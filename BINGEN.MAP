@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/07 06:25:51
+Created on:       24/10/06 18:41:10
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -81,8 +81,8 @@ r_bsp_TEXT             CODE           AUTO           187f:0000       000007fe
 r_data_TEXT            CODE           AUTO           187f:0800       0000169e
 R_MATH_TEXT            CODE           AUTO           187f:1e9e       00000401
 R_COLUMN_TEXT          CODE           AUTO           187f:22a0       00000ba0
-R_SPAN_TEXT            CODE           AUTO           187f:2e40       00000951
-R_SKY_TEXT             CODE           AUTO           187f:3792       0000023a
+R_SPAN_TEXT            CODE           AUTO           187f:2e40       00000947
+R_SKY_TEXT             CODE           AUTO           187f:3788       0000023a
 r_draw_TEXT            CODE           AUTO           187f:39d0       00000377
 r_main_TEXT            CODE           AUTO           187f:3d50       00000238
 r_plane_TEXT           CODE           AUTO           187f:3f90       00000783
@@ -1351,13 +1351,13 @@ Module: r_column.obj(r_column.ASM)
 187f:2dd7      R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
 187f:2e40      R_DrawSpan_
-187f:35d9*     R_FixedMulLocal_
-187f:34e4*     R_DrawSpanPrep_
-187f:3612      R_MapPlane_
-187f:3583*     R_FixedMulTrigLocal_
+187f:35d5*     R_FixedMulLocal_
+187f:34e0*     R_DrawSpanPrep_
+187f:360e      R_MapPlane_
+187f:357f*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-187f:3792      R_DrawSkyColumn_
-187f:3958      R_DrawSkyPlane_
+187f:3788      R_DrawSkyColumn_
+187f:394e      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 187f:39d0      R_FillBackScreen_
 187f:3c54      R_VideoErase_

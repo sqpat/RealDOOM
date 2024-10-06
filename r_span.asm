@@ -35,10 +35,16 @@ EXTRN FixedMul_:PROC
 
 
 
-DS_XFRAC    = _ss_variable_space+ 004h
-DS_YFRAC    = _ss_variable_space+ 008h
-DS_XSTEP    = _ss_variable_space+ 00Ch
-DS_YSTEP    = _ss_variable_space+ 010h
+DS_XFRAC    = bp - 004h
+DS_YFRAC    = bp - 008h
+DS_XSTEP    = bp - 00Ch
+DS_YSTEP    = bp - 010h
+
+
+DS_XFRAC_INNER    = bp - 004h
+DS_YFRAC_INNER    = bp - 008h
+DS_XSTEP_INNER    = bp - 00Ch
+DS_YSTEP_INNER    = bp - 010h
 
 
 
@@ -135,8 +141,8 @@ mov   si, ax						; temporarily store dx:ax into es:si
 mov   es, dx						; store sign bits (dx) in es
 mov   bx, ax
 mov   cx, dx						; also copy sign bits to cx
-mov   ax, word ptr ds:[DS_XSTEP]
-mov   dx, word ptr ds:[DS_XSTEP + 2]
+mov   ax, word ptr [DS_XSTEP_INNER]
+mov   dx, word ptr [DS_XSTEP_INNER + 2]
 
 ; inline i4m
 ; DX:AX * CX:BX,  CX is 0000 or FFFF
@@ -167,18 +173,18 @@ mov   dx, word ptr ds:[DS_XSTEP + 2]
 ;	DX:AX contains ds_xstep * prt
 
 
-add   ax, word ptr ds:[DS_XFRAC]	; load _ds_xfrac
+add   ax, word ptr [DS_XFRAC_INNER]	; load _ds_xfrac
 mov   cx, es					; retrieve prt sign bits
 
-adc   dx, word ptr ds:[DS_XFRAC + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
+adc   dx, word ptr [DS_XFRAC_INNER + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
 
 mov   dh, dl
 mov   dl, ah
 mov   es, dx  ; store mid 16 bits of x_frac.w
 mov   bx, si
 
-mov   ax, word ptr ds:[DS_YSTEP]
-mov   dx, word ptr ds:[DS_YSTEP + 2]
+mov   ax, word ptr ds:[DS_YSTEP_INNER]
+mov   dx, word ptr ds:[DS_YSTEP_INNER + 2]
 
 
 ;		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
@@ -208,8 +214,8 @@ mov   dx, word ptr ds:[DS_YSTEP + 2]
 
 ; add 32 bits of ds_yfrac
 mov   bx, ax
-add   bx, word ptr ds:[DS_YFRAC]	; load ds_yfrac
-adc   dx, word ptr ds:[DS_YFRAC + 2]
+add   bx, word ptr [DS_YFRAC_INNER]	; load ds_yfrac
+adc   dx, word ptr [DS_YFRAC_INNER + 2]
 
 ;	xfrac16.hu = xfrac.wu >> 8;
 
@@ -233,8 +239,8 @@ mov dx, es   ;  load mid 16 bits of x_frac.w
 
 ;	xadder = ds_xstep >> 6; 
 
-mov   ax, word ptr ds:[DS_XSTEP]
-mov   cx, word ptr ds:[DS_XSTEP + 2]
+mov   ax, word ptr [DS_XSTEP_INNER]
+mov   cx, word ptr [DS_XSTEP_INNER + 2]
 
 
 ; quick shift 6
@@ -256,7 +262,7 @@ mov   word ptr ds:[_ss_variable_space], ax	; store x_adder
 
 ;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 
-mov   ax, word ptr ds:[DS_YSTEP + 1]
+mov   ax, word ptr ds:[DS_YSTEP_INNER + 1]
 
 
 
@@ -754,7 +760,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 04h
+sub   sp, 14h
 
 xor   ah, ah
 ; set these values for drawspan while they are still in registers
@@ -795,8 +801,8 @@ mov   word ptr [bp - 02h], ax	; store distance low word
 
 mov   ax, word ptr es:[si + (( CACHEDXSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   dx, word ptr es:[si + 2 + (( CACHEDXSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   word ptr ds:[DS_XSTEP], ax
-mov   word ptr ds:[DS_XSTEP+2], dx
+mov   word ptr [DS_XSTEP], ax
+mov   word ptr [DS_XSTEP+2], dx
 
 ; CACHEDYSTEP lookup
 
@@ -816,7 +822,7 @@ shl   si, 1
 shl   si, 1						; dword lookup
 mov   es, ax
 mov   dx, di  				    ; distance high word
-mov   word ptr [bp - 04h], dx   ; store distance high word in case needed for colormap
+push  dx   ; store distance high word in case needed for colormap
 mov   ax, word ptr [bp - 02h]   ; distance low word
 mov   bx, word ptr es:[si]		; distscale low word
 mov   cx, word ptr es:[si + 2]	; distscale high word
@@ -852,8 +858,8 @@ call R_FixedMulTrigLocal_
 
 add   ax, word ptr ds:[_viewx]
 adc   dx, word ptr ds:[_viewx+2]
-mov   word ptr ds:[DS_XFRAC], ax
-mov   word ptr ds:[DS_XFRAC+2], dx
+mov   word ptr [DS_XFRAC], ax
+mov   word ptr [DS_XFRAC+2], dx
 
 mov   ax, FINESINE_SEGMENT
 pop   dx              ; get fineangle
@@ -878,8 +884,8 @@ neg   ax
 ; probably too tiny an error to be visibly noticable?
 sbb   dx, 0
 
-mov   word ptr ds:[DS_YFRAC], ax
-mov   word ptr ds:[DS_YFRAC+2], dx
+mov   word ptr [DS_YFRAC], ax
+mov   word ptr [DS_YFRAC+2], dx
 mov   word ptr ds:[_ds_colormap_segment], COLORMAPS_SEGMENT
 
 
@@ -888,7 +894,7 @@ mov   word ptr ds:[_ds_colormap_segment], COLORMAPS_SEGMENT
 cmp   byte ptr ds:[_fixedcolormap], 0
 jne   use_fixed_colormap
 ; 		index = distance >> LIGHTZSHIFT;
-mov   ax, word ptr [bp - 04h]
+pop   ax
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 sar   ax, 4
 ELSE
@@ -988,8 +994,8 @@ mov   bx, CACHEDXSTEP_SEGMENT
 mov   es, bx
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
-mov   word ptr ds:[DS_XSTEP], ax
-mov   word ptr ds:[DS_XSTEP+2], dx
+mov   word ptr [DS_XSTEP], ax
+mov   word ptr [DS_XSTEP+2], dx
 mov   dx, di
 mov   bx, word ptr ds:[_baseyscale]
 mov   cx, word ptr ds:[_baseyscale+2]

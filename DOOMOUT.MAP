@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/07 04:52:36
+Created on:       24/10/06 18:41:13
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -1695,14 +1695,6 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_expand.c)
 1f00:3db8      __HeapManager_expand_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(bfree.c)
 1f00:3f49      _bfree_
-
-
-                        +--------------------+
-                        |   Traced Symbols   |
-                        +--------------------+
-
-tolower_ referenced by module fopen.c
-
 
 
                         +--------------------+

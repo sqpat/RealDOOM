@@ -56,14 +56,14 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	uint16_t codesize4;
 	uint16_t codesize5;
     
-    codesize1 = FP_OFF(R_DrawSkyColumn) - FP_OFF(R_DrawColumn);
+    codesize1 = FP_OFF(R_DrawSpan) - FP_OFF(R_DrawColumn);
     // write filesize..
     fwrite(&codesize1, 2, 1, fp);
     // write data
     FAR_fwrite((byte __far *)R_DrawColumn, codesize1, 1, fp);
 
     
-    codesize2 = FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan);
+    codesize2 = FP_OFF(R_DrawSkyColumn) - FP_OFF(R_DrawSpan);
     
     // write filesize..
     fwrite(&codesize2, 2, 1, fp);
