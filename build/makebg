@@ -1,4 +1,4 @@
-# RealDOOM makefile
+
 
 # --------------------------------------------------------------------------
 #
@@ -37,19 +37,22 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__SCAT_BUILD=1 -d__CHIPSET_BUILD=1
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s
 ASMOPTS = /d_USED000=0 /dCOMPILE_INSTRUCTIONSET=2
+ 
+#doom8088 build opts for comparison
+#CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99
 
 GLOBOBJS = &
  m_near.obj &
  i_init.obj &
  i_quit.obj &
- i_main.obj &
+ d_main.obj &
  i_ibm.obj &
  i_sound.obj &
  f_finale.obj &
  d_init.obj &
- d_main.obj &
+ bingen.obj &
  d_net.obj &
  g_setup.obj &
  g_game.obj &
@@ -92,7 +95,6 @@ GLOBOBJS = &
  z_init.obj &
  z_umb.obj &
  z_zone.obj &
- z_scat.obj &
  st_init.obj &
  st_setup.obj &
  st_stuff.obj &
@@ -110,16 +112,22 @@ GLOBOBJS = &
  math.obj &
  d_algo.obj &
  r_math.obj &
+ r_masked.obj &
+ r_column.obj &
  r_sky.obj &
- video.obj
+ r_span.obj &
+ video.obj 
+ 
+bingen.exe : $(GLOBOBJS) 
+ wlink @build/bingen.lnk 
+ wstrip bingen.exe
 
-doomout.exe : $(GLOBOBJS) i_ibm.obj
- wlink @build/rdoomsct.lnk
- copy doomout.exe bin\doom.exe
- wstrip bin\doom.exe
+obj\.obj : obj\
 
-.c.obj :
+.c.obj : 
  wcc $(CCOPTS) $[*
+ 
+.c : build\tools\bingen\
 
 .asm.obj :
  tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
@@ -127,5 +135,4 @@ doomout.exe : $(GLOBOBJS) i_ibm.obj
 clean : .SYMBOLIC
  del *.obj
  del *.err
- del doomout.exe
- 
+ del bingen.exe

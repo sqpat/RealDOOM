@@ -117,7 +117,7 @@ GLOBOBJS = &
  video.obj
 
 doomout.exe : $(GLOBOBJS) i_ibm.obj
- wlink @build/newd16.lnk
+ wlink @build/rdoom16.lnk
  copy doomout.exe bin\doom.exe
  wstrip bin\doom.exe
 # 4gwbind 4gwpro.exe striptic.exe heretic.exe -V

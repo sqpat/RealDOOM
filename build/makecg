@@ -1,4 +1,3 @@
-
 # RealDOOM makefile
 
 # --------------------------------------------------------------------------
@@ -33,100 +32,30 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp 
-#CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp -wx 
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp  -dCODEGEN_SKIP_MENU
+#CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp  -d__USED000=1 -dCODEGEN_SKIP_MENU
  
-#doom8088 build opts for comparison
-#CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99
-ASMOPTS = /d_USED000=0 /dCOMPILE_INSTRUCTIONSET=0
-
 GLOBOBJS = &
  m_near.obj &
- i_init.obj &
- i_quit.obj &
- i_main.obj &
- i_ibm.obj &
- i_sound.obj &
- f_finale.obj &
- d_init.obj &
- d_main.obj &
- d_net.obj &
- g_setup.obj &
- g_game.obj &
- m_menu.obj &
- m_misc.obj &
- am_map.obj &
- p_init.obj &
- p_ceilng.obj &
- p_doors.obj &
- p_enemy.obj &
- p_floor.obj &
- p_inter.obj &
- p_lights.obj &
- p_map.obj &
- p_maputl.obj &
- p_math.obj &
- p_plats.obj &
- p_pspr.obj &
- p_setup.obj &
- p_sight.obj &
- p_spec.obj &
- p_switch.obj &
- p_mobj.obj &
- p_telept.obj &
- p_saveg.obj &
- p_tick.obj &
- p_user.obj &
- r_init.obj &
- r_setup.obj &
- r_bsp.obj &
- r_data.obj &
- r_draw.obj &
- r_main.obj &
- r_plane.obj &
- r_segs.obj &
- r_things.obj &
- w_init.obj &
- w_wad.obj &
- v_video.obj &
- z_init.obj &
- z_umb.obj &
- z_zone.obj &
- st_init.obj &
- st_setup.obj &
- st_stuff.obj &
- hu_setup.obj &
- hu_stuff.obj &
- hu_lib.obj &
- wi_stuff.obj &
- s_sound.obj &
- sounds.obj &
- dutils.obj &
- f_wipe.obj &
- info.obj &
- d_math.obj &
- dmx.obj &
- math.obj &
- d_algo.obj &
- r_math.obj &
- r_sky.obj &
- video.obj
+ codegen.obj
 
 
-doomout.exe : $(GLOBOBJS) i_ibm.obj
- wlink @build/rdoom16.lnk
- copy doomout.exe bin\doom.exe
- wstrip bin\doom.exe
+codegen.exe : $(GLOBOBJS)
+ wlink @build\codegen.lnk
+ wstrip codegen.exe
 # 4gwbind 4gwpro.exe striptic.exe heretic.exe -V
 # prsucc
 
 .c.obj :
  wcc $(CCOPTS) $[*
 
+.c : build\tools\codegen\
+
 .asm.obj :
  tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
 
 clean : .SYMBOLIC
- del *.obj
+ del m_near.obj
+ del codegen.obj
  del *.err
- del doomout.exe
+ 
