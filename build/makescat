@@ -1,5 +1,4 @@
-
-# NEWDOOM.EXE and DOOM.EXE makefile
+# RealDOOM makefile
 
 # --------------------------------------------------------------------------
 #
@@ -114,9 +113,9 @@ GLOBOBJS = &
  r_sky.obj &
  video.obj
 
-doom16.exe : $(GLOBOBJS) i_ibm.obj
- wlink @newdscat.lnk
- copy doom16.exe doom.exe
+doomout.exe : $(GLOBOBJS) i_ibm.obj
+ wlink @build/newdscat.lnk
+ copy doomout.exe doom.exe
  wstrip doom.exe
 
 .c.obj :
@@ -128,4 +127,4 @@ doom16.exe : $(GLOBOBJS) i_ibm.obj
 clean : .SYMBOLIC
  del *.obj
  del *.err
- del newdoom.exe
+ 

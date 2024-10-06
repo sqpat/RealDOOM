@@ -1,4 +1,4 @@
-# newdoom.EXE Linker directive file
+# RealDOOM linker file
 
 option quiet
 option map
@@ -9,7 +9,7 @@ debug all
 libpath %WATCOM%\lib286
 libpath %WATCOM%\lib286\dos
 format dos
-name doom16
+name doomout
 
 #file p_setup.obj
 #NEWSEGMENT

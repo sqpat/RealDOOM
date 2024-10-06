@@ -1,2 +1,2 @@
 @echo off
-wmake -f makecg %1 %2 %3 %4 %5 %6 %7 %8 %9
+wmake -f build\makecg %1 %2 %3 %4 %5 %6 %7 %8 %9
