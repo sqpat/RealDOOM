@@ -98,6 +98,7 @@ _viewangle_shiftright3 = 		_NULL_OFFSET + 00104h
 _dc_source_segment =	 		_NULL_OFFSET + 0010Ah
 _ds_y = 				    	_NULL_OFFSET + 0010Ch
 
+_stored_ds = 				    _NULL_OFFSET + 00110h
 
 
 

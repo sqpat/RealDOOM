@@ -28,6 +28,24 @@ void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
 void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
 
+void checkDS(int16_t a) {
+	struct SREGS        sregs;
+	uint16_t ds;
+	uint16_t ss;
+	//byte __far* someptr = malloc(1);
+    return;
+	segread(&sregs);
+	ds = sregs.ds; // 2a56 2e06 c7a
+	ss = sregs.ss; // 2a56 2e06 c7a
+
+	if (ds != 0x3C00 || ss != 0x3C00){
+		I_Error("\nvalues chaged! %x %x %i", ds, ss, a);
+	}
+
+	printf("%i ok", a);
+
+	//I_Error("\npointer is %Fp %x %x %x", someptr, ds, ss, ds_diff);
+}
 int16_t main ( int16_t argc,int8_t** argv )  { 
     
     // Export .inc file with segment values, etc from the c coe

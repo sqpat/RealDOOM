@@ -60,23 +60,30 @@ void hackDS() {
 
 
 
-void checkDS() {
+void checkDS(int16_t a) {
 	struct SREGS        sregs;
-	int16_t ds;
-	int16_t ss;
-	int16_t ds_diff;
+	uint16_t ds;
+	uint16_t ss;
 	//byte __far* someptr = malloc(1);
-
+	return;
 	segread(&sregs);
 	ds = sregs.ds; // 2a56 2e06 c7a
 	ss = sregs.ss; // 2a56 2e06 c7a
-	ds_diff = USED_DS - ds; // 102a
 
+	if (ds != 0x3C00 || ss != 0x3C00){
+		I_Error("\nvalues chaged! %x %x %i\n", ds, ss, a);
+	}
+
+	DEBUG_PRINT("%i\n", a);
 
 	//I_Error("\npointer is %Fp %x %x %x", someptr, ds, ss, ds_diff);
-	I_Error("\nvalues are %x %x %x", ds, ss, ds_diff);
 }
 */
+
+
+void hackDS();
+void hackDSBack();
+
 int16_t
 main
 ( int16_t		argc,
@@ -86,6 +93,8 @@ main
     myargv = argv; 
 
 	//hackDS();
+
+	//hackDSBack();
 	//checkDS();
     D_DoomMain (); 
 

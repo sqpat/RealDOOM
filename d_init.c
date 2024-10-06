@@ -743,6 +743,7 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 }
 */
 
+//void checkDS(int16_t a);
 
 void __far D_DoomMain2(void)
 {
@@ -1043,6 +1044,8 @@ R_PointToAngle(y, x);
 	regs.w.ax = 3;
 	intx86(0x10, &regs, &regs);
 	D_DrawTitle(title);
+
+	//DEBUG_PRINT("\nBYTES LEFT: %i %x\n", 16 * (baselowermemoryaddresssegment - stored_ds), 16 * (baselowermemoryaddresssegment - stored_ds));
 
 	DEBUG_PRINT("\nP_Init: Checking cmd-line parameters...");
 #endif

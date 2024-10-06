@@ -244,13 +244,6 @@ push si     ; we need scratch space here. push this now instead of in r_drawskyc
   ; dx = dc_yl,
   ; bx = dc_x (don't modify)
 call  R_DrawSkyColumn_
-; call 9163:0000
-
-;db 09Ah
-;dw 0000h
-;dw 09163h
-
-
 
 pop si  ; retrieve si
 

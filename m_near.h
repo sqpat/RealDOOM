@@ -150,6 +150,9 @@
 #define dc_source_segment           (*((segment_t __near*)          (_NULL_OFFSET + 0x010A)))
 #define ds_y                        (*((int16_t __near*)            (_NULL_OFFSET + 0x010C)))
 // 10E is constant
+#define stored_ds                   (*((uint16_t __near*)            (_NULL_OFFSET + 0x0110)))
+
+
 
 //#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0110)))
 

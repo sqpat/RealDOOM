@@ -40,7 +40,7 @@ void __near I_ShutdownSound(void)
 // I_ShutdownGraphics
 //
 void __near I_ShutdownGraphics(void) {
-	if (*(byte __far*)0x449 == 0x13) // don't reset mode if it didn't get set
+	if (*(byte __far*)(MK_FP(0000, 0x449)) == 0x13) // don't reset mode if it didn't get set
 	{
 		regs.w.ax = 3;
 		intx86(0x10, &regs, &regs); // back to text mode
@@ -165,18 +165,21 @@ void __near Z_ShutdownEMS() {
 }
 
 
+void hackDSBack();
+
 //
 // I_Shutdown
 // return to default system state
 //
 // called from I_Error
 void __near I_Shutdown(void) {
+	//hackDSBack();
 	
 	if (wadfilefp) {
 		fclose(wadfilefp);
 	}
 	if (wadfilefp2){
-		fclose(wadfilefp);
+		fclose(wadfilefp2);
 	}
 
 	I_ShutdownGraphics();

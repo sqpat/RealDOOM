@@ -54,7 +54,7 @@ dw 8000h,  7000h,  6000h,  9C00h,    DRAWSPAN_CALL_OFFSET,     00,     00,    00
 ; _viewangle_shiftright3 0x104
 ; _dc_source_segment  0x10A
 dw DRAWCOL_OFFSET, 00, 00h, XTOVIEWANGLE_SEGMENT,  004Fh, 00h, 00h, DC_YL_LOOKUP_SEGMENT
-
+dw 00, 00
 
 
     
@@ -3257,5 +3257,128 @@ ret
 
 
 endp
+@
+
+COMMENT @
+
+PROC hackDS_ FAR
+PUBLIC hackDS_
+
+cli
+push cx
+push si
+push di
+
+mov ds:[_stored_ds], ds
+xor di, di
+mov si, di
+;mov cx, 03C00h
+mov cx, ds
+add cx, 400h
+mov es, cx
+mov CX, 04000h
+rep movsw
+;mov cx, es
+;mov ds, cx
+;mov ss, cx
+
+
+pop cx
+pop di
+pop si
+
+
+
+sti
+
+
+
+retf
+
+ENDP
+
+PROC hackDSOLD_ FAR
+PUBLIC hackDSOLD_
+
+cli
+push cx
+push si
+push di
+
+mov ds:[_stored_ds], ds
+xor di, di
+mov si, di
+mov cx, 05000h
+mov es, cx
+mov CX, 04000h
+rep movsw
+
+mov cx, es
+mov ds, cx
+
+xor di, di
+mov si, di
+
+mov cx, ss
+add cx, 100h
+mov es, cx
+
+mov CX, 04000h
+rep movsw
+
+mov cx, es
+mov ds, cx
+mov ss, cx
+
+
+pop cx
+pop di
+pop si
+
+
+
+sti
+
+
+
+retf
+
+ENDP
+
+
+
+PROC hackDSBack_ FAR
+PUBLIC hackDSBack_
+
+cli
+push cx
+push si
+push di
+
+mov es, ds:[_stored_ds]
+
+xor di, di
+mov si, di
+mov CX, 04000h
+rep movsw
+mov cx, es
+mov ds, cx
+mov ss, cx
+
+
+pop cx
+pop di
+pop si
+
+
+
+sti
+
+
+
+retf
+
+ENDP
+
 @
 END

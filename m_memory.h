@@ -196,10 +196,13 @@ segs                 EDD9:0000
 
 // 
 
-//#define baselowermemoryaddresssegment 0x3007
-//#define baselowermemoryaddress (0x30070000)
+
 #define baselowermemoryaddresssegment 0x31E4
 #define baselowermemoryaddress (0x31E40000)
+
+
+//#define baselowermemoryaddress        (0x2DE40000)
+//#define baselowermemoryaddresssegment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
 
 #define finesine           ((int32_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
@@ -217,8 +220,8 @@ segs                 EDD9:0000
 #define patchcache_nodes   ((cache_node_t __far*) (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
 #define texturecache_nodes ((cache_node_t __far*) (((int32_t)patchcache_nodes) + size_patchcache_nodes))
 
-#define FINE_SINE_ARGUMENT  0x31E4
-#define FINE_COSINE_ARGUMENT 0x33E4
+#define FINE_SINE_ARGUMENT  baselowermemoryaddresssegment
+#define FINE_COSINE_ARGUMENT FINE_SINE_ARGUMENT + 0x200
 
 
 

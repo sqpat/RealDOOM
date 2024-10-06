@@ -869,7 +869,9 @@ void __near D_DoomLoop (void)
                 
 
 
+	//I_Error("Here! 0");
     I_InitGraphics ();
+	//I_Error("Here! B");
 
     while (1)
     {
