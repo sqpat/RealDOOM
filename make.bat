@@ -4,6 +4,7 @@ set arg1=%1
 
 IF "%1" == "" GOTO PRINT_EXIT
 IF "%1" == "286" GOTO MAKE_286
+IF "%1" == "386" GOTO MAKE_386
 IF "%1" == "8086" GOTO MAKE_8086
 IF "%1" == "8088" GOTO MAKE_8086
 IF "%1" == "186" GOTO MAKE_186
@@ -25,6 +26,10 @@ GOTO END
     wmake -f build\make286 %2 %3 %4 %5 %6 %7 %8 %9
 GOTO END
 
+:MAKE_386
+    wmake -f build\make386 %2 %3 %4 %5 %6 %7 %8 %9
+GOTO END
+
 :MAKE_SCAT
     wmake -f build\makescat %2 %3 %4 %5 %6 %7 %8 %9
 GOTO END
@@ -40,7 +45,7 @@ GOTO END
 
 :PRINT_EXIT
     echo:
-    echo Usage: make [286] [8086] [186] [SCAMP] [SCAT] [HT18] [make options]
+    echo Usage: make [286] [8086] [186] [SCAMP] [SCAT] [HT18] [386] [make options]
     echo:
 GOTO END
 
