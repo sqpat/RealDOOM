@@ -14,74 +14,74 @@ IF "%1" == "HT18" GOTO MAKE_HT18
 GOTO PRINT_EXIT
 
 :MAKE_8086
-    wmake -f make16 clean
-    wmake -f makebg
+    wmake -f build\make16 clean
+    wmake -f build\makebg
     bingen.exe
-    wmake -f makecg clean
-    wmake -f makecg 
+    wmake -f build\makecg clean
+    wmake -f build\makecg 
     codegen.exe
-    wmake -f makecg clean
-    wmake -f make16
+    wmake -f build\makecg clean
+    wmake -f build\make16
 GOTO END
 
 :MAKE_186
-    wmake -f make186 clean
-    wmake -f makebg
+    wmake -f build\make186 clean
+    wmake -f build\makebg
     bingen.exe
-    wmake -f makecg clean
-    wmake -f makecg 
+    wmake -f build\makecg clean
+    wmake -f build\makecg 
     codegen.exe
-    wmake -f makecg clean
-    wmake -f make186
+    wmake -f build\makecg clean
+    wmake -f build\make186
 GOTO END
 
 :MAKE_286
-    wmake -f make286 clean
-    wmake -f makebg
+    wmake -f build\make286 clean
+    wmake -f build\makebg
     bingen.exe
-    wmake -f makecg clean
-    wmake -f makecg 
+    wmake -f build\makecg clean
+    wmake -f build\makecg 
     codegen.exe
-    wmake -f makecg clean
-    wmake -f make286
+    wmake -f build\makecg clean
+    wmake -f build\make286
 GOTO END
 
 
 :MAKE_SCAT
-    wmake -f makescat clean
-    wmake -f makebg
+    wmake -f build\makescat clean
+    wmake -f build\makebg
     bingen.exe
-    wmake -f makecg clean
-    wmake -f makecg 
+    wmake -f build\makecg clean
+    wmake -f build\makecg 
     codegen.exe
-    wmake -f makecg clean
-    wmake -f makescat
+    wmake -f build\makecg clean
+    wmake -f build\makescat
 GOTO END
 
 
 
 :MAKE_SCAMP
-    wmake -f makesc clean
-    wmake -f makebg
+    wmake -f build\makesc clean
+    wmake -f build\makebg
     bingen.exe
-    wmake -f makecg clean
-    wmake -f makecg 
+    wmake -f build\makecg clean
+    wmake -f build\makecg 
     codegen.exe
-    wmake -f makecg clean
-    wmake -f makesc
+    wmake -f build\makecg clean
+    wmake -f build\makesc
 GOTO END
 
 
 
 :MAKE_HT18
-    wmake -f makeht clean
-    wmake -f makebg
+    wmake -f build\makeht clean
+    wmake -f build\makebg
     bingen.exe
-    wmake -f makecg clean
-    wmake -f makecg 
+    wmake -f build\makecg clean
+    wmake -f build\makecg 
     codegen.exe
-    wmake -f makecg clean
-    wmake -f makeht
+    wmake -f build\makecg clean
+    wmake -f build\makeht
 GOTO END
 
 
