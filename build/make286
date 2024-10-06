@@ -116,9 +116,10 @@ GLOBOBJS = &
  video.obj 
  
 doomout.exe : $(GLOBOBJS) i_ibm.obj
- wlink @build/newd16.lnk symt tolower_
- copy doomout.exe doom.exe
- wstrip doom.exe
+ #wlink @build/newd16.lnk symt tolower_
+ wlink @build/newd16.lnk 
+ copy doomout.exe bin\doom.exe
+ wstrip bin\doom.exe
 
 .c.obj :
  wcc $(CCOPTS) $[*
@@ -129,3 +130,4 @@ doomout.exe : $(GLOBOBJS) i_ibm.obj
 clean : .SYMBOLIC
  del *.obj
  del *.err
+ del doomout.exe

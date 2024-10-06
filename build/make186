@@ -118,8 +118,8 @@ GLOBOBJS = &
 
 doomout.exe : $(GLOBOBJS) i_ibm.obj
  wlink @build/newd16.lnk
- copy doomout.exe doom.exe
- wstrip doom.exe
+ copy doomout.exe bin\doom.exe
+ wstrip bin\doom.exe
 # 4gwbind 4gwpro.exe striptic.exe heretic.exe -V
 # prsucc
 
@@ -132,3 +132,4 @@ doomout.exe : $(GLOBOBJS) i_ibm.obj
 clean : .SYMBOLIC
  del *.obj
  del *.err
+ del doomout.exe

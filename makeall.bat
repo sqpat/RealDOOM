@@ -17,6 +17,7 @@ GOTO PRINT_EXIT
     wmake -f build\make16 clean
     wmake -f build\makebg
     bingen.exe
+    move doomcode.bin bin\doomcode.bin
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
@@ -28,6 +29,7 @@ GOTO END
     wmake -f build\make186 clean
     wmake -f build\makebg
     bingen.exe
+    move doomcode.bin bin\doomcode.bin
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
@@ -39,6 +41,7 @@ GOTO END
     wmake -f build\make286 clean
     wmake -f build\makebg
     bingen.exe
+    move doomcode.bin bin\doomcode.bin
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
@@ -51,6 +54,7 @@ GOTO END
     wmake -f build\makescat clean
     wmake -f build\makebg
     bingen.exe
+    move doomcode.bin bin\doomcode.bin
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
@@ -64,6 +68,7 @@ GOTO END
     wmake -f build\makesc clean
     wmake -f build\makebg
     bingen.exe
+    move doomcode.bin bin\doomcode.bin
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
@@ -77,6 +82,7 @@ GOTO END
     wmake -f build\makeht clean
     wmake -f build\makebg
     bingen.exe
+    move doomcode.bin bin\doomcode.bin
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe

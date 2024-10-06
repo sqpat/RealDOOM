@@ -115,8 +115,8 @@ GLOBOBJS = &
 
 doomout.exe : $(GLOBOBJS) i_ibm.obj
  wlink @build/newdht18.lnk
- copy doomout.exe doom.exe
- wstrip doom.exe
+ copy doomout.exe bin\doom.exe
+ wstrip bin\doom.exe
 
 .c.obj :
  wcc $(CCOPTS) $[*
@@ -127,3 +127,4 @@ doomout.exe : $(GLOBOBJS) i_ibm.obj
 clean : .SYMBOLIC
  del *.obj
  del *.err
+ del doomout.exe
