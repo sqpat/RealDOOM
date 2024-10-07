@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/07 13:46:32
+Created on:       24/10/07 16:28:06
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -52,7 +52,7 @@ D_ALGO_TEXT            CODE           AUTO           024b:59dc       00000154
 dmx_TEXT               CODE           AUTO           024b:5b30       000001f0
 dutils_TEXT            CODE           AUTO           024b:5d20       0000008b
 wi_stuff_TEXT          CODE           AUTO           024b:5db0       00000efa
-MATH_TEXT              CODE           AUTO           024b:6caa       000007df
+MATH_TEXT              CODE           AUTO           024b:6caa       000007dc
 f_finale_TEXT          CODE           AUTO           024b:7490       00000bf7
 g_setup_TEXT           CODE           AUTO           024b:8090       000002a0
 r_setup_TEXT           CODE           AUTO           024b:8330       00000434
@@ -96,7 +96,7 @@ _TEXT                  CODE           AUTO           1f01:17d0       0000279e
 FAR_DATA               FAR_DATA       AUTO           22f7:000e       00000000
 _NULL                  BEGDATA        DGROUP         22f8:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         22fa:0000       00000002
-_FIXEDDATA             DATA           DGROUP         22fb:0000       00000114
+_FIXEDDATA             DATA           DGROUP         22fb:0000       0000011c
 _DATA                  DATA           DGROUP         230d:0000       00000be8
 CONST                  DATA           DGROUP         23cb:0008       00000854
 CONST2                 DATA           DGROUP         2450:000c       0000010d
@@ -998,29 +998,29 @@ Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
 024b:6b0a+     WI_Init_
 024b:6c88      WI_Start_
 Module: math.obj(math.ASM)
-024b:7086      FastDiv32u16u_
+024b:7083      FastDiv32u16u_
 024b:6db2      FixedMulTrigNoShift_
-024b:6e97      FastMul16u32u_
-024b:6ff7      FixedDiv_
-024b:6e00*     FixedMulTrig16_
-024b:6eac      div48_32_
-024b:713c*     FastDiv3232_RPTA_
-024b:735b*     div48_32_whole_
-024b:6e1a      FastMulTrig16_
-024b:6e43      FixedMulTrigSpeed_
-024b:6e88*     FixedMul16u32u_
-024b:70a4      FastDiv3216u_
-024b:7228      FastDiv3232_
-024b:72e6      FixedDivWholeA_
+024b:6e94      FastMul16u32u_
+024b:6ff4      FixedDiv_
+024b:6dfd*     FixedMulTrig16_
+024b:6ea9      div48_32_
+024b:7139*     FastDiv3232_RPTA_
+024b:7358*     div48_32_whole_
+024b:6e17      FastMulTrig16_
+024b:6e40      FixedMulTrigSpeed_
+024b:6e85*     FixedMul16u32u_
+024b:70a1      FastDiv3216u_
+024b:7225      FastDiv3232_
+024b:72e3      FixedDivWholeA_
 024b:6dae      FixedMulTrig_
 024b:6d6e      FixedMul1632_
 024b:6d2d      FixedMul2432_
 024b:6ce3      FixedMul2424_
 024b:6caa      FixedMul_
-024b:710b      FastDiv3232_shift_3_8_
-024b:6e5f      FixedMulBig1632_
-024b:6e73      FixedMul16u32_
-024b:6e47      FixedMulTrigSpeedNoShift_
+024b:7108      FastDiv3232_shift_3_8_
+024b:6e5c      FixedMulBig1632_
+024b:6e70      FixedMul16u32_
+024b:6e44      FixedMulTrigSpeedNoShift_
 Module: f_finale.obj(C:\REALDOOM\f_finale.c)
 024b:7490+     V_DrawPatchFlipped_
 024b:7576      F_StartFinale_

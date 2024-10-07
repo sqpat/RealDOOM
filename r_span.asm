@@ -73,8 +73,7 @@ cli 									; disable interrupts
 ; fixed_t x32step = (ds_xstep << 6);
 
 ; todo move this logic out into prep function? 
-mov   ax, SPANFUNC_JUMP_LOOKUP_SEGMENT
-MOV   ES, ax
+MOV   ES, ds:[_spanfunc_jump_segment_storage]
 
 mov   al, byte ptr ds:[_spanfunc_main_loop_count]             
 ;; todo is this smaller with DI/stosb stuff?
@@ -350,8 +349,7 @@ SELFMODIFY_compare_span_counter:
 cmp   bl, 4
 jge    span_i_loop_done
 
-mov   ax, SPANFUNC_JUMP_LOOKUP_SEGMENT
-MOV   ES, ax
+MOV   ES, ds:[_spanfunc_jump_segment_storage]
 
 jmp   span_i_loop_repeat
 span_i_loop_done:
@@ -583,24 +581,23 @@ push  si
 sal dx, 1
 sal dx, 1   ; DWORD lookup index
 mov si, dx
-mov es, ax  ; put segment in ES
-mov ax, es:[si]
-mov dx, es:[si+2]
 
+mov ds, ax  ; cosine/sine segment in ds
+lodsw
+mov  es, ax
+lodsw
+mov  dx, ax ; store sign bits in DX
 
-mov   es, ax    ; store ax in es
-mov   DS, DX    ; store sign bits in DS
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
+AND AX, BX  ; S0*BX
+NEG AX
+MOV SI, AX  ; SI stores hi word return
 
-mov   DX, DS    ; restore sign bits from DS
+mov AX, DX  ; restore sign bits from dx
 
-AND  DX, CX    ; DX*CX
-NEG  DX
-add  SI, DX    ; low word result into high word return
-
-mov   DX, DS    ; restore sign bits from DS
+AND  AX, CX    ; DX*CX
+NEG  AX
+add  SI, AX    ; low word result into high word return
+; use DX copy of sign bits later..
 
 ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
 ; UNLESS BX is 0. then its also 0!
@@ -730,6 +727,8 @@ ret
 
 ENDP
 
+go_generate_values:
+jmp   generate_distance_steps
 
 ;
 ; R_MapPlane_
@@ -765,8 +764,8 @@ mov   word ptr ds:[_ds_x2], bx
 
 xor   ah, ah
 xchg  si, ax
-mov   ax, CACHEDHEIGHT_SEGMENT			; base segment
-mov   es, ax
+mov   es, ds:[_cachedheight_segment_storage]
+
 mov   ax, word ptr ds:[_planeheight]
 mov   dx, word ptr ds:[_planeheight + 2]
 shl   si, 1
@@ -774,9 +773,7 @@ shl   si, 1
 ; CACHEDHEIGHT LOOKUP
 
 cmp   ax, word ptr es:[si] ; compare low word
-je    use_cached_values
-go_generate_values:
-jmp   generate_distance_steps
+jne    go_generate_values
 use_cached_values:
 
 cmp   dx, word ptr es:[si+2]
@@ -787,39 +784,39 @@ jne   go_generate_values	; comparing high word
 
 mov   ax, word ptr es:[si + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   dx, word ptr es:[si + 2 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   di, dx					; store distance high word
-push   ax	; store distance low word
 
-; CACHEDXSTEP lookup
+; CACHEDXSTEP lookup. move these into temporary variable space
 
-
-mov   ax, word ptr es:[si + (( CACHEDXSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   dx, word ptr es:[si + 2 + (( CACHEDXSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   word ptr ds:[DS_XSTEP], ax
-mov   word ptr ds:[DS_XSTEP+2], dx
-
+mov   bx, ds
+mov   es, bx
+mov   ds, ds:[_cachedxstep_segment_storage]
+mov   di, DS_XSTEP
+movsw       ; DS_XSTEP
+movsw       ; DS_XSTEP + 2
+sub   si, 4
 ; CACHEDYSTEP lookup
+mov   ds, ss:[_cachedystep_segment_storage]
+movsw       ; DS_YSTEP
+movsw       ; DS_YSTEP + 2
 
+;restore ds. es, si etc dont materr.
+mov   ds, bx
 
-mov   ax, word ptr es:[si + (( CACHEDYSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   dx, word ptr es:[si + 2 + (( CACHEDYSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   word ptr ds:[DS_YSTEP], ax
-mov   word ptr ds:[DS_YSTEP+2], dx
 distance_steps_ready:
+;dx:ax is already distance going in
 
 ; dx:ax is y_step
 ;     length = R_FixedMulLocal (distance,distscale[x1]);
 
 mov   si, word ptr ds:[_ds_x1]		; grab x2 (function input)
-mov   ax, DISTSCALE_SEGMENT
-shl   si, 1
-shl   si, 1						; dword lookup
-mov   es, ax
-mov   dx, di  				    ; distance high word
-pop   ax   ; distance low word
+
+shl   si, 1						; word lookup
+mov   bx, si          ; dword lookup if we add them
+mov   es, ds:[_distscale_segment_storage]
+
 push  dx   ; store distance high word in case needed for colormap
-mov   bx, word ptr es:[si]		; distscale low word
-mov   cx, word ptr es:[si + 2]	; distscale high word
+mov   cx, word ptr es:[bx + si + 2]	; distscale high word
+mov   bx, word ptr es:[bx + si]		; distscale low word
 
 ;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
@@ -828,22 +825,19 @@ call R_FixedMulLocal_
 ;	angle = MOD_FINE_ANGLE(viewangle_shiftright3+ xtoviewangle[x1]);
 ; ds_xfrac = viewx.w + R_FixedMulLocal(finecosine[angle], length );
 
-mov   bx, si
-; todo bx + si below, reorder
-shr   bx, 1		
-xchg  di, ax			; store low word of length (product result)in di
-mov   si, dx			; store high word of length  (product result) in si
+xchg  bx, ax			; store low word of length (product result)in bx
+mov   cx, dx			; store high word of length  (product result) in cx
 
 les   ax, dword ptr ds:[_viewangle_shiftright3]
-add   ax, word ptr es:[bx]		; ax is unmodded fine angle..
+add   ax, word ptr es:[si]		; ax is unmodded fine angle.. si is a word lookup
 and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
 push  ax            ; store fineangle
 
 xchg  dx, ax			; fineangle in DX
 mov   ax, FINECOSINE_SEGMENT
 
-mov   bx, di			; length low word to DX
-mov   cx, si			; length low word to DX
+mov   di, bx			; backup low word to DX
+mov   si, cx			; backup high word
 
 ;call FAR PTR FixedMul_ 
 call R_FixedMulTrigLocal_
@@ -955,8 +949,6 @@ generate_distance_steps:
 ; dx:ax = planeheight segment
 ; note: es wrecked by function calls to r_fixedmullocal...
 
-
-
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx   ; cachedheight into dx
 mov   bx, word ptr es:[si + (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
@@ -970,8 +962,7 @@ mov   cx, word ptr es:[si + 2 + (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 call R_FixedMulLocal_
 
 ; result is distance
-mov   bx, CACHEDDISTANCE_SEGMENT
-mov   es, bx
+mov   es, ds:[_cacheddistance_segment_storage]
 mov   bx, word ptr ds:[_basexscale]
 mov   cx, word ptr ds:[_basexscale+2]
 mov   word ptr es:[si], ax			; store distance
@@ -984,8 +975,7 @@ push  ax  ; distance low word
 ;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
-mov   bx, CACHEDXSTEP_SEGMENT
-mov   es, bx
+mov   es, ds:[_cachedxstep_segment_storage]
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
 mov   word ptr ds:[DS_XSTEP], ax
@@ -1001,12 +991,15 @@ mov   ax, word ptr [bp - 02h]	; retrieve distance low word
 ;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
-mov   bx, CACHEDYSTEP_SEGMENT
-mov   es, bx
+mov   es, ds:[_cachedystep_segment_storage]
+; todo turn into stosw here and above?
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
 mov   word ptr ds:[DS_YSTEP], ax
 mov   word ptr ds:[DS_YSTEP+2], dx
+
+pop   ax
+mov   dx, di  				    ; distance high word
 jmp   distance_steps_ready
 
    
@@ -1014,3 +1007,4 @@ jmp   distance_steps_ready
 ENDP
 
 END
+

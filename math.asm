@@ -24,7 +24,10 @@ GLOBAL FixedMul_:PROC
 ENDIF
 
 SEGMENT _FIXEDDATA  USE16 PARA PUBLIC 'DATA'
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+; spanfunc_segment_storage 0Eh
+dw SPANFUNC_JUMP_LOOKUP_SEGMENT
+; 010h
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ; _quality_port_lookup 0x30
@@ -54,7 +57,9 @@ dw 8000h,  7000h,  6000h,  9C00h,    DRAWSPAN_CALL_OFFSET,     00,     00,    00
 ; _viewangle_shiftright3 0x104
 ; _dc_source_segment  0x10A
 dw DRAWCOL_OFFSET, 00, 00h, XTOVIEWANGLE_SEGMENT,  004Fh, 00h, 00h, DC_YL_LOOKUP_SEGMENT
-dw 00, 00
+dw 00, CACHEDHEIGHT_SEGMENT, DISTSCALE_SEGMENT, CACHEDDISTANCE_SEGMENT, CACHEDXSTEP_SEGMENT, CACHEDYSTEP_SEGMENT
+
+
 
 
     
@@ -620,23 +625,21 @@ push  si
 mov si, dx
 mov ds, ax  ; put segment in ES
 lodsw
-xchg ax, dx
+mov es, ax
 lodsw
 
-
-mov   es, dx    ; store ax in es
-mov   DS, AX    ; store sign bits in DS
+mov   DX, AX    ; store sign bits in DX
 AND   AX, BX	; S0*BX
 NEG   AX
 mov   SI, AX	; SI stores hi word return
 
-mov   DX, DS    ; restore sign bits from DS
+mov   AX, DX    ; restore sign bits from DX
 
-AND  DX, CX    ; DX*CX
-NEG  DX
-add  SI, DX    ; low word result into high word return
+AND  AX, CX    ; DX*CX
+NEG  AX
+add  SI, AX    ; low word result into high word return
 
-mov   DX, DS    ; restore sign bits from DS
+; DX already has sign bits..
 
 ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
 ; UNLESS BX is 0. then its also 0!
