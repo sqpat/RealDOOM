@@ -72,14 +72,15 @@
 #define currentscreen               (*(byte __far * __near *)       (_NULL_OFFSET + 0x0000))
 #define destview                    (*(byte __far * __near *)       (_NULL_OFFSET + 0x0004))
 #define destscreen                  (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0008)))
-#define tantoangle                  (*((angle_t __far * __near*)    (_NULL_OFFSET + 0x000C)))
+#define tantoangle                  (*((segment_t  __near*)         (_NULL_OFFSET + 0x000C)))
+//#define ???  0E
 #define olddb                       ((int16_t __near *)             (_NULL_OFFSET + 0x0010))
 // 0 = high, 1 = low, = 2 potato
 #define detailshift                 (*((int16_t_union __near*)      (_NULL_OFFSET + 0x0020)))
 #define detailshiftitercount        (*((uint8_t __near*)            (_NULL_OFFSET + 0x0022)))
 #define detailshift2minus           (*((uint8_t __near*)            (_NULL_OFFSET + 0x0023)))
 #define detailshiftandval           (*((uint16_t __near*)           (_NULL_OFFSET + 0x0024)))
-//#define ???
+//#define ??? 26
 #define ds_x1                       (*((int16_t __near*)            (_NULL_OFFSET + 0x0028)))
 #define ds_x2                       (*((int16_t __near*)            (_NULL_OFFSET + 0x002A)))
 #define ds_colormap_segment         (*((segment_t __near*)          (_NULL_OFFSET + 0x002C)))

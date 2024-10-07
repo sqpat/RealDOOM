@@ -49,10 +49,10 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_6_out_of_bounds
 
-les   bx, dword ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
-add   bx, ax
+mov   bx, ax
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
 add   dx, 0c000h
@@ -103,10 +103,10 @@ call FastDiv3232_shift_3_8_
 
 cmp   ax, 0800h
 jae   octant_7_out_of_bounds
-les   bx, dword ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
-add   bx, ax
+mov   bx, ax
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
 neg   dx
@@ -201,10 +201,10 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_0_out_of_bounds
 
-les   bx, dword ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
-add   bx, ax
+mov   bx, ax
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
 
@@ -226,10 +226,10 @@ octant_1_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_1_out_of_bounds
-les   bx, dword ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
-add   bx, ax
+mov   bx, ax
 mov   ax, 0ffffh
 sub   ax, word ptr es:[bx]
 mov   dx, 03fffh
@@ -274,10 +274,10 @@ xchg ax, bx
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_3_out_of_bounds
-les   bx, dword ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
-add   bx, ax
+mov   bx, ax
 mov   ax, 0ffffh
 sub   ax, word ptr es:[bx]
 mov   dx, 07fffh
@@ -299,10 +299,10 @@ octant_2_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_2_out_of_bounds
-les   bx, dword ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
-add   bx, ax
+mov   bx, ax
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
 add   dx, 04000h
@@ -337,10 +337,10 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_4_out_of_bounds
 
-les   bx, dword ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
-add   bx, ax
+mov   bx, ax
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
 add   dx, 08000h
@@ -362,10 +362,10 @@ octant_5_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_5_out_of_bounds
-les   bx, dword ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
-add   bx, ax
+mov   bx, ax
 mov   ax, 0ffffh
 sub   ax, word ptr es:[bx]
 mov   dx, 0bfffh
@@ -650,8 +650,8 @@ mov   dx, di ; move di to dx early to free up di for les + di + bx combo
 
 
 mov   bx, ax
-les   di, dword ptr ds:[_tantoangle] 
-mov   bx, word ptr es:[di + bx + 2] ; get just intbits..
+mov   es, word ptr ds:[_tantoangle] 
+mov   bx, word ptr es:[bx + 2] ; get just intbits..
 
 ;    dist = FixedDiv (dx, finesine[angle] );	
 

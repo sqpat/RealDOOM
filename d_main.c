@@ -1073,21 +1073,25 @@ void __near Z_ClearDeadCode() {
 	byte __far *startaddr =	(byte __far*)D_InitStrings;
 	byte __far *endaddr =		(byte __far*)P_Init;
 	
+	// accurate enough
+
 	//8830 bytes or so
 	//8978 currently - 05/29/24
 	//8342           - 06/01/24
-	uint16_t size = endaddr - startaddr;
+	//9350           - 10/07/24
+	uint16_t size = endaddr - startaddr-16;
 	FILE* fp;
 
-	//I_Error("size: %u", size);
 
-	FAR_memset(startaddr, 0, size);
+	angle_t __far*  dest;
 	
-	tantoangle = (angle_t __far* )startaddr;
+	tantoangle = FP_SEG(startaddr) + 1;
+	//I_Error("size: %i", size);
+	dest =  (angle_t __far* )MK_FP(tantoangle, 0);
 	
 	fp = fopen("DOOMDATA.BIN", "rb");
 	fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);
-	FAR_fread(tantoangle, 4, 2049, fp);
+	FAR_fread(dest, 4, 2049, fp);
 	fclose(fp);
 
 }
