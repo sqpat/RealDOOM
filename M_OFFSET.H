@@ -8,7 +8,7 @@
 #define R_DrawSkyPlaneOffset           0x1C6
 
 #define R_DrawColumnCodeSize           0xBA0
-#define R_DrawSpanCodeSize             0x948
+#define R_DrawSpanCodeSize             0x942
 #define R_DrawFuzzColumnCodeSize       0x2A8
 #define R_DrawMaskedColumnCodeSize     0xFB
-#define R_DrawSkyColumnCodeSize        0x248
+#define R_DrawSkyColumnCodeSize        0x23E

@@ -794,7 +794,7 @@ jne   go_generate_values	; comparing high word
 mov   ax, word ptr es:[si + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   dx, word ptr es:[si + 2 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   di, dx					; store distance high word
-mov   word ptr [bp - 02h], ax	; store distance low word
+push   ax	; store distance low word
 
 ; CACHEDXSTEP lookup
 
@@ -822,8 +822,8 @@ shl   si, 1
 shl   si, 1						; dword lookup
 mov   es, ax
 mov   dx, di  				    ; distance high word
+pop   ax   ; distance low word
 push  dx   ; store distance high word in case needed for colormap
-mov   ax, word ptr [bp - 02h]   ; distance low word
 mov   bx, word ptr es:[si]		; distscale low word
 mov   cx, word ptr es:[si + 2]	; distscale high word
 
@@ -983,7 +983,7 @@ mov   cx, word ptr ds:[_basexscale+2]
 mov   word ptr es:[si], ax			; store distance
 mov   word ptr es:[si + 2], dx		; store distance
 mov   di, dx						; store distance high word in di
-mov   word ptr [bp - 02h], ax		; distance low word
+push  ax  ; distance low word
 
 ; 		ds_xstep = cachedxstep[y] = (R_FixedMulLocal (distance,basexscale));
 
@@ -999,6 +999,7 @@ mov   word ptr [DS_XSTEP+2], dx
 mov   dx, di
 mov   bx, word ptr ds:[_baseyscale]
 mov   cx, word ptr ds:[_baseyscale+2]
+; cant pop - used once more later
 mov   ax, word ptr [bp - 02h]	; retrieve distance low word
 
 ;		ds_ystep = cachedystep[y] = (R_FixedMulLocal (distance,baseyscale));
