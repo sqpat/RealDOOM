@@ -378,6 +378,7 @@ void __near Z_LoadBinaries() {
 	FILE* fp2;
 	int16_t codesize;
 	FILE* fp = fopen("DOOMDATA.BIN", "rb"); 
+	fseek(fp, DATA_DOOMDATA_OFFSET, SEEK_SET);
 	// currently in physics region!
 	
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);

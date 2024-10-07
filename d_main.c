@@ -1085,7 +1085,8 @@ void __near Z_ClearDeadCode() {
 	
 	tantoangle = (angle_t __far* )startaddr;
 	
-	fp = fopen("D_TANTOA.BIN", "rb");
+	fp = fopen("DOOMDATA.BIN", "rb");
+	fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);
 	FAR_fread(tantoangle, 4, 2049, fp);
 	fclose(fp);
 

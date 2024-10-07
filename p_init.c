@@ -62,7 +62,8 @@ void __near P_InitSwitchList(void)
 //
 	switchlist_t alphSwitchList[NUMSWITCHDEFS];
 
-	FILE *fp = fopen("D_SWITCH.BIN", "rb"); // clear old file
+	FILE *fp = fopen("DOOMDATA.BIN", "rb"); // clear old file
+	fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 	fread(alphSwitchList, sizeof(switchlist_t), NUMSWITCHDEFS, fp);
 	fclose(fp);
 	//I_Error("\nval %s %s %s", alphSwitchList[0].name1, alphSwitchList[1].name1, alphSwitchList[2].name1);
@@ -177,7 +178,7 @@ void __near P_InitPicAnims(void)
 //  the WAD file.
 //
 	animdef_t animdefs[NUMANIMDEFS];
-	FILE *fp = fopen("D_ANIMS.BIN", "rb"); // clear old file
+	FILE *fp = fopen("DOOMDATA.BIN", "rb"); // clear old file
 	fread(animdefs, sizeof(animdef_t), NUMANIMDEFS, fp);
 	fclose(fp);
 	//I_Error("\nvalanim %s %s %s", animdefs[0].startname, animdefs[1].startname, animdefs[2].startname);
@@ -377,7 +378,8 @@ void __near R_InitSpriteDefs()
 	};
 	*/
 	int8_t namelist[NUMSPRITES][5];
-	FILE * fp = fopen("D_SPLIST.BIN", "rb"); // clear old file
+	FILE * fp = fopen("DOOMDATA.BIN", "rb"); // clear old file
+	fseek(fp, SPLIST_DOOMDATA_OFFSET, SEEK_SET);
 	fread(namelist,  5, NUMSPRITES, fp);
 	fclose(fp);
 	//I_Error("\nvalanim %s %s %s", namelist[0], namelist[1], namelist[2]);
