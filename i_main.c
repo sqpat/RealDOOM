@@ -59,7 +59,6 @@ void hackDS() {
 }
 
 
-
 void checkDS(int16_t a) {
 	struct SREGS        sregs;
 	uint16_t ds;
@@ -74,9 +73,8 @@ void checkDS(int16_t a) {
 		I_Error("\nvalues chaged! %x %x %i\n", ds, ss, a);
 	}
 
-	DEBUG_PRINT("%i\n", a);
+	//DEBUG_PRINT("%i\n", a);
 
-	//I_Error("\npointer is %Fp %x %x %x", someptr, ds, ss, ds_diff);
 }
 */
 
@@ -84,22 +82,18 @@ void checkDS(int16_t a) {
 void hackDS();
 void hackDSBack();
 
+extern int16_t  __GETDS;
+
 int16_t
 main
 ( int16_t		argc,
   int8_t**	argv ) 
 { 
-	struct SREGS        sregs;
     myargc = argc; 
     myargv = argv; 
 
-	segread(&sregs);
-	stored_ds = sregs.ds; // 2a56 2e06 c7a
+	hackDS();
 
-	//hackDS();
-
-	//hackDSBack();
-	//checkDS();
     D_DoomMain (); 
 
     return 0;

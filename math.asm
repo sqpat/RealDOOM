@@ -3262,7 +3262,39 @@ ret
 endp
 @
 
-COMMENT @
+
+
+PROC resetDS_ FAR
+PUBLIC resetDS_
+
+;todo is ax necessary? if 286+ can push immediate.
+push ax
+mov ax, 03C00h
+mov ds, ax
+pop ax
+
+retf
+endp
+
+PROC hackCMain_ FAR
+PUBLIC hackCMain_
+
+push ax
+push cx
+push si
+push di
+
+
+
+
+pop di
+pop si
+pop cx
+pop ax
+
+
+retf
+endp
 
 
 PROC hackDS_ FAR
@@ -3280,11 +3312,11 @@ mov cx, 03C00h
 
 ;mov cx, ds
 ;add cx, 400h
-
-
 mov es, cx
-mov CX, 0800h    ; 1000h bytes
+
+mov CX, 2000h    ; 4000h bytes
 rep movsw
+
 mov cx, es
 mov ds, cx
 mov ss, cx
@@ -3319,7 +3351,7 @@ mov es, ds:[_stored_ds]
 
 xor di, di
 mov si, di
-mov CX, 0800h   ; 1000h bytes
+mov CX, 2000h   ; 4000h bytes
 rep movsw
 mov cx, es
 mov ds, cx
@@ -3339,6 +3371,7 @@ retf
 
 ENDP
 
+COMMENT @
 
 
 PROC hackDSOLD_ FAR

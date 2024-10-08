@@ -362,8 +362,10 @@ void __near I_StartTic(void)
 //
 // I_TimerISR
 //
+void	resetDS();
 void I_TimerISR(void)
 {
+	//resetDS();
     ticcount++;
     return ;
 }
@@ -380,7 +382,10 @@ void I_TimerISR(void)
 void __interrupt I_KeyboardISR(void)
 {
 // Get the scan code
-	byte value = _inbyte(0x60);
+	byte value;
+	resetDS();
+
+	 value = _inbyte(0x60);
     keyboardque[kbdhead&(KBDQUESIZE - 1)] = value;
 
 	kbdhead++;

@@ -187,7 +187,7 @@ void __near I_Shutdown(void) {
 	I_ShutdownMouse();
 	I_ShutdownKeyboard();
 	Z_ShutdownEMS();
-	//hackDSBack();
+	hackDSBack();
 	//Z_ShutdownUMB();
 }
 
@@ -276,7 +276,7 @@ void __near I_Quit(void)
 	//printf("\n");
 	Z_ShutdownEMS();
 	//Z_ShutdownUMB();
-	//hackDSBack();
+	hackDSBack();
 
 
 	exit(1);

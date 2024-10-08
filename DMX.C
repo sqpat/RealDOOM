@@ -77,8 +77,11 @@ void TS_SetTimerToMaxTaskRate(void)
 	_enable();
 }
 
+void	resetDS();
+
 void __interrupt __far_func TS_ServiceScheduleIntEnabled(void)
 {
+	resetDS();
 
 	TS_TimesInInterrupt++;
 	TaskServiceCount += TaskServiceRate;
