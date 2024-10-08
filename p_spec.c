@@ -110,7 +110,7 @@ short_height_t __near P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8
  	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
-	FAR_memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
+	memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
 	if (isHigh)
 		floor =  -500 << SHORTFLOORBITS; // - 4000 = 0xE0C0 ?
 
@@ -149,7 +149,7 @@ short_height_t __near P_FindNextHighestFloor( int16_t	secnum,short_height_t		cur
     
     short_height_t		heightlist[MAX_ADJOINING_SECTORS];		
 
-	FAR_memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
+	memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
 
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -187,7 +187,7 @@ short_height_t __near P_FindLowestOrHighestCeilingSurrounding(int16_t	secnum, in
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
-	FAR_memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
+	memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
 
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -238,7 +238,7 @@ uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max ){
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
-	FAR_memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
+	memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
 
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -1009,7 +1009,7 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
 		
 		linecount = sectors[s2Offset].linecount;
 		offset = sectors[s2Offset].linesoffset;
-		FAR_memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
+		memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
 		linecount = getNextSectorList(linebufferlines, secnum, innersecnumlist, linecount, true);
 
 		for (i = 0;i < linecount;i++) {

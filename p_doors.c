@@ -330,7 +330,7 @@ EV_VerticalDoor
 	int16_t linespecial = lines_physics[linenum].special;
 	int16_t doortopheight;
 	sector_t  __far*doorsector;
-	sector_physics_t  __far*doorsector_physics;
+	sector_physics_t  __near*doorsector_physics;
 	int16_t soundorgx;
 	int16_t soundorgy;
 

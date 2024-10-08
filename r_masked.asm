@@ -61,6 +61,7 @@ mov  cl, byte ptr ds:[_fuzzpos]	; note this is always the byte offset - no shift
 xor  ch, ch
 mov  si, cx
 mov  cx, ax
+; todo dont need segment... use the variable offset and store in di
 mov  ax, FUZZOFFSET_SEGMENT
 mov  ds, ax
 mov  di, bx

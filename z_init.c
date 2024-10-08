@@ -424,7 +424,7 @@ void __near Z_LoadBinaries() {
 	FAR_fread(scantokey, 1, 128, fp);
 	
 	//1507
-	FAR_fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
+	fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
 	DEBUG_PRINT(".");
 
 	//5802

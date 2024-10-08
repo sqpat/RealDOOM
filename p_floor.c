@@ -284,7 +284,7 @@ int16_t __near EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floo
 	THINKERREF floorRef;
 	int16_t specialheight;
 	sector_t __far* sector;
-	sector_physics_t __far* sector_physics;
+	sector_physics_t __near* sector_physics;
 
 	int16_t sectorceilingheight;
 	int16_t sectorfloorheight;

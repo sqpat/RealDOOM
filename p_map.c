@@ -1685,7 +1685,7 @@ boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj
 // P_ChangeSector
 //
 boolean __near P_ChangeSector ( sector_t __far*	sector, boolean	crunch ) {
-	sector_physics_t __far* sector_physics = &sectors_physics[sector - sectors];
+	sector_physics_t __near* sector_physics = &sectors_physics[sector - sectors];
 
 	int16_t xl = sector_physics->blockbox[BOXLEFT];
 	int16_t xh = sector_physics->blockbox[BOXRIGHT];

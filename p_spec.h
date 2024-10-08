@@ -347,7 +347,7 @@ int16_t __near EV_DoCeiling (uint8_t linetag, ceiling_e	type );
 
 void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef);
 void    __near P_AddActiveCeiling(THINKERREF ceilingRef);
-void    __near P_RemoveActiveCeiling(sector_physics_t __far*, THINKERREF ceilingRef);
+void    __near P_RemoveActiveCeiling(sector_physics_t __near*, THINKERREF ceilingRef);
 int16_t	__near EV_CeilingCrushStop(uint8_t linetag);
 void    __near P_ActivateInStasisCeiling(uint8_t linetag);
 

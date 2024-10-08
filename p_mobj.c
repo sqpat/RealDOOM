@@ -818,7 +818,7 @@ __near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t k
 	mobj_t __near*	mobj;
 	mobj_pos_t __far*	mobj_pos;
     state_t __far*	st;
-    mobjinfo_t __far*	info;
+    mobjinfo_t __near*	info;
 	THINKERREF mobjRef;
 	int16_t mobjsecnum;
 	fixed_t_union temp;

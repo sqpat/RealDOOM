@@ -47,7 +47,7 @@ void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef)
     result_e	res;
 	int16_t secnum = ceiling->secnum;
 	sector_t __far* ceilingsector = &sectors[secnum];
-	sector_physics_t __far* ceilingsector_physics = &sectors_physics[secnum];
+	sector_physics_t __near* ceilingsector_physics = &sectors_physics[secnum];
 	int16_t soundorgX = sectors_soundorgs[secnum].soundorgX;
 	int16_t soundorgY = sectors_soundorgs[secnum].soundorgY;
 	//int16_t ceilingsecnum;
@@ -153,7 +153,7 @@ int16_t __near EV_DoCeiling ( uint8_t linetag, ceiling_e	type ) {
 	int16_t		secnum = -1;
 	int16_t		rtn = 0;
     sector_t __far*	sector;
-    sector_physics_t __far*	sector_physics;
+    sector_physics_t __near*	sector_physics;
 	int16_t		j = 0;
     ceiling_t __near*	ceiling;
 	THINKERREF ceilingRef;
@@ -248,7 +248,7 @@ void __near P_AddActiveCeiling(THINKERREF ceilingRef) {
 //
 // Remove a ceiling's thinker
 //
-void __near P_RemoveActiveCeiling(sector_physics_t __far* ceilingsector_physics, THINKERREF ceilingRef)
+void __near P_RemoveActiveCeiling(sector_physics_t __near* ceilingsector_physics, THINKERREF ceilingRef)
 {
     int8_t		i;
 

@@ -418,12 +418,12 @@ segs                 EDD9:0000
 
 
 
-#define thinkerlist_far    ((thinker_t __far*)        MAKE_FULL_SEGMENT(0x40000000, 0))
-#define mobjinfo           ((mobjinfo_t __far *)          MAKE_FULL_SEGMENT(thinkerlist_far, size_thinkerlist))
-#define linebuffer         ((int16_t __far*)              MAKE_FULL_SEGMENT(mobjinfo, size_mobjinfo ))
-#define sectors_physics    ((sector_physics_t __far* )    MAKE_FULL_SEGMENT(linebuffer, size_linebuffer ))
-#define sectors_soundorgs  ((sector_soundorg_t __far* )   MAKE_FULL_SEGMENT(sectors_physics, size_sectors_physics ))
-#define sector_soundtraversed ((int8_t __far*)            MAKE_FULL_SEGMENT(sectors_soundorgs, size_sectors_soundorgs ))
+#define thinkerlist_far        ((thinker_t __far*)            MAKE_FULL_SEGMENT(0x40000000, 0))
+#define mobjinfo_far           ((mobjinfo_t __far *)          MAKE_FULL_SEGMENT(thinkerlist_far, size_thinkerlist))
+#define linebuffer_far         ((int16_t __far*)              MAKE_FULL_SEGMENT(mobjinfo_far, size_mobjinfo ))
+#define sectors_physics_far    ((sector_physics_t __far* )    MAKE_FULL_SEGMENT(linebuffer_far, size_linebuffer ))
+#define sectors_soundorgs      ((sector_soundorg_t __far* )   MAKE_FULL_SEGMENT(sectors_physics_far, size_sectors_physics ))
+#define sector_soundtraversed  ((int8_t __far*)               MAKE_FULL_SEGMENT(sectors_soundorgs, size_sectors_soundorgs ))
 
 #define intercepts         ((intercept_t __far*)          MAKE_FULL_SEGMENT(sector_soundtraversed, size_sector_soundtraversed ))
 #define ammnumpatchbytes   ((byte __far *)                MAKE_FULL_SEGMENT(intercepts, size_intercepts ))
@@ -433,9 +433,9 @@ segs                 EDD9:0000
   
 
 #define thinkerlist_segment           ((segment_t) ((int32_t)thinkerlist_far >> 16))
-#define mobjinfo_segment              ((segment_t) ((int32_t)mobjinfo >> 16))
-#define linebuffer_segment            ((segment_t) ((int32_t)linebuffer >> 16))
-#define sectors_physics_segment       ((segment_t) ((int32_t)sectors_physics >> 16))
+#define mobjinfo_segment              ((segment_t) ((int32_t)mobjinfo_far >> 16))
+#define linebuffer_segment            ((segment_t) ((int32_t)linebuffer_far >> 16))
+#define sectors_physics_segment       ((segment_t) ((int32_t)sectors_physics_far >> 16))
 #define sectors_soundorgs_segment     ((segment_t) ((int32_t)sectors_soundorgs >> 16))
 #define sector_soundtraversed_segment ((segment_t) ((int32_t)sector_soundtraversed >> 16))
 
@@ -446,10 +446,10 @@ segs                 EDD9:0000
 #define linespeciallist_segment       ((segment_t) ((int32_t)linespeciallist >> 16))
   
  // 3C00:4000
-#define thinkerlist        ((thinker_t __near*)   0x4000)
-
-
-
+#define thinkerlist        ((thinker_t __near*)          0x4000)
+#define mobjinfo           ((mobjinfo_t  __near*)       (0x4000 + ((mobjinfo_segment        - thinkerlist_segment)<<4)))
+#define linebuffer         ((int16_t __near*)           (0x4000 + ((linebuffer_segment      - thinkerlist_segment)<<4)))
+#define sectors_physics    ((sector_physics_t __near* ) (0x4000 + ((sectors_physics_segment - thinkerlist_segment)<<4)))
 
 
 

@@ -1415,7 +1415,7 @@ void __near A_VileChase (mobj_t __near* actor, mobj_pos_t __far* actor_pos) {
     int16_t			bx;
     int16_t			by;
 
-    mobjinfo_t __far*		info;
+    mobjinfo_t __near*		info;
 	fixed_t_union   coord;
 	THINKERREF		tempRef;
 	mobj_t __near*	corpsehit;

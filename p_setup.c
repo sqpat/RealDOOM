@@ -322,7 +322,7 @@ void __near P_LoadSectors(int16_t lump) {
 	uint16_t                 i;
 	mapsector_t        ms;
 	sector_t __far*           ss;
-	sector_physics_t __far*   sp;
+	sector_physics_t __near*   sp;
 	// most tags are under 100, a couple are like 666 or 667 or 999 or other such special numbers.
 	// we will special case those and fit it in 8 bits so allocations are smaller
 	int16_t convertedtag;
@@ -330,7 +330,7 @@ void __near P_LoadSectors(int16_t lump) {
 
 
 	FAR_memset(sectors, 0, MAX_SECTORS_SIZE);
-	FAR_memset(sectors_physics, 0, MAX_SECTORS_PHYSICS_SIZE);
+	memset(sectors_physics, 0, MAX_SECTORS_PHYSICS_SIZE);
 	FAR_memset(sectors_soundorgs, 0, MAX_SECTORS_SOUNDORGS_SIZE);
 	FAR_memset(sector_soundtraversed, 0, MAX_SECTORS_SOUNDTRAVERSED_SIZE);
 	Z_QuickMapScratch_8000();
