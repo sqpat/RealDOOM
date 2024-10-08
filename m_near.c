@@ -1750,7 +1750,7 @@ boolean		onground;
 fixed_t_union	leveltime;
 int16_t currentThinkerListHead;
 // cached 'last used' mobjs for functions that operate on a mobj and where the mobj is often used right after. 
-mobj_t __far* setStateReturn;
+mobj_t __near* setStateReturn;
 mobj_pos_t __far* setStateReturn_pos;
 uint16_t oldentertics;
 
@@ -1788,13 +1788,13 @@ int16_t		numbraintargets;
 int16_t		braintargeton;
 
 THINKERREF		corpsehitRef;
-mobj_t __far*		vileobj;
+mobj_t __near*		vileobj;
 fixed_t_union		viletryx;
 fixed_t_union		viletryy;
 
 
 fixed_t_union		tmbbox[4];
-mobj_t __far*		tmthing;
+mobj_t __near*		tmthing;
 mobj_pos_t __far*		tmthing_pos;
 int16_t		tmflags1;
 fixed_t_union		tmx;
@@ -1823,8 +1823,8 @@ int16_t lastcalculatedsector;
 //
 // RADIUS ATTACK
 //
-mobj_t __far*		bombsource;
-mobj_t __far*		bombspot;
+mobj_t __near*		bombsource;
+mobj_t __near*		bombspot;
 mobj_pos_t __far*		bombspot_pos;
 int16_t		bombdamage;
 
@@ -1846,9 +1846,9 @@ fixed_t_union		tmymove;
 //
 // P_LineAttack
 //
-mobj_t __far*		linetarget;	// who got hit (or NULL)
+mobj_t __near*		linetarget;	// who got hit (or NULL)
 mobj_pos_t __far*		linetarget_pos;	// who got hit (or NULL)
-mobj_t __far*		shootthing;
+mobj_t __near*		shootthing;
 
 // Height if not aiming up or down
 // ???: use slope for monsters?

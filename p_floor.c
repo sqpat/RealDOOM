@@ -225,7 +225,7 @@ result_e __near T_MovePlane ( sector_t __far*	sector, short_height_t	speed, shor
 //
 // MOVE A FLOOR TO IT'S DESTINATION (UP OR DOWN)
 //
-void __near T_MoveFloor(floormove_t __far* floor, THINKERREF floorRef)
+void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef)
 {
     result_e	res;
 	int16_t floorsecnum = floor->secnum;
@@ -280,7 +280,7 @@ int16_t __near EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floo
     int16_t			rtn = 0;
     int16_t			i;
 	int16_t		j = 0;
-    floormove_t __far*	floor;
+    floormove_t __near*	floor;
 	THINKERREF floorRef;
 	int16_t specialheight;
 	sector_t __far* sector;
@@ -307,7 +307,7 @@ int16_t __near EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floo
 		sectorfloorheight = sector->floorheight;
 
 
-		floor = (floormove_t __far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+		floor = (floormove_t __near*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 		floorRef = GETTHINKERREF(floor);
 		sector_physics->specialdataRef = floorRef;
 
@@ -496,7 +496,7 @@ int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
     
     int16_t		tsecOffset;
 
-    floormove_t __far*	floor;
+    floormove_t __near*	floor;
     
     int16_t		stairsize;
     int16_t		speed;
@@ -527,7 +527,7 @@ int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
 		sectorlinecount = sector->linecount;
 		sectorlinesoffset = sector->linesoffset;
 
-		floor = (floormove_t __far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+		floor = (floormove_t __near*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 		floorRef = GETTHINKERREF(floor);		
 		floor->direction = 1;
 		floor->secnum = secnum;
@@ -583,7 +583,7 @@ int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
 				secnum = tsecOffset;
 
 
-				floor = (floormove_t __far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+				floor = (floormove_t __near*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 				floorRef = GETTHINKERREF(floor);		
 
 				floor->floordestheight = height;

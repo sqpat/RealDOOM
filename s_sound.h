@@ -42,7 +42,7 @@ typedef uint8_t sfxenum_t;
 //
 void S_Start(void);
 
-void __near S_StartSoundFromRef(mobj_t __far* mobj, sfxenum_t	sfx_id);
+void __near S_StartSoundFromRef(mobj_t __near* mobj, sfxenum_t	sfx_id);
 
 
 //
@@ -51,7 +51,7 @@ void __near S_StartSoundFromRef(mobj_t __far* mobj, sfxenum_t	sfx_id);
 //
 void
 S_StartSound
-(mobj_t __far*		origin,
+(mobj_t __near*		origin,
   sfxenum_t		sound_id );
 
 void
@@ -62,7 +62,7 @@ S_StartSoundWithParams(int16_t x, int16_t y, sfxenum_t sound_id);
 // Will start a sound at a given volume.
 void
 S_StartSoundAtVolume
-( mobj_t __far*		origin,
+( mobj_t __near*		origin,
 	int16_t x,
 	int16_t y,
   sfxenum_t		sound_id,
@@ -70,7 +70,7 @@ S_StartSoundAtVolume
 
 
 // Stop sound for thing at <origin>
-void S_StopSound(mobj_t __far* origin);
+void S_StopSound(mobj_t __near* origin);
 
 
 // Start music using <music_id> from sounds.h

@@ -113,8 +113,8 @@ S_getChannel
 
 int16_t
 S_AdjustSoundParams
-( mobj_t __far*	listener,
-	mobj_t __far*	source,
+( mobj_t __near*	listener,
+	mobj_t __near*	source,
   uint8_t*		vol,
   uint8_t*		sep,
   uint8_t*		pitch );
@@ -262,8 +262,8 @@ void S_StopChannel(int8_t cnum)
 //
 int16_t
 S_AdjustSoundParams
-( mobj_t __far*	listener,
-	mobj_t __far*	source,
+( mobj_t __near*	listener,
+	mobj_t __near*	source,
   uint8_t*		vol,
   uint8_t*		sep,
   uint8_t*		pitch )
@@ -373,7 +373,7 @@ void S_ResumeSound(void)
 	*/
 }
 
-void S_StopSound(mobj_t __far* origin)
+void S_StopSound(mobj_t __near* origin)
 {
 	/*
 	int8_t cnum;
@@ -447,7 +447,7 @@ S_getChannel (THINKERREF originRef, sfxinfo_t*	sfxinfo ) {
 }
 
 void S_StartSoundAtVolume
-( mobj_t __far*    origin,
+( mobj_t __near*    origin,
 	int16_t originX,
 	int16_t originY,
   sfxenum_t		sfx_id,
@@ -560,7 +560,7 @@ void S_StartSoundAtVolume
 	*/
 }
 
-void __near S_StartSoundFromRef(mobj_t __far* mobj,	sfxenum_t sfx_id)  {
+void __near S_StartSoundFromRef(mobj_t __near* mobj,	sfxenum_t sfx_id)  {
 	/*
 	if (sfx_id == 0) {
 		return;
@@ -573,7 +573,7 @@ void __near S_StartSoundFromRef(mobj_t __far* mobj,	sfxenum_t sfx_id)  {
 	*/
 }
 
-void S_StartSound(mobj_t __far*		mobj, sfxenum_t		sfx_id) {
+void S_StartSound(mobj_t __near*		mobj, sfxenum_t		sfx_id) {
 	/*
 	if (sfx_id == 0) {
 		return;

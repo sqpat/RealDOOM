@@ -647,12 +647,12 @@ void __near A_CloseShotgun2 (   pspdef_t __near*	psp ){
 // A_BFGSpray
 // Spawn a BFG explosion on every monster in view
 //
-void __near A_BFGSpray (mobj_t __far* mo, mobj_pos_t __far* mo_pos) {
+void __near A_BFGSpray (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
     int8_t			i;
     int8_t			j;
     int16_t			damage;
     fineangle_t		an;
-	mobj_t __far*			motarget; // not sure if this can be set here? does targetref get reset over and over?
+	mobj_t __near*			motarget; // not sure if this can be set here? does targetref get reset over and over?
 
     // offset angles from its attack angle
     for (i=0 ; i<40 ; i++) {

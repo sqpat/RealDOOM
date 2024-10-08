@@ -42,7 +42,7 @@
 // T_MoveCeiling
 //
 
-void __near T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef)
+void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef)
 {
     result_e	res;
 	int16_t secnum = ceiling->secnum;
@@ -155,7 +155,7 @@ int16_t __near EV_DoCeiling ( uint8_t linetag, ceiling_e	type ) {
     sector_t __far*	sector;
     sector_physics_t __far*	sector_physics;
 	int16_t		j = 0;
-    ceiling_t __far*	ceiling;
+    ceiling_t __near*	ceiling;
 	THINKERREF ceilingRef;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
@@ -183,7 +183,7 @@ int16_t __near EV_DoCeiling ( uint8_t linetag, ceiling_e	type ) {
 		// new door thinker
 		rtn = 1;
 
-		ceiling = (ceiling_t __far*) P_CreateThinker (TF_MOVECEILING_HIGHBITS);
+		ceiling = (ceiling_t __near*) P_CreateThinker (TF_MOVECEILING_HIGHBITS);
 		ceiling->secnum = secnum;
 		ceiling->crush = false;
 		ceilingRef = GETTHINKERREF(ceiling);
@@ -270,11 +270,11 @@ void __near P_RemoveActiveCeiling(sector_physics_t __far* ceilingsector_physics,
 void __near P_ActivateInStasisCeiling(uint8_t linetag)
 {
     int8_t		i;
-	ceiling_t __far* c;
+	ceiling_t __near* c;
 
 	for (i = 0; i < MAXCEILINGS; i++) {
 		if (activeceilings[i] != NULL_THINKERREF) {
-			c = (ceiling_t __far*)&thinkerlist[activeceilings[i]].data;
+			c = (ceiling_t __near*)&thinkerlist[activeceilings[i]].data;
 			if ((c->tag == linetag) && (c->direction == 0)) {
 				c->direction = c->olddirection;
 
@@ -294,11 +294,11 @@ int16_t	__near EV_CeilingCrushStop(uint8_t linetag)
 {
     int8_t		i;
     int16_t		rtn;
-	ceiling_t __far* c;
+	ceiling_t __near* c;
 	rtn = 0;
 	for (i = 0; i < MAXCEILINGS; i++) {
 		if (activeceilings[i] != NULL_THINKERREF) {
-			c = (ceiling_t __far*)&thinkerlist[activeceilings[i]].data;
+			c = (ceiling_t __near*)&thinkerlist[activeceilings[i]].data;
 			if ((c->tag == linetag) && (c->direction != 0)) {
 				c->olddirection = c->direction;
 				P_UpdateThinkerFunc(activeceilings[i], TF_NULL);

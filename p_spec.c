@@ -268,7 +268,7 @@ uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max ){
 // Called every time a thing origin is about
 //  to cross a line with a non 0 special.
 //
-void __near P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __far*	thing,mobj_pos_t __far* thing_pos){
+void __near P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __near*	thing,mobj_pos_t __far* thing_pos){
     int16_t		ok;
 	line_physics_t __far*	line_physics = &lines_physics[linenum];
 	uint8_t linetag = line_physics->tag;
@@ -738,7 +738,7 @@ void __near P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __far*	thi
 // P_ShootSpecialLine - IMPACT SPECIALS
 // Called when a thing shoots a special line.
 //
-void __near P_ShootSpecialLine( mobj_t __far* thing,int16_t linenum ){
+void __near P_ShootSpecialLine( mobj_t __near* thing,int16_t linenum ){
     int16_t		ok;
 	int16_t innerlinenum = linebuffer[linenum];
 	line_t __far* line = &lines[innerlinenum];

@@ -70,7 +70,7 @@ THINKERREF __near P_GetNextThinkerRef(void) {
 
 }
 
-void __far* __near P_CreateThinker(uint16_t thinkfunc) {
+void __near* __near P_CreateThinker(uint16_t thinkfunc) {
 	int16_t index = P_GetNextThinkerRef();
 	THINKERREF temp = thinkerlist[0].prevFunctype;// &0x7FF;
 	thinkerlist[index].next = 0;
@@ -104,7 +104,7 @@ void __near P_RunThinkers (void)
 	THINKERREF	currentthinker;
 	uint16_t	currentthinkerFunc;
 	int16_t i = 0;
-	mobj_t __far* mobj;
+	mobj_t __near* mobj;
 #ifdef DEBUGLOG_TO_FILE
 
 	int8_t result2[100];
@@ -148,28 +148,28 @@ void __near P_RunThinkers (void)
 						P_MobjThinker(mobj, &mobjposlist[currentthinker], currentthinker);
 						break;
 					case TF_PLATRAISE_HIGHBITS:
-						T_PlatRaise((plat_t __far*)mobj, currentthinker);
+						T_PlatRaise((plat_t __near*)mobj, currentthinker);
 						break;
 					case TF_MOVECEILING_HIGHBITS:
-						T_MoveCeiling((ceiling_t __far*)mobj, currentthinker);
+						T_MoveCeiling((ceiling_t __near*)mobj, currentthinker);
 						break;
 					case TF_VERTICALDOOR_HIGHBITS:
-						T_VerticalDoor((vldoor_t __far*)mobj, currentthinker);
+						T_VerticalDoor((vldoor_t __near*)mobj, currentthinker);
 						break;
 					case TF_MOVEFLOOR_HIGHBITS:
-						T_MoveFloor((floormove_t __far*)mobj, currentthinker);
+						T_MoveFloor((floormove_t __near*)mobj, currentthinker);
 						break;
 					case TF_FIREFLICKER_HIGHBITS:
-						T_FireFlicker((fireflicker_t __far*)mobj, currentthinker);
+						T_FireFlicker((fireflicker_t __near*)mobj, currentthinker);
 						break;
 					case TF_LIGHTFLASH_HIGHBITS:
-						T_LightFlash((lightflash_t __far*)mobj, currentthinker);
+						T_LightFlash((lightflash_t __near*)mobj, currentthinker);
 						break;
 					case TF_STROBEFLASH_HIGHBITS:
-						T_StrobeFlash((strobe_t __far*)mobj, currentthinker);
+						T_StrobeFlash((strobe_t __near*)mobj, currentthinker);
 						break;
 					case TF_GLOW_HIGHBITS:
-						T_Glow((glow_t __far*)mobj, currentthinker);
+						T_Glow((glow_t __near*)mobj, currentthinker);
 						break;
  					
 
@@ -194,7 +194,7 @@ void __near P_RunThinkers (void)
 // i will need this later to help me debug inevitible doom 2 content memleaks
 /*
 				if (gametic == 619 && i == 0) {
-					//SAVEDUNIT = (mobj_t __far*)Z_LoadThinkerBytesFromEMS(players.moRef);
+					//SAVEDUNIT = (mobj_t __near*)Z_LoadThinkerBytesFromEMS(players.moRef);
 					//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy);
 					// 454 122 157
 

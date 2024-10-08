@@ -39,9 +39,9 @@
 //
 // TELEPORTATION
 //
-int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __far*	thing,mobj_pos_t __far* thing_pos){
+int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __near*	thing,mobj_pos_t __far* thing_pos){
     int16_t		i;
-    mobj_t __far*	m;
+    mobj_t __near*	m;
 	mobj_pos_t __far* m_pos;
 	uint16_t	an;
     THINKERREF	thinkerRef;
@@ -83,7 +83,7 @@ int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __far*	thing,m
 					continue;
 				}
 
-				m = (mobj_t  __far*)(&thinkerlist[thinkerRef].data);
+				m = (mobj_t  __near*)(&thinkerlist[thinkerRef].data);
 		
 				// not a teleportman
 				if (m->type != MT_TELEPORTMAN )

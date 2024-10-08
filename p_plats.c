@@ -42,7 +42,7 @@
 //
 // Move a plat up and down
 //
-void __near T_PlatRaise(plat_t __far* plat, THINKERREF platRef)
+void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef)
 {
 
     result_e	res;
@@ -123,7 +123,7 @@ void __near T_PlatRaise(plat_t __far* plat, THINKERREF platRef)
 //  "amount" is only used for SOME platforms.
 //
 int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	type,int16_t		amount ){
-    plat_t __far*	plat;
+    plat_t __near*	plat;
     int16_t		secnum;
     int16_t		rtn;
 	int16_t		j = 0;
@@ -161,7 +161,7 @@ int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	
 		sectorfloorheight = sectors[secnum].floorheight;
 
 
-		plat = (plat_t __far*)P_CreateThinker(TF_PLATRAISE_HIGHBITS);
+		plat = (plat_t __near*)P_CreateThinker(TF_PLATRAISE_HIGHBITS);
 		platRef = GETTHINKERREF(plat);
 		sectors_physics[secnum].specialdataRef = platRef;
 
@@ -259,10 +259,10 @@ int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	
 
 void __near EV_PlatFunc(uint8_t linetag, int8_t type) {
 	int8_t		j;
-	plat_t __far* plat;
+	plat_t __near* plat;
 	for (j = 0; j < MAXPLATS; j++) {
 		if (activeplats[j] != NULL_THINKERREF) {
-			plat = (plat_t __far*)&thinkerlist[activeplats[j]].data;
+			plat = (plat_t __near*)&thinkerlist[activeplats[j]].data;
 			if (plat->tag == linetag){
 				if (type == PLAT_FUNC_IN_STASIS && plat->status == plat_in_stasis){
 						plat->oldstatus = plat->status;
@@ -296,11 +296,11 @@ void __near P_AddActivePlat(THINKERREF thinkerref) {
 void __near P_RemoveActivePlat(THINKERREF platRef)
 {
     int8_t		i;
-	plat_t __far* plat;
+	plat_t __near* plat;
 	int16_t platsecnum;
 	for (i = 0; i < MAXPLATS; i++) {
 		if (platRef == activeplats[i]) {
-			plat = (plat_t __far*)&thinkerlist[platRef].data;
+			plat = (plat_t __near*)&thinkerlist[platRef].data;
 			platsecnum = plat->secnum;
 			P_RemoveThinker(platRef);
 			(&sectors_physics[platsecnum])->specialdataRef = NULL_THINKERREF;

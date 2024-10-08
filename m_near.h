@@ -884,7 +884,7 @@ extern boolean		onground;
 
 extern fixed_t_union	leveltime;
 extern int16_t currentThinkerListHead;
-extern mobj_t __far* setStateReturn;
+extern mobj_t __near* setStateReturn;
 extern mobj_pos_t __far* setStateReturn_pos;
 extern uint16_t oldentertics;
 extern boolean brainspit_easy;
@@ -912,14 +912,14 @@ extern int16_t		numbraintargets;
 extern int16_t		braintargeton;
 
 extern THINKERREF		corpsehitRef;
-extern mobj_t __far*		vileobj;
+extern mobj_t __near*		vileobj;
 extern fixed_t_union		viletryx;
 extern fixed_t_union		viletryy;
 
 
 
 extern fixed_t_union		tmbbox[4];
-extern mobj_t __far*		tmthing;
+extern mobj_t __near*		tmthing;
 extern mobj_pos_t __far*		tmthing_pos;
 extern int16_t		tmflags1;
 extern fixed_t_union		tmx;
@@ -946,8 +946,8 @@ extern int16_t		spechit[MAXSPECIALCROSS];
 extern int16_t		numspechit;
 
 extern int16_t lastcalculatedsector;
-extern mobj_t __far*		bombsource;
-extern mobj_t __far*		bombspot;
+extern mobj_t __near*		bombsource;
+extern mobj_t __near*		bombspot;
 extern mobj_pos_t __far*		bombspot_pos;
 extern int16_t		bombdamage;
 extern fixed_t_union		bestslidefrac;
@@ -955,9 +955,9 @@ extern int16_t		bestslidelinenum;
 extern fixed_t_union		tmxmove;
 extern fixed_t_union		tmymove;
 //
-extern mobj_t __far*		linetarget;	// who got hit (or NULL)
-extern mobj_pos_t __far*		linetarget_pos;	// who got hit (or NULL)
-extern mobj_t __far*		shootthing;
+extern mobj_t __near*		linetarget;	// who got hit (or NULL)
+extern mobj_pos_t __far*	linetarget_pos;	// who got hit (or NULL)
+extern mobj_t __near*		shootthing;
 
 // Height if not aiming up or down
 // ???: use slope for monsters?

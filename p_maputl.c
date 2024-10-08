@@ -441,11 +441,11 @@ void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t l
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos)
+void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos)
 {
     int16_t		blockx;
     int16_t		blocky;
-	mobj_t __far* changeThing;
+	mobj_t __near* changeThing;
 	mobj_pos_t __far* changeThing_pos;
 
 	THINKERREF nextRef;
@@ -462,7 +462,7 @@ void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_p
 		// inert things don't need to be in blockmap?
 		// unlink from subsector
 		if (thingsnextRef) {
-			changeThing = (mobj_t __far*)&thinkerlist[thingsnextRef].data;
+			changeThing = (mobj_t __near*)&thinkerlist[thingsnextRef].data;
 			changeThing->sprevRef = thingsprevRef;
 		}
 
@@ -483,7 +483,7 @@ void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_p
 		nextRef = sectors[thingsecnum].thinglistRef;
 		// if nextref check here?
 		while (nextRef) {
-			mobj_t __far* innerthing = &thinkerlist[nextRef].data;
+			mobj_t __near* innerthing = &thinkerlist[nextRef].data;
 			if (innerthing->snextRef == thisRef) {
 				innerthing->snextRef = thingsnextRef;
 				break;
@@ -526,7 +526,7 @@ void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_p
 			nextRef = blocklinks[bindex];
 			// if nextref check here?
 			while (nextRef) {
-				mobj_t __far* innerthing = &thinkerlist[nextRef].data;
+				mobj_t __near* innerthing = &thinkerlist[nextRef].data;
 				if (innerthing->bnextRef == thisRef) {
 					innerthing->bnextRef = thingbnextRef;
 					break;
@@ -549,7 +549,7 @@ void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_p
 // based on it's x y.
 // Sets thing->subsector properly
 //
-void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum) {
+void __near P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum) {
 
 
 
@@ -558,7 +558,7 @@ void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos
     int16_t			blocky;
 	THINKERREF		linkRef;
 	
-	mobj_t __far* thingList;
+	mobj_t __near* thingList;
 	THINKERREF oldsectorthinglist;
 	fixed_t_union temp;
 	THINKERREF thingRef = GETTHINKERREF(thing);
@@ -582,14 +582,14 @@ void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos
 		sectors[thing->secnum].thinglistRef = thingRef;
 
 
-		thing = (mobj_t __far*)&thinkerlist[thingRef].data;
+		thing = (mobj_t __near*)&thinkerlist[thingRef].data;
 		thing_pos = &mobjposlist[thingRef];
 
 		thing->sprevRef = NULL_THINKERREF;
 		thing_pos->snextRef = oldsectorthinglist;
 
 		if (thing_pos->snextRef) {
-			thingList = (mobj_t __far*)&thinkerlist[thing_pos->snextRef].data;
+			thingList = (mobj_t __near*)&thinkerlist[thing_pos->snextRef].data;
 			thingList->sprevRef = thingRef;
 		}
 
@@ -690,9 +690,9 @@ boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   f
 // P_BlockThingsIterator
 //
 boolean __near P_BlockThingsIterator ( int16_t x, int16_t y, 
-boolean __near(*   func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*) ){
+boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) ){
 	THINKERREF mobjRef;
-    mobj_t __far*		mobj;
+    mobj_t __near*		mobj;
 
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
@@ -703,7 +703,7 @@ boolean __near(*   func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*) ){
 		// will this cause stuff to lose scope...?
 
 
-		mobj = (mobj_t __far*)&thinkerlist[mobjRef].data;
+		mobj = (mobj_t __near*)&thinkerlist[mobjRef].data;
 		
 		if (!func(mobjRef, mobj, &mobjposlist[mobjRef])) {
 
@@ -805,7 +805,7 @@ boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t
 //
 // PIT_AddThingIntercepts
 //
-boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __far* thing, mobj_pos_t __far* thing_pos)
+boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union		x1;
 	fixed_t_union		y1;

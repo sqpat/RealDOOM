@@ -40,7 +40,7 @@
 //
 // T_VerticalDoor
 //
-void __near T_VerticalDoor (vldoor_t __far* door, THINKERREF doorRef)
+void __near T_VerticalDoor (vldoor_t __near* door, THINKERREF doorRef)
 {
     result_e	res;
 	sector_t __far* doorsector = &sectors[door->secnum];
@@ -225,7 +225,7 @@ EV_DoDoor
   vldoor_e	type )
 {
     int16_t		secnum,rtn;
-    vldoor_t __far*	door;
+    vldoor_t __near*	door;
 	THINKERREF doorRef;
 	int16_t doortopheight;
 	sector_t  __far*doorsector;
@@ -253,7 +253,7 @@ EV_DoDoor
 		soundorgx = sectors_soundorgs[secnum].soundorgX;
 		soundorgy = sectors_soundorgs[secnum].soundorgY;
 
-		door  = (vldoor_t __far*)P_CreateThinker (TF_VERTICALDOOR_HIGHBITS);
+		door  = (vldoor_t __near*)P_CreateThinker (TF_VERTICALDOOR_HIGHBITS);
 		doorRef = GETTHINKERREF(door);
 		sectors_physics[secnum].specialdataRef = doorRef;
 
@@ -324,7 +324,7 @@ EV_VerticalDoor
 {
     int16_t		secnum;
     //sector_t __far*	sec;
-    vldoor_t __far*	door;
+    vldoor_t __near*	door;
     //int16_t		side = 0;
 	THINKERREF doorRef;
 	int16_t linespecial = lines_physics[linenum].special;
@@ -395,7 +395,7 @@ EV_VerticalDoor
     if (doorsector_physics->specialdataRef) {
 		
 		doorRef = doorsector_physics->specialdataRef;
-		door = (vldoor_t __far*)&thinkerlist[doorRef].data;
+		door = (vldoor_t __near*)&thinkerlist[doorRef].data;
 
 
 		switch(linespecial) {
@@ -440,7 +440,7 @@ EV_VerticalDoor
     // new door thinker
 
 	
-	door = (vldoor_t __far*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
+	door = (vldoor_t __near*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
 	doorRef = GETTHINKERREF(door);
 	door->secnum = secnum;
 	door->direction = 1;
@@ -487,10 +487,10 @@ EV_VerticalDoor
 //
 void P_SpawnDoorCloseIn30 (int16_t secnum)
 {
-    vldoor_t __far*	door;
+    vldoor_t __near*	door;
 	THINKERREF doorRef;
 
-	door = (vldoor_t __far*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
+	door = (vldoor_t __near*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
 	doorRef = GETTHINKERREF(door);
 	door->secnum = secnum;
 	door->direction = 0;
@@ -511,11 +511,11 @@ void
 P_SpawnDoorRaiseIn5Mins
 ( int16_t secnum)
 {
-	vldoor_t __far*	door;
+	vldoor_t __near*	door;
 	THINKERREF doorRef;
 	int16_t doortopheight;
 
-	door = (vldoor_t __far*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
+	door = (vldoor_t __near*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
 	doorRef = GETTHINKERREF(door);
 
 	

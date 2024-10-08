@@ -458,6 +458,7 @@ void __near P_LoadThings(int16_t lump) {
 	for (i = 0; i < numthings; i++) {
 		mt = data[i];
 
+		// todo eventually under player = mobj 0 hack. its not actually meaningful speed improvement anyway.
 		// do player1
 		if (mt.type == 1) {
 			P_SpawnMapThing(data[i], i);
@@ -888,7 +889,7 @@ void __near Z_FreeConventionalAllocations() {
 	int16_t i;
 
 	// we should be paged to physics now - should be ok
-	FAR_memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
+	memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
 	//erase the level data region
 	FAR_memset(((byte __far*) uppermemoryblock), 0, 0xFFFF);

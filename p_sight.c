@@ -37,7 +37,7 @@ boolean __near P_CrossBSPNode (uint16_t bspnum);
 //  if a straight line between t1 and t2 is unobstructed.
 // Uses REJECT.
 //
-boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos ) {
+boolean __far P_CheckSight (  mobj_t __near* t1, mobj_t __near* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos ) {
 
     fixed_t_union		pnum;
     uint16_t		bytenum;

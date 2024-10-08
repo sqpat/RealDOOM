@@ -115,13 +115,13 @@ typedef struct thinker_s
 
 
 
-void __far* __near P_CreateThinker(uint16_t thinkfunc);
+void __near* __near P_CreateThinker(uint16_t thinkfunc);
 
 void __near P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
 void __near P_RemoveThinker(THINKERREF thinkerRef);
 
 #define THINKER_SIZE sizeof(thinker_t)
-#define GETTHINKERREF(a) ((((uint16_t)((byte __far*)a - (byte __far*)thinkerlist))-4)/THINKER_SIZE)
+#define GETTHINKERREF(a) ((((uint16_t)((byte __near*)a - (byte __near*)thinkerlist))-4)/THINKER_SIZE)
 #define GET_MOBJPOS_FROM_MOBJ(a) &mobjposlist[GETTHINKERREF(a)]
 
 
@@ -154,14 +154,14 @@ __near P_SpawnMobj
   mobjtype_t	type, 
 	int16_t knownsecnum );
 
-void 	__near P_RemoveMobj (mobj_t __far* mobj);
+void 	__near P_RemoveMobj (mobj_t __near* mobj);
 
-boolean	__near P_SetMobjState(mobj_t __far* mobj, statenum_t state);
-void __near P_MobjThinker(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef);
+boolean	__near P_SetMobjState(mobj_t __near* mobj, statenum_t state);
+void __near P_MobjThinker(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef);
 
 void	__near P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 void 	__near P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
-THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source_pos, mobj_t __far* dest,  mobjtype_t type);
+THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type);
 void	__near P_SpawnPlayerMissile (mobjtype_t type);
 
 
@@ -200,7 +200,7 @@ typedef struct
 
 #define playerMobjRef	((THINKERREF)1)
 #define playerMobj_pos	((&mobjposlist[playerMobjRef]))
-#define playerMobj		((mobj_t __far *) (((byte __far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
+#define playerMobj		((mobj_t __near *) (((byte __far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
 
 
 typedef boolean __near (*traverser_t ) (intercept_t __far*in);
@@ -222,7 +222,7 @@ void 	__near P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t l
 
 
 boolean __near P_BlockLinesIterator (int16_t x, int16_t y, boolean __near ( *  func)(line_physics_t __far* ld, int16_t ) );
-boolean __near P_BlockThingsIterator (int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*));
+boolean __near P_BlockThingsIterator (int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -238,8 +238,8 @@ __near P_PathTraverse
   uint8_t		flags,
   boolean	__near(*  trav) (intercept_t  __far*));
 
-void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* mobj_pos);
-void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* mobj_pos, int16_t knownsecnum);
+void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* mobj_pos);
+void __near P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* mobj_pos, int16_t knownsecnum);
 
 
 //
@@ -249,13 +249,13 @@ void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* mobj_pos,
 // If "floatok" true, move would be ok
 // if within "tmfloorz - tmceilingz".
 
-boolean __near P_CheckPosition (mobj_t __far* thing, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
-boolean __near P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
-boolean __near P_TeleportMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
+boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
+boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
+boolean __near P_TeleportMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
 void	__near P_SlideMove ();
 
 #ifndef MOVE_P_SIGHT
-boolean __far P_CheckSight (mobj_t __far* t1,mobj_t __far* t2,mobj_pos_t __far* t1_pos,mobj_pos_t __far* t2_pos);
+boolean __far P_CheckSight (mobj_t __near* t1,mobj_t __near* t2,mobj_pos_t __far* t1_pos,mobj_pos_t __far* t2_pos);
 #endif
 
 void 	__near P_UseLines ();
@@ -263,14 +263,14 @@ boolean __near P_ChangeSector (sector_t __far* sector, boolean crunch);
 
 
 
-fixed_t __near P_AimLineAttack(mobj_t __far*	t1,fineangle_t	angle,int16_t	distance);
-void __near P_LineAttack(mobj_t __far*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage );
-void __near P_RadiusAttack (mobj_t __far*	spot,mobj_pos_t __far* spot_pos,mobj_t __far*	source, int16_t		damage );
+fixed_t __near P_AimLineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance);
+void __near P_LineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage );
+void __near P_RadiusAttack (mobj_t __near*	spot,mobj_pos_t __far* spot_pos,mobj_t __near*	source, int16_t		damage );
 
 
 
-void __near P_TouchSpecialThing (mobj_t __far*	special,mobj_t __far*	toucher,mobj_pos_t  __far*special_pos,mobj_pos_t  __far*toucher_pos);
-void __near P_DamageMobj(mobj_t __far*	target,mobj_t __far*	inflictor,mobj_t __far*	source,int16_t		damage );
+void __near P_TouchSpecialThing (mobj_t __near*	special,mobj_t __near*	toucher,mobj_pos_t  __far*special_pos,mobj_pos_t  __far*toucher_pos);
+void __near P_DamageMobj(mobj_t __near*	target,mobj_t __near*	inflictor,mobj_t __near*	source,int16_t		damage );
 
 
 #pragma aux fiveparam \

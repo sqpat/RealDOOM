@@ -158,7 +158,7 @@ int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 
 
 
-boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union	blockdist;
 
@@ -190,7 +190,7 @@ boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_p
 }
 
 
-boolean DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, boolean __near(*   func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*) , int8_t returnOnFalse){
+boolean DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) , int8_t returnOnFalse){
 	int16_t by;
 	if (xl < 0) xl = 0;
 	if (yl < 0) yl = 0;
@@ -212,7 +212,7 @@ boolean DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, boolean _
 //
 // P_TeleportMove
 //
-boolean __near P_TeleportMove (mobj_t __far* thing,mobj_pos_t __far* thing_pos,fixed_t_union	x,fixed_t_union	y, int16_t oldsecnum){
+boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,fixed_t_union	x,fixed_t_union	y, int16_t oldsecnum){
     int16_t			xl;
     int16_t			xh;
     int16_t			yl;
@@ -394,12 +394,12 @@ boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 //
 // PIT_CheckThing
 //
-boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union blockdist;
     boolean		solid;
     int16_t			damage;
-	mobj_t __far* tmthingTarget;
+	mobj_t __near* tmthingTarget;
 	mobjtype_t tmthingTargettype;
 	mobjtype_t thingtype;
 	THINKERREF tmthingtargetRef;
@@ -467,7 +467,7 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
 		if (tmthingz.w + tmthingheight.w < thingz.w) {
 			return true;		// underneath
 		}
-		tmthingTarget = (mobj_t __far*)&thinkerlist[tmthingtargetRef].data;
+		tmthingTarget = (mobj_t __near*)&thinkerlist[tmthingtargetRef].data;
 		if (tmthingTarget) {
 			tmthingTargettype = tmthingTarget->type;
 			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
@@ -543,7 +543,7 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
 //  numspeciallines
 //
 
-boolean __near P_CheckPosition (mobj_t __far* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum )
+boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum )
 {
     int16_t			xl;
     int16_t			xh;
@@ -666,7 +666,7 @@ boolean __near P_CheckPosition (mobj_t __far* thing, fixed_t_union	x, fixed_t_un
 // Attempt to move to a new position,
 // crossing special lines unless MF_TELEPORT is set.
 //
-boolean __near P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union	x, fixed_t_union	y ) {
+boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union	x, fixed_t_union	y ) {
     fixed_t_union	oldx;
     fixed_t_union	oldy;
 	fixed_t_union	newx;
@@ -774,7 +774,7 @@ boolean __near P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixe
 // the z will be set to the lowest value
 // and false will be returned.
 //
-boolean __near P_ThingHeightClip (mobj_t __far* thing, mobj_pos_t __far* thing_pos)
+boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_pos)
 {
     boolean		onfloor;
 	fixed_t_union temp;
@@ -1069,7 +1069,7 @@ void __near P_SlideMove ()
 boolean __near PTR_AimTraverse (intercept_t __far* in) {
 	line_t __far*		li;
 	line_physics_t __far*		li_physics;
-    mobj_t __far*		th;
+    mobj_t __near*		th;
 	mobj_pos_t __far* th_pos;
     fixed_t		slope;
     fixed_t		thingtopslope;
@@ -1122,7 +1122,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
     }
     
     // shoot a thing
-	th = (mobj_t __far*)&thinkerlist[in->d.thingRef].data;
+	th = (mobj_t __near*)&thinkerlist[in->d.thingRef].data;
 	if (th == shootthing) {
 		return true;			// can't shoot self
 	}
@@ -1171,7 +1171,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 	line_t		 __far* li;
 	line_physics_t __far*		li_physics;
     
-	mobj_t __far*		th;
+	mobj_t __near*		th;
 	mobj_pos_t __far*		th_pos;
 
     fixed_t		slope;
@@ -1270,7 +1270,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 	 
     // shoot a thing
     thRef = in->d.thingRef;
-	th = (mobj_t __far*)&thinkerlist[thRef].data;
+	th = (mobj_t __near*)&thinkerlist[thRef].data;
 	if (th == shootthing) {
 		return true;		// can't shoot self
 	}
@@ -1340,7 +1340,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 //
 // P_AimLineAttack
 //
-fixed_t __near P_AimLineAttack ( mobj_t __far*	t1, fineangle_t	angle,int16_t	distance16 ) {
+fixed_t __near P_AimLineAttack ( mobj_t __near*	t1, fineangle_t	angle,int16_t	distance16 ) {
     fixed_t_union	x2;
 	fixed_t_union	y2;
 	fixed_t_union	x;
@@ -1409,7 +1409,7 @@ fixed_t __near P_AimLineAttack ( mobj_t __far*	t1, fineangle_t	angle,int16_t	dis
 // If damage == 0, it is just a test trace
 // that will leave linetarget set.
 //
-void __near P_LineAttack (mobj_t __far* t1, fineangle_t	angle, int16_t	distance16, fixed_t	slope, int16_t	damage ) {
+void __near P_LineAttack (mobj_t __near* t1, fineangle_t	angle, int16_t	distance16, fixed_t	slope, int16_t	damage ) {
     fixed_t_union	x2;
 	fixed_t_union	y2;
 	
@@ -1533,13 +1533,13 @@ void __near P_UseLines ()  {
 // "bombsource" is the creature
 // that caused the explosion at "bombspot".
 //
-boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)  {
+boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos)  {
     fixed_t	dx;
     fixed_t	dy;
     fixed_t_union	dist;
 	//todoaddr inline later
 #ifdef MOVE_P_SIGHT
-	boolean (__far  * P_CheckSight)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
+	boolean (__far  * P_CheckSight)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
 #endif
 
 	
@@ -1580,7 +1580,7 @@ boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_
 // P_RadiusAttack
 // Source is the creature that caused the explosion at spot.
 //
-void __near P_RadiusAttack (mobj_t __far* spot, mobj_pos_t __far* spot_pos, mobj_t __far* source, int16_t		damage) {
+void __near P_RadiusAttack (mobj_t __near* spot, mobj_pos_t __far* spot_pos, mobj_t __near* source, int16_t		damage) {
 	int16_t		xl;
 	int16_t		xh;
 	int16_t		yl;
@@ -1626,7 +1626,7 @@ void __near P_RadiusAttack (mobj_t __far* spot, mobj_pos_t __far* spot_pos, mobj
 //
 // PIT_ChangeSector
 //
-boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos) {
+boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) {
 
 
     if (P_ThingHeightClip (thing, thing_pos)) {
@@ -1663,7 +1663,7 @@ boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_
     nofit = true;
 	
     if (crushchange && !(leveltime.w &3) ) {
-		mobj_t __far*	mo;
+		mobj_t __near*	mo;
 		THINKERREF moRef;
 		P_DamageMobj(thing,NULL_THINKERREF,NULL_THINKERREF,10);
 
