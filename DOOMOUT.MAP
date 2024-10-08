@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/08 19:49:05
+Created on:       24/10/08 19:55:43
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -77,13 +77,13 @@ p_mobj_TEXT            CODE           AUTO           0af4:a350       000017be
 p_telept_TEXT          CODE           AUTO           0af4:bb10       0000021d
 p_tick_TEXT            CODE           AUTO           0af4:bd30       00000202
 p_user_TEXT            CODE           AUTO           0af4:bf40       00000607
-r_bsp_TEXT             CODE           AUTO           1749:0000       000007f0
-r_data_TEXT            CODE           AUTO           1749:07f0       0000169e
-R_MATH_TEXT            CODE           AUTO           1749:1e8e       000003ea
-r_draw_TEXT            CODE           AUTO           1749:2280       00000377
-r_main_TEXT            CODE           AUTO           1749:2600       00000232
-r_plane_TEXT           CODE           AUTO           1749:2840       00000783
-r_segs_TEXT            CODE           AUTO           1749:2fd0       00001c33
+r_bsp_TEXT             CODE           AUTO           1749:0000       000007f2
+r_data_TEXT            CODE           AUTO           1749:0800       0000169e
+R_MATH_TEXT            CODE           AUTO           1749:1e9e       000003ea
+r_draw_TEXT            CODE           AUTO           1749:2290       00000377
+r_main_TEXT            CODE           AUTO           1749:2610       00000232
+r_plane_TEXT           CODE           AUTO           1749:2850       00000783
+r_segs_TEXT            CODE           AUTO           1749:2fe0       00001c25
 r_things_TEXT          CODE           AUTO           1749:4c10       000011d0
 w_wad_TEXT             CODE           AUTO           1749:5de0       0000032e
 VIDEO_TEXT             CODE           AUTO           1749:610e       000001f8
@@ -1320,53 +1320,53 @@ Module: r_bsp.obj(C:\REALDOOM\r_bsp.c)
 1749:00dc+     R_ClipPassWallSegment_
 1749:013e      R_ClearClipSegs_
 1749:015e+     R_AddLine_
-1749:0398+     R_CheckBBox_
-1749:05aa+     R_Subsector_
-1749:06e2      R_RenderBSPNode_
+1749:039a+     R_CheckBBox_
+1749:05ac+     R_Subsector_
+1749:06e4      R_RenderBSPNode_
 Module: r_data.obj(C:\REALDOOM\r_data.c)
-1749:07f8      R_MarkCacheLRU_
-1749:098e      R_EvictCacheEMSPage_
-1749:0c38+     R_DrawColumnInCache_
-1749:0cbc+     R_GetNextCompositeBlock_
-1749:0df6+     R_GetNextPatchBlock_
-1749:0f28+     R_GetNextSpriteBlock_
-1749:1068+     R_GenerateComposite_
-1749:1294+     gettexturepage_
-1749:1536+     getspritepage_
-1749:179e+     getpatchtexture_
-1749:185c+     getcompositetexture_
-1749:18c2      getspritetexture_
-1749:1942      R_GetColumnSegment_
-1749:1afc+     R_LoadPatchColumns_
-1749:1bee      R_LoadPatchColumnsColormap0_
-1749:1d06+     R_LoadSpriteColumns_
+1749:0808      R_MarkCacheLRU_
+1749:099e      R_EvictCacheEMSPage_
+1749:0c48+     R_DrawColumnInCache_
+1749:0ccc+     R_GetNextCompositeBlock_
+1749:0e06+     R_GetNextPatchBlock_
+1749:0f38+     R_GetNextSpriteBlock_
+1749:1078+     R_GenerateComposite_
+1749:12a4+     gettexturepage_
+1749:1546+     getspritepage_
+1749:17ae+     getpatchtexture_
+1749:186c+     getcompositetexture_
+1749:18d2      getspritetexture_
+1749:1952      R_GetColumnSegment_
+1749:1b0c+     R_LoadPatchColumns_
+1749:1bfe      R_LoadPatchColumnsColormap0_
+1749:1d16+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-1749:21ad      R_PointOnSegSide_
-1749:212d      R_PointToDist_
-1749:1f04      R_PointToAngle_
-1749:208b      R_ScaleFromGlobalAngle_
+1749:21bd      R_PointOnSegSide_
+1749:213d      R_PointToDist_
+1749:1f14      R_PointToAngle_
+1749:209b      R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
-1749:2280      R_FillBackScreen_
-1749:2504      R_VideoErase_
-1749:2588      R_DrawViewBorder_
+1749:2290      R_FillBackScreen_
+1749:2514      R_VideoErase_
+1749:2598      R_DrawViewBorder_
 Module: r_main.obj(C:\REALDOOM\r_main.c)
-1749:2600      R_PointToAngle16_
-1749:2616      R_PointToAngle2_
-1749:2642      R_PointToAngle2_16_
-1749:2670      R_SetViewSize_
-1749:2680+     R_SetupFrame_
-1749:26fc      R_RenderPlayerView_
+1749:2610      R_PointToAngle16_
+1749:2626      R_PointToAngle2_
+1749:2652      R_PointToAngle2_16_
+1749:2680      R_SetViewSize_
+1749:2690+     R_SetupFrame_
+1749:270c      R_RenderPlayerView_
 Module: r_plane.obj(C:\REALDOOM\r_plane.c)
-1749:2840      R_ClearPlanes_
-1749:2908+     R_HandleEMSPagination_
-1749:29c0      R_FindPlane_
-1749:2acc      R_CheckPlane_
-1749:2bfa      R_DrawPlanes_
+1749:2850      R_ClearPlanes_
+1749:2918+     R_HandleEMSPagination_
+1749:29d0      R_FindPlane_
+1749:2adc      R_CheckPlane_
+1749:2c0a      R_DrawPlanes_
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
-1749:2fd0      R_RenderMaskedSegRange_
-1749:3528+     R_RenderSegLoop_
-1749:3c1e+     R_RenderOneSeg_
-1749:408c      R_StoreWallRange_
+1749:2fe0      R_RenderMaskedSegRange_
+1749:352a+     R_RenderSegLoop_
+1749:3c20+     R_RenderOneSeg_
+1749:408e      R_StoreWallRange_
 Module: r_things.obj(C:\REALDOOM\r_things.c)
 1749:4c10+     R_DrawMaskedSpriteShadow_
 1749:4dcc+     R_DrawVisSprite_

@@ -51,7 +51,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	fixed_t_union rw_scalestep;
 
 	side_t __far* side;
-	side_render_t __far* side_render;
+	side_render_t __near* side_render;
 	uint8_t curlineside;
 	int16_t cursegline;
 	vertex_t v1;
@@ -821,7 +821,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 	// needs to be refreshed...
 	side_t __far* side = &sides[curseg_render->sidedefOffset];
-	side_render_t __far* side_render = &sides_render[curseg_render->sidedefOffset];
+	side_render_t __near* side_render = &sides_render[curseg_render->sidedefOffset];
 	vertex_t curlinev1 = vertexes[curseg_render->v1Offset];
 	vertex_t curlinev2 = vertexes[curseg_render->v2Offset];
 	int16_t sidetextureoffset;
@@ -861,7 +861,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 
     // calculate rw_distance for scale calculation
-    rw_normalangle = seg_normalangles_far[curseg];
+    rw_normalangle = seg_normalangles[curseg];
 	rw_normalangle_shiftleft3 = rw_normalangle << SHORTTOFINESHIFT;
 
 
