@@ -1210,9 +1210,9 @@ spritewidths        7000:7592
 #define size_compositetextureoffset   (MAX_TEXTURES * sizeof(uint8_t))
 
 
-#define segs_render             ((seg_render_t  __far*)      MAKE_FULL_SEGMENT(0x40000000              , 0))
-#define seg_normalangles        ((fineangle_t  __far*)       MAKE_FULL_SEGMENT(segs_render             , size_segs_render))
-#define sides_render            ((side_render_t __far*)      MAKE_FULL_SEGMENT(seg_normalangles        , size_seg_normalangles))
+#define segs_render_far         ((seg_render_t  __far*)      MAKE_FULL_SEGMENT(0x40000000              , 0))
+#define seg_normalangles_far    ((fineangle_t  __far*)       MAKE_FULL_SEGMENT(segs_render_far         , size_segs_render))
+#define sides_render            ((side_render_t __far*)      MAKE_FULL_SEGMENT(seg_normalangles_far    , size_seg_normalangles))
 #define vissprites              ((vissprite_t __far*)        MAKE_FULL_SEGMENT(sides_render            , size_sides_render))
 #define player_vissprites       ((vissprite_t __far*)        MAKE_FULL_SEGMENT(vissprites              , size_vissprites))
 #define texturepatchlump_offset ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites       , size_player_vissprites))
@@ -1234,8 +1234,8 @@ spritewidths        7000:7592
 
 
 
-#define segs_render_segment               ((segment_t) ((int32_t)segs_render >> 16))
-#define seg_normalangles_segment          ((segment_t) ((int32_t)seg_normalangles >> 16))
+#define segs_render_segment               ((segment_t) ((int32_t)segs_render_far >> 16))
+#define seg_normalangles_segment          ((segment_t) ((int32_t)seg_normalangles_far >> 16))
 #define sides_render_segment              ((segment_t) ((int32_t)sides_render >> 16))
 #define vissprites_segment                ((segment_t) ((int32_t)vissprites >> 16))
 #define player_vissprites_segment         ((segment_t) ((int32_t)player_vissprites >> 16))
@@ -1249,6 +1249,9 @@ spritewidths        7000:7592
 #define viewangletox_segment              ((segment_t) ((int32_t)viewangletox >> 16))
 #define flatindex_segment                 ((segment_t) ((int32_t)flatindex >> 16))
 
+
+#define segs_render             ((seg_render_t  __near*)      0x4000)
+#define seg_normalangles        ((fineangle_t  __near*)       (((uint16_t)(segs_render)) + size_segs_render))
 
 #define scalelight_offset_in_fixed_scalelight (16 * (scalelight_segment - scalelightfixed_segment))
 

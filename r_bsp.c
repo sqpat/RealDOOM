@@ -200,7 +200,7 @@ void __near R_AddLine (int16_t curlineNum) {
 	angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
-	seg_render_t __far*		curline_render = &segs_render[curlineNum];
+	seg_render_t __near*		curline_render = &segs_render[curlineNum];
 
 	uint8_t curlineside = *((uint8_t __far *)MK_FP(seg_linedefs_segment, curlineNum + seg_sides_offset_in_seglines));//seg_sides[curseg];
 	int16_t curseglinedef =  *((int16_t __far *)MK_FP(seg_linedefs_segment, 2*curlineNum)); // seg_linedefs[curseg];

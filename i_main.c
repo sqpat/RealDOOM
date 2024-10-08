@@ -82,8 +82,6 @@ void checkDS(int16_t a) {
 void hackDS();
 void hackDSBack();
 
-extern int16_t  __GETDS;
-
 int16_t
 main
 ( int16_t		argc,

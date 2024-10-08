@@ -1008,7 +1008,7 @@ extern int16_t		numlinespecials;
 
 
 extern int16_t		curseg;
-extern seg_render_t __far* curseg_render;
+extern seg_render_t __near* curseg_render;
 extern sector_t __far*	frontsector;
 extern sector_t __far*	backsector;
 

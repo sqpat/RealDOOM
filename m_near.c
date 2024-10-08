@@ -1895,7 +1895,7 @@ int16_t		numlinespecials;
 
 
 int16_t		curseg;
-seg_render_t __far* curseg_render;
+seg_render_t __near* curseg_render;
 sector_t __far*	frontsector;
 sector_t __far*	backsector;
 
