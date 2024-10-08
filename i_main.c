@@ -89,8 +89,12 @@ main
 ( int16_t		argc,
   int8_t**	argv ) 
 { 
+	struct SREGS        sregs;
     myargc = argc; 
     myargv = argv; 
+
+	segread(&sregs);
+	stored_ds = sregs.ds; // 2a56 2e06 c7a
 
 	//hackDS();
 

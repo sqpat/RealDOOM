@@ -3264,6 +3264,7 @@ endp
 
 COMMENT @
 
+
 PROC hackDS_ FAR
 PUBLIC hackDS_
 
@@ -3275,68 +3276,23 @@ push di
 mov ds:[_stored_ds], ds
 xor di, di
 mov si, di
-;mov cx, 03C00h
-mov cx, ds
-add cx, 400h
+mov cx, 03C00h
+
+;mov cx, ds
+;add cx, 400h
+
+
 mov es, cx
-mov CX, 04000h
+mov CX, 0800h    ; 1000h bytes
 rep movsw
-;mov cx, es
-;mov ds, cx
-;mov ss, cx
-
-
-pop cx
-pop di
-pop si
-
-
-
-sti
-
-
-
-retf
-
-ENDP
-
-PROC hackDSOLD_ FAR
-PUBLIC hackDSOLD_
-
-cli
-push cx
-push si
-push di
-
-mov ds:[_stored_ds], ds
-xor di, di
-mov si, di
-mov cx, 05000h
-mov es, cx
-mov CX, 04000h
-rep movsw
-
-mov cx, es
-mov ds, cx
-
-xor di, di
-mov si, di
-
-mov cx, ss
-add cx, 100h
-mov es, cx
-
-mov CX, 04000h
-rep movsw
-
 mov cx, es
 mov ds, cx
 mov ss, cx
 
 
-pop cx
 pop di
 pop si
+pop cx
 
 
 
@@ -3347,6 +3303,7 @@ sti
 retf
 
 ENDP
+
 
 
 
@@ -3362,16 +3319,65 @@ mov es, ds:[_stored_ds]
 
 xor di, di
 mov si, di
-mov CX, 04000h
+mov CX, 0800h   ; 1000h bytes
 rep movsw
 mov cx, es
 mov ds, cx
 mov ss, cx
 
 
-pop cx
 pop di
 pop si
+pop cx
+
+
+sti
+
+
+
+retf
+
+ENDP
+
+
+
+PROC hackDSOLD_ FAR
+PUBLIC hackDSOLD_
+
+cli
+push cx
+push si
+push di
+
+mov ds:[_stored_ds], ds
+xor di, di
+mov si, di
+mov cx, 05000h
+mov es, cx
+mov CX, 0800h   ; 1000h bytes
+rep movsw
+
+mov cx, es
+mov ds, cx
+
+xor di, di
+mov si, di
+
+mov cx, ss
+add cx, 100h
+mov es, cx
+
+mov CX, 0800h   ; 1000h bytes
+rep movsw
+
+mov cx, es
+mov ds, cx
+mov ss, cx
+
+
+pop di
+pop si
+pop cx
 
 
 
@@ -3384,4 +3390,5 @@ retf
 ENDP
 
 @
+
 END

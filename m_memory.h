@@ -198,12 +198,10 @@ segs                 EDD9:0000
 // 
 
 
-#define baselowermemoryaddresssegment 0x31E4
-#define baselowermemoryaddress (0x31E40000)
+//#define baselowermemoryaddress (0x31E40000)
+#define baselowermemoryaddress        (0x2DE40000)
 
-
-//#define baselowermemoryaddress        (0x2DE40000)
-//#define baselowermemoryaddresssegment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
+#define baselowermemoryaddresssegment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
 
 #define finesine           ((int32_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240

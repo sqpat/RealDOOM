@@ -1045,7 +1045,11 @@ R_PointToAngle(y, x);
 	intx86(0x10, &regs, &regs);
 	D_DrawTitle(title);
 
-	//DEBUG_PRINT("\nBYTES LEFT: %i %x\n", 16 * (baselowermemoryaddresssegment - stored_ds), 16 * (baselowermemoryaddresssegment - stored_ds));
+	if (M_CheckParm("-mem")){
+		I_Error("\nBYTES LEFT: %i %x (DS : %x to %x BASEMEM : %x)\n", 16 * (baselowermemoryaddresssegment - stored_ds) - 0x1000, 16 * (baselowermemoryaddresssegment - stored_ds)- 0x100, stored_ds, stored_ds + 0x100, baselowermemoryaddresssegment);
+	}
+
+	
 
 	DEBUG_PRINT("\nP_Init: Checking cmd-line parameters...");
 #endif
