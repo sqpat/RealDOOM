@@ -258,7 +258,7 @@ visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil){
 // view z can be 16 too. -sq
 int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlevel, int8_t isceil ) {
     visplane_t __far*	check;
-    visplaneheader_t __far *checkheader;
+    visplaneheader_t __near *checkheader;
 	int16_t i;
 	int16_t_union piclight;
     if (picnum == skyflatnum) {
@@ -330,7 +330,7 @@ int16_t __near R_CheckPlane ( int16_t index, int16_t start, int16_t stop, int8_t
     int16_t		unionh;
     int16_t		x;
 	byte  __far*	pltop;
-	visplaneheader_t __far* plheader = &visplaneheaders[index];
+	visplaneheader_t __near* plheader = &visplaneheaders[index];
 
 	// should be active and have already have been paged in...
 	if (isceil){
@@ -461,7 +461,7 @@ void __near R_DrawPlanes (void) {
 	visplanepiclight_t piclight;
 
     for (i = 0; i < lastvisplane ; i++, visplaneoffset+= VISPLANE_BYTE_SIZE) {
-		visplaneheader_t __far*	plheader = &visplaneheaders[i];
+		visplaneheader_t __near*	plheader = &visplaneheaders[i];
 
 		if (plheader->minx > plheader->maxx)
 			continue;

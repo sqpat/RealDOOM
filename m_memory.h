@@ -416,8 +416,6 @@ segs                 EDD9:0000
 #define size_doomednum             ((sizeof(int16_t) * NUMMOBJTYPES))
 #define size_linespeciallist       ((sizeof(int16_t) * MAXLINEANIMS))
 
-// 3C00:4000
-#define thinkerlist        ((thinker_t __near*)   0x4000)
 
 
 #define thinkerlist_far    ((thinker_t __far*)        MAKE_FULL_SEGMENT(0x40000000, 0))
@@ -447,7 +445,9 @@ segs                 EDD9:0000
 #define doomednum_segment             ((segment_t) ((int32_t)doomednum >> 16))
 #define linespeciallist_segment       ((segment_t) ((int32_t)linespeciallist >> 16))
   
- 
+ // 3C00:4000
+#define thinkerlist        ((thinker_t __near*)   0x4000)
+
 
 
 
@@ -1210,19 +1210,19 @@ spritewidths        7000:7592
 #define size_compositetextureoffset   (MAX_TEXTURES * sizeof(uint8_t))
 
 
-#define segs_render_far         ((seg_render_t  __far*)      MAKE_FULL_SEGMENT(0x40000000              , 0))
-#define seg_normalangles_far    ((fineangle_t  __far*)       MAKE_FULL_SEGMENT(segs_render_far         , size_segs_render))
-#define sides_render_far        ((side_render_t __far*)      MAKE_FULL_SEGMENT(seg_normalangles_far    , size_seg_normalangles))
-#define vissprites_far          ((vissprite_t __far*)        MAKE_FULL_SEGMENT(sides_render_far        , size_sides_render))
-#define player_vissprites_far   ((vissprite_t __far*)        MAKE_FULL_SEGMENT(vissprites_far          , size_vissprites))
-#define texturepatchlump_offset ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites_far   , size_player_vissprites))
-#define visplaneheaders         ((visplaneheader_t __far*)   MAKE_FULL_SEGMENT(texturepatchlump_offset , size_texturepatchlump_offset))
-#define visplanepiclights       ((visplanepiclight_t __far*) MAKE_FULL_SEGMENT(visplaneheaders         , size_visplaneheaders))
-#define fuzzoffset              ((int16_t __far*)            MAKE_FULL_SEGMENT(visplanepiclights       , size_visplanepiclights))
-#define scalelightfixed         ((uint8_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset              , size_fuzzoffset))
-#define scalelight              ((uint8_t __far*)            MAKE_FULL_SEGMENT(scalelightfixed         , size_scalelightfixed))
-#define patch_sizes             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight              , size_scalelight))
-#define viewangletox            ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes             , size_patch_sizes))
+#define segs_render_far             ((seg_render_t  __far*)      MAKE_FULL_SEGMENT(0x40000000                  , 0))
+#define seg_normalangles_far        ((fineangle_t  __far*)       MAKE_FULL_SEGMENT(segs_render_far             , size_segs_render))
+#define sides_render_far            ((side_render_t __far*)      MAKE_FULL_SEGMENT(seg_normalangles_far        , size_seg_normalangles))
+#define vissprites_far              ((vissprite_t __far*)        MAKE_FULL_SEGMENT(sides_render_far            , size_sides_render))
+#define player_vissprites_far       ((vissprite_t __far*)        MAKE_FULL_SEGMENT(vissprites_far              , size_vissprites))
+#define texturepatchlump_offset_far ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites_far       , size_player_vissprites))
+#define visplaneheaders_far         ((visplaneheader_t __far*)   MAKE_FULL_SEGMENT(texturepatchlump_offset_far , size_texturepatchlump_offset))
+#define visplanepiclights_far       ((visplanepiclight_t __far*) MAKE_FULL_SEGMENT(visplaneheaders_far         , size_visplaneheaders))
+#define fuzzoffset_far              ((int16_t __far*)            MAKE_FULL_SEGMENT(visplanepiclights_far       , size_visplanepiclights))
+#define scalelightfixed_far         ((uint8_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset_far              , size_fuzzoffset))
+#define scalelight_far              ((uint8_t __far*)            MAKE_FULL_SEGMENT(scalelightfixed_far         , size_scalelightfixed))
+#define patch_sizes_far             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight_far              , size_scalelight))
+#define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
 
 
@@ -1239,23 +1239,29 @@ spritewidths        7000:7592
 #define sides_render_segment              ((segment_t) ((int32_t)sides_render_far >> 16))
 #define vissprites_segment                ((segment_t) ((int32_t)vissprites_far >> 16))
 #define player_vissprites_segment         ((segment_t) ((int32_t)player_vissprites_far >> 16))
-#define texturepatchlump_offset_segment   ((segment_t) ((int32_t)texturepatchlump_offset >> 16))
-#define visplaneheaders_segment           ((segment_t) ((int32_t)visplaneheaders >> 16))
-#define visplanepiclights_segment         ((segment_t) ((int32_t)visplanepiclights >> 16))
-#define fuzzoffset_segment                ((segment_t) ((int32_t)fuzzoffset >> 16))
-#define scalelightfixed_segment           ((segment_t) ((int32_t)scalelightfixed >> 16))
-#define scalelight_segment                ((segment_t) ((int32_t)scalelight >> 16))
-#define patch_sizes_segment               ((segment_t) ((int32_t)patch_sizes >> 16))
+#define texturepatchlump_offset_segment   ((segment_t) ((int32_t)texturepatchlump_offset_far >> 16))
+#define visplaneheaders_segment           ((segment_t) ((int32_t)visplaneheaders_far >> 16))
+#define visplanepiclights_segment         ((segment_t) ((int32_t)visplanepiclights_far >> 16))
+#define fuzzoffset_segment                ((segment_t) ((int32_t)fuzzoffset_far >> 16))
+#define scalelightfixed_segment           ((segment_t) ((int32_t)scalelightfixed_far >> 16))
+#define scalelight_segment                ((segment_t) ((int32_t)scalelight_far >> 16))
+#define patch_sizes_segment               ((segment_t) ((int32_t)patch_sizes_far >> 16))
 #define viewangletox_segment              ((segment_t) ((int32_t)viewangletox >> 16))
 #define flatindex_segment                 ((segment_t) ((int32_t)flatindex >> 16))
 
 
 #define segs_render             ((seg_render_t  __near*)      0x4000)
-#define seg_normalangles        ((fineangle_t  __near*)       (0x4000 + ((seg_normalangles_segment      - segs_render_segment)<<4)))
-#define sides_render            ((side_render_t __near*)      (0x4000 + ((sides_render_segment          - segs_render_segment)<<4)))
-#define vissprites              ((vissprite_t __near*)        (0x4000 + ((vissprites_segment            - segs_render_segment)<<4)))
-#define player_vissprites       ((vissprite_t __near*)        (0x4000 + ((player_vissprites_segment     - segs_render_segment)<<4)))
-
+#define seg_normalangles        ((fineangle_t  __near*)       (0x4000 + ((seg_normalangles_segment        - segs_render_segment)<<4)))
+#define sides_render            ((side_render_t __near*)      (0x4000 + ((sides_render_segment            - segs_render_segment)<<4)))
+#define vissprites              ((vissprite_t __near*)        (0x4000 + ((vissprites_segment              - segs_render_segment)<<4)))
+#define player_vissprites       ((vissprite_t __near*)        (0x4000 + ((player_vissprites_segment       - segs_render_segment)<<4)))
+#define texturepatchlump_offset ((uint16_t __near*)           (0x4000 + ((texturepatchlump_offset_segment - segs_render_segment)<<4)))
+#define visplaneheaders         ((visplaneheader_t __near*)   (0x4000 + ((visplaneheaders_segment         - segs_render_segment)<<4)))
+#define visplanepiclights       ((visplanepiclight_t __near*) (0x4000 + ((visplanepiclights_segment       - segs_render_segment)<<4)))
+#define fuzzoffset              ((int16_t __near*)            (0x4000 + ((fuzzoffset_segment              - segs_render_segment)<<4)))
+#define scalelightfixed         ((uint8_t __near*)            (0x4000 + ((scalelightfixed_segment         - segs_render_segment)<<4)))
+#define scalelight              ((uint8_t __near*)            (0x4000 + ((scalelight_segment              - segs_render_segment)<<4)))
+#define patch_sizes             ((uint16_t __near*)           (0x4000 + ((patch_sizes_segment             - segs_render_segment)<<4)))
 
 
 #define scalelight_offset_in_fixed_scalelight (16 * (scalelight_segment - scalelightfixed_segment))
