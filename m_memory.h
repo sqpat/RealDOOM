@@ -1213,9 +1213,9 @@ spritewidths        7000:7592
 #define segs_render_far         ((seg_render_t  __far*)      MAKE_FULL_SEGMENT(0x40000000              , 0))
 #define seg_normalangles_far    ((fineangle_t  __far*)       MAKE_FULL_SEGMENT(segs_render_far         , size_segs_render))
 #define sides_render_far        ((side_render_t __far*)      MAKE_FULL_SEGMENT(seg_normalangles_far    , size_seg_normalangles))
-#define vissprites              ((vissprite_t __far*)        MAKE_FULL_SEGMENT(sides_render_far        , size_sides_render))
-#define player_vissprites       ((vissprite_t __far*)        MAKE_FULL_SEGMENT(vissprites              , size_vissprites))
-#define texturepatchlump_offset ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites       , size_player_vissprites))
+#define vissprites_far          ((vissprite_t __far*)        MAKE_FULL_SEGMENT(sides_render_far        , size_sides_render))
+#define player_vissprites_far   ((vissprite_t __far*)        MAKE_FULL_SEGMENT(vissprites_far          , size_vissprites))
+#define texturepatchlump_offset ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites_far   , size_player_vissprites))
 #define visplaneheaders         ((visplaneheader_t __far*)   MAKE_FULL_SEGMENT(texturepatchlump_offset , size_texturepatchlump_offset))
 #define visplanepiclights       ((visplanepiclight_t __far*) MAKE_FULL_SEGMENT(visplaneheaders         , size_visplaneheaders))
 #define fuzzoffset              ((int16_t __far*)            MAKE_FULL_SEGMENT(visplanepiclights       , size_visplanepiclights))
@@ -1237,8 +1237,8 @@ spritewidths        7000:7592
 #define segs_render_segment               ((segment_t) ((int32_t)segs_render_far >> 16))
 #define seg_normalangles_segment          ((segment_t) ((int32_t)seg_normalangles_far >> 16))
 #define sides_render_segment              ((segment_t) ((int32_t)sides_render_far >> 16))
-#define vissprites_segment                ((segment_t) ((int32_t)vissprites >> 16))
-#define player_vissprites_segment         ((segment_t) ((int32_t)player_vissprites >> 16))
+#define vissprites_segment                ((segment_t) ((int32_t)vissprites_far >> 16))
+#define player_vissprites_segment         ((segment_t) ((int32_t)player_vissprites_far >> 16))
 #define texturepatchlump_offset_segment   ((segment_t) ((int32_t)texturepatchlump_offset >> 16))
 #define visplaneheaders_segment           ((segment_t) ((int32_t)visplaneheaders >> 16))
 #define visplanepiclights_segment         ((segment_t) ((int32_t)visplanepiclights >> 16))
@@ -1251,8 +1251,10 @@ spritewidths        7000:7592
 
 
 #define segs_render             ((seg_render_t  __near*)      0x4000)
-#define seg_normalangles        ((fineangle_t  __near*)       (0x4000 + ((seg_normalangles_segment - segs_render_segment)<<4)))
-#define sides_render            ((side_render_t __near*)      (0x4000 + ((sides_render_segment     - segs_render_segment)<<4)))
+#define seg_normalangles        ((fineangle_t  __near*)       (0x4000 + ((seg_normalangles_segment      - segs_render_segment)<<4)))
+#define sides_render            ((side_render_t __near*)      (0x4000 + ((sides_render_segment          - segs_render_segment)<<4)))
+#define vissprites              ((vissprite_t __near*)        (0x4000 + ((vissprites_segment            - segs_render_segment)<<4)))
+#define player_vissprites       ((vissprite_t __near*)        (0x4000 + ((player_vissprites_segment     - segs_render_segment)<<4)))
 
 
 

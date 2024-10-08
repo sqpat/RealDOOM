@@ -262,7 +262,7 @@ void __near R_DrawSingleMaskedColumn2 (segment_t pixeldatasegment, byte length) 
 //
 
 
-void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
+void __near R_DrawVisSprite ( vissprite_t __near* vis ) {
     
     fixed_t_union       frac;
     segment_t      patch_segment;
@@ -400,7 +400,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     
 	int16_t                 index;
 
-    vissprite_t __far*        vis;
+    vissprite_t __near*        vis;
     
     angle_t             ang;
     fixed_t             iscale;
@@ -608,7 +608,7 @@ void __near R_AddSprites (sector_t __far* sec)
 //
 // R_DrawPSprite
 //
-void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* vis){
+void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __near* vis){
     fixed_t_union           tx;
 	int16_t                 x1;
 	int16_t                 x2;
@@ -771,7 +771,7 @@ void __near R_SortVisSprites (void)
 	int16_t                 count;
     uint8_t        ds;
     uint8_t        bestindex;
-    vissprite_t __far*        best;
+    vissprite_t __near*        best;
     vissprite_t         unsorted;
     fixed_t             bestscale;
     uint8_t     vsprsortedheadprev;
@@ -836,7 +836,7 @@ void __near R_SortVisSprites (void)
 // R_DrawSprite
 //
 
-void __near R_DrawSprite (vissprite_t __far* spr)
+void __near R_DrawSprite (vissprite_t __near* spr)
 {
     drawseg_t __far*          ds;
     int16_t               clipbot[SCREENWIDTH]; // could be uint8_t, need to change -2 special case
