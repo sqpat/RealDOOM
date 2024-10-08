@@ -700,35 +700,34 @@ push  ax
 shl   si, 1
 shl   si, 1
 shl   si, 1
-mov   ax, SEGS_RENDER_SEGMENT
 
-mov   es, ax  ; ES for segs_render lookup
+;mov   ax, SEGS_RENDER_SEGMENT
+;mov   es, ax  ; ES for segs_render lookup
 
-mov   di, word ptr es:[si]
+mov   di, word ptr ds:[04000h + si]
 shl   di, 1
 shl   di, 1
 
 mov   ax, VERTEXES_SEGMENT
-mov   ds, ax  ; DS for vertexes lookup
+mov   es, ax  ; DS for vertexes lookup
 
 
-mov   bx, word ptr ds:[di]      ; lx
-mov   ax, word ptr ds:[di + 2]  ; ly
+mov   bx, word ptr es:[di]      ; lx
+mov   ax, word ptr es:[di + 2]  ; ly
 
 
+mov   di, word ptr ds:[04000h + si + 2]
 
-mov   di, word ptr es:[si + 2]
-
-mov   es, ax  ; juggle ax around isntead of putting on stack...
+;mov   es, ax  ; juggle ax around isntead of putting on stack...
 
 shl   di, 1
 shl   di, 1
 
-mov   si, word ptr ds:[di]      ; ldx
-mov   ax, word ptr ds:[di + 2]  ; ldy
+mov   si, word ptr es:[di]      ; ldx
+mov   di, word ptr es:[di + 2]  ; ldy
 
-mov   di, es                    ; ly
-
+;mov   di, es                    ; ly
+xchg   ax, di
 
 ;    ldx -= lx;
 ;    ldy -= ly;
@@ -767,8 +766,6 @@ jle    return_true
 
 return_false:
 xor   ax, ax
-mov   di, ss ;  restore ds
-mov   ds, di
 LEAVE_MACRO
 pop   di
 ret   
@@ -781,8 +778,6 @@ jge  return_false
 
 return_true:
 mov   ax, 1
-mov   di, ss ;  restore ds
-mov   ds, di
 LEAVE_MACRO
 pop   di
 ret   
@@ -813,9 +808,6 @@ jg    return_true
 ; return false
 xor   ax, ax
 
-mov   di, ss ;  restore ds
-mov   ds, di
-
 LEAVE_MACRO
 pop   di
 ret   
@@ -829,9 +821,6 @@ jle    return_true
 
 ; return false
 xor   ax, ax
-
-mov   di, ss ;  restore ds
-mov   ds, di
 
 LEAVE_MACRO
 pop   di
@@ -911,8 +900,6 @@ xor   ax, dx
 xor   al, al
 and   ah, 080h
 
-mov   di, ss ;  restore ds
-mov   ds, di
 
 LEAVE_MACRO
 pop   di
