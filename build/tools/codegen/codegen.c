@@ -3,6 +3,7 @@
 #include "m_near.h"
 
 #define CONSTANTS_COUNT 98
+#define LOCALS_COUNT 16
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
     "SECTORS_SEGMENT",
@@ -129,6 +130,9 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
 };
 
+
+
+
 segment_t SEGMENTS[CONSTANTS_COUNT] = {
     sectors_segment,
     vertexes_segment, 
@@ -250,6 +254,54 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     
 };
 
+char* LOCALS[LOCALS_COUNT] = {
+    "_segs_render",
+    "_seg_normalangles",
+    "_sides_render",
+    "_vissprites",
+    "_player_vissprites",
+    "_texturepatchlump_offset",
+    "_visplaneheaders",
+    "_visplanepiclights",
+    "_fuzzoffset",
+    "_scalelightfixed",
+    "_scalelight",
+    "_patch_sizes",
+
+
+    "_thinkerlist",
+    "_mobjinfo",
+    "_linebuffer",
+    "_sectors_physics"
+
+
+};
+
+void __near* VALUES[LOCALS_COUNT] = {
+
+    segs_render,
+    seg_normalangles,
+    sides_render,
+    vissprites,
+    player_vissprites,
+
+    texturepatchlump_offset,
+    visplaneheaders,
+    visplanepiclights,
+    fuzzoffset,
+    scalelightfixed,
+
+    scalelight,
+    patch_sizes,
+
+    thinkerlist,
+    mobjinfo,
+    linebuffer,
+    sectors_physics
+
+
+};
+
 int16_t main ( int16_t argc,int8_t** argv )  { 
     
     // Export .inc file with segment values, etc from the c coe
@@ -257,11 +309,19 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     char* varname;
     segment_t segment;
     int16_t i;
+    fprintf(fp, "; Far Segments\n");
 
     for (i = 0; i < CONSTANTS_COUNT; i++){
         varname = CONSTANTS[i];
         segment = SEGMENTS[i];
         fprintf(fp, "%s = 0%Xh\n", varname, segment);
+    }
+    fprintf(fp, "\n; Near vars as constants\n");
+
+
+    for (i = 0; i < LOCALS_COUNT; i++){
+        varname = LOCALS[i];
+        fprintf(fp, "%s = 0%Xh\n", varname, VALUES[i]);
     }
 
 

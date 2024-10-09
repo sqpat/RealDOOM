@@ -1,3 +1,4 @@
+; Far Segments
 SECTORS_SEGMENT = 0E000h
 VERTEXES_SEGMENT = 0E15Ch
 SIDES_SEGMENT = 0E2F3h
@@ -96,3 +97,21 @@ SPANFUNC_JUMP_LOOKUP_SEGMENT = 06EA0h
 SPANFUNC_FUNCTION_AREA_SEGMENT = 06EAAh
 COLFUNC_HIGH_SEGMENT = 08E42h
 R_DRAWCOLUMNPREPCALLOFFSET = 0B37h
+
+; Near vars as constants
+_segs_render = 04000h
+_seg_normalangles = 09800h
+_sides_render = 0AE00h
+_vissprites = 0D670h
+_player_vissprites = 0EA70h
+_texturepatchlump_offset = 0EAC0h
+_visplaneheaders = 0EE20h
+_visplanepiclights = 0F210h
+_fuzzoffset = 0F310h
+_scalelightfixed = 0F3A0h
+_scalelight = 0F3D0h
+_patch_sizes = 0F6D0h
+_thinkerlist = 04000h
+_mobjinfo = 0D060h
+_linebuffer = 0D650h
+_sectors_physics = 0EA30h
