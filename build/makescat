@@ -107,6 +107,7 @@ GLOBOBJS = &
  info.obj &
  d_math.obj &
  dmx.obj &
+ data.obj &
  math.obj &
  d_algo.obj &
  r_math.obj &
