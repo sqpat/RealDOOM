@@ -280,6 +280,8 @@ int16_t    vissprite_p;
 uint8_t   vsprsortedheadfirst;
 segment_t lastvisspritesegment = 0xFFFF;
 int16_t   lastvisspritepatch = -1;
+segment_t lastvisspritesegment2 = 0xFFFF;
+int16_t   lastvisspritepatch2 = -1;
 
 
 
@@ -325,14 +327,13 @@ int8_t patchcache_tail = -1;
 int8_t texturecache_head = -1;
 int8_t texturecache_tail = -1;
 
-segment_t cachedsegmentlump = 0xFFFF;
-segment_t cachedsegmenttex = 0xFFFF;
-int16_t   cachedlump = -1;
-int16_t   cachedtex = -1;
 
-segment_t cachedsegmentlump2 = 0xFFFF;
+int16_t cachedlumps[NUM_CACHE_LUMPS];
+segment_t cachedsegmentlumps[NUM_CACHE_LUMPS];
+
+int16_t   cachedtex = -1;
+segment_t cachedsegmenttex = 0xFFFF;
 segment_t cachedsegmenttex2 = 0xFFFF;
-int16_t   cachedlump2 = -1;
 int16_t   cachedtex2 = -1;
 uint8_t   cachedcollength = 0;
 uint8_t   cachedcollength2 = 0;

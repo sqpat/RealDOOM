@@ -285,8 +285,19 @@ void __near R_DrawVisSprite ( vissprite_t __near* vis ) {
     if (vis->patch == lastvisspritepatch){
         patch_segment = lastvisspritesegment;
     } else {
-        lastvisspritepatch = vis->patch;
-    	patch_segment = lastvisspritesegment = getspritetexture(vis->patch);
+        if (vis->patch ==  lastvisspritepatch2){
+            // swap MRU order..
+            patch_segment = lastvisspritesegment2;
+            lastvisspritesegment2 = lastvisspritesegment;
+            lastvisspritesegment = patch_segment;
+            lastvisspritepatch2 = lastvisspritepatch;
+            lastvisspritepatch = vis->patch;
+        } else {
+            lastvisspritepatch2 = lastvisspritepatch;
+            lastvisspritesegment2 = lastvisspritesegment;
+        	patch_segment = lastvisspritesegment = getspritetexture(vis->patch);            
+            lastvisspritepatch = vis->patch;
+        }
     }
 
     patch = MK_FP(patch_segment, 0);

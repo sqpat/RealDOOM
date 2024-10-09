@@ -156,6 +156,18 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	Z_QuickMapPhysics();
  
 
+ // reset last used segment cache
+	lastvisspritepatch = -1;    
+	lastvisspritepatch2 = -1;    
+	cachedtex = -1;
+    cachedtex2 = -1;
+	{
+		int16_t a;
+		for (a = 0; a < NUM_CACHE_LUMPS; a++){
+			cachedlumps[a] = -1;
+		}
+	}
+
 
 	// preload graphics
 	

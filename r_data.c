@@ -952,10 +952,15 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		R_MarkCacheLRU(realtexpage, 0, cachetype);
 		Z_QuickMapRenderTexture();
-		cachedlump = -1;
 		cachedtex = -1;
-		cachedlump2 = -1;
 		cachedtex2 = -1;
+		{
+			int16_t a;
+			for (a = 0; a < NUM_CACHE_LUMPS; a++){
+				cachedlumps[a] = -1;
+			}
+		}
+
 	
 
 		return startpage;
@@ -1047,10 +1052,16 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		R_MarkCacheLRU(realtexpage, numpages, cachetype);
 		Z_QuickMapRenderTexture();
-		cachedlump = -1;
 		cachedtex = -1;
-		cachedlump2 = -1;
 		cachedtex2 = -1;
+		
+		{
+			int16_t a;
+			for (a = 0; a < NUM_CACHE_LUMPS; a++){
+				cachedlumps[a] = -1;
+			}
+		}
+
 
 		// paged in
 
@@ -1128,6 +1139,9 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		Z_QuickMapSpritePage();
 		R_MarkCacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
 
+		lastvisspritepatch = -1;
+		lastvisspritepatch2 = -1;
+		
 
 		return startpage;
 
@@ -1215,6 +1229,9 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 			activespritenumpages[startpage + i] = numpages - i;
 
 		}
+
+		lastvisspritepatch = -1;
+		lastvisspritepatch2 = -1;
 
 		Z_QuickMapSpritePage();
 
@@ -1379,27 +1396,49 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		uint8_t lookup = masked_lookup[tex];
 		uint16_t patchwidth = patchwidths[lump-firstpatch];
 		uint8_t heightval = texturecolumnlump[n-1].bu.bytehigh;
+		int16_t  cachelumpindex;
 		cachedbyteheight = heightval & 0xF0;
 		heightval &= 0x0F;
-		if (cachedlump != lump){
-			if (cachedlump2 != lump){
-				// var cache miss
-				cachedlump2 = cachedlump;
-				cachedsegmentlump2 = cachedsegmentlump;
-				cachedsegmentlump = getpatchtexture(lump, lookup);  // might zero out cachedlump vars
-				cachedlump = lump;
-			} else {
-				// cycle cache so 2 = 1
-				cachedlump2 = cachedlump;
-				cachedlump = lump;
+		
+		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
+			if (lump == cachedlumps[cachelumpindex]){
 				
-				lump = cachedsegmentlump;
-				cachedsegmentlump = cachedsegmentlump2;
-				cachedsegmentlump2 = lump;
+				if (cachelumpindex == 0){
+					goto foundcachedlump;
+				} else {
+					// reorder, put it in spot 0
+					segment_t usedsegment = cachedsegmentlumps[cachelumpindex];
+					int16_t cachedlump = cachedlumps[cachelumpindex];
+					int16_t i;
+
+					// reorder cache MRU				
+					for (i = cachelumpindex; i > 0; i--){
+						cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
+						cachedlumps[i] = cachedlumps[i-1];
+					}
+
+					cachedsegmentlumps[0] = usedsegment;
+					cachedlumps[0] = cachedlump;
+					goto foundcachedlump;	
+
+				}
 			}
 		}
 
+		// not found, set cache.
+		{
+			int16_t i;
+			for (i = NUM_CACHE_LUMPS - 1; i > 0; i--){
+				cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
+				cachedlumps[i] = cachedlumps[i-1];
+			}
+			cachedsegmentlumps[0] = getpatchtexture(lump, lookup);  // might zero out cachedlump vars;
+			cachedlumps[0] = lump;
 
+		}
+		
+		foundcachedlump:
+		// so now cachedlumps[0] and cachedsegmentlumps[0] are the most recently used
 
 		// todo what else can we reuse collength and cachedbyteheight here?
 		
@@ -1411,7 +1450,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		}
 
 		if (lookup == 0xFF){
-			return cachedsegmentlump + (FastMul8u8u(col , heightval) );
+			return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 		} else {
 			// Does this code ever run outside of draw masked?
 
@@ -1421,7 +1460,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 			uint16_t ofs  = pixelofs[col]; // precached as segment value.
 			cachedcol = col;
 		 
-			return cachedsegmentlump + (ofs);
+			return cachedsegmentlumps[0] + (ofs);
 		}
 	} else {
 		uint8_t collength = textureheights[tex] + 1;

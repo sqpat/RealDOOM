@@ -37,6 +37,8 @@
 #include "z_zone.h"
 
 
+#define NUM_CACHE_LUMPS 4
+
 #if (EXE_VERSION < EXE_VERSION_ULTIMATE)
 #define NUMEPISODES	3
 #else
@@ -319,6 +321,8 @@ extern int16_t              vissprite_p;
 extern uint8_t              vsprsortedheadfirst;
 extern segment_t            lastvisspritesegment;
 extern int16_t              lastvisspritepatch;
+extern segment_t            lastvisspritesegment2;
+extern int16_t              lastvisspritepatch2;
 extern int16_t              firstflat;
 extern int16_t              numflats;
 extern int16_t              firstpatch;
@@ -340,13 +344,15 @@ extern int8_t               patchcache_head;
 extern int8_t               patchcache_tail;
 extern int8_t               texturecache_head;
 extern int8_t               texturecache_tail;
-extern segment_t            cachedsegmentlump;
+extern int16_t cachedlumps[NUM_CACHE_LUMPS];
+extern segment_t cachedsegmentlumps[NUM_CACHE_LUMPS];
+//extern segment_t            cachedsegmentlump;
 extern segment_t            cachedsegmenttex;
-extern int16_t              cachedlump;
+//extern int16_t              cachedlump;
 extern int16_t              cachedtex;
-extern segment_t            cachedsegmentlump2;
+//extern segment_t            cachedsegmentlump2;
 extern segment_t            cachedsegmenttex2;
-extern int16_t              cachedlump2;
+//extern int16_t              cachedlump2;
 extern int16_t              cachedtex2;
 extern uint8_t              cachedcollength;
 extern uint8_t              cachedcollength2;
