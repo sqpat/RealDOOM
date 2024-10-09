@@ -257,7 +257,7 @@ void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n){
 }
 
 
-void __far locallib_printhexdigit (uint8_t digit, boolean printifzero){
+char __far locallib_printhexdigit (uint8_t digit, boolean printifzero){
 	
 	if (digit){
 		if (digit < 0xA){
@@ -269,25 +269,38 @@ void __far locallib_printhexdigit (uint8_t digit, boolean printifzero){
 		if (printifzero){
 			digit = ('0');
 		} else {
-			return;
+			return 0;
 		}
 	}
-	putchar(digit);
+	return(digit);
 }
 
 
-void __far locallib_printhex (uint32_t number, boolean islong){
+
+
+void __far locallib_printhex (uint32_t number, boolean islong, int8_t __near* outputtarget){
 	uint32_t modder = 0xF000;
 	int8_t shifter = 12;
 	boolean printedonedigit = false;
+	boolean printtostring = outputtarget != NULL;
+	int8_t index = 0;
+	int8_t thechar;
+
 	if (islong){
 		modder = 0xF0000000;
 		shifter = 28;
-
 	}
 	while (shifter ){
 		int8_t digit = (number&modder) >> shifter;
-		locallib_printhexdigit(digit, printedonedigit);
+		thechar = locallib_printhexdigit(digit, printedonedigit);
+		if (thechar){
+			if (printtostring){
+				outputtarget[index] = thechar;
+				index++;
+			} else {
+				putchar(thechar);
+			}
+		}
 		if (digit){
 			printedonedigit = true;
 		}
@@ -295,7 +308,15 @@ void __far locallib_printhex (uint32_t number, boolean islong){
 		shifter -=4;
 	}
 	
-	locallib_printhexdigit((number&0x000F), true);
+	
+
+		thechar = locallib_printhexdigit((number&0x000F), true);
+		if (printtostring){
+			outputtarget[index] = thechar;
+			outputtarget[index+1] = '\0';
+		} else {
+			putchar(thechar);
+		}
 	
 }
 
@@ -390,9 +411,9 @@ void __far locallib_printf (int8_t *str, va_list argptr){
 				case 'p':
 				case 'P':
 					if (longflag){
-						locallib_printhex(va_arg(argptr, uint32_t), true);
+						locallib_printhex(va_arg(argptr, uint32_t), true, NULL);
 					} else {
-						locallib_printhex((uint32_t)va_arg(argptr, uint16_t), false);
+						locallib_printhex((uint32_t)va_arg(argptr, uint16_t), false, NULL);
 					}
 					i+=2;
 					longflag = false;

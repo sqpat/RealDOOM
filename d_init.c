@@ -560,7 +560,7 @@ void __near G_TimeDemo (int8_t* name)
 
 void __near W_AddFile(int8_t *filename);
 
-void __far M_Init(void);
+
 
 
 
@@ -573,6 +573,89 @@ void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) ;
 
 int16_t countleadingzeroes(uint32_t num);
 uint32_t divllu(fixed_t_union num_input, fixed_t_union den);
+
+
+
+//
+// M_Init
+//
+ 
+
+// this is only done in init... pull into there?
+
+void __near M_Reload(void) {
+	// reload menu graphics
+	int16_t i = 0;
+	uint32_t size = 0;
+	byte __far* dst = menugraphicspage0;
+	uint8_t pageoffset = 0;
+
+ 	int8_t menugraphics[NUM_MENU_ITEMS * 9];
+
+	FILE *fp = fopen("D_MENUG.BIN", "rb"); // clear old file
+	fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
+	fclose(fp);
+
+	for (i = 0; i < NUM_MENU_ITEMS; i++) {
+		int16_t lump = W_GetNumForName(&menugraphics[i*9]);
+		uint16_t lumpsize = W_LumpLength(lump);
+		if (i == 27) { // (size + lumpsize) > 65535u) {
+			// repage
+			size = 0;
+			pageoffset += 4;
+			dst = menugraphicspage4;
+		}
+		W_CacheLumpNumDirect(lump, dst);
+		menuoffsets[i] = size;
+		size += lumpsize;
+		dst += lumpsize;
+
+	}
+
+
+
+}
+
+
+void __near M_DrawReadThisRetail(void);
+void __near M_FinishReadThis(int16_t choice);
+
+void __far M_Init(void){
+	
+
+	Z_QuickMapMenu();
+	
+	M_Reload();
+	
+
+	currentMenu = &MainDef;
+	menuactive = 0;
+	itemOn = currentMenu->lastOn;
+	whichSkull = 0;
+	skullAnimCounter = 10;
+	screenSize = screenblocks - 1;
+	messageToPrint = 0;
+	menu_messageString[0] = '\0';
+	messageLastMenuActive = menuactive;
+	quickSaveSlot = -1;  // means to pick a slot now
+
+	if (commercial)
+	{
+		MainMenu[readthis] = MainMenu[quitdoom];
+		MainDef.numitems--;
+		MainDef.y += 8;
+		NewDef.prevMenu = &MainDef;
+		ReadDef1.routine = M_DrawReadThisRetail;
+		ReadDef1.x = 330;
+		ReadDef1.y = 165;
+		ReadMenu1[0].routine = M_FinishReadThis;
+	}
+
+	Z_QuickMapPhysics();
+
+	
+}
+
 
 /*
 int16_t countleadingzeroes(uint32_t num){

@@ -874,17 +874,6 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 		}
 	}
 
-	/*
-#ifdef __COMPILER_WATCOM
-	sprintf(fname, "wtex%i.bin", texnum);
-#else
-	sprintf(fname, "gtex%i.bin", texnum);
-#endif
-	fp = fopen(fname, "wb");
-	FAR_fwrite(block, totalsize, 1, fp);
-	fclose(fp);
-	*/
-
 	Z_QuickMapRender7000();
 
 }

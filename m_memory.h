@@ -195,10 +195,6 @@ segs                 EDD9:0000
 
 #define size_tantoangle    size_finetangent +  2049u * sizeof(int32_t)
 
-// 
-
-
-//#define baselowermemoryaddress (0x31E40000)
 #define baselowermemoryaddress        (0x2DE40000)
 
 #define baselowermemoryaddresssegment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
@@ -262,20 +258,20 @@ segs                 EDD9:0000
 
 
 
-// finesine             31E4:0000
-// finecosine           31E4:2000
-// finetangentinner     3BE4:0000
-// states               3DE4:0000
-// events               3F4F:0000
-// flattranslation      3F83:0000
-// texturetranslation   3F8D:0000
-// textureheights       3FC3:0000
-// scantokey            3FDE:0000
-// rndtable             3FE6:003C
-// spritecache_nodes    3FF6:0000
-// flatcache_nodes      3FF6:003C
-// patchcache_nodes     3FF6:004E
-// texturecache_nodes   3FF6:007E
+// finesine             2DE4:0000
+// finecosine           2DE4:2000
+// finetangentinner     37E4:0000
+// states               39E4:0000
+// events               3B4F:0000
+// flattranslation      3B83:0000
+// texturetranslation   3B8D:0000
+// textureheights       3BC3:0000
+// scantokey            3BDE:0000
+// rndtable             3BE6:003C
+// spritecache_nodes    3BF6:0000
+// flatcache_nodes      3BF6:003C
+// patchcache_nodes     3BF6:004E
+// texturecache_nodes   3BF6:007E
 // [done]               4000:0000
 
 
@@ -453,18 +449,18 @@ segs                 EDD9:0000
 
 
 
-// 4000:0000  thinkerlist
-// 4906:0000  mobjinfo
-// 4965:0000  linebuffer
-// 4AA3:0000  sectors_physics
-// 4BFF:0000  sectors_soundorgs
-// 4C56:0000  sectors_soundstraversed
-// 4C6c:0000  intercepts
-// 4CA4:0000  ammnumpatchbytes
-// 4CA4:020C  ammnumpatchoffsets
-// 4CC6:0000  doomednum
-// 4CD8:0000  linespeciallist
-// 4CCA:03B1  [empty]
+// 4000:0000  4000 thinkerlist
+// 4906:0000  D060 mobjinfo
+// 4965:0000  D650 linebuffer
+// 4AA3:0000  EA30 sectors_physics
+// 4BFF:0000  xxxx sectors_soundorgs
+// 4C56:0000  xxxx sectors_soundstraversed
+// 4C6c:0000  xxxx intercepts
+// 4CA4:0000  xxxx ammnumpatchbytes
+// 4CA4:020C  xxxx ammnumpatchoffsets
+// 4CC6:0000  xxxx doomednum
+// 4CD8:0000  xxxx linespeciallist
+// 4CCA:03B1  xxxx [empty]
 
 
 // over 8k bytes free?
@@ -629,7 +625,7 @@ blockmaplump_plus4  76E4:0008
 
  /*
 
-TODO this may grow with final doom suppot...?
+TODO this may grow with final doom support...?
 
 maskedpostdata              8400:0000
 drawmaskedfuncarea_sprite?  86FD:0000

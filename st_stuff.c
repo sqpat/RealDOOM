@@ -57,6 +57,7 @@
 #include "m_near.h"
 
 
+void __far locallib_printhex (uint32_t number, boolean islong, int8_t __near* outputtarget);
 
 
 //
@@ -200,13 +201,20 @@ boolean __near ST_Responder (event_t __far* ev) {
           // 'mypos' for player position
 
 //todo: this      player pos  
-        /*
-        sprintf(st_stuff_buf, "ang=0x%lx;x,y=(0x%lx,0x%lx)",
-                playerMobj_pos->angle,
-                playerMobj_pos->x,
-                playerMobj_pos->y);
-                */
-        //memcpy(player.messagestring, st_stuff_buf, 40);
+        int8_t hexnumber_string[10];
+        locallib_printhex(playerMobj_pos->angle.wu, true, hexnumber_string);
+        combine_strings(st_stuff_buf,"ang=0x", hexnumber_string);
+        combine_strings(st_stuff_buf,st_stuff_buf, ";x,y=(0x");
+        
+        locallib_printhex(playerMobj_pos->x.w, true, hexnumber_string);
+        combine_strings(st_stuff_buf,st_stuff_buf, hexnumber_string);
+        combine_strings(st_stuff_buf,st_stuff_buf, ",0x");
+
+        locallib_printhex(playerMobj_pos->y.w, true, hexnumber_string);
+        combine_strings(st_stuff_buf,st_stuff_buf, hexnumber_string);
+        combine_strings(st_stuff_buf,st_stuff_buf, ")");
+        
+        
         player.messagestring = st_stuff_buf;
       }
     }
