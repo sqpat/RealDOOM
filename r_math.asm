@@ -704,7 +704,7 @@ shl   si, 1
 ;mov   ax, SEGS_RENDER_SEGMENT
 ;mov   es, ax  ; ES for segs_render lookup
 
-mov   di, word ptr ds:[04000h + si]
+mov   di, word ptr ds:[_segs_render + si]
 shl   di, 1
 shl   di, 1
 
@@ -716,7 +716,7 @@ mov   bx, word ptr es:[di]      ; lx
 mov   ax, word ptr es:[di + 2]  ; ly
 
 
-mov   di, word ptr ds:[04000h + si + 2]
+mov   di, word ptr ds:[_segs_render + si + 2]
 
 ;mov   es, ax  ; juggle ax around isntead of putting on stack...
 
