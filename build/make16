@@ -117,14 +117,12 @@ doomout.exe : $(GLOBOBJS) i_ibm.obj
  wlink @build/rdoom16.lnk
  copy doomout.exe bin\doom.exe
  wstrip bin\doom.exe
-# 4gwbind 4gwpro.exe striptic.exe heretic.exe -V
-# prsucc
 
 .c.obj :
  wcc $(CCOPTS) $[*
 
 .asm.obj :
- tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
+ tasm /mx /m4 /w2 /q /zi $(ASMOPTS) $[*
 
 clean : .SYMBOLIC
  del *.obj
