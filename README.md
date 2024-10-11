@@ -4,38 +4,41 @@
 
 
 
-RealDOOM is an in progress port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical detail as the original game.
+RealDOOM is an in progress port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical detail as the original game.
 
 
 - As of release 0.11, the game is fully playable with the shareware DOOM1.WAD file. 
 - As of version 0.15, the game is no longer compatible with DOSBox because DOSBox lacks support for EMS 4.0 with backfill.
 - As of release 0.20, the game is fully playable with commercial DOOM.WAD and DOOM2.WAD files
-- (Final DOOM WADs are not planned to be supported, the levels are too big and I can't think of a good way to fit everything in memory)
+- Final/Ultimate DOOM WADs are planned to eventually be supported.
 
-The current development focus is on stability and architecture rather than speed improvements, which will come after the engine is in a more realmode-friendly state.
+The current development focus is on ASM rewrites of most of the render code. This will be followed by re-adding removed features.
 
-To build an optimized 80286 build, run make286.bat. Otherwise, run make16.bat for 8088 support.
+Building RealDOOM requires openwatcom 2.0 and tasm 2.51.
+Simply run the makeall script and select your build option (286, 386, 8086, chipset, etc).
 
-If running on real hardware, a pentium or fast 486 is current recommended.
+If running on real hardware, a 486 or Pentium should generally run the game okay in high quality. A 386 or 286 should be fast and also use low or potato detail to get an agreeable framereate.
 
-The minimum spec will eventually be a standard 4.77 MhZ 8088 machine with a VGA card, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets (C&T SCAT, VLSI SCAMP, VLSI TOPCAT... ) support EMS 4.0 and you will be able to use their appropriate EMS drivers. 
+The "minimum spec" is a standard 4.77 MhZ 8088 machine with a VGA card, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets (C&T SCAT, VLSI SCAMP, VLSI TOPCAT... ) support EMS 4.0 and you will be able to use their appropriate EMS drivers or SQEMM, which is faster.
 
 ### Removed features (not planned to be re-added)
- - multiplayer and netplay
  - joystick support
- 
 
 ###  Broken/unimplemented features (planned to be fixed)
  - sound (will require writing a 16 bit library for this)
  - savegames (will require a rewrite of the archive/unarchive code)
+ - multiplayer/networking? (not sure)
+
 
 There are also a lot of hard caps on things like texture size and count, node count, etc, which will probably make many custom WADs unplayable. oh well.
 
 
 ### Known bugs:
- - some ceiling textures seem to render in lower detail or the wrong lightmaps
- - 8088 build probably currently doesn't work (it probably generates a binary that is too big - this will be fixed as the binary shrinks over the next months)
-
+ - player arrow renders incorrectly in automap
+ - some corruption may be happening in single pixel sprite draws
+ - span/plane draws may lack texture precision and be a little 'fuzzy'
+ - doom 2 mission 3 is incredibly laggy (too many large textures at once)
+ 
 ### High-Level Roadmap:
  Not necessarily meant to be accurate, but just to give an overview of the general order in which things are probably going to be built.
 
@@ -70,61 +73,54 @@ There are also a lot of hard caps on things like texture size and count, node co
   - ems visplane allocation
   - texture cache improvements
   - many bugfixes, memory organization improvements
-   
  
-    
+ (Jun 18, 2024)
  ~~**v0.21** : ASM improvements~~
   - R_DrawColumn, R_DrawSpan, R_MapPlane ASM optimized
   - Potato quality implemented
   - FixedMul ASM Optimized
 
+ (Aug 20, 2024)
  ~~**v0.22** : More ASM improvements~~
   - FixedDiv ASM optimized
   - Additional render pipeline optimization
   - Textures paragraph/segment aligned
-  
- **v0.23** : Memory, Build
-  - fixed DS to 0x3C00?
+
+ (Oct 11, 2024)
+ ~~**v0.23** : Memory, Build~~
+  - fixed DS to 0x3C00
   - build tools to support fixed DS and binary offloading to file
-  - offloaded render function binaries loaded into EMS memory at runtime 
+  - offloaded render function binaries loaded into EMS memory at runtime
+  - 286 chipset specific builds
+  - binary size significantly reduced
+  - 386 math build option (WIP, only FixedMul)
+  - improved rendering fidelity
 
 **v0.24** : More ASM improvements
  - Entire render pipeline ASM optimzied
  - core physics functions rewritten in asm
-  
+ - more code moved into offloaded binary
     
- **v0.30** : Full feature compatibility?
+**v0.25** : Full feature compatibility?
   - sound code?
   - fix save/load game?
-      
+
+**v0.26** : Final Doom Support
+  - sound code?
+  - fix save/load game?
+ 
  **v0.xx** : Continued improvement
   - continued moving of code to asm, optimizations, etc
-    - physics code profiled, some main loops written in asm?
-    - manually written overlay code, more dynamic linking to free more space?
-    
- **v0.??**
+  - Entire codebase in asm? Remove c lib dependencies?
+  - Remove MS-DOS dependencies, self boot?
   - highly optimized but non-timedemo conformant 286 super-optimized version?
+  - Protected mode 286 version? (Probably slower)
  
 
 
 ### Speed
 
-(NOTE: these speeds are based off Release 0.10 and somewhat dated)
-Current Realtics/FPS for shareware DOOM1.WAD timedemo3 with screenblocks 5 and high quality:
+Various performance benchmarks can be found in this spreadsheet:
+[https://docs.google.com/spreadsheets/d/1gt8gqvKrvJh5GH_xDKoZ98G4jY873s6zx_Y5EaFbb7M/](url)
 
-| Machine Specs  | 86box  |  FPS | Real Hardware | FPS |
-| ------------- | ------------- | ------------- | ------------- | ------------- |
-| Pentium MMX 233  | 1148 | 65.06 |  830  | 89.99 |
-| Pentium 133  | 1695  |44.06 |||
-| AMD 5x86 P90  | 2637 | 28.32 |||
-| 486 DX2-66  | 5637|  13.25 |||
-| 486 SX-33  | 10529 | 7.09| ||
-| 386 DX-40  | 12989  | 5.75| 12534| 5.96|
-| 286-25  | 31821   | 2.35| ||
-| 286-20  ||| 32377 | 2.31|
-| v20 9.5 MhZ  | || 162157   | 0.46 |  
-| 8088 4.77 MhZ (NuXT) | || 351970   | 0.21 |  
-| 8088 4.77 MhZ (5150) | || 384254   | 0.19 |  
-
-
-I think we are looking for around 5-10x performance uplift from the current point to reach playability on fast 286es.
+For the most part, a 386SX currently runs RealDOOM about as fast as it does DOOM 1.9. 32 bit bus cpus all generally run it 0-30% worse. A very fast 286 achieves around 4-5 FPS in high quality, 7.5 in low, and 10 in potato quality.
