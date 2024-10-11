@@ -23,3 +23,6 @@
 /GCCIA16
 010/.DS_Store
 .vscode/settings.json
+bin/scat/.DS_Store
+build/tools/.DS_Store
+bin/.DS_Store
