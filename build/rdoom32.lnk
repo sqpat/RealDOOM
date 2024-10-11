@@ -87,7 +87,6 @@ file r_bsp.obj
 file r_data.obj
 file r_math.obj
 #file r_span.obj
-file r_sky.obj
 file r_draw.obj
 file r_main.obj
 file r_plane.obj
@@ -108,12 +107,12 @@ file p_sight.obj
 
 
 
+
 # here we move _DATA before CONST and CONST2.
 ORDER      clname CODE 
-           clname FAR_DATA #segaddr=0x3C00 
-           clname BEGDATA segment _NULL segment _AFTERNULL
-           clname DATA  segment _DATA
+           clname FAR_DATA #segaddr=22FD
+           clname BEGDATA segment _NULL segment _AFTERNULL 
+           clname DATA  segment _FIXEDDATA segment _DATA
            clname BSS
            clname STACK
            clname START 
-

@@ -107,11 +107,10 @@ GLOBOBJS = &
  info.obj &
  d_math.obj &
  dmx.obj &
- data.obj &
+ memory.obj &
  math.obj &
  d_algo.obj &
  r_math.obj &
- r_sky.obj &
  video.obj
 
 doomout.exe : $(GLOBOBJS) i_ibm.obj

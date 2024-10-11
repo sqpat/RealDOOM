@@ -98,7 +98,6 @@ file z_zone.obj
 #file info.obj
 file d_math.obj
 
-
 NEWSEGMENT
 file p_setup.obj
 file p_sight.obj

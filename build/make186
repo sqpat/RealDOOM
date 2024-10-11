@@ -114,7 +114,6 @@ GLOBOBJS = &
  math.obj &
  d_algo.obj &
  r_math.obj &
- r_sky.obj &
  video.obj
 
 doomout.exe : $(GLOBOBJS) i_ibm.obj
@@ -128,7 +127,7 @@ doomout.exe : $(GLOBOBJS) i_ibm.obj
  wcc $(CCOPTS) $[*
 
 .asm.obj :
- tasm /mx $(ASMOPTS) $[*
+ tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
 
 clean : .SYMBOLIC
  del *.obj

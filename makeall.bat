@@ -16,7 +16,7 @@ GOTO PRINT_EXIT
 
 :MAKE_8086
     wmake -f build\make16 clean
-    wmake -f build\makebg
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=0"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
@@ -28,7 +28,7 @@ GOTO END
 
 :MAKE_186
     wmake -f build\make186 clean
-    wmake -f build\makebg
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=1"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
@@ -40,7 +40,7 @@ GOTO END
 
 :MAKE_286
     wmake -f build\make286 clean
-    wmake -f build\makebg
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
@@ -52,7 +52,7 @@ GOTO END
 
 :MAKE_386
     wmake -f build\make386 clean
-    wmake -f build\makebg
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=3" BUILD_386="1"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
@@ -64,8 +64,8 @@ GOTO END
 
 
 :MAKE_SCAT
-    wmake -f build\makescat clean
-    wmake -f build\makebg
+    wmake -f build\makescat clean 
+    wmake -f build\makebg EXTERNCOPT="-d__SCAT_BUILD=1 -d__CHIPSET_BUILD=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="2"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
@@ -78,8 +78,8 @@ GOTO END
 
 
 :MAKE_SCAMP
-    wmake -f build\makesc clean
-    wmake -f build\makebg
+    wmake -f build\makesc clean 
+    wmake -f build\makebg EXTERNCOPT="-d__SCAMP_BUILD=1 -d__CHIPSET_BUILD=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="1"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
@@ -92,8 +92,8 @@ GOTO END
 
 
 :MAKE_HT18
-    wmake -f build\makeht clean
-    wmake -f build\makebg
+    wmake -f build\makeht clean 
+    wmake -f build\makebg EXTERNCOPT="-d__HT18_BUILD=1 -d__CHIPSET_BUILD=1 -d__USED000=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="3"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean

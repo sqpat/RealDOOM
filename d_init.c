@@ -841,6 +841,8 @@ void __far D_DoomMain2(void)
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 
+	//I_Error("%lx", FixedMul(0x40000L, 0x40000L));
+
 /*
 	FILE *fp = fopen("output3.bin", "wb");
 	FAR_fwrite(V_DrawPatchDirect, (byte __far *)V_DrawFullscreenPatch - (byte __far *)V_DrawPatchDirect, 1, fp);

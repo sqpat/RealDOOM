@@ -37,13 +37,28 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s
-ASMOPTS = /d_USED000=0 /dCOMPILE_INSTRUCTIONSET=2
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s $(EXTERNCOPT)
+ASMOPTS = /d_USED000=0 $(EXTERNASMOPT)
  
-#doom8088 build opts for comparison
-#CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99
+build386 = $(BUILD_386)
+build286chipset = $(286_CHIPSET)
 
-GLOBOBJS = &
+!ifeq build386 1
+GLOBOBJS = $(GLOBOBJS) math386.obj
+!endif
+
+!ifeq build286chipset 1
+GLOBOBJS = $(GLOBOBJS) z_scamp.obj
+!endif
+!ifeq build286chipset 2
+GLOBOBJS = $(GLOBOBJS) z_scat.obj
+!endif
+!ifeq build286chipset 3
+GLOBOBJS = $(GLOBOBJS) z_ht18.obj
+!endif
+
+
+GLOBOBJS = $(GLOBOBJS) &
  m_near.obj &
  i_init.obj &
  i_quit.obj &
@@ -120,7 +135,23 @@ GLOBOBJS = &
  video.obj 
  
 bingen.exe : $(GLOBOBJS) 
+!ifeq build386 1
+ wlink @build/bingen3.lnk 
+!else
+!ifeq build286chipset 1
+ wlink @build/bingensc.lnk 
+!else
+!ifeq build286chipset 2
+ wlink @build/bingenst.lnk 
+!else
+!ifeq build286chipset 3
+ wlink @build/bingenht.lnk 
+!else
  wlink @build/bingen.lnk 
+!endif
+!endif
+!endif
+!endif
  wstrip bingen.exe
 
 obj\.obj : obj\
