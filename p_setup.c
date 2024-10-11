@@ -108,6 +108,10 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 		lumpname[3] = '0' + map;
 		lumpname[4] = 0;
 	}
+	lumpname[5] = 0;
+	lumpname[6] = 0;
+	lumpname[7] = 0;
+	lumpname[8] = 0;
 
 	lumpnum = W_GetNumForName(lumpname);
 
