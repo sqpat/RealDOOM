@@ -22,7 +22,9 @@ GOTO PRINT_EXIT
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
-    wmake -f build\makecg clean
+    wmake -f build\make16 clean
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=0"
+    bingen.exe
     wmake -f build\make16
 GOTO END
 
@@ -34,7 +36,9 @@ GOTO END
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
-    wmake -f build\makecg clean
+    wmake -f build\make186 clean
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=1"
+    bingen.exe
     wmake -f build\make186
 GOTO END
 
@@ -46,7 +50,9 @@ GOTO END
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
-    wmake -f build\makecg clean
+    wmake -f build\make286 clean
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2"
+    bingen.exe
     wmake -f build\make286
 GOTO END
 
@@ -58,7 +64,9 @@ GOTO END
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
-    wmake -f build\makecg clean
+    wmake -f build\make386 clean
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=3" BUILD_386="1"
+    bingen.exe
     wmake -f build\make386
 GOTO END
 
@@ -71,7 +79,9 @@ GOTO END
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
-    wmake -f build\makecg clean
+    wmake -f build\makescat clean 
+    wmake -f build\makebg EXTERNCOPT="-d__SCAT_BUILD=1 -d__CHIPSET_BUILD=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="2"
+    bingen.exe
     wmake -f build\makescat
 GOTO END
 
@@ -85,7 +95,9 @@ GOTO END
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
-    wmake -f build\makecg clean
+    wmake -f build\makesc clean 
+    wmake -f build\makebg EXTERNCOPT="-d__SCAMP_BUILD=1 -d__CHIPSET_BUILD=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="1"
+    bingen.exe
     wmake -f build\makesc
 GOTO END
 
@@ -99,7 +111,9 @@ GOTO END
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
-    wmake -f build\makecg clean
+    wmake -f build\makeht clean 
+    wmake -f build\makebg EXTERNCOPT="-d__HT18_BUILD=1 -d__CHIPSET_BUILD=1 -d__USED000=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="3"
+    bingen.exe
     wmake -f build\makeht
 GOTO END
 
