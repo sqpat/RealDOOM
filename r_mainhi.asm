@@ -664,16 +664,18 @@ PUBLIC R_HandleEMSPagination_
 ; input: 
 ; al is index, dl is isceil
 
+; in func:
+; ah stores 0  (copied to and from dx/bx)
+; al stores various things
 ; dl stores usedvirtualpage
+; dh stores 0 (copied to and from ax/bx)
 ; bl stores usedphyspage
-; bh stores 
-; dh stores
+; bh stores 0 (bx indexed a lot, copied to/from ax/dx )
 ; cl stores isceil
 ; ch stores usedsubindex
 
 push  bx
 push  cx
-
 
 mov   cl, dl        ; copy is_ceil to cl
 mov   ch, al
@@ -689,8 +691,10 @@ mov   bx, dx
 
 mov   al, byte ptr ds:[bx + _active_visplanes]
 test  al, al
+xchg  ax, dx
 je    do_quickmap_ems_visplaes
-mov   bl, al
+; found active visplane page 
+mov   bl, dl
 dec   bl
 return_visplane:
 
@@ -704,10 +708,8 @@ mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
 mov   bl, ch
 sal   bx, 1
 
-
 mov   ax, word ptr ds:[bx + _visplane_offset]
 add   ax, 2
-
 
 mov   word ptr ds:[_ceiltop], ax
 sub   ax, 2
@@ -722,10 +724,8 @@ mov   byte ptr ds:[_floorphyspage], bl
 sal   bx, 1
 mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
 
-
 mov   bl, ch
 sal   bx, 1
-
 
 mov   ax, word ptr ds:[bx + _visplane_offset]
 add   ax, 2
@@ -733,7 +733,6 @@ add   ax, 2
 mov   word ptr ds:[_floortop], ax
 sub   ax, 2
 mov   word ptr ds:[_floortop+2], dx
-
 
 pop   cx
 pop   bx
@@ -758,16 +757,14 @@ jne   use_phys_page_2
 use_phys_page_1:
 mov   bl, 1
 
-mov   al, bl
-xchg  ax, dx
+mov   dl, bl
 
 
 call  Z_QuickMapVisplanePage_
 jmp   return_visplane
 use_phys_page_2:
 mov   bl, 2
-mov   al, bl
-xchg  ax, dx
+mov   dl, bl
 
 
 call  Z_QuickMapVisplanePage_
@@ -776,8 +773,7 @@ is_floor:
 cmp   byte ptr ds:[_ceilphyspage], 2
 je    use_phys_page_1
 mov   bl, 2
-mov   al, bl
-xchg  ax, dx
+mov   dl, bl
 
 call  Z_QuickMapVisplanePage_
 jmp   return_visplane
