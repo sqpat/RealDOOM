@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/12 05:23:38
+Created on:       24/10/12 05:49:24
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -80,7 +80,8 @@ p_tick_TEXT            CODE           AUTO           0b0e:bc90       00000202
 p_user_TEXT            CODE           AUTO           0b0e:bea0       00000604
 r_bsp_TEXT             CODE           AUTO           1759:0000       000007f2
 r_data_TEXT            CODE           AUTO           1759:0800       0000170a
-R_MATH_TEXT            CODE           AUTO           1759:1f0a       0000046d
+R_MATH_TEXT            CODE           AUTO           1759:1f0a       000001fd
+R_MAINHI_TEXT          CODE           AUTO           1759:2108       00000270
 r_draw_TEXT            CODE           AUTO           1759:2380       00000377
 r_main_TEXT            CODE           AUTO           1759:2700       0000021e
 r_plane_TEXT           CODE           AUTO           1759:2920       00000672
@@ -1341,11 +1342,12 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 1759:1c6a      R_LoadPatchColumnsColormap0_
 1759:1d82+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-1759:2229      R_PointOnSegSide_
-1759:21a9      R_PointToDist_
-1759:22f4      R_ClearPlanes_
 1759:1f80      R_PointToAngle_
-1759:2107      R_ScaleFromGlobalAngle_
+Module: r_mainhi.obj(r_mainhi.ASM)
+1759:222a      R_PointOnSegSide_
+1759:21aa      R_PointToDist_
+1759:22f5      R_ClearPlanes_
+1759:2108      R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1759:2380      R_FillBackScreen_
 1759:2604      R_VideoErase_
@@ -1715,4 +1717,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00025220 (152096.)
 Entry point address: 1de5:213c
-Link time: 00:00.20
+Link time: 00:00.74

@@ -79,6 +79,7 @@ NEWSEGMENT
 file r_bsp.obj
 file r_data.obj
 file r_math.obj
+file r_mainhi.obj
 file r_column.obj
 file r_span.obj
 file r_sky.obj

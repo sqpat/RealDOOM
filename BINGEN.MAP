@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/12 05:23:36
+Created on:       24/10/12 05:49:22
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -79,7 +79,8 @@ p_tick_TEXT            CODE           AUTO           0b2d:bc90       00000202
 p_user_TEXT            CODE           AUTO           0b2d:bea0       00000604
 r_bsp_TEXT             CODE           AUTO           1778:0000       000007f2
 r_data_TEXT            CODE           AUTO           1778:0800       0000170a
-R_MATH_TEXT            CODE           AUTO           1778:1f0a       0000046d
+R_MATH_TEXT            CODE           AUTO           1778:1f0a       000001fd
+R_MAINHI_TEXT          CODE           AUTO           1778:2108       00000270
 R_COLUMN_TEXT          CODE           AUTO           1778:2378       00000ba0
 R_SPAN_TEXT            CODE           AUTO           1778:2f18       00000929
 R_SKY_TEXT             CODE           AUTO           1778:3842       0000023a
@@ -1344,11 +1345,12 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 1778:1c6a      R_LoadPatchColumnsColormap0_
 1778:1d82+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-1778:2229      R_PointOnSegSide_
-1778:21a9      R_PointToDist_
-1778:22f4      R_ClearPlanes_
 1778:1f80      R_PointToAngle_
-1778:2107      R_ScaleFromGlobalAngle_
+Module: r_mainhi.obj(r_mainhi.ASM)
+1778:222a      R_PointOnSegSide_
+1778:21aa      R_PointToDist_
+1778:22f5      R_ClearPlanes_
+1778:2108      R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
 1778:2378      R_DrawColumn_
 1778:2eaf      R_DrawColumnPrep_
@@ -1775,4 +1777,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028070 (163952.)
 Entry point address: 1f9e:23d4
-Link time: 00:00.74
+Link time: 00:00.29
