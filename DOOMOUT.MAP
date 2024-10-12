@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/12 09:26:42
+Created on:       24/10/12 19:45:07
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -81,10 +81,10 @@ p_user_TEXT            CODE           AUTO           0b0e:bea0       00000604
 r_bsp_TEXT             CODE           AUTO           1759:0000       000007f2
 r_data_TEXT            CODE           AUTO           1759:0800       0000170a
 R_MATH_TEXT            CODE           AUTO           1759:1f0a       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1759:2108       00000322
-r_draw_TEXT            CODE           AUTO           1759:2430       00000377
-r_main_TEXT            CODE           AUTO           1759:27b0       0000021e
-r_plane_TEXT           CODE           AUTO           1759:29d0       000005ba
+R_MAINHI_TEXT          CODE           AUTO           1759:2108       00000418
+r_draw_TEXT            CODE           AUTO           1759:2520       00000377
+r_main_TEXT            CODE           AUTO           1759:28a0       0000021e
+r_plane_TEXT           CODE           AUTO           1759:2ac0       000004c4
 r_segs_TEXT            CODE           AUTO           1759:2f90       00001c25
 r_things_TEXT          CODE           AUTO           1759:4bc0       000010f2
 w_wad_TEXT             CODE           AUTO           1759:5cc0       0000032e
@@ -1348,22 +1348,22 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 1759:21aa      R_PointToDist_
 1759:22f5      R_ClearPlanes_
 1759:2378      R_HandleEMSPagination_
+1759:242a      R_FindPlane_
 1759:2108      R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
-1759:2430      R_FillBackScreen_
-1759:26b4      R_VideoErase_
-1759:2738      R_DrawViewBorder_
+1759:2520      R_FillBackScreen_
+1759:27a4      R_VideoErase_
+1759:2828      R_DrawViewBorder_
 Module: r_main.obj(C:\REALDOOM\r_main.c)
-1759:27b0      R_PointToAngle16_
-1759:27c6      R_PointToAngle2_
-1759:27f2      R_PointToAngle2_16_
-1759:2820      R_SetViewSize_
-1759:2830+     R_SetupFrame_
-1759:28aa      R_RenderPlayerView_
+1759:28a0      R_PointToAngle16_
+1759:28b6      R_PointToAngle2_
+1759:28e2      R_PointToAngle2_16_
+1759:2910      R_SetViewSize_
+1759:2920+     R_SetupFrame_
+1759:299a      R_RenderPlayerView_
 Module: r_plane.obj(C:\REALDOOM\r_plane.c)
-1759:29d0      R_FindPlane_
-1759:2ac6      R_CheckPlane_
-1759:2bda      R_DrawPlanes_
+1759:2ac0      R_CheckPlane_
+1759:2bd4      R_DrawPlanes_
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 1759:2f90      R_RenderMaskedSegRange_
 1759:34da+     R_RenderSegLoop_
@@ -1717,4 +1717,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00025210 (152080.)
 Entry point address: 1de4:213c
-Link time: 00:00.74
+Link time: 00:00.20

@@ -40,6 +40,7 @@ EXTRN _floortop:DWORD
 EXTRN _ceiltop:DWORD
 EXTRN _visplane_offset:WORD
 EXTRN _visplanelookupsegments:WORD
+EXTRN _skyflatnum:BYTE
 
 INCLUDE defs.inc
 
@@ -779,6 +780,126 @@ call  Z_QuickMapVisplanePage_
 jmp   return_visplane
 
 
+
+ENDP
+
+;R_FindPlane_
+
+PROC R_FindPlane_ NEAR
+PUBLIC R_FindPlane_ 
+
+
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 6
+push      ax
+cmp       bl, byte ptr ds:[_skyflatnum]
+jne       label1
+mov       word ptr [bp - 8], 0
+xor       dx, dx
+xor       cl, cl
+label1:
+mov       word ptr [bp - 2], 0
+mov       byte ptr [bp - 6], bl
+mov       byte ptr [bp - 5], cl
+cmp       word ptr ds:[_lastvisplane], 0
+jl        label2
+mov       cx, word ptr ds:[_lastvisplane]
+mov       bx, _visplaneheaders
+add       cx, cx
+xor       ax, ax
+mov       word ptr [bp - 4], cx
+mov       cx, word ptr [bp - 6]
+label7:
+mov       di, bx
+cmp       ax, word ptr [bp - 4]
+jne       label3
+label2:
+mov       ax, word ptr [bp - 2]
+cmp       ax, word ptr ds:[_lastvisplane]
+jge       label4
+mov       al, byte ptr [bp + 8]
+cbw      
+mov       dx, ax
+mov       al, byte ptr [bp - 2]
+cbw      
+call      R_HandleEMSPagination_
+mov       ax, word ptr [bp - 2]
+
+LEAVE_MACRO
+
+pop       di
+pop       si
+ret       2
+label3:
+mov       si, word ptr [bp - 8]
+cmp       dx, word ptr [bx + 2]
+jne       label5
+cmp       si, word ptr [bx]
+jne       label5
+mov       si, ax
+add       si, _visplanepiclights
+cmp       cx, word ptr [si]
+je        label2
+label5:
+inc       word ptr [bp - 2]
+add       bx, 8
+mov       si, word ptr [bp - 2]
+add       ax, 2
+cmp       si, word ptr ds:[_lastvisplane]
+jle       label7
+jmp       label2
+label4:
+mov       ax, word ptr [bp - 8]
+mov       word ptr [di + 4], SCREENWIDTH
+mov       word ptr [di], ax
+mov       ax, word ptr [bp - 2]
+mov       word ptr [di + 6], 0FFFFh
+add       ax, ax
+mov       word ptr [di + 2], dx
+mov       bx, ax
+mov       ax, word ptr [bp - 6]
+mov       word ptr [bx - 0DF0h], ax   ; todo what is this
+mov       al, byte ptr [bp + 8]
+cbw      
+mov       cx, SCREENWIDTH
+mov       dx, ax
+mov       al, byte ptr [bp - 2]
+inc       word ptr ds:[_lastvisplane]
+cbw      
+add       bx, _visplanepiclights
+call      R_HandleEMSPagination_
+mov       bx, ax
+mov       es, dx
+mov       al, 0FFh
+lea       di, [bx + 2]
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       cx, SCREENWIDTH
+lea       di, [bx + 0144h] ; pl->top 
+xor       al, al
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       ax, word ptr [bp - 2]
+
+LEAVE_MACRO
+
+
+pop       di
+pop       si
+ret       2
 
 ENDP
 

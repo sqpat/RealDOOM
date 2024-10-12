@@ -260,6 +260,7 @@ visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil){
 
 //todo can we change height to 16 bit? the only tricky part is when viewz is involved, but maybe
 // view z can be 16 too. -sq
+/*
 int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlevel, int8_t isceil ) {
     visplane_t __far*	check;
     visplaneheader_t __near *checkheader;
@@ -322,6 +323,7 @@ int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlev
     return i;
 
 }
+*/
 
 
 //
@@ -393,7 +395,6 @@ int16_t __near R_CheckPlane ( int16_t index, int16_t start, int16_t stop, int8_t
 }
 
 
-#define SC_INDEX			0x3C4
 
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 
