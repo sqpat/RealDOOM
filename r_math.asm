@@ -925,9 +925,8 @@ push  bx
 push  cx
 push  dx
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
+
+
 mov   cx, word ptr ds:[_viewwidth]
 mov   dx, cx
 
@@ -973,16 +972,12 @@ mov   ax, word ptr es:[di]
 mov   dx, word ptr es:[di + 2]
 mov   bx, 0
 call FixedDiv_  ; TODO! FixedDivWholeB? Optimize?
-mov   bx, ax
-mov   ax, dx
-neg   ax
-mov   dx, bx
 neg   dx
-sbb   ax, 0
-mov   word ptr ds:[_baseyscale], dx
-mov   word ptr ds:[_baseyscale + 2], ax
+neg   ax
+sbb   dx, 0
+mov   word ptr ds:[_baseyscale], ax
+mov   word ptr ds:[_baseyscale + 2], dx
 
-LEAVE_MACRO
 
 pop   di
 pop   dx
