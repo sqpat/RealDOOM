@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/12 05:49:22
+Created on:       24/10/12 06:54:49
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -80,13 +80,13 @@ p_user_TEXT            CODE           AUTO           0b2d:bea0       00000604
 r_bsp_TEXT             CODE           AUTO           1778:0000       000007f2
 r_data_TEXT            CODE           AUTO           1778:0800       0000170a
 R_MATH_TEXT            CODE           AUTO           1778:1f0a       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1778:2108       00000270
-R_COLUMN_TEXT          CODE           AUTO           1778:2378       00000ba0
-R_SPAN_TEXT            CODE           AUTO           1778:2f18       00000929
-R_SKY_TEXT             CODE           AUTO           1778:3842       0000023a
-r_draw_TEXT            CODE           AUTO           1778:3a80       00000377
-r_main_TEXT            CODE           AUTO           1778:3e00       0000021e
-r_plane_TEXT           CODE           AUTO           1778:4020       00000672
+R_MAINHI_TEXT          CODE           AUTO           1778:2108       00000327
+R_COLUMN_TEXT          CODE           AUTO           1778:2430       00000ba0
+R_SPAN_TEXT            CODE           AUTO           1778:2fd0       00000929
+R_SKY_TEXT             CODE           AUTO           1778:38fa       0000023a
+r_draw_TEXT            CODE           AUTO           1778:3b40       00000377
+r_main_TEXT            CODE           AUTO           1778:3ec0       0000021e
+r_plane_TEXT           CODE           AUTO           1778:40e0       000005ba
 r_segs_TEXT            CODE           AUTO           1778:46a0       00001c25
 R_MASKED_TEXT          CODE           AUTO           1778:62c6       000002a1
 r_things_TEXT          CODE           AUTO           1778:6570       000010f2
@@ -1350,35 +1350,35 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 1778:222a      R_PointOnSegSide_
 1778:21aa      R_PointToDist_
 1778:22f5      R_ClearPlanes_
+1778:2378      R_HandleEMSPagination_
 1778:2108      R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-1778:2378      R_DrawColumn_
-1778:2eaf      R_DrawColumnPrep_
+1778:2430      R_DrawColumn_
+1778:2f67      R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
-1778:2f18      R_DrawSpan_
-1778:36a8*     R_FixedMulLocal_
-1778:35ba*     R_DrawSpanPrep_
-1778:36e4      R_MapPlane_
-1778:3659*     R_FixedMulTrigLocal_
+1778:2fd0      R_DrawSpan_
+1778:3760*     R_FixedMulLocal_
+1778:3672*     R_DrawSpanPrep_
+1778:379c      R_MapPlane_
+1778:3711*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1778:3842      R_DrawSkyColumn_
-1778:3a08      R_DrawSkyPlane_
+1778:38fa      R_DrawSkyColumn_
+1778:3ac0      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
-1778:3a80      R_FillBackScreen_
-1778:3d04      R_VideoErase_
-1778:3d88      R_DrawViewBorder_
+1778:3b40      R_FillBackScreen_
+1778:3dc4      R_VideoErase_
+1778:3e48      R_DrawViewBorder_
 Module: r_main.obj(C:\REALDOOM\r_main.c)
-1778:3e00      R_PointToAngle16_
-1778:3e16      R_PointToAngle2_
-1778:3e42      R_PointToAngle2_16_
-1778:3e70      R_SetViewSize_
-1778:3e80+     R_SetupFrame_
-1778:3efa      R_RenderPlayerView_
+1778:3ec0      R_PointToAngle16_
+1778:3ed6      R_PointToAngle2_
+1778:3f02      R_PointToAngle2_16_
+1778:3f30      R_SetViewSize_
+1778:3f40+     R_SetupFrame_
+1778:3fba      R_RenderPlayerView_
 Module: r_plane.obj(C:\REALDOOM\r_plane.c)
-1778:4020+     R_HandleEMSPagination_
-1778:40d8      R_FindPlane_
-1778:41ce      R_CheckPlane_
-1778:42e2      R_DrawPlanes_
+1778:40e0      R_FindPlane_
+1778:41d6      R_CheckPlane_
+1778:42ea      R_DrawPlanes_
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 1778:46a0      R_RenderMaskedSegRange_
 1778:4bea+     R_RenderSegLoop_
@@ -1777,4 +1777,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028070 (163952.)
 Entry point address: 1f9e:23d4
-Link time: 00:00.29
+Link time: 00:00.75

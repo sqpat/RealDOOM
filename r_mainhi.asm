@@ -31,6 +31,16 @@ EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
 
+EXTRN Z_QuickMapVisplanePage_:PROC
+EXTRN _ceilphyspage:BYTE
+EXTRN _floorphyspage:BYTE
+EXTRN _visplanedirty:BYTE
+EXTRN _active_visplanes:BYTE
+EXTRN _floortop:DWORD
+EXTRN _ceiltop:DWORD
+EXTRN _visplane_offset:WORD
+EXTRN _visplanelookupsegments:WORD
+
 INCLUDE defs.inc
 
 .CODE
@@ -641,5 +651,115 @@ pop   bx
 ret   
 
 endp
+
+;R_HandleEMSPagination
+
+PROC R_HandleEMSPagination_ NEAR
+PUBLIC R_HandleEMSPagination_ 
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 2
+mov   cl, dl
+mov   bl, al
+xor   dl, dl
+cmp   al, VISPLANES_PER_EMS_PAGE
+jb    label1
+label2:  ; move this above func
+sub   bl, VISPLANES_PER_EMS_PAGE
+inc   dl
+cmp   bl, VISPLANES_PER_EMS_PAGE
+jae   label2
+label1:
+mov   bh, dl
+cmp   byte ptr ds:[_visplanedirty], 0
+je    label3
+label6:
+mov   al, dl
+cbw  
+mov   si, ax
+mov   al, byte ptr ds:[si + _active_visplanes]
+test  al, al
+je    label4
+mov   bh, al
+dec   bh
+label7:
+mov   al, bl
+xor   ah, ah
+mov   di, ax
+add   di, ax
+mov   al, bh
+cbw  
+mov   si, ax
+add   si, ax
+mov   ax, word ptr ds:[di + _visplane_offset]
+mov   word ptr [bp - 2], ax
+mov   ax, word ptr ds:[si + _visplanelookupsegments]
+mov   si, word ptr [bp - 2]
+lea   di, [si + 2]
+mov   dx, ax
+test  cl, cl
+je    label5
+mov   byte ptr ds:[_ceilphyspage], bh
+mov   word ptr ds:[_ceiltop], di
+mov   word ptr ds:[_ceiltop+2], ax
+mov   ax, si
+
+LEAVE_MACRO
+
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label3:
+cmp   al, MAX_CONVENTIONAL_VISPLANES  
+jge   label6
+jmp   label7
+label4:
+test  cl, cl
+je    label8
+cmp   byte ptr ds:[_floorphyspage], 2  
+jne   label9
+label11:
+mov   bh, 1
+label10:
+mov   al, bh
+cbw  
+mov   si, ax
+mov   al, dl
+cbw  
+mov   dx, si
+call  Z_QuickMapVisplanePage_
+jmp   label7
+label9:
+mov   bh, 2
+jmp   label10
+label8:
+cmp   byte ptr ds:[_ceilphyspage], 2
+je    label11
+mov   bh, 2
+jmp   label10
+label5:
+mov   byte ptr ds:[_floorphyspage], bh   
+mov   word ptr ds:[_floortop], di
+mov   word ptr ds:[_floortop+2], ax
+mov   ax, si
+
+LEAVE_MACRO
+
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret
+
+
+ENDP
+
 
 END

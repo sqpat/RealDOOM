@@ -826,7 +826,7 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 }
 */
 
-visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil);
+//visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil);
 
 
 //void checkDS(int16_t a);

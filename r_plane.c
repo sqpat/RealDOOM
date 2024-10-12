@@ -191,6 +191,8 @@ void __near R_ClearPlanes (void) {
 
 
 // requires pagination and juggling of floor/ceil planes...
+visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil);
+/*
 visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil){
 
 	int8_t usedphyspage;
@@ -250,6 +252,7 @@ visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil){
 
 	 return pl;
 }
+*/
 
 //
 // R_FindPlane
