@@ -320,4 +320,93 @@ jmp continue_main_loop
 
 ENDP
 
+PROC resetDS_ FAR
+PUBLIC resetDS_
+
+;todo is ax necessary? if 286+ can push immediate.
+push ax
+mov ax, 03C00h
+mov ds, ax
+pop ax
+
+retf
+endp
+
+
+PROC hackDS_ FAR
+PUBLIC hackDS_
+
+cli
+push cx
+push si
+push di
+
+mov ds:[_stored_ds], ds
+xor di, di
+mov si, di
+mov cx, 03C00h
+
+;mov cx, ds
+;add cx, 400h
+mov es, cx
+
+mov CX, 2000h    ; 4000h bytes
+rep movsw
+
+mov cx, es
+mov ds, cx
+mov ss, cx
+
+
+pop di
+pop si
+pop cx
+
+
+
+sti
+
+
+
+retf
+
+ENDP
+
+
+
+
+PROC hackDSBack_ FAR
+PUBLIC hackDSBack_
+
+cli
+push cx
+push si
+push di
+
+mov es, ds:[_stored_ds]
+
+xor di, di
+mov si, di
+mov CX, 2000h   ; 4000h bytes
+rep movsw
+mov cx, es
+mov ds, cx
+mov ss, cx
+
+
+pop di
+pop si
+pop cx
+
+
+sti
+
+
+
+retf
+
+ENDP
+
+
+
 END

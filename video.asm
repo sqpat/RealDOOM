@@ -163,6 +163,10 @@ mov   ax, word ptr ds:[si]
 mov   cl, ah
 xor   ah, ah      ; al contains topdelta
 
+; todo: figure this out.
+; either one works on its own, but the else branch will fail regardless
+; of which code is in it if the if is active. Probably related to 
+; selfmodifying code references.
 
 ;IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 ;imul   di, ax, SCREENWIDTH

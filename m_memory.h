@@ -1006,6 +1006,11 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define floorclip_segment            ((segment_t) ((int32_t)floorclip >> 16))
 #define ceilingclip_segment          ((segment_t) ((int32_t)ceilingclip >> 16))
 
+//negonearray       = 7800:A000 or 8200
+//screenheightarray = 7800:A280 or 8228
+//floorclip         = 7800:A500 or 8250
+//ceilingclip       = 7800:A780 or 8278
+
 #define negonearray_offset        size_openings
 #define screenheightarray_offset  size_negonearray
 

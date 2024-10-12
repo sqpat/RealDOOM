@@ -158,6 +158,7 @@ void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 // R_ClearPlanes
 // At begining of frame.
 //
+/*
 void __near R_ClearPlanes (void) {
     int16_t		i;
     fineangle_t	angle;
@@ -182,7 +183,7 @@ void __near R_ClearPlanes (void) {
     baseyscale = -FixedDivWholeB(finesine[angle],temp.w);
 
 }
-
+*/
 
 
 // we want to cache the variables/logic based around which plane indices are mapped..
