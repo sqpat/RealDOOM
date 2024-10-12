@@ -654,9 +654,9 @@ endp
 
 
 loop_cycle_visplane_ems_page:  ; move this above func
-sub   bl, VISPLANES_PER_EMS_PAGE
+sub   ch, VISPLANES_PER_EMS_PAGE
 inc   dl
-cmp   bl, VISPLANES_PER_EMS_PAGE
+cmp   ch, VISPLANES_PER_EMS_PAGE
 jae   loop_cycle_visplane_ems_page
 jmp   visplane_ems_page_ready
 
@@ -670,8 +670,11 @@ PUBLIC R_HandleEMSPagination_
 ; al is index, dl is isceil
 
 ; dl stores usedvirtualpage
-; bl stores usedsubindex
+; bl stores usedphyspage
+; bh stores 
+; dh stores
 ; cl stores isceil
+; ch stores usedsubindex
 
 push  bx
 push  cx
@@ -679,12 +682,13 @@ push  si
 push  di
 
 mov   cl, dl        ; copy is_ceil to cl
-mov   bl, al
+mov   ch, al
 xor   dl, dl
 cmp   al, VISPLANES_PER_EMS_PAGE
-jae    loop_cycle_visplane_ems_page
+jae   loop_cycle_visplane_ems_page
 visplane_ems_page_ready:
-mov   bh, dl
+mov   bl, dl
+mov   bh, 0
 cmp   byte ptr ds:[_visplanedirty], 0
 je    visplane_not_dirty
 visplane_dirty_or_index_over_max_conventional_visplanes:
@@ -693,29 +697,29 @@ cbw
 mov   si, ax
 mov   al, byte ptr ds:[si + _active_visplanes]
 test  al, al
-je    prepare_to_quickmap_ems_visplaes
-mov   bh, al
-dec   bh
+je    do_quickmap_ems_visplaes
+mov   bl, al
+dec   bl
 return_visplane:
-mov   al, bl
+mov   al, ch
 xor   ah, ah
 mov   di, ax
 add   di, ax
-mov   al, bh
-cbw  
-mov   si, ax
-add   si, ax
-mov   ax, word ptr ds:[di + _visplane_offset]
-mov   si, word ptr ds:[si + _visplanelookupsegments]
-xchg  ax, si
+sal   bx, 1
+
+
+mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
+mov   si, word ptr ds:[di + _visplane_offset]
+
 lea   di, [si + 2]
-mov   dx, ax
+xchg  ax, si
+
 test  cl, cl    ; check isceil
 je    is_floor_2
-mov   byte ptr ds:[_ceilphyspage], bh
+mov   byte ptr ds:[_ceilphyspage], bl
 mov   word ptr ds:[_ceiltop], di
-mov   word ptr ds:[_ceiltop+2], ax
-mov   ax, si
+mov   word ptr ds:[_ceiltop+2], dx
+
 
 
 pop   di
@@ -723,54 +727,11 @@ pop   si
 pop   cx
 pop   bx
 ret   
-visplane_not_dirty:
-cmp   al, MAX_CONVENTIONAL_VISPLANES  
-jge   visplane_dirty_or_index_over_max_conventional_visplanes
-jmp   return_visplane
-prepare_to_quickmap_ems_visplaes:
-test  cl, cl    ; check isceil
-je    is_floor
-; is ceil
-cmp   byte ptr ds:[_floorphyspage], 2  
-jne   use_phys_page_2
-use_phys_page_1:
-mov   bh, 1
-
-mov   al, bh
-cbw  
-mov   si, ax
-mov   al, dl
-cbw  
-mov   dx, si
-call  Z_QuickMapVisplanePage_
-jmp   return_visplane
-use_phys_page_2:
-mov   bh, 2
-mov   al, bh
-cbw  
-mov   si, ax
-mov   al, dl
-cbw  
-mov   dx, si
-call  Z_QuickMapVisplanePage_
-jmp   return_visplane
-is_floor:
-cmp   byte ptr ds:[_ceilphyspage], 2
-je    use_phys_page_1
-mov   bh, 2
-mov   al, bh
-cbw  
-mov   si, ax
-mov   al, dl
-cbw  
-mov   dx, si
-call  Z_QuickMapVisplanePage_
-jmp   return_visplane
 is_floor_2:
-mov   byte ptr ds:[_floorphyspage], bh   
+mov   byte ptr ds:[_floorphyspage], bl   
 mov   word ptr ds:[_floortop], di
-mov   word ptr ds:[_floortop+2], ax
-mov   ax, si
+mov   word ptr ds:[_floortop+2], dx
+
 
 
 pop   di
@@ -778,6 +739,47 @@ pop   si
 pop   cx
 pop   bx
 ret
+visplane_not_dirty:
+cmp   al, MAX_CONVENTIONAL_VISPLANES  
+jge   visplane_dirty_or_index_over_max_conventional_visplanes
+jmp   return_visplane
+do_quickmap_ems_visplaes:
+test  cl, cl    ; check isceil
+je    is_floor
+; is ceil
+cmp   byte ptr ds:[_floorphyspage], 2  
+jne   use_phys_page_2
+use_phys_page_1:
+mov   bl, 1
+
+mov   ax, bx
+mov   si, ax
+mov   al, dl
+
+mov   dx, si
+call  Z_QuickMapVisplanePage_
+jmp   return_visplane
+use_phys_page_2:
+mov   bl, 2
+mov   ax, bx
+mov   si, ax
+mov   al, dl
+
+mov   dx, si
+call  Z_QuickMapVisplanePage_
+jmp   return_visplane
+is_floor:
+cmp   byte ptr ds:[_ceilphyspage], 2
+je    use_phys_page_1
+mov   bl, 2
+mov   ax, bx
+mov   si, ax
+mov   al, dl
+
+mov   dx, si
+call  Z_QuickMapVisplanePage_
+jmp   return_visplane
+
 
 
 ENDP
