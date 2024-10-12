@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/12 04:29:43
+Created on:       24/10/12 04:42:03
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -79,10 +79,10 @@ p_tick_TEXT            CODE           AUTO           0b2d:bc90       00000202
 p_user_TEXT            CODE           AUTO           0b2d:bea0       00000604
 r_bsp_TEXT             CODE           AUTO           1778:0000       000007f2
 r_data_TEXT            CODE           AUTO           1778:0800       0000170a
-R_MATH_TEXT            CODE           AUTO           1778:1f0a       000004b2
-R_COLUMN_TEXT          CODE           AUTO           1778:23bc       00000ba0
-R_SPAN_TEXT            CODE           AUTO           1778:2f5c       00000929
-R_SKY_TEXT             CODE           AUTO           1778:3886       0000023a
+R_MATH_TEXT            CODE           AUTO           1778:1f0a       000004a7
+R_COLUMN_TEXT          CODE           AUTO           1778:23b2       00000ba0
+R_SPAN_TEXT            CODE           AUTO           1778:2f52       00000929
+R_SKY_TEXT             CODE           AUTO           1778:387c       0000023a
 r_draw_TEXT            CODE           AUTO           1778:3ac0       00000377
 r_main_TEXT            CODE           AUTO           1778:3e40       0000021e
 r_plane_TEXT           CODE           AUTO           1778:4060       00000672
@@ -1350,17 +1350,17 @@ Module: r_math.obj(r_math.ASM)
 1778:1f80      R_PointToAngle_
 1778:2107      R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-1778:23bc      R_DrawColumn_
-1778:2ef3      R_DrawColumnPrep_
+1778:23b2      R_DrawColumn_
+1778:2ee9      R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
-1778:2f5c      R_DrawSpan_
-1778:36ec*     R_FixedMulLocal_
-1778:35fe*     R_DrawSpanPrep_
-1778:3728      R_MapPlane_
-1778:369d*     R_FixedMulTrigLocal_
+1778:2f52      R_DrawSpan_
+1778:36e2*     R_FixedMulLocal_
+1778:35f4*     R_DrawSpanPrep_
+1778:371e      R_MapPlane_
+1778:3693*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1778:3886      R_DrawSkyColumn_
-1778:3a4c      R_DrawSkyPlane_
+1778:387c      R_DrawSkyColumn_
+1778:3a42      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1778:3ac0      R_FillBackScreen_
 1778:3d44      R_VideoErase_

@@ -924,79 +924,67 @@ PUBLIC R_ClearPlanes_
 push  bx
 push  cx
 push  dx
-push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 6
-mov   si, word ptr ds:[_viewwidth]
-mov   di, word ptr ds:[_viewheight]
-mov   bx, _centerx
-mov   word ptr [bp - 4], 0
-mov   ax, word ptr [bx]
-xor   dx, dx
-mov   word ptr [bp - 2], ax
-test  si, si
-jle   skipresetcliploop   ; todo remove this... 0 cant be smaller than viewwidth??
-xor   ax, ax
-loop_resetclips:
-mov   bx, OPENINGS_SEGMENT;  todo can this be better...
-mov   es, bx
-mov   bx, ax
-add   bh, 0A5h               ; a500 floorclip offset within openings segment
-mov   word ptr es:[bx], di
-mov   bx, ax
-inc   dx
-add   bx, 0A780h             ; ; a780 ceilingclip offset within openings segment
-add   ax, 2
-mov   word ptr es:[bx], 0FFFFh
-cmp   dx, si
-jl    loop_resetclips
-skipresetcliploop:
-xor   ax, ax
-mov   bx, _viewangle_shiftright3
+sub   sp, 2
+mov   cx, word ptr ds:[_viewwidth]
+mov   dx, cx
+
+xor   di, di
+mov   ax, word ptr ds:[_viewheight]
+mov bx, 08250h;  todo can this be better... 
+mov es, bx
+
+rep stosw  ; write vieweight to es:di
+
+mov ax, 0FFFFh
+mov di, 0280h  ; offset of ceilingclip within floorclip
+mov cx, dx
+rep stosw  ; write vieweight to es:di
+
+inc ax   ; zeroed
 mov   word ptr ds:[_lastvisplane], ax
 mov   word ptr ds:[_lastopening], ax
-mov   ax, word ptr [bx]
-sub   ax, 0800h   ; FINE_ANG90
+mov   ax, word ptr ds:[_viewangle_shiftright3]
+sub   ah, 08h   ; FINE_ANG90
 and   ah, 01Fh    ; MOD_FINE_ANGLE
 shl   ax, 2
-mov   cx, word ptr [bp - 2]
-mov   word ptr [bp - 6], ax
-mov   ax, FINESINE_SEGMENT
-mov   bx, word ptr [bp - 6]
+mov   cx, word ptr ds:[_centerx]
+mov   di, ax
+
+mov   ax, FINECOSINE_SEGMENT
+
 mov   es, ax
-add   bh, 020h   ; cosine offset. todo improve?
-mov   word ptr ds:[_viewwidth], si
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
-mov   bx, word ptr [bp - 4]
-mov   word ptr ds:[_viewheight], di
+
+mov   word ptr ds:[_viewwidth], dx
+mov   ax, word ptr es:[di]
+mov   dx, word ptr es:[di + 2]
+mov   bx, 0
+
 call FixedDiv_  ; TODO! FixedDivWholeB? Optimize?
-mov   bx, _basexscale
-mov   word ptr [bx], ax
-mov   word ptr [bx + 2], dx
+mov   word ptr ds:[_basexscale], ax
+mov   word ptr ds:[_basexscale + 2], dx
 mov   ax, FINESINE_SEGMENT
-mov   bx, word ptr [bp - 6]
+
 mov   es, ax
-mov   cx, word ptr [bp - 2]
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
-mov   bx, word ptr [bp - 4]
+mov   cx, word ptr ds:[_centerx]
+mov   ax, word ptr es:[di]
+mov   dx, word ptr es:[di + 2]
+mov   bx, 0
 call FixedDiv_  ; TODO! FixedDivWholeB? Optimize?
 mov   bx, ax
 mov   ax, dx
 neg   ax
 mov   dx, bx
-mov   bx, _baseyscale
 neg   dx
 sbb   ax, 0
-mov   word ptr [bx], dx
-mov   si, word ptr ds:[_viewwidth]
-mov   word ptr [bx + 2], ax
-leave 
+mov   word ptr ds:[_baseyscale], dx
+mov   word ptr ds:[_baseyscale + 2], ax
+
+LEAVE_MACRO
+
 pop   di
-pop   si
 pop   dx
 pop   cx
 pop   bx
