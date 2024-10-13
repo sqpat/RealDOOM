@@ -821,47 +821,45 @@ not_skyflat:
 
 ; loop vars
 ; bp - 2 = i
-; ax = i  (visplane lights lookup)
+; al = i  (visplane lights lookup)
+; ah = lastvisplane
 ; dx is height high
 ; bx is .. visplane headers?
 
 
 ; set up find visplane loop
 push      ax  ; set bp - 8
-mov       word ptr [bp - 2], 0
-mov       byte ptr [bp - 6], bl
-mov       byte ptr [bp - 5], cl
 
-
-
-cmp       word ptr ds:[_lastvisplane], 0
-jl        check_loop_condition   ; else break
-
-; do loop iteration
-
-
-mov       bx, _visplaneheaders   ; set bx default value
-;add       cx, cx
+mov       ch, bl        ; setup pic_and_light
+xchg      ch, cl       
+; al i s0 to start as i
 xor       ax, ax
+mov       ah, byte ptr ds:[_lastvisplane]
 
-mov       cx, word ptr [bp - 6]
+cmp       ah, 0
+jl        break_loop   ; else break
 
-label7:
+; do loop setup
+
+mov       al, 0
+mov       bx, _visplaneheaders   ; set bx default value
+
+
+next_loop_iteration:
 
 mov       di, bx
-cmp       ax, word ptr [_lastvisplane]
+cmp       al, ah
 jne       check_for_visplane_match
 
-check_loop_condition:
-mov       ax, word ptr [bp - 2]   ; fetch i
-cmp       ax, word ptr ds:[_lastvisplane]
-jge       break_loop
+break_loop:
+;         al is i, ah is lastvisplane
+cmp       al, ah
+jge       break_loop_visplane_not_found
 
 ; found visplane match. return it
-mov       al, byte ptr [bp + 8]
-cbw      
-mov       dx, ax
-mov       al, byte ptr [bp - 2]
+cbw       ; clear lastvisplane out of ah
+mov       dl, byte ptr [bp + 8]
+xor       dh, dh
 mov       bx, ax        ; store i
 call      R_HandleEMSPagination_
 ; fetch and return i
@@ -881,44 +879,47 @@ ret       2
 
 check_for_visplane_match:
 cmp       dx, word ptr [bx + 2] ; compare height high word
-jne       label5
+jne       loop_iter_step_variables
 mov       si, word ptr [bp - 8] ; fetch height
 cmp       si, word ptr [bx]     ; compare height low word
-jne       label5
+jne       loop_iter_step_variables
 mov       si, ax
+and       si, 0FFh; 
 add       si, si
 cmp       cx, word ptr [si+_visplanepiclights] ; compare lights
-je        check_loop_condition
+je        break_loop
 
-label5:
-inc       word ptr [bp - 2]
+loop_iter_step_variables:
+inc       al
 add       bx, 8
-mov       si, word ptr [bp - 2]
-inc       ax
-cmp       si, word ptr ds:[_lastvisplane]
-jle       label7
-jmp       check_loop_condition
+
+cmp       al, ah
+jle       next_loop_iteration
+jmp       break_loop
 
 
-break_loop:
+break_loop_visplane_not_found:
 ; not found, create new visplane
-mov       ax, word ptr [bp - 8]
-mov       word ptr [di + 4], SCREENWIDTH
-mov       word ptr [di], ax
-mov       ax, word ptr [bp - 2]
-mov       word ptr [di + 6], 0FFFFh
-add       ax, ax
+
+cbw       ; no longer need lastvisplane, zero out ah
+
+mov       si, word ptr [bp - 8]
+mov       word ptr [di], si
 mov       word ptr [di + 2], dx
+mov       word ptr [di + 4], SCREENWIDTH
+
+mov       word ptr [di + 6], 0FFFFh
 mov       bx, ax
-mov       ax, word ptr [bp - 6]
-mov       word ptr [bx - 0DF0h], ax   ; todo what is this
-mov       al, byte ptr [bp + 8]
-cbw      
-mov       dx, ax
-mov       al, byte ptr [bp - 2]
+add       bx, bx
+
+mov       word ptr ds:[bx + _visplanepiclights], cx 
+mov       dl, byte ptr [bp + 8]
+xor       dh, dh
+
 inc       word ptr ds:[_lastvisplane]
-cbw      
-add       bx, _visplanepiclights  ; todo is this used
+
+mov       si, ax     ; store i      
+
 call      R_HandleEMSPagination_
 
 ;; ff out pl top
@@ -937,7 +938,7 @@ mov       cx, (SCREENWIDTH / 2) + 1  ; one extra word for pad
 rep stosw 
 
 
-mov       ax, word ptr [bp - 2]
+mov       ax, si
 
 LEAVE_MACRO
 

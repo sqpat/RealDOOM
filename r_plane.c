@@ -306,7 +306,7 @@ int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlev
     checkheader->height = height;
     checkheader->minx = SCREENWIDTH;
     checkheader->maxx = -1;
-	// using this ugly MK_FP because c compiler seems confused when we use the define array to set...
+
 	visplanepiclights[i].pic_and_light = piclight.hu;
 
 
