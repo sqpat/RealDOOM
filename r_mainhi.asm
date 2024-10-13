@@ -784,7 +784,6 @@ jmp   return_visplane
 ENDP
 
 
-; todo... when the caller is in asm, put all the params in asm instead of stack shenanigans
 
 ;R_FindPlane_
 
@@ -794,18 +793,13 @@ PUBLIC R_FindPlane_
 
 
 ; dx:ax is height
-; cl is lightlevel
-; bl is picnum
-; bp + 8 is isceil  
-; todo: optim bp + 8 out. self modifying code -
-;   update the one spot its used down below at start of func
+; cx is picandlight
+; bl is icceil
 
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 6
-cmp       bl, byte ptr ds:[_skyflatnum]
+
+cmp       cl, byte ptr ds:[_skyflatnum]
 jne       not_skyflat
 
 ;		height = 0;			// all skys map together
@@ -813,7 +807,7 @@ jne       not_skyflat
 
 xor       ax, ax
 cwd
-xor       cl, cl
+xor       ch, ch
 not_skyflat:
 
 
@@ -825,18 +819,12 @@ not_skyflat:
 ; di is height low precision
 ; bx is .. checkheader
 ; cx is pic_and_light
-; si is scratch
+; si is visplanepiclights[i] (used for visplanelights lookups)
 
 
 ; set up find visplane loop
 mov       di, ax  
-mov       ch, bl        ; setup pic_and_light
-xchg      ch, cl  
-mov       al, byte ptr [bp + 8]
-
-; todo will this work loaded high... if its relative it should?
-mov       byte ptr cs:[SELFMODIFY_set_isceil_1+1], al
-mov       byte ptr cs:[SELFMODIFY_set_isceil_2+1], al
+push      bx  ; push isceil
 
 ; init loop vars
 xor       ax, ax
@@ -864,18 +852,16 @@ jge       break_loop_visplane_not_found
 
 ; found visplane match. return it
 cbw       ; clear lastvisplane out of ah
-SELFMODIFY_set_isceil_1:
-mov       dx, 1
+pop       dx  ; get isceil
 mov       bx, ax        ; store i
 call      R_HandleEMSPagination_
 ; fetch and return i
 mov       ax, bx
 
-LEAVE_MACRO
 
 pop       di
 pop       si
-ret       2
+ret       
 
 
 ;		if (height == checkheader->height
@@ -918,9 +904,8 @@ mov       word ptr [bx + 6], 0FFFFh
 
 
 mov       word ptr ds:[si], cx 
-SELFMODIFY_set_isceil_2:
-mov       dx, 1
 
+pop       dx  ; get isceil
 inc       word ptr ds:[_lastvisplane]
 
 mov       si, ax     ; store i      
@@ -945,12 +930,10 @@ rep stosw
 
 mov       ax, si
 
-LEAVE_MACRO
-
 
 pop       di
 pop       si
-ret       2
+ret       
 
 ENDP
 

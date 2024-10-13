@@ -532,7 +532,10 @@ void __near R_Subsector(int16_t subsecnum) {
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->floorheight);
 
 	if (temp.w < viewz.w) {
-		floorplaneindex = R_FindPlane(temp.w, frontsector->floorpic, frontsector->lightlevel,  IS_FLOOR_PLANE);
+		visplanepiclight_t picandlight;
+		picandlight.bytes.lightlevel = frontsector->lightlevel;
+		picandlight.bytes.picnum = frontsector->floorpic;
+		floorplaneindex = R_FindPlane(temp.w, IS_FLOOR_PLANE, picandlight);
 	} else {
 		floorplaneindex = -1;
 	}
@@ -541,7 +544,10 @@ void __near R_Subsector(int16_t subsecnum) {
 	// todo: see if frontsector->ceilingheight > viewz.h.intbits would work. same above -sq
 	
 	if (temp.w > viewz.w || frontsector->ceilingpic == skyflatnum) {
-		ceilingplaneindex = R_FindPlane(temp.w, frontsector->ceilingpic, frontsector->lightlevel, IS_CEILING_PLANE);
+		visplanepiclight_t picandlight;
+		picandlight.bytes.lightlevel = frontsector->lightlevel;
+		picandlight.bytes.picnum = frontsector->floorpic;
+		ceilingplaneindex = R_FindPlane(temp.w, IS_CEILING_PLANE, picandlight);
 	} else {
 		ceilingplaneindex = -1;
 	}
