@@ -932,9 +932,9 @@ rep stosw
 
 ; zero out pl bot
 ; di is already set
-inc       ax   ; zeroed
-mov       cx, (SCREENWIDTH / 2) + 1  ; one extra word for pad
-rep stosw 
+;inc       ax   ; zeroed
+;mov       cx, (SCREENWIDTH / 2) + 1  ; one extra word for pad
+;rep stosw 
 
 
 mov       ax, si
