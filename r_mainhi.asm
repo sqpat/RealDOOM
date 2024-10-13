@@ -947,11 +947,20 @@ ret
 ENDP
 
 
+revert_visplane:
+call  Z_QuickMapVisplaneRevert_
+jmp   prepare_fields
+
+SUBSECTOR_OFFSET_IN_SECTORS       = (SUBSECTORS_SEGMENT - SECTORS_SEGMENT) * 16
+SUBSECTOR_LINES_OFFSET_IN_SECTORS = (SUBSECTOR_LINES_SEGMENT - SECTORS_SEGMENT) * 16
 
 ;R_Subsector_
 
 PROC R_Subsector_ NEAR
 PUBLIC R_Subsector_ 
+
+
+;ax is subsecnum
 
 push  bx
 push  cx
@@ -962,27 +971,35 @@ push  bp
 mov   bp, sp
 sub   sp, 6
 mov   bx, ax
-mov   ax, SUBSECTOR_LINES_SEGMENT
+mov   ax, SECTORS_SEGMENT
 mov   es, ax
-mov   al, byte ptr es:[bx]
+mov   al, byte ptr es:[bx + SUBSECTOR_LINES_OFFSET_IN_SECTORS]
 xor   ah, ah
-mov   di, ax
-mov   ax, SUBSECTORS_SEGMENT
-shl   bx, 2
-mov   es, ax
-mov   ax, word ptr es:[bx]
-mov   word ptr ds:[_frontsector+2], SECTORS_SEGMENT
-shl   ax, 4
-mov   si, word ptr es:[bx + 2]
+mov   di, ax    ; di stores count
+
+shl   bx, 1
+mov   si, bx
+
+mov   ax, word ptr es:[bx+si+SUBSECTOR_OFFSET_IN_SECTORS] ; get subsec secnum
+
+mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
+shl   ax, 4    ; todo make  8086 friendly
+mov   si, word ptr es:[bx+si+SUBSECTOR_OFFSET_IN_SECTORS + 2]   ; get subsec firstline
 mov   word ptr ds:[_frontsector], ax
 cmp   byte ptr [_visplanedirty], 0
-je    label1
-jmp   label2
-label1:
-xor   al, al
+jne   revert_visplane
+
+prepare_fields:
+
+;	ceilphyspage = 0;
+;	floorphyspage = 0;
+;	ceiltop = NULL;
+;	floortop = NULL;
+
+xor   ax, ax
 mov   byte ptr ds:[_ceilphyspage], al
 mov   byte ptr ds:[_floorphyspage], al
-xor   ah, ah
+
 mov   bx, word ptr ds:[_frontsector]
 mov   word ptr ds:[_ceiltop], ax
 mov   word ptr ds:[_ceiltop+2], ax
@@ -1056,10 +1073,6 @@ pop   cx
 pop   bx
 ret   
 
-label2:
-push  cs
-call  Z_QuickMapVisplaneRevert_
-jmp   label1
 label5:
 mov   word ptr ds:[_floorplaneindex], 0FFFFh
 jmp   label10

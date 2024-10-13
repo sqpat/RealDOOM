@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/12 22:19:25
+Created on:       24/10/13 00:51:21
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -77,13 +77,13 @@ p_mobj_TEXT            CODE           AUTO           0b2d:a2e0       00001786
 p_telept_TEXT          CODE           AUTO           0b2d:ba70       00000218
 p_tick_TEXT            CODE           AUTO           0b2d:bc90       00000202
 p_user_TEXT            CODE           AUTO           0b2d:bea0       00000604
-r_bsp_TEXT             CODE           AUTO           1778:0000       000007de
-r_data_TEXT            CODE           AUTO           1778:07e0       0000170a
-R_MATH_TEXT            CODE           AUTO           1778:1eea       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1778:20e8       000003aa
-R_COLUMN_TEXT          CODE           AUTO           1778:2492       00000ba0
-R_SPAN_TEXT            CODE           AUTO           1778:3032       00000929
-R_SKY_TEXT             CODE           AUTO           1778:395c       0000023a
+r_bsp_TEXT             CODE           AUTO           1778:0000       000006ba
+r_data_TEXT            CODE           AUTO           1778:06c0       0000170a
+R_MATH_TEXT            CODE           AUTO           1778:1dca       000001fd
+R_MAINHI_TEXT          CODE           AUTO           1778:1fc8       000004d1
+R_COLUMN_TEXT          CODE           AUTO           1778:249a       00000ba0
+R_SPAN_TEXT            CODE           AUTO           1778:303a       00000929
+R_SKY_TEXT             CODE           AUTO           1778:3964       0000023a
 r_draw_TEXT            CODE           AUTO           1778:3ba0       00000377
 r_main_TEXT            CODE           AUTO           1778:3f20       0000021e
 r_plane_TEXT           CODE           AUTO           1778:4140       000004c4
@@ -1323,48 +1323,48 @@ Module: r_bsp.obj(C:\REALDOOM\r_bsp.c)
 1778:0000+     R_ClipSolidWallSegment_
 1778:00dc+     R_ClipPassWallSegment_
 1778:013e      R_ClearClipSegs_
-1778:015e+     R_AddLine_
+1778:015e      R_AddLine_
 1778:039a+     R_CheckBBox_
-1778:05ac+     R_Subsector_
-1778:06d0      R_RenderBSPNode_
+1778:05ac      R_RenderBSPNode_
 Module: r_data.obj(C:\REALDOOM\r_data.c)
-1778:07e8      R_MarkCacheLRU_
-1778:097e      R_EvictCacheEMSPage_
-1778:0c28+     R_DrawColumnInCache_
-1778:0cac+     R_GetNextCompositeBlock_
-1778:0de6+     R_GetNextPatchBlock_
-1778:0f18+     R_GetNextSpriteBlock_
-1778:1058+     R_GenerateComposite_
-1778:1290+     gettexturepage_
-1778:1546+     getspritepage_
-1778:17c0+     getpatchtexture_
-1778:1880+     getcompositetexture_
-1778:18e6      getspritetexture_
-1778:1966      R_GetColumnSegment_
-1778:1b58+     R_LoadPatchColumns_
-1778:1c4a      R_LoadPatchColumnsColormap0_
-1778:1d62+     R_LoadSpriteColumns_
+1778:06c8      R_MarkCacheLRU_
+1778:085e      R_EvictCacheEMSPage_
+1778:0b08+     R_DrawColumnInCache_
+1778:0b8c+     R_GetNextCompositeBlock_
+1778:0cc6+     R_GetNextPatchBlock_
+1778:0df8+     R_GetNextSpriteBlock_
+1778:0f38+     R_GenerateComposite_
+1778:1170+     gettexturepage_
+1778:1426+     getspritepage_
+1778:16a0+     getpatchtexture_
+1778:1760+     getcompositetexture_
+1778:17c6      getspritetexture_
+1778:1846      R_GetColumnSegment_
+1778:1a38+     R_LoadPatchColumns_
+1778:1b2a      R_LoadPatchColumnsColormap0_
+1778:1c42+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-1778:1f60      R_PointToAngle_
+1778:1e40      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-1778:220a      R_PointOnSegSide_
-1778:218a      R_PointToDist_
-1778:22d5      R_ClearPlanes_
-1778:2358      R_HandleEMSPagination_
-1778:240a      R_FindPlane_
-1778:20e8      R_ScaleFromGlobalAngle_
+1778:20ea      R_PointOnSegSide_
+1778:2372      R_Subsector_
+1778:206a      R_PointToDist_
+1778:21b5      R_ClearPlanes_
+1778:2238      R_HandleEMSPagination_
+1778:22ea*     R_FindPlane_
+1778:1fc8      R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-1778:2492      R_DrawColumn_
-1778:2fc9      R_DrawColumnPrep_
+1778:249a      R_DrawColumn_
+1778:2fd1      R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
-1778:3032      R_DrawSpan_
-1778:37c2*     R_FixedMulLocal_
-1778:36d4*     R_DrawSpanPrep_
-1778:37fe      R_MapPlane_
-1778:3773*     R_FixedMulTrigLocal_
+1778:303a      R_DrawSpan_
+1778:37ca*     R_FixedMulLocal_
+1778:36dc*     R_DrawSpanPrep_
+1778:3806      R_MapPlane_
+1778:377b*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1778:395c      R_DrawSkyColumn_
-1778:3b22      R_DrawSkyPlane_
+1778:3964      R_DrawSkyColumn_
+1778:3b2a      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1778:3ba0      R_FillBackScreen_
 1778:3e24      R_VideoErase_
@@ -1777,4 +1777,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00027fe0 (163808.)
 Entry point address: 1f95:23d4
-Link time: 00:00.75
+Link time: 00:00.74
