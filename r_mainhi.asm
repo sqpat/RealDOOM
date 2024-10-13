@@ -1127,7 +1127,8 @@ PUBLIC R_CheckPlane_
 ; cl: isceil?
 
 ; bp - 2 is nothing
-
+; bp - 4 is nothing
+; bp - 6 is nothing
 ; bp - 8 is floortop or ceilingtop offset
 ; bp - A is index
 ; bp - C is start
@@ -1156,7 +1157,7 @@ mov       word ptr [bp - 8], ax
 mov       ax, word ptr [bp - 0Ch]  ; fetch start
 cmp       ax, word ptr [di + 4]    ; compare to minx
 jge       start_greater_than_min
-mov       word ptr [bp - 6], ax
+mov       word ptr cs:[SELFMODIFY_setminx+3], ax
 mov       bx, word ptr [di + 4]
 checked_start:
 ; now checkmax
@@ -1164,44 +1165,60 @@ mov       ax, word ptr [di + 6]   ; fetch maxx
 cmp       si, ax                  ; compare stop to maxx
 jle       stop_smaller_than_max
 mov       dx, ax
-mov       word ptr [bp - 4], si
+mov       word ptr cs:[SELFMODIFY_setmax+3], si
 done_checking_max:
+
+; begin loop checks
+
+
 mov       ax, bx
-cmp       bx, dx
-jg        label4
+cmp       bx, dx        ; x<= intrh 
+jg        breakloop
 add       bx, word ptr [bp - 8]
 label6:
+
+;	pltop[x]==0xff
+
 cmp       byte ptr es:[bx], 0FFh
-jne       label4
-inc       ax
+jne       breakloop
+; x++
+inc       ax            
 inc       bx
 cmp       ax, dx
 jle       label6
-label4:
+
+breakloop:
+
+
+;    if (x > intrh) {
+
 cmp       ax, dx
-jle       label5
-mov       ax, word ptr [bp - 6]
-mov       word ptr [di + 4], ax
-mov       ax, word ptr [bp - 4]
-mov       word ptr [di + 6], ax
+jle       make_new_visplane
+SELFMODIFY_setminx:
+mov       word ptr [di + 4], 0FFFFh
+SELFMODIFY_setmax:
+mov       word ptr [di + 6], 0FFFFh
 mov       ax, word ptr [bp - 0Ah]
 leave     
 pop       di
 pop       si
 ret       
+
+
 check_plane_is_floor:
 les       ax, dword ptr ds:[_floortop]
 jmp       loaded_floor_or_ceiling
 start_greater_than_min:
 mov       ax, word ptr [di + 4]
 mov       bx, word ptr [bp - 0Ch]
-mov       word ptr [bp - 6], ax
+mov       word ptr cs:[SELFMODIFY_setminx+3], ax
 jmp       checked_start
 stop_smaller_than_max:
-mov       word ptr [bp - 4], ax
+mov       word ptr cs:[SELFMODIFY_setmax+3], ax
 mov       dx, si
 jmp       done_checking_max
-label5:
+
+make_new_visplane:
 mov       ax, word ptr ds:[_lastvisplane]  ; todo byte
 shl       ax, 3
 mov       dx, word ptr [di + 2]
