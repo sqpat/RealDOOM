@@ -1131,7 +1131,7 @@ PUBLIC R_CheckPlane_
 ; bp - 6 is nothing
 ; bp - 8 is floortop or ceilingtop offset
 ; bp - A is index
-; bp - C is start
+; bp - C is bothing
 
 ; di holds visplaneheaders lookup. maybe should be si
 
@@ -1141,20 +1141,20 @@ push      bp
 mov       bp, sp
 sub       sp, 8
 push      ax        ; bp - 0A is index
-push      dx        ; bp - 0C is start
-mov       si, bx
+mov       si, dx    ; si holds start
 
 mov       di, ax
 shl       di, 3
-add       di, _visplaneheaders
+add       di, _visplaneheaders  ; _di is plheader
 mov       byte ptr cs:[SELFMODIFY_setisceil + 1], cl  ; write cl value
 test      cl, cl
+mov       cx, bx    ; cx holds stop
 je        check_plane_is_floor
 check_plane_is_ceil:
 les       ax, dword ptr ds:[_ceiltop]
 loaded_floor_or_ceiling:
 mov       word ptr [bp - 8], ax
-mov       ax, word ptr [bp - 0Ch]  ; fetch start
+mov       ax, si  ; fetch start
 cmp       ax, word ptr [di + 4]    ; compare to minx
 jge       start_greater_than_min
 mov       word ptr cs:[SELFMODIFY_setminx+3], ax
@@ -1162,10 +1162,10 @@ mov       bx, word ptr [di + 4]
 checked_start:
 ; now checkmax
 mov       ax, word ptr [di + 6]   ; fetch maxx
-cmp       si, ax                  ; compare stop to maxx
+cmp       cx, ax                  ; compare stop to maxx
 jle       stop_smaller_than_max
 mov       dx, ax
-mov       word ptr cs:[SELFMODIFY_setmax+3], si
+mov       word ptr cs:[SELFMODIFY_setmax+3], cx
 done_checking_max:
 
 ; begin loop checks
@@ -1210,40 +1210,50 @@ les       ax, dword ptr ds:[_floortop]
 jmp       loaded_floor_or_ceiling
 start_greater_than_min:
 mov       ax, word ptr [di + 4]
-mov       bx, word ptr [bp - 0Ch]
+mov       bx, si
 mov       word ptr cs:[SELFMODIFY_setminx+3], ax
 jmp       checked_start
 stop_smaller_than_max:
 mov       word ptr cs:[SELFMODIFY_setmax+3], ax
-mov       dx, si
+mov       dx, cx
 jmp       done_checking_max
 
 make_new_visplane:
-mov       ax, word ptr ds:[_lastvisplane]  ; todo byte
-shl       ax, 3
-mov       dx, word ptr [di + 2]
-mov       bx, ax
-mov       cx, word ptr [di]
-mov       word ptr [bx + _visplaneheaders+2], dx
-mov       dx, word ptr [bp - 0Ah]
-add       dx, dx
-mov       word ptr [bx + _visplaneheaders], cx
-mov       di, dx
-mov       dx, word ptr [_lastvisplane]
-add       bx, _visplaneheaders
-add       dx, dx
-add       di, _visplanepiclights
-mov       bx, dx
-mov       dx, word ptr [di]
-mov       di, ax
-mov       word ptr [bx + _visplanepiclights], dx
-mov       ax, word ptr [bp - 0Ch]
-mov       word ptr [di + _visplaneheaders+4], ax ; looks weird
-SELFMODIFY_setisceil:
-mov       dx, 0000h
+mov       bx, word ptr ds:[_lastvisplane]  ; todo byte
+mov       es, bx    ; store in es
+sal       bx, 1   ; bx is 2 per index
 
-mov       al, byte ptr [_lastvisplane]
-mov       word ptr [di + _visplaneheaders+6], si  ; looks weird
+; dx/ax is plheader->height
+; done with old plheader..
+mov       ax, word ptr ds:[di]
+mov       dx, word ptr ds:[di + 2]
+
+;	visplanepiclights[lastvisplane].pic_and_light = visplanepiclights[index].pic_and_light;
+
+; generate index from di again. 
+sub       di, _visplaneheaders
+sar       di, 1
+sar       di, 1
+mov       di, word ptr [di + _visplanepiclights]
+
+mov       word ptr [bx + _visplanepiclights], di
+sal       bx, 1
+sal       bx, 1 ; now bx is 8 per
+
+; set all plheader fields for lastvisplane...
+mov       word ptr [bx + _visplaneheaders], ax
+mov       word ptr [bx + _visplaneheaders+2], dx
+mov       word ptr [bx + _visplaneheaders+4], si ; looks weird
+mov       word ptr [bx + _visplaneheaders+6], cx  ; looks weird
+
+
+
+
+SELFMODIFY_setisceil:
+mov       dx, 0000h     ; set isceil argument
+
+mov       ax, es ; todo keep this from above somehow
+mov       si, ax ; todo keep this from above somehow
 cbw      
 
 call      R_HandleEMSPagination_
@@ -1255,7 +1265,7 @@ mov       cx, (SCREENWIDTH / 2) + 1   ; plus one for the padding
 rep stosw 
 
 
-mov       ax, word ptr [_lastvisplane]
+mov       ax, si
 inc       word ptr [_lastvisplane]
 
 LEAVE_MACRO
