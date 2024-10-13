@@ -986,6 +986,7 @@ mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
 shl   ax, 4    ; todo make  8086 friendly
 mov   si, word ptr es:[bx+si+SUBSECTOR_OFFSET_IN_SECTORS + 2]   ; get subsec firstline
 mov   word ptr ds:[_frontsector], ax
+mov   bx, ax
 cmp   byte ptr [_visplanedirty], 0
 jne   revert_visplane
 
@@ -1000,71 +1001,93 @@ xor   ax, ax
 mov   byte ptr ds:[_ceilphyspage], al
 mov   byte ptr ds:[_floorphyspage], al
 
-mov   bx, word ptr ds:[_frontsector]
+;mov   bx, word ptr ds:[_frontsector]
+;  bx already holds frontsector offset
 mov   word ptr ds:[_ceiltop], ax
 mov   word ptr ds:[_ceiltop+2], ax
 mov   word ptr ds:[_floortop], ax
 mov   word ptr ds:[_floortop+2], ax
-mov   es, word ptr ds:[_frontsector+2]
-mov   word ptr [bp - 2], bx
+;mov   es, word ptr ds:[_frontsector+2]
+; es already stores SECTORS_SEGMENT
+
 mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx]
+mov   dx, ax
 xor   ah, ah
-mov   bx, _viewz
+
 and   al, 7
 sar   dx, 3
 shl   ax, 0Dh
-cmp   dx, word ptr ds:[bx + 2]
-jl    label3
-je    label4
-label6:
-jmp   label5
-label4:
-cmp   ax, word ptr ds:[bx]
-jae   label6    ; todo move to the other label
-label3:
-mov   bx, word ptr [bp - 2]
-mov   cl, byte ptr es:[bx + 0Eh]
-mov   byte ptr [bp - 5], cl
+cmp   dx, word ptr ds:[_viewz + 2]
+jl    find_floor_plane_index
+je    check_viewz_lowbits_floor
+
+set_floor_plane_minus_one:
+mov   word ptr ds:[_floorplaneindex], 0FFFFh
+jmp   floor_plane_set
+
+check_viewz_lowbits_floor:
+cmp   ax, word ptr ds:[_viewz]
+jae   set_floor_plane_minus_one    ; todo move to the other label
+find_floor_plane_index:
+
+; set up picandlight
+mov   ch, byte ptr es:[bx + 0Eh]
 mov   cl, byte ptr es:[bx + 4]
-mov   byte ptr [bp - 6], cl
-xor   bx, bx
-mov   cx, word ptr [bp - 6]
+xor   bx, bx ; isceil = 0
 call  R_FindPlane_
 mov   word ptr ds:[_floorplaneindex], ax
-label10:
-les   cx, dword ptr ds:[_frontsector]
-mov   bx, cx
+floor_plane_set:
+les   bx, dword ptr ds:[_frontsector]
 mov   ax, word ptr es:[bx + 2]
 mov   dx, word ptr es:[bx + 2]
 xor   ah, ah
-mov   bx, _viewz
+
 and   al, 7
 sar   dx, 3
 shl   ax, 0Dh
-cmp   dx, word ptr ds:[bx + 2]
-jg    label7
-jne   label8
-cmp   ax, word ptr ds:[bx]
-jbe   label8
-label7:
+
+cmp   dx, word ptr ds:[_viewz + 2]
+jg    find_ceiling_plane_index
+jne   set_ceiling_plane_minus_one
+cmp   ax, word ptr ds:[_viewz]
+jbe   set_ceiling_plane_minus_one
+find_ceiling_plane_index:
 les   bx, dword ptr ds:[_frontsector]
-mov   cl, byte ptr es:[bx + 0Eh]
-mov   bl, byte ptr es:[bx + 4]
-mov   byte ptr [bp - 3], cl
-mov   byte ptr [bp - 4], bl
-mov   cx, word ptr [bp - 4]
+
+; set up picandlight
+mov   ch, byte ptr es:[bx + 0Eh]
+mov   cl, byte ptr es:[bx + 5]
 mov   bx, 1
+
 call  R_FindPlane_
 mov   word ptr ds:[_ceilingplaneindex], ax
-label11:
+do_addsprites:
 mov   ax, word ptr ds:[_frontsector]
 mov   dx, word ptr ds:[_frontsector+2]
 call  R_AddSprites_
-label12:
+
+; todo: proper cx loop
+
+loop_addline:
 dec   di
 cmp   di, 0FFFFh
-jne   label9
+je   exit_r_subsector
+
+mov   ax, si
+call  R_AddLine_
+inc   si
+jmp   loop_addline
+
+
+set_ceiling_plane_minus_one:
+
+; es:bx is still frontsector
+mov   cl, byte ptr es:[bx + 5]
+cmp   cl, byte ptr ds:[_skyflatnum]
+je    find_ceiling_plane_index
+mov   word ptr ds:[_ceilingplaneindex], 0FFFFh
+jmp   do_addsprites
+exit_r_subsector:
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -1072,22 +1095,6 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-
-label5:
-mov   word ptr ds:[_floorplaneindex], 0FFFFh
-jmp   label10
-label8:
-mov   bx, cx
-mov   cl, byte ptr es:[bx + 5]
-cmp   cl, byte ptr ds:[_skyflatnum]
-je    label7
-mov   word ptr ds:[_ceilingplaneindex], 0FFFFh
-jmp   label11
-label9:
-mov   ax, si
-call  R_AddLine_
-inc   si
-jmp   label12
 
 ENDP
 

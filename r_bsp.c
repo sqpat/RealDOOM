@@ -548,7 +548,7 @@ void __near R_Subsector(int16_t subsecnum) {
 	if (temp.w > viewz.w || frontsector->ceilingpic == skyflatnum) {
 		visplanepiclight_t picandlight;
 		picandlight.bytes.lightlevel = frontsector->lightlevel;
-		picandlight.bytes.picnum = frontsector->floorpic;
+		picandlight.bytes.picnum = frontsector->ceilingpic;
 		ceilingplaneindex = R_FindPlane(temp.w, IS_CEILING_PLANE, picandlight);
 	} else {
 		ceilingplaneindex = -1;
