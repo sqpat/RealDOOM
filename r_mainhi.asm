@@ -783,29 +783,44 @@ jmp   return_visplane
 
 ENDP
 
+
+; todo... when the caller is in asm, put all the params in asm instead of stack shenanigans
+
 ;R_FindPlane_
 
 PROC R_FindPlane_ NEAR
 PUBLIC R_FindPlane_ 
 
 
+; bp - 2 is i
+; bp - 4
+; bp - 5 is lightlevel
+; bp - 6 is picnum
+; bp - 8 is 
+
+; dx:ax is height
+; cl is lightlevel
+; bl is picnum
+
 push      si
 push      di
 push      bp
 mov       bp, sp
 sub       sp, 6
-push      ax
 cmp       bl, byte ptr ds:[_skyflatnum]
-jne       label1
-mov       word ptr [bp - 8], 0
-xor       dx, dx
+jne       not_skyflat
+xor       ax, ax
+cwd
 xor       cl, cl
-label1:
+not_skyflat:
+
+; set up find visplane loop
+push      ax  ; set bp - 8
 mov       word ptr [bp - 2], 0
 mov       byte ptr [bp - 6], bl
 mov       byte ptr [bp - 5], cl
 cmp       word ptr ds:[_lastvisplane], 0
-jl        label2
+jl        compare_visplane
 mov       cx, word ptr ds:[_lastvisplane]
 mov       bx, _visplaneheaders
 add       cx, cx
@@ -816,16 +831,19 @@ label7:
 mov       di, bx
 cmp       ax, word ptr [bp - 4]
 jne       label3
-label2:
+compare_visplane:
 mov       ax, word ptr [bp - 2]
 cmp       ax, word ptr ds:[_lastvisplane]
-jge       label4
+jge       not_found_create_new_visplane
+
+; found visplane match. return it
 mov       al, byte ptr [bp + 8]
 cbw      
 mov       dx, ax
 mov       al, byte ptr [bp - 2]
-cbw      
+
 call      R_HandleEMSPagination_
+; fetch and return i
 mov       ax, word ptr [bp - 2]
 
 LEAVE_MACRO
@@ -842,7 +860,7 @@ jne       label5
 mov       si, ax
 add       si, _visplanepiclights
 cmp       cx, word ptr [si]
-je        label2
+je        compare_visplane
 label5:
 inc       word ptr [bp - 2]
 add       bx, 8
@@ -850,8 +868,8 @@ mov       si, word ptr [bp - 2]
 add       ax, 2
 cmp       si, word ptr ds:[_lastvisplane]
 jle       label7
-jmp       label2
-label4:
+jmp       compare_visplane
+not_found_create_new_visplane:
 mov       ax, word ptr [bp - 8]
 mov       word ptr [di + 4], SCREENWIDTH
 mov       word ptr [di], ax
@@ -864,34 +882,29 @@ mov       ax, word ptr [bp - 6]
 mov       word ptr [bx - 0DF0h], ax   ; todo what is this
 mov       al, byte ptr [bp + 8]
 cbw      
-mov       cx, SCREENWIDTH
 mov       dx, ax
 mov       al, byte ptr [bp - 2]
 inc       word ptr ds:[_lastvisplane]
 cbw      
-add       bx, _visplanepiclights
+add       bx, _visplanepiclights  ; todo is this used
 call      R_HandleEMSPagination_
-mov       bx, ax
+
+;; ff out pl top
+mov       di, ax
 mov       es, dx
-mov       al, 0FFh
-lea       di, [bx + 2]
-push      di
-mov       ah, al
-shr       cx, 1
+
+mov       cx, (SCREENWIDTH / 2) + 1    ; one extra word for pad
+mov       ax, 0FFFFh
 rep stosw 
-adc       cx, cx
-rep stosb 
-pop       di
-mov       cx, SCREENWIDTH
-lea       di, [bx + 0144h] ; pl->top 
-xor       al, al
-push      di
-mov       ah, al
-shr       cx, 1
+
+
+; zero out pl bot
+; di is already set
+inc       ax   ; zeroed
+mov       cx, (SCREENWIDTH / 2) + 1  ; one extra word for pad
 rep stosw 
-adc       cx, cx
-rep stosb 
-pop       di
+
+
 mov       ax, word ptr [bp - 2]
 
 LEAVE_MACRO
