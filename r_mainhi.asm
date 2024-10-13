@@ -1121,36 +1121,51 @@ ENDP
 PROC R_CheckPlane_ NEAR
 PUBLIC R_CheckPlane_ 
 
+; ax: index
+; dx: start
+; bx: stop
+; cl: isceil?
+
+; bp - 2 is nothing
+
+; bp - 8 is floortop or ceilingtop offset
+; bp - A is index
+; bp - C is start
+
+; di holds visplaneheaders lookup. maybe should be si
 
 push      si
 push      di
 push      bp
 mov       bp, sp
 sub       sp, 8
-push      ax
-push      dx
+push      ax        ; bp - 0A is index
+push      dx        ; bp - 0C is start
 mov       si, bx
-mov       byte ptr [bp - 2], cl
+
 mov       di, ax
 shl       di, 3
 add       di, _visplaneheaders
+mov       byte ptr cs:[SELFMODIFY_setisceil + 1], cl  ; write cl value
 test      cl, cl
-je        label1
+je        check_plane_is_floor
+check_plane_is_ceil:
 les       ax, dword ptr ds:[_ceiltop]
-label7:
+loaded_floor_or_ceiling:
 mov       word ptr [bp - 8], ax
-mov       ax, word ptr [bp - 0Ch]
-cmp       ax, word ptr [di + 4]
-jge       label2
+mov       ax, word ptr [bp - 0Ch]  ; fetch start
+cmp       ax, word ptr [di + 4]    ; compare to minx
+jge       start_greater_than_min
 mov       word ptr [bp - 6], ax
 mov       bx, word ptr [di + 4]
-label8:
-mov       ax, word ptr [di + 6]
-cmp       si, ax
-jle       label3
+checked_start:
+; now checkmax
+mov       ax, word ptr [di + 6]   ; fetch maxx
+cmp       si, ax                  ; compare stop to maxx
+jle       stop_smaller_than_max
 mov       dx, ax
 mov       word ptr [bp - 4], si
-label9:
+done_checking_max:
 mov       ax, bx
 cmp       bx, dx
 jg        label4
@@ -1174,18 +1189,18 @@ leave
 pop       di
 pop       si
 ret       
-label1:
+check_plane_is_floor:
 les       ax, dword ptr ds:[_floortop]
-jmp       label7
-label2:
+jmp       loaded_floor_or_ceiling
+start_greater_than_min:
 mov       ax, word ptr [di + 4]
 mov       bx, word ptr [bp - 0Ch]
 mov       word ptr [bp - 6], ax
-jmp       label8
-label3:
+jmp       checked_start
+stop_smaller_than_max:
 mov       word ptr [bp - 4], ax
 mov       dx, si
-jmp       label9
+jmp       done_checking_max
 label5:
 mov       ax, word ptr ds:[_lastvisplane]  ; todo byte
 shl       ax, 3
@@ -1207,31 +1222,24 @@ mov       di, ax
 mov       word ptr [bx + _visplanepiclights], dx
 mov       ax, word ptr [bp - 0Ch]
 mov       word ptr [di + _visplaneheaders+4], ax ; looks weird
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       cx, SCREENWIDTH
-mov       dx, ax
+SELFMODIFY_setisceil:
+mov       dx, 0000h
+
 mov       al, byte ptr [_lastvisplane]
 mov       word ptr [di + _visplaneheaders+6], si  ; looks weird
 cbw      
-add       di, _visplaneheaders
+
 call      R_HandleEMSPagination_
 mov       di, ax
 mov       es, dx
-mov       al, 0FFh
-add       di, 2
-push      di
-mov       ah, al
-shr       cx, 1
+mov       ax, 0FFFFh
+
+mov       cx, (SCREENWIDTH / 2) + 1   ; plus one for the padding
 rep stosw 
-adc       cx, cx
-rep stosb 
-pop       di
-mov       dx, word ptr [_lastvisplane]
-mov       ax, dx
-inc       dx
-add       bx, _visplanepiclights
-mov       word ptr [_lastvisplane], dx
+
+
+mov       ax, word ptr [_lastvisplane]
+inc       word ptr [_lastvisplane]
 
 LEAVE_MACRO
 
