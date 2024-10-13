@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/12 22:19:27
+Created on:       24/10/13 00:17:52
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -78,10 +78,10 @@ p_mobj_TEXT            CODE           AUTO           0b0e:a2e0       00001786
 p_telept_TEXT          CODE           AUTO           0b0e:ba70       00000218
 p_tick_TEXT            CODE           AUTO           0b0e:bc90       00000202
 p_user_TEXT            CODE           AUTO           0b0e:bea0       00000604
-r_bsp_TEXT             CODE           AUTO           1759:0000       000007de
-r_data_TEXT            CODE           AUTO           1759:07e0       0000170a
-R_MATH_TEXT            CODE           AUTO           1759:1eea       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1759:20e8       000003aa
+r_bsp_TEXT             CODE           AUTO           1759:0000       000006ba
+r_data_TEXT            CODE           AUTO           1759:06c0       0000170a
+R_MATH_TEXT            CODE           AUTO           1759:1dca       000001fd
+R_MAINHI_TEXT          CODE           AUTO           1759:1fc8       000004d2
 r_draw_TEXT            CODE           AUTO           1759:24a0       00000377
 r_main_TEXT            CODE           AUTO           1759:2820       0000021e
 r_plane_TEXT           CODE           AUTO           1759:2a40       000004c4
@@ -1320,36 +1320,36 @@ Module: r_bsp.obj(C:\REALDOOM\r_bsp.c)
 1759:0000+     R_ClipSolidWallSegment_
 1759:00dc+     R_ClipPassWallSegment_
 1759:013e      R_ClearClipSegs_
-1759:015e+     R_AddLine_
+1759:015e      R_AddLine_
 1759:039a+     R_CheckBBox_
-1759:05ac+     R_Subsector_
-1759:06d0      R_RenderBSPNode_
+1759:05ac      R_RenderBSPNode_
 Module: r_data.obj(C:\REALDOOM\r_data.c)
-1759:07e8      R_MarkCacheLRU_
-1759:097e      R_EvictCacheEMSPage_
-1759:0c28+     R_DrawColumnInCache_
-1759:0cac+     R_GetNextCompositeBlock_
-1759:0de6+     R_GetNextPatchBlock_
-1759:0f18+     R_GetNextSpriteBlock_
-1759:1058+     R_GenerateComposite_
-1759:1290+     gettexturepage_
-1759:1546+     getspritepage_
-1759:17c0+     getpatchtexture_
-1759:1880+     getcompositetexture_
-1759:18e6      getspritetexture_
-1759:1966      R_GetColumnSegment_
-1759:1b58+     R_LoadPatchColumns_
-1759:1c4a      R_LoadPatchColumnsColormap0_
-1759:1d62+     R_LoadSpriteColumns_
+1759:06c8      R_MarkCacheLRU_
+1759:085e      R_EvictCacheEMSPage_
+1759:0b08+     R_DrawColumnInCache_
+1759:0b8c+     R_GetNextCompositeBlock_
+1759:0cc6+     R_GetNextPatchBlock_
+1759:0df8+     R_GetNextSpriteBlock_
+1759:0f38+     R_GenerateComposite_
+1759:1170+     gettexturepage_
+1759:1426+     getspritepage_
+1759:16a0+     getpatchtexture_
+1759:1760+     getcompositetexture_
+1759:17c6      getspritetexture_
+1759:1846      R_GetColumnSegment_
+1759:1a38+     R_LoadPatchColumns_
+1759:1b2a      R_LoadPatchColumnsColormap0_
+1759:1c42+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-1759:1f60      R_PointToAngle_
+1759:1e40      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-1759:220a      R_PointOnSegSide_
-1759:218a      R_PointToDist_
-1759:22d5      R_ClearPlanes_
-1759:2358      R_HandleEMSPagination_
-1759:240a      R_FindPlane_
-1759:20e8      R_ScaleFromGlobalAngle_
+1759:20ea      R_PointOnSegSide_
+1759:2372      R_Subsector_
+1759:206a      R_PointToDist_
+1759:21b5      R_ClearPlanes_
+1759:2238      R_HandleEMSPagination_
+1759:22ea*     R_FindPlane_
+1759:1fc8      R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1759:24a0      R_FillBackScreen_
 1759:2724      R_VideoErase_
@@ -1717,4 +1717,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00025190 (151952.)
 Entry point address: 1ddc:213c
-Link time: 00:00.20
+Link time: 00:00.75

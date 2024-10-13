@@ -30,8 +30,11 @@ EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
-
+EXTRN R_AddSprites_:PROC
+EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
+EXTRN Z_QuickMapVisplaneRevert_:PROC
+
 EXTRN _ceilphyspage:BYTE
 EXTRN _floorphyspage:BYTE
 EXTRN _visplanedirty:BYTE
@@ -41,6 +44,12 @@ EXTRN _ceiltop:DWORD
 EXTRN _visplane_offset:WORD
 EXTRN _visplanelookupsegments:WORD
 EXTRN _skyflatnum:BYTE
+
+EXTRN _frontsector:DWORD
+EXTRN _floorplaneindex:WORD
+EXTRN _ceilingplaneindex:WORD
+
+
 
 INCLUDE defs.inc
 
@@ -937,5 +946,136 @@ ret
 
 ENDP
 
+
+
+;R_Subsector_
+
+PROC R_Subsector_ NEAR
+PUBLIC R_Subsector_ 
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 6
+mov   bx, ax
+mov   ax, SUBSECTOR_LINES_SEGMENT
+mov   es, ax
+mov   al, byte ptr es:[bx]
+xor   ah, ah
+mov   di, ax
+mov   ax, SUBSECTORS_SEGMENT
+shl   bx, 2
+mov   es, ax
+mov   ax, word ptr es:[bx]
+mov   word ptr ds:[_frontsector+2], SECTORS_SEGMENT
+shl   ax, 4
+mov   si, word ptr es:[bx + 2]
+mov   word ptr ds:[_frontsector], ax
+cmp   byte ptr [_visplanedirty], 0
+je    label1
+jmp   label2
+label1:
+xor   al, al
+mov   byte ptr ds:[_ceilphyspage], al
+mov   byte ptr ds:[_floorphyspage], al
+xor   ah, ah
+mov   bx, word ptr ds:[_frontsector]
+mov   word ptr ds:[_ceiltop], ax
+mov   word ptr ds:[_ceiltop+2], ax
+mov   word ptr ds:[_floortop], ax
+mov   word ptr ds:[_floortop+2], ax
+mov   es, word ptr ds:[_frontsector+2]
+mov   word ptr [bp - 2], bx
+mov   ax, word ptr es:[bx]
+mov   dx, word ptr es:[bx]
+xor   ah, ah
+mov   bx, _viewz
+and   al, 7
+sar   dx, 3
+shl   ax, 0Dh
+cmp   dx, word ptr ds:[bx + 2]
+jl    label3
+je    label4
+label6:
+jmp   label5
+label4:
+cmp   ax, word ptr ds:[bx]
+jae   label6    ; todo move to the other label
+label3:
+mov   bx, word ptr [bp - 2]
+mov   cl, byte ptr es:[bx + 0Eh]
+mov   byte ptr [bp - 5], cl
+mov   cl, byte ptr es:[bx + 4]
+mov   byte ptr [bp - 6], cl
+xor   bx, bx
+mov   cx, word ptr [bp - 6]
+call  R_FindPlane_
+mov   word ptr ds:[_floorplaneindex], ax
+label10:
+les   cx, dword ptr ds:[_frontsector]
+mov   bx, cx
+mov   ax, word ptr es:[bx + 2]
+mov   dx, word ptr es:[bx + 2]
+xor   ah, ah
+mov   bx, _viewz
+and   al, 7
+sar   dx, 3
+shl   ax, 0Dh
+cmp   dx, word ptr ds:[bx + 2]
+jg    label7
+jne   label8
+cmp   ax, word ptr ds:[bx]
+jbe   label8
+label7:
+les   bx, dword ptr ds:[_frontsector]
+mov   cl, byte ptr es:[bx + 0Eh]
+mov   bl, byte ptr es:[bx + 4]
+mov   byte ptr [bp - 3], cl
+mov   byte ptr [bp - 4], bl
+mov   cx, word ptr [bp - 4]
+mov   bx, 1
+call  R_FindPlane_
+mov   word ptr ds:[_ceilingplaneindex], ax
+label11:
+mov   ax, word ptr ds:[_frontsector]
+mov   dx, word ptr ds:[_frontsector+2]
+call  R_AddSprites_
+label12:
+dec   di
+cmp   di, 0FFFFh
+jne   label9
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+label2:
+push  cs
+call  Z_QuickMapVisplaneRevert_
+jmp   label1
+label5:
+mov   word ptr ds:[_floorplaneindex], 0FFFFh
+jmp   label10
+label8:
+mov   bx, cx
+mov   cl, byte ptr es:[bx + 5]
+cmp   cl, byte ptr ds:[_skyflatnum]
+je    label7
+mov   word ptr ds:[_ceilingplaneindex], 0FFFFh
+jmp   label11
+label9:
+mov   ax, si
+call  R_AddLine_
+inc   si
+jmp   label12
+
+ENDP
 
 END

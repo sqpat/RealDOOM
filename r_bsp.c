@@ -509,6 +509,8 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 // Add sprites of things in sector.
 // Draw one or more line segments.
 //
+void __near R_Subsector(int16_t subsecnum);
+/*
 void __near R_Subsector(int16_t subsecnum) {
 	int16_t count = subsector_lines[subsecnum];
 	subsector_t __far* sub = &subsectors[subsecnum];
@@ -559,7 +561,7 @@ void __near R_Subsector(int16_t subsecnum) {
 		firstline++;
 	}
 }
-
+*/
 //
 // RenderBSPNode
 // Renders all subsectors below a given node,

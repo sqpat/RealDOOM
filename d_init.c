@@ -828,7 +828,6 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 
 //visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil);
 
-
 //void checkDS(int16_t a);
 
 void __far D_DoomMain2(void)
@@ -849,13 +848,13 @@ void __far D_DoomMain2(void)
 
 
 /*
-	FILE *fp = fopen("output2.bin", "wb");
-	FAR_fwrite(R_HandleEMSPagination, (byte __far *)R_FindPlane - (byte __far *)R_HandleEMSPagination, 1, fp);
+	FILE *fp = fopen("output6.bin", "wb");
+	FAR_fwrite(R_Subsector, (byte __far *)R_RenderBSPNode - (byte __far *)R_Subsector, 1, fp);
 	fclose(fp);
 	exit(0);
-	*/
+	/*
 
-/*
+
 	fixed_t_union x, y;
 
 
