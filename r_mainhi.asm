@@ -969,7 +969,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 6
+
 mov   bx, ax
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
@@ -982,11 +982,11 @@ mov   si, bx
 
 mov   ax, word ptr es:[bx+si+SUBSECTOR_OFFSET_IN_SECTORS] ; get subsec secnum
 
-mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
 shl   ax, 4    ; todo make  8086 friendly
 mov   si, word ptr es:[bx+si+SUBSECTOR_OFFSET_IN_SECTORS + 2]   ; get subsec firstline
 mov   word ptr ds:[_frontsector], ax
-mov   bx, ax
+mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
+xchg  bx, ax
 cmp   byte ptr [_visplanedirty], 0
 jne   revert_visplane
 
@@ -1001,22 +1001,25 @@ xor   ax, ax
 mov   byte ptr ds:[_ceilphyspage], al
 mov   byte ptr ds:[_floorphyspage], al
 
-;mov   bx, word ptr ds:[_frontsector]
-;  bx already holds frontsector offset
+;  es:bx holds frontsector
 mov   word ptr ds:[_ceiltop], ax
 mov   word ptr ds:[_ceiltop+2], ax
 mov   word ptr ds:[_floortop], ax
 mov   word ptr ds:[_floortop+2], ax
-;mov   es, word ptr ds:[_frontsector+2]
-; es already stores SECTORS_SEGMENT
 
-mov   ax, word ptr es:[bx]
-mov   dx, ax
-xor   ah, ah
 
-and   al, 7
-sar   dx, 3
-shl   ax, 0Dh
+mov   dx, word ptr es:[bx]
+; ax is already 0
+
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT
+
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+
 cmp   dx, word ptr ds:[_viewz + 2]
 jl    find_floor_plane_index
 je    check_viewz_lowbits_floor
@@ -1024,6 +1027,15 @@ je    check_viewz_lowbits_floor
 set_floor_plane_minus_one:
 mov   word ptr ds:[_floorplaneindex], 0FFFFh
 jmp   floor_plane_set
+
+set_ceiling_plane_minus_one:
+
+; es:bx is still frontsector
+mov   cl, byte ptr es:[bx + 5]
+cmp   cl, byte ptr ds:[_skyflatnum]
+je    find_ceiling_plane_index
+mov   word ptr ds:[_ceilingplaneindex], 0FFFFh
+jmp   do_addsprites
 
 check_viewz_lowbits_floor:
 cmp   ax, word ptr ds:[_viewz]
@@ -1038,13 +1050,17 @@ call  R_FindPlane_
 mov   word ptr ds:[_floorplaneindex], ax
 floor_plane_set:
 les   bx, dword ptr ds:[_frontsector]
-mov   ax, word ptr es:[bx + 2]
 mov   dx, word ptr es:[bx + 2]
-xor   ah, ah
+xor   ax, ax
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT
 
-and   al, 7
-sar   dx, 3
-shl   ax, 0Dh
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+
 
 cmp   dx, word ptr ds:[_viewz + 2]
 jg    find_ceiling_plane_index
@@ -1064,31 +1080,27 @@ mov   word ptr ds:[_ceilingplaneindex], ax
 do_addsprites:
 mov   ax, word ptr ds:[_frontsector]
 mov   dx, word ptr ds:[_frontsector+2]
+; todo make this not a function argument if its always frontsector?
 call  R_AddSprites_
 
 ; todo: proper cx loop
-
+mov   cx, di
 loop_addline:
-dec   di
-cmp   di, 0FFFFh
-je   exit_r_subsector
 
-mov   ax, si
+; what if we inlined AddLine? or unrolled this?
+
+
+
+mov   ax, si   ; si had firstline
 call  R_AddLine_
 inc   si
-jmp   loop_addline
+loop   loop_addline
 
 
-set_ceiling_plane_minus_one:
 
-; es:bx is still frontsector
-mov   cl, byte ptr es:[bx + 5]
-cmp   cl, byte ptr ds:[_skyflatnum]
-je    find_ceiling_plane_index
-mov   word ptr ds:[_ceilingplaneindex], 0FFFFh
-jmp   do_addsprites
-exit_r_subsector:
+
 LEAVE_MACRO 
+
 pop   di
 pop   si
 pop   dx
