@@ -329,6 +329,7 @@ int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlev
 //
 // R_CheckPlane
 //
+/*
 int16_t __near R_CheckPlane ( int16_t index, int16_t start, int16_t stop, int8_t isceil ) {
     int16_t		intrl;
     int16_t		intrh;
@@ -394,7 +395,7 @@ int16_t __near R_CheckPlane ( int16_t index, int16_t start, int16_t stop, int8_t
 	return lastvisplane++;
 }
 
-
+*/
 
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 

@@ -1116,4 +1116,129 @@ ret
 
 ENDP
 
+;R_CheckPlane_
+
+PROC R_CheckPlane_ NEAR
+PUBLIC R_CheckPlane_ 
+
+
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 8
+push      ax
+push      dx
+mov       si, bx
+mov       byte ptr [bp - 2], cl
+mov       di, ax
+shl       di, 3
+add       di, _visplaneheaders
+test      cl, cl
+je        label1
+les       ax, dword ptr ds:[_ceiltop]
+label7:
+mov       word ptr [bp - 8], ax
+mov       ax, word ptr [bp - 0Ch]
+cmp       ax, word ptr [di + 4]
+jge       label2
+mov       word ptr [bp - 6], ax
+mov       bx, word ptr [di + 4]
+label8:
+mov       ax, word ptr [di + 6]
+cmp       si, ax
+jle       label3
+mov       dx, ax
+mov       word ptr [bp - 4], si
+label9:
+mov       ax, bx
+cmp       bx, dx
+jg        label4
+add       bx, word ptr [bp - 8]
+label6:
+cmp       byte ptr es:[bx], 0FFh
+jne       label4
+inc       ax
+inc       bx
+cmp       ax, dx
+jle       label6
+label4:
+cmp       ax, dx
+jle       label5
+mov       ax, word ptr [bp - 6]
+mov       word ptr [di + 4], ax
+mov       ax, word ptr [bp - 4]
+mov       word ptr [di + 6], ax
+mov       ax, word ptr [bp - 0Ah]
+leave     
+pop       di
+pop       si
+ret       
+label1:
+les       ax, dword ptr ds:[_floortop]
+jmp       label7
+label2:
+mov       ax, word ptr [di + 4]
+mov       bx, word ptr [bp - 0Ch]
+mov       word ptr [bp - 6], ax
+jmp       label8
+label3:
+mov       word ptr [bp - 4], ax
+mov       dx, si
+jmp       label9
+label5:
+mov       ax, word ptr ds:[_lastvisplane]  ; todo byte
+shl       ax, 3
+mov       dx, word ptr [di + 2]
+mov       bx, ax
+mov       cx, word ptr [di]
+mov       word ptr [bx + _visplaneheaders+2], dx
+mov       dx, word ptr [bp - 0Ah]
+add       dx, dx
+mov       word ptr [bx + _visplaneheaders], cx
+mov       di, dx
+mov       dx, word ptr [_lastvisplane]
+add       bx, _visplaneheaders
+add       dx, dx
+add       di, _visplanepiclights
+mov       bx, dx
+mov       dx, word ptr [di]
+mov       di, ax
+mov       word ptr [bx + _visplanepiclights], dx
+mov       ax, word ptr [bp - 0Ch]
+mov       word ptr [di + _visplaneheaders+4], ax ; looks weird
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       cx, SCREENWIDTH
+mov       dx, ax
+mov       al, byte ptr [_lastvisplane]
+mov       word ptr [di + _visplaneheaders+6], si  ; looks weird
+cbw      
+add       di, _visplaneheaders
+call      R_HandleEMSPagination_
+mov       di, ax
+mov       es, dx
+mov       al, 0FFh
+add       di, 2
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       dx, word ptr [_lastvisplane]
+mov       ax, dx
+inc       dx
+add       bx, _visplanepiclights
+mov       word ptr [_lastvisplane], dx
+
+LEAVE_MACRO
+
+pop       di
+pop       si
+ret       
+
+ENDP
+
 END
