@@ -792,15 +792,13 @@ PROC R_FindPlane_ NEAR
 PUBLIC R_FindPlane_ 
 
 
-; bp - 2 is i (loop var)
-; bp - 4 is lastvisplane ? (lookup)
-; bp - 5 is lightlevel
-; bp - 6 is picnum     (pic and light)
-; bp - 8 is height low 16 bits
 
 ; dx:ax is height
 ; cl is lightlevel
 ; bl is picnum
+; bp + 8 is isceil  
+; todo: optim bp + 8 out. self modifying code -
+;   update the one spot its used down below at start of func
 
 push      si
 push      di
@@ -820,20 +818,24 @@ not_skyflat:
 
 
 ; loop vars
-; bp - 2 = i
-; al = i  (visplane lights lookup)
+
+; al = i
 ; ah = lastvisplane
-; dx is height high
-; bx is .. visplane headers?
+; dx is height high precision
+; di is height low precision
+; bx is .. checkheader
+; cx is pic_and_light
+; si is scratch
 
 
 ; set up find visplane loop
-push      ax  ; set bp - 8
+mov      di, ax  ; set bp - 8
 
 mov       ch, bl        ; setup pic_and_light
 xchg      ch, cl       
-; al i s0 to start as i
+; init loop vars
 xor       ax, ax
+mov       si, _visplanepiclights    ; initial offset
 mov       ah, byte ptr ds:[_lastvisplane]
 
 cmp       ah, 0
@@ -842,12 +844,11 @@ jl        break_loop   ; else break
 ; do loop setup
 
 mov       al, 0
-mov       bx, _visplaneheaders   ; set bx default value
+mov       bx, _visplaneheaders   ; set bx to header 0
 
 
 next_loop_iteration:
 
-mov       di, bx
 cmp       al, ah
 jne       check_for_visplane_match
 
@@ -878,23 +879,21 @@ ret       2
 ;		}
 
 check_for_visplane_match:
+cmp       di, word ptr [bx]     ; compare height low word
+jne       loop_iter_step_variables
 cmp       dx, word ptr [bx + 2] ; compare height high word
 jne       loop_iter_step_variables
-mov       si, word ptr [bp - 8] ; fetch height
-cmp       si, word ptr [bx]     ; compare height low word
-jne       loop_iter_step_variables
-mov       si, ax
-and       si, 0FFh; 
-add       si, si
-cmp       cx, word ptr [si+_visplanepiclights] ; compare lights
+cmp       cx, word ptr [si] ; compare picandlight
 je        break_loop
 
 loop_iter_step_variables:
 inc       al
+add       si, 2
 add       bx, 8
 
 cmp       al, ah
 jle       next_loop_iteration
+sub       bx, 8  ; use last checkheader index
 jmp       break_loop
 
 
@@ -903,16 +902,17 @@ break_loop_visplane_not_found:
 
 cbw       ; no longer need lastvisplane, zero out ah
 
-mov       si, word ptr [bp - 8]
-mov       word ptr [di], si
-mov       word ptr [di + 2], dx
-mov       word ptr [di + 4], SCREENWIDTH
 
-mov       word ptr [di + 6], 0FFFFh
-mov       bx, ax
-add       bx, bx
+; set up new visplaneheader
+mov       word ptr [bx], di
+mov       word ptr [bx + 2], dx
+mov       word ptr [bx + 4], SCREENWIDTH
+mov       word ptr [bx + 6], 0FFFFh
 
-mov       word ptr ds:[bx + _visplanepiclights], cx 
+;si already has  word lookup for piclights
+
+
+mov       word ptr ds:[si], cx 
 mov       dl, byte ptr [bp + 8]
 xor       dh, dh
 
