@@ -947,9 +947,6 @@ ret
 ENDP
 
 
-revert_visplane:
-call  Z_QuickMapVisplaneRevert_
-jmp   prepare_fields
 
 SUBSECTOR_OFFSET_IN_SECTORS       = (SUBSECTORS_SEGMENT - SECTORS_SEGMENT) * 16
 SUBSECTOR_LINES_OFFSET_IN_SECTORS = (SUBSECTOR_LINES_SEGMENT - SECTORS_SEGMENT) * 16
@@ -965,28 +962,29 @@ PUBLIC R_Subsector_
 push  bx
 push  cx
 push  dx
-push  si
-push  di
 push  bp
-mov   bp, sp
+mov   bp, sp ; todo remove when we can?
 
 mov   bx, ax
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx + SUBSECTOR_LINES_OFFSET_IN_SECTORS]
 xor   ah, ah
-mov   di, ax    ; di stores count
+mov   word ptr cs:[SELFMODIFY_countvalue+1], ax    ; di stores count for later
 
 shl   bx, 1
-mov   si, bx
+shl   bx, 1
 
-mov   ax, word ptr es:[bx+si+SUBSECTOR_OFFSET_IN_SECTORS] ; get subsec secnum
+mov   ax, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS] ; get subsec secnum
 
 shl   ax, 4    ; todo make  8086 friendly
-mov   si, word ptr es:[bx+si+SUBSECTOR_OFFSET_IN_SECTORS + 2]   ; get subsec firstline
 mov   word ptr ds:[_frontsector], ax
 mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
+mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + 2]   ; get subsec firstline
 xchg  bx, ax
+mov   word ptr cs:[SELFMODIFY_firstlinevalue+1], ax    ; di stores count for later
+
+
 cmp   byte ptr [_visplanedirty], 0
 jne   revert_visplane
 
@@ -998,6 +996,8 @@ prepare_fields:
 ;	floortop = NULL;
 
 xor   ax, ax
+; todo: put these variables all next to each other, then knock them out
+; with movsw
 mov   byte ptr ds:[_ceilphyspage], al
 mov   byte ptr ds:[_floorphyspage], al
 
@@ -1027,6 +1027,10 @@ je    check_viewz_lowbits_floor
 set_floor_plane_minus_one:
 mov   word ptr ds:[_floorplaneindex], 0FFFFh
 jmp   floor_plane_set
+revert_visplane:
+call  Z_QuickMapVisplaneRevert_
+jmp   prepare_fields
+
 
 set_ceiling_plane_minus_one:
 
@@ -1083,17 +1087,21 @@ mov   dx, word ptr ds:[_frontsector+2]
 ; todo make this not a function argument if its always frontsector?
 call  R_AddSprites_
 
-; todo: proper cx loop
-mov   cx, di
+SELFMODIFY_countvalue:
+mov   cx, 0FFFFh
+SELFMODIFY_firstlinevalue:
+mov   bx, 0FFFFh
+
 loop_addline:
 
 ; what if we inlined AddLine? or unrolled this?
+; whats realistic maximum of numlines? a few hundred? might be 1800ish bytes... save about 10 cycles per call to addline maybe?
 
 
-
-mov   ax, si   ; si had firstline
+mov   ax, bx   ; bx has firstline
 call  R_AddLine_
-inc   si
+inc   bx
+
 loop   loop_addline
 
 
@@ -1101,8 +1109,6 @@ loop   loop_addline
 
 LEAVE_MACRO 
 
-pop   di
-pop   si
 pop   dx
 pop   cx
 pop   bx
