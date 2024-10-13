@@ -792,11 +792,11 @@ PROC R_FindPlane_ NEAR
 PUBLIC R_FindPlane_ 
 
 
-; bp - 2 is i
-; bp - 4
+; bp - 2 is i (loop var)
+; bp - 4 is lastvisplane ? (lookup)
 ; bp - 5 is lightlevel
-; bp - 6 is picnum
-; bp - 8 is 
+; bp - 6 is picnum     (pic and light)
+; bp - 8 is height low 16 bits
 
 ; dx:ax is height
 ; cl is lightlevel
@@ -809,67 +809,99 @@ mov       bp, sp
 sub       sp, 6
 cmp       bl, byte ptr ds:[_skyflatnum]
 jne       not_skyflat
+
+;		height = 0;			// all skys map together
+;		lightlevel = 0;
+
 xor       ax, ax
 cwd
 xor       cl, cl
 not_skyflat:
+
+
+; loop vars
+; bp - 2 = i
+; ax = i  (visplane lights lookup)
+; dx is height high
+; bx is .. visplane headers?
+
 
 ; set up find visplane loop
 push      ax  ; set bp - 8
 mov       word ptr [bp - 2], 0
 mov       byte ptr [bp - 6], bl
 mov       byte ptr [bp - 5], cl
+
+
+
 cmp       word ptr ds:[_lastvisplane], 0
-jl        compare_visplane
-mov       cx, word ptr ds:[_lastvisplane]
-mov       bx, _visplaneheaders
-add       cx, cx
+jl        check_loop_condition   ; else break
+
+; do loop iteration
+
+
+mov       bx, _visplaneheaders   ; set bx default value
+;add       cx, cx
 xor       ax, ax
-mov       word ptr [bp - 4], cx
+
 mov       cx, word ptr [bp - 6]
+
 label7:
+
 mov       di, bx
-cmp       ax, word ptr [bp - 4]
-jne       label3
-compare_visplane:
-mov       ax, word ptr [bp - 2]
+cmp       ax, word ptr [_lastvisplane]
+jne       check_for_visplane_match
+
+check_loop_condition:
+mov       ax, word ptr [bp - 2]   ; fetch i
 cmp       ax, word ptr ds:[_lastvisplane]
-jge       not_found_create_new_visplane
+jge       break_loop
 
 ; found visplane match. return it
 mov       al, byte ptr [bp + 8]
 cbw      
 mov       dx, ax
 mov       al, byte ptr [bp - 2]
-
+mov       bx, ax        ; store i
 call      R_HandleEMSPagination_
 ; fetch and return i
-mov       ax, word ptr [bp - 2]
+mov       ax, bx
 
 LEAVE_MACRO
 
 pop       di
 pop       si
 ret       2
-label3:
-mov       si, word ptr [bp - 8]
-cmp       dx, word ptr [bx + 2]
+
+
+;		if (height == checkheader->height
+;			&& piclight.hu == visplanepiclights[i].pic_and_light) {
+;				break;
+;		}
+
+check_for_visplane_match:
+cmp       dx, word ptr [bx + 2] ; compare height high word
 jne       label5
-cmp       si, word ptr [bx]
+mov       si, word ptr [bp - 8] ; fetch height
+cmp       si, word ptr [bx]     ; compare height low word
 jne       label5
 mov       si, ax
-add       si, _visplanepiclights
-cmp       cx, word ptr [si]
-je        compare_visplane
+add       si, si
+cmp       cx, word ptr [si+_visplanepiclights] ; compare lights
+je        check_loop_condition
+
 label5:
 inc       word ptr [bp - 2]
 add       bx, 8
 mov       si, word ptr [bp - 2]
-add       ax, 2
+inc       ax
 cmp       si, word ptr ds:[_lastvisplane]
 jle       label7
-jmp       compare_visplane
-not_found_create_new_visplane:
+jmp       check_loop_condition
+
+
+break_loop:
+; not found, create new visplane
 mov       ax, word ptr [bp - 8]
 mov       word ptr [di + 4], SCREENWIDTH
 mov       word ptr [di], ax
