@@ -1126,96 +1126,100 @@ PUBLIC R_CheckPlane_
 ; bx: stop
 ; cl: isceil?
 
-; bp - 2 is nothing
-; bp - 4 is nothing
-; bp - 6 is nothing
-; bp - 8 is floortop or ceilingtop offset
-; bp - A is index
-; bp - C is bothing
+
 
 ; di holds visplaneheaders lookup. maybe should be si
 
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 8
-push      ax        ; bp - 0A is index
+
+mov       word ptr cs:[SELFMODIFY_setindex+1], ax
 mov       si, dx    ; si holds start
 
 mov       di, ax
-shl       di, 3
+shl       di, 1
+shl       di, 1
+shl       di, 1
 add       di, _visplaneheaders  ; _di is plheader
 mov       byte ptr cs:[SELFMODIFY_setisceil + 1], cl  ; write cl value
 test      cl, cl
 mov       cx, bx    ; cx holds stop
 je        check_plane_is_floor
 check_plane_is_ceil:
-les       ax, dword ptr ds:[_ceiltop]
+les       bx, dword ptr ds:[_ceiltop]
 loaded_floor_or_ceiling:
-mov       word ptr [bp - 8], ax
+; bx holds offset..
+
 mov       ax, si  ; fetch start
 cmp       ax, word ptr [di + 4]    ; compare to minx
 jge       start_greater_than_min
 mov       word ptr cs:[SELFMODIFY_setminx+3], ax
-mov       bx, word ptr [di + 4]
+mov       dx, word ptr [di + 4]    ; fetch minx into intrl
 checked_start:
 ; now checkmax
-mov       ax, word ptr [di + 6]   ; fetch maxx
+mov       ax, word ptr [di + 6]   ; fetch maxx, ax = intrh = plheader->max
 cmp       cx, ax                  ; compare stop to maxx
 jle       stop_smaller_than_max
-mov       dx, ax
 mov       word ptr cs:[SELFMODIFY_setmax+3], cx
 done_checking_max:
 
 ; begin loop checks
 
+; x = intrl to intrh
+; so use intrl as x
+; dx = intrl
+; ax = intrh
 
-mov       ax, bx
-cmp       bx, dx        ; x<= intrh 
+
+cmp       dx, ax        ; x<= intrh 
 jg        breakloop
-add       bx, word ptr [bp - 8]
-label6:
+
+add       bx, dx
+loop_increment_x:
 
 ;	pltop[x]==0xff
 
 cmp       byte ptr es:[bx], 0FFh
 jne       breakloop
 ; x++
-inc       ax            
+inc       dx            
 inc       bx
-cmp       ax, dx
-jle       label6
+cmp       dx, ax
+jle       loop_increment_x
 
 breakloop:
 
 
 ;    if (x > intrh) {
 
-cmp       ax, dx
+cmp       dx, ax
 jle       make_new_visplane
 SELFMODIFY_setminx:
 mov       word ptr [di + 4], 0FFFFh
 SELFMODIFY_setmax:
 mov       word ptr [di + 6], 0FFFFh
-mov       ax, word ptr [bp - 0Ah]
-leave     
+
+SELFMODIFY_setindex:
+mov       ax, 0ffffh
+
+
 pop       di
 pop       si
 ret       
 
 
 check_plane_is_floor:
-les       ax, dword ptr ds:[_floortop]
+les       bx, dword ptr ds:[_floortop]
 jmp       loaded_floor_or_ceiling
 start_greater_than_min:
 mov       ax, word ptr [di + 4]
-mov       bx, si
+; todo comment out since dx was si to begin with
+mov       dx, si                ; put start into intrl
 mov       word ptr cs:[SELFMODIFY_setminx+3], ax
 jmp       checked_start
 stop_smaller_than_max:
-mov       word ptr cs:[SELFMODIFY_setmax+3], ax
-mov       dx, cx
+mov       word ptr cs:[SELFMODIFY_setmax+3], ax     ; unionh = plheader->max
+mov       ax, cx                                    ; intrh = stop
 jmp       done_checking_max
 
 make_new_visplane:
@@ -1268,7 +1272,6 @@ rep stosw
 mov       ax, si
 inc       word ptr [_lastvisplane]
 
-LEAVE_MACRO
 
 pop       di
 pop       si
