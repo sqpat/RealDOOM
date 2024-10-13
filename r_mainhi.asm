@@ -829,10 +829,15 @@ not_skyflat:
 
 
 ; set up find visplane loop
-mov      di, ax  ; set bp - 8
-
+mov       di, ax  
 mov       ch, bl        ; setup pic_and_light
-xchg      ch, cl       
+xchg      ch, cl  
+mov       al, byte ptr [bp + 8]
+
+; todo will this work loaded high... if its relative it should?
+mov       byte ptr cs:[SELFMODIFY_set_isceil_1+1], al
+mov       byte ptr cs:[SELFMODIFY_set_isceil_2+1], al
+
 ; init loop vars
 xor       ax, ax
 mov       si, _visplanepiclights    ; initial offset
@@ -859,8 +864,8 @@ jge       break_loop_visplane_not_found
 
 ; found visplane match. return it
 cbw       ; clear lastvisplane out of ah
-mov       dl, byte ptr [bp + 8]
-xor       dh, dh
+SELFMODIFY_set_isceil_1:
+mov       dx, 1
 mov       bx, ax        ; store i
 call      R_HandleEMSPagination_
 ; fetch and return i
@@ -913,8 +918,8 @@ mov       word ptr [bx + 6], 0FFFFh
 
 
 mov       word ptr ds:[si], cx 
-mov       dl, byte ptr [bp + 8]
-xor       dh, dh
+SELFMODIFY_set_isceil_2:
+mov       dx, 1
 
 inc       word ptr ds:[_lastvisplane]
 
