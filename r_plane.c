@@ -457,11 +457,15 @@ void __near R_DrawPlanes (void) {
 	int8_t			j;
 	int8_t			physindex = 0;
 
-	int16_t effectivepagenumber = 0;
+	// 0-3, the 16 kb page within the 64 kb conventional memory spot
+	int8_t flatcacheL1pagenumber = 0;
+	// FIRST_FLAT_CACHE_LOGICAL_PAGE + (0... NUM_FLAT_CACHEPAGES-1.)
+	// The actual EMS logical page index within the L2 cache. 
+	int8_t flatcacheL2pagenumber = 0;
+	
+	// "Logical" flat index within L2 cache, 0 indexed. 4 per page, so max value is (4 * NUM_FLAT_CACHEPAGES)-1
 	uint8_t usedflatindex;
 	boolean flatunloaded = false;
-	int16_t flatcacheindex = 0;
-	int16_t lastflatcacheindicesused[3] = {3, 2, 1}; // initialized so that allocation order is 0 1 2
 	segment_t visplanesegment = 0x8400;
 	uint16_t visplaneoffset = 0;
 	visplanepiclight_t piclight;
@@ -506,7 +510,7 @@ void __near R_DrawPlanes (void) {
 		}
 		planezlight = MK_FP(zlight_segment, lightshift7lookup[light]);
 
-		
+		// usedflatindex is the index within L2 flat cache
 		usedflatindex = flatindex[flattranslation[piclight.bytes.picnum]];
 		if (usedflatindex == 0xFF) {
 			// load if not loaded
@@ -518,6 +522,7 @@ void __near R_DrawPlanes (void) {
 					goto foundflat;
 				}
 			}
+			
 			// todo figure out what to do with firstunused flat etc
 			usedflatindex = R_EvictCacheEMSPage(0, CACHETYPE_FLAT);
 			// mult by 4, going from flat index to page index first index of the flat in the evicted page.
@@ -529,50 +534,54 @@ void __near R_DrawPlanes (void) {
 			flatunloaded = true;
 		}
 
-		effectivepagenumber = (usedflatindex >> 2) + FIRST_FLAT_CACHE_LOGICAL_PAGE;
+		// page within L2 flat cache
+		// todo: is this worth being a lookup table?
+		flatcacheL2pagenumber = (usedflatindex >> 2);
  
-		if (currentflatpage[0] == effectivepagenumber) {
-			flatcacheindex = 0;
-		} else if (currentflatpage[1] == effectivepagenumber) {
-			flatcacheindex = 1;
-		} else if (currentflatpage[2] == effectivepagenumber) {
-			flatcacheindex = 2;
-		} else if (currentflatpage[3] == effectivepagenumber) {
-			flatcacheindex = 3;
+		// check if L2 page is in L1 cache
+		if (currentflatpage[0] == flatcacheL2pagenumber) {
+			flatcacheL1pagenumber = 0;
+		} else if (currentflatpage[1] == flatcacheL2pagenumber) {
+			flatcacheL1pagenumber = 1;
+		} else if (currentflatpage[2] == flatcacheL2pagenumber) {
+			flatcacheL1pagenumber = 2;
+		} else if (currentflatpage[3] == flatcacheL2pagenumber) {
+			flatcacheL1pagenumber = 3;
 		} else {
-			/*
-			// LRU on evicition.. not doing this above as we should though
-			for (i = 0; i < 3; i++) {
-				if (lastflatcacheindicesused[0] != i && lastflatcacheindicesused[1] != i) {
-				//if (lastflatcacheindicesused[0] != i && lastflatcacheindicesused[1] != i && lastflatcacheindicesused[2] != i) {
-					flatcacheindex = i;
-					break;
-				}
-			}
-			*/
+			
+			// L2 page not in L1 cache. need to EMS remap
+
+		//3:2525  2528  2525 again
+		//1:5867  5871  5869 again
 
 
-			if (lastflatcacheindicesused[0] != 0 && lastflatcacheindicesused[1] != 0) {
-				flatcacheindex = 0;
-			} else if (lastflatcacheindicesused[0] != 1 && lastflatcacheindicesused[1] != 1) {
-				flatcacheindex = 1;
-			} else if (lastflatcacheindicesused[0] != 2 && lastflatcacheindicesused[1] != 2) {
-				flatcacheindex = 2;
-			} else {
-				flatcacheindex = 3;
-			}
+			// get LRU local cache page to page out
+			flatcacheL1pagenumber = lastflatcacheindicesused[3];
 
-			currentflatpage[flatcacheindex] = effectivepagenumber;
-			Z_QuickMapFlatPage(effectivepagenumber, flatcacheindex);
+			// update the L1 LRU cache
+			lastflatcacheindicesused[3] = lastflatcacheindicesused[2];
+			lastflatcacheindicesused[2] = lastflatcacheindicesused[1];
+			lastflatcacheindicesused[1] = lastflatcacheindicesused[0];
+			lastflatcacheindicesused[0] = flatcacheL1pagenumber;
+
+			currentflatpage[flatcacheL1pagenumber] = flatcacheL2pagenumber;
+
+			Z_QuickMapFlatPage((int16_t)flatcacheL2pagenumber+FIRST_FLAT_CACHE_LOGICAL_PAGE, flatcacheL1pagenumber);
+			goto cachealreadymarked;
 		}
 
-		if (lastflatcacheindicesused[0] != flatcacheindex) {
-			if (lastflatcacheindicesused[1] != flatcacheindex) {
+		// update local cache.
+		if (lastflatcacheindicesused[0] != flatcacheL1pagenumber) {
+			if (lastflatcacheindicesused[1] != flatcacheL1pagenumber) {
+				if (lastflatcacheindicesused[2] != flatcacheL1pagenumber) {
+					lastflatcacheindicesused[3] = lastflatcacheindicesused[2];
+				}
 				lastflatcacheindicesused[2] = lastflatcacheindicesused[1];
 			}
 			lastflatcacheindicesused[1] = lastflatcacheindicesused[0];
-			lastflatcacheindicesused[0] = flatcacheindex;
+			lastflatcacheindicesused[0] = flatcacheL1pagenumber;
 		}
+		cachealreadymarked:
 
 		R_MarkCacheLRU(usedflatindex >> 2, 0, CACHETYPE_FLAT);
 		
@@ -586,11 +595,11 @@ void __near R_DrawPlanes (void) {
 			}
 #endif
 		 
-			W_CacheLumpNumDirect(firstflat + flattranslation[piclight.bytes.picnum], MK_FP(FLAT_CACHE_PAGE[flatcacheindex], MULT_4096[usedflatindex & 0x03]));
+			W_CacheLumpNumDirect(firstflat + flattranslation[piclight.bytes.picnum], MK_FP(FLAT_CACHE_PAGE[flatcacheL1pagenumber], MULT_4096[usedflatindex & 0x03]));
 		}
 		
 		// regular flat
-		ds_source_segment = FLAT_CACHE_PAGE[flatcacheindex] + MULT_256[usedflatindex & 0x03];
+		ds_source_segment = FLAT_CACHE_PAGE[flatcacheL1pagenumber] + MULT_256[usedflatindex & 0x03];
 
 		// works but slow?
 		//ds_source = R_GetFlat(firstflat + flattranslation[piclight.bytes.picnum]);

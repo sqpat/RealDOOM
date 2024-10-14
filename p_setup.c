@@ -958,6 +958,8 @@ void __near Z_FreeConventionalAllocations() {
 		spritecache_nodes[i].pagecount = 0;
 	}  
 
+	// todo memcpy this all in asm?
+
 	for ( i = 0; i < NUM_FLAT_CACHE_PAGES; i++) {
 		allocatedflatsperpage[i] = 0;
 	}  
@@ -966,10 +968,16 @@ void __near Z_FreeConventionalAllocations() {
 
 	FAR_memset(flatindex, 0xFF, sizeof(uint8_t) * numflats);
 	
-	currentflatpage[0] = -1;
-	currentflatpage[1] = -1;
-	currentflatpage[2] = -1;
-	currentflatpage[3] = -1;
+	currentflatpage[0] = 0;
+	currentflatpage[1] = 1;
+	currentflatpage[2] = 2;
+	currentflatpage[3] = 3;
+
+	lastflatcacheindicesused[0]= 0;
+	lastflatcacheindicesused[1]= 1;
+	lastflatcacheindicesused[2]= 2;
+	lastflatcacheindicesused[3]= 3;
+
 
 	Z_QuickMapPhysics();
 

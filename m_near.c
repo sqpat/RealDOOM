@@ -178,8 +178,13 @@ segment_t visplanelookupsegments[3] = {0x8400, 0x8800, 0x8C00};
 int8_t ceilphyspage = 0;
 int8_t floorphyspage = 0;
 
-int16_t currentflatpage[4] = { -1, -1, -1, -1 };
+// Map of four L2 flat cache logical pages  in the L1 cache. Used to quickly(?) determine if flat cache in L1 cache by it's L2 cache index.
+int8_t currentflatpage[4] = { 0, 1, 2, 3 };
 // there can be 4 flats (4k each) per ems page (16k each). Keep track of how many are allocated here.
+
+// keeps track of the most recently used flat L1 cache for page-out
+int8_t lastflatcacheindicesused[4] = {0,1,2,3};
+
 int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
 
 int8_t visplanedirty = false;
