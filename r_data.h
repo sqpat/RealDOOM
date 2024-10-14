@@ -41,6 +41,13 @@ typedef struct {
   //uint8_t value; // lump, value, etc
 } cache_node_t;
 
+typedef struct {
+  int8_t prev;
+  int8_t next;
+  
+  // floats are never anything but single page..
+} cache_node_flat_t;
+
 
 int8_t __near R_EvictFlatCacheEMSPage();
 int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype);

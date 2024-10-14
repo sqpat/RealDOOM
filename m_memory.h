@@ -183,10 +183,11 @@ segs                 EDD9:0000
 #define size_scantokey           128
 #define size_rndtable            256
 
-#define size_spritecache_nodes   sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
-#define size_flatcache_nodes     sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
-#define size_patchcache_nodes    sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
-#define size_texturecache_nodes  sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
+#define size_spritecache_nodes   sizeof(cache_node_t)      * (NUM_SPRITE_CACHE_PAGES)
+#define size_patchcache_nodes    sizeof(cache_node_t)      * (NUM_PATCH_CACHE_PAGES)
+#define size_texturecache_nodes  sizeof(cache_node_t)      * (NUM_TEXTURE_PAGES)
+#define size_flatcache_nodes     sizeof(cache_node_flat_t) * (NUM_FLAT_CACHE_PAGES)
+
 
 
 
@@ -198,42 +199,27 @@ segs                 EDD9:0000
 #define baselowermemoryaddress        (0x2DE40000)
 
 #define baselowermemoryaddresssegment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
-
-
-#define finesine           ((int32_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
-#define finecosine         ((int32_t __far*)      (baselowermemoryaddress + 0x2000))  // 10240
-#define finetangentinner   ((int32_t __far*)      MAKE_FULL_SEGMENT(finesine, size_finesine))
-#define states             ((state_t __far*)      MAKE_FULL_SEGMENT(finetangentinner, size_finetangent))
-#define events             ((event_t __far*)      MAKE_FULL_SEGMENT(states, size_states))
-#define flattranslation    ((uint8_t __far*)      MAKE_FULL_SEGMENT(events, size_events))
-#define texturetranslation ((uint16_t __far*)     MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
-#define textureheights     ((uint8_t __far*)      MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
-#define scantokey          ((byte __far*)         MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
-#define rndtable           ((uint8_t __far*)      MAKE_FULL_SEGMENT(scantokey, size_scantokey))
-#define spritecache_nodes  ((cache_node_t __far*) MAKE_FULL_SEGMENT(rndtable , size_rndtable))
-#define flatcache_nodes    ((cache_node_t __far*) (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
-#define patchcache_nodes   ((cache_node_t __far*) (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
-#define texturecache_nodes ((cache_node_t __far*) (((int32_t)patchcache_nodes) + size_patchcache_nodes))
+ 
 
 #define FINE_SINE_ARGUMENT  baselowermemoryaddresssegment
 #define FINE_COSINE_ARGUMENT FINE_SINE_ARGUMENT + 0x200
 
 
 
-#define finesine           ((int32_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
-#define finecosine         ((int32_t __far*)      (baselowermemoryaddress + 0x2000))  // 10240
-#define finetangentinner   ((int32_t __far*)      MAKE_FULL_SEGMENT(finesine, size_finesine))
-#define states             ((state_t __far*)      MAKE_FULL_SEGMENT(finetangentinner, size_finetangent))
-#define events             ((event_t __far*)      MAKE_FULL_SEGMENT(states, size_states))
-#define flattranslation    ((uint8_t __far*)      MAKE_FULL_SEGMENT(events, size_events))
-#define texturetranslation ((uint16_t __far*)     MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
-#define textureheights     ((uint8_t __far*)      MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
-#define scantokey          ((byte __far*)         MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
-#define rndtable           ((uint8_t __far*)      MAKE_FULL_SEGMENT(scantokey, size_scantokey))
-#define spritecache_nodes  ((cache_node_t __far*) MAKE_FULL_SEGMENT(rndtable , size_rndtable))
-#define flatcache_nodes    ((cache_node_t __far*) (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
-#define patchcache_nodes   ((cache_node_t __far*) (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
-#define texturecache_nodes ((cache_node_t __far*) (((int32_t)patchcache_nodes) + size_patchcache_nodes))
+#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
+#define finecosine         ((int32_t __far*)            (baselowermemoryaddress + 0x2000))  // 10240
+#define finetangentinner   ((int32_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
+#define states             ((state_t __far*)            MAKE_FULL_SEGMENT(finetangentinner, size_finetangent))
+#define events             ((event_t __far*)            MAKE_FULL_SEGMENT(states, size_states))
+#define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
+#define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
+#define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
+#define scantokey          ((byte __far*)               MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
+#define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(scantokey, size_scantokey))
+#define spritecache_nodes  ((cache_node_t __far*)       MAKE_FULL_SEGMENT(rndtable , size_rndtable))
+#define patchcache_nodes   ((cache_node_t __far*)       (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
+#define texturecache_nodes ((cache_node_t __far*)       (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
+#define flatcache_nodes    ((cache_node_flat_t __far*)  (((int32_t)patchcache_nodes) + size_patchcache_nodes))
 
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
 // gross... should we change how this works
@@ -247,9 +233,9 @@ segs                 EDD9:0000
 #define scantokey_segment             ((segment_t) ((int32_t)scantokey >> 16))
 #define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
 #define spritecache_nodes_segment     ((segment_t) ((int32_t)spritecache_nodes >> 16))
-#define flatcache_nodes_segment       ((segment_t) ((int32_t)flatcache_nodes >> 16))
 #define patchcache_nodes_segment      ((segment_t) ((int32_t)patchcache_nodes >> 16))
 #define texturecache_nodes_segment    ((segment_t) ((int32_t)texturecache_nodes >> 16))
+#define flatcache_nodes_segment       ((segment_t) ((int32_t)flatcache_nodes >> 16))
 
  
 

@@ -250,8 +250,6 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	uint8_t __far* cacherefoffset;
 	uint8_t __near* usedcacherefpage;
 
-	//I_Error("evicting %i", cachetype);
-
 	switch (cachetype){
 		case CACHETYPE_SPRITE:
 			nodetail = &spritecache_tail;
@@ -377,7 +375,7 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 // numpages is 0-3 not 1-4
 void __near R_MarkFlatCacheLRU(int8_t index) {
 
-	cache_node_t far* nodelist  = flatcache_nodes;
+	cache_node_flat_t far* nodelist  = flatcache_nodes;
 
 
 	int8_t prev;
@@ -426,9 +424,8 @@ int8_t __near R_EvictFlatCacheEMSPage(){
 	int8_t evictedpage;
 	uint8_t i;
 	int8_t next, prev;
-	cache_node_t far* nodelist;
+	cache_node_flat_t far* nodelist;
 	
-	int8_t* nodehead;
 
 	
 	//I_Error("evicting %i", cachetype);
