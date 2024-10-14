@@ -88,11 +88,6 @@ void __near R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 			nodehead = &spritecache_head;
 			nodelist = spritecache_nodes;
 			break;
-		case CACHETYPE_FLAT:
-			nodetail = &flatcache_tail;
-			nodehead = &flatcache_head;
-			nodelist = flatcache_nodes;
-			break;
 		case CACHETYPE_PATCH:
  			nodetail = &patchcache_tail;
 			nodehead = &patchcache_head;
@@ -236,13 +231,15 @@ int8_t checkchecksum(int16_t l){
 
 // in this case numpages is 1-4, not 0-3
 // todo: consider moving a lot of these small data structures into DS/near memory
+
+// This generally works on the "L2" cache which is pages in EMS logical memory that are backing up conventional memory ("L1" cache)
 int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	int8_t evictedpage;
 	int8_t j;
 	uint8_t currentpage;
 	int16_t k;
 	int8_t offset;
-	int8_t remainingpages;
+	int8_t remainingpages; //TODO uninitialized. probably 0 is fine but confirm.
 	int8_t next, prev;
 	cache_node_t far* nodelist;
 	int8_t* nodetail;
@@ -269,16 +266,7 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 			spritecacheevictcount++;
 			#endif
 	break;
-		case CACHETYPE_FLAT:
-			nodetail = &flatcache_tail;
-			nodehead = &flatcache_head;
-			nodelist = flatcache_nodes;
-			maxcachesize = NUM_FLAT_CACHE_PAGES;
-			maxitersize = MAX_FLATS;
-			#ifdef DETAILED_BENCH_STATS
-			flatcacheevictcount++;
-			#endif
-			break;
+
 		case CACHETYPE_PATCH:
  			nodetail = &patchcache_tail;
 			nodehead = &patchcache_head;
@@ -318,13 +306,10 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
  	}
 
 
-	//I_Error("out of sprite");
 	// need to evict at least numpages pages
 	// we'll remove the tail, up to numpages...
 	// if thats part of a multipage allocations, we'll remove that until the end
-	// this can potentially remove something in an active page. 
-
-	//printout();
+ 
 
 
 	// todo update cache list including numpages situation
@@ -371,42 +356,146 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	// handles the remainingpages thing - resets numpages
 	numpages = j;
 
-//todo clear cache data per type
-	switch (cachetype){
-		case CACHETYPE_SPRITE:
-		case CACHETYPE_PATCH:
-		case CACHETYPE_COMPOSITE:
-
-			for (offset = 0; offset < numpages; offset++){
-				currentpage = evictedpage + offset;
-				for (k = 0; k < maxitersize; k++){
-					if ((cacherefpage[k] >> 2) == currentpage){
-						cacherefpage[k] = 0xFF;
-						cacherefoffset[k] = 0xFF;
-						//I_Error("deleted a page");
-					}
-				}
-				usedcacherefpage[currentpage] = 0;
-
-			}	
-			break;
-		case CACHETYPE_FLAT:
-
-			allocatedflatsperpage[evictedpage] = 1;
-			for (k = 0; k < maxitersize; k++){
-				
-				if ((flatindex[k] >> 2) == evictedpage){
-					flatindex[k] = 0xFF;
-				}
-
- 
+	//todo clear cache data per type
+	for (offset = 0; offset < numpages; offset++){
+		currentpage = evictedpage + offset;
+		for (k = 0; k < maxitersize; k++){
+			if ((cacherefpage[k] >> 2) == currentpage){
+				cacherefpage[k] = 0xFF;
+				cacherefoffset[k] = 0xFF;
+				//I_Error("deleted a page");
 			}
- 
-			break;
-	}
+		}
+		usedcacherefpage[currentpage] = 0;
+
+	}	
+
 
 	return evictedpage;
 }
+
+// numpages is 0-3 not 1-4
+void __near R_MarkFlatCacheLRU(int8_t index) {
+
+	cache_node_t far* nodelist  = flatcache_nodes;
+
+
+	int8_t prev;
+	int8_t next;
+
+	if (index == flatcache_head) {
+		return;
+	}
+	
+	prev = nodelist[index].prev;
+	next = nodelist[index].next;
+
+	if (prev != -1) {
+		nodelist[prev].next = next;
+	} else {
+		// no prev; may be a new allocation.
+		if (flatcache_tail == -1){
+			// first allocation. being set to 0
+			flatcache_tail = index;
+		} else {
+			// it has a next, which means its allocated. tail becomes next
+			if (next != -1){
+				flatcache_tail = next;
+			}
+		}
+	}
+
+	if (next != -1) {
+		nodelist[next].prev = prev;
+	}
+
+	// this says head has no prev!
+	nodelist[index].prev = flatcache_head;
+	nodelist[index].next = -1;
+	if (flatcache_head != -1) {
+		nodelist[flatcache_head].next = index;
+	}
+	flatcache_head = index;
+
+
+	 
+}
+
+
+int8_t __near R_EvictFlatCacheEMSPage(){
+	int8_t evictedpage;
+	uint8_t i;
+	int8_t next, prev;
+	cache_node_t far* nodelist;
+	
+	int8_t* nodehead;
+
+	
+	//I_Error("evicting %i", cachetype);
+
+
+	
+	nodelist = flatcache_nodes;
+	
+	#ifdef DETAILED_BENCH_STATS
+	flatcacheevictcount++;
+	#endif
+	 
+	evictedpage = flatcache_tail;
+
+ 
+	// todo update cache list including numpages situation
+
+	// remove the element and connext its next and prev togeter
+	next = nodelist[evictedpage].next;
+	prev = nodelist[evictedpage].prev;
+
+	if (next != -1){
+		nodelist[next].prev = prev;
+	}
+
+	if (prev != -1){
+		nodelist[prev].next = next;
+	}
+
+	// evicted page is now floating
+	nodelist[evictedpage].prev = -1;
+	nodelist[evictedpage].next = -1;
+
+	// update tail/head pointer if necessary
+
+	if (evictedpage == flatcache_tail){
+		flatcache_tail = next;
+	}
+	if (evictedpage == flatcache_head){
+		flatcache_head = prev;
+	}
+
+
+	// if its an active page... do we have to do anything? 
+
+
+	//todo clear cache data per type
+ 
+	// all the other flats in this are cleared.
+	allocatedflatsperpage[evictedpage] = 1;
+
+	// gross and slow. but rare i guess? revisit?
+	// cant we fetch these from some list that already exists?
+	
+	//entries in flatindex cache pointing to this page are marked unloded.
+	for (i = 0; i < MAX_FLATS; i++){
+		
+		if ((flatindex[i] >> 2) == evictedpage){
+			flatindex[i] = 0xFF;
+		}
+
+	}
+
+
+	return evictedpage;
+}
+
 
 
 //
@@ -626,6 +715,8 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 	if (size & 0xFF) {
 		blocksize++;
 	}
+
+	//todo shift right 6 can be a lookup.
 	numpages = blocksize >> 6; // num EMS pages needed
 	if (blocksize & 0x3F) {
 		numpages++;

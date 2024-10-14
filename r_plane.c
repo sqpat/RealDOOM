@@ -524,7 +524,7 @@ void __near R_DrawPlanes (void) {
 			}
 			
 			// todo figure out what to do with firstunused flat etc
-			usedflatindex = R_EvictCacheEMSPage(0, CACHETYPE_FLAT);
+			usedflatindex = R_EvictFlatCacheEMSPage();
 			// mult by 4, going from flat index to page index first index of the flat in the evicted page.
 			usedflatindex = usedflatindex << 2;
 
@@ -583,7 +583,7 @@ void __near R_DrawPlanes (void) {
 		}
 		cachealreadymarked:
 
-		R_MarkCacheLRU(usedflatindex >> 2, 0, CACHETYPE_FLAT);
+		R_MarkFlatCacheLRU(usedflatindex >> 2);
 		
 
 		// load if necessary
