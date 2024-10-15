@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/14 04:12:56
+Created on:       24/10/15 02:32:36
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -88,9 +88,9 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:1df8*     _markpoints
 02cf:1e20*     _cachedsegmentlumps
 02cf:1e28*     _cachedlumps
-02cf:1e30*     _activespritepages
-02cf:1e38*     _textureLRU
-02cf:1e40*     _spriteLRU
+02cf:1e30*     _spriteL1LRU
+02cf:1e38*     _activespritepages
+02cf:1e40*     _textureL1LRU
 02cf:1e48*     _activetexturepages
 02cf:1e50*     _frontsector
 02cf:1e54*     _backsector
@@ -436,14 +436,14 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:0bac*     _lastvisspritepatch
 02cf:0bae*     _lastvisspritesegment2
 02cf:0bb0*     _lastvisspritepatch2
-02cf:0bb2*     _spritecache_head
-02cf:0bb3*     _spritecache_tail
-02cf:0bb4*     _flatcache_head
-02cf:0bb5*     _flatcache_tail
-02cf:0bb6*     _patchcache_head
-02cf:0bb7*     _patchcache_tail
-02cf:0bb8*     _texturecache_head
-02cf:0bb9*     _texturecache_tail
+02cf:0bb2*     _spritecache_l2_head
+02cf:0bb3*     _spritecache_l2_tail
+02cf:0bb4*     _flatcache_l2_head
+02cf:0bb5*     _flatcache_l2_tail
+02cf:0bb6*     _patchcache_l2_head
+02cf:0bb7*     _patchcache_l2_tail
+02cf:0bb8*     _texturecache_l2_head
+02cf:0bb9*     _texturecache_l2_tail
 02cf:0bba*     _cachedtex
 02cf:0bbc*     _cachedsegmenttex
 02cf:0bbe*     _cachedsegmenttex2
@@ -574,11 +574,11 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:1150*     _weaponinfo
 02cf:11b4*     _maxammo
 02cf:11bc*     _clipammo
+02cf:0b50*     _snd_prefixen
 02cf:11c0*     _brainspit_easy
 02cf:11c1*     _opposite
 02cf:11ca*     _diags
 02cf:11ce*     _movedirangles
-02cf:0b50*     _snd_prefixen
 02cf:11de*     _pageswapargs
 02cf:13ee*     _current5000State
 02cf:13ef*     _last5000State
@@ -860,4 +860,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  6310 (25360.)
 Entry point address: 0000:0426
-Link time: 00:00.65
+Link time: 00:00.10

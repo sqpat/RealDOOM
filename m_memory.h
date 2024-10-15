@@ -183,10 +183,10 @@ segs                 EDD9:0000
 #define size_scantokey           128
 #define size_rndtable            256
 
-#define size_spritecache_nodes   sizeof(cache_node_t)      * (NUM_SPRITE_CACHE_PAGES)
-#define size_patchcache_nodes    sizeof(cache_node_t)      * (NUM_PATCH_CACHE_PAGES)
-#define size_texturecache_nodes  sizeof(cache_node_t)      * (NUM_TEXTURE_PAGES)
-#define size_flatcache_nodes     sizeof(cache_node_flat_t) * (NUM_FLAT_CACHE_PAGES)
+#define size_spritecache_nodes   sizeof(cache_node_page_count_t)      * (NUM_SPRITE_CACHE_PAGES)
+#define size_patchcache_nodes    sizeof(cache_node_page_count_t)      * (NUM_PATCH_CACHE_PAGES)
+#define size_texturecache_nodes  sizeof(cache_node_page_count_t)      * (NUM_TEXTURE_PAGES)
+#define size_flatcache_nodes     sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
 
 
 
@@ -216,10 +216,10 @@ segs                 EDD9:0000
 #define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
 #define scantokey          ((byte __far*)               MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(scantokey, size_scantokey))
-#define spritecache_nodes  ((cache_node_t __far*)       MAKE_FULL_SEGMENT(rndtable , size_rndtable))
-#define patchcache_nodes   ((cache_node_t __far*)       (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
-#define texturecache_nodes ((cache_node_t __far*)       (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
-#define flatcache_nodes    ((cache_node_flat_t __far*)  (((int32_t)patchcache_nodes) + size_patchcache_nodes))
+#define spritecache_nodes  ((cache_node_page_count_t __far*)       MAKE_FULL_SEGMENT(rndtable , size_rndtable))
+#define patchcache_nodes   ((cache_node_page_count_t __far*)       (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
+#define texturecache_nodes ((cache_node_page_count_t __far*)       (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
+#define flatcache_nodes    ((cache_node_t __far*)  (((int32_t)patchcache_nodes) + size_patchcache_nodes))
 
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
 // gross... should we change how this works

@@ -938,18 +938,22 @@ void __near Z_FreeConventionalAllocations() {
 
 	skytextureloaded = 0;
 
-	spritecache_head = -1;
-	spritecache_tail = -1;
-
-	flatcache_head = -1;
-	flatcache_tail = -1;
+	// put these all next to each other for a single memset..
 
 
-	patchcache_head = -1;
-	patchcache_tail = -1;
+	flatcache_l2_head = -1;
+	flatcache_l2_tail = -1;
 
-	texturecache_head = -1;
-	texturecache_tail = -1;
+	spritecache_l2_head = -1;
+	spritecache_l2_tail = -1;
+
+
+
+	patchcache_l2_head = -1;
+	patchcache_l2_tail = -1;
+
+	texturecache_l2_head = -1;
+	texturecache_l2_tail = -1;
 
 	// just run thru the whole bunch in one go instead of multiple 
 	for ( i = 0; i < NUM_SPRITE_CACHE_PAGES+NUM_FLAT_CACHE_PAGES+NUM_PATCH_CACHE_PAGES+NUM_TEXTURE_PAGES; i++) {
@@ -983,9 +987,11 @@ void __near Z_FreeConventionalAllocations() {
 
 	for (i = 0; i < 4; i++) {
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
-		textureLRU[i] = i;
+		textureL1LRU[i] = i;
 		activespritepages[i] = FIRST_SPRITE_CACHE_LOGICAL_PAGE + i;
-		spriteLRU[i] = i;
+		//spriteL1LRU[i].prev = -1;
+		//spriteL1LRU[i].next = -1;
+		spriteL1LRU[i] = i;
 
 		pageswapargs[pageswapargs_rend_texture_offset +  i*PAGE_SWAP_ARG_MULT]  = _EPR(FIRST_TEXTURE_LOGICAL_PAGE + i);
 		pageswapargs[pageswapargs_spritecache_offset + i*PAGE_SWAP_ARG_MULT]  = _EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + i);

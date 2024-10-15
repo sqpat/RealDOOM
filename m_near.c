@@ -307,30 +307,28 @@ int16_t             numtextures;
 
 int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
 uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
-int16_t textureLRU[4];
+int16_t textureL1LRU[4];
 
 
 int16_t activespritepages[4]; // always gets reset to defaults at start of frame
 uint8_t activespritenumpages[4]; // always gets reset to defaults at start of frame
-int16_t spriteLRU[4];
+int16_t spriteL1LRU[4];
 
  
 
 
 
+int8_t spritecache_l2_head = -1;
+int8_t spritecache_l2_tail = -1;
 
+int8_t flatcache_l2_head = -1;
+int8_t flatcache_l2_tail = -1;
 
-int8_t spritecache_head = -1;
-int8_t spritecache_tail = -1;
+int8_t patchcache_l2_head = -1;
+int8_t patchcache_l2_tail = -1;
 
-int8_t flatcache_head = -1;
-int8_t flatcache_tail = -1;
-
-int8_t patchcache_head = -1;
-int8_t patchcache_tail = -1;
-
-int8_t texturecache_head = -1;
-int8_t texturecache_tail = -1;
+int8_t texturecache_l2_head = -1;
+int8_t texturecache_l2_tail = -1;
 
 
 int16_t cachedlumps[NUM_CACHE_LUMPS];
@@ -2292,3 +2290,31 @@ int32_t visplaneswitchcount = 0;
 int8_t currenttask = -1;
 
 int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17 };
+
+/*
+uint8_t blocksizelookup[256]={
+
+// not sure this isa ctually faster..
+
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+
+	1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+
+	2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+
+	3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+	4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+	4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+	4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+
+};
+*/

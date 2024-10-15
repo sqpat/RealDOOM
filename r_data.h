@@ -39,20 +39,20 @@ typedef struct {
   // allocation and count up prev from there. this way when 
   int8_t pagecount; 
   //uint8_t value; // lump, value, etc
-} cache_node_t;
+} cache_node_page_count_t;
 
 typedef struct {
   int8_t prev;
   int8_t next;
   
   // floats are never anything but single page..
-} cache_node_flat_t;
+} cache_node_t;
 
 
 int8_t __near R_EvictFlatCacheEMSPage();
 int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype);
-void __near R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype);
-void __near R_MarkFlatCacheLRU(int8_t index);
+void __near R_MarkL2CacheLRU(int8_t index, int8_t numpages, int8_t cachetype);
+void __near R_MarkL2FlatCacheLRU(int8_t index);
 
 segment_t __near R_GetColumnSegment ( int16_t tex, int16_t col );
 segment_t __near getspritetexture(int16_t index);

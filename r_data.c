@@ -60,21 +60,64 @@
 
 
  
+//todo: these can be inlined or made a faster algorithm later.
 
 
+void __near R_MarkL1SpriteCacheLRU(int8_t index){
 
+	if (spriteL1LRU[0] == index){
+		return;
+	} else if (spriteL1LRU[1] == index){
+		spriteL1LRU[1] = spriteL1LRU[0];
+		spriteL1LRU[0] = index;
+		return;
+	} else if (spriteL1LRU[2] == index){
+		spriteL1LRU[2] = spriteL1LRU[1];
+		spriteL1LRU[1] = spriteL1LRU[0];
+		spriteL1LRU[0] = index;
+		return;
+	} else if (spriteL1LRU[3] == index){
+		spriteL1LRU[3] = spriteL1LRU[2];
+		spriteL1LRU[2] = spriteL1LRU[1];
+		spriteL1LRU[1] = spriteL1LRU[0];
+		spriteL1LRU[0] = index;
+		return;
+	}
+}
 
+void __near R_MarkL1TextureCacheLRU(int8_t index){
+	
+	if (textureL1LRU[0] == index){
+		return;
+	} else if (textureL1LRU[1] == index){
+		textureL1LRU[1] = textureL1LRU[0];
+		textureL1LRU[0] = index;
+		return;
+	} else if (textureL1LRU[2] == index){
+		textureL1LRU[2] = textureL1LRU[1];
+		textureL1LRU[1] = textureL1LRU[0];
+		textureL1LRU[0] = index;
+		return;
+	} else if (textureL1LRU[3] == index){
+		textureL1LRU[3] = textureL1LRU[2];
+		textureL1LRU[2] = textureL1LRU[1];
+		textureL1LRU[1] = textureL1LRU[0];
+		textureL1LRU[0] = index;
+		return;
+	}
+
+}
 
 
  
 
 // numpages is 0-3 not 1-4
-void __near R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
+void __near R_MarkL2CacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 	int8_t prev;
 	int8_t next;
 	int8_t pagecount;
 
-	cache_node_t far* nodelist;
+	cache_node_page_count_t far* nodelist;
 	int8_t* nodetail;
 	int8_t* nodehead;
 	int8_t lastpagecount;
@@ -84,18 +127,18 @@ void __near R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 
 	switch (cachetype){
 		case CACHETYPE_SPRITE:
-			nodetail = &spritecache_tail;
-			nodehead = &spritecache_head;
+			nodetail = &spritecache_l2_tail;
+			nodehead = &spritecache_l2_head;
 			nodelist = spritecache_nodes;
 			break;
 		case CACHETYPE_PATCH:
- 			nodetail = &patchcache_tail;
-			nodehead = &patchcache_head;
+ 			nodetail = &patchcache_l2_tail;
+			nodehead = &patchcache_l2_head;
 			nodelist = patchcache_nodes;
 			break;
 		case CACHETYPE_COMPOSITE:
- 			nodetail = &texturecache_tail;
-			nodehead = &texturecache_head;
+ 			nodetail = &texturecache_l2_tail;
+			nodehead = &texturecache_l2_head;
 			nodelist = texturecache_nodes;
 			break;
 			
@@ -239,9 +282,9 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	uint8_t currentpage;
 	int16_t k;
 	int8_t offset;
-	int8_t remainingpages; //TODO uninitialized. probably 0 is fine but confirm.
+	int8_t remainingpages = 0; //TODO uninitialized. probably 0 is fine but confirm.
 	int8_t next, prev;
-	cache_node_t far* nodelist;
+	cache_node_page_count_t far* nodelist;
 	int8_t* nodetail;
 	int8_t* nodehead;
 	int8_t maxcachesize;
@@ -252,8 +295,8 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 
 	switch (cachetype){
 		case CACHETYPE_SPRITE:
-			nodetail = &spritecache_tail;
-			nodehead = &spritecache_head;
+			nodetail = &spritecache_l2_tail;
+			nodehead = &spritecache_l2_head;
 			nodelist = spritecache_nodes;
 			maxcachesize = NUM_SPRITE_CACHE_PAGES;
 			maxitersize = MAX_SPRITE_LUMPS;
@@ -266,8 +309,8 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	break;
 
 		case CACHETYPE_PATCH:
- 			nodetail = &patchcache_tail;
-			nodehead = &patchcache_head;
+ 			nodetail = &patchcache_l2_tail;
+			nodehead = &patchcache_l2_head;
 			nodelist = patchcache_nodes;
 			maxcachesize = NUM_PATCH_CACHE_PAGES;
 			maxitersize = MAX_PATCHES;
@@ -279,8 +322,8 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 			#endif
 			break;
 		case CACHETYPE_COMPOSITE:
- 			nodetail = &texturecache_tail;
-			nodehead = &texturecache_head;
+ 			nodetail = &texturecache_l2_tail;
+			nodehead = &texturecache_l2_head;
 			nodelist = texturecache_nodes;
 			maxcachesize = NUM_TEXTURE_PAGES;
 			maxitersize = MAX_TEXTURES;
@@ -312,6 +355,7 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 
 	// todo update cache list including numpages situation
 
+	// note numpages is 1 minimum..
 	for (j = 0; j < numpages+remainingpages; j++){
 		currentpage = evictedpage+j;
 		remainingpages = nodelist[currentpage].pagecount;
@@ -354,14 +398,13 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	// handles the remainingpages thing - resets numpages
 	numpages = j;
 
-	//todo clear cache data per type
+	//clear cache data that was pointing to this page.
 	for (offset = 0; offset < numpages; offset++){
 		currentpage = evictedpage + offset;
 		for (k = 0; k < maxitersize; k++){
 			if ((cacherefpage[k] >> 2) == currentpage){
 				cacherefpage[k] = 0xFF;
 				cacherefoffset[k] = 0xFF;
-				//I_Error("deleted a page");
 			}
 		}
 		usedcacherefpage[currentpage] = 0;
@@ -373,15 +416,15 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 }
 
 // numpages is 0-3 not 1-4
-void __near R_MarkFlatCacheLRU(int8_t index) {
+void __near R_MarkL2FlatCacheLRU(int8_t index) {
 
-	cache_node_flat_t far* nodelist  = flatcache_nodes;
+	cache_node_t far* nodelist  = flatcache_nodes;
 
 
 	int8_t prev;
 	int8_t next;
 
-	if (index == flatcache_head) {
+	if (index == flatcache_l2_head) {
 		return;
 	}
 	
@@ -392,13 +435,13 @@ void __near R_MarkFlatCacheLRU(int8_t index) {
 		nodelist[prev].next = next;
 	} else {
 		// no prev; may be a new allocation.
-		if (flatcache_tail == -1){
+		if (flatcache_l2_tail == -1){
 			// first allocation. being set to 0
-			flatcache_tail = index;
+			flatcache_l2_tail = index;
 		} else {
 			// it has a next, which means its allocated. tail becomes next
 			if (next != -1){
-				flatcache_tail = next;
+				flatcache_l2_tail = next;
 			}
 		}
 	}
@@ -408,12 +451,12 @@ void __near R_MarkFlatCacheLRU(int8_t index) {
 	}
 
 	// this says head has no prev!
-	nodelist[index].prev = flatcache_head;
+	nodelist[index].prev = flatcache_l2_head;
 	nodelist[index].next = -1;
-	if (flatcache_head != -1) {
-		nodelist[flatcache_head].next = index;
+	if (flatcache_l2_head != -1) {
+		nodelist[flatcache_l2_head].next = index;
 	}
-	flatcache_head = index;
+	flatcache_l2_head = index;
 
 
 	 
@@ -424,7 +467,7 @@ int8_t __near R_EvictFlatCacheEMSPage(){
 	int8_t evictedpage;
 	uint8_t i;
 	int8_t next, prev;
-	cache_node_flat_t far* nodelist;
+	cache_node_t far* nodelist;
 	
 
 	
@@ -438,7 +481,7 @@ int8_t __near R_EvictFlatCacheEMSPage(){
 	flatcacheevictcount++;
 	#endif
 	 
-	evictedpage = flatcache_tail;
+	evictedpage = flatcache_l2_tail;
 
  
 	// todo update cache list including numpages situation
@@ -461,11 +504,11 @@ int8_t __near R_EvictFlatCacheEMSPage(){
 
 	// update tail/head pointer if necessary
 
-	if (evictedpage == flatcache_tail){
-		flatcache_tail = next;
+	if (evictedpage == flatcache_l2_tail){
+		flatcache_l2_tail = next;
 	}
-	if (evictedpage == flatcache_head){
-		flatcache_head = prev;
+	if (evictedpage == flatcache_l2_head){
+		flatcache_l2_head = prev;
 	}
 
 
@@ -554,8 +597,6 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 
 
 
-	// tex_index 24 is size 32768
-
 	// calculated the size, now lets find an open page
 	if (numpages == 1) {
 		// number of 256-byte block segments needed in an ems page
@@ -609,10 +650,6 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 		}
 		texpage = (i << 2) + (numpagesminus1);
 		texoffset = 0; // if multipage then its always aligned to start of its block
-		
-
-
-	
 
 
 	}
@@ -718,6 +755,8 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 	if (blocksize & 0x3F) {
 		numpages++;
 	}
+	// asm algo something like
+	// rol x2, add (3F) to get carry, adc 0
 
 
 
@@ -840,8 +879,6 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 	// check which 64k page this lives in
 
 	Z_QuickMapScratch_7000();
-
-
 
 	for (i = 0; i < texturepatchcount; i++) {
 
@@ -973,10 +1010,8 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 	uint8_t realtexpage = texpage >> 2;
 	uint8_t pagenum = pageoffset + realtexpage;
 	uint8_t numpages = (texpage& 0x03);
- 	int16_t bestpage = -1;
-	int16_t bestpageindex = -1;
-	uint8_t startpage = 0;
-	int16_t i;
+	uint8_t startpage;
+	uint8_t i;
 
  
 
@@ -990,34 +1025,20 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			if (activetexturepages[i] == pagenum ) {
 				// todo faster, better lru? add to all can be just one op right?
 				// cast to int16_t and add 0x0101?
-				textureLRU[0]++;
-				textureLRU[1]++;
-				textureLRU[2]++;
-				textureLRU[3]++;
-				textureLRU[i] = 0;
-
-				R_MarkCacheLRU(realtexpage, 0, cachetype);
+				R_MarkL1TextureCacheLRU(i);
+				R_MarkL2CacheLRU(realtexpage, 0, cachetype);
 				return i;
 			}
 
 		}
 		// cache miss, find highest LRU cache index
-		for (i = 0; i < 4; i++) {
-			if (bestpage < textureLRU[i]) {
-				bestpage = textureLRU[i];
-				bestpageindex = i;
-			}
-		}
-
+ 
 		// figure out startpage based on LRU
 
-		startpage = bestpageindex;
+		startpage = textureL1LRU[3];
 
-		textureLRU[0]++;
-		textureLRU[1]++;
-		textureLRU[2]++;
-		textureLRU[3]++;
-		textureLRU[startpage] = 0;
+		R_MarkL1TextureCacheLRU(startpage);
+
 
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage]) {
@@ -1038,7 +1059,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 
 
-		R_MarkCacheLRU(realtexpage, 0, cachetype);
+		R_MarkL2CacheLRU(realtexpage, 0, cachetype);
 		Z_QuickMapRenderTexture();
 		cachedtex = -1;
 		cachedtex2 = -1;
@@ -1056,7 +1077,6 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 	} else {
 		int16_t j = 0;
 		
-		startpage = 0;
 
 		for (i = 0; i < 4-numpages; i++) {
 
@@ -1074,41 +1094,34 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			}
 
 
-			// all pages were good
+			// all pages for this texture are in the cache, unevicted.
 
-			// todo faster, better lru?
-			textureLRU[0]++;
-			textureLRU[1]++;
-			textureLRU[2]++;
-			textureLRU[3]++;
-			// (can we do two int16_t adds of 0x0101)
+			
 			for (j = 0; j <= numpages; j++) {
-				textureLRU[i + j] = 0;
+				R_MarkL1TextureCacheLRU(i+j);
 			}
 
-			R_MarkCacheLRU(realtexpage, numpages, cachetype);
+			R_MarkL2CacheLRU(realtexpage, numpages, cachetype);
 			return i;
 		}
 
-		// need to page it in
+		// texture not in cache. need to page it in
 
-		for (i = 0; i < 4-numpages; i++) {
-			if (bestpage < textureLRU[i]) {
-				bestpage = textureLRU[i];
-				bestpageindex = i;
-			}
-		}
+		
 
 
 		// figure out startpage based on LRU
+		startpage = 3; // num EMS pages in conventional memory - 1
+		while (textureL1LRU[startpage] > (3-numpages)){
+			startpage--;
+		}
+		startpage = textureL1LRU[startpage];
 
-		startpage = bestpageindex;
+
 
 		// (can we do two int16_t adds of 0x0101)
-		textureLRU[0]++;
-		textureLRU[1]++;
-		textureLRU[2]++;
-		textureLRU[3]++;
+
+
 
 		// prep args for quickmap;
 
@@ -1130,7 +1143,8 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 
 		for (i = 0; i <= numpages; i++) {
-			textureLRU[startpage + i] = 0;
+			R_MarkL1TextureCacheLRU(startpage+i);
+
 			activetexturepages[startpage + i]  = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;			
 			pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(pagenum + i);
 
@@ -1138,7 +1152,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		}
 
-		R_MarkCacheLRU(realtexpage, numpages, cachetype);
+		R_MarkL2CacheLRU(realtexpage, numpages, cachetype);
 		Z_QuickMapRenderTexture();
 		cachedtex = -1;
 		cachedtex2 = -1;
@@ -1164,10 +1178,8 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 	uint8_t realtexpage = texpage >> 2;
 	uint8_t pagenum = pageoffset + realtexpage;
 	uint8_t numpages = (texpage & 0x03);
-	int16_t bestpage = -1;
-	int16_t bestpageindex = -1;
 	uint8_t startpage = 0;
-	int16_t i;
+	uint8_t i;
 
 	if (!numpages) {
 		// one page, most common case - lets write faster code here...
@@ -1178,34 +1190,22 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 			if (activespritepages[i] == pagenum) {
 				// todo faster, better lru? add to all can be just one op right?
 				// cast to int16_t and add 0x0101?
-				spriteLRU[0]++;
-				spriteLRU[1]++;
-				spriteLRU[2]++;
-				spriteLRU[3]++;
-				spriteLRU[i] = 0;
-				R_MarkCacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
+				//todo: mark lru here..
+				R_MarkL1SpriteCacheLRU(i);
+				R_MarkL2CacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
 
 				return i;
 			}
 
 		}
 		// cache miss, find highest LRU cache index
-		for (i = 0; i < 4; i++) {
-			if (bestpage < spriteLRU[i]) {
-				bestpage = spriteLRU[i];
-				bestpageindex = i;
-			}
-		}
 
-		// figure out startpage based on LRU
+		// start page is least recently used (since single page)
 
-		startpage = bestpageindex;
+		startpage = spriteL1LRU[3];
 
-		spriteLRU[0]++;
-		spriteLRU[1]++;
-		spriteLRU[2]++;
-		spriteLRU[3]++;
-		spriteLRU[startpage] = 0;
+		R_MarkL1SpriteCacheLRU(startpage);
+
 
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activespritenumpages[startpage]) {
@@ -1225,7 +1225,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		pageswapargs[pageswapargs_spritecache_offset +  (startpage)*PAGE_SWAP_ARG_MULT] = _EPR(pagenum);	
 		
 		Z_QuickMapSpritePage();
-		R_MarkCacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
+		R_MarkL2CacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
 
 		lastvisspritepatch = -1;
 		lastvisspritepatch2 = -1;
@@ -1237,7 +1237,6 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 	else {
 		int16_t j = 0;
 
-		startpage = 0;
 
 		for (i = 0; i < 4 - numpages; i++) {
 
@@ -1258,38 +1257,27 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 			// all pages were good
 
 			// todo faster, better lru?
-			spriteLRU[0]++;
-			spriteLRU[1]++;
-			spriteLRU[2]++;
-			spriteLRU[3]++;
+
 			// (can we do two int16_t adds of 0x0101)
 			for (j = 0; j <= numpages; j++) {
-				spriteLRU[i + j] = 0;
+				R_MarkL1SpriteCacheLRU(i+j);
+
 			}
-			R_MarkCacheLRU(realtexpage, numpages, CACHETYPE_SPRITE);
+			R_MarkL2CacheLRU(realtexpage, numpages, CACHETYPE_SPRITE);
 
 			return i;
 		}
 
 		// need to page it in
 
-		for (i = 0; i < 4 - numpages; i++) {
-			if (bestpage < spriteLRU[i]) {
-				bestpage = spriteLRU[i];
-				bestpageindex = i;
-			}
+
+		// start page is least recently used that fits in numpages.
+		startpage = 3; // num EMS pages in conventional memory - 1
+		while (spriteL1LRU[startpage] > (3-numpages)){
+			startpage--;
 		}
+		startpage = spriteL1LRU[startpage];
 
-
-		// figure out startpage based on LRU
-
-		startpage = bestpageindex;
-
-		// (can we do two int16_t adds of 0x0101)
-		spriteLRU[0]++;
-		spriteLRU[1]++;
-		spriteLRU[2]++;
-		spriteLRU[3]++;
 
 		// prep args for quickmap;
 
@@ -1310,7 +1298,8 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 
 		for (i = 0; i <= numpages; i++) {
-			spriteLRU[startpage + i] = 0;
+			R_MarkL1SpriteCacheLRU(startpage+i);
+
 			activespritepages[startpage + i] =  pagenum + i;			
 			pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)*PAGE_SWAP_ARG_MULT)] = _EPR(pagenum + i);
 
@@ -1324,7 +1313,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		Z_QuickMapSpritePage();
 
 		// paged in
-		R_MarkCacheLRU(realtexpage, numpages, CACHETYPE_SPRITE);
+		R_MarkL2CacheLRU(realtexpage, numpages, CACHETYPE_SPRITE);
 
 		return startpage;
 
