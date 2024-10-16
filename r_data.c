@@ -415,7 +415,87 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	return evictedpage;
 }
 
-// numpages is 0-3 not 1-4
+/*
+
+void __near checkflatcache(int8_t id){
+	int8_t node0;
+	int8_t node1;
+	int8_t node2;
+	int8_t node3;
+	int8_t node4;
+	int8_t node5;
+	cache_node_t far* nodelist  = flatcache_nodes;
+
+
+
+	node0  = flatcache_l2_tail;
+	node1  = nodelist[node0].next;
+	node2  = nodelist[node1].next;
+	node3  = nodelist[node2].next;
+	node4  = nodelist[node3].next;
+	node5  = nodelist[node4].next;
+
+	if (id == 2){
+	//I_Error("check %i %i %i %i %i %i %i %i %i %i", flatcache_l2_tail, flatcache_l2_head, id, node0, node1, node2, node3, node4, node5);
+
+	}
+
+
+
+	if (nodelist[flatcache_l2_tail].prev != -1){
+		I_Error("tail non -1 prev %i", id);
+	}
+	if (nodelist[flatcache_l2_tail].next == -1){
+		I_Error("tail -1 next %i", id);
+	}
+
+	if (nodelist[flatcache_l2_head].next != -1){
+		I_Error("head non -1 next %i", id);
+	}
+	if (nodelist[flatcache_l2_head].prev == -1){
+		I_Error("head -1 prev %i %i %i %i %i %i %i %i", id, node0, node1, node2, node3, node4, node5);
+	}
+
+	if (nodelist[node1].prev != node0){
+		I_Error("A %i", id);
+	}
+	if (nodelist[node1].next != node2){
+		I_Error("B %i", id);
+	}
+
+	if (nodelist[node2].prev != node1){
+		I_Error("C %i", id);
+	}
+	if (nodelist[node2].next != node3){
+		I_Error("D %i", id);
+	}
+
+	if (nodelist[node3].prev != node2){
+		I_Error("E %i", id);
+	}
+	if (nodelist[node3].next != node4){
+		I_Error("F %i", id);
+	}
+
+	if (nodelist[node4].prev != node3){
+		I_Error("G %i", id);
+	}
+	if (nodelist[node4].next != node5){
+		I_Error("H %i", id);
+	}
+
+	if (nodelist[node5].prev != node4){
+		I_Error("I %i", id);
+	}
+	if (nodelist[node5].next != -1){
+		I_Error("J %i", id);
+	}
+
+
+
+
+}
+*/
 void __near R_MarkL2FlatCacheLRU(int8_t index) {
 
 	cache_node_t far* nodelist  = flatcache_nodes;
@@ -431,31 +511,18 @@ void __near R_MarkL2FlatCacheLRU(int8_t index) {
 	prev = nodelist[index].prev;
 	next = nodelist[index].next;
 
-	if (prev != -1) {
-		nodelist[prev].next = next;
+	if (index == flatcache_l2_tail) {
+		flatcache_l2_tail = next;	
 	} else {
-		// no prev; may be a new allocation.
-		if (flatcache_l2_tail == -1){
-			// first allocation. being set to 0
-			flatcache_l2_tail = index;
-		} else {
-			// it has a next, which means its allocated. tail becomes next
-			if (next != -1){
-				flatcache_l2_tail = next;
-			}
-		}
+		nodelist[prev].next = next;
 	}
 
-	if (next != -1) {
-		nodelist[next].prev = prev;
-	}
+	// guaranteed to have a next. if we didnt have one, it'd be head but we already returned from that case.
+	nodelist[next].prev = prev;
 
-	// this says head has no prev!
 	nodelist[index].prev = flatcache_l2_head;
 	nodelist[index].next = -1;
-	if (flatcache_l2_head != -1) {
-		nodelist[flatcache_l2_head].next = index;
-	}
+	nodelist[flatcache_l2_head].next = index;
 	flatcache_l2_head = index;
 
 
@@ -482,6 +549,7 @@ int8_t __near R_EvictFlatCacheEMSPage(){
 	#endif
 	 
 	evictedpage = flatcache_l2_tail;
+	// evicted page becomes the new head.
 
  
 	// todo update cache list including numpages situation
@@ -490,32 +558,14 @@ int8_t __near R_EvictFlatCacheEMSPage(){
 	next = nodelist[evictedpage].next;
 	prev = nodelist[evictedpage].prev;
 
-	if (next != -1){
-		nodelist[next].prev = prev;
-	}
-
-	if (prev != -1){
-		nodelist[prev].next = next;
-	}
-
-	// evicted page is now floating
-	nodelist[evictedpage].prev = -1;
+	flatcache_l2_tail = nodelist[evictedpage].next;
+	nodelist[flatcache_l2_tail].prev = -1;
+	
+	nodelist[flatcache_l2_head].next = evictedpage;
 	nodelist[evictedpage].next = -1;
+	nodelist[evictedpage].prev = flatcache_l2_head;
+	flatcache_l2_head = evictedpage;
 
-	// update tail/head pointer if necessary
-
-	if (evictedpage == flatcache_l2_tail){
-		flatcache_l2_tail = next;
-	}
-	if (evictedpage == flatcache_l2_head){
-		flatcache_l2_head = prev;
-	}
-
-
-	// if its an active page... do we have to do anything? 
-
-
-	//todo clear cache data per type
  
 	// all the other flats in this are cleared.
 	allocatedflatsperpage[evictedpage] = 1;

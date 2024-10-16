@@ -321,8 +321,8 @@ int16_t spriteL1LRU[4];
 int8_t spritecache_l2_head = -1;
 int8_t spritecache_l2_tail = -1;
 
-int8_t flatcache_l2_head = -1;
-int8_t flatcache_l2_tail = -1;
+int8_t flatcache_l2_head = 0;
+int8_t flatcache_l2_tail = NUM_FLAT_CACHE_PAGES-1;
 
 int8_t patchcache_l2_head = -1;
 int8_t patchcache_l2_tail = -1;

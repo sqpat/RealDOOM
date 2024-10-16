@@ -218,8 +218,8 @@ segs                 EDD9:0000
 #define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(scantokey, size_scantokey))
 #define spritecache_nodes  ((cache_node_page_count_t __far*)       MAKE_FULL_SEGMENT(rndtable , size_rndtable))
 #define patchcache_nodes   ((cache_node_page_count_t __far*)       (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
-#define texturecache_nodes ((cache_node_page_count_t __far*)       (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
-#define flatcache_nodes    ((cache_node_t __far*)  (((int32_t)patchcache_nodes) + size_patchcache_nodes))
+#define texturecache_nodes ((cache_node_page_count_t __far*)       (((int32_t)patchcache_nodes)  + size_patchcache_nodes))
+#define flatcache_nodes    ((cache_node_t __far*)  (((int32_t)texturecache_nodes) + size_texturecache_nodes))
 
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
 // gross... should we change how this works

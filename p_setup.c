@@ -941,13 +941,18 @@ void __near Z_FreeConventionalAllocations() {
 	// put these all next to each other for a single memset..
 
 
-	flatcache_l2_head = -1;
-	flatcache_l2_tail = -1;
+	flatcache_l2_head = 0;
+	flatcache_l2_tail = NUM_FLAT_CACHE_PAGES-1;
+	for (i = 0; i < NUM_FLAT_CACHE_PAGES; i++){
+		flatcache_nodes[i].prev = i+1;
+		flatcache_nodes[i].next = i-1;
+	}
+	flatcache_nodes[flatcache_l2_head].next = -1;
+	flatcache_nodes[flatcache_l2_tail].prev = -1;
+	
 
 	spritecache_l2_head = -1;
 	spritecache_l2_tail = -1;
-
-
 
 	patchcache_l2_head = -1;
 	patchcache_l2_tail = -1;
@@ -956,7 +961,7 @@ void __near Z_FreeConventionalAllocations() {
 	texturecache_l2_tail = -1;
 
 	// just run thru the whole bunch in one go instead of multiple 
-	for ( i = 0; i < NUM_SPRITE_CACHE_PAGES+NUM_FLAT_CACHE_PAGES+NUM_PATCH_CACHE_PAGES+NUM_TEXTURE_PAGES; i++) {
+	for ( i = 0; i < NUM_SPRITE_CACHE_PAGES+NUM_PATCH_CACHE_PAGES+NUM_TEXTURE_PAGES; i++) {
 		spritecache_nodes[i].prev = -1; // Mark unused entries
 		spritecache_nodes[i].next = -1; // Mark unused entries
 		spritecache_nodes[i].pagecount = 0;
