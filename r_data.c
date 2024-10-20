@@ -276,6 +276,7 @@ int8_t checkchecksum(int16_t l){
 // todo: consider moving a lot of these small data structures into DS/near memory
 
 // This generally works on the "L2" cache which is pages in EMS logical memory that are backing up conventional memory ("L1" cache)
+
 int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	int8_t evictedpage;
 	int8_t j;
@@ -496,6 +497,674 @@ void __near checkflatcache(int8_t id){
 
 }
 */
+
+
+
+void __near checktexturecache(int8_t id){
+	int8_t node0;
+	int8_t node1;
+	int8_t node2;
+	int8_t node3;
+	int8_t node4;
+	int8_t node5;
+	int8_t node6;
+	int8_t node7;
+	int8_t nodeprev;
+	int8_t nodenow;
+	int8_t j = 0;
+	int8_t i = 0;
+	cache_node_page_count_t far* nodelist  = texturecache_nodes;
+
+
+
+	node0  = texturecache_l2_tail;
+	node1  = nodelist[node0].next;
+	node2  = nodelist[node1].next;
+	node3  = nodelist[node2].next;
+	node4  = nodelist[node3].next;
+	node5  = nodelist[node4].next;
+	node6  = nodelist[node5].next;
+	node7  = nodelist[node6].next;
+
+	if (id >= 30){
+	  //I_Error("check %i %i %i \n%i %i %i %i %i %i %i %i ", texturecache_l2_tail, texturecache_l2_head, id, 
+	  //node0, node1, node2, node3, node4, node5, node6, node7);
+
+	}
+
+	for (i = 0; i < NUM_TEXTURE_PAGES; i++){
+		int8_t found = 0;
+		nodenow = texturecache_l2_tail;
+		for (j = 0; j < NUM_TEXTURE_PAGES; j++){
+			if (nodenow == i){
+				found = 1;
+				break;
+			}			
+			nodenow = nodelist[nodenow].next;
+		}
+		if (!found){
+			I_Error("not found %i \n %i %i %i \n%i %i %i %i %i %i %i %i ", i, texturecache_l2_tail, texturecache_l2_head, id, 
+	  		node0, node1, node2, node3, node4, node5, node6, node7);
+
+		}
+	}
+
+	nodenow = texturecache_l2_tail;
+
+	for (i = 0; i < NUM_TEXTURE_PAGES; i++){
+		int8_t currenttarget = 0;
+		int8_t lastpagecount = 0;
+		for (j = 0; j < NUM_TEXTURE_PAGES; j++){
+			if (!currenttarget){
+				if (nodelist[nodenow].pagecount == 1){
+					currenttarget = nodelist[nodenow].numpages;
+					lastpagecount = 1;
+				} else {
+					if (nodelist[nodenow].pagecount){
+						I_Error("non one first pagecount %i %i %i", nodelist[nodenow].pagecount, nodenow, id);
+					} else 
+
+					if (nodelist[nodenow].numpages){
+						I_Error("pagecount zero and numpages nonzero %i %i", nodelist[nodenow].pagecount, nodelist[nodenow].numpages);
+					}
+				}
+			} else {
+				if (nodelist[nodenow].pagecount == lastpagecount+1){
+					if (nodelist[nodenow].numpages != currenttarget){
+						I_Error("numpages changed?  %i %i", nodelist[nodenow].pagecount, nodelist[nodenow].numpages);
+					}
+					if (nodelist[nodenow].pagecount == currenttarget){
+						currenttarget = 0;
+						lastpagecount = 0;
+	
+					}
+
+				} else {
+					I_Error("pagecount wrong order %i %i", nodelist[nodenow].pagecount, nodelist[nodenow].numpages);
+				}
+				
+			}
+			nodenow = nodelist[nodenow].next;
+		}
+
+		if (currenttarget){
+			I_Error("page count ended at end? A");
+
+		}
+		if (lastpagecount){
+			I_Error("page count ended at end? B");
+		}
+
+	}
+
+	//for (j = 0; j < NUM_TEXTURE_PAGES; j++){
+
+	//}
+
+	//prevmost is tail (LRU)
+	//nextmost is head (MRU)
+
+
+	if (nodelist[texturecache_l2_tail].prev != -1){
+		I_Error("tail non -1 prev %i", id);
+	}
+	if (nodelist[texturecache_l2_tail].next == -1){
+		I_Error("tail -1 next %i", id);
+	}
+
+	if (nodelist[texturecache_l2_head].next != -1){
+		I_Error("head non -1 next %i", id);
+	}
+	if (nodelist[texturecache_l2_head].prev == -1){
+		I_Error("head -1 prev %i %i %i %i %i %i %i %i", id, node0, node1, node2, node3, node4, node5);
+	}
+
+	if (nodelist[node1].prev != node0){
+		I_Error("A %i", id);
+	}
+	if (nodelist[node1].next != node2){
+		I_Error("B %i", id);
+	}
+
+	if (nodelist[node2].prev != node1){
+		I_Error("C %i", id);
+	}
+	if (nodelist[node2].next != node3){
+		I_Error("D %i", id);
+	}
+
+	if (nodelist[node3].prev != node2){
+		I_Error("E %i", id);
+	}
+	if (nodelist[node3].next != node4){
+		I_Error("F %i", id);
+	}
+
+	if (nodelist[node4].prev != node3){
+		I_Error("G %i", id);
+	}
+	if (nodelist[node4].next != node5){
+		I_Error("H %i", id);
+	}
+
+
+	if (nodelist[node5].prev != node4){
+		I_Error("I %i", id);
+	}
+	if (nodelist[node5].next != node6){
+		I_Error("J %i", id);
+	}
+
+
+	if (nodelist[node6].prev != node5){
+		I_Error("K %i", id);
+	}
+	if (nodelist[node6].next != node7){
+		I_Error("L %i", id);
+	}
+
+	if (nodelist[node7].prev != node6){
+		I_Error("M %i", id);
+	}
+	if (nodelist[node7].next != -1){
+		I_Error("N %i", id);
+	}
+
+	if (node7 != texturecache_l2_head){
+		I_Error("O %i", id);
+	}
+
+
+
+
+}
+int8_t setval = 0;
+
+
+// sometimes these are new allocations, and thus numpages must be supplied and written 
+void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
+
+
+/*
+	cache_node_page_count_t far* nodelist  = spritecache_nodes;
+
+
+	int8_t prev;
+	int8_t next;
+
+	if (index == flatcache_l2_head) {
+		return;
+	}
+
+	// TODO:
+	// multipage: 
+	
+	prev = nodelist[index].prev;
+	next = nodelist[index].next;
+
+	if (index == flatcache_l2_tail) {
+		flatcache_l2_tail = next;	
+	} else {
+		nodelist[prev].next = next;
+	}
+
+	// guaranteed to have a next. if we didnt have one, it'd be head but we already returned from that case.
+	nodelist[next].prev = prev;
+
+	nodelist[index].prev = flatcache_l2_head;
+	nodelist[index].next = -1;
+	nodelist[flatcache_l2_head].next = index;
+	flatcache_l2_head = index;
+
+
+*/
+
+
+	// todo look for the case where first allocation is to head but multipage.
+
+
+
+	int8_t prev;
+	int8_t next;
+	int8_t pagecount;
+
+	cache_node_page_count_t far* nodelist =texturecache_nodes;
+
+	int8_t previous_next;
+	int8_t previous_head;
+
+
+	int8_t lastindex;
+	int8_t lastindex_prev;
+	int8_t index_next;
+
+	//I_Error("valuesf %i %i %i %i", index, numpages, texturecache_l2_tail, texturecache_l2_head);
+
+	// edge case - the first allocation is a 2 pager. we return the head and then we end up not setting numpages
+	
+	if (index == texturecache_l2_head) {
+		return;
+	}
+
+	//I_Error("made it here? %i %i %i %i", index, numpages, texturecache_l2_head, texturecache_l2_tail );
+
+
+	pagecount = nodelist[index].pagecount;
+	// if pagecount is nonzero, then this is a pre-existing allocation which is multipage.
+	// so we want to find the head of this allocation, and check if it's the head.
+
+	if (pagecount){
+		// if this is multipage, then pagecount is nonzero.
+		
+		// could probably be unrolled in asm
+	 	while (nodelist[index].numpages != nodelist[index].pagecount){
+			index = nodelist[index].next;
+		}
+
+
+		if (index == texturecache_l2_head) {
+			return;
+		}
+
+		// there are going to be cases where we call with numpages = 0, 
+		// but the allocation is sharing a page with the last page of a
+		// multi-page allocation. in this case, we want to back up and update the
+		// whole multi-page allocation.
+		
+		numpages = nodelist[index].numpages;
+	}
+
+	// FROM:  A B 1 2 3 C D
+	// TO:    1 2 3 A B C D
+
+	//  A PREV 0, NEXT B
+	//  B PREV A, NEXT 1
+	//  1 PREV B
+	//  3 NEXT C
+	//  C PREV 3, NEXT D
+	// tail D
+	// head A
+
+	//  becomes
+
+	//  1 prev 0, next same
+	// 3 next becomes old head
+	// head prev becomes last index
+	// head next does not necessarily change.
+	// indexprev's next becomes lastindex_next
+
+	
+
+	// todo get rid of numpages check?
+	if (numpages){
+		// multipage  allocation being updated.
+		
+		// we know its pre-existing because numpages is set on the node;
+		// that means all the inner pages' next/prevs set and pagecount/numpages are also already set
+		// no need to set all that stuff, just the relevant outer allocations's prev/next.
+		// and update head/tail
+		
+		if (nodelist[index].numpages != numpages){
+			I_Error("mismatched allocation?");
+		}
+
+		lastindex = index;
+		while (nodelist[lastindex].pagecount != 1){
+			lastindex = nodelist[lastindex].prev;
+		}
+		
+		lastindex_prev = nodelist[lastindex].prev;
+		index_next = nodelist[index].next;
+
+		if (texturecache_l2_tail == lastindex){
+			texturecache_l2_tail = index_next;
+			nodelist[index_next].prev = -1;
+		} else {
+			nodelist[lastindex_prev].next = index_next;
+			nodelist[index_next].prev = lastindex_prev;
+		}
+
+		nodelist[lastindex].prev = texturecache_l2_head;
+		nodelist[texturecache_l2_head].next = lastindex;
+		// head's next doesnt change directly. it changes indirectly if index_prev changes.
+
+		nodelist[index].next = -1;
+		texturecache_l2_head = index;
+
+		return;
+	} else if (!numpages){
+		// handle the simple one page case.
+
+		prev = nodelist[index].prev;
+		next = nodelist[index].next;
+
+		if (index == texturecache_l2_tail) {
+			texturecache_l2_tail = next;
+		} else {
+			nodelist[prev].next = next; 
+		}
+
+		nodelist[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+
+		nodelist[index].prev = texturecache_l2_head;
+		nodelist[index].next = -1;
+
+		// pagecount/numpages dont have to be zeroed - either p_setup 
+		// sets it to 0 in the initial case, or EvictCache in later cases.
+		//nodelist[index].pagecount = 0;
+		//nodelist[index].numpages  = 0;
+
+		nodelist[texturecache_l2_head].next = index;
+		
+		
+		texturecache_l2_head = index;
+		return;
+
+	}
+
+	// whats remaining is the case of a multipage, new allocation. 
+	// we must set all the next/prev and pagecount/numpages.
+	// this is usually preset by the EvictCache function.
+	// but in the initial allocation case, when were are setting l2 cache entries for the first time
+	// and nothing has been evicted yet - then we set it here. 
+	// in that initial allocation case, we know the indexes are sequential
+	// so we dont have to go thru prev/next
+	
+	
+	//prevmost is tail (LRU)
+	//nextmost is head (MRU)
+
+
+	// this next needs to later be connected to the allocation block's last element's prev
+	I_Error("this code path cant happen anymore?");
+	
+	/*
+	previous_next = nodelist[index].next;
+	previous_head = texturecache_l2_head;
+
+	texturecache_l2_head = index;
+
+
+	// this loop may be unrollable (if i section)
+	// todo remove the next/prev setters? should already be set.
+	switch (numpages){
+		case 3:
+			nodelist[index].prev      = index+1;
+			nodelist[index].pagecount = 4;
+			nodelist[index].numpages  = numpages+1;
+			index++;
+		
+		case 2:
+			nodelist[index].next      = index-1;
+			nodelist[index].prev      = index+1;
+			nodelist[index].pagecount = 3;
+			nodelist[index].numpages  = numpages+1;
+			index++;
+		
+		case 1:
+			nodelist[index].next      = index-1;
+			nodelist[index].prev      = index+1;
+			nodelist[index].pagecount = 2;
+			nodelist[index].numpages  = numpages+1;
+			index++;
+
+		// case 1 cant happen...
+		case 0: 
+			lastindex_prev = nodelist[index].prev;
+			nodelist[index].next      = index-1;
+			nodelist[index].prev      = previous_head;
+			nodelist[index].pagecount = 1;
+			nodelist[index].numpages  = numpages+1;
+			break;
+		
+
+		default:
+			I_Error("what %i", numpages);
+	}
+
+	if (index >= NUM_TEXTURE_PAGES){
+		I_Error("overshot texture page count?");
+	}
+
+	// index is now equivalent to "last_index" in the above code. 
+	// the starting index is texturecache_l2_head.
+
+
+
+//   1 2 3 4 5
+//   3 4 1 2 5
+
+//    1     1
+//  -1 2   4 2      lasthead prev -> index   next -> hasn't changed?
+//    2     2
+//   1 3   1 5      
+//    3     3
+//   2 4  -1 4
+//    4     4
+//   3 5   3 1
+//    5     5
+//   4 -1   2 -1
+
+
+	if (index == texturecache_l2_tail){
+		texturecache_l2_tail = previous_next;
+	} else {
+		nodelist[lastindex_prev].next = previous_next;
+	}
+
+	// works in the tail case too.
+	nodelist[previous_next].prev = lastindex_prev;
+	nodelist[previous_head].next = index;
+	nodelist[texturecache_l2_head].next = -1; 
+
+	// previous prev should be 0?
+	// lastindex_next should be... 3?
+*/
+
+
+}
+
+
+// note: numpages is 1-4, not 0-3 here.
+// this function needs to always leave the cache in a workable state...
+// if we remove excess pages due to the removed pages being part of a
+// multi-page allocation, then those now unused pages should be appropriately
+// put at the back of the queue so they will be the next unloaded.
+// the evicted pages are also moved to the front, and numpages/etc should be set properly.
+int8_t __near R_EvictCompositeCacheEMSPage(int8_t numpages){
+	int8_t evictedpage;
+	int8_t lastevictedpage;
+	int8_t extraevictedpages;
+	int8_t j;
+	uint8_t currentpage;
+	int16_t k;
+	int8_t remainingpages = 0; //TODO uninitialized. probably 0 is fine but confirm.
+	int8_t previous_head;
+	int8_t previous_next;
+	cache_node_page_count_t far* nodelist = texturecache_nodes;
+
+	uint8_t __far* cacherefpage;
+	uint8_t __far* cacherefoffset;
+	uint8_t __near* usedcacherefpage;
+
+	#ifdef DETAILED_BENCH_STATS
+	compositecacheevictcount++;
+	#endif
+
+	evictedpage = texturecache_l2_tail;
+
+	// go back enough pages to allocate them all.
+	for (j = 0; j < numpages-1; j++){
+		evictedpage = nodelist[evictedpage].next;
+	}
+
+	extraevictedpages = evictedpage;
+	// evictedpage is the LRU page we can remove in which
+	// there is enough room to allocate numpages pages
+
+
+	//prevmost is tail (LRU)
+	//nextmost is head (MRU)
+
+	// need to evict at least numpages pages
+	// we'll remove the tail, up to numpages...
+	// if thats part of a multipage allocations, we'll remove that until the end
+	// in that case, we leave extra deallocated pages in the tail.
+
+ 
+	// true if 0 page allocation or 1st page of a multi-page
+	while (nodelist[evictedpage].numpages != nodelist[evictedpage].pagecount){
+		extraevictedpages = nodelist[extraevictedpages].next;
+	}
+
+	// step 1: move the new stuff to the head. connect properly. set up numpages etc.
+	// step 1.5: update cache lookups
+	// step 2: zero out numpages etc of extraevictedpages
+	// step 2.5: update cache lookups for those
+	
+
+	//checktexturecache(30 + evictedpage);
+
+	previous_head = texturecache_l2_head;
+	previous_next = nodelist[evictedpage].next;
+
+	texturecache_l2_head = evictedpage;
+	nodelist[evictedpage].next = -1;
+
+
+	lastevictedpage = evictedpage;
+	j = numpages;
+	while (j){
+		evictedpage = lastevictedpage;
+		nodelist[evictedpage].pagecount = j;
+		nodelist[evictedpage].numpages = numpages;
+		j--;
+		lastevictedpage = nodelist[evictedpage].prev;
+	}
+
+	nodelist[evictedpage].prev = previous_head;
+	nodelist[previous_head].next = evictedpage;
+
+	nodelist[previous_next].prev = -1;
+	texturecache_l2_tail = previous_next;
+
+
+
+	//clear cache data that was pointing to this page.
+	currentpage = texturecache_l2_head;
+	j = numpages;
+	while (j > 0){
+		for (k = 0; k < MAX_TEXTURES; k++){
+			if ((compositetexturepage[k] >> 2) == currentpage){
+				compositetexturepage[k] = 0xFF;
+				compositetextureoffset[k] = 0xFF;
+			}
+		}
+		usedcompositetexturepagemem[currentpage] = 0;
+		currentpage = nodelist[evictedpage].prev;
+		j--;
+	}	
+
+	j = 0;
+
+	// if we have to clear extra pages... then clear those too.
+	if (extraevictedpages != texturecache_l2_head){
+		evictedpage = extraevictedpages;
+		I_Error("this happened?");
+		while (nodelist[evictedpage].next != -1){
+
+			nodelist[evictedpage].pagecount = 0;
+			nodelist[evictedpage].numpages = 0;
+			
+			evictedpage = nodelist[evictedpage].prev;
+			j++;
+		}
+
+		nodelist[evictedpage].next = -1;
+		texturecache_l2_tail = evictedpage;
+
+		currentpage = evictedpage;
+		//clear cache data that was pointing to this page.
+		while (j > 0){
+			for (k = 0; k < MAX_TEXTURES; k++){
+				if ((compositetexturepage[k] >> 2) == currentpage){
+					compositetexturepage[k] = 0xFF;
+					compositetextureoffset[k] = 0xFF;
+				}
+			}
+			usedcompositetexturepagemem[currentpage] = 0;
+			currentpage = nodelist[evictedpage].next;
+			j--;
+		}	
+	}
+
+	//checktexturecache(20);
+
+
+
+	return texturecache_l2_head;
+}
+
+
+
+/*
+int8_t __near R_EvictFlatCacheEMSPage(){
+	int8_t evictedpage;
+	uint8_t i;
+	int8_t next, prev;
+	cache_node_page_count_t far* nodelist  = spritecache_nodes;
+	
+
+	
+	//I_Error("evicting %i", cachetype);
+
+
+	
+	
+	#ifdef DETAILED_BENCH_STATS
+	flatcacheevictcount++;
+	#endif
+	 
+	evictedpage = flatcache_l2_tail;
+	// evicted page becomes the new head.
+
+ 
+	// todo update cache list including numpages situation
+
+	// remove the element and connext its next and prev togeter
+	next = nodelist[evictedpage].next;
+	prev = nodelist[evictedpage].prev;
+
+	flatcache_l2_tail = nodelist[evictedpage].next;
+	nodelist[flatcache_l2_tail].prev = -1;
+	
+	nodelist[flatcache_l2_head].next = evictedpage;
+	nodelist[evictedpage].next = -1;
+	nodelist[evictedpage].prev = flatcache_l2_head;
+	flatcache_l2_head = evictedpage;
+
+ 
+	// all the other flats in this are cleared.
+	allocatedflatsperpage[evictedpage] = 1;
+
+	// gross and slow. but rare i guess? revisit?
+	// cant we fetch these from some list that already exists?
+	
+	//entries in flatindex cache pointing to this page are marked unloded.
+	for (i = 0; i < MAX_FLATS; i++){
+		
+		if ((flatindex[i] >> 2) == evictedpage){
+			flatindex[i] = 0xFF;
+		}
+
+	}
+
+
+	return evictedpage;
+}
+*/
+
+// MRU is the head. LRU is the tail.
 void __near R_MarkL2FlatCacheLRU(int8_t index) {
 
 	cache_node_t far* nodelist  = flatcache_nodes;
@@ -632,6 +1301,7 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 	int8_t numpages;
 	uint8_t texpage, texoffset;
 	int16_t i;
+	int16_t j;
 /*
 	if (size == 0){
 		return; // why does this happen...
@@ -657,7 +1327,9 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 			}
 		}
 		
-		i = R_EvictCacheEMSPage(numpages, CACHETYPE_COMPOSITE);
+		//checktexturecache(9);
+		i = R_EvictCompositeCacheEMSPage (numpages);
+		//checktexturecache(10);
 
 		foundonepage:
 		texpage = i << 2; // num pages 0
@@ -669,6 +1341,7 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 		// theres no deallocation so any page with 0 allocated will be followed by another 
 		uint8_t numpagesminus1 = numpages - 1;
 
+		// todo: fast skip this if we've already allocated everything?
 		for (i = 0; i < NUM_TEXTURE_PAGES-numpagesminus1; i++) {
 			if (!usedcompositetexturepagemem[i]) {
 				// need to check following pages for emptiness, or else after evictions weird stuff can happen
@@ -682,21 +1355,48 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 			}
 		}
 
-		i = R_EvictCacheEMSPage(numpages, CACHETYPE_COMPOSITE);
+		//checktexturecache(11);
+		i = R_EvictCompositeCacheEMSPage(numpages);
+		//checktexturecache(12);
 
 		foundmultipage:
+		// if we jumped here, its because we're in the initial allocation phase
+		// where nothing has yet been evicted - so everything is in order.
+
+		// pages are found for our allocation.
+		// set numpages, etc in here.
 
 		usedcompositetexturepagemem[i] = 64;
+		//I_Error("found page %i %i %i", i, texturecache_nodes[i].next, texturecache_nodes[texturecache_nodes[i].next].next);
+		j = i;
+		// last page of the allocation
+		texturecache_nodes[i].numpages = numpages;
+		texturecache_nodes[i].pagecount = numpages;
 		if (numpages >= 3) {
-			usedcompositetexturepagemem[i + 1] = 64;
+			// 2nd to last page of the allocation
+			j = texturecache_nodes[i].prev;
+			texturecache_nodes[j].numpages = numpages;
+			// 2 if numpages is 3. 
+			// 3 if numpages is 4
+			texturecache_nodes[j].pagecount = numpages-1;
+			usedcompositetexturepagemem[j] = 64;
 		}
 		if (numpages == 4) {
-			usedcompositetexturepagemem[i + 2] = 64;
+			// always page 2 of the 4 page allocation
+			j = texturecache_nodes[j].prev;
+			texturecache_nodes[j].numpages = numpages;
+			texturecache_nodes[j].pagecount = 2;
+			usedcompositetexturepagemem[j] = 64;
 		}
+		// first page of the allocation
+		j = texturecache_nodes[j].prev;
+		texturecache_nodes[j].numpages = numpages;
+		texturecache_nodes[j].pagecount = 1;
+
 		if (blocksize & 0x3F) {
-			usedcompositetexturepagemem[i + numpagesminus1] = blocksize & 0x3F;
+			usedcompositetexturepagemem[j] = blocksize & 0x3F;
 		} else {
-			usedcompositetexturepagemem[i + numpagesminus1] = 64;
+			usedcompositetexturepagemem[j] = 64;
 		}
 		texpage = (i << 2) + (numpagesminus1);
 		texoffset = 0; // if multipage then its always aligned to start of its block
@@ -1054,8 +1754,6 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 }
 
 
-
-
 uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 	uint8_t realtexpage = texpage >> 2;
 	uint8_t pagenum = pageoffset + realtexpage;
@@ -1076,7 +1774,13 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 				// todo faster, better lru? add to all can be just one op right?
 				// cast to int16_t and add 0x0101?
 				R_MarkL1TextureCacheLRU(i);
-				R_MarkL2CacheLRU(realtexpage, 0, cachetype);
+				if (cachetype == CACHETYPE_COMPOSITE){
+					//checktexturecache(1);
+					R_MarkL2CompositeTextureCacheLRU(realtexpage, 0);
+					//checktexturecache(2);
+				} else {
+					R_MarkL2CacheLRU(realtexpage, 0, cachetype);
+				}
 				return i;
 			}
 
@@ -1109,7 +1813,14 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 
 
-		R_MarkL2CacheLRU(realtexpage, 0, cachetype);
+		if (cachetype == CACHETYPE_COMPOSITE){
+			//checktexturecache(3);
+			R_MarkL2CompositeTextureCacheLRU(realtexpage, 0);
+			//checktexturecache(4);
+
+		} else {
+			R_MarkL2CacheLRU(realtexpage, 0, cachetype);
+		}
 		Z_QuickMapRenderTexture();
 		cachedtex = -1;
 		cachedtex2 = -1;
@@ -1151,7 +1862,14 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 				R_MarkL1TextureCacheLRU(i+j);
 			}
 
-			R_MarkL2CacheLRU(realtexpage, numpages, cachetype);
+				if (cachetype == CACHETYPE_COMPOSITE){
+					//checktexturecache(5);
+					R_MarkL2CompositeTextureCacheLRU(realtexpage, numpages);
+					//checktexturecache(6);
+
+				} else {
+					R_MarkL2CacheLRU(realtexpage, numpages, cachetype);
+				}
 			return i;
 		}
 
@@ -1202,7 +1920,13 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		}
 
-		R_MarkL2CacheLRU(realtexpage, numpages, cachetype);
+		if (cachetype == CACHETYPE_COMPOSITE){
+			//checktexturecache(7);
+			R_MarkL2CompositeTextureCacheLRU(realtexpage, numpages);
+			//checktexturecache(8);
+		} else {
+			R_MarkL2CacheLRU(realtexpage, numpages, cachetype);
+		}
 		Z_QuickMapRenderTexture();
 		cachedtex = -1;
 		cachedtex2 = -1;

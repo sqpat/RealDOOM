@@ -957,14 +957,26 @@ void __near Z_FreeConventionalAllocations() {
 	patchcache_l2_head = -1;
 	patchcache_l2_tail = -1;
 
-	texturecache_l2_head = -1;
-	texturecache_l2_tail = -1;
+	texturecache_l2_head = 0;
+	texturecache_l2_tail = NUM_TEXTURE_PAGES-1;
+
+	for (i = 0; i < NUM_TEXTURE_PAGES; i++){
+		texturecache_nodes[i].prev = i+1;
+		texturecache_nodes[i].next = i-1;
+		texturecache_nodes[i].pagecount = 0;
+		texturecache_nodes[i].numpages = 0;
+	}
+
+	texturecache_nodes[texturecache_l2_head].next = -1;
+	texturecache_nodes[texturecache_l2_tail].prev = -1;
+
 
 	// just run thru the whole bunch in one go instead of multiple 
-	for ( i = 0; i < NUM_SPRITE_CACHE_PAGES+NUM_PATCH_CACHE_PAGES+NUM_TEXTURE_PAGES; i++) {
+	for ( i = 0; i < NUM_SPRITE_CACHE_PAGES+NUM_PATCH_CACHE_PAGES; i++) {
 		spritecache_nodes[i].prev = -1; // Mark unused entries
 		spritecache_nodes[i].next = -1; // Mark unused entries
 		spritecache_nodes[i].pagecount = 0;
+		spritecache_nodes[i].numpages = 0;
 	}  
 
 	// todo memcpy this all in asm?
@@ -994,8 +1006,6 @@ void __near Z_FreeConventionalAllocations() {
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
 		textureL1LRU[i] = i;
 		activespritepages[i] = FIRST_SPRITE_CACHE_LOGICAL_PAGE + i;
-		//spriteL1LRU[i].prev = -1;
-		//spriteL1LRU[i].next = -1;
 		spriteL1LRU[i] = i;
 
 		pageswapargs[pageswapargs_rend_texture_offset +  i*PAGE_SWAP_ARG_MULT]  = _EPR(FIRST_TEXTURE_LOGICAL_PAGE + i);
