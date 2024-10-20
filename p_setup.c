@@ -943,22 +943,24 @@ void __near Z_FreeConventionalAllocations() {
 
 	flatcache_l2_head = 0;
 	flatcache_l2_tail = NUM_FLAT_CACHE_PAGES-1;
+	
+
+	spritecache_l2_head = 0;
+	spritecache_l2_tail = NUM_SPRITE_CACHE_PAGES-1;
+
+	patchcache_l2_head = 0;
+	patchcache_l2_tail = NUM_PATCH_CACHE_PAGES-1;
+
+	texturecache_l2_head = 0;
+	texturecache_l2_tail = NUM_TEXTURE_PAGES-1;
+
+
 	for (i = 0; i < NUM_FLAT_CACHE_PAGES; i++){
 		flatcache_nodes[i].prev = i+1;
 		flatcache_nodes[i].next = i-1;
 	}
 	flatcache_nodes[flatcache_l2_head].next = -1;
 	flatcache_nodes[flatcache_l2_tail].prev = -1;
-	
-
-	spritecache_l2_head = -1;
-	spritecache_l2_tail = -1;
-
-	patchcache_l2_head = -1;
-	patchcache_l2_tail = -1;
-
-	texturecache_l2_head = 0;
-	texturecache_l2_tail = NUM_TEXTURE_PAGES-1;
 
 	for (i = 0; i < NUM_TEXTURE_PAGES; i++){
 		texturecache_nodes[i].prev = i+1;
@@ -972,12 +974,27 @@ void __near Z_FreeConventionalAllocations() {
 
 
 	// just run thru the whole bunch in one go instead of multiple 
-	for ( i = 0; i < NUM_SPRITE_CACHE_PAGES+NUM_PATCH_CACHE_PAGES; i++) {
-		spritecache_nodes[i].prev = -1; // Mark unused entries
-		spritecache_nodes[i].next = -1; // Mark unused entries
+	for ( i = 0; i < NUM_SPRITE_CACHE_PAGES; i++) {
+		spritecache_nodes[i].prev = i+1; // Mark unused entries
+		spritecache_nodes[i].next = i-1; // Mark unused entries
 		spritecache_nodes[i].pagecount = 0;
 		spritecache_nodes[i].numpages = 0;
 	}  
+
+	spritecache_nodes[spritecache_l2_head].next = -1;
+	spritecache_nodes[spritecache_l2_tail].prev = -1;
+
+
+	for ( i = 0; i < NUM_PATCH_CACHE_PAGES; i++) {
+		patchcache_nodes[i].prev = i+1; // Mark unused entries
+		patchcache_nodes[i].next = i-1; // Mark unused entries
+		patchcache_nodes[i].pagecount = 0;
+		patchcache_nodes[i].numpages = 0;
+	}  
+
+	patchcache_nodes[patchcache_l2_head].next = -1;
+	patchcache_nodes[patchcache_l2_tail].prev = -1;
+
 
 	// todo memcpy this all in asm?
 

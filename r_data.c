@@ -110,136 +110,6 @@ void __near R_MarkL1TextureCacheLRU(int8_t index){
 
 
  
-
-// numpages is 0-3 not 1-4
-void __near R_MarkL2CacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
-	int8_t prev;
-	int8_t next;
-	int8_t pagecount;
-
-	cache_node_page_count_t far* nodelist;
-	int8_t* nodetail;
-	int8_t* nodehead;
-	int8_t lastpagecount;
-	int8_t lastindex;
-
-	// cachetype 2
-
-	switch (cachetype){
-		case CACHETYPE_SPRITE:
-			nodetail = &spritecache_l2_tail;
-			nodehead = &spritecache_l2_head;
-			nodelist = spritecache_nodes;
-			break;
-		case CACHETYPE_PATCH:
- 			nodetail = &patchcache_l2_tail;
-			nodehead = &patchcache_l2_head;
-			nodelist = patchcache_nodes;
-			break;
-		case CACHETYPE_COMPOSITE:
- 			nodetail = &texturecache_l2_tail;
-			nodehead = &texturecache_l2_head;
-			nodelist = texturecache_nodes;
-			break;
-			
-	}
-
-
-	if (index == *nodehead) {
-		return;
-	}
-	
-	pagecount = nodelist[index].pagecount;
-	if (pagecount == 1){
-		// special case: 
-		//updating element sharing the same page as the last page of a
-		//multi-page allocation. to avoid eviction complications 
-		//(from cases where one is in conventional memory and others
-		// arent, and their lru statuses are different)
-		//we are going to update the entire multi-page block as LRU
-		lastpagecount = 0;
-		
-		while (nodelist[index].pagecount > lastpagecount){
-		//todo head or tail or -1? want to avoid going out of bounds
-			lastpagecount = nodelist[index].pagecount;
-
-			//if (index == *nodetail){
-			//	break;
-			//}
-
-			// shouldnt happen? todo remove later
-			if (nodelist[index].prev == -1){
-				// hit the end i guess?
-				goto foundstartpage;
-			}
-			lastindex = index;			
-			index = nodelist[index].prev;
-		}
-		index = lastindex;
-		
-		foundstartpage:
-		// index now equal to the beginning of the multipage allocation
-		pagecount = nodelist[index].pagecount;
-		numpages = pagecount - 1;
-		
-	}
-
-	if (numpages){
-		pagecount = numpages + 1;
-	}
-
-
-
-	while (true){
-		prev = nodelist[index].prev;
-		next = nodelist[index].next;
-
-		if (prev != -1) {
-			nodelist[prev].next = next;
-		} else {
-			// no prev; may be a new allocation.
-			if (*nodetail == -1){
-				// first allocation. being set to 0
-				*nodetail = index;
-			} else {
-				// it has a next, which means its allocated. tail becomes next
-				if (next != -1){
-					*nodetail = next;
-				}
-			}
-		}
-
-		if (next != -1) {
-			nodelist[next].prev = prev;
-		}
-
-		// this says head has no prev!
-		nodelist[index].prev = *nodehead;
-		nodelist[index].next = -1;
-		if (*nodehead != -1) {
-			nodelist[*nodehead].next = index;
-		}
-		*nodehead = index;
-
-		nodelist[index].pagecount = pagecount;
-
-		if (numpages == 0)
-			break; // done
-
-		// continue to the next one
-		numpages--;
-		pagecount--;
-		
-		index++; // multipage are always consecutive pages...
-
-	}
-
-
-
-
-	 
-}
-
 /*
 
 int setval = 0;
@@ -271,150 +141,6 @@ int8_t checkchecksum(int16_t l){
 
 
 
-
-// in this case numpages is 1-4, not 0-3
-// todo: consider moving a lot of these small data structures into DS/near memory
-
-// This generally works on the "L2" cache which is pages in EMS logical memory that are backing up conventional memory ("L1" cache)
-
-int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
-	int8_t evictedpage;
-	int8_t j;
-	uint8_t currentpage;
-	int16_t k;
-	int8_t offset;
-	int8_t remainingpages = 0; //TODO uninitialized. probably 0 is fine but confirm.
-	int8_t next, prev;
-	cache_node_page_count_t far* nodelist;
-	int8_t* nodetail;
-	int8_t* nodehead;
-	int8_t maxcachesize;
-	int16_t maxitersize;
-	uint8_t __far* cacherefpage;
-	uint8_t __far* cacherefoffset;
-	uint8_t __near* usedcacherefpage;
-
-	switch (cachetype){
-		case CACHETYPE_SPRITE:
-			nodetail = &spritecache_l2_tail;
-			nodehead = &spritecache_l2_head;
-			nodelist = spritecache_nodes;
-			maxcachesize = NUM_SPRITE_CACHE_PAGES;
-			maxitersize = MAX_SPRITE_LUMPS;
-			cacherefpage = spritepage;
-			cacherefoffset = spriteoffset;
-			usedcacherefpage = usedspritepagemem;
-			#ifdef DETAILED_BENCH_STATS
-			spritecacheevictcount++;
-			#endif
-	break;
-
-		case CACHETYPE_PATCH:
- 			nodetail = &patchcache_l2_tail;
-			nodehead = &patchcache_l2_head;
-			nodelist = patchcache_nodes;
-			maxcachesize = NUM_PATCH_CACHE_PAGES;
-			maxitersize = MAX_PATCHES;
-			cacherefpage = patchpage;
-			cacherefoffset = patchoffset;
-			usedcacherefpage = usedpatchpagemem;
-			#ifdef DETAILED_BENCH_STATS
-			patchcacheevictcount++;
-			#endif
-			break;
-		case CACHETYPE_COMPOSITE:
- 			nodetail = &texturecache_l2_tail;
-			nodehead = &texturecache_l2_head;
-			nodelist = texturecache_nodes;
-			maxcachesize = NUM_TEXTURE_PAGES;
-			maxitersize = MAX_TEXTURES;
-			cacherefpage = compositetexturepage;
-			cacherefoffset = compositetextureoffset;
-			usedcacherefpage = usedcompositetexturepagemem;
-			#ifdef DETAILED_BENCH_STATS
-			compositecacheevictcount++;
-			#endif
-
-//			I_Error("confirm a");
-			break;
-	}
-	 
-	evictedpage = *nodetail;
-
-	// for multipage evictions, need to make sure we are not trying to 
-	// evict from the end of the cache, without enough room
-	while ((maxcachesize-evictedpage) < numpages){
-		evictedpage = nodelist[evictedpage].next;
- 	}
-
-
-	// need to evict at least numpages pages
-	// we'll remove the tail, up to numpages...
-	// if thats part of a multipage allocations, we'll remove that until the end
- 
-
-
-	// todo update cache list including numpages situation
-
-	// note numpages is 1 minimum..
-	for (j = 0; j < numpages+remainingpages; j++){
-		currentpage = evictedpage+j;
-		remainingpages = nodelist[currentpage].pagecount;
-		
-		if (remainingpages)
-			remainingpages--;
-
-		next = nodelist[currentpage].next;
-		prev = nodelist[currentpage].prev;
-
-		if (next != -1){
-			nodelist[next].prev = prev;
-		}
-
-		if (prev != -1){
-			nodelist[prev].next = next;
-		}
-
-		nodelist[currentpage].prev = -1;
-		nodelist[currentpage].next = -1;
-		nodelist[currentpage].pagecount = 0;
-
-		if (currentpage == *nodetail){
-			*nodetail = next;
-		}
-		if (currentpage == *nodehead){
-			*nodehead = prev;
-			 
-			 // ok this happens... its gross, but basically when we need to evict to allocate multiple consecutive
-			 // pages and it turns out that the least recently used and most recently used end up in the same
-			 // contiguous block. Im not sure this is actually going to break anything, it's just a rare bad luck case
-			 // of eviciting a recently used item. Just need to make sure to handle the node head right
-		}
-
-
-
-		// if its an active page... do we have to do anything? 
-	}
-
-	// handles the remainingpages thing - resets numpages
-	numpages = j;
-
-	//clear cache data that was pointing to this page.
-	for (offset = 0; offset < numpages; offset++){
-		currentpage = evictedpage + offset;
-		for (k = 0; k < maxitersize; k++){
-			if ((cacherefpage[k] >> 2) == currentpage){
-				cacherefpage[k] = 0xFF;
-				cacherefoffset[k] = 0xFF;
-			}
-		}
-		usedcacherefpage[currentpage] = 0;
-
-	}	
-
-
-	return evictedpage;
-}
 
 /*
 
@@ -499,7 +225,7 @@ void __near checkflatcache(int8_t id){
 */
 
 
-
+/*
 void __near checktexturecache(int8_t id){
 	int8_t node0;
 	int8_t node1;
@@ -513,6 +239,7 @@ void __near checktexturecache(int8_t id){
 	int8_t nodenow;
 	int8_t j = 0;
 	int8_t i = 0;
+	
 	cache_node_page_count_t far* nodelist  = texturecache_nodes;
 
 
@@ -551,7 +278,7 @@ void __near checktexturecache(int8_t id){
 
 	nodenow = texturecache_l2_tail;
 
-	for (i = 0; i < NUM_TEXTURE_PAGES; i++){
+	{
 		int8_t currenttarget = 0;
 		int8_t lastpagecount = 0;
 		for (j = 0; j < NUM_TEXTURE_PAGES; j++){
@@ -678,49 +405,663 @@ void __near checktexturecache(int8_t id){
 
 
 }
-int8_t setval = 0;
 
-
-// sometimes these are new allocations, and thus numpages must be supplied and written 
-void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
-
+*/
 
 /*
+void __near checkspritecache(int8_t id){
+	int8_t node0;
+	int8_t node1;
+	int8_t node2;
+	int8_t node3;
+	int8_t node4;
+	int8_t node5;
+	int8_t node6;
+	int8_t node7;
+	int8_t node8;
+	int8_t node9;
+	int8_t node10;
+	int8_t node11;
+	int8_t node12;
+	int8_t node13;
+	int8_t node14;
+	int8_t node15;
+	int8_t node16;
+	int8_t node17;
+	int8_t node18;
+	int8_t node19;
+	int8_t nodeprev;
+	int8_t nodenow;
+	int8_t j = 0;
+	int8_t i = 0;
+	
 	cache_node_page_count_t far* nodelist  = spritecache_nodes;
 
 
-	int8_t prev;
-	int8_t next;
 
-	if (index == flatcache_l2_head) {
-		return;
+	node0  = spritecache_l2_tail;
+	node1  = nodelist[node0].next;
+	node2  = nodelist[node1].next;
+	node3  = nodelist[node2].next;
+	node4  = nodelist[node3].next;
+	node5  = nodelist[node4].next;
+	node6  = nodelist[node5].next;
+	node7  = nodelist[node6].next;
+	node8  = nodelist[node7].next;
+	node9  = nodelist[node8].next;
+	node10  = nodelist[node9].next;
+	node11  = nodelist[node10].next;
+	node12  = nodelist[node11].next;
+	node13  = nodelist[node12].next;
+	node14  = nodelist[node13].next;
+	node15  = nodelist[node14].next;
+	node16  = nodelist[node15].next;
+	node17  = nodelist[node16].next;
+	node18  = nodelist[node17].next;
+	node19  = nodelist[node18].next;
+
+
+	for (i = 0; i < NUM_SPRITE_CACHE_PAGES; i++){
+		int8_t found = 0;
+		nodenow = spritecache_l2_tail;
+		for (j = 0; j < NUM_SPRITE_CACHE_PAGES; j++){
+			if (nodenow == i){
+				found = 1;
+				break;
+			}			
+			nodenow = nodelist[nodenow].next;
+		}
+		if (!found){
+			I_Error("not found %i \n %i %i %i \n%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", i, spritecache_l2_tail, spritecache_l2_head, id, 
+	  		node0, node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15, node16, node17, node18, node19);
+
+		}
 	}
 
-	// TODO:
-	// multipage: 
+	nodenow = spritecache_l2_tail;
+
+	{
+		int8_t currenttarget = 0;
+		int8_t lastpagecount = 0;
+		for (j = 0; j < NUM_SPRITE_CACHE_PAGES; j++){
+			if (!currenttarget){
+				if (nodelist[nodenow].pagecount == 1){
+					currenttarget = nodelist[nodenow].numpages;
+					lastpagecount = 1;
+				} else {
+					if (nodelist[nodenow].pagecount){
+						I_Error("non one first pagecount %i %i %i", nodelist[nodenow].pagecount, nodenow, id);
+
+						//I_Error("not found %i \n %i %i %i \n%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", i, spritecache_l2_tail, spritecache_l2_head, id, 
+						//node0, node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15, node16, node17, node18, node19);
+
+					} else 
+
+					if (nodelist[nodenow].numpages){
+						I_Error("pagecount zero and numpages nonzero %i %i", nodelist[nodenow].pagecount, nodelist[nodenow].numpages);
+					}
+				}
+			} else {
+				if (nodelist[nodenow].pagecount == lastpagecount+1){
+					if (nodelist[nodenow].numpages != currenttarget){
+						I_Error("numpages changed?  %i %i", nodelist[nodenow].pagecount, nodelist[nodenow].numpages);
+					}
+					if (nodelist[nodenow].pagecount == currenttarget){
+						currenttarget = 0;
+						lastpagecount = 0;
 	
-	prev = nodelist[index].prev;
-	next = nodelist[index].next;
+					}
 
-	if (index == flatcache_l2_tail) {
-		flatcache_l2_tail = next;	
-	} else {
-		nodelist[prev].next = next;
+				} else {
+					I_Error("pagecount wrong order %i %i", nodelist[nodenow].pagecount, nodelist[nodenow].numpages);
+				}
+				
+			}
+
+
+			nodenow = nodelist[nodenow].next;
+		}
+
+		if (currenttarget){
+			//I_Error("page count ended at end? A");
+
+						I_Error("pagecount not found %i \n %i %i %i \n%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i\n%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i\n%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", i, spritecache_l2_tail, spritecache_l2_head, id, 
+						node0, node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15, node16, node17, node18, node19,
+						nodelist[node0].pagecount, 
+						nodelist[node1].pagecount, 
+						nodelist[node2].pagecount, 
+						nodelist[node3].pagecount, 
+						nodelist[node4].pagecount, 
+						nodelist[node5].pagecount, 
+						nodelist[node6].pagecount, 
+						nodelist[node7].pagecount, 
+						nodelist[node8].pagecount, 
+						nodelist[node9].pagecount, 
+						nodelist[node10].pagecount, 
+						nodelist[node11].pagecount, 
+						nodelist[node12].pagecount, 
+						nodelist[node13].pagecount, 
+						nodelist[node14].pagecount, 
+						nodelist[node15].pagecount, 
+						nodelist[node16].pagecount, 
+						nodelist[node17].pagecount, 
+						nodelist[node18].pagecount, 
+						nodelist[node19].pagecount,
+						
+								nodelist[node0].numpages, 
+						nodelist[node1].numpages, 
+						nodelist[node2].numpages, 
+						nodelist[node3].numpages, 
+						nodelist[node4].numpages, 
+						nodelist[node5].numpages, 
+						nodelist[node6].numpages, 
+						nodelist[node7].numpages, 
+						nodelist[node8].numpages, 
+						nodelist[node9].numpages, 
+						nodelist[node10].numpages, 
+						nodelist[node11].numpages, 
+						nodelist[node12].numpages, 
+						nodelist[node13].numpages, 
+						nodelist[node14].numpages, 
+						nodelist[node15].numpages, 
+						nodelist[node16].numpages, 
+						nodelist[node17].numpages, 
+						nodelist[node18].numpages, 
+						nodelist[node19].numpages
+
+
+						
+						);
+
+
+		}
+		if (lastpagecount){
+			I_Error("page count ended at end? B");
+		}
 	}
 
-	// guaranteed to have a next. if we didnt have one, it'd be head but we already returned from that case.
-	nodelist[next].prev = prev;
+	//prevmost is tail (LRU)
+	//nextmost is head (MRU)
 
-	nodelist[index].prev = flatcache_l2_head;
-	nodelist[index].next = -1;
-	nodelist[flatcache_l2_head].next = index;
-	flatcache_l2_head = index;
+
+	if (nodelist[spritecache_l2_tail].prev != -1){
+		I_Error("tail non -1 prev %i", id);
+	}
+	if (nodelist[spritecache_l2_tail].next == -1){
+		I_Error("tail -1 next %i", id);
+	}
+
+	if (nodelist[spritecache_l2_head].next != -1){
+		I_Error("head non -1 next %i", id);
+	}
+	if (nodelist[spritecache_l2_head].prev == -1){
+		I_Error("head -1 prev %i %i %i %i %i %i %i %i", id, node0, node1, node2, node3, node4, node5);
+	}
+
+	if (nodelist[node1].prev != node0){
+		I_Error("AA %i", id);
+	}
+	if (nodelist[node1].next != node2){
+		I_Error("BB %i", id);
+	}
+
+	if (nodelist[node2].prev != node1){
+		I_Error("CC %i", id);
+	}
+	if (nodelist[node2].next != node3){
+		I_Error("DD %i", id);
+	}
+
+	if (nodelist[node3].prev != node2){
+		I_Error("EE %i", id);
+	}
+	if (nodelist[node3].next != node4){
+		I_Error("FF %i", id);
+	}
+
+	if (nodelist[node4].prev != node3){
+		I_Error("GG %i", id);
+	}
+	if (nodelist[node4].next != node5){
+		I_Error("HH %i", id);
+	}
+
+
+	if (nodelist[node5].prev != node4){
+		I_Error("II %i", id);
+	}
+	if (nodelist[node5].next != node6){
+		I_Error("JJ %i", id);
+	}
+
+
+	if (nodelist[node6].prev != node5){
+		I_Error("KK %i", id);
+	}
+	if (nodelist[node6].next != node7){
+		I_Error("LL %i", id);
+	}
+
+	if (nodelist[node7].prev != node6){
+		I_Error("MM %i", id);
+	}
+	if (nodelist[node7].next != node8){
+		I_Error("NN %i", id);
+	}
+
+	if (nodelist[node8].prev != node7){
+		I_Error("OO %i", id);
+	}
+	if (nodelist[node8].next != node9){
+		I_Error("PP %i", id);
+	}
+
+	if (nodelist[node9].prev != node8){
+		I_Error("QQ %i", id);
+	}
+	if (nodelist[node9].next != node10){
+		I_Error("RR %i", id);
+	}
+
+
+	if (nodelist[node10].prev != node9){
+		I_Error("SS %i", id);
+	}
+	if (nodelist[node10].next != node11){
+		I_Error("TT %i", id);
+	}
+
+	if (nodelist[node11].prev != node10){
+		I_Error("UU %i", id);
+	}
+	if (nodelist[node11].next != node12){
+		I_Error("VV %i", id);
+	}
+
+	if (nodelist[node12].prev != node11){
+		I_Error("WW %i", id);
+	}
+	if (nodelist[node12].next != node13){
+		I_Error("XX %i", id);
+	}
+
+	if (nodelist[node13].prev != node12){
+		I_Error("YY %i", id);
+	}
+	if (nodelist[node13].next != node14){
+		I_Error("ZZ %i", id);
+	}
+
+	if (nodelist[node14].prev != node13){
+		I_Error("AAA %i", id);
+	}
+	if (nodelist[node14].next != node15){
+		I_Error("BBB %i", id);
+	}
+
+
+	if (nodelist[node15].prev != node14){
+		I_Error("CCC %i", id);
+	}
+	if (nodelist[node15].next != node16){
+		I_Error("DDD %i", id);
+	}
+
+	if (nodelist[node16].prev != node15){
+		I_Error("EEE %i", id);
+	}
+	if (nodelist[node16].next != node17){
+		I_Error("FFF %i", id);
+	}
+
+	if (nodelist[node17].prev != node16){
+		I_Error("GGG %i", id);
+	}
+	if (nodelist[node17].next != node18){
+		I_Error("HHH %i", id);
+	}
+
+	if (nodelist[node18].prev != node17){
+		I_Error("III %i", id);
+	}
+	if (nodelist[node18].next != node19){
+		I_Error("JJJ %i", id);
+	}
+
+	if (nodelist[node19].prev != node18){
+		I_Error("KKK %i", id);
+	}
+	if (nodelist[node19].next != -1){
+		I_Error("LLL %i", id);
+	}
+
+	
+	//if (nodelist[node7].next != -1){
+	//	I_Error("N %i", id);
+	//}
+
+	//if (node7 != spritecache_l2_head){
+	//	I_Error("O %i", id);
+	//}
+
+
+
+
+}
+
+*/
+
+
+/*
+void __near checkpatchcache(int8_t id){
+	int8_t node0;
+	int8_t node1;
+	int8_t node2;
+	int8_t node3;
+	int8_t node4;
+	int8_t node5;
+	int8_t node6;
+	int8_t node7;
+	int8_t node8;
+	int8_t node9;
+	int8_t node10;
+	int8_t node11;
+	int8_t node12;
+	int8_t node13;
+	int8_t node14;
+	int8_t node15;
+	int8_t nodeprev;
+	int8_t nodenow;
+	int8_t j = 0;
+	int8_t i = 0;
+	
+	cache_node_page_count_t far* nodelist  = patchcache_nodes;
+
+
+
+	node0  = patchcache_l2_tail;
+	node1  = nodelist[node0].next;
+	node2  = nodelist[node1].next;
+	node3  = nodelist[node2].next;
+	node4  = nodelist[node3].next;
+	node5  = nodelist[node4].next;
+	node6  = nodelist[node5].next;
+	node7  = nodelist[node6].next;
+	node8  = nodelist[node7].next;
+	node9  = nodelist[node8].next;
+	node10  = nodelist[node9].next;
+	node11  = nodelist[node10].next;
+	node12  = nodelist[node11].next;
+	node13  = nodelist[node12].next;
+	node14  = nodelist[node13].next;
+	node15  = nodelist[node14].next;
+
+
+	for (i = 0; i < NUM_PATCH_CACHE_PAGES; i++){
+		int8_t found = 0;
+		nodenow = patchcache_l2_tail;
+		for (j = 0; j < NUM_PATCH_CACHE_PAGES; j++){
+			if (nodenow == i){
+				found = 1;
+				break;
+			}			
+			nodenow = nodelist[nodenow].next;
+		}
+		if (!found){
+			I_Error("not found %i \n %i %i %i \n%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i ", i, patchcache_l2_tail, patchcache_l2_head, id, 
+	  		node0, node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15);
+
+		}
+	}
+
+	nodenow = patchcache_l2_tail;
+
+	{
+		int8_t currenttarget = 0;
+		int8_t lastpagecount = 0;
+		for (j = 0; j < NUM_PATCH_CACHE_PAGES; j++){
+			if (!currenttarget){
+				if (nodelist[nodenow].pagecount == 1){
+					currenttarget = nodelist[nodenow].numpages;
+					lastpagecount = 1;
+				} else {
+					if (nodelist[nodenow].pagecount){
+						I_Error("non one first pagecount %i %i %i", nodelist[nodenow].pagecount, nodenow, id);
+
+						//I_Error("not found %i \n %i %i %i \n%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", i, patchcache_l2_tail, patchcache_l2_head, id, 
+						//node0, node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15, node16, node17, node18, node19);
+
+					} else 
+
+					if (nodelist[nodenow].numpages){
+						I_Error("pagecount zero and numpages nonzero %i %i", nodelist[nodenow].pagecount, nodelist[nodenow].numpages);
+					}
+				}
+			} else {
+				if (nodelist[nodenow].pagecount == lastpagecount+1){
+					if (nodelist[nodenow].numpages != currenttarget){
+						I_Error("numpages changed?  %i %i", nodelist[nodenow].pagecount, nodelist[nodenow].numpages);
+					}
+					lastpagecount++;
+					if (nodelist[nodenow].pagecount == currenttarget){
+						currenttarget = 0;
+						lastpagecount = 0;
+	
+					}
+				} else {
+					
+					I_Error("pagecount not found %i \n %i %i %i \n%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i \n%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i \n%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i ", i, patchcache_l2_tail, patchcache_l2_head, id, 
+						node0, node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15,
+						nodelist[node0].pagecount, 
+						nodelist[node1].pagecount, 
+						nodelist[node2].pagecount, 
+						nodelist[node3].pagecount, 
+						nodelist[node4].pagecount, 
+						nodelist[node5].pagecount, 
+						nodelist[node6].pagecount, 
+						nodelist[node7].pagecount, 
+						nodelist[node8].pagecount, 
+						nodelist[node9].pagecount, 
+						nodelist[node10].pagecount, 
+						nodelist[node11].pagecount, 
+						nodelist[node12].pagecount, 
+						nodelist[node13].pagecount, 
+						nodelist[node14].pagecount, 
+						nodelist[node15].pagecount, 
+						
+						nodelist[node0].numpages, 
+						nodelist[node1].numpages, 
+						nodelist[node2].numpages, 
+						nodelist[node3].numpages, 
+						nodelist[node4].numpages, 
+						nodelist[node5].numpages, 
+						nodelist[node6].numpages, 
+						nodelist[node7].numpages, 
+						nodelist[node8].numpages, 
+						nodelist[node9].numpages, 
+						nodelist[node10].numpages, 
+						nodelist[node11].numpages, 
+						nodelist[node12].numpages, 
+						nodelist[node13].numpages, 
+						nodelist[node14].numpages, 
+						nodelist[node15].numpages
+
+
+						
+						);
+					
+					
+					I_Error("pagecount wrong order %i %i %i %i", nodelist[nodenow].pagecount, nodelist[nodenow].numpages,
+					currenttarget, lastpagecount);
+				}
+				
+			}
+
+
+			nodenow = nodelist[nodenow].next;
+		}
+
+		if (currenttarget){
+			I_Error("page count ended at end? A");
+
+						
+
+
+		}
+		if (lastpagecount){
+			I_Error("page count ended at end? B");
+		}
+	}
+
+	//prevmost is tail (LRU)
+	//nextmost is head (MRU)
+
+
+	if (nodelist[patchcache_l2_tail].prev != -1){
+		I_Error("tail non -1 prev %i", id);
+	}
+	if (nodelist[patchcache_l2_tail].next == -1){
+		I_Error("tail -1 next %i", id);
+	}
+
+	if (nodelist[patchcache_l2_head].next != -1){
+		I_Error("head non -1 next %i", id);
+	}
+	if (nodelist[patchcache_l2_head].prev == -1){
+		I_Error("head -1 prev %i %i %i %i %i %i %i %i", id, node0, node1, node2, node3, node4, node5);
+	}
+
+	if (nodelist[node1].prev != node0){
+		I_Error("AA %i", id);
+	}
+	if (nodelist[node1].next != node2){
+		I_Error("BB %i", id);
+	}
+
+	if (nodelist[node2].prev != node1){
+		I_Error("CC %i", id);
+	}
+	if (nodelist[node2].next != node3){
+		I_Error("DD %i", id);
+	}
+
+	if (nodelist[node3].prev != node2){
+		I_Error("EE %i", id);
+	}
+	if (nodelist[node3].next != node4){
+		I_Error("FF %i", id);
+	}
+
+	if (nodelist[node4].prev != node3){
+		I_Error("GG %i", id);
+	}
+	if (nodelist[node4].next != node5){
+		I_Error("HH %i", id);
+	}
+
+
+	if (nodelist[node5].prev != node4){
+		I_Error("II %i", id);
+	}
+	if (nodelist[node5].next != node6){
+		I_Error("JJ %i", id);
+	}
+
+
+	if (nodelist[node6].prev != node5){
+		I_Error("KK %i", id);
+	}
+	if (nodelist[node6].next != node7){
+		I_Error("LL %i", id);
+	}
+
+	if (nodelist[node7].prev != node6){
+		I_Error("MM %i", id);
+	}
+	if (nodelist[node7].next != node8){
+		I_Error("NN %i", id);
+	}
+
+	if (nodelist[node8].prev != node7){
+		I_Error("OO %i", id);
+	}
+	if (nodelist[node8].next != node9){
+		I_Error("PP %i", id);
+	}
+
+	if (nodelist[node9].prev != node8){
+		I_Error("QQ %i", id);
+	}
+	if (nodelist[node9].next != node10){
+		I_Error("RR %i", id);
+	}
+
+
+	if (nodelist[node10].prev != node9){
+		I_Error("SS %i", id);
+	}
+	if (nodelist[node10].next != node11){
+		I_Error("TT %i", id);
+	}
+
+	if (nodelist[node11].prev != node10){
+		I_Error("UU %i", id);
+	}
+	if (nodelist[node11].next != node12){
+		I_Error("VV %i", id);
+	}
+
+	if (nodelist[node12].prev != node11){
+		I_Error("WW %i", id);
+	}
+	if (nodelist[node12].next != node13){
+		I_Error("XX %i", id);
+	}
+
+	if (nodelist[node13].prev != node12){
+		I_Error("YY %i", id);
+	}
+	if (nodelist[node13].next != node14){
+		I_Error("ZZ %i", id);
+	}
+
+	if (nodelist[node14].prev != node13){
+		I_Error("AAA %i", id);
+	}
+	if (nodelist[node14].next != node15){
+		I_Error("BBB %i", id);
+	}
+
+
+	if (nodelist[node15].prev != node14){
+		I_Error("CCC %i", id);
+	}
+	if (nodelist[node15].next != -1){
+		I_Error("DDD %i", id);
+	}
+
+	
+	//if (nodelist[node7].next != -1){
+	//	I_Error("N %i", id);
+	//}
+
+	//if (node7 != patchcache_l2_head){
+	//	I_Error("O %i", id);
+	//}
+
+
+
+
+}
 
 
 */
 
 
-	// todo look for the case where first allocation is to head but multipage.
+//todo remove numpages
+void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
+
+ 
 
 
 
@@ -738,15 +1079,10 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
 	int8_t lastindex_prev;
 	int8_t index_next;
 
-	//I_Error("valuesf %i %i %i %i", index, numpages, texturecache_l2_tail, texturecache_l2_head);
-
-	// edge case - the first allocation is a 2 pager. we return the head and then we end up not setting numpages
 	
 	if (index == texturecache_l2_head) {
 		return;
 	}
-
-	//I_Error("made it here? %i %i %i %i", index, numpages, texturecache_l2_head, texturecache_l2_tail );
 
 
 	pagecount = nodelist[index].pagecount;
@@ -774,28 +1110,8 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
 		numpages = nodelist[index].numpages;
 	}
 
-	// FROM:  A B 1 2 3 C D
-	// TO:    1 2 3 A B C D
+	 
 
-	//  A PREV 0, NEXT B
-	//  B PREV A, NEXT 1
-	//  1 PREV B
-	//  3 NEXT C
-	//  C PREV 3, NEXT D
-	// tail D
-	// head A
-
-	//  becomes
-
-	//  1 prev 0, next same
-	// 3 next becomes old head
-	// head prev becomes last index
-	// head next does not necessarily change.
-	// indexprev's next becomes lastindex_next
-
-	
-
-	// todo get rid of numpages check?
 	if (numpages){
 		// multipage  allocation being updated.
 		
@@ -803,10 +1119,6 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
 		// that means all the inner pages' next/prevs set and pagecount/numpages are also already set
 		// no need to set all that stuff, just the relevant outer allocations's prev/next.
 		// and update head/tail
-		
-		if (nodelist[index].numpages != numpages){
-			I_Error("mismatched allocation?");
-		}
 
 		lastindex = index;
 		while (nodelist[lastindex].pagecount != 1){
@@ -832,7 +1144,7 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
 		texturecache_l2_head = index;
 
 		return;
-	} else if (!numpages){
+	} else {
 		// handle the simple one page case.
 
 		prev = nodelist[index].prev;
@@ -862,104 +1174,234 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
 
 	}
 
-	// whats remaining is the case of a multipage, new allocation. 
-	// we must set all the next/prev and pagecount/numpages.
-	// this is usually preset by the EvictCache function.
-	// but in the initial allocation case, when were are setting l2 cache entries for the first time
-	// and nothing has been evicted yet - then we set it here. 
-	// in that initial allocation case, we know the indexes are sequential
-	// so we dont have to go thru prev/next
+
+}
+
+
+//todo remove numpages
+void __near R_MarkL2PatchCacheLRU(int8_t index, int8_t numpages) {
+
+ 
+
+
+
+	int8_t prev;
+	int8_t next;
+	int8_t pagecount;
+
+	cache_node_page_count_t far* nodelist = patchcache_nodes;
+
+	int8_t previous_next;
+	int8_t previous_head;
+
+
+	int8_t lastindex;
+	int8_t lastindex_prev;
+	int8_t index_next;
+
 	
-	
-	//prevmost is tail (LRU)
-	//nextmost is head (MRU)
-
-
-	// this next needs to later be connected to the allocation block's last element's prev
-	I_Error("this code path cant happen anymore?");
-	
-	/*
-	previous_next = nodelist[index].next;
-	previous_head = texturecache_l2_head;
-
-	texturecache_l2_head = index;
-
-
-	// this loop may be unrollable (if i section)
-	// todo remove the next/prev setters? should already be set.
-	switch (numpages){
-		case 3:
-			nodelist[index].prev      = index+1;
-			nodelist[index].pagecount = 4;
-			nodelist[index].numpages  = numpages+1;
-			index++;
-		
-		case 2:
-			nodelist[index].next      = index-1;
-			nodelist[index].prev      = index+1;
-			nodelist[index].pagecount = 3;
-			nodelist[index].numpages  = numpages+1;
-			index++;
-		
-		case 1:
-			nodelist[index].next      = index-1;
-			nodelist[index].prev      = index+1;
-			nodelist[index].pagecount = 2;
-			nodelist[index].numpages  = numpages+1;
-			index++;
-
-		// case 1 cant happen...
-		case 0: 
-			lastindex_prev = nodelist[index].prev;
-			nodelist[index].next      = index-1;
-			nodelist[index].prev      = previous_head;
-			nodelist[index].pagecount = 1;
-			nodelist[index].numpages  = numpages+1;
-			break;
-		
-
-		default:
-			I_Error("what %i", numpages);
+	if (index == patchcache_l2_head) {
+		return;
 	}
 
-	if (index >= NUM_TEXTURE_PAGES){
-		I_Error("overshot texture page count?");
+
+	pagecount = nodelist[index].pagecount;
+	// if pagecount is nonzero, then this is a pre-existing allocation which is multipage.
+	// so we want to find the head of this allocation, and check if it's the head.
+
+	if (pagecount){
+		// if this is multipage, then pagecount is nonzero.
+		
+		// could probably be unrolled in asm
+	 	while (nodelist[index].numpages != nodelist[index].pagecount){
+			index = nodelist[index].next;
+		}
+
+
+		if (index == patchcache_l2_head) {
+			return;
+		}
+
+		// there are going to be cases where we call with numpages = 0, 
+		// but the allocation is sharing a page with the last page of a
+		// multi-page allocation. in this case, we want to back up and update the
+		// whole multi-page allocation.
+		
+		numpages = nodelist[index].numpages;
 	}
 
-	// index is now equivalent to "last_index" in the above code. 
-	// the starting index is texturecache_l2_head.
+	 
 
+	if (numpages){
+		// multipage  allocation being updated.
+		
+		// we know its pre-existing because numpages is set on the node;
+		// that means all the inner pages' next/prevs set and pagecount/numpages are also already set
+		// no need to set all that stuff, just the relevant outer allocations's prev/next.
+		// and update head/tail
+	
+		// todo get rid of numpages check?
 
+		lastindex = index;
+		while (nodelist[lastindex].pagecount != 1){
+			lastindex = nodelist[lastindex].prev;
+		}
+		
+		lastindex_prev = nodelist[lastindex].prev;
+		index_next = nodelist[index].next;
 
-//   1 2 3 4 5
-//   3 4 1 2 5
+		if (patchcache_l2_tail == lastindex){
+			patchcache_l2_tail = index_next;
+			nodelist[index_next].prev = -1;
+		} else {
+			nodelist[lastindex_prev].next = index_next;
+			nodelist[index_next].prev = lastindex_prev;
+		}
 
-//    1     1
-//  -1 2   4 2      lasthead prev -> index   next -> hasn't changed?
-//    2     2
-//   1 3   1 5      
-//    3     3
-//   2 4  -1 4
-//    4     4
-//   3 5   3 1
-//    5     5
-//   4 -1   2 -1
+		nodelist[lastindex].prev = patchcache_l2_head;
+		nodelist[patchcache_l2_head].next = lastindex;
+		// head's next doesnt change directly. it changes indirectly if index_prev changes.
 
+		nodelist[index].next = -1;
+		patchcache_l2_head = index;
 
-	if (index == texturecache_l2_tail){
-		texturecache_l2_tail = previous_next;
+		return;
 	} else {
-		nodelist[lastindex_prev].next = previous_next;
+		// handle the simple one page case.
+
+		prev = nodelist[index].prev;
+		next = nodelist[index].next;
+
+		if (index == patchcache_l2_tail) {
+			patchcache_l2_tail = next;
+		} else {
+			nodelist[prev].next = next; 
+		}
+
+		nodelist[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+
+		nodelist[index].prev = patchcache_l2_head;
+		nodelist[index].next = -1;
+
+		// pagecount/numpages dont have to be zeroed - either p_setup 
+		// sets it to 0 in the initial case, or EvictCache in later cases.
+		//nodelist[index].pagecount = 0;
+		//nodelist[index].numpages  = 0;
+
+		nodelist[patchcache_l2_head].next = index;
+		
+		
+		patchcache_l2_head = index;
+		return;
+
 	}
 
-	// works in the tail case too.
-	nodelist[previous_next].prev = lastindex_prev;
-	nodelist[previous_head].next = index;
-	nodelist[texturecache_l2_head].next = -1; 
 
-	// previous prev should be 0?
-	// lastindex_next should be... 3?
-*/
+}
+
+//todo remove numpages
+void __near R_MarkL2SpriteCacheLRU(int8_t index, int8_t numpages) {
+
+	int8_t prev;
+	int8_t next;
+	int8_t pagecount;
+	cache_node_page_count_t far* nodelist = spritecache_nodes;
+	int8_t previous_next;
+	int8_t previous_head;
+	int8_t lastindex;
+	int8_t lastindex_prev;
+	int8_t index_next;
+
+	if (index == spritecache_l2_head) {
+		return;
+	}
+
+	pagecount = nodelist[index].pagecount;
+	// if pagecount is nonzero, then this is a pre-existing allocation which is multipage.
+	// so we want to find the head of this allocation, and check if it's the head.
+
+	if (pagecount){
+		// if this is multipage, then pagecount is nonzero.
+		
+		// could probably be unrolled in asm
+	 	while (nodelist[index].numpages != nodelist[index].pagecount){
+			index = nodelist[index].next;
+		}
+
+		if (index == spritecache_l2_head) {
+			return;
+		}
+
+		// there are going to be cases where we call with numpages = 0, 
+		// but the allocation is sharing a page with the last page of a
+		// multi-page allocation. in this case, we want to back up and update the
+		// whole multi-page allocation.
+		
+		numpages = nodelist[index].numpages;
+	}
+
+	if (numpages){
+		// multipage  allocation being updated.
+		
+		// we know its pre-existing because numpages is set on the node;
+		// that means all the inner pages' next/prevs set and pagecount/numpages are also already set
+		// no need to set all that stuff, just the relevant outer allocations's prev/next.
+		// and update head/tail
+	
+
+		lastindex = index;
+		while (nodelist[lastindex].pagecount != 1){
+			lastindex = nodelist[lastindex].prev;
+		}
+		
+		lastindex_prev = nodelist[lastindex].prev;
+		index_next = nodelist[index].next;
+
+		if (spritecache_l2_tail == lastindex){
+			spritecache_l2_tail = index_next;
+			nodelist[index_next].prev = -1;
+		} else {
+			nodelist[lastindex_prev].next = index_next;
+			nodelist[index_next].prev = lastindex_prev;
+		}
+
+		nodelist[lastindex].prev = spritecache_l2_head;
+		nodelist[spritecache_l2_head].next = lastindex;
+		// head's next doesnt change directly. it changes indirectly if index_prev changes.
+
+		nodelist[index].next = -1;
+		spritecache_l2_head = index;
+
+		return;
+	} else {
+		// handle the simple one page case.
+
+		prev = nodelist[index].prev;
+		next = nodelist[index].next;
+
+		if (index == spritecache_l2_tail) {
+			spritecache_l2_tail = next;
+		} else {
+			nodelist[prev].next = next; 
+		}
+
+		nodelist[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+
+		nodelist[index].prev = spritecache_l2_head;
+		nodelist[index].next = -1;
+
+		// pagecount/numpages dont have to be zeroed - either p_setup 
+		// sets it to 0 in the initial case, or EvictCache in later cases.
+		//nodelist[index].pagecount = 0;
+		//nodelist[index].numpages  = 0;
+
+		nodelist[spritecache_l2_head].next = index;
+		
+		
+		spritecache_l2_head = index;
+		return;
+
+	}
 
 
 }
@@ -969,29 +1411,73 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
 // this function needs to always leave the cache in a workable state...
 // if we remove excess pages due to the removed pages being part of a
 // multi-page allocation, then those now unused pages should be appropriately
-// put at the back of the queue so they will be the next unloaded.
-// the evicted pages are also moved to the front, and numpages/etc should be set properly.
-int8_t __near R_EvictCompositeCacheEMSPage(int8_t numpages){
+// put at the back of the queue so they will be the next loaded into.
+// the evicted pages are also moved to the front. numpages/pagecount are filled in by the code after this
+int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	int8_t evictedpage;
 	int8_t lastevictedpage;
 	int8_t extraevictedpages;
 	int8_t j;
 	uint8_t currentpage;
 	int16_t k;
-	int8_t remainingpages = 0; //TODO uninitialized. probably 0 is fine but confirm.
 	int8_t previous_head;
 	int8_t previous_next;
-	cache_node_page_count_t far* nodelist = texturecache_nodes;
+	cache_node_page_count_t far* nodelist;;
+	int8_t* nodetail;
+	int8_t* nodehead;
+	int16_t maxitersize;
 
 	uint8_t __far* cacherefpage;
 	uint8_t __far* cacherefoffset;
 	uint8_t __near* usedcacherefpage;
 
-	#ifdef DETAILED_BENCH_STATS
-	compositecacheevictcount++;
-	#endif
 
-	evictedpage = texturecache_l2_tail;
+
+	switch (cachetype){
+		case CACHETYPE_SPRITE:
+			nodetail = &spritecache_l2_tail;
+			nodehead = &spritecache_l2_head;
+			nodelist = spritecache_nodes;
+			maxitersize = MAX_SPRITE_LUMPS;
+			cacherefpage = spritepage;
+			cacherefoffset = spriteoffset;
+			usedcacherefpage = usedspritepagemem;
+			#ifdef DETAILED_BENCH_STATS
+			spritecacheevictcount++;
+			#endif
+	break;
+
+		case CACHETYPE_PATCH:
+ 			nodetail = &patchcache_l2_tail;
+			nodehead = &patchcache_l2_head;
+			nodelist = patchcache_nodes;
+			maxitersize = MAX_PATCHES;
+			cacherefpage = patchpage;
+			cacherefoffset = patchoffset;
+			usedcacherefpage = usedpatchpagemem;
+			#ifdef DETAILED_BENCH_STATS
+			patchcacheevictcount++;
+			#endif
+			break;
+		case CACHETYPE_COMPOSITE:
+ 			nodetail = &texturecache_l2_tail;
+			nodehead = &texturecache_l2_head;
+			nodelist = texturecache_nodes;
+			maxitersize = MAX_TEXTURES;
+			cacherefpage = compositetexturepage;
+			cacherefoffset = compositetextureoffset;
+			usedcacherefpage = usedcompositetexturepagemem;
+			#ifdef DETAILED_BENCH_STATS
+			compositecacheevictcount++;
+			#endif
+
+//			I_Error("confirm a");
+			break;
+	}
+
+
+
+	evictedpage = *nodetail;
 
 	// go back enough pages to allocate them all.
 	for (j = 0; j < numpages-1; j++){
@@ -1025,10 +1511,10 @@ int8_t __near R_EvictCompositeCacheEMSPage(int8_t numpages){
 
 	//checktexturecache(30 + evictedpage);
 
-	previous_head = texturecache_l2_head;
+	previous_head = *nodehead;
 	previous_next = nodelist[evictedpage].next;
 
-	texturecache_l2_head = evictedpage;
+	*nodehead = evictedpage;
 	nodelist[evictedpage].next = -1;
 
 
@@ -1036,31 +1522,31 @@ int8_t __near R_EvictCompositeCacheEMSPage(int8_t numpages){
 	j = numpages;
 	while (j){
 		evictedpage = lastevictedpage;
-		nodelist[evictedpage].pagecount = j;
-		nodelist[evictedpage].numpages = numpages;
-		j--;
+		//nodelist[evictedpage].pagecount = j;
+		//nodelist[evictedpage].numpages = numpages;
 		lastevictedpage = nodelist[evictedpage].prev;
+		j--;
 	}
 
 	nodelist[evictedpage].prev = previous_head;
 	nodelist[previous_head].next = evictedpage;
 
 	nodelist[previous_next].prev = -1;
-	texturecache_l2_tail = previous_next;
+	*nodetail = previous_next;
 
 
 
 	//clear cache data that was pointing to this page.
-	currentpage = texturecache_l2_head;
+	currentpage = *nodehead;
 	j = numpages;
 	while (j > 0){
-		for (k = 0; k < MAX_TEXTURES; k++){
-			if ((compositetexturepage[k] >> 2) == currentpage){
-				compositetexturepage[k] = 0xFF;
-				compositetextureoffset[k] = 0xFF;
+		for (k = 0; k < maxitersize; k++){
+			if ((cacherefpage[k] >> 2) == currentpage){
+				cacherefpage[k] = 0xFF;
+				cacherefoffset[k] = 0xFF;
 			}
 		}
-		usedcompositetexturepagemem[currentpage] = 0;
+		usedcacherefpage[currentpage] = 0;
 		currentpage = nodelist[evictedpage].prev;
 		j--;
 	}	
@@ -1068,11 +1554,13 @@ int8_t __near R_EvictCompositeCacheEMSPage(int8_t numpages){
 	j = 0;
 
 	// if we have to clear extra pages... then clear those too.
-	if (extraevictedpages != texturecache_l2_head){
+	// TODO: debug this for sure
+	if (extraevictedpages != *nodehead){
 		evictedpage = extraevictedpages;
-		I_Error("this happened?");
+		I_Error("this happened?"); 
 		while (nodelist[evictedpage].next != -1){
 
+			// this must be done here...
 			nodelist[evictedpage].pagecount = 0;
 			nodelist[evictedpage].numpages = 0;
 			
@@ -1081,18 +1569,18 @@ int8_t __near R_EvictCompositeCacheEMSPage(int8_t numpages){
 		}
 
 		nodelist[evictedpage].next = -1;
-		texturecache_l2_tail = evictedpage;
+		*nodetail = evictedpage;
 
 		currentpage = evictedpage;
 		//clear cache data that was pointing to this page.
 		while (j > 0){
-			for (k = 0; k < MAX_TEXTURES; k++){
-				if ((compositetexturepage[k] >> 2) == currentpage){
-					compositetexturepage[k] = 0xFF;
-					compositetextureoffset[k] = 0xFF;
+			for (k = 0; k < maxitersize; k++){
+				if ((cacherefpage[k] >> 2) == currentpage){
+					cacherefpage[k] = 0xFF;
+					cacherefoffset[k] = 0xFF;
 				}
 			}
-			usedcompositetexturepagemem[currentpage] = 0;
+			usedcacherefpage[currentpage] = 0;
 			currentpage = nodelist[evictedpage].next;
 			j--;
 		}	
@@ -1102,8 +1590,9 @@ int8_t __near R_EvictCompositeCacheEMSPage(int8_t numpages){
 
 
 
-	return texturecache_l2_head;
+	return *nodehead;
 }
+
 
 
 
@@ -1300,8 +1789,7 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
 	int8_t numpages;
 	uint8_t texpage, texoffset;
-	int16_t i;
-	int16_t j;
+	int8_t i, j;
 /*
 	if (size == 0){
 		return; // why does this happen...
@@ -1328,20 +1816,19 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 		}
 		
 		//checktexturecache(9);
-		i = R_EvictCompositeCacheEMSPage (numpages);
+		i = R_EvictCacheEMSPage (numpages, CACHETYPE_COMPOSITE);
 		//checktexturecache(10);
 
 		foundonepage:
 		texpage = i << 2; // num pages 0
 		texoffset = usedcompositetexturepagemem[i];
 		usedcompositetexturepagemem[i] += blocksize;
-
-	}
-	else {
+	} else {
 		// theres no deallocation so any page with 0 allocated will be followed by another 
 		uint8_t numpagesminus1 = numpages - 1;
 
 		// todo: fast skip this if we've already allocated everything?
+		
 		for (i = 0; i < NUM_TEXTURE_PAGES-numpagesminus1; i++) {
 			if (!usedcompositetexturepagemem[i]) {
 				// need to check following pages for emptiness, or else after evictions weird stuff can happen
@@ -1356,7 +1843,7 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 		}
 
 		//checktexturecache(11);
-		i = R_EvictCompositeCacheEMSPage(numpages);
+		i = R_EvictCacheEMSPage(numpages, CACHETYPE_COMPOSITE);
 		//checktexturecache(12);
 
 		foundmultipage:
@@ -1372,7 +1859,9 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 		// last page of the allocation
 		texturecache_nodes[i].numpages = numpages;
 		texturecache_nodes[i].pagecount = numpages;
+		// not sure if this ever happens...
 		if (numpages >= 3) {
+			I_Error("happened 1");
 			// 2nd to last page of the allocation
 			j = texturecache_nodes[i].prev;
 			texturecache_nodes[j].numpages = numpages;
@@ -1381,6 +1870,8 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 			texturecache_nodes[j].pagecount = numpages-1;
 			usedcompositetexturepagemem[j] = 64;
 		}
+		// i actually think this never happens? get rid of the code?
+		/*
 		if (numpages == 4) {
 			// always page 2 of the 4 page allocation
 			j = texturecache_nodes[j].prev;
@@ -1388,6 +1879,7 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 			texturecache_nodes[j].pagecount = 2;
 			usedcompositetexturepagemem[j] = 64;
 		}
+		*/
 		// first page of the allocation
 		j = texturecache_nodes[j].prev;
 		texturecache_nodes[j].numpages = numpages;
@@ -1416,7 +1908,7 @@ void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
 	int8_t numpages;
 	uint8_t texpage, texoffset;
-	int16_t i;
+	int8_t i, j;
 	if (size & 0xFF) {
 		blocksize++;
 	}
@@ -1439,7 +1931,9 @@ void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
 			}
 		}
 
+		//checkpatchcache(50);
 		i = R_EvictCacheEMSPage(numpages, CACHETYPE_PATCH);
+		//checkpatchcache(51);
 
 		foundonepage:
 		texpage = i << 2;
@@ -1448,7 +1942,6 @@ void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
 	} else {
 		// theres no deallocation so any page with 0 allocated will be followed by another 
 		uint8_t numpagesminus1 = numpages - 1;
-
 		for (i = 0; i < NUM_PATCH_CACHE_PAGES-numpagesminus1; i++) {
 			if (!usedpatchpagemem[i]) {
 				// need to check following pages for emptiness, or else after evictions weird stuff can happen
@@ -1462,21 +1955,49 @@ void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
 			}
 		}
 
+		//checkpatchcache(52);
 		i = R_EvictCacheEMSPage(numpages, CACHETYPE_PATCH);
+		//checkpatchcache(53);
 
 		foundmultipage:
 		
 		usedpatchpagemem[i] = 64;
+		//I_Error("found page %i %i %i", i, texturecache_nodes[i].next, texturecache_nodes[texturecache_nodes[i].next].next);
+		j = i;
+		// last page of the allocation
+		patchcache_nodes[i].numpages = numpages;
+		patchcache_nodes[i].pagecount = numpages;
+
+		// this DOES happen.
 		if (numpages >= 3) {
-			usedpatchpagemem[i + 1] = 64;
+			// 2nd to last page of the allocation
+			j = patchcache_nodes[i].prev;
+			patchcache_nodes[j].numpages = numpages;
+			// 2 if numpages is 3. 
+			// 3 if numpages is 4
+			patchcache_nodes[j].pagecount = numpages-1;
+			usedpatchpagemem[j] = 64;
 		}
+		// i actually think this never happens? get rid of the code?
+		/*
 		if (numpages == 4) {
-			usedpatchpagemem[i + 2] = 64;
+			// always page 2 of the 4 page allocation
+			j = texturecache_nodes[j].prev;
+			texturecache_nodes[j].numpages = numpages;
+			texturecache_nodes[j].pagecount = 2;
+			usedpatchpagemem[j] = 64;
 		}
+		*/
+		// first page of the allocation
+		j = patchcache_nodes[j].prev;
+		patchcache_nodes[j].numpages = numpages;
+		patchcache_nodes[j].pagecount = 1;
+
+
 		if (blocksize & 0x3F) {
-			usedpatchpagemem[i + numpagesminus1] = blocksize & 0x3F;
+			usedpatchpagemem[j] = blocksize & 0x3F;
 		} else {
-			usedpatchpagemem[i + numpagesminus1] = 64;
+			usedpatchpagemem[j] = 64;
 		}
 		texpage = (i << 2) + (numpagesminus1);
 		texoffset = 0; // if multipage then its always aligned to start of its block
@@ -1495,7 +2016,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
 	int8_t numpages;
 	uint8_t texpage, texoffset;
-	int16_t i;
+	int8_t i, j;
 	if (size & 0xFF) {
 		blocksize++;
 	}
@@ -1521,10 +2042,11 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 		}
 
 		// nothing found, evict cache
+		//checkspritecache(30);
 		i = R_EvictCacheEMSPage(numpages, CACHETYPE_SPRITE);
+		//checkspritecache(31);
 		
 		foundonepage:
-		
 		texpage = i << 2;
 		texoffset = usedspritepagemem[i];
 		usedspritepagemem[i] += blocksize;
@@ -1545,23 +2067,53 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 		}
 
 		// nothing found, evict cache
+		//checkspritecache(32);
 		i = R_EvictCacheEMSPage(numpages, CACHETYPE_SPRITE);
+		//checkspritecache(33);
 		foundmultipage:
 
 		usedspritepagemem[i] = 64;
+		//I_Error("found page %i %i %i", i, texturecache_nodes[i].next, texturecache_nodes[texturecache_nodes[i].next].next);
+		//j = i;
+		// last page of the allocation
+		spritecache_nodes[i].numpages = numpages;
+		spritecache_nodes[i].pagecount = numpages;
+		// not sure if this ever happens... especially for sprite. biggest sprites are barely 2 page.
+		/*
+
 		if (numpages >= 3) {
-			usedspritepagemem[i + 1] = 64;
+			// 2nd to last page of the allocation
+			j = spritecache_nodes[i].prev;
+			spritecache_nodes[j].numpages = numpages;
+			// 2 if numpages is 3. 
+			// 3 if numpages is 4
+			spritecache_nodes[j].pagecount = numpages-1;
+			usedspritepagemem[j] = 64;
 		}
+		*/
+		// i actually think this never happens? get rid of the code?
+		/*
 		if (numpages == 4) {
-			usedspritepagemem[i + 2] = 64;
+			// always page 2 of the 4 page allocation
+			j = texturecache_nodes[j].prev;
+			texturecache_nodes[j].numpages = numpages;
+			texturecache_nodes[j].pagecount = 2;
+			usedspritepagemem[j] = 64;
 		}
+		*/
+		// first page of the allocation
+		j = spritecache_nodes[j].prev;
+		spritecache_nodes[j].numpages = numpages;
+		spritecache_nodes[j].pagecount = 1;
+
+
 
 
 		if (blocksize & 0x3F) {
-			usedspritepagemem[i + numpagesminus1] = blocksize & 0x3F;
+			usedspritepagemem[j] = blocksize & 0x3F;
 		}
 		else {
-			usedspritepagemem[i + numpagesminus1] = 64;
+			usedspritepagemem[j] = 64;
 		}
 
 		texpage = (i << 2) + (numpagesminus1);
@@ -1779,7 +2331,9 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 					R_MarkL2CompositeTextureCacheLRU(realtexpage, 0);
 					//checktexturecache(2);
 				} else {
-					R_MarkL2CacheLRU(realtexpage, 0, cachetype);
+					//checkpatchcache(60);
+					R_MarkL2PatchCacheLRU(realtexpage, 0);
+					//checkpatchcache(61);
 				}
 				return i;
 			}
@@ -1819,7 +2373,9 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			//checktexturecache(4);
 
 		} else {
-			R_MarkL2CacheLRU(realtexpage, 0, cachetype);
+			//checkpatchcache(58);
+			R_MarkL2PatchCacheLRU(realtexpage, 0);
+			//checkpatchcache(59);
 		}
 		Z_QuickMapRenderTexture();
 		cachedtex = -1;
@@ -1868,7 +2424,9 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 					//checktexturecache(6);
 
 				} else {
-					R_MarkL2CacheLRU(realtexpage, numpages, cachetype);
+					//checkpatchcache(56);
+					R_MarkL2PatchCacheLRU(realtexpage, numpages);
+					//checkpatchcache(57);
 				}
 			return i;
 		}
@@ -1925,7 +2483,9 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			R_MarkL2CompositeTextureCacheLRU(realtexpage, numpages);
 			//checktexturecache(8);
 		} else {
-			R_MarkL2CacheLRU(realtexpage, numpages, cachetype);
+			//checkpatchcache(54);
+			R_MarkL2PatchCacheLRU(realtexpage, numpages);
+			//checkpatchcache(55);
 		}
 		Z_QuickMapRenderTexture();
 		cachedtex = -1;
@@ -1966,7 +2526,9 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 				// cast to int16_t and add 0x0101?
 				//todo: mark lru here..
 				R_MarkL1SpriteCacheLRU(i);
-				R_MarkL2CacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
+				//checkspritecache(34);
+				R_MarkL2SpriteCacheLRU(realtexpage, 0);
+				//checkspritecache(35);
 
 				return i;
 			}
@@ -1999,7 +2561,9 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		pageswapargs[pageswapargs_spritecache_offset +  (startpage)*PAGE_SWAP_ARG_MULT] = _EPR(pagenum);	
 		
 		Z_QuickMapSpritePage();
-		R_MarkL2CacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
+		//checkspritecache(36);
+		R_MarkL2SpriteCacheLRU(realtexpage, 0);
+		//checkspritecache(37);
 
 		lastvisspritepatch = -1;
 		lastvisspritepatch2 = -1;
@@ -2037,7 +2601,9 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 				R_MarkL1SpriteCacheLRU(i+j);
 
 			}
-			R_MarkL2CacheLRU(realtexpage, numpages, CACHETYPE_SPRITE);
+			//checkspritecache(38);
+			R_MarkL2SpriteCacheLRU(realtexpage, numpages);
+			//checkspritecache(39);
 
 			return i;
 		}
@@ -2087,7 +2653,9 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		Z_QuickMapSpritePage();
 
 		// paged in
-		R_MarkL2CacheLRU(realtexpage, numpages, CACHETYPE_SPRITE);
+		//checkspritecache(40);
+		R_MarkL2SpriteCacheLRU(realtexpage, numpages);
+		//checkspritecache(41);
 
 		return startpage;
 
