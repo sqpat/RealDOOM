@@ -186,7 +186,7 @@ segs                 EDD9:0000
 #define size_spritecache_nodes   sizeof(cache_node_page_count_t)      * (NUM_SPRITE_CACHE_PAGES)
 #define size_patchcache_nodes    sizeof(cache_node_page_count_t)      * (NUM_PATCH_CACHE_PAGES)
 #define size_texturecache_nodes  sizeof(cache_node_page_count_t)      * (NUM_TEXTURE_PAGES)
-#define size_flatcache_nodes     sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
+#define size_flatcache_nodes     sizeof(cache_node_t)                 * (NUM_FLAT_CACHE_PAGES)
 
 
 
@@ -196,7 +196,7 @@ segs                 EDD9:0000
 
 #define size_tantoangle    size_finetangent +  2049u * sizeof(int32_t)
 
-#define baselowermemoryaddress        (0x2DE40000)
+#define baselowermemoryaddress        (0x2DE00000)
 
 #define baselowermemoryaddresssegment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
  
@@ -217,9 +217,9 @@ segs                 EDD9:0000
 #define scantokey          ((byte __far*)               MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(scantokey, size_scantokey))
 #define spritecache_nodes  ((cache_node_page_count_t __far*)       MAKE_FULL_SEGMENT(rndtable , size_rndtable))
-#define patchcache_nodes   ((cache_node_page_count_t __far*)       (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
-#define texturecache_nodes ((cache_node_page_count_t __far*)       (((int32_t)patchcache_nodes)  + size_patchcache_nodes))
-#define flatcache_nodes    ((cache_node_t __far*)  (((int32_t)texturecache_nodes) + size_texturecache_nodes))
+#define patchcache_nodes   ((cache_node_page_count_t __far*)       (((int32_t)spritecache_nodes)  + size_spritecache_nodes))
+#define texturecache_nodes ((cache_node_page_count_t __far*)       (((int32_t)patchcache_nodes)   + size_patchcache_nodes))
+#define flatcache_nodes    ((cache_node_t __far*)                  (((int32_t)texturecache_nodes) + size_texturecache_nodes))
 
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
 // gross... should we change how this works
@@ -244,21 +244,21 @@ segs                 EDD9:0000
 
 
 
-// finesine             2DE4:0000
-// finecosine           2DE4:2000
-// finetangentinner     37E4:0000
-// states               39E4:0000
-// events               3B4F:0000
-// flattranslation      3B83:0000
-// texturetranslation   3B8D:0000
-// textureheights       3BC3:0000
-// scantokey            3BDE:0000
-// rndtable             3BE6:003C
-// spritecache_nodes    3BF6:0000
-// flatcache_nodes      3BF6:003C
-// patchcache_nodes     3BF6:004E
-// texturecache_nodes   3BF6:007E
-// [done]               4000:0000
+// finesine             2DE0:0000
+// finecosine           2DE0:2000
+// finetangentinner     37E0:0000
+// states               39E0:0000
+// events               3B4B:0000
+// flattranslation      3B7F:0000
+// texturetranslation   3B89:0000
+// textureheights       3BBF:0000
+// scantokey            3BDA:0000
+// rndtable             3BE2:003C
+// spritecache_nodes    3BF2:0000
+// patchcache_nodes     3BF2:0050
+// texturecache_nodes   3BF2:007E
+// flatcache_nodes      3BF2:00B0
+// [done]               3C00:0000
 
 
 
