@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/20 07:00:11
+Created on:       24/10/21 01:20:24
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -78,12 +78,12 @@ p_telept_TEXT          CODE           AUTO           0b2d:ba70       00000218
 p_tick_TEXT            CODE           AUTO           0b2d:bc90       00000202
 p_user_TEXT            CODE           AUTO           0b2d:bea0       00000604
 r_bsp_TEXT             CODE           AUTO           1778:0000       000006ba
-r_data_TEXT            CODE           AUTO           1778:06c0       00001b70
-R_MATH_TEXT            CODE           AUTO           1778:2230       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1778:242e       00000569
-R_COLUMN_TEXT          CODE           AUTO           1778:2998       00000ba0
-R_SPAN_TEXT            CODE           AUTO           1778:3538       00000929
-R_SKY_TEXT             CODE           AUTO           1778:3e62       0000023a
+r_data_TEXT            CODE           AUTO           1778:06c0       00001b72
+R_MATH_TEXT            CODE           AUTO           1778:2232       000001fd
+R_MAINHI_TEXT          CODE           AUTO           1778:2430       00000569
+R_COLUMN_TEXT          CODE           AUTO           1778:299a       00000ba0
+R_SPAN_TEXT            CODE           AUTO           1778:353a       00000929
+R_SKY_TEXT             CODE           AUTO           1778:3e64       0000023a
 r_draw_TEXT            CODE           AUTO           1778:40a0       00000377
 r_main_TEXT            CODE           AUTO           1778:4420       0000021e
 r_plane_TEXT           CODE           AUTO           1778:4640       000003a0
@@ -101,8 +101,8 @@ _TEXT                  CODE           AUTO           1fd2:1920       00003745
 FAR_DATA               FAR_DATA       AUTO           24d8:0005       00000000
 _NULL                  BEGDATA        DGROUP         24d9:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         24db:0000       00000002
-CONST                  DATA           DGROUP         24db:0002       00000b9a
-CONST2                 DATA           DGROUP         2594:000c       00000133
+CONST                  DATA           DGROUP         24db:0002       00000b8c
+CONST2                 DATA           DGROUP         2593:000e       00000133
 _DATA                  DATA           DGROUP         25a8:0000       00000bea
 XIB                    DATA           DGROUP         2666:000a       00000000
 XI                     DATA           DGROUP         2666:000a       00000012
@@ -671,7 +671,7 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 24d9:1682      _current5000State
 24d9:1683      _last5000State
 24d9:1684      _current9000State
-24d9:0bbc      _snd_prefixen
+24d9:0bae      _snd_prefixen
 24d9:1685      _last9000State
 24d9:1686      _currenttask
 24d9:1687      _ems_backfill_page_order
@@ -1334,45 +1334,45 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 1778:08cc+     R_MarkL2PatchCacheLRU_
 1778:0a20+     R_MarkL2SpriteCacheLRU_
 1778:0b6e+     R_EvictCacheEMSPage_
-1778:0e0a      R_MarkL2FlatCacheLRU_
-1778:0e7e      R_EvictFlatCacheEMSPage_
-1778:0f06+     R_DrawColumnInCache_
-1778:0f8a+     R_GetNextCompositeBlock_
-1778:1154+     R_GetNextPatchBlock_
-1778:12f0+     R_GetNextSpriteBlock_
-1778:145a+     R_GenerateComposite_
-1778:1692+     gettexturepage_
-1778:1904+     getspritepage_
-1778:1b06+     getpatchtexture_
-1778:1bc6+     getcompositetexture_
-1778:1c2c      getspritetexture_
-1778:1cac      R_GetColumnSegment_
-1778:1e9e+     R_LoadPatchColumns_
-1778:1f90      R_LoadPatchColumnsColormap0_
-1778:20a8+     R_LoadSpriteColumns_
+1778:0e0c      R_MarkL2FlatCacheLRU_
+1778:0e80      R_EvictFlatCacheEMSPage_
+1778:0f08+     R_DrawColumnInCache_
+1778:0f8c+     R_GetNextCompositeBlock_
+1778:1156+     R_GetNextPatchBlock_
+1778:12f2+     R_GetNextSpriteBlock_
+1778:145c+     R_GenerateComposite_
+1778:1694+     gettexturepage_
+1778:1906+     getspritepage_
+1778:1b08+     getpatchtexture_
+1778:1bc8+     getcompositetexture_
+1778:1c2e      getspritetexture_
+1778:1cae      R_GetColumnSegment_
+1778:1ea0+     R_LoadPatchColumns_
+1778:1f92      R_LoadPatchColumnsColormap0_
+1778:20aa+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-1778:22a6      R_PointToAngle_
+1778:22a8      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-1778:2550      R_PointOnSegSide_
-1778:27d2      R_Subsector_
-1778:24d0      R_PointToDist_
-1778:261b      R_ClearPlanes_
-1778:269e*     R_HandleEMSPagination_
-1778:2750*     R_FindPlane_
-1778:28ca      R_CheckPlane_
-1778:242e      R_ScaleFromGlobalAngle_
+1778:2552      R_PointOnSegSide_
+1778:27d4      R_Subsector_
+1778:24d2      R_PointToDist_
+1778:261d      R_ClearPlanes_
+1778:26a0*     R_HandleEMSPagination_
+1778:2752*     R_FindPlane_
+1778:28cc      R_CheckPlane_
+1778:2430      R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-1778:2998      R_DrawColumn_
-1778:34cf      R_DrawColumnPrep_
+1778:299a      R_DrawColumn_
+1778:34d1      R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
-1778:3538      R_DrawSpan_
-1778:3cc8*     R_FixedMulLocal_
-1778:3bda*     R_DrawSpanPrep_
-1778:3d04      R_MapPlane_
-1778:3c79*     R_FixedMulTrigLocal_
+1778:353a      R_DrawSpan_
+1778:3cca*     R_FixedMulLocal_
+1778:3bdc*     R_DrawSpanPrep_
+1778:3d06      R_MapPlane_
+1778:3c7b*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1778:3e62      R_DrawSkyColumn_
-1778:4028      R_DrawSkyPlane_
+1778:3e64      R_DrawSkyColumn_
+1778:402a      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1778:40a0      R_FillBackScreen_
 1778:4324      R_VideoErase_
@@ -1596,7 +1596,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(dointr)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(segread.c)
 1fd2:31cd      segread_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(istable.c)
-24d9:0bc8      __IsTable
+24d9:0bba      __IsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(gfattdos.c)
 1fd2:31e5      _dos_getfileattr_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosret.c)
@@ -1756,7 +1756,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(sbrk.c)
 1fd2:4d52      __brk_
 1fd2:4da8*     sbrk_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(alphabet.c)
-24d9:0cca      ___Alphabet
+24d9:0cbc      ___Alphabet
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbinit.c)
 1fd2:4e0b      __mbinit_
 24d9:18d8+     ___MBCodePage

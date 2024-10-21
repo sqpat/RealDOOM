@@ -1072,8 +1072,6 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
 	cache_node_page_count_t far* nodelist =texturecache_nodes;
 
 	int8_t previous_next;
-	int8_t previous_head;
-
 
 	int8_t lastindex;
 	int8_t lastindex_prev;
@@ -1192,8 +1190,6 @@ void __near R_MarkL2PatchCacheLRU(int8_t index, int8_t numpages) {
 	cache_node_page_count_t far* nodelist = patchcache_nodes;
 
 	int8_t previous_next;
-	int8_t previous_head;
-
 
 	int8_t lastindex;
 	int8_t lastindex_prev;
@@ -1307,7 +1303,6 @@ void __near R_MarkL2SpriteCacheLRU(int8_t index, int8_t numpages) {
 	int8_t pagecount;
 	cache_node_page_count_t far* nodelist = spritecache_nodes;
 	int8_t previous_next;
-	int8_t previous_head;
 	int8_t lastindex;
 	int8_t lastindex_prev;
 	int8_t index_next;
@@ -1414,13 +1409,12 @@ void __near R_MarkL2SpriteCacheLRU(int8_t index, int8_t numpages) {
 // put at the back of the queue so they will be the next loaded into.
 // the evicted pages are also moved to the front. numpages/pagecount are filled in by the code after this
 int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
-	int8_t evictedpage;
-	int8_t lastevictedpage;
-	int8_t extraevictedpages;
+
+	//todo revisit these vars.
+	int16_t evictedpage;
 	int8_t j;
-	uint8_t currentpage;
+	int16_t currentpage;
 	int16_t k;
-	int8_t previous_head;
 	int8_t previous_next;
 	cache_node_page_count_t far* nodelist;;
 	int8_t* nodetail;
@@ -1477,15 +1471,16 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 
 
 
-	evictedpage = *nodetail;
+	currentpage = *nodetail;
 
 	// go back enough pages to allocate them all.
 	for (j = 0; j < numpages-1; j++){
-		evictedpage = nodelist[evictedpage].next;
+		currentpage = nodelist[currentpage].next;
 	}
 
-	extraevictedpages = evictedpage;
-	// evictedpage is the LRU page we can remove in which
+	evictedpage = currentpage;
+
+	// currentpage is the LRU page we can remove in which
 	// there is enough room to allocate numpages pages
 
 
@@ -1500,93 +1495,45 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
  
 	// true if 0 page allocation or 1st page of a multi-page
 	while (nodelist[evictedpage].numpages != nodelist[evictedpage].pagecount){
-		extraevictedpages = nodelist[extraevictedpages].next;
+		evictedpage = nodelist[evictedpage].next;
 	}
 
-	// step 1: move the new stuff to the head. connect properly. set up numpages etc.
-	// step 1.5: update cache lookups
-	// step 2: zero out numpages etc of extraevictedpages
-	// step 2.5: update cache lookups for those
-	
 
-	//checktexturecache(30 + evictedpage);
+	// clear cache data that was pointing to this page.
+	while (evictedpage != -1){
 
-	previous_head = *nodehead;
-	previous_next = nodelist[evictedpage].next;
+		nodelist[evictedpage].pagecount = 0;
+		nodelist[evictedpage].numpages = 0;
 
-	*nodehead = evictedpage;
-	nodelist[evictedpage].next = -1;
-
-
-	lastevictedpage = evictedpage;
-	j = numpages;
-	while (j){
-		evictedpage = lastevictedpage;
-		//nodelist[evictedpage].pagecount = j;
-		//nodelist[evictedpage].numpages = numpages;
-		lastevictedpage = nodelist[evictedpage].prev;
-		j--;
-	}
-
-	nodelist[evictedpage].prev = previous_head;
-	nodelist[previous_head].next = evictedpage;
-
-	nodelist[previous_next].prev = -1;
-	*nodetail = previous_next;
-
-
-
-	//clear cache data that was pointing to this page.
-	currentpage = *nodehead;
-	j = numpages;
-	while (j > 0){
 		for (k = 0; k < maxitersize; k++){
-			if ((cacherefpage[k] >> 2) == currentpage){
+			if ((cacherefpage[k] >> 2) == evictedpage){
 				cacherefpage[k] = 0xFF;
 				cacherefoffset[k] = 0xFF;
 			}
 		}
-		usedcacherefpage[currentpage] = 0;
-		currentpage = nodelist[evictedpage].prev;
-		j--;
+		usedcacherefpage[evictedpage] = 0;
+		evictedpage = nodelist[evictedpage].prev;
 	}	
 
-	j = 0;
 
-	// if we have to clear extra pages... then clear those too.
-	// TODO: debug this for sure
-	if (extraevictedpages != *nodehead){
-		evictedpage = extraevictedpages;
-		I_Error("this happened?"); 
-		while (nodelist[evictedpage].next != -1){
+	// connect old tail and old head.
+	nodelist[*nodetail].prev = *nodehead;
+	nodelist[*nodehead].next = *nodetail;
 
-			// this must be done here...
-			nodelist[evictedpage].pagecount = 0;
-			nodelist[evictedpage].numpages = 0;
-			
-			evictedpage = nodelist[evictedpage].prev;
-			j++;
-		}
 
-		nodelist[evictedpage].next = -1;
-		*nodetail = evictedpage;
+	// current page is next head
+	//previous_head = *nodehead;
+	previous_next = nodelist[currentpage].next;
 
-		currentpage = evictedpage;
-		//clear cache data that was pointing to this page.
-		while (j > 0){
-			for (k = 0; k < maxitersize; k++){
-				if ((cacherefpage[k] >> 2) == currentpage){
-					cacherefpage[k] = 0xFF;
-					cacherefoffset[k] = 0xFF;
-				}
-			}
-			usedcacherefpage[currentpage] = 0;
-			currentpage = nodelist[evictedpage].next;
-			j--;
-		}	
-	}
+	*nodehead = currentpage;
+	nodelist[currentpage].next = -1;
 
-	//checktexturecache(20);
+
+	// new tail
+	nodelist[previous_next].prev = -1;
+	*nodetail = previous_next;
+
+
 
 
 
@@ -1739,8 +1686,6 @@ int8_t __near R_EvictFlatCacheEMSPage(){
 		}
 
 	}
-
-
 	return evictedpage;
 }
 

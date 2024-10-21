@@ -256,7 +256,7 @@ segs                 EDD9:0000
 // rndtable             3BE2:003C
 // spritecache_nodes    3BF2:0000
 // patchcache_nodes     3BF2:0050
-// texturecache_nodes   3BF2:007E
+// texturecache_nodes   3BF2:0090
 // flatcache_nodes      3BF2:00B0
 // [done]               3C00:0000
 
