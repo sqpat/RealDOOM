@@ -458,7 +458,8 @@ void R_GenerateLookup(uint16_t texnum)
 	for (x = 1; x < texturewidth; x++) {
 		if (currentcollump != texcollump[x]) {
 			collump[currentlumpindex].h = currentcollump;
-			// this is never above 128 in doom shareware, 1, 2. 
+			// "this is never above 128 in doom shareware, 1, 2. ""
+			// - WRONG! Can be 256. gets stores as 0 for now. Need to fix later. perhaps store 256 - value (it's never 0..)
 			collump[currentlumpindex + 1].bu.bytelow = x - currentcollumpRLEStart; 
 			// thus, the high byte is free to store another useful byte - the texture patch offset y.
 

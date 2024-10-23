@@ -2724,7 +2724,11 @@ void setchecksum(){
 
 
 
-
+// todo: since this is called once per getcolumn, really investigate
+// c-level improvements. can tex be cached to skip stuff?
+// if texturecolumnlump, mask, etc are not stack vars but near vars, 
+// their values can be reused
+// if tex is same as last call.
 segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	int16_t         lump;
 	int16_t_union __far* texturecolumnlump;
@@ -2737,12 +2741,19 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
 
 	// todo: maybe unroll this in asm to the max RLE size of this operation?
-	// todo: whats the max size of such a texture/rle thing
+	// todo: whats the max size of such a texture/rle string? to know for the asm 
 
 	// RLE stuff to figure out actual lump for column
 	while (col >= 0) {
+		//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
+		// should we change this to be 256 - the number? we dont want a branch.
+		// anyway, fix it in asm
+		int16_t subtractor = texturecolumnlump[n+1].bu.bytelow;
+		if (!subtractor){
+			subtractor = 256;
+		}
 		lump = texturecolumnlump[n].h;
-		col -= texturecolumnlump[n+1].bu.bytelow;
+		col -= subtractor;
 		if (lump >= 0){ // should be equiv to == -1?
 			texcol -= texturecolumnlump[n+1].bu.bytelow;
 		}
