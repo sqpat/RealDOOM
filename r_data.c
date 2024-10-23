@@ -1058,8 +1058,7 @@ void __near checkpatchcache(int8_t id){
 */
 
 
-//todo remove numpages
-void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
+void __near R_MarkL2CompositeTextureCacheLRU(int8_t index) {
 
  
 
@@ -1105,12 +1104,11 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
 		// multi-page allocation. in this case, we want to back up and update the
 		// whole multi-page allocation.
 		
-		numpages = nodelist[index].numpages;
 	}
 
 	 
 
-	if (numpages){
+	if (nodelist[index].numpages){
 		// multipage  allocation being updated.
 		
 		// we know its pre-existing because numpages is set on the node;
@@ -1176,8 +1174,7 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index, int8_t numpages) {
 }
 
 
-//todo remove numpages
-void __near R_MarkL2PatchCacheLRU(int8_t index, int8_t numpages) {
+void __near R_MarkL2PatchCacheLRU(int8_t index) {
 
  
 
@@ -1223,12 +1220,11 @@ void __near R_MarkL2PatchCacheLRU(int8_t index, int8_t numpages) {
 		// multi-page allocation. in this case, we want to back up and update the
 		// whole multi-page allocation.
 		
-		numpages = nodelist[index].numpages;
 	}
 
 	 
 
-	if (numpages){
+	if (nodelist[index].numpages){
 		// multipage  allocation being updated.
 		
 		// we know its pre-existing because numpages is set on the node;
@@ -1295,8 +1291,7 @@ void __near R_MarkL2PatchCacheLRU(int8_t index, int8_t numpages) {
 
 }
 
-//todo remove numpages
-void __near R_MarkL2SpriteCacheLRU(int8_t index, int8_t numpages) {
+void __near R_MarkL2SpriteCacheLRU(int8_t index) {
 
 	int8_t prev;
 	int8_t next;
@@ -1332,10 +1327,9 @@ void __near R_MarkL2SpriteCacheLRU(int8_t index, int8_t numpages) {
 		// multi-page allocation. in this case, we want to back up and update the
 		// whole multi-page allocation.
 		
-		numpages = nodelist[index].numpages;
 	}
 
-	if (numpages){
+	if (nodelist[index].numpages){
 		// multipage  allocation being updated.
 		
 		// we know its pre-existing because numpages is set on the node;
@@ -2273,11 +2267,11 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 				R_MarkL1TextureCacheLRU(i);
 				if (cachetype == CACHETYPE_COMPOSITE){
 					//checktexturecache(1);
-					R_MarkL2CompositeTextureCacheLRU(realtexpage, 0);
+					R_MarkL2CompositeTextureCacheLRU(realtexpage);
 					//checktexturecache(2);
 				} else {
 					//checkpatchcache(60);
-					R_MarkL2PatchCacheLRU(realtexpage, 0);
+					R_MarkL2PatchCacheLRU(realtexpage);
 					//checkpatchcache(61);
 				}
 				return i;
@@ -2314,12 +2308,12 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		if (cachetype == CACHETYPE_COMPOSITE){
 			//checktexturecache(3);
-			R_MarkL2CompositeTextureCacheLRU(realtexpage, 0);
+			R_MarkL2CompositeTextureCacheLRU(realtexpage);
 			//checktexturecache(4);
 
 		} else {
 			//checkpatchcache(58);
-			R_MarkL2PatchCacheLRU(realtexpage, 0);
+			R_MarkL2PatchCacheLRU(realtexpage);
 			//checkpatchcache(59);
 		}
 		Z_QuickMapRenderTexture();
@@ -2365,12 +2359,12 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 				if (cachetype == CACHETYPE_COMPOSITE){
 					//checktexturecache(5);
-					R_MarkL2CompositeTextureCacheLRU(realtexpage, numpages);
+					R_MarkL2CompositeTextureCacheLRU(realtexpage);
 					//checktexturecache(6);
 
 				} else {
 					//checkpatchcache(56);
-					R_MarkL2PatchCacheLRU(realtexpage, numpages);
+					R_MarkL2PatchCacheLRU(realtexpage);
 					//checkpatchcache(57);
 				}
 			return i;
@@ -2425,11 +2419,11 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		if (cachetype == CACHETYPE_COMPOSITE){
 			//checktexturecache(7);
-			R_MarkL2CompositeTextureCacheLRU(realtexpage, numpages);
+			R_MarkL2CompositeTextureCacheLRU(realtexpage);
 			//checktexturecache(8);
 		} else {
 			//checkpatchcache(54);
-			R_MarkL2PatchCacheLRU(realtexpage, numpages);
+			R_MarkL2PatchCacheLRU(realtexpage);
 			//checkpatchcache(55);
 		}
 		Z_QuickMapRenderTexture();
@@ -2472,7 +2466,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 				//todo: mark lru here..
 				R_MarkL1SpriteCacheLRU(i);
 				//checkspritecache(34);
-				R_MarkL2SpriteCacheLRU(realtexpage, 0);
+				R_MarkL2SpriteCacheLRU(realtexpage);
 				//checkspritecache(35);
 
 				return i;
@@ -2507,7 +2501,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		
 		Z_QuickMapSpritePage();
 		//checkspritecache(36);
-		R_MarkL2SpriteCacheLRU(realtexpage, 0);
+		R_MarkL2SpriteCacheLRU(realtexpage);
 		//checkspritecache(37);
 
 		lastvisspritepatch = -1;
@@ -2547,7 +2541,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 			}
 			//checkspritecache(38);
-			R_MarkL2SpriteCacheLRU(realtexpage, numpages);
+			R_MarkL2SpriteCacheLRU(realtexpage);
 			//checkspritecache(39);
 
 			return i;
@@ -2599,7 +2593,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 		// paged in
 		//checkspritecache(40);
-		R_MarkL2SpriteCacheLRU(realtexpage, numpages);
+		R_MarkL2SpriteCacheLRU(realtexpage);
 		//checkspritecache(41);
 
 		return startpage;

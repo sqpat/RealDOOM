@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/21 07:00:10
+Created on:       24/10/22 22:30:47
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -79,9 +79,9 @@ p_telept_TEXT          CODE           AUTO           0b0e:ba70       00000218
 p_tick_TEXT            CODE           AUTO           0b0e:bc90       00000202
 p_user_TEXT            CODE           AUTO           0b0e:bea0       00000604
 r_bsp_TEXT             CODE           AUTO           1759:0000       000006ba
-r_data_TEXT            CODE           AUTO           1759:06c0       00001a9a
-R_MATH_TEXT            CODE           AUTO           1759:215a       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1759:2358       00000569
+r_data_TEXT            CODE           AUTO           1759:06c0       00001aa2
+R_MATH_TEXT            CODE           AUTO           1759:2162       000001fd
+R_MAINHI_TEXT          CODE           AUTO           1759:2360       00000569
 r_draw_TEXT            CODE           AUTO           1759:28d0       00000377
 r_main_TEXT            CODE           AUTO           1759:2c50       0000021e
 r_plane_TEXT           CODE           AUTO           1759:2e70       000003a0
@@ -1328,36 +1328,36 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 1759:06c0+     R_MarkL1SpriteCacheLRU_
 1759:071c+     R_MarkL1TextureCacheLRU_
 1759:0778+     R_MarkL2CompositeTextureCacheLRU_
-1759:08cc+     R_MarkL2PatchCacheLRU_
-1759:0a20+     R_MarkL2SpriteCacheLRU_
-1759:0b6e+     R_EvictCacheEMSPage_
-1759:0d34      R_MarkL2FlatCacheLRU_
-1759:0da8      R_EvictFlatCacheEMSPage_
-1759:0e30+     R_DrawColumnInCache_
-1759:0eb4+     R_GetNextCompositeBlock_
-1759:107e+     R_GetNextPatchBlock_
-1759:121a+     R_GetNextSpriteBlock_
-1759:1384+     R_GenerateComposite_
-1759:15bc+     gettexturepage_
-1759:182e+     getspritepage_
-1759:1a30+     getpatchtexture_
-1759:1af0+     getcompositetexture_
-1759:1b56      getspritetexture_
-1759:1bd6      R_GetColumnSegment_
-1759:1dc8+     R_LoadPatchColumns_
-1759:1eba      R_LoadPatchColumnsColormap0_
-1759:1fd2+     R_LoadSpriteColumns_
+1759:08dc+     R_MarkL2PatchCacheLRU_
+1759:0a40+     R_MarkL2SpriteCacheLRU_
+1759:0b9a+     R_EvictCacheEMSPage_
+1759:0d60      R_MarkL2FlatCacheLRU_
+1759:0dd4      R_EvictFlatCacheEMSPage_
+1759:0e5c+     R_DrawColumnInCache_
+1759:0ee0+     R_GetNextCompositeBlock_
+1759:10aa+     R_GetNextPatchBlock_
+1759:1246+     R_GetNextSpriteBlock_
+1759:13b0+     R_GenerateComposite_
+1759:15e8+     gettexturepage_
+1759:1842+     getspritepage_
+1759:1a38+     getpatchtexture_
+1759:1af8+     getcompositetexture_
+1759:1b5e      getspritetexture_
+1759:1bde      R_GetColumnSegment_
+1759:1dd0+     R_LoadPatchColumns_
+1759:1ec2      R_LoadPatchColumnsColormap0_
+1759:1fda+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-1759:21d0      R_PointToAngle_
+1759:21d8      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-1759:247a      R_PointOnSegSide_
-1759:26fc      R_Subsector_
-1759:23fa      R_PointToDist_
-1759:2545      R_ClearPlanes_
-1759:25c8*     R_HandleEMSPagination_
-1759:267a*     R_FindPlane_
-1759:27f4      R_CheckPlane_
-1759:2358      R_ScaleFromGlobalAngle_
+1759:2482      R_PointOnSegSide_
+1759:2704      R_Subsector_
+1759:2402      R_PointToDist_
+1759:254d      R_ClearPlanes_
+1759:25d0*     R_HandleEMSPagination_
+1759:2682*     R_FindPlane_
+1759:27fc      R_CheckPlane_
+1759:2360      R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1759:28d0      R_FillBackScreen_
 1759:2b54      R_VideoErase_
@@ -1724,4 +1724,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000255f0 (153072.)
 Entry point address: 1e0c:228c
-Link time: 00:00.19
+Link time: 00:00.75
