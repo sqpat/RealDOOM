@@ -361,7 +361,7 @@ extern uint8_t              cachedcollength2;
 extern int8_t               active_visplanes[5];
 extern byte                 cachedbyteheight;
 extern uint8_t              cachedcol;
-//extern int16_t              setval;
+//extern int16_t              ;
 
 extern int8_t               am_cheating;
 extern int8_t 	            am_grid;

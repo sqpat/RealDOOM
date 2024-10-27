@@ -344,7 +344,6 @@ int8_t active_visplanes[5] = {1, 2, 3, 0, 0};
 
 byte cachedbyteheight;
 uint8_t cachedcol;
-//int16_t setval = 0;
 
 
 int8_t 	am_cheating = 0;
