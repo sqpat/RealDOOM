@@ -1089,7 +1089,6 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index) {
 	int8_t next;
 	int8_t pagecount;
 
-	cache_node_page_count_t far* nodelist =texturecache_nodes;
 
 	int8_t previous_next;
 
@@ -1103,7 +1102,7 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index) {
 	}
 
 
-	pagecount = nodelist[index].pagecount;
+	pagecount = texturecache_nodes[index].pagecount;
 	// if pagecount is nonzero, then this is a pre-existing allocation which is multipage.
 	// so we want to find the head of this allocation, and check if it's the head.
 
@@ -1111,8 +1110,8 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index) {
 		// if this is multipage, then pagecount is nonzero.
 		
 		// could probably be unrolled in asm
-	 	while (nodelist[index].numpages != nodelist[index].pagecount){
-			index = nodelist[index].next;
+	 	while (texturecache_nodes[index].numpages != texturecache_nodes[index].pagecount){
+			index = texturecache_nodes[index].next;
 		}
 
 
@@ -1129,7 +1128,7 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index) {
 
 	 
 
-	if (nodelist[index].numpages){
+	if (texturecache_nodes[index].numpages){
 		// multipage  allocation being updated.
 		
 		// we know its pre-existing because numpages is set on the node;
@@ -1138,52 +1137,52 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index) {
 		// and update head/tail
 
 		lastindex = index;
-		while (nodelist[lastindex].pagecount != 1){
-			lastindex = nodelist[lastindex].prev;
+		while (texturecache_nodes[lastindex].pagecount != 1){
+			lastindex = texturecache_nodes[lastindex].prev;
 		}
 		
-		lastindex_prev = nodelist[lastindex].prev;
-		index_next = nodelist[index].next;
+		lastindex_prev = texturecache_nodes[lastindex].prev;
+		index_next = texturecache_nodes[index].next;
 
 		if (texturecache_l2_tail == lastindex){
 			texturecache_l2_tail = index_next;
-			nodelist[index_next].prev = -1;
+			texturecache_nodes[index_next].prev = -1;
 		} else {
-			nodelist[lastindex_prev].next = index_next;
-			nodelist[index_next].prev = lastindex_prev;
+			texturecache_nodes[lastindex_prev].next = index_next;
+			texturecache_nodes[index_next].prev = lastindex_prev;
 		}
 
-		nodelist[lastindex].prev = texturecache_l2_head;
-		nodelist[texturecache_l2_head].next = lastindex;
+		texturecache_nodes[lastindex].prev = texturecache_l2_head;
+		texturecache_nodes[texturecache_l2_head].next = lastindex;
 		// head's next doesnt change directly. it changes indirectly if index_prev changes.
 
-		nodelist[index].next = -1;
+		texturecache_nodes[index].next = -1;
 		texturecache_l2_head = index;
 
 		return;
 	} else {
 		// handle the simple one page case.
 
-		prev = nodelist[index].prev;
-		next = nodelist[index].next;
+		prev = texturecache_nodes[index].prev;
+		next = texturecache_nodes[index].next;
 
 		if (index == texturecache_l2_tail) {
 			texturecache_l2_tail = next;
 		} else {
-			nodelist[prev].next = next; 
+			texturecache_nodes[prev].next = next; 
 		}
 
-		nodelist[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+		texturecache_nodes[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
 
-		nodelist[index].prev = texturecache_l2_head;
-		nodelist[index].next = -1;
+		texturecache_nodes[index].prev = texturecache_l2_head;
+		texturecache_nodes[index].next = -1;
 
 		// pagecount/numpages dont have to be zeroed - either p_setup 
 		// sets it to 0 in the initial case, or EvictCache in later cases.
-		//nodelist[index].pagecount = 0;
-		//nodelist[index].numpages  = 0;
+		//texturecache_nodes[index].pagecount = 0;
+		//texturecache_nodes[index].numpages  = 0;
 
-		nodelist[texturecache_l2_head].next = index;
+		texturecache_nodes[texturecache_l2_head].next = index;
 		
 		
 		texturecache_l2_head = index;
@@ -1201,7 +1200,6 @@ void __near R_MarkL2SpriteCacheLRU(int8_t index) {
 	int8_t prev;
 	int8_t next;
 	int8_t pagecount;
-	cache_node_page_count_t far* nodelist = spritecache_nodes;
 	int8_t previous_next;
 	int8_t lastindex;
 	int8_t lastindex_prev;
@@ -1211,7 +1209,7 @@ void __near R_MarkL2SpriteCacheLRU(int8_t index) {
 		return;
 	}
 
-	pagecount = nodelist[index].pagecount;
+	pagecount = spritecache_nodes[index].pagecount;
 	// if pagecount is nonzero, then this is a pre-existing allocation which is multipage.
 	// so we want to find the head of this allocation, and check if it's the head.
 
@@ -1219,8 +1217,8 @@ void __near R_MarkL2SpriteCacheLRU(int8_t index) {
 		// if this is multipage, then pagecount is nonzero.
 		
 		// could probably be unrolled in asm
-	 	while (nodelist[index].numpages != nodelist[index].pagecount){
-			index = nodelist[index].next;
+	 	while (spritecache_nodes[index].numpages != spritecache_nodes[index].pagecount){
+			index = spritecache_nodes[index].next;
 		}
 
 		if (index == spritecache_l2_head) {
@@ -1234,7 +1232,7 @@ void __near R_MarkL2SpriteCacheLRU(int8_t index) {
 		
 	}
 
-	if (nodelist[index].numpages){
+	if (spritecache_nodes[index].numpages){
 		// multipage  allocation being updated.
 		
 		// we know its pre-existing because numpages is set on the node;
@@ -1244,52 +1242,52 @@ void __near R_MarkL2SpriteCacheLRU(int8_t index) {
 	
 
 		lastindex = index;
-		while (nodelist[lastindex].pagecount != 1){
-			lastindex = nodelist[lastindex].prev;
+		while (spritecache_nodes[lastindex].pagecount != 1){
+			lastindex = spritecache_nodes[lastindex].prev;
 		}
 		
-		lastindex_prev = nodelist[lastindex].prev;
-		index_next = nodelist[index].next;
+		lastindex_prev = spritecache_nodes[lastindex].prev;
+		index_next = spritecache_nodes[index].next;
 
 		if (spritecache_l2_tail == lastindex){
 			spritecache_l2_tail = index_next;
-			nodelist[index_next].prev = -1;
+			spritecache_nodes[index_next].prev = -1;
 		} else {
-			nodelist[lastindex_prev].next = index_next;
-			nodelist[index_next].prev = lastindex_prev;
+			spritecache_nodes[lastindex_prev].next = index_next;
+			spritecache_nodes[index_next].prev = lastindex_prev;
 		}
 
-		nodelist[lastindex].prev = spritecache_l2_head;
-		nodelist[spritecache_l2_head].next = lastindex;
+		spritecache_nodes[lastindex].prev = spritecache_l2_head;
+		spritecache_nodes[spritecache_l2_head].next = lastindex;
 		// head's next doesnt change directly. it changes indirectly if index_prev changes.
 
-		nodelist[index].next = -1;
+		spritecache_nodes[index].next = -1;
 		spritecache_l2_head = index;
 
 		return;
 	} else {
 		// handle the simple one page case.
 
-		prev = nodelist[index].prev;
-		next = nodelist[index].next;
+		prev = spritecache_nodes[index].prev;
+		next = spritecache_nodes[index].next;
 
 		if (index == spritecache_l2_tail) {
 			spritecache_l2_tail = next;
 		} else {
-			nodelist[prev].next = next; 
+			spritecache_nodes[prev].next = next; 
 		}
 
-		nodelist[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+		spritecache_nodes[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
 
-		nodelist[index].prev = spritecache_l2_head;
-		nodelist[index].next = -1;
+		spritecache_nodes[index].prev = spritecache_l2_head;
+		spritecache_nodes[index].next = -1;
 
 		// pagecount/numpages dont have to be zeroed - either p_setup 
 		// sets it to 0 in the initial case, or EvictCache in later cases.
-		//nodelist[index].pagecount = 0;
-		//nodelist[index].numpages  = 0;
+		//spritecache_nodes[index].pagecount = 0;
+		//spritecache_nodes[index].numpages  = 0;
 
-		nodelist[spritecache_l2_head].next = index;
+		spritecache_nodes[spritecache_l2_head].next = index;
 		
 		
 		spritecache_l2_head = index;
@@ -1315,7 +1313,7 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	int16_t currentpage;
 	int16_t k;
 	int8_t previous_next;
-	cache_node_page_count_t far* nodelist;
+	cache_node_page_count_t near* nodelist;
 	int8_t* nodetail;
 	int8_t* nodehead;
 	int16_t maxitersize;

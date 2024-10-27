@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 97
+#define CONSTANTS_COUNT 94
 #define LOCALS_COUNT 16
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -30,9 +30,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "TEXTUREHEIGHTS_SEGMENT",
     "SCANTOKEY_SEGMENT",
     "RNGTABLE_SEGMENT",
-    "SPRITECACHE_NODES_SEGMENT",
-    "FLATCACHE_NODES_SEGMENT",
-    "TEXTURECACHE_NODES_SEGMENT",
 
     "SEGS_PHYSICS_SEGMENT",
     "DISKGRAPHICBYTES_SEGMENT",
@@ -156,9 +153,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     textureheights_segment,
     scantokey_segment,
     rndtable_segment,
-    spritecache_nodes_segment,
-    flatcache_nodes_segment,
-    texturecache_nodes_segment,
 
     segs_physics_segment,
     diskgraphicbytes_segment,

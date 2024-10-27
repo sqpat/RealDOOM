@@ -1112,3 +1112,7 @@ extern int32_t visplaneswitchcount;
 
 extern int8_t currenttask;
 extern int8_t ems_backfill_page_order[24];
+
+extern cache_node_page_count_t  spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
+extern cache_node_page_count_t	texturecache_nodes[NUM_TEXTURE_PAGES];
+extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];

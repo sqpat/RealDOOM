@@ -183,11 +183,6 @@ segs                 EDD9:0000
 #define size_scantokey           128
 #define size_rndtable            256
 
-#define size_spritecache_nodes   sizeof(cache_node_page_count_t)      * (NUM_SPRITE_CACHE_PAGES)
-//#define size_patchcache_nodes    sizeof(cache_node_page_count_t)      * (NUM_PATCH_CACHE_PAGES)
-#define size_texturecache_nodes  sizeof(cache_node_page_count_t)      * (NUM_TEXTURE_PAGES)
-#define size_flatcache_nodes     sizeof(cache_node_t)                 * (NUM_FLAT_CACHE_PAGES)
-
 
 
 
@@ -216,10 +211,6 @@ segs                 EDD9:0000
 #define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
 #define scantokey          ((byte __far*)               MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(scantokey, size_scantokey))
-#define spritecache_nodes  ((cache_node_page_count_t __far*)       MAKE_FULL_SEGMENT(rndtable , size_rndtable))
-//#define patchcache_nodes   ((cache_node_page_count_t __far*)       
-#define texturecache_nodes ((cache_node_page_count_t __far*)       (((int32_t)spritecache_nodes)  + size_spritecache_nodes))
-#define flatcache_nodes    ((cache_node_t __far*)                  (((int32_t)texturecache_nodes) + size_texturecache_nodes))
 
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
 // gross... should we change how this works
@@ -232,10 +223,6 @@ segs                 EDD9:0000
 #define textureheights_segment        ((segment_t) ((int32_t)textureheights >> 16))
 #define scantokey_segment             ((segment_t) ((int32_t)scantokey >> 16))
 #define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
-#define spritecache_nodes_segment     ((segment_t) ((int32_t)spritecache_nodes >> 16))
-//#define patchcache_nodes_segment      ((segment_t) ((int32_t)patchcache_nodes >> 16))
-#define texturecache_nodes_segment    ((segment_t) ((int32_t)texturecache_nodes >> 16))
-#define flatcache_nodes_segment       ((segment_t) ((int32_t)flatcache_nodes >> 16))
 
  
 

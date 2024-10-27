@@ -2313,3 +2313,7 @@ uint8_t blocksizelookup[256]={
 
 };
 */
+
+cache_node_page_count_t 	spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
+cache_node_page_count_t		texturecache_nodes[NUM_TEXTURE_PAGES];
+cache_node_t 				flatcache_nodes[NUM_FLAT_CACHE_PAGES];
