@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/27 02:58:28
+Created on:       24/10/27 03:43:34
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -78,12 +78,12 @@ p_telept_TEXT          CODE           AUTO           0b2d:ba70       00000218
 p_tick_TEXT            CODE           AUTO           0b2d:bc90       00000202
 p_user_TEXT            CODE           AUTO           0b2d:bea0       00000604
 r_bsp_TEXT             CODE           AUTO           1778:0000       000006ba
-r_data_TEXT            CODE           AUTO           1778:06c0       00001bf6
-R_MATH_TEXT            CODE           AUTO           1778:22b6       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1778:24b4       00000569
-R_COLUMN_TEXT          CODE           AUTO           1778:2a1e       00000ba0
-R_SPAN_TEXT            CODE           AUTO           1778:35be       00000929
-R_SKY_TEXT             CODE           AUTO           1778:3ee8       0000023a
+r_data_TEXT            CODE           AUTO           1778:06c0       00001bfa
+R_MATH_TEXT            CODE           AUTO           1778:22ba       000001fd
+R_MAINHI_TEXT          CODE           AUTO           1778:24b8       00000569
+R_COLUMN_TEXT          CODE           AUTO           1778:2a22       00000ba0
+R_SPAN_TEXT            CODE           AUTO           1778:35c2       00000929
+R_SKY_TEXT             CODE           AUTO           1778:3eec       0000023a
 r_draw_TEXT            CODE           AUTO           1778:4130       00000377
 r_main_TEXT            CODE           AUTO           1778:44b0       0000021e
 r_plane_TEXT           CODE           AUTO           1778:46d0       000003a0
@@ -1344,37 +1344,37 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 1778:1324+     R_GetNextSpriteBlock_
 1778:14d0+     R_GenerateComposite_
 1778:1708+     gettexturepage_
-1778:1974+     getspritepage_
-1778:1b58+     getpatchtexture_
-1778:1c2e+     getcompositetexture_
-1778:1caa      getspritetexture_
-1778:1d20      R_GetColumnSegment_
-1778:1f24+     R_LoadPatchColumns_
-1778:2016      R_LoadPatchColumnsColormap0_
-1778:212e+     R_LoadSpriteColumns_
+1778:1978+     getspritepage_
+1778:1b5c+     getpatchtexture_
+1778:1c32+     getcompositetexture_
+1778:1cae      getspritetexture_
+1778:1d24      R_GetColumnSegment_
+1778:1f28+     R_LoadPatchColumns_
+1778:201a      R_LoadPatchColumnsColormap0_
+1778:2132+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-1778:232c      R_PointToAngle_
+1778:2330      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-1778:25d6      R_PointOnSegSide_
-1778:2858      R_Subsector_
-1778:2556      R_PointToDist_
-1778:26a1      R_ClearPlanes_
-1778:2724*     R_HandleEMSPagination_
-1778:27d6*     R_FindPlane_
-1778:2950      R_CheckPlane_
-1778:24b4      R_ScaleFromGlobalAngle_
+1778:25da      R_PointOnSegSide_
+1778:285c      R_Subsector_
+1778:255a      R_PointToDist_
+1778:26a5      R_ClearPlanes_
+1778:2728*     R_HandleEMSPagination_
+1778:27da*     R_FindPlane_
+1778:2954      R_CheckPlane_
+1778:24b8      R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-1778:2a1e      R_DrawColumn_
-1778:3555      R_DrawColumnPrep_
+1778:2a22      R_DrawColumn_
+1778:3559      R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
-1778:35be      R_DrawSpan_
-1778:3d4e*     R_FixedMulLocal_
-1778:3c60*     R_DrawSpanPrep_
-1778:3d8a      R_MapPlane_
-1778:3cff*     R_FixedMulTrigLocal_
+1778:35c2      R_DrawSpan_
+1778:3d52*     R_FixedMulLocal_
+1778:3c64*     R_DrawSpanPrep_
+1778:3d8e      R_MapPlane_
+1778:3d03*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1778:3ee8      R_DrawSkyColumn_
-1778:40ae      R_DrawSkyPlane_
+1778:3eec      R_DrawSkyColumn_
+1778:40b2      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1778:4130      R_FillBackScreen_
 1778:43b4      R_VideoErase_
@@ -1786,4 +1786,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028590 (165264.)
 Entry point address: 1fdb:2524
-Link time: 00:00.74
+Link time: 00:00.75

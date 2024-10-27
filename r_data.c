@@ -2215,7 +2215,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 
 uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 	uint8_t realtexpage = texpage >> 2;
-	uint8_t pagenum = pageoffset + realtexpage;
+	//uint8_t pagenum = pageoffset + realtexpage;
 	uint8_t numpages = (texpage& 0x03);
 	uint8_t startpage;
 	uint8_t i;
@@ -2228,7 +2228,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		for (i = 0; i < 4; i++) {
 
-			if (activetexturepages[i] == pagenum ) {
+			if (activetexturepages[i] == realtexpage ) {
 
 				R_MarkL1TextureCacheLRU(i);
 				if (cachetype == CACHETYPE_COMPOSITE){
@@ -2266,10 +2266,10 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		activenumpages[startpage] = 0;
 
 
-		activetexturepages[startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
+		activetexturepages[startpage] = realtexpage; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
 		
 		pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT] = 
-			_EPR(pagenum);
+			_EPR(pageoffset + realtexpage);
 
 
 
@@ -2316,7 +2316,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			// Note: if we do always properly unset multi-page allocations,
 			// then a multi-page check should be unnecessary.
 
-			if (activetexturepages[i] != pagenum){
+			if (activetexturepages[i] != realtexpage){
 				continue;
 			}
 			
@@ -2389,9 +2389,10 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 				activetexturepages[startpage + i]  = currentpage;
 
-				// successive logical page indices must come via node list iteration...
 				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = 
-				    _EPR(currentpage+pageoffset);
+					_EPR(currentpage+pageoffset);
+
+
 
 				activenumpages[startpage + i] = numpages-i;
 				currentpage = nodelist[currentpage].prev;
@@ -2431,7 +2432,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 uint8_t __near getspritepage(uint8_t texpage) {
 	uint8_t realtexpage = texpage >> 2;
-	uint8_t pagenum = FIRST_SPRITE_CACHE_LOGICAL_PAGE + realtexpage;
+	//uint8_t pagenum = FIRST_SPRITE_CACHE_LOGICAL_PAGE + realtexpage;
 	uint8_t numpages = (texpage & 0x03);
 	uint8_t startpage = 0;
 	uint8_t i;
@@ -2442,7 +2443,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 		for (i = 0; i < 4; i++) {
 
 
-			if (activespritepages[i] == pagenum) {
+			if (activespritepages[i] == realtexpage) {
 				R_MarkL1SpriteCacheLRU(i);
 				//checkspritecache(34);
 				R_MarkL2SpriteCacheLRU(realtexpage);
@@ -2476,10 +2477,10 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 
 
-		activespritepages[startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
+		activespritepages[startpage] = realtexpage; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 
 		pageswapargs[pageswapargs_spritecache_offset +  (startpage)*PAGE_SWAP_ARG_MULT] = 
-			_EPR(pagenum);	
+			_EPR(realtexpage+FIRST_SPRITE_CACHE_LOGICAL_PAGE);	
 		
 		Z_QuickMapSpritePage();
 		//checkspritecache(36);
@@ -2503,7 +2504,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 			// Note: if we do always properly unset multi-page allocations,
 			// then a multi-page check should be unnecessary.
 
-			if (activespritepages[i] != pagenum){
+			if (activespritepages[i] != realtexpage){
 				continue;
 			}
 
