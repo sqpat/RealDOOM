@@ -287,15 +287,12 @@ void __far Z_QuickMapUnmapAll();
 // 39
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
 // 42
-#define FIRST_PATCH_CACHE_LOGICAL_PAGE              FIRST_LUMPINFO_LOGICAL_PAGE + 3
-#define NUM_PATCH_CACHE_PAGES                       16
-// 58
-#define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
+#define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_LUMPINFO_LOGICAL_PAGE + 3
 #define NUM_FLAT_CACHE_PAGES                        6
-// 64
+// 48
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 72
-#define NUM_TEXTURE_PAGES                           8
+// 72  todo revisit, can maybe even be smaller.
+#define NUM_TEXTURE_PAGES                           24
 #define FIRST_EXTRA_MASKED_DATA_PAGE                FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
 // 74

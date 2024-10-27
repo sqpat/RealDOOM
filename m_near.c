@@ -324,9 +324,6 @@ int8_t spritecache_l2_tail = -1;
 int8_t flatcache_l2_head = 0;
 int8_t flatcache_l2_tail = NUM_FLAT_CACHE_PAGES-1;
 
-int8_t patchcache_l2_head = -1;
-int8_t patchcache_l2_tail = -1;
-
 int8_t texturecache_l2_head = -1;
 int8_t texturecache_l2_tail = -1;
 
@@ -1908,8 +1905,7 @@ drawseg_t __far*	ds_p;
 // newend is one past the last valid seg
 cliprange_t __near*	newend;
 cliprange_t	solidsegs[MAXSEGS];
-uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES];
-uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES];
+uint8_t usedtexturepagemem[NUM_TEXTURE_PAGES];
 uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
 uint16_t                     numlumps;
 FILE* wadfilefp;

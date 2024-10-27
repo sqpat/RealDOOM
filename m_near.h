@@ -341,8 +341,6 @@ extern int8_t               spritecache_l2_head;
 extern int8_t               spritecache_l2_tail;
 extern int8_t               flatcache_l2_head;
 extern int8_t               flatcache_l2_tail;
-extern int8_t               patchcache_l2_head;
-extern int8_t               patchcache_l2_tail;
 extern int8_t               texturecache_l2_head;
 extern int8_t               texturecache_l2_tail;
 extern int16_t              cachedlumps[NUM_CACHE_LUMPS];
@@ -1041,8 +1039,7 @@ typedef	struct
 // newend is one past the last valid seg
 extern cliprange_t __near*	newend;
 extern cliprange_t	solidsegs[MAXSEGS];
-extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES];
-extern uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES];
+extern uint8_t usedtexturepagemem[NUM_TEXTURE_PAGES];
 extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
 extern uint16_t                     numlumps;
 extern FILE* wadfilefp;

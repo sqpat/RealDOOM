@@ -921,11 +921,10 @@ void __near Z_FreeConventionalAllocations() {
 	//reset texturee cache
 	FAR_memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
 	FAR_memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
-	memset(usedcompositetexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
+	memset(usedtexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
 	
 	FAR_memset(patchpage, 0xFF, sizeof(uint8_t) * (MAX_PATCHES));
 	FAR_memset(patchoffset, 0xFF, sizeof(uint8_t) * (MAX_PATCHES));
-	memset(usedpatchpagemem, 00, sizeof(uint8_t) * NUM_PATCH_CACHE_PAGES);
 
 	FAR_memset(spritepage, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
 	FAR_memset(spriteoffset, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
@@ -948,8 +947,6 @@ void __near Z_FreeConventionalAllocations() {
 	spritecache_l2_head = 0;
 	spritecache_l2_tail = NUM_SPRITE_CACHE_PAGES-1;
 
-	patchcache_l2_head = 0;
-	patchcache_l2_tail = NUM_PATCH_CACHE_PAGES-1;
 
 	texturecache_l2_head = 0;
 	texturecache_l2_tail = NUM_TEXTURE_PAGES-1;
@@ -985,15 +982,6 @@ void __near Z_FreeConventionalAllocations() {
 	spritecache_nodes[spritecache_l2_tail].prev = -1;
 
 
-	for ( i = 0; i < NUM_PATCH_CACHE_PAGES; i++) {
-		patchcache_nodes[i].prev = i+1; // Mark unused entries
-		patchcache_nodes[i].next = i-1; // Mark unused entries
-		patchcache_nodes[i].pagecount = 0;
-		patchcache_nodes[i].numpages = 0;
-	}  
-
-	patchcache_nodes[patchcache_l2_head].next = -1;
-	patchcache_nodes[patchcache_l2_tail].prev = -1;
 
 
 	// todo memcpy this all in asm?
