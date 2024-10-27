@@ -1305,7 +1305,7 @@ void __near R_MarkL2SpriteCacheLRU(int8_t index) {
 // multi-page allocation, then those now unused pages should be appropriately
 // put at the back of the queue so they will be the next loaded into.
 // the evicted pages are also moved to the front. numpages/pagecount are filled in by the code after this
-int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
+int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 
 	//todo revisit these vars.
 	int16_t evictedpage;
@@ -1555,133 +1555,16 @@ void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdest
 }
 
 
+void __near R_GetNextTextureBlock(int16_t tex_index, uint16_t size, int8_t cachetype) {
 
-
- 
-
-void __near R_GetNextCompositeBlock(int16_t tex_index) {
-	uint16_t size = texturecompositesizes[tex_index];
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
 	int8_t numpages;
 	uint8_t texpage, texoffset;
 	int8_t i, j;
-/*
-	if (size == 0){
-		return; // why does this happen...
-	}
-	*/
-	if (size & 0xFF) {
-		blocksize++;
-	}
-	numpages = blocksize >> 6; // num EMS pages needed
-	if (blocksize & 0x3F) {
-		numpages++;
-	}
 
-
-
-	// calculated the size, now lets find an open page
-	if (numpages == 1) {
-		// number of 256-byte block segments needed in an ems page
-		uint8_t freethreshold = 64 - blocksize;
-		for (i = 0; i < NUM_TEXTURE_PAGES; i++) {
-			if (freethreshold >= usedtexturepagemem[i]) {
-				goto foundonepage;
-			}
-		}
-		
-		//checktexturecache(9);
-		i = R_EvictCacheEMSPage(1, CACHETYPE_COMPOSITE);
-		//checktexturecache(10);
-
-		foundonepage:
-		texpage = i << 2; // num pages 0
-		texoffset = usedtexturepagemem[i];
-		usedtexturepagemem[i] += blocksize;
-	} else {
-		uint8_t numpagesminus1 = numpages - 1;
-
-		// todo: think about a way to fast skip this if we've already allocated everything?
-	   
-		for (i = texturecache_l2_head;
-				i != -1; 
-				i = texturecache_nodes[i].prev
-				) {
-			if (!usedtexturepagemem[i]) {
-				// need to check following pages for emptiness, or else after evictions weird stuff can happen
-				int8_t nextpage = texturecache_nodes[i].prev;
-				if ((nextpage != -1 &&!usedtexturepagemem[nextpage])) {
-					nextpage = texturecache_nodes[nextpage].prev;
-					if (numpagesminus1 < 2 || (nextpage != -1 && (!usedtexturepagemem[nextpage]))) {
-						nextpage = texturecache_nodes[nextpage].prev;
-						if (numpagesminus1 < 3 || (nextpage != -1 &&(!usedtexturepagemem[nextpage]))) {
-							goto foundmultipage;
-						}
-					}
-				}
-			}
-		}
-
-		//checktexturecache(11);
-		i = R_EvictCacheEMSPage(numpages, CACHETYPE_COMPOSITE);
-		//checktexturecache(12);
-
-		foundmultipage:
-		// if we jumped here, its because we're in the initial allocation phase
-		// where nothing has yet been evicted - so everything is in order.
-
-		// pages are found for our allocation.
-		// set numpages, etc in here.
-
-		usedtexturepagemem[i] = 64;
-		//I_Error("found page %i %i %i", i, texturecache_nodes[i].next, texturecache_nodes[texturecache_nodes[i].next].next);
-		j = i;
-		// last page of the allocation
-		texturecache_nodes[i].numpages = numpages;
-		texturecache_nodes[i].pagecount = numpages;
-		// not sure if this ever happens...
-		if (numpages >= 3) {
-			//todo figure out if we need to removew this
-			I_Error("happened 1");
-			// 2nd to last page of the allocation
-			j = texturecache_nodes[i].prev;
-			texturecache_nodes[j].numpages = numpages;
-			// 2 if numpages is 3. 
-			// 3 if numpages is 4
-			texturecache_nodes[j].pagecount = numpages-1;
-			usedtexturepagemem[j] = 64;
-		}
-		// numpages 4 never happens
-	
-		// first page of the allocation
-		j = texturecache_nodes[j].prev;
-		texturecache_nodes[j].numpages = numpages;
-		texturecache_nodes[j].pagecount = 1;
-
-		if (blocksize & 0x3F) {
-			usedtexturepagemem[j] = blocksize & 0x3F;
-		} else {
-			usedtexturepagemem[j] = 64;
-		}
-		texpage = (i << 2) + (numpagesminus1);
-		texoffset = 0; // if multipage then its always aligned to start of its block
-
-
-	}
-
-
-	compositetexturepage[tex_index] = texpage;
-	compositetextureoffset[tex_index] = texoffset;
 	
 
-}
 
-
-void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
-	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
-	int8_t numpages;
-	uint8_t texpage, texoffset;
-	int8_t i, j;
 	if (size & 0xFF) {
 		blocksize++;
 	}
@@ -1703,7 +1586,7 @@ void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
 		}
 
 		//checkpatchcache(50);
-		i = R_EvictCacheEMSPage(1, CACHETYPE_PATCH);
+		i = R_EvictL2CacheEMSPage(1, cachetype);
 		//checkpatchcache(51);
 
 		foundonepage:
@@ -1733,7 +1616,7 @@ void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
 		}
 
 		//checkpatchcache(52);
-		i = R_EvictCacheEMSPage(numpages, CACHETYPE_PATCH);
+		i = R_EvictL2CacheEMSPage(numpages, cachetype);
 		//checkpatchcache(53);
 
 		foundmultipage:
@@ -1773,8 +1656,13 @@ void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
  	
 	}
 
-	patchpage  [lump - firstpatch] = texpage;
-	patchoffset[lump - firstpatch] = texoffset;
+	if (cachetype == CACHETYPE_PATCH){
+		patchpage  [tex_index] = texpage;
+		patchoffset[tex_index] = texoffset;
+	} else {
+		compositetexturepage[tex_index] = texpage;
+		compositetextureoffset[tex_index] = texoffset;
+	}
 
 }
 
@@ -1812,7 +1700,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 
 		// nothing found, evict cache
 		//checkspritecache(30);
-		i = R_EvictCacheEMSPage(1, CACHETYPE_SPRITE);
+		i = R_EvictL2CacheEMSPage(1, CACHETYPE_SPRITE);
 		//checkspritecache(31);
 		
 		foundonepage:
@@ -1845,7 +1733,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 
 		// nothing found, evict cache
 		//checkspritecache(32);
-		i = R_EvictCacheEMSPage(numpages, CACHETYPE_SPRITE);
+		i = R_EvictL2CacheEMSPage(numpages, CACHETYPE_SPRITE);
 		//checkspritecache(33);
 		foundmultipage:
 
@@ -2083,6 +1971,8 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 }
 
 
+//gettexturepage takes an l2 cache page, pages it into L1 if its not already.
+//then returns the L1 page number
 uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 	uint8_t realtexpage = texpage >> 2;
 	//uint8_t pagenum = pageoffset + realtexpage;
@@ -2257,7 +2147,8 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 }
 
-
+//getspritepage takes an l2 cache page, pages it into L1 if its not already.
+//then returns the L1 page number
 uint8_t __near getspritepage(uint8_t texpage) {
 	uint8_t realtexpage = texpage >> 2;
 	//uint8_t pagenum = FIRST_SPRITE_CACHE_LOGICAL_PAGE + realtexpage;
@@ -2416,7 +2307,6 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 
 
-// TODO - try different algos instead of first free block for populating cache pages
 // get 0x9000 offset for texture
 segment_t __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
 
@@ -2428,24 +2318,26 @@ segment_t __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
 	benchtexturetype = TEXTURE_TYPE_PATCH;
 #endif
 
-	if (texpage == 0xFF) { // texture not loaded -  0xFFu is initial state (and impossible anyway)
+	if (texpage == 0xFF) { 
+		//texture not in L2 cache
 		segment_t tex_segment;
 		uint16_t size = ismasked ? masked_headers[maskedlookup].texturesize : patch_sizes[index];
-		R_GetNextPatchBlock(lump, size);
+		
+		// load texture into L2 cache 
+		R_GetNextTextureBlock(lump - firstpatch, size, CACHETYPE_PATCH);
 
 		texpage = patchpage[index];
 		texoffset = patchoffset[index];
 
-		//gettexturepage ensures the page is active
+		// texture in now L2 cache (EMS), so just return thru L1 cache
 		tex_segment = 0x9000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
 		R_LoadPatchColumns(lump, tex_segment, ismasked);
 		return tex_segment;
 	} 
 	
+	// texture in L2 cache (EMS), so just return thru L1 cache
 	return 0x9000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
 
-
-	// return
 
 
 }
@@ -2462,7 +2354,7 @@ segment_t getcompositetexture(int16_t tex_index) {
 
 	if (texpage == 0xFF) { // texture not loaded -  0xFFu is initial state (and impossible anyway)
 		segment_t tex_segment;
-		R_GetNextCompositeBlock(tex_index);
+		R_GetNextTextureBlock(tex_index, texturecompositesizes[tex_index], CACHETYPE_COMPOSITE);
 		texpage = compositetexturepage[tex_index];
 		texoffset = compositetextureoffset[tex_index];
 		//gettexturepage ensures the page is active
@@ -2673,7 +2565,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 } 
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
-//void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked){
+// todo return the tex segment?
 void R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
 	int16_t col;
