@@ -1053,13 +1053,29 @@ void __far AM_Drawer (void) {
 
 	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
 	//G_ExitLevel();
-/*
-	playerMobj_pos->x.w =     0xff809e2b;
-	playerMobj_pos->y.w =     0xfdd065a0;
-	playerMobj_pos->z.w =     0x00600000;
-	playerMobj_pos->angle.w = 0xbe400000;
-	 */
 
+/*
+	I_Error("%lx %lx %lx %lx", 
+		playerMobj_pos->x.w, 
+		playerMobj_pos->y.w, 
+		playerMobj_pos->z.w,
+		playerMobj_pos->angle.w
+	);*/
+
+
+	// 0E280C9b
+	// 01532DF7
+	// 0
+	// 34C00000
+
+
+/*
+	playerMobj_pos->x.w =     0x0E280C9b;
+	playerMobj_pos->y.w =     0x01532DF7;
+	playerMobj_pos->z.w =     0x00000000;
+	playerMobj_pos->angle.w = 0x34C00000;
+	 
+*/
 	//setval = 1;
 	
 	// Clear automap frame buffer.

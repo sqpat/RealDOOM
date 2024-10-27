@@ -100,6 +100,19 @@ void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 
 	int8_t min;
 
+/*
+	if (setval){
+		int8_t i = 0;
+		for (i = 0; i < count; i++){
+			int16_t pagenum = offset[(i*2)+0];
+			if (pagenum == FIRST_FLAT_CACHE_LOGICAL_PAGE){
+				I_Error("paged? %i %i %i %i", i, count, offset[(i*2)+1], setval);
+			}
+		}
+
+	}
+	*/
+
 	// test if some of these fields can be pulled out
 	while (count > 0){
 

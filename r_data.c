@@ -1433,7 +1433,7 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 			#ifdef DETAILED_BENCH_STATS
 			spritecacheevictcount++;
 			#endif
-	break;
+			break;
 
 		case CACHETYPE_PATCH:
  			nodetail = &patchcache_l2_tail;
@@ -1755,7 +1755,7 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 		}
 		
 		//checktexturecache(9);
-		i = R_EvictCacheEMSPage (numpages, CACHETYPE_COMPOSITE);
+		i = R_EvictCacheEMSPage(1, CACHETYPE_COMPOSITE);
 		//checktexturecache(10);
 
 		foundonepage:
@@ -1763,17 +1763,22 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 		texoffset = usedcompositetexturepagemem[i];
 		usedcompositetexturepagemem[i] += blocksize;
 	} else {
-		// theres no deallocation so any page with 0 allocated will be followed by another 
 		uint8_t numpagesminus1 = numpages - 1;
 
 		// todo: fast skip this if we've already allocated everything?
 		
-		for (i = 0; i < NUM_TEXTURE_PAGES-numpagesminus1; i++) {
+		for (i = texturecache_l2_head;
+				i != -1; 
+				i = texturecache_nodes[i].prev
+				) {
 			if (!usedcompositetexturepagemem[i]) {
 				// need to check following pages for emptiness, or else after evictions weird stuff can happen
-				if (!usedcompositetexturepagemem[i+1]) {
-					if (numpagesminus1 < 2 || (!usedcompositetexturepagemem[i+2])) {
-						if (numpagesminus1 < 3 || (!usedcompositetexturepagemem[i+3])) {					
+				int8_t nextpage = texturecache_nodes[i].prev;
+				if ((nextpage != -1 &&!usedcompositetexturepagemem[nextpage])) {
+					nextpage = texturecache_nodes[nextpage].prev;
+					if (numpagesminus1 < 2 || (nextpage != -1 && (!usedcompositetexturepagemem[nextpage]))) {
+						nextpage = texturecache_nodes[nextpage].prev;
+						if (numpagesminus1 < 3 || (nextpage != -1 &&(!usedcompositetexturepagemem[nextpage]))) {
 							goto foundmultipage;
 						}
 					}
@@ -1871,7 +1876,7 @@ void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
 		}
 
 		//checkpatchcache(50);
-		i = R_EvictCacheEMSPage(numpages, CACHETYPE_PATCH);
+		i = R_EvictCacheEMSPage(1, CACHETYPE_PATCH);
 		//checkpatchcache(51);
 
 		foundonepage:
@@ -1879,14 +1884,20 @@ void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
 		texoffset = usedpatchpagemem[i];
 		usedpatchpagemem[i] += blocksize;
 	} else {
-		// theres no deallocation so any page with 0 allocated will be followed by another 
 		uint8_t numpagesminus1 = numpages - 1;
-		for (i = 0; i < NUM_PATCH_CACHE_PAGES-numpagesminus1; i++) {
+
+		for (i = patchcache_l2_head;
+				i != -1; 
+				i = patchcache_nodes[i].prev
+				) {
 			if (!usedpatchpagemem[i]) {
 				// need to check following pages for emptiness, or else after evictions weird stuff can happen
-				if (!usedpatchpagemem[i+1]) {
-					if (numpagesminus1 < 2 || (!usedpatchpagemem[i+2])) {
-						if (numpagesminus1 < 3 || (!usedpatchpagemem[i+3])) {					
+				int8_t nextpage = patchcache_nodes[i].prev;
+				if ((nextpage != -1 &&!usedpatchpagemem[nextpage])) {
+					nextpage = patchcache_nodes[nextpage].prev;
+					if (numpagesminus1 < 2 || (nextpage != -1 && (!usedpatchpagemem[nextpage]))) {
+						nextpage = patchcache_nodes[nextpage].prev;
+						if (numpagesminus1 < 3 || (nextpage != -1 &&(!usedpatchpagemem[nextpage]))) {
 							goto foundmultipage;
 						}
 					}
@@ -1982,7 +1993,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 
 		// nothing found, evict cache
 		//checkspritecache(30);
-		i = R_EvictCacheEMSPage(numpages, CACHETYPE_SPRITE);
+		i = R_EvictCacheEMSPage(1, CACHETYPE_SPRITE);
 		//checkspritecache(31);
 		
 		foundonepage:
@@ -1992,18 +2003,26 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 	} else {
 
 		uint8_t numpagesminus1 = numpages - 1;
-		for (i = 0; i < NUM_SPRITE_CACHE_PAGES-numpagesminus1; i++) {
+
+		for (i = spritecache_l2_head;
+				i != -1; 
+				i = spritecache_nodes[i].prev
+				) {
 			if (!usedspritepagemem[i]) {
 				// need to check following pages for emptiness, or else after evictions weird stuff can happen
-				if (!usedspritepagemem[i+1]) {
-					if (numpagesminus1 < 2 || (!usedspritepagemem[i+2])) {
-						if (numpagesminus1 < 3 || (!usedspritepagemem[i+3])) {					
+				int8_t nextpage = spritecache_nodes[i].prev;
+				if ((nextpage != -1 &&!usedspritepagemem[nextpage])) {
+					nextpage = spritecache_nodes[nextpage].prev;
+					if (numpagesminus1 < 2 || (nextpage != -1 && (!usedspritepagemem[nextpage]))) {
+						nextpage = spritecache_nodes[nextpage].prev;
+						if (numpagesminus1 < 3 || (nextpage != -1 &&(!usedspritepagemem[nextpage]))) {
 							goto foundmultipage;
 						}
 					}
 				}
 			}
 		}
+
 
 		// nothing found, evict cache
 		//checkspritecache(32);
@@ -2284,6 +2303,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		startpage = textureL1LRU[3];
 
+		// todo in this case we know its LRU, do a specialized call?
 		R_MarkL1TextureCacheLRU(startpage);
 
 
@@ -2291,8 +2311,9 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		if (activenumpages[startpage]) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
 				activetexturepages[startpage+i]  = -1; // unpaged
-
-				pageswapargs[pageswapargs_rend_texture_offset+( startpage+i)*PAGE_SWAP_ARG_MULT] = _NPR(PAGE_9000_OFFSET+startpage+i);
+				//this is unmapping the page, so we don't need to use pagenum/nodelist
+				pageswapargs[pageswapargs_rend_texture_offset+( startpage+i)*PAGE_SWAP_ARG_MULT] = 
+					_NPR(PAGE_9000_OFFSET+startpage+i);
 
 				activenumpages[startpage+i] = 0;
 			}
@@ -2302,7 +2323,8 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		activetexturepages[startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
 		
-		pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT] = _EPR(pagenum);
+		pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT] = 
+			_EPR(pagenum);
 
 
 
@@ -2316,7 +2338,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			R_MarkL2PatchCacheLRU(realtexpage);
 			//checkpatchcache(59);
 		}
-		Z_QuickMapRenderTexture();
+		Z_QuickMapRenderTexture(5);
 		cachedtex = -1;
 		cachedtex2 = -1;
 		{
@@ -2332,22 +2354,27 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 	} else {
 		int16_t j = 0;
+		// needed for multipage iteration...
+		cache_node_page_count_t far* nodelist;
 		
+		if (cachetype == CACHETYPE_COMPOSITE){
+			nodelist = texturecache_nodes;
+		} else {
+			nodelist = patchcache_nodes;
+		}
+		
+
+
 
 		for (i = 0; i < 4-numpages; i++) {
 
-			int8_t currentpage = 0;
-			while (currentpage <= numpages) {
-				if (activetexturepages[i+ currentpage] != pagenum + currentpage) {
-					break;
-				}
-				currentpage++;
+			// Note: if we do always properly unset multi-page allocations,
+			// then a multi-page check should be unnecessary.
 
-			}
-
-			if (currentpage <= numpages) {
+			if (activetexturepages[i] != pagenum){
 				continue;
 			}
+			
 
 
 			// all pages for this texture are in the cache, unevicted.
@@ -2397,24 +2424,36 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage] > numpages) {
+			// todo: test i = numpages instead of i = 1
 			for (i = 1; i <= activenumpages[startpage]; i++) {
 				activetexturepages[startpage + i] = -1;
 
-				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
+				// unmapping the page, so we dont need pagenum
+				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT] 
+					= _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
 				activenumpages[startpage + i] = 0;
 			}
 		}
 
 
+		{
+			int8_t currentpage = realtexpage; // pagenum - pageoffset
+			for (i = 0; i <= numpages; i++) {
+				if (currentpage == -1){
+					I_Error("bad currentpage? todo remove this");
+				}
 
-		for (i = 0; i <= numpages; i++) {
-			R_MarkL1TextureCacheLRU(startpage+i);
+				R_MarkL1TextureCacheLRU(startpage+i);
 
-			activetexturepages[startpage + i]  = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;			
-			pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(pagenum + i);
+				activetexturepages[startpage + i]  = currentpage;
 
-			activenumpages[startpage + i] = numpages-i;
+				// successive logical page indices must come via node list iteration...
+				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = 
+				    _EPR(currentpage+pageoffset);
 
+				activenumpages[startpage + i] = numpages-i;
+				currentpage = nodelist[currentpage].prev;
+			}
 		}
 
 		if (cachetype == CACHETYPE_COMPOSITE){
@@ -2426,7 +2465,11 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			R_MarkL2PatchCacheLRU(realtexpage);
 			//checkpatchcache(55);
 		}
-		Z_QuickMapRenderTexture();
+		if ((cachetype != CACHETYPE_COMPOSITE) && (pagenum  + i >= FIRST_FLAT_CACHE_LOGICAL_PAGE)){
+			//I_Error("overrun? %i %i %i", pagenum, i, FIRST_FLAT_CACHE_LOGICAL_PAGE);
+		}
+
+		Z_QuickMapRenderTexture(4);
 		cachedtex = -1;
 		cachedtex2 = -1;
 		
@@ -2447,6 +2490,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 }
 
 
+//todo: get rid of pageoffset. hardcoded anyway
 uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 	uint8_t realtexpage = texpage >> 2;
 	uint8_t pagenum = pageoffset + realtexpage;
@@ -2479,6 +2523,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 		startpage = spriteL1LRU[3];
 
+		// todo in this case we know its LRU, do a specialized call?
 		R_MarkL1SpriteCacheLRU(startpage);
 
 
@@ -2486,7 +2531,9 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		if (activespritenumpages[startpage]) {
 			for (i = 1; i <= activespritenumpages[startpage]; i++) {
 				activespritepages[startpage + i] = -1;
-				pageswapargs[pageswapargs_spritecache_offset + (startpage + i)*PAGE_SWAP_ARG_MULT] = _NPR(PAGE_6800_OFFSET+(startpage+i)); // unpaged				
+				//this is being unset, doesn't need to use pagenum
+				pageswapargs[pageswapargs_spritecache_offset + (startpage + i)*PAGE_SWAP_ARG_MULT] = 
+					_NPR(PAGE_6800_OFFSET+(startpage+i)); // unpaged				
 
 				activespritenumpages[startpage + i] = 0;
 			}
@@ -2497,7 +2544,8 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 		activespritepages[startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 
-		pageswapargs[pageswapargs_spritecache_offset +  (startpage)*PAGE_SWAP_ARG_MULT] = _EPR(pagenum);	
+		pageswapargs[pageswapargs_spritecache_offset +  (startpage)*PAGE_SWAP_ARG_MULT] = 
+			_EPR(pagenum);	
 		
 		Z_QuickMapSpritePage();
 		//checkspritecache(36);
@@ -2517,18 +2565,14 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 		for (i = 0; i < 4 - numpages; i++) {
 
-			int8_t currentpage = 0;
-			while (currentpage <= numpages) {
-				if (activespritepages[i + currentpage] != pagenum + currentpage) {
-					break;
-				}
-				currentpage++;
 
-			}
+			// Note: if we do always properly unset multi-page allocations,
+			// then a multi-page check should be unnecessary.
 
-			if (currentpage <= numpages) {
+			if (activespritepages[i] != pagenum){
 				continue;
 			}
+
 
 
 			// all pages were good
@@ -2567,23 +2611,38 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activespritenumpages[startpage] > numpages) {
+			// todo: test i = numpages instead of i = 1
 			for (i = 1; i <= activespritenumpages[startpage]; i++) {
 				activespritepages[startpage + i] = -1;
-				pageswapargs[pageswapargs_spritecache_offset + ( (startpage + i)*PAGE_SWAP_ARG_MULT)] = _NPR(PAGE_6800_OFFSET+(startpage+i));
+				// unmapping the page, so we dont need pagenum
+				pageswapargs[pageswapargs_spritecache_offset + ( (startpage + i)*PAGE_SWAP_ARG_MULT)] = 
+					_NPR(PAGE_6800_OFFSET+(startpage+i));
 				activespritenumpages[startpage + i] = 0;
 			}
 		}
 
 
+		{
+			int8_t currentpage = realtexpage; // pagenum - pageoffset
+			cache_node_page_count_t far* nodelist = spritecache_nodes;
 
-		for (i = 0; i <= numpages; i++) {
-			R_MarkL1SpriteCacheLRU(startpage+i);
+			for (i = 0; i <= numpages; i++) {
 
-			activespritepages[startpage + i] =  pagenum + i;			
-			pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)*PAGE_SWAP_ARG_MULT)] = _EPR(pagenum + i);
+				if (currentpage == -1){
+					I_Error("bad currentpage 2? todo remove this");
+				}
 
-			activespritenumpages[startpage + i] = numpages - i;
+				R_MarkL1SpriteCacheLRU(startpage+i);
 
+				activespritepages[startpage + i] = currentpage;
+				
+				// successive logical page indices must come via node list iteration...
+				pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)*PAGE_SWAP_ARG_MULT)] = 
+					_EPR(currentpage+pageoffset);
+
+				activespritenumpages[startpage + i] = numpages - i;
+				currentpage = nodelist[currentpage].prev;
+			}
 		}
 
 		lastvisspritepatch = -1;
@@ -2612,7 +2671,6 @@ segment_t __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
 	uint8_t texpage = patchpage[index];
 	uint8_t texoffset = patchoffset[index];
 	segment_t tex_segment;
-	int8_t cachelump = false;
 	boolean ismasked = maskedlookup != 0xFF;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_PATCH;
@@ -2626,16 +2684,17 @@ segment_t __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
 		texoffset = patchoffset[index];
 
 		//gettexturepage ensures the page is active
-		cachelump = true;
+	tex_segment = 0x9000 + pagesegments[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
+		R_LoadPatchColumns(lump, tex_segment, ismasked);
+		return tex_segment;
+	} else {
+		tex_segment = 0x9000 + pagesegments[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
+		return tex_segment;
+
 	}
 	
-	tex_segment = 0x9000 + pagesegments[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
 
-	if (cachelump){
-		R_LoadPatchColumns(lump, tex_segment, ismasked);
-	}
 	// return
-	return tex_segment;
 
 
 }
@@ -2726,6 +2785,8 @@ void setchecksum(){
 
 // todo: since this is called once per getcolumn, really investigate
 // c-level improvements. can tex be cached to skip stuff?
+// todo: maybe cache stuff per top, bot, and mid calls with an id?
+
 // if texturecolumnlump, mask, etc are not stack vars but near vars, 
 // their values can be reused
 // if tex is same as last call.

@@ -271,49 +271,49 @@ void __far Z_QuickMapUnmapAll();
 #define FIRST_VISPLANE_PAGE							5
 
 //#define EMS_VISPLANE_EXTRA_PAGE                     NUM_EMS4_SWAP_PAGES + 1
-// 16
+// 15
 #define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         15
-// 17
+// 16
 #define FIRST_STATUS_LOGICAL_PAGE                   LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
-// 21
+// 20
 #define PALETTE_LOGICAL_PAGE                        FIRST_STATUS_LOGICAL_PAGE + 4
 // todo almost 6k free here..
-// 22
+// 21
 #define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            PALETTE_LOGICAL_PAGE + 1
-// 28
+// 27
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 6
-// 36
+// 35
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 40
+// 39
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 43
+// 42
 #define FIRST_PATCH_CACHE_LOGICAL_PAGE              FIRST_LUMPINFO_LOGICAL_PAGE + 3
 #define NUM_PATCH_CACHE_PAGES                       16
-// 59
+// 58
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES                        6
-// 65
+// 64
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 73
+// 72
 #define NUM_TEXTURE_PAGES                           8
 #define FIRST_EXTRA_MASKED_DATA_PAGE                FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
-// 81
+// 74
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_EXTRA_MASKED_DATA_PAGE + 2
 
-// 83
+// 82
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 87
+// 86
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 91
+// 90
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 #define NUM_SPRITE_CACHE_PAGES                      20
 
 // todo eventuall yjust include this in the spritecache area...
 //#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 95
+// 94 (+1 for 0 index = 95)
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 96 in use currently (including page 0)
+// 95 in use currently (including page 0)
 
 
 // NUM_EMS4_SWAP_PAGES needs to be 104 to fit in 256 k + (2 MB EMS - 384k)
