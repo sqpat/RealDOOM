@@ -79,10 +79,6 @@
 //
 
 
-#if (EXE_VERSION >= EXE_VERSION_FINAL)
-boolean         plutonia;
-boolean         tnt;
-#endif
 
 
 //int8_t            wadfile[64];          // primary wad file

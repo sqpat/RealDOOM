@@ -1526,7 +1526,7 @@ int8_t __near R_EvictFlatCacheEMSPage(){
 // Clip and draw a column
 //  from a patch into a cached post.
 //
-// todo merge below
+// todo merge below when doing asm later
 //int16_t
 void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight) {
 	while (patchcol->topdelta != 0xff) { 
@@ -2083,10 +2083,6 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 
 
-		// (can we do two int16_t adds of 0x0101)
-
-
-
 		// prep args for quickmap;
 
 		// startpage is the ems page withing the 0x9000 block
@@ -2095,7 +2091,6 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
-		//todo get rid of activenumpages?
 		if (activenumpages[startpage] > numpages) {
 			for (i = numpages; i <= activenumpages[startpage]; i++) {
 				activetexturepages[startpage + i] = -1;
@@ -2229,7 +2224,6 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 			// all pages were good
 
-			// (can we do two int16_t adds of 0x0101)
 			for (j = 0; j <= numpages; j++) {
 				R_MarkL1SpriteCacheLRU(i+j);
 
@@ -2565,7 +2559,6 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 } 
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
-// todo return the tex segment?
 void R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
 	int16_t col;

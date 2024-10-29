@@ -146,7 +146,7 @@ boolean __near ST_Responder (event_t __far* ev) {
           musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
           
           if (((buf[0]-'0')*10 + buf[1]-'0') > 35)
-              players.message = STSTR_NOMUS;
+              player.message = STSTR_NOMUS;
           else
             S_ChangeMusic(musnum, 1);
         }
@@ -155,7 +155,7 @@ boolean __near ST_Responder (event_t __far* ev) {
           musnum = mus_e1m1 + (buf[0]-'1')*9 + (buf[1]-'1');
           
           if (((buf[0]-'1')*9 + buf[1]-'1') > 31)
-              players.message = STSTR_NOMUS;
+              player.message = STSTR_NOMUS;
           else
             S_ChangeMusic(musnum, 1);
         }
@@ -245,7 +245,7 @@ boolean __near ST_Responder (event_t __far* ev) {
 #else
       if ((!commercial && epsd > 0 && epsd < 5 && map > 0 && map < 10) || (commercial && map > 0 && map <= 40)) {
           // So be it.
-          players.message = STSTR_CLEV;
+          player.message = STSTR_CLEV;
           G_DeferedInitNew(gameskill, epsd, map);
       }
 #endif

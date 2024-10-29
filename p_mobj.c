@@ -584,7 +584,7 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos)
 		if (mo_pos->flags2 & MF_SKULLFLY)
 		{
 			// the skull slammed into something
-			mo->momz = -mo->momz;
+			mo->momz.w = -mo->momz.w;
 		}
 	#endif
 	

@@ -1150,7 +1150,7 @@ int16_t	e1text = E1TEXT;
 int16_t	e2text = E2TEXT;
 int16_t	e3text = E3TEXT;
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-int8_t*	e4text = E4TEXT;
+int16_t	e4text = E4TEXT;
 #endif
 
 int16_t	c1text = C1TEXT;
@@ -1302,6 +1302,7 @@ void __near M_DrawSave(void);
 void __near M_DrawSound(void);
 void __near M_DrawReadThis1(void);
 void __near M_DrawReadThis2(void);
+void __near M_DrawReadThisRetail(void);
 
 
 
@@ -2317,3 +2318,7 @@ uint8_t blocksizelookup[256]={
 cache_node_page_count_t 	spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 cache_node_page_count_t		texturecache_nodes[NUM_TEXTURE_PAGES];
 cache_node_t 				flatcache_nodes[NUM_FLAT_CACHE_PAGES];
+#if (EXE_VERSION >= EXE_VERSION_FINAL)
+boolean    					plutonia = false;
+boolean    					tnt = false;
+#endif

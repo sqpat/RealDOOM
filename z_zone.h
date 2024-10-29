@@ -42,7 +42,20 @@
 #define MAX_TEXTURES 428
 #define MAX_PATCHES 476
 #define MAX_FLATS 151
+
+// These are WAD maxes and corresponds to doom2/tnt/plutonia max values
+//#define MAX_TEXTURES 585
+//#define MAX_PATCHES 664
+//#define MAX_FLATS 151
+
+
+// textures     585 for tnt   550 for plutonia
+// patches      664 for tnt   546 for plutonia
+// flats        147 for tnt   147 for plutonia
+
 #define MAX_SPRITE_LUMPS 1381
+
+// sprites 1381 for tnt       1381 for plutonia
 
 #define MAX_THINKERS 840
 #define SPRITE_ALLOCATION_LIST_SIZE 150

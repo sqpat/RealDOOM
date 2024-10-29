@@ -240,12 +240,8 @@ segs                 EDD9:0000
 // texturetranslation   3B89:0000
 // textureheights       3BBF:0000
 // scantokey            3BDA:0000
-// rndtable             3BE2:003C
-// spritecache_nodes    3BF2:0000
-// patchcache_nodes     3BF2:0050
-// texturecache_nodes   3BF2:0090
-// flatcache_nodes      3BF2:00B0
-// [done]               3C00:0000
+// rndtable             3BE2:0000
+// done                 3BF2:003C
 
 
 
@@ -706,6 +702,7 @@ mobjposlist           6B14:0000
 rejectmatrix       5C00:0000
 savegamestrings    5FB3:0000
 [empty]        5000:FC12
+//FREEBYTES
 1006 bytes free
 */
 
@@ -946,7 +943,7 @@ wianimoffsets  7800:24b8
 
 
 
-// RENDER 0x8000
+// RENDER 0x7800 - 0x8000 - 0x8FFF
 
 
 // openings are A000 in size. 0x7800 can be just that. Note that 0x2000 carries over to 8000
@@ -1084,7 +1081,7 @@ spritedefs_bytes    7000:36A0
 spritewidths        7000:7592
 [empty]             7000:7AF7
 
-
+//FREEBYTES
 1289 bytes free
 */
 
@@ -1156,7 +1153,7 @@ spritewidths        7000:7592
 // drawsegs_PLUSONE           6459:0020
 // [empty]                    665D:0000
 
-
+//FREEBYTES
 // 6704 (!) bytes free till 6000:8000 
 
 // 0x4000 BLOCK RENDER
@@ -1272,6 +1269,7 @@ texturecompositesizes   4DB3:0000
 compositetexturepage    4DE9:0000
 compositetextureoffset  4DE9:01AC
 [done]                  4E20:0000
+//FREEBYTES
 7680 bytes free
 
 

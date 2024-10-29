@@ -35,6 +35,7 @@
 #include "p_spec.h"
 #include "p_local.h"
 #include "z_zone.h"
+#include "d_englsh.h"
 
 
 #define NUM_CACHE_LUMPS 4
@@ -699,7 +700,7 @@ extern int16_t 	e1text;
 extern int16_t	e2text;
 extern int16_t	e3text;
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-extern int8_t*	e4text = E4TEXT;
+extern int16_t	e4text;
 #endif
 
 extern int16_t	c1text;
@@ -1116,3 +1117,8 @@ extern int8_t ems_backfill_page_order[24];
 extern cache_node_page_count_t  spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 extern cache_node_page_count_t	texturecache_nodes[NUM_TEXTURE_PAGES];
 extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
+
+#if (EXE_VERSION >= EXE_VERSION_FINAL)
+extern boolean    				plutonia;
+extern boolean    				tnt;
+#endif
