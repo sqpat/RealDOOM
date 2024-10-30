@@ -56,14 +56,11 @@
 #define size_sides              (MAX_SIDES_SIZE)
 #define size_lines              (MAX_LINES_SIZE)
 #define size_lineflagslist      (MAX_LINEFLAGS_SIZE)
-#define size_seenlines          (MAX_SEENLINES_SIZE)
 #define size_subsectors         (MAX_SUBSECTORS_SIZE)
-#define size_subsector_lines    (MAX_SUBSECTOR_LINES_SIZE)
 #define size_nodes              (MAX_NODES_SIZE)
 #define size_node_children      (MAX_NODE_CHILDREN_SIZE)
 #define size_seg_linedefs       (MAX_SEGS * sizeof(int16_t))
 #define size_seg_sides          (MAX_SEGS * sizeof(uint8_t))
-
 
 
 
@@ -72,10 +69,8 @@
 #define sides             ((side_t __far*)          MAKE_FULL_SEGMENT(vertexes         , size_vertexes))
 #define lines             ((line_t __far*)          MAKE_FULL_SEGMENT(sides            , size_sides))
 #define lineflagslist     ((uint8_t __far*)         MAKE_FULL_SEGMENT(lines            , size_lines))
-#define seenlines         ((uint8_t __far*)         MAKE_FULL_SEGMENT(lineflagslist    , size_lineflagslist))
-#define subsectors        ((subsector_t __far*)     MAKE_FULL_SEGMENT(seenlines        , size_seenlines))
-#define subsector_lines   ((uint8_t __far*)         MAKE_FULL_SEGMENT(subsectors       , size_subsectors))
-#define nodes             ((node_t __far*)          MAKE_FULL_SEGMENT(subsector_lines  , size_subsector_lines))
+#define subsectors        ((subsector_t __far*)     MAKE_FULL_SEGMENT(lineflagslist    , size_lineflagslist))
+#define nodes             ((node_t __far*)          MAKE_FULL_SEGMENT(subsectors       , size_subsectors))
 #define node_children     ((node_children_t __far*) MAKE_FULL_SEGMENT(nodes            , size_nodes))
 #define seg_linedefs      ((int16_t __far*)         MAKE_FULL_SEGMENT(node_children    , size_node_children))
 #define seg_sides         ((uint8_t __far*)         MAKE_FULL_SEGMENT(seg_linedefs     , size_seg_linedefs))
@@ -88,9 +83,7 @@
 #define sides_segment             ((segment_t) ((int32_t)sides >> 16))
 #define lines_segment             ((segment_t) ((int32_t)lines >> 16))
 #define lineflagslist_segment     ((segment_t) ((int32_t)lineflagslist >> 16))
-#define seenlines_segment         ((segment_t) ((int32_t)seenlines >> 16))
 #define subsectors_segment        ((segment_t) ((int32_t)subsectors >> 16))
-#define subsector_lines_segment   ((segment_t) ((int32_t)subsector_lines >> 16))
 #define nodes_segment             ((segment_t) ((int32_t)nodes >> 16))
 #define node_children_segment     ((segment_t) ((int32_t)node_children >> 16))
 #define seg_linedefs_segment      ((segment_t) ((int32_t)seg_linedefs >> 16))
@@ -106,19 +99,24 @@ sectors              E000:0000
 vertexes             E15C:0000
 sides                E2F3:0000
 lines                E801:0000
-
 lineflagslist        E9BA:0000
+subsectors           EA29:0000
+nodes                EB18:0000
+node_children        ECF6:0000
+segs_linedefs        EDE5:0000
+segs_sides           EF45:0000 
+[empty]              EFF5:0000
 
-seenlines            EA29:0000
-subsectors           EA37:0000
-subsector_lines      EB12:0000
-nodes                EB49:0000
-node_children        ECFE:0000
-segs                 EDD9:0000
-[empty]              EFE9:0000
+177 bytes left
+
+SUBSECTORS_SEGMENT= 0EA37h
+SUBSECTOR_LINES_SEGMENT = 0EB26h
+NODES_SEGMENT = 0EB62h
+NODE_CHILDREN_SEGMENT = 0ED40h
+SEG_LINDEDEFS_SEGMENT = 0EE2Fh
+SEG_SIDES_SEGMENT = 0EF8Fh
 
 
-// 368 bytes free? 
             
 //
 
@@ -182,6 +180,8 @@ segs                 EDD9:0000
 #define size_textureheights      (MAX_TEXTURES * sizeof(uint8_t))
 #define size_scantokey           128
 #define size_rndtable            256
+#define size_seenlines          (MAX_SEENLINES_SIZE)
+#define size_subsector_lines    (MAX_SUBSECTOR_LINES_SIZE)
 
 
 
@@ -191,7 +191,7 @@ segs                 EDD9:0000
 
 #define size_tantoangle    size_finetangent +  2049u * sizeof(int32_t)
 
-#define baselowermemoryaddress        (0x2DE00000)
+#define baselowermemoryaddress        (0x2DA40000)
 
 #define baselowermemoryaddresssegment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
  
@@ -211,9 +211,13 @@ segs                 EDD9:0000
 #define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
 #define scantokey          ((byte __far*)               MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(scantokey, size_scantokey))
+#define seenlines          ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable    , size_rndtable))
+#define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(seenlines   , size_seenlines))
+
+
 
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
-// gross... should we change how this works
+// todo clean this and finecosine up
 #define finecosine_segment            ((segment_t) (finesine_segment + 0x200))
 #define finetangentinner_segment      ((segment_t) ((int32_t)finetangentinner >> 16))
 #define states_segment                ((segment_t) ((int32_t)states >> 16))
@@ -223,25 +227,25 @@ segs                 EDD9:0000
 #define textureheights_segment        ((segment_t) ((int32_t)textureheights >> 16))
 #define scantokey_segment             ((segment_t) ((int32_t)scantokey >> 16))
 #define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
-
- 
-
-
-//MAKE_FULL_SEGMENT(spritecache_nodes , (((int32_t)texturecache_nodes) & 0xFFFF)+ size_texturecache_nodes))
+#define seenlines_segment             ((segment_t) ((int32_t)seenlines >> 16))
+#define subsector_lines_segment       ((segment_t) ((int32_t)subsector_lines >> 16))
 
 
 
-// finesine             2DE0:0000
-// finecosine           2DE0:2000
-// finetangentinner     37E0:0000
-// states               39E0:0000
-// events               3B4B:0000
-// flattranslation      3B7F:0000
-// texturetranslation   3B89:0000
-// textureheights       3BBF:0000
-// scantokey            3BDA:0000
-// rndtable             3BE2:0000
-// done                 3BF2:003C
+// finesine             2DA4:0000
+// finecosine           2DA4:2000
+// finetangentinner     37A4:0000
+// states               39A4:0000
+// events               3B0F:0000
+// flattranslation      3B43:0000
+// texturetranslation   3B4D:0000
+// textureheights       3B83:0000
+// scantokey            3B9E:0000
+// rndtable             3BA6:0000
+// seenlines            3BB6:0000
+// subsector_lines      3C00:0000
+
+// done                 3C00:0000
 
 
 
@@ -948,15 +952,17 @@ wianimoffsets  7800:24b8
 
 // openings are A000 in size. 0x7800 can be just that. Note that 0x2000 carries over to 8000
 
+// spritewidths overruns into 7802. have to offset this a bit.
+
 /*
-openings                 7800:0000
-negonearray_offset       7800:a000  or 8000:2000
-screenheightarray_offset 7800:A500  or 8000:2500
-[done]                   7800:AA00  or 8000:2A00
+openings                 7802:0000
+negonearray_offset       7802:a000  or 8000:2000
+screenheightarray_offset 7802:A500  or 8000:2500
+[done]                   7802:AA00  or 8000:2A00
 
 //aa00
 */
-// LEAVE ALL THESE in 0x7800 SEGMENT 
+// LEAVE ALL THESE in 0x7802 SEGMENT 
 
 #define size_openings      sizeof(int16_t) * MAXOPENINGS
 #define size_negonearray          size_openings             + sizeof(int16_t) * (SCREENWIDTH)
@@ -964,22 +970,23 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_floorclip            size_screenheightarray    + (sizeof(int16_t) * SCREENWIDTH)
 #define size_ceilingclip          size_floorclip            + (sizeof(int16_t) * SCREENWIDTH)
 
-#define openings             ((uint16_t __far*)         (0x78000000))
-#define negonearray          ((int16_t __far*)          (0x78000000 + size_openings))
-#define screenheightarray    ((int16_t __far*)          (0x78000000 + size_negonearray))
-#define floorclip            ((int16_t __far*)          (0x78000000 + size_screenheightarray))
-#define ceilingclip          ((int16_t __far*)          (0x78000000 + size_floorclip))
+#define openings             ((uint16_t __far*)         (0x78020000))
+#define negonearray          ((int16_t __far*)          (0x78020000 + size_openings))
+#define screenheightarray    ((int16_t __far*)          (0x78020000 + size_negonearray))
+#define floorclip            ((int16_t __far*)          (0x78020000 + size_screenheightarray))
+#define ceilingclip          ((int16_t __far*)          (0x78020000 + size_floorclip))
 
+// todo these are wrong i guess.
 #define openings_segment             ((segment_t) ((int32_t)openings >> 16))
 #define negonearray_segment          ((segment_t) ((int32_t)negonearray >> 16))
 #define screenheightarray_segment    ((segment_t) ((int32_t)screenheightarray >> 16))
 #define floorclip_segment            ((segment_t) ((int32_t)floorclip >> 16))
 #define ceilingclip_segment          ((segment_t) ((int32_t)ceilingclip >> 16))
 
-//negonearray       = 7800:A000 or 8200
-//screenheightarray = 7800:A280 or 8228
-//floorclip         = 7800:A500 or 8250
-//ceilingclip       = 7800:A780 or 8278
+//negonearray       = 7802:A000 or 8202
+//screenheightarray = 7802:A280 or 822A
+//floorclip         = 7802:A500 or 8252
+//ceilingclip       = 7802:A780 or 827A
 
 #define negonearray_offset        size_openings
 #define screenheightarray_offset  size_negonearray
@@ -990,7 +997,7 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define FUZZTABLE                         50 
 
 //todo programmattically do this
-#define size_leftover_openings_arrays     0x2A00
+#define size_leftover_openings_arrays     (0x2A00 + 0x20)
 
 #define size_texturewidthmasks  MAX_TEXTURES * sizeof(uint8_t)
 #define size_zlight             sizeof(uint8_t) * (LIGHTLEVELS * MAXLIGHTZ)
@@ -1021,22 +1028,17 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define visplanes_8C00          ((visplane_t __far*)      (0x8C000000 ))
 /*
   
-spritecache_nodes           82A0:0000
-flatcache_nodes             82A0:003C
-patchcache_nodes            82A0:004E
-texturecache_nodes          82A0:0073
-
-texturewidthmasks           82A0:0000
-zlight                      82BB:0000
-xtoviewangle                833B:0000
-spriteoffsets               8364:0000
-patchpage                   83BB:0000
-patchoffset                 83BB:01DC
-[empty]                     83F7:0000
+texturewidthmasks           82A2:0000
+zlight                      82BD:0000
+xtoviewangle                833D:0000
+spriteoffsets               8366:0000
+patchpage                   83BD:0000
+patchoffset                 83BD:01DC
+[empty]                     83F9:0000
 
 
 
-// 144 bytes free
+// 112 bytes free
 */
 
 
@@ -1077,12 +1079,11 @@ patchoffset                 83BB:01DC
 /*
 
 nodes_render        7000:0000
-spritedefs_bytes    7000:36A0
-spritewidths        7000:7592
-[empty]             7000:7AF7
+spritedefs_bytes    73BB:0000
+spritewidths        77AB:0000
+[empty]             7802:0000   // we have to start other pages at 7802, not 7800
 
-//FREEBYTES
-1289 bytes free
+-32 bytes free
 */
 
 

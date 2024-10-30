@@ -356,6 +356,7 @@ void __near R_InitSpriteDefs()
 	spriteframe_t __far* spriteframes;
 	uint16_t		currentspritememoryoffset;
 	//int32_t totalsize = 0;
+	// todo make this far instead of near? use temporary space instead of stack maybe?
 	byte sprtempbytes[29 * sizeof(spriteframe_t)];
 	int8_t localname[8];
 	/*

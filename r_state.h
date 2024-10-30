@@ -34,8 +34,11 @@
 #define MAX_SECTORS				348u
 #define MAX_VERTEXES			1626u
 #define MAX_LINES				1764u
-#define MAX_SUBSECTORS			875u
-#define MAX_NODES				874u
+#define MAX_SUBSECTORS			956u
+#define MAX_NODES				955u
+//#define MAX_SUBSECTORS		875u
+//#define MAX_NODES				874u
+
 #define MAX_SEGS				2815u
 #define MAX_LINEBUFFER_COUNT	2542u
 

@@ -949,7 +949,7 @@ ENDP
 
 
 SUBSECTOR_OFFSET_IN_SECTORS       = (SUBSECTORS_SEGMENT - SECTORS_SEGMENT) * 16
-SUBSECTOR_LINES_OFFSET_IN_SECTORS = (SUBSECTOR_LINES_SEGMENT - SECTORS_SEGMENT) * 16
+;SUBSECTOR_LINES_OFFSET_IN_SECTORS = (SUBSECTOR_LINES_SEGMENT - SECTORS_SEGMENT) * 16
 
 ;R_Subsector_
 
@@ -966,11 +966,14 @@ push  bp
 mov   bp, sp ; todo remove when we can?
 
 mov   bx, ax
-mov   ax, SECTORS_SEGMENT
+mov   ax, SUBSECTOR_LINES_SEGMENT
 mov   es, ax
-mov   al, byte ptr es:[bx + SUBSECTOR_LINES_OFFSET_IN_SECTORS]
+mov   al, byte ptr es:[bx]
 xor   ah, ah
 mov   word ptr cs:[SELFMODIFY_countvalue+1], ax    ; di stores count for later
+
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
 
 shl   bx, 1
 shl   bx, 1

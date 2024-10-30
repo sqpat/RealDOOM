@@ -993,23 +993,23 @@ R_PointToAngle(y, x);
 */
   
 /*
-	I_Error("\n%i %i %u %x\n%lx %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		MAX_THINKERS, sizeof(thinker_t), size_thinkerlist, size_thinkerlist,
-		mobjinfo, 
-		linespeciallist,
-		 sectors_soundorgs,
-		 sector_soundtraversed,
-		fuzzoffset, 
+	I_Error("\n%lx %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
+		rndtable,
+		seenlines,
+		subsector_lines, 
+
+		
+		 MAKE_FULL_SEGMENT(subsector_lines, size_subsector_lines),
 		scalelightfixed,
 			scalelight, 
 			patch_sizes,
 			viewangletox
 );
+
+
 */
 
-
 	file[0] = 0;
-
 
 /*
 	if (M_CheckParm("-debug")){
