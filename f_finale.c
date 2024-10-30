@@ -119,6 +119,7 @@ void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) {
 }
 
 
+
 //
 // F_StartFinale
 //

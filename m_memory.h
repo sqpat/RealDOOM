@@ -955,14 +955,14 @@ wianimoffsets  7800:24b8
 // spritewidths overruns into 7802. have to offset this a bit.
 
 /*
-openings                 7802:0000
-negonearray_offset       7802:a000  or 8000:2000
-screenheightarray_offset 7802:A500  or 8000:2500
-[done]                   7802:AA00  or 8000:2A00
+openings                 7800:0000
+negonearray_offset       7800:a000  or 8000:2000
+screenheightarray_offset 7800:A500  or 8000:2500
+[done]                   7800:AA00  or 8000:2A00
 
 //aa00
 */
-// LEAVE ALL THESE in 0x7802 SEGMENT 
+// LEAVE ALL THESE in 0x7800 SEGMENT 
 
 #define size_openings      sizeof(int16_t) * MAXOPENINGS
 #define size_negonearray          size_openings             + sizeof(int16_t) * (SCREENWIDTH)
@@ -970,11 +970,11 @@ screenheightarray_offset 7802:A500  or 8000:2500
 #define size_floorclip            size_screenheightarray    + (sizeof(int16_t) * SCREENWIDTH)
 #define size_ceilingclip          size_floorclip            + (sizeof(int16_t) * SCREENWIDTH)
 
-#define openings             ((uint16_t __far*)         (0x78020000))
-#define negonearray          ((int16_t __far*)          (0x78020000 + size_openings))
-#define screenheightarray    ((int16_t __far*)          (0x78020000 + size_negonearray))
-#define floorclip            ((int16_t __far*)          (0x78020000 + size_screenheightarray))
-#define ceilingclip          ((int16_t __far*)          (0x78020000 + size_floorclip))
+#define openings             ((uint16_t __far*)         (0x78000000))
+#define negonearray          ((int16_t __far*)          (0x78000000 + size_openings))
+#define screenheightarray    ((int16_t __far*)          (0x78000000 + size_negonearray))
+#define floorclip            ((int16_t __far*)          (0x78000000 + size_screenheightarray))
+#define ceilingclip          ((int16_t __far*)          (0x78000000 + size_floorclip))
 
 // todo these are wrong i guess.
 #define openings_segment             ((segment_t) ((int32_t)openings >> 16))
@@ -983,10 +983,10 @@ screenheightarray_offset 7802:A500  or 8000:2500
 #define floorclip_segment            ((segment_t) ((int32_t)floorclip >> 16))
 #define ceilingclip_segment          ((segment_t) ((int32_t)ceilingclip >> 16))
 
-//negonearray       = 7802:A000 or 8202
-//screenheightarray = 7802:A280 or 822A
-//floorclip         = 7802:A500 or 8252
-//ceilingclip       = 7802:A780 or 827A
+//negonearray       = 7800:A000 or 8202
+//screenheightarray = 7800:A280 or 822A
+//floorclip         = 7800:A500 or 8252
+//ceilingclip       = 7800:A780 or 827A
 
 #define negonearray_offset        size_openings
 #define screenheightarray_offset  size_negonearray
@@ -1060,16 +1060,34 @@ patchoffset                 83BD:01DC
 
 
 // RENDER 0x7000-0x77FF DATA - USED ONLY IN BSP ... 13k + 8k ... 10592 free
-#define size_nodes_render      MAX_NODES_RENDER_SIZE
-#define size_spritedefs        16114u
-#define size_spritewidths      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 
-//30462
+// complicated... 
+// nodes_render is larger for ultimate doom but sprites are smaller.
+// in doom2, etc - sprites etc are larger but nodes are bigger.
+// they can always fit in the 32k at 0x7000-7800, but you cant
+// lazily assign worst case and make it always fit.
+// It fails filling in the allotted space by only 32 bytes.
+// so remove 32 bytes from the size of [something]
+
 #define nodes_render          ((node_render_t __far*)  MAKE_FULL_SEGMENT(0x70000000, 0))
-#define spritedefs_bytes      ((byte __far*)           MAKE_FULL_SEGMENT(nodes_render, size_nodes_render))
-#define sprites               ((spritedef_t __far*)    spritedefs_bytes)
-#define spritewidths          ((uint8_t __far*)        MAKE_FULL_SEGMENT(spritedefs_bytes, size_spritedefs))
 
+#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
+  #define size_nodes_render      (MAX_NODES_RENDER_SIZE - 32)
+  #define size_spritedefs        16114u
+  #define size_spritewidths      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
+
+  #define spritedefs_bytes  ((byte __far*)           MAKE_FULL_SEGMENT(nodes_render, size_nodes_render))
+  #define sprites           ((spritedef_t __far*)    spritedefs_bytes)
+  #define spritewidths      ((uint8_t __far*)        MAKE_FULL_SEGMENT(spritedefs_bytes, size_spritedefs))
+#else
+  #define size_nodes_render      MAX_NODES_RENDER_SIZE
+  #define size_spritedefs        (16114u  - 32)
+  #define size_spritewidths      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
+
+  #define spritedefs_bytes  ((byte __far*)           MAKE_FULL_SEGMENT(nodes_render, size_nodes_render))
+  #define sprites           ((spritedef_t __far*)    spritedefs_bytes)
+  #define spritewidths      ((uint8_t __far*)        MAKE_FULL_SEGMENT(spritedefs_bytes, size_spritedefs))
+#endif
 
 #define NODES_RENDER_SEGMENT 0x7000
 
