@@ -952,7 +952,6 @@ wianimoffsets  7800:24b8
 
 // openings are A000 in size. 0x7800 can be just that. Note that 0x2000 carries over to 8000
 
-// spritewidths overruns into 7802. have to offset this a bit.
 
 /*
 openings                 7800:0000
@@ -1063,45 +1062,43 @@ patchoffset                 83BD:01DC
 
 // complicated... 
 // nodes_render is larger for ultimate doom but sprites are smaller.
-// in doom2, etc - sprites etc are larger but nodes are bigger.
+// in doom2, etc - sprites etc are larger but nodes are smaller.
 // they can always fit in the 32k at 0x7000-7800, but you cant
 // lazily assign worst case and make it always fit.
 // It fails filling in the allotted space by only 32 bytes.
-// so remove 32 bytes from the size of [something]
+// so shift the middle element (spritewidths)  by 32 bytes at runtime.
+// this means spritewidths is a variable and not a constant, 
+// but it also means the ultimate doom version will work with either wad
 
+
+#define size_nodes_render      MAX_NODES_RENDER_SIZE
+#define size_spritedefs        16114u
+#define size_spritewidths      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
+
+// first element
 #define nodes_render          ((node_render_t __far*)  MAKE_FULL_SEGMENT(0x70000000, 0))
 
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-  #define size_nodes_render      (MAX_NODES_RENDER_SIZE - 32)
-  #define size_spritedefs        16114u
-  #define size_spritewidths      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
+//middle element
+#define spritewidths_ult          ((uint8_t __far*)        MAKE_FULL_SEGMENT(nodes_render, size_nodes_render))
+#define spritewidths_normal       ((uint8_t __far*)        MAKE_FULL_SEGMENT(nodes_render, size_nodes_render - 0x20))
 
-  #define spritedefs_bytes  ((byte __far*)           MAKE_FULL_SEGMENT(nodes_render, size_nodes_render))
-  #define sprites           ((spritedef_t __far*)    spritedefs_bytes)
-  #define spritewidths      ((uint8_t __far*)        MAKE_FULL_SEGMENT(spritedefs_bytes, size_spritedefs))
-#else
-  #define size_nodes_render      MAX_NODES_RENDER_SIZE
-  #define size_spritedefs        (16114u  - 32)
-  #define size_spritewidths      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
-
-  #define spritedefs_bytes  ((byte __far*)           MAKE_FULL_SEGMENT(nodes_render, size_nodes_render))
-  #define sprites           ((spritedef_t __far*)    spritedefs_bytes)
-  #define spritewidths      ((uint8_t __far*)        MAKE_FULL_SEGMENT(spritedefs_bytes, size_spritedefs))
-#endif
+//last element
+#define sprites               ((spritedef_t __far*)    MAKE_FULL_SEGMENT(0x74100000, 0))
+#define spritedefs_bytes      ((byte __far*)           sprites)
 
 #define NODES_RENDER_SEGMENT 0x7000
-
 
 
 
 /*
 
 nodes_render        7000:0000
-spritedefs_bytes    73BB:0000
-spritewidths        77AB:0000
-[empty]             7802:0000   // we have to start other pages at 7802, not 7800
+spritewidths_ult    73BB:0000
+spritewidths_normal 73B9:0000
+spritedefs_bytes    7410:0000
+[empty]             7800:0000 
 
--32 bytes free
+0 bytes free
 */
 
 

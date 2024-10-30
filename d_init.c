@@ -994,22 +994,22 @@ R_PointToAngle(y, x);
   
 /*
 	I_Error("\n%lx %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		rndtable,
-		seenlines,
-		subsector_lines, 
-
+		spritewidths_ult,
+		spritewidths_normal,
+		sprites, 
+//73bb 73b9 7410 7412 7410 
 		
-		 MAKE_FULL_SEGMENT(subsector_lines, size_subsector_lines),
-		scalelightfixed,
+		 MAKE_FULL_SEGMENT(spritewidths_ult, size_spritewidths),
+		 MAKE_FULL_SEGMENT(spritewidths_normal, size_spritewidths),
 			scalelight, 
 			patch_sizes,
 			viewangletox
 );
 
-
 */
 
 	file[0] = 0;
+
 
 /*
 	if (M_CheckParm("-debug")){

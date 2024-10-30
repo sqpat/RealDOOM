@@ -60,7 +60,11 @@ uint8_t R_FlatNumForName(int8_t* name);
 void R_InitSpriteLumps(void)
 {
 	int16_t         i;
-
+	if (is_ultimate){
+		spritewidths = spritewidths_ult;
+	} else {
+		spritewidths = spritewidths_normal;
+	}
 	for (i = 0; i < numspritelumps; i++) {
 		patch_t     __far*patch;
 		int16_t		patchwidth;

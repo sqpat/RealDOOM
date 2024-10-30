@@ -2318,7 +2318,12 @@ uint8_t blocksizelookup[256]={
 cache_node_page_count_t 	spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 cache_node_page_count_t		texturecache_nodes[NUM_TEXTURE_PAGES];
 cache_node_t 				flatcache_nodes[NUM_FLAT_CACHE_PAGES];
+boolean						is_ultimate = false;
+uint8_t __far*				spritewidths;
+
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 boolean    					plutonia = false;
 boolean    					tnt = false;
 #endif
+
+

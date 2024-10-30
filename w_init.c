@@ -136,6 +136,10 @@ void __near W_AddFile(int8_t *filename) {
 	FAR_fread(fileinfo, length, 1, usefp);
 	numlumps += header.numlumps;
 	
+	if (numlumps == 2306){
+		// todo: find a better check than this. 
+		is_ultimate = true;
+	}
 	// numlumps 1264
  
 	lump_p = &lumpinfoinit[startlump];
