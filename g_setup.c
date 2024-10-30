@@ -158,18 +158,18 @@ void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t     
 	if (skill > sk_nightmare)
 		skill = sk_nightmare;
 
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-	if (episode < 1) {
-		episode = 1;
+	if (!is_ultimate){
+		if (episode < 1) {
+			episode = 1;
+		}
+		if (episode > 3) {
+			episode = 3;
+		}
+	} else {
+		if (episode == 0) {
+			episode = 4;
+		}
 	}
-	if (episode > 3) {
-		episode = 3;
-	}
-#else
-	if (episode == 0) {
-		episode = 4;
-	}
-#endif
 
 	if (episode > 1 && shareware) {
 		episode = 1;

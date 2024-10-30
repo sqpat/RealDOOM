@@ -286,12 +286,10 @@ void __far F_StartFinale (void) {
 	    finaleflat = "MFLR8_4";
 	    finaletext = e3text;
 	    break;
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 	  case 4:
 	    finaleflat = "MFLR8_3";
 	    finaletext = e4text;
 	    break;
-#endif
 	  default:
 	    // Ouch.
 	    break;
@@ -824,13 +822,13 @@ void __far F_Drawer (void) {
 	} else {
 		switch (gameepisode) {
 		  case 1:
-			#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
+			if (!is_ultimate){
 				V_DrawFullscreenPatch("HELP2", 0);
 				break;
-			#else
+			} else {
 			    V_DrawFullscreenPatch("CREDIT", 0);
 				break;
-			#endif
+			}
 		  case 2:
 				V_DrawFullscreenPatch("VICTORY2", 0);
 				break;

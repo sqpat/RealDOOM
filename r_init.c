@@ -57,8 +57,7 @@ uint8_t R_FlatNumForName(int8_t* name);
 //  so the sprite does not need to be cached completely
 //  just for having the header info ready during rendering.
 //
-void R_InitSpriteLumps(void)
-{
+void R_InitSpriteLumps(void) {
 	int16_t         i;
 	if (is_ultimate){
 		spritewidths = spritewidths_ult;
@@ -138,7 +137,6 @@ void R_InitSpriteLumps(void)
 		spritepostdatasizes[i] = postdatasize;
 		spritetotaldatasizes[i] = pixelsize + startoffset;
 		Z_QuickMapRender();
-
 
 
 	}
@@ -418,6 +416,7 @@ void R_GenerateLookup(uint16_t texnum)
 
 		}
 
+		//DEBUG_PRINT("maskedcount %i %i\n", maskedcount, texnum);
 
 		// times 2 for word offset to byte offset
 		currentpostoffset += (texturewidth*2);

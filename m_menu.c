@@ -1013,11 +1013,11 @@ boolean __far M_Responder (event_t __far*  ev) {
           case KEY_F1:            // Help key
             M_StartControlPanel ();
 
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-        currentMenu = &ReadDef1;
-#else
-            currentMenu = &ReadDef2;
-#endif
+            if (is_ultimate){
+                currentMenu = &ReadDef2;
+            } else {
+                currentMenu = &ReadDef1;
+            }
             
             itemOn = 0;
             S_StartSound(NULL,sfx_swtchn);

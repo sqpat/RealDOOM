@@ -139,6 +139,7 @@ void __near W_AddFile(int8_t *filename) {
 	if (numlumps == 2306){
 		// todo: find a better check than this. 
 		is_ultimate = true;
+		EpiDef.numitems = 4;
 	}
 	// numlumps 1264
  

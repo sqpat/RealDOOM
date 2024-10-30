@@ -2026,68 +2026,66 @@ void __near A_BossDeath (mobj_t __near* mo){
 	if ((motype != MT_FATSO)
 	    && (motype != MT_BABY))
 	    return;
-    }
-    else
-    {
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-	if (gamemap != 8)
-	    return;
+    } else {
+		if (!is_ultimate){
+			if (gamemap != 8){
+				return;
+			}
 
-	if (motype == MT_BRUISER && gameepisode != 1)
-	    return;
-#else
-	switch(gameepisode)
-	{
-	  case 1:
-	    if (gamemap != 8)
-		return;
+			if (motype == MT_BRUISER && gameepisode != 1){
+				return;
+			}
+		} else {
+			switch(gameepisode) {
+				case 1:
+					if (gamemap != 8)
+						return;
 
-	    if (motype != MT_BRUISER)
-		return;
-	    break;
-	    
-	  case 2:
-	    if (gamemap != 8)
-		return;
+					if (motype != MT_BRUISER)
+						return;
+					break;
+					
+				case 2:
+					if (gamemap != 8)
+						return;
 
-	    if (motype != MT_CYBORG)
-		return;
-	    break;
-	    
-	  case 3:
-	    if (gamemap != 8)
-		return;
-	    
-	    if (motype != MT_SPIDER)
-		return;
-	    
-	    break;
-	    
-	  case 4:
-	    switch(gamemap)
-	    {
-	      case 6:
-		if (motype != MT_CYBORG)
-		    return;
-		break;
-		
-	      case 8: 
-		if (motype != MT_SPIDER)
-		    return;
-		break;
-		
-	      default:
-		return;
-		break;
-	    }
-	    break;
-	    
-	  default:
-	    if (gamemap != 8)
-		return;
-	    break;
-	}
-#endif
+					if (motype != MT_CYBORG)
+						return;
+					break;
+					
+				case 3:
+					if (gamemap != 8)
+						return;
+					
+					if (motype != MT_SPIDER)
+						return;
+					
+					break;
+					
+				case 4:
+					switch(gamemap) {
+						case 6:
+						if (motype != MT_CYBORG)
+							return;
+						break;
+						
+						case 8: 
+						if (motype != MT_SPIDER)
+							return;
+						break;
+						
+						default:
+						return;
+						break;
+					}
+					break;
+					
+				default:
+					if (gamemap != 8)
+						return;
+					break;
+			}
+		}
 		
     }
 
@@ -2099,62 +2097,53 @@ void __near A_BossDeath (mobj_t __near* mo){
     // scan the remaining thinkers to see
     // if all bosses are dead
 	moRef = GETTHINKERREF(mo);
-	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next)
-	{
-	if ((thinkerlist[th].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS)
-	    continue;
-	
-	mo2 = (mobj_t  __near*)&thinkerlist[th].data;
-	if (th != moRef
-	    && mo2->type == motype
-	    && mo2->health > 0)
-	{
-	    // other boss not dead
-	    return;
-	}
+	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next) {
+		if ((thinkerlist[th].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS){
+			continue;
+		}
+
+		mo2 = (mobj_t  __near*)&thinkerlist[th].data;
+		if (th != moRef
+			&& mo2->type == motype
+			&& mo2->health > 0) {
+			// other boss not dead
+			return;
+		}
     }
 	
     // victory!
-    if (commercial)
-    {
-	if (gamemap == 7)
-	{
-	    if (motype == MT_FATSO)
-	    {
-		EV_DoFloor(TAG_666, -1,lowerFloorToLowest);
-		return;
-	    }
-	    
-	    if (motype == MT_BABY)
-	    {
-		EV_DoFloor(TAG_667, -1,raiseToTexture);
-		return;
-	    }
-	}
-    }
-    else
-    {
-	switch(gameepisode)
-	{
-	  case 1:
-	    EV_DoFloor (TAG_666, -1, lowerFloorToLowest);
-	    return;
-	    break;
-	    
-	  case 4:
-	    switch(gamemap)
-	    {
-	      case 6:
-		EV_DoDoor (TAG_666, blazeOpen);
-		return;
-		break;
-		
-	      case 8:
-		EV_DoFloor (TAG_666, -1, lowerFloorToLowest);
-		return;
-		break;
-	    }
-	}
+    if (commercial) {
+		if (gamemap == 7) {
+			if (motype == MT_FATSO) {
+				EV_DoFloor(TAG_666, -1,lowerFloorToLowest);
+				return;
+			}
+			
+			if (motype == MT_BABY) {
+				EV_DoFloor(TAG_667, -1,raiseToTexture);
+				return;
+			}
+		}
+    } else {
+		switch(gameepisode) {
+			case 1:
+				EV_DoFloor (TAG_666, -1, lowerFloorToLowest);
+				return;
+				break;
+				
+			case 4:
+				switch(gamemap) {
+					case 6:
+						EV_DoDoor (TAG_666, blazeOpen);
+						return;
+						break;
+					
+					case 8:
+						EV_DoFloor (TAG_666, -1, lowerFloorToLowest);
+						return;
+						break;
+				}
+		}
     }
 	
     G_ExitLevel ();
@@ -2188,21 +2177,20 @@ void __near A_BrainAwake (){
 	
     for (thinkerRef = thinkerlist[0].next ;
 	 thinkerRef != 0 ;
-	 thinkerRef = thinkerlist[thinkerRef].next)
-    {
+	 thinkerRef = thinkerlist[thinkerRef].next) {
 
 
-	if ((thinkerlist[thinkerRef].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS)
-	    continue;	// not a mobj
+		if ((thinkerlist[thinkerRef].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS){
+			continue;	// not a mobj
+		}
 
-	m = (mobj_t __near*)&thinkerlist[thinkerRef].data;
+		m = (mobj_t __near*)&thinkerlist[thinkerRef].data;
 
 
-	if (m->type == MT_BOSSTARGET )
-	{
-	    braintargets[numbraintargets] = thinkerRef;
-	    numbraintargets++;
-	}
+		if (m->type == MT_BOSSTARGET ) {
+			braintargets[numbraintargets] = thinkerRef;
+			numbraintargets++;
+		}
     }
 	
 	S_StartSoundFromRef(NULL,sfx_bossit);

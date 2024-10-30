@@ -577,16 +577,16 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos)
     if (mo_pos->z.w <= temp.w) {
 		// hit the floor
 
-	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-		// Note (id):
-		//  somebody left this after the setting momz to 0,
-		//  kinda useless there.
-		if (mo_pos->flags2 & MF_SKULLFLY)
-		{
-			// the skull slammed into something
-			mo->momz.w = -mo->momz.w;
+		if (is_ultimate){
+			// Note (id):
+			//  somebody left this after the setting momz to 0,
+			//  kinda useless there.
+			if (mo_pos->flags2 & MF_SKULLFLY)
+			{
+				// the skull slammed into something
+				mo->momz.w = -mo->momz.w;
+			}
 		}
-	#endif
 	
 		if (mo->momz.h.intbits < 0) {
 			if (motype == MT_PLAYER && mo->momz.w < -GRAVITY*8)	 {
@@ -604,12 +604,12 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos)
 
 		mo_pos->z.w = temp.w;
 
-	#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-		if (mo_pos->flags2 & MF_SKULLFLY) {
-			// the skull slammed into something
-			mo->momz.w = -mo->momz.w;
+		if (!is_ultimate){
+			if (mo_pos->flags2 & MF_SKULLFLY) {
+				// the skull slammed into something
+				mo->momz.w = -mo->momz.w;
+			}
 		}
-	#endif
 
 		if ( (mo_pos->flags2 & MF_MISSILE) && !(mo_pos->flags1 & MF_NOCLIP) ) {
 			P_ExplodeMissile (mo, mo_pos);
@@ -649,9 +649,7 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos)
 //
 // P_NightmareRespawn
 //
-void
-__near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos)
-{
+void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) {
 
 	
 	fixed_t_union		x;

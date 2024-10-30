@@ -276,12 +276,11 @@ void __near WI_initAnimatedBack(void)
     wianim_t __far*	a;
 
     if (commercial)
-	return;
+		return;
 
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-    if (wbs->epsd > 2)
-	return;
-#endif
+	if (wbs->epsd > 2){
+		return;
+	}
 
 
     for (i=0;i<NUMANIMS[wbs->epsd];i++) {
@@ -308,10 +307,9 @@ void __near WI_updateAnimatedBack(void) {
     if (commercial)
 		return;
 
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-    if (wbs->epsd > 2)
-	return;
-#endif
+	if (wbs->epsd > 2){
+		return;
+	}
 
     for (i=0;i<NUMANIMS[wbs->epsd];i++) {
 		a = &wianims[wbs->epsd][i];
@@ -361,10 +359,9 @@ void __near WI_drawAnimatedBack(void)
 	if (commercial)
 		return;
 
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-	if (wbs->epsd > 2)
+	if (wbs->epsd > 2){
 		return;
-#endif
+	}
 
 	for (i = 0; i < NUMANIMS[wbs->epsd]; i++) {
 		anim = &wianims[wbs->epsd][i];
@@ -511,36 +508,35 @@ void __near WI_drawShowNextLoc(void) {
     // draw animated background
     WI_drawAnimatedBack(); 
 
-    if (!commercial)
-    {
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-  	if (wbs->epsd > 2)
-	{
-	    WI_drawEL();
-	    return;
-	}
-#endif
+    if (!commercial) {
+		if (wbs->epsd > 2) {
+			WI_drawEL();
+			return;
+		}
 	
-	last = (wbs->last == 8) ? wbs->next - 1 : wbs->last;
+		
+		last = (wbs->last == 8) ? wbs->next - 1 : wbs->last;
 
-	// draw a splat on taken cities.
-	for (i = 0; i <= last; i++) {
-		WI_drawOnLnode(i, &splatRef);
-	}
+		// draw a splat on taken cities.
+		for (i = 0; i <= last; i++) {
+			WI_drawOnLnode(i, &splatRef);
+		}
 
-	// splat the secret level?
-	if (wbs->didsecret)
-	    WI_drawOnLnode(8, &splatRef);
+		// splat the secret level?
+		if (wbs->didsecret){
+			WI_drawOnLnode(8, &splatRef);
+		}
 
-	// draw flashing ptr
-	if (snl_pointeron)
-	    WI_drawOnLnode(wbs->next, yahRef); 
+		// draw flashing ptr
+		if (snl_pointeron){
+			WI_drawOnLnode(wbs->next, yahRef); 
+		}
     }
 
     // draws which level you are entering..
-    if ( (!commercial)
-	 || wbs->next != 30)
-	WI_drawEL();  
+    if ( (!commercial) || wbs->next != 30){
+		WI_drawEL();  
+	}
 
 }
 
@@ -676,10 +672,7 @@ void __near WI_drawStats(void) {
     V_DrawPatch(SP_TIMEX, SP_TIMEY, FB, WI_GetPatch(9));
     WI_drawTime(SCREENWIDTH/2 - SP_TIMEX, SP_TIMEY, cnt_time);
 
-	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-		if (wbs->epsd < 3)
-	#endif
-    {
+	if (wbs->epsd < 3) {
 		V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, FB, WI_GetPatch(10));
 		WI_drawTime(SCREENWIDTH - SP_TIMEX, SP_TIMEY, cnt_par);
     }
@@ -716,23 +709,19 @@ void __near WI_loadData(void) {
 	int8_t	name2[9] = "WIMAP0";
 	int8_t* name = name2;
 
-    if (commercial)
+    if (commercial){
 		name = name1;
-    else 
+	} else {
 		name2[5]+= wbs->epsd;
-    
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-    if (wbs->epsd == 3)
-	locallib_strcpy(name,"INTERPIC");
-#endif
-
+	}
+	if (wbs->epsd == 3){
+		name = name1;
+	}
 
     // background
 	V_DrawFullscreenPatch(name, 1); // scratch also used here
 
     if (!commercial) {
-
-
 
 		// you are here
 		yahRef[0] = 0;

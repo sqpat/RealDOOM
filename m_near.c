@@ -1149,9 +1149,7 @@ int16_t		finalecount;
 int16_t	e1text = E1TEXT;
 int16_t	e2text = E2TEXT;
 int16_t	e3text = E3TEXT;
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 int16_t	e4text = E4TEXT;
-#endif
 
 int16_t	c1text = C1TEXT;
 int16_t	c2text = C2TEXT;
@@ -1286,11 +1284,8 @@ void __near M_MusicVol(int16_t choice);
 
 
 
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
 void __near M_ReadThis(int16_t choice);
-#else
 void __near M_ReadThis2(int16_t choice);
-#endif
 
 void __near M_DrawMainMenu(void);
 void __near M_DrawEpisode(void);
@@ -1331,12 +1326,7 @@ menu_t  MainDef ={
 };
 
 
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-    #define ep_end 4
-#else 
-    #define ep_end 3
 
-#endif
 #define newg_end 5
 #define hurtme 2
 #define opt_end 8
@@ -1350,13 +1340,12 @@ menuitem_t EpisodeMenu[]={
     {1,17, M_Episode,'k'},
     {1,18, M_Episode,'t'},
     {1,19, M_Episode,'i'},
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
     {1,46, M_Episode,'t'}
-#endif
 };
 
+
 menu_t  EpiDef ={
-    ep_end,             // # of menu items
+    3,             		// # of menu items. overwritten when is_ultimate is true
     &MainDef,           // previous menu
     EpisodeMenu,        // menuitem_t ->
     M_DrawEpisode,      // drawing routine ->

@@ -699,9 +699,7 @@ extern int16_t		finalecount;
 extern int16_t 	e1text;
 extern int16_t	e2text;
 extern int16_t	e3text;
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 extern int16_t	e4text;
-#endif
 
 extern int16_t	c1text;
 extern int16_t	c2text;
@@ -765,11 +763,7 @@ extern menu_t  MainDef;
 
 
 
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 extern menuitem_t EpisodeMenu[4];
-#else
-extern menuitem_t EpisodeMenu[3];
-#endif
 
 extern menu_t  EpiDef;
 //
