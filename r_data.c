@@ -2596,7 +2596,7 @@ void R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean is
 
 	}
 
-	Z_QuickMapColumnOffsets5000(); // put render info back
+	Z_QuickMapPhysicsRender5000(); // put render info back
 
 }
 
@@ -2646,7 +2646,7 @@ void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, b
 
 	}
 
-	Z_QuickMapColumnOffsets5000(); // put render info back
+	Z_QuickMapPhysicsRender5000(); // put render info back
 
 }
 
@@ -2731,6 +2731,6 @@ void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment){
 
 	}
 
-	Z_QuickMapColumnOffsets5000(); // put render info back
+	Z_QuickMapPhysicsRender5000(); // put render info back
 
 }

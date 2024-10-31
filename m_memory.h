@@ -667,17 +667,10 @@ mobjposlist           6B14:0000
 
  
 
-//6800:6a82
-
-//1748:6ef4 
-
-//4284 bytes or 0x10BC
-
-
 
  //0x6400 BLOCK PHYSICS
 #define size_blocklinks       (0 + MAX_BLOCKLINKS_SIZE)
-#define size_nightmarespawns  (size_blocklinks    + NIGHTMARE_SPAWN_SIZE)
+#define size_nightmarespawns  (NIGHTMARE_SPAWN_SIZE)
 
 #define blocklinks          ((THINKERREF __far*)    MAKE_FULL_SEGMENT(0x64000000, 0))
 #define nightmarespawns     ((mapthing_t __far *)   MAKE_FULL_SEGMENT(blocklinks, size_blocklinks))
@@ -687,6 +680,7 @@ mobjposlist           6B14:0000
 //[empty]          6000:7f8a
 // 118 bytes free
 
+// 5000-5c00 unused in physics, so menu using NPR pages for graphics. some free room in 5800.
 
 // 0x5C00 BLOCK PHYSICS
 
@@ -897,7 +891,7 @@ skytexture         9400:0000
 #define size_menugraphcispage4 0xAC64
 #define size_menuoffsets    ((sizeof(uint16_t) * NUM_MENU_ITEMS))
 
-#define menugraphicspage0   (byte __far* )0x70000000
+#define menugraphicspage0   (byte __far* )0x50000000
 #define menugraphicspage4   (byte __far* )0x64000000
 #define menuoffsets         ((uint16_t __far*)  MAKE_FULL_SEGMENT(menugraphicspage4, size_menugraphcispage4 ))
 
@@ -909,7 +903,7 @@ skytexture         9400:0000
 #define menuoffsets_segment       ((segment_t) ((int32_t)menuoffsets >> 16))
 
 
-// menugraphicspage0  7000:0000
+// menugraphicspage0  5000:0000
 // [empty]            ????
 // menugraphicspage4  6400:0000
 // menuoffsets        6EC7:0000

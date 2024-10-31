@@ -147,24 +147,11 @@ void __far Z_QuickMapPhysics() {
 	taskswitchcount ++;
 #endif
 	currenttask = TASK_PHYSICS;
-	current5000State = PAGE_5000_COLUMN_OFFSETS;
+	current5000State = PAGE_5000_PHYSICS_RENDER;
 	current9000State = PAGE_9000_LUMPINFO_PHYSICS;
 
 }
- /*
-// leave off text and do 4000 in 9000 region. Used in p_setup...
-void __far Z Z_QuickMapPhysics_4000To9000() {
-	
-	Z_QuickMap(pageswapargs_phys_offset_size+8, 23);
- 
-#ifdef DETAILED_BENCH_STATS
-	taskswitchcount ++;
-#endif
-	currenttask = TASK_PHYSICS;
-	current5000State = PAGE_5000_COLUMN_OFFSETS;
 
-}
-*/
 
 void __far Z_QuickMapDemo() {
 	Z_QuickMap4AI(pageswapargs_demo_offset_size, INDEXED_PAGE_5000_OFFSET);
@@ -204,7 +191,7 @@ void __far  Z_QuickMapRender() {
 	currenttask = TASK_RENDER;
 
 
-	current5000State = PAGE_5000_COLUMN_OFFSETS;
+	current5000State = PAGE_5000_PHYSICS_RENDER;
 	current9000State = PAGE_9000_TEXTURE;
 }
 
@@ -223,7 +210,7 @@ void __far Z_QuickMapRender_4000To9000() {
 #endif
 	currenttask = TASK_RENDER;
 
-	current5000State = PAGE_5000_COLUMN_OFFSETS;
+	current5000State = PAGE_5000_PHYSICS_RENDER;
 	current9000State = PAGE_9000_RENDER;
 
 }
@@ -423,14 +410,14 @@ void __far Z_QuickMapSpritePage() {
 
  
 
-void __far Z_QuickMapColumnOffsets5000() {
+void __far Z_QuickMapPhysicsRender5000() {
 
 	Z_QuickMap4AI(pageswapargs_rend_offset_size + 4, INDEXED_PAGE_5000_OFFSET);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
 
-	current5000State = PAGE_5000_COLUMN_OFFSETS;
+	current5000State = PAGE_5000_PHYSICS_RENDER;
 }
 
 void __far Z_QuickMapScreen1(){
@@ -512,7 +499,7 @@ void __far Z_QuickMapLumpInfo5000() {
 	switch (current5000State) {
 
 		case PAGE_5000_SCRATCH:
-		case PAGE_5000_COLUMN_OFFSETS:
+		case PAGE_5000_PHYSICS_RENDER:
 		case PAGE_5000_UNMAPPED:
 		case PAGE_5000_DEMOBUFFER:
 
@@ -542,8 +529,8 @@ void __far Z_UnmapLumpInfo5000() {
 		case PAGE_5000_SCRATCH:
 			Z_QuickMapScratch_5000();
 			break;
-		case PAGE_5000_COLUMN_OFFSETS:
-			Z_QuickMapColumnOffsets5000();
+		case PAGE_5000_PHYSICS_RENDER:
+			Z_QuickMapPhysicsRender5000();
 			break;
 		case PAGE_5000_DEMOBUFFER:
 			Z_QuickMapDemo();
@@ -567,7 +554,7 @@ void __far Z_QuickMapPalette() {
 	currenttask = TASK_PALETTE;
 }
 void __far Z_QuickMapMenu() {
-	Z_QuickMap8AI(pageswapargs_menu_offset_size, INDEXED_PAGE_6000_OFFSET);
+	Z_QuickMap8AI(pageswapargs_menu_offset_size, INDEXED_PAGE_5000_OFFSET);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif

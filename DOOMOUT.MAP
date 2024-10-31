@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/31 13:35:32
+Created on:       24/10/31 14:42:38
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -1431,7 +1431,7 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 1739:64e0      Z_QuickMapUndoFlatCache_
 1739:6508      Z_QuickMapMaskedExtraData_
 1739:6514      Z_QuickMapSpritePage_
-1739:6520      Z_QuickMapColumnOffsets5000_
+1739:6520      Z_QuickMapPhysicsRender5000_
 1739:6532*     Z_QuickMapScreen1_
 1739:6552      Z_QuickMapLumpInfo_
 1739:6592      Z_UnmapLumpInfo_
@@ -1728,4 +1728,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000250a0 (151712.)
 Entry point address: 1db7:21bc
-Link time: 00:00.19
+Link time: 00:00.75

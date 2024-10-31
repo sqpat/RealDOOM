@@ -285,7 +285,7 @@ void __far Z_QuickMapUnmapAll();
 
 //#define EMS_VISPLANE_EXTRA_PAGE                     NUM_EMS4_SWAP_PAGES + 1
 // 15
-#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         15
+#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         14
 // 16
 #define FIRST_STATUS_LOGICAL_PAGE                   LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
 // 20
@@ -294,7 +294,7 @@ void __far Z_QuickMapUnmapAll();
 // 21
 #define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            PALETTE_LOGICAL_PAGE + 1
 // 27
-#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 6
+#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 3
 // 35
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
 // 39
@@ -460,7 +460,7 @@ void __far Z_QuickMapLumpInfo();
 void __far Z_UnmapLumpInfo();
 void __far Z_QuickMapLumpInfo5000();
 void __far Z_UnmapLumpInfo5000();
-void __far Z_QuickMapColumnOffsets5000();
+void __far Z_QuickMapPhysicsRender5000();
 void __far Z_QuickMapRender7000();
 
 void __near Z_GetEMSPageMap();
@@ -490,7 +490,7 @@ void __far Z_QuickMapRenderPlanes();
 #define PAGE_5000_LUMPINFO 1
 #define PAGE_5000_DEMOBUFFER 2
 #define PAGE_5000_SCRATCH 3
-#define PAGE_5000_COLUMN_OFFSETS 4
+#define PAGE_5000_PHYSICS_RENDER 4
 
 
 #define PAGE_5000_SCRATCH_REMAP 6
