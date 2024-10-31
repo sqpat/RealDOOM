@@ -395,8 +395,6 @@ int8_t markpointnum = 0; // next point to be assigned
 
 int8_t followplayer = 1; // specifies whether to follow the player around
 
-uint8_t cheat_amap_seq[] = {'i', 'd', 'd', 't', 0xff};
-cheatseq_t cheat_amap = { cheat_amap_seq, 0 };
 boolean am_stopped = true;
 boolean am_bigstate=0;
 int8_t  am_buffer[20];
@@ -903,7 +901,8 @@ uint8_t   cheat_mypos_seq[] = {
 }; 
 
 
-// Now what?
+uint8_t 		cheat_amap_seq[] = {'i', 'd', 'd', 't', 0xff};
+cheatseq_t 		cheat_amap = { cheat_amap_seq, 0 };
 cheatseq_t      cheat_mus = { cheat_mus_seq, 0 };
 cheatseq_t      cheat_god = { cheat_god_seq, 0 };
 cheatseq_t      cheat_ammo = { cheat_ammo_seq, 0 };
@@ -1335,7 +1334,7 @@ menuitem_t EpisodeMenu[]={
     {1,17, M_Episode,'k'},
     {1,18, M_Episode,'t'},
     {1,19, M_Episode,'i'},
-    {1,46, M_Episode,'t'}
+    {1,45, M_Episode,'t'}
 };
 
 
@@ -1951,7 +1950,7 @@ uint16_t pageswapargs[total_pages] = {
 
 	// render
 	_EPR(0),				 _EPR(1),					 _EPR(2),					 _EPR(3),						
-	_NPR(PAGE_5000_OFFSET),  _NPR(PAGE_5400_OFFSET),	 _NPR(PAGE_5800_OFFSET),	 _EPR(14),						  // same as physics as its unused for physics..
+	_NPR(PAGE_5000_OFFSET),  _NPR(PAGE_5400_OFFSET),	 _NPR(PAGE_5800_OFFSET),	 _NPR(PAGE_5C00_OFFSET),						  // same as physics as its unused for physics..
 	_EPR(11), 				 _EPR(12),					 _EPR(13),					 _NPR(PAGE_6C00_OFFSET),		  // shared 6400 6800 with physics
 	_EPR(7),				 _EPR(8),					 _EPR(9),					 _EPR(10),						
 	_EPR(4),				 _EPR(5),					 _EPR(6),					 _EPR(EMS_VISPLANE_EXTRA_PAGE),
@@ -2099,7 +2098,7 @@ uint16_t pageswapargs[total_pages] = {
 
 	// render
 	_EPR(0),				PAGE_4000_OFFSET, _EPR(1),					PAGE_4400_OFFSET, _EPR(2),					PAGE_4800_OFFSET, _EPR(3),						PAGE_4C00_OFFSET,
-	_NPR(PAGE_5000_OFFSET), PAGE_5000_OFFSET, _NPR(PAGE_5400_OFFSET),	PAGE_5400_OFFSET, _NPR(PAGE_5800_OFFSET),	PAGE_5800_OFFSET, _EPR(14),						PAGE_5C00_OFFSET,  // same as physics as its unused for physics..
+	_NPR(PAGE_5000_OFFSET), PAGE_5000_OFFSET, _NPR(PAGE_5400_OFFSET),	PAGE_5400_OFFSET, _NPR(PAGE_5800_OFFSET),	PAGE_5800_OFFSET, _NPR(PAGE_5C00_OFFSET),		PAGE_5C00_OFFSET,  // same as physics as its unused for physics..
 	_EPR(11), 				PAGE_6000_OFFSET, _EPR(12),					PAGE_6400_OFFSET, _EPR(13),					PAGE_6800_OFFSET, _NPR(PAGE_6C00_OFFSET),		PAGE_6C00_OFFSET,  // shared 6400 6800 with physics
 	_EPR(7),				PAGE_7000_OFFSET, _EPR(8),					PAGE_7400_OFFSET, _EPR(9),					PAGE_7800_OFFSET, _EPR(10),						PAGE_7C00_OFFSET,
 	_EPR(4),				PAGE_8000_OFFSET, _EPR(5),					PAGE_8400_OFFSET, _EPR(6),					PAGE_8800_OFFSET, _EPR(EMS_VISPLANE_EXTRA_PAGE),PAGE_8C00_OFFSET,

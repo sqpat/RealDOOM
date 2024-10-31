@@ -39,7 +39,7 @@
 
  
 
-#define NUM_MENU_ITEMS  45
+#define NUM_MENU_ITEMS  46
 #define MAXLINEANIMS    64
 
  

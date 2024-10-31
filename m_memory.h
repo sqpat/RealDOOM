@@ -343,6 +343,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 */
 // 0x9323C done
 // 0x9324  empty
+// FREEBYTES
 
 
 // B14B0 + FE0
@@ -446,17 +447,15 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define screen0 ((byte __far*) 0x80000000)
 #define size_screen0        (64000u)
 #define size_gammatable     (size_screen0     + 256 * 5)
-#define size_menuoffsets    (size_gammatable  + (sizeof(uint16_t) * NUM_MENU_ITEMS))
+
 
 #define gammatable          ((byte __far*)      (0x8FA00000 ))
-#define menuoffsets         ((uint16_t __far*)  (0x8FF00000 ))
 
 
 
 
 #define screen0_segment           ((segment_t) ((int32_t)screen0 >> 16))
 #define gammatable_segment        ((segment_t) ((int32_t)gammatable >> 16))
-#define menuoffsets_segment       ((segment_t) ((int32_t)menuoffsets >> 16))
 
 
 /*
@@ -465,9 +464,9 @@ this area used in many tasks including physics but not including render
 
 8000:0000  screen0
 8000:FA00  gammatable
-8000:FF00  lnodex
-8000:FF36  lnodey
-8000:FF6C  [empty]
+8000:FF00  menuoffsets
+8000:FF5C  [empty] ? 
+//FREEBYTES ?
 
 
 //
@@ -494,6 +493,7 @@ lines_physics       7000:0000
 blockmaplump        76E4:0000
 blockmaplump_plus4  76E4:0008
 [empty]             7000:D736
+FREEBYTES
  10442 bytes free!
 */
 
@@ -597,12 +597,11 @@ blockmaplump_plus4  76E4:0008
 
  /*
 
-TODO this may grow with final doom support...?
 
 maskedpostdata              8400:0000
 drawmaskedfuncarea_sprite?  86FD:0000
 
-4144 free
+FREEBYTES 4144 free
 
  spritepostdatasizes    8800:0000
  spritetotaldatasizes   88AD:0000
@@ -611,7 +610,7 @@ drawmaskedfuncarea_sprite?  86FD:0000
  drawfuzzcol_area       8B0A:0000
  [empty]                    :0000 todo
 
-3936 free
+FREEBYTES 3936 free
  */
 
 
@@ -895,13 +894,28 @@ skytexture         9400:0000
 
 
 
+#define size_menugraphcispage4 0xAC64
+#define size_menuoffsets    ((sizeof(uint16_t) * NUM_MENU_ITEMS))
 
 #define menugraphicspage0   (byte __far* )0x70000000
 #define menugraphicspage4   (byte __far* )0x64000000
+#define menuoffsets         ((uint16_t __far*)  MAKE_FULL_SEGMENT(menugraphicspage4, size_menugraphcispage4 ))
+
+// ends at AC64. are there other spare graphics to drop here?
 
 #define wigraphicspage0     (byte __far* )0x70000000
 #define wigraphicslevelname (byte __far* )0x78000000
 #define wianimspage         (byte __far* )0x60000000
+#define menuoffsets_segment       ((segment_t) ((int32_t)menuoffsets >> 16))
+
+
+// menugraphicspage0  7000:0000
+// [empty]            ????
+// menugraphicspage4  6400:0000
+// menuoffsets        6EC7:0000
+// [empty]            6ECD:0000 ?
+//FREEBYTES 4992 in menu page 4. Eventually move menu code here?
+
 
 
 #define NUM_WI_ITEMS 28
@@ -1299,6 +1313,7 @@ compositetextureoffset  4DE9:01AC
 #define ANIMS_DOOMDATA_SIZE     0x1B5
 #define SPLIST_DOOMDATA_SIZE    0x2B2
 #define SWITCH_DOOMDATA_SIZE    0x334
+#define MENUDATA_DOOMDATA_SIZE  0x19E
 #define TANTOA_DOOMDATA_SIZE    0x2004
 
 // 0
@@ -1307,10 +1322,13 @@ compositetextureoffset  4DE9:01AC
 #define SPLIST_DOOMDATA_OFFSET ANIMS_DOOMDATA_OFFSET + ANIMS_DOOMDATA_SIZE
 // 0x467
 #define SWITCH_DOOMDATA_OFFSET SPLIST_DOOMDATA_OFFSET + SPLIST_DOOMDATA_SIZE
-// 0x79B
-#define TANTOA_DOOMDATA_OFFSET SWITCH_DOOMDATA_OFFSET + SWITCH_DOOMDATA_SIZE
-// 0x279F
+// 0x79b
+#define MENUDATA_DOOMDATA_OFFSET SWITCH_DOOMDATA_OFFSET + SWITCH_DOOMDATA_SIZE
+// 0x939
+#define TANTOA_DOOMDATA_OFFSET MENUDATA_DOOMDATA_OFFSET + MENUDATA_DOOMDATA_SIZE
+// 0x293D
 #define DATA_DOOMDATA_OFFSET   TANTOA_DOOMDATA_OFFSET + TANTOA_DOOMDATA_SIZE
+
 
  
 

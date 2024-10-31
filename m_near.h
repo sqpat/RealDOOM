@@ -385,8 +385,6 @@ extern fixed_t_union        am_scale_ftom;
 extern mpoint_t             markpoints[AM_NUMMARKPOINTS];
 extern int8_t               markpointnum;
 extern int8_t               followplayer;
-extern uint8_t              cheat_amap_seq[];
-extern cheatseq_t           cheat_amap;
 extern boolean              am_stopped;
 extern boolean              am_bigstate;
 extern int8_t               am_buffer[20];
@@ -641,6 +639,8 @@ extern uint8_t   cheat_clev_seq[10];
 extern uint8_t   cheat_mypos_seq[8];
 
 // Now what?
+extern uint8_t              cheat_amap_seq[];
+extern cheatseq_t           cheat_amap;
 extern cheatseq_t      cheat_mus;
 extern cheatseq_t      cheat_god;
 extern cheatseq_t      cheat_ammo;

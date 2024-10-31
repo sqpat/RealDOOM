@@ -594,18 +594,25 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den);
 
 void __near M_Reload(void) {
 	// reload menu graphics
-	int16_t i = 0;
-	uint32_t size = 0;
+	int8_t i = 0;
+	int8_t count = NUM_MENU_ITEMS;
+
+	uint16_t size = 0;
 	byte __far* dst = menugraphicspage0;
 	uint8_t pageoffset = 0;
-
  	int8_t menugraphics[NUM_MENU_ITEMS * 9];
 
-	FILE *fp = fopen("D_MENUG.BIN", "rb"); // clear old file
+
+	FILE *fp = fopen("DOOMDATA.BIN", "rb");
+	fseek(fp, MENUDATA_DOOMDATA_OFFSET, SEEK_SET);
 	fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
 	fclose(fp);
 
-	for (i = 0; i < NUM_MENU_ITEMS; i++) {
+	if (!is_ultimate){
+		count--;
+	}
+
+	for (i = 0; i < count; i++) {
 		int16_t lump = W_GetNumForName(&menugraphics[i*9]);
 		uint16_t lumpsize = W_LumpLength(lump);
 		if (i == 27) { // (size + lumpsize) > 65535u) {
@@ -620,8 +627,17 @@ void __near M_Reload(void) {
 		dst += lumpsize;
 
 	}
-
-
+	// grew from 9A78 end to AC64
+/*
+	if (is_ultimate){
+		int16_t lump = W_GetNumForName("M_EPI4");
+		uint16_t lumpsize = W_LumpLength(lump);
+		W_CacheLumpNumDirect(lump, dst);
+		menuoffsets[i] = size;
+		size += lumpsize;
+		//I_Error("size %x %x %x", menuoffsets[NUM_MENU_ITEMS-1], size, lumpsize);
+	}
+	*/
 
 }
 
