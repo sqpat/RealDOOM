@@ -178,7 +178,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
 #define size_texturetranslation  (MAX_TEXTURES * sizeof(uint16_t))
 #define size_textureheights      (MAX_TEXTURES * sizeof(uint8_t))
-#define size_scantokey           128
 #define size_rndtable            256
 #define size_subsector_lines    (MAX_SUBSECTOR_LINES_SIZE)
 
@@ -190,7 +189,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define size_tantoangle    size_finetangent +  2049u * sizeof(int32_t)
 
-#define baselowermemoryaddress        (0x2DB20000)
+#define baselowermemoryaddress        (0x2DBA0000)
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
  
@@ -208,10 +207,9 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
 #define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
 #define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
-#define scantokey          ((byte __far*)               MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
-#define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(scantokey, size_scantokey))
+#define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable    , size_rndtable))
-
+#define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
 
 
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
@@ -223,24 +221,24 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define flattranslation_segment       ((segment_t) ((int32_t)flattranslation >> 16))
 #define texturetranslation_segment    ((segment_t) ((int32_t)texturetranslation >> 16))
 #define textureheights_segment        ((segment_t) ((int32_t)textureheights >> 16))
-#define scantokey_segment             ((segment_t) ((int32_t)scantokey >> 16))
 #define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
 #define subsector_lines_segment       ((segment_t) ((int32_t)subsector_lines >> 16))
+#define base_lower_end_segment        ((segment_t) ((int32_t)base_lower_end >> 16))
 
 //todo recalculate after moving stuff around...
 
-// finesine             2DA4:0000
-// finecosine           2DA4:2000
-// finetangentinner     37A4:0000
-// states               39A4:0000
-// events               3B0F:0000
-// flattranslation      3B43:0000
-// texturetranslation   3B4D:0000
-// textureheights       3B83:0000
-// scantokey            3B9E:0000
-// rndtable             3BA6:0000
-// subsector_lines      3BB6:0000
-
+// finesine             2DBA:0000
+// finecosine           2DBA:2000
+// finetangentinner     37BA:0000
+// states               39BA:0000
+// events               3B25:0000
+// flattranslation      3B59:0000
+// texturetranslation   3B62:0000
+// textureheights       3B99:0000
+// rndtable             3BB4:0000
+// subsector_lines      3BC4:0000
+// base_lower_end       3C00:0000
+//03BACh
 // done                 3C00:000C
 
 
@@ -443,11 +441,10 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define screen0 ((byte __far*) 0x80000000)
 #define size_screen0        (64000u)
-#define size_gammatable     (size_screen0     + 256 * 5)
+#define size_gammatable     (256 * 5)
 
 
 #define gammatable          ((byte __far*)      (0x8FA00000 ))
-
 
 
 
@@ -460,10 +457,9 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 this area used in many tasks including physics but not including render
 
 8000:0000  screen0
-8000:FA00  gammatable
-8000:FF00  menuoffsets
-8000:FF5C  [empty] ? 
-//FREEBYTES ?
+8FA0:0000  gammatable
+8FF0:0000  [empty]
+//FREEBYTES 256 ?
 
 
 //
@@ -489,7 +485,7 @@ this area used in many tasks including physics but not including render
 lines_physics       7000:0000
 blockmaplump        76E4:0000
 blockmaplump_plus4  76E4:0008
-[empty]             7000:D736
+[empty]             7D74:0000
 FREEBYTES
  10442 bytes free!
 */
@@ -515,6 +511,7 @@ FREEBYTES
 
 #define size_colormaps        ((33 * 256))
 #define size_seenlines          (MAX_SEENLINES_SIZE)
+#define size_scantokey           128
 
 
 #define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x68000000            , 0))
@@ -523,7 +520,8 @@ FREEBYTES
 #define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup          , size_dc_yl_lookup))
 #define mobjposlist           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
 #define seenlines             ((uint8_t __far*)           MAKE_FULL_SEGMENT(mobjposlist           , size_mobjposlist))
-#define empty_render_6800     ((uint16_t  __far*)         MAKE_FULL_SEGMENT(seenlines   , size_seenlines))
+#define scantokey             ((byte __far*)              MAKE_FULL_SEGMENT(seenlines             , size_seenlines))
+#define empty_render_6800     ((uint16_t  __far*)         MAKE_FULL_SEGMENT(scantokey             , size_scantokey))
 
 //6D8A
 #define colormaps_segment               ((segment_t) ((int32_t)colormaps >> 16))
@@ -532,10 +530,14 @@ FREEBYTES
 #define colfunc_function_area_segment   ((segment_t) ((int32_t)colfunc_function_area >> 16))
 #define mobjposlist_segment             ((segment_t) ((int32_t)mobjposlist >> 16))
 #define seenlines_segment               ((segment_t) ((int32_t)seenlines >> 16))
-#define empty_render_6800_segment       ((segment_t) ((int32_t)seenlines >> 16))
+#define scantokey_segment               ((segment_t) ((int32_t)scantokey >> 16))
+#define empty_render_6800_segment       ((segment_t) ((int32_t)empty_render_6800 >> 16))
 
 // seenlines_segment:  6FE8:0000
-// empty?              6FF6:0000
+// scantokey_segment:  6FF6:0000
+// empty:              6FFE:0000
+// FREEBYTES 32 bytes free
+
 // 8C60
 #define colormaps_high_seg_diff  ((segment_t)0x8C00 - 0x6800)
 

@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 96
+#define CONSTANTS_COUNT 97
 #define LOCALS_COUNT 16
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -29,7 +29,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "TEXTURETRANSLATION_SEGMENT",
     "TEXTUREHEIGHTS_SEGMENT",
     "SCANTOKEY_SEGMENT",
-    "RNGTABLE_SEGMENT",
+    "RNDTABLE_SEGMENT",
 
     "SEGS_PHYSICS_SEGMENT",
     "DISKGRAPHICBYTES_SEGMENT",
@@ -121,6 +121,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "COLFUNC_HIGH_SEGMENT",
     "R_DRAWCOLUMNPREPCALLOFFSET",
     "BASE_LOWER_MEMORY_SEGMENT",
+    "BASE_LOWER_END_SEGMENT",
     "EMPTY_RENDER_6800_SEGMENT"
 
 
@@ -244,6 +245,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     colfunc_segment_high,
     R_DrawColumnPrepOffset,
     base_lower_memory_segment,
+    base_lower_end_segment,
     empty_render_6800_segment
 
     
