@@ -179,6 +179,15 @@ void __near D_DrawTitle(int8_t __near *string)
 	union REGS regs;
 	int16_t_union columnrow;
 	int16_t i;
+	int8_t COLOR;
+
+	if (is_ultimate) {
+		COLOR = 120;
+	} else {
+		COLOR = 116;
+	}
+
+
 
 	//Calculate text color
 
@@ -195,7 +204,7 @@ void __near D_DrawTitle(int8_t __near *string)
 		regs.h.ah = 9;
 		regs.h.al = string[i];
 		regs.w.cx = 1;
-		regs.h.bl = (BGCOLOR << 4) | FGCOLOR; 
+		regs.h.bl = COLOR;
 		regs.h.bh = 0;
 		intx86(0x10, &regs, &regs);
 
@@ -1097,38 +1106,30 @@ R_PointToAngle(y, x);
 
 #if DEBUG_PRINTING
 
-	if (!commercial)
-	{
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-
-    combine_strings(title, "                         The Ultimate DOOM Startup v", VERSION_STRING);
-	combine_strings(title, title, "                        ");
-
-#else
-    combine_strings(title, "                          DOOM System Startup v", VERSION_STRING);
-	combine_strings(title, title, "                          ");
-
-#endif
-	}
-	else
-	{
-#if (EXE_VERSION >= EXE_VERSION_FINAL)
-		if (plutonia) {
-	    	combine_strings(title, "                   DOOM 2: Plutonia Experiment v", VERSION_STRING);
-		combine_strings(title, title, "                           ");
-		}
-		else if (tnt) {
-		    combine_strings(title, "                     DOOM 2: TNT - Evilution v", VERSION_STRING);
-			combine_strings(title, title, "                           ");
+	if (!commercial) {
+		if (is_ultimate){
+			memcpy(title, "                         The Ultimate DOOM Startup v1.09                        ", 127);
 		} else {
-		    combine_strings(title, "                         DOOM 2: Hell on Earth v", VERSION_STRING);
-		    combine_strings(title, title, "                           ");
-
+			memcpy(title, "                          DOOM System Startup v1.09                          ", 127);
 		}
-#else
-		    combine_strings(title, "                         DOOM 2: Hell on Earth v", VERSION_STRING);
-		    combine_strings(title, title, "                           ");
-#endif
+	} else {
+		#if (EXE_VERSION >= EXE_VERSION_FINAL)
+				if (plutonia) {
+					combine_strings(title, "                   DOOM 2: Plutonia Experiment v", VERSION_STRING);
+				combine_strings(title, title, "                           ");
+				}
+				else if (tnt) {
+					combine_strings(title, "                     DOOM 2: TNT - Evilution v", VERSION_STRING);
+					combine_strings(title, title, "                           ");
+				} else {
+					combine_strings(title, "                         DOOM 2: Hell on Earth v", VERSION_STRING);
+					combine_strings(title, title, "                           ");
+
+				}
+		#else
+					memcpy(title, "                         DOOM 2: Hell on Earth v1.09                           ", 127);
+					
+		#endif
 	}
 
 	regs.w.ax = 3;

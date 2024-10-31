@@ -40,11 +40,7 @@
 
 #define NUM_CACHE_LUMPS 4
 
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-#define NUMEPISODES	3
-#else
-#define NUMEPISODES	4
-#endif
+#define NUMEPISODES_FOR_ANIMS	3
 #define NUMMAPS		9
 
 #define NUM_QUITMESSAGES   8
@@ -820,8 +816,8 @@ extern volatile int32_t TS_TimesInInterrupt;
 extern int8_t TS_Installed;
 extern volatile int32_t TS_InInterrupt;
 
-extern int8_t NUMANIMS[NUMEPISODES];
-extern wianim_t __far*wianims[NUMEPISODES];
+extern int8_t NUMANIMS[NUMEPISODES_FOR_ANIMS];
+extern wianim_t __far*wianims[NUMEPISODES_FOR_ANIMS];
 extern int16_t		acceleratestage;
 extern stateenum_t	state;
 extern wbstartstruct_t __near*	wbs;

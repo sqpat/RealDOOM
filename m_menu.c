@@ -632,8 +632,15 @@ void __near M_EndGame(int16_t choice){
 // M_ReadThis
 //
 void __near M_ReadThis(int16_t choice){
-    choice = 0;
-    M_SetupNextMenu(&ReadDef1);
+    if (is_ultimate){
+        // skip to M_ReadThis2
+        M_ReadThis2(choice);
+
+    } else {
+        choice = 0;
+        M_SetupNextMenu(&ReadDef1);
+    }
+
 }
 
 void __near M_ReadThis2(int16_t choice){

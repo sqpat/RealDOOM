@@ -79,179 +79,170 @@ void __near ST_refreshBackground(void) {
 //  intercept cheats.
 boolean __near ST_Responder (event_t __far* ev) {
     int8_t           i;
-    
+    // if a user keypress...
 
-  // if a user keypress...
-  if (ev->type == ev_keydown) {
-    if (gameskill != sk_nightmare) {
-      // 'dqd' cheat for toggleable god mode
-      if (cht_CheckCheat(&cheat_god, ev->data1)) {
-          player.cheats ^= CF_GODMODE;
-        if (player.cheats & CF_GODMODE) {
-            playerMobj->health = 100;
-          
-          player.health = 100;
-          player.message = STSTR_DQDON;
-        }
-        else 
-            player.message = STSTR_DQDOFF;
-      }
-      // 'fa' cheat for killer fucking arsenal
-      else if (cht_CheckCheat(&cheat_ammonokey, ev->data1)) {
-          player.armorpoints = 200;
-          player.armortype = 2;
-        
-        for (i=0;i<NUMWEAPONS;i++)
-            player.weaponowned[i] = true;
-        
-        for (i=0;i<NUMAMMO;i++)
-            player.ammo[i] = player.maxammo[i];
-        
-        player.message = STSTR_FAADDED;
-      }
-      // 'kfa' cheat for key full ammo
-      else if (cht_CheckCheat(&cheat_ammo, ev->data1)) {
-          player.armorpoints = 200;
-          player.armortype = 2;
-        
-        for (i=0;i<NUMWEAPONS;i++)
-            player.weaponowned[i] = true;
-        
-        for (i=0;i<NUMAMMO;i++)
-            player.ammo[i] = player.maxammo[i];
-        
-        for (i=0;i<NUMCARDS;i++)
-            player.cards[i] = true;
-        
-        player.message = STSTR_KFAADDED;
-      }
-      // 'mus' cheat for changing music
-      else if (cht_CheckCheat(&cheat_mus, ev->data1)) {
-        
-          int8_t    buf[3];
-          int16_t             musnum;
-        
-          player.message = STSTR_MUS;
-        cht_GetParam(&cheat_mus, buf);
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-        musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
-          
-        if (((buf[0]-'0')*10 + buf[1]-'0') > 35)
-            player.message = STSTR_NOMUS;
-        else
-          S_ChangeMusic(musnum, 1);
-#else
-        if (commercial)
-        {
-          musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
-          
-          if (((buf[0]-'0')*10 + buf[1]-'0') > 35)
-              player.message = STSTR_NOMUS;
-          else
-            S_ChangeMusic(musnum, 1);
-        }
-        else
-        {
-          musnum = mus_e1m1 + (buf[0]-'1')*9 + (buf[1]-'1');
-          
-          if (((buf[0]-'1')*9 + buf[1]-'1') > 31)
-              player.message = STSTR_NOMUS;
-          else
-            S_ChangeMusic(musnum, 1);
-        }
-#endif
-      } else if(!commercial && cht_CheckCheat(&cheat_noclip, ev->data1)) { 
-          player.cheats ^= CF_NOCLIP;
-        
-        if (player.cheats & CF_NOCLIP)
-            player.message = STSTR_NCON;
-        else
-            player.message = STSTR_NCOFF;
-      } else if (commercial && cht_CheckCheat(&cheat_commercial_noclip, ev->data1)) {
-          player.cheats ^= CF_NOCLIP;
-        
-        if (player.cheats & CF_NOCLIP)
-            player.message = STSTR_NCON;
-        else
-            player.message = STSTR_NCOFF;
-      }
-      // 'behold?' power-up cheats
-      for (i=0;i<6;i++) {
-        if (cht_CheckCheat(&cheat_powerup[i], ev->data1)) {
-          if (!player.powers[i]){
-            P_GivePower( i);
-          } else if (i!=pw_strength){
-              player.powers[i] = 1;
-          }else{
-              player.powers[i] = 0;
-          }
-          player.message = STSTR_BEHOLDX;
-        }
-      }
-      
-      // 'behold' power-up menu
-      if (cht_CheckCheat(&cheat_powerup[6], ev->data1)) {
-          player.message = STSTR_BEHOLD;
-      } else if (cht_CheckCheat(&cheat_choppers, ev->data1)) {
-          // 'choppers' invulnerability & chainsaw
-          player.weaponowned[wp_chainsaw] = true;
-          player.powers[pw_invulnerability] = true;
-          player.message = STSTR_CHOPPERS;
-      } else if (cht_CheckCheat(&cheat_mypos, ev->data1)) {
-          // 'mypos' for player position
+    if (ev->type == ev_keydown) {
+        if (gameskill != sk_nightmare) {
+            // 'dqd' cheat for toggleable god mode
+            if (cht_CheckCheat(&cheat_god, ev->data1)) {
+                player.cheats ^= CF_GODMODE;
+                if (player.cheats & CF_GODMODE) {
+                    playerMobj->health = 100;
+                
+                player.health = 100;
+                player.message = STSTR_DQDON;
+                }
+                else 
+                    player.message = STSTR_DQDOFF;
+            }
+            // 'fa' cheat for killer fucking arsenal
+            else if (cht_CheckCheat(&cheat_ammonokey, ev->data1)) {
+                player.armorpoints = 200;
+                player.armortype = 2;
+                
+                for (i=0;i<NUMWEAPONS;i++)
+                    player.weaponowned[i] = true;
+                
+                for (i=0;i<NUMAMMO;i++)
+                    player.ammo[i] = player.maxammo[i];
+                
+                player.message = STSTR_FAADDED;
+            }
+            // 'kfa' cheat for key full ammo
+            else if (cht_CheckCheat(&cheat_ammo, ev->data1)) {
+                player.armorpoints = 200;
+                player.armortype = 2;
+                
+                for (i=0;i<NUMWEAPONS;i++)
+                    player.weaponowned[i] = true;
+                
+                for (i=0;i<NUMAMMO;i++)
+                    player.ammo[i] = player.maxammo[i];
+                
+                for (i=0;i<NUMCARDS;i++)
+                    player.cards[i] = true;
+                
+                player.message = STSTR_KFAADDED;
+            }
 
-//todo: this      player pos  
-        int8_t hexnumber_string[10];
-        locallib_printhex(playerMobj_pos->angle.wu, true, hexnumber_string);
-        combine_strings(st_stuff_buf,"ang=0x", hexnumber_string);
-        combine_strings(st_stuff_buf,st_stuff_buf, ";x,y=(0x");
-        
-        locallib_printhex(playerMobj_pos->x.w, true, hexnumber_string);
-        combine_strings(st_stuff_buf,st_stuff_buf, hexnumber_string);
-        combine_strings(st_stuff_buf,st_stuff_buf, ",0x");
 
-        locallib_printhex(playerMobj_pos->y.w, true, hexnumber_string);
-        combine_strings(st_stuff_buf,st_stuff_buf, hexnumber_string);
-        combine_strings(st_stuff_buf,st_stuff_buf, ")");
-        
-        
-        player.messagestring = st_stuff_buf;
-      }
+        // 'mus' cheat for changing music
+            else if (cht_CheckCheat(&cheat_mus, ev->data1)) {
+                
+                int8_t    buf[3];
+                int16_t             musnum;
+                player.message = STSTR_MUS;
+                cht_GetParam(&cheat_mus, buf);
+                if (commercial) {
+                    musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
+                    
+                    if (((buf[0]-'0')*10 + buf[1]-'0') > 35){
+                        player.message = STSTR_NOMUS;
+                    } else {
+                        S_ChangeMusic(musnum, 1);
+                    }
+                } else {
+                    musnum = mus_e1m1 + (buf[0]-'1')*9 + (buf[1]-'1');
+                    
+                    if (((buf[0]-'1')*9 + buf[1]-'1') > 31){
+                        player.message = STSTR_NOMUS;
+                    } else {
+                        S_ChangeMusic(musnum, 1);
+                    }
+                }
+            
+            } else if(!commercial && cht_CheckCheat(&cheat_noclip, ev->data1)) { 
+                player.cheats ^= CF_NOCLIP;
+                
+                if (player.cheats & CF_NOCLIP)
+                    player.message = STSTR_NCON;
+                else
+                    player.message = STSTR_NCOFF;
+            } else if (commercial && cht_CheckCheat(&cheat_commercial_noclip, ev->data1)) {
+                player.cheats ^= CF_NOCLIP;
+                
+                if (player.cheats & CF_NOCLIP)
+                    player.message = STSTR_NCON;
+                else
+                    player.message = STSTR_NCOFF;
+            }
+            // 'behold?' power-up cheats
+            for (i=0;i<6;i++) {
+                if (cht_CheckCheat(&cheat_powerup[i], ev->data1)) {
+                if (!player.powers[i]){
+                    P_GivePower( i);
+                } else if (i!=pw_strength){
+                    player.powers[i] = 1;
+                }else{
+                    player.powers[i] = 0;
+                }
+                player.message = STSTR_BEHOLDX;
+                }
+            }
+            
+            // 'behold' power-up menu
+            if (cht_CheckCheat(&cheat_powerup[6], ev->data1)) {
+                player.message = STSTR_BEHOLD;
+            } else if (cht_CheckCheat(&cheat_choppers, ev->data1)) {
+                // 'choppers' invulnerability & chainsaw
+                player.weaponowned[wp_chainsaw] = true;
+                player.powers[pw_invulnerability] = true;
+                player.message = STSTR_CHOPPERS;
+            } else if (cht_CheckCheat(&cheat_mypos, ev->data1)) {
+                // 'mypos' for player position
+
+            //todo: this      player pos  
+                int8_t hexnumber_string[10];
+                locallib_printhex(playerMobj_pos->angle.wu, true, hexnumber_string);
+                combine_strings(st_stuff_buf,"ang=0x", hexnumber_string);
+                combine_strings(st_stuff_buf,st_stuff_buf, ";x,y=(0x");
+                
+                locallib_printhex(playerMobj_pos->x.w, true, hexnumber_string);
+                combine_strings(st_stuff_buf,st_stuff_buf, hexnumber_string);
+                combine_strings(st_stuff_buf,st_stuff_buf, ",0x");
+
+                locallib_printhex(playerMobj_pos->y.w, true, hexnumber_string);
+                combine_strings(st_stuff_buf,st_stuff_buf, hexnumber_string);
+                combine_strings(st_stuff_buf,st_stuff_buf, ")");
+                
+                
+                player.messagestring = st_stuff_buf;
+            }
+        }
+
+        // 'clev' change-level cheat
+        if (cht_CheckCheat(&cheat_clev, ev->data1)) {
+            int8_t              buf[3];
+            int8_t               epsd;
+            int8_t               map;
+
+            cht_GetParam(&cheat_clev, buf);
+            
+            if (commercial) {
+                epsd = 0;
+                map = (buf[0] - '0')*10 + buf[1] - '0';
+            } else {
+                epsd = buf[0] - '0';
+                map = buf[1] - '0';
+            }
+
+            // Catch invalid maps.
+            if (!is_ultimate){
+                if ((!commercial && epsd > 0 && epsd < 4 && map > 0 && map < 10) || (commercial && map > 0 && map <= 40)) {
+                    // So be it.
+                    player.message = STSTR_CLEV;
+                    G_DeferedInitNew(gameskill, epsd, map);
+                }
+            } else {
+                if ((!commercial && epsd > 0 && epsd < 5 && map > 0 && map < 10) || (commercial && map > 0 && map <= 40)) {
+                    // So be it.
+                    player.message = STSTR_CLEV;
+                    G_DeferedInitNew(gameskill, epsd, map);
+                }
+            }
+        }
     }
-    
-    // 'clev' change-level cheat
-    if (cht_CheckCheat(&cheat_clev, ev->data1)) {
-        int8_t              buf[3];
-        int8_t               epsd;
-        int8_t               map;
-      
-      cht_GetParam(&cheat_clev, buf);
-      
-      if (commercial) {
-        epsd = 0;
-        map = (buf[0] - '0')*10 + buf[1] - '0';
-      } else {
-        epsd = buf[0] - '0';
-        map = buf[1] - '0';
-      }
-
-      // Catch invalid maps.
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-      if ((!commercial && epsd > 0 && epsd < 4 && map > 0 && map < 10) || (commercial && map > 0 && map <= 40)) {
-          // So be it.
-          player.message = STSTR_CLEV;
-          G_DeferedInitNew(gameskill, epsd, map);
-      }
-#else
-      if ((!commercial && epsd > 0 && epsd < 5 && map > 0 && map < 10) || (commercial && map > 0 && map <= 40)) {
-          // So be it.
-          player.message = STSTR_CLEV;
-          G_DeferedInitNew(gameskill, epsd, map);
-      }
-#endif
-    }    
-  }
-  return false;
+    return false;
 }
 
 

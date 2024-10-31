@@ -34,6 +34,7 @@
 typedef uint8_t evtype_t;
 
 // Event structure.
+// todo 13 bytes gross. maybe re-align at least.
 typedef struct
 {
     evtype_t	type;

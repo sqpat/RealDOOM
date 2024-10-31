@@ -1307,12 +1307,7 @@ menuitem_t MainMenu[]={
     {1,2,M_Options,'o'},
     {1,30,M_LoadGame,'l'},
     {1,29,M_SaveGame,'s'},
-    // Another hickup with Special edition.
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
     {1,1,M_ReadThis,'r'},
-#else
-    {1,1,M_ReadThis2,'r'},
-#endif
     {1,3,M_QuitDOOM,'q'}
 };
 
@@ -1420,11 +1415,11 @@ menuitem_t ReadMenu2[]={
 
 menu_t  ReadDef2 ={
     read2_end,
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
+//#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
     &ReadDef1,
-#else
-    NULL,
-#endif
+//#else
+    //NULL,
+//#endif
     ReadMenu2,
 #if (EXE_VERSION < EXE_VERSION_FINAL)
     M_DrawReadThis2,
@@ -1542,14 +1537,14 @@ volatile int32_t TS_TimesInInterrupt;
 int8_t TS_Installed = false;
 volatile int32_t TS_InInterrupt = false;
 
-int8_t NUMANIMS[NUMEPISODES] =
+int8_t NUMANIMS[NUMEPISODES_FOR_ANIMS] =
 {
     10,
     9,
     6
 };
 
-wianim_t __far*wianims[NUMEPISODES] =
+wianim_t __far*wianims[NUMEPISODES_FOR_ANIMS] =
 {
     epsd0animinfo,
     epsd1animinfo,

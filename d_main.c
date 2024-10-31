@@ -1007,34 +1007,34 @@ void __near D_PageDrawer (void)
 // This cycles through the demo sequences.
 // FIXME - version dependend demo numbers?
 //
- void __near D_DoAdvanceDemo (void)
-{
+ void __near D_DoAdvanceDemo (void) {
     player.playerstate = PST_LIVE;  // not reborn
     advancedemo = false;
     usergame = false;               // no save / end game here
     paused = false;
     gameaction = ga_nothing;
 
-#if (EXE_VERSION == EXE_VERSION_ULTIMATE) || (EXE_VERSION == EXE_VERSION_FINAL)
-    demosequence = (demosequence+1)%7;
-#else
-    demosequence = (demosequence+1)%6;
-#endif
+	if (is_ultimate){
+    	demosequence = (demosequence+1)%7;
+	} else{
+    	demosequence = (demosequence+1)%6;
+	}
     
-    switch (demosequence)
-    {
+    switch (demosequence) {
       case 0:
-        if ( commercial )
+        if ( commercial ){
             pagetic = 35 * 11;
-        else
+		} else {
             pagetic = 170;
-			gamestate = GS_DEMOSCREEN;
-			pagename = "TITLEPIC"; 
-        if ( commercial )
+		}
+		gamestate = GS_DEMOSCREEN;
+		pagename = "TITLEPIC"; 
+		if ( commercial ){
           S_StartMusic(mus_dm2ttl);
-        else
+		} else {
           S_StartMusic (mus_intro);
-        break;
+		}
+		break;
       case 1:
         G_DeferedPlayDemo ("demo1");
         break;
@@ -1048,32 +1048,29 @@ void __near D_PageDrawer (void)
         break;
       case 4:
         gamestate = GS_DEMOSCREEN;
-        if ( commercial)
-        {
+        if ( commercial) {
             pagetic = 35 * 11;
             pagename = "TITLEPIC";
             S_StartMusic(mus_dm2ttl);
-        }
-        else
-        {
+        } else {
             pagetic = 200;
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-            pagename = "CREDIT";
-#else
-            pagename = "HELP2";
-#endif
+			if (is_ultimate){
+				pagename = "CREDIT";
+			} else {
+				pagename = "HELP2";
+			}
         }
         break;
       case 5:
         G_DeferedPlayDemo ("demo3");
         break;
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
         // THE DEFINITIVE DOOM Special Edition demo
       case 6:
-        G_DeferedPlayDemo ("demo4");
-        break;
-#endif
-    }
+		if (is_ultimate){
+			G_DeferedPlayDemo ("demo4");
+			break;
+		}
+	}
 }
 
 

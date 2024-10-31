@@ -27,14 +27,6 @@ void __near D_DoomMain (void);
 // Called by IO functions when input is detected.
 void __near D_PostEvent (event_t __far* ev);
 
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-	#define BGCOLOR         7
-	#define FGCOLOR         8
-#else
-	#define BGCOLOR         7
-	#define FGCOLOR         4
-#endif
-
 
 //
 // BASE LEVEL

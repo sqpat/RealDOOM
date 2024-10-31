@@ -13,7 +13,7 @@
 // GNU General Public License for more details.
 //
 // DESCRIPTION:
-//	Cheat sequence checking.
+//  Cheat sequence checking.
 //
 
 #include "dutils.h"
@@ -24,55 +24,46 @@
 // Called in st_stuff module, which handles the input.
 // Returns a 1 if the cheat was successful, 0 if failed.
 //
-int8_t
-__near cht_CheckCheat
-( cheatseq_t __near*	cht,
-	int8_t		key )
-{
+int8_t __near cht_CheckCheat ( cheatseq_t __near* cht, int8_t key ) {
 	int8_t rc = 0;
 
-    if (!cht->p)
-	cht->p = cht->sequence; // initialize if first time
-
-    if (*cht->p == 0)
-	*(cht->p++) = key;
-    else if
-	((uint8_t)key == *cht->p) cht->p++;
-    else
-	cht->p = cht->sequence;
-
-    if (*cht->p == 1)
-	cht->p++;
-    else if (*cht->p == 0xff) // end of sequence character
-    {
-	cht->p = cht->sequence;
-	rc = 1;
+    if (!cht->p){
+	    cht->p = cht->sequence; // initialize if first time
     }
+    if (*cht->p == 0){
+	    *(cht->p++) = key;
+    } else if ((uint8_t)key == *cht->p) { 
+        cht->p++;
+    } else {
+	    cht->p = cht->sequence;
+    }
+
+    if (*cht->p == 1){
+	    cht->p++;
+    } else if (*cht->p == 0xff){ // end of sequence character
+        cht->p = cht->sequence;
+        rc = 1;
+    }
+
 
     return rc;
 }
 
-void
-__near cht_GetParam
-( cheatseq_t __near*	cht,
-  int8_t __near*		buffer )
-{
+void __near cht_GetParam ( cheatseq_t __near* cht, int8_t __near* buffer ) {
 
     uint8_t *p, c;
 
     p = cht->sequence;
     while (*(p++) != 1);
     
-    do
-    {
-	c = *p;
-	*(buffer++) = c;
-	*(p++) = 0;
-    }
-    while (c && *p!=0xff );
+    do {
+        c = *p;
+        *(buffer++) = c;
+        *(p++) = 0;
+    } while (c && *p!=0xff );
 
     if (*p==0xff)
-	*buffer = 0;
+	    *buffer = 0;
 
 }
 
