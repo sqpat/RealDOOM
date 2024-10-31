@@ -1415,11 +1415,7 @@ menuitem_t ReadMenu2[]={
 
 menu_t  ReadDef2 ={
     read2_end,
-//#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
     &ReadDef1,
-//#else
-    //NULL,
-//#endif
     ReadMenu2,
 #if (EXE_VERSION < EXE_VERSION_FINAL)
     M_DrawReadThis2,

@@ -79,8 +79,9 @@ void __near ST_refreshBackground(void) {
 //  intercept cheats.
 boolean __near ST_Responder (event_t __far* ev) {
     int8_t           i;
-    // if a user keypress...
 
+    return false;
+    // if a user keypress...
     if (ev->type == ev_keydown) {
         if (gameskill != sk_nightmare) {
             // 'dqd' cheat for toggleable god mode

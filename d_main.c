@@ -471,7 +471,9 @@ void __far DEBUG_PRINT (int8_t *error, ...){
     locallib_printf(error, argptr);
     va_end(argptr);
 }
-
+#else
+void __far DEBUG_PRINT (int8_t *error, ...){
+}
 #endif
 
 void locallib_strupr(char __far *str){

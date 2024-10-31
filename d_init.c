@@ -835,9 +835,19 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 }
 */
 
-//visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil);
 
-void __near R_Subsector(int16_t subsecnum) ;
+// check for doom ultimate.
+void check_is_ultimate(){
+	int16_t bytes[3];
+	FILE* fp = fopen("doom.wad", "rb");
+	fread (bytes, sizeof(int16_t), 3, fp);
+	fclose(fp);
+	if (bytes[2] == 0x0902){
+		is_ultimate = true;
+		EpiDef.numitems = 4;
+	}
+}
+
 //void checkDS(int16_t a);
 
 void __far D_DoomMain2(void)
@@ -1053,24 +1063,21 @@ R_PointToAngle(y, x);
 	//P_Init();
 
 
-	if (!access("doom2.wad", R_OK))
-	{
+	if (!access("doom2.wad", R_OK)) {
 		commercial = true;
 		locallib_strcpy(wadfile,"doom2.wad");
 		goto foundfile;
 	}
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
-	if (!access("plutonia.wad", R_OK))
-	{
+	if (!access("plutonia.wad", R_OK)) {
 		commercial = true;
 		plutonia = true;
 		locallib_strcpy(wadfile,"plutonia.wad");
 		goto foundfile;
 	}
 
-	if (!access("tnt.wad", R_OK))
-	{
+	if (!access("tnt.wad", R_OK)) {
 		commercial = true;
 		tnt = true;
 		locallib_strcpy(wadfile,"tnt.wad");
@@ -1078,15 +1085,14 @@ R_PointToAngle(y, x);
 	}
 #endif
 
-	if (!access("doom.wad", R_OK))
-	{
+	if (!access("doom.wad", R_OK)) {
 		registered = true;
 		locallib_strcpy(wadfile,"doom.wad");
+		check_is_ultimate();
 		goto foundfile;
 	}
 
-	if (!access("doom1.wad", R_OK))
-	{
+	if (!access("doom1.wad", R_OK)) {
 		shareware = true;
 		locallib_strcpy(wadfile,"doom1.wad");
 		goto foundfile;
@@ -1104,14 +1110,22 @@ R_PointToAngle(y, x);
 	respawnparm = M_CheckParm("-respawn");
 	fastparm = M_CheckParm("-fast");
 
+	if (M_CheckParm("-mem")){
+		I_Error("\nBYTES LEFT: %i %x (DS : %x to %x BASEMEM : %x)\n", 16 * (base_lower_memory_segment - stored_ds) - 0x1000, 16 * (base_lower_memory_segment - stored_ds)- 0x100, stored_ds, stored_ds + 0x100, base_lower_memory_segment);
+	}
+
+
 #if DEBUG_PRINTING
 
 	if (!commercial) {
+		memcpy(title, "                        ", 30);
 		if (is_ultimate){
-			memcpy(title, "                         The Ultimate DOOM Startup v1.09                        ", 127);
+			combine_strings(title, title, " The Ultimate DOOM Startup v1.09");
 		} else {
-			memcpy(title, "                          DOOM System Startup v1.09                          ", 127);
+			combine_strings(title, title, "  DOOM System Startup v1.09  ");
 		}
+		combine_strings(title, title, "                        ");
+
 	} else {
 		#if (EXE_VERSION >= EXE_VERSION_FINAL)
 				if (plutonia) {
@@ -1136,9 +1150,6 @@ R_PointToAngle(y, x);
 	intx86(0x10, &regs, &regs);
 	D_DrawTitle(title);
 
-	if (M_CheckParm("-mem")){
-		I_Error("\nBYTES LEFT: %i %x (DS : %x to %x BASEMEM : %x)\n", 16 * (baselowermemoryaddresssegment - stored_ds) - 0x1000, 16 * (baselowermemoryaddresssegment - stored_ds)- 0x100, stored_ds, stored_ds + 0x100, baselowermemoryaddresssegment);
-	}
 
 	
 
@@ -1147,8 +1158,7 @@ R_PointToAngle(y, x);
 
 
 	// turbo option
-	if ((p = M_CheckParm("-turbo")))
-	{
+	if ((p = M_CheckParm("-turbo"))) {
 		int16_t     scale = 200;
 
 		if (p < myargc - 1)
@@ -1165,9 +1175,6 @@ R_PointToAngle(y, x);
 		sidemove[0] = sidemove[0] * scale / 100;
 		sidemove[1] = sidemove[1] * scale / 100;
 	}
-
-
-
 
 	p = M_CheckParm("-playdemo");
 
@@ -1215,10 +1222,6 @@ R_PointToAngle(y, x);
 	}
 
 	// init subsystems
-
-
-	//DEBUG_PRINT("V_Init: allocate screens.\n");
-	//V_Init();
 
 
 	DEBUG_PRINT("\nZ_InitEMS: Init EMS memory allocation daemon.");

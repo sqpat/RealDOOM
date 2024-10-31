@@ -193,10 +193,10 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define baselowermemoryaddress        (0x2DA40000)
 
-#define baselowermemoryaddresssegment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
+#define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
  
 
-#define FINE_SINE_ARGUMENT  baselowermemoryaddresssegment
+#define FINE_SINE_ARGUMENT  base_lower_memory_segment
 #define FINE_COSINE_ARGUMENT FINE_SINE_ARGUMENT + 0x200
 
 
@@ -229,7 +229,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
 #define seenlines_segment             ((segment_t) ((int32_t)seenlines >> 16))
 #define subsector_lines_segment       ((segment_t) ((int32_t)subsector_lines >> 16))
-
 
 
 // finesine             2DA4:0000

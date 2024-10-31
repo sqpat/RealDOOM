@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 94
+#define CONSTANTS_COUNT 95
 #define LOCALS_COUNT 16
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -119,7 +119,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SPANFUNC_JUMP_LOOKUP_SEGMENT",
     "SPANFUNC_FUNCTION_AREA_SEGMENT",
     "COLFUNC_HIGH_SEGMENT",
-    "R_DRAWCOLUMNPREPCALLOFFSET"
+    "R_DRAWCOLUMNPREPCALLOFFSET",
+    "BASE_LOWER_MEMORY_SEGMENT"
 
 
 
@@ -241,7 +242,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     spanfunc_jump_lookup_segment,
     spanfunc_function_area_segment,
     colfunc_segment_high,
-    R_DrawColumnPrepOffset
+    R_DrawColumnPrepOffset,
+    base_lower_memory_segment
 
     
 };

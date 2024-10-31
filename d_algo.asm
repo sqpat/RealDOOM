@@ -336,6 +336,8 @@ endp
 PROC hackDS_ FAR
 PUBLIC hackDS_
 
+;todo: make cli held for less time
+
 cli
 push cx
 push si
@@ -357,10 +359,29 @@ mov cx, es
 mov ds, cx
 mov ss, cx
 
+COMMENT @
+
+;; clear out BASE_LOWER_MEMORY_SEGMENT. Not needed? if we do this then push/pop ax!
+push ax
+mov cx, BASE_LOWER_MEMORY_SEGMENT
+mov es, cx
+
+; zero up till 3C00h
+mov cx, 03C00h
+sub cx, BASE_LOWER_MEMORY_SEGMENT
+sal cx, 1 ; 16 bytes per paragraphs divided by 2 (word writes) = shift 8
+sal cx, 1
+sal cx, 1 
+xor ax, ax
+mov di, ax
+rep stosw
+pop ax
+@
 
 pop di
 pop si
 pop cx
+
 
 
 
