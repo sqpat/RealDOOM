@@ -180,7 +180,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_textureheights      (MAX_TEXTURES * sizeof(uint8_t))
 #define size_scantokey           128
 #define size_rndtable            256
-#define size_seenlines          (MAX_SEENLINES_SIZE)
 #define size_subsector_lines    (MAX_SUBSECTOR_LINES_SIZE)
 
 
@@ -191,7 +190,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define size_tantoangle    size_finetangent +  2049u * sizeof(int32_t)
 
-#define baselowermemoryaddress        (0x2DA40000)
+#define baselowermemoryaddress        (0x2DB20000)
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
  
@@ -211,8 +210,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
 #define scantokey          ((byte __far*)               MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(scantokey, size_scantokey))
-#define seenlines          ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable    , size_rndtable))
-#define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(seenlines   , size_seenlines))
+#define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable    , size_rndtable))
 
 
 
@@ -227,9 +225,9 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define textureheights_segment        ((segment_t) ((int32_t)textureheights >> 16))
 #define scantokey_segment             ((segment_t) ((int32_t)scantokey >> 16))
 #define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
-#define seenlines_segment             ((segment_t) ((int32_t)seenlines >> 16))
 #define subsector_lines_segment       ((segment_t) ((int32_t)subsector_lines >> 16))
 
+//todo recalculate after moving stuff around...
 
 // finesine             2DA4:0000
 // finecosine           2DA4:2000
@@ -241,10 +239,9 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // textureheights       3B83:0000
 // scantokey            3B9E:0000
 // rndtable             3BA6:0000
-// seenlines            3BB6:0000
-// subsector_lines      3C00:0000
+// subsector_lines      3BB6:0000
 
-// done                 3C00:0000
+// done                 3C00:000C
 
 
 
@@ -517,6 +514,7 @@ FREEBYTES
 
 
 #define size_colormaps        ((33 * 256))
+#define size_seenlines          (MAX_SEENLINES_SIZE)
 
 
 #define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x68000000            , 0))
@@ -524,6 +522,8 @@ FREEBYTES
 #define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colfunc_jump_lookup   , size_colfunc_jump_lookup))
 #define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup          , size_dc_yl_lookup))
 #define mobjposlist           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
+#define seenlines             ((uint8_t __far*)           MAKE_FULL_SEGMENT(mobjposlist           , size_mobjposlist))
+#define empty_render_6800     ((uint16_t  __far*)         MAKE_FULL_SEGMENT(seenlines   , size_seenlines))
 
 //6D8A
 #define colormaps_segment               ((segment_t) ((int32_t)colormaps >> 16))
@@ -531,8 +531,11 @@ FREEBYTES
 #define dc_yl_lookup_segment            ((segment_t) ((int32_t)dc_yl_lookup >> 16))
 #define colfunc_function_area_segment   ((segment_t) ((int32_t)colfunc_function_area >> 16))
 #define mobjposlist_segment             ((segment_t) ((int32_t)mobjposlist >> 16))
+#define seenlines_segment               ((segment_t) ((int32_t)seenlines >> 16))
+#define empty_render_6800_segment       ((segment_t) ((int32_t)seenlines >> 16))
 
-
+// seenlines_segment:  6FE8:0000
+// empty?              6FF6:0000
 // 8C60
 #define colormaps_high_seg_diff  ((segment_t)0x8C00 - 0x6800)
 
