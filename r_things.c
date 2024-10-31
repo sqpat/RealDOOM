@@ -417,8 +417,11 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     fixed_t             iscale;
 	spriteframe_t __far*		spriteframes;
 	
-	spritenum_t thingsprite = states[thing->stateNum].sprite;
-	spriteframenum_t thingframe = states[thing->stateNum].frame;
+	spritenum_t thingsprite     = states_render[thing->stateNum].sprite;
+	spriteframenum_t thingframe = states_render[thing->stateNum].frame;
+    //spritenum_t thingsprite = states[thing->stateNum].sprite;
+	//spriteframenum_t thingframe = states[thing->stateNum].frame;
+
 	vissprite_t     overflowsprite;
 
 	fixed_t_union thingx = thing->x;

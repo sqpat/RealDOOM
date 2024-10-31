@@ -187,6 +187,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 
+
 #define size_tantoangle    size_finetangent +  2049u * sizeof(int32_t)
 
 #define baselowermemoryaddress        (0x2DBA0000)
@@ -475,18 +476,19 @@ this area used in many tasks including physics but not including render
 
 #define lines_physics       ((line_physics_t __far*)  MAKE_FULL_SEGMENT(0x70000000, 0))
 #define blockmaplump        ((int16_t __far*)         MAKE_FULL_SEGMENT(lines_physics, size_lines_physics))
-#define blockmaplump_plus4  ((int16_t __far*)        (((int32_t)blockmaplump) + 0x08))
+#define blockmaplump_plus4  ((int16_t __far*)         (((int32_t)blockmaplump) + 0x08))
+#define physics_7000_end    ((uint8_t __far*)         MAKE_FULL_SEGMENT(blockmaplump, size_blockmaplump+0x08))
 
 #define lines_physics_segment       ((segment_t) ((int32_t)lines_physics >> 16))
 #define blockmaplump_segment        ((segment_t) ((int32_t)blockmaplump >> 16))
-
+#define physics_7000_end_segment    ((segment_t) ((int32_t)physics_7000_end >> 16))
 
 /*
 lines_physics       7000:0000
 blockmaplump        76E4:0000
 blockmaplump_plus4  76E4:0008
-[empty]             7D74:0000
-FREEBYTES
+states              7D74:0000
+FREEBYTES           7EDF:0000
  10442 bytes free!
 */
 
@@ -591,13 +593,16 @@ FREEBYTES
 #define maskedpostdataofs          ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritetotaldatasizes, size_spritetotaldatasizes))
 #define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdataofs,    size_maskedpostdataofs))
 #define drawfuzzcol_area           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpixeldataofs,   size_maskedpixeldataofs))
- 
+#define render_8800_end            ((byte __far*)              MAKE_FULL_SEGMENT(drawfuzzcol_area,     R_DrawFuzzColumnCodeSize)) 
+
+
 #define maskedpostdata_segment       ((segment_t) ((int32_t)maskedpostdata >> 16))
 #define spritepostdatasizes_segment  ((segment_t) ((int32_t)spritepostdatasizes >> 16))
 #define spritetotaldatasizes_segment ((segment_t) ((int32_t)spritetotaldatasizes >> 16))
 #define maskedpostdataofs_segment    ((segment_t) ((int32_t)maskedpostdataofs >> 16))
 #define maskedpixeldataofs_segment   ((segment_t) ((int32_t)maskedpixeldataofs >> 16))
 #define drawfuzzcol_area_segment     ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
+#define render_8800_end_segment      ((segment_t) ((int32_t)render_8800_end >> 16))
 
 
  /*
@@ -613,10 +618,15 @@ FREEBYTES 4144 free
  maskedpostdataofs      895A:0000
  maskedpixeldataofs     8A32:0000
  drawfuzzcol_area       8B0A:0000
- [empty]                    :0000 todo
+[empty]                    :0000 todo
 
 FREEBYTES 3936 free
  */
+
+
+
+
+
 
 
 //#define spanfunc_function_offset  0x1000
@@ -1203,6 +1213,7 @@ spritedefs_bytes    7410:0000
 #define size_patch_sizes              (MAX_PATCHES * sizeof(uint16_t))
 #define size_viewangletox             (sizeof(int16_t) * (FINEANGLES / 2))
 
+#define size_states_render            (sizeof(state_render_t) * NUMSTATES)
 #define size_flatindex                (sizeof(uint8_t) * MAX_FLATS)
 #define size_texturecompositesizes    (MAX_TEXTURES * sizeof(uint16_t))
 #define size_compositetexturepage     (MAX_TEXTURES * sizeof(uint8_t))
@@ -1225,7 +1236,8 @@ spritedefs_bytes    7410:0000
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
 
 
-#define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
+#define states_render           ((state_render_t __far*)     MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
+#define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(states_render           , size_states_render))
 
 #define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
@@ -1246,6 +1258,7 @@ spritedefs_bytes    7410:0000
 #define scalelight_segment                ((segment_t) ((int32_t)scalelight_far >> 16))
 #define patch_sizes_segment               ((segment_t) ((int32_t)patch_sizes_far >> 16))
 #define viewangletox_segment              ((segment_t) ((int32_t)viewangletox >> 16))
+#define states_render_segment             ((segment_t) ((int32_t)states_render >> 16))
 #define flatindex_segment                 ((segment_t) ((int32_t)flatindex >> 16))
 
 
@@ -1289,16 +1302,16 @@ scalelightfixed         4B3A:0000   F3A0
 scalelight              4B3D:0000   F3D0
 patch_sizes             4B6D:0000   F6D0
 viewangletox            4BA9:0000   FA90
-
 [near range over]       
 
-flatindex               4DA9:0000
-texturecompositesizes   4DB3:0000
-compositetexturepage    4DE9:0000
-compositetextureoffset  4DE9:01AC
-[done]                  4E20:0000
+states_render           4DA9:0000
+flatindex               4E22:0000
+texturecompositesizes   4E2C:0000
+compositetexturepage    4E62:0000
+compositetextureoffset  4E62:01AC
+[done]                  4E99:0000
 //FREEBYTES
-7680 bytes free
+5744 bytes free
 
 
 */

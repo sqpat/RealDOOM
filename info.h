@@ -1150,6 +1150,13 @@ typedef struct state_s
   statenum_t			nextstate; // todo i think this can be a int8_t diff that adds to current state.
   //int32_t			misc1, misc2;
 } state_t;
+
+typedef struct state_render_s
+{
+  spritenum_t	sprite;
+  spriteframenum_t	frame;
+
+} state_render_t;
  
 
 #define MT_PLAYER 0

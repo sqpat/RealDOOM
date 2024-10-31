@@ -376,6 +376,7 @@ boolean __far P_CheckSight (  mobj_t __near* t1, mobj_t __near* t2, mobj_pos_t _
  
 void __near Z_LoadBinaries() {
 	FILE* fp2;
+	int16_t i;
 	int16_t codesize;
 	FILE* fp = fopen("DOOMDATA.BIN", "rb"); 
 	fseek(fp, DATA_DOOMDATA_OFFSET, SEEK_SET);
@@ -445,6 +446,14 @@ void __near Z_LoadBinaries() {
 
 	//274
 	FAR_fread(doomednum, 2, NUMMOBJTYPES, fp);
+	
+	Z_QuickMapRender4000();
+	// todo put in doomdata...
+	for (i = 0; i < NUMSTATES; i++){
+		states_render[i].sprite = states[i].sprite;
+		states_render[i].frame  = states[i].frame;
+	}
+
 
 	// load consecutive memory contents in one call here
 	Z_QuickMapIntermission();

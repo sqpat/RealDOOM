@@ -729,12 +729,7 @@ void __near P_MovePsprites ()  {
 //
 // P_SetPsprite
 //
-void
-__near P_SetPsprite
-(
-	int8_t		position,
-	statenum_t	stnum)
-{
+void __near P_SetPsprite ( int8_t position, statenum_t stnum) {
 	pspdef_t __near*	psp;
 	state_t __far*	state;
 	boolean found;
