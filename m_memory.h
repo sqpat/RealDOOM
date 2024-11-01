@@ -491,8 +491,8 @@ lines_physics       7000:0000
 blockmaplump        76E4:0000
 blockmaplump_plus4  76E4:0008
 states              7D74:0000
-FREEBYTES           7EDF:0000
- 10442 bytes free!
+FREEBYTES           7EE0:0000
+ 4608 bytes free!
 */
 
 
@@ -881,7 +881,7 @@ distscale      9113:0000
 drawskyplane_area  9163:0000
 
 //FREEBYTES
-// 8000+ bytes free? could be fast unrolled draw sky code, 
+// 8000+ bytes free? PLANES ONLY. could be fast unrolled draw sky code, 
 // and fast unrolled drawspan no tex code.
 
 
@@ -1152,8 +1152,6 @@ spritedefs_bytes    7410:0000
 #define size_texturedefs_offset        (MAX_TEXTURES * sizeof(uint16_t))
 #define size_masked_lookup             (MAX_TEXTURES * sizeof(uint8_t))
 #define size_masked_headers            (MAX_MASKED_TEXTURES * sizeof(masked_header_t))
-#define size_spritepage                (MAX_SPRITE_LUMPS * sizeof(uint8_t))
-#define size_spriteoffset              (MAX_SPRITE_LUMPS * sizeof(uint8_t))
 #define size_patchwidths               (MAX_PATCHES * sizeof(uint16_t))
 #define size_drawsegs                 (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
 #define size_drawsegs_PLUS_EXTRA      (sizeof(drawseg_t) * (MAXDRAWSEGS+2))
@@ -1170,15 +1168,14 @@ spritedefs_bytes    7410:0000
 #define texturedefs_offset         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
 #define masked_lookup              ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset,       size_texturedefs_offset))
 #define masked_headers             ((masked_header_t __far *)  MAKE_FULL_SEGMENT(masked_lookup,            size_masked_lookup))
-#define spritepage                 ((uint8_t __far*)           MAKE_FULL_SEGMENT(masked_headers,           size_masked_headers))
-#define spriteoffset               ((uint8_t __far*)           (((int32_t)spritepage)                      + size_spritepage))
-#define patchwidths                ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritepage,               (size_spriteoffset + size_spritetopoffsets)))
+#define patchwidths                ((uint16_t  __far*)         MAKE_FULL_SEGMENT(masked_headers,           size_masked_headers))
 
 #define drawsegs_BASE           ((drawseg_t __far*)          MAKE_FULL_SEGMENT(patchwidths            , size_patchwidths))
 #define drawsegs_PLUSONE        ((drawseg_t __far*)          (drawsegs_BASE          + 1))
-#define nextthing               ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs_BASE   , size_drawsegs_PLUS_EXTRA))//
+#define render_6800_end         ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs_BASE   , size_drawsegs_PLUS_EXTRA))//
 
 
+#define render_6800_end_segment          ((segment_t) ((int32_t)render_6800_end >> 16))
 
 
 // texturecolumnlumps_bytes   6000:0000
@@ -1187,15 +1184,13 @@ spritedefs_bytes    7410:0000
 // texturedefs_offset         6319:0000
 // masked_lookup              634F:0000
 // masked_headers             636A:0000
-// spritepage                 6370:0000
-// spriteoffset               6370:0565
-// patchwidths                641D:0000
-// drawsegs_BASE              6459:0000
-// drawsegs_PLUSONE           6459:0020
-// [empty]                    665D:0000
+// patchwidths                6370:0000
+// drawsegs_BASE              6506:0000
+// drawsegs_PLUSONE           6506:0020
+// [empty]                    65B0:0000
 
 //FREEBYTES
-// 6704 (!) bytes free till 6000:8000 
+// 9472 (!) bytes free till 6000:8000 
 
 // 0x4000 BLOCK RENDER
 
@@ -1218,6 +1213,9 @@ spritedefs_bytes    7410:0000
 
 #define size_states_render            (sizeof(state_render_t) * NUMSTATES)
 #define size_flatindex                (sizeof(uint8_t) * MAX_FLATS)
+#define size_spritepage                (MAX_SPRITE_LUMPS * sizeof(uint8_t))
+#define size_spriteoffset              (MAX_SPRITE_LUMPS * sizeof(uint8_t))
+
 #define size_texturecompositesizes    (MAX_TEXTURES * sizeof(uint16_t))
 #define size_compositetexturepage     (MAX_TEXTURES * sizeof(uint8_t))
 #define size_compositetextureoffset   (MAX_TEXTURES * sizeof(uint8_t))
@@ -1237,12 +1235,12 @@ spritedefs_bytes    7410:0000
 #define patch_sizes_far             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight_far              , size_scalelight))
 #define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
-
-
 #define states_render           ((state_render_t __far*)     MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
 #define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(states_render           , size_states_render))
+#define spritepage                 ((uint8_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
+#define spriteoffset               ((uint8_t __far*)           (((int32_t)spritepage)                      + size_spritepage))
 
-#define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
+#define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(spritepage,               (size_spriteoffset + size_spritetopoffsets)))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
 #define compositetextureoffset  ((uint8_t __far*)            (((int32_t)compositetexturepage)          + size_compositetexturepage))
 
@@ -1309,12 +1307,14 @@ viewangletox            4BA9:0000   FA90
 
 states_render           4DA9:0000
 flatindex               4E22:0000
-texturecompositesizes   4E2C:0000
-compositetexturepage    4E62:0000
-compositetextureoffset  4E62:01AC
-[done]                  4E99:0000
+spritepage              4E2C:0000
+spriteoffset            4E2C:0565
+texturecompositesizes   4ED9:0000
+compositetexturepage    4F0E:0000
+compositetextureoffset  4F0E:01AC
+[done]                  4F46:0000
 //FREEBYTES
-5744 bytes free
+3744 bytes free
 
 
 */
