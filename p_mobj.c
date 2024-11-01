@@ -102,8 +102,7 @@ mobj_t __near* SAVEDUNIT;
 
 
 // Which one is deterministic?
-uint8_t __near P_Random(void)
-{
+uint8_t __near P_Random(void) {
 	 
     prndindex = (prndindex+1)&0xff;
     return rndtable[prndindex];
@@ -115,13 +114,13 @@ void __near P_BringUpWeapon();
 // P_SetupPsprites
 // Called at start of level for each player.
 //
-void __near P_SetupPsprites()
-{
+void __near P_SetupPsprites() {
 	int8_t	i;
 
 	// remove all psprites
-	for (i = 0; i < NUMPSPRITES; i++)
-		player.psprites[i].state = NULL;
+	for (i = 0; i < NUMPSPRITES; i++){
+		player.psprites[i].statenum = STATENUM_NULL;
+	}
 
 	// spawn the gun
 	player.pendingweapon = player.readyweapon;
@@ -135,8 +134,7 @@ void __far ST_Start(void);
 // Most of the player structure stays unchanged
 //  between levels.
 //
-void __near P_SpawnPlayer(mapthing_t __far* mthing)
-{
+void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	fixed_t_union		x;
 	fixed_t_union		y;
 	fixed_t_union		z;
@@ -198,8 +196,7 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing)
 // The fields of the mapthing should
 // already be in host byte order.
 //
-void __far P_SpawnMapThing(mapthing_t mthing, int16_t key)
-{
+void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
 
 
 
@@ -382,8 +379,7 @@ void __near P_ExplodeMissile(mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 // todo make near?
 fixed_t  FastMulFriction (fixed_t num);
 
-void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos)
-{ 	
+void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) { 	
     fixed_t_union 	ptryx;
     fixed_t_union	ptryy;
 	int16_t motype = mo->type;
@@ -414,15 +410,17 @@ void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos)
 	mosecnum = mo->secnum;
 
 
-    if (mo->momx.w > MAXMOVE)
+    if (mo->momx.w > MAXMOVE){
 		mo->momx.w = MAXMOVE;
-    else if (mo->momx.w < -MAXMOVE)
+	} else if (mo->momx.w < -MAXMOVE){
 		mo->momx.w = -MAXMOVE;
+	}
 
-    if (mo->momy.w > MAXMOVE)
+    if (mo->momy.w > MAXMOVE){
 		mo->momy.w = MAXMOVE;
-    else if (mo->momy.w < -MAXMOVE)
+	} else if (mo->momy.w < -MAXMOVE){
 		mo->momy.w = -MAXMOVE;
+	}
 		
     xmove = mo->momx;
     ymove = mo->momy;
@@ -811,11 +809,9 @@ void __near P_MobjThinker (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THIN
 //
 // P_SpawnMobj
 //
-THINKERREF
-__near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
+THINKERREF __near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
 	mobj_t __near*	mobj;
 	mobj_pos_t __far*	mobj_pos;
-    state_t __far*	st;
     mobjinfo_t __near*	info;
 	THINKERREF mobjRef;
 	int16_t mobjsecnum;
@@ -857,12 +853,8 @@ __near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t k
 
     // do not set the state with P_SetMobjState,
     // because action routines can not be called yet
-    st = &states[info->spawnstate];
 	mobj_pos->stateNum = info->spawnstate;
-    mobj->tics = st->tics;
-    //mobj->sprite = st->sprite;
-    //mobj->frame = st->frame;
-
+    mobj->tics = states[info->spawnstate].tics;
 
     // set subsector and/or block links
     P_SetThingPosition (mobj, mobj_pos, knownsecnum);
@@ -945,13 +937,7 @@ void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
 //
 // P_SpawnBlood
 // 
-void
-__near P_SpawnBlood
-( fixed_t	x,
-  fixed_t	y,
-  fixed_t	z,
-  int16_t		damage )
-{
+void __near P_SpawnBlood ( fixed_t x, fixed_t y, fixed_t z, int16_t damage ) {
     mobj_t __near*	th;
 	THINKERREF thRef;
 	
@@ -977,8 +963,7 @@ __near P_SpawnBlood
 // Moves the missile forward a bit
 //  and possibly explodes it right there.
 //
-void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos)
-{
+void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos) {
 
     th->tics -= P_Random()&3;
 	if (th->tics < 1 || th->tics > 240) {
@@ -1065,11 +1050,7 @@ void __near A_BFGSpray(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 // P_SpawnPlayerMissile
 // Tries to aim at a nearby monster
 //
-void
-__near P_SpawnPlayerMissile
-( 
-  mobjtype_t	type )
-{
+void __near P_SpawnPlayerMissile ( mobjtype_t type ) {
 	mobj_t __near*	th;
 	mobj_pos_t __far*	th_pos;
 	THINKERREF thRef;
@@ -1130,11 +1111,7 @@ __near P_SpawnPlayerMissile
 }
 
 
-boolean
-__near P_SetMobjState
-(mobj_t __near* mobj, statenum_t state)
-//(mobj_t* mobj, statenum_t state, int8_t* file, int32_t line)
-{
+boolean __near P_SetMobjState (mobj_t __near* mobj, statenum_t state) {
 	state_t __far*	st;
 	mobj_pos_t __far* mobj_pos;
 

@@ -537,16 +537,13 @@ void __near F_CastTicker (void)
 	}
     }
 	
-    if (castattacking)
-    {
-	if (castframes == 24
-	    ||	caststate == &states[getSeeState(castorder[castnum].type)] )
-	{
-	  stopattack:
-	    castattacking = false;
-	    castframes = 0;
-	    caststate = &states[getSeeState(castorder[castnum].type)];
-	}
+    if (castattacking) {
+		if (castframes == 24 ||	caststate == &states[getSeeState(castorder[castnum].type)] ) {
+			stopattack:
+				castattacking = false;
+				castframes = 0;
+				caststate = &states[getSeeState(castorder[castnum].type)];
+		}
     }
 	
     casttics = caststate->tics;

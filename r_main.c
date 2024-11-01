@@ -587,14 +587,6 @@ void __far R_RenderPlayerView ()
 	viewangle_shiftright1 = (viewangle.hu.intbits >> 1) & 0xFFFC;
 	viewangle_shiftright3 = viewangle.hu.intbits >> 3;
 
-
-	if (player.psprites[0].state) {
-		r_cachedstatecopy[0] = *(player.psprites[0].state);
-	}
-	if (player.psprites[1].state) {
-		r_cachedstatecopy[1] = *(player.psprites[1].state);
-	}
-
 	Z_QuickMapRender();
 	R_SetupFrame ();
 

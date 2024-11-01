@@ -419,8 +419,6 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 	
 	spritenum_t thingsprite     = states_render[thing->stateNum].sprite;
 	spriteframenum_t thingframe = states_render[thing->stateNum].frame;
-    //spritenum_t thingsprite = states[thing->stateNum].sprite;
-	//spriteframenum_t thingframe = states[thing->stateNum].frame;
 
 	vissprite_t     overflowsprite;
 
@@ -622,7 +620,8 @@ void __near R_AddSprites (sector_t __far* sec)
 //
 // R_DrawPSprite
 //
-void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __near* vis){
+//todo pass in frame and sprite only.
+void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframenum_t frame,  vissprite_t __near* vis){
     fixed_t_union           tx;
 	int16_t                 x1;
 	int16_t                 x2;
@@ -634,11 +633,11 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
 
 
 	// decide which patch to use
-	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[statecopy.sprite].spriteframesOffset]);
+	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[sprite].spriteframesOffset]);
 
 
-    spriteindex = spriteframes[statecopy.frame & FF_FRAMEMASK].lump[0];
-    flip = (boolean)spriteframes[statecopy.frame & FF_FRAMEMASK].flip[0];
+    spriteindex = spriteframes[frame & FF_FRAMEMASK].lump[0];
+    flip = (boolean)spriteframes[frame & FF_FRAMEMASK].flip[0];
     
     // calculate edges of the shape
 	tx.w = psp->sx;// -160 * FRACUNIT;
@@ -714,7 +713,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
     } else if (fixedcolormap) {
         // fixed color
         vis->colormap = fixedcolormap;
-    } else if (statecopy.frame & FF_FULLBRIGHT) {
+    } else if (frame & FF_FULLBRIGHT) {
         // full bright
         vis->colormap = 0;
     } else {
@@ -738,7 +737,7 @@ void __near R_DrawPlayerSprites (void){
 		i < NUMPSPRITES;
 		i++, psp++) {
 
-		if (psp->state) {
+		if (psp->statenum != STATENUM_NULL) {
 			R_DrawVisSprite(&player_vissprites[i]);
 		}
 	}
@@ -747,7 +746,7 @@ void __near R_DrawPlayerSprites (void){
 void __near R_PrepareMaskedPSprites(void) {
 	uint8_t         i;
 	uint8_t         lightnum;
-	pspdef_t __near*   psp;
+	statenum_t      pspstatenum;
 	// get light level
 	lightnum = (sectors[r_cachedplayerMobjsecnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
 
@@ -761,15 +760,14 @@ void __near R_PrepareMaskedPSprites(void) {
 		spritelights = lightmult48lookup[lightnum];
 	}
 
-	// add all active psprites
-	for (i = 0, psp = player.psprites;
-		i < NUMPSPRITES;
-		i++, psp++) {
+    for (i = 0; i < NUMPSPRITES; i++){
+        statenum_t pspstatenum = player.psprites[i].statenum;
+        if (pspstatenum != STATENUM_NULL) {
+            R_DrawPSprite(&player.psprites[i], states_render[pspstatenum].sprite, states_render[pspstatenum].frame, &player_vissprites[i]);
+        }
+    }
 
-		if (psp->state) {
-			R_DrawPSprite(psp, r_cachedstatecopy[i], &player_vissprites[i]);
-		}
-	}
+
 }
 
 //

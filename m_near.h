@@ -277,7 +277,6 @@ extern int8_t               allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
 extern int8_t               visplanedirty;
 extern int8_t               skytextureloaded;
 extern int16_t              r_cachedplayerMobjsecnum;
-extern state_t              r_cachedstatecopy[2];
 extern int16_t			    validcount;
 
 extern int16_t 			    setdetail;

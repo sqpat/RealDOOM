@@ -205,7 +205,7 @@ void __near A_WeaponReady (  pspdef_t __near*	psp ) {
 		P_SetMobjState (playerMobj, S_PLAY);
     }
     
-    if (player.readyweapon == wp_chainsaw && psp->state == &states[S_SAW]) {
+    if (player.readyweapon == wp_chainsaw && psp->statenum == S_SAW) {
 		S_StartSoundFromRef (playerMobj, sfx_sawidl);
     }
     
@@ -599,11 +599,12 @@ void __near A_FireCGun (  pspdef_t __near*	psp ) {
     P_SetMobjState (playerMobj, S_PLAY_ATK2);
     player.ammo[weaponinfo[player.readyweapon].ammo]--;
 
+	//todo review..
     P_SetPsprite (
 		  ps_flash,
 		  weaponinfo[player.readyweapon].flashstate
-		  + psp->state
-		  - &states[S_CHAIN1] );
+		  + psp->statenum
+		  - S_CHAIN1 );
 
     P_BulletSlope ();
 	
@@ -701,19 +702,20 @@ void __near  A_BFGsound (  pspdef_t __near*	psp ) {
 void __near P_MovePsprites ()  {
     int8_t		i;
 	pspdef_t __near*	psp;
-    state_t __far*	state;
 	
     psp = &player.psprites[0];
     for (i=0 ; i<NUMPSPRITES ; i++, psp++) {
 		// a null state means not active
-		if ( (state = psp->state) )	 {
+		
+		// if state
+		if ( (psp->statenum != STATENUM_NULL) )	 {
 			// drop tic count and possibly change state
 
 			// a -1 tic count never changes
 			if (psp->tics != -1)	 {
 				psp->tics--;
 				if (!psp->tics) {
-					P_SetPsprite(i, psp->state->nextstate);
+					P_SetPsprite(i, states[psp->statenum].nextstate);
 				}
 			}				
 		}
@@ -737,15 +739,15 @@ void __near P_SetPsprite ( int8_t position, statenum_t stnum) {
 	psp = &player.psprites[position];
 
 	do {
-		if (!stnum)
-		{
+		// todo: see if code can be cleaned up to only have one null case...
+		if (stnum == 0 || stnum == STATENUM_NULL) {
 			// object removed itself
-			psp->state = NULL;
+			psp->statenum = STATENUM_NULL;
 			break;
 		}
 
 		state = &states[stnum];
-		psp->state = state;
+		psp->statenum = stnum;
 		psp->tics = state->tics;	// could be 0
 
 
@@ -784,11 +786,11 @@ void __near P_SetPsprite ( int8_t position, statenum_t stnum) {
  
 
 		if (found)
-			if (!psp->state)
+			if (psp->statenum == STATENUM_NULL)
 				break;
 
 
-		stnum = psp->state->nextstate;
+		stnum = states[psp->statenum].nextstate;
 
 	} while (!psp->tics);
 	// an initial state of 0 could cycle through

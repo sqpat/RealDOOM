@@ -191,8 +191,7 @@ int8_t visplanedirty = false;
 int8_t skytextureloaded = false;
 
 // Cached fields to avoid thinker access after page swap
-int16_t r_cachedplayerMobjsecnum;
-state_t r_cachedstatecopy[2];
+int16_t 	r_cachedplayerMobjsecnum;
 
 
 
