@@ -911,7 +911,9 @@ void __near Z_FreeConventionalAllocations() {
 	FAR_memset(((byte __far*) uppermemoryblock), 0, 0xFFFF);
 
 	// todo make this area less jank. We want to free all the ems 4.0 region level data...
-	FAR_memset(MK_FP(0x7000, 0), 0, 65535);
+	// handles blockmaps and lines_physics...
+	// do we really have to do this anyway?
+	FAR_memset(MK_FP(0x7000, 0), 0, (states_segment - lines_physics_segment) << 4);
 	
 	FAR_memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
 

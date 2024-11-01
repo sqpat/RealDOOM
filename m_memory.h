@@ -173,7 +173,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define size_finesine            (10240u * sizeof(int32_t))
 #define size_finetangent         (2048u * sizeof(int32_t))
-#define size_states              (sizeof(state_t) * NUMSTATES)
 #define size_events              (sizeof(event_t) * MAXEVENTS)
 #define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
 #define size_texturetranslation  (MAX_TEXTURES * sizeof(uint16_t))
@@ -190,7 +189,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define size_tantoangle    size_finetangent +  2049u * sizeof(int32_t)
 
-#define baselowermemoryaddress        (0x2DBA0000)
+#define baselowermemoryaddress        (0x2F250000)
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
  
@@ -203,8 +202,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
 #define finecosine         ((int32_t __far*)            (baselowermemoryaddress + 0x2000))  // 10240
 #define finetangentinner   ((int32_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
-#define states             ((state_t __far*)            MAKE_FULL_SEGMENT(finetangentinner, size_finetangent))
-#define events             ((event_t __far*)            MAKE_FULL_SEGMENT(states, size_states))
+#define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finetangentinner, size_finetangent))
 #define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
 #define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
 #define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
@@ -217,7 +215,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // todo clean this and finecosine up
 #define finecosine_segment            ((segment_t) (finesine_segment + 0x200))
 #define finetangentinner_segment      ((segment_t) ((int32_t)finetangentinner >> 16))
-#define states_segment                ((segment_t) ((int32_t)states >> 16))
 #define events_segment                ((segment_t) ((int32_t)events >> 16))
 #define flattranslation_segment       ((segment_t) ((int32_t)flattranslation >> 16))
 #define texturetranslation_segment    ((segment_t) ((int32_t)texturetranslation >> 16))
@@ -228,10 +225,9 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 //todo recalculate after moving stuff around...
 
-// finesine             2DBA:0000
-// finecosine           2DBA:2000
-// finetangentinner     37BA:0000
-// states               39BA:0000
+// finesine             2F25:0000
+// finecosine           2F25:2000
+// finetangentinner     3925:0000
 // events               3B25:0000
 // flattranslation      3B59:0000
 // texturetranslation   3B62:0000
@@ -472,15 +468,22 @@ this area used in many tasks including physics but not including render
 #define size_blockmaplump     ( MAX_BLOCKMAP_LUMPSIZE)
 
 //3f8a, runs up close to 6800 which has mobjposlist, etc
+#define size_states              (sizeof(state_t) * NUMSTATES)
 
 
 #define lines_physics       ((line_physics_t __far*)  MAKE_FULL_SEGMENT(0x70000000, 0))
 #define blockmaplump        ((int16_t __far*)         MAKE_FULL_SEGMENT(lines_physics, size_lines_physics))
 #define blockmaplump_plus4  ((int16_t __far*)         (((int32_t)blockmaplump) + 0x08))
-#define physics_7000_end    ((uint8_t __far*)         MAKE_FULL_SEGMENT(blockmaplump, size_blockmaplump+0x08))
+
+
+
+#define states             ((state_t __far*)          MAKE_FULL_SEGMENT(blockmaplump, size_blockmaplump+0x08))  
+
+#define physics_7000_end    ((uint8_t __far*)         MAKE_FULL_SEGMENT(states, size_states+0x08))
 
 #define lines_physics_segment       ((segment_t) ((int32_t)lines_physics >> 16))
 #define blockmaplump_segment        ((segment_t) ((int32_t)blockmaplump >> 16))
+#define states_segment                ((segment_t) ((int32_t)states >> 16))
 #define physics_7000_end_segment    ((segment_t) ((int32_t)physics_7000_end >> 16))
 
 /*
