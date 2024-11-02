@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 101
+#define CONSTANTS_COUNT 108
 #define LOCALS_COUNT 16
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -23,6 +23,17 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "FINESINE_SEGMENT",
     "FINECOSINE_SEGMENT",
     "FINETANGENTINNER_SEGMENT",
+
+    "TEXTURECOLUMNLUMPS_BYTES_SEGMENT",
+    "TEXTUREDEFS_BYTES_SEGMENT",
+    "SPRITETOPOFFSETS_SEGMENT",
+    "TEXTUREDEFS_OFFSET_SEGMENT",
+    "MASKED_LOOKUP_SEGMENT",
+    "MASKED_HEADERS_SEGMENT",
+    "PATCHWIDTHS_SEGMENT",
+    "DRAWSEGS_BASE_SEGMENT",
+
+
     "STATES_SEGMENT",
     "EVENTS_SEGMENT",
     "FLATTRANSLATION_SEGMENT",
@@ -129,6 +140,9 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "RENDER_6800_END_SEGMENT"
 
 
+
+
+
 };
 
 
@@ -151,6 +165,15 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     finesine_segment,
     finecosine_segment,
     finetangentinner_segment,
+    texturecolumnlumps_bytes_segment,
+    texturedefs_bytes_segment,
+    spritetopoffsets_segment,
+    texturedefs_offset_segment,
+    masked_lookup_segment,
+    masked_headers_segment,
+    patchwidths_segment,
+    drawsegs_BASE_segment,
+
     states_segment,
     events_segment,
     flattranslation_segment,

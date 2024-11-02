@@ -170,9 +170,10 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // 3767u shareware
 // 8756u doom2
 
+#define baselowermemoryaddress        (0x31250000)
+#define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
 #define size_finesine            (10240u * sizeof(int32_t))
-#define size_finetangent         (2048u * sizeof(int32_t))
 #define size_events              (sizeof(event_t) * MAXEVENTS)
 #define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
 #define size_texturetranslation  (MAX_TEXTURES * sizeof(uint16_t))
@@ -181,19 +182,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_subsector_lines    (MAX_SUBSECTOR_LINES_SIZE)
 
 
-
-
-
-
-
-
-#define size_tantoangle    size_finetangent +  2049u * sizeof(int32_t)
-
-#define baselowermemoryaddress        (0x2F250000)
-
-#define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
- 
-
 #define FINE_SINE_ARGUMENT  base_lower_memory_segment
 #define FINE_COSINE_ARGUMENT FINE_SINE_ARGUMENT + 0x200
 
@@ -201,20 +189,18 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
 #define finecosine         ((int32_t __far*)            (baselowermemoryaddress + 0x2000))  // 10240
-#define finetangentinner   ((int32_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
-#define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finetangentinner, size_finetangent))
+#define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
 #define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
 #define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
 #define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
 #define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
-#define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable    , size_rndtable))
+#define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable, size_rndtable))
 #define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
 
 
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
 // todo clean this and finecosine up
 #define finecosine_segment            ((segment_t) (finesine_segment + 0x200))
-#define finetangentinner_segment      ((segment_t) ((int32_t)finetangentinner >> 16))
 #define events_segment                ((segment_t) ((int32_t)events >> 16))
 #define flattranslation_segment       ((segment_t) ((int32_t)flattranslation >> 16))
 #define texturetranslation_segment    ((segment_t) ((int32_t)texturetranslation >> 16))
@@ -225,9 +211,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 //todo recalculate after moving stuff around...
 
-// finesine             2F25:0000
-// finecosine           2F25:2000
-// finetangentinner     3925:0000
+// finesine             3125:0000
+// finecosine           3125:2000
 // events               3B25:0000
 // flattranslation      3B59:0000
 // texturetranslation   3B62:0000
@@ -1153,14 +1138,12 @@ spritedefs_bytes    7410:0000
 #define size_masked_lookup             (MAX_TEXTURES * sizeof(uint8_t))
 #define size_masked_headers            (MAX_MASKED_TEXTURES * sizeof(masked_header_t))
 #define size_patchwidths               (MAX_PATCHES * sizeof(uint16_t))
-#define size_drawsegs                 (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
-#define size_drawsegs_PLUS_EXTRA      (sizeof(drawseg_t) * (MAXDRAWSEGS+2))
-
+#define size_finetangentinner          2048u * sizeof(int32_t)
+#define size_drawsegs                  (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
+#define size_drawsegs_PLUS_EXTRA       (sizeof(drawseg_t) * (MAXDRAWSEGS+2))
 
 
 // size_texturedefs_bytes 0x6184... 0x6674
-
-
 
 #define texturecolumnlumps_bytes   ((int16_t_union __far*)     (0x60000000 ))
 #define texturedefs_bytes          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
@@ -1169,12 +1152,21 @@ spritedefs_bytes    7410:0000
 #define masked_lookup              ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset,       size_texturedefs_offset))
 #define masked_headers             ((masked_header_t __far *)  MAKE_FULL_SEGMENT(masked_lookup,            size_masked_lookup))
 #define patchwidths                ((uint16_t  __far*)         MAKE_FULL_SEGMENT(masked_headers,           size_masked_headers))
+#define drawsegs_BASE              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchwidths,              size_patchwidths))
+#define drawsegs_PLUSONE           ((drawseg_t __far*)         (drawsegs_BASE          + 1))
+#define finetangentinner           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE   , size_drawsegs_PLUS_EXTRA))
+#define render_6800_end            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner,  size_finetangentinner))
 
-#define drawsegs_BASE           ((drawseg_t __far*)          MAKE_FULL_SEGMENT(patchwidths            , size_patchwidths))
-#define drawsegs_PLUSONE        ((drawseg_t __far*)          (drawsegs_BASE          + 1))
-#define render_6800_end         ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs_BASE   , size_drawsegs_PLUS_EXTRA))//
 
-
+#define texturecolumnlumps_bytes_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes >> 16))
+#define texturedefs_bytes_segment        ((segment_t) ((int32_t)texturedefs_bytes >> 16))
+#define spritetopoffsets_segment         ((segment_t) ((int32_t)spritetopoffsets >> 16))
+#define texturedefs_offset_segment       ((segment_t) ((int32_t)texturedefs_offset >> 16))
+#define masked_lookup_segment            ((segment_t) ((int32_t)masked_lookup >> 16))
+#define masked_headers_segment           ((segment_t) ((int32_t)masked_headers >> 16))
+#define patchwidths_segment              ((segment_t) ((int32_t)patchwidths >> 16))
+#define drawsegs_BASE_segment            ((segment_t) ((int32_t)drawsegs_BASE >> 16))
+#define finetangentinner_segment         ((segment_t) ((int32_t)finetangentinner >> 16))
 #define render_6800_end_segment          ((segment_t) ((int32_t)render_6800_end >> 16))
 
 
@@ -1185,16 +1177,22 @@ spritedefs_bytes    7410:0000
 // masked_lookup              634F:0000
 // masked_headers             636A:0000
 // patchwidths                6370:0000
-// drawsegs_BASE              6506:0000
-// drawsegs_PLUSONE           6506:0020
-// [empty]                    65B0:0000
+
+// drawsegs_BASE              63AC:0000
+// drawsegs_PLUSONE           63AC:0020
+// finetangentinner           65B0:0000
+
+// [empty]                    67B0:0000
+
 
 //FREEBYTES
-// 9472 (!) bytes free till 6000:8000 
+// 1280 bytes free till 6000:8000 
+
+
+
+
 
 // 0x4000 BLOCK RENDER
-
-
 #define FUZZ_LOOP_LENGTH              16
 
 #define size_segs_render              MAX_SEGS_RENDER_SIZE
@@ -1322,7 +1320,7 @@ compositetextureoffset  4F0E:01AC
 
 #define lumpinfo5000 ((lumpinfo_t __far*) 0x54000000)
 #define lumpinfo9000 ((lumpinfo_t __far*) 0x94000000)
-#define lumpinfoinit ((lumpinfo_t __far*) baselowermemoryaddress)
+#define lumpinfoinit ((lumpinfo_t __far*) uppermemoryblock)
 
 
 #define ANIMS_DOOMDATA_SIZE     0x1B5

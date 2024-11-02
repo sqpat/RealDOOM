@@ -300,7 +300,7 @@ found:
 	 
 
 	// todo this is old and out of date, but informative.
-	// update!
+	// update! or make a script that does this.
 
 	//					PHYSICS			RENDER					ST/HUD			DEMO		PALETTE			FWIPE				MENU		INTERMISSION
 	// BLOCK
@@ -440,9 +440,12 @@ void __near Z_LoadBinaries() {
 	FAR_fread(finesine, 4, 10240, fp);
 	DEBUG_PRINT(".");
 
+	Z_QuickMapRender();
+
 	//8192
 	FAR_fread(finetangentinner, 4, 2048, fp);
 	DEBUG_PRINT(".");
+	Z_QuickMapPhysics();
 
 	//274
 	FAR_fread(doomednum, 2, NUMMOBJTYPES, fp);
