@@ -1127,7 +1127,13 @@ R_PointToAngle(y, x);
 	fastparm = M_CheckParm("-fast");
 
 	if (M_CheckParm("-mem")){
-		I_Error("\nBYTES LEFT: %i %x (DS : %x to %x BASEMEM : %x)\n", 16 * (base_lower_memory_segment - stored_ds) - 0x1000, 16 * (base_lower_memory_segment - stored_ds)- 0x100, stored_ds, stored_ds + 0x100, base_lower_memory_segment);
+		//todo whats the -100 about? should it be 400?
+		I_Error("\nBYTES LEFT: %i %x (DS : %x to %x BASEMEM : %x)\n", 
+		16 * (base_lower_memory_segment - stored_ds) - 0x1000, 
+		16 * (base_lower_memory_segment - stored_ds )- 0x100, 
+		stored_ds, 
+		stored_ds + 0x100, 
+		base_lower_memory_segment);
 	}
 
 

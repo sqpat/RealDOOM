@@ -88,8 +88,8 @@ boolean         autostart;
 boolean         advancedemo;
 boolean         modifiedgame;
 boolean         shareware;
-boolean         registered;
-boolean         commercial;
+boolean         registered;	// doom 1 
+boolean         commercial; // doom 2 +
 
 
 
@@ -503,12 +503,11 @@ uint8_t quality_port_lookup[12] = {
 */
 
 uint16_t visplane_offset[25] = {
-	0,
-	646 ,1292, 1938, 2584, 3230, 
-	3876, 4522, 5168, 5814, 6460, 
-	7106, 7752, 8398, 9044, 9690, 
-	10336, 10982, 11628, 12274, 12920, 
-	13566, 14212, 14858, 15504
+	0, 646 ,1292, 1938, 2584, 
+	3230,  3876, 4522, 5168, 5814, 
+	6460,  7106, 7752, 8398, 9044, 
+	9690,  10336, 10982, 11628, 12274, 
+	12920,  13566, 14212, 14858, 15504
 };
 
 uint16_t vga_read_port_lookup[12] = {
@@ -1143,18 +1142,7 @@ int16_t		finalestage;
 int16_t		finalecount;
 
 
-
-int16_t	e1text = E1TEXT;
-int16_t	e2text = E2TEXT;
-int16_t	e3text = E3TEXT;
-int16_t	e4text = E4TEXT;
-
-int16_t	c1text = C1TEXT;
-int16_t	c2text = C2TEXT;
-int16_t	c3text = C3TEXT;
-int16_t	c4text = C4TEXT;
-int16_t	c5text = C5TEXT;
-int16_t	c6text = C6TEXT;
+ 
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 int16_t	p1text = P1TEXT;
@@ -1351,7 +1339,7 @@ menu_t  EpiDef ={
 menuitem_t NewGameMenu[]={
     {1,21,       M_ChooseSkill, 'i'},
     {1,22,       M_ChooseSkill, 'h'},
-    {1,20,        M_ChooseSkill, 'h'},
+    {1,20,       M_ChooseSkill, 'h'},
     {1,25,       M_ChooseSkill, 'u'},
     {1,26,       M_ChooseSkill, 'n'}
 };
@@ -1636,85 +1624,85 @@ THINKERREF		activeplats[MAXPLATS];
 weaponinfo_t	weaponinfo[NUMWEAPONS] =
 {
     {
-	// fist
-	am_noammo,
-	S_PUNCHUP,
-	S_PUNCHDOWN,
-	S_PUNCH,
-	S_PUNCH1,
-	S_NULL
+		// fist
+		am_noammo,
+		S_PUNCHUP,
+		S_PUNCHDOWN,
+		S_PUNCH,
+		S_PUNCH1,
+		S_NULL
     },	
     {
-	// pistol
-	am_clip,
-	S_PISTOLUP,
-	S_PISTOLDOWN,
-	S_PISTOL,
-	S_PISTOL1,
-	S_PISTOLFLASH
+		// pistol
+		am_clip,
+		S_PISTOLUP,
+		S_PISTOLDOWN,
+		S_PISTOL,
+		S_PISTOL1,
+		S_PISTOLFLASH
     },	
     {
-	// shotgun
-	am_shell,
-	S_SGUNUP,
-	S_SGUNDOWN,
-	S_SGUN,
-	S_SGUN1,
-	S_SGUNFLASH1
+		// shotgun
+		am_shell,
+		S_SGUNUP,
+		S_SGUNDOWN,
+		S_SGUN,
+		S_SGUN1,
+		S_SGUNFLASH1
     },
     {
-	// chaingun
-	am_clip,
-	S_CHAINUP,
-	S_CHAINDOWN,
-	S_CHAIN,
-	S_CHAIN1,
-	S_CHAINFLASH1
+		// chaingun
+		am_clip,
+		S_CHAINUP,
+		S_CHAINDOWN,
+		S_CHAIN,
+		S_CHAIN1,
+		S_CHAINFLASH1
     },
     {
-	// missile launcher
-	am_misl,
-	S_MISSILEUP,
-	S_MISSILEDOWN,
-	S_MISSILE,
-	S_MISSILE1,
-	S_MISSILEFLASH1
+		// missile launcher
+		am_misl,
+		S_MISSILEUP,
+		S_MISSILEDOWN,
+		S_MISSILE,
+		S_MISSILE1,
+		S_MISSILEFLASH1
     },
     {
-	// plasma rifle
-	am_cell,
-	S_PLASMAUP,
-	S_PLASMADOWN,
-	S_PLASMA,
-	S_PLASMA1,
-	S_PLASMAFLASH1
+		// plasma rifle
+		am_cell,
+		S_PLASMAUP,
+		S_PLASMADOWN,
+		S_PLASMA,
+		S_PLASMA1,
+		S_PLASMAFLASH1
     },
     {
-	// bfg 9000
-	am_cell,
-	S_BFGUP,
-	S_BFGDOWN,
-	S_BFG,
-	S_BFG1,
-	S_BFGFLASH1
+		// bfg 9000
+		am_cell,
+		S_BFGUP,
+		S_BFGDOWN,
+		S_BFG,
+		S_BFG1,
+		S_BFGFLASH1
     },
     {
-	// chainsaw
-	am_noammo,
-	S_SAWUP,
-	S_SAWDOWN,
-	S_SAW,
-	S_SAW1,
-	S_NULL
+		// chainsaw
+		am_noammo,
+		S_SAWUP,
+		S_SAWDOWN,
+		S_SAW,
+		S_SAW1,
+		S_NULL
     },
     {
-	// super shotgun
-	am_shell,
-	S_DSGUNUP,
-	S_DSGUNDOWN,
-	S_DSGUN,
-	S_DSGUN1,
-	S_DSGUNFLASH1
+		// super shotgun
+		am_shell,
+		S_DSGUNUP,
+		S_DSGUNDOWN,
+		S_DSGUN,
+		S_DSGUN1,
+		S_DSGUNFLASH1
     },	
 };
 
@@ -1826,7 +1814,7 @@ fixed_t_union		tmymove;
 // P_LineAttack
 //
 mobj_t __near*		linetarget;	// who got hit (or NULL)
-mobj_pos_t __far*		linetarget_pos;	// who got hit (or NULL)
+mobj_pos_t __far*	linetarget_pos;	// who got hit (or NULL)
 mobj_t __near*		shootthing;
 
 // Height if not aiming up or down
@@ -1851,7 +1839,7 @@ fixed_t_union		cachedt2y;
 
 boolean		crushchange;
 boolean		nofit;
- intercept_t __far*	intercept_p;
+intercept_t __far*	intercept_p;
 
 divline_t 	trace;
 boolean 	earlyout;
@@ -1868,7 +1856,7 @@ divline_t		dl;
 p_spec_anim_t	anims[MAXANIMS];
 p_spec_anim_t __near*		lastanim;
 boolean		levelTimer;
-ticcount_t		levelTimeCount;
+ticcount_t	levelTimeCount;
 int16_t		numlinespecials;
 
 
@@ -2298,7 +2286,7 @@ cache_node_page_count_t 	spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 cache_node_page_count_t		texturecache_nodes[NUM_TEXTURE_PAGES];
 cache_node_t 				flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 boolean						is_ultimate = false;
-uint8_t __far*				spritewidths;
+segment_t   				spritewidths_segment;
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 boolean    					plutonia = false;

@@ -426,8 +426,7 @@ void __near AM_minOutWindowScale(void) {
 //
 // set the window scale to the minimum size
 //
-void __near AM_maxOutWindowScale(void)
-{
+void __near AM_maxOutWindowScale(void) {
     am_scale_mtof.w = am_max_scale_mtof.w;
     am_scale_ftom.w = FixedDivWholeA(1, am_scale_mtof.w);
     AM_activateNewScale();
@@ -764,7 +763,6 @@ boolean __near AM_clipMline ( mline_t __near*	ml) {
 // Clip lines, draw visible part sof lines.
 //
 void __near AM_drawMline ( mline_t __near*	ml, uint8_t	color ) {
-
 	if (AM_clipMline(ml)){
 		register int16_t x;
 		register int16_t y;

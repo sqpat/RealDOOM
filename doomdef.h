@@ -57,7 +57,8 @@ enum { VERSION =  109 };
 #if DEBUG_PRINTING
     void __far DEBUG_PRINT (int8_t *error, ...);
 #else
-	#define DEBUG_PRINT(...) 
+    //void __far DEBUG_PRINT (int8_t *error, ...);
+	#define DEBUG_PRINT(...)
 #endif
 
 // Print player fields by tic to file. useful for debugging 16 vs 32 bit demo playback

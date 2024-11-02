@@ -65,9 +65,9 @@ void __near R_ClipSolidWallSegment ( int16_t first, int16_t last ) {
 			next = newend;
 			newend++;
 
-			//if (newend - solidsegs > MAX_SEGS){
-			//	I_Error("blah");
-			//}
+			if (newend - solidsegs > MAX_SEGS){
+				I_Error("segs1"); //todo remove
+			}
 	    
 			// 1/11/98 killough: performance tuning using fast memmove
 			memmove(start + 1, start, (++newend - start) * sizeof(*start));
@@ -123,9 +123,9 @@ void __near R_ClipSolidWallSegment ( int16_t first, int16_t last ) {
     }
 
     newend = start+1;
-		//if (newend - solidsegs > MAX_SEGS){
-		//		I_Error("blah2");
-		//	}
+	if (newend - solidsegs > MAX_SEGS){
+		I_Error("segs2"); //todo remove
+	}
 }
 
 
@@ -382,61 +382,61 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 		 2;
 
 	boxpos = (boxy << 2) + boxx;
-	if (boxpos == 5)
+	if (boxpos == 5){
 		return true;
+	}
 
-	switch (boxpos)
-	{
-	case 0:
-		x1 = bspcoord[BOXRIGHT];
-		y1 = bspcoord[BOXTOP];
-		x2 = bspcoord[BOXLEFT];
-		y2 = bspcoord[BOXBOTTOM];
-		break;
-	case 1:
-		x1 = bspcoord[BOXRIGHT];
-		y1 = y2 = bspcoord[BOXTOP];
-		x2 = bspcoord[BOXLEFT];
-		break;
-	case 2:
-		x1 = bspcoord[BOXRIGHT];
-		y1 = bspcoord[BOXBOTTOM];
-		x2 = bspcoord[BOXLEFT];
-		y2 = bspcoord[BOXTOP];
-		break;
-	case 3:
-	case 7:
-	 // todo optimize since angle1 = angle 2? how common is this.
-	 // span would be 0
-		x1 = x2 = y1 = y2 = bspcoord[BOXTOP];
-		break;
-	case 4:
-		x1 = x2 = bspcoord[BOXLEFT];
-		y1 = bspcoord[BOXTOP];
-		y2 = bspcoord[BOXBOTTOM];
-		break;
-	case 6:
-		x1 = x2 = bspcoord[BOXRIGHT];
-		y1 = bspcoord[BOXBOTTOM];
-		y2 = bspcoord[BOXTOP];
-		break;
-	case 8:
-		x1 = bspcoord[BOXLEFT];
-		y1 = bspcoord[BOXTOP];
-		x2 = bspcoord[BOXRIGHT];
-		y2 = bspcoord[BOXBOTTOM];
-		break;
-	case 9:
-		x1 = bspcoord[BOXLEFT];
-		y1 = y2 = bspcoord[BOXBOTTOM];
-		x2 = bspcoord[BOXRIGHT];
-		break;
-	case 10:
-		x1 = bspcoord[BOXLEFT];
-		y1 = bspcoord[BOXBOTTOM];
-		x2 = bspcoord[BOXRIGHT];
-		y2 = bspcoord[BOXTOP];
-		break;
+	switch (boxpos) {
+		case 0:
+			x1 = bspcoord[BOXRIGHT];
+			y1 = bspcoord[BOXTOP];
+			x2 = bspcoord[BOXLEFT];
+			y2 = bspcoord[BOXBOTTOM];
+			break;
+		case 1:
+			x1 = bspcoord[BOXRIGHT];
+			y1 = y2 = bspcoord[BOXTOP];
+			x2 = bspcoord[BOXLEFT];
+			break;
+		case 2:
+			x1 = bspcoord[BOXRIGHT];
+			y1 = bspcoord[BOXBOTTOM];
+			x2 = bspcoord[BOXLEFT];
+			y2 = bspcoord[BOXTOP];
+			break;
+		case 3:
+		case 7:
+		// todo optimize since angle1 = angle 2? how common is this.
+		// span would be 0
+			x1 = x2 = y1 = y2 = bspcoord[BOXTOP];
+			break;
+		case 4:
+			x1 = x2 = bspcoord[BOXLEFT];
+			y1 = bspcoord[BOXTOP];
+			y2 = bspcoord[BOXBOTTOM];
+			break;
+		case 6:
+			x1 = x2 = bspcoord[BOXRIGHT];
+			y1 = bspcoord[BOXBOTTOM];
+			y2 = bspcoord[BOXTOP];
+			break;
+		case 8:
+			x1 = bspcoord[BOXLEFT];
+			y1 = bspcoord[BOXTOP];
+			x2 = bspcoord[BOXRIGHT];
+			y2 = bspcoord[BOXBOTTOM];
+			break;
+		case 9:
+			x1 = bspcoord[BOXLEFT];
+			y1 = y2 = bspcoord[BOXBOTTOM];
+			x2 = bspcoord[BOXRIGHT];
+			break;
+		case 10:
+			x1 = bspcoord[BOXLEFT];
+			y1 = bspcoord[BOXBOTTOM];
+			x2 = bspcoord[BOXRIGHT];
+			y2 = bspcoord[BOXTOP];
+			break;
 	}
 
 	// check clip list for an open space
@@ -446,8 +446,9 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 	span.wu = angle1.wu - angle2.wu;
 
 	// Sitting on a line?
-	if (span.hu.intbits >= ANG180_HIGHBITS)
+	if (span.hu.intbits >= ANG180_HIGHBITS){
 		return true;
+	}
 
 	tspan.wu = angle1.wu;
 	tspan.hu.intbits += clipangle;
@@ -456,8 +457,9 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 		tspan.hu.intbits -= fieldofview;
 
 		// Totally off the left edge?
-		if (tspan.wu >= span.wu)
+		if (tspan.wu >= span.wu){
 			return false;
+		}
 
 		angle1.hu.intbits = clipangle;
 		angle1.hu.fracbits = 0;
@@ -470,8 +472,9 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 		tspan.hu.intbits -= fieldofview;
 
 		// Totally off the left edge?
-		if (tspan.wu >= span.wu)
+		if (tspan.wu >= span.wu){
 			return false;
+		}
 
 		angle2.hu.intbits = -clipangle;
 	}
@@ -486,16 +489,17 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
  
 
 	// Does not cross a pixel.
-	if (sx1 == sx2)
+	if (sx1 == sx2){
 		return false;
+	}
 	sx2--;
 
 	start = solidsegs;
-	while (start->last < sx2)
+	while (start->last < sx2){
 		start++;
+	}
 
-	if (sx1 >= start->first && sx2 <= start->last)
-	{
+	if (sx1 >= start->first && sx2 <= start->last) {
 		// The clippost contains the new span.
 		return false;
 	}
@@ -620,11 +624,11 @@ void __far R_RenderBSPNode() {
 			bspnum = node_children[bspnum].children[side];
 		}
 		 
-		if (bspnum == -1)
+		if (bspnum == -1){
 			R_Subsector(0);
-		else
+		} else {
 			R_Subsector(bspnum & (~NF_SUBSECTOR));
-
+		}
 		if (sp == 0) {
 			//back at root node and not visible. All done!
 			return;
@@ -645,8 +649,7 @@ void __far R_RenderBSPNode() {
 
 		while (!R_CheckBBox(((node_render_t __far *)MK_FP(NODES_RENDER_SEGMENT+ bspnum, 0))->bbox[side ^ 1]))  // - todo only used once, is it better to inline this? - sq
 		{
-			if (sp == 0)
-			{
+			if (sp == 0) {
 				//back at root node and not visible. All done!
 				return;
 			}

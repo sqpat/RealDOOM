@@ -690,18 +690,7 @@ extern uint8_t mapnamest[32];
 extern int16_t		finalestage;
 
 extern int16_t		finalecount;
-
-extern int16_t 	e1text;
-extern int16_t	e2text;
-extern int16_t	e3text;
-extern int16_t	e4text;
-
-extern int16_t	c1text;
-extern int16_t	c2text;
-extern int16_t	c3text;
-extern int16_t	c4text;
-extern int16_t	c5text;
-extern int16_t	c6text;
+ 
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 extern int16_t	p1text;
@@ -1024,7 +1013,7 @@ typedef	struct
 } cliprange_t;
 
 
-#define MAXSEGS		64
+#define MAXSEGS		32
 
 // newend is one past the last valid seg
 extern cliprange_t __near*	newend;
@@ -1108,7 +1097,7 @@ extern cache_node_page_count_t	texturecache_nodes[NUM_TEXTURE_PAGES];
 extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 
 extern boolean				    is_ultimate;
-extern uint8_t __far*			spritewidths;
+extern segment_t			    spritewidths_segment;
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 extern boolean    				plutonia;

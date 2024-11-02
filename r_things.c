@@ -478,7 +478,8 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     if (x1 > viewwidth)
         return;
     
-    usedwidth = spritewidths[spriteindex];
+    usedwidth =  *((uint8_t __far*) MK_FP(spritewidths_segment, spriteindex));
+
     if (usedwidth == 1){
         usedwidth = 257;
     }
@@ -659,7 +660,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframe
 
 
  	temp.h.fracbits = 0;
-    usedwidth = spritewidths[spriteindex];
+    usedwidth =  *((uint8_t __far *)MK_FP(spritewidths_segment, spriteindex));
     if (usedwidth == 1){
         usedwidth = 257;
     }

@@ -794,23 +794,22 @@ void __near WI_loadData(void) {
 void __near G_WorldDone (void)  { 
     gameaction = ga_worlddone; 
 
-    if (secretexit) 
+    if (secretexit) {
         player.didsecret = true; 
+	}
 
-    if ( commercial )
-    {
-        switch (gamemap)
-        {
-          case 15:
-          case 31:
-            if (!secretexit)
-                break;
-          case 6:
-          case 11:
-          case 20:
-          case 30:
-            F_StartFinale ();
-            break;
+    if ( commercial ) {
+        switch (gamemap) {
+			case 15:
+			case 31:
+				if (!secretexit)
+					break;
+			case 6:
+			case 11:
+			case 20:
+			case 30:
+				F_StartFinale ();
+				break;
         }
     }
 } 
@@ -844,10 +843,11 @@ void __far  WI_Ticker(void) {
 	bcnt++;
 	if (bcnt == 1) {
 		// intermission music
-		if (commercial)
+		if (commercial){
 			S_ChangeMusic(mus_dm2int, true);
-		else
+		} else {
 			S_ChangeMusic(mus_inter, true);
+		}
 	}
 
 	WI_checkForAccelerate();
@@ -879,17 +879,17 @@ void __far WI_Drawer (void) {
 	Z_QuickMapIntermission();
 
     switch (state) {
-      case StatCount:
-	    WI_drawStats();
-		break;
+		case StatCount:
+			WI_drawStats();
+			break;
 	
-      case ShowNextLoc:
-		WI_drawShowNextLoc();
-		break;
+		case ShowNextLoc:
+			WI_drawShowNextLoc();
+			break;
 	
-      case NoState:
-		WI_drawNoState();
-		break;
+		case NoState:
+			WI_drawNoState();
+			break;
     }
 	Z_QuickMapPhysics();
 }
@@ -901,14 +901,17 @@ void __near WI_initVariables(wbstartstruct_t __near* wbstartstruct) {
 	cnt = bcnt = 0;
 	plrs = wbs->plyr;
 
-	if (!wbs->maxkills)
+	if (!wbs->maxkills){
 		wbs->maxkills = 1;
+	}
 
-	if (!wbs->maxitems)
+	if (!wbs->maxitems){
 		wbs->maxitems = 1;
+	}
 
-	if (!wbs->maxsecret)
+	if (!wbs->maxsecret){
 		wbs->maxsecret = 1;
+	}
 }
 
 

@@ -73,11 +73,13 @@ void	__near F_CastDrawer (void);
 // Masks a column based masked pic to the screen.
 // Flips horizontally, e.g. to mirror face.
 //
-void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) {
+// patch always 0x50000000
+void __near V_DrawPatchFlipped (int16_t		x, int16_t		y) {
 
 	int16_t		count;
 	int16_t		col;
 	column_t __far*	column;
+	patch_t __far*	patch = (patch_t __far*) 0x50000000;
 	byte __far*	desttop;
 	byte __far*	dest;
 	byte __far*	source;
@@ -95,9 +97,8 @@ void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) {
 
 	w = (patch->width);
 
-	for (; col < w; x++, col++, desttop++)
-	{
-		column = (column_t  __far*)((byte  __far*)patch + (patch->columnofs[w - 1 - col]));
+	for (; col < w; x++, col++, desttop++) {
+		column = (column_t  __far*)MK_FP(0x5000, (patch->columnofs[w - 1 - col]));
 
 		// step through the posts in a column 
 		while (column->topdelta != 0xff)
@@ -112,12 +113,11 @@ void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) {
 				source++;
 				dest += SCREENWIDTH;
 			}
-			column = (column_t  __far*)((byte  __far*)column + column->length
+			column = (column_t  __far*)MK_FP(0x5000,  column->length
 				+ 4);
 		}
 	}
 }
-
 
 
 //
@@ -136,32 +136,32 @@ void __far F_StartFinale (void) {
         // DOOM II and missions packs with E1, M34
 			switch (gamemap) {
 				case 6:
-				finaleflat = "SLIME16";
-				finaletext = c1text;
-				break;
+					finaleflat = "SLIME16";
+					finaletext = C1TEXT;
+					break;
 				case 11:
-				finaleflat = "RROCK14";
-				finaletext = c2text;
-				break;
+					finaleflat = "RROCK14";
+					finaletext = C2TEXT;
+					break;
 				case 20:
-				finaleflat = "RROCK07";
-				finaletext = c3text;
-				break;
+					finaleflat = "RROCK07";
+					finaletext = C3TEXT;
+					break;
 				case 30:
-				finaleflat = "RROCK17";
-				finaletext = c4text;
-				break;
+					finaleflat = "FLOOR4_8";
+					finaletext = C4TEXT;
+					break;
 				case 15:
-				finaleflat = "RROCK13";
-				finaletext = c5text;
-				break;
+					finaleflat = "RROCK13";
+					finaletext = C5TEXT;
+					break;
 				case 31:
-				finaleflat = "RROCK19";
-				finaletext = c6text;
-				break;
+					finaleflat = "RROCK19";
+					finaletext = C6TEXT;
+					break;
 				default:
-				// Ouch.
-				break;
+					// Ouch.
+					break;
 			}
 		#else
 			if (plutonia) {
@@ -263,24 +263,25 @@ void __far F_StartFinale (void) {
 		switch (gameepisode) {
 			case 1:
 				finaleflat = "FLOOR4_8";
-				finaletext = e1text;
+				//finaletext = E1TEXT;
 				break;
 			case 2:
 				finaleflat = "SFLR6_1";
-				finaletext = e2text;
+				//finaletext = E2TEXT;
 				break;
 			case 3:
 				finaleflat = "MFLR8_4";
-				finaletext = e3text;
+				//finaletext = E3TEXT;
 				break;
 			case 4:
 				finaleflat = "MFLR8_3";
-				finaletext = e4text;
+				//finaletext = E4TEXT;
 				break;
 			default:
 				// Ouch.
 				break;
 		}
+		finaletext = (E1TEXT-1) + gameepisode;
 		finalemusic = mus_victor;
     }
     
@@ -350,7 +351,7 @@ void __far F_Ticker (void) {
 #include "hu_stuff.h"
 
 void __near F_TextWrite (void) {
-	byte __far*	dest = screen0;
+	uint16_t dest = 0;
     
     int16_t		x,y,w;
     int16_t		count;
@@ -360,20 +361,21 @@ void __near F_TextWrite (void) {
     int16_t		cx;
     int16_t		cy;
      // erase the entire screen to a tiled background
-	byte __far* src = (byte __far*)0x50000000;
+	//byte __far* src = (byte __far*)0x50000000;
 
 	Z_QuickMapScratch_5000();
 	Z_QuickMapScreen0();
-	W_CacheLumpNameDirect(finaleflat, src);
+	W_CacheLumpNameDirect(finaleflat, MK_FP(0x5000, 0x0000));
+	//I_Error("finale flat %s", finaleflat);
 
     for (y=0 ; y<SCREENHEIGHT ; y++) {
 		for (x=0 ; x<SCREENWIDTH/64 ; x++) {
-			FAR_memcpy (dest, src+((y&63)<<6), 64);
+			FAR_memcpy (MK_FP(screen0_segment, dest), MK_FP(0x5000, ((y&63)<<6)), 64);
 			dest += 64;
 		}
 	 
     }
-	Z_QuickMapStatus();
+	Z_QuickMapStatus();	
 
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
     
@@ -389,8 +391,9 @@ void __near F_TextWrite (void) {
 	}
     for ( ; count ; count-- ) {
 		c = *ch++;
-		if (!c)
+		if (!c){
 			break;
+		}
 		if (c == '\n') {
 			cx = 10;
 			cy += 11;
@@ -404,8 +407,9 @@ void __near F_TextWrite (void) {
 		}
 			
 		w =  (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
-		if (cx+w > SCREENWIDTH)
+		if (cx+w > SCREENWIDTH){
 			break;
+		}
 		V_DrawPatch(cx, cy, 0, (patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]));
 		cx+=w;
     }
@@ -461,8 +465,7 @@ void __near F_CastTicker (void) {
 		S_StartSound (NULL, getSeeState(castorder[castnum].type));
 		caststate = &states[getSeeState(castorder[castnum].type)];
 		castframes = 0;
-	}
-	else {
+	} else {
 		// just advance to next state in animation
 		if (caststate == &states[S_PLAY_ATK1]){
 			goto stopattack;	// Oh, gross hack!
@@ -647,12 +650,11 @@ void __near F_CastDrawer (void) {
 	
 	Z_QuickMapScratch_5000();
 
-	W_CacheLumpNumDirect(lump + firstspritelump, (byte __far*)patch);
+	W_CacheLumpNumDirect(lump + firstspritelump, (byte __far*)0x50000000);
 
 	if (flip) {
-		V_DrawPatchFlipped(160, 170, patch);
-	}
-	else {
+		V_DrawPatchFlipped(160, 170);
+	} else {
 		V_DrawPatch(160, 170, 0, patch);
 	}
 
@@ -747,7 +749,6 @@ void __near F_BunnyScroll (void) {
 			totaloffset += columnoffset;
 			if (pic2){
 				W_CacheLumpNumDirectFragment(W_GetNumForName("PFUB1"), lookupoffset, totaloffset);
-				
 			} else {
 				W_CacheLumpNumDirectFragment(W_GetNumForName("PFUB2"), lookupoffset, totaloffset);
 			}
@@ -761,8 +762,9 @@ void __near F_BunnyScroll (void) {
 
     }
 	
-    if (finalecount < 1130)
+    if (finalecount < 1130){
 		return;
+	}
     
 	if (finalecount < 1180) {
 		W_CacheLumpNameDirect("END0", (byte __far*)patch);
@@ -773,9 +775,10 @@ void __near F_BunnyScroll (void) {
     }
 	
     stage = (finalecount-1180) / 5;
-    if (stage > 6)
+    if (stage > 6){
 		stage = 6;
-    if (stage > finale_laststage) {
+	}
+	if (stage > finale_laststage) {
 		S_StartSound (NULL, sfx_pistol);
 		finale_laststage = stage;
     }

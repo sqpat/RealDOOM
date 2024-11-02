@@ -149,7 +149,7 @@ void __near G_DoLoadLevel(void) {
 
 
 
-void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t           map) {
+void __far G_InitNew (skill_t skill, int8_t episode, int8_t map) {
 	int16_t             i;
 
 	if (paused) {

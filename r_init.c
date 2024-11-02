@@ -60,9 +60,9 @@ uint8_t R_FlatNumForName(int8_t* name);
 void R_InitSpriteLumps(void) {
 	int16_t         i;
 	if (is_ultimate){
-		spritewidths = spritewidths_ult;
+		spritewidths_segment = spritewidths_ult_segment;
 	} else {
-		spritewidths = spritewidths_normal;
+		spritewidths_segment = spritewidths_normal_segment;
 	}
 	for (i = 0; i < numspritelumps; i++) {
 		patch_t     __far*patch;
@@ -93,9 +93,9 @@ void R_InitSpriteLumps(void) {
 		// we will hack in the case that 1 == 257 in the engine and store in uint8_t (gross but saves 1300 bytes)
 
 		if (patchwidth == 257)
-			spritewidths[i] = 1;
+			*((uint8_t __far *)MK_FP(spritewidths_segment, i)) = 1;
 		else
-			spritewidths[i] = patchwidth;
+			*((uint8_t __far *)MK_FP(spritewidths_segment, i)) = patchwidth;
 
 		// left offset between -151 and 130 in practice. 
 		//  negatives are only ever used for psprites, and psprites are always negative so we encode positve and change

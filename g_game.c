@@ -451,8 +451,6 @@ void __near G_Ticker (void)  {
 
 	if (demoplayback) {
 		G_ReadDemoTiccmd(cmd);
-
-
 	}
 	if (demorecording) {
 		G_WriteDemoTiccmd(cmd);
@@ -491,17 +489,17 @@ void __near G_Ticker (void)  {
 			HU_Ticker ();
 			break;
          
-		  case GS_INTERMISSION: 
-			WI_Ticker (); 
-			break;
+        case GS_INTERMISSION: 
+            WI_Ticker (); 
+            break;
                          
-		  case GS_FINALE: 
+        case GS_FINALE: 
 			Z_QuickMapStatus();
 			F_Ticker();
 			Z_QuickMapPhysics();		
 			break;
  
-		  case GS_DEMOSCREEN: 
+        case GS_DEMOSCREEN: 
 			D_PageTicker (); 
 			break;
     }        
@@ -579,10 +577,11 @@ void __far G_ExitLevel (void)
 // Here's for the german edition.
 void __far G_SecretExitLevel (void) { 
     // IF NO WOLF3D LEVELS, NO SECRET EXIT!
-    if ( (commercial) && (W_CheckNumForName("map31")<0))
+    if ( (commercial) && (W_CheckNumForName("map31")<0)){
         secretexit = false;
-    else
+    } else {
         secretexit = true; 
+    }
     gameaction = ga_completed; 
 } 
  
@@ -592,21 +591,21 @@ void __near G_DoCompleted (void)  {
  
 	G_PlayerFinishLevel(0); // take away cards and stuff
 
-    if (automapactive) 
+    if (automapactive) {
         AM_Stop (); 
-        
-    if (!commercial)
-        switch(gamemap)
-        {
-          case 8:
-            gameaction = ga_victory;
-            return;
-          case 9: 
-            player.didsecret = true; 
-            break;
+    }
+    
+    if (!commercial){
+        switch(gamemap) {
+            case 8:
+                gameaction = ga_victory;
+                return;
+            case 9: 
+                player.didsecret = true; 
+                break;
         }
-                
- 
+    }
+
     
          
     wminfo.didsecret = player.didsecret; 
@@ -615,50 +614,58 @@ void __near G_DoCompleted (void)  {
     
     // wminfo.next is 0 biased, unlike gamemap
     if (commercial) {
-        if (secretexit)
+        if (secretexit) {
             switch(gamemap) {
-              case 15: wminfo.next = 30; break;
-              case 31: wminfo.next = 31; break;
-            } else {
-                switch(gamemap) {
-                    case 31:
-                    case 32: wminfo.next = 15; break;
-                    default: wminfo.next = gamemap;
-                }
+                case 15: 
+                    wminfo.next = 30; 
+                    break;
+                case 31: 
+                    wminfo.next = 31; 
+                    break;
             }
+        } else {
+            switch(gamemap) {
+                case 31:
+                case 32: 
+                    wminfo.next = 15; 
+                    break;
+                default: 
+                    wminfo.next = gamemap;
+            }
+        }
     } else {
         if (secretexit) 
             wminfo.next = 8;    // go to secret level 
         else if (gamemap == 9) {
             // returning from secret level 
             switch (gameepisode)  { 
-              case 1: 
-                wminfo.next = 3; 
-                break; 
-              case 2: 
-                wminfo.next = 5; 
-                break; 
-              case 3: 
-                wminfo.next = 6; 
-                break; 
-              case 4:
-                wminfo.next = 2;
-                break;
+                case 1: 
+                    wminfo.next = 3; 
+                    break; 
+                case 2: 
+                    wminfo.next = 5; 
+                    break; 
+                case 3: 
+                    wminfo.next = 6; 
+                    break; 
+                case 4:
+                    wminfo.next = 2;
+                    break;
             }                
-        } 
-        else 
+        } else {
             wminfo.next = gamemap;          // go to next level 
+        }
     }
                  
     wminfo.maxkills = totalkills; 
     wminfo.maxitems = totalitems; 
     wminfo.maxsecret = totalsecret; 
 
-	if ( commercial )
+	if ( commercial ){
         wminfo.partime = cpars[gamemap-1]; 
-    else
+    } else {
         wminfo.partime = pars[10*gameepisode+gamemap]; 
-
+    }
  
 	wminfo.plyr.in = true;
     wminfo.plyr.skills = player.killcount; 
@@ -910,7 +917,7 @@ void __far G_DeferedPlayDemo (int8_t* name)  {
  
 void __near G_DoPlayDemo (void)  { 
     skill_t skill; 
-	int8_t             episode, map;
+	int8_t episode, map;
 	byte __far* demo_addr;
 	Z_QuickMapDemo();
 
