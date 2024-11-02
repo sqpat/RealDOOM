@@ -72,8 +72,7 @@ void __near P_SetPsprite(int8_t		position, statenum_t	stnum);
 // from the bottom of the screen.
 // Uses player
 //
-void __near P_BringUpWeapon ()
-{
+void __near P_BringUpWeapon () {
     statenum_t	newstate;
 	
 	if (player.pendingweapon == wp_nochange) {

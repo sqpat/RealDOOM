@@ -27,9 +27,6 @@
 int8_t __near cht_CheckCheat ( cheatseq_t __near* cht, int8_t key ) {
 	int8_t rc = 0;
 
-
-    //I_Error("not null");
-    return 0;
     if (!cht->p){
 	    cht->p = cht->sequence; // initialize if first time
     }

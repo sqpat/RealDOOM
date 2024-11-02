@@ -441,8 +441,7 @@ void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t l
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos)
-{
+void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos){
     int16_t		blockx;
     int16_t		blocky;
 	mobj_t __near* changeThing;
@@ -805,8 +804,7 @@ boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t
 //
 // PIT_AddThingIntercepts
 //
-boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thing, mobj_pos_t __far* thing_pos)
-{
+boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thing, mobj_pos_t __far* thing_pos) {
     fixed_t_union		x1;
 	fixed_t_union		y1;
 	fixed_t_union		x2;
@@ -919,14 +917,7 @@ void __near P_TraverseIntercepts( traverser_t	func) {
 // Returns true if the traverser function returns true
 // for all lines.
 //
-void __near P_PathTraverse
-( fixed_t_union		x1,
-  fixed_t_union		y1,
-	fixed_t_union		x2,
-	fixed_t_union		y2,
-  uint8_t			flags,
-  boolean __near(*   trav) (intercept_t  __far*))
-{
+void __near P_PathTraverse ( fixed_t_union x1, fixed_t_union y1, fixed_t_union x2, fixed_t_union y2, uint8_t flags, boolean __near(*   trav) (intercept_t  __far*)) {
     int16_t	xt1;
     int16_t	yt1;
     int16_t	xt2;

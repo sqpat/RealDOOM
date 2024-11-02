@@ -71,9 +71,7 @@ int16_t __far I_ResetMouse(void);
    Ends processing of a specific task.
 ---------------------------------------------------------------------*/
 
-void __near TS_Terminate()
-
-{
+void __near TS_Terminate() {
 	//_disable();
 	//free(&HeadTask);
 	TS_SetTimerToMaxTaskRate();
@@ -89,8 +87,7 @@ void __near TS_Terminate()
 ---------------------------------------------------------------------*/
 
 void __near TS_Shutdown(void) {
-	if (TS_Installed)
-	{
+	if (TS_Installed) {
 		TS_FreeTaskList();
 		TS_SetClockSpeed(0);
 		_dos_setvect(0x08, OldInt8);
@@ -103,18 +100,17 @@ void __near TS_Shutdown(void) {
 	}
 }
 
-void __near I_ShutdownTimer(void)
-{
+void __near I_ShutdownTimer(void) {
 	TS_Terminate();
 	TS_Shutdown();
 }
 
 
 
-void __near I_ShutdownKeyboard(void)
-{
-	if (oldkeyboardisr)
+void __near I_ShutdownKeyboard(void) {
+	if (oldkeyboardisr){
 		_dos_setvect(KEYBOARDINT, oldkeyboardisr);
+	}
 	*(int16_t __far*)0x41c = *(int16_t __far*)0x41a;      // clear bios key buffer
 }
  
@@ -151,13 +147,13 @@ void __near Z_ShutdownEMS() {
 		if (emshandle) {
 			Z_QuickMapUnmapAll();
 
-				regs.w.dx = emshandle; // handle
-				regs.h.ah = 0x45;
-				intx86(EMS_INT, &regs, &regs);
-				result = regs.h.ah;
-				if (result != 0) {
-					DEBUG_PRINT("Failed deallocating EMS memory! %i!\n", result);
-				}
+			regs.w.dx = emshandle; // handle
+			regs.h.ah = 0x45;
+			intx86(EMS_INT, &regs, &regs);
+			result = regs.h.ah;
+			if (result != 0) {
+				DEBUG_PRINT("Failed deallocating EMS memory! %i!\n", result);
+			}
 		}
 	#endif
 
@@ -196,17 +192,16 @@ void __near I_Shutdown(void) {
 //
 // M_SaveDefaults
 //
-void __near M_SaveDefaults (void)
-{
+void __near M_SaveDefaults (void) {
     int8_t		i;
     int8_t		j;
     uint8_t		v;
     FILE*	f;
 	int8_t	currentvchar;
     f = fopen (defaultfile, "w");
-    if (!f)
+    if (!f){
 	    return; // can't write the file, but don't complain
-		
+	}
     for (i=0 ; i< NUM_DEFAULTS; i++) {
         if (defaults[i].scantranslate){
             defaults[i].location = &defaults[i].untranslated;
@@ -247,11 +242,9 @@ void __near M_SaveDefaults (void)
 // Shuts down net game, saves defaults, prints the exit text message,
 // goes to text mode, and exits.
 //
-void __near I_Quit(void)
-{
+void __near I_Quit(void) {
 
-	if (demorecording)
-	{
+	if (demorecording) {
 		G_CheckDemoStatus();
 	}
 

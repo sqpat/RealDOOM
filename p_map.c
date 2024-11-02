@@ -158,8 +158,7 @@ int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 
 
 
-boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos)
-{
+boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) {
     fixed_t_union	blockdist;
 
     if (!(thing_pos->flags1 & MF_SHOOTABLE) )
@@ -394,8 +393,7 @@ boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 //
 // PIT_CheckThing
 //
-boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos)
-{
+boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos){
     fixed_t_union blockdist;
     boolean		solid;
     int16_t			damage;
@@ -543,8 +541,7 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_p
 //  numspeciallines
 //
 
-boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum )
-{
+boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum ){
     int16_t			xl;
     int16_t			xh;
     int16_t			yl;
@@ -774,8 +771,7 @@ boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fix
 // the z will be set to the lowest value
 // and false will be returned.
 //
-boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_pos)
-{
+boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_pos){
     boolean		onfloor;
 	fixed_t_union temp;
 	int16_t temp2;
@@ -819,8 +815,7 @@ boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_
 // Adjusts the xmove / ymove
 // so that the next move will slide along the wall.
 //
-void __near P_HitSlideLine (int16_t linenum)
-{
+void __near P_HitSlideLine (int16_t linenum){
     int16_t			side;
 
     angle_t		lineangle;
@@ -933,8 +928,7 @@ boolean __near PTR_SlideTraverse (intercept_t __far* in) {
 //
 // This is a kludgy mess.
 //
-void __near P_SlideMove ()
-{
+void __near P_SlideMove (){
     fixed_t_union		leadx;
 	fixed_t_union		leady;
 	fixed_t_union		trailx;
@@ -1161,8 +1155,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 //
 // PTR_ShootTraverse
 //
-boolean __near PTR_ShootTraverse (intercept_t __far* in)
-{
+boolean __near PTR_ShootTraverse (intercept_t __far* in){
     fixed_t		x;
     fixed_t		y;
     fixed_t		z;

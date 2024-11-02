@@ -131,11 +131,11 @@ void __near ST_createWidgets(void){
 
 
 void __near ST_Stop(void){
- if (st_stopped){
-     return;
- }
- I_SetPalette(0);
- st_stopped = true;
+    if (st_stopped){
+        return;
+    }
+    I_SetPalette(0);
+    st_stopped = true;
 
 }
 

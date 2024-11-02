@@ -532,8 +532,7 @@ void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 //
 // P_ZMovement
 //
-void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos)
-{
+void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
     fixed_t	dist;
 	fixed_t	delta;
 	mobj_t __near* moTarget;
@@ -885,8 +884,7 @@ THINKERREF __near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type
 //
 
 
-void __near P_RemoveMobj (mobj_t __near* mobj)
-{
+void __near P_RemoveMobj (mobj_t __near* mobj) {
 	THINKERREF mobjRef = GETTHINKERREF(mobj);
     // unlink from sector and block lists
     P_UnsetThingPosition (mobj, &mobjposlist[mobjRef]);

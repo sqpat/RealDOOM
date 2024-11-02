@@ -155,8 +155,9 @@ void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t     
 	}
 
 
-	if (skill > sk_nightmare)
+	if (skill > sk_nightmare){
 		skill = sk_nightmare;
+	}
 
 	if (!is_ultimate){
 		if (episode < 1) {
@@ -187,21 +188,24 @@ void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t     
     rndindex = prndindex = 0;
 
 
-	if (skill == sk_nightmare || respawnparm)
+	if (skill == sk_nightmare || respawnparm){
 		respawnmonsters = true;
-	else
+	} else {
 		respawnmonsters = false;
+	}
 
 	if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare)){
-		for (i = S_SARG_RUN1; i <= S_SARG_PAIN2; i++)
+		for (i = S_SARG_RUN1; i <= S_SARG_PAIN2; i++){
 			states[i].tics >>= 1;
+		}
 		mobjinfo[MT_BRUISERSHOT].speed = 20 + HIGHBIT;
 		mobjinfo[MT_HEADSHOT].speed = 20 + HIGHBIT;
 		mobjinfo[MT_TROOPSHOT].speed = 20 + HIGHBIT;
 	}
 	else if (skill != sk_nightmare && gameskill == sk_nightmare) {
-		for (i = S_SARG_RUN1; i <= S_SARG_PAIN2; i++)
+		for (i = S_SARG_RUN1; i <= S_SARG_PAIN2; i++){
 			states[i].tics <<= 1;
+		}
 		mobjinfo[MT_BRUISERSHOT].speed = 15 + HIGHBIT;
 		mobjinfo[MT_HEADSHOT].speed = 10 + HIGHBIT;
 		mobjinfo[MT_TROOPSHOT].speed = 10 + HIGHBIT;
@@ -228,13 +232,15 @@ void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t     
 	// set the sky map for the episode
 	if (commercial) {
 		skytexture = R_TextureNumForName("SKY3");
-		if (gamemap < 12)
+		if (gamemap < 12){
 			skytexture = R_TextureNumForName("SKY1");
-		else
-			if (gamemap < 21)
+		} else{
+			if (gamemap < 21) {
 				//skytexture = R_TextureNumForName("ASHWALL2");  // for debugging skytexture issues...
 				skytexture = R_TextureNumForName("SKY2");
-	} else
+			}
+		}
+	} else {
 		switch (episode) {
 			case 1:
 				skytexture = R_TextureNumForName("SKY1");
@@ -249,7 +255,8 @@ void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t     
 				skytexture = R_TextureNumForName("SKY4");
 				break;
 		}
-
+	}
+	
 	Z_QuickMapPhysics();
 
 	G_DoLoadLevel();

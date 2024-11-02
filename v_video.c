@@ -277,9 +277,8 @@ void V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
 			dest = desttop + column->topdelta * SCREENWIDTH;
 			count = column->length;
 
-			if ((count -= 4) >= 0)
-				do
-				{
+			if ((count -= 4) >= 0) {
+				do {
 					register byte s0, s1;
 					s0 = source[0];
 					s1 = source[1];
@@ -293,14 +292,15 @@ void V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
 					dest[SCREENWIDTH] = s1;
 					dest += SCREENWIDTH * 2;
 				} while ((count -= 4) >= 0);
-				if (count += 4)
-					do
-					{
-						*dest = *source;
-						source++;
-						dest += SCREENWIDTH;
-					} while (--count);
-					column = (column_t  __far*)(source + 1);
+			}
+			if (count += 4) {
+				do {
+					*dest = *source;
+					source++;
+					dest += SCREENWIDTH;
+				} while (--count);
+			}
+			column = (column_t  __far*)(source + 1);
 		}
 	}
 

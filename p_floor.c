@@ -225,8 +225,7 @@ result_e __near T_MovePlane ( sector_t __far*	sector, short_height_t	speed, shor
 //
 // MOVE A FLOOR TO IT'S DESTINATION (UP OR DOWN)
 //
-void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef)
-{
+void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef) {
     result_e	res;
 	int16_t floorsecnum = floor->secnum;
 

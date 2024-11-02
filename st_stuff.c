@@ -79,8 +79,8 @@ void __near ST_refreshBackground(void) {
 //  intercept cheats.
 boolean __near ST_Responder (event_t __far* ev) {
     int8_t           i;
+    int8_t hexnumber_string[10];
 
-    return false;
     // if a user keypress...
     if (ev->type == ev_keydown) {
         if (gameskill != sk_nightmare) {
@@ -169,16 +169,19 @@ boolean __near ST_Responder (event_t __far* ev) {
             }
             // 'behold?' power-up cheats
             for (i=0;i<6;i++) {
+
+                
                 if (cht_CheckCheat(&cheat_powerup[i], ev->data1)) {
-                if (!player.powers[i]){
-                    P_GivePower( i);
-                } else if (i!=pw_strength){
-                    player.powers[i] = 1;
-                }else{
-                    player.powers[i] = 0;
+                    if (!player.powers[i]){
+                        P_GivePower( i);
+                    } else if (i!=pw_strength){
+                        player.powers[i] = 1;
+                    } else {
+                        player.powers[i] = 0;
+                    }
+                    player.message = STSTR_BEHOLDX;
                 }
-                player.message = STSTR_BEHOLDX;
-                }
+                
             }
             
             // 'behold' power-up menu
@@ -192,8 +195,10 @@ boolean __near ST_Responder (event_t __far* ev) {
             } else if (cht_CheckCheat(&cheat_mypos, ev->data1)) {
                 // 'mypos' for player position
 
-            //todo: this      player pos  
-                int8_t hexnumber_string[10];
+                //todo: test/fix this      player pos  
+
+                return true;
+
                 locallib_printhex(playerMobj_pos->angle.wu, true, hexnumber_string);
                 combine_strings(st_stuff_buf,"ang=0x", hexnumber_string);
                 combine_strings(st_stuff_buf,st_stuff_buf, ";x,y=(0x");
@@ -205,17 +210,18 @@ boolean __near ST_Responder (event_t __far* ev) {
                 locallib_printhex(playerMobj_pos->y.w, true, hexnumber_string);
                 combine_strings(st_stuff_buf,st_stuff_buf, hexnumber_string);
                 combine_strings(st_stuff_buf,st_stuff_buf, ")");
+
                 
                 
                 player.messagestring = st_stuff_buf;
             }
         }
 
-        // 'clev' change-level cheat
         if (cht_CheckCheat(&cheat_clev, ev->data1)) {
             int8_t              buf[3];
             int8_t               epsd;
             int8_t               map;
+            int8_t               max_epsd = 4;
 
             cht_GetParam(&cheat_clev, buf);
             
@@ -228,20 +234,18 @@ boolean __near ST_Responder (event_t __far* ev) {
             }
 
             // Catch invalid maps.
-            if (!is_ultimate){
-                if ((!commercial && epsd > 0 && epsd < 4 && map > 0 && map < 10) || (commercial && map > 0 && map <= 40)) {
-                    // So be it.
-                    player.message = STSTR_CLEV;
-                    G_DeferedInitNew(gameskill, epsd, map);
-                }
-            } else {
-                if ((!commercial && epsd > 0 && epsd < 5 && map > 0 && map < 10) || (commercial && map > 0 && map <= 40)) {
-                    // So be it.
-                    player.message = STSTR_CLEV;
-                    G_DeferedInitNew(gameskill, epsd, map);
-                }
+            if (is_ultimate){
+                max_epsd = 5;
             }
-        }
+            
+            if ((!commercial && epsd > 0 && epsd < max_epsd && map > 0 && map < 10)
+                || (commercial && map > 0 && map <= 40)) {
+                // So be it.
+                player.message = STSTR_CLEV;
+                G_DeferedInitNew(gameskill, epsd, map);
+            }
+
+        }        
     }
     return false;
 }

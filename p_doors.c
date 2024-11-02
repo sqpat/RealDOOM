@@ -40,8 +40,7 @@
 //
 // T_VerticalDoor
 //
-void __near T_VerticalDoor (vldoor_t __near* door, THINKERREF doorRef)
-{
+void __near T_VerticalDoor (vldoor_t __near* door, THINKERREF doorRef) {
     result_e	res;
 	sector_t __far* doorsector = &sectors[door->secnum];
 	int16_t soundorgx = sectors_soundorgs[door->secnum].soundorgX;
@@ -167,13 +166,7 @@ void __near T_VerticalDoor (vldoor_t __near* door, THINKERREF doorRef)
 // Move a locked door up/down
 //
 
-int16_t
-EV_DoLockedDoor
-( uint8_t linetag,
-	int16_t linespecial,
-  vldoor_e	type,
-	THINKERREF thingRef )
-{
+int16_t EV_DoLockedDoor ( uint8_t linetag, int16_t linespecial, vldoor_e	type, THINKERREF thingRef ) {
 	
     if (thingRef != playerMobjRef)
 		return 0;
@@ -219,11 +212,7 @@ EV_DoLockedDoor
 }
 
 
-int16_t
-EV_DoDoor
-( uint8_t linetag,
-  vldoor_e	type )
-{
+int16_t EV_DoDoor ( uint8_t linetag, vldoor_e	type ) {
     int16_t		secnum,rtn;
     vldoor_t __near*	door;
 	THINKERREF doorRef;
@@ -317,11 +306,7 @@ EV_DoDoor
 //
 // EV_VerticalDoor : open a door manually, no tag value
 //
-void
-EV_VerticalDoor
-( int16_t linenum,
-	THINKERREF thingRef )
-{
+void EV_VerticalDoor ( int16_t linenum, THINKERREF thingRef ) {
     int16_t		secnum;
     //sector_t __far*	sec;
     vldoor_t __near*	door;
@@ -485,8 +470,7 @@ EV_VerticalDoor
 //
 // Spawn a door that closes after 30 seconds
 //
-void P_SpawnDoorCloseIn30 (int16_t secnum)
-{
+void P_SpawnDoorCloseIn30 (int16_t secnum) {
     vldoor_t __near*	door;
 	THINKERREF doorRef;
 
@@ -507,10 +491,7 @@ void P_SpawnDoorCloseIn30 (int16_t secnum)
 //
 // Spawn a door that opens after 5 minutes
 //
-void
-P_SpawnDoorRaiseIn5Mins
-( int16_t secnum)
-{
+void P_SpawnDoorRaiseIn5Mins ( int16_t secnum) {
 	vldoor_t __near*	door;
 	THINKERREF doorRef;
 	int16_t doortopheight;

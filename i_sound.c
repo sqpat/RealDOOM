@@ -38,8 +38,7 @@
 //
 
 
-void I_StartupTimer(void)
-{
+void I_StartupTimer(void) {
 
 	void I_TimerISR(void);
 
@@ -49,24 +48,20 @@ void I_StartupTimer(void)
 	TS_Dispatch();
 }
 
-void I_PauseSong(int16_t handle)
-{
+void I_PauseSong(int16_t handle) {
     //MUS_PauseSong(handle);
 }
 
-void I_ResumeSong(int16_t handle)
-{
+void I_ResumeSong(int16_t handle) {
     //MUS_ResumeSong(handle);
 }
 
-void I_SetMusicVolume(uint8_t volume)
-{
+void I_SetMusicVolume(uint8_t volume) {
     //MUS_SetMasterVolume(volume);
     snd_MusicVolume = volume;
 }
 
-void I_SetSfxVolume(uint8_t volume)
-{
+void I_SetSfxVolume(uint8_t volume) {
     snd_SfxVolume = volume;
 }
 
@@ -74,8 +69,7 @@ void I_SetSfxVolume(uint8_t volume)
 // Song API
 //
 
-int16_t I_RegisterSong(void __far*data)
-{
+int16_t I_RegisterSong(void __far*data) {
 	/*
     int16_t rc = MUS_RegisterSong(data);
 #ifdef SNDDEBUG
@@ -86,8 +80,7 @@ int16_t I_RegisterSong(void __far*data)
 	return 1;
 }
 
-void I_UnRegisterSong(int16_t handle)
-{
+void I_UnRegisterSong(int16_t handle) {
 	/*
     int16_t rc = MUS_UnregisterSong(handle);
 #ifdef SNDDEBUG
@@ -96,8 +89,7 @@ void I_UnRegisterSong(int16_t handle)
 */
 }
 
-int16_t I_QrySongPlaying(int16_t handle)
-{
+int16_t I_QrySongPlaying(int16_t handle) {
 	/*
     int16_t rc = MUS_QrySongPlaying(handle);
 #ifdef SNDDEBUG
@@ -110,8 +102,7 @@ int16_t I_QrySongPlaying(int16_t handle)
 //
 // Stops a song.  MUST be called before I_UnregisterSong().
 //
-void I_StopSong(int16_t handle)
-{
+void I_StopSong(int16_t handle) {
 	/*
     int16_t rc;
     rc = MUS_StopSong(handle);
@@ -126,8 +117,7 @@ void I_StopSong(int16_t handle)
 	*/
 }
 
-void I_PlaySong(int16_t handle, boolean looping)
-{
+void I_PlaySong(int16_t handle, boolean looping) {
 	/*
 	int16_t rc;
     rc = MUS_ChainSong(handle, looping ? handle : -1);
@@ -145,12 +135,10 @@ void I_PlaySong(int16_t handle, boolean looping)
 // Retrieve the raw data lump index
 //  for a given SFX name.
 //
-int16_t I_GetSfxLumpNum(sfxinfo_t* sfx)
-{
+int16_t I_GetSfxLumpNum(sfxinfo_t* sfx) {
 	int8_t namebuf[9];
     int8_t part1[3];
-    if (sfx->link)
-    {
+    if (sfx->link) {
         sfx = sfx->link;
     }
     part1[0] = 'd';
@@ -161,8 +149,7 @@ int16_t I_GetSfxLumpNum(sfxinfo_t* sfx)
     return W_GetNumForName(namebuf);
 }
 
-int16_t I_StartSound(int16_t id, void  __far*data, uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority)
-{
+int16_t I_StartSound(int16_t id, void  __far*data, uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority) {
 	/*
     // hacks out certain PC sounds
     if (snd_SfxDevice == snd_PC
@@ -180,19 +167,16 @@ int16_t I_StartSound(int16_t id, void  __far*data, uint8_t vol, uint8_t sep, uin
 	return -1;
 }
 
-void I_StopSound(int16_t handle)
-{
+void I_StopSound(int16_t handle) {
     //SFX_StopPatch(handle);
 }
 
-boolean I_SoundIsPlaying(int16_t handle)
-{
+boolean I_SoundIsPlaying(int16_t handle) {
     //return SFX_Playing(handle);
 	return 0;
 }
 
-void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch)
-{
+void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch) {
     //SFX_SetOrigin(handle, pitch, sep, vol);
 }
 
@@ -200,8 +184,7 @@ void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch
 // Sound startup stuff
 //
 
-void I_sndArbitrateCards(void)
-{
+void I_sndArbitrateCards(void) {
 
      // todo when we redo this, checkparm is __near to init code so do that there
 
@@ -343,8 +326,7 @@ void I_sndArbitrateCards(void)
 // I_StartupSound
 // Inits all sound stuff
 //
-void __far I_StartupSound(void)
-{
+void __far I_StartupSound(void) {
 
     //
     // initialize dmxCodes[]
@@ -386,7 +368,6 @@ void __far I_StartupSound(void)
 }
 
 
-void I_SetChannels(int8_t channels)
-{
+void I_SetChannels(int8_t channels) {
     //WAV_PlayMode(channels, SND_SAMPLERATE);
 }

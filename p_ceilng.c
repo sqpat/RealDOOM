@@ -267,8 +267,7 @@ void __near P_RemoveActiveCeiling(sector_physics_t __near* ceilingsector_physics
 //
 // Restart a ceiling that's in-stasis
 //
-void __near P_ActivateInStasisCeiling(uint8_t linetag)
-{
+void __near P_ActivateInStasisCeiling(uint8_t linetag) {
     int8_t		i;
 	ceiling_t __near* c;
 
@@ -290,8 +289,7 @@ void __near P_ActivateInStasisCeiling(uint8_t linetag)
 // EV_CeilingCrushStop
 // Stop a ceiling from crushing!
 //
-int16_t	__near EV_CeilingCrushStop(uint8_t linetag)
-{
+int16_t	__near EV_CeilingCrushStop(uint8_t linetag) {
     int8_t		i;
     int16_t		rtn;
 	ceiling_t __near* c;

@@ -49,7 +49,7 @@ void __near wipe_shittyColMajorXform ( int16_t __far*	array ) {
 	
 	Z_QuickMapScratch_5000();
 
-    for(y=0;y<SCREENHEIGHT;y++)
+    for(y=0;y<SCREENHEIGHT;y++){
 		for (x = 0; x < SCREENWIDTHOVER2; x++) {
 			uint16_t result = SCREENHEIGHT;
 			uint16_t result2 = SCREENWIDTHOVER2;
@@ -60,6 +60,7 @@ void __near wipe_shittyColMajorXform ( int16_t __far*	array ) {
 			
 			dest[result] = array[result2];
 		}
+	}
 
 	FAR_memcpy(array, dest, 64000u);
 	
@@ -173,8 +174,7 @@ int16_t __near wipe_doMelt2 ( int16_t	ticks ) {
 // I_ReadScreen
 // Reads the screen currently displayed into a linear buffer.
 //
-void __near I_ReadScreen(byte __far *scr)
-{
+void __near I_ReadScreen(byte __far *scr) {
 	uint16_t i;
 	uint16_t j;
 

@@ -684,8 +684,7 @@ void __near G_DoCompleted (void)  {
 
 //int8_t    savename[256];
 
-void __far G_LoadGame (int8_t* name) 
-{ 
+void __far G_LoadGame (int8_t* name)  { 
     //strcpy (savename, name); 
     //gameaction = ga_loadgame; 
 } 
@@ -693,8 +692,7 @@ void __far G_LoadGame (int8_t* name)
 #define VERSIONSIZE             16 
 
 
-void __near G_DoLoadGame (void) 
-{ 
+void __near G_DoLoadGame (void)  { 
 	/*
 	filelength_t         length;
 	byte         a,b,c;
@@ -764,8 +762,7 @@ void __far G_SaveGame(int8_t   slot, int8_t __far* description ) {
     sendsave = true; 
 } 
  
-void __near G_DoSaveGame (void) 
-{ 
+void __near G_DoSaveGame (void)  { 
 	/*
 	int8_t        name[100];
 	int8_t        name2[VERSIONSIZE];
@@ -827,19 +824,14 @@ void __near G_DoSaveGame (void)
 // consoleplayer, displayplayer, playeringame[] should be set. 
 //
  
-void
-__near G_DeferedInitNew
-( skill_t       skill,
-	int8_t           episode,
-	int8_t           map)
-{ 
+void __near G_DeferedInitNew ( skill_t skill, int8_t episode, int8_t map) { 
     d_skill = skill; 
     d_episode = episode; 
     d_map = map; 
     gameaction = ga_newgame; 
 } 
 
-void __far G_InitNew(skill_t       skill, int8_t           episode, int8_t           map);
+void __far G_InitNew(skill_t skill, int8_t episode, int8_t map);
 
 
 
@@ -850,8 +842,7 @@ void __far G_InitNew(skill_t       skill, int8_t           episode, int8_t      
 // 
 #define DEMOMARKER              0x80
 
-void __near G_ReadDemoTiccmd (ticcmd_t __near* cmd) 
-{ 
+void __near G_ReadDemoTiccmd (ticcmd_t __near* cmd)  { 
     // this is just used as an offset so lets just store as int;
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickMapDemo();
@@ -873,8 +864,7 @@ void __near G_ReadDemoTiccmd (ticcmd_t __near* cmd)
 }
 
 
-void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd) 
-{ 
+void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  { 
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickMapDemo();
 	if (gamekeydown['q'])           // press q to end demo recording 
@@ -913,14 +903,12 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)
 //
 
  
-void __far G_DeferedPlayDemo (int8_t* name) 
-{ 
+void __far G_DeferedPlayDemo (int8_t* name)  { 
     defdemoname = name; 
     gameaction = ga_playdemo; 
 } 
  
-void __near G_DoPlayDemo (void) 
-{ 
+void __near G_DoPlayDemo (void)  { 
     skill_t skill; 
 	int8_t             episode, map;
 	byte __far* demo_addr;
@@ -932,12 +920,11 @@ void __near G_DoPlayDemo (void)
 	demo_p = 0;
 
 
-	if ( *demo_addr++ != VERSION)
-    {
+	if ( *demo_addr++ != VERSION) {
 #ifdef CHECK_FOR_ERRORS
 		I_Error("Demo is from a different game version!");
 #endif
-}
+    }
 
     skill = *demo_addr++;
     episode = *demo_addr++;

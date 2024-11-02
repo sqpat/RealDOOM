@@ -109,13 +109,11 @@ void __near I_StartupMouse(void) {
 	// General mouse detection
 	//
 	mousepresent = 0;
-	if (M_CheckParm("-nomouse") || !usemouse)
-	{
+	if (M_CheckParm("-nomouse") || !usemouse) {
 		return;
 	}
 
-	if (I_ResetMouse() != 0xffffu)
-	{
+	if (I_ResetMouse() != 0xffffu) {
 		DEBUG_PRINT("Mouse: not present\n", 0);
 		return;
 	}
@@ -149,8 +147,7 @@ void __near I_StartupKeyboard(void) {
 // I_Init
 // hook interrupts and set graphics mode
 //
-void __near I_Init(void)
-{
+void __near I_Init(void) {
 	novideo = M_CheckParm("-nodraw");
 	DEBUG_PRINT("I_StartupMouse\n");
 	I_StartupMouse();

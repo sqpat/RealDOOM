@@ -85,16 +85,16 @@ boolean M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		leng
 	
     FILE* fp = fopen ( name, "wb");
 
-    if (!fp)
+    if (!fp){
 	    return false;
-
+    }
 	//todo re-enable with demos re-enabled. or dont use far_fwrite or something.
      //count = FAR_fwrite (source, 1, length, fp);
     fclose (fp);
 	
-    if (count < length)
+    if (count < length){
 	    return false;
-		
+    }
     return true;
 }
 

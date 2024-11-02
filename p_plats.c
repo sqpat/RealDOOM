@@ -42,8 +42,7 @@
 //
 // Move a plat up and down
 //
-void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef)
-{
+void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef) {
 
     result_e	res;
 	int16_t platsecnum = plat->secnum;
@@ -293,8 +292,7 @@ void __near P_AddActivePlat(THINKERREF thinkerref) {
 
 
 
-void __near P_RemoveActivePlat(THINKERREF platRef)
-{
+void __near P_RemoveActivePlat(THINKERREF platRef) {
     int8_t		i;
 	plat_t __near* plat;
 	int16_t platsecnum;

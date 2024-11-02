@@ -82,11 +82,7 @@ void checkDS(int16_t a) {
 void hackDS();
 void hackDSBack();
 
-int16_t
-main
-( int16_t		argc,
-  int8_t**	argv ) 
-{ 
+int16_t main ( int16_t argc, int8_t** argv ) { 
     myargc = argc; 
     myargv = argv; 
 

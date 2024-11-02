@@ -52,8 +52,7 @@ uint16_t  __far   R_CheckTextureNumForName(int8_t *name);
 // P_InitSwitchList
 // Only called at game initialization.
 //
-void __near P_InitSwitchList(void)
-{
+void __near P_InitSwitchList(void){
 	int8_t		i;
 	int8_t		index;
 	int8_t		episode;
@@ -147,8 +146,7 @@ void __near P_InitSwitchList(void)
 
 }
  
-typedef struct
-{
+typedef struct{
 	boolean	istexture;	// if false, it is a flat
 	int8_t	endname[9];
 	int8_t	startname[9];
@@ -165,8 +163,7 @@ uint8_t __far R_FlatNumForName(int8_t* name);
 
 
 #define NUMANIMDEFS 23
-void __near P_InitPicAnims(void)
-{
+void __near P_InitPicAnims(void) {
 	int16_t		i;
 	// Floor/ceiling animation sequences,
 //  defined by first and last frame,
@@ -262,13 +259,7 @@ void __near P_InitPicAnims(void)
 // R_InstallSpriteLump
 // Local function for R_InitSprites.
 //
-void
-__near R_InstallSpriteLump
-(int16_t           lump,
-	uint16_t      frame,
-	uint16_t      rotation,
-	boolean       flipped)
-{
+void __near R_InstallSpriteLump (int16_t lump, uint16_t frame, uint16_t rotation, boolean flipped) {
 	int16_t         r;
 
 #ifdef CHECK_FOR_ERRORS
@@ -343,8 +334,7 @@ __near R_InstallSpriteLump
 //
 
 
-void __near R_InitSpriteDefs()
-{
+void __near R_InitSpriteDefs() {
 	int16_t         i;
 	int16_t         l;
 	int32_t         intname;
@@ -505,8 +495,7 @@ void __near R_InitSpriteDefs()
 // R_InitSprites
 // Called at program start.
 //
-void __near R_InitSprites()
-{
+void __near R_InitSprites(){
 	
 	int		i;
 

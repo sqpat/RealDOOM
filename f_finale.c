@@ -131,170 +131,157 @@ void __far F_StartFinale (void) {
     viewactive = false;
     automapactive = false;
 
-    if(commercial)
-    {
-#if (EXE_VERSION < EXE_VERSION_FINAL)
+    if(commercial) {
+		#if (EXE_VERSION < EXE_VERSION_FINAL)
         // DOOM II and missions packs with E1, M34
-	  switch (gamemap)
-	  {
-	    case 6:
-	      finaleflat = "SLIME16";
-	      finaletext = c1text;
-	      break;
-	    case 11:
-	      finaleflat = "RROCK14";
-	      finaletext = c2text;
-	      break;
-	    case 20:
-	      finaleflat = "RROCK07";
-	      finaletext = c3text;
-	      break;
-	    case 30:
-	      finaleflat = "RROCK17";
-	      finaletext = c4text;
-	      break;
-	    case 15:
-	      finaleflat = "RROCK13";
-	      finaletext = c5text;
-	      break;
-	    case 31:
-	      finaleflat = "RROCK19";
-	      finaletext = c6text;
-	      break;
-	    default:
-	      // Ouch.
-	      break;
-	  }
-#else
-        if (plutonia)
-        {
-	  switch (gamemap)
-	  {
-	    case 6:
-	      finaleflat = "SLIME16";
-	      finaletext = p1text;
-	      break;
-	    case 11:
-	      finaleflat = "RROCK14";
-	      finaletext = p2text;
-	      break;
-	    case 20:
-	      finaleflat = "RROCK07";
-	      finaletext = p3text;
-	      break;
-	    case 30:
-	      finaleflat = "RROCK17";
-	      finaletext = p4text;
-	      break;
-	    case 15:
-	      finaleflat = "RROCK13";
-	      finaletext = p5text;
-	      break;
-	    case 31:
-	      finaleflat = "RROCK19";
-	      finaletext = p6text;
-	      break;
-	    default:
-	      // Ouch.
-	      break;
-	  }
-        }
-        else if (tnt)
-        {
-	  switch (gamemap)
-	  {
-	    case 6:
-	      finaleflat = "SLIME16";
-	      finaletext = t1text;
-	      break;
-	    case 11:
-	      finaleflat = "RROCK14";
-	      finaletext = t2text;
-	      break;
-	    case 20:
-	      finaleflat = "RROCK07";
-	      finaletext = t3text;
-	      break;
-	    case 30:
-	      finaleflat = "RROCK17";
-	      finaletext = t4text;
-	      break;
-	    case 15:
-	      finaleflat = "RROCK13";
-	      finaletext = t5text;
-	      break;
-	    case 31:
-	      finaleflat = "RROCK19";
-	      finaletext = t6text;
-	      break;
-	    default:
-	      // Ouch.
-	      break;
-	  }
-        }
-        else
-        {
-	  // DOOM II and missions packs with E1, M34
-	  switch (gamemap)
-	  {
-	    case 6:
-	      finaleflat = "SLIME16";
-	      finaletext = c1text;
-	      break;
-	    case 11:
-	      finaleflat = "RROCK14";
-	      finaletext = c2text;
-	      break;
-	    case 20:
-	      finaleflat = "RROCK07";
-	      finaletext = c3text;
-	      break;
-	    case 30:
-	      finaleflat = "RROCK17";
-	      finaletext = c4text;
-	      break;
-	    case 15:
-	      finaleflat = "RROCK13";
-	      finaletext = c5text;
-	      break;
-	    case 31:
-	      finaleflat = "RROCK19";
-	      finaletext = c6text;
-	      break;
-	    default:
-	      // Ouch.
-	      break;
-	  }
-        }
-#endif
-	finalemusic = mus_read_m;
-    }
-    else
-    {
-	// DOOM 1 - E1, E3 or E4, but each nine missions
-	switch (gameepisode)
-	{
-	  case 1:
-	    finaleflat = "FLOOR4_8";
-	    finaletext = e1text;
-	    break;
-	  case 2:
-	    finaleflat = "SFLR6_1";
-	    finaletext = e2text;
-	    break;
-	  case 3:
-	    finaleflat = "MFLR8_4";
-	    finaletext = e3text;
-	    break;
-	  case 4:
-	    finaleflat = "MFLR8_3";
-	    finaletext = e4text;
-	    break;
-	  default:
-	    // Ouch.
-	    break;
-	}
-	finalemusic = mus_victor;
+			switch (gamemap) {
+				case 6:
+				finaleflat = "SLIME16";
+				finaletext = c1text;
+				break;
+				case 11:
+				finaleflat = "RROCK14";
+				finaletext = c2text;
+				break;
+				case 20:
+				finaleflat = "RROCK07";
+				finaletext = c3text;
+				break;
+				case 30:
+				finaleflat = "RROCK17";
+				finaletext = c4text;
+				break;
+				case 15:
+				finaleflat = "RROCK13";
+				finaletext = c5text;
+				break;
+				case 31:
+				finaleflat = "RROCK19";
+				finaletext = c6text;
+				break;
+				default:
+				// Ouch.
+				break;
+			}
+		#else
+			if (plutonia) {
+				switch (gamemap) {
+					case 6:
+					finaleflat = "SLIME16";
+					finaletext = p1text;
+					break;
+					case 11:
+					finaleflat = "RROCK14";
+					finaletext = p2text;
+					break;
+					case 20:
+					finaleflat = "RROCK07";
+					finaletext = p3text;
+					break;
+					case 30:
+					finaleflat = "RROCK17";
+					finaletext = p4text;
+					break;
+					case 15:
+					finaleflat = "RROCK13";
+					finaletext = p5text;
+					break;
+					case 31:
+					finaleflat = "RROCK19";
+					finaletext = p6text;
+					break;
+					default:
+					// Ouch.
+					break;
+				}
+			} else if (tnt) {
+				switch (gamemap) {
+					case 6:
+					finaleflat = "SLIME16";
+					finaletext = t1text;
+					break;
+					case 11:
+					finaleflat = "RROCK14";
+					finaletext = t2text;
+					break;
+					case 20:
+					finaleflat = "RROCK07";
+					finaletext = t3text;
+					break;
+					case 30:
+					finaleflat = "RROCK17";
+					finaletext = t4text;
+					break;
+					case 15:
+					finaleflat = "RROCK13";
+					finaletext = t5text;
+					break;
+					case 31:
+					finaleflat = "RROCK19";
+					finaletext = t6text;
+					break;
+					default:
+					// Ouch.
+					break;
+				}
+			} else {
+				// DOOM II and missions packs with E1, M34
+				switch (gamemap) {
+					case 6:
+					finaleflat = "SLIME16";
+					finaletext = c1text;
+					break;
+					case 11:
+					finaleflat = "RROCK14";
+					finaletext = c2text;
+					break;
+					case 20:
+					finaleflat = "RROCK07";
+					finaletext = c3text;
+					break;
+					case 30:
+					finaleflat = "RROCK17";
+					finaletext = c4text;
+					break;
+					case 15:
+					finaleflat = "RROCK13";
+					finaletext = c5text;
+					break;
+					case 31:
+					finaleflat = "RROCK19";
+					finaletext = c6text;
+					break;
+					default:
+					// Ouch.
+					break;
+				}
+			}
+		#endif
+		finalemusic = mus_read_m;
+    } else {
+		// DOOM 1 - E1, E3 or E4, but each nine missions
+		switch (gameepisode) {
+			case 1:
+				finaleflat = "FLOOR4_8";
+				finaletext = e1text;
+				break;
+			case 2:
+				finaleflat = "SFLR6_1";
+				finaletext = e2text;
+				break;
+			case 3:
+				finaleflat = "MFLR8_4";
+				finaletext = e3text;
+				break;
+			case 4:
+				finaleflat = "MFLR8_3";
+				finaletext = e4text;
+				break;
+			default:
+				// Ouch.
+				break;
+		}
+		finalemusic = mus_victor;
     }
     
     S_ChangeMusic(finalemusic, true);
@@ -305,9 +292,9 @@ void __far F_StartFinale (void) {
 
 
 boolean __far F_Responder (event_t  __far*event) {
-    if (finalestage == 2)
-	return F_CastResponder (event);
-	
+    if (finalestage == 2){
+		return F_CastResponder (event);
+	}
     return false;
 }
 
@@ -430,13 +417,13 @@ void __near F_TextWrite (void) {
 // F_StartCast
 //
 
-void __near F_StartCast (void)
-{
+void __near F_StartCast (void) {
 	//todoaddr inline later
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
 
-	if (finalestage != 2)
+	if (finalestage != 2) {
     	wipegamestate = -1;		// force a screen wipe
+	}
     castnum = 0;
     caststate = &states[getSeeState(castorder[castnum].type)];
     casttics = caststate->tics;
@@ -452,8 +439,7 @@ void __near F_StartCast (void)
 //
 // F_CastTicker
 //
-void __near F_CastTicker (void)
-{
+void __near F_CastTicker (void) {
     int16_t		st;
     int16_t		sfx;
 	//todoaddr inline later
@@ -461,80 +447,79 @@ void __near F_CastTicker (void)
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
 	statenum_t (__far  * getMeleeState)(uint8_t) = getMeleeStateAddr;
 
-    if (--casttics > 0)
+    if (--casttics > 0){
 		return;			// not time to change state yet
-		
+	}
     if (caststate->tics == -1 || caststate->nextstate == S_NULL) {
 		// switch from deathstate to next monster
 		castnum++;
 		castdeath = false;
-		if (castnum == MAX_CASTNUM)
+		if (castnum == MAX_CASTNUM){
 			castnum = 0;
-	
+		}
+
 		S_StartSound (NULL, getSeeState(castorder[castnum].type));
 		caststate = &states[getSeeState(castorder[castnum].type)];
 		castframes = 0;
 	}
 	else {
 		// just advance to next state in animation
-		if (caststate == &states[S_PLAY_ATK1])
+		if (caststate == &states[S_PLAY_ATK1]){
 			goto stopattack;	// Oh, gross hack!
+		}
 		st = caststate->nextstate;
 		caststate = &states[st];
 		castframes++;
 
 		// sound hacks....
-		switch (st)
-		{
-		case S_PLAY_ATK1:	sfx = sfx_dshtgn; break;
-		case S_POSS_ATK2:	sfx = sfx_pistol; break;
-		case S_SPOS_ATK2:	sfx = sfx_shotgn; break;
-		case S_VILE_ATK2:	sfx = sfx_vilatk; break;
-		case S_SKEL_FIST2:	sfx = sfx_skeswg; break;
-		case S_SKEL_FIST4:	sfx = sfx_skepch; break;
-		case S_SKEL_MISS2:	sfx = sfx_skeatk; break;
-		case S_FATT_ATK8:
-		case S_FATT_ATK5:
-		case S_FATT_ATK2:	sfx = sfx_firsht; break;
-		case S_CPOS_ATK2:
-		case S_CPOS_ATK3:
-		case S_CPOS_ATK4:	sfx = sfx_shotgn; break;
-		case S_TROO_ATK3:	sfx = sfx_claw; break;
-		case S_SARG_ATK2:	sfx = sfx_sgtatk; break;
-		case S_BOSS_ATK2:
-		case S_BOS2_ATK2:
-		case S_HEAD_ATK2:	sfx = sfx_firsht; break;
-		case S_SKULL_ATK2:	sfx = sfx_sklatk; break;
-		case S_SPID_ATK2:
-		case S_SPID_ATK3:	sfx = sfx_shotgn; break;
-		case S_BSPI_ATK2:	sfx = sfx_plasma; break;
-		case S_CYBER_ATK2:
-		case S_CYBER_ATK4:
-		case S_CYBER_ATK6:	sfx = sfx_rlaunc; break;
-		case S_PAIN_ATK3:	sfx = sfx_sklatk; break;
-		default: sfx = 0; break;
+		switch (st) {
+			case S_PLAY_ATK1:	sfx = sfx_dshtgn; break;
+			case S_POSS_ATK2:	sfx = sfx_pistol; break;
+			case S_SPOS_ATK2:	sfx = sfx_shotgn; break;
+			case S_VILE_ATK2:	sfx = sfx_vilatk; break;
+			case S_SKEL_FIST2:	sfx = sfx_skeswg; break;
+			case S_SKEL_FIST4:	sfx = sfx_skepch; break;
+			case S_SKEL_MISS2:	sfx = sfx_skeatk; break;
+			case S_FATT_ATK8:
+			case S_FATT_ATK5:
+			case S_FATT_ATK2:	sfx = sfx_firsht; break;
+			case S_CPOS_ATK2:
+			case S_CPOS_ATK3:
+			case S_CPOS_ATK4:	sfx = sfx_shotgn; break;
+			case S_TROO_ATK3:	sfx = sfx_claw; break;
+			case S_SARG_ATK2:	sfx = sfx_sgtatk; break;
+			case S_BOSS_ATK2:
+			case S_BOS2_ATK2:
+			case S_HEAD_ATK2:	sfx = sfx_firsht; break;
+			case S_SKULL_ATK2:	sfx = sfx_sklatk; break;
+			case S_SPID_ATK2:
+			case S_SPID_ATK3:	sfx = sfx_shotgn; break;
+			case S_BSPI_ATK2:	sfx = sfx_plasma; break;
+			case S_CYBER_ATK2:
+			case S_CYBER_ATK4:
+			case S_CYBER_ATK6:	sfx = sfx_rlaunc; break;
+			case S_PAIN_ATK3:	sfx = sfx_sklatk; break;
+			default: sfx = 0; break;
 		}
 
 		S_StartSound(NULL, sfx);
 	}
-    if (castframes == 12)
-    {
-	// go into attack frame
-	castattacking = true;
-	if (castonmelee)
-	    caststate=&states[getMeleeState(castorder[castnum].type)];
-	else
-	    caststate=&states[getMissileState(castorder[castnum].type)];
-	castonmelee ^= 1;
-	if (caststate == &states[S_NULL])
-	{
-	    if (castonmelee)
-		caststate=
-		    &states[getMeleeState(castorder[castnum].type)];
-	    else
-		caststate=
-		    &states[getMissileState(castorder[castnum].type)];
-	}
+    if (castframes == 12) {
+		// go into attack frame
+		castattacking = true;
+		if (castonmelee){
+			caststate=&states[getMeleeState(castorder[castnum].type)];
+		} else{
+			caststate=&states[getMissileState(castorder[castnum].type)];
+		}
+		castonmelee ^= 1;
+		if (caststate == &states[S_NULL]) {
+			if (castonmelee){
+				caststate= &states[getMeleeState(castorder[castnum].type)];
+			} else {
+				caststate= &states[getMissileState(castorder[castnum].type)];
+			}
+		}
     }
 	
     if (castattacking) {
@@ -547,8 +532,9 @@ void __near F_CastTicker (void)
     }
 	
     casttics = caststate->tics;
-    if (casttics == -1)
+    if (casttics == -1){
 		casttics = 15;
+	}
 }
 
 
@@ -556,16 +542,17 @@ void __near F_CastTicker (void)
 // F_CastResponder
 //
 
-boolean __near F_CastResponder (event_t __far* ev)
-{
+boolean __near F_CastResponder (event_t __far* ev) {
  	//todoaddr inline later
 	statenum_t (__far  * getDeathState)(uint8_t) = getDeathStateAddr;
-   if (ev->type != ev_keydown)
-	return false;
+   	if (ev->type != ev_keydown){
+		return false;
+	}
 		
-    if (castdeath)
-	return true;			// already in dying frames
-		
+    if (castdeath){
+		return true;			// already in dying frames
+	}
+
     // go into death frame
     castdeath = true;
     caststate = &states[getDeathState(castorder[castnum].type)];
@@ -578,8 +565,7 @@ boolean __near F_CastResponder (event_t __far* ev)
 }
 
 
-void __near F_CastPrint (int8_t* text)
-{
+void __near F_CastPrint (int8_t* text) {
     int8_t*	ch;
     int16_t		c;
     int16_t		cx;
@@ -590,41 +576,39 @@ void __near F_CastPrint (int8_t* text)
     ch = text;
     width = 0;
 	
-    while (ch)
-    {
-	c = *ch++;
-	if (!c)
-	    break;
-	c = locallib_toupper(c) - HU_FONTSTART;
-	if (c < 0 || c> HU_FONTSIZE)
-	{
-	    width += 4;
-	    continue;
-	}
-		
- 
-	w = (((patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
-	width += w;
+    while (ch) {
+		c = *ch++;
+		if (!c){
+			break;
+		}
+		c = locallib_toupper(c) - HU_FONTSTART;
+		if (c < 0 || c> HU_FONTSIZE) {
+			width += 4;
+			continue;
+		}
+			
+	
+		w = (((patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
+		width += w;
     }
     
     // draw it
     cx = 160-width/2;
     ch = text;
-    while (ch)
-    {
-	c = *ch++;
-	if (!c)
-	    break;
-	c = locallib_toupper(c) - HU_FONTSTART;
-	if (c < 0 || c> HU_FONTSIZE)
-	{
-	    cx += 4;
-	    continue;
-	}
-		
-	w = (((patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
-	V_DrawPatch(cx, 180, 0, (patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]));
-	cx+=w;
+    while (ch) {
+		c = *ch++;
+		if (!c){
+			break;
+		}
+		c = locallib_toupper(c) - HU_FONTSTART;
+		if (c < 0 || c> HU_FONTSIZE) {
+			cx += 4;
+			continue;
+		}
+			
+		w = (((patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
+		V_DrawPatch(cx, 180, 0, (patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]));
+		cx+=w;
     }
 	
 }
@@ -723,10 +707,12 @@ void __near F_BunnyScroll (void) {
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 	
     scrolled = 320 - (finalecount-230)/2;
-    if (scrolled > 320)
+    if (scrolled > 320){
 		scrolled = 320;
-    if (scrolled < 0)
+	}
+    if (scrolled < 0){
 		scrolled = 0;
+	}
 
 	
 	//V_DrawFullscreenPatch("PFUB2", PU_LEVEL)

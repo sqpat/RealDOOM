@@ -305,8 +305,7 @@ void __near I_StartTic(void)
 		kbdtail++;
 		// extended keyboard shift key bullshit
 		if ((k & 0x7f) == SC_LSHIFT || (k & 0x7f) == SC_RSHIFT) {
-			if (keyboardque[(kbdtail - 2)&(KBDQUESIZE - 1)] == 0xe0)
-			{
+			if (keyboardque[(kbdtail - 2)&(KBDQUESIZE - 1)] == 0xe0) {
 				continue;
 			}
 			k &= 0x80;
@@ -326,10 +325,11 @@ void __near I_StartTic(void)
 			continue;
 		}
 
-		if (k & 0x80)
+		if (k & 0x80) {
 			ev.type = ev_keyup;
-		else
+		} else {
 			ev.type = ev_keydown;
+		}
 		k &= 0x7f;
 		switch (k) {
 			case SC_UPARROW:
@@ -363,8 +363,7 @@ void __near I_StartTic(void)
 // I_TimerISR
 //
 void	resetDS();
-void I_TimerISR(void)
-{
+void I_TimerISR(void) {
 	//resetDS();
     ticcount++;
     return ;
@@ -379,8 +378,7 @@ void I_TimerISR(void)
 // I_KeyboardISR
 //
 
-void __interrupt I_KeyboardISR(void)
-{
+void __interrupt I_KeyboardISR(void) {
 // Get the scan code
 	byte value;
 	resetDS();
