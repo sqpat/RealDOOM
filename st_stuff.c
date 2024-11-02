@@ -90,22 +90,25 @@ boolean __near ST_Responder (event_t __far* ev) {
                 if (player.cheats & CF_GODMODE) {
                     playerMobj->health = 100;
                 
-                player.health = 100;
-                player.message = STSTR_DQDON;
+                    player.health = 100;
+                    player.message = STSTR_DQDON;
                 }
-                else 
+                else {
                     player.message = STSTR_DQDOFF;
+                }
             }
             // 'fa' cheat for killer fucking arsenal
             else if (cht_CheckCheat(&cheat_ammonokey, ev->data1)) {
                 player.armorpoints = 200;
                 player.armortype = 2;
                 
-                for (i=0;i<NUMWEAPONS;i++)
+                for (i=0;i<NUMWEAPONS;i++){
                     player.weaponowned[i] = true;
+                }
                 
-                for (i=0;i<NUMAMMO;i++)
+                for (i=0;i<NUMAMMO;i++){
                     player.ammo[i] = player.maxammo[i];
+                }
                 
                 player.message = STSTR_FAADDED;
             }
@@ -114,14 +117,17 @@ boolean __near ST_Responder (event_t __far* ev) {
                 player.armorpoints = 200;
                 player.armortype = 2;
                 
-                for (i=0;i<NUMWEAPONS;i++)
+                for (i=0;i<NUMWEAPONS;i++){
                     player.weaponowned[i] = true;
+                }
                 
-                for (i=0;i<NUMAMMO;i++)
+                for (i=0;i<NUMAMMO;i++){
                     player.ammo[i] = player.maxammo[i];
+                }
                 
-                for (i=0;i<NUMCARDS;i++)
+                for (i=0;i<NUMCARDS;i++){
                     player.cards[i] = true;
+                }
                 
                 player.message = STSTR_KFAADDED;
             }
@@ -155,17 +161,19 @@ boolean __near ST_Responder (event_t __far* ev) {
             } else if(!commercial && cht_CheckCheat(&cheat_noclip, ev->data1)) { 
                 player.cheats ^= CF_NOCLIP;
                 
-                if (player.cheats & CF_NOCLIP)
+                if (player.cheats & CF_NOCLIP){
                     player.message = STSTR_NCON;
-                else
+                } else{
                     player.message = STSTR_NCOFF;
+                }
             } else if (commercial && cht_CheckCheat(&cheat_commercial_noclip, ev->data1)) {
                 player.cheats ^= CF_NOCLIP;
                 
-                if (player.cheats & CF_NOCLIP)
+                if (player.cheats & CF_NOCLIP){
                     player.message = STSTR_NCON;
-                else
+                } else {
                     player.message = STSTR_NCOFF;
+                }
             }
             // 'behold?' power-up cheats
             for (i=0;i<6;i++) {
@@ -223,6 +231,7 @@ boolean __near ST_Responder (event_t __far* ev) {
             int8_t               map;
             int8_t               max_epsd = 4;
 
+            return true;
             cht_GetParam(&cheat_clev, buf);
             
             if (commercial) {
@@ -391,8 +400,7 @@ void __near ST_updateFaceWidget(void) {
   
     if (st_face_priority < 5) {
         // invulnerability
-        if ((player.cheats & CF_GODMODE)
-            || player.powers[pw_invulnerability]) {
+        if ((player.cheats & CF_GODMODE) || player.powers[pw_invulnerability]) {
             st_face_priority = 4;
 
             st_faceindex = ST_GODFACE;
@@ -418,8 +426,7 @@ void __near ST_updateWidgets(void) {
 
  
     // update keycard multiple widgets
-    for (i = 0; i < 3; i++)
-    {
+    for (i = 0; i < 3; i++) {
         keyboxes[i] = player.cards[i] ? i : -1;
 
         if (player.cards[i + 3])
@@ -449,43 +456,41 @@ void __near ST_doPaletteStuff(void){
 
     cnt = player.damagecount;
 
-    if (player.powers[pw_strength])
-    {
+    if (player.powers[pw_strength]) {
         // slowly fade the berzerk out
         bzc = 12 - (player.powers[pw_strength]>>6);
 
-        if (bzc > cnt)
+        if (bzc > cnt){
             cnt = bzc;
+        }
     }
         
-    if (cnt)
-    {
+    if (cnt) {
         palette = (cnt+7)>>3;
         
-        if (palette >= NUMREDPALS)
+        if (palette >= NUMREDPALS){
             palette = NUMREDPALS-1;
+        }
 
         palette += STARTREDPALS;
     }
 
-    else if (player.bonuscount)
-    {
+    else if (player.bonuscount) {
         palette = (player.bonuscount+7)>>3;
 
-        if (palette >= NUMBONUSPALS)
+        if (palette >= NUMBONUSPALS){
             palette = NUMBONUSPALS-1;
+        }
 
         palette += STARTBONUSPALS;
     }
 
-    else if (player.powers[pw_ironfeet] > 4*32
-              || player.powers[pw_ironfeet]&8)
+    else if (player.powers[pw_ironfeet] > 4*32 || player.powers[pw_ironfeet]&8){
         palette = RADIATIONPAL;
-    else
+    } else{
         palette = 0;
-
-    if (palette != st_palette)
-    {
+    }
+    if (palette != st_palette) {
         st_palette = palette;
         I_SetPalette (palette);
     }
@@ -566,14 +571,13 @@ void __near STlib_drawNum ( st_number_t __near*	number, int16_t num) {
 
     neg = num < 0;
 
-    if (neg)
-    {
-	if (numdigits == 2 && num < -9)
-	    num = -9;
-	else if (numdigits == 3 && num < -99)
-	    num = -99;
-	
-	num = -num;
+    if (neg) {
+        if (numdigits == 2 && num < -9){
+            num = -9;
+        } else if (numdigits == 3 && num < -99){
+            num = -99;
+        }
+        num = -num;
     }
 
     // clear the area
@@ -585,8 +589,9 @@ void __near STlib_drawNum ( st_number_t __near*	number, int16_t num) {
     V_CopyRect (x + SCREENWIDTH*(number->y - ST_Y), x + SCREENWIDTH*number->y, digitwidth, h);
 
     // if non-number, do not draw it
-    if (num == 1994)
+    if (num == 1994){
 		return;
+    }
 
     x = number->x;
 
@@ -618,13 +623,17 @@ void __near ST_drawWidgets() {
 
     // used by w_arms[] widgets
 
-    if (st_statusbaron) {
+    if (st_statusbaron){
+        int8_t ammotype = weaponinfo[player.readyweapon].ammo;
         for (i = 0; i < 4; i++) {
             STlib_drawNum(&w_ammo[i], player.ammo[i]);
             STlib_drawNum(&w_maxammo[i], player.maxammo[i]);
         }
-
-        STlib_drawNum(&w_ready, player.ammo[weaponinfo[player.readyweapon].ammo]);
+        if (ammotype != am_noammo){
+            STlib_drawNum(&w_ready, player.ammo[ammotype]);
+        } else {
+            STlib_drawNum(&w_ready, 1994);
+        }
 
         STlib_updatePercent(&w_health, player.health);
         STlib_updatePercent(&w_armor, player.armorpoints);

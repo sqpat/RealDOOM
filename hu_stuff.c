@@ -148,11 +148,11 @@ boolean __near HU_Responder(event_t __far *ev) {
 		return false;
 	}
 
-	if (ev->type != ev_keydown)
+	if (ev->type != ev_keydown){
 		return false;
+	}
 
-	if (ev->data1 == HU_MSGREFRESH)
-	{
+	if (ev->data1 == HU_MSGREFRESH) {
 		message_on = true;
 		message_counter = HU_MSGTIMEOUT;
 		eatkey = true;

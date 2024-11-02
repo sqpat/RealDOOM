@@ -285,8 +285,7 @@ void __near R_InstallSpriteLump (int16_t lump, uint16_t frame, uint16_t rotation
 #endif
 
 		p_init_sprtemp[frame].rotate = false;
-		for (r = 0; r < 8; r++)
-		{
+		for (r = 0; r < 8; r++) {
 			p_init_sprtemp[frame].lump[r] = lump - firstspritelump;
 			p_init_sprtemp[frame].flip[r] = (byte)flipped;
 		}

@@ -73,8 +73,9 @@ uint16_t   __far  R_CheckTextureNumForName(int8_t *name) {
 	texture_t __far* texture;
 	int8_t texturename[8];
 	// "NoTexture" marker.
-	if (name[0] == '-')
+	if (name[0] == '-'){
 		return 0;
+	}
 
 	for (i = 0; i < numtextures; i++) {
 		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[i]]);
@@ -120,14 +121,16 @@ void __near G_DoLoadLevel(void) {
 
 	Z_QuickMapPhysics();
 
-	if (wipegamestate == GS_LEVEL)
+	if (wipegamestate == GS_LEVEL){
 		wipegamestate = -1;             // force a wipe 
+	}
 
 	gamestate = GS_LEVEL;
 
 
-	if (player.playerstate == PST_DEAD)
+	if (player.playerstate == PST_DEAD){
 		player.playerstate = PST_REBORN;
+	}
 
 	P_SetupLevel(gameepisode, gamemap, gameskill);
 	starttime = ticcount;
