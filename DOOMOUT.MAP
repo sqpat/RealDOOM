@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/02 19:30:45
+Created on:       24/11/03 11:43:43
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -81,10 +81,10 @@ p_user_TEXT            CODE           AUTO           0b1e:bf20       00000604
 r_bsp_TEXT             CODE           AUTO           1771:0000       000006f6
 r_data_TEXT            CODE           AUTO           1771:0700       00001764
 R_MATH_TEXT            CODE           AUTO           1771:1e64       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1771:2062       0000056c
-r_draw_TEXT            CODE           AUTO           1771:25d0       00000377
-r_main_TEXT            CODE           AUTO           1771:2950       000001dc
-r_plane_TEXT           CODE           AUTO           1771:2b30       000003a0
+R_MAINHI_TEXT          CODE           AUTO           1771:2062       0000090c
+r_draw_TEXT            CODE           AUTO           1771:2970       00000377
+r_main_TEXT            CODE           AUTO           1771:2cf0       000001dc
+r_plane_TEXT           CODE           AUTO           1771:2ed0       00000000
 r_segs_TEXT            CODE           AUTO           1771:2ed0       00001c25
 r_things_TEXT          CODE           AUTO           1771:4b00       000010de
 w_wad_TEXT             CODE           AUTO           1771:5be0       0000032e
@@ -536,7 +536,7 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 21ed:0260      _lightmult48lookup
 21ed:0280      _lightshift7lookup
 21ed:02a0      _pagesegments
-21ed:02a8      _MULT_4096
+21ed:02a8*     _MULT_4096
 21ed:02b0      _MULT_256
 21ed:02b8      _FLAT_CACHE_PAGE
 21ed:02c0      _visplane_offset
@@ -1346,24 +1346,23 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 1771:2184      R_PointOnSegSide_
 1771:2406      R_Subsector_
 1771:2104      R_PointToDist_
+1771:25ce      R_DrawPlanes_
 1771:224f      R_ClearPlanes_
 1771:22d2*     R_HandleEMSPagination_
 1771:2384*     R_FindPlane_
 1771:2501      R_CheckPlane_
 1771:2062      R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
-1771:25d0      R_FillBackScreen_
-1771:2854      R_VideoErase_
-1771:28d8      R_DrawViewBorder_
+1771:2970      R_FillBackScreen_
+1771:2bf4      R_VideoErase_
+1771:2c78      R_DrawViewBorder_
 Module: r_main.obj(C:\REALDOOM\r_main.c)
-1771:2950      R_PointToAngle16_
-1771:2966      R_PointToAngle2_
-1771:2992      R_PointToAngle2_16_
-1771:29c0      R_SetViewSize_
-1771:29d0+     R_SetupFrame_
-1771:2a4a      R_RenderPlayerView_
-Module: r_plane.obj(C:\REALDOOM\r_plane.c)
-1771:2b30      R_DrawPlanes_
+1771:2cf0      R_PointToAngle16_
+1771:2d06      R_PointToAngle2_
+1771:2d32      R_PointToAngle2_16_
+1771:2d60      R_SetViewSize_
+1771:2d70+     R_SetupFrame_
+1771:2dea      R_RenderPlayerView_
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 1771:2ed0      R_RenderMaskedSegRange_
 1771:341a+     R_RenderSegLoop_
@@ -1717,4 +1716,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00025370 (152432.)
 Entry point address: 1dee:21bc
-Link time: 00:00.75
+Link time: 00:00.74

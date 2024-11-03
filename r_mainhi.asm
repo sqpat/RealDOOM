@@ -34,6 +34,10 @@ EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
+EXTRN Z_QuickMapFlatPage_:PROC
+EXTRN W_CacheLumpNumDirect_:PROC
+EXTRN R_EvictFlatCacheEMSPage_:NEAR
+EXTRN R_MarkL2FlatCacheLRU_:NEAR
 
 EXTRN _ceilphyspage:BYTE
 EXTRN _floorphyspage:BYTE
@@ -49,6 +53,17 @@ EXTRN _frontsector:DWORD
 EXTRN _floorplaneindex:WORD
 EXTRN _ceilingplaneindex:WORD
 
+
+EXTRN _lastflatcacheindicesused:BYTE
+EXTRN _allocatedflatsperpage:BYTE
+EXTRN _currentflatpage:BYTE
+EXTRN _firstflat:BYTE
+EXTRN _MULT_256:BYTE
+EXTRN _FLAT_CACHE_PAGE:BYTE
+EXTRN _extralight:BYTE
+EXTRN _lightshift7lookup:BYTE
+EXTRN _R_DrawSkyPlaneCallHigh:DWORD
+EXTRN _R_MapPlaneCall:DWORD
 
 
 INCLUDE defs.inc
@@ -1281,5 +1296,419 @@ pop       si
 ret       
 
 ENDP
+
+
+;R_DrawPlanes_
+
+PROC R_DrawPlanes_ NEAR
+PUBLIC R_DrawPlanes_ 
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 01eh
+mov   word ptr [bp - 01eh], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
+xor   al, al
+mov   word ptr [bp - 016h], 0
+mov   byte ptr [bp - 8], al
+mov   byte ptr [bp - 6], al
+mov   byte ptr [bp - 0eh], al
+label3:
+mov   al, byte ptr [bp - 0eh]
+cbw  
+cmp   ax, word ptr [_lastvisplane]
+jge   label1
+mov   si, ax
+shl   si, 3
+add   si, offset _visplaneheaders
+mov   ax, word ptr [si + 4]
+cmp   ax, word ptr [si + 6]
+jle   label2
+label22:
+inc   byte ptr [bp - 0eh]
+add   word ptr [bp - 016h], 0286h
+jmp   label3
+label2:
+mov   cx, 2
+label6:
+mov   ax, word ptr [bp - 016h]
+cmp   ax, VISPLANE_BYTES_PER_PAGE
+jb    label4
+inc   byte ptr [bp - 8]
+sub   word ptr [bp - 016h], VISPLANE_BYTES_PER_PAGE
+cmp   byte ptr [bp - 8], 3
+je    label5
+label7:
+mov   al, byte ptr [bp - 8]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   ax, word ptr [bx + _visplanelookupsegments]
+mov   word ptr [bp - 01eh], ax
+jmp   label6
+label5:
+mov   al, byte ptr [_visplanedirty+3]
+add   al, 3
+mov   dx, cx
+cbw  
+mov   byte ptr [bp - 8], cl
+call  Z_QuickMapVisplanePage_
+jmp   label7
+label1:
+jmp   exit_drawplanes
+label4:
+mov   word ptr [bp - 018h], ax
+mov   al, byte ptr [bp - 0eh]
+cbw  
+mov   di, word ptr [bp - 01eh]
+add   ax, ax
+mov   bx, ax
+mov   cx, word ptr [bx + offset _visplanepiclights]
+add   bx, offset _visplanepiclights
+cmp   cl, byte ptr [_skyflatnum]
+jne   label8
+jmp   label9
+label8:
+mov   al, ch
+xor   ah, ah
+mov   dx, ax
+mov   al, byte ptr [_extralight]
+sar   dx, 4
+add   dx, ax
+mov   al, dl
+cmp   dl, 010h
+jb    label10
+mov   al, 0fh
+label10:
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   ax, word ptr [bx + _lightshift7lookup]
+mov   bx, 084h
+mov   dx, FLATTRANSLATION_SEGMENT
+mov   word ptr [bx], ax
+mov   al, cl
+mov   word ptr [bx + 2], ZLIGHT_SEGMENT
+xor   ah, ah
+mov   es, dx
+mov   bx, ax
+mov   dx, FLATINDEX_SEGMENT
+mov   al, byte ptr es:[bx]
+mov   es, dx
+mov   bx, ax
+mov   al, byte ptr es:[bx]
+mov   byte ptr [bp - 4], al
+cmp   al, 0ffh
+jne   label11
+xor   dl, dl
+label32:
+mov   al, dl
+cbw  
+mov   bx, ax
+cmp   byte ptr [bx + _allocatedflatsperpage], 4
+jl    label12
+jmp   label13
+label12:
+mov   al, dl
+shl   al, 2
+mov   ah, byte ptr [bx + _allocatedflatsperpage]
+add   ah, al
+inc   byte ptr [bx + _allocatedflatsperpage]
+mov   byte ptr [bp - 4], ah
+label33:
+mov   al, cl
+mov   dx, FLATTRANSLATION_SEGMENT
+xor   ah, ah
+mov   es, dx
+mov   bx, ax
+mov   dx, FLATINDEX_SEGMENT
+mov   al, byte ptr es:[bx]
+mov   es, dx
+mov   bx, ax
+mov   al, byte ptr [bp - 4]
+mov   byte ptr [bp - 6], 1
+mov   byte ptr es:[bx], al
+label11:
+mov   dl, byte ptr [bp - 4]
+xor   dh, dh
+sar   dx, 2
+cmp   dl, byte ptr [_currentflatpage]
+je    label14
+jmp   label15
+label14:
+mov   byte ptr [bp - 0ch], 0
+label44:
+mov   al, byte ptr [_lastflatcacheindicesused]
+cmp   al, byte ptr [bp - 0ch]
+je    label16
+mov   al, byte ptr [_lastflatcacheindicesused+1]
+cmp   al, byte ptr [bp - 0ch]
+je    label17
+mov   al, byte ptr [_lastflatcacheindicesused+2]
+cmp   al, byte ptr [bp - 0ch]
+je    label18
+mov   byte ptr [_lastflatcacheindicesused+3], al
+label18:
+mov   al, byte ptr [_lastflatcacheindicesused+1]
+mov   byte ptr [_lastflatcacheindicesused+2], al
+label17:
+mov   al, byte ptr [_lastflatcacheindicesused]
+mov   byte ptr [_lastflatcacheindicesused+1], al
+mov   al, byte ptr [bp - 0ch]
+mov   byte ptr [_lastflatcacheindicesused], al
+label16:
+mov   al, byte ptr [bp - 4]
+xor   ah, ah
+sar   ax, 2
+cbw  
+call  R_MarkL2FlatCacheLRU_
+cmp   byte ptr [bp - 6], 0
+je    label19
+mov   al, byte ptr [bp - 4]
+and   al, 3
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bp - 0ch]
+cbw  
+add   ax, ax
+mov   dx, word ptr [bx + 02a8h]
+mov   bx, ax
+mov   ax, word ptr [bx + 02b8h]
+xor   ch, ch
+mov   word ptr [bp - 01ah], ax
+mov   ax, FLATTRANSLATION_SEGMENT
+mov   bx, cx
+mov   es, ax
+mov   al, byte ptr es:[bx]
+mov   cx, word ptr [bp - 01ah]
+xor   ah, ah
+mov   bx, dx
+add   ax, word ptr [_firstflat]
+call  W_CacheLumpNumDirect_
+label19:
+mov   al, byte ptr [bp - 4]
+and   al, 3
+xor   ah, ah
+mov   dx, ax
+add   dx, ax
+mov   al, byte ptr [bp - 0ch]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   ax, word ptr [bx + _FLAT_CACHE_PAGE]
+mov   bx, dx
+add   ax, word ptr [bx + _MULT_256]
+mov   bx, 06eh
+mov   word ptr [bx], ax
+mov   bx, 09ch
+mov   ax, word ptr [si]
+mov   dx, word ptr [si + 2]
+sub   ax, word ptr [bx]
+sbb   dx, word ptr [bx + 2]
+mov   bx, 088h
+or    dx, dx
+jge   label20
+neg   ax
+adc   dx, 0
+neg   dx
+label20:
+mov   word ptr [bx], ax
+mov   word ptr [bx + 2], dx
+mov   bx, word ptr [si + 6]
+mov   es, di
+add   bx, word ptr [bp - 018h]
+mov   byte ptr es:[bx + 3], 0ffh
+mov   bx, word ptr [si + 4]
+add   bx, word ptr [bp - 018h]
+mov   byte ptr es:[bx + 1], 0ffh
+mov   ax, word ptr [si + 6]
+inc   ax
+mov   si, word ptr [si + 4]
+mov   word ptr [bp - 010h], ax
+cmp   si, ax
+jle   label21
+jmp   label22
+label21:
+mov   bx, word ptr [bp - 018h]
+mov   word ptr [bp - 01ch], di
+add   bx, si
+lea   ax, [si - 1]
+mov   word ptr [bp - 012h], bx
+mov   word ptr [bp - 014h], ax
+label23:
+mov   es, word ptr [bp - 01ch]
+mov   bx, word ptr [bp - 012h]
+mov   al, byte ptr es:[bx + 0143h]
+mov   ch, byte ptr es:[bx + 1]
+mov   byte ptr [bp - 2], al
+mov   al, byte ptr es:[bx + 0144h]
+mov   cl, byte ptr es:[bx + 2]
+mov   byte ptr [bp - 0ah], al
+cmp   ch, cl
+jae   label25
+mov   di, word ptr [bp - 014h]
+label36:
+cmp   ch, byte ptr [bp - 2]
+jbe   label26
+label25:
+mov   di, word ptr [bp - 014h]
+label39:
+mov   al, byte ptr [bp - 2]
+cmp   al, byte ptr [bp - 0ah]
+ja    label27
+label38:
+mov   dx, SPANSTART_SEGMENT
+label42:
+cmp   cl, ch
+jb    label28
+label41:
+mov   dx, SPANSTART_SEGMENT
+label30:
+mov   al, byte ptr [bp - 0ah]
+cmp   al, byte ptr [bp - 2]
+jbe   label29
+cmp   cl, al
+ja    label29
+xor   ah, ah
+mov   bx, ax
+mov   es, dx
+add   bx, ax
+dec   byte ptr [bp - 0ah]
+mov   word ptr es:[bx], si
+jmp   label30
+label9:
+mov   bx, word ptr [bp - 016h]
+mov   cx, di
+mov   dx, word ptr [si + 6]
+mov   ax, word ptr [si + 4]
+call  [_R_DrawSkyPlaneCallHigh]
+inc   byte ptr [bp - 0eh]
+add   word ptr [bp - 016h], 0286h
+jmp   label3
+label13:
+inc   dl
+cmp   dl, 6
+jge   label31
+jmp   label32
+label31:
+call  R_EvictFlatCacheEMSPage_
+shl   al, 2
+mov   byte ptr [bp - 4], al
+jmp   label33
+label26:
+jmp   label34
+label15:
+cmp   dl, byte ptr [_currentflatpage+1]
+jne   label43
+mov   byte ptr [bp - 0ch], 1
+jmp   label44
+label27:
+jmp   label45
+label43:
+cmp   dl, byte ptr [_currentflatpage+2]
+jne   label46
+mov   byte ptr [bp - 0ch], 2
+jmp   label44
+label28:
+jmp   label47
+label29:
+jmp   label48
+label46:
+cmp   dl, byte ptr [_currentflatpage+3]
+jne   label49
+mov   byte ptr [bp - 0ch], 3
+jmp   label44
+label49:
+mov   al, byte ptr [_lastflatcacheindicesused+3]
+mov   byte ptr [bp - 0ch], al
+mov   al, byte ptr [_lastflatcacheindicesused+2]
+mov   byte ptr [_lastflatcacheindicesused+3], al
+mov   al, byte ptr [_lastflatcacheindicesused+1]
+mov   byte ptr [_lastflatcacheindicesused+2], al
+mov   al, byte ptr [_lastflatcacheindicesused]
+mov   byte ptr [_lastflatcacheindicesused+1], al
+mov   al, byte ptr [bp - 0ch]
+mov   byte ptr [_lastflatcacheindicesused], al
+cbw  
+mov   bx, ax
+mov   al, dl
+mov   byte ptr [bx + 015ah], dl
+cbw  
+mov   dx, bx
+add   ax, 026h
+call  Z_QuickMapFlatPage_
+jmp   label16
+label34:
+mov   al, ch
+xor   ah, ah
+mov   dx, SPANSTART_SEGMENT
+mov   bx, ax
+mov   es, dx
+add   bx, ax
+mov   dx, word ptr es:[bx]
+mov   bx, di
+inc   ch
+call [_R_MapPlaneCall]
+cmp   ch, cl
+jae   label35
+jmp   label36
+label35:
+jmp   label25
+label45:
+cmp   ch, al
+jbe   label37
+jmp   label38
+label37:
+xor   ah, ah
+mov   dx, SPANSTART_SEGMENT
+mov   bx, ax
+mov   es, dx
+add   bx, ax
+mov   dx, word ptr es:[bx]
+mov   bx, di
+dec   byte ptr [bp - 2]
+call [_R_MapPlaneCall]
+jmp   label39
+label47:
+cmp   cl, byte ptr [bp - 0ah]
+jbe   label40
+jmp   label41
+label40:
+mov   al, cl
+xor   ah, ah
+mov   bx, ax
+mov   es, dx
+add   bx, ax
+inc   cl
+mov   word ptr es:[bx], si
+jmp   label42
+label48:
+inc   word ptr [bp - 012h]
+inc   si
+inc   word ptr [bp - 014h]
+cmp   si, word ptr [bp - 010h]
+jle   label24
+jmp   label22
+label24:
+jmp   label23
+exit_drawplanes:
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+ENDP
+
+
+
 
 END

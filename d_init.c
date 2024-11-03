@@ -866,8 +866,7 @@ void check_is_ultimate(){
 
 //void checkDS(int16_t a);
 
-void __far D_DoomMain2(void)
-{
+void __far D_DoomMain2(void) {
 	int16_t             p;
 	int8_t                    file[256];
 	union REGS regs;

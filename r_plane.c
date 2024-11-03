@@ -447,6 +447,9 @@ void __near R_DrawSkyPlane2(int16_t minx, int16_t maxx, visplane_t __far*		pl){
 // R_DrawPlanes
 // At the end of each frame.
 //
+void __near R_DrawPlanes (void);
+
+/*
 void __near R_DrawPlanes (void) {
     visplane_t __far*		pl;
     uint8_t			light;
@@ -647,5 +650,6 @@ void __near R_DrawPlanes (void) {
     }
 
 }
+*/
 
 
