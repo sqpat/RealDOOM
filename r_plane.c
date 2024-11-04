@@ -604,8 +604,6 @@ void __near R_DrawPlanes (void) {
 		// regular flat
 		ds_source_segment = FLAT_CACHE_PAGE[flatcacheL1pagenumber] + MULT_256[usedflatindex & 0x03];
 
-		// works but slow?
-		//ds_source = R_GetFlat(firstflat + flattranslation[piclight.bytes.picnum]);
 		
 		planeheight = labs(plheader->height - viewz.w);
 				// quicker shift 7.. (? test)

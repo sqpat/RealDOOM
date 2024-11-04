@@ -1298,11 +1298,34 @@ ret
 ENDP
 
 
+
+
+
 ;R_DrawPlanes_
 
 PROC R_DrawPlanes_ NEAR
 PUBLIC R_DrawPlanes_ 
 
+; ARGS none
+
+; STACK
+; bp - 01Eh visplanesegment
+; bp - 01Ch some segment, probably also visplanesegment, or pl..
+; bp - 01Ah temp storage, easily removed
+; bp - 018h visplane offset clone. used for pl
+; bp - 016h visplaneoffset
+; bp - 014h	todo some offset
+; bp - 012h todo some addr
+; bp - 010h stop
+
+; bp - 0Eh i (loop counter)
+; bp - 0Ch flatcacheL1pagenumber
+; bp - 0Ah t2
+; bp - 8 physindex
+; bp - 6 flatunloaded
+; bp - 4 usedflatindex
+; bp - 2   t1
+; bp - 0
 
 push  bx
 push  cx
@@ -1311,89 +1334,96 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 01eh
-mov   word ptr [bp - 01eh], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
+sub   sp, 01Eh
+mov   word ptr [bp - 01Eh], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
 xor   al, al
 mov   word ptr [bp - 016h], 0
 mov   byte ptr [bp - 8], al
 mov   byte ptr [bp - 6], al
 mov   byte ptr [bp - 0eh], al
-label3:
-mov   al, byte ptr [bp - 0eh]
+drawplanes_loop:
+mov   al, byte ptr [bp - 0eh] ; get i value
 cbw  
 cmp   ax, word ptr [_lastvisplane]
-jge   label1
+jge   exit_drawplanes
 mov   si, ax
 shl   si, 3
 add   si, offset _visplaneheaders
-mov   ax, word ptr [si + 4]
-cmp   ax, word ptr [si + 6]
-jle   label2
-label22:
-inc   byte ptr [bp - 0eh]
-add   word ptr [bp - 016h], 0286h
-jmp   label3
-label2:
+mov   ax, word ptr [si + 4]			; fetch visplane minx
+cmp   ax, word ptr [si + 6]			; fetch visplane maxx
+jle   visplane_x_in_range
+do_next_drawplanes_loop:	
+
+inc   byte ptr [bp - 0eh]	; increment i
+add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
+jmp   drawplanes_loop
+visplane_x_in_range:
 mov   cx, 2
-label6:
+loop_visplane_page_check:
 mov   ax, word ptr [bp - 016h]
 cmp   ax, VISPLANE_BYTES_PER_PAGE
-jb    label4
+jb    visplane_in_current_page
+; do next visplane page
 inc   byte ptr [bp - 8]
 sub   word ptr [bp - 016h], VISPLANE_BYTES_PER_PAGE
 cmp   byte ptr [bp - 8], 3
-je    label5
-label7:
+je    do_visplane_pagination
+lookup_visplane_segment:
 mov   al, byte ptr [bp - 8]
 cbw  
 mov   bx, ax
 add   bx, ax
 mov   ax, word ptr [bx + _visplanelookupsegments]
-mov   word ptr [bp - 01eh], ax
-jmp   label6
-label5:
+mov   word ptr [bp - 01Eh], ax
+jmp   loop_visplane_page_check
+do_visplane_pagination:
 mov   al, byte ptr [_visplanedirty+3]
 add   al, 3
 mov   dx, cx
 cbw  
 mov   byte ptr [bp - 8], cl
 call  Z_QuickMapVisplanePage_
-jmp   label7
-label1:
-jmp   exit_drawplanes
-label4:
-mov   word ptr [bp - 018h], ax
-mov   al, byte ptr [bp - 0eh]
+jmp   lookup_visplane_segment
+exit_drawplanes:
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+visplane_in_current_page:
+mov   word ptr [bp - 018h], ax	; store pl... probably can remove this and use 016h
+mov   al, byte ptr [bp - 0Eh]
 cbw  
-mov   di, word ptr [bp - 01eh]
+mov   di, word ptr [bp - 01Eh]
 add   ax, ax
 mov   bx, ax
 mov   cx, word ptr [bx + offset _visplanepiclights]
 add   bx, offset _visplanepiclights
 cmp   cl, byte ptr [_skyflatnum]
-jne   label8
-jmp   label9
-label8:
+jne   do_nonsky_flat_draw
+jmp   do_sky_flat_draw
+do_nonsky_flat_draw:
 mov   al, ch
 xor   ah, ah
 mov   dx, ax
 mov   al, byte ptr [_extralight]
-sar   dx, 4
+sar   dx, LIGHTSEGSHIFT
 add   dx, ax
 mov   al, dl
-cmp   dl, 010h
-jb    label10
-mov   al, 0fh
-label10:
+cmp   dl, LIGHTLEVELS
+jb    lightlevel_in_range
+mov   al, LIGHTLEVELS-1
+lightlevel_in_range:
 xor   ah, ah
 mov   bx, ax
 add   bx, ax
 mov   ax, word ptr [bx + _lightshift7lookup]
-mov   bx, 084h
 mov   dx, FLATTRANSLATION_SEGMENT
-mov   word ptr [bx], ax
+mov   word ptr ds:[_planezlight], ax
 mov   al, cl
-mov   word ptr [bx + 2], ZLIGHT_SEGMENT
+mov   word ptr ds:[_planezlight + 2], ZLIGHT_SEGMENT
 xor   ah, ah
 mov   es, dx
 mov   bx, ax
@@ -1404,23 +1434,34 @@ mov   bx, ax
 mov   al, byte ptr es:[bx]
 mov   byte ptr [bp - 4], al
 cmp   al, 0ffh
-jne   label11
+jne   flat_loaded
 xor   dl, dl
-label32:
-mov   al, dl
+loop_find_flat:
+mov   al, dl		; dl is j
 cbw  
 mov   bx, ax
-cmp   byte ptr [bx + _allocatedflatsperpage], 4
-jl    label12
-jmp   label13
-label12:
+cmp   byte ptr [bx + _allocatedflatsperpage], 4   ; if (allocatedflatsperpage[j]<4){
+jl    found_page_with_empty_space
+inc   dl
+cmp   dl, NUM_FLAT_CACHE_PAGES
+jge   found_flat_page_to_evict
+jmp   loop_find_flat
+found_flat_page_to_evict:
+call  R_EvictFlatCacheEMSPage_   ; al stores result..
+shl   al, 2
+mov   byte ptr [bp - 4], al
+jmp   found_flat
+
+
+found_page_with_empty_space:
+; usedflatindex
 mov   al, dl
 shl   al, 2
 mov   ah, byte ptr [bx + _allocatedflatsperpage]
 add   ah, al
 inc   byte ptr [bx + _allocatedflatsperpage]
 mov   byte ptr [bp - 4], ah
-label33:
+found_flat:
 mov   al, cl
 mov   dx, FLATTRANSLATION_SEGMENT
 xor   ah, ah
@@ -1431,202 +1472,39 @@ mov   al, byte ptr es:[bx]
 mov   es, dx
 mov   bx, ax
 mov   al, byte ptr [bp - 4]
-mov   byte ptr [bp - 6], 1
-mov   byte ptr es:[bx], al
-label11:
+mov   byte ptr [bp - 6], 1	; update flatunloaded
+mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] = usedflatindex;
+
+; check l2 cache next
+flat_loaded:
 mov   dl, byte ptr [bp - 4]
 xor   dh, dh
 sar   dx, 2
-cmp   dl, byte ptr [_currentflatpage]
-je    label14
-jmp   label15
-label14:
-mov   byte ptr [bp - 0ch], 0
-label44:
-mov   al, byte ptr [_lastflatcacheindicesused]
-cmp   al, byte ptr [bp - 0ch]
-je    label16
-mov   al, byte ptr [_lastflatcacheindicesused+1]
-cmp   al, byte ptr [bp - 0ch]
-je    label17
-mov   al, byte ptr [_lastflatcacheindicesused+2]
-cmp   al, byte ptr [bp - 0ch]
-je    label18
-mov   byte ptr [_lastflatcacheindicesused+3], al
-label18:
-mov   al, byte ptr [_lastflatcacheindicesused+1]
-mov   byte ptr [_lastflatcacheindicesused+2], al
-label17:
-mov   al, byte ptr [_lastflatcacheindicesused]
-mov   byte ptr [_lastflatcacheindicesused+1], al
-mov   al, byte ptr [bp - 0ch]
-mov   byte ptr [_lastflatcacheindicesused], al
-label16:
-mov   al, byte ptr [bp - 4]
-xor   ah, ah
-sar   ax, 2
-cbw  
-call  R_MarkL2FlatCacheLRU_
-cmp   byte ptr [bp - 6], 0
-je    label19
-mov   al, byte ptr [bp - 4]
-and   al, 3
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-mov   al, byte ptr [bp - 0ch]
-cbw  
-add   ax, ax
-mov   dx, word ptr [bx + 02a8h]
-mov   bx, ax
-mov   ax, word ptr [bx + 02b8h]
-xor   ch, ch
-mov   word ptr [bp - 01ah], ax
-mov   ax, FLATTRANSLATION_SEGMENT
-mov   bx, cx
-mov   es, ax
-mov   al, byte ptr es:[bx]
-mov   cx, word ptr [bp - 01ah]
-xor   ah, ah
-mov   bx, dx
-add   ax, word ptr [_firstflat]
-call  W_CacheLumpNumDirect_
-label19:
-mov   al, byte ptr [bp - 4]
-and   al, 3
-xor   ah, ah
-mov   dx, ax
-add   dx, ax
-mov   al, byte ptr [bp - 0ch]
-cbw  
-mov   bx, ax
-add   bx, ax
-mov   ax, word ptr [bx + _FLAT_CACHE_PAGE]
-mov   bx, dx
-add   ax, word ptr [bx + _MULT_256]
-mov   bx, 06eh
-mov   word ptr [bx], ax
-mov   bx, 09ch
-mov   ax, word ptr [si]
-mov   dx, word ptr [si + 2]
-sub   ax, word ptr [bx]
-sbb   dx, word ptr [bx + 2]
-mov   bx, 088h
-or    dx, dx
-jge   label20
-neg   ax
-adc   dx, 0
-neg   dx
-label20:
-mov   word ptr [bx], ax
-mov   word ptr [bx + 2], dx
-mov   bx, word ptr [si + 6]
-mov   es, di
-add   bx, word ptr [bp - 018h]
-mov   byte ptr es:[bx + 3], 0ffh
-mov   bx, word ptr [si + 4]
-add   bx, word ptr [bp - 018h]
-mov   byte ptr es:[bx + 1], 0ffh
-mov   ax, word ptr [si + 6]
-inc   ax
-mov   si, word ptr [si + 4]
-mov   word ptr [bp - 010h], ax
-cmp   si, ax
-jle   label21
-jmp   label22
-label21:
-mov   bx, word ptr [bp - 018h]
-mov   word ptr [bp - 01ch], di
-add   bx, si
-lea   ax, [si - 1]
-mov   word ptr [bp - 012h], bx
-mov   word ptr [bp - 014h], ax
-label23:
-mov   es, word ptr [bp - 01ch]
-mov   bx, word ptr [bp - 012h]
-mov   al, byte ptr es:[bx + 0143h]
-mov   ch, byte ptr es:[bx + 1]
-mov   byte ptr [bp - 2], al
-mov   al, byte ptr es:[bx + 0144h]
-mov   cl, byte ptr es:[bx + 2]
-mov   byte ptr [bp - 0ah], al
-cmp   ch, cl
-jae   label25
-mov   di, word ptr [bp - 014h]
-label36:
-cmp   ch, byte ptr [bp - 2]
-jbe   label26
-label25:
-mov   di, word ptr [bp - 014h]
-label39:
-mov   al, byte ptr [bp - 2]
-cmp   al, byte ptr [bp - 0ah]
-ja    label27
-label38:
-mov   dx, SPANSTART_SEGMENT
-label42:
-cmp   cl, ch
-jb    label28
-label41:
-mov   dx, SPANSTART_SEGMENT
-label30:
-mov   al, byte ptr [bp - 0ah]
-cmp   al, byte ptr [bp - 2]
-jbe   label29
-cmp   cl, al
-ja    label29
-xor   ah, ah
-mov   bx, ax
-mov   es, dx
-add   bx, ax
-dec   byte ptr [bp - 0ah]
-mov   word ptr es:[bx], si
-jmp   label30
-label9:
-mov   bx, word ptr [bp - 016h]
-mov   cx, di
-mov   dx, word ptr [si + 6]
-mov   ax, word ptr [si + 4]
-call  [_R_DrawSkyPlaneCallHigh]
-inc   byte ptr [bp - 0eh]
-add   word ptr [bp - 016h], 0286h
-jmp   label3
-label13:
-inc   dl
-cmp   dl, 6
-jge   label31
-jmp   label32
-label31:
-call  R_EvictFlatCacheEMSPage_
-shl   al, 2
-mov   byte ptr [bp - 4], al
-jmp   label33
-label26:
-jmp   label34
-label15:
+; dl = flatcacheL2pagenumber
+cmp   dl, byte ptr [_currentflatpage+0]
+je    in_flat_page_0
+
+; check if L2 page is in L1 cache
+
 cmp   dl, byte ptr [_currentflatpage+1]
-jne   label43
-mov   byte ptr [bp - 0ch], 1
-jmp   label44
-label27:
-jmp   label45
-label43:
+jne   not_in_flat_page_1
+mov   byte ptr [bp - 0Ch], 1
+jmp   update_l1_cache
+not_in_flat_page_1:
 cmp   dl, byte ptr [_currentflatpage+2]
-jne   label46
-mov   byte ptr [bp - 0ch], 2
-jmp   label44
-label28:
-jmp   label47
-label29:
-jmp   label48
-label46:
+jne   not_in_flat_page_2
+mov   byte ptr [bp - 0Ch], 2
+jmp   update_l1_cache
+not_in_flat_page_2:
 cmp   dl, byte ptr [_currentflatpage+3]
-jne   label49
-mov   byte ptr [bp - 0ch], 3
-jmp   label44
-label49:
+jne   not_in_flat_page_3
+mov   byte ptr [bp - 0Ch], 3
+jmp   update_l1_cache
+not_in_flat_page_3:
+; L2 page not in L1 cache. need to EMS remap
+
 mov   al, byte ptr [_lastflatcacheindicesused+3]
-mov   byte ptr [bp - 0ch], al
+mov   byte ptr [bp - 0Ch], al
 mov   al, byte ptr [_lastflatcacheindicesused+2]
 mov   byte ptr [_lastflatcacheindicesused+3], al
 mov   al, byte ptr [_lastflatcacheindicesused+1]
@@ -1638,13 +1516,145 @@ mov   byte ptr [_lastflatcacheindicesused], al
 cbw  
 mov   bx, ax
 mov   al, dl
-mov   byte ptr [bx + 015ah], dl
+mov   byte ptr [bx + _currentflatpage], dl
 cbw  
 mov   dx, bx
 add   ax, 026h
 call  Z_QuickMapFlatPage_
-jmp   label16
-label34:
+jmp   l1_cache_finished_updating
+in_flat_page_0:
+mov   byte ptr [bp - 0Ch], 0
+
+update_l1_cache:
+mov   al, byte ptr [_lastflatcacheindicesused]
+cmp   al, byte ptr [bp - 0Ch]
+je    l1_cache_finished_updating
+mov   al, byte ptr [_lastflatcacheindicesused+1]
+cmp   al, byte ptr [bp - 0Ch]
+je    in_flat_page_1
+mov   al, byte ptr [_lastflatcacheindicesused+2]
+cmp   al, byte ptr [bp - 0Ch]
+je    in_flat_page_2
+mov   byte ptr [_lastflatcacheindicesused+3], al
+in_flat_page_2:
+mov   al, byte ptr [_lastflatcacheindicesused+1]
+mov   byte ptr [_lastflatcacheindicesused+2], al
+in_flat_page_1:
+mov   al, byte ptr [_lastflatcacheindicesused]
+mov   byte ptr [_lastflatcacheindicesused+1], al
+mov   al, byte ptr [bp - 0Ch]
+mov   byte ptr [_lastflatcacheindicesused], al
+l1_cache_finished_updating:
+mov   al, byte ptr [bp - 4]
+xor   ah, ah
+sar   ax, 2
+cbw  
+call  R_MarkL2FlatCacheLRU_
+cmp   byte ptr [bp - 6], 0  ; if (!flatunloaded)
+je    flat_not_unloaded
+; flat is unloaded
+mov   al, byte ptr [bp - 4]
+and   al, 3
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bp - 0Ch]
+cbw  
+add   ax, ax
+mov   dx, word ptr [bx + 02a8h]
+mov   bx, ax
+mov   ax, word ptr [bx + 02b8h]
+xor   ch, ch
+mov   word ptr [bp - 01Ah], ax
+mov   ax, FLATTRANSLATION_SEGMENT
+mov   bx, cx
+mov   es, ax
+mov   al, byte ptr es:[bx]
+mov   cx, word ptr [bp - 01Ah]
+xor   ah, ah
+mov   bx, dx
+add   ax, word ptr [_firstflat]
+call  W_CacheLumpNumDirect_
+flat_not_unloaded:
+; calculate ds_source_segment
+mov   al, byte ptr [bp - 4]
+and   al, 3
+xor   ah, ah
+mov   dx, ax
+add   dx, ax
+mov   al, byte ptr [bp - 0Ch]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   ax, word ptr [bx + _FLAT_CACHE_PAGE]
+mov   bx, dx
+add   ax, word ptr [bx + _MULT_256]
+mov   word ptr ds:[_ds_source_segment], ax
+mov   ax, word ptr [si]
+mov   dx, word ptr [si + 2]
+sub   ax, word ptr ds:[_viewz]
+sbb   dx, word ptr ds:[_viewz + 2]
+or    dx, dx
+
+; planeheight = labs(plheader->height - viewz.w);
+
+jge   planeheight_already_positive
+neg   ax
+adc   dx, 0
+neg   dx
+planeheight_already_positive:
+mov   word ptr ds:[_planeheight], ax
+mov   word ptr ds:[_planeheight + 2], dx
+mov   bx, word ptr [si + 6]
+mov   es, di
+add   bx, word ptr [bp - 018h]
+mov   byte ptr es:[bx + 3], 0ffh
+mov   bx, word ptr [si + 4]
+add   bx, word ptr [bp - 018h]
+mov   byte ptr es:[bx + 1], 0ffh
+mov   ax, word ptr [si + 6]
+inc   ax
+mov   si, word ptr [si + 4]
+mov   word ptr [bp - 010h], ax   ; x<= stop
+cmp   si, ax
+jle   start_single_plane_draw_loop
+jmp   do_next_drawplanes_loop
+
+
+start_single_plane_draw_loop:
+; loop setup
+mov   bx, word ptr [bp - 018h]
+mov   word ptr [bp - 01Ch], di
+add   bx, si
+lea   ax, [si - 1]
+mov   word ptr [bp - 012h], bx
+mov   word ptr [bp - 014h], ax
+
+single_plane_draw_loop:
+mov   es, word ptr [bp - 01Ch]
+mov   bx, word ptr [bp - 012h]
+
+;			t1 = pl->top[x - 1];
+;			b1 = pl->bottom[x - 1];
+;			t2 = pl->top[x];
+;			b2 = pl->bottom[x];
+
+
+mov   al, byte ptr es:[bx + 0143h]	; b1
+mov   ch, byte ptr es:[bx + 1]		; t1
+mov   byte ptr [bp - 2], al
+mov   al, byte ptr es:[bx + 0144h]  ; b2
+mov   cl, byte ptr es:[bx + 2]      ; t2
+mov   byte ptr [bp - 0Ah], al
+;    while (t1 < t2 && t1 <= b1)
+cmp   ch, cl
+
+
+jae   done_with_first_mapplane_loop
+mov   di, word ptr [bp - 014h]
+loop_first_mapplane:
+cmp   ch, byte ptr [bp - 2]
+ja   done_with_first_mapplane_loop
 mov   al, ch
 xor   ah, ah
 mov   dx, SPANSTART_SEGMENT
@@ -1656,30 +1666,62 @@ mov   bx, di
 inc   ch
 call [_R_MapPlaneCall]
 cmp   ch, cl
-jae   label35
-jmp   label36
-label35:
-jmp   label25
-label45:
+jae   done_with_first_mapplane_loop
+jmp   loop_first_mapplane
+
+end_single_plane_draw_loop_iteration:
+inc   word ptr [bp - 012h]
+inc   si
+inc   word ptr [bp - 014h]
+cmp   si, word ptr [bp - 010h]
+jle   single_plane_draw_loop
+jmp   do_next_drawplanes_loop
+
+done_with_first_mapplane_loop:
+mov   di, word ptr [bp - 014h]
+loop_second_mapplane:
+mov   al, byte ptr [bp - 2]
+cmp   al, byte ptr [bp - 0Ah]
+jbe    done_with_second_mapplane_loop
 cmp   ch, al
-jbe   label37
-jmp   label38
-label37:
+ja   done_with_second_mapplane_loop
 xor   ah, ah
 mov   dx, SPANSTART_SEGMENT
-mov   bx, ax
 mov   es, dx
+mov   bx, ax
 add   bx, ax
 mov   dx, word ptr es:[bx]
 mov   bx, di
 dec   byte ptr [bp - 2]
 call [_R_MapPlaneCall]
-jmp   label39
-label47:
-cmp   cl, byte ptr [bp - 0ah]
-jbe   label40
-jmp   label41
-label40:
+; todo do loop break check here with fall thru?
+jmp   loop_second_mapplane
+done_with_second_mapplane_loop:
+
+; update spanstarts
+
+; b1 = bp - 2
+; b2 = bp - 0a
+; t1 = ch
+; t2 = cl
+
+;			while (t2 < t1 && t2 <= b2) {
+;				spanstart[t2] = x;
+;				t2++;
+;			}
+;			while (b2 > b1 && b2 >= t2) {
+;				spanstart[b2] = x;
+;				b2--;
+;			}
+
+mov   dx, SPANSTART_SEGMENT
+mov   es, dx
+; todo note DX is free here.. probably have free bytes
+first_spanstart_update_loop:
+cmp   cl, ch     ; t2 < t1?
+jae    second_spanstart_update_loop
+cmp   cl, byte ptr [bp - 0Ah]     ; t2 <= b2?
+ja   second_spanstart_update_loop
 mov   al, cl
 xor   ah, ah
 mov   bx, ax
@@ -1687,24 +1729,40 @@ mov   es, dx
 add   bx, ax
 inc   cl
 mov   word ptr es:[bx], si
-jmp   label42
-label48:
-inc   word ptr [bp - 012h]
-inc   si
-inc   word ptr [bp - 014h]
-cmp   si, word ptr [bp - 010h]
-jle   label24
-jmp   label22
-label24:
-jmp   label23
-exit_drawplanes:
-leave 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
+jmp   first_spanstart_update_loop
+
+
+second_spanstart_update_loop:
+mov   al, byte ptr [bp - 0Ah]
+cmp   al, byte ptr [bp - 2]
+jbe   end_single_plane_draw_loop_iteration
+cmp   cl, al
+ja    end_single_plane_draw_loop_iteration
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+dec   byte ptr [bp - 0Ah]
+mov   word ptr es:[bx], si
+jmp   second_spanstart_update_loop
+
+
+
+
+do_sky_flat_draw:
+mov   bx, word ptr [bp - 016h] ; get visplane offset
+mov   cx, di
+mov   dx, word ptr [si + 6]
+mov   ax, word ptr [si + 4]
+call  [_R_DrawSkyPlaneCallHigh]
+inc   byte ptr [bp - 0eh]
+add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
+jmp   drawplanes_loop
+
+
+
+
+
+
 
 ENDP
 
