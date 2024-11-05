@@ -1311,21 +1311,21 @@ PUBLIC R_DrawPlanes_
 ; STACK
 ; bp - 01Eh visplanesegment
 ; bp - 01Ch some segment, probably also visplanesegment, or pl..
-; bp - 01Ah temp storage, easily removed
-; bp - 018h visplane offset clone. used for pl
+; bp - 01Ah temp storage, easily removed?
+; bp - 018h visplane offset clone. used for pl.
 ; bp - 016h visplaneoffset
-; bp - 014h	todo some offset
-; bp - 012h todo some addr
+; bp - 014h	unused (was x-1 in draw single plane outer loop)
+; bp - 012h unused (was x in draw single plane outer loop)
 ; bp - 010h stop
 
 ; bp - 0Eh i (loop counter)
 ; bp - 0Ch flatcacheL1pagenumber
-; bp - 0Ah t2
+; bp - 0Ah unused
 ; bp - 8 physindex
 ; bp - 6 flatunloaded
 ; bp - 4 usedflatindex
-; bp - 2   t1
-; bp - 0
+; bp - 2  unused
+
 
 push  bx
 push  cx
@@ -1623,16 +1623,13 @@ jmp   do_next_drawplanes_loop
 
 start_single_plane_draw_loop:
 ; loop setup
-mov   bx, word ptr [bp - 018h]
 mov   word ptr [bp - 01Ch], di
-add   bx, si
-lea   ax, [si - 1]
-mov   word ptr [bp - 012h], bx
-mov   word ptr [bp - 014h], ax
 
 single_plane_draw_loop:
+; todo les. put these adjacent to each other.
+; si is x, bx is plheader pointer. so adding si gets us plheader->top[x] etc.
 mov   es, word ptr [bp - 01Ch]
-mov   bx, word ptr [bp - 012h]
+mov   bx, word ptr [bp - 018h]
 
 ;			t1 = pl->top[x - 1];
 ;			b1 = pl->bottom[x - 1];
@@ -1640,60 +1637,75 @@ mov   bx, word ptr [bp - 012h]
 ;			b2 = pl->bottom[x];
 
 
-mov   al, byte ptr es:[bx + 0143h]	; b1
-mov   ch, byte ptr es:[bx + 1]		; t1
-mov   byte ptr [bp - 2], al
-mov   al, byte ptr es:[bx + 0144h]  ; b2
-mov   cl, byte ptr es:[bx + 2]      ; t2
-mov   byte ptr [bp - 0Ah], al
+mov   dx, word ptr es:[bx + si + 0143h]	; b1&b2
+mov   cx, word ptr es:[bx + si + 1]		; t1&t2
+; todo update following code to not need this
+; todo then move cx to ax
+; todo then move dx to cx..(?)
+xchg  dh, dl
+xchg  ch, cl
+
+mov   ax, SPANSTART_SEGMENT
+mov   es, ax
+
+
+; t1/t2 ch/cl
+; b1/b2 dh/dl
+
 ;    while (t1 < t2 && t1 <= b1)
 cmp   ch, cl
 
 
 jae   done_with_first_mapplane_loop
-mov   di, word ptr [bp - 014h]
+mov   di, si
+dec   di
 loop_first_mapplane:
-cmp   ch, byte ptr [bp - 2]
+cmp   ch, dh
 ja   done_with_first_mapplane_loop
+
 mov   al, ch
 xor   ah, ah
-mov   dx, SPANSTART_SEGMENT
 mov   bx, ax
-mov   es, dx
 add   bx, ax
-mov   dx, word ptr es:[bx]
+push  es
+push  dx
+mov   dx, word ptr es:[bx] ; todo refactor params...
 mov   bx, di
 inc   ch
-call [_R_MapPlaneCall]
+call  [_R_MapPlaneCall]
+pop   dx
+pop   es
 cmp   ch, cl
 jae   done_with_first_mapplane_loop
 jmp   loop_first_mapplane
 
 end_single_plane_draw_loop_iteration:
-inc   word ptr [bp - 012h]
 inc   si
-inc   word ptr [bp - 014h]
 cmp   si, word ptr [bp - 010h]
 jle   single_plane_draw_loop
 jmp   do_next_drawplanes_loop
 
 done_with_first_mapplane_loop:
-mov   di, word ptr [bp - 014h]
+mov   di, si
+dec   di
 loop_second_mapplane:
-mov   al, byte ptr [bp - 2]
-cmp   al, byte ptr [bp - 0Ah]
+cmp   dh, dl
 jbe    done_with_second_mapplane_loop
-cmp   ch, al
+cmp   ch, dh
 ja   done_with_second_mapplane_loop
+
+mov   al, dh
 xor   ah, ah
-mov   dx, SPANSTART_SEGMENT
-mov   es, dx
 mov   bx, ax
 add   bx, ax
+dec   dh
+push  es
+push  dx
 mov   dx, word ptr es:[bx]
 mov   bx, di
-dec   byte ptr [bp - 2]
 call [_R_MapPlaneCall]
+pop   dx
+pop   es
 ; todo do loop break check here with fall thru?
 jmp   loop_second_mapplane
 done_with_second_mapplane_loop:
@@ -1714,18 +1726,18 @@ done_with_second_mapplane_loop:
 ;				b2--;
 ;			}
 
-mov   dx, SPANSTART_SEGMENT
-mov   es, dx
-; todo note DX is free here.. probably have free bytes
+mov   ax, SPANSTART_SEGMENT
+mov   es, ax
+
+; todo dumb but probably positive idea - unroll 
 first_spanstart_update_loop:
 cmp   cl, ch     ; t2 < t1?
 jae    second_spanstart_update_loop
-cmp   cl, byte ptr [bp - 0Ah]     ; t2 <= b2?
+cmp   cl, dl     ; t2 <= b2?
 ja   second_spanstart_update_loop
 mov   al, cl
 xor   ah, ah
 mov   bx, ax
-mov   es, dx
 add   bx, ax
 inc   cl
 mov   word ptr es:[bx], si
@@ -1733,15 +1745,15 @@ jmp   first_spanstart_update_loop
 
 
 second_spanstart_update_loop:
-mov   al, byte ptr [bp - 0Ah]
-cmp   al, byte ptr [bp - 2]
+mov   al, dl
+cmp   al, dh
 jbe   end_single_plane_draw_loop_iteration
 cmp   cl, al
 ja    end_single_plane_draw_loop_iteration
 xor   ah, ah
 mov   bx, ax
 add   bx, ax
-dec   byte ptr [bp - 0Ah]
+dec   dl
 mov   word ptr es:[bx], si
 jmp   second_spanstart_update_loop
 
