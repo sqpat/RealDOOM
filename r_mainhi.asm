@@ -1310,13 +1310,13 @@ PUBLIC R_DrawPlanes_
 
 ; STACK
 ; bp - 01Eh visplanesegment
-; bp - 01Ch some segment, probably also visplanesegment, or pl..
-; bp - 01Ah temp storage, easily removed?
-; bp - 018h visplane offset clone. used for pl.
+; bp - 01Ch unused (was effictively dupe of 01Eh)
+; bp - 01Ah unused
+; bp - 018h unused
 ; bp - 016h visplaneoffset
 ; bp - 014h	unused (was x-1 in draw single plane outer loop)
 ; bp - 012h unused (was x in draw single plane outer loop)
-; bp - 010h stop
+; bp - 010h unused. (was loop stop condition, replaced with selfmodify)
 
 ; bp - 0Eh i (loop counter)
 ; bp - 0Ch flatcacheL1pagenumber
@@ -1393,7 +1393,9 @@ pop   cx
 pop   bx
 ret   
 visplane_in_current_page:
-mov   word ptr [bp - 018h], ax	; store pl... probably can remove this and use 016h
+
+; todo: DI is unused here.
+
 mov   al, byte ptr [bp - 0Eh]
 cbw  
 mov   di, word ptr [bp - 01Eh]
@@ -1565,12 +1567,13 @@ mov   dx, word ptr [bx + 02a8h]
 mov   bx, ax
 mov   ax, word ptr [bx + 02b8h]
 xor   ch, ch
-mov   word ptr [bp - 01Ah], ax
-mov   ax, FLATTRANSLATION_SEGMENT
 mov   bx, cx
+mov   cx, ax
+
+mov   ax, FLATTRANSLATION_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx]
-mov   cx, word ptr [bp - 01Ah]
+
 xor   ah, ah
 mov   bx, dx
 add   ax, word ptr [_firstflat]
@@ -1606,16 +1609,19 @@ planeheight_already_positive:
 mov   word ptr ds:[_planeheight], ax
 mov   word ptr ds:[_planeheight + 2], dx
 mov   bx, word ptr [si + 6]
+; todo les
 mov   es, di
-add   bx, word ptr [bp - 018h]
+add   bx, word ptr [bp - 016h]
 mov   byte ptr es:[bx + 3], 0ffh
 mov   bx, word ptr [si + 4]
-add   bx, word ptr [bp - 018h]
+add   bx, word ptr [bp - 016h]
 mov   byte ptr es:[bx + 1], 0ffh
 mov   ax, word ptr [si + 6]
 inc   ax
 mov   si, word ptr [si + 4]
 mov   word ptr [bp - 010h], ax   ; x<= stop
+mov   word ptr cs:[SELFMODIFY_comparestop+2], ax ; set count value to be compared against in loop.
+
 cmp   si, ax
 jle   start_single_plane_draw_loop
 jmp   do_next_drawplanes_loop
@@ -1623,13 +1629,12 @@ jmp   do_next_drawplanes_loop
 
 start_single_plane_draw_loop:
 ; loop setup
-mov   word ptr [bp - 01Ch], di
 
 single_plane_draw_loop:
 ; todo les. put these adjacent to each other.
 ; si is x, bx is plheader pointer. so adding si gets us plheader->top[x] etc.
-mov   es, word ptr [bp - 01Ch]
-mov   bx, word ptr [bp - 018h]
+mov   es, word ptr [bp - 01Eh]
+mov   bx, word ptr [bp - 016h]
 
 ;			t1 = pl->top[x - 1];
 ;			b1 = pl->bottom[x - 1];
@@ -1639,11 +1644,8 @@ mov   bx, word ptr [bp - 018h]
 
 mov   dx, word ptr es:[bx + si + 0143h]	; b1&b2
 mov   cx, word ptr es:[bx + si + 1]		; t1&t2
-; todo update following code to not need this
 ; todo then move cx to ax
 ; todo then move dx to cx..(?)
-xchg  dh, dl
-xchg  ch, cl
 
 mov   ax, SPANSTART_SEGMENT
 mov   es, ax
@@ -1653,56 +1655,55 @@ mov   es, ax
 ; b1/b2 dh/dl
 
 ;    while (t1 < t2 && t1 <= b1)
-cmp   ch, cl
+cmp   cl, ch
 
 
 jae   done_with_first_mapplane_loop
-mov   di, si
-dec   di
 loop_first_mapplane:
-cmp   ch, dh
+cmp   cl, dl
 ja   done_with_first_mapplane_loop
 
-mov   al, ch
+mov   al, cl
 xor   ah, ah
 mov   bx, ax
 add   bx, ax
 push  es
 push  dx
 mov   dx, word ptr es:[bx] ; todo refactor params...
-mov   bx, di
-inc   ch
+mov   bx, si
+dec   bx
+inc   cl
 call  [_R_MapPlaneCall]
 pop   dx
 pop   es
-cmp   ch, cl
+cmp   cl, ch
 jae   done_with_first_mapplane_loop
 jmp   loop_first_mapplane
 
 end_single_plane_draw_loop_iteration:
 inc   si
-cmp   si, word ptr [bp - 010h]
+SELFMODIFY_comparestop:
+cmp   si, 1000h
 jle   single_plane_draw_loop
 jmp   do_next_drawplanes_loop
 
 done_with_first_mapplane_loop:
-mov   di, si
-dec   di
 loop_second_mapplane:
-cmp   dh, dl
+cmp   dl, dh
 jbe    done_with_second_mapplane_loop
-cmp   ch, dh
+cmp   cl, dl
 ja   done_with_second_mapplane_loop
 
-mov   al, dh
+mov   al, dl
 xor   ah, ah
 mov   bx, ax
 add   bx, ax
-dec   dh
+dec   dl
 push  es
 push  dx
 mov   dx, word ptr es:[bx]
-mov   bx, di
+mov   bx, si
+dec   bx
 call [_R_MapPlaneCall]
 pop   dx
 pop   es
@@ -1731,29 +1732,29 @@ mov   es, ax
 
 ; todo dumb but probably positive idea - unroll 
 first_spanstart_update_loop:
-cmp   cl, ch     ; t2 < t1?
+cmp   ch, cl     ; t2 < t1?
 jae    second_spanstart_update_loop
-cmp   cl, dl     ; t2 <= b2?
+cmp   ch, dh     ; t2 <= b2?
 ja   second_spanstart_update_loop
-mov   al, cl
+mov   al, ch
 xor   ah, ah
 mov   bx, ax
 add   bx, ax
-inc   cl
+inc   ch
 mov   word ptr es:[bx], si
 jmp   first_spanstart_update_loop
 
 
 second_spanstart_update_loop:
-mov   al, dl
-cmp   al, dh
+cmp   dh, dl
 jbe   end_single_plane_draw_loop_iteration
-cmp   cl, al
+cmp   ch, dh
 ja    end_single_plane_draw_loop_iteration
+mov   al, dh
 xor   ah, ah
 mov   bx, ax
 add   bx, ax
-dec   dl
+dec   dh
 mov   word ptr es:[bx], si
 jmp   second_spanstart_update_loop
 
