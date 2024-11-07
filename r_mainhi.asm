@@ -1301,7 +1301,7 @@ ENDP
 
 
 exit_drawplanes:
-leave 
+LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
@@ -1552,10 +1552,9 @@ add   al, 0
 jnz    flat_is_unloaded
 flat_not_unloaded:
 ; calculate ds_source_segment
-mov   ax, word ptr [bp - 4]
-and   ax, 3
-mov   bx, ax
-add   bx, ax
+mov   bx, word ptr [bp - 4]
+and   bx, 3
+add   bx, bx
 mov   ax, word ptr [bx + _MULT_256]
 mov   bl, cl
 add   bx, bx
@@ -1642,6 +1641,7 @@ mov   es, ax
 
 ; t1/t2 ch/cl
 ; b1/b2 dh/dl
+mov   word ptr ds:[_ds_x2], si
 
 ;    while (t1 < t2 && t1 <= b1)
 dec   si	; x - 1  constant
@@ -1654,20 +1654,19 @@ ja   done_with_first_mapplane_loop
 
 mov   al, cl
 xor   ah, ah
-mov   bx, ax
-add   bx, ax
-push  es
-push  dx
-mov   dx, word ptr es:[bx] ; todo refactor params to mapplane?
-mov   bx, si
+mov   word ptr ds:[_ds_y], ax
+; todo: pull di base calc out of loop and use two incs
+; possibly use inc _ds_y?
+mov   di, ax
+add   di, ax
+mov   bx, word ptr es:[di]
+mov   word ptr ds:[_ds_x1], bx
 inc   cl
 ;call  [_R_MapPlaneCall]
 db    09Ah
 dw    R_MAPPLANE_OFFSET
 dw    SPANFUNC_FUNCTION_AREA_SEGMENT
 
-pop   dx
-pop   es
 cmp   cl, ch
 jae   done_with_first_mapplane_loop
 jmp   loop_first_mapplane
@@ -1689,19 +1688,16 @@ ja   done_with_second_mapplane_loop
 
 mov   al, dl
 xor   ah, ah
-mov   bx, ax
-add   bx, ax
+mov   word ptr ds:[_ds_y], ax
+mov   di, ax
+add   di, ax
 dec   dl
-push  es
-push  dx
-mov   dx, word ptr es:[bx]
-mov   bx, si
+mov   bx, word ptr es:[di]
+mov   word ptr ds:[_ds_x1], bx
 ;call  [_R_MapPlaneCall]
 db    09Ah
 dw    R_MAPPLANE_OFFSET
 dw    SPANFUNC_FUNCTION_AREA_SEGMENT
-pop   dx
-pop   es
 ; todo do loop break check here with fall thru?
 jmp   loop_second_mapplane
 done_with_second_mapplane_loop:

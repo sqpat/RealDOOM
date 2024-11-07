@@ -751,18 +751,16 @@ PUBLIC  R_MapPlane_
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 14h
+push  es
+push  dx
 
-xor   ah, ah
+;xor   ah, ah
 ; set these values for drawspan while they are still in registers
-mov   word ptr ds:[_ds_y], ax
-mov   word ptr ds:[_ds_x1], dx
-mov   word ptr ds:[_ds_x2], bx
+;mov   word ptr ds:[_ds_y], ax
+;mov   word ptr ds:[_ds_x1], dx
+;mov   word ptr ds:[_ds_x2], si
 
 
-xor   ah, ah
 xchg  si, ax
 mov   es, ds:[_cachedheight_segment_storage]
 
@@ -773,7 +771,7 @@ shl   si, 1
 ; CACHEDHEIGHT LOOKUP
 
 cmp   ax, word ptr es:[si] ; compare low word
-jne    go_generate_values
+jne   go_generate_values
 use_cached_values:
 
 cmp   dx, word ptr es:[si+2]
@@ -918,8 +916,10 @@ dw (R_DrawSpanPrep_ - R_DrawSpan_)
 dw SPANFUNC_FUNCTION_AREA_SEGMENT
 
 
-LEAVE_MACRO
 
+
+pop   dx
+pop   es
 pop   di
 pop   si
 pop   cx
@@ -937,7 +937,9 @@ dw (R_DrawSpanPrep_ - R_DrawSpan_)
 dw SPANFUNC_FUNCTION_AREA_SEGMENT
 
 
-LEAVE_MACRO
+
+pop   dx
+pop   es
 pop   di
 pop   si
 pop   cx
