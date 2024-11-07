@@ -32,8 +32,11 @@ db 1,  2,  4,  8,  3, 12,  3, 12, 15, 15, 15, 15
 ; _ds_source_segment  0x3E (and _ds_source_segment -2 = 0x3C)
 dw                                       DRAWSPAN_BX_OFFSET, 0000h
 
+
+;0x40
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+;0x50   0x54 = _planezlight (dword, so segment in 56)
+dw 0,  0,  0,  ZLIGHT_SEGMENT,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
