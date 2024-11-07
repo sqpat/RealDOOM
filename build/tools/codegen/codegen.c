@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 108
+#define CONSTANTS_COUNT 112
 #define LOCALS_COUNT 16
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -137,7 +137,11 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "EMPTY_RENDER_6800_SEGMENT",
     "PHYSICS_7000_END_SEGMENT",
     "RENDER_8800_END_SEGMENT",
-    "RENDER_6800_END_SEGMENT"
+    "RENDER_6800_END_SEGMENT",
+    "R_MAPPLANE_OFFSET",
+    "DRAWSKYPLANE_AREA_SEGMENT",
+    "R_DRAWSKYPLANE_OFFSET"
+    
 
 
 
@@ -276,7 +280,11 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     empty_render_6800_segment,
     physics_7000_end_segment,
     render_8800_end_segment,
-    render_6800_end_segment
+    render_6800_end_segment,
+    R_MapPlaneOffset,
+    drawskyplane_area_segment,
+    R_DrawSkyPlaneOffset
+
 
     
 };

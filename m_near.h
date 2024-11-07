@@ -413,13 +413,11 @@ extern void                 (__far* R_DrawColumnPrepCallHigh)(uint16_t);
 extern void                 (__far* R_DrawColumnPrepCall)(uint16_t);
 
 extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *);
-extern void                 (__far* R_MapPlaneCall)(byte, int16_t, int16_t);
 
 extern void                 (__far* R_DrawMaskedColumnCallHigh)(segment_t, column_t __far *);
 extern void                 (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t, byte);
 
 extern void                 (__far* R_DrawMaskedColumnCallSpriteHigh)(segment_t, column_t __far *);
-extern void                 (__far* R_DrawSkyPlaneCallHigh)(int16_t, int16_t,visplane_t __far *);
 
 
 extern int16_t              currentlumpindex;

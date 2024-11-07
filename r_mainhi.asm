@@ -63,8 +63,7 @@ EXTRN _MULT_256:BYTE
 EXTRN _FLAT_CACHE_PAGE:BYTE
 EXTRN _extralight:BYTE
 EXTRN _lightshift7lookup:BYTE
-EXTRN _R_DrawSkyPlaneCallHigh:DWORD
-EXTRN _R_MapPlaneCall:DWORD
+EXTRN _MULT_4096:BYTE
 
 
 INCLUDE defs.inc
@@ -1313,16 +1312,19 @@ ret
 do_next_drawplanes_loop:	
 
 inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1]
-add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
+add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   drawplanes_loop
 do_sky_flat_draw:
-mov   bx, word ptr [bp - 016h] ; get visplane offset
+mov   bx, word ptr [bp - 8] ; get visplane offset
 mov   cx, di
 mov   dx, word ptr [si + 6]
 mov   ax, word ptr [si + 4]
-call  [_R_DrawSkyPlaneCallHigh]
+;call  [_R_DrawSkyPlaneCallHigh]
+db    09Ah
+dw    R_DRAWSKYPLANE_OFFSET
+dw    DRAWSKYPLANE_AREA_SEGMENT
 inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1]
-add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
+add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   drawplanes_loop
 
 ;R_DrawPlanes_
@@ -1333,18 +1335,10 @@ PUBLIC R_DrawPlanes_
 ; ARGS none
 
 ; STACK
-; bp - 016h visplaneoffset
-; bp - 014h visplanesegment
-; bp - 012h unused
-; bp - 010h unused
-
-; bp - 0Eh unused
-; bp - 0Ch flatcacheL1pagenumber
-; bp - 0Ah unused
-; bp - 8 physindex
-; bp - 6 unused
+; bp - 8 visplaneoffset
+; bp - 6 visplanesegment
 ; bp - 4 usedflatindex    ; maybe use DI to store this?
-; bp - 2  unused
+; bp - 2 physindex
 
 
 push  bx
@@ -1354,11 +1348,11 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 016h
-mov   word ptr [bp - 014h], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
+sub   sp, 08h
+mov   word ptr [bp - 6], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
 xor   al, al
-mov   word ptr [bp - 016h], 0
-mov   byte ptr [bp - 8], al
+mov   word ptr [bp - 8], 0
+mov   byte ptr [bp - 2], al
 mov   byte ptr cs:[SELFMODIFY_compareflatunloaded+1], al ; set flatunloaded to 0
 
 drawplanes_loop:
@@ -1374,11 +1368,10 @@ mov   ax, word ptr [si + 4]			; fetch visplane minx
 cmp   ax, word ptr [si + 6]			; fetch visplane maxx
 jnle   do_next_drawplanes_loop
 
-mov   cx, 2
 loop_visplane_page_check:
-mov   ax, word ptr [bp - 016h]
+mov   ax, word ptr [bp - 8]
 cmp   ax, VISPLANE_BYTES_PER_PAGE
-jnb    check_next_visplane_page
+jnb   check_next_visplane_page
 
 
 ; todo: DI is unused here.
@@ -1386,35 +1379,33 @@ jnb    check_next_visplane_page
 mov   al, byte ptr cs:[SELFMODIFY_drawplaneiter+1]
 
 cbw  
-mov   di, word ptr [bp - 014h]
+mov   di, word ptr [bp - 6]
 add   ax, ax
 mov   bx, ax
-mov   cx, word ptr [bx + offset _visplanepiclights]
-add   bx, offset _visplanepiclights
+mov   cx, word ptr [bx +  _visplanepiclights]
 cmp   cl, byte ptr [_skyflatnum]
 je    do_sky_flat_draw
 
 do_nonsky_flat_draw:
+
+mov   byte ptr cs:[SELFMODIFY_lookuppicnum+1], cl 
 mov   al, ch
 xor   ah, ah
-mov   dx, ax
-mov   al, byte ptr [_extralight]
-sar   dx, LIGHTSEGSHIFT
-add   dx, ax
-mov   al, dl
-cmp   dl, LIGHTLEVELS
+sar   ax, LIGHTSEGSHIFT
+add   al, byte ptr [_extralight]
+cmp   al, LIGHTLEVELS
 jb    lightlevel_in_range
 mov   al, LIGHTLEVELS-1
 lightlevel_in_range:
-xor   ah, ah
+
 mov   bx, ax
 add   bx, ax
-mov   ax, word ptr [bx + _lightshift7lookup]
-mov   dx, FLATTRANSLATION_SEGMENT
-mov   word ptr ds:[_planezlight], ax
+mov   dx, word ptr [bx + _lightshift7lookup]
+mov   word ptr ds:[_planezlight], dx
 mov   al, cl
 mov   word ptr ds:[_planezlight + 2], ZLIGHT_SEGMENT
-xor   ah, ah
+
+mov   dx, FLATTRANSLATION_SEGMENT
 mov   es, dx
 mov   bx, ax
 mov   dx, FLATINDEX_SEGMENT
@@ -1440,24 +1431,24 @@ jump_to_flat_loaded:
 jmp   flat_loaded  				; todo remove/improve
 check_next_visplane_page:
 ; do next visplane page
-inc   byte ptr [bp - 8]
-sub   word ptr [bp - 016h], VISPLANE_BYTES_PER_PAGE
-cmp   byte ptr [bp - 8], 3
+inc   byte ptr [bp - 2]
+sub   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE
+cmp   byte ptr [bp - 2], 3
 je    do_visplane_pagination
 lookup_visplane_segment:
-mov   al, byte ptr [bp - 8]
+mov   al, byte ptr [bp - 2]
 cbw  
 mov   bx, ax
 add   bx, ax
 mov   ax, word ptr [bx + _visplanelookupsegments]
-mov   word ptr [bp - 014h], ax
+mov   word ptr [bp - 6], ax
 jmp   loop_visplane_page_check
 do_visplane_pagination:
 mov   al, byte ptr [_visplanedirty+3]
 add   al, 3
-mov   dx, cx
+mov   dx, 2
 cbw  
-mov   byte ptr [bp - 8], cl
+mov   byte ptr [bp - 2], 2
 call  Z_QuickMapVisplanePage_
 jmp   lookup_visplane_segment
 
@@ -1505,30 +1496,30 @@ je    in_flat_page_0
 
 cmp   dl, byte ptr [_currentflatpage+1]
 jne   not_in_flat_page_1
-mov   byte ptr [bp - 0Ch], 1
+mov   cl, 1
 jmp   update_l1_cache
 not_in_flat_page_1:
 cmp   dl, byte ptr [_currentflatpage+2]
 jne   not_in_flat_page_2
-mov   byte ptr [bp - 0Ch], 2
+mov   cl, 2
 jmp   update_l1_cache
 not_in_flat_page_2:
 cmp   dl, byte ptr [_currentflatpage+3]
 jne   not_in_flat_page_3
-mov   byte ptr [bp - 0Ch], 3
+mov   cl, 3
 jmp   update_l1_cache
 not_in_flat_page_3:
 ; L2 page not in L1 cache. need to EMS remap
 
 mov   al, byte ptr [_lastflatcacheindicesused+3]
-mov   byte ptr [bp - 0Ch], al
+mov   cl, al
 mov   al, byte ptr [_lastflatcacheindicesused+2]
 mov   byte ptr [_lastflatcacheindicesused+3], al
 mov   al, byte ptr [_lastflatcacheindicesused+1]
 mov   byte ptr [_lastflatcacheindicesused+2], al
 mov   al, byte ptr [_lastflatcacheindicesused]
 mov   byte ptr [_lastflatcacheindicesused+1], al
-mov   al, byte ptr [bp - 0ch]
+mov   al, cl
 mov   byte ptr [_lastflatcacheindicesused], al
 cbw  
 mov   bx, ax
@@ -1540,17 +1531,17 @@ add   ax, 026h
 call  Z_QuickMapFlatPage_
 jmp   l1_cache_finished_updating
 in_flat_page_0:
-mov   byte ptr [bp - 0Ch], 0
+mov   cl, 0
 
 update_l1_cache:
 mov   al, byte ptr [_lastflatcacheindicesused]
-cmp   al, byte ptr [bp - 0Ch]
+cmp   al, cl
 je    l1_cache_finished_updating
 mov   al, byte ptr [_lastflatcacheindicesused+1]
-cmp   al, byte ptr [bp - 0Ch]
+cmp   al, cl
 je    in_flat_page_1
 mov   al, byte ptr [_lastflatcacheindicesused+2]
-cmp   al, byte ptr [bp - 0Ch]
+cmp   al, cl
 je    in_flat_page_2
 mov   byte ptr [_lastflatcacheindicesused+3], al
 in_flat_page_2:
@@ -1559,7 +1550,7 @@ mov   byte ptr [_lastflatcacheindicesused+2], al
 in_flat_page_1:
 mov   al, byte ptr [_lastflatcacheindicesused]
 mov   byte ptr [_lastflatcacheindicesused+1], al
-mov   al, byte ptr [bp - 0Ch]
+mov   al, cl
 mov   byte ptr [_lastflatcacheindicesused], al
 l1_cache_finished_updating:
 mov   al, byte ptr [bp - 4]
@@ -1578,7 +1569,7 @@ and   al, 3
 xor   ah, ah
 mov   dx, ax
 add   dx, ax
-mov   al, byte ptr [bp - 0Ch]
+mov   al, cl
 
 mov   bx, ax
 add   bx, ax
@@ -1604,10 +1595,10 @@ mov   word ptr ds:[_planeheight + 2], dx
 mov   bx, word ptr [si + 6]
 ; todo les
 mov   es, di
-add   bx, word ptr [bp - 016h]
+add   bx, word ptr [bp - 8]
 mov   byte ptr es:[bx + 3], 0ffh
 mov   bx, word ptr [si + 4]
-add   bx, word ptr [bp - 016h]
+add   bx, word ptr [bp - 8]
 mov   byte ptr es:[bx + 1], 0ffh
 mov   ax, word ptr [si + 6]
 inc   ax
@@ -1625,19 +1616,18 @@ and   al, 3
 
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr [bp - 0Ch]
+mov   al, cl
 
 add   ax, ax
-mov   dx, word ptr [bx + 02a8h]
+mov   dx, word ptr [bx + _MULT_4096]
 mov   bx, ax
-mov   ax, word ptr [bx + 02b8h]
-xor   ch, ch
-mov   bx, cx
-mov   cx, ax
+mov   cx, word ptr [bx + _FLAT_CACHE_PAGE]
 
 mov   ax, FLATTRANSLATION_SEGMENT
 mov   es, ax
-mov   al, byte ptr es:[bx]
+SELFMODIFY_lookuppicnum:
+mov   bx, 00h
+mov   al, byte ptr es:[bx]    ; uses picnum from way above.
 
 xor   ah, ah
 mov   bx, dx
@@ -1653,9 +1643,7 @@ start_single_plane_draw_loop:
 single_plane_draw_loop:
 ; todo les. put these adjacent to each other.
 ; si is x, bx is plheader pointer. so adding si gets us plheader->top[x] etc.
-;mov   es, word ptr [bp - 014h]
-;mov   bx, word ptr [bp - 016h]
-les    bx, dword ptr [bp - 016h]
+les    bx, dword ptr [bp - 8]
 
 ;			t1 = pl->top[x - 1];
 ;			b1 = pl->bottom[x - 1];
@@ -1694,7 +1682,11 @@ mov   dx, word ptr es:[bx] ; todo refactor params...
 mov   bx, si
 dec   bx
 inc   cl
-call  [_R_MapPlaneCall]
+;call  [_R_MapPlaneCall]
+db    09Ah
+dw    R_MAPPLANE_OFFSET
+dw    SPANFUNC_FUNCTION_AREA_SEGMENT
+
 pop   dx
 pop   es
 cmp   cl, ch
@@ -1726,7 +1718,10 @@ push  dx
 mov   dx, word ptr es:[bx]
 mov   bx, si
 dec   bx
-call [_R_MapPlaneCall]
+;call  [_R_MapPlaneCall]
+db    09Ah
+dw    R_MAPPLANE_OFFSET
+dw    SPANFUNC_FUNCTION_AREA_SEGMENT
 pop   dx
 pop   es
 ; todo do loop break check here with fall thru?
