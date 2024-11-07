@@ -39,8 +39,6 @@ EXTRN W_CacheLumpNumDirect_:PROC
 EXTRN R_EvictFlatCacheEMSPage_:NEAR
 EXTRN R_MarkL2FlatCacheLRU_:NEAR
 
-EXTRN checkplanevals_:PROC
-EXTRN checkplanevals2_:PROC
 
 EXTRN _ceilphyspage:BYTE
 EXTRN _floorphyspage:BYTE
@@ -1317,16 +1315,16 @@ PUBLIC R_DrawPlanes_
 ; bp - 01Ah unused
 ; bp - 018h unused
 ; bp - 016h visplaneoffset
-; bp - 014h	unused (was x-1 in draw single plane outer loop)
-; bp - 012h unused (was x in draw single plane outer loop)
-; bp - 010h unused. (was loop stop condition, replaced with selfmodify)
+; bp - 014h	unused
+; bp - 012h unused
+; bp - 010h unused
 
-; bp - 0Eh i (loop counter)
+; bp - 0Eh unused
 ; bp - 0Ch flatcacheL1pagenumber
 ; bp - 0Ah unused
 ; bp - 8 physindex
-; bp - 6 flatunloaded
-; bp - 4 usedflatindex
+; bp - 6 unused
+; bp - 4 usedflatindex    ; maybe use DI to store this?
 ; bp - 2  unused
 
 
@@ -1342,10 +1340,11 @@ mov   word ptr [bp - 01Eh], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant v
 xor   al, al
 mov   word ptr [bp - 016h], 0
 mov   byte ptr [bp - 8], al
-mov   byte ptr [bp - 6], al
-mov   byte ptr [bp - 0eh], al
+mov   byte ptr cs:[SELFMODIFY_compareflatunloaded+1], al ; set flatunloaded to 0
+
 drawplanes_loop:
-mov   al, byte ptr [bp - 0eh] ; get i value
+SELFMODIFY_drawplaneiter:
+mov   al, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
 cbw  
 cmp   ax, word ptr [_lastvisplane]
 jge   exit_drawplanes
@@ -1357,15 +1356,10 @@ cmp   ax, word ptr [si + 6]			; fetch visplane maxx
 jle   visplane_x_in_range
 do_next_drawplanes_loop:	
 
-inc   byte ptr [bp - 0eh]	; increment i
+inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1]
 add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
 jmp   drawplanes_loop
-visplane_x_in_range:
-mov   cx, 2
-loop_visplane_page_check:
-mov   ax, word ptr [bp - 016h]
-cmp   ax, VISPLANE_BYTES_PER_PAGE
-jb    visplane_in_current_page
+check_next_visplane_page:
 ; do next visplane page
 inc   byte ptr [bp - 8]
 sub   word ptr [bp - 016h], VISPLANE_BYTES_PER_PAGE
@@ -1394,12 +1388,29 @@ pop   si
 pop   dx
 pop   cx
 pop   bx
+mov   byte ptr cs:[SELFMODIFY_drawplaneiter+1], 0
 ret   
-visplane_in_current_page:
+do_sky_flat_draw:
+mov   bx, word ptr [bp - 016h] ; get visplane offset
+mov   cx, di
+mov   dx, word ptr [si + 6]
+mov   ax, word ptr [si + 4]
+call  [_R_DrawSkyPlaneCallHigh]
+inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1]
+add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
+jmp   drawplanes_loop
+visplane_x_in_range:
+mov   cx, 2
+loop_visplane_page_check:
+mov   ax, word ptr [bp - 016h]
+cmp   ax, VISPLANE_BYTES_PER_PAGE
+jnb    check_next_visplane_page
+
 
 ; todo: DI is unused here.
 
-mov   al, byte ptr [bp - 0Eh]
+mov   al, byte ptr cs:[SELFMODIFY_drawplaneiter+1]
+
 cbw  
 mov   di, word ptr [bp - 01Eh]
 add   ax, ax
@@ -1407,8 +1418,8 @@ mov   bx, ax
 mov   cx, word ptr [bx + offset _visplanepiclights]
 add   bx, offset _visplanepiclights
 cmp   cl, byte ptr [_skyflatnum]
-jne   do_nonsky_flat_draw
-jmp   do_sky_flat_draw
+je    do_sky_flat_draw
+
 do_nonsky_flat_draw:
 mov   al, ch
 xor   ah, ah
@@ -1477,7 +1488,8 @@ mov   al, byte ptr es:[bx]
 mov   es, dx
 mov   bx, ax
 mov   al, byte ptr [bp - 4]
-mov   byte ptr [bp - 6], 1	; update flatunloaded
+mov   byte ptr cs:[SELFMODIFY_compareflatunloaded+1], 1 ; update flat unloaded
+
 mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] = usedflatindex;
 
 ; check l2 cache next
@@ -1555,32 +1567,10 @@ xor   ah, ah
 sar   ax, 2
 cbw  
 call  R_MarkL2FlatCacheLRU_
-cmp   byte ptr [bp - 6], 0  ; if (!flatunloaded)
-je    flat_not_unloaded
-; flat is unloaded
-mov   al, byte ptr [bp - 4]
-and   al, 3
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-mov   al, byte ptr [bp - 0Ch]
-cbw  
-add   ax, ax
-mov   dx, word ptr [bx + 02a8h]
-mov   bx, ax
-mov   ax, word ptr [bx + 02b8h]
-xor   ch, ch
-mov   bx, cx
-mov   cx, ax
-
-mov   ax, FLATTRANSLATION_SEGMENT
-mov   es, ax
-mov   al, byte ptr es:[bx]
-
-xor   ah, ah
-mov   bx, dx
-add   ax, word ptr [_firstflat]
-call  W_CacheLumpNumDirect_
+xor   ax, ax
+SELFMODIFY_compareflatunloaded:
+add   al, 0
+jnz    flat_is_unloaded
 flat_not_unloaded:
 ; calculate ds_source_segment
 mov   al, byte ptr [bp - 4]
@@ -1589,7 +1579,7 @@ xor   ah, ah
 mov   dx, ax
 add   dx, ax
 mov   al, byte ptr [bp - 0Ch]
-cbw  
+
 mov   bx, ax
 add   bx, ax
 mov   ax, word ptr [bx + _FLAT_CACHE_PAGE]
@@ -1604,7 +1594,7 @@ or    dx, dx
 
 ; planeheight = labs(plheader->height - viewz.w);
 
-jge   planeheight_already_positive
+jge   planeheight_already_positive	; labs check
 neg   ax
 adc   dx, 0
 neg   dx
@@ -1628,6 +1618,33 @@ mov   word ptr cs:[SELFMODIFY_comparestop+2], ax ; set count value to be compare
 cmp   si, ax
 jle   start_single_plane_draw_loop
 jmp   do_next_drawplanes_loop
+; flat is unloaded. load it in
+flat_is_unloaded:
+mov   al, byte ptr [bp - 4]
+and   al, 3
+
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bp - 0Ch]
+
+add   ax, ax
+mov   dx, word ptr [bx + 02a8h]
+mov   bx, ax
+mov   ax, word ptr [bx + 02b8h]
+xor   ch, ch
+mov   bx, cx
+mov   cx, ax
+
+mov   ax, FLATTRANSLATION_SEGMENT
+mov   es, ax
+mov   al, byte ptr es:[bx]
+
+xor   ah, ah
+mov   bx, dx
+add   ax, word ptr [_firstflat]
+call  W_CacheLumpNumDirect_
+jmp   flat_not_unloaded
+
 
 
 start_single_plane_draw_loop:
@@ -1801,15 +1818,7 @@ jmp   end_single_plane_draw_loop_iteration
 
 
 
-do_sky_flat_draw:
-mov   bx, word ptr [bp - 016h] ; get visplane offset
-mov   cx, di
-mov   dx, word ptr [si + 6]
-mov   ax, word ptr [si + 4]
-call  [_R_DrawSkyPlaneCallHigh]
-inc   byte ptr [bp - 0eh]
-add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
-jmp   drawplanes_loop
+
 
 
 

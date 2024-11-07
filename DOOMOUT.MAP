@@ -1,11 +1,9 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/07 09:17:08
+Created on:       24/11/07 09:58:53
 Executable Image: doomout.exe
 creating a DOS executable
-Error! E2028: checkplanevals_ is an undefined reference
-Error! E2028: checkplanevals2_ is an undefined reference
 
 
                         +------------+
@@ -83,7 +81,7 @@ p_user_TEXT            CODE           AUTO           0b1e:bf20       00000604
 r_bsp_TEXT             CODE           AUTO           1771:0000       000006f6
 r_data_TEXT            CODE           AUTO           1771:0700       00001764
 R_MATH_TEXT            CODE           AUTO           1771:1e64       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1771:2062       000008c6
+R_MAINHI_TEXT          CODE           AUTO           1771:2062       000008cb
 r_draw_TEXT            CODE           AUTO           1771:2930       00000377
 r_main_TEXT            CODE           AUTO           1771:2cb0       000001dc
 r_plane_TEXT           CODE           AUTO           1771:2e90       00000000
@@ -1718,4 +1716,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00025330 (152368.)
 Entry point address: 1dea:21bc
-Link time: 00:00.00
+Link time: 00:00.75
