@@ -39,6 +39,9 @@ EXTRN W_CacheLumpNumDirect_:PROC
 EXTRN R_EvictFlatCacheEMSPage_:NEAR
 EXTRN R_MarkL2FlatCacheLRU_:NEAR
 
+EXTRN checkplanevals_:PROC
+EXTRN checkplanevals2_:PROC
+
 EXTRN _ceilphyspage:BYTE
 EXTRN _floorphyspage:BYTE
 EXTRN _visplanedirty:BYTE
@@ -1681,6 +1684,7 @@ jae   done_with_first_mapplane_loop
 jmp   loop_first_mapplane
 
 end_single_plane_draw_loop_iteration:
+;  todo: di not really in use at all in this loop. could be made to hold something useful
 inc   si
 SELFMODIFY_comparestop:
 cmp   si, 1000h
@@ -1713,50 +1717,86 @@ done_with_second_mapplane_loop:
 
 ; update spanstarts
 
-; b1 = bp - 2
-; b2 = bp - 0a
-; t1 = ch
-; t2 = cl
+
+
+; b1 = dl
+; b2 = dh
+; t1 = cl
+; t2 = ch
 
 ;			while (t2 < t1 && t2 <= b2) {
 ;				spanstart[t2] = x;
-;				t2++;
-;			}
-;			while (b2 > b1 && b2 >= t2) {
-;				spanstart[b2] = x;
-;				b2--;
-;			}
 
 mov   ax, SPANSTART_SEGMENT
 mov   es, ax
 
-; todo dumb but probably positive idea - unroll 
-first_spanstart_update_loop:
-cmp   ch, cl     ; t2 < t1?
-jae    second_spanstart_update_loop
-cmp   ch, dh     ; t2 <= b2?
-ja   second_spanstart_update_loop
-mov   al, ch
+mov   bx, cx
+
+sub   cl, ch     ; t2 < t1?
+jbe   second_spanstart_update_loop
+mov   ax, dx
+sub   ah, ch     ; t2 <= b2?
+jb    second_spanstart_update_loop
+
+inc   ah		; add one for the >= 
+cmp   ah, cl
+ja    dont_swap_cx_params_1  ; todo jae and inc inside
+mov   cl, ah
+dont_swap_cx_params_1:
+
+
+mov   al, ch  ; get t2 word lookup...
 xor   ah, ah
-mov   bx, ax
-add   bx, ax
-inc   ch
-mov   word ptr es:[bx], si
-jmp   first_spanstart_update_loop
+add   ax, ax
+mov   di, ax  ; di = offset
+
+xor   ch, ch  ; cx loop count is set
+mov   ax, bx
+add   bh, cl  ; add the t2 increment
+
+mov   ax, si  ;  ax = x
+rep   stosw
+
 
 
 second_spanstart_update_loop:
-cmp   dh, dl
+
+
+;			while (b2 > b1 && b2 >= t2) {
+;				spanstart[b2] = x;
+; b1 = dl
+; b2 = dh
+; t1 = bl
+; t2 = bh
+
+mov   ax, dx
+sub   ah, al    ; b2 - b1
 jbe   end_single_plane_draw_loop_iteration
-cmp   ch, dh
-ja    end_single_plane_draw_loop_iteration
-mov   al, dh
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-dec   dh
-mov   word ptr es:[bx], si
-jmp   second_spanstart_update_loop
+mov   cl, dh	; store b2 copy for spanstart addr calculation
+sub   dh, bh    ; b2 - t2
+jb    end_single_plane_draw_loop_iteration
+
+; add one for the >= case 
+inc   dh
+; ah and ch store the two values... take the smallest one to get loop count
+cmp   ah, dh
+ja    dont_swap_cx_params_2
+mov   dh, ah
+dont_swap_cx_params_2:
+
+
+xor   ch, ch
+mov   di, cx  ; cl held copied b2 from above
+add   di, di  ; di = offset
+
+mov   cl, dh  ; count
+
+
+mov   ax, si  ;  ax = x
+std   
+rep   stosw
+cld
+jmp   end_single_plane_draw_loop_iteration
 
 
 

@@ -447,6 +447,9 @@ void __near R_DrawSkyPlane2(int16_t minx, int16_t maxx, visplane_t __far*		pl){
 // R_DrawPlanes
 // At the end of each frame.
 //
+
+
+
 void __near R_DrawPlanes (void);
 
 /*
@@ -647,6 +650,45 @@ void __near R_DrawPlanes (void) {
 		
     }
 
+}
+*/
+
+
+/*
+// useful debug format..
+int16_t checkplanevals(int16_t ax, int16_t dx, int16_t bx, int16_t cx){
+
+
+	byte t2 = cx >> 8;
+	byte t1 = cx & 0xFF;
+	byte b2 = dx >> 8;
+	byte b1 = dx & 0xFF;
+	int16_t x = bx;
+	int16_t count1 = (t1 - t2);
+	int16_t count2 = (b2 - t2) + 1;
+	
+	count1 = min(count1, count2);
+	count1 = max(count1, 0);
+	cx = t2+count1;
+	
+	
+	
+	while (t2 < t1 && t2 <= b2) {
+		spanstart[t2] = x;
+		t2++;
+	}
+
+	if (cx != t2){
+		I_Error("values %i %i %i %i %i %i %i %i",
+		cx, t2 ,t1, b1, b2, count1, count2, 0
+		);
+	}
+
+	//cx = t2;
+	cx <<= 8;
+	cx += t1;
+
+	return cx;
 }
 */
 
