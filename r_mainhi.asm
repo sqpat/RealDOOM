@@ -1363,9 +1363,9 @@ mov   al, 0 ; get i value. this is at the start of the function so its hard to s
 cbw  
 cmp   ax, word ptr [_lastvisplane]
 jge   exit_drawplanes
+shl   ax, 3
+add   ax, offset _visplaneheaders
 mov   si, ax
-shl   si, 3
-add   si, offset _visplaneheaders
 mov   ax, word ptr [si + 4]			; fetch visplane minx
 cmp   ax, word ptr [si + 6]			; fetch visplane maxx
 jnle   do_next_drawplanes_loop
@@ -1399,46 +1399,42 @@ jb    lightlevel_in_range
 mov   al, LIGHTLEVELS-1
 lightlevel_in_range:
 
+add   ax, ax
 mov   bx, ax
-add   bx, ax
-mov   dx, word ptr [bx + _lightshift7lookup]
-mov   word ptr ds:[_planezlight], dx
+mov   ax, word ptr [bx + _lightshift7lookup]
+mov   word ptr ds:[_planezlight], ax
 ;mov   word ptr ds:[_planezlight + 2], ZLIGHT_SEGMENT  ; this is static and set in memory.asm
 
-mov   dx, FLATTRANSLATION_SEGMENT
-mov   es, dx
+mov   ax, FLATTRANSLATION_SEGMENT
+mov   es, ax
 mov   bl, cl
 xor   bh, bh
 
 mov   bl, byte ptr es:[bx]
-mov   dx, FLATINDEX_SEGMENT
-mov   es, dx
+mov   ax, FLATINDEX_SEGMENT
+mov   es, ax
 
 mov   al, byte ptr es:[bx]
 mov   byte ptr [bp - 4], al
 cmp   al, 0ffh
 jne   flat_loaded
-xor   dx, dx
+xor   bx, bx
 loop_find_flat:
-mov   al, dl		; dl is j
-cbw  
-mov   bx, ax
 cmp   byte ptr [bx + _allocatedflatsperpage], 4   ; if (allocatedflatsperpage[j]<4){
 jl    found_page_with_empty_space
-inc   dl
-cmp   dl, NUM_FLAT_CACHE_PAGES
+inc   bl
+cmp   bl, NUM_FLAT_CACHE_PAGES
 jge   found_flat_page_to_evict
 jmp   loop_find_flat
 check_next_visplane_page:
 ; do next visplane page
-inc   byte ptr [bp - 2]
 sub   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE
+inc   byte ptr [bp - 2]
 cmp   byte ptr [bp - 2], 3
 je    do_visplane_pagination
 lookup_visplane_segment:
-mov   ax, word ptr [bp - 2]
-mov   bx, ax
-add   bx, ax
+mov   bx, word ptr [bp - 2]
+add   bx, bx
 mov   ax, word ptr [bx + _visplanelookupsegments]
 mov   word ptr [bp - 6], ax
 jmp   loop_visplane_page_check
@@ -1455,22 +1451,22 @@ jmp   lookup_visplane_segment
 
 
 found_page_with_empty_space:
-; usedflatindex
-mov   al, dl
+
+mov   al, bl ; bl is usedflatindex
 shl   al, 2
 mov   ah, byte ptr [bx + _allocatedflatsperpage]
 add   ah, al
 inc   byte ptr [bx + _allocatedflatsperpage]
 mov   byte ptr [bp - 4], ah
 found_flat:
-mov   dx, FLATTRANSLATION_SEGMENT
-mov   es, dx
+mov   ax, FLATTRANSLATION_SEGMENT
+mov   es, ax
 mov   bl, cl
 xor   bh, bh
 
 mov   bl, byte ptr es:[bx]
-mov   dx, FLATINDEX_SEGMENT
-mov   es, dx
+mov   ax, FLATINDEX_SEGMENT
+mov   es, ax
 mov   al, byte ptr [bp - 4]
 mov   byte ptr cs:[SELFMODIFY_compareflatunloaded+1], 1 ; update flat unloaded
 
@@ -1517,13 +1513,14 @@ mov   cl, byte ptr [_lastflatcacheindicesused+3]
 mov   word ptr [_lastflatcacheindicesused], cx
 mov   word ptr [_lastflatcacheindicesused+2], ax
 
-xor   ax, ax  
+mov   ax, dx
+
 mov   bl, cl
 xor   bh, bh   ; ugly... can i do cx above
-mov   al, dl
 mov   byte ptr [bx + _currentflatpage], al
 mov   dx, bx
 add   ax, FIRST_FLAT_CACHE_LOGICAL_PAGE
+
 call  Z_QuickMapFlatPage_
 jmp   l1_cache_finished_updating
 in_flat_page_0:
@@ -1556,8 +1553,7 @@ jnz    flat_is_unloaded
 flat_not_unloaded:
 ; calculate ds_source_segment
 mov   ax, word ptr [bp - 4]
-and   al, 3
-cbw
+and   ax, 3
 mov   bx, ax
 add   bx, ax
 mov   ax, word ptr [bx + _MULT_256]
@@ -1597,12 +1593,8 @@ jle   start_single_plane_draw_loop
 jmp   do_next_drawplanes_loop
 ; flat is unloaded. load it in
 flat_is_unloaded:
-mov   bl, byte ptr [bp - 4]
-and   bx, 3
-
-add   bx, bx
-mov   dx, word ptr [bx + _MULT_4096]
 mov   bl, cl
+xor   bh, bh
 
 add   bx, bx
 mov   cx, word ptr [bx + _FLAT_CACHE_PAGE]
@@ -1611,12 +1603,17 @@ mov   ax, FLATTRANSLATION_SEGMENT
 mov   es, ax
 SELFMODIFY_lookuppicnum:
 ; todo figure out how to lookup es:[00h] instead
-mov   bx, 00h
+mov   bl, 00h
 mov   al, byte ptr es:[bx]    ; uses picnum from way above.
 
 xor   ah, ah
-mov   bx, dx
 add   ax, word ptr [_firstflat]
+mov   bl, byte ptr [bp - 4]
+and   bl, 3
+
+add   bx, bx
+mov   bx, word ptr [bx + _MULT_4096]
+
 call  W_CacheLumpNumDirect_
 jmp   flat_not_unloaded
 
@@ -1647,8 +1644,8 @@ mov   es, ax
 ; b1/b2 dh/dl
 
 ;    while (t1 < t2 && t1 <= b1)
+dec   si	; x - 1  constant
 cmp   cl, ch
-
 
 jae   done_with_first_mapplane_loop
 loop_first_mapplane:
@@ -1663,7 +1660,6 @@ push  es
 push  dx
 mov   dx, word ptr es:[bx] ; todo refactor params to mapplane?
 mov   bx, si
-dec   bx
 inc   cl
 ;call  [_R_MapPlaneCall]
 db    09Ah
@@ -1700,7 +1696,6 @@ push  es
 push  dx
 mov   dx, word ptr es:[bx]
 mov   bx, si
-dec   bx
 ;call  [_R_MapPlaneCall]
 db    09Ah
 dw    R_MAPPLANE_OFFSET
@@ -1723,6 +1718,7 @@ done_with_second_mapplane_loop:
 ;			while (t2 < t1 && t2 <= b2) {
 ;				spanstart[t2] = x;
 
+inc   si  ; add one back from the previous saved x-1 state
 mov   ax, SPANSTART_SEGMENT
 mov   es, ax
 
