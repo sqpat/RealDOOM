@@ -1300,7 +1300,30 @@ ENDP
 
 
 
+exit_drawplanes:
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+mov   byte ptr cs:[SELFMODIFY_drawplaneiter+1], 0
+ret   
 
+do_next_drawplanes_loop:	
+
+inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1]
+add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
+jmp   drawplanes_loop
+do_sky_flat_draw:
+mov   bx, word ptr [bp - 016h] ; get visplane offset
+mov   cx, di
+mov   dx, word ptr [si + 6]
+mov   ax, word ptr [si + 4]
+call  [_R_DrawSkyPlaneCallHigh]
+inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1]
+add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
+jmp   drawplanes_loop
 
 ;R_DrawPlanes_
 
@@ -1310,12 +1333,8 @@ PUBLIC R_DrawPlanes_
 ; ARGS none
 
 ; STACK
-; bp - 01Eh visplanesegment
-; bp - 01Ch unused (was effictively dupe of 01Eh)
-; bp - 01Ah unused
-; bp - 018h unused
 ; bp - 016h visplaneoffset
-; bp - 014h	unused
+; bp - 014h visplanesegment
 ; bp - 012h unused
 ; bp - 010h unused
 
@@ -1335,8 +1354,8 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 01Eh
-mov   word ptr [bp - 01Eh], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
+sub   sp, 016h
+mov   word ptr [bp - 014h], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
 xor   al, al
 mov   word ptr [bp - 016h], 0
 mov   byte ptr [bp - 8], al
@@ -1353,53 +1372,8 @@ shl   si, 3
 add   si, offset _visplaneheaders
 mov   ax, word ptr [si + 4]			; fetch visplane minx
 cmp   ax, word ptr [si + 6]			; fetch visplane maxx
-jle   visplane_x_in_range
-do_next_drawplanes_loop:	
+jnle   do_next_drawplanes_loop
 
-inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1]
-add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
-jmp   drawplanes_loop
-check_next_visplane_page:
-; do next visplane page
-inc   byte ptr [bp - 8]
-sub   word ptr [bp - 016h], VISPLANE_BYTES_PER_PAGE
-cmp   byte ptr [bp - 8], 3
-je    do_visplane_pagination
-lookup_visplane_segment:
-mov   al, byte ptr [bp - 8]
-cbw  
-mov   bx, ax
-add   bx, ax
-mov   ax, word ptr [bx + _visplanelookupsegments]
-mov   word ptr [bp - 01Eh], ax
-jmp   loop_visplane_page_check
-do_visplane_pagination:
-mov   al, byte ptr [_visplanedirty+3]
-add   al, 3
-mov   dx, cx
-cbw  
-mov   byte ptr [bp - 8], cl
-call  Z_QuickMapVisplanePage_
-jmp   lookup_visplane_segment
-exit_drawplanes:
-leave 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-mov   byte ptr cs:[SELFMODIFY_drawplaneiter+1], 0
-ret   
-do_sky_flat_draw:
-mov   bx, word ptr [bp - 016h] ; get visplane offset
-mov   cx, di
-mov   dx, word ptr [si + 6]
-mov   ax, word ptr [si + 4]
-call  [_R_DrawSkyPlaneCallHigh]
-inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1]
-add   word ptr [bp - 016h], VISPLANE_BYTE_SIZE
-jmp   drawplanes_loop
-visplane_x_in_range:
 mov   cx, 2
 loop_visplane_page_check:
 mov   ax, word ptr [bp - 016h]
@@ -1412,7 +1386,7 @@ jnb    check_next_visplane_page
 mov   al, byte ptr cs:[SELFMODIFY_drawplaneiter+1]
 
 cbw  
-mov   di, word ptr [bp - 01Eh]
+mov   di, word ptr [bp - 014h]
 add   ax, ax
 mov   bx, ax
 mov   cx, word ptr [bx + offset _visplanepiclights]
@@ -1450,7 +1424,7 @@ mov   bx, ax
 mov   al, byte ptr es:[bx]
 mov   byte ptr [bp - 4], al
 cmp   al, 0ffh
-jne   flat_loaded
+jne   jump_to_flat_loaded
 xor   dl, dl
 loop_find_flat:
 mov   al, dl		; dl is j
@@ -1462,6 +1436,32 @@ inc   dl
 cmp   dl, NUM_FLAT_CACHE_PAGES
 jge   found_flat_page_to_evict
 jmp   loop_find_flat
+jump_to_flat_loaded:
+jmp   flat_loaded  				; todo remove/improve
+check_next_visplane_page:
+; do next visplane page
+inc   byte ptr [bp - 8]
+sub   word ptr [bp - 016h], VISPLANE_BYTES_PER_PAGE
+cmp   byte ptr [bp - 8], 3
+je    do_visplane_pagination
+lookup_visplane_segment:
+mov   al, byte ptr [bp - 8]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   ax, word ptr [bx + _visplanelookupsegments]
+mov   word ptr [bp - 014h], ax
+jmp   loop_visplane_page_check
+do_visplane_pagination:
+mov   al, byte ptr [_visplanedirty+3]
+add   al, 3
+mov   dx, cx
+cbw  
+mov   byte ptr [bp - 8], cl
+call  Z_QuickMapVisplanePage_
+jmp   lookup_visplane_segment
+
+
 found_flat_page_to_evict:
 call  R_EvictFlatCacheEMSPage_   ; al stores result..
 shl   al, 2
@@ -1653,8 +1653,9 @@ start_single_plane_draw_loop:
 single_plane_draw_loop:
 ; todo les. put these adjacent to each other.
 ; si is x, bx is plheader pointer. so adding si gets us plheader->top[x] etc.
-mov   es, word ptr [bp - 01Eh]
-mov   bx, word ptr [bp - 016h]
+;mov   es, word ptr [bp - 014h]
+;mov   bx, word ptr [bp - 016h]
+les    bx, dword ptr [bp - 016h]
 
 ;			t1 = pl->top[x - 1];
 ;			b1 = pl->bottom[x - 1];
