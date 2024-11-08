@@ -1663,8 +1663,6 @@ mov   ax, word ptr es:[di]
 mov   word ptr ds:[_ds_y], di   ; predoubled for lookup
 mov   word ptr ds:[_ds_x1], ax
 inc   cl
-inc   di
-inc   di
 ;call  [_R_MapPlaneCall]
 db    09Ah
 dw    R_MAPPLANE_OFFSET
@@ -1672,6 +1670,8 @@ dw    SPANFUNC_FUNCTION_AREA_SEGMENT
 
 cmp   cl, ch
 jae   done_with_first_mapplane_loop
+inc   di
+inc   di
 
 jmp   loop_first_mapplane
 
@@ -1701,8 +1701,6 @@ mov   ax, word ptr es:[di]
 mov   word ptr ds:[_ds_y], di
 mov   word ptr ds:[_ds_x1], ax
 dec   dl
-dec   di
-dec   di
 ;call  [_R_MapPlaneCall]
 db    09Ah
 dw    R_MAPPLANE_OFFSET
@@ -1711,6 +1709,8 @@ dw    SPANFUNC_FUNCTION_AREA_SEGMENT
 cmp   dl, dh
 jbe   done_with_second_mapplane_loop
 
+dec   di
+dec   di
 jmp   loop_second_mapplane
 
 done_with_second_mapplane_loop:
