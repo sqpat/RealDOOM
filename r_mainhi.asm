@@ -1316,6 +1316,7 @@ inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1]
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   drawplanes_loop
 do_sky_flat_draw:
+; todo revisit params. maybe these can be loaded in R_DrawSkyPlaneCallHigh
 mov   bx, word ptr [bp - 8] ; get visplane offset
 mov   cx, word ptr [bp - 6] ; and segment
 mov   dx, word ptr [si + 6]
@@ -1338,7 +1339,7 @@ PUBLIC R_DrawPlanes_
 ; STACK
 ; bp - 8 visplaneoffset
 ; bp - 6 visplanesegment
-; bp - 4 usedflatindex    ; maybe use DI to store this?
+; bp - 4 usedflatindex
 ; bp - 2 physindex
 
 
@@ -1353,14 +1354,12 @@ sub   sp, 08h
 xor   ax, ax
 mov   word ptr [bp - 8], ax
 mov   word ptr [bp - 6], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
-mov   word ptr [bp - 2], ax
 mov   word ptr [bp - 4], ax
-mov   byte ptr cs:[SELFMODIFY_compareflatunloaded+1], al ; set flatunloaded to 0
+mov   word ptr [bp - 2], ax
 
 drawplanes_loop:
 SELFMODIFY_drawplaneiter:
-mov   al, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
-cbw  
+mov   ax, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
 cmp   ax, word ptr [_lastvisplane]
 jge   exit_drawplanes
 shl   ax, 3
@@ -1377,19 +1376,16 @@ jnb   check_next_visplane_page
 
 ; todo: DI is (mostly) unused here. Can probably be used to hold something usedful.
 
-mov   al, byte ptr cs:[SELFMODIFY_drawplaneiter+1]
+mov   bx, word ptr cs:[SELFMODIFY_drawplaneiter+1]
 
-cbw  
-
-add   ax, ax
-mov   bx, ax
+add   bx, bx
 mov   cx, word ptr [bx +  _visplanepiclights]
 cmp   cl, byte ptr [_skyflatnum]
 je    do_sky_flat_draw
 
 do_nonsky_flat_draw:
 
-mov   byte ptr cs:[SELFMODIFY_lookuppicnum+1], cl 
+mov   byte ptr cs:[SELFMODIFY_lookuppicnum+2], cl 
 mov   al, ch
 xor   ah, ah
 sar   ax, LIGHTSEGSHIFT
@@ -1416,9 +1412,11 @@ mov   es, ax
 
 mov   al, byte ptr es:[bx]
 mov   byte ptr [bp - 4], al
+; going to use di to hold flatunloaded
+xor   di, di
 cmp   al, 0ffh
 jne   flat_loaded
-xor   bx, bx
+mov   bx, di
 loop_find_flat:
 cmp   byte ptr [bx + _allocatedflatsperpage], 4   ; if (allocatedflatsperpage[j]<4){
 jl    found_page_with_empty_space
@@ -1439,7 +1437,7 @@ mov   ax, word ptr [bx + _visplanelookupsegments]
 mov   word ptr [bp - 6], ax
 jmp   loop_visplane_page_check
 do_visplane_pagination:
-mov   al, byte ptr [_visplanedirty+3]
+mov   al, byte ptr [_visplanedirty]
 add   al, 3
 mov   dx, 2
 cbw  
@@ -1468,7 +1466,7 @@ mov   bl, byte ptr es:[bx]
 mov   ax, FLATINDEX_SEGMENT
 mov   es, ax
 mov   al, byte ptr [bp - 4]
-mov   byte ptr cs:[SELFMODIFY_compareflatunloaded+1], 1 ; update flat unloaded
+mov   di, 1 ; update flat unloaded
 
 mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] = usedflatindex;
 
@@ -1546,10 +1544,8 @@ mov   ax, word ptr [bp - 4]
 sar   ax, 2
 cbw  
 call  R_MarkL2FlatCacheLRU_
-xor   ax, ax
-SELFMODIFY_compareflatunloaded:
-add   al, 0
-jnz    flat_is_unloaded
+cmp   di, 0 ; di used to hold flatunlodaed
+jnz   flat_is_unloaded
 flat_not_unloaded:
 ; calculate ds_source_segment
 mov   bx, word ptr [bp - 4]
@@ -1596,14 +1592,13 @@ mov   bl, cl
 xor   bh, bh
 
 add   bx, bx
+push  cx
 mov   cx, word ptr [bx + _FLAT_CACHE_PAGE]
 
 mov   ax, FLATTRANSLATION_SEGMENT
 mov   es, ax
 SELFMODIFY_lookuppicnum:
-; todo figure out how to lookup es:[00h] instead
-mov   bl, 00h
-mov   al, byte ptr es:[bx]    ; uses picnum from way above.
+mov   al, byte ptr es:[00]    ; uses picnum from way above.
 
 xor   ah, ah
 add   ax, word ptr [_firstflat]
@@ -1612,8 +1607,8 @@ and   bl, 3
 
 add   bx, bx
 mov   bx, word ptr [bx + _MULT_4096]
-
 call  W_CacheLumpNumDirect_
+pop   cx
 jmp   flat_not_unloaded
 
 
@@ -1649,6 +1644,7 @@ inc   si  ; add one back from the previous saved x-1 state
 
 cmp   cl, ch
 jae   done_with_first_mapplane_loop
+; set up the di parameter to be spanstart lookup index
 mov   al, cl
 xor   ah, ah
 mov   di, ax
@@ -1687,6 +1683,7 @@ done_with_first_mapplane_loop:
 
 cmp   dl, dh
 jbe   done_with_second_mapplane_loop
+; set up the di parameter to be spanstart lookup index
 mov   al, dl
 xor   ah, ah
 mov   di, ax
