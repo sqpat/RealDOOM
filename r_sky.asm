@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 ;=================================
 .DATA
 
-
+SKY_TEXTURE_MID = 100
 
 
 
@@ -99,14 +99,17 @@ PUBLIC  R_DrawSkyColumn_
 
    ;  prep our loop variables
 
+   ; bugfix starting point for sky texture is 100 + (dc_yl - centery), basically.
+   add     si, SKY_TEXTURE_MID
+   sub     si, word ptr ds:[_centery]
+   
    mov     ds, dx                          ; dx contained dc_source_segment
    mov     ax, 004Fh
    cwd     ; zero out dx 
    ; should be able to easily do a lookup into here with available registers (ax, dx, bx)
 
-jump_location:
-    jmp sky_loop_done
-sky_pixel_loop_fast:
+   jump_location:
+   jmp sky_loop_done
 
 
 DRAW_SINGLE_SKY_PIXEL MACRO 
