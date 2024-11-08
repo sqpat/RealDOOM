@@ -1637,31 +1637,34 @@ mov   cx, word ptr es:[bx + si + 1]		; t1&t2
 
 mov   ax, SPANSTART_SEGMENT
 mov   es, ax
-
+; todo swap si/di uses in the map plane area. reduces a little bit of register thrashing
 
 ; t1/t2 ch/cl
 ; b1/b2 dh/dl
+dec   si	; x - 1  constant
 mov   word ptr ds:[_ds_x2], si
+inc   si  ; add one back from the previous saved x-1 state
 
 ;    while (t1 < t2 && t1 <= b1)
-dec   si	; x - 1  constant
-cmp   cl, ch
 
+cmp   cl, ch
 jae   done_with_first_mapplane_loop
+mov   al, cl
+xor   ah, ah
+mov   di, ax
+add   di, ax
+
 loop_first_mapplane:
 cmp   cl, dl
 ja   done_with_first_mapplane_loop
 
-mov   al, cl
-xor   ah, ah
-mov   word ptr ds:[_ds_y], ax
-; todo: pull di base calc out of loop and use two incs
-; possibly use inc _ds_y?
-mov   di, ax
-add   di, ax
-mov   bx, word ptr es:[di]
-mov   word ptr ds:[_ds_x1], bx
+
+mov   ax, word ptr es:[di]
+mov   word ptr ds:[_ds_y], di   ; predoubled for lookup
+mov   word ptr ds:[_ds_x1], ax
 inc   cl
+inc   di
+inc   di
 ;call  [_R_MapPlaneCall]
 db    09Ah
 dw    R_MAPPLANE_OFFSET
@@ -1669,6 +1672,7 @@ dw    SPANFUNC_FUNCTION_AREA_SEGMENT
 
 cmp   cl, ch
 jae   done_with_first_mapplane_loop
+
 jmp   loop_first_mapplane
 
 end_single_plane_draw_loop_iteration:
@@ -1680,26 +1684,35 @@ jle   single_plane_draw_loop
 jmp   do_next_drawplanes_loop
 
 done_with_first_mapplane_loop:
-loop_second_mapplane:
+
 cmp   dl, dh
-jbe    done_with_second_mapplane_loop
+jbe   done_with_second_mapplane_loop
+mov   al, dl
+xor   ah, ah
+mov   di, ax
+add   di, ax
+
+loop_second_mapplane:
 cmp   cl, dl
 ja   done_with_second_mapplane_loop
 
-mov   al, dl
-xor   ah, ah
-mov   word ptr ds:[_ds_y], ax
-mov   di, ax
-add   di, ax
+
+mov   ax, word ptr es:[di]
+mov   word ptr ds:[_ds_y], di
+mov   word ptr ds:[_ds_x1], ax
 dec   dl
-mov   bx, word ptr es:[di]
-mov   word ptr ds:[_ds_x1], bx
+dec   di
+dec   di
 ;call  [_R_MapPlaneCall]
 db    09Ah
 dw    R_MAPPLANE_OFFSET
 dw    SPANFUNC_FUNCTION_AREA_SEGMENT
-; todo do loop break check here with fall thru?
+
+cmp   dl, dh
+jbe   done_with_second_mapplane_loop
+
 jmp   loop_second_mapplane
+
 done_with_second_mapplane_loop:
 
 ; update spanstarts
@@ -1714,7 +1727,6 @@ done_with_second_mapplane_loop:
 ;			while (t2 < t1 && t2 <= b2) {
 ;				spanstart[t2] = x;
 
-inc   si  ; add one back from the previous saved x-1 state
 mov   ax, SPANSTART_SEGMENT
 mov   es, ax
 

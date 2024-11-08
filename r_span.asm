@@ -375,8 +375,9 @@ PUBLIC  R_DrawSpanPrep_
  
  ;  	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
 
+; predoubles _ds_y for lookup
  les   bx, dword ptr ds:[_ds_y]
- add   bx, bx
+ ;add   bx, bx
  mov   ax, word ptr ds:[_destview]			; get FP_OFF(destview)
  mov   dx, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
 
@@ -754,19 +755,19 @@ push  di
 push  es
 push  dx
 
+; this is all done in R_DrawPlanes before the call now
 ;xor   ah, ah
-; set these values for drawspan while they are still in registers
 ;mov   word ptr ds:[_ds_y], ax
 ;mov   word ptr ds:[_ds_x1], dx
 ;mov   word ptr ds:[_ds_x2], si
 
-
-xchg  si, ax
+mov  si, di
+; si is x * 4
 mov   es, ds:[_cachedheight_segment_storage]
 
 mov   ax, word ptr ds:[_planeheight]
 mov   dx, word ptr ds:[_planeheight + 2]
-shl   si, 1
+; TODO: do this shl outside of the function. borrow from es:di lookup's di
 shl   si, 1
 ; CACHEDHEIGHT LOOKUP
 
