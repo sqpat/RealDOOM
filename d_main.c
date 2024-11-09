@@ -520,20 +520,27 @@ int16_t __far locallib_strcmp(char __far *str1, char __far *str2){
 	return str1[i] - str2[i];
 }
 
-int16_t __far locallib_strncasecmp(char __far *str1, char __far *str2, int16_t n){
-	int16_t i = 0;
-	while (str1[i] && i < n){
-		int16_t b  = locallib_toupper(str1[i]) - locallib_toupper(str2[i]);
-		
-		
-		
-		if (b){
-			return b;
+
+// todo leads to texture bugs, why?
+int16_t __far locallib_strncasecmp(char __near *str1, char __far *str2, int16_t n){
+	int8_t i = 0;
+	while (i < n){
+		int8_t a = locallib_toupper(str1[i]);
+		int8_t b = locallib_toupper(str2[i]);
+		int16_t diff = a - b;
+		if (diff){
+			return diff;
 		}
+		if (!a){
+			return 0;
+		}
+		
+
 		i++;
 	}
 	return 0;
 }
+
 
 /*
 
