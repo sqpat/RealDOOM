@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/08 18:54:49
+Created on:       24/11/09 12:17:38
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -33,7 +33,7 @@ i_init_TEXT            CODE           AUTO           0000:1d50       000000b0
 z_umb_TEXT             CODE           AUTO           0000:1e00       00000000
 z_init_TEXT            CODE           AUTO           0000:1e00       000004b8
 p_init_TEXT            CODE           AUTO           0000:22c0       0000045f
-d_main_TEXT            CODE           AUTO           0272:0000       00000ef4
+d_main_TEXT            CODE           AUTO           0272:0000       00000ef6
 i_quit_TEXT            CODE           AUTO           0272:0f00       00000286
 i_ibm_TEXT             CODE           AUTO           0272:1190       000004a1
 i_sound_TEXT           CODE           AUTO           0272:1640       0000008b
@@ -41,7 +41,7 @@ bingen_TEXT            CODE           AUTO           0272:16d0       0000020f
 d_net_TEXT             CODE           AUTO           0272:18e0       00000104
 g_game_TEXT            CODE           AUTO           0272:19f0       00000bc3
 m_misc_TEXT            CODE           AUTO           0272:25c0       00000061
-am_map_TEXT            CODE           AUTO           0272:2630       000011c9
+am_map_TEXT            CODE           AUTO           0272:2630       000011c7
 st_stuff_TEXT          CODE           AUTO           0272:3800       00000a1c
 hu_stuff_TEXT          CODE           AUTO           0272:4220       000001cc
 hu_lib_TEXT            CODE           AUTO           0272:43f0       000001ac
@@ -743,17 +743,17 @@ Module: d_main.obj(C:\REALDOOM\d_main.c)
 0272:07b4      combine_strings_
 0272:082a      locallib_strcmp_
 0272:087a      locallib_strncasecmp_
-0272:08d4      makesavegamename_
-0272:0910      D_StartTitle_
-0272:0920      I_UpdateNoBlit_
-0272:0a1a+     D_Display_
-0272:0c7a+     G_BeginRecording_
-0272:0cf8      D_PageTicker_
-0272:0d0a+     D_PageDrawer_
-0272:0d2e      D_DoAdvanceDemo_
-0272:0e3c+     Z_ClearDeadCode_
-0272:0e82*     D_DoomMain_
-0272:0e8a*     D_DoomLoop_
+0272:08d6      makesavegamename_
+0272:0912      D_StartTitle_
+0272:0922      I_UpdateNoBlit_
+0272:0a1c+     D_Display_
+0272:0c7c+     G_BeginRecording_
+0272:0cfa      D_PageTicker_
+0272:0d0c+     D_PageDrawer_
+0272:0d30      D_DoAdvanceDemo_
+0272:0e3e+     Z_ClearDeadCode_
+0272:0e84*     D_DoomMain_
+0272:0e8c*     D_DoomLoop_
 Module: i_quit.obj(C:\REALDOOM\i_quit.c)
 0272:0f00*     I_ShutdownSound_
 0272:0f02+     I_ShutdownGraphics_
@@ -855,16 +855,16 @@ Module: am_map.obj(C:\REALDOOM\am_map.c)
 0272:2f34      AM_Ticker_
 0272:2f5e+     DOOUTCODE_
 0272:2f82+     AM_clipMline_
-0272:31ac+     AM_drawMline_
-0272:3284+     AM_drawGrid_
-0272:3344+     AM_drawWalls_
-0272:350a+     AM_rotate_
-0272:3578+     AM_drawLineCharacter_
-0272:3634+     AM_drawPlayers_
-0272:3686+     AM_drawThings_
-0272:36f8+     AM_drawMarks_
-0272:378e*     AM_drawCrosshair_
-0272:379e      AM_Drawer_
+0272:31aa+     AM_drawMline_
+0272:3282+     AM_drawGrid_
+0272:3342+     AM_drawWalls_
+0272:3508+     AM_rotate_
+0272:3576+     AM_drawLineCharacter_
+0272:3632+     AM_drawPlayers_
+0272:3684+     AM_drawThings_
+0272:36f6+     AM_drawMarks_
+0272:378c*     AM_drawCrosshair_
+0272:379c      AM_Drawer_
 Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
 0272:3800+     ST_refreshBackground_
 0272:3844      ST_Responder_
