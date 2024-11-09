@@ -92,11 +92,13 @@ PUBLIC  R_DrawColumn_
 ;    finishing  dc_texturemid.w + (dc_yl-centery)*fracstep.w
 
 
+    
+    add   ax, word ptr ds:[_dc_texturemid+0]
+    adc   dx, word ptr ds:[_dc_texturemid+2]   ; first add dx_texture mid
+
     mov   dh, dl
     mov   dl, ah                          ; mid 16 bits of the 32 bit dx:ax into dx
     
-    add   dx, word ptr ds:[_dc_texturemid+1]   ; first add dx_texture mid
-    add   al, byte ptr ds:[_dc_texturemid+3]
     mov   ch, al        ; ch gets the low 8 bits
 
     
