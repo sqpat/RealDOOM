@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/09 12:19:21
+Created on:       24/11/09 12:21:31
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -41,7 +41,7 @@ d_main_TEXT            CODE           AUTO           0272:07f0       00000ef6
 d_net_TEXT             CODE           AUTO           0272:16f0       00000104
 g_game_TEXT            CODE           AUTO           0272:1800       00000bc3
 m_misc_TEXT            CODE           AUTO           0272:23d0       00000061
-am_map_TEXT            CODE           AUTO           0272:2440       000011f7
+am_map_TEXT            CODE           AUTO           0272:2440       000011f5
 st_stuff_TEXT          CODE           AUTO           0272:3640       00000a1c
 hu_stuff_TEXT          CODE           AUTO           0272:4060       000001cc
 hu_lib_TEXT            CODE           AUTO           0272:4230       000001ac
@@ -856,12 +856,12 @@ Module: am_map.obj(C:\REALDOOM\am_map.c)
 0272:30c2+     AM_drawGrid_
 0272:3182+     AM_drawWalls_
 0272:3348+     AM_rotate_
-0272:33b6+     AM_drawLineCharacter_
-0272:3472+     AM_drawPlayers_
-0272:34c4+     AM_drawThings_
-0272:3536+     AM_drawMarks_
-0272:35cc*     AM_drawCrosshair_
-0272:35dc      AM_Drawer_
+0272:33b4+     AM_drawLineCharacter_
+0272:3470+     AM_drawPlayers_
+0272:34c2+     AM_drawThings_
+0272:3534+     AM_drawMarks_
+0272:35ca*     AM_drawCrosshair_
+0272:35da      AM_Drawer_
 Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
 0272:3640+     ST_refreshBackground_
 0272:3684      ST_Responder_
@@ -1714,4 +1714,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000252f0 (152304.)
 Entry point address: 1de6:21bc
-Link time: 00:00.20
+Link time: 00:00.75

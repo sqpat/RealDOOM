@@ -939,7 +939,7 @@ void __near AM_rotate ( int16_t __near*	x, int16_t __near* y, fineangle_t a ) {
 	fixed_t_union tmpy;
 
     tmpx.w = (FastMulTrig16(FINE_COSINE_ARGUMENT, a, *x)) - FastMulTrig16(FINE_SINE_ARGUMENT, a,  *y);
-    tmpy.w = (FastMulTrig16(FINE_SINE_ARGUMENT, a, *x)) - FastMulTrig16(FINE_COSINE_ARGUMENT, a,  *y);
+    tmpy.w = (FastMulTrig16(FINE_SINE_ARGUMENT, a, *x)) + FastMulTrig16(FINE_COSINE_ARGUMENT, a,  *y);
 
 	*y = tmpy.h.intbits;
 	*x = tmpx.h.intbits;
