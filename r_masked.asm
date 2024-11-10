@@ -213,29 +213,27 @@ adc dx, si
 ;        dc_yh--;
 
 
+neg ax
+sbb dx, 0h
+mov  word ptr ds:[_dc_yh], dx
+; dc_yh written back
+
+
+;		dc_yl = bottomscreen.h.intbits;
+;		if (!bottomscreen.h.fracbits)
+;			dc_yl++;
+
+
 
 neg  di
 adc  si, 0
-;mov  word ptr ds:[_dc_yl], si
+mov  word ptr ds:[_dc_yl], si
 
-; dc_yl written back
-
-
-;		dc_yh = bottomscreen.h.intbits;
-;		if (!bottomscreen.h.fracbits)
-;			dc_yh--;
-
-neg ax
-sbb dx, 0FFFFh
-mov  word ptr ds:[_dc_yh], dx
 ; dx is dc_yh
 ; si is dc_yl
 
 
 
-
-
-skip_inc_dc_yl:
 
 ;        if (dc_yh >= mfloorclip[dc_x])
 ;            dc_yh = mfloorclip[dc_x]-1;
@@ -279,7 +277,7 @@ jnle   exit_function_single
 mov   word ptr ds:[_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
 mov   word ptr ds:[_dc_yl], si ;  dc_x could also be trivially recovered from bx
 
-mov   ax, 02400h
+mov   ax, COLORMAPS_HIGH_SEG_DIFF
 
 
 db 09Ah
@@ -400,7 +398,7 @@ mov   ds, cx
 ;			dc_yh--;
 
 neg ax
-sbb dx, 0FFFFh
+sbb dx, 0h
 
 
 ; dx is dc_yh but needs to be written back 
@@ -447,10 +445,15 @@ cmp   ax, word ptr ds:[_dc_yh]
 jg    increment_column_and_continue_loop
 mov   bx, di
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shr   bx, 4
+ELSE
 shr   bx, 1
 shr   bx, 1
 shr   bx, 1
 shr   bx, 1
+ENDIF
+
 mov   dx, word ptr [bp - 6]
 les   ax, dword ptr [bp - 4]
 add   ax, bx
@@ -459,7 +462,7 @@ mov   al, byte ptr es:[si]
 xor   ah, ah
 sub   dx, ax
 mov   word ptr ds:[_dc_texturemid+2], dx
-mov   ax, 02400h
+mov   ax, COLORMAPS_HIGH_SEG_DIFF
 
 
 db 09Ah

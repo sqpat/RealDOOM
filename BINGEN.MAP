@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/09 15:09:36
+Created on:       24/11/09 12:16:15
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -88,7 +88,7 @@ r_draw_TEXT            CODE           AUTO           1791:3fd0       00000377
 r_main_TEXT            CODE           AUTO           1791:4350       000001dc
 r_plane_TEXT           CODE           AUTO           1791:4530       00000000
 r_segs_TEXT            CODE           AUTO           1791:4530       00001c25
-R_MASKED_TEXT          CODE           AUTO           1791:6156       000002a1
+R_MASKED_TEXT          CODE           AUTO           1791:6156       000002a0
 r_things_TEXT          CODE           AUTO           1791:6400       000010de
 w_wad_TEXT             CODE           AUTO           1791:74e0       0000032e
 VIDEO_TEXT             CODE           AUTO           1791:780e       000001fb
@@ -1384,7 +1384,7 @@ Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 Module: r_masked.obj(r_masked.ASM)
 1791:6156      R_DrawFuzzColumn_
 1791:628d      R_DrawSingleMaskedColumn_
-1791:6303      R_DrawMaskedColumn_
+1791:6307      R_DrawMaskedColumn_
 Module: r_things.obj(C:\REALDOOM\r_things.c)
 1791:6400      R_DrawMaskedSpriteShadow_
 1791:65bc+     R_DrawVisSprite_
