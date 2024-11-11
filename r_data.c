@@ -1744,9 +1744,10 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 		spritecache_nodes[i].numpages = numpages;
 		spritecache_nodes[i].pagecount = numpages;
 		// not sure if this ever happens... especially for sprite. biggest sprites are barely 2 page.
-		/*
 
 		if (numpages >= 3) {
+			I_Error("3 page sprite! fix this"); // todo remove
+			/*
 			// 2nd to last page of the allocation
 			j = spritecache_nodes[i].prev;
 			spritecache_nodes[j].numpages = numpages;
@@ -1754,8 +1755,9 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 			// 3 if numpages is 4
 			spritecache_nodes[j].pagecount = numpages-1;
 			usedspritepagemem[j] = 64;
+			*/
 		}
-		*/
+		
 		// i actually think this never happens? get rid of the code?
 		/*
 		if (numpages == 4) {
@@ -1767,7 +1769,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 		}
 		*/
 		// first page of the allocation
-		j = spritecache_nodes[j].prev;
+		j = spritecache_nodes[i].prev;
 		spritecache_nodes[j].numpages = numpages;
 		spritecache_nodes[j].pagecount = 1;
 

@@ -11,4 +11,4 @@
 #define R_DrawSpanCodeSize             0x916
 #define R_DrawFuzzColumnCodeSize       0x2AA
 #define R_DrawMaskedColumnCodeSize     0xF9
-#define R_DrawSkyColumnCodeSize        0x244
+#define R_DrawSkyColumnCodeSize        0x246
