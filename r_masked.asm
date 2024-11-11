@@ -219,8 +219,8 @@ mov  word ptr ds:[_dc_yh], dx
 ; dc_yh written back
 
 
-;		dc_yl = bottomscreen.h.intbits;
-;		if (!bottomscreen.h.fracbits)
+;		dc_yl = topscreen.h.intbits;
+;		if (topscreen.h.fracbits)
 ;			dc_yl++;
 
 

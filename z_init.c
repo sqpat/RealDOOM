@@ -444,6 +444,14 @@ void __near Z_LoadBinaries() {
 
 	//8192
 	FAR_fread(finetangentinner, 4, 2048, fp);
+
+
+	//  fixes an issue with garbage left over from other applications running.
+	FAR_memset(visplanes_8400, 0x00,   0xC000);
+	Z_QuickMapVisplanePage(3, 1);
+	Z_QuickMapVisplanePage(4, 2);
+	FAR_memset(visplanes_8800, 0x00,   0x8000);
+
 	DEBUG_PRINT(".");
 	Z_QuickMapPhysics();
 
@@ -503,6 +511,8 @@ void __near Z_LoadBinaries() {
 	FAR_fread(drawskyplane_area, codesize, 1, fp2);
 
 	fclose(fp2);
+
+
 
 
 	Z_QuickMapPhysics();
