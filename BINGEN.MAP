@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/12 11:26:34
+Created on:       24/11/12 12:54:26
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -82,8 +82,8 @@ r_data_TEXT            CODE           AUTO           17e0:0700       00001770
 R_MATH_TEXT            CODE           AUTO           17e0:1e70       000001fd
 R_MAINHI_TEXT          CODE           AUTO           17e0:206e       00000874
 R_COLUMN_TEXT          CODE           AUTO           17e0:28e2       00000ba0
-R_SPAN_TEXT            CODE           AUTO           17e0:3482       00000915
-R_SKY_TEXT             CODE           AUTO           17e0:3d98       00000241
+R_SPAN_TEXT            CODE           AUTO           17e0:3482       0000091a
+R_SKY_TEXT             CODE           AUTO           17e0:3d9c       00000241
 r_draw_TEXT            CODE           AUTO           17e0:3fe0       00000377
 r_main_TEXT            CODE           AUTO           17e0:4360       000001e7
 r_plane_TEXT           CODE           AUTO           17e0:4550       00000000
@@ -1364,8 +1364,8 @@ Module: r_span.obj(r_span.ASM)
 17e0:3c4c      R_MapPlane_
 17e0:3bc1*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-17e0:3d98      R_DrawSkyColumn_
-17e0:3f65      R_DrawSkyPlane_
+17e0:3d9c      R_DrawSkyColumn_
+17e0:3f69      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17e0:3fe0      R_FillBackScreen_
 17e0:4264      R_VideoErase_
@@ -1775,4 +1775,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028610 (165392.)
 Entry point address: 1fef:2414
-Link time: 00:00.74
+Link time: 00:00.75

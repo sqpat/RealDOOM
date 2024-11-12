@@ -754,6 +754,9 @@ push  si
 push  di
 push  es
 push  dx
+push  bp
+mov   bp, sp
+
 
 ; this is all done in R_DrawPlanes before the call now
 ;xor   ah, ah
@@ -917,6 +920,7 @@ dw (R_DrawSpanPrep_ - R_DrawSpan_)
 dw SPANFUNC_FUNCTION_AREA_SEGMENT
 
 
+LEAVE_MACRO
 
 
 pop   dx
@@ -937,7 +941,7 @@ dw (R_DrawSpanPrep_ - R_DrawSpan_)
 ;dw SPANFUNC_PREP_OFFSET
 dw SPANFUNC_FUNCTION_AREA_SEGMENT
 
-
+LEAVE_MACRO
 
 pop   dx
 pop   es
