@@ -1182,8 +1182,9 @@ boolean __far M_Responder (event_t __far*  ev) {
             // if there is a border
             borderdrawcount = 3; // need to redraw border...
             
-            if (hudneedsupdate) { // if letters etc are on screen... make sure this isnt interrupted.
-                hudneedsupdate = 6;
+            if (hudneedsupdate) { // if letters etc are on screen on top of border...
+                // make sure the letters are properly written
+                hudneedsupdate = 6; // i think this has to be 6 because there are 3 frames of border writes that come after the hud write? it's a little jank.
             }
         }
 

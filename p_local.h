@@ -197,8 +197,6 @@ typedef struct
 
  
 
-
-#define playerMobjRef	((THINKERREF)1)
 #define playerMobj_pos	((&mobjposlist[playerMobjRef]))
 #define playerMobj		((mobj_t __near *) (((byte __far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
 

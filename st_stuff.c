@@ -205,7 +205,6 @@ boolean __near ST_Responder (event_t __far* ev) {
 
                 //todo: test/fix this      player pos  
 
-                return true;
 
                 locallib_printhex(playerMobj_pos->angle.wu, true, hexnumber_string);
                 combine_strings(st_stuff_buf,"ang=0x", hexnumber_string);
@@ -231,7 +230,6 @@ boolean __near ST_Responder (event_t __far* ev) {
             int8_t               map;
             int8_t               max_epsd = 4;
 
-            return true;
             cht_GetParam(&cheat_clev, buf);
             
             if (commercial) {

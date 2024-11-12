@@ -153,10 +153,8 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	y.h.intbits = mthingy;
 	z.w = ONFLOORZ;
 	
-	P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
+	playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
 
-	// always index 1 for player
-	//playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
 	//playerMobj = setStateReturn;
 	///playerMobj_pos = setStateReturn_pos;
 

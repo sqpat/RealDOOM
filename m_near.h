@@ -528,6 +528,8 @@ extern boolean         noblit;                 // for comparative timing purpose
 extern ticcount_t             starttime;              // for comparative timing purposes       
 extern boolean         viewactive; 
 extern player_t        player;
+extern THINKERREF      playerMobjRef;
+
 extern ticcount_t          gametic;
 extern int16_t             totalkills; 
 extern int16_t             totalitems;
