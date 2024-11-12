@@ -788,18 +788,19 @@ void __near D_Display (void)
     }
 
     // see if the border needs to be updated to the screen
-    if (gamestate == GS_LEVEL && !automapactive && scaledviewwidth != 320)
-    {
-        if (menuactive || menuactivestate || !viewactivestate)
+    if (gamestate == GS_LEVEL && !automapactive && scaledviewwidth != 320) {
+        if (menuactive || menuactivestate || !viewactivestate){
             borderdrawcount = 3;
-        if (borderdrawcount)
-        {
-			if (!inhelpscreens)
-            R_DrawViewBorder ();    // erase old menu stuff
-            borderdrawcount--;
-        }
+		}
+		if (borderdrawcount) {
+			if (!inhelpscreens){
+            	R_DrawViewBorder ();    // erase old menu stuff
+			}
+			borderdrawcount--;
+        	
 
-    }
+		}
+	}
 
     menuactivestate = menuactive;
     viewactivestate = viewactive;
@@ -826,8 +827,7 @@ void __near D_Display (void)
 	NetUpdate ();         // send out any new accumulation
 
 	// normal update
-    if (!wipe)
-    {
+    if (!wipe) {
         I_FinishUpdate ();              // page flip or blit buffer
 #ifdef DETAILED_BENCH_STATS
 		renderpostplayerviewtics += ticcount - cachedrendertics;

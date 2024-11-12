@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/11 17:51:39
+Created on:       24/11/11 18:24:48
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -45,7 +45,7 @@ am_map_TEXT            CODE           AUTO           0277:2440       000011f5
 st_stuff_TEXT          CODE           AUTO           0277:3640       00000a1c
 hu_stuff_TEXT          CODE           AUTO           0277:4060       000001cc
 hu_lib_TEXT            CODE           AUTO           0277:4230       000001ac
-m_menu_TEXT            CODE           AUTO           0277:43e0       00001368
+m_menu_TEXT            CODE           AUTO           0277:43e0       00001366
 sounds_TEXT            CODE           AUTO           0277:5750       00000000
 f_wipe_TEXT            CODE           AUTO           0277:5750       0000027b
 D_ALGO_TEXT            CODE           AUTO           0277:59cc       00000199
@@ -934,10 +934,10 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 0277:4dc4+     M_StringHeight_
 0277:4e0a+     M_WriteText_
 0277:4e8a      M_Responder_
-0277:553c      M_StartControlPanel_
-0277:5556      M_Drawer_
-0277:571a*     M_SetupNextMenu_
-0277:572a      M_Ticker_
+0277:553a      M_StartControlPanel_
+0277:5554      M_Drawer_
+0277:5718*     M_SetupNextMenu_
+0277:5728      M_Ticker_
 Module: f_wipe.obj(C:\REALDOOM\f_wipe.c)
 0277:5750+     wipe_shittyColMajorXform_
 0277:57da+     wipe_initMelt_
@@ -1714,4 +1714,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00025360 (152416.)
 Entry point address: 1dec:21bc
-Link time: 00:00.75
+Link time: 00:00.74

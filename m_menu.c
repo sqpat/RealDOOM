@@ -1177,6 +1177,17 @@ boolean __far M_Responder (event_t __far*  ev) {
         currentMenu->lastOn = itemOn;
         // M_ClearMenus
         menuactive = 0;
+        inhelpscreens = 0;
+        if (screenblocks <= 9){
+            // if there is a border
+            borderdrawcount = 3; // need to redraw border...
+            
+            if (hudneedsupdate) { // if letters etc are on screen... make sure this isnt interrupted.
+                hudneedsupdate = 6;
+            }
+        }
+
+
         S_StartSound(NULL,sfx_swtchx);
         return true;
                 
