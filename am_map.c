@@ -351,7 +351,8 @@ void __near AM_initVariables(void) {
 
 void __near AM_clearMarks(void) {
 
-	memset(markpoints, -1, AM_NUMMARKPOINTS);
+	// - 1 memset multiple times is still -1 as a word or dword...
+	memset(markpoints, -1, AM_NUMMARKPOINTS*sizeof(mpoint_t));
     markpointnum = 0;
 }
 
@@ -404,7 +405,7 @@ void __far AM_Start (void) {
 	}
 	am_stopped = false;
 	
-	if (am_lastlevel != gamemap || am_lastepisode != gameepisode) {
+	if ((am_lastlevel != gamemap) || (am_lastepisode != gameepisode)) {
 		AM_LevelInit();
 		am_lastlevel = gamemap;
 		am_lastepisode = gameepisode;
