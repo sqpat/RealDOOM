@@ -493,7 +493,7 @@ void __near Z_LoadBinaries() {
 
 	//2048
 	FAR_fread(zlight, 1, 2048, fp);
-	FAR_fread(fuzzoffset, 1, size_fuzzoffset, fp);
+	fread(fuzzoffset, 1, size_fuzzoffset, fp);
 
 	Z_QuickMapMaskedExtraData();
 		// load R_DrawFuzzColumn into high memory near colormaps_high...
