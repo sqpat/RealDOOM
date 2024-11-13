@@ -170,7 +170,9 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // 3767u shareware
 // 8756u doom2
 
-#define baselowermemoryaddress        (0x31250000)
+#define SAVESTRINGSIZE        24u
+
+#define baselowermemoryaddress        (0x31160000)
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
 #define size_finesine            (10240u * sizeof(int32_t))
@@ -179,7 +181,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_texturetranslation  (MAX_TEXTURES * sizeof(uint16_t))
 #define size_textureheights      (MAX_TEXTURES * sizeof(uint8_t))
 #define size_rndtable            256
-#define size_subsector_lines    (MAX_SUBSECTOR_LINES_SIZE)
+#define size_subsector_lines     (MAX_SUBSECTOR_LINES_SIZE)
+#define size_savegamestrings     (10 * SAVESTRINGSIZE)
 
 
 #define FINE_SINE_ARGUMENT  base_lower_memory_segment
@@ -195,7 +198,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
 #define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable, size_rndtable))
-#define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
+#define savegamestrings    ((int8_t __far *)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
+#define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(savegamestrings , size_savegamestrings))
 
 
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
@@ -207,21 +211,23 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define textureheights_segment        ((segment_t) ((int32_t)textureheights >> 16))
 #define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
 #define subsector_lines_segment       ((segment_t) ((int32_t)subsector_lines >> 16))
+#define savegamestrings_segment       ((segment_t) ((int32_t)savegamestrings >> 16))
 #define base_lower_end_segment        ((segment_t) ((int32_t)base_lower_end >> 16))
 
 //todo recalculate after moving stuff around...
 
-// finesine             3125:0000
-// finecosine           3125:2000
-// events               3B25:0000
-// flattranslation      3B59:0000
-// texturetranslation   3B62:0000
-// textureheights       3B99:0000
-// rndtable             3BB4:0000
-// subsector_lines      3BC4:0000
+// finesine             3116:0000
+// finecosine           3116:2000
+// events               3B16:0000
+// flattranslation      3B4A:0000
+// texturetranslation   3B53:0000
+// textureheights       3B8A:0000
+// rndtable             3BA5:0000
+// subsector_lines      3BB5:0000
+// savegamestrings      3BF1:0000
 // base_lower_end       3C00:0000
 //03BACh
-// done                 3C00:000C
+// done                 3C00:0000
 
 
 
@@ -240,23 +246,24 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_diskgraphicbytes (392)
 
 #define segs_physics          ((seg_physics_t __far*)    (0x90000000))
-#define diskgraphicbytes      ((byte __far*) (MAKE_FULL_SEGMENT(segs_physics, size_segs_physics)))
+#define diskgraphicbytes      ((byte __far*)             MAKE_FULL_SEGMENT(segs_physics,     size_segs_physics))
 
 
 #define segs_physics_segment              ((segment_t) ((int32_t)segs_physics >> 16))
 #define diskgraphicbytes_segment          ((segment_t) ((int32_t)diskgraphicbytes >> 16))
 
-
-// 0x92D90000
+#ifdef MOVE_P_SIGHT
+// 0x92E80000
 #define PSightFuncLoadAddr      ((byte __far*) (MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes)))
 #define P_CheckSightAddr        ((boolean (__far *)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ))  (PSightFuncLoadAddr))
-#define SIZE_PSight             0x0A70
+#define SIZE_PSight             0x0A70*/
+#endif
 
 // end at 0x9380
 
  // or 9380:0000
-#define InfoFuncLoadAddr      ((byte __far *)  (0x93800000))
-// note: entry point to the function is not necessarily the first byte of the compiled binary.
+#define InfoFuncLoadAddr      ((byte __far *) MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes))
+// note: entry point to the function is not necessarily the first byte of the compiled binary. (jump tables and stuff for swithc cases)
 #define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0034))
 #define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x00B2))
 #define getXDeathStateAddr    ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x010A))
@@ -279,8 +286,11 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 
-// segs_physics   9000:0000
-// [empty]        9000:2BFC
+// segs_physics     9000:0000
+// diskgraphicbytes 92C0:0000
+// D_INFO           92D9:0000
+// [empty]          9343:0000
+// FREEBYTES 2784 bytes free
 
 
 /*
@@ -301,29 +311,23 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 */
 
 /*
-
-92C0:0034      getPainChance_
-92C0:00b2      getRaiseState_
-92C0:010a      getXDeathState_
-92C0:015a      getMeleeState_
-92C0:01b8      getMobjMass_
-92C0:0222      getActiveSound_
-92C0:0284      getPainSound_
-92C0:02b8      getAttackSound_
-92C0:02da      getDamage_
-92C0:0350      getSeeState_
-92C0:03f4      getMissileState_
-92C0:04a8      getDeathState_
-92C0:0586      getPainState_
-92C0:063c      getSpawnHealth_
-92C0:069c*     [empty] ??
+//todo update
+92D9:0034      getPainChance_
+92D9:00b2      getRaiseState_
+92D9:010a      getXDeathState_
+92D9:015a      getMeleeState_
+92D9:01b8      getMobjMass_
+92D9:0222      getActiveSound_
+92D9:0284      getPainSound_
+92D9:02b8      getAttackSound_
+92D9:02da      getDamage_
+92D9:0350      getSeeState_
+92D9:03f4      getMissileState_
+92D9:04a8      getDeathState_
+92D9:0586      getPainState_
+92D9:063c      getSpawnHealth_
+92D9:069c*     [empty] ??
 */
-// 0x9323C done
-// 0x9324  empty
-// FREEBYTES
-
-
-// B14B0 + FE0
 
  
 
@@ -687,22 +691,18 @@ mobjposlist           6B14:0000
 
 // 0x5C00 BLOCK PHYSICS
 
-#define SAVESTRINGSIZE        24u
 #define MAX_REJECT_SIZE        15138u
 
 #define size_rejectmatrix    (MAX_REJECT_SIZE)
-#define size_savegamestrings (size_rejectmatrix + (10 * SAVESTRINGSIZE))
 
 #define rejectmatrix         ((byte __far *)      MAKE_FULL_SEGMENT(0x5C000000, 0))
-#define savegamestrings      ((int8_t __far *)    MAKE_FULL_SEGMENT(rejectmatrix, size_rejectmatrix))
 
 
 /*
 rejectmatrix       5C00:0000
-savegamestrings    5FB3:0000
-[empty]        5000:FC12
+[empty]            5FB3:0000
 //FREEBYTES
-1006 bytes free
+1232 bytes free
 */
 
 
@@ -890,7 +890,7 @@ skytexture         9400:0000
 #define armsbg  58984u
 
 
-
+#define size_menugraphics      0x0000
 #define size_menugraphcispage4 0xAC64
 #define size_menuoffsets    ((sizeof(uint16_t) * NUM_MENU_ITEMS))
 
@@ -907,7 +907,7 @@ skytexture         9400:0000
 
 
 // menugraphicspage0  5000:0000
-// [empty]            ????
+// [empty]            ????      todo
 // menugraphicspage4  6400:0000
 // menuoffsets        6EC7:0000
 // [empty]            6ECD:0000 ?

@@ -176,8 +176,7 @@ void __near M_ReadSaveStrings(void){
     int8_t    name[256];
     FILE* fp;
         
-    for (i = 0;i < load_end;i++)
-    {
+    for (i = 0;i < load_end;i++) {
         makesavegamename(name, i);
 
         fp = fopen (name, "rb");
@@ -198,10 +197,10 @@ void __near M_ReadSaveStrings(void){
 //
 void __near M_DrawLoad(void){
     int8_t             i;
+    Z_QuickMapStatus();
         
     V_DrawPatchDirect (72,28, M_GetMenuPatch(30));
-    for (i = 0;i < load_end; i++)
-    {
+    for (i = 0;i < load_end; i++) {
         M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
         M_WriteText(LoadDef.x,LoadDef.y+LINEHEIGHT*i,&savegamestrings[i*SAVESTRINGSIZE]);
     }
@@ -257,15 +256,14 @@ void __near M_LoadGame (int16_t choice){
 void __near M_DrawSave(void){
     int8_t             i;
         
+    Z_QuickMapStatus();
     V_DrawPatchDirect (72,28, M_GetMenuPatch(29));
-    for (i = 0;i < load_end; i++)
-    {
+    for (i = 0;i < load_end; i++) {
         M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
         M_WriteText(LoadDef.x,LoadDef.y+LINEHEIGHT*i,&savegamestrings[i*SAVESTRINGSIZE]);
     }
         
-    if (saveStringEnter)
-    {
+    if (saveStringEnter) {
         i = M_StringWidth(&savegamestrings[saveSlot*SAVESTRINGSIZE]);
         M_WriteText(LoadDef.x + i,LoadDef.y+LINEHEIGHT*saveSlot,"_");
     }
@@ -302,8 +300,9 @@ void __near M_SaveSelect(int16_t choice){
     //FAR_strcpy(saveOldString,&savegamestrings[choice*SAVESTRINGSIZE]);
 
     getStringByIndex(EMPTYSTRING, temp);
-    if (!locallib_strcmp(&savegamestrings[choice*SAVESTRINGSIZE], temp))
+    if (!locallib_strcmp(&savegamestrings[choice*SAVESTRINGSIZE], temp)){
         savegamestrings[choice*SAVESTRINGSIZE] = 0;
+    }
     saveCharIndex = locallib_strlen(&savegamestrings[choice*SAVESTRINGSIZE]);
 }
 
@@ -312,15 +311,15 @@ void __near M_SaveSelect(int16_t choice){
 //
 void __near M_SaveGame (int16_t choice){
     int8_t temp[256];
-    if (!usergame)
-    {
+    if (!usergame) {
         getStringByIndex(SAVEDEAD, temp);
         M_StartMessage(temp,NULL,false);
         return;
     }
         
-    if (gamestate != GS_LEVEL)
+    if (gamestate != GS_LEVEL){
         return;
+    }
         
     M_SetupNextMenu(&SaveDef);
     M_ReadSaveStrings();
@@ -526,9 +525,7 @@ void __near M_VerifyNightmare(int16_t ch){
 
 void __near M_ChooseSkill(int16_t choice){
     int8_t temp[256];
-    if (choice == diff_nightmare 
-)
-    {
+    if (choice == diff_nightmare ) {
         getStringByIndex(NIGHTMARE, temp);
         M_StartMessage(temp,M_VerifyNightmare,true);
         return;
@@ -604,9 +601,10 @@ void __near M_ChangeMessages(int16_t choice) {
 // M_EndGame
 //
 void __near M_EndGameResponse(int16_t ch) {
-    if (ch != 'y')
+    if (ch != 'y'){
         return;
-                
+    }
+
     currentMenu->lastOn = itemOn;
     // M_ClearMenus
     menuactive = 0;
@@ -616,8 +614,7 @@ void __near M_EndGameResponse(int16_t ch) {
 void __near M_EndGame(int16_t choice){
     int8_t temp[256];
     choice = 0;
-    if (!usergame)
-    {
+    if (!usergame) {
         S_StartSound(NULL, sfx_oof);
         return;
     }
@@ -853,8 +850,9 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
     while(1) {
         c = *ch;
         ch++;
-        if (!c)
+        if (!c){
             break;
+        }
         if (c == '\n') {
             cx = x;
             cy += 12;
@@ -868,8 +866,9 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
 
         w = (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
 
-        if (cx+w > SCREENWIDTH)
+        if (cx+w > SCREENWIDTH){
             break;
+        }
         V_DrawPatchDirect(cx, cy, (patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]));
         cx+=w;
     }
@@ -960,15 +959,17 @@ boolean __far M_Responder (event_t __far*  ev) {
                                 
           case KEY_ENTER:
             saveStringEnter = 0;
-            if (savegamestrings[saveSlot*SAVESTRINGSIZE])
+            if (savegamestrings[saveSlot*SAVESTRINGSIZE]){
                 M_DoSave(saveSlot);
+            }
             break;
                                 
           default:
             ch = locallib_toupper(ch);
             if (ch != 32)
-                if (ch-HU_FONTSTART < 0 || ch-HU_FONTSTART >= HU_FONTSIZE)
+                if (ch-HU_FONTSTART < 0 || ch-HU_FONTSTART >= HU_FONTSIZE){
                     break;
+                }
             if (ch >= 32 && ch <= 127 &&
                 saveCharIndex < SAVESTRINGSIZE-1 &&
                 M_StringWidth(&savegamestrings[saveSlot*SAVESTRINGSIZE]) <
@@ -984,8 +985,9 @@ boolean __far M_Responder (event_t __far*  ev) {
     // Take care of any messages that need input
     if (messageToPrint) {
         if (messageNeedsInput == true &&
-            !(ch == ' ' || ch == 'n' || ch == 'y' || ch == KEY_ESCAPE))
+            !(ch == ' ' || ch == 'n' || ch == 'y' || ch == KEY_ESCAPE)){
             return false;
+        }
                 
         menuactive = messageLastMenuActive;
         messageToPrint = 0;
@@ -1004,15 +1006,17 @@ boolean __far M_Responder (event_t __far*  ev) {
     if (!menuactive)
         switch(ch) {
           case KEY_MINUS:         // Screen size down
-            if (automapactive )
+            if (automapactive ){
                 return false;
+            }
             M_SizeDisplay(0);
             S_StartSound(NULL,sfx_stnmov);
             return true;
                                 
           case KEY_EQUALS:        // Screen size up
-            if (automapactive )
+            if (automapactive ){
                 return false;
+            }
             M_SizeDisplay(1);
             S_StartSound(NULL,sfx_stnmov);
             return true;
@@ -1037,7 +1041,7 @@ boolean __far M_Responder (event_t __far*  ev) {
             return true;
                                 
           case KEY_F3:            // Load
-              M_StartControlPanel();
+            M_StartControlPanel();
             S_StartSound(NULL,sfx_swtchn);
             M_LoadGame(0);
             return true;
@@ -1055,7 +1059,7 @@ boolean __far M_Responder (event_t __far*  ev) {
             return true;
                                 
           case KEY_F6:            // Quicksave
-              S_StartSound(NULL,sfx_swtchn);
+            S_StartSound(NULL,sfx_swtchn);
             M_QuickSave();
             return true;
                                 
@@ -1081,8 +1085,9 @@ boolean __far M_Responder (event_t __far*  ev) {
                                 
           case KEY_F11:           // gamma toggle
             usegamma++;
-            if (usegamma > 4)
+            if (usegamma > 4){
                 usegamma = 0;
+            }
             player.message = gammamsg[usegamma];
             I_SetPalette (0);
             return true;
@@ -1105,8 +1110,9 @@ boolean __far M_Responder (event_t __far*  ev) {
     switch (ch) {
       case KEY_DOWNARROW:
         do {
-            if (itemOn+1 > currentMenu->numitems-1)
+            if (itemOn+1 > currentMenu->numitems-1){
                 itemOn = 0;
+            }
             else itemOn++;
             S_StartSound(NULL,sfx_pstop);
         } while(currentMenu->menuitems[itemOn].status==-1);
@@ -1114,9 +1120,11 @@ boolean __far M_Responder (event_t __far*  ev) {
                 
       case KEY_UPARROW:
         do {
-            if (!itemOn)
+            if (!itemOn){
                 itemOn = currentMenu->numitems-1;
-            else itemOn--;
+            } else { 
+                itemOn--;
+            }
             S_StartSound(NULL,sfx_pstop);
         } while(currentMenu->menuitems[itemOn].status==-1);
         return true;

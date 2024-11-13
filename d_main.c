@@ -821,6 +821,7 @@ void __near D_Display (void)
 #endif
     }
 	
+
     // menus go directly to the screen
 	M_Drawer (false);          // menu is drawn even on top of everything
 

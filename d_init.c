@@ -604,6 +604,7 @@ void __near M_Reload(void) {
 
 
 	FILE *fp = fopen("DOOMDATA.BIN", "rb");
+	FAR_memset(savegamestrings, 0x00, size_savegamestrings);
 	fseek(fp, MENUDATA_DOOMDATA_OFFSET, SEEK_SET);
 	fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
 	fclose(fp);
