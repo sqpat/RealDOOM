@@ -345,6 +345,7 @@ void __far Z_QuickMapUnmapAll();
 #define TASK_MENU 9
 #define TASK_WIPE 10
 #define TASK_INTERMISSION 11
+#define TASK_STATUS_NO_SCREEN4 12
 
 #define SCRATCH_PAGE_SEGMENT 0x5000u
 #define SCRATCH_PAGE_SEGMENT_7000 0x7000u
@@ -435,6 +436,8 @@ void __far Z_QuickMapPhysics();
 void __far Z_QuickMapRender();
 void __far Z_QuickMapRender_4000To9000();
 void __far Z_QuickMapStatus();
+void __far Z_QuickMapStatusNoScreen4();
+
 void __far Z_QuickMapDemo();
 void __far Z_QuickMapRender4000();
 void __far Z_QuickMapByTaskNum(int8_t task);

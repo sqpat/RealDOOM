@@ -494,9 +494,7 @@ void __near G_Ticker (void)  {
             break;
                          
         case GS_FINALE: 
-			Z_QuickMapStatus();
 			F_Ticker();
-			Z_QuickMapPhysics();		
 			break;
  
         case GS_DEMOSCREEN: 

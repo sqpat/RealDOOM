@@ -76,45 +76,38 @@ void	__near F_CastDrawer (void);
 // patch always 0x50000000
 void __near V_DrawPatchFlipped (int16_t		x, int16_t		y) {
 
-	int16_t		count;
-	int16_t		col;
+	int16_t		    count;
+	int16_t		    col = 0;
 	column_t __far*	column;
 	patch_t __far*	patch = (patch_t __far*) 0x50000000;
-	byte __far*	desttop;
-	byte __far*	dest;
-	byte __far*	source;
-	int16_t		w;
-
+	byte __far*	    desttop;
+	byte __far*		dest;
+	byte __far*		source;
+	int16_t			w = patch->width;
 	y -= (patch->topoffset);
 	x -= (patch->leftoffset);
 
-
 	//if (!0)
-	V_MarkRect(x, y, (patch->width), (patch->height));
+	V_MarkRect(x, y, (w), (patch->height));
 
-	col = 0;
-	desttop = screen0 + y * SCREENWIDTH + x;
+	desttop = MK_FP(screen0_segment,  (y * SCREENWIDTH_UNSIGNED) + x);
 
-	w = (patch->width);
 
 	for (; col < w; x++, col++, desttop++) {
 		column = (column_t  __far*)MK_FP(0x5000, (patch->columnofs[w - 1 - col]));
 
 		// step through the posts in a column 
-		while (column->topdelta != 0xff)
-		{
+		while (column->topdelta != 0xff) {
 			source = (byte  __far*)column + 3;
 			dest = desttop + column->topdelta*SCREENWIDTH;
 			count = column->length;
 
-			while (count--)
-			{
+			while (count--) {
 				*dest = *source;
 				source++;
 				dest += SCREENWIDTH;
 			}
-			column = (column_t  __far*)MK_FP(0x5000,  column->length
-				+ 4);
+			column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
 		}
 	}
 }
@@ -363,8 +356,9 @@ void __near F_TextWrite (void) {
      // erase the entire screen to a tiled background
 	//byte __far* src = (byte __far*)0x50000000;
 
-	Z_QuickMapScratch_5000();
-	Z_QuickMapScreen0();
+	Z_QuickMapScratch_5000(); // 5000
+	Z_QuickMapScreen0();      // 8000
+	// 9400-9c00 carries wad stuff
 	W_CacheLumpNameDirect(finaleflat, MK_FP(0x5000, 0x0000));
 	//I_Error("finale flat %s", finaleflat);
 
@@ -375,11 +369,10 @@ void __near F_TextWrite (void) {
 		}
 	 
     }
-	//6000, 7000-8000, 9c00
-	Z_QuickMapStatus();	
+	//6000, 7000-8000
+	Z_QuickMapStatusNoScreen4();	
 
-    V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
-    
+    V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);	
     // draw some of the text onto the screen
     cx = 10;
     cy = 10;
@@ -414,7 +407,6 @@ void __near F_TextWrite (void) {
 		V_DrawPatch(cx, cy, 0, (patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]));
 		cx+=w;
     }
-	
 }
 
 
@@ -455,6 +447,7 @@ void __near F_CastTicker (void) {
     if (--casttics > 0){
 		return;			// not time to change state yet
 	}
+	Z_QuickMapPhysics();
     if (caststate->tics == -1 || caststate->nextstate == S_NULL) {
 		// switch from deathstate to next monster
 		castnum++;
@@ -576,9 +569,7 @@ void __near F_CastPrint (int8_t* text) {
     int16_t		w;
     int16_t		width;
     
-	// needed for text letter graphics lumps
-	Z_QuickMapStatus();
-    // find width
+	// find width
     ch = text;
     width = 0;
 	
@@ -617,7 +608,6 @@ void __near F_CastPrint (int8_t* text) {
 		cx+=w;
     }
 	
-	Z_QuickMapPhysics(); // restore wad lumps...
 }
 
 
@@ -626,27 +616,32 @@ void __near F_CastPrint (int8_t* text) {
 //
 
 void __near F_CastDrawer (void) {
-    spritedef_t __far*	sprite;
-    spriteframe_t __far*	sprframe;
-    int16_t			lump;
-    boolean		flip;
+    spritedef_t __far*	  sprite;
+    spriteframe_t __far*  sprframe;
+    int16_t			      lump;
+    boolean				  flip;
 	spriteframe_t __far*  spriteframes;
-	int8_t			text[100];
-	patch_t __far*		patch = (patch_t __far*)0x50000000;
+	int8_t				  text[100];
+	patch_t __far*		  patch = (patch_t __far*)0x50000000;
+
+	// these get paged out by render7000
+	spritenum_t           castspritenum = caststate->sprite;
+	spritenum_t           castframenum = caststate->frame;
+
 
     // erase the entire screen to a background
     V_DrawFullscreenPatch("BOSSBACK", 0);
 	getStringByIndex(castorder[castnum].nameindex+castorderoffset, text);
-    F_CastPrint (text);
-
-	// need render 7000 for spriteframes. (but this overwrites status page)
-	Z_QuickMapRender7000();
+    Z_QuickMapStatusNoScreen4();
+    F_CastPrint (text); //this needs status for the letter graphics
+	
+	Z_QuickMapRender7000(); // need render 7000 for spriteframes. (but this overwrites status page)
 
     // draw the current frame in the middle of the screen
-	sprite = &sprites[caststate->sprite];
+	sprite = &sprites[castspritenum];
 	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprite->spriteframesOffset]);
 
-	sprframe = &spriteframes[caststate->frame & FF_FRAMEMASK];
+	sprframe = &spriteframes[castframenum & FF_FRAMEMASK];
 
 	
 	lump = sprframe->lump[0];
@@ -809,7 +804,6 @@ void __far F_Drawer (void) {
 	
 	if (!finalestage) {
 		F_TextWrite();
-		Z_QuickMapPhysics();
 	} else {
 		switch (gameepisode) {
 		  case 1:
@@ -825,7 +819,6 @@ void __far F_Drawer (void) {
 				break;
 		  case 3:
 				F_BunnyScroll ();
-				Z_QuickMapPhysics();
 				break;
 		  case 4:
 				V_DrawFullscreenPatch("ENDPIC", 0);

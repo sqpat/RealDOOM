@@ -280,6 +280,19 @@ void __far Z_QuickMapStatus() {
 	currenttask = TASK_STATUS;
 }
 
+void __far Z_QuickMapStatusNoScreen4() {
+
+	Z_QuickMap4AI(pageswapargs_stat_offset_size+1,  INDEXED_PAGE_7000_OFFSET);
+	Z_QuickMap1AI(pageswapargs_stat_offset_size+5, INDEXED_PAGE_6000_OFFSET);
+
+
+
+#ifdef DETAILED_BENCH_STATS
+	taskswitchcount++;
+#endif
+	currenttask = TASK_STATUS_NO_SCREEN4;
+}
+
 void __far Z_QuickMapScratch_5000() {
 
 	Z_QuickMap4AI(pageswapargs_scratch5000_offset_size, INDEXED_PAGE_5000_OFFSET);
@@ -598,6 +611,9 @@ void __far Z_QuickMapByTaskNum(int8_t tasknum) {
 		case TASK_STATUS:
 			Z_QuickMapStatus();
 			break;
+//		case TASK_STATUS_NO_SCREEN4:
+//			Z_QuickMapStatusNoScreen4();
+//			break;
 		case TASK_RENDER_TEXT:
 			Z_QuickMapRender();
 			Z_QuickMapRenderTexture(); // should be okay this way

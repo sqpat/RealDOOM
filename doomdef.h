@@ -100,6 +100,7 @@ enum { VERSION =  109 };
 // C++ might sucks for OOP, but it sure is a better C.
 // So there.
 #define SCREENWIDTH  320
+#define SCREENWIDTH_UNSIGNED  320u
 #define SCREENWIDTHOVER2  160
 #define SCREENHEIGHT 200u
 

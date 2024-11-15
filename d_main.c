@@ -734,6 +734,7 @@ void __near D_Display (void) {
 
       case GS_FINALE:
         F_Drawer ();
+		Z_QuickMapPhysics(); // put this here, instead of 3 spots in f_drawer...
         break;
 
       case GS_DEMOSCREEN:
