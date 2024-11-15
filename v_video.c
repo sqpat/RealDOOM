@@ -176,8 +176,7 @@ void
 V_DrawPatchDirect
 ( int16_t		x,
   int16_t		y,
-  patch_t __far*	patch )
-{
+  patch_t __far*	patch ) {
     int16_t		count;
     int16_t		col; 
     column_t __far*	column;

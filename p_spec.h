@@ -67,8 +67,7 @@ int16_t __near EV_DoDonut(uint8_t linetag);
 //
 // P_LIGHTS
 //
-typedef struct
-{
+typedef struct {
 	int16_t secnum;
     int16_t		count;
     uint8_t		maxlight;
@@ -78,8 +77,7 @@ typedef struct
 
 
 
-typedef struct
-{
+typedef struct {
 	int16_t secnum;
     int16_t		count;
     uint8_t		maxlight;
@@ -91,8 +89,7 @@ typedef struct
 
 
 
-typedef struct
-{
+typedef struct {
 	int16_t secnum;
     int16_t		count;
     uint8_t		minlight;
@@ -105,8 +102,7 @@ typedef struct
 
 
 
-typedef struct
-{
+typedef struct {
 	int16_t secnum;
     uint8_t		minlight;
     uint8_t		maxlight;
@@ -136,8 +132,7 @@ void __near T_FireFlicker(fireflicker_t __near* flick, THINKERREF flickRef);
 //
 // P_SWITCH
 //
-typedef struct
-{
+typedef struct {
     int8_t	name1[9];
 	int8_t	name2[9];
     int16_t	episode;
@@ -153,8 +148,7 @@ typedef struct
 typedef uint8_t bwhere_e;
 
 
-typedef struct
-{
+typedef struct {
 	int16_t     linenum;
     bwhere_e	where;
     uint8_t		btexture;
@@ -203,8 +197,7 @@ typedef uint8_t plattype_e;
 
 
 
-typedef struct
-{
+typedef struct {
 	int16_t secnum;
     short_height_t	speed;
     short_height_t	low;
@@ -252,8 +245,7 @@ typedef int8_t vldoor_e;
 
 
 
-typedef struct
-{
+typedef struct {
     vldoor_e	type;
     int16_t	secnum;
     short_height_t	topheight;
@@ -315,8 +307,7 @@ typedef int8_t ceiling_e;
 
 
 
-typedef struct
-{
+typedef struct {
     ceiling_e	type;
 	int16_t secnum;
     short_height_t	bottomheight;
@@ -398,8 +389,7 @@ typedef uint8_t  stair_e;
 
 
 
-typedef struct
-{
+typedef struct {
     floor_e	type;
     boolean	crush;
     int16_t   secnum;

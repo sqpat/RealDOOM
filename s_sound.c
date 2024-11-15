@@ -68,8 +68,7 @@
 
  
 
-typedef struct
-{
+typedef struct {
     // sound information (if null, channel avail.)
     sfxinfo_t*	sfxinfo;
 
@@ -121,8 +120,7 @@ S_AdjustSoundParams
 
 void S_StopChannel(int8_t cnum);
 
-void S_SetMusicVolume(uint8_t volume)
-{
+void S_SetMusicVolume(uint8_t volume) {
 	/*
 	if ( volume > 127)
     {
@@ -137,8 +135,7 @@ void S_SetMusicVolume(uint8_t volume)
 }
 
 
-void S_StopMusic(void)
-{
+void S_StopMusic(void) {
 	return;
 	/*
     if (mus_playing)
@@ -163,8 +160,7 @@ void S_StopMusic(void)
 void
 S_ChangeMusic
 ( musicenum_t			musicnum,
-  boolean			looping )
-{
+  boolean			looping ) {
 
 	/*
     musicinfo_t*	music;
@@ -210,14 +206,12 @@ S_ChangeMusic
 //
 // Starts some music with the music id found in sounds.h.
 //
-void S_StartMusic(musicenum_t m_id)
-{
+void S_StartMusic(musicenum_t m_id) {
 	return;
     //S_ChangeMusic(m_id, false);
 }
 
-void S_StopChannel(int8_t cnum)
-{
+void S_StopChannel(int8_t cnum) {
 	/*
     int8_t		i;
 	channel_t* channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
@@ -266,8 +260,7 @@ S_AdjustSoundParams
 	mobj_t __near*	source,
   uint8_t*		vol,
   uint8_t*		sep,
-  uint8_t*		pitch )
-{
+  uint8_t*		pitch ) {
 	return 0;
 	/*
 	fixed_t	approx_dist;
@@ -335,8 +328,7 @@ S_AdjustSoundParams
 
 }
 
-void S_SetSfxVolume(uint8_t volume)
-{
+void S_SetSfxVolume(uint8_t volume) {
 
 #ifdef CHECK_FOR_ERRORS
 	if ( volume > 127)
@@ -349,8 +341,7 @@ void S_SetSfxVolume(uint8_t volume)
 //
 // Stop and resume music, during game PAUSE.
 //
-void S_PauseSound(void)
-{
+void S_PauseSound(void) {
 	return;
 	/*
     if (mus_playing && !mus_paused)
@@ -361,8 +352,7 @@ void S_PauseSound(void)
 	*/
 }
 
-void S_ResumeSound(void)
-{
+void S_ResumeSound(void) {
 	return;
 	/*
     if (mus_playing && mus_paused)
@@ -373,8 +363,7 @@ void S_ResumeSound(void)
 	*/
 }
 
-void S_StopSound(mobj_t __near* origin)
-{
+void S_StopSound(mobj_t __near* origin) {
 	/*
 	int8_t cnum;
 	channel_t* channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
@@ -451,8 +440,7 @@ void S_StartSoundAtVolume
 	int16_t originX,
 	int16_t originY,
   sfxenum_t		sfx_id,
-  uint8_t		volume )
-{
+  uint8_t		volume ) {
 
 	/*
 
@@ -596,8 +584,7 @@ void S_StartSoundWithParams(int16_t x, int16_t y, sfxenum_t sfx_id) {
 //
 // Updates music & sounds
 //
-void S_UpdateSounds(THINKERREF listenerRef)
-{
+void S_UpdateSounds(THINKERREF listenerRef) {
 	/*
 
 	
@@ -704,8 +691,7 @@ void S_UpdateSounds(THINKERREF listenerRef)
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.
 //
-void S_Start(void)
-{
+void S_Start(void) {
 
 	/*
 

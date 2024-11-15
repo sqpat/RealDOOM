@@ -45,8 +45,7 @@
 #define PATCHMASK 0x7FFF
 #define ORIGINX_SIGN_FLAG 0x8000
 
-typedef struct
-{
+typedef struct {
 	// Block origin (allways UL),
 	// which has allready accounted
 	// for the internal origin of the patch.
@@ -55,8 +54,7 @@ typedef struct
 	int16_t         patch; // lump num
 } texpatch_t;
 
-typedef struct
-{
+typedef struct {
 	// Keep name for switch changing, etc.
 	int8_t        name[8];
 	// width and height max out at 256 and are never 0. we store as real size -  1 and add 1 whenever we readd it

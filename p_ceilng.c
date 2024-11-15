@@ -42,8 +42,8 @@
 // T_MoveCeiling
 //
 
-void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef)
-{
+void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef) {
+
     result_e	res;
 	int16_t secnum = ceiling->secnum;
 	sector_t __far* ceilingsector = &sectors[secnum];
@@ -248,8 +248,8 @@ void __near P_AddActiveCeiling(THINKERREF ceilingRef) {
 //
 // Remove a ceiling's thinker
 //
-void __near P_RemoveActiveCeiling(sector_physics_t __near* ceilingsector_physics, THINKERREF ceilingRef)
-{
+void __near P_RemoveActiveCeiling(sector_physics_t __near* ceilingsector_physics, THINKERREF ceilingRef) {
+
     int8_t		i;
 
     for (i = 0;i < MAXCEILINGS;i++) {

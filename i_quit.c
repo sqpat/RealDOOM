@@ -25,8 +25,7 @@
 // I_ShutdownSound
 // Shuts down all sound stuff
 //
-void __near I_ShutdownSound(void)
-{
+void __near I_ShutdownSound(void) {
 	/*
 	ticcount_t s;
 	S_PauseSound();

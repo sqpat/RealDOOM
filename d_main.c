@@ -94,8 +94,7 @@ void __near D_DoAdvanceDemo (void);
 // D_PostEvent
 // Called by the I/O functions when input is detected
 //
-void __near D_PostEvent (event_t __far* ev)
-{
+void __near D_PostEvent (event_t __far* ev) {
     events[eventhead] = *ev;
     eventhead = (++eventhead)&(MAXEVENTS-1);
 }
@@ -107,8 +106,7 @@ boolean __near G_Responder (event_t __far* ev);
 // D_ProcessEvents
 // Send all the events of the given timestamp down the responder chain
 //
-void __near D_ProcessEvents (void)
-{
+void __near D_ProcessEvents (void) {
     event_t __far*     ev;
 	for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
 		ev = &events[eventtail];
@@ -583,8 +581,8 @@ void __near R_ExecuteSetViewSize (void);
 //
 // D_StartTitle
 //
-void __far D_StartTitle(void)
-{
+void __far D_StartTitle(void){
+
 	gameaction = ga_nothing;
 	demosequence = -1;
     advancedemo = true;
@@ -654,8 +652,7 @@ void __far I_UpdateNoBlit(void) {
 
 
     // Update screen
-    if (realdr[BOXBOTTOM] <= realdr[BOXTOP])
-    {
+    if (realdr[BOXBOTTOM] <= realdr[BOXTOP]) {
         x = realdr[BOXLEFT];
         y = realdr[BOXBOTTOM];
         w = realdr[BOXRIGHT] - realdr[BOXLEFT] + 1;
@@ -673,14 +670,13 @@ void __far I_FinishUpdate(void);
 
 
 
-void __near D_Display (void)
-{
+void __near D_Display (void) {
 	int16_t                         y;
     boolean                     wipe;
     boolean                     redrawsbar;
-	if (novideo)
+	if (novideo){
         return;                    // for comparative timing / profiling
- 
+	}
 #ifdef DETAILED_BENCH_STATS
 	cachedrendertics = ticcount;
 #endif
@@ -809,10 +805,11 @@ void __near D_Display (void)
 
     // draw pause pic
     if (paused) {
-        if (automapactive)
+        if (automapactive){
             y = 4;
-        else
+		} else{
             y = viewwindowy+4;
+		}
 #ifndef __DEMO_ONLY_BINARY
 
 		Z_QuickMapMenu();		
@@ -881,8 +878,7 @@ void __near G_BeginRecording (void)  {
 // and sets up the video mode
 void __near I_InitGraphics(void);
 
-void __near D_DoomLoop (void)
-{
+void __near D_DoomLoop (void) {
 	// debugging stuff i need to find mem leaks...
 #ifdef DEBUGLOG_TO_FILE
 	//int8_t result2[100];
@@ -890,17 +886,16 @@ void __near D_DoomLoop (void)
 	FILE* fp;
 #endif
 
-    if (demorecording)
+    if (demorecording){
         G_BeginRecording ();
-                
+	}
 
 
 	//I_Error("Here! 0");
     I_InitGraphics ();
 	//I_Error("Here! B");
 
-    while (1)
-    {
+    while (1) {
 		// process one or more tics
 		if (singletics) {
 #ifdef DETAILED_BENCH_STATS
@@ -986,10 +981,10 @@ if (gametic == 200){
 // D_PageTicker
 // Handles timing for warped projection
 //
-void __near D_PageTicker (void)
-{
-    if (--pagetic < 0)
+void __near D_PageTicker (void) {
+    if (--pagetic < 0){
 	    advancedemo = true;
+	}
 }
 
 
@@ -997,8 +992,7 @@ void __near D_PageTicker (void)
 //
 // D_PageDrawer
 //
-void __near D_PageDrawer (void)
-{
+void __near D_PageDrawer (void) {
 
 	// we dont have various screen buffers anymore, so we cant draw to buffer in 'read this'
 	// screen - this would draw direct to screen and overwrite the read this screen.

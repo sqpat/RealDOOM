@@ -453,20 +453,32 @@ boolean __far AM_Responder ( event_t __far* ev ) {
 		rc = true;
 		switch(ev->data1) {
 		  case AM_PANRIGHTKEY: // pan right
-			if (!followplayer) m_paninc.x = FTOM16(SCREEN_PAN_INC);
-			else rc = false;
+			if (!followplayer) {
+				m_paninc.x = FTOM16(SCREEN_PAN_INC);
+			} else {
+				rc = false;
+			}
 			break;
 		  case AM_PANLEFTKEY: // pan left
-			if (!followplayer) m_paninc.x = -FTOM16(SCREEN_PAN_INC);
-			else rc = false;
+			if (!followplayer){
+				m_paninc.x = -FTOM16(SCREEN_PAN_INC);
+			} else {
+				rc = false;
+			}
 			break;
 		  case AM_PANUPKEY: // pan up
-			if (!followplayer) m_paninc.y = FTOM16(SCREEN_PAN_INC);
-			else rc = false;
+			if (!followplayer) {
+				m_paninc.y = FTOM16(SCREEN_PAN_INC);
+			} else {
+				rc = false;
+			}
 			break;
 		  case AM_PANDOWNKEY: // pan down
-			if (!followplayer) m_paninc.y = -FTOM16(SCREEN_PAN_INC);
-			else rc = false;
+			if (!followplayer){
+				 m_paninc.y = -FTOM16(SCREEN_PAN_INC);
+			} else { 
+				rc = false;
+			}
 			break;
 		  case AM_ZOOMOUTKEY: // zoom out
 			mtof_zoommul = M_ZOOMOUT;
@@ -532,16 +544,24 @@ boolean __far AM_Responder ( event_t __far* ev ) {
 		rc = false;
 		switch (ev->data1) {
 		  case AM_PANRIGHTKEY:
-			if (!followplayer) m_paninc.x = 0;
+			if (!followplayer) {
+				m_paninc.x = 0;
+			}
 			break;
 		  case AM_PANLEFTKEY:
-			if (!followplayer) m_paninc.x = 0;
+			if (!followplayer) {
+				m_paninc.x = 0;
+			}
 			break;
 		  case AM_PANUPKEY:
-			if (!followplayer) m_paninc.y = 0;
+			if (!followplayer) {
+				m_paninc.y = 0;
+			}
 			break;
 		  case AM_PANDOWNKEY:
-			if (!followplayer) m_paninc.y = 0;
+			if (!followplayer) {
+				m_paninc.y = 0;
+			}
 			break;
 		  case AM_ZOOMOUTKEY:
 		  case AM_ZOOMINKEY:
@@ -1020,8 +1040,7 @@ void __near AM_drawThings() {
     }
 }
 
-void __near AM_drawMarks(void)
-{
+void __near AM_drawMarks(void) {
 	int8_t i;
 	int16_t fx, fy;
 

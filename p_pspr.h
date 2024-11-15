@@ -49,16 +49,14 @@
 // drawn directly on the view screen,
 // coordinates are given for a 320*200 view screen.
 //
-typedef enum
-{
+typedef enum {
     ps_weapon,
     ps_flash,
     NUMPSPRITES
 
 } psprnum_t;
 
-typedef struct
-{
+typedef struct {
 	statenum_t 	statenum;	// a NULL state means not active
 	int16_t		tics;
     fixed_t	sx;
@@ -67,8 +65,7 @@ typedef struct
 } pspdef_t;
 
 // Weapon info: sprite frames, ammunition use.
-typedef struct
-{
+typedef struct {
     ammotype_t	ammo;
     int16_t		upstate;
     int16_t		downstate;

@@ -618,8 +618,7 @@ void __far R_DrawColumn (void) {
 
  */
 /*
-void __far R_DrawColumnLow (void) 
-{ 
+void __far R_DrawColumnLow (void)  { 
 
 	int16_t                 count;
 	byte __far*               dest;
@@ -843,8 +842,7 @@ void __far R_DrawFuzzColumn (int16_t count, byte __far * dest) {
 // Draws the actual span.
 
 /*
-void __far R_DrawSpan(void)
-{
+void __far R_DrawSpan(void) {
 	//fixed_t_union             src = 0x80000000;
 	fixed_t_union             xfrac;
 	fixed_t_union             yfrac;
@@ -1133,8 +1131,7 @@ BC 50 2A    mov sp, 0x2a50
 // Again..
 //
 /*
-void __far R_DrawSpanLow(void)
-{
+void __far R_DrawSpanLow(void) {
 	fixed_t_union             xfrac;
 	fixed_t             yfrac;
 	byte __far*               dest;
@@ -1190,8 +1187,7 @@ void __far R_DrawSpanLow(void)
 //  for variable screen sizes
 // Also draws a beveled edge.
 //
-void __far R_FillBackScreen (void) 
-{ 
+void __far R_FillBackScreen (void)  { 
  
 
     byte __far*	src; // could be src[104] if not for name1/name2 flat texture. then we could avoid scratch altogether.
@@ -1330,8 +1326,7 @@ void __far R_VideoErase (uint16_t ofs, int16_t count )  {
 //
 
  
-void __far R_DrawViewBorder (void) 
-{ 
+void __far R_DrawViewBorder (void)  { 
     uint16_t		top;
     uint16_t		side;
     uint16_t		ofs;

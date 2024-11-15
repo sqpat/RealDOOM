@@ -573,8 +573,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 // During BSP traversal, this adds sprites by sector.
 //
 
-void __near R_AddSprites (sector_t __far* sec)
-{
+void __near R_AddSprites (sector_t __far* sec) {
 	THINKERREF				thingRef;
 	int16_t                 lightnum;
  
@@ -778,8 +777,7 @@ void __near R_PrepareMaskedPSprites(void) {
 #define VISSPRITE_UNSORTED_INDEX 255
 #define VISSPRITE_SORTED_HEAD_INDEX 254
 
-void __near R_SortVisSprites (void)
-{
+void __near R_SortVisSprites (void) {
 	int16_t                 i;
 	int16_t                 count;
     uint8_t        ds;
@@ -849,8 +847,7 @@ void __near R_SortVisSprites (void)
 // R_DrawSprite
 //
 
-void __near R_DrawSprite (vissprite_t __near* spr)
-{
+void __near R_DrawSprite (vissprite_t __near* spr) {
     drawseg_t __far*          ds;
     int16_t               clipbot[SCREENWIDTH]; // could be uint8_t, need to change -2 special case
     int16_t               cliptop[SCREENWIDTH];
@@ -918,8 +915,6 @@ void __near R_DrawSprite (vissprite_t __near* spr)
         silhouette = ds->silhouette;
         
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
-		if (ds->bsilheight < 0) {
-		}
 		if (spr->gz.w >= temp.w) {
 			silhouette &= ~SIL_BOTTOM;
 		}

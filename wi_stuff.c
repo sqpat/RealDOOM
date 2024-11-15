@@ -181,8 +181,7 @@ void __near maketwocharint(int16_t j, char __far *str ){
 }
 
 
-void __near WI_slamBackground(void)
-{
+void __near WI_slamBackground(void) {
     FAR_memcpy(screen0, screen1, SCREENWIDTH * SCREENHEIGHT);
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 }
@@ -190,8 +189,7 @@ void __near WI_slamBackground(void)
 
 
 // Draws "<Levelname> Finished!"
-void __near WI_drawLF(void)
-{
+void __near WI_drawLF(void) {
 	int16_t y = WI_TITLEY;
 	patch_t __far* finished = WI_GetPatch(5);
 	// draw <LevelName> 
@@ -208,8 +206,7 @@ void __near WI_drawLF(void)
 
 
 // Draws "Entering <LevelName>"
-void __near WI_drawEL(void)
-{
+void __near WI_drawEL(void) {
 	patch_t __far* lname;
 	int16_t y = WI_TITLEY;
 	patch_t __far* entering = WI_GetPatch(27);
@@ -226,11 +223,7 @@ void __near WI_drawEL(void)
 
 }
 
-void
-__near WI_drawOnLnode
-( int16_t		n,
-  uint8_t*	cRef )
-{
+void __near WI_drawOnLnode ( int16_t n, uint8_t* cRef ) {
 
     int16_t		i = 0;
     int16_t		left;
@@ -262,21 +255,18 @@ __near WI_drawOnLnode
 
     if (fits && i<2) {
 		V_DrawPatch(lnodeX, lnodeY, FB, (WI_GetPatch(cRef[i])));
-    } else {
-		// DEBUG
-		//DEBUG_PRINT("Could not place patch on level %d", n+1);
     }
 }
 
 
 
-void __near WI_initAnimatedBack(void)
-{
+void __near WI_initAnimatedBack(void) {
     int16_t		i;
     wianim_t __far*	a;
 
-    if (commercial)
+    if (commercial){
 		return;
+	}
 
 	if (wbs->epsd > 2){
 		return;
@@ -290,12 +280,13 @@ void __near WI_initAnimatedBack(void)
 		a->ctr = -1;
 
 		// specify the next time to draw it
-		if (a->type == ANIM_ALWAYS)
+		if (a->type == ANIM_ALWAYS){
 			a->nexttic = bcnt + 1 + (M_Random()%a->period);
-		else if (a->type == ANIM_RANDOM)
+		} else if (a->type == ANIM_RANDOM){
 			a->nexttic = bcnt + 1 + 0+(M_Random()%a->data1);
-		else if (a->type == ANIM_LEVEL)
+		} else if (a->type == ANIM_LEVEL){
 			a->nexttic = bcnt + 1;
+		}
     }
 
 }
@@ -304,8 +295,9 @@ void __near WI_updateAnimatedBack(void) {
     int16_t		i;
     wianim_t __far*	a;
 
-    if (commercial)
+    if (commercial) {
 		return;
+	}
 
 	if (wbs->epsd > 2){
 		return;
@@ -350,14 +342,14 @@ void __near WI_updateAnimatedBack(void) {
 
 }
 
-void __near WI_drawAnimatedBack(void)
-{
+void __near WI_drawAnimatedBack(void) {
    
 	int16_t i;
 	wianim_t __far*anim;
 
-	if (commercial)
+	if (commercial) {
 		return;
+	}
 
 	if (wbs->epsd > 2){
 		return;
@@ -366,8 +358,9 @@ void __near WI_drawAnimatedBack(void)
 	for (i = 0; i < NUMANIMS[wbs->epsd]; i++) {
 		anim = &wianims[wbs->epsd][i];
 
-		if (anim->ctr >= 0)
+		if (anim->ctr >= 0) {
 			V_DrawPatch(anim->loc.x, anim->loc.y, FB, WI_GetAnimPatch(anim->pRef[anim->ctr]));
+		}
 	}
 
 }
@@ -681,22 +674,22 @@ void __near WI_drawStats(void) {
 
 void __near WI_checkForAccelerate(void) {
  
-	if (player.cmd.buttons & BT_ATTACK)
-	{
-		if (!player.attackdown)
+	if (player.cmd.buttons & BT_ATTACK) {
+		if (!player.attackdown){
 			acceleratestage = 1;
+		}
 		player.attackdown = true;
-	}
-	else
+	} else {
 		player.attackdown = false;
-	if (player.cmd.buttons & BT_USE)
-	{
-		if (!player.usedown)
-			acceleratestage = 1;
-		player.usedown = true;
 	}
-	else
+	if (player.cmd.buttons & BT_USE) {
+		if (!player.usedown) {
+			acceleratestage = 1;
+		}
+		player.usedown = true;
+	} else {
 		player.usedown = false;
+	}
 }
 
 
@@ -818,8 +811,7 @@ void __near G_WorldDone (void)  {
 void __near WI_unloadData(void){
 	unloaded = true;
 }
-void __near WI_End(void)
-{
+void __near WI_End(void) {
     WI_unloadData();
 }
 
@@ -850,8 +842,8 @@ void __far  WI_Ticker(void) {
 		}
 	}
 
-	WI_checkForAccelerate();
 	Z_QuickMapIntermission();
+	WI_checkForAccelerate();
 
 	switch (state) {
 		case StatCount:
@@ -947,6 +939,7 @@ void __near WI_Init(void) {
 
 	if (commercial) {
 		int8_t temp[3];
+		dst = wigraphicslevelname;
 		maketwocharint(wbs->last, temp);
         combine_strings(name, "CWILV", temp);
 

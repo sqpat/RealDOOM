@@ -156,8 +156,7 @@ void R_InitSpriteLumps(void) {
 // into the rectangular texture space using origin
 // and possibly other attributes.
 //
-typedef struct
-{
+typedef struct {
 	int16_t       originx;
 	int16_t       originy;
 	int16_t       patch;
@@ -173,8 +172,7 @@ typedef struct
 // A DOOM wall texture is a list of patches
 // which are to be combined in a predefined order.
 //
-typedef struct
-{
+typedef struct {
 	int8_t                name[8];  // 8
 	byte				unusedA[4];        // 12  defining this in bytes to avoid 16/32 bit compiler differences
 	int16_t               width;    // 14
@@ -189,9 +187,7 @@ typedef struct
 // complicated memory situation... creating render data at 0x5000-0x6000... lump info will be in 0x4000 range...
 // use scratch at 0x7000 which is usually level data. level data is not used during init, only during setup,
 // so its technically a free area here. (init is game init, setup is level setup)
-void R_GenerateLookup(uint16_t texnum)
-{
- 
+void R_GenerateLookup(uint16_t texnum) {
 
 	texture_t __far*          texture;
 	patch_t __far*            realpatch;
@@ -793,8 +789,7 @@ void __near R_InitData(void) {
 
 
 
-void __near R_Init(void)
-{
+void __near R_Init(void) {
 	Z_QuickMapRender();
 	Z_QuickMapLumpInfo();
 

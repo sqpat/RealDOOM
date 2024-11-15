@@ -33,15 +33,15 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void);
 void TS_Startup(void);
 
 
-void TS_FreeTaskList(void)
-{
+void TS_FreeTaskList(void){
+
 	//_disable();
 	//free(&HeadTask);
 	//_enable();
 }
 
-void TS_SetClockSpeed(int32_t speed)
-{
+void TS_SetClockSpeed(int32_t speed){
+
 	_disable();
 	if ((speed > 0) && (speed < 0x10000L)) {
 		TaskServiceRate = speed;
@@ -55,8 +55,8 @@ void TS_SetClockSpeed(int32_t speed)
 	_enable();
 }
 
-uint16_t TS_SetTimer(int32_t TickBase)
-{
+uint16_t TS_SetTimer(int32_t TickBase){
+
 	uint16_t speed;
 	// VITI95: OPTIMIZE
 	//speed =   1192030L / TickBase;
@@ -70,8 +70,8 @@ uint16_t TS_SetTimer(int32_t TickBase)
 	return (speed);
 }
 
-void TS_SetTimerToMaxTaskRate(void)
-{
+void TS_SetTimerToMaxTaskRate(void){
+
 	_disable();
 	TS_SetClockSpeed(0x10000L);
 	_enable();
@@ -79,8 +79,8 @@ void TS_SetTimerToMaxTaskRate(void)
 
 void	resetDS();
 
-void __interrupt __far_func TS_ServiceScheduleIntEnabled(void)
-{
+void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
+
 	resetDS();
 
 	TS_TimesInInterrupt++;
@@ -133,10 +133,8 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void)
    Sets up the task service routine.
 ---------------------------------------------------------------------*/
 
-void TS_Startup(
-	void)
+void TS_Startup(void){
 
-{
 	if (!TS_Installed)
 	{
 

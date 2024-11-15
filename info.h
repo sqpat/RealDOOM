@@ -1139,8 +1139,8 @@ typedef uint8_t spriteframenum_t;
 
 typedef uint16_t statenum_t;
 
-typedef struct state_s
-{
+typedef struct state_s {
+
   spritenum_t	sprite;
   spriteframenum_t	frame;
   int8_t			tics;
@@ -1151,8 +1151,8 @@ typedef struct state_s
   //int32_t			misc1, misc2;
 } state_t;
 
-typedef struct state_render_s
-{
+typedef struct state_render_s {
+
   spritenum_t	sprite;
   spriteframenum_t	frame;
 
@@ -1308,8 +1308,8 @@ typedef uint8_t sfxenum_t;
 
 
  // most states and sfx fields could probably save space(?) in a getter. most of these arent oft used
-typedef struct
-{
+typedef struct {
+
     //int16_t	doomednum;  // moved into code in overlay
 	statenum_t	spawnstate;	// pretty much  every value different, probably cant remove
 	//int8_t	spawnhealth;  // can probably divide by 10 and store as int8_t and mult by 10 on init

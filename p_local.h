@@ -98,8 +98,8 @@
 #define TF_PREVBITS					0x07FFu
 
 // 44 in size
-typedef struct thinker_s
-{
+typedef struct thinker_s {
+
 	// functiontype is the five high bits
 
 	// contains previous reference mixed with functin type (in the high five bits)
@@ -176,8 +176,8 @@ void __near P_NoiseAlert ();
 //
 // P_MAPUTL
 //
-typedef struct
-{
+typedef struct {
+
 	fixed_t_union	x;
 	fixed_t_union	y;
     fixed_t_union	dx;
@@ -185,8 +185,8 @@ typedef struct
     
 } divline_t;
 
-typedef struct
-{
+typedef struct {
+
     fixed_t	frac;		// along trace line
     boolean	isaline;
     union {

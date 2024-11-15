@@ -68,8 +68,7 @@ P_Thrust
 // P_CalcHeight
 // Calculate the walking / running height adjustment
 //
-void P_CalcHeight () 
-{
+void P_CalcHeight ()  {
     fineangle_t		angle;
     fixed_t	bob;
 	fixed_t_union temp;
@@ -140,8 +139,7 @@ void P_CalcHeight ()
 //
 // P_MovePlayer
 //
-void P_MovePlayer ()
-{
+void P_MovePlayer () {
     ticcmd_t __near*		cmd = &player.cmd;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
@@ -177,8 +175,7 @@ void __near P_MovePsprites () ;
 //
 #define ANG5   	(ANG90/18)
 
-void P_DeathThink ()
-{
+void P_DeathThink () {
     angle_t		angle;
     angle_t		delta;
 	mobj_pos_t __far* playerattacker_pos;
@@ -236,8 +233,7 @@ void P_DeathThink ()
 //
 // P_PlayerThink
 //
-void __near P_PlayerThink (void)
-{
+void __near P_PlayerThink (void) {
     ticcmd_t __near*		cmd;
     weapontype_t	newweapon;
 

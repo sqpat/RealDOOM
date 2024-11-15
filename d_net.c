@@ -58,14 +58,14 @@ void NetUpdate(void) {
 	nowtime = ticcount;
 	newtics = nowtime - gametime;
 
-	if (newtics <= 0) // nothing new to update
+	if (newtics <= 0){ // nothing new to update
 		return;
+	}
 
 	gametime = nowtime;
 
 	// build new ticcmds for console player
-	for (i = 0; i < newtics; i++)
-	{
+	for (i = 0; i < newtics; i++) {
 		I_StartTic();
 		D_ProcessEvents();
 		if (maketic - gametic >= (BACKUPTICS / 2 - 1)) {
@@ -78,6 +78,7 @@ void NetUpdate(void) {
 
 }
 
+void __far WI_otherchecksum(int16_t i);
 
 void __near TryRunTics(void) {
 	// dont need 32 bit precision to find a diff.
@@ -92,39 +93,43 @@ void __near TryRunTics(void) {
 	oldentertics = entertic;
 
 	// get available tics
+
+
 	NetUpdate();
+
+
 
 	availabletics = maketic - gametic;
 
 	// decide how many tics to run
-	if (realtics + 1 < availabletics)
+	if (realtics + 1 < availabletics){
 		counts = realtics + 1;
-	else if (realtics < availabletics)
+	} else if (realtics < availabletics){
 		counts = realtics;
-	else
+	} else {
 		counts = availabletics;
+	}
 
-	if (counts < 1)
+	if (counts < 1){
 		counts = 1;
+	}
 
 	// wait for new tics if needed
-	while (maketic < gametic + counts)
-	{
+	while (maketic < gametic + counts) {
 		NetUpdate();
 
 		// don't stay in here forever -- give the menu a chance to work
-		if (ticcount - entertic >= 20)
-		{
+		if (ticcount - entertic >= 20) {
 			M_Ticker();
 			return;
 		}
 	}
 
 	// run the count dics
-	while (counts--)
-	{
-		if (advancedemo)
+	while (counts--) {
+		if (advancedemo){
 			D_DoAdvanceDemo();
+		}
 		M_Ticker();
 		G_Ticker();
 		gametic++;

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/13 12:26:03
+Created on:       24/11/14 17:06:54
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -31,7 +31,7 @@ r_init_TEXT            CODE           AUTO           0000:0f70       00000b88
 w_init_TEXT            CODE           AUTO           0000:1b00       00000269
 i_init_TEXT            CODE           AUTO           0000:1d70       000000b0
 z_umb_TEXT             CODE           AUTO           0000:1e20       00000000
-z_init_TEXT            CODE           AUTO           0000:1e20       00000507
+z_init_TEXT            CODE           AUTO           0000:1e20       0000050c
 p_init_TEXT            CODE           AUTO           0000:2330       0000045f
 i_main_TEXT            CODE           AUTO           0279:0000       00000012
 i_quit_TEXT            CODE           AUTO           0279:0020       00000286
@@ -47,8 +47,8 @@ hu_stuff_TEXT          CODE           AUTO           0279:41f0       000001cc
 hu_lib_TEXT            CODE           AUTO           0279:43c0       000001ac
 m_menu_TEXT            CODE           AUTO           0279:4570       0000136e
 sounds_TEXT            CODE           AUTO           0279:58e0       00000000
-f_wipe_TEXT            CODE           AUTO           0279:58e0       0000027b
-D_ALGO_TEXT            CODE           AUTO           0279:5b5c       00000199
+f_wipe_TEXT            CODE           AUTO           0279:58e0       00000277
+D_ALGO_TEXT            CODE           AUTO           0279:5b58       00000199
 dmx_TEXT               CODE           AUTO           0279:5d00       000001f4
 dutils_TEXT            CODE           AUTO           0279:5f00       0000008b
 wi_stuff_TEXT          CODE           AUTO           0279:5f90       00000f26
@@ -942,14 +942,14 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 Module: f_wipe.obj(C:\REALDOOM\f_wipe.c)
 0279:58e0+     wipe_shittyColMajorXform_
 0279:596a+     wipe_initMelt_
-0279:5a3a+     I_ReadScreen_
-0279:5a96      wipe_StartScreen_
-0279:5aae      wipe_WipeLoop_
+0279:5a3c+     I_ReadScreen_
+0279:5a98      wipe_StartScreen_
+0279:5aac      wipe_WipeLoop_
 Module: d_algo.obj(d_algo.ASM)
-0279:5cd9      hackDSBack_
-0279:5b5c      wipe_doMelt_
-0279:5cb0      resetDS_
-0279:5cb8      hackDS_
+0279:5cd5      hackDSBack_
+0279:5b58      wipe_doMelt_
+0279:5cac      resetDS_
+0279:5cb4      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 0279:5d00      TS_FreeTaskList_
 0279:5d02      TS_SetClockSpeed_
@@ -1718,4 +1718,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000258e0 (153824.)
 Entry point address: 1e3a:217c
-Link time: 00:00.75
+Link time: 00:00.20

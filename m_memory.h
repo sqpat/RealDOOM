@@ -732,28 +732,10 @@ rejectmatrix       5C00:0000
 #define fwipe_ycolumns_segment         (segment_t)0x7FA0
 #define fwipe_mul160lookup_segment     (segment_t)0x7FE0
 
-
+// dont put stuff in screen1 - it gets used by sprite cache
 
 // screen1 is used during wi_stuff/intermission code, we can stick this anim data there
 #define size_screen1          (64000u)
-#define size_lnodex           ((sizeof(int16_t) * (9*3)))
-#define size_lnodey           ((sizeof(int16_t) * (9*3)))
-#define size_epsd0animinfo    (16 * 10)
-#define size_epsd1animinfo    (16 * 9)
-#define size_epsd2animinfo    (16 * 6)
-#define size_wigraphics       (NUM_WI_ITEMS * 9)
-#define size_pars             ((sizeof(int16_t) * (4*10)))
-#define size_cpars            ((sizeof(int16_t) * (32)))
-
-#define lnodex           ((int16_t __far*)   MAKE_FULL_SEGMENT(screen1, size_screen1))
-#define lnodey           ((int16_t __far*)   (((int32_t)lnodex) + size_lnodex))
-#define epsd0animinfo    ((wianim_t __far*)  (((int32_t)lnodey) + size_lnodey))
-#define epsd1animinfo    ((wianim_t __far*)  (((int32_t)epsd0animinfo)+ size_epsd0animinfo))
-#define epsd2animinfo    ((wianim_t __far*)  (((int32_t)epsd1animinfo)+ size_epsd1animinfo))
-#define wigraphics       ((int8_t __far*)    (((int32_t)epsd2animinfo)+ size_epsd2animinfo))
-#define pars             ((int16_t __far*)   MAKE_FULL_SEGMENT(lnodex, (((int32_t)wigraphics) & 0xFFFF)+size_wigraphics))
-#define cpars            ((int16_t __far*)   MAKE_FULL_SEGMENT(pars, size_pars))
-
 
 
 /*
@@ -898,12 +880,7 @@ skytexture         9400:0000
 #define menugraphicspage4   (byte __far* )0x64000000
 #define menuoffsets         ((uint16_t __far*)  MAKE_FULL_SEGMENT(menugraphicspage4, size_menugraphcispage4 ))
 
-// ends at AC64. are there other spare graphics to drop here?
-
-#define wigraphicspage0     (byte __far* )0x70000000
-#define wigraphicslevelname (byte __far* )0x78000000
-#define wianimspage         (byte __far* )0x60000000
-#define menuoffsets_segment       ((segment_t) ((int32_t)menuoffsets >> 16))
+#define menuoffsets_segment  ((segment_t) ((int32_t)menuoffsets >> 16))
 
 
 // menugraphicspage0  5000:0000
@@ -912,28 +889,96 @@ skytexture         9400:0000
 // menuoffsets        6EC7:0000
 // [empty]            6ECD:0000 ?
 //FREEBYTES 4992 in menu page 4. Eventually move menu code here?
-
+// ends at AC64. are there other spare graphics to drop here?
 
 
 #define NUM_WI_ITEMS 28
 #define NUM_WI_ANIM_ITEMS 30
 
-// maximum size for level complete graphic, times two
-#define MAX_LEVEL_COMPLETE_GRAPHIC_SIZE 0x1240
+#define MAX_LEVEL_COMPLETE_GRAPHIC_SIZE 0x1278
 #define size_level_finished_graphic (MAX_LEVEL_COMPLETE_GRAPHIC_SIZE * 2)
 
-#define size_wioffsets              (sizeof(uint16_t) * NUM_WI_ITEMS)
-#define size_wianimoffsets          (sizeof(uint16_t) * NUM_WI_ANIM_ITEMS)
+#define size_wigraphicspage0      0x4CF0
+#define size_wigraphicslevelname  size_level_finished_graphic
 
-#define wioffsets                   ((uint16_t __far*)   MAKE_FULL_SEGMENT(0x78000000, size_level_finished_graphic))
+// 4CF0 in size?
+// 4220 doom2
+
+
+
+#define wigraphicslevelname  ((byte __far* )0x78000000)
+#define wianimspage          ((byte __far* )0x60000000)
+
+
+// maximum size for level complete graphic, times two. in theory could be measured smaller? we have enough space though...
+// largest level complete graphic in ultimate doom somewhere..
+
+
+#define size_wioffsets        (sizeof(uint16_t) * NUM_WI_ITEMS)
+#define size_lnodex           ((sizeof(int16_t) * (9*3)))
+#define size_lnodey           ((sizeof(int16_t) * (9*3)))
+#define size_epsd0animinfo    (16 * 10)
+#define size_epsd1animinfo    (16 * 9)
+#define size_epsd2animinfo    (16 * 6)
+#define size_wigraphics       (NUM_WI_ITEMS * 9)
+#define size_pars             ((sizeof(int16_t) * (4*10)))
+#define size_cpars            ((sizeof(int16_t) * (32)))
+#define size_wianimoffsets    (sizeof(uint16_t) * NUM_WI_ANIM_ITEMS)
+
+
+
+#define wigraphicspage0  ((byte __far* )     0x70000000) 
+#define lnodex           ((int16_t __far*)   MAKE_FULL_SEGMENT(wigraphicspage0, size_wigraphicspage0))
+#define lnodey           ((int16_t __far*)   (((int32_t)lnodex) + size_lnodex))
+#define epsd0animinfo    ((wianim_t __far*)  (((int32_t)lnodey) + size_lnodey))
+#define epsd1animinfo    ((wianim_t __far*)  (((int32_t)epsd0animinfo)+ size_epsd0animinfo))
+#define epsd2animinfo    ((wianim_t __far*)  (((int32_t)epsd1animinfo)+ size_epsd1animinfo))
+#define wigraphics       ((int8_t __far*)    (((int32_t)epsd2animinfo)+ size_epsd2animinfo))
+#define pars             ((int16_t __far*)   MAKE_FULL_SEGMENT(lnodex, (((int32_t)wigraphics) & 0xFFFF)+size_wigraphics))
+#define cpars            ((int16_t __far*)   MAKE_FULL_SEGMENT(pars, size_pars))
+
+#define wioffsets        ((uint16_t __far*)   MAKE_FULL_SEGMENT(0x78000000, size_level_finished_graphic))
 #define wianimoffsets               ((uint16_t __far*)   MAKE_FULL_SEGMENT(wioffsets, size_wioffsets))
 
+// todo make this work
 /*
-wioffsets      7800:2480
-wianimoffsets  7800:24b8
-[empty]        7800:24f4
+#define lnodex           ((int16_t __far*)   MAKE_FULL_SEGMENT(0x77000000, 0))
+#define lnodey           ((int16_t __far*)   MAKE_FULL_SEGMENT(lnodex,          size_lnodex))
+#define epsd0animinfo    ((wianim_t __far*)  MAKE_FULL_SEGMENT(lnodey,          size_lnodey))
+#define epsd1animinfo    ((wianim_t __far*)  MAKE_FULL_SEGMENT(epsd0animinfo,   size_epsd0animinfo))
+#define epsd2animinfo    ((wianim_t __far*)  MAKE_FULL_SEGMENT(epsd1animinfo,   size_epsd1animinfo))
+#define wigraphics       ((int8_t __far*)    MAKE_FULL_SEGMENT(epsd2animinfo,   size_epsd2animinfo))
+#define pars             ((int16_t __far*)   MAKE_FULL_SEGMENT(wigraphics,      size_wigraphics))
+#define cpars            ((int16_t __far*)   MAKE_FULL_SEGMENT(pars,            size_pars))
 */
-//6924 free? but intermission memory usage isnt common...
+
+
+/*
+
+This area used during intermission task
+
+7000:0000  wigraphicspage0
+9FA0:0000  lnodex
+9FA0:0036  lnodey
+9FA0:006c  epsd0animinfo
+9FA0:010c  epsd1animinfo
+9FA0:019c  epsd2animinfo
+9FA0:01FC  wigraphics
+9FD0:0000  pars
+9FD0:0050  cpars
+9FD7:0000  [empty]
+
+776 bytes free
+*/
+
+
+
+/*
+wioffsets      7A4F:0000
+wianimoffsets  7A53:0000
+[empty]        7A57:0000
+*/
+//6800 free? but intermission memory usage isnt common...
 
 
 

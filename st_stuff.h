@@ -51,8 +51,7 @@ void __near ST_Init (void);
 
 
 // States for status bar code.
-typedef enum
-{
+typedef enum {
     AutomapState,
     FirstPersonState
     

@@ -34,23 +34,19 @@ void __far AM_Stop (void);
 
 #define AM_NUMMARKPOINTS 10
 
-typedef struct
-{
+typedef struct {
 	int16_t x, y;
 } fpoint_t;
 
-typedef struct
-{
+typedef struct {
     fpoint_t a, b;
 } fline_t;
 
-typedef struct
-{
+typedef struct {
     int16_t		x,y;
 } mpoint_t;
 
-typedef struct
-{
+typedef struct {
     mpoint_t a, b;
 } mline_t;
 

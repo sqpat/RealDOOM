@@ -106,8 +106,7 @@ boolean __far AM_Responder (event_t __far* ev);
 // R_FlatNumForName
 // Retrieval, get a flat number for a flat name.
 //
-uint8_t __far R_FlatNumForName(int8_t* name)
-{
+uint8_t __far R_FlatNumForName(int8_t* name) {
 	int16_t         i;
 #ifdef CHECK_FOR_ERRORS
 	int8_t        namet[9];
@@ -403,8 +402,9 @@ void __near G_Ticker (void)  {
     // do player reborns if needed
 
     // do player reborn if needed
-	if (player.playerstate == PST_REBORN) 
+	if (player.playerstate == PST_REBORN) {
         gameaction = ga_loadlevel;  
+    }
 
 
 	// do things to change the game state
@@ -568,8 +568,7 @@ void __far G_PlayerReborn () {
 // G_DoCompleted 
 //
   
-void __far G_ExitLevel (void) 
-{ 
+void __far G_ExitLevel (void)  { 
     secretexit = false; 
     gameaction = ga_completed; 
 } 
@@ -588,13 +587,11 @@ void __far G_SecretExitLevel (void) {
 void __near G_DoCompleted (void)  { 
          
     gameaction = ga_nothing; 
- 
 	G_PlayerFinishLevel(0); // take away cards and stuff
 
     if (automapactive) {
         AM_Stop (); 
     }
-    
     if (!commercial){
         switch(gamemap) {
             case 8:
@@ -874,9 +871,9 @@ void __near G_ReadDemoTiccmd (ticcmd_t __near* cmd)  {
 void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  { 
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickMapDemo();
-	if (gamekeydown['q'])           // press q to end demo recording 
+	if (gamekeydown['q']){           // press q to end demo recording 
         G_CheckDemoStatus (); 
-
+    }
 	
 
 	*demo_addr++ = cmd->forwardmove;
@@ -885,8 +882,7 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  {
     *demo_addr++ = cmd->buttons;
 	demo_addr -= 4;
 	
-    if (demo_p > (DEMO_MAX_SIZE - 16))
-    {
+    if (demo_p > (DEMO_MAX_SIZE - 16)) {
         // no more space 
         G_CheckDemoStatus (); 
 		Z_QuickMapPhysics();
@@ -1017,8 +1013,9 @@ boolean __far G_CheckDemoStatus (void)  {
 	} 
          
     if (demoplayback)  { 
-        if (singledemo) 
+        if (singledemo) {
             I_Quit (); 
+        }
                          
         demoplayback = false; 
         netdemo = false;

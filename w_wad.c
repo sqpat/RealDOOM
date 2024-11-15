@@ -238,8 +238,7 @@ int32_t W_LumpLength9000(int16_t lump) {
 	return (lumpinfo9000[lump + 1].position - lumpinfo9000[lump].position) + lumpinfo9000[lump].sizediff;
 }
 
-int32_t W_LumpLength (int16_t lump)
-{
+int32_t W_LumpLength (int16_t lump) {
 	int32_t size;
 #ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps)

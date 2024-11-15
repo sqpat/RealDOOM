@@ -45,8 +45,7 @@ void __far WI_Start(wbstartstruct_t __near*	 wbstartstruct);
 typedef uint8_t animenum_t;
 
 // in practice the used values are all 8 bit, 0 - 224
-typedef struct
-{
+typedef struct {
     uint8_t		x;
     uint8_t		y;
     
@@ -56,8 +55,7 @@ typedef struct
 //
 // Animation.
 //
-typedef struct
-{
+typedef struct {
     animenum_t	type;
 
     // period in tics between animations

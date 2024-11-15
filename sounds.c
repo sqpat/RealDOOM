@@ -26,8 +26,7 @@
 //
 
 /*
-musicinfo_t S_music[] =
-{
+musicinfo_t S_music[] = {
     { 0 },
     { "e1m1", 0 },
     { "e1m2", 0 },
@@ -105,8 +104,7 @@ musicinfo_t S_music[] =
 
 /*
 
-sfxinfo_t S_sfx[] =
-{
+sfxinfo_t S_sfx[] = {
   // S_sfx[0] needs to be a dummy for odd reasons.
   { "none", false,  0, 0},
 

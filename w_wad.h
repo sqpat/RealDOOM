@@ -25,8 +25,7 @@
 //
 // TYPES
 //
-typedef struct
-{
+typedef struct {
     // Should be "IWAD" or "PWAD".
 	int8_t		identification[4];
     int32_t			numlumps;
@@ -35,8 +34,7 @@ typedef struct
 } wadinfo_t;
 
 
-typedef struct
-{
+typedef struct {
 	int32_t			filepos;
 	int32_t			size;
 	int8_t		name[8];
@@ -46,8 +44,7 @@ typedef struct
 //
 // WADFILE I/O related stuff.
 //
-typedef struct
-{
+typedef struct {
 	int8_t	name[8];
 	// (probably could cap at 16 bit and use high bit as sizediff)
     int32_t		position; //todo make 48 bit

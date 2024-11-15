@@ -1802,8 +1802,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 
 #define realpatch7000  ((patch_t __far *)  MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0))
 
-void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
-{
+void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 	texpatch_t __far*         patch;
 	//patch_t __far*            realpatch;
 	int16_t             x;

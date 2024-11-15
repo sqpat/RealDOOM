@@ -252,8 +252,7 @@ int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, uint16_t no
 fixed_t
 P_InterceptVector2
 ( divline_t __near*	v2,
-  node_t*	v1 )
-{
+  node_t*	v1 ) {
     fixed_t	frac;
     fixed_t	num;
     fixed_t	den;

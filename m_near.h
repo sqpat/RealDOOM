@@ -832,8 +832,8 @@ extern int16_t	sp_state;
 // Casting by id Software.
 //   in order of appearance
 //
-typedef struct
-{
+typedef struct {
+
 	uint8_t		nameindex;
     mobjtype_t	type;
 } castinfo_t;
@@ -967,8 +967,8 @@ extern boolean 	earlyout;
 extern lineopening_t lineopening;
 extern divline_t		dl;
 
-typedef struct
-{
+typedef struct {
+
     boolean	istexture;
 	uint16_t		picnum;
 	uint16_t		basepic;
@@ -1005,8 +1005,8 @@ extern drawseg_t __far*	ds_p;
 // Clips the given range of columns
 // and includes it in the new clip list.
 //
-typedef	struct
-{
+typedef	struct {
+
     int16_t	first;
 	int16_t last;
     

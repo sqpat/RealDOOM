@@ -23,8 +23,7 @@ void StartTimer(void(*function)(void));
 void StopTimer(void);
 */
 
-typedef struct task
-{
+typedef struct task{
 	struct task *next;
 	struct task *prev;
 	void(*TaskService)(void);

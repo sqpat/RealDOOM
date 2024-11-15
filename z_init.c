@@ -47,8 +47,7 @@
 
 // EMS STUFF
 
-void near doerror(int16_t errnum, int16_t errorreg)
-{
+void near doerror(int16_t errnum, int16_t errorreg) {
 	I_Error("\n\n%d %d", errnum, errorreg); // Couldn't init EMS, error %d
 }
 
@@ -80,8 +79,7 @@ byte __far *__near Z_InitEMS() {
 	return MK_FP(EMS_PAGE, 0);
 }
 
-void __near Z_GetEMSPageMap()
-{
+void __near Z_GetEMSPageMap() {
 	int16_t i;
 
 
@@ -96,14 +94,12 @@ void __near Z_GetEMSPageMap()
 #elif defined(__SCAT_BUILD)
 
 
-byte __far *__near Z_InitEMS()
-{
+byte __far *__near Z_InitEMS() {
 	EMS_PAGE = 0xD000; // hard coded
 	return MK_FP(EMS_PAGE, 0);
 }
 
-void __near Z_GetEMSPageMap()
-{
+void __near Z_GetEMSPageMap() {
 	int16_t i;
 
 
@@ -140,8 +136,7 @@ byte __far *__near Z_InitEMS() {
 
 }
 
-void __near Z_GetEMSPageMap()
-{
+void __near Z_GetEMSPageMap() {
 	int16_t i;
 
 
@@ -515,10 +510,11 @@ void __near Z_LoadBinaries() {
 
 
 
-	Z_QuickMapPhysics();
+	Z_QuickMapIntermission();
 	FAR_fread(pars, 2, 72, fp);  // 4*10 + 32 par times
 
 	fclose(fp);
+	Z_QuickMapPhysics();
 
 	DEBUG_PRINT("..");
  

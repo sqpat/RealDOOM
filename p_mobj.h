@@ -105,8 +105,8 @@
 //
 // Misc. mobj flags
 //
-typedef enum
-{
+typedef enum {
+
     // Call P_SpecialThing when touched.
     MF_SPECIAL		= 1,
     // Blocks.
@@ -153,8 +153,8 @@ typedef enum
 
 } mobjflag_1_t;
 
-typedef enum
-{
+typedef enum {
+
 
     MF_MISSILE		= 0x1,	
     // Dropped by a demon, not level spawned.
@@ -199,8 +199,8 @@ typedef enum
 // Map Object definition.
 // 40 bytes
 
-typedef struct mobj_s
-{
+typedef struct mobj_s {
+
     // More list: links in sector (if needed)
 	THINKERREF	sprevRef;
 
@@ -267,8 +267,8 @@ typedef struct mobj_s
 // and reduces some task switching in the sprite code 
 
 // 22 bytes.
-typedef struct mobj_pos_s
-{
+typedef struct mobj_pos_s {
+
 	// List: thinker links.
 
 	// Info for drawing: position.

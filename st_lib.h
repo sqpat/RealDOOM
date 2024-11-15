@@ -38,8 +38,7 @@
 
 // Number widget
 
-typedef struct
-{
+typedef struct {
     // upper right-hand corner
     //  of the number (right-justified)
  int16_t  x;
@@ -60,8 +59,7 @@ typedef struct
 
 // Percent widget ("child" of number widget,
 //  or, more precisely, contains a number widget.)
-typedef struct
-{
+typedef struct {
     // number information
     st_number_t  num;
 
@@ -74,8 +72,7 @@ typedef struct
 
 
 // Multiple Icon widget
-typedef struct
-{
+typedef struct {
      // center-justified location of icons
  int16_t   x;
  int16_t   y;

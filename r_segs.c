@@ -329,8 +329,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 //extern int setval;
 
 
-void __near R_RenderSegLoop (fixed_t rw_scalestep)
-{
+void __near R_RenderSegLoop (fixed_t rw_scalestep) {
     fineangle_t		angle;
 	uint16_t		index;
     int16_t			yl;
@@ -608,8 +607,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep)
 // dont need to do modulo vga plane stuff in a loop either
 // not a big improvement, but an improvement. lots of extra code though. But it should eventually be loaded high into ems regions.
 
-void __near R_RenderOneSeg ()
-{
+void __near R_RenderOneSeg () {
     fineangle_t		angle;
 	uint16_t		index;
     int16_t			yl;

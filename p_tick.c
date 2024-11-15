@@ -92,15 +92,13 @@ void __near P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc) {
 // Deallocation is lazy -- it will not actually be freed
 // until its thinking turn comes up.
 // 
-void __near P_RemoveThinker (THINKERREF thinkerRef)
-{
+void __near P_RemoveThinker (THINKERREF thinkerRef) {
 	thinkerlist[thinkerRef].prevFunctype = (thinkerlist[thinkerRef].prevFunctype & TF_PREVBITS) + TF_DELETEME_HIGHBITS;
 }
 //
 // P_RunThinkers
 //
-void __near P_RunThinkers (void)
-{
+void __near P_RunThinkers (void) {
 	THINKERREF	currentthinker;
 	uint16_t	currentthinkerFunc;
 	int16_t i = 0;
@@ -223,8 +221,7 @@ void __near P_RunThinkers (void)
 //
 // P_Ticker
 //
-void __far P_Ticker (void)
-{
+void __far P_Ticker (void) {
     // run the tic
 	// pause if in menu and at least one tic has been run
 	if (paused || (menuactive && !demoplayback && player.viewzvalue.w != 1)) {

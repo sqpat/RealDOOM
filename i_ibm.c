@@ -207,8 +207,8 @@ void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h) {
 //
 // I_FinishUpdate
 //
-void __far I_FinishUpdate(void)
-{
+void __far I_FinishUpdate(void) {
+
 
 	outpw(CRTC_INDEX, (destscreen.h.fracbits & 0xff00L) + 0xc);
     
@@ -249,8 +249,8 @@ void __far I_FinishUpdate(void)
 //
 // I_ReadMouse
 //
-void __near I_ReadMouse(void)
-{
+void __near I_ReadMouse(void) {
+
     event_t ev;
 
     //
@@ -283,8 +283,8 @@ void __near I_ReadMouse(void)
 }
 
 
-void __near I_StartTic(void)
-{
+void __near I_StartTic(void) {
+
 	uint8_t k;
 	event_t ev;
 	
@@ -400,8 +400,8 @@ void __interrupt I_KeyboardISR(void) {
 // Mouse
 //
 
-int16_t __far I_ResetMouse(void)
-{
+int16_t __far I_ResetMouse(void) {
+
         regs.w.ax = 0; // reset
         intx86 (0x33, &regs, &regs);
         return regs.w.ax;
@@ -489,8 +489,8 @@ void __far I_BeginRead(void) {
 }
 
 // erase disk icon
-void __far I_EndRead(void)
-{
+void __far I_EndRead(void) {
+
     byte __far *src, __far *dest;
 	int8_t y;
 	int16_t oldval;

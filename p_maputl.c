@@ -101,8 +101,7 @@ P_PointOnLineSide16
   	int16_t	y,
 	int16_t linedx,
 	int16_t linedy,
-	int16_t linev1Offset)
-{
+	int16_t linev1Offset) {
     int16_t	dx;
     int16_t	dy;
     fixed_t	left;
@@ -246,8 +245,7 @@ boolean __near P_PointOnDivlineSide ( fixed_t	x, fixed_t	y ) {
 boolean
 P_PointOnDivlineSide16
 (fixed_t_union	x,
-	fixed_t_union	y )
-{
+	fixed_t_union	y ) {
 	fixed_t_union	dx;
 	fixed_t_union	dy;
     fixed_t	left;

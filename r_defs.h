@@ -59,8 +59,7 @@
 //  like some DOOM-alikes ("wt", "WebView") did.
 //
 // 4 bytes, great
-typedef struct
-{
+typedef struct {
     int16_t	x;
     int16_t	y;
     
@@ -76,8 +75,7 @@ struct line_s;
 //
 
 // 16 bytes
-typedef	struct
-{
+typedef	struct {
 
     short_height_t	floorheight;
     short_height_t	ceilingheight;
@@ -105,8 +103,7 @@ typedef	struct
 
 
 // 16 bytes...
-typedef	struct
-{
+typedef	struct {
 
 	int16_t	blockbox[4];
 	// origin for any sounds played by the sector
@@ -138,8 +135,7 @@ typedef struct {
 //
 
 // 8 bytes, great
-typedef struct
-{
+typedef struct {
   
 	// todo remove above
 
@@ -156,8 +152,7 @@ typedef struct
 } side_t; 
 
 
-typedef struct side_render_s
-{
+typedef struct side_render_s {
 	// add this to the calculated texture column
 
 	// add this to the calculated texture top
@@ -186,8 +181,7 @@ typedef int16_t slopetype_t;
 //#define		LINETAG_VALIDCOUNT_MASK		0xC0
 
 // 4 bytes, lineflags was moved out
-typedef struct line_s
-{
+typedef struct line_s {
     // Animation related.
     // theres normally 9 flags here, one is runtime created and not pulled from the wad (?) we put that flag in seenlines bit array
 
@@ -207,8 +201,7 @@ typedef struct line_s
 
 
 
-typedef struct 
-{
+typedef struct  {
 	// Vertices, from v1 to v2.
 	int16_t	v1Offset;										
 	int16_t	v2Offset;	//high two bits are the slopetype	
@@ -238,8 +231,7 @@ typedef struct
 
 
 // 6 bytes. not in an array, who cares..
-typedef struct lineopening_s
-{
+typedef struct lineopening_s {
 	short_height_t		opentop;
 	short_height_t 		openbottom;
 	short_height_t		lowfloor;
@@ -260,8 +252,7 @@ typedef struct lineopening_s
 //
 
 // 4 bytes now, lines mvoed out..
-typedef struct subsector_s
-{
+typedef struct subsector_s {
     int16_t	secnum;   
     int16_t	firstline;
     
@@ -273,8 +264,7 @@ typedef struct subsector_s
 //
 
 // original seg_t replaced with other arrays
-/*typedef struct seg_s
-{
+/*typedef struct seg_s {
  
     int16_t	linedefOffset;
 	uint8_t side;
@@ -310,8 +300,7 @@ typedef struct seg_render_s {
 // BSP node.
 //
 // 8 bytes. ok
-typedef struct node_s
-{
+typedef struct node_s {
     // Partition line.
     int16_t	x;
     int16_t	y;
@@ -325,8 +314,7 @@ typedef struct node_s
 
 
 // 4 bytes
-typedef struct node_children_s
-{
+typedef struct node_children_s {
  
     // If NF_SUBSECTOR its a subsector.
     uint16_t children[2];
@@ -335,8 +323,7 @@ typedef struct node_children_s
 
 
 // 16 bytes, nice
-typedef struct node_render_s
-{
+typedef struct node_render_s {
 	// Bounding box for each child.
 	int16_t	bbox[2][4];
 
@@ -348,8 +335,7 @@ typedef struct node_render_s
 
 
 // posts are runs of non masked source pixels
-typedef struct
-{
+typedef struct {
     byte		topdelta;	// -1 is the last post in a column
     byte		length; 	// length data bytes follows
 } post_t;
@@ -358,8 +344,7 @@ typedef struct
 typedef post_t	column_t;
 
 
-typedef struct 
-{
+typedef struct  {
     uint16_t    pixelofsoffset;
     uint16_t    postofsoffset;
     uint16_t    texturesize;
@@ -390,8 +375,7 @@ typedef byte	lighttable_t;
 //
 // ?
 // padded to 32 bytes each..
-typedef struct drawseg_s
-{
+typedef struct drawseg_s {
 	uint16_t		curseg;
 
 	// start pixel x range
@@ -441,8 +425,7 @@ typedef struct drawseg_s
 // Patches are used for sprites and all masked pictures,
 // and we compose textures from the TEXTURE1/2 lists
 // of patches.
-typedef struct 
-{ 
+typedef struct  { 
     int16_t		width;		// bounding box size 
     int16_t		height; 
     int16_t		leftoffset;	// pixels to the left of origin 
@@ -463,8 +446,7 @@ typedef struct
 // I.e. a sprite object that is partly visible.
 
 // 38 bytes.
-typedef struct vissprite_s
-{
+typedef struct vissprite_s {
     // Doubly linked list.
     uint8_t	next;
     uint8_t	colormap;
@@ -515,8 +497,7 @@ typedef struct vissprite_s
 //
 
 //not really used in engine just gamesetup, who cares if struct sucks
-typedef struct
-{
+typedef struct {
     // If false use 0 for any position.
     // Note: as eight entries are available,
     //  we might as well insert the same name eight times.
@@ -537,8 +518,7 @@ typedef struct
 // A sprite definition:
 //  a number of animation frames.
 //
-typedef struct
-{
+typedef struct {
     uint16_t		spriteframesOffset;
     int8_t			numframes;
 
@@ -546,8 +526,7 @@ typedef struct
 
 
 // 8 bytes... picnum and lightlevel pulled out to their own fields
-typedef struct
-{
+typedef struct {
   fixed_t height;
   int16_t minx;
   int16_t maxx;
@@ -556,8 +535,7 @@ typedef struct
 } visplaneheader_t;
 
 // 2 bytes
-typedef union visplanepiclight_s
-{
+typedef union visplanepiclight_s {
     int16_t pic_and_light;
 
     struct visplanepiclightbytes {
@@ -572,8 +550,7 @@ typedef union visplanepiclight_s
 //
 // Now what is a visplane, anyway?
 // 
-typedef struct
-{
+typedef struct {
     
   // leave pads for [minx-1]/[maxx+1]
 // we want the top and bottom arrays to be at multiples of two bytes. 

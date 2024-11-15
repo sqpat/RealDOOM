@@ -34,8 +34,8 @@
 
 // Text Line widget
 //  (parent of Scrolling Text and Input Text widgets)
-typedef struct
-{
+typedef struct {
+
     // left-justified position of scrolling text window
     int16_t		x;
     int16_t		y;
@@ -53,8 +53,8 @@ typedef struct
 
 // Scrolling Text window widget
 //  (child of Text Line widget)
-typedef struct
-{
+typedef struct {
+
     hu_textline_t	textlines[HU_MAXLINES];	// text lines to draw
     int8_t			height;		// height in lines
     int8_t			currentline;		// current line number
@@ -69,8 +69,8 @@ typedef struct
 
 // Input Text Line widget
 //  (child of Text Line widget)
-typedef struct
-{
+typedef struct {
+
     hu_textline_t	l;		// text line to input on
 
      // left margin past which I am not to delete characters

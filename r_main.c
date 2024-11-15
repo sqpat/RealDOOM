@@ -437,8 +437,7 @@ fixed_t __near R_PointToDist ( int16_t	xarg, int16_t	yarg ){
 //
 
 /*
-fixed_t __near R_ScaleFromGlobalAngle2 (fineangle_t visangle_shift3)
-{
+fixed_t __near R_ScaleFromGlobalAngle2 (fineangle_t visangle_shift3) {
     fixed_t_union		scale;
     fineangle_t			anglea;
     fineangle_t			angleb;
@@ -474,8 +473,7 @@ fixed_t __near R_ScaleFromGlobalAngle2 (fineangle_t visangle_shift3)
     
 }
 
-fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
-{
+fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3) {
     fixed_t a = R_ScaleFromGlobalAngle2(visangle_shift3);
     fixed_t b = R_ScaleFromGlobalAngle3(visangle_shift3);
 
@@ -567,8 +565,7 @@ int32_t fps_rendered_frames_since_last_measure = 0;
 ticcount_t fps_last_measure_start_tic = 0;
 #endif 
 
-void __far R_RenderPlayerView ()
-{	
+void __far R_RenderPlayerView () {	
 
 	#ifdef FPS_DISPLAY
 	int32_t fps_num;

@@ -144,8 +144,7 @@ void __far D_InitStrings() {
 //
 // D_GetCursorColumn
 //
-int16_t __near D_GetCursorColumnRow(void)
-{
+int16_t __near D_GetCursorColumnRow(void) {
 	union REGS regs;
 
 	regs.h.ah = 3;
@@ -159,8 +158,8 @@ int16_t __near D_GetCursorColumnRow(void)
 //
 // D_SetCursorPosition
 //
-void __near D_SetCursorPosition(int16_t columnrow)
-{
+void __near D_SetCursorPosition(int16_t columnrow){
+
 	union REGS regs;
 
 	//regs.h.dh = row;
@@ -174,8 +173,8 @@ void __near D_SetCursorPosition(int16_t columnrow)
 //
 // D_DrawTitle
 //
-void __near D_DrawTitle(int8_t __near *string)
-{
+void __near D_DrawTitle(int8_t __near *string){
+
 	union REGS regs;
 	int16_t_union columnrow;
 	int16_t i;
@@ -416,8 +415,8 @@ void __near makethreecharint(int16_t j, char __far *str ){
 }
 
 
-void __near HU_Init(void)
-{
+void __near HU_Init(void){
+
 
 	int16_t		i;
 	int16_t		j;
@@ -489,8 +488,8 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 
 
 
-void __near AM_loadPics(void)
-{
+void __near AM_loadPics(void){
+
 	int8_t i;
 	int16_t lump;
 	int8_t namebuf[8] = "AMMNUM0";
@@ -538,8 +537,8 @@ int16_t main ( int16_t		argc, int8_t**	argv ) ;
 //
 // G_RecordDemo 
 // 
-void __near G_RecordDemo (int8_t* name) 
-{ 
+void __near G_RecordDemo (int8_t* name) {
+ 
 	int32_t                         maxsize;
     int16_t i;    
     usergame = false; 
@@ -556,8 +555,8 @@ void __near G_RecordDemo (int8_t* name)
 //
 // G_TimeDemo 
 //
-void __near G_TimeDemo (int8_t* name) 
-{        
+void __near G_TimeDemo (int8_t* name) {
+        
     //nodrawers = M_CheckParm ("-nodraw"); 
     noblit = M_CheckParm ("-noblit"); 
     timingdemo = true; 
@@ -1183,12 +1182,15 @@ R_PointToAngle(y, x);
 	if ((p = M_CheckParm("-turbo"))) {
 		int16_t     scale = 200;
 
-		if (p < myargc - 1)
+		if (p < myargc - 1) {
 			scale = atoi(myargv[p + 1]);
-		if (scale < 10)
+		}
+		if (scale < 10) {
 			scale = 10;
-		if (scale > 400)
+		}
+		if (scale > 400) {
 			scale = 400;
+		}
 
 		DEBUG_PRINT("turbo scale: %i%%\n", scale);
 
@@ -1205,7 +1207,6 @@ R_PointToAngle(y, x);
 	}
 
 	if (p && p < myargc - 1) {
-
 		combine_strings(file, myargv[p + 1], ".lmp");
 		DEBUG_PRINT("Playing demo %s.lmp.\n", myargv[p + 1]);
 	}
@@ -1252,8 +1253,9 @@ R_PointToAngle(y, x);
 	DEBUG_PRINT("\nW_Init: Init WADfiles.");
 	numlumps = 0;
 	W_AddFile(wadfile);
-	if (file[0])
+	if (file[0]){
 		W_AddFile(file);
+	}
 
 	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
 	Z_GetEMSPageMap();
@@ -1359,23 +1361,20 @@ R_PointToAngle(y, x);
 	// start the apropriate game based on parms
 	p = M_CheckParm("-record");
 
-	if (p && p < myargc - 1)
-	{
+	if (p && p < myargc - 1) {
 		G_RecordDemo(myargv[p + 1]);
 		autostart = true;
 	}
 
 	p = M_CheckParm("-playdemo");
-	if (p && p < myargc - 1)
-	{
+	if (p && p < myargc - 1) {
 		singledemo = true;              // quit after one demo
 		G_DeferedPlayDemo(myargv[p + 1]);
 		return;
  	}
 
 	p = M_CheckParm("-timedemo");
-	if (p && p < myargc - 1)
-	{
+	if (p && p < myargc - 1) {
 		G_TimeDemo(myargv[p + 1]);
 		return; 
  	}
@@ -1388,12 +1387,12 @@ R_PointToAngle(y, x);
 	}
 
 
-	if (gameaction != ga_loadgame)
-	{
-		if (autostart)
+	if (gameaction != ga_loadgame) {
+		if (autostart){
 			G_InitNew(startskill, startepisode, startmap);
-		else
+		} else {
 			D_StartTitle();                // start up intro loop
+		}
 
 	}
 

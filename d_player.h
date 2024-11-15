@@ -66,8 +66,8 @@ typedef int8_t cheat_t;
 //
 // Extended player object info: player_t
 //
-typedef struct player_s
-{
+typedef struct player_s{
+
     playerstate_t	playerstate;
     ticcmd_t		cmd;
 
@@ -155,8 +155,8 @@ typedef struct player_s
 // INTERMISSION
 // Structure passed e.g. to WI_Start(wb)
 //
-typedef struct
-{
+typedef struct{
+
     boolean	in;	// whether the player is in game
     
     // Player stats, kills, collected items etc.
@@ -167,8 +167,8 @@ typedef struct
   
 } wbplayerstruct_t;
 
-typedef struct
-{
+typedef struct{
+
     int8_t		epsd;	// episode # (0-2)
 
     // if true, splash the secret level

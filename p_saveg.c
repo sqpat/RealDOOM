@@ -35,8 +35,7 @@
 //
 // P_ArchivePlayers
 //
-void P_ArchivePlayers (void)
-{/*
+void P_ArchivePlayers (void) {/*
     int16_t		j;
     player_t*	dest;
 		
@@ -61,8 +60,7 @@ void P_ArchivePlayers (void)
 //
 // P_UnArchivePlayers
 //
-void P_UnArchivePlayers (void)
-{
+void P_UnArchivePlayers (void) {
 	/*
     int16_t		i;
     int16_t		j;
@@ -92,8 +90,7 @@ void P_UnArchivePlayers (void)
 //
 // P_ArchiveWorld
 //
-void P_ArchiveWorld (void)
-{
+void P_ArchiveWorld (void) {
 	/*
     int16_t			i;
     int16_t			j;
@@ -150,8 +147,7 @@ void P_ArchiveWorld (void)
 //
 // P_UnArchiveWorld
 //
-void P_UnArchiveWorld (void)
-{
+void P_UnArchiveWorld (void) {
 	/*
     int16_t			i;
     int16_t			j;
@@ -208,8 +204,7 @@ void P_UnArchiveWorld (void)
 //
 // Thinkers
 //
-typedef enum
-{
+typedef enum {
     tc_end,
     tc_mobj
 
@@ -220,8 +215,7 @@ typedef enum
 //
 // P_ArchiveThinkers
 //
-void P_ArchiveThinkers (void)
-{
+void P_ArchiveThinkers (void) {
 	/*
     THINKERREF		th;
     mobj_t*		mobj;
@@ -260,8 +254,7 @@ void P_ArchiveThinkers (void)
 //
 // P_UnArchiveThinkers
 //
-void P_UnArchiveThinkers (void)
-{
+void P_UnArchiveThinkers (void) {
 	/*
     byte		tclass;
     THINKERREF		currentthinker;
@@ -331,8 +324,7 @@ void P_UnArchiveThinkers (void)
 //
 
 /*
-enum
-{
+enum {
     tc_ceiling,
     tc_door,
     tc_floor,
@@ -357,8 +349,7 @@ enum
 // T_Glow, (glow_t: sector_t *),
 // T_PlatRaise, (plat_t: sector_t *), - active list
 //
-void P_ArchiveSpecials (void)
-{
+void P_ArchiveSpecials (void) {
 	/*
     THINKERREF		th;
     ceiling_t*		ceiling;

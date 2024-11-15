@@ -42,12 +42,11 @@
 
 
 
-void __near wipe_shittyColMajorXform ( int16_t __far*	array ) {
+void __near wipe_shittyColMajorXform ( segment_t array_segment ) {
     uint16_t		x;
     uint16_t		y;
     int16_t __far*	dest = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
-	
-	Z_QuickMapScratch_5000();
+	int16_t __far*	array = MK_FP(array_segment, 0);
 
     for(y=0;y<SCREENHEIGHT;y++){
 		for (x = 0; x < SCREENWIDTHOVER2; x++) {
@@ -80,8 +79,10 @@ int16_t __near wipe_initMelt (){
 
     // makes this wipe faster (in theory)
     // to have stuff in column-major format
-    wipe_shittyColMajorXform((int16_t __far*)screen2);
-    wipe_shittyColMajorXform((int16_t __far*)screen3);
+	Z_QuickMapScratch_5000(); // prep 5000 block for this..
+    
+	wipe_shittyColMajorXform(screen2_segment);
+    wipe_shittyColMajorXform(screen3_segment);
     
     // setup initial column positions
     // (y<0 => not ready to scroll yet)
@@ -174,10 +175,11 @@ int16_t __near wipe_doMelt2 ( int16_t	ticks ) {
 // I_ReadScreen
 // Reads the screen currently displayed into a linear buffer.
 //
-void __near I_ReadScreen(byte __far *scr) {
+// todo move this to asm
+void __near I_ReadScreen(segment_t scr_segment) {
 	uint16_t i;
 	uint16_t j;
-
+	byte __far* scr = MK_FP(scr_segment, 0);
 
 	outp(GC_INDEX, GC_READMAP);
     for (i = 0; i < 4; i++) {
@@ -194,7 +196,7 @@ int16_t __far wipe_StartScreen( ) {
 	Z_QuickMapWipe();
 
 	//wipe_scr_start = screen2;
-    I_ReadScreen(screen2);
+    I_ReadScreen(screen2_segment);
 
 
 
@@ -226,7 +228,7 @@ void __far wipe_WipeLoop(){
 	Z_QuickMapWipe();
 	//wipe_EndScreen();
 	//wipe_scr_end = screen3;
-    I_ReadScreen(screen3);
+    I_ReadScreen(screen3_segment);
     
 
 

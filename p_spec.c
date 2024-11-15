@@ -865,8 +865,7 @@ void __near P_PlayerInSpecialSector () {
 //
 
 
-void __near P_UpdateSpecials(void)
-{
+void __near P_UpdateSpecials(void) {
 	p_spec_anim_t __near*	anim;
 	uint16_t		pic;
 	int16_t		i;
@@ -1060,8 +1059,7 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
 
 
 // Parses command line parameters.
-void __far P_SpawnSpecials(void)
-{
+void __far P_SpawnSpecials(void) {
 	int16_t		i;
 	int8_t		episode;
 

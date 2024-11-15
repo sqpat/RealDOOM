@@ -963,8 +963,8 @@ uint16_t hu_font[HU_FONTSIZE]  ={ 8468,
 };
 
 
-uint8_t	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
-{
+uint8_t	mapnames[] = {// DOOM shareware/registered/retail (Ultimate) names. 
+
 
 	HUSTR_E1M1 - title_string_offset,
 	HUSTR_E1M2 - title_string_offset,
@@ -1017,8 +1017,8 @@ uint8_t	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
 	NEWLEVELMSG - title_string_offset
 };
 
-uint8_t	mapnames2[] =	// DOOM 2 map names.
-{
+uint8_t	mapnames2[] = { // DOOM 2 map names. 
+
 	HUSTR_1 - title_string_offset,
 	HUSTR_2 - title_string_offset,
 	HUSTR_3 - title_string_offset,
@@ -1056,8 +1056,8 @@ uint8_t	mapnames2[] =	// DOOM 2 map names.
 };
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
-uint8_t	mapnamesp[] =	// Plutonia WAD map names.
-{
+uint8_t	mapnamesp[] =	// Plutonia WAD map names. {
+
 	PHUSTR_1 - title_string_offset,
 	PHUSTR_2 - title_string_offset,
 	PHUSTR_3 - title_string_offset,
@@ -1095,8 +1095,8 @@ uint8_t	mapnamesp[] =	// Plutonia WAD map names.
 };
 
 
-uint8_t mapnamest[] =	// TNT WAD map names.
-{
+uint8_t mapnamest[] =	// TNT WAD map names. {
+
 	THUSTR_1 - title_string_offset,
 	THUSTR_2 - title_string_offset,
 	THUSTR_3 - title_string_offset,
@@ -1519,15 +1519,15 @@ volatile int32_t TS_TimesInInterrupt;
 int8_t TS_Installed = false;
 volatile int32_t TS_InInterrupt = false;
 
-int8_t NUMANIMS[NUMEPISODES_FOR_ANIMS] =
-{
+int8_t NUMANIMS[NUMEPISODES_FOR_ANIMS] = {
+
     10,
     9,
     6
 };
 
-wianim_t __far*wianims[NUMEPISODES_FOR_ANIMS] =
-{
+wianim_t __far*wianims[NUMEPISODES_FOR_ANIMS] = {
+
     epsd0animinfo,
     epsd1animinfo,
     epsd2animinfo
@@ -1621,8 +1621,8 @@ THINKERREF	activeceilings[MAXCEILINGS];
 THINKERREF		activeplats[MAXPLATS];
 
 
-weaponinfo_t	weaponinfo[NUMWEAPONS] =
-{
+weaponinfo_t	weaponinfo[NUMWEAPONS] = {
+
     {
 		// fist
 		am_noammo,
@@ -1727,14 +1727,14 @@ boolean brainspit_easy = 0;
 //
 // P_NewChaseDir related LUT.
 //
-dirtype_t opposite[] =
-{
+dirtype_t opposite[] = {
+
   DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST,
   DI_EAST, DI_NORTHEAST, DI_NORTH, DI_NORTHWEST, DI_NODIR
 };
 
-dirtype_t diags[] =
-{
+dirtype_t diags[] = {
+
     DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
 };
 
@@ -2199,13 +2199,13 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(SCREEN1_LOGICAL_PAGE + 3), PAGE_9C00_OFFSET,
 
 	_EPR(SCREEN3_LOGICAL_PAGE + 0), PAGE_6000_OFFSET,
-	_EPR(SCREEN3_LOGICAL_PAGE + 1), PAGE_6400_OFFSET, // shared with visplanes
+	_EPR(SCREEN3_LOGICAL_PAGE + 1), PAGE_6400_OFFSET, // shared with visplanes. TODO: this works because no level starting screen ever goes beyond 50 visplanes. However, savegames might be problematic...
 	_EPR(SCREEN3_LOGICAL_PAGE + 2), PAGE_6800_OFFSET, // shared with visplanes
 	_EPR(SCREEN3_LOGICAL_PAGE + 3), PAGE_6C00_OFFSET, // shared with visplanes
 	_EPR(SCREEN2_LOGICAL_PAGE + 0), PAGE_7000_OFFSET,
 	_EPR(SCREEN2_LOGICAL_PAGE + 1), PAGE_7400_OFFSET,
 	_EPR(SCREEN2_LOGICAL_PAGE + 2), PAGE_7800_OFFSET,
-	_EPR(SCREEN2_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
+	_EPR(SCREEN2_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET, // fwipe_ycolumns_segment here, fwipe_mul160lookup_segment too
 	//FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,
 	
 
