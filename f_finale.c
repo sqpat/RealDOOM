@@ -375,6 +375,7 @@ void __near F_TextWrite (void) {
 		}
 	 
     }
+	//6000, 7000-8000, 9c00
 	Z_QuickMapStatus();	
 
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
@@ -391,7 +392,7 @@ void __near F_TextWrite (void) {
 	}
     for ( ; count ; count-- ) {
 		c = *ch++;
-		if (!c){
+		if (!c) {
 			break;
 		}
 		if (c == '\n') {
@@ -407,7 +408,7 @@ void __near F_TextWrite (void) {
 		}
 			
 		w =  (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
-		if (cx+w > SCREENWIDTH){
+		if (cx+w > SCREENWIDTH) {
 			break;
 		}
 		V_DrawPatch(cx, cy, 0, (patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]));
@@ -575,6 +576,8 @@ void __near F_CastPrint (int8_t* text) {
     int16_t		w;
     int16_t		width;
     
+	// needed for text letter graphics lumps
+	Z_QuickMapStatus();
     // find width
     ch = text;
     width = 0;
@@ -614,6 +617,7 @@ void __near F_CastPrint (int8_t* text) {
 		cx+=w;
     }
 	
+	Z_QuickMapPhysics(); // restore wad lumps...
 }
 
 
@@ -770,7 +774,7 @@ void __near F_BunnyScroll (void) {
 		W_CacheLumpNameDirect("END0", (byte __far*)patch);
 		V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
 		finale_laststage = 0;
-		Z_QuickMapStatus();
+
 		return;
     }
 	
@@ -789,7 +793,7 @@ void __near F_BunnyScroll (void) {
     combine_strings(name,"END", stagestring);
 	W_CacheLumpNameDirect(name, (byte __far*)patch);
 	V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
-	Z_QuickMapStatus();
+
 
 }
 
@@ -799,12 +803,13 @@ void __near F_BunnyScroll (void) {
 //
 void __far F_Drawer (void) {
     if (finalestage == 2) {
-		F_CastDrawer ();
+		F_CastDrawer ();  // F_CastDrawer calls F_CastPrint which restores physics quickmap
 		return;
     }
 	
 	if (!finalestage) {
 		F_TextWrite();
+		Z_QuickMapPhysics();
 	} else {
 		switch (gameepisode) {
 		  case 1:
@@ -820,6 +825,7 @@ void __far F_Drawer (void) {
 				break;
 		  case 3:
 				F_BunnyScroll ();
+				Z_QuickMapPhysics();
 				break;
 		  case 4:
 				V_DrawFullscreenPatch("ENDPIC", 0);
@@ -827,6 +833,7 @@ void __far F_Drawer (void) {
 		}
     }
 			
+	
 }
 
 

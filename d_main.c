@@ -733,9 +733,7 @@ void __near D_Display (void) {
 		break;
 
       case GS_FINALE:
-		Z_QuickMapStatus();
         F_Drawer ();
-		Z_QuickMapPhysics();
         break;
 
       case GS_DEMOSCREEN:

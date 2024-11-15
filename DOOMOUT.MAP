@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/14 17:06:54
+Created on:       24/11/15 10:18:08
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -37,24 +37,24 @@ i_main_TEXT            CODE           AUTO           0279:0000       00000012
 i_quit_TEXT            CODE           AUTO           0279:0020       00000286
 i_ibm_TEXT             CODE           AUTO           0279:02b0       000004a1
 i_sound_TEXT           CODE           AUTO           0279:0760       0000008b
-d_main_TEXT            CODE           AUTO           0279:07f0       00000ef6
-d_net_TEXT             CODE           AUTO           0279:16f0       00000104
-g_game_TEXT            CODE           AUTO           0279:1800       00000bc7
-m_misc_TEXT            CODE           AUTO           0279:23d0       00000061
-am_map_TEXT            CODE           AUTO           0279:2440       0000123d
-st_stuff_TEXT          CODE           AUTO           0279:3680       00000b6a
-hu_stuff_TEXT          CODE           AUTO           0279:41f0       000001cc
-hu_lib_TEXT            CODE           AUTO           0279:43c0       000001ac
-m_menu_TEXT            CODE           AUTO           0279:4570       0000136e
-sounds_TEXT            CODE           AUTO           0279:58e0       00000000
-f_wipe_TEXT            CODE           AUTO           0279:58e0       00000277
-D_ALGO_TEXT            CODE           AUTO           0279:5b58       00000199
-dmx_TEXT               CODE           AUTO           0279:5d00       000001f4
-dutils_TEXT            CODE           AUTO           0279:5f00       0000008b
-wi_stuff_TEXT          CODE           AUTO           0279:5f90       00000f26
-MEMORY_TEXT            CODE           AUTO           0279:6eb6       00000000
-MATH_TEXT              CODE           AUTO           0279:6eb6       000007dc
-f_finale_TEXT          CODE           AUTO           0279:76a0       00000c0d
+d_main_TEXT            CODE           AUTO           0279:07f0       00000eec
+d_net_TEXT             CODE           AUTO           0279:16e0       00000104
+g_game_TEXT            CODE           AUTO           0279:17f0       00000bc7
+m_misc_TEXT            CODE           AUTO           0279:23c0       00000061
+am_map_TEXT            CODE           AUTO           0279:2430       0000123d
+st_stuff_TEXT          CODE           AUTO           0279:3670       00000b6a
+hu_stuff_TEXT          CODE           AUTO           0279:41e0       000001cc
+hu_lib_TEXT            CODE           AUTO           0279:43b0       000001ac
+m_menu_TEXT            CODE           AUTO           0279:4560       0000136e
+sounds_TEXT            CODE           AUTO           0279:58d0       00000000
+f_wipe_TEXT            CODE           AUTO           0279:58d0       00000277
+D_ALGO_TEXT            CODE           AUTO           0279:5b48       00000199
+dmx_TEXT               CODE           AUTO           0279:5cf0       000001f4
+dutils_TEXT            CODE           AUTO           0279:5ef0       0000008b
+wi_stuff_TEXT          CODE           AUTO           0279:5f80       00000f26
+MEMORY_TEXT            CODE           AUTO           0279:6ea6       00000000
+MATH_TEXT              CODE           AUTO           0279:6ea6       000007dc
+f_finale_TEXT          CODE           AUTO           0279:7690       00000c11
 g_setup_TEXT           CODE           AUTO           0279:82b0       000002a8
 r_setup_TEXT           CODE           AUTO           0279:8560       00000432
 st_setup_TEXT          CODE           AUTO           0279:89a0       000001fa
@@ -794,245 +794,245 @@ Module: d_main.obj(C:\REALDOOM\d_main.c)
 0279:1102      D_StartTitle_
 0279:1112      I_UpdateNoBlit_
 0279:120c+     D_Display_
-0279:146c+     G_BeginRecording_
-0279:14ea      D_PageTicker_
-0279:14fc+     D_PageDrawer_
-0279:1520      D_DoAdvanceDemo_
-0279:162e+     Z_ClearDeadCode_
-0279:1674      D_DoomMain_
-0279:167c*     D_DoomLoop_
+0279:1462+     G_BeginRecording_
+0279:14e0      D_PageTicker_
+0279:14f2+     D_PageDrawer_
+0279:1516      D_DoAdvanceDemo_
+0279:1624+     Z_ClearDeadCode_
+0279:166a      D_DoomMain_
+0279:1672*     D_DoomLoop_
 Module: d_net.obj(C:\REALDOOM\d_net.c)
-0279:16f0      NetUpdate_
-0279:1752      TryRunTics_
+0279:16e0      NetUpdate_
+0279:1742      TryRunTics_
 Module: g_game.obj(C:\REALDOOM\g_game.c)
-0279:1800      R_FlatNumForName_
-0279:180a      R_TextureNumForName_
-0279:1830      G_BuildTiccmd_
-0279:1c0c      G_Responder_
-0279:1d88*     G_DoWorldDone_
-0279:1da4+     G_DoNewGame_
-0279:1df6      G_Ticker_
-0279:1f22+     G_PlayerFinishLevel_
-0279:1f74      G_PlayerReborn_
-0279:1fea      G_ExitLevel_
-0279:1ff6      G_SecretExitLevel_
-0279:2008      G_LoadGame_
-0279:2028+     G_DoCompleted_
-0279:20fc*     G_DoSaveGame_
-0279:20fc*     G_DoLoadGame_
-0279:21a8      G_SaveGame_
-0279:21be      G_DeferedInitNew_
-0279:21d0+     G_ReadDemoTiccmd_
-0279:2222+     G_WriteDemoTiccmd_
-0279:2290      G_DeferedPlayDemo_
-0279:229a+     G_DoPlayDemo_
-0279:2322      G_CheckDemoStatus_
+0279:17f0      R_FlatNumForName_
+0279:17fa      R_TextureNumForName_
+0279:1820      G_BuildTiccmd_
+0279:1bfc      G_Responder_
+0279:1d78*     G_DoWorldDone_
+0279:1d94+     G_DoNewGame_
+0279:1de6      G_Ticker_
+0279:1f12+     G_PlayerFinishLevel_
+0279:1f64      G_PlayerReborn_
+0279:1fda      G_ExitLevel_
+0279:1fe6      G_SecretExitLevel_
+0279:1ff8      G_LoadGame_
+0279:2018+     G_DoCompleted_
+0279:20ec*     G_DoSaveGame_
+0279:20ec*     G_DoLoadGame_
+0279:2198      G_SaveGame_
+0279:21ae      G_DeferedInitNew_
+0279:21c0+     G_ReadDemoTiccmd_
+0279:2212+     G_WriteDemoTiccmd_
+0279:2280      G_DeferedPlayDemo_
+0279:228a+     G_DoPlayDemo_
+0279:2312      G_CheckDemoStatus_
 Module: m_misc.obj(C:\REALDOOM\m_misc.c)
-0279:23d0      M_Random_
-0279:23ec      M_AddToBox16_
-0279:2416      M_WriteFile_
+0279:23c0      M_Random_
+0279:23dc      M_AddToBox16_
+0279:2406      M_WriteFile_
 Module: am_map.obj(C:\REALDOOM\am_map.c)
-0279:2440*     MTOF16_
-0279:2454*     CXMTOF16_
-0279:246c*     CYMTOF16_
-0279:248c+     AM_activateNewScale_
-0279:24f2+     AM_restoreScaleAndLoc_
-0279:2582+     AM_addMark_
-0279:25b8+     AM_findMinMaxBoundaries_
-0279:2690+     AM_changeWindowLoc_
-0279:271e+     AM_initVariables_
-0279:27ba*     AM_clearMarks_
-0279:27da+     AM_LevelInit_
-0279:2852      AM_Stop_
-0279:2860+     AM_Start_
-0279:28a0+     AM_minOutWindowScale_
-0279:28ca+     AM_maxOutWindowScale_
-0279:28f4      AM_Responder_
-0279:2ca0+     AM_changeWindowScale_
-0279:2d16+     AM_doFollowPlayer_
-0279:2da8      AM_Ticker_
-0279:2dd2+     DOOUTCODE_
-0279:2df6+     AM_clipMline_
-0279:301e+     AM_drawMline_
-0279:30f6+     AM_drawGrid_
-0279:31b6+     AM_drawWalls_
-0279:337c+     AM_rotate_
-0279:33e8+     AM_drawLineCharacter_
-0279:34a4+     AM_drawPlayers_
-0279:350a+     AM_drawThings_
-0279:357c+     AM_drawMarks_
-0279:3612*     AM_drawCrosshair_
-0279:3622      AM_Drawer_
+0279:2430*     MTOF16_
+0279:2444*     CXMTOF16_
+0279:245c*     CYMTOF16_
+0279:247c+     AM_activateNewScale_
+0279:24e2+     AM_restoreScaleAndLoc_
+0279:2572+     AM_addMark_
+0279:25a8+     AM_findMinMaxBoundaries_
+0279:2680+     AM_changeWindowLoc_
+0279:270e+     AM_initVariables_
+0279:27aa*     AM_clearMarks_
+0279:27ca+     AM_LevelInit_
+0279:2842      AM_Stop_
+0279:2850+     AM_Start_
+0279:2890+     AM_minOutWindowScale_
+0279:28ba+     AM_maxOutWindowScale_
+0279:28e4      AM_Responder_
+0279:2c90+     AM_changeWindowScale_
+0279:2d06+     AM_doFollowPlayer_
+0279:2d98      AM_Ticker_
+0279:2dc2+     DOOUTCODE_
+0279:2de6+     AM_clipMline_
+0279:300e+     AM_drawMline_
+0279:30e6+     AM_drawGrid_
+0279:31a6+     AM_drawWalls_
+0279:336c+     AM_rotate_
+0279:33d8+     AM_drawLineCharacter_
+0279:3494+     AM_drawPlayers_
+0279:34fa+     AM_drawThings_
+0279:356c+     AM_drawMarks_
+0279:3602*     AM_drawCrosshair_
+0279:3612      AM_Drawer_
 Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
-0279:3680+     ST_refreshBackground_
-0279:36c4      ST_Responder_
-0279:3b18+     ST_calcPainOffset_
-0279:3b5a+     ST_updateFaceWidget_
-0279:3db4+     ST_updateWidgets_
-0279:3df8      ST_Ticker_
-0279:3e0a+     ST_doPaletteStuff_
-0279:3e92*     STlib_updateflag_
-0279:3ea6+     STlib_updateMultIcon_
-0279:3f68+     STlib_drawNum_
-0279:4076+     STlib_updatePercent_
-0279:40b0+     ST_drawWidgets_
-0279:418a      ST_Drawer_
+0279:3670+     ST_refreshBackground_
+0279:36b4      ST_Responder_
+0279:3b08+     ST_calcPainOffset_
+0279:3b4a+     ST_updateFaceWidget_
+0279:3da4+     ST_updateWidgets_
+0279:3de8      ST_Ticker_
+0279:3dfa+     ST_doPaletteStuff_
+0279:3e82*     STlib_updateflag_
+0279:3e96+     STlib_updateMultIcon_
+0279:3f58+     STlib_drawNum_
+0279:4066+     STlib_updatePercent_
+0279:40a0+     ST_drawWidgets_
+0279:417a      ST_Drawer_
 Module: hu_stuff.obj(C:\REALDOOM\hu_stuff.c)
-0279:41f0      HU_Drawer_
-0279:427a      HU_Erase_
-0279:42c2      HU_Ticker_
-0279:4362      HU_Responder_
+0279:41e0      HU_Drawer_
+0279:426a      HU_Erase_
+0279:42b2      HU_Ticker_
+0279:4352      HU_Responder_
 Module: hu_lib.obj(C:\REALDOOM\hu_lib.c)
-0279:43c0      HUlib_addStringToTextLine_
-0279:4410      HUlib_drawTextLine_
-0279:448e      HUlib_eraseTextLine_
-0279:4506      HUlib_addMessageToSText_
+0279:43b0      HUlib_addStringToTextLine_
+0279:4400      HUlib_drawTextLine_
+0279:447e      HUlib_eraseTextLine_
+0279:44f6      HUlib_addMessageToSText_
 Module: m_menu.obj(C:\REALDOOM\m_menu.c)
-0279:4570      M_GetMenuPatch_
-0279:45ae      M_DrawLoad_
-0279:4614+     M_DrawSaveLoadBorder_
-0279:467e      M_LoadSelect_
-0279:46a8      M_LoadGame_
-0279:46b4+     M_ReadSaveStrings_
-0279:4722      M_DrawSave_
-0279:47bc+     M_DoSave_
-0279:47e6      M_SaveSelect_
-0279:4866      M_SaveGame_
-0279:48b2*     M_QuickSaveResponse_
-0279:48ba*     M_QuickSave_
-0279:48ce*     M_QuickLoadResponse_
-0279:48d6*     M_QuickLoad_
-0279:48ea      M_DrawReadThis1_
-0279:48fc      M_DrawReadThis2_
-0279:490e      M_DrawReadThisRetail_
-0279:4920      M_DrawSound_
-0279:496e      M_Sound_
-0279:497c      M_SfxVol_
-0279:49b0      M_MusicVol_
-0279:49e4      M_DrawMainMenu_
-0279:4a00      M_DrawNewGame_
-0279:4a32      M_NewGame_
-0279:4a54      M_DrawEpisode_
-0279:4a70+     M_VerifyNightmare_
-0279:4a94      M_ChooseSkill_
-0279:4ae2      M_Episode_
-0279:4b36      M_DrawOptions_
-0279:4bd6      M_Options_
-0279:4be4      M_ChangeMessages_
-0279:4c08+     M_EndGameResponse_
-0279:4c26      M_EndGame_
-0279:4c66      M_ReadThis_
-0279:4c6e      M_ReadThis2_
-0279:4c88      M_FinishReadThis_
-0279:4c96+     M_QuitResponse_
-0279:4cda      M_QuitDOOM_
-0279:4d80      M_ChangeSensitivity_
-0279:4da8      M_ChangeDetail_
-0279:4df8      M_SizeDisplay_
-0279:4e38+     M_DrawThermo_
-0279:4ebc+     M_StartMessage_
-0279:4efa+     M_StringWidth_
-0279:4f5c+     M_StringHeight_
-0279:4fa2+     M_WriteText_
-0279:5022      M_Responder_
-0279:56d2      M_StartControlPanel_
-0279:56ec      M_Drawer_
-0279:58b0*     M_SetupNextMenu_
-0279:58c0      M_Ticker_
+0279:4560      M_GetMenuPatch_
+0279:459e      M_DrawLoad_
+0279:4604+     M_DrawSaveLoadBorder_
+0279:466e      M_LoadSelect_
+0279:4698      M_LoadGame_
+0279:46a4+     M_ReadSaveStrings_
+0279:4712      M_DrawSave_
+0279:47ac+     M_DoSave_
+0279:47d6      M_SaveSelect_
+0279:4856      M_SaveGame_
+0279:48a2*     M_QuickSaveResponse_
+0279:48aa*     M_QuickSave_
+0279:48be*     M_QuickLoadResponse_
+0279:48c6*     M_QuickLoad_
+0279:48da      M_DrawReadThis1_
+0279:48ec      M_DrawReadThis2_
+0279:48fe      M_DrawReadThisRetail_
+0279:4910      M_DrawSound_
+0279:495e      M_Sound_
+0279:496c      M_SfxVol_
+0279:49a0      M_MusicVol_
+0279:49d4      M_DrawMainMenu_
+0279:49f0      M_DrawNewGame_
+0279:4a22      M_NewGame_
+0279:4a44      M_DrawEpisode_
+0279:4a60+     M_VerifyNightmare_
+0279:4a84      M_ChooseSkill_
+0279:4ad2      M_Episode_
+0279:4b26      M_DrawOptions_
+0279:4bc6      M_Options_
+0279:4bd4      M_ChangeMessages_
+0279:4bf8+     M_EndGameResponse_
+0279:4c16      M_EndGame_
+0279:4c56      M_ReadThis_
+0279:4c5e      M_ReadThis2_
+0279:4c78      M_FinishReadThis_
+0279:4c86+     M_QuitResponse_
+0279:4cca      M_QuitDOOM_
+0279:4d70      M_ChangeSensitivity_
+0279:4d98      M_ChangeDetail_
+0279:4de8      M_SizeDisplay_
+0279:4e28+     M_DrawThermo_
+0279:4eac+     M_StartMessage_
+0279:4eea+     M_StringWidth_
+0279:4f4c+     M_StringHeight_
+0279:4f92+     M_WriteText_
+0279:5012      M_Responder_
+0279:56c2      M_StartControlPanel_
+0279:56dc      M_Drawer_
+0279:58a0*     M_SetupNextMenu_
+0279:58b0      M_Ticker_
 Module: f_wipe.obj(C:\REALDOOM\f_wipe.c)
-0279:58e0+     wipe_shittyColMajorXform_
-0279:596a+     wipe_initMelt_
-0279:5a3c+     I_ReadScreen_
-0279:5a98      wipe_StartScreen_
-0279:5aac      wipe_WipeLoop_
+0279:58d0+     wipe_shittyColMajorXform_
+0279:595a+     wipe_initMelt_
+0279:5a2c+     I_ReadScreen_
+0279:5a88      wipe_StartScreen_
+0279:5a9c      wipe_WipeLoop_
 Module: d_algo.obj(d_algo.ASM)
-0279:5cd5      hackDSBack_
-0279:5b58      wipe_doMelt_
-0279:5cac      resetDS_
-0279:5cb4      hackDS_
+0279:5cc5      hackDSBack_
+0279:5b48      wipe_doMelt_
+0279:5c9c      resetDS_
+0279:5ca4      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
-0279:5d00      TS_FreeTaskList_
-0279:5d02      TS_SetClockSpeed_
-0279:5d4c+     TS_SetTimer_
-0279:5d76      TS_SetTimerToMaxTaskRate_
-0279:5d86+     TS_ServiceScheduleIntEnabled_
-0279:5e70+     TS_Startup_
-0279:5ebc      TS_ScheduleTask_
-0279:5eea      TS_Dispatch_
+0279:5cf0      TS_FreeTaskList_
+0279:5cf2      TS_SetClockSpeed_
+0279:5d3c+     TS_SetTimer_
+0279:5d66      TS_SetTimerToMaxTaskRate_
+0279:5d76+     TS_ServiceScheduleIntEnabled_
+0279:5e60+     TS_Startup_
+0279:5eac      TS_ScheduleTask_
+0279:5eda      TS_Dispatch_
 Module: dutils.obj(C:\REALDOOM\dutils.c)
-0279:5f00      cht_CheckCheat_
-0279:5f58      cht_GetParam_
+0279:5ef0      cht_CheckCheat_
+0279:5f48      cht_GetParam_
 Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
-0279:5f90*     WI_GetPatch_
-0279:5fa2*     WI_GetAnimPatch_
-0279:5fb4+     maketwocharint_
-0279:5fda+     WI_slamBackground_
-0279:6012+     WI_drawLF_
-0279:6078+     WI_drawEL_
-0279:60cc+     WI_drawOnLnode_
-0279:61ae+     WI_updateAnimatedBack_
-0279:62d6+     WI_drawAnimatedBack_
-0279:6358+     WI_drawNum_
-0279:6432+     WI_drawPercent_
-0279:6476+     WI_drawTime_
-0279:651e*     WI_initNoState_
-0279:6530*     WI_initShowNextLoc_
-0279:6544+     WI_updateShowNextLoc_
-0279:6576*     WI_drawNoState_
-0279:657c+     WI_drawShowNextLoc_
-0279:65f6*     WI_initStats_
-0279:661e+     WI_initAnimatedBack_
-0279:66a0+     WI_updateStats_
-0279:68a6+     WI_drawStats_
-0279:69c0*     WI_checkForAccelerate_
-0279:6a00+     WI_loadData_
-0279:6bf6*     WI_End_
-0279:6bf6*     WI_unloadData_
-0279:6bfc+     WI_updateNoState_
-0279:6c0c*     G_WorldDone_
-0279:6c30      WI_Ticker_
-0279:6c88      WI_Drawer_
-0279:6cba+     WI_initVariables_
-0279:6d16+     WI_Init_
-0279:6e94      WI_Start_
+0279:5f80*     WI_GetPatch_
+0279:5f92*     WI_GetAnimPatch_
+0279:5fa4+     maketwocharint_
+0279:5fca+     WI_slamBackground_
+0279:6002+     WI_drawLF_
+0279:6068+     WI_drawEL_
+0279:60bc+     WI_drawOnLnode_
+0279:619e+     WI_updateAnimatedBack_
+0279:62c6+     WI_drawAnimatedBack_
+0279:6348+     WI_drawNum_
+0279:6422+     WI_drawPercent_
+0279:6466+     WI_drawTime_
+0279:650e*     WI_initNoState_
+0279:6520*     WI_initShowNextLoc_
+0279:6534+     WI_updateShowNextLoc_
+0279:6566*     WI_drawNoState_
+0279:656c+     WI_drawShowNextLoc_
+0279:65e6*     WI_initStats_
+0279:660e+     WI_initAnimatedBack_
+0279:6690+     WI_updateStats_
+0279:6896+     WI_drawStats_
+0279:69b0*     WI_checkForAccelerate_
+0279:69f0+     WI_loadData_
+0279:6be6*     WI_End_
+0279:6be6*     WI_unloadData_
+0279:6bec+     WI_updateNoState_
+0279:6bfc*     G_WorldDone_
+0279:6c20      WI_Ticker_
+0279:6c78      WI_Drawer_
+0279:6caa+     WI_initVariables_
+0279:6d06+     WI_Init_
+0279:6e84      WI_Start_
 Module: math.obj(math.ASM)
-0279:728f      FastDiv32u16u_
-0279:6fbe      FixedMulTrigNoShift_
-0279:70a0      FastMul16u32u_
-0279:7200      FixedDiv_
-0279:7009*     FixedMulTrig16_
-0279:70b5      div48_32_
-0279:7345*     FastDiv3232_RPTA_
-0279:7564*     div48_32_whole_
-0279:7023      FastMulTrig16_
-0279:704c      FixedMulTrigSpeed_
-0279:7091*     FixedMul16u32u_
-0279:72ad      FastDiv3216u_
-0279:7431      FastDiv3232_
-0279:74ef      FixedDivWholeA_
-0279:6fba      FixedMulTrig_
-0279:6f7a      FixedMul1632_
-0279:6f39      FixedMul2432_
-0279:6eef      FixedMul2424_
-0279:6eb6      FixedMul_
-0279:7314      FastDiv3232_shift_3_8_
-0279:7068      FixedMulBig1632_
-0279:707c      FixedMul16u32_
-0279:7050      FixedMulTrigSpeedNoShift_
+0279:727f      FastDiv32u16u_
+0279:6fae      FixedMulTrigNoShift_
+0279:7090      FastMul16u32u_
+0279:71f0      FixedDiv_
+0279:6ff9*     FixedMulTrig16_
+0279:70a5      div48_32_
+0279:7335*     FastDiv3232_RPTA_
+0279:7554*     div48_32_whole_
+0279:7013      FastMulTrig16_
+0279:703c      FixedMulTrigSpeed_
+0279:7081*     FixedMul16u32u_
+0279:729d      FastDiv3216u_
+0279:7421      FastDiv3232_
+0279:74df      FixedDivWholeA_
+0279:6faa      FixedMulTrig_
+0279:6f6a      FixedMul1632_
+0279:6f29      FixedMul2432_
+0279:6edf      FixedMul2424_
+0279:6ea6      FixedMul_
+0279:7304      FastDiv3232_shift_3_8_
+0279:7058      FixedMulBig1632_
+0279:706c      FixedMul16u32_
+0279:7040      FixedMulTrigSpeedNoShift_
 Module: f_finale.obj(C:\REALDOOM\f_finale.c)
-0279:76a0+     V_DrawPatchFlipped_
-0279:779a      F_StartFinale_
-0279:786a      F_Responder_
-0279:7878      F_Ticker_
-0279:7918+     F_TextWrite_
-0279:7a3a+     F_StartCast_
-0279:7aa6+     F_CastTicker_
-0279:7dba+     F_CastResponder_
-0279:7e50+     F_CastPrint_
-0279:7f06+     F_CastDrawer_
-0279:7fb8+     F_DrawPatchCol_
-0279:802e+     F_BunnyScroll_
-0279:823e      F_Drawer_
+0279:7690+     V_DrawPatchFlipped_
+0279:778a      F_StartFinale_
+0279:785a      F_Responder_
+0279:7868      F_Ticker_
+0279:7908+     F_TextWrite_
+0279:7a2a+     F_StartCast_
+0279:7a96+     F_CastTicker_
+0279:7daa+     F_CastResponder_
+0279:7e40+     F_CastPrint_
+0279:7efa+     F_CastDrawer_
+0279:7fac+     F_DrawPatchCol_
+0279:8022+     F_BunnyScroll_
+0279:8228      F_Drawer_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 0279:82b0      R_CheckTextureNumForName_
 0279:831a      G_DoLoadLevel_
@@ -1718,4 +1718,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000258e0 (153824.)
 Entry point address: 1e3a:217c
-Link time: 00:00.20
+Link time: 00:00.74
