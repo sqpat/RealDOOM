@@ -823,6 +823,7 @@ This area used during intermission task
 // 9163:0000
 //#define skytexture_post_bytes ((byte __far*) MAKE_FULL_SEGMENT(distscale, size_distscale))
 //#define skytexture_post_segment    ((uint16_t) ((int32_t)skytexture_post_bytes >> 16))
+// FREEBYTES ~ 8k free in drawskyplane still?
 
 // 32768 bytes
 //  9400:0000

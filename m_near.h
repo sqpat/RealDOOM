@@ -157,7 +157,7 @@
 #define cacheddistance_segment_storage  (*((segment_t __near*)           (_NULL_OFFSET + 0x0116)))
 #define cachedxstep_segment_storage     (*((segment_t __near*)           (_NULL_OFFSET + 0x0118)))
 #define cachedystep_segment_storage     (*((segment_t __near*)           (_NULL_OFFSET + 0x011A)))
-
+#define pspriteiscale                   (*((fixed_t   __near*)           (_NULL_OFFSET + 0x011C)))
 
 
 //#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0110)))
@@ -312,7 +312,6 @@ extern uint16_t __far*		maskedtexturecol;
 extern byte __far *         ceiltop;
 extern byte __far *         floortop;
 extern uint16_t             pspritescale;
-extern fixed_t              pspriteiscale;
 extern int16_t              spritelights;
 extern int16_t              vissprite_p;
 extern uint8_t              vsprsortedheadfirst;

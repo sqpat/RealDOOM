@@ -65,6 +65,8 @@ EXTRN _extralight:BYTE
 EXTRN _lightshift7lookup:BYTE
 EXTRN _MULT_4096:BYTE
 
+EXTRN _screenblocks:BYTE
+
 FIRST_FLAT_CACHE_LOGICAL_PAGE = 026h
 
 INCLUDE defs.inc
@@ -1156,6 +1158,16 @@ mov       word ptr cs:[SELFMODIFY_setindex+1], ax
 mov       si, dx    ; si holds start
 
 mov       di, ax
+
+mov       ax, R_DRAWSKYPLANE_OFFSET
+cmp       byte ptr ds:[_screenblocks], 10
+jge       setup_dynamic_skyplane
+mov       ax, R_DRAWSKYPLANE_DYNAMIC_OFFSET
+setup_dynamic_skyplane:
+mov       word ptr cs:[SELFMODIFY_draw_skyplane_call + 1], ax
+
+
+
 shl       di, 1
 shl       di, 1
 shl       di, 1
@@ -1322,6 +1334,7 @@ mov   cx, word ptr [bp - 6] ; and segment
 mov   dx, word ptr [si + 6]
 mov   ax, word ptr [si + 4]
 ;call  [_R_DrawSkyPlaneCallHigh]
+SELFMODIFY_draw_skyplane_call:
 db    09Ah
 dw    R_DRAWSKYPLANE_OFFSET
 dw    DRAWSKYPLANE_AREA_SEGMENT

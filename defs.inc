@@ -109,6 +109,10 @@ _cacheddistance_segment_storage =   _NULL_OFFSET + 00116h
 _cachedxstep_segment_storage =    	_NULL_OFFSET + 00118h
 _cachedystep_segment_storage =    	_NULL_OFFSET + 0011Ah
 
+_pspriteiscale =                    _NULL_OFFSET + 0011Ch
+
+; 120h
+
 DRAWSPAN_BX_OFFSET             = 0FC0h
 DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_FUNCTION_AREA_SEGMENT - 06800h)) + DRAWSPAN_BX_OFFSET
 

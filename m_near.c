@@ -262,7 +262,6 @@ byte __far * floortop;
 // There was a lot of stuff grabbed wrong, so I changed it...
 //
 uint16_t         pspritescale;
-fixed_t         pspriteiscale;
 
 int16_t   spritelights;
 
