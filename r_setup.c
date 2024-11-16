@@ -143,6 +143,9 @@ void __near R_InitTextureMapping(void) {
 		
 		pspritescale = FastDiv32u16u(FRACUNIT * viewwidth, SCREENWIDTH);
 		pspriteiscale = FastDiv32u16u(FRACUNIT * SCREENWIDTH, viewwidth);
+		// 			10000	11C71	14000	16DB6	1AAAA	20000	28000	35555	50000	A0000 
+		//detail    10-11,   9		 8		 7		 6		 5		 4		 3		 2		 1
+		
 	}
 
 	// thing clipping

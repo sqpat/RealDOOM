@@ -164,6 +164,8 @@ PUBLIC  R_DrawSkyColumnDynamic_
 
 
     push bx
+    cli
+    push bp
 
     mov   si, dx     ; copy dc_yl for later
     sub   al, dl     ; al now has count. 
@@ -184,9 +186,9 @@ PUBLIC  R_DrawSkyColumnDynamic_
 
     mov   dx, ax   ; dh zero maintained 
     add   ax, ax   ; ax is 2xed..
-    add   ax, ax   ; ax is 4xed..
-    add   ax, dx   ; ax is 5xed..
-    add   ax, ax   ; ax is 10xed..
+    add   ax, dx   ; ax is 3xed..
+    add   ax, ax   ; ax is 6xed..
+    add   ax, dx   ; ax is 7xed..
     
     mov   word ptr cs:[((OFFSET jump_location_dynamic + 1) - R_DrawSkyColumn_)], ax   ; modify the jump
 
@@ -229,48 +231,89 @@ PUBLIC  R_DrawSkyColumnDynamic_
    
    
    ; ax = dc_yl - centery
-   mov    ax, SKY_TEXTURE_MID
-
-   xchg   ax, si
+   ;mov    ax, si
 
 
-   sub    ax, word ptr ds:[_centery]
+
+   sub    si, word ptr ds:[_centery]
    ; get middle sixteen bits of scale. top 8 are 0. todo: make this 24 somehow? used bp and sp?
-   mov    bx, word ptr ds:[_pspriteiscale+1] 
-   
+   mov    bp, word ptr ds:[_pspriteiscale+0] ; low word. 
+   mov    bx, word ptr ds:[_pspriteiscale+2] ; high word. top 8 are almost certainly zero ...?
+
    mov    ds, dx                          ; dx contained dc_source_segment
    
-   ; 	bx =  dc_iscale = pspriteiscale>>detailshift;
-   ; need to shift by 2 - cl... messy but ah well
-   sal    bx, cl
+   ; 	bl:bp =  dc_iscale = pspriteiscale>>detailshift;
+   ; need to shift by 2 - detailshift... messy but ah well
+   
+   cmp    cl, 2
+   je     end_shift_loop
+   cmp    cl, 1
+   je     shift_one
    sar    bx, 1
+   rcr    bp, 1
+   shift_one:
    sar    bx, 1
+   rcr    bp, 1
+   end_shift_loop:
+
+
+; multiply by fracstep. depends on ax sign though...
+; IMUL BP is complicated because BP is unsigned and can be 8000 etc.
+
+
+   test   si, si
    
-   ; multiply by fracstep and take 16 middle bits?
-   mul    bx
-   mov    dh, al   ; hold this for a sec...
+   jns  do_positive_mul
+   do_negative_mul:
+   neg    si
 
-   mov    al, ah
-   mov    ah, dl
 
-   neg   dh
-   neg   dh ; ugly... we want carry flag if nonzero, but we want dh unchanged, so do this twice.
+   ; FixedMul832u
+   ; AL * BL:BP  (actually 8 * 24 bits)
+   ; SI stores "AX"
+
+   MOV  AX, SI
+   MUL BP         ; AX * BP  (LOW MULT)
+   XCHG AX, SI    ; AX to AX again. SI stores low result.. DX already has high result.
+   MUL BL        ; AX * BX (HIGH WORD MULT) 
+   ADD  DX, AX    ; add high word results
+   MOV  AX, SI
+
+   neg ax
+   adc dx, 0
+   neg dx
+
+   jmp done_with_mul
    
-   adc    si, ax; add by one if low eight bits non zero; i.e. "round up"
+   do_positive_mul:
 
-   and    si, 127
-   
-   mov    ax, bx   ; ax holds the sprite scale...
-   mov    bx, si   ; bx gets starting point
-   mov    bh, bl
-   mov    bl, dh   ; get those low 8 bits...
+   ; FixedMul832u
+   ; AL * BL:BP  (actually 8 * 24 bits)
+   MOV  AX, SI
+   MUL BP         ; AX * BP  (LOW MULT)
+   XCHG AX, SI    ; AX to AX again. SI stores low result.. DX already has high result.
+   MUL BL        ; AX * BX (HIGH WORD MULT) 
+   ADD  DX, AX    ; add high word results
+   MOV  AX, SI
 
-   xor     dx, dx  ; zero out dx (dh specifically)
+   done_with_mul:
 
+   ;  now   DX:AX gets added to SI:00
+   ;  result is SI:BP
 
+   ; so now we have two high bytes in a word and one low byte in a byte
+   ; we want one high in a byte and two low in a word...
 
+   mov    si, SKY_TEXTURE_MID
+   ; dh is probably 0 but doesnt matter. AND 127 knocks it out
+   add    si, dx    ; add integer result of (dc_yl - centery) * fracstep
 
+   dec    bl        ; because movsb adds one to si and we are adding to it each step
+   ; bl (bx), bp ready
+   ; ax was already ready
 
+   mov dx, 79
+   ; dx ready
 
    ; should be able to easily do a lookup into here with available registers (ax, dx, bx)
 
@@ -279,12 +322,13 @@ PUBLIC  R_DrawSkyColumnDynamic_
 
 
 DRAW_SINGLE_SKY_PIXEL_DYNAMIC MACRO 
+; nine bytes per loop.
 ; main loop: no colormaps, add by one texel at a time... skip dx, just do lodsb
     movsb
-	add    di,79      ; draw in next column 
-    add    bx,ax      ; bx is 8:8 fixed point that holds current sky texel (frac), ax holds fracstep 
-    mov    dl,bh      ; dh is 0, lets get the fixed point whole # in dl.
-    mov    si,dx      ; and set si to the texel v
+    add    di, dx     ; draw in next column 
+    add    ax, bp     ; ax is 8:8 fixed point that holds current sky texel (frac), ax holds fracstep 
+    adc    si, bx     ; bh is 0, add bl (with carry) to si...
+
 
 
 ENDM
@@ -301,9 +345,15 @@ endm
 sky_loop_done_dynamic:
 ; clean up
 
-; restore ds without going to memory.
-    mov ax, ss
-    mov ds, ax  ; restore ds
+    mov    ax, 03C00h
+;    mov    ss, ax    ; restore ss...
+    mov    ds, ax    ; restore ds...
+
+
+    ; restore ds without going to memory.
+    pop bp
+    sti
+
     
     pop bx
     ret
