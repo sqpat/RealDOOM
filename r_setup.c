@@ -88,11 +88,11 @@ void __near R_InitTextureMapping(void) {
 
 	for (i = 0; i < FINEANGLES / 2; i++) {
 		finetan_i.w = finetangent(i);
-		if (finetan_i.w > FRACUNIT * 2)
+		if (finetan_i.w > FRACUNIT * 2){
 			t.h.intbits = -1;
-		else if (finetan_i.w < -FRACUNIT * 2)
+		} else if (finetan_i.w < -FRACUNIT * 2){
 			t.h.intbits = viewwidth + 1;
-		else {
+		} else {
 			fixed_t_union temp;
 			temp.h.intbits = centerx;
 			temp.h.fracbits = 0;
@@ -100,10 +100,11 @@ void __near R_InitTextureMapping(void) {
 			//todo optimize given centerxfrac low bits are 0
 			t.w = (temp.w - t.w + 0xFFFFu);
 
-			if (t.h.intbits < -1)
+			if (t.h.intbits < -1){
 				t.h.intbits = -1;
-			else if (t.h.intbits > viewwidth + 1)
+			} else if (t.h.intbits > viewwidth + 1){
 				t.h.intbits = viewwidth + 1;
+			}
 		}
 		viewangletox[i] = t.h.intbits;
 	}
@@ -113,18 +114,20 @@ void __near R_InitTextureMapping(void) {
 	//  that maps to x.	
 	for (x = 0; x <= viewwidth; x++) {
 		i = 0;
-		while (viewangletox[i] > x)
+		while (viewangletox[i] > x){
 			i++;
+		}
 		xtoviewangle[x] = MOD_FINE_ANGLE((i)-FINE_ANG90);
 	}
 
 	// Take out the fencepost cases from viewangletox.
 	for (i = 0; i < FINEANGLES / 2; i++) {
 
-		if (viewangletox[i] == -1)
+		if (viewangletox[i] == -1){
 			viewangletox[i] = 0;
-		else if (viewangletox[i] == viewwidth + 1)
+		} else if (viewangletox[i] == viewwidth + 1){
 			viewangletox[i] = viewwidth;
+		}
 	}
 
 	clipangle = xtoviewangle[0] << 3;

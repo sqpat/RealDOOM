@@ -161,27 +161,28 @@ int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) {
     fixed_t_union	blockdist;
 
-    if (!(thing_pos->flags1 & MF_SHOOTABLE) )
+    if (!(thing_pos->flags1 & MF_SHOOTABLE) ){
 		return true;
+	}
 		
     blockdist.h.intbits = thing->radius + tmthing->radius;
 	blockdist.h.fracbits = 0;
     
     if ( labs(thing_pos->x.w - tmx.w) >= blockdist.w
-	 || labs(thing_pos->y.w - tmy.w) >= blockdist.w )
-    {
+	 || labs(thing_pos->y.w - tmy.w) >= blockdist.w ) {
 	// didn't hit it
 		return true;
     }
     
     // don't clip against self
-    if (thing == tmthing)
+    if (thing == tmthing){
 		return true;
-    
+	}
 	
     // monsters don't stomp things except on boss level
-    if ( !tmthing->type == MT_PLAYER && gamemap != 30)
+    if ( !tmthing->type == MT_PLAYER && gamemap != 30){
 		return false;	
+	}
 		
     P_DamageMobj (thing, tmthing, tmthing, 10000);
 	
@@ -639,8 +640,12 @@ boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_u
 
 	if (xl2 < 0) xl2 = 0;
 	if (yl2 < 0) yl2 = 0;
-	if (xh2 >= bmapwidth) xh2 = bmapwidth - 1;
-	if (yh2 >= bmapheight) yh2 = bmapheight - 1;
+	if (xh2 >= bmapwidth) {
+		xh2 = bmapwidth - 1;
+	}
+	if (yh2 >= bmapheight) {
+		yh2 = bmapheight - 1;
+	}
  
 	for (; xl2 <= xh2; xl2++) {
 		for (by = yl2; by <= yh2; by++) {
@@ -801,8 +806,9 @@ boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_
 	temp2 = (thing->ceilingz - thing->floorz);
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 	
-	if (temp.h.intbits < thing->height.h.intbits) // 16 bit math should be ok
+	if (temp.h.intbits < thing->height.h.intbits){ // 16 bit math should be ok
 		return false;
+	}
 
     return true;
 }
@@ -1280,24 +1286,25 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
 
 
 
-    if (thingtopslope < aimslope)
+    if (thingtopslope < aimslope){
 		return true;		// shot over the thing
+	}
 
     thingbottomslope = FixedDiv (th_pos->z.w - shootz.w, dist);
 
-    if (thingbottomslope > aimslope)
+    if (thingbottomslope > aimslope){
 		return true;		// shot under the thing
-
+	}
     
     // hit thing
     // position a bit closer
     //frac = in->frac - FixedDivWholeAB2 (10, attackrange16);
 
 	switch (attackrange16){
-			case MISSILERANGE:
+		case MISSILERANGE:
 			frac = in->frac - 320;
 			break;
-			case HALFMISSILERANGE:
+		case HALFMISSILERANGE:
 			frac = in->frac - 640;
 			break;
 			// todo are non missilerange cases possible?
@@ -1318,8 +1325,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
     // depending on target type.
 	if (th_pos->flags2 & MF_NOBLOOD) {
 		P_SpawnPuff(x, y, z);
-	}
-	else {
+	} else {
 		P_SpawnBlood(x, y, z, la_damage);
 	}
 	if (la_damage) {
@@ -1389,7 +1395,6 @@ fixed_t __near P_AimLineAttack ( mobj_t __near*	t1, fineangle_t	angle,int16_t	di
 
 
 	if (linetarget) {
-
 		return aimslope;
 	}
 
@@ -1469,8 +1474,7 @@ boolean	__near PTR_UseTraverse (intercept_t __far* in) {
 		P_LineOpening(line->sidenum[1], line_physics->frontsecnum, line_physics->backsecnum);
 #endif
 
- 		if (lineopening.opentop < lineopening.openbottom)
-		{
+ 		if (lineopening.opentop < lineopening.openbottom) {
 			S_StartSoundFromRef (playerMobj, sfx_noway);
 
 			// can't use through a wall

@@ -94,15 +94,19 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
 
 		dc_yl = topscreen.h.intbits; 
 		dc_yh = bottomscreen.h.intbits;
-		if (!bottomscreen.h.fracbits)
+		if (!bottomscreen.h.fracbits){
 			dc_yh--;
-		if (topscreen.h.fracbits)
+        }
+		if (topscreen.h.fracbits){
 			dc_yl++;
+        }
 
-        if (dc_yh >= mfloorclip[dc_x])
+        if (dc_yh >= mfloorclip[dc_x]){
             dc_yh = mfloorclip[dc_x]-1;
-        if (dc_yl <= mceilingclip[dc_x])
+        }
+        if (dc_yl <= mceilingclip[dc_x]){
             dc_yl = mceilingclip[dc_x]+1;
+        }
 
         if (dc_yl <= dc_yh) {
             int16_t count;  // todo uint8_t?
@@ -439,8 +443,9 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     tz.w = gxt.w-gyt.w; 
 
     // thing is behind view plane?
-    if (tz.h.intbits < MINZ_HIGHBITS) // (- sq: where does this come from)
+    if (tz.h.intbits < MINZ_HIGHBITS){ // (- sq: where does this come from)
         return;
+    }
 
         
     xscale.w = FixedDivWholeA(centerx, tz.w);
@@ -475,8 +480,9 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     x1 = temp.h.intbits;
 
     // off the right side?
-    if (x1 > viewwidth)
+    if (x1 > viewwidth){
         return;
+    }
     
     usedwidth =  *((uint8_t __far*) MK_FP(spritewidths_segment, spriteindex));
 
@@ -519,7 +525,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     }
 
 	vis->gzt.w = vis->gz.w + temp.w;
-//	vis->gzt = thing->z + spritetopoffset[lump];
+//	vis->gzt = thingz + spritetopoffset[lump];
     vis->texturemid = vis->gzt.w - viewz.w;
     vis->x1 = x1 < 0 ? 0 : x1;
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
@@ -556,8 +562,9 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
         // diminished light
         index = xscale.w>>(LIGHTSCALESHIFT-detailshift.b.bytelow);
 
-        if (index >= MAXLIGHTSCALE) 
+        if (index >= MAXLIGHTSCALE) {
             index = MAXLIGHTSCALE-1;
+        }
 
         vis->colormap = *((int8_t __far*)MK_FP(scalelightfixed_segment, spritelights+index));
     }
@@ -792,8 +799,9 @@ void __near R_SortVisSprites (void) {
     count = vissprite_p;
         
 
-    if (!count)
+    if (!count){
         return;
+    }
           
     for (ds=0 ; ds<count ; ds++) {
         vissprites[ds].next = ds+1;
@@ -925,21 +933,27 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
 		}
         if (silhouette == 1) {
             // bottom sil
-            for (x=r1 ; x<=r2 ; x++)
-                if (clipbot[x] == -2)
+            for (x=r1 ; x<=r2 ; x++){
+                if (clipbot[x] == -2){
                     clipbot[x] = *((int16_t __far *)MK_FP(openings_segment, ds->sprbottomclip_offset+(x*2))); 
+                }
+            }
         } else if (silhouette == 2) {
             // top sil
-            for (x=r1 ; x<=r2 ; x++)
-                if (cliptop[x] == -2)
+            for (x=r1 ; x<=r2 ; x++){
+                if (cliptop[x] == -2){
                     cliptop[x] = *((int16_t __far *)MK_FP(openings_segment, ds->sprtopclip_offset+(x*2))); 
+                }
+            }
         } else if (silhouette == 3) {
             // both
             for (x=r1 ; x<=r2 ; x++) {
-                if (clipbot[x] == -2)
+                if (clipbot[x] == -2){
                     clipbot[x] = *((int16_t __far *)MK_FP(openings_segment, ds->sprbottomclip_offset+(x*2))); 
-                if (cliptop[x] == -2)
+                }
+                if (cliptop[x] == -2){
                     cliptop[x] = *((int16_t __far *)MK_FP(openings_segment, ds->sprtopclip_offset+(x*2))); 
+                }
             }
         }
                 
@@ -948,8 +962,7 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
     // all clipping has been performed, so draw the sprite
 
     // check for unclipped columns
-	for (x = spr->x1 ; x<=spr->x2 ; x++)
-    {
+	for (x = spr->x1 ; x<=spr->x2 ; x++) {
 		if (clipbot[x] == -2) {
 			clipbot[x] = viewheight;
 		}

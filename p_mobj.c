@@ -913,7 +913,8 @@ void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
 	mobj_t __near*	th;
 	THINKERREF thRef;
 	
-    z += ((P_Random()-P_Random())<<10);
+    z += ((int32_t) ( (P_Random()-P_Random()))<<10);
+
 
     thRef = P_SpawnMobj (x,y,z, MT_PUFF, -1);
 	th = setStateReturn;
@@ -937,7 +938,7 @@ void __near P_SpawnBlood ( fixed_t x, fixed_t y, fixed_t z, int16_t damage ) {
     mobj_t __near*	th;
 	THINKERREF thRef;
 	
-    z += ((P_Random()-P_Random())<<10);
+    z += ((int32_t) ( (P_Random()-P_Random()))<<10);
 	thRef  = P_SpawnMobj (x,y,z, MT_BLOOD, -1);
 	th = setStateReturn;
     th->momz.h.intbits = 2;
