@@ -656,11 +656,7 @@ void __near G_DoCompleted (void)  {
     wminfo.maxitems = totalitems; 
     wminfo.maxsecret = totalsecret; 
 
-	if ( commercial ){
-        wminfo.partime = cpars[gamemap-1]; 
-    } else {
-        wminfo.partime = pars[10*gameepisode+gamemap]; 
-    }
+
  
 	wminfo.plyr.in = true;
     wminfo.plyr.skills = player.killcount; 
@@ -671,7 +667,14 @@ void __near G_DoCompleted (void)  {
     gamestate = GS_INTERMISSION; 
     viewactive = false; 
     automapactive = false; 
- 
+
+    // pars need intermission data mapped in.
+    Z_QuickMapIntermission();
+ 	if ( commercial ){
+        wminfo.partime = cpars[gamemap-1]; 
+    } else {
+        wminfo.partime = pars[10*gameepisode+gamemap]; 
+    }
         
     WI_Start (&wminfo); 
 } 

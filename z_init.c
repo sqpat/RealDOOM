@@ -461,10 +461,10 @@ void __near Z_LoadBinaries() {
 	}
 
 
-	// load consecutive memory contents in one call here
+	// load consecutive memory contents in one call here. 
 	Z_QuickMapIntermission();
 	//760
-	FAR_fread(lnodex, 1, 760, fp);
+	FAR_fread(lnodex, 1, 928, fp);
 
 	// FOD3
 	Z_QuickMapPalette();
@@ -510,8 +510,6 @@ void __near Z_LoadBinaries() {
 
 
 
-	Z_QuickMapIntermission();
-	FAR_fread(pars, 2, 72, fp);  // 4*10 + 32 par times
 
 	fclose(fp);
 	Z_QuickMapPhysics();

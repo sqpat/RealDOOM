@@ -232,7 +232,7 @@ void __near WI_drawOnLnode ( int16_t n, uint8_t* cRef ) {
     int16_t		bottom;
     boolean	fits = false;
 	patch_t __far* ci;
-	int16_t index = wbs->epsd*3+ n;
+	int16_t index = wbs->epsd*10 + n;
 	int16_t lnodeX = lnodex[index];
 	int16_t lnodeY = lnodey[index];
 
@@ -976,7 +976,8 @@ void __near WI_Init(void) {
 
 void __far WI_Start(wbstartstruct_t __near* wbstartstruct) {
 	unloaded = false;
-	Z_QuickMapIntermission();
+	// called before WI_Start
+	//Z_QuickMapIntermission();
 	
 	WI_initVariables(wbstartstruct);
 	WI_Init();
