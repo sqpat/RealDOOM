@@ -641,7 +641,14 @@ mov   word ptr ds:[_lastopening], ax
 mov   ax, word ptr ds:[_viewangle_shiftright3]
 sub   ah, 08h   ; FINE_ANG90
 and   ah, 01Fh    ; MOD_FINE_ANGLE
-shl   ax, 2
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ shl   ax, 2
+ELSE
+ shl   ax, 1
+ shl   ax, 1
+ENDIF
+ 
 mov   cx, word ptr ds:[_centerx]
 mov   di, ax
 
@@ -998,7 +1005,17 @@ shl   bx, 1
 
 mov   ax, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS] ; get subsec secnum
 
-shl   ax, 4    ; todo make  8086 friendly
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ shl   ax, 4
+ELSE
+ shl   ax, 1
+ shl   ax, 1
+ shl   ax, 1
+ shl   ax, 1
+ENDIF
+
+
 mov   word ptr ds:[_frontsector], ax
 mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
 mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + 2]   ; get subsec firstline
@@ -1375,7 +1392,14 @@ SELFMODIFY_drawplaneiter:
 mov   ax, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
 cmp   ax, word ptr [_lastvisplane]
 jge   exit_drawplanes
-shl   ax, 3
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ shl   ax, 3
+ELSE
+ shl   ax, 1
+ shl   ax, 1
+ shl   ax, 1
+ENDIF
+
 add   ax, offset _visplaneheaders
 mov   si, ax
 mov   ax, word ptr [si + 4]			; fetch visplane minx
@@ -1401,7 +1425,17 @@ do_nonsky_flat_draw:
 mov   byte ptr cs:[SELFMODIFY_lookuppicnum+2], cl 
 mov   al, ch
 xor   ah, ah
-sar   ax, LIGHTSEGSHIFT
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ sar   ax, LIGHTSEGSHIFT
+ELSE
+ sar   ax, 1
+ sar   ax, 1
+ sar   ax, 1
+ sar   ax, 1
+ENDIF
+
+
 add   al, byte ptr [_extralight]
 cmp   al, LIGHTLEVELS
 jb    lightlevel_in_range
@@ -1464,7 +1498,13 @@ jmp   lookup_visplane_segment
 found_page_with_empty_space:
 
 mov   al, bl ; bl is usedflatindex
-shl   al, 2
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ shl   al, 2
+ELSE
+ shl   al, 1
+ shl   al, 1
+ENDIF
+
 mov   ah, byte ptr [bx + _allocatedflatsperpage]
 add   ah, al
 inc   byte ptr [bx + _allocatedflatsperpage]
@@ -1486,7 +1526,15 @@ mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] =
 ; check l2 cache next
 flat_loaded:
 mov   dx, word ptr [bp - 4] ; a byte, but read the 0 together
-sar   dx, 2
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ sar   dx, 2
+ELSE
+ sar   dx, 1
+ sar   dx, 1
+ENDIF
+
+
 ; dl = flatcacheL2pagenumber
 cmp   dl, byte ptr [_currentflatpage+0]
 je    in_flat_page_0
@@ -1499,7 +1547,14 @@ mov   cl, 1
 jmp   update_l1_cache
 found_flat_page_to_evict:
 call  R_EvictFlatCacheEMSPage_   ; al stores result..
-shl   al, 2
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ shl   al, 2
+ELSE
+ shl   al, 1
+ shl   al, 1
+ENDIF
+
+
 mov   byte ptr [bp - 4], al
 jmp   found_flat
 
@@ -1554,7 +1609,12 @@ in_flat_page_1:
 mov   word ptr [_lastflatcacheindicesused], cx
 l1_cache_finished_updating:
 mov   ax, word ptr [bp - 4]
-sar   ax, 2
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ sar   ax, 2
+ELSE
+ sar   ax, 1
+ sar   ax, 1
+ENDIF
 cbw  
 call  R_MarkL2FlatCacheLRU_
 cmp   di, 0 ; di used to hold flatunlodaed
