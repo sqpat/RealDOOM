@@ -164,8 +164,7 @@ PUBLIC  R_DrawSkyColumnDynamic_
 
 
     push bx
-    cli
-    push bp
+    push cx
 
     mov   si, dx     ; copy dc_yl for later
     sub   al, dl     ; al now has count. 
@@ -234,31 +233,32 @@ PUBLIC  R_DrawSkyColumnDynamic_
    ;mov    ax, si
 
 
+   mov    al, cl  ; grab detailshift into al for now
 
    sub    si, word ptr ds:[_centery]
    ; get middle sixteen bits of scale. top 8 are 0. todo: make this 24 somehow? used bp and sp?
-   mov    bp, word ptr ds:[_pspriteiscale+0] ; low word. 
+   mov    cx, word ptr ds:[_pspriteiscale+0] ; low word. 
    mov    bx, word ptr ds:[_pspriteiscale+2] ; high word. top 8 are almost certainly zero ...?
 
    mov    ds, dx                          ; dx contained dc_source_segment
    
-   ; 	bl:bp =  dc_iscale = pspriteiscale>>detailshift;
+   ; 	bl:cx =  dc_iscale = pspriteiscale>>detailshift;
    ; need to shift by 2 - detailshift... messy but ah well
    
-   cmp    cl, 2
+   cmp    al, 2
    je     end_shift_loop
-   cmp    cl, 1
+   cmp    al, 1
    je     shift_one
    sar    bx, 1
-   rcr    bp, 1
+   rcr    cx, 1
    shift_one:
    sar    bx, 1
-   rcr    bp, 1
+   rcr    cx, 1
    end_shift_loop:
 
 
 ; multiply by fracstep. depends on ax sign though...
-; IMUL BP is complicated because BP is unsigned and can be 8000 etc.
+; IMUL CX is complicated because CX is unsigned and can be 8000 etc.
 
 
    test   si, si
@@ -269,11 +269,11 @@ PUBLIC  R_DrawSkyColumnDynamic_
 
 
    ; FixedMul832u
-   ; AL * BL:BP  (actually 8 * 24 bits)
+   ; AL * BL:CX  (actually 8 * 24 bits)
    ; SI stores "AX"
 
    MOV  AX, SI
-   MUL BP         ; AX * BP  (LOW MULT)
+   MUL CX         ; AX * CX  (LOW MULT)
    XCHG AX, SI    ; AX to AX again. SI stores low result.. DX already has high result.
    MUL BL        ; AX * BX (HIGH WORD MULT) 
    ADD  DX, AX    ; add high word results
@@ -288,9 +288,9 @@ PUBLIC  R_DrawSkyColumnDynamic_
    do_positive_mul:
 
    ; FixedMul832u
-   ; AL * BL:BP  (actually 8 * 24 bits)
+   ; AL * BL:CX  (actually 8 * 24 bits)
    MOV  AX, SI
-   MUL BP         ; AX * BP  (LOW MULT)
+   MUL CX         ; AX * CX  (LOW MULT)
    XCHG AX, SI    ; AX to AX again. SI stores low result.. DX already has high result.
    MUL BL        ; AX * BX (HIGH WORD MULT) 
    ADD  DX, AX    ; add high word results
@@ -299,7 +299,7 @@ PUBLIC  R_DrawSkyColumnDynamic_
    done_with_mul:
 
    ;  now   DX:AX gets added to SI:00
-   ;  result is SI:BP
+   ;  result is SI:CX
 
    ; so now we have two high bytes in a word and one low byte in a byte
    ; we want one high in a byte and two low in a word...
@@ -309,7 +309,7 @@ PUBLIC  R_DrawSkyColumnDynamic_
    add    si, dx    ; add integer result of (dc_yl - centery) * fracstep
 
    dec    bl        ; because movsb adds one to si and we are adding to it each step
-   ; bl (bx), bp ready
+   ; bl (bx), cx ready
    ; ax was already ready
 
    mov dx, 79
@@ -326,7 +326,7 @@ DRAW_SINGLE_SKY_PIXEL_DYNAMIC MACRO
 ; main loop: no colormaps, add by one texel at a time... skip dx, just do lodsb
     movsb
     add    di, dx     ; draw in next column 
-    add    ax, bp     ; ax is 8:8 fixed point that holds current sky texel (frac), ax holds fracstep 
+    add    ax, cx     ; ax is 8:8 fixed point that holds current sky texel (frac), ax holds fracstep 
     adc    si, bx     ; bh is 0, add bl (with carry) to si...
 
 
@@ -345,16 +345,14 @@ endm
 sky_loop_done_dynamic:
 ; clean up
 
-    mov    ax, 03C00h
-;    mov    ss, ax    ; restore ss...
+    mov    ax, ss
+;    mov    ax, 03C00h
+
     mov    ds, ax    ; restore ds...
 
 
     ; restore ds without going to memory.
-    pop bp
-    sti
-
-    
+    pop cx
     pop bx
     ret
 
