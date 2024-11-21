@@ -132,3 +132,6 @@ _thinkerlist = 04000h
 _mobjinfo = 0D060h
 _linebuffer = 0D650h
 _sectors_physics = 0EA30h
+NUM_FLAT_CACHE_PAGES = 06h
+NUM_SPRITE_CACHE_PAGES = 014h
+NUM_TEXTURE_PAGES = 018h

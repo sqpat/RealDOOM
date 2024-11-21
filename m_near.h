@@ -179,9 +179,9 @@
 
 
 
-// 6 bytes... space it out in case of size growth
+// 6-16 bytes... space it out in case of size growth
 #define allocatedflatsperpage           (((int8_t    __near*)            (_NULL_OFFSET + 0x0170)))
-// space for up to 12 pages of flats
+
 
 // these are far pointers to functions..
 #define Z_QuickMapVisplanePage_addr     (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0180)))

@@ -263,6 +263,32 @@ void __far Z_QuickMapUnmapAll();
 
 #define AMTSIO16 (PAGE_SWAP_ARG_MULT * sizeof(int16_t))
 
+#define EMS_2_MB_BUILD_SETTING                      1
+#define EMS_4_MB_BUILD_SETTING                      2
+
+#define EMS_BUILD_SETTING                           EMS_2_MB_BUILD_SETTING
+//#define EMS_BUILD_SETTING                           EMS_4_MB_BUILD_SETTING
+
+
+// THESE MUST BE HEX FOR CODEGEN
+#if EMS_BUILD_SETTING == EMS_2_MB_BUILD_SETTING  
+//#define NUM_FLAT_CACHE_PAGES                        6
+//#define NUM_SPRITE_CACHE_PAGES                      20
+//#define NUM_TEXTURE_PAGES                           24
+#define NUM_FLAT_CACHE_PAGES                        0x6
+#define NUM_SPRITE_CACHE_PAGES                      0x14
+#define NUM_TEXTURE_PAGES                           0x18
+#elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  
+// todo revisit these numbers? might want less, and then more for sound
+//#define NUM_FLAT_CACHE_PAGES                        16
+//#define NUM_SPRITE_CACHE_PAGES                      64
+//#define NUM_TEXTURE_PAGES                           64
+#define NUM_FLAT_CACHE_PAGES                        0x10
+#define NUM_SPRITE_CACHE_PAGES                      0x40
+#define NUM_TEXTURE_PAGES                           0x40
+#endif
+
+
 // arg mult times size of int16
 
 #define SCRATCH_ADDRESS_5000 (byte __far* )0x50000000
@@ -301,11 +327,9 @@ void __far Z_QuickMapUnmapAll();
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
 // 38
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_LUMPINFO_LOGICAL_PAGE + 3
-#define NUM_FLAT_CACHE_PAGES                        6
 // 44
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
 // 68  todo revisit, can maybe even be smaller.
-#define NUM_TEXTURE_PAGES                           24
 #define FIRST_EXTRA_MASKED_DATA_PAGE                FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
 // 70
@@ -317,7 +341,6 @@ void __far Z_QuickMapUnmapAll();
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
 // 86
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
-#define NUM_SPRITE_CACHE_PAGES                      20
 
 // todo eventuall yjust include this in the spritecache area...
 //#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)

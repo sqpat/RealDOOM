@@ -3,7 +3,7 @@
 #include "m_near.h"
 
 #define CONSTANTS_COUNT 115
-#define LOCALS_COUNT 16
+#define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
     "SECTORS_SEGMENT",
@@ -313,11 +313,17 @@ char* LOCALS[LOCALS_COUNT] = {
     "_thinkerlist",
     "_mobjinfo",
     "_linebuffer",
-    "_sectors_physics"
+    "_sectors_physics",
+    "NUM_FLAT_CACHE_PAGES",
+    "NUM_SPRITE_CACHE_PAGES",
+    "NUM_TEXTURE_PAGES"
+
+
 
 
 };
 
+// NOTE: THESE ALL MUST BE HEX
 void __near* VALUES[LOCALS_COUNT] = {
 
     segs_render,
@@ -338,7 +344,11 @@ void __near* VALUES[LOCALS_COUNT] = {
     thinkerlist,
     mobjinfo,
     linebuffer,
-    sectors_physics
+    sectors_physics,
+    NUM_FLAT_CACHE_PAGES,
+    NUM_SPRITE_CACHE_PAGES,
+    NUM_TEXTURE_PAGES
+    
 
 
 };
@@ -357,7 +367,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
         segment = SEGMENTS[i];
         fprintf(fp, "%s = 0%Xh\n", varname, segment);
     }
-    fprintf(fp, "\n; Near vars as constants\n");
+    fprintf(fp, "\n; Near vars as constants. Note these are all hex\n");
 
 
     for (i = 0; i < LOCALS_COUNT; i++){
