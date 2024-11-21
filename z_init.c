@@ -516,9 +516,13 @@ void __near Z_LoadBinaries() {
 
 	DEBUG_PRINT("..");
  
-	 
+	// set some function addresses for asm calls
+	Z_QuickMapVisplanePage_addr = 	(uint32_t)(Z_QuickMapVisplanePage);
+	R_EvictFlatCacheEMSPage_addr = 	(uint32_t)(R_EvictFlatCacheEMSPage);
+	Z_QuickMapFlatPage_addr =   	(uint32_t)(Z_QuickMapFlatPage);
+	R_MarkL2FlatCacheLRU_addr = 	(uint32_t)(R_MarkL2FlatCacheLRU);
+	W_CacheLumpNumDirect_addr = 	(uint32_t)(W_CacheLumpNumDirect);
 
-	
 
 }
 

@@ -138,7 +138,6 @@ uint8_t         musicVolume;
 
 // Blocky mode, has default, 0 = high, 1 = normal
 uint8_t                     detailLevel;
-uint8_t                     screenblocks;           // has default
 
 // temp for screenblocks (0-9)
 uint8_t                     screenSize;
@@ -167,27 +166,17 @@ int16_t		viewwindowoffset;
 
 
 
-int16_t				lastvisplane;
 int16_t				floorplaneindex;
 int16_t				ceilingplaneindex;
 uint16_t 		lastopening;
 
 
 
-segment_t visplanelookupsegments[3] = {0x8400, 0x8800, 0x8C00};
 int8_t ceilphyspage = 0;
 int8_t floorphyspage = 0;
 
-// Map of four L2 flat cache logical pages  in the L1 cache. Used to quickly(?) determine if flat cache in L1 cache by it's L2 cache index.
-int8_t currentflatpage[4] = { 0, 1, 2, 3 };
-// there can be 4 flats (4k each) per ems page (16k each). Keep track of how many are allocated here.
 
-// keeps track of the most recently used flat L1 cache for page-out
-int8_t lastflatcacheindicesused[4] = {0,1,2,3};
 
-int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
-
-int8_t visplanedirty = false;
 int8_t skytextureloaded = false;
 
 // Cached fields to avoid thinker access after page swap
@@ -209,12 +198,9 @@ uint16_t			fieldofview =  0;	// note: fracbits always 0
  
  
 
-// bumped light from gun blasts
-uint8_t			extralight;			
 
 boolean		setsizeneeded;
 uint8_t		setblocks;
-uint8_t			skyflatnum;
 uint16_t			skytexture;
 
 
@@ -290,7 +276,6 @@ int16_t   lastvisspritepatch2 = -1;
 
 
  
-int16_t             firstflat;
 int16_t             numflats;
 
 int16_t             firstpatch;
@@ -470,17 +455,9 @@ int16_t lightmult48lookup[16] = { 0,  48,  96, 144,
 								384, 432, 480, 528,
 								576, 624, 672, 720 };
 
-int16_t lightshift7lookup[16] = { 0,  128,  256, 384,
-								 512,  640,  768, 896,
-								1024, 1152, 1280, 1408,
-								1536, 1664, 1792, 1920 };
 
 segment_t pagesegments[4] = { 0x0000u, 0x0400u, 0x0800u, 0x0c00u };
 
-uint16_t MULT_4096[4] = {0x0000u, 0x1000u, 0x2000u, 0x3000u};
-uint16_t MULT_256[4] = {0x0000u, 0x0100u, 0x0200u, 0x0300u};
-
-uint16_t FLAT_CACHE_PAGE[4] = { 0x7000, 0x7400, 0x7800, 0x7C00 };
 
 /* 
 uint8_t quality_port_lookup[12] = {
@@ -528,6 +505,7 @@ uint16_t vga_read_port_lookup[12] = {
 void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  				      	  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 void (__far* R_DrawColumnPrepCall)(uint16_t)  =   				      	      ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 
+void (__far* R_DrawPlanesCall)()  =   				      	                  ((void    (__far *)(uint6_t))  (MK_FP(spanfunc_function_area_segment, R_DrawPlanesOffset)));
 void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  		      ((void    (__far *)(uint16_t, byte __far *))  		(MK_FP(drawfuzzcol_area_segment, R_DrawFuzzColumnOffset)));
 void (__far* R_DrawMaskedColumnCallHigh)(segment_t, column_t __far *) =       ((void    (__far *)(segment_t, column_t __far *))     (MK_FP(drawfuzzcol_area_segment, R_DrawMaskedColumnOffset)));
 void (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t, byte)  =  	      ((void    (__far *)(segment_t, byte))  				(MK_FP(drawfuzzcol_area_segment, R_DrawSingleMaskedColumnOffset)));

@@ -159,8 +159,37 @@
 #define cachedystep_segment_storage     (*((segment_t __near*)           (_NULL_OFFSET + 0x011A)))
 #define pspriteiscale                   (*((fixed_t   __near*)           (_NULL_OFFSET + 0x011C)))
 
+#define MULT_256                        (((uint16_t   __near*)           (_NULL_OFFSET + 0x0120)))
+#define MULT_4096                       (((uint16_t   __near*)           (_NULL_OFFSET + 0x0128)))
+#define FLAT_CACHE_PAGE                 (((uint16_t   __near*)           (_NULL_OFFSET + 0x0130)))
+#define visplanelookupsegments          (((segment_t   __near*)          (_NULL_OFFSET + 0x0138)))
 
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0110)))
+#define firstflat                       (*((int16_t    __near*)          (_NULL_OFFSET + 0x013E)))
+#define lightshift7lookup               (*((int16_t    __near*)          (_NULL_OFFSET + 0x0140)))
+
+#define currentflatpage                 (((int8_t    __near*)            (_NULL_OFFSET + 0x0160)))
+#define lastflatcacheindicesused        (((int8_t    __near*)            (_NULL_OFFSET + 0x0164)))
+#define skyflatnum                      (*((uint8_t    __near*)          (_NULL_OFFSET + 0x0168)))
+#define extralight                      (*((uint8_t    __near*)          (_NULL_OFFSET + 0x0169)))
+#define visplanedirty                   (*((int8_t    __near*)           (_NULL_OFFSET + 0x016A)))
+#define screenblocks                    (*((uint8_t    __near*)          (_NULL_OFFSET + 0x016B)))
+#define lastvisplane                    (*((int16_t    __near*)          (_NULL_OFFSET + 0x016C)))
+// 16E, 16F free
+
+
+
+
+// 6 bytes... space it out in case of size growth
+#define allocatedflatsperpage           (((int8_t    __near*)            (_NULL_OFFSET + 0x0170)))
+// space for up to 12 pages of flats
+
+// these are far pointers to functions..
+#define Z_QuickMapVisplanePage_addr     (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0180)))
+#define R_EvictFlatCacheEMSPage_addr    (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0184)))
+#define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0188)))
+#define R_MarkL2FlatCacheLRU_addr       (*((uint32_t  __near*)           (_NULL_OFFSET + 0x018C)))
+#define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0190)))
+
 
 
 
@@ -252,7 +281,6 @@ extern uint8_t              showMessages;
 extern uint8_t              sfxVolume;
 extern uint8_t              musicVolume;
 extern uint8_t              detailLevel;
-extern uint8_t              screenblocks;           
 extern uint8_t              screenSize;
 extern int8_t               quickSaveSlot;
 extern boolean              inhelpscreens;
@@ -264,17 +292,11 @@ extern int16_t		        viewheight;
 extern int16_t		        viewwindowx;
 extern int16_t		        viewwindowy; 
 extern int16_t		        viewwindowoffset;
-extern int16_t				lastvisplane;
 extern int16_t				floorplaneindex;
 extern int16_t				ceilingplaneindex;
 extern uint16_t 		    lastopening;
-extern segment_t            visplanelookupsegments[3];
 extern int8_t               ceilphyspage;
 extern int8_t               floorphyspage;
-extern int8_t               currentflatpage[4];
-extern int8_t               lastflatcacheindicesused[4];
-extern int8_t               allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
-extern int8_t               visplanedirty;
 extern int8_t               skytextureloaded;
 extern int16_t              r_cachedplayerMobjsecnum;
 extern int16_t			    validcount;
@@ -282,10 +304,8 @@ extern int16_t			    validcount;
 extern int16_t 			    setdetail;
 extern uint16_t			    clipangle;
 extern uint16_t			    fieldofview;
-extern uint8_t			    extralight;			
 extern boolean		        setsizeneeded;
 extern uint8_t		        setblocks;
-extern uint8_t			    skyflatnum;
 extern uint16_t			    skytexture;
 extern boolean		        segtextured;	
 extern boolean		        markfloor;	
@@ -319,7 +339,6 @@ extern segment_t            lastvisspritesegment;
 extern int16_t              lastvisspritepatch;
 extern segment_t            lastvisspritesegment2;
 extern int16_t              lastvisspritepatch2;
-extern int16_t              firstflat;
 extern int16_t              numflats;
 extern int16_t              firstpatch;
 extern int16_t              numpatches;
@@ -400,16 +419,14 @@ extern mline_t              triangle_guy[3];
 */
 extern mline_t              thintriangle_guy[3];
 extern int16_t              lightmult48lookup[16];
-extern int16_t              lightshift7lookup[16];
 extern segment_t            pagesegments[4];
-extern uint16_t             MULT_4096[4];
-extern uint16_t             MULT_256[4];
-extern uint16_t             FLAT_CACHE_PAGE[4];
+
 extern uint16_t             vga_read_port_lookup[12];
 extern uint16_t             visplane_offset[25];
 
 extern void                 (__far* R_DrawColumnPrepCallHigh)(uint16_t);
 extern void                 (__far* R_DrawColumnPrepCall)(uint16_t);
+extern void                 (__far* R_DrawPlanesCall)();
 
 extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *);
 

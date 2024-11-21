@@ -612,6 +612,7 @@ FREEBYTES 4144 free
  drawfuzzcol_area       8B0A:0000
 [empty]                    :0000 todo
 
+// MOVE MASKED/SPRITE CODE HERE!
 FREEBYTES 3936 free
  */
 

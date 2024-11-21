@@ -113,6 +113,36 @@ _pspriteiscale =                    _NULL_OFFSET + 0011Ch
 
 ; 120h
 
+_MULT_256 =                    		_NULL_OFFSET + 00120h
+_MULT_4096 =                    	_NULL_OFFSET + 00128h
+_FLAT_CACHE_PAGE =                  _NULL_OFFSET + 00130h
+_visplanelookupsegments =           _NULL_OFFSET + 00138h
+_firstflat =                  		_NULL_OFFSET + 0013Eh
+; 140h
+_lightshift7lookup =            	_NULL_OFFSET + 00140h
+; 160h
+_currentflatpage =            		_NULL_OFFSET + 00160h
+_lastflatcacheindicesused =         _NULL_OFFSET + 00164h
+_skyflatnum =            			_NULL_OFFSET + 00168h
+_extralight =            			_NULL_OFFSET + 00169h
+_visplanedirty =            		_NULL_OFFSET + 0016Ah
+_screenblocks =            			_NULL_OFFSET + 0016Bh
+_lastvisplane =            			_NULL_OFFSET + 0016Ch
+
+; 170h
+; 6 bytes... space it out in case of size growth
+_allocatedflatsperpage =           	_NULL_OFFSET + 00170h
+
+; 180h
+_Z_QuickMapVisplanePage_addr =      _NULL_OFFSET + 00180h
+_R_EvictFlatCacheEMSPage_addr =     _NULL_OFFSET + 00184h
+_Z_QuickMapFlatPage_addr =        	_NULL_OFFSET + 00188h
+_R_MarkL2FlatCacheLRU_addr =        _NULL_OFFSET + 0018Ch
+; 190h
+_W_CacheLumpNumDirect_addr =        _NULL_OFFSET + 00190h
+
+
+
 DRAWSPAN_BX_OFFSET             = 0FC0h
 DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_FUNCTION_AREA_SEGMENT - 06800h)) + DRAWSPAN_BX_OFFSET
 

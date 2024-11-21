@@ -525,7 +525,7 @@ void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
 void R_SetupFrame () {		
     int8_t		i;
 
-    extralight = player.extralight;
+    extralight = player.extralightvalue;
 
     viewz = player.viewzvalue;
 	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
@@ -631,7 +631,9 @@ void __far R_RenderPlayerView () {
 		Z_QuickMapVisplaneRevert();
 	}
     
-	R_DrawPlanes ();
+	R_DrawPlanesCall();
+
+
 	// put away flat cache, put back level data
 	Z_QuickMapUndoFlatCache();
  	Z_QuickMapRenderTexture();

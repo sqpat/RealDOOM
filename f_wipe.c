@@ -262,8 +262,20 @@ void __far wipe_WipeLoop(){
 
     } while (!done);
 	// i think the first draw or two dont write to the correct framebuffer? needs six
+	
 	hudneedsupdate = 6;
 
+/*
+	{
+		hu_stext_t __near* 	stext = &w_message;
+		int8_t i = 0;
+		for (i = 0; i < stext->height; i++) {
+			//if (stext->textlines[i].needsupdate) {
+				stext->textlines[i].needsupdate = 4;
+			//}
+		}
+	}
+*/
 	Z_QuickMapPhysics();
 	wipeduration = ticcount - wiperealstart;
 

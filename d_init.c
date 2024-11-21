@@ -880,10 +880,11 @@ void __far D_DoomMain2(void) {
 
 	//I_Error("%lx", FixedMul(0x40000L, 0x40000L));
 
-/*
 
-	FILE *fp = fopen("output8.bin", "wb");
-	FAR_fwrite(R_CheckPlane, (byte __far *)R_FillBackScreen - (byte __far *)R_CheckPlane, 1, fp);
+	/*
+
+	FILE *fp = fopen("output9.bin", "wb");
+	FAR_fwrite(R_MarkL2FlatCacheLRU, (byte __far *)R_EvictFlatCacheEMSPage - (byte __far *)R_MarkL2FlatCacheLRU, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

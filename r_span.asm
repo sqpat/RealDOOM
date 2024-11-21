@@ -20,8 +20,8 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 ;=================================
-.DATA
 
+.CODE
 
 
 
@@ -30,8 +30,13 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 
 
 
+; todo: eventually call these directly... 
+;EXTRN R_MarkL2FlatCacheLRU_:PROC
+;EXTRN Z_QuickMapFlatPage_:PROC
+;EXTRN W_CacheLumpNumDirect_:PROC
+;EXTRN Z_QuickMapVisplanePage_:PROC
+;EXTRN R_EvictFlatCacheEMSPage_:PROC
 
-EXTRN FixedMul_:PROC
 
 
 
@@ -41,8 +46,13 @@ DS_XSTEP    = _ss_variable_space+ 00Ch
 DS_YSTEP    = _ss_variable_space+ 010h
 
 
+FIRST_FLAT_CACHE_LOGICAL_PAGE = 026h
 
-.CODE
+
+; NOTE: cs:offset stuff for self modifying code must be zero-normalized
+;  (subtract offset of R_DrawSpan) because this code is being moved to
+; segment:0000 at runtime and the cs offset stuff is absolute, not relative.
+
 
 
 ;
@@ -62,8 +72,9 @@ PUBLIC  R_DrawSpan_
 ; 0Ch ds_xstep
 ; 10h ds_ystep
 
-jmp start_function
+jmp SHORT start_function
 
+; todo move this into before the per-pixel rollout.
 no_pixels:
 jmp   do_span_loop
 
@@ -746,7 +757,7 @@ jmp   generate_distance_steps
 ; 	rather than changing ES a ton we will just modify offsets by segment distance
 ;   confirmed to be faster even on 8088 with it's baby prefetch queue - i think on 16 bit busses it is only faster.
 
-PROC  R_MapPlane_
+PROC  R_MapPlane_ NEAR
 PUBLIC  R_MapPlane_ 
 
 push  cx
@@ -928,7 +939,7 @@ pop   es
 pop   di
 pop   si
 pop   cx
-retf  
+ret
 
 use_fixed_colormap:
 mov   al, byte ptr ds:[_fixedcolormap]
@@ -948,7 +959,7 @@ pop   es
 pop   di
 pop   si
 pop   cx
-retf  
+ret  
 
 generate_distance_steps:
 
@@ -1012,6 +1023,599 @@ jmp   distance_steps_ready
    
 
 ENDP
+
+
+exit_drawplanes:
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+mov   byte ptr cs:[(SELFMODIFY_drawplaneiter+1)-OFFSET R_DrawSpan_], 0
+retf   
+
+do_next_drawplanes_loop:	
+
+inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1-OFFSET R_DrawSpan_]
+add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
+jmp   SHORT drawplanes_loop
+do_sky_flat_draw:
+; todo revisit params. maybe these can be loaded in R_DrawSkyPlaneCallHigh
+mov   bx, word ptr [bp - 8] ; get visplane offset
+mov   cx, word ptr [bp - 6] ; and segment
+mov   dx, word ptr [si + 6]
+mov   ax, word ptr [si + 4]
+;call  [_R_DrawSkyPlaneCallHigh]
+SELFMODIFY_draw_skyplane_call:
+db    09Ah
+dw    R_DRAWSKYPLANE_OFFSET
+dw    DRAWSKYPLANE_AREA_SEGMENT
+inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1-OFFSET R_DrawSpan_]
+add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
+jmp   SHORT drawplanes_loop
+
+;R_DrawPlanes_
+
+PROC R_DrawPlanes_
+PUBLIC R_DrawPlanes_ 
+
+;retf
+
+; ARGS none
+
+; STACK
+; bp - 8 visplaneoffset
+; bp - 6 visplanesegment
+; bp - 4 usedflatindex
+; bp - 2 physindex
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 08h
+xor   ax, ax
+mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 6], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
+mov   word ptr [bp - 4], ax
+mov   word ptr [bp - 2], ax
+
+
+mov       ax, R_DRAWSKYPLANE_OFFSET
+cmp       byte ptr ds:[_screenblocks], 10
+jge       setup_dynamic_skyplane
+mov       ax, R_DRAWSKYPLANE_DYNAMIC_OFFSET
+setup_dynamic_skyplane:
+mov       word ptr cs:[SELFMODIFY_draw_skyplane_call + 1-OFFSET R_DrawSpan_], ax
+
+
+
+drawplanes_loop:
+SELFMODIFY_drawplaneiter:
+mov   ax, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
+cmp   ax, word ptr ds:[_lastvisplane]
+jge   exit_drawplanes
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ shl   ax, 3
+ELSE
+ shl   ax, 1
+ shl   ax, 1
+ shl   ax, 1
+ENDIF
+
+add   ax, offset _visplaneheaders
+mov   si, ax
+mov   ax, word ptr [si + 4]			; fetch visplane minx
+cmp   ax, word ptr [si + 6]			; fetch visplane maxx
+jnle   do_next_drawplanes_loop
+
+loop_visplane_page_check:
+cmp   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE
+jnb   check_next_visplane_page
+
+
+; todo: DI is (mostly) unused here. Can probably be used to hold something usedful.
+
+mov   bx, word ptr cs:[SELFMODIFY_drawplaneiter+1-OFFSET R_DrawSpan_]
+
+add   bx, bx
+mov   cx, word ptr [bx +  _visplanepiclights]
+cmp   cl, byte ptr ds:[_skyflatnum]
+je    do_sky_flat_draw
+
+do_nonsky_flat_draw:
+
+mov   byte ptr cs:[SELFMODIFY_lookuppicnum+2-OFFSET R_DrawSpan_], cl 
+mov   al, ch
+xor   ah, ah
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ sar   ax, LIGHTSEGSHIFT
+ELSE
+ sar   ax, 1
+ sar   ax, 1
+ sar   ax, 1
+ sar   ax, 1
+ENDIF
+
+
+add   al, byte ptr ds:[_extralight]
+cmp   al, LIGHTLEVELS
+jb    lightlevel_in_range
+mov   al, LIGHTLEVELS-1
+lightlevel_in_range:
+
+add   ax, ax
+mov   bx, ax
+mov   ax, word ptr ds:[bx + _lightshift7lookup]
+mov   word ptr ds:[_planezlight], ax
+;mov   word ptr ds:[_planezlight + 2], ZLIGHT_SEGMENT  ; this is static and set in memory.asm
+
+mov   ax, FLATTRANSLATION_SEGMENT
+mov   es, ax
+mov   bl, cl
+xor   bh, bh
+
+mov   bl, byte ptr es:[bx]
+mov   ax, FLATINDEX_SEGMENT
+mov   es, ax
+
+mov   al, byte ptr es:[bx]
+mov   byte ptr [bp - 4], al
+; going to use di to hold flatunloaded
+xor   di, di
+cmp   al, 0ffh
+jne   flat_loaded
+mov   bx, di
+loop_find_flat:
+cmp   byte ptr ds:[bx + _allocatedflatsperpage], 4   ; if (allocatedflatsperpage[j]<4){
+jl    found_page_with_empty_space
+inc   bl
+cmp   bl, NUM_FLAT_CACHE_PAGES
+jge   found_flat_page_to_evict
+jmp   loop_find_flat
+check_next_visplane_page:
+; do next visplane page
+sub   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE
+inc   byte ptr [bp - 2]
+cmp   byte ptr [bp - 2], 3
+je    do_visplane_pagination
+lookup_visplane_segment:
+mov   bx, word ptr [bp - 2]
+add   bx, bx
+mov   ax, word ptr ds:[bx + _visplanelookupsegments]
+mov   word ptr [bp - 6], ax
+jmp   loop_visplane_page_check
+do_visplane_pagination:
+mov   al, byte ptr ds:[_visplanedirty]
+add   al, 3
+mov   dx, 2
+cbw  
+mov   byte ptr [bp - 2], 2
+
+
+;call  Z_QuickMapVisplanePage_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapVisplanePage_addr
+
+
+jmp   lookup_visplane_segment
+
+
+
+
+found_page_with_empty_space:
+
+mov   al, bl ; bl is usedflatindex
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ shl   al, 2
+ELSE
+ shl   al, 1
+ shl   al, 1
+ENDIF
+
+mov   ah, byte ptr ds:[bx + _allocatedflatsperpage]
+add   ah, al
+inc   byte ptr ds:[bx + _allocatedflatsperpage]
+mov   byte ptr [bp - 4], ah
+found_flat:
+mov   ax, FLATTRANSLATION_SEGMENT
+mov   es, ax
+mov   bl, cl
+xor   bh, bh
+
+mov   bl, byte ptr es:[bx]
+mov   ax, FLATINDEX_SEGMENT
+mov   es, ax
+mov   al, byte ptr [bp - 4]
+mov   di, 1 ; update flat unloaded
+
+mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] = usedflatindex;
+
+; check l2 cache next
+flat_loaded:
+mov   dx, word ptr [bp - 4] ; a byte, but read the 0 together
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ sar   dx, 2
+ELSE
+ sar   dx, 1
+ sar   dx, 1
+ENDIF
+
+
+; dl = flatcacheL2pagenumber
+cmp   dl, byte ptr ds:[_currentflatpage+0]
+je    in_flat_page_0
+
+; check if L2 page is in L1 cache
+
+cmp   dl, byte ptr ds:[_currentflatpage+1]
+jne   not_in_flat_page_1
+mov   cl, 1
+jmp   SHORT update_l1_cache
+found_flat_page_to_evict:
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_EvictFlatCacheEMSPage_addr
+
+;call  R_EvictFlatCacheEMSPage_   ; al stores result..
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ shl   al, 2
+ELSE
+ shl   al, 1
+ shl   al, 1
+ENDIF
+
+
+mov   byte ptr [bp - 4], al
+jmp   found_flat
+
+not_in_flat_page_1:
+cmp   dl, byte ptr ds:[_currentflatpage+2]
+jne   not_in_flat_page_2
+mov   cl, 2
+jmp SHORT  update_l1_cache
+not_in_flat_page_2:
+cmp   dl, byte ptr ds:[_currentflatpage+3]
+jne   not_in_flat_page_3
+mov   cl, 3
+jmp SHORT  update_l1_cache
+not_in_flat_page_3:
+; L2 page not in L1 cache. need to EMS remap
+
+; doing word writes/reads instead of byte writes/reads when possible
+mov   ch, byte ptr ds:[_lastflatcacheindicesused]
+mov   ax, word ptr ds:[_lastflatcacheindicesused+1]
+mov   cl, byte ptr ds:[_lastflatcacheindicesused+3]
+
+mov   word ptr ds:[_lastflatcacheindicesused], cx
+mov   word ptr ds:[_lastflatcacheindicesused+2], ax
+
+mov   ax, dx
+
+mov   bl, cl
+xor   bh, bh   ; ugly... can i do cx above
+mov   byte ptr ds:[bx + _currentflatpage], al
+mov   dx, bx
+add   ax, FIRST_FLAT_CACHE_LOGICAL_PAGE
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapFlatPage_addr
+
+;call  Z_QuickMapFlatPage_
+jmp  SHORT l1_cache_finished_updating
+in_flat_page_0:
+mov   cl, 0
+
+update_l1_cache:
+mov   ch, byte ptr ds:[_lastflatcacheindicesused]
+cmp   ch, cl
+je    l1_cache_finished_updating
+mov   ah, byte ptr ds:[_lastflatcacheindicesused+1]
+cmp   ah, cl
+je    in_flat_page_1
+mov   al, byte ptr ds:[_lastflatcacheindicesused+2]
+cmp   al, cl
+je    in_flat_page_2
+mov   byte ptr ds:[_lastflatcacheindicesused+3], al
+in_flat_page_2:
+mov   byte ptr ds:[_lastflatcacheindicesused+2], ah
+in_flat_page_1:
+mov   word ptr ds:[_lastflatcacheindicesused], cx
+l1_cache_finished_updating:
+mov   ax, word ptr [bp - 4]
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ sar   ax, 2
+ELSE
+ sar   ax, 1
+ sar   ax, 1
+ENDIF
+cbw  
+
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_MarkL2FlatCacheLRU_addr
+;call  R_MarkL2FlatCacheLRU_
+
+
+cmp   di, 0 ; di used to hold flatunlodaed
+jnz   flat_is_unloaded
+flat_not_unloaded:
+; calculate ds_source_segment
+mov   bx, word ptr [bp - 4]
+and   bx, 3
+add   bx, bx
+mov   ax, word ptr ds:[bx + _MULT_256]
+mov   bl, cl
+add   bx, bx
+add   ax, word ptr ds:[bx + _FLAT_CACHE_PAGE]
+
+mov   word ptr ds:[_ds_source_segment], ax
+mov   ax, word ptr [si]
+mov   dx, word ptr [si + 2]
+sub   ax, word ptr ds:[_viewz]
+sbb   dx, word ptr ds:[_viewz + 2]
+or    dx, dx
+
+; planeheight = labs(plheader->height - viewz.w);
+
+jge   planeheight_already_positive	; labs check
+neg   ax
+adc   dx, 0
+neg   dx
+planeheight_already_positive:
+mov   word ptr ds:[_planeheight], ax
+mov   word ptr ds:[_planeheight + 2], dx
+mov   ax, word ptr [si + 6]
+mov   di, ax
+les   bx, dword ptr [bp - 8]
+
+mov   byte ptr es:[bx + di + 3], 0ffh
+mov   si, word ptr [si + 4]
+mov   byte ptr es:[bx + si + 1], 0ffh
+inc   ax
+
+mov   word ptr cs:[SELFMODIFY_comparestop+2-OFFSET R_DrawSpan_], ax ; set count value to be compared against in loop.
+
+cmp   si, ax
+jle   start_single_plane_draw_loop
+jmp   do_next_drawplanes_loop
+; flat is unloaded. load it in
+flat_is_unloaded:
+mov   bl, cl
+xor   bh, bh
+
+add   bx, bx
+
+push  cx
+mov   cx, word ptr ds:[bx + _FLAT_CACHE_PAGE]
+
+mov   ax, FLATTRANSLATION_SEGMENT
+mov   es, ax
+SELFMODIFY_lookuppicnum:
+mov   al, byte ptr es:[00]    ; uses picnum from way above.
+
+xor   ah, ah
+add   ax, word ptr ds:[_firstflat]
+mov   bl, byte ptr [bp - 4]
+and   bl, 3
+
+add   bx, bx
+mov   bx, word ptr ds:[bx + _MULT_4096]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNumDirect_addr
+
+;call  W_CacheLumpNumDirect_
+pop   cx
+jmp   flat_not_unloaded
+
+
+
+start_single_plane_draw_loop:
+; loop setup
+
+single_plane_draw_loop:
+; si is x, bx is plheader pointer. so adding si gets us plheader->top[x] etc.
+les    bx, dword ptr [bp - 8]
+
+;			t1 = pl->top[x - 1];
+;			b1 = pl->bottom[x - 1];
+;			t2 = pl->top[x];
+;			b2 = pl->bottom[x];
+
+
+
+mov   dx, word ptr es:[bx + si + 0143h]	; b1&b2
+mov   cx, word ptr es:[bx + si + 1]		; t1&t2
+
+
+mov   ax, SPANSTART_SEGMENT
+mov   es, ax
+; todo swap si/di uses in the map plane area. reduces a little bit of register thrashing
+
+; t1/t2 ch/cl
+; b1/b2 dh/dl
+dec   si	; x - 1  constant
+mov   word ptr ds:[_ds_x2], si
+inc   si  ; add one back from the previous saved x-1 state
+
+;    while (t1 < t2 && t1 <= b1)
+
+cmp   cl, ch
+jae   done_with_first_mapplane_loop
+; set up the di parameter to be spanstart lookup index
+mov   al, cl
+xor   ah, ah
+mov   di, ax
+add   di, ax
+
+
+loop_first_mapplane:
+cmp   cl, dl
+ja   done_with_first_mapplane_loop
+
+mov   ax, word ptr es:[di]
+mov   word ptr ds:[_ds_y], di   ; predoubled for lookup
+mov   word ptr ds:[_ds_x1], ax
+inc   cl
+
+call  R_MapPlane_
+;db    09Ah
+;dw    R_MAPPLANE_OFFSET
+;dw    SPANFUNC_FUNCTION_AREA_SEGMENT
+
+cmp   cl, ch
+jae   done_with_first_mapplane_loop
+inc   di
+inc   di
+
+jmp   loop_first_mapplane
+
+end_single_plane_draw_loop_iteration:
+
+;  todo: di not really in use at all in this loop. could be made to hold something useful
+inc   si
+SELFMODIFY_comparestop:
+cmp   si, 1000h
+jle   single_plane_draw_loop
+
+;jmp exit_drawplanes
+
+jmp   do_next_drawplanes_loop
+
+done_with_first_mapplane_loop:
+
+
+
+cmp   dl, dh
+jbe   done_with_second_mapplane_loop
+; set up the di parameter to be spanstart lookup index
+mov   al, dl
+xor   ah, ah
+mov   di, ax
+add   di, ax
+
+loop_second_mapplane:
+cmp   cl, dl
+ja   done_with_second_mapplane_loop
+
+mov   ax, word ptr es:[di]
+mov   word ptr ds:[_ds_y], di
+mov   word ptr ds:[_ds_x1], ax
+dec   dl
+call  R_MapPlane_
+;db    09Ah
+;dw    R_MAPPLANE_OFFSET
+;dw    SPANFUNC_FUNCTION_AREA_SEGMENT
+
+cmp   dl, dh
+jbe   done_with_second_mapplane_loop
+
+dec   di
+dec   di
+jmp   loop_second_mapplane
+
+done_with_second_mapplane_loop:
+
+; update spanstarts
+
+
+
+; b1 = dl
+; b2 = dh
+; t1 = cl
+; t2 = ch
+
+;			while (t2 < t1 && t2 <= b2) {
+;				spanstart[t2] = x;
+
+mov   ax, SPANSTART_SEGMENT
+mov   es, ax
+
+mov   bx, cx
+
+sub   cl, ch     ; t2 < t1?
+jbe   second_spanstart_update_loop
+mov   ax, dx
+sub   ah, ch     ; t2 <= b2?
+jb    second_spanstart_update_loop
+
+inc   ah		; add one for the >= 
+cmp   ah, cl
+ja    dont_swap_cx_params_1  ; todo jae and inc inside
+mov   cl, ah
+dont_swap_cx_params_1:
+
+
+mov   al, ch  ; get t2 word lookup...
+xor   ah, ah
+add   ax, ax
+mov   di, ax  ; di = offset
+
+xor   ch, ch  ; cx loop count is set
+mov   ax, bx
+add   bh, cl  ; add the t2 increment
+
+mov   ax, si  ;  ax = x
+rep   stosw
+
+
+
+second_spanstart_update_loop:
+
+
+;			while (b2 > b1 && b2 >= t2) {
+;				spanstart[b2] = x;
+; b1 = dl
+; b2 = dh
+; t1 = bl
+; t2 = bh
+
+mov   ax, dx
+sub   ah, al    ; b2 - b1
+jbe   end_single_plane_draw_loop_iteration
+mov   cl, dh	; store b2 copy for spanstart addr calculation
+sub   dh, bh    ; b2 - t2
+jb    end_single_plane_draw_loop_iteration
+
+; add one for the >= case 
+inc   dh
+; ah and ch store the two values... take the smallest one to get loop count
+cmp   ah, dh
+ja    dont_swap_cx_params_2
+mov   dh, ah
+dont_swap_cx_params_2:
+
+
+xor   ch, ch
+mov   di, cx  ; cl held copied b2 from above
+add   di, di  ; di = offset
+
+mov   cl, dh  ; count
+
+
+mov   ax, si  ;  ax = x
+std   
+rep   stosw
+cld
+jmp   end_single_plane_draw_loop_iteration
+
+
+
+ENDP
+
 
 END
 

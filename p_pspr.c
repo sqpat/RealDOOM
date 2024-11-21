@@ -616,15 +616,15 @@ void __near A_FireCGun (  pspdef_t __near*	psp ) {
 // ?
 //
 void __near A_Light0 (pspdef_t __near *psp) {
-    player.extralight = 0;
+    player.extralightvalue = 0;
 }
 
 void __near A_Light1 (pspdef_t __near *psp) {
-    player.extralight = 1;
+    player.extralightvalue = 1;
 }
 
 void __near A_Light2 (pspdef_t __near *psp) {
-    player.extralight = 2;
+    player.extralightvalue = 2;
 }
 
 

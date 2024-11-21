@@ -170,7 +170,7 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	player.message = -1;
 	player.damagecount = 0;
 	player.bonuscount = 0;
-	player.extralight = 0;
+	player.extralightvalue = 0;
 	player.fixedcolormapvalue = 0;
 	player.viewheight.w = VIEWHEIGHT;
 

@@ -21,7 +21,6 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN _lastvisplane:word
 EXTRN _lastopening:word
 EXTRN _viewheight:word
 EXTRN _viewwidth:word

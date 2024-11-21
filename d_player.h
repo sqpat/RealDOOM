@@ -132,7 +132,7 @@ typedef struct player_s{
     THINKERREF		attackerRef;
     
     // So gun flashes light up areas.
-    int8_t			extralight;
+    int8_t			extralightvalue;
 
     // Current PLAYPAL, ???
     //  can be set to REDCOLORMAP for pain, etc.

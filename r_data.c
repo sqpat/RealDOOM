@@ -1441,7 +1441,8 @@ int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 
 
 // MRU is the head. LRU is the tail.
-void __near R_MarkL2FlatCacheLRU(int8_t index) {
+//todo move to r_span.asm segment
+void __far R_MarkL2FlatCacheLRU(int8_t index) {
 
 	cache_node_t far* nodelist  = flatcache_nodes;
 
@@ -1475,7 +1476,8 @@ void __near R_MarkL2FlatCacheLRU(int8_t index) {
 }
 
 
-int8_t __near R_EvictFlatCacheEMSPage(){
+//todo move into asm into r_span
+int8_t __far R_EvictFlatCacheEMSPage(){
 	int8_t evictedpage;
 	uint8_t i;
 	int8_t next, prev;

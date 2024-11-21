@@ -329,7 +329,7 @@ void W_CacheLumpNameDirect (int8_t* name, byte __far* dest ) {
 }
 
 
-void W_CacheLumpNumDirect (int16_t lump, byte __far* dest ) {
+void __far W_CacheLumpNumDirect (int16_t lump, byte __far* dest ) {
 	W_ReadLump(lump, dest, 0, 0);
 }
 

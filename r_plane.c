@@ -450,7 +450,7 @@ void __near R_DrawSkyPlane2(int16_t minx, int16_t maxx, visplane_t __far*		pl){
 
 
 
-void __near R_DrawPlanes (void);
+//void __near R_DrawPlanes (void);
 
 /*
 void __near R_DrawPlanes (void) {
