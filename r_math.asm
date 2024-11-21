@@ -20,11 +20,6 @@ INSTRUCTION_SET_MACRO
 
 
 
-
-EXTRN _lastopening:word
-EXTRN _viewheight:word
-EXTRN _viewwidth:word
-
 EXTRN FastDiv3232_shift_3_8_:PROC
 
 EXTRN FastDiv3232_shift_3_8_:PROC
@@ -33,7 +28,6 @@ EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
 
-INCLUDE defs.inc
 
 .CODE
 

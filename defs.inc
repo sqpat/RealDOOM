@@ -37,6 +37,8 @@ _detailshift = 						_NULL_OFFSET + 00020h
 _detailshiftitercount = 			_NULL_OFFSET + 00022h
 _detailshift2minus = 				_NULL_OFFSET + 00023h
 _detailshiftandval = 				_NULL_OFFSET + 00024h
+_ceilphyspage =                  	_NULL_OFFSET + 00026h
+_floorphyspage =                 	_NULL_OFFSET + 00027h
 
 _ds_x1 = 							_NULL_OFFSET + 00028h
 _ds_x2 = 							_NULL_OFFSET + 0002Ah
@@ -53,14 +55,13 @@ _dc_yh = 							_NULL_OFFSET + 00046h
 _dc_iscale = 						_NULL_OFFSET + 00048h
 _dc_texturemid = 					_NULL_OFFSET + 0004Ch
 _dc_x = 							_NULL_OFFSET + 00050h
-
+_lastopening =                   	_NULL_OFFSET + 00052h
 _planezlight = 						_NULL_OFFSET + 00054h
 _planeheight = 						_NULL_OFFSET + 00058h
 _basexscale = 						_NULL_OFFSET + 0005Ch
 _baseyscale = 						_NULL_OFFSET + 00060h
 _viewx = 							_NULL_OFFSET + 00064h
 _viewy = 							_NULL_OFFSET + 00068h
-
 _viewz = 							_NULL_OFFSET + 0006Ch
 _centerx = 							_NULL_OFFSET + 00070h
 _centery = 							_NULL_OFFSET + 00072h
@@ -68,7 +69,6 @@ _centeryfrac_shiftright4 = 			_NULL_OFFSET + 00074h
 _viewangle =                		_NULL_OFFSET + 00078h
 _viewz_shortheight = 				_NULL_OFFSET + 0007Ch
 _viewangle_shiftright1 = 			_NULL_OFFSET + 0007Eh
-
 _rw_x = 							_NULL_OFFSET + 00080h
 _rw_stopx = 						_NULL_OFFSET + 00082h
 _rw_centerangle = 					_NULL_OFFSET + 00084h
@@ -81,7 +81,6 @@ _rw_toptexturemid = 				_NULL_OFFSET + 00098h
 _rw_bottomtexturemid = 				_NULL_OFFSET + 0009Ch
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
-
 _ss_variable_space = 				_NULL_OFFSET + 000ACh
 _mfloorclip = 						_NULL_OFFSET + 000C0h
 _mceilingclip = 					_NULL_OFFSET + 000C4h
@@ -99,7 +98,6 @@ _colfunc_farcall_addr_1   =    		_NULL_OFFSET + 00100h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
-
 _stored_ds = 				    	_NULL_OFFSET + 00110h
 
 
@@ -130,7 +128,7 @@ _screenblocks =            			_NULL_OFFSET + 0016Bh
 _lastvisplane =            			_NULL_OFFSET + 0016Ch
 
 ; 170h
-; 6 bytes... space it out in case of size growth
+; 6-16 bytes...
 _allocatedflatsperpage =           	_NULL_OFFSET + 00170h
 
 ; 180h
@@ -140,6 +138,25 @@ _Z_QuickMapFlatPage_addr =        	_NULL_OFFSET + 00188h
 _R_MarkL2FlatCacheLRU_addr =        _NULL_OFFSET + 0018Ch
 ; 190h
 _W_CacheLumpNumDirect_addr =        _NULL_OFFSET + 00190h
+
+
+
+_floorplaneindex =               	_NULL_OFFSET + 00194h
+_ceilingplaneindex =             	_NULL_OFFSET + 00196h
+_viewwidth =                     	_NULL_OFFSET + 00198h
+_viewheight =	                    _NULL_OFFSET + 0019Ah
+
+_ceiltop =      	                _NULL_OFFSET + 0019Ch
+_floortop =         	            _NULL_OFFSET + 001A0h
+
+_frontsector =          	        _NULL_OFFSET + 001A4h
+_backsector =               	    _NULL_OFFSET + 001A8h
+; 1AC free
+_active_visplanes =             	_NULL_OFFSET + 001B0h
+; 1B5 free
+_visplane_offset =              	_NULL_OFFSET + 001B6h
+; up to 1E8
+
 
 
 

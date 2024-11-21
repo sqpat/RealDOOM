@@ -332,8 +332,8 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 	int16_t linev2Offset;
 	uint8_t lineflags;
 	fixed_t_union temp;
-	sector_t __far* frontsector;
-	sector_t __far* backsector;
+	sector_t __far* frontsector_local;
+	sector_t __far* backsector_local;
 	int16_t curlineside;
  	temp.h.fracbits = 0;
     // check lines
@@ -414,25 +414,25 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 			sides[line->sidenum[curlineside ^ 1]].secnum
 			: SECNUM_NULL;
 			*/
-		frontsector = &sectors[frontsecnum];
-		backsector = &sectors[backsecnum];
+		frontsector_local = &sectors[frontsecnum];
+		backsector_local = &sectors[backsecnum];
 
-		if (frontsector->floorheight == backsector->floorheight && frontsector->ceilingheight == backsector->ceilingheight) {
+		if (frontsector_local->floorheight == backsector_local->floorheight && frontsector_local->ceilingheight == backsector_local->ceilingheight) {
 			continue;
 		}
 
 		// possible occluder
 		// because of ceiling height differences
-		if (frontsector->ceilingheight < backsector->ceilingheight)
-			opentop = frontsector->ceilingheight;
+		if (frontsector_local->ceilingheight < backsector_local->ceilingheight)
+			opentop = frontsector_local->ceilingheight;
 		else
-			opentop = backsector->ceilingheight;
+			opentop = backsector_local->ceilingheight;
 
 		// because of ceiling height differences
-		if (frontsector->floorheight > backsector->floorheight)
-			openbottom = frontsector->floorheight;
+		if (frontsector_local->floorheight > backsector_local->floorheight)
+			openbottom = frontsector_local->floorheight;
 		else
-			openbottom = backsector->floorheight;
+			openbottom = backsector_local->floorheight;
 		
 		// quick test for totally closed doors
 		if (openbottom >= opentop) {
@@ -444,7 +444,7 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 		// todo pull this out? only use
 		frac = P_InterceptVector2 (&strace, &divl);
 		
-		if (frontsector->floorheight != backsector->floorheight) {
+		if (frontsector_local->floorheight != backsector_local->floorheight) {
 		 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  openbottom);
 			slope = FixedDiv (temp.w - sightzstart , frac);
@@ -452,7 +452,7 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 				bottomslope = slope;
 		}
 		
-		if (frontsector->ceilingheight != backsector->ceilingheight) {
+		if (frontsector_local->ceilingheight != backsector_local->ceilingheight) {
 		 	// temp.h.intbits = opentop >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  opentop);
 			slope = FixedDiv (temp.w - sightzstart , frac);

@@ -21,9 +21,6 @@ INSTRUCTION_SET_MACRO
 ; todo move these all out
 
 
-EXTRN _lastopening:word
-EXTRN _viewheight:word
-EXTRN _viewwidth:word
 
 EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
@@ -34,17 +31,6 @@ EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
 
-
-EXTRN _ceilphyspage:BYTE
-EXTRN _floorphyspage:BYTE
-EXTRN _active_visplanes:BYTE
-EXTRN _floortop:DWORD
-EXTRN _ceiltop:DWORD
-EXTRN _visplane_offset:WORD
-
-EXTRN _frontsector:DWORD
-EXTRN _floorplaneindex:WORD
-EXTRN _ceilingplaneindex:WORD
 
 
 

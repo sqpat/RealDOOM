@@ -151,9 +151,7 @@ boolean                 menuactive;
 
 
 
-int16_t		viewwidth;
 int16_t		scaledviewwidth;
-int16_t		viewheight;
 int16_t		viewwindowx;
 int16_t		viewwindowy; 
 int16_t		viewwindowoffset;
@@ -166,16 +164,7 @@ int16_t		viewwindowoffset;
 
 
 
-int16_t				floorplaneindex;
-int16_t				ceilingplaneindex;
-uint16_t 		lastopening;
-
-
-
-int8_t ceilphyspage = 0;
-int8_t floorphyspage = 0;
-
-
+ 
 
 int8_t skytextureloaded = false;
 
@@ -236,8 +225,6 @@ int16_t     walllights;
 
 uint16_t __far*		maskedtexturecol;
 
-byte __far * ceiltop;
-byte __far * floortop;
 
 
 //
@@ -320,7 +307,6 @@ segment_t cachedsegmenttex2 = 0xFFFF;
 int16_t   cachedtex2 = -1;
 uint8_t   cachedcollength = 0;
 uint8_t   cachedcollength2 = 0;
-int8_t active_visplanes[5] = {1, 2, 3, 0, 0};
 
 byte cachedbyteheight;
 uint8_t cachedcol;
@@ -478,13 +464,7 @@ uint8_t quality_port_lookup[12] = {
 };
 */
 
-uint16_t visplane_offset[25] = {
-	0, 646 ,1292, 1938, 2584, 
-	3230,  3876, 4522, 5168, 5814, 
-	6460,  7106, 7752, 8398, 9044, 
-	9690,  10336, 10982, 11628, 12274, 
-	12920,  13566, 14212, 14858, 15504
-};
+
 
 uint16_t vga_read_port_lookup[12] = {
 
@@ -1840,8 +1820,6 @@ int16_t		numlinespecials;
 
 int16_t		curseg;
 seg_render_t __near* curseg_render;
-sector_t __far*	frontsector;
-sector_t __far*	backsector;
 
 drawseg_t __far*	ds_p;
 

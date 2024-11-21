@@ -76,7 +76,7 @@ typedef struct player_s{
     // Focal origin above r.z
     fixed_t_union		viewzvalue;
     // Base height above floor for viewz.
-	fixed_t_union		viewheight;
+	fixed_t_union		viewheightvalue;
     // Bob/squat speed.
 	fixed_t_union     deltaviewheight;
     // bounded/scaled total momentum.

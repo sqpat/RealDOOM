@@ -97,7 +97,7 @@ void P_CalcHeight ()  {
 		if (player.viewzvalue.w > temp.w)
 			player.viewzvalue = temp;
 
-		player.viewzvalue.w = playerMobj_pos->z.w + player.viewheight.w;
+		player.viewzvalue.w = playerMobj_pos->z.w + player.viewheightvalue.w;
 		return;
     }
 		
@@ -108,15 +108,15 @@ void P_CalcHeight ()  {
     
     // move viewheight
     if (player.playerstate == PST_LIVE) {
-		player.viewheight.w += player.deltaviewheight.w;
+		player.viewheightvalue.w += player.deltaviewheight.w;
 
-		if (player.viewheight.w > VIEWHEIGHT) {
-			player.viewheight.w = VIEWHEIGHT;
+		if (player.viewheightvalue.w > VIEWHEIGHT) {
+			player.viewheightvalue.w = VIEWHEIGHT;
 			player.deltaviewheight.w = 0;
 		}
 
-		if (player.viewheight.w < VIEWHEIGHT/2) {
-			player.viewheight.w = VIEWHEIGHT/2;
+		if (player.viewheightvalue.w < VIEWHEIGHT/2) {
+			player.viewheightvalue.w = VIEWHEIGHT/2;
 			if (player.deltaviewheight.w <= 0)
 				player.deltaviewheight.w = 1;
 		}
@@ -127,7 +127,7 @@ void P_CalcHeight ()  {
 				player.deltaviewheight.w = 1;
 		}
     }
-	player.viewzvalue.w = playerMobj_pos->z.w + player.viewheight.w + bob;
+	player.viewzvalue.w = playerMobj_pos->z.w + player.viewheightvalue.w + bob;
 
 
     if (player.viewzvalue.w > temp.w)
@@ -185,11 +185,11 @@ void P_DeathThink () {
     P_MovePsprites();
 	
     // fall to the ground
-    if (player.viewheight.w > 6*FRACUNIT)
-		player.viewheight.h.intbits -= 1;
+    if (player.viewheightvalue.w > 6*FRACUNIT)
+		player.viewheightvalue.h.intbits -= 1;
 
-    if (player.viewheight.w < 6*FRACUNIT)
-		player.viewheight.w = 6*FRACUNIT;
+    if (player.viewheightvalue.w < 6*FRACUNIT)
+		player.viewheightvalue.w = 6*FRACUNIT;
 
 	player.deltaviewheight.w = 0;
 	

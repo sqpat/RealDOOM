@@ -115,7 +115,7 @@ R_DRAWSKYPLANE_OFFSET = 0654h
 R_DRAWSKYPLANE_DYNAMIC_OFFSET = 05E0h
 COLORMAPS_HIGH_SEG_DIFF = 02400h
 
-; Near vars as constants
+; Near vars as constants. Note these are all hex
 _segs_render = 04000h
 _seg_normalangles = 09800h
 _sides_render = 0AE00h

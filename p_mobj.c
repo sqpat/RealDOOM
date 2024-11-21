@@ -172,7 +172,7 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	player.bonuscount = 0;
 	player.extralightvalue = 0;
 	player.fixedcolormapvalue = 0;
-	player.viewheight.w = VIEWHEIGHT;
+	player.viewheightvalue.w = VIEWHEIGHT;
 
 	// setup gun psprite
 	P_SetupPsprites();
@@ -541,9 +541,9 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
     // check for smooth step up
     if (motype == MT_PLAYER && mo_pos->z.w < temp.w) {
-		player.viewheight.w -= (temp.w-mo_pos->z.w);
+		player.viewheightvalue.w -= (temp.w-mo_pos->z.w);
 
-		player.deltaviewheight.w = (VIEWHEIGHT - player.viewheight.w)>>3;
+		player.deltaviewheight.w = (VIEWHEIGHT - player.viewheightvalue.w)>>3;
     }
     
     // adjust height

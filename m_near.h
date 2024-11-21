@@ -79,7 +79,10 @@
 #define detailshiftitercount            (*((uint8_t __near*)            (_NULL_OFFSET + 0x0022)))
 #define detailshift2minus               (*((uint8_t __near*)            (_NULL_OFFSET + 0x0023)))
 #define detailshiftandval               (*((uint16_t __near*)           (_NULL_OFFSET + 0x0024)))
-//#define ???
+
+#define ceilphyspage                    (*((int8_t __near*)             (_NULL_OFFSET + 0x0026)))
+#define floorphyspage                   (*((int8_t __near*)             (_NULL_OFFSET + 0x0027)))
+
 #define ds_x1                           (*((int16_t __near*)            (_NULL_OFFSET + 0x0028)))
 #define ds_x2                           (*((int16_t __near*)            (_NULL_OFFSET + 0x002A)))
 #define ds_colormap_segment             (*((segment_t __near*)          (_NULL_OFFSET + 0x002C)))
@@ -95,7 +98,8 @@
 #define dc_iscale                       (*((fixed_t __near *)           (_NULL_OFFSET + 0x0048)))
 #define dc_texturemid                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x004C)))
 #define dc_x                            (*((int16_t __near*)            (_NULL_OFFSET + 0x0050)))
-//#define ???
+#define lastopening                     (*((uint16_t    __near*)        (_NULL_OFFSET + 0x0052)))
+
 #define planezlight                     (*(uint8_t __far * __near *)    (_NULL_OFFSET + 0x0054))
 #define planeheight                     (*((fixed_t __near *)           (_NULL_OFFSET + 0x0058)))
 #define basexscale                      (*((fixed_t __near *)           (_NULL_OFFSET + 0x005C)))
@@ -189,6 +193,22 @@
 #define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0188)))
 #define R_MarkL2FlatCacheLRU_addr       (*((uint32_t  __near*)           (_NULL_OFFSET + 0x018C)))
 #define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0190)))
+
+#define floorplaneindex                 (*((int16_t    __near*)          (_NULL_OFFSET + 0x0194)))
+#define ceilingplaneindex               (*((int16_t    __near*)          (_NULL_OFFSET + 0x0196)))
+#define viewwidth                       (*((int16_t    __near*)          (_NULL_OFFSET + 0x0198)))
+#define viewheight                      (*((int16_t    __near*)          (_NULL_OFFSET + 0x019A)))
+#define ceiltop                         (*((byte  __far* __near*)        (_NULL_OFFSET + 0x019C)))
+#define floortop                        (*((byte  __far* __near*)        (_NULL_OFFSET + 0x01A0)))
+
+#define frontsector                     (*((sector_t __far*  __near*)    (_NULL_OFFSET + 0x01A4)))
+#define backsector                      (*((sector_t __far*  __near*)    (_NULL_OFFSET + 0x01A8)))
+// 1AC free
+
+#define active_visplanes                (((int8_t    __near*)            (_NULL_OFFSET + 0x01B0)))
+// 1B5 free
+#define visplane_offset                 (((uint16_t    __near*)          (_NULL_OFFSET + 0x01B6)))
+// up to 1E8
 
 
 
@@ -286,17 +306,11 @@ extern int8_t               quickSaveSlot;
 extern boolean              inhelpscreens;
 extern boolean              menuactive;
 
-extern int16_t		        viewwidth;
 extern int16_t		        scaledviewwidth;
-extern int16_t		        viewheight;
 extern int16_t		        viewwindowx;
 extern int16_t		        viewwindowy; 
 extern int16_t		        viewwindowoffset;
-extern int16_t				floorplaneindex;
-extern int16_t				ceilingplaneindex;
-extern uint16_t 		    lastopening;
-extern int8_t               ceilphyspage;
-extern int8_t               floorphyspage;
+
 extern int8_t               skytextureloaded;
 extern int16_t              r_cachedplayerMobjsecnum;
 extern int16_t			    validcount;
@@ -329,8 +343,6 @@ extern fixed_t		        bottomfrac;
 extern fixed_t		        bottomstep;
 extern int16_t      	    walllights;
 extern uint16_t __far*		maskedtexturecol;
-extern byte __far *         ceiltop;
-extern byte __far *         floortop;
 extern uint16_t             pspritescale;
 extern int16_t              spritelights;
 extern int16_t              vissprite_p;
@@ -370,7 +382,6 @@ extern int16_t              cachedtex2;
 extern uint8_t              cachedcollength;
 extern uint8_t              cachedcollength2;
 
-extern int8_t               active_visplanes[5];
 extern byte                 cachedbyteheight;
 extern uint8_t              cachedcol;
 //extern int16_t              ;
@@ -422,7 +433,6 @@ extern int16_t              lightmult48lookup[16];
 extern segment_t            pagesegments[4];
 
 extern uint16_t             vga_read_port_lookup[12];
-extern uint16_t             visplane_offset[25];
 
 extern void                 (__far* R_DrawColumnPrepCallHigh)(uint16_t);
 extern void                 (__far* R_DrawColumnPrepCall)(uint16_t);
@@ -1009,8 +1019,6 @@ extern int16_t		numlinespecials;
 
 extern int16_t		curseg;
 extern seg_render_t __near* curseg_render;
-extern sector_t __far*	frontsector;
-extern sector_t __far*	backsector;
 
 extern drawseg_t __far*	ds_p;
 
