@@ -343,10 +343,13 @@ void __far Z_QuickMapUnmapAll();
 // 86
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 
+#define FLAT_DATA_PAGES                             (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
+
+
 // todo eventuall yjust include this in the spritecache area...
 //#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
 // 90 (+1 for 0 index = 95)
-#define NUM_EMS4_SWAP_PAGES                         (int16_t) (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
+#define NUM_EMS4_SWAP_PAGES                         (int16_t) (FLAT_DATA_PAGES + 3)
 // 91 in use currently (including page 0)
 
 
@@ -513,7 +516,6 @@ void __far Z_QuickMapRenderPlanes();
 #define PAGE_9000_LUMPINFO_PHYSICS 1
 #define PAGE_9000_RENDER 2
 #define PAGE_9000_SCREEN1 4
-#define PAGE_9000_RENDER_PLANE 5
 
 
 
@@ -523,7 +525,7 @@ void __far Z_QuickMapRenderPlanes();
 #define PAGE_5000_SCRATCH 3
 #define PAGE_5000_PHYSICS 4
 #define PAGE_5000_RENDER 5
-
+#define PAGE_5000_RENDER_PLANE 6
 
 #define PAGE_5000_SCRATCH_REMAP 6
 

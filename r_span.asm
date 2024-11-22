@@ -1472,9 +1472,6 @@ mov   word ptr ds:[_ds_x1], ax
 inc   cl
 
 call  R_MapPlane_
-;db    09Ah
-;dw    R_MAPPLANE_OFFSET
-;dw    SPANFUNC_FUNCTION_AREA_SEGMENT
 
 cmp   cl, ch
 jae   done_with_first_mapplane_loop
@@ -1515,10 +1512,8 @@ mov   ax, word ptr es:[di]
 mov   word ptr ds:[_ds_y], di
 mov   word ptr ds:[_ds_x1], ax
 dec   dl
+
 call  R_MapPlane_
-;db    09Ah
-;dw    R_MAPPLANE_OFFSET
-;dw    SPANFUNC_FUNCTION_AREA_SEGMENT
 
 cmp   dl, dh
 jbe   done_with_second_mapplane_loop

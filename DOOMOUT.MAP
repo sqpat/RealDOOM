@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/21 14:53:38
+Created on:       24/11/21 16:02:46
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -90,7 +90,7 @@ r_things_TEXT          CODE           AUTO           17c7:4800       000010f2
 w_wad_TEXT             CODE           AUTO           17c7:5900       0000032e
 VIDEO_TEXT             CODE           AUTO           17c7:5c2e       000001fb
 v_video_TEXT           CODE           AUTO           17c7:5e30       00000218
-z_zone_TEXT            CODE           AUTO           17c7:6050       000004d6
+z_zone_TEXT            CODE           AUTO           17c7:6050       000004d8
 d_math_TEXT            CODE           AUTO           17c7:6530       00000000
 p_setup_TEXT           CODE           AUTO           1e1a:0000       0000107d
 p_sight_TEXT           CODE           AUTO           1e1a:1080       00000795
@@ -1391,22 +1391,22 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 17c7:61fc*     Z_QuickMapRenderPlanesBack_
 17c7:620e      Z_QuickMapFlatPage_
 17c7:6228      Z_QuickMapUndoFlatCache_
-17c7:6250      Z_QuickMapMaskedExtraData_
-17c7:625c      Z_QuickMapSpritePage_
-17c7:6268*     Z_QuickMapPhysics5000_
-17c7:627a*     Z_QuickMapScreen1_
-17c7:629a      Z_QuickMapLumpInfo_
-17c7:62d2      Z_UnmapLumpInfo_
-17c7:6322      Z_QuickMapLumpInfo5000_
-17c7:6366      Z_UnmapLumpInfo5000_
-17c7:63b4      Z_QuickMapPalette_
-17c7:63c6      Z_QuickMapMenu_
-17c7:63d8      Z_QuickMapIntermission_
-17c7:63ee      Z_QuickMapWipe_
-17c7:6420      Z_QuickMapByTaskNum_
-17c7:6468      Z_QuickMapVisplanePage_
-17c7:64cc      Z_QuickMapVisplaneRevert_
-17c7:64ea      Z_QuickMapUnmapAll_
+17c7:6256      Z_QuickMapMaskedExtraData_
+17c7:6262      Z_QuickMapSpritePage_
+17c7:626e*     Z_QuickMapPhysics5000_
+17c7:6280*     Z_QuickMapScreen1_
+17c7:629e      Z_QuickMapLumpInfo_
+17c7:62d6      Z_UnmapLumpInfo_
+17c7:6314      Z_QuickMapLumpInfo5000_
+17c7:635a      Z_UnmapLumpInfo5000_
+17c7:63b8      Z_QuickMapPalette_
+17c7:63ca      Z_QuickMapMenu_
+17c7:63dc      Z_QuickMapIntermission_
+17c7:63f2      Z_QuickMapWipe_
+17c7:6424      Z_QuickMapByTaskNum_
+17c7:646c      Z_QuickMapVisplanePage_
+17c7:64ce      Z_QuickMapVisplaneRevert_
+17c7:64ec      Z_QuickMapUnmapAll_
 Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 1e1a:0000      P_SetupLevel_
 1e1a:014e+     P_LoadVertexes_

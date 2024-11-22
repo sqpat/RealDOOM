@@ -775,7 +775,7 @@ rejectmatrix       5C00:0000
 #define size_distscale         (sizeof(fixed_t) * SCREENWIDTH)
 
 // start plane only
-#define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(0x90000000, 0))
+#define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(0x50000000, 0))
 #define yslope                ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedheight, size_cachedheight))
 #define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(yslope, size_yslope))
 #define cachedxstep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cacheddistance, size_cacheddistance))
@@ -802,40 +802,40 @@ rejectmatrix       5C00:0000
 
 
 //FREE AREA
-// 9163:0000
+// 5163:0000
 //#define skytexture_post_bytes ((byte __far*) MAKE_FULL_SEGMENT(distscale, size_distscale))
 //#define skytexture_post_segment    ((uint16_t) ((int32_t)skytexture_post_bytes >> 16))
 // FREEBYTES ~ 8k free in drawskyplane still?
 
 // 32768 bytes
-//  9400:0000
+//  5400:0000
 
 
 
 // 35080 for the wad but 32k pixel data actually. 
 // todo theres that one with the weird double column. confirm on that...
 #define size_skytexture   32768
-#define skytexture_texture_bytes ((byte __far*) MAKE_FULL_SEGMENT(0x94000000, 0))
+#define skytexture_texture_bytes ((byte __far*) MAKE_FULL_SEGMENT(0x54000000, 0))
 #define skytexture_texture_segment ((segment_t) ((int32_t)skytexture_texture_bytes >> 16))
 
 
 
 /*
-cachedheight   9000:0000
-yslope         9032:0000
-cacheddistance 9064:0000
-cachedxstep    9096:0000
-cachedystep    90C8:0000
-spanstart      90FA:0000
-distscale      9113:0000
-drawskyplane_area  9163:0000
+cachedheight   5000:0000
+yslope         5032:0000
+cacheddistance 5064:0000
+cachedxstep    5096:0000
+cachedystep    50C8:0000
+spanstart      50FA:0000
+distscale      5113:0000
+drawskyplane_area  5163:0000
 
 //FREEBYTES
 // 8000+ bytes free? PLANES ONLY. could be fast unrolled draw sky code, 
 // and fast unrolled drawspan no tex code.
 
 
-skytexture         9400:0000
+skytexture         5400:0000
 
 
 */
@@ -974,15 +974,6 @@ wianimoffsets  7A53:0000
 
 // ALLOCATION DEFINITIONS: RENDER
 
-// RENDER 0x9000
-// textures
-
-
-
-
-
-
-
 
 
 
@@ -1086,9 +1077,24 @@ patchoffset                 83BD:01DC
 
 // RENDER 0x7800 - 0x7FFF DATA NOT USED IN PLANES
 
+
+//NOW
+
 //              bsp     plane     sprite
-// 9C00-9FFF  TEXTURE   -----     TEXTURE
-// 9000-9BFF  TEXTURE sky texture TEXTURE
+// 9000-9FFF        COLORMAPS_DATA
+// 8000-8FFF    VISPLANES_DATA    sprcache ??
+// 8000-87FF    DATA  flatcache   sprcache ??
+// 7000-7FFF   DATA  flatcache    DATA
+// 6000-6FFF  TEXTURE   -----     TEXTURE
+// 5000-5FFF  TEXTURE sky texture TEXTURE
+// 4000-4FFF        -- no changes --
+
+
+//WAS
+
+//              bsp     plane     sprite
+// 9C00-9FFF    -----   -----     -----
+// 9000-9BFF    ----- sky texture -----
 // 8000-8FFF    VISPLANES_DATA    COLORMAPS_DATA
 // 7800-7FFF    DATA  flatcache   DATA
 // 7000-77FF    DATA  flatcache   sprcache

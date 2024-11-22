@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/21 14:53:35
+Created on:       24/11/21 16:02:43
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -93,7 +93,7 @@ r_things_TEXT          CODE           AUTO           17e9:6930       000010f2
 w_wad_TEXT             CODE           AUTO           17e9:7a30       0000032e
 VIDEO_TEXT             CODE           AUTO           17e9:7d5e       000001fb
 v_video_TEXT           CODE           AUTO           17e9:7f60       00000218
-z_zone_TEXT            CODE           AUTO           17e9:8180       000004d6
+z_zone_TEXT            CODE           AUTO           17e9:8180       000004d8
 d_math_TEXT            CODE           AUTO           17e9:8660       00000000
 p_setup_TEXT           CODE           AUTO           204f:0000       0000107d
 p_sight_TEXT           CODE           AUTO           204f:1080       00000795
@@ -1413,22 +1413,22 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 17e9:832c*     Z_QuickMapRenderPlanesBack_
 17e9:833e      Z_QuickMapFlatPage_
 17e9:8358      Z_QuickMapUndoFlatCache_
-17e9:8380      Z_QuickMapMaskedExtraData_
-17e9:838c      Z_QuickMapSpritePage_
-17e9:8398*     Z_QuickMapPhysics5000_
-17e9:83aa*     Z_QuickMapScreen1_
-17e9:83ca      Z_QuickMapLumpInfo_
-17e9:8402      Z_UnmapLumpInfo_
-17e9:8452      Z_QuickMapLumpInfo5000_
-17e9:8496      Z_UnmapLumpInfo5000_
-17e9:84e4      Z_QuickMapPalette_
-17e9:84f6      Z_QuickMapMenu_
-17e9:8508      Z_QuickMapIntermission_
-17e9:851e      Z_QuickMapWipe_
-17e9:8550      Z_QuickMapByTaskNum_
-17e9:8598      Z_QuickMapVisplanePage_
-17e9:85fc      Z_QuickMapVisplaneRevert_
-17e9:861a      Z_QuickMapUnmapAll_
+17e9:8386      Z_QuickMapMaskedExtraData_
+17e9:8392      Z_QuickMapSpritePage_
+17e9:839e*     Z_QuickMapPhysics5000_
+17e9:83b0*     Z_QuickMapScreen1_
+17e9:83ce      Z_QuickMapLumpInfo_
+17e9:8406      Z_UnmapLumpInfo_
+17e9:8444      Z_QuickMapLumpInfo5000_
+17e9:848a      Z_UnmapLumpInfo5000_
+17e9:84e8      Z_QuickMapPalette_
+17e9:84fa      Z_QuickMapMenu_
+17e9:850c      Z_QuickMapIntermission_
+17e9:8522      Z_QuickMapWipe_
+17e9:8554      Z_QuickMapByTaskNum_
+17e9:859c      Z_QuickMapVisplanePage_
+17e9:85fe      Z_QuickMapVisplaneRevert_
+17e9:861c      Z_QuickMapUnmapAll_
 Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 204f:0000      P_SetupLevel_
 204f:014e+     P_LoadVertexes_
@@ -1756,4 +1756,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028ca0 (167072.)
 Entry point address: 204f:2424
-Link time: 00:00.75
+Link time: 00:00.19

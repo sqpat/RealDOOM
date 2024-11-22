@@ -2606,23 +2606,23 @@ void R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean is
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
 //void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked){
 void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
-	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
+	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_4000;
 	int16_t col;
 	uint16_t destoffset = 0;
 	int16_t patchwidth;
 
 
-	Z_QuickMapScratch_5000(); // render col info has been paged out..
+	Z_QuickMapScratch_4000(); // render col info has been paged out..
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
 	patchwidth = patch->width;
 
 	for (col = 0; col < patchwidth; col++){
 
-		column_t __far * column = (column_t __far *)(SCRATCH_ADDRESS_5000 + patch->columnofs[col]);
+		column_t __far * column = (column_t __far *)(SCRATCH_ADDRESS_4000 + patch->columnofs[col]);
 		while (column->topdelta != 0xFF){
 			uint8_t length = column->length;
-			byte __far * sourcetexaddr = SCRATCH_ADDRESS_5000 + (((int32_t)column) + 3);
+			byte __far * sourcetexaddr = SCRATCH_ADDRESS_4000 + (((int32_t)column) + 3);
 			byte __far * destaddr = MK_FP(texlocation_segment,  destoffset);
 			byte __far * colormapzero = MK_FP(colormaps_segment,  0);
 			//FAR_memcpy(MK_FP(texlocation_segment,  destoffset), sourcetexaddr, length);
@@ -2649,7 +2649,7 @@ void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, b
 
 	}
 
-	Z_QuickMapRender5000(); // put render info back
+	Z_QuickMapRender4000(); // put render info back
 
 }
 
