@@ -464,7 +464,7 @@ sub   dx, ax
 mov   word ptr ds:[_dc_texturemid+2], dx
 mov   ax, COLORMAPS_HIGH_SEG_DIFF
 
-
+; todo double check if this is really necessary
 db 09Ah
 db R_DRAWCOLUMNPREPCALLOFFSET AND 0FFh
 db (R_DRAWCOLUMNPREPCALLOFFSET SHR 8 )

@@ -291,6 +291,7 @@ void __far Z_QuickMapUnmapAll();
 
 // arg mult times size of int16
 
+#define SCRATCH_ADDRESS_4000 (byte __far* )0x40000000
 #define SCRATCH_ADDRESS_5000 (byte __far* )0x50000000
 #define SCRATCH_ADDRESS_7000 (byte __far* )0x70000000
 #define SCRATCH_ADDRESS_8000 (byte __far* )0x80000000
@@ -382,6 +383,7 @@ void __far Z_QuickMapUnmapAll();
 #define num_scratch5000_params 4
 #define num_scratch8000_params 4
 #define num_scratch7000_params 4
+#define num_scratch4000_params 4
 #define num_renderplane_params 4
 #define num_flatcache_params 4
 #define num_spritecache_params 4
@@ -407,7 +409,7 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_screen0_offset_size             (16)
 #define pageswapargs_rend_offset_size                (num_phys_params)
 
-#define pageswapargs_rend_texture_size                (pageswapargs_rend_offset_size + 20)
+#define pageswapargs_rend_texture_size                (pageswapargs_rend_offset_size + 4)
 #define pageswapargs_rend_other9000_size              (pageswapargs_rend_offset_size + 24)
 
 #define pageswapargs_stat_offset_size                (pageswapargs_rend_offset_size           + num_rend_params)
@@ -415,7 +417,8 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_scratch5000_offset_size         (pageswapargs_demo_offset_size           + num_demo_params)
 #define pageswapargs_scratch8000_offset_size         (pageswapargs_scratch5000_offset_size    + num_scratch5000_params)
 #define pageswapargs_scratch7000_offset_size         (pageswapargs_scratch8000_offset_size    + num_scratch8000_params)
-#define pageswapargs_renderplane_offset_size         (pageswapargs_scratch7000_offset_size    + num_scratch7000_params)
+#define pageswapargs_scratch4000_offset_size         (pageswapargs_scratch7000_offset_size    + num_scratch7000_params)
+#define pageswapargs_renderplane_offset_size         (pageswapargs_scratch4000_offset_size    + num_scratch4000_params)
 #define pageswapargs_flatcache_offset_size           (pageswapargs_renderplane_offset_size    + num_renderplane_params)
 #define pageswapargs_spritecache_offset_size         (pageswapargs_flatcache_offset_size      + num_flatcache_params)
 #define pageswapargs_flatcache_undo_offset_size      (pageswapargs_spritecache_offset_size    + num_spritecache_params)
@@ -435,7 +438,8 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_scratch5000_offset     (pageswapargs_demo_offset               + (num_demo_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_scratch8000_offset     (pageswapargs_scratch5000_offset        + (num_scratch5000_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_scratch7000_offset     (pageswapargs_scratch8000_offset        + (num_scratch8000_params*PAGE_SWAP_ARG_MULT))
-#define pageswapargs_renderplane_offset     (pageswapargs_scratch7000_offset        + (num_scratch7000_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_scratch4000_offset     (pageswapargs_scratch7000_offset        + (num_scratch7000_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_renderplane_offset     (pageswapargs_scratch4000_offset        + (num_scratch4000_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_flatcache_offset       (pageswapargs_renderplane_offset        + (num_renderplane_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_spritecache_offset     (pageswapargs_flatcache_offset          + (num_flatcache_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_flatcache_undo_offset  (pageswapargs_spritecache_offset        + (num_spritecache_params*PAGE_SWAP_ARG_MULT))
@@ -448,7 +452,7 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_visplanepage_offset    (pageswapargs_lumpinfo_5400_offset      + (num_lumpinfo_5400_params*PAGE_SWAP_ARG_MULT))
 #define total_pages                         (pageswapargs_visplanepage_offset       + (num_visplanepage_params*PAGE_SWAP_ARG_MULT))
 
-#define pageswapargs_rend_texture_offset                (pageswapargs_rend_offset + 20*PAGE_SWAP_ARG_MULT)
+#define pageswapargs_rend_texture_offset                (pageswapargs_rend_offset + 4*PAGE_SWAP_ARG_MULT)
 #define pageswapargs_rend_other9000_offset              (pageswapargs_rend_offset + 24*PAGE_SWAP_ARG_MULT)
 
 
@@ -463,9 +467,11 @@ void __far Z_QuickMapStatusNoScreen4();
 
 void __far Z_QuickMapDemo();
 void __far Z_QuickMapRender4000();
+void __far Z_QuickMapRender5000();
 void __far Z_QuickMapByTaskNum(int8_t task);
 void __near Z_QuickMapRenderTexture();
 //void __far Z_QuickMapRenderTexture(uint8_t offset, uint8_t count);
+void __far Z_QuickMapScratch_4000();
 void __far Z_QuickMapScratch_5000();
 void __far Z_QuickMapScratch_8000();
 void __far Z_QuickMapScratch_7000();
@@ -505,8 +511,7 @@ void __far Z_QuickMapRenderPlanes();
 
 #define PAGE_9000_UNMAPPED -1
 #define PAGE_9000_LUMPINFO_PHYSICS 1
-#define PAGE_9000_TEXTURE 2
-#define PAGE_9000_RENDER 3
+#define PAGE_9000_RENDER 2
 #define PAGE_9000_SCREEN1 4
 #define PAGE_9000_RENDER_PLANE 5
 
@@ -516,7 +521,8 @@ void __far Z_QuickMapRenderPlanes();
 #define PAGE_5000_LUMPINFO 1
 #define PAGE_5000_DEMOBUFFER 2
 #define PAGE_5000_SCRATCH 3
-#define PAGE_5000_PHYSICS_RENDER 4
+#define PAGE_5000_PHYSICS 4
+#define PAGE_5000_RENDER 5
 
 
 #define PAGE_5000_SCRATCH_REMAP 6

@@ -147,7 +147,7 @@ void __far Z_QuickMapPhysics() {
 	taskswitchcount ++;
 #endif
 	currenttask = TASK_PHYSICS;
-	current5000State = PAGE_5000_PHYSICS_RENDER;
+	current5000State = PAGE_5000_PHYSICS;
 	current9000State = PAGE_9000_LUMPINFO_PHYSICS;
 
 }
@@ -191,8 +191,8 @@ void __far  Z_QuickMapRender() {
 	currenttask = TASK_RENDER;
 
 
-	current5000State = PAGE_5000_PHYSICS_RENDER;
-	current9000State = PAGE_9000_TEXTURE;
+	current5000State = PAGE_5000_RENDER;
+	current9000State = PAGE_9000_RENDER;
 }
 
 // leave off text and do 4000 in 9000 region. Used in p_setup...
@@ -200,7 +200,7 @@ void __far Z_QuickMapRender_4000To9000() {
 
 	//todo
 
-	Z_QuickMap16AI(pageswapargs_rend_offset_size+4, INDEXED_PAGE_5000_OFFSET); // 5000 to 8000
+	Z_QuickMap16AI(pageswapargs_rend_offset_size+4, INDEXED_PAGE_5000_OFFSET); // 5000 thru 8000
 	Z_QuickMap4AI(pageswapargs_rend_other9000_size, INDEXED_PAGE_9000_OFFSET);  // 4000 as 9000
 
 
@@ -210,7 +210,7 @@ void __far Z_QuickMapRender_4000To9000() {
 #endif
 	currenttask = TASK_RENDER;
 
-	current5000State = PAGE_5000_PHYSICS_RENDER;
+	current5000State = PAGE_5000_RENDER;
 	current9000State = PAGE_9000_RENDER;
 
 }
@@ -220,8 +220,16 @@ void __far Z_QuickMapRender4000() {
 
 	Z_QuickMap4AI(pageswapargs_rend_offset_size, INDEXED_PAGE_4000_OFFSET);
 
-	
+}
 
+void __far Z_QuickMapRender5000() {
+
+	Z_QuickMap4AI(pageswapargs_rend_offset_size + 4, INDEXED_PAGE_5000_OFFSET);
+#ifdef DETAILED_BENCH_STATS
+	taskswitchcount++;
+#endif
+
+	current5000State = PAGE_5000_RENDER;
 }
 
 void __far Z_QuickMapRender9000() {
@@ -233,12 +241,8 @@ void __far Z_QuickMapRender9000() {
 
 // sometimes needed when rendering sprites..
 void __near Z_QuickMapRenderTexture() {
-//void Z_QuickMapRenderTexture(uint8_t offset, uint8_t count) {
 
-	//pageswapargs_textcache[2];
-	
-	//pageswapargs_rend_texture_size
-	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_9000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_5000_OFFSET);
 
 
 
@@ -259,7 +263,7 @@ void __near Z_QuickMapRenderTexture() {
 
 #endif
 	currenttask = TASK_RENDER_TEXT; // not sure about this
-	current9000State = PAGE_9000_TEXTURE;
+	current9000State = PAGE_9000_RENDER;
 }
 
 
@@ -328,6 +332,17 @@ void __far Z_QuickMapScratch_7000() {
 #endif
 }
 
+void __far Z_QuickMapScratch_4000() {
+
+	Z_QuickMap4AI(pageswapargs_scratch4000_offset_size, INDEXED_PAGE_4000_OFFSET);
+
+#ifdef DETAILED_BENCH_STATS
+	taskswitchcount++;
+	scratchpageswitchcount++;
+
+#endif
+}
+
 void __far Z_QuickMapScreen0() {
 	Z_QuickMap4AI(pageswapargs_screen0_offset_size, INDEXED_PAGE_8000_OFFSET);
 }
@@ -379,8 +394,7 @@ void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 }
 
 void __far Z_QuickMapUndoFlatCache() {
-	// also puts 9000 page back from skytexture
-	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_9000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_5000_OFFSET);
 	
 	// this runs 4 over into z_quickmapsprite page
 	//Z_QuickMap9(pageswapargs_flatcache_undo_offset_size);
@@ -395,7 +409,7 @@ void __far Z_QuickMapUndoFlatCache() {
 
 #endif
 	currenttask = TASK_RENDER_TEXT; 
-	current9000State = PAGE_9000_TEXTURE;
+	current9000State = PAGE_9000_RENDER;
 }
 
 void __far Z_QuickMapMaskedExtraData() {
@@ -420,18 +434,19 @@ void __far Z_QuickMapSpritePage() {
 
 }
  
+void __far Z_QuickMapPhysics5000() {
 
- 
-
-void __far Z_QuickMapPhysicsRender5000() {
-
-	Z_QuickMap4AI(pageswapargs_rend_offset_size + 4, INDEXED_PAGE_5000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_phys_offset_size + 4, INDEXED_PAGE_5000_OFFSET);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
 
-	current5000State = PAGE_5000_PHYSICS_RENDER;
+	current5000State = PAGE_5000_PHYSICS;
 }
+
+ 
+
+
 
 void __far Z_QuickMapScreen1(){
 	Z_QuickMap4AI(pageswapargs_intermission_offset_size+12, INDEXED_PAGE_9000_OFFSET);
@@ -447,7 +462,6 @@ void __far Z_QuickMapLumpInfo() {
 			// use conventional memory until set up...
 			return;
 	 
-		case PAGE_9000_TEXTURE:
 		case PAGE_9000_RENDER:
 		case PAGE_9000_SCREEN1:
 		
@@ -488,9 +502,6 @@ void __far Z_UnmapLumpInfo() {
 
 
 	switch (last9000State) {
-		case PAGE_9000_TEXTURE:
-			Z_QuickMapRenderTexture();
-			break;
 		case PAGE_9000_RENDER:
 			Z_QuickMapRender9000();
 			break;
@@ -512,7 +523,8 @@ void __far Z_QuickMapLumpInfo5000() {
 	switch (current5000State) {
 
 		case PAGE_5000_SCRATCH:
-		case PAGE_5000_PHYSICS_RENDER:
+		case PAGE_5000_PHYSICS:
+		case PAGE_5000_RENDER:
 		case PAGE_5000_UNMAPPED:
 		case PAGE_5000_DEMOBUFFER:
 
@@ -542,8 +554,10 @@ void __far Z_UnmapLumpInfo5000() {
 		case PAGE_5000_SCRATCH:
 			Z_QuickMapScratch_5000();
 			break;
-		case PAGE_5000_PHYSICS_RENDER:
-			Z_QuickMapPhysicsRender5000();
+		case PAGE_5000_RENDER:
+			Z_QuickMapRender5000();
+		case PAGE_5000_PHYSICS:
+			Z_QuickMapPhysics5000();
 			break;
 		case PAGE_5000_DEMOBUFFER:
 			Z_QuickMapDemo();

@@ -141,7 +141,7 @@ int origcachecount = 0;
 int8_t checkchecksum(int16_t l){
 	uint16_t checkchecksum = 0;
 	uint16_t i;
-	uint16_t __far* data =  MK_FP(0x9000, 0);
+	uint16_t __far* data =  MK_FP(0x5000, 0);
 	if (setval < 2){
 		return 0;
 	}
@@ -2013,7 +2013,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 				activetexturepages[startpage+i]  = -1; // unpaged
 				//this is unmapping the page, so we don't need to use pagenum/nodelist
 				pageswapargs[pageswapargs_rend_texture_offset+( startpage+i)*PAGE_SWAP_ARG_MULT] = 
-					_NPR(PAGE_9000_OFFSET+startpage+i);
+					_NPR(PAGE_5000_OFFSET+startpage+i);
 
 				activenumpages[startpage+i] = 0;
 			}
@@ -2088,7 +2088,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		// prep args for quickmap;
 
-		// startpage is the ems page withing the 0x9000 block
+		// startpage is the ems page withing the 0x5000 block
 		// pagenum is the EMS page offset within EMS texture pages
 
 
@@ -2100,7 +2100,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 				// unmapping the page, so we dont need pagenum
 				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT] 
-					= _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
+					= _NPR(PAGE_5000_OFFSET+startpage+i); // unpaged
 				activenumpages[startpage + i] = 0;
 			}
 		}
@@ -2251,7 +2251,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 		// prep args for quickmap;
 
-		// startpage is the ems page withing the 0x9000 block
+		// startpage is the ems page withing the 0x5000 block
 		// pagenum is the EMS page offset within EMS texture pages
 
 
@@ -2304,7 +2304,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 
 
-// get 0x9000 offset for texture
+// get 0x5000 offset for texture
 segment_t __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
 
 	int16_t index = lump - firstpatch;
@@ -2327,13 +2327,13 @@ segment_t __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
 		texoffset = patchoffset[index];
 
 		// texture in now L2 cache (EMS), so just return thru L1 cache
-		tex_segment = 0x9000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
+		tex_segment = 0x5000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
 		R_LoadPatchColumns(lump, tex_segment, ismasked);
 		return tex_segment;
 	} 
 	
 	// texture in L2 cache (EMS), so just return thru L1 cache
-	return 0x9000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
+	return 0x5000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
 
 
 
@@ -2355,12 +2355,12 @@ segment_t getcompositetexture(int16_t tex_index) {
 		texpage = compositetexturepage[tex_index];
 		texoffset = compositetextureoffset[tex_index];
 		//gettexturepage ensures the page is active
-		tex_segment = 0x9000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+		tex_segment = 0x5000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
 		R_GenerateComposite(tex_index, tex_segment);
 		return tex_segment;
 	}
 
-	return 0x9000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+	return 0x5000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
 
 
 }
@@ -2401,7 +2401,7 @@ segment_t __near getspritetexture(int16_t index) {
 /*
 void setchecksum(){
 	uint16_t i;
-	uint16_t __far* data =  MK_FP(0x9000, 0);
+	uint16_t __far* data =  MK_FP(0x5000, 0);
 	
 	for (i = 0; i <32767; i++){
 		thechecksum += data[i];
@@ -2563,23 +2563,23 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
 void R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
-	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
+	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_4000;
 	int16_t col;
 	uint16_t destoffset = 0;
 	int16_t patchwidth;
 
 
-	Z_QuickMapScratch_5000(); // render col info has been paged out..
+	Z_QuickMapScratch_4000(); // render col info has been paged out..
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
 	patchwidth = patch->width;
 
 	for (col = 0; col < patchwidth; col++){
 
-		column_t __far * column = (column_t __far *)(SCRATCH_ADDRESS_5000 + patch->columnofs[col]);
+		column_t __far * column = (column_t __far *)(SCRATCH_ADDRESS_4000 + patch->columnofs[col]);
 		while (column->topdelta != 0xFF){
 			uint8_t length = column->length;
-			byte __far * sourcetexaddr = SCRATCH_ADDRESS_5000 + (((int32_t)column) + 3);
+			byte __far * sourcetexaddr = SCRATCH_ADDRESS_4000 + (((int32_t)column) + 3);
 			FAR_memcpy(MK_FP(texlocation_segment,  destoffset), sourcetexaddr, length);
 			destoffset += length;
 			if (ismasked){
@@ -2599,7 +2599,7 @@ void R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean is
 
 	}
 
-	Z_QuickMapPhysicsRender5000(); // put render info back
+	Z_QuickMapRender4000(); // put render info back
 
 }
 
@@ -2649,7 +2649,7 @@ void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, b
 
 	}
 
-	Z_QuickMapPhysicsRender5000(); // put render info back
+	Z_QuickMapRender5000(); // put render info back
 
 }
 
@@ -2734,6 +2734,6 @@ void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment){
 
 	}
 
-	Z_QuickMapPhysicsRender5000(); // put render info back
+	Z_QuickMapRender5000(); // put render info back
 
 }
