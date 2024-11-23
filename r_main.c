@@ -636,7 +636,7 @@ void __far R_RenderPlayerView () {
 
 	// put away flat cache, put back level data
 	Z_QuickMapUndoFlatCache();
- 	Z_QuickMapRenderTexture();
+ 	//Z_QuickMapRenderTexture();
 	//Z_QuickMapSpritePage(); //todo combine somehow with above?
 
 
@@ -650,7 +650,6 @@ void __far R_RenderPlayerView () {
 	// either one extra page swap per frame or comment this out
 	// todo reenable...? i think this doesnt cause conflicts anymore
 	//NetUpdate ();
-
 	R_DrawMasked ();
 #ifdef DETAILED_BENCH_STATS
 	renderplayermaskedtics += ticcount - cachedrenderplayertics;

@@ -1945,10 +1945,9 @@ uint16_t pageswapargs[total_pages] = {
 
 	// puts sky_texture in the right place, adjacent to flat cache for planes
 	//  RenderPlane
-	_NPR(PAGE_9000_OFFSET), 	
-	_NPR(PAGE_9400_OFFSET), 	
-	_NPR(PAGE_9800_OFFSET), 	
-	
+	_EPR(FLAT_DATA_PAGES),
+	_EPR(FLAT_DATA_PAGES+1),
+	_EPR(FLAT_DATA_PAGES+2)
 	_EPR(PALETTE_LOGICAL_PAGE),       // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused during planes
 														
 	//PHYSICS_RENDER_6800_PAGE,           // remap colormaps to be before drawspan code
@@ -2121,10 +2120,10 @@ uint16_t pageswapargs[total_pages] = {
 
 	// flat cache undo   NOTE: we just call it with seven params to set everything up for sprites
 	// sprite cache
-	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 0), PAGE_6800_OFFSET,
-	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 1), PAGE_6C00_OFFSET,
-	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 2), PAGE_7000_OFFSET,
-	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 3), PAGE_7400_OFFSET,
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 0), PAGE_9000_OFFSET,
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 1), PAGE_9400_OFFSET,
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 2), PAGE_9800_OFFSET,
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 3), PAGE_9C00_OFFSET,
 
 	_EPR(RENDER_7800_PAGE), PAGE_7800_OFFSET,
 	_EPR(RENDER_7C00_PAGE), PAGE_7C00_OFFSET,

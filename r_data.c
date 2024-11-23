@@ -1745,7 +1745,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 		// last page of the allocation
 		spritecache_nodes[i].numpages = numpages;
 		spritecache_nodes[i].pagecount = numpages;
-		// not sure if this ever happens... especially for sprite. biggest sprites are barely 2 page.
+		// not sure if this ever happens... especially for sprite. biggest sprites are barely 2 page. todo remove
 
 		if (numpages >= 3) {
 			I_Error("3 page sprite! fix this"); // todo remove
@@ -2185,7 +2185,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 				activespritepages[startpage + i] = -1;
 				//this is being unset, doesn't need to use pagenum
 				pageswapargs[pageswapargs_spritecache_offset + (startpage + i)*PAGE_SWAP_ARG_MULT] = 
-					_NPR(PAGE_6800_OFFSET+(startpage+i)); // unpaged				
+					_NPR(PAGE_9000_OFFSET+(startpage+i)); // unpaged				
 
 				activespritenumpages[startpage + i] = 0;
 			}
@@ -2262,7 +2262,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 				activespritepages[startpage + i] = -1;
 				// unmapping the page, so we dont need pagenum
 				pageswapargs[pageswapargs_spritecache_offset + ( (startpage + i)*PAGE_SWAP_ARG_MULT)] = 
-					_NPR(PAGE_6800_OFFSET+(startpage+i));
+					_NPR(PAGE_9000_OFFSET+(startpage+i));
 				activespritenumpages[startpage + i] = 0;
 			}
 		}
@@ -2381,13 +2381,13 @@ segment_t __near getspritetexture(int16_t index) {
 		texpage = spritepage[index];
 		texoffset = spriteoffset[index];
 		//getspritepage ensures the page is active
-		tex_segment = 0x6800u + pagesegments[getspritepage(texpage)] + (texoffset << 4);
+		tex_segment = 0x9000u + pagesegments[getspritepage(texpage)] + (texoffset << 4);
 		R_LoadSpriteColumns(lump, tex_segment);
 		return tex_segment;
 	}
 
 		
-	return 0x6800u + pagesegments[getspritepage(texpage)] + (texoffset << 4);
+	return 0x9000u + pagesegments[getspritepage(texpage)] + (texoffset << 4);
 
  
 

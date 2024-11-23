@@ -366,7 +366,7 @@ void __far Z_QuickMapUnmapAll();
 #define TASK_STATUS 2
 #define TASK_DEMO 3
 #define TASK_PHYSICS9000 4
-#define TASK_RENDER_TEXT 6
+#define TASK_RENDER_SPRITE 5
 #define TASK_SCRATCH_STACK 7
 #define TASK_PALETTE 8
 #define TASK_MENU 9
@@ -515,6 +515,7 @@ void __far Z_QuickMapRenderPlanes();
 #define PAGE_9000_UNMAPPED -1
 #define PAGE_9000_LUMPINFO_PHYSICS 1
 #define PAGE_9000_RENDER 2
+#define PAGE_9000_RENDER_SPRITE 3
 #define PAGE_9000_SCREEN1 4
 
 

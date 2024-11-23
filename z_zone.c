@@ -102,14 +102,38 @@ void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 
 /*
 	if (setval){
-		int8_t i = 0;
-		for (i = 0; i < count; i++){
-			int16_t pagenum = offset[(i*2)+0];
-			if (pagenum == FIRST_FLAT_CACHE_LOGICAL_PAGE){
-				I_Error("paged? %i %i %i %i", i, count, offset[(i*2)+1], setval);
+		if (count == 4 && offset[1] == 24 && offset[2] != 35){
+			if (offset[0] < 70 || offset[2] < 70 || offset[4] < 70 || offset[6] < 70){
+				I_Error("catch %i %i %i %i %i",
+				
+				offset[0],
+				offset[2],
+				offset[4],
+
+				);
 			}
 		}
+	}
 
+
+	if (setval){
+		int8_t i = 0;
+		FILE* fp = fopen("pages.txt", "ab");
+		fprintf(fp, "%li\t\t", gametic);
+
+		for (i = 0; i < count; i++){
+			
+			
+			int16_t pagenum = offset[(i*2)+0];
+			int16_t pageoff = offset[(i*2)+1];
+			fprintf(fp, "%i %i\t", pagenum, pageoff);
+			
+			//if (pagenum == FIRST_FLAT_CACHE_LOGICAL_PAGE){
+			//	I_Error("paged? %i %i %i %i", i, count, offset[(i*2)+1], setval);
+			//}
+		}
+		fprintf(fp, "\n");
+		fclose(fp);
 	}
 	*/
 
@@ -259,8 +283,9 @@ void __near Z_QuickMapRenderTexture() {
 
 
 #endif
-	currenttask = TASK_RENDER_TEXT; // not sure about this
-	current9000State = PAGE_9000_RENDER;
+
+	current5000State = PAGE_5000_RENDER;
+
 }
 
 
@@ -394,9 +419,11 @@ void __far Z_QuickMapUndoFlatCache() {
 	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_5000_OFFSET);
 	
 	// this runs 4 over into z_quickmapsprite page
-	//Z_QuickMap9(pageswapargs_flatcache_undo_offset_size);
 
-	Z_QuickMap6AI(pageswapargs_spritecache_offset_size,     			INDEXED_PAGE_6800_OFFSET);
+	// inlined quickmap maksed (colormaps high, sprite cache, Z_QuickMapMaskedExtraData)
+	// todo combine maskeddata and spritecache into a single 7 page run by reordering
+	Z_QuickMap4AI(pageswapargs_spritecache_offset_size,     			INDEXED_PAGE_9000_OFFSET);
+	Z_QuickMap2AI(pageswapargs_spritecache_offset_size+4,     			INDEXED_PAGE_7800_OFFSET);
 	Z_QuickMap3AI(pageswapargs_maskeddata_offset_size,   				INDEXED_PAGE_8400_OFFSET);
 
 
@@ -405,8 +432,8 @@ void __far Z_QuickMapUndoFlatCache() {
 	flatpageswitchcount++;
 
 #endif
-	currenttask = TASK_RENDER_TEXT; 
-	current9000State = PAGE_9000_RENDER;
+	currenttask = TASK_RENDER_SPRITE; 
+	current9000State = PAGE_9000_RENDER_SPRITE;
 	current5000State = PAGE_5000_RENDER;
 }
 
@@ -424,13 +451,14 @@ void __far Z_QuickMapMaskedExtraData() {
 
 void __far Z_QuickMapSpritePage() {
 
-	Z_QuickMap4AI(pageswapargs_spritecache_offset_size, INDEXED_PAGE_6800_OFFSET);
+	Z_QuickMap4AI(pageswapargs_spritecache_offset_size, INDEXED_PAGE_9000_OFFSET);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	spritepageswitchcount++;
 
 #endif
 
+	current9000State = PAGE_9000_RENDER_SPRITE;
 }
  
 void __far Z_QuickMapPhysics5000() {
@@ -461,6 +489,7 @@ void __far Z_QuickMapLumpInfo() {
 			// use conventional memory until set up...
 			return;
 	 
+		case PAGE_9000_RENDER_SPRITE:
 		case PAGE_9000_RENDER:
 		case PAGE_9000_SCREEN1:
 		
@@ -511,6 +540,8 @@ void __far Z_UnmapLumpInfo() {
 		case PAGE_9000_SCREEN1:
 			Z_QuickMapScreen1();
 			break;
+		case PAGE_9000_RENDER_SPRITE:
+			Z_QuickMapSpritePage();
 		default:
 			break;
 	}
@@ -633,10 +664,10 @@ void __far Z_QuickMapByTaskNum(int8_t tasknum) {
 //		case TASK_STATUS_NO_SCREEN4:
 //			Z_QuickMapStatusNoScreen4();
 //			break;
-		case TASK_RENDER_TEXT:
+		case TASK_RENDER_SPRITE:
+			I_Error("this happened..?"); // todo remove TASK_RENDER_SPRITE if this never happens..?
 			Z_QuickMapRender();
-			Z_QuickMapRenderTexture(); // should be okay this way
-			break;
+			Z_QuickMapUndoFlatCache();
 		case TASK_MENU:
 			Z_QuickMapMenu();
 			break;

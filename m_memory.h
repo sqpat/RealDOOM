@@ -1081,10 +1081,10 @@ patchoffset                 83BD:01DC
 //NOW
 
 //              bsp     plane     sprite
-// 9000-9FFF        COLORMAPS_DATA
-// 8000-8FFF    VISPLANES_DATA    sprcache ??
-// 8000-87FF    DATA  flatcache   sprcache ??
-// 7000-7FFF   DATA  flatcache    DATA
+// 9000-9FFF   COLORMAPS_DATA     sprcache
+// 8000-8FFF    VISPLANES_DATA    COLORMAPS_DATA
+// 7800-7FFF    DATA  flatcache   DATA
+// 7000-77FF    DATA  flatcache   
 // 6000-6FFF  TEXTURE   -----     TEXTURE
 // 5000-5FFF  TEXTURE sky texture TEXTURE
 // 4000-4FFF        -- no changes --
@@ -1093,8 +1093,7 @@ patchoffset                 83BD:01DC
 //WAS
 
 //              bsp     plane     sprite
-// 9C00-9FFF    -----   -----     -----
-// 9000-9BFF    ----- sky texture -----
+// 9000-9FFF  TEXTURE sky texture TEXTURE
 // 8000-8FFF    VISPLANES_DATA    COLORMAPS_DATA
 // 7800-7FFF    DATA  flatcache   DATA
 // 7000-77FF    DATA  flatcache   sprcache
@@ -1272,10 +1271,10 @@ spritedefs_bytes    7410:0000
 #define patch_sizes_far             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight_far              , size_scalelight))
 #define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
-#define states_render           ((state_render_t __far*)     MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
-#define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(states_render           , size_states_render))
-#define spritepage                 ((uint8_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
-#define spriteoffset               ((uint8_t __far*)           (((int32_t)spritepage)                      + size_spritepage))
+#define states_render               ((state_render_t __far*)     MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
+#define flatindex                   ((uint8_t __far*)            MAKE_FULL_SEGMENT(states_render           , size_states_render))
+#define spritepage                  ((uint8_t __far*)            MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
+#define spriteoffset                ((uint8_t __far*)            (((int32_t)spritepage)                    + size_spritepage))
 
 #define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(spritepage,               (size_spriteoffset + size_spritetopoffsets)))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
