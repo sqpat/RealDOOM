@@ -18,6 +18,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <dos.h>
 
 #include "doomdef.h" 
 #include "doomstat.h"
@@ -68,17 +69,15 @@ uint16_t   __far  R_TextureNumForName(int8_t* name);
 // Check whether texture is available.
 // Filter out NoTexture indicator.
 //
+// this is always called in a situation where the texture defs must be mapped down to 6000
+// first, so we just use 6000 in here for texturedefs etc.
 uint16_t   __far  R_CheckTextureNumForName(int8_t *name) {
 	uint16_t         i;
 	texture_t __far* texture;
 	int8_t texturename[8];
-	// "NoTexture" marker.
-	if (name[0] == '-'){
-		return 0;
-	}
 
 	for (i = 0; i < numtextures; i++) {
-		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[i]]);
+		texture = (texture_t __far*)&(texturedefs_bytes_6000[texturedefs_offset_6000[i]]);
 
 		copystr8(texturename, texture->name);
 		//DEBUG_PRINT("\n %.8Fs %8s %8s %i %Fp", texture->name, texturename, name, texture->name);
@@ -93,6 +92,32 @@ uint16_t   __far  R_CheckTextureNumForName(int8_t *name) {
 	return BAD_TEXTURE;
 }
 
+
+//
+// R_TextureNumForName
+// Calls R_CheckTextureNumForName,
+//  aborts with error message.
+//
+uint16_t     __far R_TextureNumForName(int8_t* name) {
+	uint16_t i;
+	FILE* fp;
+	// "NoTexture" marker.
+	if (name[0] == '-'){
+		return 0;
+	}
+
+	i = R_CheckTextureNumForName(name);
+	/*
+	fp = fopen ("texes.txt", "ab");
+	fprintf (fp, "%i %s\n",i, name );
+	fclose(fp);
+	*/
+
+	if (i == BAD_TEXTURE) {
+		I_Error("\n96 %s", name); // \nR_TextureNumForName: %s not found
+	}
+	return i;
+}
 
 
 //
@@ -229,7 +254,7 @@ void __far G_InitNew (skill_t skill, int8_t episode, int8_t map) {
 
 	viewactive = true;
 	Z_QuickMapRender();
-	//Z_QuickMapTextureInfoPage();
+	Z_QuickMapRender_9000To6000();//for R_TextureNumForName
 
 
 	// set the sky map for the episode

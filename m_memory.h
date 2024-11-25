@@ -172,7 +172,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define SAVESTRINGSIZE        24u
 
-#define baselowermemoryaddress        (0x31160000)
+#define baselowermemoryaddress    (0x31160000)
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
 #define size_finesine            (10240u * sizeof(int32_t))
@@ -1080,11 +1080,15 @@ patchoffset                 83BD:01DC
 
 //NOW
 
+// todo: also extend flatcache down to 6000?
+// also extend 
+
 //              bsp     plane     sprite
-// 9000-9FFF   COLORMAPS_DATA     sprcache
+// 9800-9FFF      COLORMAPS       sprcache
+// 9000-97FF    DATA1    DATA1    sprcache
 // 8000-8FFF    VISPLANES_DATA    COLORMAPS_DATA
-// 7800-7FFF    DATA  flatcache   DATA
-// 7000-77FF    DATA  flatcache   
+// 7800-7FFF    DATA2 flatcache   DATA2
+// 7000-77FF    DATA3 flatcache   DATA1   
 // 6000-6FFF  TEXTURE   -----     TEXTURE
 // 5000-5FFF  TEXTURE sky texture TEXTURE
 // 4000-4FFF        -- no changes --
@@ -1174,7 +1178,6 @@ spritedefs_bytes    7410:0000
 #define size_spritetopoffsets          (sizeof(int8_t) * MAX_SPRITE_LUMPS)
 #define size_texturedefs_offset        (MAX_TEXTURES * sizeof(uint16_t))
 #define size_masked_lookup             (MAX_TEXTURES * sizeof(uint8_t))
-#define size_masked_headers            (MAX_MASKED_TEXTURES * sizeof(masked_header_t))
 #define size_patchwidths               (MAX_PATCHES * sizeof(uint16_t))
 #define size_finetangentinner          2048u * sizeof(int32_t)
 #define size_drawsegs                  (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
@@ -1183,17 +1186,19 @@ spritedefs_bytes    7410:0000
 
 // size_texturedefs_bytes 0x6184... 0x6674
 
-#define texturecolumnlumps_bytes   ((int16_t_union __far*)     (0x60000000 ))
+// this is 9000-9800 for bsp/plane
+//. then   7000-7800 for sprite.
+
+#define texturecolumnlumps_bytes   ((int16_t_union __far*)     (0x90000000 ))
 #define texturedefs_bytes          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
 #define spritetopoffsets           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
 #define texturedefs_offset         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
 #define masked_lookup              ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset,       size_texturedefs_offset))
-#define masked_headers             ((masked_header_t __far *)  MAKE_FULL_SEGMENT(masked_lookup,            size_masked_lookup))
-#define patchwidths                ((uint16_t  __far*)         MAKE_FULL_SEGMENT(masked_headers,           size_masked_headers))
+#define patchwidths                ((uint16_t  __far*)         MAKE_FULL_SEGMENT(masked_lookup,            size_masked_lookup))
 #define drawsegs_BASE              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchwidths,              size_patchwidths))
 #define drawsegs_PLUSONE           ((drawseg_t __far*)         (drawsegs_BASE          + 1))
-#define finetangentinner           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE   , size_drawsegs_PLUS_EXTRA))
-#define render_6800_end            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner,  size_finetangentinner))
+#define finetangentinner           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE   ,         size_drawsegs_PLUS_EXTRA))
+#define render_9800_end            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner,         size_finetangentinner))
 
 
 #define texturecolumnlumps_bytes_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes >> 16))
@@ -1201,30 +1206,53 @@ spritedefs_bytes    7410:0000
 #define spritetopoffsets_segment         ((segment_t) ((int32_t)spritetopoffsets >> 16))
 #define texturedefs_offset_segment       ((segment_t) ((int32_t)texturedefs_offset >> 16))
 #define masked_lookup_segment            ((segment_t) ((int32_t)masked_lookup >> 16))
-#define masked_headers_segment           ((segment_t) ((int32_t)masked_headers >> 16))
 #define patchwidths_segment              ((segment_t) ((int32_t)patchwidths >> 16))
 #define drawsegs_BASE_segment            ((segment_t) ((int32_t)drawsegs_BASE >> 16))
 #define finetangentinner_segment         ((segment_t) ((int32_t)finetangentinner >> 16))
-#define render_6800_end_segment          ((segment_t) ((int32_t)render_6800_end >> 16))
+#define render_9800_end_segment          ((segment_t) ((int32_t)render_9800_end >> 16))
 
 
-// texturecolumnlumps_bytes   6000:0000
-// texturedefs_bytes          609E:0000
-// spritetopoffsets           62C2:0000
-// texturedefs_offset         6319:0000
-// masked_lookup              634F:0000
-// masked_headers             636A:0000
-// patchwidths                6370:0000
+#define texturecolumnlumps_bytes_7000   ((int16_t_union __far*)     (0x70000000 ))
+#define texturedefs_bytes_7000          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes_7000, size_texturecolumnlumps_bytes))
+#define spritetopoffsets_7000           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes_7000,        size_texturedefs_bytes))
+#define texturedefs_offset_7000         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets_7000,         size_spritetopoffsets))
+#define masked_lookup_7000              ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset_7000,       size_texturedefs_offset))
+#define patchwidths_7000                ((uint16_t  __far*)         MAKE_FULL_SEGMENT(masked_lookup_7000,            size_masked_lookup))
+#define drawsegs_BASE_7000              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchwidths_7000,              size_patchwidths))
+#define drawsegs_PLUSONE_7000           ((drawseg_t __far*)         (drawsegs_BASE_7000          + 1))
+#define finetangentinner_7000           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE_7000   ,         size_drawsegs_PLUS_EXTRA))
+#define render_9800_end_7000            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner_7000,         size_finetangentinner))
 
-// drawsegs_BASE              63AC:0000
-// drawsegs_PLUSONE           63AC:0020
-// finetangentinner           65B0:0000
+#define texturecolumnlumps_bytes_6000   ((int16_t_union __far*)     (0x60000000 ))
+#define texturedefs_bytes_6000          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes_6000, size_texturecolumnlumps_bytes))
+#define spritetopoffsets_6000           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes_6000,        size_texturedefs_bytes))
+#define texturedefs_offset_6000         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets_6000,         size_spritetopoffsets))
+#define masked_lookup_6000              ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset_6000,       size_texturedefs_offset))
+#define patchwidths_6000                ((uint16_t  __far*)         MAKE_FULL_SEGMENT(masked_lookup_6000,            size_masked_lookup))
+#define drawsegs_BASE_6000              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchwidths_6000,              size_patchwidths))
+#define drawsegs_PLUSONE_6000           ((drawseg_t __far*)         (drawsegs_BASE_6000          + 1))
+#define finetangentinner_6000           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE_6000   ,         size_drawsegs_PLUS_EXTRA))
+#define render_9800_end_6000            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner_6000,         size_finetangentinner))
 
-// [empty]                    67B0:0000
+
+// texturecolumnlumps_bytes   9000:0000
+// texturedefs_bytes          909E:0000
+// spritetopoffsets           92C2:0000
+// texturedefs_offset         9319:0000
+// masked_lookup              934F:0000
+// masked_headers             936A:0000
+// patchwidths                9370:0000
+
+// drawsegs_BASE              93AC:0000
+// drawsegs_PLUSONE           93AC:0020
+// finetangentinner           95B0:0000
+
+// [empty]                    97B0:0000
 
 
 //FREEBYTES
-// 1280 bytes free till 6000:8000 
+// 1280 bytes free till 6000:8000
+// some masked code can easily go here? Maybe more if drawsegs maxsegs goes back to 128 from 256?
 
 
 

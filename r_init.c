@@ -92,11 +92,11 @@ void R_InitSpriteLumps(void) {
 		// no patchwidth 1s ever exist, nor does 256.
 		// we will hack in the case that 1 == 257 in the engine and store in uint8_t (gross but saves 1300 bytes)
 
-		if (patchwidth == 257)
+		if (patchwidth == 257){
 			*((uint8_t __far *)MK_FP(spritewidths_segment, i)) = 1;
-		else
+		} else{
 			*((uint8_t __far *)MK_FP(spritewidths_segment, i)) = patchwidth;
-
+		}
 		// left offset between -151 and 130 in practice. 
 		//  negatives are only ever used for psprites, and psprites are always negative so we encode positve and change
 		// the subtraction operation to an addition and we are good.
@@ -104,10 +104,11 @@ void R_InitSpriteLumps(void) {
 
 
 		// top offset between -127 and 129 in practice. 128/-128 never actually happens so we hack in that case
-		if (patchtopoffset == 129)
-			spritetopoffsets[i] = -128;
-		else
-			spritetopoffsets[i] = patchtopoffset;
+		if (patchtopoffset == 129){
+			spritetopoffsets_6000[i] = -128;
+		} else{
+			spritetopoffsets_6000[i] = patchtopoffset;
+		}
 
 		// calculate sizes for this
 		for (col = 0; col < patchwidth; col++){
@@ -137,6 +138,8 @@ void R_InitSpriteLumps(void) {
 		spritepostdatasizes[i] = postdatasize;
 		spritetotaldatasizes[i] = pixelsize + startoffset;
 		Z_QuickMapRender();
+		Z_QuickMapLumpInfo();
+		Z_QuickMapRender_9000To6000();//for R_TextureNumForName
 
 
 	}
@@ -221,7 +224,7 @@ void R_GenerateLookup(uint16_t texnum) {
 	// put colofs in here. copy to colofs if texture is masked
 
 	// piggyback these local arrays off scratch data...
-	int16_t_union __far*  collump = texturecolumnlumps_bytes;
+	int16_t_union __far*  collump = texturecolumnlumps_bytes_6000;
 	uint16_t currenttexturepixelbytecount = 0;
 	uint16_t currenttexturepostoffset = 0;
 	column_t __far * column;
@@ -237,7 +240,7 @@ void R_GenerateLookup(uint16_t texnum) {
 
 	// Composited texture not created yet.
 
-	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
+	texture = (texture_t __far*)&(texturedefs_bytes_6000[texturedefs_offset_6000[texnum]]);
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
 	usedtextureheight = textureheight + ((16 - (textureheight &0xF) ) & 0xF);
@@ -376,13 +379,13 @@ void R_GenerateLookup(uint16_t texnum) {
 
 	// we determined up above we have a masked texture....
 	// need to run thru colofs again?
-	masked_lookup[texnum] = 0xFF;	// initialized value - no pointer to colofs
+	masked_lookup_6000[texnum] = 0xFF;	// initialized value - no pointer to colofs
 	if (ismaskedtexture){
 		uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, currentpixeloffset);
 		uint16_t __far* postofs    =  MK_FP(maskedpostdataofs_segment, currentpostoffset);
 		uint16_t __far* postdata   =  MK_FP(maskedpostdata_segment, currentpostdataoffset);
 		
-		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
+		masked_lookup_6000[texnum] = maskedcount;	// index to lookup of struct...
 
 		masked_headers[maskedcount].texturesize = currenttexturepixelbytecount;
 		masked_headers[maskedcount].pixelofsoffset = currentpixeloffset;
@@ -610,11 +613,11 @@ void R_InitTextures(void) {
 
 		if ((i + 1) < numtextures) {
 			// texturedefs sizes are variable and dependent on texture size/texture patch count.
-			texturedefs_offset[i + 1] = texturedefs_offset[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
+			texturedefs_offset_6000[i + 1] = texturedefs_offset_6000[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
 		}
 
 
-		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[i]]);
+		texture = (texture_t __far*)&(texturedefs_bytes_6000[texturedefs_offset_6000[i]]);
 		texture->width = (mtexture->width) - 1;
 		texture->height = (mtexture->height) - 1;
 		texture->patchcount = (mtexture->patchcount);
@@ -684,6 +687,7 @@ void R_InitTextures2(){
 	// Reset this since 0x7000 scratch page is active
 	Z_QuickMapRender();
 	Z_QuickMapLumpInfo();
+	Z_QuickMapRender_9000To6000(); //for R_TextureNumForName
 
 	//I_Error("final size: %i", currentlumpindex);
 }
@@ -743,7 +747,7 @@ void __near R_InitPatches(){
 	for (i = 0; i < numpatches; i++){
 		int16_t patchindex = firstpatch+i;
 		W_CacheLumpNumDirect(patchindex, (byte __far*)realpatch);
-		patchwidths[i] = realpatch->width;
+		patchwidths_6000[i] = realpatch->width;
 	}
 		
 
@@ -792,6 +796,7 @@ void __near R_InitData(void) {
 void __near R_Init(void) {
 	Z_QuickMapRender();
 	Z_QuickMapLumpInfo();
+	Z_QuickMapRender_9000To6000(); //for R_TextureNumForName
 
 	R_InitData();
 	DEBUG_PRINT("..");

@@ -513,6 +513,7 @@ void __near P_Init(void) {
 
 	Z_QuickMapRender();
 	Z_QuickMapLumpInfo();
+	Z_QuickMapRender_9000To6000();//for R_TextureNumForName
 	P_InitSwitchList();
 	P_InitPicAnims();
 	R_InitSprites();

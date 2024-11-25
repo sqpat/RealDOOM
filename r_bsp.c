@@ -33,6 +33,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 #include <dos.h>
+#include <stdlib.h>
 
 //#include "r_local.h"
 
@@ -565,7 +566,384 @@ void __near R_Subsector(int16_t subsecnum) {
 		firstline++;
 	}
 }
+
 */
+
+// put these functions here because it runs in this code section with this memory mapping. no masked-like 7000 remap
+#define BASEYCENTER                     100L
+#define MINZ_HIGHBITS					4
+
+//
+// R_DrawPSprite
+//
+//todo pass in frame and sprite only.
+void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframenum_t frame,  vissprite_t __near* vis){
+    fixed_t_union           tx;
+	int16_t                 x1;
+	int16_t                 x2;
+	int16_t                 spriteindex;
+	int16_t                 usedwidth;
+    boolean             flip;
+	spriteframe_t __far*		spriteframes;
+    fixed_t_union temp;
+
+
+	// decide which patch to use
+	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[sprite].spriteframesOffset]);
+
+
+    spriteindex = spriteframes[frame & FF_FRAMEMASK].lump[0];
+    flip = (boolean)spriteframes[frame & FF_FRAMEMASK].flip[0];
+    
+    // calculate edges of the shape
+	tx.w = psp->sx;// -160 * FRACUNIT;
+
+    // spriteoffsets are only ever negative for psprite - we store as a uint and subtract in that case.
+	tx.h.intbits += spriteoffsets[spriteindex];
+	tx.h.intbits -= 160;
+
+	temp.h.fracbits = 0;
+	temp.h.intbits = centerx;
+	if (pspritescale) {
+		temp.w += FixedMul16u32(pspritescale, tx.w);
+	}
+	else {
+		temp.w += tx.w;
+	}
+
+    x1 = temp.h.intbits;
+
+
+ 	temp.h.fracbits = 0;
+    usedwidth =  *((uint8_t __far *)MK_FP(spritewidths_segment, spriteindex));
+    if (usedwidth == 1){
+        usedwidth = 257;
+    }
+
+    tx.h.intbits += usedwidth;
+
+	temp.h.intbits = centerx;
+	if (pspritescale) {
+		temp.w += FixedMul16u32(pspritescale, tx.w);
+	} else {
+		temp.w += tx.w;
+	}
+    x2 = temp.h.intbits - 1;
+
+    
+    // store information in a vissprite
+    temp.h.fracbits = 0;
+    temp.h.intbits = spritetopoffsets[spriteindex];
+        // hack to make this fit in 8 bits, check r_init.c
+    if (temp.h.intbits == -128){
+        temp.h.intbits = 129;
+    }
+
+	vis->texturemid = (BASEYCENTER<<FRACBITS)+FRACUNIT/2-(psp->sy-temp.w);
+    vis->x1 = x1 < 0 ? 0 : x1;
+    vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
+	if (pspritescale) {
+		vis->scale = (int32_t)pspritescale << detailshift.b.bytelow;
+	} else {
+		vis->scale = FRACUNIT << detailshift.b.bytelow;
+	}
+    
+    if (flip) {
+        vis->xiscale = -pspriteiscale;
+        temp.h.intbits = usedwidth;
+		vis->startfrac = temp.w - 1;
+    } else {
+        vis->xiscale = pspriteiscale;
+        vis->startfrac = 0;
+    }
+    
+    if (vis->x1 > x1)
+        vis->startfrac += FastMul16u32u((vis->x1-x1),  vis->xiscale);
+
+    vis->patch = spriteindex;
+
+    if (player.powers[pw_invisibility] > 4*32
+        || player.powers[pw_invisibility] & 8) {
+        // shadow draw
+        vis->colormap = COLORMAP_SHADOW;
+    } else if (fixedcolormap) {
+        // fixed color
+        vis->colormap = fixedcolormap;
+    } else if (frame & FF_FULLBRIGHT) {
+        // full bright
+        vis->colormap = 0;
+    } else {
+        // local light
+        vis->colormap = *((int8_t __far*)MK_FP(scalelightfixed_segment, spritelights+MAXLIGHTSCALE-1));
+    }
+
+}
+
+void __near R_PrepareMaskedPSprites(void) {
+	uint8_t         i;
+	uint8_t         lightnum;
+	statenum_t      pspstatenum;
+	// get light level
+	lightnum = (sectors[r_cachedplayerMobjsecnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
+
+	//    if (lightnum < 0)          
+	// not sure if this hack is necessary.. since its unsigned we loop around if its below 0 
+	if (lightnum > 240) {
+		spritelights = 0;
+	} else if (lightnum >= LIGHTLEVELS) {
+		spritelights = lightmult48lookup[LIGHTLEVELS - 1];
+	} else {
+		spritelights = lightmult48lookup[lightnum];
+	}
+
+    for (i = 0; i < NUMPSPRITES; i++){
+        statenum_t pspstatenum = player.psprites[i].statenum;
+        if (pspstatenum != STATENUM_NULL) {
+            R_DrawPSprite(&player.psprites[i], states_render[pspstatenum].sprite, states_render[pspstatenum].frame, &player_vissprites[i]);
+        }
+    }
+
+
+}
+
+//
+// R_ProjectSprite
+// Generates a vissprite for a thing
+//  if it might be visible.
+//
+void __near R_ProjectSprite (mobj_pos_t __far* thing){
+    fixed_t_union             tr_x;
+    fixed_t_union             tr_y;
+    
+    fixed_t_union             gxt;
+    fixed_t_union             gyt;
+    
+    fixed_t_union             tx;
+    fixed_t_union             tz;
+
+    fixed_t_union             xscale;
+    
+	int16_t                 x1;
+	int16_t                 x2;
+
+	int16_t                 spriteindex;
+    int16_t                 usedwidth;
+    
+	uint8_t            rot = 0;
+    boolean             flip;
+    
+	int16_t                 index;
+
+    vissprite_t __near*        vis;
+    
+    angle_t             ang;
+    fixed_t             iscale;
+	spriteframe_t __far*		spriteframes;
+	
+	spritenum_t thingsprite     = states_render[thing->stateNum].sprite;
+	spriteframenum_t thingframe = states_render[thing->stateNum].frame;
+
+	vissprite_t     overflowsprite;
+
+	fixed_t_union thingx = thing->x;
+	fixed_t_union thingy = thing->y;
+	fixed_t_union thingz = thing->z;
+	int16_t thingflags2 = thing->flags2;
+	angle_t thingangle = thing->angle;
+    fixed_t_union temp;
+		
+	// transform the origin point
+    tr_x.w = thingx.w - viewx.w;
+    tr_y.w = thingy.w - viewy.w;
+        
+    gxt.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, viewangle_shiftright1 ,tr_x.w);
+    gyt.w = -FixedMulTrigNoShift(FINE_SINE_ARGUMENT, viewangle_shiftright1 ,tr_y.w);
+    
+    tz.w = gxt.w-gyt.w; 
+
+    // thing is behind view plane?
+    if (tz.h.intbits < MINZ_HIGHBITS){ // (- sq: where does this come from)
+        return;
+    }
+
+        
+    xscale.w = FixedDivWholeA(centerx, tz.w);
+        
+    gxt.w = -FixedMulTrigNoShift(FINE_SINE_ARGUMENT, viewangle_shiftright1 ,tr_x.w);
+    gyt.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, viewangle_shiftright1 ,tr_y.w);
+    tx.w = -(gyt.w+gxt.w); 
+
+    // too far off the side?
+    if (labs(tx.w)>(tz.w<<2)) // check just high 16 bits?
+        return;
+
+    // decide which patch to use for sprite relative to player
+	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[thingsprite].spriteframesOffset]);
+
+    if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
+        // choose a different rotation based on player view
+		ang.wu = R_PointToAngle (thingx, thingy);
+		rot = _rotl(ang.hu.intbits - thingangle.hu.intbits + 0x9000u, 3) & 0x07;
+
+    }
+
+    spriteindex = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
+    flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[rot];
+
+    // calculate edges of the shape
+    temp.h.fracbits = 0;
+    temp.h.intbits = spriteoffsets[spriteindex];
+	tx.w -= temp.w;
+	temp.h.intbits = centerx;
+    temp.w +=  FixedMul (tx.w,xscale.w);
+    x1 = temp.h.intbits;
+
+    // off the right side?
+    if (x1 > viewwidth){
+        return;
+    }
+    
+    usedwidth =  *((uint8_t __far*) MK_FP(spritewidths_segment, spriteindex));
+
+    if (usedwidth == 1){
+        usedwidth = 257;
+    }
+
+    temp.h.fracbits = 0;
+    temp.h.intbits = usedwidth;
+    // hack to make this fit in 8 bits, check r_init.c
+
+    tx.w +=  temp.w;
+	temp.h.intbits = centerx;
+	temp.w += FixedMul (tx.w,xscale.w);
+    x2 = temp.h.intbits - 1;
+
+	
+
+    // off the left side
+    if (x2 < 0)
+        return;
+    // store information in a vissprite
+
+	if (vissprite_p == MAXVISSPRITES) {
+		vis = &overflowsprite;
+	}
+	vissprite_p++;
+	vis = &vissprites[vissprite_p - 1];
+
+    vis->scale = xscale.w<<detailshift.b.bytelow;
+    vis->gx = thingx;
+    vis->gy = thingy;
+    vis->gz = thingz;
+    temp.h.fracbits = 0;
+    temp.h.intbits = spritetopoffsets[spriteindex];
+    
+    // hack to make this fit in 8 bits, check r_init.c
+    if (temp.h.intbits == -128){
+        temp.h.intbits = 129;
+    }
+
+	vis->gzt.w = vis->gz.w + temp.w;
+//	vis->gzt = thingz + spritetopoffset[lump];
+    vis->texturemid = vis->gzt.w - viewz.w;
+    vis->x1 = x1 < 0 ? 0 : x1;
+    vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
+    
+	// todo does a quick  inverse function exist? considering this is fixed point
+	iscale = FixedDivWholeA (1, xscale.w);
+
+    if (flip) {
+        temp.h.fracbits = 0;
+        temp.h.intbits = usedwidth;
+		vis->startfrac = temp.w-1;
+        vis->xiscale = -iscale;
+    } else {
+        vis->startfrac = 0;
+        vis->xiscale = iscale;
+    }
+
+    if (vis->x1 > x1)
+        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
+
+    vis->patch = spriteindex;
+    
+    // get light level
+    if (thingflags2 & MF_SHADOW) {
+        // shadow draw
+        vis->colormap = COLORMAP_SHADOW;
+    } else if (fixedcolormap) {
+        // fixed map
+        vis->colormap = fixedcolormap;
+    } else if (thingframe & FF_FULLBRIGHT) {
+        // full bright
+        vis->colormap = 0;
+    } else {
+        // diminished light
+        index = xscale.w>>(LIGHTSCALESHIFT-detailshift.b.bytelow);
+
+        if (index >= MAXLIGHTSCALE) {
+            index = MAXLIGHTSCALE-1;
+        }
+
+        vis->colormap = *((int8_t __far*)MK_FP(scalelightfixed_segment, spritelights+index));
+    }
+
+	
+}
+
+
+
+
+//
+// R_AddSprites
+// During BSP traversal, this adds sprites by sector.
+//
+
+void __near R_AddSprites (sector_t __far* sec) {
+	THINKERREF				thingRef;
+	int16_t                 lightnum;
+ 
+
+    // BSP is traversed by subsector.
+    // A sector might have been split into several
+    //  subsectors during BSP building.
+    // Thus we check whether its already added.
+    
+
+	if (sec->validcount == validcount)
+        return;         
+    // Well, now it will be done.
+	sec->validcount = validcount;
+        
+    lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
+
+	if (lightnum < 0) {
+		spritelights = 0;
+	} else if (lightnum >= LIGHTLEVELS) {
+		spritelights = lightmult48lookup[LIGHTLEVELS - 1];
+	} else {
+		spritelights = lightmult48lookup[lightnum];
+	}
+
+
+    // Handle all things in sector.
+	if (sec->thinglistRef) {
+		mobj_pos_t __far*             thing;
+
+		for (thingRef = sec->thinglistRef; thingRef; thingRef = thing->snextRef) {
+			thing = (mobj_pos_t __far*)&mobjposlist[thingRef];
+			R_ProjectSprite(thing);
+		}
+
+	}
+
+
+
+
+
+}
+
+
 //
 // RenderBSPNode
 // Renders all subsectors below a given node,
@@ -666,6 +1044,10 @@ void __far R_RenderBSPNode() {
 		bspnum = node_children[bspnum].children[side ^ 1];
 	}
 }
+
+
+
+
 /*
 
 void __far R_RenderBSPNode(int16_t bspnum) {

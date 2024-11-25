@@ -390,8 +390,9 @@ void __far Z_QuickMapUnmapAll();
 #define num_renderplane_params 4
 #define num_flatcache_params 4
 #define num_spritecache_params 4
-#define num_flatcache_undo_params 2
+#define num_flatcache_undo_params 4
 #define num_maskeddata_params 3
+#define num_renderto6000_params 2
 #define num_palette_params 5
 #define num_7000to6000_params 4
 #define num_menu_params 8
@@ -413,6 +414,7 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_rend_offset_size                (num_phys_params)
 
 #define pageswapargs_rend_texture_size                (pageswapargs_rend_offset_size + 4)
+#define pageswapargs_rend_9000_size                   (pageswapargs_rend_offset_size + 20)
 #define pageswapargs_rend_other9000_size              (pageswapargs_rend_offset_size + 24)
 
 #define pageswapargs_stat_offset_size                (pageswapargs_rend_offset_size           + num_rend_params)
@@ -426,7 +428,8 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_spritecache_offset_size         (pageswapargs_flatcache_offset_size      + num_flatcache_params)
 #define pageswapargs_flatcache_undo_offset_size      (pageswapargs_spritecache_offset_size    + num_spritecache_params)
 #define pageswapargs_maskeddata_offset_size          (pageswapargs_flatcache_undo_offset_size + num_flatcache_undo_params)
-#define pageswapargs_palette_offset_size             (pageswapargs_maskeddata_offset_size     + num_maskeddata_params)
+#define pageswapargs_render_to_6000_size             (pageswapargs_maskeddata_offset_size     + num_maskeddata_params)
+#define pageswapargs_palette_offset_size             (pageswapargs_render_to_6000_size        + num_renderto6000_params)
 #define pageswapargs_menu_offset_size                (pageswapargs_palette_offset_size        + num_palette_params)
 #define pageswapargs_intermission_offset_size        (pageswapargs_menu_offset_size           + num_menu_params)
 #define pageswapargs_wipe_offset_size                (pageswapargs_intermission_offset_size   + num_intermission_params)
@@ -447,7 +450,8 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_spritecache_offset     (pageswapargs_flatcache_offset          + (num_flatcache_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_flatcache_undo_offset  (pageswapargs_spritecache_offset        + (num_spritecache_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_maskeddata_offset      (pageswapargs_flatcache_undo_offset     + (num_flatcache_undo_params*PAGE_SWAP_ARG_MULT))
-#define pageswapargs_palette_offset         (pageswapargs_maskeddata_offset         + (num_maskeddata_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_render_to_6000_offset  (pageswapargs_maskeddata_offset         + (num_maskeddata_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_palette_offset         (pageswapargs_render_to_6000_offset     + (num_renderto6000_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_menu_offset            (pageswapargs_palette_offset            + (num_palette_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_intermission_offset    (pageswapargs_menu_offset               + (num_menu_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_wipe_offset            (pageswapargs_intermission_offset       + (num_intermission_params*PAGE_SWAP_ARG_MULT))
@@ -465,6 +469,9 @@ void __far Z_QuickMapUnmapAll();
 void __far Z_QuickMapPhysics();
 void __far Z_QuickMapRender();
 void __far Z_QuickMapRender_4000To9000();
+void __far Z_QuickMapRender_9000To7000();
+void __far Z_QuickMapRender_9000To6000();
+
 void __far Z_QuickMapStatus();
 void __far Z_QuickMapStatusNoScreen4();
 
@@ -506,17 +513,13 @@ void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage);
 void __far Z_QuickMapVisplaneRevert();
 void __far Z_QuickMapRenderPlanes();
 
-#define PAGE_TYPE_PHYSICS 0
-#define PAGE_TYPE_RENDER 1
-
-
-
 
 #define PAGE_9000_UNMAPPED -1
 #define PAGE_9000_LUMPINFO_PHYSICS 1
 #define PAGE_9000_RENDER 2
 #define PAGE_9000_RENDER_SPRITE 3
 #define PAGE_9000_SCREEN1 4
+#define PAGE_9000_RENDER_4000 5
 
 
 
@@ -527,10 +530,6 @@ void __far Z_QuickMapRenderPlanes();
 #define PAGE_5000_PHYSICS 4
 #define PAGE_5000_RENDER 5
 #define PAGE_5000_RENDER_PLANE 6
-
-#define PAGE_5000_SCRATCH_REMAP 6
-
-#define MAX_FLATS_LOADED                            NUM_FLAT_CACHE_PAGES * 4
 
 
 //void DUMP_4000_TO_FILE();

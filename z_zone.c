@@ -220,12 +220,18 @@ void __far  Z_QuickMapRender() {
 }
 
 // leave off text and do 4000 in 9000 region. Used in p_setup...
+void __far Z_QuickMapRender_4000To9000_9000Only(){
+	Z_QuickMap4AI(pageswapargs_rend_other9000_size, INDEXED_PAGE_9000_OFFSET);  // 4000 as 9000
+	current9000State = PAGE_9000_RENDER_4000;
+
+}
+
 void __far Z_QuickMapRender_4000To9000() {
 
 	//todo
 
 	Z_QuickMap16AI(pageswapargs_rend_offset_size+4, INDEXED_PAGE_5000_OFFSET); // 5000 thru 8000
-	Z_QuickMap4AI(pageswapargs_rend_other9000_size, INDEXED_PAGE_9000_OFFSET);  // 4000 as 9000
+	Z_QuickMapRender_4000To9000_9000Only();
 
 
 
@@ -235,9 +241,21 @@ void __far Z_QuickMapRender_4000To9000() {
 	currenttask = TASK_RENDER;
 
 	current5000State = PAGE_5000_RENDER;
-	current9000State = PAGE_9000_RENDER;
 
 }
+
+void __far Z_QuickMapRender_9000To7000() {
+
+	// sets texturedefs into 7000 (just like they are in the masked task)
+	Z_QuickMap2AI(pageswapargs_spritecache_offset_size+4,     			INDEXED_PAGE_7000_OFFSET);
+}
+
+void __far Z_QuickMapRender_9000To6000() {
+
+	// sets texturedefs into 6000
+	Z_QuickMap2AI(pageswapargs_render_to_6000_size,     			INDEXED_PAGE_6000_OFFSET);
+}
+
 
 
 void __far Z_QuickMapRender4000() {
@@ -257,7 +275,8 @@ void __far Z_QuickMapRender5000() {
 }
 
 void __far Z_QuickMapRender9000() {
-	Z_QuickMap4AI(pageswapargs_rend_other9000_size, INDEXED_PAGE_9000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_rend_9000_size, INDEXED_PAGE_9000_OFFSET);
+	
 	current9000State = PAGE_9000_RENDER;
 
 }
@@ -416,15 +435,16 @@ void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 }
 
 void __far Z_QuickMapUndoFlatCache() {
-	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_5000_OFFSET);
+	
+	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_5000_OFFSET); // put texture cache fragment back in 5000...
 	
 	// this runs 4 over into z_quickmapsprite page
 
 	// inlined quickmap maksed (colormaps high, sprite cache, Z_QuickMapMaskedExtraData)
 	// todo combine maskeddata and spritecache into a single 7 page run by reordering
-	Z_QuickMap4AI(pageswapargs_spritecache_offset_size,     			INDEXED_PAGE_9000_OFFSET);
-	Z_QuickMap2AI(pageswapargs_spritecache_offset_size+4,     			INDEXED_PAGE_7800_OFFSET);
-	Z_QuickMap3AI(pageswapargs_maskeddata_offset_size,   				INDEXED_PAGE_8400_OFFSET);
+	Z_QuickMap4AI(pageswapargs_spritecache_offset_size,     			INDEXED_PAGE_9000_OFFSET); // put sprite cache in 9000
+	Z_QuickMap4AI(pageswapargs_spritecache_offset_size+4,     			INDEXED_PAGE_7000_OFFSET); // remap 9000-97FF data to 7000-77FF
+	Z_QuickMap3AI(pageswapargs_maskeddata_offset_size,   				INDEXED_PAGE_8400_OFFSET); // map sprite data and colormaps to 8400-8FFF
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -491,6 +511,7 @@ void __far Z_QuickMapLumpInfo() {
 	 
 		case PAGE_9000_RENDER_SPRITE:
 		case PAGE_9000_RENDER:
+		case PAGE_9000_RENDER_4000:
 		case PAGE_9000_SCREEN1:
 		
 			Z_QuickMap4AI(pageswapargs_phys_offset_size+20, INDEXED_PAGE_9000_OFFSET);
@@ -536,6 +557,9 @@ void __far Z_UnmapLumpInfo() {
 	switch (last9000State) {
 		case PAGE_9000_RENDER:
 			Z_QuickMapRender9000();
+			break;
+		case PAGE_9000_RENDER_4000:
+			Z_QuickMapRender_4000To9000_9000Only();
 			break;
 		case PAGE_9000_SCREEN1:
 			Z_QuickMapScreen1();
@@ -650,6 +674,8 @@ void __far Z_QuickMapWipe() {
 	currenttask = TASK_WIPE;
 }
 
+//todo: figure out when this can ever be called. then make sure the task values match what is necessary
+// seems to be palette calls andmenu? and V_DrawFullscreenPatch
 void __far Z_QuickMapByTaskNum(int8_t tasknum) {
 	switch (tasknum) {
 		case TASK_PHYSICS:

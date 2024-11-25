@@ -664,6 +664,7 @@ void __near P_LoadSideDefs(int16_t lump) {
 	int32_t offset = 0;
 	int16_t indexoffset = 0;
 	Z_QuickMapRender_4000To9000();
+	Z_QuickMapRender_9000To6000(); //for R_TextureNumForName
  
 	lumpsize = W_LumpLength(lump);
 	numsides = FastDiv32u16u(lumpsize, sizeof(mapsidedef_t));
@@ -676,6 +677,8 @@ void __near P_LoadSideDefs(int16_t lump) {
 
 	for (i = 0; i < numsides; i++) {
 		
+		// when sides is too big for one 64k block
+		//  and needs to have a 2nd fragment paged in.
 		if ((i-indexoffset) == 546){
 			// reload...
 			offset += 16380;

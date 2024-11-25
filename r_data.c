@@ -2513,7 +2513,151 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		} else {
 			// Does this code ever run outside of draw masked?
 
-			masked_header_t __far * maskedheader = &masked_headers[lookup];
+			masked_header_t __near* maskedheader = &masked_headers[lookup];
+			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
+
+			uint16_t ofs  = pixelofs[col]; // precached as segment value.
+			cachedcol = col;
+		 
+			return cachedsegmentlumps[0] + (ofs);
+		}
+	} else {
+		uint8_t collength = textureheights[tex] + 1;
+
+		// todo in the asm make default branch to use cache
+
+		if (cachedtex != tex){
+			if (cachedtex2 != tex){
+				cachedtex2 = cachedtex;
+				cachedsegmenttex2 = cachedsegmenttex;
+				cachedcollength2 = cachedcollength;
+				cachedtex = tex;
+				cachedsegmenttex = getcompositetexture(cachedtex);
+				collength += (16 - ((collength &0xF)) &0xF);
+				cachedcollength = collength >> 4;
+
+			} else {
+				// cycle cache so 2 = 1
+				tex = cachedtex;
+				cachedtex = cachedtex2;
+				cachedtex2 = tex;
+
+				tex = cachedsegmenttex;
+				cachedsegmenttex = cachedsegmenttex2;
+				cachedsegmenttex2 = tex;
+
+				tex = cachedcollength;
+				cachedcollength = cachedcollength2;
+				cachedcollength2 = tex;
+
+			}
+
+		}
+		
+		cachedbyteheight = collength;
+		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
+
+	}
+
+} 
+
+
+//todo can this be optimizefor the masked case??
+segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
+	int16_t         lump;
+	int16_t_union __far* texturecolumnlump;
+	int16_t n = 0;
+	uint8_t texcol;
+
+
+	col &= texturewidthmasks[tex];
+	texcol = col;
+	texturecolumnlump = &(texturecolumnlumps_bytes_7000[texturepatchlump_offset[tex]]);
+
+	// todo: maybe unroll this in asm to the max RLE size of this operation?
+	// todo: whats the max size of such a texture/rle string? to know for the asm 
+
+	// RLE stuff to figure out actual lump for column
+	while (col >= 0) {
+		//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
+		// should we change this to be 256 - the number? we dont want a branch.
+		// anyway, fix it in asm
+		int16_t subtractor = texturecolumnlump[n+1].bu.bytelow;
+		if (!subtractor){
+			subtractor = 256;
+		}
+		lump = texturecolumnlump[n].h;
+		col -= subtractor;
+		if (lump >= 0){ // should be equiv to == -1?
+			texcol -= texturecolumnlump[n+1].bu.bytelow;
+		}
+		n += 2;
+	}
+
+
+	if (lump > 0){
+		uint8_t lookup = masked_lookup_7000[tex];
+		uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
+		uint8_t heightval = texturecolumnlump[n-1].bu.bytehigh;
+		int16_t  cachelumpindex;
+		cachedbyteheight = heightval & 0xF0;
+		heightval &= 0x0F;
+		
+		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
+			if (lump == cachedlumps[cachelumpindex]){
+				
+				if (cachelumpindex == 0){
+					goto foundcachedlump;
+				} else {
+					// reorder, put it in spot 0
+					segment_t usedsegment = cachedsegmentlumps[cachelumpindex];
+					int16_t cachedlump = cachedlumps[cachelumpindex];
+					int16_t i;
+
+					// reorder cache MRU				
+					for (i = cachelumpindex; i > 0; i--){
+						cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
+						cachedlumps[i] = cachedlumps[i-1];
+					}
+
+					cachedsegmentlumps[0] = usedsegment;
+					cachedlumps[0] = cachedlump;
+					goto foundcachedlump;	
+
+				}
+			}
+		}
+
+		// not found, set cache.
+		{
+			int16_t i;
+			for (i = NUM_CACHE_LUMPS - 1; i > 0; i--){
+				cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
+				cachedlumps[i] = cachedlumps[i-1];
+			}
+			cachedsegmentlumps[0] = getpatchtexture(lump, lookup);  // might zero out cachedlump vars;
+			cachedlumps[0] = lump;
+
+		}
+		
+		foundcachedlump:
+		// so now cachedlumps[0] and cachedsegmentlumps[0] are the most recently used
+
+		// todo what else can we reuse collength and cachedbyteheight here?
+		
+		// we cant use rle width as it might be longer than single patch width
+		// in the case of multiple side by side patches. so we essentially
+		// "modulo from negative" by patch width.
+		while (col < 0){
+			col+= patchwidth;
+		}
+
+		if (lookup == 0xFF){
+			return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
+		} else {
+			// Does this code ever run outside of draw masked?
+
+			masked_header_t __near * maskedheader = &masked_headers[lookup];
 			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
 
 			uint16_t ofs  = pixelofs[col]; // precached as segment value.

@@ -1122,6 +1122,7 @@ extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 
 extern boolean				    is_ultimate;
 extern segment_t			    spritewidths_segment;
+extern masked_header_t  		masked_headers[MAX_MASKED_TEXTURES];
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 extern boolean    				plutonia;

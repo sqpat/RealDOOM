@@ -109,6 +109,8 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 
 	// can we use 16 bits? most of the time the answer is yes...
 	// but need to handle obscure 16th bit case
+	
+	//todo bench if its faster to just to the one. probably is.
 	if ((rw_scalestep.h.intbits == 0x0000 && !(rw_scalestep.h.fracbits & 0x8000) ) || 
 		(rw_scalestep.h.intbits == 0xFFFF &&  (rw_scalestep.h.fracbits & 0x8000) )){
 	    spryscale.w = ds->scale1 + FastMul1616(x1 - ds->x1,rw_scalestep.h.fracbits); // actually 1616 seems ok
@@ -218,7 +220,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 					}
 					
 
-					// todo there's got to be a faster way
+					// todo there's got to be a faster algorithm to calculcate this?
 					//dc_iscale = 0xffffffffu / spryscale.w;
 					dc_iscale = FastDiv3232(0xffffffffu, spryscale.w);
 
@@ -228,11 +230,11 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 				
 					// draw the texture
 					{
-						segment_t pixelsegment = R_GetColumnSegment(texnum,maskedtexturecol[dc_x]);
+						segment_t pixelsegment = R_GetMaskedColumnSegment(texnum,maskedtexturecol[dc_x]);
 						
-						uint8_t lookup = masked_lookup[texnum];
+						uint8_t lookup = masked_lookup_7000[texnum];
 						if (lookup != 0xFF){
-							masked_header_t __far * maskedheader = &masked_headers[lookup];
+							masked_header_t __near * maskedheader = &masked_headers[lookup];
 							uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedheader->postofsoffset);
 							uint16_t 		 postoffset = postoffsets[cachedcol];
 							column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
@@ -258,7 +260,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		// calculate lighting
 		if (maskedtexturecol[x1] != MAXSHORT) {
 			segment_t pixelsegment = R_GetColumnSegment(texnum,maskedtexturecol[x1]);
-			uint8_t lookup = masked_lookup[texnum];
+			uint8_t lookup = masked_lookup_7000[texnum];
 			int16_t dc_x_base4 = x1 & (detailshiftandval);	
 			outp(SC_INDEX+1, quality_port_lookup[dc_x_base4+detailshift.b.bytehigh]);
 			dc_x        = x1;
@@ -295,7 +297,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 			// draw the texture
 				
 			if (lookup != 0xFF){
-				masked_header_t __far * maskedheader = &masked_headers[lookup];
+				masked_header_t __near * maskedheader = &masked_headers[lookup];
 				uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedheader->postofsoffset);
 				uint16_t 		 postoffset = postoffsets[cachedcol];
 				column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
