@@ -554,7 +554,7 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 		//todo can this be done with a single if?
 		if ( !(mo_pos->flags2 & MF_SKULLFLY) && !(mo_pos->flags2 & MF_INFLOAT) ) {
 			moTarget = (mobj_t __near*)&thinkerlist[mo->targetRef].data;
-			moTarget_pos = &mobjposlist[mo->targetRef];
+			moTarget_pos = &mobjposlist_6800[mo->targetRef];
 			dist = P_AproxDistance (mo_pos->x.w - moTarget_pos->x.w,
 				mo_pos->y.w - moTarget_pos->y.w);
 	    
@@ -819,7 +819,7 @@ THINKERREF __near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type
 
 	mobj = (mobj_t __near*)P_CreateThinker(TF_MOBJTHINKER_HIGHBITS);
 	mobjRef = GETTHINKERREF(mobj);
-	mobj_pos = &mobjposlist[mobjRef];
+	mobj_pos = &mobjposlist_6800[mobjRef];
 
 
 
@@ -885,7 +885,7 @@ THINKERREF __near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type
 void __near P_RemoveMobj (mobj_t __near* mobj) {
 	THINKERREF mobjRef = GETTHINKERREF(mobj);
     // unlink from sector and block lists
-    P_UnsetThingPosition (mobj, &mobjposlist[mobjRef]);
+    P_UnsetThingPosition (mobj, &mobjposlist_6800[mobjRef]);
     
     // stop any playing sound
     S_StopSound (mobj);

@@ -387,14 +387,14 @@ void __near Z_LoadBinaries() {
 
 	fp2 = fopen("DOOMCODE.BIN", "rb"); 
 	fread(&codesize, 2, 1, fp2);
-	FAR_fread(colfunc_function_area, codesize, 1, fp2);
+	FAR_fread(colfunc_function_area_6800, codesize, 1, fp2);
 
 
 
 
 
 	// 400
-	FAR_fread(colfunc_jump_lookup,  2, SCREENHEIGHT * 2, fp);
+	FAR_fread(colfunc_jump_lookup_6800,  2, SCREENHEIGHT * 2, fp);
 	// 400
 	//FAR_fread(dc_yl_lookup, 2, SCREENHEIGHT, fp);
 

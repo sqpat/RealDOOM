@@ -54,13 +54,15 @@ int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __near*	thing,
 	THINKERREF fogRef;
 	
     // don't teleport missiles
-    if (thing_pos->flags2 & MF_MISSILE)
+    if (thing_pos->flags2 & MF_MISSILE){
 		return 0;		
+	}
 
     // Don't teleport if hit back of line,
     //  so you can get out of teleporter.
-    if (side == 1)		
-		return 0;	
+    if (side == 1){
+		return 0;
+	}
     
     for (i = 0; i < numsectors; i++) {
 
@@ -86,24 +88,26 @@ int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __near*	thing,
 				m = (mobj_t  __near*)(&thinkerlist[thinkerRef].data);
 		
 				// not a teleportman
-				if (m->type != MT_TELEPORTMAN )
+				if (m->type != MT_TELEPORTMAN ){
 					continue;		
-				
+				}
 
 
 				secnum = m->secnum;
 				// wrong sector
-				if (secnum != i )
+				if (secnum != i ){
 					continue;	
+				}
 
-				m_pos = &mobjposlist[thinkerRef];
+				m_pos = &mobjposlist_6800[thinkerRef];
 				oldx = thing_pos->x;
 				oldy = thing_pos->y;
 				oldz = thing_pos->z;
 				oldsecnum = thing->secnum;
 				
-				if (!P_TeleportMove (thing, thing_pos, m_pos->x, m_pos->y, m->secnum))
+				if (!P_TeleportMove (thing, thing_pos, m_pos->x, m_pos->y, m->secnum)){
 					return 0;
+				}
 		#if (EXE_VERSION != EXE_VERSION_FINAL)
 
 				SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);

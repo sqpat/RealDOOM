@@ -905,7 +905,7 @@ void __near AM_drawWalls() {
     for (i=0;i<numlines;i++) {
 		linev1Offset = lines_physics[i].v1Offset;
 		linev2Offset = lines_physics[i].v2Offset & VERTEX_OFFSET_MASK;
-		mappedflag = seenlines[i / 8] & (0x01 << (i%8));  // todo this seems wasteful? just add up during the loop to avoid all these shifts?
+		mappedflag = seenlines_6800[i / 8] & (0x01 << (i%8));  // todo this seems wasteful? just add up during the loop to avoid all these shifts?
 		lineflags = lineflagslist[i];
 		linebacksecnum = lines_physics[i].backsecnum;
 		linefrontsecnum = lines_physics[i].frontsecnum;
@@ -1031,7 +1031,7 @@ void __near AM_drawThings() {
 	for (i=0;i<numsectors;i++) {
 		tRef = sectors[i].thinglistRef;
 		while (tRef) {
-			t = (mobj_pos_t __far*)(&mobjposlist[tRef]);
+			t = (mobj_pos_t __far*)(&mobjposlist_6800[tRef]);
 			
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
 			 0x10L, t->angle.hu.intbits >> SHORTTOFINESHIFT, THINGCOLORS, t->x.h.intbits, t->y.h.intbits);

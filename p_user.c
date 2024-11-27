@@ -199,7 +199,7 @@ void P_DeathThink () {
     P_CalcHeight();
 	
 	if (player.attackerRef && player.attackerRef != playerMobjRef) {
-		playerattacker_pos = &mobjposlist[player.attackerRef];
+		playerattacker_pos = &mobjposlist_6800[player.attackerRef];
 		angle.wu = R_PointToAngle2(playerMobj_pos->x, playerMobj_pos->y, playerattacker_pos->x, playerattacker_pos->y);
 	
 

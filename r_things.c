@@ -128,7 +128,7 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
             if (count >= 0){
             	uint8_t lookup = detailshift.b.bytehigh + (dc_x&3);
                 
-                byte __far * dest = destview + dc_yl_lookup_high[dc_yl] + (dc_x>>detailshift2minus);
+                byte __far * dest = destview + dc_yl_lookup_maskedmapping[dc_yl] + (dc_x>>detailshift2minus);
                 outp  (SC_INDEX + 1, quality_port_lookup[lookup]); 
                 outpw (GC_INDEX,     vga_read_port_lookup[lookup] );
 
@@ -149,7 +149,7 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
 
     }
     // if we dont update above we dont need to rest it
-    //dc_colormap = MK_FP(colormaps_segment_high, old_dc_colormap);
+    //dc_colormap = MK_FP(colormaps_segment_maskedmapping, old_dc_colormap);
         
     dc_texturemid = basetexturemid;
 
@@ -190,7 +190,7 @@ void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column)
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
-            R_DrawColumnPrepCallHigh(colormaps_high_seg_diff);
+            R_DrawColumnPrepCallHigh(colormaps_maskedmapping_seg_diff);
 
                 
         }
@@ -202,7 +202,7 @@ void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column)
 
     }
     // if we dont update above we dont need to rest it
-    //dc_colormap = MK_FP(colormaps_segment_high, old_dc_colormap);
+    //dc_colormap = MK_FP(colormaps_segment_maskedmapping, old_dc_colormap);
         
     dc_texturemid = basetexturemid;
 }
@@ -244,14 +244,14 @@ void __near R_DrawSingleMaskedColumn2 (segment_t pixeldatasegment, byte length) 
         dc_source_segment = pixeldatasegment;
         dc_texturemid = basetexturemid;
 
-        R_DrawColumnPrepCallHigh(colormaps_high_seg_diff);
+        R_DrawColumnPrepCallHigh(colormaps_maskedmapping_seg_diff);
 
             
     }
 
     
     // if we dont update above we dont need to rest it
-    //dc_colormap = MK_FP(colormaps_segment_high, old_dc_colormap);
+    //dc_colormap = MK_FP(colormaps_segment_maskedmapping, old_dc_colormap);
         
     dc_texturemid = basetexturemid;
 }
@@ -271,7 +271,7 @@ void __near R_DrawVisSprite ( vissprite_t __near* vis ) {
     patch_t __far * patch;
 
 
-    dc_colormap_segment = colormaps_segment_high;
+    dc_colormap_segment = colormaps_segment_maskedmapping;
     dc_colormap_index = vis->colormap;
     
     dc_iscale = labs(vis->xiscale)>>detailshift.b.bytelow;
@@ -610,7 +610,6 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
 
 
 
-
 //
 // R_DrawMasked
 //
@@ -621,6 +620,7 @@ void __near R_DrawMasked (void) {
 	R_SortVisSprites ();
 
     // adjust ds_p to be 7000 based instead of 9000 based due to different masked task mappings.
+    // subtracting (0x90000000 - 0x70000000) basically 
     ds_p = (drawseg_t __far*)(((int32_t)ds_p) - (((int32_t)drawsegs_BASE) - ((int32_t)drawsegs_BASE_7000)));
 
     if (vissprite_p > 0) {

@@ -226,12 +226,12 @@ void __far R_DrawColumnPrepHigh(){
 	uint8_t count = dc_yh-dc_yl;	
 
 	dc_source = 	MK_FP(calculated_ds, 	bx_offset);
-	dc_yl_lookup_val = dc_yl_lookup_high[dc_yl];   // precalculate dc_yl * 80
+	dc_yl_lookup_val = dc_yl_lookup_maskedmapping[dc_yl];   // precalculate dc_yl * 80
 	//dc_yl_lookup_val = dc_yl_lookup[dc_yl];   // precalculate dc_yl * 80
 	
 	// modify the jump instruction based on count
-	((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = colfunc_jump_lookup_high[count];
-	//((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = colfunc_jump_lookup[count];
+	((uint16_t __far *)MK_FP(colfunc_segment_maskedmapping, draw_jump_inst_offset))[0] = colfunc_jump_lookup_maskedmapping[count];
+	//((uint16_t __far *)MK_FP(colfunc_segment_maskedmapping, draw_jump_inst_offset))[0] = colfunc_jump_lookup[count];
 
 	// todo add in the actual colormap?
 	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
@@ -679,7 +679,7 @@ void __far R_DrawColumnLow (void)  {
 
 // augmented by 6*256 bytes in paragraphs 
 /*
-#define colormaps_high_fuzz    ((lighttable_t  __far*) (((int32_t)colormaps_high)   + 0x00600000))
+#define colormaps_maskedmapping_fuzz    ((lighttable_t  __far*) (((int32_t)colormaps_maskedmapping)   + 0x00600000))
 
 
 
@@ -701,97 +701,97 @@ void __far R_DrawFuzzColumn (int16_t count, byte __far * dest) {
 		// Add index from colormap to index.
 
 		// only used during sprite, during which colormaps is high
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
 		fuzzpos ++;
 	
@@ -810,7 +810,7 @@ void __far R_DrawFuzzColumn (int16_t count, byte __far * dest) {
 		// Add index from colormap to index.
 
 		// only used during sprite, during which colormaps is high
-		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_maskedmapping_fuzz[dest[fuzzoffset[fuzzpos]]];
 
 		// Clamp table lookup index.
 		if (++fuzzpos == FUZZTABLE) 

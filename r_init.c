@@ -785,7 +785,6 @@ void __near R_InitData(void) {
 	//length = W_LumpLength(lump) + 255;
 	//colormaps = (byte __far*)colormapbytes;
 	//colormaps = (byte  __far*)(((int32_t)colormaps + 255)&~0xff);
-	W_CacheLumpNumDirect(1, colormaps);
 	//W_CacheLumpNumDirect(1, (byte __far*) 0xCC000000);
 
  
@@ -795,6 +794,8 @@ void __near R_InitData(void) {
 
 void __near R_Init(void) {
 	Z_QuickMapRender();
+	W_CacheLumpNumDirect(1, colormaps);
+
 	Z_QuickMapLumpInfo();
 	Z_QuickMapRender_9000To6000(); //for R_TextureNumForName
 

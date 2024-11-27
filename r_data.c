@@ -2425,7 +2425,6 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	int16_t n = 0;
 	uint8_t texcol;
 
-
 	col &= texturewidthmasks[tex];
 	texcol = col;
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
@@ -2749,6 +2748,7 @@ void R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean is
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
 //void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked){
+//todo remove texlocation_segment param if its hardcoded?
 void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_4000;
 	int16_t col;

@@ -327,7 +327,7 @@ void __near ST_updateFaceWidget(void) {
                 st_faceindex = ST_calcPainOffset() + ST_OUCHOFFSET;
             } else {
                  
-                plyrattacker_pos = &mobjposlist[player.attackerRef];
+                plyrattacker_pos = &mobjposlist_6800[player.attackerRef];
                 badguyangle.wu = R_PointToAngle2(playerMobj_pos->x,
                                                 playerMobj_pos->y,
                                               plyrattacker_pos->x,

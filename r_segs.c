@@ -31,9 +31,6 @@
 #include <dos.h>
 #include <conio.h>
 
-#define playerMobjRef	((THINKERREF)1)
-#define playerMobj_pos	((&mobjposlist[playerMobjRef]))
-
 
 // OPTIMIZE: closed two sided lines as single sided
 
@@ -151,7 +148,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 			
 	if (fixedcolormap) {
 		// todo if this is 0 maybe skip the if?
-		dc_colormap_segment = colormaps_segment_high;
+		dc_colormap_segment = colormaps_segment_maskedmapping;
 		dc_colormap_index = fixedcolormap;
 	}
 
@@ -212,7 +209,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 							index = spryscale.w >> LIGHTSCALESHIFT;
 						}
 
-						dc_colormap_segment = colormaps_segment_high;
+						dc_colormap_segment = colormaps_segment_maskedmapping;
 				        dc_colormap_index = *((int8_t __far*)MK_FP(scalelightfixed_segment, walllights+index));
 
 
@@ -280,7 +277,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 					index = spryscale.w >> LIGHTSCALESHIFT;
 				}
 
-				dc_colormap_segment = colormaps_segment_high;
+				dc_colormap_segment = colormaps_segment_maskedmapping;
 				dc_colormap_index = walllights[index];
 
 				// todo does it have to be reset after this?
@@ -717,6 +714,43 @@ void __near R_RenderOneSeg () {
 			// 1CA4:19d2 
 			// 1CA4:253C
 			R_DrawColumnPrepCall(0);				
+			/*
+
+			I_Error("%x %lx %x\n %lx %lx %x %x\n %x %x %x\n %x %x %x %x %x %x",
+			 dc_source_segment, destview, dc_x,
+			
+			colfunc_farcall_addr_1,
+			func_farcall_scratch_addr,
+			dc_colormap_segment, 
+			dc_colormap_index,
+			dc_x, dc_yl, dc_yh,
+			colormaps[0],
+			colormaps[1],
+			colormaps[0x10],
+			colormaps[0x500],
+			colormaps[0x501],
+			colormaps[0x502]
+			
+			);
+
+			I_Error("%lx %x %x %x %x \n %x %x %x   %x %x %x", R_DrawColumnPrepCall, ((byte __far*) R_DrawColumnPrepCall)[0], dc_x, dc_yh - dc_yl,
+			colfunc_jump_lookup_segment, 
+			(((int16_t __far*) (MK_FP(colfunc_jump_lookup_segment, 0x362)))[0]),
+			(((int16_t __far*) (MK_FP(colfunc_jump_lookup_segment, 0x364)))[0]),
+			(((int16_t __far*) (MK_FP(colfunc_jump_lookup_segment, 0x366)))[0]),
+
+			(((int16_t __far*) (MK_FP(colfunc_function_area_segment, 0x42)))[0]),
+			(((int16_t __far*) (MK_FP(colfunc_function_area_segment, 0x44)))[0]),
+			(((int16_t __far*) (MK_FP(colfunc_function_area_segment, 0x46)))[0])
+
+
+
+			);
+			*/
+
+
+
+			//I_Error("made it thru");
 
 
 

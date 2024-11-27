@@ -37,9 +37,6 @@
 
 
 
-// Both the head and tail of the thinker list.
-//thinker_t __far*	thinkerlist; // [MAX_THINKERS];
-//mobj_pos_t __far*	mobjposlist; // [MAX_THINKERS];
 
 
 
@@ -132,7 +129,7 @@ void __near P_RunThinkers (void) {
 			thinkerlist[prevRef].next = nextRef;;
 
 			memset(&thinkerlist[currentthinker].data, 0, sizeof(mobj_t));
-			FAR_memset(&mobjposlist[currentthinker],	  0, sizeof(mobj_pos_t));
+			FAR_memset(&mobjposlist_6800[currentthinker],	  0, sizeof(mobj_pos_t));
 			thinkerlist[currentthinker].prevFunctype = MAX_THINKERS;
 		} else {
 			mobj = &thinkerlist[currentthinker].data;
@@ -143,7 +140,7 @@ void __near P_RunThinkers (void) {
 			if (currentthinkerFunc) {
 				switch (currentthinkerFunc) {
 					case TF_MOBJTHINKER_HIGHBITS:
-						P_MobjThinker(mobj, &mobjposlist[currentthinker], currentthinker);
+						P_MobjThinker(mobj, &mobjposlist_6800[currentthinker], currentthinker);
 						break;
 					case TF_PLATRAISE_HIGHBITS:
 						T_PlatRaise((plat_t __near*)mobj, currentthinker);

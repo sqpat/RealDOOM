@@ -902,7 +902,6 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 void __near R_AddSprites (sector_t __far* sec) {
 	THINKERREF				thingRef;
 	int16_t                 lightnum;
- 
 
     // BSP is traversed by subsector.
     // A sector might have been split into several
@@ -910,8 +909,9 @@ void __near R_AddSprites (sector_t __far* sec) {
     // Thus we check whether its already added.
     
 
-	if (sec->validcount == validcount)
+	if (sec->validcount == validcount){
         return;         
+	}
     // Well, now it will be done.
 	sec->validcount = validcount;
         

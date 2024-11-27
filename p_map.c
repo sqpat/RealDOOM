@@ -1126,7 +1126,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 	if (th == shootthing) {
 		return true;			// can't shoot self
 	}
-	th_pos = &mobjposlist[in->d.thingRef];
+	th_pos = &mobjposlist_6800[in->d.thingRef];
 
 	if (!(th_pos->flags1&MF_SHOOTABLE)) {
 		return true;			// corpse or something
@@ -1273,7 +1273,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
 	if (th == shootthing) {
 		return true;		// can't shoot self
 	}
-	th_pos = &mobjposlist[thRef];
+	th_pos = &mobjposlist_6800[thRef];
 
 
 	if (!(th_pos->flags1&MF_SHOOTABLE)) {

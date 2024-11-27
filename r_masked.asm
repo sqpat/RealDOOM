@@ -28,10 +28,10 @@ INSTRUCTION_SET_MACRO
 
 
 ; for the 6th colormap (used in fuzz draws. offset by 600h bytes, or 60h segments)
-COLORMAPS_6_HIGH_SEG_DIFF_SEGMENT = (08C00h + 060h)
+COLORMAPS_6_MASKEDMAPPING_SEG_DIFF_SEGMENT = (08C00h + 060h)
  
 ; 5472 or 0x1560
-COLORMAPS_HIGH_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_6_HIGH_SEG_DIFF_SEGMENT - DRAWFUZZCOL_AREA_SEGMENT)
+COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_6_MASKEDMAPPING_SEG_DIFF_SEGMENT - DRAWFUZZCOL_AREA_SEGMENT)
 
 
 
@@ -72,7 +72,7 @@ mov  ch, 010h
 
 cli
 push bp
-mov  bp, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
+mov  bp, COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS
 
 
 
@@ -277,14 +277,14 @@ jnle   exit_function_single
 mov   word ptr ds:[_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
 mov   word ptr ds:[_dc_yl], si ;  dc_x could also be trivially recovered from bx
 
-mov   ax, COLORMAPS_HIGH_SEG_DIFF
+mov   ax, COLORMAPS_MASKEDMAPPING_SEG_DIFF
 
 
 db 09Ah
 db R_DRAWCOLUMNPREPCALLOFFSET AND 0FFh
 db (R_DRAWCOLUMNPREPCALLOFFSET SHR 8 )
-db COLFUNC_HIGH_SEGMENT AND 0FFh
-db (COLFUNC_HIGH_SEGMENT SHR 8 )
+db COLFUNC_MASKEDMAPPING_SEGMENT AND 0FFh
+db (COLFUNC_MASKEDMAPPING_SEGMENT SHR 8 )
 
 
 exit_function_single:
@@ -462,14 +462,14 @@ mov   al, byte ptr es:[si]
 xor   ah, ah
 sub   dx, ax
 mov   word ptr ds:[_dc_texturemid+2], dx
-mov   ax, COLORMAPS_HIGH_SEG_DIFF
+mov   ax, COLORMAPS_MASKEDMAPPING_SEG_DIFF
 
 ; todo double check if this is really necessary
 db 09Ah
 db R_DRAWCOLUMNPREPCALLOFFSET AND 0FFh
 db (R_DRAWCOLUMNPREPCALLOFFSET SHR 8 )
-db COLFUNC_HIGH_SEGMENT AND 0FFh
-db (COLFUNC_HIGH_SEGMENT SHR 8 )
+db COLFUNC_MASKEDMAPPING_SEGMENT AND 0FFh
+db (COLFUNC_MASKEDMAPPING_SEGMENT SHR 8 )
 
 increment_column_and_continue_loop:
 mov   es, word ptr [bp - 2]

@@ -245,7 +245,7 @@ boolean __near P_CheckMeleeRange (mobj_t __near* actor){
 
 	plRef = actor->targetRef;
 	pl = (mobj_t __near*)(&thinkerlist[plRef].data);
-	pl_pos = &mobjposlist[plRef];
+	pl_pos = &mobjposlist_6800[plRef];
 	plx = pl_pos->x.w;
 	ply = pl_pos->y.w;
 	plradius  = mobjinfo[pl->type].radius;
@@ -729,7 +729,7 @@ void __near A_Look (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 
 	if (targRef) {
 
-		mobj_pos_t __far* targ_pos = &mobjposlist[targRef];
+		mobj_pos_t __far* targ_pos = &mobjposlist_6800[targRef];
 
 		targ = (mobj_t __near*)(&thinkerlist[targRef].data);
 		if (targ_pos->flags1 & MF_SHOOTABLE) {
@@ -811,7 +811,7 @@ void __near A_Chase (mobj_t __near*	actor, mobj_pos_t __far* actor_pos){
 	int16_t delta;
 	uint8_t sound;
 	mobj_t __near*	actorTarget = (mobj_t __near*)(&thinkerlist[actortargetRef].data);
-	mobj_pos_t __far*	actorTarget_pos = &mobjposlist[actortargetRef];
+	mobj_pos_t __far*	actorTarget_pos = &mobjposlist_6800[actortargetRef];
 	//todoaddr inline later
 	statenum_t (__far  * getMissileState)(uint8_t) = getMissileStateAddr;
 	statenum_t (__far  * getMeleeState)(uint8_t) = getMeleeStateAddr;
@@ -950,11 +950,11 @@ void __near A_FaceTarget (mobj_t __near* actor){
 	uint16_t temp;
     if (!actor->targetRef)
 		return;
-	actorTarget_pos = &mobjposlist[actor->targetRef];
+	actorTarget_pos = &mobjposlist_6800[actor->targetRef];
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 
     actor_pos->flags1 &= ~MF_AMBUSH;
-	actorTarget_pos = &mobjposlist[actor->targetRef];
+	actorTarget_pos = &mobjposlist_6800[actor->targetRef];
 	actorTargetShadow = actorTarget_pos->flags2 & MF_SHADOW ? 1 : 0;
 
 
@@ -1306,7 +1306,7 @@ void __near A_Tracer (mobj_t __near* actor, mobj_pos_t __far* actor_pos) {
 	actor->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, fineexact, mobjinfo[actor->type].speed);
 	
 	dest = (mobj_t __near*)(&thinkerlist[actor->tracerRef].data);
-	dest_pos = &mobjposlist[actor->tracerRef];
+	dest_pos = &mobjposlist_6800[actor->tracerRef];
 	destz = dest_pos->z.w;
 
 	// change slope
@@ -1506,7 +1506,7 @@ void __near A_VileChase (mobj_t __near* actor, mobj_pos_t __far* actor_pos) {
 				//actor = setStateReturn;
 
 				corpsehit = (mobj_t __near*)(&thinkerlist[corpsehitRef].data);
-				corpsehit_pos = &mobjposlist[corpsehitRef];
+				corpsehit_pos = &mobjposlist_6800[corpsehitRef];
 				S_StartSoundFromRef(corpsehit, sfx_slop);
 				info = &mobjinfo[corpsehit->type];
 		    
@@ -1565,14 +1565,16 @@ void __near A_Fire (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 
 
     destRef = actor->tracerRef;
-    if (!destRef)
+    if (!destRef){
 		return;
-		
+	}
+
     // don't move it if the vile lost sight
 	dest = (mobj_t __near*)(&thinkerlist[destRef].data);
-	dest_pos = &mobjposlist[destRef];
-	if (!P_CheckSight ((&thinkerlist[actor->targetRef].data), dest, &mobjposlist[actor->targetRef], dest_pos) )
+	dest_pos = &mobjposlist_6800[destRef];
+	if (!P_CheckSight ((&thinkerlist[actor->targetRef].data), dest, &mobjposlist_6800[actor->targetRef], dest_pos) ){
 		return;
+	}
 
     an = (dest_pos->angle.hu.intbits >> 1) & 0xFFFC;
 
@@ -1606,7 +1608,7 @@ void __near A_VileTarget (mobj_t __near* actor){
 
 	actortargetRef = actor->targetRef;
 	actorTarget = (mobj_t __near*)(&thinkerlist[actor->targetRef].data);
-	actorTarget_pos = &mobjposlist[actor->targetRef];
+	actorTarget_pos = &mobjposlist_6800[actor->targetRef];
     fogRef = P_SpawnMobj (actorTarget_pos->x.w,
 		actorTarget_pos->y.w,
 		actorTarget_pos->z.w, MT_FIRE, actorTarget->secnum);
@@ -1673,12 +1675,13 @@ void __near A_VileAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 
 	if (!actor->targetRef)
 		return;
-	actorTarget_pos = &mobjposlist[actor->targetRef];
+	actorTarget_pos = &mobjposlist_6800[actor->targetRef];
 
     A_FaceTarget (actor);
 	actorTarget = (mobj_t __near*)(&thinkerlist[actor->targetRef].data);
-	if (!P_CheckSight(actor, actorTarget, actor_pos, actorTarget_pos))
+	if (!P_CheckSight(actor, actorTarget, actor_pos, actorTarget_pos)){
 		return;
+	}
 	S_StartSoundFromRef (actor, sfx_barexp);
 	P_DamageMobj ((&thinkerlist[actor->targetRef].data), actor, actor, 20);
     an = (actor_pos->angle.hu.intbits >> 1) & 0xFFFC;
@@ -1688,12 +1691,13 @@ void __near A_VileAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 	actorTarget->momz.w = GetVileMomz(actorTarget->type);
 
 
-    if (!fireRef)
+    if (!fireRef){
 		return;
+	}
 		
 
 	fire = (mobj_t __near*)(&thinkerlist[fireRef].data);
-	fire_pos = &mobjposlist[fireRef];
+	fire_pos = &mobjposlist_6800[fireRef];
 	// move the fire between the vile and the player
 	//todo isnt this just multiplied by 24?
 	fire_pos->x.w = actorTarget_pos->x.w - FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, an, 24*FRACUNIT);
@@ -1731,7 +1735,7 @@ void __near A_FatAttack1 (mobj_t __near*	actor, mobj_pos_t __far* actor_pos){
 
     moRef = P_SpawnMissile (actor, actor_pos, (&thinkerlist[actor->targetRef].data), MT_FATSHOT);
 	mo = (mobj_t __near*)(&thinkerlist[moRef].data);
-	mo_pos = &mobjposlist[moRef];
+	mo_pos = &mobjposlist_6800[moRef];
 	mo_pos->angle.wu += FATSPREAD;
     an = (mo_pos->angle.hu.intbits >> 1) & 0xFFFC;
     mo->momx.w = FixedMulTrigSpeedNoShift(FINE_COSINE_ARGUMENT, an, (mobjinfo[mo->type].speed));
@@ -1820,7 +1824,7 @@ void __near A_SkullAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 	S_StartSoundFromRef(actor, getAttackSound(actor->type));
 	A_FaceTarget(actor);
 	dest = (mobj_t __near*)(&thinkerlist[destRef].data);
-	dest_pos = &mobjposlist[destRef];
+	dest_pos = &mobjposlist_6800[destRef];
     //an = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
     an = (actor_pos->angle.hu.intbits >> 1) & 0xFFFC;
     actor->momx.w = FixedMulTrigSpeedNoShift(FINE_COSINE_ARGUMENT, an, SKULLSPEED_SMALL);
@@ -2284,7 +2288,7 @@ void __near A_BrainSpit (mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 
 
 	targ = (mobj_t __near*)&thinkerlist[targRef].data;
-	targ_pos = &mobjposlist[targRef];
+	targ_pos = &mobjposlist_6800[targRef];
 	targy = targ_pos->y.w;
 	moy = mo_pos->y.w;
 
@@ -2327,7 +2331,7 @@ void __near A_SpawnFly (mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 	
     targRef = mo->targetRef;
 	targ = (mobj_t __near*)&thinkerlist[targRef].data;
-	targ_pos = &mobjposlist[targRef];
+	targ_pos = &mobjposlist_6800[targRef];
     // First spawn teleport fog.
     fogRef = P_SpawnMobj (targ_pos->x.w, targ_pos->y.w, targ_pos->z.w, MT_SPAWNFIRE, targ->secnum);
     S_StartSoundFromRef (setStateReturn, sfx_telept);
@@ -2363,7 +2367,7 @@ void __near A_SpawnFly (mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 
     newmobjRef	= P_SpawnMobj (targ_pos->x.w, targ_pos->y.w, targ_pos->z.w, type, targ->secnum);
 	newmobj = (mobj_t __near*)&thinkerlist[newmobjRef].data;
-	newmobj_pos = &mobjposlist[newmobjRef];
+	newmobj_pos = &mobjposlist_6800[newmobjRef];
 	if (P_LookForPlayers(newmobj, true)) {
 		P_SetMobjState(newmobj, getSeeState(newmobj->type));
 	}

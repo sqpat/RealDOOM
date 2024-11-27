@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 115
+#define CONSTANTS_COUNT 114
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -29,7 +29,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SPRITETOPOFFSETS_SEGMENT",
     "TEXTUREDEFS_OFFSET_SEGMENT",
     "MASKED_LOOKUP_SEGMENT",
-    "MASKED_HEADERS_SEGMENT",
     "PATCHWIDTHS_SEGMENT",
     "DRAWSEGS_BASE_SEGMENT",
 
@@ -129,12 +128,12 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
     "SPANFUNC_JUMP_LOOKUP_SEGMENT",
     "SPANFUNC_FUNCTION_AREA_SEGMENT",
-    "COLFUNC_HIGH_SEGMENT",
+    "COLFUNC_MASKEDMAPPING_SEGMENT",
     "R_DRAWCOLUMNPREPCALLOFFSET",
     "STATES_RENDER_SEGMENT",
     "BASE_LOWER_MEMORY_SEGMENT",
     "BASE_LOWER_END_SEGMENT",
-    "EMPTY_RENDER_6800_SEGMENT",
+    "EMPTY_RENDER_9800_SEGMENT",
     "PHYSICS_7000_END_SEGMENT",
     "RENDER_8800_END_SEGMENT",
     "RENDER_9800_END_SEGMENT",
@@ -143,7 +142,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "DRAWSKYPLANE_AREA_SEGMENT",
     "R_DRAWSKYPLANE_OFFSET",
     "R_DRAWSKYPLANE_DYNAMIC_OFFSET",
-    "COLORMAPS_HIGH_SEG_DIFF"
+    "COLORMAPS_MASKEDMAPPING_SEG_DIFF"
     
 
 
@@ -177,7 +176,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     spritetopoffsets_segment,
     texturedefs_offset_segment,
     masked_lookup_segment,
-    masked_headers_segment,
     patchwidths_segment,
     drawsegs_BASE_segment,
 
@@ -275,12 +273,12 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 
     spanfunc_jump_lookup_segment,
     spanfunc_function_area_segment,
-    colfunc_segment_high,
+    colfunc_segment_maskedmapping,
     R_DrawColumnPrepOffset,
     states_render_segment,
     base_lower_memory_segment,
     base_lower_end_segment,
-    empty_render_6800_segment,
+    empty_render_9800_segment,
     physics_7000_end_segment,
     render_8800_end_segment,
     render_9800_end_segment,
@@ -289,7 +287,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     drawskyplane_area_segment,
     R_DrawSkyPlaneOffset,
     R_DrawSkyPlaneDynamicOffset,
-    colormaps_high_seg_diff
+    colormaps_maskedmapping_seg_diff
 
 
     

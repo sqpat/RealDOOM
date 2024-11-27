@@ -482,8 +482,8 @@ uint16_t vga_read_port_lookup[12] = {
 };
 
 
-void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  				      	  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
-void (__far* R_DrawColumnPrepCall)(uint16_t)  =   				      	      ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
+void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  				      	  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_maskedmapping, R_DrawColumnPrepOffset)));
+void (__far* R_DrawColumnPrepCall)(uint16_t)  =   				      	      ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, 				R_DrawColumnPrepOffset)));
 
 void (__far* R_DrawPlanesCall)()  =   				      	                  ((void    (__far *)(uint6_t))  (MK_FP(spanfunc_function_area_segment, R_DrawPlanesOffset)));
 void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  		      ((void    (__far *)(uint16_t, byte __far *))  		(MK_FP(drawfuzzcol_area_segment, R_DrawFuzzColumnOffset)));
@@ -1882,10 +1882,10 @@ uint16_t pageswapargs[total_pages] = {
 
 	_NPR(PAGE_4000_OFFSET),	 _NPR(PAGE_4400_OFFSET),	 _NPR(PAGE_4800_OFFSET),	 _NPR(PAGE_4C00_OFFSET),	
 	_NPR(PAGE_5000_OFFSET),  _NPR(PAGE_5400_OFFSET),	 _NPR(PAGE_5800_OFFSET),	 _NPR(PAGE_5C00_OFFSET),	 
-	_NPR(PAGE_6000_OFFSET),  _NPR(PAGE_6400_OFFSET),	 _EPR(13),	                 _NPR(PAGE_6C00_OFFSET),	
+	_NPR(PAGE_6000_OFFSET),  _NPR(PAGE_6400_OFFSET),	 _EPR(13),	                 _EPR(14),	
 	_NPR(PAGE_7000_OFFSET),	 _NPR(PAGE_7400_OFFSET),	 _NPR(PAGE_7800_OFFSET),	 _NPR(PAGE_7C00_OFFSET),	
 	_NPR(PAGE_8000_OFFSET),	 _NPR(PAGE_8400_OFFSET),	 _NPR(PAGE_8800_OFFSET),	 _NPR(PAGE_8C00_OFFSET),	
-	_EPR(14), 
+	_EPR(15), 
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE)    , 
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), 
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), 
@@ -1893,13 +1893,14 @@ uint16_t pageswapargs[total_pages] = {
 	// render
 	_EPR(0),				 _EPR(1),					 _EPR(2),					 _EPR(3),						
 	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 0),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 1),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 2),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 3),	  // texture cache area
-	_EPR(11), 				 _EPR(12),					 _EPR(13),					 _NPR(PAGE_6C00_OFFSET),		  // shared 6400 6800 with physics
+	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 4),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 5),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 6),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 7),	  // texture cache area
 	_EPR(7),				 _EPR(8),					 _EPR(9),					 _EPR(10),						
 	_EPR(4),				 _EPR(5),					 _EPR(6),					 _EPR(EMS_VISPLANE_EXTRA_PAGE),
-	_EPR(14), 
-	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE)    , 
-	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), 
-	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), 
+	_EPR(11), PAGE_9000_OFFSET,
+	_EPR(12), PAGE_9400_OFFSET,
+	_EPR(13), PAGE_9800_OFFSET,
+	_EPR(14), PAGE_9C00_OFFSET,
+	// render 4000 to 9000
 	_EPR(0),				 _EPR(1),					 _EPR(2),					 _EPR(3),						
 
 	
@@ -1950,7 +1951,6 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(FLAT_DATA_PAGES+2)
 	_EPR(PALETTE_LOGICAL_PAGE),       // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused during planes
 														
-	//PHYSICS_RENDER_6800_PAGE,           // remap colormaps to be before drawspan code
 														
 
 
@@ -1974,7 +1974,7 @@ uint16_t pageswapargs[total_pages] = {
 	//masked
 	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE), 
 	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE+1), 
-	_EPR(PHYSICS_RENDER_6800_PAGE),  // put colormaps where vissprites used to be?
+	_EPR(PHYSICS_RENDER_9800_PAGE),  // put colormaps where vissprites used to be?
 	//render 9000 to 6000
 	_EPR(11),
 	_EPR(12),
@@ -1997,7 +1997,7 @@ uint16_t pageswapargs[total_pages] = {
 	_NPR(PAGE_6000_OFFSET) 				  	  ,  // STRINGS_LOGICAL_PAGE
 	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 1), 
 	_NPR(PAGE_6800_OFFSET)  				  , 
-	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2), 
+	_NPR(PAGE_6C00_OFFSET)
 
 // intermission 
 	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4), 
@@ -2042,10 +2042,10 @@ int16_t pagenum9000;
 uint16_t pageswapargs[total_pages] = {
 	_NPR(PAGE_4000_OFFSET),	PAGE_4000_OFFSET, _NPR(PAGE_4400_OFFSET),	PAGE_4400_OFFSET, _NPR(PAGE_4800_OFFSET),	PAGE_4800_OFFSET, _NPR(PAGE_4C00_OFFSET),	PAGE_4C00_OFFSET,
 	_NPR(PAGE_5000_OFFSET), PAGE_5000_OFFSET, _NPR(PAGE_5400_OFFSET),	PAGE_5400_OFFSET, _NPR(PAGE_5800_OFFSET),	PAGE_5800_OFFSET, _NPR(PAGE_5C00_OFFSET),	PAGE_5C00_OFFSET, 
-	_NPR(PAGE_6000_OFFSET), PAGE_6000_OFFSET, _NPR(PAGE_6400_OFFSET),	PAGE_6400_OFFSET, _EPR(13),	                PAGE_6800_OFFSET, _NPR(PAGE_6C00_OFFSET),	PAGE_6C00_OFFSET,
+	_NPR(PAGE_6000_OFFSET), PAGE_6000_OFFSET, _NPR(PAGE_6400_OFFSET),	PAGE_6400_OFFSET, _EPR(13),	                PAGE_6800_OFFSET, _EPR(14)				,	PAGE_6C00_OFFSET,
 	_NPR(PAGE_7000_OFFSET),	PAGE_7000_OFFSET, _NPR(PAGE_7400_OFFSET),	PAGE_7400_OFFSET, _NPR(PAGE_7800_OFFSET),	PAGE_7800_OFFSET, _NPR(PAGE_7C00_OFFSET),	PAGE_7C00_OFFSET,
 	_NPR(PAGE_8000_OFFSET),	PAGE_8000_OFFSET, _NPR(PAGE_8400_OFFSET),	PAGE_8400_OFFSET, _NPR(PAGE_8800_OFFSET),	PAGE_8800_OFFSET, _NPR(PAGE_8C00_OFFSET),	PAGE_8C00_OFFSET,
-	_EPR(14), PAGE_9000_OFFSET, // segs physics
+	_EPR(15), PAGE_9000_OFFSET, // segs physics
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE)    , PAGE_9400_OFFSET,
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), PAGE_9800_OFFSET,
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), PAGE_9C00_OFFSET,
@@ -2055,8 +2055,7 @@ uint16_t pageswapargs[total_pages] = {
 	// render
 	_EPR(0),								PAGE_4000_OFFSET, _EPR(1),								PAGE_4400_OFFSET, _EPR(2),								PAGE_4800_OFFSET, _EPR(3),								PAGE_4C00_OFFSET,
 	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 0),	PAGE_5000_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 1),	PAGE_5400_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 2),	PAGE_5800_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 3),	PAGE_5C00_OFFSET,  // texture cache area
-	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 4),	PAGE_6000_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 5),	PAGE_6400_OFFSET, _EPR(13),								PAGE_6800_OFFSET, _NPR(PAGE_6C00_OFFSET),				PAGE_6C00_OFFSET,  // shared  6800 with physics
-	//_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 4),	PAGE_6000_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 5),	PAGE_6400_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 6),	PAGE_6800_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 7),	PAGE_6C00_OFFSET,  // texture cache area
+	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 4),	PAGE_6000_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 5),	PAGE_6400_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 6),	PAGE_6800_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 7),	PAGE_6C00_OFFSET,  // texture cache area
 	_EPR(7),								PAGE_7000_OFFSET, _EPR(8),								PAGE_7400_OFFSET, _EPR(9),								PAGE_7800_OFFSET, _EPR(10),								PAGE_7C00_OFFSET,
 	_EPR(4),								PAGE_8000_OFFSET, _EPR(5),								PAGE_8400_OFFSET, _EPR(6),								PAGE_8800_OFFSET, _EPR(EMS_VISPLANE_EXTRA_PAGE),		PAGE_8C00_OFFSET,
 	
@@ -2066,7 +2065,7 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(12), PAGE_9400_OFFSET,
 	_EPR(13), PAGE_9800_OFFSET,
 	_EPR(14), PAGE_9C00_OFFSET,
-	 // for 4000 to 9000
+	 // render 4000 to 9000
 	_EPR(0),				PAGE_9000_OFFSET, _EPR(1),					PAGE_9400_OFFSET, _EPR(2),					PAGE_9800_OFFSET, _EPR(3),						PAGE_9C00_OFFSET,
 
 	
@@ -2116,7 +2115,7 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(FLAT_DATA_PAGES+1), 	PAGE_5400_OFFSET,
 	_EPR(FLAT_DATA_PAGES+2), 	PAGE_5800_OFFSET,
 	
-	_EPR(PALETTE_LOGICAL_PAGE), PAGE_6C00_OFFSET,      // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused during planes
+	_EPR(PALETTE_LOGICAL_PAGE), PAGE_9C00_OFFSET,      // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused during planes
 														
 
 
@@ -2140,7 +2139,7 @@ uint16_t pageswapargs[total_pages] = {
 	//masked
 	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE), PAGE_8400_OFFSET,
 	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE+1), PAGE_8800_OFFSET,
-	_EPR(PHYSICS_RENDER_6800_PAGE), PAGE_8C00_OFFSET, // put colormaps where vissprites used to be?
+	_EPR(PHYSICS_RENDER_9800_PAGE), PAGE_8C00_OFFSET, // put colormaps where vissprites used to be?
 	//render 9000 to 6000
 	_EPR(11), PAGE_6000_OFFSET,
 	_EPR(12), PAGE_6400_OFFSET,
@@ -2162,7 +2161,7 @@ uint16_t pageswapargs[total_pages] = {
 	_NPR(PAGE_6000_OFFSET) 				  	  , PAGE_6000_OFFSET, // STRINGS_LOGICAL_PAGE
 	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 1), PAGE_6400_OFFSET,
 	_NPR(PAGE_6800_OFFSET)  				  , PAGE_6800_OFFSET,
-	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2), PAGE_6C00_OFFSET,
+	_NPR(PAGE_6C00_OFFSET)					  , PAGE_6C00_OFFSET,
 
 // intermission 
 	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4), PAGE_6000_OFFSET,

@@ -951,7 +951,7 @@ if (gametic == 200){
 			//SAVEDUNIT = playerMobj;
 			//SAVEDUNIT_POS = playerMobj_pos;
 			SAVEDUNIT = &thinkerlist[222].data;
-			SAVEDUNIT_POS = &mobjposlist[222];
+			SAVEDUNIT_POS = &mobjposlist_6800[222];
 			//SAVEDUNIT = &thinkerlist[playerMobjRef].data;
 			//if (gametic == 1) {
 			//	fp = fopen("debuglog.txt", "w"); // clear old file

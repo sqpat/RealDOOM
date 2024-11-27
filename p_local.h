@@ -122,7 +122,7 @@ void __near P_RemoveThinker(THINKERREF thinkerRef);
 
 #define THINKER_SIZE sizeof(thinker_t)
 #define GETTHINKERREF(a) ((((uint16_t)((byte __near*)a - (byte __near*)thinkerlist))-4)/THINKER_SIZE)
-#define GET_MOBJPOS_FROM_MOBJ(a) &mobjposlist[GETTHINKERREF(a)]
+#define GET_MOBJPOS_FROM_MOBJ(a) &mobjposlist_6800[GETTHINKERREF(a)]
 
 
 
@@ -197,7 +197,7 @@ typedef struct {
 
  
 
-#define playerMobj_pos	((&mobjposlist[playerMobjRef]))
+#define playerMobj_pos	((&mobjposlist_6800[playerMobjRef]))
 #define playerMobj		((mobj_t __near *) (((byte __far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
 
 

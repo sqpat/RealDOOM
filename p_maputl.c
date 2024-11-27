@@ -464,7 +464,7 @@ void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_
 		}
 
 		if (thingsprevRef) {
-			changeThing_pos = &mobjposlist[thingsprevRef];
+			changeThing_pos = &mobjposlist_6800[thingsprevRef];
 			changeThing_pos->snextRef = thingsnextRef;
 		}
 		else {
@@ -580,7 +580,7 @@ void __near P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_po
 
 
 		thing = (mobj_t __near*)&thinkerlist[thingRef].data;
-		thing_pos = &mobjposlist[thingRef];
+		thing_pos = &mobjposlist_6800[thingRef];
 
 		thing->sprevRef = NULL_THINKERREF;
 		thing_pos->snextRef = oldsectorthinglist;
@@ -702,7 +702,7 @@ boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) ){
 
 		mobj = (mobj_t __near*)&thinkerlist[mobjRef].data;
 		
-		if (!func(mobjRef, mobj, &mobjposlist[mobjRef])) {
+		if (!func(mobjRef, mobj, &mobjposlist_6800[mobjRef])) {
 
 			return false;
 		}

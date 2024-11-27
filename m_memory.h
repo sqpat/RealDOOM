@@ -61,6 +61,7 @@
 #define size_node_children      (MAX_NODE_CHILDREN_SIZE)
 #define size_seg_linedefs       (MAX_SEGS * sizeof(int16_t))
 #define size_seg_sides          (MAX_SEGS * sizeof(uint8_t))
+#define size_scantokey           128
 
 
 
@@ -74,21 +75,23 @@
 #define node_children     ((node_children_t __far*) MAKE_FULL_SEGMENT(nodes            , size_nodes))
 #define seg_linedefs      ((int16_t __far*)         MAKE_FULL_SEGMENT(node_children    , size_node_children))
 #define seg_sides         ((uint8_t __far*)         MAKE_FULL_SEGMENT(seg_linedefs     , size_seg_linedefs))
+#define scantokey         ((byte __far*)            MAKE_FULL_SEGMENT(seg_sides        , size_seg_sides))
 
 
 
 
-#define sectors_segment           ((segment_t) ((int32_t)sectors >> 16))
-#define vertexes_segment          ((segment_t) ((int32_t)vertexes >> 16))
-#define sides_segment             ((segment_t) ((int32_t)sides >> 16))
-#define lines_segment             ((segment_t) ((int32_t)lines >> 16))
-#define lineflagslist_segment     ((segment_t) ((int32_t)lineflagslist >> 16))
-#define subsectors_segment        ((segment_t) ((int32_t)subsectors >> 16))
-#define nodes_segment             ((segment_t) ((int32_t)nodes >> 16))
-#define node_children_segment     ((segment_t) ((int32_t)node_children >> 16))
-#define seg_linedefs_segment      ((segment_t) ((int32_t)seg_linedefs >> 16))
-#define seg_sides_segment         ((segment_t) ((int32_t)seg_sides >> 16))
+#define sectors_segment              ((segment_t) ((int32_t)sectors >> 16))
+#define vertexes_segment             ((segment_t) ((int32_t)vertexes >> 16))
+#define sides_segment                ((segment_t) ((int32_t)sides >> 16))
+#define lines_segment                ((segment_t) ((int32_t)lines >> 16))
+#define lineflagslist_segment        ((segment_t) ((int32_t)lineflagslist >> 16))
+#define subsectors_segment           ((segment_t) ((int32_t)subsectors >> 16))
+#define nodes_segment                ((segment_t) ((int32_t)nodes >> 16))
+#define node_children_segment        ((segment_t) ((int32_t)node_children >> 16))
+#define seg_linedefs_segment         ((segment_t) ((int32_t)seg_linedefs >> 16))
+#define seg_sides_segment            ((segment_t) ((int32_t)seg_sides >> 16))
 #define seg_sides_offset_in_seglines ((uint16_t)(((seg_sides_segment - seg_linedefs_segment) << 4)))
+#define scantokey_segment            ((segment_t) ((int32_t)scantokey >> 16))
 
 
 
@@ -105,9 +108,11 @@ nodes                EB18:0000
 node_children        ECF6:0000
 segs_linedefs        EDE5:0000
 segs_sides           EF45:0000 
-[empty]              EFF5:0000
+scantokey            EFF5:0000
+[empty]              EFFD:0000
+              
 
-177 bytes left
+48 bytes left
 
 SUBSECTORS_SEGMENT= 0EA37h
 SUBSECTOR_LINES_SEGMENT = 0EB26h
@@ -505,49 +510,55 @@ FREEBYTES           7EE0:0000
 
 #define size_colormaps        ((33 * 256))
 #define size_seenlines          (MAX_SEENLINES_SIZE)
-#define size_scantokey           128
 
 
-#define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x68000000            , 0))
+#define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x98000000            , 0))
 #define colfunc_jump_lookup   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps             , size_colormaps))
 #define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colfunc_jump_lookup   , size_colfunc_jump_lookup))
 #define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup          , size_dc_yl_lookup))
 #define mobjposlist           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
 #define seenlines             ((uint8_t __far*)           MAKE_FULL_SEGMENT(mobjposlist           , size_mobjposlist))
-#define scantokey             ((byte __far*)              MAKE_FULL_SEGMENT(seenlines             , size_seenlines))
-#define empty_render_6800     ((uint16_t  __far*)         MAKE_FULL_SEGMENT(scantokey             , size_scantokey))
-
+#define empty_render_9800     ((uint16_t  __far*)         MAKE_FULL_SEGMENT(seenlines             , size_seenlines))
 //6D8A
+
 #define colormaps_segment               ((segment_t) ((int32_t)colormaps >> 16))
 #define colfunc_jump_lookup_segment     ((segment_t) ((int32_t)colfunc_jump_lookup >> 16))
 #define dc_yl_lookup_segment            ((segment_t) ((int32_t)dc_yl_lookup >> 16))
 #define colfunc_function_area_segment   ((segment_t) ((int32_t)colfunc_function_area >> 16))
 #define mobjposlist_segment             ((segment_t) ((int32_t)mobjposlist >> 16))
 #define seenlines_segment               ((segment_t) ((int32_t)seenlines >> 16))
-#define scantokey_segment               ((segment_t) ((int32_t)scantokey >> 16))
-#define empty_render_6800_segment       ((segment_t) ((int32_t)empty_render_6800 >> 16))
+#define empty_render_9800_segment       ((segment_t) ((int32_t)empty_render_9800 >> 16))
+
+//physics addresses. if wads ever move out of EMS, use the 9800 mapping again.
+#define colormaps_6800             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x68000000                 , 0))
+#define colfunc_jump_lookup_6800   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps_6800             , size_colormaps))
+#define dc_yl_lookup_6800          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colfunc_jump_lookup_6800   , size_colfunc_jump_lookup))
+#define colfunc_function_area_6800 ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup_6800          , size_dc_yl_lookup))
+#define mobjposlist_6800           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(colfunc_function_area_6800 , size_colfunc_function_area))
+#define seenlines_6800             ((uint8_t __far*)           MAKE_FULL_SEGMENT(mobjposlist_6800           , size_mobjposlist))
+#define empty_render_6800          ((byte __far*)              MAKE_FULL_SEGMENT(seenlines_6800             , size_seenlines))
+
 
 // seenlines_segment:  6FE8:0000
-// scantokey_segment:  6FF6:0000
-// empty:              6FFE:0000
-// FREEBYTES 32 bytes free
+// empty:              6FF6:0000
+// FREEBYTES 160 bytes free
 
 // 8C60
-#define colormaps_high_seg_diff  ((segment_t)0x8C00 - 0x6800)
+#define colormaps_maskedmapping_seg_diff  ((segment_t)0x8C00 - colormaps_segment)
 
-// used in sprite render, this has been remapped to 8400 page
-#define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps)       - 0x68000000 + 0x8C000000))
+// used in sprite render, this has been remapped to 8C00 page
+#define colormaps_maskedmapping         ((lighttable_t  __far*) 0x8C000000)
 // 852D
-#define colormaps_segment_high  ((segment_t)             (colormaps_segment           - 0x6800 + 0x8C00))
+#define colormaps_segment_maskedmapping  ((segment_t) ((int32_t)colormaps_maskedmapping >> 16))
 
 
 //6F2E
-#define colfunc_segment        ((segment_t) ((int32_t)colfunc_function_area >> 16))
-#define colfunc_segment_high   ((segment_t) (colfunc_segment           - 0x6800 + 0x8C00))
+#define colfunc_segment                 ((segment_t) ((int32_t)colfunc_function_area >> 16))
+#define colfunc_segment_maskedmapping   ((segment_t) (colfunc_segment           - colormaps_segment + colormaps_segment_maskedmapping))
 
 
-#define colfunc_jump_lookup_high ((uint16_t __far*)  (((int32_t)colfuncjump_lookup) - 0x68000000 + 0x8C000000))
-#define dc_yl_lookup_high        ((uint16_t  __far*) (((int32_t)dc_yl_lookup)       - 0x68000000 + 0x8C000000))
+#define colfunc_jump_lookup_maskedmapping ((uint16_t __far*)  (((int32_t)colfuncjump_lookup) - (int32_t)colormaps + (int32_t)colormaps_maskedmapping))
+#define dc_yl_lookup_maskedmapping        ((uint16_t  __far*) (((int32_t)dc_yl_lookup)       - (int32_t)colormaps + (int32_t)colormaps_maskedmapping))
 
 
 
@@ -628,12 +639,12 @@ FREEBYTES 3936 free
 #define size_spanfunc_funcation_area      R_DrawSpanCodeSize
 
 // spanfunc offset
-#define spanfunc_jump_lookup              ((uint16_t  __far*)               MAKE_FULL_SEGMENT(0x6C000000              , palettebytes_size))
+#define spanfunc_jump_lookup              ((uint16_t  __far*)               MAKE_FULL_SEGMENT(0x9C000000              , palettebytes_size))
 #define spanfunc_function_area            ((byte  __far*)                   MAKE_FULL_SEGMENT(spanfunc_jump_lookup, size_spanfunc_jump_lookup))
 
 // used for loading into memory - not the actual call
-#define spanfunc_jump_lookup_9000         ((byte  __far*)                   (((uint32_t)spanfunc_jump_lookup)   - 0x6C000000 + 0x90000000))
-#define spanfunc_function_area_9000       ((uint16_t  __far*)               (((uint32_t)spanfunc_function_area) - 0x6C000000 + 0x90000000))
+#define spanfunc_jump_lookup_9000         ((byte  __far*)                   (((uint32_t)spanfunc_jump_lookup)   - 0x9C000000 + 0x90000000))
+#define spanfunc_function_area_9000       ((uint16_t  __far*)               (((uint32_t)spanfunc_function_area) - 0x9C000000 + 0x90000000))
 
 #define spanfunc_jump_lookup_segment      ((segment_t) ((int32_t)spanfunc_jump_lookup >> 16))
 #define spanfunc_function_area_segment    ((segment_t) ((int32_t)spanfunc_function_area >> 16))
@@ -1245,13 +1256,13 @@ spritedefs_bytes    7410:0000
 
 // drawsegs_BASE              93AC:0000
 // drawsegs_PLUSONE           93AC:0020
-// finetangentinner           95B0:0000
+// finetangentinner           95AA:0000
 
-// [empty]                    97B0:0000
+// [empty]                    97AA:0000
 
 
 //FREEBYTES
-// 1280 bytes free till 6000:8000
+// 1376 bytes free till 6000:8000
 // some masked code can easily go here? Maybe more if drawsegs maxsegs goes back to 128 from 256?
 
 

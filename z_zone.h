@@ -304,24 +304,24 @@ void __far Z_QuickMapUnmapAll();
 
 #define RENDER_7800_PAGE                            9
 #define RENDER_7C00_PAGE                            10
-#define PHYSICS_RENDER_6800_PAGE                    13
+#define PHYSICS_RENDER_9800_PAGE                    13
 //#define PHYSICS_RENDER_6C00_PAGE                    15
 //#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
 #define EMS_VISPLANE_EXTRA_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5
 #define FIRST_VISPLANE_PAGE							5
 
 //#define EMS_VISPLANE_EXTRA_PAGE                     NUM_EMS4_SWAP_PAGES + 1
-// 14
-#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         14
 // 15
+#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         15
+// 16
 #define FIRST_STATUS_LOGICAL_PAGE                   LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
-// 19
+// 20
 #define PALETTE_LOGICAL_PAGE                        FIRST_STATUS_LOGICAL_PAGE + 4
 // todo almost 6k free here..
-// 20
+// 21
 #define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            PALETTE_LOGICAL_PAGE + 1
 // 23
-#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 3
+#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2
 // 31
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
 // 35
@@ -520,6 +520,7 @@ void __far Z_QuickMapRenderPlanes();
 #define PAGE_9000_RENDER_SPRITE 3
 #define PAGE_9000_SCREEN1 4
 #define PAGE_9000_RENDER_4000 5
+#define PAGE_9000_RENDER_PLANES 6
 
 
 

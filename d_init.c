@@ -392,10 +392,8 @@ void __near M_LoadDefaults(void) {
 
 		fclose(f);
 	}
-	for (i = 0; i < NUM_DEFAULTS; i++)
-	{
-		if (defaults[i].scantranslate)
-		{
+	for (i = 0; i < NUM_DEFAULTS; i++) {
+		if (defaults[i].scantranslate) {
 			parm = *defaults[i].location;
 			defaults[i].untranslated = parm;
 			*defaults[i].location = scantokey[parm];

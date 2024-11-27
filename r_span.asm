@@ -927,7 +927,6 @@ mov   byte ptr ds:[_ds_colormap_index], al
 
 db 09Ah
 dw (R_DrawSpanPrep_ - R_DrawSpan_)
-;dw SPANFUNC_PREP_OFFSET
 dw SPANFUNC_FUNCTION_AREA_SEGMENT
 
 
@@ -949,7 +948,6 @@ mov   byte ptr ds:[_ds_colormap_index], al
 
 db 09Ah
 dw (R_DrawSpanPrep_ - R_DrawSpan_)
-;dw SPANFUNC_PREP_OFFSET
 dw SPANFUNC_FUNCTION_AREA_SEGMENT
 
 LEAVE_MACRO
@@ -963,7 +961,7 @@ ret
 
 generate_distance_steps:
 
-; es = 9000h  (CACHEDHEIGHT_SEGMENT)
+; es = 5000h  (CACHEDHEIGHT_SEGMENT)
 ; dx:ax = planeheight segment
 ; note: es wrecked by function calls to r_fixedmullocal...
 

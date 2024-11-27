@@ -541,7 +541,7 @@ void __near P_LoadLineDefs(int16_t lump) {
 
 	FAR_memset(lines, 0, MAX_LINES_SIZE);
 	FAR_memset(lines_physics, 0, MAX_LINES_PHYSICS_SIZE);
-	FAR_memset(seenlines, 0, MAX_SEENLINES_SIZE);
+	FAR_memset(seenlines_6800, 0, MAX_SEENLINES_SIZE);
 	Z_QuickMapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
@@ -898,8 +898,8 @@ void __near Z_FreeConventionalAllocations() {
 	// we should be paged to physics now - should be ok
 	memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
-	//erase the level data region
-	FAR_memset(((byte __far*) uppermemoryblock), 0, 0xFFFF);
+	//erase the level data region (BUT NOT SCANTOKEY)
+	FAR_memset(((byte __far*) uppermemoryblock), 0, (scantokey_segment - 0xE000) << 4);
 
 	// todo make this area less jank. We want to free all the ems 4.0 region level data...
 	// handles blockmaps and lines_physics...

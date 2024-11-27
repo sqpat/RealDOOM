@@ -159,11 +159,11 @@ _visplane_offset =              	_NULL_OFFSET + 001B6h
 
 
 
-
+; todo what is this magic number again? (??) r_draw.c alludes to it as desired bx offset
 DRAWSPAN_BX_OFFSET             = 0FC0h
-DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_FUNCTION_AREA_SEGMENT - 06800h)) + DRAWSPAN_BX_OFFSET
+DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_FUNCTION_AREA_SEGMENT - COLORMAPS_SEGMENT)) + DRAWSPAN_BX_OFFSET
 
-DRAWCOL_OFFSET                 = (COLFUNC_FUNCTION_AREA_SEGMENT - 06800h) * 16
+DRAWCOL_OFFSET                 = (COLFUNC_FUNCTION_AREA_SEGMENT - COLORMAPS_SEGMENT) * 16
 
 ; todo copy this from C via script
 VISPLANES_PER_EMS_PAGE         = 25

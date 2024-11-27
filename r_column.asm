@@ -195,7 +195,7 @@ push  si
 push  di
 
 
-; cant optimize as this is ADD not ov
+; cant optimize as this is ADD not mov
 add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
@@ -228,9 +228,9 @@ mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((COLFUNC_JUMP_OFFSET+1)-R_DrawColumn_)+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
-mov   dx, word ptr ds:[_dc_colormap_segment]    
+mov   dx, word ptr ds:[_dc_colormap_segment]
 test  al, al
-jne    skipcolormapzero
+jne   skipcolormapzero
 
 mov   word ptr ds:[_colfunc_farcall_addr_1+2], dx
 
