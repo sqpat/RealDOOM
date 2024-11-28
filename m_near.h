@@ -1133,3 +1133,5 @@ extern masked_header_t  		masked_headers[MAX_MASKED_TEXTURES];
 extern boolean    				plutonia;
 extern boolean    				tnt;
 #endif
+
+//extern uint16_t shift4lookup[256];
