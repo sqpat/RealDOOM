@@ -794,6 +794,7 @@ void __near R_InitData(void) {
 
 void __near R_Init(void) {
 	Z_QuickMapRender();
+	// load colormaps while this memory region active.
 	W_CacheLumpNumDirect(1, colormaps);
 
 	Z_QuickMapLumpInfo();

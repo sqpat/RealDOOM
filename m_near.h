@@ -40,6 +40,11 @@
 
 #define NUM_CACHE_LUMPS 4
 
+#define NUM_TEXTURE_L1_CACHE_PAGES 8
+#define NUM_SPRITE_L1_CACHE_PAGES 4
+
+
+
 #define NUMEPISODES_FOR_ANIMS	3
 #define NUMMAPS		9
 
@@ -357,12 +362,12 @@ extern int16_t              numpatches;
 extern int16_t              firstspritelump;
 extern int16_t              numspritelumps;
 extern int16_t              numtextures;
-extern int16_t              activetexturepages[4];
-extern uint8_t              activenumpages[4];
-extern int16_t              textureL1LRU[4];
-extern int16_t              activespritepages[4];
-extern uint8_t              activespritenumpages[4];
-extern int16_t              spriteL1LRU[4];
+extern int16_t              activetexturepages[NUM_TEXTURE_L1_CACHE_PAGES];
+extern uint8_t              activenumpages[NUM_TEXTURE_L1_CACHE_PAGES];
+extern int16_t              textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES];
+extern int16_t              activespritepages[NUM_SPRITE_L1_CACHE_PAGES];
+extern uint8_t              activespritenumpages[NUM_SPRITE_L1_CACHE_PAGES];
+extern int16_t              spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
 extern int8_t               spritecache_l2_head;
 extern int8_t               spritecache_l2_tail;
 extern int8_t               flatcache_l2_head;
@@ -430,7 +435,7 @@ extern mline_t              triangle_guy[3];
 */
 extern mline_t              thintriangle_guy[3];
 extern int16_t              lightmult48lookup[16];
-extern segment_t            pagesegments[4];
+extern segment_t            pagesegments[NUM_TEXTURE_L1_CACHE_PAGES];
 
 extern uint16_t             vga_read_port_lookup[12];
 

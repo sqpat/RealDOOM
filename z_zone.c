@@ -285,7 +285,7 @@ void __far Z_QuickMapRender9000() {
 // sometimes needed when rendering sprites..
 void __near Z_QuickMapRenderTexture() {
 	// todo make this 8..
-	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_5000_OFFSET);
+	Z_QuickMap8AI(pageswapargs_rend_texture_size, INDEXED_PAGE_5000_OFFSET);
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -445,7 +445,7 @@ void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 
 void __far Z_QuickMapUndoFlatCache() {
 	
-	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_5000_OFFSET); // put texture cache fragment back in 5000...
+	Z_QuickMap8AI(pageswapargs_rend_texture_size, INDEXED_PAGE_5000_OFFSET); // put texture cache fragment back in 5000...
 	
 	// this runs 4 over into z_quickmapsprite page
 

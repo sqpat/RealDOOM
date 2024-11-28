@@ -932,6 +932,7 @@ void __near Z_FreeConventionalAllocations() {
 
 	// put these all next to each other for a single memset..
 
+	// L2 cache stuff
 
 	flatcache_l2_head = 0;
 	flatcache_l2_tail = NUM_FLAT_CACHE_PAGES-1;
@@ -1000,16 +1001,19 @@ void __near Z_FreeConventionalAllocations() {
 
 	Z_QuickMapPhysics();
 
-	for (i = 0; i < 4; i++) {
+	// L1 cache stuff
+	for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES; i++) {
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
 		textureL1LRU[i] = i;
-		activespritepages[i] = FIRST_SPRITE_CACHE_LOGICAL_PAGE + i;
-		spriteL1LRU[i] = i;
-
 		pageswapargs[pageswapargs_rend_texture_offset +  i*PAGE_SWAP_ARG_MULT]  = _EPR(FIRST_TEXTURE_LOGICAL_PAGE + i);
-		pageswapargs[pageswapargs_spritecache_offset + i*PAGE_SWAP_ARG_MULT]  = _EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + i);
 		activenumpages[i] = 0;
-		activespritenumpages[i] = 0;
+
+		if (i < NUM_SPRITE_L1_CACHE_PAGES){
+			activespritepages[i] = FIRST_SPRITE_CACHE_LOGICAL_PAGE + i;
+			spriteL1LRU[i] = i;
+			pageswapargs[pageswapargs_spritecache_offset + i*PAGE_SWAP_ARG_MULT]  = _EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + i);
+			activespritenumpages[i] = 0;
+		}
 	}
 
 }

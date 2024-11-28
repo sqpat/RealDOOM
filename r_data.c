@@ -94,7 +94,7 @@ void __near R_MarkL1SpriteCacheLRU3(int8_t index){
 	return;
 }
 
-
+//todo make this work as a jump table in asm like a switch block fall thru thing.
 void __near R_MarkL1TextureCacheLRU(int8_t index){
 	
 	if (textureL1LRU[0] == index){
@@ -113,13 +113,47 @@ void __near R_MarkL1TextureCacheLRU(int8_t index){
 		textureL1LRU[2] = textureL1LRU[1];
 		textureL1LRU[1] = textureL1LRU[0];
 		textureL1LRU[0] = index;
+	} else if (textureL1LRU[4] == index){
+		textureL1LRU[4] = textureL1LRU[3];
+		textureL1LRU[3] = textureL1LRU[2];
+		textureL1LRU[2] = textureL1LRU[1];
+		textureL1LRU[1] = textureL1LRU[0];
+		textureL1LRU[0] = index;
+	} else if (textureL1LRU[5] == index){
+		textureL1LRU[5] = textureL1LRU[4];
+		textureL1LRU[4] = textureL1LRU[3];
+		textureL1LRU[3] = textureL1LRU[2];
+		textureL1LRU[2] = textureL1LRU[1];
+		textureL1LRU[1] = textureL1LRU[0];
+		textureL1LRU[0] = index;
+	} else if (textureL1LRU[6] == index){
+		textureL1LRU[6] = textureL1LRU[5];
+		textureL1LRU[5] = textureL1LRU[4];
+		textureL1LRU[4] = textureL1LRU[3];
+		textureL1LRU[3] = textureL1LRU[2];
+		textureL1LRU[2] = textureL1LRU[1];
+		textureL1LRU[1] = textureL1LRU[0];
+		textureL1LRU[0] = index;
+	} else if (textureL1LRU[7] == index){
+		textureL1LRU[7] = textureL1LRU[6];
+		textureL1LRU[6] = textureL1LRU[5];
+		textureL1LRU[5] = textureL1LRU[4];
+		textureL1LRU[4] = textureL1LRU[3];
+		textureL1LRU[3] = textureL1LRU[2];
+		textureL1LRU[2] = textureL1LRU[1];
+		textureL1LRU[1] = textureL1LRU[0];
+		textureL1LRU[0] = index;
 		return;
 	}
 
 }
 
-void __near R_MarkL1TextureCacheLRU3(int8_t index){
+void __near R_MarkL1TextureCacheLRU7(int8_t index){
 	//todo: make this function live in the above in the asm.
+	textureL1LRU[7] = textureL1LRU[6];
+	textureL1LRU[6] = textureL1LRU[5];
+	textureL1LRU[5] = textureL1LRU[4];
+	textureL1LRU[4] = textureL1LRU[3];
 	textureL1LRU[3] = textureL1LRU[2];
 	textureL1LRU[2] = textureL1LRU[1];
 	textureL1LRU[1] = textureL1LRU[0];
@@ -1989,7 +2023,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 	if (!numpages) {
 		// one page, most common case - lets write faster code here...
 
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES; i++) {
 
 			if (activetexturepages[i] == realtexpage ) {
 
@@ -2003,9 +2037,9 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
  
 		// figure out startpage based on LRU
 
-		startpage = textureL1LRU[3];
+		startpage = textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1];
 
-		R_MarkL1TextureCacheLRU3(startpage);
+		R_MarkL1TextureCacheLRU7(startpage);
 
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage]) {
@@ -2051,7 +2085,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 
 
-		for (i = 0; i < 4-numpages; i++) {
+		for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES-numpages; i++) {
 
 			// Note: if we do always properly unset multi-page allocations,
 			// then a multi-page check should be unnecessary.
@@ -2078,8 +2112,8 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 
 		// figure out startpage based on LRU
-		startpage = 3; // num EMS pages in conventional memory - 1
-		while (textureL1LRU[startpage] > (3-numpages)){
+		startpage = NUM_TEXTURE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
+		while (textureL1LRU[startpage] > ((NUM_TEXTURE_L1_CACHE_PAGES-1)-numpages)){
 			startpage--;
 		}
 		startpage = textureL1LRU[startpage];
@@ -2157,7 +2191,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 	if (!numpages) {
 		// one page, most common case - lets write faster code here...
 
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < NUM_SPRITE_L1_CACHE_PAGES; i++) {
 
 
 			if (activespritepages[i] == realtexpage) {
@@ -2174,7 +2208,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 		// start page is least recently used (since single page)
 
-		startpage = spriteL1LRU[3];
+		startpage = spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES-1];
 
 		R_MarkL1SpriteCacheLRU3(startpage);
 
@@ -2215,7 +2249,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 		int16_t j = 0;
 
 
-		for (i = 0; i < 4 - numpages; i++) {
+		for (i = 0; i < NUM_SPRITE_L1_CACHE_PAGES - numpages; i++) {
 
 
 			// Note: if we do always properly unset multi-page allocations,
@@ -2242,8 +2276,8 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 
 		// start page is least recently used that fits in numpages.
-		startpage = 3; // num EMS pages in conventional memory - 1
-		while (spriteL1LRU[startpage] > (3-numpages)){
+		startpage = NUM_SPRITE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
+		while (spriteL1LRU[startpage] > ((NUM_SPRITE_L1_CACHE_PAGES-1)-numpages)){
 			startpage--;
 		}
 		startpage = spriteL1LRU[startpage];
@@ -2451,7 +2485,6 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 
 
 	if (lump > 0){
-		uint8_t lookup = masked_lookup[tex];
 		uint16_t patchwidth = patchwidths[lump-firstpatch];
 		uint8_t heightval = texturecolumnlump[n-1].bu.bytehigh;
 		int16_t  cachelumpindex;
@@ -2490,7 +2523,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 				cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
 				cachedlumps[i] = cachedlumps[i-1];
 			}
-			cachedsegmentlumps[0] = getpatchtexture(lump, lookup);  // might zero out cachedlump vars;
+			cachedsegmentlumps[0] = getpatchtexture(lump, 0xFF);  // might zero out cachedlump vars;
 			cachedlumps[0] = lump;
 
 		}
@@ -2507,19 +2540,8 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 			col+= patchwidth;
 		}
 
-		if (lookup == 0xFF){
-			return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
-		} else {
-			// Does this code ever run outside of draw masked?
+		return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 
-			masked_header_t __near* maskedheader = &masked_headers[lookup];
-			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
-
-			uint16_t ofs  = pixelofs[col]; // precached as segment value.
-			cachedcol = col;
-		 
-			return cachedsegmentlumps[0] + (ofs);
-		}
 	} else {
 		uint8_t collength = textureheights[tex] + 1;
 

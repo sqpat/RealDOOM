@@ -275,14 +275,14 @@ int16_t             numtextures;
 
 
 
-int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
-uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
-int16_t textureL1LRU[4];
+int16_t activetexturepages[NUM_TEXTURE_L1_CACHE_PAGES]; // always gets reset to defaults at start of frame
+uint8_t activenumpages[NUM_TEXTURE_L1_CACHE_PAGES]; // always gets reset to defaults at start of frame
+int16_t textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES];
 
 
-int16_t activespritepages[4]; // always gets reset to defaults at start of frame
-uint8_t activespritenumpages[4]; // always gets reset to defaults at start of frame
-int16_t spriteL1LRU[4];
+int16_t activespritepages[NUM_SPRITE_L1_CACHE_PAGES]; // always gets reset to defaults at start of frame
+uint8_t activespritenumpages[NUM_SPRITE_L1_CACHE_PAGES]; // always gets reset to defaults at start of frame
+int16_t spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
 
  
 
@@ -442,7 +442,9 @@ int16_t lightmult48lookup[16] = { 0,  48,  96, 144,
 								576, 624, 672, 720 };
 
 
-segment_t pagesegments[4] = { 0x0000u, 0x0400u, 0x0800u, 0x0c00u };
+segment_t pagesegments[NUM_TEXTURE_L1_CACHE_PAGES] = { 0x0000u, 0x0400u, 0x0800u, 0x0c00u
+							,0x1000u, 0x1400u, 0x1800u, 0x1c00u
+ };
 
 
 /* 
