@@ -2485,6 +2485,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 
 
 	if (lump > 0){
+		uint8_t lookup = masked_lookup[tex];
 		uint16_t patchwidth = patchwidths[lump-firstpatch];
 		uint8_t heightval = texturecolumnlump[n-1].bu.bytehigh;
 		int16_t  cachelumpindex;
@@ -2523,7 +2524,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 				cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
 				cachedlumps[i] = cachedlumps[i-1];
 			}
-			cachedsegmentlumps[0] = getpatchtexture(lump, 0xFF);  // might zero out cachedlump vars;
+			cachedsegmentlumps[0] = getpatchtexture(lump, lookup);  // might zero out cachedlump vars;
 			cachedlumps[0] = lump;
 
 		}
@@ -2540,8 +2541,20 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 			col+= patchwidth;
 		}
 
-		return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 
+		if (lookup == 0xFF){
+			return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
+		} else {
+			// Does this code ever run outside of draw masked?
+
+			masked_header_t __near* maskedheader = &masked_headers[lookup];
+			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
+
+			uint16_t ofs  = pixelofs[col]; // precached as segment value.
+			cachedcol = col;
+		 
+			return cachedsegmentlumps[0] + (ofs);
+		}
 	} else {
 		uint8_t collength = textureheights[tex] + 1;
 
