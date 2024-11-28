@@ -597,6 +597,7 @@ void R_InitTextures(void) {
 	DEBUG_PRINT("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");
 	
 	for (i = 0; i < numtextures; i++, directory++) {
+		int16_t collength;
 		if (!(i & 63))
 			DEBUG_PRINT(".");
 
@@ -650,6 +651,11 @@ void R_InitTextures(void) {
 
 		texturewidthmasks[i] = j - 1;
 		textureheights[i] = textureheightval;
+
+		collength = textureheightval + 1;
+		collength += (16 - ((collength &0xF)) &0xF);
+
+		texturecollength[i] = collength >> 4;
 
 
 	}

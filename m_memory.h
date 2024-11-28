@@ -1288,8 +1288,9 @@ spritedefs_bytes    7410:0000
 
 #define size_states_render            (sizeof(state_render_t) * NUMSTATES)
 #define size_flatindex                (sizeof(uint8_t) * MAX_FLATS)
-#define size_spritepage                (MAX_SPRITE_LUMPS * sizeof(uint8_t))
-#define size_spriteoffset              (MAX_SPRITE_LUMPS * sizeof(uint8_t))
+#define size_spritepage               (MAX_SPRITE_LUMPS * sizeof(uint8_t))
+#define size_spriteoffset             (MAX_SPRITE_LUMPS * sizeof(uint8_t))
+#define size_texturecollength         (MAX_TEXTURES * sizeof(uint8_t))
 
 #define size_texturecompositesizes    (MAX_TEXTURES * sizeof(uint16_t))
 #define size_compositetexturepage     (MAX_TEXTURES * sizeof(uint8_t))
@@ -1315,9 +1316,11 @@ spritedefs_bytes    7410:0000
 #define spritepage                  ((uint8_t __far*)            MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define spriteoffset                ((uint8_t __far*)            (((int32_t)spritepage)                    + size_spritepage))
 
-#define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(spritepage,               (size_spriteoffset + size_spritetopoffsets)))
-#define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
-#define compositetextureoffset  ((uint8_t __far*)            (((int32_t)compositetexturepage)          + size_compositetexturepage))
+#define texturecollength            ((uint8_t __far*)            MAKE_FULL_SEGMENT(spritepage,               (size_spriteoffset + size_spritetopoffsets)))
+
+#define texturecompositesizes   ((uint16_t __far*)               MAKE_FULL_SEGMENT(texturecollength,         size_texturecollength))
+#define compositetexturepage    ((uint8_t __far*)                MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
+#define compositetextureoffset  ((uint8_t __far*)                (((int32_t)compositetexturepage)          + size_compositetexturepage))
 
 
 
@@ -1336,6 +1339,10 @@ spritedefs_bytes    7410:0000
 #define viewangletox_segment              ((segment_t) ((int32_t)viewangletox >> 16))
 #define states_render_segment             ((segment_t) ((int32_t)states_render >> 16))
 #define flatindex_segment                 ((segment_t) ((int32_t)flatindex >> 16))
+#define spritepage_segment                ((segment_t) ((int32_t)spritepage >> 16))
+#define texturecollength_segment          ((segment_t) ((int32_t)texturecollength >> 16))
+#define texturecompositesizes_segment     ((segment_t) ((int32_t)texturecompositesizes >> 16))
+#define compositetexturepage_segment      ((segment_t) ((int32_t)compositetexturepage >> 16))
 
 
 #define segs_render             ((seg_render_t  __near*)      0x4000)
@@ -1378,18 +1385,20 @@ scalelightfixed         4B3A:0000   F3A0
 scalelight              4B3D:0000   F3D0
 patch_sizes             4B6D:0000   F6D0
 viewangletox            4BA9:0000   FA90
+// 1392 bytes here?
 [near range over]       
 
 states_render           4DA9:0000
 flatindex               4E22:0000
 spritepage              4E2C:0000
 spriteoffset            4E2C:0565
-texturecompositesizes   4ED9:0000
-compositetexturepage    4F0E:0000
-compositetextureoffset  4F0E:01AC
-[done]                  4F46:0000
+texturecollength        4ED9:0000
+texturecompositesizes   4EF4:0000
+compositetexturepage    4F29:0000
+compositetextureoffset  4F29:01AC
+[done]                  4F61:0000
 //FREEBYTES
-3744 bytes free
+3312 bytes free
 
 
 */

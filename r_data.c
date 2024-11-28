@@ -2066,12 +2066,10 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		Z_QuickMapRenderTexture();
 		cachedtex = -1;
 		cachedtex2 = -1;
-		{
-			int16_t a;
-			for (a = 0; a < NUM_CACHE_LUMPS; a++){
-				cachedlumps[a] = -1;
-			}
-		}
+		cachedlumps[0] = -1;
+		cachedlumps[1] = -1;
+		cachedlumps[2] = -1;
+		cachedlumps[3] = -1;
 
 	
 
@@ -2163,12 +2161,10 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		cachedtex = -1;
 		cachedtex2 = -1;
 		
-		{
-			int16_t a;
-			for (a = 0; a < NUM_CACHE_LUMPS; a++){
-				cachedlumps[a] = -1;
-			}
-		}
+		cachedlumps[0] = -1;
+		cachedlumps[1] = -1;
+		cachedlumps[2] = -1;
+		cachedlumps[3] = -1;
 
 
 		// paged in
@@ -2485,9 +2481,8 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 
 
 	if (lump > 0){
-		uint8_t lookup = masked_lookup[tex];
 		uint16_t patchwidth = patchwidths[lump-firstpatch];
-		uint8_t heightval = texturecolumnlump[n-1].bu.bytehigh;
+		uint8_t  heightval = texturecolumnlump[n-1].bu.bytehigh;
 		int16_t  cachelumpindex;
 		cachedbyteheight = heightval & 0xF0;
 		heightval &= 0x0F;
@@ -2519,13 +2514,15 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 
 		// not found, set cache.
 		{
-			int16_t i;
-			for (i = NUM_CACHE_LUMPS - 1; i > 0; i--){
-				cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
-				cachedlumps[i] = cachedlumps[i-1];
-			}
-			cachedsegmentlumps[0] = getpatchtexture(lump, lookup);  // might zero out cachedlump vars;
+			cachedsegmentlumps[3] = cachedsegmentlumps[2];
+			cachedsegmentlumps[2] = cachedsegmentlumps[1];
+			cachedsegmentlumps[1] = cachedsegmentlumps[0];
+			cachedlumps[3] = cachedlumps[2];
+			cachedlumps[2] = cachedlumps[1];
+			cachedlumps[1] = cachedlumps[0];
+
 			cachedlumps[0] = lump;
+			cachedsegmentlumps[0] = getpatchtexture(lump, 0xFF);  // might zero out cachedlump vars;
 
 		}
 		
@@ -2541,22 +2538,10 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 			col+= patchwidth;
 		}
 
+		return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 
-		if (lookup == 0xFF){
-			return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
-		} else {
-			// Does this code ever run outside of draw masked?
-
-			masked_header_t __near* maskedheader = &masked_headers[lookup];
-			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
-
-			uint16_t ofs  = pixelofs[col]; // precached as segment value.
-			cachedcol = col;
-		 
-			return cachedsegmentlumps[0] + (ofs);
-		}
 	} else {
-		uint8_t collength = textureheights[tex] + 1;
+		uint8_t collength = texturecollength[tex];
 
 		// todo in the asm make default branch to use cache
 
@@ -2567,8 +2552,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 				cachedcollength2 = cachedcollength;
 				cachedtex = tex;
 				cachedsegmenttex = getcompositetexture(cachedtex);
-				collength += (16 - ((collength &0xF)) &0xF);
-				cachedcollength = collength >> 4;
+				cachedcollength = collength;
 
 			} else {
 				// cycle cache so 2 = 1
@@ -2588,6 +2572,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 
 		}
 		
+		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
 		cachedbyteheight = collength;
 		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
@@ -2687,6 +2672,8 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		}
 
 		if (lookup == 0xFF){
+			// this happens with weird reverse walls like e1m1 upper wall in the sewage room.. 
+			// (but it is a super duper rare case)
 			return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 		} else {
 			// Does this code ever run outside of draw masked?
@@ -2700,7 +2687,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 			return cachedsegmentlumps[0] + (ofs);
 		}
 	} else {
-		uint8_t collength = textureheights[tex] + 1;
+		uint8_t collength = texturecollength[tex];
 
 		// todo in the asm make default branch to use cache
 
@@ -2711,8 +2698,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 				cachedcollength2 = cachedcollength;
 				cachedtex = tex;
 				cachedsegmenttex = getcompositetexture(cachedtex);
-				collength += (16 - ((collength &0xF)) &0xF);
-				cachedcollength = collength >> 4;
+				cachedcollength = collength;
 
 			} else {
 				// cycle cache so 2 = 1
@@ -2732,6 +2718,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 
 		}
 		
+		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
 		cachedbyteheight = collength;
 		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
