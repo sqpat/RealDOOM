@@ -1397,7 +1397,6 @@ int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 			compositecacheevictcount++;
 			#endif
 
-//			I_Error("confirm a");
 			break;
 	}
 
@@ -1774,16 +1773,16 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 		foundmultipage:
 
 		usedspritepagemem[i] = 64;
-		//I_Error("found page %i %i %i", i, texturecache_nodes[i].next, texturecache_nodes[texturecache_nodes[i].next].next);
-		//j = i;
+
+		// j = i
 		// last page of the allocation
 		spritecache_nodes[i].numpages = numpages;
 		spritecache_nodes[i].pagecount = numpages;
 		// not sure if this ever happens... especially for sprite. biggest sprites are barely 2 page. todo remove
 
+		/*
 		if (numpages >= 3) {
 			I_Error("3 page sprite! fix this"); // todo remove
-			/*
 			// 2nd to last page of the allocation
 			j = spritecache_nodes[i].prev;
 			spritecache_nodes[j].numpages = numpages;
@@ -1791,9 +1790,9 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 			// 3 if numpages is 4
 			spritecache_nodes[j].pagecount = numpages-1;
 			usedspritepagemem[j] = 64;
-			*/
 		}
-		
+		*/
+
 		// i actually think this never happens? get rid of the code?
 		/*
 		if (numpages == 4) {
@@ -1903,13 +1902,15 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 		x1 = patchoriginx;
 		x2 = x1 + (realpatch7000->width);
 
-		if (x1 < 0)
+		if (x1 < 0){
 			x = 0;
-		else
+		} else {
 			x = x1;
+		}
 
-		if (x2 > texturewidth)
+		if (x2 > texturewidth){
 			x2 = texturewidth;
+		}
 
 		currentlump = collump[currentRLEIndex].h;
 		nextcollumpRLE = collump[currentRLEIndex + 1].bu.bytelow;
@@ -2158,6 +2159,8 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		R_MarkL2CompositeTextureCacheLRU(realtexpage);
 		Z_QuickMapRenderTexture();
+		
+		//todo: only -1 if its in the knocked out page? pretty infrequent though.
 		cachedtex = -1;
 		cachedtex2 = -1;
 		

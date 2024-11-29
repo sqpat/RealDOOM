@@ -511,10 +511,6 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 
 					dc_source_segment = R_GetColumnSegment(midtexture,texturecolumn);
 
-					//I_Error("A %Fp  %Fp %Fp", R_DrawColumnPrepCall, R_DrawColumn, R_DrawColumnPrep);
-					// 6A42:0B6A
-					// 1CA4:19d2 
-					// 1CA4:253C
 					R_DrawColumnPrepCall(0);				
 
 
@@ -709,50 +705,7 @@ void __near R_RenderOneSeg () {
 
 			dc_source_segment = R_GetColumnSegment(midtexture,texturecolumn);
 
-			//I_Error("A %Fp  %Fp %Fp", R_DrawColumnPrepCall, R_DrawColumn, R_DrawColumnPrep);
-			// 6A42:0B6A
-			// 1CA4:19d2 
-			// 1CA4:253C
 			R_DrawColumnPrepCall(0);				
-			/*
-
-			I_Error("%x %lx %x\n %lx %lx %x %x\n %x %x %x\n %x %x %x %x %x %x",
-			 dc_source_segment, destview, dc_x,
-			
-			colfunc_farcall_addr_1,
-			func_farcall_scratch_addr,
-			dc_colormap_segment, 
-			dc_colormap_index,
-			dc_x, dc_yl, dc_yh,
-			colormaps[0],
-			colormaps[1],
-			colormaps[0x10],
-			colormaps[0x500],
-			colormaps[0x501],
-			colormaps[0x502]
-			
-			);
-
-			I_Error("%lx %x %x %x %x \n %x %x %x   %x %x %x", R_DrawColumnPrepCall, ((byte __far*) R_DrawColumnPrepCall)[0], dc_x, dc_yh - dc_yl,
-			colfunc_jump_lookup_segment, 
-			(((int16_t __far*) (MK_FP(colfunc_jump_lookup_segment, 0x362)))[0]),
-			(((int16_t __far*) (MK_FP(colfunc_jump_lookup_segment, 0x364)))[0]),
-			(((int16_t __far*) (MK_FP(colfunc_jump_lookup_segment, 0x366)))[0]),
-
-			(((int16_t __far*) (MK_FP(colfunc_function_area_segment, 0x42)))[0]),
-			(((int16_t __far*) (MK_FP(colfunc_function_area_segment, 0x44)))[0]),
-			(((int16_t __far*) (MK_FP(colfunc_function_area_segment, 0x46)))[0])
-
-
-
-			);
-			*/
-
-
-
-			//I_Error("made it thru");
-
-
 
 		}
 		ceilingclip[rw_x] = viewheight;
@@ -851,7 +804,6 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	uint16_t offsetangle;
     int16_t			lightnum;
 	fixed_t_union rw_scalestep;
-	boolean     use16bit = false;
 
 	// needs to be refreshed...
 	side_t __far* side = &sides[curseg_render->sidedefOffset];
@@ -874,8 +826,9 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	fixed_t_union		worldhigh;
 	fixed_t_union		worldlow;
 
-	if (ds_p == &drawsegs_BASE[MAXDRAWSEGS])
+	if (ds_p == &drawsegs_BASE[MAXDRAWSEGS]){
 		return;		
+	}
 
 		 
 	//linedef = &lines[curseg->linedefOffset];
@@ -897,9 +850,6 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     // calculate rw_distance for scale calculation
     rw_normalangle = seg_normalangles[curseg];
 	rw_normalangle_shiftleft3 = rw_normalangle << SHORTTOFINESHIFT;
-
-
-
 
 
 	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
@@ -932,11 +882,6 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 		rw_scalestep.w = FastDiv3216u((ds_p->scale2 - rw_scale.w), (stop-start));
 		ds_p->scalestep = rw_scalestep.w;
-
-		if ((rw_scalestep.h.intbits == 0x0000 && !(rw_scalestep.h.fracbits & 0x8000) ) || 
-			(rw_scalestep.h.intbits == 0xFFFF &&  (rw_scalestep.h.fracbits & 0x8000) )){
-			use16bit = true;
-		}
 
     } else {
 		ds_p->scale2 = ds_p->scale1;
@@ -1220,13 +1165,8 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	
     if (stop > start ) {
 
-		if (use16bit) {
-			topstep =    -FixedMul1632(rw_scalestep.h.fracbits, worldtop.w);
-			bottomstep = -FixedMul1632(rw_scalestep.h.fracbits, worldbottom.w);
-		} else {
-			topstep =    -FixedMul    (rw_scalestep.w,          worldtop.w);
-			bottomstep = -FixedMul    (rw_scalestep.w,          worldbottom.w);
-		}
+		topstep =    -FixedMul    (rw_scalestep.w,          worldtop.w);
+		bottomstep = -FixedMul    (rw_scalestep.w,          worldbottom.w);
 
  		if (backsector) {
 			// todo dont shift 4 twice, instead borrow old value somehow and do byte shift... rare case though
@@ -1237,21 +1177,13 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 			if (worldhigh.w < worldtop.w) {
 
 				pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
-				if (use16bit) {
-					pixhighstep = -FixedMul1632(rw_scalestep.h.fracbits, worldhigh.w);
-				} else {
-					pixhighstep = -FixedMul    (rw_scalestep.w,          worldhigh.w);
-				}
+				pixhighstep = -FixedMul    (rw_scalestep.w,          worldhigh.w);
+
 			}
 		
 			if (worldlow.w > worldbottom.w) {
 				pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
-				if (use16bit) {
-					pixlowstep = -FixedMul1632(rw_scalestep.h.fracbits, worldlow.w);
-				}
-				else {
-					pixlowstep = -FixedMul    (rw_scalestep.w,          worldlow.w);
-				}
+				pixlowstep = -FixedMul    (rw_scalestep.w,          worldlow.w);
 
 			}
 

@@ -66,10 +66,11 @@ void __near R_ClipSolidWallSegment ( int16_t first, int16_t last ) {
 			next = newend;
 			newend++;
 
+#ifdef CHECK_FOR_ERRORS
 			if (newend - solidsegs > MAX_SEGS){
-				I_Error("segs1"); //todo remove
+				I_Error("segs1"); 
 			}
-	    
+#endif
 			// 1/11/98 killough: performance tuning using fast memmove
 			memmove(start + 1, start, (++newend - start) * sizeof(*start));
 			start->first = first;
@@ -124,9 +125,11 @@ void __near R_ClipSolidWallSegment ( int16_t first, int16_t last ) {
     }
 
     newend = start+1;
+#ifdef CHECK_FOR_ERRORS
 	if (newend - solidsegs > MAX_SEGS){
 		I_Error("segs2"); //todo remove
 	}
+#endif
 }
 
 

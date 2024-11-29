@@ -401,16 +401,7 @@ void R_GenerateLookup(uint16_t texnum) {
 		for (i = 0; i < currenttexturepostoffset; i++){
 			postdata[i] = texmaskedpostdata[i];
 
-/*
-			if (texnum == 4 && i == 45) {
-				I_Error("\ntexture stuff %u %u %u %x %x %x %x", texnum, x, 
-					currenttexturepixelbytecount, 
-					*((uint16_t __far *)( (byte  __far*)column + 3)),
-					*((uint16_t __far *)( (byte  __far*)column + 5)),
-					*column,
-					texmaskedpostdata[usedpostoffset-1]
-					);
-			}*/
+ 
 
 
 		}
@@ -431,8 +422,8 @@ void R_GenerateLookup(uint16_t texnum) {
  
 		if (!columnpatchcount[x]) {
 			// R_GenerateLookup: column without a patch
-			I_Error("R_GenerateLookup: column without a patch (%Fs), %i %i %hhu %hhu %Fp\n", texture->name, x, texturewidth, texnum, columnpatchcount[x], columnpatchcount);
-			//I_Error("91");
+			//I_Error("R_GenerateLookup: column without a patch (%Fs), %i %i %hhu %hhu %Fp\n", texture->name, x, texturewidth, texnum, columnpatchcount[x], columnpatchcount);
+			I_Error("91");
 			return;
 		}
 
