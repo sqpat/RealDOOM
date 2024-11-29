@@ -2169,6 +2169,9 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		cachedlumps[2] = -1;
 		cachedlumps[3] = -1;
 
+		segloopnextlookup[0] = -1;
+		segloopnextlookup[1] = -1;
+
 
 		// paged in
 
@@ -2452,11 +2455,16 @@ void setchecksum(){
 // if texturecolumnlump, mask, etc are not stack vars but near vars, 
 // their values can be reused
 // if tex is same as last call.
-segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
+
+segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcachetype) {
 	int16_t         lump;
 	int16_t_union __far* texturecolumnlump;
 	int16_t n = 0;
 	uint8_t texcol;
+	int16_t subtractor;
+	int16_t basecol = col;
+
+	segloopcachedbasecol[segloopcachetype] = col;
 
 	col &= texturewidthmasks[tex];
 	texcol = col;
@@ -2470,7 +2478,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
 		// should we change this to be 256 - the number? we dont want a branch.
 		// anyway, fix it in asm
-		int16_t subtractor = texturecolumnlump[n+1].bu.bytelow;
+		subtractor = texturecolumnlump[n+1].bu.bytelow;
 		if (!subtractor){
 			subtractor = 256;
 		}
@@ -2482,6 +2490,9 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		n += 2;
 	}
 
+
+	// can reuse this seg until we reach this value... need to add to base later
+	segloopnextlookup[segloopcachetype] = subtractor; 
 
 	if (lump > 0){
 		uint16_t patchwidth = patchwidths[lump-firstpatch];
@@ -2541,6 +2552,12 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 			col+= patchwidth;
 		}
 
+		segloopheightvalcache[segloopcachetype] = heightval;
+		segloopcachedsegment[segloopcachetype]  = cachedsegmentlumps[0];
+		segloopcachedbasecol[segloopcachetype] -= col;
+		segloopnextlookup[segloopcachetype]    += segloopcachedbasecol[segloopcachetype]; 
+		
+
 		return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 
 	} else {
@@ -2576,7 +2593,12 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		}
 		
 		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
-		cachedbyteheight = collength;
+		cachedbyteheight = collength; // todo revisit this whole thing..
+		segloopheightvalcache[segloopcachetype] = collength;
+		segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
+		segloopcachedbasecol[segloopcachetype] -= texcol;
+		segloopnextlookup[segloopcachetype] += segloopcachedbasecol[segloopcachetype]; 
+
 		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
 	}
@@ -2584,7 +2606,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 } 
 
 
-//todo can this be optimizefor the masked case??
+//todo can this be optimized for the masked case??
 segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	int16_t         lump;
 	int16_t_union __far* texturecolumnlump;

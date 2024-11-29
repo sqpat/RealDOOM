@@ -325,7 +325,11 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 #define HEIGHTBITS		12
 #define HEIGHTUNIT		(1<<HEIGHTBITS)
 
-//extern int setval;
+// cant have a MID and also a TOP/BOT. so 2 texes per wall at most
+#define MID_TEXTURE_SEGLOOP_CACHE 		0
+#define TOP_TEXTURE_SEGLOOP_CACHE 		0
+#define BOT_TEXTURE_SEGLOOP_CACHE 		1
+
 
 
 void __near R_RenderSegLoop (fixed_t rw_scalestep) {
@@ -509,7 +513,17 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 					dc_yh = yh;
 					dc_texturemid = rw_midtexturemid;
 
-					dc_source_segment = R_GetColumnSegment(midtexture,texturecolumn);
+					// note: column iteration can go in either dir, have to check for underflow and overflow
+					if (texturecolumn >= segloopnextlookup[MID_TEXTURE_SEGLOOP_CACHE] ||
+						texturecolumn < segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE] ){
+						dc_source_segment = R_GetColumnSegment(midtexture, texturecolumn, MID_TEXTURE_SEGLOOP_CACHE);
+						//todo: use self modifying code in ASM to change these segloopcachedbasecol values around here. then reset on function exit.
+					} else {
+						dc_source_segment = segloopcachedsegment[MID_TEXTURE_SEGLOOP_CACHE] 
+						    + FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE]) , 
+										segloopheightvalcache[MID_TEXTURE_SEGLOOP_CACHE]);
+					}
+
 
 					R_DrawColumnPrepCall(0);				
 
@@ -536,7 +550,16 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 							dc_yh = mid;
 							dc_texturemid = rw_toptexturemid;
 
-							dc_source_segment = R_GetColumnSegment(toptexture,texturecolumn);
+							if (texturecolumn >= segloopnextlookup[TOP_TEXTURE_SEGLOOP_CACHE] ||
+								texturecolumn < segloopcachedbasecol[TOP_TEXTURE_SEGLOOP_CACHE] ){
+								dc_source_segment = R_GetColumnSegment(toptexture,texturecolumn, TOP_TEXTURE_SEGLOOP_CACHE);
+							} else {
+								dc_source_segment = segloopcachedsegment[TOP_TEXTURE_SEGLOOP_CACHE] 
+									+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[TOP_TEXTURE_SEGLOOP_CACHE]) , 
+												segloopheightvalcache[TOP_TEXTURE_SEGLOOP_CACHE]);
+							}
+
+
 							R_DrawColumnPrepCall(0);				
 						}
 						ceilingclip[rw_x] = mid;
@@ -567,7 +590,15 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 							dc_yh = yh;
 							dc_texturemid = rw_bottomtexturemid;
 
-							dc_source_segment = R_GetColumnSegment(bottomtexture, texturecolumn);
+
+							if (texturecolumn >= segloopnextlookup[BOT_TEXTURE_SEGLOOP_CACHE] ||
+								texturecolumn < segloopcachedbasecol[BOT_TEXTURE_SEGLOOP_CACHE] ){
+								dc_source_segment = R_GetColumnSegment(bottomtexture, texturecolumn, BOT_TEXTURE_SEGLOOP_CACHE);
+							} else {
+								dc_source_segment = segloopcachedsegment[BOT_TEXTURE_SEGLOOP_CACHE] 
+									+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[BOT_TEXTURE_SEGLOOP_CACHE]) , 
+												segloopheightvalcache[BOT_TEXTURE_SEGLOOP_CACHE]);
+							}
 							R_DrawColumnPrepCall(0);
 							
 
@@ -596,12 +627,15 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 		}
 	}
 
+	segloopnextlookup[TOP_TEXTURE_SEGLOOP_CACHE] = -1;
+	segloopnextlookup[BOT_TEXTURE_SEGLOOP_CACHE] = -1;
+
 }
 
 // dont need to do step-related math for one seg
 // dont need to do modulo vga plane stuff in a loop either
 // not a big improvement, but an improvement. lots of extra code though. But it should eventually be loaded high into ems regions.
-
+/*
 void __near R_RenderOneSeg () {
     fineangle_t		angle;
 	uint16_t		index;
@@ -703,7 +737,7 @@ void __near R_RenderOneSeg () {
 			dc_yh = yh;
 			dc_texturemid = rw_midtexturemid;
 
-			dc_source_segment = R_GetColumnSegment(midtexture,texturecolumn);
+			dc_source_segment = R_GetColumnSegment(midtexture,texturecolumn, MID_TEXTURE_SEGLOOP_CACHE);
 
 			R_DrawColumnPrepCall(0);				
 
@@ -727,7 +761,7 @@ void __near R_RenderOneSeg () {
 					dc_yh = mid;
 					dc_texturemid = rw_toptexturemid;
 
-					dc_source_segment = R_GetColumnSegment(toptexture,texturecolumn);
+					dc_source_segment = R_GetColumnSegment(toptexture,texturecolumn, TOP_TEXTURE_SEGLOOP_CACHE);
 					R_DrawColumnPrepCall(0);				
 				}
 				ceilingclip[rw_x] = mid;
@@ -757,7 +791,7 @@ void __near R_RenderOneSeg () {
 					dc_yh = yh;
 					dc_texturemid = rw_bottomtexturemid;
 
-					dc_source_segment = R_GetColumnSegment(bottomtexture, texturecolumn);
+					dc_source_segment = R_GetColumnSegment(bottomtexture, texturecolumn, BOT_TEXTURE_SEGLOOP_CACHE);
 					R_DrawColumnPrepCall(0);
 					
 
@@ -782,11 +816,13 @@ void __near R_RenderOneSeg () {
 		
 	}
 			
+	segloopnextlookup[TOP_TEXTURE_SEGLOOP_CACHE] = -1;
+	segloopnextlookup[BOT_TEXTURE_SEGLOOP_CACHE] = -1;
 
 
 }
 
-
+*/
 
 //
 // R_StoreWallRange
@@ -1163,7 +1199,8 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		floorplaneindex = R_CheckPlane(floorplaneindex, rw_x, rw_stopx - 1, IS_FLOOR_PLANE);
 	}
 	
-    if (stop > start ) {
+    //if (stop > start ) {
+    if (stop >= start ) {
 
 		topstep =    -FixedMul    (rw_scalestep.w,          worldtop.w);
 		bottomstep = -FixedMul    (rw_scalestep.w,          worldbottom.w);
@@ -1191,6 +1228,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 
 		R_RenderSegLoop (rw_scalestep.w);
+/*
 	} else {
 		// single pixel dont need most of the 'step' stuff.
 		if (backsector) {
@@ -1207,6 +1245,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		}
 
 		R_RenderOneSeg (rw_scalestep);
+		*/
 	}
     
     // save sprite clipping info

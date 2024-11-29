@@ -2281,6 +2281,10 @@ boolean    					plutonia = false;
 boolean    					tnt = false;
 #endif
 
+int16_t 					segloopnextlookup[2] = {-1, -1}; // 0 would be fine too...
+segment_t 					segloopcachedsegment[2];
+int16_t 					segloopcachedbasecol[2];
+uint8_t 					segloopheightvalcache[2];
 
 /*
 uint16_t shift4lookup[256] = 

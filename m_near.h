@@ -1129,6 +1129,12 @@ extern boolean				    is_ultimate;
 extern segment_t			    spritewidths_segment;
 extern masked_header_t  		masked_headers[MAX_MASKED_TEXTURES];
 
+extern int16_t 					segloopnextlookup[2];
+extern segment_t 				segloopcachedsegment[2];
+extern int16_t 					segloopcachedbasecol[2];
+extern uint8_t 					segloopheightvalcache[2];
+
+
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 extern boolean    				plutonia;
 extern boolean    				tnt;
