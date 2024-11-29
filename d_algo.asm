@@ -326,51 +326,50 @@ PUBLIC I_ReadScreen_
 
 
 push  bx
-push  cx
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 6
-mov   bx, ax
+
+
+mov   es, ax ; copy segment to es...
 mov   al, GC_READMAP
 mov   dx, GC_INDEX
-mov   di, 00030h
+
 out   dx, al
-xor   cx, cx
-mov   word ptr [bp - 4], bx
-mov   word ptr [bp - 6], cx
-label2:
-mov   dx, GC_INDEX + 1
-mov   bx, word ptr [bp - 6]
-mov   al, cl
-mov   si, word ptr [bp - 4]
-out   dx, al
-mov   word ptr [bp - 2], si
-xor   ax, ax
-add   bx, cx
+xor	  ax, ax
+
 cld   
-label1:
-mov   si, 00030h
-mov   si, word ptr [si]
-mov   es, word ptr [di + 2]
-add   si, ax
-add   bx, 4
-mov   dl, byte ptr es:[si]
-mov   es, word ptr [bp - 2]
-inc   ax
-mov   byte ptr es:[bx - 4], dl
-cmp   ax, 03E80h
-jb    label1
-inc   cx
-cmp   cx, 4
-jb    label2
-leave 
+;mov   dx, GC_INDEX + 1
+inc    dx
+
+lds   bx, dword ptr ds:[_currentscreen]
+
+
+increment_screen_plane:
+out   dx, al
+mov   si, bx  ; reset si for this loop
+mov   di, ax  ; di = "i" 
+
+loop_screen_plane_read:
+; could unroll this a bit. dont think it matters?
+; scr[i+j*4u] = currentscreen[j];
+movsb 
+add   di, 3
+
+cmp   di, 0FA00h  ;  SCREENWIDTH * SCREENHEIGHT
+jb    loop_screen_plane_read
+
+inc   al
+cmp   al, 4
+jb    increment_screen_plane
+
+
+mov   ax, ss
+mov   ds, ax
+
 pop   di
 pop   si
 pop   dx
-pop   cx
 pop   bx
 ret   
 

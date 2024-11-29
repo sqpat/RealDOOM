@@ -32,6 +32,7 @@ GC_READMAP      =   4
 
 
 _NULL_OFFSET = 0030h
+_currentscreen    = 				_NULL_OFFSET + 00000h
 _destview    = 						_NULL_OFFSET + 00004h
 _tantoangle  = 						_NULL_OFFSET + 0000Ch
 _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 0000Eh
