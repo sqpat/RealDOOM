@@ -171,11 +171,14 @@ int16_t __near wipe_doMelt2 ( int16_t	ticks ) {
 #define GC_INDEX                0x3CE
 #define GC_READMAP              4
 
+void __near I_ReadScreen(segment_t scr_segment);
+
 //
 // I_ReadScreen
 // Reads the screen currently displayed into a linear buffer.
 //
 // todo move this to asm
+/*
 void __near I_ReadScreen(segment_t scr_segment) {
 	uint16_t i;
 	uint16_t j;
@@ -190,6 +193,7 @@ void __near I_ReadScreen(segment_t scr_segment) {
     }
 
 }
+*/
 
 
 int16_t __far wipe_StartScreen( ) {

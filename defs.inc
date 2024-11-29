@@ -27,6 +27,9 @@ PEL_DATA		=	03c9h
 SC_INDEX		=	03C4h
 SC_MAPMASK		=	2
 
+GC_INDEX        =   03CEh
+GC_READMAP      =   4
+
 
 _NULL_OFFSET = 0030h
 _destview    = 						_NULL_OFFSET + 00004h

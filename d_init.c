@@ -862,6 +862,7 @@ void check_is_ultimate(){
 	}
 }
 
+
 //void checkDS(int16_t a);
 
 void __far D_DoomMain2(void) {
@@ -882,7 +883,7 @@ void __far D_DoomMain2(void) {
 	/*
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(R_MarkL2FlatCacheLRU, (byte __far *)R_EvictFlatCacheEMSPage - (byte __far *)R_MarkL2FlatCacheLRU, 1, fp);
+	FAR_fwrite(I_ReadScreen, (byte __far *)wipe_StartScreen - (byte __far *)I_ReadScreen, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

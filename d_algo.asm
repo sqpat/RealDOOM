@@ -320,6 +320,62 @@ jmp continue_main_loop
 
 ENDP
 
+
+PROC I_ReadScreen_ NEAR
+PUBLIC I_ReadScreen_
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 6
+mov   bx, ax
+mov   al, GC_READMAP
+mov   dx, GC_INDEX
+mov   di, 00030h
+out   dx, al
+xor   cx, cx
+mov   word ptr [bp - 4], bx
+mov   word ptr [bp - 6], cx
+label2:
+mov   dx, GC_INDEX + 1
+mov   bx, word ptr [bp - 6]
+mov   al, cl
+mov   si, word ptr [bp - 4]
+out   dx, al
+mov   word ptr [bp - 2], si
+xor   ax, ax
+add   bx, cx
+cld   
+label1:
+mov   si, 00030h
+mov   si, word ptr [si]
+mov   es, word ptr [di + 2]
+add   si, ax
+add   bx, 4
+mov   dl, byte ptr es:[si]
+mov   es, word ptr [bp - 2]
+inc   ax
+mov   byte ptr es:[bx - 4], dl
+cmp   ax, 03E80h
+jb    label1
+inc   cx
+cmp   cx, 4
+jb    label2
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+endp
+
 PROC resetDS_ FAR
 PUBLIC resetDS_
 
@@ -392,6 +448,7 @@ sti
 retf
 
 ENDP
+
 
 
 

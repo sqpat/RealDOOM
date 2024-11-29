@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/28 15:59:31
+Created on:       24/11/28 16:13:59
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -47,8 +47,8 @@ hu_stuff_TEXT          CODE           AUTO           027d:41c0       000001ce
 hu_lib_TEXT            CODE           AUTO           027d:4390       000001b0
 m_menu_TEXT            CODE           AUTO           027d:4540       00001378
 sounds_TEXT            CODE           AUTO           027d:58c0       00000000
-f_wipe_TEXT            CODE           AUTO           027d:58c0       00000277
-D_ALGO_TEXT            CODE           AUTO           027d:5b38       00000199
+f_wipe_TEXT            CODE           AUTO           027d:58c0       0000021b
+D_ALGO_TEXT            CODE           AUTO           027d:5adc       000001f5
 dmx_TEXT               CODE           AUTO           027d:5ce0       000001f4
 dutils_TEXT            CODE           AUTO           027d:5ee0       0000008b
 wi_stuff_TEXT          CODE           AUTO           027d:5f70       00000f16
@@ -915,12 +915,12 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 Module: f_wipe.obj(C:\REALDOOM\f_wipe.c)
 027d:58c0+     wipe_shittyColMajorXform_
 027d:594a+     wipe_initMelt_
-027d:5a1c+     I_ReadScreen_
-027d:5a78      wipe_StartScreen_
-027d:5a8c      wipe_WipeLoop_
+027d:5a1c      wipe_StartScreen_
+027d:5a30      wipe_WipeLoop_
 Module: d_algo.obj(d_algo.ASM)
+027d:5c30      I_ReadScreen_
 027d:5cb5      hackDSBack_
-027d:5b38      wipe_doMelt_
+027d:5adc      wipe_doMelt_
 027d:5c8c      resetDS_
 027d:5c94      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
@@ -1699,4 +1699,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000259e0 (154080.)
 Entry point address: 1e40:219c
-Link time: 00:00.74
+Link time: 00:00.20
