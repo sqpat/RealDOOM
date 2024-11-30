@@ -25,7 +25,7 @@
 //
 
 void __far wipe_WipeLoop();
-int16_t __far wipe_StartScreen();
+void __far wipe_StartScreen();
   
 
 #endif

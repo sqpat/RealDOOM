@@ -199,8 +199,10 @@ void __near I_ReadScreen(segment_t scr_segment) {
 }
 */
 
+void __far wipe_StartScreen();
 
-int16_t __far wipe_StartScreen( ) {
+/*
+void __far wipe_StartScreen( ){
 	Z_QuickMapWipe();
 
 	//wipe_scr_start = screen2;
@@ -210,9 +212,8 @@ int16_t __far wipe_StartScreen( ) {
 
 	Z_QuickMapPhysics();
 
-    return 0;
 }
-
+*/
 
 
 

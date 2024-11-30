@@ -20,6 +20,8 @@ INSTRUCTION_SET_MACRO
 
 
 
+EXTRN Z_QuickMapPhysics_:PROC
+EXTRN Z_QuickMapWipe_:PROC
 EXTRN Z_QuickMapScratch_5000_:PROC
 EXTRN M_Random_:PROC
 
@@ -461,20 +463,20 @@ push      si
 push      di
 
 
-mov       ax, 08000h
+mov       ax, SCREEN0_SEGMENT
 mov       es, ax
 xor       si, si
 mov       di, si
-mov       ax, 07000h
+mov       ax, SCREEN2_SEGMENT
 mov       ds, ax
-mov       cx, 07D00h
+mov       cx, 07D00h  ; SCREENWIDTH * SCREENHEIGHT / 2
 rep movsw 
 mov       ax, ss
 mov       ds, ax
 call      Z_QuickMapScratch_5000_
-mov       ax, 07000h
+mov       ax, SCREEN2_SEGMENT
 call      wipe_shittyColMajorXform_
-mov       ax, 06000h
+mov       ax, SCREEN3_SEGMENT
 call      wipe_shittyColMajorXform_
 
 call      M_Random_
@@ -538,7 +540,16 @@ jmp       done_comparing_r
 
 endp
 
+PROC wipe_StartScreen_ FAR
+PUBLIC wipe_StartScreen_
 
+call 	Z_QuickMapWipe_
+mov   	ax, SCREEN2_SEGMENT
+call  	I_ReadScreen_
+call 	Z_QuickMapPhysics_
+retf
+
+endp
 
 PROC resetDS_ FAR
 PUBLIC resetDS_
