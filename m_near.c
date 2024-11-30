@@ -1466,7 +1466,10 @@ int8_t     quitsounds2[8] ={
     sfx_bspact,
     sfx_sgtatk
 };
+
+#ifdef DETAILED_BENCH_STATS
 uint16_t  wipeduration = 0;
+#endif
 
 task HeadTask;
 void( __interrupt __far_func *OldInt8)(void);

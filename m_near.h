@@ -826,8 +826,9 @@ extern int8_t     quitsounds[8];
 
 extern int8_t     quitsounds2[8];
 
+#ifdef DETAILED_BENCH_STATS
 extern uint16_t  wipeduration;
-
+#endif
 
 extern task HeadTask;
 extern void( __interrupt __far_func *OldInt8)(void);

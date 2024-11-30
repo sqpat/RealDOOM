@@ -19,9 +19,11 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+IFDEF DETAILED_BENCH_STATS
+EXTRN _wipeduration:WORD
+ENDIF
 
 EXTRN _hudneedsupdate:BYTE
-EXTRN _wipeduration:WORD
 EXTRN _ticcount:DWORD
 EXTRN _dirtybox:WORD
 EXTRN Z_QuickMapPhysics_:PROC
@@ -572,56 +574,55 @@ mov       ax, SCREEN3_SEGMENT
 mov       cx, SCREENHEIGHT
 mov       bx, SCREENWIDTH
 call      I_ReadScreen_
-xor       dx, dx
-xor       si, si
 xor       ax, ax
-xor       di, di
+cwd
+mov       si, ax
+mov       di, ax
 call      V_MarkRect_
-mov       ax, 0FA00h
-mov       dx, SCREEN0_SEGMENT
-mov       cx, SCREEN2_SEGMENT
-mov       es, dx
-push      ds
-push      di
-xchg      ax, cx
+mov       CX, 07D00h   ; SCREENWIDTH * SCREENHEIGHT / 2
+mov       ax, SCREEN0_SEGMENT
+mov       es, ax
+mov       ax, SCREEN2_SEGMENT
 mov       ds, ax
-shr       cx, 1
 rep movsw 
-adc       cx, cx
-rep movsb 
-pop       di
-pop       ds
+mov       ax, ss
+mov       ds, ax
+
 call      wipe_initMelt_
 mov       bx, word ptr ds:[_ticcount]
-add       bx, 0FFFFh
-mov       ax, word ptr ds:[_ticcount+2]
-adc       ax, 0FFFFh
-mov       cx, bx
-label1:
+dec       bx
+mov       cx, bx     ; store wipestart
+ticcount_loop:
 mov       dx, word ptr ds:[_ticcount]
-mov       ax, word ptr ds:[_ticcount+2]
 mov       ax, dx
 sub       ax, bx
-je        label1
+je        ticcount_loop
+
+mov       bx, dx	; update wipestart
+
+mov       word ptr ds:[_dirtybox], SCREENHEIGHT
+mov       word ptr ds:[_dirtybox+2], 0
 mov       word ptr ds:[_dirtybox+4], 0
 mov       word ptr ds:[_dirtybox+6], SCREENWIDTH
-mov       word ptr ds:[_dirtybox+2], 0
-mov       word ptr ds:[_dirtybox], SCREENHEIGHT
-mov       bx, dx
 
 call      wipe_doMelt_
-mov       dx, ax
+mov       dx, ax    ; store "done" result from wipe_doMelt_
 call      I_UpdateNoBlit_
 mov       ax, 1
 call      M_Drawer_
 call      I_FinishUpdate_
 test      dl, dl
-je        label1
+je        ticcount_loop
+
 mov       byte ptr ds:[_hudneedsupdate], 6
 call      Z_QuickMapPhysics_
+
+IFDEF DETAILED_BENCH_STATS
 mov       ax, word ptr ds:[_ticcount]
 sub       ax, cx
 mov       word ptr ds:[_wipeduration], ax
+ENDIF
+
 pop       di
 pop       si
 pop       dx
