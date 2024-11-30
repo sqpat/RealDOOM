@@ -8,9 +8,12 @@
 #define R_DrawSkyColumnOffset          0x0
 #define R_DrawSkyPlaneOffset           0x654
 #define R_DrawSkyPlaneDynamicOffset    0x5E0
+#define wipe_StartScreenOffset         0x259
+#define wipe_WipeLoopOffset            0x268
 
 #define R_DrawColumnCodeSize           0xBA0
 #define R_DrawSpanCodeSize             0xC2E
 #define R_DrawFuzzColumnCodeSize       0x2A6
 #define R_DrawMaskedColumnCodeSize     0xF5
 #define R_DrawSkyColumnCodeSize        0x6D6
+#define WipeCodeSize                   0x31B

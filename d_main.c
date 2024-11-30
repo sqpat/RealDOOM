@@ -695,7 +695,7 @@ void __near D_Display (void) {
     // save the current screen if about to wipe
     if (gamestate != wipegamestate) {
         wipe = true;
-        wipe_StartScreen();
+        wipe_StartScreenCall();
     } else {
         wipe = false;
     }
@@ -836,9 +836,7 @@ void __near D_Display (void) {
     
     // wipe update
 #ifndef SKIPWIPE
-	wipe_WipeLoop();
-
-
+	wipe_WipeLoopCall();
 #endif
 }
  

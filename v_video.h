@@ -40,7 +40,6 @@
  
 
 #define NUM_MENU_ITEMS  46
-#define MAXLINEANIMS    64
 
  
 

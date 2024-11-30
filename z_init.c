@@ -507,6 +507,12 @@ void __near Z_LoadBinaries() {
 	fread(&codesize, 2, 1, fp2);
 	FAR_fread(drawskyplane_area, codesize, 1, fp2);
 
+	Z_QuickMapPhysics();
+
+	fread(&codesize, 2, 1, fp2);
+	FAR_fread(fwipe_code_area, codesize, 1, fp2);
+
+
 	fclose(fp2);
 
 
@@ -514,7 +520,7 @@ void __near Z_LoadBinaries() {
 
 
 	fclose(fp);
-	Z_QuickMapPhysics();
+
 
 	DEBUG_PRINT("..");
  

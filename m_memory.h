@@ -36,6 +36,7 @@
 
 
 */
+#define MAXLINEANIMS    64
 
 // round up a segment if necessary. convert size to segments
 #define MAKE_FULL_SEGMENT(a, b)  ((int32_t)a + ((((int32_t)b + 0x0F) >> 4) << 16))
@@ -257,6 +258,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define segs_physics_segment              ((segment_t) ((int32_t)segs_physics >> 16))
 #define diskgraphicbytes_segment          ((segment_t) ((int32_t)diskgraphicbytes >> 16))
 
+
+//todo get rid of this.
 #ifdef MOVE_P_SIGHT
 // 0x92E80000
 #define PSightFuncLoadAddr      ((byte __far*) (MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes)))
@@ -385,7 +388,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define ammnumpatchoffsets ((uint16_t __far*)             (((int32_t)ammnumpatchbytes) + 0x020C))
 #define doomednum          ((int16_t __far*)              MAKE_FULL_SEGMENT(ammnumpatchbytes, (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
 #define linespeciallist    ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum, size_doomednum ))
-  
+#define fwipe_code_area    ((byte __far*)                 MAKE_FULL_SEGMENT(linespeciallist,     size_linespeciallist))
+
 
 #define thinkerlist_segment           ((segment_t) ((int32_t)thinkerlist_far >> 16))
 #define mobjinfo_segment              ((segment_t) ((int32_t)mobjinfo_far >> 16))
@@ -399,7 +403,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define ammnumpatchoffsets_segment    ((segment_t) ((int32_t)ammnumpatchoffsets >> 16))
 #define doomednum_segment             ((segment_t) ((int32_t)doomednum >> 16))
 #define linespeciallist_segment       ((segment_t) ((int32_t)linespeciallist >> 16))
-  
+#define fwipe_code_area_segment       ((segment_t) ((int32_t)fwipe_code_area >> 16))
+
  // 3C00:4000
 #define thinkerlist        ((thinker_t __near*)          0x4000)
 #define mobjinfo           ((mobjinfo_t  __near*)       (0x4000 + ((mobjinfo_segment        - thinkerlist_segment)<<4)))
@@ -419,10 +424,11 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // 4CA4:020C  xxxx ammnumpatchoffsets
 // 4CC6:0000  xxxx doomednum
 // 4CD8:0000  xxxx linespeciallist
-// 4CCA:03B1  xxxx [empty]
+// 4CE0:0000  xxxx fwipe_code_area
+// 4D12:0000  xxxx [empty]
 
 
-// over 8k bytes free?
+// 12000 bytes free?
 
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region

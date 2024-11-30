@@ -476,6 +476,9 @@ extern void                 (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t,
 
 extern void                 (__far* R_DrawMaskedColumnCallSpriteHigh)(segment_t, column_t __far *);
 
+extern void                 (__far* wipe_StartScreenCall)();
+extern void                 (__far* wipe_WipeLoopCall)();
+
 
 extern int16_t              currentlumpindex;
 extern uint16_t             maskedcount;

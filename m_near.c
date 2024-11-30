@@ -483,15 +483,19 @@ uint16_t vga_read_port_lookup[12] = {
 };
 
 
-void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  				      	  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_maskedmapping, R_DrawColumnPrepOffset)));
-void (__far* R_DrawColumnPrepCall)(uint16_t)  =   				      	      ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, 				R_DrawColumnPrepOffset)));
+void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  				      	  ((void    (__far *)(uint16_t))						(MK_FP(colfunc_segment_maskedmapping, R_DrawColumnPrepOffset)));
+void (__far* R_DrawColumnPrepCall)(uint16_t)  =   				      	      ((void    (__far *)(uint16_t))  						(MK_FP(colfunc_segment, 				R_DrawColumnPrepOffset)));
 
-void (__far* R_DrawPlanesCall)()  =   				      	                  ((void    (__far *)(uint6_t))  (MK_FP(spanfunc_function_area_segment, R_DrawPlanesOffset)));
+void (__far* R_DrawPlanesCall)()  =   				      	                  ((void    (__far *)())  								(MK_FP(spanfunc_function_area_segment, R_DrawPlanesOffset)));
 void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  		      ((void    (__far *)(uint16_t, byte __far *))  		(MK_FP(drawfuzzcol_area_segment, R_DrawFuzzColumnOffset)));
 void (__far* R_DrawMaskedColumnCallHigh)(segment_t, column_t __far *) =       ((void    (__far *)(segment_t, column_t __far *))     (MK_FP(drawfuzzcol_area_segment, R_DrawMaskedColumnOffset)));
 void (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t, byte)  =  	      ((void    (__far *)(segment_t, byte))  				(MK_FP(drawfuzzcol_area_segment, R_DrawSingleMaskedColumnOffset)));
 
 void (__far* R_DrawMaskedColumnCallSpriteHigh)(segment_t, column_t __far *) = ((void    (__far *)(segment_t, column_t __far *))     (MK_FP(drawmaskedfuncarea_sprite_segment, R_DrawMaskedColumnSpriteOffset)));
+
+void (__far* wipe_StartScreenCall)() = 										  ((void    (__far *)())     							(MK_FP(fwipe_code_area_segment, wipe_StartScreenOffset)));
+void (__far* wipe_WipeLoopCall)() = 										  ((void    (__far *)())     							(MK_FP(fwipe_code_area_segment, wipe_WipeLoopOffset)));
+
 
 
 int16_t                 currentlumpindex = 0;

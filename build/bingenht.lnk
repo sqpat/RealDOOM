@@ -37,7 +37,7 @@ file hu_stuff.obj
 file hu_lib.obj
 file m_menu.obj
 file sounds.obj
-file f_wipe.obj
+file d_wipe.obj
 file d_algo.obj
 file dmx.obj
 file dutils.obj

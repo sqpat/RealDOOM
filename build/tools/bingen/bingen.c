@@ -29,6 +29,13 @@ void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
 void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
 void __far R_DrawSkyPlaneDynamic(int16_t minx, int16_t maxx, visplane_t __far*		pl);
 
+void __far hackDSBack();
+int16_t __far wipe_doMelt(int16_t ticks);
+void __far wipe_WipeLoop();
+void __far wipe_StartScreen();
+void __far I_ReadScreen(); //todo this gets made the first function...
+
+/*
 void checkDS(int16_t a) {
 	struct SREGS        sregs;
 	uint16_t ds;
@@ -47,6 +54,8 @@ void checkDS(int16_t a) {
 
 	//I_Error("\npointer is %Fp %x %x %x", someptr, ds, ss, ds_diff);
 }
+*/
+
 int16_t main ( int16_t argc,int8_t** argv )  { 
     
     // Export .inc file with segment values, etc from the c coe
@@ -57,6 +66,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	uint16_t codesize3;
 	uint16_t codesize4;
 	uint16_t codesize5;
+	uint16_t codesize6;
     
     codesize1 = FP_OFF(R_DrawSpan) - FP_OFF(R_DrawColumn);
     // write filesize..
@@ -97,6 +107,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // write data
     FAR_fwrite((byte __far *)R_DrawSkyColumn, codesize5, 1, fp);
 
+    codesize6 = FP_OFF(hackDSBack) - FP_OFF(I_ReadScreen);
+    // write filesize..
+    fwrite(&codesize6, 2, 1, fp);
+    // write data
+    FAR_fwrite((byte __far *)I_ReadScreen, codesize6, 1, fp);
+
 
     fclose(fp);
     printf("Generated doomcode.bin file\n");
@@ -112,6 +128,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawSkyColumnOffset          0x%X\n", FP_OFF(R_DrawSkyColumn)          - FP_OFF(R_DrawSkyColumn));
 	fprintf(fp, "#define R_DrawSkyPlaneOffset           0x%X\n", FP_OFF(R_DrawSkyPlane)           - FP_OFF(R_DrawSkyColumn));
 	fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset    0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)    - FP_OFF(R_DrawSkyColumn));
+	fprintf(fp, "#define wipe_StartScreenOffset         0x%X\n", FP_OFF(wipe_StartScreen)         - FP_OFF(I_ReadScreen));
+	fprintf(fp, "#define wipe_WipeLoopOffset            0x%X\n", FP_OFF(wipe_WipeLoop)            - FP_OFF(I_ReadScreen));
 
 
 
@@ -122,6 +140,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawFuzzColumnCodeSize       0x%X\n", codesize3);
 	fprintf(fp, "#define R_DrawMaskedColumnCodeSize     0x%X\n", codesize4);
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize5);
+	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize6);
 
 
 
