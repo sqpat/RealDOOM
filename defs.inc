@@ -131,6 +131,8 @@ _extralight =            			_NULL_OFFSET + 00169h
 _visplanedirty =            		_NULL_OFFSET + 0016Ah
 _screenblocks =            			_NULL_OFFSET + 0016Bh
 _lastvisplane =            			_NULL_OFFSET + 0016Ch
+_hudneedsupdate =                   _NULL_OFFSET + 0016Eh
+
 
 ; 170h
 ; 6-16 bytes...
@@ -161,6 +163,10 @@ _active_visplanes =             	_NULL_OFFSET + 001B0h
 ; 1B5 free
 _visplane_offset =              	_NULL_OFFSET + 001B6h
 ; up to 1E8
+_dirtybox =              			_NULL_OFFSET + 001E8h
+_ticcount =			              	_NULL_OFFSET + 001F0h
+_wipeduration =			            _NULL_OFFSET + 001F4h
+
 
 
 

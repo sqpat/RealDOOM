@@ -187,7 +187,9 @@
 #define visplanedirty                   (*((int8_t    __near*)           (_NULL_OFFSET + 0x016A)))
 #define screenblocks                    (*((uint8_t    __near*)          (_NULL_OFFSET + 0x016B)))
 #define lastvisplane                    (*((int16_t    __near*)          (_NULL_OFFSET + 0x016C)))
-// 16E, 16F free
+#define hudneedsupdate                  (*((uint8_t    __near*)          (_NULL_OFFSET + 0x016E)))
+
+// 16F free
 
 
 
@@ -217,7 +219,15 @@
 #define active_visplanes                (((int8_t    __near*)            (_NULL_OFFSET + 0x01B0)))
 // 1B5 free
 #define visplane_offset                 (((uint16_t    __near*)          (_NULL_OFFSET + 0x01B6)))
-// up to 1E8
+
+
+#define dirtybox                        (((int16_t    __near*)           (_NULL_OFFSET + 0x01E8)))
+#define ticcount                        (*((volatile uint32_t  __near*)  (_NULL_OFFSET + 0x01F0)))
+#define wipeduration                    (*((uint16_t  __near*)           (_NULL_OFFSET + 0x01F4)))
+
+// 1f6
+
+
 
 
 
@@ -516,7 +526,6 @@ extern int16_t              p_init_maxframe;
 
 extern boolean grmode;
 extern boolean mousepresent;
-extern volatile uint32_t ticcount;
 // REGS stuff used for int calls
 extern union REGS regs;
 extern struct SREGS segregs;
@@ -702,7 +711,6 @@ extern boolean			message_dontfuckwithme;
 extern boolean		message_nottobefuckedwith;
 extern hu_stext_t	w_message;
 extern uint8_t		message_counter;
-extern int8_t hudneedsupdate;
 
 
 
@@ -826,9 +834,6 @@ extern int8_t     quitsounds[8];
 
 extern int8_t     quitsounds2[8];
 
-#ifdef DETAILED_BENCH_STATS
-extern uint16_t  wipeduration;
-#endif
 
 extern task HeadTask;
 extern void( __interrupt __far_func *OldInt8)(void);
@@ -1057,7 +1062,6 @@ extern uint16_t                     numlumps;
 extern FILE* wadfilefp;
 extern FILE* wadfilefp2;
   
-extern int16_t				dirtybox[4]; 
 
 
 

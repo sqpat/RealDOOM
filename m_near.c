@@ -516,7 +516,7 @@ int16_t             p_init_maxframe;
 
 boolean grmode = 0;
 boolean mousepresent;
-volatile uint32_t ticcount;
+
 // REGS stuff used for int calls
 union REGS regs;
 struct SREGS segregs;
@@ -899,7 +899,6 @@ boolean		message_nottobefuckedwith;
 
 hu_stext_t	w_message;
 uint8_t		message_counter;
-int8_t hudneedsupdate = 0;
 
 
 
@@ -1467,9 +1466,6 @@ int8_t     quitsounds2[8] ={
     sfx_sgtatk
 };
 
-#ifdef DETAILED_BENCH_STATS
-uint16_t  wipeduration = 0;
-#endif
 
 task HeadTask;
 void( __interrupt __far_func *OldInt8)(void);
@@ -1837,7 +1833,6 @@ uint16_t                     numlumps;
 FILE* wadfilefp;
 FILE* wadfilefp2;
   
-int16_t				dirtybox[4]; 
 
 
 //

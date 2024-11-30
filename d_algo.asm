@@ -19,13 +19,8 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-IFDEF DETAILED_BENCH_STATS
-EXTRN _wipeduration:WORD
-ENDIF
 
-EXTRN _hudneedsupdate:BYTE
-EXTRN _ticcount:DWORD
-EXTRN _dirtybox:WORD
+
 EXTRN Z_QuickMapPhysics_:PROC
 EXTRN Z_QuickMapWipe_:PROC
 EXTRN Z_QuickMapScratch_5000_:PROC
