@@ -165,8 +165,20 @@ _visplane_offset =              	_NULL_OFFSET + 001B6h
 ; up to 1E8
 _dirtybox =              			_NULL_OFFSET + 001E8h
 _ticcount =			              	_NULL_OFFSET + 001F0h
-_wipeduration =			            _NULL_OFFSET + 001F4h
 
+_Z_QuickMapPhysics_addr =            _NULL_OFFSET + 001F4h
+_Z_QuickMapWipe_addr =               _NULL_OFFSET + 001F8h
+_Z_QuickMapScratch_5000_addr =       _NULL_OFFSET + 001FCh
+_M_Random_addr =                     _NULL_OFFSET + 00200h
+_I_UpdateNoBlit_addr =               _NULL_OFFSET + 00204h
+_I_FinishUpdate_addr =               _NULL_OFFSET + 00208h
+_V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
+_M_Drawer_addr =                     _NULL_OFFSET + 00210h
+
+wipeduration =                      _NULL_OFFSET + 00214h
+
+
+; 216
 
 
 

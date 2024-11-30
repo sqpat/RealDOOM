@@ -223,9 +223,22 @@
 
 #define dirtybox                        (((int16_t    __near*)           (_NULL_OFFSET + 0x01E8)))
 #define ticcount                        (*((volatile uint32_t  __near*)  (_NULL_OFFSET + 0x01F0)))
-#define wipeduration                    (*((uint16_t  __near*)           (_NULL_OFFSET + 0x01F4)))
 
-// 1f6
+#define Z_QuickMapPhysics_addr          (*((uint32_t  __near*)           (_NULL_OFFSET + 0x01F4)))
+#define Z_QuickMapWipe_addr             (*((uint32_t  __near*)           (_NULL_OFFSET + 0x01F8)))
+#define Z_QuickMapScratch_5000_addr     (*((uint32_t  __near*)           (_NULL_OFFSET + 0x01FC)))
+#define M_Random_addr                   (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0200)))
+#define I_UpdateNoBlit_addr             (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0204)))
+#define I_FinishUpdate_addr             (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0208)))
+#define V_MarkRect_addr                 (*((uint32_t  __near*)           (_NULL_OFFSET + 0x020C)))
+#define M_Drawer_addr                   (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0210)))
+
+#define wipeduration                    (*((uint16_t  __near*)           (_NULL_OFFSET + 0x0214)))
+
+
+
+
+// 216
 
 
 

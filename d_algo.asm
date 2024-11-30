@@ -19,18 +19,6 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-
-
-EXTRN Z_QuickMapPhysics_:PROC
-EXTRN Z_QuickMapWipe_:PROC
-EXTRN Z_QuickMapScratch_5000_:PROC
-EXTRN M_Random_:PROC
-EXTRN I_UpdateNoBlit_:PROC
-EXTRN I_FinishUpdate_:PROC
-EXTRN V_MarkRect_:PROC
-EXTRN M_Drawer_:PROC
-
-
 .CODE
 
 
@@ -478,13 +466,21 @@ mov       cx, 07D00h  ; SCREENWIDTH * SCREENHEIGHT / 2
 rep movsw 
 mov       ax, ss
 mov       ds, ax
-call      Z_QuickMapScratch_5000_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapScratch_5000_addr
+
 mov       ax, SCREEN2_SEGMENT
 call      wipe_shittyColMajorXform_
 mov       ax, SCREEN3_SEGMENT
 call      wipe_shittyColMajorXform_
 
-call      M_Random_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _M_Random_addr
+
+
 
 ;    y[0] = -(M_Random()%16);
 
@@ -502,7 +498,10 @@ mov       cx, SCREENWIDTH
 mov       bl, 3
 
 loop_screenwidth:
-call      M_Random_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _M_Random_addr
+
 xor       ah, ah
 div       bl     ; modulo 3...
 mov       al, ah
@@ -548,10 +547,18 @@ endp
 PROC wipe_StartScreen_ FAR
 PUBLIC wipe_StartScreen_
 
-call 	Z_QuickMapWipe_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapWipe_addr
+
 mov   	ax, SCREEN2_SEGMENT
 call  	I_ReadScreen_
-call 	Z_QuickMapPhysics_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapPhysics_addr
+
+
 retf
 
 endp
@@ -564,7 +571,9 @@ push      cx
 push      dx
 push      si
 push      di
-call      Z_QuickMapWipe_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapWipe_addr
 mov       ax, SCREEN3_SEGMENT
 mov       cx, SCREENHEIGHT
 mov       bx, SCREENWIDTH
@@ -573,7 +582,11 @@ xor       ax, ax
 cwd
 mov       si, ax
 mov       di, ax
-call      V_MarkRect_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_MarkRect_addr
+
 mov       CX, 07D00h   ; SCREENWIDTH * SCREENHEIGHT / 2
 mov       ax, SCREEN0_SEGMENT
 mov       es, ax
@@ -602,15 +615,29 @@ mov       word ptr ds:[_dirtybox+6], SCREENWIDTH
 
 call      wipe_doMelt_
 mov       dx, ax    ; store "done" result from wipe_doMelt_
-call      I_UpdateNoBlit_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _I_UpdateNoBlit_addr
+
+
 mov       ax, 1
-call      M_Drawer_
-call      I_FinishUpdate_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _M_Drawer_addr
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _I_FinishUpdate_addr
+
 test      dl, dl
 je        ticcount_loop
 
 mov       byte ptr ds:[_hudneedsupdate], 6
-call      Z_QuickMapPhysics_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapPhysics_addr
 
 IFDEF DETAILED_BENCH_STATS
 mov       ax, word ptr ds:[_ticcount]

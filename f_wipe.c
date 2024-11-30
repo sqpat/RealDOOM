@@ -222,8 +222,6 @@ void __far wipe_StartScreen( ){
 
 
 void __far M_Drawer (int8_t isFromWipe);
-void __far I_UpdateNoBlit(void);
-void __far I_FinishUpdate(void);
 
 
 
