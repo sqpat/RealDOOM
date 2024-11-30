@@ -385,45 +385,48 @@ push      cx
 push      dx
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 010h
+
 mov       es, ax  					; set dest segment
 
-xor       cx, cx
-xor       di, di
+mov       cx, SCREENHEIGHT
 
 ; dx is x
 ; di is y
 
+mov       ds, ax
+mov       ax, SCRATCH_PAGE_SEGMENT_5000
+mov       es, ax
+
+; ax unused in loops...
+
+
+xor       ax, ax
+mov       bx, ax
+mov       dx, ((SCREENHEIGHT*2) - 2)
+
+loopy:
+
+mov       si, bx
+mov       di, (SCREENHEIGHT)
+sub       di, cx
+add       di, di
+
+mov       ax, cx
+mov       cx, SCREENWIDTHOVER2
+
+loopx:
+movsw
+add       di, dx
+loop      loopx
+
+mov       cx, ax
+add       bx, SCREENWIDTH
+loop      loopy
+
+mov       ax, ds
 mov       es, ax
 mov       ax, SCRATCH_PAGE_SEGMENT_5000
 mov       ds, ax
-
-
-
-label2:
-
-xor       dx, dx
-
-mov       bx, di
-
-label1:
-imul      si, dx, SCREENHEIGHT
-mov       ax, word ptr es:[bx]
-add       bx, 2
-add       si, cx
-add       si, si
-inc       dx
-mov       word ptr ds:[si], ax
-cmp       dx, SCREENWIDTHOVER2
-jb        label1
-inc       cx
-add       di, SCREENWIDTH
-cmp       cx, SCREENHEIGHT
-jb        label2
-
-
 xor       si, si
 mov       di, si
 
@@ -436,7 +439,6 @@ rep movsw
 mov       ax, ss
 mov       ds, ax
 
-leave     
 pop       di
 pop       si
 pop       dx
