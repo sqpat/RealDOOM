@@ -68,7 +68,7 @@ void __near wipe_shittyColMajorXform ( segment_t array_segment ) {
 } 
 */
  
-int16_t __near wipe_initMelt ();
+void __near wipe_initMelt ();
 
 /*
 int16_t __near wipe_initMelt (){

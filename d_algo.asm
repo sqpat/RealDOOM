@@ -457,104 +457,83 @@ PUBLIC wipe_initMelt_
 
 push      bx
 push      cx
-push      dx
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 6
-mov       ax, 0FA00h
-mov       cx, 07000h
-mov       dx, 08000h
+
+
+mov       ax, 08000h
+mov       es, ax
 xor       si, si
-xor       di, di
-mov       es, dx
-push      ds
-push      di
-xchg      ax, cx
+mov       di, si
+mov       ax, 07000h
 mov       ds, ax
-shr       cx, 1
+mov       cx, 07D00h
 rep movsw 
-adc       cx, cx
-rep movsb 
-pop       di
-pop       ds
+mov       ax, ss
+mov       ds, ax
 call      Z_QuickMapScratch_5000_
 mov       ax, 07000h
 call      wipe_shittyColMajorXform_
 mov       ax, 06000h
 call      wipe_shittyColMajorXform_
-push      cs
-call      M_Random_
-nop       
-mov       dl, al
-xor       dh, dh
-mov       ax, dx
-sar       ax, 0Fh
-mov       word ptr [bp - 4], 07FA0h
-xor       dx, ax
-mov       word ptr [bp - 2], 07FE0h
-sub       dx, ax
-xor       bx, bx
-xor       dh, dh
-mov       word ptr [bp - 6], bx
-and       dl, 0Fh
-mov       cx, 1
-xor       dx, ax
-mov       es, word ptr [bp - 4]
-sub       dx, ax
-mov       si, 07FA0h
-mov       word ptr es:[bx], dx
-mov       di, 3
-neg       word ptr es:[bx]
-mov       bx, 2
-cld       
-label1:
-push      cs
-call      M_Random_
-nop       
-xor       ah, ah
-cwd       
-idiv      di
-mov       es, si
-dec       dx
-add       dx, word ptr es:[bx - 2]
-mov       word ptr es:[bx], dx
-test      dx, dx
-jle       label2
-mov       word ptr es:[bx], 0
-label4:
-inc       cx
-add       bx, 2
-cmp       cx, SCREENWIDTH
-jl        label1
-mov       bx, word ptr [bp - 6]
-mov       es, word ptr [bp - 2]
-xor       dx, dx
-xor       ax, ax
-cld       
-label3:
-inc       ax
-mov       word ptr es:[bx], dx
-add       bx, 2
-add       dx, 0A0h
-cmp       ax, 0C8h
-jb        label3
-xor       ax, ax
 
-LEAVE_MACRO
+call      M_Random_
+
+;    y[0] = -(M_Random()%16);
+
+and       ax, 0Fh ;
+neg       ax
+
+xor       di, di
+mov       si, FWIPE_YCOLUMNS_SEGMENT
+mov       es, si
+;mov       word ptr es:[di], ax
+;mov       di, 2
+stosw
+
+mov       cx, SCREENWIDTH
+mov       bl, 3
+
+loop_screenwidth:
+call      M_Random_
+xor       ah, ah
+div       bl     ; modulo 3...
+mov       al, ah
+cbw
+mov       es, si  ; do we know if M_Random_ wrecks es? ... probaly does... todo inline M_Random
+dec       ax
+add       ax, word ptr es:[di - 2]
+stosw     ;word ptr es:[di], ax
+test      ax, ax
+jle       set_r
+mov       word ptr es:[di-2], 0
+done_comparing_r:
+loop      loop_screenwidth
+
+
+mov       ax, FWIPE_MUL160LOOKUP_SEGMENT
+mov       es, ax
+xor       di, di
+mov       ax, di
+
+
+mov       cx, SCREENHEIGHT
+loop_screenheight:
+stosw
+add       ax, SCREENWIDTHOVER2
+loop        loop_screenheight
 
 pop       di
 pop       si
-pop       dx
 pop       cx
 pop       bx
-ret       
-label2:
-cmp       dx, 0FFF0h
-jne       label4
-mov       word ptr es:[bx], 0FFF1h
-jmp       label4
+ret 
+
+set_r:
+cmp       ax, 0FFF0h
+jne       done_comparing_r
+mov       word ptr es:[di], 0FFF1h
+jmp       done_comparing_r
 
 
 endp
