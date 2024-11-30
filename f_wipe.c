@@ -228,7 +228,9 @@ void __far I_FinishUpdate(void);
 
 
 
+void __far wipe_WipeLoop();
 
+/*
 void __far wipe_WipeLoop(){
 	ticcount_t                         nowtime, wipestart;
 	ticcount_t                         wiperealstart;
@@ -274,21 +276,10 @@ void __far wipe_WipeLoop(){
 	
 	hudneedsupdate = 6;
 
-/*
-	{
-		hu_stext_t __near* 	stext = &w_message;
-		int8_t i = 0;
-		for (i = 0; i < stext->height; i++) {
-			//if (stext->textlines[i].needsupdate) {
-				stext->textlines[i].needsupdate = 4;
-			//}
-		}
-	}
-*/
 	Z_QuickMapPhysics();
 	wipeduration = ticcount - wiperealstart;
 
 }
-
+*/
 
 #endif

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/30 10:38:29
+Created on:       24/11/30 10:51:29
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -47,8 +47,8 @@ hu_stuff_TEXT          CODE           AUTO           027d:41c0       000001ce
 hu_lib_TEXT            CODE           AUTO           027d:4390       000001b0
 m_menu_TEXT            CODE           AUTO           027d:4540       00001378
 sounds_TEXT            CODE           AUTO           027d:58c0       00000000
-f_wipe_TEXT            CODE           AUTO           027d:58c0       000000ab
-D_ALGO_TEXT            CODE           AUTO           027d:596c       000002b2
+f_wipe_TEXT            CODE           AUTO           027d:58c0       00000000
+D_ALGO_TEXT            CODE           AUTO           027d:58c0       0000035c
 dmx_TEXT               CODE           AUTO           027d:5c20       000001f4
 dutils_TEXT            CODE           AUTO           027d:5e20       0000008b
 wi_stuff_TEXT          CODE           AUTO           027d:5eb0       00000f16
@@ -920,17 +920,16 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 027d:56c6      M_Drawer_
 027d:588a*     M_SetupNextMenu_
 027d:589a      M_Ticker_
-Module: f_wipe.obj(C:\REALDOOM\f_wipe.c)
-027d:58c0      wipe_WipeLoop_
 Module: d_algo.obj(d_algo.ASM)
-027d:5ac0      I_ReadScreen_
-027d:5b42      wipe_initMelt_
-027d:5c02      hackDSBack_
-027d:5bc8      wipe_StartScreen_
-027d:596c      wipe_doMelt_
-027d:5af2*     wipe_shittyColMajorXform_
-027d:5bd9      resetDS_
-027d:5be1      hackDS_
+027d:5a14*     I_ReadScreen_
+027d:5a96*     wipe_initMelt_
+027d:5c00      hackDSBack_
+027d:5b1c      wipe_StartScreen_
+027d:58c0*     wipe_doMelt_
+027d:5a46*     wipe_shittyColMajorXform_
+027d:5b2d      wipe_WipeLoop_
+027d:5bd7      resetDS_
+027d:5bdf      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 027d:5c20      TS_FreeTaskList_
 027d:5c22      TS_SetClockSpeed_
@@ -1706,4 +1705,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00025590 (152976.)
 Entry point address: 1dfa:219c
-Link time: 00:00.20
+Link time: 00:00.75

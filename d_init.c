@@ -864,6 +864,8 @@ void check_is_ultimate(){
 
 
 //void checkDS(int16_t a);
+void __far wipe_WipeLoop();
+void __far I_ReadScreen();
 
 void __far D_DoomMain2(void) {
 	int16_t             p;
@@ -883,7 +885,7 @@ void __far D_DoomMain2(void) {
 	/*
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(wipe_StartScreen, (byte __far *)wipe_WipeLoop - (byte __far *)wipe_StartScreen, 1, fp);
+	FAR_fwrite(wipe_WipeLoop, (byte __far *)I_ReadScreen - (byte __far *)wipe_WipeLoop, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

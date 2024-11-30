@@ -20,10 +20,18 @@ INSTRUCTION_SET_MACRO
 
 
 
+EXTRN _hudneedsupdate:BYTE
+EXTRN _wipeduration:WORD
+EXTRN _ticcount:DWORD
+EXTRN _dirtybox:WORD
 EXTRN Z_QuickMapPhysics_:PROC
 EXTRN Z_QuickMapWipe_:PROC
 EXTRN Z_QuickMapScratch_5000_:PROC
 EXTRN M_Random_:PROC
+EXTRN I_UpdateNoBlit_:PROC
+EXTRN I_FinishUpdate_:PROC
+EXTRN V_MarkRect_:PROC
+EXTRN M_Drawer_:PROC
 
 
 .CODE
@@ -550,6 +558,79 @@ call 	Z_QuickMapPhysics_
 retf
 
 endp
+
+PROC wipe_WipeLoop_ FAR
+PUBLIC wipe_WipeLoop_
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+call      Z_QuickMapWipe_
+mov       ax, SCREEN3_SEGMENT
+mov       cx, SCREENHEIGHT
+mov       bx, SCREENWIDTH
+call      I_ReadScreen_
+xor       dx, dx
+xor       si, si
+xor       ax, ax
+xor       di, di
+call      V_MarkRect_
+mov       ax, 0FA00h
+mov       dx, SCREEN0_SEGMENT
+mov       cx, SCREEN2_SEGMENT
+mov       es, dx
+push      ds
+push      di
+xchg      ax, cx
+mov       ds, ax
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+pop       di
+pop       ds
+call      wipe_initMelt_
+mov       bx, word ptr ds:[_ticcount]
+add       bx, 0FFFFh
+mov       ax, word ptr ds:[_ticcount+2]
+adc       ax, 0FFFFh
+mov       cx, bx
+label1:
+mov       dx, word ptr ds:[_ticcount]
+mov       ax, word ptr ds:[_ticcount+2]
+mov       ax, dx
+sub       ax, bx
+je        label1
+mov       word ptr ds:[_dirtybox+4], 0
+mov       word ptr ds:[_dirtybox+6], SCREENWIDTH
+mov       word ptr ds:[_dirtybox+2], 0
+mov       word ptr ds:[_dirtybox], SCREENHEIGHT
+mov       bx, dx
+
+call      wipe_doMelt_
+mov       dx, ax
+call      I_UpdateNoBlit_
+mov       ax, 1
+call      M_Drawer_
+call      I_FinishUpdate_
+test      dl, dl
+je        label1
+mov       byte ptr ds:[_hudneedsupdate], 6
+call      Z_QuickMapPhysics_
+mov       ax, word ptr ds:[_ticcount]
+sub       ax, cx
+mov       word ptr ds:[_wipeduration], ax
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+retf      
+ 
+endp
+
 
 PROC resetDS_ FAR
 PUBLIC resetDS_
