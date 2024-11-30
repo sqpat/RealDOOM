@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/29 20:12:10
+Created on:       24/11/30 01:19:36
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -47,8 +47,8 @@ hu_stuff_TEXT          CODE           AUTO           027d:41c0       000001ce
 hu_lib_TEXT            CODE           AUTO           027d:4390       000001b0
 m_menu_TEXT            CODE           AUTO           027d:4540       00001378
 sounds_TEXT            CODE           AUTO           027d:58c0       00000000
-f_wipe_TEXT            CODE           AUTO           027d:58c0       00000191
-D_ALGO_TEXT            CODE           AUTO           027d:5a52       0000021b
+f_wipe_TEXT            CODE           AUTO           027d:58c0       000000bf
+D_ALGO_TEXT            CODE           AUTO           027d:5980       000002f0
 dmx_TEXT               CODE           AUTO           027d:5c70       000001f4
 dutils_TEXT            CODE           AUTO           027d:5e70       0000008b
 wi_stuff_TEXT          CODE           AUTO           027d:5f00       00000f16
@@ -921,16 +921,16 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 027d:588a*     M_SetupNextMenu_
 027d:589a      M_Ticker_
 Module: f_wipe.obj(C:\REALDOOM\f_wipe.c)
-027d:58c0+     wipe_initMelt_
-027d:5992      wipe_StartScreen_
-027d:59a6      wipe_WipeLoop_
+027d:58c0      wipe_StartScreen_
+027d:58d4      wipe_WipeLoop_
 Module: d_algo.obj(d_algo.ASM)
-027d:5ba6      I_ReadScreen_
-027d:5c51      hackDSBack_
-027d:5a52      wipe_doMelt_
-027d:5bd8      wipe_shittyColMajorXform_
-027d:5c28      resetDS_
-027d:5c30      hackDS_
+027d:5ad4      I_ReadScreen_
+027d:5b56      wipe_initMelt_
+027d:5c54      hackDSBack_
+027d:5980      wipe_doMelt_
+027d:5b06*     wipe_shittyColMajorXform_
+027d:5c2b      resetDS_
+027d:5c33      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 027d:5c70      TS_FreeTaskList_
 027d:5c72      TS_SetClockSpeed_

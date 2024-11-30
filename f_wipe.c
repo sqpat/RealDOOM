@@ -68,8 +68,9 @@ void __near wipe_shittyColMajorXform ( segment_t array_segment ) {
 } 
 */
  
+int16_t __near wipe_initMelt ();
 
-
+/*
 int16_t __near wipe_initMelt (){
 	int16_t i, r;
 	int16_t __far* y = (int16_t __far*)MK_FP(fwipe_ycolumns_segment, 0);
@@ -108,6 +109,8 @@ int16_t __near wipe_initMelt (){
 
     return 0;
 }
+
+*/
 
 int16_t __far wipe_doMelt ( int16_t	ticks );
 
