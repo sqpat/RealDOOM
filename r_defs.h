@@ -416,7 +416,7 @@ typedef struct drawseg_s {
     
 } drawseg_t;
 
-// underflows of up to screenwidth are possible
+// underflows of up to screenwidth are possible (looking thru masked textures)
 #define NULL_TEX_COL (65535u - SCREENWIDTH)
  
 

@@ -56,6 +56,8 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	line_t __far* curlinelinedef;
 	int16_t		texnum;
 	uint8_t lineflags;
+	uint8_t lookup;
+	uint16_t maskedpostsofs = 0xFFFF;
 	curseg = ds->curseg;
 	curseg_render = &segs_render[curseg];
 
@@ -63,7 +65,14 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	side_render = &sides_render[curseg_render->sidedefOffset];
 
 	texnum = texturetranslation[side->midtexture];
-
+	lookup = masked_lookup_7000[texnum];
+	
+	//todo split function's inner loop based off lookup 0xFF or not ? could also have a separate specialized getcolumnsegment function
+	if (lookup != 0xFF){
+		masked_header_t __near * maskedheader = &masked_headers[lookup];
+		maskedpostsofs = maskedheader->postofsoffset;
+	}
+	
 	
 	curlineside = *((uint8_t __far *)MK_FP(seg_linedefs_segment, curseg + (seg_sides_offset_in_seglines)));//seg_sides[curseg];
 	cursegline =  *((int16_t __far *)MK_FP(seg_linedefs_segment, 2*curseg)); // seg_linedefs[curseg];
@@ -108,18 +117,18 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	// but need to handle obscure 16th bit case
 	
 	//todo bench if its faster to just to the one. probably is.
-	if ((rw_scalestep.h.intbits == 0x0000 && !(rw_scalestep.h.fracbits & 0x8000) ) || 
-		(rw_scalestep.h.intbits == 0xFFFF &&  (rw_scalestep.h.fracbits & 0x8000) )){
-	    spryscale.w = ds->scale1 + FastMul1616(x1 - ds->x1,rw_scalestep.h.fracbits); // actually 1616 seems ok
-	} else {
+	//if ((rw_scalestep.h.intbits == 0x0000 && !(rw_scalestep.h.fracbits & 0x8000) ) || 
+	//	(rw_scalestep.h.intbits == 0xFFFF &&  (rw_scalestep.h.fracbits & 0x8000) )){
+	//    spryscale.w = ds->scale1 + FastMul1616(x1 - ds->x1,rw_scalestep.h.fracbits); // actually 1616 seems ok
+	//} else {
 		spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,rw_scalestep.w); // actually 1616 seems ok
-	}
+	//}
 	
 	
     //spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,(int32_t)rw_scalestep); // this cast is necessary or some masked textures render wrong behind some sprites
 	
-    mfloorclip = MK_FP(openings_segment, ds->sprbottomclip_offset);
-    mceilingclip = MK_FP(openings_segment, ds->sprtopclip_offset);
+    mfloorclip_offset = ds->sprbottomclip_offset;
+    mceilingclip_offset = ds->sprtopclip_offset;
     
     // find positioning
     if (lineflags & ML_DONTPEGBOTTOM) {
@@ -161,6 +170,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		int16_t xoffset;
 		fixed_t rw_scalestep_shift = rw_scalestep.w << detailshift2minus;
 		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
+		uint16_t texturecolumn;
 
 		while (base4diff){
 			basespryscale -= rw_scalestep.w;
@@ -196,8 +206,9 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 				sprtopscreen.w -= sprtopscreen_step
 
 			){
+				texturecolumn = maskedtexturecol[dc_x];
 				// calculate lighting
-				if (maskedtexturecol[dc_x] != MAXSHORT) {
+				if (texturecolumn != MAXSHORT) {
 					if (!fixedcolormap) {
 
 						// prevents a 12 bit shift in many cases. 
@@ -226,22 +237,53 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 					//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
 				
 					// draw the texture
-					{
-						segment_t pixelsegment = R_GetMaskedColumnSegment(texnum,maskedtexturecol[dc_x]);
 						
-						uint8_t lookup = masked_lookup_7000[texnum];
-						if (lookup != 0xFF){
-							masked_header_t __near * maskedheader = &masked_headers[lookup];
-							uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedheader->postofsoffset);
-							uint16_t 		 postoffset = postoffsets[cachedcol];
-							column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
+					if (lookup != 0xFF){
 
-							R_DrawMaskedColumnCallHigh (pixelsegment, postsdata);
+						segment_t pixelsegment;
+
+						if (texturecolumn >= maskednextlookup ||
+							texturecolumn < maskedcachedbasecol ){
+							pixelsegment = R_GetMaskedColumnSegment(texnum,texturecolumn);
+							//todo: use self modifying code in ASM to change these maskedcachedbasecol values around here. then reset on function exit.
 						} else {
-							R_DrawSingleMaskedColumnCallHigh(pixelsegment, cachedbyteheight);
+
+							if (maskedheaderpixeolfs != 0xFFFF){
+								uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheaderpixeolfs);
+								uint16_t ofs  = pixelofs[texturecolumn - maskedcachedbasecol]; // precached as segment value.
+								pixelsegment = maskedcachedsegment + ofs;
+							} else {
+
+								pixelsegment = maskedcachedsegment 
+									+ FastMul8u8u((uint8_t) (texturecolumn - maskedcachedbasecol) , 
+												maskedheightvalcache);
+							}
+
+
+						}
+						
+
+						{
+							uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedpostsofs);
+							uint16_t 		 postoffset = postoffsets[texturecolumn-maskedcachedbasecol];
+							R_DrawMaskedColumnCallHigh (pixelsegment, (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)));
+						}
+					} else {
+						segment_t pixelsegment;
+
+						if (texturecolumn >= maskednextlookup ||
+							texturecolumn < maskedcachedbasecol ){
+							pixelsegment = R_GetMaskedColumnSegment(texnum,texturecolumn);
+							//todo: use self modifying code in ASM to change these maskedcachedbasecol values around here. then reset on function exit.
+						} else {
+							pixelsegment = maskedcachedsegment 
+									+ FastMul8u8u((uint8_t) (texturecolumn - maskedcachedbasecol) , 
+												maskedheightvalcache);
 						}
 
-					}			
+						R_DrawSingleMaskedColumnCallHigh(pixelsegment, cachedbyteheight);
+					}
+
 					maskedtexturecol[dc_x] = MAXSHORT;
 				}
 			}
@@ -308,6 +350,8 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		}
 	}
 */
+	maskednextlookup = NULL_TEX_COL;
+	maskedcachedbasecol = NULL_TEX_COL;
 
 }
 

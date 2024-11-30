@@ -137,7 +137,11 @@
 //ss_variable_space[10]
 #define ss_variable_space               ((int16_t __near *)             (_NULL_OFFSET + 0x00AC))
 #define mfloorclip                      (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00C0))
+#define mfloorclip_offset               (*(int16_t __near *)            (_NULL_OFFSET + 0x00C0))
+#define mfloorclip_segment              (*(segment_t __near *)          (_NULL_OFFSET + 0x00C2))
 #define mceilingclip                    (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00C4))
+#define mceilingclip_offset             (*(int16_t __near *)            (_NULL_OFFSET + 0x00C4))
+#define mceilingclip_segment            (*(segment_t __near *)          (_NULL_OFFSET + 0x00C6))
 //spanfunc_prt[4]
 #define spanfunc_prt                    ((int16_t __near *)             (_NULL_OFFSET + 0x00CC))
 //spanfunc_destview_offset[4]
@@ -388,7 +392,6 @@ extern uint8_t              cachedcollength;
 extern uint8_t              cachedcollength2;
 
 extern byte                 cachedbyteheight;
-extern uint8_t              cachedcol;
 //extern int16_t              ;
 
 extern int8_t               am_cheating;
@@ -1133,6 +1136,12 @@ extern int16_t 					segloopnextlookup[2];
 extern segment_t 				segloopcachedsegment[2];
 extern int16_t 					segloopcachedbasecol[2];
 extern uint8_t 					segloopheightvalcache[2];
+
+extern int16_t 					maskednextlookup; // 0 would be fine too...
+extern segment_t 				maskedcachedsegment;
+extern int16_t 					maskedcachedbasecol;
+extern uint8_t 					maskedheightvalcache;
+extern int16_t					maskedheaderpixeolfs;
 
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)

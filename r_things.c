@@ -394,8 +394,8 @@ void __near R_DrawPlayerSprites (void){
 	uint8_t i;
 	pspdef_t __near*   psp;
 	// clip to screen bounds
-	mfloorclip = screenheightarray;
-	mceilingclip = negonearray;
+	mfloorclip_offset = size_negonearray;
+	mceilingclip_offset = size_openings;
 
 	for (i = 0, psp = player.psprites;
 		i < NUMPSPRITES;
@@ -498,9 +498,11 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
 	boolean				scalecheckpass, lowscalecheckpass;
     fixed_t_union temp;
 
+    // todo make this rep movsw in asm
 	for (x = spr->x1; x <= spr->x2; x++) {
 		clipbot[x] = cliptop[x] = -2;
 	}
+    
 
     // Scan drawsegs from end to start for obscuring segs.
     // The first drawseg that has a greater scale
@@ -603,9 +605,12 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
 		}
     }
     
+    // todo only set segment...
 	mfloorclip = clipbot;
     mceilingclip = cliptop;
     R_DrawVisSprite (spr);
+    //reset just the segment to the default value...
+    mfloorclip_segment = mceilingclip_segment = openings_segment;
 }
 
 
@@ -630,6 +635,8 @@ void __near R_DrawMasked (void) {
              spr=vissprites[spr].next) {
             R_DrawSprite (&vissprites[spr]);
         }
+        //drawsprite clobbers this
+
     }
 
     // render any remaining masked mid textures

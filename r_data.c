@@ -2171,6 +2171,8 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		segloopnextlookup[0] = -1;
 		segloopnextlookup[1] = -1;
+		maskednextlookup = NULL_TEX_COL;
+		maskedcachedbasecol = NULL_TEX_COL;
 
 
 		// paged in
@@ -2498,7 +2500,6 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		uint16_t patchwidth = patchwidths[lump-firstpatch];
 		uint8_t  heightval = texturecolumnlump[n-1].bu.bytehigh;
 		int16_t  cachelumpindex;
-		cachedbyteheight = heightval & 0xF0;
 		heightval &= 0x0F;
 		
 		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
@@ -2542,8 +2543,6 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		
 		foundcachedlump:
 		// so now cachedlumps[0] and cachedsegmentlumps[0] are the most recently used
-
-		// todo what else can we reuse collength and cachedbyteheight here?
 		
 		// we cant use rle width as it might be longer than single patch width
 		// in the case of multiple side by side patches. so we essentially
@@ -2593,7 +2592,6 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		}
 		
 		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
-		cachedbyteheight = collength; // todo revisit this whole thing..
 		segloopheightvalcache[segloopcachetype] = collength;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
 		segloopcachedbasecol[segloopcachetype] -= texcol;
@@ -2612,6 +2610,9 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	int16_t_union __far* texturecolumnlump;
 	int16_t n = 0;
 	uint8_t texcol;
+	int16_t subtractor;
+	maskedcachedbasecol = col;
+	maskedheaderpixeolfs = 0xFFFF;
 
 
 	col &= texturewidthmasks[tex];
@@ -2626,7 +2627,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
 		// should we change this to be 256 - the number? we dont want a branch.
 		// anyway, fix it in asm
-		int16_t subtractor = texturecolumnlump[n+1].bu.bytelow;
+		subtractor = texturecolumnlump[n+1].bu.bytelow;
 		if (!subtractor){
 			subtractor = 256;
 		}
@@ -2696,9 +2697,16 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 			col+= patchwidth;
 		}
 
+		maskedcachedsegment   = cachedsegmentlumps[0];
+		maskedcachedbasecol  -= col;
+		maskednextlookup = subtractor;  // todo does this 
+		maskednextlookup += maskedcachedbasecol;
+		
 		if (lookup == 0xFF){
 			// this happens with weird reverse walls like e1m1 upper wall in the sewage room.. 
 			// (but it is a super duper rare case)
+
+			maskedheightvalcache  = heightval;
 			return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 		} else {
 			// Does this code ever run outside of draw masked?
@@ -2707,9 +2715,10 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
 
 			uint16_t ofs  = pixelofs[col]; // precached as segment value.
-			cachedcol = col;
-		 
-			return cachedsegmentlumps[0] + (ofs);
+
+			maskedheaderpixeolfs = maskedheader->pixelofsoffset;
+
+			return cachedsegmentlumps[0] + ofs;
 		}
 	} else {
 		uint8_t collength = texturecollength[tex];
@@ -2745,6 +2754,13 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		
 		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
 		cachedbyteheight = collength;
+
+		maskedheightvalcache  = collength;
+		maskedcachedsegment   = cachedsegmenttex;
+		maskedcachedbasecol  -= texcol;
+		maskednextlookup 	  = subtractor;  // todo does this 
+		maskednextlookup     += maskedcachedbasecol;
+
 		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
 	}

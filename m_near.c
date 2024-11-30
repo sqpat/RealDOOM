@@ -309,7 +309,6 @@ uint8_t   cachedcollength = 0;
 uint8_t   cachedcollength2 = 0;
 
 byte cachedbyteheight;
-uint8_t cachedcol;
 
 
 int8_t 	am_cheating = 0;
@@ -2285,6 +2284,13 @@ int16_t 					segloopnextlookup[2] = {-1, -1}; // 0 would be fine too...
 segment_t 					segloopcachedsegment[2];
 int16_t 					segloopcachedbasecol[2];
 uint8_t 					segloopheightvalcache[2];
+
+int16_t 					maskednextlookup = NULL_TEX_COL; // 0 would be fine too...
+segment_t 					maskedcachedsegment;
+int16_t 					maskedcachedbasecol = NULL_TEX_COL;
+uint8_t 					maskedheightvalcache;
+int16_t						maskedheaderpixeolfs = -1;
+
 
 /*
 uint16_t shift4lookup[256] = 
