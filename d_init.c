@@ -862,6 +862,8 @@ void check_is_ultimate(){
 	}
 }
 
+int16_t __near wipe_initMelt ();
+void __near wipe_shittyColMajorXform ( segment_t array_segment );
 
 //void checkDS(int16_t a);
 
@@ -883,7 +885,7 @@ void __far D_DoomMain2(void) {
 	/*
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(I_ReadScreen, (byte __far *)wipe_StartScreen - (byte __far *)I_ReadScreen, 1, fp);
+	FAR_fwrite(wipe_shittyColMajorXform, (byte __far *)wipe_initMelt - (byte __far *)wipe_shittyColMajorXform, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

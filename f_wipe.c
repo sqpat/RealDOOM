@@ -40,8 +40,9 @@
 //                       SCREEN WIPE PACKAGE
 //
 
+void __near wipe_shittyColMajorXform ( segment_t array_segment );
 
-
+/**
 void __near wipe_shittyColMajorXform ( segment_t array_segment ) {
     uint16_t		x;
     uint16_t		y;
@@ -65,7 +66,7 @@ void __near wipe_shittyColMajorXform ( segment_t array_segment ) {
 	
 
 } 
-
+*/
  
 
 
