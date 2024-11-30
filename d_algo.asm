@@ -388,54 +388,54 @@ push      di
 push      bp
 mov       bp, sp
 sub       sp, 010h
-mov       word ptr [bp - 0Ch], 0
-mov       word ptr [bp - 8], SCRATCH_PAGE_SEGMENT_5000
-mov       word ptr [bp - 0Eh], 0
-mov       word ptr [bp - 0Ah], ax
-mov       word ptr [bp - 4], ax
+mov       es, ax  					; set dest segment
+
 xor       cx, cx
 xor       di, di
-mov       word ptr [bp - 6], cx
-cld       
+
+; dx is x
+; di is y
+
+mov       es, ax
+mov       ax, SCRATCH_PAGE_SEGMENT_5000
+mov       ds, ax
+
+
+
 label2:
-mov       bx, word ptr [bp - 6]
-mov       ax, word ptr [bp - 4]
+
 xor       dx, dx
-mov       word ptr [bp - 2], ax
-add       bx, di
-cld       
+
+mov       bx, di
+
 label1:
 imul      si, dx, SCREENHEIGHT
-mov       es, word ptr [bp - 2]
+mov       ax, word ptr es:[bx]
 add       bx, 2
-mov       word ptr [bp - 010h], SCRATCH_PAGE_SEGMENT_5000
-mov       ax, word ptr es:[bx - 2]
 add       si, cx
-mov       es, word ptr [bp - 010h]
 add       si, si
 inc       dx
-mov       word ptr es:[si], ax
+mov       word ptr ds:[si], ax
 cmp       dx, SCREENWIDTHOVER2
 jb        label1
 inc       cx
 add       di, SCREENWIDTH
 cmp       cx, SCREENHEIGHT
 jb        label2
-mov       ax, 0FA00h ; 64000 bytes
-mov       si, word ptr [bp - 0Ch]
-mov       cx, word ptr [bp - 8]
-mov       di, word ptr [bp - 0Eh]
-mov       es, word ptr [bp - 0Ah]
-push      ds
-push      di
-xchg      ax, cx
-mov       ds, ax
-shr       cx, 1
+
+
+xor       si, si
+mov       di, si
+
+
+cld
+mov       cx, 32000
 rep movsw 
-adc       cx, cx
-rep movsb 
-pop       di
-pop       ds
+
+
+mov       ax, ss
+mov       ds, ax
+
 leave     
 pop       di
 pop       si
