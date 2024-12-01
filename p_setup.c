@@ -885,12 +885,6 @@ void  __near P_InitThinkers (void) {
  
 
 
- 
-
-
-
-#define STATIC_CONVENTIONAL_BLOCK_SIZE DESIRED_UMB_SIZE << 4
-
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
 void __near Z_FreeConventionalAllocations() {
 	int16_t i;
@@ -984,9 +978,8 @@ void __near Z_FreeConventionalAllocations() {
 		allocatedflatsperpage[i] = 0;
 	}  
 
-
-
-	FAR_memset(flatindex, 0xFF, sizeof(uint8_t) * numflats);
+	//FAR_memset(visplanepiclights, 0x00, size_visplanepiclights);
+	FAR_memset(flatindex, 0xFF, size_flatindex);
 	
 	currentflatpage[0] = 0;
 	currentflatpage[1] = 1;

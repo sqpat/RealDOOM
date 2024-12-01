@@ -427,7 +427,7 @@ mov   bl, byte ptr ds:[_quality_port_lookup + bx]
 
 
 xchg   bx, ax   ; swap these values
-mov   dx, 03C5h
+mov   dx, SC_DATA
 out   dx, al
 
 
@@ -561,7 +561,7 @@ mov   bl, byte ptr ds:[_quality_port_lookup + bx]
 
 
 xchg   bx, ax   ; swap these values
-mov   dx, 03C5h
+mov   dx, SC_DATA
 out   dx, al
 
 

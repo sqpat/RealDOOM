@@ -120,7 +120,7 @@ xchg  ax, SI
 
 ; outp to plane only if there was a pixel to draw
 mov   al, byte ptr ds:[_spanfunc_outp + bx]
-mov   dx, 3c5h						; outp 1 << i
+mov   dx, SC_DATA						; outp 1 << i
 out   dx, al
 
 

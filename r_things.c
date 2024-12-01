@@ -264,7 +264,9 @@ void __near R_DrawSingleMaskedColumn2 (segment_t pixeldatasegment, byte length) 
 //
 
 
-void __near R_DrawVisSprite ( vissprite_t __near* vis ) {
+void __near R_DrawVisSprite ( vissprite_t __near* vis );
+/*
+void __near R_DrawVisSprite2 ( vissprite_t __near* vis ) {
     
     fixed_t_union       frac;
     segment_t      patch_segment;
@@ -383,7 +385,7 @@ void __near R_DrawVisSprite ( vissprite_t __near* vis ) {
     }
 }
 
-
+*/
 
 
 

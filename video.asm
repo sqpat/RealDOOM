@@ -366,7 +366,7 @@ mov   cx, si ; retrieve x
 mov   ax, 1
 
 
-mov   dx, 03C5h
+mov   dx, SC_DATA
 and   cl, 3
 SELFMODIFY_retrievenextcoloffset:
 mov   di, 0F030h

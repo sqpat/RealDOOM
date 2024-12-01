@@ -866,6 +866,8 @@ void check_is_ultimate(){
 //void checkDS(int16_t a);
 void __far wipe_WipeLoop();
 void __far I_ReadScreen();
+void __near R_DrawPlayerSprites (void);
+void __near R_DrawVisSprite ( vissprite_t __near* vis );
 
 void __far D_DoomMain2(void) {
 	int16_t             p;
@@ -885,7 +887,7 @@ void __far D_DoomMain2(void) {
 	/*
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(wipe_WipeLoop, (byte __far *)I_ReadScreen - (byte __far *)wipe_WipeLoop, 1, fp);
+	FAR_fwrite(R_DrawVisSprite, (byte __far *)R_DrawPlayerSprites - (byte __far *)R_DrawVisSprite, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

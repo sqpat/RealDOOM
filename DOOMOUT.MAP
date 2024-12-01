@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/30 19:49:02
+Created on:       24/12/01 10:32:29
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -80,12 +80,12 @@ p_user_TEXT            CODE           AUTO           0b11:c180       000006c2
 r_bsp_TEXT             CODE           AUTO           1796:0000       00000e0c
 r_data_TEXT            CODE           AUTO           1796:0e10       00001a98
 R_MATH_TEXT            CODE           AUTO           1796:28a8       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1796:2aa6       0000056c
-r_draw_TEXT            CODE           AUTO           1796:3020       00000379
-r_main_TEXT            CODE           AUTO           1796:33a0       000001e8
-r_plane_TEXT           CODE           AUTO           1796:3590       00000000
-r_segs_TEXT            CODE           AUTO           1796:3590       0000177a
-r_things_TEXT          CODE           AUTO           1796:4d10       000009fe
+R_MAINHI_TEXT          CODE           AUTO           1796:2aa6       00000868
+r_draw_TEXT            CODE           AUTO           1796:3310       00000379
+r_main_TEXT            CODE           AUTO           1796:3690       000001e8
+r_plane_TEXT           CODE           AUTO           1796:3880       00000000
+r_segs_TEXT            CODE           AUTO           1796:3880       0000177a
+r_things_TEXT          CODE           AUTO           1796:5000       00000702
 w_wad_TEXT             CODE           AUTO           1796:5710       0000032e
 VIDEO_TEXT             CODE           AUTO           1796:5a3e       000001fb
 v_video_TEXT           CODE           AUTO           1796:5c40       00000218
@@ -1322,33 +1322,33 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 1796:2bc8      R_PointOnSegSide_
 1796:2e4a      R_Subsector_
 1796:2b48      R_PointToDist_
+1796:3012      R_DrawVisSprite_
 1796:2c93      R_ClearPlanes_
 1796:2d16*     R_HandleEMSPagination_
 1796:2dc8*     R_FindPlane_
 1796:2f45      R_CheckPlane_
 1796:2aa6      R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
-1796:3020      R_FillBackScreen_
-1796:329e      R_VideoErase_
-1796:3322      R_DrawViewBorder_
+1796:3310      R_FillBackScreen_
+1796:358e      R_VideoErase_
+1796:3612      R_DrawViewBorder_
 Module: r_main.obj(C:\REALDOOM\r_main.c)
-1796:33a0      R_PointToAngle16_
-1796:33b6      R_PointToAngle2_
-1796:33e2      R_PointToAngle2_16_
-1796:3410      R_SetViewSize_
-1796:3420+     R_SetupFrame_
-1796:349c      R_RenderPlayerView_
+1796:3690      R_PointToAngle16_
+1796:36a6      R_PointToAngle2_
+1796:36d2      R_PointToAngle2_16_
+1796:3700      R_SetViewSize_
+1796:3710+     R_SetupFrame_
+1796:378c      R_RenderPlayerView_
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
-1796:3590      R_RenderMaskedSegRange_
-1796:3b16+     R_RenderSegLoop_
-1796:4298      R_StoreWallRange_
+1796:3880      R_RenderMaskedSegRange_
+1796:3e06+     R_RenderSegLoop_
+1796:4588      R_StoreWallRange_
 Module: r_things.obj(C:\REALDOOM\r_things.c)
-1796:4d10+     R_DrawMaskedSpriteShadow_
-1796:4ed2+     R_DrawVisSprite_
-1796:51ce+     R_DrawPlayerSprites_
-1796:5204+     R_SortVisSprites_
-1796:5348+     R_DrawSprite_
-1796:5696      R_DrawMasked_
+1796:5000      R_DrawMaskedSpriteShadow_
+1796:51c2+     R_DrawPlayerSprites_
+1796:51f8+     R_SortVisSprites_
+1796:533c+     R_DrawSprite_
+1796:568a      R_DrawMasked_
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 1796:5710      locallib_far_fread_
 1796:579a*     locallib_far_fwrite_
@@ -1696,4 +1696,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00025370 (152432.)
 Entry point address: 1dd5:219c
-Link time: 00:00.19
+Link time: 00:00.20

@@ -28,6 +28,8 @@ PEL_DATA			=	03c9h
 SC_INDEX			=	03C4h
 SC_MAPMASK			=	2
 
+SC_DATA 			=   03C5h
+
 GC_INDEX        	=   03CEh
 GC_READMAP      	=   4
 

@@ -763,8 +763,9 @@ void __near R_InitData(void) {
 
 	// Create translation table for global animation.
 
-	for (i = 0; i < numflats; i++)
+	for (i = 0; i < numflats; i++){
 		flattranslation[i] = i;
+	}
 
 
 

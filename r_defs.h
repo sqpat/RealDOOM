@@ -439,39 +439,46 @@ typedef struct  {
 
 
 
-
+ 
 
 // A vissprite_t is a thing
 //  that will be drawn during a refresh.
 // I.e. a sprite object that is partly visible.
 
-// 38 bytes.
+// 40 bytes.
 typedef struct vissprite_s {
     // Doubly linked list.
+    //0x0
     uint8_t	next;
     uint8_t	colormap;
     
 
+    //0x2
 	int16_t x1;
 	int16_t x2;
 
     // for line side calculation
+    //0x6
     fixed_t_union		gx;
     fixed_t_union		gy;
 
     // global bottom / top for silhouette clipping
+    //0xE
     fixed_t_union		gz;
     fixed_t_union		gzt;
 
     // horizontal position of x1
-    fixed_t		startfrac;
-    
+    //0x16
+    fixed_t		startfrac;    
     fixed_t		scale;
     
     // negative if flipped
+    //0x1E
     fixed_t		xiscale;	
 
+    //0x22
     fixed_t		texturemid;
+    //0x26
 	int16_t     patch;
 
     // flags removed -were only used for player color translations?

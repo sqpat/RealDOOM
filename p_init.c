@@ -175,10 +175,9 @@ void __near P_InitPicAnims(void) {
 //  the WAD file.
 //
 	animdef_t animdefs[NUMANIMDEFS];
-	FILE *fp = fopen("DOOMDATA.BIN", "rb"); // clear old file
+	FILE *fp = fopen("DOOMDATA.BIN", "rb");
 	fread(animdefs, sizeof(animdef_t), NUMANIMDEFS, fp);
 	fclose(fp);
-	//I_Error("\nvalanim %s %s %s", animdefs[0].startname, animdefs[1].startname, animdefs[2].startname);
 
 	/*
 
@@ -221,17 +220,14 @@ void __near P_InitPicAnims(void) {
 	//for (i = 0; animdefs[i].istexture != -1; i++) {
 	for (i = 0; i < NUMANIMDEFS; i++) {
 		
-		if (animdefs[i].istexture)
-		{
+		if (animdefs[i].istexture) {
 			// different episode ?
 			if (R_CheckTextureNumForName(animdefs[i].startname) == BAD_TEXTURE)
 				continue;
 
 			lastanim->picnum = R_TextureNumForName(animdefs[i].endname);
 			lastanim->basepic = R_TextureNumForName(animdefs[i].startname);
-		}
-		else
-		{
+		} else {
 			if (W_CheckNumForName(animdefs[i].startname) == -1)
 				continue;
 
@@ -268,11 +264,10 @@ void __near R_InstallSpriteLump (int16_t lump, uint16_t frame, uint16_t rotation
 			"Bad frame characters in lump %i", lump);
 #endif
 
-	if ((int16_t)frame > p_init_maxframe)
+	if ((int16_t)frame > p_init_maxframe){
 		p_init_maxframe = frame;
-
-	if (rotation == 0)
-	{
+	}
+	if (rotation == 0) {
 		// the lump should be used for all rotations
 #ifdef CHECK_FOR_ERRORS
 		if (p_init_sprtemp[frame].rotate == false)
@@ -397,8 +392,7 @@ void __near R_InitSpriteDefs() {
 	// scan all the lump names for each of the names,
 	//  noting the highest frame letter.
 	// Just compare 4 characters as ints
-	for (i = 0; i < NUMSPRITES; i++)
-	{
+	for (i = 0; i < NUMSPRITES; i++) {
 #ifdef CHECK_FOR_ERRORS
 		spritename = namelist[i];
 #endif
@@ -409,24 +403,21 @@ void __near R_InitSpriteDefs() {
 
 		// scan the lumps,
 		//  filling in the frames for whatever is found
-		for (l = start + 1; l < end; l++)
-		{
-			if (*(int32_t  __far*)lumpinfo9000[l].name == intname)
-			{
+		for (l = start + 1; l < end; l++) {
+			if (*(int32_t  __far*)lumpinfo9000[l].name == intname) {
 				frame = lumpinfo9000[l].name[4] - 'A';
 				rotation = lumpinfo9000[l].name[5] - '0';
 
 				if (modifiedgame) {
 					copystr8(localname, lumpinfo9000[l].name);
 					patched = W_GetNumForName(localname);
-				}
-				else
+				} else {
 					patched = l;
+				}
 
 				R_InstallSpriteLump(patched, frame, rotation, false);
 
-				if (lumpinfo9000[l].name[6])
-				{
+				if (lumpinfo9000[l].name[6]) {
 					frame = lumpinfo9000[l].name[6] - 'A';
 					rotation = lumpinfo9000[l].name[7] - '0';
 					R_InstallSpriteLump(l, frame, rotation, true);
@@ -435,8 +426,7 @@ void __near R_InitSpriteDefs() {
 		}
 
 		// check the frames that were found for completeness
-		if (p_init_maxframe == -1)
-		{
+		if (p_init_maxframe == -1) {
 			sprites[i].numframes = 0;
 			continue;
 		}
@@ -445,10 +435,8 @@ void __near R_InitSpriteDefs() {
 
 		p_init_maxframe++;
 
-		for (frame = 0; frame < p_init_maxframe; frame++)
-		{
-			switch ((int16_t)p_init_sprtemp[frame].rotate)
-			{
+		for (frame = 0; frame < p_init_maxframe; frame++) {
+			switch ((int16_t)p_init_sprtemp[frame].rotate) {
 			case -1:
 				// no rotations were found for that frame at all
 #ifdef CHECK_FOR_ERRORS
@@ -463,7 +451,7 @@ void __near R_InitSpriteDefs() {
 
 			case 1:
 				// must have all 8 frames
-				for (rotation = 0; rotation < 8; rotation++)
+				for (rotation = 0; rotation < 8; rotation++){
 					if (p_init_sprtemp[frame].lump[rotation] == -1) {
 #ifdef CHECK_FOR_ERRORS
 						I_Error("R_InitSprites: Sprite %s frame %c "
@@ -472,6 +460,7 @@ void __near R_InitSpriteDefs() {
 						break;
 #endif
 					}
+				}
 			}
 		}
 
@@ -498,8 +487,7 @@ void __near R_InitSprites(){
 	
 	int		i;
 
-	for (i = 0; i < SCREENWIDTH; i++)
-	{
+	for (i = 0; i < SCREENWIDTH; i++) {
 		negonearray[i] = -1;
 	}
 
