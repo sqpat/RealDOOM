@@ -1307,8 +1307,8 @@ PUBLIC  R_DrawVisSprite_
 
 ; ax is vissprite_t near pointer
 
-
-; bp - 24  vissprite (ax)
+; bp - 022h  dc_texture_mid low word
+; bp - 024h  vissprite (ax)
 
 push  bx
 push  cx
@@ -1333,20 +1333,20 @@ neg   ax
 adc   dx, 0
 neg   dx
 xiscale_already_positive:
-mov   bx, ax
+
 xor   cx, cx
 mov   cl, byte ptr ds:[_detailshift]
 
-mov   ax, bx
 
-jcxz  label2
-label3:
+
+jcxz  xiscale_shift_done
+loop_shift_xiscale:
 sar   dx, 1
 rcr   ax, 1
-loop  label3
-label2:
+loop  loop_shift_xiscale
+xiscale_shift_done:
 mov   word ptr ds:[_dc_iscale], ax
-mov   di, si
+
 mov   word ptr ds:[_dc_iscale+2], dx
 
 mov   dx, word ptr [si + 022h] ; vis->texturemid
@@ -1354,43 +1354,44 @@ mov   ax, word ptr [si + 024h]
 mov   word ptr ds:[_dc_texturemid], dx
 
 mov   word ptr ds:[_dc_texturemid + 2], ax
-mov   bx, word ptr [bp - 024h]
-mov   di, word ptr [di + 016h]
-mov   dx, word ptr [bx + 01Ah]
-mov   ax, word ptr [bx + 01Ch]
-mov   bx, OFFSET _spryscale
-mov   si, word ptr [si + 018h]
-mov   word ptr ds:[bx], dx
-mov   word ptr ds:[bx + 2], ax
-mov   ax, word ptr ds:[_centery]
 
-mov   word ptr ds:[_sprtopscreen + 2], ax
+mov   bx, word ptr [si + 01Ah]  ; vis->scale
+mov   cx, word ptr [si + 01Ch]  
+
+
+mov   word ptr ds:[_spryscale], bx
+mov   word ptr ds:[_spryscale + 2], cx
+
+mov   ax, word ptr ds:[_centery]
 mov   word ptr ds:[_sprtopscreen], 0
-mov   ax, word ptr ds:[bx]
-mov   cx, word ptr ds:[bx + 2]
-mov   dx, word ptr ds:[_dc_texturemid]
-mov   word ptr [bp - 022h], dx
+mov   word ptr ds:[_sprtopscreen + 2], ax
+
+
+mov   ax, word ptr ds:[_dc_texturemid]
 mov   dx, word ptr ds:[_dc_texturemid + 2]
-mov   bx, ax
-mov   ax, word ptr [bp - 022h]
 
 call FixedMul_
 
 sub   word ptr ds:[_sprtopscreen], ax
 sbb   word ptr ds:[_sprtopscreen + 2], dx
-mov   bx, word ptr [bp - 024h]
-mov   ax, word ptr [bx + 026h]
+
+mov   ax, word ptr [si + 026h]
 cmp   ax, word ptr ds:[_lastvisspritepatch]
-je    label4
-jmp   label5
-label4:
+je    sprite_is_firstcachedsegment
+jmp   sprite_not_first_cachedsegment
+sprite_is_firstcachedsegment:
 mov   ax, word ptr ds:[_lastvisspritesegment]
 mov   word ptr [bp - 6], ax
-label13:
+spritesegment_ready:
 mov   ax, word ptr [bp - 6]
-mov   bx, word ptr [bp - 024h]
 mov   word ptr [bp - 8], ax
-mov   ax, word ptr [bx + 2]
+mov   ax, word ptr [si + 2]
+
+
+mov   di, word ptr [si + 016h]  ; si:di is frac = vis->startfrac
+mov   si, word ptr [si + 018h]
+
+
 mov   word ptr [bp - 014h], si
 and   ax, word ptr ds:[_detailshiftandval]
 mov   bx, word ptr [bp - 024h]
@@ -1405,6 +1406,9 @@ mov   dx, word ptr [si + 020h]
 xor   ch, ch
 mov   bx, word ptr [bx + 01Eh]
 mov   word ptr [bp - 0Ah], 0
+
+
+
 jcxz  label6
 label7:
 shl   bx, 1
@@ -1452,9 +1456,9 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label5:
+sprite_not_first_cachedsegment:
 cmp   ax, word ptr _lastvisspritepatch2
-jne   label14
+jne   sprite_not_in_cached_segments
 mov   dx, word ptr ds:[_lastvisspritesegment2]
 mov   word ptr [bp - 6], dx
 mov   dx, word ptr ds:[_lastvisspritesegment]
@@ -1464,8 +1468,8 @@ mov   word ptr ds:[_lastvisspritesegment], dx
 mov   dx, word ptr ds:[_lastvisspritepatch]
 mov   word ptr ds:[_lastvisspritepatch2], dx
 mov   word ptr ds:[_lastvisspritepatch], ax
-jmp   label13
-label14:
+jmp   spritesegment_ready
+sprite_not_in_cached_segments:
 mov   dx, word ptr ds:[_lastvisspritepatch]
 mov   word ptr _lastvisspritepatch2, dx
 mov   dx, word ptr ds:[_lastvisspritesegment]
@@ -1473,9 +1477,9 @@ mov   word ptr ds:[_lastvisspritesegment2], dx
 call  getspritetexture_
 mov   word ptr ds:[_lastvisspritesegment], ax
 mov   word ptr [bp - 6], ax
-mov   ax, word ptr [bx + 026h]
+mov   ax, word ptr [si + 026h]
 mov   word ptr ds:[_lastvisspritepatch], ax
-jmp   label13
+jmp   spritesegment_ready
 label10:
 jmp   label12
 label11:
