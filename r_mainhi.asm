@@ -1307,7 +1307,15 @@ PUBLIC  R_DrawVisSprite_
 
 ; ax is vissprite_t near pointer
 
-; bp - 022h  dc_texture_mid low word
+; bp - 2     xiscalestep_shift high word
+; bp - 4     xiscalestep_shift low word
+; bp - 6     patch_segment
+; bp - 8     UNUSED patch_segment clone?
+; bp - 0Ah   UNUSED 0. probably patch segment offset
+; bp - 014h  frac.h.intbits
+; bp - 016h  frac.h.fracbits
+; bp - 020h  dc_x_base4
+; bp - 022h  UNUSED dc_texture_mid low word
 ; bp - 024h  vissprite (ax)
 
 push  bx
@@ -1340,24 +1348,29 @@ mov   cl, byte ptr ds:[_detailshift]
 
 
 jcxz  xiscale_shift_done
-loop_shift_xiscale:
 sar   dx, 1
 rcr   ax, 1
-loop  loop_shift_xiscale
+dec   cx
+jcxz  xiscale_shift_done
+sar   dx, 1
+rcr   ax, 1
+dec   cx
+jcxz  xiscale_shift_done
+sar   dx, 1
+rcr   ax, 1
 xiscale_shift_done:
-mov   word ptr ds:[_dc_iscale], ax
 
+mov   word ptr ds:[_dc_iscale], ax
 mov   word ptr ds:[_dc_iscale+2], dx
 
-mov   dx, word ptr [si + 022h] ; vis->texturemid
-mov   ax, word ptr [si + 024h]
-mov   word ptr ds:[_dc_texturemid], dx
+mov   ax, word ptr [si + 022h] ; vis->texturemid
+mov   dx, word ptr [si + 024h]
 
-mov   word ptr ds:[_dc_texturemid + 2], ax
+mov   word ptr ds:[_dc_texturemid], ax
+mov   word ptr ds:[_dc_texturemid + 2], dx
 
 mov   bx, word ptr [si + 01Ah]  ; vis->scale
 mov   cx, word ptr [si + 01Ch]  
-
 
 mov   word ptr ds:[_spryscale], bx
 mov   word ptr ds:[_spryscale + 2], cx
@@ -1383,59 +1396,61 @@ sprite_is_firstcachedsegment:
 mov   ax, word ptr ds:[_lastvisspritesegment]
 mov   word ptr [bp - 6], ax
 spritesegment_ready:
-mov   ax, word ptr [bp - 6]
-mov   word ptr [bp - 8], ax
+
+
+mov   di, word ptr [si + 016h]  ; frac = vis->startfrac
+mov   ax, word ptr [si + 018h]
+mov   word ptr [bp - 016h], di
+mov   word ptr [bp - 014h], ax
+
 mov   ax, word ptr [si + 2]
-
-
-mov   di, word ptr [si + 016h]  ; si:di is frac = vis->startfrac
-mov   si, word ptr [si + 018h]
-
-
-mov   word ptr [bp - 014h], si
+mov   dx, ax
 and   ax, word ptr ds:[_detailshiftandval]
-mov   bx, word ptr [bp - 024h]
-mov   si, word ptr [bp - 024h]
-mov   dx, word ptr [bx + 2]
 mov   word ptr [bp - 020h], ax
 sub   dx, ax
-mov   ax, dx
+xchg  ax, dx
+xor   cx, cx
 mov   cl, byte ptr ds:[_detailshift2minus]
-mov   bx, word ptr [bp - 024h]
+
+
+; xiscalestep_shift = vis->xiscale << detailshift2minus;
+
+mov   bx, word ptr [si + 01Eh] ; DX:BX = vis->xiscale
 mov   dx, word ptr [si + 020h]
-xor   ch, ch
-mov   bx, word ptr [bx + 01Eh]
-mov   word ptr [bp - 0Ah], 0
 
-
-
-jcxz  label6
-label7:
+; todo unroll if it doesnt break the jne above..
+jcxz  done_shifting_shift_xiscalestep_shift
+shift_xiscalestep_shift:
 shl   bx, 1
 rcl   dx, 1
-loop  label7
-label6:
-mov   word ptr [bp - 016h], di
+loop  shift_xiscalestep_shift
+done_shifting_shift_xiscalestep_shift:
 mov   word ptr [bp - 4], bx
 mov   word ptr [bp - 2], dx
+
+;        while (base4diff){
+;            basespryscale-=vis->xiscale; 
+;            base4diff--;
+;        }
+
+
 test  ax, ax
-je    label8
-mov   bx, word ptr [bp - 024h]
-label9:
-mov   dx, word ptr [bx + 01Eh]
+je    base4diff_is_zero
+mov   dx, word ptr [si + 01Eh]
+mov   bx, word ptr [si + 020h]
+
+decrementbase4loop:
 sub   word ptr [bp - 016h], dx
-mov   dx, word ptr [bx + 020h]
-sbb   word ptr [bp - 014h], dx
+sbb   word ptr [bp - 014h], bx
 dec   ax
-jne   label9
-label8:
-mov   ax, word ptr [bp - 0Ah]
-mov   bx, word ptr [bp - 024h]
-add   ax, 8
-cmp   byte ptr [bx + 1], 0ffh
-je    label10
+jne   decrementbase4loop
+
+base4diff_is_zero:
+mov   ax, 8
+cmp   byte ptr [si + 1], COLORMAP_SHADOW
+je    draw_shadow_sprite
 mov   word ptr [bp - 010h], ax
-mov   ax, word ptr [bp - 8]
+mov   ax, word ptr [bp - 6]
 mov   word ptr [bp - 0Eh], ax
 mov   ax, word ptr [bp - 020h]
 mov   word ptr [bp - 01Ah], 0
@@ -1480,7 +1495,7 @@ mov   word ptr [bp - 6], ax
 mov   ax, word ptr [si + 026h]
 mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready
-label10:
+draw_shadow_sprite:
 jmp   label12
 label11:
 mov   al, byte ptr ds:[_detailshift+1]
@@ -1507,11 +1522,11 @@ jg    label16
 mov   bx, si
 mov   es, word ptr [bp - 0Eh]
 shl   bx, 2
-mov   dx, word ptr [bp - 0Ah]
+
 add   bx, word ptr [bp - 010h]
-mov   cx, word ptr [bp - 8]
+mov   cx, word ptr [bp - 6]
 mov   ax, word ptr es:[bx]
-add   dx, word ptr es:[bx + 2]
+mov   dx, word ptr es:[bx + 2]
 shr   ax, 4
 mov   bx, dx
 add   ax, word ptr [bp - 6]
@@ -1548,7 +1563,7 @@ adc   word ptr [bp - 014h], ax
 jmp   label18
 label12:
 mov   word ptr [bp - 012h], ax
-mov   ax, word ptr [bp - 8]
+mov   ax, word ptr [bp - 6]
 mov   word ptr [bp - 0Ch], ax
 mov   ax, word ptr [bp - 020h]
 mov   word ptr [bp - 018h], 0
@@ -1591,11 +1606,10 @@ jg    label21
 mov   bx, si
 mov   es, word ptr [bp - 0Ch]
 shl   bx, 2
-mov   dx, word ptr [bp - 0Ah]
 add   bx, word ptr [bp - 012h]
-mov   cx, word ptr [bp - 8]
+mov   cx, word ptr [bp - 6]
 mov   ax, word ptr es:[bx]
-add   dx, word ptr es:[bx + 2]
+mov   dx, word ptr es:[bx + 2]
 shr   ax, 4
 mov   bx, dx
 add   ax, word ptr [bp - 6]

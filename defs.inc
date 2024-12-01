@@ -205,7 +205,7 @@ SCRATCH_PAGE_SEGMENT_5000      = 05000h;
 
 
 
-
+COLORMAP_SHADOW     		   = 0FFh
 
 
 
