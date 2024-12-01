@@ -313,6 +313,8 @@ PUBLIC  R_DrawMaskedColumn_
 ;  bp - 04  ax/pixelsegment cache
 ;  bp - 06  cached dc_texturemid intbits to restore before function
 
+; todo: synergy with outer function... cx and es
+
 push  dx
 push  si
 push  di
