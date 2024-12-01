@@ -1312,8 +1312,16 @@ PUBLIC  R_DrawVisSprite_
 ; bp - 6     patch_segment
 ; bp - 8     UNUSED patch_segment clone?
 ; bp - 0Ah   UNUSED 0. probably patch segment offset
+; bp - 0Ch   UNUSED patch_segment clone
+; bp - 0Eh   UNUSED clone of patch_segment..
+; bp - 010h  UNUSED. was constant of 8, probably vis field offset or something
+; bp - 012h  UNUSED. was constant of 8, probably vis field offset or something
 ; bp - 014h  frac.h.intbits
 ; bp - 016h  frac.h.fracbits
+; bp - 018h  UNUSED was xoffset  (shadow only?)
+; bp - 01Ah  xoffset (loop iter count)
+; bp - 01Ch  basespryscale ?
+; bp - 01Eh  UNUSED was shadow version of 01Ch
 ; bp - 020h  dc_x_base4
 ; bp - 022h  UNUSED dc_texture_mid low word
 ; bp - 024h  vissprite (ax)
@@ -1390,9 +1398,7 @@ sbb   word ptr ds:[_sprtopscreen + 2], dx
 
 mov   ax, word ptr [si + 026h]
 cmp   ax, word ptr ds:[_lastvisspritepatch]
-je    sprite_is_firstcachedsegment
-jmp   sprite_not_first_cachedsegment
-sprite_is_firstcachedsegment:
+jne   sprite_not_first_cachedsegment
 mov   ax, word ptr ds:[_lastvisspritesegment]
 mov   word ptr [bp - 6], ax
 spritesegment_ready:
@@ -1420,10 +1426,17 @@ mov   dx, word ptr [si + 020h]
 
 ; todo unroll if it doesnt break the jne above..
 jcxz  done_shifting_shift_xiscalestep_shift
-shift_xiscalestep_shift:
 shl   bx, 1
 rcl   dx, 1
-loop  shift_xiscalestep_shift
+dec   cx
+jcxz  done_shifting_shift_xiscalestep_shift
+shl   bx, 1
+rcl   dx, 1
+dec   cx
+jcxz  done_shifting_shift_xiscalestep_shift
+shl   bx, 1
+rcl   dx, 1
+
 done_shifting_shift_xiscalestep_shift:
 mov   word ptr [bp - 4], bx
 mov   word ptr [bp - 2], dx
@@ -1446,21 +1459,14 @@ dec   ax
 jne   decrementbase4loop
 
 base4diff_is_zero:
-mov   ax, 8
+
 cmp   byte ptr [si + 1], COLORMAP_SHADOW
-je    draw_shadow_sprite
-mov   word ptr [bp - 010h], ax
-mov   ax, word ptr [bp - 6]
-mov   word ptr [bp - 0Eh], ax
+je    jump_to_draw_shadow_sprite
+
 mov   ax, word ptr [bp - 020h]
 mov   word ptr [bp - 01Ah], 0
 mov   word ptr [bp - 01Ch], ax
-label18:
-mov   al, byte ptr ds:[_detailshiftitercount]
-cbw
-
-cmp   ax, word ptr [bp - 01Ah]
-jg    label11
+jmp loop_vga_plane_draw_normal 
 
 exit_draw_vissprites:
 LEAVE_MACRO
@@ -1495,41 +1501,50 @@ mov   word ptr [bp - 6], ax
 mov   ax, word ptr [si + 026h]
 mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready
-draw_shadow_sprite:
-jmp   label12
-label11:
+jump_to_draw_shadow_sprite:
+jmp   draw_shadow_sprite
+
+loop_vga_plane_draw_normal:
+mov   al, byte ptr ds:[_detailshiftitercount]
+cbw
+
+cmp   ax, word ptr [bp - 01Ah]
+jng   exit_draw_vissprites
+
 mov   al, byte ptr ds:[_detailshift+1]
 mov   bx, word ptr [bp - 01Ah]
 cbw
 add   bx, ax
 mov   dx, SC_DATA
-mov   al, byte ptr [bx + 060h] ; TODO WHAT
-mov   di, word ptr [bp - 016h]
+mov   al, byte ptr ds:[bx + _quality_port_lookup] ; TODO WHAT
 out   dx, al
-mov   ax, word ptr [bp - 01Ch]
+mov   di, word ptr [bp - 016h]
 mov   si, word ptr [bp - 014h]
+mov   ax, word ptr [bp - 01Ch]
 mov   word ptr ds:[_dc_x], ax
 mov   bx, word ptr [bp - 024h]
 mov   dx, ax
+;      if (dc_x < vis->x1){
 cmp   ax, word ptr [bx + 2]
-jl    label15
-label17:
+jl    increment_by_shift
+
+draw_sprite_normal_innerloop:
 
 mov   ax, word ptr ds:[_dc_x]
 mov   bx, word ptr [bp - 024h]
 cmp   ax, word ptr [bx + 4]
-jg    label16
+jg    end_draw_sprite_normal_innerloop
 mov   bx, si
-mov   es, word ptr [bp - 0Eh]
+mov   es, word ptr [bp - 6]
 shl   bx, 2
 
-add   bx, word ptr [bp - 010h]
-mov   cx, word ptr [bp - 6]
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
+
+mov   cx, es
+mov   ax, word ptr es:[bx + 8]
+mov   dx, word ptr es:[bx + 10]
 shr   ax, 4
 mov   bx, dx
-add   ax, word ptr [bp - 6]
+add   ax, cx
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1542,8 +1557,9 @@ cbw
 add   word ptr ds:[_dc_x], ax
 add   di, word ptr [bp - 4]
 adc   si, word ptr [bp - 2]
-jmp   label17
-label15:
+jmp   draw_sprite_normal_innerloop
+
+increment_by_shift:
 mov   al, byte ptr ds:[_detailshiftitercount]
 cbw
 
@@ -1552,37 +1568,35 @@ add   dx, ax
 mov   word ptr ds:[_dc_x], dx
 add   di, word ptr [bp - 4]
 adc   si, word ptr [bp - 2]
-jmp   label17
-label16:
+jmp   draw_sprite_normal_innerloop
+end_draw_sprite_normal_innerloop:
 inc   word ptr [bp - 01Ch]
 mov   ax, word ptr [bx + 01Eh]
 inc   word ptr [bp - 01Ah]
 add   word ptr [bp - 016h], ax
 mov   ax, word ptr [bx + 020h]
 adc   word ptr [bp - 014h], ax
-jmp   label18
-label12:
-mov   word ptr [bp - 012h], ax
-mov   ax, word ptr [bp - 6]
-mov   word ptr [bp - 0Ch], ax
+jmp   loop_vga_plane_draw_normal
+draw_shadow_sprite:
+
 mov   ax, word ptr [bp - 020h]
-mov   word ptr [bp - 018h], 0
-mov   word ptr [bp - 01Eh], ax
-label23:
+mov   word ptr [bp - 01Ah], 0
+mov   word ptr [bp - 01Ch], ax
+loop_vga_plane_draw_shadow:
 mov   al, byte ptr ds:[_detailshiftitercount]
 cbw
-cmp   ax, word ptr [bp - 018h]
-jg    label19
+cmp   ax, word ptr [bp - 01Ah]
+jg    continue_vga_plane_draw_shadow_iteration
 jmp   exit_draw_vissprites
-label19:
+continue_vga_plane_draw_shadow_iteration:
 mov   di, word ptr [bp - 016h]
-mov   ax, word ptr [bp - 01Eh]
+mov   ax, word ptr [bp - 01Ch]
 mov   si, word ptr [bp - 014h]
 mov   word ptr ds:[_dc_x], ax
 mov   bx, word ptr [bp - 024h]
 mov   dx, ax
 cmp   ax, word ptr [bx + 2]
-jge   label20
+jge   dont_increment_by_shift_shadow
 mov   al, byte ptr ds:[_detailshiftitercount]
 cbw
 
@@ -1590,29 +1604,29 @@ add   dx, ax
 mov   word ptr ds:[_dc_x], dx
 add   di, word ptr [bp - 4]
 adc   si, word ptr [bp - 2]
-label20:
+dont_increment_by_shift_shadow:
 mov   al, byte ptr ds:[_detailshift+1]
-mov   bx, word ptr [bp - 018h]
+mov   bx, word ptr [bp - 01Ah]
 cbw  
 add   bx, ax
 mov   dx, SC_DATA
 mov   al, byte ptr [bx + 060h]
 out   dx, al
-label22:
+draw_sprite_shadow_innerloop:
 mov   ax, word ptr ds:[_dc_x]
 mov   bx, word ptr [bp - 024h]
 cmp   ax, word ptr [bx + 4]
-jg    label21
+jg    end_draw_sprite_shadow_innerloop
 mov   bx, si
-mov   es, word ptr [bp - 0Ch]
+mov   es, word ptr [bp - 6]
 shl   bx, 2
-add   bx, word ptr [bp - 012h]
-mov   cx, word ptr [bp - 6]
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
+
+mov   cx, es
+mov   ax, word ptr es:[bx + 8]
+mov   dx, word ptr es:[bx + 10]
 shr   ax, 4
 mov   bx, dx
-add   ax, word ptr [bp - 6]
+add   ax, cx
 
 call R_DrawMaskedSpriteShadow_
 
@@ -1622,15 +1636,15 @@ cbw
 add   word ptr ds:[_dc_x], ax
 add   di, word ptr [bp - 4]
 adc   si, word ptr [bp - 2]
-jmp   label22
-label21:
-inc   word ptr [bp - 01Eh]
+jmp   draw_sprite_shadow_innerloop
+end_draw_sprite_shadow_innerloop:
+inc   word ptr [bp - 01Ch]
 mov   ax, word ptr [bx + 01Eh]
-inc   word ptr [bp - 018h]
+inc   word ptr [bp - 01Ah]
 add   word ptr [bp - 016h], ax
 mov   ax, word ptr [bx + 020h]
 adc   word ptr [bp - 014h], ax
-jmp   label23
+jmp   loop_vga_plane_draw_shadow
 
 endp
 
