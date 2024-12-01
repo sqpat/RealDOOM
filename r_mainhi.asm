@@ -1319,73 +1319,65 @@ push  bp
 mov   bp, sp
 sub   sp, 022h
 push  ax
-mov   bx, OFFSET _dc_colormap_segment
 mov   si, ax
-mov   word ptr [bx], COLORMAPS_SEGMENT_MASKEDMAPPING
-mov   bx, OFFSET _dc_colormap_index
+mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT_MASKEDMAPPING
 mov   al, byte ptr [si + 1]
-mov   byte ptr [bx], al
-mov   bx, si
-mov   ax, word ptr [bx + 01Eh]   ; vis->xiscale
-mov   dx, word ptr [bx + 020h]
-mov   di, OFFSET _detailshift
+mov   byte ptr ds:[_dc_colormap_index], al
+mov   ax, word ptr ds:[si + 01Eh]   ; vis->xiscale
+mov   dx, word ptr ds:[si + 020h]
+
+; labs
 or    dx, dx
-jge   label1
+jge   xiscale_already_positive
 neg   ax
 adc   dx, 0
 neg   dx
-label1:
+xiscale_already_positive:
 mov   bx, ax
-mov   al, byte ptr [di]
-cbw  
-mov   cx, ax
+xor   cx, cx
+mov   cl, byte ptr ds:[_detailshift]
+
 mov   ax, bx
-mov   bx, OFFSET _dc_iscale
+
 jcxz  label2
 label3:
 sar   dx, 1
 rcr   ax, 1
 loop  label3
 label2:
-mov   word ptr [bx], ax
+mov   word ptr ds:[_dc_iscale], ax
 mov   di, si
-mov   word ptr [bx + 2], dx
-mov   bx, OFFSET _dc_texturemid
+mov   word ptr ds:[_dc_iscale+2], dx
+
 mov   dx, word ptr [si + 022h] ; vis->texturemid
 mov   ax, word ptr [si + 024h]
-mov   word ptr [bx], dx
-mov   cx, OFFSET _spryscale
-mov   word ptr [bx + 2], ax
+mov   word ptr ds:[_dc_texturemid], dx
+
+mov   word ptr ds:[_dc_texturemid + 2], ax
 mov   bx, word ptr [bp - 024h]
 mov   di, word ptr [di + 016h]
 mov   dx, word ptr [bx + 01Ah]
 mov   ax, word ptr [bx + 01Ch]
-mov   bx, cx
+mov   bx, OFFSET _spryscale
 mov   si, word ptr [si + 018h]
-mov   word ptr [bx], dx
-mov   word ptr [bx + 2], ax
-mov   bx, OFFSET _centery
-mov   dx, OFFSET _sprtopscreen + 2
-mov   ax, word ptr [bx]
-mov   bx, dx
-mov   word ptr [bx], ax
-mov   bx, OFFSET _sprtopscreen
-mov   word ptr [bx], 0
-mov   bx, cx
-mov   ax, word ptr [bx]
-mov   cx, word ptr [bx + 2]
-mov   bx, OFFSET _dc_texturemid
-mov   dx, word ptr [bx]
+mov   word ptr ds:[bx], dx
+mov   word ptr ds:[bx + 2], ax
+mov   ax, word ptr ds:[_centery]
+
+mov   word ptr ds:[_sprtopscreen + 2], ax
+mov   word ptr ds:[_sprtopscreen], 0
+mov   ax, word ptr ds:[bx]
+mov   cx, word ptr ds:[bx + 2]
+mov   dx, word ptr ds:[_dc_texturemid]
 mov   word ptr [bp - 022h], dx
-mov   dx, word ptr [bx + 2]
+mov   dx, word ptr ds:[_dc_texturemid + 2]
 mov   bx, ax
 mov   ax, word ptr [bp - 022h]
 
 call FixedMul_
 
-mov   bx, OFFSET _sprtopscreen
-sub   word ptr [bx], ax
-sbb   word ptr [bx + 2], dx
+sub   word ptr ds:[_sprtopscreen], ax
+sbb   word ptr ds:[_sprtopscreen + 2], dx
 mov   bx, word ptr [bp - 024h]
 mov   ax, word ptr [bx + 026h]
 cmp   ax, word ptr ds:[_lastvisspritepatch]
@@ -1396,21 +1388,18 @@ mov   ax, word ptr ds:[_lastvisspritesegment]
 mov   word ptr [bp - 6], ax
 label13:
 mov   ax, word ptr [bp - 6]
-mov   dx, OFFSET _detailshiftandval
 mov   bx, word ptr [bp - 024h]
 mov   word ptr [bp - 8], ax
 mov   ax, word ptr [bx + 2]
-mov   bx, dx
 mov   word ptr [bp - 014h], si
-and   ax, word ptr [bx]
+and   ax, word ptr ds:[_detailshiftandval]
 mov   bx, word ptr [bp - 024h]
 mov   si, word ptr [bp - 024h]
 mov   dx, word ptr [bx + 2]
 mov   word ptr [bp - 020h], ax
 sub   dx, ax
-mov   bx, OFFSET _detailshift2minus
 mov   ax, dx
-mov   cl, byte ptr [bx]
+mov   cl, byte ptr ds:[_detailshift2minus]
 mov   bx, word ptr [bp - 024h]
 mov   dx, word ptr [si + 020h]
 xor   ch, ch
@@ -1448,9 +1437,9 @@ mov   ax, word ptr [bp - 020h]
 mov   word ptr [bp - 01Ah], 0
 mov   word ptr [bp - 01Ch], ax
 label18:
-mov   bx, OFFSET _detailshiftitercount
-mov   al, byte ptr [bx]
-xor   ah, ah
+mov   al, byte ptr ds:[_detailshiftitercount]
+cbw
+
 cmp   ax, word ptr [bp - 01Ah]
 jg    label11
 
@@ -1490,8 +1479,7 @@ jmp   label13
 label10:
 jmp   label12
 label11:
-mov   bx, OFFSET _detailshift+1
-mov   al, byte ptr [bx]
+mov   al, byte ptr ds:[_detailshift+1]
 mov   bx, word ptr [bp - 01Ah]
 cbw
 add   bx, ax
@@ -1500,16 +1488,15 @@ mov   al, byte ptr [bx + 060h] ; TODO WHAT
 mov   di, word ptr [bp - 016h]
 out   dx, al
 mov   ax, word ptr [bp - 01Ch]
-mov   bx, OFFSET _dc_x
 mov   si, word ptr [bp - 014h]
-mov   word ptr [bx], ax
+mov   word ptr ds:[_dc_x], ax
 mov   bx, word ptr [bp - 024h]
 mov   dx, ax
 cmp   ax, word ptr [bx + 2]
 jl    label15
 label17:
-mov   bx, OFFSET _dc_x
-mov   ax, word ptr [bx]
+
+mov   ax, word ptr ds:[_dc_x]
 mov   bx, word ptr [bp - 024h]
 cmp   ax, word ptr [bx + 4]
 jg    label16
@@ -1530,21 +1517,20 @@ db 01Eh  ;
 dw _R_DrawMaskedColumnCallSpriteHigh
 
 
-mov   bx, OFFSET _detailshiftitercount
-mov   al, byte ptr [bx]
-mov   bx, OFFSET _dc_x
-xor   ah, ah
-add   word ptr [bx], ax
+mov   al, byte ptr ds:[_detailshiftitercount]
+cbw
+
+add   word ptr ds:[_dc_x], ax
 add   di, word ptr [bp - 4]
 adc   si, word ptr [bp - 2]
 jmp   label17
 label15:
-mov   bx, OFFSET _detailshiftitercount
-mov   al, byte ptr [bx]
-xor   ah, ah
-mov   bx, OFFSET _dc_x
+mov   al, byte ptr ds:[_detailshiftitercount]
+cbw
+
+
 add   dx, ax
-mov   word ptr [bx], dx
+mov   word ptr ds:[_dc_x], dx
 add   di, word ptr [bp - 4]
 adc   si, word ptr [bp - 2]
 jmp   label17
@@ -1564,33 +1550,29 @@ mov   ax, word ptr [bp - 020h]
 mov   word ptr [bp - 018h], 0
 mov   word ptr [bp - 01Eh], ax
 label23:
-mov   bx, OFFSET _detailshiftitercount
-mov   al, byte ptr [bx]
-xor   ah, ah
+mov   al, byte ptr ds:[_detailshiftitercount]
+cbw
 cmp   ax, word ptr [bp - 018h]
 jg    label19
 jmp   exit_draw_vissprites
 label19:
 mov   di, word ptr [bp - 016h]
 mov   ax, word ptr [bp - 01Eh]
-mov   bx, OFFSET _dc_x
 mov   si, word ptr [bp - 014h]
-mov   word ptr [bx], ax
+mov   word ptr ds:[_dc_x], ax
 mov   bx, word ptr [bp - 024h]
 mov   dx, ax
 cmp   ax, word ptr [bx + 2]
 jge   label20
-mov   bx, OFFSET _detailshiftitercount
-mov   al, byte ptr [bx]
-xor   ah, ah
-mov   bx, OFFSET _dc_x
+mov   al, byte ptr ds:[_detailshiftitercount]
+cbw
+
 add   dx, ax
-mov   word ptr [bx], dx
+mov   word ptr ds:[_dc_x], dx
 add   di, word ptr [bp - 4]
 adc   si, word ptr [bp - 2]
 label20:
-mov   bx, OFFSET _detailshift+1
-mov   al, byte ptr [bx]
+mov   al, byte ptr ds:[_detailshift+1]
 mov   bx, word ptr [bp - 018h]
 cbw  
 add   bx, ax
@@ -1598,8 +1580,7 @@ mov   dx, SC_DATA
 mov   al, byte ptr [bx + 060h]
 out   dx, al
 label22:
-mov   bx, OFFSET _dc_x
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[_dc_x]
 mov   bx, word ptr [bp - 024h]
 cmp   ax, word ptr [bx + 4]
 jg    label21
@@ -1617,11 +1598,10 @@ add   ax, word ptr [bp - 6]
 
 call R_DrawMaskedSpriteShadow_
 
-mov   bx, OFFSET _detailshiftitercount
-mov   al, byte ptr [bx]
-mov   bx, OFFSET _dc_x
-xor   ah, ah
-add   word ptr [bx], ax
+mov   al, byte ptr ds:[_detailshiftitercount]
+cbw
+
+add   word ptr ds:[_dc_x], ax
 add   di, word ptr [bp - 4]
 adc   si, word ptr [bp - 2]
 jmp   label22
