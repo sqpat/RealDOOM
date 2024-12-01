@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/11/30 13:26:15
+Created on:       24/11/30 19:49:02
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -78,9 +78,9 @@ p_telept_TEXT          CODE           AUTO           0b11:bd40       00000221
 p_tick_TEXT            CODE           AUTO           0b11:bf70       00000202
 p_user_TEXT            CODE           AUTO           0b11:c180       000006c2
 r_bsp_TEXT             CODE           AUTO           1796:0000       00000e0c
-r_data_TEXT            CODE           AUTO           1796:0e10       00001aa2
-R_MATH_TEXT            CODE           AUTO           1796:28b2       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1796:2ab0       0000056c
+r_data_TEXT            CODE           AUTO           1796:0e10       00001a98
+R_MATH_TEXT            CODE           AUTO           1796:28a8       000001fd
+R_MAINHI_TEXT          CODE           AUTO           1796:2aa6       0000056c
 r_draw_TEXT            CODE           AUTO           1796:3020       00000379
 r_main_TEXT            CODE           AUTO           1796:33a0       000001e8
 r_plane_TEXT           CODE           AUTO           1796:3590       00000000
@@ -1312,21 +1312,21 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 1796:1fbe+     getcompositetexture_
 1796:205a      getspritetexture_
 1796:20d0      R_GetColumnSegment_
-1796:22e2      R_GetMaskedColumnSegment_
-1796:2520+     R_LoadPatchColumns_
-1796:2612      R_LoadPatchColumnsColormap0_
-1796:272a+     R_LoadSpriteColumns_
+1796:22e0      R_GetMaskedColumnSegment_
+1796:2516+     R_LoadPatchColumns_
+1796:2608      R_LoadPatchColumnsColormap0_
+1796:2720+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-1796:2928      R_PointToAngle_
+1796:291e      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-1796:2bd2      R_PointOnSegSide_
-1796:2e54      R_Subsector_
-1796:2b52      R_PointToDist_
-1796:2c9d      R_ClearPlanes_
-1796:2d20*     R_HandleEMSPagination_
-1796:2dd2*     R_FindPlane_
-1796:2f4f      R_CheckPlane_
-1796:2ab0      R_ScaleFromGlobalAngle_
+1796:2bc8      R_PointOnSegSide_
+1796:2e4a      R_Subsector_
+1796:2b48      R_PointToDist_
+1796:2c93      R_ClearPlanes_
+1796:2d16*     R_HandleEMSPagination_
+1796:2dc8*     R_FindPlane_
+1796:2f45      R_CheckPlane_
+1796:2aa6      R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1796:3020      R_FillBackScreen_
 1796:329e      R_VideoErase_
@@ -1696,4 +1696,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00025370 (152432.)
 Entry point address: 1dd5:219c
-Link time: 00:00.20
+Link time: 00:00.19

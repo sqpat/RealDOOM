@@ -2487,20 +2487,19 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		lump = texturecolumnlump[n].h;
 		col -= subtractor;
 		if (lump >= 0){ // should be equiv to == -1?
-			texcol -= texturecolumnlump[n+1].bu.bytelow;
+			texcol -= subtractor; // is this correct or does it have to be bytelow direct?
 		}
 		n += 2;
 	}
 
 
-	// can reuse this seg until we reach this value... need to add to base later
-	segloopnextlookup[segloopcachetype] = subtractor; 
 
 	if (lump > 0){
 		uint16_t patchwidth = patchwidths[lump-firstpatch];
 		uint8_t  heightval = texturecolumnlump[n-1].bu.bytehigh;
 		int16_t  cachelumpindex;
 		heightval &= 0x0F;
+		segloopnextlookup[segloopcachetype] = patchwidth; 
 		
 		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
 			if (lump == cachedlumps[cachelumpindex]){
@@ -2590,12 +2589,12 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 			}
 
 		}
-		
+	
 		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
 		segloopheightvalcache[segloopcachetype] = collength;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
 		segloopcachedbasecol[segloopcachetype] -= texcol;
-		segloopnextlookup[segloopcachetype] += segloopcachedbasecol[segloopcachetype]; 
+		segloopnextlookup[segloopcachetype] = subtractor+ segloopcachedbasecol[segloopcachetype]; 
 
 		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
@@ -2634,7 +2633,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		lump = texturecolumnlump[n].h;
 		col -= subtractor;
 		if (lump >= 0){ // should be equiv to == -1?
-			texcol -= texturecolumnlump[n+1].bu.bytelow;
+			texcol -= subtractor;
 		}
 		n += 2;
 	}
@@ -2699,8 +2698,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 
 		maskedcachedsegment   = cachedsegmentlumps[0];
 		maskedcachedbasecol  -= col;
-		maskednextlookup = subtractor;  // todo does this 
-		maskednextlookup += maskedcachedbasecol;
+		maskednextlookup = subtractor + maskedcachedbasecol;
 		
 		if (lookup == 0xFF){
 			// this happens with weird reverse walls like e1m1 upper wall in the sewage room.. 
