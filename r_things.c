@@ -353,7 +353,7 @@ void __near R_DrawVisSprite2 ( vissprite_t __near* vis ) {
                     frac.w += xiscalestep_shift) {
                     uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
                     column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
-                    R_DrawMaskedColumnCallSpriteHigh(patch_segment + (columndata[0] >> 4), postdata);
+                    R_DrawMaskedColumnCallSpriteHigh(patch_segment + columndata[0], postdata);
                 }
             }
         
@@ -378,7 +378,7 @@ void __near R_DrawVisSprite2 ( vissprite_t __near* vis ) {
 
                     uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
                     column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
-                    R_DrawMaskedSpriteShadow(patch_segment + (columndata[0] >> 4), postdata);
+                    R_DrawMaskedSpriteShadow(patch_segment + columndata[0], postdata);
                 }
             }
         }

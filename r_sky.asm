@@ -394,7 +394,7 @@ and   al, 0FCh                  ;
 push  ax                        ; bp-8 minxbase4
 push  dx                        ; bp-A maxx
 
-; todo investigate speedup on 286 of removing this stack var and using the ds one...
+; todo make this a constant and write it in executesetviewsize
 mov   al, byte ptr ds:[_detailshiftitercount]
 cbw
 
@@ -528,7 +528,7 @@ and   al, 0FCh                  ;
 push  ax                        ; bp-8 minxbase4
 push  dx                        ; bp-A maxx
 
-; todo investigate speedup on 286 of removing this stack var and using the ds one...
+; todo make this a constant and write it in executesetviewsize
 mov   al, byte ptr ds:[_detailshiftitercount]
 cbw
 

@@ -193,7 +193,7 @@ typedef struct {
 void R_GenerateLookup(uint16_t texnum) {
 
 	texture_t __far*          texture;
-	patch_t __far*            realpatch;
+	patch_t __far*            wadpatch;
 	int16_t                 x;
 	int16_t                 i;
 	uint16_t				eraseoffset;
@@ -261,7 +261,7 @@ void R_GenerateLookup(uint16_t texnum) {
 	
 	//patch = texture->patches;
 	texturepatchcount = texture->patchcount;
-	realpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
+	wadpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
  
 	// about masked textures
 	
@@ -281,14 +281,14 @@ void R_GenerateLookup(uint16_t texnum) {
 		patchpatch = patch->patch & PATCHMASK;
 
 		if (lastusedpatch != patchpatch){
-			W_CacheLumpNumDirect(patchpatch, (byte __far*)realpatch);
-			patchusedheight = realpatch->height;
+			W_CacheLumpNumDirect(patchpatch, (byte __far*)wadpatch);
+			patchusedheight = wadpatch->height;
 			patchusedheight += (16 - ((patchusedheight &0xF)) &0xF); // round up to next paragraph
 		}
-		patch_sizes[patchpatch-firstpatch] = patchusedheight * realpatch->width; // used for non masked sizes. doesnt include colofs, headers.
+		patch_sizes[patchpatch-firstpatch] = patchusedheight * wadpatch->width; // used for non masked sizes. doesnt include colofs, headers.
 		lastusedpatch = patchpatch;
 
-		x2 = x1 + (realpatch->width);
+		x2 = x1 + (wadpatch->width);
 
 		if (x1 < 0) {
 			x = 0;
@@ -300,7 +300,7 @@ void R_GenerateLookup(uint16_t texnum) {
 			x2 = texturewidth;
 		}
 		
-		column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, realpatch->columnofs[x]);
+		column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, wadpatch->columnofs[x]);
 
 		for (; x < x2; x++) {
 			columnpatchcount[x]++;
@@ -310,14 +310,14 @@ void R_GenerateLookup(uint16_t texnum) {
 			// this may be a masked texture, so lets store it's data in temporary region
 			if (texturepatchcount == 1){	
 				// openwatcom messes up if column is dfined here...
-				//column_t __far * column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, realpatch->columnofs[x]);
+				//column_t __far * column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, wadpatch->columnofs[x]);
 				
 				int8_t colpatchcount = 0;
 				int16_t columntotalsize = 0;
 				// i dont think we need x1 for texturepatchcount 1 stuff.
 				// i think in practice, all masked textures are same size as the single patch etc
 				// calculate proper addr, paragraph align				
-				column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, realpatch->columnofs[x]);
+				column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, wadpatch->columnofs[x]);
 				
 				maskedpixlofs[x] = currenttexturepixelbytecount; 
 				maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
@@ -740,11 +740,11 @@ void R_InitPatches() {
 
 void __near R_InitPatches(){
 	int i = 0;
-	patch_t __far* realpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
+	patch_t __far* wadpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
 	for (i = 0; i < numpatches; i++){
 		int16_t patchindex = firstpatch+i;
-		W_CacheLumpNumDirect(patchindex, (byte __far*)realpatch);
-		patchwidths_6000[i] = realpatch->width;
+		W_CacheLumpNumDirect(patchindex, (byte __far*)wadpatch);
+		patchwidths_6000[i] = wadpatch->width;
 	}
 		
 

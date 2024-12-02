@@ -94,7 +94,7 @@ void __near V_DrawPatchFlipped (int16_t		x, int16_t		y) {
 
 
 	for (; col < w; x++, col++, desttop++) {
-		column = (column_t  __far*)MK_FP(0x5000, (patch->columnofs[w - 1 - col]));
+		column = (column_t  __far*)MK_FP(0x5000 + (patch->columnofs[w - 1 - col]) << 4, 0);
 
 		// step through the posts in a column 
 		while (column->topdelta != 0xff) {

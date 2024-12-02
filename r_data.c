@@ -1835,11 +1835,11 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 //
 
 
-#define realpatch7000  ((patch_t __far *)  MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0))
+#define wadpatch7000  ((patch_t __far *)  MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0))
 
 void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 	texpatch_t __far*         patch;
-	//patch_t __far*            realpatch;
+	//patch_t __far*            wadpatch;
 	int16_t             x;
 	int16_t             x1;
 	int16_t             x2;
@@ -1893,14 +1893,14 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
 
 		if (lastusedpatch != patchpatch) {
-			W_CacheLumpNumDirect(patchpatch, (byte __far*)realpatch7000);
+			W_CacheLumpNumDirect(patchpatch, (byte __far*)wadpatch7000);
 		}
 		patchoriginx = patch->originx *  (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchoriginy = patch->originy;
 
 
 		x1 = patchoriginx;
-		x2 = x1 + (realpatch7000->width);
+		x2 = x1 + (wadpatch7000->width);
 
 		if (x1 < 0){
 			x = 0;
@@ -1964,7 +1964,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 				continue;
 			}
 			
-			patchcol = MK_FP(0x7000, realpatch7000->columnofs[x - x1]);
+			patchcol = MK_FP(0x7000, wadpatch7000->columnofs[x - x1]);
 
 			// inlined R_DrawColumninCache
 			R_DrawColumnInCache(patchcol,
@@ -2872,7 +2872,7 @@ void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, b
 void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment){
 	patch_t __far * destpatch = MK_FP(destpatch_segment, 0);
 
-	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
+	patch_t __far *wadpatch = (patch_t __far *)SCRATCH_ADDRESS_5000;
 	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
 	uint16_t currentpixelbyte;
 	uint16_t currentpostbyte;
@@ -2887,12 +2887,12 @@ void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment){
 	Z_QuickMapScratch_5000(); // render col info has been paged out..
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
-	patchwidth = patch->width;
+	patchwidth = wadpatch->width;
 
-	destpatch->width = patch->width;
-	destpatch->height = patch->height;
-	destpatch->leftoffset = patch->leftoffset;
-	destpatch->topoffset = patch->topoffset;
+	destpatch->width = wadpatch->width;
+	destpatch->height = wadpatch->height;
+	destpatch->leftoffset = wadpatch->leftoffset;
+	destpatch->topoffset = wadpatch->topoffset;
 
  	destoffset = 8 + ( patchwidth << 2);
 	currentpostbyte = destoffset;
@@ -2901,15 +2901,15 @@ void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment){
 	destoffset += spritepostdatasizes[lump-firstspritelump];
 	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
 	currentpixelbyte = destoffset;
-	pixeldataoffset = ((byte __far *)(destpatch)) + currentpixelbyte;
+	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
 
 	// 32, 368
 
 	for (col = 0; col < patchwidth; col++){
 
-		column_t __far * column = (column_t __far *)MK_FP(SCRATCH_PAGE_SEGMENT, patch->columnofs[col]);
+		column_t __far * column = (column_t __far *)MK_FP(SCRATCH_PAGE_SEGMENT, wadpatch->columnofs[col]);
 		
-		*columnofs = currentpixelbyte;	// colofs pointer
+		*columnofs = currentpixelbyte >> 4;	// colofs pointer in SEGMENTS. store preshifted.
 		columnofs++;
 		*columnofs = currentpostbyte;	// postofs pointer
 		columnofs++;

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/01 15:38:06
+Created on:       24/12/01 17:44:26
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -78,12 +78,12 @@ p_telept_TEXT          CODE           AUTO           0b68:bd40       00000221
 p_tick_TEXT            CODE           AUTO           0b68:bf70       00000202
 p_user_TEXT            CODE           AUTO           0b68:c180       000006c2
 r_bsp_TEXT             CODE           AUTO           17ed:0000       00000e0c
-r_data_TEXT            CODE           AUTO           17ed:0e10       00001a98
-R_MATH_TEXT            CODE           AUTO           17ed:28a8       000001fd
-R_MAINHI_TEXT          CODE           AUTO           17ed:2aa6       000007c3
-R_COLUMN_TEXT          CODE           AUTO           17ed:326a       00000ba0
-R_SPAN_TEXT            CODE           AUTO           17ed:3e0a       00000c2d
-R_SKY_TEXT             CODE           AUTO           17ed:4a38       000006c8
+r_data_TEXT            CODE           AUTO           17ed:0e10       00001a9b
+R_MATH_TEXT            CODE           AUTO           17ed:28ac       000001fd
+R_MAINHI_TEXT          CODE           AUTO           17ed:2aaa       000007b9
+R_COLUMN_TEXT          CODE           AUTO           17ed:3264       00000ba0
+R_SPAN_TEXT            CODE           AUTO           17ed:3e04       00000c2d
+R_SKY_TEXT             CODE           AUTO           17ed:4a32       000006c8
 r_draw_TEXT            CODE           AUTO           17ed:5100       00000379
 r_main_TEXT            CODE           AUTO           17ed:5480       000001e8
 r_plane_TEXT           CODE           AUTO           17ed:5670       00000000
@@ -1327,32 +1327,32 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 17ed:2608      R_LoadPatchColumnsColormap0_
 17ed:2720+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-17ed:291e      R_PointToAngle_
+17ed:2922      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-17ed:2bc8      R_PointOnSegSide_
-17ed:2e4a      R_Subsector_
-17ed:2b48      R_PointToDist_
-17ed:3012      R_DrawVisSprite_
-17ed:2c93      R_ClearPlanes_
-17ed:2d16*     R_HandleEMSPagination_
-17ed:2dc8*     R_FindPlane_
-17ed:2f45      R_CheckPlane_
-17ed:2aa6      R_ScaleFromGlobalAngle_
+17ed:2bcc      R_PointOnSegSide_
+17ed:2e4e      R_Subsector_
+17ed:2b4c      R_PointToDist_
+17ed:3016      R_DrawVisSprite_
+17ed:2c97      R_ClearPlanes_
+17ed:2d1a*     R_HandleEMSPagination_
+17ed:2dcc*     R_FindPlane_
+17ed:2f49      R_CheckPlane_
+17ed:2aaa      R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-17ed:326a      R_DrawColumn_
-17ed:3da1      R_DrawColumnPrep_
+17ed:3264      R_DrawColumn_
+17ed:3d9b      R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
-17ed:3e0a      R_DrawSpan_
-17ed:4598*     R_FixedMulLocal_
-17ed:44ac*     R_DrawSpanPrep_
-17ed:475a      R_DrawPlanes_
-17ed:45d4      R_MapPlane_
-17ed:4549*     R_FixedMulTrigLocal_
+17ed:3e04      R_DrawSpan_
+17ed:4592*     R_FixedMulLocal_
+17ed:44a6*     R_DrawSpanPrep_
+17ed:4754      R_DrawPlanes_
+17ed:45ce      R_MapPlane_
+17ed:4543*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-17ed:4a38      R_DrawSkyColumn_
-17ed:4c05*     R_DrawSkyColumnDynamic_
-17ed:508c      R_DrawSkyPlane_
-17ed:5018      R_DrawSkyPlaneDynamic_
+17ed:4a32      R_DrawSkyColumn_
+17ed:4bff*     R_DrawSkyColumnDynamic_
+17ed:5086      R_DrawSkyPlane_
+17ed:5012      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17ed:5100      R_FillBackScreen_
 17ed:537e      R_VideoErase_
@@ -1766,4 +1766,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028bb0 (166832.)
 Entry point address: 2035:2434
-Link time: 00:00.74
+Link time: 00:00.20

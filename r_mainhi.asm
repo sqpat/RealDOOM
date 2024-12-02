@@ -1307,24 +1307,11 @@ PUBLIC  R_DrawVisSprite_
 
 ; ax is vissprite_t near pointer
 
-; bp - 2     xiscalestep_shift high word
-; bp - 4     xiscalestep_shift low word
-; bp - 6     UNUSED patch_segment
-; bp - 8     UNUSED patch_segment clone?
-; bp - 0Ah   UNUSED 0. probably patch segment offset
-; bp - 0Ch   UNUSED patch_segment clone
-; bp - 0Eh   UNUSED clone of patch_segment..
-; bp - 010h  UNUSED. was constant of 8, probably vis field offset or something
-; bp - 012h  UNUSED. was constant of 8, probably vis field offset or something
-; bp - 014h  frac.h.intbits
-; bp - 016h  frac.h.fracbits
-; bp - 018h  UNUSED was xoffset  (shadow only?)
-; bp - 01Ah  xoffset (loop iter count) (byte)
-; bp - 01Ch  UNUSED basespryscale ?
-; bp - 01Eh  UNUSED was shadow version of 01Ch
-; bp - 020h  dc_x_base4 ? 
-; bp - 022h  UNUSED dc_texture_mid low word
-; bp - 024h  vissprite (ax)
+; bp - 2  	 frac.h.fracbits
+; bp - 4  	 frac.h.intbits
+; bp - 6     xiscalestep_shift low word
+; bp - 8     xiscalestep_shift high word
+
 
 push  bx
 push  cx
@@ -1333,12 +1320,24 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 022h
-push  ax
+
 mov   si, ax
+; todo is this a constant that can be moved out a layer?
 mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT_MASKEDMAPPING
 mov   al, byte ptr [si + 1]
 mov   byte ptr ds:[_dc_colormap_index], al
+
+; todo move this out to a higher level! possibly when executesetviewsize happens.
+
+mov   al, byte ptr ds:[_detailshiftitercount]
+mov   byte ptr cs:[SELFMODIFY_detailshiftitercount1+2], al
+mov   byte ptr cs:[SELFMODIFY_detailshiftitercount2+4], al
+mov   byte ptr cs:[SELFMODIFY_detailshiftitercount3+1], al
+mov   byte ptr cs:[SELFMODIFY_detailshiftitercount4+2], al
+mov   byte ptr cs:[SELFMODIFY_detailshiftitercount5+4], al
+mov   byte ptr cs:[SELFMODIFY_detailshiftitercount6+1], al
+
+
 mov   ax, word ptr ds:[si + 01Eh]   ; vis->xiscale
 mov   dx, word ptr ds:[si + 020h]
 
@@ -1403,16 +1402,18 @@ mov   es, word ptr ds:[_lastvisspritesegment]
 spritesegment_ready:
 
 
-mov   word ptr [bp - 6], es
 mov   di, word ptr [si + 016h]  ; frac = vis->startfrac
 mov   ax, word ptr [si + 018h]
-mov   word ptr [bp - 016h], di
-mov   word ptr [bp - 014h], ax
+push  ax;  [bp - 2]
+push  di;  [bp - 4]
 
 mov   ax, word ptr [si + 2]
 mov   dx, ax
 and   ax, word ptr ds:[_detailshiftandval]
-mov   word ptr [bp - 020h], ax
+
+mov   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4+1], ax
+mov   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4_shadow+1], ax
+
 sub   dx, ax
 xchg  ax, dx
 xor   cx, cx
@@ -1438,8 +1439,8 @@ shl   bx, 1
 rcl   dx, 1
 
 done_shifting_shift_xiscalestep_shift:
-mov   word ptr [bp - 4], bx
-mov   word ptr [bp - 2], dx
+push dx;  [bp - 6]
+push bx;  [bp - 8]
 
 ;        while (base4diff){
 ;            basespryscale-=vis->xiscale; 
@@ -1453,18 +1454,18 @@ mov   dx, word ptr [si + 01Eh]
 mov   bx, word ptr [si + 020h]
 
 decrementbase4loop:
-sub   word ptr [bp - 016h], dx
-sbb   word ptr [bp - 014h], bx
+sub   word ptr [bp - 4], dx
+sbb   word ptr [bp - 2], bx
 dec   ax
 jne   decrementbase4loop
 
 base4diff_is_zero:
 
 ; zero xoffset loop iter
-mov   byte ptr cs:[SELFMODIFY_setbx_to_xoffset+1], 0
-mov   byte ptr cs:[SELFMODIFY_setbx_to_xoffset_shadow+1], 0
+mov   byte ptr cs:[SELFMODIFY_set_bx_to_xoffset+1], 0
+mov   byte ptr cs:[SELFMODIFY_set_bx_to_xoffset_shadow+1], 0
 
-mov   cx, word ptr [bp - 6]
+mov   cx, es
 
 
 cmp   byte ptr [si + 1], COLORMAP_SHADOW
@@ -1481,8 +1482,8 @@ mov   dx, word ptr ds:[_lastvisspritesegment2]
 mov   es, dx
 mov   dx, word ptr ds:[_lastvisspritesegment]
 mov   word ptr ds:[_lastvisspritesegment2], dx
-mov   dx, es
-mov   word ptr ds:[_lastvisspritesegment], dx
+
+mov   word ptr ds:[_lastvisspritesegment], es
 mov   dx, word ptr ds:[_lastvisspritepatch]
 mov   word ptr ds:[_lastvisspritepatch2], dx
 mov   word ptr ds:[_lastvisspritepatch], ax
@@ -1503,22 +1504,21 @@ jmp   draw_shadow_sprite
 
 loop_vga_plane_draw_normal:
 
-
-mov   al, byte ptr ds:[_detailshiftitercount]
-cbw
-SELFMODIFY_setbx_to_xoffset:
+SELFMODIFY_set_bx_to_xoffset:
 mov   bx, 0 ; zero out bh
-cmp   ax, bx
-jng   exit_draw_vissprites
+SELFMODIFY_detailshiftitercount1:
+cmp   bx, 0
+jge    exit_draw_vissprites
 
 add   bl, byte ptr ds:[_detailshift+1]
 
 mov   dx, SC_DATA
 mov   al, byte ptr ds:[bx + _quality_port_lookup]
 out   dx, al
-mov   di, word ptr [bp - 016h]
-mov   dx, word ptr [bp - 014h]
-mov   ax, word ptr [bp - 020h]
+mov   di, word ptr [bp - 4]
+mov   dx, word ptr [bp - 2]
+SELFMODIFY_set_ax_to_dc_x_base4:
+mov   ax, 0
 mov   word ptr ds:[_dc_x], ax
 cmp   ax, word ptr [si + 2]
 jl    increment_by_shift
@@ -1528,7 +1528,7 @@ mov   ax, word ptr ds:[_dc_x]
 cmp   ax, word ptr [si + 4]
 jg    end_draw_sprite_normal_innerloop
 mov   bx, dx
-mov   es, cx
+
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl   bx, 2
 ELSE
@@ -1538,37 +1538,27 @@ ENDIF
 
 mov   ax, word ptr es:[bx + 8]
 mov   bx, word ptr es:[bx + 10]
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shr   ax, 4
-ELSE
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-ENDIF
+
 add   ax, cx
 
 ; ax pixelsegment
 ; cx:bx column
 ; dx unused
 ; cx is preserved by this call here
+; so is ES
 
-
-push  cx
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_DrawMaskedColumnCallSpriteHigh
-pop  cx
 
-mov   al, byte ptr ds:[_detailshiftitercount]
-cbw
-
-add   word ptr ds:[_dc_x], ax
-add   di, word ptr [bp - 4]
-adc   dx, word ptr [bp - 2]
+SELFMODIFY_detailshiftitercount2:
+add   word ptr ds:[_dc_x], 0
+add   di, word ptr [bp - 8]
+adc   dx, word ptr [bp - 6]
 jmp   draw_sprite_normal_innerloop
 exit_draw_vissprites:
 LEAVE_MACRO
+
 
 pop   di
 pop   si
@@ -1578,38 +1568,39 @@ pop   bx
 ret 
 increment_by_shift:
 
-add   al, byte ptr ds:[_detailshiftitercount]
-adc   ah, 0
+SELFMODIFY_detailshiftitercount3:
+add   ax, 0
 mov   word ptr ds:[_dc_x], ax
-add   di, word ptr [bp - 4]
-adc   dx, word ptr [bp - 2]
+add   di, word ptr [bp - 8]
+adc   dx, word ptr [bp - 6]
 jmp   draw_sprite_normal_innerloop
+
 end_draw_sprite_normal_innerloop:
-inc   word ptr [bp - 020h]
+inc   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4+1]
+inc   byte ptr cs:[SELFMODIFY_set_bx_to_xoffset+1]
 mov   ax, word ptr [si + 01Eh]
-inc   byte ptr cs:[SELFMODIFY_setbx_to_xoffset+1]
-add   word ptr [bp - 016h], ax
+add   word ptr [bp - 4], ax
 mov   ax, word ptr [si + 020h]
-adc   word ptr [bp - 014h], ax
+adc   word ptr [bp - 2], ax
 jmp   loop_vga_plane_draw_normal
 draw_shadow_sprite:
 
 loop_vga_plane_draw_shadow:
-mov   al, byte ptr ds:[_detailshiftitercount]
-cbw
-SELFMODIFY_setbx_to_xoffset_shadow:
+SELFMODIFY_set_bx_to_xoffset_shadow:
 mov   bx, 0
-cmp   ax, bx
-jng   exit_draw_vissprites
+SELFMODIFY_detailshiftitercount4:
+cmp   bx, 0
+jge    exit_draw_vissprites
 
 add   bl, byte ptr ds:[_detailshift+1]
 
 mov   dx, SC_DATA
 mov   al, byte ptr ds:[bx + _quality_port_lookup]
 out   dx, al
-mov   di, word ptr [bp - 016h]
-mov   dx, word ptr [bp - 014h]
-mov   ax, word ptr [bp - 020h]
+mov   di, word ptr [bp - 4]
+mov   dx, word ptr [bp - 2]
+SELFMODIFY_set_ax_to_dc_x_base4_shadow:
+mov   ax, 0
 mov   word ptr ds:[_dc_x], ax
 
 cmp   ax, word ptr [si + 2]
@@ -1629,14 +1620,7 @@ shl   bx, 1
 ENDIF
 mov   ax, word ptr es:[bx + 8]
 mov   bx, word ptr es:[bx + 10]
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shr   ax, 4
-ELSE
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-ENDIF
+
 add   ax, cx
 
 ; todo preserve cx in this call.
@@ -1644,28 +1628,28 @@ push  cx
 call R_DrawMaskedSpriteShadow_
 pop   cx
 
-mov   al, byte ptr ds:[_detailshiftitercount]
-cbw
+SELFMODIFY_detailshiftitercount5:
 
-add   word ptr ds:[_dc_x], ax
-add   di, word ptr [bp - 4]
-adc   dx, word ptr [bp - 2]
+add   word ptr ds:[_dc_x], 0
+add   di, word ptr [bp - 8]
+adc   dx, word ptr [bp - 6]
 jmp   draw_sprite_shadow_innerloop
+
 end_draw_sprite_shadow_innerloop:
-inc   word ptr [bp - 020h]
+inc   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4_shadow+1]
+inc   byte ptr cs:[SELFMODIFY_set_bx_to_xoffset_shadow+1]
 mov   ax, word ptr [si + 01Eh]
-inc   byte ptr cs:[SELFMODIFY_setbx_to_xoffset_shadow+1]
-add   word ptr [bp - 016h], ax
+add   word ptr [bp - 4], ax
 mov   ax, word ptr [si + 020h]
-adc   word ptr [bp - 014h], ax
+adc   word ptr [bp - 2], ax
 jmp   loop_vga_plane_draw_shadow
 
 increment_by_shift_shadow:
-add   al, byte ptr ds:[_detailshiftitercount]
-adc   ah, 0
+SELFMODIFY_detailshiftitercount6:
+add   ax, 0
 mov   word ptr ds:[_dc_x], ax
-add   di, word ptr [bp - 4]
-adc   dx, word ptr [bp - 2]
+add   di, word ptr [bp - 8]
+adc   dx, word ptr [bp - 6]
 jmp   draw_sprite_shadow_innerloop
 
 endp

@@ -300,7 +300,7 @@ ENDP
 
 ; ax pixelsegment
 ; cx:bx column
-
+; todo: use es:bx instead of cx.
 
 ;
 ; R_DrawMaskedColumn
@@ -318,9 +318,9 @@ PUBLIC  R_DrawMaskedColumn_
 push  dx
 push  si
 push  di
-push  cx            ; bp + 2
 push  bp
 mov   bp, sp
+push  cx            ; bp - 2
 mov   si, bx        ; si now holds column address.
 mov   es, cx
 push  ax            ; bp - 4
@@ -455,8 +455,8 @@ shr   bx, 1
 shr   bx, 1
 ENDIF
 
-mov   dx, word ptr [bp - 4]
-les   ax, dword ptr [bp - 2]
+mov   dx, word ptr [bp - 6]
+les   ax, dword ptr [bp - 4]
 add   ax, bx
 mov   word ptr ds:[_dc_source_segment], ax
 mov   al, byte ptr es:[si]
@@ -473,7 +473,7 @@ db COLFUNC_MASKEDMAPPING_SEGMENT AND 0FFh
 db (COLFUNC_MASKEDMAPPING_SEGMENT SHR 8 )
 
 increment_column_and_continue_loop:
-mov   es, word ptr [bp+2]
+mov   es, word ptr [bp-2]
 mov   al, byte ptr es:[si + 1]
 xor   ah, ah
 
@@ -488,10 +488,10 @@ je    exit_function
 jmp   draw_next_column_patch ; todo inverse and skip jump
 exit_function:
 
-mov   ax, word ptr [bp - 4]             ; restore dc_texture_mid
+pop   ax; , word ptr [bp - 6]             ; restore dc_texture_mid
 mov   word ptr ds:[_dc_texturemid+2], ax
+mov   cx, word ptr [bp - 2]               ; restore cx
 LEAVE_MACRO
-pop   cx
 pop   di
 pop   si
 pop   dx
