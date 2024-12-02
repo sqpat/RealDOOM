@@ -85,7 +85,7 @@ void __near P_BringUpWeapon () {
     newstate = weaponinfo[player.pendingweapon].upstate;
 
     player.pendingweapon = wp_nochange;
-    player.psprites[ps_weapon].sy = WEAPONBOTTOM;
+    psprites[ps_weapon].sy = WEAPONBOTTOM;
 
     P_SetPsprite ( ps_weapon, newstate);
 }
@@ -702,7 +702,7 @@ void __near P_MovePsprites ()  {
     int8_t		i;
 	pspdef_t __near*	psp;
 	
-    psp = &player.psprites[0];
+    psp = &psprites[0];
     for (i=0 ; i<NUMPSPRITES ; i++, psp++) {
 		// a null state means not active
 		
@@ -720,8 +720,8 @@ void __near P_MovePsprites ()  {
 		}
     }
     
-    player.psprites[ps_flash].sx = player.psprites[ps_weapon].sx;
-    player.psprites[ps_flash].sy = player.psprites[ps_weapon].sy;
+    psprites[ps_flash].sx = psprites[ps_weapon].sx;
+    psprites[ps_flash].sy = psprites[ps_weapon].sy;
 }
 
 
@@ -735,7 +735,7 @@ void __near P_SetPsprite ( int8_t position, statenum_t stnum) {
 	state_t __far*	state;
 	boolean found;
 
-	psp = &player.psprites[position];
+	psp = &psprites[position];
 
 	do {
 		// todo: see if code can be cleaned up to only have one null case...

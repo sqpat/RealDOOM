@@ -42,7 +42,7 @@ EXTRN _lastvisspritepatch2:WORD
 EXTRN _lastvisspritesegment:WORD
 EXTRN _lastvisspritesegment2:WORD
 EXTRN _vga_read_port_lookup:BYTE
-
+EXTRN _psprites:BYTE
 
 
 
@@ -1856,7 +1856,27 @@ jmp   draw_sprite_shadow_innerloop
 
 endp
 
+PROC R_DrawPlayerSprites_ NEAR
+PUBLIC R_DrawPlayerSprites_
+
+mov  word ptr ds:[_mfloorclip], 0A280h  ; set offset to size_negonearray
+mov  word ptr ds:[_mceilingclip], 0A000h ; set offset to size_openings
+
+cmp  word ptr ds:[_psprites], -1  ; STATENUM_NULL
+je  check_next_player_sprite
+mov  ax, _player_vissprites       ; vissprite 0
+call R_DrawVisSprite_
+
+check_next_player_sprite:
+cmp  word ptr ds:[_psprites + 0Ch], -1  ; STATENUM_NULL
+je  exit_drawplayersprites
+mov  ax, _player_vissprites + 028h ; vissprite 1
+call R_DrawVisSprite_
+
+exit_drawplayersprites:
+ret 
 
 
+ENDP
 
 END

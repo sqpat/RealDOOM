@@ -80,7 +80,7 @@ void P_UnArchivePlayers (void) {
 	    if (players. psprites[j].state)
 	    {
 		players. psprites[j].state 
-		    = &states[ (int16_t)players.psprites[j].state ];
+		    = &states[ (int16_t)psprites[j].state ];
 	    }
 	}
 	*/

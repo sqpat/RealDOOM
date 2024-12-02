@@ -587,6 +587,7 @@ extern boolean         noblit;                 // for comparative timing purpose
 extern ticcount_t             starttime;              // for comparative timing purposes       
 extern boolean         viewactive; 
 extern player_t        player;
+extern pspdef_t		psprites[NUMPSPRITES];
 extern THINKERREF      playerMobjRef;
 
 extern ticcount_t          gametic;

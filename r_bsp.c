@@ -700,9 +700,9 @@ void __near R_PrepareMaskedPSprites(void) {
 	}
 
     for (i = 0; i < NUMPSPRITES; i++){
-        statenum_t pspstatenum = player.psprites[i].statenum;
+        statenum_t pspstatenum = psprites[i].statenum;
         if (pspstatenum != STATENUM_NULL) {
-            R_DrawPSprite(&player.psprites[i], states_render[pspstatenum].sprite, states_render[pspstatenum].frame, &player_vissprites[i]);
+            R_DrawPSprite(&psprites[i], states_render[pspstatenum].sprite, states_render[pspstatenum].frame, &player_vissprites[i]);
         }
     }
 

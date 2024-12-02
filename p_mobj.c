@@ -118,9 +118,8 @@ void __near P_SetupPsprites() {
 	int8_t	i;
 
 	// remove all psprites
-	for (i = 0; i < NUMPSPRITES; i++){
-		player.psprites[i].statenum = STATENUM_NULL;
-	}
+	psprites[0].statenum = STATENUM_NULL;
+	psprites[1].statenum = STATENUM_NULL;
 
 	// spawn the gun
 	player.pendingweapon = player.readyweapon;

@@ -398,6 +398,8 @@ void __near R_DrawVisSprite2 ( vissprite_t __near* vis ) {
 //
 // R_DrawPlayerSprites
 //
+void __near R_DrawPlayerSprites (void);
+/*
 void __near R_DrawPlayerSprites (void){
 	uint8_t i;
 	pspdef_t __near*   psp;
@@ -405,7 +407,7 @@ void __near R_DrawPlayerSprites (void){
 	mfloorclip_offset = size_negonearray;
 	mceilingclip_offset = size_openings;
 
-	for (i = 0, psp = player.psprites;
+	for (i = 0, psp = psprites;
 		i < NUMPSPRITES;
 		i++, psp++) {
 
@@ -414,6 +416,7 @@ void __near R_DrawPlayerSprites (void){
 		}
 	}
 }
+*/
 
 
 

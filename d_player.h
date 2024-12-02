@@ -66,10 +66,11 @@ typedef int8_t cheat_t;
 //
 // Extended player object info: player_t
 //
+
+
 typedef struct player_s{
 
-    playerstate_t	playerstate;
-    ticcmd_t		cmd;
+    ticcmd_t		cmd;  // 12 bytes
 
     // Determine POV,
     //  including viewpoint bobbing during movement.
@@ -80,19 +81,19 @@ typedef struct player_s{
     // Bob/squat speed.
 	fixed_t_union     deltaviewheight;
     // bounded/scaled total momentum.
-	fixed_t_union     bob;
-
+	fixed_t_union     bob; 
     // This is only used between levels,
     // mo->health is used during levels.
     int16_t		health;	
+
     int16_t		armorpoints;
     // Armor type is 0-2.
     int8_t			armortype;	
+    playerstate_t	playerstate;
 
     // Power ups. invinc and invis are tic counters.
     int16_t		powers[NUMPOWERS];
     boolean		cards[NUMCARDS];
-    boolean		backpack;
     
     weapontype_t	readyweapon;
     
@@ -100,19 +101,21 @@ typedef struct player_s{
     weapontype_t	pendingweapon;
 
     boolean			weaponowned[NUMWEAPONS];
+    // Bit flags, for cheats and debug.
+    // See cheat_t, above.
+    int8_t			cheats;		
+
+
+
     int16_t			ammo[NUMAMMO];
     int16_t			maxammo[NUMAMMO];
+
 
     // True if button down last tic.
     int8_t			attackdown;
     int8_t			usedown;
 
-    // Bit flags, for cheats and debug.
-    // See cheat_t, above.
-    int8_t			cheats;		
-
-    // Refired shots are less accurate.
-    int8_t			refire;		
+    
 
      // For intermission stats.
     int16_t			killcount;
@@ -127,6 +130,9 @@ typedef struct player_s{
     // For screen flashing (red or bright).
     int16_t			damagecount;
     int8_t			bonuscount;
+    // Refired shots are less accurate.
+    int8_t			refire;		
+
 
     // Who did damage (NULL for floors/ceilings).
     THINKERREF		attackerRef;
@@ -141,12 +147,12 @@ typedef struct player_s{
     // Player skin colorshift,
     //  0-3 for which color to draw player.
     int8_t			colormap;	
-
-    // Overlay view sprites (gun, etc).
-    pspdef_t		psprites[NUMPSPRITES];
-
     // True if secret level has been done.
     boolean		didsecret;	
+
+    // Overlay view sprites (gun, etc).
+    boolean		backpack;
+
 
 } player_t;
 
