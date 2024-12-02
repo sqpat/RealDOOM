@@ -52,23 +52,30 @@ PUBLIC  R_DrawFuzzColumn_
 ; todo:
 ; could write sp somehwere and use it as 64h for si comps. 
 
-push dx
+; arguments: 
+; bx is equal to destview + 2 (screen segment)... any reason to not do it in here?
+; cx is offset to screen segment
+; di has count. note that this is an 8 bit value. (screen height max of 240)
+; ideally di and cx get swapped...
+
 push si
 push di
 push es
-mov  es, cx
-mov  cl, byte ptr ds:[_fuzzpos]	; note this is always the byte offset - no shift conversion necessary
-xor  ch, ch
-mov  si, cx
-mov  cx, ax
+mov  es, bx
+mov  bl, byte ptr ds:[_fuzzpos]	; note this is always the byte offset - no shift conversion necessary
+xor  bh, bh
+mov  si, bx
+;  need to put di in cx
+xchg cx, di   ; cx gets count , di gets screen offset
+; todo what does this todo mean
 ; todo dont need segment... use the variable offset and store in di
 mov  ax, FUZZOFFSET_SEGMENT
 mov  ds, ax
-mov  di, bx
 ; constant space
 mov  dx, 04Fh
 mov  ch, 010h
 
+; todo: store count in cx not di?
 
 cli
 push bp
@@ -150,7 +157,6 @@ mov  byte ptr ds:[_fuzzpos], al
 pop  es
 pop  di
 pop  si
-pop  dx
 retf 
 
 zero_out_fuzzpos:

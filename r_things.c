@@ -71,6 +71,9 @@
 
 /*
 
+
+//todo... do the dc_x mod quality loop and redo in asm
+
 void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* column) {
 	
     fixed_t_union     topscreen;

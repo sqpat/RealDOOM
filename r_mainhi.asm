@@ -1308,7 +1308,12 @@ PUBLIC R_DrawMaskedSpriteShadow_
 ; ax 	 pixelsegment
 ; cx:bx  column fardata
 
-
+; bp - 2  	 UNUSED lookup (for quality_port_lookup and vga_read_port_lookup)
+; bp - 4     UNUSED  was cached cx
+; bp - 6     topscreen  segment
+; bp - 8     basetexturemid segment
+; bp - 0Ah   basetexturemid offset
+; bp - 0Ch   UNUSED temp cached destview segment
 
 push  dx
 push  si
@@ -1317,7 +1322,7 @@ push  bp
 mov   bp, sp
 sub   sp, 0Ch
 mov   si, bx
-mov   word ptr [bp - 4], cx
+
 mov   es, cx
 mov   ax, word ptr ds:[_dc_texturemid]
 mov   word ptr [bp - 0Ah], ax
@@ -1329,8 +1334,9 @@ je    jump_to_exit_draw_shadow_sprite
 draw_next_shadow_sprite_post:
 mov   bx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
+mov   di, cx
 mov   al, byte ptr es:[si]
-xor   ah, ah
+xor   ah, ah  ; todo can this be cbw
 
 ;inlined FastMul16u32u_
 XCHG CX, AX    ; AX stored in CX
@@ -1343,14 +1349,15 @@ ADD  DX, CX    ; add
 mov   cx, word ptr ds:[_sprtopscreen]
 add   cx, ax
 mov   word ptr [bp - 6], cx
-mov   di, word ptr ds:[_sprtopscreen + 2]
-adc   di, dx
+mov   cx, word ptr ds:[_sprtopscreen + 2]
+adc   cx, dx
 ; todo cache above values to not grab these again?
-mov   dx, word ptr ds:[_spryscale]
-mov   cx, word ptr ds:[_spryscale + 2]
+; BX IS STILL _spryscale
+
+xchg  cx, di   ; cx is now spryscale + 2, di is now spytopscreen+2
+
 
 mov   al, byte ptr es:[si + 1]
-mov   bx, dx
 xor   ah, ah
 
 ;inlined FastMul16u32u_
@@ -1366,13 +1373,13 @@ add   ax, word ptr [bp - 6]
 adc   dx, di
 mov   word ptr ds:[_dc_yh], dx
 test  ax, ax
-jne   label2
+jne   bottomscreen_not_zero
 dec   word ptr ds:[_dc_yh]
-label2:
+bottomscreen_not_zero:
 cmp   word ptr [bp - 6], 0
-je    label4
+je    topscreen_not_zero
 inc   word ptr ds:[_dc_yl]
-label4:
+topscreen_not_zero:
 mov   cx, es    ; cache this
 mov   bx, word ptr ds:[_dc_x]
 mov   di, word ptr ds:[_mfloorclip]
@@ -1380,11 +1387,11 @@ mov   es, word ptr ds:[_mfloorclip + 2]
 add   bx, bx
 mov   ax, word ptr ds:[_dc_yh]
 cmp   ax, word ptr es:[bx + di]
-jl    label5
+jl    dc_yh_clipped_to_floor
 mov   ax, word ptr es:[bx + di]
 dec   ax
 mov   word ptr ds:[_dc_yh], ax
-label5:
+dc_yh_clipped_to_floor:
 
 mov   di, word ptr ds:[_mceilingclip]
 mov   es, word ptr ds:[_mceilingclip + 2]
@@ -1392,79 +1399,89 @@ mov   es, word ptr ds:[_mceilingclip + 2]
 
 mov   ax, word ptr ds:[_dc_yl]
 cmp   ax, word ptr es:[bx + di]
-jg    label6
+jg    dc_yl_clipped_to_ceiling
 
 mov   ax, word ptr es:[bx + di]
 inc   ax
 mov   word ptr ds:[_dc_yl], ax
-label6:
+dc_yl_clipped_to_ceiling:
 mov   ax, word ptr ds:[_dc_yl]
+;        if (dc_yl <= dc_yh) {
 cmp   ax, word ptr ds:[_dc_yh]
-jle   label12
-jmp   do_next_shadow_sprite_iteration ; 1Bh left.. close
-label12:
+mov   es, cx
+jle   at_least_one_pixel_to_draw
+jmp   do_next_shadow_sprite_iteration ; 3 bytes left.. close
+at_least_one_pixel_to_draw:
 mov   ax, word ptr [bp - 0Ah]
 mov   word ptr ds:[_dc_texturemid], ax
 mov   ax, word ptr [bp - 8]
 mov   word ptr ds:[_dc_texturemid + 2], ax
-mov   es, cx
 mov   al, byte ptr es:[si]
 
 xor   ah, ah
 sub   word ptr ds:[_dc_texturemid+2], ax   ; todo clean this up, write once.
 cmp   word ptr ds:[_dc_yl], 0
-jne   label11
+jne   high_border_adjusted
 mov   word ptr ds:[_dc_yl], 1  
-label11:
+high_border_adjusted:
 mov   ax, word ptr ds:[_viewheight]
 dec   ax
-cmp   ax, word ptr ds:[_dc_yh]
-jne   label10
-mov   ax, word ptr ds:[_viewheight]
-sub   ax, 2
-mov   word ptr ds:[_dc_yh], ax
-label10:
 mov   di, word ptr ds:[_dc_yh]
-sub   di, word ptr ds:[_dc_yl]
-test  di, di
-jl    do_next_shadow_sprite_iteration
-mov   al, byte ptr ds:[_dc_x]
-and   al, 3
-mov   ah, byte ptr ds:[_detailshift + 1]
-mov   dx, 08E29h   ;  todo make dc_yl_lookup_maskedmapping a constant
-add   ah, al
-mov   byte ptr [bp - 2], ah
+cmp   ax, di
+jne   low_border_adjusted
+dec   ax
+mov   word ptr ds:[_dc_yh], ax
+low_border_adjusted:
+
 mov   bx, word ptr ds:[_dc_yl]
-add   bx, bx
-mov   es, dx
-mov   dx, word ptr ds:[_destview]
-mov   ax, word ptr ds:[_destview + 2]
-add   dx, word ptr es:[bx]
-mov   cl, byte ptr ds:[_detailshift2minus]
-mov   word ptr [bp - 0Ch], ax
+sub   di, bx
+test  di, di
+; di = count
+jl    do_next_shadow_sprite_iteration
 mov   ax, word ptr ds:[_dc_x]
-mov   bl, byte ptr [bp - 2]
-sar   ax, cl
-xor   bh, bh
-mov   cx, ax
-mov   al, byte ptr ds:[bx + _quality_port_lookup]
-add   cx, dx
+mov   dx, ax
+
+and   al, 3
+add   al, byte ptr ds:[_detailshift + 1]
+mov   byte ptr cs:[SELFMODIFY_set_bx_to_lookup+1], al
+mov   cx, 08E29h   ;  todo make dc_yl_lookup_maskedmapping a constant
+
+add   bx, bx
+mov   ax, es
+mov   es, cx
+mov   cl, byte ptr ds:[_detailshift2minus]
+sar   dx, cl
+SELFMODIFY_set_dx_to_destview_offset:
+add   dx, 1000h   ; need the 2 byte constant.
+add   dx, word ptr es:[bx]
+mov   es, ax
+
+mov   cx, dx
+
+; vga plane stuff.
 mov   dx, SC_DATA
+SELFMODIFY_set_bx_to_lookup:
+mov   bx, 0
+mov   al, byte ptr ds:[bx + _quality_port_lookup]
+
 out   dx, al
 add   bx, bx
 mov   dx, GC_INDEX
 mov   ax, word ptr ds:[bx + _vga_read_port_lookup]
 out   dx, ax
-mov   bx, cx
-mov   ax, di
-mov   cx, word ptr [bp - 0Ch]
+
+SELFMODIFY_set_bx_to_destview_segment:
+mov   bx, 0
+
+; pass in count via di
+; pass in destview via bx
+; pass in offset via cx
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_DrawFuzzColumnCallHigh
 
 do_next_shadow_sprite_iteration:
-mov   es, word ptr [bp - 4]
 add   si, 2
 cmp   byte ptr es:[si], 0FFh
 je    exit_draw_shadow_sprite
@@ -1772,6 +1789,10 @@ mov   ax, word ptr [si + 020h]
 adc   word ptr [bp - 2], ax
 jmp   loop_vga_plane_draw_normal
 draw_shadow_sprite:
+mov   ax, word ptr ds:[_destview]
+mov   word ptr cs:[SELFMODIFY_set_dx_to_destview_offset+2], ax
+mov   ax, word ptr ds:[_destview + 2]
+mov   word ptr cs:[SELFMODIFY_set_bx_to_destview_segment+1], ax
 
 loop_vga_plane_draw_shadow:
 SELFMODIFY_set_bx_to_xoffset_shadow:
