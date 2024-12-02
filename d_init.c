@@ -870,6 +870,7 @@ void __near R_DrawPlayerSprites (void);
 void __near R_DrawVisSprite ( vissprite_t __near* vis );
 void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* column);
 
+
 void __far D_DoomMain2(void) {
 	int16_t             p;
 	int8_t                    file[256];
@@ -888,7 +889,7 @@ void __far D_DoomMain2(void) {
 	/*
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(R_DrawMaskedSpriteShadow, (byte __far *)R_DrawPlayerSprites - (byte __far *)R_DrawMaskedSpriteShadow, 1, fp);
+	FAR_fwrite(R_DrawPlayerSprites, (byte __far *)R_SortVisSprites - (byte __far *)R_DrawPlayerSprites, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*
