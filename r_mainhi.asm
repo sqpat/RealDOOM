@@ -27,19 +27,21 @@ EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
+EXTRN FastMul16u32u_:PROC
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
 
 
+EXTRN _R_DrawFuzzColumnCallHigh:DWORD
 EXTRN _R_DrawMaskedColumnCallSpriteHigh:DWORD
-EXTRN R_DrawMaskedSpriteShadow_:NEAR
 EXTRN getspritetexture_:NEAR
 EXTRN _lastvisspritepatch:WORD
 EXTRN _lastvisspritepatch2:WORD
 EXTRN _lastvisspritesegment:WORD
 EXTRN _lastvisspritesegment2:WORD
+EXTRN _vga_read_port_lookup:BYTE
 
 
 
@@ -1295,6 +1297,214 @@ pop       si
 ret       
 
 ENDP
+
+
+PROC R_DrawMaskedSpriteShadow_ NEAR
+PUBLIC R_DrawMaskedSpriteShadow_
+
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 0Ch
+mov   si, bx
+mov   word ptr [bp - 4], cx
+mov   bx, OFFSET _dc_texturemid
+mov   ax, word ptr ds:[bx]
+mov   word ptr [bp - 0Ah], ax
+mov   ax, word ptr ds:[bx + 2]
+mov   es, cx
+mov   word ptr [bp - 8], ax
+cmp   byte ptr es:[si], 0FFh
+jne   label1
+jmp   label8
+label1:
+mov   bx, OFFSET _spryscale
+mov   di, OFFSET _spryscale
+mov   bx, word ptr ds:[bx]
+mov   cx, word ptr ds:[di + 2]
+mov   es, word ptr [bp - 4]
+mov   al, byte ptr es:[si]
+xor   ah, ah
+call FastMul16u32u_
+mov   bx, OFFSET _sprtopscreen
+mov   cx, word ptr ds:[bx]
+add   cx, ax
+mov   word ptr [bp - 6], cx
+mov   di, word ptr ds:[bx + 2]
+mov   bx, OFFSET _spryscale
+adc   di, dx
+mov   dx, word ptr ds:[bx]
+mov   cx, word ptr ds:[bx + 2]
+mov   es, word ptr [bp - 4]
+mov   al, byte ptr es:[si + 1]
+mov   bx, dx
+xor   ah, ah
+
+call FastMul16u32u_
+
+mov   bx, OFFSET _dc_yl
+mov   word ptr ds:[bx], di
+mov   bx, OFFSET _dc_yh
+add   ax, word ptr [bp - 6]
+adc   dx, di
+mov   word ptr ds:[bx], dx
+test  ax, ax
+jne   label2
+jmp   label3
+label2:
+cmp   word ptr [bp - 6], 0
+je    label4
+mov   bx, OFFSET _dc_yl
+inc   word ptr ds:[bx]
+label4:
+mov   bx, OFFSET _dc_x
+mov   di, OFFSET _mfloorclip
+mov   bx, word ptr ds:[bx]
+mov   ax, word ptr ds:[di]
+mov   dx, word ptr ds:[di + 2]
+mov   di, OFFSET _dc_yh
+add   bx, bx
+mov   es, dx
+add   bx, ax
+mov   cx, word ptr ds:[di]
+cmp   cx, word ptr es:[bx]
+jl    label5
+mov   bx, OFFSET _dc_x
+mov   bx, word ptr ds:[bx]
+add   bx, bx
+add   bx, ax
+mov   ax, word ptr es:[bx]
+dec   ax
+mov   word ptr ds:[di], ax
+label5:
+mov   bx, OFFSET _dc_x
+mov   di, OFFSET _mceilingclip
+mov   bx, word ptr ds:[bx]
+mov   ax, word ptr ds:[di]
+mov   dx, word ptr ds:[di + 2]
+mov   di, OFFSET _dc_yl
+add   bx, bx
+mov   es, dx
+add   bx, ax
+mov   cx, word ptr ds:[di]
+cmp   cx, word ptr es:[bx]
+jg    label6
+mov   bx, OFFSET _dc_x
+mov   bx, word ptr [bx]
+add   bx, bx
+add   bx, ax
+mov   ax, word ptr es:[bx]
+inc   ax
+mov   word ptr [di], ax
+label6:
+mov   bx, OFFSET _dc_yl
+mov   ax, word ptr [bx]
+mov   bx, OFFSET _dc_yh
+cmp   ax, word ptr [bx]
+jle   label12
+jmp   label7
+label12:
+mov   bx, OFFSET _dc_texturemid
+mov   ax, word ptr [bp - 0Ah]
+mov   word ptr [bx], ax
+mov   ax, word ptr [bp - 8]
+mov   word ptr [bx + 2], ax
+mov   es, word ptr [bp - 4]
+mov   al, byte ptr es:[si]
+mov   bx, OFFSET _dc_texturemid + 2
+xor   ah, ah
+sub   word ptr [bx], ax
+mov   bx, OFFSET _dc_yl
+cmp   word ptr [bx], 0
+jne   label11
+mov   word ptr [bx], 1
+label11:
+mov   bx, OFFSET _viewheight
+mov   ax, word ptr ds:[bx]
+mov   bx, OFFSET _dc_yh
+dec   ax
+cmp   ax, word ptr [bx]
+jne   label10
+mov   bx, OFFSET _viewheight
+mov   ax, word ptr ds:[bx]
+mov   bx, OFFSET _dc_yh
+sub   ax, 2
+mov   word ptr [bx], ax
+label10:
+mov   di, OFFSET _dc_yh
+mov   bx, OFFSET _dc_yl
+mov   di, word ptr [di]
+sub   di, word ptr [bx]
+test  di, di
+jl    label7
+mov   bx, OFFSET _dc_x
+mov   al, byte ptr [bx]
+mov   bx, OFFSET _detailshift + 1
+and   al, 3
+mov   ah, byte ptr [bx]
+mov   dx, 08E29h   ;  todo make dc_yl_lookup_maskedmapping a constant
+add   ah, al
+mov   bx, OFFSET _dc_yl
+mov   byte ptr [bp - 2], ah
+mov   cx, word ptr [bx]
+mov   bx, OFFSET _destview
+mov   es, dx
+add   cx, cx
+mov   dx, word ptr [bx]
+mov   ax, word ptr [bx + 2]
+mov   bx, cx
+add   dx, word ptr es:[bx]
+mov   bx, OFFSET _detailshift2minus
+mov   cl, byte ptr [bx]
+mov   bx, OFFSET _dc_x
+mov   word ptr [bp - 0Ch], ax
+mov   ax, word ptr [bx]
+mov   bl, byte ptr [bp - 2]
+sar   ax, cl
+xor   bh, bh
+mov   cx, ax
+mov   al, byte ptr [bx + _quality_port_lookup]
+add   cx, dx
+mov   dx, SC_DATA
+out   dx, al
+add   bx, bx
+mov   dx, GC_INDEX
+mov   ax, word ptr [bx + _vga_read_port_lookup]
+out   dx, ax
+mov   bx, cx
+mov   ax, di
+mov   cx, word ptr [bp - 0Ch]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_DrawFuzzColumnCallHigh
+
+label7:
+mov   es, word ptr [bp - 4]
+add   si, 2
+cmp   byte ptr es:[si], 0FFh
+je    label8
+jmp   label1
+label8:
+mov   bx, OFFSET _dc_texturemid
+mov   ax, word ptr [bp - 0Ah]
+mov   word ptr [bx], ax
+mov   ax, word ptr [bp - 8]
+mov   word ptr [bx + 2], ax
+
+LEAVE_MACRO
+
+pop   di
+pop   si
+pop   dx
+ret   
+label3:
+dec   word ptr [bx]
+jmp   label2
+
+endp
 
 
 

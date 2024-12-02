@@ -69,7 +69,7 @@
 //  in posts/runs of opaque pixels.
 //
 
-
+/*
 
 void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* column) {
 	
@@ -154,6 +154,9 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
     dc_texturemid = basetexturemid;
 
 }
+
+*/
+
 /*
 void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column) {
 	
