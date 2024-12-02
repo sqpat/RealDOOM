@@ -1308,27 +1308,24 @@ PUBLIC R_DrawMaskedSpriteShadow_
 ; ax 	 pixelsegment
 ; cx:bx  column fardata
 
-; bp - 2  	 UNUSED lookup (for quality_port_lookup and vga_read_port_lookup)
-; bp - 4     UNUSED  was cached cx
-; bp - 6     topscreen  segment
-; bp - 8     basetexturemid segment
-; bp - 0Ah   basetexturemid offset
-; bp - 0Ch   UNUSED temp cached destview segment
+; bp - 2     topscreen  segment
+; bp - 4     basetexturemid segment
+; bp - 6   basetexturemid offset
 
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ch
+sub   sp, 6
 mov   si, bx
 
 mov   es, cx
 mov   ax, word ptr ds:[_dc_texturemid]
-mov   word ptr [bp - 0Ah], ax
+mov   word ptr [bp - 6], ax
 mov   ax, word ptr ds:[_dc_texturemid+2]
 ; es is already cx
-mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 4], ax
 cmp   byte ptr es:[si], 0FFh  ; todo cant this check be only at the end? can this be called with 0 posts?
 je    jump_to_exit_draw_shadow_sprite
 draw_next_shadow_sprite_post:
@@ -1348,94 +1345,90 @@ ADD  DX, CX    ; add
 
 mov   cx, word ptr ds:[_sprtopscreen]
 add   cx, ax
-mov   word ptr [bp - 6], cx
+mov   word ptr [bp - 2], cx
 mov   cx, word ptr ds:[_sprtopscreen + 2]
 adc   cx, dx
 ; todo cache above values to not grab these again?
 ; BX IS STILL _spryscale
-
-xchg  cx, di   ; cx is now spryscale + 2, di is now spytopscreen+2
 
 
 mov   al, byte ptr es:[si + 1]
 xor   ah, ah
 
 ;inlined FastMul16u32u_
-XCHG CX, AX    ; AX stored in CX
-MUL  CX        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+XCHG DI, AX    ; AX stored in DI
+MUL  DI        ; AX * DI
+XCHG DI, AX    ; store low product to be high result. Retrieve orig AX
 MUL  BX        ; AX * BX
-ADD  DX, CX    ; add 
+ADD  DX, DI    ; add 
 
 
-mov   word ptr ds:[_dc_yl], di
-add   ax, word ptr [bp - 6]
-adc   dx, di
-mov   word ptr ds:[_dc_yh], dx
+mov   bx, cx   ; bx store _dc_yl
+add   ax, word ptr [bp - 2]
+adc   dx, cx
 test  ax, ax
 jne   bottomscreen_not_zero
-dec   word ptr ds:[_dc_yh]
+dec   dx
 bottomscreen_not_zero:
-cmp   word ptr [bp - 6], 0
+cmp   word ptr [bp - 2], 0
 je    topscreen_not_zero
-inc   word ptr ds:[_dc_yl]
+inc   bx   				; inc _dc_yl
 topscreen_not_zero:
+mov   ax, dx  ; store dc_yh in ax...
+mov   dx, bx			; dx gets _dc_yl
 mov   cx, es    ; cache this
 mov   bx, word ptr ds:[_dc_x]
 mov   di, word ptr ds:[_mfloorclip]
 mov   es, word ptr ds:[_mfloorclip + 2]
 add   bx, bx
-mov   ax, word ptr ds:[_dc_yh]
-cmp   ax, word ptr es:[bx + di]
+cmp   ax, word ptr es:[bx + di]   ; ax holds dc_yh
 jl    dc_yh_clipped_to_floor
 mov   ax, word ptr es:[bx + di]
 dec   ax
-mov   word ptr ds:[_dc_yh], ax
 dc_yh_clipped_to_floor:
+
 
 mov   di, word ptr ds:[_mceilingclip]
 mov   es, word ptr ds:[_mceilingclip + 2]
 
-
-mov   ax, word ptr ds:[_dc_yl]
-cmp   ax, word ptr es:[bx + di]
+cmp   dx, word ptr es:[bx + di]  ; _dc_yl compare
 jg    dc_yl_clipped_to_ceiling
 
-mov   ax, word ptr es:[bx + di]
-inc   ax
-mov   word ptr ds:[_dc_yl], ax
+mov   dx, word ptr es:[bx + di]
+inc   dx
 dc_yl_clipped_to_ceiling:
-mov   ax, word ptr ds:[_dc_yl]
-;        if (dc_yl <= dc_yh) {
-cmp   ax, word ptr ds:[_dc_yh]
-mov   es, cx
-jle   at_least_one_pixel_to_draw
-jmp   do_next_shadow_sprite_iteration ; 3 bytes left.. close
-at_least_one_pixel_to_draw:
-mov   ax, word ptr [bp - 0Ah]
-mov   word ptr ds:[_dc_texturemid], ax
-mov   ax, word ptr [bp - 8]
-mov   word ptr ds:[_dc_texturemid + 2], ax
-mov   al, byte ptr es:[si]
+; ax still stores dc_yh
 
-xor   ah, ah
-sub   word ptr ds:[_dc_texturemid+2], ax   ; todo clean this up, write once.
-cmp   word ptr ds:[_dc_yl], 0
+;        if (dc_yl <= dc_yh) {
+cmp   dx, ax
+mov   es, cx
+jg   do_next_shadow_sprite_iteration
+
+mov   di, ax  ; finally pass off dc_yh to di
+; _dc_texturemid = basetexturemid
+mov   ax, word ptr [bp - 6]
+mov   word ptr ds:[_dc_texturemid], ax
+mov   ax, word ptr [bp - 4]
+
+mov   bl, byte ptr es:[si]
+
+xor   bh, bh
+sub   ax, bx
+mov   word ptr ds:[_dc_texturemid+2], ax 
+cmp   dx, 0			; dx still holds dc_yl
 jne   high_border_adjusted
-mov   word ptr ds:[_dc_yl], 1  
+inc   dx 
 high_border_adjusted:
 mov   ax, word ptr ds:[_viewheight]
 dec   ax
-mov   di, word ptr ds:[_dc_yh]
-cmp   ax, di
+cmp   ax, di    ; di still holds _dc_yh
 jne   low_border_adjusted
-dec   ax
-mov   word ptr ds:[_dc_yh], ax
+dec   di        ; _dc_yh --
 low_border_adjusted:
 
-mov   bx, word ptr ds:[_dc_yl]
+mov   bx, dx    ; bx gets dc_yl 
 sub   di, bx
-test  di, di
+
 ; di = count
 jl    do_next_shadow_sprite_iteration
 mov   ax, word ptr ds:[_dc_x]
@@ -1487,9 +1480,9 @@ cmp   byte ptr es:[si], 0FFh
 je    exit_draw_shadow_sprite
 jmp   draw_next_shadow_sprite_post
 exit_draw_shadow_sprite:
-mov   ax, word ptr [bp - 0Ah]
+mov   ax, word ptr [bp - 6]
 mov   word ptr ds:[_dc_texturemid], ax
-mov   ax, word ptr [bp - 8]
+mov   ax, word ptr [bp - 4]
 mov   word ptr ds:[_dc_texturemid + 2], ax
 
 LEAVE_MACRO
