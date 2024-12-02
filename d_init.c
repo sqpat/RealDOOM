@@ -869,7 +869,7 @@ void __far I_ReadScreen();
 void __near R_DrawPlayerSprites (void);
 void __near R_DrawVisSprite ( vissprite_t __near* vis );
 void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* column);
-
+void __near R_DrawSprite (vissprite_t __near* spr);
 
 void __far D_DoomMain2(void) {
 	int16_t             p;
@@ -886,10 +886,10 @@ void __far D_DoomMain2(void) {
 	//I_Error("%lx", FixedMul(0x40000L, 0x40000L));
 
 
-	/*
+/*
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(R_DrawPlayerSprites, (byte __far *)R_SortVisSprites - (byte __far *)R_DrawPlayerSprites, 1, fp);
+	FAR_fwrite(R_DrawSprite, (byte __far *)R_FillBackScreen - (byte __far *)R_DrawSprite, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

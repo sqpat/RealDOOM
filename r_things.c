@@ -497,7 +497,8 @@ void __near R_SortVisSprites (void) {
 //
 // R_DrawSprite
 //
-
+void __near R_DrawSprite (vissprite_t __near* spr);
+/*
 void __near R_DrawSprite (vissprite_t __near* spr) {
     drawseg_t __far*          ds;
     int16_t               clipbot[SCREENWIDTH]; // could be uint8_t, need to change -2 special case
@@ -624,7 +625,7 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
     mfloorclip_segment = mceilingclip_segment = openings_segment;
 }
 
-
+*/
 
 //
 // R_DrawMasked

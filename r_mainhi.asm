@@ -27,11 +27,11 @@ EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
-EXTRN FastMul16u32u_:PROC
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
+EXTRN R_RenderMaskedSegRange_:NEAR
 
 
 EXTRN _R_DrawFuzzColumnCallHigh:DWORD
@@ -43,6 +43,7 @@ EXTRN _lastvisspritesegment:WORD
 EXTRN _lastvisspritesegment2:WORD
 EXTRN _vga_read_port_lookup:BYTE
 EXTRN _psprites:BYTE
+EXTRN _ds_p:DWORD
 
 
 
@@ -1854,7 +1855,7 @@ add   di, word ptr [bp - 8]
 adc   dx, word ptr [bp - 6]
 jmp   draw_sprite_shadow_innerloop
 
-endp
+ENDP
 
 PROC R_DrawPlayerSprites_ NEAR
 PUBLIC R_DrawPlayerSprites_
@@ -1878,5 +1879,377 @@ ret
 
 
 ENDP
+
+PROC R_DrawSprite_ NEAR
+PUBLIC R_DrawSprite_
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 0508h	; for cliptop/clipbot
+push  ax
+mov   bx, ax
+mov   ax, word ptr [bx + 2]
+cmp   ax, word ptr [bx + 4]
+jg    label1
+mov   di, ax
+mov   bx, word ptr [bp - 050Ah]
+add   di, ax
+label2:
+mov   word ptr [bp + di - 0288h], 0FFFEh ; todo rep movsw
+mov   dx, word ptr [bp + di - 0288h]
+inc   ax
+mov   word ptr [bp + di - 0508h], dx
+add   di, 2
+cmp   ax, word ptr [bx + 4]
+jle   label2
+label1:
+mov   di, word ptr ds:[_ds_p]
+mov   ax, word ptr ds:[_ds_p+2]
+sub   di, 020h		; sizeof drawseg
+mov   word ptr [bp - 2], ax
+test  di, di
+jbe   label3
+label6:
+mov   es, word ptr [bp - 2]
+mov   bx, word ptr [bp - 050Ah]
+mov   ax, word ptr es:[di + 2]
+cmp   ax, word ptr [bx + 4]
+jg    iterate_next_drawsg_loop
+jmp   label5
+iterate_next_drawsg_loop:
+add   di, -020h       ; sizeof drawseg
+test  di, di
+ja    label6
+label3:
+mov   bx, word ptr [bp - 050Ah]
+mov   ax, word ptr [bx + 2]
+cmp   ax, word ptr [bx + 4]
+jg    label7
+mov   si, ax
+add   si, ax
+label9:
+cmp   word ptr [bp + si - 0508h], -2
+jne   label8
+mov   bx, OFFSET _viewheight
+mov   dx, word ptr ds:[bx]
+mov   word ptr [bp + si - 0508h], dx
+label8:
+cmp   word ptr [bp + si - 0288h], -2
+jne   label42
+mov   word ptr [bp + si - 0288h], 0FFFFh
+label42:
+mov   bx, word ptr [bp - 050Ah]
+inc   ax
+add   si, 2
+cmp   ax, word ptr [bx + 4]
+jle   label9
+label7:
+mov   bx, OFFSET _mfloorclip
+lea   dx, [bp - 0508h]
+mov   word ptr ds:[bx], dx
+mov   word ptr ds:[bx + 2], ds
+mov   bx, OFFSET _mceilingclip
+lea   dx, [bp - 0288h]
+mov   word ptr ds:[bx], dx
+mov   ax, word ptr [bp - 050Ah]
+mov   word ptr ds:[bx + 2], ds
+mov   bx, OFFSET _mceilingclip + 2
+call  R_DrawVisSprite_
+mov   word ptr [bx], OPENINGS_SEGMENT
+mov   ax, word ptr [bx]
+mov   bx, OFFSET _mfloorclip + 2
+mov   word ptr [bx], ax
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label5:
+mov   ax, word ptr es:[di + 4]
+cmp   ax, word ptr [bx + 2]
+jl    iterate_next_drawsg_loop
+cmp   byte ptr es:[di + 01Ch], 0
+jne   label41
+cmp   word ptr es:[di + 01Ah], NULL_TEX_COL
+jne   label41
+jump_to_iterate_next_drawsg_loop_3:
+jmp   iterate_next_drawsg_loop
+label41:
+mov   es, word ptr [bp - 2]
+mov   ax, word ptr es:[di + 8]
+mov   dx, word ptr es:[di + 6]
+cmp   ax, word ptr es:[di + 0Ch]
+jg    label11
+je    label10
+label40:
+jmp   SHORT label39 
+label10:
+cmp   dx, word ptr es:[di + 0Ah]
+jbe   label40
+label11:
+mov   bx, word ptr [bp - 050Ah]
+cmp   ax, word ptr [bx + 01Ch]
+jl    label12
+jne   label13
+cmp   dx, word ptr [bx + 01Ah]
+jae   label13
+label12:
+mov   al, 1
+label19:
+mov   es, word ptr [bp - 2]
+mov   si, word ptr [bp - 050Ah]
+mov   dx, word ptr es:[di + 0Ch]
+mov   bx, word ptr es:[di + 0Ah]
+cmp   dx, word ptr [si + 01Ch]
+jl    label14
+jne   label15
+cmp   bx, word ptr [si + 01Ah]
+jae   label15
+label14:
+mov   ah, 1
+label20:
+test  al, al
+je    label16
+label58:
+mov   es, word ptr [bp - 2]
+cmp   word ptr es:[di + 01Ah], NULL_TEX_COL
+je    jump_to_iterate_next_drawsg_loop_3
+mov   bx, word ptr [bp - 050Ah]
+mov   ax, word ptr es:[di + 2]
+cmp   ax, word ptr [bx + 2]
+jge   label17
+mov   ax, word ptr [bx + 2]
+label17:
+mov   es, word ptr [bp - 2]
+mov   bx, word ptr [bp - 050Ah]
+mov   dx, word ptr es:[di + 4]
+cmp   dx, word ptr [bx + 4]
+jle   jump_to_label_25
+mov   cx, word ptr [bx + 4]
+label26:
+mov   dx, word ptr [bp - 2]
+mov   bx, ax
+mov   ax, di
+call  R_RenderMaskedSegRange_
+jmp   iterate_next_drawsg_loop
+label13:
+xor   al, al
+jmp   label19
+label15:
+xor   ah, ah
+jmp   label20
+label16:
+jmp   label22
+label39:
+mov   bx, word ptr [bp - 050Ah]
+mov   ax, word ptr es:[di + 0Ch]
+mov   dx, word ptr es:[di + 0Ah]
+cmp   ax, word ptr [bx + 01Ch]
+jl    label43
+jne   label44
+cmp   dx, word ptr [bx + 01Ah]
+jae   label44
+label43:
+mov   al, 1
+label23:
+mov   es, word ptr [bp - 2]
+mov   si, word ptr [bp - 050Ah]
+mov   dx, word ptr es:[di + 8]
+mov   bx, word ptr es:[di + 6]
+cmp   dx, word ptr [si + 01Ch]
+jl    label14
+jne   label15
+cmp   bx, word ptr [si + 01Ah]
+jae   label15
+jmp   label14
+label44:
+xor   al, al
+jmp   label23
+jump_to_label_25:
+jmp   label25
+label22:
+test  ah, ah
+je    label24
+jmp   label33 
+label24:
+mov   es, word ptr [bp - 2]
+mov   bx, word ptr [bp - 050Ah]
+mov   ax, word ptr es:[di + 2]
+cmp   ax, word ptr [bx + 2]
+jl    label31
+jmp   label45
+label31:
+mov   bx, word ptr [bx + 2]
+label27:
+mov   es, word ptr [bp - 2]
+mov   si, word ptr [bp - 050Ah]
+mov   ax, word ptr es:[di + 4]
+cmp   ax, word ptr [si + 4]
+jg    label32
+jmp   label46
+label32:
+mov   dx, word ptr [si + 4]
+label28:
+mov   es, word ptr [bp - 2]
+mov   cx, word ptr es:[di + 012h]
+sar   cx, 3
+mov   word ptr [bp - 8], cx
+mov   cx, word ptr es:[di + 012h]
+and   cx, 7
+mov   si, word ptr [bp - 050Ah]
+shl   cx, 0Dh
+mov   al, byte ptr es:[di + 01Ch]
+mov   word ptr [bp - 4], cx
+mov   cx, word ptr [si + 010h]
+cbw  
+cmp   cx, word ptr [bp - 8]
+jg    label29
+jne   label30
+mov   cx, word ptr [si + 0Eh]
+cmp   cx, word ptr [bp - 4]
+jb    label30
+label29:
+and   al, 0FEh
+label30:
+mov   es, word ptr [bp - 2]
+mov   cx, word ptr es:[di + 014h]
+sar   cx, 3
+mov   word ptr [bp - 8], cx
+mov   cx, word ptr es:[di + 014h]
+xor   ch, ch
+and   cl, 7
+shl   cx, 0Dh
+mov   si, word ptr [bp - 050Ah]
+mov   word ptr [bp - 4], cx
+mov   cx, word ptr [si + 014h]
+cmp   cx, word ptr [bp - 8]
+jl    label38
+jne   label37
+mov   cx, word ptr [si + 012h]
+cmp   cx, word ptr [bp - 4]
+ja    label37
+label38:
+and   al, 0FDh  
+label37:
+mov   si, bx
+add   si, bx
+cmp   ax, 1
+jne   label47
+mov   ax, bx
+cmp   bx, dx
+jle   label36
+jump_to_iterate_next_drawsg_loop_2:
+jmp   iterate_next_drawsg_loop
+label36:
+mov   cx, OPENINGS_SEGMENT
+label34:
+cmp   word ptr [bp + si - 0508h], -2
+jne   label35
+mov   es, word ptr [bp - 2]
+mov   bx, word ptr es:[di + 018h]
+mov   es, cx
+add   bx, si
+mov   bx, word ptr es:[bx]
+mov   word ptr [bp + si - 0508h], bx
+label35:
+inc   ax
+add   si, 2
+cmp   ax, dx
+jle   label34
+jmp   iterate_next_drawsg_loop
+label33:
+mov   es, word ptr [bp - 2]
+mov   bx, word ptr [bp - 050Ah]
+mov   si, word ptr es:[di]
+mov   cx, word ptr [bx + 0Ah]
+mov   ax, word ptr [bx + 0Ch]
+mov   dx, word ptr [bx + 8]
+mov   word ptr [bp - 6], ax
+mov   ax, word ptr [bx + 6]
+mov   bx, cx
+mov   cx, word ptr [bp - 6]
+call  R_PointOnSegSide_
+test  ax, ax
+jne   jump_to_label24
+jmp   label58
+jump_to_label24:
+jmp   label24
+label25:
+mov   cx, dx
+jmp   label26
+label45:
+mov   bx, ax
+jmp   label27
+label46:
+mov   dx, ax
+jmp   label28
+label47:
+cmp   ax, 2
+jne   label49
+mov   ax, bx
+cmp   bx, dx
+jg    jump_to_iterate_next_drawsg_loop_2
+mov   cx, OPENINGS_SEGMENT
+label51:
+cmp   word ptr [bp + si - 0288h], -2
+jne   label50
+mov   es, word ptr [bp - 2]
+mov   bx, word ptr es:[di + 016h]
+mov   es, cx
+add   bx, si
+mov   bx, word ptr es:[bx]
+mov   word ptr [bp + si - 0288h], bx
+label50:
+inc   ax
+add   si, 2
+cmp   ax, dx
+jle   label51
+jmp   iterate_next_drawsg_loop
+label49:
+cmp   ax, 3
+je    label52
+jump_to_iterate_next_drawsg_loop:
+jmp   iterate_next_drawsg_loop
+label52:
+mov   ax, bx
+cmp   bx, dx
+
+label56:
+jg    jump_to_iterate_next_drawsg_loop
+cmp   word ptr [bp + si - 0508h], -2
+jne   label54
+mov   es, word ptr [bp - 2]
+mov   cx, OPENINGS_SEGMENT
+mov   bx, word ptr es:[di + 018h]
+mov   es, cx
+add   bx, si
+mov   bx, word ptr es:[bx]
+mov   word ptr [bp + si - 0508h], bx
+label54:
+cmp   word ptr [bp + si - 0288h], -2
+jne   label55
+mov   es, word ptr [bp - 2]
+mov   cx, OPENINGS_SEGMENT
+mov   bx, word ptr es:[di + 016h]
+mov   es, cx
+add   bx, si
+mov   bx, word ptr es:[bx]
+mov   word ptr [bp + si - 0288h], bx
+label55:
+inc   ax
+add   si, 2
+cmp   ax, dx
+jmp   label56
+
+ENDP
+
 
 END
