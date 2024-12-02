@@ -1318,33 +1318,48 @@ mov   bp, sp
 sub   sp, 0Ch
 mov   si, bx
 mov   word ptr [bp - 4], cx
+mov   es, cx
 mov   ax, word ptr ds:[_dc_texturemid]
 mov   word ptr [bp - 0Ah], ax
 mov   ax, word ptr ds:[_dc_texturemid+2]
-mov   es, cx
+; es is already cx
 mov   word ptr [bp - 8], ax
-cmp   byte ptr es:[si], 0FFh
+cmp   byte ptr es:[si], 0FFh  ; todo cant this check be only at the end? can this be called with 0 posts?
 je    jump_to_exit_draw_shadow_sprite
 draw_next_shadow_sprite_post:
 mov   bx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
-mov   es, word ptr [bp - 4]
 mov   al, byte ptr es:[si]
 xor   ah, ah
-call FastMul16u32u_
+
+;inlined FastMul16u32u_
+XCHG CX, AX    ; AX stored in CX
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
+
 mov   cx, word ptr ds:[_sprtopscreen]
 add   cx, ax
 mov   word ptr [bp - 6], cx
 mov   di, word ptr ds:[_sprtopscreen + 2]
 adc   di, dx
+; todo cache above values to not grab these again?
 mov   dx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
-mov   es, word ptr [bp - 4]
+
 mov   al, byte ptr es:[si + 1]
 mov   bx, dx
 xor   ah, ah
 
-call FastMul16u32u_
+;inlined FastMul16u32u_
+XCHG CX, AX    ; AX stored in CX
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
 
 mov   word ptr ds:[_dc_yl], di
 add   ax, word ptr [bp - 6]
@@ -1358,48 +1373,41 @@ cmp   word ptr [bp - 6], 0
 je    label4
 inc   word ptr ds:[_dc_yl]
 label4:
+mov   cx, es    ; cache this
 mov   bx, word ptr ds:[_dc_x]
-mov   ax, word ptr ds:[_mfloorclip]
-mov   dx, word ptr ds:[_mfloorclip + 2]
+mov   di, word ptr ds:[_mfloorclip]
+mov   es, word ptr ds:[_mfloorclip + 2]
 add   bx, bx
-mov   es, dx
-add   bx, ax
-mov   cx, word ptr ds:[_dc_yh]
-cmp   cx, word ptr es:[bx]
+mov   ax, word ptr ds:[_dc_yh]
+cmp   ax, word ptr es:[bx + di]
 jl    label5
-mov   bx, word ptr ds:[_dc_x]
-add   bx, bx
-add   bx, ax
-mov   ax, word ptr es:[bx]
+mov   ax, word ptr es:[bx + di]
 dec   ax
 mov   word ptr ds:[_dc_yh], ax
 label5:
-mov   bx, word ptr ds:[_dc_x]
-mov   ax, word ptr ds:[_mceilingclip]
-mov   dx, word ptr ds:[_mceilingclip + 2]
-add   bx, bx
-mov   es, dx
-add   bx, ax
-mov   cx, word ptr ds:[_dc_yl]
-cmp   cx, word ptr es:[bx]
+
+mov   di, word ptr ds:[_mceilingclip]
+mov   es, word ptr ds:[_mceilingclip + 2]
+
+
+mov   ax, word ptr ds:[_dc_yl]
+cmp   ax, word ptr es:[bx + di]
 jg    label6
-mov   bx, word ptr ds:[_dc_x]
-add   bx, bx
-add   bx, ax
-mov   ax, word ptr es:[bx]
+
+mov   ax, word ptr es:[bx + di]
 inc   ax
 mov   word ptr ds:[_dc_yl], ax
 label6:
 mov   ax, word ptr ds:[_dc_yl]
 cmp   ax, word ptr ds:[_dc_yh]
 jle   label12
-jmp   label7
+jmp   do_next_shadow_sprite_iteration ; 1Bh left.. close
 label12:
 mov   ax, word ptr [bp - 0Ah]
 mov   word ptr ds:[_dc_texturemid], ax
 mov   ax, word ptr [bp - 8]
 mov   word ptr ds:[_dc_texturemid + 2], ax
-mov   es, word ptr [bp - 4]
+mov   es, cx
 mov   al, byte ptr es:[si]
 
 xor   ah, ah
@@ -1419,19 +1427,18 @@ label10:
 mov   di, word ptr ds:[_dc_yh]
 sub   di, word ptr ds:[_dc_yl]
 test  di, di
-jl    label7
+jl    do_next_shadow_sprite_iteration
 mov   al, byte ptr ds:[_dc_x]
 and   al, 3
 mov   ah, byte ptr ds:[_detailshift + 1]
 mov   dx, 08E29h   ;  todo make dc_yl_lookup_maskedmapping a constant
 add   ah, al
 mov   byte ptr [bp - 2], ah
-mov   cx, word ptr ds:[_dc_yl]
+mov   bx, word ptr ds:[_dc_yl]
+add   bx, bx
 mov   es, dx
-add   cx, cx
 mov   dx, word ptr ds:[_destview]
 mov   ax, word ptr ds:[_destview + 2]
-mov   bx, cx
 add   dx, word ptr es:[bx]
 mov   cl, byte ptr ds:[_detailshift2minus]
 mov   word ptr [bp - 0Ch], ax
@@ -1456,7 +1463,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_DrawFuzzColumnCallHigh
 
-label7:
+do_next_shadow_sprite_iteration:
 mov   es, word ptr [bp - 4]
 add   si, 2
 cmp   byte ptr es:[si], 0FFh
@@ -1469,7 +1476,7 @@ mov   ax, word ptr [bp - 8]
 mov   word ptr ds:[_dc_texturemid + 2], ax
 
 LEAVE_MACRO
-
+mov   cx, es
 pop   di
 pop   si
 pop   dx
@@ -1792,7 +1799,7 @@ mov   ax, word ptr ds:[_dc_x]
 cmp   ax, word ptr [si + 4]
 jg    end_draw_sprite_shadow_innerloop
 mov   bx, dx
-mov   es, cx
+
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl   bx, 2
 ELSE
@@ -1804,10 +1811,10 @@ mov   bx, word ptr es:[bx + 10]
 
 add   ax, cx
 
-; todo preserve cx in this call.
-push  cx
+; cx, es preserved in the call
+
 call R_DrawMaskedSpriteShadow_
-pop   cx
+
 
 SELFMODIFY_detailshiftitercount5:
 

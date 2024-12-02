@@ -55,6 +55,7 @@ PUBLIC  R_DrawFuzzColumn_
 push dx
 push si
 push di
+push es
 mov  es, cx
 mov  cl, byte ptr ds:[_fuzzpos]	; note this is always the byte offset - no shift conversion necessary
 xor  ch, ch
@@ -146,6 +147,7 @@ mov  ax, si
 
 mov  byte ptr ds:[_fuzzpos], al
 
+pop  es
 pop  di
 pop  si
 pop  dx
@@ -490,7 +492,7 @@ exit_function:
 
 pop   ax; , word ptr [bp - 6]             ; restore dc_texture_mid
 mov   word ptr ds:[_dc_texturemid+2], ax
-mov   cx, word ptr [bp - 2]               ; restore cx
+mov   cx, es               ; restore cx
 LEAVE_MACRO
 pop   di
 pop   si
