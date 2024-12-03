@@ -2023,34 +2023,24 @@ scale1_highbits_larger_than_scale2:
 
 ;ax:dx = scale1
 
+; if scalecheckpass is 0, go calculate lowscalecheck pass. 
+; if not, the following if/else fails and we skip out early
+
 cmp   ax, word ptr [bx + 01Ch]
-jl    scale1_highbits_larger_than_spr_scale
-jne   scale1_highbits_smaller_than_spr_scale
+jl    set_r1_r2_and_render_masked_set_range
+jne   get_lowscalepass_1
 cmp   dx, word ptr [bx + 01Ah]
-jae   scale1_highbits_smaller_than_spr_scale
-scale1_highbits_larger_than_spr_scale:
+jae   get_lowscalepass_1
 
-mov   al, 1
-get_lowscalepass_1:
+;     scalecheckpass 1, fail early
+jmp   set_r1_r2_and_render_masked_set_range
 
-;			lowscalecheckpass = ds->scale2 < spr->scale;
 
-;dx:bx = ds->scale2
-
-mov   dx, word ptr es:[di + 0Ch]
-mov   si, word ptr es:[di + 0Ah]
-cmp   dx, word ptr [bx + 01Ch]
-jl    set_lowscalecheckpass_to_1
-jne   set_lowscalecheckpass_to_0
-cmp   si, word ptr [bx + 01Ah]
-jae   set_lowscalecheckpass_to_0
-set_lowscalecheckpass_to_1:
-mov   ah, 1
-lowscalecheckpass_set:
-test  al, al
-je    label22
 set_r1_r2_and_render_masked_set_range:
+;	if (ds->maskedtexturecol != NULL_TEX_COL) {
+ 
 cmp   word ptr es:[di + 01Ah], NULL_TEX_COL
+; continue
 je    jump_to_iterate_next_drawseg_loop_3
 ;  r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
 
@@ -2072,48 +2062,55 @@ mov   bx, ax
 mov   ax, di
 call  R_RenderMaskedSegRange_
 jmp   iterate_next_drawseg_loop
+get_lowscalepass_1:
+
+;			lowscalecheckpass = ds->scale2 < spr->scale;
+
+;dx:bx = ds->scale2
+
+mov   dx, word ptr es:[di + 0Ch]
+cmp   dx, word ptr [bx + 01Ch]
+jl    do_R_PointOnSegSide_check
+jne   failed_check_pass_set_r1_r2
+mov   si, word ptr es:[di + 0Ah]
+cmp   si, word ptr [bx + 01Ah]
+jae   failed_check_pass_set_r1_r2
+
+jmp   do_R_PointOnSegSide_check
 label25:
 ; set r2 to other case
 mov   cx, dx
 jmp   do_render_masked_segrange
 
-; todo do this al thing without branching.
-scale1_highbits_smaller_than_spr_scale:
-xor   al, al
-jmp   get_lowscalepass_1
-set_lowscalecheckpass_to_0:
-xor   ah, ah
-jmp   lowscalecheckpass_set
 
 scale1_smaller_than_scale2:
 
+;lowscalecheckpass = ds->scale1 < spr->scale;
+; ax:dx is ds->scale2
+
 mov   ax, word ptr es:[di + 0Ch]
-mov   dx, word ptr es:[di + 0Ah]
 cmp   ax, word ptr [bx + 01Ch]
-jl    label43
-jne   label44
+jl    set_r1_r2_and_render_masked_set_range
+jne   lowscalecheckpass_set_route2
+mov   dx, word ptr es:[di + 0Ah]
 cmp   dx, word ptr [bx + 01Ah]
-jae   label44
-label43:
-mov   al, 1
-label23:
+jae   lowscalecheckpass_set_route2
+jmp   set_r1_r2_and_render_masked_set_range
+
+lowscalecheckpass_set_route2:
+;scalecheckpass = ds->scale2 < spr->scale;
+; dx:si is ds->scale1
 
 
 mov   dx, word ptr es:[di + 8]
-mov   si, word ptr es:[di + 6]
 cmp   dx, word ptr [bx + 01Ch]
-jl    set_lowscalecheckpass_to_1
-jne   set_lowscalecheckpass_to_0
+jl    do_R_PointOnSegSide_check
+jne   failed_check_pass_set_r1_r2
+mov   si, word ptr es:[di + 6]
 cmp   si, word ptr [bx + 01Ah]
-jae   set_lowscalecheckpass_to_0
-jmp   set_lowscalecheckpass_to_1
-label44:
-xor   al, al
-jmp   label23
-label22:
-test  ah, ah
-je    failed_check_pass_set_r1_r2
-jmp   do_R_PointOnSegSide_check 
+jae   failed_check_pass_set_r1_r2
+jmp   do_R_PointOnSegSide_check
+
 failed_check_pass_set_r1_r2:
 
 ;		r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
@@ -2133,6 +2130,28 @@ mov   ax, word ptr es:[di + 4]	; spr->x2
 cmp   ax, word ptr [bx + 4]		; ds->x2
 jg    spr_x2_greater_than_dx_x2
 jmp   spr_x2_not_greater_than_dx_x2
+do_R_PointOnSegSide_check:
+
+
+mov   si, word ptr es:[di]
+mov   cx, word ptr [bx + 0Ah]
+mov   ax, word ptr [bx + 0Ch]
+mov   dx, word ptr [bx + 8]
+mov   word ptr [bp - 6], ax
+mov   ax, word ptr [bx + 6]
+mov   bx, cx
+mov   cx, word ptr [bp - 6]
+
+; todo this is the only place calling this? make sense to inline?
+call  R_PointOnSegSide_
+test  ax, ax
+mov   bx, word ptr [bp - 050Ah]  ; todo remove?
+mov   es, word ptr [bp - 2]     			; necessary
+jne   jump_to_failed_check_pass_set_r1_r2
+jmp   set_r1_r2_and_render_masked_set_range
+jump_to_failed_check_pass_set_r1_r2:
+jmp   failed_check_pass_set_r1_r2
+
 spr_x2_greater_than_dx_x2:
 mov   dx, word ptr [bx + 4]
 r2_set:
@@ -2206,27 +2225,7 @@ add   si, 2
 cmp   ax, dx
 jle   label34
 jmp   iterate_next_drawseg_loop
-do_R_PointOnSegSide_check:
 
-
-mov   si, word ptr es:[di]
-mov   cx, word ptr [bx + 0Ah]
-mov   ax, word ptr [bx + 0Ch]
-mov   dx, word ptr [bx + 8]
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr [bx + 6]
-mov   bx, cx
-mov   cx, word ptr [bp - 6]
-
-; todo this is the only place calling this? make sense to inline?
-call  R_PointOnSegSide_
-test  ax, ax
-mov   bx, word ptr [bp - 050Ah]  ; todo remove?
-mov   es, word ptr [bp - 2]     			; necessary
-jne   jump_to_failed_check_pass_set_r1_r2
-jmp   set_r1_r2_and_render_masked_set_range
-jump_to_failed_check_pass_set_r1_r2:
-jmp   failed_check_pass_set_r1_r2
 spr_x1_not_smaller_than_ds_x1:
 mov   si, ax
 jmp   r1_set
