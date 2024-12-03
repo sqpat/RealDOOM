@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 115
+#define CONSTANTS_COUNT 116
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -31,7 +31,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "MASKED_LOOKUP_SEGMENT",
     "PATCHWIDTHS_SEGMENT",
     "DRAWSEGS_BASE_SEGMENT",
-
+    "DRAWSEGS_BASE_SEGMENT_7000",
 
     "STATES_SEGMENT",
     "EVENTS_SEGMENT",
@@ -178,6 +178,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     masked_lookup_segment,
     patchwidths_segment,
     drawsegs_BASE_segment,
+    drawsegs_BASE_segment_7000,
 
     states_segment,
     events_segment,

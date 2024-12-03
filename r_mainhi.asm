@@ -1883,6 +1883,13 @@ ENDP
 PROC R_DrawSprite_ NEAR
 PUBLIC R_DrawSprite_
 
+; bp - 2	   ds_p segment. TODO always DRAWSEGS_BASE_SEGMENT_7000
+
+;
+
+; bp - 288h    cliptop
+; bp - 508h    clipbot
+; bp - 50Ah    vissprite near pointer
 
 push  bx
 push  cx
@@ -1892,79 +1899,90 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 0508h	; for cliptop/clipbot
-push  ax
+push  ax        ; bp - 50Ah
 mov   bx, ax
 mov   ax, word ptr [bx + 2]
-cmp   ax, word ptr [bx + 4]
-jg    label1
+mov   cx, word ptr [bx + 4]  ; spr->x2
+cmp   ax, cx
+jg    no_clip  ; todo im not sure if this conditional is possible. spr x2 < spr x1?
 mov   di, ax
-mov   bx, word ptr [bp - 050Ah]
+
+
+;	for (x = spr->x1; x <= spr->x2; x++) {
+;		clipbot[x] = cliptop[x] = -2;
+;	}
+    
+; init clipbot, cliptop
+
 add   di, ax
-label2:
-mov   word ptr [bp + di - 0288h], 0FFFEh ; todo rep movsw
-mov   dx, word ptr [bp + di - 0288h]
-inc   ax
-mov   word ptr [bp + di - 0508h], dx
-add   di, 2
-cmp   ax, word ptr [bx + 4]
-jle   label2
-label1:
+mov   si, di
+lea   di, [bp + di - 0288h]
+mov   dx, ss
+mov   es, dx
+sub   cx, ax   				 ; minus spr->x1
+inc   cx				     ; for the equals case.
+mov   dx, cx
+mov   ax, 0FFFEh             ; -2
+rep   stosw
+lea   di, [bp + si - 0508h]
+mov   cx, dx
+rep   stosw
+
+
+no_clip:
+; di equals ds_p offset
 mov   di, word ptr ds:[_ds_p]
-mov   ax, word ptr ds:[_ds_p+2]
-sub   di, 020h		; sizeof drawseg
+mov   ax, DRAWSEGS_BASE_SEGMENT_7000
+sub   di, DRAWSEG_SIZE		; sizeof drawseg
 mov   word ptr [bp - 2], ax
-test  di, di
+;test  di, di   ;todo seems to work?
 jbe   label3
 label6:
 mov   es, word ptr [bp - 2]
-mov   bx, word ptr [bp - 050Ah]
+
+; compare ds->x1 > spr->x2
 mov   ax, word ptr es:[di + 2]
 cmp   ax, word ptr [bx + 4]
-jg    iterate_next_drawsg_loop
-jmp   label5
-iterate_next_drawsg_loop:
-add   di, -020h       ; sizeof drawseg
-test  di, di
+jg    iterate_next_drawseg_loop
+jmp   continue_checking_if_drawseg_obscures_sprite
+iterate_next_drawseg_loop:
+mov   bx, word ptr [bp - 050Ah]
+add   di, -DRAWSEG_SIZE       ; sizeof drawseg
+test  di, di    ; todo why is this necessary
 ja    label6
 label3:
-mov   bx, word ptr [bp - 050Ah]
 mov   ax, word ptr [bx + 2]
 cmp   ax, word ptr [bx + 4]
-jg    label7
+jg    draw_the_vissprite
 mov   si, ax
 add   si, ax
 label9:
 cmp   word ptr [bp + si - 0508h], -2
 jne   label8
-mov   bx, OFFSET _viewheight
-mov   dx, word ptr ds:[bx]
+mov   dx, word ptr ds:[_viewheight]
 mov   word ptr [bp + si - 0508h], dx
 label8:
 cmp   word ptr [bp + si - 0288h], -2
 jne   label42
 mov   word ptr [bp + si - 0288h], 0FFFFh
 label42:
-mov   bx, word ptr [bp - 050Ah]
 inc   ax
 add   si, 2
 cmp   ax, word ptr [bx + 4]
 jle   label9
-label7:
-mov   bx, OFFSET _mfloorclip
+draw_the_vissprite:
+
 lea   dx, [bp - 0508h]
-mov   word ptr ds:[bx], dx
-mov   word ptr ds:[bx + 2], ds
-mov   bx, OFFSET _mceilingclip
-lea   dx, [bp - 0288h]
-mov   word ptr ds:[bx], dx
+mov   word ptr ds:[_mfloorclip], dx
+mov   word ptr ds:[_mfloorclip + 2], ds
+add   dx, 0280h   ;  [bp - 0288h]
+
+mov   word ptr ds:[_mceilingclip], dx
+mov   word ptr ds:[_mceilingclip + 2], ds
 mov   ax, word ptr [bp - 050Ah]
-mov   word ptr ds:[bx + 2], ds
-mov   bx, OFFSET _mceilingclip + 2
 call  R_DrawVisSprite_
-mov   word ptr [bx], OPENINGS_SEGMENT
-mov   ax, word ptr [bx]
-mov   bx, OFFSET _mfloorclip + 2
-mov   word ptr [bx], ax
+mov   word ptr ds:[_mceilingclip + 2], OPENINGS_SEGMENT
+mov   word ptr ds:[_mfloorclip + 2], OPENINGS_SEGMENT
 leave 
 pop   di
 pop   si
@@ -1972,84 +1990,103 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label5:
+continue_checking_if_drawseg_obscures_sprite:
+; compare (ds->x2 < spr->x1)
 mov   ax, word ptr es:[di + 4]
 cmp   ax, word ptr [bx + 2]
-jl    iterate_next_drawsg_loop
+jl    iterate_next_drawseg_loop
+;  (!ds->silhouette     && ds->maskedtexturecol == NULL_TEX_COL) ) {
 cmp   byte ptr es:[di + 01Ch], 0
-jne   label41
+jne   check_drawseg_scales
 cmp   word ptr es:[di + 01Ah], NULL_TEX_COL
-jne   label41
-jump_to_iterate_next_drawsg_loop_3:
-jmp   iterate_next_drawsg_loop
-label41:
-mov   es, word ptr [bp - 2]
+jne   check_drawseg_scales
+jump_to_iterate_next_drawseg_loop_3:
+jmp   iterate_next_drawseg_loop
+check_drawseg_scales:
+
+;		if (ds->scale1 > ds->scale2) {
+
+;ax:dx = scale1
 mov   ax, word ptr es:[di + 8]
 mov   dx, word ptr es:[di + 6]
 cmp   ax, word ptr es:[di + 0Ch]
-jg    label11
-je    label10
-label40:
-jmp   SHORT label39 
-label10:
+jg    scale1_highbits_larger_than_scale2
+je    scale1_highbits_equal_to_scale2
+
+jmp   SHORT scale1_smaller_than_scale2
+scale1_highbits_equal_to_scale2:
 cmp   dx, word ptr es:[di + 0Ah]
-jbe   label40
-label11:
-mov   bx, word ptr [bp - 050Ah]
+jbe   scale1_smaller_than_scale2
+scale1_highbits_larger_than_scale2:
+;   bx is vissprite..
+;			scalecheckpass = ds->scale1 < spr->scale;
+
+;ax:dx = scale1
+
 cmp   ax, word ptr [bx + 01Ch]
-jl    label12
-jne   label13
+jl    scale1_highbits_larger_than_spr_scale
+jne   scale1_highbits_smaller_than_spr_scale
 cmp   dx, word ptr [bx + 01Ah]
-jae   label13
-label12:
+jae   scale1_highbits_smaller_than_spr_scale
+scale1_highbits_larger_than_spr_scale:
+
 mov   al, 1
-label19:
-mov   es, word ptr [bp - 2]
-mov   si, word ptr [bp - 050Ah]
+get_lowscalepass_1:
+
+;			lowscalecheckpass = ds->scale2 < spr->scale;
+
+;dx:bx = ds->scale2
+
 mov   dx, word ptr es:[di + 0Ch]
-mov   bx, word ptr es:[di + 0Ah]
-cmp   dx, word ptr [si + 01Ch]
-jl    label14
-jne   label15
-cmp   bx, word ptr [si + 01Ah]
-jae   label15
-label14:
+mov   si, word ptr es:[di + 0Ah]
+cmp   dx, word ptr [bx + 01Ch]
+jl    set_lowscalecheckpass_to_1
+jne   set_lowscalecheckpass_to_0
+cmp   si, word ptr [bx + 01Ah]
+jae   set_lowscalecheckpass_to_0
+set_lowscalecheckpass_to_1:
 mov   ah, 1
-label20:
+lowscalecheckpass_set:
 test  al, al
-je    label16
-label58:
-mov   es, word ptr [bp - 2]
+je    label22
+set_r1_r2_and_render_masked_set_range:
 cmp   word ptr es:[di + 01Ah], NULL_TEX_COL
-je    jump_to_iterate_next_drawsg_loop_3
-mov   bx, word ptr [bp - 050Ah]
+je    jump_to_iterate_next_drawseg_loop_3
+;  r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
+
 mov   ax, word ptr es:[di + 2]
 cmp   ax, word ptr [bx + 2]
 jge   label17
 mov   ax, word ptr [bx + 2]
 label17:
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr [bp - 050Ah]
+
+; r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
+
 mov   dx, word ptr es:[di + 4]
 cmp   dx, word ptr [bx + 4]
-jle   jump_to_label_25
+jle   label25
 mov   cx, word ptr [bx + 4]
-label26:
-mov   dx, word ptr [bp - 2]
+do_render_masked_segrange:
+mov   dx, es
 mov   bx, ax
 mov   ax, di
 call  R_RenderMaskedSegRange_
-jmp   iterate_next_drawsg_loop
-label13:
+jmp   iterate_next_drawseg_loop
+label25:
+; set r2 to other case
+mov   cx, dx
+jmp   do_render_masked_segrange
+
+; todo do this al thing without branching.
+scale1_highbits_smaller_than_spr_scale:
 xor   al, al
-jmp   label19
-label15:
+jmp   get_lowscalepass_1
+set_lowscalecheckpass_to_0:
 xor   ah, ah
-jmp   label20
-label16:
-jmp   label22
-label39:
-mov   bx, word ptr [bp - 050Ah]
+jmp   lowscalecheckpass_set
+
+scale1_smaller_than_scale2:
+
 mov   ax, word ptr es:[di + 0Ch]
 mov   dx, word ptr es:[di + 0Ah]
 cmp   ax, word ptr [bx + 01Ch]
@@ -2060,66 +2097,70 @@ jae   label44
 label43:
 mov   al, 1
 label23:
-mov   es, word ptr [bp - 2]
-mov   si, word ptr [bp - 050Ah]
+
+
 mov   dx, word ptr es:[di + 8]
-mov   bx, word ptr es:[di + 6]
-cmp   dx, word ptr [si + 01Ch]
-jl    label14
-jne   label15
-cmp   bx, word ptr [si + 01Ah]
-jae   label15
-jmp   label14
+mov   si, word ptr es:[di + 6]
+cmp   dx, word ptr [bx + 01Ch]
+jl    set_lowscalecheckpass_to_1
+jne   set_lowscalecheckpass_to_0
+cmp   si, word ptr [bx + 01Ah]
+jae   set_lowscalecheckpass_to_0
+jmp   set_lowscalecheckpass_to_1
 label44:
 xor   al, al
 jmp   label23
-jump_to_label_25:
-jmp   label25
 label22:
 test  ah, ah
-je    label24
-jmp   label33 
-label24:
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr [bp - 050Ah]
-mov   ax, word ptr es:[di + 2]
-cmp   ax, word ptr [bx + 2]
-jl    label31
-jmp   label45
-label31:
-mov   bx, word ptr [bx + 2]
-label27:
-mov   es, word ptr [bp - 2]
-mov   si, word ptr [bp - 050Ah]
-mov   ax, word ptr es:[di + 4]
-cmp   ax, word ptr [si + 4]
-jg    label32
-jmp   label46
-label32:
-mov   dx, word ptr [si + 4]
-label28:
-mov   es, word ptr [bp - 2]
+je    failed_check_pass_set_r1_r2
+jmp   do_R_PointOnSegSide_check 
+failed_check_pass_set_r1_r2:
+
+;		r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
+
+
+mov   ax, word ptr es:[di + 2]  ; spr->x1
+cmp   ax, word ptr [bx + 2]     ; ds->x1 
+jl    spr_x1_smaller_than_ds_x1
+jmp   spr_x1_not_smaller_than_ds_x1
+spr_x1_smaller_than_ds_x1:
+mov   si, word ptr [bx + 2]
+r1_set:
+
+;		r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
+
+mov   ax, word ptr es:[di + 4]	; spr->x2
+cmp   ax, word ptr [bx + 4]		; ds->x2
+jg    spr_x2_greater_than_dx_x2
+jmp   spr_x2_not_greater_than_dx_x2
+spr_x2_greater_than_dx_x2:
+mov   dx, word ptr [bx + 4]
+r2_set:
+
+;        silhouette = ds->silhouette;
+
+; todo clean up this set SET_FIXED_UNION_FROM_SHORT_HEIGHT
 mov   cx, word ptr es:[di + 012h]
 sar   cx, 3
 mov   word ptr [bp - 8], cx
 mov   cx, word ptr es:[di + 012h]
 and   cx, 7
-mov   si, word ptr [bp - 050Ah]
+
 shl   cx, 0Dh
 mov   al, byte ptr es:[di + 01Ch]
 mov   word ptr [bp - 4], cx
-mov   cx, word ptr [si + 010h]
+mov   cx, word ptr [bx + 010h]
 cbw  
 cmp   cx, word ptr [bp - 8]
 jg    label29
 jne   label30
-mov   cx, word ptr [si + 0Eh]
+mov   cx, word ptr [bx + 0Eh]
 cmp   cx, word ptr [bp - 4]
 jb    label30
 label29:
 and   al, 0FEh
 label30:
-mov   es, word ptr [bp - 2]
+
 mov   cx, word ptr es:[di + 014h]
 sar   cx, 3
 mov   word ptr [bp - 8], cx
@@ -2127,27 +2168,27 @@ mov   cx, word ptr es:[di + 014h]
 xor   ch, ch
 and   cl, 7
 shl   cx, 0Dh
-mov   si, word ptr [bp - 050Ah]
+
 mov   word ptr [bp - 4], cx
-mov   cx, word ptr [si + 014h]
+mov   cx, word ptr [bx + 014h]
 cmp   cx, word ptr [bp - 8]
 jl    label38
 jne   label37
-mov   cx, word ptr [si + 012h]
+mov   cx, word ptr [bx + 012h]
 cmp   cx, word ptr [bp - 4]
 ja    label37
 label38:
 and   al, 0FDh  
 label37:
-mov   si, bx
+mov   bx, si
 add   si, bx
 cmp   ax, 1
 jne   label47
 mov   ax, bx
 cmp   bx, dx
 jle   label36
-jump_to_iterate_next_drawsg_loop_2:
-jmp   iterate_next_drawsg_loop
+jump_to_iterate_next_drawseg_loop_2:
+jmp   iterate_next_drawseg_loop
 label36:
 mov   cx, OPENINGS_SEGMENT
 label34:
@@ -2164,10 +2205,10 @@ inc   ax
 add   si, 2
 cmp   ax, dx
 jle   label34
-jmp   iterate_next_drawsg_loop
-label33:
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr [bp - 050Ah]
+jmp   iterate_next_drawseg_loop
+do_R_PointOnSegSide_check:
+
+
 mov   si, word ptr es:[di]
 mov   cx, word ptr [bx + 0Ah]
 mov   ax, word ptr [bx + 0Ch]
@@ -2176,27 +2217,28 @@ mov   word ptr [bp - 6], ax
 mov   ax, word ptr [bx + 6]
 mov   bx, cx
 mov   cx, word ptr [bp - 6]
+
+; todo this is the only place calling this? make sense to inline?
 call  R_PointOnSegSide_
 test  ax, ax
-jne   jump_to_label24
-jmp   label58
-jump_to_label24:
-jmp   label24
-label25:
-mov   cx, dx
-jmp   label26
-label45:
-mov   bx, ax
-jmp   label27
-label46:
+mov   bx, word ptr [bp - 050Ah]  ; todo remove?
+mov   es, word ptr [bp - 2]     			; necessary
+jne   jump_to_failed_check_pass_set_r1_r2
+jmp   set_r1_r2_and_render_masked_set_range
+jump_to_failed_check_pass_set_r1_r2:
+jmp   failed_check_pass_set_r1_r2
+spr_x1_not_smaller_than_ds_x1:
+mov   si, ax
+jmp   r1_set
+spr_x2_not_greater_than_dx_x2:
 mov   dx, ax
-jmp   label28
+jmp   r2_set
 label47:
 cmp   ax, 2
 jne   label49
 mov   ax, bx
 cmp   bx, dx
-jg    jump_to_iterate_next_drawsg_loop_2
+jg    jump_to_iterate_next_drawseg_loop_2
 mov   cx, OPENINGS_SEGMENT
 label51:
 cmp   word ptr [bp + si - 0288h], -2
@@ -2212,18 +2254,18 @@ inc   ax
 add   si, 2
 cmp   ax, dx
 jle   label51
-jmp   iterate_next_drawsg_loop
+jmp   iterate_next_drawseg_loop
 label49:
 cmp   ax, 3
 je    label52
-jump_to_iterate_next_drawsg_loop:
-jmp   iterate_next_drawsg_loop
+jump_to_iterate_next_drawseg_loop:
+jmp   iterate_next_drawseg_loop
 label52:
 mov   ax, bx
 cmp   bx, dx
 
 label56:
-jg    jump_to_iterate_next_drawsg_loop
+jg    jump_to_iterate_next_drawseg_loop
 cmp   word ptr [bp + si - 0508h], -2
 jne   label54
 mov   es, word ptr [bp - 2]

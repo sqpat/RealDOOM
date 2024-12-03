@@ -207,7 +207,8 @@ SCRATCH_PAGE_SEGMENT_5000      = 05000h;
 
 COLORMAP_SHADOW     		   = 0FFh
 
-
+; todo generate this from c
+DRAWSEG_SIZE				   = 020h
 NULL_TEX_COL				   = 0FEBFh  ;  65535 - SCREENWIDTH
 
 
