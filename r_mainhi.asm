@@ -44,6 +44,8 @@ EXTRN _lastvisspritesegment2:WORD
 EXTRN _vga_read_port_lookup:BYTE
 EXTRN _psprites:BYTE
 EXTRN _ds_p:DWORD
+EXTRN _vissprite_p:DWORD
+EXTRN _vsprsortedheadfirst:DWORD
 
 
 UNCLIPPED_COLUMN  = 0FFFEh
@@ -2330,6 +2332,166 @@ jmp   iterate_next_drawseg_loop
 
 
 ENDP
+
+
+VISSPRITE_UNSORTED_INDEX    = 0FFh
+VISSPRITE_SORTED_HEAD_INDEX = 0FEh
+
+
+PROC R_SortVisSprites_ NEAR
+PUBLIC R_SortVisSprites_
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 03Ah
+mov       cx, 028h
+lea       di, [bp - 03Ah]
+xor       al, al
+push      di
+push      ds
+pop       es
+mov       ah, al
+shr       cx, 1
+rep stosw
+adc       cx, cx
+rep stosb
+pop       di
+mov       ax, word ptr [_vissprite_p]
+mov       word ptr [bp - 0Ah], ax
+test      ax, ax
+jne       label10
+label9:
+jmp       exit_sort_vissprites
+label10:
+xor       dl, dl
+label4:
+mov       al, dl
+xor       ah, ah
+cmp       ax, word ptr [bp - 0Ah]
+jge       label11
+jmp       label12
+label11:
+xor       al, dl
+mov       byte ptr [bp - 03Ah], al
+mov       ax, word ptr [_vissprite_p]
+dec       ax
+imul      ax, ax, 028h
+mov       word ptr [bp - 8], 0
+mov       bx, ax
+mov       al, VISSPRITE_SORTED_HEAD_INDEX
+add       bx, OFFSET _vissprites
+mov       byte ptr [bp - 2], al
+mov       byte ptr [_vsprsortedheadfirst], al
+mov       byte ptr [bx], VISSPRITE_UNSORTED_INDEX
+cmp       word ptr [bp - 0Ah], 0
+jle       label9
+label2:
+mov       si, 0FFFFh
+mov       al, byte ptr [bp - 03Ah]
+mov       dx, 07FFFh
+cmp       al, VISSPRITE_UNSORTED_INDEX
+je        label8
+label7:
+mov       bl, al
+xor       bh, bh
+imul      cx, bx, 028h
+mov       bx, cx
+mov       word ptr [bp - 0Ch], 0
+add       bx, OFFSET _vissprites + 1Ah;  0xd68a  probably offset to a vissprites field?
+mov       word ptr [bp - 0Eh], cx
+cmp       dx, word ptr [bx + 2]
+jg        label13
+jne       label14
+cmp       si, word ptr [bx]
+jbe       label14
+label13:
+mov       byte ptr [bp - 4], al
+add       cx, OFFSET _vissprites
+mov       si, word ptr [bx]
+mov       dx, word ptr [bx + 2]
+mov       word ptr [bp - 6], cx
+label14:
+xor       ah, ah
+imul      ax, ax, 028h
+mov       bx, ax
+mov       al, byte ptr [bx + OFFSET _vissprites]
+add       bx, OFFSET _vissprites
+cmp       al, VISSPRITE_UNSORTED_INDEX
+jne       label7
+label8:
+mov       al, byte ptr [bp - 03Ah]
+cmp       al, byte ptr [bp - 4]
+je        label6
+label5:
+xor       ah, ah
+imul      ax, ax, 028h
+mov       word ptr [bp - 010h], 0
+mov       bx, ax
+mov       word ptr [bp - 012h], ax
+mov       al, byte ptr [bx + OFFSET _vissprites]
+add       bx, OFFSET _vissprites
+cmp       al, byte ptr [bp - 4]
+je        label15
+jmp       label5
+label12:
+imul      ax, ax, 028h
+mov       dh, dl
+inc       dh
+mov       bx, ax
+mov       byte ptr [bx + OFFSET _vissprites ], dh
+add       bx, OFFSET _vissprites
+inc       dl
+jmp       label4
+label6:
+mov       bx, word ptr [bp - 6]
+mov       al, byte ptr [bx]
+mov       byte ptr [bp - 03Ah], al
+label16:
+cmp       byte ptr [_vsprsortedheadfirst], VISSPRITE_SORTED_HEAD_INDEX
+jne       label3
+mov       al, byte ptr [bp - 4]
+mov       byte ptr [_vsprsortedheadfirst], al
+label1:
+mov       bx, word ptr [bp - 6]
+mov       al, byte ptr [bp - 4]
+inc       word ptr [bp - 8]
+mov       byte ptr [bp - 2], al
+mov       ax, word ptr [bp - 8]
+mov       byte ptr [bx], VISSPRITE_SORTED_HEAD_INDEX
+cmp       ax, word ptr [bp - 0Ah]
+jge       exit_sort_vissprites
+jmp       label2
+exit_sort_vissprites:
+
+LEAVE_MACRO
+
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+ret       
+label15:
+mov       si, word ptr [bp - 6]
+mov       al, byte ptr [si]
+mov       byte ptr [bx], al
+jmp       label16
+label3:
+mov       al, byte ptr [bp - 2]
+xor       ah, ah
+imul      ax, ax, 028h
+mov       bx, ax
+mov       al, byte ptr [bp - 4]
+add       bx, OFFSET _vissprites
+mov       byte ptr [bx], al
+jmp       label1
+
+endp
 
 
 END

@@ -427,6 +427,9 @@ void __near R_DrawPlayerSprites (void){
 #define VISSPRITE_UNSORTED_INDEX 255
 #define VISSPRITE_SORTED_HEAD_INDEX 254
 
+void __near R_SortVisSprites (void);
+
+/*
 void __near R_SortVisSprites (void) {
 	int16_t                 i;
 	int16_t                 count;
@@ -491,7 +494,7 @@ void __near R_SortVisSprites (void) {
 }
 
 
-
+*/
 
 
 //
