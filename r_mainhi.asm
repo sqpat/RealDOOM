@@ -2235,6 +2235,9 @@ do_not_remove_top_silhouette:
 mov   bx, si
 add   si, bx
 mov   cx, OPENINGS_SEGMENT
+mov   ds, cx
+mov   es, word ptr [bp - 2]; todo necessary?
+
 pop   ax
 
 cmp   al, 1
@@ -2246,21 +2249,21 @@ jump_to_iterate_next_drawseg_loop_2:
 jmp   iterate_next_drawseg_loop
 do_silhouette_1_loop:
 
+mov   bx, word ptr es:[di + 018h]
 silhouette_1_loop:
 cmp   word ptr [bp + si - 0508h], -2
 jne   increment_silhouette_1_loop
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr es:[di + 018h]
-mov   es, cx
 
-mov   bx, word ptr es:[bx+si]
-mov   word ptr [bp + si - 0508h], bx
+mov   cx, word ptr ds:[bx+si]
+mov   word ptr [bp + si - 0508h], cx
 increment_silhouette_1_loop:
 inc   ax
 add   si, 2
 cmp   ax, dx
 jle   silhouette_1_loop
-jmp   iterate_next_drawseg_loop
+mov   cx, ss
+mov   ds, cx
+jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
 
 silhouette_not_1:
 cmp   al, 2
@@ -2268,25 +2271,29 @@ jne   silhouette_not_2
 mov   ax, bx
 cmp   bx, dx
 jg    jump_to_iterate_next_drawseg_loop_2
+
+mov   bx, word ptr es:[di + 016h]
+
 silhouette_2_loop:
 cmp   word ptr [bp + si - 0288h], -2
 jne   increment_silhouette_2_loop
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr es:[di + 016h]
-mov   es, cx
-add   bx, si
-mov   bx, word ptr es:[bx]
-mov   word ptr [bp + si - 0288h], bx
+
+mov   cx, word ptr ds:[bx+si]
+mov   word ptr [bp + si - 0288h], cx
 increment_silhouette_2_loop:
 inc   ax
 add   si, 2
 cmp   ax, dx
 jle   silhouette_2_loop
-jmp   iterate_next_drawseg_loop
+mov   cx, ss
+mov   ds, cx
+jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
 silhouette_not_2:
 cmp   al, 3
 je    silhouette_is_3
 jump_to_iterate_next_drawseg_loop:
+mov   cx, ss
+mov   ds, cx
 jmp   iterate_next_drawseg_loop
 silhouette_is_3:
 mov   ax, bx
@@ -2296,23 +2303,19 @@ silhouette_3_loop:
 jg    jump_to_iterate_next_drawseg_loop
 cmp   word ptr [bp + si - 0508h], -2
 jne   do_next_silhouette_3_subloop
-mov   es, word ptr [bp - 2]
+
 
 mov   bx, word ptr es:[di + 018h]
-mov   es, cx
-add   bx, si
-mov   bx, word ptr es:[bx]
-mov   word ptr [bp + si - 0508h], bx
+
+mov   cx, word ptr ds:[bx+si]
+mov   word ptr [bp + si - 0508h], cx
 do_next_silhouette_3_subloop:
 cmp   word ptr [bp + si - 0288h], -2
 jne   increment_silhouette_3_loop
-mov   es, word ptr [bp - 2]
 
 mov   bx, word ptr es:[di + 016h]
-mov   es, cx
-add   bx, si
-mov   bx, word ptr es:[bx]
-mov   word ptr [bp + si - 0288h], bx
+mov   cx, word ptr ds:[bx+si]
+mov   word ptr [bp + si - 0288h], cx
 increment_silhouette_3_loop:
 inc   ax
 add   si, 2
