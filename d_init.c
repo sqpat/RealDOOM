@@ -871,6 +871,7 @@ void __near R_DrawVisSprite ( vissprite_t __near* vis );
 void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* column);
 void __near R_DrawSprite (vissprite_t __near* spr);
 void __near R_SortVisSprites (void);
+void __near R_RenderSegLoop (fixed_t rw_scalestep);
 
 void __far D_DoomMain2(void) {
 	int16_t             p;
@@ -889,8 +890,8 @@ void __far D_DoomMain2(void) {
 
 /*
 
-	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(R_SortVisSprites, (byte __far *)R_DrawMasked - (byte __far *)R_SortVisSprites, 1, fp);
+	FILE *fp = fopen("output8.bin", "wb");
+	FAR_fwrite(R_RenderMaskedSegRange, (byte __far *)R_DrawSprite - (byte __far *)R_RenderMaskedSegRange, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

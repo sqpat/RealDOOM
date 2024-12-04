@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 116
+#define CONSTANTS_COUNT 117
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -16,7 +16,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SUBSECTOR_LINES_SEGMENT",
     "NODES_SEGMENT",
     "NODE_CHILDREN_SEGMENT",
-    "SEG_LINDEDEFS_SEGMENT",
+    "SEG_LINEDEFS_SEGMENT",
     "SEG_SIDES_SEGMENT",
 
 
@@ -29,6 +29,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SPRITETOPOFFSETS_SEGMENT",
     "TEXTUREDEFS_OFFSET_SEGMENT",
     "MASKED_LOOKUP_SEGMENT",
+    "MASKED_LOOKUP_SEGMENT_7000",
     "PATCHWIDTHS_SEGMENT",
     "DRAWSEGS_BASE_SEGMENT",
     "DRAWSEGS_BASE_SEGMENT_7000",
@@ -176,6 +177,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     spritetopoffsets_segment,
     texturedefs_offset_segment,
     masked_lookup_segment,
+    masked_lookup_segment_7000,
     patchwidths_segment,
     drawsegs_BASE_segment,
     drawsegs_BASE_segment_7000,

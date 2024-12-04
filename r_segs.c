@@ -41,6 +41,7 @@
 //
 // R_RenderMaskedSegRange
 //
+/*
 void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2) {
 	uint8_t	index;
 	int16_t		lightnum;
@@ -99,7 +100,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		lightnum--;
 	} else if (v1.x == v2.x) {
 		lightnum++;
-	}
+	} 
 	if (lightnum < 0){
 		walllights = 0;
 	} else if (lightnum >= LIGHTLEVELS) {
@@ -350,11 +351,12 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		}
 	}
 */
+/*
 	maskednextlookup = NULL_TEX_COL;
 	maskedcachedbasecol = NULL_TEX_COL;
 
 }
-
+*/
 
 
 

@@ -27,11 +27,13 @@ EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
+EXTRN FastMul16u32u_:PROC
+EXTRN FastDiv3232_:PROC
+EXTRN R_GetMaskedColumnSegment_:NEAR
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
-EXTRN R_RenderMaskedSegRange_:NEAR
 
 
 EXTRN _R_DrawFuzzColumnCallHigh:DWORD
@@ -46,6 +48,22 @@ EXTRN _psprites:BYTE
 EXTRN _ds_p:DWORD
 EXTRN _vissprite_p:DWORD
 EXTRN _vsprsortedheadfirst:DWORD
+
+EXTRN _maskedtexturecol:BYTE
+EXTRN _maskedcachedbasecol:BYTE
+EXTRN _maskedheaderpixeolfs:BYTE
+EXTRN _maskedcachedsegment:WORD
+EXTRN _maskedheightvalcache:BYTE
+EXTRN _cachedbyteheight:BYTE
+EXTRN _maskednextlookup:WORD
+EXTRN _lightmult48lookup:BYTE
+EXTRN _walllights:BYTE
+EXTRN _R_DrawSingleMaskedColumnCallHigh:DWORD
+EXTRN _R_DrawMaskedColumnCallHigh:DWORD
+EXTRN _curseg:WORD
+EXTRN _curseg_render:WORD
+EXTRN _masked_headers:WORD
+
 
 
 UNCLIPPED_COLUMN  = 0FFFEh
@@ -1883,6 +1901,590 @@ ret
 
 
 ENDP
+
+
+PROC R_RenderMaskedSegRange_ NEAR
+PUBLIC R_RenderMaskedSegRange_
+
+
+
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 034h
+mov   di, ax
+mov   word ptr [bp - 022h], dx
+mov   word ptr [bp - 020h], bx
+mov   word ptr [bp - 010h], cx
+mov   es, dx
+mov   ax, word ptr es:[di]
+mov   word ptr ds:[_curseg], ax
+shl   ax, 3
+add   ah, 040h
+mov   word ptr ds:[_curseg_render], ax
+mov   bx, ax
+mov   ax, SIDES_SEGMENT
+mov   si, word ptr [bx + 6]
+mov   es, ax
+mov   ax, word ptr [bx + 6]
+shl   ax, 2
+shl   si, 3
+add   ah, 0AEh
+mov   si, word ptr es:[si + 4]
+mov   word ptr [bp - 024h], ax
+mov   ax, TEXTURETRANSLATION_SEGMENT
+add   si, si
+mov   es, ax
+mov   ax, MASKED_LOOKUP_SEGMENT_7000
+mov   si, word ptr es:[si]
+mov   es, ax
+mov   al, byte ptr es:[si]
+mov   word ptr [bp - 0Ch], 0FFFFh
+mov   byte ptr [bp - 2], al
+cmp   al, 0FFh
+je    label1
+xor   ah, ah
+mov   bx, OFFSET _masked_headers
+shl   ax, 3
+add   bx, ax
+mov   ax, word ptr [bx + 2]
+mov   word ptr [bp - 0Ch], ax
+label1:
+mov   ax, word ptr ds:[_curseg]
+mov   dx, SEG_LINEDEFS_SEGMENT
+mov   bx, ax
+mov   es, dx
+add   bh, 016h
+mov   dl, byte ptr es:[bx]
+mov   bx, ax
+add   bx, ax
+mov   bx, word ptr es:[bx]
+mov   ax, bx
+shl   ax, 2
+mov   word ptr [bp - 026h], ax
+mov   ax, LINEFLAGSLIST_SEGMENT
+mov   es, ax
+mov   al, byte ptr es:[bx]
+mov   bx, word ptr ds:[_curseg_render]
+mov   byte ptr [bp - 4], al
+mov   word ptr [bp - 034h], bx
+mov   bx, word ptr [bx]
+mov   ax, VERTEXES_SEGMENT
+shl   bx, 2
+mov   es, ax
+mov   ax, word ptr es:[bx]
+mov   word ptr [bp - 02Eh], ax
+mov   ax, word ptr es:[bx + 2]
+mov   bx, word ptr [bp - 034h]
+mov   bx, word ptr [bx + 2]
+shl   bx, 2
+mov   word ptr [bp - 02Ah], ax
+mov   ax, word ptr es:[bx]
+mov   cx, word ptr es:[bx + 2]
+mov   bx, word ptr [bp - 024h]
+mov   word ptr [bp - 028h], ax
+mov   ax, word ptr [bx + 2]
+mov   word ptr [bp - 02Ch], ax
+test  byte ptr [bp - 4], 4
+jne   label2
+jmp   label3
+label2:
+mov   al, dl
+xor   al, 1
+mov   bx, word ptr [bp - 026h]
+xor   ah, ah
+mov   dx, LINES_SEGMENT
+add   ax, ax
+mov   es, dx
+add   bx, ax
+mov   ax, word ptr es:[bx]
+shl   ax, 2
+mov   dx, SECTORS_SEGMENT
+mov   bx, ax
+mov   ax, word ptr [bx + 0AE02h] ; ????? maybe lines sectors offset diff
+add   bx, 0AE02h
+shl   ax, 4
+label22:
+mov   bx, OFFSET _backsector
+mov   word ptr [bx], ax
+mov   word ptr [bx + 2], dx
+mov   ax, word ptr [bp - 02Ch]
+mov   bx, OFFSET _frontsector
+shl   ax, 4
+mov   word ptr [bx + 2], SECTORS_SEGMENT
+mov   word ptr [bx], ax
+les   ax, dword ptr [bx]
+mov   bx, ax
+mov   al, byte ptr es:[bx + 0Eh]
+xor   ah, ah
+mov   dx, ax
+mov   bx, OFFSET _extralight
+sar   dx, 4
+mov   al, byte ptr [bx]
+add   ax, dx
+cmp   cx, word ptr [bp - 02Ah]
+je    label4
+jmp   label7
+label4:
+dec   ax
+label24:
+test  ax, ax
+jge   label5
+jmp   label8
+label5:
+cmp   ax, 010h
+jge   label6
+jmp   label9
+label6:
+
+
+mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult48lookup[LIGHTLEVELS - 1];
+
+label25:
+mov   word ptr ds:[_walllights], ax
+mov   es, word ptr [bp - 022h]
+mov   ax, word ptr es:[di + 01Ah]
+add   ax, ax
+mov   word ptr ds:[_maskedtexturecol], ax
+mov   ax, word ptr es:[di + 0Eh]
+mov   word ptr ds:[_maskedtexturecol+2], OPENINGS_SEGMENT
+mov   word ptr [bp - 01Eh], ax
+mov   ax, word ptr es:[di + 010h]
+mov   bx, word ptr [bp - 01Eh]
+mov   word ptr [bp - 01Ch], ax
+mov   ax, word ptr [bp - 020h]
+mov   cx, word ptr [bp - 01Ch]
+sub   ax, word ptr es:[di + 2]
+add   word ptr ds:[_walllights], 030h
+call  FastMul16u32u_
+mov   es, word ptr [bp - 022h]
+mov   bx, OFFSET _spryscale
+add   ax, word ptr es:[di + 6]
+adc   dx, word ptr es:[di + 8]
+mov   word ptr [bx], ax
+mov   word ptr [bx + 2], dx
+mov   bx, OFFSET _mfloorclip
+mov   ax, word ptr es:[di + 018h]
+mov   word ptr [bx], ax
+mov   bx, OFFSET _mceilingclip
+mov   ax, word ptr es:[di + 016h]
+mov   word ptr [bx], ax
+test  byte ptr [bp - 4], 010h
+jne   label10
+jmp   label12
+label10:
+mov   bx, OFFSET _frontsector
+les   di, dword ptr [bx]
+mov   bx, OFFSET _backsector
+mov   dx, word ptr [bx]
+mov   bx, word ptr [bx + 2]
+mov   ax, word ptr es:[di]
+mov   es, bx
+mov   bx, dx
+cmp   ax, word ptr es:[bx]
+jg    label11
+jmp   label13
+label11:
+mov   bx, OFFSET _frontsector
+label26:
+les   di, dword ptr [bx]
+mov   bx, word ptr es:[di]
+mov   di, OFFSET _viewz_shortheight
+mov   ax, bx
+sub   ax, word ptr [di]
+mov   bx, OFFSET _dc_texturemid+2
+sar   ax, 3
+mov   word ptr [bx], ax
+mov   bx, OFFSET _frontsector
+les   di, dword ptr [bx]
+mov   bx, OFFSET _backsector
+mov   dx, word ptr [bx]
+mov   bx, word ptr [bx + 2]
+mov   ax, word ptr es:[di]
+mov   es, bx
+mov   bx, dx
+cmp   ax, word ptr es:[bx]
+jg    label14
+jmp   label15
+label14:
+mov   bx, OFFSET _frontsector
+label27:
+les   di, dword ptr [bx]
+mov   bx, word ptr es:[di]
+mov   di, OFFSET _viewz_shortheight
+mov   ax, bx
+sub   ax, word ptr [di]
+and   ax, 7
+mov   bx, OFFSET _dc_texturemid
+shl   ax, 0Dh
+mov   word ptr [bx], ax
+mov   ax, TEXTUREHEIGHTS_SEGMENT
+mov   es, ax
+mov   al, byte ptr es:[si]
+xor   ah, ah
+mov   bx, OFFSET _dc_texturemid+2
+inc   ax
+add   word ptr [bx], ax
+label55:
+mov   di, word ptr [bp - 024h]
+mov   bx, OFFSET _dc_texturemid+2
+mov   ax, word ptr [di]
+add   word ptr [bx], ax
+mov   bx, OFFSET _fixedcolormap
+cmp   byte ptr [bx], 0
+je    label16
+mov   bx, OFFSET _dc_colormap_segment
+mov   word ptr [bx], COLORMAPS_SEGMENT_MASKEDMAPPING
+mov   bx, OFFSET _fixedcolormap
+mov   di, OFFSET _dc_colormap_index
+mov   al, byte ptr [bx]
+mov   byte ptr [di], al
+label16:
+mov   bx, OFFSET _detailshiftandval
+mov   ax, word ptr [bp - 020h]
+mov   di, word ptr [bp - 020h]
+and   ax, word ptr [bx]
+mov   bx, OFFSET _spryscale
+mov   word ptr [bp - 032h], ax
+sub   di, ax
+mov   ax, word ptr [bx]
+mov   dx, word ptr [bp - 01Ch]
+mov   word ptr [bp - 016h], ax
+mov   ax, word ptr [bx + 2]
+mov   bx, OFFSET _detailshift2minus
+mov   word ptr [bp - 014h], ax
+mov   cl, byte ptr [bx]
+mov   ax, word ptr [bp - 01Eh]
+xor   ch, ch
+jcxz  label17
+label18:
+shl   ax, 1
+rcl   dx, 1
+loop  label18
+label17:
+mov   bx, OFFSET _dc_texturemid
+mov   word ptr [bp - 0Ah], ax
+mov   word ptr [bp - 8], dx
+mov   cx, word ptr [bx]
+mov   bx, word ptr [bx + 2]
+mov   word ptr [bp - 030h], cx
+mov   word ptr [bp - 034h], bx
+mov   cx, dx
+mov   dx, word ptr [bp - 034h]
+mov   bx, ax
+mov   ax, word ptr [bp - 030h]
+call  FixedMul_
+mov   word ptr [bp - 012h], ax
+mov   word ptr [bp - 0Eh], dx
+test  di, di
+je    label19
+label20:
+mov   ax, word ptr [bp - 01Eh]
+sub   word ptr [bp - 016h], ax
+mov   ax, word ptr [bp - 01ch]
+sbb   word ptr [bp - 014h], ax
+dec   di
+jne   label20
+label19:
+mov   ax, word ptr [bp - 032h]
+mov   word ptr [bp - 018h], 0
+mov   word ptr [bp - 01Ah], ax
+label30:
+mov   bx, OFFSET _detailshiftitercount
+mov   al, byte ptr [bx]
+xor   ah, ah
+cmp   ax, word ptr [bp - 018h]
+jg    label21
+mov   ax, NULL_TEX_COL
+mov   word ptr ds:[_maskednextlookup], ax
+mov   word ptr ds:[_maskedcachedbasecol], ax
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+label3:
+xor   ax, ax
+xor   dx, dx
+jmp   label22
+label7:
+mov   dx, word ptr [bp - 02Eh]
+cmp   dx, word ptr [bp - 028h]
+je    label23
+jmp   label24
+label23:
+inc   ax
+jmp   label24
+label8:
+xor   ax, ax
+jmp   label25
+label9:
+mov   bx, ax
+add   bx, ax
+mov   ax, word ptr [bx + _lightmult48lookup]
+jmp   label25
+label13:
+mov   bx, OFFSET _backsector
+jmp   label26
+label15:
+mov   bx, OFFSET _backsector
+jmp   label27
+label21:
+mov   bx, OFFSET _detailshift + 1
+mov   al, byte ptr [bx]
+mov   bx, word ptr [bp - 018h]
+cbw  
+add   bx, ax
+mov   dx, SC_DATA
+mov   al, byte ptr [bx + 060h]
+out   dx, al
+mov   bx, OFFSET _spryscale
+mov   ax, word ptr [bp - 016h]
+mov   word ptr [bx], ax
+mov   ax, word ptr [bp - 014h]
+mov   word ptr [bx + 2], ax
+mov   bx, OFFSET _dc_x
+mov   ax, word ptr [bp - 01ah]
+mov   word ptr [bx], ax
+cmp   ax, word ptr [bp - 020h]
+jl    label28
+label47:
+mov   bx, OFFSET _centery
+mov   ax, word ptr [bx]
+mov   bx, OFFSET _sprtopscreen+2
+mov   word ptr [bx], ax
+mov   bx, OFFSET _sprtopscreen
+mov   di, OFFSET _spryscale
+mov   word ptr [bx], 0
+mov   bx, OFFSET _spryscale
+mov   cx, word ptr [di + 2]
+mov   di, OFFSET _dc_texturemid
+mov   bx, word ptr [bx]
+mov   ax, word ptr [di]
+mov   dx, word ptr [di + 2]
+call  FixedMul_
+mov   bx, OFFSET _sprtopscreen
+mov   di, OFFSET _spryscale
+sub   word ptr [bx], ax
+sbb   word ptr [bx + 2], dx
+label34:
+mov   bx, OFFSET _dc_x
+mov   ax, word ptr [bx]
+cmp   ax, word ptr [bp - 010h]
+jle   label29
+inc   word ptr [bp - 01Ah]
+mov   ax, word ptr [bp - 01Eh]
+inc   word ptr [bp - 018h]
+add   word ptr [bp - 016h], ax
+mov   ax, word ptr [bp - 01Ch]
+adc   word ptr [bp - 014h], ax
+jmp   label30
+label28:
+jmp   label31
+label29:
+mov   bx, word ptr ds:[_maskedtexturecol]
+add   ax, ax
+mov   es, word ptr ds:[_maskedtexturecol+2]
+add   bx, ax
+mov   ax, word ptr es:[bx]
+mov   word ptr [bp - 6], ax
+cmp   ax, 07FFFh
+jne   label32
+label40:
+mov   bx, OFFSET _detailshiftitercount
+mov   al, byte ptr [bx]
+mov   bx, OFFSET _dc_x
+xor   ah, ah
+add   word ptr [bx], ax
+mov   bx, OFFSET _spryscale
+mov   ax, word ptr [bp - 0Ah]
+add   word ptr [bx], ax
+mov   ax, word ptr [bp - 8]
+adc   word ptr [bx + 2], ax
+mov   bx, OFFSET _sprtopscreen
+mov   ax, word ptr [bp - 012h]
+sub   word ptr [bx], ax
+mov   ax, word ptr [bp - 0Eh]
+sbb   word ptr [bx + 2], ax
+jmp   label34
+label32:
+mov   bx, OFFSET _fixedcolormap
+cmp   byte ptr [bx], 0
+jne   label36
+mov   bx, OFFSET _spryscale + 2
+cmp   word ptr [bx], 3
+jge   label35
+jmp   label37
+label35:
+mov   al, 02Fh
+label49:
+mov   bx, OFFSET _dc_colormap_segment
+xor   ah, ah
+mov   word ptr [bx], COLORMAPS_SEGMENT_MASKEDMAPPING
+mov   bx, word ptr ds:[_walllights]
+add   bx, ax
+mov   ax, SCALELIGHTFIXED_SEGMENT
+mov   es, ax
+mov   al, byte ptr es:[bx]
+mov   bx, OFFSET _dc_colormap_index
+mov   byte ptr [bx], al
+label36:
+mov   bx, OFFSET _spryscale
+mov   ax, 0FFFFh
+mov   cx, word ptr [di + 2]
+mov   dx, ax
+mov   bx, word ptr [bx]
+call  FastDiv3232_
+mov   bx, OFFSET _dc_iscale
+mov   word ptr [bx], ax
+mov   al, byte ptr [bp - 6]
+mov   word ptr [bx + 2], dx
+sub   al, byte ptr ds:[_maskedcachedbasecol]
+cmp   byte ptr [bp - 2], 0FFh
+je    jump_to_label_41
+mov   dx, word ptr [bp - 6]
+cmp   dx, word ptr ds:[_maskednextlookup]
+jb    label39
+label38:
+mov   dx, word ptr [bp - 6]
+mov   ax, si
+call  R_GetMaskedColumnSegment_  ; todo is this right
+label43:
+mov   bx, word ptr [bp - 6]
+sub   bx, word ptr ds:[_maskedcachedbasecol]
+mov   dx, MASKEDPOSTDATAOFS_SEGMENT
+add   bx, bx
+mov   es, dx
+add   bx, word ptr [bp - 0Ch]
+mov   cx, maskedpostdata_segment
+mov   bx, word ptr es:[bx]
+call  dword ptr [_R_DrawMaskedColumnCallHigh]   ;todo right ask?
+label51:
+mov   bx, OFFSET _dc_x
+mov   ax, word ptr [bx]
+mov   bx, word ptr ds:[_maskedtexturecol]
+add   ax, ax
+mov   es, word ptr ds:[_maskedtexturecol+2]
+add   bx, ax
+mov   word ptr es:[bx], 07FFFh
+jmp   label40
+jump_to_label_41:
+jmp   label41
+label39:
+cmp   dx, word ptr ds:[_maskedcachedbasecol]
+jb    label38
+cmp   word ptr ds:[_maskedheaderpixeolfs], -1
+je    label42
+mov   bx, dx
+mov   ax, word ptr ds:[_maskedheaderpixeolfs]
+sub   bx, word ptr ds:[_maskedcachedbasecol]
+mov   dx, MASKEDPIXELDATAOFS_SEGMENT
+add   bx, bx
+mov   es, dx
+add   bx, ax
+mov   ax, word ptr es:[bx]
+add   ax, word ptr [_maskedcachedsegment]
+jmp   label43
+label42:
+mov   ah, byte ptr [_maskedheightvalcache]
+mul   ah
+add   ax, word ptr [_maskedcachedsegment]
+jmp   label43
+label12:
+mov   bx, OFFSET _frontsector
+les   ax, dword ptr [bx]
+mov   bx, OFFSET _backsector
+mov   di, word ptr [bx]
+mov   dx, word ptr [bx + 2]
+mov   bx, ax
+mov   ax, word ptr es:[bx + 2]
+mov   es, dx
+cmp   ax, word ptr es:[di + 2]
+jge   label54
+mov   bx, OFFSET _frontsector
+label45:
+les   di, dword ptr [bx]
+mov   bx, word ptr es:[di + 2]
+mov   di, OFFSET _viewz_shortheight
+mov   ax, bx
+sub   ax, word ptr [di]
+mov   bx, OFFSET _dc_texturemid+2
+sar   ax, 3
+mov   word ptr [bx], ax
+mov   bx, OFFSET _frontsector
+les   di, dword ptr [bx]
+mov   bx, OFFSET _backsector
+mov   dx, word ptr [bx]
+mov   bx, word ptr [bx + 2]
+mov   ax, word ptr es:[di + 2]
+mov   es, bx
+mov   bx, dx
+cmp   ax, word ptr es:[bx + 2]
+jge   label44
+mov   bx, OFFSET _frontsector
+label46:
+les   di, dword ptr [bx]
+mov   bx, word ptr es:[di + 2]
+mov   di, OFFSET _viewz_shortheight
+mov   ax, bx
+sub   ax, word ptr [di]
+xor   ah, ah
+and   al, 7
+mov   bx, OFFSET _dc_texturemid
+shl   ax, 0Dh
+mov   word ptr [bx], ax
+jmp   label55
+label54:
+mov   bx, OFFSET _backsector
+jmp   label45
+label44:
+mov   bx, OFFSET _backsector
+jmp   label46
+label31:
+mov   bx, OFFSET _detailshiftitercount
+mov   al, byte ptr [bx]
+mov   bx, OFFSET _dc_x
+xor   ah, ah
+add   word ptr [bx], ax
+mov   bx, OFFSET _spryscale
+mov   ax, word ptr [bp - 0Ah]
+add   word ptr [bx], ax
+mov   ax, word ptr [bp - 8]
+adc   word ptr [bx + 2], ax
+jmp   label47
+label37:
+mov   bx, OFFSET _spryscale
+mov   ax, word ptr [bx]
+mov   dx, word ptr [bx + 2]
+mov   cx, 0Ch
+label48:
+sar   dx, 1
+rcr   ax, 1
+loop  label48
+jmp   label49
+label41:
+mov   dx, word ptr [bp - 6]
+cmp   dx, word ptr ds:[_maskednextlookup]
+jb    label50
+label52:
+mov   dx, word ptr [bp - 6]
+mov   ax, si
+call  R_GetMaskedColumnSegment_
+label53:
+mov   dl, byte ptr ds:[_cachedbyteheight]
+xor   dh, dh
+call  dword ptr [_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+jmp   label51
+label50:
+cmp   dx, word ptr ds:[_maskedcachedbasecol]
+jb    label52
+mov   ah, byte ptr ds:[_maskedheightvalcache]
+mul   ah
+add   ax, word ptr ds:[_maskedcachedsegment]
+jmp   label53
+
+endp
+
 
 PROC R_DrawSprite_ NEAR
 PUBLIC R_DrawSprite_
