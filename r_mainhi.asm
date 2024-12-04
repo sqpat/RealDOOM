@@ -1886,12 +1886,12 @@ PROC R_DrawSprite_ NEAR
 PUBLIC R_DrawSprite_
 
 ; bp - 2	   ds_p segment. TODO always DRAWSEGS_BASE_SEGMENT_7000
+; bp - 4       unused
+; bp - 6       unused
 
-;
-
-; bp - 288h    cliptop
-; bp - 508h    clipbot
-; bp - 50Ah    vissprite near pointer
+; bp - 282h    cliptop
+; bp - 502h    clipbot
+; bp - 504h    vissprite near pointer
 
 push  bx
 push  cx
@@ -1900,8 +1900,8 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0508h	; for cliptop/clipbot
-push  ax        ; bp - 50Ah
+sub   sp, 0502h	; for cliptop/clipbot
+push  ax        ; bp - 504h
 mov   bx, ax
 mov   ax, word ptr [bx + 2]
 mov   cx, word ptr [bx + 4]  ; spr->x2
@@ -1918,7 +1918,7 @@ mov   di, ax
 
 add   di, ax
 mov   si, di
-lea   di, [bp + di - 0288h]
+lea   di, [bp + di - 0282h]
 mov   dx, ss
 mov   es, dx
 sub   cx, ax   				 ; minus spr->x1
@@ -1926,7 +1926,7 @@ inc   cx				     ; for the equals case.
 mov   dx, cx
 mov   ax, UNCLIPPED_COLUMN             ; -2
 rep   stosw
-lea   di, [bp + si - 0508h]
+lea   di, [bp + si - 0502h]
 mov   cx, dx
 rep   stosw
 
@@ -1947,7 +1947,7 @@ cmp   ax, word ptr [bx + 4]
 jg    iterate_next_drawseg_loop
 jmp   continue_checking_if_drawseg_obscures_sprite
 iterate_next_drawseg_loop:
-mov   bx, word ptr [bp - 050Ah]  ;todo put this after R_RenderMaskedSegRange_
+mov   bx, word ptr [bp - 0504h]  ;todo put this after R_RenderMaskedSegRange_
 sub   di, DRAWSEG_SIZE       ; sizeof drawseg
 jnz   check_loop_conditions
 done_masking:
@@ -1959,8 +1959,8 @@ sub   cx, si
 jl    draw_the_vissprite
 inc   cx
 add   si, si
-lea   si, [bp + si - 0508h]
-mov   bx, (0508h - 0288h)  
+lea   si, [bp + si - 0502h]
+mov   bx, (0502h - 0282h)  
 mov   ax, word ptr ds:[_viewheight]
 
 ; todo optim loop
@@ -1978,10 +1978,10 @@ loop loop_clipping_columns
 
 draw_the_vissprite:
 
-lea   ax, [bp - 0508h]
+lea   ax, [bp - 0502h]
 mov   word ptr ds:[_mfloorclip], ax
 mov   word ptr ds:[_mfloorclip + 2], ds
-add   ax, 0280h   ;  [bp - 0288h]
+add   ax, 0280h   ;  [bp - 0282h]
 
 mov   word ptr ds:[_mceilingclip], ax
 mov   word ptr ds:[_mceilingclip + 2], ds
@@ -2121,18 +2121,15 @@ do_R_PointOnSegSide_check:
 
 
 mov   si, word ptr es:[di]
-mov   cx, word ptr [bx + 0Ah]
-mov   ax, word ptr [bx + 0Ch]
-mov   dx, word ptr [bx + 8]
-mov   word ptr [bp - 6], ax
+mov   cx, word ptr [bx + 0Ch]
 mov   ax, word ptr [bx + 6]
-mov   bx, cx
-mov   cx, word ptr [bp - 6]
+mov   dx, word ptr [bx + 8]
+mov   bx, word ptr [bx + 0Ah]
 
 ; todo this is the only place calling this? make sense to inline?
 call  R_PointOnSegSide_
 test  ax, ax
-mov   bx, word ptr [bp - 050Ah]  ; todo remove?
+mov   bx, word ptr [bp - 0504h]  ; todo remove?
 mov   es, word ptr [bp - 2]     			; necessary
 jne   failed_check_pass_set_r1_r2
 jmp   set_r1_r2_and_render_masked_set_range
@@ -2142,11 +2139,10 @@ failed_check_pass_set_r1_r2:
 ;		r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
 
 
-mov   ax, word ptr es:[di + 2]  ; spr->x1
-cmp   ax, word ptr [bx + 2]     ; ds->x1 
+mov   si, word ptr es:[di + 2]  ; spr->x1
+cmp   si, word ptr [bx + 2]     ; ds->x1 
 jl    spr_x1_smaller_than_ds_x1
 
-mov   si, ax
 jmp   r1_set
 
 spr_x1_smaller_than_ds_x1:
@@ -2155,12 +2151,14 @@ r1_set:
 
 ;		r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 
-mov   ax, word ptr es:[di + 4]	; spr->x2
-cmp   ax, word ptr [bx + 4]		; ds->x2
+mov   dx, word ptr es:[di + 4]	; spr->x2
+cmp   dx, word ptr [bx + 4]		; ds->x2
 jg    spr_x2_greater_than_dx_x2
 
-mov   dx, ax
 jmp   r2_set
+jump_to_iterate_next_drawseg_loop_2:
+jmp   iterate_next_drawseg_loop
+
 
 
 spr_x2_greater_than_dx_x2:
@@ -2170,26 +2168,32 @@ r2_set:
 ; si is r1 and dx is r2
 ; bx is near vissprite
 ; es:di is drawseg
-
 ; so only ax and cx are free.
+; lets precalculate the loop count into cx, freeing up dx.
+mov   cx, dx
+sub   cx, si
+jl    jump_to_iterate_next_drawseg_loop_2 
+inc   cx
+
+
 
 ;        silhouette = ds->silhouette;
-
 ;    	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
+
 mov   al, byte ptr es:[di + 01Ch]
-push  ax
+mov   byte ptr cs:[SELFMODIFY_set_al_to_silhouette+1],  al
 
-mov   cx, word ptr es:[di + 012h]
-xor   ax, ax
-sar   cx, 1
-rcr   ax, 1
-sar   cx, 1
-rcr   ax, 1
-sar   cx, 1
-rcr   ax, 1
+mov   ax, word ptr es:[di + 012h]
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
 
-;cx:ax = temp
-cmp   cx, word ptr [bx + 010h]
+;ax:dx = temp
+cmp   ax, word ptr [bx + 010h]
 
 ;		if (spr->gz.w >= temp.w) {
 ;			silhouette &= ~SIL_BOTTOM;
@@ -2197,22 +2201,20 @@ cmp   cx, word ptr [bx + 010h]
 
 jl    remove_bot_silhouette
 jg   do_not_remove_bot_silhouette
-cmp   ax, word ptr [bx + 0Eh]
+cmp   dx, word ptr [bx + 0Eh]
 ja    do_not_remove_bot_silhouette
 remove_bot_silhouette:
-pop   ax
-and   al, 0FEh
-push  ax
+and   byte ptr cs:[SELFMODIFY_set_al_to_silhouette+1], 0FEh  
 do_not_remove_bot_silhouette:
 
-mov   cx, word ptr es:[di + 014h]
-xor   ax, ax
-sar   cx, 1
-rcr   ax, 1
-sar   cx, 1
-rcr   ax, 1
-sar   cx, 1
-rcr   ax, 1
+mov   ax, word ptr es:[di + 014h]
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
 
 ;cx:ax = temp
 
@@ -2220,71 +2222,70 @@ rcr   ax, 1
 ;			silhouette &= ~SIL_TOP;
 ;		}
 
-cmp   cx, word ptr [bx + 014h]
-
+cmp   ax, word ptr [bx + 014h]
+mov   ah,  0FFh		; for later and
 jg    remove_top_silhouette
 jl   do_not_remove_top_silhouette
-cmp   ax, word ptr [bx + 012h]
+cmp   dx, word ptr [bx + 012h]
 
 jb    do_not_remove_top_silhouette
 remove_top_silhouette:
-pop   ax
-and   al, 0FDh  
-push  ax
+
+; ok. this is too close to the following instruction to and to 0FD so instead, 
+; we put the value to AND into ah.
+mov   ah,  0FDh
+
 do_not_remove_top_silhouette:
-mov   bx, si
-add   si, bx
-mov   cx, OPENINGS_SEGMENT
-mov   ds, cx
-mov   es, word ptr [bp - 2]; todo necessary?
 
-pop   ax
+mov   dx, OPENINGS_SEGMENT
+mov   ds, dx
 
+add   si, si
+
+; si is r1 and dx is r2
+; bx is near vissprite
+; es:di is drawseg
+
+
+SELFMODIFY_set_al_to_silhouette:
+mov   al, 0FFh ; this gets selfmodified
+and   al, ah   ; second AND is applied 
 cmp   al, 1
 jne   silhouette_not_1
-mov   ax, bx
-cmp   bx, dx
-jle   do_silhouette_1_loop
-jump_to_iterate_next_drawseg_loop_2:
-jmp   iterate_next_drawseg_loop
+
 do_silhouette_1_loop:
+
 
 mov   bx, word ptr es:[di + 018h]
 silhouette_1_loop:
-cmp   word ptr [bp + si - 0508h], -2
+cmp   word ptr [bp + si - 0502h], UNCLIPPED_COLUMN
 jne   increment_silhouette_1_loop
 
-mov   cx, word ptr ds:[bx+si]
-mov   word ptr [bp + si - 0508h], cx
+mov   ax, word ptr ds:[bx+si]
+mov   word ptr [bp + si - 0502h], ax
 increment_silhouette_1_loop:
-inc   ax
 add   si, 2
-cmp   ax, dx
-jle   silhouette_1_loop
-mov   cx, ss
-mov   ds, cx
+loop   silhouette_1_loop
+mov   ax, ss
+mov   ds, ax
 jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
 
 silhouette_not_1:
 cmp   al, 2
 jne   silhouette_not_2
-mov   ax, bx
-cmp   bx, dx
-jg    jump_to_iterate_next_drawseg_loop_2
+
 
 mov   bx, word ptr es:[di + 016h]
 
 silhouette_2_loop:
-cmp   word ptr [bp + si - 0288h], -2
+cmp   word ptr [bp + si - 0282h], UNCLIPPED_COLUMN
 jne   increment_silhouette_2_loop
 
-mov   cx, word ptr ds:[bx+si]
-mov   word ptr [bp + si - 0288h], cx
+mov   ax, word ptr ds:[bx+si]
+mov   word ptr [bp + si - 0282h], ax
 increment_silhouette_2_loop:
-inc   ax
 add   si, 2
-cmp   ax, dx
-jle   silhouette_2_loop
+loop   silhouette_2_loop
 mov   cx, ss
 mov   ds, cx
 jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
@@ -2296,31 +2297,37 @@ mov   cx, ss
 mov   ds, cx
 jmp   iterate_next_drawseg_loop
 silhouette_is_3:
-mov   ax, bx
-cmp   bx, dx
+
+mov   bx, word ptr es:[di + 018h]
+mov   dx, word ptr es:[di + 016h]
 
 silhouette_3_loop:
-jg    jump_to_iterate_next_drawseg_loop
-cmp   word ptr [bp + si - 0508h], -2
+
+cmp   word ptr [bp + si - 0502h], UNCLIPPED_COLUMN
 jne   do_next_silhouette_3_subloop
 
 
-mov   bx, word ptr es:[di + 018h]
 
-mov   cx, word ptr ds:[bx+si]
-mov   word ptr [bp + si - 0508h], cx
+mov   ax, word ptr ds:[bx+si]
+mov   word ptr [bp + si - 0502h], ax
 do_next_silhouette_3_subloop:
-cmp   word ptr [bp + si - 0288h], -2
+cmp   word ptr [bp + si - 0282h], UNCLIPPED_COLUMN
 jne   increment_silhouette_3_loop
 
-mov   bx, word ptr es:[di + 016h]
-mov   cx, word ptr ds:[bx+si]
-mov   word ptr [bp + si - 0288h], cx
+xchg  bx, dx
+mov   ax, word ptr ds:[bx+si]
+mov   word ptr [bp + si - 0282h], ax
+xchg  bx, dx
+
 increment_silhouette_3_loop:
-inc   ax
+
 add   si, 2
-cmp   ax, dx
-jmp   silhouette_3_loop
+
+loop   silhouette_3_loop
+mov   cx, ss
+mov   ds, cx
+jmp   iterate_next_drawseg_loop
+
 
 ENDP
 
