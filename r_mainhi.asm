@@ -27,7 +27,7 @@ EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
-EXTRN FastMul16u32u_:PROC
+
 EXTRN FastDiv3232_:PROC
 EXTRN R_GetMaskedColumnSegment_:NEAR
 EXTRN R_AddSprites_:PROC
@@ -1902,6 +1902,10 @@ ret
 
 ENDP
 
+;todo move these to codegen
+
+ML_TWOSIDED  = 4h
+ML_DONTPEGBOTTOM  = 010h
 
 PROC R_RenderMaskedSegRange_ NEAR
 PUBLIC R_RenderMaskedSegRange_
@@ -1912,33 +1916,43 @@ PUBLIC R_RenderMaskedSegRange_
 ;x1 is bx
 ;x2 is cx
 
-; bp - 02       
-; bp - 04       
-; bp - 06       
-; bp - 08       
+; bp - 2        
+; bp - 4        lineflags
+; bp - 6        
+; bp - 8        
 ; bp - 0Ah      
 ; bp - 0Ch      maskedpostsofs
-; bp - 0Eh      
-; bp - 010h     x2
-; bp - 012h     
-; bp - 014h     
-; bp - 016h     
-; bp - 018h     
+; bp - 0Eh      sprtopscreen_step hi word
+; bp - 010h     UNUSED
+; bp - 012h     sprtopscreen_step lo word
+; bp - 014h     basespryscale hi word
+; bp - 016h     basespryscale lo word
+; bp - 018h     xoffset (iterator) todo replace with selfmodify
 ; bp - 01Ah     
-; bp - 01Ch     
-; bp - 01Eh     
+; bp - 01Ch     rw_scalestep hi word
+; bp - 01Eh     rw_scalestep lo word
 ; bp - 020h     x1
-; bp - 022h     drawseg far segment (this is a constant)
+; bp - 022h     UNUSED
 ; bp - 024h     side_render
+; bp - 026h     UNUSED curlinelinedef
+; bp - 028h     
+; bp - 02Ah     
+; bp - 02Ch     
+; bp - 02Eh     
+; bp - 030h     
+; bp - 032h     dc_x_base4
+; bp - 034h     drawseg far segment (this is a constant)
+; bp - 036h     ds
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 034h
+sub   sp, 036h
 mov   di, ax
-mov   word ptr [bp - 022h], dx
+mov   word ptr [bp - 036h], ax
+mov   word ptr [bp - 034h], dx
 mov   word ptr [bp - 020h], bx
-mov   word ptr [bp - 010h], cx
+mov   word ptr cs:[SELFMODIFY_cmp_to_x2+1], cx
 mov   es, dx
 mov   ax, word ptr es:[di]       ; get ds->curseg
 mov   word ptr ds:[_curseg], ax  
@@ -1984,21 +1998,18 @@ mov   ax, word ptr ds:[_curseg]
 mov   dx, SEG_LINEDEFS_SEGMENT
 mov   bx, ax
 mov   es, dx
-add   bh, 016h					; todo... what is this
+add   bh, 016h					; todo.... seg_sides_offset_in_seglines high word
 mov   dl, byte ptr es:[bx]
+add   ax, ax
 mov   bx, ax
-add   bx, ax
-mov   ax, word ptr es:[bx]
-mov   bx, ax
-shl   ax, 1
-shl   ax, 1
-mov   word ptr [bp - 026h], ax
+mov   di, word ptr es:[bx]		; di holds curlinelinedef
+
 mov   ax, LINEFLAGSLIST_SEGMENT
 mov   es, ax
-mov   al, byte ptr es:[bx]
+mov   al, byte ptr es:[di]
 mov   bx, word ptr ds:[_curseg_render]
 mov   byte ptr [bp - 4], al
-mov   word ptr [bp - 034h], bx
+mov   word ptr [bp - 026h], bx
 mov   bx, word ptr [bx]
 mov   ax, VERTEXES_SEGMENT
 shl   bx, 2
@@ -2006,7 +2017,7 @@ mov   es, ax
 mov   ax, word ptr es:[bx]
 mov   word ptr [bp - 02Eh], ax
 mov   ax, word ptr es:[bx + 2]
-mov   bx, word ptr [bp - 034h]
+mov   bx, word ptr [bp - 026h]
 mov   bx, word ptr [bx + 2]
 shl   bx, 2
 mov   word ptr [bp - 02Ah], ax
@@ -2016,26 +2027,30 @@ mov   bx, word ptr [bp - 024h]
 mov   word ptr [bp - 028h], ax
 mov   ax, word ptr [bx + 2]
 mov   word ptr [bp - 02Ch], ax
-test  byte ptr [bp - 4], 4
-jne   label2
-jmp   label3
-label2:
-mov   al, dl
-xor   al, 1
-mov   bx, word ptr [bp - 026h]
-xor   ah, ah
+test  byte ptr [bp - 4], ML_TWOSIDED
+je   set_backsector_to_null				; todo is there a cleaner way to do this than null a far pointer?
+
+; backsector = &sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
+
+;curlineside ^ 1
+mov   bl, dl
+xor   bl, 1
+xor   bh, bh
+
+shl   di, 1
+shl   di, 1
 mov   dx, LINES_SEGMENT
-add   ax, ax
+sal   bx, 1
 mov   es, dx
-add   bx, ax
-mov   bx, word ptr es:[bx]
+
+mov   bx, word ptr es:[bx + di]
 shl   bx, 2
 mov   dx, SECTORS_SEGMENT
 
 mov   ax, word ptr [bx + 0AE02h] ; ????? maybe lines sectors offset diff
 
 shl   ax, 4
-label22:
+backsector_set_to_dx_ax:
 mov   word ptr ds:[_backsector], ax
 mov   word ptr ds:[_backsector + 2], dx
 mov   ax, word ptr [bp - 02Ch]
@@ -2051,18 +2066,34 @@ sar   dx, 4
 mov   al, byte ptr ds:[_extralight]
 add   ax, dx
 cmp   cx, word ptr [bp - 02Ah]
-je    label4
-jmp   label7
-label4:
+jne    label7
 dec   ax
 label24:
 test  ax, ax
-jge   label5
-jmp   label8
-label5:
+jl   label8
 cmp   ax, 010h
 jge   label6
-jmp   label9
+mov   bx, ax
+add   bx, ax
+mov   ax, word ptr [bx + _lightmult48lookup]
+jmp   label25
+
+set_backsector_to_null:
+xor   ax, ax
+xor   dx, dx
+jmp   backsector_set_to_dx_ax
+label7:
+mov   dx, word ptr [bp - 02Eh]
+cmp   dx, word ptr [bp - 028h]
+je    label23
+jmp   label24
+label23:
+inc   ax
+jmp   label24
+label8:
+xor   ax, ax
+jmp   label25
+
 label6:
 
 
@@ -2070,7 +2101,9 @@ mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult
 
 label25:
 mov   word ptr ds:[_walllights], ax
-mov   es, word ptr [bp - 022h]
+les   di, dword ptr [bp - 036h]
+
+; es:di is input drawseg
 mov   ax, word ptr es:[di + 01Ah]
 add   ax, ax
 mov   word ptr ds:[_maskedtexturecol], ax
@@ -2084,8 +2117,13 @@ mov   ax, word ptr [bp - 020h]
 mov   cx, word ptr [bp - 01Ch]
 sub   ax, word ptr es:[di + 2]
 add   word ptr ds:[_walllights], 030h
-call  FastMul16u32u_
-mov   es, word ptr [bp - 022h]
+; inlined  FastMul16u32u_
+
+XCHG CX, AX    ; AX stored in CX
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
 
 add   ax, word ptr es:[di + 6]
 adc   dx, word ptr es:[di + 8]
@@ -2095,7 +2133,7 @@ mov   ax, word ptr es:[di + 018h]
 mov   word ptr ds:[_mfloorclip], ax
 mov   ax, word ptr es:[di + 016h]
 mov   word ptr ds:[_mceilingclip], ax
-test  byte ptr [bp - 4], 010h
+test  byte ptr [bp - 4], ML_DONTPEGBOTTOM
 jne   label10
 jmp   label12
 label10:
@@ -2106,13 +2144,12 @@ mov   ax, word ptr es:[di]
 mov   es, bx
 mov   bx, dx
 cmp   ax, word ptr es:[bx]
-jg    label11
-jmp   label13
 ; es is sectors segment..
-label11:
-mov   di, word ptr ds:[_frontsector]
-label26:
-les   di, dword ptr [bx]
+mov   di, OFFSET _frontsector
+jg    use_frontsector_1
+add   di, 4
+use_frontsector_1:
+les   di, dword ptr [di]
 mov   bx, word ptr es:[di]
 mov   ax, bx
 sub   ax, word ptr ds:[_viewz_shortheight]
@@ -2125,13 +2162,14 @@ mov   ax, word ptr es:[di]
 mov   es, bx
 mov   bx, dx
 cmp   ax, word ptr es:[bx]
-jg    label14
-jmp   label15
-; es is sectors segment..
-label14:
-mov   di, word ptr ds:[_frontsector]
-label27:
+mov   di, OFFSET _frontsector
+jg    use_frontsector_2
 
+add   di, 4
+
+; es is sectors segment..
+use_frontsector_2:
+mov   di, word ptr ds:[di]
 mov   bx, word ptr es:[di]
 mov   ax, bx
 sub   ax, word ptr ds:[_viewz_shortheight]
@@ -2156,10 +2194,10 @@ mov   al, byte ptr ds:[_fixedcolormap]
 mov   byte ptr ds:[_dc_colormap_index], al
 label16:
 mov   ax, word ptr [bp - 020h]
-mov   di, word ptr [bp - 020h]
+mov   di, ax						; di = x1
 and   ax, word ptr ds:[_detailshiftandval]
 mov   word ptr [bp - 032h], ax
-sub   di, ax
+sub   di, ax						; di = base4diff = x1 - dc_x_base4
 mov   ax, word ptr ds:[_spryscale]
 mov   dx, word ptr [bp - 01Ch]
 mov   word ptr [bp - 016h], ax
@@ -2176,27 +2214,29 @@ loop  label18
 label17:
 mov   word ptr [bp - 0Ah], ax
 mov   word ptr [bp - 8], dx
-mov   cx, word ptr ds:[_dc_texturemid]
-mov   bx, word ptr ds:[_dc_texturemid + 2]
-mov   word ptr [bp - 030h], cx
-mov   word ptr [bp - 034h], bx
 mov   cx, dx
-mov   dx, word ptr [bp - 034h]
+
+mov   dx, word ptr ds:[_dc_texturemid + 2]
+
+mov   word ptr [bp - 026h], dx
 mov   bx, ax
-mov   ax, word ptr [bp - 030h]
+mov   ax, word ptr ds:[_dc_texturemid]
 call  FixedMul_
-mov   word ptr [bp - 012h], ax
+mov   word ptr [bp - 012h], ax	  ; sprtopscreen_step
 mov   word ptr [bp - 0Eh], dx
 test  di, di
-je    label19
-label20:
+je    base4diff_is_zero_rendermaksedsegrange
 mov   ax, word ptr [bp - 01Eh]
+mov   dx, word ptr [bp - 01Ch]
+
+loop_dec_base4diff:
+;			basespryscale -= rw_scalestep.w;
+
 sub   word ptr [bp - 016h], ax
-mov   ax, word ptr [bp - 01ch]
-sbb   word ptr [bp - 014h], ax
+sbb   word ptr [bp - 014h], dx
 dec   di
-jne   label20
-label19:
+jne   loop_dec_base4diff
+base4diff_is_zero_rendermaksedsegrange:
 mov   ax, word ptr [bp - 032h]
 mov   word ptr [bp - 018h], 0
 mov   word ptr [bp - 01Ah], ax
@@ -2212,32 +2252,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label3:
-xor   ax, ax
-xor   dx, dx
-jmp   label22
-label7:
-mov   dx, word ptr [bp - 02Eh]
-cmp   dx, word ptr [bp - 028h]
-je    label23
-jmp   label24
-label23:
-inc   ax
-jmp   label24
-label8:
-xor   ax, ax
-jmp   label25
-label9:
-mov   bx, ax
-add   bx, ax
-mov   ax, word ptr [bx + _lightmult48lookup]
-jmp   label25
-label13:
-mov   di, word ptr ds:[_backsector]
-jmp   label26
-label15:
-mov   di, word ptr ds:[_backsector]
-jmp   label27
+
 label21:
 mov   al, byte ptr ds:[_detailshift + 1]
 mov   bx, word ptr [bp - 018h]
@@ -2268,7 +2283,8 @@ sbb   word ptr ds:[_sprtopscreen + 2], dx
 label34:
 
 mov   ax, word ptr ds:[_dc_x]
-cmp   ax, word ptr [bp - 010h]
+SELFMODIFY_cmp_to_x2:
+cmp   ax, 02000h
 jle   label29
 inc   word ptr [bp - 01Ah]
 mov   ax, word ptr [bp - 01Eh]
@@ -2278,7 +2294,15 @@ mov   ax, word ptr [bp - 01Ch]
 adc   word ptr [bp - 014h], ax
 jmp   label30
 label28:
-jmp   label31
+mov   al, byte ptr ds:[_detailshiftitercount]
+xor   ah, ah
+add   word ptr ds:[_dc_x], ax
+mov   ax, word ptr [bp - 0Ah]
+add   word ptr ds:[_spryscale], ax
+mov   ax, word ptr [bp - 8]
+adc   word ptr ds:[_spryscale + 2], ax
+jmp   label47
+
 label29:
 mov   bx, word ptr ds:[_maskedtexturecol]
 add   ax, ax
@@ -2380,13 +2404,12 @@ mul   ah
 add   ax, word ptr [_maskedcachedsegment]
 jmp   label43
 label12:
-les   ax, dword ptr ds:[_frontsector]
+les   bx, dword ptr ds:[_frontsector]
 mov   di, word ptr ds:[_backsector]
 mov   dx, word ptr ds:[_backsector + 2]
-mov   bx, ax
 mov   ax, word ptr es:[bx + 2]
 mov   es, dx
-cmp   ax, word ptr es:[di + 2]
+cmp   ax, word ptr es:[di + 2]  ; todo can backsector be null here
 ; es is sectors segment..
 jge   label54
 mov   di, word ptr ds:[_frontsector]
@@ -2423,15 +2446,6 @@ jmp   label45
 label44:
 mov   di, word ptr ds:[_backsector]
 jmp   label46
-label31:
-mov   al, byte ptr ds:[_detailshiftitercount]
-xor   ah, ah
-add   word ptr ds:[_dc_x], ax
-mov   ax, word ptr [bp - 0Ah]
-add   word ptr ds:[_spryscale], ax
-mov   ax, word ptr [bp - 8]
-adc   word ptr ds:[_spryscale + 2], ax
-jmp   label47
 label37:
 mov   ax, word ptr ds:[_spryscale]
 mov   dx, word ptr ds:[_spryscale + 2]
