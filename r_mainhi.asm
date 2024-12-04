@@ -2341,9 +2341,11 @@ VISSPRITE_SORTED_HEAD_INDEX = 0FEh
 PROC R_SortVisSprites_ NEAR
 PUBLIC R_SortVisSprites_
 
-; bp - 6     best ?
-; bp - 0ah   vissprite_p pointer?
-; bp -03Ah   unsorted?
+; bp - 2     vsprsortedheadfirst ?
+; bp - 4     best ?
+; bp - 8     UNUSED i (loop counter). todo selfmodify out.
+; bp - 0ah   UNUSED vissprite_p pointer/count todo selfmodify out
+; bp -034h   unsorted?
 
 
 mov       ax, word ptr [_vissprite_p]
@@ -2360,11 +2362,11 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 03Ah				; let's set things up finally isnce we're not quick-exiting out
-mov       word ptr [bp - 0Ah], ax
+sub       sp, 034h				; let's set things up finally isnce we're not quick-exiting out
+mov       byte ptr cs:[SELFMODIFY_loop_compare_instruction+1], al ; store count
 mov       dx, ax
 mov       cx, 014h
-lea       di, [bp - 03Ah]
+lea       di, [bp - 034h]
 mov       ax, ds
 mov       es, ax
 xor       ax, ax
@@ -2386,7 +2388,7 @@ jl        loop_set_vissprite_next
 done_setting_vissprite_next:
 
 sub        bx, 028h
-mov       word ptr [bp - 8], 0
+mov       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1], 0  ; zero loop counter
 
 mov       al, VISSPRITE_SORTED_HEAD_INDEX
 
@@ -2398,58 +2400,61 @@ jle       exit_sort_vissprites
 
 loop_visplane_sort:
 
-;DX:SI is bestscale
+inc       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1] ; update loop counter
+
+;DI:CX is bestscale
 ;        bestscale = MAXLONG;
 
-mov       si, 0FFFFh  ; max long low word
-mov       dx, 07FFFh  ; max long hi word
+mov       cx, 0FFFFh  ; max long low word
+mov       di, 07FFFh  ; max long hi word
 
 ;        for (ds=unsorted.next ; ds!= VISSPRITE_UNSORTED_INDEX ; ds=vissprites[ds].next) {
 
-mov       al, byte ptr [bp - 03Ah]  ; ds=unsorted.next
+mov       si, OFFSET _vissprites
+mov       al, byte ptr [bp - 034h]  ; ds=unsorted.next
 cmp       al, VISSPRITE_UNSORTED_INDEX ; ds!= VISSPRITE_UNSORTED_INDEX
 je        done_with_sort_subloop
 loop_sort_subloop:
-mov       bl, al
-xor       bh, bh
-imul      cx, bx, 028h
-mov       bx, cx
-mov       word ptr [bp - 0Ch], 0
-add       bx, OFFSET _vissprites + 1Ah;  0xd68a  probably offset to a vissprites field?
-mov       word ptr [bp - 0Eh], cx
-cmp       dx, word ptr [bx + 2]
+mov       ah, 028h
+mov       bx, ax
+mul       ah
+xchg      ax, bx
+
+mov       word ptr [bp - 06h], 0  ; field in unsorted
+mov       word ptr [bp - 08h], bx ; field in unsorted
+cmp       di, word ptr [bx + si + + 1Ah + 2]
 jg        unsorted_next_is_best_next
 jne       prepare_find_best_index_subloop
-cmp       si, word ptr [bx]
+cmp       cx, word ptr [bx + si + 1Ah]
 jbe       prepare_find_best_index_subloop
 unsorted_next_is_best_next:
-mov       byte ptr [bp - 4], al  ; good candidate for persistent variable. written once read a lot
-add       cx, OFFSET _vissprites
-mov       si, word ptr [bx]
-mov       dx, word ptr [bx + 2]
-mov       word ptr [bp - 6], cx
+mov       dh, al  ;  store bestindex ( i think)
+mov       cx, word ptr [bx + si + 1Ah]
+mov       di, word ptr [bx + si + 1Ah + 2]
+add       bx, si
+mov       word ptr [bp - 4], bx   ; todo dont add vissprites to this?
+
 prepare_find_best_index_subloop:
-xor       ah, ah
-imul      ax, ax, 028h
+
+mul       ah	  ; still 028h
 mov       bx, ax
-add       bx, OFFSET _vissprites
-mov       al, byte ptr [bx]
+
+mov       al, byte ptr [bx+si]
 cmp       al, VISSPRITE_UNSORTED_INDEX
 jne       loop_sort_subloop
 done_with_sort_subloop:
-mov       al, byte ptr [bp - 03Ah]
-mov       dh, byte ptr [bp - 4]
+mov       di, word ptr [bp - 4]		; retrieve best visprite pointer
+mov       al, byte ptr [bp - 034h]
+
 cmp       al, dh
-mov       si, OFFSET _vissprites
 je        done_with_find_best_index_loop
 mov       dl, 028h
 loop_find_best_index:
 mul       dl
-;mov       word ptr [bp - 010h], 0  ; todo remove?
+mov       word ptr [bp - 0Ah], 0  ; some unsorted field
 mov       bx, ax
-;mov       word ptr [bp - 012h], ax ; todo remove?
+mov       word ptr [bp - 0Ch], ax ; some unsorted field
 mov       al, byte ptr [bx + si]
-add       bx, OFFSET _vissprites
 
 cmp       al, dh
 jne       loop_find_best_index
@@ -2459,9 +2464,8 @@ jne       loop_find_best_index
 ; vissprites[ds].next = best->next;
  ;break;
 
-mov       si, word ptr [bp - 6]
-mov       al, byte ptr [si]
-mov       byte ptr [bx], al
+mov       al, byte ptr [di]
+mov       byte ptr [bx+si], al
 jmp       found_best_index
 exit_sort_vissprites:
 
@@ -2477,23 +2481,22 @@ ret
 done_with_find_best_index_loop:
 
 
-mov       bx, word ptr [bp - 6]
-mov       al, byte ptr [bx]
-mov       byte ptr [bp - 03Ah], al
+mov       al, byte ptr [di]
+mov       byte ptr [bp - 034h], al
 found_best_index:
 ;        if (vsprsortedheadfirst == VISSPRITE_SORTED_HEAD_INDEX){
 cmp       byte ptr [_vsprsortedheadfirst], VISSPRITE_SORTED_HEAD_INDEX
 jne       set_next_to_best_index
-mov       al, dh
-mov       byte ptr [_vsprsortedheadfirst], al
+
+mov       byte ptr [_vsprsortedheadfirst], dh
 increment_visplane_sort_loop_variables:
-mov       bx, word ptr [bp - 6]
-mov       al, dh
-inc       word ptr [bp - 8]
-mov       byte ptr [bp - 2], al
-mov       ax, word ptr [bp - 8]
-mov       byte ptr [bx], VISSPRITE_SORTED_HEAD_INDEX
-cmp       ax, word ptr [bp - 0Ah]
+
+mov       byte ptr [bp - 2], dh
+mov       byte ptr [di], VISSPRITE_SORTED_HEAD_INDEX
+SELFMODIFY_set_al_to_loop_counter:
+mov       al, 0FFh ; get loop counter
+SELFMODIFY_loop_compare_instruction:
+cmp       al, 0FFh ; compare
 jge       exit_sort_vissprites
 jmp       loop_visplane_sort
 
