@@ -2341,6 +2341,9 @@ VISSPRITE_SORTED_HEAD_INDEX = 0FEh
 PROC R_SortVisSprites_ NEAR
 PUBLIC R_SortVisSprites_
 
+; bp - 0ah   vissprite_p pointer?
+; bp -03Ah   unsorted?
+
 push      bx
 push      cx
 push      dx
@@ -2348,55 +2351,63 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 03Ah
-mov       cx, 028h
-lea       di, [bp - 03Ah]
-xor       al, al
-push      di
-push      ds
-pop       es
-mov       ah, al
-shr       cx, 1
-rep stosw
-adc       cx, cx
-rep stosb
-pop       di
+
 mov       ax, word ptr [_vissprite_p]
-mov       word ptr [bp - 0Ah], ax
 test      ax, ax
-jne       label10
-label9:
+jne       count_not_zero
+jump_to_exit_sort_visplanes:
 jmp       exit_sort_vissprites
-label10:
-xor       dl, dl
-label4:
-mov       al, dl
-xor       ah, ah
-cmp       ax, word ptr [bp - 0Ah]
-jge       label11
-jmp       label12
-label11:
-xor       al, dl
-mov       byte ptr [bp - 03Ah], al
-mov       ax, word ptr [_vissprite_p]
-dec       ax
-imul      ax, ax, 028h
+count_not_zero:
+sub       sp, 03Ah
+mov       word ptr [bp - 0Ah], ax
+mov       dx, ax
+mov       cx, 014h
+lea       di, [bp - 03Ah]
+mov       ax, ds
+mov       es, ax
+xor       ax, ax
+rep stosw
+
+
+
+mov       bx, OFFSET _vissprites
+; dl is vissprite count
+loop_set_vissprite_next:
+; ax already 0
+
+inc       al
+mov       byte ptr ds:[bx], al
+add       bx, 028h  ; size visprites todo
+cmp       ax, dx
+jl        loop_set_vissprite_next
+
+done_setting_vissprite_next:
+
+sub        bx, 028h
 mov       word ptr [bp - 8], 0
-mov       bx, ax
+
 mov       al, VISSPRITE_SORTED_HEAD_INDEX
-add       bx, OFFSET _vissprites
+
 mov       byte ptr [bp - 2], al
-mov       byte ptr [_vsprsortedheadfirst], al
+mov       byte ptr ds:[_vsprsortedheadfirst], al
 mov       byte ptr [bx], VISSPRITE_UNSORTED_INDEX
-cmp       word ptr [bp - 0Ah], 0
-jle       label9
-label2:
-mov       si, 0FFFFh
-mov       al, byte ptr [bp - 03Ah]
-mov       dx, 07FFFh
-cmp       al, VISSPRITE_UNSORTED_INDEX
-je        label8
-label7:
+cmp       dx, 0  ; is this redundant?
+jle       jump_to_exit_sort_visplanes
+
+loop_visplane_sort:
+
+;DX:SI is bestscale
+;        bestscale = MAXLONG;
+
+mov       si, 0FFFFh  ; max long low word
+mov       dx, 07FFFh  ; max long hi word
+
+;        for (ds=unsorted.next ; ds!= VISSPRITE_UNSORTED_INDEX ; ds=vissprites[ds].next) {
+
+mov       al, byte ptr [bp - 03Ah]  ; ds=unsorted.next
+cmp       al, VISSPRITE_UNSORTED_INDEX ; ds!= VISSPRITE_UNSORTED_INDEX
+je        done_with_sort_subloop
+loop_sort_subloop:
 mov       bl, al
 xor       bh, bh
 imul      cx, bx, 028h
@@ -2410,7 +2421,7 @@ jne       label14
 cmp       si, word ptr [bx]
 jbe       label14
 label13:
-mov       byte ptr [bp - 4], al
+mov       byte ptr [bp - 4], al  ; good candidate for persistent variable. written once read a lot
 add       cx, OFFSET _vissprites
 mov       si, word ptr [bx]
 mov       dx, word ptr [bx + 2]
@@ -2422,12 +2433,14 @@ mov       bx, ax
 mov       al, byte ptr [bx + OFFSET _vissprites]
 add       bx, OFFSET _vissprites
 cmp       al, VISSPRITE_UNSORTED_INDEX
-jne       label7
-label8:
+jne       loop_sort_subloop
+done_with_sort_subloop:
 mov       al, byte ptr [bp - 03Ah]
 cmp       al, byte ptr [bp - 4]
-je        label6
-label5:
+je        done_with_find_best_index_loop
+
+
+loop_find_best_index:
 xor       ah, ah
 imul      ax, ax, 028h
 mov       word ptr [bp - 010h], 0
@@ -2436,22 +2449,26 @@ mov       word ptr [bp - 012h], ax
 mov       al, byte ptr [bx + OFFSET _vissprites]
 add       bx, OFFSET _vissprites
 cmp       al, byte ptr [bp - 4]
-je        label15
-jmp       label5
-label12:
-imul      ax, ax, 028h
-mov       dh, dl
-inc       dh
-mov       bx, ax
-mov       byte ptr [bx + OFFSET _vissprites ], dh
-add       bx, OFFSET _vissprites
-inc       dl
-jmp       label4
-label6:
+jne       loop_find_best_index
+
+
+
+; vissprites[ds].next = best->next;
+ ;break;
+
+mov       si, word ptr [bp - 6]
+mov       al, byte ptr [si]
+mov       byte ptr [bx], al
+jmp       label16
+
+done_with_find_best_index_loop:
+
+
 mov       bx, word ptr [bp - 6]
 mov       al, byte ptr [bx]
 mov       byte ptr [bp - 03Ah], al
 label16:
+;        if (vsprsortedheadfirst == VISSPRITE_SORTED_HEAD_INDEX){
 cmp       byte ptr [_vsprsortedheadfirst], VISSPRITE_SORTED_HEAD_INDEX
 jne       label3
 mov       al, byte ptr [bp - 4]
@@ -2465,7 +2482,7 @@ mov       ax, word ptr [bp - 8]
 mov       byte ptr [bx], VISSPRITE_SORTED_HEAD_INDEX
 cmp       ax, word ptr [bp - 0Ah]
 jge       exit_sort_vissprites
-jmp       label2
+jmp       loop_visplane_sort
 exit_sort_vissprites:
 
 LEAVE_MACRO
@@ -2476,12 +2493,9 @@ pop       dx
 pop       cx
 pop       bx
 ret       
-label15:
-mov       si, word ptr [bp - 6]
-mov       al, byte ptr [si]
-mov       byte ptr [bx], al
-jmp       label16
 label3:
+;            vissprites[vsprsortedheadprev].next = bestindex;
+
 mov       al, byte ptr [bp - 2]
 xor       ah, ah
 imul      ax, ax, 028h
