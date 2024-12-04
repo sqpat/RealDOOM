@@ -2341,9 +2341,18 @@ VISSPRITE_SORTED_HEAD_INDEX = 0FEh
 PROC R_SortVisSprites_ NEAR
 PUBLIC R_SortVisSprites_
 
+; bp - 6     best ?
 ; bp - 0ah   vissprite_p pointer?
 ; bp -03Ah   unsorted?
 
+
+mov       ax, word ptr [_vissprite_p]
+test      ax, ax
+jne       count_not_zero
+ret
+
+
+count_not_zero:
 push      bx
 push      cx
 push      dx
@@ -2351,14 +2360,7 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-
-mov       ax, word ptr [_vissprite_p]
-test      ax, ax
-jne       count_not_zero
-jump_to_exit_sort_visplanes:
-jmp       exit_sort_vissprites
-count_not_zero:
-sub       sp, 03Ah
+sub       sp, 03Ah				; let's set things up finally isnce we're not quick-exiting out
 mov       word ptr [bp - 0Ah], ax
 mov       dx, ax
 mov       cx, 014h
@@ -2392,7 +2394,7 @@ mov       byte ptr [bp - 2], al
 mov       byte ptr ds:[_vsprsortedheadfirst], al
 mov       byte ptr [bx], VISSPRITE_UNSORTED_INDEX
 cmp       dx, 0  ; is this redundant?
-jle       jump_to_exit_sort_visplanes
+jle       exit_sort_vissprites
 
 loop_visplane_sort:
 
@@ -2416,39 +2418,40 @@ mov       word ptr [bp - 0Ch], 0
 add       bx, OFFSET _vissprites + 1Ah;  0xd68a  probably offset to a vissprites field?
 mov       word ptr [bp - 0Eh], cx
 cmp       dx, word ptr [bx + 2]
-jg        label13
-jne       label14
+jg        unsorted_next_is_best_next
+jne       prepare_find_best_index_subloop
 cmp       si, word ptr [bx]
-jbe       label14
-label13:
+jbe       prepare_find_best_index_subloop
+unsorted_next_is_best_next:
 mov       byte ptr [bp - 4], al  ; good candidate for persistent variable. written once read a lot
 add       cx, OFFSET _vissprites
 mov       si, word ptr [bx]
 mov       dx, word ptr [bx + 2]
 mov       word ptr [bp - 6], cx
-label14:
+prepare_find_best_index_subloop:
 xor       ah, ah
 imul      ax, ax, 028h
 mov       bx, ax
-mov       al, byte ptr [bx + OFFSET _vissprites]
 add       bx, OFFSET _vissprites
+mov       al, byte ptr [bx]
 cmp       al, VISSPRITE_UNSORTED_INDEX
 jne       loop_sort_subloop
 done_with_sort_subloop:
 mov       al, byte ptr [bp - 03Ah]
-cmp       al, byte ptr [bp - 4]
+mov       dh, byte ptr [bp - 4]
+cmp       al, dh
+mov       si, OFFSET _vissprites
 je        done_with_find_best_index_loop
-
-
+mov       dl, 028h
 loop_find_best_index:
-xor       ah, ah
-imul      ax, ax, 028h
-mov       word ptr [bp - 010h], 0
+mul       dl
+;mov       word ptr [bp - 010h], 0  ; todo remove?
 mov       bx, ax
-mov       word ptr [bp - 012h], ax
-mov       al, byte ptr [bx + OFFSET _vissprites]
+;mov       word ptr [bp - 012h], ax ; todo remove?
+mov       al, byte ptr [bx + si]
 add       bx, OFFSET _vissprites
-cmp       al, byte ptr [bp - 4]
+
+cmp       al, dh
 jne       loop_find_best_index
 
 
@@ -2459,30 +2462,7 @@ jne       loop_find_best_index
 mov       si, word ptr [bp - 6]
 mov       al, byte ptr [si]
 mov       byte ptr [bx], al
-jmp       label16
-
-done_with_find_best_index_loop:
-
-
-mov       bx, word ptr [bp - 6]
-mov       al, byte ptr [bx]
-mov       byte ptr [bp - 03Ah], al
-label16:
-;        if (vsprsortedheadfirst == VISSPRITE_SORTED_HEAD_INDEX){
-cmp       byte ptr [_vsprsortedheadfirst], VISSPRITE_SORTED_HEAD_INDEX
-jne       label3
-mov       al, byte ptr [bp - 4]
-mov       byte ptr [_vsprsortedheadfirst], al
-label1:
-mov       bx, word ptr [bp - 6]
-mov       al, byte ptr [bp - 4]
-inc       word ptr [bp - 8]
-mov       byte ptr [bp - 2], al
-mov       ax, word ptr [bp - 8]
-mov       byte ptr [bx], VISSPRITE_SORTED_HEAD_INDEX
-cmp       ax, word ptr [bp - 0Ah]
-jge       exit_sort_vissprites
-jmp       loop_visplane_sort
+jmp       found_best_index
 exit_sort_vissprites:
 
 LEAVE_MACRO
@@ -2493,17 +2473,40 @@ pop       dx
 pop       cx
 pop       bx
 ret       
-label3:
+
+done_with_find_best_index_loop:
+
+
+mov       bx, word ptr [bp - 6]
+mov       al, byte ptr [bx]
+mov       byte ptr [bp - 03Ah], al
+found_best_index:
+;        if (vsprsortedheadfirst == VISSPRITE_SORTED_HEAD_INDEX){
+cmp       byte ptr [_vsprsortedheadfirst], VISSPRITE_SORTED_HEAD_INDEX
+jne       set_next_to_best_index
+mov       al, dh
+mov       byte ptr [_vsprsortedheadfirst], al
+increment_visplane_sort_loop_variables:
+mov       bx, word ptr [bp - 6]
+mov       al, dh
+inc       word ptr [bp - 8]
+mov       byte ptr [bp - 2], al
+mov       ax, word ptr [bp - 8]
+mov       byte ptr [bx], VISSPRITE_SORTED_HEAD_INDEX
+cmp       ax, word ptr [bp - 0Ah]
+jge       exit_sort_vissprites
+jmp       loop_visplane_sort
+
+set_next_to_best_index:
 ;            vissprites[vsprsortedheadprev].next = bestindex;
 
 mov       al, byte ptr [bp - 2]
-xor       ah, ah
-imul      ax, ax, 028h
+mov	      ah, 028h
+mul       ah
 mov       bx, ax
-mov       al, byte ptr [bp - 4]
 add       bx, OFFSET _vissprites
-mov       byte ptr [bx], al
-jmp       label1
+mov       byte ptr [bx], dh
+jmp       increment_visplane_sort_loop_variables
 
 endp
 
