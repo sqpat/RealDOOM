@@ -1252,7 +1252,7 @@ spritedefs_bytes    7410:0000
 #define render_9800_end_6000            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner_6000,         size_finetangentinner))
 
 #define drawsegs_BASE_segment_7000      ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
-
+#define masked_lookup_segment_7000      ((segment_t) ((int32_t)masked_lookup_7000 >> 16))
 // texturecolumnlumps_bytes   9000:0000
 // texturedefs_bytes          909E:0000
 // spritetopoffsets           92C2:0000

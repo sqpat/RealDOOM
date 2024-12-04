@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 117
+#define CONSTANTS_COUNT 118
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -144,7 +144,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "R_DRAWSKYPLANE_OFFSET",
     "R_DRAWSKYPLANE_DYNAMIC_OFFSET",
     "COLORMAPS_MASKEDMAPPING_SEG_DIFF",
-    "COLORMAPS_SEGMENT_MASKEDMAPPING"
+    "COLORMAPS_SEGMENT_MASKEDMAPPING",
+    "SEG_SIDES_OFFSET_IN_SEGLINES"
 
 
 
@@ -291,7 +292,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     R_DrawSkyPlaneOffset,
     R_DrawSkyPlaneDynamicOffset,
     colormaps_maskedmapping_seg_diff,
-    colormaps_segment_maskedmapping
+    colormaps_segment_maskedmapping,
+    seg_sides_offset_in_seglines
 
 
     
