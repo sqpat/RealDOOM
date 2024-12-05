@@ -1915,19 +1915,19 @@ PUBLIC R_RenderMaskedSegRange_
 ;x1 is bx
 ;x2 is cx
 
-; bp - 2        UNUSED (was lookup)
+; bp - 2        base4diff
 ; bp - 4        lineflags
 ; bp - 6        
-; bp - 8        
-; bp - 0Ah      
+; bp - 8        rw_scalestep_shift hi word
+; bp - 0Ah      rw_scalestep_shift lo word
 ; bp - 0Ch      maskedpostsofs
-; bp - 0Eh      sprtopscreen_step hi word
-; bp - 010h     UNUSED
+; bp - 0Eh      UNUSED
+; bp - 010h     sprtopscreen_step hi word
 ; bp - 012h     sprtopscreen_step lo word
 ; bp - 014h     basespryscale hi word
 ; bp - 016h     basespryscale lo word
-; bp - 018h     xoffset (iterator) todo replace with selfmodify
-; bp - 01Ah     
+; bp - 018h     UNUSED moved to cx xoffset (iterator) todo replace with selfmodify
+; bp - 01Ah     dc_x_base4
 ; bp - 01Ch     rw_scalestep hi word
 ; bp - 01Eh     rw_scalestep lo word
 ; bp - 020h     x1
@@ -1950,7 +1950,12 @@ sub   sp, 036h
 mov   di, ax
 mov   word ptr [bp - 036h], ax
 mov   word ptr [bp - 034h], dx
-mov   word ptr [bp - 020h], bx
+;mov   word ptr [bp - 020h], bx
+mov   ax, bx
+mov   word ptr cs:[SELFMODIFY_x1_field_1+1], ax
+mov   word ptr cs:[SELFMODIFY_x1_field_2+1], ax
+mov   word ptr cs:[SELFMODIFY_x1_field_3+1], ax
+
 mov   word ptr cs:[SELFMODIFY_cmp_to_x2+1], cx
 mov   es, dx
 mov   ax, word ptr es:[di]       ; get ds->curseg
@@ -1978,6 +1983,8 @@ mov   ax, MASKED_LOOKUP_SEGMENT_7000
 mov   si, word ptr es:[si]			; get texnum. si is stored for the whole function. not good revisit.
 mov   es, ax
 mov   al, byte ptr es:[si]			; translate texnum to lookup
+
+
 mov   word ptr [bp - 0Ch], 0FFFFh
 mov   byte ptr cs:[SELFMODIFY_compare_lookup+2], al
 
@@ -2134,7 +2141,8 @@ mov   word ptr [bp - 01Eh], bx
 mov   cx, word ptr es:[di + 010h]
 mov   word ptr [bp - 01Ch], cx
 
-mov   ax, word ptr [bp - 020h]
+SELFMODIFY_x1_field_1:
+mov   ax, 08000h
 sub   ax, word ptr es:[di + 2]
 add   word ptr ds:[_walllights], 030h
 
@@ -2253,24 +2261,37 @@ mov   word ptr ds:[_dc_texturemid+2], ax
 cmp   byte ptr ds:[_fixedcolormap], 0
 jne    fixed_colormap
 colormap_set:
-mov   ax, word ptr [bp - 020h]   ; di = x1
-mov   di, ax
 
+; set up main outer loop
+
+;		int16_t dc_x_base4 = x1 & (detailshiftandval);	
+
+SELFMODIFY_x1_field_2:
+mov   ax, 08000h
+mov   di, ax						; di = x1
 and   ax, word ptr ds:[_detailshiftandval]
 mov   word ptr [bp - 032h], ax
+
+;		int16_t base4diff = x1 - dc_x_base4;
+
 sub   di, ax						; di = base4diff = x1 - dc_x_base4
+
+;		fixed_t basespryscale = spryscale.w;
+
 mov   ax, word ptr ds:[_spryscale]
-mov   dx, word ptr [bp - 01Ch]
 mov   word ptr [bp - 016h], ax
 mov   ax, word ptr ds:[_spryscale + 2]
 mov   word ptr [bp - 014h], ax
+
+;		fixed_t rw_scalestep_shift = rw_scalestep.w << detailshift2minus;
+
+mov   ax, word ptr [bp - 01Eh]  ; rw_scalestep
+mov   dx, word ptr [bp - 01Ch]	; rw_scalestep
 mov   cl, byte ptr ds:[_detailshift2minus]
-mov   ax, word ptr [bp - 01Eh]
 xor   ch, ch
 ; cl is 0 to 2
 
 jcxz  done_shifting_spryscale
-
 shl   ax, 1
 rcl   dx, 1
 dec   cl
@@ -2279,16 +2300,26 @@ shl   ax, 1
 rcl   dx, 1
 
 done_shifting_spryscale:
-mov   word ptr [bp - 0Ah], ax
-mov   word ptr [bp - 8], dx
+mov   word ptr [bp - 0Ah], ax		; rw_scalestep_shift
+mov   word ptr [bp - 8], dx			; rw_scalestep_shift
 mov   cx, dx
 mov   bx, ax
+
+;		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
+
 
 mov   ax, word ptr ds:[_dc_texturemid]
 mov   dx, word ptr ds:[_dc_texturemid + 2]
 call  FixedMul_
 mov   word ptr [bp - 012h], ax	  ; sprtopscreen_step
-mov   word ptr [bp - 0Eh], dx
+mov   word ptr [bp - 010h], dx
+
+
+;	while (base4diff){
+;		basespryscale -= rw_scalestep.w;
+;		base4diff--;
+;	}
+
 test  di, di
 je    base4diff_is_zero_rendermaskedsegrange
 mov   ax, word ptr [bp - 01Eh]
@@ -2302,58 +2333,111 @@ sbb   word ptr [bp - 014h], dx
 dec   di
 jne   loop_dec_base4diff
 base4diff_is_zero_rendermaskedsegrange:
-mov   ax, word ptr [bp - 032h]
-mov   word ptr [bp - 018h], 0
-mov   word ptr [bp - 01Ah], ax
-label30:
-mov   al, byte ptr ds:[_detailshiftitercount]
-xor   ah, ah
-cmp   ax, word ptr [bp - 018h]
-jle    exit_render_masked_segrange
+; di is now free.
+
+mov   di, 0		; x_offset. todo replace with cx
 
 
 
-mov   bx, word ptr [bp - 018h]
+check_outer_loop_conditions:
+
+; if xoffset < detailshiftitercount exit loop
+
+
+continue_outer_loop:
+
+;			outp(SC_INDEX+1, quality_port_lookup[xoffset+detailshift.b.bytehigh]);
+mov   bx, di  ; copy xoffset
 add   bl, byte ptr ds:[_detailshift + 1]
 
 mov   dx, SC_DATA
 mov   al, byte ptr [bx + _quality_port_lookup]
 out   dx, al
-mov   ax, word ptr [bp - 016h]
-mov   word ptr ds:[_spryscale], ax
-mov   ax, word ptr [bp - 014h]
-mov   word ptr ds:[_spryscale + 2], ax
-mov   ax, word ptr [bp - 01ah]
-mov   word ptr ds:[_dc_x], ax
+
+
+;			spryscale.w = basespryscale;
+
+mov   dx, word ptr [bp - 016h]	; basespryscale
+mov   bx, word ptr [bp - 014h]	; basespryscale
+
+; di holds xoffset.
+; bx:dx temporarily holds _spryscale
+; ax will temporarily store dc_x
+;			dc_x        = dc_x_base4 + xoffset;
+mov   ax, word ptr [bp - 032h]		; dc_x_base4
+add   ax, di		; add xoffset to dc_x
+
+
 
 ;	if (dc_x < x1){
+SELFMODIFY_x1_field_3:
+cmp   ax, 08000h   ; x1 
+jge   calculate_sprtopscreen
 
-cmp   ax, word ptr [bp - 020h]
-jl    adjust_by_shiftstep
+; adjust by shiftstep
+
+;	dc_x        += detailshiftitercount;
+;	spryscale.w += rw_scalestep_shift;
+
+add   al, byte ptr ds:[_detailshiftitercount]
+adc   ah, 0
+add   dx, word ptr [bp - 0Ah]   ; rw_scalestep_shift 
+adc   bx, word ptr [bp - 8]     ; rw_scalestep_shift
+
 calculate_sprtopscreen:
+
+mov   word ptr ds:[_dc_x], ax
+mov   word ptr ds:[_spryscale], dx
+mov   word ptr ds:[_spryscale + 2], bx
+
+; bx:dx written back to  _spryscale
+
+;			sprtopscreen.h.intbits = centery;
+;			sprtopscreen.h.fracbits = 0;
+
 mov   ax, word ptr ds:[_centery]
 mov   word ptr ds:[_sprtopscreen+2], ax
-mov   word ptr ds:[_sprtopscreen], 0
-mov   cx, word ptr ds:[_spryscale + 2]
+
+
+;			sprtopscreen.w -= FixedMul(dc_texturemid.w,spryscale.w);
+
 mov   bx, word ptr ds:[_spryscale]
+mov   cx, word ptr ds:[_spryscale + 2]
 mov   ax, word ptr ds:[_dc_texturemid]
 mov   dx, word ptr ds:[_dc_texturemid + 2]
 call  FixedMul_
-sub   word ptr ds:[_sprtopscreen], ax
+
+
+neg   ax ; no need to subtract from zero...
+mov   word ptr ds:[_sprtopscreen], ax
 sbb   word ptr ds:[_sprtopscreen + 2], dx
-loop_draw_columns:
+
+inner_loop_draw_columns:
 
 mov   ax, word ptr ds:[_dc_x]
 SELFMODIFY_cmp_to_x2:
 cmp   ax, 02000h
-jle   label29
-inc   word ptr [bp - 01Ah]
+jle   do_inner_loop
+
+;		for (xoffset = 0 ; xoffset < detailshiftitercount ; 
+;			xoffset++, 
+;			basespryscale+=rw_scalestep.w) {
+
+; end of inner loop, fall back to end of outer loop step
+
+inc   di			; xoffset++
+;			basespryscale+=rw_scalestep.w
 mov   ax, word ptr [bp - 01Eh]
-inc   word ptr [bp - 018h]
 add   word ptr [bp - 016h], ax
 mov   ax, word ptr [bp - 01Ch]
 adc   word ptr [bp - 014h], ax
-jmp   label30
+
+
+mov   al, byte ptr ds:[_detailshiftitercount]
+cbw
+; xoffset < detailshiftitercount
+cmp   ax, di
+jg    continue_outer_loop		; 6 bytes out of range
 
 exit_render_masked_segrange:
 mov   ax, NULL_TEX_COL
@@ -2363,21 +2447,8 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-adjust_by_shiftstep:
 
-;				dc_x        += detailshiftitercount;
-;				spryscale.w += rw_scalestep_shift;
-
-mov   al, byte ptr ds:[_detailshiftitercount]
-xor   ah, ah
-add   word ptr ds:[_dc_x], ax
-mov   ax, word ptr [bp - 0Ah]
-add   word ptr ds:[_spryscale], ax
-mov   ax, word ptr [bp - 8]
-adc   word ptr ds:[_spryscale + 2], ax
-jmp   calculate_sprtopscreen
-
-label29:
+do_inner_loop:
 mov   bx, word ptr ds:[_maskedtexturecol]
 add   ax, ax
 mov   es, word ptr ds:[_maskedtexturecol+2]
@@ -2396,9 +2467,9 @@ mov   ax, word ptr [bp - 8]
 adc   word ptr ds:[_spryscale + 2], ax
 mov   ax, word ptr [bp - 012h]
 sub   word ptr ds:[_sprtopscreen], ax
-mov   ax, word ptr [bp - 0Eh]
+mov   ax, word ptr [bp - 010h]
 sbb   word ptr ds:[_sprtopscreen + 2], ax
-jmp   loop_draw_columns
+jmp   inner_loop_draw_columns
 label32:
 cmp   byte ptr ds:[_fixedcolormap], 0
 jne   label36
