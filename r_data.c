@@ -2450,9 +2450,6 @@ void setchecksum(){
 
 
 extern int16_t setval;
-// todo: since this is called once per getcolumn, really investigate
-// c-level improvements. can tex be cached to skip stuff?
-// todo: maybe cache stuff per top, bot, and mid calls with an id?
 
 // if texturecolumnlump, mask, etc are not stack vars but near vars, 
 // their values can be reused
@@ -2493,7 +2490,6 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		}
 		n += 2;
 	}
-	runningbasetotal -= subtractor;
 
 
 
@@ -2557,8 +2553,17 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 			col+= patchwidth;
 		}
 		// handles RLE runs..
-		while ((runningbasetotal + patchwidth) < basecol){
-			runningbasetotal += patchwidth;
+		//while ((runningbasetotal + patchwidth) < basecol){
+			//runningbasetotal += patchwidth;
+		//}
+
+		segloopnextlookup[segloopcachetype]     = runningbasetotal;
+		runningbasetotal -= subtractor; // remove last subtractor...
+		if (subtractor > patchwidth){
+			// if this is a multi patch RLE run, then subtractor will be larger than patchwidth
+			// add the difference in one go
+			// could alternatively modulo outside the function?
+			runningbasetotal += (subtractor - patchwidth);
 		}
 		
 		
