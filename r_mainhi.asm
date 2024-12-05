@@ -1915,7 +1915,7 @@ PUBLIC R_RenderMaskedSegRange_
 ;x1 is bx
 ;x2 is cx
 
-; bp - 2        
+; bp - 2        UNUSED (was lookup)
 ; bp - 4        lineflags
 ; bp - 6        
 ; bp - 8        
@@ -1933,11 +1933,11 @@ PUBLIC R_RenderMaskedSegRange_
 ; bp - 020h     x1
 ; bp - 022h     UNUSED
 ; bp - 024h     side_render
-; bp - 026h     UNUSED curlinelinedef
-; bp - 028h     
-; bp - 02Ah     
-; bp - 02Ch     
-; bp - 02Eh     
+; bp - 026h     UNUSED curseg pointer. pointless since its a var?
+; bp - 028h     UNUSED v2.x
+; bp - 02Ah     UNUSED v1.y
+; bp - 02Ch     UNUSED side_render secnum todo selfmodify easy
+; bp - 02Eh     UNUSED v1
 ; bp - 030h     
 ; bp - 032h     dc_x_base4
 ; bp - 034h     drawseg far segment (this is a constant)
@@ -1958,28 +1958,28 @@ mov   word ptr ds:[_curseg], ax
 shl   ax, 1
 shl   ax, 1
 shl   ax, 1
-add   ah, 040h					; segs_render is ds:[0x4000]
+add   ah, 040h					; segs_render is ds:[0x4000] todo constant
 mov   word ptr ds:[_curseg_render], ax
 mov   bx, ax
 mov   ax, SIDES_SEGMENT
-mov   si, word ptr [bx + 6]
+mov   si, word ptr [bx + 6]			; get sidedefOffset
 mov   es, ax
 shl   si, 1
 shl   si, 1
-mov   ax, si
-shl   si, 1
-add   ah, 0AEh						; sides render is ds:[0xAE00] 
-mov   si, word ptr es:[si + 4]
-mov   word ptr [bp - 024h], ax
+mov   ax, si						; side_render_t is 4 bytes each
+shl   si, 1							; side_t is 8 bytes each
+add   ah, 0AEh						; sides render is ds:[0xAE00] todo constant
+mov   si, word ptr es:[si + 4]		; lookup side->midtexture
+mov   word ptr [bp - 024h], ax		; store side_render_t offset for curseg_render
 mov   ax, TEXTURETRANSLATION_SEGMENT
 add   si, si
 mov   es, ax
 mov   ax, MASKED_LOOKUP_SEGMENT_7000
-mov   si, word ptr es:[si]		; si is stored for the whole function. not good revisit.
+mov   si, word ptr es:[si]			; get texnum. si is stored for the whole function. not good revisit.
 mov   es, ax
-mov   al, byte ptr es:[si]
+mov   al, byte ptr es:[si]			; translate texnum to lookup
 mov   word ptr [bp - 0Ch], 0FFFFh
-mov   byte ptr [bp - 2], al
+mov   byte ptr cs:[SELFMODIFY_compare_lookup+2], al
 
 ;	if (lookup != 0xFF){
 cmp   al, 0FFh
@@ -1987,18 +1987,18 @@ je    lookup_not_ff
 
 ;		masked_header_t __near * maskedheader = &masked_headers[lookup];
 ;		maskedpostsofs = maskedheader->postofsoffset;
-xor   ah, ah
+cbw
 shl   ax, 3
 mov   bx, ax
 mov   ax, word ptr [bx + _masked_headers + 2]
 mov   word ptr [bp - 0Ch], ax
 lookup_not_ff:
+mov   ax, SEG_LINEDEFS_SEGMENT
+mov   es, ax
 mov   ax, word ptr ds:[_curseg]
-mov   dx, SEG_LINEDEFS_SEGMENT
 mov   bx, ax
-mov   es, dx
 add   bh, 016h					; todo.... seg_sides_offset_in_seglines high word
-mov   dl, byte ptr es:[bx]
+mov   dl, byte ptr es:[bx]		; todo... this can be passed forward via self modifying code and no register wasted?
 add   ax, ax
 mov   bx, ax
 mov   di, word ptr es:[bx]		; di holds curlinelinedef
@@ -2006,59 +2006,69 @@ mov   di, word ptr es:[bx]		; di holds curlinelinedef
 mov   ax, LINEFLAGSLIST_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[di]
-mov   bx, word ptr ds:[_curseg_render]
+mov   bx, word ptr ds:[_curseg_render]   ; get curseg 
 mov   byte ptr [bp - 4], al
-mov   word ptr [bp - 026h], bx
-mov   bx, word ptr [bx]
+mov   cx, word ptr [bx+2]			; get v2 offset
+mov   bx, word ptr [bx]				; get v1 offset
 mov   ax, VERTEXES_SEGMENT
 shl   bx, 2
+shl   cx, 2
 mov   es, ax
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 02Eh], ax ; store v1 (?)
-mov   ax, word ptr es:[bx + 2] ; v1.y ?
-mov   bx, word ptr [bp - 026h] ; todo use from above
-mov   bx, word ptr [bx + 2]    ; v2.y?
-shl   bx, 2
-mov   word ptr [bp - 02Ah], ax
-mov   ax, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 2]
-mov   bx, word ptr [bp - 024h]
-mov   word ptr [bp - 028h], ax
-mov   ax, word ptr [bx + 2]
-mov   word ptr [bp - 02Ch], ax
+
+; compare v1/v2 fields right now, self modify the lightnum diff that it is used for later.
+
+mov   ax, word ptr es:[bx]	   ; get v1.x
+mov   bx, word ptr es:[bx + 2] ; v1.y
+xchg  bx, cx				   ; cx has v1.y. ax has v1.x
+
+; todo is there a way to do this with adc/sbb without jumps?
+cmp   cx, word ptr es:[bx+2]	; compare v1.y == v2.y
+je    ys_equal
+cmp   ax, word ptr es:[bx]		; compare v1.x == v2.x
+je    xs_equal
+mov   al, 090h				    ; nop instruction
+done_comparing_vertexes:
+mov   byte ptr cs:[SELFMODIFY_add_vertex_field], al
+
+
+mov   bx, word ptr [bp - 024h] ; get side_render
+mov   cx, word ptr [bx + 2]		; get side_render secnum
+
 test  byte ptr [bp - 4], ML_TWOSIDED
+										; todo 2 is this even necessary? do lineflags prevent us from checking for a null backsec
 je   set_backsector_to_null				; todo is there a cleaner way to do this than null a far pointer?
 
 ; backsector = &sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
 
 ;curlineside ^ 1
+
+mov   dl, 1
+xor   bx, bx
 mov   bl, dl
-xor   bl, 1
-xor   bh, bh
 
 shl   di, 1
 shl   di, 1
-mov   dx, LINES_SEGMENT
+mov   ax, LINES_SEGMENT
 sal   bx, 1
-mov   es, dx
+mov   es, ax
 
-mov   bx, word ptr es:[bx + di]
+mov   bx, word ptr es:[bx + di]		; get secnum
 shl   bx, 2
-mov   dx, SECTORS_SEGMENT
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
 
-mov   ax, word ptr [bx + 0AE02h] ; ????? maybe lines sectors offset diff
+mov   dx, word ptr ds:[bx + _sides_render + 2]   ; get a field in the sides render area
 
-shl   ax, 4
+shl   dx, 4
 backsector_set_to_dx_ax:
-mov   word ptr ds:[_backsector], ax
-mov   word ptr ds:[_backsector + 2], dx
-mov   ax, word ptr [bp - 02Ch]
+mov   word ptr ds:[_frontsector + 2], ax  ; necessary?
+mov   word ptr ds:[_backsector + 2], ax
+mov   word ptr ds:[_backsector], dx
+mov   ax, cx        ; retrieve side_render secnum from above
 shl   ax, 4
-mov   word ptr ds:[_frontsector + 2], dx  ; necessary?
 mov   word ptr ds:[_frontsector], ax
 
 mov   bx, ax
-mov   es, dx
 
 mov   al, byte ptr es:[bx + 0Eh]
 xor   ah, ah
@@ -2066,59 +2076,72 @@ mov   dx, ax
 sar   dx, 4
 mov   al, byte ptr ds:[_extralight]
 add   ax, dx
-cmp   cx, word ptr [bp - 02Ah]
-jne    label7
-dec   ax
-label24:
-test  ax, ax
-jl   label8
+
+SELFMODIFY_add_vertex_field:
+nop				; becomes inc ax, dec ax, or nop
+
+;	if (lightnum < 0){
+test  ax, ax			; todo get for free?
+jl   set_walllights_zero
 cmp   ax, 010h
-jge   label6
+jge   clip_lights_to_max
 mov   bx, ax
 add   bx, ax
 mov   ax, word ptr [bx + _lightmult48lookup]
-jmp   label25
+jmp   lights_set
+
+ys_equal:
+mov   al, 048h  ; dec ax instruction
+jmp   done_comparing_vertexes
+xs_equal:
+mov   al, 040h  ; inc ax instruciton
+jmp   done_comparing_vertexes
+
 
 set_backsector_to_null:
 xor   ax, ax
 xor   dx, dx
+xor   cx, cx
 jmp   backsector_set_to_dx_ax
-label7:
-mov   dx, word ptr [bp - 02Eh]
-cmp   dx, word ptr [bp - 028h]
-je    label23
-jmp   label24
-label23:
-inc   ax
-jmp   label24
-label8:
+
+
+set_walllights_zero:
 xor   ax, ax
-jmp   label25
+jmp   lights_set
 
-label6:
-
-
+clip_lights_to_max:
 mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult48lookup[LIGHTLEVELS - 1];
 
-label25:
-mov   word ptr ds:[_walllights], ax
-les   di, dword ptr [bp - 036h]
+lights_set:
+mov   word ptr ds:[_walllights], ax      ; store lights
+les   di, dword ptr [bp - 036h]          ; get drawseg far ptr
 
 ; es:di is input drawseg
+
+;    maskedtexturecol = &openings[ds->maskedtexturecol];
+
 mov   ax, word ptr es:[di + 01Ah]
 add   ax, ax
 mov   word ptr ds:[_maskedtexturecol], ax
-mov   ax, word ptr es:[di + 0Eh]
-mov   word ptr ds:[_maskedtexturecol+2], OPENINGS_SEGMENT
-mov   word ptr [bp - 01Eh], ax
-mov   ax, word ptr es:[di + 010h]
-mov   bx, word ptr [bp - 01Eh]
-mov   word ptr [bp - 01Ch], ax
+mov   word ptr ds:[_maskedtexturecol+2], OPENINGS_SEGMENT	; todo hardcode this in data
+
+
+;    rw_scalestep.w = ds->scalestep;
+
+
+mov   bx, word ptr es:[di + 0Eh]
+mov   word ptr [bp - 01Eh], bx		
+mov   cx, word ptr es:[di + 010h]
+mov   word ptr [bp - 01Ch], cx
+
 mov   ax, word ptr [bp - 020h]
-mov   cx, word ptr [bp - 01Ch]
 sub   ax, word ptr es:[di + 2]
 add   word ptr ds:[_walllights], 030h
+
 ; inlined  FastMul16u32u_
+
+;		spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,rw_scalestep.w)
+
 
 XCHG CX, AX    ; AX stored in CX
 MUL  CX        ; AX * CX
@@ -2130,10 +2153,17 @@ add   ax, word ptr es:[di + 6]
 adc   dx, word ptr es:[di + 8]
 mov   word ptr ds:[_spryscale], ax
 mov   word ptr ds:[_spryscale + 2], dx
+
+;    mfloorclip_offset = ds->sprbottomclip_offset;
+;    mceilingclip_offset = ds->sprtopclip_offset;
+
 mov   ax, word ptr es:[di + 018h]
 mov   word ptr ds:[_mfloorclip], ax
 mov   ax, word ptr es:[di + 016h]
 mov   word ptr ds:[_mceilingclip], ax
+
+;    if (lineflags & ML_DONTPEGBOTTOM) {
+
 les   di, dword ptr ds:[_frontsector]
 mov   bx, word ptr  ds:[_backsector]
 test  byte ptr [bp - 4], ML_DONTPEGBOTTOM
@@ -2170,6 +2200,8 @@ cmp   ax, cx
 jg    use_frontsector_floor
 mov   ax, cx   ; use backsector floor
 use_frontsector_floor:
+
+
 
 mov   cx, TEXTUREHEIGHTS_SEGMENT
 mov   es, cx
@@ -2250,12 +2282,10 @@ done_shifting_spryscale:
 mov   word ptr [bp - 0Ah], ax
 mov   word ptr [bp - 8], dx
 mov   cx, dx
-
-mov   dx, word ptr ds:[_dc_texturemid + 2]
-
-mov   word ptr [bp - 026h], dx
 mov   bx, ax
+
 mov   ax, word ptr ds:[_dc_texturemid]
+mov   dx, word ptr ds:[_dc_texturemid + 2]
 call  FixedMul_
 mov   word ptr [bp - 012h], ax	  ; sprtopscreen_step
 mov   word ptr [bp - 0Eh], dx
@@ -2404,7 +2434,9 @@ mov   word ptr ds:[_dc_iscale], ax
 mov   al, byte ptr [bp - 6]
 mov   word ptr ds:[_dc_iscale + 2], dx
 sub   al, byte ptr ds:[_maskedcachedbasecol]
-cmp   byte ptr [bp - 2], 0FFh
+SELFMODIFY_compare_lookup:  
+mov   dl, 0FFh
+cmp   dl, 0FFh
 je    label41 ; todo fine?
 mov   dx, word ptr [bp - 6]
 cmp   dx, word ptr ds:[_maskednextlookup]
