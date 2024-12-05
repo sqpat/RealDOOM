@@ -77,7 +77,7 @@ enum { VERSION =  109 };
 //#define FPS_DISPLAY
 
 // Sets some viewpoitn calculations to 16 bit and less precision than 32 bit. not super obvious, but if you run against a wall up close the wall texture pixels will move less smoothly with the player bob for example
-#define USE_SHORTHEIGHT_VIEWZ	
+//#define USE_SHORTHEIGHT_VIEWZ	
 
 // Load P_SETUP and P_SIGHT source dynamically into upper regions . if you enable these, move p_setup/p_sight to newsegments at start of linker file
 //#define MOVE_P_SETUP

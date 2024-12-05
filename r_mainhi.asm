@@ -35,7 +35,6 @@ EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
 
-
 EXTRN _R_DrawFuzzColumnCallHigh:DWORD
 EXTRN _R_DrawMaskedColumnCallSpriteHigh:DWORD
 EXTRN getspritetexture_:NEAR
@@ -2015,10 +2014,10 @@ mov   ax, VERTEXES_SEGMENT
 shl   bx, 2
 mov   es, ax
 mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 02Eh], ax
-mov   ax, word ptr es:[bx + 2]
-mov   bx, word ptr [bp - 026h]
-mov   bx, word ptr [bx + 2]
+mov   word ptr [bp - 02Eh], ax ; store v1 (?)
+mov   ax, word ptr es:[bx + 2] ; v1.y ?
+mov   bx, word ptr [bp - 026h] ; todo use from above
+mov   bx, word ptr [bx + 2]    ; v2.y?
 shl   bx, 2
 mov   word ptr [bp - 02Ah], ax
 mov   ax, word ptr es:[bx]
@@ -2055,9 +2054,11 @@ mov   word ptr ds:[_backsector], ax
 mov   word ptr ds:[_backsector + 2], dx
 mov   ax, word ptr [bp - 02Ch]
 shl   ax, 4
-mov   word ptr ds:[_frontsector + 2], SECTORS_SEGMENT  ; todo remove
+mov   word ptr ds:[_frontsector + 2], dx  ; necessary?
 mov   word ptr ds:[_frontsector], ax
-les   bx, dword ptr ds:[_frontsector]
+
+mov   bx, ax
+mov   es, dx
 
 mov   al, byte ptr es:[bx + 0Eh]
 xor   ah, ah
@@ -2133,68 +2134,96 @@ mov   ax, word ptr es:[di + 018h]
 mov   word ptr ds:[_mfloorclip], ax
 mov   ax, word ptr es:[di + 016h]
 mov   word ptr ds:[_mceilingclip], ax
+les   di, dword ptr ds:[_frontsector]
+mov   bx, word ptr  ds:[_backsector]
 test  byte ptr [bp - 4], ML_DONTPEGBOTTOM
-jne   label10
-jmp   label12
-label10:
-les   di, dword ptr ds:[_frontsector]
-mov   dx, word ptr ds:[_backsector]
-mov   bx, word ptr ds:[_backsector + 2]
-mov   ax, word ptr es:[di]
-mov   es, bx
-mov   bx, dx
-cmp   ax, word ptr es:[bx]
-; es is sectors segment..
-mov   di, OFFSET _frontsector
-jg    use_frontsector_1
-add   di, 4
-use_frontsector_1:
-les   di, dword ptr [di]
-mov   bx, word ptr es:[di]
-mov   ax, bx
-sub   ax, word ptr ds:[_viewz_shortheight]
-sar   ax, 3
-mov   word ptr ds:[_dc_texturemid+2], ax
-les   di, dword ptr ds:[_frontsector]
-mov   dx, word ptr ds:[_backsector]
-mov   bx, word ptr ds:[_backsector + 2]
-mov   ax, word ptr es:[di]
-mov   es, bx
-mov   bx, dx
-cmp   ax, word ptr es:[bx]
-mov   di, OFFSET _frontsector
-jg    use_frontsector_2
+jne   front_back_floor_case
 
-add   di, 4
+front_back_ceiling_case:
 
-; es is sectors segment..
-use_frontsector_2:
-mov   di, word ptr ds:[di]
-mov   bx, word ptr es:[di]
-mov   ax, bx
-sub   ax, word ptr ds:[_viewz_shortheight]
-and   ax, 7
-shl   ax, 0Dh
-mov   word ptr ds:[_dc_texturemid], ax
-mov   ax, TEXTUREHEIGHTS_SEGMENT
-mov   es, ax
-mov   al, byte ptr es:[si]
-xor   ah, ah
-inc   ax
-add   word ptr ds:[_dc_texturemid+2], ax
-label55:
-mov   di, word ptr [bp - 024h]
-mov   ax, word ptr [di]
-add   word ptr ds:[_dc_texturemid+2], ax
+; frontsector->ceilingheight < backsector->ceilingheight ? frontsector->ceilingheight : backsector->ceilingheight;
 
-cmp   byte ptr ds:[_fixedcolormap], 0
-je    label16
+mov   ax, word ptr es:[di+2] ; frontsector ceil
+mov   cx, word ptr es:[bx+2] ; backsector ceil
+cmp   ax, cx
+jl    use_frontsector_ceil
+mov   ax, cx			    ; use backsector ceil
+use_frontsector_ceil:
+
+xor   cx, cx
+
+jmp sector_height_chosen
+fixed_colormap:
 mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT_MASKEDMAPPING
 mov   al, byte ptr ds:[_fixedcolormap]
 mov   byte ptr ds:[_dc_colormap_index], al
-label16:
-mov   ax, word ptr [bp - 020h]
-mov   di, ax						; di = x1
+jmp   colormap_set
+
+
+front_back_floor_case:
+
+;	base = frontsector->floorheight > backsector->floorheight ? frontsector->floorheight : backsector->floorheight;
+
+mov   ax, word ptr es:[di] ; frontsector floor
+mov   cx, word ptr es:[bx] ; backsector floor
+cmp   ax, cx
+jg    use_frontsector_floor
+mov   ax, cx   ; use backsector floor
+use_frontsector_floor:
+
+mov   cx, TEXTUREHEIGHTS_SEGMENT
+mov   es, cx
+xor   cx, cx
+mov   cl, byte ptr es:[si]
+inc   cx
+
+sector_height_chosen:
+
+;ax contains shortheight of chosen sector height
+;cx contains word to add to dc_texturemid after shortheight conversion.. 0 for ceil, and textureheight for floor case
+
+; set fixed union from shortheight, i.e. shift 13 left
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+
+; ax:dx is textureheight
+
+;    dc_texturemid.h.intbits += adder;		
+
+add   ax, cx
+
+;     dc_texturemid.w -= viewz.w;
+sub   dx, word ptr ds:[_viewz]
+sbb   ax, word ptr ds:[_viewz+2]
+
+
+
+;    dc_texturemid.h.intbits += side_render->rowoffset;
+
+mov   di, word ptr [bp - 024h]
+add   ax, word ptr [di]
+
+
+mov   word ptr ds:[_dc_texturemid], dx
+mov   word ptr ds:[_dc_texturemid+2], ax
+
+;if (fixedcolormap) {
+;		// todo if this is 0 maybe skip the if?
+;		dc_colormap_segment = colormaps_segment_maskedmapping;
+;		dc_colormap_index = fixedcolormap;
+;	}
+
+cmp   byte ptr ds:[_fixedcolormap], 0
+jne    fixed_colormap
+colormap_set:
+mov   ax, word ptr [bp - 020h]   ; di = x1
+mov   di, ax
+
 and   ax, word ptr ds:[_detailshiftandval]
 mov   word ptr [bp - 032h], ax
 sub   di, ax						; di = base4diff = x1 - dc_x_base4
@@ -2206,12 +2235,18 @@ mov   word ptr [bp - 014h], ax
 mov   cl, byte ptr ds:[_detailshift2minus]
 mov   ax, word ptr [bp - 01Eh]
 xor   ch, ch
-jcxz  label17
-label18:
+; cl is 0 to 2
+
+jcxz  done_shifting_spryscale
+
 shl   ax, 1
 rcl   dx, 1
-loop  label18
-label17:
+dec   cl
+jcxz  done_shifting_spryscale
+shl   ax, 1
+rcl   dx, 1
+
+done_shifting_spryscale:
 mov   word ptr [bp - 0Ah], ax
 mov   word ptr [bp - 8], dx
 mov   cx, dx
@@ -2225,7 +2260,7 @@ call  FixedMul_
 mov   word ptr [bp - 012h], ax	  ; sprtopscreen_step
 mov   word ptr [bp - 0Eh], dx
 test  di, di
-je    base4diff_is_zero_rendermaksedsegrange
+je    base4diff_is_zero_rendermaskedsegrange
 mov   ax, word ptr [bp - 01Eh]
 mov   dx, word ptr [bp - 01Ch]
 
@@ -2236,7 +2271,7 @@ sub   word ptr [bp - 016h], ax
 sbb   word ptr [bp - 014h], dx
 dec   di
 jne   loop_dec_base4diff
-base4diff_is_zero_rendermaksedsegrange:
+base4diff_is_zero_rendermaskedsegrange:
 mov   ax, word ptr [bp - 032h]
 mov   word ptr [bp - 018h], 0
 mov   word ptr [bp - 01Ah], ax
@@ -2244,22 +2279,15 @@ label30:
 mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
 cmp   ax, word ptr [bp - 018h]
-jg    label21
-mov   ax, NULL_TEX_COL
-mov   word ptr ds:[_maskednextlookup], ax
-mov   word ptr ds:[_maskedcachedbasecol], ax
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
+jle    exit_render_masked_segrange
 
-label21:
-mov   al, byte ptr ds:[_detailshift + 1]
+
+
 mov   bx, word ptr [bp - 018h]
-cbw  
-add   bx, ax
+add   bl, byte ptr ds:[_detailshift + 1]
+
 mov   dx, SC_DATA
-mov   al, byte ptr [bx + 060h]
+mov   al, byte ptr [bx + _quality_port_lookup]
 out   dx, al
 mov   ax, word ptr [bp - 016h]
 mov   word ptr ds:[_spryscale], ax
@@ -2267,9 +2295,12 @@ mov   ax, word ptr [bp - 014h]
 mov   word ptr ds:[_spryscale + 2], ax
 mov   ax, word ptr [bp - 01ah]
 mov   word ptr ds:[_dc_x], ax
+
+;	if (dc_x < x1){
+
 cmp   ax, word ptr [bp - 020h]
-jl    label28
-label47:
+jl    adjust_by_shiftstep
+calculate_sprtopscreen:
 mov   ax, word ptr ds:[_centery]
 mov   word ptr ds:[_sprtopscreen+2], ax
 mov   word ptr ds:[_sprtopscreen], 0
@@ -2280,7 +2311,7 @@ mov   dx, word ptr ds:[_dc_texturemid + 2]
 call  FixedMul_
 sub   word ptr ds:[_sprtopscreen], ax
 sbb   word ptr ds:[_sprtopscreen + 2], dx
-label34:
+loop_draw_columns:
 
 mov   ax, word ptr ds:[_dc_x]
 SELFMODIFY_cmp_to_x2:
@@ -2293,7 +2324,20 @@ add   word ptr [bp - 016h], ax
 mov   ax, word ptr [bp - 01Ch]
 adc   word ptr [bp - 014h], ax
 jmp   label30
-label28:
+
+exit_render_masked_segrange:
+mov   ax, NULL_TEX_COL
+mov   word ptr ds:[_maskednextlookup], ax
+mov   word ptr ds:[_maskedcachedbasecol], ax
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+adjust_by_shiftstep:
+
+;				dc_x        += detailshiftitercount;
+;				spryscale.w += rw_scalestep_shift;
+
 mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
 add   word ptr ds:[_dc_x], ax
@@ -2301,7 +2345,7 @@ mov   ax, word ptr [bp - 0Ah]
 add   word ptr ds:[_spryscale], ax
 mov   ax, word ptr [bp - 8]
 adc   word ptr ds:[_spryscale + 2], ax
-jmp   label47
+jmp   calculate_sprtopscreen
 
 label29:
 mov   bx, word ptr ds:[_maskedtexturecol]
@@ -2324,13 +2368,20 @@ mov   ax, word ptr [bp - 012h]
 sub   word ptr ds:[_sprtopscreen], ax
 mov   ax, word ptr [bp - 0Eh]
 sbb   word ptr ds:[_sprtopscreen + 2], ax
-jmp   label34
+jmp   loop_draw_columns
 label32:
 cmp   byte ptr ds:[_fixedcolormap], 0
 jne   label36
 cmp   word ptr ds:[_spryscale + 2], 3
 jge   label35
-jmp   label37
+mov   ax, word ptr ds:[_spryscale]
+mov   dx, word ptr ds:[_spryscale + 2]
+mov   cx, 0Ch
+label48:
+sar   dx, 1
+rcr   ax, 1
+loop  label48
+jmp   label49
 label35:
 mov   al, 02Fh
 label49:
@@ -2354,7 +2405,7 @@ mov   al, byte ptr [bp - 6]
 mov   word ptr ds:[_dc_iscale + 2], dx
 sub   al, byte ptr ds:[_maskedcachedbasecol]
 cmp   byte ptr [bp - 2], 0FFh
-je    jump_to_label_41
+je    label41 ; todo fine?
 mov   dx, word ptr [bp - 6]
 cmp   dx, word ptr ds:[_maskednextlookup]
 jb    label39
@@ -2381,8 +2432,6 @@ mov   es, word ptr ds:[_maskedtexturecol+2]
 add   bx, ax
 mov   word ptr es:[bx], 07FFFh
 jmp   label40
-jump_to_label_41:
-jmp   label41
 label39:
 cmp   dx, word ptr ds:[_maskedcachedbasecol]
 jb    label38
@@ -2403,58 +2452,8 @@ mov   ah, byte ptr [_maskedheightvalcache]
 mul   ah
 add   ax, word ptr [_maskedcachedsegment]
 jmp   label43
-label12:
-les   bx, dword ptr ds:[_frontsector]
-mov   di, word ptr ds:[_backsector]
-mov   dx, word ptr ds:[_backsector + 2]
-mov   ax, word ptr es:[bx + 2]
-mov   es, dx
-cmp   ax, word ptr es:[di + 2]  ; todo can backsector be null here
-; es is sectors segment..
-jge   label54
-mov   di, word ptr ds:[_frontsector]
-label45:
 
-mov   bx, word ptr es:[di + 2]
-mov   ax, bx
-sub   ax, word ptr ds:[_viewz_shortheight]
-sar   ax, 3
-mov   word ptr ds:[_dc_texturemid+2], ax
-les   di, dword ptr ds:[_frontsector]
-mov   dx, word ptr ds:[_backsector]
-mov   bx, word ptr ds:[_backsector + 2]
-mov   ax, word ptr es:[di + 2]
-mov   es, bx
-mov   bx, dx
-cmp   ax, word ptr es:[bx + 2]
-; es is sectors segment..
-jge   label44
-mov   di, word ptr ds:[_frontsector]
-label46:
 
-mov   bx, word ptr es:[di + 2]
-mov   ax, bx
-sub   ax, word ptr ds:[_viewz_shortheight]
-xor   ah, ah
-and   al, 7
-shl   ax, 0Dh
-mov   word ptr ds:[_dc_texturemid], ax
-jmp   label55
-label54:
-mov   di, word ptr ds:[_backsector]
-jmp   label45
-label44:
-mov   di, word ptr ds:[_backsector]
-jmp   label46
-label37:
-mov   ax, word ptr ds:[_spryscale]
-mov   dx, word ptr ds:[_spryscale + 2]
-mov   cx, 0Ch
-label48:
-sar   dx, 1
-rcr   ax, 1
-loop  label48
-jmp   label49
 label41:
 mov   dx, word ptr [bp - 6]
 cmp   dx, word ptr ds:[_maskednextlookup]

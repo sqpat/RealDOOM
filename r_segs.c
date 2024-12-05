@@ -42,7 +42,7 @@
 // R_RenderMaskedSegRange
 //
 /*
-void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2) {
+void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2) {
 	uint8_t	index;
 	int16_t		lightnum;
 	int16_t		frontsecnum;
@@ -59,6 +59,8 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	uint8_t lineflags;
 	uint8_t lookup;
 	uint16_t maskedpostsofs = 0xFFFF;
+	uint16_t base;
+	int16_t adder = 0;
 	curseg = ds->curseg;
 	curseg_render = &segs_render[curseg];
 
@@ -133,27 +135,17 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
     
     // find positioning
     if (lineflags & ML_DONTPEGBOTTOM) {
-
-#ifdef USE_SHORTHEIGHT_VIEWZ	
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(dc_texturemid, 
-				(frontsector->floorheight > backsector->floorheight ? frontsector->floorheight : backsector->floorheight) - viewz_shortheight);
-		dc_texturemid.h.intbits += (textureheights[texnum] + 1);
-#else
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(dc_texturemid,
-			frontsector->floorheight > backsector->floorheight ? frontsector->floorheight : backsector->floorheight);
-		dc_texturemid.h.intbits += textureheights[texnum] + 1;
-		dc_texturemid.w -= viewz.w;
-#endif
+		base = frontsector->floorheight > backsector->floorheight ? frontsector->floorheight : backsector->floorheight;
+		adder = textureheights[texnum] + 1;
     } else {
-#ifdef USE_SHORTHEIGHT_VIEWZ	
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(dc_texturemid,
-			(frontsector->ceilingheight < backsector->ceilingheight ? frontsector->ceilingheight : backsector->ceilingheight) - viewz_shortheight);
-#else
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(dc_texturemid,
-			(frontsector->ceilingheight < backsector->ceilingheight ? frontsector->ceilingheight : backsector->ceilingheight));
-		dc_texturemid.w -= viewz.w;
-#endif
+		base =  frontsector->ceilingheight < backsector->ceilingheight ? frontsector->ceilingheight : backsector->ceilingheight;
     }
+
+    SET_FIXED_UNION_FROM_SHORT_HEIGHT(dc_texturemid, base);
+    
+    dc_texturemid.w -= viewz.w;
+	dc_texturemid.h.intbits += adder;		
+
     dc_texturemid.h.intbits += side_render->rowoffset;
 			
 	if (fixedcolormap) {
