@@ -2449,7 +2449,7 @@ void setchecksum(){
 }*/
 
 
-
+extern int16_t setval;
 // todo: since this is called once per getcolumn, really investigate
 // c-level improvements. can tex be cached to skip stuff?
 // todo: maybe cache stuff per top, bot, and mid calls with an id?
@@ -2464,11 +2464,11 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 	int16_t n = 0;
 	uint8_t texcol;
 	int16_t subtractor;
-	int16_t basecol = col;
-
-	segloopcachedbasecol[segloopcachetype] = col;
-
-	col &= texturewidthmasks[tex];
+	int16_t runningbasetotal = 0;
+	int16_t runningtexbasetotal = 0;  // we want to keep track of how much to subtract col by to get the real col offset in the composite, and also know when the RLE run starts
+	int16_t fullwidth = texturewidthmasks[tex];
+	int16_t basecol = col = col & texturewidthmasks[tex];
+	
 	texcol = col;
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
 
@@ -2484,13 +2484,16 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		if (!subtractor){
 			subtractor = 256;
 		}
+		runningbasetotal += subtractor;
 		lump = texturecolumnlump[n].h;
 		col -= subtractor;
 		if (lump >= 0){ // should be equiv to == -1?
 			texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+			runningtexbasetotal += subtractor;
 		}
 		n += 2;
 	}
+	runningbasetotal -= subtractor;
 
 
 
@@ -2499,6 +2502,9 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		uint8_t  heightval = texturecolumnlump[n-1].bu.bytehigh;
 		int16_t  cachelumpindex;
 		heightval &= 0x0F;
+		if (patchwidth > (fullwidth)){
+			patchwidth = fullwidth+1;
+		}
 		segloopnextlookup[segloopcachetype] = patchwidth; 
 		
 		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
@@ -2546,15 +2552,21 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		// we cant use rle width as it might be longer than single patch width
 		// in the case of multiple side by side patches. so we essentially
 		// "modulo from negative" by patch width.
+
 		while (col < 0){
 			col+= patchwidth;
 		}
-
+		// handles RLE runs..
+		while ((runningbasetotal + patchwidth) < basecol){
+			runningbasetotal += patchwidth;
+		}
+		
+		
 		segloopheightvalcache[segloopcachetype] = heightval;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmentlumps[0];
-		segloopcachedbasecol[segloopcachetype] -= col;
-		segloopnextlookup[segloopcachetype]    += segloopcachedbasecol[segloopcachetype]; 
-		
+		segloopcachedbasecol[segloopcachetype]  = runningbasetotal;
+		segloopnextlookup[segloopcachetype]     = runningbasetotal + subtractor;
+
 
 		return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 
@@ -2593,8 +2605,12 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
 		segloopheightvalcache[segloopcachetype] = collength;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
-		segloopcachedbasecol[segloopcachetype] -= texcol;
-		segloopnextlookup[segloopcachetype] = subtractor+ segloopcachedbasecol[segloopcachetype]; 
+		//segloopcachedbasecol[segloopcachetype] -= texcol;
+		//segloopnextlookup[segloopcachetype] = subtractor+ segloopcachedbasecol[segloopcachetype]; 
+		//todo does this sitll crash...?
+		segloopcachedbasecol[segloopcachetype]  = runningtexbasetotal;
+		segloopnextlookup[segloopcachetype]     = runningtexbasetotal + subtractor;
+		
 
 		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
