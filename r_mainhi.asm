@@ -1915,30 +1915,30 @@ PUBLIC R_RenderMaskedSegRange_
 ;x1 is bx
 ;x2 is cx
 
-; bp - 2        base4diff
+; bp - 2        side_render
 ; bp - 4        lineflags
-; bp - 6        
+; bp - 6        maskedtexturecolumn todo put in register
 ; bp - 8        rw_scalestep_shift hi word
 ; bp - 0Ah      rw_scalestep_shift lo word
-; bp - 0Ch      maskedpostsofs
+; bp - 0Ch      UNUSED maskedpostsofs
 ; bp - 0Eh      UNUSED
 ; bp - 010h     sprtopscreen_step hi word
 ; bp - 012h     sprtopscreen_step lo word
 ; bp - 014h     basespryscale hi word
 ; bp - 016h     basespryscale lo word
 ; bp - 018h     UNUSED moved to cx xoffset (iterator) todo replace with selfmodify
-; bp - 01Ah     dc_x_base4
+; bp - 01Ah     UNUSED
 ; bp - 01Ch     rw_scalestep hi word
 ; bp - 01Eh     rw_scalestep lo word
-; bp - 020h     x1
+; bp - 020h     UNUSED
 ; bp - 022h     UNUSED
-; bp - 024h     side_render
+; bp - 024h     UNUSED
 ; bp - 026h     UNUSED curseg pointer. pointless since its a var?
 ; bp - 028h     UNUSED v2.x
 ; bp - 02Ah     UNUSED v1.y
 ; bp - 02Ch     UNUSED side_render secnum todo selfmodify easy
 ; bp - 02Eh     UNUSED v1
-; bp - 030h     
+; bp - 030h     UNUSED
 ; bp - 032h     dc_x_base4
 ; bp - 034h     drawseg far segment (this is a constant)
 ; bp - 036h     ds
@@ -1950,7 +1950,7 @@ sub   sp, 036h
 mov   di, ax
 mov   word ptr [bp - 036h], ax
 mov   word ptr [bp - 034h], dx
-;mov   word ptr [bp - 020h], bx
+
 mov   ax, bx
 mov   word ptr cs:[SELFMODIFY_x1_field_1+1], ax
 mov   word ptr cs:[SELFMODIFY_x1_field_2+1], ax
@@ -1975,7 +1975,7 @@ mov   ax, si						; side_render_t is 4 bytes each
 shl   si, 1							; side_t is 8 bytes each
 add   ah, 0AEh						; sides render is ds:[0xAE00] todo constant
 mov   si, word ptr es:[si + 4]		; lookup side->midtexture
-mov   word ptr [bp - 024h], ax		; store side_render_t offset for curseg_render
+mov   word ptr [bp - 2], ax			; store side_render_t offset for curseg_render
 mov   ax, TEXTURETRANSLATION_SEGMENT
 add   si, si
 mov   es, ax
@@ -1984,8 +1984,11 @@ mov   si, word ptr es:[si]			; get texnum. si is stored for the whole function. 
 mov   es, ax
 mov   al, byte ptr es:[si]			; translate texnum to lookup
 
+; put texnum where it needs to be
+mov   word ptr cs:[SELFMODIFY_texnum_1+1], si
+mov   word ptr cs:[SELFMODIFY_texnum_2+1], si
+mov   word ptr cs:[SELFMODIFY_texnum_3+1], si
 
-mov   word ptr [bp - 0Ch], 0FFFFh
 mov   byte ptr cs:[SELFMODIFY_compare_lookup+2], al
 
 ;	if (lookup != 0xFF){
@@ -1998,8 +2001,9 @@ cbw
 shl   ax, 3
 mov   bx, ax
 mov   ax, word ptr [bx + _masked_headers + 2]
-mov   word ptr [bp - 0Ch], ax
+mov   word ptr cs:[SELFMODIFY_maskedpostofs+3], ax
 lookup_not_ff:
+
 mov   ax, SEG_LINEDEFS_SEGMENT
 mov   es, ax
 mov   ax, word ptr ds:[_curseg]
@@ -2038,7 +2042,7 @@ done_comparing_vertexes:
 mov   byte ptr cs:[SELFMODIFY_add_vertex_field], al
 
 
-mov   bx, word ptr [bp - 024h] ; get side_render
+mov   bx, word ptr [bp - 2]     ; get side_render
 mov   cx, word ptr [bx + 2]		; get side_render secnum
 
 test  byte ptr [bp - 4], ML_TWOSIDED
@@ -2214,6 +2218,9 @@ use_frontsector_floor:
 mov   cx, TEXTUREHEIGHTS_SEGMENT
 mov   es, cx
 xor   cx, cx
+
+SELFMODIFY_texnum_3:
+mov   si, 08000h
 mov   cl, byte ptr es:[si]
 inc   cx
 
@@ -2245,7 +2252,7 @@ sbb   ax, word ptr ds:[_viewz+2]
 
 ;    dc_texturemid.h.intbits += side_render->rowoffset;
 
-mov   di, word ptr [bp - 024h]
+mov   di, word ptr [bp - 2]
 add   ax, word ptr [di]
 
 
@@ -2395,8 +2402,6 @@ mov   word ptr ds:[_spryscale + 2], bx
 ;			sprtopscreen.h.intbits = centery;
 ;			sprtopscreen.h.fracbits = 0;
 
-mov   ax, word ptr ds:[_centery]
-mov   word ptr ds:[_sprtopscreen+2], ax
 
 
 ;			sprtopscreen.w -= FixedMul(dc_texturemid.w,spryscale.w);
@@ -2410,7 +2415,10 @@ call  FixedMul_
 
 neg   ax ; no need to subtract from zero...
 mov   word ptr ds:[_sprtopscreen], ax
-sbb   word ptr ds:[_sprtopscreen + 2], dx
+mov   ax, word ptr ds:[_centery]
+sbb   ax, dx
+mov   word ptr ds:[_sprtopscreen + 2], ax
+
 
 inner_loop_draw_columns:
 
@@ -2418,6 +2426,7 @@ mov   ax, word ptr ds:[_dc_x]
 SELFMODIFY_cmp_to_x2:
 cmp   ax, 02000h
 jle   do_inner_loop
+
 
 ;		for (xoffset = 0 ; xoffset < detailshiftitercount ; 
 ;			xoffset++, 
@@ -2449,15 +2458,38 @@ pop   si
 ret   
 
 do_inner_loop:
-mov   bx, word ptr ds:[_maskedtexturecol]
+;   ax is dc_x
+les   bx, dword ptr ds:[_maskedtexturecol]
 add   ax, ax
-mov   es, word ptr ds:[_maskedtexturecol+2]
 add   bx, ax
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 6], ax
-cmp   ax, 07FFFh
-jne   label32
-label40:
+mov   si, word ptr es:[bx]
+cmp   si, MAXSHORT			; dont render nonmasked columns here.
+je   increment_inner_loop
+cmp   byte ptr ds:[_fixedcolormap], 0   
+jne   got_colormap
+; calculate colormap
+cmp   word ptr ds:[_spryscale + 2], 3
+jge   use_maxlight
+; shift this by 12...
+mov   ax, word ptr ds:[_spryscale]
+mov   dx, word ptr ds:[_spryscale + 2]
+mov   cx, LIGHTSCALESHIFT
+loop_shift_12:
+sar   dx, 1
+rcr   ax, 1
+loop  loop_shift_12
+jmp   get_colormap
+update_maskedtexturecol_finish_loop_iter:
+;	maskedtexturecol[dc_x] = MAXSHORT;
+
+les   bx, dword ptr ds:[_maskedtexturecol]
+mov   ax, word ptr ds:[_dc_x]
+add   ax, ax
+add   bx, ax
+mov   word ptr es:[bx], MAXSHORT
+
+
+increment_inner_loop:
 mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
 add   word ptr ds:[_dc_x], ax
@@ -2470,113 +2502,119 @@ sub   word ptr ds:[_sprtopscreen], ax
 mov   ax, word ptr [bp - 010h]
 sbb   word ptr ds:[_sprtopscreen + 2], ax
 jmp   inner_loop_draw_columns
-label32:
-cmp   byte ptr ds:[_fixedcolormap], 0
-jne   label36
-cmp   word ptr ds:[_spryscale + 2], 3
-jge   label35
-mov   ax, word ptr ds:[_spryscale]
-mov   dx, word ptr ds:[_spryscale + 2]
-mov   cx, 0Ch
-label48:
-sar   dx, 1
-rcr   ax, 1
-loop  label48
-jmp   label49
-label35:
-mov   al, 02Fh
-label49:
+
+use_maxlight:
+mov   al, 02Fh			; todo MAXLIGHTSCALE - 1;
+get_colormap:
 xor   ah, ah
 mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT_MASKEDMAPPING
-mov   bx, word ptr ds:[_walllights]
+mov   bx, word ptr ds:[_walllights]			; todo set this constant outside the loop?
 add   bx, ax
 mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx]
-
 mov   byte ptr ds:[_dc_colormap_index], al
-label36:
+got_colormap:
 mov   ax, 0FFFFh
-mov   cx, word ptr ds:[_spryscale + 2]
 mov   dx, ax
 mov   bx, word ptr ds:[_spryscale]
+mov   cx, word ptr ds:[_spryscale + 2]
 call  FastDiv3232_
 mov   word ptr ds:[_dc_iscale], ax
-mov   al, byte ptr [bp - 6]
 mov   word ptr ds:[_dc_iscale + 2], dx
+mov   dh, ah	; todo why is ah needed
+mov   ax, si
+mov   ah, dh
 sub   al, byte ptr ds:[_maskedcachedbasecol]
+
+; todo: make two loops instead of branching here?
+
+;	if (lookup != 0xFF){
 SELFMODIFY_compare_lookup:  
 mov   dl, 0FFh
 cmp   dl, 0FFh
-je    label41 ; todo fine?
-mov   dx, word ptr [bp - 6]
-cmp   dx, word ptr ds:[_maskednextlookup]
-jb    label39
-label38:
-mov   dx, word ptr [bp - 6]
-mov   ax, si
-call  R_GetMaskedColumnSegment_  ; todo is this right
-label43:
-mov   bx, word ptr [bp - 6]
-sub   bx, word ptr ds:[_maskedcachedbasecol]
-mov   dx, MASKEDPOSTDATAOFS_SEGMENT
-add   bx, bx
-mov   es, dx
-add   bx, word ptr [bp - 0Ch]
-mov   cx, maskedpostdata_segment
-mov   bx, word ptr es:[bx]
-call  dword ptr [_R_DrawMaskedColumnCallHigh]   ;todo right ask?
-label51:
+je    lookup_FF ; todo fine?
 
-mov   ax, word ptr ds:[_dc_x]
-mov   bx, word ptr ds:[_maskedtexturecol]
-add   ax, ax
-mov   es, word ptr ds:[_maskedtexturecol+2]
-add   bx, ax
-mov   word ptr es:[bx], 07FFFh
-jmp   label40
-label39:
-cmp   dx, word ptr ds:[_maskedcachedbasecol]
-jb    label38
+; lookup NOT ff.
+
+cmp   si, word ptr ds:[_maskednextlookup]
+jae    load_masked_column_segment_lookup
+
+cmp   si, word ptr ds:[_maskedcachedbasecol]
+jb    load_masked_column_segment_lookup
 cmp   word ptr ds:[_maskedheaderpixeolfs], -1
-je    label42
-mov   bx, dx
+jne   calculate_maskedheader_pixel_ofs
+mul   byte ptr [_maskedheightvalcache]
+add   ax, word ptr [_maskedcachedsegment]
+go_draw_masked_column:
+mov   bx, si
+sub   bx, word ptr ds:[_maskedcachedbasecol]
+mov   cx, MASKEDPOSTDATAOFS_SEGMENT
+add   bx, bx
+mov   es, cx
+SELFMODIFY_maskedpostofs:
+mov   bx, word ptr es:[bx+08000h]
+mov   cx, maskedpostdata_segment
+call  dword ptr [_R_DrawMaskedColumnCallHigh]   ;todo right ask?
+
+;	maskedtexturecol[dc_x] = MAXSHORT;
+les   bx, dword ptr ds:[_maskedtexturecol]
+mov   ax, word ptr ds:[_dc_x]
+add   ax, ax
+add   bx, ax
+mov   word ptr es:[bx], MAXSHORT
+jmp   increment_inner_loop
+
+calculate_maskedheader_pixel_ofs:
+mov   bx, si
 mov   ax, word ptr ds:[_maskedheaderpixeolfs]
 sub   bx, word ptr ds:[_maskedcachedbasecol]
-mov   dx, MASKEDPIXELDATAOFS_SEGMENT
 add   bx, bx
-mov   es, dx
 add   bx, ax
+mov   ax, MASKEDPIXELDATAOFS_SEGMENT
+mov   es, ax
 mov   ax, word ptr es:[bx]
 add   ax, word ptr [_maskedcachedsegment]
-jmp   label43
-label42:
-mov   ah, byte ptr [_maskedheightvalcache]
-mul   ah
-add   ax, word ptr [_maskedcachedsegment]
-jmp   label43
+jmp   go_draw_masked_column
+
+load_masked_column_segment_lookup:
+mov   dx, si
+SELFMODIFY_texnum_1:
+mov   ax, 08000h
+call  R_GetMaskedColumnSegment_  ; todo is this right
+
+; todo put some cached values here in di, dh, dl, etc
+; _maskedheaderpixeolfs is strong selfmodify candidate.
+jmp   go_draw_masked_column
 
 
-label41:
-mov   dx, word ptr [bp - 6]
-cmp   dx, word ptr ds:[_maskednextlookup]
-jb    label50
-label52:
-mov   dx, word ptr [bp - 6]
-mov   ax, si
-call  R_GetMaskedColumnSegment_
-label53:
-mov   dl, byte ptr ds:[_cachedbyteheight]
+
+lookup_FF:
+
+;	if (texturecolumn >= maskednextlookup ||
+; 		texturecolumn < maskedcachedbasecol
+cmp   si, word ptr ds:[_maskednextlookup]
+jae    load_masked_column_segment
+cmp   si, word ptr ds:[_maskedcachedbasecol]
+jb    load_masked_column_segment
+mul   byte ptr ds:[_maskedheightvalcache]
+add   ax, word ptr ds:[_maskedcachedsegment]
+
+mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 xor   dh, dh
 call  dword ptr [_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
-jmp   label51
-label50:
-cmp   dx, word ptr ds:[_maskedcachedbasecol]
-jb    label52
-mov   ah, byte ptr ds:[_maskedheightvalcache]
-mul   ah
-add   ax, word ptr ds:[_maskedcachedsegment]
-jmp   label53
+jmp   update_maskedtexturecol_finish_loop_iter
+
+load_masked_column_segment:
+mov   dx, si
+SELFMODIFY_texnum_2:
+mov   ax, 08000h
+call  R_GetMaskedColumnSegment_
+
+mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
+xor   dh, dh
+call  dword ptr [_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+jmp   update_maskedtexturecol_finish_loop_iter
 
 endp
 
