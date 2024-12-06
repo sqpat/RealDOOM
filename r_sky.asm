@@ -395,14 +395,12 @@ push  ax                        ; bp-8 minxbase4
 push  dx                        ; bp-A maxx
 
 ; todo make this a constant and write it in executesetviewsize
-mov   al, byte ptr ds:[_detailshiftitercount]
-cbw
+mov   ax, word ptr ds:[_detailshiftitercount]
 
 
 push  ax                        ; bp-C
 
-mov cl, byte ptr ds:[_detailshift2minus]
-mov ch, 0
+mov cx, word ptr ds:[_detailshift2minus]
 
 start_drawing_next_vga_plane_dynamic:
 
@@ -529,14 +527,12 @@ push  ax                        ; bp-8 minxbase4
 push  dx                        ; bp-A maxx
 
 ; todo make this a constant and write it in executesetviewsize
-mov   al, byte ptr ds:[_detailshiftitercount]
-cbw
+mov   ax, word ptr ds:[_detailshiftitercount]
 
 
 push  ax                        ; bp-C
 
-mov cl, byte ptr ds:[_detailshift2minus]
-mov ch, 0
+mov cx, word ptr ds:[_detailshift2minus]
 
 start_drawing_next_vga_plane:
 

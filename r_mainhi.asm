@@ -30,6 +30,7 @@ EXTRN FixedMul1632_:PROC
 
 EXTRN FastDiv3232_:PROC
 EXTRN R_GetMaskedColumnSegment_:NEAR
+;EXTRN R_RenderMaskedSegRange2_:NEAR
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
@@ -1014,7 +1015,7 @@ ENDIF
 
 
 mov   word ptr ds:[_frontsector], ax
-mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
+;mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
 mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + 2]   ; get subsec firstline
 xchg  bx, ax
 mov   word ptr cs:[SELFMODIFY_firstlinevalue+1], ax    ; di stores count for later
@@ -1118,7 +1119,7 @@ call  R_FindPlane_
 mov   word ptr ds:[_ceilingplaneindex], ax
 do_addsprites:
 mov   ax, word ptr ds:[_frontsector]
-mov   dx, word ptr ds:[_frontsector+2]
+mov   dx, SECTORS_SEGMENT
 ; todo make this not a function argument if its always frontsector?
 call  R_AddSprites_
 
@@ -1920,7 +1921,7 @@ PUBLIC R_RenderMaskedSegRange_
 ; bp - 6        maskedtexturecolumn todo put in register
 ; bp - 8        rw_scalestep_shift hi word
 ; bp - 0Ah      rw_scalestep_shift lo word
-; bp - 0Ch      UNUSED maskedpostsofs
+; bp - 0Ch      cached xoffset/di
 ; bp - 0Eh      UNUSED
 ; bp - 010h     sprtopscreen_step hi word
 ; bp - 012h     sprtopscreen_step lo word
@@ -2047,7 +2048,9 @@ mov   cx, word ptr [bx + 2]		; get side_render secnum
 
 test  byte ptr [bp - 4], ML_TWOSIDED
 										; todo 2 is this even necessary? do lineflags prevent us from checking for a null backsec
-je   set_backsector_to_null				; todo is there a cleaner way to do this than null a far pointer?
+
+mov   ax, 0FFFFh						; dunno if we need this..
+je   backsector_set
 
 ; backsector = &sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
 
@@ -2065,21 +2068,18 @@ mov   es, ax
 
 mov   bx, word ptr es:[bx + di]		; get secnum
 shl   bx, 2
+
+mov   ax, word ptr ds:[bx + _sides_render + 2]   ; get a field in the sides render area
+
+shl   ax, 4
+backsector_set:
+mov   word ptr ds:[_backsector], ax
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
+mov   bx, cx        ; retrieve side_render secnum from above
+shl   bx, 4
+mov   word ptr ds:[_frontsector], bx
 
-mov   dx, word ptr ds:[bx + _sides_render + 2]   ; get a field in the sides render area
-
-shl   dx, 4
-backsector_set_to_dx_ax:
-mov   word ptr ds:[_frontsector + 2], ax  ; necessary?
-mov   word ptr ds:[_backsector + 2], ax
-mov   word ptr ds:[_backsector], dx
-mov   ax, cx        ; retrieve side_render secnum from above
-shl   ax, 4
-mov   word ptr ds:[_frontsector], ax
-
-mov   bx, ax
 
 mov   al, byte ptr es:[bx + 0Eh]
 xor   ah, ah
@@ -2094,7 +2094,7 @@ nop				; becomes inc ax, dec ax, or nop
 ;	if (lightnum < 0){
 test  ax, ax			; todo get for free?
 jl   set_walllights_zero
-cmp   ax, 010h
+cmp   ax, LIGHTLEVELS
 jge   clip_lights_to_max
 mov   bx, ax
 add   bx, ax
@@ -2109,11 +2109,6 @@ mov   al, 040h  ; inc ax instruciton
 jmp   done_comparing_vertexes
 
 
-set_backsector_to_null:
-xor   ax, ax
-xor   dx, dx
-xor   cx, cx
-jmp   backsector_set_to_dx_ax
 
 
 set_walllights_zero:
@@ -2131,14 +2126,12 @@ les   di, dword ptr [bp - 036h]          ; get drawseg far ptr
 
 ;    maskedtexturecol = &openings[ds->maskedtexturecol];
 
-mov   ax, word ptr es:[di + 01Ah]
+mov   ax, word ptr es:[di + 01Ah]		; ds->maskedtexturecol
 add   ax, ax
 mov   word ptr ds:[_maskedtexturecol], ax
 mov   word ptr ds:[_maskedtexturecol+2], OPENINGS_SEGMENT	; todo hardcode this in data
 
-
 ;    rw_scalestep.w = ds->scalestep;
-
 
 mov   bx, word ptr es:[di + 0Eh]
 mov   word ptr [bp - 01Eh], bx		
@@ -2294,9 +2287,9 @@ mov   word ptr [bp - 014h], ax
 
 mov   ax, word ptr [bp - 01Eh]  ; rw_scalestep
 mov   dx, word ptr [bp - 01Ch]	; rw_scalestep
-mov   cl, byte ptr ds:[_detailshift2minus]
-xor   ch, ch
-; cl is 0 to 2
+mov   cx, word ptr ds:[_detailshift2minus]
+
+; cx is 0 to 2
 
 jcxz  done_shifting_spryscale
 shl   ax, 1
@@ -2340,9 +2333,10 @@ sbb   word ptr [bp - 014h], dx
 dec   di
 jne   loop_dec_base4diff
 base4diff_is_zero_rendermaskedsegrange:
-; di is now free.
 
-mov   di, 0		; x_offset. todo replace with cx
+; di is now free to use for something else..
+
+mov   di, 0		; x_offset. 
 
 
 
@@ -2386,8 +2380,7 @@ jge   calculate_sprtopscreen
 ;	dc_x        += detailshiftitercount;
 ;	spryscale.w += rw_scalestep_shift;
 
-add   al, byte ptr ds:[_detailshiftitercount]
-adc   ah, 0
+add   ax, word ptr ds:[_detailshiftitercount]
 add   dx, word ptr [bp - 0Ah]   ; rw_scalestep_shift 
 adc   bx, word ptr [bp - 8]     ; rw_scalestep_shift
 
@@ -2419,6 +2412,8 @@ mov   ax, word ptr ds:[_centery]
 sbb   ax, dx
 mov   word ptr ds:[_sprtopscreen + 2], ax
 
+;push  di ; todo figure out how to put di on stack and use it in the inner loop.
+mov   word ptr [bp - 0Ch], di
 
 inner_loop_draw_columns:
 
@@ -2434,6 +2429,9 @@ jle   do_inner_loop
 
 ; end of inner loop, fall back to end of outer loop step
 
+mov   di, word ptr [bp - 0Ch]
+;pop   di
+
 inc   di			; xoffset++
 ;			basespryscale+=rw_scalestep.w
 mov   ax, word ptr [bp - 01Eh]
@@ -2442,8 +2440,7 @@ mov   ax, word ptr [bp - 01Ch]
 adc   word ptr [bp - 014h], ax
 
 
-mov   al, byte ptr ds:[_detailshiftitercount]
-cbw
+mov   ax, word ptr ds:[_detailshiftitercount]
 ; xoffset < detailshiftitercount
 cmp   ax, di
 jg    continue_outer_loop		; 6 bytes out of range
@@ -2462,7 +2459,11 @@ do_inner_loop:
 les   bx, dword ptr ds:[_maskedtexturecol]
 add   ax, ax
 add   bx, ax
+;  si caches _texturecolumn in this inner loop
 mov   si, word ptr es:[bx]
+;  di caches _maskedcachedbasecol in this inner loop
+mov   di, word ptr ds:[_maskedcachedbasecol] 
+
 cmp   si, MAXSHORT			; dont render nonmasked columns here.
 je   increment_inner_loop
 cmp   byte ptr ds:[_fixedcolormap], 0   
@@ -2471,16 +2472,24 @@ jne   got_colormap
 cmp   word ptr ds:[_spryscale + 2], 3
 jge   use_maxlight
 ; shift this by 12...
-mov   ax, word ptr ds:[_spryscale]
-mov   dx, word ptr ds:[_spryscale + 2]
-mov   cx, LIGHTSCALESHIFT
-loop_shift_12:
+; shift 4 by with this lookup
+xor   dx, dx
+mov   ax, word ptr ds:[_spryscale + 1]
+mov   dl, byte ptr ds:[_spryscale + 3]
 sar   dx, 1
 rcr   ax, 1
-loop  loop_shift_12
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+
 jmp   get_colormap
 update_maskedtexturecol_finish_loop_iter:
 ;	maskedtexturecol[dc_x] = MAXSHORT;
+
+increment_inner_loop:
 
 les   bx, dword ptr ds:[_maskedtexturecol]
 mov   ax, word ptr ds:[_dc_x]
@@ -2488,10 +2497,7 @@ add   ax, ax
 add   bx, ax
 mov   word ptr es:[bx], MAXSHORT
 
-
-increment_inner_loop:
-mov   al, byte ptr ds:[_detailshiftitercount]
-xor   ah, ah
+mov   ax, word ptr ds:[_detailshiftitercount]
 add   word ptr ds:[_dc_x], ax
 mov   ax, word ptr [bp - 0Ah]
 add   word ptr ds:[_spryscale], ax
@@ -2525,7 +2531,7 @@ mov   word ptr ds:[_dc_iscale + 2], dx
 mov   dh, ah	; todo why is ah needed
 mov   ax, si
 mov   ah, dh
-sub   al, byte ptr ds:[_maskedcachedbasecol]
+sub   ax, di
 
 ; todo: make two loops instead of branching here?
 
@@ -2538,55 +2544,59 @@ je    lookup_FF ; todo fine?
 ; lookup NOT ff.
 
 cmp   si, word ptr ds:[_maskednextlookup]
-jae    load_masked_column_segment_lookup
+jae   load_masked_column_segment_lookup
 
-cmp   si, word ptr ds:[_maskedcachedbasecol]
+cmp   si, di
 jb    load_masked_column_segment_lookup
+
+mov   ax, MASKEDPIXELDATAOFS_SEGMENT
+mov   es, ax
+
 cmp   word ptr ds:[_maskedheaderpixeolfs], -1
 jne   calculate_maskedheader_pixel_ofs
-mul   byte ptr [_maskedheightvalcache]
-add   ax, word ptr [_maskedcachedsegment]
+mul   byte ptr ds:[_maskedheightvalcache]
 go_draw_masked_column:
+SELFMODIFY_add_maskedcachedsegment:
+add   ax, 08000h;
+
+;	uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedpostsofs);
+;	uint16_t 		 postoffset = postoffsets[texturecolumn-maskedcachedbasecol];
+;	R_DrawMaskedColumnCallHigh (pixelsegment, (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)));
+
+
 mov   bx, si
-sub   bx, word ptr ds:[_maskedcachedbasecol]
+sub   bx, di
 mov   cx, MASKEDPOSTDATAOFS_SEGMENT
-add   bx, bx
 mov   es, cx
+add   bx, bx
 SELFMODIFY_maskedpostofs:
 mov   bx, word ptr es:[bx+08000h]
-mov   cx, maskedpostdata_segment
-call  dword ptr [_R_DrawMaskedColumnCallHigh]   ;todo right ask?
+mov   cx, MASKEDPOSTDATA_SEGMENT
+call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
 
-;	maskedtexturecol[dc_x] = MAXSHORT;
-les   bx, dword ptr ds:[_maskedtexturecol]
-mov   ax, word ptr ds:[_dc_x]
-add   ax, ax
-add   bx, ax
-mov   word ptr es:[bx], MAXSHORT
 jmp   increment_inner_loop
 
 calculate_maskedheader_pixel_ofs:
 mov   bx, si
 mov   ax, word ptr ds:[_maskedheaderpixeolfs]
-sub   bx, word ptr ds:[_maskedcachedbasecol]
+sub   bx, di
 add   bx, bx
 add   bx, ax
-mov   ax, MASKEDPIXELDATAOFS_SEGMENT
-mov   es, ax
 mov   ax, word ptr es:[bx]
-add   ax, word ptr [_maskedcachedsegment]
 jmp   go_draw_masked_column
 
 load_masked_column_segment_lookup:
 mov   dx, si
 SELFMODIFY_texnum_1:
 mov   ax, 08000h
-call  R_GetMaskedColumnSegment_  ; todo is this right
-
+call  R_GetMaskedColumnSegment_  
+mov   di, word ptr ds:[_maskedcachedbasecol]
+mov   dx, word ptr [_maskedcachedsegment]   ; to offset for above
+sub   ax, dx
+mov   word ptr cs:[SELFMODIFY_add_maskedcachedsegment+1], dx
 ; todo put some cached values here in di, dh, dl, etc
 ; _maskedheaderpixeolfs is strong selfmodify candidate.
 jmp   go_draw_masked_column
-
 
 
 lookup_FF:
@@ -2594,8 +2604,8 @@ lookup_FF:
 ;	if (texturecolumn >= maskednextlookup ||
 ; 		texturecolumn < maskedcachedbasecol
 cmp   si, word ptr ds:[_maskednextlookup]
-jae    load_masked_column_segment
-cmp   si, word ptr ds:[_maskedcachedbasecol]
+jae   load_masked_column_segment
+cmp   si, di
 jb    load_masked_column_segment
 mul   byte ptr ds:[_maskedheightvalcache]
 add   ax, word ptr ds:[_maskedcachedsegment]
@@ -2610,7 +2620,7 @@ mov   dx, si
 SELFMODIFY_texnum_2:
 mov   ax, 08000h
 call  R_GetMaskedColumnSegment_
-
+mov   di, word ptr ds:[_maskedcachedbasecol]
 mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 xor   dh, dh
 call  dword ptr [_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this

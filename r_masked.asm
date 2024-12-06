@@ -315,7 +315,7 @@ ENDP
 PROC  R_DrawMaskedColumn_ 
 PUBLIC  R_DrawMaskedColumn_ 
 
-;  bp - 02 cx/column segment
+;  bp - 02 cx/maskedcolumn segment
 ;  bp - 04  ax/pixelsegment cache
 ;  bp - 06  cached dc_texturemid intbits to restore before function
 

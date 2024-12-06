@@ -42,7 +42,6 @@ _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 0000Eh
 
 _detailshift = 						_NULL_OFFSET + 00020h
 _detailshiftitercount = 			_NULL_OFFSET + 00022h
-_detailshift2minus = 				_NULL_OFFSET + 00023h
 _detailshiftandval = 				_NULL_OFFSET + 00024h
 _ceilphyspage =                  	_NULL_OFFSET + 00026h
 _floorphyspage =                 	_NULL_OFFSET + 00027h
@@ -177,10 +176,11 @@ _I_FinishUpdate_addr =               _NULL_OFFSET + 00208h
 _V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
 _M_Drawer_addr =                     _NULL_OFFSET + 00210h
 
-wipeduration =                      _NULL_OFFSET + 00214h
+_wipeduration =                      _NULL_OFFSET + 00214h
+_detailshift2minus =  		 		 _NULL_OFFSET + 00216h
 
 
-; 216
+; 0286h
 
 
 

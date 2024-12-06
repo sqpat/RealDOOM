@@ -82,7 +82,6 @@
 // 0 = high, 1 = low, = 2 potato
 #define detailshift                     (*((int16_t_union __near*)      (_NULL_OFFSET + 0x0020)))
 #define detailshiftitercount            (*((uint8_t __near*)            (_NULL_OFFSET + 0x0022)))
-#define detailshift2minus               (*((uint8_t __near*)            (_NULL_OFFSET + 0x0023)))
 #define detailshiftandval               (*((uint16_t __near*)           (_NULL_OFFSET + 0x0024)))
 
 #define ceilphyspage                    (*((int8_t __near*)             (_NULL_OFFSET + 0x0026)))
@@ -214,6 +213,7 @@
 
 #define frontsector                     (*((sector_t __far*  __near*)    (_NULL_OFFSET + 0x01A4)))
 #define backsector                      (*((sector_t __far*  __near*)    (_NULL_OFFSET + 0x01A8)))
+#define backsector_offset               (*((int16_t  __near*)            (_NULL_OFFSET + 0x01A8)))
 // 1AC free
 
 #define active_visplanes                (((int8_t    __near*)            (_NULL_OFFSET + 0x01B0)))
@@ -234,6 +234,7 @@
 #define M_Drawer_addr                   (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0210)))
 
 #define wipeduration                    (*((uint16_t  __near*)           (_NULL_OFFSET + 0x0214)))
+#define detailshift2minus               (*((uint8_t __near*)             (_NULL_OFFSET + 0x0216)))
 
 
 

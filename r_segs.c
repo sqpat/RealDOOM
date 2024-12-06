@@ -862,6 +862,7 @@ void __near R_RenderOneSeg () {
 
 */
 
+int16_t setval = 0;
 //
 // R_StoreWallRange
 // A wall segment will be drawn
@@ -992,9 +993,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 	sidetextureoffset = side->textureoffset;
 	
- 
-
-	if (!backsector) {
+	if (backsector_offset  == SECNUM_NULL) {
 	// single sided line
 		midtexture = texturetranslation[side->midtexture];
 		// a single sided line is terminal, so it must mark ends
@@ -1243,7 +1242,8 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		topstep =    -FixedMul    (rw_scalestep.w,          worldtop.w);
 		bottomstep = -FixedMul    (rw_scalestep.w,          worldbottom.w);
 
- 		if (backsector) {
+ 		if (backsector_offset  != SECNUM_NULL) {
+ 		//if (backsector  != NULL) {
 			// todo dont shift 4 twice, instead borrow old value somehow and do byte shift... rare case though
 
 
@@ -1269,7 +1269,8 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 /*
 	} else {
 		// single pixel dont need most of the 'step' stuff.
-		if (backsector) {
+ 		if (backsector  != NULL) {
+// 		if (backsector_offset != SECNUM_NULL) {
 			// todo dont shift 4 twice, instead borrow old value somehow and do byte shift... rare case though
 			worldhigh.w >>= 4;
 			worldlow.w >>= 4;

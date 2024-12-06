@@ -296,21 +296,19 @@ void __near R_AddLine (int16_t curlineNum) {
 	}
  
 	
+	// todo clean up the ternary, if else instead
 	//linebacksecnum = curlinelinedef->backsecnum;
-	linebacksecnum =
-		
-		lineflagslist[curseglinedef] & ML_TWOSIDED ?
-		sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum
-		: SECNUM_NULL;
 		
 
-	backsector = linebacksecnum	== SECNUM_NULL ? NULL : &sectors[linebacksecnum];
 
     // Single sided line?
-	if (linebacksecnum == SECNUM_NULL) {
+	if (!(lineflagslist[curseglinedef] & ML_TWOSIDED)) {
+		backsector_offset = SECNUM_NULL;
 		goto clipsolid;
 	}
 
+	linebacksecnum =  sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum;	
+	backsector = &sectors[linebacksecnum];
 
     // Closed door.
 	if (backsector->ceilingheight <= frontsector->floorheight

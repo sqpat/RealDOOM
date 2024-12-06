@@ -86,8 +86,10 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0x190
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 0x1A0
-dw  00, 00, 00, 00, 00, 00, 00, 00
+; 0x1A0  _frontsector backsector 1a4 1a8, set their segments
+
+
+dw  00, 00, 00, SECTORS_SEGMENT, 00, SECTORS_SEGMENT, 00, 00
 ; 0x1B0
 ; _active_visplanes[5]... one byte free
 db  1, 2, 3, 0, 0, 0
@@ -102,9 +104,9 @@ dw  00, 00, 00, 00
 ; 1F0 ticcount...
 dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
-dw  00, 00, 00
+dw  00, 00, 00, 00
 
-; 216
+; 218
 
 
 
