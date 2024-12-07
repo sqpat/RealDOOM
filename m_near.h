@@ -1155,6 +1155,8 @@ extern boolean				    is_ultimate;
 extern segment_t			    spritewidths_segment;
 extern masked_header_t  		masked_headers[MAX_MASKED_TEXTURES];
 
+extern uint8_t 					seglooptexmodulo[2]; // 0 would be fine too...
+extern int16_t 					seglooptexrepeat[2]; // 0 would be fine too...
 extern int16_t 					segloopnextlookup[2];
 extern int16_t 					segloopprevlookup[2];
 extern segment_t 				segloopcachedsegment[2];

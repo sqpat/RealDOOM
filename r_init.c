@@ -209,6 +209,7 @@ void R_GenerateLookup(uint16_t texnum) {
 	int16_t				currentcollump;
 	int16_t				currentcollumpRLEStart;
 	int8_t				ismaskedtexture = 0;
+	boolean				issingleRLErun = true;
 
 	uint8_t				startx;
 	uint8_t				totalcompositecolumns;
@@ -460,6 +461,8 @@ void R_GenerateLookup(uint16_t texnum) {
 		if (currentcollump != texcollump[x] 
 		|| (x - currentcollumpRLEStart) >= columnwidths[x]) 
 		{
+			issingleRLErun = false;
+			
 			collump[currentlumpindex].h = currentcollump;
 			// "this is never above 128 in doom shareware, 1, 2. ""
 			// - WRONG! Can be 256. gets stores as 0 for now. Need to fix later. perhaps store 256 - value (it's never 0..)
@@ -482,11 +485,14 @@ void R_GenerateLookup(uint16_t texnum) {
 
 		}
 	}
+	if (issingleRLErun){
+		startx = texturewidth-1;
+	}
+	collump[currentlumpindex + 1].bu.bytehigh = startx;
+
 	collump[currentlumpindex].h = currentcollump;
 	collump[currentlumpindex + 1].bu.bytelow = (texturewidth - currentcollumpRLEStart);
 	
-	//todo handle composite texture gaps
-	collump[currentlumpindex + 1].bu.bytehigh = startx;
 
 	currentlumpindex += 2;
 

@@ -2169,10 +2169,13 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		cachedlumps[2] = -1;
 		cachedlumps[3] = -1;
 
+		
 		segloopnextlookup[0] = -1;
 		segloopnextlookup[1] = -1;
 		maskednextlookup = NULL_TEX_COL;
 		maskedcachedbasecol = NULL_TEX_COL;
+		seglooptexrepeat[0] = 0;
+		seglooptexrepeat[1] = 0;
 
 
 		// paged in
@@ -2460,56 +2463,87 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 	int16_t_union __far* texturecolumnlump;
 	int16_t n = 0;
 	uint8_t texcol;
-	int16_t subtractor;
-	int16_t runningbasetotal = 0;
 	int16_t fullwidth = texturewidthmasks[tex];
 	int16_t basecol = col;
 	int16_t realbasecol = col;
+	int16_t loopwidth;
+	
 	
 	col &= texturewidthmasks[tex];
-	//int16_t basecol = col;
-	//col &= texturewidthmasks[tex];
+
 	basecol -= col;
 	
 	texcol = col;
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
+	loopwidth = texturecolumnlump[1].bu.bytehigh;
 
-	// todo: maybe unroll this in asm to the max RLE size of this operation?
-	// todo: whats the max size of such a texture/rle string? to know for the asm 
+	// loopwidth is set if this is a repeating texture with a single segment lookup.
+	// we dont have to do RLE stuff and we can take some shortcuts.
+	if (loopwidth){
+		loopwidth++;
 
-	// RLE stuff to figure out actual lump for column
-	while (col >= 0) {
-		//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
-		// should we change this to be 256 - the number? we dont want a branch.
-		// anyway, fix it in asm
-		subtractor = texturecolumnlump[n+1].bu.bytelow;
-		if (!subtractor){
-			subtractor = 256;
+		lump = texturecolumnlump[0].h;
+		segloopcachedbasecol[segloopcachetype]  = basecol;
+		seglooptexrepeat[segloopcachetype] 		= loopwidth;
+		if ((loopwidth & loopwidth - 1) == 0) { // power of 2 check
+			// most textures are power of 2 and its much faster to modulo by ANDing (size-1)
+			seglooptexmodulo[segloopcachetype]  = loopwidth - 1; 
+		} else {
+			// we will do a manual modulo process in this case
+			seglooptexmodulo[segloopcachetype]  = 0;
 		}
-		runningbasetotal += subtractor;
-		lump = texturecolumnlump[n].h;
-		col -= subtractor;
-		if (lump >= 0){ // should be equiv to == -1?
-			texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+
+		//n+=2;
+	} else {
+
+		// todo: maybe unroll this in asm to the max RLE size of this operation?
+		// todo: whats the max size of such a texture/rle string? to know for the asm? 8 at least.
+
+		// RLE stuff to figure out actual lump for column
+		uint8_t  startpixel;
+		int16_t subtractor;
+		int16_t runningbasetotal = basecol;
+		
+		while (col >= 0) {
+			//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
+			// should we change this to be 256 - the number? we dont want a branch.
+			// anyway, fix it in asm
+			subtractor = texturecolumnlump[n+1].bu.bytelow;
+			if (!subtractor){
+				subtractor = 256;
+			}
+			runningbasetotal += subtractor;
+			lump = texturecolumnlump[n].h;
+			col -= subtractor;
+			if (lump >= 0){ // should be equiv to == -1?
+				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+			}
+			n += 2;
 		}
-		n += 2;
+		startpixel = texturecolumnlump[n-1].bu.bytehigh;
+		
+		// starting offset for the texture column
+		segloopcachedbasecol[segloopcachetype]  = basecol + startpixel;
+		// prev RLE boundary. Hit this function again to load next texture if we hit this.
+		segloopprevlookup[segloopcachetype]     = runningbasetotal - subtractor;
+		// next RLE boundary. see above
+		segloopnextlookup[segloopcachetype]     = runningbasetotal; 
+		// this is not a single repeating texture 
+		seglooptexrepeat[segloopcachetype] 		= 0;
 	}
-
-	runningbasetotal += basecol;
 
 
 
 	if (lump > 0){
-		uint16_t patchwidth = patchwidths[lump-firstpatch];
-		uint8_t  startpixel = texturecolumnlump[n-1].bu.bytehigh;
 		int16_t  cachelumpindex;
-
+		int16_t  cached_nextlookup;
 		uint8_t heightval = patchheights[lump-firstpatch];
 		heightval &= 0x0F;
-		if (patchwidth > (fullwidth)){
-			patchwidth = fullwidth+1;
-		}
-		
+
+		// not sure if this is needed anymore
+
+
+
 		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
 			if (lump == cachedlumps[cachelumpindex]){
 				
@@ -2536,18 +2570,23 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		}
 
 		// not found, set cache.
-		{
-			cachedsegmentlumps[3] = cachedsegmentlumps[2];
-			cachedsegmentlumps[2] = cachedsegmentlumps[1];
-			cachedsegmentlumps[1] = cachedsegmentlumps[0];
-			cachedlumps[3] = cachedlumps[2];
-			cachedlumps[2] = cachedlumps[1];
-			cachedlumps[1] = cachedlumps[0];
+		cachedsegmentlumps[3] = cachedsegmentlumps[2];
+		cachedsegmentlumps[2] = cachedsegmentlumps[1];
+		cachedsegmentlumps[1] = cachedsegmentlumps[0];
+		cachedlumps[3] = cachedlumps[2];
+		cachedlumps[2] = cachedlumps[1];
+		cachedlumps[1] = cachedlumps[0];
 
-			cachedlumps[0] = lump;
-			cachedsegmentlumps[0] = getpatchtexture(lump, 0xFF);  // might zero out cachedlump vars;
+		cachedlumps[0] = lump;
+		
+		cached_nextlookup = segloopnextlookup[segloopcachetype]; 
 
-		}
+		// will zero out certain cache vars on a L1 page eviction - must reset them after.
+		cachedsegmentlumps[0] = getpatchtexture(lump, 0xFF);  
+		
+		segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
+		seglooptexrepeat[segloopcachetype] 		= loopwidth;
+
 		
 		foundcachedlump:
 		// so now cachedlumps[0] and cachedsegmentlumps[0] are the most recently used
@@ -2556,17 +2595,20 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		// in the case of multiple side by side patches. so we essentially
 		// "modulo from negative" by patch width.
 
-		while (col < 0){
-			col+= patchwidth;
+		if (col < 0){
+			uint16_t patchwidth = patchwidths[lump-firstpatch];
+			if (patchwidth > (fullwidth+1)){
+				patchwidth = fullwidth+1;
+			}
+			while (col < 0){
+				col+= patchwidth;
+			}
 		}
 		
 		
 		
 		segloopheightvalcache[segloopcachetype] = heightval;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmentlumps[0];
-		segloopcachedbasecol[segloopcachetype]  = basecol + startpixel;
-		segloopprevlookup[segloopcachetype]     = runningbasetotal - subtractor;
-		segloopnextlookup[segloopcachetype]     = runningbasetotal;
 		
 
 		/*
@@ -2586,7 +2628,6 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 	} else {
 		uint8_t collength = texturecollength[tex];
-		uint8_t  startpixel = texturecolumnlump[n-1].bu.bytehigh;
 
 		// todo in the asm make default branch to use cache
 
@@ -2617,15 +2658,11 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 		}
 	
-		//runningbasetotal -= subtractor; // remove last subtractor...
 
 
 		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
 		segloopheightvalcache[segloopcachetype] = collength;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
-		segloopcachedbasecol[segloopcachetype]  = basecol + startpixel;
-		segloopprevlookup[segloopcachetype]     = runningbasetotal - subtractor;
-		segloopnextlookup[segloopcachetype]     = runningbasetotal; 
 
 		/*
 		if (setval && tex == 50){
