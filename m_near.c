@@ -2285,6 +2285,7 @@ boolean    					tnt = false;
 #endif
 
 int16_t 					segloopnextlookup[2] = {-1, -1}; // 0 would be fine too...
+int16_t 					segloopprevlookup[2];
 segment_t 					segloopcachedsegment[2];
 int16_t 					segloopcachedbasecol[2];
 uint8_t 					segloopheightvalcache[2];

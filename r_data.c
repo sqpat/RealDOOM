@@ -2498,7 +2498,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 	if (lump > 0){
 		uint16_t patchwidth = patchwidths[lump-firstpatch];
-		//uint8_t  heightval2 = texturecolumnlump[n-1].bu.bytehigh;
+		uint8_t  startpixel = texturecolumnlump[n-1].bu.bytehigh;
 		int16_t  cachelumpindex;
 
 		uint8_t heightval = patchheights[lump-firstpatch];
@@ -2572,7 +2572,8 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		
 		segloopheightvalcache[segloopcachetype] = heightval;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmentlumps[0];
-		segloopcachedbasecol[segloopcachetype]  = runningbasetotal;
+		segloopcachedbasecol[segloopcachetype]  = startpixel;
+		segloopprevlookup[segloopcachetype]     = runningbasetotal;
 		segloopnextlookup[segloopcachetype]     = runningbasetotal + subtractor;
 		
 		//segloopprevlookup[segloopcachetype]		= basecol + runningtexbasetotal;
@@ -2625,6 +2626,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		segloopheightvalcache[segloopcachetype] = collength;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
 		segloopcachedbasecol[segloopcachetype] -= texcol;
+		segloopprevlookup[segloopcachetype]     = segloopcachedbasecol[segloopcachetype]; //todo
 		segloopnextlookup[segloopcachetype] = subtractor+ segloopcachedbasecol[segloopcachetype]; 
 		//todo does this sitll crash...?
 		//segloopcachedbasecol[segloopcachetype]  = runningtexbasetotal;

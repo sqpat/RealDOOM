@@ -553,7 +553,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 
 					// note: column iteration can go in either dir, have to check for underflow and overflow
 					if (texturecolumn >= segloopnextlookup[MID_TEXTURE_SEGLOOP_CACHE] ||
-						texturecolumn < segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE] ){
+						texturecolumn < segloopprevlookup[MID_TEXTURE_SEGLOOP_CACHE] ){
 						dc_source_segment = R_GetColumnSegment(midtexture, texturecolumn, MID_TEXTURE_SEGLOOP_CACHE);
 						//todo: use self modifying code in ASM to change these segloopcachedbasecol values around here. then reset on function exit.
 					} else {
@@ -589,7 +589,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 							dc_texturemid = rw_toptexturemid;
 
 							if (texturecolumn >= segloopnextlookup[TOP_TEXTURE_SEGLOOP_CACHE] ||
-								texturecolumn < segloopcachedbasecol[TOP_TEXTURE_SEGLOOP_CACHE] ){
+								texturecolumn < segloopprevlookup[TOP_TEXTURE_SEGLOOP_CACHE] ){
 								dc_source_segment = R_GetColumnSegment(toptexture,texturecolumn, TOP_TEXTURE_SEGLOOP_CACHE);
 							} else {
 								dc_source_segment = segloopcachedsegment[TOP_TEXTURE_SEGLOOP_CACHE] 
@@ -630,7 +630,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 
 
 							if (texturecolumn >= segloopnextlookup[BOT_TEXTURE_SEGLOOP_CACHE] ||
-								texturecolumn < segloopcachedbasecol[BOT_TEXTURE_SEGLOOP_CACHE] ){
+								texturecolumn < segloopprevlookup[BOT_TEXTURE_SEGLOOP_CACHE] ){
 								dc_source_segment = R_GetColumnSegment(bottomtexture, texturecolumn, BOT_TEXTURE_SEGLOOP_CACHE);
 							} else {
 								dc_source_segment = segloopcachedsegment[BOT_TEXTURE_SEGLOOP_CACHE] 

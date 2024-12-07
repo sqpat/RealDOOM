@@ -211,10 +211,12 @@ void R_GenerateLookup(uint16_t texnum) {
 	uint16_t            currentheight;  // use int16 so shifting is less of a hassle in here
 	int8_t				ismaskedtexture = 0;
 
+	uint8_t				startx;
 
 	// rather than alloca or whatever, lets use the scratch page since its already allocated for us...
 	// this is startup code so who cares if its slow
 	uint16_t __far*              texmaskedpostdata    = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xE000);
+	int8_t  __far*               startpixel           = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF700);
 	int16_t __far*               texcollump           = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF800);
 	uint16_t __far*              maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
 	uint16_t __far*              maskedpixlofs        = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFC00);
@@ -301,12 +303,12 @@ void R_GenerateLookup(uint16_t texnum) {
 		}
 		
 		column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, wadpatch->columnofs[x]);
-
+		startx = x;
 		for (; x < x2; x++) {
 			columnpatchcount[x]++;
 			texcollump[x] = patchpatch;
 			texpatchheights[x] = patchusedheight;
-			
+			startpixel[x] = startx;
 			// this may be a masked texture, so lets store it's data in temporary region
 			if (texturepatchcount == 1){	
 				// openwatcom messes up if column is dfined here...
@@ -446,7 +448,7 @@ void R_GenerateLookup(uint16_t texnum) {
 	currentcollump = texcollump[0];
 	currentheight = texpatchheights[0];
 	currentcollumpRLEStart = 0;
-
+	startx = startpixel[0];
 	// write collumps data. Needs to be done here, so that we've accounted for multiple-patch cases with patchcount[x] > 1
 	for (x = 1; x < texturewidth; x++) {
 		if (currentcollump != texcollump[x]) {
@@ -461,8 +463,8 @@ void R_GenerateLookup(uint16_t texnum) {
 			// so we only use the top 4 bits. We often shift this right 4 to get segment count from number of bytes.
 			// So we store two values here and do an AND to avoid 4x shifts (slow on x86-16)
 			
-			//todo
-			//collump[currentlumpindex + 1].bu.bytehigh = currentheight | (currentheight >> 4); 
+			//todo handle composite texture gaps
+			collump[currentlumpindex + 1].bu.bytehigh = startx;
 
 
 
@@ -472,6 +474,7 @@ void R_GenerateLookup(uint16_t texnum) {
 			currentcollump = texcollump[x];
 			currentheight = texpatchheights[x];
 			currentlumpindex += 2;
+			startx = startpixel[x];
 				
 
 		}
@@ -479,8 +482,8 @@ void R_GenerateLookup(uint16_t texnum) {
 	collump[currentlumpindex].h = currentcollump;
 	collump[currentlumpindex + 1].bu.bytelow = (texturewidth - currentcollumpRLEStart);
 	
-	//todo
-	//collump[currentlumpindex + 1].bu.bytehigh = currentheight | (currentheight >> 4); 
+	//todo handle composite texture gaps
+	collump[currentlumpindex + 1].bu.bytehigh = startx;
 
 	currentlumpindex += 2;
 
