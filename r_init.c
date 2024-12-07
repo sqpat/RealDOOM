@@ -208,19 +208,21 @@ void R_GenerateLookup(uint16_t texnum) {
 	
 	int16_t				currentcollump;
 	int16_t				currentcollumpRLEStart;
-	uint16_t            currentheight;  // use int16 so shifting is less of a hassle in here
 	int8_t				ismaskedtexture = 0;
 
 	uint8_t				startx;
+	uint8_t				totalcompositecolumns;
 
 	// rather than alloca or whatever, lets use the scratch page since its already allocated for us...
 	// this is startup code so who cares if its slow
 	uint16_t __far*              texmaskedpostdata    = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xE000);
+	//columnwidths check helps us detect cases of two or more of the same patches in a row 
+	// so we properly create two separate RLE entries.
+	int16_t  __far*              columnwidths         = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF500);
 	int8_t  __far*               startpixel           = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF700);
 	int16_t __far*               texcollump           = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF800);
 	uint16_t __far*              maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
 	uint16_t __far*              maskedpixlofs        = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFC00);
-	int8_t __far*                texpatchheights      = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFE00);
 	byte __far*					 columnpatchcount     = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFF00);
 
 	// put colofs in here. copy to colofs if texture is masked
@@ -307,8 +309,8 @@ void R_GenerateLookup(uint16_t texnum) {
 		for (; x < x2; x++) {
 			columnpatchcount[x]++;
 			texcollump[x] = patchpatch;
-			texpatchheights[x] = patchusedheight;
 			startpixel[x] = startx;
+			columnwidths[x] = wadpatch->width;
 			// this may be a masked texture, so lets store it's data in temporary region
 			if (texturepatchcount == 1){	
 				// openwatcom messes up if column is dfined here...
@@ -420,6 +422,7 @@ void R_GenerateLookup(uint16_t texnum) {
 	}
 
 
+	totalcompositecolumns = 0;
 	for (x = 0; x < texturewidth; x++) {
  
 		if (!columnpatchcount[x]) {
@@ -432,9 +435,13 @@ void R_GenerateLookup(uint16_t texnum) {
 		//todo start/stop 
 		if (columnpatchcount[x] > 1) {
 			// two patches in this column!
+			// so it's composite.
 
 			texcollump[x] = -1;
 			texturecompositesizes[texnum] += usedtextureheight;
+			startpixel[x] = totalcompositecolumns;
+			totalcompositecolumns++;
+			columnwidths[x] = MAXSHORT;
 		}
 	}
 
@@ -446,12 +453,13 @@ void R_GenerateLookup(uint16_t texnum) {
 
 
 	currentcollump = texcollump[0];
-	currentheight = texpatchheights[0];
 	currentcollumpRLEStart = 0;
 	startx = startpixel[0];
 	// write collumps data. Needs to be done here, so that we've accounted for multiple-patch cases with patchcount[x] > 1
 	for (x = 1; x < texturewidth; x++) {
-		if (currentcollump != texcollump[x]) {
+		if (currentcollump != texcollump[x] 
+		|| (x - currentcollumpRLEStart) >= columnwidths[x]) 
+		{
 			collump[currentlumpindex].h = currentcollump;
 			// "this is never above 128 in doom shareware, 1, 2. ""
 			// - WRONG! Can be 256. gets stores as 0 for now. Need to fix later. perhaps store 256 - value (it's never 0..)
@@ -459,20 +467,15 @@ void R_GenerateLookup(uint16_t texnum) {
 			// thus, the high byte is free to store another useful byte - the texture patch offset y.
 
 			
-			// height is a value (number of bytes) between 16 and 144 in practice. it is 00010000 to 10010000 binary.
-			// so we only use the top 4 bits. We often shift this right 4 to get segment count from number of bytes.
-			// So we store two values here and do an AND to avoid 4x shifts (slow on x86-16)
 			
-			//todo handle composite texture gaps
+			// store render texture segment starting point for this column grouping
 			collump[currentlumpindex + 1].bu.bytehigh = startx;
-
 
 
 
 
 			currentcollumpRLEStart = x;
 			currentcollump = texcollump[x];
-			currentheight = texpatchheights[x];
 			currentlumpindex += 2;
 			startx = startpixel[x];
 				
@@ -681,10 +684,10 @@ void R_InitTextures2(){
 	 
 	
 	//              pixelofs        postofs
-	//    				  masked count
-    //DOOM Shareware:	896    8     3170
-	//DOOM 1: 			2304   12    12238
-	//DOOM 2:		 	1408   11    4772
+	//    				  masked count    collumps
+    //DOOM Shareware:	896    8     3170	544
+	//DOOM 1: 			2304   12    12238	1126
+	//DOOM 2:		 	1408   11    4772	1424
 	//I_Error("currentpixeloffset is %u %u %u", currentpixeloffset, maskedcount, currentpostoffset);
 
 
@@ -693,6 +696,9 @@ void R_InitTextures2(){
 	Z_QuickMapLumpInfo();
 	Z_QuickMapRender_9000To6000(); //for R_TextureNumForName
 
+	// 1264 doom2, 402 shareware...
+	
+	// 544, 1126, 1424
 	//I_Error("final size: %i", currentlumpindex);
 }
 
@@ -753,6 +759,11 @@ void __near R_InitPatches(){
 		int16_t patchheight;
 		W_CacheLumpNumDirect(patchindex, (byte __far*)wadpatch);
 		patchwidths_6000[i] = wadpatch->width;
+
+		// height is a value (number of bytes) between 16 and 144 in practice. it is 00010000 to 10010000 binary.
+		// so we only use the top 4 bits. We often shift this right 4 to get segment count from number of bytes.
+		// So we store two values here and do an AND to avoid 4x shifts (slow on x86-16)
+
 		patchheight = wadpatch->height;
 		patchheight += (16 - ((patchheight &0xF)) &0xF);
 		patchheight |= (patchheight >> 4);

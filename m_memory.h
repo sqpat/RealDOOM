@@ -165,7 +165,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 // size_texturecolumnlumps_bytes
 
-// 1264u doom2
+// 1264u doom2 now 1424
 // 402 shareware
 
 // size_texturecolumnofs_bytes
@@ -1259,23 +1259,23 @@ spritedefs_bytes    7410:0000
 #define drawsegs_BASE_segment_7000      ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
 #define masked_lookup_segment_7000      ((segment_t) ((int32_t)masked_lookup_7000 >> 16))
 // texturecolumnlumps_bytes   9000:0000
-// texturedefs_bytes          909E:0000
-// spritetopoffsets           92C2:0000
-// texturedefs_offset         9319:0000
-// masked_lookup              934F:0000
-// masked_headers             936A:0000
-// patchwidths                9370:0000
-// patchheights               93AC:0000
+// texturedefs_bytes          90A8:0000
+// spritetopoffsets           92CC:0000
+// texturedefs_offset         9323:0000
+// masked_lookup              9359:0000
+// masked_headers             9374:0000
+// patchwidths                937A:0000
+// patchheights               93B6:0000
 
-// drawsegs_BASE              93CA:0000
-// drawsegs_PLUSONE           93CA:0020
-// finetangentinner           95C8:0000
+// drawsegs_BASE              93D4:0000
+// drawsegs_PLUSONE           93D4:0020
+// finetangentinner           95D2:0000
 
-// [empty]                    97C8:0000
+// [empty]                    97D2:0000
 
 
 //FREEBYTES
-// 896 bytes free till 6000:8000
+// 736 bytes free till 6000:8000
 // some masked code can easily go here? Maybe more if drawsegs maxsegs goes back to 128 from 256?
 
 

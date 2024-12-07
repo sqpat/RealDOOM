@@ -2462,12 +2462,14 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 	uint8_t texcol;
 	int16_t subtractor;
 	int16_t runningbasetotal = 0;
-	int16_t runningtexbasetotal = 0;  // we want to keep track of how much to subtract col by to get the real col offset in the composite, and also know when the RLE run starts
 	int16_t fullwidth = texturewidthmasks[tex];
-	int16_t basecol = col = col & texturewidthmasks[tex];
+	int16_t basecol = col;
+	int16_t realbasecol = col;
+	
+	col &= texturewidthmasks[tex];
 	//int16_t basecol = col;
 	//col &= texturewidthmasks[tex];
-	//basecol -= col;
+	basecol -= col;
 	
 	texcol = col;
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
@@ -2489,10 +2491,11 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		col -= subtractor;
 		if (lump >= 0){ // should be equiv to == -1?
 			texcol -= subtractor; // is this correct or does it have to be bytelow direct?
-			runningtexbasetotal += subtractor;
 		}
 		n += 2;
 	}
+
+	runningbasetotal += basecol;
 
 
 
@@ -2556,34 +2559,25 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		while (col < 0){
 			col+= patchwidth;
 		}
-		// handles RLE runs..
-		//while ((runningbasetotal + patchwidth) < basecol){
-			//runningbasetotal += patchwidth;
-		//}
-
-		runningbasetotal -= subtractor; // remove last subtractor...
-		if (subtractor > patchwidth){
-			// if this is a multi patch RLE run, then subtractor will be larger than patchwidth
-			// add the difference in one go
-			// could alternatively modulo outside the function?
-			//runningbasetotal += (subtractor - patchwidth);
-		}
+		
 		
 		
 		segloopheightvalcache[segloopcachetype] = heightval;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmentlumps[0];
-		segloopcachedbasecol[segloopcachetype]  = startpixel;
-		segloopprevlookup[segloopcachetype]     = runningbasetotal;
-		segloopnextlookup[segloopcachetype]     = runningbasetotal + subtractor;
+		segloopcachedbasecol[segloopcachetype]  = basecol + startpixel;
+		segloopprevlookup[segloopcachetype]     = runningbasetotal - subtractor;
+		segloopnextlookup[segloopcachetype]     = runningbasetotal;
 		
-		//segloopprevlookup[segloopcachetype]		= basecol + runningtexbasetotal;
-		//segloopcachedbasecol[segloopcachetype]  = basecol + runningtexbasetotal;
-		//segloopnextlookup[segloopcachetype]     = basecol + runningtexbasetotal + subtractor;
 
 		/*
-		if (setval && tex == 15){
+		if (setval && tex == 50){
 			FILE* fp = fopen("tex.txt", "ab");
-			fprintf(fp, "\n a %i %i %i %i %i %i %i", segloopcachedbasecol[segloopcachetype], segloopnextlookup[segloopcachetype], col, basecol, patchwidth, runningtexbasetotal, subtractor);
+			fprintf(fp, "\n a %i %i %i %i %i %i %i %i", 
+			segloopprevlookup[segloopcachetype], 
+			segloopnextlookup[segloopcachetype], 
+			segloopcachedbasecol[segloopcachetype], 
+			col, patchwidth, subtractor, 
+			basecol, realbasecol);
 			fclose(fp);
 		}
 		*/
@@ -2592,6 +2586,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 	} else {
 		uint8_t collength = texturecollength[tex];
+		uint8_t  startpixel = texturecolumnlump[n-1].bu.bytehigh;
 
 		// todo in the asm make default branch to use cache
 
@@ -2622,19 +2617,24 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 		}
 	
+		//runningbasetotal -= subtractor; // remove last subtractor...
+
+
 		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
 		segloopheightvalcache[segloopcachetype] = collength;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
-		segloopcachedbasecol[segloopcachetype] -= texcol;
-		segloopprevlookup[segloopcachetype]     = segloopcachedbasecol[segloopcachetype]; //todo
-		segloopnextlookup[segloopcachetype] = subtractor+ segloopcachedbasecol[segloopcachetype]; 
-		//todo does this sitll crash...?
-		//segloopcachedbasecol[segloopcachetype]  = runningtexbasetotal;
-		//segloopnextlookup[segloopcachetype]     = runningtexbasetotal + subtractor;
+		segloopcachedbasecol[segloopcachetype]  = basecol + startpixel;
+		segloopprevlookup[segloopcachetype]     = runningbasetotal - subtractor;
+		segloopnextlookup[segloopcachetype]     = runningbasetotal; 
+
 		/*
-		if (setval && tex == 15){
+		if (setval && tex == 50){
 			FILE* fp = fopen("tex.txt", "ab");
-			fprintf(fp, "\n b %i %i %i %i %i %i", segloopcachedbasecol[segloopcachetype], segloopnextlookup[segloopcachetype], col, basecol, subtractor);
+			fprintf(fp, "\n b %i %i %i %i %i %i %i", 
+			segloopprevlookup[segloopcachetype], 
+			segloopnextlookup[segloopcachetype], 
+			segloopcachedbasecol[segloopcachetype],
+			col, texcol, basecol, subtractor);
 			fclose(fp);
 		}
 		*/
@@ -2686,6 +2686,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		uint8_t lookup = masked_lookup_7000[tex];
 		uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
 		//uint8_t heightval = texturecolumnlump[n-1].bu.bytehigh;
+		uint8_t  startpixel = texturecolumnlump[n-1].bu.bytehigh;
 		uint8_t heightval = patchheights_7000[lump-firstpatch];
 		int16_t  cachelumpindex;
 		cachedbyteheight = heightval & 0xF0;
