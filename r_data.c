@@ -2465,6 +2465,9 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 	int16_t runningtexbasetotal = 0;  // we want to keep track of how much to subtract col by to get the real col offset in the composite, and also know when the RLE run starts
 	int16_t fullwidth = texturewidthmasks[tex];
 	int16_t basecol = col = col & texturewidthmasks[tex];
+	//int16_t basecol = col;
+	//col &= texturewidthmasks[tex];
+	//basecol -= col;
 	
 	texcol = col;
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
@@ -2495,18 +2498,19 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 	if (lump > 0){
 		uint16_t patchwidth = patchwidths[lump-firstpatch];
-		uint8_t  heightval = texturecolumnlump[n-1].bu.bytehigh;
+		//uint8_t  heightval2 = texturecolumnlump[n-1].bu.bytehigh;
 		int16_t  cachelumpindex;
+
+		uint8_t heightval = patchheights[lump-firstpatch];
 		heightval &= 0x0F;
 		if (patchwidth > (fullwidth)){
 			patchwidth = fullwidth+1;
 		}
-		segloopnextlookup[segloopcachetype] = patchwidth; 
 		
 		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
 			if (lump == cachedlumps[cachelumpindex]){
 				
-				if (cachelumpindex == 0){
+				if (cachelumpindex == 0){ // todo move this out? or unloop it?
 					goto foundcachedlump;
 				} else {
 					// reorder, put it in spot 0
@@ -2557,13 +2561,12 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 			//runningbasetotal += patchwidth;
 		//}
 
-		segloopnextlookup[segloopcachetype]     = runningbasetotal;
 		runningbasetotal -= subtractor; // remove last subtractor...
 		if (subtractor > patchwidth){
 			// if this is a multi patch RLE run, then subtractor will be larger than patchwidth
 			// add the difference in one go
 			// could alternatively modulo outside the function?
-			runningbasetotal += (subtractor - patchwidth);
+			//runningbasetotal += (subtractor - patchwidth);
 		}
 		
 		
@@ -2571,7 +2574,18 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		segloopcachedsegment[segloopcachetype]  = cachedsegmentlumps[0];
 		segloopcachedbasecol[segloopcachetype]  = runningbasetotal;
 		segloopnextlookup[segloopcachetype]     = runningbasetotal + subtractor;
+		
+		//segloopprevlookup[segloopcachetype]		= basecol + runningtexbasetotal;
+		//segloopcachedbasecol[segloopcachetype]  = basecol + runningtexbasetotal;
+		//segloopnextlookup[segloopcachetype]     = basecol + runningtexbasetotal + subtractor;
 
+		/*
+		if (setval && tex == 15){
+			FILE* fp = fopen("tex.txt", "ab");
+			fprintf(fp, "\n a %i %i %i %i %i %i %i", segloopcachedbasecol[segloopcachetype], segloopnextlookup[segloopcachetype], col, basecol, patchwidth, runningtexbasetotal, subtractor);
+			fclose(fp);
+		}
+		*/
 
 		return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 
@@ -2610,12 +2624,18 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
 		segloopheightvalcache[segloopcachetype] = collength;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
-		//segloopcachedbasecol[segloopcachetype] -= texcol;
-		//segloopnextlookup[segloopcachetype] = subtractor+ segloopcachedbasecol[segloopcachetype]; 
+		segloopcachedbasecol[segloopcachetype] -= texcol;
+		segloopnextlookup[segloopcachetype] = subtractor+ segloopcachedbasecol[segloopcachetype]; 
 		//todo does this sitll crash...?
-		segloopcachedbasecol[segloopcachetype]  = runningtexbasetotal;
-		segloopnextlookup[segloopcachetype]     = runningtexbasetotal + subtractor;
-		
+		//segloopcachedbasecol[segloopcachetype]  = runningtexbasetotal;
+		//segloopnextlookup[segloopcachetype]     = runningtexbasetotal + subtractor;
+		/*
+		if (setval && tex == 15){
+			FILE* fp = fopen("tex.txt", "ab");
+			fprintf(fp, "\n b %i %i %i %i %i %i", segloopcachedbasecol[segloopcachetype], segloopnextlookup[segloopcachetype], col, basecol, subtractor);
+			fclose(fp);
+		}
+		*/
 
 		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
@@ -2663,7 +2683,8 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	if (lump > 0){
 		uint8_t lookup = masked_lookup_7000[tex];
 		uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
-		uint8_t heightval = texturecolumnlump[n-1].bu.bytehigh;
+		//uint8_t heightval = texturecolumnlump[n-1].bu.bytehigh;
+		uint8_t heightval = patchheights_7000[lump-firstpatch];
 		int16_t  cachelumpindex;
 		cachedbyteheight = heightval & 0xF0;
 		heightval &= 0x0F;
