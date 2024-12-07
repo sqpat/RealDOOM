@@ -460,7 +460,9 @@ void R_GenerateLookup(uint16_t texnum) {
 			// height is a value (number of bytes) between 16 and 144 in practice. it is 00010000 to 10010000 binary.
 			// so we only use the top 4 bits. We often shift this right 4 to get segment count from number of bytes.
 			// So we store two values here and do an AND to avoid 4x shifts (slow on x86-16)
-			collump[currentlumpindex + 1].bu.bytehigh = currentheight | (currentheight >> 4); 
+			
+			//todo
+			//collump[currentlumpindex + 1].bu.bytehigh = currentheight | (currentheight >> 4); 
 
 
 
@@ -476,7 +478,9 @@ void R_GenerateLookup(uint16_t texnum) {
 	}
 	collump[currentlumpindex].h = currentcollump;
 	collump[currentlumpindex + 1].bu.bytelow = (texturewidth - currentcollumpRLEStart);
-	collump[currentlumpindex + 1].bu.bytehigh = currentheight | (currentheight >> 4); 
+	
+	//todo
+	//collump[currentlumpindex + 1].bu.bytehigh = currentheight | (currentheight >> 4); 
 
 	currentlumpindex += 2;
 
@@ -743,8 +747,15 @@ void __near R_InitPatches(){
 	patch_t __far* wadpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
 	for (i = 0; i < numpatches; i++){
 		int16_t patchindex = firstpatch+i;
+		int16_t patchheight;
 		W_CacheLumpNumDirect(patchindex, (byte __far*)wadpatch);
 		patchwidths_6000[i] = wadpatch->width;
+		patchheight = wadpatch->height;
+		patchheight += (16 - ((patchheight &0xF)) &0xF);
+		patchheight |= (patchheight >> 4);
+		
+		patchheights_6000[i] = patchheight;
+
 	}
 		
 
