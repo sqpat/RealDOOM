@@ -2461,9 +2461,7 @@ extern int16_t setval;
 segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcachetype) {
 	int16_t         lump;
 	int16_t_union __far* texturecolumnlump;
-	int16_t n = 0;
 	uint8_t texcol;
-	int16_t fullwidth = texturewidthmasks[tex];
 	int16_t basecol = col;
 	int16_t realbasecol = col;
 	int16_t loopwidth;
@@ -2503,6 +2501,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		uint8_t  startpixel;
 		int16_t subtractor;
 		int16_t runningbasetotal = basecol;
+		int16_t n = 0;
 		
 		while (col >= 0) {
 			//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
@@ -2597,8 +2596,9 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 		if (col < 0){
 			uint16_t patchwidth = patchwidths[lump-firstpatch];
-			if (patchwidth > (fullwidth+1)){
-				patchwidth = fullwidth+1;
+			if (patchwidth > texturewidthmasks[tex]){
+				patchwidth = texturewidthmasks[tex];
+				patchwidth++;
 			}
 			while (col < 0){
 				col+= patchwidth;
@@ -2633,12 +2633,19 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 		if (cachedtex != tex){
 			if (cachedtex2 != tex){
+				int16_t  cached_nextlookup = segloopnextlookup[segloopcachetype]; 
 				cachedtex2 = cachedtex;
 				cachedsegmenttex2 = cachedsegmenttex;
 				cachedcollength2 = cachedcollength;
 				cachedtex = tex;
+				
 				cachedsegmenttex = getcompositetexture(cachedtex);
 				cachedcollength = collength;
+
+				// restore these if composite texture is unloaded...
+				segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
+				seglooptexrepeat[segloopcachetype] 		= loopwidth;
+
 
 			} else {
 				// cycle cache so 2 = 1

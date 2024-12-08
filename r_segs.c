@@ -557,7 +557,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 						if (seglooptexmodulo[MID_TEXTURE_SEGLOOP_CACHE]){
 							// power of 2. just modulo to get the column value
 							dc_source_segment = segloopcachedsegment[MID_TEXTURE_SEGLOOP_CACHE] 
-								+ FastMul8u8u((uint8_t) (texturecolumn & seglooptexmodulo[MID_TEXTURE_SEGLOOP_CACHE]) , 
+								+ FastMul8u8u((uint8_t) texturecolumn , 
 											segloopheightvalcache[MID_TEXTURE_SEGLOOP_CACHE]);
 
 						} else {
@@ -759,6 +759,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 		}
 	}
 
+	// force lookups on next cal
 	segloopnextlookup[TOP_TEXTURE_SEGLOOP_CACHE] = -1;
 	segloopnextlookup[BOT_TEXTURE_SEGLOOP_CACHE] = -1;
 	seglooptexrepeat[TOP_TEXTURE_SEGLOOP_CACHE] = 0;
