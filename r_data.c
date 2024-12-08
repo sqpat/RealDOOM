@@ -2489,6 +2489,12 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		} else {
 			// we will do a manual modulo process in this case
 			seglooptexmodulo[segloopcachetype]  = 0;
+			while (texcol < 0){
+				texcol += loopwidth;
+			}
+			while (texcol > loopwidth){
+				texcol -= loopwidth;
+			}
 		}
 
 		//n+=2;

@@ -369,6 +369,64 @@ extern int16_t setval;
 #define TOP_TEXTURE_SEGLOOP_CACHE 		0
 #define BOT_TEXTURE_SEGLOOP_CACHE 		1
 
+segment_t __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
+
+	if (seglooptexrepeat[segloopcachetype]){
+		// if we know its a single repeating texture we just repeat with previously loaded params
+		if (seglooptexmodulo[segloopcachetype]){
+			// power of 2. just modulo to get the column value
+			return segloopcachedsegment[segloopcachetype] 
+				+ FastMul8u8u((uint8_t) texturecolumn & seglooptexmodulo[segloopcachetype], 
+							segloopheightvalcache[segloopcachetype]);
+
+		} else {
+			int16_t loopwidth = seglooptexrepeat[segloopcachetype];
+			// not power of 2. manual modulo process
+			while (texturecolumn < (segloopcachedbasecol[segloopcachetype])){
+				segloopcachedbasecol[segloopcachetype] -= loopwidth;
+			}
+			while (texturecolumn >= (loopwidth + segloopcachedbasecol[segloopcachetype])){
+				segloopcachedbasecol[segloopcachetype] += loopwidth;
+			}
+	
+			return segloopcachedsegment[segloopcachetype] 
+				+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[segloopcachetype]) , 
+							segloopheightvalcache[segloopcachetype]);
+		}
+				
+	} else {
+
+
+		// note: column iteration can go in either dir, have to check for underflow and overflow
+		if (texturecolumn >= segloopnextlookup[segloopcachetype] ||
+			texturecolumn < segloopprevlookup[segloopcachetype] ){
+			return R_GetColumnSegment(texture, texturecolumn, segloopcachetype);
+			//todo: use self modifying code in ASM to change these segloopcachedbasecol values around here. then reset on function exit.
+
+/*
+			if (setval && midtexture == 50){
+				FILE* fp = fopen("tex.txt", "ab");
+				fprintf(fp, "\n CHANGED mid %i %i %i", segloopcachedbasecol[segloopcachetype], segloopnextlookup[segloopcachetype], texturecolumn);
+				fclose(fp);
+			}	
+			*/
+
+		} else {
+			return segloopcachedsegment[segloopcachetype] 
+				+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[segloopcachetype]) , 
+							segloopheightvalcache[segloopcachetype]);
+
+/*
+			if (setval && midtexture == 50){
+							FILE* fp = fopen("tex.txt", "ab");
+							fprintf(fp, "\nUSED mid %i %i %i", segloopcachedbasecol[segloopcachetype], segloopnextlookup[segloopcachetype], texturecolumn);
+							fclose(fp);
+						}	
+*/
+		}
+	}
+
+}
 
 
 void __near R_RenderSegLoop (fixed_t rw_scalestep) {
@@ -552,60 +610,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 					dc_yh = yh;
 					dc_texturemid = rw_midtexturemid;
 
-					if (seglooptexrepeat[MID_TEXTURE_SEGLOOP_CACHE]){
-						// if we know its a single repeating texture we just repeat with previously loaded params
-						if (seglooptexmodulo[MID_TEXTURE_SEGLOOP_CACHE]){
-							// power of 2. just modulo to get the column value
-							dc_source_segment = segloopcachedsegment[MID_TEXTURE_SEGLOOP_CACHE] 
-								+ FastMul8u8u((uint8_t) texturecolumn , 
-											segloopheightvalcache[MID_TEXTURE_SEGLOOP_CACHE]);
-
-						} else {
-							int16_t loopwidth = seglooptexrepeat[MID_TEXTURE_SEGLOOP_CACHE];
-							// not power of 2. manual modulo process
-							while (texturecolumn < (segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE])){
-								segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE] -= loopwidth;
-							}
-							while (texturecolumn >= (loopwidth + segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE])){
-								segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE] += loopwidth;
-							}
-					
-							dc_source_segment = segloopcachedsegment[MID_TEXTURE_SEGLOOP_CACHE] 
-								+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE]) , 
-											segloopheightvalcache[MID_TEXTURE_SEGLOOP_CACHE]);
-						}
-								
-					} else {
-
-
-						// note: column iteration can go in either dir, have to check for underflow and overflow
-						if (texturecolumn >= segloopnextlookup[MID_TEXTURE_SEGLOOP_CACHE] ||
-							texturecolumn < segloopprevlookup[MID_TEXTURE_SEGLOOP_CACHE] ){
-							dc_source_segment = R_GetColumnSegment(midtexture, texturecolumn, MID_TEXTURE_SEGLOOP_CACHE);
-							//todo: use self modifying code in ASM to change these segloopcachedbasecol values around here. then reset on function exit.
-
-	/*
-							if (setval && midtexture == 50){
-								FILE* fp = fopen("tex.txt", "ab");
-								fprintf(fp, "\n CHANGED mid %i %i %i", segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE], segloopnextlookup[MID_TEXTURE_SEGLOOP_CACHE], texturecolumn);
-								fclose(fp);
-							}	
-							*/
-
-						} else {
-							dc_source_segment = segloopcachedsegment[MID_TEXTURE_SEGLOOP_CACHE] 
-								+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE]) , 
-											segloopheightvalcache[MID_TEXTURE_SEGLOOP_CACHE]);
-
-	/*
-							if (setval && midtexture == 50){
-											FILE* fp = fopen("tex.txt", "ab");
-											fprintf(fp, "\nUSED mid %i %i %i", segloopcachedbasecol[MID_TEXTURE_SEGLOOP_CACHE], segloopnextlookup[MID_TEXTURE_SEGLOOP_CACHE], texturecolumn);
-											fclose(fp);
-										}	
-	*/
-						}
-					}
+					dc_source_segment = R_GetSourceSegment(texturecolumn, midtexture, MID_TEXTURE_SEGLOOP_CACHE);
 
 					R_DrawColumnPrepCall(0);				
 
@@ -632,40 +637,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 							dc_yh = mid;
 							dc_texturemid = rw_toptexturemid;
 
-							if (seglooptexrepeat[TOP_TEXTURE_SEGLOOP_CACHE]){
-								// if we know its a single repeating texture we just repeat with previously loaded params
-								if (seglooptexmodulo[TOP_TEXTURE_SEGLOOP_CACHE]){
-									// power of 2. just modulo to get the column value
-									dc_source_segment = segloopcachedsegment[TOP_TEXTURE_SEGLOOP_CACHE] 
-										+ FastMul8u8u((uint8_t) (texturecolumn & seglooptexmodulo[TOP_TEXTURE_SEGLOOP_CACHE]) , 
-													segloopheightvalcache[TOP_TEXTURE_SEGLOOP_CACHE]);
-
-								} else {
-									int16_t loopwidth = seglooptexrepeat[TOP_TEXTURE_SEGLOOP_CACHE];
-									// not power of 2. manual modulo process
-
-									while (texturecolumn < (segloopcachedbasecol[TOP_TEXTURE_SEGLOOP_CACHE])){
-										segloopcachedbasecol[TOP_TEXTURE_SEGLOOP_CACHE] -= loopwidth;
-									}
-									while (texturecolumn >= (loopwidth + segloopcachedbasecol[TOP_TEXTURE_SEGLOOP_CACHE])){
-										segloopcachedbasecol[TOP_TEXTURE_SEGLOOP_CACHE] += loopwidth;
-									}
-							
-									dc_source_segment = segloopcachedsegment[TOP_TEXTURE_SEGLOOP_CACHE] 
-										+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[TOP_TEXTURE_SEGLOOP_CACHE]) , 
-													segloopheightvalcache[TOP_TEXTURE_SEGLOOP_CACHE]);
-								}
-							} else {
-
-								if (texturecolumn >= segloopnextlookup[TOP_TEXTURE_SEGLOOP_CACHE] ||
-									texturecolumn < segloopprevlookup[TOP_TEXTURE_SEGLOOP_CACHE] ){
-									dc_source_segment = R_GetColumnSegment(toptexture,texturecolumn, TOP_TEXTURE_SEGLOOP_CACHE);
-								} else {
-									dc_source_segment = segloopcachedsegment[TOP_TEXTURE_SEGLOOP_CACHE] 
-										+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[TOP_TEXTURE_SEGLOOP_CACHE]) , 
-													segloopheightvalcache[TOP_TEXTURE_SEGLOOP_CACHE]);
-								}
-							}
+							dc_source_segment = R_GetSourceSegment(texturecolumn, toptexture, TOP_TEXTURE_SEGLOOP_CACHE);
 
 							R_DrawColumnPrepCall(0);				
 						}
@@ -697,40 +669,9 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 							dc_yh = yh;
 							dc_texturemid = rw_bottomtexturemid;
 
-							if (seglooptexrepeat[BOT_TEXTURE_SEGLOOP_CACHE]){
-								// if we know its a single repeating texture we just repeat with previously loaded params
-								if (seglooptexmodulo[BOT_TEXTURE_SEGLOOP_CACHE]){
-									// power of 2. just modulo to get the column value
-									dc_source_segment = segloopcachedsegment[BOT_TEXTURE_SEGLOOP_CACHE] 
-										+ FastMul8u8u((uint8_t) (texturecolumn & seglooptexmodulo[BOT_TEXTURE_SEGLOOP_CACHE]) , 
-													segloopheightvalcache[BOT_TEXTURE_SEGLOOP_CACHE]);
-
-								} else {
-									// not power of 2. manual modulo process
-									int16_t loopwidth = seglooptexrepeat[BOT_TEXTURE_SEGLOOP_CACHE];
-
-									while (texturecolumn < (segloopcachedbasecol[BOT_TEXTURE_SEGLOOP_CACHE])){
-										segloopcachedbasecol[BOT_TEXTURE_SEGLOOP_CACHE] -= loopwidth;
-									}
-									while (texturecolumn >= (loopwidth + segloopcachedbasecol[BOT_TEXTURE_SEGLOOP_CACHE])){
-										segloopcachedbasecol[BOT_TEXTURE_SEGLOOP_CACHE] += loopwidth;
-									}
+							dc_source_segment = R_GetSourceSegment(texturecolumn, bottomtexture, BOT_TEXTURE_SEGLOOP_CACHE);
 							
-									dc_source_segment = segloopcachedsegment[BOT_TEXTURE_SEGLOOP_CACHE] 
-										+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[BOT_TEXTURE_SEGLOOP_CACHE]) , 
-													segloopheightvalcache[BOT_TEXTURE_SEGLOOP_CACHE]);
-								}
-								
-							} else {
-								if (texturecolumn >= segloopnextlookup[BOT_TEXTURE_SEGLOOP_CACHE] ||
-									texturecolumn < segloopprevlookup[BOT_TEXTURE_SEGLOOP_CACHE] ){
-									dc_source_segment = R_GetColumnSegment(bottomtexture, texturecolumn, BOT_TEXTURE_SEGLOOP_CACHE);
-								} else {
-									dc_source_segment = segloopcachedsegment[BOT_TEXTURE_SEGLOOP_CACHE] 
-										+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[BOT_TEXTURE_SEGLOOP_CACHE]) , 
-													segloopheightvalcache[BOT_TEXTURE_SEGLOOP_CACHE]);
-								}
-							}
+							
 							R_DrawColumnPrepCall(0);
 							
 
