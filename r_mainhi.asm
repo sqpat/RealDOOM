@@ -1990,7 +1990,7 @@ mov   word ptr cs:[SELFMODIFY_texnum_1+1], si
 mov   word ptr cs:[SELFMODIFY_texnum_2+1], si
 mov   word ptr cs:[SELFMODIFY_texnum_3+1], si
 
-mov   byte ptr cs:[SELFMODIFY_compare_lookup+2], al
+mov   byte ptr cs:[SELFMODIFY_compare_lookup+1], al
 
 ;	if (lookup != 0xFF){
 cmp   al, 0FFh

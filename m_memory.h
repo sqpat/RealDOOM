@@ -1190,7 +1190,7 @@ spritedefs_bytes    7410:0000
 
 
 
-#define size_texturecolumnlumps_bytes  (1264u * sizeof(int16_t))
+#define size_texturecolumnlumps_bytes  (1424u * sizeof(int16_t))
 #define size_texturedefs_bytes         8756u
 #define size_spritetopoffsets          (sizeof(int8_t) * MAX_SPRITE_LUMPS)
 #define size_texturedefs_offset        (MAX_TEXTURES * sizeof(uint16_t))
@@ -1259,23 +1259,23 @@ spritedefs_bytes    7410:0000
 #define drawsegs_BASE_segment_7000      ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
 #define masked_lookup_segment_7000      ((segment_t) ((int32_t)masked_lookup_7000 >> 16))
 // texturecolumnlumps_bytes   9000:0000
-// texturedefs_bytes          90A8:0000
-// spritetopoffsets           92CC:0000
-// texturedefs_offset         9323:0000
-// masked_lookup              9359:0000
-// masked_headers             9374:0000
-// patchwidths                937A:0000
-// patchheights               93B6:0000
+// texturedefs_bytes          90B2:0000
+// spritetopoffsets           92A6:0000
+// texturedefs_offset         932D:0000
+// masked_lookup              9363:0000
+// masked_headers             937E:0000
+// patchwidths                9384:0000
+// patchheights               93AC:0000
 
-// drawsegs_BASE              93D4:0000
-// drawsegs_PLUSONE           93D4:0020
-// finetangentinner           95D2:0000
+// drawsegs_BASE              93DE:0000
+// drawsegs_PLUSONE           93DE:0020
+// finetangentinner           95DC:0000
 
-// [empty]                    97D2:0000
+// [empty]                    97DC:0000
 
 
 //FREEBYTES
-// 736 bytes free till 6000:8000
+// 576 bytes free till 6000:8000
 // some masked code can easily go here? Maybe more if drawsegs maxsegs goes back to 128 from 256?
 
 

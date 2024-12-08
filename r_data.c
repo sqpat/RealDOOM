@@ -1844,7 +1844,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 	int16_t             x1;
 	int16_t             x2;
 	int16_t             i;
-	column_t __far*           patchcol;
+	column_t __far*           sourcepatch;
 	int16_t_union __far*         collump;
 	uint8_t				textureheight;
 	uint8_t				usetextureheight;
@@ -1878,8 +1878,6 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
 	// Composite the columns together.
 	collump = &(texturecolumnlumps_bytes[texturepatchlump_offset[texnum]]);
-
-	// check which 64k page this lives in
 
 	Z_QuickMapScratch_7000();
 
@@ -1964,10 +1962,12 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 				continue;
 			}
 			
-			patchcol = MK_FP(0x7000, wadpatch7000->columnofs[x - x1]);
+			// get the patch for this lump at this location.
+			sourcepatch = MK_FP(0x7000, wadpatch7000->columnofs[x - x1]);
 
+			//todo hardcode the 0x7000?
 			// inlined R_DrawColumninCache
-			R_DrawColumnInCache(patchcol,
+			R_DrawColumnInCache(sourcepatch,
 				currentdestsegment,
 				patchoriginy,
 				textureheight);
@@ -2489,9 +2489,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		} else {
 			// we will do a manual modulo process in this case
 			seglooptexmodulo[segloopcachetype]  = 0;
-			while (texcol < 0){
-				texcol += loopwidth;
-			}
+
 			while (texcol > loopwidth){
 				texcol -= loopwidth;
 			}
@@ -2504,8 +2502,9 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		// todo: whats the max size of such a texture/rle string? to know for the asm? 8 at least.
 
 		// RLE stuff to figure out actual lump for column
-		uint8_t  startpixel;
+		uint8_t startpixel;
 		int16_t subtractor;
+		int16_t textotal = 0;
 		int16_t runningbasetotal = basecol;
 		int16_t n = 0;
 		
@@ -2522,13 +2521,25 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 			col -= subtractor;
 			if (lump >= 0){ // should be equiv to == -1?
 				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+			} else {
+				textotal += subtractor; // add the last's total.
 			}
 			n += 2;
 		}
 		startpixel = texturecolumnlump[n-1].bu.bytehigh;
 		
-		// starting offset for the texture column
-		segloopcachedbasecol[segloopcachetype]  = basecol + startpixel;
+		if (lump > 0){
+			segloopcachedbasecol[segloopcachetype] = basecol + startpixel;
+		} else {
+			// this has to be the difference between the current rendered column and the 
+			// associated column within the composite texture
+
+			// runningbasetotal - subtractor is the current rendered column
+			// textotal is the running composite texture column
+
+			segloopcachedbasecol[segloopcachetype] = runningbasetotal - textotal;
+		}
+
 		// prev RLE boundary. Hit this function again to load next texture if we hit this.
 		segloopprevlookup[segloopcachetype]     = runningbasetotal - subtractor;
 		// next RLE boundary. see above
@@ -2677,17 +2688,6 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		segloopheightvalcache[segloopcachetype] = collength;
 		segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
 
-		/*
-		if (setval && tex == 50){
-			FILE* fp = fopen("tex.txt", "ab");
-			fprintf(fp, "\n b %i %i %i %i %i %i %i", 
-			segloopprevlookup[segloopcachetype], 
-			segloopnextlookup[segloopcachetype], 
-			segloopcachedbasecol[segloopcachetype],
-			col, texcol, basecol, subtractor);
-			fclose(fp);
-		}
-		*/
 
 		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
@@ -2703,6 +2703,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	int16_t n = 0;
 	uint8_t texcol;
 	int16_t subtractor;
+	//int16_t loopwidth;
 	maskedcachedbasecol = col;
 	maskedheaderpixeolfs = 0xFFFF;
 
@@ -2713,6 +2714,8 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 
 	// todo: maybe unroll this in asm to the max RLE size of this operation?
 	// todo: whats the max size of such a texture/rle string? to know for the asm 
+
+	//loopwidth = texturecolumnlump[1].bu.bytehigh;
 
 	// RLE stuff to figure out actual lump for column
 	while (col >= 0) {
