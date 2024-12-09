@@ -232,50 +232,106 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 				
 					// draw the texture
 						
-					if (lookup != 0xFF){
 
+					if (maskedtexrepeat){
+						// if we know its a single repeating texture we just repeat with previously loaded params
 						segment_t pixelsegment;
+						int16_t usetexturecolumn = texturecolumn;
+						
+						// texturecolumn already masked...
+						// todo double check..
 
-						if ((texturecolumn >= maskednextlookup) ||
-							(texturecolumn < maskedprevlookup) ){
-							pixelsegment = R_GetMaskedColumnSegment(texnum,texturecolumn);
-							//todo: use self modifying code in ASM to change these maskedcachedbasecol values around here. then reset on function exit.
+						if (maskedtexmodulo){
+							// power of 2. just modulo to get the column value
+							usetexturecolumn =  texturecolumn & maskedtexmodulo;
 						} else {
+							int16_t loopwidth = maskedtexrepeat;
+							// not power of 2. manual modulo process
+							while (texturecolumn < (maskedcachedbasecol)){
+								maskedcachedbasecol -= loopwidth;
+							}
+							while (texturecolumn >= (loopwidth + maskedcachedbasecol)){
+								maskedcachedbasecol += loopwidth;
+							}
+							usetexturecolumn -= maskedcachedbasecol;
+						}
 
+						if (lookup != 0xFF){
+
+							
 							if (maskedheaderpixeolfs != 0xFFFF){
 								uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheaderpixeolfs);
-								uint16_t ofs  = pixelofs[texturecolumn - maskedcachedbasecol]; // precached as segment value.
+								uint16_t ofs  = pixelofs[usetexturecolumn]; // precached as segment value.
 								pixelsegment = maskedcachedsegment + ofs;
 							} else {
-
 								pixelsegment = maskedcachedsegment 
-									+ FastMul8u8u((uint8_t) (texturecolumn - maskedcachedbasecol) , 
-												maskedheightvalcache);
+									+ FastMul8u8u((uint8_t) usetexturecolumn, 
+										maskedheightvalcache);
+							}
+
+							{
+								uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedpostsofs);
+								uint16_t 		 postoffset = postoffsets[usetexturecolumn];
+								R_DrawMaskedColumnCallHigh (pixelsegment, (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)));
 							}
 
 
-						}
-						
 
-						{
-							uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedpostsofs);
-							uint16_t 		 postoffset = postoffsets[texturecolumn-maskedcachedbasecol];
-							R_DrawMaskedColumnCallHigh (pixelsegment, (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)));
-						}
-					} else {
-						segment_t pixelsegment;
-
-						if (texturecolumn >= maskednextlookup ||
-							texturecolumn < maskedprevlookup ){
-							pixelsegment = R_GetMaskedColumnSegment(texnum,texturecolumn);
-							//todo: use self modifying code in ASM to change these maskedcachedbasecol values around here. then reset on function exit.
 						} else {
 							pixelsegment = maskedcachedsegment 
-									+ FastMul8u8u((uint8_t) (texturecolumn - maskedcachedbasecol) , 
-												maskedheightvalcache);
+									+ FastMul8u8u((uint8_t) usetexturecolumn, 
+										maskedheightvalcache);
+							
+							R_DrawSingleMaskedColumnCallHigh(pixelsegment, cachedbyteheight);
 						}
+							
+					} else {
 
-						R_DrawSingleMaskedColumnCallHigh(pixelsegment, cachedbyteheight);
+						if (lookup != 0xFF){
+
+							segment_t pixelsegment;
+
+							if ((texturecolumn >= maskednextlookup) ||
+								(texturecolumn < maskedprevlookup) ){
+								pixelsegment = R_GetMaskedColumnSegment(texnum,texturecolumn);
+								//todo: use self modifying code in ASM to change these maskedcachedbasecol values around here. then reset on function exit.
+							} else {
+
+								if (maskedheaderpixeolfs != 0xFFFF){
+									uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheaderpixeolfs);
+									uint16_t ofs  = pixelofs[texturecolumn - maskedcachedbasecol]; // precached as segment value.
+									pixelsegment = maskedcachedsegment + ofs;
+								} else {
+
+									pixelsegment = maskedcachedsegment 
+										+ FastMul8u8u((uint8_t) (texturecolumn - maskedcachedbasecol) , 
+													maskedheightvalcache);
+								}
+
+
+							}
+							
+
+							{
+								uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedpostsofs);
+								uint16_t 		 postoffset = postoffsets[texturecolumn-maskedcachedbasecol];
+								R_DrawMaskedColumnCallHigh (pixelsegment, (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)));
+							}
+						} else {
+							segment_t pixelsegment;
+
+							if (texturecolumn >= maskednextlookup ||
+								texturecolumn < maskedprevlookup ){
+								pixelsegment = R_GetMaskedColumnSegment(texnum,texturecolumn);
+								//todo: use self modifying code in ASM to change these maskedcachedbasecol values around here. then reset on function exit.
+							} else {
+								pixelsegment = maskedcachedsegment 
+										+ FastMul8u8u((uint8_t) (texturecolumn - maskedcachedbasecol) , 
+													maskedheightvalcache);
+							}
+
+							R_DrawSingleMaskedColumnCallHigh(pixelsegment, cachedbyteheight);
+						}
 					}
 
 					maskedtexturecol[dc_x] = MAXSHORT;

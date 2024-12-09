@@ -2840,7 +2840,7 @@ do_render_masked_segrange:
 mov   dx, es
 mov   bx, ax   ; todo figure out a way to keep bx 
 mov   ax, di
-call  R_RenderMaskedSegRange_
+call  R_RenderMaskedSegRange2_
 jmp   iterate_next_drawseg_loop
 get_lowscalepass_1:
 

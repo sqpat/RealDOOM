@@ -2599,8 +2599,8 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 		// will zero out certain cache vars on a L1 page eviction - must reset them after.
 		cachedsegmentlumps[0] = getpatchtexture(lump, 0xFF);  
-		cachedlumps[0] = lump;
 		
+		cachedlumps[0] = lump;
 		segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
 		seglooptexrepeat[segloopcachetype] 		= loopwidth;
 
@@ -2728,8 +2728,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	// todo: maybe unroll this in asm to the max RLE size of this operation?
 	// todo: whats the max size of such a texture/rle string? to know for the asm 
 	
-	// todo implement
-	loopwidth = 0;
+
 	if (loopwidth){
 		loopwidth++;
 
@@ -2781,10 +2780,6 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		}
 		startpixel = texturecolumnlump[n-1].bu.bytehigh;
 		
-		//todo remove
-		if (texturecolumnlump[1].bu.bytehigh){
-			startpixel = 0;
-		}
 
 		if (lump > 0){
 			maskedcachedbasecol = basecol + startpixel;
@@ -2909,20 +2904,18 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 
 			maskedheightvalcache  = heightval;
 			
+			//todo debug this case...
 
-			return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
+			return maskedcachedsegment + (FastMul8u8u(col , heightval) );
 		} else {
-			// Does this code ever run outside of draw masked?
-
+			
 			masked_header_t __near * maskedheader = &masked_headers[lookup];
 			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
-
 			uint16_t ofs  = pixelofs[col]; // precached as segment value.
 
 			maskedheaderpixeolfs = maskedheader->pixelofsoffset;
 
-
-			return cachedsegmentlumps[0] + ofs;
+			return maskedcachedsegment + ofs;
 		}
 	} else {
 		uint8_t collength = texturecollength[tex];
@@ -2972,7 +2965,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		maskedcachedsegment   = cachedsegmenttex;
 
 
-		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
+		return maskedcachedsegment + (FastMul8u8u(cachedcollength , texcol));
 
 	}
 
