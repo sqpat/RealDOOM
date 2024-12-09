@@ -278,6 +278,7 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 
 
 						} else {
+							// e1m1 case thing
 							pixelsegment = maskedcachedsegment 
 									+ FastMul8u8u((uint8_t) usetexturecolumn, 
 										maskedheightvalcache);

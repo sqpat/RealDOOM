@@ -2823,7 +2823,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	if (lump > 0){
 		uint8_t lookup = masked_lookup_7000[tex];
 		int16_t cached_nextlookup;
-		uint8_t heightval = patchheights[lump-firstpatch];
+		uint8_t heightval = patchheights_7000[lump-firstpatch];
 		int16_t  cachelumpindex;
 		cachedbyteheight = heightval & 0xF0;
 
