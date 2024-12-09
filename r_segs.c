@@ -34,6 +34,7 @@
 
 // OPTIMIZE: closed two sided lines as single sided
 
+extern int16_t setval;
 
 
 #define SC_INDEX			0x3C4
@@ -41,7 +42,7 @@
 //
 // R_RenderMaskedSegRange
 //
-/*
+
 void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2) {
 	uint8_t	index;
 	int16_t		lightnum;
@@ -163,7 +164,7 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 		int16_t xoffset;
 		fixed_t rw_scalestep_shift = rw_scalestep.w << detailshift2minus;
 		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
-		uint16_t texturecolumn;
+		int16_t texturecolumn;
 
 		while (base4diff){
 			basespryscale -= rw_scalestep.w;
@@ -235,8 +236,8 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 
 						segment_t pixelsegment;
 
-						if (texturecolumn >= maskednextlookup ||
-							texturecolumn < maskedcachedbasecol ){
+						if ((texturecolumn >= maskednextlookup) ||
+							(texturecolumn < maskedprevlookup) ){
 							pixelsegment = R_GetMaskedColumnSegment(texnum,texturecolumn);
 							//todo: use self modifying code in ASM to change these maskedcachedbasecol values around here. then reset on function exit.
 						} else {
@@ -265,7 +266,7 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 						segment_t pixelsegment;
 
 						if (texturecolumn >= maskednextlookup ||
-							texturecolumn < maskedcachedbasecol ){
+							texturecolumn < maskedprevlookup ){
 							pixelsegment = R_GetMaskedColumnSegment(texnum,texturecolumn);
 							//todo: use self modifying code in ASM to change these maskedcachedbasecol values around here. then reset on function exit.
 						} else {
@@ -343,14 +344,11 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 		}
 	}
 */
-/*
 	maskednextlookup = NULL_TEX_COL;
-	maskedcachedbasecol = NULL_TEX_COL;
+	maskedtexrepeat = 0;
 
 }
-*/
 
-extern int16_t setval;
 
 
 //

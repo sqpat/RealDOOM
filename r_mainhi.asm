@@ -30,7 +30,7 @@ EXTRN FixedMul1632_:PROC
 
 EXTRN FastDiv3232_:PROC
 EXTRN R_GetMaskedColumnSegment_:NEAR
-;EXTRN R_RenderMaskedSegRange2_:NEAR
+EXTRN R_RenderMaskedSegRange2_:NEAR
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
@@ -50,11 +50,12 @@ EXTRN _vissprite_p:DWORD
 EXTRN _vsprsortedheadfirst:DWORD
 
 EXTRN _maskedtexturecol:BYTE
-EXTRN _maskedcachedbasecol:BYTE
+EXTRN _maskedcachedbasecol:WORD
 EXTRN _maskedheaderpixeolfs:BYTE
 EXTRN _maskedcachedsegment:WORD
 EXTRN _maskedheightvalcache:BYTE
 EXTRN _cachedbyteheight:BYTE
+EXTRN _maskedprevlookup:WORD
 EXTRN _maskednextlookup:WORD
 EXTRN _lightmult48lookup:BYTE
 EXTRN _walllights:BYTE
@@ -2543,11 +2544,15 @@ je    lookup_FF ; todo fine?
 
 ; lookup NOT ff.
 
-cmp   si, word ptr ds:[_maskednextlookup]
-jae   load_masked_column_segment_lookup
+;	if (texturecolumn >= maskednextlookup ||
+; 		texturecolumn < maskedprevlookup
 
-cmp   si, di
-jb    load_masked_column_segment_lookup
+
+cmp   si, word ptr ds:[_maskednextlookup]
+jge   load_masked_column_segment_lookup ; may be negative
+
+cmp   si, word ptr ds:[_maskedprevlookup] ; may be negative
+jl    load_masked_column_segment_lookup
 
 mov   ax, MASKEDPIXELDATAOFS_SEGMENT
 mov   es, ax
@@ -2602,11 +2607,12 @@ jmp   go_draw_masked_column
 lookup_FF:
 
 ;	if (texturecolumn >= maskednextlookup ||
-; 		texturecolumn < maskedcachedbasecol
-cmp   si, word ptr ds:[_maskednextlookup]
-jae   load_masked_column_segment
-cmp   si, di
-jb    load_masked_column_segment
+; 		texturecolumn < maskedprevlookup
+
+cmp   si, word ptr ds:[_maskednextlookup] ; may be negative
+jge   load_masked_column_segment
+cmp   si, word ptr ds:[_maskedprevlookup] ; may be negative
+jl    load_masked_column_segment
 mul   byte ptr ds:[_maskedheightvalcache]
 add   ax, word ptr ds:[_maskedcachedsegment]
 

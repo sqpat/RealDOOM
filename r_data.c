@@ -2173,9 +2173,9 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		segloopnextlookup[0] = -1;
 		segloopnextlookup[1] = -1;
 		maskednextlookup = NULL_TEX_COL;
-		maskedcachedbasecol = NULL_TEX_COL;
 		seglooptexrepeat[0] = 0;
 		seglooptexrepeat[1] = 0;
+		maskedtexrepeat = 0;
 
 
 		// paged in
@@ -2593,12 +2593,13 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		cachedlumps[2] = cachedlumps[1];
 		cachedlumps[1] = cachedlumps[0];
 
-		cachedlumps[0] = lump;
+		
 		
 		cached_nextlookup = segloopnextlookup[segloopcachetype]; 
 
 		// will zero out certain cache vars on a L1 page eviction - must reset them after.
 		cachedsegmentlumps[0] = getpatchtexture(lump, 0xFF);  
+		cachedlumps[0] = lump;
 		
 		segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
 		seglooptexrepeat[segloopcachetype] 		= loopwidth;
@@ -2694,6 +2695,15 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 	}
 
 } 
+/*
+void doprint(int16_t a, int16_t tex){
+	if (setval && tex == 11){
+			FILE* fp = fopen("tex3.txt", "ab");
+			fprintf(fp, "\n return %i", a);
+			fclose(fp);
+		}
+}
+*/
 
 
 //todo can this be optimized for the masked case??
@@ -2702,53 +2712,136 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	int16_t_union __far* texturecolumnlump;
 	int16_t n = 0;
 	uint8_t texcol;
-	int16_t subtractor;
-	//int16_t loopwidth;
-	maskedcachedbasecol = col;
+	int16_t loopwidth;
+	int16_t basecol = col;
+	
 	maskedheaderpixeolfs = 0xFFFF;
 
 
 	col &= texturewidthmasks[tex];
+	basecol -= col;
+	
 	texcol = col;
 	texturecolumnlump = &(texturecolumnlumps_bytes_7000[texturepatchlump_offset[tex]]);
+	loopwidth = texturecolumnlump[1].bu.bytehigh;
 
 	// todo: maybe unroll this in asm to the max RLE size of this operation?
 	// todo: whats the max size of such a texture/rle string? to know for the asm 
+	
+	// todo implement
+	loopwidth = 0;
+	if (loopwidth){
+		loopwidth++;
 
-	//loopwidth = texturecolumnlump[1].bu.bytehigh;
+		lump = texturecolumnlump[0].h;
+		maskedcachedbasecol  = basecol;
+		maskedtexrepeat 		= loopwidth;
+		if ((loopwidth & loopwidth - 1) == 0) { // power of 2 check
+			// most textures are power of 2 and its much faster to modulo by ANDing (size-1)
+			maskedtexmodulo  = loopwidth - 1; 
+		} else {
+			// we will do a manual modulo process in this case
+			maskedtexmodulo  = 0;
 
-	// RLE stuff to figure out actual lump for column
-	while (col >= 0) {
-		//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
-		// should we change this to be 256 - the number? we dont want a branch.
-		// anyway, fix it in asm
-		subtractor = texturecolumnlump[n+1].bu.bytelow;
-		if (!subtractor){
-			subtractor = 256;
+			while (texcol > loopwidth){
+				texcol -= loopwidth;
+			}
 		}
-		lump = texturecolumnlump[n].h;
-		col -= subtractor;
-		if (lump >= 0){ // should be equiv to == -1?
-			texcol -= subtractor;
+
+		//n+=2;
+	} else {
+
+			// todo: maybe unroll this in asm to the max RLE size of this operation?
+		// todo: whats the max size of such a texture/rle string? to know for the asm? 8 at least.
+
+		// RLE stuff to figure out actual lump for column
+		uint8_t startpixel;
+		int16_t subtractor;
+		int16_t textotal = 0;
+		int16_t runningbasetotal = basecol;
+		int16_t n = 0;
+		
+		while (col >= 0) {
+			//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
+			// should we change this to be 256 - the number? we dont want a branch.
+			// anyway, fix it in asm
+			subtractor = texturecolumnlump[n+1].bu.bytelow;
+			if (!subtractor){
+				subtractor = 256;
+			}
+			runningbasetotal += subtractor;
+			lump = texturecolumnlump[n].h;
+			col -= subtractor;
+			if (lump >= 0){ // should be equiv to == -1?
+				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+			} else {
+				textotal += subtractor; // add the last's total.
+			}
+			n += 2;
 		}
-		n += 2;
+		startpixel = texturecolumnlump[n-1].bu.bytehigh;
+		
+		//todo remove
+		if (texturecolumnlump[1].bu.bytehigh){
+			startpixel = 0;
+		}
+
+		if (lump > 0){
+			maskedcachedbasecol = basecol + startpixel;
+		} else {
+			// this has to be the difference between the current rendered column and the 
+			// associated column within the composite texture
+
+			// runningbasetotal - subtractor is the current rendered column
+			// textotal is the running composite texture column
+
+			maskedcachedbasecol = runningbasetotal - textotal;
+		}
+
+
+/*
+		if (setval && tex == 11){
+			FILE* fp = fopen("tex3.txt", "ab");
+			fprintf(fp, "\n INNER A  %i %i %i %i %i %i %i", 
+				basecol,
+				startpixel,
+				textotal,
+				lump,
+				maskedcachedbasecol,
+				runningbasetotal,
+				subtractor
+			);
+			fclose(fp);
+		}
+*/
+
+		// prev RLE boundary. Hit this function again to load next texture if we hit this.
+		maskedprevlookup     = runningbasetotal - subtractor;
+		// next RLE boundary. see above
+		maskednextlookup     = runningbasetotal; 
+		// this is not a single repeating texture 
+		maskedtexrepeat 		= 0;
+
 	}
 
 
 	if (lump > 0){
 		uint8_t lookup = masked_lookup_7000[tex];
-		uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
-		//uint8_t heightval = texturecolumnlump[n-1].bu.bytehigh;
-		uint8_t  startpixel = texturecolumnlump[n-1].bu.bytehigh;
-		uint8_t heightval = patchheights_7000[lump-firstpatch];
+		int16_t cached_nextlookup;
+		uint8_t heightval = patchheights[lump-firstpatch];
 		int16_t  cachelumpindex;
 		cachedbyteheight = heightval & 0xF0;
+
 		heightval &= 0x0F;
-		
+
+		// not sure if this is needed anymore
+
+
+
 		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
 			if (lump == cachedlumps[cachelumpindex]){
 				
-				if (cachelumpindex == 0){
+				if (cachelumpindex == 0){ // todo move this out? or unloop it?
 					goto foundcachedlump;
 				} else {
 					// reorder, put it in spot 0
@@ -2771,38 +2864,52 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		}
 
 		// not found, set cache.
-		{
-			int16_t i;
-			for (i = NUM_CACHE_LUMPS - 1; i > 0; i--){
-				cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
-				cachedlumps[i] = cachedlumps[i-1];
-			}
-			cachedsegmentlumps[0] = getpatchtexture(lump, lookup);  // might zero out cachedlump vars;
-			cachedlumps[0] = lump;
+		cachedsegmentlumps[3] = cachedsegmentlumps[2];
+		cachedsegmentlumps[2] = cachedsegmentlumps[1];
+		cachedsegmentlumps[1] = cachedsegmentlumps[0];
+		cachedlumps[3] = cachedlumps[2];
+		cachedlumps[2] = cachedlumps[1];
+		cachedlumps[1] = cachedlumps[0];
 
-		}
+		
+		
+		cached_nextlookup = maskednextlookup; 
+
+		// will zero out certain cache vars on a L1 page eviction - must reset them after.
+		cachedsegmentlumps[0] = getpatchtexture(lump, lookup);  // might zero out cachedlump vars;
+		cachedlumps[0] = lump;
+		// reset these since possibly clobbered by cache reset...
+		maskednextlookup     = cached_nextlookup; 
+		maskedtexrepeat 	 = loopwidth;
+
 		
 		foundcachedlump:
 		// so now cachedlumps[0] and cachedsegmentlumps[0] are the most recently used
-
-		// todo what else can we reuse collength and cachedbyteheight here?
 		
 		// we cant use rle width as it might be longer than single patch width
 		// in the case of multiple side by side patches. so we essentially
 		// "modulo from negative" by patch width.
-		while (col < 0){
-			col+= patchwidth;
-		}
 
-		maskedcachedsegment   = cachedsegmentlumps[0];
-		maskedcachedbasecol  -= col;
-		maskednextlookup = subtractor + maskedcachedbasecol;
+		if (col < 0){
+			uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
+			if (patchwidth > texturewidthmasks[tex]){
+				patchwidth = texturewidthmasks[tex];
+				patchwidth++;
+			}
+			while (col < 0){
+				col+= patchwidth;
+			}
+		}
+		
+		maskedcachedsegment  = cachedsegmentlumps[0];
 		
 		if (lookup == 0xFF){
 			// this happens with weird reverse walls like e1m1 upper wall in the sewage room.. 
 			// (but it is a super duper rare case)
 
 			maskedheightvalcache  = heightval;
+			
+
 			return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 		} else {
 			// Does this code ever run outside of draw masked?
@@ -2814,6 +2921,7 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 
 			maskedheaderpixeolfs = maskedheader->pixelofsoffset;
 
+
 			return cachedsegmentlumps[0] + ofs;
 		}
 	} else {
@@ -2823,12 +2931,19 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 
 		if (cachedtex != tex){
 			if (cachedtex2 != tex){
+				int16_t  cached_nextlookup = maskednextlookup; 
 				cachedtex2 = cachedtex;
 				cachedsegmenttex2 = cachedsegmenttex;
 				cachedcollength2 = cachedcollength;
 				cachedtex = tex;
+				
 				cachedsegmenttex = getcompositetexture(cachedtex);
 				cachedcollength = collength;
+
+				// restore these if composite texture is unloaded...
+				maskednextlookup     = cached_nextlookup; 
+				maskedtexrepeat 	 = loopwidth;
+
 
 			} else {
 				// cycle cache so 2 = 1
@@ -2847,15 +2962,15 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 			}
 
 		}
-		
+	
+
+
 		// todo on a fall through this doesnt get set to a modified collength. is that a bug?
 		cachedbyteheight = collength;
 
 		maskedheightvalcache  = collength;
 		maskedcachedsegment   = cachedsegmenttex;
-		maskedcachedbasecol  -= texcol;
-		maskednextlookup 	  = subtractor;  // todo does this 
-		maskednextlookup     += maskedcachedbasecol;
+
 
 		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 

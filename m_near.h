@@ -1163,7 +1163,10 @@ extern segment_t 				segloopcachedsegment[2];
 extern int16_t 					segloopcachedbasecol[2];
 extern uint8_t 					segloopheightvalcache[2];
 
+extern uint8_t 					maskedtexmodulo;
+extern int16_t 					maskedtexrepeat;
 extern int16_t 					maskednextlookup; // 0 would be fine too...
+extern int16_t 					maskedprevlookup; // 0 would be fine too...
 extern segment_t 				maskedcachedsegment;
 extern int16_t 					maskedcachedbasecol;
 extern uint8_t 					maskedheightvalcache;
