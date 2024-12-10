@@ -30,7 +30,7 @@ EXTRN FixedMul1632_:PROC
 
 EXTRN FastDiv3232_:PROC
 EXTRN R_GetMaskedColumnSegment_:NEAR
-EXTRN R_RenderMaskedSegRange2_:NEAR
+;EXTRN R_RenderMaskedSegRange2_:NEAR
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
@@ -1585,10 +1585,7 @@ dec   cx
 jcxz  xiscale_shift_done
 sar   dx, 1
 rcr   ax, 1
-dec   cx
-jcxz  xiscale_shift_done
-sar   dx, 1
-rcr   ax, 1
+
 xiscale_shift_done:
 
 mov   word ptr ds:[_dc_iscale], ax
@@ -1600,24 +1597,37 @@ mov   dx, word ptr [si + 024h]
 mov   word ptr ds:[_dc_texturemid], ax
 mov   word ptr ds:[_dc_texturemid + 2], dx
 
-mov   bx, word ptr [si + 01Ah]  ; vis->scale
-mov   cx, word ptr [si + 01Ch]  
 
-mov   word ptr ds:[_spryscale], bx
-mov   word ptr ds:[_spryscale + 2], cx
 
 mov   ax, word ptr ds:[_centery]
-mov   word ptr ds:[_sprtopscreen], 0
-mov   word ptr ds:[_sprtopscreen + 2], ax
+lea   di, ds:[_sprtopscreen]
+mov   word ptr ds:[di], 0		; di is _sprtopscreen
+mov   word ptr ds:[di + 2], ax
+
+mov   ax, word ptr [si + 01Ah]  ; vis->scale
+mov   dx, word ptr [si + 01Ch]  
+
+mov   word ptr ds:[_spryscale], ax
+mov   word ptr ds:[_spryscale + 2], dx
+
+mov   bx, word ptr ds:[_dc_texturemid]
+mov   cx, word ptr ds:[_dc_texturemid + 2]
+
+test  dx, dx
+jnz    do_32_bit_mul_vissprite
+
+test ax, 08000h  ; high bit
+do_16_bit_mul_after_all_vissprite:
+jnz  do_32_bit_mul_after_all_vissprite
+
+call  FixedMul1632_
+
+done_with_mul_vissprite:
 
 
-mov   ax, word ptr ds:[_dc_texturemid]
-mov   dx, word ptr ds:[_dc_texturemid + 2]
-
-call FixedMul_
-
-sub   word ptr ds:[_sprtopscreen], ax
-sbb   word ptr ds:[_sprtopscreen + 2], dx
+; di is _sprtopscreen
+sub   word ptr ds:[di], ax
+sbb   word ptr ds:[di + 2], dx
 
 mov   ax, word ptr [si + 026h]
 cmp   ax, word ptr ds:[_lastvisspritepatch]
@@ -1640,8 +1650,8 @@ mov   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4_shadow+1], ax
 
 sub   dx, ax
 xchg  ax, dx
-xor   cx, cx
-mov   cl, byte ptr ds:[_detailshift2minus]
+
+mov   cx, word ptr ds:[_detailshift2minus]
 
 
 ; xiscalestep_shift = vis->xiscale << detailshift2minus;
@@ -1650,10 +1660,6 @@ mov   bx, word ptr [si + 01Eh] ; DX:BX = vis->xiscale
 mov   dx, word ptr [si + 020h]
 
 ; todo unroll if it doesnt break the jne above..
-jcxz  done_shifting_shift_xiscalestep_shift
-shl   bx, 1
-rcl   dx, 1
-dec   cx
 jcxz  done_shifting_shift_xiscalestep_shift
 shl   bx, 1
 rcl   dx, 1
@@ -1697,6 +1703,15 @@ je    jump_to_draw_shadow_sprite
 
 
 jmp loop_vga_plane_draw_normal 
+
+do_32_bit_mul_vissprite:
+inc   dx
+jz    do_16_bit_mul_after_all_vissprite
+dec   dx
+do_32_bit_mul_after_all_vissprite:
+
+call FixedMul_
+jmp done_with_mul_vissprite
 
   
 sprite_not_first_cachedsegment:
@@ -2394,12 +2409,23 @@ mov   word ptr ds:[_spryscale + 2], bx
 
 ;			sprtopscreen.w -= FixedMul(dc_texturemid.w,spryscale.w);
 
-mov   bx, word ptr ds:[_spryscale]
-mov   cx, word ptr ds:[_spryscale + 2]
-mov   ax, word ptr ds:[_dc_texturemid]
-mov   dx, word ptr ds:[_dc_texturemid + 2]
-call  FixedMul_
+mov   ax, dx
+mov   dx, bx
+mov   bx, word ptr ds:[_dc_texturemid]
+mov   cx, word ptr ds:[_dc_texturemid + 2]
 
+test  dx, dx
+jnz    do_32_bit_mul
+
+test ax, 08000h  ; high bit
+do_16_bit_mul_after_all:
+jnz  do_32_bit_mul_after_all
+
+call  FixedMul1632_
+
+
+
+done_with_mul:
 
 neg   ax ; no need to subtract from zero...
 mov   word ptr ds:[_sprtopscreen], ax
@@ -2451,6 +2477,15 @@ pop   di
 pop   si
 ret   
 
+do_32_bit_mul:
+inc   dx
+jz    do_16_bit_mul_after_all
+dec   dx
+do_32_bit_mul_after_all:
+
+call FixedMul_
+jmp done_with_mul
+
 do_inner_loop:
 ;   ax is dc_x
 les   bx, dword ptr ds:[_maskedtexturecol]
@@ -2483,6 +2518,7 @@ sar   dx, 1
 rcr   ax, 1
 
 jmp   get_colormap
+
 
 update_maskedtexturecol_finish_loop_iter:
 ;	maskedtexturecol[dc_x] = MAXSHORT;

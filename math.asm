@@ -119,6 +119,53 @@ ENDP
 ENDIF
 
 
+PROC FixedMulBig16u32_ FAR
+PUBLIC FixedMulBig16u32_
+
+; AX:00  *  CX:BX
+; 1          2  3
+
+; with sign extend for byte 3:
+; S0:DX:AX    *   S1:CX:BX
+; S0 = DX sign extend
+; S1 = CX sign extend
+
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+;                               00BXhi	 00BXlo
+;                       AXBXhi  AXBXlo          
+;
+;                       00CXhi  00CXlo
+;               AXCXhi  AXCXlo  
+;                       
+;                               
+;                       
+;       
+
+
+
+
+; need to get the sign-extends for DX and CX
+
+
+
+XCHG CX, AX    ; AX stored in CX
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  AX, CX    ; add 
+
+ret
+
+
+
+ENDP
+
+
 
 
 PROC FixedMul2424_ FAR

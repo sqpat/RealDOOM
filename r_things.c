@@ -660,6 +660,16 @@ void __near R_DrawMasked (void) {
 			R_RenderMaskedSegRange(ds, ds->x1, ds->x2);  // draws what is behind the sprites
 		}
 	}
+
+/*
+  // dumb asm logging testing stuff to keep around
+    {
+        FILE* fp = fopen("blah.txt", "ab");
+        fprintf (fp, "%x %x\n", visplanelookupsegments[1], visplanelookupsegments[2]);
+        fclose(fp);
+    }
+
+*/
     // draw the psprites on top of everything
     //  but does not draw on side views
 	R_DrawPlayerSprites ();
