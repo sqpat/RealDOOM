@@ -30,7 +30,6 @@ EXTRN FixedMul1632_:PROC
 
 EXTRN FastDiv3232_:PROC
 EXTRN R_GetMaskedColumnSegment_:NEAR
-EXTRN R_RenderMaskedSegRange2_:NEAR
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
@@ -51,7 +50,7 @@ EXTRN _vsprsortedheadfirst:DWORD
 
 EXTRN _maskedtexturecol:BYTE
 EXTRN _maskedcachedbasecol:WORD
-EXTRN _maskedheaderpixeolfs:BYTE
+
 EXTRN _maskedcachedsegment:WORD
 EXTRN _maskedheightvalcache:BYTE
 EXTRN _maskedtexrepeat:WORD
@@ -2536,19 +2535,19 @@ call  FastDiv3232_
 mov   word ptr ds:[_dc_iscale], ax
 mov   word ptr ds:[_dc_iscale + 2], dx
 
-; todo: make two loops instead of branching here?
-
 mov   bx, si  ; bx gets a copy of texture column?
 ;  ax stores _maskedtexrepeat for a little bit
 mov   ax, word ptr ds:[_maskedtexrepeat] 
 test  ax, ax
-jne   do_non_repeat
-jmp   do_non_repeat
+jz   do_non_repeat
+
 mov   cl, byte ptr ds:[_maskedtexmodulo] 
 test  cl, cl
 jz    do_looped_column_calc
 
 ; width is power of 2, just AND
+;	usetexturecolumn =  &= maskedtexmodulo;
+
 and   bl, cl
 
 repeat_column_calculated:
@@ -2564,13 +2563,30 @@ mov   dl, 0FFh
 inc   dl	; if it was ff, this sets zero flag.
 jz    lookup_FF_repeat
 
-
 ;if (maskedheaderpixeolfs != 0xFFFF){
 
-cmp   word ptr ds:[_maskedheaderpixeolfs], -1
-jne   calculate_maskedheader_pixel_ofs_repeat
-mul   byte ptr ds:[_maskedheightvalcache]
+; cs gets MASKEDPIXELDATAOFS_SEGMENT
+les   cx, dword ptr ds:[_maskedheaderpixeolfs]
+cmp   cx, -1
+
+je   calculate_pixelsegment_mul
+
+calculate_maskedheader_pixel_ofs_repeat:
+
+; es:cx previously LESed
+add   bx, bx
+add   bx, cx
+
+mov   bx, word ptr es:[bx]
+xchg  bx, ax  ; bx back, ax gets pixelsegment
+
+; pixelsegment = ofs
+
+
 go_draw_masked_column_repeat:
+
+; pixelsegment += _maskedcachedsegment
+
 add   ax, word ptr ds:[_maskedcachedsegment]
 
 ;    ax is pixelsegment.
@@ -2593,34 +2609,45 @@ jmp   update_maskedtexturecol_finish_loop_iter
 
 
 do_looped_column_calc:
-; calculate column by looping until 0 < column < size
+; calculate column by looping until 0 < column < width
+; but column may be offset by (width * n)
+; we iterate such that (width * n) < column < (width * (n+1))
+; such that we can subtract column by width * n each iteration.
+; di stores maskedcachedbasecol, which is (width * n).
 
-;	while (texturecolumn < (maskedcachedbasecol)){
-;		maskedcachedbasecol -= loopwidth;
+
+
+;	while (usetexturecolumn < (maskedcachedbasecol)){
+;		maskedcachedbasecol -= maskedtexrepeat;
 ;	}
 cmp bx, di
 jge done_subtracting_column
 subtract_column_by_modulo:
 sub di, ax
 cmp bx, di
-jnge subtract_column_by_modulo
+jl subtract_column_by_modulo 
+
+; we know maskedcachedbasecol is already good. skip the next loop check. 
+; but it only saves running one instruction. lets keep it simpler.
+;jmp done_calculating_column_modulo
+
 done_subtracting_column:
 
-;	while (texturecolumn >= (loopwidth + maskedcachedbasecol)){
-;		maskedcachedbasecol += loopwidth;
+;	while (usetexturecolumn >= maskedcachedbasecol){
+;		maskedcachedbasecol += maskedtexrepeat;
 ;	}
 
 
 
-; todo clean up this loop
 cmp bx, di
-jl done_adding_column
+jl done_adding_column 
 add_column_by_modulo:
 add di, ax
 cmp bx, di
-jnl add_column_by_modulo
+jge add_column_by_modulo
 done_adding_column:
 sub di, ax
+done_calculating_column_modulo:
 
 mov ds:[_maskedcachedbasecol], di  ; write the changes back
 
@@ -2642,16 +2669,12 @@ xor   dh, dh
 call  dword ptr [_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
 jmp   update_maskedtexturecol_finish_loop_iter
 
-calculate_maskedheader_pixel_ofs_repeat:
+; pixelsegment = FastMul8u8u((uint8_t) usetexturecolumn, maskedheightvalcache);
+calculate_pixelsegment_mul:
 
-xchg  ax, bx  ; safekeeping of usetexturecolumn
-mov   bx, si
-sub   bx, di
-add   bx, bx
-add   bx, word ptr ds:[_maskedheaderpixeolfs]
-mov   bx, word ptr es:[bx]
-xchg  bx, ax  ; bx back, ax gets pixelsegment
+mul   byte ptr ds:[_maskedheightvalcache]
 jmp   go_draw_masked_column_repeat
+
 do_non_repeat:
 
 mov   dh, ah	; todo why is ah needed
@@ -2678,10 +2701,10 @@ jge   load_masked_column_segment_lookup ; may be negative
 cmp   si, word ptr ds:[_maskedprevlookup] ; may be negative
 jl    load_masked_column_segment_lookup
 
-mov   ax, MASKEDPIXELDATAOFS_SEGMENT
-mov   es, ax
+; loads MASKEDPIXELDATAOFS_SEGMENT into ES
+les   ax, dword ptr ds:[_maskedheaderpixeolfs]
 
-cmp   word ptr ds:[_maskedheaderpixeolfs], -1
+cmp   ax, -1
 jne   calculate_maskedheader_pixel_ofs
 mul   byte ptr ds:[_maskedheightvalcache]
 go_draw_masked_column:
@@ -2705,10 +2728,11 @@ call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
 jmp   update_maskedtexturecol_finish_loop_iter
 
 calculate_maskedheader_pixel_ofs:
+; es:ax previously LESed
 mov   bx, si
 sub   bx, di
 add   bx, bx
-add   bx, word ptr ds:[_maskedheaderpixeolfs]
+add   bx, ax
 mov   ax, word ptr es:[bx]
 jmp   go_draw_masked_column
 
@@ -2720,8 +2744,7 @@ call  R_GetMaskedColumnSegment_
 mov   di, word ptr ds:[_maskedcachedbasecol]
 mov   dx, word ptr [_maskedcachedsegment]   ; to offset for above
 sub   ax, dx
-; todo put some cached values here in di, dh, dl, etc
-; _maskedheaderpixeolfs is strong selfmodify candidate.
+
 jmp   go_draw_masked_column
 
 

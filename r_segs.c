@@ -42,7 +42,7 @@ extern int16_t setval;
 //
 // R_RenderMaskedSegRange
 //
-
+/*
 void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2) {
 	uint8_t	index;
 	int16_t		lightnum;
@@ -243,21 +243,20 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 
 						if (maskedtexmodulo){
 							// power of 2. just modulo to get the column value
-							usetexturecolumn =  texturecolumn & maskedtexmodulo;
+							usetexturecolumn  &= maskedtexmodulo;
 						} else {
-							int16_t loopwidth = maskedtexrepeat;
 							// not power of 2. manual modulo process
-							while (texturecolumn < (maskedcachedbasecol)){
-								maskedcachedbasecol -= loopwidth;
+							while (usetexturecolumn < (maskedcachedbasecol)){
+								maskedcachedbasecol -= maskedtexrepeat;
 							}
-							//while (texturecolumn >= (loopwidth + maskedcachedbasecol)){
-							//	maskedcachedbasecol += loopwidth;
+							//while (usetexturecolumn >= (maskedtexrepeat + maskedcachedbasecol)){
+							//	maskedcachedbasecol += maskedtexrepeat;
 							//}
 							
-							while (maskedcachedbasecol <= texturecolumn){
-								maskedcachedbasecol += loopwidth;
+							while (maskedcachedbasecol <= usetexturecolumn){
+								maskedcachedbasecol += maskedtexrepeat;
 							}
-							maskedcachedbasecol -= loopwidth;
+							maskedcachedbasecol -= maskedtexrepeat;
 
 							usetexturecolumn -= maskedcachedbasecol;
 						}
@@ -346,72 +345,12 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 			}
 		}
 	}
-		/*
-	 else {
-		// single pixel case
-
-
-
-		// draw the column
-		// calculate lighting
-		if (maskedtexturecol[x1] != MAXSHORT) {
-			segment_t pixelsegment = R_GetColumnSegment(texnum,maskedtexturecol[x1]);
-			uint8_t lookup = masked_lookup_7000[texnum];
-			int16_t dc_x_base4 = x1 & (detailshiftandval);	
-			outp(SC_INDEX+1, quality_port_lookup[dc_x_base4+detailshift.b.bytehigh]);
-			dc_x        = x1;
-
-			sprtopscreen.h.intbits = centery;
-			sprtopscreen.h.fracbits = 0;
-			sprtopscreen.w -= FixedMul(dc_texturemid.w, spryscale.w);
-
-			if (!fixedcolormap) {
-
-				// prevents a 12 bit shift in many cases. 
-				// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4) which is 0x30000
-				if (spryscale.h.intbits >= 3) {
-					index = MAXLIGHTSCALE - 1;
-				} else {
-					// todo precalc the shift somehow. maybe precalc shift 4 and do byte swaps after 
-					index = spryscale.w >> LIGHTSCALESHIFT;
-				}
-
-				dc_colormap_segment = colormaps_segment_maskedmapping;
-				dc_colormap_index = walllights[index];
-
-				// todo does it have to be reset after this?
-			}
-			
-			// todo there's got to be a faster way
-			//dc_iscale = 0xffffffffu / spryscale.w;
-			dc_iscale = FastDiv3232(0xffffffffu, spryscale.w);
-
-
-			// the below doesnt work because sometimes < FRACUNIT
-			//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
-		
-			// draw the texture
-				
-			if (lookup != 0xFF){
-				masked_header_t __near * maskedheader = &masked_headers[lookup];
-				uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedheader->postofsoffset);
-				uint16_t 		 postoffset = postoffsets[cachedcol];
-				column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
-
-				R_DrawMaskedColumn (pixelsegment, postsdata);
-			} else {
-				R_DrawSingleMaskedColumn(pixelsegment, cachedbyteheight);
-			}
-
-			maskedtexturecol[dc_x] = MAXSHORT;
-		}
-	}
-*/
+	
 	maskednextlookup = NULL_TEX_COL;
 	maskedtexrepeat = 0;
 
 }
-
+*/
 
 
 //

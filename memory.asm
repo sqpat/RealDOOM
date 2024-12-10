@@ -107,7 +107,8 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00
 
 ; 218
-
+; 
+dw 0FFFFh, MASKEDPIXELDATAOFS_SEGMENT
 
 
 

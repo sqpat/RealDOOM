@@ -2299,7 +2299,6 @@ int16_t 					maskedprevlookup;
 segment_t 					maskedcachedsegment;
 int16_t 					maskedcachedbasecol = NULL_TEX_COL;
 uint8_t 					maskedheightvalcache;
-int16_t						maskedheaderpixeolfs = -1;
 
 /*
 uint16_t shift4lookup[256] = 

@@ -234,12 +234,13 @@
 #define M_Drawer_addr                   (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0210)))
 
 #define wipeduration                    (*((uint16_t  __near*)           (_NULL_OFFSET + 0x0214)))
+// uses high byte for quick 0
 #define detailshift2minus               (*((uint8_t __near*)             (_NULL_OFFSET + 0x0216)))
+// uses high word for quick segment read
+#define maskedheaderpixeolfs            (*((uint16_t  __near*)           (_NULL_OFFSET + 0x0218)))
 
 
-
-
-// 216
+// 220
 
 
 
@@ -1170,7 +1171,6 @@ extern int16_t 					maskedprevlookup; // 0 would be fine too...
 extern segment_t 				maskedcachedsegment;
 extern int16_t 					maskedcachedbasecol;
 extern uint8_t 					maskedheightvalcache;
-extern int16_t					maskedheaderpixeolfs;
 
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
