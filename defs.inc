@@ -85,6 +85,7 @@ _rw_scale =		 					_NULL_OFFSET + 00090h
 _rw_midtexturemid = 				_NULL_OFFSET + 00094h
 _rw_toptexturemid = 				_NULL_OFFSET + 00098h
 _rw_bottomtexturemid = 				_NULL_OFFSET + 0009Ch
+_rw_angle1 =                        _NULL_OFFSET + 000A0h
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
 _ss_variable_space = 				_NULL_OFFSET + 000ACh

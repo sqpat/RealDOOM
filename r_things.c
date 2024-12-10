@@ -230,8 +230,7 @@ void __near R_DrawSingleMaskedColumn2 (segment_t pixeldatasegment, byte length) 
 
     // calculate unclipped screen coordinates
     //  for post
-    topscreen.w = sprtopscreen;
-    bottomscreen.w = topscreen.w + FastMul16u32u(length, spryscale.w);
+    topscreen = sprtopscreen;
 
     dc_yl = topscreen.h.intbits; 
     dc_yh = bottomscreen.h.intbits;

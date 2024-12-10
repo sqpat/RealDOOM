@@ -2904,8 +2904,6 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 
 			maskedheightvalcache  = heightval;
 			
-			//todo debug this case...
-
 			return maskedcachedsegment + (FastMul8u8u(col , heightval) );
 		} else {
 			

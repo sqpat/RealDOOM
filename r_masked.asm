@@ -23,8 +23,6 @@ INSTRUCTION_SET_MACRO
 
 
 
-
-
 ; for the 6th colormap (used in fuzz draws. offset by 600h bytes, or 60h segments)
 
 COLORMAPS_6_MASKEDMAPPING_SEG_DIFF_SEGMENT = (COLORMAPS_SEGMENT_MASKEDMAPPING + 060h)
@@ -197,6 +195,7 @@ mov   ax, word ptr ds:[_spryscale+2]
 
 ;   topscreen = si:di 
 
+; CX * AX:BX
 ; fastmul1632, ax/cx preswapped
 
 ; FastMul16u32u(length, spryscale.w)
@@ -220,9 +219,10 @@ adc dx, si
 ;        dc_yh--;
 
 
-neg ax
-sbb dx, 0h
-mov  word ptr ds:[_dc_yh], dx
+neg ax          ; if zero, subtract
+adc dx, 0FFFFh      ; 
+
+;mov  word ptr ds:[_dc_yh], dx   ; dont actually need to write back.
 ; dc_yh written back
 
 
@@ -234,7 +234,7 @@ mov  word ptr ds:[_dc_yh], dx
 
 neg  di
 adc  si, 0
-mov  word ptr ds:[_dc_yl], si
+;mov  word ptr ds:[_dc_yl], si   ; dont actually need to write back.
 
 ; dx is dc_yh
 ; si is dc_yl
@@ -278,7 +278,7 @@ inc   si
 skip_ceil_clip_set_single:
 
 cmp   si, dx			
-jnle   exit_function_single
+jg    exit_function_single
 
 
 mov   word ptr ds:[_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
@@ -293,6 +293,7 @@ dw COLFUNC_MASKEDMAPPING_SEGMENT
 
 
 exit_function_single:
+
 
 pop   bp
 pop   di
