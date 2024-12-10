@@ -250,9 +250,15 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 							while (texturecolumn < (maskedcachedbasecol)){
 								maskedcachedbasecol -= loopwidth;
 							}
-							while (texturecolumn >= (loopwidth + maskedcachedbasecol)){
+							//while (texturecolumn >= (loopwidth + maskedcachedbasecol)){
+							//	maskedcachedbasecol += loopwidth;
+							//}
+							
+							while (maskedcachedbasecol <= texturecolumn){
 								maskedcachedbasecol += loopwidth;
 							}
+							maskedcachedbasecol -= loopwidth;
+
 							usetexturecolumn -= maskedcachedbasecol;
 						}
 
@@ -268,7 +274,7 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 									+ FastMul8u8u((uint8_t) usetexturecolumn, 
 										maskedheightvalcache);
 							}
-
+ 
 							{
 								uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedpostsofs);
 								uint16_t 		 postoffset = postoffsets[usetexturecolumn];

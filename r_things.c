@@ -657,7 +657,7 @@ void __near R_DrawMasked (void) {
 
 	for (ds = ds_p - 1; ds > drawsegs_BASE_7000; ds--) {
 		if (ds->maskedtexturecol != NULL_TEX_COL) {
-			R_RenderMaskedSegRange2(ds, ds->x1, ds->x2);  // draws what is behind the sprites
+			R_RenderMaskedSegRange(ds, ds->x1, ds->x2);  // draws what is behind the sprites
 		}
 	}
     // draw the psprites on top of everything

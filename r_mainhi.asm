@@ -54,6 +54,8 @@ EXTRN _maskedcachedbasecol:WORD
 EXTRN _maskedheaderpixeolfs:BYTE
 EXTRN _maskedcachedsegment:WORD
 EXTRN _maskedheightvalcache:BYTE
+EXTRN _maskedtexrepeat:WORD
+EXTRN _maskedtexmodulo:BYTE
 EXTRN _cachedbyteheight:BYTE
 EXTRN _maskedprevlookup:WORD
 EXTRN _maskednextlookup:WORD
@@ -1991,7 +1993,8 @@ mov   word ptr cs:[SELFMODIFY_texnum_1+1], si
 mov   word ptr cs:[SELFMODIFY_texnum_2+1], si
 mov   word ptr cs:[SELFMODIFY_texnum_3+1], si
 
-mov   byte ptr cs:[SELFMODIFY_compare_lookup+1], al
+mov   byte ptr cs:[SELFMODIFY_compare_lookup  +1], al
+mov   byte ptr cs:[SELFMODIFY_compare_lookup_2+1], al
 
 ;	if (lookup != 0xFF){
 cmp   al, 0FFh
@@ -2003,7 +2006,8 @@ cbw
 shl   ax, 3
 mov   bx, ax
 mov   ax, word ptr [bx + _masked_headers + 2]
-mov   word ptr cs:[SELFMODIFY_maskedpostofs+3], ax
+mov   word ptr cs:[SELFMODIFY_maskedpostofs  +3], ax
+mov   word ptr cs:[SELFMODIFY_maskedpostofs_2+3], ax
 lookup_not_ff:
 
 mov   ax, SEG_LINEDEFS_SEGMENT
@@ -2487,16 +2491,18 @@ sar   dx, 1
 rcr   ax, 1
 
 jmp   get_colormap
+
 update_maskedtexturecol_finish_loop_iter:
 ;	maskedtexturecol[dc_x] = MAXSHORT;
 
-increment_inner_loop:
 
 les   bx, dword ptr ds:[_maskedtexturecol]
 mov   ax, word ptr ds:[_dc_x]
 add   ax, ax
 add   bx, ax
 mov   word ptr es:[bx], MAXSHORT
+
+increment_inner_loop:
 
 mov   ax, word ptr ds:[_detailshiftitercount]
 add   word ptr ds:[_dc_x], ax
@@ -2529,17 +2535,135 @@ mov   cx, word ptr ds:[_spryscale + 2]
 call  FastDiv3232_
 mov   word ptr ds:[_dc_iscale], ax
 mov   word ptr ds:[_dc_iscale + 2], dx
+
+; todo: make two loops instead of branching here?
+
+mov   bx, si  ; bx gets a copy of texture column?
+;  ax stores _maskedtexrepeat for a little bit
+mov   ax, word ptr ds:[_maskedtexrepeat] 
+test  ax, ax
+jne   do_non_repeat
+jmp   do_non_repeat
+mov   cl, byte ptr ds:[_maskedtexmodulo] 
+test  cl, cl
+jz    do_looped_column_calc
+
+; width is power of 2, just AND
+and   bl, cl
+
+repeat_column_calculated:
+
+; bx is usetexturecolumn
+xor   bh, bh   ;todo necessary?
+mov   ax, bx
+; now al is usetexturecolumn
+
+;	if (lookup != 0xFF){
+SELFMODIFY_compare_lookup_2:  
+mov   dl, 0FFh
+inc   dl	; if it was ff, this sets zero flag.
+jz    lookup_FF_repeat
+
+
+;if (maskedheaderpixeolfs != 0xFFFF){
+
+cmp   word ptr ds:[_maskedheaderpixeolfs], -1
+jne   calculate_maskedheader_pixel_ofs_repeat
+mul   byte ptr ds:[_maskedheightvalcache]
+go_draw_masked_column_repeat:
+add   ax, word ptr ds:[_maskedcachedsegment]
+
+;    ax is pixelsegment.
+;    bx still has usetexturecolumn!
+
+;	uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedpostsofs);
+;	uint16_t 		 postoffset = postoffsets[texturecolumn-maskedcachedbasecol];
+;	R_DrawMaskedColumnCallHigh (pixelsegment, (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)));
+
+
+mov   cx, MASKEDPOSTDATAOFS_SEGMENT
+mov   es, cx
+add   bx, bx
+SELFMODIFY_maskedpostofs_2:     ; todo this
+mov   bx, word ptr es:[bx+08000h]
+mov   cx, MASKEDPOSTDATA_SEGMENT
+call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
+
+jmp   update_maskedtexturecol_finish_loop_iter
+
+
+do_looped_column_calc:
+; calculate column by looping until 0 < column < size
+
+;	while (texturecolumn < (maskedcachedbasecol)){
+;		maskedcachedbasecol -= loopwidth;
+;	}
+cmp bx, di
+jge done_subtracting_column
+subtract_column_by_modulo:
+sub di, ax
+cmp bx, di
+jnge subtract_column_by_modulo
+done_subtracting_column:
+
+;	while (texturecolumn >= (loopwidth + maskedcachedbasecol)){
+;		maskedcachedbasecol += loopwidth;
+;	}
+
+
+
+; todo clean up this loop
+cmp bx, di
+jl done_adding_column
+add_column_by_modulo:
+add di, ax
+cmp bx, di
+jnl add_column_by_modulo
+done_adding_column:
+sub di, ax
+
+mov ds:[_maskedcachedbasecol], di  ; write the changes back
+
+;	usetexturecolumn -= maskedcachedbasecol;
+sub bx, di
+
+jmp repeat_column_calculated
+
+lookup_FF_repeat:
+
+;	if (texturecolumn >= maskednextlookup ||
+; 		texturecolumn < maskedprevlookup
+
+mul   byte ptr ds:[_maskedheightvalcache]
+add   ax, word ptr ds:[_maskedcachedsegment]
+
+mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
+xor   dh, dh
+call  dword ptr [_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+jmp   update_maskedtexturecol_finish_loop_iter
+
+calculate_maskedheader_pixel_ofs_repeat:
+
+xchg  ax, bx  ; safekeeping of usetexturecolumn
+mov   bx, si
+sub   bx, di
+add   bx, bx
+add   bx, word ptr ds:[_maskedheaderpixeolfs]
+mov   bx, word ptr es:[bx]
+xchg  bx, ax  ; bx back, ax gets pixelsegment
+jmp   go_draw_masked_column_repeat
+do_non_repeat:
+
 mov   dh, ah	; todo why is ah needed
 mov   ax, si
 mov   ah, dh
 sub   ax, di
 
-; todo: make two loops instead of branching here?
 
 ;	if (lookup != 0xFF){
 SELFMODIFY_compare_lookup:  
 mov   dl, 0FFh
-cmp   dl, 0FFh
+inc   dl
 je    lookup_FF ; todo fine?
 
 ; lookup NOT ff.
@@ -2561,8 +2685,7 @@ cmp   word ptr ds:[_maskedheaderpixeolfs], -1
 jne   calculate_maskedheader_pixel_ofs
 mul   byte ptr ds:[_maskedheightvalcache]
 go_draw_masked_column:
-SELFMODIFY_add_maskedcachedsegment:
-add   ax, 08000h;
+add   ax, word ptr ds:[_maskedcachedsegment]
 
 ;	uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedpostsofs);
 ;	uint16_t 		 postoffset = postoffsets[texturecolumn-maskedcachedbasecol];
@@ -2579,14 +2702,13 @@ mov   bx, word ptr es:[bx+08000h]
 mov   cx, MASKEDPOSTDATA_SEGMENT
 call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
 
-jmp   increment_inner_loop
+jmp   update_maskedtexturecol_finish_loop_iter
 
 calculate_maskedheader_pixel_ofs:
 mov   bx, si
-mov   ax, word ptr ds:[_maskedheaderpixeolfs]
 sub   bx, di
 add   bx, bx
-add   bx, ax
+add   bx, word ptr ds:[_maskedheaderpixeolfs]
 mov   ax, word ptr es:[bx]
 jmp   go_draw_masked_column
 
@@ -2598,7 +2720,6 @@ call  R_GetMaskedColumnSegment_
 mov   di, word ptr ds:[_maskedcachedbasecol]
 mov   dx, word ptr [_maskedcachedsegment]   ; to offset for above
 sub   ax, dx
-mov   word ptr cs:[SELFMODIFY_add_maskedcachedsegment+1], dx
 ; todo put some cached values here in di, dh, dl, etc
 ; _maskedheaderpixeolfs is strong selfmodify candidate.
 jmp   go_draw_masked_column
@@ -2840,7 +2961,7 @@ do_render_masked_segrange:
 mov   dx, es
 mov   bx, ax   ; todo figure out a way to keep bx 
 mov   ax, di
-call  R_RenderMaskedSegRange2_
+call  R_RenderMaskedSegRange_
 jmp   iterate_next_drawseg_loop
 get_lowscalepass_1:
 
