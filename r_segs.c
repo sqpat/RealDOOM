@@ -348,6 +348,7 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 	
 	maskednextlookup = NULL_TEX_COL;
 	maskedtexrepeat = 0;
+	// idea: store a "last used tex". reuse maskedtexrepeat?
 
 }
 */

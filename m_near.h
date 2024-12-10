@@ -237,7 +237,7 @@
 // uses high byte for quick 0
 #define detailshift2minus               (*((uint8_t __near*)             (_NULL_OFFSET + 0x0216)))
 // uses high word for quick segment read
-#define maskedheaderpixeolfs            (*((uint16_t  __near*)           (_NULL_OFFSET + 0x0218)))
+#define maskedheaderpixeolfs            (*((int16_t  __near*)            (_NULL_OFFSET + 0x0218)))
 
 
 // 220

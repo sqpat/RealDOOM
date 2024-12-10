@@ -2172,9 +2172,10 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		
 		segloopnextlookup[0] = -1;
 		segloopnextlookup[1] = -1;
-		maskednextlookup = NULL_TEX_COL;
 		seglooptexrepeat[0] = 0;
 		seglooptexrepeat[1] = 0;
+		
+		maskednextlookup = NULL_TEX_COL;
 		maskedtexrepeat = 0;
 
 
@@ -2794,21 +2795,9 @@ segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		}
 
 
-/*
-		if (setval && tex == 11){
-			FILE* fp = fopen("tex3.txt", "ab");
-			fprintf(fp, "\n INNER A  %i %i %i %i %i %i %i", 
-				basecol,
-				startpixel,
-				textotal,
-				lump,
-				maskedcachedbasecol,
-				runningbasetotal,
-				subtractor
-			);
-			fclose(fp);
-		}
-*/
+
+
+
 
 		// prev RLE boundary. Hit this function again to load next texture if we hit this.
 		maskedprevlookup     = runningbasetotal - subtractor;

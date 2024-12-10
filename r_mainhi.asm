@@ -30,6 +30,7 @@ EXTRN FixedMul1632_:PROC
 
 EXTRN FastDiv3232_:PROC
 EXTRN R_GetMaskedColumnSegment_:NEAR
+EXTRN R_RenderMaskedSegRange2_:NEAR
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
@@ -1924,35 +1925,25 @@ PUBLIC R_RenderMaskedSegRange_
 ; bp - 8        rw_scalestep_shift hi word
 ; bp - 0Ah      rw_scalestep_shift lo word
 ; bp - 0Ch      cached xoffset/di
-; bp - 0Eh      UNUSED
+; bp - 0Eh      dc_x_base4
 ; bp - 010h     sprtopscreen_step hi word
 ; bp - 012h     sprtopscreen_step lo word
 ; bp - 014h     basespryscale hi word
 ; bp - 016h     basespryscale lo word
-; bp - 018h     UNUSED moved to cx xoffset (iterator) todo replace with selfmodify
-; bp - 01Ah     UNUSED
+; bp - 018h     drawseg far segment (this is a constant)
+; bp - 01Ah     ds (drawseg, not data segment)
 ; bp - 01Ch     rw_scalestep hi word
 ; bp - 01Eh     rw_scalestep lo word
-; bp - 020h     UNUSED
-; bp - 022h     UNUSED
-; bp - 024h     UNUSED
-; bp - 026h     UNUSED curseg pointer. pointless since its a var?
-; bp - 028h     UNUSED v2.x
-; bp - 02Ah     UNUSED v1.y
-; bp - 02Ch     UNUSED side_render secnum todo selfmodify easy
-; bp - 02Eh     UNUSED v1
-; bp - 030h     UNUSED
-; bp - 032h     dc_x_base4
-; bp - 034h     drawseg far segment (this is a constant)
-; bp - 036h     ds
+
+  
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 036h
+sub   sp, 01Eh
 mov   di, ax
-mov   word ptr [bp - 036h], ax
-mov   word ptr [bp - 034h], dx
+mov   word ptr [bp - 01Ah], ax
+mov   word ptr [bp - 018h], dx
 
 mov   ax, bx
 mov   word ptr cs:[SELFMODIFY_x1_field_1+1], ax
@@ -2124,7 +2115,7 @@ mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult
 
 lights_set:
 mov   word ptr ds:[_walllights], ax      ; store lights
-les   di, dword ptr [bp - 036h]          ; get drawseg far ptr
+les   di, dword ptr [bp - 01Ah]          ; get drawseg far ptr
 
 ; es:di is input drawseg
 
@@ -2274,7 +2265,7 @@ SELFMODIFY_x1_field_2:
 mov   ax, 08000h
 mov   di, ax						; di = x1
 and   ax, word ptr ds:[_detailshiftandval]
-mov   word ptr [bp - 032h], ax
+mov   word ptr [bp - 0Eh], ax
 
 ;		int16_t base4diff = x1 - dc_x_base4;
 
@@ -2369,7 +2360,7 @@ mov   bx, word ptr [bp - 014h]	; basespryscale
 ; bx:dx temporarily holds _spryscale
 ; ax will temporarily store dc_x
 ;			dc_x        = dc_x_base4 + xoffset;
-mov   ax, word ptr [bp - 032h]		; dc_x_base4
+mov   ax, word ptr [bp - 0Eh]		; dc_x_base4
 add   ax, di		; add xoffset to dc_x
 
 
@@ -2453,6 +2444,8 @@ exit_render_masked_segrange:
 mov   ax, NULL_TEX_COL
 mov   word ptr ds:[_maskednextlookup], ax
 mov   word ptr ds:[_maskedcachedbasecol], ax
+mov   word ptr ds:[_maskedtexrepeat], 0
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -2540,7 +2533,6 @@ mov   bx, si  ; bx gets a copy of texture column?
 mov   ax, word ptr ds:[_maskedtexrepeat] 
 test  ax, ax
 jz   do_non_repeat
-
 mov   cl, byte ptr ds:[_maskedtexmodulo] 
 test  cl, cl
 jz    do_looped_column_calc
