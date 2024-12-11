@@ -180,7 +180,7 @@ _M_Drawer_addr =                     _NULL_OFFSET + 00210h
 _wipeduration =                      _NULL_OFFSET + 00214h
 _detailshift2minus =  		 		 _NULL_OFFSET + 00216h
 _maskedheaderpixeolfs =				 _NULL_OFFSET + 00218h
-
+_maskedtexturecol =					 _NULL_OFFSET + 0021Ch
 ; 0220h
 
 

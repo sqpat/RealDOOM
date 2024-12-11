@@ -566,7 +566,7 @@ FREEBYTES           7EE0:0000
 #define colfunc_jump_lookup_maskedmapping ((uint16_t __far*)  (((int32_t)colfuncjump_lookup) - (int32_t)colormaps + (int32_t)colormaps_maskedmapping))
 #define dc_yl_lookup_maskedmapping        ((uint16_t  __far*) (((int32_t)dc_yl_lookup)       - (int32_t)colormaps + (int32_t)colormaps_maskedmapping))
 
-
+#define dc_yl_lookup_maskedmapping_segment ((segment_t) ((int32_t)dc_yl_lookup_maskedmapping >> 16))
 
 
 #define colormaps_colfunc_seg_difference (colfunc_segment - colormaps_segment)
@@ -1011,8 +1011,11 @@ screenheightarray_offset 7800:A500  or 8000:2500
 // LEAVE ALL THESE in 0x7800 SEGMENT 
 
 #define size_openings      sizeof(int16_t) * MAXOPENINGS
+//8200
 #define size_negonearray          size_openings             + sizeof(int16_t) * (SCREENWIDTH)
+//8228
 #define size_screenheightarray    size_negonearray          + sizeof(int16_t) * (SCREENWIDTH)
+//8250
 #define size_floorclip            size_screenheightarray    + (sizeof(int16_t) * SCREENWIDTH)
 #define size_ceilingclip          size_floorclip            + (sizeof(int16_t) * SCREENWIDTH)
 
@@ -1022,12 +1025,16 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define floorclip            ((int16_t __far*)          (0x78000000 + size_screenheightarray))
 #define ceilingclip          ((int16_t __far*)          (0x78000000 + size_floorclip))
 
+#define floorclip_paragraph_aligned       ((int16_t __far*)          MAKE_FULL_SEGMENT(openings, size_screenheightarray))
+
 // todo these are wrong i guess.
 #define openings_segment             ((segment_t) ((int32_t)openings >> 16))
 #define negonearray_segment          ((segment_t) ((int32_t)negonearray >> 16))
 #define screenheightarray_segment    ((segment_t) ((int32_t)screenheightarray >> 16))
 #define floorclip_segment            ((segment_t) ((int32_t)floorclip >> 16))
 #define ceilingclip_segment          ((segment_t) ((int32_t)ceilingclip >> 16))
+#define floorclip_paragraph_aligned_segment       ((segment_t) ((int32_t)floorclip_paragraph_aligned >> 16))
+
 
 //negonearray       = 7800:A000 or 8202
 //screenheightarray = 7800:A280 or 822A

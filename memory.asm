@@ -110,8 +110,10 @@ dw  00, 00, 00, 00
 ; 
 dw 0FFFFh, MASKEDPIXELDATAOFS_SEGMENT
 
-
-
+; 21C
+; _maskedtexturecol and its segment
+dw 00, OPENINGS_SEGMENT
+; 220
     
 
 ENDS _FIXEDDATA

@@ -210,7 +210,8 @@ uint16_t		midtexture;
 // regular wall
 //
 
-
+//todo these are only used int he context of one function and the stuff it calls, can probably
+// share space with other items if need me (especially once its in memory.h)
 fixed_t		pixhigh;
 fixed_t		pixlow;
 fixed_t		pixhighstep;
@@ -223,7 +224,6 @@ fixed_t		bottomfrac;
 fixed_t		bottomstep;
 int16_t     walllights;
 
-uint16_t __far*		maskedtexturecol;
 
 
 

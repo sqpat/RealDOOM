@@ -49,7 +49,6 @@ EXTRN _ds_p:DWORD
 EXTRN _vissprite_p:DWORD
 EXTRN _vsprsortedheadfirst:DWORD
 
-EXTRN _maskedtexturecol:BYTE
 EXTRN _maskedcachedbasecol:WORD
 
 EXTRN _maskedcachedsegment:WORD
@@ -156,8 +155,7 @@ xor   ch, ch
 jcxz  shift_done
 shl   ax, 1
 rcl   dx, 1
-dec   cl
-jcxz  shift_done
+loop  shift_done
 shl   ax, 1
 rcl   dx, 1
 
@@ -502,7 +500,7 @@ ret_ldx_greater_than_lx:
 ;            return ldx > lx;
 
 cmp   si, bx
-; todo double check jge vs jg
+
 jg    return_true
 
 ; return false
@@ -516,7 +514,7 @@ ret_ldx_less_than_lx:
 ;            return ldx < lx;
 
 cmp    si, bx
-; todo double check jle vs jl
+
 jle    return_true
 
 ; return false
@@ -626,7 +624,7 @@ mov   dx, cx
 
 xor   di, di
 mov   ax, word ptr ds:[_viewheight]
-mov bx, 08250h;  todo can this be better... 
+mov bx, FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT;  todo can this be better... 
 mov es, bx
 
 rep stosw  ; write vieweight to es:di
@@ -1461,7 +1459,7 @@ mov   dx, ax
 and   al, 3
 add   al, byte ptr ds:[_detailshift + 1]
 mov   byte ptr cs:[SELFMODIFY_set_bx_to_lookup+1], al
-mov   cx, 08E29h   ;  todo make dc_yl_lookup_maskedmapping a constant
+mov   cx, DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT
 
 add   bx, bx
 mov   ax, es
@@ -1920,10 +1918,7 @@ ret
 
 ENDP
 
-;todo move these to codegen
 
-ML_TWOSIDED  = 4h
-ML_DONTPEGBOTTOM  = 010h
 
 PROC R_RenderMaskedSegRange_ NEAR
 PUBLIC R_RenderMaskedSegRange_
@@ -1972,7 +1967,7 @@ mov   word ptr ds:[_curseg], ax
 shl   ax, 1
 shl   ax, 1
 shl   ax, 1
-add   ah, 040h					; segs_render is ds:[0x4000] todo constant
+add   ah, (_segs_render SHR 8 ) 		; segs_render is ds:[0x4000] 
 mov   word ptr ds:[_curseg_render], ax
 mov   bx, ax
 mov   ax, SIDES_SEGMENT
@@ -1982,7 +1977,7 @@ shl   si, 1
 shl   si, 1
 mov   ax, si						; side_render_t is 4 bytes each
 shl   si, 1							; side_t is 8 bytes each
-add   ah, 0AEh						; sides render is ds:[0xAE00] todo constant
+add   ah, (_sides_render SHR 8 )		; sides render near addr is ds:[0xAE00]
 mov   si, word ptr es:[si + 4]		; lookup side->midtexture
 mov   word ptr [bp - 2], ax			; store side_render_t offset for curseg_render
 mov   ax, TEXTURETRANSLATION_SEGMENT
@@ -2019,7 +2014,7 @@ mov   ax, SEG_LINEDEFS_SEGMENT
 mov   es, ax
 mov   ax, word ptr ds:[_curseg]
 mov   bx, ax
-add   bh, 016h					; todo.... seg_sides_offset_in_seglines high word
+add   bh, (seg_sides_offset_in_seglines SHR 8)		; seg_sides_offset_in_seglines high word
 mov   dl, byte ptr es:[bx]		; todo... this can be passed forward via self modifying code and no register wasted?
 add   ax, ax
 mov   bx, ax
@@ -2102,7 +2097,7 @@ SELFMODIFY_add_vertex_field:
 nop				; becomes inc ax, dec ax, or nop
 
 ;	if (lightnum < 0){
-test  ax, ax			; todo get for free?
+;test  ax, ax			; we get this for free via the above instructions
 jl   set_walllights_zero
 cmp   ax, LIGHTLEVELS
 jge   clip_lights_to_max
@@ -2134,12 +2129,12 @@ les   di, dword ptr [bp - 01Ah]          ; get drawseg far ptr
 
 ; es:di is input drawseg
 
-;    maskedtexturecol = &openings[ds->maskedtexturecol];
+;    maskedtexturecol = &openings[ds->maskedtexturecol_val];
 
-mov   ax, word ptr es:[di + 01Ah]		; ds->maskedtexturecol
+mov   ax, word ptr es:[di + 01Ah]		; ds->maskedtexturecol_val
 add   ax, ax
 mov   word ptr ds:[_maskedtexturecol], ax
-mov   word ptr ds:[_maskedtexturecol+2], OPENINGS_SEGMENT	; todo hardcode this in data
+;mov   word ptr ds:[_maskedtexturecol+2], OPENINGS_SEGMENT	; this is now hardcoded in data
 
 ;    rw_scalestep.w = ds->scalestep;
 
@@ -2545,11 +2540,11 @@ sbb   word ptr ds:[_sprtopscreen + 2], ax
 jmp   inner_loop_draw_columns
 
 use_maxlight:
-mov   al, 02Fh			; todo MAXLIGHTSCALE - 1;
+mov   al, MAXLIGHTSCALE - 1
 get_colormap:
 xor   ah, ah
 mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT_MASKEDMAPPING
-mov   bx, word ptr ds:[_walllights]			; todo set this constant outside the loop?
+mov   bx, word ptr ds:[_walllights]
 add   bx, ax
 mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
@@ -2928,7 +2923,7 @@ continue_checking_if_drawseg_obscures_sprite:
 mov   ax, word ptr es:[di + 4]
 cmp   ax, word ptr [bx + 2]
 jl    iterate_next_drawseg_loop
-;  (!ds->silhouette     && ds->maskedtexturecol == NULL_TEX_COL) ) {
+;  (!ds->silhouette     && ds->maskedtexturecol_val == NULL_TEX_COL) ) {
 cmp   byte ptr es:[di + 01Ch], 0
 jne   check_drawseg_scales
 cmp   word ptr es:[di + 01Ah], NULL_TEX_COL
@@ -2984,7 +2979,7 @@ jae   get_lowscalepass_1
 ;     scalecheckpass 1, fail early
 
 set_r1_r2_and_render_masked_set_range:
-;	if (ds->maskedtexturecol != NULL_TEX_COL) {
+;	if (ds->maskedtexturecol_val != NULL_TEX_COL) {
  
 cmp   word ptr es:[di + 01Ah], NULL_TEX_COL
 ; continue
@@ -3304,13 +3299,13 @@ loop_set_vissprite_next:
 
 inc       al
 mov       byte ptr ds:[bx], al
-add       bx, 028h  ; size visprites todo
+add       bx, SIZEOF_VISSPRITE_T  
 cmp       ax, dx
 jl        loop_set_vissprite_next
 
 done_setting_vissprite_next:
 
-sub        bx, 028h
+sub        bx, SIZEOF_VISSPRITE_T
 mov       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1], 0  ; zero loop counter
 
 mov       al, VISSPRITE_SORTED_HEAD_INDEX

@@ -239,7 +239,8 @@
 // uses high word for quick segment read
 #define maskedheaderpixeolfs            (*((int16_t  __near*)            (_NULL_OFFSET + 0x0218)))
 
-
+#define maskedtexturecol                (*((uint16_t  __far* __near*)    (_NULL_OFFSET + 0x021C)))
+#define maskedtexturecol_offset         (*((int16_t  __near*)            (_NULL_OFFSET + 0x021C)))
 // 220
 
 
@@ -376,7 +377,6 @@ extern fixed_t		        topstep;
 extern fixed_t		        bottomfrac;
 extern fixed_t		        bottomstep;
 extern int16_t      	    walllights;
-extern uint16_t __far*		maskedtexturecol;
 extern uint16_t             pspritescale;
 extern int16_t              spritelights;
 extern int16_t              vissprite_p;

@@ -529,7 +529,7 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
 		if ((ds->x1 > spr->x2)
             || (ds->x2 < spr->x1)
             || (!ds->silhouette
-                && ds->maskedtexturecol == NULL_TEX_COL) ) {
+                && ds->maskedtexturecol_val == NULL_TEX_COL) ) {
 			// this drawseg's x vals (cols) dont overlap the sprite at all can't cover
 			continue;
         }
@@ -554,7 +554,7 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
             
 			// if drawseg is that of a masked texture then... 
 
-			if (ds->maskedtexturecol != NULL_TEX_COL) {
+			if (ds->maskedtexturecol_val != NULL_TEX_COL) {
 				r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
 				r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 				R_RenderMaskedSegRange(ds, r1, r2); // draws what is in front of the sprite (??)
@@ -656,7 +656,7 @@ void __near R_DrawMasked (void) {
     // render any remaining masked mid textures
 
 	for (ds = ds_p - 1; ds > drawsegs_BASE_7000; ds--) {
-		if (ds->maskedtexturecol != NULL_TEX_COL) {
+		if (ds->maskedtexturecol_val != NULL_TEX_COL) {
 			R_RenderMaskedSegRange(ds, ds->x1, ds->x2);  // draws what is behind the sprites
 		}
 	}

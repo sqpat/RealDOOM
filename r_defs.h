@@ -403,7 +403,7 @@ typedef struct drawseg_s {
     uint16_t		sprbottomclip_offset;
     
     // offset within openings
-    uint16_t		maskedtexturecol;
+    uint16_t		maskedtexturecol_val;
 
     // 0=none, 1=bottom, 2=top, 3=both
     int8_t			silhouette;

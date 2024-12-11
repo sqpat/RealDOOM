@@ -113,7 +113,7 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 	}
 	walllights+=scalelight_offset_in_fixed_scalelight;
 
-    maskedtexturecol = &openings[ds->maskedtexturecol];
+    maskedtexturecol = &openings[ds->maskedtexturecol_val];
 
     rw_scalestep.w = ds->scalestep;
 
@@ -1028,7 +1028,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	worldbottom.w -= viewz.w;
 #endif
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
-    ds_p->maskedtexturecol = NULL_TEX_COL;
+    ds_p->maskedtexturecol_val = NULL_TEX_COL;
 	
 
 	sidetextureoffset = side->textureoffset;
@@ -1173,8 +1173,8 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		if (side->midtexture) {
 			// masked midtexture
 			maskedtexture = true;
-			ds_p->maskedtexturecol = lastopening - rw_x;
-    		maskedtexturecol = &openings[ds_p->maskedtexturecol];
+			ds_p->maskedtexturecol_val = lastopening - rw_x;
+    		maskedtexturecol_offset = (ds_p->maskedtexturecol_val) << 1;
 			lastopening += rw_stopx - rw_x;
 		}
     }
