@@ -56,6 +56,7 @@ typedef enum {
 
 } psprnum_t;
 
+// 12 bytes each
 typedef struct {
 	statenum_t 	statenum;	// a NULL state means not active
 	int16_t		tics;

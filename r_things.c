@@ -550,7 +550,7 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
 		if (scalecheckpass
             || ( lowscalecheckpass
 		    // worst case scenario one side of wall is closer, have to manually check if sprite on the closer side of wall
-            && !R_PointOnSegSide (spr->gx, spr->gy, ds->curseg) ) ) {
+            && !R_PointOnSegSide (spr->gx, spr->gy, ds->cursegvalue) ) ) {
             
 			// if drawseg is that of a masked texture then... 
 

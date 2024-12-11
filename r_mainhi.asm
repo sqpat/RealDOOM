@@ -21,7 +21,6 @@ INSTRUCTION_SET_MACRO
 ; todo move these all out
 
 
-;EXTRN R_RenderMaskedSegRange2_:NEAR
 
 EXTRN FixedMul_:PROC
 EXTRN FixedMulTrig_:PROC
@@ -29,43 +28,48 @@ EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
 EXTRN FastDiv3232_:PROC
-EXTRN R_GetMaskedColumnSegment_:NEAR
-EXTRN getspritetexture_:NEAR
 
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
+EXTRN R_GetMaskedColumnSegment_:NEAR
+EXTRN getspritetexture_:NEAR
 
-EXTRN _R_DrawFuzzColumnCallHigh:DWORD
-EXTRN _R_DrawMaskedColumnCallSpriteHigh:DWORD
-EXTRN _lastvisspritepatch:WORD
-EXTRN _lastvisspritepatch2:WORD
-EXTRN _lastvisspritesegment:WORD
-EXTRN _lastvisspritesegment2:WORD
-EXTRN _vga_read_port_lookup:BYTE
-EXTRN _psprites:BYTE
-EXTRN _ds_p:DWORD
-EXTRN _vissprite_p:DWORD
-EXTRN _vsprsortedheadfirst:DWORD
 
-EXTRN _maskedcachedbasecol:WORD
+;EXTRN _R_DrawFuzzColumnCallHigh:DWORD
+;EXTRN _R_DrawMaskedColumnCallSpriteHigh:DWORD
+;EXTRN _R_DrawSingleMaskedColumnCallHigh:DWORD
 
-EXTRN _maskedcachedsegment:WORD
-EXTRN _maskedheightvalcache:BYTE
-EXTRN _maskedtexrepeat:WORD
-EXTRN _maskedtexmodulo:BYTE
-EXTRN _cachedbyteheight:BYTE
-EXTRN _maskedprevlookup:WORD
-EXTRN _maskednextlookup:WORD
-EXTRN _lightmult48lookup:BYTE
-EXTRN _walllights:BYTE
-EXTRN _R_DrawSingleMaskedColumnCallHigh:DWORD
-EXTRN _R_DrawMaskedColumnCallHigh:DWORD
-EXTRN _curseg:WORD
-EXTRN _curseg_render:WORD
-EXTRN _masked_headers:WORD
+;EXTRN _R_DrawMaskedColumnCallHigh:DWORD
+;EXTRN _vissprite_p:DWORD
+;EXTRN _vsprsortedheadfirst:DWORD
 
+;EXTRN _psprites:BYTE
+;EXTRN _vga_read_port_lookup:BYTE
+;EXTRN _lightmult48lookup:BYTE
+;EXTRN _ds_p:DWORD
+
+;EXTRN _maskedcachedsegment:WORD
+;EXTRN _maskedheightvalcache:BYTE
+;EXTRN _cachedbyteheight:BYTE
+
+;EXTRN _walllights:BYTE
+;EXTRN _curseg:WORD
+;EXTRN _curseg_render:WORD
+;EXTRN _masked_headers:WORD
+
+;EXTRN _maskedtexmodulo:WORD
+;EXTRN _maskedcachedbasecol:WORD
+;EXTRN _maskedtexrepeat:WORD
+;EXTRN _maskedprevlookup:WORD
+;EXTRN _maskednextlookup:WORD
+
+;EXTRN _lastvisspritepatch:WORD
+;EXTRN _lastvisspritepatch2:WORD
+;EXTRN _lastvisspritesegment:WORD
+;EXTRN _lastvisspritesegment2:WORD
+;EXTRN R_RenderMaskedSegRange2_:NEAR
 
 
 UNCLIPPED_COLUMN  = 0FFFEh
@@ -1490,9 +1494,12 @@ mov   bx, 0
 ; pass in destview via bx
 ; pass in offset via cx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_DrawFuzzColumnCallHigh
+;call _R_DrawFuzzColumnCallHigh
+
+db 09Ah
+dw R_DRAWFUZZCOLUMNOFFSET
+dw DRAWFUZZCOL_AREA_SEGMENT
+
 
 do_next_shadow_sprite_iteration:
 add   si, 2
@@ -1708,7 +1715,7 @@ jmp done_with_mul_vissprite
 
   
 sprite_not_first_cachedsegment:
-cmp   ax, word ptr _lastvisspritepatch2
+cmp   ax, word ptr ds:[_lastvisspritepatch2]
 jne   sprite_not_in_cached_segments
 mov   dx, word ptr ds:[_lastvisspritesegment2]
 mov   es, dx
@@ -1722,7 +1729,7 @@ mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready
 sprite_not_in_cached_segments:
 mov   dx, word ptr ds:[_lastvisspritepatch]
-mov   word ptr _lastvisspritepatch2, dx
+mov   word ptr ds:[_lastvisspritepatch2], dx
 mov   dx, word ptr ds:[_lastvisspritesegment]
 mov   word ptr ds:[_lastvisspritesegment2], dx
 call  getspritetexture_
@@ -1779,9 +1786,10 @@ add   ax, cx
 ; cx is preserved by this call here
 ; so is ES
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_DrawMaskedColumnCallSpriteHigh
+; call R_DrawMaskedColumnCallHigh
+db 09Ah
+dw R_DRAWMASKEDCOLUMNSPRITEOFFSET
+dw DRAWMASKEDFUNCAREA_SPRITE_SEGMENT
 
 SELFMODIFY_detailshiftitercount2:
 add   word ptr ds:[_dc_x], 0
@@ -1957,7 +1965,7 @@ mov   word ptr cs:[SELFMODIFY_x1_field_3+1], ax
 
 mov   word ptr cs:[SELFMODIFY_cmp_to_x2+1], cx
 mov   es, dx
-mov   ax, word ptr es:[di]       ; get ds->curseg
+mov   ax, word ptr es:[di]       ; get ds->cursegvalue
 mov   word ptr ds:[_curseg], ax  
 shl   ax, 1
 shl   ax, 1
@@ -2000,7 +2008,7 @@ je    lookup_not_ff
 cbw
 shl   ax, 3
 mov   bx, ax
-mov   ax, word ptr [bx + _masked_headers + 2]
+mov   ax, word ptr ds:[bx + _masked_headers + 2]
 mov   word ptr cs:[SELFMODIFY_maskedpostofs  +3], ax
 mov   word ptr cs:[SELFMODIFY_maskedpostofs_2+3], ax
 lookup_not_ff:
@@ -2098,7 +2106,7 @@ cmp   ax, LIGHTLEVELS
 jge   clip_lights_to_max
 mov   bx, ax
 add   bx, ax
-mov   ax, word ptr [bx + _lightmult48lookup]
+mov   ax, word ptr ds:[bx + _lightmult48lookup]
 jmp   lights_set
 
 ys_equal:
@@ -2558,19 +2566,18 @@ mov   bx, si  ; bx gets a copy of texture column?
 mov   ax, word ptr ds:[_maskedtexrepeat] 
 test  ax, ax
 jz   do_non_repeat
-mov   cl, byte ptr ds:[_maskedtexmodulo] 
-test  cl, cl
-jz    do_looped_column_calc
+mov   cx, word ptr ds:[_maskedtexmodulo] 
+jcxz  do_looped_column_calc
 
 ; width is power of 2, just AND
 ;	usetexturecolumn =  &= maskedtexmodulo;
 
-and   bl, cl
+and   bx, cx
 
 repeat_column_calculated:
 
 ; bx is usetexturecolumn
-xor   bh, bh   ;todo necessary?
+;xor   bh, bh   ;todo necessary?
 mov   ax, bx
 ; now al is usetexturecolumn
 
@@ -2620,7 +2627,11 @@ add   bx, bx
 SELFMODIFY_maskedpostofs_2:     ; todo this
 mov   bx, word ptr es:[bx+08000h]
 mov   cx, MASKEDPOSTDATA_SEGMENT
-call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
+;call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
+
+db 09Ah
+dw R_DRAWMASKEDCOLUMNOFFSET
+dw DRAWFUZZCOL_AREA_SEGMENT
 
 jmp   update_maskedtexturecol_finish_loop_iter
 
@@ -2683,7 +2694,11 @@ add   ax, word ptr ds:[_maskedcachedsegment]
 
 mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 xor   dh, dh
-call  dword ptr [_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+;call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+db 09Ah
+dw R_DRAWSINGLEMASKEDCOLUMNOFFSET
+dw DRAWFUZZCOL_AREA_SEGMENT
+
 jmp   update_maskedtexturecol_finish_loop_iter
 
 ; pixelsegment = FastMul8u8u((uint8_t) usetexturecolumn, maskedheightvalcache);
@@ -2740,7 +2755,11 @@ add   bx, bx
 SELFMODIFY_maskedpostofs:
 mov   bx, word ptr es:[bx+08000h]
 mov   cx, MASKEDPOSTDATA_SEGMENT
-call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
+;call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
+db 09Ah
+dw R_DRAWMASKEDCOLUMNOFFSET
+dw DRAWFUZZCOL_AREA_SEGMENT
+
 
 jmp   update_maskedtexturecol_finish_loop_iter
 
@@ -2759,7 +2778,7 @@ SELFMODIFY_texnum_1:
 mov   ax, 08000h
 call  R_GetMaskedColumnSegment_  
 mov   di, word ptr ds:[_maskedcachedbasecol]
-mov   dx, word ptr [_maskedcachedsegment]   ; to offset for above
+mov   dx, word ptr ds:[_maskedcachedsegment]   ; to offset for above
 sub   ax, dx
 
 jmp   go_draw_masked_column
@@ -2779,7 +2798,10 @@ add   ax, word ptr ds:[_maskedcachedsegment]
 
 mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 xor   dh, dh
-call  dword ptr [_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+;call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+db 09Ah
+dw R_DRAWSINGLEMASKEDCOLUMNOFFSET
+dw DRAWFUZZCOL_AREA_SEGMENT
 jmp   update_maskedtexturecol_finish_loop_iter
 
 load_masked_column_segment:
@@ -2790,7 +2812,13 @@ call  R_GetMaskedColumnSegment_
 mov   di, word ptr ds:[_maskedcachedbasecol]
 mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 xor   dh, dh
-call  dword ptr [_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+
+; call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+db 09Ah
+dw R_DRAWSINGLEMASKEDCOLUMNOFFSET
+dw DRAWFUZZCOL_AREA_SEGMENT
+
+
 jmp   update_maskedtexturecol_finish_loop_iter
 
 endp
@@ -3260,7 +3288,7 @@ PUBLIC R_SortVisSprites_
 ; bp -034h   unsorted?
 
 
-mov       ax, word ptr [_vissprite_p]
+mov       ax, word ptr ds:[_vissprite_p]
 test      ax, ax
 jne       count_not_zero
 ret
@@ -3397,10 +3425,10 @@ mov       al, byte ptr [di]
 mov       byte ptr [bp - 034h], al
 found_best_index:
 ;        if (vsprsortedheadfirst == VISSPRITE_SORTED_HEAD_INDEX){
-cmp       byte ptr [_vsprsortedheadfirst], VISSPRITE_SORTED_HEAD_INDEX
+cmp       byte ptr ds:[_vsprsortedheadfirst], VISSPRITE_SORTED_HEAD_INDEX
 jne       set_next_to_best_index
 
-mov       byte ptr [_vsprsortedheadfirst], dh
+mov       byte ptr ds:[_vsprsortedheadfirst], dh
 increment_visplane_sort_loop_variables:
 
 mov       byte ptr [bp - 2], dh

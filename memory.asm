@@ -113,8 +113,27 @@ dw 0FFFFh, MASKEDPIXELDATAOFS_SEGMENT
 ; 21C
 ; _maskedtexturecol and its segment
 dw 00, OPENINGS_SEGMENT
-; 220
-    
+; 220 masked_headers 12 * 8 bytes
+dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 280
+dw  00, 00, 00, 00, 00, NULL_TEX_COL, 00, NULL_TEX_COL
+dw  00, 00, 0FFFFh, 0FFFFh, 0FFFFh, 0FFFFh, 00, 00
+; 2A0
+dw    0,  48,  96, 144, 192, 240, 288, 336
+dw  384, 432, 480, 528, 576, 624, 672, 720
+; 2C0 _vga_read_port_lookup
+dw   4, 260, 516, 772,   4, 516, 4, 516,
+dw 	 4, 4, 4, 4, 0, 0, 0, 0
+dw  00, 00, 00, 00, 00, 00, 00, 00
+
+;2f0
+dw  00, 00
+
 
 ENDS _FIXEDDATA
 

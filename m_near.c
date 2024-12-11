@@ -222,7 +222,6 @@ fixed_t		topstep;
 
 fixed_t		bottomfrac;
 fixed_t		bottomstep;
-int16_t     walllights;
 
 
 
@@ -251,13 +250,6 @@ int16_t   spritelights;
 // variables used to look up
 //  and range check thing_t sprites patches
 
-int16_t    vissprite_p;
-
-uint8_t   vsprsortedheadfirst;
-segment_t lastvisspritesegment = 0xFFFF;
-int16_t   lastvisspritepatch = -1;
-segment_t lastvisspritesegment2 = 0xFFFF;
-int16_t   lastvisspritepatch2 = -1;
 
 
 
@@ -308,7 +300,6 @@ int16_t   cachedtex2 = -1;
 uint8_t   cachedcollength = 0;
 uint8_t   cachedcollength2 = 0;
 
-byte cachedbyteheight;
 
 
 int8_t 	am_cheating = 0;
@@ -435,10 +426,6 @@ mline_t thintriangle_guy[] = {
 #undef R
 
 
-int16_t lightmult48lookup[16] = { 0,  48,  96, 144,
-								192, 240, 288, 336,
-								384, 432, 480, 528,
-								576, 624, 672, 720 };
 
 
 segment_t pagesegments[NUM_TEXTURE_L1_CACHE_PAGES] = { 0x0000u, 0x0400u, 0x0800u, 0x0c00u
@@ -467,34 +454,22 @@ uint8_t quality_port_lookup[12] = {
 
 
 
-uint16_t vga_read_port_lookup[12] = {
-
-// lookup for what to write to the vga port for read  for fuzzcolumn
-         4, 260, 516, 772,
-
-	// bit 34  01 = low
-	     4, 516, 4, 516,
-
-	    
-	// bit 34  10  = potato
-		4, 4, 4, 4
 
 
-};
 
-
-void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  				      	  ((void    (__far *)(uint16_t))						(MK_FP(colfunc_segment_maskedmapping, R_DrawColumnPrepOffset)));
 void (__far* R_DrawColumnPrepCall)(uint16_t)  =   				      	      ((void    (__far *)(uint16_t))  						(MK_FP(colfunc_segment, 				R_DrawColumnPrepOffset)));
 
 void (__far* R_DrawPlanesCall)()  =   				      	                  ((void    (__far *)())  								(MK_FP(spanfunc_function_area_segment, R_DrawPlanesOffset)));
-void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  		      ((void    (__far *)(uint16_t, byte __far *))  		(MK_FP(drawfuzzcol_area_segment, R_DrawFuzzColumnOffset)));
-void (__far* R_DrawMaskedColumnCallHigh)(segment_t, column_t __far *) =       ((void    (__far *)(segment_t, column_t __far *))     (MK_FP(drawfuzzcol_area_segment, R_DrawMaskedColumnOffset)));
-void (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t, byte)  =  	      ((void    (__far *)(segment_t, byte))  				(MK_FP(drawfuzzcol_area_segment, R_DrawSingleMaskedColumnOffset)));
 
-void (__far* R_DrawMaskedColumnCallSpriteHigh)(segment_t, column_t __far *) = ((void    (__far *)(segment_t, column_t __far *))     (MK_FP(drawmaskedfuncarea_sprite_segment, R_DrawMaskedColumnSpriteOffset)));
+//void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  				      	  ((void    (__far *)(uint16_t))						(MK_FP(colfunc_segment_maskedmapping, R_DrawColumnPrepOffset)));
+//void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  		      ((void    (__far *)(uint16_t, byte __far *))  		(MK_FP(drawfuzzcol_area_segment, R_DrawFuzzColumnOffset)));
+//void (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t, byte)  =  	      ((void    (__far *)(segment_t, byte))  				(MK_FP(drawfuzzcol_area_segment, R_DrawSingleMaskedColumnOffset)));
+//void (__far* R_DrawMaskedColumnCallSpriteHigh)(segment_t, column_t __far *) = ((void    (__far *)(segment_t, column_t __far *))     (MK_FP(drawmaskedfuncarea_sprite_segment, R_DrawMaskedColumnSpriteOffset)));
 
 void (__far* wipe_StartScreenCall)() = 										  ((void    (__far *)())     							(MK_FP(fwipe_code_area_segment, wipe_StartScreenOffset)));
 void (__far* wipe_WipeLoopCall)() = 										  ((void    (__far *)())     							(MK_FP(fwipe_code_area_segment, wipe_WipeLoopOffset)));
+
+//void (__far* R_DrawMaskedColumnCallHigh)(segment_t, column_t __far *) =       ((void    (__far *)(segment_t, column_t __far *))     (MK_FP(drawfuzzcol_area_segment, R_DrawMaskedColumnOffset)));
 
 
 
@@ -569,7 +544,6 @@ ticcount_t             starttime;              // for comparative timing purpose
 boolean         viewactive; 
  
 player_t        player;
-pspdef_t		psprites[NUMPSPRITES];
 
 THINKERREF      playerMobjRef;
 
@@ -1824,10 +1798,7 @@ int16_t		numlinespecials;
 
 
 
-int16_t		curseg;
-seg_render_t __near* curseg_render;
 
-drawseg_t __far*	ds_p;
 
 
 // newend is one past the last valid seg
@@ -2277,7 +2248,6 @@ cache_node_page_count_t		texturecache_nodes[NUM_TEXTURE_PAGES];
 cache_node_t 				flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 boolean						is_ultimate = false;
 segment_t   				spritewidths_segment;
-masked_header_t  			masked_headers[MAX_MASKED_TEXTURES];
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 boolean    					plutonia = false;
@@ -2292,13 +2262,6 @@ segment_t 					segloopcachedsegment[2];
 int16_t 					segloopcachedbasecol[2];
 uint8_t 					segloopheightvalcache[2];
 
-uint8_t 					maskedtexmodulo = 0; 
-int16_t 					maskedtexrepeat = 0; 
-int16_t 					maskednextlookup = NULL_TEX_COL; // 0 would be fine too...
-int16_t 					maskedprevlookup;
-segment_t 					maskedcachedsegment;
-int16_t 					maskedcachedbasecol = NULL_TEX_COL;
-uint8_t 					maskedheightvalcache;
 
 /*
 uint16_t shift4lookup[256] = 

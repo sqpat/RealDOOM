@@ -62,7 +62,7 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 	uint16_t maskedpostsofs = 0xFFFF;
 	uint16_t base;
 	int16_t adder = 0;
-	curseg = ds->curseg;
+	curseg = ds->cursegvalue;
 	curseg_render = &segs_render[curseg];
 
 	side = &sides[curseg_render->sidedefOffset];
@@ -984,7 +984,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	
     ds_p->x1 = rw_x = start;
     ds_p->x2 = stop;
-    ds_p->curseg = curseg;
+    ds_p->cursegvalue = curseg;
     rw_stopx = stop+1;
 
  

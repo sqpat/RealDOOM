@@ -73,120 +73,120 @@
 
 #define _NULL_OFFSET 0x30
 
-#define currentscreen                   (*(byte __far * __near *)       (_NULL_OFFSET + 0x0000))
-#define destview                        (*(byte __far * __near *)       (_NULL_OFFSET + 0x0004))
-#define destscreen                      (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0008)))
-#define tantoangle                      (*((segment_t  __near*)         (_NULL_OFFSET + 0x000C)))
-#define spanfunc_jump_segment_storage   (*((segment_t __near*)          (_NULL_OFFSET + 0x000E)))
-#define olddb                           ((int16_t __near *)             (_NULL_OFFSET + 0x0010))
+#define currentscreen                   (*(byte __far * __near *)            (_NULL_OFFSET + 0x0000))
+#define destview                        (*(byte __far * __near *)            (_NULL_OFFSET + 0x0004))
+#define destscreen                      (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0008)))
+#define tantoangle                      (*((segment_t  __near*)              (_NULL_OFFSET + 0x000C)))
+#define spanfunc_jump_segment_storage   (*((segment_t __near*)               (_NULL_OFFSET + 0x000E)))
+#define olddb                           ((int16_t __near *)                  (_NULL_OFFSET + 0x0010))
 // 0 = high, 1 = low, = 2 potato
-#define detailshift                     (*((int16_t_union __near*)      (_NULL_OFFSET + 0x0020)))
-#define detailshiftitercount            (*((uint8_t __near*)            (_NULL_OFFSET + 0x0022)))
-#define detailshiftandval               (*((uint16_t __near*)           (_NULL_OFFSET + 0x0024)))
+#define detailshift                     (*((int16_t_union __near*)           (_NULL_OFFSET + 0x0020)))
+#define detailshiftitercount            (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0022)))
+#define detailshiftandval               (*((uint16_t __near*)                (_NULL_OFFSET + 0x0024)))
 
-#define ceilphyspage                    (*((int8_t __near*)             (_NULL_OFFSET + 0x0026)))
-#define floorphyspage                   (*((int8_t __near*)             (_NULL_OFFSET + 0x0027)))
+#define ceilphyspage                    (*((int8_t __near*)                  (_NULL_OFFSET + 0x0026)))
+#define floorphyspage                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0027)))
 
-#define ds_x1                           (*((int16_t __near*)            (_NULL_OFFSET + 0x0028)))
-#define ds_x2                           (*((int16_t __near*)            (_NULL_OFFSET + 0x002A)))
-#define ds_colormap_segment             (*((segment_t __near*)          (_NULL_OFFSET + 0x002C)))
-#define ds_colormap_index               (*((uint8_t __near*)            (_NULL_OFFSET + 0x002E)))
-#define fixedcolormap                   (*((uint8_t __near*)            (_NULL_OFFSET + 0x002F)))
-#define quality_port_lookup             ((uint8_t __near *)             (_NULL_OFFSET + 0x0030))
-#define ds_source_segment               (*((segment_t __near*)          (_NULL_OFFSET + 0x003E)))
-#define dc_colormap_segment             (*((segment_t __near*)          (_NULL_OFFSET + 0x0040)))
-#define dc_colormap_index               (*((uint8_t __near*)            (_NULL_OFFSET + 0x0042)))
-#define fuzzpos                         (*((int8_t __near*)             (_NULL_OFFSET + 0x0043)))
-#define dc_yl                           (*((int16_t __near*)            (_NULL_OFFSET + 0x0044)))
-#define dc_yh                           (*((int16_t __near*)            (_NULL_OFFSET + 0x0046)))
-#define dc_iscale                       (*((fixed_t __near *)           (_NULL_OFFSET + 0x0048)))
-#define dc_texturemid                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x004C)))
-#define dc_x                            (*((int16_t __near*)            (_NULL_OFFSET + 0x0050)))
-#define lastopening                     (*((uint16_t    __near*)        (_NULL_OFFSET + 0x0052)))
+#define ds_x1                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0028)))
+#define ds_x2                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x002A)))
+#define ds_colormap_segment             (*((segment_t __near*)               (_NULL_OFFSET + 0x002C)))
+#define ds_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002E)))
+#define fixedcolormap                   (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002F)))
+#define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
+#define ds_source_segment               (*((segment_t __near*)               (_NULL_OFFSET + 0x003E)))
+#define dc_colormap_segment             (*((segment_t __near*)               (_NULL_OFFSET + 0x0040)))
+#define dc_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0042)))
+#define fuzzpos                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0043)))
+#define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0044)))
+#define dc_yh                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0046)))
+#define dc_iscale                       (*((fixed_t __near *)                (_NULL_OFFSET + 0x0048)))
+#define dc_texturemid                   (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x004C)))
+#define dc_x                            (*((int16_t __near*)                 (_NULL_OFFSET + 0x0050)))
+#define lastopening                     (*((uint16_t    __near*)             (_NULL_OFFSET + 0x0052)))
 
-#define planezlight                     (*(uint8_t __far * __near *)    (_NULL_OFFSET + 0x0054))
-#define planeheight                     (*((fixed_t __near *)           (_NULL_OFFSET + 0x0058)))
-#define basexscale                      (*((fixed_t __near *)           (_NULL_OFFSET + 0x005C)))
-#define baseyscale                      (*((fixed_t __near *)           (_NULL_OFFSET + 0x0060)))
-#define viewx                           (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0064)))
-#define viewy                           (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0068)))
-#define viewz                           (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x006C)))
-#define centerx                         (*((int16_t __near *)           (_NULL_OFFSET + 0x0070)))
-#define centery                         (*((int16_t __near *)           (_NULL_OFFSET + 0x0072)))
-#define centeryfrac_shiftright4         (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0074)))
-#define viewangle                       (*((angle_t __near *)           (_NULL_OFFSET + 0x0078)))
-#define viewz_shortheight               (*((short_height_t __near *)    (_NULL_OFFSET + 0x007C)))
-#define viewangle_shiftright1           (*((uint16_t __near *)          (_NULL_OFFSET + 0x007E)))
+#define planezlight                     (*(uint8_t __far * __near *)         (_NULL_OFFSET + 0x0054))
+#define planeheight                     (*((fixed_t __near *)                (_NULL_OFFSET + 0x0058)))
+#define basexscale                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x005C)))
+#define baseyscale                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0060)))
+#define viewx                           (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0064)))
+#define viewy                           (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0068)))
+#define viewz                           (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x006C)))
+#define centerx                         (*((int16_t __near *)                (_NULL_OFFSET + 0x0070)))
+#define centery                         (*((int16_t __near *)                (_NULL_OFFSET + 0x0072)))
+#define centeryfrac_shiftright4         (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0074)))
+#define viewangle                       (*((angle_t __near *)                (_NULL_OFFSET + 0x0078)))
+#define viewz_shortheight               (*((short_height_t __near *)         (_NULL_OFFSET + 0x007C)))
+#define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x007E)))
 
-#define rw_x                            (*((int16_t __near *)           (_NULL_OFFSET + 0x0080)))
-#define rw_stopx                        (*((int16_t __near *)           (_NULL_OFFSET + 0x0082)))
-#define rw_centerangle                  (*((fineangle_t __near *)       (_NULL_OFFSET + 0x0084)))
-#define rw_normalangle                  (*((fineangle_t __near *)       (_NULL_OFFSET + 0x0086)))
+#define rw_x                            (*((int16_t __near *)                (_NULL_OFFSET + 0x0080)))
+#define rw_stopx                        (*((int16_t __near *)                (_NULL_OFFSET + 0x0082)))
+#define rw_centerangle                  (*((fineangle_t __near *)            (_NULL_OFFSET + 0x0084)))
+#define rw_normalangle                  (*((fineangle_t __near *)            (_NULL_OFFSET + 0x0086)))
 
-#define rw_offset                       (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0088)))
-#define rw_distance                     (*((fixed_t __near *)           (_NULL_OFFSET + 0x008C)))
-#define rw_scale                        (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0090)))
-#define rw_midtexturemid                (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0094)))
-#define rw_toptexturemid                (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0098)))
-#define rw_bottomtexturemid             (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x009C)))
-#define rw_angle1                       (*((angle_t __near *)           (_NULL_OFFSET + 0x00A0)))
+#define rw_offset                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0088)))
+#define rw_distance                     (*((fixed_t __near *)                (_NULL_OFFSET + 0x008C)))
+#define rw_scale                        (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0090)))
+#define rw_midtexturemid                (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0094)))
+#define rw_toptexturemid                (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0098)))
+#define rw_bottomtexturemid             (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x009C)))
+#define rw_angle1                       (*((angle_t __near *)                (_NULL_OFFSET + 0x00A0)))
 
-#define spryscale                       (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A4)))
-#define sprtopscreen                    (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A8)))
+#define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
+#define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
 //ss_variable_space[10]
-#define ss_variable_space               ((int16_t __near *)             (_NULL_OFFSET + 0x00AC))
-#define mfloorclip                      (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00C0))
-#define mfloorclip_offset               (*(int16_t __near *)            (_NULL_OFFSET + 0x00C0))
-#define mfloorclip_segment              (*(segment_t __near *)          (_NULL_OFFSET + 0x00C2))
-#define mceilingclip                    (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00C4))
-#define mceilingclip_offset             (*(int16_t __near *)            (_NULL_OFFSET + 0x00C4))
-#define mceilingclip_segment            (*(segment_t __near *)          (_NULL_OFFSET + 0x00C6))
+#define ss_variable_space               ((int16_t __near *)                  (_NULL_OFFSET + 0x00AC))
+#define mfloorclip                      (*(int16_t __far * __near *)         (_NULL_OFFSET + 0x00C0))
+#define mfloorclip_offset               (*(int16_t __near *)                 (_NULL_OFFSET + 0x00C0))
+#define mfloorclip_segment              (*(segment_t __near *)               (_NULL_OFFSET + 0x00C2))
+#define mceilingclip                    (*(int16_t __far * __near *)         (_NULL_OFFSET + 0x00C4))
+#define mceilingclip_offset             (*(int16_t __near *)                 (_NULL_OFFSET + 0x00C4))
+#define mceilingclip_segment            (*(segment_t __near *)               (_NULL_OFFSET + 0x00C6))
 //spanfunc_prt[4]
-#define spanfunc_prt                    ((int16_t __near *)             (_NULL_OFFSET + 0x00CC))
+#define spanfunc_prt                    ((int16_t __near *)                  (_NULL_OFFSET + 0x00CC))
 //spanfunc_destview_offset[4]
-#define spanfunc_destview_offset        ((uint16_t __near *)            (_NULL_OFFSET + 0x00D4))
+#define spanfunc_destview_offset        ((uint16_t __near *)                 (_NULL_OFFSET + 0x00D4))
 //spanfunc_inner_loop_count[4]
-#define spanfunc_inner_loop_count       ((int8_t __near *)              (_NULL_OFFSET + 0x00DC))
+#define spanfunc_inner_loop_count       ((int8_t __near *)                   (_NULL_OFFSET + 0x00DC))
 //spanfunc_outp[4]
-#define spanfunc_outp                   ((uint8_t __near *)             (_NULL_OFFSET + 0x00E0))
-#define spanfunc_main_loop_count        (*(uint8_t __near *)            (_NULL_OFFSET + 0x00E4))
-#define skipdirectdraws                 (*(uint8_t __near *)            (_NULL_OFFSET + 0x00E5))
-#define jump_mult_table_3               ((uint8_t __near *)             (_NULL_OFFSET + 0x00E6))
-#define screen_segments                 ((segment_t __near *)           (_NULL_OFFSET + 0x00EE))
-#define spanfunc_farcall_addr_1         (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x00F8)))
-#define func_farcall_scratch_addr       (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x00FC)))
-#define colfunc_farcall_addr_1          (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x0100)))
+#define spanfunc_outp                   ((uint8_t __near *)                  (_NULL_OFFSET + 0x00E0))
+#define spanfunc_main_loop_count        (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E4))
+#define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E5))
+#define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x00E6))
+#define screen_segments                 ((segment_t __near *)                (_NULL_OFFSET + 0x00EE))
+#define spanfunc_farcall_addr_1         (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00F8)))
+#define func_farcall_scratch_addr       (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00FC)))
+#define colfunc_farcall_addr_1          (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0100)))
 // 104 is constant
-#define viewangle_shiftright3           (*((fineangle_t __near*)        (_NULL_OFFSET + 0x0104)))
+#define viewangle_shiftright3           (*((fineangle_t __near*)             (_NULL_OFFSET + 0x0104)))
 // 108 is constant
-#define dc_source_segment               (*((segment_t __near*)          (_NULL_OFFSET + 0x010A)))
-#define ds_y                            (*((int16_t __near*)            (_NULL_OFFSET + 0x010C)))
+#define dc_source_segment               (*((segment_t __near*)               (_NULL_OFFSET + 0x010A)))
+#define ds_y                            (*((int16_t __near*)                 (_NULL_OFFSET + 0x010C)))
 // 10E is constant
-#define stored_ds                       (*((uint16_t __near*)            (_NULL_OFFSET + 0x0110)))
+#define stored_ds                       (*((uint16_t __near*)                (_NULL_OFFSET + 0x0110)))
 
-#define cachedheight_segment_storage    (*((segment_t __near*)           (_NULL_OFFSET + 0x0112)))
-#define distscale_segment_storage       (*((segment_t __near*)           (_NULL_OFFSET + 0x0114)))
-#define cacheddistance_segment_storage  (*((segment_t __near*)           (_NULL_OFFSET + 0x0116)))
-#define cachedxstep_segment_storage     (*((segment_t __near*)           (_NULL_OFFSET + 0x0118)))
-#define cachedystep_segment_storage     (*((segment_t __near*)           (_NULL_OFFSET + 0x011A)))
-#define pspriteiscale                   (*((fixed_t   __near*)           (_NULL_OFFSET + 0x011C)))
+#define cachedheight_segment_storage    (*((segment_t __near*)               (_NULL_OFFSET + 0x0112)))
+#define distscale_segment_storage       (*((segment_t __near*)               (_NULL_OFFSET + 0x0114)))
+#define cacheddistance_segment_storage  (*((segment_t __near*)               (_NULL_OFFSET + 0x0116)))
+#define cachedxstep_segment_storage     (*((segment_t __near*)               (_NULL_OFFSET + 0x0118)))
+#define cachedystep_segment_storage     (*((segment_t __near*)               (_NULL_OFFSET + 0x011A)))
+#define pspriteiscale                   (*((fixed_t   __near*)               (_NULL_OFFSET + 0x011C)))
 
-#define MULT_256                        (((uint16_t   __near*)           (_NULL_OFFSET + 0x0120)))
-#define MULT_4096                       (((uint16_t   __near*)           (_NULL_OFFSET + 0x0128)))
-#define FLAT_CACHE_PAGE                 (((uint16_t   __near*)           (_NULL_OFFSET + 0x0130)))
-#define visplanelookupsegments          (((segment_t   __near*)          (_NULL_OFFSET + 0x0138)))
+#define MULT_256                        (((uint16_t   __near*)               (_NULL_OFFSET + 0x0120)))
+#define MULT_4096                       (((uint16_t   __near*)               (_NULL_OFFSET + 0x0128)))
+#define FLAT_CACHE_PAGE                 (((uint16_t   __near*)               (_NULL_OFFSET + 0x0130)))
+#define visplanelookupsegments          (((segment_t   __near*)              (_NULL_OFFSET + 0x0138)))
 
-#define firstflat                       (*((int16_t    __near*)          (_NULL_OFFSET + 0x013E)))
-#define lightshift7lookup               (*((int16_t    __near*)          (_NULL_OFFSET + 0x0140)))
+#define firstflat                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x013E)))
+#define lightshift7lookup               (*((int16_t    __near*)              (_NULL_OFFSET + 0x0140)))
 
-#define currentflatpage                 (((int8_t    __near*)            (_NULL_OFFSET + 0x0160)))
-#define lastflatcacheindicesused        (((int8_t    __near*)            (_NULL_OFFSET + 0x0164)))
-#define skyflatnum                      (*((uint8_t    __near*)          (_NULL_OFFSET + 0x0168)))
-#define extralight                      (*((uint8_t    __near*)          (_NULL_OFFSET + 0x0169)))
-#define visplanedirty                   (*((int8_t    __near*)           (_NULL_OFFSET + 0x016A)))
-#define screenblocks                    (*((uint8_t    __near*)          (_NULL_OFFSET + 0x016B)))
-#define lastvisplane                    (*((int16_t    __near*)          (_NULL_OFFSET + 0x016C)))
-#define hudneedsupdate                  (*((uint8_t    __near*)          (_NULL_OFFSET + 0x016E)))
+#define currentflatpage                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0160)))
+#define lastflatcacheindicesused        (((int8_t    __near*)                (_NULL_OFFSET + 0x0164)))
+#define skyflatnum                      (*((uint8_t    __near*)              (_NULL_OFFSET + 0x0168)))
+#define extralight                      (*((uint8_t    __near*)              (_NULL_OFFSET + 0x0169)))
+#define visplanedirty                   (*((int8_t    __near*)               (_NULL_OFFSET + 0x016A)))
+#define screenblocks                    (*((uint8_t    __near*)              (_NULL_OFFSET + 0x016B)))
+#define lastvisplane                    (*((int16_t    __near*)              (_NULL_OFFSET + 0x016C)))
+#define hudneedsupdate                  (*((uint8_t    __near*)              (_NULL_OFFSET + 0x016E)))
 
 // 16F free
 
@@ -194,68 +194,81 @@
 
 
 // 6-16 bytes... space it out in case of size growth
-#define allocatedflatsperpage           (((int8_t    __near*)            (_NULL_OFFSET + 0x0170)))
+#define allocatedflatsperpage           (((int8_t    __near*)                (_NULL_OFFSET + 0x0170)))
 
 
 // these are far pointers to functions..
-#define Z_QuickMapVisplanePage_addr     (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0180)))
-#define R_EvictFlatCacheEMSPage_addr    (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0184)))
-#define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0188)))
-#define R_MarkL2FlatCacheLRU_addr       (*((uint32_t  __near*)           (_NULL_OFFSET + 0x018C)))
-#define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0190)))
+#define Z_QuickMapVisplanePage_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0180)))
+#define R_EvictFlatCacheEMSPage_addr    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0184)))
+#define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0188)))
+#define R_MarkL2FlatCacheLRU_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
+#define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0190)))
 
-#define floorplaneindex                 (*((int16_t    __near*)          (_NULL_OFFSET + 0x0194)))
-#define ceilingplaneindex               (*((int16_t    __near*)          (_NULL_OFFSET + 0x0196)))
-#define viewwidth                       (*((int16_t    __near*)          (_NULL_OFFSET + 0x0198)))
-#define viewheight                      (*((int16_t    __near*)          (_NULL_OFFSET + 0x019A)))
-#define ceiltop                         (*((byte  __far* __near*)        (_NULL_OFFSET + 0x019C)))
-#define floortop                        (*((byte  __far* __near*)        (_NULL_OFFSET + 0x01A0)))
+#define floorplaneindex                 (*((int16_t    __near*)              (_NULL_OFFSET + 0x0194)))
+#define ceilingplaneindex               (*((int16_t    __near*)              (_NULL_OFFSET + 0x0196)))
+#define viewwidth                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x0198)))
+#define viewheight                      (*((int16_t    __near*)              (_NULL_OFFSET + 0x019A)))
+#define ceiltop                         (*((byte  __far* __near*)            (_NULL_OFFSET + 0x019C)))
+#define floortop                        (*((byte  __far* __near*)            (_NULL_OFFSET + 0x01A0)))
 
-#define frontsector                     (*((sector_t __far*  __near*)    (_NULL_OFFSET + 0x01A4)))
-#define backsector                      (*((sector_t __far*  __near*)    (_NULL_OFFSET + 0x01A8)))
-#define backsector_offset               (*((int16_t  __near*)            (_NULL_OFFSET + 0x01A8)))
+#define frontsector                     (*((sector_t __far*  __near*)        (_NULL_OFFSET + 0x01A4)))
+#define backsector                      (*((sector_t __far*  __near*)        (_NULL_OFFSET + 0x01A8)))
+#define backsector_offset               (*((int16_t  __near*)                (_NULL_OFFSET + 0x01A8)))
 // 1AC free
 
-#define active_visplanes                (((int8_t    __near*)            (_NULL_OFFSET + 0x01B0)))
+#define active_visplanes                (((int8_t    __near*)                (_NULL_OFFSET + 0x01B0)))
 // 1B5 free
-#define visplane_offset                 (((uint16_t    __near*)          (_NULL_OFFSET + 0x01B6)))
+#define visplane_offset                 (((uint16_t    __near*)              (_NULL_OFFSET + 0x01B6)))
 
 
-#define dirtybox                        (((int16_t    __near*)           (_NULL_OFFSET + 0x01E8)))
-#define ticcount                        (*((volatile uint32_t  __near*)  (_NULL_OFFSET + 0x01F0)))
+#define dirtybox                        (((int16_t    __near*)               (_NULL_OFFSET + 0x01E8)))
+#define ticcount                        (*((volatile uint32_t  __near*)      (_NULL_OFFSET + 0x01F0)))
 
-#define Z_QuickMapPhysics_addr          (*((uint32_t  __near*)           (_NULL_OFFSET + 0x01F4)))
-#define Z_QuickMapWipe_addr             (*((uint32_t  __near*)           (_NULL_OFFSET + 0x01F8)))
-#define Z_QuickMapScratch_5000_addr     (*((uint32_t  __near*)           (_NULL_OFFSET + 0x01FC)))
-#define M_Random_addr                   (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0200)))
-#define I_UpdateNoBlit_addr             (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0204)))
-#define I_FinishUpdate_addr             (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0208)))
-#define V_MarkRect_addr                 (*((uint32_t  __near*)           (_NULL_OFFSET + 0x020C)))
-#define M_Drawer_addr                   (*((uint32_t  __near*)           (_NULL_OFFSET + 0x0210)))
+#define Z_QuickMapPhysics_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F4)))
+#define Z_QuickMapWipe_addr             (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F8)))
+#define Z_QuickMapScratch_5000_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01FC)))
+#define M_Random_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0200)))
+#define I_UpdateNoBlit_addr             (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
+#define I_FinishUpdate_addr             (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
+#define V_MarkRect_addr                 (*((uint32_t  __near*)               (_NULL_OFFSET + 0x020C)))
+#define M_Drawer_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0210)))
 
-#define wipeduration                    (*((uint16_t  __near*)           (_NULL_OFFSET + 0x0214)))
+#define wipeduration                    (*((uint16_t  __near*)               (_NULL_OFFSET + 0x0214)))
 // uses high byte for quick 0
-#define detailshift2minus               (*((uint8_t __near*)             (_NULL_OFFSET + 0x0216)))
+#define detailshift2minus               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0216)))
 // uses high word for quick segment read
-#define maskedheaderpixeolfs            (*((int16_t  __near*)            (_NULL_OFFSET + 0x0218)))
+#define maskedheaderpixeolfs            (*((int16_t  __near*)                (_NULL_OFFSET + 0x0218)))
 
-#define maskedtexturecol                (*((uint16_t  __far* __near*)    (_NULL_OFFSET + 0x021C)))
-#define maskedtexturecol_offset         (*((int16_t  __near*)            (_NULL_OFFSET + 0x021C)))
+#define maskedtexturecol                (*((uint16_t  __far* __near*)        (_NULL_OFFSET + 0x021C)))
+#define maskedtexturecol_offset         (*((int16_t  __near*)                (_NULL_OFFSET + 0x021C)))
 // 220
+#define masked_headers                  (((masked_header_t  __near*)         (_NULL_OFFSET + 0x0220)))
+#define curseg                          (*((int16_t  __near*)                (_NULL_OFFSET + 0x0280)))
+#define curseg_render                   (*((seg_render_t  __near* __near*)   (_NULL_OFFSET + 0x0282)))
+#define walllights                      (*((int16_t  __near*)                (_NULL_OFFSET + 0x0284)))
+#define maskedtexmodulo                 (*((uint16_t __near*)                (_NULL_OFFSET + 0x0286)))
+#define maskednextlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x0288)))
+#define maskedprevlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x028A)))
+#define maskedtexrepeat                 (*((int16_t __near*)                 (_NULL_OFFSET + 0x028C)))
+#define maskedcachedbasecol             (*((int16_t __near*)                 (_NULL_OFFSET + 0x028E)))
+#define maskedcachedsegment             (*((segment_t __near*)               (_NULL_OFFSET + 0x0290)))
+#define maskedheightvalcache            (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0292)))
+#define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0293)))
+#define lastvisspritesegment            (*((segment_t __near*)               (_NULL_OFFSET + 0x0294)))
+#define lastvisspritesegment2           (*((segment_t __near*)               (_NULL_OFFSET + 0x0296)))
+#define lastvisspritepatch              (*((int16_t __near*)                 (_NULL_OFFSET + 0x0298)))
+#define lastvisspritepatch2             (*((int16_t __near*)                 (_NULL_OFFSET + 0x029A)))
+#define ds_p                            (*((drawseg_t __far* __near*)        (_NULL_OFFSET + 0x029C)))
+#define lightmult48lookup               (((int16_t __near*)                  (_NULL_OFFSET + 0x02A0)))
+// lookup for what to write to the vga port for read  for fuzzcolumn
+#define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x02C0)))
+#define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x02D8)))
+#define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x02F0)))
+#define vsprsortedheadfirst             (*((uint8_t __near*)                 (_NULL_OFFSET + 0x02F2)))
+
+// 2f3 is free
 
 
-
-
-
-
-
-
-
-
-
-
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0052)))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x003E)))
 
 
 
@@ -376,15 +389,8 @@ extern fixed_t		        topfrac;
 extern fixed_t		        topstep;
 extern fixed_t		        bottomfrac;
 extern fixed_t		        bottomstep;
-extern int16_t      	    walllights;
 extern uint16_t             pspritescale;
 extern int16_t              spritelights;
-extern int16_t              vissprite_p;
-extern uint8_t              vsprsortedheadfirst;
-extern segment_t            lastvisspritesegment;
-extern int16_t              lastvisspritepatch;
-extern segment_t            lastvisspritesegment2;
-extern int16_t              lastvisspritepatch2;
 extern int16_t              numflats;
 extern int16_t              firstpatch;
 extern int16_t              numpatches;
@@ -416,7 +422,6 @@ extern int16_t              cachedtex2;
 extern uint8_t              cachedcollength;
 extern uint8_t              cachedcollength2;
 
-extern byte                 cachedbyteheight;
 //extern int16_t              ;
 
 extern int8_t               am_cheating;
@@ -462,21 +467,18 @@ extern mline_t              cheat_player_arrow[16];
 extern mline_t              triangle_guy[3];
 */
 extern mline_t              thintriangle_guy[3];
-extern int16_t              lightmult48lookup[16];
 extern segment_t            pagesegments[NUM_TEXTURE_L1_CACHE_PAGES];
 
-extern uint16_t             vga_read_port_lookup[12];
 
-extern void                 (__far* R_DrawColumnPrepCallHigh)(uint16_t);
 extern void                 (__far* R_DrawColumnPrepCall)(uint16_t);
 extern void                 (__far* R_DrawPlanesCall)();
 
-extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *);
 
-extern void                 (__far* R_DrawMaskedColumnCallHigh)(segment_t, column_t __far *);
-extern void                 (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t, byte);
-
-extern void                 (__far* R_DrawMaskedColumnCallSpriteHigh)(segment_t, column_t __far *);
+//todo factor these out after DrawMasked moved hi...
+//extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *);
+//extern void                 (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t, byte);
+//extern void                 (__far* R_DrawMaskedColumnCallSpriteHigh)(segment_t, column_t __far *);
+//extern void                 (__far* R_DrawColumnPrepCallHigh)(uint16_t);
 
 extern void                 (__far* wipe_StartScreenCall)();
 extern void                 (__far* wipe_WipeLoopCall)();
@@ -589,7 +591,6 @@ extern boolean         noblit;                 // for comparative timing purpose
 extern ticcount_t             starttime;              // for comparative timing purposes       
 extern boolean         viewactive; 
 extern player_t        player;
-extern pspdef_t		psprites[NUMPSPRITES];
 extern THINKERREF      playerMobjRef;
 
 extern ticcount_t          gametic;
@@ -1050,10 +1051,7 @@ extern int16_t		numlinespecials;
 
 
 
-extern int16_t		curseg;
-extern seg_render_t __near* curseg_render;
 
-extern drawseg_t __far*	ds_p;
 
 
 
@@ -1154,7 +1152,6 @@ extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 
 extern boolean				    is_ultimate;
 extern segment_t			    spritewidths_segment;
-extern masked_header_t  		masked_headers[MAX_MASKED_TEXTURES];
 
 extern uint8_t 					seglooptexmodulo[2]; // 0 would be fine too...
 extern int16_t 					seglooptexrepeat[2]; // 0 would be fine too...
@@ -1164,13 +1161,6 @@ extern segment_t 				segloopcachedsegment[2];
 extern int16_t 					segloopcachedbasecol[2];
 extern uint8_t 					segloopheightvalcache[2];
 
-extern uint8_t 					maskedtexmodulo;
-extern int16_t 					maskedtexrepeat;
-extern int16_t 					maskednextlookup; // 0 would be fine too...
-extern int16_t 					maskedprevlookup; // 0 would be fine too...
-extern segment_t 				maskedcachedsegment;
-extern int16_t 					maskedcachedbasecol;
-extern uint8_t 					maskedheightvalcache;
 
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)

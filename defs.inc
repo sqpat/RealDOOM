@@ -182,6 +182,32 @@ _detailshift2minus =  		 		 _NULL_OFFSET + 00216h
 _maskedheaderpixeolfs =				 _NULL_OFFSET + 00218h
 _maskedtexturecol =					 _NULL_OFFSET + 0021Ch
 ; 0220h
+_masked_headers =                    _NULL_OFFSET + 00220h
+_curseg =                          	 _NULL_OFFSET + 00280h
+_curseg_render =                     _NULL_OFFSET + 00282h
+_walllights =                        _NULL_OFFSET + 00284h
+_maskedtexmodulo =                   _NULL_OFFSET + 00286h
+_maskednextlookup =                  _NULL_OFFSET + 00288h
+_maskedprevlookup =                  _NULL_OFFSET + 0028Ah
+_maskedtexrepeat =                   _NULL_OFFSET + 0028Ch
+_maskedcachedbasecol =               _NULL_OFFSET + 0028Eh
+_maskedcachedsegment =               _NULL_OFFSET + 00290h
+_maskedheightvalcache =              _NULL_OFFSET + 00292h
+_cachedbyteheight =                  _NULL_OFFSET + 00293h
+_lastvisspritesegment =              _NULL_OFFSET + 00294h
+_lastvisspritesegment2 =             _NULL_OFFSET + 00296h
+_lastvisspritepatch =                _NULL_OFFSET + 00298h
+_lastvisspritepatch2 =               _NULL_OFFSET + 0029Ah
+_ds_p =               				 _NULL_OFFSET + 0029Ch
+_lightmult48lookup =                 _NULL_OFFSET + 002A0h
+
+_vga_read_port_lookup =              _NULL_OFFSET + 002C0h
+_psprites =              			 _NULL_OFFSET + 002D8h
+_vissprite_p =                       _NULL_OFFSET + 002F0h
+_vsprsortedheadfirst =               _NULL_OFFSET + 002F2h
+
+
+; 2F0h
 
 
 

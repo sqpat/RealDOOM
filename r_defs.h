@@ -376,7 +376,7 @@ typedef byte	lighttable_t;
 // ?
 // padded to 32 bytes each..
 typedef struct drawseg_s {
-	uint16_t		curseg;
+	uint16_t		cursegvalue;
 
 	// start pixel x range
     int16_t			x1;

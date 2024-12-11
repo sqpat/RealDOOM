@@ -217,8 +217,8 @@ void __near R_AddLine (int16_t curlineNum) {
 	side_t __far* curlinesidedef = &sides[curline_render->sidedefOffset];
 	vertex_t v1 = vertexes[curline_render->v1Offset];
 	vertex_t v2 = vertexes[curline_render->v2Offset];
-     curseg = curlineNum;
-	 curseg_render = curline_render;
+    curseg = curlineNum;
+	curseg_render = curline_render;
 
 
 #ifdef CHECK_FOR_ERRORS
