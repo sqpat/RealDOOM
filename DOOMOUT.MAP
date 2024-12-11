@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/10 19:47:47
+Created on:       24/12/11 12:21:57
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -80,7 +80,7 @@ p_user_TEXT            CODE           AUTO           0b1e:c170       000006c2
 r_bsp_TEXT             CODE           AUTO           17a2:0000       00000dcc
 r_data_TEXT            CODE           AUTO           17a2:0dd0       00001c7d
 R_MATH_TEXT            CODE           AUTO           17a2:2a4e       000001fd
-R_MAINHI_TEXT          CODE           AUTO           17a2:2c4c       0000113f
+R_MAINHI_TEXT          CODE           AUTO           17a2:2c4c       00001135
 r_draw_TEXT            CODE           AUTO           17a2:3d90       00000379
 r_main_TEXT            CODE           AUTO           17a2:4110       000001e8
 r_plane_TEXT           CODE           AUTO           17a2:4300       00000000
@@ -1325,19 +1325,19 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 Module: r_math.obj(r_math.ASM)
 17a2:2ac4      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-17a2:2d6c*     R_PointOnSegSide_
-17a2:3530      R_DrawPlayerSprites_
-17a2:2fee      R_Subsector_
-17a2:3c9b      R_SortVisSprites_
-17a2:31b4*     R_DrawMaskedSpriteShadow_
-17a2:2cec      R_PointToDist_
-17a2:3a2f      R_DrawSprite_
-17a2:32db*     R_DrawVisSprite_
-17a2:2e37      R_ClearPlanes_
-17a2:2eba*     R_HandleEMSPagination_
-17a2:2f6c*     R_FindPlane_
-17a2:3557      R_RenderMaskedSegRange_
-17a2:30e4      R_CheckPlane_
+17a2:2d6a*     R_PointOnSegSide_
+17a2:352a      R_DrawPlayerSprites_
+17a2:2fec      R_Subsector_
+17a2:3c91      R_SortVisSprites_
+17a2:31b0*     R_DrawMaskedSpriteShadow_
+17a2:2cea      R_PointToDist_
+17a2:3a25      R_DrawSprite_
+17a2:32d7*     R_DrawVisSprite_
+17a2:2e35      R_ClearPlanes_
+17a2:2eb8*     R_HandleEMSPagination_
+17a2:2f6a*     R_FindPlane_
+17a2:3551      R_RenderMaskedSegRange_
+17a2:30e2      R_CheckPlane_
 17a2:2c4c      R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17a2:3d90      R_FillBackScreen_
@@ -1704,4 +1704,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000252c0 (152256.)
 Entry point address: 1dca:219c
-Link time: 00:00.75
+Link time: 00:00.20

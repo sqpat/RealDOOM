@@ -21,16 +21,17 @@ INSTRUCTION_SET_MACRO
 ; todo move these all out
 
 
+;EXTRN R_RenderMaskedSegRange2_:NEAR
 
 EXTRN FixedMul_:PROC
 EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
-
 EXTRN FastDiv3232_:PROC
 EXTRN R_GetMaskedColumnSegment_:NEAR
-;EXTRN R_RenderMaskedSegRange2_:NEAR
+EXTRN getspritetexture_:NEAR
+
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
@@ -38,7 +39,6 @@ EXTRN Z_QuickMapVisplaneRevert_:PROC
 
 EXTRN _R_DrawFuzzColumnCallHigh:DWORD
 EXTRN _R_DrawMaskedColumnCallSpriteHigh:DWORD
-EXTRN getspritetexture_:NEAR
 EXTRN _lastvisspritepatch:WORD
 EXTRN _lastvisspritepatch2:WORD
 EXTRN _lastvisspritesegment:WORD
@@ -147,18 +147,16 @@ ADD  DX, BX
 ; di:si had den
 ; dx:ax has num
 
-mov   cl, byte ptr ds:[_detailshift]
-xor   ch, ch
 
-; cl is 0 to 2
-
-jcxz  shift_done
+cmp byte ptr ds:[_detailshift], 1
+jb shift_done
+je do_once
+; fall thru do twice
 shl   ax, 1
 rcl   dx, 1
-loop  shift_done
+do_once:
 shl   ax, 1
 rcl   dx, 1
-
 shift_done:
 
 
@@ -173,7 +171,7 @@ shift_done:
 ; is there a cleaner way?
 
  
-mov    cx, ax  ; temp storage
+xchg   cx, ax  ; temp storage
 mov    ax, dx
 cwd            ; sign extend
 
@@ -624,7 +622,7 @@ mov   dx, cx
 
 xor   di, di
 mov   ax, word ptr ds:[_viewheight]
-mov bx, FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT;  todo can this be better... 
+mov bx, FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT; 
 mov es, bx
 
 rep stosw  ; write vieweight to es:di
@@ -1033,7 +1031,7 @@ prepare_fields:
 ;	floortop = NULL;
 
 xor   ax, ax
-; todo: put these variables all next to each other, then knock them out
+; idea: put these variables all next to each other, then knock them out
 ; with movsw
 mov   byte ptr ds:[_ceilphyspage], al
 mov   byte ptr ds:[_floorphyspage], al
@@ -1254,8 +1252,8 @@ les       bx, dword ptr ds:[_floortop]
 jmp       loaded_floor_or_ceiling
 start_greater_than_min:
 mov       ax, word ptr [di + 4]
-; todo comment out since dx was si to begin with
-mov       dx, si                ; put start into intrl
+
+;mov       dx, si                ; put start into intrl (dx was already si)
 mov       word ptr cs:[SELFMODIFY_setminx+3], ax
 jmp       checked_start
 stop_smaller_than_max:
@@ -1264,7 +1262,7 @@ mov       ax, cx                                    ; intrh = stop
 jmp       done_checking_max
 
 make_new_visplane:
-mov       bx, word ptr ds:[_lastvisplane]  ; todo byte
+mov       bx, word ptr ds:[_lastvisplane] 
 mov       es, bx    ; store in es
 sal       bx, 1   ; bx is 2 per index
 
@@ -1297,8 +1295,8 @@ mov       word ptr [bx + _visplaneheaders+6], cx  ; looks weird
 SELFMODIFY_setisceil:
 mov       dx, 0000h     ; set isceil argument
 
-mov       ax, es ; todo keep this from above somehow
-mov       si, ax ; todo keep this from above somehow
+mov       ax, es 
+mov       si, ax 
 cbw      
 
 call      R_HandleEMSPagination_
@@ -1571,19 +1569,15 @@ adc   dx, 0
 neg   dx
 xiscale_already_positive:
 
-xor   cx, cx
-mov   cl, byte ptr ds:[_detailshift]
-
-
-
-jcxz  xiscale_shift_done
+cmp byte ptr ds:[_detailshift], 1
+jb xiscale_shift_done
+je do_xiscale_shift_once
+; fall thru do twice
 sar   dx, 1
 rcr   ax, 1
-dec   cx
-jcxz  xiscale_shift_done
+do_xiscale_shift_once:
 sar   dx, 1
 rcr   ax, 1
-
 xiscale_shift_done:
 
 mov   word ptr ds:[_dc_iscale], ax
@@ -1649,7 +1643,6 @@ mov   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4_shadow+1], ax
 sub   dx, ax
 xchg  ax, dx
 
-mov   cx, word ptr ds:[_detailshift2minus]
 
 
 ; xiscalestep_shift = vis->xiscale << detailshift2minus;
@@ -1657,14 +1650,16 @@ mov   cx, word ptr ds:[_detailshift2minus]
 mov   bx, word ptr [si + 01Eh] ; DX:BX = vis->xiscale
 mov   dx, word ptr [si + 020h]
 
-; todo unroll if it doesnt break the jne above..
-jcxz  done_shifting_shift_xiscalestep_shift
+cmp byte ptr ds:[_detailshift2minus], 1
+jb done_shifting_shift_xiscalestep_shift
+je do_shift_xiscalestep_shift_once
+; fall thru do twice
 shl   bx, 1
 rcl   dx, 1
-dec   cx
-jcxz  done_shifting_shift_xiscalestep_shift
+do_shift_xiscalestep_shift_once:
 shl   bx, 1
 rcl   dx, 1
+
 
 done_shifting_shift_xiscalestep_shift:
 push dx;  [bp - 6]
@@ -2292,29 +2287,28 @@ mov   word ptr [bp - 014h], ax
 
 mov   ax, word ptr [bp - 01Eh]  ; rw_scalestep
 mov   dx, word ptr [bp - 01Ch]	; rw_scalestep
-mov   cx, word ptr ds:[_detailshift2minus]
 
-; cx is 0 to 2
 
-jcxz  done_shifting_spryscale
+cmp byte ptr ds:[_detailshift2minus], 1
+jb done_shifting_spryscale
+je do_shift_spryscale_once
+; fall thru do twice
 shl   ax, 1
 rcl   dx, 1
-dec   cl
-jcxz  done_shifting_spryscale
+do_shift_spryscale_once:
 shl   ax, 1
 rcl   dx, 1
+
 
 done_shifting_spryscale:
 mov   word ptr [bp - 0Ah], ax		; rw_scalestep_shift
 mov   word ptr [bp - 8], dx			; rw_scalestep_shift
-mov   cx, dx
-mov   bx, ax
 
 ;		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
 
 
-mov   ax, word ptr ds:[_dc_texturemid]
-mov   dx, word ptr ds:[_dc_texturemid + 2]
+mov   bx, word ptr ds:[_dc_texturemid]
+mov   cx, word ptr ds:[_dc_texturemid + 2]
 call  FixedMul_
 mov   word ptr [bp - 012h], ax	  ; sprtopscreen_step
 mov   word ptr [bp - 010h], dx
