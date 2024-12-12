@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/11 15:04:17
+Created on:       24/12/11 15:17:04
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -80,10 +80,10 @@ p_user_TEXT            CODE           AUTO           0b79:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           17ff:0000       00000dd6
 r_data_TEXT            CODE           AUTO           17ff:0de0       00001ca3
 R_MATH_TEXT            CODE           AUTO           17ff:2a84       000001fd
-R_MAINHI_TEXT          CODE           AUTO           17ff:2c82       00001135
-R_COLUMN_TEXT          CODE           AUTO           17ff:3db8       00000ba0
-R_SPAN_TEXT            CODE           AUTO           17ff:4958       00000c2d
-R_SKY_TEXT             CODE           AUTO           17ff:5586       000006c2
+R_MAINHI_TEXT          CODE           AUTO           17ff:2c82       0000112f
+R_COLUMN_TEXT          CODE           AUTO           17ff:3db2       00000ba0
+R_SPAN_TEXT            CODE           AUTO           17ff:4952       00000c2d
+R_SKY_TEXT             CODE           AUTO           17ff:5580       000006c2
 r_draw_TEXT            CODE           AUTO           17ff:5c50       00000379
 r_main_TEXT            CODE           AUTO           17ff:5fd0       000001ed
 r_plane_TEXT           CODE           AUTO           17ff:61c0       00000000
@@ -1311,10 +1311,10 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 17ff:2da0*     R_PointOnSegSide_
 17ff:3561      R_DrawPlayerSprites_
 17ff:3022      R_Subsector_
-17ff:3cc7      R_SortVisSprites_
+17ff:3cc1      R_SortVisSprites_
 17ff:31e6*     R_DrawMaskedSpriteShadow_
 17ff:2d20      R_PointToDist_
-17ff:3a5b      R_DrawSprite_
+17ff:3a55      R_DrawSprite_
 17ff:330e*     R_DrawVisSprite_
 17ff:2e6b      R_ClearPlanes_
 17ff:2eee*     R_HandleEMSPagination_
@@ -1323,20 +1323,20 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 17ff:3118      R_CheckPlane_
 17ff:2c82      R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-17ff:3db8      R_DrawColumn_
-17ff:48ef      R_DrawColumnPrep_
+17ff:3db2      R_DrawColumn_
+17ff:48e9      R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
-17ff:4958      R_DrawSpan_
-17ff:50e6*     R_FixedMulLocal_
-17ff:4ffa*     R_DrawSpanPrep_
-17ff:52a8      R_DrawPlanes_
-17ff:5122      R_MapPlane_
-17ff:5097*     R_FixedMulTrigLocal_
+17ff:4952      R_DrawSpan_
+17ff:50e0*     R_FixedMulLocal_
+17ff:4ff4*     R_DrawSpanPrep_
+17ff:52a2      R_DrawPlanes_
+17ff:511c      R_MapPlane_
+17ff:5091*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-17ff:5586      R_DrawSkyColumn_
-17ff:5753*     R_DrawSkyColumnDynamic_
-17ff:5bd7      R_DrawSkyPlane_
-17ff:5b66      R_DrawSkyPlaneDynamic_
+17ff:5580      R_DrawSkyColumn_
+17ff:574d*     R_DrawSkyColumnDynamic_
+17ff:5bd1      R_DrawSkyPlane_
+17ff:5b60      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17ff:5c50      R_FillBackScreen_
 17ff:5ece      R_VideoErase_
@@ -1747,4 +1747,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028c60 (167008.)
 Entry point address: 204d:2434
-Link time: 00:00.74
+Link time: 00:00.75

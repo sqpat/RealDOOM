@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/11 15:04:19
+Created on:       24/12/11 15:31:28
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -80,12 +80,12 @@ p_user_TEXT            CODE           AUTO           0b22:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           17a8:0000       00000dd6
 r_data_TEXT            CODE           AUTO           17a8:0de0       00001ca3
 R_MATH_TEXT            CODE           AUTO           17a8:2a84       000001fd
-R_MAINHI_TEXT          CODE           AUTO           17a8:2c82       00001135
-r_draw_TEXT            CODE           AUTO           17a8:3dc0       00000379
-r_main_TEXT            CODE           AUTO           17a8:4140       000001ed
-r_plane_TEXT           CODE           AUTO           17a8:4330       00000000
-r_segs_TEXT            CODE           AUTO           17a8:4330       0000132a
-r_things_TEXT          CODE           AUTO           17a8:5660       0000007c
+R_MAINHI_TEXT          CODE           AUTO           17a8:2c82       000011af
+r_draw_TEXT            CODE           AUTO           17a8:3e40       00000379
+r_main_TEXT            CODE           AUTO           17a8:41c0       000001ed
+r_plane_TEXT           CODE           AUTO           17a8:43b0       00000000
+r_segs_TEXT            CODE           AUTO           17a8:43b0       0000132a
+r_things_TEXT          CODE           AUTO           17a8:56e0       00000000
 w_wad_TEXT             CODE           AUTO           17a8:56e0       0000032e
 VIDEO_TEXT             CODE           AUTO           17a8:5a0e       000001fb
 v_video_TEXT           CODE           AUTO           17a8:5c10       00000218
@@ -1299,37 +1299,36 @@ Module: r_math.obj(r_math.ASM)
 17a8:2afa      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
 17a8:2da0*     R_PointOnSegSide_
-17a8:3561      R_DrawPlayerSprites_
+17a8:3561*     R_DrawPlayerSprites_
 17a8:3022      R_Subsector_
-17a8:3cc7      R_SortVisSprites_
+17a8:3cc1*     R_SortVisSprites_
 17a8:31e6*     R_DrawMaskedSpriteShadow_
 17a8:2d20      R_PointToDist_
-17a8:3a5b      R_DrawSprite_
+17a8:3a55*     R_DrawSprite_
 17a8:330e*     R_DrawVisSprite_
 17a8:2e6b      R_ClearPlanes_
 17a8:2eee*     R_HandleEMSPagination_
+17a8:3db1      R_DrawMasked_
 17a8:2fa0*     R_FindPlane_
-17a8:3588      R_RenderMaskedSegRange_
+17a8:3588*     R_RenderMaskedSegRange_
 17a8:3118      R_CheckPlane_
 17a8:2c82      R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
-17a8:3dc0      R_FillBackScreen_
-17a8:403e      R_VideoErase_
-17a8:40c2      R_DrawViewBorder_
+17a8:3e40      R_FillBackScreen_
+17a8:40be      R_VideoErase_
+17a8:4142      R_DrawViewBorder_
 Module: r_main.obj(C:\REALDOOM\r_main.c)
-17a8:4140      R_PointToAngle16_
-17a8:4156      R_PointToAngle2_
-17a8:4182      R_PointToAngle2_16_
-17a8:41b0      R_SetViewSize_
-17a8:41c0+     R_SetupFrame_
-17a8:423e      R_RenderPlayerView_
+17a8:41c0      R_PointToAngle16_
+17a8:41d6      R_PointToAngle2_
+17a8:4202      R_PointToAngle2_16_
+17a8:4230      R_SetViewSize_
+17a8:4240+     R_SetupFrame_
+17a8:42be      R_RenderPlayerView_
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
-17a8:4330+     R_GetSourceSegment_
-17a8:43dc+     R_RenderSegLoop_
-17a8:4af4      R_StoreWallRange_
+17a8:43b0+     R_GetSourceSegment_
+17a8:445c+     R_RenderSegLoop_
+17a8:4b74      R_StoreWallRange_
 21ef:0cc8*     _setval
-Module: r_things.obj(C:\REALDOOM\r_things.c)
-17a8:5660      R_DrawMasked_
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 17a8:56e0      locallib_far_fread_
 17a8:576a*     locallib_far_fwrite_
@@ -1677,4 +1676,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00025470 (152688.)
 Entry point address: 1de4:219c
-Link time: 00:00.20
+Link time: 00:00.75

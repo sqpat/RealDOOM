@@ -193,7 +193,7 @@ _maskedtexrepeat =                   _NULL_OFFSET + 0028Ch
 _maskedcachedbasecol =               _NULL_OFFSET + 0028Eh
 _maskedcachedsegment =               _NULL_OFFSET + 00290h
 _maskedheightvalcache =              _NULL_OFFSET + 00292h
-_cachedbyteheight =                  _NULL_OFFSET + 00293h
+_vsprsortedheadfirst =               _NULL_OFFSET + 00293h
 _lastvisspritesegment =              _NULL_OFFSET + 00294h
 _lastvisspritesegment2 =             _NULL_OFFSET + 00296h
 _lastvisspritepatch =                _NULL_OFFSET + 00298h
@@ -204,8 +204,8 @@ _lightmult48lookup =                 _NULL_OFFSET + 002A0h
 _vga_read_port_lookup =              _NULL_OFFSET + 002C0h
 _psprites =              			 _NULL_OFFSET + 002D8h
 _vissprite_p =                       _NULL_OFFSET + 002F0h
-_vsprsortedheadfirst =               _NULL_OFFSET + 002F2h
-
+_cachedbyteheight =                  _NULL_OFFSET + 002F2h
+; high byte always 0
 _FixedMul_addr =               		 _NULL_OFFSET + 002F4h
 _FixedMul1632_addr =                 _NULL_OFFSET + 002F8h
 _FastDiv3232_addr =                  _NULL_OFFSET + 002FCh

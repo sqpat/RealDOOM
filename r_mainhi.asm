@@ -1345,7 +1345,7 @@ ENDP
 
 
 
-
+; 3034 ish bytes
 ; note remove masked start from here 
 
 jump_to_exit_draw_shadow_sprite:
@@ -2746,8 +2746,7 @@ lookup_FF_repeat:
 mul   byte ptr ds:[_maskedheightvalcache]
 add   ax, word ptr ds:[_maskedcachedsegment]
 
-mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
-xor   dh, dh
+mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 ;call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
 db 09Ah
 dw R_DRAWSINGLEMASKEDCOLUMNOFFSET
@@ -2855,8 +2854,7 @@ jl    load_masked_column_segment
 mul   byte ptr ds:[_maskedheightvalcache]
 add   ax, word ptr ds:[_maskedcachedsegment]
 
-mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
-xor   dh, dh
+mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 ;call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
 db 09Ah
 dw R_DRAWSINGLEMASKEDCOLUMNOFFSET
@@ -2873,8 +2871,7 @@ db 01Eh  ;
 dw _R_GetMaskedColumnSegment_addr
 
 mov   di, word ptr ds:[_maskedcachedbasecol]
-mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
-xor   dh, dh
+mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 
 ; call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
 db 09Ah
@@ -3514,7 +3511,72 @@ add       bx, OFFSET _vissprites
 mov       byte ptr [bx], dh
 jmp       increment_visplane_sort_loop_variables
 
-endp
+ENDP
 
+VISSPRITE_SORTED_HEAD_INDEX = 0FEh
+
+PROC R_DrawMasked_ NEAR
+PUBLIC R_DrawMasked_
+
+
+push bx
+push cx
+push dx
+push si
+push di
+mov  bx, OFFSET _ds_p
+call R_SortVisSprites_
+mov  cx, word ptr ds:[bx]
+mov  ax, word ptr ds:[bx + 2]
+add  cx, 0
+adc  ax, 0E000h	; todo 0x9000 vs 0x7000 difference
+mov  word ptr ds:[bx], cx
+mov  word ptr ds:[bx + 2], ax
+mov  bx, OFFSET _vissprite_p
+cmp  word ptr ds:[bx], 0
+jle  label1
+mov  bx, OFFSET _vsprsortedheadfirst
+mov  al, byte ptr ds:[bx]
+cmp  al, VISSPRITE_SORTED_HEAD_INDEX
+je   label1
+label5:
+xor  ah, ah
+imul bx, ax, SIZEOF_VISSPRITE_T
+lea  ax, ds:[bx + _vissprites]
+call R_DrawSprite_
+mov  al, byte ptr ds:[bx + _vissprites]
+add  bx, OFFSET _vissprites
+cmp  al, VISSPRITE_SORTED_HEAD_INDEX
+jne  label5
+label1:
+mov  bx, OFFSET _ds_p
+mov  si, word ptr ds:[bx]
+sub  si, SIZEOF_DRAWSEG_T
+mov  di, word ptr ds:[bx + 2]
+test si, si
+jbe  label4
+label3:
+mov  es, di
+cmp  word ptr es:[si + 01Ah], NULL_TEX_COL
+je   label2
+mov  ax, si
+mov  dx, di
+mov  cx, word ptr es:[si + 4]
+mov  bx, word ptr es:[si + 2]
+call R_RenderMaskedSegRange_
+label2:
+add  si, -SIZEOF_DRAWSEG_T
+test si, si
+ja   label3
+label4:
+call R_DrawPlayerSprites_
+pop  di
+pop  si
+pop  dx
+pop  cx
+pop  bx
+ret  
+
+ENDP
 
 END

@@ -632,6 +632,7 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
 //
 // R_DrawMasked
 //
+/*
 void __near R_DrawMasked (void) {
     uint8_t         spr;
     drawseg_t __far*          ds;
@@ -661,19 +662,11 @@ void __near R_DrawMasked (void) {
 		}
 	}
 
-/*
-  // dumb asm logging testing stuff to keep around
-    {
-        FILE* fp = fopen("blah.txt", "ab");
-        fprintf (fp, "%x %x\n", visplanelookupsegments[1], visplanelookupsegments[2]);
-        fclose(fp);
-    }
 
-*/
     // draw the psprites on top of everything
     //  but does not draw on side views
 	R_DrawPlayerSprites ();
 }
-
+*/
 
 

@@ -253,7 +253,7 @@
 #define maskedcachedbasecol             (*((int16_t __near*)                 (_NULL_OFFSET + 0x028E)))
 #define maskedcachedsegment             (*((segment_t __near*)               (_NULL_OFFSET + 0x0290)))
 #define maskedheightvalcache            (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0292)))
-#define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0293)))
+#define vsprsortedheadfirst             (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0293)))
 #define lastvisspritesegment            (*((segment_t __near*)               (_NULL_OFFSET + 0x0294)))
 #define lastvisspritesegment2           (*((segment_t __near*)               (_NULL_OFFSET + 0x0296)))
 #define lastvisspritepatch              (*((int16_t __near*)                 (_NULL_OFFSET + 0x0298)))
@@ -264,8 +264,9 @@
 #define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x02C0)))
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x02D8)))
 #define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x02F0)))
-#define vsprsortedheadfirst             (*((uint8_t __near*)                 (_NULL_OFFSET + 0x02F2)))
+#define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x02F2)))
 
+// more far pointers to functions... once they are in ASM-fixed locations, they should be callable normally
 #define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02F4)))
 #define FixedMul1632_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02F8)))
 #define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02FC)))
