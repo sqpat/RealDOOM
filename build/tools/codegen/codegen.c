@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 130
+#define CONSTANTS_COUNT 132
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -158,7 +158,9 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "R_DRAWMASKEDCOLUMNSPRITEOFFSET",
     "R_DRAWSINGLEMASKEDCOLUMNOFFSET",
     "R_DRAWFUZZCOLUMNOFFSET",
-    "SIZEOF_DRAWSEG_T"
+    "SIZEOF_DRAWSEG_T",
+    "OFFSET_NEGONEARRAY",
+    "OFFSET_SCREENHEIGHTARRAY"
 
 };
 
@@ -314,7 +316,9 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     R_DrawMaskedColumnSpriteOffset,
     R_DrawSingleMaskedColumnOffset,
     R_DrawFuzzColumnOffset,
-    sizeof(drawseg_t)
+    sizeof(drawseg_t),
+    offset_negonearray,
+    offset_screenheightarray
     
 };
 

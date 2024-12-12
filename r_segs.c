@@ -1051,8 +1051,8 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		rw_midtexturemid.h.intbits += side_render->rowoffset;
 
 		ds_p->silhouette = SIL_BOTH;
-		ds_p->sprtopclip_offset = screenheightarray_offset;
-		ds_p->sprbottomclip_offset = negonearray_offset;
+		ds_p->sprtopclip_offset = offset_screenheightarray;
+		ds_p->sprbottomclip_offset = offset_negonearray;
 		ds_p->bsilheight = MAXSHORT;
 		ds_p->tsilheight = MINSHORT;
     } else {
@@ -1082,13 +1082,13 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		}
 		
 		if (backsectorceilingheight <= frontsectorfloorheight) {
-			ds_p->sprbottomclip_offset = negonearray_offset;
+			ds_p->sprbottomclip_offset = offset_negonearray;
 			ds_p->bsilheight = MAXSHORT;
 			ds_p->silhouette |= SIL_BOTTOM;
 		}
 	
 		if (backsectorfloorheight >= frontsectorceilingheight) {
-			ds_p->sprtopclip_offset = screenheightarray_offset;
+			ds_p->sprtopclip_offset = offset_screenheightarray;
 			ds_p->tsilheight = MINSHORT;
 			ds_p->silhouette |= SIL_TOP;
 		}

@@ -28,7 +28,7 @@ void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
 void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
 void __far R_DrawSkyPlaneDynamic(int16_t minx, int16_t maxx, visplane_t __far*		pl);
-
+void  locallib_far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * fp);
 void __near R_DrawMasked();
 void __far R_DrawPlayerSprites();
 void __far hackDSBack();
@@ -88,7 +88,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)R_DrawSpan, codesize2, 1, fp);
 
 
-    codesize3 = FP_OFF(R_DrawMasked) - FP_OFF(R_DrawFuzzColumn);
+    codesize3 = FP_OFF(locallib_far_fread) - FP_OFF(R_DrawFuzzColumn);
     
     // write filesize..
     fwrite(&codesize3, 2, 1, fp);
@@ -96,7 +96,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)R_DrawFuzzColumn, codesize3, 1, fp);
 
     // This func gets loaded in two spots...
-    codesize4 = FP_OFF(R_DrawMasked) - FP_OFF(R_DrawMaskedColumn);
+    codesize4 = FP_OFF(locallib_far_fread) - FP_OFF(R_DrawMaskedColumn);
     // write filesize..
     fwrite(&codesize4, 2, 1, fp);
     // write data

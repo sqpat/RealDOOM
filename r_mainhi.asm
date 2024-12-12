@@ -1939,8 +1939,8 @@ ENDP
 PROC R_DrawPlayerSprites_ NEAR
 PUBLIC R_DrawPlayerSprites_
 
-mov  word ptr ds:[_mfloorclip], 0A280h  ; set offset to size_negonearray
-mov  word ptr ds:[_mceilingclip], 0A000h ; set offset to size_openings
+mov  word ptr ds:[_mfloorclip], OFFSET_SCREENHEIGHTARRAY 
+mov  word ptr ds:[_mceilingclip], OFFSET_NEGONEARRAY 
 
 cmp  word ptr ds:[_psprites], -1  ; STATENUM_NULL
 je  check_next_player_sprite
@@ -1950,7 +1950,7 @@ call R_DrawVisSprite_
 check_next_player_sprite:
 cmp  word ptr ds:[_psprites + 0Ch], -1  ; STATENUM_NULL
 je  exit_drawplayersprites
-mov  ax, _player_vissprites + 028h ; vissprite 1
+mov  ax, _player_vissprites + SIZEOF_VISSPRITE_T
 call R_DrawVisSprite_
 
 exit_drawplayersprites:

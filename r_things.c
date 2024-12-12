@@ -627,7 +627,7 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
     mfloorclip_segment = mceilingclip_segment = openings_segment;
 }
 
-*/
+*/ 
 
 //
 // R_DrawMasked
