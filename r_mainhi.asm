@@ -1966,8 +1966,8 @@ PUBLIC R_RenderMaskedSegRange_
 
 ;void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2) {
 
-;dx:ax is far drawseg pointer
-;x1 is bx
+;es:di is far drawseg pointer
+;x1 is ax
 ;x2 is cx
 
 ; bp - 2        side_render
@@ -1992,17 +1992,16 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 01Eh
-mov   di, ax
-mov   word ptr [bp - 01Ah], ax
-mov   word ptr [bp - 018h], dx
 
-mov   ax, bx
+mov   word ptr [bp - 01Ah], di
+mov   word ptr [bp - 018h], es
+
 mov   word ptr cs:[SELFMODIFY_x1_field_1+1], ax
 mov   word ptr cs:[SELFMODIFY_x1_field_2+1], ax
 mov   word ptr cs:[SELFMODIFY_x1_field_3+1], ax
 
 mov   word ptr cs:[SELFMODIFY_cmp_to_x2+1], cx
-mov   es, dx
+
 mov   ax, word ptr es:[di]       ; get ds->cursegvalue
 mov   word ptr ds:[_curseg], ax  
 shl   ax, 1
@@ -3086,9 +3085,8 @@ r2_stays_ds_x2:
 
 
 do_render_masked_segrange:
-mov   dx, es
-mov   bx, ax   ; todo figure out a way to keep bx 
-mov   ax, di
+
+
 call  R_RenderMaskedSegRange_
 jmp   iterate_next_drawseg_loop
 get_lowscalepass_1:
@@ -3507,8 +3505,8 @@ mov       al, byte ptr [bp - 2]
 mov	      ah, 028h
 mul       ah
 mov       bx, ax
-add       bx, OFFSET _vissprites
-mov       byte ptr [bx], dh
+
+mov       byte ptr [bx + _vissprites], dh
 jmp       increment_visplane_sort_loop_variables
 
 ENDP
@@ -3524,51 +3522,59 @@ push cx
 push dx
 push si
 push di
-mov  bx, OFFSET _ds_p
 call R_SortVisSprites_
-mov  cx, word ptr ds:[bx]
-mov  ax, word ptr ds:[bx + 2]
-add  cx, 0
-adc  ax, 0E000h	; todo 0x9000 vs 0x7000 difference
-mov  word ptr ds:[bx], cx
-mov  word ptr ds:[bx + 2], ax
-mov  bx, OFFSET _vissprite_p
-cmp  word ptr ds:[bx], 0
-jle  label1
-mov  bx, OFFSET _vsprsortedheadfirst
-mov  al, byte ptr ds:[bx]
+
+; adjust ds_p to be 7000 based instead of 9000 based due to different masked task mappings.
+
+
+
+sub  word ptr ds:[_ds_p + 2], (DRAWSEGS_BASE_SEGMENT - DRAWSEGS_BASE_SEGMENT_7000)	
+;    if (vissprite_p > 0) {
+cmp  word ptr ds:[_vissprite_p], 0
+jle  done_drawing_sprites
+
+;	for (spr = vsprsortedheadfirst ;
+;       spr != VISSPRITE_SORTED_HEAD_INDEX ;
+;       spr=vissprites[spr].next) {
+;       R_DrawSprite (&vissprites[spr]);
+;   }
+
+mov  al, byte ptr ds:[_vsprsortedheadfirst]
 cmp  al, VISSPRITE_SORTED_HEAD_INDEX
-je   label1
-label5:
-xor  ah, ah
-imul bx, ax, SIZEOF_VISSPRITE_T
-lea  ax, ds:[bx + _vissprites]
+je   done_drawing_sprites
+draw_next_sprite:
+mov  ah, SIZEOF_VISSPRITE_T
+mul  ah
+add  ax, OFFSET _vissprites
+mov  bx, ax
 call R_DrawSprite_
-mov  al, byte ptr ds:[bx + _vissprites]
-add  bx, OFFSET _vissprites
+mov  al, byte ptr ds:[bx]
+
+
 cmp  al, VISSPRITE_SORTED_HEAD_INDEX
-jne  label5
-label1:
-mov  bx, OFFSET _ds_p
-mov  si, word ptr ds:[bx]
-sub  si, SIZEOF_DRAWSEG_T
-mov  di, word ptr ds:[bx + 2]
-test si, si
-jbe  label4
-label3:
-mov  es, di
-cmp  word ptr es:[si + 01Ah], NULL_TEX_COL
-je   label2
-mov  ax, si
-mov  dx, di
-mov  cx, word ptr es:[si + 4]
-mov  bx, word ptr es:[si + 2]
+jne  draw_next_sprite
+done_drawing_sprites:
+
+les  di, dword ptr ds:[_ds_p]
+
+sub  di, SIZEOF_DRAWSEG_T
+
+jle  done_rendering_masked_segranges
+mov  si, es
+check_next_seg:
+cmp  word ptr es:[di + 01Ah], NULL_TEX_COL
+je   not_masked
+
+mov  ax, word ptr es:[di + 2]
+mov  cx, word ptr es:[di + 4]
+
 call R_RenderMaskedSegRange_
-label2:
-add  si, -SIZEOF_DRAWSEG_T
-test si, si
-ja   label3
-label4:
+mov  es, si
+not_masked:
+sub  di, SIZEOF_DRAWSEG_T
+
+ja   check_next_seg
+done_rendering_masked_segranges:
 call R_DrawPlayerSprites_
 pop  di
 pop  si
