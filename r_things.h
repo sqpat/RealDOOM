@@ -34,7 +34,6 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixeldata, column_t __far* colum
 void __near R_SortVisSprites (void);
 
 void __near R_ClearSprites (void);
-void __near R_DrawMasked (void);
 
 void __near R_PrepareMaskedPSprites(void);
 

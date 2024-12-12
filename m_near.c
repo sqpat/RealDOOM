@@ -460,6 +460,7 @@ uint8_t quality_port_lookup[12] = {
 void (__far* R_DrawColumnPrepCall)(uint16_t)  =   				      	      ((void    (__far *)(uint16_t))  						(MK_FP(colfunc_segment, 				R_DrawColumnPrepOffset)));
 
 void (__far* R_DrawPlanesCall)()  =   				      	                  ((void    (__far *)())  								(MK_FP(spanfunc_function_area_segment, R_DrawPlanesOffset)));
+void (__far* R_DrawMaskedCall)() = 											  ((void    (__far *)())     							(MK_FP(drawfuzzcol_area_segment, R_DrawMaskedOffset)));
 
 //void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  				      	  ((void    (__far *)(uint16_t))						(MK_FP(colfunc_segment_maskedmapping, R_DrawColumnPrepOffset)));
 //void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  		      ((void    (__far *)(uint16_t, byte __far *))  		(MK_FP(drawfuzzcol_area_segment, R_DrawFuzzColumnOffset)));

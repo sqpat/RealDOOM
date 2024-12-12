@@ -481,6 +481,7 @@ extern segment_t            pagesegments[NUM_TEXTURE_L1_CACHE_PAGES];
 
 extern void                 (__far* R_DrawColumnPrepCall)(uint16_t);
 extern void                 (__far* R_DrawPlanesCall)();
+extern void                 (__far* R_DrawMaskedCall)();
 
 
 //todo factor these out after DrawMasked moved hi...

@@ -619,18 +619,19 @@ FREEBYTES           7EE0:0000
 
 maskedpostdata              8400:0000
 drawmaskedfuncarea_sprite?  86FD:0000
-
-FREEBYTES 4144 free
+empty                       871C:0000 
+FREEBYTES 3648 free
+// MOVE SOME/SPRITE CODE HERE!
 
  spritepostdatasizes    8800:0000
  spritetotaldatasizes   88AD:0000
  maskedpostdataofs      895A:0000
  maskedpixeldataofs     8A32:0000
  drawfuzzcol_area       8B0A:0000
-[empty]                    :0000 todo
+//todo change
+[empty]                 8BF3:0000 
 
-// MOVE MASKED/SPRITE CODE HERE!
-FREEBYTES 3936 free
+FREEBYTES 208 free
  */
 
 

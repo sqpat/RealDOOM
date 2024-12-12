@@ -650,7 +650,16 @@ void __far R_RenderPlayerView () {
 	// either one extra page swap per frame or comment this out
 	// todo reenable...? i think this doesnt cause conflicts anymore
 	//NetUpdate ();
-	R_DrawMasked ();
+
+	// 8B0A0E30  5153 5652
+/*
+	I_Error("%lx %x %x", R_DrawMaskedCall, 
+	((int16_t __far*)R_DrawMaskedCall)[0],
+	((int16_t __far*)R_DrawMaskedCall)[1]
+	);
+	*/
+
+	R_DrawMaskedCall ();
 #ifdef DETAILED_BENCH_STATS
 	renderplayermaskedtics += ticcount - cachedrenderplayertics;
 #endif
