@@ -703,6 +703,7 @@ void __far Z_QuickMapByTaskNum(int8_t tasknum) {
 //			Z_QuickMapStatusNoScreen4();
 //			break;
 		case TASK_RENDER_SPRITE:
+			// this happened once, weird...? might be corruption
 			I_Error("this happened..?"); // todo remove TASK_RENDER_SPRITE if this never happens..?
 			Z_QuickMapRender();
 			Z_QuickMapUndoFlatCache();

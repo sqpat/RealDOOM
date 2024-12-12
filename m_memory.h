@@ -588,7 +588,6 @@ FREEBYTES           7EE0:0000
 #define size_maskedpixeldataofs        3456u
 
 
-// todo fix?
 
 #define maskedpostdata             ((byte __far*)              (0x84000000 ))
 

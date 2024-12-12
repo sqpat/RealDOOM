@@ -658,11 +658,30 @@ void __far R_RenderPlayerView () {
 	((int16_t __far*)R_DrawMaskedCall)[1]
 	);
 	*/
+/*
+	//if (visplanelookupsegments[1] == 2)
+	{
+		FILE* fp1 = fopen("log3.txt", "wb");
+		FILE* fp2 = fopen("log4.txt", "wb");
+		byte __far* addr1 = MK_FP(drawfuzzcol_area_segment, 0);
+		byte __far* addr2 = MK_FP(drawmaskedfuncarea_sprite_segment, 0);
+
+	    FAR_fwrite((byte __far *)addr1, R_DrawFuzzColumnCodeSize, 1, fp1);
+	    FAR_fwrite((byte __far *)addr2, R_DrawMaskedColumnCodeSize, 1, fp2);
+
+
+		fclose(fp1);
+		fclose(fp2);
+		//I_Error("done");
+
+	}*/
 
 	R_DrawMaskedCall ();
 #ifdef DETAILED_BENCH_STATS
 	renderplayermaskedtics += ticcount - cachedrenderplayertics;
 #endif
+
+
 	//filelog2(4, 0, 0, 0, 0, 0);
 
 	// Check for new console commands.

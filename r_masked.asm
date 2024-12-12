@@ -2850,7 +2850,7 @@ push      bp
 mov       bp, sp
 sub       sp, 034h				; let's set things up finally isnce we're not quick-exiting out
 
-mov       byte ptr cs:[SELFMODIFY_loop_compare_instruction+1 - OFFSET R_DrawFuzzColumn_], al ; store count
+mov       byte ptr cs:[SELFMODIFY_loop_compare_instruction+1 - OFFSET R_DrawMaskedColumn_], al ; store count
 mov       dx, ax
 mov       cx, 014h
 lea       di, [bp - 034h]
@@ -2875,7 +2875,7 @@ jl        loop_set_vissprite_next
 done_setting_vissprite_next:
 
 sub        bx, SIZEOF_VISSPRITE_T
-mov       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawFuzzColumn_], 0  ; zero loop counter
+mov       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawMaskedColumn_], 0  ; zero loop counter
 
 mov       al, VISSPRITE_SORTED_HEAD_INDEX
 
@@ -2887,7 +2887,7 @@ jle       exit_sort_vissprites
 
 loop_visplane_sort:
 
-inc       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawFuzzColumn_] ; update loop counter
+inc       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawMaskedColumn_] ; update loop counter
 
 ;DI:CX is bestscale
 ;        bestscale = MAXLONG;
@@ -2902,7 +2902,7 @@ mov       al, byte ptr [bp - 034h]  ; ds=unsorted.next
 cmp       al, VISSPRITE_UNSORTED_INDEX ; ds!= VISSPRITE_UNSORTED_INDEX
 je        done_with_sort_subloop
 loop_sort_subloop:
-mov       ah, 028h
+mov       ah, SIZEOF_VISSPRITE_T
 mov       bx, ax
 mul       ah
 xchg      ax, bx
@@ -2923,7 +2923,7 @@ mov       word ptr [bp - 4], bx   ; todo dont add vissprites to this?
 
 prepare_find_best_index_subloop:
 
-mul       ah	  ; still 028h
+mul       ah	  ; still 028h (SIZEOF_VISSPRITE_T )
 mov       bx, ax
 
 mov       al, byte ptr [bx+si]
@@ -2935,7 +2935,7 @@ mov       al, byte ptr [bp - 034h]
 
 cmp       al, dh
 je        done_with_find_best_index_loop
-mov       dl, 028h
+mov       dl, SIZEOF_VISSPRITE_T
 loop_find_best_index:
 mul       dl
 mov       word ptr [bp - 0Ah], 0  ; some unsorted field
@@ -2991,7 +2991,7 @@ set_next_to_best_index:
 ;            vissprites[vsprsortedheadprev].next = bestindex;
 
 mov       al, byte ptr [bp - 2]
-mov	      ah, 028h
+mov	      ah, SIZEOF_VISSPRITE_T
 mul       ah
 mov       bx, ax
 

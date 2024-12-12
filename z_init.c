@@ -502,6 +502,21 @@ void __near Z_LoadBinaries() {
 	fread(&codesize, 2, 1, fp2);
 	FAR_fread(drawmaskedfuncarea_sprite, codesize, 1, fp2);
 
+/*
+	{
+		FILE* fp1 = fopen("log4.txt", "wb");
+		byte __far* addr1 = MK_FP(drawfuzzcol_area_segment, 0);
+	    FAR_fwrite((byte __far *)addr1, R_DrawFuzzColumnCodeSize, 1, fp1);
+		fclose(fp1);
+
+		I_Error("done %x %x\n %lx %lx", R_DrawFuzzColumnCodeSize, R_DrawFuzzColumnCodeSize,
+		addr1, addr1 + R_DrawFuzzColumnCodeSize
+		
+		);
+
+	}
+*/
+
 	Z_QuickMapRenderPlanes();
 
 	fread(&codesize, 2, 1, fp2);
@@ -543,7 +558,7 @@ void __near Z_LoadBinaries() {
 	M_Drawer_addr = 				(uint32_t)(M_Drawer);
 
 	FixedMul_addr = 				(uint32_t)(FixedMul);
-	//FixedMul1632_addr = 			(uint32_t)(FixedMul1632);
+	FixedMul1632_addr = 			(uint32_t)(FixedMul1632);
 	FastDiv3232_addr = 				(uint32_t)(FastDiv3232);
 	R_GetMaskedColumnSegment_addr = (uint32_t)(R_GetMaskedColumnSegment);
 	getspritetexture_addr = 		(uint32_t)(getspritetexture);
