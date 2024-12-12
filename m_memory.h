@@ -629,9 +629,9 @@ FREEBYTES 3648 free
  maskedpixeldataofs     8A32:0000
  drawfuzzcol_area       8B0A:0000
 //todo change
-[empty]                 8BF3:0000 
+[empty]                 8BF7:0000 
 
-FREEBYTES 208 free
+FREEBYTES 144 free
  */
 
 

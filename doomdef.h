@@ -297,7 +297,7 @@ fixed_t32	FastMulTrig16(uint16_t trigtype, fineangle_t fineangle, int16_t b);
 
 //fixed_t32	FixedMulTrig16(uint16_t trigtype, fineangle_t fineangle, int16_t b);
 //fixed_t32	FixedMulTrigOld(fixed_t32 a, fixed_t32 b);
-fixed_t32	FixedMul1632(int16_t a, fixed_t32 b);
+fixed_t32	__far FixedMul1632(int16_t a, fixed_t32 b);
 fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
 fixed_t32	FixedMul (fixed_t32 a, fixed_t32 b);
 fixed_t32	FixedMul2424(fixed_t32 a, fixed_t32 b);
@@ -406,7 +406,7 @@ inline uint16_t FastMul8u8u(uint8_t a, uint8_t b);
 
 
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
-fixed_t32	FastDiv3232(fixed_t32 a, fixed_t32 b);
+fixed_t32	__far FastDiv3232(fixed_t32 a, fixed_t32 b);
 uint16_t 	FastDiv3232_shift_3_8(fixed_t32 a, fixed_t32 b);
 fixed_t32	FastDiv32u16u (fixed_t32 a, uint16_t b);
 fixed_t32	FastDiv3216u (fixed_t32 a, int16_t b);

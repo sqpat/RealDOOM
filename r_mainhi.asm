@@ -28,7 +28,7 @@ EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
-EXTRN FixedMul1632_:PROC
+
 
 
 ;EXTRN FixedMul_:PROC

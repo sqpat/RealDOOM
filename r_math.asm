@@ -26,7 +26,6 @@ EXTRN FastDiv3232_shift_3_8_:PROC
 EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
-EXTRN FixedMul1632_:PROC
 
 
 .CODE

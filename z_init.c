@@ -524,7 +524,8 @@ void __near Z_LoadBinaries() {
 
 	DEBUG_PRINT("..");
  
-	// set some function addresses for asm calls
+	// set some function addresses for asm calls. 
+	// as these move to asm and EMS memory space themselves, these references can go away
 	Z_QuickMapVisplanePage_addr = 	(uint32_t)(Z_QuickMapVisplanePage);
 	R_EvictFlatCacheEMSPage_addr = 	(uint32_t)(R_EvictFlatCacheEMSPage);
 	Z_QuickMapFlatPage_addr =   	(uint32_t)(Z_QuickMapFlatPage);
@@ -542,7 +543,7 @@ void __near Z_LoadBinaries() {
 	M_Drawer_addr = 				(uint32_t)(M_Drawer);
 
 	FixedMul_addr = 				(uint32_t)(FixedMul);
-	FixedMul1632_addr = 			(uint32_t)(FixedMul1632);
+	//FixedMul1632_addr = 			(uint32_t)(FixedMul1632);
 	FastDiv3232_addr = 				(uint32_t)(FastDiv3232);
 	R_GetMaskedColumnSegment_addr = (uint32_t)(R_GetMaskedColumnSegment);
 	getspritetexture_addr = 		(uint32_t)(getspritetexture);

@@ -207,14 +207,14 @@ _vissprite_p =                       _NULL_OFFSET + 002F0h
 _cachedbyteheight =                  _NULL_OFFSET + 002F2h
 ; high byte always 0
 _FixedMul_addr =               		 _NULL_OFFSET + 002F4h
-_FixedMul1632_addr =                 _NULL_OFFSET + 002F8h
+;_FixedMul1632_addr =                 _NULL_OFFSET + 002F8h
 _FastDiv3232_addr =                  _NULL_OFFSET + 002FCh
 _R_GetMaskedColumnSegment_addr =     _NULL_OFFSET + 00300h
 _getspritetexture_addr =             _NULL_OFFSET + 00304h
 
 
 
-; 2F0h
+; 308h
 
 
 

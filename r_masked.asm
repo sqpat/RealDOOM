@@ -2538,7 +2538,7 @@ jmp   iterate_next_drawseg_loop
 
 ENDP
 
-R_SORTVISSPRITES_OFFSET = R_DrawVisSprite_ - R_DrawMaskedColumn_
+R_SORTVISSPRITES_OFFSET = OFFSET R_SortVisSprites_ - OFFSET R_DrawMaskedColumn_
 VISSPRITE_SORTED_HEAD_INDEX = 0FEh
 
 PROC R_DrawMasked_ FAR
@@ -2554,13 +2554,11 @@ push di
 
 db 09Ah
 dw R_SORTVISSPRITES_OFFSET 
-dw COLFUNC_MASKEDMAPPING_SEGMENT 
+dw DRAWMASKEDFUNCAREA_SPRITE_SEGMENT 
+
 
 
 ; adjust ds_p to be 7000 based instead of 9000 based due to different masked task mappings.
-
-
-
 sub  word ptr ds:[_ds_p + 2], (DRAWSEGS_BASE_SEGMENT - DRAWSEGS_BASE_SEGMENT_7000)	
 ;    if (vissprite_p > 0) {
 cmp  word ptr ds:[_vissprite_p], 0
@@ -2629,7 +2627,7 @@ ENDP
 ; R_DrawMaskedColumn
 ;
 	
-PROC  R_DrawMaskedColumn_ 
+PROC  R_DrawMaskedColumn_ FAR
 PUBLIC  R_DrawMaskedColumn_ 
 
 ;  bp - 02 cx/maskedcolumn segment
@@ -2824,6 +2822,7 @@ ENDP
 VISSPRITE_UNSORTED_INDEX    = 0FFh
 VISSPRITE_SORTED_HEAD_INDEX = 0FEh
 
+; note: selfmodifies in this in theory are based off R_DrawMaskedColumn_ offset in sprites space, but thats 0 anyway
 
 PROC R_SortVisSprites_ FAR
 PUBLIC R_SortVisSprites_
@@ -2850,7 +2849,8 @@ push      di
 push      bp
 mov       bp, sp
 sub       sp, 034h				; let's set things up finally isnce we're not quick-exiting out
-mov       byte ptr cs:[SELFMODIFY_loop_compare_instruction+1 - OFFSET R_DrawMaskedColumn_], al ; store count
+
+mov       byte ptr cs:[SELFMODIFY_loop_compare_instruction+1 - OFFSET R_DrawFuzzColumn_], al ; store count
 mov       dx, ax
 mov       cx, 014h
 lea       di, [bp - 034h]
@@ -2875,7 +2875,7 @@ jl        loop_set_vissprite_next
 done_setting_vissprite_next:
 
 sub        bx, SIZEOF_VISSPRITE_T
-mov       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawMaskedColumn_], 0  ; zero loop counter
+mov       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawFuzzColumn_], 0  ; zero loop counter
 
 mov       al, VISSPRITE_SORTED_HEAD_INDEX
 
@@ -2887,7 +2887,7 @@ jle       exit_sort_vissprites
 
 loop_visplane_sort:
 
-inc       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawMaskedColumn_] ; update loop counter
+inc       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawFuzzColumn_] ; update loop counter
 
 ;DI:CX is bestscale
 ;        bestscale = MAXLONG;

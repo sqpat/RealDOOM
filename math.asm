@@ -380,7 +380,7 @@ ENDP
 
 
 
-PROC FixedMul1632_
+PROC FixedMul1632_ FAR
 PUBLIC FixedMul1632_
 
 ; AX  *  CX:BX
@@ -468,7 +468,7 @@ ADC  DX, SI
  
 
 pop   si
-ret
+retf
 
 
 
@@ -2197,7 +2197,7 @@ retf
 ;FastDiv3232_
 ; DX:AX / CX:BX
 
-PROC FastDiv3232_
+PROC FastDiv3232_ FAR
 PUBLIC FastDiv3232_
 
 
@@ -2374,7 +2374,7 @@ dec ax
 
 pop   di
 pop   si
-ret  
+retf  
 
 
 qhat_subtract_1_3232:
@@ -2384,7 +2384,7 @@ xor dx, dx
 
 pop   di
 pop   si
-ret  
+retf  
 
 
 
@@ -2396,7 +2396,7 @@ xor  dx, dx;
 
 pop   di
 pop   si
-ret  
+retf
 
 
 endp
