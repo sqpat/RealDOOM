@@ -206,6 +206,13 @@ _psprites =              			 _NULL_OFFSET + 002D8h
 _vissprite_p =                       _NULL_OFFSET + 002F0h
 _vsprsortedheadfirst =               _NULL_OFFSET + 002F2h
 
+_FixedMul_addr =               		 _NULL_OFFSET + 002F4h
+_FixedMul1632_addr =                 _NULL_OFFSET + 002F8h
+_FastDiv3232_addr =                  _NULL_OFFSET + 002FCh
+_R_GetMaskedColumnSegment_addr =     _NULL_OFFSET + 00300h
+_getspritetexture_addr =             _NULL_OFFSET + 00304h
+
+
 
 ; 2F0h
 

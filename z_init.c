@@ -541,6 +541,12 @@ void __near Z_LoadBinaries() {
 	V_MarkRect_addr = 				(uint32_t)(V_MarkRect);
 	M_Drawer_addr = 				(uint32_t)(M_Drawer);
 
+	FixedMul_addr = 				(uint32_t)(FixedMul);
+	FixedMul1632_addr = 			(uint32_t)(FixedMul1632);
+	FastDiv3232_addr = 				(uint32_t)(FastDiv3232);
+	R_GetMaskedColumnSegment_addr = (uint32_t)(R_GetMaskedColumnSegment);
+	getspritetexture_addr = 		(uint32_t)(getspritetexture);
+
 
 
 }

@@ -266,6 +266,14 @@
 #define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x02F0)))
 #define vsprsortedheadfirst             (*((uint8_t __near*)                 (_NULL_OFFSET + 0x02F2)))
 
+#define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02F4)))
+#define FixedMul1632_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02F8)))
+#define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02FC)))
+#define R_GetMaskedColumnSegment_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0300)))
+#define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0304)))
+	
+
+
 // 2f3 is free
 
 

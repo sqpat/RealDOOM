@@ -2407,7 +2407,7 @@ segment_t getcompositetexture(int16_t tex_index) {
 
 }
 
-segment_t __near getspritetexture(int16_t index) {
+segment_t __far getspritetexture(int16_t index) {
 
 	int16_t lump = index + firstspritelump;
 	uint8_t texpage = spritepage[index];
@@ -2708,7 +2708,7 @@ void doprint(int16_t a, int16_t tex){
 
 
 //todo can this be optimized for the masked case??
-segment_t __near R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
+segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	int16_t         lump;
 	int16_t_union __far* texturecolumnlump;
 	int16_t n = 0;

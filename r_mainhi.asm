@@ -18,23 +18,23 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
-; todo move these all out
+; todo move these all out once BSP code moved out of binary
 
 
-
-EXTRN FixedMul_:PROC
 EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
-EXTRN FixedMul1632_:PROC
-EXTRN FastDiv3232_:PROC
-
 EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
-EXTRN R_GetMaskedColumnSegment_:NEAR
-EXTRN getspritetexture_:NEAR
+EXTRN FixedMul1632_:PROC
+
+
+;EXTRN FixedMul_:PROC
+;EXTRN FastDiv3232_:PROC
+;EXTRN R_GetMaskedColumnSegment_:NEAR
+;EXTRN getspritetexture_:NEAR
 
 
 ;EXTRN _R_DrawFuzzColumnCallHigh:DWORD
@@ -559,6 +559,11 @@ mov   di, cx  ; store cx..
 pop bx
 mov   cx, dx
 call FixedMul1632_
+; this is crashing now
+;db 0FFh  ; lcall[addr]
+;db 01Eh  ;
+;dw _FixedMul1632_addr
+
 
 ; set up params..
 pop bx
@@ -567,6 +572,11 @@ mov   ds, ax
 mov   ax, si
 mov   di, dx
 call FixedMul1632_
+; this is crashing now
+;db 0FFh  ; lcall[addr]
+;db 01Eh  ;
+;dw _FixedMul1632_addr
+
 cmp   dx, di
 jg    return_true_2
 je    check_lowbits
@@ -1323,6 +1333,21 @@ ret
 ENDP
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+; note remove masked start from here 
+
 jump_to_exit_draw_shadow_sprite:
 jmp   exit_draw_shadow_sprite
 
@@ -1619,7 +1644,12 @@ test ax, 08000h  ; high bit
 do_16_bit_mul_after_all_vissprite:
 jnz  do_32_bit_mul_after_all_vissprite
 
-call  FixedMul1632_
+;call  FixedMul1632_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul1632_addr
+
+
 
 done_with_mul_vissprite:
 
@@ -1710,7 +1740,11 @@ jz    do_16_bit_mul_after_all_vissprite
 dec   dx
 do_32_bit_mul_after_all_vissprite:
 
-call FixedMul_
+;call FixedMul_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
+
 jmp done_with_mul_vissprite
 
   
@@ -1732,7 +1766,11 @@ mov   dx, word ptr ds:[_lastvisspritepatch]
 mov   word ptr ds:[_lastvisspritepatch2], dx
 mov   dx, word ptr ds:[_lastvisspritesegment]
 mov   word ptr ds:[_lastvisspritesegment2], dx
-call  getspritetexture_
+;call  getspritetexture_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _getspritetexture_addr
+
 mov   word ptr ds:[_lastvisspritesegment], ax
 mov   word ptr es, ax
 mov   ax, word ptr [si + 026h]
@@ -2317,7 +2355,11 @@ mov   word ptr [bp - 8], dx			; rw_scalestep_shift
 
 mov   bx, word ptr ds:[_dc_texturemid]
 mov   cx, word ptr ds:[_dc_texturemid + 2]
-call  FixedMul_
+;call  FixedMul_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
+
 mov   word ptr [bp - 012h], ax	  ; sprtopscreen_step
 mov   word ptr [bp - 010h], dx
 
@@ -2418,7 +2460,10 @@ test ax, 08000h  ; high bit
 do_16_bit_mul_after_all:
 jnz  do_32_bit_mul_after_all
 
-call  FixedMul1632_
+;call  FixedMul1632_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul1632_addr
 
 
 
@@ -2480,7 +2525,12 @@ jz    do_16_bit_mul_after_all
 dec   dx
 do_32_bit_mul_after_all:
 
-call FixedMul_
+;call FixedMul_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
+
+
 jmp done_with_mul
 
 do_inner_loop:
@@ -2557,7 +2607,11 @@ mov   ax, 0FFFFh
 mov   dx, ax
 mov   bx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
-call  FastDiv3232_
+;call  FastDiv3232_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastDiv3232_addr
+
 mov   word ptr ds:[_dc_iscale], ax
 mov   word ptr ds:[_dc_iscale + 2], dx
 
@@ -2776,7 +2830,12 @@ load_masked_column_segment_lookup:
 mov   dx, si
 SELFMODIFY_texnum_1:
 mov   ax, 08000h
-call  R_GetMaskedColumnSegment_  
+;call  R_GetMaskedColumnSegment_  
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_GetMaskedColumnSegment_addr
+
+
 mov   di, word ptr ds:[_maskedcachedbasecol]
 mov   dx, word ptr ds:[_maskedcachedsegment]   ; to offset for above
 sub   ax, dx
@@ -2808,7 +2867,11 @@ load_masked_column_segment:
 mov   dx, si
 SELFMODIFY_texnum_2:
 mov   ax, 08000h
-call  R_GetMaskedColumnSegment_
+;call  R_GetMaskedColumnSegment_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_GetMaskedColumnSegment_addr
+
 mov   di, word ptr ds:[_maskedcachedbasecol]
 mov   dl, byte ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 xor   dh, dh
