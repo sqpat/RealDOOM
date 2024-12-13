@@ -2027,23 +2027,21 @@ jne   do_sign_bit_return
 
 ; gross - we must do a lot of work in this case. 
 mov   di, cx  ; store cx.. 
-pop bx
+pop   bx
 mov   cx, dx
 ;call FixedMul1632_
-; this is crashing now
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMul1632_addr
 
 
 ; set up params..
-pop bx
+pop   bx
 mov   cx, di
-mov   ds, ax
+push  ax
 mov   ax, si
 mov   di, dx
 ;call FixedMul1632_
-; this is crashing now
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMul1632_addr
@@ -2053,21 +2051,17 @@ jg    return_true_2
 je    check_lowbits
 return_false_2:
 xor   ax, ax
-mov   di, ss ;  restore ds
-mov   ds, di
-pop   bp
+
+LEAVE_MACRO
 pop   di
 ret   
 
 check_lowbits:
-mov   cx, ds
+pop   cx ;  old AX
 cmp   ax, cx
 jb    return_false_2
 return_true_2:
 mov   ax, 1
-
-mov   di, ss ;  restore ds
-mov   ds, di
 
 LEAVE_MACRO
 pop   di
@@ -2087,7 +2081,7 @@ pop   di
 ret   
 
 
-endp
+ENDP
 
 
 PROC R_DrawSprite_ NEAR
@@ -2822,7 +2816,7 @@ ENDP
 VISSPRITE_UNSORTED_INDEX    = 0FFh
 VISSPRITE_SORTED_HEAD_INDEX = 0FEh
 
-; note: selfmodifies in this in theory are based off R_DrawMaskedColumn_ offset in sprites space, but thats 0 anyway
+; note: selfmodifies in this are based off R_DrawMaskedColumn_ as 0
 
 PROC R_SortVisSprites_ FAR
 PUBLIC R_SortVisSprites_
