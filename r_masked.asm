@@ -1006,7 +1006,17 @@ je    lookup_not_ff
 ;		masked_header_t __near * maskedheader = &masked_headers[lookup];
 ;		maskedpostsofs = maskedheader->postofsoffset;
 cbw
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl   ax, 3
+ELSE
+shl   ax, 1
+shl   ax, 1
+shl   ax, 1
+ENDIF
+
+
 mov   bx, ax
 mov   ax, word ptr ds:[bx + _masked_headers + 2]
 mov   word ptr cs:[SELFMODIFY_maskedpostofs  +3 - OFFSET R_DrawFuzzColumn_], ax
@@ -1031,8 +1041,17 @@ mov   byte ptr [bp - 4], al
 mov   cx, word ptr [bx+2]			; get v2 offset
 mov   bx, word ptr [bx]				; get v1 offset
 mov   ax, VERTEXES_SEGMENT
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl   bx, 2
 shl   cx, 2
+ELSE
+shl   bx, 1
+shl   bx, 1
+shl   cx, 1
+shl   cx, 1
+ENDIF
+
 mov   es, ax
 
 ; compare v1/v2 fields right now, self modify the lightnum diff that it is used for later.
@@ -1075,24 +1094,57 @@ sal   bx, 1
 mov   es, ax
 
 mov   bx, word ptr es:[bx + di]		; get secnum
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl   bx, 2
+ELSE
+shl   bx, 1
+shl   bx, 1
+ENDIF
+
 
 mov   ax, word ptr ds:[bx + _sides_render + 2]   ; get a field in the sides render area
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl   ax, 4
+ELSE
+shl   ax, 1
+shl   ax, 1
+shl   ax, 1
+shl   ax, 1
+ENDIF
+
 backsector_set:
 mov   word ptr ds:[_backsector], ax
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 mov   bx, cx        ; retrieve side_render secnum from above
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl   bx, 4
+ELSE
+shl   bx, 1
+shl   bx, 1
+shl   bx, 1
+shl   bx, 1
+ENDIF
+
+
 mov   word ptr ds:[_frontsector], bx
 
 
 mov   al, byte ptr es:[bx + 0Eh]
 xor   ah, ah
 mov   dx, ax
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 sar   dx, 4
+ELSE
+sar   dx, 1
+sar   dx, 1
+sar   dx, 1
+sar   dx, 1
+ENDIF
+
 mov   al, byte ptr ds:[_extralight]
 add   ax, dx
 
