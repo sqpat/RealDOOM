@@ -574,6 +574,7 @@ void __near R_Subsector(int16_t subsecnum) {
 #define BASEYCENTER                     100L
 #define MINZ_HIGHBITS					4
 
+
 //
 // R_DrawPSprite
 //
@@ -658,8 +659,9 @@ void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframe
         vis->startfrac = 0;
     }
     
-    if (vis->x1 > x1)
+    if (vis->x1 > x1){
         vis->startfrac += FastMul16u32u((vis->x1-x1),  vis->xiscale);
+	}
 
     vis->patch = spriteindex;
 
@@ -706,7 +708,7 @@ void __near R_PrepareMaskedPSprites(void) {
 
 
 }
-
+/*
 //
 // R_ProjectSprite
 // Generates a vissprite for a thing
@@ -943,7 +945,7 @@ void __near R_AddSprites (sector_t __far* sec) {
 
 
 }
-
+*/
 
 //
 // RenderBSPNode

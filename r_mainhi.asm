@@ -24,53 +24,19 @@ INSTRUCTION_SET_MACRO
 EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
-EXTRN R_AddSprites_:PROC
+;EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
+EXTRN FixedMulTrigNoShift_:PROC
+EXTRN FixedMul_:PROC
+EXTRN FastMul16u32u_:PROC
+EXTRN FixedDivWholeA_:PROC
+EXTRN R_PointToAngle_:PROC
 
-
-
-;EXTRN FixedMul_:PROC
-;EXTRN FastDiv3232_:PROC
-;EXTRN R_GetMaskedColumnSegment_:NEAR
-;EXTRN getspritetexture_:NEAR
-
-
-;EXTRN _R_DrawFuzzColumnCallHigh:DWORD
-;EXTRN _R_DrawMaskedColumnCallSpriteHigh:DWORD
-;EXTRN _R_DrawSingleMaskedColumnCallHigh:DWORD
-
-;EXTRN _R_DrawMaskedColumnCallHigh:DWORD
-;EXTRN _vissprite_p:DWORD
-;EXTRN _vsprsortedheadfirst:DWORD
-
-;EXTRN _psprites:BYTE
-;EXTRN _vga_read_port_lookup:BYTE
-;EXTRN _lightmult48lookup:BYTE
-;EXTRN _ds_p:DWORD
-
-;EXTRN _maskedcachedsegment:WORD
-;EXTRN _maskedheightvalcache:BYTE
-;EXTRN _cachedbyteheight:BYTE
-
-;EXTRN _walllights:BYTE
-;EXTRN _curseg:WORD
-;EXTRN _curseg_render:WORD
-;EXTRN _masked_headers:WORD
-
-;EXTRN _maskedtexmodulo:WORD
-;EXTRN _maskedcachedbasecol:WORD
-;EXTRN _maskedtexrepeat:WORD
-;EXTRN _maskedprevlookup:WORD
-;EXTRN _maskednextlookup:WORD
-
-;EXTRN _lastvisspritepatch:WORD
-;EXTRN _lastvisspritepatch2:WORD
-;EXTRN _lastvisspritesegment:WORD
-;EXTRN _lastvisspritesegment2:WORD
-;EXTRN R_RenderMaskedSegRange2_:NEAR
-
+EXTRN _validcount:WORD
+EXTRN _spritelights:WORD
+EXTRN _spritewidths_segment:WORD
 
 
 
@@ -1091,9 +1057,507 @@ ENDP
 
 
 
+FF_FRAMEMASK = 07Fh
+FF_FULLBRIGHT = 080h
+MINZ_HIGHBITS = 4
+;R_ProjectSprite_
+
+PROC R_ProjectSprite_ NEAR
+PUBLIC R_ProjectSprite_ 
 
 
 
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 060h
+mov   si, ax
+mov   es, dx
+mov   ax, STATES_RENDER_SEGMENT
+mov   bx, word ptr es:[si + 012h]
+mov   es, ax
+add   bx, bx
+mov   al, byte ptr es:[bx]
+mov   byte ptr [bp - 4], al
+mov   al, byte ptr es:[bx + 1]
+mov   es, dx
+mov   byte ptr [bp - 6], al
+mov   ax, word ptr es:[si]
+mov   word ptr [bp - 018h], ax
+mov   ax, word ptr es:[si + 2]
+mov   word ptr [bp - 014h], ax
+mov   ax, word ptr es:[si + 4]
+mov   word ptr [bp - 012h], ax
+mov   ax, word ptr es:[si + 6]
+mov   word ptr [bp - 010h], ax
+mov   ax, word ptr es:[si + 8]
+mov   word ptr [bp - 028h], ax
+mov   ax, word ptr es:[si + 0Ah]
+mov   word ptr [bp - 024h], ax
+mov   ax, word ptr es:[si + 016h]
+inc   bx
+mov   word ptr [bp - 022h], ax
+mov   ax, word ptr es:[si + 010h]
+mov   bx, OFFSET _viewx
+mov   word ptr [bp - 02ah], ax
+mov   ax, word ptr [bp - 018h]
+sub   ax, word ptr [bx]
+mov   word ptr [bp - 032h], ax
+mov   ax, word ptr [bp - 014h]
+sbb   ax, word ptr [bx + 2]
+mov   si, word ptr [bp - 012h]
+mov   word ptr [bp - 01eh], ax
+mov   bx, OFFSET _viewy
+mov   cx, word ptr [bp - 01eh]
+sub   si, word ptr [bx]
+mov   ax, word ptr [bp - 010h]
+sbb   ax, word ptr [bx + 2]
+mov   bx, OFFSET _viewangle_shiftright1
+mov   word ptr [bp - 020h], ax
+mov   ax, FINECOSINE_SEGMENT
+mov   dx, word ptr [bx]
+mov   bx, word ptr [bp - 032h]
+call FixedMulTrigNoShift_
+mov   bx, OFFSET _viewangle_shiftright1
+mov   cx, word ptr [bp - 020h]
+mov   word ptr [bp - 036h], ax
+mov   word ptr [bp - 034h], dx
+mov   ax, FINESINE_SEGMENT
+mov   dx, word ptr [bx]
+mov   bx, si
+mov   byte ptr [bp - 2], 0
+call FixedMulTrigNoShift_
+mov   di, dx
+mov   dx, word ptr [bp - 036h]
+neg   di
+neg   ax
+sbb   di, 0
+sub   dx, ax
+mov   ax, word ptr [bp - 034h]
+sbb   ax, di
+mov   word ptr [bp - 01ch], dx
+mov   di, ax
+cmp   ax, MINZ_HIGHBITS
+jge   label1
+exit_project_sprite:
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label1:
+mov   bx, OFFSET _centerx
+mov   cx, di
+mov   ax, word ptr [bx]
+mov   bx, dx
+call FixedDivWholeA_
+mov   bx, _viewangle_shiftright1
+mov   cx, word ptr [bp - 01eh]
+mov   word ptr [bp - 0Ch], ax
+mov   word ptr [bp - 0Ah], dx
+mov   ax, FINESINE_SEGMENT
+mov   dx, word ptr [bx]
+mov   bx, word ptr [bp - 032h]
+call FixedMulTrigNoShift_
+mov   bx, _viewangle_shiftright1
+mov   cx, word ptr [bp - 020h]
+mov   word ptr [bp - 038h], dx
+mov   word ptr [bp - 030h], ax
+neg   word ptr [bp - 038h]
+mov   ax, FINECOSINE_SEGMENT
+mov   dx, word ptr [bx]
+mov   bx, si
+neg   word ptr [bp - 030h]
+sbb   word ptr [bp - 038h], 0
+call FixedMulTrigNoShift_
+mov   si, dx
+add   ax, word ptr [bp - 030h]
+adc   si, word ptr [bp - 038h]
+mov   word ptr [bp - 02ch], ax
+neg   si
+neg   word ptr [bp - 02ch]
+sbb   si, 0
+mov   ax, word ptr [bp - 02ch]
+mov   dx, si
+or    dx, dx
+jge   label2
+neg   ax
+adc   dx, 0
+neg   dx
+label2:
+mov   word ptr [bp - 036h], ax
+mov   ax, word ptr [bp - 01ch]
+add   ax, ax
+adc   di, di
+add   ax, ax
+adc   di, di
+cmp   dx, di
+jle   label3
+jump_to_exit_project_sprite:
+jmp   exit_project_sprite
+label3:
+jne   label4
+cmp   ax, word ptr [bp - 036h]
+jb    jump_to_exit_project_sprite
+label4:
+mov   al, byte ptr [bp - 4]
+xor   ah, ah
+mov   di, ax
+shl   di, 2
+sub   di, ax
+mov   ax, SPRITES_SEGMENT
+mov   es, ax
+mov   word ptr [bp - 01ah], ax
+mov   al, byte ptr [bp - 6]
+and   al, FF_FRAMEMASK
+xor   ah, ah
+imul  ax, ax, SIZEOF_SPRITEFRAME_T
+mov   di, word ptr es:[di]
+mov   bx, di
+add   bx, ax
+cmp   byte ptr es:[bx + 018h], 0
+je    label5
+mov   bx, word ptr [bp - 012h]
+mov   cx, word ptr [bp - 010h]
+mov   ax, word ptr [bp - 018h]
+mov   dx, word ptr [bp - 014h]
+call  R_PointToAngle_
+mov   ax, dx
+sub   ax, word ptr [bp - 02ah]
+mov   cx, 3
+
+;rot = _rotl(ang.hu.intbits - thingangle.hu.intbits + 0x9000u, 3) & 0x07;
+add   ah, 090h
+rol   ax, cl
+and   al, 7
+mov   byte ptr [bp - 2], al
+label5:
+mov   al, byte ptr [bp - 6]
+and   al, FF_FRAMEMASK
+xor   ah, ah
+imul  ax, ax, SIZEOF_SPRITEFRAME_T
+mov   dx, di
+add   dx, ax
+mov   al, byte ptr [bp - 2]
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   es, word ptr [bp - 01ah]
+add   bx, dx
+mov   bx, word ptr es:[bx]
+mov   word ptr [bp - 02eh], bx
+mov   bx, dx
+add   bx, ax
+mov   al, byte ptr es:[bx + 010h]
+mov   cx, word ptr [bp - 0Ah]
+mov   byte ptr [bp - 8], al
+mov   ax, SPRITEOFFSETS_SEGMENT
+mov   bx, word ptr [bp - 02eh]
+mov   es, ax
+mov   di, OFFSET _centerx
+mov   al, byte ptr es:[bx]
+mov   bx, word ptr [bp - 0Ch]
+xor   ah, ah
+sub   word ptr [bp - 02ch], 0
+sbb   si, ax
+mov   ax, word ptr [bp - 02ch]
+mov   dx, si
+mov   di, word ptr [di]
+call FixedMul_
+mov   bx, ax
+mov   ax, dx
+xor   dx, dx
+add   dx, bx
+adc   di, ax
+mov   bx, OFFSET _viewwidth
+mov   word ptr [bp - 0Eh], di
+cmp   di, word ptr [bx]
+jle   label6
+jump_to_exit_project_sprite_2:
+jmp   exit_project_sprite
+label6:
+mov   bx, word ptr [bp - 02eh]
+mov   es, word ptr ds:[_spritewidths_segment]
+mov   al, byte ptr es:[bx]
+xor   ah, ah
+mov   word ptr [bp - 026h], ax
+
+
+;    if (usedwidth == 1){
+;        usedwidth = 257;
+;    }
+
+
+cmp   ax, 1
+jne   label7
+mov   word ptr [bp - 026h], 257   
+label7:
+mov   di, word ptr [bp - 026h]
+mov   bx, word ptr [bp - 0Ch]
+mov   cx, word ptr [bp - 0Ah]
+mov   dx, si
+add   word ptr [bp - 02ch], 0
+adc   dx, di
+mov   di, OFFSET _centerx
+mov   ax, word ptr [bp - 02ch]
+mov   di, word ptr [di]
+call FixedMul_
+mov   bx, dx
+xor   dx, dx
+add   dx, ax
+adc   di, bx
+dec   di
+mov   word ptr [bp - 016h], di
+test  di, di
+jl    jump_to_exit_project_sprite_2
+mov   bx, OFFSET _vissprite_p
+inc   word ptr [bx]
+mov   si, word ptr [bx]
+dec   si
+imul  si, si, SIZEOF_VISSPRITE_T
+
+;	if (pspritescale) {
+;		vis->scale = (int32_t)pspritescale << detailshift.b.bytelow;
+;	} else {
+;		vis->scale = FRACUNIT << detailshift.b.bytelow;
+;	}
+
+mov   bx, OFFSET _detailshift
+mov   al, byte ptr [bx]
+cbw  
+mov   di, word ptr [bp - 0Ah]
+mov   cx, ax
+mov   ax, word ptr [bp - 0Ch]
+jcxz  label8
+label9:
+shl   ax, 1
+rcl   di, 1
+loop  label9
+label8:
+
+; si is vis
+
+mov   word ptr ds:[si + _vissprites + 01Ah], ax
+mov   ax, word ptr [bp - 018h]
+mov   word ptr ds:[si + _vissprites + 006h], ax
+mov   ax, word ptr [bp - 014h]
+mov   word ptr ds:[si + _vissprites + 008h], ax
+mov   ax, word ptr [bp - 012h]
+mov   word ptr ds:[si + _vissprites + 00Ah], ax
+mov   ax, word ptr [bp - 010h]
+mov   word ptr ds:[si + _vissprites + 00Ch], ax
+mov   ax, word ptr [bp - 028h]
+mov   word ptr ds:[si + _vissprites + 00Eh], ax
+mov   ax, word ptr [bp - 024h]
+mov   bx, word ptr [bp - 02eh]
+mov   word ptr ds:[si + _vissprites + 010h], ax
+mov   ax, SPRITETOPOFFSETS_SEGMENT
+mov   word ptr ds:[si + _vissprites + 01Ch], di
+mov   es, ax
+mov   al, byte ptr es:[bx]
+xor   dx, dx
+cbw  
+
+; todo maybe vis = &vissprites[vissprite_p - 1];
+add   si, OFFSET _vissprites
+mov   di, ax
+
+;    // hack to make this fit in 8 bits, check r_init.c
+;    if (temp.h.intbits == -128){
+;        temp.h.intbits = 129;
+;    }
+
+
+cmp   ax, 0FF80h
+jne   label22
+mov   di, 129
+label22:
+mov   bx, word ptr [si + 0Eh]
+mov   ax, word ptr [si + 010h]
+add   bx, dx
+adc   ax, di
+mov   word ptr [si + 012h], bx
+mov   bx, OFFSET _viewz
+mov   dx, word ptr [si + 012h]
+mov   word ptr [si + 014h], ax
+sub   dx, word ptr [bx]
+sbb   ax, word ptr [bx + 2]
+mov   word ptr [si + 024h], ax
+mov   ax, word ptr [bp - 0Eh]
+mov   word ptr [si + 022h], dx
+test  ax, ax
+jge   label19
+jmp   label20
+label19:
+mov   bx, OFFSET _viewwidth
+mov   word ptr [si + 2], ax
+mov   ax, word ptr [bp - 016h]
+cmp   ax, word ptr [bx]
+jl    label21
+mov   ax, word ptr [bx]
+dec   ax
+label21:
+mov   bx, word ptr [bp - 0Ch]
+mov   cx, word ptr [bp - 0Ah]
+mov   word ptr [si + 4], ax
+mov   ax, 1
+call FixedDivWholeA_
+mov   bx, ax
+cmp   byte ptr [bp - 8], 0
+jne   label13
+jmp   label14
+label13:
+mov   di, word ptr [bp - 026h]
+mov   word ptr [si + 020h], dx
+xor   ax, ax
+mov   word ptr [si + 01eh], bx
+add   ax, -1
+adc   di, -1
+mov   word ptr [si + 016h], ax
+mov   word ptr [si + 018h], di
+neg   word ptr [si + 020h]
+neg   word ptr [si + 01eh]
+sbb   word ptr [si + 020h], 0
+label15:
+mov   ax, word ptr [si + 2]
+cmp   ax, word ptr [bp - 0Eh]
+jle   label12
+sub   ax, word ptr [bp - 0Eh]
+mov   bx, word ptr [si + 01eh]
+mov   cx, word ptr [si + 020h]
+call FastMul16u32u_
+add   word ptr [si + 016h], ax
+adc   word ptr [si + 018h], dx
+label12:
+mov   bx, word ptr [bp - 02eh]
+mov   word ptr [si + 026h], bx
+test  byte ptr [bp - 022h], 4
+jne   label11
+mov   bx, OFFSET _fixedcolormap
+mov   al, byte ptr [bx]
+test  al, al
+jne   label10
+test  byte ptr [bp - 6], FF_FULLBRIGHT
+jne   label10
+mov   bx, OFFSET _detailshift
+mov   al, byte ptr [bx]
+mov   cx, 0Ch							; todo what
+cbw  
+mov   di, word ptr [bp - 0Ah]
+sub   cx, ax
+mov   ax, word ptr [bp - 0Ch]
+jcxz  label16
+loop_label_17:
+sar   di, 1
+rcr   ax, 1
+loop  loop_label_17
+label16:
+mov   dx, ax
+cmp   ax, MAXLIGHTSCALE
+jl    label18
+mov   dx, MAXLIGHTSCALE - 1
+label18:
+mov   ax, SCALELIGHTFIXED_SEGMENT
+mov   bx, word ptr ds:[_spritelights]
+mov   es, ax
+add   bx, dx
+mov   al, byte ptr es:[bx]
+label10:
+mov   byte ptr [si + 1], al
+LEAVE_MACRO
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label20:
+xor   ax, ax
+jmp   label19
+label14:
+mov   word ptr [si + 016h], 0
+mov   word ptr [si + 018h], 0
+mov   word ptr [si + 01eh], ax
+mov   word ptr [si + 020h], dx
+jmp   label15
+label11:
+mov   byte ptr [si + 1], COLORMAP_SHADOW
+LEAVE_MACRO
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+
+endp
+
+
+
+
+
+;R_AddSprites_
+
+PROC R_AddSprites_ NEAR
+PUBLIC R_AddSprites_ 
+
+; DX:AX = sector_t __far* sec
+
+push  bx
+push  si
+mov   bx, ax
+mov   es, dx
+mov   ax, word ptr es:[bx + 6]		; sec->validcount
+cmp   ax, word ptr ds:[_validcount]
+je    exit_add_sprites
+mov   ax, word ptr ds:[_validcount]
+mov   word ptr es:[bx + 6], ax
+mov   al, byte ptr es:[bx + 0Eh]		; sec->lightlevel
+xor   ah, ah
+mov   dx, ax
+mov   si, OFFSET _extralight
+sar   dx, 4
+mov   al, byte ptr [si]
+add   ax, dx
+test  ax, ax
+jl    set_spritelights_to_zero
+cmp   ax, LIGHTLEVELS
+jge   set_spritelights_to_max
+mov   si, ax
+add   si, ax
+mov   ax, word ptr ds:[si + _lightmult48lookup]
+spritelights_set:
+mov   word ptr ds:[_spritelights], ax
+mov   ax, word ptr es:[bx + 8]
+test  ax, ax
+je    exit_add_sprites
+je    exit_add_sprites
+mov   si, MOBJPOSLIST_SEGMENT
+loop_things_in_thinglist:
+imul  bx, ax, SIZEOF_MOBJ_POS_T
+mov   dx, si
+mov   ax, bx
+call  R_ProjectSprite_
+mov   es, si
+mov   ax, word ptr es:[bx + 0Ch]
+test  ax, ax
+jne   loop_things_in_thinglist
+exit_add_sprites:
+pop   si
+pop   bx
+ret   
+set_spritelights_to_zero:
+xor   ax, ax
+jmp   spritelights_set
+set_spritelights_to_max:
+mov   si, _lightmult48lookup + (2 * (LIGHTLEVELS - 1))  ; _NULL_OFFSET + 02A0h + 16 - 1 ... (0x2ee)
+mov   ax, word ptr [si]
+jmp   spritelights_set
+
+
+endp
 
 
 

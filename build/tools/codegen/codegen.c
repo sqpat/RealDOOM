@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 132
+#define CONSTANTS_COUNT 135
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -160,7 +160,10 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "R_DRAWFUZZCOLUMNOFFSET",
     "SIZEOF_DRAWSEG_T",
     "OFFSET_NEGONEARRAY",
-    "OFFSET_SCREENHEIGHTARRAY"
+    "OFFSET_SCREENHEIGHTARRAY",
+    "SIZEOF_MOBJ_POS_T",
+    "SIZEOF_SPRITEFRAME_T",
+    "SPRITES_SEGMENT"
 
 };
 
@@ -318,7 +321,11 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     R_DrawFuzzColumnOffset,
     sizeof(drawseg_t),
     offset_negonearray,
-    offset_screenheightarray
+    offset_screenheightarray,
+    sizeof(mobj_pos_t),
+    sizeof(spriteframe_t),
+    sprites_segment
+
     
 };
 

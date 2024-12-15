@@ -266,7 +266,7 @@ typedef struct mobj_s {
 // which allows us to not have to allocate the whole 9000 block to thinkers, 
 // and reduces some task switching in the sprite code 
 
-// 22 bytes.
+// 24 bytes.
 typedef struct mobj_pos_s {
 
 	// List: thinker links.

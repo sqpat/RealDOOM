@@ -665,6 +665,13 @@ FREEBYTES 144 free
 [palettebytes]         6C00:0000
 spanfunc_jump_lookup   6EA0:0000
 spanfunc_function_area 6EAA:0000
+empty (?)              6F6D:0000
+
+// FREEBYTES: 2352 (?)
+// a lot of this will be lost to the updated drawspan func!
+
+// R_DrawSpanCodeSize  :0xC2E
+
 
  planes change the 6800 page and remove 
 
@@ -677,14 +684,11 @@ colormaps             6800:0000
 colfunc_jump_lookup   6A10:0000
 dc_yl_lookup          6A29:0000
 colfunc_function_area 6A42:0000
-mobjposlist           6B14:0000
+mobjposlist           6B14:0000  // 6AFC?? todo
 [empty]               7000:0000
 
 
-
-
-
-
+// FREEBYTES (?)
 1488 bytes for colfunc
  we would prefer to have about 3400...   scalelight is 1632, xtoview is 660ish... free those 2 probably
 
@@ -1163,6 +1167,7 @@ patchoffset                 83BD:01DC
 
 #define spritewidths_ult_segment    ((segment_t)     ((int32_t)spritewidths_ult >> 16))
 #define spritewidths_normal_segment ((segment_t)     ((int32_t)spritewidths_normal >> 16))
+#define sprites_segment             ((segment_t)     ((int32_t)sprites >> 16))
 
 #define NODES_RENDER_SEGMENT 0x7000
 
