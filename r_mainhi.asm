@@ -1065,26 +1065,29 @@ MINZ_HIGHBITS = 4
 PROC R_ProjectSprite_ NEAR
 PUBLIC R_ProjectSprite_ 
 
+; es:si is sprite.
+; es is a constant..
 
+; dont need to preserve di or bx...
 
-push  bx
-push  cx
 push  si
-push  di
+push  es
 push  bp
 mov   bp, sp
 sub   sp, 060h
-mov   si, ax
-mov   es, dx
-mov   ax, STATES_RENDER_SEGMENT
+mov   dx, es					; back this up...
 mov   bx, word ptr es:[si + 012h]
+mov   ax, STATES_RENDER_SEGMENT
 mov   es, ax
 add   bx, bx
+
+; todo clean all this up. do we need local copy?
+; otherwise use ds and rep movsw
 mov   al, byte ptr es:[bx]
 mov   byte ptr [bp - 4], al
 mov   al, byte ptr es:[bx + 1]
-mov   es, dx
-mov   byte ptr [bp - 6], al
+mov   es, dx					; restore sprite segment
+mov   byte ptr [bp - 6], al		; todo a lot of lodsb? set ds to es?
 mov   ax, word ptr es:[si]
 mov   word ptr [bp - 018h], ax
 mov   ax, word ptr es:[si + 2]
@@ -1101,32 +1104,28 @@ mov   ax, word ptr es:[si + 016h]
 inc   bx
 mov   word ptr [bp - 022h], ax
 mov   ax, word ptr es:[si + 010h]
-mov   bx, OFFSET _viewx
 mov   word ptr [bp - 02ah], ax
 mov   ax, word ptr [bp - 018h]
-sub   ax, word ptr [bx]
+sub   ax, word ptr ds:[_viewx]
 mov   word ptr [bp - 032h], ax
 mov   ax, word ptr [bp - 014h]
-sbb   ax, word ptr [bx + 2]
+sbb   ax, word ptr ds:[_viewx + 2]
 mov   si, word ptr [bp - 012h]
 mov   word ptr [bp - 01eh], ax
-mov   bx, OFFSET _viewy
 mov   cx, word ptr [bp - 01eh]
-sub   si, word ptr [bx]
+sub   si, word ptr ds:[_viewy]
 mov   ax, word ptr [bp - 010h]
-sbb   ax, word ptr [bx + 2]
-mov   bx, OFFSET _viewangle_shiftright1
+sbb   ax, word ptr ds:[_viewy + 2]
 mov   word ptr [bp - 020h], ax
 mov   ax, FINECOSINE_SEGMENT
-mov   dx, word ptr [bx]
+mov   dx, word ptr ds:[_viewangle_shiftright1]
 mov   bx, word ptr [bp - 032h]
 call FixedMulTrigNoShift_
-mov   bx, OFFSET _viewangle_shiftright1
 mov   cx, word ptr [bp - 020h]
 mov   word ptr [bp - 036h], ax
 mov   word ptr [bp - 034h], dx
 mov   ax, FINESINE_SEGMENT
-mov   dx, word ptr [bx]
+mov   dx, word ptr ds:[_viewangle_shiftright1]
 mov   bx, si
 mov   byte ptr [bp - 2], 0
 call FixedMulTrigNoShift_
@@ -1144,32 +1143,27 @@ cmp   ax, MINZ_HIGHBITS
 jge   label1
 exit_project_sprite:
 LEAVE_MACRO 
-pop   di
+pop   es
 pop   si
-pop   cx
-pop   bx
 ret   
 label1:
-mov   bx, OFFSET _centerx
 mov   cx, di
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[_centerx]
 mov   bx, dx
 call FixedDivWholeA_
-mov   bx, _viewangle_shiftright1
 mov   cx, word ptr [bp - 01eh]
 mov   word ptr [bp - 0Ch], ax
 mov   word ptr [bp - 0Ah], dx
 mov   ax, FINESINE_SEGMENT
-mov   dx, word ptr [bx]
+mov   dx, word ptr ds:[_viewangle_shiftright1]
 mov   bx, word ptr [bp - 032h]
 call FixedMulTrigNoShift_
-mov   bx, _viewangle_shiftright1
 mov   cx, word ptr [bp - 020h]
 mov   word ptr [bp - 038h], dx
 mov   word ptr [bp - 030h], ax
 neg   word ptr [bp - 038h]
 mov   ax, FINECOSINE_SEGMENT
-mov   dx, word ptr [bx]
+mov   dx, word ptr ds:[_viewangle_shiftright1]
 mov   bx, si
 neg   word ptr [bp - 030h]
 sbb   word ptr [bp - 038h], 0
@@ -1258,7 +1252,6 @@ mov   byte ptr [bp - 8], al
 mov   ax, SPRITEOFFSETS_SEGMENT
 mov   bx, word ptr [bp - 02eh]
 mov   es, ax
-mov   di, OFFSET _centerx
 mov   al, byte ptr es:[bx]
 mov   bx, word ptr [bp - 0Ch]
 xor   ah, ah
@@ -1266,16 +1259,15 @@ sub   word ptr [bp - 02ch], 0
 sbb   si, ax
 mov   ax, word ptr [bp - 02ch]
 mov   dx, si
-mov   di, word ptr [di]
+mov   di, word ptr ds:[_centerx]
 call FixedMul_
 mov   bx, ax
 mov   ax, dx
 xor   dx, dx
 add   dx, bx
 adc   di, ax
-mov   bx, OFFSET _viewwidth
 mov   word ptr [bp - 0Eh], di
-cmp   di, word ptr [bx]
+cmp   di, word ptr ds:[_viewwidth]
 jle   label6
 jump_to_exit_project_sprite_2:
 jmp   exit_project_sprite
@@ -1302,9 +1294,8 @@ mov   cx, word ptr [bp - 0Ah]
 mov   dx, si
 add   word ptr [bp - 02ch], 0
 adc   dx, di
-mov   di, OFFSET _centerx
 mov   ax, word ptr [bp - 02ch]
-mov   di, word ptr [di]
+mov   di, word ptr ds:[_centerx]
 call FixedMul_
 mov   bx, dx
 xor   dx, dx
@@ -1314,9 +1305,8 @@ dec   di
 mov   word ptr [bp - 016h], di
 test  di, di
 jl    jump_to_exit_project_sprite_2
-mov   bx, OFFSET _vissprite_p
-inc   word ptr [bx]
-mov   si, word ptr [bx]
+inc   word ptr ds:[_vissprite_p]
+mov   si, word ptr ds:[_vissprite_p]
 dec   si
 imul  si, si, SIZEOF_VISSPRITE_T
 
@@ -1326,8 +1316,7 @@ imul  si, si, SIZEOF_VISSPRITE_T
 ;		vis->scale = FRACUNIT << detailshift.b.bytelow;
 ;	}
 
-mov   bx, OFFSET _detailshift
-mov   al, byte ptr [bx]
+mov   al, byte ptr ds:[_detailshift]
 cbw  
 mov   di, word ptr [bp - 0Ah]
 mov   cx, ax
@@ -1393,12 +1382,12 @@ test  ax, ax
 jge   label19
 jmp   label20
 label19:
-mov   bx, OFFSET _viewwidth
+; todo move viewwidth to var then compare and set?
 mov   word ptr [si + 2], ax
 mov   ax, word ptr [bp - 016h]
-cmp   ax, word ptr [bx]
+cmp   ax, word ptr ds:[_viewwidth]
 jl    label21
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[_viewwidth]
 dec   ax
 label21:
 mov   bx, word ptr [bp - 0Ch]
@@ -1436,25 +1425,23 @@ label12:
 mov   bx, word ptr [bp - 02eh]
 mov   word ptr [si + 026h], bx
 test  byte ptr [bp - 022h], 4
-jne   label11
-mov   bx, OFFSET _fixedcolormap
-mov   al, byte ptr [bx]
+jne   exit_set_shadow
+mov   al, byte ptr ds:[_fixedcolormap]
 test  al, al
-jne   label10
+jne   exit_set_fixed_colormap
 test  byte ptr [bp - 6], FF_FULLBRIGHT
-jne   label10
-mov   bx, OFFSET _detailshift
-mov   al, byte ptr [bx]
+jne   exit_set_fixed_colormap
+mov   al, byte ptr ds:[_detailshift]	; set fullbright colormap
 mov   cx, 0Ch							; todo what
 cbw  
 mov   di, word ptr [bp - 0Ah]
 sub   cx, ax
 mov   ax, word ptr [bp - 0Ch]
 jcxz  label16
-loop_label_17:
+loop_shift:
 sar   di, 1
 rcr   ax, 1
-loop  loop_label_17
+loop  loop_shift
 label16:
 mov   dx, ax
 cmp   ax, MAXLIGHTSCALE
@@ -1466,13 +1453,11 @@ mov   bx, word ptr ds:[_spritelights]
 mov   es, ax
 add   bx, dx
 mov   al, byte ptr es:[bx]
-label10:
+exit_set_fixed_colormap:
 mov   byte ptr [si + 1], al
 LEAVE_MACRO
-pop   di
+pop   es
 pop   si
-pop   cx
-pop   bx
 ret   
 label20:
 xor   ax, ax
@@ -1483,16 +1468,14 @@ mov   word ptr [si + 018h], 0
 mov   word ptr [si + 01eh], ax
 mov   word ptr [si + 020h], dx
 jmp   label15
-label11:
+exit_set_shadow:
 mov   byte ptr [si + 1], COLORMAP_SHADOW
 LEAVE_MACRO
-pop   di
+pop   es
 pop   si
-pop   cx
-pop   bx
 ret   
 
-endp
+ENDP
 
 
 
@@ -1506,20 +1489,30 @@ PUBLIC R_AddSprites_
 ; DX:AX = sector_t __far* sec
 
 push  bx
-push  si
 mov   bx, ax
 mov   es, dx
 mov   ax, word ptr es:[bx + 6]		; sec->validcount
-cmp   ax, word ptr ds:[_validcount]
-je    exit_add_sprites
-mov   ax, word ptr ds:[_validcount]
-mov   word ptr es:[bx + 6], ax
+mov   dx, word ptr ds:[_validcount]
+cmp   ax, dx
+je    exit_add_sprites_bx_only				; do this without push/pop
+push  di
+push  cx
+push  si
+
+mov   word ptr es:[bx + 6], dx
 mov   al, byte ptr es:[bx + 0Eh]		; sec->lightlevel
 xor   ah, ah
 mov   dx, ax
-mov   si, OFFSET _extralight
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 sar   dx, 4
-mov   al, byte ptr [si]
+ELSE
+sar   dx, 1
+sar   dx, 1
+sar   dx, 1
+sar   dx, 1
+ENDIF
+
+mov   al, byte ptr ds:[_extralight]
 add   ax, dx
 test  ax, ax
 jl    set_spritelights_to_zero
@@ -1533,27 +1526,35 @@ mov   word ptr ds:[_spritelights], ax
 mov   ax, word ptr es:[bx + 8]
 test  ax, ax
 je    exit_add_sprites
-je    exit_add_sprites
 mov   si, MOBJPOSLIST_SEGMENT
-loop_things_in_thinglist:
-imul  bx, ax, SIZEOF_MOBJ_POS_T
-mov   dx, si
-mov   ax, bx
-call  R_ProjectSprite_
 mov   es, si
-mov   ax, word ptr es:[bx + 0Ch]
+
+loop_things_in_thinglist:
+; multiply by 18h (SIZEOF_MOBJ_POS_T), AX maxes at MAX_THINKERS - 1 (839), cant 8 bit mul
+sal   ax, 1
+sal   ax, 1
+sal   ax, 1
+mov   si, ax
+sal   si, 1
+add   si, ax
+call  R_ProjectSprite_
+mov   ax, word ptr es:[si + 0Ch]
 test  ax, ax
 jne   loop_things_in_thinglist
+
 exit_add_sprites:
 pop   si
+pop   cx
+pop   di
+exit_add_sprites_bx_only:
 pop   bx
 ret   
 set_spritelights_to_zero:
 xor   ax, ax
 jmp   spritelights_set
 set_spritelights_to_max:
-mov   si, _lightmult48lookup + (2 * (LIGHTLEVELS - 1))  ; _NULL_OFFSET + 02A0h + 16 - 1 ... (0x2ee)
-mov   ax, word ptr [si]
+; _NULL_OFFSET + 02A0h + 16 - 1 ... (0x2ee)
+mov   ax, word ptr [_lightmult48lookup + (2 * (LIGHTLEVELS - 1))]
 jmp   spritelights_set
 
 
