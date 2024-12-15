@@ -503,7 +503,7 @@ typedef struct vissprite_s {
 // for all views: NNNNF0
 //
 
-//not really used in engine just gamesetup, who cares if struct sucks
+//25 bytes, kinda sucks
 typedef struct {
     // If false use 0 for any position.
     // Note: as eight entries are available,
