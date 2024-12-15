@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/15 09:13:07
+Created on:       24/12/15 10:13:51
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -80,7 +80,7 @@ p_user_TEXT            CODE           AUTO           0b22:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           17a8:0000       0000098e
 r_data_TEXT            CODE           AUTO           17a8:0990       00001ca3
 R_MATH_TEXT            CODE           AUTO           17a8:2634       000001fd
-R_MAINHI_TEXT          CODE           AUTO           17a8:2832       000008c4
+R_MAINHI_TEXT          CODE           AUTO           17a8:2832       000008c1
 r_draw_TEXT            CODE           AUTO           17a8:3100       00000379
 r_main_TEXT            CODE           AUTO           17a8:3480       000001ee
 r_plane_TEXT           CODE           AUTO           17a8:3670       00000000
@@ -1301,7 +1301,7 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 17a8:28d0      R_PointToDist_
 17a8:2950      R_ClearPlanes_
 17a8:29d3*     R_HandleEMSPagination_
-17a8:3088*     R_AddSprites_
+17a8:3085*     R_AddSprites_
 17a8:2a85*     R_FindPlane_
 17a8:2cc6*     R_ProjectSprite_
 17a8:2bfb      R_CheckPlane_
@@ -1669,4 +1669,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00024730 (149296.)
 Entry point address: 1d10:219c
-Link time: 00:00.75
+Link time: 00:00.20

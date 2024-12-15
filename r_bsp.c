@@ -777,9 +777,10 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     tx.w = -(gyt.w+gxt.w); 
 
     // too far off the side?
-    if (labs(tx.w)>(tz.w<<2)) // check just high 16 bits?
+    if (labs(tx.w)>(tz.w<<2)){ // check just high 16 bits?
         return;
-
+	}
+	
     // decide which patch to use for sprite relative to player
 	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[thingsprite].spriteframesOffset]);
 

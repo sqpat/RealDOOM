@@ -1068,85 +1068,131 @@ PUBLIC R_ProjectSprite_
 ; es:si is sprite.
 ; es is a constant..
 
-; dont need to preserve di or bx...
+
+
+; bp - 4:    thingsprite (byte)
+; bp - 6:    thingframe (byte)
+; bp - 8:    
+; bp - 0Ah:    
+; bp - 0Ch:    
+; bp - 0Eh:    	x1
+; bp - 010h:	thing->y hi
+; bp - 012h:	thing->y lo
+; bp - 014h:	thing->x hi
+; bp - 016h:    x2
+; bp - 018h:	thing->x lo
+; bp - 01Ah:	SPRITES_SEGMENT (segment for spriteframes?)
+; bp - 01Ch:	tz_w hi
+; bp - 01Eh:	tr_x hi
+; bp - 020h:    tr_y hi
+; bp - 022h:    thing->flags2
+; bp - 024h:    thing->x hi
+; bp - 026h:    usedwidth
+; bp - 028h:    thing->x lo
+; bp - 02Ah:    thing-> angle hi???
+; bp - 02Ch:    temp fracbits
+; bp - 02Eh:    spriteframes (pointer)? or spriteframes[thingframe & FF_FRAMEMASK]
+; bp - 030h:    gxt lo
+; bp - 032h:    tr_x lo
+; bp - 034h:    gxt lo
+; bp - 036h:    gxt hi
+; bp - 038h:    gxt hi
+; bp - 03Ah:    
+; bp - 03Ch:    
+; bp - 03Eh:    
+
+
 
 push  si
 push  es
 push  bp
 mov   bp, sp
 sub   sp, 060h
-mov   dx, es					; back this up...
-mov   bx, word ptr es:[si + 012h]
+mov   dx, es					   ; back this up...
+mov   bx, word ptr es:[si + 012h]  ; thing->stateNum
 mov   ax, STATES_RENDER_SEGMENT
 mov   es, ax
 add   bx, bx
 
 ; todo clean all this up. do we need local copy?
 ; otherwise use ds and rep movsw
-mov   al, byte ptr es:[bx]
-mov   byte ptr [bp - 4], al
-mov   al, byte ptr es:[bx + 1]
+mov   al, byte ptr es:[bx]		   ; states_render[thing->stateNum].sprite
+mov   byte ptr [bp - 4], al		   
+mov   al, byte ptr es:[bx + 1]	; states_render[thing->stateNum].frame
 mov   es, dx					; restore sprite segment
 mov   byte ptr [bp - 6], al		; todo a lot of lodsb? set ds to es?
-mov   ax, word ptr es:[si]
+
+mov   ax, word ptr es:[si]			; x lo
 mov   word ptr [bp - 018h], ax
-mov   ax, word ptr es:[si + 2]
+mov   ax, word ptr es:[si + 2]		; x hi
 mov   word ptr [bp - 014h], ax
-mov   ax, word ptr es:[si + 4]
+mov   ax, word ptr es:[si + 4]		; y lo
 mov   word ptr [bp - 012h], ax
-mov   ax, word ptr es:[si + 6]
+mov   ax, word ptr es:[si + 6]		; y hi
 mov   word ptr [bp - 010h], ax
-mov   ax, word ptr es:[si + 8]
+mov   ax, word ptr es:[si + 8]		; z lo
 mov   word ptr [bp - 028h], ax
-mov   ax, word ptr es:[si + 0Ah]
+mov   ax, word ptr es:[si + 0Ah]	; z hi
 mov   word ptr [bp - 024h], ax
-mov   ax, word ptr es:[si + 016h]
-inc   bx
+mov   ax, word ptr es:[si + 016h]	; flags2
 mov   word ptr [bp - 022h], ax
-mov   ax, word ptr es:[si + 010h]
-mov   word ptr [bp - 02ah], ax
-mov   ax, word ptr [bp - 018h]
+mov   ax, word ptr es:[si + 010h]	; angle_t
+mov   word ptr [bp - 02Ah], ax
+mov   ax, word ptr [bp - 018h]		; x lo
 sub   ax, word ptr ds:[_viewx]
 mov   word ptr [bp - 032h], ax
 mov   ax, word ptr [bp - 014h]
 sbb   ax, word ptr ds:[_viewx + 2]
-mov   si, word ptr [bp - 012h]
-mov   word ptr [bp - 01eh], ax
-mov   cx, word ptr [bp - 01eh]
-sub   si, word ptr ds:[_viewy]
-mov   ax, word ptr [bp - 010h]
-sbb   ax, word ptr ds:[_viewy + 2]
-mov   word ptr [bp - 020h], ax
+mov   si, word ptr [bp - 012h]		; y lo
+mov   word ptr [bp - 01Eh], ax
+mov   cx, ax						
+sub   si, word ptr ds:[_viewy]		
+mov   ax, word ptr [bp - 010h]		; y hi
+sbb   ax, word ptr ds:[_viewy + 2]	; si:ax = tr_y
+
+;    gxt.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, viewangle_shiftright1 ,tr_x.w);
+
+mov   word ptr [bp - 020h], ax		
 mov   ax, FINECOSINE_SEGMENT
-mov   dx, word ptr ds:[_viewangle_shiftright1]
+mov   di, word ptr ds:[_viewangle_shiftright1]
+mov   dx, di
 mov   bx, word ptr [bp - 032h]
 call FixedMulTrigNoShift_
-mov   cx, word ptr [bp - 020h]
-mov   word ptr [bp - 036h], ax
+
+
+;    gyt.w = -FixedMulTrigNoShift(FINE_SINE_ARGUMENT, viewangle_shiftright1 ,tr_y.w);
+
+mov   cx, word ptr [bp - 020h]		; tr_y hi
+mov   word ptr [bp - 036h], ax		; store gxt
 mov   word ptr [bp - 034h], dx
 mov   ax, FINESINE_SEGMENT
-mov   dx, word ptr ds:[_viewangle_shiftright1]
-mov   bx, si
+mov   dx, di						; _viewangle_shiftright1
+mov   bx, si						; cx:bx = tr_y
 mov   byte ptr [bp - 2], 0
 call FixedMulTrigNoShift_
+
+
 mov   di, dx
 mov   dx, word ptr [bp - 036h]
 neg   di
 neg   ax
 sbb   di, 0
+
+;    tz.w = gxt.w-gyt.w; 
+
 sub   dx, ax
 mov   ax, word ptr [bp - 034h]
 sbb   ax, di
-mov   word ptr [bp - 01ch], dx
+mov   word ptr [bp - 01Ch], dx
 mov   di, ax
 cmp   ax, MINZ_HIGHBITS
-jge   label1
-exit_project_sprite:
-LEAVE_MACRO 
-pop   es
-pop   si
-ret   
-label1:
+
+;    // thing is behind view plane?
+;    if (tz.h.intbits < MINZ_HIGHBITS){ // (- sq: where does this come from)
+;        return;
+;    }
+
+jl   exit_project_sprite
 mov   cx, di
 mov   ax, word ptr ds:[_centerx]
 mov   bx, dx
@@ -1171,11 +1217,11 @@ call FixedMulTrigNoShift_
 mov   si, dx
 add   ax, word ptr [bp - 030h]
 adc   si, word ptr [bp - 038h]
-mov   word ptr [bp - 02ch], ax
+mov   word ptr [bp - 02Ch], ax
 neg   si
-neg   word ptr [bp - 02ch]
+neg   word ptr [bp - 02Ch]
 sbb   si, 0
-mov   ax, word ptr [bp - 02ch]
+mov   ax, word ptr [bp - 02Ch]
 mov   dx, si
 or    dx, dx
 jge   label2
@@ -1183,6 +1229,13 @@ neg   ax
 adc   dx, 0
 neg   dx
 label2:
+
+;    // too far off the side?
+;    if (labs(tx.w)>(tz.w<<2)){ // check just high 16 bits?
+;        return;
+;	}
+
+
 mov   word ptr [bp - 036h], ax
 mov   ax, word ptr [bp - 01ch]
 add   ax, ax
@@ -1191,12 +1244,15 @@ add   ax, ax
 adc   di, di
 cmp   dx, di
 jle   label3
-jump_to_exit_project_sprite:
-jmp   exit_project_sprite
+exit_project_sprite:
+LEAVE_MACRO 
+pop   es
+pop   si
+ret   
 label3:
 jne   label4
 cmp   ax, word ptr [bp - 036h]
-jb    jump_to_exit_project_sprite
+jb    exit_project_sprite
 label4:
 mov   al, byte ptr [bp - 4]
 xor   ah, ah
@@ -1243,21 +1299,21 @@ add   bx, ax
 mov   es, word ptr [bp - 01ah]
 add   bx, dx
 mov   bx, word ptr es:[bx]
-mov   word ptr [bp - 02eh], bx
+mov   word ptr [bp - 02Eh], bx
 mov   bx, dx
 add   bx, ax
 mov   al, byte ptr es:[bx + 010h]
 mov   cx, word ptr [bp - 0Ah]
 mov   byte ptr [bp - 8], al
 mov   ax, SPRITEOFFSETS_SEGMENT
-mov   bx, word ptr [bp - 02eh]
+mov   bx, word ptr [bp - 02Eh]
 mov   es, ax
 mov   al, byte ptr es:[bx]
 mov   bx, word ptr [bp - 0Ch]
 xor   ah, ah
-sub   word ptr [bp - 02ch], 0
+sub   word ptr [bp - 02Ch], 0
 sbb   si, ax
-mov   ax, word ptr [bp - 02ch]
+mov   ax, word ptr [bp - 02Ch]
 mov   dx, si
 mov   di, word ptr ds:[_centerx]
 call FixedMul_
@@ -1266,13 +1322,20 @@ mov   ax, dx
 xor   dx, dx
 add   dx, bx
 adc   di, ax
+
+;    // off the right side?
+;    if (x1 > viewwidth){
+;        return;
+;    }
+    
+
 mov   word ptr [bp - 0Eh], di
 cmp   di, word ptr ds:[_viewwidth]
 jle   label6
 jump_to_exit_project_sprite_2:
 jmp   exit_project_sprite
 label6:
-mov   bx, word ptr [bp - 02eh]
+mov   bx, word ptr [bp - 02Eh]
 mov   es, word ptr ds:[_spritewidths_segment]
 mov   al, byte ptr es:[bx]
 xor   ah, ah
@@ -1288,21 +1351,37 @@ cmp   ax, 1
 jne   label7
 mov   word ptr [bp - 026h], 257   
 label7:
+
+;   temp.h.fracbits = 0;
+;    temp.h.intbits = usedwidth;
+;    // hack to make this fit in 8 bits, check r_init.c
+;    tx.w +=  temp.w;
+;	temp.h.intbits = centerx;
+;	temp.w += FixedMul (tx.w,xscale.w);
+
 mov   di, word ptr [bp - 026h]
 mov   bx, word ptr [bp - 0Ch]
 mov   cx, word ptr [bp - 0Ah]
 mov   dx, si
-add   word ptr [bp - 02ch], 0
+add   word ptr [bp - 02Ch], 0
 adc   dx, di
-mov   ax, word ptr [bp - 02ch]
+mov   ax, word ptr [bp - 02Ch]
 mov   di, word ptr ds:[_centerx]
 call FixedMul_
+
+;    x2 = temp.h.intbits - 1;
+
 mov   bx, dx
 xor   dx, dx
 add   dx, ax
 adc   di, bx
 dec   di
 mov   word ptr [bp - 016h], di
+
+;    // off the left side
+;    if (x2 < 0)
+;        return;
+
 test  di, di
 jl    jump_to_exit_project_sprite_2
 inc   word ptr ds:[_vissprite_p]
@@ -1342,7 +1421,7 @@ mov   word ptr ds:[si + _vissprites + 00Ch], ax
 mov   ax, word ptr [bp - 028h]
 mov   word ptr ds:[si + _vissprites + 00Eh], ax
 mov   ax, word ptr [bp - 024h]
-mov   bx, word ptr [bp - 02eh]
+mov   bx, word ptr [bp - 02Eh]
 mov   word ptr ds:[si + _vissprites + 010h], ax
 mov   ax, SPRITETOPOFFSETS_SEGMENT
 mov   word ptr ds:[si + _vissprites + 01Ch], di
@@ -1385,9 +1464,10 @@ label19:
 ; todo move viewwidth to var then compare and set?
 mov   word ptr [si + 2], ax
 mov   ax, word ptr [bp - 016h]
-cmp   ax, word ptr ds:[_viewwidth]
+mov   bx, word ptr ds:[_viewwidth]
+cmp   ax, bx
 jl    label21
-mov   ax, word ptr ds:[_viewwidth]
+mov   ax, bx
 dec   ax
 label21:
 mov   bx, word ptr [bp - 0Ch]
@@ -1422,7 +1502,7 @@ call FastMul16u32u_
 add   word ptr [si + 016h], ax
 adc   word ptr [si + 018h], dx
 label12:
-mov   bx, word ptr [bp - 02eh]
+mov   bx, word ptr [bp - 02Eh]
 mov   word ptr [si + 026h], bx
 test  byte ptr [bp - 022h], 4
 jne   exit_set_shadow
@@ -1554,7 +1634,7 @@ xor   ax, ax
 jmp   spritelights_set
 set_spritelights_to_max:
 ; _NULL_OFFSET + 02A0h + 16 - 1 ... (0x2ee)
-mov   ax, word ptr [_lightmult48lookup + (2 * (LIGHTLEVELS - 1))]
+mov   ax, word ptr ds:[_lightmult48lookup + (2 * (LIGHTLEVELS - 1))]
 jmp   spritelights_set
 
 
