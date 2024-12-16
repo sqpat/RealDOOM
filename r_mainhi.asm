@@ -1070,42 +1070,41 @@ PUBLIC R_ProjectSprite_
 
 
 
-; bp - 2:	 	UNUSED   was rot (byte)
-; bp - 4:    	thingsprite (byte)   do selfmodifying
-; bp - 6:    	thingframe (byte)
-; bp - 8:    	flip (?) (byte)      do selfmodifying
+; bp - 2:	 	x1
+; bp - 4:    	thingframe (byte, with SIZEOF_SPRITEFRAME_T high)
+; bp - 6:    	UNUSED
+; bp - 8:    	UNUSED flip (?) (byte)      do selfmodifying
 ; bp - 0Ah:    	xscale hi
 ; bp - 0Ch:    	xscale lo
-; bp - 0Eh:    	x1
-; bp - 010h:	thing->y hi
-; bp - 012h:	thing->y lo
-; bp - 014h:	thing->x hi
-; bp - 016h:    x2
-; bp - 018h:	thing->x lo
-; bp - 01Ah:	UNUSED was SPRITES_SEGMENT (far segment for spriteframes?)
+; bp - 0Eh:    	UNUSED
+; bp - 010h:	thingz hi
+; bp - 012h:	thingz lo
+; bp - 014h:	thingy hi
+; bp - 016h:    thingy lo
+; bp - 018h:	thingx hi
+; bp - 01Ah:	thingx lo
 ; bp - 01Ch:	tz_w hi
 ; bp - 01Eh:	tr_x hi
 ; bp - 020h:    tr_y hi
-; bp - 022h:    thing->flags2
-; bp - 024h:    thing->x hi
+; bp - 022h:    UNUSED 
+; bp - 024h:    UNUSED
 ; bp - 026h:    usedwidth
-; bp - 028h:    thing->x lo
-; bp - 02Ah:    thing->angle hibits. only used for rot.    do selfmodifying
+; bp - 028h:    UNUSED
+; bp - 02Ah:    UNUSED was thing->angle hibits. only used for rot.    do selfmodifying
 ; bp - 02Ch:    temp fracbits. probably something else is temp hibits..
 ; bp - 02Eh:    spriteindex. used for spriteframes and spritetopindex?
 ; bp - 030h:    gxt lo
 ; bp - 032h:    tr_x lo
-; bp - 034h:    gxt lo
-; bp - 036h:    gxt hi
+; bp - 034h:    gxt hi
+; bp - 036h:    gxt lo
 ; bp - 038h:    gxt hi
-; bp - 060h;    overflowsprite (SIZEOF_VISSPRITE_T is 028h)
 
 
 push  si
 push  es
 push  bp
 mov   bp, sp
-sub   sp, 060h
+sub   sp, 038h
 mov   dx, es					   ; back this up...
 mov   bx, word ptr es:[si + 012h]  ; thing->stateNum
 mov   ax, STATES_RENDER_SEGMENT
@@ -1115,37 +1114,42 @@ add   bx, bx
 ; todo clean all this up. do we need local copy?
 ; otherwise use ds and rep movsw
 mov   al, byte ptr es:[bx]		   ; states_render[thing->stateNum].sprite
-mov   byte ptr [bp - 4], al		   
+mov   byte ptr cs:[SELFMODIFY_set_ax_to_spriteframe+1], al		   
 mov   al, byte ptr es:[bx + 1]	; states_render[thing->stateNum].frame
-mov   es, dx					; restore sprite segment
-mov   byte ptr [bp - 6], al		; todo a lot of lodsb? set ds to es?
+mov   ah, SIZEOF_SPRITEFRAME_T
+mov   word ptr [bp - 4], ax		
 
-mov   ax, word ptr es:[si]			; x lo
-mov   word ptr [bp - 018h], ax
-mov   ax, word ptr es:[si + 2]		; x hi
-mov   word ptr [bp - 014h], ax
-mov   ax, word ptr es:[si + 4]		; y lo
-mov   word ptr [bp - 012h], ax
-mov   ax, word ptr es:[si + 6]		; y hi
-mov   word ptr [bp - 010h], ax
-mov   ax, word ptr es:[si + 8]		; z lo
-mov   word ptr [bp - 028h], ax
-mov   ax, word ptr es:[si + 0Ah]	; z hi
-mov   word ptr [bp - 024h], ax
-mov   ax, word ptr es:[si + 016h]	; flags2
-mov   word ptr [bp - 022h], ax
-mov   ax, word ptr es:[si + 010h]	; angle_t
-mov   word ptr [bp - 02Ah], ax
-mov   ax, word ptr [bp - 018h]		; x lo
+
+
+mov   cx, 6
+mov   bx, ss
+mov   es, bx					; es is SS i.e. destination segment
+mov   ds, dx					; ds is movsw source segment
+mov    ax, word ptr [si+010h]		; 010h
+mov    word ptr cs:[SELFMODIFY_set_ax_to_angle_highword+1], ax
+mov    al, byte ptr [si+016h]	; 016h
+mov    byte ptr cs:[SELFMODIFY_set_al_to_flags2+1], al
+
+lea   di, [bp - 01Ah]			; di is the stack area to copy to..
+
+rep   movsw
+
+;si is [si + 0xC] now...
+
+
+mov    ds, bx					; restore ds to 3C00
+
+; todo: do these subtractions during the above process.
+mov   ax, word ptr [bp - 01Ah]		; x lo
 sub   ax, word ptr ds:[_viewx]
 mov   word ptr [bp - 032h], ax
-mov   ax, word ptr [bp - 014h]
+mov   ax, word ptr [bp - 018h]
 sbb   ax, word ptr ds:[_viewx + 2]
-mov   si, word ptr [bp - 012h]		; y lo
+mov   si, word ptr [bp - 016h]		; y lo
 mov   word ptr [bp - 01Eh], ax
 mov   cx, ax						
 sub   si, word ptr ds:[_viewy]		
-mov   ax, word ptr [bp - 010h]		; y hi
+mov   ax, word ptr [bp - 014h]		; y hi
 sbb   ax, word ptr ds:[_viewy + 2]	; si:ax = tr_y
 
 ;    gxt.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, viewangle_shiftright1 ,tr_x.w);
@@ -1158,15 +1162,17 @@ mov   bx, word ptr [bp - 032h]
 call FixedMulTrigNoShift_
 
 
-;    gyt.w = -FixedMulTrigNoShift(FINE_SINE_ARGUMENT, viewangle_shiftright1 ,tr_y.w);
 
 mov   cx, word ptr [bp - 020h]		; tr_y hi
 mov   word ptr [bp - 036h], ax		; store gxt
 mov   word ptr [bp - 034h], dx
+
+;    gyt.w = -FixedMulTrigNoShift(FINE_SINE_ARGUMENT, viewangle_shiftright1 ,tr_y.w);
+
 mov   ax, FINESINE_SEGMENT
 mov   dx, di						; _viewangle_shiftright1
 mov   bx, si						; cx:bx = tr_y
-mov   byte ptr [bp - 2], 0
+
 call FixedMulTrigNoShift_
 
 
@@ -1195,7 +1201,7 @@ mov   cx, di
 mov   ax, word ptr ds:[_centerx]
 mov   bx, dx
 call FixedDivWholeA_
-mov   cx, word ptr [bp - 01eh]
+mov   cx, word ptr [bp - 01Eh]
 mov   word ptr [bp - 0Ch], ax
 mov   word ptr [bp - 0Ah], dx
 mov   ax, FINESINE_SEGMENT
@@ -1203,14 +1209,15 @@ mov   dx, word ptr ds:[_viewangle_shiftright1]
 mov   bx, word ptr [bp - 032h]
 call FixedMulTrigNoShift_
 mov   cx, word ptr [bp - 020h]
+neg dx
+neg ax
+sbb dx, 0
 mov   word ptr [bp - 038h], dx
 mov   word ptr [bp - 030h], ax
-neg   word ptr [bp - 038h]
+
 mov   ax, FINECOSINE_SEGMENT
 mov   dx, word ptr ds:[_viewangle_shiftright1]
 mov   bx, si
-neg   word ptr [bp - 030h]
-sbb   word ptr [bp - 038h], 0
 call FixedMulTrigNoShift_
 
 ;    tx.w = -(gyt.w+gxt.w); 
@@ -1257,61 +1264,62 @@ jne   not_too_far_off_side_lowbits
 cmp   ax, word ptr [bp - 036h]
 jb    exit_project_sprite
 not_too_far_off_side_lowbits:
-mov   al, byte ptr [bp - 4]
-xor   ah, ah
+SELFMODIFY_set_ax_to_spriteframe:
+mov   ax, 00012h  ; leave high byte 0
 mov   di, ax
 shl   di, 2
 sub   di, ax
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
-mov   al, byte ptr [bp - 6]
+mov   ax, word ptr [bp - 4]
 and   al, FF_FRAMEMASK
-xor   ah, ah
-imul  ax, ax, SIZEOF_SPRITEFRAME_T			; sucks. do shifts? 3 << 4 + 1
+mul   ah
 mov   di, word ptr es:[di]
 mov   bx, di
 add   bx, ax
 cmp   byte ptr es:[bx + 018h], 0
-mov   bl, 0					; rot 0 on jmp
+mov   bx, 0				; rot 0 on jmp
 je    skip_sprite_rotation
-mov   bx, word ptr [bp - 012h]
-mov   cx, word ptr [bp - 010h]
-mov   ax, word ptr [bp - 018h]
-mov   dx, word ptr [bp - 014h]
+mov   ax, word ptr [bp - 01Ah]
+mov   dx, word ptr [bp - 018h]
+mov   bx, word ptr [bp - 016h]
+mov   cx, word ptr [bp - 014h]
 call  R_PointToAngle_
 mov   ax, dx
-sub   ax, word ptr [bp - 02Ah]
-mov   cx, 3
-
 ;rot = _rotl(ang.hu.intbits - thingangle.hu.intbits + 0x9000u, 3) & 0x07;
+
+SELFMODIFY_set_ax_to_angle_highword:
+sub   ax, 01212h
+
 add   ah, 090h
-rol   ax, cl
-and   al, 7
-mov   bl, al				; rot result
+rol   ax, 1
+rol   ax, 1
+rol   ax, 1
+and   ax, 7
+mov   bx, ax				; rot result
 skip_sprite_rotation:
-mov   al, byte ptr [bp - 6]
+mov   ax, word ptr [bp - 4]
 and   al, FF_FRAMEMASK
-xor   ah, ah
-imul  ax, ax, SIZEOF_SPRITEFRAME_T
-mov   dx, di
-add   dx, ax
-xor   bh, bh
+mul   ah
+add   di, ax
+
+
 add   bx, bx					; rot lookup
 mov   cx, SPRITES_SEGMENT
 mov   es, cx
-add   bx, dx
-mov   bx, word ptr es:[bx]
+
+mov   bx, word ptr es:[bx+di]
 mov   word ptr [bp - 02Eh], bx
-xchg  bx, dx
+xchg  bx, di
 add   bx, ax
 mov   al, byte ptr es:[bx + 010h]
-mov   cx, word ptr [bp - 0Ah]
-mov   byte ptr [bp - 8], al
+mov   byte ptr cs:[SELFMODIFY_set_flip+1], al
 mov   ax, SPRITEOFFSETS_SEGMENT
-mov   bx, dx						; restore this
+
 mov   es, ax
-mov   al, byte ptr es:[bx]
+mov   al, byte ptr es:[di]
 mov   bx, word ptr [bp - 0Ch]
+mov   cx, word ptr [bp - 0Ah]
 xor   ah, ah
 ;sub   word ptr [bp - 02Ch], 0
 sub   si, ax						; no need for sbb?
@@ -1331,7 +1339,7 @@ adc   di, ax
 ;    }
     
 
-mov   word ptr [bp - 0Eh], di
+mov   word ptr [bp - 2], di
 cmp   di, word ptr ds:[_viewwidth]
 jle   not_too_far_off_right_side_highbits
 jump_to_exit_project_sprite_2:
@@ -1378,7 +1386,7 @@ xor   dx, dx
 add   dx, ax
 adc   di, bx
 dec   di
-mov   word ptr [bp - 016h], di
+mov   word ptr cs:[SELFMODIFY_set_ax_to_x2+1], di
 
 ;    // off the left side
 ;    if (x2 < 0)
@@ -1387,14 +1395,15 @@ mov   word ptr [bp - 016h], di
 test  di, di
 jl    jump_to_exit_project_sprite_2
 
-inc   word ptr ds:[_vissprite_p]
 mov   si, word ptr ds:[_vissprite_p]
-dec   si
+cmp  si, MAXVISSPRITES
+je   got_vissprite
+; don't increment vissprite if its the max index. reuse this index.
+inc   word ptr ds:[_vissprite_p]
+got_vissprite:
 imul  si, si, SIZEOF_VISSPRITE_T
 add   si, OFFSET _vissprites
 
-;todo fix overflow sprite.
-;    vis->scale = xscale.w<<detailshift.b.bytelow;
 
 
 mov   al, byte ptr ds:[_detailshift]
@@ -1413,28 +1422,30 @@ done_looping_shift_visscale:
 ; todo clean this up too...
 
 mov   word ptr ds:[si  + 01Ah], ax
-mov   ax, word ptr [bp - 018h]
-mov   word ptr ds:[si  + 006h], ax
-mov   ax, word ptr [bp - 014h]
-mov   word ptr ds:[si  + 008h], ax
-mov   ax, word ptr [bp - 012h]
-mov   word ptr ds:[si  + 00Ah], ax
-mov   ax, word ptr [bp - 010h]
-mov   word ptr ds:[si  + 00Ch], ax
-mov   ax, word ptr [bp - 028h]
-mov   word ptr ds:[si  + 00Eh], ax
-mov   ax, word ptr [bp - 024h]
-mov   bx, word ptr [bp - 02Eh]
-mov   word ptr ds:[si  + 010h], ax
-mov   ax, SPRITETOPOFFSETS_SEGMENT
 mov   word ptr ds:[si  + 01Ch], di
+
+mov   cx, 6
+lea   di, [si  + 006h]
+lea   si, [bp - 01Ah]
+
+mov   ax, ss
+mov   es, ax
+
+; copy thing x y z to new vissprite x y z
+rep movsw
+
+; todo: put more stuff on stack ready for copy. or do one copy, why are we doing 2...
+
+lea   si, [di - 012h]			; restore di
+
+mov   bx, word ptr [bp - 02Eh]
+mov   ax, SPRITETOPOFFSETS_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx]
 xor   dx, dx
 cbw  
 
 ; todo maybe vis = &vissprites[vissprite_p - 1];
-mov   di, ax
 
 ;    // hack to make this fit in 8 bits, check r_init.c
 ;    if (temp.h.intbits == -128){
@@ -1442,22 +1453,22 @@ mov   di, ax
 ;    }
 
 
-cmp   ax, 0FF80h
-je   intbits_128
+cmp   ax, 0FF80h				; -128
+je   set_intbits_to_129
 intbits_ready:
+;	vis->gzt.w = vis->gz.w + temp.w;
 mov   bx, word ptr [si + 0Eh]
-mov   ax, word ptr [si + 010h]
-add   bx, dx
-adc   ax, di
+add   ax, word ptr [si + 010h]
 mov   word ptr [si + 012h], bx
-mov   bx, OFFSET _viewz
-mov   dx, word ptr [si + 012h]
 mov   word ptr [si + 014h], ax
-sub   dx, word ptr [bx]
-sbb   ax, word ptr [bx + 2]
+
+;    vis->texturemid = vis->gzt.w - viewz.w;
+
+sub   bx, word ptr ds:[_viewz]
+sbb   ax, word ptr ds:[_viewz + 2]
+mov   word ptr [si + 022h], bx
 mov   word ptr [si + 024h], ax
-mov   ax, word ptr [bp - 0Eh]
-mov   word ptr [si + 022h], dx
+mov   ax, word ptr [bp - 2]
 ; todo move x1 code way up where its still register
 
 ;    vis->x1 = x1 < 0 ? 0 : x1;
@@ -1472,7 +1483,8 @@ mov   word ptr [si + 2], ax
 ;    vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
 ; todo move x2 code way up where its still register
 
-mov   ax, word ptr [bp - 016h]
+SELFMODIFY_set_ax_to_x2:
+mov   ax, 00012h			; get x2
 mov   bx, word ptr ds:[_viewwidth]
 cmp   ax, bx
 jl    x2_smaller_than_viewwidth
@@ -1485,25 +1497,27 @@ mov   word ptr [si + 4], ax
 mov   ax, 1
 call FixedDivWholeA_
 mov   bx, ax
-cmp   byte ptr [bp - 8], 0
+SELFMODIFY_set_flip:
+mov   al, 00h
+cmp   al, 0
 jne   flip_not_zero
 jmp   flip_zero
-intbits_128:
-mov   di, 129
+set_intbits_to_129:
+mov   ax, 129
 jmp intbits_ready
 
 flip_not_zero:
-mov   di, word ptr [bp - 026h]
+mov   word ptr [si + 016h], -1
+mov   ax, word ptr [bp - 026h]	; usedwidth
+dec   ax
+mov   word ptr [si + 018h], ax
+
+neg   dx
+neg   bx
+sbb   dx, 0
+
+mov   word ptr [si + 01Eh], bx
 mov   word ptr [si + 020h], dx
-xor   ax, ax
-mov   word ptr [si + 01eh], bx
-add   ax, -1
-adc   di, -1
-mov   word ptr [si + 016h], ax
-mov   word ptr [si + 018h], di
-neg   word ptr [si + 020h]
-neg   word ptr [si + 01eh]
-sbb   word ptr [si + 020h], 0
 
 flip_stuff_done:
 
@@ -1512,11 +1526,11 @@ flip_stuff_done:
 ;        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
 
 mov   ax, word ptr [si + 2]
-mov   bx, word ptr [bp - 0Eh]
-cmp   ax, bx
-jle   vis_x1_greater_than_x1
+mov   bx, word ptr [bp - 2]
 sub   ax, bx
-mov   bx, word ptr [si + 01eh]
+jle   vis_x1_greater_than_x1
+;sub   ax, bx
+mov   bx, word ptr [si + 01Eh]
 mov   cx, word ptr [si + 020h]
 call FastMul16u32u_
 add   word ptr [si + 016h], ax
@@ -1528,12 +1542,14 @@ mov   word ptr [si + 026h], bx
 
 ;    if (thingflags2 & MF_SHADOW) {
 
-test  byte ptr [bp - 022h], 4
+SELFMODIFY_set_al_to_flags2:
+mov   al, 00h
+test  al, 4
 jne   exit_set_shadow
 mov   al, byte ptr ds:[_fixedcolormap]
 test  al, al
 jne   exit_set_fixed_colormap
-test  byte ptr [bp - 6], FF_FULLBRIGHT
+test  byte ptr [bp - 4], FF_FULLBRIGHT
 jne   exit_set_fixed_colormap
 
 
@@ -1577,7 +1593,7 @@ ret
 flip_zero:
 mov   word ptr [si + 016h], 0
 mov   word ptr [si + 018h], 0
-mov   word ptr [si + 01eh], ax
+mov   word ptr [si + 01Eh], bx
 mov   word ptr [si + 020h], dx
 jmp   flip_stuff_done
 exit_set_shadow:

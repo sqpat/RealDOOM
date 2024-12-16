@@ -830,10 +830,12 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     // store information in a vissprite
 
 	if (vissprite_p == MAXVISSPRITES) {
-		vis = &overflowsprite;
+		//vis = &overflowsprite;
+		vis = &vissprites[MAXVISSPRITES];
+	} else {
+		vissprite_p++;
+		vis = &vissprites[vissprite_p - 1];
 	}
-	vissprite_p++;
-	vis = &vissprites[vissprite_p - 1];
 
     vis->scale = xscale.w<<detailshift.b.bytelow;
     vis->gx = thingx;

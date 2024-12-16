@@ -1302,7 +1302,8 @@ spritedefs_bytes    7410:0000
 #define size_segs_render              MAX_SEGS_RENDER_SIZE
 #define size_seg_normalangles         (MAX_SEGS * (sizeof(fineangle_t)))
 #define size_sides_render             MAX_SIDES_RENDER_SIZE
-#define size_vissprites               (sizeof(vissprite_t) * (MAXVISSPRITES))
+// plus one to make room for overflow vissprite
+#define size_vissprites               (sizeof(vissprite_t) * (MAXVISSPRITES+1))
 #define size_player_vissprites        (sizeof(vissprite_t) * 2)
 #define size_texturepatchlump_offset  (MAX_TEXTURES * sizeof(uint16_t))
 #define size_visplaneheaders          (sizeof(visplaneheader_t) * MAXEMSVISPLANES)
@@ -1403,29 +1404,29 @@ segs_render             4000:0000   4000
 seg_normalangles        4580:0000   9800
 sides_render            46E0:0000   AE00
 vissprites              4967:0000   D670
-player_vissprites       4AA7:0000   EA70
-texturepatchlump_offset 4AAC:0000   EAC0
-visplaneheaders         4AE2:0000   EE20
-visplanepiclights       4B21:0000   F210
-fuzzoffset              4B31:0000   F310
-scalelightfixed         4B3A:0000   F3A0
-scalelight              4B3D:0000   F3D0
-patch_sizes             4B6D:0000   F6D0
-viewangletox            4BA9:0000   FA90
+player_vissprites       4AAA:0000   EAA0
+texturepatchlump_offset 4AAF:0000   EAF0
+visplaneheaders         4AE5:0000   EE50
+visplanepiclights       4B24:0000   F240
+fuzzoffset              4B34:0000   F340
+scalelightfixed         4B3D:0000   F3D0
+scalelight              4B40:0000   F400
+patch_sizes             4B70:0000   F700
+viewangletox            4BAC:0000   FAC0
 // 1392 bytes here?
 [near range over]       
 
-states_render           4DA9:0000
-flatindex               4E22:0000
-spritepage              4E2C:0000
-spriteoffset            4E2C:0565
-texturecollength        4ED9:0000
-texturecompositesizes   4EF4:0000
-compositetexturepage    4F29:0000
-compositetextureoffset  4F29:01AC
-[done]                  4F61:0000
+states_render           4DAC:0000
+flatindex               4E25:0000
+spritepage              4E2F:0000
+spriteoffset            4E2F:0565
+texturecollength        4EDC:0000
+texturecompositesizes   4EF7:0000
+compositetexturepage    4F2C:0000
+compositetextureoffset  4F2C:01AC
+[done]                  4F64:0000
 //FREEBYTES
-3312 bytes free
+3264 bytes free
 
 
 */
