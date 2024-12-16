@@ -128,7 +128,7 @@ PUBLIC R_PointToAngle_
 ;	x.w -= viewx.w;
 ;	y.w -= viewy.w;
 
-
+; idea: self modify code, change this to constants per frame.
 
 sub   ax, word ptr ds:[_viewx]
 sbb   dx, word ptr ds:[_viewx+2]
