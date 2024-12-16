@@ -1070,13 +1070,13 @@ PUBLIC R_ProjectSprite_
 
 
 
-; bp - 2:	 	x1
-; bp - 4:    	thingframe (byte, with SIZEOF_SPRITEFRAME_T high)
-; bp - 6:    	UNUSED
-; bp - 8:    	UNUSED flip (?) (byte)      do selfmodifying
-; bp - 0Ah:    	xscale hi
-; bp - 0Ch:    	xscale lo
-; bp - 0Eh:    	UNUSED
+; bp - 2:	 	xscale hi
+; bp - 4:    	xscale lo
+; bp - 6:    	thingframe (byte, with SIZEOF_SPRITEFRAME_T high)
+; bp - 8:    	tr_y hi
+; bp - 0Ah:    	tr_y low
+; bp - 0Ch:    	tr_x hi
+; bp - 0Eh:    	tr_x lo
 ; bp - 010h:	thingz hi
 ; bp - 012h:	thingz lo
 ; bp - 014h:	thingy hi
@@ -1084,27 +1084,26 @@ PUBLIC R_ProjectSprite_
 ; bp - 018h:	thingx hi
 ; bp - 01Ah:	thingx lo
 ; bp - 01Ch:	tz_w hi
-; bp - 01Eh:	tr_x hi
-; bp - 020h:    tr_y hi
-; bp - 022h:    UNUSED 
+; bp - 01Eh:	tz_w lo
+; bp - 020h:    UNUSED
+; bp - 022h:    UNUSED
 ; bp - 024h:    UNUSED
 ; bp - 026h:    usedwidth
 ; bp - 028h:    UNUSED
-; bp - 02Ah:    UNUSED was thing->angle hibits. only used for rot.    do selfmodifying
+; bp - 02Ah:    UNUSED
 ; bp - 02Ch:    temp fracbits. probably something else is temp hibits..
 ; bp - 02Eh:    spriteindex. used for spriteframes and spritetopindex?
-; bp - 030h:    gxt lo
-; bp - 032h:    tr_x lo
+; bp - 030h:    UNUSED
+; bp - 032h:    UNUSED
 ; bp - 034h:    gxt hi
 ; bp - 036h:    gxt lo
-; bp - 038h:    gxt hi
 
 
 push  si
 push  es
 push  bp
 mov   bp, sp
-sub   sp, 038h
+sub   sp, 036h
 mov   dx, es					   ; back this up...
 mov   bx, word ptr es:[si + 012h]  ; thing->stateNum
 mov   ax, STATES_RENDER_SEGMENT
@@ -1117,7 +1116,7 @@ mov   al, byte ptr es:[bx]		   ; states_render[thing->stateNum].sprite
 mov   byte ptr cs:[SELFMODIFY_set_ax_to_spriteframe+1], al		   
 mov   al, byte ptr es:[bx + 1]	; states_render[thing->stateNum].frame
 mov   ah, SIZEOF_SPRITEFRAME_T
-mov   word ptr [bp - 4], ax		
+mov   word ptr [bp - 6], ax		
 
 
 
@@ -1125,10 +1124,10 @@ mov   cx, 6
 mov   bx, ss
 mov   es, bx					; es is SS i.e. destination segment
 mov   ds, dx					; ds is movsw source segment
-mov    ax, word ptr [si+010h]		; 010h
-mov    word ptr cs:[SELFMODIFY_set_ax_to_angle_highword+1], ax
-mov    al, byte ptr [si+016h]	; 016h
-mov    byte ptr cs:[SELFMODIFY_set_al_to_flags2+1], al
+mov   ax, word ptr [si+010h]		; 010h
+mov   word ptr cs:[SELFMODIFY_set_ax_to_angle_highword+1], ax
+mov   al, byte ptr [si+016h]	; 016h
+mov   byte ptr cs:[SELFMODIFY_set_al_to_flags2+1], al
 
 lea   di, [bp - 01Ah]			; di is the stack area to copy to..
 
@@ -1137,59 +1136,68 @@ rep   movsw
 ;si is [si + 0xC] now...
 
 
-mov    ds, bx					; restore ds to 3C00
+mov   ds, bx					; restore ds to 3C00
+lea   si, [bp - 01Ah]
 
 ; todo: do these subtractions during the above process.
-mov   ax, word ptr [bp - 01Ah]		; x lo
+lodsw
 sub   ax, word ptr ds:[_viewx]
-mov   word ptr [bp - 032h], ax
-mov   ax, word ptr [bp - 018h]
+stosw
+xchg   bx, ax
+lodsw
 sbb   ax, word ptr ds:[_viewx + 2]
-mov   si, word ptr [bp - 016h]		; y lo
-mov   word ptr [bp - 01Eh], ax
-mov   cx, ax						
-sub   si, word ptr ds:[_viewy]		
-mov   ax, word ptr [bp - 014h]		; y hi
-sbb   ax, word ptr ds:[_viewy + 2]	; si:ax = tr_y
+stosw
+xchg   cx, ax						
+lodsw
+sub   ax, word ptr ds:[_viewy]		
+stosw
+lodsw
+sbb   ax, word ptr ds:[_viewy + 2]
+stosw
 
+lea   si, [bp - 0Ah]
 ;    gxt.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, viewangle_shiftright1 ,tr_x.w);
 
-mov   word ptr [bp - 020h], ax		
 mov   ax, FINECOSINE_SEGMENT
-mov   di, word ptr ds:[_viewangle_shiftright1]
-mov   dx, di
-mov   bx, word ptr [bp - 032h]
-call FixedMulTrigNoShift_
+mov   dx, word ptr ds:[_viewangle_shiftright1]
+call  FixedMulTrigNoShift_
 
 
 
-mov   cx, word ptr [bp - 020h]		; tr_y hi
+
 mov   word ptr [bp - 036h], ax		; store gxt
 mov   word ptr [bp - 034h], dx
+; cx:bx = tr_y
+lodsw
+xchg  ax, bx
+lodsw
+xchg  ax, cx
+
 
 ;    gyt.w = -FixedMulTrigNoShift(FINE_SINE_ARGUMENT, viewangle_shiftright1 ,tr_y.w);
 
 mov   ax, FINESINE_SEGMENT
-mov   dx, di						; _viewangle_shiftright1
-mov   bx, si						; cx:bx = tr_y
+mov   dx, word ptr ds:[_viewangle_shiftright1]
 
 call FixedMulTrigNoShift_
 
+; todo clean this up. less register swapping.
 
-mov   di, dx
-mov   dx, word ptr [bp - 036h]
-neg   di
+
+neg   dx
 neg   ax
-sbb   di, 0
+sbb   dx, 0
 
 ;    tz.w = gxt.w-gyt.w; 
+mov   bx, word ptr [bp - 036h]
+mov   cx, word ptr [bp - 034h]
+sub   bx, ax
+sbb   cx, dx
 
-sub   dx, ax
-mov   ax, word ptr [bp - 034h]
-sbb   ax, di
-mov   word ptr [bp - 01Ch], dx
-mov   di, ax
-cmp   ax, MINZ_HIGHBITS
+mov   word ptr [bp - 01Eh], bx
+mov   word ptr [bp - 01Ch], cx
+
+cmp   cx, MINZ_HIGHBITS
 
 ;    // thing is behind view plane?
 ;    if (tz.h.intbits < MINZ_HIGHBITS){ // (- sq: where does this come from)
@@ -1197,33 +1205,49 @@ cmp   ax, MINZ_HIGHBITS
 ;    }
 
 jl   exit_project_sprite
-mov   cx, di
+
+
+;    xscale.w = FixedDivWholeA(centerx, tz.w);
+
 mov   ax, word ptr ds:[_centerx]
-mov   bx, dx
-call FixedDivWholeA_
-mov   cx, word ptr [bp - 01Eh]
-mov   word ptr [bp - 0Ch], ax
-mov   word ptr [bp - 0Ah], dx
+
+call  FixedDivWholeA_
+mov   word ptr [bp - 4], ax
+mov   word ptr [bp - 2], dx
+
+lea   si, [bp - 0Eh]
+lodsw
+xchg  ax, bx
+lodsw
+xchg  ax, cx
+
 mov   ax, FINESINE_SEGMENT
 mov   dx, word ptr ds:[_viewangle_shiftright1]
-mov   bx, word ptr [bp - 032h]
-call FixedMulTrigNoShift_
-mov   cx, word ptr [bp - 020h]
+
+call  FixedMulTrigNoShift_
 neg dx
 neg ax
 sbb dx, 0
-mov   word ptr [bp - 038h], dx
-mov   word ptr [bp - 030h], ax
+; results from DX:AX to DI:SI... eventually
+mov   di, dx
+xchg  ax, dx
 
+
+lodsw
+xchg  ax, bx
+lodsw
+xchg  ax, cx
+
+mov   si, dx  ; SI can now move 
 mov   ax, FINECOSINE_SEGMENT
 mov   dx, word ptr ds:[_viewangle_shiftright1]
-mov   bx, si
+
 call FixedMulTrigNoShift_
 
 ;    tx.w = -(gyt.w+gxt.w); 
 
-add   ax, word ptr [bp - 030h]		; add gxt
-adc   dx, word ptr [bp - 038h]
+add   ax, si		; add gxt
+adc   dx, di
 neg   dx
 neg   ax
 sbb   dx, 0
@@ -1247,7 +1271,8 @@ tx_already_positive:
 
 
 mov   word ptr [bp - 036h], ax
-mov   ax, word ptr [bp - 01ch]
+mov   ax, word ptr [bp - 01Eh]
+mov   di, word ptr [bp - 01Ch]
 add   ax, ax
 adc   di, di
 add   ax, ax
@@ -1271,7 +1296,7 @@ shl   di, 2
 sub   di, ax
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
-mov   ax, word ptr [bp - 4]
+mov   ax, word ptr [bp - 6]
 and   al, FF_FRAMEMASK
 mul   ah
 mov   di, word ptr es:[di]
@@ -1298,12 +1323,12 @@ rol   ax, 1
 and   ax, 7
 mov   bx, ax				; rot result
 skip_sprite_rotation:
-mov   ax, word ptr [bp - 4]
+mov   ax, word ptr [bp - 6]
 and   al, FF_FRAMEMASK
 mul   ah
 add   di, ax
 
-
+mov   ax, bx					; copy rotation
 add   bx, bx					; rot lookup
 mov   cx, SPRITES_SEGMENT
 mov   es, cx
@@ -1318,8 +1343,8 @@ mov   ax, SPRITEOFFSETS_SEGMENT
 
 mov   es, ax
 mov   al, byte ptr es:[di]
-mov   bx, word ptr [bp - 0Ch]
-mov   cx, word ptr [bp - 0Ah]
+mov   bx, word ptr [bp - 4]
+mov   cx, word ptr [bp - 2]
 xor   ah, ah
 ;sub   word ptr [bp - 02Ch], 0
 sub   si, ax						; no need for sbb?
@@ -1331,7 +1356,7 @@ mov   bx, ax
 mov   ax, dx
 xor   dx, dx
 add   dx, bx
-adc   di, ax
+adc   ax, di
 
 ;    // off the right side?
 ;    if (x1 > viewwidth){
@@ -1339,8 +1364,9 @@ adc   di, ax
 ;    }
     
 
-mov   word ptr [bp - 2], di
-cmp   di, word ptr ds:[_viewwidth]
+mov   word ptr cs:[SELFMODIFY_set_vis_x1+1], ax
+mov   word ptr cs:[SELFMODIFY_sub_x1+1], ax
+cmp   ax, word ptr ds:[_viewwidth]
 jle   not_too_far_off_right_side_highbits
 jump_to_exit_project_sprite_2:
 jmp   exit_project_sprite
@@ -1349,7 +1375,6 @@ mov   bx, word ptr [bp - 02Eh]
 mov   es, word ptr ds:[_spritewidths_segment]
 mov   al, byte ptr es:[bx]
 xor   ah, ah
-mov   word ptr [bp - 026h], ax
 
 
 ;    if (usedwidth == 1){
@@ -1358,9 +1383,9 @@ mov   word ptr [bp - 026h], ax
 
 
 cmp   ax, 1
-jne   not_too_far_off_right_side_lowbits
-mov   word ptr [bp - 026h], 257   
-not_too_far_off_right_side_lowbits:
+jne   usedwidth_not_1
+mov   ax, 257   
+usedwidth_not_1:
 
 ;   temp.h.fracbits = 0;
 ;    temp.h.intbits = usedwidth;
@@ -1369,12 +1394,14 @@ not_too_far_off_right_side_lowbits:
 ;	temp.h.intbits = centerx;
 ;	temp.w += FixedMul (tx.w,xscale.w);
 
-mov   di, word ptr [bp - 026h]
-mov   bx, word ptr [bp - 0Ch]
-mov   cx, word ptr [bp - 0Ah]
+mov   word ptr cs:[SELFMODIFY_set_ax_to_usedwidth+1], ax
+
+
+mov   bx, word ptr [bp - 4]
+mov   cx, word ptr [bp - 2]
 mov   dx, si
 ;add   word ptr [bp - 02Ch], 0
-add   dx, di					; no need for adc
+add   dx, ax					; no need for adc
 mov   ax, word ptr [bp - 02Ch]
 mov   di, word ptr ds:[_centerx]
 call FixedMul_
@@ -1408,9 +1435,9 @@ add   si, OFFSET _vissprites
 
 mov   al, byte ptr ds:[_detailshift]
 cbw  
-mov   di, word ptr [bp - 0Ah]
 mov   cx, ax
-mov   ax, word ptr [bp - 0Ch]
+mov   ax, word ptr [bp - 4]
+mov   di, word ptr [bp - 2]
 jcxz  done_looping_shift_visscale  ; todo unroll
 loop_shift_visscale:
 shl   ax, 1
@@ -1468,7 +1495,8 @@ sub   bx, word ptr ds:[_viewz]
 sbb   ax, word ptr ds:[_viewz + 2]
 mov   word ptr [si + 022h], bx
 mov   word ptr [si + 024h], ax
-mov   ax, word ptr [bp - 2]
+SELFMODIFY_set_vis_x1:
+mov   ax, 01234h
 ; todo move x1 code way up where its still register
 
 ;    vis->x1 = x1 < 0 ? 0 : x1;
@@ -1491,8 +1519,8 @@ jl    x2_smaller_than_viewwidth
 mov   ax, bx
 dec   ax
 x2_smaller_than_viewwidth:
-mov   bx, word ptr [bp - 0Ch]
-mov   cx, word ptr [bp - 0Ah]
+mov   bx, word ptr [bp - 4]
+mov   cx, word ptr [bp - 2]
 mov   word ptr [si + 4], ax
 mov   ax, 1
 call FixedDivWholeA_
@@ -1508,7 +1536,8 @@ jmp intbits_ready
 
 flip_not_zero:
 mov   word ptr [si + 016h], -1
-mov   ax, word ptr [bp - 026h]	; usedwidth
+SELFMODIFY_set_ax_to_usedwidth:
+mov   ax, 01234h 
 dec   ax
 mov   word ptr [si + 018h], ax
 
@@ -1526,10 +1555,9 @@ flip_stuff_done:
 ;        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
 
 mov   ax, word ptr [si + 2]
-mov   bx, word ptr [bp - 2]
-sub   ax, bx
+SELFMODIFY_sub_x1:
+sub   ax, 01234h
 jle   vis_x1_greater_than_x1
-;sub   ax, bx
 mov   bx, word ptr [si + 01Eh]
 mov   cx, word ptr [si + 020h]
 call FastMul16u32u_
@@ -1549,7 +1577,7 @@ jne   exit_set_shadow
 mov   al, byte ptr ds:[_fixedcolormap]
 test  al, al
 jne   exit_set_fixed_colormap
-test  byte ptr [bp - 4], FF_FULLBRIGHT
+test  byte ptr [bp - 6], FF_FULLBRIGHT
 jne   exit_set_fixed_colormap
 
 
@@ -1558,9 +1586,9 @@ jne   exit_set_fixed_colormap
 mov   al, byte ptr ds:[_detailshift]	; set fullbright colormap
 mov   cx, 0Ch							; todo what
 cbw  
-mov   di, word ptr [bp - 0Ah]
 sub   cx, ax
-mov   ax, word ptr [bp - 0Ch]
+mov   ax, word ptr [bp - 4]
+mov   di, word ptr [bp - 2]
 jcxz  done_shifting_xscale
 loop_shift_xscale:
 sar   di, 1

@@ -852,7 +852,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 	vis->gzt.w = vis->gz.w + temp.w;
 //	vis->gzt = thingz + spritetopoffset[lump];
     vis->texturemid = vis->gzt.w - viewz.w;
-    vis->x1 = x1 < 0 ? 0 : x1;
+    vis->x1 = x1 < 0 ? 0 : x1; // if set to 0, then startfrac gets set below..
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
     
 	// todo does a quick  inverse function exist? considering this is fixed point
