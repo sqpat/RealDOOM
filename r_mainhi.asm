@@ -1746,7 +1746,8 @@ PUBLIC R_RenderSegLoop_
 
 ; DX:AX  is fixed_t rw_scalestep
 
-; bp - 034h	; easy to remove. temp storage?
+; bp - 4    ; unused
+; bp - 034h	; stores yh
 ; bp - 038h	; rw_scalestep lo argument AX
 ; bp - 03Ah	; rw_scalestep hi argument DX
 
@@ -1990,6 +1991,9 @@ adc   ax, word ptr [bp - 016h]
 mov   word ptr ds:[_pixhigh+2], ax
 jmp   label11
 label46:
+; di is rw_x
+; todo: cache the values of floorclip/ceil clip to not have to fetch in a billion places?
+; todo: store si in stack.
 mov   ax, word ptr ds:[_topfrac]
 add   ax, ((HEIGHTUNIT)-1)
 mov   dx, word ptr ds:[_topfrac+2]
@@ -1999,129 +2003,108 @@ loop_5:
 sar   dx, 1
 rcr   ax, 1
 loop  loop_5
-mov   bx, di
 mov   dx, OPENINGS_SEGMENT
-add   bx, di
 mov   es, dx
-mov   dx, word ptr es:[bx  + OFFSET_CEILINGCLIP]
+mov   bx, di ; di = rw_x
+mov   dx, word ptr es:[bx+di+OFFSET_CEILINGCLIP]
 mov   si, ax
 inc   dx
-add   bx, OFFSET_CEILINGCLIP
 cmp   ax, dx
-jge   label12
-mov   bx, di
-add   bx, di
-mov   si, word ptr es:[bx  + OFFSET_CEILINGCLIP]
-add   bx, OFFSET_CEILINGCLIP
-inc   si
-label12:
+jge   skip_yl_ceil_clip
+mov   si, dx
+skip_yl_ceil_clip:
 cmp   byte ptr ds:[_markceiling], 0
-je    label13
-mov   bx, word ptr ds:[_rw_x]
-mov   ax, OPENINGS_SEGMENT
-add   bx, bx
-mov   es, ax
-add   bx, OFFSET_CEILINGCLIP
-mov   ax, word ptr es:[bx]
-mov   bx, word ptr ds:[_rw_x]
-add   bx, bx
-lea   dx, [si - 1]
-add   bh, (OFFSET_FLOORCLIP SHR 8)
-inc   ax
-cmp   dx, word ptr es:[bx]
-jl    label14
-mov   bx, word ptr ds:[_rw_x]
-add   bx, bx
-add   bh, (OFFSET_FLOORCLIP SHR 8)
-mov   dx, word ptr es:[bx]
+je    markceiling_done
+
+; top = ceilingclip[rw_x]+1;
+mov   ax, dx;   dx is 1 + word ptr es:[bx+di+OFFSET_CEILINGCLIP]
+lea   dx, [si - 1]								; bottom = yl-1;
+mov   cx, word ptr es:[bx+di+OFFSET_FLOORCLIP]
+cmp   dx, cx
+jl    skip_bottom_floorclip
+mov   dx, cx
 dec   dx
-label14:
+skip_bottom_floorclip:
 cmp   ax, dx
-jg    label13
+jg    markceiling_done
 les   bx, dword ptr ds:[_ceiltop] 
-add   bx, word ptr ds:[_rw_x]
-mov   byte ptr es:[bx], al
-mov   bx, word ptr ds:[_rw_x]
-les   ax, dword ptr ds:[_ceiltop] ; todo cleanup...
-add   bx, ax
-mov   byte ptr es:[bx + 0142h], dl		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
-label13:
+mov   byte ptr es:[bx+di], al
+mov   byte ptr es:[bx+di + 0142h], dl		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
+markceiling_done:
+
+; yh = bottomfrac>>HEIGHTBITS;
 mov   ax, word ptr ds:[_bottomfrac]
 mov   dx, word ptr ds:[_bottomfrac+2]
 mov   cx, HEIGHTBITS
-loop_6:
+loop_6:					; todo fast shift with byte moves. just load 3 bytes and shift 4.
 sar   dx, 1
 rcr   ax, 1
 loop  loop_6
-mov   dx, word ptr ds:[_rw_x]
-add   dx, dx
 mov   bx, OPENINGS_SEGMENT
-add   dh, (OFFSET_FLOORCLIP SHR 8)
 mov   es, bx
-mov   bx, dx
-mov   di, ax
-cmp   ax, word ptr es:[bx]
-jl    label43
-mov   bx, word ptr ds:[_rw_x]
-add   bx, bx
-add   bh, (OFFSET_FLOORCLIP SHR 8)
-mov   di, word ptr es:[bx]
-dec   di
-label43:
-cmp   byte ptr ds:[_markfloor], 0
-je    label42
-mov   dx, word ptr ds:[_rw_x]
-add   dx, dx
-mov   bx, OPENINGS_SEGMENT
-add   dh, (OFFSET_FLOORCLIP SHR 8)
-mov   es, bx
-mov   bx, dx
-mov   dx, word ptr es:[bx]
-mov   cx, word ptr ds:[_rw_x]
-add   cx, cx
-lea   ax, [di + 1]
-mov   bx, cx
-dec   dx
-add   bx, OFFSET_CEILINGCLIP
-cmp   ax, word ptr es:[bx]
-jg    label44
-mov   bx, word ptr ds:[_rw_x]
-add   bx, bx
-mov   ax, word ptr es:[bx  + OFFSET_CEILINGCLIP]
-add   bx, OFFSET_CEILINGCLIP
-inc   ax
-label44:
+mov   bx, di
+mov   cx, ax
+mov   dx, word ptr es:[bx+di+OFFSET_FLOORCLIP]
 cmp   ax, dx
-jg    label42
-mov   dh, al
-les   ax, dword ptr ds:[_floortop]
-add   ax, word ptr ds:[_rw_x]
-mov   bx, ax
-mov   byte ptr es:[bx], dh
-mov   cx, word ptr ds:[_rw_x]
-mov   byte ptr [bp - 4], dl
-les   dx, dword ptr ds:[_floortop]	; todo cleanup
-mov   bx, dx
-add   bx, cx
-mov   al, byte ptr [bp - 4]
-mov   byte ptr es:[bx + 0142h], al
-label42:
+jl    skip_yh_floorclip
+mov   cx, dx
+dec   cx
+skip_yh_floorclip:
+mov   word ptr [bp - 034h], cx  ; store yl
+cmp   byte ptr ds:[_markfloor], 0
+je    markfloor_done
+
+;	top = yh+1;
+;	bottom = floorclip[rw_x]-1;
+
+mov   ax, cx
+inc   ax			; top = yh + 1...
+; dx is already  es:[bx+di+OFFSET_FLOORCLIP]
+dec   dx
+; cx is ceil
+mov   cx, word ptr es:[bx+di+OFFSET_CEILINGCLIP]
+
+;	if (top <= ceilingclip[rw_x]){
+;		top = ceilingclip[rw_x]+1;
+;	}
+
+cmp   ax, cx
+jg    skip_top_ceilingclip
+mov   ax, cx	 ; ax = ceiling clip di + 1
+inc   ax
+skip_top_ceilingclip:
+
+;	if (top <= bottom) {
+;		floortop[rw_x] = top & 0xFF;
+;		floortop[rw_x+322] = bottom & 0xFF;
+;	}
+
+cmp   ax, dx
+jg    markfloor_done
+les   bx, dword ptr ds:[_floortop]
+mov   byte ptr es:[bx+di], al
+mov   byte ptr es:[bx+di + 0142h], dl
+markfloor_done:
 cmp   byte ptr ds:[_segtextured], 0
-jne   label15
-jmp   label16
-label15:
+jne   seg_is_textured
+jmp   seg_non_textured
+seg_is_textured:
+
+; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
+
 mov   dx, XTOVIEWANGLE_SEGMENT
-mov   ax, word ptr ds:[_rw_x]
-add   ax, ax
 mov   es, dx
-mov   dx, ax
 mov   ax, word ptr ds:[_rw_centerangle]
-mov   bx, dx
-add   ax, word ptr es:[bx]
+mov   bx, di
+add   ax, word ptr es:[bx+di]
 and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
-mov   dx, word ptr ds:[_rw_distance + 2]
+
+; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
+
 mov   cx, word ptr ds:[_rw_distance]
+mov   dx, word ptr ds:[_rw_distance + 2]
 mov   word ptr [bp - 8], dx
+
 cmp   ax, FINE_TANGENT_MAX					; todo clean up this inline for sure.
 jb    label17
 jmp   label18
@@ -2164,7 +2147,11 @@ mov   dx, ax
 call FastDiv3232_
 mov   word ptr ds:[_dc_iscale], ax
 mov   word ptr ds:[_dc_iscale + 2], dx
-label16:
+seg_non_textured:
+; si/di are yh/yl
+;if (yh >= yl){
+
+mov   di, word ptr [bp - 034h]
 cmp   word ptr ds:[_midtexture], 0
 jne   label23
 jmp   label24
@@ -2404,7 +2391,7 @@ add   bh, (OFFSET_FLOORCLIP SHR 8)
 inc   di
 mov   word ptr es:[bx], di
 jmp   label25
-cld   
+   
 
 
 
