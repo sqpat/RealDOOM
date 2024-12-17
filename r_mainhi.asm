@@ -1744,7 +1744,11 @@ PROC R_RenderSegLoop_ NEAR
 PUBLIC R_RenderSegLoop_ 
 
 
-; bp - 03B54h	; easy to remove. temp storage?
+; DX:AX  is fixed_t rw_scalestep
+
+; bp - 034h	; easy to remove. temp storage?
+; bp - 038h	; rw_scalestep lo argument AX
+; bp - 03Ah	; rw_scalestep hi argument DX
 
 push  bx
 push  cx
@@ -1755,16 +1759,20 @@ mov   bp, sp
 sub   sp, 036h
 push  ax
 push  dx
-mov   bx, OFFSET _rw_x
-mov   ax, word ptr [bx]
-mov   si, OFFSET _detailshiftandval
+mov   ax, word ptr ds:[_rw_x]
 mov   bx, ax
-and   bx, word ptr [si]
-mov   si, OFFSET _detailshift2minus
+and   bx, word ptr ds:[_detailshiftandval]
 mov   word ptr [bp - 030h], ax
-mov   cl, byte ptr [si]
-mov   ax, word ptr [bp - 038h]
+mov   cl, byte ptr ds:[_detailshift2minus]
 xor   ch, ch
+mov   si, cx
+mov   ax, word ptr [bp - 038h]
+
+; todo: loop idea:
+; rep movsw all these things local.
+; then shift them all in a single big loop, cx times.
+
+
 jcxz  label1
 loop_1:
 shl   ax, 1
@@ -1773,10 +1781,9 @@ loop  loop_1
 label1:
 mov   word ptr [bp - 01ah], ax
 mov   word ptr [bp - 036h], dx
-mov   cl, byte ptr [si]
+mov   cx, si
 mov   ax, word ptr ds:[_topstep]
 mov   dx, word ptr ds:[_topstep+2]
-xor   ch, ch
 jcxz  label2
 loop_2:
 shl   ax, 1
@@ -1785,10 +1792,9 @@ loop  loop_2
 label2:
 mov   word ptr [bp - 0ch], ax
 mov   word ptr [bp - 0ah], dx
-mov   cl, byte ptr [si]
+mov   cx, si
 mov   ax, word ptr ds:[_bottomstep]
 mov   dx, word ptr ds:[_bottomstep+2]
-xor   ch, ch
 jcxz  label3
 loop_3:
 shl   ax, 1
@@ -1797,10 +1803,9 @@ loop  loop_3
 label3:
 mov   word ptr [bp - 012h], ax
 mov   word ptr [bp - 0eh], dx
-mov   cl, byte ptr [si]
+mov   cx, si
 mov   ax, word ptr ds:[_pixhighstep]
 mov   dx, word ptr ds:[_pixhighstep+2]
-xor   ch, ch
 jcxz  label4
 loop_10:
 shl   ax, 1
@@ -1809,10 +1814,9 @@ loop  loop_10
 label4:
 mov   word ptr [bp - 018h], ax
 mov   word ptr [bp - 016h], dx
-mov   cl, byte ptr [si]
+mov   cx, si
 mov   ax, word ptr ds:[_pixlowstep]
 mov   dx, word ptr ds:[_pixlowstep+2]
-xor   ch, ch
 mov   word ptr [bp - 032h], bx
 jcxz  label5
 loop_4:
@@ -1820,18 +1824,17 @@ shl   ax, 1
 rcl   dx, 1
 loop  loop_4
 label5:
-mov   si, OFFSET _rw_x
 mov   word ptr [bp - 010h], ax
-mov   ax, word ptr [si]
+mov   ax, word ptr ds:[_rw_x]
 mov   word ptr [bp - 014h], dx
 sub   ax, bx
 je    label6
-mov   si, OFFSET _rw_scale
 label7:
+; gross
 mov   dx, word ptr [bp - 038h]
-sub   word ptr [si], dx
+sub   word ptr ds:[_rw_scale], dx
 mov   dx, word ptr [bp - 03ah]
-sbb   word ptr [si + 2], dx
+sbb   word ptr ds:[_rw_scale + 2], dx
 mov   dx, word ptr ds:[_topstep]
 mov   bx, word ptr ds:[_topstep+2]
 sub   word ptr ds:[_topfrac], dx
@@ -1851,10 +1854,9 @@ sbb   word ptr ds:[_pixhigh+2], bx
 dec   ax
 jne   label7
 label6:
-mov   bx, OFFSET _rw_scale
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[_rw_scale]
 mov   word ptr [bp - 02eh], ax
-mov   ax, word ptr [bx + 2]
+mov   ax, word ptr ds:[_rw_scale + 2]
 mov   word ptr [bp - 02ch], ax
 mov   ax, word ptr ds:[_topfrac]
 mov   word ptr [bp - 02ah], ax
@@ -1876,9 +1878,8 @@ mov   word ptr [bp - 01eh], ax
 label45:
 mov   al, byte ptr [bp - 2]
 cbw  
-mov   si, OFFSET _detailshiftitercount
 mov   bx, ax
-mov   al, byte ptr [si]
+mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
 cmp   bx, ax
 jl    label8
@@ -1896,8 +1897,7 @@ pop   cx
 pop   bx
 ret   
 label8:
-mov   si, OFFSET _detailshift + 1
-mov   al, byte ptr [si]
+mov   al, byte ptr ds:[_detailshift + 1]
 cbw  
 mov   si, bx
 add   si, ax
@@ -1911,30 +1911,26 @@ mov   word ptr ds:[_topfrac+2], ax
 mov   ax, word ptr [bp - 01ch]
 mov   word ptr ds:[_bottomfrac], ax
 mov   ax, word ptr [bp - 022h]
-mov   si, OFFSET _rw_scale
 mov   word ptr ds:[_bottomfrac+2], ax
 mov   ax, word ptr [bp - 02eh]
-mov   word ptr [si], ax
+mov   word ptr ds:[_rw_scale], ax
 mov   ax, word ptr [bp - 02ch]
-mov   word ptr [si + 2], ax
+mov   word ptr ds:[_rw_scale + 2], ax
 mov   ax, word ptr [bp - 024h]
 mov   word ptr ds:[_pixlow], ax
 mov   ax, word ptr [bp - 020h]
 add   bx, word ptr [bp - 032h]
 mov   word ptr ds:[_pixlow+2], ax
 mov   ax, word ptr [bp - 026h]
-mov   si, OFFSET _rw_x
 mov   word ptr ds:[_pixhigh], ax
 mov   ax, word ptr [bp - 01eh]
-mov   word ptr [si], bx
+mov   word ptr ds:[_rw_x], bx
 mov   word ptr ds:[_pixhigh+2], ax
 cmp   bx, word ptr [bp - 030h]
 jl    label10
 label11:
-mov   di, OFFSET _rw_x
-mov   bx, OFFSET _rw_stopx
-mov   di, word ptr [di]
-cmp   di, word ptr [bx]
+mov   di, word ptr ds:[_rw_x]
+cmp   di, word ptr ds:[_rw_stopx]
 jl    label9
 mov   ax, word ptr ds:[_topstep]
 inc   byte ptr [bp - 2]
@@ -1961,10 +1957,9 @@ jmp   label45
 label9:
 jmp   label46
 label10:
-mov   bx, OFFSET _detailshiftitercount
-mov   al, byte ptr [bx]
+mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
-add   word ptr [si], ax
+add   word ptr ds:[_rw_x], ax
 mov   ax, word ptr [bp - 02ah]
 add   ax, word ptr [bp - 0ch]
 mov   word ptr ds:[_topfrac], ax
@@ -1976,12 +1971,11 @@ add   ax, word ptr [bp - 012h]
 mov   word ptr ds:[_bottomfrac], ax
 mov   ax, word ptr [bp - 022h]
 adc   ax, word ptr [bp - 0eh]
-mov   bx, OFFSET _rw_scale
 mov   word ptr ds:[_bottomfrac+2], ax
 mov   ax, word ptr [bp - 01ah]
-add   word ptr [bx], ax
+add   word ptr ds:[_rw_scale], ax
 mov   ax, word ptr [bp - 036h]
-adc   word ptr [bx + 2], ax
+adc   word ptr ds:[_rw_scale + 2], ax
 mov   ax, word ptr [bp - 024h]
 add   ax, word ptr [bp - 010h]
 mov   word ptr ds:[_pixlow], ax
@@ -2023,23 +2017,20 @@ inc   si
 label12:
 cmp   byte ptr ds:[_markceiling], 0
 je    label13
-mov   bx, OFFSET _rw_x
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 mov   ax, OPENINGS_SEGMENT
 add   bx, bx
 mov   es, ax
 add   bx, OFFSET_CEILINGCLIP
 mov   ax, word ptr es:[bx]
-mov   bx, OFFSET _rw_x
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 add   bx, bx
 lea   dx, [si - 1]
 add   bh, (OFFSET_FLOORCLIP SHR 8)
 inc   ax
 cmp   dx, word ptr es:[bx]
 jl    label14
-mov   bx, OFFSET _rw_x
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 add   bx, bx
 add   bh, (OFFSET_FLOORCLIP SHR 8)
 mov   dx, word ptr es:[bx]
@@ -2047,28 +2038,22 @@ dec   dx
 label14:
 cmp   ax, dx
 jg    label13
-mov   bx, OFFSET _ceiltop
-mov   di, OFFSET _ceiltop
-mov   bx, word ptr [bx]
-mov   es, word ptr [di + 2]
-mov   di, OFFSET _rw_x
-add   bx, word ptr [di]
+les   bx, dword ptr ds:[_ceiltop] 
+add   bx, word ptr ds:[_rw_x]
 mov   byte ptr es:[bx], al
-mov   bx, word ptr [di]
-mov   di, OFFSET _ceiltop
-les   ax, dword ptr [di]
+mov   bx, word ptr ds:[_rw_x]
+les   ax, dword ptr ds:[_ceiltop] ; todo cleanup...
 add   bx, ax
 mov   byte ptr es:[bx + 0142h], dl		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
 label13:
 mov   ax, word ptr ds:[_bottomfrac]
 mov   dx, word ptr ds:[_bottomfrac+2]
-mov   bx, OFFSET _rw_x
 mov   cx, HEIGHTBITS
 loop_6:
 sar   dx, 1
 rcr   ax, 1
 loop  loop_6
-mov   dx, word ptr [bx]
+mov   dx, word ptr ds:[_rw_x]
 add   dx, dx
 mov   bx, OPENINGS_SEGMENT
 add   dh, (OFFSET_FLOORCLIP SHR 8)
@@ -2077,8 +2062,7 @@ mov   bx, dx
 mov   di, ax
 cmp   ax, word ptr es:[bx]
 jl    label43
-mov   bx, OFFSET _rw_x
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 add   bx, bx
 add   bh, (OFFSET_FLOORCLIP SHR 8)
 mov   di, word ptr es:[bx]
@@ -2086,16 +2070,14 @@ dec   di
 label43:
 cmp   byte ptr ds:[_markfloor], 0
 je    label42
-mov   bx, OFFSET _rw_x
-mov   dx, word ptr [bx]
+mov   dx, word ptr ds:[_rw_x]
 add   dx, dx
 mov   bx, OPENINGS_SEGMENT
 add   dh, (OFFSET_FLOORCLIP SHR 8)
 mov   es, bx
 mov   bx, dx
 mov   dx, word ptr es:[bx]
-mov   bx, OFFSET _rw_x
-mov   cx, word ptr [bx]
+mov   cx, word ptr ds:[_rw_x]
 add   cx, cx
 lea   ax, [di + 1]
 mov   bx, cx
@@ -2103,8 +2085,7 @@ dec   dx
 add   bx, OFFSET_CEILINGCLIP
 cmp   ax, word ptr es:[bx]
 jg    label44
-mov   bx, OFFSET _rw_x
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 add   bx, bx
 mov   ax, word ptr es:[bx  + OFFSET_CEILINGCLIP]
 add   bx, OFFSET_CEILINGCLIP
@@ -2112,18 +2093,14 @@ inc   ax
 label44:
 cmp   ax, dx
 jg    label42
-mov   bx, OFFSET _floortop
 mov   dh, al
-les   ax, dword ptr [bx]
-mov   bx, OFFSET _rw_x
-add   ax, word ptr [bx]
+les   ax, dword ptr ds:[_floortop]
+add   ax, word ptr ds:[_rw_x]
 mov   bx, ax
 mov   byte ptr es:[bx], dh
-mov   bx, OFFSET _rw_x
-mov   cx, word ptr [bx]
-mov   bx, OFFSET _floortop
+mov   cx, word ptr ds:[_rw_x]
 mov   byte ptr [bp - 4], dl
-les   dx, dword ptr [bx]
+les   dx, dword ptr ds:[_floortop]	; todo cleanup
 mov   bx, dx
 add   bx, cx
 mov   al, byte ptr [bp - 4]
@@ -2133,20 +2110,17 @@ cmp   byte ptr ds:[_segtextured], 0
 jne   label15
 jmp   label16
 label15:
-mov   bx, OFFSET _rw_x
 mov   dx, XTOVIEWANGLE_SEGMENT
-mov   ax, word ptr [bx]
-mov   bx, OFFSET _rw_centerangle
+mov   ax, word ptr ds:[_rw_x]
 add   ax, ax
 mov   es, dx
 mov   dx, ax
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[_rw_centerangle]
 mov   bx, dx
 add   ax, word ptr es:[bx]
-mov   bx, OFFSET _rw_distance
 and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
-mov   dx, word ptr [bx + 2]
-mov   cx, word ptr [bx]
+mov   dx, word ptr ds:[_rw_distance + 2]
+mov   cx, word ptr ds:[_rw_distance]
 mov   word ptr [bp - 8], dx
 cmp   ax, FINE_TANGENT_MAX					; todo clean up this inline for sure.
 jb    label17
@@ -2162,45 +2136,34 @@ label20:
 mov   bx, cx
 mov   cx, word ptr [bp - 8]
 call FixedMul_
-mov   bx, OFFSET _rw_offset
-mov   word ptr [bp - 034h], OFFSET _rw_offset ;
-mov   cx, word ptr [bx]
-mov   bx, word ptr [bp - 034h]
+mov   cx, word ptr ds:[_rw_offset]
 sub   cx, ax
-mov   ax, word ptr [bx + 2]
+mov   ax, word ptr ds:[_rw_offset + 2]
 sbb   ax, dx
-mov   bx, OFFSET _rw_scale + 2
 mov   word ptr [bp - 6], ax
-cmp   word ptr [bx], 3
+cmp   word ptr ds:[_rw_scale + 2], 3
 jge   label21
 jmp   label22
 label21:
 mov   ax, MAXLIGHTSCALE - 1
 label28:
-mov   bx, OFFSET _dc_colormap_segment
-mov   word ptr [bx], COLORMAPS_SEGMENT   ; colormap 0
-mov   bx, OFFSET _walllights
+mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT   ; colormap 0
 mov   dx, SCALELIGHTFIXED_SEGMENT
-add   ax, word ptr [bx]
+add   ax, word ptr ds:[_walllights]
 mov   es, dx
 mov   bx, ax
 mov   al, byte ptr es:[bx]
-mov   bx, OFFSET _dc_colormap_index
-mov   byte ptr [bx], al
-mov   bx, OFFSET _rw_x
-mov   ax, word ptr [bx]
-mov   bx, OFFSET _dc_x
-mov   word ptr [bx], ax
-mov   bx, OFFSET _rw_scale
-mov   ax, word ptr [bx]
-mov   cx, word ptr [bx + 2]
+mov   byte ptr ds:[_dc_colormap_index], al
+mov   ax, word ptr ds:[_rw_x]
+mov   word ptr ds:[_dc_x], ax
+mov   ax, word ptr ds:[_rw_scale]
+mov   cx, word ptr ds:[_rw_scale + 2]
 mov   bx, ax
 mov   ax, 0FFFFh
 mov   dx, ax
 call FastDiv3232_
-mov   bx, OFFSET _dc_iscale
-mov   word ptr [bx], ax
-mov   word ptr [bx + 2], dx
+mov   word ptr ds:[_dc_iscale], ax
+mov   word ptr ds:[_dc_iscale + 2], dx
 label16:
 cmp   word ptr ds:[_midtexture], 0
 jne   label23
@@ -2208,58 +2171,47 @@ jmp   label24
 label23:
 cmp   di, si
 jl    label19
-mov   bx, OFFSET _dc_yl
-mov   word ptr [bx], si
-mov   bx, OFFSET _dc_yh
-mov   word ptr [bx], di
-mov   bx, OFFSET _rw_midtexturemid
-mov   ax, word ptr [bx]
-mov   dx, word ptr [bx + 2]
-mov   bx, OFFSET _dc_texturemid
-mov   word ptr [bx], ax
-mov   word ptr [bx + 2], dx
+mov   word ptr ds:[_dc_yl], si
+mov   word ptr ds:[_dc_yh], di
+mov   ax, word ptr ds:[_rw_midtexturemid]
+mov   dx, word ptr ds:[_rw_midtexturemid + 2]
+mov   word ptr ds:[_dc_texturemid], ax
+mov   word ptr ds:[_dc_texturemid + 2], dx
 mov   ax, word ptr [bp - 6]
 mov   dx, word ptr ds:[_midtexture]
 xor   bx, bx
 call  R_GetSourceSegment_
-mov   bx, OFFSET _dc_source_segment
-mov   word ptr [bx], ax
+mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 call dword ptr ds:[_R_DrawColumnPrepCall]
 label19:
-mov   bx, OFFSET _rw_x
 mov   ax, OPENINGS_SEGMENT
-mov   bx, word ptr [bx]
-mov   si, OFFSET _viewheight
+mov   bx, word ptr ds:[_rw_x]
 add   bx, bx
 mov   es, ax
 add   bx, OFFSET_CEILINGCLIP
-mov   ax, word ptr [si]
+mov   ax, word ptr ds:[_viewheight]
 mov   word ptr es:[bx], ax
-mov   bx, OFFSET _rw_x
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 add   bx, bx
 add   bh, (OFFSET_FLOORCLIP SHR 8)
 mov   word ptr es:[bx], 0FFFFh
 label27:
-mov   bx, OFFSET _detailshiftitercount
-mov   al, byte ptr [bx]
-mov   bx, OFFSET _rw_x
+mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
-add   word ptr [bx], ax
+add   word ptr ds:[_rw_x], ax
 mov   ax, word ptr [bp - 0ch]
 add   word ptr ds:[_topfrac], ax
 mov   ax, word ptr [bp - 0ah]
 adc   word ptr ds:[_topfrac+2], ax
 mov   ax, word ptr [bp - 012h]
-mov   si, OFFSET _rw_scale
 add   word ptr ds:[_bottomfrac], ax
 mov   ax, word ptr [bp - 0eh]
 adc   word ptr ds:[_bottomfrac+2], ax
 mov   ax, word ptr [bp - 01ah]
-add   word ptr [si], ax
+add   word ptr ds:[_rw_scale], ax
 mov   ax, word ptr [bp - 036h]
-adc   word ptr [si + 2], ax
+adc   word ptr ds:[_rw_scale + 2], ax
 jmp   label11
 label18:
 mov   bx, FINE_TANGENT_MAX - 1
@@ -2275,9 +2227,8 @@ neg   ax
 sbb   dx, 0
 jmp   label20
 label22:
-mov   bx, OFFSET _rw_scale
-mov   ax, word ptr [bx]
-mov   dx, word ptr [bx + 2]
+mov   ax, word ptr ds:[_rw_scale]
+mov   dx, word ptr ds:[_rw_scale + 2]
 mov   cx, HEIGHTBITS
 loop_7:
 sar   dx, 1
@@ -2297,22 +2248,19 @@ sar   dx, 1
 rcr   ax, 1
 loop  loop_8
 mov   dx, word ptr [bp - 018h]
-mov   bx, OFFSET _rw_x
 add   word ptr ds:[_pixhigh], dx
 mov   dx, word ptr [bp - 016h]
 adc   word ptr ds:[_pixhigh+2], dx
-mov   dx, word ptr [bx]
+mov   dx, word ptr ds:[_rw_x]
 add   dx, dx
-mov   word ptr [bp - 034h], dx
+mov   bx, dx
 mov   dx, OPENINGS_SEGMENT
-mov   bx, word ptr [bp - 034h]
 mov   es, dx
 add   bh, (OFFSET_FLOORCLIP SHR 8)
 mov   cx, ax
 cmp   ax, word ptr es:[bx]
 jl    label38
-mov   bx, OFFSET _rw_x
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[_rw_x]
 add   ax, ax
 add   ah, (OFFSET_FLOORCLIP SHR 8)
 mov   bx, ax
@@ -2325,28 +2273,22 @@ jmp   label40
 label39:
 cmp   di, si
 jle   label41
-mov   bx, OFFSET _dc_yl
-mov   word ptr [bx], si
-mov   bx, OFFSET _dc_yh
-mov   word ptr [bx], cx
-mov   bx, OFFSET _rw_toptexturemid
-mov   dx, word ptr [bx]
-mov   ax, word ptr [bx + 2]
-mov   bx, OFFSET _dc_texturemid
-mov   word ptr [bx], dx
-mov   word ptr [bx + 2], ax
+mov   word ptr ds:[_dc_yl], si
+mov   word ptr ds:[_dc_yh], cx
+mov   dx, word ptr ds:[_rw_toptexturemid]
+mov   ax, word ptr ds:[_rw_toptexturemid + 2]
+mov   word ptr ds:[_dc_texturemid], dx
+mov   word ptr ds:[_dc_texturemid + 2], ax
 mov   ax, word ptr [bp - 6]
 mov   dx, word ptr ds:[_toptexture]
 xor   bx, bx
 call  R_GetSourceSegment_
-mov   bx, OFFSET _dc_source_segment
-mov   word ptr [bx], ax
+mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 call dword ptr ds:[_R_DrawColumnPrepCall]
 label41:
-mov   bx, OFFSET _rw_x
 mov   dx, OPENINGS_SEGMENT
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 mov   es, dx
 add   bx, bx
 mov   word ptr es:[bx  + OFFSET_CEILINGCLIP], cx
@@ -2367,22 +2309,19 @@ sar   dx, 1
 rcr   ax, 1
 loop  loop_9
 mov   dx, word ptr [bp - 010h]
-mov   bx, OFFSET _rw_x
 add   word ptr ds:[_pixlow], dx
 mov   dx, word ptr [bp - 014h]
 adc   word ptr ds:[_pixlow+2], dx
-mov   dx, word ptr [bx]
+mov   dx, word ptr ds:[_rw_x]
 add   dx, dx
-mov   word ptr [bp - 034h], dx
+mov   bx, dx
 mov   dx, OPENINGS_SEGMENT
-mov   bx, word ptr [bp - 034h]
 mov   es, dx
 add   bx, OFFSET_CEILINGCLIP
 mov   cx, ax
 cmp   ax, word ptr es:[bx]
 jg    label35
-mov   bx, OFFSET _rw_x
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 add   bx, bx
 mov   cx, word ptr es:[bx  + OFFSET_CEILINGCLIP]
 add   bx, OFFSET_CEILINGCLIP
@@ -2392,27 +2331,21 @@ cmp   cx, di
 jg    label33
 cmp   di, si
 jle   label34
-mov   bx, OFFSET _dc_yl
-mov   word ptr [bx], cx
-mov   bx, OFFSET _dc_yh
-mov   word ptr [bx], di
-mov   bx, OFFSET _rw_bottomtexturemid
-mov   dx, word ptr [bx]
-mov   ax, word ptr [bx + 2]
-mov   bx, OFFSET _dc_texturemid
-mov   word ptr [bx], dx
-mov   word ptr [bx + 2], ax
+mov   word ptr ds:[_dc_yl], cx
+mov   word ptr ds:[_dc_yh], di
+mov   dx, word ptr ds:[_rw_bottomtexturemid]
+mov   ax, word ptr ds:[_rw_bottomtexturemid + 2]
+mov   word ptr ds:[_dc_texturemid], dx
+mov   word ptr ds:[_dc_texturemid + 2], ax
 mov   bx, 1
 mov   ax, word ptr [bp - 6]
 mov   dx, word ptr ds:[_bottomtexture]
 call  R_GetSourceSegment_
-mov   bx, OFFSET _dc_source_segment
-mov   word ptr [bx], ax
+mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 call dword ptr ds:[_R_DrawColumnPrepCall]
 label34:
-mov   bx, OFFSET _rw_x
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 mov   ax, OPENINGS_SEGMENT
 add   bx, bx
 mov   es, ax
@@ -2423,19 +2356,16 @@ cmp   byte ptr ds:[_maskedtexture], 0
 jne   label32
 jmp   label27
 label32:
-mov   bx, OFFSET _rw_x
-mov   si, OFFSET _maskedtexturecol
-mov   bx, word ptr [bx]
-mov   dx, word ptr [si]
+mov   bx, word ptr ds:[_rw_x]
+mov   dx, word ptr ds:[_maskedtexturecol]
 add   bx, bx
-mov   es, word ptr [si + 2]
+mov   es, word ptr ds:[_maskedtexturecol + 2]
 add   bx, dx
 mov   ax, word ptr [bp - 6]
 mov   word ptr es:[bx], ax
 jmp   label27
 label33:
-mov   bx, OFFSET _rw_x
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 mov   ax, OPENINGS_SEGMENT
 add   bx, bx
 mov   es, ax
@@ -2444,9 +2374,8 @@ inc   di
 mov   word ptr es:[bx], di
 jmp   label25
 label40:
-mov   bx, OFFSET _rw_x
 mov   dx, OPENINGS_SEGMENT
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 mov   es, dx
 add   bx, bx
 lea   ax, [si - 1]
@@ -2457,9 +2386,8 @@ cmp   byte ptr ds:[_markceiling], 0
 jne   label30
 jmp   label31
 label30:
-mov   bx, OFFSET _rw_x
 mov   dx, OPENINGS_SEGMENT
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 mov   es, dx
 add   bx, bx
 lea   ax, [si - 1]
@@ -2468,8 +2396,7 @@ jmp   label26
 label36:
 cmp   byte ptr ds:[_markfloor], 0
 je    label25
-mov   bx, OFFSET _rw_x
-mov   bx, word ptr [bx]
+mov   bx, word ptr ds:[_rw_x]
 mov   ax, OPENINGS_SEGMENT
 add   bx, bx
 mov   es, ax
