@@ -429,6 +429,9 @@ segment_t __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8
 
 }
 
+void __near R_RenderSegLoop (fixed_t rw_scalestep);
+
+/*
 
 void __near R_RenderSegLoop (fixed_t rw_scalestep) {
     fineangle_t		angle;
@@ -536,7 +539,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 			// no space above wall?
 			if (yl < ceilingclip[rw_x]+1){
 				yl = ceilingclip[rw_x]+1;
-			}
+			} 
 
 			if (markceiling) {
 				top = ceilingclip[rw_x]+1;
@@ -709,6 +712,8 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep) {
 
 
 }
+
+*/
 
 // dont need to do step-related math for one seg
 // dont need to do modulo vga plane stuff in a loop either

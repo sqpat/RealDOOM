@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 136
+#define CONSTANTS_COUNT 137
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -161,6 +161,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SIZEOF_DRAWSEG_T",
     "OFFSET_NEGONEARRAY",
     "OFFSET_SCREENHEIGHTARRAY",
+    "OFFSET_FLOORCLIP",
+    "OFFSET_CEILINGCLIP",
     "SIZEOF_MOBJ_POS_T",
     "SIZEOF_SPRITEFRAME_T",
     "SPRITES_SEGMENT",
@@ -323,11 +325,12 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     sizeof(drawseg_t),
     offset_negonearray,
     offset_screenheightarray,
+    offset_floorclip,
+    offset_ceilingclip,
     sizeof(mobj_pos_t),
     sizeof(spriteframe_t),
     sprites_segment,
     MAXVISSPRITES
-
     
 };
 
