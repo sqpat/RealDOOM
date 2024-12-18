@@ -396,12 +396,8 @@ mov   ax, word ptr ds:[_viewangle_shiftright3]
 sub   ah, 08h   ; FINE_ANG90
 and   ah, 01Fh    ; MOD_FINE_ANGLE
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
- shl   ax, 2
-ELSE
  shl   ax, 1
  shl   ax, 1
-ENDIF
  
 mov   cx, word ptr ds:[_centerx]
 mov   di, ax
@@ -1933,7 +1929,7 @@ jl    label10
 label11:
 mov   di, word ptr ds:[_rw_x]
 cmp   di, word ptr ds:[_rw_stopx]
-jl    label9
+jl    label9 ; todo optim out
 
 ; todo: self modifying code for step values.
 
@@ -1960,7 +1956,7 @@ mov   ax, word ptr ds:[_pixhighstep+2]
 adc   word ptr [bp - 01eh], ax
 jmp   label45
 label9:
-jmp   label46
+jmp   start_per_column_inner_loop
 label10:
 mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
@@ -1994,52 +1990,50 @@ mov   ax, word ptr [bp - 01eh]
 adc   ax, word ptr [bp - 016h]
 mov   word ptr ds:[_pixhigh+2], ax
 jmp   label11
-label46:
+start_per_column_inner_loop:
 ; di is rw_x
-; todo: cache the values of floorclip/ceil clip to not have to fetch in a billion places?
-; todo: store si in stack.
+
+
+mov   ax, OPENINGS_SEGMENT
+mov   es, ax
+mov   bx, di ; di = rw_x
+mov   cx, word ptr es:[bx+di+OFFSET_FLOORCLIP]	 ; cx = floor
+mov   si, word ptr es:[bx+di+OFFSET_CEILINGCLIP] ; dx = ceiling
+inc   si
+
+
 mov   ax, word ptr ds:[_topfrac]
 add   ax, ((HEIGHTUNIT)-1)
 mov   dx, word ptr ds:[_topfrac+2]
 adc   dx, 0
 
-
-; screenheight << HEIGHTBITS 
-; if DX >= 20 , then we know ax clips before a shift is necessary.
-; (20 is SCREENHEIGHT > 4, or rather, (screenheight << 16) >> HEIGHBITS)
-; we dont have to shift d in that case.
-
-
 mov   al, ah
 mov   ah, dl
-mov   dl, dh
 
-sar   dl, 1
+; we dont have to shift DH's stuff in at all.
+; if DH was even 1, we'd have triggered the above cmp
+
+; is dh ever actually ever non zero??? would be nice to remove them.
+
+sar   dh, 1
 rcr   ax, 1
-sar   dl, 1
+sar   dh, 1
 rcr   ax, 1
-sar   dl, 1
+sar   dh, 1
 rcr   ax, 1
-sar   dl, 1
+sar   dh, 1
 rcr   ax, 1
 
-mov   dx, OPENINGS_SEGMENT
-mov   es, dx
-mov   bx, di ; di = rw_x
-mov   cx, word ptr es:[bx+di+OFFSET_FLOORCLIP]	 ; cx = floor
-mov   si, word ptr es:[bx+di+OFFSET_CEILINGCLIP] ; dx = ceiling
-mov   dx, si									 ; copy ceiling.
-inc   dx
-cmp   ax, dx
+cmp   ax, si
 jge   skip_yl_ceil_clip
-mov   ax, dx
+do_yl_ceil_clip:
+mov   ax, si
 skip_yl_ceil_clip:
 push  ax 				; store yl
-
 cmp   byte ptr ds:[_markceiling], 0
 je    markceiling_done
 
-;                       dx = top = ceilingclip[rw_x]+1;
+;                       si = top = ceilingclip[rw_x]+1;
 
 dec   ax				; bottom = yl-1;
 ; cx is floor, 
@@ -2048,34 +2042,42 @@ jl    skip_bottom_floorclip
 mov   ax, cx
 dec   ax
 skip_bottom_floorclip:
-cmp   dx, ax
+cmp   si, ax
 jg    markceiling_done
 les   bx, dword ptr ds:[_ceiltop] 
+mov   dx, si
 mov   byte ptr es:[bx+di], dl
 mov   byte ptr es:[bx+di + 0142h], al		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
 markceiling_done:
 
 ; yh = bottomfrac>>HEIGHTBITS;
-; todo improve..
-mov   ax, word ptr ds:[_bottomfrac+1]
-mov   dl, byte ptr ds:[_bottomfrac+3]
 
-sar   dl, 1
-rcr   ax, 1
-sar   dl, 1
-rcr   ax, 1
-sar   dl, 1
-rcr   ax, 1
-sar   dl, 1
-rcr   ax, 1
+; any of these bits being set means yh > 320 and clips
+cmp   byte ptr ds:[_bottomfrac+3], 0
+jne	  do_yh_floorclip
 
-mov   bx, OPENINGS_SEGMENT
-mov   es, bx
-mov   bx, di
-; cx is floor
+mov   ax, word ptr ds:[_bottomfrac+1] ; get bytes 2 and 3..
 
+; screenheight << HEIGHTBITS 
+; if AH > 20 , then we know yh cannot be smaller than floor clip which maxes out at screenheight+1
+; (20 is (SCREENHEIGHT+1) >> 4, or rather, (((SCREENHEIGHT+1) << HEIGHTBITS) >> 16))
+; we dont have to shift in that case. because 320 is the highest possible value for floorclip.
+
+cmp   ah, ((SCREENHEIGHT+1) SHR 4)
+jg    do_yh_floorclip
+
+; finish the shift 12
+; todo: we are assuming this cant be negative. If it can be,
+; we must do the full sar rcr with the 4th byte. seems fine so far?
+shr   ax, 1
+shr   ax, 1
+shr   ax, 1
+shr   ax, 1
+
+; cx is still floor
 cmp   ax, cx
 jl    skip_yh_floorclip
+do_yh_floorclip:
 mov   ax, cx
 dec   ax
 skip_yh_floorclip:
@@ -2094,9 +2096,8 @@ dec   cx			; bottom = floorclip[rw_x]-1;
 
 ; si is ceil
 cmp   ax, si
-jg    skip_top_ceilingclip
+jge   skip_top_ceilingclip
 mov   ax, si	 ; ax = ceiling clip di + 1
-inc   ax
 skip_top_ceilingclip:
 
 ;	if (top <= bottom) {
