@@ -1905,6 +1905,7 @@ add   si, ax
 mov   dx, SC_DATA
 mov   al, byte ptr [si + OFFSET _quality_port_lookup]	
 out   dx, al
+; todo clean up this mess.
 mov   ax, word ptr [bp - 02ah]
 mov   word ptr ds:[_topfrac], ax
 mov   ax, word ptr [bp - 028h]
@@ -1933,6 +1934,9 @@ label11:
 mov   di, word ptr ds:[_rw_x]
 cmp   di, word ptr ds:[_rw_stopx]
 jl    label9
+
+; todo: self modifying code for step values.
+
 mov   ax, word ptr ds:[_topstep]
 inc   byte ptr [bp - 2]
 add   word ptr [bp - 02ah], ax
@@ -1998,79 +2002,100 @@ mov   ax, word ptr ds:[_topfrac]
 add   ax, ((HEIGHTUNIT)-1)
 mov   dx, word ptr ds:[_topfrac+2]
 adc   dx, 0
-mov   cx, HEIGHTBITS
-loop_5:
-sar   dx, 1
+
+
+; screenheight << HEIGHTBITS 
+; if DX >= 20 , then we know ax clips before a shift is necessary.
+; (20 is SCREENHEIGHT > 4, or rather, (screenheight << 16) >> HEIGHBITS)
+; we dont have to shift d in that case.
+
+
+mov   al, ah
+mov   ah, dl
+mov   dl, dh
+
+sar   dl, 1
 rcr   ax, 1
-loop  loop_5
+sar   dl, 1
+rcr   ax, 1
+sar   dl, 1
+rcr   ax, 1
+sar   dl, 1
+rcr   ax, 1
+
 mov   dx, OPENINGS_SEGMENT
 mov   es, dx
 mov   bx, di ; di = rw_x
-mov   dx, word ptr es:[bx+di+OFFSET_CEILINGCLIP]
-mov   si, ax
+mov   cx, word ptr es:[bx+di+OFFSET_FLOORCLIP]	 ; cx = floor
+mov   si, word ptr es:[bx+di+OFFSET_CEILINGCLIP] ; dx = ceiling
+mov   dx, si									 ; copy ceiling.
 inc   dx
 cmp   ax, dx
 jge   skip_yl_ceil_clip
-mov   si, dx
+mov   ax, dx
 skip_yl_ceil_clip:
+push  ax 				; store yl
+
 cmp   byte ptr ds:[_markceiling], 0
 je    markceiling_done
 
-; top = ceilingclip[rw_x]+1;
-mov   ax, dx;   dx is 1 + word ptr es:[bx+di+OFFSET_CEILINGCLIP]
-lea   dx, [si - 1]								; bottom = yl-1;
-mov   cx, word ptr es:[bx+di+OFFSET_FLOORCLIP]
-cmp   dx, cx
+;                       dx = top = ceilingclip[rw_x]+1;
+
+dec   ax				; bottom = yl-1;
+; cx is floor, 
+cmp   ax, cx
 jl    skip_bottom_floorclip
-mov   dx, cx
-dec   dx
+mov   ax, cx
+dec   ax
 skip_bottom_floorclip:
-cmp   ax, dx
+cmp   dx, ax
 jg    markceiling_done
 les   bx, dword ptr ds:[_ceiltop] 
-mov   byte ptr es:[bx+di], al
-mov   byte ptr es:[bx+di + 0142h], dl		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
+mov   byte ptr es:[bx+di], dl
+mov   byte ptr es:[bx+di + 0142h], al		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
 markceiling_done:
 
 ; yh = bottomfrac>>HEIGHTBITS;
-mov   ax, word ptr ds:[_bottomfrac]
-mov   dx, word ptr ds:[_bottomfrac+2]
-mov   cx, HEIGHTBITS
-loop_6:					; todo fast shift with byte moves. just load 3 bytes and shift 4.
-sar   dx, 1
+; todo improve..
+mov   ax, word ptr ds:[_bottomfrac+1]
+mov   dl, byte ptr ds:[_bottomfrac+3]
+
+sar   dl, 1
 rcr   ax, 1
-loop  loop_6
+sar   dl, 1
+rcr   ax, 1
+sar   dl, 1
+rcr   ax, 1
+sar   dl, 1
+rcr   ax, 1
+
 mov   bx, OPENINGS_SEGMENT
 mov   es, bx
 mov   bx, di
-mov   cx, ax
-mov   dx, word ptr es:[bx+di+OFFSET_FLOORCLIP]
-cmp   ax, dx
+; cx is floor
+
+cmp   ax, cx
 jl    skip_yh_floorclip
-mov   cx, dx
-dec   cx
+mov   ax, cx
+dec   ax
 skip_yh_floorclip:
-mov   word ptr [bp - 034h], cx  ; store yl
+push  ax  ; store yh
 cmp   byte ptr ds:[_markfloor], 0
 je    markfloor_done
 
-;	top = yh+1;
-;	bottom = floorclip[rw_x]-1;
-
-mov   ax, cx
+; ax is already yh
 inc   ax			; top = yh + 1...
-; dx is already  es:[bx+di+OFFSET_FLOORCLIP]
-dec   dx
-; cx is ceil
-mov   cx, word ptr es:[bx+di+OFFSET_CEILINGCLIP]
+; cx is already  floor
+dec   cx			; bottom = floorclip[rw_x]-1;
 
 ;	if (top <= ceilingclip[rw_x]){
 ;		top = ceilingclip[rw_x]+1;
 ;	}
 
-cmp   ax, cx
+; si is ceil
+cmp   ax, si
 jg    skip_top_ceilingclip
-mov   ax, cx	 ; ax = ceiling clip di + 1
+mov   ax, si	 ; ax = ceiling clip di + 1
 inc   ax
 skip_top_ceilingclip:
 
@@ -2079,11 +2104,11 @@ skip_top_ceilingclip:
 ;		floortop[rw_x+322] = bottom & 0xFF;
 ;	}
 
-cmp   ax, dx
+cmp   ax, cx
 jg    markfloor_done
 les   bx, dword ptr ds:[_floortop]
 mov   byte ptr es:[bx+di], al
-mov   byte ptr es:[bx+di + 0142h], dl
+mov   byte ptr es:[bx+di + 0142h], cl
 markfloor_done:
 cmp   byte ptr ds:[_segtextured], 0
 jne   seg_is_textured
@@ -2151,7 +2176,8 @@ seg_non_textured:
 ; si/di are yh/yl
 ;if (yh >= yl){
 
-mov   di, word ptr [bp - 034h]
+pop   di
+pop   si
 cmp   word ptr ds:[_midtexture], 0
 jne   label23
 jmp   label24
