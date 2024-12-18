@@ -2158,16 +2158,14 @@ mov   ax, MAXLIGHTSCALE - 1
 label28:
 mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT   ; colormap 0
 mov   dx, SCALELIGHTFIXED_SEGMENT
-add   ax, word ptr ds:[_walllights]
 mov   es, dx
+add   ax, word ptr ds:[_walllights]
 mov   bx, ax
 mov   al, byte ptr es:[bx]
 mov   byte ptr ds:[_dc_colormap_index], al
-mov   ax, word ptr ds:[_rw_x]
-mov   word ptr ds:[_dc_x], ax
-mov   ax, word ptr ds:[_rw_scale]
+mov   word ptr ds:[_dc_x], di			; rw_x
+mov   bx, word ptr ds:[_rw_scale]
 mov   cx, word ptr ds:[_rw_scale + 2]
-mov   bx, ax
 mov   ax, 0FFFFh
 mov   dx, ax
 call FastDiv3232_
@@ -2176,6 +2174,10 @@ mov   word ptr ds:[_dc_iscale + 2], dx
 seg_non_textured:
 ; si/di are yh/yl
 ;if (yh >= yl){
+mov   bx, di 			; store rw_x
+add   bx, bx
+mov   ax, OPENINGS_SEGMENT
+mov   es, ax
 
 pop   di
 pop   si
@@ -2188,9 +2190,9 @@ jl    label19
 mov   word ptr ds:[_dc_yl], si
 mov   word ptr ds:[_dc_yh], di
 mov   ax, word ptr ds:[_rw_midtexturemid]
-mov   dx, word ptr ds:[_rw_midtexturemid + 2]
 mov   word ptr ds:[_dc_texturemid], ax
-mov   word ptr ds:[_dc_texturemid + 2], dx
+mov   ax, word ptr ds:[_rw_midtexturemid + 2]
+mov   word ptr ds:[_dc_texturemid + 2], ax
 mov   ax, word ptr [bp - 6]
 mov   dx, word ptr ds:[_midtexture]
 xor   bx, bx
@@ -2198,18 +2200,16 @@ call  R_GetSourceSegment_
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 call dword ptr ds:[_R_DrawColumnPrepCall]
-label19:
+mov   bx, word ptr ds:[_rw_x]
+add   bx, bx
 mov   ax, OPENINGS_SEGMENT
-mov   bx, word ptr ds:[_rw_x]
-add   bx, bx
 mov   es, ax
-add   bx, OFFSET_CEILINGCLIP
+
+label19:
+; bx is already _rw_x << 1
 mov   ax, word ptr ds:[_viewheight]
-mov   word ptr es:[bx], ax
-mov   bx, word ptr ds:[_rw_x]
-add   bx, bx
-add   bh, (OFFSET_FLOORCLIP SHR 8)
-mov   word ptr es:[bx], 0FFFFh
+mov   word ptr es:[bx + OFFSET_CEILINGCLIP], ax
+mov   word ptr es:[bx + OFFSET_FLOORCLIP], 0FFFFh
 label27:
 mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
@@ -2241,44 +2241,42 @@ neg   ax
 sbb   dx, 0
 jmp   label20
 label22:
-mov   ax, word ptr ds:[_rw_scale]
-mov   dx, word ptr ds:[_rw_scale + 2]
-mov   cx, HEIGHTBITS
-loop_7:
-sar   dx, 1
+mov   ax, word ptr ds:[_rw_scale + 1]
+mov   dl, byte ptr ds:[_rw_scale + 3]
+sar   dl, 1
 rcr   ax, 1
-loop  loop_7
+sar   dl, 1
+rcr   ax, 1
+sar   dl, 1
+rcr   ax, 1
+sar   dl, 1
+rcr   ax, 1
 jmp   label28
 label24:
 cmp   word ptr ds:[_toptexture], 0
 jne   label47
 jmp   label29
 label47:
-mov   ax, word ptr ds:[_pixhigh]
-mov   dx, word ptr ds:[_pixhigh+2]
-mov   cx, HEIGHTBITS
-loop_8:
-sar   dx, 1
+mov   ax, word ptr ds:[_pixhigh+1]
+mov   dl, byte ptr ds:[_pixhigh+3]
+sar   dl, 1
 rcr   ax, 1
-loop  loop_8
+sar   dl, 1
+rcr   ax, 1
+sar   dl, 1
+rcr   ax, 1
+sar   dl, 1
+rcr   ax, 1
 mov   dx, word ptr [bp - 018h]
 add   word ptr ds:[_pixhigh], dx
 mov   dx, word ptr [bp - 016h]
 adc   word ptr ds:[_pixhigh+2], dx
-mov   dx, word ptr ds:[_rw_x]
-add   dx, dx
-mov   bx, dx
-mov   dx, OPENINGS_SEGMENT
-mov   es, dx
-add   bh, (OFFSET_FLOORCLIP SHR 8)
+; bx is rw_x << 1
 mov   cx, ax
-cmp   ax, word ptr es:[bx]
+mov   dx, word ptr es:[bx + OFFSET_FLOORCLIP]
+cmp   ax, dx
 jl    label38
-mov   ax, word ptr ds:[_rw_x]
-add   ax, ax
-add   ah, (OFFSET_FLOORCLIP SHR 8)
-mov   bx, ax
-mov   cx, word ptr es:[bx]
+mov   cx, dx
 dec   cx
 label38:
 cmp   cx, si
@@ -2289,9 +2287,9 @@ cmp   di, si
 jle   label41
 mov   word ptr ds:[_dc_yl], si
 mov   word ptr ds:[_dc_yh], cx
-mov   dx, word ptr ds:[_rw_toptexturemid]
+mov   ax, word ptr ds:[_rw_toptexturemid]
+mov   word ptr ds:[_dc_texturemid], ax
 mov   ax, word ptr ds:[_rw_toptexturemid + 2]
-mov   word ptr ds:[_dc_texturemid], dx
 mov   word ptr ds:[_dc_texturemid + 2], ax
 mov   ax, word ptr [bp - 6]
 mov   dx, word ptr ds:[_toptexture]
@@ -2300,15 +2298,16 @@ call  R_GetSourceSegment_
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 call dword ptr ds:[_R_DrawColumnPrepCall]
-label41:
-mov   dx, OPENINGS_SEGMENT
 mov   bx, word ptr ds:[_rw_x]
-mov   es, dx
 add   bx, bx
+mov   dx, OPENINGS_SEGMENT
+mov   es, dx
+
+label41:
 mov   word ptr es:[bx  + OFFSET_CEILINGCLIP], cx
-label26:
-add   bx, OFFSET_CEILINGCLIP
-label31:
+check_bottom_texture:
+; bx is already rw_x << 1
+
 cmp   word ptr ds:[_bottomtexture], 0
 jne   label37
 jmp   label36
@@ -2317,28 +2316,25 @@ mov   ax, word ptr ds:[_pixlow]
 add   ax, ((HEIGHTUNIT)-1)
 mov   dx, word ptr ds:[_pixlow+2]
 adc   dx, 0
-mov   cx, HEIGHTBITS
-loop_9:
-sar   dx, 1
+mov   al, ah
+mov   ah, dl
+sar   dh, 1
 rcr   ax, 1
-loop  loop_9
+sar   dh, 1
+rcr   ax, 1
+sar   dh, 1
+rcr   ax, 1
+sar   dh, 1
+rcr   ax, 1
 mov   dx, word ptr [bp - 010h]
 add   word ptr ds:[_pixlow], dx
 mov   dx, word ptr [bp - 014h]
 adc   word ptr ds:[_pixlow+2], dx
-mov   dx, word ptr ds:[_rw_x]
-add   dx, dx
-mov   bx, dx
-mov   dx, OPENINGS_SEGMENT
-mov   es, dx
-add   bx, OFFSET_CEILINGCLIP
 mov   cx, ax
-cmp   ax, word ptr es:[bx]
+mov   dx, word ptr es:[bx+OFFSET_CEILINGCLIP]
+cmp   ax, dx
 jg    label35
-mov   bx, word ptr ds:[_rw_x]
-add   bx, bx
-mov   cx, word ptr es:[bx  + OFFSET_CEILINGCLIP]
-add   bx, OFFSET_CEILINGCLIP
+mov   cx, dx
 inc   cx
 label35:
 cmp   cx, di
@@ -2347,9 +2343,9 @@ cmp   di, si
 jle   label34
 mov   word ptr ds:[_dc_yl], cx
 mov   word ptr ds:[_dc_yh], di
-mov   dx, word ptr ds:[_rw_bottomtexturemid]
+mov   ax, word ptr ds:[_rw_bottomtexturemid]
+mov   word ptr ds:[_dc_texturemid], ax
 mov   ax, word ptr ds:[_rw_bottomtexturemid + 2]
-mov   word ptr ds:[_dc_texturemid], dx
 mov   word ptr ds:[_dc_texturemid + 2], ax
 mov   bx, 1
 mov   ax, word ptr [bp - 6]
@@ -2358,66 +2354,50 @@ call  R_GetSourceSegment_
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 call dword ptr ds:[_R_DrawColumnPrepCall]
-label34:
+; restore bx. carry from above func?
 mov   bx, word ptr ds:[_rw_x]
-mov   ax, OPENINGS_SEGMENT
 add   bx, bx
+mov   ax, OPENINGS_SEGMENT
 mov   es, ax
-add   bh, (OFFSET_FLOORCLIP SHR 8)
-mov   word ptr es:[bx], cx
-label25:
+label34:
+mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
+done_marking_floor:
 cmp   byte ptr ds:[_maskedtexture], 0
 jne   label32
 jmp   label27
 label32:
-mov   bx, word ptr ds:[_rw_x]
 mov   dx, word ptr ds:[_maskedtexturecol]
-add   bx, bx
 mov   es, word ptr ds:[_maskedtexturecol + 2]
 add   bx, dx
 mov   ax, word ptr [bp - 6]
 mov   word ptr es:[bx], ax
 jmp   label27
 label33:
-mov   bx, word ptr ds:[_rw_x]
-mov   ax, OPENINGS_SEGMENT
-add   bx, bx
-mov   es, ax
-add   bh, (OFFSET_FLOORCLIP SHR 8)
 inc   di
-mov   word ptr es:[bx], di
-jmp   label25
+mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
+jmp   done_marking_floor
 label40:
-mov   dx, OPENINGS_SEGMENT
-mov   bx, word ptr ds:[_rw_x]
-mov   es, dx
-add   bx, bx
+; bx is rw_x << 1
 lea   ax, [si - 1]
 mov   word ptr es:[bx  + OFFSET_CEILINGCLIP], ax
-jmp   label26
+jmp   check_bottom_texture
 label29:
+; bx is already rw_x << 1
 cmp   byte ptr ds:[_markceiling], 0
-jne   label30
-jmp   label31
-label30:
-mov   dx, OPENINGS_SEGMENT
-mov   bx, word ptr ds:[_rw_x]
-mov   es, dx
-add   bx, bx
+jne   mark_ceiling
+jmp   check_bottom_texture
+mark_ceiling:
+; bx is already rw_x << 1
 lea   ax, [si - 1]
 mov   word ptr es:[bx + OFFSET_CEILINGCLIP], ax
-jmp   label26
+jmp   check_bottom_texture
 label36:
 cmp   byte ptr ds:[_markfloor], 0
-je    label25
-mov   bx, word ptr ds:[_rw_x]
-mov   ax, OPENINGS_SEGMENT
-add   bx, bx
-mov   es, ax
-add   bh, (OFFSET_FLOORCLIP SHR 8)
+je    done_marking_floor
+;floorclip[rw_x] = yh + 1;
 inc   di
-mov   word ptr es:[bx], di
-jmp   label25
+mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
+jmp   done_marking_floor
    
 
 
