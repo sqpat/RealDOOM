@@ -1742,8 +1742,35 @@ PUBLIC R_RenderSegLoop_
 
 ; DX:AX  is fixed_t rw_scalestep
 
-; bp - 4    ; unused
-; bp - 034h	; stores yh
+
+; order all these in memory then movsw
+; bp - 2    ; UNUSED
+; bp - 4    ; UNUSED
+; bp - 6    ; texturecolumn
+; bp - 8    ; UNUSED
+; bp - 0Ah  ; topstepshift lo
+; bp - 0Ch  ; topstepshift hi
+; bp - 0Eh  ; bottomstepshift hi
+; bp - 010h ; pixlowstepshift lo
+; bp - 012h ; bottomstepshift lo
+; bp - 014h ; pixlowstepshift hi
+; bp - 016h ; pixhighstepshift hi
+; bp - 018h ; pixhighstepshift lo
+; bp - 01Ah ; rwscaleshift lo
+; bp - 01Ch ; base_bottomfrac lo
+; bp - 01Eh ; base_pixhigh hi
+; bp - 020h ; base_pixlow hi
+; bp - 022h ; base_bottomfrac hi
+; bp - 024h ; base_pixlow lo
+; bp - 026h ; base_pixhigh lo
+; bp - 028h ; base_topfrac hi
+; bp - 02Ah ; base_topfrac lo
+; bp - 02Ch ; baserwscale hi
+; bp - 02Eh ; baserwscale lo
+; bp - 030h ; start_rw_x
+; bp - 032h ; rw_x_base4
+; bp - 034h	; unused
+; bp - 036h	; rwscaleshift hi
 ; bp - 038h	; rw_scalestep lo argument AX
 ; bp - 03Ah	; rw_scalestep hi argument DX
 
@@ -1756,14 +1783,61 @@ mov   bp, sp
 sub   sp, 036h
 push  ax
 push  dx
+xchg  ax, cx
 mov   ax, word ptr ds:[_rw_x]
 mov   bx, ax
+mov   di, ax
 and   bx, word ptr ds:[_detailshiftandval]
+mov   word ptr [bp - 032h], bx
 mov   word ptr [bp - 030h], ax
+
+; self modify code in the function to set constants rather than
+; repeatedly reading loop-constant or function-constant variables.
+
+mov   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1], 0
+
+mov   al, byte ptr ds:[_detailshiftitercount]
+mov   byte ptr cs:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
+
+mov   ax, word ptr ds:[_rw_centerangle]
+mov   word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
+mov   ax, word ptr ds:[_rw_distance]
+mov   word ptr cs:[SELFMODIFY_set_bx_rw_distance_lo+1], ax
+mov   ax, word ptr ds:[_rw_distance+2]
+mov   word ptr cs:[SELFMODIFY_set_cx_rw_distance_hi+1], ax
+
+mov   ax, word ptr ds:[_rw_offset]
+mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1], ax
+mov   ax, word ptr ds:[_rw_offset+2]
+mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1], ax
+
+mov   ax, word ptr ds:[_rw_stopx]
+mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx+2], ax
+
+mov   ax, word ptr ds:[_rw_midtexturemid]
+mov   word ptr cs:[SELFMODIFY_set_midtexturemid_lo+4], ax
+mov   ax, word ptr ds:[_rw_midtexturemid + 2]
+mov   word ptr cs:[SELFMODIFY_set_midtexturemid_hi+4], ax
+
+mov   ax, word ptr ds:[_rw_toptexturemid]
+mov   word ptr cs:[SELFMODIFY_set_toptexturemid_lo+4], ax
+mov   ax, word ptr ds:[_rw_toptexturemid + 2]
+mov   word ptr cs:[SELFMODIFY_set_toptexturemid_hi+4], ax
+
+mov   ax, word ptr ds:[_rw_bottomtexturemid]
+mov   word ptr cs:[SELFMODIFY_set_bottexturemid_lo+4], ax
+mov   ax, word ptr ds:[_rw_bottomtexturemid + 2]
+mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+4], ax
+
+
+
+xchg  ax, cx
 mov   cl, byte ptr ds:[_detailshift2minus]
 xor   ch, ch
 mov   si, cx
-mov   ax, word ptr [bp - 038h]
+
+; todo here: selfmodify the code for all the steps ahead.
+
 
 ; todo: loop idea:
 ; rep movsw all these things local.
@@ -1814,7 +1888,6 @@ mov   word ptr [bp - 016h], dx
 mov   cx, si
 mov   ax, word ptr ds:[_pixlowstep]
 mov   dx, word ptr ds:[_pixlowstep+2]
-mov   word ptr [bp - 032h], bx
 jcxz  label5
 loop_4:
 shl   ax, 1
@@ -1822,34 +1895,37 @@ rcl   dx, 1
 loop  loop_4
 label5:
 mov   word ptr [bp - 010h], ax
-mov   ax, word ptr ds:[_rw_x]
 mov   word ptr [bp - 014h], dx
-sub   ax, bx
+
+;  	int16_t base4diff = rw_x - rw_x_base4;
+mov   cx, di
+
+sub   cx, bx
 je    label6
 label7:
 ; gross
-mov   dx, word ptr [bp - 038h]
-sub   word ptr ds:[_rw_scale], dx
-mov   dx, word ptr [bp - 03ah]
-sbb   word ptr ds:[_rw_scale + 2], dx
-mov   dx, word ptr ds:[_topstep]
-mov   bx, word ptr ds:[_topstep+2]
-sub   word ptr ds:[_topfrac], dx
-sbb   word ptr ds:[_topfrac+2], bx
-mov   bx, word ptr ds:[_bottomstep]
-mov   dx, word ptr ds:[_bottomstep+2]
-sub   word ptr ds:[_bottomfrac], bx
-sbb   word ptr ds:[_bottomfrac+2], dx
-mov   dx, word ptr ds:[_pixlowstep]
-mov   bx, word ptr ds:[_pixlowstep+2]
-sub   word ptr ds:[_pixlow], dx
-mov   dx, word ptr ds:[_pixhighstep]
-sbb   word ptr ds:[_pixlow+2], bx
-mov   bx, word ptr ds:[_pixhighstep+2]
-sub   word ptr ds:[_pixhigh], dx
-sbb   word ptr ds:[_pixhigh+2], bx
-dec   ax
-jne   label7
+mov   ax, word ptr [bp - 038h]
+sub   word ptr ds:[_rw_scale], ax
+mov   ax, word ptr [bp - 03ah]
+sbb   word ptr ds:[_rw_scale + 2], ax
+mov   ax, word ptr ds:[_topstep]
+sub   word ptr ds:[_topfrac], ax
+mov   ax, word ptr ds:[_topstep+2]
+sbb   word ptr ds:[_topfrac+2], ax
+mov   ax, word ptr ds:[_bottomstep]
+sub   word ptr ds:[_bottomfrac], ax
+mov   ax, word ptr ds:[_bottomstep+2]
+sbb   word ptr ds:[_bottomfrac+2], ax
+mov   ax, word ptr ds:[_pixlowstep]
+sub   word ptr ds:[_pixlow], ax
+mov   ax, word ptr ds:[_pixlowstep+2]
+sbb   word ptr ds:[_pixlow+2], ax
+mov   ax, word ptr ds:[_pixhighstep]
+sub   word ptr ds:[_pixhigh], ax
+mov   ax, word ptr ds:[_pixhighstep+2]
+sbb   word ptr ds:[_pixhigh+2], ax
+
+loop   label7
 label6:
 mov   ax, word ptr ds:[_rw_scale]
 mov   word ptr [bp - 02eh], ax
@@ -1870,15 +1946,13 @@ mov   word ptr [bp - 020h], ax
 mov   ax, word ptr ds:[_pixhigh]
 mov   word ptr [bp - 026h], ax
 mov   ax, word ptr ds:[_pixhigh+2]
-mov   byte ptr [bp - 2], 0
 mov   word ptr [bp - 01eh], ax
 label45:
-mov   al, byte ptr [bp - 2]
-cbw  
-mov   bx, ax
-mov   al, byte ptr ds:[_detailshiftitercount]
-xor   ah, ah
-cmp   bx, ax
+SELFMODIFY_set_al_to_xoffset:
+mov   al, 0
+SELFMODIFY_cmp_al_to_detailshiftitercount:
+cmp   al, 0
+; todo change this default loop case
 jl    label8
 exit_rendersegloop:
 mov   ax, 0FFFFh
@@ -1894,6 +1968,8 @@ pop   cx
 pop   bx
 ret   
 label8:
+cbw  
+mov   bx, ax
 mov   al, byte ptr ds:[_detailshift + 1]
 cbw  
 mov   si, bx
@@ -1928,13 +2004,15 @@ cmp   bx, word ptr [bp - 030h]
 jl    label10
 label11:
 mov   di, word ptr ds:[_rw_x]
-cmp   di, word ptr ds:[_rw_stopx]
+SELFMODIFY_cmp_di_to_rw_stopx:
+cmp   di, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
 jl    label9 ; todo optim out
 
 ; todo: self modifying code for step values.
 
+inc   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1]
+
 mov   ax, word ptr ds:[_topstep]
-inc   byte ptr [bp - 2]
 add   word ptr [bp - 02ah], ax
 mov   ax, word ptr ds:[_topstep+2]
 adc   word ptr [bp - 028h], ax
@@ -1955,6 +2033,7 @@ add   word ptr [bp - 026h], ax
 mov   ax, word ptr ds:[_pixhighstep+2]
 adc   word ptr [bp - 01eh], ax
 jmp   label45
+
 label9:
 jmp   start_per_column_inner_loop
 label10:
@@ -2120,34 +2199,45 @@ seg_is_textured:
 
 mov   dx, XTOVIEWANGLE_SEGMENT
 mov   es, dx
-mov   ax, word ptr ds:[_rw_centerangle]
+SELFMODIFY_set_rw_center_angle:
+mov   ax, 01000h			; mov   ax, word ptr ds:[_rw_centerangle]
 mov   bx, di
 add   ax, word ptr es:[bx+di]
 and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 ; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
 
-mov   cx, word ptr ds:[_rw_distance]
-mov   dx, word ptr ds:[_rw_distance + 2]
-mov   word ptr [bp - 8], dx
+mov   dx, FINETANGENTINNER_SEGMENT
+mov   es, dx
 
 cmp   ax, FINE_TANGENT_MAX					; todo clean up this inline for sure.
-jb    label17
-jmp   label18
-label17:
-mov   bx, ax
-mov   dx, FINETANGENTINNER_SEGMENT
+jb    non_subtracted_finetangent
+mov   bx, FINE_TANGENT_MAX - 1
+sub   ax, FINE_TANGENT_MAX
+sub   bx, ax
 shl   bx, 2
-mov   es, dx
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
-label20:
-mov   bx, cx
-mov   cx, word ptr [bp - 8]
+neg   dx
+neg   ax
+sbb   dx, 0
+jmp   finetangent_ready
+non_subtracted_finetangent:
+mov   bx, ax
+shl   bx, 2
+mov   ax, word ptr es:[bx]
+mov   dx, word ptr es:[bx + 2]
+finetangent_ready:
+SELFMODIFY_set_bx_rw_distance_lo:
+mov   bx, 01000h	; mov   bx, word ptr ds:[_rw_distance]
+SELFMODIFY_set_cx_rw_distance_hi:
+mov   cx, 01000h	; mov   cx, word ptr ds:[_rw_distance+2]
 call FixedMul_
-mov   cx, word ptr ds:[_rw_offset]
+SELFMODIFY_set_cx_rw_offset_lo:	;
+mov   cx, 01000h			; mov   cx, word ptr ds:[_rw_offset]
 sub   cx, ax
-mov   ax, word ptr ds:[_rw_offset + 2]
+SELFMODIFY_set_ax_rw_offset_hi:
+mov   ax, 01000h            ; mov   ax, word ptr ds:[_rw_offset + 2]
 sbb   ax, dx
 mov   word ptr [bp - 6], ax
 cmp   word ptr ds:[_rw_scale + 2], 3
@@ -2157,10 +2247,10 @@ label21:
 mov   ax, MAXLIGHTSCALE - 1
 label28:
 mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT   ; colormap 0
-mov   dx, SCALELIGHTFIXED_SEGMENT
-mov   es, dx
 add   ax, word ptr ds:[_walllights]
 mov   bx, ax
+mov   ax, SCALELIGHTFIXED_SEGMENT
+mov   es, ax
 mov   al, byte ptr es:[bx]
 mov   byte ptr ds:[_dc_colormap_index], al
 mov   word ptr ds:[_dc_x], di			; rw_x
@@ -2189,10 +2279,10 @@ cmp   di, si
 jl    label19
 mov   word ptr ds:[_dc_yl], si
 mov   word ptr ds:[_dc_yh], di
-mov   ax, word ptr ds:[_rw_midtexturemid]
-mov   word ptr ds:[_dc_texturemid], ax
-mov   ax, word ptr ds:[_rw_midtexturemid + 2]
-mov   word ptr ds:[_dc_texturemid + 2], ax
+SELFMODIFY_set_midtexturemid_lo:
+mov   word ptr ds:[_dc_texturemid], 01000h
+SELFMODIFY_set_midtexturemid_hi:
+mov   word ptr ds:[_dc_texturemid + 2], 01000h
 mov   ax, word ptr [bp - 6]
 mov   dx, word ptr ds:[_midtexture]
 xor   bx, bx
@@ -2200,6 +2290,8 @@ call  R_GetSourceSegment_
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 call dword ptr ds:[_R_DrawColumnPrepCall]
+; todo cleanup the transition with these. bx shouldnt need to be recalced.
+; but the two function calls leave us nowehre to put it.
 mov   bx, word ptr ds:[_rw_x]
 add   bx, bx
 mov   ax, OPENINGS_SEGMENT
@@ -2227,19 +2319,7 @@ add   word ptr ds:[_rw_scale], ax
 mov   ax, word ptr [bp - 036h]
 adc   word ptr ds:[_rw_scale + 2], ax
 jmp   label11
-label18:
-mov   bx, FINE_TANGENT_MAX - 1
-sub   ax, FINE_TANGENT_MAX
-sub   bx, ax
-mov   ax, FINETANGENTINNER_SEGMENT
-shl   bx, 2
-mov   es, ax
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx]
-neg   dx
-neg   ax
-sbb   dx, 0
-jmp   label20
+
 label22:
 mov   ax, word ptr ds:[_rw_scale + 1]
 mov   dl, byte ptr ds:[_rw_scale + 3]
@@ -2287,10 +2367,10 @@ cmp   di, si
 jle   label41
 mov   word ptr ds:[_dc_yl], si
 mov   word ptr ds:[_dc_yh], cx
-mov   ax, word ptr ds:[_rw_toptexturemid]
-mov   word ptr ds:[_dc_texturemid], ax
-mov   ax, word ptr ds:[_rw_toptexturemid + 2]
-mov   word ptr ds:[_dc_texturemid + 2], ax
+SELFMODIFY_set_toptexturemid_lo:
+mov   word ptr ds:[_dc_texturemid], 01000h
+SELFMODIFY_set_toptexturemid_hi:
+mov   word ptr ds:[_dc_texturemid + 2], 01000h
 mov   ax, word ptr [bp - 6]
 mov   dx, word ptr ds:[_toptexture]
 xor   bx, bx
@@ -2298,6 +2378,8 @@ call  R_GetSourceSegment_
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 call dword ptr ds:[_R_DrawColumnPrepCall]
+; todo cleanup the transition with these. bx shouldnt need to be recalced.
+; but the two function calls leave us nowehre to put it.
 mov   bx, word ptr ds:[_rw_x]
 add   bx, bx
 mov   dx, OPENINGS_SEGMENT
@@ -2343,10 +2425,10 @@ cmp   di, si
 jle   label34
 mov   word ptr ds:[_dc_yl], cx
 mov   word ptr ds:[_dc_yh], di
-mov   ax, word ptr ds:[_rw_bottomtexturemid]
-mov   word ptr ds:[_dc_texturemid], ax
-mov   ax, word ptr ds:[_rw_bottomtexturemid + 2]
-mov   word ptr ds:[_dc_texturemid + 2], ax
+SELFMODIFY_set_bottexturemid_lo:
+mov   word ptr ds:[_dc_texturemid], 01000h
+SELFMODIFY_set_bottexturemid_hi:
+mov   word ptr ds:[_dc_texturemid + 2], 01000h
 mov   bx, 1
 mov   ax, word ptr [bp - 6]
 mov   dx, word ptr ds:[_bottomtexture]
@@ -2354,7 +2436,8 @@ call  R_GetSourceSegment_
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 call dword ptr ds:[_R_DrawColumnPrepCall]
-; restore bx. carry from above func?
+; todo cleanup the transition with these. bx shouldnt need to be recalced.
+; but the two function calls leave us nowehre to put it.
 mov   bx, word ptr ds:[_rw_x]
 add   bx, bx
 mov   ax, OPENINGS_SEGMENT

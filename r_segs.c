@@ -799,7 +799,7 @@ void __near R_RenderOneSeg () {
 		} else {
 			index = rw_scale.w >> LIGHTSCALESHIFT;
 		}
-
+ 
 
 		dc_colormap_segment = colormaps_segment;
 		dc_colormap_index = *((int8_t __far*)MK_FP(scalelightfixed_segment, walllights+index));
