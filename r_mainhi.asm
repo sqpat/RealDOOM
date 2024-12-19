@@ -1744,9 +1744,9 @@ PUBLIC R_RenderSegLoop_
 
 
 ; order all these in memory then movsw
-; bp - 2    ; UNUSED
+; bp - 2    ; texturecolumn		; consider storing in register.
 ; bp - 4    ; UNUSED
-; bp - 6    ; texturecolumn
+; bp - 6    ; UNUSED
 ; bp - 8    ; UNUSED
 ; bp - 0Ah  ; UNUSED
 ; bp - 0Ch  ; UNUSED
@@ -1829,6 +1829,15 @@ mov   word ptr cs:[SELFMODIFY_set_bottexturemid_lo+4], ax
 mov   ax, word ptr ds:[_rw_bottomtexturemid + 2]
 mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+4], ax
 
+mov   ax, word ptr ds:[_bottomtexture]
+mov   word ptr cs:[SELFMODIFY_bottexture_skip_check+1], ax
+mov   word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
+
+mov   ax, word ptr ds:[_toptexture]
+mov   word ptr cs:[SELFMODIFY_toptexture_skip_check+1], ax
+mov   word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+
+
 
 
 xchg  ax, cx
@@ -1874,28 +1883,44 @@ loop  loop_3
 label3:
 mov   word ptr [bp - 02Eh], ax
 mov   word ptr [bp - 02Ch], dx
+
+; skip if no top texture
+
+SELFMODIFY_toptexture_skip_check:
+mov   cx, 01000h
+jcxz  skip_shifting_pixhighstep
+
 mov   cx, si
 mov   ax, word ptr ds:[_pixhighstep]
 mov   dx, word ptr ds:[_pixhighstep+2]
-jcxz  label4
-loop_10:
+jcxz  done_shifting_pixhighstep
+loop_shift_pixhighstep:
 shl   ax, 1
 rcl   dx, 1
-loop  loop_10
-label4:
+loop  loop_shift_pixhighstep
+done_shifting_pixhighstep:
 mov   word ptr [bp - 02Ah], ax
 mov   word ptr [bp - 028h], dx
+skip_shifting_pixhighstep:
+
+; skip if no bot texture
+SELFMODIFY_bottexture_skip_check:
+mov   cx, 01000h
+; cx is 0 due to loop;
+jcxz  skip_shifting_pixlowstep
+
 mov   cx, si
 mov   ax, word ptr ds:[_pixlowstep]
 mov   dx, word ptr ds:[_pixlowstep+2]
-jcxz  label5
+jcxz  done_shifting_pixlowstep
 loop_4:
 shl   ax, 1
 rcl   dx, 1
 loop  loop_4
-label5:
+done_shifting_pixlowstep:
 mov   word ptr [bp - 026h], ax
 mov   word ptr [bp - 024h], dx
+skip_shifting_pixlowstep:
 
 ;  	int16_t base4diff = rw_x - rw_x_base4;
 mov   cx, di
@@ -2305,7 +2330,7 @@ label19:
 mov   ax, word ptr ds:[_viewheight]
 mov   word ptr es:[bx + OFFSET_CEILINGCLIP], ax
 mov   word ptr es:[bx + OFFSET_FLOORCLIP], 0FFFFh
-label27:
+finished_inner_loop_iter:
 mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
 add   word ptr ds:[_rw_x], ax
@@ -2335,11 +2360,22 @@ rcr   ax, 1
 sar   dl, 1
 rcr   ax, 1
 jmp   label28
+no_top_texture_draw:
+; bx is already rw_x << 1
+cmp   byte ptr ds:[_markceiling], 0
+jne   mark_ceiling_si
+jmp   check_bottom_texture
+mark_ceiling_si:
+; bx is already rw_x << 1
+lea   ax, [si - 1]
+mov   word ptr es:[bx + OFFSET_CEILINGCLIP], ax
+jmp   check_bottom_texture
+
 label24:
-cmp   word ptr ds:[_toptexture], 0
-jne   label47
-jmp   label29
-label47:
+SELFMODIFY_set_toptexture:
+mov   cx, 01000h
+jcxz  no_top_texture_draw
+do_top_texture_draw:
 mov   ax, word ptr ds:[_pixhigh+1]
 mov   dl, byte ptr ds:[_pixhigh+3]
 sar   dl, 1
@@ -2354,20 +2390,19 @@ mov   dx, word ptr [bp - 02Ah]
 add   word ptr ds:[_pixhigh], dx
 mov   dx, word ptr [bp - 028h]
 adc   word ptr ds:[_pixhigh+2], dx
+mov   dx, cx  ; copy over tex...
 ; bx is rw_x << 1
 mov   cx, ax
-mov   dx, word ptr es:[bx + OFFSET_FLOORCLIP]
-cmp   ax, dx
+mov   ax, word ptr es:[bx + OFFSET_FLOORCLIP]
+cmp   cx, ax
 jl    label38
-mov   cx, dx
+mov   cx, ax
 dec   cx
 label38:
 cmp   cx, si
-jge   label39
-jmp   label40
-label39:
+jl    mark_ceiling_si
 cmp   di, si
-jle   label41
+jle   mark_ceiling_cx
 mov   word ptr ds:[_dc_yl], si
 mov   word ptr ds:[_dc_yh], cx
 SELFMODIFY_set_toptexturemid_lo:
@@ -2375,7 +2410,7 @@ mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_toptexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
 mov   ax, word ptr [bp - 2]
-mov   dx, word ptr ds:[_toptexture]
+; dx already set to texture
 xor   bx, bx
 call  R_GetSourceSegment_
 mov   word ptr ds:[_dc_source_segment], ax
@@ -2388,15 +2423,15 @@ add   bx, bx
 mov   dx, OPENINGS_SEGMENT
 mov   es, dx
 
-label41:
+mark_ceiling_cx:
 mov   word ptr es:[bx  + OFFSET_CEILINGCLIP], cx
 check_bottom_texture:
 ; bx is already rw_x << 1
 
-cmp   word ptr ds:[_bottomtexture], 0
-jne   label37
-jmp   label36
-label37:
+SELFMODIFY_set_bottomtexture:
+mov   cx, 01000h
+jcxz  no_bottom_texture_draw
+do_bottom_texture_draw:
 mov   ax, word ptr ds:[_pixlow]
 add   ax, ((HEIGHTUNIT)-1)
 mov   dx, word ptr ds:[_pixlow+2]
@@ -2415,75 +2450,68 @@ mov   dx, word ptr [bp - 026h]
 add   word ptr ds:[_pixlow], dx
 mov   dx, word ptr [bp - 024h]
 adc   word ptr ds:[_pixlow+2], dx
+mov   dx, cx 			; get bottom texture
 mov   cx, ax
-mov   dx, word ptr es:[bx+OFFSET_CEILINGCLIP]
-cmp   ax, dx
-jg    label35
-mov   cx, dx
-inc   cx
-label35:
+mov   ax, word ptr es:[bx+OFFSET_CEILINGCLIP]
+cmp   cx, ax
+jg    dont_clip_bot_ceil
+inc   ax
+xchg  cx, ax
+dont_clip_bot_ceil:
 cmp   cx, di
-jg    label33
+jg    mark_floor_di
 cmp   di, si
-jle   label34
+jle   mark_floor_cx
 mov   word ptr ds:[_dc_yl], cx
 mov   word ptr ds:[_dc_yh], di
 SELFMODIFY_set_bottexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_bottexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
+push  es 
+push  bx
 mov   bx, 1
 mov   ax, word ptr [bp - 2]
-mov   dx, word ptr ds:[_bottomtexture]
 call  R_GetSourceSegment_
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
+
+;db 09Ah
+;dw R_DRAWCOLUMNPREPCALLOFFSET 
+;dw COLFUNC_SEGMENT 
+
 call dword ptr ds:[_R_DrawColumnPrepCall]
+
 ; todo cleanup the transition with these. bx shouldnt need to be recalced.
 ; but the two function calls leave us nowehre to put it.
-mov   bx, word ptr ds:[_rw_x]
-add   bx, bx
-mov   ax, OPENINGS_SEGMENT
-mov   es, ax
-label34:
+pop   bx
+pop   es
+mark_floor_cx:
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
 done_marking_floor:
 cmp   byte ptr ds:[_maskedtexture], 0
 jne   label32
-jmp   label27
+jmp   finished_inner_loop_iter
+no_bottom_texture_draw:
+cmp   byte ptr ds:[_markfloor], 0
+je    done_marking_floor
+;floorclip[rw_x] = yh + 1;
+mark_floor_di:
+inc   di
+mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
+cmp   byte ptr ds:[_maskedtexture], 0
+jne   label32
+jmp   finished_inner_loop_iter
+
 label32:
 mov   dx, word ptr ds:[_maskedtexturecol]
 mov   es, word ptr ds:[_maskedtexturecol + 2]
 add   bx, dx
 mov   ax, word ptr [bp - 2]
 mov   word ptr es:[bx], ax
-jmp   label27
-label33:
-inc   di
-mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
-jmp   done_marking_floor
-label40:
-; bx is rw_x << 1
-lea   ax, [si - 1]
-mov   word ptr es:[bx  + OFFSET_CEILINGCLIP], ax
-jmp   check_bottom_texture
-label29:
-; bx is already rw_x << 1
-cmp   byte ptr ds:[_markceiling], 0
-jne   mark_ceiling
-jmp   check_bottom_texture
-mark_ceiling:
-; bx is already rw_x << 1
-lea   ax, [si - 1]
-mov   word ptr es:[bx + OFFSET_CEILINGCLIP], ax
-jmp   check_bottom_texture
-label36:
-cmp   byte ptr ds:[_markfloor], 0
-je    done_marking_floor
-;floorclip[rw_x] = yh + 1;
-inc   di
-mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
-jmp   done_marking_floor
+jmp   finished_inner_loop_iter
+
+
    
 
 
