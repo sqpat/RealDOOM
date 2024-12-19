@@ -1748,29 +1748,29 @@ PUBLIC R_RenderSegLoop_
 ; bp - 4    ; UNUSED
 ; bp - 6    ; texturecolumn
 ; bp - 8    ; UNUSED
-; bp - 0Ah  ; topstepshift lo
-; bp - 0Ch  ; topstepshift hi
-; bp - 0Eh  ; bottomstepshift hi
-; bp - 010h ; pixlowstepshift lo
-; bp - 012h ; bottomstepshift lo
-; bp - 014h ; pixlowstepshift hi
-; bp - 016h ; pixhighstepshift hi
-; bp - 018h ; pixhighstepshift lo
-; bp - 01Ah ; rwscaleshift lo
-; bp - 01Ch ; base_bottomfrac lo
-; bp - 01Eh ; base_pixhigh hi
-; bp - 020h ; base_pixlow hi
-; bp - 022h ; base_bottomfrac hi
-; bp - 024h ; base_pixlow lo
-; bp - 026h ; base_pixhigh lo
-; bp - 028h ; base_topfrac hi
-; bp - 02Ah ; base_topfrac lo
-; bp - 02Ch ; baserwscale hi
-; bp - 02Eh ; baserwscale lo
-; bp - 030h ; start_rw_x
-; bp - 032h ; rw_x_base4
-; bp - 034h	; unused
-; bp - 036h	; rwscaleshift hi
+; bp - 0Ah  ; UNUSED
+; bp - 0Ch  ; UNUSED
+; bp - 0Eh  ; UNUSED
+; bp - 010h ; base_pixhigh hi
+; bp - 012h ; base_pixhigh lo
+; bp - 014h ; base_pixlow hi
+; bp - 016h ; base_pixlow lo
+; bp - 018h ; base_bottomfrac hi
+; bp - 01Ah ; base_bottomfrac lo
+; bp - 01Ch ; base_topfrac hi
+; bp - 01Eh ; base_topfrac lo
+; bp - 020h ; baserwscale hi
+; bp - 022h ; baserwscale lo
+; bp - 024h ; pixlowstepshift hi
+; bp - 026h ; pixlowstepshift lo
+; bp - 028h ; pixhighstepshift hi
+; bp - 02Ah ; pixhighstepshift lo
+; bp - 02Ch ; bottomstepshift hi
+; bp - 02Eh ; bottomstepshift lo
+; bp - 030h ; topstepshift hi
+; bp - 032h ; topstepshift lo
+; bp - 034h	; rwscaleshift hi
+; bp - 036h	; rwscaleshift lo
 ; bp - 038h	; rw_scalestep lo argument AX
 ; bp - 03Ah	; rw_scalestep hi argument DX
 
@@ -1788,8 +1788,8 @@ mov   ax, word ptr ds:[_rw_x]
 mov   bx, ax
 mov   di, ax
 and   bx, word ptr ds:[_detailshiftandval]
-mov   word ptr [bp - 032h], bx
-mov   word ptr [bp - 030h], ax
+mov   word ptr cs:[SELFMODIFY_add_rw_x_base4_to_ax+1], bx
+mov   word ptr cs:[SELFMODIFY_compare_ax_to_start_rw_x+1], ax	
 
 ; self modify code in the function to set constants rather than
 ; repeatedly reading loop-constant or function-constant variables.
@@ -1850,8 +1850,8 @@ shl   ax, 1
 rcl   dx, 1
 loop  loop_1
 label1:
-mov   word ptr [bp - 01ah], ax
-mov   word ptr [bp - 036h], dx
+mov   word ptr [bp - 036h], ax
+mov   word ptr [bp - 034h], dx
 mov   cx, si
 mov   ax, word ptr ds:[_topstep]
 mov   dx, word ptr ds:[_topstep+2]
@@ -1861,8 +1861,8 @@ shl   ax, 1
 rcl   dx, 1
 loop  loop_2
 label2:
-mov   word ptr [bp - 0ch], ax
-mov   word ptr [bp - 0ah], dx
+mov   word ptr [bp - 032h], ax
+mov   word ptr [bp - 030h], dx
 mov   cx, si
 mov   ax, word ptr ds:[_bottomstep]
 mov   dx, word ptr ds:[_bottomstep+2]
@@ -1872,8 +1872,8 @@ shl   ax, 1
 rcl   dx, 1
 loop  loop_3
 label3:
-mov   word ptr [bp - 012h], ax
-mov   word ptr [bp - 0eh], dx
+mov   word ptr [bp - 02Eh], ax
+mov   word ptr [bp - 02Ch], dx
 mov   cx, si
 mov   ax, word ptr ds:[_pixhighstep]
 mov   dx, word ptr ds:[_pixhighstep+2]
@@ -1883,8 +1883,8 @@ shl   ax, 1
 rcl   dx, 1
 loop  loop_10
 label4:
-mov   word ptr [bp - 018h], ax
-mov   word ptr [bp - 016h], dx
+mov   word ptr [bp - 02Ah], ax
+mov   word ptr [bp - 028h], dx
 mov   cx, si
 mov   ax, word ptr ds:[_pixlowstep]
 mov   dx, word ptr ds:[_pixlowstep+2]
@@ -1894,8 +1894,8 @@ shl   ax, 1
 rcl   dx, 1
 loop  loop_4
 label5:
-mov   word ptr [bp - 010h], ax
-mov   word ptr [bp - 014h], dx
+mov   word ptr [bp - 026h], ax
+mov   word ptr [bp - 024h], dx
 
 ;  	int16_t base4diff = rw_x - rw_x_base4;
 mov   cx, di
@@ -1928,25 +1928,25 @@ sbb   word ptr ds:[_pixhigh+2], ax
 loop   label7
 label6:
 mov   ax, word ptr ds:[_rw_scale]
-mov   word ptr [bp - 02eh], ax
-mov   ax, word ptr ds:[_rw_scale + 2]
-mov   word ptr [bp - 02ch], ax
-mov   ax, word ptr ds:[_topfrac]
-mov   word ptr [bp - 02ah], ax
-mov   ax, word ptr ds:[_topfrac+2]
-mov   word ptr [bp - 028h], ax
-mov   ax, word ptr ds:[_bottomfrac]
-mov   word ptr [bp - 01ch], ax
-mov   ax, word ptr ds:[_bottomfrac+2]
 mov   word ptr [bp - 022h], ax
-mov   ax, word ptr ds:[_pixlow]
-mov   word ptr [bp - 024h], ax
-mov   ax, word ptr ds:[_pixlow+2]
+mov   ax, word ptr ds:[_rw_scale + 2]
 mov   word ptr [bp - 020h], ax
+mov   ax, word ptr ds:[_topfrac]
+mov   word ptr [bp - 01Eh], ax
+mov   ax, word ptr ds:[_topfrac+2]
+mov   word ptr [bp - 01Ch], ax
+mov   ax, word ptr ds:[_bottomfrac]
+mov   word ptr [bp - 01Ah], ax
+mov   ax, word ptr ds:[_bottomfrac+2]
+mov   word ptr [bp - 018h], ax
+mov   ax, word ptr ds:[_pixlow]
+mov   word ptr [bp - 016h], ax
+mov   ax, word ptr ds:[_pixlow+2]
+mov   word ptr [bp - 014h], ax
 mov   ax, word ptr ds:[_pixhigh]
-mov   word ptr [bp - 026h], ax
+mov   word ptr [bp - 012h], ax
 mov   ax, word ptr ds:[_pixhigh+2]
-mov   word ptr [bp - 01eh], ax
+mov   word ptr [bp - 010h], ax
 label45:
 SELFMODIFY_set_al_to_xoffset:
 mov   al, 0
@@ -1978,29 +1978,32 @@ mov   dx, SC_DATA
 mov   al, byte ptr [si + OFFSET _quality_port_lookup]	
 out   dx, al
 ; todo clean up this mess.
-mov   ax, word ptr [bp - 02ah]
+mov   ax, word ptr [bp - 01Eh]
 mov   word ptr ds:[_topfrac], ax
-mov   ax, word ptr [bp - 028h]
+mov   ax, word ptr [bp - 01Ch]
 mov   word ptr ds:[_topfrac+2], ax
-mov   ax, word ptr [bp - 01ch]
+mov   ax, word ptr [bp - 01Ah]
 mov   word ptr ds:[_bottomfrac], ax
-mov   ax, word ptr [bp - 022h]
+mov   ax, word ptr [bp - 018h]
 mov   word ptr ds:[_bottomfrac+2], ax
-mov   ax, word ptr [bp - 02eh]
+mov   ax, word ptr [bp - 022h]
 mov   word ptr ds:[_rw_scale], ax
-mov   ax, word ptr [bp - 02ch]
-mov   word ptr ds:[_rw_scale + 2], ax
-mov   ax, word ptr [bp - 024h]
-mov   word ptr ds:[_pixlow], ax
 mov   ax, word ptr [bp - 020h]
-add   bx, word ptr [bp - 032h]
+mov   word ptr ds:[_rw_scale + 2], ax
+mov   ax, word ptr [bp - 016h]
+mov   word ptr ds:[_pixlow], ax
+mov   ax, word ptr [bp - 014h]
 mov   word ptr ds:[_pixlow+2], ax
-mov   ax, word ptr [bp - 026h]
+mov   ax, word ptr [bp - 012h]
 mov   word ptr ds:[_pixhigh], ax
-mov   ax, word ptr [bp - 01eh]
-mov   word ptr ds:[_rw_x], bx
+mov   ax, word ptr [bp - 010h]
 mov   word ptr ds:[_pixhigh+2], ax
-cmp   bx, word ptr [bp - 030h]
+xchg  ax, bx
+SELFMODIFY_add_rw_x_base4_to_ax:
+add   ax, 1000h
+mov   word ptr ds:[_rw_x], ax
+SELFMODIFY_compare_ax_to_start_rw_x:
+cmp   ax, 1000h
 jl    label10
 label11:
 mov   di, word ptr ds:[_rw_x]
@@ -2013,25 +2016,25 @@ jl    label9 ; todo optim out
 inc   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1]
 
 mov   ax, word ptr ds:[_topstep]
-add   word ptr [bp - 02ah], ax
+add   word ptr [bp - 01Eh], ax
 mov   ax, word ptr ds:[_topstep+2]
-adc   word ptr [bp - 028h], ax
+adc   word ptr [bp - 01Ch], ax
 mov   ax, word ptr ds:[_bottomstep]
-add   word ptr [bp - 01ch], ax
+add   word ptr [bp - 01Ah], ax
 mov   ax, word ptr ds:[_bottomstep+2]
-adc   word ptr [bp - 022h], ax
+adc   word ptr [bp - 018h], ax
 mov   ax, word ptr [bp - 038h]
-add   word ptr [bp - 02eh], ax
+add   word ptr [bp - 022h], ax
 mov   ax, word ptr [bp - 03ah]
-adc   word ptr [bp - 02ch], ax
-mov   ax, word ptr ds:[_pixlowstep]
-add   word ptr [bp - 024h], ax
-mov   ax, word ptr ds:[_pixlowstep+2]
 adc   word ptr [bp - 020h], ax
+mov   ax, word ptr ds:[_pixlowstep]
+add   word ptr [bp - 016h], ax
+mov   ax, word ptr ds:[_pixlowstep+2]
+adc   word ptr [bp - 014h], ax
 mov   ax, word ptr ds:[_pixhighstep]
-add   word ptr [bp - 026h], ax
+add   word ptr [bp - 012h], ax
 mov   ax, word ptr ds:[_pixhighstep+2]
-adc   word ptr [bp - 01eh], ax
+adc   word ptr [bp - 010h], ax
 jmp   label45
 
 label9:
@@ -2040,33 +2043,33 @@ label10:
 mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
 add   word ptr ds:[_rw_x], ax
-mov   ax, word ptr [bp - 02ah]
-add   ax, word ptr [bp - 0ch]
+mov   ax, word ptr [bp - 01Eh]
+add   ax, word ptr [bp - 032h]
 mov   word ptr ds:[_topfrac], ax
-mov   ax, word ptr [bp - 028h]
-adc   ax, word ptr [bp - 0ah]
+mov   ax, word ptr [bp - 01Ch]
+adc   ax, word ptr [bp - 030h]
 mov   word ptr ds:[_topfrac+2], ax
-mov   ax, word ptr [bp - 01ch]
-add   ax, word ptr [bp - 012h]
+mov   ax, word ptr [bp - 01Ah]
+add   ax, word ptr [bp - 02Eh]
 mov   word ptr ds:[_bottomfrac], ax
-mov   ax, word ptr [bp - 022h]
-adc   ax, word ptr [bp - 0eh]
+mov   ax, word ptr [bp - 018h]
+adc   ax, word ptr [bp - 02Ch]
 mov   word ptr ds:[_bottomfrac+2], ax
-mov   ax, word ptr [bp - 01ah]
-add   word ptr ds:[_rw_scale], ax
 mov   ax, word ptr [bp - 036h]
+add   word ptr ds:[_rw_scale], ax
+mov   ax, word ptr [bp - 034h]
 adc   word ptr ds:[_rw_scale + 2], ax
-mov   ax, word ptr [bp - 024h]
-add   ax, word ptr [bp - 010h]
+mov   ax, word ptr [bp - 016h]
+add   ax, word ptr [bp - 026h]
 mov   word ptr ds:[_pixlow], ax
-mov   ax, word ptr [bp - 020h]
-adc   ax, word ptr [bp - 014h]
+mov   ax, word ptr [bp - 014h]
+adc   ax, word ptr [bp - 024h]
 mov   word ptr ds:[_pixlow+2], ax
-mov   ax, word ptr [bp - 026h]
-add   ax, word ptr [bp - 018h]
+mov   ax, word ptr [bp - 012h]
+add   ax, word ptr [bp - 02Ah]
 mov   word ptr ds:[_pixhigh], ax
-mov   ax, word ptr [bp - 01eh]
-adc   ax, word ptr [bp - 016h]
+mov   ax, word ptr [bp - 010h]
+adc   ax, word ptr [bp - 028h]
 mov   word ptr ds:[_pixhigh+2], ax
 jmp   label11
 start_per_column_inner_loop:
@@ -2239,7 +2242,7 @@ sub   cx, ax
 SELFMODIFY_set_ax_rw_offset_hi:
 mov   ax, 01000h            ; mov   ax, word ptr ds:[_rw_offset + 2]
 sbb   ax, dx
-mov   word ptr [bp - 6], ax
+mov   word ptr [bp - 2], ax
 cmp   word ptr ds:[_rw_scale + 2], 3
 jge   label21
 jmp   label22
@@ -2283,7 +2286,7 @@ SELFMODIFY_set_midtexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_midtexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
-mov   ax, word ptr [bp - 6]
+mov   ax, word ptr [bp - 2]
 mov   dx, word ptr ds:[_midtexture]
 xor   bx, bx
 call  R_GetSourceSegment_
@@ -2306,17 +2309,17 @@ label27:
 mov   al, byte ptr ds:[_detailshiftitercount]
 xor   ah, ah
 add   word ptr ds:[_rw_x], ax
-mov   ax, word ptr [bp - 0ch]
+mov   ax, word ptr [bp - 032h]
 add   word ptr ds:[_topfrac], ax
-mov   ax, word ptr [bp - 0ah]
+mov   ax, word ptr [bp - 030h]
 adc   word ptr ds:[_topfrac+2], ax
-mov   ax, word ptr [bp - 012h]
+mov   ax, word ptr [bp - 02Eh]
 add   word ptr ds:[_bottomfrac], ax
-mov   ax, word ptr [bp - 0eh]
+mov   ax, word ptr [bp - 02Ch]
 adc   word ptr ds:[_bottomfrac+2], ax
-mov   ax, word ptr [bp - 01ah]
-add   word ptr ds:[_rw_scale], ax
 mov   ax, word ptr [bp - 036h]
+add   word ptr ds:[_rw_scale], ax
+mov   ax, word ptr [bp - 034h]
 adc   word ptr ds:[_rw_scale + 2], ax
 jmp   label11
 
@@ -2347,9 +2350,9 @@ sar   dl, 1
 rcr   ax, 1
 sar   dl, 1
 rcr   ax, 1
-mov   dx, word ptr [bp - 018h]
+mov   dx, word ptr [bp - 02Ah]
 add   word ptr ds:[_pixhigh], dx
-mov   dx, word ptr [bp - 016h]
+mov   dx, word ptr [bp - 028h]
 adc   word ptr ds:[_pixhigh+2], dx
 ; bx is rw_x << 1
 mov   cx, ax
@@ -2371,7 +2374,7 @@ SELFMODIFY_set_toptexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_toptexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
-mov   ax, word ptr [bp - 6]
+mov   ax, word ptr [bp - 2]
 mov   dx, word ptr ds:[_toptexture]
 xor   bx, bx
 call  R_GetSourceSegment_
@@ -2408,9 +2411,9 @@ sar   dh, 1
 rcr   ax, 1
 sar   dh, 1
 rcr   ax, 1
-mov   dx, word ptr [bp - 010h]
+mov   dx, word ptr [bp - 026h]
 add   word ptr ds:[_pixlow], dx
-mov   dx, word ptr [bp - 014h]
+mov   dx, word ptr [bp - 024h]
 adc   word ptr ds:[_pixlow+2], dx
 mov   cx, ax
 mov   dx, word ptr es:[bx+OFFSET_CEILINGCLIP]
@@ -2430,7 +2433,7 @@ mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_bottexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
 mov   bx, 1
-mov   ax, word ptr [bp - 6]
+mov   ax, word ptr [bp - 2]
 mov   dx, word ptr ds:[_bottomtexture]
 call  R_GetSourceSegment_
 mov   word ptr ds:[_dc_source_segment], ax
@@ -2452,7 +2455,7 @@ label32:
 mov   dx, word ptr ds:[_maskedtexturecol]
 mov   es, word ptr ds:[_maskedtexturecol + 2]
 add   bx, dx
-mov   ax, word ptr [bp - 6]
+mov   ax, word ptr [bp - 2]
 mov   word ptr es:[bx], ax
 jmp   label27
 label33:
