@@ -1755,6 +1755,11 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 
+; do once for the whole function here.
+mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT   ; colormap 0
+
+
+
 mov   word ptr cs:[SELFMODIFY_add_rwscale_lo+5], ax
 mov   word ptr cs:[SELFMODIFY_add_rwscale_hi+5], dx
 mov   word ptr cs:[SELFMODIFY_sub_rwscale_lo+4], ax
@@ -1778,6 +1783,8 @@ mov   byte ptr cs:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
 mov   byte ptr cs:[SELFMODIFY_add_iter_to_rw_x+4], al
 mov   byte ptr cs:[SELFMODIFY_add_detailshiftitercount+4], al
 
+mov   ax, word ptr ds:[_walllights]
+mov   word ptr cs:[SELFMODIFY_add_wallights+3], ax
 
 mov   ax, word ptr ds:[_rw_centerangle]
 mov   word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
@@ -1839,11 +1846,14 @@ mov   si, cx
 
 
 
-jcxz  finished_shifting_rw_scale
-loop_1:
+cmp  cx, 1
+jb finished_shifting_rw_scale
+je shift_rw_scale_once
 shl   ax, 1
 rcl   dx, 1
-loop  loop_1
+shift_rw_scale_once:
+shl   ax, 1
+rcl   dx, 1
 finished_shifting_rw_scale:
 
 mov   word ptr cs:[SELF_MODIFY_add_to_rwscale_lo_1+4], ax
@@ -1851,7 +1861,6 @@ mov   word ptr cs:[SELF_MODIFY_add_to_rwscale_lo_2+4], ax
 mov   word ptr cs:[SELF_MODIFY_add_to_rwscale_hi_1+4], dx
 mov   word ptr cs:[SELF_MODIFY_add_to_rwscale_hi_2+4], dx
 
-mov   cx, si
 mov   ax, word ptr ds:[_topstep]
 mov   dx, word ptr ds:[_topstep+2]
 
@@ -1861,17 +1870,22 @@ mov   word ptr cs:[SELFMODIFY_add_topstep_lo+5], ax
 mov   word ptr cs:[SELFMODIFY_add_topstep_hi+5], dx
 
 
-jcxz  finished_shifting_topstep
-loop_2:
+cmp  cx, 1
+jb finished_shifting_topstep
+je shift_topstep_once
 shl   ax, 1
 rcl   dx, 1
-loop  loop_2
+shift_topstep_once:
+shl   ax, 1
+rcl   dx, 1
+
 finished_shifting_topstep:
+
+
 mov   word ptr cs:[SELF_MODIFY_add_to_topfrac_lo_1+4], ax
 mov   word ptr cs:[SELF_MODIFY_add_to_topfrac_lo_2+4], ax
 mov   word ptr cs:[SELF_MODIFY_add_to_topfrac_hi_1+4], dx
 mov   word ptr cs:[SELF_MODIFY_add_to_topfrac_hi_2+4], dx
-mov   cx, si
 mov   ax, word ptr ds:[_bottomstep]
 mov   dx, word ptr ds:[_bottomstep+2]
 
@@ -1880,12 +1894,17 @@ mov   word ptr cs:[SELFMODIFY_sub_botstep_hi+4], dx
 mov   word ptr cs:[SELFMODIFY_add_botstep_lo+5], ax
 mov   word ptr cs:[SELFMODIFY_add_botstep_hi+5], dx
 
-jcxz  finished_shifting_botstep
-loop_3:
+cmp  cx, 1
+jb finished_shifting_botstep
+je shift_botstep_once
 shl   ax, 1
 rcl   dx, 1
-loop  loop_3
+shift_botstep_once:
+shl   ax, 1
+rcl   dx, 1
+
 finished_shifting_botstep:
+
 mov   word ptr cs:[SELF_MODIFY_add_to_bottomfrac_lo_1+4], ax
 mov   word ptr cs:[SELF_MODIFY_add_to_bottomfrac_lo_2+4], ax
 mov   word ptr cs:[SELF_MODIFY_add_to_bottomfrac_hi_1+4], dx
@@ -1906,11 +1925,14 @@ mov   word ptr cs:[SELFMODIFY_sub_pixhigh_hi+4], dx
 mov   word ptr cs:[SELFMODIFY_add_pixhighstep_lo+5], ax
 mov   word ptr cs:[SELFMODIFY_add_pixhighstep_hi+5], dx
 
-jcxz  done_shifting_pixhighstep
-loop_shift_pixhighstep:
+cmp  cx, 1
+jb done_shifting_pixhighstep
+je shift_pixhighstep_once
 shl   ax, 1
 rcl   dx, 1
-loop  loop_shift_pixhighstep
+shift_pixhighstep_once:
+shl   ax, 1
+rcl   dx, 1
 done_shifting_pixhighstep:
 mov   word ptr cs:[SELF_MODIFY_add_to_pixhigh_lo_1+4], ax
 mov   word ptr cs:[SELF_MODIFY_add_to_pixhigh_lo_2+4], ax
@@ -1935,11 +1957,14 @@ mov   word ptr cs:[SELFMODIFY_sub_pixlow_hi+4], dx
 mov   word ptr cs:[SELFMODIFY_add_pixlowstep_lo+5], ax
 mov   word ptr cs:[SELFMODIFY_add_pixlowstep_hi+5], dx
 
-jcxz  done_shifting_pixlowstep
-loop_4:
+cmp  cx, 1
+jb done_shifting_pixlowstep
+je shift_pixlowstep_once
 shl   ax, 1
 rcl   dx, 1
-loop  loop_4
+shift_pixlowstep_once:
+shl   ax, 1
+rcl   dx, 1
 done_shifting_pixlowstep:
 mov   word ptr cs:[SELF_MODIFY_add_to_pixlow_lo_1+4], ax
 mov   word ptr cs:[SELF_MODIFY_add_to_pixlow_lo_2+4], ax
@@ -1994,7 +2019,7 @@ skip_sub_base4diff:
 ;	base_pixlow     = pixlow;
 ;	base_pixhigh    = pixhigh;
 
-; todo: make this all adjacent in memory and lodsw it all
+; todo: make this all adjacent in memory and lodsw it all in order
 
 mov   ax, word ptr ds:[_rw_scale]
 mov   word ptr cs:[SELFMODIFY_set_rw_scale_lo+4], ax
@@ -2055,7 +2080,6 @@ out   dx, al
 ; pixlow     = base_pixlow;
 ; pixhigh    = base_pixhigh;
 
-; todo clean up this mess.
 SELFMODIFY_set_topfrac_lo:
 mov   word ptr ds:[_topfrac], 01000h
 SELFMODIFY_set_topfrac_hi:
@@ -2077,7 +2101,8 @@ SELFMODIFY_set_pixhigh_lo:
 mov   word ptr ds:[_pixhigh], 01000h
 SELFMODIFY_set_pixhigh_hi:
 mov   word ptr ds:[_pixhigh+2], 01000h
-xchg  ax, bx
+
+xchg  ax, bx	; get argument back
 SELFMODIFY_add_rw_x_base4_to_ax:
 add   ax, 1000h
 mov   word ptr ds:[_rw_x], ax
@@ -2088,7 +2113,7 @@ check_inner_loop_conditions:
 mov   di, word ptr ds:[_rw_x]
 SELFMODIFY_cmp_di_to_rw_stopx:
 cmp   di, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
-jl    label9 ; todo optim out
+jl    jump_to_start_per_column_inner_loop ; todo optim out
 
 ; todo: self modifying code for step values.
 
@@ -2130,7 +2155,7 @@ adc   word ptr cs:[SELFMODIFY_set_pixhigh_hi+4], 01000h
 
 jmp   check_outer_loop_conditions
 
-label9:
+jump_to_start_per_column_inner_loop:
 jmp   start_per_column_inner_loop
 pre_increment_values:
 
@@ -2297,8 +2322,8 @@ seg_is_textured:
 
 ; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
 
-mov   dx, XTOVIEWANGLE_SEGMENT
-mov   es, dx
+mov   ax, XTOVIEWANGLE_SEGMENT
+mov   es, ax
 SELFMODIFY_set_rw_center_angle:
 mov   ax, 01000h			; mov   ax, word ptr ds:[_rw_centerangle]
 mov   bx, di
@@ -2347,11 +2372,14 @@ mov   word ptr [bp - 2], ax
 ;		index = rw_scale.w >> LIGHTSCALESHIFT;
 ;	}
 
-cmp   word ptr ds:[_rw_scale + 2], 3
+mov   bx, word ptr ds:[_rw_scale]
+mov   cx, word ptr ds:[_rw_scale + 2]
+cmp   cx, 3
 jge   use_max_light
 do_lightscaleshift:
-mov   ax, word ptr ds:[_rw_scale + 1]
-mov   dl, byte ptr ds:[_rw_scale + 3]
+mov   al, bh
+mov   ah, cl
+mov   dl, ch
 sar   dl, 1
 rcr   ax, 1
 sar   dl, 1
@@ -2360,26 +2388,23 @@ sar   dl, 1
 rcr   ax, 1
 sar   dl, 1
 rcr   ax, 1
+mov   si, ax
 jmp   light_set
 
 use_max_light:
-mov   ax, MAXLIGHTSCALE - 1
+mov   si, MAXLIGHTSCALE - 1
 light_set:
-mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT   ; colormap 0
-add   ax, word ptr ds:[_walllights]
-mov   bx, ax
 mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
-mov   al, byte ptr es:[bx]
+SELFMODIFY_add_wallights:
+mov   al, byte ptr es:[si+01000h]
 mov   byte ptr ds:[_dc_colormap_index], al
 mov   word ptr ds:[_dc_x], di			; rw_x
-mov   bx, word ptr ds:[_rw_scale]
-mov   cx, word ptr ds:[_rw_scale + 2]
 mov   ax, 0FFFFh
-mov   dx, ax
+cwd
 call FastDiv3232_
-mov   word ptr ds:[_dc_iscale], ax
-mov   word ptr ds:[_dc_iscale + 2], dx
+mov   word ptr ds:[_dc_iscale], ax		; todo: write these to code
+mov   word ptr ds:[_dc_iscale + 2], dx  ; todo: write these to code
 seg_non_textured:
 ; si/di are yh/yl
 ;if (yh >= yl){
@@ -2394,7 +2419,6 @@ SELFMODIFY_set_midtexture:
 mov   cx, 01000h
 mov   dx, cx				; copy texture argument
 jcxz  no_mid_texture_draw	; todo filter this out if possible...
-label23:
 cmp   di, si
 jl    mid_no_pixels_to_draw
 mov   word ptr ds:[_dc_yl], si
@@ -2572,7 +2596,7 @@ mark_floor_cx:
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
 done_marking_floor:
 cmp   byte ptr ds:[_maskedtexture], 0
-jne   label32
+jne   record_masked
 jmp   finished_inner_loop_iter
 no_bottom_texture_draw:
 cmp   byte ptr ds:[_markfloor], 0
@@ -2582,15 +2606,13 @@ mark_floor_di:
 inc   di
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
 cmp   byte ptr ds:[_maskedtexture], 0
-jne   label32
+jne   record_masked
 jmp   finished_inner_loop_iter
 
-label32:
-mov   dx, word ptr ds:[_maskedtexturecol]
-mov   es, word ptr ds:[_maskedtexturecol + 2]
-add   bx, dx
+record_masked:
+les   si, dword ptr ds:[_maskedtexturecol]
 mov   ax, word ptr [bp - 2]
-mov   word ptr es:[bx], ax
+mov   word ptr es:[bx+si], ax
 jmp   finished_inner_loop_iter
 
 
