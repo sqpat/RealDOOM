@@ -125,7 +125,12 @@
 
 #define rw_offset                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0088)))
 #define rw_distance                     (*((fixed_t __near *)                (_NULL_OFFSET + 0x008C)))
-#define rw_scale                        (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0090)))
+
+#define maskedtexture                   (*((boolean __near*)                 (_NULL_OFFSET + 0x0090)))
+#define segtextured                     (*((boolean __near*)                 (_NULL_OFFSET + 0x0091)))
+#define markfloor                       (*((boolean __near*)                 (_NULL_OFFSET + 0x0092)))
+#define markceiling                     (*((boolean __near*)                 (_NULL_OFFSET + 0x0093)))
+
 #define rw_midtexturemid                (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0094)))
 #define rw_toptexturemid                (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0098)))
 #define rw_bottomtexturemid             (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x009C)))
@@ -272,7 +277,17 @@
 #define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02FC)))
 #define R_GetMaskedColumnSegment_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0300)))
 #define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0304)))
-	
+#define rw_scale                        (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0308)))
+#define topfrac                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x030C)))
+#define bottomfrac                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0310)))
+#define pixlow                          (*((fixed_t __near *)                (_NULL_OFFSET + 0x0314)))
+#define pixhigh                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x0318)))
+
+#define topstep                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x031C)))
+#define bottomstep                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0320)))
+#define pixlowstep                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0324)))
+#define pixhighstep                     (*((fixed_t __near *)                (_NULL_OFFSET + 0x0328)))
+
 
 
 // 2f3 is free
@@ -378,10 +393,6 @@ extern uint16_t			    fieldofview;
 extern boolean		        setsizeneeded;
 extern uint8_t		        setblocks;
 extern uint16_t			    skytexture;
-extern boolean		        segtextured;	
-extern boolean		        markfloor;	
-extern boolean		        markceiling;
-extern boolean		        maskedtexture;
 extern uint16_t		        toptexture;
 extern uint16_t		        bottomtexture;
 extern uint16_t		        midtexture;
@@ -390,14 +401,6 @@ extern fixed_t_union		worldtop;
 extern fixed_t_union		worldbottom;
 extern fixed_t_union		worldhigh;
 extern fixed_t_union		worldlow;
-extern fixed_t		        pixhigh;
-extern fixed_t		        pixlow;
-extern fixed_t		        pixhighstep;
-extern fixed_t		        pixlowstep;
-extern fixed_t		        topfrac;
-extern fixed_t		        topstep;
-extern fixed_t		        bottomfrac;
-extern fixed_t		        bottomstep;
 extern uint16_t             pspritescale;
 extern int16_t              spritelights;
 extern int16_t              numflats;

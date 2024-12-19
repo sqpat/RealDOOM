@@ -81,7 +81,10 @@ _rw_centerangle = 					_NULL_OFFSET + 00084h
 _rw_normalangle =	    	   		_NULL_OFFSET + 00086h
 _rw_offset = 						_NULL_OFFSET + 00088h
 _rw_distance = 						_NULL_OFFSET + 0008Ch
-_rw_scale =		 					_NULL_OFFSET + 00090h
+_maskedtexture = 					_NULL_OFFSET + 00090h
+_segtextured = 						_NULL_OFFSET + 00091h
+_markfloor = 						_NULL_OFFSET + 00092h
+_markceiling = 						_NULL_OFFSET + 00093h
 _rw_midtexturemid = 				_NULL_OFFSET + 00094h
 _rw_toptexturemid = 				_NULL_OFFSET + 00098h
 _rw_bottomtexturemid = 				_NULL_OFFSET + 0009Ch
@@ -215,6 +218,16 @@ _getspritetexture_addr =             _NULL_OFFSET + 00304h
 
 
 ; 308h
+_rw_scale =		 					 _NULL_OFFSET + 00308h
+_topfrac =							 _NULL_OFFSET + 0030Ch
+_bottomfrac =						 _NULL_OFFSET + 00310h
+_pixlow =						 	 _NULL_OFFSET + 00314h
+_pixhigh =						 	 _NULL_OFFSET + 00318h
+_topstep =							 _NULL_OFFSET + 0031Ch
+_bottomstep =						 _NULL_OFFSET + 00320h
+_pixlowstep =					 	 _NULL_OFFSET + 00324h
+_pixhighstep =					 	 _NULL_OFFSET + 00328h
+
 
 
 
