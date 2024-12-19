@@ -1799,7 +1799,9 @@ mov   ax, word ptr ds:[_rw_offset+2]
 mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1], ax
 
 mov   ax, word ptr ds:[_rw_stopx]
-mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx+2], ax
+mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
+mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_2+2], ax
+mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_3+2], ax
 
 mov   ax, word ptr ds:[_rw_midtexturemid]
 mov   word ptr cs:[SELFMODIFY_set_midtexturemid_lo+4], ax
@@ -2041,29 +2043,12 @@ mov   ax, word ptr ds:[_pixhigh]
 mov   word ptr cs:[SELFMODIFY_set_pixhigh_lo+4], ax
 mov   ax, word ptr ds:[_pixhigh+2]
 mov   word ptr cs:[SELFMODIFY_set_pixhigh_hi+4], ax
-check_outer_loop_conditions:
-SELFMODIFY_set_al_to_xoffset:
-mov   al, 0
-SELFMODIFY_cmp_al_to_detailshiftitercount:
-cmp   al, 0
-; todo change this default loop case
-jl    continue_outer_rendersegloop
-exit_rendersegloop:
-mov   ax, 0FFFFh
-mov   word ptr ds:[_segloopnextlookup], ax
-mov   word ptr ds:[_segloopnextlookup+2], ax
-xor   ax, ax
-mov   word ptr ds:[_seglooptexrepeat], ax
-mov   word ptr ds:[_seglooptexrepeat+2], ax
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
+
+mov   al, 0 ; xoffset is 0
 continue_outer_rendersegloop:
 cbw  
 mov   bx, ax
+inc   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1]
 mov   al, byte ptr ds:[_detailshift + 1]
 mov   si, ax
 mov   dx, SC_DATA
@@ -2109,12 +2094,14 @@ mov   word ptr ds:[_rw_x], ax
 SELFMODIFY_compare_ax_to_start_rw_x:
 cmp   ax, 1000h
 jl    pre_increment_values
+
 check_inner_loop_conditions:
 mov   di, word ptr ds:[_rw_x]
-SELFMODIFY_cmp_di_to_rw_stopx:
+SELFMODIFY_cmp_di_to_rw_stopx_3:
 cmp   di, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
 jl    jump_to_start_per_column_inner_loop ; todo optim out
 
+finish_outer_loop:
 ; todo: self modifying code for step values.
 
 ; xoffset++,
@@ -2124,8 +2111,14 @@ jl    jump_to_start_per_column_inner_loop ; todo optim out
 ; base_pixlow	  += pixlowstep,
 ; base_pixhigh    += pixhighstep
 
-inc   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1]
+check_outer_loop_conditions:
 
+SELFMODIFY_set_al_to_xoffset:
+mov   al, 0
+SELFMODIFY_cmp_al_to_detailshiftitercount:
+cmp   al, 0
+
+jge   exit_rendersegloop ; exit before adding the other loop vars.
 SELFMODIFY_add_topstep_lo:
 add   word ptr cs:[SELFMODIFY_set_topfrac_lo+4], 01000h
 SELFMODIFY_add_topstep_hi:
@@ -2153,10 +2146,30 @@ SELFMODIFY_add_pixhighstep_hi:
 adc   word ptr cs:[SELFMODIFY_set_pixhigh_hi+4], 01000h
 
 
-jmp   check_outer_loop_conditions
+
+jmp   continue_outer_rendersegloop
+
+
+exit_rendersegloop:
+mov   ax, 0FFFFh
+mov   word ptr ds:[_segloopnextlookup], ax
+mov   word ptr ds:[_segloopnextlookup+2], ax
+xor   ax, ax
+mov   word ptr ds:[_seglooptexrepeat], ax
+mov   word ptr ds:[_seglooptexrepeat+2], ax
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+
+
 
 jump_to_start_per_column_inner_loop:
 jmp   start_per_column_inner_loop
+jump_to_finish_outer_loop_2:
+jmp finish_outer_loop
 pre_increment_values:
 
 ; ? todo: make this check loop break condition before adding the rest.
@@ -2194,7 +2207,12 @@ SELF_MODIFY_add_to_pixhigh_lo_2:
 add   word ptr ds:[_pixhigh], 01000h
 SELF_MODIFY_add_to_pixhigh_hi_2:
 adc   word ptr ds:[_pixhigh+2], 01000h
-jmp   check_inner_loop_conditions
+; this is right before inner loop start
+mov   di, word ptr ds:[_rw_x]
+SELFMODIFY_cmp_di_to_rw_stopx_1:
+cmp   di, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
+jge   jump_to_finish_outer_loop_2
+
 start_per_column_inner_loop:
 ; di is rw_x
 
@@ -2418,7 +2436,7 @@ pop   si
 SELFMODIFY_set_midtexture:
 mov   cx, 01000h
 mov   dx, cx				; copy texture argument
-jcxz  no_mid_texture_draw	; todo filter this out if possible...
+jcxz  no_mid_texture_draw
 cmp   di, si
 jl    mid_no_pixels_to_draw
 mov   word ptr ds:[_dc_yl], si
@@ -2445,8 +2463,21 @@ mov   ax, word ptr ds:[_viewheight]
 mov   word ptr es:[bx + OFFSET_CEILINGCLIP], ax
 mov   word ptr es:[bx + OFFSET_FLOORCLIP], 0FFFFh
 finished_inner_loop_iter:
+
+;		for ( ; rw_x < rw_stopx ; 
+;			rw_x		+= detailshiftitercount,
+;			topfrac 	+= topstepshift,
+;			bottomfrac  += bottomstepshift,
+;			rw_scale.w  += rwscaleshift
+
 SELFMODIFY_add_detailshiftitercount:
 add   word ptr ds:[_rw_x], 0
+mov   di, word ptr ds:[_rw_x]
+SELFMODIFY_cmp_di_to_rw_stopx_2:
+cmp   di, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
+jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
+
+
 SELF_MODIFY_add_to_topfrac_lo_1:
 add   word ptr ds:[_topfrac], 01000h
 SELF_MODIFY_add_to_topfrac_hi_1:
@@ -2459,8 +2490,9 @@ SELF_MODIFY_add_to_rwscale_lo_1:
 add   word ptr ds:[_rw_scale], 01000h
 SELF_MODIFY_add_to_rwscale_hi_1:
 adc   word ptr ds:[_rw_scale + 2], 01000h
-jmp   check_inner_loop_conditions
-
+jmp   start_per_column_inner_loop
+jump_to_finish_outer_loop:
+jmp   finish_outer_loop
 
 no_top_texture_draw:
 ; bx is already rw_x << 1
