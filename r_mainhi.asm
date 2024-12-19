@@ -2433,9 +2433,7 @@ push  es
 push  bx
 xor   bx, bx
 call  R_GetSourceSegment_
-mov   word ptr ds:[_dc_source_segment], ax
-xor   ax, ax
-call dword ptr ds:[_R_DrawColumnPrepCall]
+
 ; todo cleanup the transition with these. bx shouldnt need to be recalced.
 ; but the two function calls leave us nowehre to put it.
 pop   bx
@@ -2520,9 +2518,7 @@ push  bx
 
 xor   bx, bx
 call  R_GetSourceSegment_
-mov   word ptr ds:[_dc_source_segment], ax
-xor   ax, ax
-call dword ptr ds:[_R_DrawColumnPrepCall]
+
 ; todo cleanup the transition with these. bx shouldnt need to be recalced.
 ; but the two function calls leave us nowehre to put it.
 
@@ -2579,14 +2575,6 @@ push  bx
 mov   bx, 1
 mov   ax, word ptr [bp - 2]
 call  R_GetSourceSegment_
-mov   word ptr ds:[_dc_source_segment], ax
-xor   ax, ax
-
-;db 09Ah
-;dw R_DRAWCOLUMNPREPCALLOFFSET 
-;dw COLFUNC_SEGMENT 
-
-call dword ptr ds:[_R_DrawColumnPrepCall]
 
 ; todo cleanup the transition with these. bx shouldnt need to be recalced.
 ; but the two function calls leave us nowehre to put it.

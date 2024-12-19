@@ -370,13 +370,13 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 #define TOP_TEXTURE_SEGLOOP_CACHE 		0
 #define BOT_TEXTURE_SEGLOOP_CACHE 		1
 
-segment_t __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
+void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
 
 	if (seglooptexrepeat[segloopcachetype]){
 		// if we know its a single repeating texture we just repeat with previously loaded params
 		if (seglooptexmodulo[segloopcachetype]){
 			// power of 2. just modulo to get the column value
-			return segloopcachedsegment[segloopcachetype] 
+			dc_source_segment = segloopcachedsegment[segloopcachetype] 
 				+ FastMul8u8u((uint8_t) texturecolumn & seglooptexmodulo[segloopcachetype], 
 							segloopheightvalcache[segloopcachetype]);
 
@@ -390,7 +390,7 @@ segment_t __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8
 				segloopcachedbasecol[segloopcachetype] += loopwidth;
 			}
 	
-			return segloopcachedsegment[segloopcachetype] 
+			dc_source_segment = segloopcachedsegment[segloopcachetype] 
 				+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[segloopcachetype]) , 
 							segloopheightvalcache[segloopcachetype]);
 		}
@@ -401,7 +401,7 @@ segment_t __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8
 		// note: column iteration can go in either dir, have to check for underflow and overflow
 		if (texturecolumn >= segloopnextlookup[segloopcachetype] ||
 			texturecolumn < segloopprevlookup[segloopcachetype] ){
-			return R_GetColumnSegment(texture, texturecolumn, segloopcachetype);
+			dc_source_segment = R_GetColumnSegment(texture, texturecolumn, segloopcachetype);
 			//todo: use self modifying code in ASM to change these segloopcachedbasecol values around here. then reset on function exit.
 
 /*
@@ -413,7 +413,7 @@ segment_t __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8
 			*/
 
 		} else {
-			return segloopcachedsegment[segloopcachetype] 
+			dc_source_segment = segloopcachedsegment[segloopcachetype] 
 				+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[segloopcachetype]) , 
 							segloopheightvalcache[segloopcachetype]);
 
@@ -426,6 +426,9 @@ segment_t __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8
 */
 		}
 	}
+
+	R_DrawColumnPrepCall(0);				
+
 
 }
 
