@@ -1403,7 +1403,6 @@ mov   di, 0		; x_offset.
 
 
 
-check_outer_loop_conditions:
 
 ; if xoffset < detailshiftitercount exit loop
 
