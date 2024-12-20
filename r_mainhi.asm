@@ -1729,11 +1729,15 @@ endp
 PROC R_GetSourceSegment_ NEAR
 PUBLIC R_GetSourceSegment_ 
 
+push  es
+push  bx
 push  cx
 push  si
 push  di
 mov   cx, ax
-mov   si, dx
+mov   word ptr cs:[SELFMODIFY_set_ax_to_tex+1], dx
+rcl   bx, 1
+and   bx, 1
 mov   dl, bl
 mov   al, bl
 cbw  
@@ -1769,6 +1773,8 @@ call dword ptr [_R_DrawColumnPrepCall]
 pop   di
 pop   si
 pop   cx
+pop   bx
+pop   es
 ret   
 label_6:
 mov   al, dl
@@ -1798,7 +1804,8 @@ mov   al, dl
 cbw  
 mov   dx, cx
 mov   bx, ax
-mov   ax, si
+SELFMODIFY_set_ax_to_tex:
+mov   ax, 01000h
 call  R_GetColumnSegment_
 jmp   label_1
 label_4:
@@ -2564,13 +2571,9 @@ SELFMODIFY_set_midtexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
 mov   ax, word ptr [bp - 2]
 
-push  es
-push  bx
-xor   bx, bx
+clc
 call  R_GetSourceSegment_
 
-pop   bx
-pop   es
 
 mid_no_pixels_to_draw:
 ; bx is already _rw_x << 1
@@ -2662,15 +2665,13 @@ SELFMODIFY_set_toptexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
 mov   ax, word ptr [bp - 2]
 ; dx already set to texture
-push  es
-push  bx
 
-xor   bx, bx
+
+clc
+
 call  R_GetSourceSegment_
 
 
-pop bx
-pop es
 
 mark_ceiling_cx:
 mov   word ptr es:[bx  + OFFSET_CEILINGCLIP], cx
@@ -2717,16 +2718,11 @@ SELFMODIFY_set_bottexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_bottexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
-push  es 
-push  bx
-; todo use carry flag instead of bx to preserve bx without explicit push..
-; todo push/pop es in the func.
-mov   bx, 1
+
+stc   
 mov   ax, word ptr [bp - 2]
 call  R_GetSourceSegment_
 
-pop   bx
-pop   es
 mark_floor_cx:
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
 done_marking_floor:
