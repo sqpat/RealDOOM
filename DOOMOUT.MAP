@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/19 03:28:32
+Created on:       24/12/19 04:00:21
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -55,7 +55,7 @@ MEMORY_TEXT            CODE           AUTO           0295:6af6       00000000
 MATH_TEXT              CODE           AUTO           0295:6af6       000007e5
 f_finale_TEXT          CODE           AUTO           0295:72e0       00000c09
 g_setup_TEXT           CODE           AUTO           0295:7ef0       000002c2
-r_setup_TEXT           CODE           AUTO           0295:81c0       00000437
+r_setup_TEXT           CODE           AUTO           0295:81c0       0000043d
 st_setup_TEXT          CODE           AUTO           0295:8600       000001fa
 hu_setup_TEXT          CODE           AUTO           0295:8800       000000a1
 p_saveg_TEXT           CODE           AUTO           0295:88b0       00000001
@@ -80,7 +80,7 @@ p_user_TEXT            CODE           AUTO           0b21:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           17a7:0000       0000098e
 r_data_TEXT            CODE           AUTO           17a7:0990       00001c9f
 R_MATH_TEXT            CODE           AUTO           17a7:2630       000001fd
-R_MAINHI_TEXT          CODE           AUTO           17a7:282e       00000ea8
+R_MAINHI_TEXT          CODE           AUTO           17a7:282e       00000ea5
 r_draw_TEXT            CODE           AUTO           17a7:36e0       00000379
 r_main_TEXT            CODE           AUTO           17a7:3a60       000001ee
 r_plane_TEXT           CODE           AUTO           17a7:3c50       00000000
@@ -979,7 +979,7 @@ Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 0295:8012      G_InitNew_
 Module: r_setup.obj(C:\REALDOOM\r_setup.c)
 0295:81c0+     R_InitTextureMapping_
-0295:84b6      R_ExecuteSetViewSize_
+0295:84bc      R_ExecuteSetViewSize_
 Module: st_setup.obj(C:\REALDOOM\st_setup.c)
 0295:8600+     STlib_initNum_
 0295:8622+     STlib_initPercent_
@@ -1657,4 +1657,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000245f0 (148976.)
 Entry point address: 1cfc:219c
-Link time: 00:00.20
+Link time: 00:00.74

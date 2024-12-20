@@ -2105,12 +2105,12 @@ xchg  ax, bx	; get argument back
 SELFMODIFY_add_rw_x_base4_to_ax:
 add   ax, 1000h
 mov   word ptr ds:[_rw_x], ax
+mov   di, ax
 SELFMODIFY_compare_ax_to_start_rw_x:
 cmp   ax, 1000h
 jl    pre_increment_values
 
-check_inner_loop_conditions:
-mov   di, word ptr ds:[_rw_x]
+
 SELFMODIFY_cmp_di_to_rw_stopx_3:
 cmp   di, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
 jl    jump_to_start_per_column_inner_loop ; todo optim out
@@ -2371,13 +2371,14 @@ and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 mov   dx, FINETANGENTINNER_SEGMENT
 mov   es, dx
-
-cmp   ax, FINE_TANGENT_MAX					; todo clean up this inline for sure.
+cmp   ax, FINE_TANGENT_MAX
+mov   bx, ax
 jb    non_subtracted_finetangent
-mov   bx, FINE_TANGENT_MAX - 1
-sub   ax, FINE_TANGENT_MAX
-sub   bx, ax
-shl   bx, 2
+; mirrored values.
+neg   bx
+add   bx, 4095
+shl   bx, 1
+shl   bx, 1
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
 neg   dx
@@ -2387,11 +2388,12 @@ jmp   finetangent_ready
 jump_to_seg_non_textured:
 jmp   seg_non_textured
 non_subtracted_finetangent:
-mov   bx, ax
-shl   bx, 2
+shl   bx, 1
+shl   bx, 1
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
 finetangent_ready:
+; calculate texture column
 SELFMODIFY_set_bx_rw_distance_lo:
 mov   bx, 01000h	; mov   bx, word ptr ds:[_rw_distance]
 SELFMODIFY_set_cx_rw_distance_hi:
@@ -2403,6 +2405,7 @@ sub   cx, ax
 SELFMODIFY_set_ax_rw_offset_hi:
 mov   ax, 01000h            ; mov   ax, word ptr ds:[_rw_offset + 2]
 sbb   ax, dx
+; store texture column
 mov   word ptr [bp - 2], ax
 
 ;	if (rw_scale.h.intbits >= 3) {
@@ -2460,10 +2463,10 @@ mov   dx, cx				; copy texture argument
 jcxz  no_mid_texture_draw
 cmp   di, si
 jl    mid_no_pixels_to_draw
-mov   word ptr ds:[_dc_yl], si
-mov   word ptr ds:[_dc_yh], di
+mov   word ptr ds:[_dc_yl], si	; todo: write these to code, doubled.
+mov   word ptr ds:[_dc_yh], di  
 SELFMODIFY_set_midtexturemid_lo:
-mov   word ptr ds:[_dc_texturemid], 01000h
+mov   word ptr ds:[_dc_texturemid], 01000h    ; todo write these into the code too?
 SELFMODIFY_set_midtexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
 mov   ax, word ptr [bp - 2]
@@ -2558,7 +2561,7 @@ cmp   cx, si
 jl    mark_ceiling_si
 cmp   di, si
 jle   mark_ceiling_cx
-mov   word ptr ds:[_dc_yl], si
+mov   word ptr ds:[_dc_yl], si ; todo: store doubled?
 mov   word ptr ds:[_dc_yh], cx
 SELFMODIFY_set_toptexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h
@@ -2615,7 +2618,7 @@ cmp   cx, di
 jg    mark_floor_di
 cmp   di, si
 jle   mark_floor_cx
-mov   word ptr ds:[_dc_yl], cx
+mov   word ptr ds:[_dc_yl], cx	; todo: store doubled?
 mov   word ptr ds:[_dc_yh], di
 SELFMODIFY_set_bottexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h

@@ -93,7 +93,7 @@ typedef fixed_t_union angle_t;
 
 // this one has no issues with mirroring 2nd half of values!
 
-#define finetangent(x) (x < 2048 ? finetangentinner[x] : -(finetangentinner[(2047-(x-2048))]) )
+#define finetangent(x) (x < 2048 ? finetangentinner[x] : -(finetangentinner[(-x+4095)]) )
 
 
 #endif
