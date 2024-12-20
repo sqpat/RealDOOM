@@ -1736,21 +1736,23 @@ PROC R_GetSourceSegment0_ NEAR
 PUBLIC R_GetSourceSegment0_ 
 
 push  es
-mov   word ptr cs:[SELFMODIFY_set_ax_to_tex0+1], dx
-; ax stores texturecolumn. todo switch to dx?
-; dx stores cachedbasecol.
-mov   dx, word ptr [_seglooptexrepeat]
+mov   es, dx
+; ax stores texturecolumn. 
+
+SELFMODIFY_set_seglooptexrepeat0:
+mov   dx, 00000h
 cmp   dx, 0
 je    non_repeating_texture0
-mov   dl, byte ptr [_seglooptexmodulo]
-test  dl, dl
+SELFMODIFY_set_seglooptexmodulo0:
+mov   dl, 0
 je   non_po2_texture_mod0
-mov   ah, byte ptr [_segloopheightvalcache]
+SELFMODIFY_set_segloopheightvalcache0:
+mov   ah, 0
 and   al, dl
 mul   ah
 add_base_segment_and_draw0:
-; todo self modify this
-add   ax, word ptr [_segloopcachedsegment]
+SELFMODIFY_add_cached_segment0:
+add   ax, 01000h
 just_do_draw0:
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
@@ -1808,10 +1810,19 @@ out_of_texture_bounds0:
 mov   dx, ax
 push  bx
 xor   bx, bx
-SELFMODIFY_set_ax_to_tex0:
-mov   ax, 01000h
+mov   ax, es
 call  R_GetColumnSegment_
 pop   bx
+
+mov   dx, word ptr [_segloopcachedsegment]
+mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
+mov   dl, byte ptr [_segloopheightvalcache]
+mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache0+1], dl
+mov   dl, byte ptr [_seglooptexmodulo]
+mov   byte ptr cs:[SELFMODIFY_set_seglooptexmodulo0+1], dl
+mov   dx, word ptr [_seglooptexrepeat]
+mov   word ptr cs:[SELFMODIFY_set_seglooptexrepeat0+1], dx
+
 jmp   just_do_draw0
 in_texture_bounds0:
 mov   dx, word ptr [_segloopcachedbasecol]
@@ -1834,33 +1845,32 @@ PROC R_GetSourceSegment1_ NEAR
 PUBLIC R_GetSourceSegment1_ 
 
 push  es
-push  bx
-push  di
 
 
-mov   word ptr cs:[SELFMODIFY_set_ax_to_tex1+1], dx
-; ax stores texturecolumn. todo switch to dx?
-; dx stores cachedbasecol.
-mov   dx, word ptr [2 + _seglooptexrepeat]
+mov   es, dx
+; ax stores texturecolumn. 
+
+SELFMODIFY_set_seglooptexrepeat1:
+mov   dx, 01000h
 cmp   dx, 0
 je    non_repeating_texture1
-mov   dl, byte ptr [1 + _seglooptexmodulo]
+SELFMODIFY_set_seglooptexmodulo1:
+mov   dl, 0
 test  dl, dl
 je   non_po2_texture_mod1
-mov   ah, byte ptr [1 + _segloopheightvalcache]
+SELFMODIFY_set_segloopheightvalcache1:
+mov   ah, 0
 and   al, dl
 mul   ah
 add_base_segment_and_draw1:
-; todo self modify this
-add   ax, word ptr [2 + _segloopcachedsegment]
+SELFMODIFY_add_cached_segment1:
+add   ax, 01000h
 just_do_draw1:
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 db 09Ah
 dw R_DRAWCOLUMNPREPCALLOFFSET 
 dw COLFUNC_FUNCTION_AREA_SEGMENT
-pop   di
-pop   bx
 pop   es
 ret
 non_po2_texture_mod1:
@@ -1912,10 +1922,20 @@ out_of_texture_bounds1:
 mov   dx, ax
 push  bx
 mov   bx, 1
-SELFMODIFY_set_ax_to_tex1:
-mov   ax, 01000h
+mov   ax, es
 call  R_GetColumnSegment_
 pop  bx
+
+mov   dx, word ptr [2 + _segloopcachedsegment]
+mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
+mov   dl, byte ptr [1 + _segloopheightvalcache]
+mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache1+1], dl
+mov   dl, byte ptr [1 + _seglooptexmodulo]
+mov   byte ptr cs:[SELFMODIFY_set_seglooptexmodulo1+1], dl
+mov   dx, word ptr [2 + _seglooptexrepeat]
+mov   word ptr cs:[SELFMODIFY_set_seglooptexrepeat1+1], dx
+
+
 jmp   just_do_draw1
 in_texture_bounds1:
 mov   dx, word ptr [2 + _segloopcachedbasecol]
@@ -2381,6 +2401,9 @@ mov   word ptr ds:[_segloopnextlookup+2], ax
 inc   ax
 mov   word ptr ds:[_seglooptexrepeat], ax
 mov   word ptr ds:[_seglooptexrepeat+2], ax
+mov   word ptr cs:[SELFMODIFY_set_seglooptexrepeat0+1], ax
+mov   word ptr cs:[SELFMODIFY_set_seglooptexrepeat1+1], ax
+
 LEAVE_MACRO 
 pop   di
 pop   si
