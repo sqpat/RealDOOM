@@ -3424,23 +3424,19 @@ jne       label_34
 cmp       si, word ptr [bp - 03eh]
 jbe       label_34
 label_33:
-mov       bx, OFFSET _rw_scale
 mov       dx, word ptr [bp - 03ch]
-mov       ax, word ptr [bx]
-mov       cx, word ptr [bx + 2]
-mov       bx, ax
+les       bx, dword ptr ds:[_rw_scale]
+mov       cx, es
 mov       ax, word ptr [bp - 03eh]
 call FixedMul_
-mov       bx, OFFSET _centeryfrac_shiftright4
-mov       cx, word ptr [bx]
+les       cx, dword ptr ds:[_centeryfrac_shiftright4]
 sub       cx, ax
-mov       bx, word ptr [bx + 2]
+mov       bx, es
 sbb       bx, dx
 mov       dx, bx
-mov       bx, OFFSET _pixhigh
-mov       word ptr [bx], cx
+mov       word ptr ds:[_pixhigh], cx
 mov       ax, word ptr [bp - 01eh]
-mov       word ptr [bx + 2], dx
+mov       word ptr ds:[_pixhigh + 2], dx
 mov       bx, word ptr [bp - 03eh]
 mov       cx, word ptr [bp - 03ch]
 mov       dx, word ptr [bp - 01ch]
@@ -3449,11 +3445,10 @@ mov       bx, ax
 mov       ax, dx
 neg       ax
 mov       dx, bx
-mov       bx, OFFSET _pixhighstep
 neg       dx
 sbb       ax, 0
-mov       word ptr [bx], dx
-mov       word ptr [bx + 2], ax
+mov       word ptr ds:[_pixhighstep], dx
+mov       word ptr ds:[_pixhighstep + 2], ax
 label_34:
 mov       ax, word ptr [bp - 038h]
 cmp       ax, word ptr [bp - 034h]
@@ -3463,23 +3458,19 @@ mov       ax, word ptr [bp - 03ah]
 cmp       ax, word ptr [bp - 036h]
 jbe       label_30
 label_35:
-mov       bx, OFFSET _rw_scale
 mov       dx, word ptr [bp - 038h]
-mov       ax, word ptr [bx]
-mov       cx, word ptr [bx + 2]
-mov       bx, ax
+les       bx, dword ptr ds:[_rw_scale]
+mov       cx, es
 mov       ax, word ptr [bp - 03ah]
 call FixedMul_
-mov       bx, OFFSET _centeryfrac_shiftright4
-mov       cx, word ptr [bx]
+les       cx, dword ptr ds:[_centeryfrac_shiftright4] 
 sub       cx, ax
-mov       bx, word ptr [bx + 2]
+mov       bx, es
 sbb       bx, dx
 mov       dx, bx
-mov       bx, OFFSET _pixlow
-mov       word ptr [bx], cx
+mov       word ptr ds:[_pixlow], cx
 mov       ax, word ptr [bp - 01eh]
-mov       word ptr [bx + 2], dx
+mov       word ptr ds:[_pixlow + 2], dx
 mov       bx, word ptr [bp - 03ah]
 mov       cx, word ptr [bp - 038h]
 mov       dx, word ptr [bp - 01ch]
@@ -3488,11 +3479,10 @@ mov       bx, ax
 mov       ax, dx
 neg       ax
 mov       dx, bx
-mov       bx, OFFSET _pixlowstep
 neg       dx
 sbb       ax, 0
-mov       word ptr [bx], dx
-mov       word ptr [bx + 2], ax
+mov       word ptr ds:[_pixlowstep], dx
+mov       word ptr ds:[_pixlowstep + 2], ax
 label_30:
 mov       ax, word ptr [bp - 01eh]
 mov       dx, word ptr [bp - 01ch]
@@ -3588,29 +3578,27 @@ or        byte ptr es:[si + 01ch], SIL_TOP
 les       si, dword ptr [bx]
 mov       word ptr es:[si + 014h], MINSHORT
 label_58:
-mov       bx, OFFSET _maskedtexture
-cmp       byte ptr [bx], 0
+
+cmp       byte ptr ds:[_maskedtexture], 0
 je        label_59
-mov       bx, OFFSET _ds_p
-les       si, dword ptr [bx]
+les       si, dword ptr ds:[_ds_p]
 test      byte ptr es:[si + 01ch], SIL_BOTTOM
 jne       label_59
 or        byte ptr es:[si + 01ch], SIL_BOTTOM
 les       si, dword ptr [bx]
 mov       word ptr es:[si + 012h], MAXSHORT
 label_59:
-mov       bx, OFFSET _ds_p
-add       word ptr [bx], SIZEOF_DRAWSEG_T
-leave     
+add       word ptr ds:[_ds_p], SIZEOF_DRAWSEG_T
+LEAVE_MACRO
 pop       di
 pop       si
 pop       cx
 pop       bx
 ret       
 label_3:
-mov       bx, OFFSET _rw_distance
-mov       word ptr [bx], 0
-mov       word ptr [bx + 2], 0
+xor       ax, ax
+mov       word ptr ds:[_rw_distance], ax
+mov       word ptr ds:[_rw_distance + 2], ax
 jmp       label_49
 label_5:
 ; ds_p is es:di
@@ -3641,58 +3629,47 @@ mov       word ptr es:[bx + 016h], cx
 mov       byte ptr es:[bx + 01ch], cl ; SIL_NONE
 cmp       ax, word ptr [bp - 010h]
 jl        label_51
-jmp       label_52
+cmp       ax, word ptr ds:[_viewz_shortheight]
+jle       label_63
+; bx ok
+mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
+mov       word ptr es:[bx + 012h], MAXSHORT
+jmp       label_63
 label_51:
+; bx ok
 mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
 mov       word ptr [bp - 0eh], bx
 mov       cx, word ptr [bp - 010h]
 mov       word ptr es:[bx + 012h], cx
 label_63:
+; bx ok
 cmp       dx, word ptr [bp - 012h]
 jg        label_53
-jmp       label_54
+cmp       dx, word ptr ds:[_viewz_shortheight]
+jge       label_62
+label_84:
+or        byte ptr es:[bx + 01ch], SIL_TOP
+mov       word ptr es:[bx + 014h], MINSHORT
+jmp       label_62
 label_53:
 ; todo: is bx _ds_p in all paths?
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
 or        byte ptr es:[bx + 01ch], SIL_TOP
-mov       bx, OFFSET _ds_p
-mov       cx, word ptr [bx]
-mov       word ptr [bp - 0eh], cx
-mov       es, word ptr [bx + 2]
-mov       bx, word ptr [bp - 0eh]
+mov       word ptr [bp - 0eh], bx
 mov       cx, word ptr [bp - 012h]
 mov       word ptr es:[bx + 014h], cx
 label_62:
+; bx ok
 cmp       dx, word ptr [bp - 010h]
 jg        label_55
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
 mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
 mov       word ptr es:[bx + 012h], MAXSHORT
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
 or        byte ptr es:[bx + 01ch], SIL_BOTTOM
 label_55:
+; bx ok
 cmp       ax, word ptr [bp - 012h]
 jl        label_56
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
 mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
 mov       word ptr es:[bx + 014h], MINSHORT
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
 or        byte ptr es:[bx + 01ch], SIL_TOP
 label_56:
 mov       bx, dx
@@ -3703,10 +3680,10 @@ xor       bh, dh
 and       bl, 7
 shl       bx, 13
 mov       word ptr [bp - 03eh], bx
-mov       bx, OFFSET _viewz
-mov       cx, word ptr [bx]
+
+mov       cx, word ptr ds:[_viewz]
 sub       word ptr [bp - 03eh], cx
-mov       bx, word ptr [bx + 2]
+mov       bx, word ptr ds:[_viewz + 2]
 sbb       word ptr [bp - 03ch], bx
 mov       bx, ax
 sar       bx, 3
@@ -3716,14 +3693,13 @@ xor       bh, ah
 and       bl, 7
 shl       bx, 13
 mov       word ptr [bp - 03ah], bx
-mov       bx, OFFSET _viewz
-mov       cx, word ptr [bx]
+
+mov       cx, word ptr ds:[_viewz]
 sub       word ptr [bp - 03ah], cx
-mov       bx, word ptr [bx + 2]
+mov       bx, word ptr ds:[_viewz + 2]
 sbb       word ptr [bp - 038h], bx
-mov       bx, offset _skyflatnum
 mov       cl, byte ptr [bp - 0ch]
-cmp       cl, byte ptr [bx]
+cmp       cl, byte ptr ds:[_skyflatnum]
 jne       label_57
 mov       cl, byte ptr [bp - 0ah]
 cmp       cl, byte ptr [bx]
@@ -3739,8 +3715,7 @@ cmp       bx, word ptr [bp - 036h]
 jne       label_60
 jmp       label_64
 label_60:
-mov       bx, OFFSET _markfloor
-mov       byte ptr [bx], 1
+mov       byte ptr ds:[_markfloor], 1
 label_79:
 cmp       di, word ptr [bp - 03ch]
 jne       label_65
@@ -3748,18 +3723,16 @@ cmp       si, word ptr [bp - 03eh]
 jne       label_65
 jmp       label_77
 label_65:
-mov       bx, OFFSET _markceiling
-mov       byte ptr [bx], 1
+mov       byte ptr ds:[_markceiling], 1
 label_80:
 cmp       dx, word ptr [bp - 010h]
 jle       label_66
 jmp       label_81
 label_66:
 mov       bx, OFFSET _markfloor
-mov       byte ptr [bx], 1
-mov       al, byte ptr [bx]
-mov       bx, OFFSET _markceiling
-mov       byte ptr [bx], al
+mov       al, 1
+mov       byte ptr ds:[_markfloor], al
+mov       byte ptr ds:[_markceiling], al
 label_67:
 mov       ax, word ptr [bp - 03ch]
 cmp       di, ax
@@ -3779,9 +3752,8 @@ test      byte ptr [bp - 024h], 8
 jne       label_69
 jmp       label_70
 label_69:
-mov       bx, OFFSET _rw_toptexturemid
-mov       word ptr [bx], si
-mov       word ptr [bx + 2], di
+mov       word ptr ds:[_rw_toptexturemid], si
+mov       word ptr ds:[_rw_toptexturemid + 2], di
 label_47:
 mov       ax, word ptr [bp - 038h]
 cmp       ax, word ptr [bp - 034h]
@@ -3800,20 +3772,13 @@ mov       ax, word ptr es:[bx]
 mov       word ptr ds:[_bottomtexture], ax
 test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
 je        label_73
-mov       bx, OFFSET _rw_bottomtexturemid
-mov       word ptr [bx], si
-mov       word ptr [bx + 2], di
+mov       word ptr ds:[_rw_bottomtexturemid], si
+mov       word ptr ds:[_rw_bottomtexturemid+2], di
 label_72:
 mov       bx, word ptr [bp - 028h]
-mov       dx, OFFSET _rw_toptexturemid + 2
 mov       ax, word ptr [bx]
-mov       bx, dx
-add       word ptr [bx], ax
-mov       bx, word ptr [bp - 028h]
-mov       dx, OFFSET _rw_bottomtexturemid + 2
-mov       ax, word ptr [bx]
-mov       bx, dx
-add       word ptr [bx], ax
+add       word ptr ds:[_rw_toptexturemid + 2], ax
+add       word ptr ds:[_rw_bottomtexturemid+2], ax
 les       bx, dword ptr [bp - 016h]
 cmp       word ptr es:[bx + 4], 0
 jne       label_82
@@ -3846,38 +3811,12 @@ mov       bx, OFFSET _lastopening
 add       word ptr [bx], ax
 jmp       label_74
 label_73:
-mov       bx, OFFSET _rw_bottomtexturemid
 mov       ax, word ptr [bp - 03ah]
-mov       word ptr [bx], ax
+mov       word ptr ds:[_rw_bottomtexturemid], ax
 mov       ax, word ptr [bp - 038h]
-mov       word ptr [bx + 2], ax
+mov       word ptr ds:[_rw_bottomtexturemid + 2], ax
 jmp       label_72
-label_52:
-cmp       ax, word ptr ds:[_viewz_shortheight]
-jg        label_83
-jmp       label_63
-label_83:
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
-mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
-mov       word ptr es:[bx + 012h], MAXSHORT
-jmp       label_63
-label_54:
-mov       bx, OFFSET _viewz_shortheight
-cmp       dx, word ptr [bx]
-jl        label_84
-jmp       label_62
-label_84:
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
-or        byte ptr es:[bx + 01ch], SIL_TOP
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
-mov       word ptr es:[bx + 014h], MINSHORT
-jmp       label_62
+
 label_64:
 mov       bl, byte ptr [bp - 4]
 cmp       bl, byte ptr [bp - 6]
@@ -3888,8 +3827,7 @@ label_61:
 mov       bl, byte ptr [bp - 2]
 cmp       bl, byte ptr [bp - 8]
 jne       label_78
-mov       bx, OFFSET _markfloor
-mov       byte ptr [bx], 0
+mov       byte ptr ds:[_markfloor], 0
 jmp       label_79
 label_77:
 mov       bl, byte ptr [bp - 0ah]
@@ -3901,8 +3839,7 @@ label_85:
 mov       bl, byte ptr [bp - 2]
 cmp       bl, byte ptr [bp - 8]
 jne       label_86
-mov       bx, OFFSET _markceiling
-mov       byte ptr [bx], 0
+mov       byte ptr ds:[_markceiling], 0
 jmp       label_80
 label_81:
 cmp       ax, word ptr [bp - 012h]
@@ -3911,31 +3848,25 @@ jmp       label_66
 label_87:
 jmp       label_67
 label_70:
-mov       bx, OFFSET _rw_toptexturemid + 2
 mov       ax, dx
 xor       dh, dh
 sar       ax, 3
 and       dl, 7
-mov       word ptr [bx], ax
-mov       bx, OFFSET _rw_toptexturemid
+mov       word ptr ds:[_rw_toptexturemid + 2], ax
 shl       dx, 13
-mov       word ptr [bx], dx
+mov       word ptr ds:[_rw_toptexturemid], dx
 les       bx, dword ptr [bp - 016h]
 mov       ax, TEXTUREHEIGHTS_SEGMENT
 mov       bx, word ptr es:[bx]
 mov       es, ax
 mov       al, byte ptr es:[bx]
 xor       ah, ah
-mov       bx, OFFSET _rw_toptexturemid + 2
 inc       ax
-add       word ptr [bx], ax
-mov       bx, OFFSET _viewz
-mov       cx, OFFSET _rw_toptexturemid
-mov       dx, word ptr [bx]
-mov       ax, word ptr [bx + 2]
-mov       bx, cx
-sub       word ptr [bx], dx
-sbb       word ptr [bx + 2], ax
+add       word ptr ds:[_rw_toptexturemid + 2], ax
+mov       dx, word ptr ds:[_viewz]
+mov       ax, word ptr ds:[_viewz + 2]
+sub       word ptr ds:[_rw_toptexturemid], dx
+sbb       word ptr ds:[_rw_toptexturemid + 2], ax
 jmp       label_47
 label_13:
 mov       bx, word ptr [bp - 020h]
