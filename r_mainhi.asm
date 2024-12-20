@@ -1738,36 +1738,27 @@ mov   cx, ax
 mov   word ptr cs:[SELFMODIFY_set_ax_to_tex+1], dx
 rcl   bx, 1
 and   bx, 1
-mov   dl, bl
-mov   al, bl
-cbw  
-mov   bx, ax
-add   bx, ax
-mov   di, ax
-cmp   word ptr [bx + _seglooptexrepeat], 0
+mov   di, bx
+
+cmp   word ptr [bx + di + _seglooptexrepeat], 0
 je    label_7
-mov   al, byte ptr [di + _seglooptexmodulo]
+mov   al, byte ptr [bx + _seglooptexmodulo]
 test  al, al
 jne   label_9
-mov   di, word ptr [bx + _seglooptexrepeat]
+mov   si, word ptr [bx + di + _seglooptexrepeat]
 label_10:
-mov   al, dl
-cbw  
-mov   bx, ax
-add   bx, ax
-cmp   cx, word ptr [bx + _segloopcachedbasecol]
+cmp   cx, word ptr [bx + di +_segloopcachedbasecol]
 jge   label_6
-sub   word ptr [bx + _segloopcachedbasecol], di
+sub   word ptr [bx + di + _segloopcachedbasecol], si
 jmp   label_10
 label_9:
-mov   ah, byte ptr [di + _segloopheightvalcache]
+mov   ah, byte ptr [bx + _segloopheightvalcache]
 and   al, cl
 mul   ah
 label_2:
-add   ax, word ptr [bx + _segloopcachedsegment]
+add   ax, word ptr [bx + di + _segloopcachedsegment]
 label_1:
-mov   bx, OFFSET _dc_source_segment
-mov   word ptr [bx], ax
+mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 call dword ptr [_R_DrawColumnPrepCall]
 pop   di
@@ -1777,41 +1768,35 @@ pop   bx
 pop   es
 ret   
 label_6:
-mov   al, dl
-cbw  
-mov   bx, ax
-add   bx, ax
-mov   si, ax
-mov   ax, word ptr [bx + _segloopcachedbasecol]
-add   ax, di
+mov   ax, word ptr [bx + di + _segloopcachedbasecol]
+add   ax, si
 cmp   cx, ax
 jl    label_5
-mov   word ptr [bx + _segloopcachedbasecol], ax
+mov   word ptr [bx + di + _segloopcachedbasecol], ax
 jmp   label_6
 label_5:
-mov   ah, byte ptr [si + _segloopheightvalcache]
+mov   ah, byte ptr [bx + _segloopheightvalcache]
 mov   al, cl
-sub   al, byte ptr [bx + _segloopcachedbasecol]
+sub   al, byte ptr [bx + di + _segloopcachedbasecol]
 mul   ah
 jmp   label_2
 label_7:
-cmp   cx, word ptr [bx + _segloopnextlookup]
+cmp   cx, word ptr [bx + di + _segloopnextlookup]
 jge   label_3
-cmp   cx, word ptr [bx + _segloopprevlookup]
+cmp   cx, word ptr [bx + di + _segloopprevlookup]
 jge   label_4
 label_3:
-mov   al, dl
-cbw  
+
 mov   dx, cx
-mov   bx, ax
+
 SELFMODIFY_set_ax_to_tex:
 mov   ax, 01000h
 call  R_GetColumnSegment_
 jmp   label_1
 label_4:
-mov   ah, byte ptr [di + _segloopheightvalcache]
+mov   ah, byte ptr [bx + _segloopheightvalcache]
 mov   al, cl
-sub   al, byte ptr [bx + _segloopcachedbasecol]
+sub   al, byte ptr [bx + di + _segloopcachedbasecol]
 mul   ah
 jmp   label_2
 
