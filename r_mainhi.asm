@@ -1726,6 +1726,12 @@ endp
 
 ;R_GetSourceSegment_
 
+;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
+
+; AX is texturecolumn
+; DX is texture
+; carry flag is 1 or 0 for the segloopcachetype
+
 PROC R_GetSourceSegment_ NEAR
 PUBLIC R_GetSourceSegment_ 
 
@@ -1735,27 +1741,24 @@ push  cx
 push  si
 push  di
 mov   cx, ax
-mov   word ptr cs:[SELFMODIFY_set_ax_to_tex+1], dx
-rcl   bx, 1
+rcl   bx, 1	 ; bx gets carry flag
 and   bx, 1
-mov   di, bx
-
-cmp   word ptr [bx + di + _seglooptexrepeat], 0
-je    label_7
-mov   al, byte ptr [bx + _seglooptexmodulo]
-test  al, al
-jne   label_9
+mov   di, bx  ; use bx + di for word ptr
+mov   word ptr cs:[SELFMODIFY_set_ax_to_tex+1], dx
+; cx stores texturecolumn. todo switch to dx?
+; dx stores cachedbasecol.
+mov   dx, word ptr [bx + di + _segloopcachedbasecol]
 mov   si, word ptr [bx + di + _seglooptexrepeat]
-label_10:
-cmp   cx, word ptr [bx + di +_segloopcachedbasecol]
-jge   label_6
-sub   word ptr [bx + di + _segloopcachedbasecol], si
-jmp   label_10
-label_9:
+cmp   si, 0
+je    non_repeating_texture
+mov   al, byte ptr [di + _seglooptexmodulo]
+test  al, al
+je   non_po2_texture_mod
 mov   ah, byte ptr [bx + _segloopheightvalcache]
 and   al, cl
 mul   ah
-label_2:
+add_base_segment_and_draw:
+; todo self modify this
 add   ax, word ptr [bx + di + _segloopcachedsegment]
 label_1:
 mov   word ptr ds:[_dc_source_segment], ax
@@ -1766,41 +1769,65 @@ pop   si
 pop   cx
 pop   bx
 pop   es
-ret   
-label_6:
-mov   ax, word ptr [bx + di + _segloopcachedbasecol]
-add   ax, si
-cmp   cx, ax
-jl    label_5
-mov   word ptr [bx + di + _segloopcachedbasecol], ax
-jmp   label_6
-label_5:
+ret
+non_po2_texture_mod:
+; si stores tex repeat
+cmp   cx, dx
+jge   done_subbing_modulo
+sub   dx, si
+continue_subbing_modulo:
+cmp   cx, dx
+jge   record_subbed_modulo
+sub   dx, si
+jmp   continue_subbing_modulo
+record_subbed_modulo:
+; at least one write was done. write back.
+mov   word ptr [bx + di + _segloopcachedbasecol], dx
+
+done_subbing_modulo:
+
+add   dx, si
+cmp   cx, dx
+jl    done_adding_modulo
+continue_adding_modulo:
+add   dx, si
+cmp   cx, dx
+jl    record_added_modulo
+jmp   continue_adding_modulo
+record_added_modulo:
+; gross
+sub   dx, si
+mov   word ptr [bx + di + _segloopcachedbasecol], dx
+add   dx, si
+
+done_adding_modulo:
+sub   dx, si
+
 mov   ah, byte ptr [bx + _segloopheightvalcache]
 mov   al, cl
-sub   al, byte ptr [bx + di + _segloopcachedbasecol]
+sub   al, dl
 mul   ah
-jmp   label_2
-label_7:
+jmp   add_base_segment_and_draw
+non_repeating_texture:
 cmp   cx, word ptr [bx + di + _segloopnextlookup]
-jge   label_3
+jge   out_of_texture_bounds
 cmp   cx, word ptr [bx + di + _segloopprevlookup]
-jge   label_4
-label_3:
-
+jge   in_texture_bounds
+out_of_texture_bounds:
 mov   dx, cx
-
 SELFMODIFY_set_ax_to_tex:
 mov   ax, 01000h
 call  R_GetColumnSegment_
 jmp   label_1
-label_4:
+in_texture_bounds:
 mov   ah, byte ptr [bx + _segloopheightvalcache]
 mov   al, cl
-sub   al, byte ptr [bx + di + _segloopcachedbasecol]
+sub   al, dl
 mul   ah
-jmp   label_2
+jmp   add_base_segment_and_draw
 
 ENDP
+
 
 ; 1 SHR 12
 HEIGHTUNIT = 01000h
