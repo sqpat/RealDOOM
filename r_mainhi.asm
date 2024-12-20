@@ -3210,6 +3210,7 @@ mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
 mov       word ptr es:[bx + 012h], MAXSHORT
 mov       word ptr es:[bx + 014h], MINSHORT
 label_74:
+; todo use words
 mov       al, byte ptr ds:[_midtexture]
 or        al, byte ptr ds:[_toptexture]
 or        al, byte ptr ds:[_bottomtexture]
@@ -3285,7 +3286,7 @@ add       dx, ax
 mov       ax, word ptr [bp - 022h]
 cmp       ax, word ptr [bp - 02ch]
 je        label_15
-label_16:
+
 mov       ax, word ptr [bp - 026h]
 cmp       ax, word ptr [bp - 02eh]
 jne       label_44
@@ -3729,7 +3730,15 @@ jne       label_60
 mov       bx, word ptr [bp - 03ah]
 cmp       bx, word ptr [bp - 036h]
 jne       label_60
-jmp       label_64
+
+mov       bl, byte ptr [bp - 4]
+cmp       bl, byte ptr [bp - 6]
+jne       label_60
+mov       bl, byte ptr [bp - 2]
+cmp       bl, byte ptr [bp - 8]
+jne       label_60
+mov       byte ptr ds:[_markfloor], 0
+jmp       label_79
 label_60:
 mov       byte ptr ds:[_markfloor], 1
 label_79:
@@ -3737,7 +3746,16 @@ cmp       di, word ptr [bp - 03ch]
 jne       label_65
 cmp       si, word ptr [bp - 03eh]
 jne       label_65
-jmp       label_77
+
+mov       bl, byte ptr [bp - 0ah]
+cmp       bl, byte ptr [bp - 0ch]
+jne       label_65
+label_85:
+mov       bl, byte ptr [bp - 2]
+cmp       bl, byte ptr [bp - 8]
+jne       label_65
+mov       byte ptr ds:[_markceiling], 0
+jmp       label_80
 label_65:
 mov       byte ptr ds:[_markceiling], 1
 label_80:
@@ -3745,7 +3763,6 @@ cmp       dx, word ptr [bp - 010h]
 jle       label_66
 jmp       label_81
 label_66:
-mov       bx, OFFSET _markfloor
 mov       al, 1
 mov       byte ptr ds:[_markfloor], al
 mov       byte ptr ds:[_markceiling], al
@@ -3822,31 +3839,17 @@ cmp       word ptr es:[bx + 4], 0
 jne       label_82
 jmp       label_74
 label_82:
-mov       bx, OFFSET _maskedtexture
-mov       byte ptr [bx], 1
-mov       bx, OFFSET _lastopening
-mov       dx, OFFSET _rw_x
-mov       ax, word ptr [bx]
-mov       bx, dx
-sub       ax, word ptr [bx]
-mov       bx, OFFSET _ds_p
-les       dx, dword ptr [bx]
-mov       bx, dx
+mov       byte ptr ds:[_maskedtexture], 1
+mov       ax, word ptr ds:[_lastopening]
+sub       ax, word ptr ds:[_rw_x]
+les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], ax
-mov       bx, OFFSET _ds_p
-les       ax, dword ptr [bx]
-mov       bx, ax
 mov       ax, word ptr es:[bx + 01ah]
-mov       bx, OFFSET _maskedtexturecol
 add       ax, ax
-mov       word ptr [bx], ax
-mov       bx, OFFSET _rw_stopx
-mov       dx, OFFSET _rw_x
-mov       ax, word ptr [bx]
-mov       bx, dx
-sub       ax, word ptr [bx]
-mov       bx, OFFSET _lastopening
-add       word ptr [bx], ax
+mov       word ptr ds:[_maskedtexturecol], ax
+mov       ax, word ptr ds:[_rw_stopx]
+sub       ax, word ptr ds:[_rw_x]
+add       word ptr ds:[_lastopening], ax
 jmp       label_74
 label_73:
 mov       ax, word ptr [bp - 03ah]
@@ -3855,36 +3858,14 @@ mov       ax, word ptr [bp - 038h]
 mov       word ptr ds:[_rw_bottomtexturemid + 2], ax
 jmp       label_72
 
-label_64:
-mov       bl, byte ptr [bp - 4]
-cmp       bl, byte ptr [bp - 6]
-je        label_61
-label_78:
-jmp       label_60
-label_61:
-mov       bl, byte ptr [bp - 2]
-cmp       bl, byte ptr [bp - 8]
-jne       label_78
-mov       byte ptr ds:[_markfloor], 0
-jmp       label_79
-label_77:
-mov       bl, byte ptr [bp - 0ah]
-cmp       bl, byte ptr [bp - 0ch]
-je        label_85
-label_86:
-jmp       label_65
-label_85:
-mov       bl, byte ptr [bp - 2]
-cmp       bl, byte ptr [bp - 8]
-jne       label_86
-mov       byte ptr ds:[_markceiling], 0
-jmp       label_80
 label_81:
 cmp       ax, word ptr [bp - 012h]
 jl        label_87
 jmp       label_66
 label_87:
 jmp       label_67
+
+
 
 
 
