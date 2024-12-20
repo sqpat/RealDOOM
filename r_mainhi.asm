@@ -1724,40 +1724,136 @@ endp
 
 
 
-;R_GetSourceSegment_
+;R_GetSourceSegment0_
 
 ;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
 
 ; AX is texturecolumn
 ; DX is texture
-; carry flag is 1 or 0 for the segloopcachetype
+; segloopcachetype is 0
 
-PROC R_GetSourceSegment_ NEAR
-PUBLIC R_GetSourceSegment_ 
+PROC R_GetSourceSegment0_ NEAR
+PUBLIC R_GetSourceSegment0_ 
+
+push  es
+mov   word ptr cs:[SELFMODIFY_set_ax_to_tex0+1], dx
+; ax stores texturecolumn. todo switch to dx?
+; dx stores cachedbasecol.
+mov   dx, word ptr [_seglooptexrepeat]
+cmp   dx, 0
+je    non_repeating_texture0
+mov   dl, byte ptr [_seglooptexmodulo]
+test  dl, dl
+je   non_po2_texture_mod0
+mov   ah, byte ptr [_segloopheightvalcache]
+and   al, dl
+mul   ah
+add_base_segment_and_draw0:
+; todo self modify this
+add   ax, word ptr [_segloopcachedsegment]
+just_do_draw0:
+mov   word ptr ds:[_dc_source_segment], ax
+xor   ax, ax
+db 09Ah
+dw R_DRAWCOLUMNPREPCALLOFFSET 
+dw COLFUNC_FUNCTION_AREA_SEGMENT
+pop   es
+ret
+non_po2_texture_mod0:
+; si stores tex repeat
+push  si
+mov   si, dx
+mov   dx, word ptr [_segloopcachedbasecol]
+cmp   ax, dx
+jge   done_subbing_modulo0
+sub   dx, si
+continue_subbing_modulo0:
+cmp   ax, dx
+jge   record_subbed_modulo0
+sub   dx, si
+jmp   continue_subbing_modulo0
+record_subbed_modulo0:
+; at least one write was done. write back.
+mov   word ptr [_segloopcachedbasecol], dx
+
+done_subbing_modulo0:
+
+add   dx, si
+cmp   ax, dx
+jl    done_adding_modulo0
+continue_adding_modulo0:
+add   dx, si
+cmp   ax, dx
+jl    record_added_modulo0
+jmp   continue_adding_modulo0
+record_added_modulo0:
+; gross
+sub   dx, si
+mov   word ptr [_segloopcachedbasecol], dx
+add   dx, si
+
+done_adding_modulo0:
+sub   dx, si
+pop   si
+mov   ah, byte ptr [_segloopheightvalcache]
+sub   al, dl
+mul   ah
+jmp   add_base_segment_and_draw0
+non_repeating_texture0:
+cmp   ax, word ptr [_segloopnextlookup]
+jge   out_of_texture_bounds0
+cmp   ax, word ptr [_segloopprevlookup]
+jge   in_texture_bounds0
+out_of_texture_bounds0:
+mov   dx, ax
+push  bx
+xor   bx, bx
+SELFMODIFY_set_ax_to_tex0:
+mov   ax, 01000h
+call  R_GetColumnSegment_
+pop   bx
+jmp   just_do_draw0
+in_texture_bounds0:
+mov   dx, word ptr [_segloopcachedbasecol]
+mov   ah, byte ptr [_segloopheightvalcache]
+sub   al, dl
+mul   ah
+jmp   add_base_segment_and_draw0
+
+ENDP
+
+;R_GetSourceSegment1_
+
+;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
+
+; AX is texturecolumn
+; DX is texture
+; segloopcachetype is 1
+
+PROC R_GetSourceSegment1_ NEAR
+PUBLIC R_GetSourceSegment1_ 
 
 push  es
 push  bx
 push  di
 
-rcl   bx, 1	 ; bx gets carry flag
-and   bx, 1
-mov   di, bx  ; use bx + di for word ptr
-mov   word ptr cs:[SELFMODIFY_set_ax_to_tex+1], dx
+
+mov   word ptr cs:[SELFMODIFY_set_ax_to_tex1+1], dx
 ; ax stores texturecolumn. todo switch to dx?
 ; dx stores cachedbasecol.
-mov   dx, word ptr [bx + di + _seglooptexrepeat]
+mov   dx, word ptr [2 + _seglooptexrepeat]
 cmp   dx, 0
-je    non_repeating_texture
-mov   dl, byte ptr [bx + _seglooptexmodulo]
+je    non_repeating_texture1
+mov   dl, byte ptr [1 + _seglooptexmodulo]
 test  dl, dl
-je   non_po2_texture_mod
-mov   ah, byte ptr [bx + _segloopheightvalcache]
+je   non_po2_texture_mod1
+mov   ah, byte ptr [1 + _segloopheightvalcache]
 and   al, dl
 mul   ah
-add_base_segment_and_draw:
+add_base_segment_and_draw1:
 ; todo self modify this
-add   ax, word ptr [bx + di + _segloopcachedsegment]
-just_do_draw:
+add   ax, word ptr [2 + _segloopcachedsegment]
+just_do_draw1:
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
 db 09Ah
@@ -1767,63 +1863,66 @@ pop   di
 pop   bx
 pop   es
 ret
-non_po2_texture_mod:
+non_po2_texture_mod1:
 ; si stores tex repeat
 push  si
 mov   si, dx
-mov   dx, word ptr [bx + di + _segloopcachedbasecol]
+mov   dx, word ptr [2 + _segloopcachedbasecol]
 cmp   ax, dx
-jge   done_subbing_modulo
+jge   done_subbing_modulo1
 sub   dx, si
-continue_subbing_modulo:
+continue_subbing_modulo1:
 cmp   ax, dx
-jge   record_subbed_modulo
+jge   record_subbed_modulo1
 sub   dx, si
-jmp   continue_subbing_modulo
-record_subbed_modulo:
+jmp   continue_subbing_modulo1
+record_subbed_modulo1:
 ; at least one write was done. write back.
-mov   word ptr [bx + di + _segloopcachedbasecol], dx
+mov   word ptr [2 + _segloopcachedbasecol], dx
 
-done_subbing_modulo:
+done_subbing_modulo1:
 
 add   dx, si
 cmp   ax, dx
-jl    done_adding_modulo
-continue_adding_modulo:
+jl    done_adding_modulo1
+continue_adding_modulo1:
 add   dx, si
 cmp   ax, dx
-jl    record_added_modulo
-jmp   continue_adding_modulo
-record_added_modulo:
+jl    record_added_modulo1
+jmp   continue_adding_modulo1
+record_added_modulo1:
 ; gross
 sub   dx, si
-mov   word ptr [bx + di + _segloopcachedbasecol], dx
+mov   word ptr [2 + _segloopcachedbasecol], dx
 add   dx, si
 
-done_adding_modulo:
+done_adding_modulo1:
 sub   dx, si
 pop   si
-mov   ah, byte ptr [bx + _segloopheightvalcache]
+mov   ah, byte ptr [1 + _segloopheightvalcache]
 sub   al, dl
 mul   ah
-jmp   add_base_segment_and_draw
-non_repeating_texture:
-cmp   ax, word ptr [bx + di + _segloopnextlookup]
-jge   out_of_texture_bounds
-cmp   ax, word ptr [bx + di + _segloopprevlookup]
-jge   in_texture_bounds
-out_of_texture_bounds:
+jmp   add_base_segment_and_draw1
+non_repeating_texture1:
+cmp   ax, word ptr [2 + _segloopnextlookup]
+jge   out_of_texture_bounds1
+cmp   ax, word ptr [2 + _segloopprevlookup]
+jge   in_texture_bounds1
+out_of_texture_bounds1:
 mov   dx, ax
-SELFMODIFY_set_ax_to_tex:
+push  bx
+mov   bx, 1
+SELFMODIFY_set_ax_to_tex1:
 mov   ax, 01000h
 call  R_GetColumnSegment_
-jmp   just_do_draw
-in_texture_bounds:
-mov   dx, word ptr [bx + di + _segloopcachedbasecol]
-mov   ah, byte ptr [bx + _segloopheightvalcache]
+pop  bx
+jmp   just_do_draw1
+in_texture_bounds1:
+mov   dx, word ptr [2 + _segloopcachedbasecol]
+mov   ah, byte ptr [1 + _segloopheightvalcache]
 sub   al, dl
 mul   ah
-jmp   add_base_segment_and_draw
+jmp   add_base_segment_and_draw1
 
 ENDP
 
@@ -2582,8 +2681,8 @@ SELFMODIFY_set_midtexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
 mov   ax, word ptr [bp - 2]
 
-clc
-call  R_GetSourceSegment_
+
+call  R_GetSourceSegment0_
 
 
 mid_no_pixels_to_draw:
@@ -2678,9 +2777,7 @@ mov   ax, word ptr [bp - 2]
 ; dx already set to texture
 
 
-clc
-
-call  R_GetSourceSegment_
+call  R_GetSourceSegment0_
 
 
 
@@ -2730,9 +2827,8 @@ mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_bottexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
 
-stc   
 mov   ax, word ptr [bp - 2]
-call  R_GetSourceSegment_
+call  R_GetSourceSegment1_
 
 mark_floor_cx:
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
