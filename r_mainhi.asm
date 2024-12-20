@@ -31,6 +31,7 @@ EXTRN Z_QuickMapVisplaneRevert_:PROC
 EXTRN FixedMulTrigNoShift_:PROC
 EXTRN FixedMul_:PROC
 EXTRN FastMul16u32u_:PROC
+EXTRN FastDiv3216u_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN R_PointToAngle_:PROC
 EXTRN R_GetColumnSegment_:NEAR
@@ -2887,9 +2888,1206 @@ jmp   finished_inner_loop_iter
 
 
 
-endp
+ENDP
 
+SIL_NONE =   0
+SIL_BOTTOM = 1
+SIL_TOP =    2
+SIL_BOTH =   3
+FINE_ANG90_NOSHIFT = 02000h
+FINE_ANG180_NOSHIFT = 04000h
+ANG180_HIGHBITS = 08000h
+MOD_FINE_ANGLE_NOSHIFT_HIGHBITS = 07Fh
+ML_DONTPEGBOTTOM = 010h
+scalelight_offset_in_fixed_scalelight = 030h
 
+;R_StoreWallRange_
+
+PROC R_StoreWallRange_ NEAR
+PUBLIC R_StoreWallRange_ 
+
+push      bx
+push      cx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 03Eh
+push      ax
+push      dx
+mov       bx, OFFSET _curseg_render
+mov       bx, word ptr [bx]
+mov       bx, word ptr [bx + 6]
+shl       bx, 3
+xor       ax, ax
+mov       word ptr [bp - 016h], bx
+mov       bx, OFFSET _curseg_render
+mov       word ptr [bp - 020h], ax
+mov       bx, word ptr [bx]
+mov       word ptr [bp - 01ah], ax
+mov       ax, word ptr [bx + 6]
+shl       ax, 2
+mov       bx, OFFSET _curseg_render
+add       ah, (_sides_render SHR 8)
+mov       bx, word ptr [bx]
+mov       word ptr [bp - 028h], ax
+mov       bx, word ptr [bx]
+mov       ax, VERTEXES_SEGMENT
+shl       bx, 2
+mov       es, ax
+mov       ax, word ptr es:[bx]
+mov       word ptr [bp - 026h], ax
+mov       ax, word ptr es:[bx + 2]
+mov       bx, OFFSET _curseg_render
+mov       bx, word ptr [bx]
+mov       bx, word ptr [bx + 2]
+shl       bx, 2
+mov       word ptr [bp - 022h], ax
+mov       ax, word ptr es:[bx]
+mov       word ptr [bp - 014h], SIDES_SEGMENT
+mov       word ptr [bp - 02eh], ax
+mov       ax, word ptr es:[bx + 2]
+mov       bx, OFFSET _ds_p
+mov       word ptr [bp - 02ch], ax
+mov       ax, word ptr [bx + 2]
+mov       dx, word ptr [bx]
+cmp       ax, DRAWSEGS_BASE_SEGMENT
+jne       label_1
+cmp       dx, FINE_ANG90_NOSHIFT
+jne       label_1
+leave     
+pop       di
+pop       si
+pop       cx
+pop       bx
+ret       
+label_1:
+mov       si, OFFSET _curseg
+mov       ax, SEG_LINEDEFS_SEGMENT
+mov       si, word ptr [si]
+mov       es, ax
+add       si, si
+mov       ax, LINEFLAGSLIST_SEGMENT
+mov       si, word ptr es:[si]
+mov       es, ax
+mov       al, byte ptr es:[si]
+xor       ah, ah
+mov       word ptr [bp - 024h], ax
+mov       ax, si
+cwd       
+shl       dx, 3
+sbb       ax, dx
+sar       ax, 3
+mov       di, ax
+mov       ax, SEENLINES_SEGMENT
+mov       es, ax
+mov       ax, si
+mov       cx, si
+sar       ax, 15
+xor       cx, ax
+sub       cx, ax
+and       cx, 7
+xor       cx, ax
+sub       cx, ax
+mov       al, byte ptr es:[di]
+mov       bx, 1
+xor       ah, ah
+shl       bx, cl
+mov       dx, ax
+or        dx, bx
+mov       bx, OFFSET _curseg
+mov       byte ptr es:[di], dl
+mov       ax, word ptr [bx]
+add       ax, ax
+mov       bx, ax
+mov       si, OFFSET _rw_normalangle
+add       bh, (_seg_normalangles SHR 8)
+mov       ax, word ptr [bx]
+mov       word ptr [si], ax
+shl       ax, 3
+mov       bx, OFFSET _rw_angle1 + 2
+mov       word ptr [bp - 02ah], ax
+sub       ax, word ptr [bx]
+cwd       
+xor       ax, dx
+sub       ax, dx
+sar       ax, 1
+
+;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
+
+and       al, 0FCh
+mov       word ptr [bp - 018h], ax
+cmp       ax, FINE_ANG90_NOSHIFT
+jb        label_2
+jmp       label_3
+label_2:
+mov       dx, word ptr [bp - 022h]
+mov       ax, word ptr [bp - 026h]
+mov       si, FINE_ANG90_NOSHIFT
+call      R_PointToDist_
+mov       word ptr [bp - 020h], ax
+mov       word ptr [bp - 01ah], dx
+sub       si, word ptr [bp - 018h]
+mov       bx, ax
+mov       cx, dx
+mov       ax, FINESINE_SEGMENT
+mov       dx, si
+call     FixedMulTrigNoShift_
+mov       bx, OFFSET _rw_distance
+mov       word ptr [bx], ax
+mov       word ptr [bx + 2], dx
+label_49:
+mov       bx, OFFSET _rw_x
+mov       ax, word ptr [bp - 040h]
+mov       word ptr [bx], ax
+mov       bx, OFFSET _ds_p
+les       si, dword ptr [bx]
+mov       word ptr es:[si + 2], ax
+les       si, dword ptr [bx]
+mov       ax, word ptr [bp - 042h]
+mov       word ptr es:[si + 4], ax
+mov       si, OFFSET _curseg
+les       di, dword ptr [bx]
+mov       ax, word ptr [si]
+mov       word ptr es:[di], ax
+mov       ax, word ptr [bp - 042h]
+mov       bx, OFFSET _rw_stopx
+inc       ax
+mov       si, _viewangle_shiftright3
+mov       word ptr [bx], ax
+mov       ax, XTOVIEWANGLE_SEGMENT
+mov       bx, word ptr [bp - 040h]
+mov       es, ax
+add       bx, bx
+mov       ax, word ptr [si]
+add       ax, word ptr es:[bx]
+mov       si, OFFSET _rw_scale
+push      cs
+call      R_ScaleFromGlobalAngle_
+mov       word ptr [si], ax
+mov       word ptr [si + 2], dx
+mov       bx, OFFSET _ds_p
+mov       dx, word ptr [si]
+mov       ax, word ptr [si + 2]
+les       si, dword ptr [bx]
+mov       word ptr es:[si + 8], ax
+mov       ax, word ptr [bp - 042h]
+mov       word ptr es:[si + 6], dx
+cmp       ax, word ptr [bp - 040h]
+jg        label_4
+jmp       label_5
+label_4:
+mov       si, ax
+add       si, ax
+mov       ax, XTOVIEWANGLE_SEGMENT
+mov       bx, OFFSET _viewangle_shiftright3
+mov       es, ax
+mov       ax, word ptr [bx]
+add       ax, word ptr es:[si]
+mov       si, OFFSET _ds_p
+push      cs
+call      R_ScaleFromGlobalAngle_
+nop
+les       bx, dword ptr [si]
+mov       cx, word ptr [bp - 042h]
+mov       word ptr es:[bx + 0ah], ax
+sub       cx, word ptr [bp - 040h]
+mov       word ptr es:[bx + 0ch], dx
+mov       bx, si
+mov       si, word ptr [si]
+mov       es, word ptr [bx + 2]
+mov       bx, OFFSET _rw_scale
+mov       ax, word ptr es:[si + 0ah]
+mov       dx, word ptr es:[si + 0ch]
+sub       ax, word ptr [bx]
+sbb       dx, word ptr [bx + 2]
+mov       bx, cx
+mov       si, OFFSET _ds_p
+call FastDiv3216u_
+les       bx, dword ptr [si]
+mov       word ptr [bp - 01eh], ax
+mov       word ptr es:[bx + 0eh], ax
+mov       word ptr [bp - 01ch], dx
+mov       word ptr es:[bx + 010h], dx
+label_48:
+mov       bx, OFFSET _frontsector
+les       si, dword ptr [bx]
+mov       ax, word ptr es:[si]
+mov       word ptr [bp - 010h], ax
+mov       ax, word ptr es:[si + 2]
+mov       word ptr [bp - 012h], ax
+mov       al, byte ptr es:[si + 4]
+mov       bx, OFFSET _viewz
+mov       byte ptr [bp - 6], al
+mov       al, byte ptr es:[si + 5]
+mov       di, word ptr [bp - 012h]
+mov       byte ptr [bp - 0ch], al
+mov       al, byte ptr es:[si + 0eh]
+mov       si, word ptr [bp - 012h]
+sar       di, 3
+and       si, 7
+mov       byte ptr [bp - 8], al
+shl       si, 13
+mov       ax, word ptr [bp - 010h]
+sub       si, word ptr [bx]
+sbb       di, word ptr [bx + 2]
+sar       ax, 3
+mov       word ptr [bp - 034h], ax
+mov       ax, word ptr [bp - 010h]
+and       ax, 7
+shl       ax, 13
+mov       word ptr [bp - 036h], ax
+mov       ax, word ptr [bx]
+sub       word ptr [bp - 036h], ax
+mov       ax, word ptr [bx + 2]
+mov       bx, OFFSET _maskedtexture
+mov       byte ptr [bx], 0
+sbb       word ptr [bp - 034h], ax
+mov       al, byte ptr [bx]
+cbw      
+mov       bx, OFFSET _ds_p
+mov       word ptr ds:[_bottomtexture], ax
+mov       word ptr ds:[_toptexture], ax
+mov       word ptr ds:[_midtexture], ax
+les       ax, dword ptr [bx]
+mov       bx, ax
+mov       word ptr es:[bx + 01ah], NULL_TEX_COL
+les       bx, dword ptr [bp - 016h]
+mov       ax, word ptr es:[bx + 6]
+mov       bx, OFFSET _backsector
+mov       word ptr [bp - 030h], ax
+mov       ax, word ptr [bx]
+cmp       ax, SECNUM_NULL
+je        label_6
+jmp       label_7
+label_6:
+mov       bx, word ptr [bp - 016h]
+mov       ax, TEXTURETRANSLATION_SEGMENT
+mov       bx, word ptr es:[bx + 4]
+mov       es, ax
+add       bx, bx
+mov       ax, word ptr es:[bx]
+mov       bx, OFFSET _markceiling
+mov       byte ptr [bx], 1
+mov       word ptr ds:[_midtexture], ax
+mov       al, byte ptr [bx]
+mov       bx, OFFSET _markfloor
+mov       byte ptr [bx], al
+test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
+jne       label_8
+jmp       label_9
+label_8:
+mov       bx, OFFSET _viewz_shortheight
+mov       ax, word ptr [bp - 010h]
+sub       ax, word ptr [bx]
+mov       bx, OFFSET _rw_midtexturemid+2
+sar       ax, 3
+mov       word ptr [bx], ax
+mov       bx, OFFSET _viewz_shortheight
+mov       ax, word ptr [bp - 010h]
+sub       ax, word ptr [bx]
+xor       ah, ah
+and       al, 7
+mov       bx, OFFSET _rw_midtexturemid
+shl       ax, 13
+mov       word ptr [bx], ax
+les       bx, dword ptr [bp - 016h]
+mov       ax, TEXTUREHEIGHTS_SEGMENT
+mov       bx, word ptr es:[bx + 4]
+mov       es, ax
+mov       al, byte ptr es:[bx]
+xor       ah, ah
+mov       bx, OFFSET _rw_midtexturemid+2
+inc       ax
+add       word ptr [bx], ax
+label_50:
+mov       bx, word ptr [bp - 028h]
+mov       dx, OFFSET _rw_midtexturemid+2
+mov       ax, word ptr [bx]
+mov       bx, dx
+add       word ptr [bx], ax
+mov       bx, OFFSET _ds_p
+les       ax, dword ptr [bx]
+mov       bx, ax
+mov       byte ptr es:[bx + 01ch], SIL_BOTH
+mov       bx, OFFSET _ds_p
+les       ax, dword ptr [bx]
+mov       bx, ax
+mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
+mov       bx, OFFSET _ds_p
+les       ax, dword ptr [bx]
+mov       bx, ax
+mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
+mov       bx, OFFSET _ds_p
+les       ax, dword ptr [bx]
+mov       bx, ax
+mov       word ptr es:[bx + 012h], MAXSHORT
+mov       bx, OFFSET _ds_p
+les       ax, dword ptr [bx]
+mov       bx, ax
+mov       word ptr es:[bx + 014h], MINSHORT
+label_74:
+mov       al, byte ptr ds:[_midtexture]
+or        al, byte ptr ds:[_toptexture]
+mov       bx, OFFSET _maskedtexture
+or        al, byte ptr ds:[_bottomtexture]
+or        al, byte ptr [bx]
+mov       bx, OFFSET _segtextured
+mov       byte ptr [bx], al
+jne       label_10
+jmp       label_11
+label_10:
+mov       ax, word ptr [bp - 018h]
+cmp       ax, FINE_ANG180_NOSHIFT
+jbe       label_75
+neg       ax
+and       ah, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
+mov       word ptr [bp - 018h], ax
+label_75:
+mov       ax, word ptr [bp - 01ah]
+or        ax, word ptr [bp - 020h]
+jne       label_76
+mov       dx, word ptr [bp - 022h]
+mov       ax, word ptr [bp - 026h]
+call      R_PointToDist_
+mov       word ptr [bp - 020h], ax
+mov       word ptr [bp - 01ah], dx
+label_76:
+mov       ax, word ptr [bp - 018h]
+cmp       ax, FINE_ANG90_NOSHIFT
+ja        label_12
+jmp       label_13
+label_12:
+mov       bx, OFFSET _rw_offset
+mov       ax, word ptr [bp - 020h]
+mov       word ptr [bx], ax
+mov       ax, word ptr [bp - 01ah]
+mov       word ptr [bx + 2], ax
+label_46:
+mov       bx, OFFSET _rw_angle1
+xor       dx, dx
+mov       ax, word ptr [bp - 02ah]
+sub       dx, word ptr [bx]
+sbb       ax, word ptr [bx + 2]
+cmp       ax, ANG180_HIGHBITS
+jae       label_14
+mov       bx, OFFSET _rw_offset
+mov       ax, word ptr [bx + 2]
+mov       dx, word ptr [bx]
+neg       ax
+neg       dx
+sbb       ax, 0
+mov       word ptr [bx], dx
+mov       word ptr [bx + 2], ax
+label_14:
+mov       bx, OFFSET _curseg_render
+mov       bx, word ptr [bx]
+mov       ax, word ptr [bp - 030h]
+add       ax, word ptr [bx + 4]
+mov       bx, OFFSET _rw_offset+2
+add       word ptr [bx], ax
+mov       bx, OFFSET _viewangle_shiftright3
+mov       ax, word ptr [bx]
+mov       bx, OFFSET _rw_normalangle
+add       ah, 8
+sub       ax, word ptr [bx]
+mov       bx, _rw_centerangle
+and       ah, FINE_ANGLE_HIGH_BYTE
+mov       word ptr [bx], ax
+mov       bx, _fixedcolormap
+cmp       byte ptr [bx], 0
+jne       label_11
+mov       al, byte ptr [bp - 8]
+mov       bx, OFFSET _extralight
+xor       ah, ah
+mov       dl, byte ptr [bx]
+sar       ax, 4
+xor       dh, dh
+add       dx, ax
+mov       ax, word ptr [bp - 022h]
+cmp       ax, word ptr [bp - 02ch]
+je        label_15
+jmp       label_16
+label_15:
+dec       dx
+label_44:
+test      dx, dx
+jge       label_17
+jmp       label_18
+label_17:
+cmp       dx, LIGHTLEVELS
+jge       label_19
+jmp       label_20
+label_19:
+mov       bx, OFFSET _lightmult48lookup + + (2 * (LIGHTLEVELS - 1))
+mov       dx, OFFSET _walllights
+mov       ax, word ptr [bx]
+label_42:
+mov       bx, dx
+mov       word ptr [bx], ax
+label_43:
+mov       bx, OFFSET _walllights
+add       word ptr [bx], scalelight_offset_in_fixed_scalelight
+label_11:
+mov       bx, OFFSET _viewz_shortheight
+mov       ax, word ptr [bp - 010h]
+cmp       ax, word ptr [bx]
+jl        label_21
+mov       bx, OFFSET _markfloor
+mov       byte ptr [bx], 0
+label_21:
+mov       bx, OFFSET _viewz_shortheight
+mov       ax, word ptr [bp - 012h]
+cmp       ax, word ptr [bx]
+jg        label_22
+mov       bx, OFFSET _skyflatnum
+mov       al, byte ptr [bp - 0ch]
+cmp       al, byte ptr [bx]
+je        label_22
+mov       bx, OFFSET _markceiling
+mov       byte ptr [bx], 0
+label_22:
+mov       cx, 4
+label_23:
+sar       word ptr [bp - 034h], 1
+rcr       word ptr [bp - 036h], 1
+loop      label_23
+mov       cx, 4
+label_24:
+sar       di, 1
+rcr       si, 1
+loop      label_24
+mov       bx, OFFSET _rw_scale
+mov       dx, di
+mov       ax, word ptr [bx]
+mov       cx, word ptr [bx + 2]
+mov       bx, ax
+mov       ax, si
+call FixedMul_
+mov       bx, OFFSET _centeryfrac_shiftright4
+mov       cx, word ptr [bx]
+sub       cx, ax
+mov       ax, word ptr [bx + 2]
+mov       bx, OFFSET _topfrac
+sbb       ax, dx
+mov       word ptr [bx], cx
+mov       word ptr [bx + 2], ax
+mov       bx, OFFSET _rw_scale
+mov       dx, word ptr [bp - 034h]
+mov       ax, word ptr [bx]
+mov       cx, word ptr [bx + 2]
+mov       bx, ax
+mov       ax, word ptr [bp - 036h]
+call FixedMul_
+mov       bx, OFFSET _centeryfrac_shiftright4
+mov       cx, word ptr [bx]
+sub       cx, ax
+mov       ax, word ptr [bx + 2]
+mov       bx, OFFSET _bottomfrac
+sbb       ax, dx
+mov       word ptr [bx], cx
+mov       word ptr [bx + 2], ax
+mov       bx, OFFSET _markceiling
+cmp       byte ptr [bx], 0
+je        label_25
+mov       bx, OFFSET _rw_stopx
+mov       cx, 1
+mov       ax, word ptr [bx]
+mov       bx, OFFSET _rw_x
+dec       ax
+mov       dx, word ptr [bx]
+mov       bx, OFFSET _ceilingplaneindex
+mov       word ptr [bp - 0eh], ax
+mov       ax, word ptr [bx]
+mov       bx, word ptr [bp - 0eh]
+call      R_CheckPlane_
+mov       bx, OFFSET _ceilingplaneindex
+mov       word ptr [bx], ax
+label_25:
+mov       bx, OFFSET _markfloor
+cmp       byte ptr [bx], 0
+je        label_26
+mov       bx, OFFSET _rw_stopx
+mov       ax, word ptr [bx]
+mov       bx, OFFSET _rw_x
+mov       dx, word ptr [bx]
+mov       bx, OFFSET _floorplaneindex
+xor       cx, cx
+mov       bx, word ptr [bx]
+dec       ax
+mov       word ptr [bp - 0eh], bx
+mov       bx, ax
+mov       ax, word ptr [bp - 0eh]
+call      R_CheckPlane_
+mov       bx, OFFSET _floorplaneindex
+mov       word ptr [bx], ax
+label_26:
+mov       ax, word ptr [bp - 042h]
+cmp       ax, word ptr [bp - 040h]
+jge       label_27
+jmp       label_28
+label_27:
+mov       ax, word ptr [bp - 01eh]
+mov       dx, word ptr [bp - 01ch]
+mov       bx, si
+mov       cx, di
+call FixedMul_
+mov       bx, ax
+mov       ax, dx
+mov       cx, word ptr [bp - 034h]
+neg       ax
+mov       dx, bx
+mov       bx, OFFSET _topstep
+neg       dx
+sbb       ax, 0
+mov       word ptr [bx], dx
+mov       dx, word ptr [bp - 01ch]
+mov       word ptr [bx + 2], ax
+mov       bx, word ptr [bp - 036h]
+mov       ax, word ptr [bp - 01eh]
+call FixedMul_
+mov       bx, ax
+mov       ax, dx
+neg       ax
+mov       dx, bx
+mov       bx, OFFSET _bottomstep
+neg       dx
+sbb       ax, 0
+mov       word ptr [bx], dx
+mov       word ptr [bx + 2], ax
+mov       bx, OFFSET _backsector
+cmp       word ptr [bx], -1
+jne       label_29
+jmp       label_30
+label_29:
+mov       cx, 4
+label_31:
+sar       word ptr [bp - 03ch], 1
+rcr       word ptr [bp - 03eh], 1
+loop      label_31
+mov       ax, word ptr [bp - 03ch]
+mov       cx, 4
+label_32:
+sar       word ptr [bp - 038h], 1
+rcr       word ptr [bp - 03ah], 1
+loop      label_32
+cmp       di, ax
+jg        label_33
+jne       label_34
+cmp       si, word ptr [bp - 03eh]
+jbe       label_34
+label_33:
+mov       bx, OFFSET _rw_scale
+mov       dx, word ptr [bp - 03ch]
+mov       ax, word ptr [bx]
+mov       cx, word ptr [bx + 2]
+mov       bx, ax
+mov       ax, word ptr [bp - 03eh]
+call FixedMul_
+mov       bx, OFFSET _centeryfrac_shiftright4
+mov       cx, word ptr [bx]
+sub       cx, ax
+mov       bx, word ptr [bx + 2]
+sbb       bx, dx
+mov       dx, bx
+mov       bx, OFFSET _pixhigh
+mov       word ptr [bx], cx
+mov       ax, word ptr [bp - 01eh]
+mov       word ptr [bx + 2], dx
+mov       bx, word ptr [bp - 03eh]
+mov       cx, word ptr [bp - 03ch]
+mov       dx, word ptr [bp - 01ch]
+call FixedMul_
+mov       bx, ax
+mov       ax, dx
+neg       ax
+mov       dx, bx
+mov       bx, OFFSET _pixhighstep
+neg       dx
+sbb       ax, 0
+mov       word ptr [bx], dx
+mov       word ptr [bx + 2], ax
+label_34:
+mov       ax, word ptr [bp - 038h]
+cmp       ax, word ptr [bp - 034h]
+jg        label_35
+jne       label_30
+mov       ax, word ptr [bp - 03ah]
+cmp       ax, word ptr [bp - 036h]
+jbe       label_30
+label_35:
+mov       bx, OFFSET _rw_scale
+mov       dx, word ptr [bp - 038h]
+mov       ax, word ptr [bx]
+mov       cx, word ptr [bx + 2]
+mov       bx, ax
+mov       ax, word ptr [bp - 03ah]
+call FixedMul_
+mov       bx, OFFSET _centeryfrac_shiftright4
+mov       cx, word ptr [bx]
+sub       cx, ax
+mov       bx, word ptr [bx + 2]
+sbb       bx, dx
+mov       dx, bx
+mov       bx, OFFSET _pixlow
+mov       word ptr [bx], cx
+mov       ax, word ptr [bp - 01eh]
+mov       word ptr [bx + 2], dx
+mov       bx, word ptr [bp - 03ah]
+mov       cx, word ptr [bp - 038h]
+mov       dx, word ptr [bp - 01ch]
+call FixedMul_
+mov       bx, ax
+mov       ax, dx
+neg       ax
+mov       dx, bx
+mov       bx, OFFSET _pixlowstep
+neg       dx
+sbb       ax, 0
+mov       word ptr [bx], dx
+mov       word ptr [bx + 2], ax
+label_30:
+mov       ax, word ptr [bp - 01eh]
+mov       dx, word ptr [bp - 01ch]
+call      R_RenderSegLoop_
+label_28:
+mov       bx, OFFSET _ds_p
+les       si, dword ptr [bx]
+test      byte ptr es:[si + 01ch], SIL_TOP
+jne       label_36
+jmp       label_37
+label_36:
+mov       bx, OFFSET _ds_p
+les       si, dword ptr [bx]
+cmp       word ptr es:[si + 016h], 0
+jne       label_38
+mov       bx, OFFSET _rw_stopx
+mov       si, word ptr [bp - 040h]
+mov       di, OFFSET _lastopening
+mov       cx, OPENINGS_SEGMENT
+mov       ax, word ptr [bx]
+mov       di, word ptr [di]
+add       si, si
+sub       ax, word ptr [bp - 040h]
+add       si, OFFSET_CEILINGCLIP
+mov       es, cx
+add       di, di
+add       ax, ax
+mov       bx, OFFSET _lastopening
+push      ds
+push      di
+xchg      ax, cx
+mov       ds, ax
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+pop       di
+pop       ds
+mov       ax, word ptr [bx]
+mov       bx, OFFSET _ds_p
+sub       ax, word ptr [bp - 040h]
+mov       si, word ptr [bx]
+add       ax, ax
+mov       es, word ptr [bx + 2]
+mov       bx, OFFSET _rw_stopx
+mov       word ptr es:[si + 016h], ax
+mov       ax, word ptr [bx]
+mov       bx, _lastopening
+sub       ax, word ptr [bp - 040h]
+add       word ptr [bx], ax
+label_38:
+mov       bx, OFFSET _ds_p
+les       si, dword ptr [bx]
+test      byte ptr es:[si + 01ch], SIL_BOTTOM
+jne       label_39
+jmp       label_40
+label_39:
+mov       bx, OFFSET _ds_p
+les       si, dword ptr [bx]
+cmp       word ptr es:[si + 018h], 0
+jne       label_41
+mov       bx, OFFSET _rw_stopx
+mov       si, word ptr [bp - 040h]
+mov       di, _lastopening
+mov       cx, OPENINGS_SEGMENT
+mov       ax, word ptr [bx]
+mov       di, word ptr [di]
+add       si, si
+sub       ax, word ptr [bp - 040h]
+add       si, OFFSET_FLOORCLIP
+mov       es, cx
+add       di, di
+add       ax, ax
+mov       bx, _lastopening
+push      ds
+push      di
+xchg      ax, cx
+mov       ds, ax
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+pop       di
+pop       ds
+mov       ax, word ptr [bx]
+mov       bx, OFFSET _ds_p
+sub       ax, word ptr [bp - 040h]
+mov       si, word ptr [bx]
+add       ax, ax
+mov       es, word ptr [bx + 2]
+mov       bx, OFFSET _rw_stopx
+mov       word ptr es:[si + 018h], ax
+mov       ax, word ptr [bx]
+mov       bx, _lastopening
+sub       ax, word ptr [bp - 040h]
+add       word ptr [bx], ax
+label_41:
+mov       bx, OFFSET _maskedtexture
+cmp       byte ptr [bx], 0
+je        label_58
+mov       bx, OFFSET _ds_p
+les       si, dword ptr [bx]
+test      byte ptr es:[si + 01ch], SIL_TOP	; todo 
+jne       label_58
+or        byte ptr es:[si + 01ch], SIL_TOP
+les       si, dword ptr [bx]
+mov       word ptr es:[si + 014h], MINSHORT
+label_58:
+mov       bx, OFFSET _maskedtexture
+cmp       byte ptr [bx], 0
+je        label_59
+mov       bx, OFFSET _ds_p
+les       si, dword ptr [bx]
+test      byte ptr es:[si + 01ch], SIL_BOTTOM
+jne       label_59
+or        byte ptr es:[si + 01ch], SIL_BOTTOM
+les       si, dword ptr [bx]
+mov       word ptr es:[si + 012h], MAXSHORT
+label_59:
+mov       bx, OFFSET _ds_p
+add       word ptr [bx], SIZEOF_DRAWSEG_T
+leave     
+pop       di
+pop       si
+pop       cx
+pop       bx
+ret       
+label_3:
+mov       bx, OFFSET _rw_distance
+mov       word ptr [bx], 0
+mov       word ptr [bx + 2], 0
+jmp       label_49
+label_5:
+mov       si, bx
+mov       di, si
+mov       bx, word ptr [bx]
+mov       es, word ptr [si + 2]
+mov       si, word ptr [di]
+mov       cx, word ptr [di + 2]
+mov       dx, word ptr es:[bx + 6]
+mov       ax, word ptr es:[bx + 8]
+mov       es, cx
+mov       word ptr es:[si + 0ah], dx
+mov       word ptr es:[si + 0ch], ax
+jmp       label_48
+label_9:
+mov       bx, OFFSET _rw_midtexturemid
+mov       word ptr [bx], si
+mov       word ptr [bx + 2], di
+jmp       label_50
+label_7:
+mov       es, word ptr [bx + 2]
+mov       bx, ax
+mov       ax, word ptr es:[bx]
+mov       bx, OFFSET _backsector
+les       dx, dword ptr [bx]
+mov       bx, dx
+mov       dx, word ptr es:[bx + 2]
+mov       bx, OFFSET _backsector
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       cl, byte ptr es:[bx + 5]
+mov       bx, OFFSET _backsector
+mov       byte ptr [bp - 0ah], cl
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       cl, byte ptr es:[bx + 4]
+mov       bx, OFFSET _backsector
+mov       byte ptr [bp - 4], cl
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       cl, byte ptr es:[bx + 0eh]
+mov       bx, OFFSET _ds_p
+mov       byte ptr [bp - 2], cl
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       word ptr es:[bx + 018h], 0
+mov       cx, word ptr es:[bx + 018h]
+mov       bx, OFFSET _ds_p
+mov       word ptr [bp - 0eh], cx
+mov       cx, word ptr [bx]
+mov       word ptr [bp - 032h], cx
+mov       es, word ptr [bx + 2]
+mov       bx, word ptr [bp - 032h]
+mov       cx, word ptr [bp - 0eh]
+mov       word ptr es:[bx + 016h], cx
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       byte ptr es:[bx + 01ch], SIL_NONE
+cmp       ax, word ptr [bp - 010h]
+jl        label_51
+jmp       label_52
+label_51:
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
+mov       bx, OFFSET _ds_p
+mov       cx, word ptr [bx]
+mov       word ptr [bp - 0eh], cx
+mov       es, word ptr [bx + 2]
+mov       bx, word ptr [bp - 0eh]
+mov       cx, word ptr [bp - 010h]
+mov       word ptr es:[bx + 012h], cx
+label_63:
+cmp       dx, word ptr [bp - 012h]
+jg        label_53
+jmp       label_54
+label_53:
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+or        byte ptr es:[bx + 01ch], SIL_TOP
+mov       bx, OFFSET _ds_p
+mov       cx, word ptr [bx]
+mov       word ptr [bp - 0eh], cx
+mov       es, word ptr [bx + 2]
+mov       bx, word ptr [bp - 0eh]
+mov       cx, word ptr [bp - 012h]
+mov       word ptr es:[bx + 014h], cx
+label_62:
+cmp       dx, word ptr [bp - 010h]
+jg        label_55
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       word ptr es:[bx + 012h], MAXSHORT
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+or        byte ptr es:[bx + 01ch], SIL_BOTTOM
+label_55:
+cmp       ax, word ptr [bp - 012h]
+jl        label_56
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       word ptr es:[bx + 014h], MINSHORT
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+or        byte ptr es:[bx + 01ch], SIL_TOP
+label_56:
+mov       bx, dx
+sar       bx, 3
+mov       word ptr [bp - 03ch], bx
+mov       bx, dx
+xor       bh, dh
+and       bl, 7
+shl       bx, 13
+mov       word ptr [bp - 03eh], bx
+mov       bx, OFFSET _viewz
+mov       cx, word ptr [bx]
+sub       word ptr [bp - 03eh], cx
+mov       bx, word ptr [bx + 2]
+sbb       word ptr [bp - 03ch], bx
+mov       bx, ax
+sar       bx, 3
+mov       word ptr [bp - 038h], bx
+mov       bx, ax
+xor       bh, ah
+and       bl, 7
+shl       bx, 13
+mov       word ptr [bp - 03ah], bx
+mov       bx, OFFSET _viewz
+mov       cx, word ptr [bx]
+sub       word ptr [bp - 03ah], cx
+mov       bx, word ptr [bx + 2]
+sbb       word ptr [bp - 038h], bx
+mov       bx, offset _skyflatnum
+mov       cl, byte ptr [bp - 0ch]
+cmp       cl, byte ptr [bx]
+jne       label_57
+mov       cl, byte ptr [bp - 0ah]
+cmp       cl, byte ptr [bx]
+jne       label_57
+mov       si, word ptr [bp - 03eh]
+mov       di, word ptr [bp - 03ch]
+label_57:
+mov       bx, word ptr [bp - 038h]
+cmp       bx, word ptr [bp - 034h]
+jne       label_60
+mov       bx, word ptr [bp - 03ah]
+cmp       bx, word ptr [bp - 036h]
+jne       label_60
+jmp       label_64
+label_60:
+mov       bx, OFFSET _markfloor
+mov       byte ptr [bx], 1
+label_79:
+cmp       di, word ptr [bp - 03ch]
+jne       label_65
+cmp       si, word ptr [bp - 03eh]
+jne       label_65
+jmp       label_77
+label_65:
+mov       bx, OFFSET _markceiling
+mov       byte ptr [bx], 1
+label_80:
+cmp       dx, word ptr [bp - 010h]
+jle       label_66
+jmp       label_81
+label_66:
+mov       bx, OFFSET _markfloor
+mov       byte ptr [bx], 1
+mov       al, byte ptr [bx]
+mov       bx, OFFSET _markceiling
+mov       byte ptr [bx], al
+label_67:
+mov       ax, word ptr [bp - 03ch]
+cmp       di, ax
+jg        label_68
+jne       label_47
+cmp       si, word ptr [bp - 03eh]
+jbe       label_47
+label_68:
+les       bx, dword ptr [bp - 016h]
+mov       ax, TEXTURETRANSLATION_SEGMENT
+mov       bx, word ptr es:[bx]
+mov       es, ax
+add       bx, bx
+mov       ax, word ptr es:[bx]
+mov       word ptr ds:[_toptexture], ax
+test      byte ptr [bp - 024h], 8
+jne       label_69
+jmp       label_70
+label_69:
+mov       bx, OFFSET _rw_toptexturemid
+mov       word ptr [bx], si
+mov       word ptr [bx + 2], di
+label_47:
+mov       ax, word ptr [bp - 038h]
+cmp       ax, word ptr [bp - 034h]
+jg        label_71
+jne       label_72
+mov       ax, word ptr [bp - 03ah]
+cmp       ax, word ptr [bp - 036h]
+jbe       label_72
+label_71:
+les       bx, dword ptr [bp - 016h]
+mov       ax, TEXTURETRANSLATION_SEGMENT
+mov       bx, word ptr es:[bx + 2]
+mov       es, ax
+add       bx, bx
+mov       ax, word ptr es:[bx]
+mov       word ptr ds:[_bottomtexture], ax
+test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
+je        label_73
+mov       bx, OFFSET _rw_bottomtexturemid
+mov       word ptr [bx], si
+mov       word ptr [bx + 2], di
+label_72:
+mov       bx, word ptr [bp - 028h]
+mov       dx, OFFSET _rw_toptexturemid + 2
+mov       ax, word ptr [bx]
+mov       bx, dx
+add       word ptr [bx], ax
+mov       bx, word ptr [bp - 028h]
+mov       dx, OFFSET _rw_bottomtexturemid + 2
+mov       ax, word ptr [bx]
+mov       bx, dx
+add       word ptr [bx], ax
+les       bx, dword ptr [bp - 016h]
+cmp       word ptr es:[bx + 4], 0
+jne       label_82
+jmp       label_74
+label_82:
+mov       bx, OFFSET _maskedtexture
+mov       byte ptr [bx], 1
+mov       bx, OFFSET _lastopening
+mov       dx, OFFSET _rw_x
+mov       ax, word ptr [bx]
+mov       bx, dx
+sub       ax, word ptr [bx]
+mov       bx, OFFSET _ds_p
+les       dx, dword ptr [bx]
+mov       bx, dx
+mov       word ptr es:[bx + 01ah], ax
+mov       bx, OFFSET _ds_p
+les       ax, dword ptr [bx]
+mov       bx, ax
+mov       ax, word ptr es:[bx + 01ah]
+mov       bx, OFFSET _maskedtexturecol
+add       ax, ax
+mov       word ptr [bx], ax
+mov       bx, OFFSET _rw_stopx
+mov       dx, OFFSET _rw_x
+mov       ax, word ptr [bx]
+mov       bx, dx
+sub       ax, word ptr [bx]
+mov       bx, OFFSET _lastopening
+add       word ptr [bx], ax
+jmp       label_74
+label_73:
+mov       bx, OFFSET _rw_bottomtexturemid
+mov       ax, word ptr [bp - 03ah]
+mov       word ptr [bx], ax
+mov       ax, word ptr [bp - 038h]
+mov       word ptr [bx + 2], ax
+jmp       label_72
+label_52:
+mov       bx, OFFSET _viewz_shortheight
+cmp       ax, word ptr [bx]
+jg        label_83
+jmp       label_63
+label_83:
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       word ptr es:[bx + 012h], MAXSHORT
+jmp       label_63
+label_54:
+mov       bx, OFFSET _viewz_shortheight
+cmp       dx, word ptr [bx]
+jl        label_84
+jmp       label_62
+label_84:
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+or        byte ptr es:[bx + 01ch], SIL_TOP
+mov       bx, OFFSET _ds_p
+les       cx, dword ptr [bx]
+mov       bx, cx
+mov       word ptr es:[bx + 014h], MINSHORT
+jmp       label_62
+label_64:
+mov       bl, byte ptr [bp - 4]
+cmp       bl, byte ptr [bp - 6]
+je        label_61
+label_78:
+jmp       label_60
+label_61:
+mov       bl, byte ptr [bp - 2]
+cmp       bl, byte ptr [bp - 8]
+jne       label_78
+mov       bx, OFFSET _markfloor
+mov       byte ptr [bx], 0
+jmp       label_79
+label_77:
+mov       bl, byte ptr [bp - 0ah]
+cmp       bl, byte ptr [bp - 0ch]
+je        label_85
+label_86:
+jmp       label_65
+label_85:
+mov       bl, byte ptr [bp - 2]
+cmp       bl, byte ptr [bp - 8]
+jne       label_86
+mov       bx, OFFSET _markceiling
+mov       byte ptr [bx], 0
+jmp       label_80
+label_81:
+cmp       ax, word ptr [bp - 012h]
+jl        label_87
+jmp       label_66
+label_87:
+jmp       label_67
+label_70:
+mov       bx, OFFSET _rw_toptexturemid + 2
+mov       ax, dx
+xor       dh, dh
+sar       ax, 3
+and       dl, 7
+mov       word ptr [bx], ax
+mov       bx, OFFSET _rw_toptexturemid
+shl       dx, 13
+mov       word ptr [bx], dx
+les       bx, dword ptr [bp - 016h]
+mov       ax, TEXTUREHEIGHTS_SEGMENT
+mov       bx, word ptr es:[bx]
+mov       es, ax
+mov       al, byte ptr es:[bx]
+xor       ah, ah
+mov       bx, OFFSET _rw_toptexturemid + 2
+inc       ax
+add       word ptr [bx], ax
+mov       bx, OFFSET _viewz
+mov       cx, OFFSET _rw_toptexturemid
+mov       dx, word ptr [bx]
+mov       ax, word ptr [bx + 2]
+mov       bx, cx
+sub       word ptr [bx], dx
+sbb       word ptr [bx + 2], ax
+jmp       label_47
+label_13:
+mov       bx, word ptr [bp - 020h]
+mov       cx, word ptr [bp - 01ah]
+mov       dx, ax
+mov       ax, FINESINE_SEGMENT
+call FixedMulTrigNoShift_
+mov       bx, OFFSET _rw_offset
+mov       word ptr [bx], ax
+mov       word ptr [bx + 2], dx
+jmp       label_46
+label_16:
+mov       ax, word ptr [bp - 026h]
+cmp       ax, word ptr [bp - 02eh]
+je        label_45
+jmp       label_44
+label_45:
+inc       dx
+jmp       label_44
+label_18:
+mov       bx, OFFSET _walllights
+mov       word ptr [bx], 0
+jmp       label_43
+label_20:
+mov       bx, dx
+add       bx, dx
+mov       dx, OFFSET _walllights
+mov       ax, word ptr ds:[bx + OFFSET _lightmult48lookup]
+jmp       label_42
+label_37:
+mov       bx, OFFSET _maskedtexture
+cmp       byte ptr [bx], 0
+je        jump_to_label_38
+jmp       label_36
+jump_to_label_38:
+jmp       label_38
+label_40:
+mov       bx, OFFSET _maskedtexture
+cmp       byte ptr [bx], 0
+je        jump_to_label_41
+jmp       label_39
+jump_to_label_41:
+jmp       label_41
+
+ENDP
 
 
 END

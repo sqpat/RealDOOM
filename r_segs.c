@@ -911,6 +911,7 @@ int16_t setval = 0;
 // sq note: temp and temp angle have become confusing here, but basically angles are uint32_t
 // while normal fixed_t is int32_t, and you have to make sure you use angles and fixed_t in the
 // correct spots or you end up doing things like comparisons between uint32_t and int32_t.
+/*
 void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     fixed_t		hyp = 0;
     uint16_t	distangle = 0;
@@ -1015,16 +1016,10 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	frontsectorceilingpic = frontsector->ceilingpic;
 	frontsectorlightlevel = frontsector->lightlevel;
 
-#ifdef USE_SHORTHEIGHT_VIEWZ	
-
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsectorceilingheight - viewz_shortheight);
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldbottom, frontsectorfloorheight - viewz_shortheight);
-#else
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsectorceilingheight);
 	worldtop.w -= viewz.w;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldbottom, frontsectorfloorheight);
 	worldbottom.w -= viewz.w;
-#endif
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol_val = NULL_TEX_COL;
 	
@@ -1090,15 +1085,10 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 			ds_p->tsilheight = MINSHORT;
 			ds_p->silhouette |= SIL_TOP;
 		}
-#ifdef USE_SHORTHEIGHT_VIEWZ	
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight - viewz_shortheight);
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldlow, backsectorfloorheight - viewz_shortheight);
-#else
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight);
 		worldhigh.w -= viewz.w;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldlow, backsectorfloorheight);
 		worldlow.w -= viewz.w;
-#endif
 		
 		// hack to allow height changes in outdoor areas
 		if (frontsectorceilingpic == skyflatnum && backsectorceilingpic == skyflatnum) {
@@ -1137,16 +1127,11 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 				// top of texture at top
 				rw_toptexturemid = worldtop;
 			} else {
-#ifdef USE_SHORTHEIGHT_VIEWZ	
-				SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_toptexturemid, backsectorceilingheight-viewz_shortheight);
-				rw_toptexturemid.h.intbits += textureheights[side->toptexture] + 1;
-#else
 				SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_toptexturemid, backsectorceilingheight);
 				rw_toptexturemid.h.intbits += textureheights[side->toptexture] + 1;
 				// bottom of texture
 
 				rw_toptexturemid.w -= viewz.w;
-#endif
 				
 			}
 		}
@@ -1304,25 +1289,23 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 
 		R_RenderSegLoop (rw_scalestep.w);
-/*
-	} else {
-		// single pixel dont need most of the 'step' stuff.
- 		if (backsector  != NULL) {
+
+//	} else {
+//		// single pixel dont need most of the 'step' stuff.
+// 		if (backsector  != NULL) {
 // 		if (backsector_offset != SECNUM_NULL) {
-			// todo dont shift 4 twice, instead borrow old value somehow and do byte shift... rare case though
-			worldhigh.w >>= 4;
-			worldlow.w >>= 4;
-			if (worldhigh.w < worldtop.w) {
-				pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
-			}
-			if (worldlow.w > worldbottom.w) {
-				pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
-			}
-
-		}
-
-		R_RenderOneSeg (rw_scalestep);
-		*/
+//			// todo dont shift 4 twice, instead borrow old value somehow and do byte shift... rare case though
+//			worldhigh.w >>= 4;
+//			worldlow.w >>= 4;
+//			if (worldhigh.w < worldtop.w) {
+//				pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
+//			}
+//			if (worldlow.w > worldbottom.w) {
+//				pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
+//			}
+//
+//		}
+//		R_RenderOneSeg (rw_scalestep);
 	}
     
     // save sprite clipping info
@@ -1348,4 +1331,6 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     }
     ds_p++;
 }
+
+*/
 

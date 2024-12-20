@@ -76,7 +76,7 @@ _viewangle =                		_NULL_OFFSET + 00078h
 _viewz_shortheight = 				_NULL_OFFSET + 0007Ch
 _viewangle_shiftright1 = 			_NULL_OFFSET + 0007Eh
 _rw_x = 							_NULL_OFFSET + 00080h
-_rw_stopx = 						_NULL_OFFSET + 00082h
+_rw_stopx = 						_NULL_OFFSET + 00082h 
 _rw_centerangle = 					_NULL_OFFSET + 00084h
 _rw_normalangle =	    	   		_NULL_OFFSET + 00086h
 _rw_offset = 						_NULL_OFFSET + 00088h
@@ -251,13 +251,14 @@ FIRST_VISPLANE_PAGE_SEGMENT    = 08400h
 SCRATCH_PAGE_SEGMENT_5000      = 05000h;
 LIGHTSCALESHIFT                = 0Ch
 MAXSHORT					   = 07FFFh
+MINSHORT					   = 08000h
 
 COLORMAP_SHADOW     		   = 0FFh
 
 ; todo generate this from c
 DRAWSEG_SIZE				   = 020h
 NULL_TEX_COL				   = 0FEBFh  ;  65535 - SCREENWIDTH
-
+SECNUM_NULL					   = 0FFFFh
 
 COMPILE_386  = 3
 COMPILE_286  = 2
