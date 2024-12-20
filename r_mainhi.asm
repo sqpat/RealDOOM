@@ -2890,6 +2890,7 @@ jmp   finished_inner_loop_iter
 
 ENDP
 
+SHORTTOFINESHIFT = 3
 SIL_NONE =   0
 SIL_BOTTOM = 1
 SIL_TOP =    2
@@ -2899,6 +2900,7 @@ FINE_ANG180_NOSHIFT = 04000h
 ANG180_HIGHBITS = 08000h
 MOD_FINE_ANGLE_NOSHIFT_HIGHBITS = 07Fh
 ML_DONTPEGBOTTOM = 010h
+ML_DONTPEGTOP = 8
 scalelight_offset_in_fixed_scalelight = 030h
 MAXDRAWSEGS = 256
 
@@ -2915,32 +2917,37 @@ ret
 PROC R_StoreWallRange_ NEAR
 PUBLIC R_StoreWallRange_ 
 
-; bp - 2     ; 
-; bp - 4     ; 
-; bp - 6     ; 
-; bp - 8     ; 
-; bp - 0Ah   ; 
-; bp - 0Ch   ; 
-; bp - 0Eh   ; 
-; bp - 010h  ; 
-; bp - 012h  ; 
-; bp - 014h  ; 
-; bp - 016h  ; 
-; bp - 018h  ; 
-; bp - 01Ah  ; 
-; bp - 01Ch  ; 
-; bp - 01Eh  ; 
-; bp - 020h  ; 
-; bp - 022h  ; 
-
+; bp - 2     ; backsectorlightlevel
+; bp - 4     ; backsectorfloorpic
+; bp - 6     ; frontsectorfloorpic
+; bp - 8     ; frontsectorlightlevel
+; bp - 0Ah   ; backsectorceilingpic
+; bp - 0Ch   ; frontsectorceilingpic
+; bp - 0Eh   ; unused? was only used as temp.
+; bp - 010h  ; frontsectorfloorheight
+; bp - 012h  ; frontsectorceilingheight
+; bp - 014h  ; sides_segment (constant)
+; bp - 016h  ; sides offset (within sides segment)
+; bp - 018h  ; offsetangle
+; bp - 01Ah  ; hyp hi
+; bp - 01Ch  ; rw_scalestep hi
+; bp - 01Eh  ; rw_scalestep lo
+; bp - 020h  ; hyp lo
+; bp - 022h  ; v1.y
 ; bp - 024h  ; lineflags
-; bp - 026h  ; 
-; bp - 028h  ; 
-; bp - 02Ah  ; 
-; bp - 02Ch  ; 
-; bp - 02Eh  ; 
-; bp - 030h  ; 
-; bp - 032h  ; 
+; bp - 026h  ; v1.x
+; bp - 028h  ; side_render (near ptr)
+; bp - 02Ah  ; rw_normalangle_shiftleft3 TODO only used once, selfmodify
+; bp - 02Ch  ; v2.y TODO only used once, selfmodify
+; bp - 02Eh  ; v2.x TODO only used once, selfmodify
+; bp - 030h  ; sidetextureoffset TODO only used once, selfmodify
+; bp - 032h  ; UNUSED
+; bp - 034h  ; worldbottom hi
+; bp - 036h  ; worldbottom lo
+; bp - 038h  ; worldlow hi ?
+; bp - 03Ah  ; worldlow lo ?
+; bp - 03Ch  ; worldhigh hi ?
+; bp - 03Eh  ; worldhigh lo?
 
 ; bp - 040h  ; dx arg
 ; bp - 042h  ; ax arg
@@ -3002,6 +3009,9 @@ mov       es, ax
 mov       al, byte ptr es:[si]
 xor       ah, ah
 mov       word ptr [bp - 024h], ax
+
+;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
+; si is linedef.
 mov       ax, si
 cwd       
 shl       dx, 3
@@ -3031,7 +3041,7 @@ mov       bx, ax
 add       bh, (_seg_normalangles SHR 8)
 mov       ax, word ptr [bx]
 mov       word ptr ds:[_rw_normalangle], ax
-shl       ax, 3
+shl       ax, SHORTTOFINESHIFT
 mov       word ptr [bp - 02ah], ax
 sub       ax, word ptr ds:[_rw_angle1 + 2]
 cwd       
@@ -3132,6 +3142,7 @@ mov       bx, OFFSET _viewz
 mov       byte ptr [bp - 6], al
 mov       al, byte ptr es:[si + 5]
 ; BIG TODO: make this di used some other way
+; (si:di is worldtop)
 mov       di, word ptr [bp - 012h]
 mov       byte ptr [bp - 0ch], al
 mov       al, byte ptr es:[si + 0eh]
@@ -3160,14 +3171,14 @@ mov       word ptr ds:[_toptexture], ax
 mov       word ptr ds:[_midtexture], ax
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], NULL_TEX_COL
-les       bx, dword ptr [bp - 016h]
+les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, word ptr es:[bx + 6]
 mov       word ptr [bp - 030h], ax
 cmp       word ptr ds:[_backsector], SECNUM_NULL
 je        label_6
 jmp       label_7
 label_6:
-mov       bx, word ptr [bp - 016h]
+mov       bx, word ptr [bp - 016h] ;sides 
 mov       ax, TEXTURETRANSLATION_SEGMENT
 mov       bx, word ptr es:[bx + 4]
 mov       es, ax
@@ -3191,7 +3202,7 @@ xor       ah, ah
 and       al, 7
 shl       ax, 13
 mov       word ptr ds:[_rw_midtexturemid], ax
-les       bx, dword ptr [bp - 016h]
+les       bx, dword ptr [bp - 016h] ; sides
 mov       bx, word ptr es:[bx + 4]
 mov       ax, TEXTUREHEIGHTS_SEGMENT
 mov       es, ax
@@ -3369,9 +3380,8 @@ mov       cx, 1
 mov       ax, word ptr ds:[_rw_stopx]
 dec       ax
 mov       dx, word ptr ds:[_rw_x]
-mov       word ptr [bp - 0eh], ax
+mov       bx, ax
 mov       ax, word ptr ds:[_ceilingplaneindex]
-mov       bx, word ptr [bp - 0eh]
 call      R_CheckPlane_
 mov       word ptr ds:[_ceilingplaneindex], ax
 label_25:
@@ -3383,9 +3393,7 @@ mov       dx, word ptr ds:[_rw_x]
 xor       cx, cx
 mov       bx, word ptr ds:[_floorplaneindex]
 dec       ax
-mov       word ptr [bp - 0eh], bx
-mov       bx, ax
-mov       ax, word ptr [bp - 0eh]
+xchg      ax, bx
 call      R_CheckPlane_
 mov       word ptr ds:[_floorplaneindex], ax
 label_26:
@@ -3425,16 +3433,16 @@ jne       label_29
 jmp       label_30
 label_29:
 mov       cx, 4
-label_31:
+loop_shift_worldhigh:
 sar       word ptr [bp - 03ch], 1
 rcr       word ptr [bp - 03eh], 1
-loop      label_31
+loop      loop_shift_worldhigh
 mov       ax, word ptr [bp - 03ch]
 mov       cx, 4
-label_32:
+loop_shift_worldlow:
 sar       word ptr [bp - 038h], 1
 rcr       word ptr [bp - 03ah], 1
-loop      label_32
+loop      loop_shift_worldlow
 cmp       di, ax
 jg        label_33
 jne       label_34
@@ -3640,8 +3648,6 @@ mov       byte ptr [bp - 2], cl
 les       bx, dword ptr ds:[_ds_p]
 xor       cx, cx
 mov       word ptr es:[bx + 018h], cx
-mov       word ptr [bp - 0eh], cx
-mov       word ptr [bp - 032h], bx
 mov       word ptr es:[bx + 016h], cx
 mov       byte ptr es:[bx + 01ch], cl ; SIL_NONE
 cmp       ax, word ptr [bp - 010h]
@@ -3655,7 +3661,6 @@ jmp       label_63
 label_51:
 ; bx ok
 mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
-mov       word ptr [bp - 0eh], bx
 mov       cx, word ptr [bp - 010h]
 mov       word ptr es:[bx + 012h], cx
 label_63:
@@ -3671,7 +3676,6 @@ jmp       label_62
 label_53:
 ; todo: is bx _ds_p in all paths?
 or        byte ptr es:[bx + 01ch], SIL_TOP
-mov       word ptr [bp - 0eh], bx
 mov       cx, word ptr [bp - 012h]
 mov       word ptr es:[bx + 014h], cx
 label_62:
@@ -3761,7 +3765,8 @@ mov       byte ptr ds:[_markceiling], 1
 label_80:
 cmp       dx, word ptr [bp - 010h]
 jle       label_66
-jmp       label_81
+cmp       ax, word ptr [bp - 012h]
+jl        label_67  ; jge label_67 does terrible things to pentium. test on
 label_66:
 mov       al, 1
 mov       byte ptr ds:[_markfloor], al
@@ -3774,14 +3779,14 @@ jne       label_47
 cmp       si, word ptr [bp - 03eh]
 jbe       label_47
 label_68:
-les       bx, dword ptr [bp - 016h]
+les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, TEXTURETRANSLATION_SEGMENT
 mov       bx, word ptr es:[bx]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
 mov       word ptr ds:[_toptexture], ax
-test      byte ptr [bp - 024h], 8
+test      byte ptr [bp - 024h], ML_DONTPEGTOP
 jne       label_69
 label_70:
 mov       ax, dx
@@ -3791,7 +3796,7 @@ and       dl, 7
 mov       word ptr ds:[_rw_toptexturemid + 2], ax
 shl       dx, 13
 mov       word ptr ds:[_rw_toptexturemid], dx
-les       bx, dword ptr [bp - 016h]
+les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, TEXTUREHEIGHTS_SEGMENT
 mov       bx, word ptr es:[bx]
 mov       es, ax
@@ -3818,7 +3823,7 @@ mov       ax, word ptr [bp - 03ah]
 cmp       ax, word ptr [bp - 036h]
 jbe       label_72
 label_71:
-les       bx, dword ptr [bp - 016h]
+les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, TEXTURETRANSLATION_SEGMENT
 mov       bx, word ptr es:[bx + 2]
 mov       es, ax
@@ -3834,7 +3839,7 @@ mov       bx, word ptr [bp - 028h]
 mov       ax, word ptr [bx]
 add       word ptr ds:[_rw_toptexturemid + 2], ax
 add       word ptr ds:[_rw_bottomtexturemid+2], ax
-les       bx, dword ptr [bp - 016h]
+les       bx, dword ptr [bp - 016h] ; sides
 cmp       word ptr es:[bx + 4], 0
 jne       label_82
 jmp       label_74
@@ -3858,12 +3863,7 @@ mov       ax, word ptr [bp - 038h]
 mov       word ptr ds:[_rw_bottomtexturemid + 2], ax
 jmp       label_72
 
-label_81:
-cmp       ax, word ptr [bp - 012h]
-jl        label_87
-jmp       label_66
-label_87:
-jmp       label_67
+
 
 
 
