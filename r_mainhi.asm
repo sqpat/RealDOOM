@@ -2900,11 +2900,51 @@ ANG180_HIGHBITS = 08000h
 MOD_FINE_ANGLE_NOSHIFT_HIGHBITS = 07Fh
 ML_DONTPEGBOTTOM = 010h
 scalelight_offset_in_fixed_scalelight = 030h
+MAXDRAWSEGS = 256
+
+out_of_drawsegs:
+LEAVE_MACRO
+pop       di
+pop       si
+pop       cx
+pop       bx
+ret       
 
 ;R_StoreWallRange_
 
 PROC R_StoreWallRange_ NEAR
 PUBLIC R_StoreWallRange_ 
+
+; bp - 2     ; 
+; bp - 4     ; 
+; bp - 6     ; 
+; bp - 8     ; 
+; bp - 0Ah   ; 
+; bp - 0Ch   ; 
+; bp - 0Eh   ; 
+; bp - 010h  ; 
+; bp - 012h  ; 
+; bp - 014h  ; 
+; bp - 016h  ; 
+; bp - 018h  ; 
+; bp - 01Ah  ; 
+; bp - 01Ch  ; 
+; bp - 01Eh  ; 
+; bp - 020h  ; 
+; bp - 022h  ; 
+
+; bp - 024h  ; lineflags
+; bp - 026h  ; 
+; bp - 028h  ; 
+; bp - 02Ah  ; 
+; bp - 02Ch  ; 
+; bp - 02Eh  ; 
+; bp - 030h  ; 
+; bp - 032h  ; 
+
+; bp - 040h  ; dx arg
+; bp - 042h  ; ax arg
+
 
 push      bx
 push      cx
@@ -2915,57 +2955,46 @@ mov       bp, sp
 sub       sp, 03Eh
 push      ax
 push      dx
-mov       bx, OFFSET _curseg_render
-mov       bx, word ptr [bx]
-mov       bx, word ptr [bx + 6]
-shl       bx, 3
 xor       ax, ax
-mov       word ptr [bp - 016h], bx
-mov       bx, OFFSET _curseg_render
 mov       word ptr [bp - 020h], ax
-mov       bx, word ptr [bx]
-mov       word ptr [bp - 01ah], ax
-mov       ax, word ptr [bx + 6]
-shl       ax, 2
-mov       bx, OFFSET _curseg_render
+mov       word ptr [bp - 01Ah], ax
+
+mov       bx, word ptr ds:[_curseg_render]
+mov       ax, word ptr ds:[bx + 6]
+shl       ax, 3
+mov       word ptr [bp - 016h], ax
+
+sar       ax, 1
 add       ah, (_sides_render SHR 8)
-mov       bx, word ptr [bx]
 mov       word ptr [bp - 028h], ax
-mov       bx, word ptr [bx]
-mov       ax, VERTEXES_SEGMENT
-shl       bx, 2
-mov       es, ax
-mov       ax, word ptr es:[bx]
+
+mov       di, word ptr ds:[bx]
+mov       ax, VERTEXES_SEGMENT 
+mov       es, ax	; if put into ds we could lodsw a bit... worth?
+shl       di, 1
+shl       di, 1
+mov       ax, word ptr es:[di]
 mov       word ptr [bp - 026h], ax
-mov       ax, word ptr es:[bx + 2]
-mov       bx, OFFSET _curseg_render
-mov       bx, word ptr [bx]
-mov       bx, word ptr [bx + 2]
-shl       bx, 2
+mov       ax, word ptr es:[di + 2]
 mov       word ptr [bp - 022h], ax
-mov       ax, word ptr es:[bx]
-mov       word ptr [bp - 014h], SIDES_SEGMENT
+
+mov       di, word ptr ds:[bx + 2]
+shl       di, 1
+shl       di, 1
+
+mov       ax, word ptr es:[di]
 mov       word ptr [bp - 02eh], ax
-mov       ax, word ptr es:[bx + 2]
-mov       bx, OFFSET _ds_p
+mov       ax, word ptr es:[di + 2]
 mov       word ptr [bp - 02ch], ax
-mov       ax, word ptr [bx + 2]
-mov       dx, word ptr [bx]
-cmp       ax, DRAWSEGS_BASE_SEGMENT
-jne       label_1
-cmp       dx, FINE_ANG90_NOSHIFT
-jne       label_1
-leave     
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
-label_1:
-mov       si, OFFSET _curseg
+mov       word ptr [bp - 014h], SIDES_SEGMENT
+
+mov       dx, word ptr ds:[_ds_p]
+cmp       dx, (MAXDRAWSEGS * SIZEOF_DRAWSEG_T)
+je        out_of_drawsegs
+
 mov       ax, SEG_LINEDEFS_SEGMENT
-mov       si, word ptr [si]
 mov       es, ax
+mov       si, word ptr ds:[_curseg]
 add       si, si
 mov       ax, LINEFLAGSLIST_SEGMENT
 mov       si, word ptr es:[si]
@@ -2995,19 +3024,16 @@ xor       ah, ah
 shl       bx, cl
 mov       dx, ax
 or        dx, bx
-mov       bx, OFFSET _curseg
 mov       byte ptr es:[di], dl
-mov       ax, word ptr [bx]
+mov       ax, word ptr ds:[_curseg]
 add       ax, ax
 mov       bx, ax
-mov       si, OFFSET _rw_normalangle
 add       bh, (_seg_normalangles SHR 8)
 mov       ax, word ptr [bx]
-mov       word ptr [si], ax
+mov       word ptr ds:[_rw_normalangle], ax
 shl       ax, 3
-mov       bx, OFFSET _rw_angle1 + 2
 mov       word ptr [bp - 02ah], ax
-sub       ax, word ptr [bx]
+sub       ax, word ptr ds:[_rw_angle1 + 2]
 cwd       
 xor       ax, dx
 sub       ax, dx
@@ -3033,23 +3059,21 @@ mov       cx, dx
 mov       ax, FINESINE_SEGMENT
 mov       dx, si
 call     FixedMulTrigNoShift_
-mov       bx, OFFSET _rw_distance
-mov       word ptr [bx], ax
-mov       word ptr [bx + 2], dx
+
+mov       word ptr ds:[_rw_distance], ax
+mov       word ptr ds:[_rw_distance + 2], dx
 label_49:
-mov       bx, OFFSET _rw_x
 mov       ax, word ptr [bp - 040h]
-mov       word ptr [bx], ax
+mov       word ptr ds:[_rw_x], ax
 mov       bx, OFFSET _ds_p
-les       si, dword ptr [bx]
+les       si, dword ptr ds:[_ds_p]
 mov       word ptr es:[si + 2], ax
-les       si, dword ptr [bx]
+
 mov       ax, word ptr [bp - 042h]
 mov       word ptr es:[si + 4], ax
-mov       si, OFFSET _curseg
-les       di, dword ptr [bx]
-mov       ax, word ptr [si]
-mov       word ptr es:[di], ax
+
+mov       ax, word ptr ds:[_curseg]
+mov       word ptr es:[si], ax
 mov       ax, word ptr [bp - 042h]
 mov       bx, OFFSET _rw_stopx
 inc       ax
