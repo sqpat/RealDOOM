@@ -370,6 +370,8 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 #define TOP_TEXTURE_SEGLOOP_CACHE 		0
 #define BOT_TEXTURE_SEGLOOP_CACHE 		1
 
+/*
+
 void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
 
 	if (seglooptexrepeat[segloopcachetype]){
@@ -404,26 +406,12 @@ void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t se
 			dc_source_segment = R_GetColumnSegment(texture, texturecolumn, segloopcachetype);
 			//todo: use self modifying code in ASM to change these segloopcachedbasecol values around here. then reset on function exit.
 
-/*
-			if (setval && midtexture == 50){
-				FILE* fp = fopen("tex.txt", "ab");
-				fprintf(fp, "\n CHANGED mid %i %i %i", segloopcachedbasecol[segloopcachetype], segloopnextlookup[segloopcachetype], texturecolumn);
-				fclose(fp);
-			}	
-			*/
 
 		} else {
 			dc_source_segment = segloopcachedsegment[segloopcachetype] 
 				+ FastMul8u8u((uint8_t) (texturecolumn - segloopcachedbasecol[segloopcachetype]) , 
 							segloopheightvalcache[segloopcachetype]);
 
-/*
-			if (setval && midtexture == 50){
-							FILE* fp = fopen("tex.txt", "ab");
-							fprintf(fp, "\nUSED mid %i %i %i", segloopcachedbasecol[segloopcachetype], segloopnextlookup[segloopcachetype], texturecolumn);
-							fclose(fp);
-						}	
-*/
 		}
 	}
 
@@ -431,6 +419,8 @@ void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t se
 
 
 }
+
+*/
 
 void __near R_RenderSegLoop (fixed_t rw_scalestep);
 

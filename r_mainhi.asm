@@ -33,7 +33,7 @@ EXTRN FixedMul_:PROC
 EXTRN FastMul16u32u_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN R_PointToAngle_:PROC
-EXTRN R_GetSourceSegment_:NEAR
+EXTRN R_GetColumnSegment_:NEAR
 EXTRN FastDiv3232_:PROC
 
 EXTRN _validcount:WORD
@@ -46,7 +46,12 @@ EXTRN _toptexture:WORD
 EXTRN _midtexture:WORD
 EXTRN _bottomtexture:WORD
 EXTRN _segloopnextlookup:WORD
+EXTRN _segloopprevlookup:WORD
 EXTRN _seglooptexrepeat:WORD
+EXTRN _seglooptexmodulo:BYTE
+EXTRN _segloopcachedbasecol:WORD
+EXTRN _segloopheightvalcache:BYTE
+EXTRN _segloopcachedsegment:WORD
 
 
 .CODE
@@ -1716,6 +1721,94 @@ jmp   spritelights_set
 
 
 endp
+
+
+
+;R_GetSourceSegment_
+
+PROC R_GetSourceSegment_ NEAR
+PUBLIC R_GetSourceSegment_ 
+
+push  cx
+push  si
+push  di
+mov   cx, ax
+mov   si, dx
+mov   dl, bl
+mov   al, bl
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   di, ax
+cmp   word ptr [bx + _seglooptexrepeat], 0
+je    label_7
+mov   al, byte ptr [di + _seglooptexmodulo]
+test  al, al
+jne   label_9
+mov   di, word ptr [bx + _seglooptexrepeat]
+label_10:
+mov   al, dl
+cbw  
+mov   bx, ax
+add   bx, ax
+cmp   cx, word ptr [bx + _segloopcachedbasecol]
+jge   label_6
+sub   word ptr [bx + _segloopcachedbasecol], di
+jmp   label_10
+label_9:
+mov   ah, byte ptr [di + _segloopheightvalcache]
+and   al, cl
+mul   ah
+label_2:
+add   ax, word ptr [bx + _segloopcachedsegment]
+label_1:
+mov   bx, OFFSET _dc_source_segment
+mov   word ptr [bx], ax
+xor   ax, ax
+call dword ptr [_R_DrawColumnPrepCall]
+pop   di
+pop   si
+pop   cx
+ret   
+label_6:
+mov   al, dl
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   si, ax
+mov   ax, word ptr [bx + _segloopcachedbasecol]
+add   ax, di
+cmp   cx, ax
+jl    label_5
+mov   word ptr [bx + _segloopcachedbasecol], ax
+jmp   label_6
+label_5:
+mov   ah, byte ptr [si + _segloopheightvalcache]
+mov   al, cl
+sub   al, byte ptr [bx + _segloopcachedbasecol]
+mul   ah
+jmp   label_2
+label_7:
+cmp   cx, word ptr [bx + _segloopnextlookup]
+jge   label_3
+cmp   cx, word ptr [bx + _segloopprevlookup]
+jge   label_4
+label_3:
+mov   al, dl
+cbw  
+mov   dx, cx
+mov   bx, ax
+mov   ax, si
+call  R_GetColumnSegment_
+jmp   label_1
+label_4:
+mov   ah, byte ptr [di + _segloopheightvalcache]
+mov   al, cl
+sub   al, byte ptr [bx + _segloopcachedbasecol]
+mul   ah
+jmp   label_2
+
+ENDP
 
 ; 1 SHR 12
 HEIGHTUNIT = 01000h
