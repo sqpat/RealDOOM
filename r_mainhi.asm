@@ -3322,69 +3322,55 @@ sar       di, 1
 rcr       si, 1
 loop      label_24
 mov       dx, di
-; todo les to load two?
-mov       ax, word ptr ds:[_rw_scale]
-mov       cx, word ptr ds:[_rw_scale + 2]
-mov       bx, ax
+; les to load two words
+les       bx, dword ptr ds:[_rw_scale]
+mov       cx, es
 mov       ax, si
 call FixedMul_
-mov       bx, OFFSET _centeryfrac_shiftright4
-mov       cx, word ptr [bx]
+les       cx, dword ptr ds:[_centeryfrac_shiftright4]
 sub       cx, ax
-mov       ax, word ptr [bx + 2]
-mov       bx, OFFSET _topfrac
+mov       ax, es
 sbb       ax, dx
-mov       word ptr [bx], cx
-mov       word ptr [bx + 2], ax
-mov       bx, OFFSET _rw_scale
+mov       word ptr ds:[_topfrac], cx
+mov       word ptr ds:[_topfrac + 2], ax
+; les to load two words
+les       bx, dword ptr ds:[_rw_scale]
+mov       cx, es
 mov       dx, word ptr [bp - 034h]
-mov       ax, word ptr [bx]
-mov       cx, word ptr [bx + 2]
-mov       bx, ax
 mov       ax, word ptr [bp - 036h]
 call FixedMul_
-mov       bx, OFFSET _centeryfrac_shiftright4
-mov       cx, word ptr [bx]
+les       cx, dword ptr ds:[_centeryfrac_shiftright4]
 sub       cx, ax
-mov       ax, word ptr [bx + 2]
-mov       bx, OFFSET _bottomfrac
+mov       ax, es
 sbb       ax, dx
-mov       word ptr [bx], cx
-mov       word ptr [bx + 2], ax
-mov       bx, OFFSET _markceiling
-cmp       byte ptr [bx], 0
+mov       word ptr ds:[_bottomfrac], cx
+mov       word ptr ds:[_bottomfrac + 2], ax
+
+cmp       byte ptr ds:[_markceiling], 0
 je        label_25
-mov       bx, OFFSET _rw_stopx
 mov       cx, 1
-mov       ax, word ptr [bx]
-mov       bx, OFFSET _rw_x
+mov       ax, word ptr ds:[_rw_stopx]
 dec       ax
-mov       dx, word ptr [bx]
-mov       bx, OFFSET _ceilingplaneindex
+mov       dx, word ptr ds:[_rw_x]
 mov       word ptr [bp - 0eh], ax
-mov       ax, word ptr [bx]
+mov       ax, word ptr ds:[_ceilingplaneindex]
 mov       bx, word ptr [bp - 0eh]
 call      R_CheckPlane_
-mov       bx, OFFSET _ceilingplaneindex
-mov       word ptr [bx], ax
+mov       word ptr ds:[_ceilingplaneindex], ax
 label_25:
-mov       bx, OFFSET _markfloor
-cmp       byte ptr [bx], 0
+
+cmp       byte ptr ds:[_markfloor], 0
 je        label_26
-mov       bx, OFFSET _rw_stopx
-mov       ax, word ptr [bx]
-mov       bx, OFFSET _rw_x
-mov       dx, word ptr [bx]
-mov       bx, OFFSET _floorplaneindex
+mov       ax, word ptr ds:[_rw_stopx]
+mov       dx, word ptr ds:[_rw_x]
 xor       cx, cx
-mov       bx, word ptr [bx]
+mov       bx, word ptr ds:[_floorplaneindex]
 dec       ax
 mov       word ptr [bp - 0eh], bx
 mov       bx, ax
 mov       ax, word ptr [bp - 0eh]
 call      R_CheckPlane_
-mov       bx, OFFSET _floorplaneindex
-mov       word ptr [bx], ax
+mov       word ptr ds:[_floorplaneindex], ax
 label_26:
 mov       ax, word ptr [bp - 042h]
 cmp       ax, word ptr [bp - 040h]
@@ -3401,12 +3387,11 @@ mov       ax, dx
 mov       cx, word ptr [bp - 034h]
 neg       ax
 mov       dx, bx
-mov       bx, OFFSET _topstep
 neg       dx
 sbb       ax, 0
-mov       word ptr [bx], dx
+mov       word ptr ds:[_topstep], dx
 mov       dx, word ptr [bp - 01ch]
-mov       word ptr [bx + 2], ax
+mov       word ptr ds:[_topstep + 2], ax
 mov       bx, word ptr [bp - 036h]
 mov       ax, word ptr [bp - 01eh]
 call FixedMul_
@@ -3414,13 +3399,11 @@ mov       bx, ax
 mov       ax, dx
 neg       ax
 mov       dx, bx
-mov       bx, OFFSET _bottomstep
 neg       dx
 sbb       ax, 0
-mov       word ptr [bx], dx
-mov       word ptr [bx + 2], ax
-mov       bx, OFFSET _backsector
-cmp       word ptr [bx], -1
+mov       word ptr ds:[_bottomstep], dx
+mov       word ptr ds:[_bottomstep + 2], ax
+cmp       word ptr ds:[_backsector], -1
 jne       label_29
 jmp       label_30
 label_29:
@@ -3515,29 +3498,29 @@ mov       ax, word ptr [bp - 01eh]
 mov       dx, word ptr [bp - 01ch]
 call      R_RenderSegLoop_
 label_28:
-mov       bx, OFFSET _ds_p
-les       si, dword ptr [bx]
+
+les       si, dword ptr ds:[_ds_p]
 test      byte ptr es:[si + 01ch], SIL_TOP
 jne       label_36
-jmp       label_37
+cmp       byte ptr ds:[_maskedtexture], 0
+je        label_38
+jmp       label_36
+
+
 label_36:
-mov       bx, OFFSET _ds_p
-les       si, dword ptr [bx]
+
 cmp       word ptr es:[si + 016h], 0
 jne       label_38
-mov       bx, OFFSET _rw_stopx
 mov       si, word ptr [bp - 040h]
-mov       di, OFFSET _lastopening
 mov       cx, OPENINGS_SEGMENT
-mov       ax, word ptr [bx]
-mov       di, word ptr [di]
+mov       ax, word ptr ds:[_rw_stopx]
+mov       di, word ptr ds:[_lastopening]
 add       si, si
 sub       ax, word ptr [bp - 040h]
 add       si, OFFSET_CEILINGCLIP
 mov       es, cx
 add       di, di
 add       ax, ax
-mov       bx, OFFSET _lastopening
 push      ds
 push      di
 xchg      ax, cx
@@ -3548,42 +3531,35 @@ adc       cx, cx
 rep movsb 
 pop       di
 pop       ds
-mov       ax, word ptr [bx]
-mov       bx, OFFSET _ds_p
+mov       ax, word ptr ds:[_lastopening]
 sub       ax, word ptr [bp - 040h]
-mov       si, word ptr [bx]
+les       si, dword ptr ds:[_ds_p]
 add       ax, ax
-mov       es, word ptr [bx + 2]
-mov       bx, OFFSET _rw_stopx
 mov       word ptr es:[si + 016h], ax
-mov       ax, word ptr [bx]
-mov       bx, _lastopening
+mov       ax, word ptr ds:[_rw_stopx]
 sub       ax, word ptr [bp - 040h]
-add       word ptr [bx], ax
+add       word ptr ds:[_lastopening], ax
 label_38:
-mov       bx, OFFSET _ds_p
-les       si, dword ptr [bx]
+; es:si is ds_p
 test      byte ptr es:[si + 01ch], SIL_BOTTOM
 jne       label_39
-jmp       label_40
+cmp       byte ptr ds:[_maskedtexture], 0
+je        label_41
+jmp       label_39
 label_39:
-mov       bx, OFFSET _ds_p
-les       si, dword ptr [bx]
+les       si, dword ptr ds:[_ds_p]
 cmp       word ptr es:[si + 018h], 0
 jne       label_41
-mov       bx, OFFSET _rw_stopx
 mov       si, word ptr [bp - 040h]
-mov       di, _lastopening
 mov       cx, OPENINGS_SEGMENT
-mov       ax, word ptr [bx]
-mov       di, word ptr [di]
+mov       ax, word ptr ds:[_rw_stopx]
+mov       di, word ptr ds:[_lastopening]
 add       si, si
 sub       ax, word ptr [bp - 040h]
 add       si, OFFSET_FLOORCLIP
 mov       es, cx
 add       di, di
 add       ax, ax
-mov       bx, _lastopening
 push      ds
 push      di
 xchg      ax, cx
@@ -3594,24 +3570,18 @@ adc       cx, cx
 rep movsb 
 pop       di
 pop       ds
-mov       ax, word ptr [bx]
-mov       bx, OFFSET _ds_p
+mov       ax, word ptr ds:[_lastopening]
 sub       ax, word ptr [bp - 040h]
-mov       si, word ptr [bx]
+les       si, dword ptr ds:[_ds_p]
 add       ax, ax
-mov       es, word ptr [bx + 2]
-mov       bx, OFFSET _rw_stopx
 mov       word ptr es:[si + 018h], ax
-mov       ax, word ptr [bx]
-mov       bx, _lastopening
+mov       ax, word ptr ds:[_rw_stopx]
 sub       ax, word ptr [bp - 040h]
-add       word ptr [bx], ax
+add       word ptr ds:[_lastopening], ax
 label_41:
-mov       bx, OFFSET _maskedtexture
-cmp       byte ptr [bx], 0
+cmp       byte ptr ds:[_maskedtexture], 0
 je        label_58
-mov       bx, OFFSET _ds_p
-les       si, dword ptr [bx]
+les       si, dword ptr ds:[_ds_p]
 test      byte ptr es:[si + 01ch], SIL_TOP	; todo 
 jne       label_58
 or        byte ptr es:[si + 01ch], SIL_TOP
@@ -3989,20 +3959,7 @@ jmp       label_44
 label_18:
 mov       word ptr ds:[_walllights], 0
 jmp       label_43
-label_37:
-mov       bx, OFFSET _maskedtexture
-cmp       byte ptr [bx], 0
-je        jump_to_label_38
-jmp       label_36
-jump_to_label_38:
-jmp       label_38
-label_40:
-mov       bx, OFFSET _maskedtexture
-cmp       byte ptr [bx], 0
-je        jump_to_label_41
-jmp       label_39
-jump_to_label_41:
-jmp       label_41
+
 
 ENDP
 
