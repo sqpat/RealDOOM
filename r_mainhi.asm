@@ -3065,38 +3065,32 @@ mov       word ptr ds:[_rw_distance + 2], dx
 label_49:
 mov       ax, word ptr [bp - 040h]
 mov       word ptr ds:[_rw_x], ax
-mov       bx, OFFSET _ds_p
-les       si, dword ptr ds:[_ds_p]
-mov       word ptr es:[si + 2], ax
+les       di, dword ptr ds:[_ds_p]
+mov       word ptr es:[di + 2], ax
 
 mov       ax, word ptr [bp - 042h]
-mov       word ptr es:[si + 4], ax
+mov       word ptr es:[di + 4], ax
 
 mov       ax, word ptr ds:[_curseg]
-mov       word ptr es:[si], ax
+mov       word ptr es:[di], ax
 mov       ax, word ptr [bp - 042h]
-mov       bx, OFFSET _rw_stopx
 inc       ax
-mov       si, _viewangle_shiftright3
-mov       word ptr [bx], ax
+mov       word ptr ds:[_rw_stopx], ax
 mov       ax, XTOVIEWANGLE_SEGMENT
 mov       bx, word ptr [bp - 040h]
 mov       es, ax
 add       bx, bx
-mov       ax, word ptr [si]
+mov       ax, word ptr ds:[_viewangle_shiftright3]
 add       ax, word ptr es:[bx]
-mov       si, OFFSET _rw_scale
 push      cs
 call      R_ScaleFromGlobalAngle_
-mov       word ptr [si], ax
-mov       word ptr [si + 2], dx
-mov       bx, OFFSET _ds_p
-mov       dx, word ptr [si]
-mov       ax, word ptr [si + 2]
-les       si, dword ptr [bx]
-mov       word ptr es:[si + 8], ax
+mov       word ptr ds:[_rw_scale], ax
+mov       word ptr ds:[_rw_scale + 2], dx
+xchg      ax, dx ; todo dumb
+les       di, dword ptr ds:[_ds_p]
+mov       word ptr es:[di + 8], ax
 mov       ax, word ptr [bp - 042h]
-mov       word ptr es:[si + 6], dx
+mov       word ptr es:[di + 6], dx
 cmp       ax, word ptr [bp - 040h]
 jg        label_4
 jmp       label_5
@@ -3703,17 +3697,11 @@ mov       word ptr [bx], 0
 mov       word ptr [bx + 2], 0
 jmp       label_49
 label_5:
-mov       si, bx
-mov       di, si
-mov       bx, word ptr [bx]
-mov       es, word ptr [si + 2]
-mov       si, word ptr [di]
-mov       cx, word ptr [di + 2]
-mov       dx, word ptr es:[bx + 6]
-mov       ax, word ptr es:[bx + 8]
-mov       es, cx
-mov       word ptr es:[si + 0ah], dx
-mov       word ptr es:[si + 0ch], ax
+; ds_p is es:di
+mov       ax, word ptr es:[di + 6]
+mov       word ptr es:[di + 0ah], ax
+mov       ax, word ptr es:[di + 8]
+mov       word ptr es:[di + 0ch], ax
 jmp       label_48
 label_9:
 mov       bx, OFFSET _rw_midtexturemid
