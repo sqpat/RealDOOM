@@ -3237,7 +3237,16 @@ label_76:
 mov       ax, word ptr [bp - 018h]
 cmp       ax, FINE_ANG90_NOSHIFT
 ja        label_12
-jmp       label_13
+mov       bx, word ptr [bp - 020h]
+mov       cx, word ptr [bp - 01ah]
+mov       dx, ax
+mov       ax, FINESINE_SEGMENT
+call FixedMulTrigNoShift_
+; used later, dont change?
+mov       bx, OFFSET _rw_offset
+mov       word ptr [bx], ax
+mov       word ptr [bx + 2], dx
+jmp       label_46
 label_12:
 mov       bx, OFFSET _rw_offset ; used later, dont change
 mov       ax, word ptr [bp - 020h]
@@ -3276,13 +3285,20 @@ add       dx, ax
 mov       ax, word ptr [bp - 022h]
 cmp       ax, word ptr [bp - 02ch]
 je        label_15
-jmp       label_16
+label_16:
+mov       ax, word ptr [bp - 026h]
+cmp       ax, word ptr [bp - 02eh]
+jne       label_44
+
+inc       dx
+jmp       label_44
 label_15:
 dec       dx
 label_44:
 test      dx, dx
 jge       label_17
-jmp       label_18
+mov       word ptr ds:[_walllights], 0
+jmp       label_43
 label_20:
 mov       bx, dx
 add       bx, dx
@@ -3750,7 +3766,29 @@ mov       ax, word ptr es:[bx]
 mov       word ptr ds:[_toptexture], ax
 test      byte ptr [bp - 024h], 8
 jne       label_69
-jmp       label_70
+label_70:
+mov       ax, dx
+xor       dh, dh
+sar       ax, 3
+and       dl, 7
+mov       word ptr ds:[_rw_toptexturemid + 2], ax
+shl       dx, 13
+mov       word ptr ds:[_rw_toptexturemid], dx
+les       bx, dword ptr [bp - 016h]
+mov       ax, TEXTUREHEIGHTS_SEGMENT
+mov       bx, word ptr es:[bx]
+mov       es, ax
+mov       al, byte ptr es:[bx]
+xor       ah, ah
+inc       ax
+add       word ptr ds:[_rw_toptexturemid + 2], ax
+mov       dx, word ptr ds:[_viewz]
+mov       ax, word ptr ds:[_viewz + 2]
+sub       word ptr ds:[_rw_toptexturemid], dx
+sbb       word ptr ds:[_rw_toptexturemid + 2], ax
+jmp       label_47
+
+
 label_69:
 mov       word ptr ds:[_rw_toptexturemid], si
 mov       word ptr ds:[_rw_toptexturemid + 2], di
@@ -3847,49 +3885,10 @@ jl        label_87
 jmp       label_66
 label_87:
 jmp       label_67
-label_70:
-mov       ax, dx
-xor       dh, dh
-sar       ax, 3
-and       dl, 7
-mov       word ptr ds:[_rw_toptexturemid + 2], ax
-shl       dx, 13
-mov       word ptr ds:[_rw_toptexturemid], dx
-les       bx, dword ptr [bp - 016h]
-mov       ax, TEXTUREHEIGHTS_SEGMENT
-mov       bx, word ptr es:[bx]
-mov       es, ax
-mov       al, byte ptr es:[bx]
-xor       ah, ah
-inc       ax
-add       word ptr ds:[_rw_toptexturemid + 2], ax
-mov       dx, word ptr ds:[_viewz]
-mov       ax, word ptr ds:[_viewz + 2]
-sub       word ptr ds:[_rw_toptexturemid], dx
-sbb       word ptr ds:[_rw_toptexturemid + 2], ax
-jmp       label_47
-label_13:
-mov       bx, word ptr [bp - 020h]
-mov       cx, word ptr [bp - 01ah]
-mov       dx, ax
-mov       ax, FINESINE_SEGMENT
-call FixedMulTrigNoShift_
-; used later, dont change?
-mov       bx, OFFSET _rw_offset
-mov       word ptr [bx], ax
-mov       word ptr [bx + 2], dx
-jmp       label_46
-label_16:
-mov       ax, word ptr [bp - 026h]
-cmp       ax, word ptr [bp - 02eh]
-je        label_45
-jmp       label_44
-label_45:
-inc       dx
-jmp       label_44
-label_18:
-mov       word ptr ds:[_walllights], 0
-jmp       label_43
+
+
+
+
 
 
 ENDP
