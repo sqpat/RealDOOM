@@ -1737,46 +1737,46 @@ PUBLIC R_GetSourceSegment_
 
 push  es
 push  bx
-push  cx
-push  si
 push  di
-mov   cx, ax
+
 rcl   bx, 1	 ; bx gets carry flag
 and   bx, 1
 mov   di, bx  ; use bx + di for word ptr
 mov   word ptr cs:[SELFMODIFY_set_ax_to_tex+1], dx
-; cx stores texturecolumn. todo switch to dx?
+; ax stores texturecolumn. todo switch to dx?
 ; dx stores cachedbasecol.
-mov   dx, word ptr [bx + di + _segloopcachedbasecol]
-mov   si, word ptr [bx + di + _seglooptexrepeat]
-cmp   si, 0
+mov   dx, word ptr [bx + di + _seglooptexrepeat]
+cmp   dx, 0
 je    non_repeating_texture
-mov   al, byte ptr [di + _seglooptexmodulo]
-test  al, al
+mov   dl, byte ptr [bx + _seglooptexmodulo]
+test  dl, dl
 je   non_po2_texture_mod
 mov   ah, byte ptr [bx + _segloopheightvalcache]
-and   al, cl
+and   al, dl
 mul   ah
 add_base_segment_and_draw:
 ; todo self modify this
 add   ax, word ptr [bx + di + _segloopcachedsegment]
-label_1:
+just_do_draw:
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
-call dword ptr [_R_DrawColumnPrepCall]
+db 09Ah
+dw R_DRAWCOLUMNPREPCALLOFFSET 
+dw COLFUNC_FUNCTION_AREA_SEGMENT
 pop   di
-pop   si
-pop   cx
 pop   bx
 pop   es
 ret
 non_po2_texture_mod:
 ; si stores tex repeat
-cmp   cx, dx
+push  si
+mov   si, dx
+mov   dx, word ptr [bx + di + _segloopcachedbasecol]
+cmp   ax, dx
 jge   done_subbing_modulo
 sub   dx, si
 continue_subbing_modulo:
-cmp   cx, dx
+cmp   ax, dx
 jge   record_subbed_modulo
 sub   dx, si
 jmp   continue_subbing_modulo
@@ -1787,11 +1787,11 @@ mov   word ptr [bx + di + _segloopcachedbasecol], dx
 done_subbing_modulo:
 
 add   dx, si
-cmp   cx, dx
+cmp   ax, dx
 jl    done_adding_modulo
 continue_adding_modulo:
 add   dx, si
-cmp   cx, dx
+cmp   ax, dx
 jl    record_added_modulo
 jmp   continue_adding_modulo
 record_added_modulo:
@@ -1802,26 +1802,25 @@ add   dx, si
 
 done_adding_modulo:
 sub   dx, si
-
+pop   si
 mov   ah, byte ptr [bx + _segloopheightvalcache]
-mov   al, cl
 sub   al, dl
 mul   ah
 jmp   add_base_segment_and_draw
 non_repeating_texture:
-cmp   cx, word ptr [bx + di + _segloopnextlookup]
+cmp   ax, word ptr [bx + di + _segloopnextlookup]
 jge   out_of_texture_bounds
-cmp   cx, word ptr [bx + di + _segloopprevlookup]
+cmp   ax, word ptr [bx + di + _segloopprevlookup]
 jge   in_texture_bounds
 out_of_texture_bounds:
-mov   dx, cx
+mov   dx, ax
 SELFMODIFY_set_ax_to_tex:
 mov   ax, 01000h
 call  R_GetColumnSegment_
-jmp   label_1
+jmp   just_do_draw
 in_texture_bounds:
+mov   dx, word ptr [bx + di + _segloopcachedbasecol]
 mov   ah, byte ptr [bx + _segloopheightvalcache]
-mov   al, cl
 sub   al, dl
 mul   ah
 jmp   add_base_segment_and_draw
