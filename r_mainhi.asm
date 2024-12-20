@@ -3087,7 +3087,7 @@ call      R_ScaleFromGlobalAngle_
 mov       word ptr ds:[_rw_scale], ax
 mov       word ptr ds:[_rw_scale + 2], dx
 xchg      ax, dx ; todo dumb
-les       di, dword ptr ds:[_ds_p]
+mov       es, word ptr ds:[_ds_p+2]
 mov       word ptr es:[di + 8], ax
 mov       ax, word ptr [bp - 042h]
 mov       word ptr es:[di + 6], dx
@@ -3098,38 +3098,31 @@ label_4:
 mov       si, ax
 add       si, ax
 mov       ax, XTOVIEWANGLE_SEGMENT
-mov       bx, OFFSET _viewangle_shiftright3
 mov       es, ax
-mov       ax, word ptr [bx]
+mov       ax, word ptr ds:[_viewangle_shiftright3]
 add       ax, word ptr es:[si]
-mov       si, OFFSET _ds_p
 push      cs
 call      R_ScaleFromGlobalAngle_
 nop
-les       bx, dword ptr [si]
-mov       cx, word ptr [bp - 042h]
-mov       word ptr es:[bx + 0ah], ax
-sub       cx, word ptr [bp - 040h]
-mov       word ptr es:[bx + 0ch], dx
-mov       bx, si
-mov       si, word ptr [si]
-mov       es, word ptr [bx + 2]
-mov       bx, OFFSET _rw_scale
-mov       ax, word ptr es:[si + 0ah]
-mov       dx, word ptr es:[si + 0ch]
-sub       ax, word ptr [bx]
-sbb       dx, word ptr [bx + 2]
-mov       bx, cx
-mov       si, OFFSET _ds_p
+mov       es, word ptr ds:[_ds_p+2]
+mov       bx, word ptr [bp - 042h]
+mov       word ptr es:[di + 0ah], ax
+sub       bx, word ptr [bp - 040h]
+mov       word ptr es:[di + 0ch], dx
+mov       ax, word ptr es:[di + 0ah]
+mov       dx, word ptr es:[di + 0ch]
+sub       ax, word ptr ds:[_rw_scale]
+sbb       dx, word ptr ds:[_rw_scale + 2]
+
 call FastDiv3216u_
-les       bx, dword ptr [si]
+mov       es, word ptr ds:[_ds_p+2]
 mov       word ptr [bp - 01eh], ax
-mov       word ptr es:[bx + 0eh], ax
+mov       word ptr es:[di + 0eh], ax
 mov       word ptr [bp - 01ch], dx
-mov       word ptr es:[bx + 010h], dx
+mov       word ptr es:[di + 010h], dx
 label_48:
-mov       bx, OFFSET _frontsector
-les       si, dword ptr [bx]
+; si = frontsector
+les       si, dword ptr ds:[_frontsector]
 mov       ax, word ptr es:[si]
 mov       word ptr [bp - 010h], ax
 mov       ax, word ptr es:[si + 2]
@@ -3138,6 +3131,7 @@ mov       al, byte ptr es:[si + 4]
 mov       bx, OFFSET _viewz
 mov       byte ptr [bp - 6], al
 mov       al, byte ptr es:[si + 5]
+; BIG TODO: make this di used some other way
 mov       di, word ptr [bp - 012h]
 mov       byte ptr [bp - 0ch], al
 mov       al, byte ptr es:[si + 0eh]
@@ -3158,24 +3152,18 @@ mov       word ptr [bp - 036h], ax
 mov       ax, word ptr [bx]
 sub       word ptr [bp - 036h], ax
 mov       ax, word ptr [bx + 2]
-mov       bx, OFFSET _maskedtexture
-mov       byte ptr [bx], 0
 sbb       word ptr [bp - 034h], ax
-mov       al, byte ptr [bx]
-cbw      
-mov       bx, OFFSET _ds_p
+xor       ax, ax
+mov       byte ptr ds:[_maskedtexture], al
 mov       word ptr ds:[_bottomtexture], ax
 mov       word ptr ds:[_toptexture], ax
 mov       word ptr ds:[_midtexture], ax
-les       ax, dword ptr [bx]
-mov       bx, ax
+les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], NULL_TEX_COL
 les       bx, dword ptr [bp - 016h]
 mov       ax, word ptr es:[bx + 6]
-mov       bx, OFFSET _backsector
 mov       word ptr [bp - 030h], ax
-mov       ax, word ptr [bx]
-cmp       ax, SECNUM_NULL
+cmp       word ptr ds:[_backsector], SECNUM_NULL
 je        label_6
 jmp       label_7
 label_6:
@@ -3704,63 +3692,31 @@ mov       ax, word ptr es:[di + 8]
 mov       word ptr es:[di + 0ch], ax
 jmp       label_48
 label_9:
-mov       bx, OFFSET _rw_midtexturemid
-mov       word ptr [bx], si
-mov       word ptr [bx + 2], di
+mov       word ptr ds:[_rw_midtexturemid], si
+mov       word ptr ds:[_rw_midtexturemid + 2], di
 jmp       label_50
 label_7:
-mov       es, word ptr [bx + 2]
-mov       bx, ax
+les       bx, dword ptr ds:[_backsector]
 mov       ax, word ptr es:[bx]
-mov       bx, OFFSET _backsector
-les       dx, dword ptr [bx]
-mov       bx, dx
 mov       dx, word ptr es:[bx + 2]
-mov       bx, OFFSET _backsector
-les       cx, dword ptr [bx]
-mov       bx, cx
-mov       cl, byte ptr es:[bx + 5]
-mov       bx, OFFSET _backsector
-mov       byte ptr [bp - 0ah], cl
-les       cx, dword ptr [bx]
-mov       bx, cx
-mov       cl, byte ptr es:[bx + 4]
-mov       bx, OFFSET _backsector
+mov       cx, word ptr es:[bx + 4]
 mov       byte ptr [bp - 4], cl
-les       cx, dword ptr [bx]
-mov       bx, cx
+mov       byte ptr [bp - 0ah], ch
 mov       cl, byte ptr es:[bx + 0eh]
-mov       bx, OFFSET _ds_p
 mov       byte ptr [bp - 2], cl
-les       cx, dword ptr [bx]
-mov       bx, cx
-mov       word ptr es:[bx + 018h], 0
-mov       cx, word ptr es:[bx + 018h]
-mov       bx, OFFSET _ds_p
+les       bx, dword ptr ds:[_ds_p]
+xor       cx, cx
+mov       word ptr es:[bx + 018h], cx
 mov       word ptr [bp - 0eh], cx
-mov       cx, word ptr [bx]
-mov       word ptr [bp - 032h], cx
-mov       es, word ptr [bx + 2]
-mov       bx, word ptr [bp - 032h]
-mov       cx, word ptr [bp - 0eh]
+mov       word ptr [bp - 032h], bx
 mov       word ptr es:[bx + 016h], cx
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
-mov       byte ptr es:[bx + 01ch], SIL_NONE
+mov       byte ptr es:[bx + 01ch], cl ; SIL_NONE
 cmp       ax, word ptr [bp - 010h]
 jl        label_51
 jmp       label_52
 label_51:
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
 mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
-mov       bx, OFFSET _ds_p
-mov       cx, word ptr [bx]
-mov       word ptr [bp - 0eh], cx
-mov       es, word ptr [bx + 2]
-mov       bx, word ptr [bp - 0eh]
+mov       word ptr [bp - 0eh], bx
 mov       cx, word ptr [bp - 010h]
 mov       word ptr es:[bx + 012h], cx
 label_63:
@@ -3768,6 +3724,7 @@ cmp       dx, word ptr [bp - 012h]
 jg        label_53
 jmp       label_54
 label_53:
+; todo: is bx _ds_p in all paths?
 mov       bx, OFFSET _ds_p
 les       cx, dword ptr [bx]
 mov       bx, cx
@@ -3968,8 +3925,7 @@ mov       ax, word ptr [bp - 038h]
 mov       word ptr [bx + 2], ax
 jmp       label_72
 label_52:
-mov       bx, OFFSET _viewz_shortheight
-cmp       ax, word ptr [bx]
+cmp       ax, word ptr ds:[_viewz_shortheight]
 jg        label_83
 jmp       label_63
 label_83:
@@ -3977,9 +3933,6 @@ mov       bx, OFFSET _ds_p
 les       cx, dword ptr [bx]
 mov       bx, cx
 mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
-mov       bx, OFFSET _ds_p
-les       cx, dword ptr [bx]
-mov       bx, cx
 mov       word ptr es:[bx + 012h], MAXSHORT
 jmp       label_63
 label_54:
