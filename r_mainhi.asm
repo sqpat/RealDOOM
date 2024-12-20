@@ -3173,73 +3173,48 @@ mov       bx, word ptr es:[bx + 4]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
-mov       bx, OFFSET _markceiling
-mov       byte ptr [bx], 1
 mov       word ptr ds:[_midtexture], ax
-mov       al, byte ptr [bx]
-mov       bx, OFFSET _markfloor
-mov       byte ptr [bx], al
+mov       al, 1
+mov       byte ptr ds:[_markceiling], al
+mov       byte ptr ds:[_markfloor], al
 test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
 jne       label_8
 jmp       label_9
 label_8:
-mov       bx, OFFSET _viewz_shortheight
 mov       ax, word ptr [bp - 010h]
-sub       ax, word ptr [bx]
-mov       bx, OFFSET _rw_midtexturemid+2
+sub       ax, word ptr ds:[_viewz_shortheight]
 sar       ax, 3
-mov       word ptr [bx], ax
-mov       bx, OFFSET _viewz_shortheight
+mov       word ptr ds:[_rw_midtexturemid+2], ax
 mov       ax, word ptr [bp - 010h]
-sub       ax, word ptr [bx]
+sub       ax, word ptr ds:[_viewz_shortheight]
 xor       ah, ah
 and       al, 7
-mov       bx, OFFSET _rw_midtexturemid
 shl       ax, 13
-mov       word ptr [bx], ax
+mov       word ptr ds:[_rw_midtexturemid], ax
 les       bx, dword ptr [bp - 016h]
-mov       ax, TEXTUREHEIGHTS_SEGMENT
 mov       bx, word ptr es:[bx + 4]
+mov       ax, TEXTUREHEIGHTS_SEGMENT
 mov       es, ax
 mov       al, byte ptr es:[bx]
 xor       ah, ah
-mov       bx, OFFSET _rw_midtexturemid+2
 inc       ax
-add       word ptr [bx], ax
+add       word ptr ds:[_rw_midtexturemid+2], ax
 label_50:
 mov       bx, word ptr [bp - 028h]
-mov       dx, OFFSET _rw_midtexturemid+2
 mov       ax, word ptr [bx]
-mov       bx, dx
-add       word ptr [bx], ax
-mov       bx, OFFSET _ds_p
-les       ax, dword ptr [bx]
-mov       bx, ax
+add       word ptr ds:[_rw_midtexturemid+2], ax
+les       bx, dword ptr ds:[_ds_p]
 mov       byte ptr es:[bx + 01ch], SIL_BOTH
-mov       bx, OFFSET _ds_p
-les       ax, dword ptr [bx]
-mov       bx, ax
 mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
-mov       bx, OFFSET _ds_p
-les       ax, dword ptr [bx]
-mov       bx, ax
 mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
-mov       bx, OFFSET _ds_p
-les       ax, dword ptr [bx]
-mov       bx, ax
 mov       word ptr es:[bx + 012h], MAXSHORT
-mov       bx, OFFSET _ds_p
-les       ax, dword ptr [bx]
-mov       bx, ax
 mov       word ptr es:[bx + 014h], MINSHORT
 label_74:
 mov       al, byte ptr ds:[_midtexture]
 or        al, byte ptr ds:[_toptexture]
-mov       bx, OFFSET _maskedtexture
 or        al, byte ptr ds:[_bottomtexture]
-or        al, byte ptr [bx]
-mov       bx, OFFSET _segtextured
-mov       byte ptr [bx], al
+or        al, byte ptr ds:[_maskedtexture]
+mov       byte ptr ds:[_segtextured], al
 jne       label_10
 jmp       label_11
 label_10:
@@ -3264,49 +3239,37 @@ cmp       ax, FINE_ANG90_NOSHIFT
 ja        label_12
 jmp       label_13
 label_12:
-mov       bx, OFFSET _rw_offset
+mov       bx, OFFSET _rw_offset ; used later, dont change
 mov       ax, word ptr [bp - 020h]
 mov       word ptr [bx], ax
 mov       ax, word ptr [bp - 01ah]
 mov       word ptr [bx + 2], ax
 label_46:
-mov       bx, OFFSET _rw_angle1
 xor       dx, dx
 mov       ax, word ptr [bp - 02ah]
-sub       dx, word ptr [bx]
-sbb       ax, word ptr [bx + 2]
+sub       dx, word ptr ds:[_rw_angle1]
+sbb       ax, word ptr ds:[_rw_angle1 + 2]
 cmp       ax, ANG180_HIGHBITS
 jae       label_14
-mov       bx, OFFSET _rw_offset
-mov       ax, word ptr [bx + 2]
-mov       dx, word ptr [bx]
-neg       ax
-neg       dx
-sbb       ax, 0
-mov       word ptr [bx], dx
-mov       word ptr [bx + 2], ax
+; bx is already _rw_offset
+neg       word ptr [bx + 2]
+neg       word ptr [bx]
+sbb       word ptr [bx + 2], 0
 label_14:
-mov       bx, OFFSET _curseg_render
-mov       bx, word ptr [bx]
+mov       bx, word ptr ds:[_curseg_render]
 mov       ax, word ptr [bp - 030h]
 add       ax, word ptr [bx + 4]
-mov       bx, OFFSET _rw_offset+2
-add       word ptr [bx], ax
-mov       bx, OFFSET _viewangle_shiftright3
-mov       ax, word ptr [bx]
-mov       bx, OFFSET _rw_normalangle
+add       word ptr ds:[_rw_offset+2], ax
+mov       ax, word ptr ds:[_viewangle_shiftright3]
 add       ah, 8
-sub       ax, word ptr [bx]
-mov       bx, _rw_centerangle
+sub       ax, word ptr ds:[_rw_normalangle]
 and       ah, FINE_ANGLE_HIGH_BYTE
-mov       word ptr [bx], ax
-mov       bx, _fixedcolormap
-cmp       byte ptr [bx], 0
+mov       word ptr ds:[_rw_centerangle], ax
+cmp       byte ptr ds:[_fixedcolormap], 0
 jne       label_11
 mov       al, byte ptr [bp - 8]
-mov       bx, OFFSET _extralight
 xor       ah, ah
-mov       dl, byte ptr [bx]
+mov       dl, byte ptr ds:[_extralight]
 sar       ax, 4
 xor       dh, dh
 add       dx, ax
@@ -3320,38 +3283,33 @@ label_44:
 test      dx, dx
 jge       label_17
 jmp       label_18
+label_20:
+mov       bx, dx
+add       bx, dx
+mov       ax, word ptr ds:[bx + _lightmult48lookup]
+jmp       label_42
+
 label_17:
 cmp       dx, LIGHTLEVELS
-jge       label_19
-jmp       label_20
-label_19:
-mov       bx, OFFSET _lightmult48lookup + + (2 * (LIGHTLEVELS - 1))
-mov       dx, OFFSET _walllights
-mov       ax, word ptr [bx]
+jl        label_20
+mov       ax, word ptr ds:[_lightmult48lookup + + (2 * (LIGHTLEVELS - 1))]
 label_42:
-mov       bx, dx
-mov       word ptr [bx], ax
+mov       word ptr ds:[_walllights], ax
 label_43:
-mov       bx, OFFSET _walllights
-add       word ptr [bx], scalelight_offset_in_fixed_scalelight
+add       word ptr ds:[_walllights], scalelight_offset_in_fixed_scalelight
 label_11:
-mov       bx, OFFSET _viewz_shortheight
 mov       ax, word ptr [bp - 010h]
-cmp       ax, word ptr [bx]
+cmp       ax, word ptr ds:[_viewz_shortheight]
 jl        label_21
-mov       bx, OFFSET _markfloor
-mov       byte ptr [bx], 0
+mov       byte ptr ds:[_markfloor], 0
 label_21:
-mov       bx, OFFSET _viewz_shortheight
 mov       ax, word ptr [bp - 012h]
-cmp       ax, word ptr [bx]
+cmp       ax, word ptr ds:[_viewz_shortheight]
 jg        label_22
-mov       bx, OFFSET _skyflatnum
 mov       al, byte ptr [bp - 0ch]
-cmp       al, byte ptr [bx]
+cmp       al, byte ptr ds:[_skyflatnum]
 je        label_22
-mov       bx, OFFSET _markceiling
-mov       byte ptr [bx], 0
+mov       byte ptr ds:[_markceiling], 0
 label_22:
 mov       cx, 4
 label_23:
@@ -3363,10 +3321,10 @@ label_24:
 sar       di, 1
 rcr       si, 1
 loop      label_24
-mov       bx, OFFSET _rw_scale
 mov       dx, di
-mov       ax, word ptr [bx]
-mov       cx, word ptr [bx + 2]
+; todo les to load two?
+mov       ax, word ptr ds:[_rw_scale]
+mov       cx, word ptr ds:[_rw_scale + 2]
 mov       bx, ax
 mov       ax, si
 call FixedMul_
@@ -4015,6 +3973,7 @@ mov       cx, word ptr [bp - 01ah]
 mov       dx, ax
 mov       ax, FINESINE_SEGMENT
 call FixedMulTrigNoShift_
+; used later, dont change?
 mov       bx, OFFSET _rw_offset
 mov       word ptr [bx], ax
 mov       word ptr [bx + 2], dx
@@ -4028,15 +3987,8 @@ label_45:
 inc       dx
 jmp       label_44
 label_18:
-mov       bx, OFFSET _walllights
-mov       word ptr [bx], 0
+mov       word ptr ds:[_walllights], 0
 jmp       label_43
-label_20:
-mov       bx, dx
-add       bx, dx
-mov       dx, OFFSET _walllights
-mov       ax, word ptr ds:[bx + OFFSET _lightmult48lookup]
-jmp       label_42
 label_37:
 mov       bx, OFFSET _maskedtexture
 cmp       byte ptr [bx], 0
