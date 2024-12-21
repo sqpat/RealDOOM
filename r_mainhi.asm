@@ -2039,11 +2039,9 @@ mov   ax, word ptr ds:[_rw_bottomtexturemid + 2]
 mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+4], ax
 
 mov   ax, word ptr ds:[_bottomtexture]
-mov   word ptr cs:[SELFMODIFY_bottexture_skip_check+1], ax
 mov   word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
 
 mov   ax, word ptr ds:[_toptexture]
-mov   word ptr cs:[SELFMODIFY_toptexture_skip_check+1], ax
 mov   word ptr cs:[SELFMODIFY_set_toptexture+1], ax
 
 mov   ax, word ptr ds:[_midtexture]
@@ -2093,116 +2091,6 @@ mov   word ptr cs:[SELFMODIFY_add_to_rwscale_lo_2+4], ax
 mov   word ptr cs:[SELFMODIFY_add_to_rwscale_hi_1+4], dx
 mov   word ptr cs:[SELFMODIFY_add_to_rwscale_hi_2+4], dx
 
-mov   ax, word ptr ds:[_topstep]
-mov   dx, word ptr ds:[_topstep+2]
-
-mov   word ptr cs:[SELFMODIFY_sub_topstep_lo+4], ax
-mov   word ptr cs:[SELFMODIFY_sub_topstep_hi+4], dx
-mov   word ptr cs:[SELFMODIFY_add_topstep_lo+5], ax
-mov   word ptr cs:[SELFMODIFY_add_topstep_hi+5], dx
-
-
-cmp  cx, 1
-jb finished_shifting_topstep
-je shift_topstep_once
-shl   ax, 1
-rcl   dx, 1
-shift_topstep_once:
-shl   ax, 1
-rcl   dx, 1
-
-finished_shifting_topstep:
-
-
-mov   word ptr cs:[SELFMODIFY_add_to_topfrac_lo_1+4], ax
-mov   word ptr cs:[SELFMODIFY_add_to_topfrac_lo_2+4], ax
-mov   word ptr cs:[SELFMODIFY_add_to_topfrac_hi_1+4], dx
-mov   word ptr cs:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
-mov   ax, word ptr ds:[_bottomstep]
-mov   dx, word ptr ds:[_bottomstep+2]
-
-mov   word ptr cs:[SELFMODIFY_sub_botstep_lo+4], ax
-mov   word ptr cs:[SELFMODIFY_sub_botstep_hi+4], dx
-mov   word ptr cs:[SELFMODIFY_add_botstep_lo+5], ax
-mov   word ptr cs:[SELFMODIFY_add_botstep_hi+5], dx
-
-cmp  cx, 1
-jb finished_shifting_botstep
-je shift_botstep_once
-shl   ax, 1
-rcl   dx, 1
-shift_botstep_once:
-shl   ax, 1
-rcl   dx, 1
-
-finished_shifting_botstep:
-
-mov   word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_1+4], ax
-mov   word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_2+4], ax
-mov   word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_1+4], dx
-mov   word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_2+4], dx
-
-
-; skip if no top texture
-SELFMODIFY_toptexture_skip_check:
-mov   cx, 01000h
-jcxz  skip_shifting_pixhighstep
-
-mov   cx, si
-mov   ax, word ptr ds:[_pixhighstep]
-mov   dx, word ptr ds:[_pixhighstep+2]
-
-mov   word ptr cs:[SELFMODIFY_sub_pixhigh_lo+4], ax
-mov   word ptr cs:[SELFMODIFY_sub_pixhigh_hi+4], dx
-mov   word ptr cs:[SELFMODIFY_add_pixhighstep_lo+5], ax
-mov   word ptr cs:[SELFMODIFY_add_pixhighstep_hi+5], dx
-
-cmp  cx, 1
-jb done_shifting_pixhighstep
-je shift_pixhighstep_once
-shl   ax, 1
-rcl   dx, 1
-shift_pixhighstep_once:
-shl   ax, 1
-rcl   dx, 1
-done_shifting_pixhighstep:
-mov   word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_1+4], ax
-mov   word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_2+4], ax
-mov   word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_1+4], dx
-mov   word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_2+4], dx
-
-skip_shifting_pixhighstep:
-
-; skip if no bot texture
-SELFMODIFY_bottexture_skip_check:
-mov   cx, 01000h
-; cx is 0 due to loop;
-jcxz  skip_shifting_pixlowstep
-
-mov   cx, si
-mov   ax, word ptr ds:[_pixlowstep]
-mov   dx, word ptr ds:[_pixlowstep+2]
-
-
-mov   word ptr cs:[SELFMODIFY_sub_pixlow_lo+4], ax
-mov   word ptr cs:[SELFMODIFY_sub_pixlow_hi+4], dx
-mov   word ptr cs:[SELFMODIFY_add_pixlowstep_lo+5], ax
-mov   word ptr cs:[SELFMODIFY_add_pixlowstep_hi+5], dx
-
-cmp  cx, 1
-jb done_shifting_pixlowstep
-je shift_pixlowstep_once
-shl   ax, 1
-rcl   dx, 1
-shift_pixlowstep_once:
-shl   ax, 1
-rcl   dx, 1
-done_shifting_pixlowstep:
-mov   word ptr cs:[SELFMODIFY_add_to_pixlow_lo_1+4], ax
-mov   word ptr cs:[SELFMODIFY_add_to_pixlow_lo_2+4], ax
-mov   word ptr cs:[SELFMODIFY_add_to_pixlow_hi_1+4], dx
-mov   word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+4], dx
-skip_shifting_pixlowstep:
 
 ;  	int16_t base4diff = rw_x - rw_x_base4;
 mov   cx, di
@@ -3448,27 +3336,71 @@ mov       dx, word ptr [bp - 01ch]
 les       bx, dword ptr [bp - 046h]
 mov       cx, es
 call FixedMul_
-mov       bx, ax
-mov       ax, dx
-mov       cx, word ptr [bp - 034h]
-neg       ax
-mov       dx, bx
 neg       dx
-sbb       ax, 0
-mov       word ptr ds:[_topstep], dx
-mov       dx, word ptr [bp - 01ch]
-mov       word ptr ds:[_topstep + 2], ax
+neg       ax
+sbb       dx, 0
+
+; dx:ax are topstep
+
+mov       word ptr cs:[SELFMODIFY_sub_topstep_lo+4], ax
+mov       word ptr cs:[SELFMODIFY_sub_topstep_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_add_topstep_lo+5], ax
+mov       word ptr cs:[SELFMODIFY_add_topstep_hi+5], dx
+
+
+cmp       ds:[_detailshift2minus], 1
+jb        finished_shifting_topstep
+je        shift_topstep_once
+shl       ax, 1
+rcl       dx, 1
+shift_topstep_once:
+shl       ax, 1
+rcl       dx, 1
+
+finished_shifting_topstep:
+
+
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_1+4], ax
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_2+4], ax
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_1+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
+
+
+mov       cx, word ptr [bp - 034h]
 mov       bx, word ptr [bp - 036h]
+mov       dx, word ptr [bp - 01ch]
 mov       ax, word ptr [bp - 01eh]
 call FixedMul_
-mov       bx, ax
-mov       ax, dx
-neg       ax
-mov       dx, bx
 neg       dx
-sbb       ax, 0
-mov       word ptr ds:[_bottomstep], dx
-mov       word ptr ds:[_bottomstep + 2], ax
+neg       ax
+sbb       dx, 0
+
+; dx:ax are bottomstep
+
+mov       word ptr cs:[SELFMODIFY_sub_botstep_lo+4], ax
+mov       word ptr cs:[SELFMODIFY_sub_botstep_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_add_botstep_lo+5], ax
+mov       word ptr cs:[SELFMODIFY_add_botstep_hi+5], dx
+
+cmp       ds:[_detailshift2minus], 1
+jb        finished_shifting_botstep
+je        shift_botstep_once
+shl       ax, 1
+rcl       dx, 1
+shift_botstep_once:
+shl       ax, 1
+rcl       dx, 1
+
+finished_shifting_botstep:
+
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_1+4], ax
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_2+4], ax
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_1+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_2+4], dx
+
+
+
+
 cmp       word ptr ds:[_backsector], SECNUM_NULL
 jne       backsector_not_null
 jmp       skip_pixlow_step
@@ -3545,12 +3477,36 @@ call FixedMul_
 neg       dx
 neg       ax
 sbb       dx, 0
-mov       word ptr ds:[_pixhighstep], ax
-mov       word ptr ds:[_pixhighstep + 2], dx
+
+
+; dx:ax is pixhighstep.
+; self modifying code to write to pixlowstep usages.
+
+
+mov       word ptr cs:[SELFMODIFY_sub_pixhigh_lo+4], ax
+mov       word ptr cs:[SELFMODIFY_sub_pixhigh_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_add_pixhighstep_lo+5], ax
+mov       word ptr cs:[SELFMODIFY_add_pixhighstep_hi+5], dx
+
+cmp       ds:[_detailshift2minus], 1
+jb        done_shifting_pixhighstep
+je shift_pixhighstep_once
+shl       ax, 1
+rcl       dx, 1
+shift_pixhighstep_once:
+shl       ax, 1
+rcl       dx, 1
+done_shifting_pixhighstep:
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_1+4], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_2+4], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_1+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_2+4], dx
+
+
 ;todo self modify here
 ; put these back where they need to be.
-xchg       dx, di
-xchg       ax, si
+xchg      dx, di
+xchg      ax, si
 skip_pixhigh_step:
 
 ; dx:ax are now worldlow
@@ -3588,8 +3544,32 @@ call FixedMul_
 neg       dx
 neg       ax
 sbb       dx, 0
-mov       word ptr ds:[_pixlowstep], ax
-mov       word ptr ds:[_pixlowstep + 2], dx
+
+; dx:ax is pixlowstep.
+; self modifying code to write to pixlowstep usages.
+
+
+mov       word ptr cs:[SELFMODIFY_sub_pixlow_lo+4], ax
+mov       word ptr cs:[SELFMODIFY_sub_pixlow_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_add_pixlowstep_lo+5], ax
+mov       word ptr cs:[SELFMODIFY_add_pixlowstep_hi+5], dx
+
+cmp       byte ptr ds:[_detailshift2minus], 1
+jb        done_shifting_pixlowstep
+je        shift_pixlowstep_once
+shl       ax, 1
+rcl       dx, 1
+shift_pixlowstep_once:
+shl       ax, 1
+rcl       dx, 1
+done_shifting_pixlowstep:
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_1+4], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_2+4], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_1+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+4], dx
+
+
+
 ;todo self modify here
 skip_pixlow_step:
 mov       ax, word ptr [bp - 01eh]
@@ -3829,7 +3809,7 @@ mov       word ptr [bp - 038h], bx
 ; 	worldtop = worldhigh;
 ; }
 
-mov       cl, byte ptr ds:[_skyflatnum], 
+mov       cl, byte ptr ds:[_skyflatnum]
 cmp       cl, byte ptr [bp - 0ch]
 jne       not_a_skyflat
 cmp       cl, byte ptr [bp - 0ah]
