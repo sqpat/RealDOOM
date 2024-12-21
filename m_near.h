@@ -120,20 +120,17 @@
 
 #define rw_x                            (*((int16_t __near *)                (_NULL_OFFSET + 0x0080)))
 #define rw_stopx                        (*((int16_t __near *)                (_NULL_OFFSET + 0x0082)))
-#define rw_centerangle                  (*((fineangle_t __near *)            (_NULL_OFFSET + 0x0084)))
-#define rw_normalangle                  (*((fineangle_t __near *)            (_NULL_OFFSET + 0x0086)))
+#define rw_offset                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0084)))
+#define maskedtexture                   (*((boolean __near*)                 (_NULL_OFFSET + 0x0088)))
+#define segtextured                     (*((boolean __near*)                 (_NULL_OFFSET + 0x0089)))
+#define markfloor                       (*((boolean __near*)                 (_NULL_OFFSET + 0x008A)))
+#define markceiling                     (*((boolean __near*)                 (_NULL_OFFSET + 0x008B)))
 
-#define rw_offset                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0088)))
-#define rw_distance                     (*((fixed_t __near *)                (_NULL_OFFSET + 0x008C)))
-
-#define maskedtexture                   (*((boolean __near*)                 (_NULL_OFFSET + 0x0090)))
-#define segtextured                     (*((boolean __near*)                 (_NULL_OFFSET + 0x0091)))
-#define markfloor                       (*((boolean __near*)                 (_NULL_OFFSET + 0x0092)))
-#define markceiling                     (*((boolean __near*)                 (_NULL_OFFSET + 0x0093)))
-
-#define rw_midtexturemid                (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0094)))
-#define rw_toptexturemid                (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0098)))
-#define rw_bottomtexturemid             (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x009C)))
+#define rw_scale                        (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x008C)))
+#define topfrac                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x0090)))
+#define bottomfrac                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0094)))
+#define pixlow                          (*((fixed_t __near *)                (_NULL_OFFSET + 0x0098)))
+#define pixhigh                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x009C)))
 #define rw_angle1                       (*((angle_t __near *)                (_NULL_OFFSET + 0x00A0)))
 
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
@@ -277,16 +274,6 @@
 #define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02FC)))
 #define R_GetMaskedColumnSegment_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0300)))
 #define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0304)))
-#define rw_scale                        (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0308)))
-#define topfrac                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x030C)))
-#define bottomfrac                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0310)))
-#define pixlow                          (*((fixed_t __near *)                (_NULL_OFFSET + 0x0314)))
-#define pixhigh                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x0318)))
-
-#define topstep                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x031C)))
-#define bottomstep                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0320)))
-#define pixlowstep                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0324)))
-#define pixhighstep                     (*((fixed_t __near *)                (_NULL_OFFSET + 0x0328)))
 
 
 

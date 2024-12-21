@@ -2007,10 +2007,6 @@ mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_2+2], ax
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_3+2], ax
 
-mov   ax, word ptr ds:[_rw_midtexturemid]
-mov   word ptr cs:[SELFMODIFY_set_midtexturemid_lo+4], ax
-mov   ax, word ptr ds:[_rw_midtexturemid + 2]
-mov   word ptr cs:[SELFMODIFY_set_midtexturemid_hi+4], ax
 
 
 
@@ -2647,8 +2643,10 @@ SELFMODIFY_set_bottomtexture:
 mov   cx, 01000h
 jcxz  no_bottom_texture_draw
 do_bottom_texture_draw:
+SELFMODIFY_get_pixlow_lo:
 mov   ax, word ptr ds:[_pixlow]
 add   ax, ((HEIGHTUNIT)-1)
+SELFMODIFY_get_pixlow_hi:
 mov   dx, word ptr ds:[_pixlow+2]
 adc   dx, 0
 mov   al, ah
@@ -3073,15 +3071,12 @@ xor       ax, ax
 mov       byte ptr ds:[_maskedtexture], al
 ; default to 0
 mov       byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
-mov       word ptr cs:[SELFMODIFY_set_midtexture+1], ax
-mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
-mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
 
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], NULL_TEX_COL
 les       bx, dword ptr [bp - 016h] ; sides
-mov       ax, word ptr es:[bx + 6]
-mov       word ptr [bp - 030h], ax
+mov       dx, word ptr es:[bx + 6]
+mov       word ptr [bp - 030h], dx
 cmp       word ptr ds:[_backsector], SECNUM_NULL
 je        handle_single_sided_line
 jmp       handle_two_sided_line
@@ -3097,7 +3092,8 @@ mov       word ptr cs:[SELFMODIFY_set_midtexture+1], ax
 ; are any bits set?
 or        al, ah
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
-
+je        overwrite_bottom_top	; if midtexture was zero, then bot/top will be checked, must zero those too
+done_overwriting_bottom_top:
 
 mov       al, 1
 mov       byte ptr ds:[_markceiling], al
@@ -3106,11 +3102,16 @@ test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
 mov       ax, word ptr [bp - 046h]
-mov       word ptr ds:[_rw_midtexturemid], ax
+mov       word ptr cs:[SELFMODIFY_set_midtexturemid_lo+4], ax
 mov       ax, word ptr [bp - 044h]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
 
+overwrite_bottom_top:
+;  al/ah were zero so ax is zero.
+mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
+mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+jmp       done_overwriting_bottom_top
 do_peg_bottom:
 mov       ax, word ptr [bp - 010h]
 sub       ax, word ptr ds:[_viewz_shortheight]
@@ -3121,7 +3122,7 @@ sar       ax, 1
 rcr       cx, 1
 sar       ax, 1
 rcr       cx, 1
-mov       word ptr ds:[_rw_midtexturemid],   cx
+mov       word ptr cs:[SELFMODIFY_set_midtexturemid_lo+4], cx
 
 
 les       bx, dword ptr [bp - 016h] ; sides
@@ -3137,7 +3138,10 @@ done_with_bottom_peg:
 
 mov       bx, word ptr [bp - 028h]
 add       ax, word ptr [bx]
-mov       word ptr ds:[_rw_midtexturemid+2], ax
+
+mov       word ptr cs:[SELFMODIFY_set_midtexturemid_hi+4], ax
+
+
 les       bx, dword ptr ds:[_ds_p]
 mov       byte ptr es:[bx + 01ch], SIL_BOTH
 mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
@@ -3722,15 +3726,19 @@ ret
 
 handle_two_sided_line:
 
+; ax still 0
+; nomidtexture. this will be checked before top/bot, have to set it to 0.
+mov       word ptr cs:[SELFMODIFY_set_midtexture+1], ax
+mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
+mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+
+
 ; short_height_t backsectorfloorheight = backsector->floorheight;
 ; short_height_t backsectorceilingheight = backsector->ceilingheight;
 ; uint8_t backsectorceilingpic = backsector->ceilingpic;
 ; uint8_t backsectorfloorpic = backsector->floorpic;
 ; uint8_t backsectorlightlevel = backsector->lightlevel;
 
-; TODO CHANGE:
-; 	dx is set to backsectorceilingheight
-; 	ax is set to backsectorfloorheight
 les       bx, dword ptr ds:[_backsector]
 mov       ax, word ptr es:[bx + 2]
 mov       word ptr [bp - 042h], ax

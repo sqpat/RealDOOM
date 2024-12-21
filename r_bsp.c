@@ -246,7 +246,7 @@ void __near R_AddLine (int16_t curlineNum) {
 
     // Global angle needed by segcalc.
 	//rw_angle1_fine = angle1.hu.intbits >> SHORTTOFINESHIFT;
-	rw_angle1 = angle1;
+	rw_angle1 = angle1; // todo self modify forward ahead
 	angle1.wu -= viewangle.wu;
     angle2.wu -= viewangle.wu;
 	

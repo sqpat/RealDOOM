@@ -77,17 +77,16 @@ _viewz_shortheight = 				_NULL_OFFSET + 0007Ch
 _viewangle_shiftright1 = 			_NULL_OFFSET + 0007Eh
 _rw_x = 							_NULL_OFFSET + 00080h
 _rw_stopx = 						_NULL_OFFSET + 00082h 
-_rw_centerangle = 					_NULL_OFFSET + 00084h
-_rw_normalangle =	    	   		_NULL_OFFSET + 00086h
-_rw_offset = 						_NULL_OFFSET + 00088h
-_rw_distance = 						_NULL_OFFSET + 0008Ch
-_maskedtexture = 					_NULL_OFFSET + 00090h
-_segtextured = 						_NULL_OFFSET + 00091h
-_markfloor = 						_NULL_OFFSET + 00092h
-_markceiling = 						_NULL_OFFSET + 00093h
-_rw_midtexturemid = 				_NULL_OFFSET + 00094h
-_rw_toptexturemid = 				_NULL_OFFSET + 00098h
-_rw_bottomtexturemid = 				_NULL_OFFSET + 0009Ch
+_rw_offset = 						_NULL_OFFSET + 00084h
+_maskedtexture = 					_NULL_OFFSET + 00088h
+_segtextured = 						_NULL_OFFSET + 00089h
+_markfloor = 						_NULL_OFFSET + 0008Ah
+_markceiling = 						_NULL_OFFSET + 0008Bh
+_rw_scale =		 					_NULL_OFFSET + 0008Ch
+_topfrac =						    _NULL_OFFSET + 00090h
+_bottomfrac =					    _NULL_OFFSET + 00094h
+_pixlow =					 	    _NULL_OFFSET + 00098h
+_pixhigh =					 	    _NULL_OFFSET + 0009Ch
 _rw_angle1 =                        _NULL_OFFSET + 000A0h
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
@@ -218,15 +217,7 @@ _getspritetexture_addr =             _NULL_OFFSET + 00304h
 
 
 ; 308h
-_rw_scale =		 					 _NULL_OFFSET + 00308h
-_topfrac =							 _NULL_OFFSET + 0030Ch
-_bottomfrac =						 _NULL_OFFSET + 00310h
-_pixlow =						 	 _NULL_OFFSET + 00314h
-_pixhigh =						 	 _NULL_OFFSET + 00318h
-_topstep =							 _NULL_OFFSET + 0031Ch
-_bottomstep =						 _NULL_OFFSET + 00320h
-_pixlowstep =					 	 _NULL_OFFSET + 00324h
-_pixhighstep =					 	 _NULL_OFFSET + 00328h
+
 
 
 
