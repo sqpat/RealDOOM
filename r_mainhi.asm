@@ -1997,23 +1997,13 @@ mov   word ptr cs:[SELFMODIFY_compare_ax_to_start_rw_x+1], ax
 
 mov   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1], 0
 
+; todo move this into r_setup area
 mov   al, byte ptr ds:[_detailshiftitercount]
 mov   byte ptr cs:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
 mov   byte ptr cs:[SELFMODIFY_add_iter_to_rw_x+4], al
 mov   byte ptr cs:[SELFMODIFY_add_detailshiftitercount+4], al
 
-mov   ax, word ptr ds:[_walllights]
-mov   word ptr cs:[SELFMODIFY_add_wallights+3], ax
 
-mov   ax, word ptr ds:[_rw_centerangle]
-mov   word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
-
-
-
-mov   ax, word ptr ds:[_rw_offset]
-mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1], ax
-mov   ax, word ptr ds:[_rw_offset+2]
-mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1], ax
 
 mov   ax, word ptr ds:[_rw_stopx]
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
@@ -2024,16 +2014,6 @@ mov   ax, word ptr ds:[_rw_midtexturemid]
 mov   word ptr cs:[SELFMODIFY_set_midtexturemid_lo+4], ax
 mov   ax, word ptr ds:[_rw_midtexturemid + 2]
 mov   word ptr cs:[SELFMODIFY_set_midtexturemid_hi+4], ax
-
-mov   ax, word ptr ds:[_rw_toptexturemid]
-mov   word ptr cs:[SELFMODIFY_set_toptexturemid_lo+4], ax
-mov   ax, word ptr ds:[_rw_toptexturemid + 2]
-mov   word ptr cs:[SELFMODIFY_set_toptexturemid_hi+4], ax
-
-mov   ax, word ptr ds:[_rw_bottomtexturemid]
-mov   word ptr cs:[SELFMODIFY_set_bottexturemid_lo+4], ax
-mov   ax, word ptr ds:[_rw_bottomtexturemid + 2]
-mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+4], ax
 
 mov   ax, word ptr ds:[_bottomtexture]
 mov   word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
@@ -3202,39 +3182,51 @@ mov       cx, word ptr [bp - 01ah]
 mov       ax, FINESINE_SEGMENT
 call FixedMulTrigNoShift_
 ; used later, dont change?
-mov       bx, OFFSET _rw_offset
-mov       word ptr [bx], ax
-mov       word ptr [bx + 2], dx
+; dx:ax is rw_offset
 jmp       done_with_offsetangle_stuff
 offsetangle_greater_than_fineang90:
-mov       bx, OFFSET _rw_offset ; used later, dont change
 mov       ax, word ptr [bp - 020h]
-mov       word ptr [bx], ax
-mov       ax, word ptr [bp - 01ah]
-mov       word ptr [bx + 2], ax
+mov       dx, word ptr [bp - 01ah]
+
+
+
 done_with_offsetangle_stuff:
-xor       dx, dx
+; dx:ax is rw_offset
+
+xor       cx, cx
 SELFMODIFY_set_rw_normal_angle_shift3:
-mov       ax, 01000h
-sub       dx, word ptr ds:[_rw_angle1]
-sbb       ax, word ptr ds:[_rw_angle1 + 2]
-cmp       ax, ANG180_HIGHBITS
+
+mov       di, 01000h
+sub       cx, word ptr ds:[_rw_angle1]
+sbb       di, word ptr ds:[_rw_angle1 + 2]
+cmp       di, ANG180_HIGHBITS
 jae       tempangle_not_smaller_than_fineang180
 ; bx is already _rw_offset
-neg       word ptr [bx + 2]
-neg       word ptr [bx]
-sbb       word ptr [bx + 2], 0
+neg       dx
+neg       ax
+sbb       dx, 0
 tempangle_not_smaller_than_fineang180:
+
+
+
+
 mov       bx, word ptr ds:[_curseg_render]
-mov       ax, word ptr [bp - 030h]
-add       ax, word ptr [bx + 4]
-add       word ptr ds:[_rw_offset+2], ax
+mov       cx, word ptr [bp - 030h]
+add       cx, word ptr [bx + 4]
+add       ax, cx
+; rw_offset ready to be written to rendersegloop:
+mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1], ax
+mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1], dx
+
 mov       ax, word ptr ds:[_viewangle_shiftright3]
 add       ah, 8
 SELFMODIFY_sub_rw_normal_angle_2:
 sub       ax, 01000h
 and       ah, FINE_ANGLE_HIGH_BYTE
-mov       word ptr ds:[_rw_centerangle], ax
+
+; set centerangle in rendersegloop
+mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
+
 cmp       byte ptr ds:[_fixedcolormap], 0
 jne       seg_textured_check_done
 mov       al, byte ptr [bp - 8]
@@ -3272,8 +3264,10 @@ jl        lightnum_less_than_lightlevels
 mov       ax, word ptr ds:[_lightmult48lookup + + (2 * (LIGHTLEVELS - 1))]
 done_setting_ax_to_wallights:
 add       ax, scalelight_offset_in_fixed_scalelight
-; todo write from this..
-mov       word ptr ds:[_walllights], ax
+
+; write walllights to rendersegloop
+mov   word ptr cs:[SELFMODIFY_add_wallights+3], ax
+
 seg_textured_check_done:
 mov       ax, word ptr [bp - 010h]
 cmp       ax, word ptr ds:[_viewz_shortheight]
@@ -3982,17 +3976,16 @@ add       dx, cx
 sub       ax, word ptr ds:[_viewz]
 sbb       dx, word ptr ds:[_viewz+2]
 
-; todo self modify _rw_toptexturemid here
 jmp       do_selfmodify_toptexture
 
 set_toptexture_to_worldtop:
 mov       ax, word ptr [bp - 046h]
 mov       dx, word ptr [bp - 044h]
 do_selfmodify_toptexture:
-; todo self modify _rw_toptexturemid here
+; set _rw_toptexturemid in rendersegloop
 
-mov       word ptr ds:[_rw_toptexturemid], ax
-mov       word ptr ds:[_rw_toptexturemid + 2], dx
+mov   word ptr cs:[SELFMODIFY_set_toptexturemid_lo+4], ax
+mov   word ptr cs:[SELFMODIFY_set_toptexturemid_hi+4], dx
 
 toptexture_stuff_done:
 
@@ -4017,8 +4010,12 @@ je        calculate_bottexturemid
 mov       ax, word ptr [bp - 046h]
 mov       dx, word ptr [bp - 044h]
 do_selfmodify_bottexture:
-mov       word ptr ds:[_rw_bottomtexturemid], ax
-mov       word ptr ds:[_rw_bottomtexturemid+2], dx
+
+; set _rw_toptexturemid in rendersegloop
+
+mov   word ptr cs:[SELFMODIFY_set_bottexturemid_lo+4], ax
+mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+4], dx
+
 
 bottexture_stuff_done:
 mov       bx, word ptr [bp - 028h]
@@ -4029,8 +4026,9 @@ mov       ax, word ptr [bx]
 ;	rw_bottomtexturemid.h.intbits += side_render->rowoffset;
 
 
-add       word ptr ds:[_rw_toptexturemid + 2], ax
-add       word ptr ds:[_rw_bottomtexturemid+2], ax
+; todo: optim and only write this once.
+add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+4], ax
+add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+4], ax
 les       bx, dword ptr [bp - 016h] ; sides
 cmp       word ptr es:[bx + 4], 0
 
