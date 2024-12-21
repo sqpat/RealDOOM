@@ -117,7 +117,8 @@ xchg ax, si
 ;  ax has finesine_segment
 ;  di:si is den
 
-mov   cx, word ptr ds:[_centerx]
+SELF_MODIFY_set_centerx_1:
+mov   cx, 01000h
 
 
 AND  DX, CX    ; DX*CX
@@ -394,7 +395,8 @@ and   ah, 01Fh    ; MOD_FINE_ANGLE
  shl   ax, 1
  shl   ax, 1
  
-mov   cx, word ptr ds:[_centerx]
+SELF_MODIFY_set_centerx_2:
+mov   cx, 01000h
 mov   di, ax
 
 mov   ax, FINECOSINE_SEGMENT
@@ -404,7 +406,7 @@ mov   es, ax
 mov   word ptr ds:[_viewwidth], dx
 mov   ax, word ptr es:[di]
 mov   dx, word ptr es:[di + 2]
-mov   bx, 0
+xor   bx, bx
 
 call FixedDiv_  ; TODO! FixedDivWholeB? Optimize?
 mov   word ptr ds:[_basexscale], ax
@@ -412,10 +414,11 @@ mov   word ptr ds:[_basexscale + 2], dx
 mov   ax, FINESINE_SEGMENT
 
 mov   es, ax
-mov   cx, word ptr ds:[_centerx]
+SELF_MODIFY_set_centerx_3:
+mov   cx, 01000h
 mov   ax, word ptr es:[di]
 mov   dx, word ptr es:[di + 2]
-mov   bx, 0
+xor   bx, bx
 call FixedDiv_  ; TODO! FixedDivWholeB? Optimize?
 neg   dx
 neg   ax
@@ -803,7 +806,8 @@ rcr   ax, 1
 sar   dx, 1
 rcr   ax, 1
 
-cmp   dx, word ptr ds:[_viewz + 2]
+SELFMODIFY_set_viewz_hi_6:
+cmp   dx, 01000h
 jl    find_floor_plane_index
 je    check_viewz_lowbits_floor
 
@@ -825,7 +829,9 @@ mov   word ptr ds:[_ceilingplaneindex], 0FFFFh
 jmp   do_addsprites
 
 check_viewz_lowbits_floor:
-cmp   ax, word ptr ds:[_viewz]
+
+SELFMODIFY_set_viewz_lo_6:
+cmp   ax, 01000h
 jae   set_floor_plane_minus_one    ; todo move to the other label
 find_floor_plane_index:
 
@@ -849,10 +855,12 @@ sar   dx, 1
 rcr   ax, 1
 
 
-cmp   dx, word ptr ds:[_viewz + 2]
+SELFMODIFY_set_viewz_hi_5:
+cmp   dx, 01000h
 jg    find_ceiling_plane_index
 jne   set_ceiling_plane_minus_one
-cmp   ax, word ptr ds:[_viewz]
+SELFMODIFY_set_viewz_lo_5:
+cmp   ax, 01000h
 jbe   set_ceiling_plane_minus_one
 find_ceiling_plane_index:
 les   bx, dword ptr ds:[_frontsector]
@@ -1214,7 +1222,8 @@ jl   exit_project_sprite
 
 ;    xscale.w = FixedDivWholeA(centerx, tz.w);
 
-mov   ax, word ptr ds:[_centerx]
+SELF_MODIFY_set_centerx_4:
+mov   ax, 01000h
 
 call  FixedDivWholeA_
 mov   word ptr [bp - 4], ax
@@ -1361,7 +1370,9 @@ mov   di, ax
 mov   dx, si
 call FixedMul_
 xchg  ax, dx
-add   ax, word ptr ds:[_centerx]
+
+SELF_MODIFY_set_centerx_5:
+add   ax, 01000h
 
 ;    // off the right side?
 ;    if (x1 > viewwidth){
@@ -1413,7 +1424,8 @@ call FixedMul_
 
 ;    x2 = temp.h.intbits - 1;
 
-add   dx, word ptr ds:[_centerx]
+SELF_MODIFY_set_centerx_6:
+add   dx, 01000h
 dec   dx
 mov   word ptr cs:[SELFMODIFY_set_ax_to_x2+1], dx
 
@@ -1499,8 +1511,10 @@ mov   word ptr [si + 014h], ax
 
 ;    vis->texturemid = vis->gzt.w - viewz.w;
 
-sub   bx, word ptr ds:[_viewz]
-sbb   ax, word ptr ds:[_viewz + 2]
+SELFMODIFY_set_viewz_lo_4:
+sub       bx, 01000h
+SELFMODIFY_set_viewz_hi_4:
+sbb       ax, 01000h
 mov   word ptr [si + 022h], bx
 mov   word ptr [si + 024h], ax
 SELFMODIFY_set_vis_x1:
@@ -3115,7 +3129,8 @@ mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
 jmp       done_overwriting_bottom_top
 do_peg_bottom:
 mov       ax, word ptr [bp - 010h]
-sub       ax, word ptr ds:[_viewz_shortheight]
+SELFMODIFY_set_viewz_shortheight_5:
+sub       ax, 01000h
 xor       cx, cx
 sar       ax, 1
 rcr       cx, 1
@@ -3281,12 +3296,14 @@ mov   word ptr cs:[SELFMODIFY_add_wallights+3], ax
 
 seg_textured_check_done:
 mov       ax, word ptr [bp - 010h]
-cmp       ax, word ptr ds:[_viewz_shortheight]
+SELFMODIFY_set_viewz_shortheight_4:
+cmp       ax, 01000h
 jl        not_above_viewplane
 mov       byte ptr ds:[_markfloor], 0
 not_above_viewplane:
 mov       ax, word ptr [bp - 012h]
-cmp       ax, word ptr ds:[_viewz_shortheight]
+SELFMODIFY_set_viewz_shortheight_3:
+cmp       ax, 01000h
 jg        not_below_viewplane
 mov       al, byte ptr [bp - 0ch]
 cmp       al, byte ptr ds:[_skyflatnum]
@@ -3774,7 +3791,8 @@ mov       byte ptr es:[bx + 01ch], cl ; SIL_NONE
 
 cmp       ax, word ptr [bp - 010h]
 jl        set_bsilheight_to_frontsectorfloorheight
-cmp       ax, word ptr ds:[_viewz_shortheight]
+SELFMODIFY_set_viewz_shortheight_2:
+cmp       ax, 01000h
 jle       bsilheight_set
 set_bsilheight_to_maxshort:
 mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
@@ -3788,7 +3806,8 @@ bsilheight_set:
 mov       ax, word ptr [bp - 042h]
 cmp       ax, word ptr [bp - 012h]
 jg        set_tsilheight_to_frontsectorceilingheight
-cmp       ax, word ptr ds:[_viewz_shortheight]
+SELFMODIFY_set_viewz_shortheight_1:
+cmp       ax, 01000h
 jge       tsilheight_set
 set_tsilheight_to_minshort:
 or        byte ptr es:[bx + 01ch], SIL_TOP
@@ -3843,8 +3862,10 @@ sar       bx, 1
 rcr       cx, 1
 sar       bx, 1
 rcr       cx, 1
-sub       cx, word ptr ds:[_viewz]
-sbb       bx, word ptr ds:[_viewz+2]
+SELFMODIFY_set_viewz_lo_3:
+sub       cx, 01000h
+SELFMODIFY_set_viewz_hi_3:
+sbb       bx, 01000h
 mov       word ptr [bp - 03ch], bx
 mov       word ptr [bp - 03eh], cx
 
@@ -3857,8 +3878,11 @@ rcr       cx, 1
 sar       bx, 1
 rcr       cx, 1
 
-sub       cx, word ptr ds:[_viewz]
-sbb       bx, word ptr ds:[_viewz+2]
+SELFMODIFY_set_viewz_lo_2:
+sub       cx, 01000h
+SELFMODIFY_set_viewz_hi_2:
+sbb       bx, 01000h
+
 mov       word ptr [bp - 03ah], cx
 mov       word ptr [bp - 038h], bx
 
@@ -4001,8 +4025,10 @@ mov       cl, byte ptr es:[bx]
 inc       cx
 
 add       dx, cx
-sub       ax, word ptr ds:[_viewz]
-sbb       dx, word ptr ds:[_viewz+2]
+SELFMODIFY_set_viewz_lo_1:
+sub       ax, 01000h
+SELFMODIFY_set_viewz_hi_1:
+sbb       dx, 01000h
 
 jmp       do_selfmodify_toptexture
 
@@ -4112,14 +4138,17 @@ jmp do_selfmodify_bottexture
 ENDP
 
 
-;R_WriteBackConstants_
+;R_WriteBackViewConstants_
 
-PROC R_WriteBackConstants_ FAR
-PUBLIC R_WriteBackConstants_ 
+PROC R_WriteBackViewConstants_ FAR
+PUBLIC R_WriteBackViewConstants_ 
 
 
+;  ? set ds to cs to make code smaller?
+; need to wrestle with tasm a bit. 
+;mov      ax, cs
+;mov      ds, cs
 
-;? set ds to cs to make code smaller?
 mov      ax,  word ptr ds:[_detailshift]
 mov      byte ptr cs:[SELFMODIFY_detailshift_plus1_1+1], ah
 
@@ -4142,30 +4171,75 @@ mov      byte ptr cs:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+1], al
 
 
 
-mov   al, byte ptr ds:[_detailshiftitercount]
-mov   byte ptr cs:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
-mov   byte ptr cs:[SELFMODIFY_add_iter_to_rw_x+4], al
-mov   byte ptr cs:[SELFMODIFY_add_detailshiftitercount+4], al
+mov      al, byte ptr ds:[_detailshiftitercount]
+mov      byte ptr cs:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
+mov      byte ptr cs:[SELFMODIFY_add_iter_to_rw_x+4], al
+mov      byte ptr cs:[SELFMODIFY_add_detailshiftitercount+4], al
 
-mov   ax, word ptr ds:[_detailshiftandval]
-mov   word ptr cs:[SELFMODIFY_detailshift_and_1+2], ax
+mov      ax, word ptr ds:[_detailshiftandval]
+mov      word ptr cs:[SELFMODIFY_detailshift_and_1+2], ax
 
-mov   ax, word ptr ds:[_centeryfrac_shiftright4]
-mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_1+1], ax
-mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_2+1], ax
-mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_3+1], ax
-mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_4+1], ax
-mov   ax, word ptr ds:[_centeryfrac_shiftright4+2]
-mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_1+1], ax
-mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_2+1], ax
-mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_3+1], ax
-mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1], ax
+mov      ax, word ptr ds:[_centeryfrac_shiftright4]
+mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_1+1], ax
+mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_2+1], ax
+mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_3+1], ax
+mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_4+1], ax
+mov      ax, word ptr ds:[_centeryfrac_shiftright4+2]
+mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_1+1], ax
+mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_2+1], ax
+mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_3+1], ax
+mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1], ax
 
+mov      ax, word ptr ds:[_centerx]
+mov      word ptr cs:[SELF_MODIFY_set_centerx_1+1], ax
+mov      word ptr cs:[SELF_MODIFY_set_centerx_2+1], ax
+mov      word ptr cs:[SELF_MODIFY_set_centerx_3+1], ax
+mov      word ptr cs:[SELF_MODIFY_set_centerx_4+1], ax
+mov      word ptr cs:[SELF_MODIFY_set_centerx_5+1], ax
+mov      word ptr cs:[SELF_MODIFY_set_centerx_6+2], ax
 
 retf
 
+
+
 ENDP
 
+
+
+;R_WriteBackFrameConstants_
+
+PROC R_WriteBackFrameConstants_ NEAR
+PUBLIC R_WriteBackFrameConstants_ 
+
+
+
+mov      ax, word ptr ds:[_viewz]
+mov      word ptr cs:[SELFMODIFY_set_viewz_lo_1+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_lo_2+2], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_lo_3+2], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_lo_4+2], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_lo_5+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_lo_6+1], ax
+mov      ax, word ptr ds:[_viewz+2]
+mov      word ptr cs:[SELFMODIFY_set_viewz_hi_1+2], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_hi_2+2], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_hi_3+2], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_hi_4+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_hi_5+2], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_hi_6+2], ax
+
+mov      ax, word ptr ds:[_viewz_shortheight]
+mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_1+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_2+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_3+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_4+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_5+1], ax
+
+ret
+
+
+
+ENDP
 
 
 END

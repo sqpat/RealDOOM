@@ -201,7 +201,7 @@ void __near R_InitTextureMapping(void) {
 
 }
 
-void __far  R_WriteBackConstants();
+void __far  R_WriteBackViewConstants();
 
 //
 // R_ExecuteSetViewSize
@@ -255,7 +255,7 @@ void __near  R_ExecuteSetViewSize(void) {
 	
 	viewwindowoffset = (viewwindowy*(SCREENWIDTH / 4)) + (viewwindowx >> 2);
 
-	R_WriteBackConstants();
+	R_WriteBackViewConstants();
 	R_InitTextureMapping();
 
 	// set render 'constants' related to detaillevel. 

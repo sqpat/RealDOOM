@@ -518,6 +518,7 @@ void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
 
 
 
+void __near  R_WriteBackFrameConstants();
 
 //
 // R_SetupFrame
@@ -586,7 +587,7 @@ void __far R_RenderPlayerView () {
 
 	Z_QuickMapRender();
 	R_SetupFrame ();
-
+	R_WriteBackFrameConstants();
 
     // Clear buffers.
     R_ClearClipSegs ();
