@@ -2948,9 +2948,14 @@ PUBLIC R_StoreWallRange_
 ; bp - 03Ah  ; worldlow lo ?
 ; bp - 03Ch  ; worldhigh hi ?
 ; bp - 03Eh  ; worldhigh lo?
+; bp - 040h  ; backsectorfloorheight
+; bp - 042h  ; backsectorceilingheight
+; bp - 044h  ; 
+; bp - 046h  ; 
 
-; bp - 040h  ; dx arg
-; bp - 042h  ; ax arg
+
+; bp - 048h  ; dx arg
+; bp - 04Ah  ; ax arg
 
 
 push      bx
@@ -2959,7 +2964,7 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 03Eh
+sub       sp, 046h
 push      ax
 push      dx
 xor       ax, ax
@@ -3063,21 +3068,21 @@ call     FixedMulTrigNoShift_
 mov       word ptr ds:[_rw_distance], ax
 mov       word ptr ds:[_rw_distance + 2], dx
 done_setting_rw_distance:
-mov       ax, word ptr [bp - 040h]
+mov       ax, word ptr [bp - 048h]
 mov       word ptr ds:[_rw_x], ax
 les       di, dword ptr ds:[_ds_p]
 mov       word ptr es:[di + 2], ax
 
-mov       ax, word ptr [bp - 042h]
+mov       ax, word ptr [bp - 04Ah]
 mov       word ptr es:[di + 4], ax
 
 mov       ax, word ptr ds:[_curseg]
 mov       word ptr es:[di], ax
-mov       ax, word ptr [bp - 042h]
+mov       ax, word ptr [bp - 04Ah]
 inc       ax
 mov       word ptr ds:[_rw_stopx], ax
 mov       ax, XTOVIEWANGLE_SEGMENT
-mov       bx, word ptr [bp - 040h]
+mov       bx, word ptr [bp - 048h]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr ds:[_viewangle_shiftright3]
@@ -3089,8 +3094,8 @@ mov       word ptr ds:[_rw_scale + 2], dx
 mov       es, word ptr ds:[_ds_p+2]
 mov       word ptr es:[di + 8], dx
 mov       word ptr es:[di + 6], ax
-mov       ax, word ptr [bp - 042h]
-cmp       ax, word ptr [bp - 040h]
+mov       ax, word ptr [bp - 04Ah]
+cmp       ax, word ptr [bp - 048h]
 jg        stop_greater_than_start
 
 ; ds_p is es:di
@@ -3112,9 +3117,9 @@ push      cs
 call      R_ScaleFromGlobalAngle_
 nop
 mov       es, word ptr ds:[_ds_p+2]
-mov       bx, word ptr [bp - 042h]
+mov       bx, word ptr [bp - 04Ah]
 mov       word ptr es:[di + 0ah], ax
-sub       bx, word ptr [bp - 040h]
+sub       bx, word ptr [bp - 048h]
 mov       word ptr es:[di + 0ch], dx
 mov       ax, word ptr es:[di + 0ah]
 mov       dx, word ptr es:[di + 0ch]
@@ -3408,8 +3413,8 @@ xchg      ax, bx
 call      R_CheckPlane_
 mov       word ptr ds:[_floorplaneindex], ax
 dont_mark_floor:
-mov       ax, word ptr [bp - 042h]
-cmp       ax, word ptr [bp - 040h]
+mov       ax, word ptr [bp - 04Ah]
+cmp       ax, word ptr [bp - 048h]
 jge       at_least_one_column_to_draw
 jmp       check_spr_top_clip
 at_least_one_column_to_draw:
@@ -3537,12 +3542,12 @@ continue_checking_spr_top_clip:
 
 cmp       word ptr es:[si + 016h], 0
 jne       check_spr_bottom_clip
-mov       si, word ptr [bp - 040h]
+mov       si, word ptr [bp - 048h]
 mov       cx, OPENINGS_SEGMENT
 mov       ax, word ptr ds:[_rw_stopx]
 mov       di, word ptr ds:[_lastopening]
 add       si, si
-sub       ax, word ptr [bp - 040h]
+sub       ax, word ptr [bp - 048h]
 add       si, OFFSET_CEILINGCLIP
 mov       es, cx
 add       di, di
@@ -3558,12 +3563,12 @@ rep movsb
 pop       di
 pop       ds
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 040h]
+sub       ax, word ptr [bp - 048h]
 les       si, dword ptr ds:[_ds_p]
 add       ax, ax
 mov       word ptr es:[si + 016h], ax
 mov       ax, word ptr ds:[_rw_stopx]
-sub       ax, word ptr [bp - 040h]
+sub       ax, word ptr [bp - 048h]
 add       word ptr ds:[_lastopening], ax
 check_spr_bottom_clip:
 ; es:si is ds_p
@@ -3575,12 +3580,12 @@ jmp       continue_checking_spr_bottom_clip
 continue_checking_spr_bottom_clip:
 cmp       word ptr es:[si + 018h], 0
 jne       check_silhouettes_then_exit
-mov       si, word ptr [bp - 040h]
+mov       si, word ptr [bp - 048h]
 mov       cx, OPENINGS_SEGMENT
 mov       ax, word ptr ds:[_rw_stopx]
 mov       di, word ptr ds:[_lastopening]
 add       si, si
-sub       ax, word ptr [bp - 040h]
+sub       ax, word ptr [bp - 048h]
 add       si, OFFSET_FLOORCLIP
 mov       es, cx
 add       di, di
@@ -3596,12 +3601,12 @@ rep movsb
 pop       di
 pop       ds
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 040h]
+sub       ax, word ptr [bp - 048h]
 les       si, dword ptr ds:[_ds_p]
 add       ax, ax
 mov       word ptr es:[si + 018h], ax
 mov       ax, word ptr ds:[_rw_stopx]
-sub       ax, word ptr [bp - 040h]
+sub       ax, word ptr [bp - 048h]
 add       word ptr ds:[_lastopening], ax
 check_silhouettes_then_exit:
 ; todo 
@@ -3640,8 +3645,10 @@ handle_two_sided_line:
 ; 	dx is set to backsectorceilingheight
 ; 	ax is set to backsectorfloorheight
 les       bx, dword ptr ds:[_backsector]
+mov       ax, word ptr es:[bx + 2]
+mov       word ptr [bp - 042h], ax
 mov       ax, word ptr es:[bx]
-mov       dx, word ptr es:[bx + 2]
+mov       word ptr [bp - 040h], ax
 mov       cx, word ptr es:[bx + 4]
 mov       byte ptr [bp - 4], cl
 mov       byte ptr [bp - 0ah], ch
@@ -3674,9 +3681,10 @@ mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
 mov       cx, word ptr [bp - 010h]
 mov       word ptr es:[bx + 012h], cx
 bsilheight_set:
-cmp       dx, word ptr [bp - 012h]
+mov       ax, word ptr [bp - 042h]
+cmp       ax, word ptr [bp - 012h]
 jg        set_tsilheight_to_frontsectorceilingheight
-cmp       dx, word ptr ds:[_viewz_shortheight]
+cmp       ax, word ptr ds:[_viewz_shortheight]
 jge       tsilheight_set
 set_tsilheight_to_minshort:
 or        byte ptr es:[bx + 01ch], SIL_TOP
@@ -3691,7 +3699,7 @@ tsilheight_set:
 
 ; if (backsectorceilingheight <= frontsectorfloorheight) {
 
-cmp       dx, word ptr [bp - 010h]
+cmp       ax, word ptr [bp - 010h]
 jg        back_ceiling_greater_than_front_floor
 
 ; ds_p->sprbottomclip_offset = offset_negonearray;
@@ -3705,6 +3713,7 @@ back_ceiling_greater_than_front_floor:
 ; es:bx is still ds_p
 ; if (backsectorfloorheight >= frontsectorceilingheight) {
 ; ax is backsectorfloorheight
+mov       ax, word ptr [bp - 040h]
 cmp       ax, word ptr [bp - 012h]
 jl        back_floor_less_than_front_ceiling
 
@@ -3722,7 +3731,7 @@ back_floor_less_than_front_ceiling:
 ; worldlow.w -= viewz.w;
 ; TODO! viewz as constants in the function.
 
-mov       bx, dx
+mov       bx, word ptr [bp - 042h]
 xor       cx, cx
 sar       bx, 1
 rcr       cx, 1
@@ -3735,7 +3744,7 @@ sbb       bx, word ptr ds:[_viewz+2]
 mov       word ptr [bp - 03ch], bx
 mov       word ptr [bp - 03eh], cx
 
-mov       bx, ax
+mov       bx, word ptr [bp - 040h] ; can be ax
 xor       cx, cx
 sar       bx, 1
 rcr       cx, 1
@@ -3820,9 +3829,10 @@ markceiling_set:
 ;			markceiling = markfloor = true;
 ;		}
 
-
+mov       dx, word ptr [bp - 042h]
 cmp       dx, word ptr [bp - 010h]
 jle       closed_door_detected
+mov       ax, word ptr [bp - 040h]
 cmp       ax, word ptr [bp - 012h]
 jl        not_closed_door 
 closed_door_detected:
@@ -3830,7 +3840,7 @@ mov       al, 1
 mov       byte ptr ds:[_markfloor], al
 mov       byte ptr ds:[_markceiling], al
 not_closed_door:
-; dx/ax free at last!
+; ax free at last!
 ; di/si still have world_top
 ;		if (worldhigh.w < worldtop.w) {
 
@@ -3858,6 +3868,8 @@ calculate_toptexturemid:
 ; rw_toptexturemid.h.intbits += textureheights[side->toptexture] + 1;
 ; // bottom of texture
 ; rw_toptexturemid.w -= viewz.w;
+
+; dx free at last!
 
 xor       ax, ax
 sar       dx, 1
