@@ -2995,8 +2995,8 @@ mov       ax, word ptr es:[di + 2]
 mov       word ptr [bp - 02ch], ax
 mov       word ptr [bp - 014h], SIDES_SEGMENT
 
-mov       dx, word ptr ds:[_ds_p]
-cmp       dx, (MAXDRAWSEGS * SIZEOF_DRAWSEG_T)
+mov       bx, word ptr ds:[_ds_p]
+cmp       bx, (MAXDRAWSEGS * SIZEOF_DRAWSEG_T)
 je        out_of_drawsegs
 
 mov       ax, SEG_LINEDEFS_SEGMENT
@@ -3011,55 +3011,40 @@ xor       ah, ah
 mov       word ptr [bp - 024h], ax
 
 ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
-; si is linedef.
-mov       ax, si
-cwd       
-shl       dx, 3
-sbb       ax, dx
-sar       ax, 3
-mov       di, ax
+; si is linedefOffset
+
+mov       cx, si
+sar       si, 3
 mov       ax, SEENLINES_SEGMENT
 mov       es, ax
-mov       ax, si
-mov       cx, si
-sar       ax, 15
-xor       cx, ax
-sub       cx, ax
-and       cx, 7
-xor       cx, ax
-sub       cx, ax
-mov       al, byte ptr es:[di]
-mov       bx, 1
-xor       ah, ah
-shl       bx, cl
-mov       dx, ax
-or        dx, bx
-mov       byte ptr es:[di], dl
-mov       ax, word ptr ds:[_curseg]
-add       ax, ax
-mov       bx, ax
+mov       al, 1
+and       cl, 7
+shl       al, cl
+or        byte ptr es:[si], al
+mov       bx, word ptr ds:[_curseg]
+add       bx, bx
 add       bh, (_seg_normalangles SHR 8)
 mov       ax, word ptr [bx]
 mov       word ptr ds:[_rw_normalangle], ax
 shl       ax, SHORTTOFINESHIFT
 mov       word ptr [bp - 02ah], ax
+
+;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
 sub       ax, word ptr ds:[_rw_angle1 + 2]
 cwd       
-xor       ax, dx
+xor       ax, dx		; what's this about. is it an abs() thing?
 sub       ax, dx
 sar       ax, 1
 
-;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
-
 and       al, 0FCh
 mov       word ptr [bp - 018h], ax
-cmp       ax, FINE_ANG90_NOSHIFT
+mov       si, FINE_ANG90_NOSHIFT
+cmp       ax, si
 jb        label_2
 jmp       label_3
 label_2:
 mov       dx, word ptr [bp - 022h]
 mov       ax, word ptr [bp - 026h]
-mov       si, FINE_ANG90_NOSHIFT
 call      R_PointToDist_
 mov       word ptr [bp - 020h], ax
 mov       word ptr [bp - 01ah], dx
@@ -3096,14 +3081,19 @@ push      cs
 call      R_ScaleFromGlobalAngle_
 mov       word ptr ds:[_rw_scale], ax
 mov       word ptr ds:[_rw_scale + 2], dx
-xchg      ax, dx ; todo dumb
 mov       es, word ptr ds:[_ds_p+2]
-mov       word ptr es:[di + 8], ax
+mov       word ptr es:[di + 8], dx
+mov       word ptr es:[di + 6], ax
 mov       ax, word ptr [bp - 042h]
-mov       word ptr es:[di + 6], dx
 cmp       ax, word ptr [bp - 040h]
 jg        label_4
-jmp       label_5
+label_5:
+; ds_p is es:di
+mov       ax, word ptr es:[di + 6]
+mov       word ptr es:[di + 0ah], ax
+mov       ax, word ptr es:[di + 8]
+mov       word ptr es:[di + 0ch], ax
+jmp       label_48
 label_4:
 mov       si, ax
 add       si, ax
@@ -3146,7 +3136,7 @@ mov       al, byte ptr es:[si + 5]
 mov       di, word ptr [bp - 012h]
 mov       byte ptr [bp - 0ch], al
 mov       al, byte ptr es:[si + 0eh]
-mov       si, word ptr [bp - 012h]
+mov       si, di
 sar       di, 3
 and       si, 7
 mov       byte ptr [bp - 8], al
@@ -3175,9 +3165,9 @@ les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, word ptr es:[bx + 6]
 mov       word ptr [bp - 030h], ax
 cmp       word ptr ds:[_backsector], SECNUM_NULL
-je        label_6
-jmp       label_7
-label_6:
+je        handle_single_sided_line
+jmp       handle_two_sided_line
+handle_single_sided_line:
 mov       bx, word ptr [bp - 016h] ;sides 
 mov       ax, TEXTURETRANSLATION_SEGMENT
 mov       bx, word ptr es:[bx + 4]
@@ -3190,7 +3180,11 @@ mov       byte ptr ds:[_markceiling], al
 mov       byte ptr ds:[_markfloor], al
 test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
 jne       label_8
-jmp       label_9
+label_9:
+mov       word ptr ds:[_rw_midtexturemid], si
+mov       word ptr ds:[_rw_midtexturemid + 2], di
+jmp       label_50
+
 label_8:
 mov       ax, word ptr [bp - 010h]
 sub       ax, word ptr ds:[_viewz_shortheight]
@@ -3625,18 +3619,8 @@ xor       ax, ax
 mov       word ptr ds:[_rw_distance], ax
 mov       word ptr ds:[_rw_distance + 2], ax
 jmp       label_49
-label_5:
-; ds_p is es:di
-mov       ax, word ptr es:[di + 6]
-mov       word ptr es:[di + 0ah], ax
-mov       ax, word ptr es:[di + 8]
-mov       word ptr es:[di + 0ch], ax
-jmp       label_48
-label_9:
-mov       word ptr ds:[_rw_midtexturemid], si
-mov       word ptr ds:[_rw_midtexturemid + 2], di
-jmp       label_50
-label_7:
+
+handle_two_sided_line:
 les       bx, dword ptr ds:[_backsector]
 mov       ax, word ptr es:[bx]
 mov       dx, word ptr es:[bx + 2]
@@ -3693,32 +3677,35 @@ mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
 mov       word ptr es:[bx + 014h], MINSHORT
 or        byte ptr es:[bx + 01ch], SIL_TOP
 label_56:
+
+; dx is being preserved as backsectorceilingheight
 mov       bx, dx
-sar       bx, 3
+xor       cx, cx
+sar       bx, 1
+rcr       cx, 1
+sar       bx, 1
+rcr       cx, 1
+sar       bx, 1
+rcr       cx, 1
+sub       cx, word ptr ds:[_viewz]
+sbb       bx, word ptr ds:[_viewz+2]
 mov       word ptr [bp - 03ch], bx
-mov       bx, dx
-xor       bh, dh
-and       bl, 7
-shl       bx, 13
-mov       word ptr [bp - 03eh], bx
+mov       word ptr [bp - 03eh], cx
 
-mov       cx, word ptr ds:[_viewz]
-sub       word ptr [bp - 03eh], cx
-mov       bx, word ptr ds:[_viewz + 2]
-sbb       word ptr [bp - 03ch], bx
 mov       bx, ax
-sar       bx, 3
+xor       cx, cx
+sar       bx, 1
+rcr       cx, 1
+sar       bx, 1
+rcr       cx, 1
+sar       bx, 1
+rcr       cx, 1
+
+sub       cx, word ptr ds:[_viewz]
+sbb       bx, word ptr ds:[_viewz+2]
+mov       word ptr [bp - 03ah], cx
 mov       word ptr [bp - 038h], bx
-mov       bx, ax
-xor       bh, ah
-and       bl, 7
-shl       bx, 13
-mov       word ptr [bp - 03ah], bx
 
-mov       cx, word ptr ds:[_viewz]
-sub       word ptr [bp - 03ah], cx
-mov       bx, word ptr ds:[_viewz + 2]
-sbb       word ptr [bp - 038h], bx
 mov       cl, byte ptr [bp - 0ch]
 cmp       cl, byte ptr ds:[_skyflatnum]
 jne       label_57
@@ -3754,7 +3741,7 @@ jne       label_65
 mov       bl, byte ptr [bp - 0ah]
 cmp       bl, byte ptr [bp - 0ch]
 jne       label_65
-label_85:
+
 mov       bl, byte ptr [bp - 2]
 cmp       bl, byte ptr [bp - 8]
 jne       label_65
