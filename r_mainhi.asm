@@ -3545,8 +3545,9 @@ call FixedMul_
 neg       dx
 neg       ax
 sbb       dx, 0
-mov       word ptr ds:[_pixhighstep], dx
-mov       word ptr ds:[_pixhighstep + 2], ax
+mov       word ptr ds:[_pixhighstep], ax
+mov       word ptr ds:[_pixhighstep + 2], dx
+;todo self modify here
 ; put these back where they need to be.
 xchg       dx, di
 xchg       ax, si
@@ -3587,8 +3588,9 @@ call FixedMul_
 neg       dx
 neg       ax
 sbb       dx, 0
-mov       word ptr ds:[_pixlowstep], dx
-mov       word ptr ds:[_pixlowstep + 2], ax
+mov       word ptr ds:[_pixlowstep], ax
+mov       word ptr ds:[_pixlowstep + 2], dx
+;todo self modify here
 skip_pixlow_step:
 mov       ax, word ptr [bp - 01eh]
 mov       dx, word ptr [bp - 01ch]
