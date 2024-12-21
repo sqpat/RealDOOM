@@ -3827,11 +3827,10 @@ mov       word ptr [bp - 038h], bx
 ; 	worldtop = worldhigh;
 ; }
 
-mov       cl, byte ptr [bp - 0ch]
-cmp       cl, byte ptr ds:[_skyflatnum]
+mov       cl, byte ptr ds:[_skyflatnum], 
+cmp       cl, byte ptr [bp - 0ch]
 jne       not_a_skyflat
-mov       cl, byte ptr [bp - 0ah]
-cmp       cl, byte ptr [bx]
+cmp       cl, byte ptr [bp - 0ah]
 jne       not_a_skyflat
 mov       si, word ptr [bp - 03eh]
 mov       di, word ptr [bp - 03ch]
