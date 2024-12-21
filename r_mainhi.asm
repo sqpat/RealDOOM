@@ -78,7 +78,8 @@ push  di
 add   ah, 8      
 mov   dx, ax      ; copy input
 sub   dx, word ptr ds:[_viewangle_shiftright3]  ; 
-sub   ax, word ptr ds:[_rw_normalangle]
+SELFMODIFY_sub_rw_normal_angle_1:
+sub   ax, 01000h
 
 and   dh, 01Fh
 and   ah, 01Fh
@@ -90,8 +91,10 @@ mov   di, ax
 
 mov   ax, FINESINE_SEGMENT
 mov   si, ax
-mov   bx, word ptr ds:[_rw_distance]
-mov   cx, word ptr ds:[_rw_distance+2]
+SELFMODIFY_get_rw_distance_lo_1:
+mov   bx, 01000h
+SELFMODIFY_get_rw_distance_hi_1:
+mov   cx, 01000h
 
 ; todo is rw_distance = 0 a common case...?
 
@@ -1980,10 +1983,6 @@ mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT   ; colormap 0
 
 
 
-mov   word ptr cs:[SELFMODIFY_add_rwscale_lo+5], ax
-mov   word ptr cs:[SELFMODIFY_add_rwscale_hi+5], dx
-mov   word ptr cs:[SELFMODIFY_sub_rwscale_lo+4], ax
-mov   word ptr cs:[SELFMODIFY_sub_rwscale_hi+4], dx
 
 xchg  ax, cx
 mov   ax, word ptr ds:[_rw_x]
@@ -2008,10 +2007,8 @@ mov   word ptr cs:[SELFMODIFY_add_wallights+3], ax
 
 mov   ax, word ptr ds:[_rw_centerangle]
 mov   word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
-mov   ax, word ptr ds:[_rw_distance]
-mov   word ptr cs:[SELFMODIFY_set_bx_rw_distance_lo+1], ax
-mov   ax, word ptr ds:[_rw_distance+2]
-mov   word ptr cs:[SELFMODIFY_set_cx_rw_distance_hi+1], ax
+
+
 
 mov   ax, word ptr ds:[_rw_offset]
 mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1], ax
@@ -2068,28 +2065,10 @@ mov   byte ptr cs:[SELFMODIFY_get_segtextured+1], ah
 
 
 xchg  ax, cx
-mov   cl, byte ptr ds:[_detailshift2minus]
-xor   ch, ch
-mov   si, cx
 
 
 
 
-
-cmp  cx, 1
-jb finished_shifting_rw_scale
-je shift_rw_scale_once
-shl   ax, 1
-rcl   dx, 1
-shift_rw_scale_once:
-shl   ax, 1
-rcl   dx, 1
-finished_shifting_rw_scale:
-
-mov   word ptr cs:[SELFMODIFY_add_to_rwscale_lo_1+4], ax
-mov   word ptr cs:[SELFMODIFY_add_to_rwscale_lo_2+4], ax
-mov   word ptr cs:[SELFMODIFY_add_to_rwscale_hi_1+4], dx
-mov   word ptr cs:[SELFMODIFY_add_to_rwscale_hi_2+4], dx
 
 
 ;  	int16_t base4diff = rw_x - rw_x_base4;
@@ -2818,14 +2797,14 @@ PUBLIC R_StoreWallRange_
 ; bp - 016h  ; sides offset (within sides segment)
 ; bp - 018h  ; offsetangle
 ; bp - 01Ah  ; hyp hi
-; bp - 01Ch  ; rw_scalestep hi
-; bp - 01Eh  ; rw_scalestep lo
+; bp - 01Ch  ; UNUSED
+; bp - 01Eh  ; UNUSED
 ; bp - 020h  ; hyp lo
 ; bp - 022h  ; v1.y
 ; bp - 024h  ; lineflags
 ; bp - 026h  ; v1.x
 ; bp - 028h  ; side_render (near ptr)
-; bp - 02Ah  ; rw_normalangle_shiftleft3 TODO only used once, selfmodify
+; bp - 02Ah  ; UNUSED
 ; bp - 02Ch  ; v2.y TODO only used once, selfmodify
 ; bp - 02Eh  ; v2.x TODO only used once, selfmodify
 ; bp - 030h  ; sidetextureoffset TODO only used once, selfmodify
@@ -2918,9 +2897,21 @@ mov       bx, word ptr ds:[_curseg]
 add       bx, bx
 add       bh, (_seg_normalangles SHR 8)
 mov       ax, word ptr [bx]
-mov       word ptr ds:[_rw_normalangle], ax
+
+mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
+mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_2+1], ax
+
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl       ax, SHORTTOFINESHIFT
-mov       word ptr [bp - 02ah], ax
+ELSE
+shl       ax, 1
+shl       ax, 1
+shl       ax, 1
+ENDIF
+mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1], ax
+
 
 ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
 sub       ax, word ptr ds:[_rw_angle1 + 2]
@@ -2936,9 +2927,8 @@ cmp       ax, si
 jb        offsetangle_below_ang_90
 offsetangle_above_ang_90:
 xor       ax, ax
-mov       word ptr ds:[_rw_distance], ax
-mov       word ptr ds:[_rw_distance + 2], ax
-jmp       done_setting_rw_distance
+mov       dx, ax
+jmp       do_set_rw_distance
 
 offsetangle_below_ang_90:
 mov       dx, word ptr [bp - 022h]
@@ -2953,8 +2943,14 @@ mov       ax, FINESINE_SEGMENT
 mov       dx, si
 call     FixedMulTrigNoShift_
 
-mov       word ptr ds:[_rw_distance], ax
-mov       word ptr ds:[_rw_distance + 2], dx
+do_set_rw_distance:
+
+; self modifying code for rw_distance
+mov   word ptr cs:[SELFMODIFY_set_bx_rw_distance_lo+1], ax
+mov   word ptr cs:[SELFMODIFY_set_cx_rw_distance_hi+1], dx
+mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1], ax
+mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1], dx
+
 done_setting_rw_distance:
 mov       ax, word ptr [bp - 048h]
 mov       word ptr ds:[_rw_x], ax
@@ -3016,12 +3012,44 @@ sbb       dx, word ptr ds:[_rw_scale + 2]
 
 call FastDiv3216u_
 mov       es, word ptr ds:[_ds_p+2]
-mov       word ptr [bp - 01eh], ax
 mov       word ptr es:[di + 0eh], ax
-mov       word ptr [bp - 01ch], dx
 mov       word ptr es:[di + 010h], dx
 
-; rw_scalestep is set. write it forward as selfmodifying code here
+; rw_scalestep is ready. write it forward as selfmodifying code here
+
+mov       word ptr cs:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
+mov       word ptr cs:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
+mov       word ptr cs:[SELFMODIFY_get_rwscalestep_lo_3+1], ax
+mov       word ptr cs:[SELFMODIFY_get_rwscalestep_lo_4+1], ax
+mov       word ptr cs:[SELFMODIFY_get_rwscalestep_hi_1+1], dx
+mov       word ptr cs:[SELFMODIFY_get_rwscalestep_hi_2+1], dx
+mov       word ptr cs:[SELFMODIFY_get_rwscalestep_hi_3+1], dx
+mov       word ptr cs:[SELFMODIFY_get_rwscalestep_hi_4+1], dx
+
+
+mov       word ptr cs:[SELFMODIFY_add_rwscale_lo+5], ax
+mov       word ptr cs:[SELFMODIFY_add_rwscale_hi+5], dx
+mov       word ptr cs:[SELFMODIFY_sub_rwscale_lo+4], ax
+mov       word ptr cs:[SELFMODIFY_sub_rwscale_hi+4], dx
+
+
+cmp       byte ptr ds:[_detailshift2minus], 1
+jb finished_shifting_rw_scale
+je shift_rw_scale_once
+shl   ax, 1
+rcl   dx, 1
+shift_rw_scale_once:
+shl   ax, 1
+rcl   dx, 1
+finished_shifting_rw_scale:
+
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_1+4], ax
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_2+4], ax
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_1+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_2+4], dx
+
+
+
 
 scales_set:
 
@@ -3186,7 +3214,8 @@ mov       ax, word ptr [bp - 01ah]
 mov       word ptr [bx + 2], ax
 done_with_offsetangle_stuff:
 xor       dx, dx
-mov       ax, word ptr [bp - 02ah]
+SELFMODIFY_set_rw_normal_angle_shift3:
+mov       ax, 01000h
 sub       dx, word ptr ds:[_rw_angle1]
 sbb       ax, word ptr ds:[_rw_angle1 + 2]
 cmp       ax, ANG180_HIGHBITS
@@ -3202,7 +3231,8 @@ add       ax, word ptr [bx + 4]
 add       word ptr ds:[_rw_offset+2], ax
 mov       ax, word ptr ds:[_viewangle_shiftright3]
 add       ah, 8
-sub       ax, word ptr ds:[_rw_normalangle]
+SELFMODIFY_sub_rw_normal_angle_2:
+sub       ax, 01000h
 and       ah, FINE_ANGLE_HIGH_BYTE
 mov       word ptr ds:[_rw_centerangle], ax
 cmp       byte ptr ds:[_fixedcolormap], 0
@@ -3331,8 +3361,11 @@ cmp       ax, word ptr [bp - 048h]
 jge       at_least_one_column_to_draw
 jmp       check_spr_top_clip
 at_least_one_column_to_draw:
-mov       ax, word ptr [bp - 01eh]
-mov       dx, word ptr [bp - 01ch]
+
+SELFMODIFY_get_rwscalestep_lo_1:
+mov       ax, 01000h
+SELFMODIFY_get_rwscalestep_hi_1:
+mov       dx, 01000h
 les       bx, dword ptr [bp - 046h]
 mov       cx, es
 call FixedMul_
@@ -3348,7 +3381,7 @@ mov       word ptr cs:[SELFMODIFY_add_topstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_topstep_hi+5], dx
 
 
-cmp       ds:[_detailshift2minus], 1
+cmp       byte ptr ds:[_detailshift2minus], 1
 jb        finished_shifting_topstep
 je        shift_topstep_once
 shl       ax, 1
@@ -3368,8 +3401,10 @@ mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
 
 mov       cx, word ptr [bp - 034h]
 mov       bx, word ptr [bp - 036h]
-mov       dx, word ptr [bp - 01ch]
-mov       ax, word ptr [bp - 01eh]
+SELFMODIFY_get_rwscalestep_lo_2:
+mov       ax, 01000h
+SELFMODIFY_get_rwscalestep_hi_2:
+mov       dx, 01000h
 call FixedMul_
 neg       dx
 neg       ax
@@ -3382,7 +3417,7 @@ mov       word ptr cs:[SELFMODIFY_sub_botstep_hi+4], dx
 mov       word ptr cs:[SELFMODIFY_add_botstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_botstep_hi+5], dx
 
-cmp       ds:[_detailshift2minus], 1
+cmp       byte ptr ds:[_detailshift2minus], 1
 jb        finished_shifting_botstep
 je        shift_botstep_once
 shl       ax, 1
@@ -3466,13 +3501,17 @@ les       cx, dword ptr ds:[_centeryfrac_shiftright4]
 sub       cx, ax
 mov       bx, es
 sbb       bx, dx
+
+; todo selfmodify this.
+
 mov       word ptr ds:[_pixhigh], cx
 mov       word ptr ds:[_pixhigh + 2], bx
 pop       bx
 pop       cx
-;todo les
-mov       ax, word ptr [bp - 01eh]
-mov       dx, word ptr [bp - 01ch]
+SELFMODIFY_get_rwscalestep_lo_3:
+mov       ax, 01000h
+SELFMODIFY_get_rwscalestep_hi_3:
+mov       dx, 01000h
 call FixedMul_
 neg       dx
 neg       ax
@@ -3488,7 +3527,7 @@ mov       word ptr cs:[SELFMODIFY_sub_pixhigh_hi+4], dx
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_hi+5], dx
 
-cmp       ds:[_detailshift2minus], 1
+cmp       byte ptr ds:[_detailshift2minus], 1
 jb        done_shifting_pixhighstep
 je shift_pixhighstep_once
 shl       ax, 1
@@ -3529,17 +3568,21 @@ mov       si, ax	; store for later
 les       bx, dword ptr ds:[_rw_scale]
 mov       cx, es
 call FixedMul_
-; todo selfmodify this.
 les       cx, dword ptr ds:[_centeryfrac_shiftright4] 
 sub       cx, ax
 mov       bx, es
 sbb       bx, dx
+
+; todo selfmodify this.
+
 mov       word ptr ds:[_pixlow], cx
 mov       word ptr ds:[_pixlow + 2], bx
-mov       ax, word ptr [bp - 01eh]
 mov       bx, si	; cached values
 mov       cx, di	; cached values
-mov       dx, word ptr [bp - 01ch]
+SELFMODIFY_get_rwscalestep_lo_4:
+mov       ax, 01000h
+SELFMODIFY_get_rwscalestep_hi_4:
+mov       dx, 01000h
 call FixedMul_
 neg       dx
 neg       ax
@@ -3572,8 +3615,6 @@ mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+4], dx
 
 ;todo self modify here
 skip_pixlow_step:
-mov       ax, word ptr [bp - 01eh]
-mov       dx, word ptr [bp - 01ch]
 call      R_RenderSegLoop_
 check_spr_top_clip:
 les       si, dword ptr ds:[_ds_p]
