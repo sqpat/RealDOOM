@@ -2804,8 +2804,8 @@ PUBLIC R_StoreWallRange_
 ; bp - 036h  ; worldbottom lo
 ; bp - 038h  ; worldlow hi ?
 ; bp - 03Ah  ; worldlow lo ?
-; bp - 03Ch  ; worldhigh hi ?
-; bp - 03Eh  ; worldhigh lo?
+; bp - 03Ch  ; UNUSED?
+; bp - 03Eh  ; UNUSED?
 ; bp - 040h  ; backsectorfloorheight
 ; bp - 042h  ; backsectorceilingheight
 ; bp - 044h  ; worldtop hi
@@ -3180,6 +3180,7 @@ mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
 mov       word ptr es:[bx + 012h], MAXSHORT
 mov       word ptr es:[bx + 014h], MINSHORT
 xor       ax, ax
+; here
 done_with_sector_sided_check:
 ; coming into here, AL is equal to maskedtexture.
 
@@ -3237,10 +3238,11 @@ done_with_offsetangle_stuff:
 xor       cx, cx
 SELFMODIFY_set_rw_normal_angle_shift3:
 
-mov       di, 01000h
+mov       bx, 01000h
 sub       cx, word ptr ds:[_rw_angle1]
-sbb       di, word ptr ds:[_rw_angle1 + 2]
-cmp       di, ANG180_HIGHBITS
+sbb       bx, word ptr ds:[_rw_angle1 + 2]
+; ANG180_HIGHBITS is 08000h. can we get this for free without cmp with a sign thing?
+cmp       bx, ANG180_HIGHBITS
 jae       tempangle_not_smaller_than_fineang180
 ; bx is already _rw_offset
 neg       dx
@@ -3492,9 +3494,7 @@ backsector_not_null:
 ; worldlow.w >>= 4;
 
 
-; worldhigh to di:si
-mov       di, word ptr [bp - 03Ch]
-mov       si, word ptr [bp - 03Eh]
+; worldhigh is di:si
 sar       di, 1
 rcr       si, 1
 sar       di, 1
@@ -3873,21 +3873,21 @@ back_floor_less_than_front_ceiling:
 ; worldlow.w -= viewz.w;
 ; TODO! viewz as constants in the function.
 
-mov       bx, word ptr [bp - 042h]
-xor       cx, cx
-sar       bx, 1
-rcr       cx, 1
-sar       bx, 1
-rcr       cx, 1
-sar       bx, 1
-rcr       cx, 1
+mov       di, word ptr [bp - 042h]
+xor       si, si
+sar       di, 1
+rcr       si, 1
+sar       di, 1
+rcr       si, 1
+sar       di, 1
+rcr       si, 1
 SELFMODIFY_set_viewz_lo_3:
-sub       cx, 01000h
+sub       si, 01000h
 SELFMODIFY_set_viewz_hi_3:
-sbb       bx, 01000h
-mov       word ptr [bp - 03ch], bx
-mov       word ptr [bp - 03eh], cx
+sbb       di, 01000h
 
+;di:si will store worldhigh
+; what if we store bx/cx here as well, and finally push it once it's too onerous to hold onto?
 mov       bx, word ptr [bp - 040h] ; can be ax
 xor       cx, cx
 sar       bx, 1
@@ -3902,6 +3902,7 @@ sub       cx, 01000h
 SELFMODIFY_set_viewz_hi_2:
 sbb       bx, 01000h
 
+
 mov       word ptr [bp - 03ah], cx
 mov       word ptr [bp - 038h], bx
 
@@ -3915,8 +3916,8 @@ cmp       cl, byte ptr [bp - 0ch]
 jne       not_a_skyflat
 cmp       cl, byte ptr [bp - 0ah]
 jne       not_a_skyflat
-mov       si, word ptr [bp - 03eh]
-mov       di, word ptr [bp - 03ch]
+;di/si are worldhigh..
+
 mov       word ptr [bp - 046h], si
 mov       word ptr [bp - 044h], di
 
@@ -3950,11 +3951,10 @@ jmp       markfloor_set
 set_markfloor_true:
 mov       byte ptr ds:[_markfloor], 1
 markfloor_set:
-mov       di, word ptr [bp - 044h]
-cmp       di, word ptr [bp - 03ch]
+; di/si are already worldhigh..
+cmp       word ptr [bp - 044h], di
 jne       set_markceiling_true
-mov       si, word ptr [bp - 046h]
-cmp       si, word ptr [bp - 03eh]
+cmp       word ptr [bp - 046h], si
 jne       set_markceiling_true
 
 mov       bl, byte ptr [bp - 0ah]
@@ -3994,12 +3994,10 @@ not_closed_door:
 ; ax free at last!
 ;		if (worldhigh.w < worldtop.w) {
 
-mov       ax, word ptr [bp - 03ch]
-cmp       word ptr [bp - 044h], ax
+cmp       word ptr [bp - 044h], di
 jg        setup_toptexture
 jne       toptexture_stuff_done
-mov       ax, word ptr [bp - 046h]
-cmp       ax, word ptr [bp - 03eh]
+cmp       word ptr [bp - 046h], si
 jbe       toptexture_stuff_done
 setup_toptexture:
 
