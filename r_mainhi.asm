@@ -3629,6 +3629,16 @@ pop       bx
 ret       
 
 handle_two_sided_line:
+
+; short_height_t backsectorfloorheight = backsector->floorheight;
+; short_height_t backsectorceilingheight = backsector->ceilingheight;
+; uint8_t backsectorceilingpic = backsector->ceilingpic;
+; uint8_t backsectorfloorpic = backsector->floorpic;
+; uint8_t backsectorlightlevel = backsector->lightlevel;
+
+; TODO CHANGE:
+; 	dx is set to backsectorceilingheight
+; 	ax is set to backsectorfloorheight
 les       bx, dword ptr ds:[_backsector]
 mov       ax, word ptr es:[bx]
 mov       dx, word ptr es:[bx + 2]
@@ -3637,56 +3647,81 @@ mov       byte ptr [bp - 4], cl
 mov       byte ptr [bp - 0ah], ch
 mov       cl, byte ptr es:[bx + 0eh]
 mov       byte ptr [bp - 2], cl
+
+;		ds_p->sprtopclip_offset = ds_p->sprbottomclip_offset = 0;
+;		ds_p->silhouette = 0;
+
 les       bx, dword ptr ds:[_ds_p]
 xor       cx, cx
 mov       word ptr es:[bx + 018h], cx
 mov       word ptr es:[bx + 016h], cx
 mov       byte ptr es:[bx + 01ch], cl ; SIL_NONE
+
+
+; es:bx is ds_p
+;		if (frontsectorfloorheight > backsectorfloorheight) {
+
 cmp       ax, word ptr [bp - 010h]
-jl        label_51
+jl        set_bsilheight_to_frontsectorfloorheight
 cmp       ax, word ptr ds:[_viewz_shortheight]
-jle       label_63
-; bx ok
+jle       bsilheight_set
+set_bsilheight_to_maxshort:
 mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
 mov       word ptr es:[bx + 012h], MAXSHORT
-jmp       label_63
-label_51:
-; bx ok
+jmp       bsilheight_set
+set_bsilheight_to_frontsectorfloorheight:
 mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
 mov       cx, word ptr [bp - 010h]
 mov       word ptr es:[bx + 012h], cx
-label_63:
-; bx ok
+bsilheight_set:
 cmp       dx, word ptr [bp - 012h]
-jg        label_53
+jg        set_tsilheight_to_frontsectorceilingheight
 cmp       dx, word ptr ds:[_viewz_shortheight]
-jge       label_62
-label_84:
+jge       tsilheight_set
+set_tsilheight_to_minshort:
 or        byte ptr es:[bx + 01ch], SIL_TOP
 mov       word ptr es:[bx + 014h], MINSHORT
-jmp       label_62
-label_53:
-; todo: is bx _ds_p in all paths?
+jmp       tsilheight_set
+set_tsilheight_to_frontsectorceilingheight:
 or        byte ptr es:[bx + 01ch], SIL_TOP
 mov       cx, word ptr [bp - 012h]
 mov       word ptr es:[bx + 014h], cx
-label_62:
-; bx ok
+tsilheight_set:
+; es:bx is still ds_p
+
+; if (backsectorceilingheight <= frontsectorfloorheight) {
+
 cmp       dx, word ptr [bp - 010h]
-jg        label_55
+jg        back_ceiling_greater_than_front_floor
+
+; ds_p->sprbottomclip_offset = offset_negonearray;
+; ds_p->bsilheight = MAXSHORT;
+; ds_p->silhouette |= SIL_BOTTOM;
+
 mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
 mov       word ptr es:[bx + 012h], MAXSHORT
 or        byte ptr es:[bx + 01ch], SIL_BOTTOM
-label_55:
-; bx ok
+back_ceiling_greater_than_front_floor:
+; es:bx is still ds_p
+; if (backsectorfloorheight >= frontsectorceilingheight) {
+; ax is backsectorfloorheight
 cmp       ax, word ptr [bp - 012h]
-jl        label_56
+jl        back_floor_less_than_front_ceiling
+
+; ds_p->sprtopclip_offset = offset_screenheightarray;
+; ds_p->tsilheight = MINSHORT;
+; ds_p->silhouette |= SIL_TOP;
 mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
 mov       word ptr es:[bx + 014h], MINSHORT
 or        byte ptr es:[bx + 01ch], SIL_TOP
-label_56:
+back_floor_less_than_front_ceiling:
 
-; dx is being preserved as backsectorceilingheight
+; SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight);
+; worldhigh.w -= viewz.w;
+; SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldlow, backsectorfloorheight);
+; worldlow.w -= viewz.w;
+; TODO! viewz as constants in the function.
+
 mov       bx, dx
 xor       cx, cx
 sar       bx, 1
@@ -3714,66 +3749,101 @@ sbb       bx, word ptr ds:[_viewz+2]
 mov       word ptr [bp - 03ah], cx
 mov       word ptr [bp - 038h], bx
 
+; // hack to allow height changes in outdoor areas
+; if (frontsectorceilingpic == skyflatnum && backsectorceilingpic == skyflatnum) {
+; 	worldtop = worldhigh;
+; }
+
 mov       cl, byte ptr [bp - 0ch]
 cmp       cl, byte ptr ds:[_skyflatnum]
-jne       label_57
+jne       not_a_skyflat
 mov       cl, byte ptr [bp - 0ah]
 cmp       cl, byte ptr [bx]
-jne       label_57
+jne       not_a_skyflat
 mov       si, word ptr [bp - 03eh]
 mov       di, word ptr [bp - 03ch]
-label_57:
+not_a_skyflat:
+
+			
+;	if (worldlow.w != worldbottom .w || backsectorfloorpic != frontsectorfloorpic || backsectorlightlevel != frontsectorlightlevel) {
+;		markfloor = true;
+;	} else {
+;		// same plane on both sides
+;		markfloor = false;
+;	}
+	
+
 mov       bx, word ptr [bp - 038h]
 cmp       bx, word ptr [bp - 034h]
-jne       label_60
+jne       set_markfloor_true
 mov       bx, word ptr [bp - 03ah]
 cmp       bx, word ptr [bp - 036h]
-jne       label_60
+jne       set_markfloor_true
 
 mov       bl, byte ptr [bp - 4]
 cmp       bl, byte ptr [bp - 6]
-jne       label_60
+jne       set_markfloor_true
 mov       bl, byte ptr [bp - 2]
 cmp       bl, byte ptr [bp - 8]
-jne       label_60
+jne       set_markfloor_true
+set_markfloor_false:
 mov       byte ptr ds:[_markfloor], 0
-jmp       label_79
-label_60:
+jmp       markfloor_set
+set_markfloor_true:
 mov       byte ptr ds:[_markfloor], 1
-label_79:
+markfloor_set:
 cmp       di, word ptr [bp - 03ch]
-jne       label_65
+jne       set_markceiling_true
 cmp       si, word ptr [bp - 03eh]
-jne       label_65
+jne       set_markceiling_true
 
 mov       bl, byte ptr [bp - 0ah]
 cmp       bl, byte ptr [bp - 0ch]
-jne       label_65
+jne       set_markceiling_true
 
 mov       bl, byte ptr [bp - 2]
 cmp       bl, byte ptr [bp - 8]
-jne       label_65
+jne       set_markceiling_true
+set_markceiling_false:
 mov       byte ptr ds:[_markceiling], 0
-jmp       label_80
-label_65:
+jmp       markceiling_set
+set_markceiling_true:
 mov       byte ptr ds:[_markceiling], 1
-label_80:
+markceiling_set:
+
+; TOOO: improve this area. write to markceiling/floor once not twice. use al/ah to store their values.
+; write one word at the end. or write directly to the code.
+
+;		if (backsectorceilingheight <= frontsectorfloorheight
+;			|| backsectorfloorheight >= frontsectorceilingheight) {
+;			// closed door
+;			markceiling = markfloor = true;
+;		}
+
+
 cmp       dx, word ptr [bp - 010h]
-jle       label_66
+jle       closed_door_detected
 cmp       ax, word ptr [bp - 012h]
-jl        label_67  ; jge label_67 does terrible things to pentium. test on
-label_66:
+jl        not_closed_door 
+closed_door_detected:
 mov       al, 1
 mov       byte ptr ds:[_markfloor], al
 mov       byte ptr ds:[_markceiling], al
-label_67:
+not_closed_door:
+; dx/ax free at last!
+; di/si still have world_top
+;		if (worldhigh.w < worldtop.w) {
+
 mov       ax, word ptr [bp - 03ch]
 cmp       di, ax
-jg        label_68
-jne       label_47
+jg        setup_toptexture
+jne       toptexture_stuff_done
 cmp       si, word ptr [bp - 03eh]
-jbe       label_47
-label_68:
+jbe       toptexture_stuff_done
+setup_toptexture:
+
+; toptexture = texturetranslation[side->toptexture];
+
 les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, TEXTURETRANSLATION_SEGMENT
 mov       bx, word ptr es:[bx]
@@ -3782,8 +3852,13 @@ add       bx, bx
 mov       ax, word ptr es:[bx]
 mov       word ptr ds:[_toptexture], ax
 test      byte ptr [bp - 024h], ML_DONTPEGTOP
-jne       label_69
-label_70:
+jne       set_toptexture_to_worldtop
+calculate_toptexturemid:
+; SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_toptexturemid, backsectorceilingheight);
+; rw_toptexturemid.h.intbits += textureheights[side->toptexture] + 1;
+; // bottom of texture
+; rw_toptexturemid.w -= viewz.w;
+
 xor       ax, ax
 sar       dx, 1
 rcr       ax, 1
@@ -3791,8 +3866,7 @@ sar       dx, 1
 rcr       ax, 1
 sar       dx, 1
 rcr       ax, 1
-;mov       word ptr ds:[_rw_toptexturemid], ax
-;mov       word ptr ds:[_rw_toptexturemid + 2], dx
+;dx:ax are toptexturemid for now..
 les       bx, dword ptr [bp - 016h] ; sides ; todo cache the value from side?
 mov       cx, TEXTUREHEIGHTS_SEGMENT
 mov       bx, word ptr es:[bx]
@@ -3807,21 +3881,22 @@ sbb       dx, word ptr ds:[_viewz+2]
 
 mov       word ptr ds:[_rw_toptexturemid], ax
 mov       word ptr ds:[_rw_toptexturemid + 2], dx
-jmp       label_47
+jmp       toptexture_stuff_done
 
 
-label_69:
+set_toptexture_to_worldtop:
 mov       word ptr ds:[_rw_toptexturemid], si
 mov       word ptr ds:[_rw_toptexturemid + 2], di
-label_47:
+
+toptexture_stuff_done:
 mov       ax, word ptr [bp - 038h]
 cmp       ax, word ptr [bp - 034h]
-jg        label_71
-jne       label_72
+jg        setup_bottexture
+jne       bottexture_stuff_done
 mov       ax, word ptr [bp - 03ah]
 cmp       ax, word ptr [bp - 036h]
-jbe       label_72
-label_71:
+jbe       bottexture_stuff_done
+setup_bottexture:
 les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, TEXTURETRANSLATION_SEGMENT
 mov       bx, word ptr es:[bx + 2]
@@ -3830,19 +3905,32 @@ add       bx, bx
 mov       ax, word ptr es:[bx]
 mov       word ptr ds:[_bottomtexture], ax
 test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
-je        label_73
+je        calculate_bottexturemid
+; todo cs write here
 mov       word ptr ds:[_rw_bottomtexturemid], si
 mov       word ptr ds:[_rw_bottomtexturemid+2], di
-label_72:
+bottexture_stuff_done:
 mov       bx, word ptr [bp - 028h]
 mov       ax, word ptr [bx]
 add       word ptr ds:[_rw_toptexturemid + 2], ax
 add       word ptr ds:[_rw_bottomtexturemid+2], ax
 les       bx, dword ptr [bp - 016h] ; sides
 cmp       word ptr es:[bx + 4], 0
-jne       label_82
+
+; // allocate space for masked texture tables
+; if (side->midtexture) {
+
+
+jne       side_has_midtexture
 jmp       done_with_sector_sided_check
-label_82:
+side_has_midtexture:
+
+; // masked midtexture
+; maskedtexture = true;
+; ds_p->maskedtexturecol_val = lastopening - rw_x;
+; maskedtexturecol_offset = (ds_p->maskedtexturecol_val) << 1;
+; lastopening += rw_stopx - rw_x;
+
 mov       byte ptr ds:[_maskedtexture], 1
 mov       ax, word ptr ds:[_lastopening]
 sub       ax, word ptr ds:[_rw_x]
@@ -3855,12 +3943,14 @@ mov       ax, word ptr ds:[_rw_stopx]
 sub       ax, word ptr ds:[_rw_x]
 add       word ptr ds:[_lastopening], ax
 jmp       done_with_sector_sided_check
-label_73:
+calculate_bottexturemid:
+; todo cs write here
+
 mov       ax, word ptr [bp - 03ah]
 mov       word ptr ds:[_rw_bottomtexturemid], ax
 mov       ax, word ptr [bp - 038h]
 mov       word ptr ds:[_rw_bottomtexturemid + 2], ax
-jmp       label_72
+jmp       bottexture_stuff_done
 
 
 
