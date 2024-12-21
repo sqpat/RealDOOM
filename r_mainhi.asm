@@ -131,10 +131,10 @@ ADD  DX, BX
 ; di:si had den
 ; dx:ax has num
 
+SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1:
+db 0EBh, 000h
 
-cmp byte ptr ds:[_detailshift], 1
-jb shift_done
-je do_once
+
 ; fall thru do twice
 shl   ax, 1
 rcl   dx, 1
@@ -1444,9 +1444,9 @@ mov   ax, word ptr [bp - 4]
 mov   di, word ptr [bp - 2]
 
 
-cmp byte ptr ds:[_detailshift], 1
-jb visscale_shift_done
-je do_visscale_shift_once
+SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2:
+db 0EBh, 000h
+
 ; fall thru do twice
 shl   ax, 1
 rcl   di, 1
@@ -1595,10 +1595,12 @@ mov   ax, word ptr [bp - 3] ; shift 8 by loading a byte higher.
 ; shift 2 more guaranteed
 sar   ax, 1
 sar   ax, 1
-cmp   byte ptr ds:[_detailshift], 1
+
 ; test for detailshift portion
-je    shift_xscale_once
-jg    done_shifting_xscale
+SELFMODIFY_detailshift_16_bit_jump_1:
+db 0EBh, 000h
+
+
 sar   ax, 1
 shift_xscale_once:
 sar   ax, 1
@@ -1985,7 +1987,9 @@ xchg  ax, cx
 mov   ax, word ptr ds:[_rw_x]
 mov   bx, ax
 mov   di, ax
-and   bx, word ptr ds:[_detailshiftandval]
+SELFMODIFY_detailshift_and_1:
+
+and   bx, 01000h
 mov   word ptr cs:[SELFMODIFY_add_rw_x_base4_to_ax+1], bx
 mov   word ptr cs:[SELFMODIFY_compare_ax_to_start_rw_x+1], ax	
 
@@ -1993,12 +1997,6 @@ mov   word ptr cs:[SELFMODIFY_compare_ax_to_start_rw_x+1], ax
 ; repeatedly reading loop-constant or function-constant variables.
 
 mov   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1], 0
-
-; todo move this into r_setup area
-mov   al, byte ptr ds:[_detailshiftitercount]
-mov   byte ptr cs:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
-mov   byte ptr cs:[SELFMODIFY_add_iter_to_rw_x+4], al
-mov   byte ptr cs:[SELFMODIFY_add_detailshiftitercount+4], al
 
 
 
@@ -2110,8 +2108,10 @@ continue_outer_rendersegloop:
 cbw  
 mov   bx, ax
 inc   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1]
-mov   al, byte ptr ds:[_detailshift + 1]
+SELFMODIFY_detailshift_plus1_1:
+mov   al, 00h
 mov   si, ax
+
 mov   dx, SC_DATA
 mov   al, byte ptr [si + bx + OFFSET _quality_port_lookup]	
 out   dx, al
@@ -2997,9 +2997,10 @@ mov       word ptr cs:[SELFMODIFY_sub_rwscale_lo+4], ax
 mov       word ptr cs:[SELFMODIFY_sub_rwscale_hi+4], dx
 
 
-cmp       byte ptr ds:[_detailshift2minus], 1
-jb finished_shifting_rw_scale
-je shift_rw_scale_once
+
+SELFMODIFY_detailshift_32_bit_rotate_jump_1:
+db 0EBh, 000h
+
 shl   ax, 1
 rcl   dx, 1
 shift_rw_scale_once:
@@ -3307,9 +3308,11 @@ les       bx, dword ptr ds:[_rw_scale]
 mov       cx, es
 call FixedMul_
 ; todo selfmodify this.
-les       cx, dword ptr ds:[_centeryfrac_shiftright4]
+SELFMODIFY_sub__centeryfrac_shiftright4_lo_4:
+mov       cx, 01000h
 sub       cx, ax
-mov       ax, es
+SELFMODIFY_sub__centeryfrac_shiftright4_hi_4:
+mov       ax, 01000h
 sbb       ax, dx
 mov       word ptr ds:[_topfrac], cx
 mov       word ptr ds:[_topfrac + 2], ax
@@ -3330,9 +3333,11 @@ les       bx, dword ptr ds:[_rw_scale]
 mov       cx, es
 call FixedMul_
 ; todo selfmodify this.
-les       cx, dword ptr ds:[_centeryfrac_shiftright4]
+SELFMODIFY_sub__centeryfrac_shiftright4_lo_3:
+mov       cx, 01000h
 sub       cx, ax
-mov       ax, es
+SELFMODIFY_sub__centeryfrac_shiftright4_hi_3:
+mov       ax, 01000h
 sbb       ax, dx
 mov       word ptr ds:[_bottomfrac], cx
 mov       word ptr ds:[_bottomfrac + 2], ax
@@ -3385,9 +3390,10 @@ mov       word ptr cs:[SELFMODIFY_add_topstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_topstep_hi+5], dx
 
 
-cmp       byte ptr ds:[_detailshift2minus], 1
-jb        finished_shifting_topstep
-je        shift_topstep_once
+SELFMODIFY_detailshift_32_bit_rotate_jump_2:
+db 0EBh, 000h
+
+
 shl       ax, 1
 rcl       dx, 1
 shift_topstep_once:
@@ -3421,9 +3427,8 @@ mov       word ptr cs:[SELFMODIFY_sub_botstep_hi+4], dx
 mov       word ptr cs:[SELFMODIFY_add_botstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_botstep_hi+5], dx
 
-cmp       byte ptr ds:[_detailshift2minus], 1
-jb        finished_shifting_botstep
-je        shift_botstep_once
+SELFMODIFY_detailshift_32_bit_rotate_jump_3:
+db 0EBh, 000h
 shl       ax, 1
 rcl       dx, 1
 shift_botstep_once:
@@ -3501,15 +3506,18 @@ call FixedMul_
 ; todo selfmodify this.
 ; mov cx, low word
 ; mov bx, high word
-les       cx, dword ptr ds:[_centeryfrac_shiftright4]
+SELFMODIFY_sub__centeryfrac_shiftright4_lo_2:
+mov       cx, 01000h
 sub       cx, ax
-mov       bx, es
-sbb       bx, dx
+SELFMODIFY_sub__centeryfrac_shiftright4_hi_2:
+mov       ax, 01000h
+sbb       ax, dx
+
 
 ; todo selfmodify this.
 
 mov       word ptr ds:[_pixhigh], cx
-mov       word ptr ds:[_pixhigh + 2], bx
+mov       word ptr ds:[_pixhigh + 2], ax
 pop       bx
 pop       cx
 SELFMODIFY_get_rwscalestep_lo_3:
@@ -3531,9 +3539,8 @@ mov       word ptr cs:[SELFMODIFY_sub_pixhigh_hi+4], dx
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_hi+5], dx
 
-cmp       byte ptr ds:[_detailshift2minus], 1
-jb        done_shifting_pixhighstep
-je shift_pixhighstep_once
+SELFMODIFY_detailshift_32_bit_rotate_jump_4:
+db 0EBh, 000h
 shl       ax, 1
 rcl       dx, 1
 shift_pixhighstep_once:
@@ -3572,15 +3579,18 @@ mov       si, ax	; store for later
 les       bx, dword ptr ds:[_rw_scale]
 mov       cx, es
 call FixedMul_
-les       cx, dword ptr ds:[_centeryfrac_shiftright4] 
+
+SELFMODIFY_sub__centeryfrac_shiftright4_lo_1:
+mov       cx, 01000h
 sub       cx, ax
-mov       bx, es
-sbb       bx, dx
+SELFMODIFY_sub__centeryfrac_shiftright4_hi_1:
+mov       ax, 01000h
+sbb       ax, dx
 
 ; todo selfmodify this.
 
-mov       word ptr ds:[_pixlow], cx
-mov       word ptr ds:[_pixlow + 2], bx
+mov       word ptr ds:[_pixlow], bx
+mov       word ptr ds:[_pixlow + 2], ax
 mov       bx, si	; cached values
 mov       cx, di	; cached values
 SELFMODIFY_get_rwscalestep_lo_4:
@@ -3601,9 +3611,8 @@ mov       word ptr cs:[SELFMODIFY_sub_pixlow_hi+4], dx
 mov       word ptr cs:[SELFMODIFY_add_pixlowstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixlowstep_hi+5], dx
 
-cmp       byte ptr ds:[_detailshift2minus], 1
-jb        done_shifting_pixlowstep
-je        shift_pixlowstep_once
+SELFMODIFY_detailshift_32_bit_rotate_jump_5:
+db 0EBh, 000h
 shl       ax, 1
 rcl       dx, 1
 shift_pixlowstep_once:
@@ -4101,6 +4110,62 @@ jmp do_selfmodify_bottexture
 
 
 ENDP
+
+
+;R_WriteBackConstants_
+
+PROC R_WriteBackConstants_ FAR
+PUBLIC R_WriteBackConstants_ 
+
+
+
+;? set ds to cs to make code smaller?
+mov      ax,  word ptr ds:[_detailshift]
+mov      byte ptr cs:[SELFMODIFY_detailshift_plus1_1+1], ah
+
+; for dual 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
+; i.e. detailshift shl 2
+shl      al, 1
+mov      byte ptr cs:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
+shl      al, 1
+
+mov      byte ptr cs:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+1], al
+mov      byte ptr cs:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+1], al
+mov      byte ptr cs:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+1], al
+mov      byte ptr cs:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+1], al
+mov      byte ptr cs:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+1], al
+
+mov      al,  8
+sub      al,  ah
+mov      byte ptr cs:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+1], al
+mov      byte ptr cs:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+1], al
+
+
+
+mov   al, byte ptr ds:[_detailshiftitercount]
+mov   byte ptr cs:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
+mov   byte ptr cs:[SELFMODIFY_add_iter_to_rw_x+4], al
+mov   byte ptr cs:[SELFMODIFY_add_detailshiftitercount+4], al
+
+mov   ax, word ptr ds:[_detailshiftandval]
+mov   word ptr cs:[SELFMODIFY_detailshift_and_1+2], ax
+
+mov   ax, word ptr ds:[_centeryfrac_shiftright4]
+mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_1+1], ax
+mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_2+1], ax
+mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_3+1], ax
+mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_4+1], ax
+mov   ax, word ptr ds:[_centeryfrac_shiftright4+2]
+mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_1+1], ax
+mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_2+1], ax
+mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_3+1], ax
+mov   word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1], ax
+
+
+retf
+
+ENDP
+
 
 
 END
