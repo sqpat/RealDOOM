@@ -3040,9 +3040,14 @@ and       al, 0FCh
 mov       word ptr [bp - 018h], ax
 mov       si, FINE_ANG90_NOSHIFT
 cmp       ax, si
-jb        label_2
-jmp       label_3
-label_2:
+jb        offsetangle_below_ang_90
+offsetangle_above_ang_90:
+xor       ax, ax
+mov       word ptr ds:[_rw_distance], ax
+mov       word ptr ds:[_rw_distance + 2], ax
+jmp       done_setting_rw_distance
+
+offsetangle_below_ang_90:
 mov       dx, word ptr [bp - 022h]
 mov       ax, word ptr [bp - 026h]
 call      R_PointToDist_
@@ -3057,7 +3062,7 @@ call     FixedMulTrigNoShift_
 
 mov       word ptr ds:[_rw_distance], ax
 mov       word ptr ds:[_rw_distance + 2], dx
-label_49:
+done_setting_rw_distance:
 mov       ax, word ptr [bp - 040h]
 mov       word ptr ds:[_rw_x], ax
 les       di, dword ptr ds:[_ds_p]
@@ -3086,15 +3091,17 @@ mov       word ptr es:[di + 8], dx
 mov       word ptr es:[di + 6], ax
 mov       ax, word ptr [bp - 042h]
 cmp       ax, word ptr [bp - 040h]
-jg        label_4
-label_5:
+jg        stop_greater_than_start
+
 ; ds_p is es:di
+;		ds_p->scale2 = ds_p->scale1;
+
 mov       ax, word ptr es:[di + 6]
 mov       word ptr es:[di + 0ah], ax
 mov       ax, word ptr es:[di + 8]
 mov       word ptr es:[di + 0ch], ax
-jmp       label_48
-label_4:
+jmp       scales_set
+stop_greater_than_start:
 mov       si, ax
 add       si, ax
 mov       ax, XTOVIEWANGLE_SEGMENT
@@ -3120,7 +3127,7 @@ mov       word ptr [bp - 01eh], ax
 mov       word ptr es:[di + 0eh], ax
 mov       word ptr [bp - 01ch], dx
 mov       word ptr es:[di + 010h], dx
-label_48:
+scales_set:
 ; si = frontsector
 les       si, dword ptr ds:[_frontsector]
 mov       ax, word ptr es:[si]
@@ -3185,14 +3192,14 @@ mov       al, 1
 mov       byte ptr ds:[_markceiling], al
 mov       byte ptr ds:[_markfloor], al
 test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
-jne       label_8
-label_9:
+jne       do_peg_bottom
+dont_peg_bottom:
 mov       word ptr ds:[_rw_midtexturemid], si
 mov       ax, di
 ; ax has rw_midtexturemid+2
-jmp       label_50
+jmp       done_with_bottom_peg
 
-label_8:
+do_peg_bottom:
 mov       ax, word ptr [bp - 010h]
 sub       ax, word ptr ds:[_viewz_shortheight]
 xor       cx, cx
@@ -3213,7 +3220,7 @@ xor       cx, cx
 mov       cl, byte ptr es:[bx]
 inc       cx
 add       ax, cx
-label_50:
+done_with_bottom_peg:
 ; cx:ax has rw_midtexturemid
 
 mov       bx, word ptr [bp - 028h]
@@ -3225,35 +3232,35 @@ mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
 mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
 mov       word ptr es:[bx + 012h], MAXSHORT
 mov       word ptr es:[bx + 014h], MINSHORT
-label_74:
+done_with_sector_sided_check:
 ; todo use words
 mov       al, byte ptr ds:[_midtexture]
 or        al, byte ptr ds:[_toptexture]
 or        al, byte ptr ds:[_bottomtexture]
 or        al, byte ptr ds:[_maskedtexture]
 mov       byte ptr ds:[_segtextured], al
-jne       label_10
-jmp       label_11
-label_10:
+jne       do_seg_textured_stuff
+jmp       seg_textured_check_done
+do_seg_textured_stuff:
 mov       ax, word ptr [bp - 018h]
 cmp       ax, FINE_ANG180_NOSHIFT
-jbe       label_75
+jbe       offsetangle_greater_than_fineang180
 neg       ax
 and       ah, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
 mov       word ptr [bp - 018h], ax
-label_75:
+offsetangle_greater_than_fineang180:
 mov       ax, word ptr [bp - 01ah]
 or        ax, word ptr [bp - 020h]
-jne       label_76
+jne       hyp_already_set   		; todo what is hyp about
 mov       dx, word ptr [bp - 022h]
 mov       ax, word ptr [bp - 026h]
 call      R_PointToDist_
 mov       word ptr [bp - 020h], ax
 mov       word ptr [bp - 01ah], dx
-label_76:
+hyp_already_set:
 mov       dx, word ptr [bp - 018h]
 cmp       dx, FINE_ANG90_NOSHIFT
-ja        label_12
+ja        offsetangle_greater_than_fineang90
 mov       bx, word ptr [bp - 020h]
 mov       cx, word ptr [bp - 01ah]
 mov       ax, FINESINE_SEGMENT
@@ -3262,25 +3269,25 @@ call FixedMulTrigNoShift_
 mov       bx, OFFSET _rw_offset
 mov       word ptr [bx], ax
 mov       word ptr [bx + 2], dx
-jmp       label_46
-label_12:
+jmp       done_with_offsetangle_stuff
+offsetangle_greater_than_fineang90:
 mov       bx, OFFSET _rw_offset ; used later, dont change
 mov       ax, word ptr [bp - 020h]
 mov       word ptr [bx], ax
 mov       ax, word ptr [bp - 01ah]
 mov       word ptr [bx + 2], ax
-label_46:
+done_with_offsetangle_stuff:
 xor       dx, dx
 mov       ax, word ptr [bp - 02ah]
 sub       dx, word ptr ds:[_rw_angle1]
 sbb       ax, word ptr ds:[_rw_angle1 + 2]
 cmp       ax, ANG180_HIGHBITS
-jae       label_14
+jae       tempangle_not_smaller_than_fineang180
 ; bx is already _rw_offset
 neg       word ptr [bx + 2]
 neg       word ptr [bx]
 sbb       word ptr [bx + 2], 0
-label_14:
+tempangle_not_smaller_than_fineang180:
 mov       bx, word ptr ds:[_curseg_render]
 mov       ax, word ptr [bp - 030h]
 add       ax, word ptr [bx + 4]
@@ -3291,7 +3298,7 @@ sub       ax, word ptr ds:[_rw_normalangle]
 and       ah, FINE_ANGLE_HIGH_BYTE
 mov       word ptr ds:[_rw_centerangle], ax
 cmp       byte ptr ds:[_fixedcolormap], 0
-jne       label_11
+jne       seg_textured_check_done
 mov       al, byte ptr [bp - 8]
 xor       ah, ah
 mov       dl, byte ptr ds:[_extralight]
@@ -3300,60 +3307,59 @@ xor       dh, dh
 add       dx, ax
 mov       ax, word ptr [bp - 022h]
 cmp       ax, word ptr [bp - 02ch]
-je        label_15
+je        v1y_equals_v2y
 
 mov       ax, word ptr [bp - 026h]
 cmp       ax, word ptr [bp - 02eh]
-jne       label_44
+jne       v1x_equals_v2x
 
 inc       dx
-jmp       label_44
-label_15:
+jmp       v1x_equals_v2x
+v1y_equals_v2y:
 dec       dx
-label_44:
+v1x_equals_v2x:
 test      dx, dx
-jge       label_17
+jge       lightnum_greater_than_0
 xor		  ax, ax
-jmp       label_43
-label_20:
+jmp       done_setting_ax_to_wallights
+lightnum_less_than_lightlevels:
 mov       bx, dx
 add       bx, dx
 mov       ax, word ptr ds:[bx + _lightmult48lookup]
-jmp       label_42
+jmp       done_setting_ax_to_wallights
 
-label_17:
+lightnum_greater_than_0:
 cmp       dx, LIGHTLEVELS
-jl        label_20
+jl        lightnum_less_than_lightlevels
 mov       ax, word ptr ds:[_lightmult48lookup + + (2 * (LIGHTLEVELS - 1))]
-label_42:
-label_43:
+done_setting_ax_to_wallights:
 add       ax, scalelight_offset_in_fixed_scalelight
 ; todo write from this..
 mov       word ptr ds:[_walllights], ax
-label_11:
+seg_textured_check_done:
 mov       ax, word ptr [bp - 010h]
 cmp       ax, word ptr ds:[_viewz_shortheight]
-jl        label_21
+jl        not_above_viewplane
 mov       byte ptr ds:[_markfloor], 0
-label_21:
+not_above_viewplane:
 mov       ax, word ptr [bp - 012h]
 cmp       ax, word ptr ds:[_viewz_shortheight]
-jg        label_22
+jg        not_below_viewplane
 mov       al, byte ptr [bp - 0ch]
 cmp       al, byte ptr ds:[_skyflatnum]
-je        label_22
+je        not_below_viewplane
 mov       byte ptr ds:[_markceiling], 0
-label_22:
+not_below_viewplane:
 mov       cx, 4
-label_23:
+loop_shift_worldtop:
 sar       word ptr [bp - 034h], 1
 rcr       word ptr [bp - 036h], 1
-loop      label_23
+loop      loop_shift_worldtop
 mov       cx, 4
-label_24:
+loop_shift_worldbot:
 sar       di, 1
 rcr       si, 1
-loop      label_24
+loop      loop_shift_worldbot
 mov       dx, di
 ; les to load two words
 les       bx, dword ptr ds:[_rw_scale]
@@ -3380,7 +3386,7 @@ mov       word ptr ds:[_bottomfrac], cx
 mov       word ptr ds:[_bottomfrac + 2], ax
 
 cmp       byte ptr ds:[_markceiling], 0
-je        label_25
+je        dont_mark_ceiling
 mov       cx, 1
 mov       ax, word ptr ds:[_rw_stopx]
 dec       ax
@@ -3389,10 +3395,10 @@ mov       bx, ax
 mov       ax, word ptr ds:[_ceilingplaneindex]
 call      R_CheckPlane_
 mov       word ptr ds:[_ceilingplaneindex], ax
-label_25:
+dont_mark_ceiling:
 
 cmp       byte ptr ds:[_markfloor], 0
-je        label_26
+je        dont_mark_floor
 mov       ax, word ptr ds:[_rw_stopx]
 mov       dx, word ptr ds:[_rw_x]
 xor       cx, cx
@@ -3401,12 +3407,12 @@ dec       ax
 xchg      ax, bx
 call      R_CheckPlane_
 mov       word ptr ds:[_floorplaneindex], ax
-label_26:
+dont_mark_floor:
 mov       ax, word ptr [bp - 042h]
 cmp       ax, word ptr [bp - 040h]
-jge       label_27
-jmp       label_28
-label_27:
+jge       at_least_one_column_to_draw
+jmp       check_spr_top_clip
+at_least_one_column_to_draw:
 mov       ax, word ptr [bp - 01eh]
 mov       dx, word ptr [bp - 01ch]
 mov       bx, si
@@ -3433,10 +3439,10 @@ neg       dx
 sbb       ax, 0
 mov       word ptr ds:[_bottomstep], dx
 mov       word ptr ds:[_bottomstep + 2], ax
-cmp       word ptr ds:[_backsector], -1
-jne       label_29
-jmp       label_30
-label_29:
+cmp       word ptr ds:[_backsector], SECNUM_NULL
+jne       backsector_not_null
+jmp       skip_pixlow_step
+backsector_not_null:
 mov       cx, 4
 loop_shift_worldhigh:
 sar       word ptr [bp - 03ch], 1
@@ -3449,11 +3455,11 @@ sar       word ptr [bp - 038h], 1
 rcr       word ptr [bp - 03ah], 1
 loop      loop_shift_worldlow
 cmp       di, ax
-jg        label_33
-jne       label_34
+jg        do_pixhigh_step
+jne       skip_pixhigh_step
 cmp       si, word ptr [bp - 03eh]
-jbe       label_34
-label_33:
+jbe       skip_pixhigh_step
+do_pixhigh_step:
 mov       dx, word ptr [bp - 03ch]
 les       bx, dword ptr ds:[_rw_scale]
 mov       cx, es
@@ -3479,15 +3485,15 @@ neg       dx
 sbb       ax, 0
 mov       word ptr ds:[_pixhighstep], dx
 mov       word ptr ds:[_pixhighstep + 2], ax
-label_34:
+skip_pixhigh_step:
 mov       ax, word ptr [bp - 038h]
 cmp       ax, word ptr [bp - 034h]
-jg        label_35
-jne       label_30
+jg        do_pixlow_step
+jne       skip_pixlow_step
 mov       ax, word ptr [bp - 03ah]
 cmp       ax, word ptr [bp - 036h]
-jbe       label_30
-label_35:
+jbe       skip_pixlow_step
+do_pixlow_step:
 mov       dx, word ptr [bp - 038h]
 les       bx, dword ptr ds:[_rw_scale]
 mov       cx, es
@@ -3513,24 +3519,24 @@ neg       dx
 sbb       ax, 0
 mov       word ptr ds:[_pixlowstep], dx
 mov       word ptr ds:[_pixlowstep + 2], ax
-label_30:
+skip_pixlow_step:
 mov       ax, word ptr [bp - 01eh]
 mov       dx, word ptr [bp - 01ch]
 call      R_RenderSegLoop_
-label_28:
+check_spr_top_clip:
 
 les       si, dword ptr ds:[_ds_p]
 test      byte ptr es:[si + 01ch], SIL_TOP
-jne       label_36
+jne       continue_checking_spr_top_clip
 cmp       byte ptr ds:[_maskedtexture], 0
-je        label_38
-jmp       label_36
+je        check_spr_bottom_clip
+jmp       continue_checking_spr_top_clip
 
 
-label_36:
+continue_checking_spr_top_clip:
 
 cmp       word ptr es:[si + 016h], 0
-jne       label_38
+jne       check_spr_bottom_clip
 mov       si, word ptr [bp - 040h]
 mov       cx, OPENINGS_SEGMENT
 mov       ax, word ptr ds:[_rw_stopx]
@@ -3559,17 +3565,16 @@ mov       word ptr es:[si + 016h], ax
 mov       ax, word ptr ds:[_rw_stopx]
 sub       ax, word ptr [bp - 040h]
 add       word ptr ds:[_lastopening], ax
-label_38:
+check_spr_bottom_clip:
 ; es:si is ds_p
 test      byte ptr es:[si + 01ch], SIL_BOTTOM
-jne       label_39
+jne       continue_checking_spr_bottom_clip
 cmp       byte ptr ds:[_maskedtexture], 0
-je        label_41
-jmp       label_39
-label_39:
-les       si, dword ptr ds:[_ds_p]
+je        check_silhouettes_then_exit
+jmp       continue_checking_spr_bottom_clip
+continue_checking_spr_bottom_clip:
 cmp       word ptr es:[si + 018h], 0
-jne       label_41
+jne       check_silhouettes_then_exit
 mov       si, word ptr [bp - 040h]
 mov       cx, OPENINGS_SEGMENT
 mov       ax, word ptr ds:[_rw_stopx]
@@ -3598,26 +3603,23 @@ mov       word ptr es:[si + 018h], ax
 mov       ax, word ptr ds:[_rw_stopx]
 sub       ax, word ptr [bp - 040h]
 add       word ptr ds:[_lastopening], ax
-label_41:
+check_silhouettes_then_exit:
+; todo 
 cmp       byte ptr ds:[_maskedtexture], 0
-je        label_58
-les       si, dword ptr ds:[_ds_p]
+je        skip_top_silhouette
 test      byte ptr es:[si + 01ch], SIL_TOP	; todo 
-jne       label_58
+jne       skip_top_silhouette
 or        byte ptr es:[si + 01ch], SIL_TOP
-les       si, dword ptr [bx]
 mov       word ptr es:[si + 014h], MINSHORT
-label_58:
+skip_top_silhouette:
 
 cmp       byte ptr ds:[_maskedtexture], 0
-je        label_59
-les       si, dword ptr ds:[_ds_p]
+je        skip_bot_silhouette
 test      byte ptr es:[si + 01ch], SIL_BOTTOM
-jne       label_59
+jne       skip_bot_silhouette
 or        byte ptr es:[si + 01ch], SIL_BOTTOM
-les       si, dword ptr [bx]
 mov       word ptr es:[si + 012h], MAXSHORT
-label_59:
+skip_bot_silhouette:
 add       word ptr ds:[_ds_p], SIZEOF_DRAWSEG_T
 LEAVE_MACRO
 pop       di
@@ -3625,11 +3627,6 @@ pop       si
 pop       cx
 pop       bx
 ret       
-label_3:
-xor       ax, ax
-mov       word ptr ds:[_rw_distance], ax
-mov       word ptr ds:[_rw_distance + 2], ax
-jmp       label_49
 
 handle_two_sided_line:
 les       bx, dword ptr ds:[_backsector]
@@ -3844,7 +3841,7 @@ add       word ptr ds:[_rw_bottomtexturemid+2], ax
 les       bx, dword ptr [bp - 016h] ; sides
 cmp       word ptr es:[bx + 4], 0
 jne       label_82
-jmp       label_74
+jmp       done_with_sector_sided_check
 label_82:
 mov       byte ptr ds:[_maskedtexture], 1
 mov       ax, word ptr ds:[_lastopening]
@@ -3857,7 +3854,7 @@ mov       word ptr ds:[_maskedtexturecol], ax
 mov       ax, word ptr ds:[_rw_stopx]
 sub       ax, word ptr ds:[_rw_x]
 add       word ptr ds:[_lastopening], ax
-jmp       label_74
+jmp       done_with_sector_sided_check
 label_73:
 mov       ax, word ptr [bp - 03ah]
 mov       word ptr ds:[_rw_bottomtexturemid], ax
