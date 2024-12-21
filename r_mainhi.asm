@@ -3149,16 +3149,17 @@ mov       byte ptr [bp - 8], al
 mov       ax, word ptr [bp - 010h]
 sub       si, word ptr [bx]
 sbb       di, word ptr [bx + 2]
-sar       ax, 3
+xor       cx, cx
+sar       ax, 1
+rcr       cx, 1
+sar       ax, 1
+rcr       cx, 1
+sar       ax, 1
+rcr       cx, 1
+sub       cx, word ptr [bx]
+sbb       ax, word ptr [bx+2]
+mov       word ptr [bp - 036h], cx
 mov       word ptr [bp - 034h], ax
-mov       ax, word ptr [bp - 010h]
-and       ax, 7
-shl       ax, 13
-mov       word ptr [bp - 036h], ax
-mov       ax, word ptr [bx]
-sub       word ptr [bp - 036h], ax
-mov       ax, word ptr [bx + 2]
-sbb       word ptr [bp - 034h], ax
 xor       ax, ax
 mov       byte ptr ds:[_maskedtexture], al
 mov       word ptr ds:[_bottomtexture], ax
@@ -3187,32 +3188,37 @@ test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
 jne       label_8
 label_9:
 mov       word ptr ds:[_rw_midtexturemid], si
-mov       word ptr ds:[_rw_midtexturemid + 2], di
+mov       ax, di
+; ax has rw_midtexturemid+2
 jmp       label_50
 
 label_8:
 mov       ax, word ptr [bp - 010h]
 sub       ax, word ptr ds:[_viewz_shortheight]
-sar       ax, 3
-mov       word ptr ds:[_rw_midtexturemid+2], ax
-mov       ax, word ptr [bp - 010h]
-sub       ax, word ptr ds:[_viewz_shortheight]
-xor       ah, ah
-and       al, 7
-shl       ax, 13
-mov       word ptr ds:[_rw_midtexturemid], ax
+xor       cx, cx
+sar       ax, 1
+rcr       cx, 1
+sar       ax, 1
+rcr       cx, 1
+sar       ax, 1
+rcr       cx, 1
+mov       word ptr ds:[_rw_midtexturemid],   cx
+
+
 les       bx, dword ptr [bp - 016h] ; sides
 mov       bx, word ptr es:[bx + 4]
-mov       ax, TEXTUREHEIGHTS_SEGMENT
-mov       es, ax
-mov       al, byte ptr es:[bx]
-xor       ah, ah
-inc       ax
-add       word ptr ds:[_rw_midtexturemid+2], ax
+mov       cx, TEXTUREHEIGHTS_SEGMENT
+mov       es, cx
+xor       cx, cx
+mov       cl, byte ptr es:[bx]
+inc       cx
+add       ax, cx
 label_50:
+; cx:ax has rw_midtexturemid
+
 mov       bx, word ptr [bp - 028h]
-mov       ax, word ptr [bx]
-add       word ptr ds:[_rw_midtexturemid+2], ax
+add       ax, word ptr [bx]
+mov       word ptr ds:[_rw_midtexturemid+2], ax
 les       bx, dword ptr ds:[_ds_p]
 mov       byte ptr es:[bx + 01ch], SIL_BOTH
 mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
@@ -3245,12 +3251,11 @@ call      R_PointToDist_
 mov       word ptr [bp - 020h], ax
 mov       word ptr [bp - 01ah], dx
 label_76:
-mov       ax, word ptr [bp - 018h]
-cmp       ax, FINE_ANG90_NOSHIFT
+mov       dx, word ptr [bp - 018h]
+cmp       dx, FINE_ANG90_NOSHIFT
 ja        label_12
 mov       bx, word ptr [bp - 020h]
 mov       cx, word ptr [bp - 01ah]
-mov       dx, ax
 mov       ax, FINESINE_SEGMENT
 call FixedMulTrigNoShift_
 ; used later, dont change?
@@ -3308,7 +3313,7 @@ dec       dx
 label_44:
 test      dx, dx
 jge       label_17
-mov       word ptr ds:[_walllights], 0
+xor		  ax, ax
 jmp       label_43
 label_20:
 mov       bx, dx
@@ -3321,9 +3326,10 @@ cmp       dx, LIGHTLEVELS
 jl        label_20
 mov       ax, word ptr ds:[_lightmult48lookup + + (2 * (LIGHTLEVELS - 1))]
 label_42:
-mov       word ptr ds:[_walllights], ax
 label_43:
-add       word ptr ds:[_walllights], scalelight_offset_in_fixed_scalelight
+add       ax, scalelight_offset_in_fixed_scalelight
+; todo write from this..
+mov       word ptr ds:[_walllights], ax
 label_11:
 mov       ax, word ptr [bp - 010h]
 cmp       ax, word ptr ds:[_viewz_shortheight]
