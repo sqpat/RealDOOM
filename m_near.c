@@ -195,10 +195,6 @@ uint16_t			skytexture;
 
 
 
-uint16_t		toptexture;
-uint16_t		bottomtexture;
-uint16_t		midtexture;
-
 
 //
 // regular wall

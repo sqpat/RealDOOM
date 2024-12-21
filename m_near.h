@@ -393,14 +393,7 @@ extern uint16_t			    fieldofview;
 extern boolean		        setsizeneeded;
 extern uint8_t		        setblocks;
 extern uint16_t			    skytexture;
-extern uint16_t		        toptexture;
-extern uint16_t		        bottomtexture;
-extern uint16_t		        midtexture;
 
-extern fixed_t_union		worldtop;
-extern fixed_t_union		worldbottom;
-extern fixed_t_union		worldhigh;
-extern fixed_t_union		worldlow;
 extern uint16_t             pspritescale;
 extern int16_t              spritelights;
 extern int16_t              numflats;

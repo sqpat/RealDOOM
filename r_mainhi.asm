@@ -43,9 +43,6 @@ EXTRN _spritewidths_segment:WORD
 
 EXTRN _R_DrawColumnPrepCall:DWORD
 
-EXTRN _toptexture:WORD
-EXTRN _midtexture:WORD
-EXTRN _bottomtexture:WORD
 EXTRN _segloopnextlookup:WORD
 EXTRN _segloopprevlookup:WORD
 EXTRN _seglooptexrepeat:WORD
@@ -2015,14 +2012,8 @@ mov   word ptr cs:[SELFMODIFY_set_midtexturemid_lo+4], ax
 mov   ax, word ptr ds:[_rw_midtexturemid + 2]
 mov   word ptr cs:[SELFMODIFY_set_midtexturemid_hi+4], ax
 
-mov   ax, word ptr ds:[_bottomtexture]
-mov   word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
 
-mov   ax, word ptr ds:[_toptexture]
-mov   word ptr cs:[SELFMODIFY_set_toptexture+1], ax
 
-mov   ax, word ptr ds:[_midtexture]
-mov   word ptr cs:[SELFMODIFY_set_midtexture+1], ax
 
 ; markceiling is ah
 mov   ax, word ptr ds:[_markfloor]
@@ -2033,12 +2024,7 @@ mov   byte ptr cs:[SELFMODIFY_get_markceiling_1+1], ah
 mov   byte ptr cs:[SELFMODIFY_get_markceiling_2+1], ah
 
 
-; segtextured is ah
-mov   ax, word ptr ds:[_maskedtexture]
-mov   byte ptr cs:[SELFMODIFY_get_maskedtexture_1+1], al
-mov   byte ptr cs:[SELFMODIFY_get_maskedtexture_2+1], al
 
-mov   byte ptr cs:[SELFMODIFY_get_segtextured+1], ah
 
 
 
@@ -3083,10 +3069,14 @@ sbb       ax, word ptr [bx+2]
 mov       word ptr [bp - 036h], cx
 mov       word ptr [bp - 034h], ax
 xor       ax, ax
+; zero out maskedtexture 
 mov       byte ptr ds:[_maskedtexture], al
-mov       word ptr ds:[_bottomtexture], ax
-mov       word ptr ds:[_toptexture], ax
-mov       word ptr ds:[_midtexture], ax
+; default to 0
+mov       byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
+mov       word ptr cs:[SELFMODIFY_set_midtexture+1], ax
+mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
+
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], NULL_TEX_COL
 les       bx, dword ptr [bp - 016h] ; sides
@@ -3102,7 +3092,13 @@ mov       bx, word ptr es:[bx + 4]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
-mov       word ptr ds:[_midtexture], ax
+
+mov       word ptr cs:[SELFMODIFY_set_midtexture+1], ax
+; are any bits set?
+or        al, ah
+or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
+
+
 mov       al, 1
 mov       byte ptr ds:[_markceiling], al
 mov       byte ptr ds:[_markfloor], al
@@ -3148,13 +3144,23 @@ mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
 mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
 mov       word ptr es:[bx + 012h], MAXSHORT
 mov       word ptr es:[bx + 014h], MINSHORT
+xor       ax, ax
 done_with_sector_sided_check:
-; todo use words
-mov       al, byte ptr ds:[_midtexture]
-or        al, byte ptr ds:[_toptexture]
-or        al, byte ptr ds:[_bottomtexture]
-or        al, byte ptr ds:[_maskedtexture]
-mov       byte ptr ds:[_segtextured], al
+; coming into here, AL is equal to maskedtexture.
+
+; set maskedtexture in rendersegloop
+
+mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_1+1], al
+mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_2+1], al
+
+; create segtextured value
+SELFMODIFY_check_for_any_tex:
+or   	  al, 0
+
+; set segtextured in rendersegloop
+mov       byte ptr cs:[SELFMODIFY_get_segtextured+1], al
+
+
 jne       do_seg_textured_stuff
 jmp       seg_textured_check_done
 do_seg_textured_stuff:
@@ -3945,7 +3951,12 @@ mov       bx, word ptr es:[bx]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
-mov       word ptr ds:[_toptexture], ax
+
+mov   	  word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+; are any bits set?
+or        al, ah
+or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
+
 test      byte ptr [bp - 024h], ML_DONTPEGTOP
 jne       set_toptexture_to_worldtop
 calculate_toptexturemid:
@@ -4003,7 +4014,12 @@ mov       bx, word ptr es:[bx + 2]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
-mov       word ptr ds:[_bottomtexture], ax
+
+mov   	  word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
+; are any bits set?
+or        al, ah
+or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
+
 test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here
@@ -4037,6 +4053,7 @@ cmp       word ptr es:[bx + 4], 0
 
 
 jne       side_has_midtexture
+xor       ax, ax
 jmp       done_with_sector_sided_check
 side_has_midtexture:
 
@@ -4046,7 +4063,6 @@ side_has_midtexture:
 ; maskedtexturecol_offset = (ds_p->maskedtexturecol_val) << 1;
 ; lastopening += rw_stopx - rw_x;
 
-mov       byte ptr ds:[_maskedtexture], 1
 mov       ax, word ptr ds:[_lastopening]
 sub       ax, word ptr ds:[_rw_x]
 les       bx, dword ptr ds:[_ds_p]
@@ -4057,6 +4073,8 @@ mov       word ptr ds:[_maskedtexturecol], ax
 mov       ax, word ptr ds:[_rw_stopx]
 sub       ax, word ptr ds:[_rw_x]
 add       word ptr ds:[_lastopening], ax
+mov       al, 1
+mov       byte ptr ds:[_maskedtexture], al
 jmp       done_with_sector_sided_check
 calculate_bottexturemid:
 ; todo cs write here
