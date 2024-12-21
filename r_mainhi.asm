@@ -3132,15 +3132,20 @@ mov       bx, OFFSET _viewz
 mov       byte ptr [bp - 6], al
 mov       al, byte ptr es:[si + 5]
 ; BIG TODO: make this di used some other way
-; (si:di is worldtop)
+; (di:si is worldtop)
 mov       di, word ptr [bp - 012h]
 mov       byte ptr [bp - 0ch], al
 mov       al, byte ptr es:[si + 0eh]
+xor       si, si
 mov       si, di
-sar       di, 3
-and       si, 7
+sar       di, 1
+rcr       si, 1
+sar       di, 1
+rcr       si, 1
+sar       di, 1
+rcr       si, 1
+; todo put this in memory instead of caching in di:si
 mov       byte ptr [bp - 8], al
-shl       si, 13
 mov       ax, word ptr [bp - 010h]
 sub       si, word ptr [bx]
 sbb       di, word ptr [bx + 2]
@@ -3776,25 +3781,29 @@ mov       word ptr ds:[_toptexture], ax
 test      byte ptr [bp - 024h], ML_DONTPEGTOP
 jne       label_69
 label_70:
-mov       ax, dx
-xor       dh, dh
-sar       ax, 3
-and       dl, 7
-mov       word ptr ds:[_rw_toptexturemid + 2], ax
-shl       dx, 13
-mov       word ptr ds:[_rw_toptexturemid], dx
-les       bx, dword ptr [bp - 016h] ; sides
-mov       ax, TEXTUREHEIGHTS_SEGMENT
+xor       ax, ax
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+;mov       word ptr ds:[_rw_toptexturemid], ax
+;mov       word ptr ds:[_rw_toptexturemid + 2], dx
+les       bx, dword ptr [bp - 016h] ; sides ; todo cache the value from side?
+mov       cx, TEXTUREHEIGHTS_SEGMENT
 mov       bx, word ptr es:[bx]
-mov       es, ax
-mov       al, byte ptr es:[bx]
-xor       ah, ah
-inc       ax
-add       word ptr ds:[_rw_toptexturemid + 2], ax
-mov       dx, word ptr ds:[_viewz]
-mov       ax, word ptr ds:[_viewz + 2]
-sub       word ptr ds:[_rw_toptexturemid], dx
-sbb       word ptr ds:[_rw_toptexturemid + 2], ax
+mov       es, cx
+xor       cx, cx
+mov       cl, byte ptr es:[bx]
+inc       cx
+
+add       dx, cx
+sub       ax, word ptr ds:[_viewz]
+sbb       dx, word ptr ds:[_viewz+2]
+
+mov       word ptr ds:[_rw_toptexturemid], ax
+mov       word ptr ds:[_rw_toptexturemid + 2], dx
 jmp       label_47
 
 
