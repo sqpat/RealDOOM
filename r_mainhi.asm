@@ -2950,8 +2950,8 @@ PUBLIC R_StoreWallRange_
 ; bp - 03Eh  ; worldhigh lo?
 ; bp - 040h  ; backsectorfloorheight
 ; bp - 042h  ; backsectorceilingheight
-; bp - 044h  ; 
-; bp - 046h  ; 
+; bp - 044h  ; worldtop hi
+; bp - 046h  ; worldtop lo
 
 
 ; bp - 048h  ; dx arg
@@ -3132,7 +3132,12 @@ mov       word ptr [bp - 01eh], ax
 mov       word ptr es:[di + 0eh], ax
 mov       word ptr [bp - 01ch], dx
 mov       word ptr es:[di + 010h], dx
+
+; rw_scalestep is set. write it forward as selfmodifying code here
+
 scales_set:
+
+
 ; si = frontsector
 les       si, dword ptr ds:[_frontsector]
 mov       ax, word ptr es:[si]
@@ -3140,27 +3145,36 @@ mov       word ptr [bp - 010h], ax
 mov       ax, word ptr es:[si + 2]
 mov       word ptr [bp - 012h], ax
 mov       al, byte ptr es:[si + 4]
-mov       bx, OFFSET _viewz
 mov       byte ptr [bp - 6], al
 mov       al, byte ptr es:[si + 5]
 ; BIG TODO: make this di used some other way
 ; (di:si is worldtop)
-mov       di, word ptr [bp - 012h]
+
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsectorceilingheight);
+;	worldtop.w -= viewz.w;
+
 mov       byte ptr [bp - 0ch], al
 mov       al, byte ptr es:[si + 0eh]
-xor       si, si
-mov       si, di
-sar       di, 1
-rcr       si, 1
-sar       di, 1
-rcr       si, 1
-sar       di, 1
-rcr       si, 1
-; todo put this in memory instead of caching in di:si
 mov       byte ptr [bp - 8], al
+mov       dx, word ptr [bp - 012h]
+xor       ax, ax
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+
+; todo selfmodify viewz
+mov       bx, OFFSET _viewz
+
+sub       ax, word ptr [bx]
+sbb       dx, word ptr [bx + 2]
+; storeworldtop
+mov       word ptr [bp - 046h], ax
+mov       word ptr [bp - 044h], dx
+
 mov       ax, word ptr [bp - 010h]
-sub       si, word ptr [bx]
-sbb       di, word ptr [bx + 2]
 xor       cx, cx
 sar       ax, 1
 rcr       cx, 1
@@ -3199,8 +3213,9 @@ mov       byte ptr ds:[_markfloor], al
 test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
-mov       word ptr ds:[_rw_midtexturemid], si
-mov       ax, di
+mov       ax, word ptr [bp - 046h]
+mov       word ptr ds:[_rw_midtexturemid], ax
+mov       ax, word ptr [bp - 044h]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
 
@@ -3356,21 +3371,20 @@ je        not_below_viewplane
 mov       byte ptr ds:[_markceiling], 0
 not_below_viewplane:
 mov       cx, 4
+mov       dx, word ptr [bp - 044h]
+mov       ax, word ptr [bp - 046h]
 loop_shift_worldtop:
-sar       word ptr [bp - 034h], 1
-rcr       word ptr [bp - 036h], 1
+sar       dx, 1
+rcr       ax, 1
 loop      loop_shift_worldtop
-mov       cx, 4
-loop_shift_worldbot:
-sar       di, 1
-rcr       si, 1
-loop      loop_shift_worldbot
-mov       dx, di
+mov       word ptr [bp - 044h], dx
+mov       word ptr [bp - 046h], ax
+
 ; les to load two words
 les       bx, dword ptr ds:[_rw_scale]
 mov       cx, es
-mov       ax, si
 call FixedMul_
+; todo selfmodify this.
 les       cx, dword ptr ds:[_centeryfrac_shiftright4]
 sub       cx, ax
 mov       ax, es
@@ -3378,11 +3392,22 @@ sbb       ax, dx
 mov       word ptr ds:[_topfrac], cx
 mov       word ptr ds:[_topfrac + 2], ax
 ; les to load two words
-les       bx, dword ptr ds:[_rw_scale]
-mov       cx, es
+mov       cx, 4
 mov       dx, word ptr [bp - 034h]
 mov       ax, word ptr [bp - 036h]
+loop_shift_worldbot:
+sar       dx, 1
+rcr       ax, 1
+loop      loop_shift_worldbot
+mov       word ptr [bp - 034h], dx
+mov       word ptr [bp - 036h], ax
+
+
+
+les       bx, dword ptr ds:[_rw_scale]
+mov       cx, es
 call FixedMul_
+; todo selfmodify this.
 les       cx, dword ptr ds:[_centeryfrac_shiftright4]
 sub       cx, ax
 mov       ax, es
@@ -3420,8 +3445,8 @@ jmp       check_spr_top_clip
 at_least_one_column_to_draw:
 mov       ax, word ptr [bp - 01eh]
 mov       dx, word ptr [bp - 01ch]
-mov       bx, si
-mov       cx, di
+les       bx, dword ptr [bp - 046h]
+mov       cx, es
 call FixedMul_
 mov       bx, ax
 mov       ax, dx
@@ -3448,80 +3473,120 @@ cmp       word ptr ds:[_backsector], SECNUM_NULL
 jne       backsector_not_null
 jmp       skip_pixlow_step
 backsector_not_null:
-mov       cx, 4
-loop_shift_worldhigh:
-sar       word ptr [bp - 03ch], 1
-rcr       word ptr [bp - 03eh], 1
-loop      loop_shift_worldhigh
-mov       ax, word ptr [bp - 03ch]
-mov       cx, 4
-loop_shift_worldlow:
-sar       word ptr [bp - 038h], 1
-rcr       word ptr [bp - 03ah], 1
-loop      loop_shift_worldlow
-cmp       di, ax
+; here we modify worldhigh/low then do not write them back to memory
+; (except push/pop in one situation)
+
+; worldhigh.w >>= 4;
+; worldlow.w >>= 4;
+
+
+; worldhigh to di:si
+mov       di, word ptr [bp - 03Ch]
+mov       si, word ptr [bp - 03Eh]
+sar       di, 1
+rcr       si, 1
+sar       di, 1
+rcr       si, 1
+sar       di, 1
+rcr       si, 1
+sar       di, 1
+rcr       si, 1
+
+; worldlow to dx:ax
+mov       dx, word ptr [bp - 038h]
+mov       ax, word ptr [bp - 03ah]
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+
+
+; if (worldhigh.w < worldtop.w) {
+
+cmp       word ptr [bp - 044h], di
 jg        do_pixhigh_step
 jne       skip_pixhigh_step
-cmp       si, word ptr [bp - 03eh]
+cmp       word ptr [bp - 046h], si
+
 jbe       skip_pixhigh_step
 do_pixhigh_step:
-mov       dx, word ptr [bp - 03ch]
+
+; pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
+; pixhighstep = -FixedMul    (rw_scalestep.w,          worldhigh.w);
+
+; store these
+xchg       dx, di
+xchg       ax, si
+
 les       bx, dword ptr ds:[_rw_scale]
 mov       cx, es
-mov       ax, word ptr [bp - 03eh]
+push      dx
+push      ax
 call FixedMul_
+; todo selfmodify this.
+; mov cx, low word
+; mov bx, high word
 les       cx, dword ptr ds:[_centeryfrac_shiftright4]
 sub       cx, ax
 mov       bx, es
 sbb       bx, dx
-mov       dx, bx
 mov       word ptr ds:[_pixhigh], cx
+mov       word ptr ds:[_pixhigh + 2], bx
+pop       bx
+pop       cx
+;todo les
 mov       ax, word ptr [bp - 01eh]
-mov       word ptr ds:[_pixhigh + 2], dx
-mov       bx, word ptr [bp - 03eh]
-mov       cx, word ptr [bp - 03ch]
 mov       dx, word ptr [bp - 01ch]
 call FixedMul_
-mov       bx, ax
-mov       ax, dx
-neg       ax
-mov       dx, bx
 neg       dx
-sbb       ax, 0
+neg       ax
+sbb       dx, 0
 mov       word ptr ds:[_pixhighstep], dx
 mov       word ptr ds:[_pixhighstep + 2], ax
+; put these back where they need to be.
+xchg       dx, di
+xchg       ax, si
 skip_pixhigh_step:
-mov       ax, word ptr [bp - 038h]
-cmp       ax, word ptr [bp - 034h]
+
+; dx:ax are now worldlow
+
+; if (worldlow.w > worldbottom.w) {
+
+cmp       dx, word ptr [bp - 034h]
 jg        do_pixlow_step
 jne       skip_pixlow_step
-mov       ax, word ptr [bp - 03ah]
 cmp       ax, word ptr [bp - 036h]
 jbe       skip_pixlow_step
 do_pixlow_step:
-mov       dx, word ptr [bp - 038h]
+
+; pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
+; pixlowstep = -FixedMul    (rw_scalestep.w,          worldlow.w);
+
+
+mov       di, dx	; store for later
+mov       si, ax	; store for later
 les       bx, dword ptr ds:[_rw_scale]
 mov       cx, es
-mov       ax, word ptr [bp - 03ah]
 call FixedMul_
+; todo selfmodify this.
 les       cx, dword ptr ds:[_centeryfrac_shiftright4] 
 sub       cx, ax
 mov       bx, es
 sbb       bx, dx
-mov       dx, bx
 mov       word ptr ds:[_pixlow], cx
+mov       word ptr ds:[_pixlow + 2], bx
 mov       ax, word ptr [bp - 01eh]
-mov       word ptr ds:[_pixlow + 2], dx
-mov       bx, word ptr [bp - 03ah]
-mov       cx, word ptr [bp - 038h]
+mov       bx, si	; cached values
+mov       cx, di	; cached values
 mov       dx, word ptr [bp - 01ch]
 call FixedMul_
-mov       bx, ax
-mov       ax, dx
-neg       ax
-mov       dx, bx
 neg       dx
-sbb       ax, 0
+neg       ax
+sbb       dx, 0
 mov       word ptr ds:[_pixlowstep], dx
 mov       word ptr ds:[_pixlowstep + 2], ax
 skip_pixlow_step:
@@ -3529,7 +3594,6 @@ mov       ax, word ptr [bp - 01eh]
 mov       dx, word ptr [bp - 01ch]
 call      R_RenderSegLoop_
 check_spr_top_clip:
-
 les       si, dword ptr ds:[_ds_p]
 test      byte ptr es:[si + 01ch], SIL_TOP
 jne       continue_checking_spr_top_clip
@@ -3771,6 +3835,9 @@ cmp       cl, byte ptr [bx]
 jne       not_a_skyflat
 mov       si, word ptr [bp - 03eh]
 mov       di, word ptr [bp - 03ch]
+mov       word ptr [bp - 046h], si
+mov       word ptr [bp - 044h], di
+
 not_a_skyflat:
 
 			
@@ -3801,8 +3868,10 @@ jmp       markfloor_set
 set_markfloor_true:
 mov       byte ptr ds:[_markfloor], 1
 markfloor_set:
+mov       di, word ptr [bp - 044h]
 cmp       di, word ptr [bp - 03ch]
 jne       set_markceiling_true
+mov       si, word ptr [bp - 046h]
 cmp       si, word ptr [bp - 03eh]
 jne       set_markceiling_true
 
@@ -3841,14 +3910,14 @@ mov       byte ptr ds:[_markfloor], al
 mov       byte ptr ds:[_markceiling], al
 not_closed_door:
 ; ax free at last!
-; di/si still have world_top
 ;		if (worldhigh.w < worldtop.w) {
 
 mov       ax, word ptr [bp - 03ch]
-cmp       di, ax
+cmp       word ptr [bp - 044h], ax
 jg        setup_toptexture
 jne       toptexture_stuff_done
-cmp       si, word ptr [bp - 03eh]
+mov       ax, word ptr [bp - 046h]
+cmp       ax, word ptr [bp - 03eh]
 jbe       toptexture_stuff_done
 setup_toptexture:
 
@@ -3891,16 +3960,20 @@ add       dx, cx
 sub       ax, word ptr ds:[_viewz]
 sbb       dx, word ptr ds:[_viewz+2]
 
-mov       word ptr ds:[_rw_toptexturemid], ax
-mov       word ptr ds:[_rw_toptexturemid + 2], dx
-jmp       toptexture_stuff_done
-
+; todo self modify _rw_toptexturemid here
+jmp       do_selfmodify_toptexture
 
 set_toptexture_to_worldtop:
-mov       word ptr ds:[_rw_toptexturemid], si
-mov       word ptr ds:[_rw_toptexturemid + 2], di
+mov       ax, word ptr [bp - 046h]
+mov       dx, word ptr [bp - 044h]
+do_selfmodify_toptexture:
+; todo self modify _rw_toptexturemid here
+
+mov       word ptr ds:[_rw_toptexturemid], ax
+mov       word ptr ds:[_rw_toptexturemid + 2], dx
 
 toptexture_stuff_done:
+
 mov       ax, word ptr [bp - 038h]
 cmp       ax, word ptr [bp - 034h]
 jg        setup_bottexture
@@ -3919,11 +3992,21 @@ mov       word ptr ds:[_bottomtexture], ax
 test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here
-mov       word ptr ds:[_rw_bottomtexturemid], si
-mov       word ptr ds:[_rw_bottomtexturemid+2], di
+mov       ax, word ptr [bp - 046h]
+mov       dx, word ptr [bp - 044h]
+do_selfmodify_bottexture:
+mov       word ptr ds:[_rw_bottomtexturemid], ax
+mov       word ptr ds:[_rw_bottomtexturemid+2], dx
+
 bottexture_stuff_done:
 mov       bx, word ptr [bp - 028h]
 mov       ax, word ptr [bx]
+
+;   extraselfmodify? or hold in vars till this pt and finally write the high bits
+; 	rw_toptexturemid.h.intbits += side_render->rowoffset;
+;	rw_bottomtexturemid.h.intbits += side_render->rowoffset;
+
+
 add       word ptr ds:[_rw_toptexturemid + 2], ax
 add       word ptr ds:[_rw_bottomtexturemid+2], ax
 les       bx, dword ptr [bp - 016h] ; sides
@@ -3959,10 +4042,8 @@ calculate_bottexturemid:
 ; todo cs write here
 
 mov       ax, word ptr [bp - 03ah]
-mov       word ptr ds:[_rw_bottomtexturemid], ax
-mov       ax, word ptr [bp - 038h]
-mov       word ptr ds:[_rw_bottomtexturemid + 2], ax
-jmp       bottexture_stuff_done
+mov       dx, word ptr [bp - 038h]
+jmp do_selfmodify_bottexture
 
 
 

@@ -1290,22 +1290,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 		R_RenderSegLoop (rw_scalestep.w);
 
-//	} else {
-//		// single pixel dont need most of the 'step' stuff.
-// 		if (backsector  != NULL) {
-// 		if (backsector_offset != SECNUM_NULL) {
-//			// todo dont shift 4 twice, instead borrow old value somehow and do byte shift... rare case though
-//			worldhigh.w >>= 4;
-//			worldlow.w >>= 4;
-//			if (worldhigh.w < worldtop.w) {
-//				pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
-//			}
-//			if (worldlow.w > worldbottom.w) {
-//				pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
-//			}
-//
-//		}
-//		R_RenderOneSeg (rw_scalestep);
+
 	}
     
     // save sprite clipping info
