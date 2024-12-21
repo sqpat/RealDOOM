@@ -74,7 +74,8 @@ push  di
 
 add   ah, 8      
 mov   dx, ax      ; copy input
-sub   dx, word ptr ds:[_viewangle_shiftright3]  ; 
+SELFMODIFY_set_viewanglesr3_5:
+sub   dx, 01000h  ; 
 SELFMODIFY_sub_rw_normal_angle_1:
 sub   ax, 01000h
 
@@ -268,11 +269,15 @@ mov   cx, ax
 xor   ax, ax
 ; DX:AX = y
 ; CX:BX = x
-sub   bx, word ptr ds:[_viewx]
-sbb   cx, word ptr ds:[_viewx+2]
+SELFMODIFY_set_viewx_lo_2:
+sub   bx, 01000h
+SELFMODIFY_set_viewx_hi_2:
+sbb   cx, 01000h
 
-sub   ax, word ptr ds:[_viewy]
-sbb   dx, word ptr ds:[_viewy+2]
+SELFMODIFY_set_viewy_lo_2:
+sub   ax, 01000h
+SELFMODIFY_set_viewy_hi_2:
+sbb   dx, 01000h
 
 
 or    cx, cx
@@ -388,7 +393,8 @@ rep stosw  ; write vieweight to es:di
 inc ax   ; zeroed
 mov   word ptr ds:[_lastvisplane], ax
 mov   word ptr ds:[_lastopening], ax
-mov   ax, word ptr ds:[_viewangle_shiftright3]
+SELFMODIFY_set_viewanglesr3_4:
+mov   ax, 01000h
 sub   ah, 08h   ; FINE_ANG90
 and   ah, 01Fh    ; MOD_FINE_ANGLE
 
@@ -1147,27 +1153,31 @@ rep   movsw
 mov   ds, bx					; restore ds to 3C00
 lea   si, [bp - 01Ah]
 
-; todo: do these subtractions during the above process.
 lodsw
-sub   ax, word ptr ds:[_viewx]
+SELFMODIFY_set_viewx_lo_1:
+sub   ax, 01000h
 stosw
 xchg   bx, ax
 lodsw
-sbb   ax, word ptr ds:[_viewx + 2]
+SELFMODIFY_set_viewx_hi_1:
+sbb   ax, 01000h
 stosw
 xchg   cx, ax						
 lodsw
-sub   ax, word ptr ds:[_viewy]		
+SELFMODIFY_set_viewy_lo_1:
+sub   ax, 01000h
 stosw
 lodsw
-sbb   ax, word ptr ds:[_viewy + 2]
+SELFMODIFY_set_viewy_hi_1:
+sbb   ax, 01000h
 stosw
 
 lea   si, [bp - 0Ah]
 ;    gxt.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, viewangle_shiftright1 ,tr_x.w);
 
 mov   ax, FINECOSINE_SEGMENT
-mov   dx, word ptr ds:[_viewangle_shiftright1]
+SELFMODIFY_set_viewanglesr1_3:
+mov   dx, 01000h
 mov   di, dx
 call  FixedMulTrigNoShift_
 
@@ -1236,7 +1246,8 @@ lodsw
 xchg  ax, cx
 
 mov   ax, FINESINE_SEGMENT
-mov   dx, word ptr ds:[_viewangle_shiftright1]
+SELFMODIFY_set_viewanglesr1_2:
+mov   dx, 01000h
 
 call  FixedMulTrigNoShift_
 neg dx
@@ -1254,7 +1265,8 @@ xchg  ax, cx
 
 mov   si, dx  ; SI can now move 
 mov   ax, FINECOSINE_SEGMENT
-mov   dx, word ptr ds:[_viewangle_shiftright1]
+SELFMODIFY_set_viewanglesr1_1:
+mov   dx, 01000h
 
 call FixedMulTrigNoShift_
 
@@ -1594,7 +1606,8 @@ SELFMODIFY_set_al_to_flags2:
 mov   al, 00h
 test  al, 4
 jne   exit_set_shadow
-mov   al, byte ptr ds:[_fixedcolormap]
+SELFMODIFY_set_fixedcolormap_1:
+mov   al, 0
 test  al, al
 jne   exit_set_fixed_colormap
 test  byte ptr [bp - 6], FF_FULLBRIGHT
@@ -1690,8 +1703,8 @@ sar   dx, 1
 sar   dx, 1
 sar   dx, 1
 ENDIF
-
-mov   al, byte ptr ds:[_extralight]
+SELFMODIFY_set_extralight_1:
+mov   al, 0
 add   ax, dx
 test  ax, ax
 jl    set_spritelights_to_zero
@@ -2947,7 +2960,8 @@ mov       ax, XTOVIEWANGLE_SEGMENT
 mov       bx, word ptr [bp - 048h]
 mov       es, ax
 add       bx, bx
-mov       ax, word ptr ds:[_viewangle_shiftright3]
+SELFMODIFY_set_viewanglesr3_3:
+mov       ax, 01000h
 add       ax, word ptr es:[bx]
 push      cs
 call      R_ScaleFromGlobalAngle_
@@ -2973,7 +2987,8 @@ mov       si, ax
 add       si, ax
 mov       ax, XTOVIEWANGLE_SEGMENT
 mov       es, ax
-mov       ax, word ptr ds:[_viewangle_shiftright3]
+SELFMODIFY_set_viewanglesr3_2:
+mov       ax, 01000h
 add       ax, word ptr es:[si]
 push      cs
 call      R_ScaleFromGlobalAngle_
@@ -3244,7 +3259,8 @@ add       ax, cx
 mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1], ax
 mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1], dx
 
-mov       ax, word ptr ds:[_viewangle_shiftright3]
+SELFMODIFY_set_viewanglesr3_1:
+mov       ax, 01000h
 add       ah, 8
 SELFMODIFY_sub_rw_normal_angle_2:
 sub       ax, 01000h
@@ -3253,11 +3269,14 @@ and       ah, FINE_ANGLE_HIGH_BYTE
 ; set centerangle in rendersegloop
 mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
 
-cmp       byte ptr ds:[_fixedcolormap], 0
+SELFMODIFY_set_fixedcolormap_2:
+mov       al, 0
+cmp       al, 0
 jne       seg_textured_check_done
 mov       al, byte ptr [bp - 8]
 xor       ah, ah
-mov       dl, byte ptr ds:[_extralight]
+SELFMODIFY_set_extralight_2:
+mov       dl, 0
 sar       ax, 4
 xor       dh, dh
 add       dx, ax
@@ -3606,7 +3625,7 @@ sbb       ax, dx
 
 ; todo selfmodify this.
 
-mov       word ptr ds:[_pixlow], bx
+mov       word ptr ds:[_pixlow], cx
 mov       word ptr ds:[_pixlow + 2], ax
 mov       bx, si	; cached values
 mov       cx, di	; cached values
@@ -4127,14 +4146,6 @@ mov       dx, word ptr [bp - 038h]
 jmp do_selfmodify_bottexture
 
 
-
-
-
-
-
-
-
-
 ENDP
 
 
@@ -4143,6 +4154,7 @@ ENDP
 PROC R_WriteBackViewConstants_ FAR
 PUBLIC R_WriteBackViewConstants_ 
 
+; todo: calculate the values here and dont store to variables.
 
 ;  ? set ds to cs to make code smaller?
 ; need to wrestle with tasm a bit. 
@@ -4211,7 +4223,7 @@ ENDP
 PROC R_WriteBackFrameConstants_ NEAR
 PUBLIC R_WriteBackFrameConstants_ 
 
-
+; todo: calculate the values here and dont store to variables.
 
 mov      ax, word ptr ds:[_viewz]
 mov      word ptr cs:[SELFMODIFY_set_viewz_lo_1+1], ax
@@ -4234,6 +4246,44 @@ mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_2+1], ax
 mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_3+1], ax
 mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_4+1], ax
 mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_5+1], ax
+
+mov      al, byte ptr ds:[_extralight]
+mov      byte ptr cs:[SELFMODIFY_set_extralight_1+1], al
+mov      byte ptr cs:[SELFMODIFY_set_extralight_2+1], al
+
+mov      al, byte ptr ds:[_fixedcolormap]
+mov      byte ptr cs:[SELFMODIFY_set_fixedcolormap_1+1], al
+mov      byte ptr cs:[SELFMODIFY_set_fixedcolormap_2+1], al
+
+
+mov      ax, word ptr ds:[_viewx]
+mov      word ptr cs:[SELFMODIFY_set_viewx_lo_1+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewx_lo_2+2], ax
+mov      ax, word ptr ds:[_viewx+2]
+mov      word ptr cs:[SELFMODIFY_set_viewx_hi_1+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewx_hi_2+2], ax
+
+mov      ax, word ptr ds:[_viewy]
+mov      word ptr cs:[SELFMODIFY_set_viewy_lo_1+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewy_lo_2+1], ax
+mov      ax, word ptr ds:[_viewy+2]
+mov      word ptr cs:[SELFMODIFY_set_viewy_hi_1+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewy_hi_2+2], ax
+
+mov      ax, word ptr ds:[_viewangle_shiftright3]
+mov      word ptr cs:[SELFMODIFY_set_viewanglesr3_1+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewanglesr3_2+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewanglesr3_3+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewanglesr3_4+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewanglesr3_5+2], ax
+
+mov      ax, word ptr ds:[_viewangle_shiftright1]
+mov      word ptr cs:[SELFMODIFY_set_viewanglesr1_1+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewanglesr1_2+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewanglesr1_3+1], ax
+
+
+
 
 ret
 
