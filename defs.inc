@@ -103,7 +103,7 @@ _jump_mult_table_3 = 				_NULL_OFFSET + 000E6h
 _screen_segments = 					_NULL_OFFSET + 000EEh
 ; F8 FA unused
 _func_farcall_scratch_addr =		_NULL_OFFSET + 000FCh
-_colfunc_farcall_addr_1   =    		_NULL_OFFSET + 00100h
+; 0100 0102 unused
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
@@ -230,7 +230,9 @@ _getspritetexture_addr =             _NULL_OFFSET + 00304h
 
 SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift = 	R_DRAWCOLUMNPREPCALLOFFSET +5 +3 +2 +3
 SELFMODIFY_COLFUNC_add_destview_offset =				SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift +2+4 +4 +2 +5
-SELFMODIFY_COLFUNC_set_colormaps_segment =              SELFMODIFY_COLFUNC_add_destview_offset +3 +4 +2 +2 +1 +3 +4 +3
+SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift = R_DRAWCOLUMNPREPMASKEDCALLOFFSET +5 +3 +2 +3
+SELFMODIFY_COLFUNC_m_add_destview_offset =				SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift +2+4 +4 +2 +5
+
 SELFMODIFY_COLFUNC_subtract_centery =                   1+1
 SELFMODIFY_COLFUNC_set_destview_segment =               1+1+3+2+4+4+2+2+1+2+2+2+2+2+2+2+2+4+4+2+2+2+2
 

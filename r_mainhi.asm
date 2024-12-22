@@ -41,7 +41,6 @@ EXTRN _validcount:WORD
 EXTRN _spritelights:WORD
 EXTRN _spritewidths_segment:WORD
 
-EXTRN _R_DrawColumnPrepCall:DWORD
 
 EXTRN _segloopnextlookup:WORD
 EXTRN _segloopprevlookup:WORD
@@ -4192,6 +4191,7 @@ shl      al, 1
 mov      byte ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
 ; write to colfunc segment
 mov      byte ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+1], al
+mov      byte ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+1], al
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 
@@ -4339,13 +4339,12 @@ mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_1+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_2+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1], ax
 
-;        do this here once and it is set for the entirety of BSP
-mov      word ptr es:[SELFMODIFY_COLFUNC_set_colormaps_segment+1], COLORMAPS_SEGMENT   ; colormap 0
 
 
 ; get whole dword at the end here.
 lds      ax, dword ptr ss:[_destview]
 mov      word ptr es:[SELFMODIFY_COLFUNC_add_destview_offset+1], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_m_add_destview_offset+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segment+1], ds
 
 ; DS IS BAD BECAUSE OF LDS ABOVE

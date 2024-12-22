@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 139
+#define CONSTANTS_COUNT 140
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -132,6 +132,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "COLFUNC_MASKEDMAPPING_SEGMENT",
     "COLFUNC_SEGMENT",
     "R_DRAWCOLUMNPREPCALLOFFSET",
+    "R_DRAWCOLUMNPREPMASKEDCALLOFFSET",
     "STATES_RENDER_SEGMENT",
     "BASE_LOWER_MEMORY_SEGMENT",
     "BASE_LOWER_END_SEGMENT",
@@ -298,6 +299,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     colfunc_segment_maskedmapping,
     colfunc_segment,
     R_DrawColumnPrepOffset,
+    R_DrawColumnPrepMaskedOffset,
     states_render_segment,
     base_lower_memory_segment,
     base_lower_end_segment,

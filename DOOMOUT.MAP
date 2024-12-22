@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/21 20:28:22
+Created on:       24/12/21 20:53:07
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -80,7 +80,7 @@ p_user_TEXT            CODE           AUTO           0b22:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           17a8:0000       0000098e
 r_data_TEXT            CODE           AUTO           17a8:0990       00001c9f
 R_MATH_TEXT            CODE           AUTO           17a8:2630       000001fd
-R_MAINHI_TEXT          CODE           AUTO           17a8:282e       0000191a
+R_MAINHI_TEXT          CODE           AUTO           17a8:282e       0000191b
 r_draw_TEXT            CODE           AUTO           17a8:4150       00000379
 r_main_TEXT            CODE           AUTO           17a8:44d0       000001f1
 r_plane_TEXT           CODE           AUTO           17a8:46d0       00000000
@@ -98,16 +98,16 @@ FAR_DATA               FAR_DATA       AUTO           20ed:000e       00000000
 _NULL                  BEGDATA        DGROUP         20ee:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         20f0:0000       00000002
 _FIXEDDATA             DATA           DGROUP         20f1:0000       0000030a
-_DATA                  DATA           DGROUP         2122:0000       00000b32
-CONST                  DATA           DGROUP         21d5:0002       00000888
-CONST2                 DATA           DGROUP         225d:000a       0000010d
-XIB                    DATA           DGROUP         226e:0008       00000000
-XI                     DATA           DGROUP         226e:0008       0000000c
-XIE                    DATA           DGROUP         226f:0004       00000000
-YIB                    DATA           DGROUP         226f:0004       00000000
-YI                     DATA           DGROUP         226f:0004       00000012
-YIE                    DATA           DGROUP         2270:0006       00000000
-DATA                   DATA           DGROUP         2270:0006       00000000
+_DATA                  DATA           DGROUP         2122:0000       00000b2e
+CONST                  DATA           DGROUP         21d4:000e       00000888
+CONST2                 DATA           DGROUP         225d:0006       0000010d
+XIB                    DATA           DGROUP         226e:0004       00000000
+XI                     DATA           DGROUP         226e:0004       0000000c
+XIE                    DATA           DGROUP         226f:0000       00000000
+YIB                    DATA           DGROUP         226f:0000       00000000
+YI                     DATA           DGROUP         226f:0000       00000012
+YIE                    DATA           DGROUP         2270:0002       00000000
+DATA                   DATA           DGROUP         2270:0002       00000000
 _BSS                   BSS            DGROUP         2271:0000       00000d26
 STACK                  STACK          DGROUP         2344:0000       00001000
 
@@ -208,11 +208,11 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20ee:2088      _maketic
 20ee:208c      _gametime
 20ee:2090      _p_init_sprtemp
-20ee:2094      _am_max_scale_mtof
-20ee:2098      _am_scale_mtof
-20ee:209c      _am_scale_ftom
-20ee:20a0      _screen_oldloc
-20ee:20a4      _am_buffer
+20ee:2094      _am_buffer
+20ee:20a8      _am_max_scale_mtof
+20ee:20ac      _am_scale_mtof
+20ee:20b0      _am_scale_ftom
+20ee:20b4      _screen_oldloc
 20ee:20b8      _m_paninc
 20ee:20bc      _activespritenumpages
 20ee:20c0      _lineopening
@@ -310,15 +310,15 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20ee:21c4      _playerMobjRef
 20ee:21c6      _p_init_maxframe
 20ee:21c8      _EMS_PAGE
-20ee:21ca      _am_min_scale_mtof
-20ee:21cc      _old_screen_viewport_width
-20ee:21ce      _old_screen_botleft_x
-20ee:21d0      _old_screen_botleft_y
-20ee:21d2      _am_max_level_y
-20ee:21d4      _am_max_level_x
-20ee:21d6      _old_screen_viewport_height
-20ee:21d8      _am_min_level_x
-20ee:21da      _am_min_level_y
+20ee:21ca      _am_min_level_y
+20ee:21cc      _am_min_scale_mtof
+20ee:21ce      _old_screen_viewport_width
+20ee:21d0      _old_screen_botleft_x
+20ee:21d2      _old_screen_botleft_y
+20ee:21d4      _am_max_level_y
+20ee:21d6      _am_max_level_x
+20ee:21d8      _old_screen_viewport_height
+20ee:21da      _am_min_level_x
 20ee:21dc      _screen_viewport_height
 20ee:21de      _screen_topright_y
 20ee:21e0      _screen_topright_x
@@ -328,20 +328,20 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20ee:21e8      _ftom_zoommul
 20ee:21ea      _mtof_zoommul
 20ee:21ec      _numtextures
-20ee:21ee      _skytexture
-20ee:21f0      _spritelights
-20ee:21f2      _firstspritelump
-20ee:21f4      _numpatches
-20ee:21f6      _pspritescale
-20ee:21f8      _firstpatch
-20ee:21fa      _viewwindowoffset
-20ee:21fc      _r_cachedplayerMobjsecnum
-20ee:21fe      _numspritelumps
-20ee:2200      _setdetail
-20ee:2202      _numflats
-20ee:2204      _scaledviewwidth
-20ee:2206      _viewwindowx
-20ee:2208      _viewwindowy
+20ee:21ee      _numspritelumps
+20ee:21f0      _skytexture
+20ee:21f2      _spritelights
+20ee:21f4      _firstspritelump
+20ee:21f6      _numpatches
+20ee:21f8      _pspritescale
+20ee:21fa      _firstpatch
+20ee:21fc      _viewwindowoffset
+20ee:21fe      _r_cachedplayerMobjsecnum
+20ee:2200      _viewwindowy
+20ee:2202      _setdetail
+20ee:2204      _numflats
+20ee:2206      _scaledviewwidth
+20ee:2208      _viewwindowx
 20ee:220a      _pagename
 20ee:220c      _pagetic
 20ee:220e*     _snd_SBport
@@ -437,28 +437,29 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20ee:251a      _eventhead
 20ee:251b      _quickSaveSlot
 20ee:251c      _detailLevel
-20ee:251d      _musicVolume
-20ee:251e      _demosequence
-20ee:251f      _shareware
-20ee:2520      _startmap
-20ee:2521      _modifiedgame
-20ee:2522+     _snd_SBport8bit
-20ee:2523      _autostart
-20ee:2524      _advancedemo
-20ee:2525      _nomonsters
-20ee:2526      _startskill
-20ee:2527      _registered
-20ee:2528      _fastparm
-20ee:2529      _respawnparm
-20ee:252a      _commercial
-20ee:252b      _startepisode
-20ee:252c+     _snd_DesiredMusicDevice
-20ee:252d+     _snd_Mport8bit
-20ee:252e+     _snd_SBirq
-20ee:252f      _snd_MusicVolume
-20ee:2530      _snd_SfxVolume
-20ee:2531+     _snd_DesiredSfxDevice
+20ee:251d      _commercial
+20ee:251e      _musicVolume
+20ee:251f      _demosequence
+20ee:2520      _shareware
+20ee:2521      _startmap
+20ee:2522      _modifiedgame
+20ee:2523+     _snd_SBport8bit
+20ee:2524      _autostart
+20ee:2525      _advancedemo
+20ee:2526      _nomonsters
+20ee:2527      _startskill
+20ee:2528      _registered
+20ee:2529+     _snd_DesiredSfxDevice
+20ee:252a      _fastparm
+20ee:252b      _respawnparm
+20ee:252c      _startepisode
+20ee:252d+     _snd_DesiredMusicDevice
+20ee:252e+     _snd_Mport8bit
+20ee:252f+     _snd_SBirq
+20ee:2530      _snd_MusicVolume
+20ee:2531      _snd_SfxVolume
 20ee:2532*     _snd_MusicDevice
+20ee:2533      _snd_SfxDevice
 20ee:0340      _wipegamestate
 20ee:0341      _singletics
 20ee:0342      _skytextureloaded
@@ -490,130 +491,128 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20ee:039b      _cheat_player_arrow
 20ee:041b      _thintriangle_guy
 20ee:0434      _pagesegments
-20ee:0444      _R_DrawColumnPrepCall
-20ee:0448      _R_DrawPlanesCall
-20ee:044c      _R_DrawMaskedCall
-20ee:0450      _wipe_StartScreenCall
-20ee:0454      _wipe_WipeLoopCall
-20ee:0458      _currentlumpindex
-20ee:045a      _maskedcount
-20ee:045c      _currentpostoffset
-20ee:045e      _currentpostdataoffset
-20ee:0460      _currentpixeloffset
-20ee:0462      _grmode
-20ee:0464      _oldkeyboardisr
-20ee:0468      _viewactivestate
-20ee:0469      _menuactivestate
-20ee:046a      _inhelpscreensstate
-20ee:046b      _fullscreen
-20ee:046c      _oldgamestate
-20ee:046d      _precache
-20ee:046e      _forwardmove
-20ee:0470      _sidemove
-20ee:0472      _angleturn
-20ee:0478      _mousebuttons
-20ee:047a      _rndindex
-20ee:047c      _prndindex
-20ee:047e      _defaults
-20ee:0542      _tallnum
-20ee:0556      _shortnum
-20ee:056a      _keys
-20ee:0576      _faces
-20ee:05ca      _arms
-20ee:05e2      _st_oldhealth
-20ee:05e4      _st_facecount
-20ee:05e6      _st_faceindex
-20ee:05e8+     _cheat_mus_seq
-20ee:05f1+     _cheat_choppers_seq
-20ee:05fc+     _cheat_god_seq
-20ee:0602+     _cheat_ammo_seq
-20ee:0608+     _cheat_ammonokey_seq
-20ee:060d+     _cheat_noclip_seq
-20ee:0618+     _cheat_commercial_noclip_seq
-20ee:061f+     _cheat_powerup_seq
-20ee:0665+     _cheat_clev_seq
-20ee:066f+     _cheat_mypos_seq
-20ee:0677+     _cheat_amap_seq
-20ee:067c      _cheat_amap
-20ee:0680      _cheat_mus
-20ee:0684      _cheat_god
-20ee:0688      _cheat_ammo
-20ee:068c      _cheat_ammonokey
-20ee:0690      _cheat_noclip
-20ee:0694      _cheat_commercial_noclip
-20ee:0698      _cheat_powerup
-20ee:06b4      _cheat_choppers
-20ee:06b8      _cheat_clev
-20ee:06bc      _cheat_mypos
-20ee:06c0      _st_palette
-20ee:06c2      _st_calc_oldhealth
-20ee:06c4      _st_face_lastattackdown
-20ee:06c5      _st_face_priority
-20ee:06c6      _hu_font
-20ee:0744      _mapnames
-20ee:0771      _mapnames2
-20ee:0791      _gammamsg
-20ee:0796      _endmsg
-20ee:07a6      _endmsg2
-20ee:07b6      _skullName
-20ee:07ba      _menu_mousewait
-20ee:07bc      _menu_mousey
-20ee:07be      _menu_lasty
-20ee:07c0      _menu_mousex
-20ee:07c2      _menu_lastx
-20ee:07c4      _MainMenu
-20ee:07e2      _MainDef
-20ee:07ee+     _EpisodeMenu
-20ee:0802      _EpiDef
-20ee:080e+     _NewGameMenu
-20ee:0827      _NewDef
-20ee:0833+     _OptionsMenu
-20ee:085b      _OptionsDef
-20ee:0867      _ReadMenu1
-20ee:086c      _ReadDef1
-20ee:0878+     _ReadMenu2
-20ee:087d      _ReadDef2
-20ee:0889+     _SoundMenu
-20ee:089d      _SoundDef
-20ee:08a9      _LoadMenu
-20ee:08c7      _LoadDef
-20ee:08d3+     _SaveMenu
-20ee:08f1      _SaveDef
-20ee:08fd      _detailNames
-20ee:08ff      _msgNames
-20ee:0901      _quitsounds
-20ee:0909      _quitsounds2
-20ee:0914      _TaskServiceRate
-20ee:0918      _TaskServiceCount
-20ee:091c      _TS_Installed
-20ee:0920      _TS_InInterrupt
-20ee:0924      _NUMANIMS
-20ee:0928      _wianims
-20ee:0934      _unloaded
-20ee:0935      _snl_pointeron
-20ee:0936      _castorder
-20ee:0958      _st_stopped
-20ee:095a      _armsbgarray
-20ee:095c      _weaponinfo
-20ee:09c0      _maxammo
-20ee:09c8      _clipammo
-20ee:09cc      _brainspit_easy
-20ee:09cd      _opposite
-20ee:09d6      _diags
-20ee:09da      _movedirangles
-20ee:09ea      _pageswapargs
-20ee:0c1a      _current5000State
-20ee:0c1b      _last5000State
-20ee:0c1c      _current9000State
-20ee:0c1d      _last9000State
-20ee:0c1e      _currenttask
-20ee:16fa      _snd_prefixen
-20ee:0c1f      _ems_backfill_page_order
-20ee:0c37      _is_ultimate
-20ee:0c38      _seglooptexmodulo
-20ee:0c3a      _seglooptexrepeat
-20ee:0c3e      _segloopnextlookup
-20ee:2533      _snd_SfxDevice
+20ee:0444      _R_DrawPlanesCall
+20ee:0448      _R_DrawMaskedCall
+20ee:044c      _wipe_StartScreenCall
+20ee:0450      _wipe_WipeLoopCall
+20ee:0454      _currentlumpindex
+20ee:0456      _maskedcount
+20ee:0458      _currentpostoffset
+20ee:045a      _currentpostdataoffset
+20ee:045c      _currentpixeloffset
+20ee:045e      _grmode
+20ee:0460      _oldkeyboardisr
+20ee:0464      _viewactivestate
+20ee:0465      _menuactivestate
+20ee:0466      _inhelpscreensstate
+20ee:0467      _fullscreen
+20ee:0468      _oldgamestate
+20ee:0469      _precache
+20ee:046a      _forwardmove
+20ee:046c      _sidemove
+20ee:046e      _angleturn
+20ee:0474      _mousebuttons
+20ee:0476      _rndindex
+20ee:0478      _prndindex
+20ee:047a      _defaults
+20ee:053e      _tallnum
+20ee:0552      _shortnum
+20ee:0566      _keys
+20ee:0572      _faces
+20ee:05c6      _arms
+20ee:05de      _st_oldhealth
+20ee:05e0      _st_facecount
+20ee:05e2      _st_faceindex
+20ee:05e4+     _cheat_mus_seq
+20ee:05ed+     _cheat_choppers_seq
+20ee:05f8+     _cheat_god_seq
+20ee:05fe+     _cheat_ammo_seq
+20ee:0604+     _cheat_ammonokey_seq
+20ee:0609+     _cheat_noclip_seq
+20ee:0614+     _cheat_commercial_noclip_seq
+20ee:061b+     _cheat_powerup_seq
+20ee:0661+     _cheat_clev_seq
+20ee:066b+     _cheat_mypos_seq
+20ee:0673+     _cheat_amap_seq
+20ee:0678      _cheat_amap
+20ee:067c      _cheat_mus
+20ee:0680      _cheat_god
+20ee:0684      _cheat_ammo
+20ee:0688      _cheat_ammonokey
+20ee:068c      _cheat_noclip
+20ee:0690      _cheat_commercial_noclip
+20ee:0694      _cheat_powerup
+20ee:06b0      _cheat_choppers
+20ee:06b4      _cheat_clev
+20ee:06b8      _cheat_mypos
+20ee:06bc      _st_palette
+20ee:06be      _st_calc_oldhealth
+20ee:06c0      _st_face_lastattackdown
+20ee:06c1      _st_face_priority
+20ee:06c2      _hu_font
+20ee:0740      _mapnames
+20ee:076d      _mapnames2
+20ee:078d      _gammamsg
+20ee:0792      _endmsg
+20ee:07a2      _endmsg2
+20ee:07b2      _skullName
+20ee:07b6      _menu_mousewait
+20ee:07b8      _menu_mousey
+20ee:07ba      _menu_lasty
+20ee:07bc      _menu_mousex
+20ee:07be      _menu_lastx
+20ee:07c0      _MainMenu
+20ee:07de      _MainDef
+20ee:07ea+     _EpisodeMenu
+20ee:07fe      _EpiDef
+20ee:080a+     _NewGameMenu
+20ee:0823      _NewDef
+20ee:082f+     _OptionsMenu
+20ee:0857      _OptionsDef
+20ee:0863      _ReadMenu1
+20ee:0868      _ReadDef1
+20ee:0874+     _ReadMenu2
+20ee:0879      _ReadDef2
+20ee:0885+     _SoundMenu
+20ee:0899      _SoundDef
+20ee:08a5      _LoadMenu
+20ee:08c3      _LoadDef
+20ee:08cf+     _SaveMenu
+20ee:08ed      _SaveDef
+20ee:08f9      _detailNames
+20ee:08fb      _msgNames
+20ee:08fd      _quitsounds
+20ee:0905      _quitsounds2
+20ee:0910      _TaskServiceRate
+20ee:0914      _TaskServiceCount
+20ee:0918      _TS_Installed
+20ee:091c      _TS_InInterrupt
+20ee:0920      _NUMANIMS
+20ee:0924      _wianims
+20ee:0930      _unloaded
+20ee:0931      _snl_pointeron
+20ee:0932      _castorder
+20ee:0954      _st_stopped
+20ee:0956      _armsbgarray
+20ee:0958      _weaponinfo
+20ee:09bc      _maxammo
+20ee:09c4      _clipammo
+20ee:09c8      _brainspit_easy
+20ee:09c9      _opposite
+20ee:09d2      _diags
+20ee:09d6      _movedirangles
+20ee:09e6      _pageswapargs
+20ee:0c16      _current5000State
+20ee:0c17      _last5000State
+20ee:0c18      _current9000State
+20ee:0c19      _last9000State
+20ee:0c1a      _currenttask
+20ee:0c1b      _ems_backfill_page_order
+20ee:0c33      _is_ultimate
+20ee:16f6      _snd_prefixen
+20ee:0c34      _seglooptexmodulo
+20ee:0c36      _seglooptexrepeat
+20ee:0c3a      _segloopnextlookup
 20ee:2534+     _snd_SBdma
 Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:0000      D_InitStrings_
@@ -1288,7 +1287,7 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 17a8:2aef      R_Subsector_
 17a8:28c1*     R_PointToDist_
 17a8:3fe7      R_WriteBackViewConstants_
-17a8:408a      R_WriteBackFrameConstants_
+17a8:408e      R_WriteBackFrameConstants_
 17a8:2940      R_ClearPlanes_
 17a8:29bb*     R_HandleEMSPagination_
 17a8:2fce*     R_AddSprites_
@@ -1309,7 +1308,7 @@ Module: r_main.obj(C:\REALDOOM\r_main.c)
 17a8:4550+     R_SetupFrame_
 17a8:45ce      R_RenderPlayerView_
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
-20ee:0ccc*     _setval
+20ee:0cc8*     _setval
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 17a8:46d0      locallib_far_fread_
 17a8:475a*     locallib_far_fwrite_
@@ -1419,7 +1418,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fread.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(accss.c)
 1ce3:2107      access_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
-20ee:0cce      ___iob
+20ee:0cca      ___iob
 20ee:253a      ___OpenStreams
 20ee:253c      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(setbuf.c)
@@ -1428,8 +1427,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(exit.c)
 1ce3:2154+     __null_int23_exit_
 1ce3:2155      exit_
 1ce3:2175*     _exit_
-20ee:0de6+     ___int23_exit
-20ee:0dea+     ___FPE_handler_exit
+20ee:0de2+     ___int23_exit
+20ee:0de6+     ___FPE_handler_exit
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cmodel.asm)
 1ce3:2184      _big_code_
 1ce3:2184*     CodeModelMismatch
@@ -1439,9 +1438,9 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(d_setvec.c)
 1ce3:218f      _dos_setvect_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 20ee:0000*     __nullarea
-20ee:0dee*     __ovlflag
-20ee:0def*     __intno
-20ee:0df0*     __ovlvec
+20ee:0dea*     __ovlflag
+20ee:0deb*     __intno
+20ee:0dec*     __ovlvec
 1ce3:219c      _cstart_
 1ce3:234d      __exit_
 1ce3:236a      __do_exit_with_msg_
@@ -1464,12 +1463,12 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fwrite.c)
 1ce3:2642      fwrite_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 1ce3:27fb*     __set_commode_
-20ee:0df4      __commode
+20ee:0df0      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 1ce3:2802      __get_errno_ptr_
 20ee:2546+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
-20ee:0df6      __fmode
+20ee:0df2      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
 1ce3:2806      tolower_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(open.c)
@@ -1506,7 +1505,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(dointr)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(segread.c)
 1ce3:3181      segread_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(istable.c)
-20ee:1706      __IsTable
+20ee:1702      __IsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(lseek.c)
 1ce3:3199      lseek_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tell.c)
@@ -1534,25 +1533,25 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(xmsg.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cmain086.c)
 1ce3:34b1      __CMain
 Module: C:\WATCOM2\lib286\dos\clibm.lib(crwdata)
-20ee:0e0c      __curbrk
-20ee:0e14      __STACKLOW
-20ee:0e16      __STACKTOP
-20ee:0e18      __cbyte
-20ee:0e1a      __child
-20ee:0e1c      __no87
-20ee:0e29      ___FPE_handler
-20ee:0e0e      __psp
-20ee:0e1d      __get_ovl_stack
-20ee:0e21      __restore_ovl_stack
-20ee:0e25      __close_ovl_file
-20ee:0e2d      __LpCmdLine
-20ee:0e31      __LpPgmName
-20ee:0e10      __osmajor
-20ee:0e11      __osminor
-20ee:0e12      __osmode
-20ee:0e13      __HShift
+20ee:0e08      __curbrk
+20ee:0e10      __STACKLOW
+20ee:0e12      __STACKTOP
+20ee:0e14      __cbyte
+20ee:0e16      __child
+20ee:0e18      __no87
+20ee:0e25      ___FPE_handler
+20ee:0e0a      __psp
+20ee:0e19      __get_ovl_stack
+20ee:0e1d      __restore_ovl_stack
+20ee:0e21      __close_ovl_file
+20ee:0e29      __LpCmdLine
+20ee:0e2d      __LpPgmName
+20ee:0e0c      __osmajor
+20ee:0e0d      __osminor
+20ee:0e0e      __osmode
+20ee:0e0f      __HShift
 Module: C:\WATCOM2\lib286\dos\clibm.lib(uselfn.c)
-20ee:0e36      ___uselfn
+20ee:0e32      ___uselfn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosseg)
 1ce3:34c8      __DOSseg__
 Module: C:\WATCOM2\lib286\dos\clibm.lib(initargv.c)
@@ -1565,16 +1564,16 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(opendos.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iomode.c)
 1ce3:36f2      __GetIOMode_
 1ce3:3709      __SetIOMode_nogrow_
-20ee:0e38      ___NFiles
-20ee:0e3a      ___init_mode
-20ee:0e62      ___io_mode
+20ee:0e34      ___NFiles
+20ee:0e36      ___init_mode
+20ee:0e5e      ___io_mode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 1ce3:371e      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 1ce3:373a      __get_doserrno_ptr_
 20ee:254c+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
-20ee:0e64      ___umaskval
+20ee:0e60      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
 1ce3:373e      _dos_creat_
 1ce3:3752*     _dos_creatnew_
@@ -1585,9 +1584,9 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(stiomode.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nmalloc.c)
 1ce3:3862      _nmalloc_
 1ce3:3862      malloc_
-20ee:0e66      ___nheapbeg
-20ee:0e68      ___MiniHeapRover
-20ee:0e6a      ___LargestSizeB4MiniHeapRover
+20ee:0e62      ___nheapbeg
+20ee:0e64      ___MiniHeapRover
+20ee:0e66      ___LargestSizeB4MiniHeapRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mem.c)
 1ce3:3930      __MemAllocator
 1ce3:39f8      __MemFree
@@ -1597,13 +1596,13 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
 1ce3:3b78      __doserror_
 1ce3:3b86*     __doserror1_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
-20ee:1808      __Start_XI
-20ee:1814      __End_XI
-20ee:1814      __Start_YI
-20ee:1826      __End_YI
+20ee:1804      __Start_XI
+20ee:1810      __End_XI
+20ee:1810      __Start_YI
+20ee:1822      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 1ce3:3b92      __EnterWVIDEO_
-20ee:0e6c+     __WD_Present
+20ee:0e68+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
 20ee:2550      ____Argv
 20ee:2552      ____Argc
@@ -1630,10 +1629,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(nexpand.c)
 1ce3:3e41      _nexpand_
 1ce3:3e41*     _expand_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(amblksiz.c)
-20ee:0e6e      __amblksiz
+20ee:0e6a      __amblksiz
 Module: C:\WATCOM2\lib286\dos\clibm.lib(heapen.c)
 1ce3:3e90*     _heapenable_
-20ee:0e70      ___heap_enabled
+20ee:0e6c      ___heap_enabled
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sbrk.c)
 1ce3:3e9c      __brk_
 1ce3:3ef2*     sbrk_

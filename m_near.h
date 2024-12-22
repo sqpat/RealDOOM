@@ -461,16 +461,11 @@ extern mline_t              thintriangle_guy[3];
 extern segment_t            pagesegments[NUM_TEXTURE_L1_CACHE_PAGES];
 
 
-extern void                 (__far* R_DrawColumnPrepCall)(uint16_t);
 extern void                 (__far* R_DrawPlanesCall)();
 extern void                 (__far* R_DrawMaskedCall)();
 
 
-//todo factor these out after DrawMasked moved hi...
-//extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *);
-//extern void                 (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t, byte);
-//extern void                 (__far* R_DrawMaskedColumnCallSpriteHigh)(segment_t, column_t __far *);
-//extern void                 (__far* R_DrawColumnPrepCallHigh)(uint16_t);
+
 
 extern void                 (__far* wipe_StartScreenCall)();
 extern void                 (__far* wipe_WipeLoopCall)();

@@ -124,7 +124,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fp = fopen("m_offsets.h", "wb");
 	fprintf(fp, "#define R_DrawColumnOffset             0x%X\n", FP_OFF(R_DrawColumn)             - FP_OFF(R_DrawColumn));
 	fprintf(fp, "#define R_DrawColumnPrepOffset         0x%X\n", FP_OFF(R_DrawColumnPrep)         - FP_OFF(R_DrawColumn));
-	fprintf(fp, "#define R_MapPlaneOffset               0x%X\n", FP_OFF(R_MapPlane)               - FP_OFF(R_DrawSpan));
+	fprintf(fp, "#define R_DrawColumnPrepMaskedOffset   0x%X\n", FP_OFF(R_DrawColumnPrepMasked)   - FP_OFF(R_DrawColumn));
+    fprintf(fp, "#define R_MapPlaneOffset               0x%X\n", FP_OFF(R_MapPlane)               - FP_OFF(R_DrawSpan));
 	fprintf(fp, "#define R_DrawPlanesOffset             0x%X\n", FP_OFF(R_DrawPlanes)             - FP_OFF(R_DrawSpan));
     fprintf(fp, "#define R_DrawFuzzColumnOffset         0x%X\n", FP_OFF(R_DrawFuzzColumn)         - FP_OFF(R_DrawFuzzColumn));
 // todo most of these are no longer used..

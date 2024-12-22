@@ -51,6 +51,7 @@ void __far R_FillBackScreen (void);
 void __far R_DrawViewBorder (void);
 
 void __far R_DrawColumnPrep(uint16_t lookup_offset_difference);
+void __far R_DrawColumnPrepMasked(uint16_t lookup_offset_difference);
 
 
 #endif

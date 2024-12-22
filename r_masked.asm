@@ -288,7 +288,7 @@ mov   ax, COLORMAPS_MASKEDMAPPING_SEG_DIFF
 
 
 db 09Ah
-dw R_DRAWCOLUMNPREPCALLOFFSET 
+dw R_DRAWCOLUMNPREPMASKEDCALLOFFSET 
 dw COLFUNC_MASKEDMAPPING_SEGMENT 
 
 
@@ -2599,11 +2599,6 @@ db 09Ah
 dw R_SORTVISSPRITES_OFFSET 
 dw DRAWMASKEDFUNCAREA_SPRITE_SEGMENT 
 
-; do this once here and its set for the entirety of drawmasked.
-; alternatively, have a drawcolumnprep masked but i dont think its worth the hundred plus bytes? unless we find other improvements. perhaps alternate call arguments?
-mov      ax, COLFUNC_MASKEDMAPPING_SEGMENT
-mov      es, ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_set_colormaps_segment+1], COLORMAPS_SEGMENT_MASKEDMAPPING
 
 
 ; adjust ds_p to be 7000 based instead of 9000 based due to different masked task mappings.
@@ -2835,7 +2830,7 @@ mov   word ptr ds:[_dc_texturemid+2], dx
 mov   ax, COLORMAPS_MASKEDMAPPING_SEG_DIFF
 
 db 09Ah
-dw R_DRAWCOLUMNPREPCALLOFFSET 
+dw R_DRAWCOLUMNPREPMASKEDCALLOFFSET 
 dw COLFUNC_MASKEDMAPPING_SEGMENT 
 
 increment_column_and_continue_loop:
