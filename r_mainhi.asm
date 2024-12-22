@@ -1762,8 +1762,12 @@ endp
 ; DX is texture
 ; segloopcachetype is 0
 
+
 PROC R_GetSourceSegment0_ NEAR
 PUBLIC R_GetSourceSegment0_ 
+
+; grab texturecolumn where it was stored before.
+mov   ax, word ptr [bp - 2]
 
 push  es
 mov   es, dx
@@ -1874,6 +1878,8 @@ ENDP
 PROC R_GetSourceSegment1_ NEAR
 PUBLIC R_GetSourceSegment1_ 
 
+; grab texturecolumn where it was stored before.
+mov   ax, word ptr [bp - 2]
 push  es
 
 
@@ -1989,8 +1995,7 @@ PROC R_RenderSegLoop_ NEAR
 PUBLIC R_RenderSegLoop_ 
 
 
-; DX:AX  is fixed_t rw_scalestep
-
+; no arguments..
 
 ; order all these in memory then movsw
 ; bp - 2    ; texturecolumn		; consider storing in register.
@@ -2496,6 +2501,7 @@ SELFMODIFY_set_ax_rw_offset_hi:
 mov   ax, 01000h            ; mov   ax, word ptr ds:[_rw_offset + 2]
 sbb   ax, dx
 ; store texture column
+; todo can this stay in reg? dont think so.
 mov   word ptr [bp - 2], ax
 
 ;	if (rw_scale.h.intbits >= 3) {
@@ -2545,11 +2551,12 @@ add   bx, bx
 mov   ax, OPENINGS_SEGMENT
 mov   es, ax
 
+; get yl/yh in di/si
 pop   di
 pop   si
 SELFMODIFY_set_midtexture:
 mov   cx, 01000h
-mov   dx, cx				; copy texture argument
+mov   dx, cx				; copy texture function argument
 jcxz  no_mid_texture_draw
 cmp   di, si
 jl    mid_no_pixels_to_draw
@@ -2559,7 +2566,6 @@ SELFMODIFY_set_midtexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h    ; todo write these into the code too?
 SELFMODIFY_set_midtexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
-mov   ax, word ptr [bp - 2]
 
 
 call  R_GetSourceSegment0_
@@ -2653,7 +2659,6 @@ SELFMODIFY_set_toptexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_toptexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
-mov   ax, word ptr [bp - 2]
 ; dx already set to texture
 
 
@@ -2709,7 +2714,6 @@ mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_bottexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
 
-mov   ax, word ptr [bp - 2]
 call  R_GetSourceSegment1_
 
 mark_floor_cx:
@@ -2781,7 +2785,7 @@ PUBLIC R_StoreWallRange_
 ; bp - 8     ; frontsectorlightlevel
 ; bp - 0Ah   ; backsectorceilingpic
 ; bp - 0Ch   ; frontsectorceilingpic
-; bp - 0Eh   ; unused? was only used as temp.
+; bp - 0Eh   ; unused
 ; bp - 010h  ; frontsectorfloorheight
 ; bp - 012h  ; frontsectorceilingheight
 ; bp - 014h  ; sides_segment (constant)
@@ -2802,10 +2806,10 @@ PUBLIC R_StoreWallRange_
 ; bp - 032h  ; UNUSED
 ; bp - 034h  ; worldbottom hi
 ; bp - 036h  ; worldbottom lo
-; bp - 038h  ; worldlow hi ?
-; bp - 03Ah  ; worldlow lo ?
-; bp - 03Ch  ; UNUSED?
-; bp - 03Eh  ; UNUSED?
+; bp - 038h  ; UNUSED
+; bp - 03Ah  ; UNUSED
+; bp - 03Ch  ; UNUSED
+; bp - 03Eh  ; UNUSED
 ; bp - 040h  ; backsectorfloorheight
 ; bp - 042h  ; backsectorceilingheight
 ; bp - 044h  ; worldtop hi
@@ -3183,6 +3187,8 @@ xor       ax, ax
 ; here
 done_with_sector_sided_check:
 ; coming into here, AL is equal to maskedtexture.
+; if backsector is not null, then di/si are worldlow
+; and 2 words on top of stack are worldhigh.
 
 ; set maskedtexture in rendersegloop
 
@@ -3494,7 +3500,7 @@ backsector_not_null:
 ; worldlow.w >>= 4;
 
 
-; worldhigh is di:si
+; worldlow is di:si
 sar       di, 1
 rcr       si, 1
 sar       di, 1
@@ -3505,16 +3511,21 @@ sar       di, 1
 rcr       si, 1
 
 ; worldlow to dx:ax
-mov       dx, word ptr [bp - 038h]
-mov       ax, word ptr [bp - 03ah]
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
+mov       dx, di
+xchg      ax, si
+
+pop       si
+pop       di
+
+; worldhi to di:si
+sar       di, 1
+rcr       si, 1
+sar       di, 1
+rcr       si, 1
+sar       di, 1
+rcr       si, 1
+sar       di, 1
+rcr       si, 1
 
 
 ; if (worldhigh.w < worldtop.w) {
@@ -3888,33 +3899,35 @@ sbb       di, 01000h
 
 ;di:si will store worldhigh
 ; what if we store bx/cx here as well, and finally push it once it's too onerous to hold onto?
-mov       bx, word ptr [bp - 040h] ; can be ax
-xor       cx, cx
-sar       bx, 1
-rcr       cx, 1
-sar       bx, 1
-rcr       cx, 1
-sar       bx, 1
-rcr       cx, 1
+mov       cx, word ptr [bp - 040h] ; can be ax?
+xor       bx, bx
+sar       cx, 1
+rcr       bx, 1
+sar       cx, 1
+rcr       bx, 1
+sar       cx, 1
+rcr       bx, 1
 
 SELFMODIFY_set_viewz_lo_2:
-sub       cx, 01000h
+sub       bx, 01000h
 SELFMODIFY_set_viewz_hi_2:
-sbb       bx, 01000h
+sbb       cx, 01000h
+
+; cx:bx hold on to worldlow for now
 
 
-mov       word ptr [bp - 03ah], cx
-mov       word ptr [bp - 038h], bx
+;mov       word ptr [bp - 03ah], cx
+;mov       word ptr [bp - 038h], bx
 
 ; // hack to allow height changes in outdoor areas
 ; if (frontsectorceilingpic == skyflatnum && backsectorceilingpic == skyflatnum) {
 ; 	worldtop = worldhigh;
 ; }
 
-mov       cl, byte ptr ds:[_skyflatnum]
-cmp       cl, byte ptr [bp - 0ch]
+mov       al, byte ptr ds:[_skyflatnum]
+cmp       al, byte ptr [bp - 0ch]
 jne       not_a_skyflat
-cmp       cl, byte ptr [bp - 0ah]
+cmp       al, byte ptr [bp - 0ah]
 jne       not_a_skyflat
 ;di/si are worldhigh..
 
@@ -3930,20 +3943,17 @@ not_a_skyflat:
 ;		// same plane on both sides
 ;		markfloor = false;
 ;	}
-	
 
-mov       bx, word ptr [bp - 038h]
-cmp       bx, word ptr [bp - 034h]
+cmp       cx, word ptr [bp - 034h]
 jne       set_markfloor_true
-mov       bx, word ptr [bp - 03ah]
 cmp       bx, word ptr [bp - 036h]
 jne       set_markfloor_true
-
-mov       bl, byte ptr [bp - 4]
-cmp       bl, byte ptr [bp - 6]
+; todo: use words
+mov       al, byte ptr [bp - 4]
+cmp       al, byte ptr [bp - 6]
 jne       set_markfloor_true
-mov       bl, byte ptr [bp - 2]
-cmp       bl, byte ptr [bp - 8]
+mov       al, byte ptr [bp - 2]
+cmp       al, byte ptr [bp - 8]
 jne       set_markfloor_true
 set_markfloor_false:
 mov       byte ptr ds:[_markfloor], 0
@@ -3957,12 +3967,12 @@ jne       set_markceiling_true
 cmp       word ptr [bp - 046h], si
 jne       set_markceiling_true
 
-mov       bl, byte ptr [bp - 0ah]
-cmp       bl, byte ptr [bp - 0ch]
+mov       al, byte ptr [bp - 0ah]
+cmp       al, byte ptr [bp - 0ch]
 jne       set_markceiling_true
 
-mov       bl, byte ptr [bp - 2]
-cmp       bl, byte ptr [bp - 8]
+mov       al, byte ptr [bp - 2]
+cmp       al, byte ptr [bp - 8]
 jne       set_markceiling_true
 set_markceiling_false:
 mov       byte ptr ds:[_markceiling], 0
@@ -3994,12 +4004,21 @@ not_closed_door:
 ; ax free at last!
 ;		if (worldhigh.w < worldtop.w) {
 
-cmp       word ptr [bp - 044h], di
+; store worldhigh on stack..
+push      di
+push      si
+xchg      di, cx
+xchg      si, bx
+
+; worldhigh check one past time
+cmp       word ptr [bp - 044h], cx
 jg        setup_toptexture
 jne       toptexture_stuff_done
-cmp       word ptr [bp - 046h], si
+cmp       word ptr [bp - 046h], bx
 jbe       toptexture_stuff_done
 setup_toptexture:
+
+;cx and bx (currently worldhigh) are clobbered but are on stack
 
 ; toptexture = texturetranslation[side->toptexture];
 
@@ -4023,7 +4042,7 @@ calculate_toptexturemid:
 ; // bottom of texture
 ; rw_toptexturemid.w -= viewz.w;
 
-; dx free at last!
+; dx holding on to backsectorceilingheight from above.
 
 xor       ax, ax
 sar       dx, 1
@@ -4058,14 +4077,15 @@ do_selfmodify_toptexture:
 mov   word ptr cs:[SELFMODIFY_set_toptexturemid_lo+4], ax
 mov   word ptr cs:[SELFMODIFY_set_toptexturemid_hi+4], dx
 
+
 toptexture_stuff_done:
 
-mov       ax, word ptr [bp - 038h]
-cmp       ax, word ptr [bp - 034h]
+
+
+cmp       di, word ptr [bp - 034h]
 jg        setup_bottexture
 jne       bottexture_stuff_done
-mov       ax, word ptr [bp - 03ah]
-cmp       ax, word ptr [bp - 036h]
+cmp       si, word ptr [bp - 036h]
 jbe       bottexture_stuff_done
 setup_bottexture:
 les       bx, dword ptr [bp - 016h] ; sides
@@ -4139,8 +4159,8 @@ jmp       done_with_sector_sided_check
 calculate_bottexturemid:
 ; todo cs write here
 
-mov       ax, word ptr [bp - 03ah]
-mov       dx, word ptr [bp - 038h]
+mov       ax, si
+mov       dx, di
 jmp do_selfmodify_bottexture
 
 
