@@ -375,11 +375,13 @@ push  dx
 push  di
 
 
-mov   cx, word ptr ds:[_viewwidth]
+SELFMODIFY_set_viewwidth_1:
+mov   cx, 01000h
 mov   dx, cx
 
 xor   di, di
-mov   ax, word ptr ds:[_viewheight]
+SELFMODIFY_setviewheight_2:
+mov   ax, 01000h
 mov bx, FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT; 
 mov es, bx
 
@@ -409,7 +411,7 @@ mov   ax, FINECOSINE_SEGMENT
 
 mov   es, ax
 
-mov   word ptr ds:[_viewwidth], dx
+
 mov   ax, word ptr es:[di]
 mov   dx, word ptr es:[di + 2]
 xor   bx, bx
@@ -818,7 +820,8 @@ jl    find_floor_plane_index
 je    check_viewz_lowbits_floor
 
 set_floor_plane_minus_one:
-mov   word ptr ds:[_floorplaneindex], 0FFFFh
+mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1], 0FFFFh
+
 jmp   floor_plane_set
 revert_visplane:
 call  Z_QuickMapVisplaneRevert_
@@ -831,7 +834,7 @@ set_ceiling_plane_minus_one:
 mov   cl, byte ptr es:[bx + 5]
 cmp   cl, byte ptr ds:[_skyflatnum]
 je    find_ceiling_plane_index
-mov   word ptr ds:[_ceilingplaneindex], 0FFFFh
+mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1], 0FFFFh
 jmp   do_addsprites
 
 check_viewz_lowbits_floor:
@@ -846,7 +849,8 @@ mov   ch, byte ptr es:[bx + 0Eh]
 mov   cl, byte ptr es:[bx + 4]
 xor   bx, bx ; isceil = 0
 call  R_FindPlane_
-mov   word ptr ds:[_floorplaneindex], ax
+mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1], ax
+
 floor_plane_set:
 les   bx, dword ptr ds:[_frontsector]
 mov   dx, word ptr es:[bx + 2]
@@ -877,7 +881,7 @@ mov   cl, byte ptr es:[bx + 5]
 mov   bx, 1
 
 call  R_FindPlane_
-mov   word ptr ds:[_ceilingplaneindex], ax
+mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1], ax
 do_addsprites:
 mov   ax, word ptr ds:[_frontsector]
 mov   dx, SECTORS_SEGMENT
@@ -919,8 +923,6 @@ PROC R_CheckPlane_ NEAR
 PUBLIC R_CheckPlane_ 
 
 ; ax: index
-; dx: start
-; bx: stop
 ; cl: isceil?
 
 
@@ -931,7 +933,10 @@ push      si
 push      di
 
 mov       word ptr cs:[SELFMODIFY_setindex+1], ax
+;mov       si, word ptr ds:[_rw_x]
 mov       si, dx    ; si holds start
+
+
 
 mov       di, ax
 
@@ -944,8 +949,11 @@ shl       di, 1
 add       di, _visplaneheaders  ; _di is plheader
 mov       byte ptr cs:[SELFMODIFY_setisceil + 1], cl  ; write cl value
 test      cl, cl
+;mov       cx, word ptr ds:[_rw_stopx]
 mov       cx, bx    ; cx holds stop
+
 je        check_plane_is_floor
+;dec       cx
 check_plane_is_ceil:
 les       bx, dword ptr ds:[_ceiltop]
 loaded_floor_or_ceiling:
@@ -1010,6 +1018,7 @@ ret
 
 
 check_plane_is_floor:
+;dec       cx
 les       bx, dword ptr ds:[_floortop]
 jmp       loaded_floor_or_ceiling
 start_greater_than_min:
@@ -1394,7 +1403,8 @@ add   ax, 01000h
 
 mov   word ptr cs:[SELFMODIFY_set_vis_x1+1], ax
 mov   word ptr cs:[SELFMODIFY_sub_x1+1], ax
-cmp   ax, word ptr ds:[_viewwidth]
+SELFMODIFY_set_viewwidth_2:
+cmp   ax, 01000h
 jle   not_too_far_off_right_side_highbits
 jump_to_exit_project_sprite_2:
 jmp   exit_project_sprite
@@ -1545,7 +1555,9 @@ mov   word ptr [si + 2], ax
 
 SELFMODIFY_set_ax_to_x2:
 mov   ax, 00012h			; get x2
-mov   bx, word ptr ds:[_viewwidth]
+
+SELFMODIFY_set_viewwidth_3:
+mov   bx, 01000h
 cmp   ax, bx
 jl    x2_smaller_than_viewwidth
 mov   ax, bx
@@ -2002,7 +2014,7 @@ PUBLIC R_RenderSegLoop_
 
 
 push  bx
-push  cx
+push  cx ; todo which of these do we actually need to push and pop?
 push  si
 push  di
 push  bp
@@ -2573,8 +2585,8 @@ call  R_GetSourceSegment0_
 
 mid_no_pixels_to_draw:
 ; bx is already _rw_x << 1
-mov   ax, word ptr ds:[_viewheight]
-mov   word ptr es:[bx + OFFSET_CEILINGCLIP], ax
+SELFMODIFY_setviewheight_1:
+mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h
 mov   word ptr es:[bx + OFFSET_FLOORCLIP], 0FFFFh
 finished_inner_loop_iter:
 
@@ -3376,7 +3388,7 @@ mov       word ptr [bp - 036h], ax
 les       bx, dword ptr ds:[_rw_scale]
 mov       cx, es
 call FixedMul_
-; todo selfmodify this.
+
 SELFMODIFY_sub__centeryfrac_shiftright4_lo_3:
 mov       cx, 01000h
 sub       cx, ax
@@ -3389,25 +3401,25 @@ mov       word ptr ds:[_bottomfrac + 2], ax
 cmp       byte ptr ds:[_markceiling], 0
 je        dont_mark_ceiling
 mov       cx, 1
-mov       ax, word ptr ds:[_rw_stopx]
-dec       ax
+SELFMODIFY_set_ceilingplaneindex:
+mov       ax, 0FFFFh
+mov       bx, word ptr ds:[_rw_stopx]
+dec       bx
 mov       dx, word ptr ds:[_rw_x]
-mov       bx, ax
-mov       ax, word ptr ds:[_ceilingplaneindex]
 call      R_CheckPlane_
-mov       word ptr ds:[_ceilingplaneindex], ax
+mov       word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1], ax
 dont_mark_ceiling:
 
 cmp       byte ptr ds:[_markfloor], 0
 je        dont_mark_floor
-mov       ax, word ptr ds:[_rw_stopx]
-mov       dx, word ptr ds:[_rw_x]
 xor       cx, cx
-mov       bx, word ptr ds:[_floorplaneindex]
-dec       ax
-xchg      ax, bx
+SELFMODIFY_set_floorplaneindex:
+mov       ax, 0FFFFh
+mov       bx, word ptr ds:[_rw_stopx]
+dec       bx
+mov       dx, word ptr ds:[_rw_x]
 call      R_CheckPlane_
-mov       word ptr ds:[_floorplaneindex], ax
+mov       word ptr cs:[SELFMODIFY_set_floorplaneindex+1], ax
 dont_mark_floor:
 mov       ax, word ptr [bp - 04Ah]
 cmp       ax, word ptr [bp - 048h]
@@ -3550,7 +3562,7 @@ mov       cx, es
 push      dx
 push      ax
 call FixedMul_
-; todo selfmodify this.
+
 ; mov cx, low word
 ; mov bx, high word
 SELFMODIFY_sub__centeryfrac_shiftright4_lo_2:
@@ -3560,8 +3572,6 @@ SELFMODIFY_sub__centeryfrac_shiftright4_hi_2:
 mov       ax, 01000h
 sbb       ax, dx
 
-
-; todo selfmodify this.
 
 mov       word ptr ds:[_pixhigh], cx
 mov       word ptr ds:[_pixhigh + 2], ax
@@ -3600,7 +3610,6 @@ mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_1+4], dx
 mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_2+4], dx
 
 
-;todo self modify here
 ; put these back where they need to be.
 xchg      dx, di
 xchg      ax, si
@@ -3634,7 +3643,6 @@ SELFMODIFY_sub__centeryfrac_shiftright4_hi_1:
 mov       ax, 01000h
 sbb       ax, dx
 
-; todo selfmodify this.
 
 mov       word ptr ds:[_pixlow], cx
 mov       word ptr ds:[_pixlow + 2], ax
@@ -3673,7 +3681,6 @@ mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+4], dx
 
 
 
-;todo self modify here
 skip_pixlow_step:
 call      R_RenderSegLoop_
 check_spr_top_clip:
@@ -3759,7 +3766,7 @@ check_silhouettes_then_exit:
 ; todo 
 cmp       byte ptr ds:[_maskedtexture], 0
 je        skip_top_silhouette
-test      byte ptr es:[si + 01ch], SIL_TOP	; todo 
+test      byte ptr es:[si + 01ch], SIL_TOP
 jne       skip_top_silhouette
 or        byte ptr es:[si + 01ch], SIL_TOP
 mov       word ptr es:[si + 014h], MINSHORT
@@ -4227,6 +4234,18 @@ mov      word ptr cs:[SELF_MODIFY_set_centerx_3+1], ax
 mov      word ptr cs:[SELF_MODIFY_set_centerx_4+1], ax
 mov      word ptr cs:[SELF_MODIFY_set_centerx_5+1], ax
 mov      word ptr cs:[SELF_MODIFY_set_centerx_6+2], ax
+
+mov      ax, word ptr ds:[_viewwidth]
+mov      word ptr cs:[SELFMODIFY_set_viewwidth_1+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewwidth_2+1], ax
+mov      word ptr cs:[SELFMODIFY_set_viewwidth_3+1], ax
+
+mov      ax, word ptr ds:[_viewheight]
+mov      word ptr cs:[SELFMODIFY_setviewheight_1+5], ax
+mov      word ptr cs:[SELFMODIFY_setviewheight_2+1], ax
+
+
+
 
 retf
 

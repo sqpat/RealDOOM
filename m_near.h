@@ -205,9 +205,8 @@
 #define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0188)))
 #define R_MarkL2FlatCacheLRU_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
 #define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0190)))
-
 #define floorplaneindex                 (*((int16_t    __near*)              (_NULL_OFFSET + 0x0194)))
-#define ceilingplaneindex               (*((int16_t    __near*)              (_NULL_OFFSET + 0x0196)))
+
 #define viewwidth                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x0198)))
 #define viewheight                      (*((int16_t    __near*)              (_NULL_OFFSET + 0x019A)))
 #define ceiltop                         (*((byte  __far* __near*)            (_NULL_OFFSET + 0x019C)))

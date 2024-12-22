@@ -253,6 +253,8 @@ void __near R_AddLine (int16_t curlineNum) {
     tspan.wu = angle1.wu;
 	tspan.hu.intbits += clipangle;
 
+	// note/todo: fieldofview will be selfmodified constant.
+	// note/todo: so will clipangle
 	if (tspan.hu.intbits > fieldofview) {
 		tspan.hu.intbits -= fieldofview;
 
