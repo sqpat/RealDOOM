@@ -4185,19 +4185,21 @@ PUBLIC R_WriteBackViewConstants_
 mov      ax, cs
 mov      ds, ax
 
+mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
+mov      es, ax
+
 ASSUME DS:R_MAINHI_TEXT
 
 mov      ax,  word ptr ss:[_detailshift]
 mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+1], ah
 
-; for dual 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
-; i.e. detailshift shl 2
+; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
 shl      al, 1
 mov      byte ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
+; write to colfunc segment
+mov      byte ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+1], al
 
-mov      byte ptr ds:[OFFSET SELFMODIFY_detailshift_16_bit_jump_1+1], al
-;mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_16_bit_shift+1], al
-
+; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 
 shl      al, 1
 
@@ -4233,6 +4235,7 @@ mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_2+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_3+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1], ax
 
+; ah is definitely 0...
 mov      ax, word ptr ss:[_centerx]
 mov      word ptr ds:[SELF_MODIFY_set_centerx_1+1], ax
 mov      word ptr ds:[SELF_MODIFY_set_centerx_2+1], ax
@@ -4241,6 +4244,11 @@ mov      word ptr ds:[SELF_MODIFY_set_centerx_4+1], ax
 mov      word ptr ds:[SELF_MODIFY_set_centerx_5+1], ax
 mov      word ptr ds:[SELF_MODIFY_set_centerx_6+2], ax
 
+; ah is definitely 0...
+; todo fix
+;mov      ax, word ptr ss:[_centery]
+;mov      word ptr es:[SELFMODIFY_COLFUNC_subtract_centery+1], ax
+ 
 mov      ax, word ptr ss:[_viewwidth]
 mov      word ptr ds:[SELFMODIFY_set_viewwidth_1+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewwidth_2+1], ax
@@ -4270,11 +4278,13 @@ ENDP
 PROC R_WriteBackFrameConstants_ NEAR
 PUBLIC R_WriteBackFrameConstants_ 
 
-; todo: calculate the values here and dont store to variables.
+; todo: calculate the values here and dont store to variables. (combine with setupframe etc)
 
 ; set ds to cs to make code smaller?
 mov      ax, cs
 mov      ds, ax
+mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
+mov      es, ax
 
 ASSUME DS:R_MAINHI_TEXT
 
@@ -4337,6 +4347,13 @@ mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_2+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1], ax
 
 
+; get whole dword at the end here.
+lds      ax, dword ptr ss:[_destview]
+mov      word ptr es:[SELFMODIFY_COLFUNC_add_destview_offset+1], ax
+; todo fix
+;mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segment+1], ds
+
+; DS IS BAD BECAUSE OF LDS ABOVE
 
 mov      ax, ss
 mov      ds, ax

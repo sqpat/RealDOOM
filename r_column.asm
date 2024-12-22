@@ -51,21 +51,23 @@ PUBLIC  R_DrawColumn_
     cli 									; disable interrupts
     push bp
 
-    mov   ax, bx  ; todo improve
-    
+    ; todo just move this above to prevenet the need for the mov ax
+    ;SELFMODIFY_COLFUNC_subtract_centery
+    ;sub   ax, 01000h
+    sub   ax, word ptr ds:[_centery]
+    mov   es, ax              ; save low(M1)
+
 	; shift already done earlier
     
 	
-
+    ; todo when self modifying get this register exchange for free..
 
     mov   bx, word ptr ds:[_dc_iscale + 0]   
     mov   ch, byte ptr ds:[_dc_iscale + 2]      ; 2nd byte of high word not used up ahead...
     mov   cl, bh                             ; construct dc_iscale + 1 word
     mov   bp, cx                             ; cache for later to avoid going to memory
 
-    
-    sub   ax, word ptr ds:[_centery]
-    mov   es, ax              ; save low(M1)
+
 
 ;  DX:AX * CX:BX
 
@@ -113,7 +115,9 @@ PUBLIC  R_DrawColumn_
 
    ;  prep our loop variables
 
-
+;SELFMODIFY_COLFUNC_set_destview_segment:
+;   mov     ax, 01000h   
+;   mov     es, ax ready the viewscreen segment
    mov     es, word ptr ds:[_destview + 2]    ; ready the viewscreen segment
    xor     bx, bx       ; common bx offset of zero in the xlats ahead
 
@@ -195,18 +199,19 @@ push  si
 push  di
 
 
+
 ; cant optimize as this is ADD not mov
 add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
+; todo optimize this read
 mov   ax, word ptr ds:[_dc_x]
-mov   cl, byte ptr ds:[_detailshift2minus] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
-shr   ax, cl
 
-;SELFMODIFY_detailshift_2_minus_16_bit_shift:
-;db 0EBh, 000h
-;shr   ax, 1
-;shr   ax, 1
+; shift ax by (2 - detailshift.)
+;SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift:
+db 0EBh, 000h
+shr   ax, 1
+shr   ax, 1
 
 
 
@@ -214,15 +219,17 @@ shr   ax, cl
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
 
-
-
-
-
-
+; todo optimize this read
 mov   bx, word ptr ds:[_dc_yl]
 mov   si, bx
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-add   ax, word ptr ds:[_destview + 0] 		    ; add destview offset
+;SELFMODIFY_COLFUNC_add_destview_offset:
+
+
+
+add   ax, 01000h
+
+; todo optimize this read
 mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
 sub   si, bx                                 ;
 
@@ -233,11 +240,15 @@ mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((COLFUNC_JUMP_OFFSET+1)-R_DrawColumn_)+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
+; or can we do this in an outer func without this instrction?
+;SELFMODIFY_set_dc_colormap_segment
 mov   dx, word ptr ds:[_dc_colormap_segment]
 test  al, al
 jne   skipcolormapzero
 
 mov   word ptr ds:[_colfunc_farcall_addr_1+2], dx
+
+xchg  ax, bx    ; dc_yl in ax
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -270,10 +281,12 @@ shr   ax, 1
 shr   ax, 1
 ENDIF
  
- add  ax, dx
+add  ax, dx
 
 mov   word ptr ds:[_func_farcall_scratch_addr], cx				; setup dynamic call
 mov   word ptr ds:[_func_farcall_scratch_addr+2], ax
+
+xchg  ax, bx    ; dc_yl in ax
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;

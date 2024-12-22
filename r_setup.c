@@ -74,7 +74,6 @@ void __near R_InitTextureMapping(void) {
 	uint8_t		i2;
 	uint8_t		j;
 	fixed_t_union finetan_i;
-	Z_QuickMapRender();
 	temp.h.fracbits = 0;
 
 	// Use tangent table to generate viewangletox:
@@ -255,6 +254,7 @@ void __near  R_ExecuteSetViewSize(void) {
 	
 	viewwindowoffset = (viewwindowy*(SCREENWIDTH / 4)) + (viewwindowx >> 2);
 
+	Z_QuickMapRender();
 	R_WriteBackViewConstants();
 	R_InitTextureMapping();
 

@@ -220,6 +220,24 @@ _getspritetexture_addr =             _NULL_OFFSET + 00304h
 
 
 
+; EXTERNAL CODE OFFSETS FOR SELF MODIFYING CODE
+; We use a 2 step build process. Some code is exported to a binary in the first build,
+; then the 2nd build includes less code in the final exe. The exe loads code from the
+; the first binary at runtime. The issue is some code from the build 2 exe wishes to
+; modify code offsets from the binary, but that 2nd build has no visibility into the
+; locations of things in the first build. So we must HARDCODE (ugh) some instruction
+; offsets in here. Oh well - it's pretty minimal.
+
+SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift = 			R_DRAWCOLUMNPREPCALLOFFSET +5 +3 +2 +3
+SELFMODIFY_COLFUNC_add_destview_offset =						R_DRAWCOLUMNPREPCALLOFFSET +5 +3 +2 +3 +2+4 +4 +2 +5
+SELFMODIFY_COLFUNC_subtract_centery =                           1+1
+SELFMODIFY_COLFUNC_set_destview_segment =                       1+1+4+2+4+4+2+2+1+2+2+2+2+2+2+2+2+4+4+2+2+2+2
+
+
+
+
+
+
 
 
 ; todo what is this magic number again? (??) r_draw.c alludes to it as desired bx offset
