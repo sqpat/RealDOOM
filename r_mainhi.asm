@@ -4181,69 +4181,79 @@ PUBLIC R_WriteBackViewConstants_
 
 ; todo: calculate the values here and dont store to variables.
 
-;  ? set ds to cs to make code smaller?
-; need to wrestle with tasm a bit. 
-;mov      ax, cs
-;mov      ds, cs
+; set ds to cs to make code smaller?
+mov      ax, cs
+mov      ds, ax
 
-mov      ax,  word ptr ds:[_detailshift]
-mov      byte ptr cs:[SELFMODIFY_detailshift_plus1_1+1], ah
+ASSUME DS:R_MAINHI_TEXT
+
+mov      ax,  word ptr ss:[_detailshift]
+mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+1], ah
 
 ; for dual 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 ; i.e. detailshift shl 2
 shl      al, 1
-mov      byte ptr cs:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
+mov      byte ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
+
+mov      byte ptr ds:[OFFSET SELFMODIFY_detailshift_16_bit_jump_1+1], al
+;mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_16_bit_shift+1], al
+
+
 shl      al, 1
 
-mov      byte ptr cs:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+1], al
-mov      byte ptr cs:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+1], al
-mov      byte ptr cs:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+1], al
-mov      byte ptr cs:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+1], al
-mov      byte ptr cs:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+1], al
+mov      byte ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+1], al
+mov      byte ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+1], al
+mov      byte ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+1], al
+mov      byte ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+1], al
+mov      byte ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+1], al
 
 mov      al,  8
 sub      al,  ah
-mov      byte ptr cs:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+1], al
-mov      byte ptr cs:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+1], al
+mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+1], al
+mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+1], al
 
 
 
-mov      al, byte ptr ds:[_detailshiftitercount]
-mov      byte ptr cs:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
-mov      byte ptr cs:[SELFMODIFY_add_iter_to_rw_x+4], al
-mov      byte ptr cs:[SELFMODIFY_add_detailshiftitercount+4], al
+mov      al, byte ptr ss:[_detailshiftitercount]
+mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
+mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+4], al
+mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+4], al
 
-mov      ax, word ptr ds:[_detailshiftandval]
-mov      word ptr cs:[SELFMODIFY_detailshift_and_1+2], ax
+mov      ax, word ptr ss:[_detailshiftandval]
+mov      word ptr ds:[SELFMODIFY_detailshift_and_1+2], ax
 
-mov      ax, word ptr ds:[_centeryfrac_shiftright4]
-mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_1+1], ax
-mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_2+1], ax
-mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_3+1], ax
-mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_4+1], ax
-mov      ax, word ptr ds:[_centeryfrac_shiftright4+2]
-mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_1+1], ax
-mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_2+1], ax
-mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_3+1], ax
-mov      word ptr cs:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1], ax
+mov      ax, word ptr ss:[_centeryfrac_shiftright4]
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_1+1], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_2+1], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_3+1], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_4+1], ax
+mov      ax, word ptr ss:[_centeryfrac_shiftright4+2]
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_1+1], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_2+1], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_3+1], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1], ax
 
-mov      ax, word ptr ds:[_centerx]
-mov      word ptr cs:[SELF_MODIFY_set_centerx_1+1], ax
-mov      word ptr cs:[SELF_MODIFY_set_centerx_2+1], ax
-mov      word ptr cs:[SELF_MODIFY_set_centerx_3+1], ax
-mov      word ptr cs:[SELF_MODIFY_set_centerx_4+1], ax
-mov      word ptr cs:[SELF_MODIFY_set_centerx_5+1], ax
-mov      word ptr cs:[SELF_MODIFY_set_centerx_6+2], ax
+mov      ax, word ptr ss:[_centerx]
+mov      word ptr ds:[SELF_MODIFY_set_centerx_1+1], ax
+mov      word ptr ds:[SELF_MODIFY_set_centerx_2+1], ax
+mov      word ptr ds:[SELF_MODIFY_set_centerx_3+1], ax
+mov      word ptr ds:[SELF_MODIFY_set_centerx_4+1], ax
+mov      word ptr ds:[SELF_MODIFY_set_centerx_5+1], ax
+mov      word ptr ds:[SELF_MODIFY_set_centerx_6+2], ax
 
-mov      ax, word ptr ds:[_viewwidth]
-mov      word ptr cs:[SELFMODIFY_set_viewwidth_1+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewwidth_2+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewwidth_3+1], ax
+mov      ax, word ptr ss:[_viewwidth]
+mov      word ptr ds:[SELFMODIFY_set_viewwidth_1+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewwidth_2+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewwidth_3+1], ax
 
-mov      ax, word ptr ds:[_viewheight]
-mov      word ptr cs:[SELFMODIFY_setviewheight_1+5], ax
-mov      word ptr cs:[SELFMODIFY_setviewheight_2+1], ax
+mov      ax, word ptr ss:[_viewheight]
+mov      word ptr ds:[SELFMODIFY_setviewheight_1+5], ax
+mov      word ptr ds:[SELFMODIFY_setviewheight_2+1], ax
 
+mov      ax, ss
+mov      ds, ax
+
+ASSUME DS:DGROUP
 
 
 
@@ -4262,64 +4272,76 @@ PUBLIC R_WriteBackFrameConstants_
 
 ; todo: calculate the values here and dont store to variables.
 
-mov      ax, word ptr ds:[_viewz]
-mov      word ptr cs:[SELFMODIFY_set_viewz_lo_1+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_lo_2+2], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_lo_3+2], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_lo_4+2], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_lo_5+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_lo_6+1], ax
-mov      ax, word ptr ds:[_viewz+2]
-mov      word ptr cs:[SELFMODIFY_set_viewz_hi_1+2], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_hi_2+2], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_hi_3+2], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_hi_4+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_hi_5+2], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_hi_6+2], ax
+; set ds to cs to make code smaller?
+mov      ax, cs
+mov      ds, ax
 
-mov      ax, word ptr ds:[_viewz_shortheight]
-mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_1+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_2+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_3+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_4+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewz_shortheight_5+1], ax
-
-mov      al, byte ptr ds:[_extralight]
-mov      byte ptr cs:[SELFMODIFY_set_extralight_1+1], al
-mov      byte ptr cs:[SELFMODIFY_set_extralight_2+1], al
-
-mov      al, byte ptr ds:[_fixedcolormap]
-mov      byte ptr cs:[SELFMODIFY_set_fixedcolormap_1+1], al
-mov      byte ptr cs:[SELFMODIFY_set_fixedcolormap_2+1], al
+ASSUME DS:R_MAINHI_TEXT
 
 
-mov      ax, word ptr ds:[_viewx]
-mov      word ptr cs:[SELFMODIFY_set_viewx_lo_1+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewx_lo_2+2], ax
-mov      ax, word ptr ds:[_viewx+2]
-mov      word ptr cs:[SELFMODIFY_set_viewx_hi_1+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewx_hi_2+2], ax
+mov      ax, word ptr ss:[_viewz]
+mov      word ptr ds:[SELFMODIFY_set_viewz_lo_1+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_lo_2+2], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_lo_3+2], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_lo_4+2], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_lo_5+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_lo_6+1], ax
+mov      ax, word ptr ss:[_viewz+2]
+mov      word ptr ds:[SELFMODIFY_set_viewz_hi_1+2], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_hi_2+2], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_hi_3+2], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_hi_4+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_hi_5+2], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_hi_6+2], ax
 
-mov      ax, word ptr ds:[_viewy]
-mov      word ptr cs:[SELFMODIFY_set_viewy_lo_1+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewy_lo_2+1], ax
-mov      ax, word ptr ds:[_viewy+2]
-mov      word ptr cs:[SELFMODIFY_set_viewy_hi_1+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewy_hi_2+2], ax
+mov      ax, word ptr ss:[_viewz_shortheight]
+mov      word ptr ds:[SELFMODIFY_set_viewz_shortheight_1+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_shortheight_2+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_shortheight_3+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_shortheight_4+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewz_shortheight_5+1], ax
 
-mov      ax, word ptr ds:[_viewangle_shiftright3]
-mov      word ptr cs:[SELFMODIFY_set_viewanglesr3_1+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewanglesr3_2+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewanglesr3_3+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewanglesr3_4+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewanglesr3_5+2], ax
+mov      al, byte ptr ss:[_extralight]
+mov      byte ptr ds:[SELFMODIFY_set_extralight_1+1], al
+mov      byte ptr ds:[SELFMODIFY_set_extralight_2+1], al
 
-mov      ax, word ptr ds:[_viewangle_shiftright1]
-mov      word ptr cs:[SELFMODIFY_set_viewanglesr1_1+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewanglesr1_2+1], ax
-mov      word ptr cs:[SELFMODIFY_set_viewanglesr1_3+1], ax
+mov      al, byte ptr ss:[_fixedcolormap]
+mov      byte ptr ds:[SELFMODIFY_set_fixedcolormap_1+1], al
+mov      byte ptr ds:[SELFMODIFY_set_fixedcolormap_2+1], al
 
 
+mov      ax, word ptr ss:[_viewx]
+mov      word ptr ds:[SELFMODIFY_set_viewx_lo_1+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewx_lo_2+2], ax
+mov      ax, word ptr ss:[_viewx+2]
+mov      word ptr ds:[SELFMODIFY_set_viewx_hi_1+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewx_hi_2+2], ax
+
+mov      ax, word ptr ss:[_viewy]
+mov      word ptr ds:[SELFMODIFY_set_viewy_lo_1+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewy_lo_2+1], ax
+mov      ax, word ptr ss:[_viewy+2]
+mov      word ptr ds:[SELFMODIFY_set_viewy_hi_1+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewy_hi_2+2], ax
+
+mov      ax, word ptr ss:[_viewangle_shiftright3]
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_1+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_2+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_3+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_4+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_5+2], ax
+
+mov      ax, word ptr ss:[_viewangle_shiftright1]
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_1+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_2+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1], ax
+
+
+
+mov      ax, ss
+mov      ds, ax
+
+ASSUME DS:DGROUP
 
 
 ret

@@ -203,6 +203,11 @@ mov   ax, word ptr ds:[_dc_x]
 mov   cl, byte ptr ds:[_detailshift2minus] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
 shr   ax, cl
 
+;SELFMODIFY_detailshift_2_minus_16_bit_shift:
+;db 0EBh, 000h
+;shr   ax, 1
+;shr   ax, 1
+
 
 
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
