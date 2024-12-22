@@ -362,8 +362,6 @@ found:
 
 
 
-void __far R_DrawColumn (void);
-void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
 void __far I_UpdateNoBlit(void);
 void __far I_FinishUpdate(void);
 
@@ -380,11 +378,6 @@ void __near Z_LoadBinaries() {
 	// currently in physics region!
 	
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
-
-	// load R_DrawColumn into high memory near colormaps...
-	//FAR_memcpy(colfunc_function_area,
-	//(byte __far *)R_DrawColumn, 
-	//(byte __far *)R_DrawSkyColumn - (byte __far *)R_DrawColumn);
 
 
 	fp2 = fopen("DOOMCODE.BIN", "rb"); 

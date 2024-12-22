@@ -4235,7 +4235,7 @@ mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_2+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_3+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1], ax
 
-; ah is definitely 0...
+; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centerx]
 mov      word ptr ds:[SELF_MODIFY_set_centerx_1+1], ax
 mov      word ptr ds:[SELF_MODIFY_set_centerx_2+1], ax
@@ -4244,10 +4244,9 @@ mov      word ptr ds:[SELF_MODIFY_set_centerx_4+1], ax
 mov      word ptr ds:[SELF_MODIFY_set_centerx_5+1], ax
 mov      word ptr ds:[SELF_MODIFY_set_centerx_6+2], ax
 
-; ah is definitely 0...
-; todo fix
-;mov      ax, word ptr ss:[_centery]
-;mov      word ptr es:[SELFMODIFY_COLFUNC_subtract_centery+1], ax
+; ah is definitely 0... optimizable?
+mov      ax, word ptr ss:[_centery]
+mov      word ptr es:[SELFMODIFY_COLFUNC_subtract_centery+1], ax
  
 mov      ax, word ptr ss:[_viewwidth]
 mov      word ptr ds:[SELFMODIFY_set_viewwidth_1+1], ax
@@ -4350,8 +4349,7 @@ mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1], ax
 ; get whole dword at the end here.
 lds      ax, dword ptr ss:[_destview]
 mov      word ptr es:[SELFMODIFY_COLFUNC_add_destview_offset+1], ax
-; todo fix
-;mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segment+1], ds
+mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segment+1], ds
 
 ; DS IS BAD BECAUSE OF LDS ABOVE
 

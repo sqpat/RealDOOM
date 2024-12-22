@@ -53,8 +53,7 @@ PUBLIC  R_DrawColumn_
 
     ; todo just move this above to prevenet the need for the mov ax
     ;SELFMODIFY_COLFUNC_subtract_centery
-    ;sub   ax, 01000h
-    sub   ax, word ptr ds:[_centery]
+    sub   ax, 01000h
     mov   es, ax              ; save low(M1)
 
 	; shift already done earlier
@@ -116,9 +115,8 @@ PUBLIC  R_DrawColumn_
    ;  prep our loop variables
 
 ;SELFMODIFY_COLFUNC_set_destview_segment:
-;   mov     ax, 01000h   
-;   mov     es, ax ready the viewscreen segment
-   mov     es, word ptr ds:[_destview + 2]    ; ready the viewscreen segment
+   mov     ax, 01000h   
+   mov     es, ax; ready the viewscreen segment
    xor     bx, bx       ; common bx offset of zero in the xlats ahead
 
    lds     si, dword ptr ds:[_dc_source_segment-2]  ; sets ds, and si to 004Fh (hardcoded)
