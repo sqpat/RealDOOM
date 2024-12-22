@@ -474,10 +474,8 @@ PUBLIC  R_DrawSpanPrep_
 
  ; calculate desired cs:ip for far jump
 
- mov   ax, word ptr ds:[_ds_colormap_segment]
- mov   dl, byte ptr ds:[_ds_colormap_index]
- sub   ax, 0FCh
- test  dl, dl									; check _ds_colormap_index
+ mov   al, byte ptr ds:[_ds_colormap_index]
+ test  al, al									; check _ds_colormap_index
  jne    ds_colormap_nonzero
 
 
@@ -487,22 +485,15 @@ PUBLIC  R_DrawSpanPrep_
 ;		uint16_t callfunc_offset = colormaps_spanfunc_off_difference + cs_source_offset;
 ;		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
 
+; call static address with static colormap.
 
-
-
-mov   word ptr ds:[_spanfunc_farcall_addr_1+2], ax				; setup dynamic call segment. offset is static.
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _spanfunc_farcall_addr_1
-
+db 09Ah
+dw DRAWSPAN_CALL_OFFSET
+dw (COLORMAPS_SEGMENT - 0FCh)
 
  retf  
  ds_colormap_nonzero:									; if ds_colormap_index is 0
- 
-
- 
- 
+  
  
  ; colormap not zero. need to offset cs etc by its address
 
@@ -512,21 +503,20 @@ dw _spanfunc_farcall_addr_1
 ;		uint16_t cs_base = ds_colormap_segment - cs_source_segment_offset + ds_colormap_shift4;
 ;		uint16_t callfunc_offset = colormaps_spanfunc_off_difference + cs_source_offset - ds_colormap_offset;
 ;		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
-
  
- mov   dh, dl
- xor   dl, dl
+ mov   ah, al
+ xor   al, al
  mov   bx, DRAWSPAN_CALL_OFFSET
- sub   bx, dx
+ sub   bx, ax
  IF COMPILE_INSTRUCTIONSET GE COMPILE_186
- shr   dx, 4
+ shr   ax, 4
  ELSE
- shr   dx, 1
- shr   dx, 1
- shr   dx, 1
- shr   dx, 1
+ shr   ax, 1
+ shr   ax, 1
+ shr   ax, 1
+ shr   ax, 1
  ENDIF
- add   ax, dx
+ add   ax, (COLORMAPS_SEGMENT - 0FCh)
 
  
 mov   word ptr ds:[_func_farcall_scratch_addr+0], bx				; setup dynamic call offset
@@ -887,7 +877,6 @@ sbb   dx, 0
 
 mov   word ptr ds:[DS_YFRAC], ax
 mov   word ptr ds:[DS_YFRAC+2], dx
-mov   word ptr ds:[_ds_colormap_segment], COLORMAPS_SEGMENT
 
 
 ; 	if (fixedcolormap) {

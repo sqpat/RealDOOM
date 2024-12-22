@@ -89,12 +89,12 @@
 
 #define ds_x1                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0028)))
 #define ds_x2                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x002A)))
-#define ds_colormap_segment             (*((segment_t __near*)               (_NULL_OFFSET + 0x002C)))
+// unused
 #define ds_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002E)))
 #define fixedcolormap                   (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002F)))
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
 #define ds_source_segment               (*((segment_t __near*)               (_NULL_OFFSET + 0x003E)))
-#define dc_colormap_segment             (*((segment_t __near*)               (_NULL_OFFSET + 0x0040)))
+// unused
 #define dc_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0042)))
 #define fuzzpos                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0043)))
 #define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0044)))
@@ -155,7 +155,7 @@
 #define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E5))
 #define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x00E6))
 #define screen_segments                 ((segment_t __near *)                (_NULL_OFFSET + 0x00EE))
-#define spanfunc_farcall_addr_1         (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00F8)))
+// f8 fa unused
 #define func_farcall_scratch_addr       (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00FC)))
 #define colfunc_farcall_addr_1          (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0100)))
 // 104 is constant

@@ -48,7 +48,7 @@ _floorphyspage =                 	_NULL_OFFSET + 00027h
 
 _ds_x1 = 							_NULL_OFFSET + 00028h
 _ds_x2 = 							_NULL_OFFSET + 0002Ah
-_ds_colormap_segment = 				_NULL_OFFSET + 0002Ch
+; UNUSED 02Ch
 _ds_colormap_index = 				_NULL_OFFSET + 0002Eh
 _fixedcolormap = 					_NULL_OFFSET + 0002Fh
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
@@ -101,7 +101,7 @@ _spanfunc_main_loop_count = 		_NULL_OFFSET + 000E4h
 _skipdirectdraws = 					_NULL_OFFSET + 000E5h
 _jump_mult_table_3 = 				_NULL_OFFSET + 000E6h
 _screen_segments = 					_NULL_OFFSET + 000EEh
-_spanfunc_farcall_addr_1 =      	_NULL_OFFSET + 000F8h
+; F8 FA unused
 _func_farcall_scratch_addr =		_NULL_OFFSET + 000FCh
 _colfunc_farcall_addr_1   =    		_NULL_OFFSET + 00100h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h

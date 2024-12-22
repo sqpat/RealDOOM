@@ -211,11 +211,8 @@ db 0EBh, 000h
 shr   ax, 1
 shr   ax, 1
 
-
-
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
-
 
 ; todo optimize this read
 mov   bx, word ptr ds:[_dc_yl]
@@ -228,7 +225,6 @@ add   ax, 01000h
 mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
 sub   si, bx                                 ;
 
-
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
 xchg  ax, di
 mov   ax, word ptr es:[si]                   ; get the jump value
@@ -236,10 +232,14 @@ mov   word ptr es:[((COLFUNC_JUMP_OFFSET+1)-R_DrawColumn_)+COLFUNC_JUMP_AND_FUNC
 mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
+
+
 ;SELFMODIFY_COLFUNC_set_colormaps_segment
 mov   dx, 01000h
 test  al, al
 jne   skipcolormapzero
+
+; if we make a separate drawcol masked we can use a constant here.
 
 mov   word ptr ds:[_colfunc_farcall_addr_1+2], dx
 

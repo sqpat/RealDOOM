@@ -50,9 +50,8 @@ db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ; EEh screen_segments[5]
 db 0,  0,  0,  0,  0,  0, 21, 18, 15, 12,  9,  6,  3,  0
 dw                                                         8000h
-;  spanfunc_farcall_addr_1   0x00F8
 ;  func_farcall_scratch_addr   0x00FC
-dw 8000h,  7000h,  6000h,  9C00h,    DRAWSPAN_CALL_OFFSET,     00,     00,    00
+dw 8000h,  7000h,  6000h,  9C00h,    00, 00,     00,    00
 ; 0x100:
 ;  colfunc_farcall_addr_1   0x0100
 ; _viewangle_shiftright3 0x104
