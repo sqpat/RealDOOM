@@ -536,9 +536,9 @@ push  di
 push  bp
 mov   bp, sp
 
+; todo just pass this in as si instead of ax?
 mov   si, ax
-; todo is this a constant that can be moved out a layer?
-mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT_MASKEDMAPPING
+
 mov   al, byte ptr [si + 1]
 mov   byte ptr ds:[_dc_colormap_index], al
 
@@ -933,21 +933,21 @@ PUBLIC R_RenderMaskedSegRange_
 ;x1 is ax
 ;x2 is cx
 
-; bp - 2        side_render
-; bp - 4        lineflags
-; bp - 6        maskedtexturecolumn todo put in register
-; bp - 8        rw_scalestep_shift hi word
-; bp - 0Ah      rw_scalestep_shift lo word
+; bp - 2        side_render ; todo selfmodify, get its two values if worth..
+; bp - 4        lineflags  ; todo can probably selfmodify value
+; bp - 6        UNUSED
+; bp - 8        rw_scalestep_shift hi word ; todo self modiable with adds to code
+; bp - 0Ah      rw_scalestep_shift lo word ; todo self modiable with adds to code
 ; bp - 0Ch      cached xoffset/di
-; bp - 0Eh      dc_x_base4
-; bp - 010h     sprtopscreen_step hi word
-; bp - 012h     sprtopscreen_step lo word
-; bp - 014h     basespryscale hi word
-; bp - 016h     basespryscale lo word
+; bp - 0Eh      dc_x_base4  ; todo used once self modify
+; bp - 010h     sprtopscreen_step hi word  ; todo self modiable with adds to code
+; bp - 012h     sprtopscreen_step lo word  ; todo self modiable with adds to code
+; bp - 014h     basespryscale hi word  ; todo self modiable with adds to code
+; bp - 016h     basespryscale lo word  ; todo self modiable with adds to code
 ; bp - 018h     drawseg far segment (this is a constant)
 ; bp - 01Ah     ds (drawseg, not data segment)
-; bp - 01Ch     rw_scalestep hi word
-; bp - 01Eh     rw_scalestep lo word
+; bp - 01Ch     rw_scalestep hi word  ; todo self modiable with adds to code
+; bp - 01Eh     rw_scalestep lo word  ; todo self modiable with adds to code
 
   
 push  si
@@ -1249,7 +1249,6 @@ xor   cx, cx
 
 jmp sector_height_chosen
 fixed_colormap:
-mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT_MASKEDMAPPING
 mov   al, byte ptr ds:[_fixedcolormap]
 mov   byte ptr ds:[_dc_colormap_index], al
 jmp   colormap_set
@@ -1608,7 +1607,6 @@ use_maxlight:
 mov   al, MAXLIGHTSCALE - 1
 get_colormap:
 xor   ah, ah
-mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT_MASKEDMAPPING
 mov   bx, word ptr ds:[_walllights]
 add   bx, ax
 mov   ax, SCALELIGHTFIXED_SEGMENT
@@ -2601,6 +2599,11 @@ db 09Ah
 dw R_SORTVISSPRITES_OFFSET 
 dw DRAWMASKEDFUNCAREA_SPRITE_SEGMENT 
 
+; do this once here and its set for the entirety of drawmasked.
+; alternatively, have a drawcolumnprep masked but i dont think its worth the hundred plus bytes? unless we find other improvements. perhaps alternate call arguments?
+mov      ax, COLFUNC_MASKEDMAPPING_SEGMENT
+mov      es, ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_set_colormaps_segment+1], COLORMAPS_SEGMENT_MASKEDMAPPING
 
 
 ; adjust ds_p to be 7000 based instead of 9000 based due to different masked task mappings.

@@ -222,9 +222,6 @@ mov   bx, word ptr ds:[_dc_yl]
 mov   si, bx
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
 ;SELFMODIFY_COLFUNC_add_destview_offset:
-
-
-
 add   ax, 01000h
 
 ; todo optimize this read
@@ -233,14 +230,14 @@ sub   si, bx                                 ;
 
 
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
-xchg  di, ax
+xchg  ax, di
 mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((COLFUNC_JUMP_OFFSET+1)-R_DrawColumn_)+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
-;SELFMODIFY_set_dc_colormap_segment
-mov   dx, word ptr ds:[_dc_colormap_segment]
+;SELFMODIFY_COLFUNC_set_colormaps_segment
+mov   dx, 01000h
 test  al, al
 jne   skipcolormapzero
 

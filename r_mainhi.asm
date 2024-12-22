@@ -2021,12 +2021,6 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 
-; do once for the whole function here.
-mov   word ptr ds:[_dc_colormap_segment], COLORMAPS_SEGMENT   ; colormap 0
-
-
-
-
 xchg  ax, cx
 mov   ax, word ptr ds:[_rw_x]
 mov   bx, ax
@@ -4344,6 +4338,9 @@ mov      ax, word ptr ss:[_viewangle_shiftright1]
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_1+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_2+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1], ax
+
+;        do this here once and it is set for the entirety of BSP
+mov      word ptr es:[SELFMODIFY_COLFUNC_set_colormaps_segment+1], COLORMAPS_SEGMENT   ; colormap 0
 
 
 ; get whole dword at the end here.

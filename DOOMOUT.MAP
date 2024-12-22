@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/21 19:39:01
+Created on:       24/12/21 20:09:27
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -80,7 +80,7 @@ p_user_TEXT            CODE           AUTO           0b22:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           17a8:0000       0000098e
 r_data_TEXT            CODE           AUTO           17a8:0990       00001c9f
 R_MATH_TEXT            CODE           AUTO           17a8:2630       000001fd
-R_MAINHI_TEXT          CODE           AUTO           17a8:282e       00001919
+R_MAINHI_TEXT          CODE           AUTO           17a8:282e       0000191a
 r_draw_TEXT            CODE           AUTO           17a8:4150       00000379
 r_main_TEXT            CODE           AUTO           17a8:44d0       000001f1
 r_plane_TEXT           CODE           AUTO           17a8:46d0       00000000
@@ -1284,11 +1284,11 @@ Module: r_math.obj(r_math.ASM)
 Module: r_mainhi.obj(r_mainhi.ASM)
 17a8:303b*     R_GetSourceSegment0_
 17a8:30eb*     R_GetSourceSegment1_
-17a8:3636      R_StoreWallRange_
+17a8:3630      R_StoreWallRange_
 17a8:2aef      R_Subsector_
 17a8:28c1*     R_PointToDist_
-17a8:3fed      R_WriteBackViewConstants_
-17a8:4090      R_WriteBackFrameConstants_
+17a8:3fe7      R_WriteBackViewConstants_
+17a8:408a      R_WriteBackFrameConstants_
 17a8:2940      R_ClearPlanes_
 17a8:29bb*     R_HandleEMSPagination_
 17a8:2fce*     R_AddSprites_
@@ -1657,4 +1657,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00024440 (148544.)
 Entry point address: 1ce3:219c
-Link time: 00:00.19
+Link time: 00:00.75

@@ -4,19 +4,19 @@
 #define R_DrawPlanesOffset             0x950
 #define R_DrawFuzzColumnOffset         0x0
 #define R_DrawSingleMaskedColumnOffset 0x135
-#define R_DrawMaskedColumnOffset       0xD96
+#define R_DrawMaskedColumnOffset       0xD90
 #define R_DrawMaskedColumnSpriteOffset 0x0
 #define R_SortVisSpritesOffset         0xEF
 #define R_DrawSkyColumnOffset          0x0
 #define R_DrawSkyPlaneOffset           0x651
 #define R_DrawSkyPlaneDynamicOffset    0x5E0
-#define R_DrawMaskedOffset             0xD38
+#define R_DrawMaskedOffset             0xD26
 #define wipe_StartScreenOffset         0x259
 #define wipe_WipeLoopOffset            0x268
 
-#define R_DrawColumnCodeSize           0xBA0
+#define R_DrawColumnCodeSize           0xB9E
 #define R_DrawSpanCodeSize             0xC2E
-#define R_DrawFuzzColumnCodeSize       0xE85
-#define R_DrawMaskedColumnCodeSize     0x1EA
-#define R_DrawSkyColumnCodeSize        0x6CA
+#define R_DrawFuzzColumnCodeSize       0xE7F
+#define R_DrawMaskedColumnCodeSize     0x1E0
+#define R_DrawSkyColumnCodeSize        0x6CC
 #define WipeCodeSize                   0x31B

@@ -53,7 +53,7 @@ _ds_colormap_index = 				_NULL_OFFSET + 0002Eh
 _fixedcolormap = 					_NULL_OFFSET + 0002Fh
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
 _ds_source_segment = 				_NULL_OFFSET + 0003Eh
-_dc_colormap_segment = 				_NULL_OFFSET + 00040h
+; UNUSED 040
 _dc_colormap_index = 				_NULL_OFFSET + 00042h
 _fuzzpos =							_NULL_OFFSET + 00043h
 _dc_yl = 							_NULL_OFFSET + 00044h
@@ -228,10 +228,11 @@ _getspritetexture_addr =             _NULL_OFFSET + 00304h
 ; locations of things in the first build. So we must HARDCODE (ugh) some instruction
 ; offsets in here. Oh well - it's pretty minimal.
 
-SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift = 			R_DRAWCOLUMNPREPCALLOFFSET +5 +3 +2 +3
-SELFMODIFY_COLFUNC_add_destview_offset =						R_DRAWCOLUMNPREPCALLOFFSET +5 +3 +2 +3 +2+4 +4 +2 +5
-SELFMODIFY_COLFUNC_subtract_centery =                           1+1
-SELFMODIFY_COLFUNC_set_destview_segment =                       1+1+3+2+4+4+2+2+1+2+2+2+2+2+2+2+2+4+4+2+2+2+2
+SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift = 	R_DRAWCOLUMNPREPCALLOFFSET +5 +3 +2 +3
+SELFMODIFY_COLFUNC_add_destview_offset =				SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift +2+4 +4 +2 +5
+SELFMODIFY_COLFUNC_set_colormaps_segment =              SELFMODIFY_COLFUNC_add_destview_offset +3 +4 +2 +2 +1 +3 +4 +3
+SELFMODIFY_COLFUNC_subtract_centery =                   1+1
+SELFMODIFY_COLFUNC_set_destview_segment =               1+1+3+2+4+4+2+2+1+2+2+2+2+2+2+2+2+4+4+2+2+2+2
 
 
 
