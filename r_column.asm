@@ -207,9 +207,8 @@ mov   ax, word ptr ds:[_dc_x]
 
 ; shift ax by (2 - detailshift.)
 ;SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift:
-db 0EBh, 000h
-shr   ax, 1
-shr   ax, 1
+sar   ax, 1
+sar   ax, 1
 
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
@@ -320,9 +319,8 @@ mov   ax, word ptr ds:[_dc_x]
 
 ; shift ax by (2 - detailshift.)
 ;SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift:
-db 0EBh, 000h
-shr   ax, 1
-shr   ax, 1
+sar   ax, 1
+sar   ax, 1
 
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
