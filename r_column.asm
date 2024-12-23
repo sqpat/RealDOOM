@@ -45,7 +45,7 @@ PUBLIC  R_DrawColumn_
 
 ; no need to push anything. outer function just returns and pops
 
-    ; di contains shifted dc_x relative to details
+    ; di contains shifted dc_x relative to detailshift
     ; bx contains dc_yl
 
     cli 									; disable interrupts
@@ -188,6 +188,9 @@ ENDP
 PROC  R_DrawColumnPrep_
 PUBLIC  R_DrawColumnPrep_ 
 
+; si:di is dc_yl, dc_yh
+
+
 ; argument AX is diff for various segment lookups
 
 push  bx
@@ -195,7 +198,6 @@ push  cx
 push  dx
 push  si
 push  di
-
 
 
 ; cant optimize as this is ADD not mov
@@ -213,21 +215,24 @@ sar   ax, 1
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
-; todo optimize this read
-mov   bx, word ptr ds:[_dc_yl]
-mov   si, bx
+; si is dc_yl 
+mov   bx, si
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
 ;SELFMODIFY_COLFUNC_add_destview_offset:
 add   ax, 01000h
 
-; todo optimize this read
-mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
+; todo optimize this bit.
+; di is dc_yh
+mov   si, di
 sub   si, bx                                 ;
-
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
+
 xchg  ax, di
 mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((COLFUNC_JUMP_OFFSET+1)-R_DrawColumn_)+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+; todo change this to just a dynamic call on lookup table based on dc_colormap index.
+
 mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?

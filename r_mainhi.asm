@@ -1758,8 +1758,10 @@ jmp   spritelights_set
 endp
 
 
+; si:di is dc_yl, dc_yh
 
 ;R_GetSourceSegment0_
+
 
 ;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
 
@@ -2531,17 +2533,22 @@ jmp   light_set
 use_max_light:
 mov   si, MAXLIGHTSCALE - 1
 light_set:
-mov   ax, SCALELIGHTFIXED_SEGMENT
-mov   es, ax
-SELFMODIFY_add_wallights:
-mov   al, byte ptr es:[si+01000h]
-mov   byte ptr ds:[_dc_colormap_index], al
-mov   word ptr ds:[_dc_x], di			; rw_x
 mov   ax, 0FFFFh
 cwd
 call FastDiv3232_
 mov   word ptr ds:[_dc_iscale], ax		; todo: write these to code
 mov   word ptr ds:[_dc_iscale + 2], dx  ; todo: write these to code
+
+mov   ax, SCALELIGHTFIXED_SEGMENT
+mov   es, ax
+SELFMODIFY_add_wallights:
+; todo idea: carry code segment in SI, use it to restore when necessary 
+; or what if do this step after the div, and carry over ES as column code segment  to write ahead di/si after pop?
+mov   al, byte ptr es:[si+01000h]
+mov   byte ptr ds:[_dc_colormap_index], al
+mov   word ptr ds:[_dc_x], di			; rw_x
+;     todo put these two values somewhere?
+
 seg_non_textured:
 ; si/di are yh/yl
 ;if (yh >= yl){
@@ -2559,8 +2566,8 @@ mov   dx, cx				; copy texture function argument
 jcxz  no_mid_texture_draw
 cmp   di, si
 jl    mid_no_pixels_to_draw
-mov   word ptr ds:[_dc_yl], si	; todo: write these to code, doubled.
-mov   word ptr ds:[_dc_yh], di  
+
+; si:di are dc_yl, dc_yh
 SELFMODIFY_set_midtexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h    ; todo write these into the code too?
 SELFMODIFY_set_midtexturemid_hi:
@@ -2652,8 +2659,9 @@ cmp   cx, si
 jl    mark_ceiling_si
 cmp   di, si
 jle   mark_ceiling_cx
-mov   word ptr ds:[_dc_yl], si ; todo: store doubled?
-mov   word ptr ds:[_dc_yh], cx
+
+xchg   cx, di
+; si:di are dc_yl, dc_yh
 SELFMODIFY_set_toptexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_toptexturemid_hi:
@@ -2662,6 +2670,7 @@ mov   word ptr ds:[_dc_texturemid + 2], 01000h
 
 
 call  R_GetSourceSegment0_
+xchg   cx, di
 
 
 
@@ -2706,14 +2715,16 @@ cmp   cx, di
 jg    mark_floor_di
 cmp   di, si
 jle   mark_floor_cx
-mov   word ptr ds:[_dc_yl], cx	; todo: store doubled?
-mov   word ptr ds:[_dc_yh], di
+
+xchg   cx, si
+; si:di are dc_yl, dc_yh
 SELFMODIFY_set_bottexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h
 SELFMODIFY_set_bottexturemid_hi:
 mov   word ptr ds:[_dc_texturemid + 2], 01000h
 
 call  R_GetSourceSegment1_
+xchg   cx, si
 
 mark_floor_cx:
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
@@ -3317,6 +3328,7 @@ add       ax, scalelight_offset_in_fixed_scalelight
 
 ; write walllights to rendersegloop
 mov   word ptr cs:[SELFMODIFY_add_wallights+3], ax
+; ? do math here and write this ahead to drawcolumn colormapsindex?
 
 seg_textured_check_done:
 mov       ax, word ptr [bp - 010h]

@@ -229,7 +229,7 @@ _getspritetexture_addr =             _NULL_OFFSET + 00304h
 ; offsets in here. Oh well - it's pretty minimal.
 
 SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift = 	R_DRAWCOLUMNPREPCALLOFFSET +5 +3 +2 +3
-SELFMODIFY_COLFUNC_add_destview_offset =				SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift +4 +4 +2 +5
+SELFMODIFY_COLFUNC_add_destview_offset =				SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift +4 +2 +5
 SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift = R_DRAWCOLUMNPREPMASKEDCALLOFFSET +5 +3 +2 +3
 SELFMODIFY_COLFUNC_m_add_destview_offset =				SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift +4 +4 +2 +5
 
