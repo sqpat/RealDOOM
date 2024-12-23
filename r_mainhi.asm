@@ -2536,8 +2536,12 @@ light_set:
 mov   ax, 0FFFFh
 cwd
 call FastDiv3232_
-mov   word ptr ds:[_dc_iscale], ax		; todo: write these to code
-mov   word ptr ds:[_dc_iscale + 2], dx  ; todo: write these to code
+
+
+
+; do the bit shuffling etc..
+mov   word ptr ds:[_dc_iscale], ax		; todo: write these to code but masked has to as well..
+mov   word ptr ds:[_dc_iscale + 2], dx  
 
 mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
@@ -2545,8 +2549,16 @@ SELFMODIFY_add_wallights:
 ; todo idea: carry code segment in SI, use it to restore when necessary 
 ; or what if do this step after the div, and carry over ES as column code segment  to write ahead di/si after pop?
 mov   al, byte ptr es:[si+01000h]
+; DO SELFMODIFY HERE for dc_x, colormapindex, and dc_iscale!
+mov      bx, COLFUNC_FUNCTION_AREA_SEGMENT
+mov      es, bx
+
+;todo: jump table shenanigans here.
 mov   byte ptr ds:[_dc_colormap_index], al
-mov   word ptr ds:[_dc_x], di			; rw_x
+
+; store dc_x directly in code
+mov   word ptr es:[SELFMODIFY_COLFUNC_get_dc_x+1], di
+
 ;     todo put these two values somewhere?
 
 seg_non_textured:

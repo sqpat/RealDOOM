@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/22 19:59:05
+Created on:       24/12/22 20:23:43
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -80,10 +80,10 @@ p_user_TEXT            CODE           AUTO           0b7d:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           1803:0000       0000098e
 r_data_TEXT            CODE           AUTO           1803:0990       00001c9f
 R_MATH_TEXT            CODE           AUTO           1803:2630       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1803:282e       000019c0
-R_COLUMN_TEXT          CODE           AUTO           1803:41ee       00000bf3
-R_SPAN_TEXT            CODE           AUTO           1803:4de2       00000c1f
-R_SKY_TEXT             CODE           AUTO           1803:5a02       000006c2
+R_MAINHI_TEXT          CODE           AUTO           1803:282e       000019c6
+R_COLUMN_TEXT          CODE           AUTO           1803:41f4       00000bf3
+R_SPAN_TEXT            CODE           AUTO           1803:4de8       00000c1f
+R_SKY_TEXT             CODE           AUTO           1803:5a08       000006c2
 r_draw_TEXT            CODE           AUTO           1803:60d0       00000379
 r_main_TEXT            CODE           AUTO           1803:6450       000001f1
 r_plane_TEXT           CODE           AUTO           1803:6650       00000000
@@ -1293,11 +1293,11 @@ Module: r_math.obj(r_math.ASM)
 Module: r_mainhi.obj(r_mainhi.ASM)
 1803:3035*     R_GetSourceSegment0_
 1803:30e5*     R_GetSourceSegment1_
-1803:361a      R_StoreWallRange_
+1803:3620      R_StoreWallRange_
 1803:2aed      R_Subsector_
 1803:28bf*     R_PointToDist_
-1803:3fc7      R_WriteBackViewConstants_
-1803:4133      R_WriteBackFrameConstants_
+1803:3fcd      R_WriteBackViewConstants_
+1803:4139      R_WriteBackFrameConstants_
 1803:293e      R_ClearPlanes_
 1803:29b9*     R_HandleEMSPagination_
 1803:2fc8*     R_AddSprites_
@@ -1307,21 +1307,21 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 1803:2be3*     R_CheckPlane_
 1803:282e*     R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-1803:41ee      R_DrawColumn_
-1803:4d7f      R_DrawColumnPrepMasked_
-1803:4d23      R_DrawColumnPrep_
+1803:41f4      R_DrawColumn_
+1803:4d85      R_DrawColumnPrepMasked_
+1803:4d29      R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
-1803:4de2      R_DrawSpan_
-1803:5568*     R_FixedMulLocal_
-1803:5484*     R_DrawSpanPrep_
-1803:5724      R_DrawPlanes_
-1803:55a4      R_MapPlane_
-1803:5519*     R_FixedMulTrigLocal_
+1803:4de8      R_DrawSpan_
+1803:556e*     R_FixedMulLocal_
+1803:548a*     R_DrawSpanPrep_
+1803:572a      R_DrawPlanes_
+1803:55aa      R_MapPlane_
+1803:551f*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1803:5a02      R_DrawSkyColumn_
-1803:5bcf*     R_DrawSkyColumnDynamic_
-1803:6053      R_DrawSkyPlane_
-1803:5fe2      R_DrawSkyPlaneDynamic_
+1803:5a08      R_DrawSkyColumn_
+1803:5bd5*     R_DrawSkyColumnDynamic_
+1803:6059      R_DrawSkyPlane_
+1803:5fe8      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1803:60d0      R_FillBackScreen_
 1803:634e      R_VideoErase_
@@ -1735,4 +1735,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028af0 (166640.)
 Entry point address: 202d:2434
-Link time: 00:00.74
+Link time: 00:00.75

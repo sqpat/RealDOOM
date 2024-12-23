@@ -199,15 +199,15 @@ push  dx
 push  si
 push  di
 
-
-; cant optimize as this is ADD not mov
-add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
-mov   es, ax                                 ; store this segment for now, with offset pre-added
+mov   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
+mov   es, ax ; store this segment for now, with offset pre-added
 
 ; todo optimize this read
-mov   ax, word ptr ds:[_dc_x]
+;SELFMODIFY_COLFUNC_get_dc_x:
+mov   ax, 01000h
 
 ; shift ax by (2 - detailshift.)
+; todo: are we benefitted by moving this out into rendersegrange..?
 ;SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift:
 sar   ax, 1
 sar   ax, 1
