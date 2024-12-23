@@ -1637,8 +1637,6 @@ sar   ax, 1
 ; test for detailshift portion
 SELFMODIFY_detailshift_16_bit_jump_1:
 db 0EBh, 000h
-
-
 sar   ax, 1
 shift_xscale_once:
 sar   ax, 1
@@ -3037,8 +3035,6 @@ mov       word ptr cs:[SELFMODIFY_sub_rwscale_hi+4], dx
 
 
 SELFMODIFY_detailshift_32_bit_rotate_jump_1:
-db 0EBh, 000h
-
 shl   ax, 1
 rcl   dx, 1
 shift_rw_scale_once:
@@ -3440,9 +3436,6 @@ mov       word ptr cs:[SELFMODIFY_add_topstep_hi+5], dx
 
 
 SELFMODIFY_detailshift_32_bit_rotate_jump_2:
-db 0EBh, 000h
-
-
 shl       ax, 1
 rcl       dx, 1
 shift_topstep_once:
@@ -3477,7 +3470,6 @@ mov       word ptr cs:[SELFMODIFY_add_botstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_botstep_hi+5], dx
 
 SELFMODIFY_detailshift_32_bit_rotate_jump_3:
-db 0EBh, 000h
 shl       ax, 1
 rcl       dx, 1
 shift_botstep_once:
@@ -3590,7 +3582,6 @@ mov       word ptr cs:[SELFMODIFY_add_pixhighstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_hi+5], dx
 
 SELFMODIFY_detailshift_32_bit_rotate_jump_4:
-db 0EBh, 000h
 shl       ax, 1
 rcl       dx, 1
 shift_pixhighstep_once:
@@ -3660,7 +3651,6 @@ mov       word ptr cs:[SELFMODIFY_add_pixlowstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixlowstep_hi+5], dx
 
 SELFMODIFY_detailshift_32_bit_rotate_jump_5:
-db 0EBh, 000h
 shl       ax, 1
 rcl       dx, 1
 shift_pixlowstep_once:
@@ -4167,12 +4157,15 @@ jmp do_selfmodify_bottexture
 ENDP
 
 
+
+; TODO: externalize this and R_ExecuteSetViewSize and its children to asm, load from binary
+; todo: calculate the values here and dont store to variables.
+
 ;R_WriteBackViewConstants_
 
 PROC R_WriteBackViewConstants_ FAR
 PUBLIC R_WriteBackViewConstants_ 
 
-; todo: calculate the values here and dont store to variables.
 
 ; set ds to cs to make code smaller?
 mov      ax, cs
@@ -4187,6 +4180,49 @@ mov      ax,  word ptr ss:[_detailshift]
 mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+1], ah
 
 ; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
+
+cmp      al, 1
+jb       set_to_zero
+je       set_to_one
+set_to_two:
+; detailshift 2 case. usually involves no shift. in this case - we just jump past the shift code.
+; 0EBh, 002h = jmp 2
+;mov      ax, 002EBh
+;mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1], ax
+; write to colfunc segment
+;mov      word ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift], ax
+;mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift], ax
+
+shl      al, 1
+mov      byte ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
+mov      byte ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+1], al
+mov      byte ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+1], al
+
+
+; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
+; 0EBh, 006h = jmp 6
+
+mov      ax, 006EBh
+
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5], ax
+
+mov      al,  0
+mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+1], al
+mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+1], al
+
+
+jmp      done_modding_shift_detail_code
+set_to_one:
+
+; detailshift 1 case. usually involves one shift pair.
+; in this case - we insert nops (nopish?) code to replace the first shift pair
+
+; 
+
 shl      al, 1
 mov      byte ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
 ; write to colfunc segment
@@ -4195,18 +4231,76 @@ mov      byte ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+1], 
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 
-shl      al, 1
 
-mov      byte ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+1], al
-mov      byte ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+1], al
-mov      byte ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+1], al
-mov      byte ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+1], al
-mov      byte ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+1], al
 
-mov      al,  8
-sub      al,  ah
+; 81 c3 00 00 = add bx, 0000. Not technically a nop, but probably better than two mov ax, ax?
+; 89 c0       = mov ax, ax. two byte nop.
+
+mov      ax, 0c089h
+
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+2], ax
+
+
+mov      al,  4
 mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+1], al
 mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+1], al
+
+
+
+
+jmp      done_modding_shift_detail_code
+set_to_zero:
+
+; detailshift 0 case. usually involves two shift pairs.
+; in this case - we make that first shift a proper shift
+
+shl      al, 1
+mov      byte ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
+; write to colfunc segment
+mov      byte ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+1], al
+mov      byte ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+1], al
+
+; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
+
+; d1 e0 d1 d2   =  shl ax, 1; rcl dx, 1.
+mov      ax, 0e0d1h
+
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+0], ax
+
+mov      ax, 0d2d1h
+
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+2], ax
+
+
+
+mov      al,  8
+mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+1], al
+mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+1], al
+
+
+
+; fall thru
+done_modding_shift_detail_code:
+
+
+
 
 
 

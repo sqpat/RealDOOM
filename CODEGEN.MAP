@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/21 20:52:35
+Created on:       24/12/22 18:53:18
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -57,11 +57,11 @@ Address        Symbol
 Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:1bf0*     _texturecache_nodes
 02cf:1c50*     _spritecache_nodes
-02cf:1ca0*     _anims
-02cf:1d60*     _usedtexturepagemem
-02cf:1d78*     _solidsegs
-02cf:1df8*     _strace
-02cf:1e08*     _dl
+02cf:1ca0*     _usedtexturepagemem
+02cf:1cb8*     _solidsegs
+02cf:1d38*     _strace
+02cf:1d48*     _dl
+02cf:1d58*     _anims
 02cf:1e18*     _trace
 02cf:1e28*     _spechit
 02cf:1e38*     _tmbbox
@@ -162,13 +162,13 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:24e4*     _bmaporgx
 02cf:24e6*     _bmaporgy
 02cf:24e8*     _numlines
-02cf:24ea*     _numnodes
-02cf:24ec*     _pagenum9000
-02cf:24ee*     _bmapheight
-02cf:24f0*     _numsides
-02cf:24f2*     _numlinespecials
-02cf:24f4*     _numvertexes
-02cf:24f6*     _lastanim
+02cf:24ea*     _pagenum9000
+02cf:24ec*     _bmapheight
+02cf:24ee*     _numsides
+02cf:24f0*     _numlinespecials
+02cf:24f2*     _numvertexes
+02cf:24f4*     _lastanim
+02cf:24f6*     _numnodes
 02cf:24f8*     _wadfilefp
 02cf:24fa*     _wadfilefp2
 02cf:24fc*     _numsectors
@@ -177,20 +177,20 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:2502*     _numsegs
 02cf:2504*     _newend
 02cf:2506*     _attackrange16
-02cf:2508*     _la_damage
-02cf:250a*     _ceilinglinenum
-02cf:250c*     _bombsource
-02cf:250e*     _bombdamage
-02cf:2510*     _lastcalculatedsector
-02cf:2512*     _tmdropoffz
-02cf:2514*     _linetarget
-02cf:2516*     _shootthing
-02cf:2518*     _bestslidelinenum
-02cf:251a*     _numspechit
-02cf:251c*     _bombspot
-02cf:251e*     _tmthing
-02cf:2520*     _numbraintargets
-02cf:2522*     _tmfloorz
+02cf:2508*     _ceilinglinenum
+02cf:250a*     _bombsource
+02cf:250c*     _bombdamage
+02cf:250e*     _lastcalculatedsector
+02cf:2510*     _la_damage
+02cf:2512*     _linetarget
+02cf:2514*     _shootthing
+02cf:2516*     _bestslidelinenum
+02cf:2518*     _numspechit
+02cf:251a*     _bombspot
+02cf:251c*     _tmthing
+02cf:251e*     _numbraintargets
+02cf:2520*     _tmfloorz
+02cf:2522*     _tmdropoffz
 02cf:2524*     _tmceilingz
 02cf:2526*     _tmflags1
 02cf:2528*     _corpsehitRef
@@ -279,9 +279,9 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:25ce*     _snd_SBport
 02cf:25d0*     _snd_Mport
 02cf:25d2*     _plrs
-02cf:25db*     _w_title
-02cf:2634*     _w_message
-02cf:279d*     _menu_messageString
+02cf:25db*     _w_message
+02cf:2744*     _menu_messageString
+02cf:27ad*     _w_title
 02cf:2806*     _oldweaponsowned
 02cf:280f*     _wminfo
 02cf:2824*     _player
@@ -300,8 +300,8 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:2895*     _state
 02cf:2896*     _splatRef
 02cf:2897*     _menu_epi
-02cf:2898*     _messageNeedsInput
-02cf:2899*     _finale_laststage
+02cf:2898*     _finale_laststage
+02cf:2899*     _messageNeedsInput
 02cf:289a*     _message_on
 02cf:289b*     _message_dontfuckwithme
 02cf:289c*     _message_counter
@@ -310,44 +310,44 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:289f*     _do_st_refresh
 02cf:28a0*     _st_randomnumber
 02cf:28a1*     _st_statusbaron
-02cf:28a2*     _st_gamestate
-02cf:28a3*     _d_episode
-02cf:28a4*     _secretexit
-02cf:28a5*     _d_skill
-02cf:28a6*     _d_map
-02cf:28a7*     _updatedthisframe
-02cf:28a8*     _st_firsttime
-02cf:28a9*     _savegameslot
-02cf:28aa+     _usemouse
-02cf:28ab+     _mousebforward
-02cf:28ac*     _turnheld
-02cf:28ad+     _mousebstrafe
-02cf:28ae+     _key_speed
-02cf:28af+     _mousebfire
-02cf:28b0+     _key_left
-02cf:28b1+     _key_fire
-02cf:28b2+     _key_strafe
-02cf:28b3+     _key_straferight
-02cf:28b4*     _demoplayback
-02cf:28b5+     _key_up
-02cf:28b6*     _singledemo
-02cf:28b7*     _netdemo
-02cf:28b8+     _key_down
-02cf:28b9+     _key_use
-02cf:28ba+     _key_right
-02cf:28bb+     _key_strafeleft
-02cf:28bc*     _paused
-02cf:28bd*     _viewactive
-02cf:28be*     _timingdemo
-02cf:28bf*     _sendsave
-02cf:28c0*     _gamemap
-02cf:28c1*     _noblit
-02cf:28c2*     _demorecording
-02cf:28c3*     _sendpause
-02cf:28c4*     _usergame
-02cf:28c5*     _borderdrawcount
-02cf:28c6+     _numChannels
-02cf:28c7*     _gameskill
+02cf:28a2*     _d_episode
+02cf:28a3*     _secretexit
+02cf:28a4*     _d_skill
+02cf:28a5*     _d_map
+02cf:28a6*     _updatedthisframe
+02cf:28a7*     _st_firsttime
+02cf:28a8*     _st_gamestate
+02cf:28a9+     _usemouse
+02cf:28aa+     _mousebforward
+02cf:28ab*     _turnheld
+02cf:28ac*     _savegameslot
+02cf:28ad+     _key_speed
+02cf:28ae+     _mousebfire
+02cf:28af+     _key_left
+02cf:28b0+     _key_fire
+02cf:28b1+     _key_strafe
+02cf:28b2+     _key_straferight
+02cf:28b3+     _key_up
+02cf:28b4+     _mousebstrafe
+02cf:28b5*     _singledemo
+02cf:28b6*     _netdemo
+02cf:28b7+     _key_down
+02cf:28b8+     _key_use
+02cf:28b9+     _key_right
+02cf:28ba+     _key_strafeleft
+02cf:28bb*     _paused
+02cf:28bc*     _viewactive
+02cf:28bd*     _timingdemo
+02cf:28be*     _sendsave
+02cf:28bf*     _noblit
+02cf:28c0*     _demoplayback
+02cf:28c1*     _demorecording
+02cf:28c2*     _sendpause
+02cf:28c3*     _usergame
+02cf:28c4*     _borderdrawcount
+02cf:28c5+     _numChannels
+02cf:28c6*     _gameskill
+02cf:28c7*     _gamemap
 02cf:28c8*     _respawnmonsters
 02cf:28c9*     _gamestate
 02cf:28ca*     _gameaction
@@ -794,4 +794,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  6710 (26384.)
 Entry point address: 0000:0426
-Link time: 00:00.10
+Link time: 00:00.09
