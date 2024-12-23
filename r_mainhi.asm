@@ -133,7 +133,6 @@ ADD  DX, BX
 ; dx:ax has num
 
 SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1:
-db 0EBh, 000h
 
 
 ; fall thru do twice
@@ -1478,8 +1477,6 @@ mov   di, word ptr [bp - 2]
 
 
 SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2:
-db 0EBh, 000h
-
 ; fall thru do twice
 shl   ax, 1
 rcl   di, 1
@@ -1636,7 +1633,6 @@ sar   ax, 1
 
 ; test for detailshift portion
 SELFMODIFY_detailshift_16_bit_jump_1:
-db 0EBh, 000h
 sar   ax, 1
 shift_xscale_once:
 sar   ax, 1
@@ -4182,37 +4178,54 @@ mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+1], ah
 ; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
 
 cmp      al, 1
-jb       set_to_zero
+jb       jump_to_set_to_zero
 je       set_to_one
+jmp      set_to_two
+jump_to_set_to_zero:
+jmp      set_to_zero
 set_to_two:
 ; detailshift 2 case. usually involves no shift. in this case - we just jump past the shift code.
-; 0EBh, 002h = jmp 2
-;mov      ax, 002EBh
-;mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1], ax
-; write to colfunc segment
-;mov      word ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift], ax
-;mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift], ax
 
 shl      al, 1
-mov      byte ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
 mov      byte ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+1], al
 mov      byte ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+1], al
+
+; nop 
+mov      ax, 0c089h 
+mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+0],   ax
+mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
+
 
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 ; 0EBh, 006h = jmp 6
 
 mov      ax, 006EBh
-
 mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1], ax
 mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2], ax
 mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3], ax
 mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4], ax
 mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5], ax
 
+
+; d1 e0 d1 d7  = shl ax, 1 rcl di, 1
 mov      al,  0
-mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+1], al
-mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+1], al
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+2], ax
+
+; inverse. do shifts
+; d1 e0 d1 d2  = shl ax, 1; rcl dx, 1
+; d1 e0 d1 d7  = shl ax, 1; rcl di, 1
+mov      ax, 0e0d1h 
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+0], ax
+mov      ax, 0d2d1h 
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+2], ax
+mov      ax, 0d7d1h 
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+2], ax
+
 
 
 jmp      done_modding_shift_detail_code
@@ -4224,12 +4237,18 @@ set_to_one:
 ; 
 
 shl      al, 1
-mov      byte ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
 ; write to colfunc segment
 mov      byte ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+1], al
 mov      byte ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+1], al
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
+
+; d1 f8  = sar ax, 1
+mov      ax, 0f8d1h 
+mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+0], ax
+; nop 
+mov      ax, 0c089h 
+mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
 
 
 
@@ -4249,10 +4268,10 @@ mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+2], ax
 mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+0], ax
 mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+2], ax
 
-
-mov      al,  4
-mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+1], al
-mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+1], al
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+2], ax
 
 
 
@@ -4264,10 +4283,15 @@ set_to_zero:
 ; in this case - we make that first shift a proper shift
 
 shl      al, 1
-mov      byte ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+1], al
 ; write to colfunc segment
 mov      byte ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+1], al
 mov      byte ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+1], al
+
+; d1 f8  = sar ax, 1
+mov      ax, 0f8d1h 
+mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
+
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 
@@ -4290,10 +4314,11 @@ mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+2], ax
 
 
 
-mov      al,  8
-mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+1], al
-mov      byte ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+1], al
 
+; 0EBh, 006h = jmp 6
+mov      ax, 006EBh
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+0], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+0], ax
 
 
 ; fall thru
