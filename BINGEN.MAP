@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/23 13:18:13
+Created on:       24/12/23 19:26:55
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -80,12 +80,12 @@ p_user_TEXT            CODE           AUTO           0b7c:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           1802:0000       0000098e
 r_data_TEXT            CODE           AUTO           1802:0990       00001c9f
 R_MATH_TEXT            CODE           AUTO           1802:2630       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1802:282e       000019f3
-R_COLUMN_TEXT          CODE           AUTO           1802:4222       00000b97
-R_SPAN_TEXT            CODE           AUTO           1802:4dba       00000c1f
-R_SKY_TEXT             CODE           AUTO           1802:59da       000006c2
+R_MAINHI_TEXT          CODE           AUTO           1802:282e       000019f1
+R_COLUMN_TEXT          CODE           AUTO           1802:4220       00000b97
+R_SPAN_TEXT            CODE           AUTO           1802:4db8       00000c1f
+R_SKY_TEXT             CODE           AUTO           1802:59d8       000006c2
 r_draw_TEXT            CODE           AUTO           1802:60a0       00000379
-r_main_TEXT            CODE           AUTO           1802:6420       000001f1
+r_main_TEXT            CODE           AUTO           1802:6420       000001f2
 r_plane_TEXT           CODE           AUTO           1802:6620       00000000
 r_segs_TEXT            CODE           AUTO           1802:6620       00000000
 R_MASKED_TEXT          CODE           AUTO           1802:6620       00000f61
@@ -1291,37 +1291,37 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 Module: r_math.obj(r_math.ASM)
 1802:26a6      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-1802:3069*     R_GetSourceSegment0_
-1802:3118*     R_GetSourceSegment1_
-1802:3652      R_StoreWallRange_
+1802:3067*     R_GetSourceSegment0_
+1802:3116*     R_GetSourceSegment1_
+1802:3650      R_StoreWallRange_
 1802:2aed      R_Subsector_
 1802:28bf*     R_PointToDist_
-1802:3fff      R_WriteBackViewConstants_
-1802:4165      R_WriteBackFrameConstants_
+1802:3ffd      R_WriteBackViewConstants_
+1802:4163      R_WriteBackFrameConstants_
 1802:293e      R_ClearPlanes_
 1802:29b9*     R_HandleEMSPagination_
 1802:2fc8*     R_AddSprites_
 1802:2a6b*     R_FindPlane_
-1802:3035*     R_DrawColumnPrep_
-1802:31ca*     R_RenderSegLoop_
+1802:3033*     R_DrawColumnPrep_
+1802:31c8*     R_RenderSegLoop_
 1802:2cae*     R_ProjectSprite_
 1802:2be3*     R_CheckPlane_
 1802:282e*     R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-1802:4222      R_DrawColumn_
-1802:4d57      R_DrawColumnPrepMasked_
+1802:4220      R_DrawColumn_
+1802:4d55      R_DrawColumnPrepMasked_
 Module: r_span.obj(r_span.ASM)
-1802:4dba      R_DrawSpan_
-1802:5540*     R_FixedMulLocal_
-1802:545c*     R_DrawSpanPrep_
-1802:56fc      R_DrawPlanes_
-1802:557c      R_MapPlane_
-1802:54f1*     R_FixedMulTrigLocal_
+1802:4db8      R_DrawSpan_
+1802:553e*     R_FixedMulLocal_
+1802:545a*     R_DrawSpanPrep_
+1802:56fa      R_DrawPlanes_
+1802:557a      R_MapPlane_
+1802:54ef*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1802:59da      R_DrawSkyColumn_
-1802:5ba7*     R_DrawSkyColumnDynamic_
-1802:602b      R_DrawSkyPlane_
-1802:5fba      R_DrawSkyPlaneDynamic_
+1802:59d8      R_DrawSkyColumn_
+1802:5ba5*     R_DrawSkyColumnDynamic_
+1802:6029      R_DrawSkyPlane_
+1802:5fb8      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1802:60a0      R_FillBackScreen_
 1802:631e      R_VideoErase_

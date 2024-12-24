@@ -261,21 +261,24 @@
 #define lastvisspritepatch2             (*((int16_t __near*)                 (_NULL_OFFSET + 0x029A)))
 #define ds_p                            (*((drawseg_t __far* __near*)        (_NULL_OFFSET + 0x029C)))
 #define lightmult48lookup               (((int16_t __near*)                  (_NULL_OFFSET + 0x02A0)))
-// lookup for what to write to the vga port for read  for fuzzcolumn
-#define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x02C0)))
-#define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x02D8)))
-#define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x02F0)))
-#define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x02F2)))
-
 // more far pointers to functions... once they are in ASM-fixed locations, they should be callable normally
-#define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02F4)))
-#define FixedMul1632_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02F8)))
-#define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02FC)))
-#define R_GetMaskedColumnSegment_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0300)))
-#define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0304)))
+#define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C0)))
+#define FixedMul1632_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C4)))
+#define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
+#define R_GetMaskedColumnSegment_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
+
+#define colfunc_call_table              (((uint32_t  __near*)                (_NULL_OFFSET + 0x02D0)))
+#define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
+#define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358)))
+// lookup for what to write to the vga port for read  for fuzzcolumn
+#define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x0370)))
+
+#define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0388)))
+#define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038A)))
 
 
-#define colfunc_call_table              (((uint32_t  __near*)                (_NULL_OFFSET + 0x03D0)))
+
+
 
 
 

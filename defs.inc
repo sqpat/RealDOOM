@@ -203,20 +203,24 @@ _lastvisspritepatch2 =               _NULL_OFFSET + 0029Ah
 _ds_p =               				 _NULL_OFFSET + 0029Ch
 _lightmult48lookup =                 _NULL_OFFSET + 002A0h
 
-_vga_read_port_lookup =              _NULL_OFFSET + 002C0h
-_psprites =              			 _NULL_OFFSET + 002D8h
-_vissprite_p =                       _NULL_OFFSET + 002F0h
-_cachedbyteheight =                  _NULL_OFFSET + 002F2h
+_FixedMul_addr =               		 _NULL_OFFSET + 002C0h
+_FixedMul1632_addr =                 _NULL_OFFSET + 002C4h
+_FastDiv3232_addr =                  _NULL_OFFSET + 002C8h
+_R_GetMaskedColumnSegment_addr =     _NULL_OFFSET + 002CCh
+
+
+_colfunc_call_lookup =               _NULL_OFFSET + 002D0h
+
+; 354
+_getspritetexture_addr =             _NULL_OFFSET + 00354h
+_psprites =              			 _NULL_OFFSET + 00358h
+_vga_read_port_lookup =              _NULL_OFFSET + 00370h
+_vissprite_p =                       _NULL_OFFSET + 00388h
 ; high byte always 0
-_FixedMul_addr =               		 _NULL_OFFSET + 002F4h
-_FixedMul1632_addr =                 _NULL_OFFSET + 002F8h
-_FastDiv3232_addr =                  _NULL_OFFSET + 002FCh
-_R_GetMaskedColumnSegment_addr =     _NULL_OFFSET + 00300h
-_getspritetexture_addr =             _NULL_OFFSET + 00304h
+_cachedbyteheight =                  _NULL_OFFSET + 0038Ah
 
 
-
-; 308h
+; 38Ch
 
 
 

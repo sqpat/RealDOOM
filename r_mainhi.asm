@@ -1816,8 +1816,8 @@ xchg  ax, bx    ; dc_yl in ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 SELFMODIFY_COLFUNC_set_colormap_index_jump:
-dw 0400h
-; addr 0400 + first byte (4x colormapzero.)
+dw 0300h
+; addr 0300 + first byte (4x colormap.)
 
 
 pop   di 

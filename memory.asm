@@ -122,52 +122,15 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 280
 dw  00, 00, 00, 00, 00, NULL_TEX_COL, 00, NULL_TEX_COL
 dw  00, 00, 0FFFFh, 0FFFFh, 0FFFFh, 0FFFFh, 00, 00
-; 2A0
+; 2A0  _lightmult48lookup
 dw    0,  48,  96, 144, 192, 240, 288, 336
 dw  384, 432, 480, 528, 576, 624, 672, 720
-; 2C0 _vga_read_port_lookup
-dw   4, 260, 516, 772,   4, 516, 4, 516,
-dw 	 4, 4, 4, 4, 0, 0, 0, 0
+; 2C0
 dw  00, 00, 00, 00, 00, 00, 00, 00
 
-;2f0
-dw  00, 00, 00, 00, 00, 00, 00, 00
-;300
-dw  00, 00, 00, 00
 
-dw  00, 00, 00, 00
-
-; 310
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 320
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 330
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 340
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 350
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 360
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 370
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 380
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 390
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 3A0
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 3B0
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 3C0
-dw  00, 00, 00, 00, 00, 00, 00
-
-
-; 3D0
-;#define colfunc_call_table              (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D0)))
-
-; todo drawcolumn func jump table here (00 aligned)
-;400 (null offset + 3D0)
+;#colfunc_call_table 2D0 (300 with null offset added )
+;300 (null offset + 2D0)
 ; colormaps settings...
 dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT + 0000h
 dw DRAWCOL_OFFSET - 00100h,  COLORMAPS_SEGMENT + 0010h
@@ -202,7 +165,15 @@ dw DRAWCOL_OFFSET - 01D00h,  COLORMAPS_SEGMENT + 01D0h
 dw DRAWCOL_OFFSET - 01E00h,  COLORMAPS_SEGMENT + 01E0h
 dw DRAWCOL_OFFSET - 01F00h,  COLORMAPS_SEGMENT + 01F0h
 dw DRAWCOL_OFFSET - 02000h,  COLORMAPS_SEGMENT + 0200h
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+
+; 354
+dw         00, 00, 00, 00, 00, 00
+; 360
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 370 _vga_read_port_lookup
+dw   4, 260, 516, 772,   4, 516, 4, 516,
+dw 	 4, 4, 4, 4, 0, 0, 0, 0
+; 390
 
 ENDS _FIXEDDATA
 
