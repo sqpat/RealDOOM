@@ -890,7 +890,7 @@ void __far D_DoomMain2(void) {
 // 9830
 //  9800
 // 0
-	//I_Error("%lx", colfunc_call_table[0]);
+	//I_Error("%lx", colfunc_masked_call_table[0]);
 
 
 /*

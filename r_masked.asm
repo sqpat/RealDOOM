@@ -214,22 +214,26 @@ add   si, si                                 ; double diff (dc_yh - dc_yl) to ge
 xchg  ax, di
 mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
-mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
+
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
 
 
-
-test  al, al
-jne   skipcolormapzero_m ; todo dumb idea - jump to the other one?
+ 
 
 ; if we make a separate drawcol masked we can use a constant here.
 
 xchg  ax, bx    ; dc_yl in ax
 
-db 09Ah
-dw DRAWCOL_OFFSET
-dw COLORMAPS_SEGMENT_MASKEDMAPPING
+
+; dynamic call lookuptable based on used colormaps address being CS:00
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+SELFMODIFY_COLFUNC_m2l_set_colormap_index_jump:
+dw 0400h
+; addr 0400 + first byte (4x colormap.)
+
 
 pop   di 
 pop   si
@@ -239,41 +243,7 @@ pop   bx
 retf  
 
 
-; if colormap is not zero we must do some segment math
-skipcolormapzero_m:
-mov   cx, DRAWCOL_OFFSET
 
-cbw           ; al is like 0-20 so this will zero out ah...
-xchg   ah, al ; move it high with 0 al.
-sub   cx, ax
- 
- ; todo investigate shift 4 lookup table
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shr   ax, 4
-ELSE
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-ENDIF
- 
-add  ax, COLORMAPS_SEGMENT_MASKEDMAPPING
-
-mov   word ptr ds:[_func_farcall_scratch_addr], cx				; setup dynamic call
-mov   word ptr ds:[_func_farcall_scratch_addr+2], ax
-
-xchg  ax, bx    ; dc_yl in ax
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _func_farcall_scratch_addr
-
-pop   di ; unused but drawcol clobbers it.
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf   
 
 ENDP
 
@@ -394,7 +364,6 @@ jg    exit_function_single
 
 mov   word ptr ds:[_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
 mov   word ptr ds:[_dc_yl], si ;  dc_x could also be trivially recovered from bx
-
 
 ; todo: this can be a second, local version of the function that is specialized?
 call  R_DrawColumnPrepMaskedSingle_
@@ -647,7 +616,15 @@ mov   bp, sp
 mov   si, ax
 
 mov   al, byte ptr [si + 1]
-mov   byte ptr ds:[_dc_colormap_index], al
+;mov   byte ptr ds:[_dc_colormap_index], al
+;2e a2 11 11 
+; al is colormap. this function always uses the high drawcall (for now)
+
+mov   dx, DRAWMASKEDFUNCAREA_SPRITE_SEGMENT
+mov   es, dx
+lea   di, cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump - OFFSET R_DrawMaskedColumn_]
+;mov   byte ptr es:[di], al
+;stosb
 
 ; todo move this out to a higher level! possibly when executesetviewsize happens.
 
@@ -1357,7 +1334,7 @@ xor   cx, cx
 jmp sector_height_chosen
 fixed_colormap:
 mov   al, byte ptr ds:[_fixedcolormap]
-mov   byte ptr ds:[_dc_colormap_index], al
+;mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump], al
 jmp   colormap_set
 
 
@@ -1719,7 +1696,9 @@ add   bx, ax
 mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx]
-mov   byte ptr ds:[_dc_colormap_index], al
+;mov   byte ptr ds:[_dc_colormap_index], al
+;mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump], al
+
 got_colormap:
 mov   ax, 0FFFFh
 mov   dx, ax
@@ -3011,61 +2990,25 @@ xchg  ax, di
 mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
-mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
 
-
-
-test  al, al
-jne   skipcolormapzero_m2 ; todo dumb idea - jump to the other one?
 
 ; if we make a separate drawcol masked we can use a constant here.
 
 xchg  ax, bx    ; dc_yl in ax
 
-db 09Ah
-dw DRAWCOL_OFFSET
-dw COLORMAPS_SEGMENT_MASKEDMAPPING
 
-pop   di 
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
-
-
-; if colormap is not zero we must do some segment math
-skipcolormapzero_m2:
-mov   cx, DRAWCOL_OFFSET
-
-cbw           ; al is like 0-20 so this will zero out ah...
-xchg   ah, al ; move it high with 0 al.
-sub   cx, ax
- 
- ; todo investigate shift 4 lookup table
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shr   ax, 4
-ELSE
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-ENDIF
- 
-add  ax, COLORMAPS_SEGMENT_MASKEDMAPPING
-
-mov   word ptr ds:[_func_farcall_scratch_addr], cx				; setup dynamic call
-mov   word ptr ds:[_func_farcall_scratch_addr+2], ax
-
-xchg  ax, bx    ; dc_yl in ax
+; dynamic call lookuptable based on used colormaps address being CS:00
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _func_farcall_scratch_addr
+SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump:
+dw 0400h
+; addr 0400 + first byte (4x colormap.)
 
-pop   di ; unused but drawcol clobbers it.
+
+pop   di 
 pop   si
 pop   dx
 pop   cx

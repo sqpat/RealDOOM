@@ -276,6 +276,7 @@
 #define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0388)))
 #define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038A)))
 
+#define colfunc_masked_call_table       (((uint32_t  __near*)                (_NULL_OFFSET + 0x03D0)))
 
 
 
