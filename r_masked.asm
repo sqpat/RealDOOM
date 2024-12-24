@@ -560,9 +560,9 @@ mov   bx, 0
 
 ;call _R_DrawFuzzColumnCallHigh
 
-db 09Ah
-dw R_DRAWFUZZCOLUMNOFFSET
-dw DRAWFUZZCOL_AREA_SEGMENT
+; todo - fix cs/colormaps offset data?
+call R_DrawFuzzColumn_
+
 
 
 do_next_shadow_sprite_iteration:
@@ -620,11 +620,9 @@ mov   al, byte ptr [si + 1]
 ;2e a2 11 11 
 ; al is colormap. this function always uses the high drawcall (for now)
 
-mov   dx, DRAWMASKEDFUNCAREA_SPRITE_SEGMENT
-mov   es, dx
-lea   di, cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump - OFFSET R_DrawMaskedColumn_]
-;mov   byte ptr es:[di], al
-;stosb
+sal   al, 1
+sal   al, 1
+mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 ; todo move this out to a higher level! possibly when executesetviewsize happens.
 
@@ -872,9 +870,7 @@ add   ax, cx
 ; so is ES
 
 ; call R_DrawMaskedColumnCallHigh
-db 09Ah
-dw R_DRAWMASKEDCOLUMNSPRITEOFFSET
-dw DRAWMASKEDFUNCAREA_SPRITE_SEGMENT
+call R_DrawMaskedColumn_
 
 SELFMODIFY_detailshiftitercount2:
 add   word ptr ds:[_dc_x], 0
@@ -1334,7 +1330,9 @@ xor   cx, cx
 jmp sector_height_chosen
 fixed_colormap:
 mov   al, byte ptr ds:[_fixedcolormap]
-;mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump], al
+sal   al, 1
+sal   al, 1
+mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 jmp   colormap_set
 
 
@@ -1697,7 +1695,9 @@ mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx]
 ;mov   byte ptr ds:[_dc_colormap_index], al
-;mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump], al
+sal   al, 1
+sal   al, 1
+mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 got_colormap:
 mov   ax, 0FFFFh
@@ -1780,9 +1780,7 @@ mov   bx, word ptr es:[bx+08000h]
 mov   cx, MASKEDPOSTDATA_SEGMENT
 ;call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
 
-db 09Ah
-dw R_DRAWMASKEDCOLUMNOFFSET
-dw DRAWFUZZCOL_AREA_SEGMENT
+call R_DrawMaskedColumn_
 
 jmp   update_maskedtexturecol_finish_loop_iter
 
@@ -1844,10 +1842,8 @@ mul   byte ptr ds:[_maskedheightvalcache]
 add   ax, word ptr ds:[_maskedcachedsegment]
 
 mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
-;call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
-db 09Ah
-dw R_DRAWSINGLEMASKEDCOLUMNOFFSET
-dw DRAWFUZZCOL_AREA_SEGMENT
+
+call R_DrawSingleMaskedColumn_
 
 jmp   update_maskedtexturecol_finish_loop_iter
 
@@ -1906,10 +1902,8 @@ SELFMODIFY_maskedpostofs:
 mov   bx, word ptr es:[bx+08000h]
 mov   cx, MASKEDPOSTDATA_SEGMENT
 ;call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
-db 09Ah
-dw R_DRAWMASKEDCOLUMNOFFSET
-dw DRAWFUZZCOL_AREA_SEGMENT
 
+call R_DrawMaskedColumn_
 
 jmp   update_maskedtexturecol_finish_loop_iter
 
@@ -1953,9 +1947,8 @@ add   ax, word ptr ds:[_maskedcachedsegment]
 
 mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 ;call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
-db 09Ah
-dw R_DRAWSINGLEMASKEDCOLUMNOFFSET
-dw DRAWFUZZCOL_AREA_SEGMENT
+
+call R_DrawSingleMaskedColumn_
 jmp   update_maskedtexturecol_finish_loop_iter
 
 load_masked_column_segment:
@@ -1971,9 +1964,7 @@ mov   di, word ptr ds:[_maskedcachedbasecol]
 mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 
 ; call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
-db 09Ah
-dw R_DRAWSINGLEMASKEDCOLUMNOFFSET
-dw DRAWFUZZCOL_AREA_SEGMENT
+call R_DrawSingleMaskedColumn_
 
 
 jmp   update_maskedtexturecol_finish_loop_iter
@@ -2667,7 +2658,6 @@ jmp   iterate_next_drawseg_loop
 
 ENDP
 
-R_SORTVISSPRITES_OFFSET = OFFSET R_SortVisSprites_ - OFFSET R_DrawMaskedColumn_
 VISSPRITE_SORTED_HEAD_INDEX = 0FEh
 
 PROC R_DrawMasked_ FAR
@@ -2679,12 +2669,7 @@ push dx
 push si
 push di
 
-;call R_SortVisSprites_
-
-db 09Ah
-dw R_SORTVISSPRITES_OFFSET 
-dw DRAWMASKEDFUNCAREA_SPRITE_SEGMENT 
-
+call R_SortVisSprites_
 
 
 ; adjust ds_p to be 7000 based instead of 9000 based due to different masked task mappings.
@@ -2736,6 +2721,7 @@ sub  di, SIZEOF_DRAWSEG_T
 ja   check_next_seg
 done_rendering_masked_segranges:
 call R_DrawPlayerSprites_
+exit_draw_masked:
 pop  di
 pop  si
 pop  dx
@@ -2756,7 +2742,7 @@ ENDP
 ; R_DrawMaskedColumn
 ;
 	
-PROC  R_DrawMaskedColumn_ FAR
+PROC  R_DrawMaskedColumn_ NEAR
 PUBLIC  R_DrawMaskedColumn_ 
 
 ;  bp - 02 cx/maskedcolumn segment
@@ -2939,7 +2925,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-retf
+ret
 
 
 ENDP
@@ -3013,7 +2999,7 @@ pop   si
 pop   dx
 pop   cx
 pop   bx
-retf   
+ret
 
 ENDP
 
@@ -3022,7 +3008,7 @@ VISSPRITE_SORTED_HEAD_INDEX = 0FEh
 
 ; note: selfmodifies in this are based off R_DrawMaskedColumn_ as 0
 
-PROC R_SortVisSprites_ FAR
+PROC R_SortVisSprites_ NEAR
 PUBLIC R_SortVisSprites_
 
 ; bp - 2     vsprsortedheadfirst ?
@@ -3035,7 +3021,7 @@ PUBLIC R_SortVisSprites_
 mov       ax, word ptr ds:[_vissprite_p]
 test      ax, ax
 jne       count_not_zero
-retf
+ret
 
 
 count_not_zero:
@@ -3048,7 +3034,7 @@ push      bp
 mov       bp, sp
 sub       sp, 034h				; let's set things up finally isnce we're not quick-exiting out
 
-mov       byte ptr cs:[SELFMODIFY_loop_compare_instruction+1 - OFFSET R_DrawMaskedColumn_], al ; store count
+mov       byte ptr cs:[SELFMODIFY_loop_compare_instruction+1 - OFFSET R_DrawFuzzColumn_], al ; store count
 mov       dx, ax
 mov       cx, 014h
 lea       di, [bp - 034h]
@@ -3073,7 +3059,7 @@ jl        loop_set_vissprite_next
 done_setting_vissprite_next:
 
 sub        bx, SIZEOF_VISSPRITE_T
-mov       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawMaskedColumn_], 0  ; zero loop counter
+mov       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawFuzzColumn_], 0  ; zero loop counter
 
 mov       al, VISSPRITE_SORTED_HEAD_INDEX
 
@@ -3085,7 +3071,7 @@ jle       exit_sort_vissprites
 
 loop_visplane_sort:
 
-inc       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawMaskedColumn_] ; update loop counter
+inc       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawFuzzColumn_] ; update loop counter
 
 ;DI:CX is bestscale
 ;        bestscale = MAXLONG;
@@ -3161,7 +3147,7 @@ pop       si
 pop       dx
 pop       cx
 pop       bx
-retf       
+ret       
 
 done_with_find_best_index_loop:
 

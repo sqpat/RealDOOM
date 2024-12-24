@@ -92,7 +92,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)R_DrawSpan, codesize2, 1, fp);
 
     // DrawFuzzColumn thru R_DrawColumnPrepMaskedMulti
-    codesize3 = FP_OFF(R_SortVisSprites) - FP_OFF(R_DrawFuzzColumn);
+    codesize3 = FP_OFF(locallib_far_fread) - FP_OFF(R_DrawFuzzColumn);
     
     // write filesize..
     fwrite(&codesize3, 2, 1, fp);
@@ -100,11 +100,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)R_DrawFuzzColumn, codesize3, 1, fp);
 
     // This func gets loaded in two spots... R_DrawMaskedColumn thru end
-    codesize4 = FP_OFF(locallib_far_fread) - FP_OFF(R_DrawMaskedColumn);
+    //codesize4 = FP_OFF(locallib_far_fread) - FP_OFF(R_DrawMaskedColumn);
+    //codesize4 = 0;
     // write filesize..
-    fwrite(&codesize4, 2, 1, fp);
+    //fwrite(&codesize4, 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_DrawMaskedColumn, codesize4, 1, fp); 
+    //FAR_fwrite((byte __far *)R_DrawMaskedColumn, codesize4, 1, fp); 
 
 
     codesize5 = FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSkyColumn);
@@ -128,7 +129,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawColumnPrepMaskedSingleOffset  0x%X\n", FP_OFF(R_DrawColumnPrepMaskedSingle)   - FP_OFF(R_DrawFuzzColumn));
 	// not the offset within the 2nd segment but the first. used for selfmodify..
     fprintf(fp, "#define R_DrawColumnPrepMaskedMultiLoOffset 0x%X\n", FP_OFF(R_DrawColumnPrepMaskedMulti)    - FP_OFF(R_DrawFuzzColumn));
-    fprintf(fp, "#define R_DrawColumnPrepMaskedMultiHiOffset 0x%X\n", FP_OFF(R_DrawColumnPrepMaskedMulti)    - FP_OFF(R_DrawMaskedColumn));
+    fprintf(fp, "#define R_DrawColumnPrepMaskedMultiHiOffset 0x%X\n", FP_OFF(R_DrawColumnPrepMaskedMulti)    - FP_OFF(R_DrawFuzzColumn));
     fprintf(fp, "#define R_MapPlaneOffset                    0x%X\n", FP_OFF(R_MapPlane)                     - FP_OFF(R_DrawSpan));
 	fprintf(fp, "#define R_DrawPlanesOffset                  0x%X\n", FP_OFF(R_DrawPlanes)                   - FP_OFF(R_DrawSpan));
     fprintf(fp, "#define R_DrawFuzzColumnOffset              0x%X\n", FP_OFF(R_DrawFuzzColumn)               - FP_OFF(R_DrawFuzzColumn));
@@ -136,8 +137,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 // todo most of these are no longer used..
 	fprintf(fp, "#define R_DrawSingleMaskedColumnOffset      0x%X\n", FP_OFF(R_DrawSingleMaskedColumn)       - FP_OFF(R_DrawFuzzColumn));
 	fprintf(fp, "#define R_DrawMaskedColumnOffset            0x%X\n", FP_OFF(R_DrawMaskedColumn)             - FP_OFF(R_DrawFuzzColumn));
-	fprintf(fp, "#define R_DrawMaskedColumnSpriteOffset      0x%X\n", FP_OFF(R_DrawMaskedColumn)             - FP_OFF(R_DrawMaskedColumn));
-	fprintf(fp, "#define R_SortVisSpritesOffset              0x%X\n", FP_OFF(R_SortVisSprites)               - FP_OFF(R_DrawMaskedColumn));
+	fprintf(fp, "#define R_SortVisSpritesOffset              0x%X\n", FP_OFF(R_SortVisSprites)               - FP_OFF(R_DrawFuzzColumn));
 	fprintf(fp, "#define R_DrawSkyColumnOffset               0x%X\n", FP_OFF(R_DrawSkyColumn)                - FP_OFF(R_DrawSkyColumn));
 	fprintf(fp, "#define R_DrawSkyPlaneOffset                0x%X\n", FP_OFF(R_DrawSkyPlane)                 - FP_OFF(R_DrawSkyColumn));
 	fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset         0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)          - FP_OFF(R_DrawSkyColumn));
@@ -152,7 +152,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawColumnCodeSize           0x%X\n", codesize1);
     fprintf(fp, "#define R_DrawSpanCodeSize             0x%X\n", codesize2);
 	fprintf(fp, "#define R_DrawFuzzColumnCodeSize       0x%X\n", codesize3);
-	fprintf(fp, "#define R_DrawMaskedColumnCodeSize     0x%X\n", codesize4);
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize5);
 	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize6);
 

@@ -4577,7 +4577,7 @@ PUBLIC R_WriteBackViewConstantsMasked_
 
 
 ; set ds to cs to make code smaller?
-mov      ax, DRAWMASKEDFUNCAREA_SPRITE_SEGMENT
+mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      ds, ax
 
 mov      ax, DRAWFUZZCOL_AREA_SEGMENT
@@ -4686,9 +4686,6 @@ mov      es, ax
 mov      ax, word ptr ds:[_destview]
 mov      word ptr es:[SELFMODIFY_COLFUNC_m_add_destview_offset+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_m2l_add_destview_offset+1], ax
-mov      ax, DRAWMASKEDFUNCAREA_SPRITE_SEGMENT
-mov      es, ax
-mov      ax, word ptr ds:[_destview]
 mov      word ptr es:[SELFMODIFY_COLFUNC_m2h_add_destview_offset+1], ax
 
 

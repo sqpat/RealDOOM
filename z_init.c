@@ -492,8 +492,8 @@ void __near Z_LoadBinaries() {
 	FAR_fread(drawfuzzcol_area, codesize, 1, fp2);
 	
 
-	fread(&codesize, 2, 1, fp2);
-	FAR_fread(drawmaskedfuncarea_sprite, codesize, 1, fp2);
+	//fread(&codesize, 2, 1, fp2);
+	//FAR_fread(drawmaskedfuncarea_sprite, codesize, 1, fp2);
 
 /*
 	{

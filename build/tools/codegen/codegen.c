@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 142
+#define CONSTANTS_COUNT 140
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -158,8 +158,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT",
     "SIZEOF_VISSPRITE_T",
     "R_DRAWMASKEDCOLUMNOFFSET",
-    "DRAWMASKEDFUNCAREA_SPRITE_SEGMENT",
-    "R_DRAWMASKEDCOLUMNSPRITEOFFSET",
     "R_DRAWSINGLEMASKEDCOLUMNOFFSET",
     "R_DRAWFUZZCOLUMNOFFSET",
     "SIZEOF_DRAWSEG_T",
@@ -326,8 +324,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     floorclip_paragraph_aligned_segment,
     sizeof(vissprite_t),
     R_DrawMaskedColumnOffset,
-    drawmaskedfuncarea_sprite_segment,
-    R_DrawMaskedColumnSpriteOffset,
     R_DrawSingleMaskedColumnOffset,
     R_DrawFuzzColumnOffset,
     sizeof(drawseg_t),
