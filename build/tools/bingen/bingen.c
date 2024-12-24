@@ -25,6 +25,8 @@
 void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
 void __far R_DrawColumn (void);
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
+void __far R_DrawColumnPrepMaskedSingle();
+void __far R_DrawColumnPrepMaskedMulti();
 void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
 void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
 void __far R_DrawSkyPlaneDynamic(int16_t minx, int16_t maxx, visplane_t __far*		pl);
@@ -89,7 +91,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // write data
     FAR_fwrite((byte __far *)R_DrawSpan, codesize2, 1, fp);
 
-    // DrawFuzzColumn thru R_DrawMaskedColumn
+    // DrawFuzzColumn thru R_DrawColumnPrepMaskedMulti
     codesize3 = FP_OFF(R_SortVisSprites) - FP_OFF(R_DrawFuzzColumn);
     
     // write filesize..
@@ -122,22 +124,26 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     printf("Generated doomcode.bin file\n");
 
     fp = fopen("m_offsets.h", "wb");
-	fprintf(fp, "#define R_DrawColumnOffset             0x%X\n", FP_OFF(R_DrawColumn)             - FP_OFF(R_DrawColumn));
-	fprintf(fp, "#define R_DrawColumnPrepMaskedOffset   0x%X\n", FP_OFF(R_DrawColumnPrepMasked)   - FP_OFF(R_DrawColumn));
-    fprintf(fp, "#define R_MapPlaneOffset               0x%X\n", FP_OFF(R_MapPlane)               - FP_OFF(R_DrawSpan));
-	fprintf(fp, "#define R_DrawPlanesOffset             0x%X\n", FP_OFF(R_DrawPlanes)             - FP_OFF(R_DrawSpan));
-    fprintf(fp, "#define R_DrawFuzzColumnOffset         0x%X\n", FP_OFF(R_DrawFuzzColumn)         - FP_OFF(R_DrawFuzzColumn));
+	fprintf(fp, "#define R_DrawColumnOffset                  0x%X\n", FP_OFF(R_DrawColumn)                   - FP_OFF(R_DrawColumn));
+	fprintf(fp, "#define R_DrawColumnPrepMaskedSingleOffset  0x%X\n", FP_OFF(R_DrawColumnPrepMaskedSingle)   - FP_OFF(R_DrawFuzzColumn));
+	// not the offset within the 2nd segment but the first. used for selfmodify..
+    fprintf(fp, "#define R_DrawColumnPrepMaskedMultiLoOffset 0x%X\n", FP_OFF(R_DrawColumnPrepMaskedMulti)    - FP_OFF(R_DrawFuzzColumn));
+    fprintf(fp, "#define R_DrawColumnPrepMaskedMultiHiOffset 0x%X\n", FP_OFF(R_DrawColumnPrepMaskedMulti)    - FP_OFF(R_DrawMaskedColumn));
+    fprintf(fp, "#define R_MapPlaneOffset                    0x%X\n", FP_OFF(R_MapPlane)                     - FP_OFF(R_DrawSpan));
+	fprintf(fp, "#define R_DrawPlanesOffset                  0x%X\n", FP_OFF(R_DrawPlanes)                   - FP_OFF(R_DrawSpan));
+    fprintf(fp, "#define R_DrawFuzzColumnOffset              0x%X\n", FP_OFF(R_DrawFuzzColumn)               - FP_OFF(R_DrawFuzzColumn));
+
 // todo most of these are no longer used..
-	fprintf(fp, "#define R_DrawSingleMaskedColumnOffset 0x%X\n", FP_OFF(R_DrawSingleMaskedColumn) - FP_OFF(R_DrawFuzzColumn));
-	fprintf(fp, "#define R_DrawMaskedColumnOffset       0x%X\n", FP_OFF(R_DrawMaskedColumn)       - FP_OFF(R_DrawFuzzColumn));
-	fprintf(fp, "#define R_DrawMaskedColumnSpriteOffset 0x%X\n", FP_OFF(R_DrawMaskedColumn)       - FP_OFF(R_DrawMaskedColumn));
-	fprintf(fp, "#define R_SortVisSpritesOffset         0x%X\n", FP_OFF(R_SortVisSprites)         - FP_OFF(R_DrawMaskedColumn));
-	fprintf(fp, "#define R_DrawSkyColumnOffset          0x%X\n", FP_OFF(R_DrawSkyColumn)          - FP_OFF(R_DrawSkyColumn));
-	fprintf(fp, "#define R_DrawSkyPlaneOffset           0x%X\n", FP_OFF(R_DrawSkyPlane)           - FP_OFF(R_DrawSkyColumn));
-	fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset    0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)    - FP_OFF(R_DrawSkyColumn));
-	fprintf(fp, "#define R_DrawMaskedOffset             0x%X\n", FP_OFF(R_DrawMasked)             - FP_OFF(R_DrawFuzzColumn));
-	fprintf(fp, "#define wipe_StartScreenOffset         0x%X\n", FP_OFF(wipe_StartScreen)         - FP_OFF(I_ReadScreen));
-	fprintf(fp, "#define wipe_WipeLoopOffset            0x%X\n", FP_OFF(wipe_WipeLoop)            - FP_OFF(I_ReadScreen));
+	fprintf(fp, "#define R_DrawSingleMaskedColumnOffset      0x%X\n", FP_OFF(R_DrawSingleMaskedColumn)       - FP_OFF(R_DrawFuzzColumn));
+	fprintf(fp, "#define R_DrawMaskedColumnOffset            0x%X\n", FP_OFF(R_DrawMaskedColumn)             - FP_OFF(R_DrawFuzzColumn));
+	fprintf(fp, "#define R_DrawMaskedColumnSpriteOffset      0x%X\n", FP_OFF(R_DrawMaskedColumn)             - FP_OFF(R_DrawMaskedColumn));
+	fprintf(fp, "#define R_SortVisSpritesOffset              0x%X\n", FP_OFF(R_SortVisSprites)               - FP_OFF(R_DrawMaskedColumn));
+	fprintf(fp, "#define R_DrawSkyColumnOffset               0x%X\n", FP_OFF(R_DrawSkyColumn)                - FP_OFF(R_DrawSkyColumn));
+	fprintf(fp, "#define R_DrawSkyPlaneOffset                0x%X\n", FP_OFF(R_DrawSkyPlane)                 - FP_OFF(R_DrawSkyColumn));
+	fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset         0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)          - FP_OFF(R_DrawSkyColumn));
+	fprintf(fp, "#define R_DrawMaskedOffset                  0x%X\n", FP_OFF(R_DrawMasked)                   - FP_OFF(R_DrawFuzzColumn));
+	fprintf(fp, "#define wipe_StartScreenOffset              0x%X\n", FP_OFF(wipe_StartScreen)               - FP_OFF(I_ReadScreen));
+	fprintf(fp, "#define wipe_WipeLoopOffset                 0x%X\n", FP_OFF(wipe_WipeLoop)                  - FP_OFF(I_ReadScreen));
 
 
 

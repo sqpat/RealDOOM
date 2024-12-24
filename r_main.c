@@ -519,6 +519,7 @@ void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
 
 
 void __near  R_WriteBackFrameConstants();
+void __near  R_WriteBackMaskedFrameConstants();
 
 //
 // R_SetupFrame
@@ -675,7 +676,18 @@ void __far R_RenderPlayerView () {
 		fclose(fp2);
 		//I_Error("done");
 
-	}*/
+	}
+	I_Error("%lx %lx %lx\n %x %x %x", 
+	MK_FP(drawfuzzcol_area_segment, R_DrawColumnPrepMaskedSingleOffset),
+	MK_FP(drawfuzzcol_area_segment, R_DrawColumnPrepMaskedMultiLoOffset),
+	MK_FP(drawmaskedfuncarea_sprite_segment, R_DrawColumnPrepMaskedMultiHiOffset),
+	((int16_t __far*)MK_FP(drawfuzzcol_area_segment, R_DrawColumnPrepMaskedSingleOffset+5 +3 +2 +3+1+4 +4 +2 +5))[0],
+	((int16_t __far*)MK_FP(drawfuzzcol_area_segment, R_DrawColumnPrepMaskedMultiLoOffset+5 +3 +2 +3+1+4 +4 +2 +5))[0],
+	((int16_t __far*)MK_FP(drawmaskedfuncarea_sprite_segment, R_DrawColumnPrepMaskedMultiHiOffset+5 +3 +2 +3+1+4 +4 +2 +5))[0]
+
+	);
+	*/
+	R_WriteBackMaskedFrameConstants();
 
 	R_DrawMaskedCall ();
 #ifdef DETAILED_BENCH_STATS

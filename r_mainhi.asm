@@ -4262,8 +4262,6 @@ PUBLIC R_WriteBackViewConstants_
 mov      ax, cs
 mov      ds, ax
 
-mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
-mov      es, ax
 
 ASSUME DS:R_MAINHI_TEXT
 
@@ -4290,8 +4288,6 @@ mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
 mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+0], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+2], ax
 
 
 
@@ -4340,14 +4336,12 @@ mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+0], ax
 
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+0], ax
 
 ; nop 
 mov      ax, 0c089h 
 mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+2], ax
 
 
 
@@ -4386,8 +4380,6 @@ mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
 mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+0], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+2], ax
 
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
@@ -4448,6 +4440,9 @@ mov      word ptr ds:[SELF_MODIFY_set_centerx_4+1], ax
 mov      word ptr ds:[SELF_MODIFY_set_centerx_5+1], ax
 mov      word ptr ds:[SELF_MODIFY_set_centerx_6+2], ax
 
+mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
+mov      es, ax
+
 ; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centery]
 mov      word ptr es:[SELFMODIFY_COLFUNC_subtract_centery+1], ax
@@ -4486,7 +4481,8 @@ PUBLIC R_WriteBackFrameConstants_
 ; set ds to cs to make code smaller?
 mov      ax, cs
 mov      ds, ax
-mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
+
+mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      es, ax
 
 ASSUME DS:R_MAINHI_TEXT
@@ -4554,15 +4550,148 @@ mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1], ax
 ; get whole dword at the end here.
 mov      ax, word ptr ss:[_destview]
 mov      word ptr ds:[SELFMODIFY_COLFUNC_add_destview_offset+1], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_m_add_destview_offset+1], ax
-mov      ax, word ptr ss:[_destview+2]
+
+mov      ax, ss
+mov      ds, ax
+
+mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
+mov      es, ax
+mov      ax, word ptr ds:[_destview+2]
 mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segment+1], ax
+
+
+
+ASSUME DS:DGROUP
+
+
+ret
+
+ENDP
+
+
+;R_WriteBackViewConstantsMasked
+
+PROC R_WriteBackViewConstantsMasked_ FAR
+PUBLIC R_WriteBackViewConstantsMasked_ 
+
+
+
+; set ds to cs to make code smaller?
+mov      ax, DRAWMASKEDFUNCAREA_SPRITE_SEGMENT
+mov      ds, ax
+
+mov      ax, DRAWFUZZCOL_AREA_SEGMENT
+mov      es, ax
+
+
+mov      ax,  word ptr ss:[_detailshift]
+
+; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
+
+cmp      al, 1
+jb       set_to_zero_masked
+je       set_to_one_masked
+
+; detailshift 2 case. usually involves no shift. in this case - we just jump past the shift code.
+
+; nop 
+mov      ax, 0c089h 
+
+; write to colfunc segment
+mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_m2l_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_m2l_detailshift_2_minus_16_bit_shift+2], ax
+
+mov      word ptr ds:[SELFMODIFY_COLFUNC_m2h_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_m2h_detailshift_2_minus_16_bit_shift+2], ax
+
+
+
+; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
+; 0EBh, 006h = jmp 6
+
+
+
+jmp      done_modding_shift_detail_code_masked
+set_to_one_masked:
+
+; detailshift 1 case. usually involves one shift pair.
+; in this case - we insert nops (nopish?) code to replace the first shift pair
+
+; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
+
+; d1 f8  = sar ax, 1
+mov      ax, 0f8d1h 
+
+; write to colfunc segment
+mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_m2l_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_m2h_detailshift_2_minus_16_bit_shift+0], ax
+
+; nop 
+mov      ax, 0c089h 
+mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_m2l_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_m2h_detailshift_2_minus_16_bit_shift+2], ax
+
+
+
+; 81 c3 00 00 = add bx, 0000. Not technically a nop, but probably better than two mov ax, ax?
+; 89 c0       = mov ax, ax. two byte nop.
+
+jmp      done_modding_shift_detail_code_masked
+set_to_zero_masked:
+
+; detailshift 0 case. usually involves two shift pairs.
+; in this case - we make that first shift a proper shift
+
+; d1 f8  = sar ax, 1
+mov      ax, 0f8d1h 
+
+; write to colfunc segment
+mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_m2l_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_m2l_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_m2h_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_m2h_detailshift_2_minus_16_bit_shift+2], ax
+
+
+; fall thru
+done_modding_shift_detail_code_masked:
 
 
 mov      ax, ss
 mov      ds, ax
 
-ASSUME DS:DGROUP
+
+retf
+
+
+
+ENDP
+
+;R_WriteBackMaskedFrameConstants
+
+PROC R_WriteBackMaskedFrameConstants_ NEAR
+PUBLIC R_WriteBackMaskedFrameConstants_ 
+
+; todo: merge this with some other code. maybe R_DrawMasked and use CS
+
+mov      ax, DRAWFUZZCOL_AREA_SEGMENT
+mov      es, ax
+
+; get whole dword at the end here.
+mov      ax, word ptr ds:[_destview]
+mov      word ptr es:[SELFMODIFY_COLFUNC_m_add_destview_offset+1], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_m2l_add_destview_offset+1], ax
+mov      ax, DRAWMASKEDFUNCAREA_SPRITE_SEGMENT
+mov      es, ax
+mov      ax, word ptr ds:[_destview]
+mov      word ptr es:[SELFMODIFY_COLFUNC_m2h_add_destview_offset+1], ax
+
+
 
 
 ret

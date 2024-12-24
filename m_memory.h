@@ -591,10 +591,9 @@ FREEBYTES           7EE0:0000
 
 #define maskedpostdata             ((byte __far*)              (0x84000000 ))
 
-#define drawmaskedfuncarea_sprite    ((byte __far*)           MAKE_FULL_SEGMENT(maskedpostdata, size_maskedpostdata))
+#define drawmaskedfuncarea_sprite    ((byte __far*)            MAKE_FULL_SEGMENT(maskedpostdata,            size_maskedpostdata))
+#define render_8400_end              ((byte __far*)            MAKE_FULL_SEGMENT(drawmaskedfuncarea_sprite, size_drawmaskedfuncarea_sprite)) 
 // drawmaskedfuncarea_sprite_segment = 86fd..
-#define drawmaskedfuncarea_sprite_segment   ((segment_t) ((int32_t)drawmaskedfuncarea_sprite >> 16))
-
 
 #define spritepostdatasizes        ((uint16_t __far*)          (0x88000000 ))
 #define spritetotaldatasizes       ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,  size_spritepostdatasizes))
@@ -602,9 +601,8 @@ FREEBYTES           7EE0:0000
 #define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdataofs,    size_maskedpostdataofs))
 #define drawfuzzcol_area           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpixeldataofs,   size_maskedpixeldataofs))
 #define render_8800_end            ((byte __far*)              MAKE_FULL_SEGMENT(drawfuzzcol_area,     R_DrawFuzzColumnCodeSize)) 
+// 8BFD
 
-
-#define maskedpostdata_segment       ((segment_t) ((int32_t)maskedpostdata >> 16))
 #define spritepostdatasizes_segment  ((segment_t) ((int32_t)spritepostdatasizes >> 16))
 #define spritetotaldatasizes_segment ((segment_t) ((int32_t)spritetotaldatasizes >> 16))
 #define maskedpostdataofs_segment    ((segment_t) ((int32_t)maskedpostdataofs >> 16))
@@ -612,15 +610,19 @@ FREEBYTES           7EE0:0000
 #define drawfuzzcol_area_segment     ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
 #define render_8800_end_segment      ((segment_t) ((int32_t)render_8800_end >> 16))
 
+#define maskedpostdata_segment       ((segment_t) ((int32_t)maskedpostdata >> 16))
+#define drawmaskedfuncarea_sprite_segment   ((segment_t) ((int32_t)drawmaskedfuncarea_sprite >> 16))
+#define render_8400_end_segment             ((segment_t) ((int32_t)render_8400_end >> 16))
 
  /*
 
 
 maskedpostdata              8400:0000
 drawmaskedfuncarea_sprite?  86FD:0000
-empty                       871C:0000 
-FREEBYTES 3648 free
-// MOVE SOME/SPRITE CODE HERE!
+empty                       8721:0000 
+FREEBYTES 3568 free
+// MOVE SOME OTHER RENDER CODE HERE?
+
 
  spritepostdatasizes    8800:0000
  spritetotaldatasizes   88AD:0000

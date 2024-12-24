@@ -199,11 +199,11 @@ void __near R_InitTextureMapping(void) {
 		}
 	}
 
-	Z_QuickMapPhysics();
 
 }
 
 void __far  R_WriteBackViewConstants();
+void __far  R_WriteBackViewConstantsMasked();
 
 //
 // R_ExecuteSetViewSize
@@ -260,6 +260,12 @@ void __near  R_ExecuteSetViewSize(void) {
 	Z_QuickMapRender();
 	R_WriteBackViewConstants();
 	R_InitTextureMapping();
+	
+	// Set Masked Mapping
+	Z_QuickMapUndoFlatCache();
+	R_WriteBackViewConstantsMasked();
+	Z_QuickMapPhysics();
+
 
 	// set render 'constants' related to detaillevel. 
 	spanfunc_main_loop_count = 4 >> detailshift.b.bytelow;
@@ -274,6 +280,8 @@ void __near  R_ExecuteSetViewSize(void) {
 	if (detailshift.b.bytelow == 2){
 		spanfunc_outp[0] = 15;
 	}
+
+
 	
  
 }

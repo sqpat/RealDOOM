@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 139
+#define CONSTANTS_COUNT 142
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -131,13 +131,16 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SPANFUNC_FUNCTION_AREA_SEGMENT",
     "COLFUNC_MASKEDMAPPING_SEGMENT",
     "COLFUNC_SEGMENT",
-    "R_DRAWCOLUMNPREPMASKEDCALLOFFSET",
+    "R_DRAWCOLUMNPREPMASKEDSINGLEOFFSET",
+    "R_DRAWCOLUMNPREPMASKEDMULTIHIOFFSET",
+    "R_DRAWCOLUMNPREPMASKEDMULTILOOFFSET",
     "STATES_RENDER_SEGMENT",
     "BASE_LOWER_MEMORY_SEGMENT",
     "BASE_LOWER_END_SEGMENT",
     "EMPTY_RENDER_9800_SEGMENT",
     "PHYSICS_7000_END_SEGMENT",
     "RENDER_8800_END_SEGMENT",
+    "RENDER_8400_END_SEGMENT",
     "RENDER_9800_END_SEGMENT",
     "R_MAPPLANE_OFFSET",
     "R_DRAWPLANES_OFFSET",
@@ -297,13 +300,16 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     spanfunc_function_area_segment,
     colfunc_segment_maskedmapping,
     colfunc_segment,
-    R_DrawColumnPrepMaskedOffset,
+    R_DrawColumnPrepMaskedSingleOffset,
+    R_DrawColumnPrepMaskedMultiHiOffset,
+    R_DrawColumnPrepMaskedMultiLoOffset,
     states_render_segment,
     base_lower_memory_segment,
     base_lower_end_segment,
     empty_render_9800_segment,
     physics_7000_end_segment,
     render_8800_end_segment,
+    render_8400_end_segment,
     render_9800_end_segment,
     R_MapPlaneOffset,
     R_DrawPlanesOffset,

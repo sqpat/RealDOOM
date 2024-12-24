@@ -165,6 +165,117 @@ jmp finished_drawing_fuzzpixels
 ENDP
 
 
+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
+
+
+;
+; R_DrawColumnPrepMaskedSingle
+;
+	
+PROC  R_DrawColumnPrepMaskedSingle_
+PUBLIC  R_DrawColumnPrepMaskedSingle_ 
+
+; argument AX is diff for various segment lookups
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+
+
+mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT)
+mov   es, ax                                 ; store this segment for now, with offset pre-added
+
+; todo optimize this read
+mov   ax, word ptr ds:[_dc_x]
+
+; shift ax by (2 - detailshift.)
+;SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift:
+sar   ax, 1
+sar   ax, 1
+
+; dest = destview + dc_yl*80 + (dc_x>>2); 
+; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
+
+; todo optimize this read
+mov   bx, word ptr ds:[_dc_yl]
+mov   si, bx
+add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
+;SELFMODIFY_COLFUNC_m_add_destview_offset:
+add   ax, 01000h
+
+; todo optimize this read
+mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
+sub   si, bx                                 ;
+
+add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
+xchg  ax, di
+mov   ax, word ptr es:[si]                   ; get the jump value
+mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
+; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
+; or can we do this in an outer func without this instrction?
+
+
+
+test  al, al
+jne   skipcolormapzero_m ; todo dumb idea - jump to the other one?
+
+; if we make a separate drawcol masked we can use a constant here.
+
+xchg  ax, bx    ; dc_yl in ax
+
+db 09Ah
+dw DRAWCOL_OFFSET
+dw COLORMAPS_SEGMENT_MASKEDMAPPING
+
+pop   di 
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+
+
+; if colormap is not zero we must do some segment math
+skipcolormapzero_m:
+mov   cx, DRAWCOL_OFFSET
+
+cbw           ; al is like 0-20 so this will zero out ah...
+xchg   ah, al ; move it high with 0 al.
+sub   cx, ax
+ 
+ ; todo investigate shift 4 lookup table
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shr   ax, 4
+ELSE
+shr   ax, 1
+shr   ax, 1
+shr   ax, 1
+shr   ax, 1
+ENDIF
+ 
+add  ax, COLORMAPS_SEGMENT_MASKEDMAPPING
+
+mov   word ptr ds:[_func_farcall_scratch_addr], cx				; setup dynamic call
+mov   word ptr ds:[_func_farcall_scratch_addr+2], ax
+
+xchg  ax, bx    ; dc_yl in ax
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _func_farcall_scratch_addr
+
+pop   di ; unused but drawcol clobbers it.
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf   
+
+ENDP
 
 ;
 ; R_DrawSingleMaskedColumn
@@ -284,13 +395,9 @@ jg    exit_function_single
 mov   word ptr ds:[_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
 mov   word ptr ds:[_dc_yl], si ;  dc_x could also be trivially recovered from bx
 
-mov   ax, COLORMAPS_MASKEDMAPPING_SEG_DIFF
 
-
-db 09Ah
-dw R_DRAWCOLUMNPREPMASKEDCALLOFFSET 
-dw COLFUNC_MASKEDMAPPING_SEGMENT 
-
+; todo: this can be a second, local version of the function that is specialized?
+call  R_DrawColumnPrepMaskedSingle_
 
 exit_function_single:
 
@@ -2827,11 +2934,8 @@ mov   al, byte ptr es:[si]
 xor   ah, ah
 sub   dx, ax
 mov   word ptr ds:[_dc_texturemid+2], dx
-mov   ax, COLORMAPS_MASKEDMAPPING_SEG_DIFF
 
-db 09Ah
-dw R_DRAWCOLUMNPREPMASKEDCALLOFFSET 
-dw COLFUNC_MASKEDMAPPING_SEGMENT 
+call  R_DrawColumnPrepMaskedMulti_
 
 increment_column_and_continue_loop:
 mov   es, word ptr [bp-2]
@@ -2861,6 +2965,114 @@ retf
 
 ENDP
 
+;
+; R_DrawColumnPrepMaskedMulti
+;
+	
+PROC  R_DrawColumnPrepMaskedMulti_
+PUBLIC  R_DrawColumnPrepMaskedMulti_ 
+
+; argument AX is diff for various segment lookups
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+
+
+mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT)
+mov   es, ax                                 ; store this segment for now, with offset pre-added
+
+; todo optimize this read
+mov   ax, word ptr ds:[_dc_x]
+
+; shift ax by (2 - detailshift.)
+;SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift:
+sar   ax, 1
+sar   ax, 1
+
+; dest = destview + dc_yl*80 + (dc_x>>2); 
+; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
+
+; todo optimize this read
+mov   bx, word ptr ds:[_dc_yl]
+mov   si, bx
+add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
+;SELFMODIFY_COLFUNC_m_add_destview_offset:
+add   ax, 01000h
+
+; todo optimize this read
+mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
+sub   si, bx                                 ;
+
+add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
+xchg  ax, di
+mov   ax, word ptr es:[si]                   ; get the jump value
+mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
+; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
+; or can we do this in an outer func without this instrction?
+
+
+
+test  al, al
+jne   skipcolormapzero_m2 ; todo dumb idea - jump to the other one?
+
+; if we make a separate drawcol masked we can use a constant here.
+
+xchg  ax, bx    ; dc_yl in ax
+
+db 09Ah
+dw DRAWCOL_OFFSET
+dw COLORMAPS_SEGMENT_MASKEDMAPPING
+
+pop   di 
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+
+
+; if colormap is not zero we must do some segment math
+skipcolormapzero_m2:
+mov   cx, DRAWCOL_OFFSET
+
+cbw           ; al is like 0-20 so this will zero out ah...
+xchg   ah, al ; move it high with 0 al.
+sub   cx, ax
+ 
+ ; todo investigate shift 4 lookup table
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shr   ax, 4
+ELSE
+shr   ax, 1
+shr   ax, 1
+shr   ax, 1
+shr   ax, 1
+ENDIF
+ 
+add  ax, COLORMAPS_SEGMENT_MASKEDMAPPING
+
+mov   word ptr ds:[_func_farcall_scratch_addr], cx				; setup dynamic call
+mov   word ptr ds:[_func_farcall_scratch_addr+2], ax
+
+xchg  ax, bx    ; dc_yl in ax
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _func_farcall_scratch_addr
+
+pop   di ; unused but drawcol clobbers it.
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf   
+
+ENDP
 
 VISSPRITE_UNSORTED_INDEX    = 0FFh
 VISSPRITE_SORTED_HEAD_INDEX = 0FEh
