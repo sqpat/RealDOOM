@@ -1,6 +1,5 @@
 #define R_DrawColumnOffset             0x0
-#define R_DrawColumnPrepOffset         0xB35
-#define R_DrawColumnPrepMaskedOffset   0xB69
+#define R_DrawColumnPrepMaskedOffset   0xB35
 #define R_MapPlaneOffset               0x7C2
 #define R_DrawPlanesOffset             0x942
 #define R_DrawFuzzColumnOffset         0x0
@@ -15,9 +14,9 @@
 #define wipe_StartScreenOffset         0x259
 #define wipe_WipeLoopOffset            0x268
 
-#define R_DrawColumnCodeSize           0xBCC
+#define R_DrawColumnCodeSize           0xB98
 #define R_DrawSpanCodeSize             0xC20
 #define R_DrawFuzzColumnCodeSize       0xE73
 #define R_DrawMaskedColumnCodeSize     0x1EC
-#define R_DrawSkyColumnCodeSize        0x6CA
+#define R_DrawSkyColumnCodeSize        0x6C6
 #define WipeCodeSize                   0x31B

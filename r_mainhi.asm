@@ -1693,7 +1693,6 @@ mov   dx, word ptr ds:[_validcount]
 cmp   ax, dx
 je    exit_add_sprites_bx_only				; do this without push/pop
 push  di
-push  cx
 push  si
 
 mov   word ptr es:[bx + 6], dx
@@ -1741,7 +1740,6 @@ jne   loop_things_in_thinglist
 
 exit_add_sprites:
 pop   si
-pop   cx
 pop   di
 exit_add_sprites_bx_only:
 pop   bx
@@ -1754,6 +1752,80 @@ set_spritelights_to_max:
 mov   ax, word ptr ds:[_lightmult48lookup + (2 * (LIGHTLEVELS - 1))]
 jmp   spritelights_set
 
+
+endp
+
+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
+
+
+;
+; R_DrawColumnPrep
+;
+	
+PROC  R_DrawColumnPrep_
+PUBLIC  R_DrawColumnPrep_ 
+
+; si:di is dc_yl, dc_yh
+
+
+; argument AX is diff for various segment lookups
+
+push  bx
+push  cx  ; cx unused... 
+push  dx
+push  si
+push  di
+
+mov   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
+mov   es, ax ; store this segment for now, with offset pre-added
+
+SELFMODIFY_COLFUNC_get_dc_x:
+mov   ax, 01000h
+
+; shift ax by (2 - detailshift.)
+; todo: are we benefitted by moving this out into rendersegrange..?
+SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift:
+sar   ax, 1
+sar   ax, 1
+
+; dest = destview + dc_yl*80 + (dc_x>>2); 
+; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
+
+; si is dc_yl 
+mov   bx, si
+add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
+SELFMODIFY_COLFUNC_add_destview_offset:
+add   ax, 01000h
+; todo optimize this bit.
+; di is dc_yh
+mov   si, di
+sub   si, bx                                 ;
+add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
+xchg  ax, di
+mov   ax, word ptr es:[si]                   ; get the jump value
+mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+
+xchg  ax, bx    ; dc_yl in ax
+
+; todo: put dc_iscale in cx:bx...
+
+; dynamic call lookuptable based on used colormaps address being CS:00
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+SELFMODIFY_COLFUNC_set_colormap_index_jump:
+dw 0400h
+; addr 0400 + first byte (4x colormapzero.)
+
+
+pop   di 
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
 
 endp
 
@@ -1797,9 +1869,7 @@ add   ax, 01000h
 just_do_draw0:
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
-db 09Ah
-dw R_DRAWCOLUMNPREPCALLOFFSET 
-dw COLFUNC_FUNCTION_AREA_SEGMENT
+call  R_DrawColumnPrep_
 pop   es
 ret
 non_po2_texture_mod0:
@@ -1911,9 +1981,7 @@ add   ax, 01000h
 just_do_draw1:
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
-db 09Ah
-dw R_DRAWCOLUMNPREPCALLOFFSET 
-dw COLFUNC_FUNCTION_AREA_SEGMENT
+call  R_DrawColumnPrep_
 pop   es
 ret
 non_po2_texture_mod1:
@@ -2552,16 +2620,16 @@ SELFMODIFY_add_wallights:
 ; todo: make scalelight be pre-shifted 4 to save on the double sal below.
 mov   al, byte ptr es:[si+01000h]
 ; DO SELFMODIFY HERE for dc_x, colormapindex, and dc_iscale!
-mov      bx, COLFUNC_FUNCTION_AREA_SEGMENT
-mov      es, bx
+;mov  bx, COLFUNC_FUNCTION_AREA_SEGMENT
+;mov  es, bx
 
 ;        set drawcolumn colormap function address
-sal      al, 1
-sal      al, 1
-mov      byte ptr es:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
+sal   al, 1
+sal   al, 1
+mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
 
 ; store dc_x directly in code
-mov   word ptr es:[SELFMODIFY_COLFUNC_get_dc_x+1], di
+mov   word ptr cs:[SELFMODIFY_COLFUNC_get_dc_x+1], di
 
 
 seg_non_textured:
@@ -4220,8 +4288,8 @@ mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+0], ax
 mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
 
 ; write to colfunc segment
-mov      word ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+0], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+2], ax
 
@@ -4271,14 +4339,14 @@ mov      ax, 0f8d1h
 mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+0], ax
 
 ; write to colfunc segment
-mov      word ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+0], ax
 
 ; nop 
 mov      ax, 0c089h 
 mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
 ; write to colfunc segment
-mov      word ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+2], ax
 
 
@@ -4316,8 +4384,8 @@ mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+0], ax
 mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
 
 ; write to colfunc segment
-mov      word ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+0], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift+2], ax
 
@@ -4484,12 +4552,12 @@ mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1], ax
 
 
 ; get whole dword at the end here.
-lds      ax, dword ptr ss:[_destview]
-mov      word ptr es:[SELFMODIFY_COLFUNC_add_destview_offset+1], ax
+mov      ax, word ptr ss:[_destview]
+mov      word ptr ds:[SELFMODIFY_COLFUNC_add_destview_offset+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_m_add_destview_offset+1], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segment+1], ds
+mov      ax, word ptr ss:[_destview+2]
+mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segment+1], ax
 
-; DS IS BAD BECAUSE OF LDS ABOVE
 
 mov      ax, ss
 mov      ds, ax
