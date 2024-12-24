@@ -885,7 +885,12 @@ void __far D_DoomMain2(void) {
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 
-	//I_Error("%lx", FixedMul(0x40000L, 0x40000L));
+// 9870
+// 9860
+// 9830
+//  9800
+// 0
+	//I_Error("%lx", colfunc_call_table[0]);
 
 
 /*

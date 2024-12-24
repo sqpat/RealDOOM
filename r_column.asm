@@ -56,7 +56,6 @@ PUBLIC  R_DrawColumn_
     sub   ax, 01000h
     mov   es, ax              ; save low(M1)
 
-	; shift already done earlier
     
 	
     ; todo when self modifying get this register exchange for free..
@@ -202,7 +201,6 @@ push  di
 mov   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
 mov   es, ax ; store this segment for now, with offset pre-added
 
-; todo optimize this read
 ;SELFMODIFY_COLFUNC_get_dc_x:
 mov   ax, 01000h
 
@@ -220,34 +218,31 @@ mov   bx, si
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
 ;SELFMODIFY_COLFUNC_add_destview_offset:
 add   ax, 01000h
-
 ; todo optimize this bit.
 ; di is dc_yh
 mov   si, di
 sub   si, bx                                 ;
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
-
 xchg  ax, di
 mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((COLFUNC_JUMP_OFFSET+1)-R_DrawColumn_)+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 ; todo change this to just a dynamic call on lookup table based on dc_colormap index.
 
-mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
-
-
-test  al, al
-jne   skipcolormapzero
 
 ; if we make a separate drawcol masked we can use a constant here.
 
 xchg  ax, bx    ; dc_yl in ax
 
-db 09Ah
-dw DRAWCOL_OFFSET
-dw COLORMAPS_SEGMENT
+
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+;SELFMODIFY_COLFUNC_set_colormap_index_jump:
+dw 0400h
+; addr 0400 + first byte (4x colormapzero.)
 
 
 pop   di 
@@ -256,45 +251,6 @@ pop   dx
 pop   cx
 pop   bx
 retf  
-
-
-; if colormap is not zero we must do some segment math
-skipcolormapzero:
-mov   cx, DRAWCOL_OFFSET
-
-cbw           ; al is like 0-20 so this will zero out ah...
-xchg   ah, al ; move it high with 0 al.
-sub   cx, ax
- 
- ; todo investigate shift 4 lookup table
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shr   ax, 4
-ELSE
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-ENDIF
- 
-add  ax, COLORMAPS_SEGMENT
-
-mov   word ptr ds:[_func_farcall_scratch_addr], cx				; setup dynamic call
-mov   word ptr ds:[_func_farcall_scratch_addr+2], ax
-
-xchg  ax, bx    ; dc_yl in ax
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _func_farcall_scratch_addr
-
-pop   di ; unused but drawcol clobbers it.
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf   
-
-ENDP
 
 
 

@@ -2537,9 +2537,10 @@ mov   ax, 0FFFFh
 cwd
 call FastDiv3232_
 
+; do the bit shuffling etc when writing direct to drawcol.
+; mov dh, dl
+; mov dl, ah
 
-
-; do the bit shuffling etc..
 mov   word ptr ds:[_dc_iscale], ax		; todo: write these to code but masked has to as well..
 mov   word ptr ds:[_dc_iscale + 2], dx  
 
@@ -2548,18 +2549,20 @@ mov   es, ax
 SELFMODIFY_add_wallights:
 ; todo idea: carry code segment in SI, use it to restore when necessary 
 ; or what if do this step after the div, and carry over ES as column code segment  to write ahead di/si after pop?
+; todo: make scalelight be pre-shifted 4 to save on the double sal below.
 mov   al, byte ptr es:[si+01000h]
 ; DO SELFMODIFY HERE for dc_x, colormapindex, and dc_iscale!
 mov      bx, COLFUNC_FUNCTION_AREA_SEGMENT
 mov      es, bx
 
-;todo: jump table shenanigans here.
-mov   byte ptr ds:[_dc_colormap_index], al
+;        set drawcolumn colormap function address
+sal      al, 1
+sal      al, 1
+mov      byte ptr es:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
 
 ; store dc_x directly in code
 mov   word ptr es:[SELFMODIFY_COLFUNC_get_dc_x+1], di
 
-;     todo put these two values somewhere?
 
 seg_non_textured:
 ; si/di are yh/yl

@@ -134,8 +134,75 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ;300
 dw  00, 00, 00, 00
-;308
 
+dw  00, 00, 00, 00
+
+; 310
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 320
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 330
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 340
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 350
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 360
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 370
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 380
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 390
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 3A0
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 3B0
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 3C0
+dw  00, 00, 00, 00, 00, 00, 00
+
+
+; 3D0
+;#define colfunc_call_table              (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D0)))
+
+; todo drawcolumn func jump table here (00 aligned)
+;400 (null offset + 3D0)
+; colormaps settings...
+dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT + 0000h
+dw DRAWCOL_OFFSET - 00100h,  COLORMAPS_SEGMENT + 0010h
+dw DRAWCOL_OFFSET - 00200h,  COLORMAPS_SEGMENT + 0020h
+dw DRAWCOL_OFFSET - 00300h,  COLORMAPS_SEGMENT + 0030h
+dw DRAWCOL_OFFSET - 00400h,  COLORMAPS_SEGMENT + 0040h
+dw DRAWCOL_OFFSET - 00500h,  COLORMAPS_SEGMENT + 0050h
+dw DRAWCOL_OFFSET - 00600h,  COLORMAPS_SEGMENT + 0060h
+dw DRAWCOL_OFFSET - 00700h,  COLORMAPS_SEGMENT + 0070h
+dw DRAWCOL_OFFSET - 00800h,  COLORMAPS_SEGMENT + 0080h
+dw DRAWCOL_OFFSET - 00900h,  COLORMAPS_SEGMENT + 0090h
+dw DRAWCOL_OFFSET - 00A00h,  COLORMAPS_SEGMENT + 00A0h
+dw DRAWCOL_OFFSET - 00B00h,  COLORMAPS_SEGMENT + 00B0h
+dw DRAWCOL_OFFSET - 00C00h,  COLORMAPS_SEGMENT + 00C0h
+dw DRAWCOL_OFFSET - 00D00h,  COLORMAPS_SEGMENT + 00D0h
+dw DRAWCOL_OFFSET - 00E00h,  COLORMAPS_SEGMENT + 00E0h
+dw DRAWCOL_OFFSET - 00F00h,  COLORMAPS_SEGMENT + 00F0h
+dw DRAWCOL_OFFSET - 01000h,  COLORMAPS_SEGMENT + 0100h
+dw DRAWCOL_OFFSET - 01100h,  COLORMAPS_SEGMENT + 0110h
+dw DRAWCOL_OFFSET - 01200h,  COLORMAPS_SEGMENT + 0120h
+dw DRAWCOL_OFFSET - 01300h,  COLORMAPS_SEGMENT + 0130h
+dw DRAWCOL_OFFSET - 01400h,  COLORMAPS_SEGMENT + 0140h
+dw DRAWCOL_OFFSET - 01500h,  COLORMAPS_SEGMENT + 0150h
+dw DRAWCOL_OFFSET - 01600h,  COLORMAPS_SEGMENT + 0160h
+dw DRAWCOL_OFFSET - 01700h,  COLORMAPS_SEGMENT + 0170h
+dw DRAWCOL_OFFSET - 01800h,  COLORMAPS_SEGMENT + 0180h
+dw DRAWCOL_OFFSET - 01900h,  COLORMAPS_SEGMENT + 0190h
+dw DRAWCOL_OFFSET - 01A00h,  COLORMAPS_SEGMENT + 01A0h
+dw DRAWCOL_OFFSET - 01B00h,  COLORMAPS_SEGMENT + 01B0h
+dw DRAWCOL_OFFSET - 01C00h,  COLORMAPS_SEGMENT + 01C0h
+dw DRAWCOL_OFFSET - 01D00h,  COLORMAPS_SEGMENT + 01D0h
+dw DRAWCOL_OFFSET - 01E00h,  COLORMAPS_SEGMENT + 01E0h
+dw DRAWCOL_OFFSET - 01F00h,  COLORMAPS_SEGMENT + 01F0h
+dw DRAWCOL_OFFSET - 02000h,  COLORMAPS_SEGMENT + 0200h
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 
 ENDS _FIXEDDATA
 

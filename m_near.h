@@ -275,6 +275,9 @@
 #define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0304)))
 
 
+#define colfunc_call_table              (((uint32_t  __near*)                (_NULL_OFFSET + 0x03D0)))
+
+
 
 // 2f3 is free
 

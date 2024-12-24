@@ -191,7 +191,10 @@ void __near R_InitTextureMapping(void) {
 			if (level >= NUMCOLORMAPS) {
 				level = NUMCOLORMAPS - 1;
 			}
-
+			
+			// todo pre shift by 4 here, since its ultimately multiplied by 4 for the colfunc lookup addr..
+			//scalelight[i2*MAXLIGHTSCALE+j] =  level << 2;
+			
 			scalelight[i2*MAXLIGHTSCALE+j] =  level;// * 256;
 		}
 	}
