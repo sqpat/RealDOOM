@@ -516,6 +516,7 @@ cmp   dx, 0			; dx still holds dc_yl
 jne   high_border_adjusted
 inc   dx 
 high_border_adjusted:
+SELFMODIFY_MASKED_viewheight_1:
 mov   ax, word ptr ds:[_viewheight]
 dec   ax
 cmp   ax, di    ; di still holds _dc_yh
@@ -532,13 +533,16 @@ mov   ax, word ptr ds:[_dc_x]
 mov   dx, ax
 
 and   al, 3
-add   al, byte ptr ds:[_detailshift + 1]
+SELFMODIFY_MASKED_detailshiftplus1_1:
+add   al, 0
 mov   byte ptr cs:[SELFMODIFY_set_bx_to_lookup+1 - OFFSET R_DrawFuzzColumn_], al
 mov   cx, DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT
 
 add   bx, bx
 mov   ax, es
 mov   es, cx
+
+; todo: proper shift jmp thing.
 mov   cl, byte ptr ds:[_detailshift2minus]
 sar   dx, cl
 SELFMODIFY_set_dx_to_destview_offset:
@@ -628,13 +632,7 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_Dr
 
 ; todo move this out to a higher level! possibly when executesetviewsize happens.
 
-mov   al, byte ptr ds:[_detailshiftitercount]
-mov   byte ptr cs:[SELFMODIFY_detailshiftitercount1+2 - OFFSET R_DrawFuzzColumn_], al
-mov   byte ptr cs:[SELFMODIFY_detailshiftitercount2+4 - OFFSET R_DrawFuzzColumn_], al
-mov   byte ptr cs:[SELFMODIFY_detailshiftitercount3+1 - OFFSET R_DrawFuzzColumn_], al
-mov   byte ptr cs:[SELFMODIFY_detailshiftitercount4+2 - OFFSET R_DrawFuzzColumn_], al
-mov   byte ptr cs:[SELFMODIFY_detailshiftitercount5+4 - OFFSET R_DrawFuzzColumn_], al
-mov   byte ptr cs:[SELFMODIFY_detailshiftitercount6+1 - OFFSET R_DrawFuzzColumn_], al
+
 
 
 mov   ax, word ptr ds:[si + 01Eh]   ; vis->xiscale
@@ -648,6 +646,7 @@ adc   dx, 0
 neg   dx
 xiscale_already_positive:
 
+;; todo proper jump thing
 cmp byte ptr ds:[_detailshift], 1
 jb xiscale_shift_done
 je do_xiscale_shift_once
@@ -669,7 +668,7 @@ mov   word ptr ds:[_dc_texturemid], ax
 mov   word ptr ds:[_dc_texturemid + 2], dx
 
 
-
+SELFMODIFY_MASKED_centery_1:
 mov   ax, word ptr ds:[_centery]
 lea   di, ds:[_sprtopscreen]
 mov   word ptr ds:[di], 0		; di is _sprtopscreen
@@ -719,7 +718,8 @@ push  di;  [bp - 4]
 
 mov   ax, word ptr [si + 2]
 mov   dx, ax
-and   ax, word ptr ds:[_detailshiftandval]
+SELFMODIFY_MASKED_detailshiftandval_1:
+and   ax, 01000h
 
 mov   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4+1 - OFFSET R_DrawFuzzColumn_], ax
 mov   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_DrawFuzzColumn_], ax
@@ -734,6 +734,7 @@ xchg  ax, dx
 mov   bx, word ptr [si + 01Eh] ; DX:BX = vis->xiscale
 mov   dx, word ptr [si + 020h]
 
+; todo: proper shift jmp thing
 cmp byte ptr ds:[_detailshift2minus], 1
 jb done_shifting_shift_xiscalestep_shift
 je do_shift_xiscalestep_shift_once
@@ -830,14 +831,14 @@ loop_vga_plane_draw_normal:
 
 SELFMODIFY_set_bx_to_xoffset:
 mov   bx, 0 ; zero out bh
-SELFMODIFY_detailshiftitercount1:
+SELFMODIFY_MASKED_detailshiftitercount_1:
 cmp   bx, 0
 jge    exit_draw_vissprites
 
-add   bl, byte ptr ds:[_detailshift+1]
 
 mov   dx, SC_DATA
-mov   al, byte ptr ds:[bx + _quality_port_lookup]
+SELFMODIFY_MASKED_detailshiftplus1_2:
+mov   al, byte ptr ds:[bx + 20]
 out   dx, al
 mov   di, word ptr [bp - 4]
 mov   dx, word ptr [bp - 2]
@@ -870,7 +871,7 @@ add   ax, cx
 ; call R_DrawMaskedColumnCallHigh
 call R_DrawMaskedColumn_
 
-SELFMODIFY_detailshiftitercount2:
+SELFMODIFY_MASKED_detailshiftitercount_2:
 add   word ptr ds:[_dc_x], 0
 add   di, word ptr [bp - 8]
 adc   dx, word ptr [bp - 6]
@@ -882,7 +883,7 @@ LEAVE_MACRO
 ret 
 increment_by_shift:
 
-SELFMODIFY_detailshiftitercount3:
+SELFMODIFY_MASKED_detailshiftitercount_3:
 add   ax, 0
 mov   word ptr ds:[_dc_x], ax
 add   di, word ptr [bp - 8]
@@ -898,22 +899,24 @@ mov   ax, word ptr [si + 020h]
 adc   word ptr [bp - 2], ax
 jmp   loop_vga_plane_draw_normal
 draw_shadow_sprite:
+SELFMODIFY_MUASKED_destview_lo_1:
 mov   ax, word ptr ds:[_destview]
 mov   word ptr cs:[SELFMODIFY_set_dx_to_destview_offset+2 - OFFSET R_DrawFuzzColumn_], ax
+SELFMODIFY_MUASKED_destview_hi_1:
 mov   ax, word ptr ds:[_destview + 2]
 mov   word ptr cs:[SELFMODIFY_set_bx_to_destview_segment+1 - OFFSET R_DrawFuzzColumn_], ax
 
 loop_vga_plane_draw_shadow:
 SELFMODIFY_set_bx_to_xoffset_shadow:
 mov   bx, 0
-SELFMODIFY_detailshiftitercount4:
+SELFMODIFY_MASKED_detailshiftitercount_4:
 cmp   bx, 0
 jge    exit_draw_vissprites
 
-add   bl, byte ptr ds:[_detailshift+1]
 
 mov   dx, SC_DATA
-mov   al, byte ptr ds:[bx + _quality_port_lookup]
+SELFMODIFY_MASKED_detailshiftplus1_3:
+mov   al, byte ptr ds:[bx + 20]
 out   dx, al
 mov   di, word ptr [bp - 4]
 mov   dx, word ptr [bp - 2]
@@ -943,8 +946,7 @@ add   ax, cx
 call R_DrawMaskedSpriteShadow_
 
 
-SELFMODIFY_detailshiftitercount5:
-
+SELFMODIFY_MASKED_detailshiftitercount_5:
 add   word ptr ds:[_dc_x], 0
 add   di, word ptr [bp - 8]
 adc   dx, word ptr [bp - 6]
@@ -960,7 +962,7 @@ adc   word ptr [bp - 2], ax
 jmp   loop_vga_plane_draw_shadow
 
 increment_by_shift_shadow:
-SELFMODIFY_detailshiftitercount6:
+SELFMODIFY_MASKED_detailshiftitercount_6:
 add   ax, 0
 mov   word ptr ds:[_dc_x], ax
 add   di, word ptr [bp - 8]
@@ -1360,7 +1362,9 @@ rcr   dx, 1
 add   ax, cx
 
 ;     dc_texturemid.w -= viewz.w;
+SELFMODIFY_MASKED_viewz_lo_1:
 sub   dx, word ptr ds:[_viewz]
+SELFMODIFY_MASKED_viewz_hi_1:
 sbb   ax, word ptr ds:[_viewz+2]
 
 
@@ -1391,7 +1395,8 @@ colormap_set:
 SELFMODIFY_x1_field_2:
 mov   ax, 08000h
 mov   di, ax						; di = x1
-and   ax, word ptr ds:[_detailshiftandval]
+SELFMODIFY_MASKED_detailshiftandval_2:
+and   ax, 01000h
 mov   word ptr [bp - 0Eh], ax
 
 ;		int16_t base4diff = x1 - dc_x_base4;
@@ -1411,6 +1416,7 @@ mov   ax, word ptr [bp - 01Eh]  ; rw_scalestep
 mov   dx, word ptr [bp - 01Ch]	; rw_scalestep
 
 
+; todo: proper shift jmp thing
 cmp byte ptr ds:[_detailshift2minus], 1
 jb done_shifting_spryscale
 je do_shift_spryscale_once
@@ -1472,11 +1478,11 @@ mov   di, 0		; x_offset.
 continue_outer_loop:
 
 ;			outp(SC_INDEX+1, quality_port_lookup[xoffset+detailshift.b.bytehigh]);
-mov   bx, di  ; copy xoffset
-add   bl, byte ptr ds:[_detailshift + 1]
 
 mov   dx, SC_DATA
-mov   al, byte ptr [bx + _quality_port_lookup]
+; di contains xoffset..
+SELFMODIFY_MASKED_detailshiftplus1_4:
+mov   al, byte ptr [di + 20]
 out   dx, al
 
 
@@ -1504,7 +1510,8 @@ jge   calculate_sprtopscreen
 ;	dc_x        += detailshiftitercount;
 ;	spryscale.w += rw_scalestep_shift;
 
-add   ax, word ptr ds:[_detailshiftitercount]
+SELFMODIFY_MASKED_detailshiftitercount_9:
+add   ax, 0
 add   dx, word ptr [bp - 0Ah]   ; rw_scalestep_shift 
 adc   bx, word ptr [bp - 8]     ; rw_scalestep_shift
 
@@ -1546,6 +1553,7 @@ done_with_mul:
 
 neg   ax ; no need to subtract from zero...
 mov   word ptr ds:[_sprtopscreen], ax
+SELFMODIFY_MASKED_centery_2:
 mov   ax, word ptr ds:[_centery]
 sbb   ax, dx
 mov   word ptr ds:[_sprtopscreen + 2], ax
@@ -1578,10 +1586,10 @@ mov   ax, word ptr [bp - 01Ch]
 adc   word ptr [bp - 014h], ax
 
 
-mov   ax, word ptr ds:[_detailshiftitercount]
 ; xoffset < detailshiftitercount
-cmp   ax, di
-jg    continue_outer_loop		; 6 bytes out of range
+SELFMODIFY_MASKED_detailshiftitercount_8:
+cmp   di, 0
+jle    continue_outer_loop		; 6 bytes out of range
 
 exit_render_masked_segrange:
 mov   ax, NULL_TEX_COL
@@ -1654,8 +1662,8 @@ mov   word ptr es:[bx], MAXSHORT
 
 increment_inner_loop:
 
-mov   ax, word ptr ds:[_detailshiftitercount]
-add   word ptr ds:[_dc_x], ax
+SELFMODIFY_MASKED_detailshiftitercount_7:
+add   word ptr ds:[_dc_x], 0
 mov   ax, word ptr [bp - 0Ah]
 add   word ptr ds:[_spryscale], ax
 mov   ax, word ptr [bp - 8]
@@ -2270,6 +2278,7 @@ inc   cx
 add   si, si
 lea   si, [bp + si - 0502h]
 mov   bx, (0502h - 0282h)  
+SELFMODIFY_MASKED_viewheight_2:
 mov   ax, word ptr ds:[_viewheight]
 
 ; todo optim loop
@@ -3197,6 +3206,11 @@ ASSUME DS:R_MASKED_TEXT
 
 mov      ax,  word ptr ss:[_detailshift]
 
+; todo modify these as loops
+;mov   al, byte ptr ss:[_detailshift2minus]
+;mov   al, byte ptr ss:[_detailshift]
+
+
 ; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
 
 cmp      al, 1
@@ -3266,6 +3280,42 @@ mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- 
 ; fall thru
 done_modding_shift_detail_code_masked:
 
+
+; note: examples 3/6/9 overwrite "add ax, 0" which compiles to the opcode where
+; you get 16 bit immediate starting at base + 1 instead of a 8 bit immediate starting at base + 2.
+mov   al, byte ptr ss:[_detailshiftitercount]
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_1+2 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_2+4 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_3+1 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_4+2 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_5+4 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_6+1 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_7+4 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_8+2 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_9+1 - OFFSET R_DrawFuzzColumn_], al
+
+
+mov   ax, word ptr ss:[_detailshiftandval]
+mov   word ptr ds:[SELFMODIFY_MASKED_detailshiftandval_1+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_detailshiftandval_2+1 - OFFSET R_DrawFuzzColumn_], ax
+
+
+mov   al, byte ptr ss:[_detailshift+1]
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_1+1 - OFFSET R_DrawFuzzColumn_], al
+add   al, _quality_port_lookup
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_2+2 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_3+2 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_4+2 - OFFSET R_DrawFuzzColumn_], al
+
+
+;SELFMODIFY_MASKED_viewheight_1
+;SELFMODIFY_MASKED_viewheight_2
+;SELFMODIFY_MASKED_centery_1
+;SELFMODIFY_MASKED_centery_2
+;SELFMODIFY_MASKED_viewz_lo_1
+;SELFMODIFY_MASKED_viewz_hi_1
+;SELFMODIFY_MASKED_destview_lo_1
+;SELFMODIFY_MASKED_destview_hi_1
 
 mov      ax, ss
 mov      ds, ax
