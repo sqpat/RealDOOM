@@ -203,7 +203,6 @@ void __near R_InitTextureMapping(void) {
 }
 
 void __far  R_WriteBackViewConstants();
-void __far  R_WriteBackViewConstantsMasked();
 
 //
 // R_ExecuteSetViewSize
@@ -263,7 +262,7 @@ void __near  R_ExecuteSetViewSize(void) {
 	
 	// Set Masked Mapping
 	Z_QuickMapUndoFlatCache();
-	R_WriteBackViewConstantsMasked();
+	R_WriteBackViewConstantsMaskedCall();
 	Z_QuickMapPhysics();
 
 

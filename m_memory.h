@@ -404,6 +404,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define doomednum_segment             ((segment_t) ((int32_t)doomednum >> 16))
 #define linespeciallist_segment       ((segment_t) ((int32_t)linespeciallist >> 16))
 #define fwipe_code_area_segment       ((segment_t) ((int32_t)fwipe_code_area >> 16))
+// 4CE0h
 
  // 3C00:4000
 #define thinkerlist        ((thinker_t __near*)          0x4000)
@@ -581,38 +582,41 @@ FREEBYTES           7EE0:0000
 #define size_maskedpostdata             12238u
 #define size_drawfuzzcol_area           R_DrawFuzzColumnCodeSize
 
-#define size_spritepostdatasizes    (MAX_SPRITE_LUMPS * sizeof(uint16_t))
-#define size_spritetotaldatasizes   (MAX_SPRITE_LUMPS * sizeof(uint16_t))
-#define size_maskedpostdataofs    size_maskedpixeldataofs
-#define size_maskedpixeldataofs        3456u
-
+#define size_spritepostdatasizes        (MAX_SPRITE_LUMPS * sizeof(uint16_t))
+#define size_spritetotaldatasizes       (MAX_SPRITE_LUMPS * sizeof(uint16_t))
+#define size_maskedpostdataofs          size_maskedpixeldataofs
+#define size_maskedpixeldataofs         3456u
+#define size_maskedconstants_funcarea   R_MaskedConstantsCodeSize
 
 #define maskedpostdata             ((byte __far*)              (0x84000000 ))
-#define drawfuzzcol_area           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdata,       size_maskedpostdata))
-// 871Fh
-#define render_8400_end              ((byte __far*)            MAKE_FULL_SEGMENT(drawfuzzcol_area,     size_drawfuzzcol_area)) 
+#define drawfuzzcol_area           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdata,             size_maskedpostdata))
+#define render_8400_end              ((byte __far*)            MAKE_FULL_SEGMENT(drawfuzzcol_area,           size_drawfuzzcol_area)) 
+// 87FBh
 
 #define spritepostdatasizes        ((uint16_t __far*)          (0x88000000 ))
-#define spritetotaldatasizes       ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,  size_spritepostdatasizes))
-#define maskedpostdataofs          ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritetotaldatasizes, size_spritetotaldatasizes))
-#define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdataofs,    size_maskedpostdataofs))
-#define render_8800_end            ((byte __far*)              MAKE_FULL_SEGMENT(maskedpixeldataofs,   size_maskedpixeldataofs))
-// 8BFD
+#define spritetotaldatasizes       ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,        size_spritepostdatasizes))
+#define maskedpostdataofs          ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritetotaldatasizes,       size_spritetotaldatasizes))
+#define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdataofs,          size_maskedpostdataofs))
+#define maskedconstants_funcarea   ((byte __far*)              MAKE_FULL_SEGMENT(maskedpixeldataofs,         size_maskedpixeldataofs))
+#define render_8800_end            ((byte __far*)              MAKE_FULL_SEGMENT(maskedconstants_funcarea,   size_maskedconstants_funcarea))
+// 8B10
 
-#define spritepostdatasizes_segment  ((segment_t) ((int32_t)spritepostdatasizes >> 16))
-#define spritetotaldatasizes_segment ((segment_t) ((int32_t)spritetotaldatasizes >> 16))
-#define maskedpostdataofs_segment    ((segment_t) ((int32_t)maskedpostdataofs >> 16))
-#define maskedpixeldataofs_segment   ((segment_t) ((int32_t)maskedpixeldataofs >> 16))
-#define drawfuzzcol_area_segment     ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
-#define render_8800_end_segment      ((segment_t) ((int32_t)render_8800_end >> 16))
 
-#define maskedpostdata_segment       ((segment_t) ((int32_t)maskedpostdata >> 16))
+#define spritepostdatasizes_segment        ((segment_t) ((int32_t)spritepostdatasizes >> 16))
+#define spritetotaldatasizes_segment       ((segment_t) ((int32_t)spritetotaldatasizes >> 16))
+#define maskedpostdataofs_segment          ((segment_t) ((int32_t)maskedpostdataofs >> 16))
+#define maskedpixeldataofs_segment         ((segment_t) ((int32_t)maskedpixeldataofs >> 16))
+#define maskedconstants_funcarea_segment   ((segment_t) ((int32_t)maskedconstants_funcarea >> 16))
+#define render_8800_end_segment            ((segment_t) ((int32_t)render_8800_end >> 16))
 
-#define render_8400_end_segment             ((segment_t) ((int32_t)render_8400_end >> 16))
+
+#define maskedpostdata_segment             ((segment_t) ((int32_t)maskedpostdata >> 16))
+#define drawfuzzcol_area_segment           ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
+#define render_8400_end_segment            ((segment_t) ((int32_t)render_8400_end >> 16))
 
  /*
-4048
 
+TODO UPDATE
 maskedpostdata              8400:0000
 drawmaskedfuncarea_sprite?  86FD:0000
 empty                       8721:0000 

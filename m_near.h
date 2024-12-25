@@ -476,6 +476,8 @@ extern void                 (__far* R_DrawMaskedCall)();
 
 extern void                 (__far* wipe_StartScreenCall)();
 extern void                 (__far* wipe_WipeLoopCall)();
+extern void                 (__far* R_WriteBackMaskedFrameConstantsCall)();
+extern void                 (__far* R_WriteBackViewConstantsMaskedCall)();
 
 
 extern int16_t              currentlumpindex;

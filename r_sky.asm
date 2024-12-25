@@ -626,5 +626,11 @@ retf
 
 ENDP
 
+; end marker for this asm file
+PROC R_SKY_END_ FAR
+PUBLIC R_SKY_END_ 
+ENDP
+
+
 END
 

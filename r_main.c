@@ -519,7 +519,6 @@ void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
 
 
 void __near  R_WriteBackFrameConstants();
-void __near  R_WriteBackMaskedFrameConstants();
 
 //
 // R_SetupFrame
@@ -687,7 +686,7 @@ void __far R_RenderPlayerView () {
 
 	);
 	*/
-	R_WriteBackMaskedFrameConstants();
+	R_WriteBackMaskedFrameConstantsCall();
 
 	R_DrawMaskedCall ();
 #ifdef DETAILED_BENCH_STATS

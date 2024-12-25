@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 140
+#define CONSTANTS_COUNT 141
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -132,8 +132,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "COLFUNC_MASKEDMAPPING_SEGMENT",
     "COLFUNC_SEGMENT",
     "R_DRAWCOLUMNPREPMASKEDSINGLEOFFSET",
-    "R_DRAWCOLUMNPREPMASKEDMULTIHIOFFSET",
-    "R_DRAWCOLUMNPREPMASKEDMULTILOOFFSET",
+    "R_DRAWCOLUMNPREPMASKEDMULTIOFFSET",
+    "MASKEDCONSTANTS_FUNCAREA_SEGMENT",
     "STATES_RENDER_SEGMENT",
     "BASE_LOWER_MEMORY_SEGMENT",
     "BASE_LOWER_END_SEGMENT",
@@ -168,7 +168,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SIZEOF_MOBJ_POS_T",
     "SIZEOF_SPRITEFRAME_T",
     "SPRITES_SEGMENT",
-    "MAXVISSPRITES"
+    "MAXVISSPRITES",
+    "FWIPE_CODE_AREA_SEGMENT"
 
 };
 
@@ -299,8 +300,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     colfunc_segment_maskedmapping,
     colfunc_segment,
     R_DrawColumnPrepMaskedSingleOffset,
-    R_DrawColumnPrepMaskedMultiHiOffset,
-    R_DrawColumnPrepMaskedMultiLoOffset,
+    R_DrawColumnPrepMaskedMultiOffset,
+    maskedconstants_funcarea_segment,
     states_render_segment,
     base_lower_memory_segment,
     base_lower_end_segment,
@@ -334,7 +335,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     sizeof(mobj_pos_t),
     sizeof(spriteframe_t),
     sprites_segment,
-    MAXVISSPRITES
+    MAXVISSPRITES,
+    fwipe_code_area_segment
     
 };
 

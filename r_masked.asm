@@ -185,14 +185,14 @@ push  si
 push  di
 
 
-mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT)
+mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) ; shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
 ; todo optimize this read
 mov   ax, word ptr ds:[_dc_x]
 
 ; shift ax by (2 - detailshift.)
-;SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift:
+SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift:
 sar   ax, 1
 sar   ax, 1
 
@@ -203,7 +203,7 @@ sar   ax, 1
 mov   bx, word ptr ds:[_dc_yl]
 mov   si, bx
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-;SELFMODIFY_COLFUNC_m_add_destview_offset:
+SELFMODIFY_MASKED_add_destview_offset:
 add   ax, 01000h
 
 ; todo optimize this read
@@ -230,7 +230,7 @@ xchg  ax, bx    ; dc_yl in ax
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-SELFMODIFY_COLFUNC_m2l_set_colormap_index_jump:
+SELFMODIFY_MASKED_set_colormap_index_jump:
 dw 0400h
 ; addr 0400 + first byte (4x colormap.)
 
@@ -268,8 +268,8 @@ push  bp
 mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
 
 ; slow and ugly - infer it anohter way later if possible.
-mov   al, byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_]
-mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2l_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
+mov   al, byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_]
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 
 mov   cl, dl
@@ -624,7 +624,7 @@ mov   al, byte ptr ds:[si + 1]
 
 sal   al, 1
 sal   al, 1
-mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 ; todo move this out to a higher level! possibly when executesetviewsize happens.
 
@@ -1313,7 +1313,7 @@ fixed_colormap:
 mov   al, byte ptr ds:[_fixedcolormap]
 sal   al, 1
 sal   al, 1
-mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 jmp   colormap_set
 
 
@@ -1678,7 +1678,7 @@ mov   al, byte ptr es:[bx]
 ;mov   byte ptr ds:[_dc_colormap_index], al
 sal   al, 1
 sal   al, 1
-mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 got_colormap:
 mov   ax, 0FFFFh
@@ -2928,14 +2928,14 @@ push  si
 push  di
 
 
-mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT)
+mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) ; shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
 ; todo optimize this read
 mov   ax, word ptr ds:[_dc_x]
 
 ; shift ax by (2 - detailshift.)
-;SELFMODIFY_COLFUNC_m_detailshift_2_minus_16_bit_shift:
+SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:
 sar   ax, 1
 sar   ax, 1
 
@@ -2946,7 +2946,7 @@ sar   ax, 1
 mov   bx, word ptr ds:[_dc_yl]
 mov   si, bx
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-;SELFMODIFY_COLFUNC_m_add_destview_offset:
+SELFMODIFY_MASKED_multi_add_destview_offset:
 add   ax, 01000h
 
 ; todo optimize this read
@@ -2971,7 +2971,7 @@ xchg  ax, bx    ; dc_yl in ax
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump:
+SELFMODIFY_MASKED_multi_set_colormap_index_jump:
 dw 0400h
 ; addr 0400 + first byte (4x colormap.)
 
@@ -3167,5 +3167,140 @@ jmp       increment_visplane_sort_loop_variables
 ENDP
 
 
+
+
+
+
+
+
+
+
+
+;
+; The following functions are loaded into a different segment at runtime.
+; However, at compile time they have access to the labels in this file.
+;
+
+
+;R_WriteBackViewConstantsMasked
+
+PROC R_WriteBackViewConstantsMasked_ FAR
+PUBLIC R_WriteBackViewConstantsMasked_ 
+
+
+
+mov      ax, DRAWFUZZCOL_AREA_SEGMENT
+mov      ds, ax
+
+
+ASSUME DS:R_MASKED_TEXT
+
+mov      ax,  word ptr ss:[_detailshift]
+
+; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
+
+cmp      al, 1
+jb       set_to_zero_masked
+je       set_to_one_masked
+
+; detailshift 2 case. usually involves no shift. in this case - we just jump past the shift code.
+
+; nop 
+mov      ax, 0c089h 
+
+; write to colfunc segment
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+2], ax
+
+
+
+
+; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
+; 0EBh, 006h = jmp 6
+
+
+
+jmp      done_modding_shift_detail_code_masked
+set_to_one_masked:
+
+; detailshift 1 case. usually involves one shift pair.
+; in this case - we insert nops (nopish?) code to replace the first shift pair
+
+; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
+
+; d1 f8  = sar ax, 1
+mov      ax, 0f8d1h 
+
+; write to colfunc segment
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+0], ax
+
+; nop 
+mov      ax, 0c089h 
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+2], ax
+
+
+
+; 81 c3 00 00 = add bx, 0000. Not technically a nop, but probably better than two mov ax, ax?
+; 89 c0       = mov ax, ax. two byte nop.
+
+jmp      done_modding_shift_detail_code_masked
+set_to_zero_masked:
+
+; detailshift 0 case. usually involves two shift pairs.
+; in this case - we make that first shift a proper shift
+
+; d1 f8  = sar ax, 1
+mov      ax, 0f8d1h 
+
+; write to colfunc segment
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_DrawFuzzColumn_+2], ax
+
+
+; fall thru
+done_modding_shift_detail_code_masked:
+
+
+mov      ax, ss
+mov      ds, ax
+
+retf
+
+endp
+
+;R_WriteBackMaskedFrameConstants
+
+PROC R_WriteBackMaskedFrameConstants_ FAR
+PUBLIC R_WriteBackMaskedFrameConstants_ 
+
+; todo: merge this with some other code. maybe R_DrawMasked and use CS
+
+mov      ax, DRAWFUZZCOL_AREA_SEGMENT
+mov      es, ax
+
+; get whole dword at the end here.
+mov      ax, word ptr ds:[_destview]
+mov      word ptr es:[SELFMODIFY_MASKED_add_destview_offset- OFFSET R_DrawFuzzColumn_+1], ax
+mov      word ptr es:[SELFMODIFY_MASKED_multi_add_destview_offset- OFFSET R_DrawFuzzColumn_+1], ax
+
+
+
+
+retf
+
+
+
+ENDP
+
+; end marker for this asm file
+PROC R_MASKED_END_ FAR
+PUBLIC R_MASKED_END_ 
+ENDP
 
 END

@@ -132,6 +132,10 @@ retf
 
 ENDP
 
+; end marker for this asm file
+PROC D_ALGO_END_ FAR
+PUBLIC D_ALGO_END_ 
+ENDP
 
 
 END

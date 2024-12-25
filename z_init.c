@@ -492,23 +492,9 @@ void __near Z_LoadBinaries() {
 	FAR_fread(drawfuzzcol_area, codesize, 1, fp2);
 	
 
-	//fread(&codesize, 2, 1, fp2);
-	//FAR_fread(drawmaskedfuncarea_sprite, codesize, 1, fp2);
-
-/*
-	{
-		FILE* fp1 = fopen("log4.txt", "wb");
-		byte __far* addr1 = MK_FP(drawfuzzcol_area_segment, 0);
-	    FAR_fwrite((byte __far *)addr1, R_DrawFuzzColumnCodeSize, 1, fp1);
-		fclose(fp1);
-
-		I_Error("done %x %x\n %lx %lx", R_DrawFuzzColumnCodeSize, R_DrawFuzzColumnCodeSize,
-		addr1, addr1 + R_DrawFuzzColumnCodeSize
-		
-		);
-
-	}
-*/
+	// load R_WriteBackViewConstantsMasked into another empty code space - they do not fit into the above area.
+	fread(&codesize, 2, 1, fp2);
+	FAR_fread(maskedconstants_funcarea, codesize, 1, fp2);
 
 	Z_QuickMapRenderPlanes();
 

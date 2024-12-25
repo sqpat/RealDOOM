@@ -690,6 +690,7 @@ void __near D_Display (void) {
         borderdrawcount = 3;
     }
 
+
 #ifndef SKIPWIPE
 
     // save the current screen if about to wipe
@@ -888,9 +889,7 @@ void __near D_DoomLoop (void) {
 	}
 
 
-	//I_Error("Here! 0");
     I_InitGraphics ();
-	//I_Error("Here! B");
 
     while (1) {
 		// process one or more tics
