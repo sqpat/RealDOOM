@@ -1774,6 +1774,7 @@ COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOO
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 
 
+; dumb idea: one version for SourceSegment0 one version for SourceSegment1
 ;
 ; R_DrawColumnPrep
 ;
@@ -1782,13 +1783,12 @@ PROC  R_DrawColumnPrep_
 PUBLIC  R_DrawColumnPrep_ 
 
 ; si:di is dc_yl, dc_yh
-
+; dx is texturemid+2
 
 ; argument AX is diff for various segment lookups
 
 push  bx
-push  cx  ; cx unused... 
-push  dx
+push  cx  ; did we need to preserve cx?
 push  si
 push  di
 
@@ -1817,12 +1817,13 @@ add   ax, 01000h
 mov   si, di
 sub   si, bx                                 ;
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
-xchg  ax, di
+xchg  ax, di								 ; di gets screen dest offset
 mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 
 xchg  ax, bx    ; dc_yl in ax
+mov   si, dx
 
 ; todo: put dc_iscale in cx:bx...
 
@@ -1837,7 +1838,6 @@ dw 0300h
 
 pop   di 
 pop   si
-pop   dx
 pop   cx
 pop   bx
 retf  
@@ -1884,6 +1884,11 @@ add   ax, 01000h
 just_do_draw0:
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
+SELFMODIFY_set_midtexturemid_hi:
+SELFMODIFY_set_toptexturemid_hi:
+
+mov   dx, 01000h
+
 call  R_DrawColumnPrep_
 pop   es
 ret
@@ -1996,6 +2001,10 @@ add   ax, 01000h
 just_do_draw1:
 mov   word ptr ds:[_dc_source_segment], ax
 xor   ax, ax
+
+SELFMODIFY_set_bottexturemid_hi:
+mov   dx, 01000h
+
 call  R_DrawColumnPrep_
 pop   es
 ret
@@ -2668,9 +2677,6 @@ jl    mid_no_pixels_to_draw
 ; si:di are dc_yl, dc_yh
 SELFMODIFY_set_midtexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h    ; todo write these into the code too?
-SELFMODIFY_set_midtexturemid_hi:
-mov   word ptr ds:[_dc_texturemid + 2], 01000h
-
 
 call  R_GetSourceSegment0_
 
@@ -2762,8 +2768,6 @@ xchg   cx, di
 ; si:di are dc_yl, dc_yh
 SELFMODIFY_set_toptexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h
-SELFMODIFY_set_toptexturemid_hi:
-mov   word ptr ds:[_dc_texturemid + 2], 01000h
 ; dx already set to texture
 
 
@@ -2818,8 +2822,6 @@ xchg   cx, si
 ; si:di are dc_yl, dc_yh
 SELFMODIFY_set_bottexturemid_lo:
 mov   word ptr ds:[_dc_texturemid], 01000h
-SELFMODIFY_set_bottexturemid_hi:
-mov   word ptr ds:[_dc_texturemid + 2], 01000h
 
 call  R_GetSourceSegment1_
 xchg   cx, si
@@ -3280,7 +3282,7 @@ done_with_bottom_peg:
 mov       bx, word ptr [bp - 028h]
 add       ax, word ptr [bx]
 
-mov       word ptr cs:[SELFMODIFY_set_midtexturemid_hi+4], ax
+mov       word ptr cs:[SELFMODIFY_set_midtexturemid_hi+1], ax
 
 
 les       bx, dword ptr ds:[_ds_p]
@@ -4172,7 +4174,7 @@ do_selfmodify_toptexture:
 ; set _rw_toptexturemid in rendersegloop
 
 mov   word ptr cs:[SELFMODIFY_set_toptexturemid_lo+4], ax
-mov   word ptr cs:[SELFMODIFY_set_toptexturemid_hi+4], dx
+mov   word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1], dx
 
 
 toptexture_stuff_done:
@@ -4207,7 +4209,7 @@ do_selfmodify_bottexture:
 ; set _rw_toptexturemid in rendersegloop
 
 mov   word ptr cs:[SELFMODIFY_set_bottexturemid_lo+4], ax
-mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+4], dx
+mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1], dx
 
 
 bottexture_stuff_done:
@@ -4220,8 +4222,9 @@ mov       ax, word ptr [bx]
 
 
 ; todo: optim and only write this once.
-add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+4], ax
-add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+4], ax
+; ?? how
+add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1], ax
+add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1], ax
 les       bx, dword ptr [bp - 016h] ; sides
 cmp       word ptr es:[bx + 4], 0
 

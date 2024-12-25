@@ -173,23 +173,25 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 ; R_DrawColumnPrepMaskedSingle
 ;
 	
-PROC  R_DrawColumnPrepMaskedSingle_
+PROC  R_DrawColumnPrepMaskedSingle_ NEAR
 PUBLIC  R_DrawColumnPrepMaskedSingle_ 
 
 ; argument AX is diff for various segment lookups
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+
+; no push/pop needed. outer function returns immediately after.
 
 
 mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) ; shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
-; todo optimize this read
-mov   ax, word ptr ds:[_dc_x]
+;dx is dc_yh
+;si is dc_yl
+;di is dc_x
+
+
+; grab dc_x..
+xchg   ax, di
 
 ; shift ax by (2 - detailshift.)
 SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift:
@@ -199,15 +201,12 @@ sar   ax, 1
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
-; todo optimize this read
-mov   bx, word ptr ds:[_dc_yl]
-mov   si, bx
+mov   bx, si
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
 SELFMODIFY_MASKED_add_destview_offset:
 add   ax, 01000h
 
-; todo optimize this read
-mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
+mov   si, dx                                 ; grab dc_yh
 sub   si, bx                                 ;
 
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
@@ -217,14 +216,13 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTIO
 
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
-
-
  
 
 ; if we make a separate drawcol masked we can use a constant here.
 
 xchg  ax, bx    ; dc_yl in ax
 
+mov   si, word ptr ds:[_dc_texturemid+2]
 
 ; dynamic call lookuptable based on used colormaps address being CS:00
 
@@ -235,12 +233,7 @@ dw 0400h
 ; addr 0400 + first byte (4x colormap.)
 
 
-pop   di 
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
+ret
 
 
 
@@ -339,6 +332,7 @@ adc  si, 0
 
 
 mov   bx, word ptr ds:[_dc_x]
+mov   di, bx ; copy dc_x to di...
 sal   bx, 1
 les   ax, dword ptr ds:[_mfloorclip]
 add   bx, ax
@@ -372,8 +366,7 @@ cmp   si, dx
 jg    exit_function_single
 
 
-mov   word ptr ds:[_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
-mov   word ptr ds:[_dc_yl], si ;  dc_x could also be trivially recovered from bx
+; dx/si contain dc_yh/dc_yl
 
 ; todo: this can be a second, local version of the function that is specialized?
 call  R_DrawColumnPrepMaskedSingle_
@@ -864,7 +857,6 @@ add   ax, cx
 ; cx is preserved by this call here
 ; so is ES
 
-; call R_DrawMaskedColumnCallHigh
 call R_DrawMaskedColumn_
 
 SELFMODIFY_MASKED_detailshiftitercount_2:
@@ -1888,7 +1880,6 @@ add   bx, bx
 SELFMODIFY_MASKED_maskedpostofs_1:
 mov   bx, word ptr es:[bx+08000h]
 mov   cx, MASKEDPOSTDATA_SEGMENT
-;call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
 
 call R_DrawMaskedColumn_
 
@@ -2751,8 +2742,8 @@ mov   si, bx        ; si now holds column address.
 mov   es, cx
 push  ax            ; bp - 4
 
-mov   cx, word ptr ds:[_dc_texturemid+2]
-push  cx            ; bp - 6
+mov   ax, word ptr ds:[_dc_texturemid+2]
+mov   word ptr cs:[SELFMODIFY_MASKED_texturemid_hi+1 - OFFSET R_DrawFuzzColumn_], ax
 xor   di, di        ; di used as currentoffset.
 
 cmp   byte ptr es:[si], 0FFh
@@ -2881,14 +2872,15 @@ shr   bx, 1
 shr   bx, 1
 ENDIF
 
-mov   dx, word ptr [bp - 6]
+SELFMODIFY_MASKED_texturemid_hi:
+mov   dx, 01000h;  dc_texturemid intbits
 les   ax, dword ptr [bp - 4]
 add   ax, bx
 mov   word ptr ds:[_dc_source_segment], ax
 mov   al, byte ptr es:[si]
 xor   ah, ah
 sub   dx, ax
-mov   word ptr ds:[_dc_texturemid+2], dx
+;mov   word ptr ds:[_dc_texturemid+2], dx
 
 call  R_DrawColumnPrepMaskedMulti_
 
@@ -2908,8 +2900,8 @@ je    exit_function
 jmp   draw_next_column_patch ; todo inverse and skip jump
 exit_function:
 
-pop   ax; , word ptr [bp - 6]             ; restore dc_texture_mid
-mov   word ptr ds:[_dc_texturemid+2], ax
+;pop   ax; , word ptr [bp - 6]             ; restore dc_texture_mid
+;mov   word ptr ds:[_dc_texturemid+2], ax
 mov   cx, es               ; restore cx
 LEAVE_MACRO
 pop   di
@@ -2974,7 +2966,7 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTIO
 ; if we make a separate drawcol masked we can use a constant here.
 
 xchg  ax, bx    ; dc_yl in ax
-
+mov   si, dx    ; dc_texturemid+2 in si
 
 ; dynamic call lookuptable based on used colormaps address being CS:00
 

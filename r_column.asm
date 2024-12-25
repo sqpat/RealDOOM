@@ -94,7 +94,7 @@ PUBLIC  R_DrawColumn_
 
     
     add   ax, word ptr ds:[_dc_texturemid+0]
-    adc   dx, word ptr ds:[_dc_texturemid+2]   ; first add dx_texture mid
+    adc   dx, si ; si was holding onto _dc_texturemid+2
 
     mov   dh, dl
     mov   dl, ah                          ; mid 16 bits of the 32 bit dx:ax into dx
