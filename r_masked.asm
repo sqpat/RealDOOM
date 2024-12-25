@@ -620,7 +620,6 @@ mov   bp, sp
 
 
 mov   al, byte ptr ds:[si + 1]
-;mov   byte ptr ds:[_dc_colormap_index], al
 ;2e a2 11 11 
 ; al is colormap. this function always uses the high drawcall (for now)
 
@@ -1199,7 +1198,8 @@ sar   dx, 1
 sar   dx, 1
 ENDIF
 
-mov   al, byte ptr ds:[_extralight]
+SELFMODIFY_MASKED_extralight_1:
+mov   al, 0
 add   ax, dx
 
 SELFMODIFY_MASKED_add_vertex_field:
@@ -1302,12 +1302,12 @@ use_frontsector_ceil:
 xor   cx, cx
 
 jmp sector_height_chosen
+SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
 fixed_colormap:
-mov   al, byte ptr ds:[_fixedcolormap]
-sal   al, 1
-sal   al, 1
-mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
+SELFMODIFY_MASKED_fixedcolormap_3:
+mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], 0
 jmp   colormap_set
+
 
 
 front_back_floor_case:
@@ -1369,14 +1369,20 @@ add   ax, word ptr [di]
 mov   word ptr ds:[_dc_texturemid], dx
 mov   word ptr ds:[_dc_texturemid+2], ax
 
+; here we used to set the fixedcolormap for the frame. 
+; however we do this at frame start now via self modifying code
+
 ;if (fixedcolormap) {
 ;		// todo if this is 0 maybe skip the if?
 ;		dc_colormap_segment = colormaps_segment_maskedmapping;
 ;		dc_colormap_index = fixedcolormap;
 ;	}
 
-cmp   byte ptr ds:[_fixedcolormap], 0
-jne    fixed_colormap
+
+
+SELFMODIFY_MASKED_fixedcolormap_2:
+jmp fixed_colormap		; jump when fixedcolormap is not 0.
+SELFMODIFY_MASKED_fixedcolormap_2_AFTER:
 colormap_set:
 
 ; set up main outer loop
@@ -1619,8 +1625,9 @@ mov   di, word ptr ds:[_maskedcachedbasecol]
 
 cmp   si, MAXSHORT			; dont render nonmasked columns here.
 je   increment_inner_loop
-cmp   byte ptr ds:[_fixedcolormap], 0   
-jne   got_colormap
+SELFMODIFY_MASKED_fixedcolormap_1:
+jmp   got_colormap ; cmp [_fixedcolormap], 0 -> jne gotcolormap
+SELFMODIFY_MASKED_fixedcolormap_1_AFTER:
 ; calculate colormap
 cmp   word ptr ds:[_spryscale + 2], 3
 jge   use_maxlight
@@ -1674,11 +1681,11 @@ add   bx, ax
 mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx]
-;mov   byte ptr ds:[_dc_colormap_index], al
 sal   al, 1
 sal   al, 1
 mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
+SELFMODIFY_MASKED_fixedcolormap_1_TARGET:
 got_colormap:
 mov   ax, 0FFFFh
 mov   dx, ax
@@ -3309,6 +3316,8 @@ mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_DrawFuzzColumn_],
 mov      ax, ss
 mov      ds, ax
 
+ASSUME DS:DGROUP
+
 retf
 
 endp
@@ -3321,26 +3330,70 @@ PUBLIC R_WriteBackMaskedFrameConstants_
 ; todo: merge this with some other code. maybe R_DrawMasked and use CS
 
 mov      ax, DRAWFUZZCOL_AREA_SEGMENT
-mov      es, ax
+mov      ds, ax
+
+
+ASSUME DS:R_MASKED_TEXT
 
 ; get whole dword at the end here.
-mov      ax, word ptr ds:[_destview]
-mov      word ptr es:[SELFMODIFY_MASKED_add_destview_offset- OFFSET R_DrawFuzzColumn_+1], ax
-mov      word ptr es:[SELFMODIFY_MASKED_multi_add_destview_offset- OFFSET R_DrawFuzzColumn_+1], ax
+mov      ax, word ptr ss:[_destview]
+mov      word ptr ds:[SELFMODIFY_MASKED_add_destview_offset- OFFSET R_DrawFuzzColumn_+1], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_add_destview_offset- OFFSET R_DrawFuzzColumn_+1], ax
 
-mov   ax, word ptr ds:[_centery]
-mov   word ptr es:[SELFMODIFY_MASKED_centery_1+3 - OFFSET R_DrawFuzzColumn_], ax
-mov   word ptr es:[SELFMODIFY_MASKED_centery_2+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   ax, word ptr ss:[_centery]
+mov   word ptr ds:[SELFMODIFY_MASKED_centery_1+3 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_centery_2+1 - OFFSET R_DrawFuzzColumn_], ax
 
-mov   ax, word ptr ds:[_viewz+0]
-mov   word ptr es:[SELFMODIFY_MASKED_viewz_lo_1+2 - OFFSET R_DrawFuzzColumn_], ax
-mov   ax, word ptr ds:[_viewz+2]
-mov   word ptr es:[SELFMODIFY_MASKED_viewz_hi_1+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   ax, word ptr ss:[_viewz+0]
+mov   word ptr ds:[SELFMODIFY_MASKED_viewz_lo_1+2 - OFFSET R_DrawFuzzColumn_], ax
+mov   ax, word ptr ss:[_viewz+2]
+mov   word ptr ds:[SELFMODIFY_MASKED_viewz_hi_1+1 - OFFSET R_DrawFuzzColumn_], ax
 
-mov   ax, word ptr ds:[_destview+0]
-mov   word ptr es:[SELFMODIFY_MASKED_destview_lo_1+2 - OFFSET R_DrawFuzzColumn_], ax
-mov   ax, word ptr ds:[_destview+2]
-mov   word ptr es:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   ax, word ptr ss:[_destview+0]
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_1+2 - OFFSET R_DrawFuzzColumn_], ax
+mov   ax, word ptr ss:[_destview+2]
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_DrawFuzzColumn_], ax
+
+mov   al, byte ptr ss:[_extralight]
+mov   byte ptr ds:[SELFMODIFY_MASKED_extralight_1+1 - OFFSET R_DrawFuzzColumn_], al
+
+mov   al, byte ptr ss:[_fixedcolormap]
+cmp   al, 0
+jne   do_fixedcolormap_selfmodify
+do_no_fixedcolormap_selfmodify:
+
+; replace with nop.
+; nop 
+mov      ax, 0c089h 
+mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_DrawFuzzColumn_], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_DrawFuzzColumn_], ax
+
+
+
+jmp done_with_fixedcolormap_selfmodify
+
+do_fixedcolormap_selfmodify:
+; preshift this left 2 now.
+sal   al, 1
+sal   al, 1
+mov   byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_3+5 - OFFSET R_DrawFuzzColumn_], al
+
+; modify jmp in place.
+mov   ah, (SELFMODIFY_MASKED_fixedcolormap_1_TARGET - SELFMODIFY_MASKED_fixedcolormap_1_AFTER)
+mov   al, 0EBh  ; jmp rel8
+mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_DrawFuzzColumn_], ax
+mov   ah, (SELFMODIFY_MASKED_fixedcolormap_2_TARGET - SELFMODIFY_MASKED_fixedcolormap_2_AFTER)
+mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_DrawFuzzColumn_], ax
+
+
+
+; fall thru
+done_with_fixedcolormap_selfmodify:
+
+mov      ax, ss
+mov      ds, ax
+
+ASSUME DS:DGROUP
 
 
 retf

@@ -539,6 +539,7 @@ void R_SetupFrame () {
 		
 		walllights = 0;//scalelightfixed;
 
+		// todo movsw
 		for (i=0 ; i<MAXLIGHTSCALE ; i++){
 			scalelightfixed[i] = fixedcolormap;
 		}

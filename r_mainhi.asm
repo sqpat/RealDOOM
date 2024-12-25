@@ -1614,12 +1614,11 @@ SELFMODIFY_set_al_to_flags2:
 mov   al, 00h
 test  al, 4
 jne   exit_set_shadow
-SELFMODIFY_set_fixedcolormap_1:
-mov   al, 0
-test  al, al
-jne   exit_set_fixed_colormap
+SELFMODIFY_set_fixedcolormap_2:
+jmp   exit_set_fixed_colormap
+SELFMODIFY_set_fixedcolormap_2_AFTER:
 test  byte ptr [bp - 6], FF_FULLBRIGHT
-jne   exit_set_fixed_colormap
+jne   exit_set_fullbright_colormap
 
 
 ;        index = xscale.w>>(LIGHTSCALESHIFT-detailshift.b.bytelow);
@@ -1652,12 +1651,28 @@ mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   bx, word ptr ds:[_spritelights]
 mov   es, ax
 mov   al, byte ptr es:[bx+di]
-exit_set_fixed_colormap:
 mov   byte ptr [si + 1], al
 LEAVE_MACRO
 pop   es
 pop   si
 ret   
+
+exit_set_fullbright_colormap:
+mov   byte ptr [si + 1], 0
+LEAVE_MACRO
+pop   es
+pop   si
+ret   
+
+SELFMODIFY_set_fixedcolormap_2_TARGET:
+SELFMODIFY_set_fixedcolormap_1:
+exit_set_fixed_colormap:
+mov   byte ptr [si + 1], 0
+LEAVE_MACRO
+pop   es
+pop   si
+ret   
+
 
 flip_zero:
 mov   word ptr [si + 016h], 0
@@ -3368,10 +3383,10 @@ and       ah, FINE_ANGLE_HIGH_BYTE
 ; set centerangle in rendersegloop
 mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
 
-SELFMODIFY_set_fixedcolormap_2:
-mov       al, 0
-cmp       al, 0
-jne       seg_textured_check_done
+
+SELFMODIFY_set_fixedcolormap_3:
+jmp       seg_textured_check_done    ; dont check walllights if fixedcolormap
+SELFMODIFY_set_fixedcolormap_3_AFTER:
 mov       al, byte ptr [bp - 8]
 xor       ah, ah
 SELFMODIFY_set_extralight_2:
@@ -3413,6 +3428,7 @@ add       ax, scalelight_offset_in_fixed_scalelight
 mov   word ptr cs:[SELFMODIFY_add_wallights+3], ax
 ; ? do math here and write this ahead to drawcolumn colormapsindex?
 
+SELFMODIFY_set_fixedcolormap_3_TARGET:
 seg_textured_check_done:
 mov       ax, word ptr [bp - 010h]
 SELFMODIFY_set_viewz_shortheight_4:
@@ -4515,8 +4531,32 @@ mov      byte ptr ds:[SELFMODIFY_set_extralight_1+1], al
 mov      byte ptr ds:[SELFMODIFY_set_extralight_2+1], al
 
 mov      al, byte ptr ss:[_fixedcolormap]
-mov      byte ptr ds:[SELFMODIFY_set_fixedcolormap_1+1], al
-mov      byte ptr ds:[SELFMODIFY_set_fixedcolormap_2+1], al
+cmp      al, 0
+jne      do_bsp_fixedcolormap_selfmodify
+do_no_bsp_fixedcolormap_selfmodify:
+
+
+mov      ax, 0c089h 
+mov      word ptr ds:[SELFMODIFY_set_fixedcolormap_2], ax
+mov      word ptr ds:[SELFMODIFY_set_fixedcolormap_3], ax
+
+
+jmp      done_with_bsp_fixedcolormap_selfmodify
+do_bsp_fixedcolormap_selfmodify:
+
+mov      byte ptr ds:[SELFMODIFY_set_fixedcolormap_1+3], al
+
+mov   ah, (SELFMODIFY_set_fixedcolormap_2_TARGET - SELFMODIFY_set_fixedcolormap_2_AFTER)
+mov   al, 0EBh  ; jmp rel8
+mov   word ptr ds:[SELFMODIFY_set_fixedcolormap_2], ax
+mov   ah, (SELFMODIFY_set_fixedcolormap_3_TARGET - SELFMODIFY_set_fixedcolormap_3_AFTER)
+mov   word ptr ds:[SELFMODIFY_set_fixedcolormap_3], ax
+
+
+; fall thru
+done_with_bsp_fixedcolormap_selfmodify:
+
+
 
 
 mov      ax, word ptr ss:[_viewx]
