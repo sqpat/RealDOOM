@@ -517,7 +517,7 @@ jne   high_border_adjusted
 inc   dx 
 high_border_adjusted:
 SELFMODIFY_MASKED_viewheight_1:
-mov   ax, word ptr ds:[_viewheight]
+mov   ax, 01000h
 dec   ax
 cmp   ax, di    ; di still holds _dc_yh
 jne   low_border_adjusted
@@ -535,7 +535,7 @@ mov   dx, ax
 and   al, 3
 SELFMODIFY_MASKED_detailshiftplus1_1:
 add   al, 0
-mov   byte ptr cs:[SELFMODIFY_set_bx_to_lookup+1 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_lookup+1 - OFFSET R_DrawFuzzColumn_], al
 mov   cx, DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT
 
 add   bx, bx
@@ -545,7 +545,7 @@ mov   es, cx
 ; todo: proper shift jmp thing.
 mov   cl, byte ptr ds:[_detailshift2minus]
 sar   dx, cl
-SELFMODIFY_set_dx_to_destview_offset:
+SELFMODIFY_MASKED_destview_lo_1:
 add   dx, 1000h   ; need the 2 byte constant.
 add   dx, word ptr es:[bx]
 mov   es, ax
@@ -554,7 +554,7 @@ mov   cx, dx
 
 ; vga plane stuff.
 mov   dx, SC_DATA
-SELFMODIFY_set_bx_to_lookup:
+SELFMODIFY_MASKED_set_bx_to_lookup:
 mov   bx, 0
 mov   al, byte ptr ds:[bx + _quality_port_lookup]
 
@@ -564,14 +564,12 @@ mov   dx, GC_INDEX
 mov   ax, word ptr ds:[bx + _vga_read_port_lookup]
 out   dx, ax
 
-SELFMODIFY_set_bx_to_destview_segment:
+SELFMODIFY_MASKED_destview_hi_1:
 mov   bx, 0
 
 ; pass in count via di
 ; pass in destview via bx
 ; pass in offset via cx
-
-;call _R_DrawFuzzColumnCallHigh
 
 ; todo - fix cs/colormaps offset data?
 call R_DrawFuzzColumn_
@@ -668,11 +666,10 @@ mov   word ptr ds:[_dc_texturemid], ax
 mov   word ptr ds:[_dc_texturemid + 2], dx
 
 
-SELFMODIFY_MASKED_centery_1:
-mov   ax, word ptr ds:[_centery]
 lea   di, ds:[_sprtopscreen]
 mov   word ptr ds:[di], 0		; di is _sprtopscreen
-mov   word ptr ds:[di + 2], ax
+SELFMODIFY_MASKED_centery_1:
+mov   word ptr ds:[di + 2], 01000h
 
 mov   ax, word ptr [si + 01Ah]  ; vis->scale
 mov   dx, word ptr [si + 01Ch]  
@@ -721,8 +718,8 @@ mov   dx, ax
 SELFMODIFY_MASKED_detailshiftandval_1:
 and   ax, 01000h
 
-mov   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4+1 - OFFSET R_DrawFuzzColumn_], ax
-mov   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_DrawFuzzColumn_], ax
 
 sub   dx, ax
 xchg  ax, dx
@@ -770,8 +767,8 @@ jne   decrementbase4loop
 base4diff_is_zero:
 
 ; zero xoffset loop iter
-mov   byte ptr cs:[SELFMODIFY_set_bx_to_xoffset+1 - OFFSET R_DrawFuzzColumn_], 0
-mov   byte ptr cs:[SELFMODIFY_set_bx_to_xoffset_shadow+1 - OFFSET R_DrawFuzzColumn_], 0
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset+1 - OFFSET R_DrawFuzzColumn_], 0
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset_shadow+1 - OFFSET R_DrawFuzzColumn_], 0
 
 mov   cx, es
 
@@ -829,7 +826,7 @@ jmp   draw_shadow_sprite
 
 loop_vga_plane_draw_normal:
 
-SELFMODIFY_set_bx_to_xoffset:
+SELFMODIFY_MASKED_set_bx_to_xoffset:
 mov   bx, 0 ; zero out bh
 SELFMODIFY_MASKED_detailshiftitercount_1:
 cmp   bx, 0
@@ -842,7 +839,7 @@ mov   al, byte ptr ds:[bx + 20]
 out   dx, al
 mov   di, word ptr [bp - 4]
 mov   dx, word ptr [bp - 2]
-SELFMODIFY_set_ax_to_dc_x_base4:
+SELFMODIFY_MASKED_set_ax_to_dc_x_base4:
 mov   ax, 0
 mov   word ptr ds:[_dc_x], ax
 cmp   ax, word ptr [si + 2]
@@ -891,23 +888,17 @@ adc   dx, word ptr [bp - 6]
 jmp   draw_sprite_normal_innerloop
 
 end_draw_sprite_normal_innerloop:
-inc   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4+1 - OFFSET R_DrawFuzzColumn_]
-inc   byte ptr cs:[SELFMODIFY_set_bx_to_xoffset+1 - OFFSET R_DrawFuzzColumn_]
+inc   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4+1 - OFFSET R_DrawFuzzColumn_]
+inc   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset+1 - OFFSET R_DrawFuzzColumn_]
 mov   ax, word ptr [si + 01Eh]
 add   word ptr [bp - 4], ax
 mov   ax, word ptr [si + 020h]
 adc   word ptr [bp - 2], ax
 jmp   loop_vga_plane_draw_normal
 draw_shadow_sprite:
-SELFMODIFY_MUASKED_destview_lo_1:
-mov   ax, word ptr ds:[_destview]
-mov   word ptr cs:[SELFMODIFY_set_dx_to_destview_offset+2 - OFFSET R_DrawFuzzColumn_], ax
-SELFMODIFY_MUASKED_destview_hi_1:
-mov   ax, word ptr ds:[_destview + 2]
-mov   word ptr cs:[SELFMODIFY_set_bx_to_destview_segment+1 - OFFSET R_DrawFuzzColumn_], ax
 
 loop_vga_plane_draw_shadow:
-SELFMODIFY_set_bx_to_xoffset_shadow:
+SELFMODIFY_MASKED_set_bx_to_xoffset_shadow:
 mov   bx, 0
 SELFMODIFY_MASKED_detailshiftitercount_4:
 cmp   bx, 0
@@ -920,7 +911,7 @@ mov   al, byte ptr ds:[bx + 20]
 out   dx, al
 mov   di, word ptr [bp - 4]
 mov   dx, word ptr [bp - 2]
-SELFMODIFY_set_ax_to_dc_x_base4_shadow:
+SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow:
 mov   ax, 0
 mov   word ptr ds:[_dc_x], ax
 
@@ -953,8 +944,8 @@ adc   dx, word ptr [bp - 6]
 jmp   draw_sprite_shadow_innerloop
 
 end_draw_sprite_shadow_innerloop:
-inc   word ptr cs:[SELFMODIFY_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_DrawFuzzColumn_]
-inc   byte ptr cs:[SELFMODIFY_set_bx_to_xoffset_shadow+1 - OFFSET R_DrawFuzzColumn_]
+inc   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_DrawFuzzColumn_]
+inc   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset_shadow+1 - OFFSET R_DrawFuzzColumn_]
 mov   ax, word ptr [si + 01Eh]
 add   word ptr [bp - 4], ax
 mov   ax, word ptr [si + 020h]
@@ -1031,11 +1022,11 @@ sub   sp, 01Eh
 mov   word ptr [bp - 01Ah], di
 mov   word ptr [bp - 018h], es
 
-mov   word ptr cs:[SELFMODIFY_x1_field_1+1 - OFFSET R_DrawFuzzColumn_], ax
-mov   word ptr cs:[SELFMODIFY_x1_field_2+1 - OFFSET R_DrawFuzzColumn_], ax
-mov   word ptr cs:[SELFMODIFY_x1_field_3+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_1+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_2+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_3+1 - OFFSET R_DrawFuzzColumn_], ax
 
-mov   word ptr cs:[SELFMODIFY_cmp_to_x2+1 - OFFSET R_DrawFuzzColumn_], cx
+mov   word ptr cs:[SELFMODIFY_MASKED_cmp_to_x2+1 - OFFSET R_DrawFuzzColumn_], cx
 
 mov   ax, word ptr es:[di]       ; get ds->cursegvalue
 mov   word ptr ds:[_curseg], ax  
@@ -1064,12 +1055,12 @@ mov   es, ax
 mov   al, byte ptr es:[si]			; translate texnum to lookup
 
 ; put texnum where it needs to be
-mov   word ptr cs:[SELFMODIFY_texnum_1+1 - OFFSET R_DrawFuzzColumn_], si
-mov   word ptr cs:[SELFMODIFY_texnum_2+1 - OFFSET R_DrawFuzzColumn_], si
-mov   word ptr cs:[SELFMODIFY_texnum_3+1 - OFFSET R_DrawFuzzColumn_], si
+mov   word ptr cs:[SELFMODIFY_MASKED_texnum_1+1 - OFFSET R_DrawFuzzColumn_], si
+mov   word ptr cs:[SELFMODIFY_MASKED_texnum_2+1 - OFFSET R_DrawFuzzColumn_], si
+mov   word ptr cs:[SELFMODIFY_MASKED_texnum_3+1 - OFFSET R_DrawFuzzColumn_], si
 
-mov   byte ptr cs:[SELFMODIFY_compare_lookup  +1 - OFFSET R_DrawFuzzColumn_], al
-mov   byte ptr cs:[SELFMODIFY_compare_lookup_2+1 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_compare_lookup  +1 - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_compare_lookup_2+1 - OFFSET R_DrawFuzzColumn_], al
 
 ;	if (lookup != 0xFF){
 cmp   al, 0FFh
@@ -1091,8 +1082,8 @@ ENDIF
 
 mov   bx, ax
 mov   ax, word ptr ds:[bx + _masked_headers + 2]
-mov   word ptr cs:[SELFMODIFY_maskedpostofs  +3 - OFFSET R_DrawFuzzColumn_], ax
-mov   word ptr cs:[SELFMODIFY_maskedpostofs_2+3 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_1  +3 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_2+3 - OFFSET R_DrawFuzzColumn_], ax
 lookup_not_ff:
 
 mov   ax, SEG_LINEDEFS_SEGMENT
@@ -1134,7 +1125,7 @@ cmp   ax, word ptr es:[bx]		; compare v1.x == v2.x
 je    xs_equal
 mov   al, 090h				    ; nop instruction
 done_comparing_vertexes:
-mov   byte ptr cs:[SELFMODIFY_add_vertex_field - OFFSET R_DrawFuzzColumn_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_add_vertex_field - OFFSET R_DrawFuzzColumn_], al
 
 
 mov   bx, word ptr [bp - 2]     ; get side_render
@@ -1211,7 +1202,7 @@ ENDIF
 mov   al, byte ptr ds:[_extralight]
 add   ax, dx
 
-SELFMODIFY_add_vertex_field:
+SELFMODIFY_MASKED_add_vertex_field:
 nop				; becomes inc ax, dec ax, or nop
 
 ;	if (lightnum < 0){
@@ -1261,7 +1252,7 @@ mov   word ptr [bp - 01Eh], bx
 mov   cx, word ptr es:[di + 010h]
 mov   word ptr [bp - 01Ch], cx
 
-SELFMODIFY_x1_field_1:
+SELFMODIFY_MASKED_x1_field_1:
 mov   ax, 08000h
 sub   ax, word ptr es:[di + 2]
 add   word ptr ds:[_walllights], 030h
@@ -1336,7 +1327,7 @@ mov   cx, TEXTUREHEIGHTS_SEGMENT
 mov   es, cx
 xor   cx, cx
 
-SELFMODIFY_texnum_3:
+SELFMODIFY_MASKED_texnum_3:
 mov   si, 08000h
 mov   cl, byte ptr es:[si]
 inc   cx
@@ -1363,9 +1354,9 @@ add   ax, cx
 
 ;     dc_texturemid.w -= viewz.w;
 SELFMODIFY_MASKED_viewz_lo_1:
-sub   dx, word ptr ds:[_viewz]
+sub   dx, 01000h
 SELFMODIFY_MASKED_viewz_hi_1:
-sbb   ax, word ptr ds:[_viewz+2]
+sbb   ax, 01000h
 
 
 
@@ -1392,7 +1383,7 @@ colormap_set:
 
 ;		int16_t dc_x_base4 = x1 & (detailshiftandval);	
 
-SELFMODIFY_x1_field_2:
+SELFMODIFY_MASKED_x1_field_2:
 mov   ax, 08000h
 mov   di, ax						; di = x1
 SELFMODIFY_MASKED_detailshiftandval_2:
@@ -1501,7 +1492,7 @@ add   ax, di		; add xoffset to dc_x
 
 
 ;	if (dc_x < x1){
-SELFMODIFY_x1_field_3:
+SELFMODIFY_MASKED_x1_field_3:
 cmp   ax, 08000h   ; x1 
 jge   calculate_sprtopscreen
 
@@ -1554,7 +1545,7 @@ done_with_mul:
 neg   ax ; no need to subtract from zero...
 mov   word ptr ds:[_sprtopscreen], ax
 SELFMODIFY_MASKED_centery_2:
-mov   ax, word ptr ds:[_centery]
+mov   ax, 01000h
 sbb   ax, dx
 mov   word ptr ds:[_sprtopscreen + 2], ax
 
@@ -1564,7 +1555,7 @@ mov   word ptr [bp - 0Ch], di
 inner_loop_draw_columns:
 
 mov   ax, word ptr ds:[_dc_x]
-SELFMODIFY_cmp_to_x2:
+SELFMODIFY_MASKED_cmp_to_x2:
 cmp   ax, 02000h
 jle   do_inner_loop
 
@@ -1722,7 +1713,7 @@ mov   ax, bx
 ; now al is usetexturecolumn
 
 ;	if (lookup != 0xFF){
-SELFMODIFY_compare_lookup_2:  
+SELFMODIFY_MASKED_compare_lookup_2:  
 mov   dl, 0FFh
 inc   dl	; if it was ff, this sets zero flag.
 jz    lookup_FF_repeat
@@ -1764,7 +1755,7 @@ add   ax, word ptr ds:[_maskedcachedsegment]
 mov   cx, MASKEDPOSTDATAOFS_SEGMENT
 mov   es, cx
 add   bx, bx
-SELFMODIFY_maskedpostofs_2:     ; todo this
+SELFMODIFY_MASKED_maskedpostofs_2:     ; todo this
 mov   bx, word ptr es:[bx+08000h]
 mov   cx, MASKEDPOSTDATA_SEGMENT
 ;call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
@@ -1851,7 +1842,7 @@ sub   ax, di
 
 
 ;	if (lookup != 0xFF){
-SELFMODIFY_compare_lookup:  
+SELFMODIFY_MASKED_compare_lookup:  
 mov   dl, 0FFh
 inc   dl
 je    lookup_FF ; todo fine?
@@ -1887,7 +1878,7 @@ sub   bx, di
 mov   cx, MASKEDPOSTDATAOFS_SEGMENT
 mov   es, cx
 add   bx, bx
-SELFMODIFY_maskedpostofs:
+SELFMODIFY_MASKED_maskedpostofs_1:
 mov   bx, word ptr es:[bx+08000h]
 mov   cx, MASKEDPOSTDATA_SEGMENT
 ;call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
@@ -1907,7 +1898,7 @@ jmp   go_draw_masked_column
 
 load_masked_column_segment_lookup:
 mov   dx, si
-SELFMODIFY_texnum_1:
+SELFMODIFY_MASKED_texnum_1:
 mov   ax, 08000h
 ;call  R_GetMaskedColumnSegment_  
 db 0FFh  ; lcall[addr]
@@ -1942,7 +1933,7 @@ jmp   update_maskedtexturecol_finish_loop_iter
 
 load_masked_column_segment:
 mov   dx, si
-SELFMODIFY_texnum_2:
+SELFMODIFY_MASKED_texnum_2:
 mov   ax, 08000h
 ;call  R_GetMaskedColumnSegment_
 db 0FFh  ; lcall[addr]
@@ -2278,8 +2269,10 @@ inc   cx
 add   si, si
 lea   si, [bp + si - 0502h]
 mov   bx, (0502h - 0282h)  
+
+; note: faster when this is put in the register rather than added in the loop.
 SELFMODIFY_MASKED_viewheight_2:
-mov   ax, word ptr ds:[_viewheight]
+mov   ax, 01000h
 
 ; todo optim loop
 loop_clipping_columns:
@@ -2498,7 +2491,7 @@ inc   cx
 ;    	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
 
 mov   al, byte ptr es:[di + 01Ch]
-mov   byte ptr cs:[SELFMODIFY_set_al_to_silhouette+1 - OFFSET R_DrawFuzzColumn_],  al
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_DrawFuzzColumn_],  al
 
 mov   ax, word ptr es:[di + 012h]
 xor   dx, dx
@@ -2521,7 +2514,7 @@ jg   do_not_remove_bot_silhouette
 cmp   dx, word ptr [bx + 0Eh]
 ja    do_not_remove_bot_silhouette
 remove_bot_silhouette:
-and   byte ptr cs:[SELFMODIFY_set_al_to_silhouette+1 - OFFSET R_DrawFuzzColumn_], 0FEh  
+and   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_DrawFuzzColumn_], 0FEh  
 do_not_remove_bot_silhouette:
 
 mov   ax, word ptr es:[di + 014h]
@@ -2564,7 +2557,7 @@ add   si, si
 ; es:di is drawseg
 
 
-SELFMODIFY_set_al_to_silhouette:
+SELFMODIFY_MASKED_set_al_to_silhouette:
 mov   al, 0FFh ; this gets selfmodified
 and   al, ah   ; second AND is applied 
 cmp   al, 1
@@ -3025,7 +3018,7 @@ push      bp
 mov       bp, sp
 sub       sp, 034h				; let's set things up finally isnce we're not quick-exiting out
 
-mov       byte ptr cs:[SELFMODIFY_loop_compare_instruction+1 - OFFSET R_DrawFuzzColumn_], al ; store count
+mov       byte ptr cs:[SELFMODIFY_MASKED_loop_compare_instruction+1 - OFFSET R_DrawFuzzColumn_], al ; store count
 mov       dx, ax
 mov       cx, 014h
 lea       di, [bp - 034h]
@@ -3050,7 +3043,7 @@ jl        loop_set_vissprite_next
 done_setting_vissprite_next:
 
 sub        bx, SIZEOF_VISSPRITE_T
-mov       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawFuzzColumn_], 0  ; zero loop counter
+mov       byte ptr cs:[SELFMODIFY_MASKED_set_al_to_loop_counter+1 - OFFSET R_DrawFuzzColumn_], 0  ; zero loop counter
 
 mov       al, VISSPRITE_SORTED_HEAD_INDEX
 
@@ -3062,7 +3055,7 @@ jle       exit_sort_vissprites
 
 loop_visplane_sort:
 
-inc       byte ptr cs:[SELFMODIFY_set_al_to_loop_counter+1 - OFFSET R_DrawFuzzColumn_] ; update loop counter
+inc       byte ptr cs:[SELFMODIFY_MASKED_set_al_to_loop_counter+1 - OFFSET R_DrawFuzzColumn_] ; update loop counter
 
 ;DI:CX is bestscale
 ;        bestscale = MAXLONG;
@@ -3155,9 +3148,9 @@ increment_visplane_sort_loop_variables:
 
 mov       byte ptr [bp - 2], dh
 mov       byte ptr [di], VISSPRITE_SORTED_HEAD_INDEX
-SELFMODIFY_set_al_to_loop_counter:
+SELFMODIFY_MASKED_set_al_to_loop_counter:
 mov       al, 0FFh ; get loop counter
-SELFMODIFY_loop_compare_instruction:
+SELFMODIFY_MASKED_loop_compare_instruction:
 cmp       al, 0FFh ; compare
 jge       exit_sort_vissprites
 jmp       loop_visplane_sort
@@ -3307,15 +3300,11 @@ mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_2+2 - OFFSET R_DrawFuzzCol
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_3+2 - OFFSET R_DrawFuzzColumn_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_4+2 - OFFSET R_DrawFuzzColumn_], al
 
+mov   ax, word ptr ss:[_viewheight]
+mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_1+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_DrawFuzzColumn_], ax
 
-;SELFMODIFY_MASKED_viewheight_1
-;SELFMODIFY_MASKED_viewheight_2
-;SELFMODIFY_MASKED_centery_1
-;SELFMODIFY_MASKED_centery_2
-;SELFMODIFY_MASKED_viewz_lo_1
-;SELFMODIFY_MASKED_viewz_hi_1
-;SELFMODIFY_MASKED_destview_lo_1
-;SELFMODIFY_MASKED_destview_hi_1
+
 
 mov      ax, ss
 mov      ds, ax
@@ -3339,7 +3328,19 @@ mov      ax, word ptr ds:[_destview]
 mov      word ptr es:[SELFMODIFY_MASKED_add_destview_offset- OFFSET R_DrawFuzzColumn_+1], ax
 mov      word ptr es:[SELFMODIFY_MASKED_multi_add_destview_offset- OFFSET R_DrawFuzzColumn_+1], ax
 
+mov   ax, word ptr ds:[_centery]
+mov   word ptr es:[SELFMODIFY_MASKED_centery_1+3 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr es:[SELFMODIFY_MASKED_centery_2+1 - OFFSET R_DrawFuzzColumn_], ax
 
+mov   ax, word ptr ds:[_viewz+0]
+mov   word ptr es:[SELFMODIFY_MASKED_viewz_lo_1+2 - OFFSET R_DrawFuzzColumn_], ax
+mov   ax, word ptr ds:[_viewz+2]
+mov   word ptr es:[SELFMODIFY_MASKED_viewz_hi_1+1 - OFFSET R_DrawFuzzColumn_], ax
+
+mov   ax, word ptr ds:[_destview+0]
+mov   word ptr es:[SELFMODIFY_MASKED_destview_lo_1+2 - OFFSET R_DrawFuzzColumn_], ax
+mov   ax, word ptr ds:[_destview+2]
+mov   word ptr es:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_DrawFuzzColumn_], ax
 
 
 retf
