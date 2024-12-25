@@ -260,7 +260,17 @@ push  si
 push  di
 push  bp
 
+; note: this function is called so rarely i don't care if its a little more innefficient.
+; it is called for reverse visible walls like in e1m1's slime REALDOOM
+
+
+
 mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
+
+; slow and ugly - infer it anohter way later if possible.
+mov   al, byte ptr cs:[SELFMODIFY_COLFUNC_m2h_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_]
+mov   byte ptr cs:[SELFMODIFY_COLFUNC_m2l_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
+
 
 mov   cl, dl
 xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
@@ -384,7 +394,6 @@ UNCLIPPED_COLUMN  = 0FFFEh
 
 
 
-; 3034 ish bytes
 ; note remove masked start from here 
 
 jump_to_exit_draw_shadow_sprite:
@@ -596,7 +605,7 @@ endp
 PROC  R_DrawVisSprite_ NEAR
 PUBLIC  R_DrawVisSprite_ 
 
-; ax is vissprite_t near pointer
+; si is vissprite_t near pointer
 
 ; bp - 2  	 frac.h.fracbits
 ; bp - 4  	 frac.h.intbits
@@ -604,18 +613,11 @@ PUBLIC  R_DrawVisSprite_
 ; bp - 8     xiscalestep_shift high word
 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
 push  bp
 mov   bp, sp
 
-; todo just pass this in as si instead of ax?
-mov   si, ax
 
-mov   al, byte ptr [si + 1]
+mov   al, byte ptr ds:[si + 1]
 ;mov   byte ptr ds:[_dc_colormap_index], al
 ;2e a2 11 11 
 ; al is colormap. this function always uses the high drawcall (for now)
@@ -851,12 +853,8 @@ cmp   ax, word ptr [si + 4]
 jg    end_draw_sprite_normal_innerloop
 mov   bx, dx
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shl   bx, 2
-ELSE
 shl   bx, 1
 shl   bx, 1
-ENDIF
 
 mov   ax, word ptr es:[bx + 8]
 mov   bx, word ptr es:[bx + 10]
@@ -881,11 +879,6 @@ exit_draw_vissprites:
 LEAVE_MACRO
 
 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
 ret 
 increment_by_shift:
 
@@ -937,12 +930,9 @@ cmp   ax, word ptr [si + 4]
 jg    end_draw_sprite_shadow_innerloop
 mov   bx, dx
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shl   bx, 2
-ELSE
 shl   bx, 1
 shl   bx, 1
-ENDIF
+
 mov   ax, word ptr es:[bx + 8]
 mov   bx, word ptr es:[bx + 10]
 
@@ -987,13 +977,13 @@ mov  word ptr ds:[_mceilingclip], OFFSET_NEGONEARRAY
 
 cmp  word ptr ds:[_psprites], -1  ; STATENUM_NULL
 je  check_next_player_sprite
-mov  ax, _player_vissprites       ; vissprite 0
+mov  si, _player_vissprites       ; vissprite 0
 call R_DrawVisSprite_
 
 check_next_player_sprite:
 cmp  word ptr ds:[_psprites + 0Ch], -1  ; STATENUM_NULL
 je  exit_drawplayersprites
-mov  ax, _player_vissprites + SIZEOF_VISSPRITE_T
+mov  si, _player_vissprites + SIZEOF_VISSPRITE_T
 call R_DrawVisSprite_
 
 exit_drawplayersprites:
@@ -1122,15 +1112,10 @@ mov   cx, word ptr [bx+2]			; get v2 offset
 mov   bx, word ptr [bx]				; get v1 offset
 mov   ax, VERTEXES_SEGMENT
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shl   bx, 2
-shl   cx, 2
-ELSE
 shl   bx, 1
 shl   bx, 1
 shl   cx, 1
 shl   cx, 1
-ENDIF
 
 mov   es, ax
 
@@ -1174,12 +1159,8 @@ sal   bx, 1
 mov   es, ax
 
 mov   bx, word ptr es:[bx + di]		; get secnum
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shl   bx, 2
-ELSE
 shl   bx, 1
 shl   bx, 1
-ENDIF
 
 
 mov   ax, word ptr ds:[bx + _sides_render + 2]   ; get a field in the sides render area
@@ -2313,7 +2294,7 @@ add   ax, 0280h   ;  [bp - 0282h]
 
 mov   word ptr ds:[_mceilingclip], ax
 mov   word ptr ds:[_mceilingclip + 2], ds
-mov   ax, dx    ; vissprite pointer from above
+mov   si, dx    ; vissprite pointer from above
 call  R_DrawVisSprite_
 mov   word ptr ds:[_mceilingclip + 2], OPENINGS_SEGMENT
 mov   word ptr ds:[_mfloorclip + 2], OPENINGS_SEGMENT
@@ -2933,7 +2914,8 @@ ENDP
 ;
 ; R_DrawColumnPrepMaskedMulti
 ;
-	
+
+; this version called for almost all masked calls	
 PROC  R_DrawColumnPrepMaskedMulti_
 PUBLIC  R_DrawColumnPrepMaskedMulti_ 
 
