@@ -501,15 +501,13 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 6
+sub   sp, 2
 mov   si, bx
 
 mov   es, cx
-mov   ax, word ptr ds:[_dc_texturemid]
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr ds:[_dc_texturemid+2]
+
+
 ; es is already cx
-mov   word ptr [bp - 4], ax
 cmp   byte ptr es:[si], 0FFh  ; todo cant this check be only at the end? can this be called with 0 posts?
 je    jump_to_exit_draw_shadow_sprite
 draw_next_shadow_sprite_post:
@@ -590,15 +588,11 @@ jg   do_next_shadow_sprite_iteration
 
 mov   di, ax  ; finally pass off dc_yh to di
 ; _dc_texturemid = basetexturemid
-mov   ax, word ptr [bp - 6]
-mov   word ptr ds:[_dc_texturemid], ax
-mov   ax, word ptr [bp - 4]
 
 mov   bl, byte ptr es:[si]
 
 xor   bh, bh
 sub   ax, bx
-mov   word ptr ds:[_dc_texturemid+2], ax 
 cmp   dx, 0			; dx still holds dc_yl
 jne   high_border_adjusted
 inc   dx 
@@ -669,10 +663,6 @@ cmp   byte ptr es:[si], 0FFh
 je    exit_draw_shadow_sprite
 jmp   draw_next_shadow_sprite_post
 exit_draw_shadow_sprite:
-mov   ax, word ptr [bp - 6]
-mov   word ptr ds:[_dc_texturemid], ax
-mov   ax, word ptr [bp - 4]
-mov   word ptr ds:[_dc_texturemid + 2], ax
 
 LEAVE_MACRO
 mov   cx, es
