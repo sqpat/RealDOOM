@@ -1075,29 +1075,30 @@ PUBLIC R_RenderMaskedSegRange_
 
 ; bp - 2        side_render ; todo selfmodify, get its two values if worth..
 ; bp - 4        lineflags  ; todo can probably selfmodify value
-; bp - 6        UNUSED
-; bp - 8        UNUSED
+; bp - 6        drawseg far segment (this is a constant)
+; bp - 8        ds (drawseg, not data segment)
 ; bp - 0Ah      UNUSED
 ; bp - 0Ch      cached xoffset/di
 ; bp - 0Eh      UNUSED
 ; bp - 010h     UNUSED
 ; bp - 012h     UNUSED
-; bp - 014h     basespryscale hi word  ; todo self modiable with adds to code
-; bp - 016h     basespryscale lo word  ; todo self modiable with adds to code
-; bp - 018h     drawseg far segment (this is a constant)
-; bp - 01Ah     ds (drawseg, not data segment)
-; bp - 01Ch     rw_scalestep hi word  ; todo self modiable with adds to code
-; bp - 01Eh     rw_scalestep lo word  ; todo self modiable with adds to code
+; bp - 014h     UNUSED
+; bp - 016h     UNUSED
+; bp - 018h     UNUSED
+; bp - 01Ah     UNUSED
+; bp - 01Ch     UNUSED
+; bp - 01Eh     UNUSED
 
   
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 01Eh
+sub   sp, 0Ch
 
-mov   word ptr [bp - 01Ah], di
-mov   word ptr [bp - 018h], es
+; todo selfmodify all this up ahead too.
+mov   word ptr [bp - 8], di
+mov   word ptr [bp - 6], es
 
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_1+1 - OFFSET R_DrawFuzzColumn_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_2+1 - OFFSET R_DrawFuzzColumn_], ax
@@ -1312,7 +1313,7 @@ mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult
 
 lights_set:
 mov   word ptr ds:[_walllights], ax      ; store lights
-les   di, dword ptr [bp - 01Ah]          ; get drawseg far ptr
+les   di, dword ptr [bp - 8]          ; get drawseg far ptr
 
 ; es:di is input drawseg
 
@@ -1329,11 +1330,11 @@ mov   bx, word ptr es:[di + 0Eh]
 mov   cx, word ptr es:[di + 010h]
 
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_1+1 - OFFSET R_DrawFuzzColumn_], bx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_2+3 - OFFSET R_DrawFuzzColumn_], bx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_3+3 - OFFSET R_DrawFuzzColumn_], bx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_2+5 - OFFSET R_DrawFuzzColumn_], bx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_3+5 - OFFSET R_DrawFuzzColumn_], bx		; rw_scalestep
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_1+1 - OFFSET R_DrawFuzzColumn_], cx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_2+3 - OFFSET R_DrawFuzzColumn_], cx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_3+3 - OFFSET R_DrawFuzzColumn_], cx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_2+5 - OFFSET R_DrawFuzzColumn_], cx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_3+5 - OFFSET R_DrawFuzzColumn_], cx		; rw_scalestep
 
 
 
@@ -1495,9 +1496,9 @@ sub   di, ax						; di = base4diff = x1 - dc_x_base4
 ;		fixed_t basespryscale = spryscale.w;
 
 mov   ax, word ptr ds:[_spryscale]
-mov   word ptr [bp - 016h], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_DrawFuzzColumn_], ax
 mov   ax, word ptr ds:[_spryscale + 2]
-mov   word ptr [bp - 014h], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_DrawFuzzColumn_], ax
 
 ;		fixed_t rw_scalestep_shift = rw_scalestep.w << detailshift2minus;
 
@@ -1505,6 +1506,8 @@ SELFMODIFY_MASKED_rw_scalestep_lo_1:
 mov   ax, 01000h
 SELFMODIFY_MASKED_rw_scalestep_hi_1:
 mov   dx, 01000h
+
+
 
 
 ; todo: proper shift jmp thing
@@ -1552,10 +1555,12 @@ je    base4diff_is_zero_rendermaskedsegrange
 
 loop_dec_base4diff:
 ;			basespryscale -= rw_scalestep.w;
+
 SELFMODIFY_MASKED_rw_scalestep_lo_2:
-sub   word ptr [bp - 016h], 01000h
+sub   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_DrawFuzzColumn_], 01000h
 SELFMODIFY_MASKED_rw_scalestep_hi_2:
-sbb   word ptr [bp - 014h], 01000h
+sbb   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_DrawFuzzColumn_], 01000h
+
 
 dec   di
 jne   loop_dec_base4diff
@@ -1584,8 +1589,10 @@ out   dx, al
 
 ;			spryscale.w = basespryscale;
 
-mov   dx, word ptr [bp - 016h]	; basespryscale
-mov   bx, word ptr [bp - 014h]	; basespryscale
+SELFMODIFY_MASKED_get_basespryscale_lo:
+mov   dx, 01000h
+SELFMODIFY_MASKED_get_basespryscale_hi:
+mov   bx, 01000h
 
 ; di holds xoffset.
 ; bx:dx temporarily holds _spryscale
@@ -1676,6 +1683,7 @@ jle   do_inner_loop
 
 ; end of inner loop, fall back to end of outer loop step
 
+SELF_MODIFY_MASKED_xoffset:
 mov   di, word ptr [bp - 0Ch]
 ;pop   di
 
@@ -1684,9 +1692,9 @@ inc   di			; xoffset++
 
 
 SELFMODIFY_MASKED_rw_scalestep_lo_3:
-add   word ptr [bp - 016h], 01000h
+add   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_DrawFuzzColumn_], 01000h
 SELFMODIFY_MASKED_rw_scalestep_hi_3:
-adc   word ptr [bp - 014h], 01000h
+adc   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_DrawFuzzColumn_], 01000h
 
 
 ; xoffset < detailshiftitercount
