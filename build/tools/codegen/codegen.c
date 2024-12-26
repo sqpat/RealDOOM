@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 141
+#define CONSTANTS_COUNT 140
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -131,7 +131,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SPANFUNC_FUNCTION_AREA_SEGMENT",
     "COLFUNC_MASKEDMAPPING_SEGMENT",
     "COLFUNC_SEGMENT",
-    "R_DRAWCOLUMNPREPMASKEDSINGLEOFFSET",
     "R_DRAWCOLUMNPREPMASKEDMULTIOFFSET",
     "MASKEDCONSTANTS_FUNCAREA_SEGMENT",
     "STATES_RENDER_SEGMENT",
@@ -299,7 +298,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     spanfunc_function_area_segment,
     colfunc_segment_maskedmapping,
     colfunc_segment,
-    R_DrawColumnPrepMaskedSingleOffset,
     R_DrawColumnPrepMaskedMultiOffset,
     maskedconstants_funcarea_segment,
     states_render_segment,
