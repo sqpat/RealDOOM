@@ -193,7 +193,7 @@ push  dx
 push  si
 push  di
 
-xchg  ax, cx
+xchg  ax, cx	; cx holds onto dc_texturemid lo. TODO move this out of function along with push/pop cx
 
 mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) ; shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
@@ -441,15 +441,16 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTIO
 ; if we make a separate drawcol masked we can use a constant here.
 
 xchg  ax, bx    ; dc_yl in ax
-mov   si, word ptr ds:[_dc_texturemid+2]
+; gross lol. but again - rare function. in exchange the common function is faster.
+mov   si, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_DrawFuzzColumn_]
+mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_DrawFuzzColumn_]
+mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_DrawFuzzColumn_]
 
 cli 	        ; disable interrupts
 push  bp
-mov   bp, word ptr ds:[_dc_texturemid+0]
+mov   bp, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_DrawFuzzColumn_]
 
 
-mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_DrawFuzzColumn_]
-mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_DrawFuzzColumn_]
 
 ; dynamic call lookuptable based on used colormaps address being CS:00
 
@@ -747,11 +748,7 @@ mov   dl, ah
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_DrawFuzzColumn_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_DrawFuzzColumn_], dx
 
-mov   ax, word ptr [si + 022h] ; vis->texturemid
-mov   dx, word ptr [si + 024h]
 
-mov   word ptr ds:[_dc_texturemid], ax
-mov   word ptr ds:[_dc_texturemid + 2], dx
 
 
 lea   di, ds:[_sprtopscreen]
@@ -765,8 +762,12 @@ mov   dx, word ptr [si + 01Ch]
 mov   word ptr ds:[_spryscale], ax
 mov   word ptr ds:[_spryscale + 2], dx
 
-mov   bx, word ptr ds:[_dc_texturemid]
-mov   cx, word ptr ds:[_dc_texturemid + 2]
+mov   bx, word ptr [si + 022h] ; vis->texturemid
+mov   cx, word ptr [si + 024h]
+; write this ahead
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_DrawFuzzColumn_], bx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_DrawFuzzColumn_], cx
+
 
 test  dx, dx
 jnz    do_32_bit_mul_vissprite
@@ -1434,7 +1435,7 @@ rcr   dx, 1
 sar   ax, 1
 rcr   dx, 1
 
-; ax:dx is textureheight
+; ax:dx is textureheight (NOT DX:AX!!)
 
 ;    dc_texturemid.h.intbits += adder;		
 
@@ -1454,8 +1455,15 @@ mov   di, word ptr [bp - 2]
 add   ax, word ptr [di]
 
 
-mov   word ptr ds:[_dc_texturemid], dx
-mov   word ptr ds:[_dc_texturemid+2], ax
+; dc_texturemid is a function contant. we selfmodify ahead:
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_DrawFuzzColumn_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_2 + 1 - OFFSET R_DrawFuzzColumn_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_3 + 1 - OFFSET R_DrawFuzzColumn_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_2 + 1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_DrawFuzzColumn_], ax
+
+
 
 ; here we used to set the fixedcolormap for the frame. 
 ; however we do this at frame start now via self modifying code
@@ -1519,9 +1527,10 @@ mov   word ptr [bp - 8], dx			; rw_scalestep_shift
 
 ;		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
 
-
-mov   bx, word ptr ds:[_dc_texturemid]
-mov   cx, word ptr ds:[_dc_texturemid + 2]
+SELFMODIFY_MASKED_dc_texturemid_lo_2:
+mov   bx, 01000h
+SELFMODIFY_MASKED_dc_texturemid_hi_2:
+mov   cx, 01000h
 ;call  FixedMul_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1617,8 +1626,10 @@ mov   word ptr ds:[_spryscale + 2], bx
 
 mov   ax, dx
 mov   dx, bx
-mov   bx, word ptr ds:[_dc_texturemid]
-mov   cx, word ptr ds:[_dc_texturemid + 2]
+SELFMODIFY_MASKED_dc_texturemid_lo_3:
+mov   bx, 01000h
+SELFMODIFY_MASKED_dc_texturemid_hi_3:
+mov   cx, 01000h
 
 test  dx, dx
 jnz    do_32_bit_mul
@@ -1818,7 +1829,7 @@ jz    lookup_FF_repeat
 
 ;if (maskedheaderpixeolfs != 0xFFFF){
 
-; cs gets MASKEDPIXELDATAOFS_SEGMENT
+; cx gets MASKEDPIXELDATAOFS_SEGMENT
 les   cx, dword ptr ds:[_maskedheaderpixeolfs]
 cmp   cx, -1
 
@@ -2841,10 +2852,7 @@ mov   si, bx        ; si now holds column address.
 mov   es, cx
 push  ax            ; bp - 4
 
-mov   ax, word ptr ds:[_dc_texturemid+0]
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo+1 - OFFSET R_DrawFuzzColumn_], ax
-mov   ax, word ptr ds:[_dc_texturemid+2]
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi+1 - OFFSET R_DrawFuzzColumn_], ax
+; dc_texturemid already set pre call.
 xor   di, di        ; di used as currentoffset.
 
 cmp   byte ptr es:[si], 0FFh
@@ -2973,7 +2981,7 @@ shr   bx, 1
 shr   bx, 1
 ENDIF
 
-SELFMODIFY_MASKED_dc_texturemid_hi:
+SELFMODIFY_MASKED_dc_texturemid_hi_1:
 mov   dx, 01000h;  dc_texturemid intbits
 les   ax, dword ptr [bp - 4]
 add   ax, bx
@@ -2984,7 +2992,7 @@ xor   ah, ah
 sub   dx, ax
 ; cx = dc_texturemid lo. carry this into the call
 
-SELFMODIFY_MASKED_dc_texturemid_lo:
+SELFMODIFY_MASKED_dc_texturemid_lo_1:
 mov   ax, 01000h
 
 call  R_DrawColumnPrepMaskedMulti_
