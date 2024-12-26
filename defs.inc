@@ -233,9 +233,9 @@ _cachedbyteheight =                  _NULL_OFFSET + 0038Ah
 ; offsets in here. Oh well - it's pretty minimal.
 
 ; todo this sucks.
-SELFMODIFY_COLFUNC_jump_offset =                        1+1+3+2+4+4+2+2+1+2+2+2+2+2+2+2+2+4+2+2+2+2+2+3+2+2+4+2
-SELFMODIFY_COLFUNC_subtract_centery =                   1+1
-SELFMODIFY_COLFUNC_set_destview_segment =               1+1+3+2+4+4+2+2+1+2+2+2+2+2+2+2+2+4+2+2+2+2+2
+SELFMODIFY_COLFUNC_subtract_centery =                   0
+SELFMODIFY_COLFUNC_set_destview_segment =               0+3+2+2+1+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2
+SELFMODIFY_COLFUNC_jump_offset =                        SELFMODIFY_COLFUNC_set_destview_segment+3+2+2+5+2
 
 
 

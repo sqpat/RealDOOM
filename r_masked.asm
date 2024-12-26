@@ -169,44 +169,55 @@ COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOO
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 
 
+; multi/single refer to whether this is drawing masked columns
+; that may have multiple segments (real masked textures)
+; or are single (false walls like e1m1)
+; this function is not actually significantly different but there are
+; different codepaths leading here. So its easier to have different variables in
+; registers in either case.
+; todo: investigate making them the same after all?
+
 ;
-; R_DrawColumnPrepMaskedSingle
+; R_DrawColumnPrepMaskedMulti
 ;
-	
-PROC  R_DrawColumnPrepMaskedSingle_ NEAR
-PUBLIC  R_DrawColumnPrepMaskedSingle_ 
+
+; this version called for almost all masked calls	
+PROC  R_DrawColumnPrepMaskedMulti_
+PUBLIC  R_DrawColumnPrepMaskedMulti_ 
 
 ; argument AX is diff for various segment lookups
 
+push  bx
+push  cx
+push  dx
+push  si
+push  di
 
-; no push/pop needed. outer function returns immediately after.
-
+xchg  ax, cx
 
 mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) ; shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
-;dx is dc_yh
-;si is dc_yl
-;di is dc_x
-
-
-; grab dc_x..
-xchg   ax, di
+; todo optimize this read
+mov   ax, word ptr ds:[_dc_x]
 
 ; shift ax by (2 - detailshift.)
-SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift:
+SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:
 sar   ax, 1
 sar   ax, 1
 
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
-mov   bx, si
+; todo optimize this read
+mov   bx, word ptr ds:[_dc_yl]
+mov   si, bx
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-SELFMODIFY_MASKED_add_destview_offset:
+SELFMODIFY_MASKED_multi_add_destview_offset:
 add   ax, 01000h
 
-mov   si, dx                                 ; grab dc_yh
+; todo optimize this read
+mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
 sub   si, bx                                 ;
 
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
@@ -216,24 +227,42 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTIO
 
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
- 
+
 
 ; if we make a separate drawcol masked we can use a constant here.
 
 xchg  ax, bx    ; dc_yl in ax
+mov   si, dx    ; dc_texturemid+2 in si
 
-mov   si, word ptr ds:[_dc_texturemid+2]
+cli 	        ; disable interrupts
+push  bp
+mov   bp, cx    ; dc_textutremid in cx
 
 ; dynamic call lookuptable based on used colormaps address being CS:00
 
+SELFMODIFY_MASKED_set_dc_iscale_lo:
+mov   bx, 01000h ; dc_iscale +0
+SELFMODIFY_MASKED_set_dc_iscale_hi:
+mov   cx, 01000h ; dc_iscale +1
+
+
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-SELFMODIFY_MASKED_set_colormap_index_jump:
+SELFMODIFY_MASKED_multi_set_colormap_index_jump:
 dw 0400h
 ; addr 0400 + first byte (4x colormap.)
 
-
+pop   bp
+sti             ; re-enable interrupts
+pop   di 
+pop   si
+pop   dx
+pop   cx
+pop   bx
 ret
+
+ENDP
+
 
 
 
@@ -369,7 +398,73 @@ jg    exit_function_single
 ; dx/si contain dc_yh/dc_yl
 
 ; todo: this can be a second, local version of the function that is specialized?
-call  R_DrawColumnPrepMaskedSingle_
+
+; inlined R_DrawColumnPrepMaskedSingle_
+
+
+mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) ; shut up assembler warning, this is fine
+mov   es, ax                                 ; store this segment for now, with offset pre-added
+
+;dx is dc_yh
+;si is dc_yl
+;di is dc_x
+
+
+; grab dc_x..
+xchg   ax, di
+
+; shift ax by (2 - detailshift.)
+SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift:
+sar   ax, 1
+sar   ax, 1
+
+; dest = destview + dc_yl*80 + (dc_x>>2); 
+; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
+
+mov   bx, si
+add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
+SELFMODIFY_MASKED_add_destview_offset:
+add   ax, 01000h
+
+mov   si, dx                                 ; grab dc_yh
+sub   si, bx                                 ;
+
+add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
+xchg  ax, di
+mov   ax, word ptr es:[si]                   ; get the jump value
+mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
+; or can we do this in an outer func without this instrction?
+ 
+
+; if we make a separate drawcol masked we can use a constant here.
+
+xchg  ax, bx    ; dc_yl in ax
+mov   si, word ptr ds:[_dc_texturemid+2]
+
+cli 	        ; disable interrupts
+push  bp
+mov   bp, word ptr ds:[_dc_texturemid+0]
+
+
+SELFMODIFY_MASKED_set_dc_iscale_lo:
+mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_DrawFuzzColumn_]
+SELFMODIFY_MASKED_set_dc_iscale_hi:
+mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_DrawFuzzColumn_]
+
+; dynamic call lookuptable based on used colormaps address being CS:00
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+SELFMODIFY_MASKED_set_colormap_index_jump:
+dw 0400h
+; addr 0400 + first byte (4x colormap.)
+
+pop   bp
+sti             ; re-enable interrupts
+
+
 
 exit_function_single:
 
@@ -648,8 +743,11 @@ sar   dx, 1
 rcr   ax, 1
 xiscale_shift_done:
 
-mov   word ptr ds:[_dc_iscale], ax
-mov   word ptr ds:[_dc_iscale+2], dx
+
+mov   dh, dl
+mov   dl, ah
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_DrawFuzzColumn_], dx
 
 mov   ax, word ptr [si + 022h] ; vis->texturemid
 mov   dx, word ptr [si + 024h]
@@ -1688,8 +1786,11 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FastDiv3232_addr
 
-mov   word ptr ds:[_dc_iscale], ax
-mov   word ptr ds:[_dc_iscale + 2], dx
+mov   dh, dl
+mov   dl, ah
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_DrawFuzzColumn_], dx
+
 
 mov   bx, si  ; bx gets a copy of texture column?
 ;  ax stores _maskedtexrepeat for a little bit
@@ -2742,8 +2843,10 @@ mov   si, bx        ; si now holds column address.
 mov   es, cx
 push  ax            ; bp - 4
 
+mov   ax, word ptr ds:[_dc_texturemid+0]
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo+1 - OFFSET R_DrawFuzzColumn_], ax
 mov   ax, word ptr ds:[_dc_texturemid+2]
-mov   word ptr cs:[SELFMODIFY_MASKED_texturemid_hi+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi+1 - OFFSET R_DrawFuzzColumn_], ax
 xor   di, di        ; di used as currentoffset.
 
 cmp   byte ptr es:[si], 0FFh
@@ -2872,15 +2975,19 @@ shr   bx, 1
 shr   bx, 1
 ENDIF
 
-SELFMODIFY_MASKED_texturemid_hi:
+SELFMODIFY_MASKED_dc_texturemid_hi:
 mov   dx, 01000h;  dc_texturemid intbits
 les   ax, dword ptr [bp - 4]
 add   ax, bx
 mov   word ptr ds:[_dc_source_segment], ax
 mov   al, byte ptr es:[si]
 xor   ah, ah
+; dx = dc_texturemid hi. carry this into the call
 sub   dx, ax
-;mov   word ptr ds:[_dc_texturemid+2], dx
+; cx = dc_texturemid lo. carry this into the call
+
+SELFMODIFY_MASKED_dc_texturemid_lo:
+mov   ax, 01000h
 
 call  R_DrawColumnPrepMaskedMulti_
 
@@ -2900,8 +3007,7 @@ je    exit_function
 jmp   draw_next_column_patch ; todo inverse and skip jump
 exit_function:
 
-;pop   ax; , word ptr [bp - 6]             ; restore dc_texture_mid
-;mov   word ptr ds:[_dc_texturemid+2], ax
+
 mov   cx, es               ; restore cx
 LEAVE_MACRO
 pop   di
@@ -2912,84 +3018,11 @@ ret
 
 ENDP
 
-;
-; R_DrawColumnPrepMaskedMulti
-;
 
-; this version called for almost all masked calls	
-PROC  R_DrawColumnPrepMaskedMulti_
-PUBLIC  R_DrawColumnPrepMaskedMulti_ 
-
-; argument AX is diff for various segment lookups
-
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-
-
-mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) ; shut up assembler warning, this is fine
-mov   es, ax                                 ; store this segment for now, with offset pre-added
-
-; todo optimize this read
-mov   ax, word ptr ds:[_dc_x]
-
-; shift ax by (2 - detailshift.)
-SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:
-sar   ax, 1
-sar   ax, 1
-
-; dest = destview + dc_yl*80 + (dc_x>>2); 
-; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
-
-; todo optimize this read
-mov   bx, word ptr ds:[_dc_yl]
-mov   si, bx
-add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-SELFMODIFY_MASKED_multi_add_destview_offset:
-add   ax, 01000h
-
-; todo optimize this read
-mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
-sub   si, bx                                 ;
-
-add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
-xchg  ax, di
-mov   ax, word ptr es:[si]                   ; get the jump value
-mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
-
-; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
-; or can we do this in an outer func without this instrction?
-
-
-; if we make a separate drawcol masked we can use a constant here.
-
-xchg  ax, bx    ; dc_yl in ax
-mov   si, dx    ; dc_texturemid+2 in si
-
-; dynamic call lookuptable based on used colormaps address being CS:00
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-SELFMODIFY_MASKED_multi_set_colormap_index_jump:
-dw 0400h
-; addr 0400 + first byte (4x colormap.)
-
-
-pop   di 
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret
-
-ENDP
 
 VISSPRITE_UNSORTED_INDEX    = 0FFh
 VISSPRITE_SORTED_HEAD_INDEX = 0FEh
 
-; note: selfmodifies in this are based off R_DrawMaskedColumn_ as 0
 
 PROC R_SortVisSprites_ NEAR
 PUBLIC R_SortVisSprites_

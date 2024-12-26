@@ -1779,18 +1779,17 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 ; R_DrawColumnPrep
 ;
 	
-PROC  R_DrawColumnPrep_
+PROC  R_DrawColumnPrep_ NEAR
 PUBLIC  R_DrawColumnPrep_ 
 
 ; si:di is dc_yl, dc_yh
-; dx is texturemid+2
-
-; argument AX is diff for various segment lookups
+; dx is texturemid hi
+; cx is texturemid lo
 
 push  bx
-push  cx  ; did we need to preserve cx?
 push  si
 push  di
+
 
 mov   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
 mov   es, ax ; store this segment for now, with offset pre-added
@@ -1812,20 +1811,32 @@ mov   bx, si
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
 SELFMODIFY_COLFUNC_add_destview_offset:
 add   ax, 01000h
-; todo optimize this bit.
+
 ; di is dc_yh
-mov   si, di
-sub   si, bx                                 ;
-add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
-xchg  ax, di								 ; di gets screen dest offset
-mov   ax, word ptr es:[si]                   ; get the jump value
+sub   di, bx                                 ;
+add   di, di                                 ; double diff (dc_yh - dc_yl) to get a word offset
+mov   di, word ptr es:[di]                   ; get the jump value
+xchg  ax, di								 ; di gets screen dest offset, ax gets jump value
 mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 
-xchg  ax, bx    ; dc_yl in ax
-mov   si, dx    ; dc_texturemid+2 to si
+xchg  ax, bx            ; dc_yl in ax
+mov   si, dx            ; dc_texturemid+2 to si
 
-; todo: put dc_iscale in cx:bx...
+; We don't have easy access into the drawcolumn code segment.
+; so instead of cli -> push bp after call, we do it right before,
+; so that we have register space to use bp now instead of a bit later.
+; (for carrying dc_texturemid)
+
+cli 				    ; disable interrupts
+push  bp
+mov   bp, cx	        ; dc_texturemid to bp
+
+; dc_iscale loaded here..
+SELFMODIFY_BSP_set_dc_iscale_lo:
+mov   bx, 01000h        ; dc_iscale +0
+SELFMODIFY_BSP_set_dc_iscale_hi:
+mov   cx, 01000h        ; dc_iscale +1
 
 ; dynamic call lookuptable based on used colormaps address being CS:00
 
@@ -1835,12 +1846,13 @@ SELFMODIFY_COLFUNC_set_colormap_index_jump:
 dw 0300h
 ; addr 0300 + first byte (4x colormap.)
 
+pop   bp 
+sti					; re-enable interrupts
 
 pop   di 
 pop   si
-pop   cx
 pop   bx
-retf  
+ret
 
 endp
 
@@ -1883,13 +1895,16 @@ SELFMODIFY_add_cached_segment0:
 add   ax, 01000h
 just_do_draw0:
 mov   word ptr ds:[_dc_source_segment], ax
-xor   ax, ax
 SELFMODIFY_set_midtexturemid_hi:
 SELFMODIFY_set_toptexturemid_hi:
-
 mov   dx, 01000h
+push  cx
+SELFMODIFY_set_midtexturemid_lo:
+SELFMODIFY_set_toptexturemid_lo:
+mov   cx, 01000h
 
 call  R_DrawColumnPrep_
+pop   cx
 pop   es
 ret
 non_po2_texture_mod0:
@@ -2000,12 +2015,15 @@ SELFMODIFY_add_cached_segment1:
 add   ax, 01000h
 just_do_draw1:
 mov   word ptr ds:[_dc_source_segment], ax
-xor   ax, ax
 
 SELFMODIFY_set_bottexturemid_hi:
 mov   dx, 01000h
+push  cx
+SELFMODIFY_set_bottexturemid_lo:
+mov   cx, 01000h
 
 call  R_DrawColumnPrep_
+pop   cx
 pop   es
 ret
 non_po2_texture_mod1:
@@ -2630,23 +2648,18 @@ light_set:
 call FastDiv3232FFFF_
 
 ; do the bit shuffling etc when writing direct to drawcol.
-; mov dh, dl
-; mov dl, ah
 
-mov   word ptr ds:[_dc_iscale], ax		; todo: write these to code but masked has to as well..
-mov   word ptr ds:[_dc_iscale + 2], dx  
+mov   dh, dl
+mov   dl, ah
+mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax		; todo: write these to code but masked has to as well..
+mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1], dx  
 
 mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
 SELFMODIFY_add_wallights:
-; todo idea: carry code segment in SI, use it to restore when necessary 
-; or what if do this step after the div, and carry over ES as column code segment  to write ahead di/si after pop?
+
 ; todo: make scalelight be pre-shifted 4 to save on the double sal below.
 mov   al, byte ptr es:[si+01000h]
-; DO SELFMODIFY HERE for dc_x, colormapindex, and dc_iscale!
-;mov  bx, COLFUNC_FUNCTION_AREA_SEGMENT
-;mov  es, bx
-
 ;        set drawcolumn colormap function address
 sal   al, 1
 sal   al, 1
@@ -2675,8 +2688,6 @@ cmp   di, si
 jl    mid_no_pixels_to_draw
 
 ; si:di are dc_yl, dc_yh
-SELFMODIFY_set_midtexturemid_lo:
-mov   word ptr ds:[_dc_texturemid], 01000h    ; todo write these into the code too?
 
 call  R_GetSourceSegment0_
 
@@ -2766,8 +2777,7 @@ jle   mark_ceiling_cx
 
 xchg   cx, di
 ; si:di are dc_yl, dc_yh
-SELFMODIFY_set_toptexturemid_lo:
-mov   word ptr ds:[_dc_texturemid], 01000h
+
 ; dx already set to texture
 
 
@@ -2820,8 +2830,6 @@ jle   mark_floor_cx
 
 xchg   cx, si
 ; si:di are dc_yl, dc_yh
-SELFMODIFY_set_bottexturemid_lo:
-mov   word ptr ds:[_dc_texturemid], 01000h
 
 call  R_GetSourceSegment1_
 xchg   cx, si
@@ -3244,7 +3252,7 @@ test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
 mov       ax, word ptr [bp - 046h]
-mov       word ptr cs:[SELFMODIFY_set_midtexturemid_lo+4], ax
+mov       word ptr cs:[SELFMODIFY_set_midtexturemid_lo+1], ax
 mov       ax, word ptr [bp - 044h]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
@@ -3265,7 +3273,7 @@ sar       ax, 1
 rcr       cx, 1
 sar       ax, 1
 rcr       cx, 1
-mov       word ptr cs:[SELFMODIFY_set_midtexturemid_lo+4], cx
+mov       word ptr cs:[SELFMODIFY_set_midtexturemid_lo+1], cx
 
 
 les       bx, dword ptr [bp - 016h] ; sides
@@ -4173,7 +4181,7 @@ mov       dx, word ptr [bp - 044h]
 do_selfmodify_toptexture:
 ; set _rw_toptexturemid in rendersegloop
 
-mov   word ptr cs:[SELFMODIFY_set_toptexturemid_lo+4], ax
+mov   word ptr cs:[SELFMODIFY_set_toptexturemid_lo+1], ax
 mov   word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1], dx
 
 
@@ -4208,7 +4216,7 @@ do_selfmodify_bottexture:
 
 ; set _rw_toptexturemid in rendersegloop
 
-mov   word ptr cs:[SELFMODIFY_set_bottexturemid_lo+4], ax
+mov   word ptr cs:[SELFMODIFY_set_bottexturemid_lo+1], ax
 mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1], dx
 
 
