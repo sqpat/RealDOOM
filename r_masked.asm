@@ -1075,38 +1075,27 @@ PUBLIC R_RenderMaskedSegRange_
 
 ; bp - 2        side_render ; todo selfmodify, get its two values if worth..
 ; bp - 4        lineflags  ; todo can probably selfmodify value
-; bp - 6        drawseg far segment (this is a constant)
-; bp - 8        ds (drawseg, not data segment)
-; bp - 0Ah      UNUSED
-; bp - 0Ch      cached xoffset/di
-; bp - 0Eh      UNUSED
-; bp - 010h     UNUSED
-; bp - 012h     UNUSED
-; bp - 014h     UNUSED
-; bp - 016h     UNUSED
-; bp - 018h     UNUSED
-; bp - 01Ah     UNUSED
-; bp - 01Ch     UNUSED
-; bp - 01Eh     UNUSED
+
 
   
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ch
+sub   sp, 4
 
 ; todo selfmodify all this up ahead too.
-mov   word ptr [bp - 8], di
-mov   word ptr [bp - 6], es
+
 
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_1+1 - OFFSET R_DrawFuzzColumn_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_2+1 - OFFSET R_DrawFuzzColumn_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_3+1 - OFFSET R_DrawFuzzColumn_], ax
-
 mov   word ptr cs:[SELFMODIFY_MASKED_cmp_to_x2+1 - OFFSET R_DrawFuzzColumn_], cx
 
-mov   ax, word ptr es:[di]       ; get ds->cursegvalue
+; grab a bunch of drawseg values early in the function and write them forward.
+mov   si, di
+lods  word ptr es:[si]  ; si 2 after
+
 mov   word ptr ds:[_curseg], ax  
 shl   ax, 1
 shl   ax, 1
@@ -1114,6 +1103,36 @@ shl   ax, 1
 add   ah, (_segs_render SHR 8 ) 		; segs_render is ds:[0x4000] 
 mov   word ptr ds:[_curseg_render], ax
 mov   bx, ax
+
+; todo rearrange fields to make this faster?
+; this whole charade with the lodsw is ~6-8 bytes smaller overall than just doing displacement.
+; It could be better if we arranged adjacent fields i guess.
+mov   ax, es
+mov   ds, ax
+lods  word ptr ds:[si]  ; si 4 after
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_02+1 - OFFSET R_DrawFuzzColumn_], ax
+inc   si
+inc   si
+lods  word ptr ds:[si]  ; si 8 after
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_06+1 - OFFSET R_DrawFuzzColumn_], ax
+lods  word ptr ds:[si]  ; si A after
+add   si, 4
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_08+2 - OFFSET R_DrawFuzzColumn_], ax
+lods  word ptr ds:[si]  ; si 0x10 after
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_0E+1 - OFFSET R_DrawFuzzColumn_], ax
+lods  word ptr ds:[si]  ; si 0x12 after
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_10+1 - OFFSET R_DrawFuzzColumn_], ax
+add   si, 4
+lods  word ptr ds:[si]  ; si 0x18 after
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_16+4 - OFFSET R_DrawFuzzColumn_], ax
+lods  word ptr ds:[si]  ; si 0x1A after
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_18+4 - OFFSET R_DrawFuzzColumn_], ax
+lods  word ptr ds:[si]  ; si 0x1C after
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_1A+1 - OFFSET R_DrawFuzzColumn_], ax
+
+mov   ax, ss
+mov   ds, ax
+
 mov   ax, SIDES_SEGMENT
 mov   si, word ptr [bx + 6]			; get sidedefOffset
 mov   es, ax
@@ -1164,6 +1183,9 @@ mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_1  +3 - OFFSET R_DrawFuzzColu
 mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_2+3 - OFFSET R_DrawFuzzColumn_], ax
 lookup_not_ff:
 
+
+
+
 mov   ax, SEG_LINEDEFS_SEGMENT
 mov   es, ax
 mov   ax, word ptr ds:[_curseg]
@@ -1178,7 +1200,8 @@ mov   ax, LINEFLAGSLIST_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[di]
 mov   bx, word ptr ds:[_curseg_render]   ; get curseg 
-mov   byte ptr [bp - 4], al
+; todo do lineflags jmp/nop selfmodify here
+mov   byte ptr [bp - 4], al         ; lineflags. 
 mov   cx, word ptr [bx+2]			; get v2 offset
 mov   bx, word ptr [bx]				; get v1 offset
 mov   ax, VERTEXES_SEGMENT
@@ -1213,12 +1236,13 @@ test  byte ptr [bp - 4], ML_TWOSIDED
 										; todo 2 is this even necessary? do lineflags prevent us from checking for a null backsec
 
 mov   ax, 0FFFFh						; dunno if we need this..
-je   backsector_set
+je   backsector_set ; NOT_TWOSIDED
 
 ; backsector = &sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
 
 ;curlineside ^ 1
 
+; todo just mov bx 1?
 mov   dl, 1
 xor   bx, bx
 mov   bl, dl
@@ -1313,21 +1337,24 @@ mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult
 
 lights_set:
 mov   word ptr ds:[_walllights], ax      ; store lights
-les   di, dword ptr [bp - 8]          ; get drawseg far ptr
+
 
 ; es:di is input drawseg
 
 ;    maskedtexturecol = &openings[ds->maskedtexturecol_val];
 
-mov   ax, word ptr es:[di + 01Ah]		; ds->maskedtexturecol_val
+SELFMODIFY_MASKED_dsp_1A:
+mov   ax, 01000h		; ds->maskedtexturecol_val
 add   ax, ax
 mov   word ptr ds:[_maskedtexturecol], ax
 ;mov   word ptr ds:[_maskedtexturecol+2], OPENINGS_SEGMENT	; this is now hardcoded in data
 
 ;    rw_scalestep.w = ds->scalestep;
 
-mov   bx, word ptr es:[di + 0Eh]
-mov   cx, word ptr es:[di + 010h]
+SELFMODIFY_MASKED_dsp_0E:
+mov   bx, 01000h
+SELFMODIFY_MASKED_dsp_10:
+mov   cx, 01000h
 
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_1+1 - OFFSET R_DrawFuzzColumn_], bx		; rw_scalestep
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_2+5 - OFFSET R_DrawFuzzColumn_], bx		; rw_scalestep
@@ -1340,7 +1367,8 @@ mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_3+5 - OFFSET R_DrawFuzzColu
 
 SELFMODIFY_MASKED_x1_field_1:
 mov   ax, 08000h
-sub   ax, word ptr es:[di + 2]
+SELFMODIFY_MASKED_dsp_02:
+sub   ax, 01000h
 add   word ptr ds:[_walllights], 030h
 
 ; inlined  FastMul16u32u_
@@ -1354,18 +1382,20 @@ XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
 MUL  BX        ; AX * BX
 ADD  DX, CX    ; add 
 
-add   ax, word ptr es:[di + 6]
-adc   dx, word ptr es:[di + 8]
+SELFMODIFY_MASKED_dsp_06:
+add   ax, 01000h
+SELFMODIFY_MASKED_dsp_08:
+adc   dx, 01000h
 mov   word ptr ds:[_spryscale], ax
 mov   word ptr ds:[_spryscale + 2], dx
 
 ;    mfloorclip_offset = ds->sprbottomclip_offset;
 ;    mceilingclip_offset = ds->sprtopclip_offset;
 
-mov   ax, word ptr es:[di + 018h]
-mov   word ptr ds:[_mfloorclip], ax
-mov   ax, word ptr es:[di + 016h]
-mov   word ptr ds:[_mceilingclip], ax
+SELFMODIFY_MASKED_dsp_18:
+mov   word ptr ds:[_mfloorclip], 01000h
+SELFMODIFY_MASKED_dsp_16:
+mov   word ptr ds:[_mceilingclip], 01000h
 
 ;    if (lineflags & ML_DONTPEGBOTTOM) {
 
@@ -1666,8 +1696,7 @@ mov   ax, 01000h
 sbb   ax, dx
 mov   word ptr ds:[_sprtopscreen + 2], ax
 
-;push  di ; todo figure out how to put di on stack and use it in the inner loop.
-mov   word ptr [bp - 0Ch], di
+mov   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_DrawFuzzColumn_], di
 
 inner_loop_draw_columns:
 
@@ -1684,9 +1713,7 @@ jle   do_inner_loop
 ; end of inner loop, fall back to end of outer loop step
 
 SELF_MODIFY_MASKED_xoffset:
-mov   di, word ptr [bp - 0Ch]
-;pop   di
-
+mov   di, 01000h
 inc   di			; xoffset++
 ;			basespryscale+=rw_scalestep.w
 
