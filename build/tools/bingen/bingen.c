@@ -25,7 +25,6 @@
 void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
 void __far R_DrawColumn (void);
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
-void __far R_DrawColumnPrepMaskedSingle();
 void __far R_DrawColumnPrepMaskedMulti();
 void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
 void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
@@ -132,8 +131,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define R_DrawColumnOffset                    0x%X\n", FP_OFF(R_DrawColumn)                    - FP_OFF(R_DrawColumn));
 
     // masked offsets
-	fprintf(fp, "#define R_DrawColumnPrepMaskedSingleOffset    0x%X\n", FP_OFF(R_DrawColumnPrepMaskedSingle)    - FP_OFF(R_DrawFuzzColumn));
-    fprintf(fp, "#define R_DrawColumnPrepMaskedMultiOffset     0x%X\n", FP_OFF(R_DrawColumnPrepMaskedMulti)     - FP_OFF(R_DrawFuzzColumn));
+	fprintf(fp, "#define R_DrawColumnPrepMaskedMultiOffset     0x%X\n", FP_OFF(R_DrawColumnPrepMaskedMulti)     - FP_OFF(R_DrawFuzzColumn));
     fprintf(fp, "#define R_DrawFuzzColumnOffset                0x%X\n", FP_OFF(R_DrawFuzzColumn)                - FP_OFF(R_DrawFuzzColumn));
 	fprintf(fp, "#define R_DrawSingleMaskedColumnOffset        0x%X\n", FP_OFF(R_DrawSingleMaskedColumn)        - FP_OFF(R_DrawFuzzColumn));
 	fprintf(fp, "#define R_DrawMaskedColumnOffset              0x%X\n", FP_OFF(R_DrawMaskedColumn)              - FP_OFF(R_DrawFuzzColumn));

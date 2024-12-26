@@ -448,9 +448,7 @@ push  bp
 mov   bp, word ptr ds:[_dc_texturemid+0]
 
 
-SELFMODIFY_MASKED_set_dc_iscale_lo:
 mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_DrawFuzzColumn_]
-SELFMODIFY_MASKED_set_dc_iscale_hi:
 mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_DrawFuzzColumn_]
 
 ; dynamic call lookuptable based on used colormaps address being CS:00
