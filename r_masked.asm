@@ -493,8 +493,7 @@ PUBLIC R_DrawMaskedSpriteShadow_
 ; cx:bx  column fardata
 
 ; bp - 2     topscreen  segment
-; bp - 4     basetexturemid segment
-; bp - 6   basetexturemid offset
+
 
 push  dx
 push  si
@@ -545,7 +544,7 @@ MUL  BX        ; AX * BX
 ADD  DX, DI    ; add 
 
 
-mov   bx, cx   ; bx store _dc_yl
+mov   bx, cx   ; bx store _sprtopscreen + 2
 add   ax, word ptr [bp - 2]
 adc   dx, cx
 test  ax, ax
@@ -1077,12 +1076,12 @@ PUBLIC R_RenderMaskedSegRange_
 ; bp - 2        side_render ; todo selfmodify, get its two values if worth..
 ; bp - 4        lineflags  ; todo can probably selfmodify value
 ; bp - 6        UNUSED
-; bp - 8        rw_scalestep_shift hi word ; todo self modiable with adds to code
-; bp - 0Ah      rw_scalestep_shift lo word ; todo self modiable with adds to code
+; bp - 8        UNUSED
+; bp - 0Ah      UNUSED
 ; bp - 0Ch      cached xoffset/di
-; bp - 0Eh      dc_x_base4  ; todo used once self modify
-; bp - 010h     sprtopscreen_step hi word  ; todo self modiable with adds to code
-; bp - 012h     sprtopscreen_step lo word  ; todo self modiable with adds to code
+; bp - 0Eh      UNUSED
+; bp - 010h     UNUSED
+; bp - 012h     UNUSED
 ; bp - 014h     basespryscale hi word  ; todo self modiable with adds to code
 ; bp - 016h     basespryscale lo word  ; todo self modiable with adds to code
 ; bp - 018h     drawseg far segment (this is a constant)
@@ -1327,9 +1326,16 @@ mov   word ptr ds:[_maskedtexturecol], ax
 ;    rw_scalestep.w = ds->scalestep;
 
 mov   bx, word ptr es:[di + 0Eh]
-mov   word ptr [bp - 01Eh], bx		
 mov   cx, word ptr es:[di + 010h]
-mov   word ptr [bp - 01Ch], cx
+
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_1+1 - OFFSET R_DrawFuzzColumn_], bx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_2+3 - OFFSET R_DrawFuzzColumn_], bx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_3+3 - OFFSET R_DrawFuzzColumn_], bx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_1+1 - OFFSET R_DrawFuzzColumn_], cx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_2+3 - OFFSET R_DrawFuzzColumn_], cx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_3+3 - OFFSET R_DrawFuzzColumn_], cx		; rw_scalestep
+
+
 
 SELFMODIFY_MASKED_x1_field_1:
 mov   ax, 08000h
@@ -1480,7 +1486,7 @@ mov   ax, 08000h
 mov   di, ax						; di = x1
 SELFMODIFY_MASKED_detailshiftandval_2:
 and   ax, 01000h
-mov   word ptr [bp - 0Eh], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_x_base4+1 - OFFSET R_DrawFuzzColumn_], ax
 
 ;		int16_t base4diff = x1 - dc_x_base4;
 
@@ -1495,8 +1501,10 @@ mov   word ptr [bp - 014h], ax
 
 ;		fixed_t rw_scalestep_shift = rw_scalestep.w << detailshift2minus;
 
-mov   ax, word ptr [bp - 01Eh]  ; rw_scalestep
-mov   dx, word ptr [bp - 01Ch]	; rw_scalestep
+SELFMODIFY_MASKED_rw_scalestep_lo_1:
+mov   ax, 01000h
+SELFMODIFY_MASKED_rw_scalestep_hi_1:
+mov   dx, 01000h
 
 
 ; todo: proper shift jmp thing
@@ -1512,8 +1520,12 @@ rcl   dx, 1
 
 
 done_shifting_spryscale:
-mov   word ptr [bp - 0Ah], ax		; rw_scalestep_shift
-mov   word ptr [bp - 8], dx			; rw_scalestep_shift
+
+
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_1+2 - OFFSET R_DrawFuzzColumn_], ax		; rw_scalestep_shift
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_2+4 - OFFSET R_DrawFuzzColumn_], ax		; rw_scalestep_shift
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_1+2 - OFFSET R_DrawFuzzColumn_], dx		; rw_scalestep_shift
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_2+4 - OFFSET R_DrawFuzzColumn_], dx		; rw_scalestep_shift
 
 ;		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
 
@@ -1526,8 +1538,8 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMul_addr
 
-mov   word ptr [bp - 012h], ax	  ; sprtopscreen_step
-mov   word ptr [bp - 010h], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_lo+4 - OFFSET R_DrawFuzzColumn_], ax	  ; sprtopscreen_step
+mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_hi+4 - OFFSET R_DrawFuzzColumn_], dx	  ; sprtopscreen_step
 
 
 ;	while (base4diff){
@@ -1537,14 +1549,14 @@ mov   word ptr [bp - 010h], dx
 
 test  di, di
 je    base4diff_is_zero_rendermaskedsegrange
-mov   ax, word ptr [bp - 01Eh]
-mov   dx, word ptr [bp - 01Ch]
 
 loop_dec_base4diff:
 ;			basespryscale -= rw_scalestep.w;
+SELFMODIFY_MASKED_rw_scalestep_lo_2:
+sub   word ptr [bp - 016h], 01000h
+SELFMODIFY_MASKED_rw_scalestep_hi_2:
+sbb   word ptr [bp - 014h], 01000h
 
-sub   word ptr [bp - 016h], ax
-sbb   word ptr [bp - 014h], dx
 dec   di
 jne   loop_dec_base4diff
 base4diff_is_zero_rendermaskedsegrange:
@@ -1579,7 +1591,8 @@ mov   bx, word ptr [bp - 014h]	; basespryscale
 ; bx:dx temporarily holds _spryscale
 ; ax will temporarily store dc_x
 ;			dc_x        = dc_x_base4 + xoffset;
-mov   ax, word ptr [bp - 0Eh]		; dc_x_base4
+SELFMODIFY_MASKED_dc_x_base4:
+mov   ax, 01000h
 add   ax, di		; add xoffset to dc_x
 
 
@@ -1596,8 +1609,10 @@ jge   calculate_sprtopscreen
 
 SELFMODIFY_MASKED_detailshiftitercount_9:
 add   ax, 0
-add   dx, word ptr [bp - 0Ah]   ; rw_scalestep_shift 
-adc   bx, word ptr [bp - 8]     ; rw_scalestep_shift
+SELFMODIFY_MASKED_rw_scalestep_shift_lo_1:
+add   dx, 01000h
+SELFMODIFY_MASKED_rw_scalestep_shift_hi_1:
+adc   bx, 01000h
 
 calculate_sprtopscreen:
 
@@ -1666,10 +1681,12 @@ mov   di, word ptr [bp - 0Ch]
 
 inc   di			; xoffset++
 ;			basespryscale+=rw_scalestep.w
-mov   ax, word ptr [bp - 01Eh]
-add   word ptr [bp - 016h], ax
-mov   ax, word ptr [bp - 01Ch]
-adc   word ptr [bp - 014h], ax
+
+
+SELFMODIFY_MASKED_rw_scalestep_lo_3:
+add   word ptr [bp - 016h], 01000h
+SELFMODIFY_MASKED_rw_scalestep_hi_3:
+adc   word ptr [bp - 014h], 01000h
 
 
 ; xoffset < detailshiftitercount
@@ -1751,14 +1768,16 @@ increment_inner_loop:
 
 SELFMODIFY_MASKED_detailshiftitercount_7:
 add   word ptr ds:[_dc_x], 0
-mov   ax, word ptr [bp - 0Ah]
-add   word ptr ds:[_spryscale], ax
-mov   ax, word ptr [bp - 8]
-adc   word ptr ds:[_spryscale + 2], ax
-mov   ax, word ptr [bp - 012h]
-sub   word ptr ds:[_sprtopscreen], ax
-mov   ax, word ptr [bp - 010h]
-sbb   word ptr ds:[_sprtopscreen + 2], ax
+
+SELFMODIFY_MASKED_rw_scalestep_shift_lo_2:
+add   word ptr ds:[_spryscale], 01000h
+SELFMODIFY_MASKED_rw_scalestep_shift_hi_2:
+adc   word ptr ds:[_spryscale + 2], 01000h
+
+SELFMODIFY_MASKED_sprtopscreen_lo:
+sub   word ptr ds:[_sprtopscreen], 01000h
+SELFMODIFY_MASKED_sprtopscreen_hi:
+sbb   word ptr ds:[_sprtopscreen + 2], 01000h
 jmp   inner_loop_draw_columns
 
 use_maxlight:

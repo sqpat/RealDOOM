@@ -99,8 +99,7 @@
 #define fuzzpos                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0043)))
 #define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0044)))
 #define dc_yh                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0046)))
-#define dc_iscale                       (*((fixed_t __near *)                (_NULL_OFFSET + 0x0048)))
-#define dc_texturemid                   (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x004C)))
+//unused
 #define dc_x                            (*((int16_t __near*)                 (_NULL_OFFSET + 0x0050)))
 #define lastopening                     (*((uint16_t    __near*)             (_NULL_OFFSET + 0x0052)))
 
