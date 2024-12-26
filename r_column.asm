@@ -46,7 +46,7 @@ PUBLIC  R_DrawColumn_
 ; no need to push anything. outer function just returns and pops
 
     ; di contains shifted dc_x relative to detailshift
-    ; bx contains dc_yl
+    ; ax contains dc_yl
 
     cli 									; disable interrupts
     push bp

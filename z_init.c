@@ -538,7 +538,7 @@ void __near Z_LoadBinaries() {
 
 	FixedMul_addr = 				(uint32_t)(FixedMul);
 	FixedMul1632_addr = 			(uint32_t)(FixedMul1632);
-	FastDiv3232_addr = 				(uint32_t)(FastDiv3232);
+	FastDiv3232_addr = 				(uint32_t)(FastDiv3232FFFF);
 	R_GetMaskedColumnSegment_addr = (uint32_t)(R_GetMaskedColumnSegment);
 	getspritetexture_addr = 		(uint32_t)(getspritetexture);
 

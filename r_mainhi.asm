@@ -35,7 +35,7 @@ EXTRN FastDiv3216u_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN R_PointToAngle_:PROC
 EXTRN R_GetColumnSegment_:NEAR
-EXTRN FastDiv3232_:PROC
+EXTRN FastDiv3232FFFF_:PROC
 
 EXTRN _validcount:WORD
 EXTRN _spritelights:WORD
@@ -1823,7 +1823,7 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTIO
 
 
 xchg  ax, bx    ; dc_yl in ax
-mov   si, dx
+mov   si, dx    ; dc_texturemid+2 to si
 
 ; todo: put dc_iscale in cx:bx...
 
@@ -2603,8 +2603,8 @@ mov   word ptr [bp - 2], ax
 ;		index = rw_scale.w >> LIGHTSCALESHIFT;
 ;	}
 
-mov   bx, word ptr ds:[_rw_scale]
-mov   cx, word ptr ds:[_rw_scale + 2]
+les   bx, dword ptr ds:[_rw_scale]
+mov   cx, es
 cmp   cx, 3
 jge   use_max_light
 do_lightscaleshift:
@@ -2625,9 +2625,9 @@ jmp   light_set
 use_max_light:
 mov   si, MAXLIGHTSCALE - 1
 light_set:
-mov   ax, 0FFFFh
-cwd
-call FastDiv3232_
+
+; internally sets ax:dx ffffffff
+call FastDiv3232FFFF_
 
 ; do the bit shuffling etc when writing direct to drawcol.
 ; mov dh, dl

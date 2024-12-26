@@ -2194,15 +2194,17 @@ retf
 
 ; NOTE: this may not work right for negative params or DX:AX  besides 0xFFFFFFFF
 
-;FastDiv3232_
+;FastDiv3232FFFF_
 ; DX:AX / CX:BX
 
-PROC FastDiv3232_ FAR
-PUBLIC FastDiv3232_
+PROC FastDiv3232FFFF_ FAR
+PUBLIC FastDiv3232FFFF_
 
 
 
 ; if top 16 bits missing just do a 32 / 16
+mov  ax, -1
+cwd
 
 test cx, cx
 je fast_div_32_16_FFFF
@@ -2228,67 +2230,56 @@ mov cl, bh
 mov bh, bl
 xor bl, bl
 
-
-xchg dh, dl
-mov  si, dx
-and si, 00FFh  ; todo make this better
-
-mov dl, ah
-mov ah, al
+; dont need a full shift 8 because we know everything is FF
+mov  si, 000FFh
 xor al, al
 
 shift_bits_3232:
 
 ; less than a byte to shift
 ; shift until MSB is 1
+; DX gets 1s so we can skip it.
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_3232  
 SAL AX, 1
-RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_3232
 SAL AX, 1
-RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_3232
 SAL AX, 1
-RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_3232
 SAL AX, 1
-RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_3232
 SAL AX, 1
-RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_3232
 SAL AX, 1
-RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_3232
 SAL AX, 1
-RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1

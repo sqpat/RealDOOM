@@ -2297,7 +2297,10 @@ void __near A_BrainSpit (mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 	newmobj = setStateReturn;
 	newmobj_pos = setStateReturn_pos;
 	newmobj->targetRef = targRef;
-    newmobj->reactiontime = FastDiv3216u ((FastDiv3232(targy - moy, newmobj->momy.w)) , states[newmobj_pos->stateNum].tics);
+	//todo: FastDiv3232FFFF uses ffff as dx and ax.
+    //newmobj->reactiontime = FastDiv3216u ((FastDiv3232FFFF(targy - moy, newmobj->momy.w)) , states[newmobj_pos->stateNum].tics);
+    newmobj->reactiontime =  
+	FastDiv3216u(targ_pos->y.h.intbits - mo_pos->y.h.intbits, newmobj->momy.h.intbits) / states[newmobj_pos->stateNum].tics;
 
 	S_StartSoundFromRef(NULL, sfx_bospit);
 }
