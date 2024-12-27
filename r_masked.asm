@@ -1073,8 +1073,8 @@ PUBLIC R_RenderMaskedSegRange_
 ;x1 is ax
 ;x2 is cx
 
-; bp - 2        side_render ; todo selfmodify, get its two values if worth..
-; bp - 4        lineflags  ; todo can probably selfmodify value
+; bp - 2        UNUSED
+; bp - 4        UNUSED
 
 
   
@@ -1082,7 +1082,6 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 4
 
 ; todo selfmodify all this up ahead too.
 
@@ -1138,11 +1137,15 @@ mov   si, word ptr [bx + 6]			; get sidedefOffset
 mov   es, ax
 shl   si, 1
 shl   si, 1
-mov   ax, si						; side_render_t is 4 bytes each
+mov   bx, si						; side_render_t is 4 bytes each
 shl   si, 1							; side_t is 8 bytes each
-add   ah, (_sides_render SHR 8 )		; sides render near addr is ds:[0xAE00]
+add   bh, (_sides_render SHR 8 )		; sides render near addr is ds:[0xAE00]
 mov   si, word ptr es:[si + 4]		; lookup side->midtexture
-mov   word ptr [bp - 2], ax			; store side_render_t offset for curseg_render
+mov   ax, word ptr [bx] 
+mov   word ptr cs:[SELFMODIFY_MASKED_siderender_00+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   ax, word ptr [bx+2] 
+mov   word ptr cs:[SELFMODIFY_MASKED_siderender_02+1 - OFFSET R_DrawFuzzColumn_], ax
+
 mov   ax, TEXTURETRANSLATION_SEGMENT
 add   si, si
 mov   es, ax
@@ -1154,7 +1157,7 @@ mov   al, byte ptr es:[si]			; translate texnum to lookup
 ; put texnum where it needs to be
 mov   word ptr cs:[SELFMODIFY_MASKED_texnum_1+1 - OFFSET R_DrawFuzzColumn_], si
 mov   word ptr cs:[SELFMODIFY_MASKED_texnum_2+1 - OFFSET R_DrawFuzzColumn_], si
-mov   word ptr cs:[SELFMODIFY_MASKED_texnum_3+1 - OFFSET R_DrawFuzzColumn_], si
+mov   word ptr cs:[SELFMODIFY_MASKED_texnum_3+3 - OFFSET R_DrawFuzzColumn_], si
 
 mov   byte ptr cs:[SELFMODIFY_MASKED_compare_lookup  +1 - OFFSET R_DrawFuzzColumn_], al
 mov   byte ptr cs:[SELFMODIFY_MASKED_compare_lookup_2+1 - OFFSET R_DrawFuzzColumn_], al
@@ -1200,8 +1203,19 @@ mov   ax, LINEFLAGSLIST_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[di]
 mov   bx, word ptr ds:[_curseg_render]   ; get curseg 
-; todo do lineflags jmp/nop selfmodify here
-mov   byte ptr [bp - 4], al         ; lineflags. 
+
+; lineflags jmp/nop selfmodify here
+test  al, ML_DONTPEGBOTTOM
+; nop 
+mov   ax, 0c089h 
+je    peg_bottom
+; todo  mov ax, (one thing) here?
+mov   ah, (SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_TARGET - SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_AFTER)
+mov   al, 0EBh  ; jmp rel8
+peg_bottom:
+; write instruction forward
+mov   word ptr cs:[SELFMODIFY_MASKED_lineflags_ml_dontpegbottom - OFFSET R_DrawFuzzColumn_], ax
+
 mov   cx, word ptr [bx+2]			; get v2 offset
 mov   bx, word ptr [bx]				; get v1 offset
 mov   ax, VERTEXES_SEGMENT
@@ -1229,8 +1243,8 @@ done_comparing_vertexes:
 mov   byte ptr cs:[SELFMODIFY_MASKED_add_vertex_field - OFFSET R_DrawFuzzColumn_], al
 
 
-mov   bx, word ptr [bp - 2]     ; get side_render
-mov   cx, word ptr [bx + 2]		; get side_render secnum
+SELFMODIFY_MASKED_siderender_02:
+mov   cx, 01000h		; get side_render secnum
 
 
 ; backsector = &sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
@@ -1285,9 +1299,9 @@ ENDIF
 ; di is frontsector ptr
 ; es is sector segment.
 
-test  byte ptr [bp - 4], ML_DONTPEGBOTTOM
+SELFMODIFY_MASKED_lineflags_ml_dontpegbottom:
 jne   front_back_floor_case
-
+SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_AFTER:
 front_back_ceiling_case:
 
 ; frontsector->ceilingheight < backsector->ceilingheight ? frontsector->ceilingheight : backsector->ceilingheight;
@@ -1310,6 +1324,7 @@ mov   al, 040h  ; inc ax instruciton
 jmp   done_comparing_vertexes
 
 
+SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_TARGET:
 front_back_floor_case:
 
 ;	base = frontsector->floorheight > backsector->floorheight ? frontsector->floorheight : backsector->floorheight;
@@ -1327,10 +1342,8 @@ mov   cx, TEXTUREHEIGHTS_SEGMENT
 mov   es, cx
 xor   cx, cx
 
-; todo skip si
 SELFMODIFY_MASKED_texnum_3:
-mov   si, 08000h
-mov   cl, byte ptr es:[si]
+mov   cl, byte ptr es:[01000h]
 inc   cx
 
 sector_height_chosen:
@@ -1362,8 +1375,8 @@ sbb   ax, 01000h
 
 ;    dc_texturemid.h.intbits += side_render->rowoffset;
 
-mov   bx, word ptr [bp - 2]		; get side_render
-add   ax, word ptr [bx]
+SELFMODIFY_MASKED_siderender_00:
+add   ax, 01000h
 
 
 ; dc_texturemid is a function contant. we selfmodify ahead:

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/27 12:58:44
+Created on:       24/12/27 13:18:57
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -88,7 +88,7 @@ r_draw_TEXT            CODE           AUTO           1802:6020       00000379
 r_main_TEXT            CODE           AUTO           1802:63a0       000001f6
 r_plane_TEXT           CODE           AUTO           1802:65a0       00000000
 r_segs_TEXT            CODE           AUTO           1802:65a0       00000000
-R_MASKED_TEXT          CODE           AUTO           1802:65a0       000010a4
+R_MASKED_TEXT          CODE           AUTO           1802:65a0       000010ad
 r_things_TEXT          CODE           AUTO           1802:7650       00000000
 w_wad_TEXT             CODE           AUTO           1802:7650       0000032e
 VIDEO_TEXT             CODE           AUTO           1802:797e       000001fb
@@ -1339,19 +1339,19 @@ Module: r_main.obj(C:\REALDOOM\r_main.c)
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 253a:1840*     _setval
 Module: r_masked.obj(r_masked.ASM)
-1802:7644      R_MASKED_END_
-1802:7000*     R_PointOnSegSide_
+1802:764d      R_MASKED_END_
+1802:7009*     R_PointOnSegSide_
 1802:6ae1*     R_DrawPlayerSprites_
-1802:7462      R_SortVisSprites_
+1802:746b      R_SortVisSprites_
 1802:67cc*     R_DrawMaskedSpriteShadow_
-1802:75dd      R_WriteBackMaskedFrameConstants_
+1802:75e6      R_WriteBackMaskedFrameConstants_
 1802:65a0      R_DrawFuzzColumn_
 1802:671e      R_DrawSingleMaskedColumn_
-1802:70bf*     R_DrawSprite_
+1802:70c8*     R_DrawSprite_
 1802:68cd*     R_DrawVisSprite_
-1802:7381      R_DrawMaskedColumn_
-1802:7325      R_DrawMasked_
-1802:7550      R_WriteBackViewConstantsMasked_
+1802:738a      R_DrawMaskedColumn_
+1802:732e      R_DrawMasked_
+1802:7559      R_WriteBackViewConstantsMasked_
 1802:6b08*     R_RenderMaskedSegRange_
 1802:66d5      R_DrawColumnPrepMaskedMulti_
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
@@ -1742,4 +1742,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028bf0 (166896.)
 Entry point address: 2035:2434
-Link time: 00:00.74
+Link time: 00:00.75
