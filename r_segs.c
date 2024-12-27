@@ -91,6 +91,9 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 
 	frontsecnum = side_render->secnum;
+	
+	
+	// revision post asm - this cant be not two-sided. masked always has a sector behind it i guess.
 	backsector =
 		lineflags & ML_TWOSIDED ?
 		&sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
@@ -147,7 +150,7 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
     dc_texturemid.w -= viewz.w;
 	dc_texturemid.h.intbits += adder;		
 
-    dc_texturemid.h.intbits += side_render->rowoffset;
+    dc_texturemid.h.intbits += side_render->rowoffset; 
 			
 	if (fixedcolormap) {
 		// todo if this is 0 maybe skip the if?

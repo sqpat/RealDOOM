@@ -1232,48 +1232,26 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_add_vertex_field - OFFSET R_DrawFuzzColumn_
 mov   bx, word ptr [bp - 2]     ; get side_render
 mov   cx, word ptr [bx + 2]		; get side_render secnum
 
-test  byte ptr [bp - 4], ML_TWOSIDED
-										; todo 2 is this even necessary? do lineflags prevent us from checking for a null backsec
-
-mov   ax, 0FFFFh						; dunno if we need this..
-je   backsector_set ; NOT_TWOSIDED
 
 ; backsector = &sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
 
-;dl has curlineside
 ;curlineside ^ 1
-
-; todo just mov bx 1?
+; (1 or 0)
 mov   bx, 1
 sub   bl, dl
 
 shl   di, 1
 shl   di, 1
 mov   ax, LINES_SEGMENT
+mov   es, ax
 sal   bx, 1
-mov   es, ax
 
-mov   bx, word ptr es:[bx + di]		; get secnum
+
+mov   bx, word ptr es:[bx + di] ; get reverse side for the line
 shl   bx, 1
 shl   bx, 1
 
-
-mov   ax, word ptr ds:[bx + _sides_render + 2]   ; get a field in the sides render area
-
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shl   ax, 4
-ELSE
-shl   ax, 1
-shl   ax, 1
-shl   ax, 1
-shl   ax, 1
-ENDIF
-
-backsector_set:
-mov   word ptr ds:[_backsector], ax
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
-mov   bx, cx        ; retrieve side_render secnum from above
+mov   bx, word ptr ds:[bx + _sides_render + 2]   ; get backsecnum
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl   bx, 4
@@ -1285,10 +1263,123 @@ shl   bx, 1
 ENDIF
 
 
-mov   word ptr ds:[_frontsector], bx
+; bx holds backsector
+
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+mov   di, cx        ; retrieve side_render secnum from above
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shl   di, 4
+ELSE
+shl   di, 1
+shl   di, 1
+shl   di, 1
+shl   di, 1
+ENDIF
 
 
-mov   al, byte ptr es:[bx + 0Eh]
+;mov   word ptr ds:[_frontsector], bx
+
+; bx is backsector ptr
+; di is frontsector ptr
+; es is sector segment.
+
+test  byte ptr [bp - 4], ML_DONTPEGBOTTOM
+jne   front_back_floor_case
+
+front_back_ceiling_case:
+
+; frontsector->ceilingheight < backsector->ceilingheight ? frontsector->ceilingheight : backsector->ceilingheight;
+
+mov   ax, word ptr es:[di+2] ; frontsector ceil
+mov   cx, word ptr es:[bx+2] ; backsector ceil
+cmp   ax, cx
+jl    use_frontsector_ceil
+mov   ax, cx			    ; use backsector ceil
+use_frontsector_ceil:
+
+xor   cx, cx
+
+jmp sector_height_chosen
+ys_equal:
+mov   al, 048h  ; dec ax instruction
+jmp   done_comparing_vertexes
+xs_equal:
+mov   al, 040h  ; inc ax instruciton
+jmp   done_comparing_vertexes
+
+
+front_back_floor_case:
+
+;	base = frontsector->floorheight > backsector->floorheight ? frontsector->floorheight : backsector->floorheight;
+
+mov   ax, word ptr es:[di] ; frontsector floor
+mov   cx, word ptr es:[bx] ; backsector floor
+cmp   ax, cx
+jg    use_frontsector_floor
+mov   ax, cx   ; use backsector floor
+use_frontsector_floor:
+
+
+
+mov   cx, TEXTUREHEIGHTS_SEGMENT
+mov   es, cx
+xor   cx, cx
+
+; todo skip si
+SELFMODIFY_MASKED_texnum_3:
+mov   si, 08000h
+mov   cl, byte ptr es:[si]
+inc   cx
+
+sector_height_chosen:
+
+;ax contains shortheight of chosen sector height
+;cx contains word to add to dc_texturemid after shortheight conversion.. 0 for ceil, and textureheight for floor case
+
+; set fixed union from shortheight, i.e. shift 13 left
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+
+; ax:dx is textureheight (NOT DX:AX!!)
+;    dc_texturemid.h.intbits += adder;		
+
+add   ax, cx
+
+;     dc_texturemid.w -= viewz.w;
+SELFMODIFY_MASKED_viewz_lo_1:
+sub   dx, 01000h
+SELFMODIFY_MASKED_viewz_hi_1:
+sbb   ax, 01000h
+
+
+
+;    dc_texturemid.h.intbits += side_render->rowoffset;
+
+mov   bx, word ptr [bp - 2]		; get side_render
+add   ax, word ptr [bx]
+
+
+; dc_texturemid is a function contant. we selfmodify ahead:
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_DrawFuzzColumn_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_2 + 1 - OFFSET R_DrawFuzzColumn_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_3 + 1 - OFFSET R_DrawFuzzColumn_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_2 + 1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_DrawFuzzColumn_], ax
+
+
+
+
+; di is frontsector
+
+mov   al, byte ptr es:[di + 0Eh]
 xor   ah, ah
 mov   dx, ax
 
@@ -1318,12 +1409,6 @@ add   bx, ax
 mov   ax, word ptr ds:[bx + _lightmult48lookup]
 jmp   lights_set
 
-ys_equal:
-mov   al, 048h  ; dec ax instruction
-jmp   done_comparing_vertexes
-xs_equal:
-mov   al, 040h  ; inc ax instruciton
-jmp   done_comparing_vertexes
 
 
 
@@ -1331,6 +1416,12 @@ jmp   done_comparing_vertexes
 set_walllights_zero:
 xor   ax, ax
 jmp   lights_set
+SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
+fixed_colormap:
+SELFMODIFY_MASKED_fixedcolormap_3:
+mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], 0
+jmp   colormap_set
+
 
 clip_lights_to_max:
 mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult48lookup[LIGHTLEVELS - 1];
@@ -1338,8 +1429,6 @@ mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult
 lights_set:
 mov   word ptr ds:[_walllights], ax      ; store lights
 
-
-; es:di is input drawseg
 
 ;    maskedtexturecol = &openings[ds->maskedtexturecol_val];
 
@@ -1397,98 +1486,7 @@ mov   word ptr ds:[_mfloorclip], 01000h
 SELFMODIFY_MASKED_dsp_16:
 mov   word ptr ds:[_mceilingclip], 01000h
 
-;    if (lineflags & ML_DONTPEGBOTTOM) {
 
-les   di, dword ptr ds:[_frontsector]
-mov   bx, word ptr  ds:[_backsector]
-test  byte ptr [bp - 4], ML_DONTPEGBOTTOM
-jne   front_back_floor_case
-
-front_back_ceiling_case:
-
-; frontsector->ceilingheight < backsector->ceilingheight ? frontsector->ceilingheight : backsector->ceilingheight;
-
-mov   ax, word ptr es:[di+2] ; frontsector ceil
-mov   cx, word ptr es:[bx+2] ; backsector ceil
-cmp   ax, cx
-jl    use_frontsector_ceil
-mov   ax, cx			    ; use backsector ceil
-use_frontsector_ceil:
-
-xor   cx, cx
-
-jmp sector_height_chosen
-SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
-fixed_colormap:
-SELFMODIFY_MASKED_fixedcolormap_3:
-mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], 0
-jmp   colormap_set
-
-
-
-front_back_floor_case:
-
-;	base = frontsector->floorheight > backsector->floorheight ? frontsector->floorheight : backsector->floorheight;
-
-mov   ax, word ptr es:[di] ; frontsector floor
-mov   cx, word ptr es:[bx] ; backsector floor
-cmp   ax, cx
-jg    use_frontsector_floor
-mov   ax, cx   ; use backsector floor
-use_frontsector_floor:
-
-
-
-mov   cx, TEXTUREHEIGHTS_SEGMENT
-mov   es, cx
-xor   cx, cx
-
-SELFMODIFY_MASKED_texnum_3:
-mov   si, 08000h
-mov   cl, byte ptr es:[si]
-inc   cx
-
-sector_height_chosen:
-
-;ax contains shortheight of chosen sector height
-;cx contains word to add to dc_texturemid after shortheight conversion.. 0 for ceil, and textureheight for floor case
-
-; set fixed union from shortheight, i.e. shift 13 left
-xor   dx, dx
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-
-; ax:dx is textureheight (NOT DX:AX!!)
-
-;    dc_texturemid.h.intbits += adder;		
-
-add   ax, cx
-
-;     dc_texturemid.w -= viewz.w;
-SELFMODIFY_MASKED_viewz_lo_1:
-sub   dx, 01000h
-SELFMODIFY_MASKED_viewz_hi_1:
-sbb   ax, 01000h
-
-
-
-;    dc_texturemid.h.intbits += side_render->rowoffset;
-
-mov   di, word ptr [bp - 2]
-add   ax, word ptr [di]
-
-
-; dc_texturemid is a function contant. we selfmodify ahead:
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_DrawFuzzColumn_], dx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_2 + 1 - OFFSET R_DrawFuzzColumn_], dx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_3 + 1 - OFFSET R_DrawFuzzColumn_], dx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_DrawFuzzColumn_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_2 + 1 - OFFSET R_DrawFuzzColumn_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_DrawFuzzColumn_], ax
 
 
 
