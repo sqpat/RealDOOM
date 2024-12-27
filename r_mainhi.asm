@@ -2234,6 +2234,7 @@ lodsw ; pixhigh hi
 mov   word ptr cs:[SELFMODIFY_set_pixhigh_hi+1], ax
 
 mov   al, 0 ; xoffset is 0
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_TARGET_3:
 continue_outer_rendersegloop:
 cbw  
 mov   bx, ax
@@ -2338,6 +2339,9 @@ add   word ptr cs:[SELFMODIFY_set_rw_scale_lo+1], 01000h
 SELFMODIFY_add_rwscale_hi:
 adc   word ptr cs:[SELFMODIFY_set_rw_scale_hi+1], 01000h
 
+;SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2:
+;jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_TARGET_2
+;SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_AFTER_2 = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 + 2
 
 SELFMODIFY_add_pixlowstep_lo:
 add   word ptr cs:[SELFMODIFY_set_pixlow_lo+1], 01000h
@@ -2405,6 +2409,10 @@ SELFMODIFY_add_to_rwscale_lo_2:
 add   word ptr ds:[_rw_scale], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
 adc   word ptr ds:[_rw_scale + 2], 01000h
+
+;SELFMODIFY_BSP_midtextureonly_skip_pixhighlow:
+;jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_TARGET
+;SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow + 2
 SELFMODIFY_add_to_pixlow_lo_2:
 add   word ptr ds:[_pixlow], 01000h
 SELFMODIFY_add_to_pixlow_hi_2:
@@ -2413,6 +2421,7 @@ SELFMODIFY_add_to_pixhigh_lo_2:
 add   word ptr ds:[_pixhigh], 01000h
 SELFMODIFY_add_to_pixhigh_hi_2:
 adc   word ptr ds:[_pixhigh+2], 01000h
+;SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_TARGET:
 ; this is right before inner loop start
 mov   di, word ptr ds:[_rw_x]
 SELFMODIFY_cmp_di_to_rw_stopx_1:
@@ -2667,10 +2676,12 @@ mov   es, ax
 ; get yl/yh in di/si
 pop   di
 pop   si
+SELFMODIFY_BSP_midtexture:
+SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 2
 SELFMODIFY_set_midtexture:
 mov   cx, 01000h
 mov   dx, cx				; copy texture function argument
-jcxz  no_mid_texture_draw
+
 cmp   di, si
 jl    mid_no_pixels_to_draw
 
@@ -2716,6 +2727,7 @@ jmp   start_per_column_inner_loop
 jump_to_finish_outer_loop:
 jmp   finish_outer_loop
 
+SELFMODIFY_BSP_toptexture_TARGET:
 no_top_texture_draw:
 ; bx is already rw_x << 1
 SELFMODIFY_get_markceiling_2:
@@ -2729,10 +2741,14 @@ lea   ax, [si - 1]
 mov   word ptr es:[bx + OFFSET_CEILINGCLIP], ax
 jmp   check_bottom_texture
 
+SELFMODIFY_BSP_midtexture_TARGET:
 no_mid_texture_draw:
+
+SELFMODIFY_BSP_toptexture:
+SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 2
 SELFMODIFY_set_toptexture:
 mov   cx, 01000h
-jcxz  no_top_texture_draw
+
 do_top_texture_draw:
 mov   ax, word ptr ds:[_pixhigh+1]
 mov   dl, byte ptr ds:[_pixhigh+3]
@@ -2778,9 +2794,11 @@ mov   word ptr es:[bx  + OFFSET_CEILINGCLIP], cx
 check_bottom_texture:
 ; bx is already rw_x << 1
 
+SELFMODIFY_BSP_bottexture:
+SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 SELFMODIFY_set_bottomtexture:
 mov   cx, 01000h
-jcxz  no_bottom_texture_draw
+
 do_bottom_texture_draw:
 SELFMODIFY_get_pixlow_lo:
 mov   ax, word ptr ds:[_pixlow]
@@ -2829,6 +2847,7 @@ mov   dl, 0
 test  dl, dl
 jne   record_masked
 jmp   finished_inner_loop_iter
+SELFMODIFY_BSP_bottexture_TARGET:
 no_bottom_texture_draw:
 SELFMODIFY_get_markfloor_2:
 mov   dl, 0
@@ -3225,10 +3244,21 @@ mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
 
-mov       word ptr cs:[SELFMODIFY_set_midtexture+1], ax
+; write the high byte of the word.
+; prev two bytes will be a jump or mov cx with the low byte
+mov       byte ptr cs:[SELFMODIFY_set_midtexture+2], ah
+mov       bx, ax     ; backup
+test      ax, ax
+mov       ah, al     
+mov       al, 0B9h   ; mov cx, [low 8 bits of the value]
+jne       midtexture_not_zero
+midtexture_zero:
+mov       ax, ((SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) SHL 8) + 0EBh
+midtexture_not_zero:
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture], ax
 ; are any bits set?
-or        al, ah
-or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
+or        bl, bh
+or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
 je        overwrite_bottom_top	; if midtexture was zero, then bot/top will be checked, must zero those too
 done_overwriting_bottom_top:
 
@@ -3246,8 +3276,11 @@ jmp       done_with_bottom_peg
 
 overwrite_bottom_top:
 ;  al/ah were zero so ax is zero.
-mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
-mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+;mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
+;mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+
+; TODO can i remove the two above...?
+
 jmp       done_overwriting_bottom_top
 do_peg_bottom:
 mov       ax, word ptr [bp - 010h]
@@ -3878,9 +3911,12 @@ handle_two_sided_line:
 
 ; ax still 0
 ; nomidtexture. this will be checked before top/bot, have to set it to 0.
-mov       word ptr cs:[SELFMODIFY_set_midtexture+1], ax
-mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
-mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+
+; jmp by default
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture], ((SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) SHL 8) + 0EBh
+mov       word ptr cs:[SELFMODIFY_BSP_toptexture], ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
+mov       word ptr cs:[SELFMODIFY_BSP_bottexture], ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
+
 
 
 ; short_height_t backsectorfloorheight = backsector->floorheight;
@@ -4123,10 +4159,22 @@ mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
 
-mov   	  word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+; write the high byte of the word.
+; prev two bytes will be a jump or mov cx with the low byte
+mov       byte ptr cs:[SELFMODIFY_set_toptexture+2], ah
+mov       bx, ax     ; backup
+test      ax, ax
+mov       ah, al     
+mov       al, 0B9h   ; mov cx, [low 8 bits of the value]
+jne       toptexture_not_zero
+toptexture_zero:
+mov       ax, ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
+toptexture_not_zero:
+mov       word ptr cs:[SELFMODIFY_BSP_toptexture], ax
 ; are any bits set?
-or        al, ah
-or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
+or        bl, bh
+or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
+
 
 test      byte ptr [bp - 024h], ML_DONTPEGTOP
 jne       set_toptexture_to_worldtop
@@ -4189,10 +4237,23 @@ mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
 
-mov   	  word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
+; write the high byte of the word.
+; prev two bytes will be a jump or mov cx with the low byte
+mov       byte ptr cs:[SELFMODIFY_set_bottomtexture+2], ah
+mov       bx, ax     ; backup
+test      ax, ax
+mov       ah, al     
+mov       al, 0B9h   ; mov cx, [low 8 bits of the value]
+jne       bottexture_not_zero
+bottexture_zero:
+mov       ax, ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
+bottexture_not_zero:
+mov       word ptr cs:[SELFMODIFY_BSP_bottexture], ax
 ; are any bits set?
-or        al, ah
-or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
+or        bl, bh
+or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
+
+
 
 test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
@@ -4544,8 +4605,7 @@ do_bsp_fixedcolormap_selfmodify:
 
 mov      byte ptr ds:[SELFMODIFY_set_fixedcolormap_1+3], al
 
-mov   ah, (SELFMODIFY_set_fixedcolormap_2_TARGET - SELFMODIFY_set_fixedcolormap_2_AFTER)
-mov   al, 0EBh  ; jmp rel8
+mov   ax, ((SELFMODIFY_set_fixedcolormap_2_TARGET - SELFMODIFY_set_fixedcolormap_2_AFTER) SHL 8) + 0EBh
 mov   word ptr ds:[SELFMODIFY_set_fixedcolormap_2], ax
 mov   ah, (SELFMODIFY_set_fixedcolormap_3_TARGET - SELFMODIFY_set_fixedcolormap_3_AFTER)
 mov   word ptr ds:[SELFMODIFY_set_fixedcolormap_3], ax

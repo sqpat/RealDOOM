@@ -1158,10 +1158,8 @@ mov   word ptr cs:[SELFMODIFY_MASKED_texnum_3+3 - OFFSET R_DrawFuzzColumn_], si
 cmp   al, 0FFh
 jne   lookup_is_ff
 
-mov   ah, (SELFMODIFY_MASKED_lookup_1_TARGET - SELFMODIFY_MASKED_lookup_1_AFTER)
-mov   al, 0EBh  ; jmp rel8
-mov   bh, (SELFMODIFY_MASKED_lookup_2_TARGET - SELFMODIFY_MASKED_lookup_2_AFTER)
-mov   bl, al
+mov   ax, ((SELFMODIFY_MASKED_lookup_1_TARGET - SELFMODIFY_MASKED_lookup_1_AFTER) SHL 8) + 0EBh
+mov   bx, ((SELFMODIFY_MASKED_lookup_2_TARGET - SELFMODIFY_MASKED_lookup_2_AFTER) SHL 8) + 0EBh
 
 jmp   do_lookup_selfmodifies
 ; still havent changed flags.
@@ -1186,6 +1184,7 @@ mov   ax, word ptr ds:[bx + _masked_headers + 2]
 mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_1  +3 - OFFSET R_DrawFuzzColumn_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_2+3 - OFFSET R_DrawFuzzColumn_], ax
 
+; nops
 mov   ax, 0c089h 
 mov   bx, ax
 
@@ -1193,8 +1192,6 @@ do_lookup_selfmodifies:
 ; write instructions forward
 mov   word ptr cs:[SELFMODIFY_MASKED_lookup_1 - OFFSET R_DrawFuzzColumn_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_lookup_2 - OFFSET R_DrawFuzzColumn_], bx
-
-
 
 
 
@@ -1218,9 +1215,8 @@ test  al, ML_DONTPEGBOTTOM
 ; nop 
 mov   ax, 0c089h 
 je    peg_bottom
-; todo  mov ax, (one thing) here?
-mov   ah, (SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_TARGET - SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_AFTER)
-mov   al, 0EBh  ; jmp rel8
+
+mov   ax, ((SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_TARGET - SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_AFTER) SHL 8) + 0EBh
 peg_bottom:
 ; write instruction forward
 mov   word ptr cs:[SELFMODIFY_MASKED_lineflags_ml_dontpegbottom - OFFSET R_DrawFuzzColumn_], ax
@@ -3473,8 +3469,7 @@ sal   al, 1
 mov   byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_3+5 - OFFSET R_DrawFuzzColumn_], al
 
 ; modify jmp in place.
-mov   ah, (SELFMODIFY_MASKED_fixedcolormap_1_TARGET - SELFMODIFY_MASKED_fixedcolormap_1_AFTER)
-mov   al, 0EBh  ; jmp rel8
+mov   ax, ((SELFMODIFY_MASKED_fixedcolormap_1_TARGET - SELFMODIFY_MASKED_fixedcolormap_1_AFTER) SHL 8) + 0EBh
 mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_DrawFuzzColumn_], ax
 mov   ah, (SELFMODIFY_MASKED_fixedcolormap_2_TARGET - SELFMODIFY_MASKED_fixedcolormap_2_AFTER)
 mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_DrawFuzzColumn_], ax
