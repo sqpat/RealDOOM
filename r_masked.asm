@@ -1155,13 +1155,18 @@ mov   word ptr cs:[SELFMODIFY_MASKED_texnum_1+1 - OFFSET R_DrawFuzzColumn_], si
 mov   word ptr cs:[SELFMODIFY_MASKED_texnum_2+1 - OFFSET R_DrawFuzzColumn_], si
 mov   word ptr cs:[SELFMODIFY_MASKED_texnum_3+3 - OFFSET R_DrawFuzzColumn_], si
 
-mov   byte ptr cs:[SELFMODIFY_MASKED_compare_lookup  +1 - OFFSET R_DrawFuzzColumn_], al
-mov   byte ptr cs:[SELFMODIFY_MASKED_compare_lookup_2+1 - OFFSET R_DrawFuzzColumn_], al
-
-;	if (lookup != 0xFF){
 cmp   al, 0FFh
-je    lookup_not_ff
+jne   lookup_is_ff
 
+mov   ah, (SELFMODIFY_MASKED_lookup_1_TARGET - SELFMODIFY_MASKED_lookup_1_AFTER)
+mov   al, 0EBh  ; jmp rel8
+mov   bh, (SELFMODIFY_MASKED_lookup_2_TARGET - SELFMODIFY_MASKED_lookup_2_AFTER)
+mov   bl, al
+
+jmp   do_lookup_selfmodifies
+; still havent changed flags.
+
+lookup_is_ff:
 ;		masked_header_t __near * maskedheader = &masked_headers[lookup];
 ;		maskedpostsofs = maskedheader->postofsoffset;
 cbw
@@ -1180,7 +1185,15 @@ mov   bx, ax
 mov   ax, word ptr ds:[bx + _masked_headers + 2]
 mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_1  +3 - OFFSET R_DrawFuzzColumn_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_2+3 - OFFSET R_DrawFuzzColumn_], ax
-lookup_not_ff:
+
+mov   ax, 0c089h 
+mov   bx, ax
+
+do_lookup_selfmodifies:
+; write instructions forward
+mov   word ptr cs:[SELFMODIFY_MASKED_lookup_1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_lookup_2 - OFFSET R_DrawFuzzColumn_], bx
+
 
 
 
@@ -1872,10 +1885,9 @@ mov   ax, bx
 ; now al is usetexturecolumn
 
 ;	if (lookup != 0xFF){
-SELFMODIFY_MASKED_compare_lookup_2:  
-mov   dl, 0FFh
-inc   dl	; if it was ff, this sets zero flag.
-jz    lookup_FF_repeat
+SELFMODIFY_MASKED_lookup_2:
+jmp    lookup_FF_repeat
+SELFMODIFY_MASKED_lookup_2_AFTER:
 
 ;if (maskedheaderpixeolfs != 0xFFFF){
 
@@ -1972,6 +1984,7 @@ sub bx, di
 
 jmp repeat_column_calculated
 
+SELFMODIFY_MASKED_lookup_2_TARGET:
 lookup_FF_repeat:
 
 ;	if (texturecolumn >= maskednextlookup ||
@@ -2001,10 +2014,9 @@ sub   ax, di
 
 
 ;	if (lookup != 0xFF){
-SELFMODIFY_MASKED_compare_lookup:  
-mov   dl, 0FFh
-inc   dl
-je    lookup_FF ; todo fine?
+SELFMODIFY_MASKED_lookup_1:  
+jmp   lookup_FF
+SELFMODIFY_MASKED_lookup_1_AFTER:
 
 ; lookup NOT ff.
 
@@ -2071,6 +2083,7 @@ sub   ax, dx
 jmp   go_draw_masked_column
 
 
+SELFMODIFY_MASKED_lookup_1_TARGET:
 lookup_FF:
 
 ;	if (texturecolumn >= maskednextlookup ||
