@@ -2149,9 +2149,6 @@ mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_2+2], ax
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_3+2], ax
 
 
-
-
-
 ; markceiling is ah
 mov   ax, word ptr ds:[_markfloor]
 mov   byte ptr cs:[SELFMODIFY_get_markfloor_1+1], al
@@ -2160,17 +2157,7 @@ mov   byte ptr cs:[SELFMODIFY_get_markfloor_2+1], al
 mov   byte ptr cs:[SELFMODIFY_get_markceiling_1+1], ah
 mov   byte ptr cs:[SELFMODIFY_get_markceiling_2+1], ah
 
-
-
-
-
-
-
-
 xchg  ax, cx
-
-
-
 
 
 

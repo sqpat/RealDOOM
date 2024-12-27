@@ -58,8 +58,9 @@ _dc_colormap_index = 				_NULL_OFFSET + 00042h
 _fuzzpos =							_NULL_OFFSET + 00043h
 _dc_yl = 							_NULL_OFFSET + 00044h
 _dc_yh = 							_NULL_OFFSET + 00046h
-_dc_iscale = 						_NULL_OFFSET + 00048h
-_dc_texturemid = 					_NULL_OFFSET + 0004Ch
+; 48, 4a, 4c, 4e unused
+;_dc_iscale = 						_NULL_OFFSET + 00048h
+;_dc_texturemid = 					_NULL_OFFSET + 0004Ch
 _dc_x = 							_NULL_OFFSET + 00050h
 _lastopening =                   	_NULL_OFFSET + 00052h
 _planezlight = 						_NULL_OFFSET + 00054h
