@@ -1073,15 +1073,11 @@ PUBLIC R_RenderMaskedSegRange_
 ;x1 is ax
 ;x2 is cx
 
-; bp - 2        UNUSED
-; bp - 4        UNUSED
-
+; no stack used..
 
   
 push  si
 push  di
-push  bp
-mov   bp, sp
 
 ; todo selfmodify all this up ahead too.
 
@@ -1390,7 +1386,7 @@ mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_DrawFuzzC
 
 
 
-; di is frontsector
+; di is still frontsector (from above)
 
 mov   al, byte ptr es:[di + 0Eh]
 xor   ah, ah
@@ -1607,7 +1603,6 @@ dec   di
 jne   loop_dec_base4diff
 base4diff_is_zero_rendermaskedsegrange:
 
-; di is now free to use for something else..
 
 mov   di, 0		; x_offset. 
 
@@ -1746,7 +1741,7 @@ mov   word ptr ds:[_maskednextlookup], ax
 mov   word ptr ds:[_maskedcachedbasecol], ax
 mov   word ptr ds:[_maskedtexrepeat], 0
 
-LEAVE_MACRO 
+
 pop   di
 pop   si
 ret   
