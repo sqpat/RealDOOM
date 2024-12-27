@@ -2144,9 +2144,9 @@ mov   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1], 0
 
 
 mov   ax, word ptr ds:[_rw_stopx]
-mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
-mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_2+2], ax
-mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_3+2], ax
+mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_1+1], ax
+mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_2+1], ax
+mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_3+1], ax
 
 
 ; markceiling is ah
@@ -2175,6 +2175,7 @@ sub   cx, bx
 ;		base4diff--;
 ;	}
 je    skip_sub_base4diff
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_TARGET:
 sub_base4diff:
 
 
@@ -2190,6 +2191,14 @@ SELFMODIFY_sub_botstep_lo:
 sub   word ptr ds:[_bottomfrac], 01000h
 SELFMODIFY_sub_botstep_hi:
 sbb   word ptr ds:[_bottomfrac+2], 01000h
+
+; THIS IS COMPLICATED because of the fall through after loop. 
+; could do a 2nd modded instruction worth jump? is that worth it?
+; i dont really think so.
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4:
+; loop SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_TARGET
+; todo: why does this equal +1 instead of +2???
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4 + 2
 SELFMODIFY_sub_pixlow_lo:
 sub   word ptr ds:[_pixlow], 01000h
 SELFMODIFY_sub_pixlow_hi:
@@ -2208,8 +2217,6 @@ skip_sub_base4diff:
 ;	base_pixlow     = pixlow;
 ;	base_pixhigh    = pixhigh;
 
-; todo: make this all adjacent in memory and lodsw it all in order
-
 mov   si, OFFSET _rw_scale
 
 lodsw ; rw_scale lo
@@ -2224,6 +2231,9 @@ lodsw ; bottomfrac lo
 mov   word ptr cs:[SELFMODIFY_set_botfrac_lo+1], ax
 lodsw ; bottomfrac hi
 mov   word ptr cs:[SELFMODIFY_set_botfrac_hi+1], ax
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3:
+jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 + 2
 lodsw ; pixlow lo
 mov   word ptr cs:[SELFMODIFY_set_pixlow_lo+1], ax
 lodsw ; pixlow hi
@@ -2232,19 +2242,18 @@ lodsw ; pixhigh lo
 mov   word ptr cs:[SELFMODIFY_set_pixhigh_lo+1], ax
 lodsw ; pixhigh hi
 mov   word ptr cs:[SELFMODIFY_set_pixhigh_hi+1], ax
-
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET:
+mov   dx, SC_DATA  ; cheat this out of the loop..
 mov   al, 0 ; xoffset is 0
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_TARGET_3:
 continue_outer_rendersegloop:
-cbw  
-mov   bx, ax
-inc   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1]
-SELFMODIFY_detailshift_plus1_1:
-mov   al, 00h
-mov   si, ax
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET:
 
-mov   dx, SC_DATA
-mov   al, byte ptr [si + bx + OFFSET _quality_port_lookup]	
+cbw  
+mov   bx, ax	; copy xoffset to bx
+inc   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1]
+
+SELFMODIFY_detailshift_plus1_1:
+mov   al, byte ptr [bx + OFFSET _quality_port_lookup]	
 out   dx, al
 
 ; pre inner loop.
@@ -2279,6 +2288,11 @@ stosw
 SELFMODIFY_set_botfrac_hi:
 mov   ax, 01000h
 stosw
+
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5:
+jmp   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 + 2
+
 SELFMODIFY_set_pixlow_lo:
 mov   ax, 01000h
 stosw
@@ -2292,19 +2306,19 @@ SELFMODIFY_set_pixhigh_hi:
 mov   ax, 01000h
 stosw
 
-xchg  ax, bx	; get argument back
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET:
+xchg  ax, bx	; get xoffset  back
 SELFMODIFY_add_rw_x_base4_to_ax:
 add   ax, 1000h
 mov   word ptr ds:[_rw_x], ax
-mov   di, ax
 SELFMODIFY_compare_ax_to_start_rw_x:
 cmp   ax, 1000h
 jl    pre_increment_values
 
 
 SELFMODIFY_cmp_di_to_rw_stopx_3:
-cmp   di, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
-jl    jump_to_start_per_column_inner_loop ; todo optim out
+cmp   ax, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
+jl    jump_to_start_per_column_inner_loop
 
 finish_outer_loop:
 ; todo: self modifying code for step values.
@@ -2339,9 +2353,9 @@ add   word ptr cs:[SELFMODIFY_set_rw_scale_lo+1], 01000h
 SELFMODIFY_add_rwscale_hi:
 adc   word ptr cs:[SELFMODIFY_set_rw_scale_hi+1], 01000h
 
-;SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2:
-;jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_TARGET_2
-;SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_AFTER_2 = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 + 2
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2:
+je   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 + 2
 
 SELFMODIFY_add_pixlowstep_lo:
 add   word ptr cs:[SELFMODIFY_set_pixlow_lo+1], 01000h
@@ -2352,7 +2366,6 @@ SELFMODIFY_add_pixhighstep_lo:
 add   word ptr cs:[SELFMODIFY_set_pixhigh_lo+1], 01000h
 SELFMODIFY_add_pixhighstep_hi:
 adc   word ptr cs:[SELFMODIFY_set_pixhigh_hi+1], 01000h
-
 
 
 jmp   continue_outer_rendersegloop
@@ -2380,7 +2393,8 @@ ret
 jump_to_start_per_column_inner_loop:
 jmp   start_per_column_inner_loop
 jump_to_finish_outer_loop_2:
-jmp finish_outer_loop
+mov   dx, SC_DATA
+jmp   finish_outer_loop
 pre_increment_values:
 
 
@@ -2396,7 +2410,9 @@ pre_increment_values:
 
 
 SELFMODIFY_add_iter_to_rw_x:
-add   word ptr ds:[_rw_x], 1
+; ax was already up-to-daterw_x
+add   ax, 1
+mov   word ptr ds:[_rw_x], ax
 SELFMODIFY_add_to_topfrac_lo_2:
 add   word ptr ds:[_topfrac], 01000h
 SELFMODIFY_add_to_topfrac_hi_2:
@@ -2410,9 +2426,9 @@ add   word ptr ds:[_rw_scale], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
 adc   word ptr ds:[_rw_scale + 2], 01000h
 
-;SELFMODIFY_BSP_midtextureonly_skip_pixhighlow:
-;jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_TARGET
-;SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow + 2
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1:
+jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 + 2
 SELFMODIFY_add_to_pixlow_lo_2:
 add   word ptr ds:[_pixlow], 01000h
 SELFMODIFY_add_to_pixlow_hi_2:
@@ -2421,15 +2437,17 @@ SELFMODIFY_add_to_pixhigh_lo_2:
 add   word ptr ds:[_pixhigh], 01000h
 SELFMODIFY_add_to_pixhigh_hi_2:
 adc   word ptr ds:[_pixhigh+2], 01000h
-;SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_TARGET:
+
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET:
 ; this is right before inner loop start
-mov   di, word ptr ds:[_rw_x]
 SELFMODIFY_cmp_di_to_rw_stopx_1:
-cmp   di, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
+cmp   ax, 01000h   ; cmp   ax, word ptr ds:[_rw_stopx]
 jge   jump_to_finish_outer_loop_2
 
 start_per_column_inner_loop:
-; di is rw_x
+; ax was rw_x
+; now di is rw_x
+mov   di, ax   ; ax was still rw_x
 
 
 mov   ax, OPENINGS_SEGMENT
@@ -2705,9 +2723,9 @@ finished_inner_loop_iter:
 
 SELFMODIFY_add_detailshiftitercount:
 add   word ptr ds:[_rw_x], 0
-mov   di, word ptr ds:[_rw_x]
+mov   ax, word ptr ds:[_rw_x]
 SELFMODIFY_cmp_di_to_rw_stopx_2:
-cmp   di, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
+cmp   ax, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
 jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
 
 
@@ -2725,6 +2743,7 @@ SELFMODIFY_add_to_rwscale_hi_1:
 adc   word ptr ds:[_rw_scale + 2], 01000h
 jmp   start_per_column_inner_loop
 jump_to_finish_outer_loop:
+mov   dx, SC_DATA
 jmp   finish_outer_loop
 
 SELFMODIFY_BSP_toptexture_TARGET:
@@ -3237,6 +3256,19 @@ cmp       word ptr ds:[_backsector], SECNUM_NULL
 je        handle_single_sided_line
 jmp       handle_two_sided_line
 handle_single_sided_line:
+
+mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER) SHL 8) + 0EBh
+mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
+mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER
+mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
+mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER
+mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3], ax
+mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_AFTER
+mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
+
+;mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_AFTER) SHL 8) + 0E2h  ; LOOP instruction
+;mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4], ax
+
 mov       bx, word ptr [bp - 016h] ;sides 
 mov       ax, TEXTURETRANSLATION_SEGMENT
 mov       bx, word ptr es:[bx + 4]
@@ -3909,7 +3941,14 @@ ret
 
 handle_two_sided_line:
 
-; ax still 0
+; nop 
+mov       ax, 0c089h 
+mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
+mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
+mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3], ax
+;mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4], ax
+mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
+
 ; nomidtexture. this will be checked before top/bot, have to set it to 0.
 
 ; jmp by default
@@ -4341,7 +4380,8 @@ mov      ds, ax
 ASSUME DS:R_MAINHI_TEXT
 
 mov      ax,  word ptr ss:[_detailshift]
-mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+1], ah
+add      ah, OFFSET _quality_port_lookup
+mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+2], ah
 
 ; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
 
@@ -4489,7 +4529,7 @@ done_modding_shift_detail_code:
 
 mov      al, byte ptr ss:[_detailshiftitercount]
 mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
-mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+4], al
+mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+1], al
 mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+4], al
 
 mov      ax, word ptr ss:[_detailshiftandval]
