@@ -1863,7 +1863,7 @@ endp
 
 ;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
 
-; AX is texturecolumn
+; DX is texturecolumn
 ; segloopcachetype is 0
 
 PROC R_GetSourceSegment0_ NEAR
@@ -1874,7 +1874,7 @@ push  es
 push  dx
 xchg  ax, dx
 
-; ax stores texturecolumn. 
+; ax gets texturecolumn from dx
 
 ; okay. we modify the first instruction in this argument. 
  ; if no texture is yet cached for this rendersegloop, jmp to non_repeating_texture
@@ -2002,7 +2002,7 @@ ENDP
 
 ;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
 
-; AX is texturecolumn
+; DX is texturecolumn
 ; segloopcachetype is 1
 
 PROC R_GetSourceSegment1_ NEAR
@@ -2012,8 +2012,8 @@ PUBLIC R_GetSourceSegment1_
 push  es
 push  dx
 xchg  ax, dx
+; ax gets texturecolumn from dx
 
-; ax stores texturecolumn. 
 
 SELFMODIFY_BSP_check_seglooptexmodulo1:
 SELFMODIFY_BSP_set_seglooptexrepeat1:
@@ -2728,7 +2728,7 @@ mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
 ; store dc_x directly in code
 mov   word ptr cs:[SELFMODIFY_COLFUNC_get_dc_x+1], di
 
-; get x     in dx
+; get texturecolumn     in dx
 pop   dx
 
 seg_non_textured:
@@ -2750,7 +2750,7 @@ cmp   di, si
 jl    mid_no_pixels_to_draw
 
 ; si:di are dc_yl, dc_yh
-; dx holds dc_x
+; dx holds texturecolumn
 
 call  R_GetSourceSegment0_
 
@@ -2846,7 +2846,7 @@ push   cx ; note: midtexture doesnt need/use cx and doesnt do this.
 
 
 ; si:di are dc_yl, dc_yh
-; dx holds dc_x
+; dx holds texturecolumn
 
 call  R_GetSourceSegment0_
 
@@ -2903,7 +2903,7 @@ xchg   cx, si
 ; si:di are dc_yl, dc_yh
 
 ; si:di are dc_yl, dc_yh
-; dx holds dc_x
+; dx holds texturecolumn
 
 call   R_GetSourceSegment1_
 xchg   cx, si
@@ -2912,10 +2912,10 @@ mark_floor_cx:
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
 SELFMODIFY_BSP_markfloor_2_TARGET:
 done_marking_floor:
-SELFMODIFY_BSP_maskedtexture_1:
+SELFMODIFY_get_maskedtexture_1:
+mov   al, 0
+test  al, al
 jne   record_masked
-SELFMODIFY_BSP_maskedtexture_1_AFTER:
-
 jmp   finished_inner_loop_iter
 SELFMODIFY_BSP_bottexture_TARGET:
 no_bottom_texture_draw:
@@ -2926,14 +2926,20 @@ SELFMODIFY_BSP_markfloor_2_AFTER = SELFMODIFY_BSP_markfloor_2+2
 mark_floor_di:
 inc   di
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
-SELFMODIFY_BSP_maskedtexture_2:
+SELFMODIFY_get_maskedtexture_2:
+mov   al, 0
+test  al, al
 jne   record_masked
-SELFMODIFY_BSP_maskedtexture_2_AFTER:
 jmp   finished_inner_loop_iter
 
-SELFMODIFY_BSP_maskedtexture_1_TARGET:
-SELFMODIFY_BSP_maskedtexture_2_TARGET:
 record_masked:
+
+;if (maskedtexture) {
+;	// save texturecol
+;	//  for backdrawing of masked mid texture			
+;	maskedtexturecol[rw_x] = texturecolumn;
+;}
+
 les   si, dword ptr ds:[_maskedtexturecol]
 mov   word ptr es:[bx+si], dx
 jmp   finished_inner_loop_iter
@@ -3160,7 +3166,6 @@ add       bx, bx
 SELFMODIFY_set_viewanglesr3_3:
 mov       ax, 01000h
 add       ax, word ptr es:[bx]
-push      cs
 call      R_ScaleFromGlobalAngle_
 mov       word ptr ds:[_rw_scale], ax
 mov       word ptr ds:[_rw_scale + 2], dx
@@ -3187,9 +3192,7 @@ mov       es, ax
 SELFMODIFY_set_viewanglesr3_2:
 mov       ax, 01000h
 add       ax, word ptr es:[si]
-push      cs
 call      R_ScaleFromGlobalAngle_
-nop
 mov       es, word ptr ds:[_ds_p+2]
 mov       bx, word ptr [bp - 04Ah]
 mov       word ptr es:[di + 0ah], ax
@@ -3409,18 +3412,11 @@ done_with_sector_sided_check:
 
 ; set maskedtexture in rendersegloop
 
-test      al, al
-jne       do_maskedtexture_selfmodify_jumps
-mov       ax, 0c089h ; nop 
-mov       bx, ax
-jmp       do_maskedtexture_selfmodify
-do_maskedtexture_selfmodify_jumps:
-mov   ax, ((SELFMODIFY_BSP_maskedtexture_1_TARGET - SELFMODIFY_BSP_maskedtexture_1_AFTER) SHL 8) + 0EBh
-mov   bx, ((SELFMODIFY_BSP_maskedtexture_2_TARGET - SELFMODIFY_BSP_maskedtexture_2_AFTER) SHL 8) + 0EBh
-
-do_maskedtexture_selfmodify:
-mov       word ptr cs:[SELFMODIFY_BSP_maskedtexture_1], ax
-mov       word ptr cs:[SELFMODIFY_BSP_maskedtexture_2], bx
+; NOTE: Dont selfmodify these branches into nop/jump. tested to be slower?
+; though thats with [nop to a long jmp]. could try straight long jmp. 
+; modify the word addr but not the long jmp instruction for a single word.
+mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_1+1], al
+mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_2+1], al
 
 ; create segtextured value
 SELFMODIFY_check_for_any_tex:
