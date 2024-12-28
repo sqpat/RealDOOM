@@ -2560,9 +2560,9 @@ skip_bottom_floorclip:
 cmp   si, ax
 jg    markceiling_done
 les   bx, dword ptr ds:[_ceiltop] 
-mov   dx, si
-mov   byte ptr es:[bx+di], dl
 mov   byte ptr es:[bx+di + 0142h], al		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
+mov   ax, si								; dl is 0, si is < screensize (and thus under 255)
+mov   byte ptr es:[bx+di], al
 SELFMODIFY_BSP_markceiling_1_TARGET:
 markceiling_done:
 
@@ -2628,11 +2628,9 @@ mov   byte ptr es:[bx+di], al
 mov   byte ptr es:[bx+di + 0142h], cl
 SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
-SELFMODIFY_get_segtextured:
-mov   dx, 0
-test  dx, dx
-je   jump_to_seg_non_textured
-
+SELFMODIFY_BSP_get_segtextured:
+je    jump_to_seg_non_textured
+SELFMODIFY_BSP_get_segtextured_AFTER:
 seg_is_textured:
 
 ; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
@@ -2647,12 +2645,12 @@ and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 ; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
 
-mov   dx, FINETANGENTINNER_SEGMENT
-mov   es, dx
+mov   bx, FINETANGENTINNER_SEGMENT
+mov   es, bx
 cmp   ax, FINE_TANGENT_MAX
 mov   bx, ax
 jb    non_subtracted_finetangent
-; mirrored values.
+; mirrored values in lookup table
 neg   bx
 add   bx, 4095
 shl   bx, 1
@@ -2663,7 +2661,9 @@ neg   dx
 neg   ax
 sbb   dx, 0
 jmp   finetangent_ready
+SELFMODIFY_BSP_get_segtextured_TARGET:
 jump_to_seg_non_textured:
+xor   dx, dx
 jmp   seg_non_textured
 non_subtracted_finetangent:
 shl   bx, 1
@@ -2690,6 +2690,8 @@ sbb   ax, dx
 ;		index = rw_scale.w >> LIGHTSCALESHIFT;
 ;	}
 
+; CX:BX rw_scale
+; todo bp/stack candidate
 les   bx, dword ptr ds:[_rw_scale]
 mov   cx, es
 
@@ -2751,7 +2753,7 @@ add   bx, bx
 mov   ax, OPENINGS_SEGMENT
 mov   es, ax
 
-; dx holds x
+; dx holds texturecolumn
 ; get yl/yh in di/si
 pop   di
 pop   si
@@ -3435,12 +3437,15 @@ SELFMODIFY_check_for_any_tex:
 or   	  al, 0
 
 ; set segtextured in rendersegloop
-mov       byte ptr cs:[SELFMODIFY_get_segtextured+1], al
+
 
 
 jne       do_seg_textured_stuff
+mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured], ((SELFMODIFY_BSP_get_segtextured_TARGET - SELFMODIFY_BSP_get_segtextured_AFTER) SHL 8) + 0EBh
+
 jmp       seg_textured_check_done
 do_seg_textured_stuff:
+mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured], 0C089h ; nop
 mov       ax, word ptr [bp - 018h]
 cmp       ax, FINE_ANG180_NOSHIFT
 jbe       offsetangle_greater_than_fineang180
