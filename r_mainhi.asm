@@ -2183,18 +2183,29 @@ mov   ax, 04940h     ; inc ax dec cx
 mov   si, 02647h     ; inc di, es:
 jmp do_markfloor_selfmodify
 do_markfloor_selfmodify_jumps:
-mov       ax, ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER) SHL 8) + 0EBh
-mov       si, ((SELFMODIFY_BSP_markfloor_2_TARGET - SELFMODIFY_BSP_markfloor_2_AFTER) SHL 8) + 0EBh
+mov   ax, ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER) SHL 8) + 0EBh
+mov   si, ((SELFMODIFY_BSP_markfloor_2_TARGET - SELFMODIFY_BSP_markfloor_2_AFTER) SHL 8) + 0EBh
 do_markfloor_selfmodify:
 
-mov       word ptr cs:[SELFMODIFY_BSP_markfloor_1], ax
-mov       word ptr cs:[SELFMODIFY_BSP_markfloor_2], si
+mov   word ptr cs:[SELFMODIFY_BSP_markfloor_1], ax
+mov   word ptr cs:[SELFMODIFY_BSP_markfloor_2], si
 
 mov   ah, byte ptr ds:[_markceiling]
+cmp   ah, 0   
 
+je    do_markceiling_selfmodify_jumps
+mov   al, 0B2h  ;      mov dl, [ah value]
+;mov   si, 0448Dh     ; lea   ax, [si - 1]
+mov   si, 0c089h    ; nop
 
-mov   byte ptr cs:[SELFMODIFY_get_markceiling_1+1], ah
-mov   byte ptr cs:[SELFMODIFY_get_markceiling_2+1], ah
+jmp do_markceiling_selfmodify
+do_markceiling_selfmodify_jumps:
+mov   ax, ((SELFMODIFY_BSP_markceiling_1_TARGET - SELFMODIFY_BSP_markceiling_1_AFTER) SHL 8) + 0EBh
+mov   si, ((SELFMODIFY_BSP_markceiling_2_TARGET - SELFMODIFY_BSP_markceiling_2_AFTER) SHL 8) + 0EBh
+do_markceiling_selfmodify:
+
+mov   word ptr cs:[SELFMODIFY_BSP_markceiling_1], ax
+mov   word ptr cs:[SELFMODIFY_BSP_markceiling_2], si
 
 xchg  ax, cx
 
@@ -2522,13 +2533,11 @@ do_yl_ceil_clip:
 mov   ax, si
 skip_yl_ceil_clip:
 push  ax 				; store yl
-SELFMODIFY_get_markceiling_1:
-mov   dl, 0
-test  dl, dl
+SELFMODIFY_BSP_markceiling_1:
 je    markceiling_done
+SELFMODIFY_BSP_markceiling_1_AFTER = SELFMODIFY_BSP_markceiling_1+2
 
 ;                       si = top = ceilingclip[rw_x]+1;
-
 dec   ax				; bottom = yl-1;
 ; cx is floor, 
 cmp   ax, cx
@@ -2542,6 +2551,7 @@ les   bx, dword ptr ds:[_ceiltop]
 mov   dx, si
 mov   byte ptr es:[bx+di], dl
 mov   byte ptr es:[bx+di + 0142h], al		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
+SELFMODIFY_BSP_markceiling_1_TARGET:
 markceiling_done:
 
 ; yh = bottomfrac>>HEIGHTBITS;
@@ -2786,11 +2796,10 @@ jmp   finish_outer_loop
 SELFMODIFY_BSP_toptexture_TARGET:
 no_top_texture_draw:
 ; bx is already rw_x << 1
-SELFMODIFY_get_markceiling_2:
-mov   al, 0
-test  al, al
-jne   mark_ceiling_si
-jmp   check_bottom_texture
+SELFMODIFY_BSP_markceiling_2:
+je   check_bottom_texture
+SELFMODIFY_BSP_markceiling_2_AFTER = SELFMODIFY_BSP_markceiling_2+2
+; bx is already rw_x << 1
 mark_ceiling_si:
 ; bx is already rw_x << 1
 lea   ax, [si - 1]
@@ -2848,6 +2857,7 @@ xchg   cx, di
 
 mark_ceiling_cx:
 mov   word ptr es:[bx  + OFFSET_CEILINGCLIP], cx
+SELFMODIFY_BSP_markceiling_2_TARGET:
 check_bottom_texture:
 ; bx is already rw_x << 1
 
