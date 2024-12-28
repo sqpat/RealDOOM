@@ -3160,7 +3160,6 @@ add       bx, bx
 SELFMODIFY_set_viewanglesr3_3:
 mov       ax, 01000h
 add       ax, word ptr es:[bx]
-push      cs
 call      R_ScaleFromGlobalAngle_
 mov       word ptr ds:[_rw_scale], ax
 mov       word ptr ds:[_rw_scale + 2], dx
@@ -3187,9 +3186,7 @@ mov       es, ax
 SELFMODIFY_set_viewanglesr3_2:
 mov       ax, 01000h
 add       ax, word ptr es:[si]
-push      cs
 call      R_ScaleFromGlobalAngle_
-nop
 mov       es, word ptr ds:[_ds_p+2]
 mov       bx, word ptr [bp - 04Ah]
 mov       word ptr es:[di + 0ah], ax
