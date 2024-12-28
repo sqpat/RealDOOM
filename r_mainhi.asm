@@ -1876,13 +1876,17 @@ push  es
 
 ; ax stores texturecolumn. 
 
+; okay. we modify the first instruction in this argument. 
+ ; if no texture is yet cached for this rendersegloop, jmp to non_repeating_texture
+  ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
+   ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
+
+SELFMODIFY_BSP_check_seglooptexmodulo0:
 SELFMODIFY_BSP_set_seglooptexrepeat0:
 jmp    non_repeating_texture0
+;mov   dl, 0
 SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
-SELFMODIFY_set_seglooptexmodulo0:
-mov   dl, 0
-test  dl, dl
-je   non_po2_texture_mod0
+SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
 SELFMODIFY_set_segloopheightvalcache0:
 mov   ah, 0
 and   al, dl
@@ -1904,7 +1908,9 @@ pop   es
 ret
 non_po2_texture_mod0:
 ; cx stores tex repeat
-mov   cx, dx
+SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET:
+SELFMODIFY_BSP_set_seglooptexmodulo0:
+mov   cx, 0
 mov   dx, word ptr [_segloopcachedbasecol]
 cmp   ax, dx
 jge   done_subbing_modulo0
@@ -1960,14 +1966,25 @@ mov   dx, word ptr [_segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
 mov   dl, byte ptr [_segloopheightvalcache]
 mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache0+1], dl
-mov   dl, byte ptr [_seglooptexmodulo]
-mov   byte ptr cs:[SELFMODIFY_set_seglooptexmodulo0+1], dl
+mov   dh, byte ptr [_seglooptexmodulo]
+mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1], dh
+
+cmp   dh, 0
+je    seglooptexmodulo0_is_jmp
+
+mov   dl, 0B2h   ;  (mov dl, xx)
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], dx
+jmp   check_seglooptexrepeat0
+seglooptexmodulo0_is_jmp:
+
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
+
+check_seglooptexrepeat0:
 cmp   word ptr [_seglooptexrepeat], 0
 je    seglooptexrepeat0_is_jmp
-; nop
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0c089h 
+; dont do anything. this was written in the step before.
 jmp   just_do_draw0
-; do jmp
+; do jmp. highest priority, overwrite previously written thing.
 seglooptexrepeat0_is_jmp:
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw0
@@ -1996,13 +2013,12 @@ push  es
 
 ; ax stores texturecolumn. 
 
+SELFMODIFY_BSP_check_seglooptexmodulo1:
 SELFMODIFY_BSP_set_seglooptexrepeat1:
 jmp    non_repeating_texture1
+;mov   dl, 0
 SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER:
-SELFMODIFY_set_seglooptexmodulo1:
-mov   dl, 0
-test  dl, dl
-je   non_po2_texture_mod1
+SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER:
 SELFMODIFY_set_segloopheightvalcache1:
 mov   ah, 0
 and   al, dl
@@ -2023,7 +2039,9 @@ pop   es
 ret
 non_po2_texture_mod1:
 ; cx stores tex repeat
-mov   cx, dx
+SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET:
+SELFMODIFY_BSP_set_seglooptexmodulo1:
+mov   cx, 0
 mov   dx, word ptr [2 + _segloopcachedbasecol]
 cmp   ax, dx
 jge   done_subbing_modulo1
@@ -2078,15 +2096,25 @@ mov   dx, word ptr [2 + _segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
 mov   dl, byte ptr [1 + _segloopheightvalcache]
 mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache1+1], dl
-mov   dl, byte ptr [1 + _seglooptexmodulo]
-mov   byte ptr cs:[SELFMODIFY_set_seglooptexmodulo1+1], dl
+mov   dh, byte ptr [1 + _seglooptexmodulo]
+mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo1+1], dh
 
+cmp   dh, 0
+je    seglooptexmodulo1_is_jmp
+
+mov   dl, 0B2h   ;  (mov dl, xx)
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], dx
+jmp   check_seglooptexrepeat1
+seglooptexmodulo1_is_jmp:
+
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
+
+check_seglooptexrepeat1:
 cmp   word ptr [2 + _seglooptexrepeat], 0
 je    seglooptexrepeat1_is_jmp
-; nop
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], 0c089h 
+; dont do anything. this was written in the step before.
 jmp   just_do_draw1
-; do jmp
+; do jmp. highest priority, overwrite previously written thing.
 seglooptexrepeat1_is_jmp:
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw1
