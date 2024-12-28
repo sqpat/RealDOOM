@@ -1867,23 +1867,21 @@ endp
 ; AX is texturecolumn
 ; segloopcachetype is 0
 
-
 PROC R_GetSourceSegment0_ NEAR
 PUBLIC R_GetSourceSegment0_ 
 
 ; grab texturecolumn where it was stored before.
 mov   ax, word ptr [bp - 2]
-
 push  es
 
 ; ax stores texturecolumn. 
 
-SELFMODIFY_set_seglooptexrepeat0:
-mov   dx, 00000h
-cmp   dx, 0
-je    non_repeating_texture0
+SELFMODIFY_BSP_set_seglooptexrepeat0:
+jmp    non_repeating_texture0
+SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
 SELFMODIFY_set_seglooptexmodulo0:
 mov   dl, 0
+test  dl, dl
 je   non_po2_texture_mod0
 SELFMODIFY_set_segloopheightvalcache0:
 mov   ah, 0
@@ -1931,7 +1929,6 @@ cmp   ax, dx
 jl    record_added_modulo0
 jmp   continue_adding_modulo0
 record_added_modulo0:
-; gross
 sub   dx, cx
 mov   word ptr [_segloopcachedbasecol], dx
 add   dx, cx
@@ -1942,6 +1939,7 @@ mov   ah, byte ptr [_segloopheightvalcache]
 sub   al, dl
 mul   ah
 jmp   add_base_segment_and_draw0
+SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
 non_repeating_texture0:
 cmp   ax, word ptr [_segloopnextlookup]
 jge   out_of_texture_bounds0
@@ -1964,9 +1962,14 @@ mov   dl, byte ptr [_segloopheightvalcache]
 mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache0+1], dl
 mov   dl, byte ptr [_seglooptexmodulo]
 mov   byte ptr cs:[SELFMODIFY_set_seglooptexmodulo0+1], dl
-mov   dx, word ptr [_seglooptexrepeat]
-mov   word ptr cs:[SELFMODIFY_set_seglooptexrepeat0+1], dx
-
+cmp   word ptr [_seglooptexrepeat], 0
+je    seglooptexrepeat0_is_jmp
+; nop
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0c089h 
+jmp   just_do_draw0
+; do jmp
+seglooptexrepeat0_is_jmp:
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw0
 in_texture_bounds0:
 mov   dx, word ptr [_segloopcachedbasecol]
@@ -1991,13 +1994,11 @@ PUBLIC R_GetSourceSegment1_
 mov   ax, word ptr [bp - 2]
 push  es
 
-
 ; ax stores texturecolumn. 
 
-SELFMODIFY_set_seglooptexrepeat1:
-mov   dx, 01000h
-cmp   dx, 0
-je    non_repeating_texture1
+SELFMODIFY_BSP_set_seglooptexrepeat1:
+jmp    non_repeating_texture1
+SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER:
 SELFMODIFY_set_seglooptexmodulo1:
 mov   dl, 0
 test  dl, dl
@@ -2047,18 +2048,17 @@ cmp   ax, dx
 jl    record_added_modulo1
 jmp   continue_adding_modulo1
 record_added_modulo1:
-; gross
 sub   dx, cx
 mov   word ptr [2 + _segloopcachedbasecol], dx
 add   dx, cx
 
 done_adding_modulo1:
 sub   dx, cx
-
 mov   ah, byte ptr [1 + _segloopheightvalcache]
 sub   al, dl
 mul   ah
 jmp   add_base_segment_and_draw1
+SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET:
 non_repeating_texture1:
 cmp   ax, word ptr [2 + _segloopnextlookup]
 jge   out_of_texture_bounds1
@@ -2072,7 +2072,7 @@ mov   bx, 1
 SELFMODIFY_set_bottomtexture:
 mov   ax, 01000h
 call  R_GetColumnSegment_
-pop  bx
+pop   bx
 
 mov   dx, word ptr [2 + _segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
@@ -2080,10 +2080,15 @@ mov   dl, byte ptr [1 + _segloopheightvalcache]
 mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache1+1], dl
 mov   dl, byte ptr [1 + _seglooptexmodulo]
 mov   byte ptr cs:[SELFMODIFY_set_seglooptexmodulo1+1], dl
-mov   dx, word ptr [2 + _seglooptexrepeat]
-mov   word ptr cs:[SELFMODIFY_set_seglooptexrepeat1+1], dx
 
-
+cmp   word ptr [2 + _seglooptexrepeat], 0
+je    seglooptexrepeat1_is_jmp
+; nop
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], 0c089h 
+jmp   just_do_draw1
+; do jmp
+seglooptexrepeat1_is_jmp:
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw1
 in_texture_bounds1:
 mov   dx, word ptr [2 + _segloopcachedbasecol]
@@ -2310,7 +2315,6 @@ SELFMODIFY_compare_ax_to_start_rw_x:
 cmp   ax, 1000h
 jl    pre_increment_values
 
-
 SELFMODIFY_cmp_di_to_rw_stopx_3:
 cmp   ax, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
 jl    jump_to_start_per_column_inner_loop
@@ -2374,8 +2378,6 @@ mov   word ptr ds:[_segloopnextlookup+2], ax
 inc   ax
 mov   word ptr ds:[_seglooptexrepeat], ax
 mov   word ptr ds:[_seglooptexrepeat+2], ax
-mov   word ptr cs:[SELFMODIFY_set_seglooptexrepeat0+1], ax
-mov   word ptr cs:[SELFMODIFY_set_seglooptexrepeat1+1], ax
 
 LEAVE_MACRO 
 pop   di
@@ -3825,6 +3827,11 @@ mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+4], dx
 
 skip_pixlow_step:
 call      R_RenderSegLoop_
+
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
+
+
 check_spr_top_clip:
 les       si, dword ptr ds:[_ds_p]
 test      byte ptr es:[si + 01ch], SIL_TOP
