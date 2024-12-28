@@ -44,8 +44,8 @@ EXTRN _spritewidths_segment:WORD
 
 EXTRN _segloopnextlookup:WORD
 EXTRN _segloopprevlookup:WORD
-EXTRN _seglooptexrepeat:WORD
-EXTRN _seglooptexmodulo:BYTE
+EXTRN _seglooptexrepeat:BYTE
+;EXTRN _seglooptexmodulo:BYTE
 EXTRN _segloopcachedbasecol:WORD
 EXTRN _segloopheightvalcache:BYTE
 EXTRN _segloopcachedsegment:WORD
@@ -1895,7 +1895,7 @@ add_base_segment_and_draw0:
 SELFMODIFY_add_cached_segment0:
 add   ax, 01000h
 just_do_draw0:
-mov   word ptr ds:[_dc_source_segment], ax
+mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later.
 SELFMODIFY_set_midtexturemid_hi:
 SELFMODIFY_set_toptexturemid_hi:
 mov   dx, 01000h
@@ -1907,45 +1907,37 @@ call  R_DrawColumnPrep_
 pop   dx
 pop   es
 ret
+
+
+COMMENT @
+; OK. so AASTINKY is in doom1.wad as a 24 pixel wide tex.
+;  but it is unused and there are no other vanilla non po2 textures.
+; this code was untested and honestly i will just remove the functionality for now.
+
 non_po2_texture_mod0:
 ; cx stores tex repeat
 SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET:
 SELFMODIFY_BSP_set_seglooptexmodulo0:
 mov   cx, 0
+; div and take modulo is way faster than loops. and smaller.
 mov   dx, word ptr [_segloopcachedbasecol]
-cmp   ax, dx
-jge   done_subbing_modulo0
-sub   dx, cx
-continue_subbing_modulo0:
-cmp   ax, dx
-jge   record_subbed_modulo0
-sub   dx, cx
-jmp   continue_subbing_modulo0
-record_subbed_modulo0:
-; at least one write was done. write back.
-mov   word ptr [_segloopcachedbasecol], dx
+do_subtract_again0:
+sub   ax, dx
+jl    update_segloopcachedbasecol0
+div   cl          ;   ah has modulo
+; could do "while ah subtract cl from basecol ah --" ? 
 
-done_subbing_modulo0:
-
-add   dx, cx
-cmp   ax, dx
-jl    done_adding_modulo0
-continue_adding_modulo0:
-add   dx, cx
-cmp   ax, dx
-jl    record_added_modulo0
-jmp   continue_adding_modulo0
-record_added_modulo0:
-sub   dx, cx
-mov   word ptr [_segloopcachedbasecol], dx
-add   dx, cx
-
-done_adding_modulo0:
-sub   dx, cx
-mov   ah, byte ptr [_segloopheightvalcache]
-sub   al, dl
-mul   ah
+mov   al, ah
+mul   byte ptr [_segloopheightvalcache]
 jmp   add_base_segment_and_draw0
+update_segloopcachedbasecol0:
+add   ax, dx
+sub   dx, cx
+mov   word ptr  [_segloopcachedbasecol], dx
+jmp   do_subtract_again0
+
+@
+
 SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
 non_repeating_texture0:
 cmp   ax, word ptr [_segloopnextlookup]
@@ -1967,6 +1959,9 @@ mov   dx, word ptr [_segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
 mov   dl, byte ptr [_segloopheightvalcache]
 mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache0+1], dl
+
+COMMENT @ 
+; see above, but all textures in vanilla are po2 so this is not necessary for now.
 mov   dh, byte ptr [_seglooptexmodulo]
 mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1], dh
 
@@ -1977,13 +1972,17 @@ mov   dl, 0B2h   ;  (mov dl, xx)
 mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], dx
 jmp   check_seglooptexrepeat0
 seglooptexmodulo0_is_jmp:
-
 mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
-
+@
 check_seglooptexrepeat0:
-cmp   word ptr [_seglooptexrepeat], 0
+
+mov   dh, byte ptr [_seglooptexrepeat]
+cmp   dh, 0
 je    seglooptexrepeat0_is_jmp
-; dont do anything. this was written in the step before.
+; modulo is seglooptexrepeat - 1
+mov   dl, 0B2h   ;  (mov dl, xx)
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], dx
+
 jmp   just_do_draw0
 ; do jmp. highest priority, overwrite previously written thing.
 seglooptexrepeat0_is_jmp:
@@ -2040,6 +2039,8 @@ call  R_DrawColumnPrep_
 pop   dx
 pop   es
 ret
+
+COMMENT @
 non_po2_texture_mod1:
 ; cx stores tex repeat
 SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET:
@@ -2079,6 +2080,8 @@ mov   ah, byte ptr [1 + _segloopheightvalcache]
 sub   al, dl
 mul   ah
 jmp   add_base_segment_and_draw1
+@
+
 SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET:
 non_repeating_texture1:
 cmp   ax, word ptr [2 + _segloopnextlookup]
@@ -2099,6 +2102,10 @@ mov   dx, word ptr [2 + _segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
 mov   dl, byte ptr [1 + _segloopheightvalcache]
 mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache1+1], dl
+
+
+
+COMMENT @
 mov   dh, byte ptr [1 + _seglooptexmodulo]
 mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo1+1], dh
 
@@ -2111,11 +2118,16 @@ jmp   check_seglooptexrepeat1
 seglooptexmodulo1_is_jmp:
 
 mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
-
+@
 check_seglooptexrepeat1:
-cmp   word ptr [2 + _seglooptexrepeat], 0
+
+mov   dh, byte ptr [1 + _seglooptexrepeat]
+cmp   dh, 0
 je    seglooptexrepeat1_is_jmp
-; dont do anything. this was written in the step before.
+; modulo is seglooptexrepeat - 1
+mov   dl, 0B2h   ;  (mov dl, xx)
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], dx
+
 jmp   just_do_draw1
 ; do jmp. highest priority, overwrite previously written thing.
 seglooptexrepeat1_is_jmp:
@@ -2426,8 +2438,8 @@ mov   ax, 0FFFFh
 mov   word ptr ds:[_segloopnextlookup], ax
 mov   word ptr ds:[_segloopnextlookup+2], ax
 inc   ax
+; zero both 
 mov   word ptr ds:[_seglooptexrepeat], ax
-mov   word ptr ds:[_seglooptexrepeat+2], ax
 
 
 pop   di

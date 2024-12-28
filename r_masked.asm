@@ -1862,16 +1862,18 @@ mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_DrawFuzzColum
 
 mov   bx, si  ; bx gets a copy of texture column?
 ;  ax stores _maskedtexrepeat for a little bit
+
 mov   ax, word ptr ds:[_maskedtexrepeat] 
 test  ax, ax
 jz   do_non_repeat
-mov   cx, word ptr ds:[_maskedtexmodulo] 
-jcxz  do_looped_column_calc
+; no more maskedtexmodulo, just use repeat
+;mov   cx, word ptr ds:[_maskedtexmodulo] 
+;jcxz  do_looped_column_calc
 
 ; width is power of 2, just AND
 ;	usetexturecolumn =  &= maskedtexmodulo;
 
-and   bx, cx
+and   bx, ax
 
 repeat_column_calculated:
 
@@ -1931,7 +1933,8 @@ call R_DrawMaskedColumn_
 
 jmp   update_maskedtexturecol_finish_loop_iter
 
-
+COMMENT @
+; unused in vanilla, and untested.
 do_looped_column_calc:
 ; calculate column by looping until 0 < column < width
 ; but column may be offset by (width * n)
@@ -1979,6 +1982,7 @@ mov ds:[_maskedcachedbasecol], di  ; write the changes back
 sub bx, di
 
 jmp repeat_column_calculated
+@
 
 SELFMODIFY_MASKED_lookup_2_TARGET:
 lookup_FF_repeat:

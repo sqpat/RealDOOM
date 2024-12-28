@@ -246,7 +246,7 @@
 #define curseg                          (*((int16_t  __near*)                (_NULL_OFFSET + 0x0280)))
 #define curseg_render                   (*((seg_render_t  __near* __near*)   (_NULL_OFFSET + 0x0282)))
 #define walllights                      (*((int16_t  __near*)                (_NULL_OFFSET + 0x0284)))
-#define maskedtexmodulo                 (*((uint16_t __near*)                (_NULL_OFFSET + 0x0286)))
+//#define maskedtexmodulo                 (*((uint16_t __near*)                (_NULL_OFFSET + 0x0286)))
 #define maskednextlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x0288)))
 #define maskedprevlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x028A)))
 #define maskedtexrepeat                 (*((int16_t __near*)                 (_NULL_OFFSET + 0x028C)))
@@ -1148,8 +1148,8 @@ extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 extern boolean				    is_ultimate;
 extern segment_t			    spritewidths_segment;
 
-extern uint8_t 					seglooptexmodulo[2]; // 0 would be fine too...
-extern int16_t 					seglooptexrepeat[2]; // 0 would be fine too...
+//extern uint8_t 					seglooptexmodulo[2]; // 0 would be fine too...
+extern uint8_t  				seglooptexrepeat[2]; // 0 would be fine too...
 extern int16_t 					segloopnextlookup[2];
 extern int16_t 					segloopprevlookup[2];
 extern segment_t 				segloopcachedsegment[2];
