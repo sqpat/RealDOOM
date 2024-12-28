@@ -1871,8 +1871,9 @@ PROC R_GetSourceSegment0_ NEAR
 PUBLIC R_GetSourceSegment0_ 
 
 ; grab texturecolumn where it was stored before.
-mov   ax, word ptr [bp - 2]
 push  es
+push  dx
+xchg  ax, dx
 
 ; ax stores texturecolumn. 
 
@@ -1904,6 +1905,7 @@ SELFMODIFY_set_toptexturemid_lo:
 mov   cx, 01000h
 
 call  R_DrawColumnPrep_
+pop   dx
 pop   es
 ret
 non_po2_texture_mod0:
@@ -2008,8 +2010,9 @@ PROC R_GetSourceSegment1_ NEAR
 PUBLIC R_GetSourceSegment1_ 
 
 ; grab texturecolumn where it was stored before.
-mov   ax, word ptr [bp - 2]
 push  es
+push  dx
+xchg  ax, dx
 
 ; ax stores texturecolumn. 
 
@@ -2035,6 +2038,7 @@ SELFMODIFY_set_bottexturemid_lo:
 mov   cx, 01000h
 
 call  R_DrawColumnPrep_
+pop   dx
 pop   es
 ret
 non_po2_texture_mod1:
@@ -2141,18 +2145,14 @@ PUBLIC R_RenderSegLoop_
 
 
 ; no arguments..
-
+; no permanent stack allocation
 ; order all these in memory then movsw
-; bp - 2    ; texturecolumn		; consider storing in register.
 
 
 push  bx
 push  cx ; todo which of these do we actually need to push and pop?
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
 
 xchg  ax, cx
 mov   ax, word ptr ds:[_rw_x]
@@ -2407,7 +2407,7 @@ inc   ax
 mov   word ptr ds:[_seglooptexrepeat], ax
 mov   word ptr ds:[_seglooptexrepeat+2], ax
 
-LEAVE_MACRO 
+
 pop   di
 pop   si
 pop   cx
@@ -2597,8 +2597,8 @@ mov   byte ptr es:[bx+di], al
 mov   byte ptr es:[bx+di + 0142h], cl
 markfloor_done:
 SELFMODIFY_get_segtextured:
-mov   dl, 0
-test  dl, dl
+mov   dx, 0
+test  dx, dx
 je   jump_to_seg_non_textured
 
 seg_is_textured:
@@ -2651,9 +2651,6 @@ sub   cx, ax
 SELFMODIFY_set_ax_rw_offset_hi:
 mov   ax, 01000h            ; mov   ax, word ptr ds:[_rw_offset + 2]
 sbb   ax, dx
-; store texture column
-; todo can this stay in reg? dont think so.
-mov   word ptr [bp - 2], ax
 
 ;	if (rw_scale.h.intbits >= 3) {
 ;		index = MAXLIGHTSCALE - 1;
@@ -2663,6 +2660,10 @@ mov   word ptr [bp - 2], ax
 
 les   bx, dword ptr ds:[_rw_scale]
 mov   cx, es
+
+; store texture column
+push  ax
+
 cmp   cx, 3
 jge   use_max_light
 do_lightscaleshift:
@@ -2693,7 +2694,6 @@ mov   dh, dl
 mov   dl, ah
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax		; todo: write these to code but masked has to as well..
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1], dx  
-
 mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
 SELFMODIFY_add_wallights:
@@ -2708,6 +2708,8 @@ mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
 ; store dc_x directly in code
 mov   word ptr cs:[SELFMODIFY_COLFUNC_get_dc_x+1], di
 
+; get x     in dx
+pop   dx
 
 seg_non_textured:
 ; si/di are yh/yl
@@ -2717,6 +2719,7 @@ add   bx, bx
 mov   ax, OPENINGS_SEGMENT
 mov   es, ax
 
+; dx holds x
 ; get yl/yh in di/si
 pop   di
 pop   si
@@ -2727,7 +2730,7 @@ cmp   di, si
 jl    mid_no_pixels_to_draw
 
 ; si:di are dc_yl, dc_yh
-
+; dx holds dc_x
 
 call  R_GetSourceSegment0_
 
@@ -2774,8 +2777,8 @@ SELFMODIFY_BSP_toptexture_TARGET:
 no_top_texture_draw:
 ; bx is already rw_x << 1
 SELFMODIFY_get_markceiling_2:
-mov   dl, 0
-test  dl, dl
+mov   al, 0
+test  al, al
 jne   mark_ceiling_si
 jmp   check_bottom_texture
 mark_ceiling_si:
@@ -2792,14 +2795,14 @@ SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 2
 
 do_top_texture_draw:
 mov   ax, word ptr ds:[_pixhigh+1]
-mov   dl, byte ptr ds:[_pixhigh+3]
-sar   dl, 1
+mov   cl, byte ptr ds:[_pixhigh+3]
+sar   cl, 1
 rcr   ax, 1
-sar   dl, 1
+sar   cl, 1
 rcr   ax, 1
-sar   dl, 1
+sar   cl, 1
 rcr   ax, 1
-sar   dl, 1
+sar   cl, 1
 rcr   ax, 1
 SELFMODIFY_add_to_pixhigh_lo_1:
 add   word ptr ds:[_pixhigh], 01000h
@@ -2823,6 +2826,9 @@ xchg   cx, di
 push   cx ; note: midtexture doesnt need/use cx and doesnt do this.
 
 
+; si:di are dc_yl, dc_yh
+; dx holds dc_x
+
 call  R_GetSourceSegment0_
 
 pop    cx
@@ -2843,17 +2849,17 @@ SELFMODIFY_get_pixlow_lo:
 mov   ax, word ptr ds:[_pixlow]
 add   ax, ((HEIGHTUNIT)-1)
 SELFMODIFY_get_pixlow_hi:
-mov   dx, word ptr ds:[_pixlow+2]
-adc   dx, 0
+mov   cx, word ptr ds:[_pixlow+2]
+adc   cx, 0
 mov   al, ah
-mov   ah, dl
-sar   dh, 1
+mov   ah, cl
+sar   ch, 1
 rcr   ax, 1
-sar   dh, 1
+sar   ch, 1
 rcr   ax, 1
-sar   dh, 1
+sar   ch, 1
 rcr   ax, 1
-sar   dh, 1
+sar   ch, 1
 rcr   ax, 1
 SELFMODIFY_add_to_pixlow_lo_1:
 add   word ptr ds:[_pixlow], 01000h
@@ -2873,40 +2879,42 @@ cmp   di, si
 jle   mark_floor_cx
 
 xchg   cx, si
+; dont push/pop cx because we don't need to preserve si, and si preserves cx
 ; si:di are dc_yl, dc_yh
-push   cx
+
+; si:di are dc_yl, dc_yh
+; dx holds dc_x
+
 call   R_GetSourceSegment1_
-pop    cx
 xchg   cx, si
 
 mark_floor_cx:
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
 done_marking_floor:
 SELFMODIFY_get_maskedtexture_1:
-mov   dl, 0
-test  dl, dl
+mov   al, 0
+test  al, al
 jne   record_masked
 jmp   finished_inner_loop_iter
 SELFMODIFY_BSP_bottexture_TARGET:
 no_bottom_texture_draw:
 SELFMODIFY_get_markfloor_2:
-mov   dl, 0
-test  dl, dl
+mov   al, 0
+test  al, al
 je    done_marking_floor
 ;floorclip[rw_x] = yh + 1;
 mark_floor_di:
 inc   di
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
 SELFMODIFY_get_maskedtexture_2:
-mov   dl, 0
-test  dl, dl
+mov   al, 0
+test  al, al
 jne   record_masked
 jmp   finished_inner_loop_iter
 
 record_masked:
 les   si, dword ptr ds:[_maskedtexturecol]
-mov   ax, word ptr [bp - 2]
-mov   word ptr es:[bx+si], ax
+mov   word ptr es:[bx+si], dx
 jmp   finished_inner_loop_iter
 
 
