@@ -2242,9 +2242,9 @@ sub_base4diff:
 
 
 SELFMODIFY_sub_rwscale_lo:
-sub   word ptr ds:[_rw_scale], 01000h
+sub   word ptr [bp - 01Eh], 01000h
 SELFMODIFY_sub_rwscale_hi:
-sbb   word ptr ds:[_rw_scale + 2], 01000h
+sbb   word ptr [bp - 01Ch], 01000h
 SELFMODIFY_sub_topstep_lo:
 sub   word ptr ds:[_topfrac], 01000h
 SELFMODIFY_sub_topstep_hi:
@@ -2279,11 +2279,11 @@ skip_sub_base4diff:
 ;	base_pixlow     = pixlow;
 ;	base_pixhigh    = pixhigh;
 
-mov   si, OFFSET _rw_scale
+mov   si, OFFSET _topfrac
 
-lodsw ; rw_scale lo
+mov   ax, [bp - 01Eh]
 mov   word ptr cs:[SELFMODIFY_set_rw_scale_lo+1], ax
-lodsw ; rw_scale hi
+mov   ax, [bp - 01Ch]
 mov   word ptr cs:[SELFMODIFY_set_rw_scale_hi+1], ax
 lodsw ; topfrac lo
 mov   word ptr cs:[SELFMODIFY_set_topfrac_lo+1], ax
@@ -2305,11 +2305,13 @@ mov   word ptr cs:[SELFMODIFY_set_pixhigh_lo+1], ax
 lodsw ; pixhigh hi
 mov   word ptr cs:[SELFMODIFY_set_pixhigh_hi+1], ax
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET:
+mov   ax, ds
+mov   es, ax
 mov   dx, SC_DATA  ; cheat this out of the loop..
 mov   al, 0 ; xoffset is 0
+
 continue_outer_rendersegloop:
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET:
-
 cbw  
 mov   bx, ax	; copy xoffset to bx
 inc   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1]
@@ -2328,16 +2330,14 @@ out   dx, al
 ; pixlow     = base_pixlow;
 ; pixhigh    = base_pixhigh;
 
-mov   ax, ds
-mov   es, ax
-mov   di, OFFSET _rw_scale
+mov   di, OFFSET _topfrac
 
 SELFMODIFY_set_rw_scale_lo:
 mov   ax, 01000h
-stosw
+mov   word ptr [bp - 01Eh], ax
 SELFMODIFY_set_rw_scale_hi:
 mov   ax, 01000h
-stosw
+mov   word ptr [bp - 01Ch], ax
 SELFMODIFY_set_topfrac_lo:
 mov   ax, 01000h
 stosw
@@ -2453,6 +2453,8 @@ ret
 jump_to_start_per_column_inner_loop:
 jmp   start_per_column_inner_loop
 jump_to_finish_outer_loop_2:
+mov   dx, ds
+mov   es, dx
 mov   dx, SC_DATA
 jmp   finish_outer_loop
 pre_increment_values:
@@ -2482,9 +2484,9 @@ add   word ptr ds:[_bottomfrac], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_2:
 adc   word ptr ds:[_bottomfrac+2], 01000h
 SELFMODIFY_add_to_rwscale_lo_2:
-add   word ptr ds:[_rw_scale], 01000h
+add   word ptr [bp - 01Eh], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
-adc   word ptr ds:[_rw_scale + 2], 01000h
+adc   word ptr [bp - 01Ch], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1:
 jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET
@@ -2692,7 +2694,7 @@ sbb   ax, dx
 
 ; CX:BX rw_scale
 ; todo bp/stack candidate
-les   bx, dword ptr ds:[_rw_scale]
+les   bx, dword ptr [bp - 01Eh]
 mov   cx, es
 
 ; store texture column
@@ -2799,11 +2801,13 @@ add   word ptr ds:[_bottomfrac], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_1:
 adc   word ptr ds:[_bottomfrac+2], 01000h
 SELFMODIFY_add_to_rwscale_lo_1:
-add   word ptr ds:[_rw_scale], 01000h
+add   word ptr [bp - 01Eh], 01000h
 SELFMODIFY_add_to_rwscale_hi_1:
-adc   word ptr ds:[_rw_scale + 2], 01000h
+adc   word ptr [bp - 01Ch], 01000h
 jmp   start_per_column_inner_loop
 jump_to_finish_outer_loop:
+mov   dx, ds
+mov   es, dx
 mov   dx, SC_DATA
 jmp   finish_outer_loop
 
@@ -3005,8 +3009,8 @@ PUBLIC R_StoreWallRange_
 ; bp - 016h  ; sides offset (within sides segment)
 ; bp - 018h  ; offsetangle
 ; bp - 01Ah  ; hyp hi
-; bp - 01Ch  ; UNUSED
-; bp - 01Eh  ; UNUSED
+; bp - 01Ch  ; rw_scale hi
+; bp - 01Eh  ; rw_scale lo
 ; bp - 020h  ; hyp lo
 ; bp - 022h  ; v1.y ; selfmodify forward
 ; bp - 024h  ; lineflags
@@ -3181,8 +3185,8 @@ SELFMODIFY_set_viewanglesr3_3:
 mov       ax, 01000h
 add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
-mov       word ptr ds:[_rw_scale], ax
-mov       word ptr ds:[_rw_scale + 2], dx
+mov       word ptr [bp - 01Eh], ax
+mov       word ptr [bp - 01Ch], dx
 mov       es, word ptr ds:[_ds_p+2]
 mov       word ptr es:[di + 8], dx
 mov       word ptr es:[di + 6], ax
@@ -3214,8 +3218,8 @@ sub       bx, word ptr [bp - 048h]
 mov       word ptr es:[di + 0ch], dx
 mov       ax, word ptr es:[di + 0ah]
 mov       dx, word ptr es:[di + 0ch]
-sub       ax, word ptr ds:[_rw_scale]
-sbb       dx, word ptr ds:[_rw_scale + 2]
+sub       ax, word ptr [bp - 01Eh]
+sbb       dx, word ptr [bp - 01Ch]
 
 call FastDiv3216u_
 mov       es, word ptr ds:[_ds_p+2]
@@ -3236,8 +3240,8 @@ mov       word ptr cs:[SELFMODIFY_get_rwscalestep_hi_4+1], dx
 
 mov       word ptr cs:[SELFMODIFY_add_rwscale_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_rwscale_hi+5], dx
-mov       word ptr cs:[SELFMODIFY_sub_rwscale_lo+4], ax
-mov       word ptr cs:[SELFMODIFY_sub_rwscale_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_sub_rwscale_lo+3], ax
+mov       word ptr cs:[SELFMODIFY_sub_rwscale_hi+3], dx
 
 
 
@@ -3249,10 +3253,10 @@ shl   ax, 1
 rcl   dx, 1
 finished_shifting_rw_scale:
 
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_1+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_2+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_1+4], dx
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_2+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_1+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_2+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_1+3], dx
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_2+3], dx
 
 
 
@@ -3590,7 +3594,7 @@ mov       word ptr [bp - 044h], dx
 mov       word ptr [bp - 046h], ax
 
 ; les to load two words
-les       bx, dword ptr ds:[_rw_scale]
+les       bx, dword ptr [bp - 01Eh]
 mov       cx, es
 call FixedMul_
 ; todo selfmodify this.
@@ -3615,7 +3619,7 @@ mov       word ptr [bp - 036h], ax
 
 
 
-les       bx, dword ptr ds:[_rw_scale]
+les       bx, dword ptr [bp - 01Eh]
 mov       cx, es
 call FixedMul_
 
@@ -3783,7 +3787,7 @@ do_pixhigh_step:
 xchg       dx, di
 xchg       ax, si
 
-les       bx, dword ptr ds:[_rw_scale]
+les       bx, dword ptr [bp - 01Eh]
 mov       cx, es
 push      dx
 push      ax
@@ -3857,7 +3861,7 @@ do_pixlow_step:
 
 mov       di, dx	; store for later
 mov       si, ax	; store for later
-les       bx, dword ptr ds:[_rw_scale]
+les       bx, dword ptr [bp - 01Eh]
 mov       cx, es
 call FixedMul_
 
