@@ -2193,7 +2193,7 @@ retf
 
 
 ; NOTE: this may not work right for negative params or DX:AX  besides 0xFFFFFFFF
-
+; TODO: We only use the low 24 bits of output from this function. can we optimize..?
 ;FastDiv3232FFFF_
 ; DX:AX / CX:BX
 
@@ -2351,7 +2351,15 @@ sbb   dx, bx
 cmp   dx, cx
 ja    qhat_subtract_2_3232
 je    compare_low_word_3232
-jmp   qhat_subtract_1_3232
+
+qhat_subtract_1_3232:
+mov ax, es
+dec ax
+xor dx, dx
+
+pop   di
+pop   si
+retf  
 
 compare_low_word_3232:
 cmp   ax, si
@@ -2368,14 +2376,6 @@ pop   si
 retf  
 
 
-qhat_subtract_1_3232:
-mov ax, es
-dec ax
-xor dx, dx
-
-pop   di
-pop   si
-retf  
 
 
 
