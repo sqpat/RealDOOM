@@ -2912,10 +2912,10 @@ mark_floor_cx:
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
 SELFMODIFY_BSP_markfloor_2_TARGET:
 done_marking_floor:
-SELFMODIFY_get_maskedtexture_1:
-mov   al, 0
-test  al, al
+SELFMODIFY_BSP_maskedtexture_1:
 jne   record_masked
+SELFMODIFY_BSP_maskedtexture_1_AFTER:
+
 jmp   finished_inner_loop_iter
 SELFMODIFY_BSP_bottexture_TARGET:
 no_bottom_texture_draw:
@@ -2926,12 +2926,13 @@ SELFMODIFY_BSP_markfloor_2_AFTER = SELFMODIFY_BSP_markfloor_2+2
 mark_floor_di:
 inc   di
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
-SELFMODIFY_get_maskedtexture_2:
-mov   al, 0
-test  al, al
+SELFMODIFY_BSP_maskedtexture_2:
 jne   record_masked
+SELFMODIFY_BSP_maskedtexture_2_AFTER:
 jmp   finished_inner_loop_iter
 
+SELFMODIFY_BSP_maskedtexture_1_TARGET:
+SELFMODIFY_BSP_maskedtexture_2_TARGET:
 record_masked:
 les   si, dword ptr ds:[_maskedtexturecol]
 mov   word ptr es:[bx+si], dx
@@ -3408,8 +3409,18 @@ done_with_sector_sided_check:
 
 ; set maskedtexture in rendersegloop
 
-mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_1+1], al
-mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_2+1], al
+test      al, al
+jne       do_maskedtexture_selfmodify_jumps
+mov       ax, 0c089h ; nop 
+mov       bx, ax
+jmp       do_maskedtexture_selfmodify
+do_maskedtexture_selfmodify_jumps:
+mov   ax, ((SELFMODIFY_BSP_maskedtexture_1_TARGET - SELFMODIFY_BSP_maskedtexture_1_AFTER) SHL 8) + 0EBh
+mov   bx, ((SELFMODIFY_BSP_maskedtexture_2_TARGET - SELFMODIFY_BSP_maskedtexture_2_AFTER) SHL 8) + 0EBh
+
+do_maskedtexture_selfmodify:
+mov       word ptr cs:[SELFMODIFY_BSP_maskedtexture_1], ax
+mov       word ptr cs:[SELFMODIFY_BSP_maskedtexture_2], bx
 
 ; create segtextured value
 SELFMODIFY_check_for_any_tex:
