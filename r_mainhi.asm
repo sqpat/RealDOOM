@@ -1774,7 +1774,6 @@ COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOO
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 
 
-; dumb idea: one version for SourceSegment0 one version for SourceSegment1
 ;
 ; R_DrawColumnPrep
 ;
@@ -1884,8 +1883,8 @@ xchg  ax, dx
 
 SELFMODIFY_BSP_check_seglooptexmodulo0:
 SELFMODIFY_BSP_set_seglooptexrepeat0:
-jmp    non_repeating_texture0
-;mov   dl, 0
+; this may get replaced with jmp non_po2_texture_mod0 or mov dl, [_segloopheightvalcache]
+jmp    non_repeating_texture0 
 SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
 SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
 SELFMODIFY_set_segloopheightvalcache0:
@@ -2177,10 +2176,22 @@ mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_2+1], ax
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_3+1], ax
 
 
-; markceiling is ah
-mov   ax, word ptr ds:[_markfloor]
-mov   byte ptr cs:[SELFMODIFY_get_markfloor_1+1], al
-mov   byte ptr cs:[SELFMODIFY_get_markfloor_2+1], al
+cmp   byte ptr ds:[_markfloor], 0
+
+je    do_markfloor_selfmodify_jumps
+mov   ax, 04940h     ; inc ax dec cx
+mov   si, 02647h     ; inc di, es:
+jmp do_markfloor_selfmodify
+do_markfloor_selfmodify_jumps:
+mov       ax, ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER) SHL 8) + 0EBh
+mov       si, ((SELFMODIFY_BSP_markfloor_2_TARGET - SELFMODIFY_BSP_markfloor_2_AFTER) SHL 8) + 0EBh
+do_markfloor_selfmodify:
+
+mov       word ptr cs:[SELFMODIFY_BSP_markfloor_1], ax
+mov       word ptr cs:[SELFMODIFY_BSP_markfloor_2], si
+
+mov   ah, byte ptr ds:[_markceiling]
+
 
 mov   byte ptr cs:[SELFMODIFY_get_markceiling_1+1], ah
 mov   byte ptr cs:[SELFMODIFY_get_markceiling_2+1], ah
@@ -2565,11 +2576,9 @@ mov   ax, cx
 dec   ax
 skip_yh_floorclip:
 push  ax  ; store yh
-SELFMODIFY_get_markfloor_1:
-mov   dl, 0
-test  dl, dl
-je    markfloor_done
-
+SELFMODIFY_BSP_markfloor_1:
+;je    markfloor_done
+SELFMODIFY_BSP_markfloor_1_AFTER = SELFMODIFY_BSP_markfloor_1 + 2
 ; ax is already yh
 inc   ax			; top = yh + 1...
 ; cx is already  floor
@@ -2595,6 +2604,7 @@ jg    markfloor_done
 les   bx, dword ptr ds:[_floortop]
 mov   byte ptr es:[bx+di], al
 mov   byte ptr es:[bx+di + 0142h], cl
+SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
 SELFMODIFY_get_segtextured:
 mov   dx, 0
@@ -2890,6 +2900,7 @@ xchg   cx, si
 
 mark_floor_cx:
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
+SELFMODIFY_BSP_markfloor_2_TARGET:
 done_marking_floor:
 SELFMODIFY_get_maskedtexture_1:
 mov   al, 0
@@ -2898,10 +2909,9 @@ jne   record_masked
 jmp   finished_inner_loop_iter
 SELFMODIFY_BSP_bottexture_TARGET:
 no_bottom_texture_draw:
-SELFMODIFY_get_markfloor_2:
-mov   al, 0
-test  al, al
-je    done_marking_floor
+SELFMODIFY_BSP_markfloor_2:
+;je    done_marking_floor
+SELFMODIFY_BSP_markfloor_2_AFTER = SELFMODIFY_BSP_markfloor_2+2
 ;floorclip[rw_x] = yh + 1;
 mark_floor_di:
 inc   di
@@ -2967,9 +2977,9 @@ PUBLIC R_StoreWallRange_
 ; bp - 01Ch  ; UNUSED
 ; bp - 01Eh  ; UNUSED
 ; bp - 020h  ; hyp lo
-; bp - 022h  ; v1.y
+; bp - 022h  ; v1.y ; selfmodify forward
 ; bp - 024h  ; lineflags
-; bp - 026h  ; v1.x
+; bp - 026h  ; v1.x ; selfmodify forward
 ; bp - 028h  ; side_render (near ptr)
 ; bp - 02Ah  ; UNUSED
 ; bp - 02Ch  ; v2.y TODO only used once, selfmodify
@@ -3864,6 +3874,7 @@ mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+4], dx
 skip_pixlow_step:
 call      R_RenderSegLoop_
 
+; clean up the self modified code of renderseg loop. 
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
 
