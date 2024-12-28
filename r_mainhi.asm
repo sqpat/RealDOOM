@@ -1865,7 +1865,6 @@ endp
 ;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
 
 ; AX is texturecolumn
-; DX is texture
 ; segloopcachetype is 0
 
 
@@ -1876,7 +1875,7 @@ PUBLIC R_GetSourceSegment0_
 mov   ax, word ptr [bp - 2]
 
 push  es
-mov   es, dx
+
 ; ax stores texturecolumn. 
 
 SELFMODIFY_set_seglooptexrepeat0:
@@ -1898,27 +1897,24 @@ mov   word ptr ds:[_dc_source_segment], ax
 SELFMODIFY_set_midtexturemid_hi:
 SELFMODIFY_set_toptexturemid_hi:
 mov   dx, 01000h
-push  cx
 SELFMODIFY_set_midtexturemid_lo:
 SELFMODIFY_set_toptexturemid_lo:
 mov   cx, 01000h
 
 call  R_DrawColumnPrep_
-pop   cx
 pop   es
 ret
 non_po2_texture_mod0:
-; si stores tex repeat
-push  si
-mov   si, dx
+; cx stores tex repeat
+mov   cx, dx
 mov   dx, word ptr [_segloopcachedbasecol]
 cmp   ax, dx
 jge   done_subbing_modulo0
-sub   dx, si
+sub   dx, cx
 continue_subbing_modulo0:
 cmp   ax, dx
 jge   record_subbed_modulo0
-sub   dx, si
+sub   dx, cx
 jmp   continue_subbing_modulo0
 record_subbed_modulo0:
 ; at least one write was done. write back.
@@ -1926,23 +1922,22 @@ mov   word ptr [_segloopcachedbasecol], dx
 
 done_subbing_modulo0:
 
-add   dx, si
+add   dx, cx
 cmp   ax, dx
 jl    done_adding_modulo0
 continue_adding_modulo0:
-add   dx, si
+add   dx, cx
 cmp   ax, dx
 jl    record_added_modulo0
 jmp   continue_adding_modulo0
 record_added_modulo0:
 ; gross
-sub   dx, si
+sub   dx, cx
 mov   word ptr [_segloopcachedbasecol], dx
-add   dx, si
+add   dx, cx
 
 done_adding_modulo0:
-sub   dx, si
-pop   si
+sub   dx, cx
 mov   ah, byte ptr [_segloopheightvalcache]
 sub   al, dl
 mul   ah
@@ -1956,7 +1951,10 @@ out_of_texture_bounds0:
 mov   dx, ax
 push  bx
 xor   bx, bx
-mov   ax, es
+
+SELFMODIFY_set_toptexture:
+SELFMODIFY_set_midtexture:
+mov   ax, 01000h
 call  R_GetColumnSegment_
 pop   bx
 
@@ -1984,7 +1982,6 @@ ENDP
 ;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
 
 ; AX is texturecolumn
-; DX is texture
 ; segloopcachetype is 1
 
 PROC R_GetSourceSegment1_ NEAR
@@ -1995,7 +1992,6 @@ mov   ax, word ptr [bp - 2]
 push  es
 
 
-mov   es, dx
 ; ax stores texturecolumn. 
 
 SELFMODIFY_set_seglooptexrepeat1:
@@ -2018,26 +2014,23 @@ mov   word ptr ds:[_dc_source_segment], ax
 
 SELFMODIFY_set_bottexturemid_hi:
 mov   dx, 01000h
-push  cx
 SELFMODIFY_set_bottexturemid_lo:
 mov   cx, 01000h
 
 call  R_DrawColumnPrep_
-pop   cx
 pop   es
 ret
 non_po2_texture_mod1:
-; si stores tex repeat
-push  si
-mov   si, dx
+; cx stores tex repeat
+mov   cx, dx
 mov   dx, word ptr [2 + _segloopcachedbasecol]
 cmp   ax, dx
 jge   done_subbing_modulo1
-sub   dx, si
+sub   dx, cx
 continue_subbing_modulo1:
 cmp   ax, dx
 jge   record_subbed_modulo1
-sub   dx, si
+sub   dx, cx
 jmp   continue_subbing_modulo1
 record_subbed_modulo1:
 ; at least one write was done. write back.
@@ -2045,23 +2038,23 @@ mov   word ptr [2 + _segloopcachedbasecol], dx
 
 done_subbing_modulo1:
 
-add   dx, si
+add   dx, cx
 cmp   ax, dx
 jl    done_adding_modulo1
 continue_adding_modulo1:
-add   dx, si
+add   dx, cx
 cmp   ax, dx
 jl    record_added_modulo1
 jmp   continue_adding_modulo1
 record_added_modulo1:
 ; gross
-sub   dx, si
+sub   dx, cx
 mov   word ptr [2 + _segloopcachedbasecol], dx
-add   dx, si
+add   dx, cx
 
 done_adding_modulo1:
-sub   dx, si
-pop   si
+sub   dx, cx
+
 mov   ah, byte ptr [1 + _segloopheightvalcache]
 sub   al, dl
 mul   ah
@@ -2075,7 +2068,9 @@ out_of_texture_bounds1:
 mov   dx, ax
 push  bx
 mov   bx, 1
-mov   ax, es
+
+SELFMODIFY_set_bottomtexture:
+mov   ax, 01000h
 call  R_GetColumnSegment_
 pop  bx
 
@@ -2372,6 +2367,7 @@ jmp   continue_outer_rendersegloop
 
 
 exit_rendersegloop:
+; zero out local caches.
 mov   ax, 0FFFFh
 mov   word ptr ds:[_segloopnextlookup], ax
 mov   word ptr ds:[_segloopnextlookup+2], ax
@@ -2696,14 +2692,12 @@ pop   di
 pop   si
 SELFMODIFY_BSP_midtexture:
 SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 2
-SELFMODIFY_set_midtexture:
-mov   cx, 01000h
-mov   dx, cx				; copy texture function argument
 
 cmp   di, si
 jl    mid_no_pixels_to_draw
 
 ; si:di are dc_yl, dc_yh
+
 
 call  R_GetSourceSegment0_
 
@@ -2765,8 +2759,6 @@ no_mid_texture_draw:
 
 SELFMODIFY_BSP_toptexture:
 SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 2
-SELFMODIFY_set_toptexture:
-mov   cx, 01000h
 
 do_top_texture_draw:
 mov   ax, word ptr ds:[_pixhigh+1]
@@ -2783,7 +2775,6 @@ SELFMODIFY_add_to_pixhigh_lo_1:
 add   word ptr ds:[_pixhigh], 01000h
 SELFMODIFY_add_to_pixhigh_hi_1:
 adc   word ptr ds:[_pixhigh+2], 01000h
-mov   dx, cx  ; copy over tex...
 ; bx is rw_x << 1
 mov   cx, ax
 mov   ax, word ptr es:[bx + OFFSET_FLOORCLIP]
@@ -2799,11 +2790,12 @@ jle   mark_ceiling_cx
 
 xchg   cx, di
 ; si:di are dc_yl, dc_yh
-
-; dx already set to texture
+push   cx ; note: midtexture doesnt need/use cx and doesnt do this.
 
 
 call  R_GetSourceSegment0_
+
+pop    cx
 xchg   cx, di
 
 
@@ -2815,8 +2807,6 @@ check_bottom_texture:
 
 SELFMODIFY_BSP_bottexture:
 SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
-SELFMODIFY_set_bottomtexture:
-mov   cx, 01000h
 
 do_bottom_texture_draw:
 SELFMODIFY_get_pixlow_lo:
@@ -2839,7 +2829,7 @@ SELFMODIFY_add_to_pixlow_lo_1:
 add   word ptr ds:[_pixlow], 01000h
 SELFMODIFY_add_to_pixlow_hi_1:
 adc   word ptr ds:[_pixlow+2], 01000h
-mov   dx, cx 			; get bottom texture
+
 mov   cx, ax
 mov   ax, word ptr es:[bx+OFFSET_CEILINGCLIP]
 cmp   cx, ax
@@ -2854,8 +2844,9 @@ jle   mark_floor_cx
 
 xchg   cx, si
 ; si:di are dc_yl, dc_yh
-
-call  R_GetSourceSegment1_
+push   cx
+call   R_GetSourceSegment1_
+pop    cx
 xchg   cx, si
 
 mark_floor_cx:
@@ -3278,11 +3269,10 @@ mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-mov       byte ptr cs:[SELFMODIFY_set_midtexture+2], ah
+mov       word ptr cs:[SELFMODIFY_set_midtexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
-mov       ah, al     
-mov       al, 0B9h   ; mov cx, [low 8 bits of the value]
+mov       ax, 0F739h   ; cmp di, si
 jne       midtexture_not_zero
 midtexture_zero:
 mov       ax, ((SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) SHL 8) + 0EBh
@@ -4200,11 +4190,10 @@ mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-mov       byte ptr cs:[SELFMODIFY_set_toptexture+2], ah
+mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
-mov       ah, al     
-mov       al, 0B9h   ; mov cx, [low 8 bits of the value]
+mov       ax, 0CDA1h   ; mov   ax, word ptr ds:[_pixhigh+1] first two bytes
 jne       toptexture_not_zero
 toptexture_zero:
 mov       ax, ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
@@ -4278,11 +4267,11 @@ mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-mov       byte ptr cs:[SELFMODIFY_set_bottomtexture+2], ah
+mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
-mov       ah, al     
-mov       al, 0B9h   ; mov cx, [low 8 bits of the value]
+
+mov       ax, 0C8A1h   ; mov   ax, word ptr ds:[_pixlow]
 jne       bottexture_not_zero
 bottexture_zero:
 mov       ax, ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
