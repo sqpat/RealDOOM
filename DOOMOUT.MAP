@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/29 10:24:25
+Created on:       24/12/29 10:48:21
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -80,7 +80,7 @@ p_user_TEXT            CODE           AUTO           0b21:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           17a7:0000       0000098e
 r_data_TEXT            CODE           AUTO           17a7:0990       00001c39
 R_MATH_TEXT            CODE           AUTO           17a7:25ca       000001fd
-R_MAINHI_TEXT          CODE           AUTO           17a7:27c8       00001973
+R_MAINHI_TEXT          CODE           AUTO           17a7:27c8       0000196a
 r_draw_TEXT            CODE           AUTO           17a7:4140       00000379
 r_main_TEXT            CODE           AUTO           17a7:44c0       000001f6
 r_plane_TEXT           CODE           AUTO           17a7:46c0       00000000
@@ -1285,11 +1285,11 @@ Module: r_math.obj(r_math.ASM)
 Module: r_mainhi.obj(r_mainhi.ASM)
 17a7:3016*     R_GetSourceSegment0_
 17a7:3086*     R_GetSourceSegment1_
-17a7:351f      R_StoreWallRange_
+17a7:3519      R_StoreWallRange_
 17a7:2a87      R_Subsector_
 17a7:2859*     R_PointToDist_
-17a7:3f0c      R_WriteBackViewConstants_
-17a7:405c      R_WriteBackFrameConstants_
+17a7:3f03      R_WriteBackViewConstants_
+17a7:4053      R_WriteBackFrameConstants_
 17a7:28d8      R_ClearPlanes_
 17a7:2953*     R_HandleEMSPagination_
 17a7:2f6f*     R_AddSprites_

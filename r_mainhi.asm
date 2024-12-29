@@ -2986,13 +2986,6 @@ ML_DONTPEGTOP = 8
 scalelight_offset_in_fixed_scalelight = 030h
 MAXDRAWSEGS = 256
 
-out_of_drawsegs:
-LEAVE_MACRO
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
 
 ;R_StoreWallRange_
 
@@ -3010,11 +3003,11 @@ PUBLIC R_StoreWallRange_
 ; bp - 0Eh   ; offsetangle
 ; bp - 010h  ; frontsectorfloorheight
 ; bp - 012h  ; frontsectorceilingheight
-; bp - 014h  ; sides_segment (constant)
-; bp - 016h  ; sides offset (within sides segment)
+; bp - 014h  ; side toptexture
+; bp - 016h  ; side bottomtexture
 ; bp - 018h  ; hyp lo
 ; bp - 01Ah  ; hyp hi
-; bp - 01Ch  ; UNUSED
+; bp - 01Ch  ; side midtexture
 ; bp - 01Eh  ; UNUSED
 ; bp - 020h  ; pixhigh hi
 ; bp - 022h  ; pixhigh lo
@@ -3058,10 +3051,24 @@ mov       word ptr [bp - 018h], ax
 mov       word ptr [bp - 01Ah], ax
 
 mov       bx, word ptr ds:[_curseg_render]
-mov       ax, word ptr ds:[bx + 6]
-shl       ax, 3
-mov       word ptr [bp - 016h], ax
+mov       si, SIDES_SEGMENT
+mov       es, si
+mov       si, word ptr ds:[bx + 6]
+shl       si, 1
+shl       si, 1
+shl       si, 1
+; read all the sides fields.
 
+lods      word ptr es:[si]
+mov       [bp - 014h], ax
+lods      word ptr es:[si]
+mov       [bp - 016h], ax
+lods      word ptr es:[si]
+mov       [bp - 01Ch], ax
+lods      word ptr es:[si]
+mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], ax
+
+xchg      ax, si
 sar       ax, 1
 add       ah, (_sides_render SHR 8)
 mov       si, ax
@@ -3087,7 +3094,6 @@ lods 	    word ptr es:[si]
 mov       word ptr cs:[SELFMODIFY_BSP_v2x+1], ax
 lods      word ptr es:[si]
 mov       word ptr cs:[SELFMODIFY_BSP_v2y+1], ax
-mov       word ptr [bp - 014h], SIDES_SEGMENT
 
 mov       bx, word ptr ds:[_ds_p]
 cmp       bx, (MAXDRAWSEGS * SIZEOF_DRAWSEG_T)
@@ -3151,6 +3157,13 @@ offsetangle_above_ang_90:
 xor       ax, ax
 mov       dx, ax
 jmp       do_set_rw_distance
+out_of_drawsegs:
+LEAVE_MACRO
+pop       di
+pop       si
+pop       cx
+pop       bx
+ret       
 
 offsetangle_below_ang_90:
 mov       dx, word ptr [bp - 03Eh]
@@ -3336,9 +3349,6 @@ mov       byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
 
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], NULL_TEX_COL
-les       bx, dword ptr [bp - 016h] ; sides
-mov       dx, word ptr es:[bx + 6]
-mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], dx
 cmp       word ptr ds:[_backsector], SECNUM_NULL
 je        handle_single_sided_line
 jmp       handle_two_sided_line
@@ -3358,7 +3368,7 @@ mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
 
 ;es:bx still side
 mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, word ptr es:[bx + 4]
+mov       bx, [bp - 01Ch]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
@@ -3413,8 +3423,7 @@ rcr       cx, 1
 mov       word ptr cs:[SELFMODIFY_set_midtexturemid_lo+1], cx
 
 
-les       bx, dword ptr [bp - 016h] ; sides
-mov       bx, word ptr es:[bx + 4]
+mov       bx, word ptr [bp - 01Ch]
 mov       cx, TEXTUREHEIGHTS_SEGMENT
 mov       es, cx
 xor       cx, cx
@@ -4291,9 +4300,8 @@ setup_toptexture:
 
 ; toptexture = texturetranslation[side->toptexture];
 
-les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr [bp - 014h]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
@@ -4332,9 +4340,8 @@ rcr       ax, 1
 sar       dx, 1
 rcr       ax, 1
 ;dx:ax are toptexturemid for now..
-les       bx, dword ptr [bp - 016h] ; sides ; todo cache the value from side?
 mov       cx, TEXTUREHEIGHTS_SEGMENT
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr [bp - 014h]
 mov       es, cx
 xor       cx, cx
 mov       cl, byte ptr es:[bx]
@@ -4368,9 +4375,8 @@ jne       bottexture_stuff_done
 cmp       si, word ptr [bp - 036h]
 jbe       bottexture_stuff_done
 setup_bottexture:
-les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, word ptr es:[bx + 2]
+mov       bx, word ptr [bp - 016h]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
@@ -4419,8 +4425,7 @@ mov       ax, 01000h
 ; ?? how
 add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1], ax
 add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1], ax
-les       bx, dword ptr [bp - 016h] ; sides
-cmp       word ptr es:[bx + 4], 0
+cmp       word ptr [bp - 01Ch], 0
 
 ; // allocate space for masked texture tables
 ; if (side->midtexture) {
