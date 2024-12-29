@@ -36,6 +36,7 @@ EXTRN FixedDivWholeA_:PROC
 EXTRN R_PointToAngle_:PROC
 EXTRN R_GetColumnSegment_:NEAR
 EXTRN FastDiv3232FFFF_:PROC
+EXTRN R_WriteMathFrameConstants_:NEAR
 
 EXTRN _validcount:WORD
 EXTRN _spritelights:WORD
@@ -1871,14 +1872,7 @@ PUBLIC R_GetSourceSegment0_
 ; grab texturecolumn where it was stored before.
 push  es
 push  dx
-xchg  ax, dx
 
-; todo no xchg
-; mov ax, [dl][ah] as ah al
-; and dl, ah
-; mul dl
-
-; ax gets texturecolumn from dx
 
 ; okay. we modify the first instruction in this argument. 
  ; if no texture is yet cached for this rendersegloop, jmp to non_repeating_texture
@@ -1887,14 +1881,13 @@ xchg  ax, dx
 
 SELFMODIFY_BSP_check_seglooptexmodulo0:
 SELFMODIFY_BSP_set_seglooptexrepeat0:
-; this may get replaced with jmp non_po2_texture_mod0 or mov dl, [_segloopheightvalcache]
+; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
 jmp    non_repeating_texture0 
 SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
 SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
-SELFMODIFY_set_segloopheightvalcache0:
-mov   ah, 0
-and   al, dl
-mul   ah
+xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
+and   dl, ah   ; ah has loopwidth-1 (modulo )
+mul   dl       ; al has heightval
 add_base_segment_and_draw0:
 SELFMODIFY_add_cached_segment0:
 add   ax, 01000h
@@ -1944,12 +1937,11 @@ jmp   do_subtract_again0
 
 SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
 non_repeating_texture0:
-cmp   ax, word ptr [_segloopnextlookup]
+cmp   dx, word ptr [_segloopnextlookup]
 jge   out_of_texture_bounds0
-cmp   ax, word ptr [_segloopprevlookup]
+cmp   dx, word ptr [_segloopprevlookup]
 jge   in_texture_bounds0
 out_of_texture_bounds0:
-mov   dx, ax
 push  bx
 xor   bx, bx
 
@@ -1961,8 +1953,6 @@ pop   bx
 
 mov   dx, word ptr [_segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
-mov   dl, byte ptr [_segloopheightvalcache]
-mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache0+1], dl
 
 COMMENT @ 
 ; see above, but all textures in vanilla are po2 so this is not necessary for now.
@@ -1984,8 +1974,9 @@ mov   dh, byte ptr [_seglooptexrepeat]
 cmp   dh, 0
 je    seglooptexrepeat0_is_jmp
 ; modulo is seglooptexrepeat - 1
-mov   dl, 0B2h   ;  (mov dl, xx)
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], dx
+mov   dl, byte ptr [_segloopheightvalcache]
+mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
 
 jmp   just_do_draw0
 ; do jmp. highest priority, overwrite previously written thing.
@@ -1993,10 +1984,9 @@ seglooptexrepeat0_is_jmp:
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw0
 in_texture_bounds0:
-mov   dx, word ptr [_segloopcachedbasecol]
-mov   ah, byte ptr [_segloopheightvalcache]
-sub   al, dl
-mul   ah
+xchg  ax, dx
+sub   al, byte ptr [_segloopcachedbasecol]
+mul   byte ptr [_segloopheightvalcache]
 jmp   add_base_segment_and_draw0
 
 ENDP
@@ -2014,20 +2004,17 @@ PUBLIC R_GetSourceSegment1_
 ; grab texturecolumn where it was stored before.
 push  es
 push  dx
-xchg  ax, dx
-; ax gets texturecolumn from dx
 
 
 SELFMODIFY_BSP_check_seglooptexmodulo1:
 SELFMODIFY_BSP_set_seglooptexrepeat1:
+; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
 jmp    non_repeating_texture1
-;mov   dl, 0
 SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER:
 SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER:
-SELFMODIFY_set_segloopheightvalcache1:
-mov   ah, 0
-and   al, dl
-mul   ah
+xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
+and   dl, ah   ; ah has loopwidth-1 (modulo )
+mul   dl       ; al has heightval
 add_base_segment_and_draw1:
 SELFMODIFY_add_cached_segment1:
 add   ax, 01000h
@@ -2088,12 +2075,11 @@ jmp   add_base_segment_and_draw1
 
 SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET:
 non_repeating_texture1:
-cmp   ax, word ptr [2 + _segloopnextlookup]
+cmp   dx, word ptr [2 + _segloopnextlookup]
 jge   out_of_texture_bounds1
-cmp   ax, word ptr [2 + _segloopprevlookup]
+cmp   dx, word ptr [2 + _segloopprevlookup]
 jge   in_texture_bounds1
 out_of_texture_bounds1:
-mov   dx, ax
 push  bx
 mov   bx, 1
 
@@ -2104,8 +2090,6 @@ pop   bx
 
 mov   dx, word ptr [2 + _segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
-mov   dl, byte ptr [1 + _segloopheightvalcache]
-mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache1+1], dl
 
 
 
@@ -2120,17 +2104,17 @@ mov   dl, 0B2h   ;  (mov dl, xx)
 mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], dx
 jmp   check_seglooptexrepeat1
 seglooptexmodulo1_is_jmp:
-
 mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
 @
 check_seglooptexrepeat1:
-
+; todo get this dh and dl in same read
 mov   dh, byte ptr [1 + _seglooptexrepeat]
 cmp   dh, 0
 je    seglooptexrepeat1_is_jmp
 ; modulo is seglooptexrepeat - 1
-mov   dl, 0B2h   ;  (mov dl, xx)
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], dx
+mov   dl, byte ptr [1 + _segloopheightvalcache]
+mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1],   0B8h   ; mov ax, xxxx
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1+1], dx
 
 jmp   just_do_draw1
 ; do jmp. highest priority, overwrite previously written thing.
@@ -2138,13 +2122,13 @@ seglooptexrepeat1_is_jmp:
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw1
 in_texture_bounds1:
-mov   dx, word ptr [2 + _segloopcachedbasecol]
-mov   ah, byte ptr [1 + _segloopheightvalcache]
-sub   al, dl
-mul   ah
+xchg  ax, dx  ; put texturecol in ax
+sub   al, byte ptr [2 + _segloopcachedbasecol]
+mul   byte ptr [1 + _segloopheightvalcache]
 jmp   add_base_segment_and_draw1
 
 ENDP
+
 
 
 ; 1 SHR 12
@@ -2519,7 +2503,7 @@ mov   di, ax   ; ax was still rw_x
 
 mov   ax, OPENINGS_SEGMENT
 mov   es, ax
-mov   bx, di ; di = rw_x
+mov   bx, di                                     ; di = rw_x
 mov   cx, word ptr es:[bx+di+OFFSET_FLOORCLIP]	 ; cx = floor
 mov   si, word ptr es:[bx+di+OFFSET_CEILINGCLIP] ; dx = ceiling
 inc   si
@@ -2568,7 +2552,7 @@ cmp   si, ax
 jg    markceiling_done
 les   bx, dword ptr ds:[_ceiltop] 
 mov   byte ptr es:[bx+di + 0142h], al		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
-mov   ax, si								; dl is 0, si is < screensize (and thus under 255)
+mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
 mov   byte ptr es:[bx+di], al
 SELFMODIFY_BSP_markceiling_1_TARGET:
 markceiling_done:
@@ -3057,7 +3041,7 @@ mov       si, word ptr ds:[bx + 6]
 shl       si, 1
 shl       si, 1
 shl       si, 1
-; read all the sides fields.
+; read all the sides fields now
 
 lods      word ptr es:[si]
 mov       [bp - 014h], ax
@@ -4808,6 +4792,7 @@ mov      es, ax
 mov      ax, word ptr ds:[_destview+2]
 mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segment+1], ax
 
+;call     R_WriteMathFrameConstants_
 
 
 

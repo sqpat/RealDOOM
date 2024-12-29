@@ -130,6 +130,16 @@ PUBLIC R_PointToAngle_
 
 ; idea: self modify code, change this to constants per frame.
 
+SELFMODIFY_set_viewx_lo_3:
+;sub   ax, 01000h
+;SELFMODIFY_set_viewx_hi_3:
+;sbb   dx, 01000h
+
+;SELFMODIFY_set_viewy_lo_3:
+;sub   bx, 01000h
+;SELFMODIFY_set_viewy_hi_3:
+;sbb   cx, 01000h
+
 sub   ax, word ptr ds:[_viewx]
 sbb   dx, word ptr ds:[_viewx+2]
 
@@ -372,6 +382,29 @@ sbb   dx, word ptr es:[bx + 2]
 retf  
 endp
 
+
+;R_WriteMathFrameConstants_
+
+PROC R_WriteMathFrameConstants_ NEAR
+PUBLIC R_WriteMathFrameConstants_ 
+
+;mov       ds:[_visplanelookupsegments+2], OFFSET SELFMODIFY_set_viewx_lo_3
+;mov       ax, word ptr ds:[_viewx]
+;mov       ds:[_visplanelookupsegments+4], ax
+
+;mov      ax, word ptr ds:[_viewx]
+;mov      word ptr cs:[SELFMODIFY_set_viewx_lo_3+1], ax
+;mov      ax, word ptr ds:[_viewx+2]
+;mov      word ptr cs:[SELFMODIFY_set_viewx_hi_3+2], ax
+
+;mov      ax, word ptr ds:[_viewy]
+;mov      word ptr cs:[SELFMODIFY_set_viewy_lo_3+2], ax
+;mov      ax, word ptr ds:[_viewy+2]
+;mov      word ptr cs:[SELFMODIFY_set_viewy_hi_3+2], ax
+
+
+ret
+endp
 
 
 END
