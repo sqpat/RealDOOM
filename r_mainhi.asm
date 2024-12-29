@@ -1614,9 +1614,9 @@ SELFMODIFY_set_al_to_flags2:
 mov   al, 00h
 test  al, 4
 jne   exit_set_shadow
-SELFMODIFY_set_fixedcolormap_2:
-jmp   exit_set_fixed_colormap
-SELFMODIFY_set_fixedcolormap_2_AFTER:
+SELFMODIFY_BSP_fixedcolormap_2:
+jne   exit_set_fixed_colormap
+SELFMODIFY_BSP_fixedcolormap_2_AFTER:
 test  byte ptr [bp - 6], FF_FULLBRIGHT
 jne   exit_set_fullbright_colormap
 
@@ -1664,8 +1664,8 @@ pop   es
 pop   si
 ret   
 
-SELFMODIFY_set_fixedcolormap_2_TARGET:
-SELFMODIFY_set_fixedcolormap_1:
+SELFMODIFY_BSP_fixedcolormap_2_TARGET:
+SELFMODIFY_BSP_fixedcolormap_1:
 exit_set_fixed_colormap:
 mov   byte ptr [si + 1], 0
 LEAVE_MACRO
@@ -2723,11 +2723,9 @@ mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
 SELFMODIFY_add_wallights:
 
-; todo: make scalelight be pre-shifted 4 to save on the double sal below.
+; scalelight is pre-shifted 4 to save on the double sal every column.
 mov   al, byte ptr es:[si+01000h]
 ;        set drawcolumn colormap function address
-sal   al, 1
-sal   al, 1
 mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
 
 ; store dc_x directly in code
@@ -2967,7 +2965,7 @@ ANG180_HIGHBITS = 08000h
 MOD_FINE_ANGLE_NOSHIFT_HIGHBITS = 07Fh
 ML_DONTPEGBOTTOM = 010h
 ML_DONTPEGTOP = 8
-scalelight_offset_in_fixed_scalelight = 030h
+SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT = 030h
 MAXDRAWSEGS = 256
 
 
@@ -3531,14 +3529,21 @@ and       ah, FINE_ANGLE_HIGH_BYTE
 mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
 
 
-SELFMODIFY_set_fixedcolormap_3:
-jmp       seg_textured_check_done    ; dont check walllights if fixedcolormap
-SELFMODIFY_set_fixedcolormap_3_AFTER:
+SELFMODIFY_BSP_fixedcolormap_3:
+jne       seg_textured_check_done    ; dont check walllights if fixedcolormap
+SELFMODIFY_BSP_fixedcolormap_3_AFTER:
 mov       al, byte ptr [bp - 1]
 xor       ah, ah
 SELFMODIFY_set_extralight_2:
 mov       dl, 0
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 sar       ax, 4
+ELSE
+sar       ax, 1
+sar       ax, 1
+sar       ax, 1
+sar       ax, 1
+ENDIF
 xor       dh, dh
 add       dx, ax
 mov       ax, word ptr [bp - 03Eh]
@@ -3571,13 +3576,13 @@ cmp       dx, LIGHTLEVELS
 jl        lightnum_less_than_lightlevels
 mov       ax, word ptr ds:[_lightmult48lookup + + (2 * (LIGHTLEVELS - 1))]
 done_setting_ax_to_wallights:
-add       ax, scalelight_offset_in_fixed_scalelight
+add       ax, SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
 
 ; write walllights to rendersegloop
 mov   word ptr cs:[SELFMODIFY_add_wallights+3], ax
 ; ? do math here and write this ahead to drawcolumn colormapsindex?
 
-SELFMODIFY_set_fixedcolormap_3_TARGET:
+SELFMODIFY_BSP_fixedcolormap_3_TARGET:
 seg_textured_check_done:
 mov       ax, word ptr [bp - 010h]
 SELFMODIFY_BSP_viewz_shortheight_4:
@@ -4730,19 +4735,21 @@ do_no_bsp_fixedcolormap_selfmodify:
 
 
 mov      ax, 0c089h 
-mov      word ptr ds:[SELFMODIFY_set_fixedcolormap_2], ax
-mov      word ptr ds:[SELFMODIFY_set_fixedcolormap_3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
 
 
 jmp      done_with_bsp_fixedcolormap_selfmodify
 do_bsp_fixedcolormap_selfmodify:
 
-mov      byte ptr ds:[SELFMODIFY_set_fixedcolormap_1+3], al
+;sal      al, 1
+;sal      al, 1
+mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3], al
 
-mov   ax, ((SELFMODIFY_set_fixedcolormap_2_TARGET - SELFMODIFY_set_fixedcolormap_2_AFTER) SHL 8) + 0EBh
-mov   word ptr ds:[SELFMODIFY_set_fixedcolormap_2], ax
-mov   ah, (SELFMODIFY_set_fixedcolormap_3_TARGET - SELFMODIFY_set_fixedcolormap_3_AFTER)
-mov   word ptr ds:[SELFMODIFY_set_fixedcolormap_3], ax
+mov   ax, ((SELFMODIFY_BSP_fixedcolormap_2_TARGET - SELFMODIFY_BSP_fixedcolormap_2_AFTER) SHL 8) + 0EBh
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
+mov   ah, (SELFMODIFY_BSP_fixedcolormap_3_TARGET - SELFMODIFY_BSP_fixedcolormap_3_AFTER)
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
 
 
 ; fall thru

@@ -182,7 +182,7 @@ void __near R_InitTextureMapping(void) {
 		//startmap = ((LIGHTLEVELS - 1 - i2) << 1)*NUMCOLORMAPS / LIGHTLEVELS;
 		startmap = ((LIGHTLEVELS - 1 - i2) << 2);
 		for (j = 0; j < MAXLIGHTSCALE; j++) {
-			level = startmap - j * SCREENWIDTH / (viewwidth << detailshift.b.bytelow) / DISTMAP;
+			level = startmap - ((j * SCREENWIDTH / (viewwidth << detailshift.b.bytelow)) >> 1);
 
 			if (level < 0) {
 				level = 0;
@@ -192,10 +192,8 @@ void __near R_InitTextureMapping(void) {
 				level = NUMCOLORMAPS - 1;
 			}
 			
-			// todo pre shift by 4 here, since its ultimately multiplied by 4 for the colfunc lookup addr..
-			//scalelight[i2*MAXLIGHTSCALE+j] =  level << 2;
-			
-			scalelight[i2*MAXLIGHTSCALE+j] =  level;// * 256;
+			// pre shift by 2 here, since its ultimately shifted by 2 for the colfunc lookup addr..
+			scalelight[i2*MAXLIGHTSCALE+j] =  level << 2;// * 256;
 		}
 	}
 

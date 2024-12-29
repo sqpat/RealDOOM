@@ -535,8 +535,8 @@ void R_SetupFrame () {
     //viewcos = finecosine[viewangle_shiftright3];
 	
     if (player.fixedcolormapvalue) {
-		fixedcolormap =  player.fixedcolormapvalue;
-		
+		// preshift by 2 for dword lookup to be ready.
+		fixedcolormap =  player.fixedcolormapvalue << 2; 
 		walllights = 0;//scalelightfixed;
 
 		// todo movsw

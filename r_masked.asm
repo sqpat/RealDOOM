@@ -696,11 +696,9 @@ mov   bp, sp
 
 
 mov   al, byte ptr ds:[si + 1]
-;2e a2 11 11 
-; al is colormap. this function always uses the high drawcall (for now)
 
-sal   al, 1
-sal   al, 1
+; al is colormap. 
+
 mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 ; todo move this out to a higher level! possibly when executesetviewsize happens.
@@ -1520,7 +1518,7 @@ mov   word ptr ds:[_mceilingclip], 01000h
 
 
 SELFMODIFY_MASKED_fixedcolormap_2:
-jmp fixed_colormap		; jump when fixedcolormap is not 0.
+jne fixed_colormap		; jump when fixedcolormap is not 0.
 SELFMODIFY_MASKED_fixedcolormap_2_AFTER:
 colormap_set:
 
@@ -1782,7 +1780,7 @@ mov   di, word ptr ds:[_maskedcachedbasecol]
 cmp   si, MAXSHORT			; dont render nonmasked columns here.
 je   increment_inner_loop
 SELFMODIFY_MASKED_fixedcolormap_1:
-jmp   got_colormap ; cmp [_fixedcolormap], 0 -> jne gotcolormap
+jne   got_colormap ; cmp [_fixedcolormap], 0 -> jne gotcolormap
 SELFMODIFY_MASKED_fixedcolormap_1_AFTER:
 ; calculate colormap
 cmp   word ptr ds:[_spryscale + 2], 3
@@ -1839,8 +1837,6 @@ add   bx, ax
 mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx]
-sal   al, 1
-sal   al, 1
 mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 SELFMODIFY_MASKED_fixedcolormap_1_TARGET:
@@ -3467,9 +3463,6 @@ mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_DrawFuzzColum
 jmp done_with_fixedcolormap_selfmodify
 
 do_fixedcolormap_selfmodify:
-; preshift this left 2 now.
-sal   al, 1
-sal   al, 1
 mov   byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_3+5 - OFFSET R_DrawFuzzColumn_], al
 
 ; modify jmp in place.

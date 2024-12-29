@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/29 13:43:24
+Created on:       24/12/29 16:56:03
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -55,7 +55,7 @@ wi_stuff_TEXT          CODE           AUTO           0295:6190       00000f16
 MATH_TEXT              CODE           AUTO           0295:70a6       000007d0
 f_finale_TEXT          CODE           AUTO           0295:7880       00000c09
 g_setup_TEXT           CODE           AUTO           0295:8490       000002c2
-r_setup_TEXT           CODE           AUTO           0295:8760       0000044d
+r_setup_TEXT           CODE           AUTO           0295:8760       0000044f
 st_setup_TEXT          CODE           AUTO           0295:8bb0       000001fa
 hu_setup_TEXT          CODE           AUTO           0295:8db0       000000a1
 p_saveg_TEXT           CODE           AUTO           0295:8e60       00000001
@@ -80,15 +80,15 @@ p_user_TEXT            CODE           AUTO           0b7c:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           1802:0000       0000098e
 r_data_TEXT            CODE           AUTO           1802:0990       00001c39
 R_MATH_TEXT            CODE           AUTO           1802:25ca       000001fe
-R_MAINHI_TEXT          CODE           AUTO           1802:27c8       0000195a
-R_COLUMN_TEXT          CODE           AUTO           1802:4122       00000b26
-R_SPAN_TEXT            CODE           AUTO           1802:4c48       00000c1f
+R_MAINHI_TEXT          CODE           AUTO           1802:27c8       00001956
+R_COLUMN_TEXT          CODE           AUTO           1802:411e       00000b26
+R_SPAN_TEXT            CODE           AUTO           1802:4c44       00000c23
 R_SKY_TEXT             CODE           AUTO           1802:5868       000006c2
 r_draw_TEXT            CODE           AUTO           1802:5f30       00000379
-r_main_TEXT            CODE           AUTO           1802:62b0       000001f6
-r_plane_TEXT           CODE           AUTO           1802:64b0       00000000
-r_segs_TEXT            CODE           AUTO           1802:64b0       00000000
-R_MASKED_TEXT          CODE           AUTO           1802:64b0       00001089
+r_main_TEXT            CODE           AUTO           1802:62b0       00000204
+r_plane_TEXT           CODE           AUTO           1802:64c0       00000000
+r_segs_TEXT            CODE           AUTO           1802:64c0       00000000
+R_MASKED_TEXT          CODE           AUTO           1802:64c0       0000107d
 r_things_TEXT          CODE           AUTO           1802:7540       00000000
 w_wad_TEXT             CODE           AUTO           1802:7540       0000032e
 VIDEO_TEXT             CODE           AUTO           1802:786e       000001fb
@@ -987,7 +987,7 @@ Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 0295:85b2      G_InitNew_
 Module: r_setup.obj(C:\REALDOOM\r_setup.c)
 0295:8760+     R_InitTextureMapping_
-0295:8a50      R_ExecuteSetViewSize_
+0295:8a52      R_ExecuteSetViewSize_
 Module: st_setup.obj(C:\REALDOOM\st_setup.c)
 0295:8bb0+     STlib_initNum_
 0295:8bd2+     STlib_initPercent_
@@ -1296,11 +1296,11 @@ Module: r_math.obj(r_math.ASM)
 Module: r_mainhi.obj(r_mainhi.ASM)
 1802:3016*     R_GetSourceSegment0_
 1802:307e*     R_GetSourceSegment1_
-1802:3509      R_StoreWallRange_
+1802:3505      R_StoreWallRange_
 1802:2a87      R_Subsector_
 1802:2859*     R_PointToDist_
-1802:3ef3      R_WriteBackViewConstants_
-1802:4043      R_WriteBackFrameConstants_
+1802:3eef      R_WriteBackViewConstants_
+1802:403f      R_WriteBackFrameConstants_
 1802:28d8      R_ClearPlanes_
 1802:2953*     R_HandleEMSPagination_
 1802:2f6f*     R_AddSprites_
@@ -1311,14 +1311,14 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 1802:2b7d*     R_CheckPlane_
 1802:27c8*     R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-1802:4122      R_DrawColumn_
+1802:411e      R_DrawColumn_
 Module: r_span.obj(r_span.ASM)
-1802:4c48      R_DrawSpan_
-1802:53ce*     R_FixedMulLocal_
-1802:52ea*     R_DrawSpanPrep_
+1802:4c44      R_DrawSpan_
+1802:53ca*     R_FixedMulLocal_
+1802:52e6*     R_DrawSpanPrep_
 1802:558a      R_DrawPlanes_
-1802:540a      R_MapPlane_
-1802:537f*     R_FixedMulTrigLocal_
+1802:5406      R_MapPlane_
+1802:537b*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
 1802:5868      R_DrawSkyColumn_
 1802:5a35*     R_DrawSkyColumnDynamic_
@@ -1335,25 +1335,25 @@ Module: r_main.obj(C:\REALDOOM\r_main.c)
 1802:62f2      R_PointToAngle2_16_
 1802:6320      R_SetViewSize_
 1802:6330+     R_SetupFrame_
-1802:63ae      R_RenderPlayerView_
+1802:63bc      R_RenderPlayerView_
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 2529:183c*     _setval
 Module: r_masked.obj(r_masked.ASM)
-1802:7539      R_MASKED_END_
-1802:6ef6*     R_PointOnSegSide_
-1802:69f1*     R_DrawPlayerSprites_
-1802:7358      R_SortVisSprites_
-1802:66dc*     R_DrawMaskedSpriteShadow_
-1802:74d3      R_WriteBackMaskedFrameConstants_
-1802:64b0      R_DrawFuzzColumn_
-1802:662e      R_DrawSingleMaskedColumn_
-1802:6fb5*     R_DrawSprite_
-1802:67dd*     R_DrawVisSprite_
-1802:7277      R_DrawMaskedColumn_
-1802:721b      R_DrawMasked_
-1802:7446      R_WriteBackViewConstantsMasked_
-1802:6a18*     R_RenderMaskedSegRange_
-1802:65e5      R_DrawColumnPrepMaskedMulti_
+1802:753d      R_MASKED_END_
+1802:6efe*     R_PointOnSegSide_
+1802:69fd*     R_DrawPlayerSprites_
+1802:7360      R_SortVisSprites_
+1802:66ec*     R_DrawMaskedSpriteShadow_
+1802:74db      R_WriteBackMaskedFrameConstants_
+1802:64c0      R_DrawFuzzColumn_
+1802:663e      R_DrawSingleMaskedColumn_
+1802:6fbd*     R_DrawSprite_
+1802:67ed*     R_DrawVisSprite_
+1802:727f      R_DrawMaskedColumn_
+1802:7223      R_DrawMasked_
+1802:744e      R_WriteBackViewConstantsMasked_
+1802:6a24*     R_RenderMaskedSegRange_
+1802:65f5      R_DrawColumnPrepMaskedMulti_
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 1802:7540      locallib_far_fread_
 1802:75ca      locallib_far_fwrite_

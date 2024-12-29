@@ -1389,7 +1389,7 @@ spritedefs_bytes    7410:0000
 #define patch_sizes             ((uint16_t __near*)           (0x4000 + ((patch_sizes_segment             - segs_render_segment)<<4)))
 
 
-#define scalelight_offset_in_fixed_scalelight (16 * (scalelight_segment - scalelightfixed_segment))
+#define SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT (16 * (scalelight_segment - scalelightfixed_segment))
 
 // need to undo prior drawseg_t shenanigans
 //0x4FBEE
