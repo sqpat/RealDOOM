@@ -947,7 +947,7 @@ shl       di, 1
 add       di, _visplaneheaders  ; _di is plheader
 mov       byte ptr cs:[SELFMODIFY_setisceil + 1], cl  ; write cl value
 test      cl, cl
-;mov       cx, word ptr ds:[_rw_stopx]
+;mov       cx, word ptr [bp - 03Ah]
 mov       cx, bx    ; cx holds stop
 
 je        check_plane_is_floor
@@ -2182,7 +2182,7 @@ mov   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1], 0
 
 
 
-mov   ax, word ptr ds:[_rw_stopx]
+mov   ax, word ptr [bp - 03Ah]
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_1+1], ax
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_2+1], ax
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_3+1], ax
@@ -2379,7 +2379,7 @@ cmp   ax, 1000h
 jl    pre_increment_values
 
 SELFMODIFY_cmp_di_to_rw_stopx_3:
-cmp   ax, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
+cmp   ax, 01000h   ; cmp   di, word ptr [bp - 03Ah]
 jl    jump_to_start_per_column_inner_loop
 
 finish_outer_loop:
@@ -2504,7 +2504,7 @@ adc   word ptr [bp - 020h], 01000h
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET:
 ; this is right before inner loop start
 SELFMODIFY_cmp_di_to_rw_stopx_1:
-cmp   ax, 01000h   ; cmp   ax, word ptr ds:[_rw_stopx]
+cmp   ax, 01000h   ; cmp   ax, word ptr [bp - 03Ah]
 jge   jump_to_finish_outer_loop_2
 
 start_per_column_inner_loop:
@@ -2789,7 +2789,7 @@ SELFMODIFY_add_detailshiftitercount:
 add   word ptr ds:[_rw_x], 0
 mov   ax, word ptr ds:[_rw_x]
 SELFMODIFY_cmp_di_to_rw_stopx_2:
-cmp   ax, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
+cmp   ax, 01000h   ; cmp   di, word ptr [bp - 03Ah]
 jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
 
 
@@ -3023,17 +3023,18 @@ PUBLIC R_StoreWallRange_
 ; bp - 034h  ; worldbottom hi
 ; bp - 036h  ; worldbottom lo
 ; bp - 038h  ; UNUSED
-; bp - 03Ah  ; lineflags
+; bp - 03Ah  ; UNUSED
 ; bp - 03Ch  ; v1.x ; selfmodify forward?
 ; bp - 03Eh  ; v1.y ; selfmodify forward?
 ; bp - 040h  ; backsectorfloorheight
 ; bp - 042h  ; backsectorceilingheight
 ; bp - 044h  ; worldtop hi
 ; bp - 046h  ; worldtop lo
+; bp - 048h  ; lineflags
 
 
-; bp - 048h  ; dx arg
-; bp - 04Ah  ; ax arg
+; bp - 04Ch  ; dx arg
+; bp - 04Eh  ; ax arg
 
 
 push      bx
@@ -3042,7 +3043,7 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 046h
+sub       sp, 04Ah
 push      ax
 push      dx
 xor       ax, ax
@@ -3094,7 +3095,7 @@ mov       si, word ptr es:[si]
 mov       es, ax
 mov       al, byte ptr es:[si]
 xor       ah, ah
-mov       word ptr [bp - 03Ah], ax
+mov       word ptr [bp - 048h], ax
 
 ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
 ; si is linedefOffset
@@ -3166,21 +3167,21 @@ mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1], ax
 mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1], dx
 
 done_setting_rw_distance:
-mov       ax, word ptr [bp - 048h]
+mov       ax, word ptr [bp - 04Ch]
 mov       word ptr ds:[_rw_x], ax
 les       di, dword ptr ds:[_ds_p]
 mov       word ptr es:[di + 2], ax
 
-mov       ax, word ptr [bp - 04Ah]
+mov       ax, word ptr [bp - 04Eh]
 mov       word ptr es:[di + 4], ax
 
 mov       ax, word ptr ds:[_curseg]
 mov       word ptr es:[di], ax
-mov       ax, word ptr [bp - 04Ah]
+mov       ax, word ptr [bp - 04Eh]
 inc       ax
-mov       word ptr ds:[_rw_stopx], ax
+mov       word ptr [bp - 03Ah], ax
 mov       ax, XTOVIEWANGLE_SEGMENT
-mov       bx, word ptr [bp - 048h]
+mov       bx, word ptr [bp - 04Ch]
 mov       es, ax
 add       bx, bx
 SELFMODIFY_set_viewanglesr3_3:
@@ -3192,8 +3193,8 @@ mov       word ptr [bp - 030h], dx
 mov       es, word ptr ds:[_ds_p+2]
 mov       word ptr es:[di + 8], dx
 mov       word ptr es:[di + 6], ax
-mov       ax, word ptr [bp - 04Ah]
-cmp       ax, word ptr [bp - 048h]
+mov       ax, word ptr [bp - 04Eh]
+cmp       ax, word ptr [bp - 04Ch]
 jg        stop_greater_than_start
 
 ; ds_p is es:di
@@ -3214,9 +3215,9 @@ mov       ax, 01000h
 add       ax, word ptr es:[si]
 call      R_ScaleFromGlobalAngle_
 mov       es, word ptr ds:[_ds_p+2]
-mov       bx, word ptr [bp - 04Ah]
+mov       bx, word ptr [bp - 04Eh]
 mov       word ptr es:[di + 0ah], ax
-sub       bx, word ptr [bp - 048h]
+sub       bx, word ptr [bp - 04Ch]
 mov       word ptr es:[di + 0ch], dx
 mov       ax, word ptr es:[di + 0ah]
 mov       dx, word ptr es:[di + 0ch]
@@ -3369,7 +3370,7 @@ done_overwriting_bottom_top:
 mov       al, 1
 mov       byte ptr ds:[_markceiling], al
 mov       byte ptr ds:[_markfloor], al
-test      byte ptr [bp - 03Ah], ML_DONTPEGBOTTOM
+test      byte ptr [bp - 048h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
 mov       ax, word ptr [bp - 046h]
@@ -3642,7 +3643,7 @@ je        dont_mark_ceiling
 mov       cx, 1
 SELFMODIFY_set_ceilingplaneindex:
 mov       ax, 0FFFFh
-mov       bx, word ptr ds:[_rw_stopx]
+mov       bx, word ptr [bp - 03Ah]
 dec       bx
 mov       dx, word ptr ds:[_rw_x]
 call      R_CheckPlane_
@@ -3654,14 +3655,14 @@ je        dont_mark_floor
 xor       cx, cx
 SELFMODIFY_set_floorplaneindex:
 mov       ax, 0FFFFh
-mov       bx, word ptr ds:[_rw_stopx]
+mov       bx, word ptr [bp - 03Ah]
 dec       bx
 mov       dx, word ptr ds:[_rw_x]
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_floorplaneindex+1], ax
 dont_mark_floor:
-mov       ax, word ptr [bp - 04Ah]
-cmp       ax, word ptr [bp - 048h]
+mov       ax, word ptr [bp - 04Eh]
+cmp       ax, word ptr [bp - 04Ch]
 jge       at_least_one_column_to_draw
 jmp       check_spr_top_clip
 at_least_one_column_to_draw:
@@ -3935,12 +3936,12 @@ continue_checking_spr_top_clip:
 
 cmp       word ptr es:[si + 016h], 0
 jne       check_spr_bottom_clip
-mov       si, word ptr [bp - 048h]
+mov       si, word ptr [bp - 04Ch]
 mov       cx, OPENINGS_SEGMENT
-mov       ax, word ptr ds:[_rw_stopx]
+mov       ax, word ptr [bp - 03Ah]
 mov       di, word ptr ds:[_lastopening]
 add       si, si
-sub       ax, word ptr [bp - 048h]
+sub       ax, word ptr [bp - 04Ch]
 add       si, OFFSET_CEILINGCLIP
 mov       es, cx
 add       di, di
@@ -3956,12 +3957,12 @@ rep movsb
 pop       di
 pop       ds
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 048h]
+sub       ax, word ptr [bp - 04Ch]
 les       si, dword ptr ds:[_ds_p]
 add       ax, ax
 mov       word ptr es:[si + 016h], ax
-mov       ax, word ptr ds:[_rw_stopx]
-sub       ax, word ptr [bp - 048h]
+mov       ax, word ptr [bp - 03Ah]
+sub       ax, word ptr [bp - 04Ch]
 add       word ptr ds:[_lastopening], ax
 check_spr_bottom_clip:
 ; es:si is ds_p
@@ -3973,12 +3974,12 @@ jmp       continue_checking_spr_bottom_clip
 continue_checking_spr_bottom_clip:
 cmp       word ptr es:[si + 018h], 0
 jne       check_silhouettes_then_exit
-mov       si, word ptr [bp - 048h]
+mov       si, word ptr [bp - 04Ch]
 mov       cx, OPENINGS_SEGMENT
-mov       ax, word ptr ds:[_rw_stopx]
+mov       ax, word ptr [bp - 03Ah]
 mov       di, word ptr ds:[_lastopening]
 add       si, si
-sub       ax, word ptr [bp - 048h]
+sub       ax, word ptr [bp - 04Ch]
 add       si, OFFSET_FLOORCLIP
 mov       es, cx
 add       di, di
@@ -3994,12 +3995,12 @@ rep movsb
 pop       di
 pop       ds
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 048h]
+sub       ax, word ptr [bp - 04Ch]
 les       si, dword ptr ds:[_ds_p]
 add       ax, ax
 mov       word ptr es:[si + 018h], ax
-mov       ax, word ptr ds:[_rw_stopx]
-sub       ax, word ptr [bp - 048h]
+mov       ax, word ptr [bp - 03Ah]
+sub       ax, word ptr [bp - 04Ch]
 add       word ptr ds:[_lastopening], ax
 check_silhouettes_then_exit:
 ; todo 
@@ -4172,7 +4173,7 @@ sbb       cx, 01000h
 ; cx:bx hold on to worldlow for now
 
 
-;mov       word ptr [bp - 03ah], cx
+;mov       word ptr [bp - 048h], cx
 ;mov       word ptr [bp - 038h], bx
 
 ; // hack to allow height changes in outdoor areas
@@ -4301,7 +4302,7 @@ or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
 
 
-test      byte ptr [bp - 03Ah], ML_DONTPEGTOP
+test      byte ptr [bp - 048h], ML_DONTPEGTOP
 jne       set_toptexture_to_worldtop
 calculate_toptexturemid:
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_toptexturemid, backsectorceilingheight);
@@ -4380,7 +4381,7 @@ or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
 
 
 
-test      byte ptr [bp - 03Ah], ML_DONTPEGBOTTOM
+test      byte ptr [bp - 048h], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here
 mov       ax, word ptr [bp - 046h]
@@ -4431,7 +4432,7 @@ mov       word ptr es:[bx + 01ah], ax
 mov       ax, word ptr es:[bx + 01ah]
 add       ax, ax
 mov       word ptr ds:[_maskedtexturecol], ax
-mov       ax, word ptr ds:[_rw_stopx]
+mov       ax, word ptr [bp - 03Ah]
 sub       ax, word ptr ds:[_rw_x]
 add       word ptr ds:[_lastopening], ax
 mov       al, 1

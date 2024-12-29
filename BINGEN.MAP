@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/28 18:46:59
+Created on:       24/12/29 08:40:03
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -80,7 +80,7 @@ p_user_TEXT            CODE           AUTO           0b7c:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           1802:0000       0000098e
 r_data_TEXT            CODE           AUTO           1802:0990       00001c39
 R_MATH_TEXT            CODE           AUTO           1802:25ca       000001fd
-R_MAINHI_TEXT          CODE           AUTO           1802:27c8       0000198a
+R_MAINHI_TEXT          CODE           AUTO           1802:27c8       00001989
 R_COLUMN_TEXT          CODE           AUTO           1802:4152       00000b26
 R_SPAN_TEXT            CODE           AUTO           1802:4c78       00000c1f
 R_SKY_TEXT             CODE           AUTO           1802:5898       000006c2
@@ -1295,11 +1295,11 @@ Module: r_math.obj(r_math.ASM)
 Module: r_mainhi.obj(r_mainhi.ASM)
 1802:3016*     R_GetSourceSegment0_
 1802:3086*     R_GetSourceSegment1_
-1802:351c      R_StoreWallRange_
+1802:3521      R_StoreWallRange_
 1802:2a87      R_Subsector_
 1802:2859*     R_PointToDist_
-1802:3f2f      R_WriteBackViewConstants_
-1802:407f      R_WriteBackFrameConstants_
+1802:3f2e      R_WriteBackViewConstants_
+1802:407e      R_WriteBackFrameConstants_
 1802:28d8      R_ClearPlanes_
 1802:2953*     R_HandleEMSPagination_
 1802:2f6f*     R_AddSprites_
@@ -1741,4 +1741,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028b10 (166672.)
 Entry point address: 2027:2434
-Link time: 00:00.74
+Link time: 00:00.19
