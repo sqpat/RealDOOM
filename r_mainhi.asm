@@ -931,7 +931,7 @@ push      si
 push      di
 
 mov       word ptr cs:[SELFMODIFY_setindex+1], ax
-;mov       si, word ptr ds:[_rw_x]
+;mov       si, word ptr [bp - 038h]
 mov       si, dx    ; si holds start
 
 
@@ -2166,7 +2166,7 @@ push  si
 push  di
 
 xchg  ax, cx
-mov   ax, word ptr ds:[_rw_x]
+mov   ax, word ptr [bp - 038h]
 mov   bx, ax
 mov   di, ax
 SELFMODIFY_detailshift_and_1:
@@ -2188,7 +2188,7 @@ mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_2+1], ax
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_3+1], ax
 
 
-cmp   byte ptr ds:[_markfloor], 0
+cmp   byte ptr [bp - 04Ah], 0 ;markfloor
 
 je    do_markfloor_selfmodify_jumps
 mov   ax, 04940h     ; inc ax dec cx
@@ -2202,7 +2202,7 @@ do_markfloor_selfmodify:
 mov   word ptr cs:[SELFMODIFY_BSP_markfloor_1], ax
 mov   word ptr cs:[SELFMODIFY_BSP_markfloor_2], si
 
-mov   ah, byte ptr ds:[_markceiling]
+mov   ah, byte ptr [bp - 049h] ;markceiling
 cmp   ah, 0   
 
 je    do_markceiling_selfmodify_jumps
@@ -2373,7 +2373,7 @@ SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET:
 xchg  ax, bx	; get xoffset  back
 SELFMODIFY_add_rw_x_base4_to_ax:
 add   ax, 1000h
-mov   word ptr ds:[_rw_x], ax
+mov   word ptr [bp - 038h], ax
 SELFMODIFY_compare_ax_to_start_rw_x:
 cmp   ax, 1000h
 jl    pre_increment_values
@@ -2475,7 +2475,7 @@ pre_increment_values:
 SELFMODIFY_add_iter_to_rw_x:
 ; ax was already up-to-daterw_x
 add   ax, 1
-mov   word ptr ds:[_rw_x], ax
+mov   word ptr [bp - 038h], ax
 SELFMODIFY_add_to_rwscale_lo_2:
 add   word ptr [bp - 032h], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
@@ -2786,8 +2786,8 @@ finished_inner_loop_iter:
 ;			rw_scale.w  += rwscaleshift
 
 SELFMODIFY_add_detailshiftitercount:
-add   word ptr ds:[_rw_x], 0
-mov   ax, word ptr ds:[_rw_x]
+add   word ptr [bp - 038h], 0
+mov   ax, word ptr [bp - 038h]
 SELFMODIFY_cmp_di_to_rw_stopx_2:
 cmp   ax, 01000h   ; cmp   di, word ptr [bp - 03Ah]
 jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
@@ -3022,8 +3022,8 @@ PUBLIC R_StoreWallRange_
 ; bp - 032h  ; rw_scale lo
 ; bp - 034h  ; worldbottom hi
 ; bp - 036h  ; worldbottom lo
-; bp - 038h  ; UNUSED
-; bp - 03Ah  ; UNUSED
+; bp - 038h  ; _rw_x
+; bp - 03Ah  ; _rw_stopx
 ; bp - 03Ch  ; v1.x ; selfmodify forward?
 ; bp - 03Eh  ; v1.y ; selfmodify forward?
 ; bp - 040h  ; backsectorfloorheight
@@ -3031,7 +3031,8 @@ PUBLIC R_StoreWallRange_
 ; bp - 044h  ; worldtop hi
 ; bp - 046h  ; worldtop lo
 ; bp - 048h  ; lineflags
-
+; bp - 049h  ; markceiling
+; bp - 04Ah  ; markfloor
 
 ; bp - 04Ch  ; dx arg
 ; bp - 04Eh  ; ax arg
@@ -3168,7 +3169,7 @@ mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1], dx
 
 done_setting_rw_distance:
 mov       ax, word ptr [bp - 04Ch]
-mov       word ptr ds:[_rw_x], ax
+mov       word ptr [bp - 038h], ax
 les       di, dword ptr ds:[_ds_p]
 mov       word ptr es:[di + 2], ax
 
@@ -3367,9 +3368,8 @@ or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
 je        overwrite_bottom_top	; if midtexture was zero, then bot/top will be checked, must zero those too
 done_overwriting_bottom_top:
 
-mov       al, 1
-mov       byte ptr ds:[_markceiling], al
-mov       byte ptr ds:[_markfloor], al
+mov       ax, 0101h
+mov       word ptr [bp - 04Ah], ax ; set markfloor and markceiling
 test      byte ptr [bp - 048h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
@@ -3578,7 +3578,7 @@ mov       ax, word ptr [bp - 010h]
 SELFMODIFY_set_viewz_shortheight_4:
 cmp       ax, 01000h
 jl        not_above_viewplane
-mov       byte ptr ds:[_markfloor], 0
+mov       byte ptr [bp - 04Ah], 0
 not_above_viewplane:
 mov       ax, word ptr [bp - 012h]
 SELFMODIFY_set_viewz_shortheight_3:
@@ -3587,7 +3587,7 @@ jg        not_below_viewplane
 mov       al, byte ptr [bp - 0ch]
 cmp       al, byte ptr ds:[_skyflatnum]
 je        not_below_viewplane
-mov       byte ptr ds:[_markceiling], 0
+mov       byte ptr [bp - 049h], 0  ;markceiling
 not_below_viewplane:
 mov       cx, 4
 mov       dx, word ptr [bp - 044h]
@@ -3638,26 +3638,26 @@ sbb       ax, dx
 mov       word ptr [bp - 02Ah], cx
 mov       word ptr [bp - 028h], ax
 
-cmp       byte ptr ds:[_markceiling], 0
+cmp       byte ptr [bp - 049h], 0  ;markceiling
 je        dont_mark_ceiling
 mov       cx, 1
 SELFMODIFY_set_ceilingplaneindex:
 mov       ax, 0FFFFh
 mov       bx, word ptr [bp - 03Ah]
 dec       bx
-mov       dx, word ptr ds:[_rw_x]
+mov       dx, word ptr [bp - 038h]
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1], ax
 dont_mark_ceiling:
 
-cmp       byte ptr ds:[_markfloor], 0
+cmp       byte ptr ds:[bp - 04Ah], 0 ; markfloor
 je        dont_mark_floor
 xor       cx, cx
 SELFMODIFY_set_floorplaneindex:
 mov       ax, 0FFFFh
 mov       bx, word ptr [bp - 03Ah]
 dec       bx
-mov       dx, word ptr ds:[_rw_x]
+mov       dx, word ptr [bp - 038h]
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_floorplaneindex+1], ax
 dont_mark_floor:
@@ -4213,10 +4213,10 @@ mov       al, byte ptr [bp - 2]
 cmp       al, byte ptr [bp - 8]
 jne       set_markfloor_true
 set_markfloor_false:
-mov       byte ptr ds:[_markfloor], 0
+mov       byte ptr [bp - 04Ah], 0  ; markfloor
 jmp       markfloor_set
 set_markfloor_true:
-mov       byte ptr ds:[_markfloor], 1
+mov       byte ptr [bp - 04Ah], 1  ; markfloor
 markfloor_set:
 ; di/si are already worldhigh..
 cmp       word ptr [bp - 044h], di
@@ -4232,10 +4232,10 @@ mov       al, byte ptr [bp - 2]
 cmp       al, byte ptr [bp - 8]
 jne       set_markceiling_true
 set_markceiling_false:
-mov       byte ptr ds:[_markceiling], 0
+mov       byte ptr [bp - 049h], 0   ;markceiling
 jmp       markceiling_set
 set_markceiling_true:
-mov       byte ptr ds:[_markceiling], 1
+mov       byte ptr [bp - 049h], 1   ;markceiling
 markceiling_set:
 
 ; TOOO: improve this area. write to markceiling/floor once not twice. use al/ah to store their values.
@@ -4254,9 +4254,8 @@ mov       ax, word ptr [bp - 040h]
 cmp       ax, word ptr [bp - 012h]
 jl        not_closed_door 
 closed_door_detected:
-mov       al, 1
-mov       byte ptr ds:[_markfloor], al
-mov       byte ptr ds:[_markceiling], al
+mov       ax, 0101h
+mov       word ptr [bp - 04Ah], ax  ; markfloor, ceiling
 not_closed_door:
 ; ax free at last!
 ;		if (worldhigh.w < worldtop.w) {
@@ -4426,14 +4425,14 @@ side_has_midtexture:
 ; lastopening += rw_stopx - rw_x;
 
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr ds:[_rw_x]
+sub       ax, word ptr [bp - 038h]
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], ax
 mov       ax, word ptr es:[bx + 01ah]
 add       ax, ax
 mov       word ptr ds:[_maskedtexturecol], ax
 mov       ax, word ptr [bp - 03Ah]
-sub       ax, word ptr ds:[_rw_x]
+sub       ax, word ptr [bp - 038h]
 add       word ptr ds:[_lastopening], ax
 mov       al, 1
 mov       byte ptr ds:[_maskedtexture], al
@@ -4617,7 +4616,7 @@ done_modding_shift_detail_code:
 mov      al, byte ptr ss:[_detailshiftitercount]
 mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
 mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+1], al
-mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+4], al
+mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+3], al
 
 mov      ax, word ptr ss:[_detailshiftandval]
 mov      word ptr ds:[SELFMODIFY_detailshift_and_1+2], ax

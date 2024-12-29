@@ -117,13 +117,13 @@
 #define viewz_shortheight               (*((short_height_t __near *)         (_NULL_OFFSET + 0x007C)))
 #define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x007E)))
 
-#define rw_x                            (*((int16_t __near *)                (_NULL_OFFSET + 0x0080)))
-#define rw_stopx                        (*((int16_t __near *)                (_NULL_OFFSET + 0x0082)))
+// #define rw_x                            (*((int16_t __near *)                (_NULL_OFFSET + 0x0080)))
+// #define rw_stopx                        (*((int16_t __near *)                (_NULL_OFFSET + 0x0082)))
 #define rw_offset                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0084)))
 #define maskedtexture                   (*((boolean __near*)                 (_NULL_OFFSET + 0x0088)))
 #define segtextured                     (*((boolean __near*)                 (_NULL_OFFSET + 0x0089)))
-#define markfloor                       (*((boolean __near*)                 (_NULL_OFFSET + 0x008A)))
-#define markceiling                     (*((boolean __near*)                 (_NULL_OFFSET + 0x008B)))
+// #define markfloor                       (*((boolean __near*)                 (_NULL_OFFSET + 0x008A)))
+// #define markceiling                     (*((boolean __near*)                 (_NULL_OFFSET + 0x008B)))
 
 #define rw_scale                        (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x008C)))
 #define topfrac                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x0090)))
