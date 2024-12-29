@@ -2242,17 +2242,17 @@ sub_base4diff:
 
 
 SELFMODIFY_sub_rwscale_lo:
-sub   word ptr [bp - 01Eh], 01000h
+sub   word ptr [bp - 032h], 01000h
 SELFMODIFY_sub_rwscale_hi:
-sbb   word ptr [bp - 01Ch], 01000h
+sbb   word ptr [bp - 030h], 01000h
 SELFMODIFY_sub_topstep_lo:
-sub   word ptr ds:[_topfrac], 01000h
+sub   word ptr [bp - 02Eh], 01000h
 SELFMODIFY_sub_topstep_hi:
-sbb   word ptr ds:[_topfrac+2], 01000h
+sbb   word ptr [bp - 02Ch], 01000h
 SELFMODIFY_sub_botstep_lo:
-sub   word ptr ds:[_bottomfrac], 01000h
+sub   word ptr [bp - 02Ah], 01000h
 SELFMODIFY_sub_botstep_hi:
-sbb   word ptr ds:[_bottomfrac+2], 01000h
+sbb   word ptr [bp - 028h], 01000h
 
 ; THIS IS COMPLICATED because of the fall through after loop. 
 ; could do a 2nd modded instruction worth jump? is that worth it?
@@ -2262,13 +2262,13 @@ SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4:
 ; todo: why does this equal +1 instead of +2???
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4 + 2
 SELFMODIFY_sub_pixlow_lo:
-sub   word ptr ds:[_pixlow], 01000h
+sub   word ptr [bp - 026h], 01000h
 SELFMODIFY_sub_pixlow_hi:
-sbb   word ptr ds:[_pixlow+2], 01000h
+sbb   word ptr [bp - 024h], 01000h
 SELFMODIFY_sub_pixhigh_lo:
-sub   word ptr ds:[_pixhigh], 01000h
+sub   word ptr [bp - 022h], 01000h
 SELFMODIFY_sub_pixhigh_hi:
-sbb   word ptr ds:[_pixhigh+2], 01000h
+sbb   word ptr [bp - 020h], 01000h
 
 loop   sub_base4diff
 skip_sub_base4diff:
@@ -2279,11 +2279,11 @@ skip_sub_base4diff:
 ;	base_pixlow     = pixlow;
 ;	base_pixhigh    = pixhigh;
 
-mov   si, OFFSET _topfrac
+lea   si, [bp - 032h]
 
-mov   ax, [bp - 01Eh]
+lodsw
 mov   word ptr cs:[SELFMODIFY_set_rw_scale_lo+1], ax
-mov   ax, [bp - 01Ch]
+lodsw
 mov   word ptr cs:[SELFMODIFY_set_rw_scale_hi+1], ax
 lodsw ; topfrac lo
 mov   word ptr cs:[SELFMODIFY_set_topfrac_lo+1], ax
@@ -2305,12 +2305,11 @@ mov   word ptr cs:[SELFMODIFY_set_pixhigh_lo+1], ax
 lodsw ; pixhigh hi
 mov   word ptr cs:[SELFMODIFY_set_pixhigh_hi+1], ax
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET:
-mov   ax, ds
-mov   es, ax
-mov   dx, SC_DATA  ; cheat this out of the loop..
 mov   al, 0 ; xoffset is 0
+mov   dx, SC_DATA  ; cheat this out of the loop..
 
 continue_outer_rendersegloop:
+
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET:
 cbw  
 mov   bx, ax	; copy xoffset to bx
@@ -2330,14 +2329,16 @@ out   dx, al
 ; pixlow     = base_pixlow;
 ; pixhigh    = base_pixhigh;
 
-mov   di, OFFSET _topfrac
+mov   dx, ss
+mov   es, dx
+lea   di, [bp - 032h]
 
 SELFMODIFY_set_rw_scale_lo:
 mov   ax, 01000h
-mov   word ptr [bp - 01Eh], ax
+stosw
 SELFMODIFY_set_rw_scale_hi:
 mov   ax, 01000h
-mov   word ptr [bp - 01Ch], ax
+stosw
 SELFMODIFY_set_topfrac_lo:
 mov   ax, 01000h
 stosw
@@ -2383,6 +2384,8 @@ jl    jump_to_start_per_column_inner_loop
 
 finish_outer_loop:
 ; todo: self modifying code for step values.
+
+
 
 ; xoffset++,
 ; base_topfrac    += topstep, 
@@ -2453,9 +2456,7 @@ ret
 jump_to_start_per_column_inner_loop:
 jmp   start_per_column_inner_loop
 jump_to_finish_outer_loop_2:
-mov   dx, ds
-mov   es, dx
-mov   dx, SC_DATA
+mov   dx, SC_DATA  ; cheat this out of the loop..
 jmp   finish_outer_loop
 pre_increment_values:
 
@@ -2475,30 +2476,30 @@ SELFMODIFY_add_iter_to_rw_x:
 ; ax was already up-to-daterw_x
 add   ax, 1
 mov   word ptr ds:[_rw_x], ax
-SELFMODIFY_add_to_topfrac_lo_2:
-add   word ptr ds:[_topfrac], 01000h
-SELFMODIFY_add_to_topfrac_hi_2:
-adc   word ptr ds:[_topfrac+2], 01000h
-SELFMODIFY_add_to_bottomfrac_lo_2:
-add   word ptr ds:[_bottomfrac], 01000h
-SELFMODIFY_add_to_bottomfrac_hi_2:
-adc   word ptr ds:[_bottomfrac+2], 01000h
 SELFMODIFY_add_to_rwscale_lo_2:
-add   word ptr [bp - 01Eh], 01000h
+add   word ptr [bp - 032h], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
-adc   word ptr [bp - 01Ch], 01000h
+adc   word ptr [bp - 030h], 01000h
+SELFMODIFY_add_to_topfrac_lo_2:
+add   word ptr [bp - 02Eh], 01000h
+SELFMODIFY_add_to_topfrac_hi_2:
+adc   word ptr [bp - 02Ch], 01000h
+SELFMODIFY_add_to_bottomfrac_lo_2:
+add   word ptr [bp - 02Ah], 01000h
+SELFMODIFY_add_to_bottomfrac_hi_2:
+adc   word ptr [bp - 028h], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1:
 jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 + 2
 SELFMODIFY_add_to_pixlow_lo_2:
-add   word ptr ds:[_pixlow], 01000h
+add   word ptr [bp - 026h], 01000h
 SELFMODIFY_add_to_pixlow_hi_2:
-adc   word ptr ds:[_pixlow+2], 01000h
+adc   word ptr [bp - 024h], 01000h
 SELFMODIFY_add_to_pixhigh_lo_2:
-add   word ptr ds:[_pixhigh], 01000h
+add   word ptr [bp - 022h], 01000h
 SELFMODIFY_add_to_pixhigh_hi_2:
-adc   word ptr ds:[_pixhigh+2], 01000h
+adc   word ptr [bp - 020h], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET:
 ; this is right before inner loop start
@@ -2519,9 +2520,9 @@ mov   cx, word ptr es:[bx+di+OFFSET_FLOORCLIP]	 ; cx = floor
 mov   si, word ptr es:[bx+di+OFFSET_CEILINGCLIP] ; dx = ceiling
 inc   si
 
-mov   ax, word ptr ds:[_topfrac]
+mov   ax, word ptr [bp - 02Eh]
 add   ax, ((HEIGHTUNIT)-1)
-mov   dx, word ptr ds:[_topfrac+2]
+mov   dx, word ptr [bp - 02Ch]
 adc   dx, 0
 
 mov   al, ah
@@ -2571,10 +2572,10 @@ markceiling_done:
 ; yh = bottomfrac>>HEIGHTBITS;
 
 ; any of these bits being set means yh > 320 and clips
-cmp   byte ptr ds:[_bottomfrac+3], 0
+cmp   byte ptr [bp - 027h], 0
 jne	  do_yh_floorclip
 
-mov   ax, word ptr ds:[_bottomfrac+1] ; get bytes 2 and 3..
+mov   ax, word ptr [bp - 029h] ; get bytes 2 and 3..
 
 ; screenheight << HEIGHTBITS 
 ; if AH > 20 , then we know yh cannot be smaller than floor clip which maxes out at screenheight+1
@@ -2694,7 +2695,7 @@ sbb   ax, dx
 
 ; CX:BX rw_scale
 ; todo bp/stack candidate
-les   bx, dword ptr [bp - 01Eh]
+les   bx, dword ptr [bp - 032h]
 mov   cx, es
 
 ; store texture column
@@ -2792,23 +2793,21 @@ cmp   ax, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
 jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
 
 
-SELFMODIFY_add_to_topfrac_lo_1:
-add   word ptr ds:[_topfrac], 01000h
-SELFMODIFY_add_to_topfrac_hi_1:
-adc   word ptr ds:[_topfrac+2], 01000h
-SELFMODIFY_add_to_bottomfrac_lo_1:
-add   word ptr ds:[_bottomfrac], 01000h
-SELFMODIFY_add_to_bottomfrac_hi_1:
-adc   word ptr ds:[_bottomfrac+2], 01000h
 SELFMODIFY_add_to_rwscale_lo_1:
-add   word ptr [bp - 01Eh], 01000h
+add   word ptr [bp - 032h], 01000h
 SELFMODIFY_add_to_rwscale_hi_1:
-adc   word ptr [bp - 01Ch], 01000h
+adc   word ptr [bp - 030h], 01000h
+SELFMODIFY_add_to_topfrac_lo_1:
+add   word ptr [bp - 02Eh], 01000h
+SELFMODIFY_add_to_topfrac_hi_1:
+adc   word ptr [bp - 02Ch], 01000h
+SELFMODIFY_add_to_bottomfrac_lo_1:
+add   word ptr [bp - 02Ah], 01000h
+SELFMODIFY_add_to_bottomfrac_hi_1:
+adc   word ptr [bp - 028h], 01000h
 jmp   start_per_column_inner_loop
 jump_to_finish_outer_loop:
-mov   dx, ds
-mov   es, dx
-mov   dx, SC_DATA
+mov   dx, SC_DATA  ; cheat this out of the loop..
 jmp   finish_outer_loop
 
 SELFMODIFY_BSP_toptexture_TARGET:
@@ -2831,8 +2830,8 @@ SELFMODIFY_BSP_toptexture:
 SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 2
 
 do_top_texture_draw:
-mov   ax, word ptr ds:[_pixhigh+1]
-mov   cl, byte ptr ds:[_pixhigh+3]
+mov   ax, word ptr [bp - 021h]
+mov   cl, byte ptr [bp - 01Fh]
 sar   cl, 1
 rcr   ax, 1
 sar   cl, 1
@@ -2842,9 +2841,9 @@ rcr   ax, 1
 sar   cl, 1
 rcr   ax, 1
 SELFMODIFY_add_to_pixhigh_lo_1:
-add   word ptr ds:[_pixhigh], 01000h
+add   word ptr [bp - 022h], 01000h
 SELFMODIFY_add_to_pixhigh_hi_1:
-adc   word ptr ds:[_pixhigh+2], 01000h
+adc   word ptr [bp - 020h], 01000h
 ; bx is rw_x << 1
 mov   cx, ax
 mov   ax, word ptr es:[bx + OFFSET_FLOORCLIP]
@@ -2884,10 +2883,10 @@ SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 
 do_bottom_texture_draw:
 SELFMODIFY_get_pixlow_lo:
-mov   ax, word ptr ds:[_pixlow]
+mov   ax, word ptr [bp - 026h]
 add   ax, ((HEIGHTUNIT)-1)
 SELFMODIFY_get_pixlow_hi:
-mov   cx, word ptr ds:[_pixlow+2]
+mov   cx, word ptr [bp - 024h]
 adc   cx, 0
 mov   al, ah
 mov   ah, cl
@@ -2900,9 +2899,9 @@ rcr   ax, 1
 sar   ch, 1
 rcr   ax, 1
 SELFMODIFY_add_to_pixlow_lo_1:
-add   word ptr ds:[_pixlow], 01000h
+add   word ptr [bp - 026h], 01000h
 SELFMODIFY_add_to_pixlow_hi_1:
-adc   word ptr ds:[_pixlow+2], 01000h
+adc   word ptr [bp - 024h], 01000h
 
 mov   cx, ax
 mov   ax, word ptr es:[bx+OFFSET_CEILINGCLIP]
@@ -3009,18 +3008,18 @@ PUBLIC R_StoreWallRange_
 ; bp - 016h  ; sides offset (within sides segment)
 ; bp - 018h  ; hyp lo
 ; bp - 01Ah  ; hyp hi
-; bp - 01Ch  ; rw_scale hi
-; bp - 01Eh  ; rw_scale lo
-; bp - 020h  ; UNUSED topfrac
-; bp - 022h  ; UNUSED topfrac
-; bp - 024h  ; UNUSED bottomfrac
-; bp - 026h  ; UNUSED bottomfrac
-; bp - 028h  ; UNUSED pixlow
-; bp - 02Ah  ; UNUSED pixlow
-; bp - 02Ch  ; UNUSED pixhigh
-; bp - 02Eh  ; UNUSED pixhigh
-; bp - 030h  ; UNUSED
-; bp - 032h  ; UNUSED
+; bp - 01Ch  ; UNUSED
+; bp - 01Eh  ; UNUSED
+; bp - 020h  ; pixhigh hi
+; bp - 022h  ; pixhigh lo  TODO swap pixhigh with topfrac, then pixlow with bottomfrac
+; bp - 024h  ; pixlow hi
+; bp - 026h  ; pixlow lo
+; bp - 028h  ; bottomfrac hi
+; bp - 02Ah  ; bottomfrac lo
+; bp - 02Ch  ; topfrac hi
+; bp - 02Eh  ; topfrac lo
+; bp - 030h  ; rw_scale hi
+; bp - 032h  ; rw_scale lo
 ; bp - 034h  ; worldbottom hi
 ; bp - 036h  ; worldbottom lo
 ; bp - 038h  ; UNUSED
@@ -3188,8 +3187,8 @@ SELFMODIFY_set_viewanglesr3_3:
 mov       ax, 01000h
 add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
-mov       word ptr [bp - 01Eh], ax
-mov       word ptr [bp - 01Ch], dx
+mov       word ptr [bp - 032h], ax
+mov       word ptr [bp - 030h], dx
 mov       es, word ptr ds:[_ds_p+2]
 mov       word ptr es:[di + 8], dx
 mov       word ptr es:[di + 6], ax
@@ -3221,8 +3220,8 @@ sub       bx, word ptr [bp - 048h]
 mov       word ptr es:[di + 0ch], dx
 mov       ax, word ptr es:[di + 0ah]
 mov       dx, word ptr es:[di + 0ch]
-sub       ax, word ptr [bp - 01Eh]
-sbb       dx, word ptr [bp - 01Ch]
+sub       ax, word ptr [bp - 032h]
+sbb       dx, word ptr [bp - 030h]
 
 call FastDiv3216u_
 mov       es, word ptr ds:[_ds_p+2]
@@ -3600,7 +3599,7 @@ mov       word ptr [bp - 044h], dx
 mov       word ptr [bp - 046h], ax
 
 ; les to load two words
-les       bx, dword ptr [bp - 01Eh]
+les       bx, dword ptr [bp - 032h]
 mov       cx, es
 call FixedMul_
 ; todo selfmodify this.
@@ -3610,8 +3609,8 @@ sub       cx, ax
 SELFMODIFY_sub__centeryfrac_shiftright4_hi_4:
 mov       ax, 01000h
 sbb       ax, dx
-mov       word ptr ds:[_topfrac], cx
-mov       word ptr ds:[_topfrac + 2], ax
+mov       word ptr [bp - 02Eh], cx
+mov       word ptr [bp - 02Ch], ax
 ; les to load two words
 mov       cx, 4
 mov       dx, word ptr [bp - 034h]
@@ -3625,7 +3624,7 @@ mov       word ptr [bp - 036h], ax
 
 
 
-les       bx, dword ptr [bp - 01Eh]
+les       bx, dword ptr [bp - 032h]
 mov       cx, es
 call FixedMul_
 
@@ -3635,8 +3634,8 @@ sub       cx, ax
 SELFMODIFY_sub__centeryfrac_shiftright4_hi_3:
 mov       ax, 01000h
 sbb       ax, dx
-mov       word ptr ds:[_bottomfrac], cx
-mov       word ptr ds:[_bottomfrac + 2], ax
+mov       word ptr [bp - 02Ah], cx
+mov       word ptr [bp - 028h], ax
 
 cmp       byte ptr ds:[_markceiling], 0
 je        dont_mark_ceiling
@@ -3680,8 +3679,8 @@ sbb       dx, 0
 
 ; dx:ax are topstep
 
-mov       word ptr cs:[SELFMODIFY_sub_topstep_lo+4], ax
-mov       word ptr cs:[SELFMODIFY_sub_topstep_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_sub_topstep_lo+3], ax
+mov       word ptr cs:[SELFMODIFY_sub_topstep_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_topstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_topstep_hi+5], dx
 
@@ -3696,10 +3695,10 @@ rcl       dx, 1
 finished_shifting_topstep:
 
 
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_1+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_2+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_1+4], dx
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_1+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_1+3], dx
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_2+3], dx
 
 
 mov       cx, word ptr [bp - 034h]
@@ -3715,8 +3714,8 @@ sbb       dx, 0
 
 ; dx:ax are bottomstep
 
-mov       word ptr cs:[SELFMODIFY_sub_botstep_lo+4], ax
-mov       word ptr cs:[SELFMODIFY_sub_botstep_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_sub_botstep_lo+3], ax
+mov       word ptr cs:[SELFMODIFY_sub_botstep_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_botstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_botstep_hi+5], dx
 
@@ -3729,10 +3728,10 @@ rcl       dx, 1
 
 finished_shifting_botstep:
 
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_1+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_2+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_1+4], dx
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_2+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_1+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_1+3], dx
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_2+3], dx
 
 
 
@@ -3793,7 +3792,7 @@ do_pixhigh_step:
 xchg       dx, di
 xchg       ax, si
 
-les       bx, dword ptr [bp - 01Eh]
+les       bx, dword ptr [bp - 032h]
 mov       cx, es
 push      dx
 push      ax
@@ -3809,8 +3808,8 @@ mov       ax, 01000h
 sbb       ax, dx
 
 
-mov       word ptr ds:[_pixhigh], cx
-mov       word ptr ds:[_pixhigh + 2], ax
+mov       word ptr [bp - 022h], cx
+mov       word ptr [bp - 020h], ax
 pop       bx
 pop       cx
 SELFMODIFY_get_rwscalestep_lo_3:
@@ -3827,8 +3826,8 @@ sbb       dx, 0
 ; self modifying code to write to pixlowstep usages.
 
 
-mov       word ptr cs:[SELFMODIFY_sub_pixhigh_lo+4], ax
-mov       word ptr cs:[SELFMODIFY_sub_pixhigh_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_sub_pixhigh_lo+3], ax
+mov       word ptr cs:[SELFMODIFY_sub_pixhigh_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_hi+5], dx
 
@@ -3839,10 +3838,10 @@ shift_pixhighstep_once:
 shl       ax, 1
 rcl       dx, 1
 done_shifting_pixhighstep:
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_1+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_2+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_1+4], dx
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_2+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_1+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_2+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_1+3], dx
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_2+3], dx
 
 
 ; put these back where they need to be.
@@ -3867,7 +3866,7 @@ do_pixlow_step:
 
 mov       di, dx	; store for later
 mov       si, ax	; store for later
-les       bx, dword ptr [bp - 01Eh]
+les       bx, dword ptr [bp - 032h]
 mov       cx, es
 call FixedMul_
 
@@ -3879,8 +3878,8 @@ mov       ax, 01000h
 sbb       ax, dx
 
 
-mov       word ptr ds:[_pixlow], cx
-mov       word ptr ds:[_pixlow + 2], ax
+mov       word ptr [bp - 026h], cx
+mov       word ptr [bp - 024h], ax
 mov       bx, si	; cached values
 mov       cx, di	; cached values
 SELFMODIFY_get_rwscalestep_lo_4:
@@ -3896,8 +3895,8 @@ sbb       dx, 0
 ; self modifying code to write to pixlowstep usages.
 
 
-mov       word ptr cs:[SELFMODIFY_sub_pixlow_lo+4], ax
-mov       word ptr cs:[SELFMODIFY_sub_pixlow_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_sub_pixlow_lo+3], ax
+mov       word ptr cs:[SELFMODIFY_sub_pixlow_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_pixlowstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixlowstep_hi+5], dx
 
@@ -3908,10 +3907,10 @@ shift_pixlowstep_once:
 shl       ax, 1
 rcl       dx, 1
 done_shifting_pixlowstep:
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_1+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_2+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_1+4], dx
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_1+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_2+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_1+3], dx
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+3], dx
 
 
 
@@ -4291,7 +4290,7 @@ mov       ax, word ptr es:[bx]
 mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
-mov       ax, 0CDA1h   ; mov   ax, word ptr ds:[_pixhigh+1] first two bytes
+mov       ax, 0468Bh   ; mov   ax, word ptr [bp - 02Dh] first two bytes
 jne       toptexture_not_zero
 toptexture_zero:
 mov       ax, ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
@@ -4369,7 +4368,7 @@ mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
 
-mov       ax, 0C8A1h   ; mov   ax, word ptr ds:[_pixlow]
+mov       ax, 0468Bh   ; mov   ax, word ptr [bp - 026h]
 jne       bottexture_not_zero
 bottexture_zero:
 mov       ax, ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
