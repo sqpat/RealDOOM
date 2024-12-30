@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/12/30 08:31:01
+Created on:       24/12/30 09:33:33
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -82,8 +82,8 @@ r_data_TEXT            CODE           AUTO           1800:0990       00001c39
 R_MATH_TEXT            CODE           AUTO           1800:25ca       000001ed
 R_MAINHI_TEXT          CODE           AUTO           1800:27b8       00001b99
 R_COLUMN_TEXT          CODE           AUTO           1800:4352       00000b26
-R_SPAN_TEXT            CODE           AUTO           1800:4e78       00000c23
-R_SKY_TEXT             CODE           AUTO           1800:5a9c       000006c2
+R_SPAN_TEXT            CODE           AUTO           1800:4e78       00000c21
+R_SKY_TEXT             CODE           AUTO           1800:5a9a       000006c2
 r_draw_TEXT            CODE           AUTO           1800:6160       00000379
 r_main_TEXT            CODE           AUTO           1800:64e0       000001ee
 r_plane_TEXT           CODE           AUTO           1800:66d0       00000000
@@ -1314,17 +1314,18 @@ Module: r_column.obj(r_column.ASM)
 1800:4352      R_DrawColumn_
 Module: r_span.obj(r_span.ASM)
 1800:4e78      R_DrawSpan_
-1800:55fe*     R_FixedMulLocal_
-1800:551a*     R_DrawSpanPrep_
-1800:57be      R_DrawPlanes_
-1800:563a      R_MapPlane_
-1800:55af*     R_FixedMulTrigLocal_
+1800:55fc*     R_FixedMulLocal_
+1800:5518*     R_DrawSpanPrep_
+1800:57bc      R_DrawPlanes_
+1800:5638      R_MapPlane_
+1800:4e7b*     R_DrawSpanActual_
+1800:55ad*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1800:5a9c      R_DrawSkyColumn_
-1800:5c69*     R_DrawSkyColumnDynamic_
-1800:60ed      R_DrawSkyPlane_
-1800:615e      R_SKY_END_
-1800:607c      R_DrawSkyPlaneDynamic_
+1800:5a9a      R_DrawSkyColumn_
+1800:5c67*     R_DrawSkyColumnDynamic_
+1800:60eb      R_DrawSkyPlane_
+1800:615c      R_SKY_END_
+1800:607a      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1800:6160      R_FillBackScreen_
 1800:63de      R_VideoErase_
@@ -1743,4 +1744,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028d00 (167168.)
 Entry point address: 2046:2434
-Link time: 00:00.74
+Link time: 00:00.75

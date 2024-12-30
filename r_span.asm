@@ -58,9 +58,16 @@ FIRST_FLAT_CACHE_LOGICAL_PAGE = 026h
 ;
 ; R_DrawSpan
 ;
-	
-PROC  R_DrawSpan_
+PROC  R_DrawSpan_ 
 PUBLIC  R_DrawSpan_ 
+	
+; nead to include these 2 instructions, and need a function label to include this...
+
+no_pixels:
+jmp   do_span_loop
+
+PROC  R_DrawSpanActual_
+PUBLIC  R_DrawSpanActual_ 
 
 ; stack vars
  
@@ -72,24 +79,21 @@ PUBLIC  R_DrawSpan_
 ; 0Ch ds_xstep
 ; 10h ds_ystep
 
-jmp SHORT start_function
 
 ; todo move this into before the per-pixel rollout.
-no_pixels:
-jmp   do_span_loop
 
-start_function:
 cli 									; disable interrupts
 
 ; fixed_t x32step = (ds_xstep << 6);
 
 ; todo move this logic out into prep function? 
+; todo LES something useful?
 MOV   ES, ds:[_spanfunc_jump_segment_storage]
 
 mov   al, byte ptr ds:[_spanfunc_main_loop_count]             
 ;; todo is this smaller with DI/stosb stuff?
-mov   byte ptr es:[((SELFMODIFY_compare_span_counter+2) -R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], al     ; set loop end constraint
-mov   byte ptr es:[((SELFMODIFY_set_span_counter+1)     -R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], 0      ; set loop increment value
+mov   byte ptr es:[((SELFMODIFY_SPAN_compare_span_counter+2) -R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], al     ; set loop end constraint
+mov   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1)     -R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], 0      ; set loop increment value
 
 
 
@@ -105,7 +109,7 @@ xor   ah, ah
 
 mov   al, byte ptr ds:[_spanfunc_inner_loop_count + bx]
 ; es is already pre-set..
-inc   byte ptr es:[((SELFMODIFY_set_span_counter+1)-R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )]					; increment loop counter
+inc   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1)-R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )]					; increment loop counter
 
 
 test  al, al
@@ -235,7 +239,6 @@ sar dh, 1
 rcr bx, 1    ; yfrac16 in bx
 
 
-
 ; shift 8, yadder in dh?
 
 mov dx, es   ;  load mid 16 bits of x_frac.w
@@ -260,7 +263,6 @@ mov   ah, cl
 
 mov cl, byte ptr ds:[_detailshift]
 shr ax, cl			; shift x_step by pixel shift
- 
 
 mov   word ptr ds:[_ss_variable_space], ax	; store x_adder
 
@@ -352,11 +354,11 @@ xchg  ds:[_ss_variable_space+2], bp			  ;   store BP and load y_adder
 
 do_span_loop:
 
-SELFMODIFY_set_span_counter:
+SELFMODIFY_SPAN_set_span_counter:
 mov   bx, 0
 
 ; loop if i < loopcount. note we can overwrite this with self modifying coe
-SELFMODIFY_compare_span_counter:
+SELFMODIFY_SPAN_compare_span_counter:
 cmp   bl, 4
 jge    span_i_loop_done
 
@@ -488,7 +490,7 @@ PUBLIC  R_DrawSpanPrep_
 ; call static address with static colormap.
 
 db 09Ah
-dw DRAWSPAN_CALL_OFFSET
+dw DRAWSPAN_CALL_OFFSET + (R_DrawSpanActual_ - R_DrawSpan_)
 dw (COLORMAPS_SEGMENT - 0FCh)
 
  retf  
@@ -506,7 +508,7 @@ dw (COLORMAPS_SEGMENT - 0FCh)
  
  mov   ah, al
  xor   al, al
- mov   bx, DRAWSPAN_CALL_OFFSET
+ mov   bx, DRAWSPAN_CALL_OFFSET + (R_DrawSpanActual_ - R_DrawSpan_)
  sub   bx, ax
  IF COMPILE_INSTRUCTIONSET GE COMPILE_186
  shr   ax, 4
@@ -1025,12 +1027,12 @@ pop   si
 pop   dx
 pop   cx
 pop   bx
-mov   byte ptr cs:[(SELFMODIFY_drawplaneiter+1)-OFFSET R_DrawSpan_], 0
+mov   byte ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1)-OFFSET R_DrawSpan_], 0
 retf   
 
 do_next_drawplanes_loop:	
 
-inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1-OFFSET R_DrawSpan_]
+inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1-OFFSET R_DrawSpan_]
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
 do_sky_flat_draw:
@@ -1040,11 +1042,11 @@ mov   cx, word ptr [bp - 6] ; and segment
 mov   dx, word ptr [si + 6]
 mov   ax, word ptr [si + 4]
 ;call  [_R_DrawSkyPlaneCallHigh]
-SELFMODIFY_draw_skyplane_call:
+SELFMODIFY_SPAN_draw_skyplane_call:
 db    09Ah
 dw    R_DRAWSKYPLANE_OFFSET
 dw    DRAWSKYPLANE_AREA_SEGMENT
-inc   byte ptr cs:[SELFMODIFY_drawplaneiter+1-OFFSET R_DrawSpan_]
+inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1-OFFSET R_DrawSpan_]
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
 
@@ -1084,12 +1086,12 @@ cmp       byte ptr ds:[_screenblocks], 10
 jge       setup_dynamic_skyplane
 mov       ax, R_DRAWSKYPLANE_DYNAMIC_OFFSET
 setup_dynamic_skyplane:
-mov       word ptr cs:[SELFMODIFY_draw_skyplane_call + 1-OFFSET R_DrawSpan_], ax
+mov       word ptr cs:[SELFMODIFY_SPAN_draw_skyplane_call + 1-OFFSET R_DrawSpan_], ax
 
 
 
 drawplanes_loop:
-SELFMODIFY_drawplaneiter:
+SELFMODIFY_SPAN_drawplaneiter:
 mov   ax, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
 cmp   ax, word ptr ds:[_lastvisplane]
 jge   exit_drawplanes
@@ -1114,7 +1116,7 @@ jnb   check_next_visplane_page
 
 ; todo: DI is (mostly) unused here. Can probably be used to hold something usedful.
 
-mov   bx, word ptr cs:[SELFMODIFY_drawplaneiter+1-OFFSET R_DrawSpan_]
+mov   bx, word ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1-OFFSET R_DrawSpan_]
 
 add   bx, bx
 mov   cx, word ptr [bx +  _visplanepiclights]
@@ -1123,7 +1125,7 @@ je    do_sky_flat_draw
 
 do_nonsky_flat_draw:
 
-mov   byte ptr cs:[SELFMODIFY_lookuppicnum+2-OFFSET R_DrawSpan_], cl 
+mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2-OFFSET R_DrawSpan_], cl 
 mov   al, ch
 xor   ah, ah
 
@@ -1378,7 +1380,7 @@ mov   si, word ptr [si + 4]
 mov   byte ptr es:[bx + si + 1], 0ffh
 inc   ax
 
-mov   word ptr cs:[SELFMODIFY_comparestop+2-OFFSET R_DrawSpan_], ax ; set count value to be compared against in loop.
+mov   word ptr cs:[SELFMODIFY_SPAN_comparestop+2-OFFSET R_DrawSpan_], ax ; set count value to be compared against in loop.
 
 cmp   si, ax
 jle   start_single_plane_draw_loop
@@ -1395,7 +1397,7 @@ mov   cx, word ptr ds:[bx + _FLAT_CACHE_PAGE]
 
 mov   ax, FLATTRANSLATION_SEGMENT
 mov   es, ax
-SELFMODIFY_lookuppicnum:
+SELFMODIFY_SPAN_lookuppicnum:
 mov   al, byte ptr es:[00]    ; uses picnum from way above.
 
 xor   ah, ah
@@ -1477,7 +1479,7 @@ end_single_plane_draw_loop_iteration:
 
 ;  todo: di not really in use at all in this loop. could be made to hold something useful
 inc   si
-SELFMODIFY_comparestop:
+SELFMODIFY_SPAN_comparestop:
 cmp   si, 1000h
 jle   single_plane_draw_loop
 
