@@ -382,7 +382,7 @@ ENDP
 ; R_DrawSpanPrep
 ;
 	
-PROC  R_DrawSpanPrep_
+PROC  R_DrawSpanPrep_ NEAR
 PUBLIC  R_DrawSpanPrep_ 
 
  
@@ -493,7 +493,7 @@ db 09Ah
 dw DRAWSPAN_CALL_OFFSET + (R_DrawSpanActual_ - R_DrawSpan_)
 dw (COLORMAPS_SEGMENT - 0FCh)
 
- retf  
+ ret  
  ds_colormap_nonzero:									; if ds_colormap_index is 0
   
  
@@ -529,7 +529,7 @@ db 01Eh  ;
 dw _func_farcall_scratch_addr
 
 
- retf  
+ ret  
 
 ENDP
 
@@ -918,10 +918,7 @@ mov   byte ptr ds:[_ds_colormap_index], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
-db 09Ah
-dw (R_DrawSpanPrep_ - R_DrawSpan_)
-dw SPANFUNC_FUNCTION_AREA_SEGMENT
-
+call  R_DrawSpanPrep_
 
 LEAVE_MACRO
 
@@ -943,9 +940,7 @@ mov   byte ptr ds:[_ds_colormap_index], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
-db 09Ah
-dw (R_DrawSpanPrep_ - R_DrawSpan_)
-dw SPANFUNC_FUNCTION_AREA_SEGMENT
+call  R_DrawSpanPrep_
 
 LEAVE_MACRO
 
