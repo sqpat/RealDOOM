@@ -132,7 +132,7 @@ out   dx, al
 
 lods  WORD PTR ES:[SI]	
 
-mov  WORD PTR es:[((SPANFUNC_JUMP_OFFSET+1)-R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], ax;
+mov   WORD PTR es:[((SPANFUNC_JUMP_OFFSET+1)-R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], ax;
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
 sal   bx, 1
@@ -149,16 +149,15 @@ CWD   				; extend sign into DX
 
 mov   si, ax						; temporarily store dx:ax into es:si
 mov   es, dx						; store sign bits (dx) in es
-mov   bx, ax
 mov   cx, dx						; also copy sign bits to cx
 SELFMODIFY_SPAN_ds_xstep_lo_1:
-mov   ax, 01000h
+mov   bx, 01000h        ; pre xchged bx ax
 SELFMODIFY_SPAN_ds_xstep_hi_1:
 mov   dx, 01000h
 
 ; inline i4m
 ; DX:AX * CX:BX,  CX is 0000 or FFFF
- 		xchg    ax,bx           ; swap low(M1) and low(M2)
+ 		
         ; todo get rid of this push/pop..
 		push    ax              ; save low(M2)
         xchg    ax,dx           ; exchange low(M2) and high(M1)
@@ -195,10 +194,10 @@ adc   dx, 01000h  ; ; ds_xfrac + ds_xstep * prt high bits
 mov   dh, dl
 mov   dl, ah
 mov   es, dx  ; store mid 16 bits of x_frac.w
-mov   bx, si
+mov   ax, si
 
 SELFMODIFY_SPAN_ds_ystep_lo:
-mov   ax, 01000h
+mov   bx, 01000h
 SELFMODIFY_SPAN_ds_ystep_hi:
 mov   dx, 01000h
 
@@ -208,7 +207,6 @@ mov   dx, 01000h
 ; inline i4m
 ; DX:AX * CX:BX,  CX is 0000 or FFFF
 
- 		xchg    ax,bx           ; swap low(M1) and low(M2)
         push    ax              ; save low(M2)
         xchg    ax,dx           ; exchange low(M2) and high(M1)
         or      ax,ax           ; if high(M1) non-zero
@@ -794,7 +792,7 @@ mov   si, word ptr ds:[_ds_x1]		; grab x2 (function input)
 shl   si, 1						; word lookup
 mov   bx, si          ; dword lookup if we add them
 mov   es, ds:[_distscale_segment_storage]
-
+;todo bench without bx + si + 2 - sar again later etc.
 push  dx   ; store distance high word in case needed for colormap
 mov   cx, word ptr es:[bx + si + 2]	; distscale high word
 mov   bx, word ptr es:[bx + si]		; distscale low word
@@ -888,8 +886,6 @@ index_set:
 les    bx, dword ptr ds:[_planezlight]
 xlat  byte ptr es:[bx]
 colormap_ready:
-shl   al, 1
-shl   al, 1
 
 mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump-OFFSET R_DrawSpan_], al
 
