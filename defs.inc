@@ -103,7 +103,7 @@ _skipdirectdraws = 					_NULL_OFFSET + 000E5h
 _jump_mult_table_3 = 				_NULL_OFFSET + 000E6h
 _screen_segments = 					_NULL_OFFSET + 000EEh
 ; F8 FA unused
-_func_farcall_scratch_addr =		_NULL_OFFSET + 000FCh
+;_func_farcall_scratch_addr =		_NULL_OFFSET + 000FCh
 ; 0100 0102 unused
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
@@ -219,6 +219,16 @@ _vga_read_port_lookup =              _NULL_OFFSET + 00370h
 _vissprite_p =                       _NULL_OFFSET + 00388h
 ; high byte always 0
 _cachedbyteheight =                  _NULL_OFFSET + 0038Ah
+_savedescription =                   _NULL_OFFSET + 00390h
+_demoname =                          _NULL_OFFSET + 003B0h
+
+_colfunc_masked_call_lookup =        _NULL_OFFSET + 003D0h
+
+_ems_backfill_page_order =           _NULL_OFFSET + 00454h
+_movedirangles =                     _NULL_OFFSET + 00470h
+_braintargets =                      _NULL_OFFSET + 00480h
+
+_spanfunc_call_lookup =              _NULL_OFFSET + 004D0h
 
 
 ; 38Ch

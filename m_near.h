@@ -155,8 +155,8 @@
 #define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x00E6))
 #define screen_segments                 ((segment_t __near *)                (_NULL_OFFSET + 0x00EE))
 // f8 fa unused
-#define func_farcall_scratch_addr       (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00FC)))
-#define colfunc_farcall_addr_1          (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0100)))
+// fc fe unused
+// 100 102 unused
 // 104 is constant
 #define viewangle_shiftright3           (*((fineangle_t __near*)             (_NULL_OFFSET + 0x0104)))
 // 108 is constant
@@ -266,7 +266,7 @@
 #define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
 #define R_GetMaskedColumnSegment_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
-#define colfunc_call_table              (((uint32_t  __near*)                (_NULL_OFFSET + 0x02D0)))
+#define colfunc_call_lookup             (((uint32_t  __near*)                (_NULL_OFFSET + 0x02D0)))
 #define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358)))
 // lookup for what to write to the vga port for read  for fuzzcolumn
@@ -274,8 +274,22 @@
 
 #define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0388)))
 #define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038A)))
+// todo fill this up
+#define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0390)))
+#define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x03B0)))
 
-#define colfunc_masked_call_table       (((uint32_t  __near*)                (_NULL_OFFSET + 0x03D0)))
+
+
+
+#define colfunc_masked_call_lookup      (((uint32_t  __near*)                (_NULL_OFFSET + 0x03D0)))
+
+#define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x0454)))
+#define movedirangles                   (((uint16_t  __near*)                (_NULL_OFFSET + 0x0470)))
+#define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x0480)))
+// todo fill this up
+// 4c0
+
+#define spanfunc_call_table             (((uint32_t  __near*)                (_NULL_OFFSET + 0x04D0)))
 
 
 
@@ -592,7 +606,6 @@ extern ticcount_t          gametic;
 extern int16_t             totalkills; 
 extern int16_t             totalitems;
 extern int16_t             totalsecret;    // for intermission 
-extern int8_t            demoname[32];
 extern boolean         demorecording; 
 extern boolean         demoplayback; 
 extern boolean         netdemo; 
@@ -635,7 +648,6 @@ extern int32_t             dclicktime2;
 extern int32_t             dclickstate2;
 extern int32_t             dclicks2;
 extern int8_t             savegameslot;
-extern int8_t            savedescription[32];
 extern ticcmd_t localcmds[BACKUPTICS];
 
 extern skill_t d_skill; 
@@ -945,8 +957,6 @@ extern boolean brainspit_easy;
 typedef int8_t dirtype_t;
 extern dirtype_t opposite[9];
 extern dirtype_t diags[4];
-extern uint16_t movedirangles[8];
-extern THINKERREF		braintargets[32];
 extern int16_t		numbraintargets;
 extern int16_t		braintargeton;
 
@@ -1139,7 +1149,6 @@ extern int32_t visplaneswitchcount;
 #endif
 
 extern int8_t currenttask;
-extern int8_t ems_backfill_page_order[24];
 
 extern cache_node_page_count_t  spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 extern cache_node_page_count_t	texturecache_nodes[NUM_TEXTURE_PAGES];

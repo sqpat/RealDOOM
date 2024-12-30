@@ -3071,6 +3071,7 @@ SELFMODIFY_set_midtexturemid_lo:
 SELFMODIFY_set_toptexturemid_lo:
 mov   cx, 01000h
 
+; fall thru in the case of top/bot column.
 PROC  R_DrawColumnPrep_ NEAR
 PUBLIC  R_DrawColumnPrep_ 
 
@@ -3144,12 +3145,11 @@ pop   bx
 
 SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 
-; the pops get replaced with ret if bottom calling
+; the pop dx gets replaced with ret if bottom is calling
 pop   dx
 pop   es
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
-
 SELFMODIFY_BSP_midtexture_return_jmp:
 ; JMP back runs for a TOP call
 ; we overwrite the next instruction with a jmp if toptexture call. otherwise we restore it.
@@ -3335,10 +3335,7 @@ SELFMODIFY_set_bottexturemid_lo:
 mov   cx, 01000h
 
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret], 0C3h  ; ret
-
-
 call  R_DrawColumnPrep_
-
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret], 05Ah  ; pop dx
 
 pop   dx

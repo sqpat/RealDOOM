@@ -66,6 +66,8 @@ PUBLIC  R_DrawSpan_
 no_pixels:
 jmp   do_span_loop
 
+ENDP ; shut up compiler warning
+
 PROC  R_DrawSpanActual_
 PUBLIC  R_DrawSpanActual_ 
 
@@ -474,62 +476,18 @@ PUBLIC  R_DrawSpanPrep_
  
  spanfunc_arg_setup_complete:
 
- ; calculate desired cs:ip for far jump
+ ; use jump table with desired cs:ip for far jump
 
- mov   al, byte ptr ds:[_ds_colormap_index]
- test  al, al									; check _ds_colormap_index
- jne    ds_colormap_nonzero
-
-
- ; easy address calculation
- 
-; 		uint16_t cs_base = ds_colormap_segment - cs_source_segment_offset;
-;		uint16_t callfunc_offset = colormaps_spanfunc_off_difference + cs_source_offset;
-;		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
-
-; call static address with static colormap.
-
-db 09Ah
-dw DRAWSPAN_CALL_OFFSET + (R_DrawSpanActual_ - R_DrawSpan_)
-dw (COLORMAPS_SEGMENT - 0FCh)
-
- ret  
- ds_colormap_nonzero:									; if ds_colormap_index is 0
-  
- 
- ; colormap not zero. need to offset cs etc by its address
-
- ;		uint16_t ds_colormap_offset = ds_colormap_index << 8;
-;		uint16_t ds_colormap_shift4 = ds_colormap_index << 4;
-	 	
-;		uint16_t cs_base = ds_colormap_segment - cs_source_segment_offset + ds_colormap_shift4;
-;		uint16_t callfunc_offset = colormaps_spanfunc_off_difference + cs_source_offset - ds_colormap_offset;
-;		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
- 
- mov   ah, al
- xor   al, al
- mov   bx, DRAWSPAN_CALL_OFFSET + (R_DrawSpanActual_ - R_DrawSpan_)
- sub   bx, ax
- IF COMPILE_INSTRUCTIONSET GE COMPILE_186
- shr   ax, 4
- ELSE
- shr   ax, 1
- shr   ax, 1
- shr   ax, 1
- shr   ax, 1
- ENDIF
- add   ax, (COLORMAPS_SEGMENT - 0FCh)
-
- 
-mov   word ptr ds:[_func_farcall_scratch_addr+0], bx				; setup dynamic call offset
-mov   word ptr ds:[_func_farcall_scratch_addr+2], ax				; setup dynamic call segment
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _func_farcall_scratch_addr
+SELFMODIFY_SPAN_set_colormap_index_jump:
+dw 0500h
+; addr 0500 + first byte (4x colormap.)
 
 
- ret  
+
+ret  
 
 ENDP
 
@@ -912,9 +870,10 @@ index_set:
 les    bx, dword ptr ds:[_planezlight]
 xlat  byte ptr es:[bx]
 colormap_ready:
-;sar al, 1
-;sar al, 1
-mov   byte ptr ds:[_ds_colormap_index], al
+shl   al, 1
+shl   al, 1
+
+mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump-OFFSET R_DrawSpan_], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
@@ -932,11 +891,7 @@ ret
 
 use_fixed_colormap:
 mov   al, byte ptr ds:[_fixedcolormap]
-; todo remove this and use proper colormap...
-; has to be shr for 128 case...
-shr   al, 1
-shr   al, 1
-mov   byte ptr ds:[_ds_colormap_index], al
+mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump-OFFSET R_DrawSpan_], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 

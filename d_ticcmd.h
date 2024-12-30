@@ -25,6 +25,7 @@
 // and transmitted to other peers (multiplayer).
 // Mainly movements/button commands per game tick,
 // plus a checksum for internal state consistency.
+// 10 bytes each..
 typedef struct {
 	int16_t	forwardmove;	// *2048 for move
 	int16_t	sidemove;	// *2048 for move

@@ -526,7 +526,6 @@ THINKERREF      playerMobjRef;
 ticcount_t          gametic;
 int16_t             totalkills, totalitems, totalsecret;    // for intermission 
  
-int8_t            demoname[32];
 boolean         demorecording; 
 boolean         demoplayback; 
 boolean         netdemo; 
@@ -585,7 +584,6 @@ int32_t             dclicks2;
 
  
 int8_t             savegameslot;
-int8_t            savedescription[32];
 ticcmd_t localcmds[BACKUPTICS];
 
 
@@ -1650,19 +1648,8 @@ dirtype_t diags[] = {
     DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
 };
 
-uint16_t movedirangles[8] = {
-	0x0000,
-	0x2000,
-	0x4000,
-	0x6000,
-	0x8000,
-	0xA000,
-	0xC000,
-	0xE000
-};
 
 
-THINKERREF		braintargets[32];
 int16_t		numbraintargets;
 int16_t		braintargeton;
 
@@ -1764,7 +1751,7 @@ divline_t		dl;
 //      source animation definition
 //
 
-
+// 6 bytes each. 32 * 6 overall.
 p_spec_anim_t	anims[MAXANIMS];
 p_spec_anim_t __near*		lastanim;
 boolean		levelTimer;
@@ -2178,7 +2165,6 @@ int32_t visplaneswitchcount = 0;
 
 int8_t currenttask = -1;
 
-int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17 };
 
 /*
 uint8_t blocksizelookup[256]={

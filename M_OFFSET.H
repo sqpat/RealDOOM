@@ -7,8 +7,8 @@
 #define R_DrawMaskedOffset                    0xD96
 #define R_WriteBackViewConstantsMaskedOffset  0x0
 #define R_WriteBackMaskedFrameConstantsOffset 0x8D
-#define R_MapPlaneOffset                      0x7C0
-#define R_DrawPlanesOffset                    0x940
+#define R_MapPlaneOffset                      0x79D
+#define R_DrawPlanesOffset                    0x91F
 #define R_DrawSkyColumnOffset                 0x0
 #define R_DrawSkyPlaneOffset                  0x651
 #define R_DrawSkyPlaneDynamicOffset           0x5E0
@@ -16,7 +16,7 @@
 #define wipe_WipeLoopOffset                   0x268
 
 #define R_DrawColumnCodeSize           0xB26
-#define R_DrawSpanCodeSize             0xC1E
+#define R_DrawSpanCodeSize             0xBFC
 #define R_DrawFuzzColumnCodeSize       0xFC1
 #define R_MaskedConstantsCodeSize      0xEF
 #define R_DrawSkyColumnCodeSize        0x6C2
