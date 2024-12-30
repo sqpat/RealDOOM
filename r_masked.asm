@@ -1834,9 +1834,7 @@ get_colormap:
 xor   ah, ah
 mov   bx, word ptr ds:[_walllights]
 add   bx, ax
-mov   ax, SCALELIGHTFIXED_SEGMENT
-mov   es, ax
-mov   al, byte ptr es:[bx]
+mov   al, byte ptr ds:[bx + _scalelightfixed]
 mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 SELFMODIFY_MASKED_fixedcolormap_1_TARGET:

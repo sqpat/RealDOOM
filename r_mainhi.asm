@@ -1647,10 +1647,8 @@ cmp   ax, MAXLIGHTSCALE
 jl    index_below_maxlightscale
 mov   di, MAXLIGHTSCALE - 1
 index_below_maxlightscale:
-mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   bx, word ptr ds:[_spritelights]
-mov   es, ax
-mov   al, byte ptr es:[bx+di]
+mov   al, byte ptr ds:[_scalelightfixed+bx+di]
 mov   byte ptr [si + 1], al
 LEAVE_MACRO
 pop   es
@@ -2719,12 +2717,10 @@ mov   dh, dl
 mov   dl, ah
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax		; todo: write these to code but masked has to as well..
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1], dx  
-mov   ax, SCALELIGHTFIXED_SEGMENT
-mov   es, ax
 SELFMODIFY_add_wallights:
 
 ; scalelight is pre-shifted 4 to save on the double sal every column.
-mov   al, byte ptr es:[si+01000h]
+mov   al, byte ptr ds:[si+01000h]
 ;        set drawcolumn colormap function address
 mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
 
@@ -3038,6 +3034,7 @@ mov       es, si
 mov       si, word ptr ds:[bx + 6]
 shl       si, 1
 shl       si, 1
+mov       di, si
 shl       si, 1
 ; read all the sides fields now
 
@@ -3050,11 +3047,7 @@ mov       [bp - 01Ch], ax
 lods      word ptr es:[si]
 mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], ax
 
-xchg      ax, si
-sar       ax, 1
-add       ah, (_sides_render SHR 8)
-mov       si, ax
-mov       ax, word ptr [si]
+mov       ax, word ptr [di+_sides_render]
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1], ax
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1], ax
 
@@ -3105,8 +3098,8 @@ shl       al, cl
 or        byte ptr es:[si], al
 mov       bx, word ptr ds:[_curseg]
 add       bx, bx
-add       bh, (_seg_normalangles SHR 8)
-mov       ax, word ptr [bx]
+
+mov       ax, word ptr [bx+_seg_normalangles]
 
 mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
 mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_2+1], ax
@@ -3169,16 +3162,17 @@ mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1], ax
 mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1], dx
 
 done_setting_rw_distance:
+les       di, dword ptr ds:[_ds_p]
+mov       ax, word ptr ds:[_curseg]
+stos      word ptr es:[di]             ; +0
+
 mov       ax, word ptr [bp - 04Ch]
 mov       word ptr [bp - 038h], ax   ; rw_x
-les       di, dword ptr ds:[_ds_p]
-mov       word ptr es:[di + 2], ax
+stos      word ptr es:[di]             ; +2
 
 mov       ax, word ptr [bp - 04Eh]
-mov       word ptr es:[di + 4], ax
+stos      word ptr es:[di]             ; +4
 
-mov       ax, word ptr ds:[_curseg]
-mov       word ptr es:[di], ax
 mov       ax, word ptr [bp - 04Eh]
 inc       ax
 mov       word ptr [bp - 03Ah], ax
@@ -3193,23 +3187,24 @@ call      R_ScaleFromGlobalAngle_
 mov       word ptr [bp - 032h], ax
 mov       word ptr [bp - 030h], dx
 mov       es, word ptr ds:[_ds_p+2]
-mov       word ptr es:[di + 8], dx
-mov       word ptr es:[di + 6], ax
-mov       ax, word ptr [bp - 04Eh]
-cmp       ax, word ptr [bp - 04Ch]
+stos      word ptr es:[di]             ; +6
+xchg      ax, dx
+stos      word ptr es:[di]             ; +8
+mov       cx, word ptr [bp - 04Eh]
+cmp       cx, word ptr [bp - 04Ch]
 jg        stop_greater_than_start
 
 ; ds_p is es:di
 ;		ds_p->scale2 = ds_p->scale1;
 
-mov       ax, word ptr es:[di + 6]
-mov       word ptr es:[di + 0ah], ax
-mov       ax, word ptr es:[di + 8]
-mov       word ptr es:[di + 0ch], ax
+stos      word ptr es:[di]      ; +0Ah
+xchg      ax, dx
+stos      word ptr es:[di]      ; +0Ch
+xchg      ax, dx
 jmp       scales_set
 stop_greater_than_start:
-mov       si, ax
-add       si, ax
+mov       si, cx
+add       si, cx
 mov       ax, XTOVIEWANGLE_SEGMENT
 mov       es, ax
 SELFMODIFY_set_viewanglesr3_2:
@@ -3218,18 +3213,20 @@ add       ax, word ptr es:[si]
 call      R_ScaleFromGlobalAngle_
 mov       es, word ptr ds:[_ds_p+2]
 mov       bx, word ptr [bp - 04Eh]
-mov       word ptr es:[di + 0ah], ax
+stos      word ptr es:[di]             ; +0Ah
+xchg      ax, dx
 sub       bx, word ptr [bp - 04Ch]
-mov       word ptr es:[di + 0ch], dx
-mov       ax, word ptr es:[di + 0ah]
-mov       dx, word ptr es:[di + 0ch]
+stos      word ptr es:[di]             ; +0Ch
+xchg      ax, dx
 sub       ax, word ptr [bp - 032h]
 sbb       dx, word ptr [bp - 030h]
 
 call FastDiv3216u_
 mov       es, word ptr ds:[_ds_p+2]
-mov       word ptr es:[di + 0eh], ax
-mov       word ptr es:[di + 010h], dx
+stos      word ptr es:[di]             ; +0Eh
+xchg      ax, dx
+stos      word ptr es:[di]             ; +10h
+xchg      ax, dx
 
 ; rw_scalestep is ready. write it forward as selfmodifying code here
 
@@ -3576,10 +3573,11 @@ cmp       dx, LIGHTLEVELS
 jl        lightnum_less_than_lightlevels
 mov       ax, word ptr ds:[_lightmult48lookup + + (2 * (LIGHTLEVELS - 1))]
 done_setting_ax_to_wallights:
-add       ax, SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+add       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+
 
 ; write walllights to rendersegloop
-mov   word ptr cs:[SELFMODIFY_add_wallights+3], ax
+mov   word ptr cs:[SELFMODIFY_add_wallights+2], ax
 ; ? do math here and write this ahead to drawcolumn colormapsindex?
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
