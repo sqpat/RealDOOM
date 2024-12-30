@@ -129,7 +129,7 @@ COLFUNC_JUMP_OFFSET:
 
 pixel_loop_fast:
 
-   ;; 12 bytes loop iter
+   ;; 14 bytes loop iter
 
 ; 0xE size
 DRAW_SINGLE_PIXEL MACRO 

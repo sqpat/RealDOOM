@@ -205,7 +205,7 @@ _ds_p =               				 _NULL_OFFSET + 0029Ch
 _lightmult48lookup =                 _NULL_OFFSET + 002A0h
 
 _FixedMul_addr =               		 _NULL_OFFSET + 002C0h
-_FixedMul1632_addr =                 _NULL_OFFSET + 002C4h
+;_FixedMul1632_addr =                 _NULL_OFFSET + 002C4h
 _FastDiv3232_addr =                  _NULL_OFFSET + 002C8h
 _R_GetMaskedColumnSegment_addr =     _NULL_OFFSET + 002CCh
 
