@@ -1411,23 +1411,6 @@ ret
 
 ENDP
 
-; NOTE: this may not work right for negative params or DX:AX  besides 0xFFFFFFFF
-; TODO: We only use the low 24 bits of output from this function. can we optimize..?
-;FastDiv3232FFFF_
-; DX:AX / CX:BX
-
-
-PROC FastDiv3232FFFF_ NEAR
-PUBLIC FastDiv3232FFFF_
-
-
-
-
-
-
-endp
-
-
 FF_FRAMEMASK = 07Fh
 FF_FULLBRIGHT = 080h
 MINZ_HIGHBITS = 4
