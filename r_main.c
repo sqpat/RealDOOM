@@ -151,7 +151,8 @@ uint32_t __near R_PointToAngle16 (int16_t	x,int16_t	y) {
 	yfp.h.intbits = y;
 	xfp.h.fracbits = 0;
 	yfp.h.fracbits = 0;
-
+	xfp.w -= viewx.w;
+	yfp.w -= viewy.w;
 	return R_PointToAngle(xfp, yfp);
 }
 /*
@@ -361,9 +362,10 @@ uint32_t __far R_PointToAngle10( fixed_t_union	x, fixed_t_union	y ) {
 */
 
 uint32_t __far R_PointToAngle2 ( fixed_t_union	x1, fixed_t_union	y1, fixed_t_union	x2, fixed_t_union	y2 ) {	
-    viewx.w = x1.w;
-    viewy.w = y1.w;
-    
+	x2.w -= x1.w;
+	y2.w -= y1.w;
+
+
     return R_PointToAngle (x2, y2);
 }
 
@@ -371,8 +373,6 @@ uint32_t __far R_PointToAngle2 ( fixed_t_union	x1, fixed_t_union	y1, fixed_t_uni
 uint32_t __far R_PointToAngle2_16 (  int16_t	x2, int16_t	y2 ) {	
 	// this could be very optimized but is called rarely.
 	fixed_t_union x2fp, y2fp;
-    viewx.w = 0; // called with 0, this is fine
-    viewy.w = 0;
 	x2fp.h.intbits = x2;
 	y2fp.h.intbits = y2;
 	x2fp.h.fracbits = 0;

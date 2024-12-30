@@ -1833,8 +1833,7 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_Dr
 
 SELFMODIFY_MASKED_fixedcolormap_1_TARGET:
 got_colormap:
-mov   ax, 0FFFFh
-mov   dx, ax
+
 mov   bx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
 ;call  FastDiv3232_
