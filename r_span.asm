@@ -90,7 +90,7 @@ cli 									; disable interrupts
 
 ; todo move this logic out into prep function? 
 ; todo LES something useful?
-MOV   ES, ds:[_spanfunc_jump_segment_storage]
+MOV   es, ds:[_spanfunc_jump_segment_storage]
 
 mov   al, byte ptr ds:[_spanfunc_main_loop_count]             
 ;; todo is this smaller with DI/stosb stuff?
@@ -131,7 +131,7 @@ out   dx, al
 
 
 lods  WORD PTR ES:[SI]	
-
+; write to the unrolled loop jump instruction.
 mov   WORD PTR es:[((SPANFUNC_JUMP_OFFSET+1)-R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], ax;
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
@@ -142,40 +142,25 @@ mov   DI, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precal
 
 ;		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
 
-CWD   				; extend sign into DX
 
 ;  DX:AX contains sign extended prt. 
 ;  probably dont really need this. can test ax and jge
-
+; bx free here...
+; es too... 
 mov   si, ax						; temporarily store dx:ax into es:si
-mov   es, dx						; store sign bits (dx) in es
-mov   cx, dx						; also copy sign bits to cx
-SELFMODIFY_SPAN_ds_xstep_lo_1:
-mov   bx, 01000h        ; pre xchged bx ax
 SELFMODIFY_SPAN_ds_xstep_hi_1:
 mov   dx, 01000h
 
 ; inline i4m
 ; DX:AX * CX:BX,  CX is 0000 or FFFF
  		
-        xchg    ax,dx           ; exchange low(M2) and high(M1)
-        or      ax,ax           ; if high(M1) non-zero
-        je skiphigh11
-          mul   dx              ; - low(M2) * high(M1)
-        skiphigh11:                  ; endif
-        xchg        ax,cx           ; save that in cx, get high(M2)
-        test 	    ax,ax           ; if high(M2) non-zero
-        je  skiphigh12              ; then
-          sub   ax,bx              ; - high(M2) * low(M1)
+        mul     dx              ; - low(M2) * high(M1)
+        mov     cx, ax           ; save that in cx
+SELFMODIFY_SPAN_ds_xstep_lo_1:
+        mov     dx, 01000h        ; pre xchged bx ax
 
-;        xchg    ax,cx           ; save that in cx, get high(M2)
-;        or      ax,ax           ; if high(M2) non-zero
-;        je skiphigh12              ; then
-;          mul   bx              ; - high(M2) * low(M1)
-;          add   cx,ax           ; - add to total
-        skiphigh12:                  ; endif
         mov     ax, si
-        mul     bx              ; low(M2) * low(M1)
+        mul     dx              ; low(M2) * low(M1)
         add     dx,cx           ; add previously computed high part
 
 ;	continuing	xfrac.w = basex = ds_xfrac + ds_xstep * prt;
@@ -184,18 +169,15 @@ mov   dx, 01000h
 
 SELFMODIFY_SPAN_ds_xfrac_lo:
 add   ax, 01000h	; load _ds_xfrac
-mov   cx, es					; retrieve prt sign bits
-
+; dh is choped off anyway so just add to dl.
 SELFMODIFY_SPAN_ds_xfrac_hi:
-adc   dx, 01000h  ; ; ds_xfrac + ds_xstep * prt high bits
+adc   dl, 010h  ; ; ds_xfrac + ds_xstep * prt high bits
 
 mov   dh, dl
 mov   dl, ah
 mov   es, dx  ; store mid 16 bits of x_frac.w
 mov   ax, si
 
-SELFMODIFY_SPAN_ds_ystep_lo:
-mov   bx, 01000h
 SELFMODIFY_SPAN_ds_ystep_hi:
 mov   dx, 01000h
 
@@ -204,19 +186,13 @@ mov   dx, 01000h
 
 ; inline i4m
 ; DX:AX * CX:BX,  CX is 0000 or FFFF
-        xchg    ax,dx           ; exchange low(M2) and high(M1)
-        or      ax,ax           ; if high(M1) non-zero
-        je skiphigh21              ; then
-          mul   dx              ; - low(M2) * high(M1)
-        skiphigh21:                  ; endif
-        xchg        ax,cx           ; save that in cx, get high(M2)
-        test 	    ax,ax           ; if high(M2) non-zero
-        je  skiphigh22              ; then
-          sub   ax,bx              ; - high(M2) * low(M1)
+        mul     dx              ; - low(M2) * high(M1)
+        mov     cx, ax           ; save that in cx
+        SELFMODIFY_SPAN_ds_ystep_lo:
+        mov     dx, 01000h
 
-        skiphigh22:                  ; endif
         mov     ax, si
-        mul     bx              ; low(M2) * low(M1)
+        mul     dx              ; low(M2) * low(M1)
         add     dx,cx           ; add previously computed high part
 
 ;	continuing:	yfrac.w = basey = ds_yfrac + ds_ystep * prt;
@@ -227,9 +203,9 @@ SELFMODIFY_SPAN_ds_yfrac_lo:
 add   ax, 01000h
 mov   cx, ax
 SELFMODIFY_SPAN_ds_yfrac_hi:
-adc   dx, 01000h
+adc   dl, 010h
 
-; cant preshift?
+; cant preshift cause its the sum
 
 ;	xfrac16.hu = xfrac.wu >> 8;
 
@@ -263,7 +239,7 @@ mov   word ptr ds:[_ss_variable_space], 01000h	; store x_adder
 SELFMODIFY_SPAN_ds_ystep_mid:
 mov   word ptr ds:[_ss_variable_space + 2], 01000h	; y_adder
 
-;todo preshift outside.
+;preshifted outside.
 
 
 
@@ -277,6 +253,7 @@ xchg  ds:[_ss_variable_space], sp             ;  store SP and load x_adder
 xchg  ds:[_ss_variable_space+2], bp			  ;   store BP and load y_adder
 
 ; yfraq16 already in cx
+; todo why is this -2?. should this be 'fixed'
 lds   bx, dword ptr ds:[_ds_source_segment-2] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 
 ; we have a safe memory space declared in near variable space to put sp/bp values
@@ -821,7 +798,7 @@ call R_FixedMulTrigLocal_
 add   ax, word ptr ds:[_viewx]
 adc   dx, word ptr ds:[_viewx+2]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xfrac_lo+1 - OFFSET R_DrawSpan_], ax
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xfrac_hi+2 - OFFSET R_DrawSpan_], dx
+mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xfrac_hi+2 - OFFSET R_DrawSpan_], dl
 
 mov   ax, FINESINE_SEGMENT
 pop   dx              ; get fineangle
@@ -838,16 +815,17 @@ call R_FixedMulTrigLocal_
 ; add viewy
 add   ax, word ptr ds:[_viewy]
 adc   dx, word ptr ds:[_viewy+2]
-; take negative of the whole
-; apparently this is how you neg a dword. 
+
 neg   dx
 neg   ax
+; - sqpat 12/30/24  read below, i used to be so dumb.
+
 ; i dont understand why this is here but the compiler did this. it works with or without, 
 ; probably too tiny an error to be visibly noticable?
 sbb   dx, 0
 
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_yfrac_lo+1 - OFFSET R_DrawSpan_], ax
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_yfrac_hi+2 - OFFSET R_DrawSpan_], dx
+mov   byte ptr cs:[SELFMODIFY_SPAN_ds_yfrac_hi+2 - OFFSET R_DrawSpan_], dl
 
 
 ; 	if (fixedcolormap) {
