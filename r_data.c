@@ -2465,7 +2465,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 	uint8_t texcol;
 	int16_t basecol = col;
 	int16_t realbasecol = col;
-	int16_t loopwidth;
+	uint8_t loopwidth;
 	
 	
 	col &= texturewidthmasks[tex];
@@ -2479,14 +2479,15 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 	// loopwidth is set if this is a repeating texture with a single segment lookup.
 	// we dont have to do RLE stuff and we can take some shortcuts.
 	if (loopwidth){
-		loopwidth++;
-
+		
 		lump = texturecolumnlump[0].h;
 		segloopcachedbasecol[segloopcachetype]  = basecol;
-		seglooptexrepeat[segloopcachetype] 		= loopwidth;
+		seglooptexrepeat[segloopcachetype] 		= loopwidth; // might be 256 and we need the modulo..
+		//seglooptexmodulo[segloopcachetype]      = loopwidth - 1; 
+		// no non power of 2s in vanilla
+		/*
 		if ((loopwidth & loopwidth - 1) == 0) { // power of 2 check
 			// most textures are power of 2 and its much faster to modulo by ANDing (size-1)
-			seglooptexmodulo[segloopcachetype]  = loopwidth - 1; 
 		} else {
 			// we will do a manual modulo process in this case
 			seglooptexmodulo[segloopcachetype]  = 0;
@@ -2495,7 +2496,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 				texcol -= loopwidth;
 			}
 		}
-
+		*/
 		//n+=2;
 	} else {
 
@@ -2713,7 +2714,7 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	int16_t_union __far* texturecolumnlump;
 	int16_t n = 0;
 	uint8_t texcol;
-	int16_t loopwidth;
+	uint8_t loopwidth;
 	int16_t basecol = col;
 	
 	maskedheaderpixeolfs = 0xFFFF;
@@ -2731,11 +2732,13 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	
 
 	if (loopwidth){
-		loopwidth++;
 
 		lump = texturecolumnlump[0].h;
 		maskedcachedbasecol  = basecol;
-		maskedtexrepeat 		= loopwidth;
+		maskedtexrepeat	 	 = loopwidth;
+
+		/*
+		// vanilla does not use powers of 2
 		if ((loopwidth & loopwidth - 1) == 0) { // power of 2 check
 			// most textures are power of 2 and its much faster to modulo by ANDing (size-1)
 			maskedtexmodulo  = loopwidth - 1; 
@@ -2747,6 +2750,7 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 				texcol -= loopwidth;
 			}
 		}
+		*/
 
 		//n+=2;
 	} else {

@@ -696,11 +696,9 @@ mov   bp, sp
 
 
 mov   al, byte ptr ds:[si + 1]
-;2e a2 11 11 
-; al is colormap. this function always uses the high drawcall (for now)
 
-sal   al, 1
-sal   al, 1
+; al is colormap. 
+
 mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 ; todo move this out to a higher level! possibly when executesetviewsize happens.
@@ -1520,7 +1518,7 @@ mov   word ptr ds:[_mceilingclip], 01000h
 
 
 SELFMODIFY_MASKED_fixedcolormap_2:
-jmp fixed_colormap		; jump when fixedcolormap is not 0.
+jne fixed_colormap		; jump when fixedcolormap is not 0.
 SELFMODIFY_MASKED_fixedcolormap_2_AFTER:
 colormap_set:
 
@@ -1782,7 +1780,7 @@ mov   di, word ptr ds:[_maskedcachedbasecol]
 cmp   si, MAXSHORT			; dont render nonmasked columns here.
 je   increment_inner_loop
 SELFMODIFY_MASKED_fixedcolormap_1:
-jmp   got_colormap ; cmp [_fixedcolormap], 0 -> jne gotcolormap
+jne   got_colormap ; cmp [_fixedcolormap], 0 -> jne gotcolormap
 SELFMODIFY_MASKED_fixedcolormap_1_AFTER:
 ; calculate colormap
 cmp   word ptr ds:[_spryscale + 2], 3
@@ -1836,11 +1834,7 @@ get_colormap:
 xor   ah, ah
 mov   bx, word ptr ds:[_walllights]
 add   bx, ax
-mov   ax, SCALELIGHTFIXED_SEGMENT
-mov   es, ax
-mov   al, byte ptr es:[bx]
-sal   al, 1
-sal   al, 1
+mov   al, byte ptr ds:[bx + _scalelightfixed]
 mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 SELFMODIFY_MASKED_fixedcolormap_1_TARGET:
@@ -1862,16 +1856,18 @@ mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_DrawFuzzColum
 
 mov   bx, si  ; bx gets a copy of texture column?
 ;  ax stores _maskedtexrepeat for a little bit
+
 mov   ax, word ptr ds:[_maskedtexrepeat] 
 test  ax, ax
 jz   do_non_repeat
-mov   cx, word ptr ds:[_maskedtexmodulo] 
-jcxz  do_looped_column_calc
+; no more maskedtexmodulo, just use repeat
+;mov   cx, word ptr ds:[_maskedtexmodulo] 
+;jcxz  do_looped_column_calc
 
 ; width is power of 2, just AND
 ;	usetexturecolumn =  &= maskedtexmodulo;
 
-and   bx, cx
+and   bx, ax
 
 repeat_column_calculated:
 
@@ -1931,7 +1927,8 @@ call R_DrawMaskedColumn_
 
 jmp   update_maskedtexturecol_finish_loop_iter
 
-
+COMMENT @
+; unused in vanilla, and untested.
 do_looped_column_calc:
 ; calculate column by looping until 0 < column < width
 ; but column may be offset by (width * n)
@@ -1979,6 +1976,7 @@ mov ds:[_maskedcachedbasecol], di  ; write the changes back
 sub bx, di
 
 jmp repeat_column_calculated
+@
 
 SELFMODIFY_MASKED_lookup_2_TARGET:
 lookup_FF_repeat:
@@ -3463,9 +3461,6 @@ mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_DrawFuzzColum
 jmp done_with_fixedcolormap_selfmodify
 
 do_fixedcolormap_selfmodify:
-; preshift this left 2 now.
-sal   al, 1
-sal   al, 1
 mov   byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_3+5 - OFFSET R_DrawFuzzColumn_], al
 
 ; modify jmp in place.

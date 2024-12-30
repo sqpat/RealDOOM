@@ -23,19 +23,15 @@ INSTRUCTION_SET_MACRO
 
 EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
-EXTRN FixedDiv_:PROC
 ;EXTRN R_AddSprites_:PROC
 EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
-EXTRN FixedMulTrigNoShift_:PROC
-EXTRN FixedMul_:PROC
 EXTRN FastMul16u32u_:PROC
-EXTRN FastDiv3216u_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN R_PointToAngle_:PROC
 EXTRN R_GetColumnSegment_:NEAR
-EXTRN FastDiv3232FFFF_:PROC
+EXTRN R_WriteMathFrameConstants_:NEAR
 
 EXTRN _validcount:WORD
 EXTRN _spritelights:WORD
@@ -44,8 +40,8 @@ EXTRN _spritewidths_segment:WORD
 
 EXTRN _segloopnextlookup:WORD
 EXTRN _segloopprevlookup:WORD
-EXTRN _seglooptexrepeat:WORD
-EXTRN _seglooptexmodulo:BYTE
+EXTRN _seglooptexrepeat:BYTE
+;EXTRN _seglooptexmodulo:BYTE
 EXTRN _segloopcachedbasecol:WORD
 EXTRN _segloopheightvalcache:BYTE
 EXTRN _segloopcachedsegment:WORD
@@ -247,6 +243,335 @@ ret
 endp
 
 
+PROC FixedMulBSPLocal_ FAR
+PUBLIC FixedMulBSPLocal_
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; with sign extend for byte 3:
+; S0:DX:AX    *   S1:CX:BX
+; S0 = DX sign extend
+; S1 = CX sign extend
+
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+
+
+;                               AXBXhi	 AXBXlo
+;                       DXBXhi  DXBXlo          
+;               S0BXhi  S0BXlo                          
+;
+;                       AXCXhi  AXCXlo
+;               DXCXhi  DXCXlo  
+;                       
+;               AXS1hi  AXS1lo
+;                               
+;                       
+;       
+
+
+
+
+; need to get the sign-extends for DX and CX
+
+push  si
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+pop   si
+ret
+
+
+
+ENDP
+
+
+PROC FixedDivBSPLocal_
+PUBLIC FixedDivBSPLocal_
+
+
+;fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
+; fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
+; 	if ((labs(a) >> 14) >= labs(b))
+; 		return (a^b) < 0 ? MINLONG : MAXLONG;
+; 	return FixedDiv2(a, b);
+; }
+
+;    abs(x) = (x XOR y) - y
+;      where y = x's sign bit extended.
+
+
+; DX:AX   /   CX:BX
+ 
+push  si
+push  di
+push  bp
+mov   bp, sp
+
+
+mov   si, dx ; 	si will store sign bit 
+xor   si, cx  ; si now stores signedness via test operator...
+
+
+
+; here we abs the numbers before unsigned division algo
+
+or    cx, cx
+jge   b_is_positive
+neg   bx
+adc   cx, 0
+neg   cx
+
+
+b_is_positive:
+
+or    dx, dx			; sign check
+jge   a_is_positive
+neg   ax
+adc   dx, 0
+neg   dx
+
+
+a_is_positive:
+
+;  dx:ax  is  labs(dx:ax) now (unshifted)
+;  cx:bx  is  labs(cx:bx) now
+test cx, 0FFFCh
+
+
+je continue_bounds_test
+
+; main division algo
+
+do_full_divide:
+
+
+call div48_32_
+
+; set negative if need be...
+
+test  si, si
+
+jl do_negative
+
+LEAVE_MACRO
+
+pop   di
+pop   si
+ret
+
+do_negative:
+
+neg   ax
+adc   dx, 0
+neg   dx
+
+LEAVE_MACRO
+
+pop   di
+pop   si
+ret
+
+continue_bounds_test:
+
+
+
+
+; if high 2 bits of dh arent present at all, and any bits of cx are present
+; then we can quit out quickly.
+
+
+test dh, 0C0h     ; dx AND 0xC000
+jne do_shift_and_full_compare
+test cx, cx
+jne do_full_divide  ; dx >> 14 is zero, cx is nonzero.
+
+
+do_shift_and_full_compare:
+
+; store backup dx:ax in ds:es
+mov ds, dx
+mov es, ax
+
+rol dx, 1
+rol ax, 1
+rol dx, 1
+rol ax, 1
+
+mov di, dx
+and ax, 03h
+and di, 0FFFCh  ; cx, 0FFFCh
+or  ax, di
+and dx, 03h
+
+
+; do comparison  di:bx vs dx:ax
+; 	if ((labs(a) >> 14) >= labs(b))
+
+cmp   dx, cx
+jg    do_quick_return
+jne   restore_reg_then_do_full_divide ; below
+cmp   ax, bx
+jb    restore_reg_then_do_full_divide
+
+do_quick_return: 
+; return (a^b) < 0 ? MINLONG : MAXLONG;
+test  si, si   ; just need to do the high word due to sign?
+jl    return_MAXLONG
+
+return_MINLONG:
+mov   ax, ss
+mov   ds, ax
+
+mov   ax, 0ffffh
+mov   dx, 07fffh
+
+exit_and_return_early:
+
+; restore ds...
+
+LEAVE_MACRO
+pop   di
+pop   si
+ret
+
+return_MAXLONG:
+mov   ax, ss
+mov   ds, ax
+
+mov   dx, 08000h
+xor   ax, ax
+jmp   exit_and_return_early
+
+restore_reg_then_do_full_divide:
+
+; restore dx
+mov dx, ds
+
+; restore ds
+mov ax, ss
+mov ds, ax 
+
+; restore ax
+mov ax, es
+jmp do_full_divide
+
+ENDP
+
+PROC FixedMulTrigNoShiftBSPLocal_
+PUBLIC FixedMulTrigNoShiftBSPLocal_
+; pass in the index already shifted to be a dword lookup..
+
+push  si
+
+; lookup the fine angle
+
+mov si, dx
+mov ds, ax  ; put segment in ES
+lodsw
+mov es, ax
+lodsw
+
+mov   DX, AX    ; store sign bits in DX
+AND   AX, BX	; S0*BX
+NEG   AX
+mov   SI, AX	; SI stores hi word return
+
+mov   AX, DX    ; restore sign bits from DX
+
+AND  AX, CX    ; DX*CX
+NEG  AX
+add  SI, AX    ; low word result into high word return
+
+; DX already has sign bits..
+
+; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+; UNLESS BX is 0. then its also 0!
+
+; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+MOV  AX, BX    ; create BX copy
+SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
+ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
+
+AND  AX, DX    ; 0 or BX - 1
+ADD  SI, AX    ; add DX * BX high word. 
+
+
+AND  DX, BX    ; DX * BX low bits
+NEG  DX
+XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+
+mov  AX, ES    ; grab AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+ 
+MOV CX, SS
+MOV DS, CX    ; put DS back from SS
+
+pop   si
+ret
+
+
+
+ENDP
+
 ;R_PointToDist_
 
 PROC R_PointToDist_ NEAR
@@ -320,7 +645,7 @@ mov   di, cx
 ; dx:ax ffa0fd1a
 
 
-call  FixedDiv_
+call  FixedDivBSPLocal_
 
 ; shift 5. since we do a tantoangle lookup... this maxes at 2048
 sar   dx, 1
@@ -347,7 +672,7 @@ mov   es, ax
 mov   ax, si
 mov   cx, word ptr es:[bx + 2]
 mov   bx, word ptr es:[bx]
-call  FixedDiv_
+call  FixedDivBSPLocal_
 
 pop   di
 pop   si
@@ -414,7 +739,7 @@ mov   ax, word ptr es:[di]
 mov   dx, word ptr es:[di + 2]
 xor   bx, bx
 
-call FixedDiv_  ; TODO! FixedDivWholeB? Optimize?
+call FixedDivBSPLocal_  ; TODO! FixedDivWholeB? Optimize?
 mov   word ptr ds:[_basexscale], ax
 mov   word ptr ds:[_basexscale + 2], dx
 mov   ax, FINESINE_SEGMENT
@@ -425,7 +750,7 @@ mov   cx, 01000h
 mov   ax, word ptr es:[di]
 mov   dx, word ptr es:[di + 2]
 xor   bx, bx
-call FixedDiv_  ; TODO! FixedDivWholeB? Optimize?
+call FixedDivBSPLocal_  ; TODO! FixedDivWholeB? Optimize?
 neg   dx
 neg   ax
 sbb   dx, 0
@@ -812,7 +1137,7 @@ rcr   ax, 1
 sar   dx, 1
 rcr   ax, 1
 
-SELFMODIFY_set_viewz_hi_6:
+SELFMODIFY_BSP_viewz_hi_6:
 cmp   dx, 01000h
 jl    find_floor_plane_index
 je    check_viewz_lowbits_floor
@@ -837,7 +1162,7 @@ jmp   do_addsprites
 
 check_viewz_lowbits_floor:
 
-SELFMODIFY_set_viewz_lo_6:
+SELFMODIFY_BSP_viewz_lo_6:
 cmp   ax, 01000h
 jae   set_floor_plane_minus_one    ; todo move to the other label
 find_floor_plane_index:
@@ -863,11 +1188,11 @@ sar   dx, 1
 rcr   ax, 1
 
 
-SELFMODIFY_set_viewz_hi_5:
+SELFMODIFY_BSP_viewz_hi_5:
 cmp   dx, 01000h
 jg    find_ceiling_plane_index
 jne   set_ceiling_plane_minus_one
-SELFMODIFY_set_viewz_lo_5:
+SELFMODIFY_BSP_viewz_lo_5:
 cmp   ax, 01000h
 jbe   set_ceiling_plane_minus_one
 find_ceiling_plane_index:
@@ -931,7 +1256,6 @@ push      si
 push      di
 
 mov       word ptr cs:[SELFMODIFY_setindex+1], ax
-;mov       si, word ptr ds:[_rw_x]
 mov       si, dx    ; si holds start
 
 
@@ -947,7 +1271,7 @@ shl       di, 1
 add       di, _visplaneheaders  ; _di is plheader
 mov       byte ptr cs:[SELFMODIFY_setisceil + 1], cl  ; write cl value
 test      cl, cl
-;mov       cx, word ptr ds:[_rw_stopx]
+;mov       cx, word ptr [bp - 03Ah]
 mov       cx, bx    ; cx holds stop
 
 je        check_plane_is_floor
@@ -1087,6 +1411,21 @@ ret
 
 ENDP
 
+; NOTE: this may not work right for negative params or DX:AX  besides 0xFFFFFFFF
+; TODO: We only use the low 24 bits of output from this function. can we optimize..?
+;FastDiv3232FFFF_
+; DX:AX / CX:BX
+
+
+PROC FastDiv3232FFFF_ NEAR
+PUBLIC FastDiv3232FFFF_
+
+
+
+
+
+
+endp
 
 
 FF_FRAMEMASK = 07Fh
@@ -1186,7 +1525,7 @@ mov   ax, FINECOSINE_SEGMENT
 SELFMODIFY_set_viewanglesr1_3:
 mov   dx, 01000h
 mov   di, dx
-call  FixedMulTrigNoShift_
+call  FixedMulTrigNoShiftBSPLocal_
 
 
 
@@ -1208,7 +1547,7 @@ xchg  ax, si
 
 mov   ax, FINESINE_SEGMENT
 
-call FixedMulTrigNoShift_
+call FixedMulTrigNoShiftBSPLocal_
 
 ; todo clean this up. less register swapping.
 
@@ -1256,7 +1595,7 @@ mov   ax, FINESINE_SEGMENT
 SELFMODIFY_set_viewanglesr1_2:
 mov   dx, 01000h
 
-call  FixedMulTrigNoShift_
+call  FixedMulTrigNoShiftBSPLocal_
 neg dx
 neg ax
 sbb dx, 0
@@ -1275,7 +1614,7 @@ mov   ax, FINECOSINE_SEGMENT
 SELFMODIFY_set_viewanglesr1_1:
 mov   dx, 01000h
 
-call FixedMulTrigNoShift_
+call FixedMulTrigNoShiftBSPLocal_
 
 ;    tx.w = -(gyt.w+gxt.w); 
 
@@ -1381,13 +1720,13 @@ mov   al, byte ptr es:[di]
 mov   bx, word ptr [bp - 4]
 mov   cx, word ptr [bp - 2]
 xor   ah, ah
-;sub   word ptr [bp - 024h], 0
+
 sub   si, ax						; no need for sbb?
 SELFMODIFY_get_temp_lowbits:
 mov   ax, 01234h
 mov   di, ax
 mov   dx, si
-call FixedMul_
+call FixedMulBSPLocal_
 xchg  ax, dx
 
 SELF_MODIFY_set_centerx_5:
@@ -1436,11 +1775,11 @@ mov   word ptr cs:[SELFMODIFY_set_ax_to_usedwidth+1], ax
 mov   bx, word ptr [bp - 4]
 mov   cx, word ptr [bp - 2]
 mov   dx, si
-;add   word ptr [bp - 024h], 0
+
 add   dx, ax					; no need for adc
 mov   ax, di
 
-call FixedMul_
+call FixedMulBSPLocal_
 
 ;    x2 = temp.h.intbits - 1;
 
@@ -1529,9 +1868,9 @@ mov   word ptr [si + 014h], ax
 
 ;    vis->texturemid = vis->gzt.w - viewz.w;
 
-SELFMODIFY_set_viewz_lo_4:
+SELFMODIFY_BSP_viewz_lo_4:
 sub       bx, 01000h
-SELFMODIFY_set_viewz_hi_4:
+SELFMODIFY_BSP_viewz_hi_4:
 sbb       ax, 01000h
 mov   word ptr [si + 022h], bx
 mov   word ptr [si + 024h], ax
@@ -1600,7 +1939,14 @@ sub   ax, 01234h
 jle   vis_x1_greater_than_x1
 mov   bx, word ptr [si + 01Eh]
 mov   cx, word ptr [si + 020h]
-call FastMul16u32u_
+
+; inlined FastMul16u32u
+XCHG CX, AX    ; AX stored in CX
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
 add   word ptr [si + 016h], ax
 adc   word ptr [si + 018h], dx
 
@@ -1614,9 +1960,9 @@ SELFMODIFY_set_al_to_flags2:
 mov   al, 00h
 test  al, 4
 jne   exit_set_shadow
-SELFMODIFY_set_fixedcolormap_2:
-jmp   exit_set_fixed_colormap
-SELFMODIFY_set_fixedcolormap_2_AFTER:
+SELFMODIFY_BSP_fixedcolormap_2:
+jne   exit_set_fixed_colormap
+SELFMODIFY_BSP_fixedcolormap_2_AFTER:
 test  byte ptr [bp - 6], FF_FULLBRIGHT
 jne   exit_set_fullbright_colormap
 
@@ -1647,10 +1993,8 @@ cmp   ax, MAXLIGHTSCALE
 jl    index_below_maxlightscale
 mov   di, MAXLIGHTSCALE - 1
 index_below_maxlightscale:
-mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   bx, word ptr ds:[_spritelights]
-mov   es, ax
-mov   al, byte ptr es:[bx+di]
+mov   al, byte ptr ds:[_scalelightfixed+bx+di]
 mov   byte ptr [si + 1], al
 LEAVE_MACRO
 pop   es
@@ -1664,8 +2008,8 @@ pop   es
 pop   si
 ret   
 
-SELFMODIFY_set_fixedcolormap_2_TARGET:
-SELFMODIFY_set_fixedcolormap_1:
+SELFMODIFY_BSP_fixedcolormap_2_TARGET:
+SELFMODIFY_BSP_fixedcolormap_1:
 exit_set_fixed_colormap:
 mov   byte ptr [si + 1], 0
 LEAVE_MACRO
@@ -1856,279 +2200,11 @@ ret
 endp
 
 
-; si:di is dc_yl, dc_yh
-
-;R_GetSourceSegment0_
 
 
-;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
 
-; AX is texturecolumn
-; segloopcachetype is 0
 
-PROC R_GetSourceSegment0_ NEAR
-PUBLIC R_GetSourceSegment0_ 
 
-; grab texturecolumn where it was stored before.
-push  es
-push  dx
-xchg  ax, dx
-
-; ax stores texturecolumn. 
-
-; okay. we modify the first instruction in this argument. 
- ; if no texture is yet cached for this rendersegloop, jmp to non_repeating_texture
-  ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
-   ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
-
-SELFMODIFY_BSP_check_seglooptexmodulo0:
-SELFMODIFY_BSP_set_seglooptexrepeat0:
-; this may get replaced with jmp non_po2_texture_mod0 or mov dl, [_segloopheightvalcache]
-jmp    non_repeating_texture0 
-SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
-SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
-SELFMODIFY_set_segloopheightvalcache0:
-mov   ah, 0
-and   al, dl
-mul   ah
-add_base_segment_and_draw0:
-SELFMODIFY_add_cached_segment0:
-add   ax, 01000h
-just_do_draw0:
-mov   word ptr ds:[_dc_source_segment], ax
-SELFMODIFY_set_midtexturemid_hi:
-SELFMODIFY_set_toptexturemid_hi:
-mov   dx, 01000h
-SELFMODIFY_set_midtexturemid_lo:
-SELFMODIFY_set_toptexturemid_lo:
-mov   cx, 01000h
-
-call  R_DrawColumnPrep_
-pop   dx
-pop   es
-ret
-non_po2_texture_mod0:
-; cx stores tex repeat
-SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET:
-SELFMODIFY_BSP_set_seglooptexmodulo0:
-mov   cx, 0
-mov   dx, word ptr [_segloopcachedbasecol]
-cmp   ax, dx
-jge   done_subbing_modulo0
-sub   dx, cx
-continue_subbing_modulo0:
-cmp   ax, dx
-jge   record_subbed_modulo0
-sub   dx, cx
-jmp   continue_subbing_modulo0
-record_subbed_modulo0:
-; at least one write was done. write back.
-mov   word ptr [_segloopcachedbasecol], dx
-
-done_subbing_modulo0:
-
-add   dx, cx
-cmp   ax, dx
-jl    done_adding_modulo0
-continue_adding_modulo0:
-add   dx, cx
-cmp   ax, dx
-jl    record_added_modulo0
-jmp   continue_adding_modulo0
-record_added_modulo0:
-sub   dx, cx
-mov   word ptr [_segloopcachedbasecol], dx
-add   dx, cx
-
-done_adding_modulo0:
-sub   dx, cx
-mov   ah, byte ptr [_segloopheightvalcache]
-sub   al, dl
-mul   ah
-jmp   add_base_segment_and_draw0
-SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
-non_repeating_texture0:
-cmp   ax, word ptr [_segloopnextlookup]
-jge   out_of_texture_bounds0
-cmp   ax, word ptr [_segloopprevlookup]
-jge   in_texture_bounds0
-out_of_texture_bounds0:
-mov   dx, ax
-push  bx
-xor   bx, bx
-
-SELFMODIFY_set_toptexture:
-SELFMODIFY_set_midtexture:
-mov   ax, 01000h
-call  R_GetColumnSegment_
-pop   bx
-
-mov   dx, word ptr [_segloopcachedsegment]
-mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
-mov   dl, byte ptr [_segloopheightvalcache]
-mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache0+1], dl
-mov   dh, byte ptr [_seglooptexmodulo]
-mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1], dh
-
-cmp   dh, 0
-je    seglooptexmodulo0_is_jmp
-
-mov   dl, 0B2h   ;  (mov dl, xx)
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], dx
-jmp   check_seglooptexrepeat0
-seglooptexmodulo0_is_jmp:
-
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
-
-check_seglooptexrepeat0:
-cmp   word ptr [_seglooptexrepeat], 0
-je    seglooptexrepeat0_is_jmp
-; dont do anything. this was written in the step before.
-jmp   just_do_draw0
-; do jmp. highest priority, overwrite previously written thing.
-seglooptexrepeat0_is_jmp:
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
-jmp   just_do_draw0
-in_texture_bounds0:
-mov   dx, word ptr [_segloopcachedbasecol]
-mov   ah, byte ptr [_segloopheightvalcache]
-sub   al, dl
-mul   ah
-jmp   add_base_segment_and_draw0
-
-ENDP
-
-;R_GetSourceSegment1_
-
-;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
-
-; AX is texturecolumn
-; segloopcachetype is 1
-
-PROC R_GetSourceSegment1_ NEAR
-PUBLIC R_GetSourceSegment1_ 
-
-; grab texturecolumn where it was stored before.
-push  es
-push  dx
-xchg  ax, dx
-
-; ax stores texturecolumn. 
-
-SELFMODIFY_BSP_check_seglooptexmodulo1:
-SELFMODIFY_BSP_set_seglooptexrepeat1:
-jmp    non_repeating_texture1
-;mov   dl, 0
-SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER:
-SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER:
-SELFMODIFY_set_segloopheightvalcache1:
-mov   ah, 0
-and   al, dl
-mul   ah
-add_base_segment_and_draw1:
-SELFMODIFY_add_cached_segment1:
-add   ax, 01000h
-just_do_draw1:
-mov   word ptr ds:[_dc_source_segment], ax
-
-SELFMODIFY_set_bottexturemid_hi:
-mov   dx, 01000h
-SELFMODIFY_set_bottexturemid_lo:
-mov   cx, 01000h
-
-call  R_DrawColumnPrep_
-pop   dx
-pop   es
-ret
-non_po2_texture_mod1:
-; cx stores tex repeat
-SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET:
-SELFMODIFY_BSP_set_seglooptexmodulo1:
-mov   cx, 0
-mov   dx, word ptr [2 + _segloopcachedbasecol]
-cmp   ax, dx
-jge   done_subbing_modulo1
-sub   dx, cx
-continue_subbing_modulo1:
-cmp   ax, dx
-jge   record_subbed_modulo1
-sub   dx, cx
-jmp   continue_subbing_modulo1
-record_subbed_modulo1:
-; at least one write was done. write back.
-mov   word ptr [2 + _segloopcachedbasecol], dx
-
-done_subbing_modulo1:
-
-add   dx, cx
-cmp   ax, dx
-jl    done_adding_modulo1
-continue_adding_modulo1:
-add   dx, cx
-cmp   ax, dx
-jl    record_added_modulo1
-jmp   continue_adding_modulo1
-record_added_modulo1:
-sub   dx, cx
-mov   word ptr [2 + _segloopcachedbasecol], dx
-add   dx, cx
-
-done_adding_modulo1:
-sub   dx, cx
-mov   ah, byte ptr [1 + _segloopheightvalcache]
-sub   al, dl
-mul   ah
-jmp   add_base_segment_and_draw1
-SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET:
-non_repeating_texture1:
-cmp   ax, word ptr [2 + _segloopnextlookup]
-jge   out_of_texture_bounds1
-cmp   ax, word ptr [2 + _segloopprevlookup]
-jge   in_texture_bounds1
-out_of_texture_bounds1:
-mov   dx, ax
-push  bx
-mov   bx, 1
-
-SELFMODIFY_set_bottomtexture:
-mov   ax, 01000h
-call  R_GetColumnSegment_
-pop   bx
-
-mov   dx, word ptr [2 + _segloopcachedsegment]
-mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
-mov   dl, byte ptr [1 + _segloopheightvalcache]
-mov   byte ptr cs:[SELFMODIFY_set_segloopheightvalcache1+1], dl
-mov   dh, byte ptr [1 + _seglooptexmodulo]
-mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo1+1], dh
-
-cmp   dh, 0
-je    seglooptexmodulo1_is_jmp
-
-mov   dl, 0B2h   ;  (mov dl, xx)
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], dx
-jmp   check_seglooptexrepeat1
-seglooptexmodulo1_is_jmp:
-
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
-
-check_seglooptexrepeat1:
-cmp   word ptr [2 + _seglooptexrepeat], 0
-je    seglooptexrepeat1_is_jmp
-; dont do anything. this was written in the step before.
-jmp   just_do_draw1
-; do jmp. highest priority, overwrite previously written thing.
-seglooptexrepeat1_is_jmp:
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
-jmp   just_do_draw1
-in_texture_bounds1:
-mov   dx, word ptr [2 + _segloopcachedbasecol]
-mov   ah, byte ptr [1 + _segloopheightvalcache]
-sub   al, dl
-mul   ah
-jmp   add_base_segment_and_draw1
-
-ENDP
 
 
 ; 1 SHR 12
@@ -2154,7 +2230,7 @@ push  si
 push  di
 
 xchg  ax, cx
-mov   ax, word ptr ds:[_rw_x]
+mov   ax, word ptr [bp - 038h]    ; rw_x
 mov   bx, ax
 mov   di, ax
 SELFMODIFY_detailshift_and_1:
@@ -2170,13 +2246,13 @@ mov   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1], 0
 
 
 
-mov   ax, word ptr ds:[_rw_stopx]
+mov   ax, word ptr [bp - 03Ah]
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_1+1], ax
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_2+1], ax
 mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_3+1], ax
 
 
-cmp   byte ptr ds:[_markfloor], 0
+cmp   byte ptr [bp - 04Ah], 0 ;markfloor
 
 je    do_markfloor_selfmodify_jumps
 mov   ax, 04940h     ; inc ax dec cx
@@ -2190,7 +2266,7 @@ do_markfloor_selfmodify:
 mov   word ptr cs:[SELFMODIFY_BSP_markfloor_1], ax
 mov   word ptr cs:[SELFMODIFY_BSP_markfloor_2], si
 
-mov   ah, byte ptr ds:[_markceiling]
+mov   ah, byte ptr [bp - 049h] ;markceiling
 cmp   ah, 0   
 
 je    do_markceiling_selfmodify_jumps
@@ -2230,17 +2306,17 @@ sub_base4diff:
 
 
 SELFMODIFY_sub_rwscale_lo:
-sub   word ptr ds:[_rw_scale], 01000h
+sub   word ptr [bp - 032h], 01000h
 SELFMODIFY_sub_rwscale_hi:
-sbb   word ptr ds:[_rw_scale + 2], 01000h
+sbb   word ptr [bp - 030h], 01000h
 SELFMODIFY_sub_topstep_lo:
-sub   word ptr ds:[_topfrac], 01000h
+sub   word ptr [bp - 02Eh], 01000h
 SELFMODIFY_sub_topstep_hi:
-sbb   word ptr ds:[_topfrac+2], 01000h
+sbb   word ptr [bp - 02Ch], 01000h
 SELFMODIFY_sub_botstep_lo:
-sub   word ptr ds:[_bottomfrac], 01000h
+sub   word ptr [bp - 02Ah], 01000h
 SELFMODIFY_sub_botstep_hi:
-sbb   word ptr ds:[_bottomfrac+2], 01000h
+sbb   word ptr [bp - 028h], 01000h
 
 ; THIS IS COMPLICATED because of the fall through after loop. 
 ; could do a 2nd modded instruction worth jump? is that worth it?
@@ -2250,13 +2326,13 @@ SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4:
 ; todo: why does this equal +1 instead of +2???
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4 + 2
 SELFMODIFY_sub_pixlow_lo:
-sub   word ptr ds:[_pixlow], 01000h
+sub   word ptr [bp - 026h], 01000h
 SELFMODIFY_sub_pixlow_hi:
-sbb   word ptr ds:[_pixlow+2], 01000h
+sbb   word ptr [bp - 024h], 01000h
 SELFMODIFY_sub_pixhigh_lo:
-sub   word ptr ds:[_pixhigh], 01000h
+sub   word ptr [bp - 022h], 01000h
 SELFMODIFY_sub_pixhigh_hi:
-sbb   word ptr ds:[_pixhigh+2], 01000h
+sbb   word ptr [bp - 020h], 01000h
 
 loop   sub_base4diff
 skip_sub_base4diff:
@@ -2267,11 +2343,11 @@ skip_sub_base4diff:
 ;	base_pixlow     = pixlow;
 ;	base_pixhigh    = pixhigh;
 
-mov   si, OFFSET _rw_scale
+lea   si, [bp - 032h]
 
-lodsw ; rw_scale lo
+lodsw
 mov   word ptr cs:[SELFMODIFY_set_rw_scale_lo+1], ax
-lodsw ; rw_scale hi
+lodsw
 mov   word ptr cs:[SELFMODIFY_set_rw_scale_hi+1], ax
 lodsw ; topfrac lo
 mov   word ptr cs:[SELFMODIFY_set_topfrac_lo+1], ax
@@ -2293,11 +2369,12 @@ mov   word ptr cs:[SELFMODIFY_set_pixhigh_lo+1], ax
 lodsw ; pixhigh hi
 mov   word ptr cs:[SELFMODIFY_set_pixhigh_hi+1], ax
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET:
-mov   dx, SC_DATA  ; cheat this out of the loop..
 mov   al, 0 ; xoffset is 0
-continue_outer_rendersegloop:
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET:
+mov   dx, SC_DATA  ; cheat this out of the loop..
 
+continue_outer_rendersegloop:
+
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET:
 cbw  
 mov   bx, ax	; copy xoffset to bx
 inc   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1]
@@ -2316,9 +2393,9 @@ out   dx, al
 ; pixlow     = base_pixlow;
 ; pixhigh    = base_pixhigh;
 
-mov   ax, ds
-mov   es, ax
-mov   di, OFFSET _rw_scale
+mov   dx, ss
+mov   es, dx
+lea   di, [bp - 032h]
 
 SELFMODIFY_set_rw_scale_lo:
 mov   ax, 01000h
@@ -2360,17 +2437,19 @@ SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET:
 xchg  ax, bx	; get xoffset  back
 SELFMODIFY_add_rw_x_base4_to_ax:
 add   ax, 1000h
-mov   word ptr ds:[_rw_x], ax
+mov   word ptr [bp - 038h], ax    ; rw_x
 SELFMODIFY_compare_ax_to_start_rw_x:
 cmp   ax, 1000h
 jl    pre_increment_values
 
 SELFMODIFY_cmp_di_to_rw_stopx_3:
-cmp   ax, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
+cmp   ax, 01000h   ; cmp   di, word ptr [bp - 03Ah]
 jl    jump_to_start_per_column_inner_loop
 
 finish_outer_loop:
 ; todo: self modifying code for step values.
+
+
 
 ; xoffset++,
 ; base_topfrac    += topstep, 
@@ -2426,8 +2505,8 @@ mov   ax, 0FFFFh
 mov   word ptr ds:[_segloopnextlookup], ax
 mov   word ptr ds:[_segloopnextlookup+2], ax
 inc   ax
+; zero both 
 mov   word ptr ds:[_seglooptexrepeat], ax
-mov   word ptr ds:[_seglooptexrepeat+2], ax
 
 
 pop   di
@@ -2441,7 +2520,7 @@ ret
 jump_to_start_per_column_inner_loop:
 jmp   start_per_column_inner_loop
 jump_to_finish_outer_loop_2:
-mov   dx, SC_DATA
+mov   dx, SC_DATA  ; cheat this out of the loop..
 jmp   finish_outer_loop
 pre_increment_values:
 
@@ -2458,38 +2537,38 @@ pre_increment_values:
 
 
 SELFMODIFY_add_iter_to_rw_x:
-; ax was already up-to-daterw_x
+; ax was already up-to-date rw_x
 add   ax, 1
-mov   word ptr ds:[_rw_x], ax
-SELFMODIFY_add_to_topfrac_lo_2:
-add   word ptr ds:[_topfrac], 01000h
-SELFMODIFY_add_to_topfrac_hi_2:
-adc   word ptr ds:[_topfrac+2], 01000h
-SELFMODIFY_add_to_bottomfrac_lo_2:
-add   word ptr ds:[_bottomfrac], 01000h
-SELFMODIFY_add_to_bottomfrac_hi_2:
-adc   word ptr ds:[_bottomfrac+2], 01000h
+mov   word ptr [bp - 038h], ax     ; rw_x
 SELFMODIFY_add_to_rwscale_lo_2:
-add   word ptr ds:[_rw_scale], 01000h
+add   word ptr [bp - 032h], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
-adc   word ptr ds:[_rw_scale + 2], 01000h
+adc   word ptr [bp - 030h], 01000h
+SELFMODIFY_add_to_topfrac_lo_2:
+add   word ptr [bp - 02Eh], 01000h
+SELFMODIFY_add_to_topfrac_hi_2:
+adc   word ptr [bp - 02Ch], 01000h
+SELFMODIFY_add_to_bottomfrac_lo_2:
+add   word ptr [bp - 02Ah], 01000h
+SELFMODIFY_add_to_bottomfrac_hi_2:
+adc   word ptr [bp - 028h], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1:
 jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 + 2
 SELFMODIFY_add_to_pixlow_lo_2:
-add   word ptr ds:[_pixlow], 01000h
+add   word ptr [bp - 026h], 01000h
 SELFMODIFY_add_to_pixlow_hi_2:
-adc   word ptr ds:[_pixlow+2], 01000h
+adc   word ptr [bp - 024h], 01000h
 SELFMODIFY_add_to_pixhigh_lo_2:
-add   word ptr ds:[_pixhigh], 01000h
+add   word ptr [bp - 022h], 01000h
 SELFMODIFY_add_to_pixhigh_hi_2:
-adc   word ptr ds:[_pixhigh+2], 01000h
+adc   word ptr [bp - 020h], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET:
 ; this is right before inner loop start
 SELFMODIFY_cmp_di_to_rw_stopx_1:
-cmp   ax, 01000h   ; cmp   ax, word ptr ds:[_rw_stopx]
+cmp   ax, 01000h   ; cmp   ax, word ptr [bp - 03Ah]
 jge   jump_to_finish_outer_loop_2
 
 start_per_column_inner_loop:
@@ -2500,14 +2579,14 @@ mov   di, ax   ; ax was still rw_x
 
 mov   ax, OPENINGS_SEGMENT
 mov   es, ax
-mov   bx, di ; di = rw_x
+mov   bx, di                                     ; di = rw_x
 mov   cx, word ptr es:[bx+di+OFFSET_FLOORCLIP]	 ; cx = floor
 mov   si, word ptr es:[bx+di+OFFSET_CEILINGCLIP] ; dx = ceiling
 inc   si
 
-mov   ax, word ptr ds:[_topfrac]
+mov   ax, word ptr [bp - 02Eh]
 add   ax, ((HEIGHTUNIT)-1)
-mov   dx, word ptr ds:[_topfrac+2]
+mov   dx, word ptr [bp - 02Ch]
 adc   dx, 0
 
 mov   al, ah
@@ -2548,19 +2627,19 @@ skip_bottom_floorclip:
 cmp   si, ax
 jg    markceiling_done
 les   bx, dword ptr ds:[_ceiltop] 
-mov   dx, si
-mov   byte ptr es:[bx+di], dl
 mov   byte ptr es:[bx+di + 0142h], al		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
+mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
+mov   byte ptr es:[bx+di], al
 SELFMODIFY_BSP_markceiling_1_TARGET:
 markceiling_done:
 
 ; yh = bottomfrac>>HEIGHTBITS;
 
 ; any of these bits being set means yh > 320 and clips
-cmp   byte ptr ds:[_bottomfrac+3], 0
+cmp   byte ptr [bp - 027h], 0
 jne	  do_yh_floorclip
 
-mov   ax, word ptr ds:[_bottomfrac+1] ; get bytes 2 and 3..
+mov   ax, word ptr [bp - 029h] ; get bytes 2 and 3..
 
 ; screenheight << HEIGHTBITS 
 ; if AH > 20 , then we know yh cannot be smaller than floor clip which maxes out at screenheight+1
@@ -2616,11 +2695,9 @@ mov   byte ptr es:[bx+di], al
 mov   byte ptr es:[bx+di + 0142h], cl
 SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
-SELFMODIFY_get_segtextured:
-mov   dx, 0
-test  dx, dx
-je   jump_to_seg_non_textured
-
+SELFMODIFY_BSP_get_segtextured:
+je    jump_to_seg_non_textured
+SELFMODIFY_BSP_get_segtextured_AFTER:
 seg_is_textured:
 
 ; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
@@ -2635,12 +2712,12 @@ and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 ; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
 
-mov   dx, FINETANGENTINNER_SEGMENT
-mov   es, dx
+mov   bx, FINETANGENTINNER_SEGMENT
+mov   es, bx
 cmp   ax, FINE_TANGENT_MAX
 mov   bx, ax
 jb    non_subtracted_finetangent
-; mirrored values.
+; mirrored values in lookup table
 neg   bx
 add   bx, 4095
 shl   bx, 1
@@ -2651,7 +2728,9 @@ neg   dx
 neg   ax
 sbb   dx, 0
 jmp   finetangent_ready
+SELFMODIFY_BSP_get_segtextured_TARGET:
 jump_to_seg_non_textured:
+xor   dx, dx
 jmp   seg_non_textured
 non_subtracted_finetangent:
 shl   bx, 1
@@ -2664,7 +2743,48 @@ SELFMODIFY_set_bx_rw_distance_lo:
 mov   bx, 01000h	; mov   bx, word ptr ds:[_rw_distance]
 SELFMODIFY_set_cx_rw_distance_hi:
 mov   cx, 01000h	; mov   cx, word ptr ds:[_rw_distance+2]
-call FixedMul_
+
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+
 SELFMODIFY_set_cx_rw_offset_lo:	;
 mov   cx, 01000h			; mov   cx, word ptr ds:[_rw_offset]
 sub   cx, ax
@@ -2678,7 +2798,9 @@ sbb   ax, dx
 ;		index = rw_scale.w >> LIGHTSCALESHIFT;
 ;	}
 
-les   bx, dword ptr ds:[_rw_scale]
+; CX:BX rw_scale
+; todo bp/stack candidate
+les   bx, dword ptr [bp - 032h]
 mov   cx, es
 
 ; store texture column
@@ -2701,12 +2823,264 @@ rcr   ax, 1
 mov   si, ax
 jmp   light_set
 
+
+fast_div_32_16_FFFF:
+
+xchg dx, cx   ; cx was 0, dx is FFFF
+div bx        ; after this dx stores remainder, ax stores q1
+xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+div bx
+mov dx, cx   ; q1:q0 is dx:ax
+jmp FastDiv3232FFFF_done 
+
+
 use_max_light:
 mov   si, MAXLIGHTSCALE - 1
 light_set:
 
-; internally sets ax:dx ffffffff
-call FastDiv3232FFFF_
+; INLINED FASTDIV3232FFF_ algo. only used here.
+
+; set ax:dx ffffffff
+
+; if top 16 bits missing just do a 32 / 16
+mov  ax, -1
+cwd
+
+test cx, cx
+je fast_div_32_16_FFFF
+
+main_3232_div:
+
+push  si
+push  di
+
+
+
+XOR SI, SI ; zero this out to get high bits of numhi
+
+
+
+
+test ch, ch
+jne shift_bits_3232
+; shift a whole byte immediately
+
+mov ch, cl
+mov cl, bh
+mov bh, bl
+xor bl, bl
+
+; dont need a full shift 8 because we know everything is FF
+mov  si, 000FFh
+xor al, al
+
+shift_bits_3232:
+
+; less than a byte to shift
+; shift until MSB is 1
+; DX gets 1s so we can skip it.
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232  
+SAL AX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+
+
+
+; store this
+done_shifting_3232:
+
+; we overshifted by one and caught it in the carry bit. lets shift back right one.
+
+RCR CX, 1
+RCR BX, 1
+
+
+; SI:DX:AX holds divisor...
+; CX:BX holds dividend...
+; numhi = SI:DX
+; numlo = AX:00...
+
+
+; save numlo word in sp.
+; avoid going to memory... lets do interrupt magic
+mov di, ax
+
+
+; set up first div. 
+; dx:ax becomes numhi
+mov   ax, dx
+mov   dx, si    
+
+; store these two long term...
+mov   si, bx
+
+
+
+; numhi is 00:SI in this case?
+
+;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+; DX:AX = numhi.wu
+
+
+div   cx
+
+; rhat = dx
+; qhat = ax
+;    c1 = FastMul16u16u(qhat , den0);
+
+mov   bx, dx					; bx stores rhat
+mov   es, ax     ; store qhat
+
+mul   si   						; DX:AX = c1
+
+
+; c1 hi = dx, c2 lo = bx
+cmp   dx, bx
+
+ja    check_c1_c2_diff_3232
+jne   q1_ready_3232
+cmp   ax, di
+jbe   q1_ready_3232
+check_c1_c2_diff_3232:
+
+; (c1 - c2.wu > den.wu)
+
+sub   ax, di
+sbb   dx, bx
+cmp   dx, cx
+ja    qhat_subtract_2_3232
+je    compare_low_word_3232
+
+qhat_subtract_1_3232:
+mov ax, es
+dec ax
+xor dx, dx
+
+pop   di
+pop   si
+jmp FastDiv3232FFFF_done
+
+compare_low_word_3232:
+cmp   ax, si
+jbe   qhat_subtract_1_3232
+
+; ugly but rare occurrence i think?
+qhat_subtract_2_3232:
+mov ax, es
+dec ax
+dec ax
+
+pop   di
+pop   si
+jmp FastDiv3232FFFF_done  
+
+
+; do jmp. highest priority, overwrite previously written thing.
+seglooptexrepeat0_is_jmp:
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
+jmp   just_do_draw0
+in_texture_bounds0:
+xchg  ax, dx
+sub   al, byte ptr [_segloopcachedbasecol]
+mul   byte ptr [_segloopheightvalcache]
+jmp   add_base_segment_and_draw0
+SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
+non_repeating_texture0:
+cmp   dx, word ptr [_segloopnextlookup]
+jge   out_of_texture_bounds0
+cmp   dx, word ptr [_segloopprevlookup]
+jge   in_texture_bounds0
+out_of_texture_bounds0:
+push  bx
+xor   bx, bx
+
+SELFMODIFY_BSP_set_toptexture:
+SELFMODIFY_BSP_set_midtexture:
+mov   ax, 01000h
+call  R_GetColumnSegment_
+pop   bx
+
+mov   dx, word ptr [_segloopcachedsegment]
+mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
+
+COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
+; see above, but all textures in vanilla are po2 so this is not necessary for now.
+mov   dh, byte ptr [_seglooptexmodulo]
+mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1], dh
+
+cmp   dh, 0
+je    seglooptexmodulo0_is_jmp
+
+mov   dl, 0B2h   ;  (mov dl, xx)
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], dx
+jmp   check_seglooptexrepeat0
+seglooptexmodulo0_is_jmp:
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
+check_seglooptexrepeat0:
+@
+
+mov   dh, byte ptr [_seglooptexrepeat]
+cmp   dh, 0
+je    seglooptexrepeat0_is_jmp
+; modulo is seglooptexrepeat - 1
+mov   dl, byte ptr [_segloopheightvalcache]
+mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
+
+jmp   just_do_draw0
+
+
+
+q1_ready_3232:
+
+mov  ax, es
+xor  dx, dx;
+
+pop   di
+pop   si
+
+FastDiv3232FFFF_done:
 
 ; do the bit shuffling etc when writing direct to drawcol.
 
@@ -2714,21 +3088,17 @@ mov   dh, dl
 mov   dl, ah
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax		; todo: write these to code but masked has to as well..
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1], dx  
-mov   ax, SCALELIGHTFIXED_SEGMENT
-mov   es, ax
 SELFMODIFY_add_wallights:
 
-; todo: make scalelight be pre-shifted 4 to save on the double sal below.
-mov   al, byte ptr es:[si+01000h]
+; scalelight is pre-shifted 4 to save on the double sal every column.
+mov   al, byte ptr ds:[si+01000h]
 ;        set drawcolumn colormap function address
-sal   al, 1
-sal   al, 1
 mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
 
 ; store dc_x directly in code
 mov   word ptr cs:[SELFMODIFY_COLFUNC_get_dc_x+1], di
 
-; get x     in dx
+; get texturecolumn     in dx
 pop   dx
 
 seg_non_textured:
@@ -2739,7 +3109,7 @@ add   bx, bx
 mov   ax, OPENINGS_SEGMENT
 mov   es, ax
 
-; dx holds x
+; dx holds texturecolumn
 ; get yl/yh in di/si
 pop   di
 pop   si
@@ -2750,15 +3120,55 @@ cmp   di, si
 jl    mid_no_pixels_to_draw
 
 ; si:di are dc_yl, dc_yh
-; dx holds dc_x
+; dx holds texturecolumn
 
-call  R_GetSourceSegment0_
+; inlined function. 
+R_GetSourceSegment0_START:
+push  es
+push  dx
+
+
+; okay. we modify the first instruction in this argument. 
+ ; if no texture is yet cached for this rendersegloop, jmp to non_repeating_texture
+  ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
+   ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
+
+SELFMODIFY_BSP_check_seglooptexmodulo0:
+SELFMODIFY_BSP_set_seglooptexrepeat0:
+; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
+jmp    non_repeating_texture0
+SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
+SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
+xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
+and   dl, ah   ; ah has loopwidth-1 (modulo )
+mul   dl       ; al has heightval
+add_base_segment_and_draw0:
+SELFMODIFY_add_cached_segment0:
+add   ax, 01000h
+just_do_draw0:
+mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later.
+SELFMODIFY_set_midtexturemid_hi:
+SELFMODIFY_set_toptexturemid_hi:
+mov   dx, 01000h
+SELFMODIFY_set_midtexturemid_lo:
+SELFMODIFY_set_toptexturemid_lo:
+mov   cx, 01000h
+
+call  R_DrawColumnPrep_
+pop   dx
+pop   es
+
+; this runs as a jmp for a top call, otherwise NOP for mid call
+SELFMODIFY_BSP_midtexture_return_jmp:
+; JMP back runs for a TOP call
+; we overwrite the next instruction with a jmp if toptexture call. otherwise we restore it.
+SELFMODIFY_BSP_midtexture_return_jmp_AFTER = SELFMODIFY_BSP_midtexture_return_jmp+3
 
 
 mid_no_pixels_to_draw:
 ; bx is already _rw_x << 1
 SELFMODIFY_setviewheight_1:
-mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h
+mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h   ; 26 c7 87 80 a7 00 10  (this instruction that gets selfmodified)
 mov   word ptr es:[bx + OFFSET_FLOORCLIP], 0FFFFh
 finished_inner_loop_iter:
 
@@ -2769,28 +3179,28 @@ finished_inner_loop_iter:
 ;			rw_scale.w  += rwscaleshift
 
 SELFMODIFY_add_detailshiftitercount:
-add   word ptr ds:[_rw_x], 0
-mov   ax, word ptr ds:[_rw_x]
+add   word ptr [bp - 038h], 0   ; rw_x
+mov   ax, word ptr [bp - 038h]  ; rw_x
 SELFMODIFY_cmp_di_to_rw_stopx_2:
-cmp   ax, 01000h   ; cmp   di, word ptr ds:[_rw_stopx]
+cmp   ax, 01000h   ; cmp   di, word ptr [bp - 03Ah]
 jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
 
 
-SELFMODIFY_add_to_topfrac_lo_1:
-add   word ptr ds:[_topfrac], 01000h
-SELFMODIFY_add_to_topfrac_hi_1:
-adc   word ptr ds:[_topfrac+2], 01000h
-SELFMODIFY_add_to_bottomfrac_lo_1:
-add   word ptr ds:[_bottomfrac], 01000h
-SELFMODIFY_add_to_bottomfrac_hi_1:
-adc   word ptr ds:[_bottomfrac+2], 01000h
 SELFMODIFY_add_to_rwscale_lo_1:
-add   word ptr ds:[_rw_scale], 01000h
+add   word ptr [bp - 032h], 01000h
 SELFMODIFY_add_to_rwscale_hi_1:
-adc   word ptr ds:[_rw_scale + 2], 01000h
+adc   word ptr [bp - 030h], 01000h
+SELFMODIFY_add_to_topfrac_lo_1:
+add   word ptr [bp - 02Eh], 01000h
+SELFMODIFY_add_to_topfrac_hi_1:
+adc   word ptr [bp - 02Ch], 01000h
+SELFMODIFY_add_to_bottomfrac_lo_1:
+add   word ptr [bp - 02Ah], 01000h
+SELFMODIFY_add_to_bottomfrac_hi_1:
+adc   word ptr [bp - 028h], 01000h
 jmp   start_per_column_inner_loop
 jump_to_finish_outer_loop:
-mov   dx, SC_DATA
+mov   dx, SC_DATA  ; cheat this out of the loop..
 jmp   finish_outer_loop
 
 SELFMODIFY_BSP_toptexture_TARGET:
@@ -2798,7 +3208,7 @@ no_top_texture_draw:
 ; bx is already rw_x << 1
 SELFMODIFY_BSP_markceiling_2:
 je   check_bottom_texture
-SELFMODIFY_BSP_markceiling_2_AFTER = SELFMODIFY_BSP_markceiling_2+2
+SELFMODIFY_BSP_markceiling_2_AFTER:
 ; bx is already rw_x << 1
 mark_ceiling_si:
 ; bx is already rw_x << 1
@@ -2813,8 +3223,8 @@ SELFMODIFY_BSP_toptexture:
 SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 2
 
 do_top_texture_draw:
-mov   ax, word ptr ds:[_pixhigh+1]
-mov   cl, byte ptr ds:[_pixhigh+3]
+mov   ax, word ptr [bp - 021h]
+mov   cl, byte ptr [bp - 01Fh]
 sar   cl, 1
 rcr   ax, 1
 sar   cl, 1
@@ -2824,9 +3234,9 @@ rcr   ax, 1
 sar   cl, 1
 rcr   ax, 1
 SELFMODIFY_add_to_pixhigh_lo_1:
-add   word ptr ds:[_pixhigh], 01000h
+add   word ptr [bp - 022h], 01000h
 SELFMODIFY_add_to_pixhigh_hi_1:
-adc   word ptr ds:[_pixhigh+2], 01000h
+adc   word ptr [bp - 020h], 01000h
 ; bx is rw_x << 1
 mov   cx, ax
 mov   ax, word ptr es:[bx + OFFSET_FLOORCLIP]
@@ -2846,9 +3256,11 @@ push   cx ; note: midtexture doesnt need/use cx and doesnt do this.
 
 
 ; si:di are dc_yl, dc_yh
-; dx holds dc_x
+; dx holds texturecolumn
 
-call  R_GetSourceSegment0_
+jmp R_GetSourceSegment0_START
+SELFMODIFY_BSP_midtexture_return_jmp_TARGET:
+R_GetSourceSegment0_DONE_TOP:
 
 pop    cx
 xchg   cx, di
@@ -2866,10 +3278,10 @@ SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 
 do_bottom_texture_draw:
 SELFMODIFY_get_pixlow_lo:
-mov   ax, word ptr ds:[_pixlow]
+mov   ax, word ptr [bp - 026h]
 add   ax, ((HEIGHTUNIT)-1)
 SELFMODIFY_get_pixlow_hi:
-mov   cx, word ptr ds:[_pixlow+2]
+mov   cx, word ptr [bp - 024h]
 adc   cx, 0
 mov   al, ah
 mov   ah, cl
@@ -2882,9 +3294,9 @@ rcr   ax, 1
 sar   ch, 1
 rcr   ax, 1
 SELFMODIFY_add_to_pixlow_lo_1:
-add   word ptr ds:[_pixlow], 01000h
+add   word ptr [bp - 026h], 01000h
 SELFMODIFY_add_to_pixlow_hi_1:
-adc   word ptr ds:[_pixlow+2], 01000h
+adc   word ptr [bp - 024h], 01000h
 
 mov   cx, ax
 mov   ax, word ptr es:[bx+OFFSET_CEILINGCLIP]
@@ -2903,19 +3315,52 @@ xchg   cx, si
 ; si:di are dc_yl, dc_yh
 
 ; si:di are dc_yl, dc_yh
-; dx holds dc_x
+; dx holds texturecolumn
 
-call   R_GetSourceSegment1_
+; BEGIN INLINED R_GetSourceSegment1_
+
+push  es
+push  dx
+
+
+SELFMODIFY_BSP_check_seglooptexmodulo1:
+SELFMODIFY_BSP_set_seglooptexrepeat1:
+; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
+je    non_repeating_texture1
+SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER:
+SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER:
+xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
+and   dl, ah   ; ah has loopwidth-1 (modulo )
+mul   dl       ; al has heightval
+add_base_segment_and_draw1:
+SELFMODIFY_add_cached_segment1:
+add   ax, 01000h
+just_do_draw1:
+mov   word ptr ds:[_dc_source_segment], ax
+
+SELFMODIFY_set_bottexturemid_hi:
+mov   dx, 01000h
+SELFMODIFY_set_bottexturemid_lo:
+mov   cx, 01000h
+
+call  R_DrawColumnPrep_
+pop   dx
+pop   es
+
+
+
+;END INLINED R_GetSourceSegment1_
+
 xchg   cx, si
 
 mark_floor_cx:
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
 SELFMODIFY_BSP_markfloor_2_TARGET:
 done_marking_floor:
-SELFMODIFY_BSP_maskedtexture_1:
+SELFMODIFY_get_maskedtexture_1:
+mov   al, 0
+test  al, al
 jne   record_masked
-SELFMODIFY_BSP_maskedtexture_1_AFTER:
-
 jmp   finished_inner_loop_iter
 SELFMODIFY_BSP_bottexture_TARGET:
 no_bottom_texture_draw:
@@ -2926,14 +3371,127 @@ SELFMODIFY_BSP_markfloor_2_AFTER = SELFMODIFY_BSP_markfloor_2+2
 mark_floor_di:
 inc   di
 mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
-SELFMODIFY_BSP_maskedtexture_2:
+SELFMODIFY_get_maskedtexture_2:
+mov   al, 0
+test  al, al
 jne   record_masked
-SELFMODIFY_BSP_maskedtexture_2_AFTER:
 jmp   finished_inner_loop_iter
+;BEGIN INLINED R_GetSourceSegment1_ AGAIN
+; this was only called in one place. this runs often, so inline it.
 
-SELFMODIFY_BSP_maskedtexture_1_TARGET:
-SELFMODIFY_BSP_maskedtexture_2_TARGET:
+COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
+non_po2_texture_mod1:
+; cx stores tex repeat
+SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET:
+SELFMODIFY_BSP_set_seglooptexmodulo1:
+mov   cx, 0
+mov   dx, word ptr [2 + _segloopcachedbasecol]
+cmp   ax, dx
+jge   done_subbing_modulo1
+sub   dx, cx
+continue_subbing_modulo1:
+cmp   ax, dx
+jge   record_subbed_modulo1
+sub   dx, cx
+jmp   continue_subbing_modulo1
+record_subbed_modulo1:
+; at least one write was done. write back.
+mov   word ptr [2 + _segloopcachedbasecol], dx
+
+done_subbing_modulo1:
+
+add   dx, cx
+cmp   ax, dx
+jl    done_adding_modulo1
+continue_adding_modulo1:
+add   dx, cx
+cmp   ax, dx
+jl    record_added_modulo1
+jmp   continue_adding_modulo1
+record_added_modulo1:
+sub   dx, cx
+mov   word ptr [2 + _segloopcachedbasecol], dx
+add   dx, cx
+
+done_adding_modulo1:
+sub   dx, cx
+mov   ah, byte ptr [1 + _segloopheightvalcache]
+sub   al, dl
+mul   ah
+jmp   add_base_segment_and_draw1
+
+@ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
+
+SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET:
+non_repeating_texture1:
+cmp   dx, word ptr [2 + _segloopnextlookup]
+jge   out_of_texture_bounds1
+cmp   dx, word ptr [2 + _segloopprevlookup]
+jge   in_texture_bounds1
+out_of_texture_bounds1:
+push  bx
+mov   bx, 1
+
+SELFMODIFY_BSP_set_bottomtexture:
+mov   ax, 01000h
+call  R_GetColumnSegment_
+pop   bx
+
+mov   dx, word ptr [2 + _segloopcachedsegment]
+mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
+
+
+
+
+COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
+mov   dh, byte ptr [1 + _seglooptexmodulo]
+mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo1+1], dh
+
+cmp   dh, 0
+je    seglooptexmodulo1_is_jmp
+
+mov   dl, 0B2h   ;  (mov dl, xx)
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], dx
+jmp   check_seglooptexrepeat1
+seglooptexmodulo1_is_jmp:
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
+@
+
+
+check_seglooptexrepeat1:
+; todo get this dh and dl in same read
+mov   dh, byte ptr [1 + _seglooptexrepeat]
+cmp   dh, 0
+je    seglooptexrepeat1_is_jmp
+; modulo is seglooptexrepeat - 1
+mov   dl, byte ptr [1 + _segloopheightvalcache]
+mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1],   0B8h   ; mov ax, xxxx
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1+1], dx
+
+jmp   just_do_draw1
+; do jmp. highest priority, overwrite previously written thing.
+seglooptexrepeat1_is_jmp:
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
+jmp   just_do_draw1
+in_texture_bounds1:
+xchg  ax, dx  ; put texturecol in ax
+sub   al, byte ptr [2 + _segloopcachedbasecol]
+mul   byte ptr [1 + _segloopheightvalcache]
+jmp   add_base_segment_and_draw1
+
+;END INLINED R_GetSourceSegment1_ AGAIN
+
+
+
+
 record_masked:
+
+;if (maskedtexture) {
+;	// save texturecol
+;	//  for backdrawing of masked mid texture			
+;	maskedtexturecol[rw_x] = texturecolumn;
+;}
+
 les   si, dword ptr ds:[_maskedtexturecol]
 mov   word ptr es:[bx+si], dx
 jmp   finished_inner_loop_iter
@@ -2956,61 +3514,58 @@ ANG180_HIGHBITS = 08000h
 MOD_FINE_ANGLE_NOSHIFT_HIGHBITS = 07Fh
 ML_DONTPEGBOTTOM = 010h
 ML_DONTPEGTOP = 8
-scalelight_offset_in_fixed_scalelight = 030h
+SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT = 030h
 MAXDRAWSEGS = 256
 
-out_of_drawsegs:
-LEAVE_MACRO
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
 
 ;R_StoreWallRange_
 
 PROC R_StoreWallRange_ NEAR
 PUBLIC R_StoreWallRange_ 
-
+; bp - 1     ; frontsectorlightlevel
 ; bp - 2     ; backsectorlightlevel
+; bp - 3     ; frontsectorfloorpic
 ; bp - 4     ; backsectorfloorpic
-; bp - 6     ; frontsectorfloorpic
-; bp - 8     ; frontsectorlightlevel
-; bp - 0Ah   ; backsectorceilingpic
-; bp - 0Ch   ; frontsectorceilingpic
-; bp - 0Eh   ; unused
+; bp - 5     ; frontsectorceilingpic
+; bp - 6     ; backsectorceilingpic
+; bp - 8     ; UNUSED
+; bp - 0Ah   ; UNUSED
+; bp - 0Ch   ; UNUSED
+; bp - 0Eh   ; offsetangle
 ; bp - 010h  ; frontsectorfloorheight
 ; bp - 012h  ; frontsectorceilingheight
-; bp - 014h  ; sides_segment (constant)
-; bp - 016h  ; sides offset (within sides segment)
-; bp - 018h  ; offsetangle
+; bp - 014h  ; side toptexture
+; bp - 016h  ; side bottomtexture
+; bp - 018h  ; hyp lo
 ; bp - 01Ah  ; hyp hi
-; bp - 01Ch  ; UNUSED
+; bp - 01Ch  ; side midtexture
 ; bp - 01Eh  ; UNUSED
-; bp - 020h  ; hyp lo
-; bp - 022h  ; v1.y ; selfmodify forward
-; bp - 024h  ; lineflags
-; bp - 026h  ; v1.x ; selfmodify forward
-; bp - 028h  ; side_render (near ptr)
-; bp - 02Ah  ; UNUSED
-; bp - 02Ch  ; v2.y TODO only used once, selfmodify
-; bp - 02Eh  ; v2.x TODO only used once, selfmodify
-; bp - 030h  ; sidetextureoffset TODO only used once, selfmodify
-; bp - 032h  ; UNUSED
+; bp - 020h  ; pixhigh hi
+; bp - 022h  ; pixhigh lo
+; bp - 024h  ; pixlow hi
+; bp - 026h  ; pixlow lo
+; bp - 028h  ; bottomfrac hi
+; bp - 02Ah  ; bottomfrac lo
+; bp - 02Ch  ; topfrac hi
+; bp - 02Eh  ; topfrac lo
+; bp - 030h  ; rw_scale hi
+; bp - 032h  ; rw_scale lo
 ; bp - 034h  ; worldbottom hi
 ; bp - 036h  ; worldbottom lo
-; bp - 038h  ; UNUSED
-; bp - 03Ah  ; UNUSED
-; bp - 03Ch  ; UNUSED
-; bp - 03Eh  ; UNUSED
+; bp - 038h  ; _rw_x
+; bp - 03Ah  ; _rw_stopx
+; bp - 03Ch  ; v1.x ; selfmodify forward?
+; bp - 03Eh  ; v1.y ; selfmodify forward?
 ; bp - 040h  ; backsectorfloorheight
 ; bp - 042h  ; backsectorceilingheight
 ; bp - 044h  ; worldtop hi
 ; bp - 046h  ; worldtop lo
+; bp - 048h  ; lineflags
+; bp - 049h  ; markceiling
+; bp - 04Ah  ; markfloor
 
-
-; bp - 048h  ; dx arg
-; bp - 04Ah  ; ax arg
+; bp - 04Ch  ; dx arg
+; bp - 04Eh  ; ax arg
 
 
 push      bx
@@ -3019,41 +3574,54 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 046h
+sub       sp, 04Ah
 push      ax
 push      dx
 xor       ax, ax
-mov       word ptr [bp - 020h], ax
+mov       word ptr [bp - 018h], ax
 mov       word ptr [bp - 01Ah], ax
 
 mov       bx, word ptr ds:[_curseg_render]
-mov       ax, word ptr ds:[bx + 6]
-shl       ax, 3
-mov       word ptr [bp - 016h], ax
+mov       si, SIDES_SEGMENT
+mov       es, si
+mov       si, word ptr ds:[bx + 6]
+shl       si, 1
+shl       si, 1
+mov       di, si
+shl       si, 1
+; read all the sides fields now
 
-sar       ax, 1
-add       ah, (_sides_render SHR 8)
-mov       word ptr [bp - 028h], ax
+lods      word ptr es:[si]
+mov       [bp - 014h], ax
+lods      word ptr es:[si]
+mov       [bp - 016h], ax
+lods      word ptr es:[si]
+mov       [bp - 01Ch], ax
+lods      word ptr es:[si]
+mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], ax
 
-mov       di, word ptr ds:[bx]
+mov       ax, word ptr [di+_sides_render]
+mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1], ax
+mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1], ax
+
+mov       si, word ptr ds:[bx]
 mov       ax, VERTEXES_SEGMENT 
 mov       es, ax	; if put into ds we could lodsw a bit... worth?
-shl       di, 1
-shl       di, 1
-mov       ax, word ptr es:[di]
-mov       word ptr [bp - 026h], ax
-mov       ax, word ptr es:[di + 2]
-mov       word ptr [bp - 022h], ax
+shl       si, 1
+shl       si, 1
+lods 	    word ptr es:[si]
+mov       word ptr [bp - 03Ch], ax
+lods 	    word ptr es:[si]
+mov       word ptr [bp - 03Eh], ax
 
-mov       di, word ptr ds:[bx + 2]
-shl       di, 1
-shl       di, 1
+mov       si, word ptr ds:[bx + 2]
+shl       si, 1
+shl       si, 1
 
-mov       ax, word ptr es:[di]
-mov       word ptr [bp - 02eh], ax
-mov       ax, word ptr es:[di + 2]
-mov       word ptr [bp - 02ch], ax
-mov       word ptr [bp - 014h], SIDES_SEGMENT
+lods 	    word ptr es:[si]
+mov       word ptr cs:[SELFMODIFY_BSP_v2x+1], ax
+lods      word ptr es:[si]
+mov       word ptr cs:[SELFMODIFY_BSP_v2y+1], ax
 
 mov       bx, word ptr ds:[_ds_p]
 cmp       bx, (MAXDRAWSEGS * SIZEOF_DRAWSEG_T)
@@ -3068,7 +3636,7 @@ mov       si, word ptr es:[si]
 mov       es, ax
 mov       al, byte ptr es:[si]
 xor       ah, ah
-mov       word ptr [bp - 024h], ax
+mov       word ptr [bp - 048h], ax
 
 ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
 ; si is linedefOffset
@@ -3083,8 +3651,8 @@ shl       al, cl
 or        byte ptr es:[si], al
 mov       bx, word ptr ds:[_curseg]
 add       bx, bx
-add       bh, (_seg_normalangles SHR 8)
-mov       ax, word ptr [bx]
+
+mov       ax, word ptr [bx+_seg_normalangles]
 
 mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
 mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_2+1], ax
@@ -3109,7 +3677,7 @@ sub       ax, dx
 sar       ax, 1
 
 and       al, 0FCh
-mov       word ptr [bp - 018h], ax
+mov       word ptr [bp - 0Eh], ax
 mov       si, FINE_ANG90_NOSHIFT
 cmp       ax, si
 jb        offsetangle_below_ang_90
@@ -3117,19 +3685,26 @@ offsetangle_above_ang_90:
 xor       ax, ax
 mov       dx, ax
 jmp       do_set_rw_distance
+out_of_drawsegs:
+LEAVE_MACRO
+pop       di
+pop       si
+pop       cx
+pop       bx
+ret       
 
 offsetangle_below_ang_90:
-mov       dx, word ptr [bp - 022h]
-mov       ax, word ptr [bp - 026h]
+mov       dx, word ptr [bp - 03Eh]
+mov       ax, word ptr [bp - 03Ch]
 call      R_PointToDist_
-mov       word ptr [bp - 020h], ax
+mov       word ptr [bp - 018h], ax
 mov       word ptr [bp - 01ah], dx
-sub       si, word ptr [bp - 018h]
+sub       si, word ptr [bp - 0Eh]
 mov       bx, ax
 mov       cx, dx
 mov       ax, FINESINE_SEGMENT
 mov       dx, si
-call     FixedMulTrigNoShift_
+call     FixedMulTrigNoShiftBSPLocal_
 
 do_set_rw_distance:
 
@@ -3140,47 +3715,91 @@ mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1], ax
 mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1], dx
 
 done_setting_rw_distance:
-mov       ax, word ptr [bp - 048h]
-mov       word ptr ds:[_rw_x], ax
 les       di, dword ptr ds:[_ds_p]
-mov       word ptr es:[di + 2], ax
-
-mov       ax, word ptr [bp - 04Ah]
-mov       word ptr es:[di + 4], ax
-
 mov       ax, word ptr ds:[_curseg]
-mov       word ptr es:[di], ax
-mov       ax, word ptr [bp - 04Ah]
+stos      word ptr es:[di]             ; +0
+
+mov       ax, word ptr [bp - 04Ch]
+mov       word ptr [bp - 038h], ax   ; rw_x
+stos      word ptr es:[di]             ; +2
+
+mov       ax, word ptr [bp - 04Eh]
+stos      word ptr es:[di]             ; +4
+
+mov       ax, word ptr [bp - 04Eh]
 inc       ax
-mov       word ptr ds:[_rw_stopx], ax
+mov       word ptr [bp - 03Ah], ax
 mov       ax, XTOVIEWANGLE_SEGMENT
-mov       bx, word ptr [bp - 048h]
+mov       bx, word ptr [bp - 04Ch]
 mov       es, ax
 add       bx, bx
 SELFMODIFY_set_viewanglesr3_3:
 mov       ax, 01000h
 add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
-mov       word ptr ds:[_rw_scale], ax
-mov       word ptr ds:[_rw_scale + 2], dx
+mov       word ptr [bp - 032h], ax
+mov       word ptr [bp - 030h], dx
 mov       es, word ptr ds:[_ds_p+2]
-mov       word ptr es:[di + 8], dx
-mov       word ptr es:[di + 6], ax
-mov       ax, word ptr [bp - 04Ah]
-cmp       ax, word ptr [bp - 048h]
+stos      word ptr es:[di]             ; +6
+xchg      ax, dx
+stos      word ptr es:[di]             ; +8
+mov       cx, word ptr [bp - 04Eh]
+cmp       cx, word ptr [bp - 04Ch]
 jg        stop_greater_than_start
 
 ; ds_p is es:di
 ;		ds_p->scale2 = ds_p->scale1;
 
-mov       ax, word ptr es:[di + 6]
-mov       word ptr es:[di + 0ah], ax
-mov       ax, word ptr es:[di + 8]
-mov       word ptr es:[di + 0ch], ax
+stos      word ptr es:[di]      ; +0Ah
+xchg      ax, dx
+stos      word ptr es:[di]      ; +0Ch
+xchg      ax, dx
 jmp       scales_set
+handle_negative_3216:
+
+neg ax
+adc dx, 0
+neg dx
+
+
+cmp dx, bx
+jge two_part_divide_3216
+one_part_divide_3216:
+div bx
+xor dx, dx
+
+neg ax
+adc dx, 0
+neg dx
+jmp div_done
+
+two_part_divide_3216:
+mov es, ax
+mov ax, dx
+xor dx, dx
+div bx     ; div high
+mov ds, ax ; store q1
+mov ax, es
+; DX:AX contains remainder + ax...
+div bx
+mov dx, ds  ; retrieve q1
+            ; q0 already in ax
+neg ax
+adc dx, 0
+neg dx
+
+
+mov bx, ss
+mov ds, bx  ; restored ds
+jmp div_done
+one_part_divide:
+div bx
+xor dx, dx
+jmp div_done
+
 stop_greater_than_start:
-mov       si, ax
-add       si, ax
+mov       si, cx
+add       si, cx
 mov       ax, XTOVIEWANGLE_SEGMENT
 mov       es, ax
 SELFMODIFY_set_viewanglesr3_2:
@@ -3188,19 +3807,49 @@ mov       ax, 01000h
 add       ax, word ptr es:[si]
 call      R_ScaleFromGlobalAngle_
 mov       es, word ptr ds:[_ds_p+2]
-mov       bx, word ptr [bp - 04Ah]
-mov       word ptr es:[di + 0ah], ax
-sub       bx, word ptr [bp - 048h]
-mov       word ptr es:[di + 0ch], dx
-mov       ax, word ptr es:[di + 0ah]
-mov       dx, word ptr es:[di + 0ch]
-sub       ax, word ptr ds:[_rw_scale]
-sbb       dx, word ptr ds:[_rw_scale + 2]
+mov       bx, word ptr [bp - 04Eh]
+stos      word ptr es:[di]             ; +0Ah
+xchg      ax, dx
+sub       bx, word ptr [bp - 04Ch]
+stos      word ptr es:[di]             ; +0Ch
+xchg      ax, dx
+sub       ax, word ptr [bp - 032h]
+sbb       dx, word ptr [bp - 030h]
 
-call FastDiv3216u_
+; inlined FastDiv3216u_    (only use in the codebase, might as well.)
+test dx, dx
+js   handle_negative_3216
+
+cmp dx, bx
+jl one_part_divide
+
+two_part_divide:
+mov es, ax
+mov ax, dx
+xor dx, dx
+div bx     ; div high
+mov ds, ax ; store q1
+mov ax, es
+; DX:AX contains remainder + ax...
+div bx
+mov dx, ds  ; retrieve q1
+            ; q0 already in ax
+mov bx, ss
+mov ds, bx  ; restored ds
+
+
+
+div_done:
+
+
+
+
+
 mov       es, word ptr ds:[_ds_p+2]
-mov       word ptr es:[di + 0eh], ax
-mov       word ptr es:[di + 010h], dx
+stos      word ptr es:[di]             ; +0Eh
+xchg      ax, dx
+stos      word ptr es:[di]             ; +10h
+xchg      ax, dx
 
 ; rw_scalestep is ready. write it forward as selfmodifying code here
 
@@ -3216,8 +3865,8 @@ mov       word ptr cs:[SELFMODIFY_get_rwscalestep_hi_4+1], dx
 
 mov       word ptr cs:[SELFMODIFY_add_rwscale_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_rwscale_hi+5], dx
-mov       word ptr cs:[SELFMODIFY_sub_rwscale_lo+4], ax
-mov       word ptr cs:[SELFMODIFY_sub_rwscale_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_sub_rwscale_lo+3], ax
+mov       word ptr cs:[SELFMODIFY_sub_rwscale_hi+3], dx
 
 
 
@@ -3229,10 +3878,10 @@ shl   ax, 1
 rcl   dx, 1
 finished_shifting_rw_scale:
 
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_1+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_2+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_1+4], dx
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_2+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_1+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_2+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_1+3], dx
+mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_2+3], dx
 
 
 
@@ -3242,41 +3891,45 @@ scales_set:
 
 ; si = frontsector
 les       si, dword ptr ds:[_frontsector]
-mov       ax, word ptr es:[si]
+lods      word ptr es:[si]
 mov       word ptr [bp - 010h], ax
-mov       ax, word ptr es:[si + 2]
+xchg      ax, bx
+lods      word ptr es:[si]
 mov       word ptr [bp - 012h], ax
-mov       al, byte ptr es:[si + 4]
-mov       byte ptr [bp - 6], al
-mov       al, byte ptr es:[si + 5]
+xchg      ax, cx
+lods      word ptr es:[si]
+mov       byte ptr [bp - 3], al
+mov       byte ptr [bp - 5], ah
 ; BIG TODO: make this di used some other way
 ; (di:si is worldtop)
 
 ;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsectorceilingheight);
 ;	worldtop.w -= viewz.w;
 
-mov       byte ptr [bp - 0ch], al
-mov       al, byte ptr es:[si + 0eh]
-mov       byte ptr [bp - 8], al
-mov       dx, word ptr [bp - 012h]
-xor       ax, ax
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
+mov       al, byte ptr es:[si + 08h]  ; + 6 from lodsw/lodsb = 0eh
+mov       byte ptr [bp - 1], al
+xchg      ax, cx  ; ax has frontsectorceilingheight
+
+xor       dx, dx
+sar       ax, 1
+rcr       dx, 1
+sar       ax, 1
+rcr       dx, 1
+sar       ax, 1
+rcr       dx, 1
 
 ; todo selfmodify viewz
-mov       bx, OFFSET _viewz
 
-sub       ax, word ptr [bx]
-sbb       dx, word ptr [bx + 2]
+SELFMODIFY_BSP_viewz_lo_7:
+sub       dx, 01000h
+SELFMODIFY_BSP_viewz_hi_7:
+sbb       ax, 01000h
 ; storeworldtop
-mov       word ptr [bp - 046h], ax
-mov       word ptr [bp - 044h], dx
+mov       word ptr [bp - 046h], dx
+mov       word ptr [bp - 044h], ax
 
-mov       ax, word ptr [bp - 010h]
+xchg      ax, bx    ; restore from before
+
 xor       cx, cx
 sar       ax, 1
 rcr       cx, 1
@@ -3284,8 +3937,10 @@ sar       ax, 1
 rcr       cx, 1
 sar       ax, 1
 rcr       cx, 1
-sub       cx, word ptr [bx]
-sbb       ax, word ptr [bx+2]
+SELFMODIFY_BSP_viewz_lo_8:
+sub       cx, 01000h
+SELFMODIFY_BSP_viewz_hi_8:
+sbb       ax, 01000h
 mov       word ptr [bp - 036h], cx
 mov       word ptr [bp - 034h], ax
 xor       ax, ax
@@ -3296,12 +3951,10 @@ mov       byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
 
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], NULL_TEX_COL
-les       bx, dword ptr [bp - 016h] ; sides
-mov       dx, word ptr es:[bx + 6]
-mov       word ptr [bp - 030h], dx
 cmp       word ptr ds:[_backsector], SECNUM_NULL
 je        handle_single_sided_line
 jmp       handle_two_sided_line
+
 handle_single_sided_line:
 
 mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER) SHL 8) + 0EBh
@@ -3316,16 +3969,21 @@ mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
 ;mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_AFTER) SHL 8) + 0E2h  ; LOOP instruction
 ;mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4], ax
 
-mov       bx, word ptr [bp - 016h] ;sides 
+;es:bx still side
 mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, word ptr es:[bx + 4]
+mov       bx, [bp - 01Ch]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-mov       word ptr cs:[SELFMODIFY_set_midtexture+1], ax
+
+
+mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+0], 026h    ; es:
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], 087C7h  ; next 2 bytes of following instr (mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
+
+mov       word ptr cs:[SELFMODIFY_BSP_set_midtexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
 mov       ax, 0F739h   ; cmp di, si
@@ -3337,13 +3995,11 @@ mov       word ptr cs:[SELFMODIFY_BSP_midtexture], ax
 ; are any bits set?
 or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
-je        overwrite_bottom_top	; if midtexture was zero, then bot/top will be checked, must zero those too
-done_overwriting_bottom_top:
 
-mov       al, 1
-mov       byte ptr ds:[_markceiling], al
-mov       byte ptr ds:[_markfloor], al
-test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
+
+mov       ax, 0101h
+mov       word ptr [bp - 04Ah], ax ; set markfloor and markceiling
+test      byte ptr [bp - 048h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
 mov       ax, word ptr [bp - 046h]
@@ -3352,17 +4008,11 @@ mov       ax, word ptr [bp - 044h]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
 
-overwrite_bottom_top:
-;  al/ah were zero so ax is zero.
-;mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
-;mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
 
-; TODO can i remove the two above...?
 
-jmp       done_overwriting_bottom_top
 do_peg_bottom:
 mov       ax, word ptr [bp - 010h]
-SELFMODIFY_set_viewz_shortheight_5:
+SELFMODIFY_BSP_viewz_shortheight_5:
 sub       ax, 01000h
 xor       cx, cx
 sar       ax, 1
@@ -3374,8 +4024,7 @@ rcr       cx, 1
 mov       word ptr cs:[SELFMODIFY_set_midtexturemid_lo+1], cx
 
 
-les       bx, dword ptr [bp - 016h] ; sides
-mov       bx, word ptr es:[bx + 4]
+mov       bx, word ptr [bp - 01Ch]
 mov       cx, TEXTUREHEIGHTS_SEGMENT
 mov       es, cx
 xor       cx, cx
@@ -3385,18 +4034,18 @@ add       ax, cx
 done_with_bottom_peg:
 ; cx:ax has rw_midtexturemid
 
-mov       bx, word ptr [bp - 028h]
-add       ax, word ptr [bx]
+SELFMODIFY_BSP_siderenderrowoffset_1:
+add       ax, 01000h
 
 mov       word ptr cs:[SELFMODIFY_set_midtexturemid_hi+1], ax
 
 
 les       bx, dword ptr ds:[_ds_p]
-mov       byte ptr es:[bx + 01ch], SIL_BOTH
-mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
-mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
 mov       word ptr es:[bx + 012h], MAXSHORT
 mov       word ptr es:[bx + 014h], MINSHORT
+mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
+mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
+mov       byte ptr es:[bx + 01Ch], SIL_BOTH
 xor       ax, ax
 ; here
 done_with_sector_sided_check:
@@ -3406,58 +4055,54 @@ done_with_sector_sided_check:
 
 ; set maskedtexture in rendersegloop
 
-test      al, al
-jne       do_maskedtexture_selfmodify_jumps
-mov       ax, 0c089h ; nop 
-mov       bx, ax
-jmp       do_maskedtexture_selfmodify
-do_maskedtexture_selfmodify_jumps:
-mov   ax, ((SELFMODIFY_BSP_maskedtexture_1_TARGET - SELFMODIFY_BSP_maskedtexture_1_AFTER) SHL 8) + 0EBh
-mov   bx, ((SELFMODIFY_BSP_maskedtexture_2_TARGET - SELFMODIFY_BSP_maskedtexture_2_AFTER) SHL 8) + 0EBh
-
-do_maskedtexture_selfmodify:
-mov       word ptr cs:[SELFMODIFY_BSP_maskedtexture_1], ax
-mov       word ptr cs:[SELFMODIFY_BSP_maskedtexture_2], bx
+; NOTE: Dont selfmodify these branches into nop/jump. tested to be slower?
+; though thats with [nop to a long jmp]. could try straight long jmp. 
+; modify the word addr but not the long jmp instruction for a single word.
+mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_1+1], al
+mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_2+1], al
 
 ; create segtextured value
 SELFMODIFY_check_for_any_tex:
 or   	  al, 0
 
 ; set segtextured in rendersegloop
-mov       byte ptr cs:[SELFMODIFY_get_segtextured+1], al
+
 
 
 jne       do_seg_textured_stuff
+mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured], ((SELFMODIFY_BSP_get_segtextured_TARGET - SELFMODIFY_BSP_get_segtextured_AFTER) SHL 8) + 0EBh
+
 jmp       seg_textured_check_done
 do_seg_textured_stuff:
-mov       ax, word ptr [bp - 018h]
+mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured], 0C089h ; nop
+mov       ax, word ptr [bp - 0Eh]
 cmp       ax, FINE_ANG180_NOSHIFT
 jbe       offsetangle_greater_than_fineang180
 neg       ax
 and       ah, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
-mov       word ptr [bp - 018h], ax
+mov       word ptr [bp - 0Eh], ax
 offsetangle_greater_than_fineang180:
 mov       ax, word ptr [bp - 01ah]
-or        ax, word ptr [bp - 020h]
+or        ax, word ptr [bp - 018h]
 jne       hyp_already_set   		; todo what is hyp about
-mov       dx, word ptr [bp - 022h]
-mov       ax, word ptr [bp - 026h]
+mov       dx, word ptr [bp - 03Eh]
+mov       ax, word ptr [bp - 03Ch]
 call      R_PointToDist_
-mov       word ptr [bp - 020h], ax
+mov       word ptr [bp - 018h], ax
 mov       word ptr [bp - 01ah], dx
 hyp_already_set:
-mov       dx, word ptr [bp - 018h]
+mov       dx, word ptr [bp - 0Eh]
 cmp       dx, FINE_ANG90_NOSHIFT
 ja        offsetangle_greater_than_fineang90
-mov       bx, word ptr [bp - 020h]
+mov       bx, word ptr [bp - 018h]
 mov       cx, word ptr [bp - 01ah]
 mov       ax, FINESINE_SEGMENT
-call FixedMulTrigNoShift_
+call FixedMulTrigNoShiftBSPLocal_
 ; used later, dont change?
 ; dx:ax is rw_offset
 jmp       done_with_offsetangle_stuff
 offsetangle_greater_than_fineang90:
-mov       ax, word ptr [bp - 020h]
+mov       ax, word ptr [bp - 018h]
 mov       dx, word ptr [bp - 01ah]
 
 
@@ -3484,7 +4129,8 @@ tempangle_not_smaller_than_fineang180:
 
 
 mov       bx, word ptr ds:[_curseg_render]
-mov       cx, word ptr [bp - 030h]
+SELFMODIFY_BSP_sidetextureoffset:
+mov       cx, 01000h
 add       cx, word ptr [bx + 4]
 add       ax, cx
 ; rw_offset ready to be written to rendersegloop:
@@ -3502,22 +4148,31 @@ and       ah, FINE_ANGLE_HIGH_BYTE
 mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
 
 
-SELFMODIFY_set_fixedcolormap_3:
-jmp       seg_textured_check_done    ; dont check walllights if fixedcolormap
-SELFMODIFY_set_fixedcolormap_3_AFTER:
-mov       al, byte ptr [bp - 8]
+SELFMODIFY_BSP_fixedcolormap_3:
+jne       seg_textured_check_done    ; dont check walllights if fixedcolormap
+SELFMODIFY_BSP_fixedcolormap_3_AFTER:
+mov       al, byte ptr [bp - 1]
 xor       ah, ah
 SELFMODIFY_set_extralight_2:
 mov       dl, 0
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 sar       ax, 4
+ELSE
+sar       ax, 1
+sar       ax, 1
+sar       ax, 1
+sar       ax, 1
+ENDIF
 xor       dh, dh
 add       dx, ax
-mov       ax, word ptr [bp - 022h]
-cmp       ax, word ptr [bp - 02ch]
+mov       ax, word ptr [bp - 03Eh]
+SELFMODIFY_BSP_v2y:
+cmp       ax, 01000h
 je        v1y_equals_v2y
 
-mov       ax, word ptr [bp - 026h]
-cmp       ax, word ptr [bp - 02eh]
+mov       ax, word ptr [bp - 03Ch]
+SELFMODIFY_BSP_v2x:
+cmp       ax, 01000h
 jne       v1x_equals_v2x
 
 inc       dx
@@ -3540,28 +4195,29 @@ cmp       dx, LIGHTLEVELS
 jl        lightnum_less_than_lightlevels
 mov       ax, word ptr ds:[_lightmult48lookup + + (2 * (LIGHTLEVELS - 1))]
 done_setting_ax_to_wallights:
-add       ax, scalelight_offset_in_fixed_scalelight
+add       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+
 
 ; write walllights to rendersegloop
-mov   word ptr cs:[SELFMODIFY_add_wallights+3], ax
+mov   word ptr cs:[SELFMODIFY_add_wallights+2], ax
 ; ? do math here and write this ahead to drawcolumn colormapsindex?
 
-SELFMODIFY_set_fixedcolormap_3_TARGET:
+SELFMODIFY_BSP_fixedcolormap_3_TARGET:
 seg_textured_check_done:
 mov       ax, word ptr [bp - 010h]
-SELFMODIFY_set_viewz_shortheight_4:
+SELFMODIFY_BSP_viewz_shortheight_4:
 cmp       ax, 01000h
 jl        not_above_viewplane
-mov       byte ptr ds:[_markfloor], 0
+mov       byte ptr [bp - 04Ah], 0
 not_above_viewplane:
 mov       ax, word ptr [bp - 012h]
-SELFMODIFY_set_viewz_shortheight_3:
+SELFMODIFY_BSP_viewz_shortheight_3:
 cmp       ax, 01000h
 jg        not_below_viewplane
-mov       al, byte ptr [bp - 0ch]
+mov       al, byte ptr [bp - 5]
 cmp       al, byte ptr ds:[_skyflatnum]
 je        not_below_viewplane
-mov       byte ptr ds:[_markceiling], 0
+mov       byte ptr [bp - 049h], 0  ;markceiling
 not_below_viewplane:
 mov       cx, 4
 mov       dx, word ptr [bp - 044h]
@@ -3574,9 +4230,9 @@ mov       word ptr [bp - 044h], dx
 mov       word ptr [bp - 046h], ax
 
 ; les to load two words
-les       bx, dword ptr ds:[_rw_scale]
+les       bx, dword ptr [bp - 032h]
 mov       cx, es
-call FixedMul_
+call FixedMulBSPLocal_
 ; todo selfmodify this.
 SELFMODIFY_sub__centeryfrac_shiftright4_lo_4:
 mov       cx, 01000h
@@ -3584,8 +4240,8 @@ sub       cx, ax
 SELFMODIFY_sub__centeryfrac_shiftright4_hi_4:
 mov       ax, 01000h
 sbb       ax, dx
-mov       word ptr ds:[_topfrac], cx
-mov       word ptr ds:[_topfrac + 2], ax
+mov       word ptr [bp - 02Eh], cx
+mov       word ptr [bp - 02Ch], ax
 ; les to load two words
 mov       cx, 4
 mov       dx, word ptr [bp - 034h]
@@ -3599,9 +4255,9 @@ mov       word ptr [bp - 036h], ax
 
 
 
-les       bx, dword ptr ds:[_rw_scale]
+les       bx, dword ptr [bp - 032h]
 mov       cx, es
-call FixedMul_
+call FixedMulBSPLocal_
 
 SELFMODIFY_sub__centeryfrac_shiftright4_lo_3:
 mov       cx, 01000h
@@ -3609,34 +4265,34 @@ sub       cx, ax
 SELFMODIFY_sub__centeryfrac_shiftright4_hi_3:
 mov       ax, 01000h
 sbb       ax, dx
-mov       word ptr ds:[_bottomfrac], cx
-mov       word ptr ds:[_bottomfrac + 2], ax
+mov       word ptr [bp - 02Ah], cx
+mov       word ptr [bp - 028h], ax
 
-cmp       byte ptr ds:[_markceiling], 0
+cmp       byte ptr [bp - 049h], 0  ;markceiling
 je        dont_mark_ceiling
 mov       cx, 1
 SELFMODIFY_set_ceilingplaneindex:
 mov       ax, 0FFFFh
-mov       bx, word ptr ds:[_rw_stopx]
+mov       bx, word ptr [bp - 03Ah]
 dec       bx
-mov       dx, word ptr ds:[_rw_x]
+mov       dx, word ptr [bp - 038h]    ; rw_x
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1], ax
 dont_mark_ceiling:
 
-cmp       byte ptr ds:[_markfloor], 0
+cmp       byte ptr ds:[bp - 04Ah], 0 ; markfloor
 je        dont_mark_floor
 xor       cx, cx
 SELFMODIFY_set_floorplaneindex:
 mov       ax, 0FFFFh
-mov       bx, word ptr ds:[_rw_stopx]
+mov       bx, word ptr [bp - 03Ah]
 dec       bx
-mov       dx, word ptr ds:[_rw_x]
+mov       dx, word ptr [bp - 038h]   ; rw_x
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_floorplaneindex+1], ax
 dont_mark_floor:
-mov       ax, word ptr [bp - 04Ah]
-cmp       ax, word ptr [bp - 048h]
+mov       ax, word ptr [bp - 04Eh]
+cmp       ax, word ptr [bp - 04Ch]
 jge       at_least_one_column_to_draw
 jmp       check_spr_top_clip
 at_least_one_column_to_draw:
@@ -3647,15 +4303,15 @@ SELFMODIFY_get_rwscalestep_hi_1:
 mov       dx, 01000h
 les       bx, dword ptr [bp - 046h]
 mov       cx, es
-call FixedMul_
+call FixedMulBSPLocal_
 neg       dx
 neg       ax
 sbb       dx, 0
 
 ; dx:ax are topstep
 
-mov       word ptr cs:[SELFMODIFY_sub_topstep_lo+4], ax
-mov       word ptr cs:[SELFMODIFY_sub_topstep_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_sub_topstep_lo+3], ax
+mov       word ptr cs:[SELFMODIFY_sub_topstep_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_topstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_topstep_hi+5], dx
 
@@ -3670,10 +4326,10 @@ rcl       dx, 1
 finished_shifting_topstep:
 
 
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_1+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_2+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_1+4], dx
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_1+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_1+3], dx
+mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_2+3], dx
 
 
 mov       cx, word ptr [bp - 034h]
@@ -3682,15 +4338,15 @@ SELFMODIFY_get_rwscalestep_lo_2:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_2:
 mov       dx, 01000h
-call FixedMul_
+call FixedMulBSPLocal_
 neg       dx
 neg       ax
 sbb       dx, 0
 
 ; dx:ax are bottomstep
 
-mov       word ptr cs:[SELFMODIFY_sub_botstep_lo+4], ax
-mov       word ptr cs:[SELFMODIFY_sub_botstep_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_sub_botstep_lo+3], ax
+mov       word ptr cs:[SELFMODIFY_sub_botstep_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_botstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_botstep_hi+5], dx
 
@@ -3703,10 +4359,10 @@ rcl       dx, 1
 
 finished_shifting_botstep:
 
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_1+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_2+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_1+4], dx
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_2+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_1+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_1+3], dx
+mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_2+3], dx
 
 
 
@@ -3767,11 +4423,11 @@ do_pixhigh_step:
 xchg       dx, di
 xchg       ax, si
 
-les       bx, dword ptr ds:[_rw_scale]
+les       bx, dword ptr [bp - 032h]
 mov       cx, es
 push      dx
 push      ax
-call FixedMul_
+call FixedMulBSPLocal_
 
 ; mov cx, low word
 ; mov bx, high word
@@ -3783,15 +4439,15 @@ mov       ax, 01000h
 sbb       ax, dx
 
 
-mov       word ptr ds:[_pixhigh], cx
-mov       word ptr ds:[_pixhigh + 2], ax
+mov       word ptr [bp - 022h], cx
+mov       word ptr [bp - 020h], ax
 pop       bx
 pop       cx
 SELFMODIFY_get_rwscalestep_lo_3:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_3:
 mov       dx, 01000h
-call FixedMul_
+call FixedMulBSPLocal_
 neg       dx
 neg       ax
 sbb       dx, 0
@@ -3801,8 +4457,8 @@ sbb       dx, 0
 ; self modifying code to write to pixlowstep usages.
 
 
-mov       word ptr cs:[SELFMODIFY_sub_pixhigh_lo+4], ax
-mov       word ptr cs:[SELFMODIFY_sub_pixhigh_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_sub_pixhigh_lo+3], ax
+mov       word ptr cs:[SELFMODIFY_sub_pixhigh_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_hi+5], dx
 
@@ -3813,10 +4469,10 @@ shift_pixhighstep_once:
 shl       ax, 1
 rcl       dx, 1
 done_shifting_pixhighstep:
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_1+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_2+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_1+4], dx
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_2+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_1+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_2+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_1+3], dx
+mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_2+3], dx
 
 
 ; put these back where they need to be.
@@ -3841,9 +4497,9 @@ do_pixlow_step:
 
 mov       di, dx	; store for later
 mov       si, ax	; store for later
-les       bx, dword ptr ds:[_rw_scale]
+les       bx, dword ptr [bp - 032h]
 mov       cx, es
-call FixedMul_
+call FixedMulBSPLocal_
 
 SELFMODIFY_sub__centeryfrac_shiftright4_lo_1:
 mov       cx, 01000h
@@ -3853,15 +4509,15 @@ mov       ax, 01000h
 sbb       ax, dx
 
 
-mov       word ptr ds:[_pixlow], cx
-mov       word ptr ds:[_pixlow + 2], ax
+mov       word ptr [bp - 026h], cx
+mov       word ptr [bp - 024h], ax
 mov       bx, si	; cached values
 mov       cx, di	; cached values
 SELFMODIFY_get_rwscalestep_lo_4:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_4:
 mov       dx, 01000h
-call FixedMul_
+call FixedMulBSPLocal_
 neg       dx
 neg       ax
 sbb       dx, 0
@@ -3870,8 +4526,8 @@ sbb       dx, 0
 ; self modifying code to write to pixlowstep usages.
 
 
-mov       word ptr cs:[SELFMODIFY_sub_pixlow_lo+4], ax
-mov       word ptr cs:[SELFMODIFY_sub_pixlow_hi+4], dx
+mov       word ptr cs:[SELFMODIFY_sub_pixlow_lo+3], ax
+mov       word ptr cs:[SELFMODIFY_sub_pixlow_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_pixlowstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixlowstep_hi+5], dx
 
@@ -3882,10 +4538,10 @@ shift_pixlowstep_once:
 shl       ax, 1
 rcl       dx, 1
 done_shifting_pixlowstep:
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_1+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_2+4], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_1+4], dx
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+4], dx
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_1+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_2+3], ax
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_1+3], dx
+mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+3], dx
 
 
 
@@ -3910,12 +4566,12 @@ continue_checking_spr_top_clip:
 
 cmp       word ptr es:[si + 016h], 0
 jne       check_spr_bottom_clip
-mov       si, word ptr [bp - 048h]
+mov       si, word ptr [bp - 04Ch]
 mov       cx, OPENINGS_SEGMENT
-mov       ax, word ptr ds:[_rw_stopx]
+mov       ax, word ptr [bp - 03Ah]
 mov       di, word ptr ds:[_lastopening]
 add       si, si
-sub       ax, word ptr [bp - 048h]
+sub       ax, word ptr [bp - 04Ch]
 add       si, OFFSET_CEILINGCLIP
 mov       es, cx
 add       di, di
@@ -3931,12 +4587,12 @@ rep movsb
 pop       di
 pop       ds
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 048h]
+sub       ax, word ptr [bp - 04Ch]
 les       si, dword ptr ds:[_ds_p]
 add       ax, ax
 mov       word ptr es:[si + 016h], ax
-mov       ax, word ptr ds:[_rw_stopx]
-sub       ax, word ptr [bp - 048h]
+mov       ax, word ptr [bp - 03Ah]
+sub       ax, word ptr [bp - 04Ch]
 add       word ptr ds:[_lastopening], ax
 check_spr_bottom_clip:
 ; es:si is ds_p
@@ -3948,12 +4604,12 @@ jmp       continue_checking_spr_bottom_clip
 continue_checking_spr_bottom_clip:
 cmp       word ptr es:[si + 018h], 0
 jne       check_silhouettes_then_exit
-mov       si, word ptr [bp - 048h]
+mov       si, word ptr [bp - 04Ch]
 mov       cx, OPENINGS_SEGMENT
-mov       ax, word ptr ds:[_rw_stopx]
+mov       ax, word ptr [bp - 03Ah]
 mov       di, word ptr ds:[_lastopening]
 add       si, si
-sub       ax, word ptr [bp - 048h]
+sub       ax, word ptr [bp - 04Ch]
 add       si, OFFSET_FLOORCLIP
 mov       es, cx
 add       di, di
@@ -3969,12 +4625,12 @@ rep movsb
 pop       di
 pop       ds
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 048h]
+sub       ax, word ptr [bp - 04Ch]
 les       si, dword ptr ds:[_ds_p]
 add       ax, ax
 mov       word ptr es:[si + 018h], ax
-mov       ax, word ptr ds:[_rw_stopx]
-sub       ax, word ptr [bp - 048h]
+mov       ax, word ptr [bp - 03Ah]
+sub       ax, word ptr [bp - 04Ch]
 add       word ptr ds:[_lastopening], ax
 check_silhouettes_then_exit:
 ; todo 
@@ -4026,60 +4682,64 @@ mov       word ptr cs:[SELFMODIFY_BSP_bottexture], ((SELFMODIFY_BSP_bottexture_T
 ; uint8_t backsectorfloorpic = backsector->floorpic;
 ; uint8_t backsectorlightlevel = backsector->lightlevel;
 
-les       bx, dword ptr ds:[_backsector]
-mov       ax, word ptr es:[bx + 2]
-mov       word ptr [bp - 042h], ax
-mov       ax, word ptr es:[bx]
+les       si, dword ptr ds:[_backsector]
+lods      word ptr es:[si]
 mov       word ptr [bp - 040h], ax
-mov       cx, word ptr es:[bx + 4]
-mov       byte ptr [bp - 4], cl
-mov       byte ptr [bp - 0ah], ch
-mov       cl, byte ptr es:[bx + 0eh]
-mov       byte ptr [bp - 2], cl
+xchg      ax, cx
+lods      word ptr es:[si]
+mov       word ptr [bp - 042h], ax
+xchg      ax, bx   ; store for later
+lods      word ptr es:[si]
+mov       byte ptr [bp - 4], al
+mov       byte ptr [bp - 6], ah
+mov       al, byte ptr es:[si + 08h]  ; 0eh with the 6 from lodsw.
+mov       byte ptr [bp - 2], al
+xchg      ax, cx
 
 ;		ds_p->sprtopclip_offset = ds_p->sprbottomclip_offset = 0;
 ;		ds_p->silhouette = 0;
 
-les       bx, dword ptr ds:[_ds_p]
+les       si, dword ptr ds:[_ds_p]
 xor       cx, cx
-mov       word ptr es:[bx + 018h], cx
-mov       word ptr es:[bx + 016h], cx
-mov       byte ptr es:[bx + 01ch], cl ; SIL_NONE
+mov       word ptr es:[si + 018h], cx
+mov       word ptr es:[si + 016h], cx
+mov       byte ptr es:[si + 01ch], cl ; SIL_NONE
 
 
-; es:bx is ds_p
+; es:si is ds_p
 ;		if (frontsectorfloorheight > backsectorfloorheight) {
 
 cmp       ax, word ptr [bp - 010h]
 jl        set_bsilheight_to_frontsectorfloorheight
-SELFMODIFY_set_viewz_shortheight_2:
+SELFMODIFY_BSP_viewz_shortheight_2:
 cmp       ax, 01000h
 jle       bsilheight_set
 set_bsilheight_to_maxshort:
-mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
-mov       word ptr es:[bx + 012h], MAXSHORT
+mov       byte ptr es:[si + 01ch], SIL_BOTTOM
+mov       word ptr es:[si + 012h], MAXSHORT
 jmp       bsilheight_set
 set_bsilheight_to_frontsectorfloorheight:
-mov       byte ptr es:[bx + 01ch], SIL_BOTTOM
+mov       byte ptr es:[si + 01ch], SIL_BOTTOM
 mov       cx, word ptr [bp - 010h]
-mov       word ptr es:[bx + 012h], cx
+mov       word ptr es:[si + 012h], cx
 bsilheight_set:
-mov       ax, word ptr [bp - 042h]
+
+xchg      ax, bx   ; retrieved from before
 cmp       ax, word ptr [bp - 012h]
 jg        set_tsilheight_to_frontsectorceilingheight
-SELFMODIFY_set_viewz_shortheight_1:
+SELFMODIFY_BSP_viewz_shortheight_1:
 cmp       ax, 01000h
 jge       tsilheight_set
 set_tsilheight_to_minshort:
-or        byte ptr es:[bx + 01ch], SIL_TOP
-mov       word ptr es:[bx + 014h], MINSHORT
+or        byte ptr es:[si + 01ch], SIL_TOP
+mov       word ptr es:[si + 014h], MINSHORT
 jmp       tsilheight_set
 set_tsilheight_to_frontsectorceilingheight:
-or        byte ptr es:[bx + 01ch], SIL_TOP
+or        byte ptr es:[si + 01ch], SIL_TOP
 mov       cx, word ptr [bp - 012h]
-mov       word ptr es:[bx + 014h], cx
+mov       word ptr es:[si + 014h], cx
 tsilheight_set:
-; es:bx is still ds_p
+; es:si is still ds_p
 
 ; if (backsectorceilingheight <= frontsectorfloorheight) {
 
@@ -4090,11 +4750,11 @@ jg        back_ceiling_greater_than_front_floor
 ; ds_p->bsilheight = MAXSHORT;
 ; ds_p->silhouette |= SIL_BOTTOM;
 
-mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
-mov       word ptr es:[bx + 012h], MAXSHORT
-or        byte ptr es:[bx + 01ch], SIL_BOTTOM
+mov       word ptr es:[si + 018h], OFFSET_NEGONEARRAY
+mov       word ptr es:[si + 012h], MAXSHORT
+or        byte ptr es:[si + 01ch], SIL_BOTTOM
 back_ceiling_greater_than_front_floor:
-; es:bx is still ds_p
+; es:si is still ds_p
 ; if (backsectorfloorheight >= frontsectorceilingheight) {
 ; ax is backsectorfloorheight
 mov       ax, word ptr [bp - 040h]
@@ -4104,9 +4764,9 @@ jl        back_floor_less_than_front_ceiling
 ; ds_p->sprtopclip_offset = offset_screenheightarray;
 ; ds_p->tsilheight = MINSHORT;
 ; ds_p->silhouette |= SIL_TOP;
-mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
-mov       word ptr es:[bx + 014h], MINSHORT
-or        byte ptr es:[bx + 01ch], SIL_TOP
+mov       word ptr es:[si + 016h], OFFSET_SCREENHEIGHTARRAY
+mov       word ptr es:[si + 014h], MINSHORT
+or        byte ptr es:[si + 01ch], SIL_TOP
 back_floor_less_than_front_ceiling:
 
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight);
@@ -4123,9 +4783,9 @@ sar       di, 1
 rcr       si, 1
 sar       di, 1
 rcr       si, 1
-SELFMODIFY_set_viewz_lo_3:
+SELFMODIFY_BSP_viewz_lo_3:
 sub       si, 01000h
-SELFMODIFY_set_viewz_hi_3:
+SELFMODIFY_BSP_viewz_hi_3:
 sbb       di, 01000h
 
 ;di:si will store worldhigh
@@ -4139,16 +4799,13 @@ rcr       bx, 1
 sar       cx, 1
 rcr       bx, 1
 
-SELFMODIFY_set_viewz_lo_2:
+SELFMODIFY_BSP_viewz_lo_2:
 sub       bx, 01000h
-SELFMODIFY_set_viewz_hi_2:
+SELFMODIFY_BSP_viewz_hi_2:
 sbb       cx, 01000h
 
 ; cx:bx hold on to worldlow for now
 
-
-;mov       word ptr [bp - 03ah], cx
-;mov       word ptr [bp - 038h], bx
 
 ; // hack to allow height changes in outdoor areas
 ; if (frontsectorceilingpic == skyflatnum && backsectorceilingpic == skyflatnum) {
@@ -4156,9 +4813,9 @@ sbb       cx, 01000h
 ; }
 
 mov       al, byte ptr ds:[_skyflatnum]
-cmp       al, byte ptr [bp - 0ch]
+cmp       al, byte ptr [bp - 5]
 jne       not_a_skyflat
-cmp       al, byte ptr [bp - 0ah]
+cmp       al, byte ptr [bp - 6]
 jne       not_a_skyflat
 ;di/si are worldhigh..
 
@@ -4180,17 +4837,17 @@ jne       set_markfloor_true
 cmp       bx, word ptr [bp - 036h]
 jne       set_markfloor_true
 ; todo: use words
-mov       al, byte ptr [bp - 4]
-cmp       al, byte ptr [bp - 6]
+mov       ax, word ptr [bp - 4]
+cmp       al, ah
 jne       set_markfloor_true
-mov       al, byte ptr [bp - 2]
-cmp       al, byte ptr [bp - 8]
+mov       ax, word ptr [bp - 2]
+cmp       al, ah
 jne       set_markfloor_true
 set_markfloor_false:
-mov       byte ptr ds:[_markfloor], 0
+mov       byte ptr [bp - 04Ah], 0  ; markfloor
 jmp       markfloor_set
 set_markfloor_true:
-mov       byte ptr ds:[_markfloor], 1
+mov       byte ptr [bp - 04Ah], 1  ; markfloor
 markfloor_set:
 ; di/si are already worldhigh..
 cmp       word ptr [bp - 044h], di
@@ -4198,18 +4855,18 @@ jne       set_markceiling_true
 cmp       word ptr [bp - 046h], si
 jne       set_markceiling_true
 
-mov       al, byte ptr [bp - 0ah]
-cmp       al, byte ptr [bp - 0ch]
+mov       ax, word ptr [bp - 6]
+cmp       al, ah
 jne       set_markceiling_true
 
-mov       al, byte ptr [bp - 2]
-cmp       al, byte ptr [bp - 8]
+mov       ax, word ptr [bp - 2]
+cmp       al, ah
 jne       set_markceiling_true
 set_markceiling_false:
-mov       byte ptr ds:[_markceiling], 0
+mov       byte ptr [bp - 049h], 0   ;markceiling
 jmp       markceiling_set
 set_markceiling_true:
-mov       byte ptr ds:[_markceiling], 1
+mov       byte ptr [bp - 049h], 1   ;markceiling
 markceiling_set:
 
 ; TOOO: improve this area. write to markceiling/floor once not twice. use al/ah to store their values.
@@ -4228,9 +4885,8 @@ mov       ax, word ptr [bp - 040h]
 cmp       ax, word ptr [bp - 012h]
 jl        not_closed_door 
 closed_door_detected:
-mov       al, 1
-mov       byte ptr ds:[_markfloor], al
-mov       byte ptr ds:[_markceiling], al
+mov       ax, 0101h
+mov       word ptr [bp - 04Ah], ax  ; markfloor, ceiling
 not_closed_door:
 ; ax free at last!
 ;		if (worldhigh.w < worldtop.w) {
@@ -4253,19 +4909,22 @@ setup_toptexture:
 
 ; toptexture = texturetranslation[side->toptexture];
 
-les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr [bp - 014h]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+
+mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+0], 0E9h ; jmp short rel16
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], SELFMODIFY_BSP_midtexture_return_jmp_TARGET - SELFMODIFY_BSP_midtexture_return_jmp_AFTER
+
+mov       word ptr cs:[SELFMODIFY_BSP_set_toptexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
-mov       ax, 0CDA1h   ; mov   ax, word ptr ds:[_pixhigh+1] first two bytes
+mov       ax, 0468Bh   ; mov   ax, word ptr [bp - 02Dh] first two bytes
 jne       toptexture_not_zero
 toptexture_zero:
 mov       ax, ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
@@ -4276,7 +4935,7 @@ or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
 
 
-test      byte ptr [bp - 024h], ML_DONTPEGTOP
+test      byte ptr [bp - 048h], ML_DONTPEGTOP
 jne       set_toptexture_to_worldtop
 calculate_toptexturemid:
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_toptexturemid, backsectorceilingheight);
@@ -4294,18 +4953,17 @@ rcr       ax, 1
 sar       dx, 1
 rcr       ax, 1
 ;dx:ax are toptexturemid for now..
-les       bx, dword ptr [bp - 016h] ; sides ; todo cache the value from side?
 mov       cx, TEXTUREHEIGHTS_SEGMENT
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr [bp - 014h]
 mov       es, cx
 xor       cx, cx
 mov       cl, byte ptr es:[bx]
 inc       cx
 
 add       dx, cx
-SELFMODIFY_set_viewz_lo_1:
+SELFMODIFY_BSP_viewz_lo_1:
 sub       ax, 01000h
-SELFMODIFY_set_viewz_hi_1:
+SELFMODIFY_BSP_viewz_hi_1:
 sbb       dx, 01000h
 
 jmp       do_selfmodify_toptexture
@@ -4330,20 +4988,19 @@ jne       bottexture_stuff_done
 cmp       si, word ptr [bp - 036h]
 jbe       bottexture_stuff_done
 setup_bottexture:
-les       bx, dword ptr [bp - 016h] ; sides
 mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, word ptr es:[bx + 2]
+mov       bx, word ptr [bp - 016h]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
+mov       word ptr cs:[SELFMODIFY_BSP_set_bottomtexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
 
-mov       ax, 0C8A1h   ; mov   ax, word ptr ds:[_pixlow]
+mov       ax, 0468Bh   ; mov   ax, word ptr [bp - 026h]
 jne       bottexture_not_zero
 bottexture_zero:
 mov       ax, ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
@@ -4355,7 +5012,7 @@ or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
 
 
 
-test      byte ptr [bp - 024h], ML_DONTPEGBOTTOM
+test      byte ptr [bp - 048h], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here
 mov       ax, word ptr [bp - 046h]
@@ -4369,8 +5026,8 @@ mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1], dx
 
 
 bottexture_stuff_done:
-mov       bx, word ptr [bp - 028h]
-mov       ax, word ptr [bx]
+SELFMODIFY_BSP_siderenderrowoffset_2:
+mov       ax, 01000h
 
 ;   extraselfmodify? or hold in vars till this pt and finally write the high bits
 ; 	rw_toptexturemid.h.intbits += side_render->rowoffset;
@@ -4381,8 +5038,7 @@ mov       ax, word ptr [bx]
 ; ?? how
 add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1], ax
 add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1], ax
-les       bx, dword ptr [bp - 016h] ; sides
-cmp       word ptr es:[bx + 4], 0
+cmp       word ptr [bp - 01Ch], 0
 
 ; // allocate space for masked texture tables
 ; if (side->midtexture) {
@@ -4400,14 +5056,14 @@ side_has_midtexture:
 ; lastopening += rw_stopx - rw_x;
 
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr ds:[_rw_x]
+sub       ax, word ptr [bp - 038h]    ; rw_x
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], ax
 mov       ax, word ptr es:[bx + 01ah]
 add       ax, ax
 mov       word ptr ds:[_maskedtexturecol], ax
-mov       ax, word ptr ds:[_rw_stopx]
-sub       ax, word ptr ds:[_rw_x]
+mov       ax, word ptr [bp - 03Ah]
+sub       ax, word ptr [bp - 038h]    ; rw_x
 add       word ptr ds:[_lastopening], ax
 mov       al, 1
 mov       byte ptr ds:[_maskedtexture], al
@@ -4591,7 +5247,7 @@ done_modding_shift_detail_code:
 mov      al, byte ptr ss:[_detailshiftitercount]
 mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
 mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+1], al
-mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+4], al
+mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+3], al
 
 mov      ax, word ptr ss:[_detailshiftandval]
 mov      word ptr ds:[SELFMODIFY_detailshift_and_1+2], ax
@@ -4665,26 +5321,32 @@ ASSUME DS:R_MAINHI_TEXT
 
 
 mov      ax, word ptr ss:[_viewz]
-mov      word ptr ds:[SELFMODIFY_set_viewz_lo_1+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_lo_2+2], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_lo_3+2], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_lo_4+2], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_lo_5+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_lo_6+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_4+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_5+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_6+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_7+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_8+2], ax
+
+
 mov      ax, word ptr ss:[_viewz+2]
-mov      word ptr ds:[SELFMODIFY_set_viewz_hi_1+2], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_hi_2+2], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_hi_3+2], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_hi_4+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_hi_5+2], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_hi_6+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_4+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_5+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_6+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_7+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_8+1], ax
 
 mov      ax, word ptr ss:[_viewz_shortheight]
-mov      word ptr ds:[SELFMODIFY_set_viewz_shortheight_1+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_shortheight_2+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_shortheight_3+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_shortheight_4+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewz_shortheight_5+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1], ax
 
 mov      al, byte ptr ss:[_extralight]
 mov      byte ptr ds:[SELFMODIFY_set_extralight_1+1], al
@@ -4697,19 +5359,21 @@ do_no_bsp_fixedcolormap_selfmodify:
 
 
 mov      ax, 0c089h 
-mov      word ptr ds:[SELFMODIFY_set_fixedcolormap_2], ax
-mov      word ptr ds:[SELFMODIFY_set_fixedcolormap_3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
 
 
 jmp      done_with_bsp_fixedcolormap_selfmodify
 do_bsp_fixedcolormap_selfmodify:
 
-mov      byte ptr ds:[SELFMODIFY_set_fixedcolormap_1+3], al
+;sal      al, 1
+;sal      al, 1
+mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3], al
 
-mov   ax, ((SELFMODIFY_set_fixedcolormap_2_TARGET - SELFMODIFY_set_fixedcolormap_2_AFTER) SHL 8) + 0EBh
-mov   word ptr ds:[SELFMODIFY_set_fixedcolormap_2], ax
-mov   ah, (SELFMODIFY_set_fixedcolormap_3_TARGET - SELFMODIFY_set_fixedcolormap_3_AFTER)
-mov   word ptr ds:[SELFMODIFY_set_fixedcolormap_3], ax
+mov   ax, ((SELFMODIFY_BSP_fixedcolormap_2_TARGET - SELFMODIFY_BSP_fixedcolormap_2_AFTER) SHL 8) + 0EBh
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
+mov   ah, (SELFMODIFY_BSP_fixedcolormap_3_TARGET - SELFMODIFY_BSP_fixedcolormap_3_AFTER)
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
 
 
 ; fall thru
@@ -4759,6 +5423,7 @@ mov      es, ax
 mov      ax, word ptr ds:[_destview+2]
 mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segment+1], ax
 
+;call     R_WriteMathFrameConstants_
 
 
 

@@ -910,6 +910,8 @@ index_set:
 les    bx, dword ptr ds:[_planezlight]
 xlat  byte ptr es:[bx]
 colormap_ready:
+;sar al, 1
+;sar al, 1
 mov   byte ptr ds:[_ds_colormap_index], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
@@ -931,6 +933,10 @@ ret
 
 use_fixed_colormap:
 mov   al, byte ptr ds:[_fixedcolormap]
+; todo remove this and use proper colormap...
+; has to be shr for 128 case...
+shr   al, 1
+shr   al, 1
 mov   byte ptr ds:[_ds_colormap_index], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET

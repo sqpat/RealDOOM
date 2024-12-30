@@ -114,7 +114,7 @@ void __near R_RenderMaskedSegRange2 (drawseg_t __far* ds, int16_t x1, int16_t x2
 	} else {
 		walllights = lightmult48lookup[lightnum];
 	}
-	walllights+=scalelight_offset_in_fixed_scalelight;
+	walllights+=SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT;
 
     maskedtexturecol = &openings[ds->maskedtexturecol_val];
 
@@ -1224,7 +1224,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 			} else {
 				walllights = lightmult48lookup[lightnum];
 			}
-			walllights+=scalelight_offset_in_fixed_scalelight;
+			walllights+=SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT;
 		}
     }
     

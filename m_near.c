@@ -2219,8 +2219,8 @@ boolean    					plutonia = false;
 boolean    					tnt = false;
 #endif
 
-uint8_t 					seglooptexmodulo[2] = {0, 0}; 
-int16_t 					seglooptexrepeat[2] = {0, 0}; 
+//uint8_t 					seglooptexmodulo[2] = {0, 0}; 
+uint8_t 					seglooptexrepeat[2] = {0, 0}; 
 int16_t 					segloopnextlookup[2] = {-1, -1}; // 0 would be fine too...
 int16_t 					segloopprevlookup[2];
 segment_t 					segloopcachedsegment[2];

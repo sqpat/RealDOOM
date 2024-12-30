@@ -117,13 +117,13 @@
 #define viewz_shortheight               (*((short_height_t __near *)         (_NULL_OFFSET + 0x007C)))
 #define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x007E)))
 
-#define rw_x                            (*((int16_t __near *)                (_NULL_OFFSET + 0x0080)))
-#define rw_stopx                        (*((int16_t __near *)                (_NULL_OFFSET + 0x0082)))
+// #define rw_x                            (*((int16_t __near *)                (_NULL_OFFSET + 0x0080)))
+// #define rw_stopx                        (*((int16_t __near *)                (_NULL_OFFSET + 0x0082)))
 #define rw_offset                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0084)))
 #define maskedtexture                   (*((boolean __near*)                 (_NULL_OFFSET + 0x0088)))
 #define segtextured                     (*((boolean __near*)                 (_NULL_OFFSET + 0x0089)))
-#define markfloor                       (*((boolean __near*)                 (_NULL_OFFSET + 0x008A)))
-#define markceiling                     (*((boolean __near*)                 (_NULL_OFFSET + 0x008B)))
+// #define markfloor                       (*((boolean __near*)                 (_NULL_OFFSET + 0x008A)))
+// #define markceiling                     (*((boolean __near*)                 (_NULL_OFFSET + 0x008B)))
 
 #define rw_scale                        (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x008C)))
 #define topfrac                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x0090)))
@@ -246,7 +246,7 @@
 #define curseg                          (*((int16_t  __near*)                (_NULL_OFFSET + 0x0280)))
 #define curseg_render                   (*((seg_render_t  __near* __near*)   (_NULL_OFFSET + 0x0282)))
 #define walllights                      (*((int16_t  __near*)                (_NULL_OFFSET + 0x0284)))
-#define maskedtexmodulo                 (*((uint16_t __near*)                (_NULL_OFFSET + 0x0286)))
+//#define maskedtexmodulo                 (*((uint16_t __near*)                (_NULL_OFFSET + 0x0286)))
 #define maskednextlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x0288)))
 #define maskedprevlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x028A)))
 #define maskedtexrepeat                 (*((int16_t __near*)                 (_NULL_OFFSET + 0x028C)))
@@ -1148,8 +1148,8 @@ extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 extern boolean				    is_ultimate;
 extern segment_t			    spritewidths_segment;
 
-extern uint8_t 					seglooptexmodulo[2]; // 0 would be fine too...
-extern int16_t 					seglooptexrepeat[2]; // 0 would be fine too...
+//extern uint8_t 					seglooptexmodulo[2]; // 0 would be fine too...
+extern uint8_t  				seglooptexrepeat[2]; // 0 would be fine too...
 extern int16_t 					segloopnextlookup[2];
 extern int16_t 					segloopprevlookup[2];
 extern segment_t 				segloopcachedsegment[2];
