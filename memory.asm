@@ -30,7 +30,7 @@ db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ; _quality_port_lookup 0x30
 db 1,  2,  4,  8,  3, 12,  3, 12, 15, 15, 15, 15
 ; _ds_source_segment  0x3E (and _ds_source_segment -2 = 0x3C)
-dw                                       DRAWSPAN_CALL_OFFSET, 0000h
+dw                                       DRAWSPAN_BX_OFFSET, 0000h
 
 
 ;0x40
