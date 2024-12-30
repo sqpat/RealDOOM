@@ -151,8 +151,10 @@ mov   si, ax						; temporarily store dx:ax into es:si
 mov   es, dx						; store sign bits (dx) in es
 mov   bx, ax
 mov   cx, dx						; also copy sign bits to cx
-mov   ax, word ptr ds:[DS_XSTEP]
-mov   dx, word ptr ds:[DS_XSTEP + 2]
+SELFMODIFY_SPAN_ds_xstep_lo_1:
+mov   ax, 01000h
+SELFMODIFY_SPAN_ds_xstep_hi_1:
+mov   dx, 01000h
 
 ; inline i4m
 ; DX:AX * CX:BX,  CX is 0000 or FFFF
@@ -183,18 +185,22 @@ mov   dx, word ptr ds:[DS_XSTEP + 2]
 ;	DX:AX contains ds_xstep * prt
 
 
-add   ax, word ptr ds:[DS_XFRAC]	; load _ds_xfrac
+SELFMODIFY_SPAN_ds_xfrac_lo:
+add   ax, 01000h	; load _ds_xfrac
 mov   cx, es					; retrieve prt sign bits
 
-adc   dx, word ptr ds:[DS_XFRAC + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
+SELFMODIFY_SPAN_ds_xfrac_hi:
+adc   dx, 01000h  ; ; ds_xfrac + ds_xstep * prt high bits
 
 mov   dh, dl
 mov   dl, ah
 mov   es, dx  ; store mid 16 bits of x_frac.w
 mov   bx, si
 
-mov   ax, word ptr ds:[DS_YSTEP]
-mov   dx, word ptr ds:[DS_YSTEP + 2]
+SELFMODIFY_SPAN_ds_ystep_lo:
+mov   ax, 01000h
+SELFMODIFY_SPAN_ds_ystep_hi:
+mov   dx, 01000h
 
 
 ;		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
@@ -223,9 +229,13 @@ mov   dx, word ptr ds:[DS_YSTEP + 2]
 ; dx:ax contains ds_ystep * prt
 
 ; add 32 bits of ds_yfrac
+SELFMODIFY_SPAN_ds_yfrac_lo:
+add   ax, 01000h
 mov   bx, ax
-add   bx, word ptr ds:[DS_YFRAC]	; load ds_yfrac
-adc   dx, word ptr ds:[DS_YFRAC + 2]
+SELFMODIFY_SPAN_ds_yfrac_hi:
+adc   dx, 01000h
+
+; todo preshift?
 
 ;	xfrac16.hu = xfrac.wu >> 8;
 
@@ -248,9 +258,12 @@ mov dx, es   ;  load mid 16 bits of x_frac.w
 
 ;	xadder = ds_xstep >> 6; 
 
-mov   ax, word ptr ds:[DS_XSTEP]
-mov   cx, word ptr ds:[DS_XSTEP + 2]
+SELFMODIFY_SPAN_ds_xstep_lo_2:
+mov   ax, 01000h
+SELFMODIFY_SPAN_ds_xstep_hi_2:
+mov   cx, 01000h
 
+;todo preshift?
 
 ; quick shift 6
 rol   ax, 1
@@ -270,9 +283,11 @@ mov   word ptr ds:[_ss_variable_space], ax	; store x_adder
 
 ;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 
-mov   ax, word ptr ds:[DS_YSTEP + 1]
 
+SELFMODIFY_SPAN_ds_ystep_mid:
+mov   ax, 01000h
 
+;todo preshift outside.
 
 shr   ax, cl			; shift y_step by pixel shift
 mov   word ptr ds:[_ss_variable_space + 2], ax	; y_adder
@@ -288,8 +303,7 @@ xchg  ds:[_ss_variable_space], sp             ;  store SP and load x_adder
 xchg  ds:[_ss_variable_space+2], bp			  ;   store BP and load y_adder
 
 mov   cx, bx  ; yfrac16
-lds   bx, dword ptr ds:[_ds_source_segment-2] 		; ds:si is ds_source. BX is pulled in by lds as a constant 
-;mov   bx, DRAWSPAN_BX_OFFSET
+lds   bx, dword ptr ds:[_ds_source_segment-2] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 
 ; we have a safe memory space declared in near variable space to put sp/bp values
 ; they meanwhile hold x_adder/y_adder and we juggle the two
@@ -750,20 +764,24 @@ mov   dx, word ptr es:[si + 2 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT
 
 ; CACHEDXSTEP lookup. move these into temporary variable space
 
-mov   bx, ds
-mov   es, bx
-mov   ds, ds:[_cachedxstep_segment_storage]
-mov   di, DS_XSTEP
-movsw       ; DS_XSTEP
-movsw       ; DS_XSTEP + 2
+mov   es, ds:[_cachedxstep_segment_storage]
+lods  word ptr es:[si]
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_DrawSpan_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_DrawSpan_], ax
+lods  word ptr es:[si]
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_DrawSpan_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_2+1 - OFFSET R_DrawSpan_], ax
 sub   si, 4
 ; CACHEDYSTEP lookup
-mov   ds, ss:[_cachedystep_segment_storage]
-movsw       ; DS_YSTEP
-movsw       ; DS_YSTEP + 2
+mov   es, ss:[_cachedystep_segment_storage]
+lods  word ptr es:[si]
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo+1 - OFFSET R_DrawSpan_], ax
+mov   bl, ah
+lods  word ptr es:[si]
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_DrawSpan_], ax
+mov   bh, al
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+1 - OFFSET R_DrawSpan_], bx
 
-;restore ds. es, si etc dont materr.
-mov   ds, bx
 
 distance_steps_ready:
 ;dx:ax is already distance going in
@@ -809,8 +827,8 @@ call R_FixedMulTrigLocal_
 
 add   ax, word ptr ds:[_viewx]
 adc   dx, word ptr ds:[_viewx+2]
-mov   word ptr ds:[DS_XFRAC], ax
-mov   word ptr ds:[DS_XFRAC+2], dx
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xfrac_lo+1 - OFFSET R_DrawSpan_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xfrac_hi+2 - OFFSET R_DrawSpan_], dx
 
 mov   ax, FINESINE_SEGMENT
 pop   dx              ; get fineangle
@@ -835,8 +853,8 @@ neg   ax
 ; probably too tiny an error to be visibly noticable?
 sbb   dx, 0
 
-mov   word ptr ds:[DS_YFRAC], ax
-mov   word ptr ds:[DS_YFRAC+2], dx
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_yfrac_lo+1 - OFFSET R_DrawSpan_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_yfrac_hi+2 - OFFSET R_DrawSpan_], dx
 
 
 ; 	if (fixedcolormap) {
@@ -941,8 +959,12 @@ call R_FixedMulLocal_
 mov   es, ds:[_cachedxstep_segment_storage]
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
-mov   word ptr ds:[DS_XSTEP], ax
-mov   word ptr ds:[DS_XSTEP+2], dx
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_DrawSpan_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_DrawSpan_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_DrawSpan_], dx
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_2+1 - OFFSET R_DrawSpan_], dx
+
 mov   dx, di
 mov   bx, word ptr ds:[_baseyscale]
 mov   cx, word ptr ds:[_baseyscale+2]
@@ -958,8 +980,13 @@ mov   es, ds:[_cachedystep_segment_storage]
 ; todo turn into stosw here and above?
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
-mov   word ptr ds:[DS_YSTEP], ax
-mov   word ptr ds:[DS_YSTEP+2], dx
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo+1 - OFFSET R_DrawSpan_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_DrawSpan_], dx
+mov   al, ah
+mov   ah, dl
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+1 - OFFSET R_DrawSpan_], ax
+
 
 pop   ax
 mov   dx, di  				    ; distance high word
