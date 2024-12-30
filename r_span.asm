@@ -158,8 +158,6 @@ mov   dx, 01000h
 ; inline i4m
 ; DX:AX * CX:BX,  CX is 0000 or FFFF
  		
-        ; todo get rid of this push/pop..
-		push    ax              ; save low(M2)
         xchg    ax,dx           ; exchange low(M2) and high(M1)
         or      ax,ax           ; if high(M1) non-zero
         je skiphigh11
@@ -176,7 +174,7 @@ mov   dx, 01000h
 ;          mul   bx              ; - high(M2) * low(M1)
 ;          add   cx,ax           ; - add to total
         skiphigh12:                  ; endif
-        pop     ax              ; restore low(M2)
+        mov     ax, si
         mul     bx              ; low(M2) * low(M1)
         add     dx,cx           ; add previously computed high part
 
@@ -206,8 +204,6 @@ mov   dx, 01000h
 
 ; inline i4m
 ; DX:AX * CX:BX,  CX is 0000 or FFFF
-
-        push    ax              ; save low(M2)
         xchg    ax,dx           ; exchange low(M2) and high(M1)
         or      ax,ax           ; if high(M1) non-zero
         je skiphigh21              ; then
@@ -219,7 +215,7 @@ mov   dx, 01000h
           sub   ax,bx              ; - high(M2) * low(M1)
 
         skiphigh22:                  ; endif
-        pop     ax              ; restore low(M2)
+        mov     ax, si
         mul     bx              ; low(M2) * low(M1)
         add     dx,cx           ; add previously computed high part
 
@@ -229,24 +225,24 @@ mov   dx, 01000h
 ; add 32 bits of ds_yfrac
 SELFMODIFY_SPAN_ds_yfrac_lo:
 add   ax, 01000h
-mov   bx, ax
+mov   cx, ax
 SELFMODIFY_SPAN_ds_yfrac_hi:
 adc   dx, 01000h
 
-; todo preshift?
+; cant preshift?
 
 ;	xfrac16.hu = xfrac.wu >> 8;
 
 
 ;	yfrac16.hu = yfrac.wu >> 10;
 
-mov bl, bh
-mov bh, dl   ; shift 8
+mov cl, ch
+mov ch, dl   ; shift 8
 
 sar dh, 1    ; shift two more
-rcr bx, 1
+rcr cx, 1
 sar dh, 1
-rcr bx, 1    ; yfrac16 in bx
+rcr cx, 1    ; yfrac16 in cx
 
 
 ; shift 8, yadder in dh?
@@ -256,39 +252,19 @@ mov dx, es   ;  load mid 16 bits of x_frac.w
 
 ;	xadder = ds_xstep >> 6; 
 
+;preshifted by 6
 SELFMODIFY_SPAN_ds_xstep_lo_2:
-mov   ax, 01000h
-SELFMODIFY_SPAN_ds_xstep_hi_2:
-mov   cx, 01000h
+mov   word ptr ds:[_ss_variable_space], 01000h	; store x_adder
 
-;todo preshift?
-
-; quick shift 6
-rol   ax, 1
-rcl   cl, 1
-rol   ax, 1
-rcl   cl, 1
-
-mov   al, ah
-mov   ah, cl
-
-; do loop setup here?
-
-mov cl, byte ptr ds:[_detailshift]
-shr ax, cl			; shift x_step by pixel shift
-
-mov   word ptr ds:[_ss_variable_space], ax	; store x_adder
 
 ;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 
 
 SELFMODIFY_SPAN_ds_ystep_mid:
-mov   ax, 01000h
+mov   word ptr ds:[_ss_variable_space + 2], 01000h	; y_adder
 
 ;todo preshift outside.
 
-shr   ax, cl			; shift y_step by pixel shift
-mov   word ptr ds:[_ss_variable_space + 2], ax	; y_adder
 
 
 
@@ -300,7 +276,7 @@ mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 xchg  ds:[_ss_variable_space], sp             ;  store SP and load x_adder
 xchg  ds:[_ss_variable_space+2], bp			  ;   store BP and load y_adder
 
-mov   cx, bx  ; yfrac16
+; yfraq16 already in cx
 lds   bx, dword ptr ds:[_ds_source_segment-2] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 
 ; we have a safe memory space declared in near variable space to put sp/bp values
@@ -765,10 +741,28 @@ mov   dx, word ptr es:[si + 2 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT
 mov   es, ds:[_cachedxstep_segment_storage]
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_DrawSpan_], ax
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_DrawSpan_], ax
+xchg  ax, cx
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_DrawSpan_], ax
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_2+1 - OFFSET R_DrawSpan_], ax
+
+; shift 6 and juggle. (take mid 16 into ax after shifting ax:cl left 6.)
+shl   cx, 1
+rcl   al, 1
+shl   cx, 1
+rcl   al, 1
+
+mov   ah, al
+mov   al, ch
+
+; do loop setup here?
+
+mov cl, byte ptr ds:[_detailshift]
+shr ax, cl			; shift x_step by pixel shift
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+4 - OFFSET R_DrawSpan_], ax
+
+
+
 sub   si, 4
 ; CACHEDYSTEP lookup
 mov   es, ss:[_cachedystep_segment_storage]
@@ -778,7 +772,8 @@ mov   bl, ah
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_DrawSpan_], ax
 mov   bh, al
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+1 - OFFSET R_DrawSpan_], bx
+shr   bx, cl
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+4 - OFFSET R_DrawSpan_], bx
 
 
 distance_steps_ready:
@@ -957,9 +952,25 @@ mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
 
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_DrawSpan_], ax
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_DrawSpan_], ax
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_DrawSpan_], dx
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_2+1 - OFFSET R_DrawSpan_], dx
+
+
+; shift 6 and juggle
+shl   ax, 1
+rcl   dl, 1
+shl   ax, 1
+rcl   dl, 1
+
+mov   al, ah
+mov   ah, dl
+
+; do loop setup here?
+
+mov cl, byte ptr ds:[_detailshift]
+shr ax, cl			; shift x_step by pixel shift
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+4 - OFFSET R_DrawSpan_], ax
+
 
 mov   dx, di
 mov   bx, word ptr ds:[_baseyscale]
@@ -981,7 +992,9 @@ mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo+1 - OFFSET R_DrawSpan_], ax
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_DrawSpan_], dx
 mov   al, ah
 mov   ah, dl
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+1 - OFFSET R_DrawSpan_], ax
+mov   cl, byte ptr ds:[_detailshift]
+shr   ax, cl
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+4 - OFFSET R_DrawSpan_], ax
 
 
 pop   ax
