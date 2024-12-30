@@ -1939,7 +1939,14 @@ sub   ax, 01234h
 jle   vis_x1_greater_than_x1
 mov   bx, word ptr [si + 01Eh]
 mov   cx, word ptr [si + 020h]
-call FastMul16u32u_
+
+; inlined FastMul16u32u
+XCHG CX, AX    ; AX stored in CX
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
 add   word ptr [si + 016h], ax
 adc   word ptr [si + 018h], dx
 
@@ -2193,140 +2200,8 @@ ret
 endp
 
 
-; si:di is dc_yl, dc_yh
-
-;R_GetSourceSegment0_
 
 
-;void __near R_GetSourceSegment(int16_t texturecolumn, int16_t texture, int8_t segloopcachetype){
-
-; DX is texturecolumn
-; segloopcachetype is 0
-
-PROC R_GetSourceSegment0_ NEAR
-PUBLIC R_GetSourceSegment0_ 
-
-; grab texturecolumn where it was stored before.
-push  es
-push  dx
-
-
-; okay. we modify the first instruction in this argument. 
- ; if no texture is yet cached for this rendersegloop, jmp to non_repeating_texture
-  ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
-   ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
-
-SELFMODIFY_BSP_check_seglooptexmodulo0:
-SELFMODIFY_BSP_set_seglooptexrepeat0:
-; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
-jmp    non_repeating_texture0 
-SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
-SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
-xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
-and   dl, ah   ; ah has loopwidth-1 (modulo )
-mul   dl       ; al has heightval
-add_base_segment_and_draw0:
-SELFMODIFY_add_cached_segment0:
-add   ax, 01000h
-just_do_draw0:
-mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later.
-SELFMODIFY_set_midtexturemid_hi:
-SELFMODIFY_set_toptexturemid_hi:
-mov   dx, 01000h
-SELFMODIFY_set_midtexturemid_lo:
-SELFMODIFY_set_toptexturemid_lo:
-mov   cx, 01000h
-
-call  R_DrawColumnPrep_
-pop   dx
-pop   es
-ret
-
-
-COMMENT @
-; OK. so AASTINKY is in doom1.wad as a 24 pixel wide tex.
-;  but it is unused and there are no other vanilla non po2 textures.
-; this code was untested and honestly i will just remove the functionality for now.
-
-non_po2_texture_mod0:
-; cx stores tex repeat
-SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET:
-SELFMODIFY_BSP_set_seglooptexmodulo0:
-mov   cx, 0
-; div and take modulo is way faster than loops. and smaller.
-mov   dx, word ptr [_segloopcachedbasecol]
-do_subtract_again0:
-sub   ax, dx
-jl    update_segloopcachedbasecol0
-div   cl          ;   ah has modulo
-; could do "while ah subtract cl from basecol ah --" ? 
-
-mov   al, ah
-mul   byte ptr [_segloopheightvalcache]
-jmp   add_base_segment_and_draw0
-update_segloopcachedbasecol0:
-add   ax, dx
-sub   dx, cx
-mov   word ptr  [_segloopcachedbasecol], dx
-jmp   do_subtract_again0
-
-@
-
-SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
-non_repeating_texture0:
-cmp   dx, word ptr [_segloopnextlookup]
-jge   out_of_texture_bounds0
-cmp   dx, word ptr [_segloopprevlookup]
-jge   in_texture_bounds0
-out_of_texture_bounds0:
-push  bx
-xor   bx, bx
-
-SELFMODIFY_set_toptexture:
-SELFMODIFY_set_midtexture:
-mov   ax, 01000h
-call  R_GetColumnSegment_
-pop   bx
-
-mov   dx, word ptr [_segloopcachedsegment]
-mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
-
-COMMENT @ 
-; see above, but all textures in vanilla are po2 so this is not necessary for now.
-mov   dh, byte ptr [_seglooptexmodulo]
-mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1], dh
-
-cmp   dh, 0
-je    seglooptexmodulo0_is_jmp
-
-mov   dl, 0B2h   ;  (mov dl, xx)
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], dx
-jmp   check_seglooptexrepeat0
-seglooptexmodulo0_is_jmp:
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
-@
-check_seglooptexrepeat0:
-
-mov   dh, byte ptr [_seglooptexrepeat]
-cmp   dh, 0
-je    seglooptexrepeat0_is_jmp
-; modulo is seglooptexrepeat - 1
-mov   dl, byte ptr [_segloopheightvalcache]
-mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
-
-jmp   just_do_draw0
-; do jmp. highest priority, overwrite previously written thing.
-seglooptexrepeat0_is_jmp:
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
-jmp   just_do_draw0
-in_texture_bounds0:
-xchg  ax, dx
-sub   al, byte ptr [_segloopcachedbasecol]
-mul   byte ptr [_segloopheightvalcache]
-jmp   add_base_segment_and_draw0
-
-ENDP
 
 
 
@@ -3141,7 +3016,59 @@ pop   si
 jmp FastDiv3232FFFF_done  
 
 
+; do jmp. highest priority, overwrite previously written thing.
+seglooptexrepeat0_is_jmp:
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
+jmp   just_do_draw0
+in_texture_bounds0:
+xchg  ax, dx
+sub   al, byte ptr [_segloopcachedbasecol]
+mul   byte ptr [_segloopheightvalcache]
+jmp   add_base_segment_and_draw0
+SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
+non_repeating_texture0:
+cmp   dx, word ptr [_segloopnextlookup]
+jge   out_of_texture_bounds0
+cmp   dx, word ptr [_segloopprevlookup]
+jge   in_texture_bounds0
+out_of_texture_bounds0:
+push  bx
+xor   bx, bx
 
+SELFMODIFY_BSP_set_toptexture:
+SELFMODIFY_BSP_set_midtexture:
+mov   ax, 01000h
+call  R_GetColumnSegment_
+pop   bx
+
+mov   dx, word ptr [_segloopcachedsegment]
+mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
+
+COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
+; see above, but all textures in vanilla are po2 so this is not necessary for now.
+mov   dh, byte ptr [_seglooptexmodulo]
+mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1], dh
+
+cmp   dh, 0
+je    seglooptexmodulo0_is_jmp
+
+mov   dl, 0B2h   ;  (mov dl, xx)
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], dx
+jmp   check_seglooptexrepeat0
+seglooptexmodulo0_is_jmp:
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
+check_seglooptexrepeat0:
+@
+
+mov   dh, byte ptr [_seglooptexrepeat]
+cmp   dh, 0
+je    seglooptexrepeat0_is_jmp
+; modulo is seglooptexrepeat - 1
+mov   dl, byte ptr [_segloopheightvalcache]
+mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
+
+jmp   just_do_draw0
 
 
 
@@ -3195,13 +3122,53 @@ jl    mid_no_pixels_to_draw
 ; si:di are dc_yl, dc_yh
 ; dx holds texturecolumn
 
-call  R_GetSourceSegment0_
+; inlined function. 
+R_GetSourceSegment0_START:
+push  es
+push  dx
+
+
+; okay. we modify the first instruction in this argument. 
+ ; if no texture is yet cached for this rendersegloop, jmp to non_repeating_texture
+  ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
+   ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
+
+SELFMODIFY_BSP_check_seglooptexmodulo0:
+SELFMODIFY_BSP_set_seglooptexrepeat0:
+; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
+jmp    non_repeating_texture0
+SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
+SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
+xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
+and   dl, ah   ; ah has loopwidth-1 (modulo )
+mul   dl       ; al has heightval
+add_base_segment_and_draw0:
+SELFMODIFY_add_cached_segment0:
+add   ax, 01000h
+just_do_draw0:
+mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later.
+SELFMODIFY_set_midtexturemid_hi:
+SELFMODIFY_set_toptexturemid_hi:
+mov   dx, 01000h
+SELFMODIFY_set_midtexturemid_lo:
+SELFMODIFY_set_toptexturemid_lo:
+mov   cx, 01000h
+
+call  R_DrawColumnPrep_
+pop   dx
+pop   es
+
+; this runs as a jmp for a top call, otherwise NOP for mid call
+SELFMODIFY_BSP_midtexture_return_jmp:
+; JMP back runs for a TOP call
+; we overwrite the next instruction with a jmp if toptexture call. otherwise we restore it.
+SELFMODIFY_BSP_midtexture_return_jmp_AFTER = SELFMODIFY_BSP_midtexture_return_jmp+3
 
 
 mid_no_pixels_to_draw:
 ; bx is already _rw_x << 1
 SELFMODIFY_setviewheight_1:
-mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h
+mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h   ; 26 c7 87 80 a7 00 10  (this instruction that gets selfmodified)
 mov   word ptr es:[bx + OFFSET_FLOORCLIP], 0FFFFh
 finished_inner_loop_iter:
 
@@ -3241,7 +3208,7 @@ no_top_texture_draw:
 ; bx is already rw_x << 1
 SELFMODIFY_BSP_markceiling_2:
 je   check_bottom_texture
-SELFMODIFY_BSP_markceiling_2_AFTER = SELFMODIFY_BSP_markceiling_2+2
+SELFMODIFY_BSP_markceiling_2_AFTER:
 ; bx is already rw_x << 1
 mark_ceiling_si:
 ; bx is already rw_x << 1
@@ -3291,7 +3258,9 @@ push   cx ; note: midtexture doesnt need/use cx and doesnt do this.
 ; si:di are dc_yl, dc_yh
 ; dx holds texturecolumn
 
-call  R_GetSourceSegment0_
+jmp R_GetSourceSegment0_START
+SELFMODIFY_BSP_midtexture_return_jmp_TARGET:
+R_GetSourceSegment0_DONE_TOP:
 
 pop    cx
 xchg   cx, di
@@ -3410,7 +3379,7 @@ jmp   finished_inner_loop_iter
 ;BEGIN INLINED R_GetSourceSegment1_ AGAIN
 ; this was only called in one place. this runs often, so inline it.
 
-COMMENT @
+COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
 non_po2_texture_mod1:
 ; cx stores tex repeat
 SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET:
@@ -3463,7 +3432,7 @@ out_of_texture_bounds1:
 push  bx
 mov   bx, 1
 
-SELFMODIFY_set_bottomtexture:
+SELFMODIFY_BSP_set_bottomtexture:
 mov   ax, 01000h
 call  R_GetColumnSegment_
 pop   bx
@@ -3985,6 +3954,7 @@ mov       word ptr es:[bx + 01ah], NULL_TEX_COL
 cmp       word ptr ds:[_backsector], SECNUM_NULL
 je        handle_single_sided_line
 jmp       handle_two_sided_line
+
 handle_single_sided_line:
 
 mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER) SHL 8) + 0EBh
@@ -4008,7 +3978,12 @@ mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-mov       word ptr cs:[SELFMODIFY_set_midtexture+1], ax
+
+
+mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+0], 026h    ; es:
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], 087C7h  ; next 2 bytes of following instr (mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
+
+mov       word ptr cs:[SELFMODIFY_BSP_set_midtexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
 mov       ax, 0F739h   ; cmp di, si
@@ -4020,8 +3995,7 @@ mov       word ptr cs:[SELFMODIFY_BSP_midtexture], ax
 ; are any bits set?
 or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
-je        overwrite_bottom_top	; if midtexture was zero, then bot/top will be checked, must zero those too
-done_overwriting_bottom_top:
+
 
 mov       ax, 0101h
 mov       word ptr [bp - 04Ah], ax ; set markfloor and markceiling
@@ -4034,14 +4008,8 @@ mov       ax, word ptr [bp - 044h]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
 
-overwrite_bottom_top:
-;  al/ah were zero so ax is zero.
-;mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
-;mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
 
-; TODO can i remove the two above...?
 
-jmp       done_overwriting_bottom_top
 do_peg_bottom:
 mov       ax, word ptr [bp - 010h]
 SELFMODIFY_BSP_viewz_shortheight_5:
@@ -4949,7 +4917,11 @@ mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-mov       word ptr cs:[SELFMODIFY_set_toptexture+1], ax
+
+mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+0], 0E9h ; jmp short rel16
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], SELFMODIFY_BSP_midtexture_return_jmp_TARGET - SELFMODIFY_BSP_midtexture_return_jmp_AFTER
+
+mov       word ptr cs:[SELFMODIFY_BSP_set_toptexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
 mov       ax, 0468Bh   ; mov   ax, word ptr [bp - 02Dh] first two bytes
@@ -5024,7 +4996,7 @@ mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-mov       word ptr cs:[SELFMODIFY_set_bottomtexture+1], ax
+mov       word ptr cs:[SELFMODIFY_BSP_set_bottomtexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
 
