@@ -2117,88 +2117,6 @@ COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOO
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 
 
-;
-; R_DrawColumnPrep
-;
-	
-PROC  R_DrawColumnPrep_ NEAR
-PUBLIC  R_DrawColumnPrep_ 
-
-; si:di is dc_yl, dc_yh
-; dx is texturemid hi
-; cx is texturemid lo
-
-push  bx
-push  si
-push  di
-
-
-mov   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
-mov   es, ax ; store this segment for now, with offset pre-added
-
-SELFMODIFY_COLFUNC_get_dc_x:
-mov   ax, 01000h
-
-; shift ax by (2 - detailshift.)
-; todo: are we benefitted by moving this out into rendersegrange..?
-SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift:
-sar   ax, 1
-sar   ax, 1
-
-; dest = destview + dc_yl*80 + (dc_x>>2); 
-; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
-
-; si is dc_yl 
-mov   bx, si
-add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-SELFMODIFY_COLFUNC_add_destview_offset:
-add   ax, 01000h
-
-; di is dc_yh
-sub   di, bx                                 ;
-add   di, di                                 ; double diff (dc_yh - dc_yl) to get a word offset
-mov   di, word ptr es:[di]                   ; get the jump value
-xchg  ax, di								 ; di gets screen dest offset, ax gets jump value
-mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
-
-
-xchg  ax, bx            ; dc_yl in ax
-mov   si, dx            ; dc_texturemid+2 to si
-
-; We don't have easy access into the drawcolumn code segment.
-; so instead of cli -> push bp after call, we do it right before,
-; so that we have register space to use bp now instead of a bit later.
-; (for carrying dc_texturemid)
-
-cli 				    ; disable interrupts
-push  bp
-mov   bp, cx	        ; dc_texturemid to bp
-
-; dc_iscale loaded here..
-SELFMODIFY_BSP_set_dc_iscale_lo:
-mov   bx, 01000h        ; dc_iscale +0
-SELFMODIFY_BSP_set_dc_iscale_hi:
-mov   cx, 01000h        ; dc_iscale +1
-
-; dynamic call lookuptable based on used colormaps address being CS:00
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-SELFMODIFY_COLFUNC_set_colormap_index_jump:
-dw 0300h
-; addr 0300 + first byte (4x colormap.)
-
-pop   bp 
-sti					; re-enable interrupts
-
-pop   di 
-pop   si
-pop   bx
-ret
-
-endp
-
-
 
 
 
@@ -3113,7 +3031,7 @@ mov   es, ax
 pop   di
 pop   si
 SELFMODIFY_BSP_midtexture:
-SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 2
+SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 3
 
 cmp   di, si
 jl    mid_no_pixels_to_draw
@@ -3153,11 +3071,85 @@ SELFMODIFY_set_midtexturemid_lo:
 SELFMODIFY_set_toptexturemid_lo:
 mov   cx, 01000h
 
-call  R_DrawColumnPrep_
+PROC  R_DrawColumnPrep_ NEAR
+PUBLIC  R_DrawColumnPrep_ 
+
+
+push  bx
+push  si
+push  di
+
+
+mov   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
+mov   es, ax ; store this segment for now, with offset pre-added
+
+SELFMODIFY_COLFUNC_get_dc_x:
+mov   ax, 01000h
+
+; shift ax by (2 - detailshift.)
+; todo: are we benefitted by moving this out into rendersegrange..?
+SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift:
+sar   ax, 1
+sar   ax, 1
+
+; dest = destview + dc_yl*80 + (dc_x>>2); 
+; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
+
+; si is dc_yl 
+mov   bx, si
+add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
+SELFMODIFY_COLFUNC_add_destview_offset:
+add   ax, 01000h
+
+; di is dc_yh
+sub   di, bx                                 ;
+add   di, di                                 ; double diff (dc_yh - dc_yl) to get a word offset
+mov   di, word ptr es:[di]                   ; get the jump value
+xchg  ax, di								 ; di gets screen dest offset, ax gets jump value
+mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+
+xchg  ax, bx            ; dc_yl in ax
+mov   si, dx            ; dc_texturemid+2 to si
+
+; We don't have easy access into the drawcolumn code segment.
+; so instead of cli -> push bp after call, we do it right before,
+; so that we have register space to use bp now instead of a bit later.
+; (for carrying dc_texturemid)
+
+cli 				    ; disable interrupts
+push  bp
+mov   bp, cx	        ; dc_texturemid to bp
+
+; dc_iscale loaded here..
+SELFMODIFY_BSP_set_dc_iscale_lo:
+mov   bx, 01000h        ; dc_iscale +0
+SELFMODIFY_BSP_set_dc_iscale_hi:
+mov   cx, 01000h        ; dc_iscale +1
+
+; dynamic call lookuptable based on used colormaps address being CS:00
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+SELFMODIFY_COLFUNC_set_colormap_index_jump:
+dw 0300h
+; addr 0300 + first byte (4x colormap.)
+
+pop   bp 
+sti					; re-enable interrupts
+
+pop   di 
+pop   si
+pop   bx
+
+SELFMODIFY_BSP_R_DrawColumnPrep_ret:
+
+; the pops get replaced with ret if bottom calling
 pop   dx
 pop   es
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
+
 SELFMODIFY_BSP_midtexture_return_jmp:
 ; JMP back runs for a TOP call
 ; we overwrite the next instruction with a jmp if toptexture call. otherwise we restore it.
@@ -3342,7 +3334,13 @@ mov   dx, 01000h
 SELFMODIFY_set_bottexturemid_lo:
 mov   cx, 01000h
 
+mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret], 0C3h  ; ret
+
+
 call  R_DrawColumnPrep_
+
+mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret], 05Ah  ; pop dx
+
 pop   dx
 pop   es
 
@@ -3985,12 +3983,15 @@ mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], 087C7h  ; next 2
 mov       word ptr cs:[SELFMODIFY_BSP_set_midtexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
-mov       ax, 0F739h   ; cmp di, si
+mov       ax, 07CF7h   ; (cmp di,) si, jl
+mov       dl, 039h     ; cmp di,
 jne       midtexture_not_zero
 midtexture_zero:
-mov       ax, ((SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) SHL 8) + 0EBh
+mov       ax, (SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER)
+mov       dl, 0E9h     ; jmp short rel16
 midtexture_not_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_midtexture], ax
+mov       byte ptr cs:[SELFMODIFY_BSP_midtexture], dl
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture+1], ax
 ; are any bits set?
 or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
@@ -4669,7 +4670,8 @@ mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
 ; nomidtexture. this will be checked before top/bot, have to set it to 0.
 
 ; jmp by default
-mov       word ptr cs:[SELFMODIFY_BSP_midtexture], ((SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) SHL 8) + 0EBh
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture], 0E9h
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture+1], (SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) 
 mov       word ptr cs:[SELFMODIFY_BSP_toptexture], ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
 mov       word ptr cs:[SELFMODIFY_BSP_bottexture], ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
 
