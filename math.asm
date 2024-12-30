@@ -1667,7 +1667,13 @@ PUBLIC FastDiv32u16u_
 ;DX:AX / BX (?)
 
 cmp dx, bx
-jl one_part_divide
+jge two_part_divide
+one_part_divide:
+div bx
+xor dx, dx
+ret
+
+two_part_divide:
 mov es, ax
 mov ax, dx
 xor dx, dx
@@ -1683,10 +1689,7 @@ mov ds, bx  ; restored ds
 ret
 
 
-one_part_divide:
-div bx
-xor dx, dx
-ret
+
 
 ENDP
 
@@ -1699,19 +1702,9 @@ test dx, dx
 js   handle_negative_3216
 
 cmp dx, bx
-jl one_part_divide
-mov es, ax
-mov ax, dx
-xor dx, dx
-div bx     ; div high
-mov ds, ax ; store q1
-mov ax, es
-; DX:AX contains remainder + ax...
+jge two_part_divide
 div bx
-mov dx, ds  ; retrieve q1
-            ; q0 already in ax
-mov bx, ss
-mov ds, bx  ; restored ds
+xor dx, dx
 ret
 
 handle_negative_3216:
@@ -1722,7 +1715,17 @@ neg dx
 
 
 cmp dx, bx
-jl one_part_divide_3216
+jge two_part_divide_3216
+one_part_divide_3216:
+div bx
+xor dx, dx
+
+neg ax
+adc dx, 0
+neg dx
+
+ret
+two_part_divide_3216:
 mov es, ax
 mov ax, dx
 xor dx, dx
@@ -1743,15 +1746,7 @@ mov ds, bx  ; restored ds
 ret
 
 
-one_part_divide_3216:
-div bx
-xor dx, dx
 
-neg ax
-adc dx, 0
-neg dx
-
-ret
 
 ENDP
 
@@ -2182,215 +2177,10 @@ endp
 
 
 
-fast_div_32_16_FFFF:
 
-xchg dx, cx   ; cx was 0, dx is FFFF
-div bx        ; after this dx stores remainder, ax stores q1
-xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
-div bx
-mov dx, cx   ; q1:q0 is dx:ax
-retf 
 
 
-; NOTE: this may not work right for negative params or DX:AX  besides 0xFFFFFFFF
-; TODO: We only use the low 24 bits of output from this function. can we optimize..?
-;FastDiv3232FFFF_
-; DX:AX / CX:BX
 
-PROC FastDiv3232FFFF_ FAR
-PUBLIC FastDiv3232FFFF_
-
-
-
-; if top 16 bits missing just do a 32 / 16
-mov  ax, -1
-cwd
-
-test cx, cx
-je fast_div_32_16_FFFF
-
-main_3232_div:
-
-push  si
-push  di
-
-
-
-XOR SI, SI ; zero this out to get high bits of numhi
-
-
-
-
-test ch, ch
-jne shift_bits_3232
-; shift a whole byte immediately
-
-mov ch, cl
-mov cl, bh
-mov bh, bl
-xor bl, bl
-
-; dont need a full shift 8 because we know everything is FF
-mov  si, 000FFh
-xor al, al
-
-shift_bits_3232:
-
-; less than a byte to shift
-; shift until MSB is 1
-; DX gets 1s so we can skip it.
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232  
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-
-
-
-; store this
-done_shifting_3232:
-
-; we overshifted by one and caught it in the carry bit. lets shift back right one.
-
-RCR CX, 1
-RCR BX, 1
-
-
-; SI:DX:AX holds divisor...
-; CX:BX holds dividend...
-; numhi = SI:DX
-; numlo = AX:00...
-
-
-; save numlo word in sp.
-; avoid going to memory... lets do interrupt magic
-mov di, ax
-
-
-; set up first div. 
-; dx:ax becomes numhi
-mov   ax, dx
-mov   dx, si    
-
-; store these two long term...
-mov   si, bx
-
-
-
-; numhi is 00:SI in this case?
-
-;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
-; DX:AX = numhi.wu
-
-
-div   cx
-
-; rhat = dx
-; qhat = ax
-;    c1 = FastMul16u16u(qhat , den0);
-
-mov   bx, dx					; bx stores rhat
-mov   es, ax     ; store qhat
-
-mul   si   						; DX:AX = c1
-
-
-; c1 hi = dx, c2 lo = bx
-cmp   dx, bx
-
-ja    check_c1_c2_diff_3232
-jne   q1_ready_3232
-cmp   ax, di
-jbe   q1_ready_3232
-check_c1_c2_diff_3232:
-
-; (c1 - c2.wu > den.wu)
-
-sub   ax, di
-sbb   dx, bx
-cmp   dx, cx
-ja    qhat_subtract_2_3232
-je    compare_low_word_3232
-
-qhat_subtract_1_3232:
-mov ax, es
-dec ax
-xor dx, dx
-
-pop   di
-pop   si
-retf  
-
-compare_low_word_3232:
-cmp   ax, si
-jbe   qhat_subtract_1_3232
-
-; ugly but rare occurrence i think?
-qhat_subtract_2_3232:
-mov ax, es
-dec ax
-dec ax
-
-pop   di
-pop   si
-retf  
-
-
-
-
-
-
-q1_ready_3232:
-
-mov  ax, es
-xor  dx, dx;
-
-pop   di
-pop   si
-retf
-
-
-endp
 
 
 
