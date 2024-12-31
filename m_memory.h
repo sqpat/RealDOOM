@@ -649,6 +649,7 @@ FREEBYTES 144 free
 // spanfunc offset
 #define spanfunc_jump_lookup              ((uint16_t  __far*)               MAKE_FULL_SEGMENT(0x9C000000              , palettebytes_size))
 #define spanfunc_function_area            ((byte  __far*)                   MAKE_FULL_SEGMENT(spanfunc_jump_lookup, size_spanfunc_jump_lookup))
+#define render_9C00_end                   ((uint8_t __far*)                 MAKE_FULL_SEGMENT(spanfunc_function_area,   R_DrawSpanCodeSize))
 
 // used for loading into memory - not the actual call
 #define spanfunc_jump_lookup_9000         ((byte  __far*)                   (((uint32_t)spanfunc_jump_lookup)   - 0x9C000000 + 0x90000000))
@@ -656,6 +657,7 @@ FREEBYTES 144 free
 
 #define spanfunc_jump_lookup_segment      ((segment_t) ((int32_t)spanfunc_jump_lookup >> 16))
 #define spanfunc_function_area_segment    ((segment_t) ((int32_t)spanfunc_function_area >> 16))
+#define render_9C00_end_segment           ((segment_t) ((int32_t)render_9C00_end >> 16))
 
 
 #define colormaps_spanfunc_seg_difference (spanfunc_function_area_segment - colormaps_segment)
