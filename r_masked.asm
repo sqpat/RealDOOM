@@ -213,7 +213,7 @@ sar   ax, 1
 mov   bx, word ptr ds:[_dc_yl]
 mov   si, bx
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-SELFMODIFY_MASKED_multi_add_destview_offset:
+SELFMODIFY_MASKED_destview_lo_3:
 add   ax, 01000h
 
 ; todo optimize this read
@@ -423,7 +423,7 @@ sar   ax, 1
 
 mov   bx, si
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-SELFMODIFY_MASKED_add_destview_offset:
+SELFMODIFY_MASKED_destview_lo_2:
 add   ax, 01000h
 
 mov   si, dx                                 ; grab dc_yh
@@ -3508,9 +3508,6 @@ mov      ds, ax
 ASSUME DS:R_MASKED_TEXT
 
 ; get whole dword at the end here.
-mov      ax, word ptr ss:[_destview]
-mov      word ptr ds:[SELFMODIFY_MASKED_add_destview_offset- OFFSET R_DrawFuzzColumn_+1], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_multi_add_destview_offset- OFFSET R_DrawFuzzColumn_+1], ax
 
 mov   ax, word ptr ss:[_centery]
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_1+3 - OFFSET R_DrawFuzzColumn_], ax
@@ -3523,6 +3520,9 @@ mov   word ptr ds:[SELFMODIFY_MASKED_viewz_hi_1+1 - OFFSET R_DrawFuzzColumn_], a
 
 mov   ax, word ptr ss:[_destview+0]
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_1+2 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_2+1 - OFFSET R_DrawFuzzColumn_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_3+1 - OFFSET R_DrawFuzzColumn_], ax
+
 mov   ax, word ptr ss:[_destview+2]
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_DrawFuzzColumn_], ax
 

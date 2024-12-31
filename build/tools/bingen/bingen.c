@@ -42,6 +42,7 @@ void __far I_ReadScreen(); //todo this gets made the first function...
 void __far R_MASKED_END();
 void __far D_ALGO_END();
 void __far R_SKY_END();
+void __far R_WriteBackViewConstantsSpan();
 
 /*
 void checkDS(int16_t a) {
@@ -143,8 +144,10 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define R_WriteBackMaskedFrameConstantsOffset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
 
     // span offsets
-    fprintf(fp, "#define R_MapPlaneOffset                      0x%X\n", FP_OFF(R_MapPlane)                      - FP_OFF(R_DrawSpan));
+    //fprintf(fp, "#define R_MapPlaneOffset                      0x%X\n", FP_OFF(R_MapPlane)                      - FP_OFF(R_DrawSpan));
 	fprintf(fp, "#define R_DrawPlanesOffset                    0x%X\n", FP_OFF(R_DrawPlanes)                    - FP_OFF(R_DrawSpan));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpanOffset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan)    - FP_OFF(R_DrawSpan));
+
 
     // sky offsets
 	fprintf(fp, "#define R_DrawSkyColumnOffset                 0x%X\n", FP_OFF(R_DrawSkyColumn)                - FP_OFF(R_DrawSkyColumn));

@@ -88,7 +88,7 @@ cli 									; disable interrupts because we use bp/sp here. (sigh)
 
 ; fixed_t x32step = (ds_xstep << 6);
 
-; todo move this logic out into prep function? could use cs instead of generating ES
+; todo move this logic out into prep function? could use cs instead of generating
 ; todo LES something useful?
 MOV   es, ds:[_spanfunc_jump_segment_storage]
 
@@ -152,15 +152,17 @@ mov   dx, SC_DATA						; outp 1 << i
 out   dx, al
 
 
-lods  WORD PTR ES:[SI]	
+lods  WORD PTR ES:[SI]	    ; get unrolled jump count.
 ; write to the unrolled loop jump instruction.
 mov   WORD PTR es:[((SPANFUNC_JUMP_OFFSET+1)-R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], ax;
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
 sal   bx, 1
+;    todo use si instead of bx and lodsw.
 mov   ax, word ptr ds:[_spanfunc_prt + bx]
+; BX is preserved for a while here. this allows us to calculate DI (big instruction) after a mul
+; finally load di using bx
 mov   DI, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
-
 
 ;		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
 
@@ -174,8 +176,9 @@ SELFMODIFY_SPAN_ds_xstep_hi_1:
 mov   dx, 01000h
 
 ; inline i4m
-; DX:AX * CX:BX,  CX is 0000 or FFFF
- 		
+; note these registers have all been shuffled around from the original version  which was wasteful but as a result it got hard to read.
+; we dont seem to shuffle by the sign extend anymore but it also doesnt seem to matter.? todo revisit
+
         mul     dx              ; - low(M2) * high(M1)
         mov     cx, ax           ; save that in cx
 SELFMODIFY_SPAN_ds_xstep_lo_1:
@@ -207,7 +210,6 @@ mov   dx, 01000h
 ;		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
 
 ; inline i4m
-; DX:AX * CX:BX,  CX is 0000 or FFFF
         mul     dx              ; - low(M2) * high(M1)
         mov     cx, ax           ; save that in cx
         SELFMODIFY_SPAN_ds_ystep_lo:
@@ -219,6 +221,8 @@ mov   dx, 01000h
 
 ;	continuing:	yfrac.w = basey = ds_yfrac + ds_ystep * prt;
 ; dx:ax contains ds_ystep * prt
+
+
 
 ; add 32 bits of ds_yfrac
 SELFMODIFY_SPAN_ds_yfrac_lo:
@@ -245,18 +249,18 @@ rcr cx, 1    ; yfrac16 in cx
 
 ; shift 8, yadder in dh?
 
-mov dx, es   ;  load mid 16 bits of x_frac.w
+mov dx, es   ;  get back mid 16 bits of x_frac.w
 
 
 
 
 
-
+; todo LES something here dunno?
 mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
 
 
-; yfraq16 already in cx
+; yfrac16 already in cx
 ; todo why is this -2?. should this be 'fixed'
 lds   bx, dword ptr ds:[_ds_source_segment-2] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 
@@ -313,7 +317,7 @@ stos  BYTE PTR es:[di]       ;
  
  
 
-; restore stack
+; restore ds
 mov   ax, ss					;   SS is DS in this watcom memory model so we use that to restore DS
 mov   ds, ax
 
@@ -363,17 +367,17 @@ PUBLIC  R_DrawSpanPrep_
 ; predoubles _ds_y for lookup
  les   bx, dword ptr ds:[_ds_y]
  ;add   bx, bx
- mov   ax, word ptr ds:[_destview]			; get FP_OFF(destview)
- mov   dx, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
-
- add   dx, ax							; dx is baseoffset
+ 
+ mov   ax, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
+SELFMODIFY_SPAN_destview_lo_1:
+ add   ax, 01000h
  mov   es, word ptr ds:[_ds_x1]			; es holds ds_x1
 	
 ; int8_t   shiftamount = (2-detailshift);
  mov   bh, byte ptr ds:[_detailshift2minus]		; get shiftamount in bh
  xor   bl, bl							; zero out bl. use it as loop counter/ i
- 
- mov   word ptr ds:[_ss_variable_space], dx			; store base view offset
+ ; todo carry this forward
+ mov   word ptr ds:[_ss_variable_space], ax			; store base view offset
  
 ; todo the following  feels like extraneous register juggling, reexamine
 
@@ -776,7 +780,6 @@ push  dx   ; store distance high word in case needed for colormap
 mov   cx, word ptr es:[bx + si + 2]	; distscale high word
 mov   bx, word ptr es:[bx + si]		; distscale low word
 
-;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 
@@ -802,8 +805,10 @@ call R_FixedMulTrigLocal_
 
 ;    ds_yfrac = -viewy.w - R_FixedMulLocal(finesine[angle], length );
 
-add   ax, word ptr ds:[_viewx]
-adc   dx, word ptr ds:[_viewx+2]
+SELFMODIFY_SPAN_viewx_lo_1:
+add   ax, 01000h
+SELFMODIFY_SPAN_viewx_hi_1:
+adc   dx, 01000h
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xfrac_lo+1 - OFFSET R_DrawSpan_], ax
 mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xfrac_hi+2 - OFFSET R_DrawSpan_], dl
 
@@ -820,8 +825,10 @@ call R_FixedMulTrigLocal_
 ; let's instead add then take the negative of the whole
 
 ; add viewy
-add   ax, word ptr ds:[_viewy]
-adc   dx, word ptr ds:[_viewy+2]
+SELFMODIFY_SPAN_viewy_lo_1:
+add   ax, 01000h
+SELFMODIFY_SPAN_viewy_hi_1:
+adc   dx, 01000h
 
 neg   dx
 neg   ax
@@ -837,8 +844,9 @@ mov   byte ptr cs:[SELFMODIFY_SPAN_ds_yfrac_hi+2 - OFFSET R_DrawSpan_], dl
 
 ; 	if (fixedcolormap) {
 
-cmp   byte ptr ds:[_fixedcolormap], 0
-jne   use_fixed_colormap
+SELFMODIFY_SPAN_fixedcolormap_1:
+mov   ax, ax
+SELFMODIFY_SPAN_fixedcolormap_1_AFTER:
 ; 		index = distance >> LIGHTZSHIFT;
 pop   ax
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
@@ -883,9 +891,10 @@ pop   si
 pop   cx
 ret
 
+SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
+SELFMODIFY_SPAN_fixedcolormap_2:
 use_fixed_colormap:
-mov   al, byte ptr ds:[_fixedcolormap]
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump-OFFSET R_DrawSpan_], al
+mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump-OFFSET R_DrawSpan_], 00
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
@@ -915,13 +924,14 @@ mov   cx, word ptr es:[si + 2 + (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 ; not worth continuing to LEA because fixedmul destroys ES and then we have to store and restore from SI which is too much extra time
 ; distance = cacheddistance[y] = R_FixedMulLocal (planeheight, yslope[y]);
 
-;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 ; result is distance
 mov   es, ds:[_cacheddistance_segment_storage]
-mov   bx, word ptr ds:[_basexscale]
-mov   cx, word ptr ds:[_basexscale+2]
+SELFMODIFY_SPAN_basexscale_lo_1:
+mov   bx, 01000h
+SELFMODIFY_SPAN_basexscale_hi_1:
+mov   cx, 01000h
 mov   word ptr es:[si], ax			; store distance
 mov   word ptr es:[si + 2], dx		; store distance
 mov   di, dx						; store distance high word in di
@@ -929,7 +939,6 @@ push  ax  ; distance low word
 
 ; 		ds_xstep = cachedxstep[y] = (R_FixedMulLocal (distance,basexscale));
 
-;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 mov   es, ds:[_cachedxstep_segment_storage]
@@ -958,14 +967,15 @@ mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_DrawSpan_], ax
 
 
 mov   dx, di
-mov   bx, word ptr ds:[_baseyscale]
-mov   cx, word ptr ds:[_baseyscale+2]
+SELFMODIFY_SPAN_baseyscale_lo_1:
+mov   bx, 01000h
+SELFMODIFY_SPAN_baseyscale_hi_1:
+mov   cx, 01000h
 ; cant pop - used once more later
 mov   ax, word ptr [bp - 02h]	; retrieve distance low word
 
 ;		ds_ystep = cachedystep[y] = (R_FixedMulLocal (distance,baseyscale));
 
-;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 mov   es, ds:[_cachedystep_segment_storage]
@@ -991,15 +1001,76 @@ jmp   distance_steps_ready
 ENDP
 
 
-exit_drawplanes:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-mov   byte ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1)-OFFSET R_DrawSpan_], 0
-retf   
+;R_DrawPlanes_
+
+PROC R_DrawPlanes_
+PUBLIC R_DrawPlanes_ 
+
+;retf
+
+; ARGS none
+
+; STACK
+; bp - 8 visplaneoffset
+; bp - 6 visplanesegment
+; bp - 4 usedflatindex
+; bp - 2 physindex
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 08h
+xor   ax, ax
+mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 6], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
+mov   word ptr [bp - 4], ax
+mov   word ptr [bp - 2], ax
+
+; inline R_WriteBackSpanFrameConstants_
+; get whole dword at the end here.
+
+; lodsw, push pop si worth?
+mov   si, _basexscale
+lodsw
+mov   word ptr cs:[SELFMODIFY_SPAN_basexscale_lo_1+1 - OFFSET R_DrawSpan_], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_SPAN_basexscale_hi_1+1 - OFFSET R_DrawSpan_], ax
+
+lodsw
+mov   word ptr cs:[SELFMODIFY_SPAN_baseyscale_lo_1+1 - OFFSET R_DrawSpan_], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_SPAN_baseyscale_hi_1+1 - OFFSET R_DrawSpan_], ax
+
+lodsw
+mov   word ptr cs:[SELFMODIFY_SPAN_viewx_lo_1+1 - OFFSET R_DrawSpan_], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_SPAN_viewx_hi_1+2 - OFFSET R_DrawSpan_], ax
+
+lodsw
+mov   word ptr cs:[SELFMODIFY_SPAN_viewy_lo_1+1 - OFFSET R_DrawSpan_], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_SPAN_viewy_hi_1+2 - OFFSET R_DrawSpan_], ax
+
+lodsw
+mov   word ptr cs:[SELFMODIFY_SPAN_viewz_lo_1+1 - OFFSET R_DrawSpan_], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_SPAN_viewz_hi_1+2 - OFFSET R_DrawSpan_], ax
+
+mov   ax, word ptr ds:[_destview+0]
+mov   word ptr cs:[SELFMODIFY_SPAN_destview_lo_1+1 - OFFSET R_DrawSpan_], ax
+
+;mov   al, byte ptr ds:[_extralight]
+;mov   byte ptr cs:[SELFMODIFY_SPAN_extralight_1+1 - OFFSET R_DrawSpan_], al
+
+mov   al, byte ptr ds:[_fixedcolormap]
+test  al, al 
+jne   do_span_fixedcolormap_selfmodify
+mov   ax, 0c089h  ; nop
+jmp   done_with_span_fixedcolormap_selfmodify
 
 do_next_drawplanes_loop:	
 
@@ -1021,35 +1092,28 @@ inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1-OFFSET R_DrawSpan_]
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
 
-;R_DrawPlanes_
+exit_drawplanes:
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+mov   byte ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1)-OFFSET R_DrawSpan_], 0
+retf   
+do_span_fixedcolormap_selfmodify:
+mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 5 - OFFSET R_DrawSpan_], al
+mov   ax, ((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) SHL 8) + 0EBh
+; fall thru
+done_with_span_fixedcolormap_selfmodify:
+; modify instruction
+mov   word ptr cs:[SELFMODIFY_SPAN_fixedcolormap_1 - OFFSET R_DrawSpan_], ax
 
-PROC R_DrawPlanes_
-PUBLIC R_DrawPlanes_ 
-
-;retf
-
-; ARGS none
-
-; STACK
-; bp - 8 visplaneoffset
-; bp - 6 visplanesegment
-; bp - 4 usedflatindex
-; bp - 2 physindex
 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 08h
-xor   ax, ax
-mov   word ptr [bp - 8], ax
-mov   word ptr [bp - 6], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
-mov   word ptr [bp - 4], ax
-mov   word ptr [bp - 2], ax
+
+
+
 
 
 mov       ax, R_DRAWSKYPLANE_OFFSET
@@ -1075,6 +1139,7 @@ ELSE
 ENDIF
 
 add   ax, offset _visplaneheaders
+; todo lea si bx + _visplaneheaders
 mov   si, ax
 mov   ax, word ptr [si + 4]			; fetch visplane minx
 cmp   ax, word ptr [si + 6]			; fetch visplane maxx
@@ -1109,15 +1174,18 @@ ELSE
  sar   ax, 1
 ENDIF
 
-
+;todoselfmodify
 add   al, byte ptr ds:[_extralight]
+
+;SELFMODIFY_SPAN_extralight_1:
+;add   al, 0
 cmp   al, LIGHTLEVELS
 jb    lightlevel_in_range
 mov   al, LIGHTLEVELS-1
 lightlevel_in_range:
 
 add   ax, ax
-mov   bx, ax
+xchg  bx, ax
 mov   ax, word ptr ds:[bx + _lightshift7lookup]
 mov   word ptr ds:[_planezlight], ax
 ;mov   word ptr ds:[_planezlight + 2], ZLIGHT_SEGMENT  ; this is static and set in memory.asm
@@ -1145,6 +1213,7 @@ inc   bl
 cmp   bl, NUM_FLAT_CACHE_PAGES
 jge   found_flat_page_to_evict
 jmp   loop_find_flat
+
 check_next_visplane_page:
 ; do next visplane page
 sub   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE
@@ -1329,8 +1398,10 @@ add   ax, word ptr ds:[bx + _FLAT_CACHE_PAGE]
 mov   word ptr ds:[_ds_source_segment], ax
 mov   ax, word ptr [si]
 mov   dx, word ptr [si + 2]
-sub   ax, word ptr ds:[_viewz]
-sbb   dx, word ptr ds:[_viewz + 2]
+SELFMODIFY_SPAN_viewz_lo_1:
+sub   ax, 01000h
+SELFMODIFY_SPAN_viewz_hi_1:
+sbb   dx, 01000h
 or    dx, dx
 
 ; planeheight = labs(plheader->height - viewz.w);
@@ -1576,6 +1647,42 @@ jmp   end_single_plane_draw_loop_iteration
 
 
 ENDP
+
+
+
+;
+; The following functions are loaded into a different segment at runtime.
+; However, at compile time they have access to the labels in this file.
+;
+
+
+;R_WriteBackViewConstantsSpan
+
+PROC R_WriteBackViewConstantsSpan_ FAR
+PUBLIC R_WriteBackViewConstantsSpan_ 
+
+
+
+mov      ax, SPANFUNC_FUNCTION_AREA_SEGMENT
+mov      ds, ax
+
+
+ASSUME DS:R_SPAN_TEXT
+
+mov      ax, ss
+mov      ds, ax
+
+ASSUME DS:DGROUP
+
+retf
+
+endp
+
+; end marker for this asm file
+PROC R_SPAN_END_ FAR
+PUBLIC R_SPAN_END_ 
+ENDP
+
 
 
 END
