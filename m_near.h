@@ -482,6 +482,7 @@ extern segment_t            pagesegments[NUM_TEXTURE_L1_CACHE_PAGES];
 
 
 extern void                 (__far* R_DrawPlanesCall)();
+extern void                 (__far* R_WriteBackViewConstantsSpanCall)();
 extern void                 (__far* R_DrawMaskedCall)();
 
 

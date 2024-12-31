@@ -257,7 +257,10 @@ void __near  R_ExecuteSetViewSize(void) {
 	Z_QuickMapRender();
 	R_WriteBackViewConstants();
 	R_InitTextureMapping();
-	
+
+	Z_QuickMapRenderPlanes();
+	R_WriteBackViewConstantsSpanCall();
+
 	// Set Masked Mapping
 	Z_QuickMapUndoFlatCache();
 	R_WriteBackViewConstantsMaskedCall();

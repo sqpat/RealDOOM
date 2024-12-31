@@ -437,6 +437,7 @@ uint8_t quality_port_lookup[12] = {
 
 
 void (__far* R_DrawPlanesCall)()  =   				      	                  ((void    (__far *)())  								(MK_FP(spanfunc_function_area_segment, 	 R_DrawPlanesOffset)));
+void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  								(MK_FP(spanfunc_function_area_segment, 	 R_WriteBackViewConstantsSpanOffset)));
 void (__far* R_DrawMaskedCall)() = 											  ((void    (__far *)())     							(MK_FP(drawfuzzcol_area_segment, 		 R_DrawMaskedOffset)));
 
 

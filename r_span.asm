@@ -1063,8 +1063,8 @@ mov   word ptr cs:[SELFMODIFY_SPAN_viewz_hi_1+2 - OFFSET R_DrawSpan_], ax
 mov   ax, word ptr ds:[_destview+0]
 mov   word ptr cs:[SELFMODIFY_SPAN_destview_lo_1+1 - OFFSET R_DrawSpan_], ax
 
-;mov   al, byte ptr ds:[_extralight]
-;mov   byte ptr cs:[SELFMODIFY_SPAN_extralight_1+1 - OFFSET R_DrawSpan_], al
+mov   al, byte ptr ds:[_extralight]
+mov   byte ptr cs:[SELFMODIFY_SPAN_extralight_1+1 - OFFSET R_DrawSpan_], al
 
 mov   al, byte ptr ds:[_fixedcolormap]
 test  al, al 
@@ -1156,7 +1156,8 @@ mov   bx, word ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1-OFFSET R_DrawSpan_]
 
 add   bx, bx
 mov   cx, word ptr [bx +  _visplanepiclights]
-cmp   cl, byte ptr ds:[_skyflatnum]
+SELFMODIFY_SPAN_skyflatnum:
+cmp   cl, 0
 je    do_sky_flat_draw
 
 do_nonsky_flat_draw:
@@ -1174,11 +1175,9 @@ ELSE
  sar   ax, 1
 ENDIF
 
-;todoselfmodify
-add   al, byte ptr ds:[_extralight]
 
-;SELFMODIFY_SPAN_extralight_1:
-;add   al, 0
+SELFMODIFY_SPAN_extralight_1:
+add   al, 0
 cmp   al, LIGHTLEVELS
 jb    lightlevel_in_range
 mov   al, LIGHTLEVELS-1
@@ -1669,8 +1668,19 @@ mov      ds, ax
 
 ASSUME DS:R_SPAN_TEXT
 
+
+mov      al, byte ptr ss:[_skyflatnum]
+mov      word ptr ds:[SELFMODIFY_SPAN_skyflatnum + 2 - OFFSET R_DrawSpan], al
+
+
+SELFMODIFY_SPAN_skyflatnum:
+
 mov      ax, ss
 mov      ds, ax
+
+
+
+
 
 ASSUME DS:DGROUP
 
