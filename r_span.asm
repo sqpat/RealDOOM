@@ -82,15 +82,37 @@ PUBLIC  R_DrawSpanActual_
 ; 10h ds_ystep
 
 
-; todo move this into before the per-pixel rollout.
 
-cli 									; disable interrupts
+cli 									; disable interrupts because we use bp/sp here. (sigh)
+
 
 ; fixed_t x32step = (ds_xstep << 6);
 
-; todo move this logic out into prep function? 
+; todo move this logic out into prep function? could use cs instead of generating ES
 ; todo LES something useful?
 MOV   es, ds:[_spanfunc_jump_segment_storage]
+
+
+; store sp/bp
+
+mov   word ptr es:[((SELFMODIFY_SPAN_sp_storage+1)-R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], sp
+mov   word ptr es:[((SELFMODIFY_SPAN_bp_storage+1)-R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], bp
+
+
+; setup x_adder/y_adder now
+;	xadder = ds_xstep >> 6; 
+;preshifted by 6
+SELFMODIFY_SPAN_ds_xstep_lo_2:
+mov   sp, 01000h	; store x_adder
+
+
+;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
+
+
+SELFMODIFY_SPAN_ds_ystep_mid:
+mov   bp, 01000h	; y_adder
+;preshifted outside.
+
 
 mov   al, byte ptr ds:[_spanfunc_main_loop_count]             
 ;; todo is this smaller with DI/stosb stuff?
@@ -226,39 +248,17 @@ rcr cx, 1    ; yfrac16 in cx
 mov dx, es   ;  load mid 16 bits of x_frac.w
 
 
-;	xadder = ds_xstep >> 6; 
-
-;preshifted by 6
-SELFMODIFY_SPAN_ds_xstep_lo_2:
-mov   word ptr ds:[_ss_variable_space], 01000h	; store x_adder
-
-
-;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
-
-
-SELFMODIFY_SPAN_ds_ystep_mid:
-mov   word ptr ds:[_ss_variable_space + 2], 01000h	; y_adder
-
-;preshifted outside.
 
 
 
 
 mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
-; stack shenanigans. swap adders and sp/bp
-; todo - this has got to be able to be improved somehow?
 
-xchg  ds:[_ss_variable_space], sp             ;  store SP and load x_adder
-xchg  ds:[_ss_variable_space+2], bp			  ;   store BP and load y_adder
 
 ; yfraq16 already in cx
 ; todo why is this -2?. should this be 'fixed'
 lds   bx, dword ptr ds:[_ds_source_segment-2] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
-
-; we have a safe memory space declared in near variable space to put sp/bp values
-; they meanwhile hold x_adder/y_adder and we juggle the two
-; due to openwatcom compilation, SS = DS so we can use SS as if it were DS to address the var safely
 
 
 
@@ -316,8 +316,7 @@ stos  BYTE PTR es:[di]       ;
 ; restore stack
 mov   ax, ss					;   SS is DS in this watcom memory model so we use that to restore DS
 mov   ds, ax
-xchg  ds:[_ss_variable_space], sp             ;  store SP and load x_adder
-xchg  ds:[_ss_variable_space+2], bp			  ;   store BP and load y_adder
+
 
 do_span_loop:
 
@@ -333,6 +332,12 @@ MOV   ES, ds:[_spanfunc_jump_segment_storage]
 
 jmp   span_i_loop_repeat
 span_i_loop_done:
+
+; restore sp, bp
+SELFMODIFY_SPAN_sp_storage:
+mov sp, 01000h
+SELFMODIFY_SPAN_bp_storage:
+mov bp, 01000h
 
 
 sti								; reenable interrupts
@@ -672,6 +677,8 @@ jmp   generate_distance_steps
 ; 	rather than changing ES a ton we will just modify offsets by segment distance
 ;   confirmed to be faster even on 8088 with it's baby prefetch queue - i think on 16 bit busses it is only faster.
 
+
+
 PROC  R_MapPlane_ NEAR
 PUBLIC  R_MapPlane_ 
 
@@ -736,7 +743,7 @@ mov   al, ch
 mov cl, byte ptr ds:[_detailshift]
 shr ax, cl			; shift x_step by pixel shift
 
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+4 - OFFSET R_DrawSpan_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_DrawSpan_], ax
 
 
 
@@ -750,7 +757,7 @@ lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_DrawSpan_], ax
 mov   bh, al
 shr   bx, cl
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+4 - OFFSET R_DrawSpan_], bx
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+1 - OFFSET R_DrawSpan_], bx
 
 
 distance_steps_ready:
@@ -947,7 +954,7 @@ mov   ah, dl
 mov cl, byte ptr ds:[_detailshift]
 shr ax, cl			; shift x_step by pixel shift
 
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+4 - OFFSET R_DrawSpan_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_DrawSpan_], ax
 
 
 mov   dx, di
@@ -972,7 +979,7 @@ mov   al, ah
 mov   ah, dl
 mov   cl, byte ptr ds:[_detailshift]
 shr   ax, cl
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+4 - OFFSET R_DrawSpan_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+1 - OFFSET R_DrawSpan_], ax
 
 
 pop   ax
