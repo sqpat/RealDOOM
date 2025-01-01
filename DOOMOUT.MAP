@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/01 11:54:44
+Created on:       25/01/01 12:33:11
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -82,7 +82,7 @@ r_data_TEXT            CODE           AUTO           17a2:0990       00001c39
 R_MATH_TEXT            CODE           AUTO           17a2:25ca       000001ed
 R_MAINHI_TEXT          CODE           AUTO           17a2:27b8       00001b78
 r_draw_TEXT            CODE           AUTO           17a2:4330       00000379
-r_main_TEXT            CODE           AUTO           17a2:46b0       000001ee
+r_main_TEXT            CODE           AUTO           17a2:46b0       000001e8
 r_plane_TEXT           CODE           AUTO           17a2:48a0       00000000
 r_segs_TEXT            CODE           AUTO           17a2:48a0       00000000
 r_things_TEXT          CODE           AUTO           17a2:48a0       00000000
@@ -1306,7 +1306,7 @@ Module: r_main.obj(C:\REALDOOM\r_main.c)
 17a2:4700      R_PointToAngle2_16_
 17a2:4716      R_SetViewSize_
 17a2:4726+     R_SetupFrame_
-17a2:47a6      R_RenderPlayerView_
+17a2:47a0      R_RenderPlayerView_
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 2105:0ef8*     _setval
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
@@ -1656,4 +1656,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00024760 (149344.)
 Entry point address: 1cfa:219c
-Link time: 00:00.74
+Link time: 00:00.20
