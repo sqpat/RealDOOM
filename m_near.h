@@ -135,7 +135,7 @@
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
 //ss_variable_space[10]
-#define ss_variable_space               ((int16_t __near *)                  (_NULL_OFFSET + 0x00AC))
+//#define ss_variable_space               ((int16_t __near *)                  (_NULL_OFFSET + 0x00AC))
 #define mfloorclip                      (*(int16_t __far * __near *)         (_NULL_OFFSET + 0x00C0))
 #define mfloorclip_offset               (*(int16_t __near *)                 (_NULL_OFFSET + 0x00C0))
 #define mfloorclip_segment              (*(segment_t __near *)               (_NULL_OFFSET + 0x00C2))
@@ -150,7 +150,7 @@
 #define spanfunc_inner_loop_count       ((int8_t __near *)                   (_NULL_OFFSET + 0x00DC))
 //spanfunc_outp[4]
 #define spanfunc_outp                   ((uint8_t __near *)                  (_NULL_OFFSET + 0x00E0))
-#define spanfunc_main_loop_count        (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E4))
+//#define spanfunc_main_loop_count        (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E4))
 #define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E5))
 #define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x00E6))
 #define screen_segments                 ((segment_t __near *)                (_NULL_OFFSET + 0x00EE))
