@@ -110,9 +110,6 @@ mov   bp, 01000h	; y_adder
 ;preshifted outside.
 
 
-mov   al, byte ptr ds:[_spanfunc_main_loop_count]             
-;; todo is this smaller with DI/stosb stuff?
-mov   byte ptr es:[((SELFMODIFY_SPAN_compare_span_counter+2) -R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], al     ; set loop end constraint
 mov   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1)     -R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], 0      ; set loop increment value
 
 
@@ -445,7 +442,9 @@ SELFMODIFY_SPAN_destview_lo_1:
  spanfunc_arg_setup_iter_done:
  
  inc   bl
- cmp   bl, byte ptr ds:[_spanfunc_main_loop_count]
+ 
+ SELFMODIFY_SPAN_detailshift_mainloopcount_2:
+ cmp   bl, 0
  jl    spanfunc_arg_setup_loop_start
  
  spanfunc_arg_setup_complete:
@@ -1691,6 +1690,11 @@ je       do_detail_shift_one
 jl       do_detail_shift_zero
 jmp      do_detail_shift_two
 do_detail_shift_zero:
+
+mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2         - OFFSET R_DrawSpan_], 4
+mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2  - OFFSET R_DrawSpan_], 4
+
+
 mov      ax, 0c089h  ; nop
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0  - OFFSET R_DrawSpan_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2  - OFFSET R_DrawSpan_], ax
@@ -1720,6 +1724,10 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2  - OFFSET R_DrawSpan
 
 jmp     done_with_detailshift
 do_detail_shift_one:
+
+mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2         - OFFSET R_DrawSpan_], 2
+mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2  - OFFSET R_DrawSpan_], 2
+
 mov      ax, 0e8d1h  ; shr ax, 1
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0  - OFFSET R_DrawSpan_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0  - OFFSET R_DrawSpan_], ax
@@ -1746,6 +1754,11 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+2  - OFFSET R_DrawSpan
 jmp     done_with_detailshift
 
 do_detail_shift_two:
+
+
+mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2         - OFFSET R_DrawSpan_], 1
+mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2  - OFFSET R_DrawSpan_], 1
+
 mov      ax, 0e8d1h  ; shr ax, 1
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0  - OFFSET R_DrawSpan_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2  - OFFSET R_DrawSpan_], ax
