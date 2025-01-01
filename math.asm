@@ -1507,8 +1507,7 @@ PUBLIC FixedDiv_
  
 push  si
 push  di
-push  bp
-mov   bp, sp
+
 
 
 mov   si, dx ; 	si will store sign bit 
@@ -1520,30 +1519,92 @@ xor   si, cx  ; si now stores signedness via test operator...
 
 or    cx, cx
 jge   b_is_positive
-neg   bx
-adc   cx, 0
 neg   cx
+neg   bx
+sbb   cx, 0
 
 
 b_is_positive:
 
 or    dx, dx			; sign check
 jge   a_is_positive
-neg   ax
-adc   dx, 0
 neg   dx
+neg   ax
+sbb   dx, 0
 
 
 a_is_positive:
 
 ;  dx:ax  is  labs(dx:ax) now (unshifted)
 ;  cx:bx  is  labs(cx:bx) now
-test cx, 0FFFCh
+
+; labs check
+
+do_shift_and_full_compare:
+
+; store backup dx:ax in ds:es
+
+rol dx, 1
+rol dx, 1
+
+mov di, dx
+and di, 03h
 
 
-je continue_bounds_test
+; do comparison  di:bx vs dx:ax
+; 	if ((labs(a) >> 14) >= labs(b))
+
+cmp   di, cx
+jg    do_quick_return
+jne   restore_reg_then_do_full_divide ; below
+mov   di, dx      ; recover this
+mov   es, ax      ; back this up
+rol   ax, 1
+rol   ax, 1
+and   ax, 03h
+and   di, 0FFFCh  ; cx, 0FFFCh
+or    ax, di
+cmp   ax, bx
+jb    restore_reg_then_do_full_divide_2
+
+do_quick_return: 
+; return (a^b) < 0 ? MINLONG : MAXLONG;
+test  si, si   ; just need to do the high word due to sign?
+jl    return_MAXLONG
+
+return_MINLONG:
+
+mov   ax, 0ffffh
+mov   dx, 07fffh
+
+exit_and_return_early:
+
+; restore ds...
+
+
+pop   di
+pop   si
+ret
+
+return_MAXLONG:
+
+mov   dx, 08000h
+xor   ax, ax
+jmp   exit_and_return_early
 
 ; main division algo
+
+restore_reg_then_do_full_divide_2:
+
+
+; restore ax
+mov ax, es
+restore_reg_then_do_full_divide:
+
+; restore dx
+ror dx, 1
+ror dx, 1
+
 
 do_full_divide:
 
@@ -1556,7 +1617,6 @@ test  si, si
 
 jl do_negative
 
-LEAVE_MACRO
 
 pop   di
 pop   si
@@ -1564,99 +1624,15 @@ ret
 
 do_negative:
 
-neg   ax
-adc   dx, 0
 neg   dx
+neg   ax
+sbb   dx, 0
 
-LEAVE_MACRO
 
 pop   di
 pop   si
 ret
 
-continue_bounds_test:
-
-
-
-
-; if high 2 bits of dh arent present at all, and any bits of cx are present
-; then we can quit out quickly.
-
-
-test dh, 0C0h     ; dx AND 0xC000
-jne do_shift_and_full_compare
-test cx, cx
-jne do_full_divide  ; dx >> 14 is zero, cx is nonzero.
-
-
-do_shift_and_full_compare:
-
-; store backup dx:ax in ds:es
-mov ds, dx
-mov es, ax
-
-rol dx, 1
-rol ax, 1
-rol dx, 1
-rol ax, 1
-
-mov di, dx
-and ax, 03h
-and di, 0FFFCh  ; cx, 0FFFCh
-or  ax, di
-and dx, 03h
-
-
-; do comparison  di:bx vs dx:ax
-; 	if ((labs(a) >> 14) >= labs(b))
-
-cmp   dx, cx
-jg    do_quick_return
-jne   restore_reg_then_do_full_divide ; below
-cmp   ax, bx
-jb    restore_reg_then_do_full_divide
-
-do_quick_return: 
-; return (a^b) < 0 ? MINLONG : MAXLONG;
-test  si, si   ; just need to do the high word due to sign?
-jl    return_MAXLONG
-
-return_MINLONG:
-mov   ax, ss
-mov   ds, ax
-
-mov   ax, 0ffffh
-mov   dx, 07fffh
-
-exit_and_return_early:
-
-; restore ds...
-
-LEAVE_MACRO
-pop   di
-pop   si
-ret
-
-return_MAXLONG:
-mov   ax, ss
-mov   ds, ax
-
-mov   dx, 08000h
-xor   ax, ax
-jmp   exit_and_return_early
-
-restore_reg_then_do_full_divide:
-
-; restore dx
-mov dx, ds
-
-; restore ds
-mov ax, ss
-mov ds, ax 
-
-; restore ax
-mov ax, es
-jmp do_full_divide
 
 ENDP
 
@@ -2428,10 +2404,42 @@ a_is_positive_whole:
 
 ;  ax:00  is  labs(ax:00) now (unshifted)
 ;  cx:bx  is  labs(cx:bx) now
-test cx, 0FFFCh
+mov   es, dx   ; store sign bit for now
+xor   dx, dx
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+cmp   dx ,cx   ; compare high bit
+jg    do_quick_return_whole                 ; greater
+jne   restore_reg_then_do_full_divide_whole ; smaller
+cmp   ax ,bx
+jb    restore_reg_then_do_full_divide_whole
+do_quick_return_whole: 
+; return (a^b) < 0 ? MINLONG : MAXLONG;
 
 
-je continue_bounds_test_whole
+mov   dx, es   ; restore sign bit
+
+test  dx, dx   ; just need to do the high word due to sign?
+jl    return_MAXLONG_whole
+
+return_MINLONG_whole:
+
+mov   ax, 0ffffh
+mov   dx, 07fffh
+
+
+ret
+
+restore_reg_then_do_full_divide_whole:
+
+
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1   ; restore ax
+mov   dx, es  ; restore sign bit
 
 ; main division algo
 
@@ -2466,87 +2474,13 @@ neg   dx
 
 ret
 
-continue_bounds_test_whole:
-
-
-
-; if high 2 bits of dh arent present at all, and any bits of cx are present
-; then we can quit out quickly.
-
-
-test ah, 0C0h     ; ax AND 0xC000
-jne do_shift_and_full_compare_whole
-test cx, cx
-jne do_full_divide_whole  ; ax >> 14 is zero, cx is nonzero.
-
-
-do_shift_and_full_compare_whole:
-
-; store backup dx:ax in ds:es
-mov es, ax
-
-
-rol ax, 1
-rol ax, 1
-
-and ax, 03h
-
-
-; 	if ((labs(a) >> 14) >= labs(b))
-
-
-
-cmp   ax, cx
-jg    do_quick_return_whole                 ; greater
-jne   restore_reg_then_do_full_divide_whole ; smaller
-mov    ax, es
-
-; shift right fourteen?
-shl ax, 1
-shl ax, 1
-and ax, 0FFFCh
-
-
-
-cmp   ax, bx                               ; low word vs 0 
-
-; if bx is zero we fall thru.
-; if not zero a was not greater, do full divide
-
-
-jb    restore_reg_then_do_full_divide_whole
-
-
-do_quick_return_whole: 
-; return (a^b) < 0 ? MINLONG : MAXLONG;
-
-
-
-
-test  dx, dx   ; just need to do the high word due to sign?
-jl    return_MAXLONG_whole
-
-return_MINLONG_whole:
-
-mov   ax, 0ffffh
-mov   dx, 07fffh
-
-exit_and_return_early_whole:
-
-
-ret
-
 return_MAXLONG_whole:
 
 mov   dx, 08000h
 xor   ax, ax
-jmp   exit_and_return_early_whole
+ret
 
-restore_reg_then_do_full_divide_whole:
 
-; restore ax
-mov ax, es
-jmp do_full_divide_whole
 
 endp
 

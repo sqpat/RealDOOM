@@ -1508,7 +1508,7 @@ ja   done_with_first_mapplane_loop
 
 mov   ax, word ptr es:[di]
 mov   word ptr ds:[_ds_y], di   ; predoubled for lookup
-mov   word ptr [bp - 0Ah], ax
+mov   word ptr [bp - 0Ah], ax   ; store ds_x1
 inc   cl
 
 call  R_MapPlane_
