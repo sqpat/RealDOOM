@@ -245,7 +245,7 @@
 #define masked_headers                  (((masked_header_t  __near*)         (_NULL_OFFSET + 0x0220)))
 #define curseg                          (*((int16_t  __near*)                (_NULL_OFFSET + 0x0280)))
 #define curseg_render                   (*((seg_render_t  __near* __near*)   (_NULL_OFFSET + 0x0282)))
-#define walllights                      (*((int16_t  __near*)                (_NULL_OFFSET + 0x0284)))
+//#define walllights                      (*((int16_t  __near*)                (_NULL_OFFSET + 0x0284)))
 //#define maskedtexmodulo                 (*((uint16_t __near*)                (_NULL_OFFSET + 0x0286)))
 #define maskednextlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x0288)))
 #define maskedprevlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x028A)))

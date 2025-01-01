@@ -1067,11 +1067,17 @@ PUBLIC R_RenderMaskedSegRange_
 ;x1 is ax
 ;x2 is cx
 
-; no stack used..
+; no stack frame used..
+
+; bp - 2    _walllights
+; bp - 4    
 
   
 push  si
 push  di
+push      bp
+mov       bp, sp
+sub       sp, 0Ah
 
 ; todo selfmodify all this up ahead too.
 
@@ -1439,7 +1445,8 @@ clip_lights_to_max:
 mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult48lookup[LIGHTLEVELS - 1];
 
 lights_set:
-mov   word ptr ds:[_walllights], ax      ; store lights
+add   ax, (SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT + _scalelightfixed)
+mov   word ptr [bp - 2], ax      ; store lights
 
 
 ;    maskedtexturecol = &openings[ds->maskedtexturecol_val];
@@ -1470,7 +1477,6 @@ SELFMODIFY_MASKED_x1_field_1:
 mov   ax, 08000h
 SELFMODIFY_MASKED_dsp_02:
 sub   ax, 01000h
-add   word ptr ds:[_walllights], 030h
 
 ; inlined  FastMul16u32u_
 
@@ -1742,7 +1748,7 @@ mov   word ptr ds:[_maskednextlookup], ax
 mov   word ptr ds:[_maskedcachedbasecol], ax
 mov   word ptr ds:[_maskedtexrepeat], 0
 
-
+LEAVE_MACRO
 pop   di
 pop   si
 ret   
@@ -1826,9 +1832,10 @@ use_maxlight:
 mov   al, MAXLIGHTSCALE - 1
 get_colormap:
 xor   ah, ah
-mov   bx, word ptr ds:[_walllights]
-add   bx, ax
-mov   al, byte ptr ds:[bx + _scalelightfixed]
+mov   bx, ax
+add   bx, word ptr [bp - 2]
+;SELFMODIFY_MASKED_set_walllights:
+mov   al, byte ptr ds:[bx]
 mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_DrawFuzzColumn_], al
 
 SELFMODIFY_MASKED_fixedcolormap_1_TARGET:
@@ -3562,6 +3569,8 @@ mov      ax, ss
 mov      ds, ax
 
 ASSUME DS:DGROUP
+
+
 
 
 retf
