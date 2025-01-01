@@ -363,7 +363,7 @@ PUBLIC  R_DrawSpanPrep_
  mov   ax, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
 SELFMODIFY_SPAN_destview_lo_1:
  add   ax, 01000h
- mov   es, word ptr ds:[_ds_x1]			; es holds ds_x1
+ mov   es, word ptr [bp - 0Ah]			; es holds ds_x1
 	
  xor   bl, bl							; zero out bl. use it as loop counter/ i
  ; todo carry this forward
@@ -384,9 +384,9 @@ SELFMODIFY_SPAN_destview_lo_1:
 
 ; 		int16_t dsp_x2 = (ds_x2 - i) >> shiftamount;
 
-
- mov   di, word ptr ds:[_ds_x2]			; cx holds ds_x2
- sub   di, ax							; subtract i
+SELFMODIFY_SPAN_ds_x2:
+ mov   cx, word ptr [bp - 0Ch]		        ; cx holds ds_x2
+ sub   cx, ax							; subtract i
  mov   si, ax							; put i in si
  
  mov   ax, dx							; copy dsp_x1 to ax
@@ -395,11 +395,11 @@ SELFMODIFY_SPAN_destview_lo_1:
  shl   ax, 1							; shift dsp_x1 left
  shl   ax, 1							; shift dsp_x1 left
  SELFMODIFY_SPAN_detailshift2minus_3:
- sar   di, 1							; shift ds_x2 right. di = dsp_x2
- sar   di, 1							; shift ds_x2 right. di = dsp_x2
- mov   cx, di							; store dsp_x2 in cx
+ sar   cx, 1							; shift ds_x2 right. di = dsp_x2
+ sar   cx, 1							; shift ds_x2 right. di = dsp_x2
+ 
  mov   di, es							; get ds_x1 into di
-
+ 
 ;		if ((dsp_x1 << shiftamount) + i < ds_x1)
 
  add   ax, si							; ax = (dsp_x1 << shiftamount) + i
@@ -690,22 +690,16 @@ push  si
 push  di
 push  es
 push  dx
-push  bp
-mov   bp, sp
 
 
-; this is all done in R_DrawPlanes before the call now
-;xor   ah, ah
-;mov   word ptr ds:[_ds_y], ax
-;mov   word ptr ds:[_ds_x1], dx
-;mov   word ptr ds:[_ds_x2], si
+
 
 mov  si, di
 ; si is x * 4
 mov   es, ds:[_cachedheight_segment_storage]
 
-mov   ax, word ptr ds:[_planeheight]
-mov   dx, word ptr ds:[_planeheight + 2]
+mov   ax, word ptr [bp - 010h]
+mov   dx, word ptr [bp - 0Eh]
 ; TODO: do this shl outside of the function. borrow from es:di lookup's di
 shl   si, 1
 ; CACHEDHEIGHT LOOKUP
@@ -778,7 +772,7 @@ distance_steps_ready:
 ; dx:ax is y_step
 ;     length = R_FixedMulLocal (distance,distscale[x1]);
 
-mov   si, word ptr ds:[_ds_x1]		; grab x2 (function input)
+mov   si, word ptr [bp - 0Ah]		; grab x2 (function input)
 
 shl   si, 1						; word lookup
 mov   bx, si          ; dword lookup if we add them
@@ -889,8 +883,6 @@ mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump-OFFSET R_DrawSpan_], 
 
 call  R_DrawSpanPrep_
 
-LEAVE_MACRO
-
 
 pop   dx
 pop   es
@@ -908,7 +900,6 @@ mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump-OFFSET R_DrawSpan_], 
 
 call  R_DrawSpanPrep_
 
-LEAVE_MACRO
 
 pop   dx
 pop   es
@@ -1021,6 +1012,10 @@ PUBLIC R_DrawPlanes_
 ; ARGS none
 
 ; STACK
+; bp - 10h planeheight lo
+; bp - 0Eh planeheight hi
+; bp - 0Ch ds_x2
+; bp - 0Ah ds_x1
 ; bp - 8 visplaneoffset
 ; bp - 6 visplanesegment
 ; bp - 4 usedflatindex
@@ -1033,7 +1028,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 08h
+sub   sp, 10h
 xor   ax, ax
 mov   word ptr [bp - 8], ax
 mov   word ptr [bp - 6], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
@@ -1420,8 +1415,8 @@ neg   ax
 adc   dx, 0
 neg   dx
 planeheight_already_positive:
-mov   word ptr ds:[_planeheight], ax
-mov   word ptr ds:[_planeheight + 2], dx
+mov   word ptr [bp - 010h], ax
+mov   word ptr [bp - 0Eh], dx
 mov   ax, word ptr [si + 6]
 mov   di, ax
 les   bx, dword ptr [bp - 8]
@@ -1489,12 +1484,11 @@ mov   cx, word ptr es:[bx + si + 1]		; t1&t2
 
 mov   ax, SPANSTART_SEGMENT
 mov   es, ax
-; todo swap si/di uses in the map plane area. reduces a little bit of register thrashing
 
 ; t1/t2 ch/cl
 ; b1/b2 dh/dl
 dec   si	; x - 1  constant
-mov   word ptr ds:[_ds_x2], si
+mov   word ptr [bp - 0Ch], si
 inc   si  ; add one back from the previous saved x-1 state
 
 ;    while (t1 < t2 && t1 <= b1)
@@ -1514,7 +1508,7 @@ ja   done_with_first_mapplane_loop
 
 mov   ax, word ptr es:[di]
 mov   word ptr ds:[_ds_y], di   ; predoubled for lookup
-mov   word ptr ds:[_ds_x1], ax
+mov   word ptr [bp - 0Ah], ax
 inc   cl
 
 call  R_MapPlane_
@@ -1556,7 +1550,7 @@ ja   done_with_second_mapplane_loop
 
 mov   ax, word ptr es:[di]
 mov   word ptr ds:[_ds_y], di
-mov   word ptr ds:[_ds_x1], ax
+mov   word ptr [bp - 0Ah], ax
 dec   dl
 
 call  R_MapPlane_
@@ -1658,7 +1652,6 @@ jmp   end_single_plane_draw_loop_iteration
 ENDP
 
 
-
 ;
 ; The following functions are loaded into a different segment at runtime.
 ; However, at compile time they have access to the labels in this file.
@@ -1716,9 +1709,9 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+2  - OFFSET R_DrawSpan
 mov ax, 0FAD1h  ; shr   dx, 1
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+0  - OFFSET R_DrawSpan_], ax  
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+2  - OFFSET R_DrawSpan_], ax  ; sar   dx, 1
-mov ax, 0FFd1h  ; sar   di, 1
+mov ax, 0F9d1h  ; sar   cx, 1
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+0  - OFFSET R_DrawSpan_], ax  
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2  - OFFSET R_DrawSpan_], ax  ; sar   di, 1
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2  - OFFSET R_DrawSpan_], ax  ; sar   cx, 1
 
 
 
@@ -1735,7 +1728,7 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+0  - OFFSET R_DrawSpan_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+0  - OFFSET R_DrawSpan_], 0EBD1h ; shr bx, 1
 
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+0  - OFFSET R_DrawSpan_], 0FAD1h  ; sar   dx, 1
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+0  - OFFSET R_DrawSpan_], 0FFD1h  ; sar   di, 1
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+0  - OFFSET R_DrawSpan_], 0F9D1h  ; sar   cx, 1
 mov      ax, 0E0D1h
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+0  - OFFSET R_DrawSpan_], ax  ; shl   ax, 1
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+0  - OFFSET R_DrawSpan_], ax  ; shl   ax, 1

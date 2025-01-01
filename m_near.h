@@ -87,8 +87,8 @@
 #define ceilphyspage                    (*((int8_t __near*)                  (_NULL_OFFSET + 0x0026)))
 #define floorphyspage                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0027)))
 
-#define ds_x1                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0028)))
-#define ds_x2                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x002A)))
+//#define ds_x1                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0028)))
+//#define ds_x2                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x002A)))
 // unused
 #define ds_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002E)))
 #define fixedcolormap                   (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002F)))
@@ -104,7 +104,7 @@
 #define lastopening                     (*((uint16_t    __near*)             (_NULL_OFFSET + 0x0052)))
 
 #define planezlight                     (*(uint8_t __far * __near *)         (_NULL_OFFSET + 0x0054))
-#define planeheight                     (*((fixed_t __near *)                (_NULL_OFFSET + 0x0058)))
+//#define planeheight                     (*((fixed_t __near *)                (_NULL_OFFSET + 0x0058)))
 #define basexscale                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x005C)))
 #define baseyscale                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0060)))
 #define viewx                           (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0064)))
@@ -119,17 +119,17 @@
 
 // #define rw_x                            (*((int16_t __near *)                (_NULL_OFFSET + 0x0080)))
 // #define rw_stopx                        (*((int16_t __near *)                (_NULL_OFFSET + 0x0082)))
-#define rw_offset                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0084)))
+//#define rw_offset                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0084)))
 #define maskedtexture                   (*((boolean __near*)                 (_NULL_OFFSET + 0x0088)))
-#define segtextured                     (*((boolean __near*)                 (_NULL_OFFSET + 0x0089)))
+//#define segtextured                     (*((boolean __near*)                 (_NULL_OFFSET + 0x0089)))
 // #define markfloor                       (*((boolean __near*)                 (_NULL_OFFSET + 0x008A)))
 // #define markceiling                     (*((boolean __near*)                 (_NULL_OFFSET + 0x008B)))
 
-#define rw_scale                        (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x008C)))
-#define topfrac                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x0090)))
-#define bottomfrac                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0094)))
-#define pixlow                          (*((fixed_t __near *)                (_NULL_OFFSET + 0x0098)))
-#define pixhigh                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x009C)))
+//#define rw_scale                        (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x008C)))
+//#define topfrac                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x0090)))
+//#define bottomfrac                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0094)))
+//#define pixlow                          (*((fixed_t __near *)                (_NULL_OFFSET + 0x0098)))
+//#define pixhigh                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x009C)))
 #define rw_angle1                       (*((angle_t __near *)                (_NULL_OFFSET + 0x00A0)))
 
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
