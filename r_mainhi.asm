@@ -243,8 +243,37 @@ ret
 
 endp
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
-PROC FixedMulBSPLocal_ FAR
+PROC FixedMulBSPLocal_ NEAR
+PUBLIC FixedMulBSPLocal_
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; cheat since we cant use .386 stuff midfile? todo figure this out...
+
+; set up ecx
+db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
+
+; set up eax
+db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
+db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
+
+; actual mul
+db 066h, 0F7h, 0E9h              ; imul ecx
+; set up return
+db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
+db 0C3h                          ; ret
+
+
+
+ENDP
+ELSE
+
+
+PROC FixedMulBSPLocal_ NEAR
 PUBLIC FixedMulBSPLocal_
 
 ; DX:AX  *  CX:BX
@@ -327,6 +356,7 @@ ret
 
 
 ENDP
+ENDIF
 
 
 PROC FixedDivBSPLocal_
