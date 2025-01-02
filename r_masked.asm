@@ -1338,9 +1338,6 @@ mov   ax, cx   ; use backsector floor
 use_frontsector_floor:
 
 
-mov   dl, byte ptr es:[di + 0Eh]   ; get sector lightlevel
-xor   dh, dh
-mov   di, dx     ; store this lightlevel in di.
 
 mov   cx, TEXTUREHEIGHTS_SEGMENT
 mov   es, cx
@@ -1391,23 +1388,28 @@ mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_DrawFuzzC
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_2 + 1 - OFFSET R_DrawFuzzColumn_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_DrawFuzzColumn_], ax
 
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
 
-
+; di is frontsector
+mov   al, byte ptr es:[di + 0Eh]   ; get sector lightlevel
+xor   ah, ah
 
 
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-sar   di, 4
+sar   ax, 4
 ELSE
-sar   di, 1
-sar   di, 1
-sar   di, 1
-sar   di, 1
+sar   ax, 1
+sar   ax, 1
+sar   ax, 1
+sar   ax, 1
 ENDIF
 
+mov   dx, ax
 SELFMODIFY_MASKED_extralight_1:
 mov   al, 0
-add   ax, di
+add   ax, dx
 
 SELFMODIFY_MASKED_add_vertex_field:
 nop				; becomes inc ax, dec ax, or nop
