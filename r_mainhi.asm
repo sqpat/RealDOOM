@@ -3720,6 +3720,7 @@ mov       es, word ptr ds:[_ds_p+2]
 stos      word ptr es:[di]             ; +6
 xchg      ax, dx
 stos      word ptr es:[di]             ; +8
+xchg      ax, dx                       ; put DX back; need it later.
 mov       cx, word ptr [bp - 04Eh]
 cmp       cx, word ptr [bp - 04Ch]
 jg        stop_greater_than_start
