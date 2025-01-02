@@ -29,6 +29,7 @@ COLORMAPS_6_MASKEDMAPPING_SEG_DIFF_SEGMENT = (COLORMAPS_SEGMENT_MASKEDMAPPING + 
  
 ; 5472 or 0x1560
 COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_6_MASKEDMAPPING_SEG_DIFF_SEGMENT - DRAWFUZZCOL_AREA_SEGMENT)
+SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT = 030h
 
 
 
@@ -1337,6 +1338,9 @@ mov   ax, cx   ; use backsector floor
 use_frontsector_floor:
 
 
+mov   dl, byte ptr es:[di + 0Eh]   ; get sector lightlevel
+xor   dh, dh
+mov   di, dx     ; store this lightlevel in di.
 
 mov   cx, TEXTUREHEIGHTS_SEGMENT
 mov   es, cx
@@ -1390,24 +1394,20 @@ mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_DrawFuzzC
 
 
 
-; di is still frontsector (from above)
 
-mov   al, byte ptr es:[di + 0Eh]
-xor   ah, ah
-mov   dx, ax
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-sar   dx, 4
+sar   di, 4
 ELSE
-sar   dx, 1
-sar   dx, 1
-sar   dx, 1
-sar   dx, 1
+sar   di, 1
+sar   di, 1
+sar   di, 1
+sar   di, 1
 ENDIF
 
 SELFMODIFY_MASKED_extralight_1:
 mov   al, 0
-add   ax, dx
+add   ax, di
 
 SELFMODIFY_MASKED_add_vertex_field:
 nop				; becomes inc ax, dec ax, or nop
