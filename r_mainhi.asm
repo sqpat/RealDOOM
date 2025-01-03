@@ -51,6 +51,9 @@ EXTRN _segloopcachedsegment:WORD
 .CODE
 
 
+MID_ONLY_DRAW_TYPE = 1
+BOT_TOP_DRAW_TYPE = 2
+
 
 ;R_ScaleFromGlobalAngle_
 
@@ -3347,8 +3350,11 @@ mov   dx, 01000h
 SELFMODIFY_set_bottexturemid_lo:
 mov   cx, 01000h
 
+; small idea: make these each three NOPs if its gonna be a bot only draw?
+SELFMODIFY_bottomtexonly_1:
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret], 0C3h  ; ret
 call  R_DrawColumnPrep_
+SELFMODIFY_bottomtexonly_2:
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret], 05Ah  ; pop dx
 
 pop   dx
@@ -3965,6 +3971,9 @@ jmp       handle_two_sided_line
 
 handle_single_sided_line:
 
+
+SELFMODIFY_BSP_drawtype_1:
+SELFMODIFY_BSP_drawtype_1_AFTER = SELFMODIFY_BSP_drawtype_1 + 2
 mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER) SHL 8) + 0EBh
 mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER
@@ -3977,6 +3986,20 @@ mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
 ;mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_AFTER) SHL 8) + 0E2h  ; LOOP instruction
 ;mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4], ax
 
+
+ 
+mov       word ptr cs:[SELFMODIFY_BSP_drawtype_2], 089B8h   ; mov ax, xx89
+mov       word ptr cs:[SELFMODIFY_BSP_drawtype_1], ((SELFMODIFY_BSP_drawtype_1_TARGET - SELFMODIFY_BSP_drawtype_1_AFTER) SHL 8) + 0EBh
+
+mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+0], 026h    ; es:
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], 087C7h  ; next 2 bytes of following instr (mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
+
+mov       byte ptr cs:[SELFMODIFY_BSP_midtexture], 039h     ; cmp di,
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture+1], 07CF7h   ; (cmp di,) si, jl
+
+
+SELFMODIFY_BSP_drawtype_1_TARGET:
+
 ;es:bx still side
 mov       ax, TEXTURETRANSLATION_SEGMENT
 mov       bx, [bp - 01Ch]
@@ -3988,24 +4011,12 @@ mov       ax, word ptr es:[bx]
 ; prev two bytes will be a jump or mov cx with the low byte
 
 
-mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+0], 026h    ; es:
-mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], 087C7h  ; next 2 bytes of following instr (mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
 
 mov       word ptr cs:[SELFMODIFY_BSP_set_midtexture+1], ax
-mov       bx, ax     ; backup
-test      ax, ax
-mov       ax, 07CF7h   ; (cmp di,) si, jl
-mov       dl, 039h     ; cmp di,
-jne       midtexture_not_zero
-midtexture_zero:
-mov       ax, (SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER)
-mov       dl, 0E9h     ; jmp short rel16
-midtexture_not_zero:
-mov       byte ptr cs:[SELFMODIFY_BSP_midtexture], dl
-mov       word ptr cs:[SELFMODIFY_BSP_midtexture+1], ax
 ; are any bits set?
-or        bl, bh
-or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
+or        al, ah
+or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
+
 
 
 mov       ax, 0101h
@@ -4659,7 +4670,12 @@ ret
 
 handle_two_sided_line:
 
+
 ; nop 
+
+SELFMODIFY_BSP_drawtype_2:
+SELFMODIFY_BSP_drawtype_2_AFTER = SELFMODIFY_BSP_drawtype_2+2
+
 mov       ax, 0c089h 
 mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
 mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
@@ -4667,13 +4683,19 @@ mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3], ax
 ;mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4], ax
 mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
 
-; nomidtexture. this will be checked before top/bot, have to set it to 0.
 
-; jmp by default
+mov       word ptr cs:[SELFMODIFY_BSP_drawtype_1], 0EBB8h   ; mov ax, xxeB
+mov       word ptr cs:[SELFMODIFY_BSP_drawtype_2], ((SELFMODIFY_BSP_drawtype_2_TARGET - SELFMODIFY_BSP_drawtype_2_AFTER) SHL 8) + 0EBh
+
 mov       word ptr cs:[SELFMODIFY_BSP_midtexture], 0E9h
 mov       word ptr cs:[SELFMODIFY_BSP_midtexture+1], (SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) 
-mov       word ptr cs:[SELFMODIFY_BSP_toptexture], ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
-mov       word ptr cs:[SELFMODIFY_BSP_bottexture], ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
+
+mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+0], 0E9h ; jmp short rel16
+mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], SELFMODIFY_BSP_midtexture_return_jmp_TARGET - SELFMODIFY_BSP_midtexture_return_jmp_AFTER
+
+
+SELFMODIFY_BSP_drawtype_2_TARGET:
+; nomidtexture. this will be checked before top/bot, have to set it to 0.
 
 
 
@@ -4901,9 +4923,9 @@ xchg      si, bx
 ; worldhigh check one past time
 cmp       word ptr [bp - 044h], cx
 jg        setup_toptexture
-jne       toptexture_stuff_done
+jne       toptexture_zero
 cmp       word ptr [bp - 046h], bx
-jbe       toptexture_stuff_done
+jbe       toptexture_zero
 setup_toptexture:
 
 ;cx and bx (currently worldhigh) are clobbered but are on stack
@@ -4918,19 +4940,17 @@ mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-
-mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+0], 0E9h ; jmp short rel16
-mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], SELFMODIFY_BSP_midtexture_return_jmp_TARGET - SELFMODIFY_BSP_midtexture_return_jmp_AFTER
+; todo midtexture some stuff set here
 
 mov       word ptr cs:[SELFMODIFY_BSP_set_toptexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
-mov       ax, 0468Bh   ; mov   ax, word ptr [bp - 02Dh] first two bytes
 jne       toptexture_not_zero
 toptexture_zero:
-mov       ax, ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
+mov       word ptr cs:[SELFMODIFY_BSP_toptexture], ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
+jmp       toptexture_stuff_done
 toptexture_not_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_toptexture], ax
+mov       word ptr cs:[SELFMODIFY_BSP_toptexture], 0468Bh ; mov   ax, word ptr [bp - 02Dh] first two bytes
 ; are any bits set?
 or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
@@ -4985,9 +5005,9 @@ toptexture_stuff_done:
 
 cmp       di, word ptr [bp - 034h]
 jg        setup_bottexture
-jne       bottexture_stuff_done
+jne       bottexture_zero
 cmp       si, word ptr [bp - 036h]
-jbe       bottexture_stuff_done
+jbe       bottexture_zero
 setup_bottexture:
 mov       ax, TEXTURETRANSLATION_SEGMENT
 mov       bx, word ptr [bp - 016h]
@@ -5001,12 +5021,13 @@ mov       word ptr cs:[SELFMODIFY_BSP_set_bottomtexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
 
-mov       ax, 0468Bh   ; mov   ax, word ptr [bp - 026h]
 jne       bottexture_not_zero
+
 bottexture_zero:
-mov       ax, ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
+mov       word ptr cs:[SELFMODIFY_BSP_bottexture], ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
+jmp       bottexture_stuff_done
 bottexture_not_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_bottexture], ax
+mov       word ptr cs:[SELFMODIFY_BSP_bottexture], 0468Bh   ; mov   ax, word ptr [bp - 02Dh] first two bytes
 ; are any bits set?
 or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
@@ -5035,8 +5056,6 @@ mov       ax, 01000h
 ;	rw_bottomtexturemid.h.intbits += side_render->rowoffset;
 
 
-; todo: optim and only write this once.
-; ?? how
 add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1], ax
 add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1], ax
 cmp       word ptr [bp - 01Ch], 0
@@ -5045,6 +5064,7 @@ cmp       word ptr [bp - 01Ch], 0
 ; if (side->midtexture) {
 
 
+; check midtexture on 2 sided line (e1m1 case)
 jne       side_has_midtexture
 xor       ax, ax
 jmp       done_with_sector_sided_check

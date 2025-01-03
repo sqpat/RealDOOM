@@ -1207,7 +1207,7 @@ spritedefs_bytes    7410:0000
 #define MAX_MASKED_TEXTURES 12
 
 
-
+// todo this is actually smaller than 1424 again? like 12xx.
 #define size_texturecolumnlumps_bytes  (1424u * sizeof(int16_t))
 #define size_texturedefs_bytes         8756u
 #define size_spritetopoffsets          (sizeof(int8_t) * MAX_SPRITE_LUMPS)
@@ -1294,6 +1294,7 @@ spritedefs_bytes    7410:0000
 
 //FREEBYTES
 // 576 bytes free till 6000:8000
+// or 900-1000 ish if we reshrink texturecolumnlumps_bytes
 // some masked code can easily go here? Maybe more if drawsegs maxsegs goes back to 128 from 256?
 
 
