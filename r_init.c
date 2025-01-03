@@ -220,7 +220,7 @@ void R_GenerateLookup(uint16_t texnum) {
 	//columnwidths check helps us detect cases of two or more of the same patches in a row 
 	// so we properly create two separate RLE entries.
 	int16_t  __far*              columnwidths         = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF500);
-	int8_t  __far*               startpixel           = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF700);
+	uint8_t  __far*              startpixel           = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF700);
 	int16_t __far*               texcollump           = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF800);
 	uint16_t __far*              maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
 	uint16_t __far*              maskedpixlofs        = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFC00);
@@ -459,7 +459,9 @@ void R_GenerateLookup(uint16_t texnum) {
 	// write collumps data. Needs to be done here, so that we've accounted for multiple-patch cases with patchcount[x] > 1
 	for (x = 1; x < texturewidth; x++) {
 		if (currentcollump != texcollump[x] 
-		|| (x - currentcollumpRLEStart) >= columnwidths[x]) 
+		|| (x - currentcollumpRLEStart) >= columnwidths[x]
+		|| (texcollump[x] != -1 && (startpixel[x] != startx))    // this handles cases like PLANET1 where AG128_1 ends then restarts again with other composite textures in between.
+		) 
 		{
 			issingleRLErun = false;
 			
@@ -689,12 +691,12 @@ void R_InitTextures2(){
 	}
 	 
 	
-	//              pixelofs        postofs
-	//    				  masked count    collumps
-    //DOOM Shareware:	896    8     3170	544
-	//DOOM 1: 			2304   12    12238	1126
-	//DOOM 2:		 	1408   11    4772	1424
-	//I_Error("currentpixeloffset is %u %u %u", currentpixeloffset, maskedcount, currentpostoffset);
+	//              pixelofs        postofs        (left collumps is an old number??)
+	//    				  masked count         collumps
+    //DOOM Shareware:	896    8     3170	544     412  416
+	//DOOM 1: 			2304   12    12238	1126    936  944
+	//DOOM 2:		 	1408   11    4772	1424   1284 1288
+	//I_Error("currentpixeloffset is %i %i %i %i", currentpixeloffset, maskedcount, currentpostoffset, currentlumpindex);
 
 
 	// Reset this since 0x7000 scratch page is active
@@ -702,8 +704,7 @@ void R_InitTextures2(){
 	Z_QuickMapLumpInfo();
 	Z_QuickMapRender_9000To6000(); //for R_TextureNumForName
 
-	// 1264 doom2, 402 shareware...
-	
+ 	
 	// 544, 1126, 1424
 	//I_Error("final size: %i", currentlumpindex);
 }
