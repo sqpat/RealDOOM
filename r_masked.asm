@@ -2104,7 +2104,7 @@ mov   di, word ptr ds:[_maskedcachedbasecol]
 mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 
 ; call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
-call R_DrawSingleMaskedColumn_
+call R_DrawSingleMaskedColumn_  ;todo inline here, jump from above case? both jump to same spot after.
 
 
 jmp   update_maskedtexturecol_finish_loop_iter

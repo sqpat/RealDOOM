@@ -843,6 +843,7 @@ sbb   dx, 0
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_yfrac_lo+1 - OFFSET R_DrawSpan_], ax
 mov   byte ptr cs:[SELFMODIFY_SPAN_ds_yfrac_hi+2 - OFFSET R_DrawSpan_], dl
 
+pop   ax  ; for stack consistency across branches, this pop is done here.
 
 ; 	if (fixedcolormap) {
 
@@ -850,7 +851,6 @@ SELFMODIFY_SPAN_fixedcolormap_1:
 mov   ax, ax
 SELFMODIFY_SPAN_fixedcolormap_1_AFTER:
 ; 		index = distance >> LIGHTZSHIFT;
-pop   ax
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 sar   ax, 4
 ELSE
