@@ -4565,8 +4565,8 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], ((SELFMODIFY_BSP_set_s
 
 
 check_spr_top_clip:
-les       si, dword ptr ds:[_ds_p]
-test      byte ptr es:[si + 01ch], SIL_TOP
+les       bx, dword ptr ds:[_ds_p]
+test      byte ptr es:[bx + 01ch], SIL_TOP
 jne       continue_checking_spr_top_clip
 cmp       byte ptr ds:[_maskedtexture], 0
 je        check_spr_bottom_clip
@@ -4575,90 +4575,79 @@ jmp       continue_checking_spr_top_clip
 
 continue_checking_spr_top_clip:
 
-cmp       word ptr es:[si + 016h], 0
+cmp       word ptr es:[bx + 016h], 0
 jne       check_spr_bottom_clip
 mov       si, word ptr [bp - 04Ch]
-mov       cx, OPENINGS_SEGMENT
-mov       ax, word ptr [bp - 03Ah]
-mov       di, word ptr ds:[_lastopening]
 add       si, si
-sub       ax, word ptr [bp - 04Ch]
 add       si, OFFSET_CEILINGCLIP
-mov       es, cx
-add       di, di
-add       ax, ax
-push      ds
-push      di
-xchg      ax, cx
+mov       di, word ptr ds:[_lastopening]
+mov       cx, word ptr [bp - 03Ah]
+sub       cx, word ptr [bp - 04Ch]
+mov       ax, OPENINGS_SEGMENT
+mov       es, ax
 mov       ds, ax
-shr       cx, 1
-rep movsw 
-adc       cx, cx
-rep movsb 
-pop       di
-pop       ds
+add       di, di
+
+rep movsw
+
+mov       ax, ss
+mov       ds, ax
 mov       ax, word ptr ds:[_lastopening]
 sub       ax, word ptr [bp - 04Ch]
-les       si, dword ptr ds:[_ds_p]
+mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
 add       ax, ax
-mov       word ptr es:[si + 016h], ax
+mov       word ptr es:[bx + 016h], ax
 mov       ax, word ptr [bp - 03Ah]
 sub       ax, word ptr [bp - 04Ch]
 add       word ptr ds:[_lastopening], ax
 check_spr_bottom_clip:
 ; es:si is ds_p
-test      byte ptr es:[si + 01ch], SIL_BOTTOM
+test      byte ptr es:[bx + 01ch], SIL_BOTTOM
 jne       continue_checking_spr_bottom_clip
 cmp       byte ptr ds:[_maskedtexture], 0
 je        check_silhouettes_then_exit
 jmp       continue_checking_spr_bottom_clip
 continue_checking_spr_bottom_clip:
-cmp       word ptr es:[si + 018h], 0
+cmp       word ptr es:[bx + 018h], 0
 jne       check_silhouettes_then_exit
 mov       si, word ptr [bp - 04Ch]
-mov       cx, OPENINGS_SEGMENT
-mov       ax, word ptr [bp - 03Ah]
-mov       di, word ptr ds:[_lastopening]
 add       si, si
-sub       ax, word ptr [bp - 04Ch]
 add       si, OFFSET_FLOORCLIP
-mov       es, cx
+mov       ax, OPENINGS_SEGMENT
+mov       di, word ptr ds:[_lastopening]
 add       di, di
-add       ax, ax
-push      ds
-push      di
-xchg      ax, cx
+mov       cx, word ptr [bp - 03Ah]
+sub       cx, word ptr [bp - 04Ch]
+mov       es, ax
 mov       ds, ax
-shr       cx, 1
 rep movsw 
-adc       cx, cx
-rep movsb 
-pop       di
-pop       ds
+
+mov       ax, ss
+mov       ds, ax
+
 mov       ax, word ptr ds:[_lastopening]
 sub       ax, word ptr [bp - 04Ch]
-les       si, dword ptr ds:[_ds_p]
+mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
 add       ax, ax
-mov       word ptr es:[si + 018h], ax
+mov       word ptr es:[bx + 018h], ax
 mov       ax, word ptr [bp - 03Ah]
 sub       ax, word ptr [bp - 04Ch]
 add       word ptr ds:[_lastopening], ax
 check_silhouettes_then_exit:
-; todo 
 cmp       byte ptr ds:[_maskedtexture], 0
 je        skip_top_silhouette
-test      byte ptr es:[si + 01ch], SIL_TOP
+test      byte ptr es:[bx + 01ch], SIL_TOP
 jne       skip_top_silhouette
-or        byte ptr es:[si + 01ch], SIL_TOP
-mov       word ptr es:[si + 014h], MINSHORT
+or        byte ptr es:[bx + 01ch], SIL_TOP
+mov       word ptr es:[bx + 014h], MINSHORT
 skip_top_silhouette:
 
 cmp       byte ptr ds:[_maskedtexture], 0
 je        skip_bot_silhouette
-test      byte ptr es:[si + 01ch], SIL_BOTTOM
+test      byte ptr es:[bx + 01ch], SIL_BOTTOM
 jne       skip_bot_silhouette
-or        byte ptr es:[si + 01ch], SIL_BOTTOM
-mov       word ptr es:[si + 012h], MAXSHORT
+or        byte ptr es:[bx + 01ch], SIL_BOTTOM
+mov       word ptr es:[bx + 012h], MAXSHORT
 skip_bot_silhouette:
 add       word ptr ds:[_ds_p], SIZEOF_DRAWSEG_T
 LEAVE_MACRO
