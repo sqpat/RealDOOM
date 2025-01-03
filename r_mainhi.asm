@@ -3021,7 +3021,7 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1], dx
 SELFMODIFY_add_wallights:
 
 ; scalelight is pre-shifted 4 to save on the double sal every column.
-mov   al, byte ptr ds:[si+01000h]
+mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
 ;        set drawcolumn colormap function address
 mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
 
@@ -5362,14 +5362,21 @@ do_no_bsp_fixedcolormap_selfmodify:
 mov      ax, 0c089h 
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
-
+;mov      word ptr cs:[SELFMODIFY_add_wallights], 0848ah       ; mov al, byte ptr... 
 
 jmp      done_with_bsp_fixedcolormap_selfmodify
 do_bsp_fixedcolormap_selfmodify:
 
-;sal      al, 1
-;sal      al, 1
 mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3], al
+
+;mov   ah, al
+;mov   al, 0b0h
+;mov   word ptr cs:[SELFMODIFY_add_wallights], ax       ; mov al, FIXEDCOLORMAP
+;mov   word ptr cs:[SELFMODIFY_add_wallights+2], 0c089h ; nop
+
+; zero out the value in the walllights read which wont be updated again.
+; It'll get a fixedcolormap value by default. We could alternately get rid of the loop that sets scalelightfixed to fixedcolormap and modify the instructions like above.
+mov   word ptr cs:[SELFMODIFY_add_wallights+2], OFFSET _scalelightfixed 
 
 mov   ax, ((SELFMODIFY_BSP_fixedcolormap_2_TARGET - SELFMODIFY_BSP_fixedcolormap_2_AFTER) SHL 8) + 0EBh
 mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
