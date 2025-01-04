@@ -197,6 +197,7 @@ void __near R_ClearClipSegs (void) {
     newend = solidsegs+2;
 }
 
+/*
 
 //
 // R_AddLine
@@ -353,6 +354,7 @@ void __near R_AddLine (int16_t curlineNum) {
 
 }
 
+*/
 
 //
 // R_CheckBBox

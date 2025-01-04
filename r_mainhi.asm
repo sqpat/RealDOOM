@@ -24,13 +24,13 @@ INSTRUCTION_SET_MACRO
 EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 
-EXTRN R_AddLine_:PROC
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
 EXTRN FastMul16u32u_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN FastDiv3232_shift_3_8_:PROC
 EXTRN R_PointToAngle_:PROC
+EXTRN R_PointToAngle16_:PROC
 
 EXTRN R_GetColumnSegment_:NEAR
 
@@ -48,10 +48,15 @@ EXTRN _segloopheightvalcache:BYTE
 EXTRN _segloopcachedsegment:WORD
 EXTRN _solidsegs:WORD
 EXTRN _newend:WORD
-EXTRN memmove_:PROC
+EXTRN _clipangle:WORD
+EXTRN _fieldofview:WORD
 
 
 .CODE
+
+
+ANG90_HIGHBITS =		04000h
+ANG180_HIGHBITS =    08000h
 
 
 MID_ONLY_DRAW_TYPE = 1
@@ -1073,6 +1078,247 @@ ret
 
 ENDP
 
+;R_AddLine_
+
+PROC R_AddLine_ NEAR
+PUBLIC R_AddLine_ 
+
+; ax = curlineNum
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 014h
+mov   si, ax
+mov   dx, SEG_LINEDEFS_SEGMENT
+add   si, SEG_SIDES_OFFSET_IN_SEGLINES
+mov   es, dx
+mov   bx, ax
+mov   dl, byte ptr es:[si]
+mov   si, ax
+shl   bx, 3
+add   si, ax
+add   bh, (_segs_render SHR 8)
+mov   si, word ptr es:[si]
+mov   byte ptr [bp - 2], dl
+mov   word ptr [bp - 4], si
+mov   dx, si
+mov   si, word ptr [bx + 6]
+shl   dx, 2
+shl   si, 3
+mov   word ptr [bp - 010h], dx
+mov   word ptr [bp - 012h], si
+mov   si, word ptr [bx]
+mov   dx, VERTEXES_SEGMENT
+shl   si, 2
+mov   es, dx
+mov   di, word ptr es:[si]
+mov   dx, word ptr es:[si + 2]
+mov   si, word ptr [bx + 2]
+shl   si, 2
+mov   cx, word ptr es:[si]
+mov   word ptr [bp - 014h], cx
+mov   cx, word ptr es:[si + 2]
+mov   si, OFFSET _curseg
+mov   word ptr [si], ax
+mov   si, OFFSET _curseg_render
+mov   ax, di
+mov   word ptr [si], bx
+call  R_PointToAngle16_
+mov   bx, ax
+mov   si, dx
+mov   ax, word ptr [bp - 014h]
+mov   dx, cx
+mov   word ptr [bp - 0Ch], LINES_SEGMENT
+call  R_PointToAngle16_
+mov   word ptr [bp - 6], ax
+mov   ax, bx
+mov   word ptr [bp - 0Eh], SIDES_SEGMENT
+sub   ax, word ptr [bp - 6]
+mov   cx, si
+sbb   cx, dx
+mov   word ptr [bp - 8], ax
+cmp   cx, ANG180_HIGHBITS
+jb    label_1
+jmp   exit_addline
+label_1:
+mov   di, OFFSET _rw_angle1
+mov   word ptr [di], bx
+mov   word ptr [di + 2], si
+mov   di, OFFSET _viewangle
+sub   bx, word ptr [di]
+mov   word ptr [bp - 0Ah], bx
+mov   bx, si
+mov   si, di
+sbb   bx, word ptr [di + 2]
+mov   di, word ptr [bp - 6]
+mov   ax, word ptr [_clipangle]
+sub   di, word ptr [si]
+sbb   dx, word ptr [si + 2]
+add   ax, bx
+cmp   ax, word ptr ds:[_fieldofview]
+jbe   label_2
+sub   ax, word ptr ds:[_fieldofview]
+cmp   ax, cx
+ja    exit_addline
+jne   label_3
+mov   ax, word ptr [bp - 0Ah]
+cmp   ax, word ptr [bp - 8]
+jae   exit_addline
+label_3:
+mov   bx, word ptr ds:[_clipangle]
+label_2:
+xor   si, si
+mov   ax, word ptr ds:[_clipangle]
+sub   si, di
+sbb   ax, dx
+mov   di, si
+cmp   ax, word ptr ds:[_fieldofview]
+jbe   label_5
+sub   ax, word ptr ds:[_fieldofview]
+cmp   ax, cx
+ja    exit_addline
+jne   label_4
+cmp   si, word ptr [bp - 8]
+jae   exit_addline
+label_4:
+mov   dx, word ptr ds:[_clipangle]
+neg   dx
+label_5:
+add   bh, (ANG90_HIGHBITS SHR 8)
+mov   ax, VIEWANGLETOX_SEGMENT
+shr   bx, 3
+mov   es, ax
+add   bx, bx
+add   dh, (ANG90_HIGHBITS SHR 8)
+mov   ax, word ptr es:[bx]
+mov   bx, dx
+shr   bx, 3
+add   bx, bx
+mov   dx, word ptr es:[bx]
+cmp   ax, dx
+je    exit_addline
+mov   bx, LINEFLAGSLIST_SEGMENT
+mov   es, bx
+mov   bx, word ptr [bp - 4]
+test  byte ptr es:[bx], 4
+jne   label_6
+mov   bx, OFFSET _backsector
+mov   word ptr [bx], 0FFFFh
+clipsolid:
+dec   dx
+call  R_ClipSolidWallSegment_
+exit_addline:
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_6:
+mov   bl, byte ptr [bp - 2]
+xor   bl, 1
+xor   bh, bh
+add   bx, bx
+mov   es, word ptr [bp - 0Ch]
+add   bx, word ptr [bp - 010h]
+mov   bx, word ptr es:[bx]
+shl   bx, 2
+add   bx, _sides_render + 2    ; secnum field in this side_render_t
+mov   bx, word ptr [bx]
+mov   cx, bx
+mov   bx, OFFSET _backsector
+shl   cx, 4
+mov   word ptr [bx + 2], SECTORS_SEGMENT  ; todo remove
+mov   word ptr [bx], cx
+les   di, dword ptr [bx]
+mov   bx, OFFSET _frontsector
+mov   si, word ptr [bx]
+mov   cx, word ptr [bx + 2]
+mov   bx, word ptr es:[di + 2]
+mov   es, cx
+cmp   bx, word ptr es:[si]
+jle   clipsolid
+mov   bx, OFFSET _frontsector
+mov   si, word ptr [bx]
+mov   cx, word ptr [bx + 2]
+mov   bx, OFFSET _backsector
+les   di, dword ptr [bx]
+mov   bx, word ptr es:[di]
+mov   es, cx
+cmp   bx, word ptr es:[si + 2]
+jge   clipsolid
+mov   bx, OFFSET _backsector
+les   si, dword ptr [bx]
+mov   bx, OFFSET _frontsector
+mov   di, word ptr [bx]
+mov   cx, word ptr [bx + 2]
+mov   bx, word ptr es:[si + 2]
+mov   es, cx
+cmp   bx, word ptr es:[di + 2]
+je    label_7
+jmp   clippass
+label_7:
+mov   bx, OFFSET _backsector
+les   di, dword ptr [bx]
+mov   bx, OFFSET _frontsector
+mov   si, word ptr [bx]
+mov   cx, word ptr [bx + 2]
+mov   bx, word ptr es:[di]
+mov   es, cx
+cmp   bx, word ptr es:[si]
+jne   clippass
+mov   bx, OFFSET _backsector
+les   si, dword ptr [bx]
+mov   bx, OFFSET _frontsector
+mov   di, word ptr [bx]
+mov   cx, word ptr [bx + 2]
+mov   bl, byte ptr es:[si + 5]
+mov   es, cx
+cmp   bl, byte ptr es:[di + 5]
+jne   clippass
+mov   bx, OFFSET _backsector
+les   di, dword ptr [bx]
+mov   bx, OFFSET _frontsector
+mov   si, word ptr [bx]
+mov   cx, word ptr [bx + 2]
+mov   bl, byte ptr es:[di + 4]
+mov   es, cx
+cmp   bl, byte ptr es:[si + 4]
+jne   clippass
+mov   bx, OFFSET _backsector
+les   si, dword ptr [bx]
+mov   bx, OFFSET _frontsector
+mov   di, word ptr [bx]
+mov   cx, word ptr [bx + 2]
+mov   bl, byte ptr es:[si + 0Eh]
+mov   es, cx
+cmp   bl, byte ptr es:[di + 0Eh]
+jne   clippass
+mov   es, word ptr [bp - 0Eh]
+mov   bx, word ptr [bp - 012h]
+cmp   word ptr es:[bx + 4], 0
+jne   clippass
+jmp   exit_addline
+clippass:
+dec   dx
+call  R_ClipPassWallSegment_
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+
+
+ENDP
 
 
 SUBSECTOR_OFFSET_IN_SECTORS       = (SUBSECTORS_SEGMENT - SECTORS_SEGMENT) * 16

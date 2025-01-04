@@ -867,8 +867,8 @@ void check_is_ultimate(){
 void __far wipe_WipeLoop();
 void __far I_ReadScreen();
 void __near R_DrawPlayerSprites (void);
-void __near R_ClipSolidWallSegment ( int16_t first, int16_t last );
-void __near R_ClipPassWallSegment ( int16_t first, int16_t last );
+void __near R_AddLine (int16_t curlineNum);
+boolean __near R_CheckBBox(int16_t __far *bspcoord);
 
 
 void __far D_DoomMain2(void) {
@@ -895,7 +895,7 @@ void __far D_DoomMain2(void) {
 
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(R_ClipSolidWallSegment, (byte __far *)R_ClipPassWallSegment - (byte __far *)R_ClipSolidWallSegment, 1, fp);
+	FAR_fwrite(R_AddLine, (byte __far *)R_CheckBBox - (byte __far *)R_AddLine, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*
