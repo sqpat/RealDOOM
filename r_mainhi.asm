@@ -1085,6 +1085,18 @@ PUBLIC R_AddLine_
 
 ; ax = curlineNum
 
+; bp - 2       curlineside
+; bp - 4       curseglinedef
+; bp - 6       angle2 lo bits ?
+; bp - 8       span   lo bits ?
+; bp - 0Ah     angle1 lo bits ?
+; bp - 0Ch     UNUSED
+; bp - 0Eh     UNUSED
+; bp - 010h    curlinelinedef ?
+; bp - 012h    curlinelinedef ?
+; bp - 014h    v2.x (easy to remove)
+
+
 push  bx
 push  cx
 push  dx
@@ -1098,15 +1110,15 @@ mov   dx, SEG_LINEDEFS_SEGMENT
 add   si, SEG_SIDES_OFFSET_IN_SEGLINES
 mov   es, dx
 mov   bx, ax
+shl   bx, 1
 mov   dl, byte ptr es:[si]
-mov   si, ax
-shl   bx, 3
-add   si, ax
+mov   si,bx
+shl   bx, 1
+shl   bx, 1
 add   bh, (_segs_render SHR 8)
-mov   si, word ptr es:[si]
 mov   byte ptr [bp - 2], dl
-mov   word ptr [bp - 4], si
-mov   dx, si
+mov   dx, word ptr es:[si]
+mov   word ptr [bp - 4], dx
 mov   si, word ptr [bx + 6]
 shl   dx, 2
 shl   si, 3
@@ -1128,7 +1140,7 @@ mov   ax, di
 mov   word ptr ds:[_curseg_render], bx
 call  R_PointToAngle16_
 mov   bx, ax
-mov   si, dx
+mov   si, dx      ; SI: BX stores angle1
 mov   ax, word ptr [bp - 014h]
 mov   dx, cx
 call  R_PointToAngle16_
@@ -1142,22 +1154,28 @@ cmp   cx, ANG180_HIGHBITS
 jb    label_1
 jmp   exit_addline
 label_1:
+; todo selfmodify _rw_angle1 forward
 mov   word ptr ds:[_rw_angle1], bx
 mov   word ptr ds:[_rw_angle1 + 2], si
-mov   di, OFFSET _viewangle
-sub   bx, word ptr [di]
+SELFMODIFY_BSP_viewangle_lo_1:
+sub   bx, 01000h
 mov   word ptr [bp - 0Ah], bx
 mov   bx, si
-mov   si, di
-sbb   bx, word ptr [di + 2]
+SELFMODIFY_BSP_viewangle_hi_1:
+sbb   bx, 01000h
 mov   di, word ptr [bp - 6]
-mov   ax, word ptr [_clipangle]
-sub   di, word ptr [si]
-sbb   dx, word ptr [si + 2]
+SELFMODIFY_BSP_clipangle_4:
+mov   ax, 01000h
+SELFMODIFY_BSP_viewangle_lo_2:
+sub   di, 01000h
+SELFMODIFY_BSP_viewangle_hi_2:
+sbb   dx, 01000h
 add   ax, bx
-cmp   ax, word ptr ds:[_fieldofview]
+SELFMODIFY_BSP_fieldofview_1:
+cmp   ax, 01000h
 jbe   label_2
-sub   ax, word ptr ds:[_fieldofview]
+SELFMODIFY_BSP_fieldofview_2:
+sub   ax, 01000h
 cmp   ax, cx
 ja    exit_addline
 jne   label_3
@@ -1165,23 +1183,28 @@ mov   ax, word ptr [bp - 0Ah]  ; todo carry from above
 cmp   ax, word ptr [bp - 8]
 jae   exit_addline
 label_3:
-mov   bx, word ptr ds:[_clipangle]
+SELFMODIFY_BSP_clipangle_1:
+mov   bx, 01000h
 label_2:
 xor   si, si
-mov   ax, word ptr ds:[_clipangle]
+SELFMODIFY_BSP_clipangle_2:
+mov   ax, 01000h
 sub   si, di
 sbb   ax, dx
 mov   di, si
-cmp   ax, word ptr ds:[_fieldofview]
+SELFMODIFY_BSP_fieldofview_3:
+cmp   ax, 01000h
 jbe   label_5
-sub   ax, word ptr ds:[_fieldofview]
+SELFMODIFY_BSP_fieldofview_4:
+sub   ax, 01000h
 cmp   ax, cx
 ja    exit_addline
 jne   label_4
 cmp   si, word ptr [bp - 8]
 jae   exit_addline
 label_4:
-mov   dx, word ptr ds:[_clipangle]
+SELFMODIFY_BSP_clipangle_3:
+mov   dx, 01000h
 neg   dx
 label_5:
 add   bh, (ANG90_HIGHBITS SHR 8)
@@ -1214,7 +1237,7 @@ mov   es, bx
 mov   bx, word ptr [bp - 4]
 test  byte ptr es:[bx], 4
 jne   label_6
-mov   word ptr ds:[_backsector], 0FFFFh
+mov   word ptr ds:[_backsector], 0FFFFh   ; does this ever get properly used or checked? can we just ignore?
 clipsolid:
 dec   dx
 call  R_ClipSolidWallSegment_
@@ -5929,6 +5952,26 @@ mov      ax, word ptr ss:[_viewangle_shiftright1]
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_1+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_2+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1], ax
+
+mov      ax, word ptr ss:[_viewangle]
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_2+2], ax
+mov      ax, word ptr ss:[_viewangle+2]
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_2+2], ax
+
+mov      ax, word ptr ss:[_fieldofview]
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_2+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_3+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_4+1], ax
+
+mov      ax, word ptr ss:[_clipangle]
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_2+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_3+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_4+1], ax
+
 
 
 
