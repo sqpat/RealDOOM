@@ -1087,14 +1087,14 @@ PUBLIC R_AddLine_
 
 ; bp - 2       curlineside
 ; bp - 4       curseglinedef
-; bp - 6       angle2 lo bits ?
+; bp - 6       UNUSED
 ; bp - 8       span   lo bits ?
 ; bp - 0Ah     angle1 lo bits ?
 ; bp - 0Ch     UNUSED
 ; bp - 0Eh     UNUSED
 ; bp - 010h    curlinelinedef ?
 ; bp - 012h    curlinelinedef ?
-; bp - 014h    v2.x (easy to remove)
+; bp - 014h    unused
 
 
 push  bx
@@ -1112,7 +1112,7 @@ mov   es, dx
 mov   bx, ax
 shl   bx, 1
 mov   dl, byte ptr es:[si]
-mov   si,bx
+mov   si, bx
 shl   bx, 1
 shl   bx, 1
 add   bh, (_segs_render SHR 8)
@@ -1120,33 +1120,36 @@ mov   byte ptr [bp - 2], dl
 mov   dx, word ptr es:[si]
 mov   word ptr [bp - 4], dx
 mov   si, word ptr [bx + 6]
-shl   dx, 2
-shl   si, 3
+shl   dx, 1
+shl   dx, 1
+shl   si, 1
+shl   si, 1
+shl   si, 1
 mov   word ptr [bp - 010h], dx
 mov   word ptr [bp - 012h], si
-mov   si, word ptr [bx]
+mov   si, word ptr [bx]       ;v1
 mov   dx, VERTEXES_SEGMENT
-shl   si, 2
+shl   si, 1
+shl   si, 1
 mov   es, dx
-mov   di, word ptr es:[si]
+mov   word ptr ds:[_curseg], ax
+mov   ax, word ptr es:[si]
 mov   dx, word ptr es:[si + 2]
 mov   si, word ptr [bx + 2]
-shl   si, 2
-mov   cx, word ptr es:[si]
-mov   word ptr [bp - 014h], cx
-mov   cx, word ptr es:[si + 2]
-mov   word ptr ds:[_curseg], ax
-mov   ax, di
+shl   si, 1
+shl   si, 1
+mov   di, word ptr es:[si]       ; v2.x
+mov   cx, word ptr es:[si + 2]   ; v2.y
 mov   word ptr ds:[_curseg_render], bx
 call  R_PointToAngle16_
 mov   bx, ax
 mov   si, dx      ; SI: BX stores angle1
-mov   ax, word ptr [bp - 014h]
-mov   dx, cx
+mov   ax, di      ; move v2 into dx:ax
+mov   dx, cx      ; move v2 into dx:ax
 call  R_PointToAngle16_
-mov   word ptr [bp - 6], ax
+mov   di, ax
 mov   ax, bx
-sub   ax, word ptr [bp - 6]
+sub   ax, di
 mov   cx, si
 sbb   cx, dx
 mov   word ptr [bp - 8], ax
@@ -1163,7 +1166,7 @@ mov   word ptr [bp - 0Ah], bx
 mov   bx, si
 SELFMODIFY_BSP_viewangle_hi_1:
 sbb   bx, 01000h
-mov   di, word ptr [bp - 6]
+
 SELFMODIFY_BSP_clipangle_4:
 mov   ax, 01000h
 SELFMODIFY_BSP_viewangle_lo_2:
@@ -1258,7 +1261,8 @@ mov   si, LINES_SEGMENT
 mov   es, si
 add   bx, word ptr [bp - 010h]
 mov   bx, word ptr es:[bx]
-shl   bx, 2
+shl   bx, 1
+shl   bx, 1
 add   bx, _sides_render + 2    ; secnum field in this side_render_t
 mov   si, word ptr [bx]
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186

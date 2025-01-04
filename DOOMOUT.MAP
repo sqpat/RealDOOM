@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/04 15:47:35
+Created on:       25/01/04 15:57:25
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -80,7 +80,7 @@ p_user_TEXT            CODE           AUTO           0b1d:c190       000006c2
 r_bsp_TEXT             CODE           AUTO           17a3:0000       0000061a
 r_data_TEXT            CODE           AUTO           17a3:0620       00001c39
 R_MATH_TEXT            CODE           AUTO           17a3:225a       000001ed
-R_MAINHI_TEXT          CODE           AUTO           17a3:2448       00001e75
+R_MAINHI_TEXT          CODE           AUTO           17a3:2448       00001e70
 r_draw_TEXT            CODE           AUTO           17a3:42c0       00000379
 r_main_TEXT            CODE           AUTO           17a3:4640       000001e8
 r_plane_TEXT           CODE           AUTO           17a3:4830       00000000
@@ -1277,23 +1277,23 @@ Module: r_math.obj(r_math.ASM)
 17a3:22d0      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
 17a3:27f6*     R_AddLine_
-17a3:350f*     R_StoreWallRange_
-17a3:3f2e*     R_ClipSolidWallSegment_
-17a3:3fe8*     R_ClipPassWallSegment_
-17a3:29ae      R_Subsector_
+17a3:350a*     R_StoreWallRange_
+17a3:3f29*     R_ClipSolidWallSegment_
+17a3:3fe3*     R_ClipPassWallSegment_
+17a3:29a9      R_Subsector_
 17a3:24d9*     FixedMulBSPLocal_
 17a3:25cc*     R_PointToDist_
 17a3:2512*     FixedDivBSPLocal_
-17a3:4047      R_WriteBackViewConstants_
-17a3:4197      R_WriteBackFrameConstants_
+17a3:4042      R_WriteBackViewConstants_
+17a3:4192      R_WriteBackFrameConstants_
 17a3:2649      R_ClearPlanes_
 17a3:26c2*     R_HandleEMSPagination_
-17a3:2e9a*     R_AddSprites_
+17a3:2e95*     R_AddSprites_
 17a3:2774*     R_FindPlane_
-17a3:3362*     R_DrawColumnPrep_
-17a3:2f05*     R_RenderSegLoop_
-17a3:2b6d*     R_ProjectSprite_
-17a3:2aa2*     R_CheckPlane_
+17a3:335d*     R_DrawColumnPrep_
+17a3:2f00*     R_RenderSegLoop_
+17a3:2b68*     R_ProjectSprite_
+17a3:2a9d*     R_CheckPlane_
 17a3:2581*     FixedMulTrigNoShiftBSPLocal_
 17a3:2448*     R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
