@@ -47,6 +47,8 @@ EXTRN _segloopcachedbasecol:WORD
 EXTRN _segloopheightvalcache:BYTE
 EXTRN _segloopcachedsegment:WORD
 EXTRN _solidsegs:WORD
+EXTRN _newend:WORD
+EXTRN memmove_:PROC
 
 
 .CODE
@@ -5100,9 +5102,143 @@ jmp do_selfmodify_bottexture
 
 ENDP
 
+;R_ClipSolidWallSegment_
+
+PROC R_ClipSolidWallSegment_ NEAR
+PUBLIC R_ClipSolidWallSegment_ 
+
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 2
+mov   cx, word ptr [_newend]
+mov   word ptr [bp - 2], ax
+mov   di, dx
+dec   ax
+mov   si, OFFSET _solidsegs
+cmp   ax, word ptr [si+2]
+jle   label1
+label2:
+add   si, 4
+cmp   ax, word ptr [si + 2]
+jg    label2
+label1:
+mov   ax, word ptr [bp - 2]
+mov   word ptr [_newend], cx
+cmp   ax, word ptr [si]
+jge   label3
+mov   dx, word ptr [si]
+dec   dx
+cmp   di, dx
+jl    label4
+call  R_StoreWallRange_
+mov   ax, word ptr [bp - 2]
+mov   word ptr [si], ax
+label3:
+mov   cx, word ptr [_newend]
+cmp   di, word ptr [si + 2]
+jle   label5
+mov   bx, si
+label10:
+mov   dx, word ptr [bx + 4]
+dec   dx
+cmp   di, dx
+jl    label9
+mov   ax, word ptr [bx + 2]
+inc   ax
+call  R_StoreWallRange_
+mov   ax, word ptr [bx + 6]
+add   bx, 4
+cmp   di, ax
+jg    label10
+mov   word ptr [si + 2], ax
+label8:
+mov   cx, word ptr [_newend]
+cmp   bx, si
+je    label5
+label7:
+mov   ax, bx
+lea   di, [si + 4]
+add   bx, 4
+cmp   ax, cx
+je    label6
+mov   ax, word ptr [bx]
+mov   dx, word ptr [bx + 2]
+mov   word ptr [di], ax
+mov   si, di
+mov   word ptr [di + 2], dx
+jmp   label7
+label4:
+mov   dx, di
+call  R_StoreWallRange_
+mov   cx, word ptr [_newend]
+add   cx, 8
+mov   bx, cx
+sub   bx, si
+sar   bx, 2
+lea   ax, [si + 4]
+shl   bx, 2
+mov   dx, si
+mov   word ptr [_newend], cx
+
+; ax = dest, dx = source, bx = count?
+;push  si
+;push  di
+;push  cx
+
+;lea   di, [si + 4]
+;sub   cx, si
+;sar   cx, 1
+;mov   ax, ds
+;mov   es, ax
+;rep   movsw
+;adc   cx, cx
+;rep   movsb
+;pop   cx
+;pop   di
+;pop   si
+
+call   memmove_
+
+mov   ax, word ptr [bp - 2]
+mov   word ptr [si + 2], di
+mov   cx, word ptr [_newend]
+mov   word ptr [si], ax
+label5:
+mov   word ptr [_newend], cx
+LEAVE_MACRO
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label9:
+mov   ax, word ptr [bx + 2]
+mov   dx, di
+inc   ax
+call  R_StoreWallRange_
+mov   word ptr [si + 2], di
+jmp   label8
+label6:
+mov   cx, di
+mov   word ptr [_newend], cx
+
+LEAVE_MACRO
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+
+ENDP
+
 ;R_ClipPassWallSegment_
 
-PROC R_ClipPassWallSegment_ FAR
+PROC R_ClipPassWallSegment_ NEAR
 PUBLIC R_ClipPassWallSegment_ 
 
 ; input: ax = first (transferred to si)

@@ -38,6 +38,8 @@
 //#include "r_local.h"
 
 void __near R_StoreWallRange ( int16_t start, int16_t stop );
+void __near R_ClipPassWallSegment ( int16_t first, int16_t last );
+void __near R_ClipSolidWallSegment ( int16_t first, int16_t last );
 
 
 
@@ -47,6 +49,8 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop );
 //  e.g. single sided LineDefs (middle texture)
 //  that entirely block the view.
 // 
+/*
+
 void __near R_ClipSolidWallSegment ( int16_t first, int16_t last ) {
     cliprange_t __near*	next;
     cliprange_t __near*	start;
@@ -132,7 +136,7 @@ void __near R_ClipSolidWallSegment ( int16_t first, int16_t last ) {
 #endif
 }
 
-
+*/
 
 //
 // R_ClipPassWallSegment
