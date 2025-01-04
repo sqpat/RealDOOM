@@ -5112,122 +5112,128 @@ push  bx
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   cx, word ptr [_newend]
-mov   word ptr [bp - 2], ax
+
+mov   cx, ax                  ; backup first in cx for most of the function.
 mov   di, dx
 dec   ax
 mov   si, OFFSET _solidsegs
 cmp   ax, word ptr [si+2]
-jle   label1
-label2:
+
+;  while (start->last < first-1)
+;  	start++;
+
+jle   found_start_solid
+increment_start:
 add   si, 4
 cmp   ax, word ptr [si + 2]
-jg    label2
-label1:
-mov   ax, word ptr [bp - 2]
-mov   word ptr [_newend], cx
+jg    increment_start
+found_start_solid:
+mov   ax, cx
 cmp   ax, word ptr [si]
-jge   label3
+
+;    if (first < start->first)
+
+jge   first_greater_than_startfirst ;		if (last < start->first-1) {
 mov   dx, word ptr [si]
 dec   dx
 cmp   di, dx
-jl    label4
-call  R_StoreWallRange_
-mov   ax, word ptr [bp - 2]
+jl    last_smaller_than_startfirst;
+call  R_StoreWallRange_             ;		R_StoreWallRange (first, start->first - 1);
+mov   ax, cx                        ;		start->first = first;	
 mov   word ptr [si], ax
-label3:
-mov   cx, word ptr [_newend]
+first_greater_than_startfirst:
+;	if (last <= start->last) {
+
 cmp   di, word ptr [si + 2]
-jle   label5
-mov   bx, si
-label10:
+jle   write_back_newend_and_return
+;    next = start;
+mov   bx, si                        ; si is start, bx is next
+;    while (last >= (next+1)->first-1) {
+check_between_posts:
 mov   dx, word ptr [bx + 4]
 dec   dx
 cmp   di, dx
-jl    label9
+jl    do_final_fragment
 mov   ax, word ptr [bx + 2]
 inc   ax
+;		// There is a fragment between two posts.
+;		R_StoreWallRange (next->last + 1, (next+1)->first - 1);
 call  R_StoreWallRange_
 mov   ax, word ptr [bx + 6]
 add   bx, 4
 cmp   di, ax
-jg    label10
+jg    check_between_posts
 mov   word ptr [si + 2], ax
-label8:
-mov   cx, word ptr [_newend]
+crunch:
+;    if (next == start) {
 cmp   bx, si
-je    label5
-label7:
+je    write_back_newend_and_return
+;    while (next++ != newend) {
+
+mov   cx, word ptr [_newend] ; cache old newend
+
+check_to_remove_posts:
 mov   ax, bx
 lea   di, [si + 4]
 add   bx, 4
 cmp   ax, cx
-je    label6
+je    done_removing_posts
 mov   ax, word ptr [bx]
 mov   dx, word ptr [bx + 2]
 mov   word ptr [di], ax
 mov   si, di
 mov   word ptr [di + 2], dx
-jmp   label7
-label4:
+jmp   check_to_remove_posts
+last_smaller_than_startfirst:
 mov   dx, di
-call  R_StoreWallRange_
-mov   cx, word ptr [_newend]
+;// Post is entirely visible (above start),  so insert a new clippost.
+call  R_StoreWallRange_          ; 			R_StoreWallRange (first, last);
+mov   ax, cx                     ;        backup first
+mov   cx, word ptr [_newend]     
 add   cx, 8
-mov   bx, cx
-sub   bx, si
-sar   bx, 2
-lea   ax, [si + 4]
-shl   bx, 2
-mov   dx, si
 mov   word ptr [_newend], cx
+
+; rep movsw setup
+mov   bx, ds
+mov   es, bx         ; set es
+mov   bx, si         ; backup si
+mov   dx, di         ; backup di
+
+; must copy from end to start!
+
+std
+mov   di, cx         ; set dest
+sub   cx, si         ; count
+lea   si, [di - 4]   ; set source
+sar   cx, 1          ; set count in words
+rep   movsw
+cld
 
 ; ax = dest, dx = source, bx = count?
-;push  si
-;push  di
-;push  cx
 
-;lea   di, [si + 4]
-;sub   cx, si
-;sar   cx, 1
-;mov   ax, ds
-;mov   es, ax
-;rep   movsw
-;adc   cx, cx
-;rep   movsb
-;pop   cx
-;pop   di
-;pop   si
+mov   word ptr [bx + 2], dx
+mov   word ptr [bx], ax
+write_back_newend_and_return:
 
-call   memmove_
-
-mov   ax, word ptr [bp - 2]
-mov   word ptr [si + 2], di
-mov   cx, word ptr [_newend]
-mov   word ptr [si], ax
-label5:
-mov   word ptr [_newend], cx
-LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
 pop   bx
 ret   
-label9:
+
+do_final_fragment:
+;    // There is a fragment after *next.
 mov   ax, word ptr [bx + 2]
 mov   dx, di
 inc   ax
 call  R_StoreWallRange_
 mov   word ptr [si + 2], di
-jmp   label8
-label6:
-mov   cx, di
-mov   word ptr [_newend], cx
+jmp   crunch
 
-LEAVE_MACRO
+done_removing_posts:
+    
+mov   word ptr [_newend], di   ; newend = start+1;
+
 pop   di
 pop   si
 pop   cx
