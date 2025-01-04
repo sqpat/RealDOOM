@@ -1123,11 +1123,9 @@ shl   si, 2
 mov   cx, word ptr es:[si]
 mov   word ptr [bp - 014h], cx
 mov   cx, word ptr es:[si + 2]
-mov   si, OFFSET _curseg
-mov   word ptr [si], ax
-mov   si, OFFSET _curseg_render
+mov   word ptr ds:[_curseg], ax
 mov   ax, di
-mov   word ptr [si], bx
+mov   word ptr ds:[_curseg_render], bx
 call  R_PointToAngle16_
 mov   bx, ax
 mov   si, dx
@@ -1146,9 +1144,8 @@ cmp   cx, ANG180_HIGHBITS
 jb    label_1
 jmp   exit_addline
 label_1:
-mov   di, OFFSET _rw_angle1
-mov   word ptr [di], bx
-mov   word ptr [di + 2], si
+mov   word ptr ds:[_rw_angle1], bx
+mov   word ptr ds:[_rw_angle1 + 2], si
 mov   di, OFFSET _viewangle
 sub   bx, word ptr [di]
 mov   word ptr [bp - 0Ah], bx
@@ -1207,8 +1204,7 @@ mov   es, bx
 mov   bx, word ptr [bp - 4]
 test  byte ptr es:[bx], 4
 jne   label_6
-mov   bx, OFFSET _backsector
-mov   word ptr [bx], 0FFFFh
+mov   word ptr ds:[_backsector], 0FFFFh
 clipsolid:
 dec   dx
 call  R_ClipSolidWallSegment_
@@ -1232,74 +1228,54 @@ shl   bx, 2
 add   bx, _sides_render + 2    ; secnum field in this side_render_t
 mov   bx, word ptr [bx]
 mov   cx, bx
-mov   bx, OFFSET _backsector
 shl   cx, 4
-mov   word ptr [bx + 2], SECTORS_SEGMENT  ; todo remove
-mov   word ptr [bx], cx
-les   di, dword ptr [bx]
-mov   bx, OFFSET _frontsector
-mov   si, word ptr [bx]
-mov   cx, word ptr [bx + 2]
-mov   bx, word ptr es:[di + 2]
-mov   es, cx
-cmp   bx, word ptr es:[si]
+mov   word ptr ds:[_backsector], cx
+mov   di, cx
+mov   es, word ptr ds:[_backsector + 2]
+
+mov   si, word ptr ds:[_frontsector]
+
+; todo do in order with lodsw and compare ax?
+
+;    // Closed door.
+;	if (backsector->ceilingheight <= frontsector->floorheight
+;		|| backsector->floorheight >= frontsector->ceilingheight) 
+
+mov   ax, word ptr es:[di + 2]
+cmp   ax, word ptr es:[si]
 jle   clipsolid
-mov   bx, OFFSET _frontsector
-mov   si, word ptr [bx]
-mov   cx, word ptr [bx + 2]
-mov   bx, OFFSET _backsector
-les   di, dword ptr [bx]
-mov   bx, word ptr es:[di]
-mov   es, cx
-cmp   bx, word ptr es:[si + 2]
+mov   ax, word ptr es:[di]
+cmp   ax, word ptr es:[si + 2]
 jge   clipsolid
-mov   bx, OFFSET _backsector
-les   si, dword ptr [bx]
-mov   bx, OFFSET _frontsector
-mov   di, word ptr [bx]
-mov   cx, word ptr [bx + 2]
-mov   bx, word ptr es:[si + 2]
-mov   es, cx
-cmp   bx, word ptr es:[di + 2]
-je    label_7
-jmp   clippass
-label_7:
-mov   bx, OFFSET _backsector
-les   di, dword ptr [bx]
-mov   bx, OFFSET _frontsector
-mov   si, word ptr [bx]
-mov   cx, word ptr [bx + 2]
-mov   bx, word ptr es:[di]
-mov   es, cx
-cmp   bx, word ptr es:[si]
+
+;    // Window.
+;    if (backsector->ceilingheight != frontsector->ceilingheight
+;	|| backsector->floorheight != frontsector->floorheight)
+
+mov   ax, word ptr es:[si + 2]
+cmp   ax, word ptr es:[di + 2]
 jne   clippass
-mov   bx, OFFSET _backsector
-les   si, dword ptr [bx]
-mov   bx, OFFSET _frontsector
-mov   di, word ptr [bx]
-mov   cx, word ptr [bx + 2]
-mov   bl, byte ptr es:[si + 5]
-mov   es, cx
-cmp   bl, byte ptr es:[di + 5]
+mov   ax, word ptr es:[di]
+cmp   ax, word ptr es:[si]
 jne   clippass
-mov   bx, OFFSET _backsector
-les   di, dword ptr [bx]
-mov   bx, OFFSET _frontsector
-mov   si, word ptr [bx]
-mov   cx, word ptr [bx + 2]
-mov   bl, byte ptr es:[di + 4]
-mov   es, cx
-cmp   bl, byte ptr es:[si + 4]
+
+; if (backsector->ceilingpic == frontsector->ceilingpic
+;		&& backsector->floorpic == frontsector->floorpic
+;		&& backsector->lightlevel == frontsector->lightlevel
+;		&& curlinesidedef->midtexture == 0) {
+;		return;
+;    }
+
+mov   al, byte ptr es:[si + 5]
+cmp   al, byte ptr es:[di + 5]
 jne   clippass
-mov   bx, OFFSET _backsector
-les   si, dword ptr [bx]
-mov   bx, OFFSET _frontsector
-mov   di, word ptr [bx]
-mov   cx, word ptr [bx + 2]
-mov   bl, byte ptr es:[si + 0Eh]
-mov   es, cx
-cmp   bl, byte ptr es:[di + 0Eh]
+mov   al, byte ptr es:[di + 4]
+cmp   al, byte ptr es:[si + 4]
 jne   clippass
+mov   al, byte ptr es:[si + 0Eh]
+cmp   al, byte ptr es:[di + 0Eh]
+jne   clippass
+;    fall thru and return.
 mov   es, word ptr [bp - 0Eh]
 mov   bx, word ptr [bp - 012h]
 cmp   word ptr es:[bx + 4], 0
