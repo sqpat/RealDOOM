@@ -1131,11 +1131,9 @@ mov   bx, ax
 mov   si, dx
 mov   ax, word ptr [bp - 014h]
 mov   dx, cx
-mov   word ptr [bp - 0Ch], LINES_SEGMENT
 call  R_PointToAngle16_
 mov   word ptr [bp - 6], ax
 mov   ax, bx
-mov   word ptr [bp - 0Eh], SIDES_SEGMENT
 sub   ax, word ptr [bp - 6]
 mov   cx, si
 sbb   cx, dx
@@ -1163,7 +1161,7 @@ sub   ax, word ptr ds:[_fieldofview]
 cmp   ax, cx
 ja    exit_addline
 jne   label_3
-mov   ax, word ptr [bp - 0Ah]
+mov   ax, word ptr [bp - 0Ah]  ; todo carry from above
 cmp   ax, word ptr [bp - 8]
 jae   exit_addline
 label_3:
@@ -1188,13 +1186,25 @@ neg   dx
 label_5:
 add   bh, (ANG90_HIGHBITS SHR 8)
 mov   ax, VIEWANGLETOX_SEGMENT
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shr   bx, 3
+ELSE
+shr   bx, 1
+shr   bx, 1
+shr   bx, 1
+ENDIF
 mov   es, ax
 add   bx, bx
 add   dh, (ANG90_HIGHBITS SHR 8)
 mov   ax, word ptr es:[bx]
 mov   bx, dx
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shr   bx, 3
+ELSE
+shr   bx, 1
+shr   bx, 1
+shr   bx, 1
+ENDIF
 add   bx, bx
 mov   dx, word ptr es:[bx]
 cmp   ax, dx
@@ -1209,7 +1219,7 @@ clipsolid:
 dec   dx
 call  R_ClipSolidWallSegment_
 exit_addline:
-leave 
+LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
@@ -1221,19 +1231,25 @@ mov   bl, byte ptr [bp - 2]
 xor   bl, 1
 xor   bh, bh
 add   bx, bx
-mov   es, word ptr [bp - 0Ch]
+mov   si, LINES_SEGMENT
+mov   es, si
 add   bx, word ptr [bp - 010h]
 mov   bx, word ptr es:[bx]
 shl   bx, 2
 add   bx, _sides_render + 2    ; secnum field in this side_render_t
-mov   bx, word ptr [bx]
-mov   cx, bx
-shl   cx, 4
-mov   word ptr ds:[_backsector], cx
-mov   di, cx
+mov   si, word ptr [bx]
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shl   si, 4
+ELSE
+shl   si, 1
+shl   si, 1
+shl   si, 1
+shl   si, 1
+ENDIF
+mov   word ptr ds:[_backsector], si
 mov   es, word ptr ds:[_backsector + 2]
 
-mov   si, word ptr ds:[_frontsector]
+mov   di, word ptr ds:[_frontsector]
 
 ; todo do in order with lodsw and compare ax?
 
@@ -1241,22 +1257,26 @@ mov   si, word ptr ds:[_frontsector]
 ;	if (backsector->ceilingheight <= frontsector->floorheight
 ;		|| backsector->floorheight >= frontsector->ceilingheight) 
 
-mov   ax, word ptr es:[di + 2]
-cmp   ax, word ptr es:[si]
-jle   clipsolid
-mov   ax, word ptr es:[di]
-cmp   ax, word ptr es:[si + 2]
-jge   clipsolid
+
+
+; weird. this kills performance on pentium by 3%.
+xchg  ax, bx   ; store first in bx
+
+lods  word ptr es:[si]
+cmp   ax, word ptr es:[di+2]
+jge   clipsolid_ax_swap
+xchg  ax, cx                  ; cx has old di+0
+lods  word ptr es:[si]
+cmp   ax, word ptr es:[di]
+jle   clipsolid_ax_swap
 
 ;    // Window.
 ;    if (backsector->ceilingheight != frontsector->ceilingheight
 ;	|| backsector->floorheight != frontsector->floorheight)
 
-mov   ax, word ptr es:[si + 2]
 cmp   ax, word ptr es:[di + 2]
 jne   clippass
-mov   ax, word ptr es:[di]
-cmp   ax, word ptr es:[si]
+cmp   cx, word ptr es:[di]
 jne   clippass
 
 ; if (backsector->ceilingpic == frontsector->ceilingpic
@@ -1266,23 +1286,23 @@ jne   clippass
 ;		return;
 ;    }
 
-mov   al, byte ptr es:[si + 5]
-cmp   al, byte ptr es:[di + 5]
+lods  word ptr es:[si]
+
+cmp   ax, word ptr es:[di + 4]
 jne   clippass
-mov   al, byte ptr es:[di + 4]
-cmp   al, byte ptr es:[si + 4]
-jne   clippass
-mov   al, byte ptr es:[si + 0Eh]
+mov   al, byte ptr es:[si + 08h] ; si offset by 6..
 cmp   al, byte ptr es:[di + 0Eh]
 jne   clippass
 ;    fall thru and return.
-mov   es, word ptr [bp - 0Eh]
-mov   bx, word ptr [bp - 012h]
-cmp   word ptr es:[bx + 4], 0
+mov   si, LINES_SEGMENT
+mov   es, si
+mov   si, word ptr [bp - 012h]
+cmp   word ptr es:[si + 4], 0
 jne   clippass
 jmp   exit_addline
 clippass:
 dec   dx
+xchg  ax, bx                   ; grab cached first
 call  R_ClipPassWallSegment_
 LEAVE_MACRO
 pop   di
@@ -1291,7 +1311,17 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-
+clipsolid_ax_swap:
+xchg  ax, bx
+dec   dx
+call  R_ClipSolidWallSegment_
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
 
 
 ENDP
