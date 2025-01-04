@@ -141,6 +141,9 @@ void __near R_ClipSolidWallSegment ( int16_t first, int16_t last ) {
 // Does handle windows,
 //  e.g. LineDefs with upper and lower texture.
 //
+
+/*
+
 void __near R_ClipPassWallSegment ( int16_t first, int16_t last ) {
     cliprange_t __near*	start;
     // Find the first range that touches the range
@@ -148,7 +151,6 @@ void __near R_ClipPassWallSegment ( int16_t first, int16_t last ) {
     start = solidsegs;
 	while (start->last < first - 1) {
 		start++;
-
 	}
     if (first < start->first) {
 		if (last < start->first-1) {
@@ -178,7 +180,7 @@ void __near R_ClipPassWallSegment ( int16_t first, int16_t last ) {
     R_StoreWallRange (start->last + 1, last);
 }
 
-
+*/
 
 //
 // R_ClearClipSegs

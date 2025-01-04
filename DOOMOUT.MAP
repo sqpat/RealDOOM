@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/03 17:56:25
+Created on:       25/01/03 18:59:37
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -77,10 +77,10 @@ p_mobj_TEXT            CODE           AUTO           0b1d:a540       00001806
 p_telept_TEXT          CODE           AUTO           0b1d:bd50       00000221
 p_tick_TEXT            CODE           AUTO           0b1d:bf80       00000202
 p_user_TEXT            CODE           AUTO           0b1d:c190       000006c2
-r_bsp_TEXT             CODE           AUTO           17a3:0000       0000098e
-r_data_TEXT            CODE           AUTO           17a3:0990       00001c39
-R_MATH_TEXT            CODE           AUTO           17a3:25ca       000001ed
-R_MAINHI_TEXT          CODE           AUTO           17a3:27b8       00001b72
+r_bsp_TEXT             CODE           AUTO           17a3:0000       0000092e
+r_data_TEXT            CODE           AUTO           17a3:0930       00001c39
+R_MATH_TEXT            CODE           AUTO           17a3:256a       000001ed
+R_MAINHI_TEXT          CODE           AUTO           17a3:2758       00001bd1
 r_draw_TEXT            CODE           AUTO           17a3:4330       00000379
 r_main_TEXT            CODE           AUTO           17a3:46b0       000001e8
 r_plane_TEXT           CODE           AUTO           17a3:48a0       00000000
@@ -1245,57 +1245,57 @@ Module: p_user.obj(C:\REALDOOM\p_user.c)
 0b1d:c65a      P_PlayerThink_
 Module: r_bsp.obj(C:\REALDOOM\r_bsp.c)
 17a3:0000+     R_ClipSolidWallSegment_
-17a3:00dc+     R_ClipPassWallSegment_
-17a3:013e      R_ClearClipSegs_
-17a3:0162      R_AddLine_
-17a3:03ae+     R_CheckBBox_
-17a3:05c0+     R_DrawPSprite_
-17a3:07ea      R_PrepareMaskedPSprites_
-17a3:0880      R_RenderBSPNode_
+17a3:00dc      R_ClearClipSegs_
+17a3:0100      R_AddLine_
+17a3:034e+     R_CheckBBox_
+17a3:0560+     R_DrawPSprite_
+17a3:078a      R_PrepareMaskedPSprites_
+17a3:0820      R_RenderBSPNode_
 Module: r_data.obj(C:\REALDOOM\r_data.c)
-17a3:0990+     R_MarkL1SpriteCacheLRU_
-17a3:09ec+     R_MarkL1SpriteCacheLRU3_
-17a3:0a0c+     R_MarkL1TextureCacheLRU_
-17a3:0b48+     R_MarkL1TextureCacheLRU7_
-17a3:0b88+     R_MarkL2CompositeTextureCacheLRU_
-17a3:0cb0+     R_MarkL2SpriteCacheLRU_
-17a3:0dd8+     R_EvictL2CacheEMSPage_
-17a3:0f6a      R_MarkL2FlatCacheLRU_
-17a3:0fe0      R_EvictFlatCacheEMSPage_
-17a3:1068+     R_DrawColumnInCache_
-17a3:10ec+     R_GetNextTextureBlock_
-17a3:12b6+     R_GetNextSpriteBlock_
-17a3:1438+     R_GenerateComposite_
-17a3:1670+     gettexturepage_
-17a3:1894+     getspritepage_
-17a3:1a80+     getpatchtexture_
-17a3:1b50+     getcompositetexture_
-17a3:1bec      getspritetexture_
-17a3:1c62      R_GetColumnSegment_
-17a3:1f38      R_GetMaskedColumnSegment_
-17a3:2234+     R_LoadPatchColumns_
-17a3:2326      R_LoadPatchColumnsColormap0_
-17a3:243e+     R_LoadSpriteColumns_
+17a3:0930+     R_MarkL1SpriteCacheLRU_
+17a3:098c+     R_MarkL1SpriteCacheLRU3_
+17a3:09ac+     R_MarkL1TextureCacheLRU_
+17a3:0ae8+     R_MarkL1TextureCacheLRU7_
+17a3:0b28+     R_MarkL2CompositeTextureCacheLRU_
+17a3:0c50+     R_MarkL2SpriteCacheLRU_
+17a3:0d78+     R_EvictL2CacheEMSPage_
+17a3:0f0a      R_MarkL2FlatCacheLRU_
+17a3:0f80      R_EvictFlatCacheEMSPage_
+17a3:1008+     R_DrawColumnInCache_
+17a3:108c+     R_GetNextTextureBlock_
+17a3:1256+     R_GetNextSpriteBlock_
+17a3:13d8+     R_GenerateComposite_
+17a3:1610+     gettexturepage_
+17a3:1834+     getspritepage_
+17a3:1a20+     getpatchtexture_
+17a3:1af0+     getcompositetexture_
+17a3:1b8c      getspritetexture_
+17a3:1c02      R_GetColumnSegment_
+17a3:1ed8      R_GetMaskedColumnSegment_
+17a3:21d4+     R_LoadPatchColumns_
+17a3:22c6      R_LoadPatchColumnsColormap0_
+17a3:23de+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-17a3:2640      R_PointToAngle_
+17a3:25e0      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-17a3:36c9      R_StoreWallRange_
-17a3:2b66      R_Subsector_
-17a3:2849*     FixedMulBSPLocal_
-17a3:293c*     R_PointToDist_
-17a3:2882*     FixedDivBSPLocal_
-17a3:40e8      R_WriteBackViewConstants_
-17a3:4238      R_WriteBackFrameConstants_
-17a3:29b9      R_ClearPlanes_
-17a3:2a32*     R_HandleEMSPagination_
-17a3:3054*     R_AddSprites_
-17a3:2ae4*     R_FindPlane_
-17a3:351c*     R_DrawColumnPrep_
-17a3:30bf*     R_RenderSegLoop_
-17a3:2d27*     R_ProjectSprite_
-17a3:2c5c*     R_CheckPlane_
-17a3:28f1*     FixedMulTrigNoShiftBSPLocal_
-17a3:27b8*     R_ScaleFromGlobalAngle_
+17a3:3669      R_StoreWallRange_
+17a3:4088      R_ClipPassWallSegment_
+17a3:2b06      R_Subsector_
+17a3:27e9*     FixedMulBSPLocal_
+17a3:28dc*     R_PointToDist_
+17a3:2822*     FixedDivBSPLocal_
+17a3:40e7      R_WriteBackViewConstants_
+17a3:4237      R_WriteBackFrameConstants_
+17a3:2959      R_ClearPlanes_
+17a3:29d2*     R_HandleEMSPagination_
+17a3:2ff4*     R_AddSprites_
+17a3:2a84*     R_FindPlane_
+17a3:34bc*     R_DrawColumnPrep_
+17a3:305f*     R_RenderSegLoop_
+17a3:2cc7*     R_ProjectSprite_
+17a3:2bfc*     R_CheckPlane_
+17a3:2891*     FixedMulTrigNoShiftBSPLocal_
+17a3:2758*     R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17a3:4330      R_FillBackScreen_
 17a3:45ae      R_VideoErase_
@@ -1656,4 +1656,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00024770 (149360.)
 Entry point address: 1cfb:219c
-Link time: 00:00.74
+Link time: 00:00.20

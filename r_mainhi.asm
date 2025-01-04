@@ -46,6 +46,7 @@ EXTRN _seglooptexrepeat:BYTE
 EXTRN _segloopcachedbasecol:WORD
 EXTRN _segloopheightvalcache:BYTE
 EXTRN _segloopcachedsegment:WORD
+EXTRN _solidsegs:WORD
 
 
 .CODE
@@ -5099,7 +5100,102 @@ jmp do_selfmodify_bottexture
 
 ENDP
 
+;R_ClipPassWallSegment_
 
+PROC R_ClipPassWallSegment_ FAR
+PUBLIC R_ClipPassWallSegment_ 
+
+; input: ax = first (transferred to si)
+;        dx = last (transferred to cx)
+
+push bx
+push cx
+push si
+mov  si, ax
+mov  cx, dx
+dec  ax
+;    start = solidsegs;
+ 
+mov  bx, OFFSET _solidsegs
+cmp  ax, word ptr ds:[bx + 2]
+
+;while (start->last < first - 1) {
+;   start++;
+;}
+
+
+jle  found_start
+keep_searching_for_start:
+add  bx, 4
+cmp  ax, word ptr [bx + 2]
+jg   keep_searching_for_start
+
+found_start:
+;    if (first < start->first) {
+
+mov  ax, word ptr [bx]  ; ax = start->first
+cmp  si, ax
+jge  check_last
+
+;		if (last < start->first-1) {
+mov  dx, ax
+dec  dx
+cmp  cx, dx
+jl   post_entirely_visible
+
+; There is a fragment above *start.
+mov  ax, si
+call R_StoreWallRange_
+
+check_last:
+
+;   // Bottom contained in start?
+;	if (last <= start->last) {
+;		return;			
+;	}
+
+
+cmp  cx, word ptr [bx + 2]
+jle  do_clippass_exit
+check_next_fragment:
+mov  dx, word ptr [bx + 4]
+dec  dx
+cmp  cx, dx
+mov  ax, word ptr [bx + 2]
+jl   fragment_after_next
+inc  ax
+add  bx, 4
+;  There is a fragment between two posts.
+
+call R_StoreWallRange_
+cmp  cx, word ptr [bx + 2]
+jg   check_next_fragment
+do_clippass_exit:
+pop  si
+pop  cx
+pop  bx
+ret  
+post_entirely_visible:
+mov  dx, cx
+mov  ax, si
+call R_StoreWallRange_
+pop  si
+pop  cx
+pop  bx
+ret  
+
+fragment_after_next:
+
+mov  dx, cx
+inc  ax
+call R_StoreWallRange_
+pop  si
+pop  cx
+pop  bx
+ret  
+
+
+ENDP
 
 ; TODO: externalize this and R_ExecuteSetViewSize and its children to asm, load from binary
 ; todo: calculate the values here and dont store to variables.
