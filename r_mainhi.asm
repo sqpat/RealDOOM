@@ -5611,8 +5611,27 @@ PW_INVISIBILITY = 02h
 
 ;R_DrawPSprite_
 
+
+;void __near R_DrawPSprite (pspdef_t __near* psp, 
+
+; AX is pointer to pspdef_t
+; DX is spritenum
+; BX is frame
+; CX is vissprite_t ptr
+
 PROC R_DrawPSprite_ NEAR
 PUBLIC R_DrawPSprite_ 
+
+
+; bp - 2      frame (arg)
+; bp - 4      flip
+; bp - 6      temp  fracbits
+; bp - 8      usedwidth
+; bp - 0Ah    tx    intbits
+; bp - 0Ch    spriteindex
+; bp - 0Eh    temp  intbits
+; bp - 010h   tx    fracbits
+; bp - 012h   psp
 
 push  si
 push  di
@@ -5622,17 +5641,30 @@ sub   sp, 010h
 push  ax
 mov   byte ptr [bp - 2], bl
 mov   si, cx
+
+xchg  ax, bx   ; bx gets ax (psp)
+xchg  ax, cx   ; cx gets old bx (frame)
+
+mov   ax, word ptr [bx + 4]       ; get psp->sx lo
+mov   word ptr [bp - 010h], ax
+mov   ax, word ptr [bx + 6]       ; get psp->sx hi
+mov   word ptr [bp - 0Ah], ax
+
 mov   al, dl
 xor   ah, ah
 mov   di, ax
-shl   di, 2
-sub   di, ax
+add   di, ax
+add   di, ax  ; shifted 3
+
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
-mov   al, bl
+xchg  ax, cx   ; get old bl value (frame)
+
 and   al, FF_FRAMEMASK
 xor   ah, ah
 mov   cx, ax
+
+; spriteframe_t is 25 bytes in size. get offset...
 
 sal   ax, 1  ; ax:2  cx:1
 sal   ax, 1  ; ax:4  cx:1
@@ -5642,24 +5674,24 @@ sal   ax, 1  ; ax:10 cx:5
 sal   ax, 1  ; ax:20 cx:5
 add   ax, cx ; ax:25 cx:5
 
-mov   di, word ptr es:[di]
+
+;	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[sprite].spriteframesOffset]);
+
+mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
 add   di, ax
-mov   bx, word ptr es:[di]
-mov   al, byte ptr es:[di + 010h]
-mov   word ptr [bp - 0Ch], bx
-mov   bx, word ptr [bp - 012h]
+mov   bx, word ptr es:[di]        ; get spriteindex
+mov   al, byte ptr es:[di + 010h] ; get flip
+mov   word ptr [bp - 0Ch], bx     ; todo maybe get rid of.
 mov   byte ptr [bp - 4], al
-mov   ax, word ptr [bx + 4]
-mov   word ptr [bp - 010h], ax
-mov   ax, word ptr [bx + 6]
-mov   word ptr [bp - 0Ah], ax
 mov   ax, SPRITEOFFSETS_SEGMENT
-mov   bx, word ptr [bp - 0Ch]
 mov   es, ax
-mov   al, byte ptr es:[bx]
+mov   al, byte ptr es:[bx] ; spriteoffsets[spriteindex]
 xor   ah, ah
 SELFMODIFY_BSP_centerx_7:
 mov   di, 01000h
+
+;	tx.h.intbits += spriteoffsets[spriteindex];
+
 add   word ptr [bp - 0Ah], ax
 SELFMODIFY_BSP_pspritescale_1:
 mov   ax, 01000h
@@ -5677,7 +5709,7 @@ mov   es, word ptr ds:[_spritewidths_segment]
 mov   al, byte ptr es:[bx]
 mov   word ptr [bp - 6], 0
 xor   ah, ah
-mov   word ptr [bp - 0eh], di
+mov   word ptr [bp - 0Eh], di
 mov   word ptr [bp - 8], ax
 cmp   ax, 1
 jne   label_6
