@@ -51,6 +51,7 @@ EXTRN _newend:WORD
 EXTRN _clipangle:WORD
 EXTRN _fieldofview:WORD
 
+EXTRN testvalues_:NEAR
 
 .CODE
 
@@ -1087,14 +1088,12 @@ PUBLIC R_AddLine_
 
 ; bp - 2       curlineside
 ; bp - 4       curseglinedef
-; bp - 6       UNUSED
-; bp - 8       span   lo bits ?
-; bp - 0Ah     angle1 lo bits ?
-; bp - 0Ch     UNUSED
-; bp - 0Eh     UNUSED
-; bp - 010h    curlinelinedef ?
-; bp - 012h    curlinelinedef ?
-; bp - 014h    unused
+; bp - 6       span   lo bits ?
+; bp - 8     angle1 lo bits ?
+; bp - 0Ah     curlinelinedef ?
+; bp - 0Ch     curlinelinedef ?
+; bp - 0Eh     _rw_scale hi
+; bp - 010h    _rw_scale lo
 
 
 push  bx
@@ -1104,7 +1103,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 014h
+sub   sp, 010h
 mov   si, ax
 mov   dx, SEG_LINEDEFS_SEGMENT
 add   si, SEG_SIDES_OFFSET_IN_SEGLINES
@@ -1125,8 +1124,8 @@ shl   dx, 1
 shl   si, 1
 shl   si, 1
 shl   si, 1
-mov   word ptr [bp - 010h], dx
-mov   word ptr [bp - 012h], si
+mov   word ptr [bp - 0Ah], dx
+mov   word ptr [bp - 0Ch], si
 mov   si, word ptr [bx]       ;v1
 mov   dx, VERTEXES_SEGMENT
 shl   si, 1
@@ -1152,17 +1151,18 @@ mov   ax, bx
 sub   ax, di
 mov   cx, si
 sbb   cx, dx
-mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 6], ax
 cmp   cx, ANG180_HIGHBITS
 jb    label_1
 jmp   exit_addline
 label_1:
-; todo selfmodify _rw_angle1 forward
-mov   word ptr ds:[_rw_angle1], bx
-mov   word ptr ds:[_rw_angle1 + 2], si
+; todo selfmodify _rw_angle1 forward or put on stack.
+mov   word ptr [bp - 010h], bx
+mov   word ptr [bp - 0Eh], si
+
 SELFMODIFY_BSP_viewangle_lo_1:
 sub   bx, 01000h
-mov   word ptr [bp - 0Ah], bx
+mov   word ptr [bp - 8], bx
 mov   bx, si
 SELFMODIFY_BSP_viewangle_hi_1:
 sbb   bx, 01000h
@@ -1182,8 +1182,8 @@ sub   ax, 01000h
 cmp   ax, cx
 ja    exit_addline
 jne   label_3
-mov   ax, word ptr [bp - 0Ah]  ; todo carry from above
-cmp   ax, word ptr [bp - 8]
+mov   ax, word ptr [bp - 8]  ; todo carry from above
+cmp   ax, word ptr [bp - 6]
 jae   exit_addline
 label_3:
 SELFMODIFY_BSP_clipangle_1:
@@ -1203,7 +1203,7 @@ sub   ax, 01000h
 cmp   ax, cx
 ja    exit_addline
 jne   label_4
-cmp   si, word ptr [bp - 8]
+cmp   si, word ptr [bp - 6]
 jae   exit_addline
 label_4:
 SELFMODIFY_BSP_clipangle_3:
@@ -1259,7 +1259,7 @@ xor   bh, bh
 add   bx, bx
 mov   si, LINES_SEGMENT
 mov   es, si
-add   bx, word ptr [bp - 010h]
+add   bx, word ptr [bp - 0Ah]
 mov   bx, word ptr es:[bx]
 shl   bx, 1
 shl   bx, 1
@@ -1323,7 +1323,7 @@ jne   clippass
 ;    fall thru and return.
 mov   si, LINES_SEGMENT
 mov   es, si
-mov   si, word ptr [bp - 012h]
+mov   si, word ptr [bp - 0Ch]
 cmp   word ptr es:[si + 4], 0
 jne   clippass
 jmp   exit_addline
@@ -3862,12 +3862,15 @@ PUBLIC R_StoreWallRange_
 ; bp - 04Ch  ; dx arg
 ; bp - 04Eh  ; ax arg
 
+; bp + 012h   ; rw_angle lo from R_AddLine
+; bp + 014h   ; rw_angle hi from R_AddLine
 
-push      bx
-push      cx
-push      si
-push      di
-push      bp
+             
+push      bx ; +8
+push      cx ; +6
+push      si ; +4
+push      di ; +2
+push      bp ; +0
 mov       bp, sp
 sub       sp, 04Ah
 push      ax
@@ -3965,7 +3968,7 @@ mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1], ax
 
 
 ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
-sub       ax, word ptr ds:[_rw_angle1 + 2]
+sub       ax, word ptr [bp + 14h]   ; rw_angle hi from R_AddLine
 cwd       
 xor       ax, dx		; what's this about. is it an abs() thing?
 sub       ax, dx
@@ -4418,8 +4421,9 @@ xor       cx, cx
 SELFMODIFY_set_rw_normal_angle_shift3:
 
 mov       bx, 01000h
-sub       cx, word ptr ds:[_rw_angle1]
-sbb       bx, word ptr ds:[_rw_angle1 + 2]
+sub       cx, word ptr [bp + 12h]   ; rw_angle lo from R_AddLine
+sbb       bx, word ptr [bp + 14h]   ; rw_angle hi from R_AddLine
+
 ; ANG180_HIGHBITS is 08000h. can we get this for free without cmp with a sign thing?
 cmp       bx, ANG180_HIGHBITS
 jae       tempangle_not_smaller_than_fineang180
@@ -5387,10 +5391,6 @@ PROC R_ClipSolidWallSegment_ NEAR
 PUBLIC R_ClipSolidWallSegment_ 
 
 
-push  bx
-push  cx
-push  si
-push  di
 
 mov   cx, ax                  ; backup first in cx for most of the function.
 mov   di, dx
@@ -5494,10 +5494,6 @@ mov   word ptr [bx + 2], dx
 mov   word ptr [bx], ax
 write_back_newend_and_return:
 
-pop   di
-pop   si
-pop   cx
-pop   bx
 ret   
 
 do_final_fragment:
@@ -5513,10 +5509,6 @@ done_removing_posts:
     
 mov   word ptr [_newend], di   ; newend = start+1;
 
-pop   di
-pop   si
-pop   cx
-pop   bx
 ret   
 
 ENDP
@@ -5529,9 +5521,6 @@ PUBLIC R_ClipPassWallSegment_
 ; input: ax = first (transferred to si)
 ;        dx = last (transferred to cx)
 
-push bx
-push cx
-push si
 mov  si, ax
 mov  cx, dx
 dec  ax
@@ -5592,17 +5581,11 @@ call R_StoreWallRange_
 cmp  cx, word ptr [bx + 2]
 jg   check_next_fragment
 do_clippass_exit:
-pop  si
-pop  cx
-pop  bx
 ret  
 post_entirely_visible:
 mov  dx, cx
 mov  ax, si
 call R_StoreWallRange_
-pop  si
-pop  cx
-pop  bx
 ret  
 
 fragment_after_next:
@@ -5610,9 +5593,6 @@ fragment_after_next:
 mov  dx, cx
 inc  ax
 call R_StoreWallRange_
-pop  si
-pop  cx
-pop  bx
 ret  
 
 

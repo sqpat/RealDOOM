@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/04 15:57:25
+Created on:       25/01/05 00:09:45
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -77,10 +77,10 @@ p_mobj_TEXT            CODE           AUTO           0b1d:a540       00001806
 p_telept_TEXT          CODE           AUTO           0b1d:bd50       00000221
 p_tick_TEXT            CODE           AUTO           0b1d:bf80       00000202
 p_user_TEXT            CODE           AUTO           0b1d:c190       000006c2
-r_bsp_TEXT             CODE           AUTO           17a3:0000       0000061a
-r_data_TEXT            CODE           AUTO           17a3:0620       00001c39
-R_MATH_TEXT            CODE           AUTO           17a3:225a       000001ed
-R_MAINHI_TEXT          CODE           AUTO           17a3:2448       00001e70
+r_bsp_TEXT             CODE           AUTO           17a3:0000       00000632
+r_data_TEXT            CODE           AUTO           17a3:0640       00001c39
+R_MATH_TEXT            CODE           AUTO           17a3:227a       000001ed
+R_MAINHI_TEXT          CODE           AUTO           17a3:2468       00001e54
 r_draw_TEXT            CODE           AUTO           17a3:42c0       00000379
 r_main_TEXT            CODE           AUTO           17a3:4640       000001e8
 r_plane_TEXT           CODE           AUTO           17a3:4830       00000000
@@ -99,15 +99,15 @@ _NULL                  BEGDATA        DGROUP         20fa:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         20fc:0000       00000002
 _FIXEDDATA             DATA           DGROUP         20fd:0000       00000554
 _DATA                  DATA           DGROUP         2153:0000       00000b0e
-CONST                  DATA           DGROUP         2203:000e       00000888
-CONST2                 DATA           DGROUP         228c:0006       0000010d
-XIB                    DATA           DGROUP         229d:0004       00000000
-XI                     DATA           DGROUP         229d:0004       0000000c
-XIE                    DATA           DGROUP         229e:0000       00000000
-YIB                    DATA           DGROUP         229e:0000       00000000
-YI                     DATA           DGROUP         229e:0000       00000012
-YIE                    DATA           DGROUP         229f:0002       00000000
-DATA                   DATA           DGROUP         229f:0002       00000000
+CONST                  DATA           DGROUP         2203:000e       00000892
+CONST2                 DATA           DGROUP         228d:0000       0000010d
+XIB                    DATA           DGROUP         229d:000e       00000000
+XI                     DATA           DGROUP         229d:000e       0000000c
+XIE                    DATA           DGROUP         229e:000a       00000000
+YIB                    DATA           DGROUP         229e:000a       00000000
+YI                     DATA           DGROUP         229e:000a       00000012
+YIE                    DATA           DGROUP         229f:000c       00000000
+DATA                   DATA           DGROUP         229f:000c       00000000
 _BSS                   BSS            DGROUP         22a0:0000       00000ca6
 STACK                  STACK          DGROUP         236b:0000       00001000
 
@@ -597,7 +597,7 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20fa:0e63      _last5000State
 20fa:0e64      _current9000State
 20fa:0e65      _last9000State
-20fa:1926      _snd_prefixen
+20fa:1930      _snd_prefixen
 20fa:0e66      _currenttask
 20fa:0e67      _is_ultimate
 20fa:0e68      _seglooptexrepeat
@@ -1244,58 +1244,59 @@ Module: p_user.obj(C:\REALDOOM\p_user.c)
 0b1d:c502+     P_DeathThink_
 0b1d:c65a      P_PlayerThink_
 Module: r_bsp.obj(C:\REALDOOM\r_bsp.c)
-17a3:0000      R_ClearClipSegs_
-17a3:003a+     R_CheckBBox_
-17a3:024c+     R_DrawPSprite_
-17a3:0476      R_PrepareMaskedPSprites_
-17a3:050c      R_RenderBSPNode_
+17a3:0000      testvalues_
+17a3:0018      R_ClearClipSegs_
+17a3:0052+     R_CheckBBox_
+17a3:0264+     R_DrawPSprite_
+17a3:048e      R_PrepareMaskedPSprites_
+17a3:0524      R_RenderBSPNode_
 Module: r_data.obj(C:\REALDOOM\r_data.c)
-17a3:0620+     R_MarkL1SpriteCacheLRU_
-17a3:067c+     R_MarkL1SpriteCacheLRU3_
-17a3:069c+     R_MarkL1TextureCacheLRU_
-17a3:07d8+     R_MarkL1TextureCacheLRU7_
-17a3:0818+     R_MarkL2CompositeTextureCacheLRU_
-17a3:0940+     R_MarkL2SpriteCacheLRU_
-17a3:0a68+     R_EvictL2CacheEMSPage_
-17a3:0bfa      R_MarkL2FlatCacheLRU_
-17a3:0c70      R_EvictFlatCacheEMSPage_
-17a3:0cf8+     R_DrawColumnInCache_
-17a3:0d7c+     R_GetNextTextureBlock_
-17a3:0f46+     R_GetNextSpriteBlock_
-17a3:10c8+     R_GenerateComposite_
-17a3:1300+     gettexturepage_
-17a3:1524+     getspritepage_
-17a3:1710+     getpatchtexture_
-17a3:17e0+     getcompositetexture_
-17a3:187c      getspritetexture_
-17a3:18f2      R_GetColumnSegment_
-17a3:1bc8      R_GetMaskedColumnSegment_
-17a3:1ec4+     R_LoadPatchColumns_
-17a3:1fb6      R_LoadPatchColumnsColormap0_
-17a3:20ce+     R_LoadSpriteColumns_
+17a3:0640+     R_MarkL1SpriteCacheLRU_
+17a3:069c+     R_MarkL1SpriteCacheLRU3_
+17a3:06bc+     R_MarkL1TextureCacheLRU_
+17a3:07f8+     R_MarkL1TextureCacheLRU7_
+17a3:0838+     R_MarkL2CompositeTextureCacheLRU_
+17a3:0960+     R_MarkL2SpriteCacheLRU_
+17a3:0a88+     R_EvictL2CacheEMSPage_
+17a3:0c1a      R_MarkL2FlatCacheLRU_
+17a3:0c90      R_EvictFlatCacheEMSPage_
+17a3:0d18+     R_DrawColumnInCache_
+17a3:0d9c+     R_GetNextTextureBlock_
+17a3:0f66+     R_GetNextSpriteBlock_
+17a3:10e8+     R_GenerateComposite_
+17a3:1320+     gettexturepage_
+17a3:1544+     getspritepage_
+17a3:1730+     getpatchtexture_
+17a3:1800+     getcompositetexture_
+17a3:189c      getspritetexture_
+17a3:1912      R_GetColumnSegment_
+17a3:1be8      R_GetMaskedColumnSegment_
+17a3:1ee4+     R_LoadPatchColumns_
+17a3:1fd6      R_LoadPatchColumnsColormap0_
+17a3:20ee+     R_LoadSpriteColumns_
 Module: r_math.obj(r_math.ASM)
-17a3:22d0      R_PointToAngle_
+17a3:22f0      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-17a3:27f6*     R_AddLine_
-17a3:350a*     R_StoreWallRange_
-17a3:3f29*     R_ClipSolidWallSegment_
-17a3:3fe3*     R_ClipPassWallSegment_
-17a3:29a9      R_Subsector_
-17a3:24d9*     FixedMulBSPLocal_
-17a3:25cc*     R_PointToDist_
-17a3:2512*     FixedDivBSPLocal_
-17a3:4042      R_WriteBackViewConstants_
-17a3:4192      R_WriteBackFrameConstants_
-17a3:2649      R_ClearPlanes_
-17a3:26c2*     R_HandleEMSPagination_
-17a3:2e95*     R_AddSprites_
-17a3:2774*     R_FindPlane_
-17a3:335d*     R_DrawColumnPrep_
-17a3:2f00*     R_RenderSegLoop_
-17a3:2b68*     R_ProjectSprite_
-17a3:2a9d*     R_CheckPlane_
-17a3:2581*     FixedMulTrigNoShiftBSPLocal_
-17a3:2448*     R_ScaleFromGlobalAngle_
+17a3:2816*     R_AddLine_
+17a3:3529*     R_StoreWallRange_
+17a3:3f45*     R_ClipSolidWallSegment_
+17a3:3ff3*     R_ClipPassWallSegment_
+17a3:29c8      R_Subsector_
+17a3:24f9*     FixedMulBSPLocal_
+17a3:25ec*     R_PointToDist_
+17a3:2532*     FixedDivBSPLocal_
+17a3:4046      R_WriteBackViewConstants_
+17a3:4196      R_WriteBackFrameConstants_
+17a3:2669      R_ClearPlanes_
+17a3:26e2*     R_HandleEMSPagination_
+17a3:2eb4*     R_AddSprites_
+17a3:2794*     R_FindPlane_
+17a3:337c*     R_DrawColumnPrep_
+17a3:2f1f*     R_RenderSegLoop_
+17a3:2b87*     R_ProjectSprite_
+17a3:2abc*     R_CheckPlane_
+17a3:25a1*     FixedMulTrigNoShiftBSPLocal_
+17a3:2468*     R_ScaleFromGlobalAngle_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17a3:42c0      R_FillBackScreen_
 17a3:453e      R_VideoErase_
@@ -1503,7 +1504,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(dointr)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(segread.c)
 1cf4:3137      segread_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(istable.c)
-20fa:1932      __IsTable
+20fa:193c      __IsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(lseek.c)
 1cf4:314f      lseek_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tell.c)
@@ -1594,10 +1595,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
 1cf4:3b28      __doserror_
 1cf4:3b36*     __doserror1_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
-20fa:1a34      __Start_XI
-20fa:1a40      __End_XI
-20fa:1a40      __Start_YI
-20fa:1a52      __End_YI
+20fa:1a3e      __Start_XI
+20fa:1a4a      __End_XI
+20fa:1a4a      __Start_YI
+20fa:1a5c      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 1cf4:3b42      __EnterWVIDEO_
 20fa:1098+     __WD_Present
@@ -1654,4 +1655,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000246b0 (149168.)
 Entry point address: 1cf4:219c
-Link time: 00:00.75
+Link time: 00:00.74

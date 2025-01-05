@@ -130,7 +130,7 @@
 //#define bottomfrac                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0094)))
 //#define pixlow                          (*((fixed_t __near *)                (_NULL_OFFSET + 0x0098)))
 //#define pixhigh                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x009C)))
-#define rw_angle1                       (*((angle_t __near *)                (_NULL_OFFSET + 0x00A0)))
+//#define rw_angle1                       (*((angle_t __near *)                (_NULL_OFFSET + 0x00A0)))
 
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
