@@ -31,6 +31,7 @@ EXTRN FixedDivWholeA_:PROC
 EXTRN FastDiv3232_shift_3_8_:PROC
 EXTRN R_PointToAngle_:PROC
 EXTRN R_PointToAngle16_:PROC
+EXTRN FixedMul16u32_:PROC
 
 EXTRN R_GetColumnSegment_:NEAR
 
@@ -50,8 +51,9 @@ EXTRN _solidsegs:WORD
 EXTRN _newend:WORD
 EXTRN _clipangle:WORD
 EXTRN _fieldofview:WORD
+EXTRN _pspritescale:WORD
+EXTRN _player:WORD
 
-EXTRN testvalues_:NEAR
 
 .CODE
 
@@ -5601,6 +5603,264 @@ ret
 
 
 ENDP
+
+FF_FRAMEMASK = 07Fh
+FRACUNIT_OVER_2 = 08000h
+BASEYCENTER  = 100
+PW_INVISIBILITY = 02h
+
+;R_DrawPSprite_
+
+PROC R_DrawPSprite_ NEAR
+PUBLIC R_DrawPSprite_ 
+
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 010h
+push  ax
+mov   byte ptr [bp - 2], bl
+mov   si, cx
+mov   al, dl
+xor   ah, ah
+mov   di, ax
+shl   di, 2
+sub   di, ax
+mov   ax, SPRITES_SEGMENT
+mov   es, ax
+mov   al, bl
+and   al, FF_FRAMEMASK
+xor   ah, ah
+imul  ax, ax, 019h               ; todo shifts
+mov   di, word ptr es:[di]
+add   di, ax
+mov   bx, word ptr es:[di]
+mov   al, byte ptr es:[di + 010h]
+mov   word ptr [bp - 0Ch], bx
+mov   bx, word ptr [bp - 012h]
+mov   byte ptr [bp - 4], al
+mov   ax, word ptr [bx + 4]
+mov   word ptr [bp - 010h], ax
+mov   ax, word ptr [bx + 6]
+mov   word ptr [bp - 0Ah], ax
+mov   ax, SPRITEOFFSETS_SEGMENT
+mov   bx, word ptr [bp - 0Ch]
+mov   es, ax
+mov   al, byte ptr es:[bx]
+mov   di, OFFSET _centerx
+xor   ah, ah
+mov   di, word ptr [di]
+add   word ptr [bp - 0Ah], ax
+mov   ax, word ptr ds:[_pspritescale]
+sub   word ptr [bp - 0Ah], 160   ;  -160 * fracunit
+test  ax, ax
+je    label_4
+jmp   label_5
+label_4:
+add   ax, word ptr [bp - 010h]
+mov   word ptr [bp - 6], ax
+adc   di, word ptr [bp - 0Ah]
+label_17:
+mov   bx, word ptr [bp - 0Ch]
+mov   es, word ptr ds:[_spritewidths_segment]
+mov   al, byte ptr es:[bx]
+mov   word ptr [bp - 6], 0
+xor   ah, ah
+mov   word ptr [bp - 0eh], di
+mov   word ptr [bp - 8], ax
+cmp   ax, 1
+jne   label_6
+mov   word ptr [bp - 8], 257     ; hardcoded special case value..  todo make constant
+label_6:
+mov   ax, word ptr [bp - 8]
+mov   di, OFFSET _centerx
+add   word ptr [bp - 0Ah], ax
+mov   ax, word ptr ds:[_pspritescale]
+mov   di, word ptr [di]
+test  ax, ax
+jne   label_8
+jmp   label_7
+label_8:
+mov   bx, word ptr [bp - 010h]
+mov   cx, word ptr [bp - 0Ah]
+call  FixedMul16u32_
+add   word ptr [bp - 6], ax
+adc   di, dx
+label_16:
+mov   ax, SPRITETOPOFFSETS_SEGMENT
+mov   bx, word ptr [bp - 0Ch]
+mov   es, ax
+mov   al, byte ptr es:[bx]
+lea   dx, [di - 1]
+cbw  
+mov   word ptr [bp - 6], 0
+mov   di, ax
+
+;        // hack to make this fit in 8 bits, check r_init.c
+;    if (temp.h.intbits == -128){
+;        temp.h.intbits = 129;
+;    }
+
+cmp   ax, -128  ; hack to fit data in 8 bits
+jne   label_9
+mov   di, 129   ; hack to fit data in 8 bits
+label_9:
+mov   bx, word ptr [bp - 012h]
+mov   ax, word ptr [bx + 8]
+sub   ax, word ptr [bp - 6]
+mov   cx, word ptr [bx + 0Ah]
+mov   bx, FRACUNIT_OVER_2
+sbb   cx, di
+sub   bx, ax
+mov   ax, BASEYCENTER
+sbb   ax, cx
+mov   word ptr [si + 024h], ax
+mov   ax, word ptr [bp - 0Eh]
+mov   word ptr [si + 022h], bx
+test  ax, ax
+jge   label_10
+jmp   label_3
+label_10:
+mov   bx, OFFSET _viewwidth
+mov   word ptr [si + 2], ax
+mov   ax, word ptr [bx]
+cmp   dx, ax
+jge   label_11
+jmp   label_12
+label_11:
+dec   ax
+label_15:
+mov   word ptr [si + 4], ax
+mov   ax, word ptr ds:[_pspritescale]
+test  ax, ax
+jne   label_13
+jmp   label_14
+label_13:
+mov   bx, OFFSET _detailshift
+mov   di, ax
+mov   al, byte ptr [bx]
+cbw  
+xor   dx, dx
+mov   cx, ax
+mov   ax, di
+label_22:
+jcxz  label_2
+loop_1:
+shl   ax, 1
+rcl   dx, 1
+loop  loop_1
+label_2:
+mov   word ptr [si + 01Ah], ax
+mov   word ptr [si + 01Ch], dx
+cmp   byte ptr [bp - 4], 0
+jne   label_24
+jmp   label_25
+label_24:
+mov   di, OFFSET _pspriteiscale
+mov   ax, word ptr [di + 2]
+mov   dx, word ptr [di]
+mov   word ptr [si + 020h], ax
+mov   word ptr [si + 01Eh], dx
+mov   di, word ptr [bp - 8]
+neg   word ptr [si + 020h]
+mov   ax, word ptr [bp - 6]
+neg   word ptr [si + 01Eh]
+sbb   word ptr [si + 020h], 0
+add   ax, -1
+adc   di, -1
+mov   word ptr [si + 016h], ax
+mov   word ptr [si + 018h], di
+label_23:
+mov   ax, word ptr [si + 2]
+cmp   ax, word ptr [bp - 0Eh]
+jle   label_1
+sub   ax, word ptr [bp - 0Eh]
+mov   bx, word ptr [si + 01Eh]
+mov   cx, word ptr [si + 020h]
+call  FastMul16u32u_
+add   word ptr [si + 016h], ax
+adc   word ptr [si + 018h], dx
+label_1:
+mov   bx, word ptr [bp - 0Ch]
+mov   word ptr [si + 026h], bx
+
+;    if (player.powers[pw_invisibility] > 4*32
+
+cmp   word ptr [_player + 020h + 2 * pw_invisibility], (4*32)
+jg    mark_shadow_draw
+test  byte ptr [_player + 020h + 2 * pw_invisibility], 8
+jne   mark_shadow_draw
+
+mov   bx, OFFSET _fixedcolormap
+mov   al, byte ptr [bx]
+test  al, al
+jne   label_19
+test  byte ptr [bp - 2], FF_FULLBRIGHT
+je    label_18
+label_19:
+mov   byte ptr [si + 1], al
+label_21:
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+label_5:
+mov   bx, word ptr [bp - 010h]
+mov   cx, word ptr [bp - 0Ah]
+call  FixedMul16u32_
+xor   bx, bx
+add   bx, ax
+mov   word ptr [bp - 6], bx
+adc   di, dx
+jmp   label_17
+label_7:
+mov   ax, word ptr [bp - 010h]
+add   word ptr [bp - 6], ax
+adc   di, word ptr [bp - 0Ah]
+jmp   label_16
+label_3:
+xor   ax, ax
+jmp   label_10
+label_12:
+mov   ax, dx
+jmp   label_15
+label_14:
+mov   bx, OFFSET _detailshift
+mov   al, byte ptr [bx]
+cbw  
+mov   dx, 1
+mov   cx, ax
+xor   ax, ax
+jmp   label_22
+mark_shadow_draw:
+; do shadow draw
+mov   byte ptr [si + 1], COLORMAP_SHADOW
+jmp   label_21
+label_25:
+mov   di, OFFSET _pspriteiscale
+mov   ax, word ptr [di]
+mov   dx, word ptr [di + 2]
+mov   word ptr [si + 016h], 0
+mov   word ptr [si + 018h], 0
+mov   word ptr [si + 01Eh], ax
+mov   word ptr [si + 020h], dx
+jmp   label_23
+label_18:
+mov   ax, SCALELIGHTFIXED_SEGMENT
+mov   bx, word ptr ds:[_spritelights]
+mov   es, ax
+mov   al, byte ptr es:[bx + (MAXLIGHTSCALE-1)]
+add   bx, (MAXLIGHTSCALE-1)                      ; todo necessary?
+mov   byte ptr [si + 1], al
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+
+
+ENDP
+
 
 ; TODO: externalize this and R_ExecuteSetViewSize and its children to asm, load from binary
 ; todo: calculate the values here and dont store to variables.

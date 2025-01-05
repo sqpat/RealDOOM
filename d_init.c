@@ -869,7 +869,8 @@ void __far I_ReadScreen();
 void __near R_DrawPlayerSprites (void);
 void __near R_AddLine (int16_t curlineNum);
 boolean __near R_CheckBBox(int16_t __far *bspcoord);
-
+void __near R_PrepareMaskedPSprites(void) ;
+void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframenum_t frame,  vissprite_t __near* vis);
 
 void __far D_DoomMain2(void) {
 	int16_t             p;
@@ -895,7 +896,7 @@ void __far D_DoomMain2(void) {
 
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(R_AddLine, (byte __far *)R_CheckBBox - (byte __far *)R_AddLine, 1, fp);
+	FAR_fwrite(R_DrawPSprite, (byte __far *)R_PrepareMaskedPSprites - (byte __far *)R_DrawPSprite, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

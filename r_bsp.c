@@ -589,6 +589,9 @@ void __near R_Subsector(int16_t subsecnum) {
 // R_DrawPSprite
 //
 //todo pass in frame and sprite only.
+void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframenum_t frame,  vissprite_t __near* vis);
+
+/*
 void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframenum_t frame,  vissprite_t __near* vis){
     fixed_t_union           tx;
 	int16_t                 x1;
@@ -691,6 +694,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframe
     }
 
 }
+*/
 
 void __near R_PrepareMaskedPSprites(void) {
 	uint8_t         i;
