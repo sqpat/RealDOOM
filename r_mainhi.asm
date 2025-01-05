@@ -143,7 +143,7 @@ ADD  DX, BX
 ; di:si had den
 ; dx:ax has num
 
-SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1:
+SELFMODIFY_BSP_detailshift2minus_1:
 
 
 ; fall thru do twice
@@ -734,7 +734,7 @@ mov   cx, 01000h
 mov   dx, cx
 
 xor   di, di
-SELFMODIFY_setviewheight_2:
+SELFMODIFY_BSP_setviewheight_2:
 mov   ax, 01000h
 mov bx, FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT; 
 mov es, bx
@@ -2118,7 +2118,7 @@ mov   ax, word ptr [bp - 4]
 mov   di, word ptr [bp - 2]
 
 
-SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2:
+SELFMODIFY_BSP_detailshift2minus_2:
 ; fall thru do twice
 shl   ax, 1
 rcl   di, 1
@@ -2280,7 +2280,7 @@ sar   ax, 1
 sar   ax, 1
 
 ; test for detailshift portion
-SELFMODIFY_detailshift_16_bit_jump_1:
+SELFMODIFY_BSP_detailshift_7:
 sar   ax, 1
 shift_xscale_once:
 sar   ax, 1
@@ -2369,7 +2369,7 @@ sar   dx, 1
 sar   dx, 1
 sar   dx, 1
 ENDIF
-SELFMODIFY_set_extralight_1:
+SELFMODIFY_BSP_extralight1:
 mov   al, 0
 add   ax, dx
 test  ax, ax
@@ -3393,7 +3393,7 @@ mov   ax, 01000h
 
 ; shift ax by (2 - detailshift.)
 ; todo: are we benefitted by moving this out into rendersegrange..?
-SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift:
+SELFMODIFY_BSP_detailshift2minus:
 sar   ax, 1
 sar   ax, 1
 
@@ -3403,7 +3403,7 @@ sar   ax, 1
 ; si is dc_yl 
 mov   bx, si
 add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-SELFMODIFY_COLFUNC_add_destview_offset:
+SELFMODIFY_BSP_add_destview_offset:
 add   ax, 01000h
 
 ; di is dc_yh
@@ -3462,7 +3462,7 @@ SELFMODIFY_BSP_midtexture_return_jmp_AFTER = SELFMODIFY_BSP_midtexture_return_jm
 
 mid_no_pixels_to_draw:
 ; bx is already _rw_x << 1
-SELFMODIFY_setviewheight_1:
+SELFMODIFY_BSP_setviewheight_1:
 mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h   ; 26 c7 87 80 a7 00 10  (this instruction that gets selfmodified)
 mov   word ptr es:[bx + OFFSET_FLOORCLIP], 0FFFFh
 finished_inner_loop_iter:
@@ -4175,7 +4175,7 @@ mov       word ptr cs:[SELFMODIFY_sub_rwscale_hi+3], dx
 
 
 
-SELFMODIFY_detailshift_32_bit_rotate_jump_1:
+SELFMODIFY_BSP_detailshift_1:
 shl   ax, 1
 rcl   dx, 1
 shift_rw_scale_once:
@@ -4467,7 +4467,7 @@ jne       seg_textured_check_done    ; dont check walllights if fixedcolormap
 SELFMODIFY_BSP_fixedcolormap_3_AFTER:
 mov       al, byte ptr [bp - 1]
 xor       ah, ah
-SELFMODIFY_set_extralight_2:
+SELFMODIFY_BSP_extralight2:
 mov       dl, 0
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 sar       ax, 4
@@ -4630,7 +4630,7 @@ mov       word ptr cs:[SELFMODIFY_add_topstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_topstep_hi+5], dx
 
 
-SELFMODIFY_detailshift_32_bit_rotate_jump_2:
+SELFMODIFY_BSP_detailshift_2:
 shl       ax, 1
 rcl       dx, 1
 shift_topstep_once:
@@ -4664,7 +4664,7 @@ mov       word ptr cs:[SELFMODIFY_sub_botstep_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_botstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_botstep_hi+5], dx
 
-SELFMODIFY_detailshift_32_bit_rotate_jump_3:
+SELFMODIFY_BSP_detailshift_3:
 shl       ax, 1
 rcl       dx, 1
 shift_botstep_once:
@@ -4776,7 +4776,7 @@ mov       word ptr cs:[SELFMODIFY_sub_pixhigh_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixhighstep_hi+5], dx
 
-SELFMODIFY_detailshift_32_bit_rotate_jump_4:
+SELFMODIFY_BSP_detailshift_4:
 shl       ax, 1
 rcl       dx, 1
 shift_pixhighstep_once:
@@ -4845,7 +4845,7 @@ mov       word ptr cs:[SELFMODIFY_sub_pixlow_hi+3], dx
 mov       word ptr cs:[SELFMODIFY_add_pixlowstep_lo+5], ax
 mov       word ptr cs:[SELFMODIFY_add_pixlowstep_hi+5], dx
 
-SELFMODIFY_detailshift_32_bit_rotate_jump_5:
+SELFMODIFY_BSP_detailshift_5:
 shl       ax, 1
 rcl       dx, 1
 shift_pixlowstep_once:
@@ -5749,18 +5749,15 @@ test  ax, ax
 jne   label_13
 jmp   label_14
 label_13:
-mov   di, ax
-mov   al, byte ptr ds:[_detailshift]
-cbw  
 xor   dx, dx
-mov   cx, ax
-mov   ax, di
 label_22:
-jcxz  label_2
-loop_1:
+
+SELFMODIFY_BSP_detailshift_6:
 shl   ax, 1
 rcl   dx, 1
-loop  loop_1
+shl   ax, 1
+rcl   dx, 1
+
 label_2:
 mov   word ptr [si + 01Ah], ax
 mov   word ptr [si + 01Ch], dx
@@ -5802,13 +5799,15 @@ jg    mark_shadow_draw
 test  byte ptr [_player + 020h + 2 * pw_invisibility], 8
 jne   mark_shadow_draw
 
-mov   al, byte ptr ds:[_fixedcolormap]
-test  al, al
-jne   label_19
+SELFMODIFY_BSP_fixedcolormap_4:
+jmp   use_fixedcolormap
+SELFMODIFY_BSP_fixedcolormap_4_AFTER:
 test  byte ptr [bp - 2], FF_FULLBRIGHT
 je    label_18
-label_19:
-mov   byte ptr [si + 1], al
+SELFMODIFY_BSP_fixedcolormap_4_TARGET:
+use_fixedcolormap:
+SELFMODIFY_BSP_fixedcolormap_5:
+mov   byte ptr [si + 1], 00h
 label_21:
 LEAVE_MACRO
 pop   di
@@ -5835,10 +5834,7 @@ label_12:
 mov   ax, dx
 jmp   label_15
 label_14:
-mov   al, byte ptr ds:[_detailshift]
-cbw  
 mov   dx, 1
-mov   cx, ax
 xor   ax, ax
 jmp   label_22
 mark_shadow_draw:
@@ -5855,7 +5851,7 @@ mov   word ptr [si + 020h], 01000h
 jmp   label_23
 label_18:
 mov   ax, SCALELIGHTFIXED_SEGMENT
-mov   bx, word ptr ds:[_spritelights]
+mov   bx, word ptr ds:[_spritelights]  ; todo remove when prepare... func is in asm
 mov   es, ax
 mov   al, byte ptr es:[bx + (MAXLIGHTSCALE-1)]
 add   bx, (MAXLIGHTSCALE-1)                      ; todo necessary?
@@ -5904,12 +5900,13 @@ set_to_two:
 ; nop 
 mov      ax, 0c089h 
 
-mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2], ax
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
-mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2], ax
+
 
 
 
@@ -5917,30 +5914,33 @@ mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
 ; 0EBh, 006h = jmp 6
 
 mov      ax, 006EBh
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5], ax
 
 
 ; d1 e0 d1 d7  = shl ax, 1 rcl di, 1
 mov      al,  0
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2], ax
 
 ; inverse. do shifts
 ; d1 e0 d1 d2  = shl ax, 1; rcl dx, 1
 ; d1 e0 d1 d7  = shl ax, 1; rcl di, 1
 mov      ax, 0e0d1h 
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0], ax
 mov      ax, 0d2d1h 
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+2], ax
 mov      ax, 0d7d1h 
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2], ax
+
 
 
 
@@ -5954,16 +5954,16 @@ set_to_one:
 
 ; d1 f8  = sar ax, 1
 mov      ax, 0f8d1h 
-mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0], ax
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0], ax
 
 ; nop 
 mov      ax, 0c089h 
-mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2], ax
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2], ax
 
 
 
@@ -5972,21 +5972,23 @@ mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
 
 mov      ax, 0c089h
 
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+2], ax
 
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+2], ax
 
 jmp      done_modding_shift_detail_code
 set_to_zero:
@@ -5996,35 +5998,37 @@ set_to_zero:
 
 ; d1 f8  = sar ax, 1
 mov      ax, 0f8d1h 
-mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_16_bit_jump_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2], ax
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+0], ax
-mov      word ptr ds:[SELFMODIFY_COLFUNC_detailshift_2_minus_16_bit_shift+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2], ax
 
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 
 ; d1 e0 d1 d2   =  shl ax, 1; rcl dx, 1.
 mov      ax, 0e0d1h
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0], ax
 
 mov      ax, 0d2d1h
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_1+2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_2+2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_3+2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_4+2], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_32_bit_rotate_jump_5+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+2], ax
 
 ; 0EBh, 006h = jmp 6
 mov      ax, 006EBh
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_1+0], ax
-mov      word ptr ds:[SELFMODIFY_detailshift_2_minus_32_bit_rotate_jump_2+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0], ax
+
 
 ; fall thru
 done_modding_shift_detail_code:
@@ -6080,8 +6084,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_3+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_4+1], ax
 
 mov      ax, word ptr ss:[_viewheight]
-mov      word ptr ds:[SELFMODIFY_setviewheight_1+5], ax
-mov      word ptr ds:[SELFMODIFY_setviewheight_2+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_1+5], ax
+mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_2+1], ax
 
 mov      ax,  word ptr ss:[_pspritescale]
 mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1+1], ax
@@ -6161,8 +6165,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1], ax
 
 mov      al, byte ptr ss:[_extralight]
-mov      byte ptr ds:[SELFMODIFY_set_extralight_1+1], al
-mov      byte ptr ds:[SELFMODIFY_set_extralight_2+1], al
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight1+1], al
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight2+1], al
 
 mov      al, byte ptr ss:[_fixedcolormap]
 cmp      al, 0
@@ -6173,12 +6177,14 @@ do_no_bsp_fixedcolormap_selfmodify:
 mov      ax, 0c089h 
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4], ax
 ;mov      word ptr cs:[SELFMODIFY_add_wallights], 0848ah       ; mov al, byte ptr... 
 
 jmp      done_with_bsp_fixedcolormap_selfmodify
 do_bsp_fixedcolormap_selfmodify:
 
 mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3], al
+mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_5+3], al
 
 ;mov   ah, al
 ;mov   al, 0b0h
@@ -6193,6 +6199,8 @@ mov   ax, ((SELFMODIFY_BSP_fixedcolormap_2_TARGET - SELFMODIFY_BSP_fixedcolormap
 mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
 mov   ah, (SELFMODIFY_BSP_fixedcolormap_3_TARGET - SELFMODIFY_BSP_fixedcolormap_3_AFTER)
 mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
+mov   ah, (SELFMODIFY_BSP_fixedcolormap_4_TARGET - SELFMODIFY_BSP_fixedcolormap_4_AFTER)
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4], ax
 
 
 ; fall thru
@@ -6255,7 +6263,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_clipangle_4+1], ax
 
 ; get whole dword at the end here.
 mov      ax, word ptr ss:[_destview]
-mov      word ptr ds:[SELFMODIFY_COLFUNC_add_destview_offset+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_add_destview_offset+1], ax
 
 mov      ax, ss
 mov      ds, ax
@@ -6265,9 +6273,6 @@ mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
 mov      es, ax
 mov      ax, word ptr ds:[_destview+2]
 mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segment+1], ax
-
-;call     R_WriteMathFrameConstants_
-
 
 
 
