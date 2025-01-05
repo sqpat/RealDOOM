@@ -1153,10 +1153,11 @@ mov   cx, si
 sbb   cx, dx
 mov   word ptr [bp - 6], ax
 cmp   cx, ANG180_HIGHBITS
-jb    label_1
+jb    dont_backface_culll
 jmp   exit_addline
-label_1:
-; todo selfmodify _rw_angle1 forward or put on stack.
+dont_backface_culll:
+
+; store rw_angle1 on stack
 mov   word ptr [bp - 010h], bx
 mov   word ptr [bp - 0Eh], si
 
@@ -1176,19 +1177,19 @@ sbb   dx, 01000h
 add   ax, bx
 SELFMODIFY_BSP_fieldofview_1:
 cmp   ax, 01000h
-jbe   label_2
+jbe   done_checking_left
 SELFMODIFY_BSP_fieldofview_2:
 sub   ax, 01000h
 cmp   ax, cx
 ja    exit_addline
-jne   label_3
+jne   not_off_left_side
 mov   ax, word ptr [bp - 8]  ; todo carry from above
 cmp   ax, word ptr [bp - 6]
 jae   exit_addline
-label_3:
+not_off_left_side:
 SELFMODIFY_BSP_clipangle_1:
 mov   bx, 01000h
-label_2:
+done_checking_left:
 xor   si, si
 SELFMODIFY_BSP_clipangle_2:
 mov   ax, 01000h
@@ -1197,19 +1198,21 @@ sbb   ax, dx
 mov   di, si
 SELFMODIFY_BSP_fieldofview_3:
 cmp   ax, 01000h
-jbe   label_5
+jbe   done_checking_right
 SELFMODIFY_BSP_fieldofview_4:
 sub   ax, 01000h
 cmp   ax, cx
 ja    exit_addline
-jne   label_4
+jne   not_off_left_side_2
 cmp   si, word ptr [bp - 6]
 jae   exit_addline
-label_4:
+not_off_left_side_2:
 SELFMODIFY_BSP_clipangle_3:
 mov   dx, 01000h
 neg   dx
-label_5:
+done_checking_right:
+
+; seg in view angle but not necessarily visible
 add   bh, (ANG90_HIGHBITS SHR 8)
 mov   ax, VIEWANGLETOX_SEGMENT
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
@@ -1235,11 +1238,12 @@ add   bx, bx
 mov   dx, word ptr es:[bx]
 cmp   ax, dx
 je    exit_addline
+;	if (!(lineflagslist[curseglinedef] & ML_TWOSIDED)) {
 mov   bx, LINEFLAGSLIST_SEGMENT
 mov   es, bx
 mov   bx, word ptr [bp - 4]
-test  byte ptr es:[bx], 4
-jne   label_6
+test  byte ptr es:[bx], ML_TWOSIDED
+jne   not_single_sided_line
 mov   word ptr ds:[_backsector], 0FFFFh   ; does this ever get properly used or checked? can we just ignore?
 clipsolid:
 dec   dx
@@ -1252,7 +1256,7 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_6:
+not_single_sided_line:
 mov   bl, byte ptr [bp - 2]
 xor   bl, 1
 xor   bh, bh
