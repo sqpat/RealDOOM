@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/05 16:46:38
+Created on:       25/01/05 18:21:02
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -1283,7 +1283,7 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 17a3:22a9*     FixedMulBSPLocal_
 17a3:239c*     R_PointToDist_
 17a3:22e2*     FixedDivBSPLocal_
-17a3:3ffe      R_WriteBackViewConstants_
+17a3:3fdc      R_WriteBackViewConstants_
 17a3:4188      R_WriteBackFrameConstants_
 17a3:2419      R_ClearPlanes_
 17a3:2492*     R_HandleEMSPagination_

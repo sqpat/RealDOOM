@@ -5693,17 +5693,25 @@ mov   di, 01000h
 ;	tx.h.intbits += spriteoffsets[spriteindex];
 
 add   word ptr [bp - 0Ah], ax
+sub   word ptr [bp - 0Ah], 160   ;  -160 * fracunit
 SELFMODIFY_BSP_pspritescale_1:
 mov   ax, 01000h
-sub   word ptr [bp - 0Ah], 160   ;  -160 * fracunit
-test  ax, ax
-je    label_4
-jmp   label_5
-label_4:
-add   ax, word ptr [bp - 010h]
+SELFMODIFY_BSP_pspritescale_1_AFTER = SELFMODIFY_BSP_pspritescale_1+2
+pspritescale_nonzero_1:
+mov   bx, word ptr [bp - 010h]
+mov   cx, word ptr [bp - 0Ah]
+call  FixedMul16u32_
+xor   bx, bx
+add   bx, ax
+mov   word ptr [bp - 6], bx
+adc   di, dx
+jmp   x1_calculcated
+SELFMODIFY_BSP_pspritescale_1_TARGET:
+pspritescale_zero_1:
+mov   ax, word ptr [bp - 010h]
 mov   word ptr [bp - 6], ax
 adc   di, word ptr [bp - 0Ah]
-label_17:
+x1_calculcated:
 mov   bx, word ptr [bp - 0Ch]
 mov   es, word ptr ds:[_spritewidths_segment]
 mov   al, byte ptr es:[bx]
@@ -5712,25 +5720,34 @@ xor   ah, ah
 mov   word ptr [bp - 0Eh], di
 mov   word ptr [bp - 8], ax
 cmp   ax, 1
-jne   label_6
+jne   usedwidth_not_1_2
 mov   word ptr [bp - 8], 257     ; hardcoded special case value..  todo make constant
-label_6:
+usedwidth_not_1_2:
 mov   ax, word ptr [bp - 8]
 add   word ptr [bp - 0Ah], ax
-SELFMODIFY_BSP_pspritescale_2:
-mov   ax, 01000h
 SELFMODIFY_BSP_centerx_8:
 mov   di, 01000h
-test  ax, ax
-jne   label_8
-jmp   label_7
-label_8:
+
+SELFMODIFY_BSP_pspritescale_2:
+mov   ax, 01000h
+SELFMODIFY_BSP_pspritescale_2_AFTER = SELFMODIFY_BSP_pspritescale_2 + 2
+
+pspritescale_nonzero_2:
 mov   bx, word ptr [bp - 010h]
 mov   cx, word ptr [bp - 0Ah]
 call  FixedMul16u32_
 add   word ptr [bp - 6], ax
 adc   di, dx
-label_16:
+jmp   x2_calculcated
+
+SELFMODIFY_BSP_pspritescale_2_TARGET:
+pspritescale_zero_2:
+mov   ax, word ptr [bp - 010h]
+add   word ptr [bp - 6], ax
+adc   di, word ptr [bp - 0Ah]
+jmp   x2_calculcated
+
+x2_calculcated:
 mov   ax, SPRITETOPOFFSETS_SEGMENT
 mov   bx, word ptr [bp - 0Ch]
 mov   es, ax
@@ -5746,9 +5763,9 @@ mov   di, ax
 ;    }
 
 cmp   ax, -128  ; hack to fit data in 8 bits
-jne   label_9
+jne   tempbits_not_minus128
 mov   di, 129   ; hack to fit data in 8 bits
-label_9:
+tempbits_not_minus128:
 mov   bx, word ptr [bp - 012h]
 mov   ax, word ptr [bx + 8]
 sub   ax, word ptr [bp - 6]
@@ -5762,27 +5779,42 @@ mov   word ptr [si + 024h], ax
 mov   ax, word ptr [bp - 0Eh]
 mov   word ptr [si + 022h], bx
 test  ax, ax
-jge   label_10
-jmp   label_3
-label_10:
+
+;    vis->x1 = x1 < 0 ? 0 : x1;
+;    vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
+
+
+jge   x1_positive_2
+xor   ax, ax
+
+x1_positive_2:
 mov   word ptr [si + 2], ax
 SELFMODIFY_BSP_viewwidth_4:
 mov   ax, 01000h
 cmp   dx, ax
-jge   label_11
-jmp   label_12
-label_11:
+jge   x2_smaller_than_viewwidth_2
+
+mov   ax, dx
+jmp   vis_x2_set
+
+x2_smaller_than_viewwidth_2:
 dec   ax
-label_15:
+vis_x2_set:
 mov   word ptr [si + 4], ax
 SELFMODIFY_BSP_pspritescale_3:
 mov   ax, 01000h
-test  ax, ax
-jne   label_13
-jmp   label_14
-label_13:
+SELFMODIFY_BSP_pspritescale_3_AFTER = SELFMODIFY_BSP_pspritescale_3 + 2
+pspritescale_nonzero_3:
 xor   dx, dx
-label_22:
+
+jmp   shift_visscale
+
+SELFMODIFY_BSP_pspritescale_3_TARGET:
+pspritescale_zero_3:
+mov   dx, 1
+xor   ax, ax
+
+shift_visscale:
 
 SELFMODIFY_BSP_detailshift_6:
 shl   ax, 1
@@ -5790,13 +5822,23 @@ rcl   dx, 1
 shl   ax, 1
 rcl   dx, 1
 
-label_2:
+
 mov   word ptr [si + 01Ah], ax
 mov   word ptr [si + 01Ch], dx
-cmp   byte ptr [bp - 4], 0
-jne   label_24
-jmp   label_25
-label_24:
+cmp   byte ptr [bp - 4], 0       ; check flip
+jne   flip_on
+
+flip_off:
+
+mov   word ptr [si + 016h], 0
+mov   word ptr [si + 018h], 0
+SELFMODIFY_BSP_pspriteiscale_lo_2:
+mov   word ptr [si + 01Eh], 01000h
+SELFMODIFY_BSP_pspriteiscale_hi_2:
+mov   word ptr [si + 020h], 01000h
+jmp   vis_startfrac_set
+
+flip_on:
 SELFMODIFY_BSP_pspriteiscale_hi_1:
 mov   word ptr [si + 020h], 01000h
 SELFMODIFY_BSP_pspriteiscale_lo_1:
@@ -5810,17 +5852,18 @@ add   ax, -1
 adc   di, -1
 mov   word ptr [si + 016h], ax
 mov   word ptr [si + 018h], di
-label_23:
+
+vis_startfrac_set:
 mov   ax, word ptr [si + 2]
 cmp   ax, word ptr [bp - 0Eh]
-jle   label_1
+jle   vis_x1_greater_than_x1_2
 sub   ax, word ptr [bp - 0Eh]
 mov   bx, word ptr [si + 01Eh]
 mov   cx, word ptr [si + 020h]
 call  FastMul16u32u_
 add   word ptr [si + 016h], ax
 adc   word ptr [si + 018h], dx
-label_1:
+vis_x1_greater_than_x1_2:
 mov   bx, word ptr [bp - 0Ch]
 mov   word ptr [si + 026h], bx
 
@@ -5835,53 +5878,29 @@ SELFMODIFY_BSP_fixedcolormap_4:
 jmp   use_fixedcolormap
 SELFMODIFY_BSP_fixedcolormap_4_AFTER:
 test  byte ptr [bp - 2], FF_FULLBRIGHT
-je    label_18
+je    set_vis_colormap
 SELFMODIFY_BSP_fixedcolormap_4_TARGET:
 use_fixedcolormap:
 SELFMODIFY_BSP_fixedcolormap_5:
 mov   byte ptr [si + 1], 00h
-label_21:
+
 LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label_5:
-mov   bx, word ptr [bp - 010h]
-mov   cx, word ptr [bp - 0Ah]
-call  FixedMul16u32_
-xor   bx, bx
-add   bx, ax
-mov   word ptr [bp - 6], bx
-adc   di, dx
-jmp   label_17
-label_7:
-mov   ax, word ptr [bp - 010h]
-add   word ptr [bp - 6], ax
-adc   di, word ptr [bp - 0Ah]
-jmp   label_16
-label_3:
-xor   ax, ax
-jmp   label_10
-label_12:
-mov   ax, dx
-jmp   label_15
-label_14:
-mov   dx, 1
-xor   ax, ax
-jmp   label_22
+
+
+
 mark_shadow_draw:
 ; do shadow draw
 mov   byte ptr [si + 1], COLORMAP_SHADOW
-jmp   label_21
-label_25:
-mov   word ptr [si + 016h], 0
-mov   word ptr [si + 018h], 0
-SELFMODIFY_BSP_pspriteiscale_lo_2:
-mov   word ptr [si + 01Eh], 01000h
-SELFMODIFY_BSP_pspriteiscale_hi_2:
-mov   word ptr [si + 020h], 01000h
-jmp   label_23
-label_18:
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+
+
+set_vis_colormap:
 mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   bx, word ptr ds:[_spritelights]  ; todo remove when prepare... func is in asm
 mov   es, ax
@@ -6120,9 +6139,33 @@ mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_1+5], ax
 mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_2+1], ax
 
 mov      ax,  word ptr ss:[_pspritescale]
+test     ax, ax
+je       pspritescale_zero_selfmodifies
+
 mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_3+1], ax
+mov      al, 0B8h
+mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_1], al
+mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_2], al
+mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_3], al
+jmp      done_with_pspritescale_zero_selfmodifies
+pspritescale_zero_selfmodifies:
+
+mov      al, 0EBh
+mov      ah, (SELFMODIFY_BSP_pspritescale_1_TARGET - SELFMODIFY_BSP_pspritescale_1_AFTER)
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1], ax
+mov      ah, (SELFMODIFY_BSP_pspritescale_2_TARGET - SELFMODIFY_BSP_pspritescale_2_AFTER)
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2], ax
+mov      ah, (SELFMODIFY_BSP_pspritescale_3_TARGET - SELFMODIFY_BSP_pspritescale_3_AFTER)
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_3], ax
+
+done_with_pspritescale_zero_selfmodifies:
+
+
+
+
+
 
 mov      ax,  word ptr ss:[_pspriteiscale]
 mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_lo_1+3], ax
