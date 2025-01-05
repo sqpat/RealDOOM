@@ -255,8 +255,8 @@ void __near  R_ExecuteSetViewSize(void) {
 	viewwindowoffset = (viewwindowy*(SCREENWIDTH / 4)) + (viewwindowx >> 2);
 
 	Z_QuickMapRender();
-	R_WriteBackViewConstants();
 	R_InitTextureMapping();
+	R_WriteBackViewConstants();
 
 	Z_QuickMapRenderPlanes();
 	R_WriteBackViewConstantsSpanCall();

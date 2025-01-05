@@ -128,7 +128,7 @@ xchg ax, si
 ;  ax has finesine_segment
 ;  di:si is den
 
-SELF_MODIFY_set_centerx_1:
+SELFMODIFY_BSP_centerx_1:
 mov   cx, 01000h
 
 
@@ -729,7 +729,7 @@ push  dx
 push  di
 
 
-SELFMODIFY_set_viewwidth_1:
+SELFMODIFY_BSP_viewwidth_1:
 mov   cx, 01000h
 mov   dx, cx
 
@@ -757,7 +757,7 @@ and   ah, 01Fh    ; MOD_FINE_ANGLE
  shl   ax, 1
  shl   ax, 1
  
-SELF_MODIFY_set_centerx_2:
+SELFMODIFY_BSP_centerx_2:
 mov   cx, 01000h
 mov   di, ax
 
@@ -776,7 +776,7 @@ mov   word ptr ds:[_basexscale + 2], dx
 mov   ax, FINESINE_SEGMENT
 
 mov   es, ax
-SELF_MODIFY_set_centerx_3:
+SELFMODIFY_BSP_centerx_3:
 mov   cx, 01000h
 mov   ax, word ptr es:[di]
 mov   dx, word ptr es:[di + 2]
@@ -1869,7 +1869,7 @@ jl   exit_project_sprite
 
 ;    xscale.w = FixedDivWholeA(centerx, tz.w);
 
-SELF_MODIFY_set_centerx_4:
+SELFMODIFY_BSP_centerx_4:
 mov   ax, 01000h
 
 call  FixedDivWholeA_
@@ -2032,7 +2032,7 @@ mov   dx, si
 call FixedMulBSPLocal_
 xchg  ax, dx
 
-SELF_MODIFY_set_centerx_5:
+SELFMODIFY_BSP_centerx_5:
 add   ax, 01000h
 
 ;    // off the right side?
@@ -2043,7 +2043,7 @@ add   ax, 01000h
 
 mov   word ptr cs:[SELFMODIFY_set_vis_x1+1], ax
 mov   word ptr cs:[SELFMODIFY_sub_x1+1], ax
-SELFMODIFY_set_viewwidth_2:
+SELFMODIFY_BSP_viewwidth_2:
 cmp   ax, 01000h
 jle   not_too_far_off_right_side_highbits
 jump_to_exit_project_sprite_2:
@@ -2086,7 +2086,7 @@ call FixedMulBSPLocal_
 
 ;    x2 = temp.h.intbits - 1;
 
-SELF_MODIFY_set_centerx_6:
+SELFMODIFY_BSP_centerx_6:
 add   dx, 01000h
 dec   dx
 mov   word ptr cs:[SELFMODIFY_set_ax_to_x2+1], dx
@@ -2194,7 +2194,7 @@ mov   word ptr [si + 2], ax
 SELFMODIFY_set_ax_to_x2:
 mov   ax, 00012h			; get x2
 
-SELFMODIFY_set_viewwidth_3:
+SELFMODIFY_BSP_viewwidth_3:
 mov   bx, 01000h
 cmp   ax, bx
 jl    x2_smaller_than_viewwidth
@@ -5632,7 +5632,16 @@ mov   es, ax
 mov   al, bl
 and   al, FF_FRAMEMASK
 xor   ah, ah
-imul  ax, ax, 019h               ; todo shifts
+mov   cx, ax
+
+sal   ax, 1  ; ax:2  cx:1
+sal   ax, 1  ; ax:4  cx:1
+add   ax, cx ; ax:5  cx:1
+mov   cx, ax ; ax:5  cx:5
+sal   ax, 1  ; ax:10 cx:5
+sal   ax, 1  ; ax:20 cx:5
+add   ax, cx ; ax:25 cx:5
+
 mov   di, word ptr es:[di]
 add   di, ax
 mov   bx, word ptr es:[di]
@@ -5648,11 +5657,12 @@ mov   ax, SPRITEOFFSETS_SEGMENT
 mov   bx, word ptr [bp - 0Ch]
 mov   es, ax
 mov   al, byte ptr es:[bx]
-mov   di, OFFSET _centerx
 xor   ah, ah
-mov   di, word ptr [di]
+SELFMODIFY_BSP_centerx_7:
+mov   di, 01000h
 add   word ptr [bp - 0Ah], ax
-mov   ax, word ptr ds:[_pspritescale]
+SELFMODIFY_BSP_pspritescale_1:
+mov   ax, 01000h
 sub   word ptr [bp - 0Ah], 160   ;  -160 * fracunit
 test  ax, ax
 je    label_4
@@ -5674,10 +5684,11 @@ jne   label_6
 mov   word ptr [bp - 8], 257     ; hardcoded special case value..  todo make constant
 label_6:
 mov   ax, word ptr [bp - 8]
-mov   di, OFFSET _centerx
 add   word ptr [bp - 0Ah], ax
-mov   ax, word ptr ds:[_pspritescale]
-mov   di, word ptr [di]
+SELFMODIFY_BSP_pspritescale_2:
+mov   ax, 01000h
+SELFMODIFY_BSP_centerx_8:
+mov   di, 01000h
 test  ax, ax
 jne   label_8
 jmp   label_7
@@ -5722,9 +5733,9 @@ test  ax, ax
 jge   label_10
 jmp   label_3
 label_10:
-mov   bx, OFFSET _viewwidth
 mov   word ptr [si + 2], ax
-mov   ax, word ptr [bx]
+SELFMODIFY_BSP_viewwidth_4:
+mov   ax, 01000h
 cmp   dx, ax
 jge   label_11
 jmp   label_12
@@ -5732,14 +5743,14 @@ label_11:
 dec   ax
 label_15:
 mov   word ptr [si + 4], ax
-mov   ax, word ptr ds:[_pspritescale]
+SELFMODIFY_BSP_pspritescale_3:
+mov   ax, 01000h
 test  ax, ax
 jne   label_13
 jmp   label_14
 label_13:
-mov   bx, OFFSET _detailshift
 mov   di, ax
-mov   al, byte ptr [bx]
+mov   al, byte ptr ds:[_detailshift]
 cbw  
 xor   dx, dx
 mov   cx, ax
@@ -5757,11 +5768,10 @@ cmp   byte ptr [bp - 4], 0
 jne   label_24
 jmp   label_25
 label_24:
-mov   di, OFFSET _pspriteiscale
-mov   ax, word ptr [di + 2]
-mov   dx, word ptr [di]
-mov   word ptr [si + 020h], ax
-mov   word ptr [si + 01Eh], dx
+SELFMODIFY_BSP_pspriteiscale_hi_1:
+mov   word ptr [si + 020h], 01000h
+SELFMODIFY_BSP_pspriteiscale_lo_1:
+mov   word ptr [si + 01Eh], 01000h
 mov   di, word ptr [bp - 8]
 neg   word ptr [si + 020h]
 mov   ax, word ptr [bp - 6]
@@ -5792,8 +5802,7 @@ jg    mark_shadow_draw
 test  byte ptr [_player + 020h + 2 * pw_invisibility], 8
 jne   mark_shadow_draw
 
-mov   bx, OFFSET _fixedcolormap
-mov   al, byte ptr [bx]
+mov   al, byte ptr ds:[_fixedcolormap]
 test  al, al
 jne   label_19
 test  byte ptr [bp - 2], FF_FULLBRIGHT
@@ -5826,8 +5835,7 @@ label_12:
 mov   ax, dx
 jmp   label_15
 label_14:
-mov   bx, OFFSET _detailshift
-mov   al, byte ptr [bx]
+mov   al, byte ptr ds:[_detailshift]
 cbw  
 mov   dx, 1
 mov   cx, ax
@@ -5838,13 +5846,12 @@ mark_shadow_draw:
 mov   byte ptr [si + 1], COLORMAP_SHADOW
 jmp   label_21
 label_25:
-mov   di, OFFSET _pspriteiscale
-mov   ax, word ptr [di]
-mov   dx, word ptr [di + 2]
 mov   word ptr [si + 016h], 0
 mov   word ptr [si + 018h], 0
-mov   word ptr [si + 01Eh], ax
-mov   word ptr [si + 020h], dx
+SELFMODIFY_BSP_pspriteiscale_lo_2:
+mov   word ptr [si + 01Eh], 01000h
+SELFMODIFY_BSP_pspriteiscale_hi_2:
+mov   word ptr [si + 020h], 01000h
 jmp   label_23
 label_18:
 mov   ax, SCALELIGHTFIXED_SEGMENT
@@ -5877,6 +5884,7 @@ mov      ds, ax
 
 
 ASSUME DS:R_MAINHI_TEXT
+
 
 mov      ax,  word ptr ss:[_detailshift]
 add      ah, OFFSET _quality_port_lookup
@@ -6047,12 +6055,16 @@ mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1], ax
 
 ; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centerx]
-mov      word ptr ds:[SELF_MODIFY_set_centerx_1+1], ax
-mov      word ptr ds:[SELF_MODIFY_set_centerx_2+1], ax
-mov      word ptr ds:[SELF_MODIFY_set_centerx_3+1], ax
-mov      word ptr ds:[SELF_MODIFY_set_centerx_4+1], ax
-mov      word ptr ds:[SELF_MODIFY_set_centerx_5+1], ax
-mov      word ptr ds:[SELF_MODIFY_set_centerx_6+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_2+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_3+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_4+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_5+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_6+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_7+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_8+1], ax
+
+
 
 mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
 mov      es, ax
@@ -6062,13 +6074,28 @@ mov      ax, word ptr ss:[_centery]
 mov      word ptr es:[SELFMODIFY_COLFUNC_subtract_centery+1], ax
  
 mov      ax, word ptr ss:[_viewwidth]
-mov      word ptr ds:[SELFMODIFY_set_viewwidth_1+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewwidth_2+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewwidth_3+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_2+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_3+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_4+1], ax
 
 mov      ax, word ptr ss:[_viewheight]
 mov      word ptr ds:[SELFMODIFY_setviewheight_1+5], ax
 mov      word ptr ds:[SELFMODIFY_setviewheight_2+1], ax
+
+mov      ax,  word ptr ss:[_pspritescale]
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_3+1], ax
+
+mov      ax,  word ptr ss:[_pspriteiscale]
+mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_lo_1+3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_lo_2+3], ax
+mov      ax,  word ptr ss:[_pspriteiscale+2]
+mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_hi_1+3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_hi_2+3], ax
+
+
 
 mov      ax, ss
 mov      ds, ax
@@ -6100,6 +6127,9 @@ mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      es, ax
 
 ASSUME DS:R_MAINHI_TEXT
+
+
+
 
 
 mov      ax, word ptr ss:[_viewz]
