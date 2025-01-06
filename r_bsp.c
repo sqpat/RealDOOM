@@ -477,7 +477,7 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 		}
 
 		angle1.hu.intbits = clipangle;
-		angle1.hu.fracbits = 0;
+		//angle1.hu.fracbits = 0;  // not used again. dont need to
 	}
 	tspan.hu.intbits = clipangle;
 	tspan.hu.fracbits= 0;

@@ -6050,7 +6050,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 8
+sub   sp, 2
 mov   bx, ax
 mov   es, dx
 
@@ -6132,49 +6132,85 @@ ret
 R_CBB_SWITCH_CASE_00:
 mov   ax, word ptr es:[bx + 6]
 mov   si, word ptr es:[bx + 4]
-label_6:
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr es:[bx]
+
+mov   dx, word ptr es:[bx]
 mov   cx, word ptr es:[bx + 2]
-label_5:
-mov   word ptr [bp - 4], ax
-R_CBB_SWITCH_CASE_05:
+
+
+R_CBB_SWITCH_CASE_05:  ; unused
 boxpos_switchblock_done:
-mov   dx, word ptr [bp - 4]
-mov   ax, word ptr [bp - 2]
+;	angle1.wu = R_PointToAngle16(x1, y1) - viewangle.wu;
+
 call  R_PointToAngle16_
 SELFMODIFY_BSP_viewangle_lo_3:
 sub   ax, 01000h
 SELFMODIFY_BSP_viewangle_hi_3:
 sbb   dx, 01000h
-mov   word ptr [bp - 6], ax
-mov   di, dx
+;di:bx stores angle1
+mov   bx, ax      ; bx ptr unused at this point; cache ax in it
+mov   di, dx      ; cache dx
+
+;	angle2.wu = R_PointToAngle16(x2, y2) - viewangle.wu;
+
 mov   ax, si
 mov   dx, cx
 call  R_PointToAngle16_
+;cx:si stores angle2
 mov   si, ax
 mov   cx, dx
-mov   ax, word ptr [bp - 6]
+mov   ax, bx
+mov   dx, bx      ; cache angle1 fracbits in dx
 SELFMODIFY_BSP_viewangle_lo_4:
 sub   si, 01000h
 SELFMODIFY_BSP_viewangle_hi_4:
 sbb   cx, 01000h
+
+;	span.wu = angle1.wu - angle2.wu;
+; bx:ax is span
+
 sub   ax, si
 mov   bx, di
 sbb   bx, cx
-mov   word ptr [bp - 8], ax
+
+;	// Sitting on a line?
+;	if (span.hu.intbits >= ANG180_HIGHBITS){
+;		return true;
+;	}
+
+mov   word ptr [bp - 2], ax   ; span low bits in bp-2...
 cmp   bx, ANG180_HIGHBITS
 jae   return_1
+
+;	tspan.wu = angle1.wu;
+;	tspan.hu.intbits += clipangle;
+
+
 SELFMODIFY_BSP_clipangle_7:
 mov   ax, 01000h
 add   ax, di
+
+; ax:bx is tspan.
+
+;	if (tspan.hu.intbits > fieldofview) {
+;		tspan.hu.intbits -= fieldofview;
+
+
 SELFMODIFY_BSP_fieldofview_7:
 cmp   ax, 01000h
-jbe   label_20
+jbe   done_with_first_tspan_adjustment
 SELFMODIFY_BSP_fieldofview_8:
 sub   ax, 01000h
+
+
+;		// Totally off the left edge?
+;		if (tspan.wu >= span.wu){
+;			return false;
+;		}
+
+
 cmp   ax, bx
-jbe   label_21
+jb    tspan_smaller_than_span
+je    check_tspan_vs_span_lobits
 
 also_return_0:
 xor   al, al
@@ -6194,43 +6230,66 @@ pop   cx
 pop   bx
 ret   
 
-label_21:
-jne   label_18
-mov   ax, word ptr [bp - 6]
-cmp   ax, word ptr [bp - 8]
+check_tspan_vs_span_lobits:
+cmp   dx, word ptr [bp - 2]  ; angle1 fracbits compare 
 jae   also_return_0
-label_18:
+tspan_smaller_than_span:
+
+;		angle1.hu.intbits = clipangle;
+
 SELFMODIFY_BSP_clipangle_5:
 mov   di, 01000h
-label_20:
-xor   dx, dx
+done_with_first_tspan_adjustment:
+
+;	tspan.hu.intbits = clipangle
+;	tspan.hu.fracbits= 0;
+;	tspan.wu -= angle2.wu;
+; cx:si was angle2
+
 SELFMODIFY_BSP_clipangle_6:
 mov   ax, 01000h
-sub   dx, si
+neg   si    ; get carry. si is tspan lobits...
 sbb   ax, cx
-mov   si, dx
+
+;	if (tspan.hu.intbits > fieldofview) {
+
 SELFMODIFY_BSP_fieldofview_5:
 cmp   ax, 01000h
-jbe   label_17
+jbe   done_with_second_tspan_adjustment
+
+;		tspan.hu.intbits -= fieldofview;
+
 SELFMODIFY_BSP_fieldofview_6:
 sub   ax, 01000h
+
+;		// Totally off the left edge?
+;		if (tspan.wu >= span.wu){
+;			return false;
+;		}
+
 cmp   ax, bx
 ja    also_return_0
-jne   label_16
-cmp   dx, word ptr [bp - 8]
-jae   also_return_0
-label_16:
+jne   tspan_smaller_than_span_2
+; tspan fracbits are 0 - angle2 lobits. span lobits are [bp - 2]
+cmp   si, word ptr [bp - 2]    
+jbe   also_return_0           ; inverse check since si is inversed
+tspan_smaller_than_span_2:
+
+;		angle2.hu.intbits = -clipangle;
+
 SELFMODIFY_BSP_clipangle_8:
 mov   cx, 01000h
 neg   cx
-label_17:
+
+done_with_second_tspan_adjustment:
+
 mov   dx, VIEWANGLETOX_SEGMENT
+mov   es, dx
 lea   si, [di + ANG90_HIGHBITS]
 add   ch, (ANG90_HIGHBITS SHR 8)
 shr   si, 1
 shr   si, 1
 mov   bx, cx
-mov   es, dx
 shr   bx, 1
 shr   bx, 1
 and   si, 0FFFEh  ; need to and out the last bit. (is there a faster way?)
@@ -6266,53 +6325,51 @@ R_CBB_SWITCH_CASE_01:
 mov   ax, word ptr es:[bx + 6]
 mov   cx, word ptr es:[bx]
 mov   si, word ptr es:[bx + 4]
-mov   word ptr [bp - 2], ax
-mov   word ptr [bp - 4], cx
+mov   dx, cx
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_02:
 mov   ax, word ptr es:[bx + 6]
 mov   si, word ptr es:[bx + 4]
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr es:[bx + 2]
+mov   dx, word ptr es:[bx + 2]
 mov   cx, word ptr es:[bx]
-jmp   label_5
+jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_03:
 R_CBB_SWITCH_CASE_07:
 mov   cx, word ptr es:[bx]
-mov   word ptr [bp - 4], cx
+mov   dx, cx
 mov   si, cx
-mov   word ptr [bp - 2], cx
+mov   ax, cx
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_04:
 mov   si, word ptr es:[bx + 4]
-mov   ax, word ptr es:[bx]
+mov   dx, word ptr es:[bx]
 mov   cx, word ptr es:[bx + 2]
-mov   word ptr [bp - 2], si
-jmp   label_5
+mov   ax, si
+jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_06:
 mov   si, word ptr es:[bx + 6]
-mov   ax, word ptr es:[bx + 2]
+mov   dx, word ptr es:[bx + 2]
 mov   cx, word ptr es:[bx]
-mov   word ptr [bp - 2], si
-jmp   label_5
+mov   ax, si
+jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_08:
 mov   ax, word ptr es:[bx + 4]
 mov   si, word ptr es:[bx + 6]
-jmp   label_6
+mov   dx, word ptr es:[bx]
+mov   cx, word ptr es:[bx + 2]
+jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_09:
 mov   ax, word ptr es:[bx + 4]
 mov   cx, word ptr es:[bx + 2]
 mov   si, word ptr es:[bx + 6]
-mov   word ptr [bp - 2], ax
-mov   word ptr [bp - 4], cx
+mov   dx, cx
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_10:
 mov   ax, word ptr es:[bx + 4]
 mov   si, word ptr es:[bx + 6]
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr es:[bx + 2]
+mov   dx, word ptr es:[bx + 2]
 mov   cx, word ptr es:[bx]
-jmp   label_5
+jmp   boxpos_switchblock_done
 
 ENDP
 
