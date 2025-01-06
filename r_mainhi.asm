@@ -53,6 +53,7 @@ EXTRN _fieldofview:WORD
 EXTRN _pspritescale:WORD
 EXTRN _player:WORD
 EXTRN _r_cachedplayerMobjsecnum:WORD
+EXTRN _numnodes:WORD
 
 
 .CODE
@@ -6404,6 +6405,145 @@ mov   si, word ptr es:[bx + 6]
 mov   dx, word ptr es:[bx + 2]
 mov   cx, word ptr es:[bx]
 jmp   boxpos_switchblock_done
+
+ENDP
+
+MAX_BSP_DEPTH = 64
+NF_SUBSECTOR  = 08000h
+NOT_NF_SUBSECTOR  = 07FFFh
+
+;R_RenderBSPNode_
+
+PROC R_RenderBSPNode_ FAR
+PUBLIC R_RenderBSPNode_ 
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, ((MAX_BSP_DEPTH * 2) + (MAX_BSP_DEPTH * 1) + 8)
+mov   cx, word ptr ds:[_numnodes]
+xor   si, si
+dec   cx
+label_3:
+test  ch, (NF_SUBSECTOR SHR 8)
+jne   label_1
+mov   ax, NODES_SEGMENT
+mov   di, OFFSET _viewx + 2
+mov   bx, cx
+mov   word ptr [bp - 2], ax
+mov   dx, word ptr [di]
+mov   di, OFFSET _viewy + 2
+mov   es, ax
+mov   ax, word ptr [di]
+shl   bx, 3
+mov   word ptr [bp - 4], ax
+mov   ax, word ptr es:[bx + 2]
+sub   dx, word ptr es:[bx]
+sub   word ptr [bp - 4], ax
+mov   ax, word ptr es:[bx + 6]
+mov   di, word ptr [bp - 4]
+xor   ax, dx
+xor   di, ax
+xor   di, word ptr es:[bx + 4]
+mov   word ptr [bp - 8], di
+test  byte ptr [bp - 7], 080h ; sign check
+je    label_2
+rol   ax, 1    ; ROLAND1
+and   ax, 1
+mov   dl, al
+label_9:
+mov   ax, NODE_CHILDREN_SEGMENT
+mov   di, si
+mov   bx, cx
+mov   byte ptr [bp + si - 048h], dl       ; stack_side
+shl   bx, 2
+xor   dh, dh
+add   di, si
+add   dx, dx
+mov   word ptr [bp + di - 0C8h], cx       ; stack_bsp lookup
+mov   es, ax
+add   bx, dx
+inc   si
+mov   cx, word ptr es:[bx]
+jmp   label_3
+label_1:
+jmp   label_4
+label_2:
+mov   ax, word ptr es:[bx + 6]
+imul  dx
+mov   es, word ptr [bp - 2]
+mov   word ptr [bp - 8], ax
+mov   di, dx
+mov   dx, word ptr [bp - 4]
+mov   ax, word ptr es:[bx + 4]
+imul  dx
+cmp   dx, di
+jg    label_10
+jne   label_11
+cmp   ax, word ptr [bp - 8]
+jbe   label_11
+label_10:
+mov   dl, 1
+jmp   label_9
+label_11:
+xor   dl, dl
+jmp   label_9
+label_4:
+cmp   cx, -1
+jne   label_12
+xor   ax, ax
+label_8:
+call  R_Subsector_
+test  si, si
+je    label_5
+dec   si
+mov   di, si
+add   di, si
+mov   bl, byte ptr [bp + si - 048h]  ; stack_side
+mov   word ptr [bp - 6], di
+label_7:
+mov   cx, word ptr [bp + di - 0C8h]  ; stack_bsp lookup
+xor   bl, 1
+xor   bh, bh
+mov   dx, cx
+mov   ax, bx
+add   dh, (NODES_RENDER_SEGMENT SHR 8)
+shl   ax, 3
+call  R_CheckBBox_
+test  al, al
+je    label_6
+mov   dx, NODE_CHILDREN_SEGMENT
+mov   ax, cx
+add   bx, bx
+shl   ax, 2
+mov   es, dx
+add   bx, ax
+mov   cx, word ptr es:[bx]
+jmp   label_3
+label_12:
+and   ch, (NOT_NF_SUBSECTOR SHR 8)
+mov   ax, cx
+jmp   label_8
+label_6:
+test  si, si
+je    label_5
+sub   word ptr [bp - 6], 2
+mov   bl, byte ptr [bp + si - 049h]   ; stack_side lookup, following dec not included yet
+mov   di, word ptr [bp - 6]
+dec   si
+jmp   label_7
+label_5:
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
 
 ENDP
 

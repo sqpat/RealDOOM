@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 140
+#define CONSTANTS_COUNT 141
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -110,6 +110,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "PATCHOFFSET_SEGMENT",
 
 
+    "NODES_RENDER_SEGMENT",
     "SEGS_RENDER_SEGMENT",
     "SEG_NORMALANGLES_SEGMENT",
     "SIDES_RENDER_SEGMENT",
@@ -277,6 +278,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 
 
 
+    nodes_render_segment,
     segs_render_segment,
     seg_normalangles_segment,
     sides_render_segment,

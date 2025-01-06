@@ -980,6 +980,8 @@ void __near R_AddSprites (sector_t __far* sec) {
 
 #define MAX_BSP_DEPTH 64
 
+/*
+
 void __far R_RenderBSPNode() {
 	int16_t stack_bsp[MAX_BSP_DEPTH];
 	byte stack_side[MAX_BSP_DEPTH];
@@ -1072,12 +1074,12 @@ void __far R_RenderBSPNode() {
 	}
 }
 
-
+*/
 
 
 /*
 
-void __far R_RenderBSPNode(int16_t bspnum) {
+void __far R_RenderBSPNodeOld(int16_t bspnum) {
 
 	int16_t side;
 	node_t __far *bsp_node;
