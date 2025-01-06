@@ -363,6 +363,9 @@ void __near R_AddLine (int16_t curlineNum) {
 //  if some part of the bbox might be visible.
 //
 
+boolean __near R_CheckBBox(int16_t __far *bspcoord);
+
+/*
 boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 	byte boxx;
 	byte boxy;
@@ -518,6 +521,7 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 
 	return true;
 }
+*/
 
 //
 // R_Subsector

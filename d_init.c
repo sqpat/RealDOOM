@@ -870,6 +870,7 @@ void __near R_DrawPlayerSprites (void);
 void __near R_AddLine (int16_t curlineNum);
 boolean __near R_CheckBBox(int16_t __far *bspcoord);
 void __near R_PrepareMaskedPSprites(void) ;
+void __far R_WriteBackViewConstants();
 void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframenum_t frame,  vissprite_t __near* vis);
 
 void __far D_DoomMain2(void) {
@@ -896,7 +897,7 @@ void __far D_DoomMain2(void) {
 
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(R_PrepareMaskedPSprites, (byte __far *)R_RenderBSPNode - (byte __far *)R_PrepareMaskedPSprites, 1, fp);
+	FAR_fwrite(R_PrepareMaskedPSprites, (byte __far *)R_WriteBackViewConstants - (byte __far *)R_PrepareMaskedPSprites, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

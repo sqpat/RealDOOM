@@ -1374,8 +1374,6 @@ PUBLIC R_Subsector_
 push  bx
 push  cx
 push  dx
-push  bp
-mov   bp, sp ; todo remove when we can?
 
 mov   bx, ax
 mov   ax, SUBSECTOR_LINES_SEGMENT
@@ -1539,7 +1537,6 @@ loop   loop_addline
 
 
 
-LEAVE_MACRO 
 
 pop   dx
 pop   cx
@@ -5980,7 +5977,7 @@ jb    calculate_spritelights
 ; use max spritelight
 mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]
 player_spritelights_set:
-mov   word ptr ds:[_spritelights], ax
+mov   word ptr ds:[_spritelights], ax  ; todo get rid of this variable. self modify this forward.
 
 first_iter:
 
@@ -6034,6 +6031,262 @@ jmp   player_spritelights_set
 
 ENDP
 
+R_CHECKBBOX_SWITCH_JMP_TABLE:
+
+;db 084h, 000h, 0BDh, 001h, 0D1h, 001h, 0E6h, 001h
+;db 0F4h, 001h, 099h, 000h, 005h, 002h, 0E6h, 001h
+;db 016h, 002h, 021h, 002h, 036h, 002h
+
+
+dw R_CBB_SWITCH_CASE_00, R_CBB_SWITCH_CASE_01, R_CBB_SWITCH_CASE_02, R_CBB_SWITCH_CASE_03
+dw R_CBB_SWITCH_CASE_04, R_CBB_SWITCH_CASE_05, R_CBB_SWITCH_CASE_06, R_CBB_SWITCH_CASE_07
+dw R_CBB_SWITCH_CASE_08, R_CBB_SWITCH_CASE_09, R_CBB_SWITCH_CASE_10
+
+;R_CheckBBox_
+
+PROC R_CheckBBox_ NEAR
+PUBLIC R_CheckBBox_ 
+
+; jmp table for switch block.... 
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 8
+mov   bx, ax
+mov   es, dx
+mov   di, OFFSET _viewx + 2
+mov   ax, word ptr [di]
+cmp   ax, word ptr es:[bx + 4]
+jge   label_1
+label_10:
+xor   ax, ax
+label_9:
+mov   di, OFFSET _viewy + 2
+mov   dl, al
+mov   ax, word ptr [di]
+cmp   ax, word ptr es:[bx]
+jl    label_2
+xor   ax, ax
+label_7:
+shl   al, 2
+add   al, dl
+cmp   al, 5
+je    label_3
+cmp   al, 10    ; largest bitmap value; skip switch block
+ja    boxpos_switchblock_done
+xor   ah, ah
+mov   di, ax
+add   di, ax
+jmp   word ptr cs:[di + R_CHECKBBOX_SWITCH_JMP_TABLE]
+label_1:
+jmp   label_26
+label_2:
+jmp   label_25
+label_3:
+jmp   label_12
+R_CBB_SWITCH_CASE_00:
+mov   ax, word ptr es:[bx + 6]
+mov   si, word ptr es:[bx + 4]
+label_6:
+mov   word ptr [bp - 2], ax
+mov   ax, word ptr es:[bx]
+mov   cx, word ptr es:[bx + 2]
+label_5:
+mov   word ptr [bp - 4], ax
+R_CBB_SWITCH_CASE_05:
+boxpos_switchblock_done:
+mov   dx, word ptr [bp - 4]
+mov   ax, word ptr [bp - 2]
+mov   di, OFFSET _viewangle
+call  R_PointToAngle16_
+sub   ax, word ptr [di]
+sbb   dx, word ptr [di + 2]
+mov   word ptr [bp - 6], ax
+mov   di, dx
+mov   ax, si
+mov   dx, cx
+mov   bx, OFFSET _viewangle
+call  R_PointToAngle16_
+mov   si, ax
+mov   cx, dx
+mov   ax, word ptr [bp - 6]
+sub   si, word ptr [bx]
+sbb   cx, word ptr [bx + 2]
+sub   ax, si
+mov   bx, di
+sbb   bx, cx
+mov   word ptr [bp - 8], ax
+cmp   bx, ANG180_HIGHBITS
+jae   label_3
+mov   ax, word ptr ds:[_clipangle]
+add   ax, di
+cmp   ax, word ptr ds:[_fieldofview]
+jbe   label_20
+sub   ax, word ptr ds:[_fieldofview]
+cmp   ax, bx
+jbe   label_21
+label_19:
+jmp   label_13
+label_21:
+jne   label_18
+mov   ax, word ptr [bp - 6]
+cmp   ax, word ptr [bp - 8]
+jae   label_19
+label_18:
+mov   di, word ptr ds:[_clipangle]
+label_20:
+xor   dx, dx
+mov   ax, word ptr ds:[_clipangle]
+sub   dx, si
+sbb   ax, cx
+mov   si, dx
+cmp   ax, word ptr ds:[_fieldofview]
+jbe   label_17
+sub   ax, word ptr ds:[_fieldofview]
+cmp   ax, bx
+ja    label_13
+jne   label_16
+cmp   dx, word ptr [bp - 8]
+jae   label_13
+label_16:
+mov   cx, word ptr ds:[_clipangle]
+neg   cx
+label_17:
+mov   dx, VIEWANGLETOX_SEGMENT
+lea   si, [di + ANG90_HIGHBITS]
+add   ch, (ANG90_HIGHBITS SHR 8)
+shr   si, 3
+mov   bx, cx
+mov   es, dx
+shr   bx, 3
+add   si, si
+add   bx, bx
+mov   si, word ptr es:[si]
+mov   ax, word ptr es:[bx]
+cmp   si, ax
+je    label_13
+dec   ax
+mov   bx, OFFSET _solidsegs
+cmp   ax, word ptr ds:[_solidsegs + 2]
+jle   label_14
+label_15:
+add   bx, 4
+cmp   ax, word ptr [bx + 2]
+jg    label_15
+label_14:
+cmp   si, word ptr [bx]
+jl    label_12
+cmp   ax, word ptr [bx + 2]
+jg    label_12
+label_13:
+xor   al, al
+leave 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label_26:
+mov   di, OFFSET _viewx
+cmp   word ptr [di], 0
+jne   label_11
+mov   di, OFFSET _viewx + 2
+mov   ax, word ptr [di]
+cmp   ax, word ptr es:[bx + 4]
+jne   label_11
+jmp   label_10
+label_11:
+mov   di, OFFSET _viewx + 2
+mov   ax, word ptr [di]
+cmp   ax, word ptr es:[bx + 6]
+jge   label_22
+mov   ax, 1
+jmp   label_9
+label_22:
+mov   ax, 2
+jmp   label_9
+label_25:
+cmp   ax, word ptr es:[bx + 2]
+jle   label_23
+label_8:
+mov   ax, 1
+jmp   label_7
+label_23:
+mov   di, OFFSET _viewy
+cmp   word ptr [di], 0
+jle   label_24
+mov   di, OFFSET _viewy + 2
+mov   ax, word ptr [di]
+cmp   ax, word ptr es:[bx + 2]
+je    label_8
+label_24:
+mov   ax, 2
+jmp   label_7
+label_12:
+mov   al, 1
+leave 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+R_CBB_SWITCH_CASE_01:
+mov   ax, word ptr es:[bx + 6]
+mov   cx, word ptr es:[bx]
+mov   si, word ptr es:[bx + 4]
+mov   word ptr [bp - 2], ax
+mov   word ptr [bp - 4], cx
+jmp   boxpos_switchblock_done
+R_CBB_SWITCH_CASE_02:
+mov   ax, word ptr es:[bx + 6]
+mov   si, word ptr es:[bx + 4]
+mov   word ptr [bp - 2], ax
+mov   ax, word ptr es:[bx + 2]
+mov   cx, word ptr es:[bx]
+jmp   label_5
+R_CBB_SWITCH_CASE_03:
+R_CBB_SWITCH_CASE_07:
+mov   cx, word ptr es:[bx]
+mov   word ptr [bp - 4], cx
+mov   si, cx
+mov   word ptr [bp - 2], cx
+jmp   boxpos_switchblock_done
+R_CBB_SWITCH_CASE_04:
+mov   si, word ptr es:[bx + 4]
+mov   ax, word ptr es:[bx]
+mov   cx, word ptr es:[bx + 2]
+mov   word ptr [bp - 2], si
+jmp   label_5
+R_CBB_SWITCH_CASE_06:
+mov   si, word ptr es:[bx + 6]
+mov   ax, word ptr es:[bx + 2]
+mov   cx, word ptr es:[bx]
+mov   word ptr [bp - 2], si
+jmp   label_5
+R_CBB_SWITCH_CASE_08:
+mov   ax, word ptr es:[bx + 4]
+mov   si, word ptr es:[bx + 6]
+jmp   label_6
+R_CBB_SWITCH_CASE_09:
+mov   ax, word ptr es:[bx + 4]
+mov   cx, word ptr es:[bx + 2]
+mov   si, word ptr es:[bx + 6]
+mov   word ptr [bp - 2], ax
+mov   word ptr [bp - 4], cx
+jmp   boxpos_switchblock_done
+R_CBB_SWITCH_CASE_10:
+mov   ax, word ptr es:[bx + 4]
+mov   si, word ptr es:[bx + 6]
+mov   word ptr [bp - 2], ax
+mov   ax, word ptr es:[bx + 2]
+mov   cx, word ptr es:[bx]
+jmp   label_5
+
+ENDP
 
 
 ; TODO: externalize this and R_ExecuteSetViewSize and its children to asm, load from binary
