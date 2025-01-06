@@ -52,6 +52,7 @@ EXTRN _clipangle:WORD
 EXTRN _fieldofview:WORD
 EXTRN _pspritescale:WORD
 EXTRN _player:WORD
+EXTRN _r_cachedplayerMobjsecnum:WORD
 
 
 .CODE
@@ -5934,6 +5935,105 @@ ret
 
 
 ENDP
+
+;R_PrepareMaskedPSprites_
+
+PROC R_PrepareMaskedPSprites_ NEAR
+PUBLIC R_PrepareMaskedPSprites_ 
+
+push  bx
+push  cx
+push  dx
+
+mov   bx, word ptr ds:[_r_cachedplayerMobjsecnum]
+mov   ax, SECTORS_SEGMENT
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shl   bx, 4
+ELSE
+shl   bx, 1
+shl   bx, 1
+shl   bx, 1
+shl   bx, 1
+ENDIF
+
+mov   es, ax
+mov   al, byte ptr es:[bx + 0Eh]  ; sector lightlevel byte offset
+xor   ah, ah
+mov   dx, ax
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+sar   dx, 4
+ELSE
+sar   dx, 1
+sar   dx, 1
+sar   dx, 1
+sar   dx, 1
+ENDIF
+
+mov   al, byte ptr ds:[_extralight]
+add   ax, dx
+cmp   al, 240   ; checking if its < 0, by checking if its above max possible
+ja    use_spritelights_zero
+cmp   al, LIGHTLEVELS
+jb    calculate_spritelights
+; use max spritelight
+mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]
+player_spritelights_set:
+mov   word ptr ds:[_spritelights], ax
+
+first_iter:
+
+mov   bx, word ptr ds:[_psprites]
+cmp   bx, STATENUM_NULL
+je    sprite_1_null
+add   bx, bx
+mov   ax, STATES_RENDER_SEGMENT
+mov   cx, OFFSET _player_vissprites
+mov   es, ax
+mov   ax, OFFSET _psprites
+mov   dl, byte ptr es:[bx]
+mov   bl, byte ptr es:[bx+1]
+xor   bh, bh
+xor   dh, dh
+call  R_DrawPSprite_
+sprite_1_null:
+
+second_iter:
+
+mov   bx, word ptr ds:[_psprites + 0Ch]
+cmp   bx, -1
+je    sprite_2_null
+add   bx, bx
+mov   ax, STATES_RENDER_SEGMENT
+mov   cx, OFFSET _player_vissprites + 028h
+mov   es, ax
+mov   ax, OFFSET _psprites + 0Ch
+mov   dl, byte ptr es:[bx]
+mov   bl, byte ptr es:[bx+1]
+xor   bh, bh
+xor   dh, dh
+call  R_DrawPSprite_
+sprite_2_null:
+
+pop   dx
+pop   cx
+pop   bx
+ret  
+
+use_spritelights_zero:
+xor   ax, ax
+jmp   player_spritelights_set
+calculate_spritelights:
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   ax, word ptr ds:[bx + _lightmult48lookup]
+jmp   player_spritelights_set
+
+
+ENDP
+
 
 
 ; TODO: externalize this and R_ExecuteSetViewSize and its children to asm, load from binary

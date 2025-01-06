@@ -696,6 +696,8 @@ void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframe
 }
 */
 
+/*
+
 void __near R_PrepareMaskedPSprites(void) {
 	uint8_t         i;
 	uint8_t         lightnum;
@@ -722,6 +724,7 @@ void __near R_PrepareMaskedPSprites(void) {
 
 
 }
+*/
 /*
 //
 // R_ProjectSprite

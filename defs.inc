@@ -251,7 +251,7 @@ SELFMODIFY_COLFUNC_jump_offset =                        SELFMODIFY_COLFUNC_set_d
 
 
 
-
+STATENUM_NULL = -1
 
 
 
