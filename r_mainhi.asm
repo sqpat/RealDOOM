@@ -31,7 +31,6 @@ EXTRN FixedDivWholeA_:PROC
 EXTRN FastDiv3232_shift_3_8_:PROC
 EXTRN R_PointToAngle_:PROC
 EXTRN R_PointToAngle16_:PROC
-EXTRN FixedMul16u32_:PROC
 
 EXTRN R_GetColumnSegment_:NEAR
 
@@ -5625,7 +5624,7 @@ PUBLIC R_DrawPSprite_
 
 ; bp - 2      frame (arg)
 ; bp - 4      flip
-; bp - 6      temp  fracbits
+; bp - 6      UNUSED  (filtered out)
 ; bp - 8      usedwidth
 ; bp - 0Ah    tx    intbits
 ; bp - 0Ch    spriteindex
@@ -5700,30 +5699,38 @@ SELFMODIFY_BSP_pspritescale_1_AFTER = SELFMODIFY_BSP_pspritescale_1+2
 pspritescale_nonzero_1:
 mov   bx, word ptr [bp - 010h]
 mov   cx, word ptr [bp - 0Ah]
-call  FixedMul16u32_
-xor   bx, bx
-add   bx, ax
-mov   word ptr [bp - 6], bx
+
+; inlined FixedMul16u32_
+XCHG BX, AX    ; AX stored in BX
+MUL  BX        ; AX * BX
+MOV  AX, CX    ; CX to AX
+MOV  CX, DX    ; CX stores low word
+CWD            ; S1 in DX
+AND  DX, BX    ; S1 * AX
+NEG  DX        ; 
+XCHG DX, BX    ; AX into DX, high word into BX
+MUL  DX        ; AX*CX
+ADD AX, CX     ; add low word
+ADC DX, BX     ; add high word
+
 adc   di, dx
 jmp   x1_calculcated
 SELFMODIFY_BSP_pspritescale_1_TARGET:
 pspritescale_zero_1:
 mov   ax, word ptr [bp - 010h]
-mov   word ptr [bp - 6], ax
 adc   di, word ptr [bp - 0Ah]
 x1_calculcated:
 mov   bx, word ptr [bp - 0Ch]
 mov   es, word ptr ds:[_spritewidths_segment]
 mov   al, byte ptr es:[bx]
-mov   word ptr [bp - 6], 0
 xor   ah, ah
 mov   word ptr [bp - 0Eh], di
-mov   word ptr [bp - 8], ax
 cmp   ax, 1
 jne   usedwidth_not_1_2
-mov   word ptr [bp - 8], 257     ; hardcoded special case value..  todo make constant
+mov   ax, 256     ; hardcoded special case value..  todo make constant
+
 usedwidth_not_1_2:
-mov   ax, word ptr [bp - 8]
+mov   word ptr [bp - 8], ax
 add   word ptr [bp - 0Ah], ax
 SELFMODIFY_BSP_centerx_8:
 mov   di, 01000h
@@ -5735,16 +5742,27 @@ SELFMODIFY_BSP_pspritescale_2_AFTER = SELFMODIFY_BSP_pspritescale_2 + 2
 pspritescale_nonzero_2:
 mov   bx, word ptr [bp - 010h]
 mov   cx, word ptr [bp - 0Ah]
-call  FixedMul16u32_
-add   word ptr [bp - 6], ax
-adc   di, dx
+
+; inlined FixedMul16u32_
+XCHG BX, AX    ; AX stored in BX
+MUL  BX        ; AX * BX
+MOV  AX, CX    ; CX to AX
+MOV  CX, DX    ; CX stores low word
+CWD            ; S1 in DX
+AND  DX, BX    ; S1 * AX
+NEG  DX        ; 
+XCHG DX, BX    ; AX into DX, high word into BX
+MUL  DX        ; AX*CX
+ADD AX, CX     ; add low word
+ADC DX, BX     ; add high word
+
+add   di, dx
 jmp   x2_calculcated
 
 SELFMODIFY_BSP_pspritescale_2_TARGET:
 pspritescale_zero_2:
 mov   ax, word ptr [bp - 010h]
-add   word ptr [bp - 6], ax
-adc   di, word ptr [bp - 0Ah]
+add   di, word ptr [bp - 0Ah]
 jmp   x2_calculcated
 
 x2_calculcated:
@@ -5754,7 +5772,6 @@ mov   es, ax
 mov   al, byte ptr es:[bx]
 lea   dx, [di - 1]
 cbw  
-mov   word ptr [bp - 6], 0
 mov   di, ax
 
 ;        // hack to make this fit in 8 bits, check r_init.c
@@ -5765,10 +5782,10 @@ mov   di, ax
 cmp   ax, -128  ; hack to fit data in 8 bits
 jne   tempbits_not_minus128
 mov   di, 129   ; hack to fit data in 8 bits
+
 tempbits_not_minus128:
 mov   bx, word ptr [bp - 012h]
 mov   ax, word ptr [bx + 8]
-sub   ax, word ptr [bp - 6]
 mov   cx, word ptr [bx + 0Ah]
 mov   bx, FRACUNIT_OVER_2
 sbb   cx, di
@@ -5789,6 +5806,7 @@ xor   ax, ax
 
 x1_positive_2:
 mov   word ptr [si + 2], ax
+
 SELFMODIFY_BSP_viewwidth_4:
 mov   ax, 01000h
 cmp   dx, ax
@@ -5822,9 +5840,14 @@ rcl   dx, 1
 shl   ax, 1
 rcl   dx, 1
 
-
 mov   word ptr [si + 01Ah], ax
 mov   word ptr [si + 01Ch], dx
+
+SELFMODIFY_BSP_pspriteiscale_lo_1:
+mov   bx, 01000h
+SELFMODIFY_BSP_pspriteiscale_hi_1:
+mov   cx, 01000h
+
 cmp   byte ptr [bp - 4], 0       ; check flip
 jne   flip_on
 
@@ -5832,34 +5855,31 @@ flip_off:
 
 mov   word ptr [si + 016h], 0
 mov   word ptr [si + 018h], 0
-SELFMODIFY_BSP_pspriteiscale_lo_2:
-mov   word ptr [si + 01Eh], 01000h
-SELFMODIFY_BSP_pspriteiscale_hi_2:
-mov   word ptr [si + 020h], 01000h
 jmp   vis_startfrac_set
 
 flip_on:
-SELFMODIFY_BSP_pspriteiscale_hi_1:
-mov   word ptr [si + 020h], 01000h
-SELFMODIFY_BSP_pspriteiscale_lo_1:
-mov   word ptr [si + 01Eh], 01000h
-mov   di, word ptr [bp - 8]
-neg   word ptr [si + 020h]
-mov   ax, word ptr [bp - 6]
-neg   word ptr [si + 01Eh]
-sbb   word ptr [si + 020h], 0
-add   ax, -1
-adc   di, -1
-mov   word ptr [si + 016h], ax
-mov   word ptr [si + 018h], di
+
+neg   cx
+neg   bx
+sbb   cx, 0
+
+
+; mov ax, 0; add ax, -1; adc di, -1 optimized 
+
+mov   ax, word ptr [bp - 8]
+dec   ax
+mov   word ptr [si + 016h], -1
+mov   word ptr [si + 018h], ax
 
 vis_startfrac_set:
+mov   word ptr [si + 01Eh], bx
+mov   word ptr [si + 020h], cx
+
 mov   ax, word ptr [si + 2]
 cmp   ax, word ptr [bp - 0Eh]
 jle   vis_x1_greater_than_x1_2
 sub   ax, word ptr [bp - 0Eh]
-mov   bx, word ptr [si + 01Eh]
-mov   cx, word ptr [si + 020h]
+
 call  FastMul16u32u_
 add   word ptr [si + 016h], ax
 adc   word ptr [si + 018h], dx
@@ -6168,11 +6188,9 @@ done_with_pspritescale_zero_selfmodifies:
 
 
 mov      ax,  word ptr ss:[_pspriteiscale]
-mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_lo_1+3], ax
-mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_lo_2+3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_lo_1+1], ax
 mov      ax,  word ptr ss:[_pspriteiscale+2]
-mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_hi_1+3], ax
-mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_hi_2+3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_hi_1+1], ax
 
 
 
