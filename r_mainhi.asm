@@ -623,14 +623,14 @@ mov   cx, ax
 xor   ax, ax
 ; DX:AX = y
 ; CX:BX = x
-SELFMODIFY_set_viewx_lo_2:
+SELFMODIFY_BSP_viewx_lo_2:
 sub   bx, 01000h
-SELFMODIFY_set_viewx_hi_2:
+SELFMODIFY_BSP_viewx_hi_2:
 sbb   cx, 01000h
 
-SELFMODIFY_set_viewy_lo_2:
+SELFMODIFY_BSP_viewy_lo_2:
 sub   ax, 01000h
-SELFMODIFY_set_viewy_hi_2:
+SELFMODIFY_BSP_viewy_hi_2:
 sbb   dx, 01000h
 
 
@@ -1788,21 +1788,21 @@ mov   ds, bx					; restore ds to 3C00
 lea   si, [bp - 01Ah]
 
 lodsw
-SELFMODIFY_set_viewx_lo_1:
+SELFMODIFY_BSP_viewx_lo_1:
 sub   ax, 01000h
 stosw
 xchg   bx, ax
 lodsw
-SELFMODIFY_set_viewx_hi_1:
+SELFMODIFY_BSP_viewx_hi_1:
 sbb   ax, 01000h
 stosw
 xchg   cx, ax						
 lodsw
-SELFMODIFY_set_viewy_lo_1:
+SELFMODIFY_BSP_viewy_lo_1:
 sub   ax, 01000h
 stosw
 lodsw
-SELFMODIFY_set_viewy_hi_1:
+SELFMODIFY_BSP_viewy_hi_1:
 sbb   ax, 01000h
 stosw
 
@@ -1974,14 +1974,14 @@ mov   bx, word ptr [bp - 016h]
 mov   cx, word ptr [bp - 014h]
 
 
-SELFMODIFY_set_viewx_lo_3:
+SELFMODIFY_BSP_viewx_lo_3:
 sub   ax, 01000h
-SELFMODIFY_set_viewx_hi_3:
+SELFMODIFY_BSP_viewx_hi_3:
 sbb   dx, 01000h
 
-SELFMODIFY_set_viewy_lo_3:
+SELFMODIFY_BSP_viewy_lo_3:
 sub   bx, 01000h
-SELFMODIFY_set_viewy_hi_3:
+SELFMODIFY_BSP_viewy_hi_3:
 sbb   cx, 01000h
 
 call  R_PointToAngle_
@@ -6033,11 +6033,6 @@ ENDP
 
 R_CHECKBBOX_SWITCH_JMP_TABLE:
 
-;db 084h, 000h, 0BDh, 001h, 0D1h, 001h, 0E6h, 001h
-;db 0F4h, 001h, 099h, 000h, 005h, 002h, 0E6h, 001h
-;db 016h, 002h, 021h, 002h, 036h, 002h
-
-
 dw R_CBB_SWITCH_CASE_00, R_CBB_SWITCH_CASE_01, R_CBB_SWITCH_CASE_02, R_CBB_SWITCH_CASE_03
 dw R_CBB_SWITCH_CASE_04, R_CBB_SWITCH_CASE_05, R_CBB_SWITCH_CASE_06, R_CBB_SWITCH_CASE_07
 dw R_CBB_SWITCH_CASE_08, R_CBB_SWITCH_CASE_09, R_CBB_SWITCH_CASE_10
@@ -6058,36 +6053,82 @@ mov   bp, sp
 sub   sp, 8
 mov   bx, ax
 mov   es, dx
-mov   di, OFFSET _viewx + 2
-mov   ax, word ptr [di]
-cmp   ax, word ptr es:[bx + 4]
-jge   label_1
-label_10:
+
+;es:[bx] is bspcoord
+;	// Find the corners of the box
+;	// that define the edges from current viewpoint.
+
+SELFMODIFY_BSP_viewx_hi_4:
+mov   ax, 01000h
+cmp   ax, word ptr es:[bx + 4]         ; bspcoord[BOXLEFT]
+
+SELFMODIFY_BSP_viewx_lo_4:
+jge   viewx_greater_than_left    ; 7d xx
+SELFMODIFY_BSP_viewx_lo_4_AFTER:
+set_boxx_0:
+mov   dl, 0
+check_boxy:
+
+SELFMODIFY_BSP_viewy_hi_4:
+mov   ax, 01000h
+cmp   ax, word ptr es:[bx]         ; bspcoord[BOXTOP]
+jl    viewy_less_than_top
 xor   ax, ax
-label_9:
-mov   di, OFFSET _viewy + 2
-mov   dl, al
-mov   ax, word ptr [di]
-cmp   ax, word ptr es:[bx]
-jl    label_2
-xor   ax, ax
-label_7:
+boxy_calculated:
 shl   al, 2
 add   al, dl
 cmp   al, 5
-je    label_3
-cmp   al, 10    ; largest bitmap value; skip switch block
-ja    boxpos_switchblock_done
+je    return_1
 xor   ah, ah
 mov   di, ax
 add   di, ax
+; switch block jump
 jmp   word ptr cs:[di + R_CHECKBBOX_SWITCH_JMP_TABLE]
-label_1:
-jmp   label_26
-label_2:
-jmp   label_25
-label_3:
-jmp   label_12
+SELFMODIFY_BSP_viewx_lo_4_TARGET_2:
+; jmp here if viewx lobits are 0.
+viewx_greater_than_left:
+cmp   ax, word ptr es:[bx + 4]         ; bspcoord[BOXLEFT]
+jne   boxx_check_2nd_expression
+jmp   set_boxx_0
+; jmp here if viewx lobits are nonzero.
+SELFMODIFY_BSP_viewx_lo_4_TARGET_1:
+boxx_check_2nd_expression:
+mov   ax, word ptr ds:[_viewx + 2]
+cmp   ax, word ptr es:[bx + 6]         ; bspcoord[BOXRIGHT]
+jge   set_boxx_2
+set_boxx_1:
+mov   dl, 1
+jmp   check_boxy
+set_boxx_2:
+mov   dl, 2
+jmp   check_boxy
+viewy_less_than_top:
+cmp   ax, word ptr es:[bx + 2]         ; bspcoord[BOXBOTTOM]
+SELFMODIFY_BSP_viewy_lo_4:
+jle   boxy_check_2nd_expression
+SELFMODIFY_BSP_viewy_lo_4_AFTER:
+set_boxy_1:
+mov   ax, 1
+jmp   boxy_calculated
+boxy_check_2nd_expression:
+;cmp   word ptr ds:[_viewy], 0
+;jle   set_boxy_2
+; ax still viewy highbits
+SELFMODIFY_BSP_viewy_lo_4_TARGET_2:
+cmp   ax, word ptr es:[bx + 2]         ; bspcoord[BOXBOTTOM]
+je    set_boxy_1
+SELFMODIFY_BSP_viewy_lo_4_TARGET_1:
+set_boxy_2:
+mov   ax, 2
+jmp   boxy_calculated
+return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
 R_CBB_SWITCH_CASE_00:
 mov   ax, word ptr es:[bx + 6]
 mov   si, word ptr es:[bx + 4]
@@ -6101,15 +6142,14 @@ R_CBB_SWITCH_CASE_05:
 boxpos_switchblock_done:
 mov   dx, word ptr [bp - 4]
 mov   ax, word ptr [bp - 2]
-mov   di, OFFSET _viewangle
+mov   bx, OFFSET _viewangle
 call  R_PointToAngle16_
-sub   ax, word ptr [di]
-sbb   dx, word ptr [di + 2]
+sub   ax, word ptr ds:[bx]
+sbb   dx, word ptr ds:[bx + 2]
 mov   word ptr [bp - 6], ax
 mov   di, dx
 mov   ax, si
 mov   dx, cx
-mov   bx, OFFSET _viewangle
 call  R_PointToAngle16_
 mov   si, ax
 mov   cx, dx
@@ -6121,7 +6161,7 @@ mov   bx, di
 sbb   bx, cx
 mov   word ptr [bp - 8], ax
 cmp   bx, ANG180_HIGHBITS
-jae   label_3
+jae   return_1
 mov   ax, word ptr ds:[_clipangle]
 add   ax, di
 cmp   ax, word ptr ds:[_fieldofview]
@@ -6129,13 +6169,30 @@ jbe   label_20
 sub   ax, word ptr ds:[_fieldofview]
 cmp   ax, bx
 jbe   label_21
-label_19:
-jmp   label_13
+
+also_return_0:
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+
+also_return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+
 label_21:
 jne   label_18
 mov   ax, word ptr [bp - 6]
 cmp   ax, word ptr [bp - 8]
-jae   label_19
+jae   also_return_0
 label_18:
 mov   di, word ptr ds:[_clipangle]
 label_20:
@@ -6148,10 +6205,10 @@ cmp   ax, word ptr ds:[_fieldofview]
 jbe   label_17
 sub   ax, word ptr ds:[_fieldofview]
 cmp   ax, bx
-ja    label_13
+ja    also_return_0
 jne   label_16
 cmp   dx, word ptr [bp - 8]
-jae   label_13
+jae   also_return_0
 label_16:
 mov   cx, word ptr ds:[_clipangle]
 neg   cx
@@ -6159,81 +6216,39 @@ label_17:
 mov   dx, VIEWANGLETOX_SEGMENT
 lea   si, [di + ANG90_HIGHBITS]
 add   ch, (ANG90_HIGHBITS SHR 8)
-shr   si, 3
+shr   si, 1
+shr   si, 1
 mov   bx, cx
 mov   es, dx
-shr   bx, 3
-add   si, si
-add   bx, bx
+shr   bx, 1
+shr   bx, 1
 mov   si, word ptr es:[si]
 mov   ax, word ptr es:[bx]
 cmp   si, ax
-je    label_13
+je    also_return_0
 dec   ax
 mov   bx, OFFSET _solidsegs
-cmp   ax, word ptr ds:[_solidsegs + 2]
-jle   label_14
-label_15:
+cmp   ax, word ptr ds:[bx + 2]
+jle   found_solidsegs
+loop_find_solidsegs:
 add   bx, 4
 cmp   ax, word ptr [bx + 2]
-jg    label_15
-label_14:
+jg    loop_find_solidsegs
+found_solidsegs:
 cmp   si, word ptr [bx]
-jl    label_12
+jl    also_return_1
 cmp   ax, word ptr [bx + 2]
-jg    label_12
-label_13:
+jg    also_return_1
+return_0:
 xor   al, al
-leave 
+LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
 pop   bx
 ret   
-label_26:
-mov   di, OFFSET _viewx
-cmp   word ptr [di], 0
-jne   label_11
-mov   di, OFFSET _viewx + 2
-mov   ax, word ptr [di]
-cmp   ax, word ptr es:[bx + 4]
-jne   label_11
-jmp   label_10
-label_11:
-mov   di, OFFSET _viewx + 2
-mov   ax, word ptr [di]
-cmp   ax, word ptr es:[bx + 6]
-jge   label_22
-mov   ax, 1
-jmp   label_9
-label_22:
-mov   ax, 2
-jmp   label_9
-label_25:
-cmp   ax, word ptr es:[bx + 2]
-jle   label_23
-label_8:
-mov   ax, 1
-jmp   label_7
-label_23:
-mov   di, OFFSET _viewy
-cmp   word ptr [di], 0
-jle   label_24
-mov   di, OFFSET _viewy + 2
-mov   ax, word ptr [di]
-cmp   ax, word ptr es:[bx + 2]
-je    label_8
-label_24:
-mov   ax, 2
-jmp   label_7
-label_12:
-mov   al, 1
-leave 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
+
+
 R_CBB_SWITCH_CASE_01:
 mov   ax, word ptr es:[bx + 6]
 mov   cx, word ptr es:[bx]
@@ -6656,22 +6671,49 @@ done_with_bsp_fixedcolormap_selfmodify:
 
 
 mov      ax, word ptr ss:[_viewx]
-mov      word ptr ds:[SELFMODIFY_set_viewx_lo_1+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewx_lo_2+2], ax
-mov      word ptr ds:[SELFMODIFY_set_viewx_lo_3+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_3+1], ax
+
+test     ax, ax
+jne      selfmodify_viewx_lo_nonzero
+mov      ax, ((SELFMODIFY_BSP_viewx_lo_4_TARGET_2 - SELFMODIFY_BSP_viewx_lo_4_AFTER) SHL 8) + 07Dh
+
+jmp      selfmodify_viewx_done
+selfmodify_viewx_lo_nonzero:
+mov      ax, ((SELFMODIFY_BSP_viewx_lo_4_TARGET_1 - SELFMODIFY_BSP_viewx_lo_4_AFTER) SHL 8) + 07Dh
+selfmodify_viewx_done:
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_4], ax
+
 mov      ax, word ptr ss:[_viewx+2]
-mov      word ptr ds:[SELFMODIFY_set_viewx_hi_1+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewx_hi_2+2], ax
-mov      word ptr ds:[SELFMODIFY_set_viewx_hi_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_4+1], ax
 
 mov      ax, word ptr ss:[_viewy]
-mov      word ptr ds:[SELFMODIFY_set_viewy_lo_1+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewy_lo_2+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewy_lo_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_2+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_3+2], ax
+
+cmp      ax, 0
+jle      selfmodify_viewy_lo_lessthanequaltozero
+mov      ax, ((SELFMODIFY_BSP_viewy_lo_4_TARGET_2 - SELFMODIFY_BSP_viewy_lo_4_AFTER) SHL 8) + 07Eh ;jle
+
+jmp      selfmodify_viewy_done
+selfmodify_viewy_lo_lessthanequaltozero:
+mov      ax, ((SELFMODIFY_BSP_viewy_lo_4_TARGET_1 - SELFMODIFY_BSP_viewy_lo_4_AFTER) SHL 8) + 07Eh ;jle
+selfmodify_viewy_done:
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_4], ax
+
+
+
 mov      ax, word ptr ss:[_viewy+2]
-mov      word ptr ds:[SELFMODIFY_set_viewy_hi_1+1], ax
-mov      word ptr ds:[SELFMODIFY_set_viewy_hi_2+2], ax
-mov      word ptr ds:[SELFMODIFY_set_viewy_hi_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_4+1], ax
+
 
 mov      ax, word ptr ss:[_viewangle_shiftright3]
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_1+1], ax
