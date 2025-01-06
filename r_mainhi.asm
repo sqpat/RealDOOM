@@ -30,7 +30,7 @@ EXTRN FastMul16u32u_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN FastDiv3232_shift_3_8_:PROC
 EXTRN R_PointToAngle_:PROC
-EXTRN R_PointToAngle16_:PROC
+EXTRN R_PointToAngle16Old_:PROC
 
 EXTRN R_GetColumnSegment_:NEAR
 
@@ -1142,12 +1142,12 @@ shl   si, 1
 mov   di, word ptr es:[si]       ; v2.x
 mov   cx, word ptr es:[si + 2]   ; v2.y
 mov   word ptr ds:[_curseg_render], bx
-call  R_PointToAngle16_
+call  R_PointToAngle16Old_    ; todo debug why this doesnt work with the other one. stack corruption?
 mov   bx, ax
 mov   si, dx      ; SI: BX stores angle1
 mov   ax, di      ; move v2 into dx:ax
 mov   dx, cx      ; move v2 into dx:ax
-call  R_PointToAngle16_
+call  R_PointToAngle16Old_    ; todo debug why this doesnt work with the other one. stack corruption?
 mov   di, ax
 mov   ax, bx
 sub   ax, di
@@ -5968,7 +5968,8 @@ sar   dx, 1
 sar   dx, 1
 ENDIF
 
-mov   al, byte ptr ds:[_extralight]
+SELFMODIFY_BSP_extralight3:
+mov   al, 0
 add   ax, dx
 cmp   al, 240   ; checking if its < 0, by checking if its above max possible
 ja    use_spritelights_zero
@@ -6031,6 +6032,38 @@ jmp   player_spritelights_set
 
 ENDP
 
+;R_PointToAngle16_
+
+PROC R_PointToAngle16_ NEAR
+PUBLIC R_PointToAngle16_ 
+
+; todo reorder params?
+
+push bx
+push cx
+mov  cx, dx
+mov  dx, ax
+xor  ax, ax
+SELFMODIFY_BSP_viewx_lo_5:
+sub  ax, 01000h
+SELFMODIFY_BSP_viewx_hi_5:
+sbb  dx, 01000h
+xor  bx, bx
+SELFMODIFY_BSP_viewy_lo_5:
+sub  bx, 01000h
+SELFMODIFY_BSP_viewy_hi_5:
+sbb  cx, 01000h
+mov  bx, bx
+
+call R_PointToAngle_
+pop  cx
+pop  bx
+
+
+ret  
+
+ENDP
+
 R_CHECKBBOX_SWITCH_JMP_TABLE:
 
 dw R_CBB_SWITCH_CASE_00, R_CBB_SWITCH_CASE_01, R_CBB_SWITCH_CASE_02, R_CBB_SWITCH_CASE_03
@@ -6044,13 +6077,12 @@ PUBLIC R_CheckBBox_
 
 ; jmp table for switch block.... 
 
+; todo improve args.
+
 push  bx
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
 mov   bx, ax
 mov   es, dx
 
@@ -6123,7 +6155,6 @@ mov   ax, 2
 jmp   boxy_calculated
 return_1:
 mov   al, 1
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
@@ -6167,17 +6198,20 @@ sbb   cx, 01000h
 
 ;	span.wu = angle1.wu - angle2.wu;
 ; bx:ax is span
+; eventually bx:si
 
 sub   ax, si
 mov   bx, di
 sbb   bx, cx
+
+mov   word ptr cs:[SELFMODIFY_BSP_forward_angle2_lobits+1], si
 
 ;	// Sitting on a line?
 ;	if (span.hu.intbits >= ANG180_HIGHBITS){
 ;		return true;
 ;	}
 
-mov   word ptr [bp - 2], ax   ; span low bits in bp-2...
+mov   si, ax   ; span low bits in si
 cmp   bx, ANG180_HIGHBITS
 jae   return_1
 
@@ -6189,7 +6223,7 @@ SELFMODIFY_BSP_clipangle_7:
 mov   ax, 01000h
 add   ax, di
 
-; ax:bx is tspan.
+; ax:dx is tspan.
 
 ;	if (tspan.hu.intbits > fieldofview) {
 ;		tspan.hu.intbits -= fieldofview;
@@ -6214,7 +6248,6 @@ je    check_tspan_vs_span_lobits
 
 also_return_0:
 xor   al, al
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
@@ -6223,7 +6256,6 @@ ret
 
 also_return_1:
 mov   al, 1
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
@@ -6231,7 +6263,7 @@ pop   bx
 ret   
 
 check_tspan_vs_span_lobits:
-cmp   dx, word ptr [bp - 2]  ; angle1 fracbits compare 
+cmp   dx, si  ; angle1 fracbits compare 
 jae   also_return_0
 tspan_smaller_than_span:
 
@@ -6248,7 +6280,10 @@ done_with_first_tspan_adjustment:
 
 SELFMODIFY_BSP_clipangle_6:
 mov   ax, 01000h
-neg   si    ; get carry. si is tspan lobits...
+SELFMODIFY_BSP_forward_angle2_lobits:
+;todo see if we can get away without needing this using enough register juggling?
+mov   dx, 01000h
+neg   dx
 sbb   ax, cx
 
 ;	if (tspan.hu.intbits > fieldofview) {
@@ -6271,7 +6306,7 @@ cmp   ax, bx
 ja    also_return_0
 jne   tspan_smaller_than_span_2
 ; tspan fracbits are 0 - angle2 lobits. span lobits are [bp - 2]
-cmp   si, word ptr [bp - 2]    
+cmp   dx, si
 jbe   also_return_0           ; inverse check since si is inversed
 tspan_smaller_than_span_2:
 
@@ -6313,7 +6348,6 @@ cmp   ax, word ptr [bx + 2]
 jg    also_return_1
 return_0:
 xor   al, al
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
@@ -6698,6 +6732,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1], ax
 mov      al, byte ptr ss:[_extralight]
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight1+1], al
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight2+1], al
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight3+1], al
 
 mov      al, byte ptr ss:[_fixedcolormap]
 cmp      al, 0
@@ -6744,6 +6779,7 @@ mov      ax, word ptr ss:[_viewx]
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_3+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_5+1], ax
 
 test     ax, ax
 jne      selfmodify_viewx_lo_nonzero
@@ -6760,11 +6796,13 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_4+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_5+2], ax
 
 mov      ax, word ptr ss:[_viewy]
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_2+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_5+2], ax
 
 cmp      ax, 0
 jle      selfmodify_viewy_lo_lessthanequaltozero
@@ -6783,6 +6821,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_4+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2], ax
 
 
 mov      ax, word ptr ss:[_viewangle_shiftright3]

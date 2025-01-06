@@ -113,7 +113,7 @@ retf
 
 ;R_PointToAngle_
 
-PROC R_PointToAngle_
+PROC R_PointToAngle_ FAR
 PUBLIC R_PointToAngle_
 
 ; inputs:

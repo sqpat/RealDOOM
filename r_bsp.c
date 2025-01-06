@@ -364,7 +364,7 @@ void __near R_AddLine (int16_t curlineNum) {
 //
 
 boolean __near R_CheckBBox(int16_t __far *bspcoord);
-
+ 
 /*
 boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 	byte boxx;

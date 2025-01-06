@@ -144,7 +144,9 @@ int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, int16_t segi
 
 //
 
-uint32_t __near R_PointToAngle16 (int16_t	x,int16_t	y) {
+
+uint32_t __near R_PointToAngle16 (int16_t	x,int16_t	y);
+uint32_t __near R_PointToAngle16Old (int16_t	x,int16_t	y) {
 
 	fixed_t_union xfp, yfp;
 	xfp.h.intbits = x;

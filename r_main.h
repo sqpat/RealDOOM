@@ -72,7 +72,6 @@
 #pragma aux (fiveparam)  R_PointOnSegSide;
 int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, int16_t segindex);
 
-uint32_t __near R_PointToAngle16 (int16_t	x, int16_t	y);
 uint32_t __far R_PointToAngle ( fixed_t_union	x, fixed_t_union	y );
 uint32_t __far R_PointToAngle2 ( fixed_t_union	x1, fixed_t_union	y1, fixed_t_union	x2, fixed_t_union	y2 );
 uint32_t __far R_PointToAngle2_16 (  int16_t	x2, int16_t	y2 );

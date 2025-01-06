@@ -897,7 +897,7 @@ void __far D_DoomMain2(void) {
 
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(R_PrepareMaskedPSprites, (byte __far *)R_WriteBackViewConstants - (byte __far *)R_PrepareMaskedPSprites, 1, fp);
+	FAR_fwrite(R_PointToAngle16, (byte __far *)R_PointToAngle2 - (byte __far *)R_PointToAngle16, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*
