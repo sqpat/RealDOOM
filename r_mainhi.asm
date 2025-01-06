@@ -6093,7 +6093,7 @@ jmp   set_boxx_0
 ; jmp here if viewx lobits are nonzero.
 SELFMODIFY_BSP_viewx_lo_4_TARGET_1:
 boxx_check_2nd_expression:
-mov   ax, word ptr ds:[_viewx + 2]
+; ax is already viewx hi
 cmp   ax, word ptr es:[bx + 6]         ; bspcoord[BOXRIGHT]
 jge   set_boxx_2
 set_boxx_1:
@@ -6142,10 +6142,11 @@ R_CBB_SWITCH_CASE_05:
 boxpos_switchblock_done:
 mov   dx, word ptr [bp - 4]
 mov   ax, word ptr [bp - 2]
-mov   bx, OFFSET _viewangle
 call  R_PointToAngle16_
-sub   ax, word ptr ds:[bx]
-sbb   dx, word ptr ds:[bx + 2]
+SELFMODIFY_BSP_viewangle_lo_3:
+sub   ax, 01000h
+SELFMODIFY_BSP_viewangle_hi_3:
+sbb   dx, 01000h
 mov   word ptr [bp - 6], ax
 mov   di, dx
 mov   ax, si
@@ -6154,19 +6155,24 @@ call  R_PointToAngle16_
 mov   si, ax
 mov   cx, dx
 mov   ax, word ptr [bp - 6]
-sub   si, word ptr [bx]
-sbb   cx, word ptr [bx + 2]
+SELFMODIFY_BSP_viewangle_lo_4:
+sub   si, 01000h
+SELFMODIFY_BSP_viewangle_hi_4:
+sbb   cx, 01000h
 sub   ax, si
 mov   bx, di
 sbb   bx, cx
 mov   word ptr [bp - 8], ax
 cmp   bx, ANG180_HIGHBITS
 jae   return_1
-mov   ax, word ptr ds:[_clipangle]
+SELFMODIFY_BSP_clipangle_7:
+mov   ax, 01000h
 add   ax, di
-cmp   ax, word ptr ds:[_fieldofview]
+SELFMODIFY_BSP_fieldofview_7:
+cmp   ax, 01000h
 jbe   label_20
-sub   ax, word ptr ds:[_fieldofview]
+SELFMODIFY_BSP_fieldofview_8:
+sub   ax, 01000h
 cmp   ax, bx
 jbe   label_21
 
@@ -6194,23 +6200,28 @@ mov   ax, word ptr [bp - 6]
 cmp   ax, word ptr [bp - 8]
 jae   also_return_0
 label_18:
-mov   di, word ptr ds:[_clipangle]
+SELFMODIFY_BSP_clipangle_5:
+mov   di, 01000h
 label_20:
 xor   dx, dx
-mov   ax, word ptr ds:[_clipangle]
+SELFMODIFY_BSP_clipangle_6:
+mov   ax, 01000h
 sub   dx, si
 sbb   ax, cx
 mov   si, dx
-cmp   ax, word ptr ds:[_fieldofview]
+SELFMODIFY_BSP_fieldofview_5:
+cmp   ax, 01000h
 jbe   label_17
-sub   ax, word ptr ds:[_fieldofview]
+SELFMODIFY_BSP_fieldofview_6:
+sub   ax, 01000h
 cmp   ax, bx
 ja    also_return_0
 jne   label_16
 cmp   dx, word ptr [bp - 8]
 jae   also_return_0
 label_16:
-mov   cx, word ptr ds:[_clipangle]
+SELFMODIFY_BSP_clipangle_8:
+mov   cx, 01000h
 neg   cx
 label_17:
 mov   dx, VIEWANGLETOX_SEGMENT
@@ -6222,6 +6233,8 @@ mov   bx, cx
 mov   es, dx
 shr   bx, 1
 shr   bx, 1
+and   si, 0FFFEh  ; need to and out the last bit. (is there a faster way?)
+and   bl, 0FEh    ; need to and out the last bit. (is there a faster way?)
 mov   si, word ptr es:[si]
 mov   ax, word ptr es:[bx]
 cmp   si, ax
@@ -6730,21 +6743,33 @@ mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1], ax
 mov      ax, word ptr ss:[_viewangle]
 mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_3+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_4+2], ax
 mov      ax, word ptr ss:[_viewangle+2]
 mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_4+2], ax
 
 mov      ax, word ptr ss:[_fieldofview]
 mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_2+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_3+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_4+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_5+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_6+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_7+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_8+1], ax
 
 mov      ax, word ptr ss:[_clipangle]
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_2+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_3+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_4+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_5+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_6+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_7+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_8+1], ax
 
 
 
