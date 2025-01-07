@@ -6078,14 +6078,14 @@ PUBLIC R_CheckBBox_
 
 ; jmp table for switch block.... 
 
-; todo improve args.
+
+; es:bx is bsp lookup
 
 push  bx
 push  cx
 push  si
 push  di
 mov   bx, ax
-mov   es, dx
 
 ;es:[bx] is bspcoord
 ;	// Find the corners of the box
@@ -6417,10 +6417,10 @@ NOT_NF_SUBSECTOR  = 07FFFh
 PROC R_RenderBSPNode_ FAR
 PUBLIC R_RenderBSPNode_ 
 
-; bp - 2    bsp segment (NODES_SEGMENT)
-; bp - 4    dy
-; bp - 6    sp
-; bp - 8    temp stack. left lo
+; bp - 2    UNUSED
+; bp - 4    UNSUED
+; bp - 6    UNUSED
+; bp - 8    temp stack
 
 push  bx
 push  cx
@@ -6440,55 +6440,57 @@ jne   after_inner_loop
 
 ; inner loop
 mov   ax, NODES_SEGMENT
-mov   word ptr [bp - 2], ax
-mov   dx, word ptr ds:[_viewx + 2]
 mov   es, ax
-mov   ax, word ptr ds:[_viewy + 2]
+SELFMODIFY_BSP_viewx_hi_6:
+mov   dx, 01000h
+SELFMODIFY_BSP_viewy_hi_6:
+mov   cx, 01000h
 shl   bx, 1       ; es:bx is node.. bspnum is bx shift right 3.
 shl   bx, 1
 shl   bx, 1
-mov   cx, ax
-mov   ax, word ptr es:[bx + 2]
+
+;        int16_t dx = viewx.h.intbits - bsp->x;
+;			int16_t dy = viewy.h.intbits - bsp->y;
+;			int16_t intermediate = bsp->dy ^ dx;
+
 sub   dx, word ptr es:[bx]
-sub   cx, ax
+sub   cx, word ptr es:[bx + 2]
 mov   ax, word ptr es:[bx + 6]
 mov   di, cx
-xor   ax, dx
-xor   di, ax
-xor   di, word ptr es:[bx + 4]
-mov   word ptr [bp - 8], di
-test  byte ptr [bp - 7], 080h ; sign check
-
 
 ;			// check signs... if one side is positive and the other negative, then we dont need to multiply to 
 ;			// figure out which is larger
 ;			if ((intermediate ^ dy ^ bsp->dx) & 0x8000){
 
+xor   ax, dx
+xor   di, ax
+xor   di, word ptr es:[bx + 4]
+test  di, 08000h ; sign check
+
+
+
 je    calculate_larger_side
 rol   ax, 1    ; ROLAND1
 and   ax, 1
-mov   dl, al
 calculate_next_bspnum:
 
 ;		bspnum = node_children[bspnum].children[side ^ 1];
-; side is dl
-mov   ax, NODE_CHILDREN_SEGMENT
-mov   es, ax
+; side is ax (ah is 0)
 
-mov   byte ptr [bp + si - 048h], dl       ; stack_side
+mov   byte ptr [bp + si - 048h], al       ; stack_side
 shr   bx, 1    ; bx is now bspnum * 4
-mov   ax, bx
-shr   ax, 1 
-shr   ax, 1 
-xor   dh, dh
-add   dx, dx
-sal   si, 1
-; todo store and use this preshifted.
-mov   word ptr [bp + si - 0C8h], ax       ; stack_bsp lookup
-sar   si, 1
-add   bx, dx
-inc   si
-mov   bx, word ptr es:[bx]
+sal   si, 1    ; shift for lookup
+; stored preshifted.
+mov   word ptr [bp + si - 0C8h], bx       ; stack_bsp lookup
+
+sal   ax, 1
+add   bx, ax   ; add side lookup
+sar   si, 1    ; unshift
+inc   si       ; 
+mov   dx, NODE_CHILDREN_SEGMENT
+mov   es, dx
+
+mov   bx, word ptr es:[bx]   ; new bspnum lookup
 jmp   main_bsp_loop
 after_inner_loop:
 
@@ -6515,7 +6517,6 @@ dec   si
 mov   di, si
 add   di, si   ; make di the word lookup
 mov   bl, byte ptr [bp + si - 048h]  ; stack_side
-mov   word ptr [bp - 6], di
 
 
 
@@ -6528,23 +6529,21 @@ mov   cx, word ptr [bp + di - 0C8h]  ; stack_bsp lookup
 xor   bl, 1       ; side ^ 1
 xor   bh, bh
 mov   dx, cx
-mov   ax, bx   ; todo get rid of this. go to ax directly.
+sar   dx, 1    ; stack_bsp was stored preshifted..
+sar   dx, 1
 add   dh, (NODES_RENDER_SEGMENT SHR 8)
-shl   ax, 1
-shl   ax, 1
-shl   ax, 1
-call  R_CheckBBox_
-test  al, al
-je    exit_check_bbox_loop
-mov   word ptr [bp - 6], di
-
-mov   dx, NODE_CHILDREN_SEGMENT
-mov   ax, cx
-add   bx, bx
+shl   bx, 1
+mov   ax, bx   ; todo get rid of this. go to ax directly.
 shl   ax, 1
 shl   ax, 1
 mov   es, dx
-add   bx, ax
+call  R_CheckBBox_
+test  al, al
+je    exit_check_bbox_loop
+
+mov   dx, NODE_CHILDREN_SEGMENT
+mov   es, dx
+add   bx, cx   ; cx preshifted 2
 mov   bx, word ptr es:[bx]
 jmp   main_bsp_loop
 
@@ -6559,21 +6558,23 @@ calculate_larger_side:
 
 mov   ax, word ptr es:[bx + 6]
 imul  dx
-mov   es, word ptr [bp - 2]
+mov   di, NODES_SEGMENT
+mov   es, di
+
 mov   word ptr [bp - 8], ax
-mov   di, dx
-mov   ax, word ptr es:[bx + 4]
-imul  cx             ; cx has dy
+xchg  ax, cx              ; cx had dy. gets lobits.
+mov   di, dx              ; store hibits
+imul  word ptr es:[bx + 4]
 cmp   dx, di
 jg    right_is_greater
 jne   left_is_greater
-cmp   ax, word ptr [bp - 8]
+cmp   ax, cx
 jbe   left_is_greater
 right_is_greater:
-mov   dl, 1
+mov   ax, 1
 jmp   calculate_next_bspnum
 left_is_greater:
-xor   dl, dl
+xor   ax, ax
 jmp   calculate_next_bspnum
 
 
@@ -6992,6 +6993,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_4+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_5+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_6+1], ax
 
 mov      ax, word ptr ss:[_viewy]
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_1+1], ax
@@ -7017,6 +7019,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_4+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_6+1], ax
 
 
 mov      ax, word ptr ss:[_viewangle_shiftright3]
