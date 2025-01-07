@@ -6417,10 +6417,6 @@ NOT_NF_SUBSECTOR  = 07FFFh
 PROC R_RenderBSPNode_ FAR
 PUBLIC R_RenderBSPNode_ 
 
-; bp - 2    UNUSED
-; bp - 4    UNSUED
-; bp - 6    UNUSED
-; bp - 8    temp stack
 
 push  bx
 push  cx
@@ -6429,7 +6425,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, ((MAX_BSP_DEPTH * 2) + (MAX_BSP_DEPTH * 1) + 8)
+sub   sp, ((MAX_BSP_DEPTH * 2) + (MAX_BSP_DEPTH * 1))
 mov   bx, word ptr ds:[_numnodes]
 xor   si, si      ; sp = 0
 dec   bx          ; bx is bspnum = numnodes - 1
@@ -6462,7 +6458,7 @@ mov   di, cx
 ;			// figure out which is larger
 ;			if ((intermediate ^ dy ^ bsp->dx) & 0x8000){
 
-xor   ax, dx
+xor   di, dx
 xor   di, ax
 xor   di, word ptr es:[bx + 4]
 test  di, 08000h ; sign check
@@ -6470,6 +6466,9 @@ test  di, 08000h ; sign check
 
 
 je    calculate_larger_side
+
+;				side = ROLAND1(intermediate);
+xor   ax, dx   ; recalc intermediate
 rol   ax, 1    ; ROLAND1
 and   ax, 1
 calculate_next_bspnum:
@@ -6477,11 +6476,11 @@ calculate_next_bspnum:
 ;		bspnum = node_children[bspnum].children[side ^ 1];
 ; side is ax (ah is 0)
 
-mov   byte ptr [bp + si - 048h], al       ; stack_side
+mov   byte ptr [bp + si - 040h], al       ; stack_side
 shr   bx, 1    ; bx is now bspnum * 4
 sal   si, 1    ; shift for lookup
 ; stored preshifted.
-mov   word ptr [bp + si - 0C8h], bx       ; stack_bsp lookup
+mov   word ptr [bp + si - 0C0h], bx       ; stack_bsp lookup
 
 sal   ax, 1
 add   bx, ax   ; add side lookup
@@ -6516,7 +6515,7 @@ je    exit_renderbspnode
 dec   si
 mov   di, si
 add   di, si   ; make di the word lookup
-mov   bl, byte ptr [bp + si - 048h]  ; stack_side
+mov   bl, byte ptr [bp + si - 040h]  ; stack_side
 
 
 
@@ -6525,7 +6524,7 @@ mov   bl, byte ptr [bp + si - 048h]  ; stack_side
 ;		//a node that has a visible backspace.
 
 loop_check_bbox:
-mov   cx, word ptr [bp + di - 0C8h]  ; stack_bsp lookup
+mov   cx, word ptr [bp + di - 0C0h]  ; stack_bsp lookup
 xor   bl, 1       ; side ^ 1
 xor   bh, bh
 mov   dx, cx
@@ -6556,12 +6555,11 @@ calculate_larger_side:
 ; dx is dx
 ; di is dy
 
-mov   ax, word ptr es:[bx + 6]
-imul  dx
+; ax is already bsp->dy
+imul  dx          ; dx is dx (ha)
 mov   di, NODES_SEGMENT
 mov   es, di
 
-mov   word ptr [bp - 8], ax
 xchg  ax, cx              ; cx had dy. gets lobits.
 mov   di, dx              ; store hibits
 imul  word ptr es:[bx + 4]
@@ -6589,8 +6587,8 @@ test  si, si
 je    exit_renderbspnode
 dec   di       ; di is the word lookup
 dec   di
-mov   bl, byte ptr [bp + si - 049h]   ; stack_side lookup, following dec not included yet
 dec   si
+mov   bl, byte ptr [bp + si - 040h]   ; stack_side lookup, following dec not included yet
 jmp   loop_check_bbox
 exit_renderbspnode:
 LEAVE_MACRO
