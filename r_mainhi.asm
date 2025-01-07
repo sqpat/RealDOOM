@@ -6430,29 +6430,29 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, ((MAX_BSP_DEPTH * 2) + (MAX_BSP_DEPTH * 1) + 8)
-mov   cx, word ptr ds:[_numnodes]
+mov   bx, word ptr ds:[_numnodes]
 xor   si, si      ; sp = 0
-dec   cx          ; cx is bspnum = numnodes - 1
+dec   bx          ; bx is bspnum = numnodes - 1
+
 main_bsp_loop:
-test  ch, (NF_SUBSECTOR SHR 8)
+test  bh, (NF_SUBSECTOR SHR 8)
 jne   after_inner_loop
 
 ; inner loop
 mov   ax, NODES_SEGMENT
-mov   bx, cx
 mov   word ptr [bp - 2], ax
 mov   dx, word ptr ds:[_viewx + 2]
 mov   es, ax
 mov   ax, word ptr ds:[_viewy + 2]
-shl   bx, 1          ; es:bx is node.
+shl   bx, 1       ; es:bx is node.. bspnum is bx shift right 3.
 shl   bx, 1
 shl   bx, 1
-mov   word ptr [bp - 4], ax
+mov   cx, ax
 mov   ax, word ptr es:[bx + 2]
 sub   dx, word ptr es:[bx]
-sub   word ptr [bp - 4], ax
+sub   cx, ax
 mov   ax, word ptr es:[bx + 6]
-mov   di, word ptr [bp - 4]
+mov   di, cx
 xor   ax, dx
 xor   di, ax
 xor   di, word ptr es:[bx + 4]
@@ -6473,54 +6473,27 @@ calculate_next_bspnum:
 ;		bspnum = node_children[bspnum].children[side ^ 1];
 ; side is dl
 mov   ax, NODE_CHILDREN_SEGMENT
-mov   bx, cx
+mov   es, ax
+
 mov   byte ptr [bp + si - 048h], dl       ; stack_side
-shl   bx, 1
-shl   bx, 1
+shr   bx, 1    ; bx is now bspnum * 4
+mov   ax, bx
+shr   ax, 1 
+shr   ax, 1 
 xor   dh, dh
 add   dx, dx
 sal   si, 1
-mov   word ptr [bp + si - 0C8h], cx       ; stack_bsp lookup
+; todo store and use this preshifted.
+mov   word ptr [bp + si - 0C8h], ax       ; stack_bsp lookup
 sar   si, 1
-mov   es, ax
 add   bx, dx
 inc   si
-mov   cx, word ptr es:[bx]
+mov   bx, word ptr es:[bx]
 jmp   main_bsp_loop
 after_inner_loop:
-jmp   label_4
 
-calculate_larger_side:
-;				fixed_t left =	FastMul1616(bsp->dy, dx);
-;				fixed_t right = FastMul1616(bsp->dx, dy);
-;				side = right > left;
 
-; dx is dx
-; di is dy
-
-mov   ax, word ptr es:[bx + 6]
-imul  dx
-mov   es, word ptr [bp - 2]
-mov   word ptr [bp - 8], ax
-mov   di, dx
-mov   dx, word ptr [bp - 4]
-mov   ax, word ptr es:[bx + 4]
-imul  dx
-cmp   dx, di
-jg    right_is_greater
-jne   left_is_greater
-cmp   ax, word ptr [bp - 8]
-jbe   left_is_greater
-right_is_greater:
-mov   dl, 1
-jmp   calculate_next_bspnum
-left_is_greater:
-xor   dl, dl
-jmp   calculate_next_bspnum
-
-label_4:
-
-cmp   cx, -1
+cmp   bx, -1
 jne   call_rsubsector_bspnum
 xor   ax, ax
 call_rsubsector:
@@ -6555,7 +6528,7 @@ mov   cx, word ptr [bp + di - 0C8h]  ; stack_bsp lookup
 xor   bl, 1       ; side ^ 1
 xor   bh, bh
 mov   dx, cx
-mov   ax, bx
+mov   ax, bx   ; todo get rid of this. go to ax directly.
 add   dh, (NODES_RENDER_SEGMENT SHR 8)
 shl   ax, 1
 shl   ax, 1
@@ -6572,14 +6545,43 @@ shl   ax, 1
 shl   ax, 1
 mov   es, dx
 add   bx, ax
-mov   cx, word ptr es:[bx]
+mov   bx, word ptr es:[bx]
 jmp   main_bsp_loop
+
+
+calculate_larger_side:
+;				fixed_t left =	FastMul1616(bsp->dy, dx);
+;				fixed_t right = FastMul1616(bsp->dx, dy);
+;				side = right > left;
+
+; dx is dx
+; di is dy
+
+mov   ax, word ptr es:[bx + 6]
+imul  dx
+mov   es, word ptr [bp - 2]
+mov   word ptr [bp - 8], ax
+mov   di, dx
+mov   ax, word ptr es:[bx + 4]
+imul  cx             ; cx has dy
+cmp   dx, di
+jg    right_is_greater
+jne   left_is_greater
+cmp   ax, word ptr [bp - 8]
+jbe   left_is_greater
+right_is_greater:
+mov   dl, 1
+jmp   calculate_next_bspnum
+left_is_greater:
+xor   dl, dl
+jmp   calculate_next_bspnum
+
 
 
 
 call_rsubsector_bspnum:
-and   ch, (NOT_NF_SUBSECTOR SHR 8)
-mov   ax, cx
+mov   ax, bx
+and   ah, (NOT_NF_SUBSECTOR SHR 8)  ; unnecessary, the shift killed this anyway.
 jmp   call_rsubsector
 exit_check_bbox_loop:
 test  si, si
