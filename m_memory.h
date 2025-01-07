@@ -1173,7 +1173,7 @@ patchoffset                 83BD:01DC
 #define spritewidths_normal_segment ((segment_t)     ((int32_t)spritewidths_normal >> 16))
 #define sprites_segment             ((segment_t)     ((int32_t)sprites >> 16))
 
-#define NODES_RENDER_SEGMENT 0x7000
+#define nodes_render_segment 0x7000
 
 
 
