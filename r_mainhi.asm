@@ -26,7 +26,7 @@ EXTRN div48_32_:PROC
 
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
-EXTRN FastMul16u32u_:PROC
+;EXTRN FastMul16u32u_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN FastDiv3232_shift_3_8_:PROC
 EXTRN R_PointToAngle_:PROC
@@ -610,8 +610,8 @@ PROC R_PointToDist_ NEAR
 PUBLIC R_PointToDist_ 
 
 
-push  bx
-push  cx
+;push  bx      ; these arent used after the call. no need to push/pop..
+;push  cx
 push  si
 push  di
 
@@ -708,8 +708,8 @@ call  FixedDivBSPLocal_
 
 pop   di
 pop   si
-pop   cx
-pop   bx
+;pop   cx
+;pop   bx
 ret   
 
 endp
@@ -802,10 +802,10 @@ endp
 
 
 
-;R_HandleEMSPagination
+;R_HandleEMSVisplanePagination
 
-PROC R_HandleEMSPagination_ NEAR
-PUBLIC R_HandleEMSPagination_ 
+PROC R_HandleEMSVisplanePagination_ NEAR
+PUBLIC R_HandleEMSVisplanePagination_ 
 
 ; input: 
 ; al is index, dl is isceil
@@ -821,7 +821,7 @@ PUBLIC R_HandleEMSPagination_
 ; ch stores usedsubindex
 
 push  bx
-push  cx
+;push  cx
 
 mov   cl, dl        ; copy is_ceil to cl
 mov   ch, al
@@ -862,7 +862,7 @@ sub   ax, 2
 mov   word ptr ds:[_ceiltop+2], dx
 
 
-pop   cx
+;pop   cx
 pop   bx
 ret   
 is_floor_2:
@@ -880,7 +880,7 @@ mov   word ptr ds:[_floortop], ax
 sub   ax, 2
 mov   word ptr ds:[_floortop+2], dx
 
-pop   cx
+;pop   cx
 pop   bx
 ret
 loop_cycle_visplane_ems_page:  ; move this above func
@@ -941,8 +941,8 @@ PUBLIC R_FindPlane_
 ; cx is picandlight
 ; bl is icceil
 
-push      si
-push      di
+;push      si
+;push      di
 
 cmp       cl, byte ptr ds:[_skyflatnum]
 jne       not_skyflat
@@ -999,13 +999,13 @@ jge       break_loop_visplane_not_found
 cbw       ; clear lastvisplane out of ah
 pop       dx  ; get isceil
 mov       bx, ax        ; store i
-call      R_HandleEMSPagination_
+call      R_HandleEMSVisplanePagination_
 ; fetch and return i
 mov       ax, bx
 
 
-pop       di
-pop       si
+;pop       di
+;pop       si
 ret       
 
 
@@ -1055,7 +1055,7 @@ inc       word ptr ds:[_lastvisplane]
 
 mov       si, ax     ; store i      
 
-call      R_HandleEMSPagination_
+call      R_HandleEMSVisplanePagination_
 
 ;; ff out pl top
 mov       di, ax
@@ -1076,8 +1076,8 @@ rep stosw
 mov       ax, si
 
 
-pop       di
-pop       si
+;pop       di
+;pop       si
 ret       
 
 ENDP
@@ -1099,11 +1099,8 @@ PUBLIC R_AddLine_
 ; bp - 010h    _rw_scale lo
 
 
-push  bx
+push  ax
 push  cx
-push  dx
-push  si
-push  di
 push  bp
 mov   bp, sp
 sub   sp, 010h
@@ -1253,11 +1250,8 @@ dec   dx
 call  R_ClipSolidWallSegment_
 exit_addline:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
 pop   cx
-pop   bx
+pop   ax
 ret   
 not_single_sided_line:
 mov   bl, byte ptr [bp - 2]
@@ -1339,22 +1333,16 @@ dec   dx
 xchg  ax, bx                   ; grab cached first
 call  R_ClipPassWallSegment_
 LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
 pop   cx
-pop   bx
+pop   ax
 ret   
 clipsolid_ax_swap:
 xchg  ax, bx
 dec   dx
 call  R_ClipSolidWallSegment_
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
 pop   cx
-pop   bx
+pop   ax
 ret   
 
 
@@ -1372,9 +1360,12 @@ PUBLIC R_Subsector_
 
 ;ax is subsecnum
 
-push  bx
 push  cx
 push  dx
+
+push  si   ; used by inner function in a loop. push/pop once at outer layer.
+push  di
+
 
 mov   bx, ax
 mov   ax, SUBSECTOR_LINES_SEGMENT
@@ -1521,7 +1512,7 @@ call  R_AddSprites_
 SELFMODIFY_countvalue:
 mov   cx, 0FFFFh
 SELFMODIFY_firstlinevalue:
-mov   bx, 0FFFFh
+mov   ax, 0FFFFh
 
 loop_addline:
 
@@ -1529,19 +1520,19 @@ loop_addline:
 ; whats realistic maximum of numlines? a few hundred? might be 1800ish bytes... save about 10 cycles per call to addline maybe?
 
 
-mov   ax, bx   ; bx has firstline
 call  R_AddLine_
-inc   bx
+inc   ax
 
 loop   loop_addline
 
 
 
 
+pop   di
+pop   si
 
 pop   dx
 pop   cx
-pop   bx
 ret   
 
 ENDP
@@ -1698,7 +1689,7 @@ mov       ax, es
 mov       si, ax 
 cbw      
 
-call      R_HandleEMSPagination_
+call      R_HandleEMSVisplanePagination_
 mov       di, ax
 mov       es, dx
 mov       ax, 0FFFFh
@@ -2345,15 +2336,12 @@ PUBLIC R_AddSprites_
 
 ; DX:AX = sector_t __far* sec
 
-push  bx
 mov   bx, ax
 mov   es, dx
 mov   ax, word ptr es:[bx + 6]		; sec->validcount
 mov   dx, word ptr ds:[_validcount]
 cmp   ax, dx
-je    exit_add_sprites_bx_only				; do this without push/pop
-push  di
-push  si
+je    exit_add_sprites_quick
 
 mov   word ptr es:[bx + 6], dx
 mov   al, byte ptr es:[bx + 0Eh]		; sec->lightlevel
@@ -2399,10 +2387,7 @@ test  ax, ax
 jne   loop_things_in_thinglist
 
 exit_add_sprites:
-pop   si
-pop   di
-exit_add_sprites_bx_only:
-pop   bx
+exit_add_sprites_quick:
 ret   
 set_spritelights_to_zero:
 xor   ax, ax
@@ -3044,7 +3029,7 @@ ja        offsetangle_greater_than_fineang90
 mov       bx, word ptr [bp - 018h]
 mov       cx, word ptr [bp - 01ah]
 mov       ax, FINESINE_SEGMENT
-call FixedMulTrigNoShiftBSPLocal_
+call      FixedMulTrigNoShiftBSPLocal_
 ; used later, dont change?
 ; dx:ax is rw_offset
 jmp       done_with_offsetangle_stuff
@@ -3167,21 +3152,71 @@ cmp       al, byte ptr ds:[_skyflatnum]
 je        not_below_viewplane
 mov       byte ptr [bp - 049h], 0  ;markceiling
 not_below_viewplane:
-mov       cx, 4
-mov       dx, word ptr [bp - 044h]
-mov       ax, word ptr [bp - 046h]
-loop_shift_worldtop:
+
+les       ax, dword ptr [bp - 046h]
+mov       dx, es
+
+
 sar       dx, 1
 rcr       ax, 1
-loop      loop_shift_worldtop
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+
 mov       word ptr [bp - 044h], dx
 mov       word ptr [bp - 046h], ax
 
 ; les to load two words
 les       bx, dword ptr [bp - 032h]
 mov       cx, es
-call FixedMulBSPLocal_
-; todo selfmodify this.
+
+;start inlined FixedMulBSPLocal_
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+;mov  CX, SS   ; dont restore DS 
+;mov  DS, CX
+
+;end inlined FixedMulBSPLocal_
+
+
 SELFMODIFY_sub__centeryfrac_shiftright4_lo_4:
 mov       cx, 01000h
 sub       cx, ax
@@ -3191,13 +3226,17 @@ sbb       ax, dx
 mov       word ptr [bp - 02Eh], cx
 mov       word ptr [bp - 02Ch], ax
 ; les to load two words
-mov       cx, 4
-mov       dx, word ptr [bp - 034h]
-mov       ax, word ptr [bp - 036h]
-loop_shift_worldbot:
+les       ax, dword ptr [bp - 036h]
+mov       dx, es
 sar       dx, 1
 rcr       ax, 1
-loop      loop_shift_worldbot
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+
 mov       word ptr [bp - 034h], dx
 mov       word ptr [bp - 036h], ax
 
@@ -3205,7 +3244,50 @@ mov       word ptr [bp - 036h], ax
 
 les       bx, dword ptr [bp - 032h]
 mov       cx, es
-call FixedMulBSPLocal_
+
+;start inlined FixedMulBSPLocal_
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+;end inlined FixedMulBSPLocal_
+
 
 SELFMODIFY_sub__centeryfrac_shiftright4_lo_3:
 mov       cx, 01000h
@@ -3251,7 +3333,50 @@ SELFMODIFY_get_rwscalestep_hi_1:
 mov       dx, 01000h
 les       bx, dword ptr [bp - 046h]
 mov       cx, es
-call FixedMulBSPLocal_
+
+;start inlined FixedMulBSPLocal_
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+;end inlined FixedMulBSPLocal_
+
 neg       dx
 neg       ax
 sbb       dx, 0
@@ -3286,7 +3411,50 @@ SELFMODIFY_get_rwscalestep_lo_2:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_2:
 mov       dx, 01000h
-call FixedMulBSPLocal_
+
+;start inlined FixedMulBSPLocal_
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+;end inlined FixedMulBSPLocal_
+
 neg       dx
 neg       ax
 sbb       dx, 0
@@ -3318,6 +3486,8 @@ mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_2+3], dx
 cmp       word ptr ds:[_backsector], SECNUM_NULL
 jne       backsector_not_null
 jmp       skip_pixlow_step
+jmp_to_skip_pixhigh_step:
+jmp skip_pixhigh_step
 backsector_not_null:
 ; here we modify worldhigh/low then do not write them back to memory
 ; (except push/pop in one situation)
@@ -3358,10 +3528,10 @@ rcr       si, 1
 
 cmp       word ptr [bp - 044h], di
 jg        do_pixhigh_step
-jne       skip_pixhigh_step
+jne       jmp_to_skip_pixhigh_step
 cmp       word ptr [bp - 046h], si
 
-jbe       skip_pixhigh_step
+jbe       jmp_to_skip_pixhigh_step
 do_pixhigh_step:
 
 ; pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
@@ -3375,7 +3545,54 @@ les       bx, dword ptr [bp - 032h]
 mov       cx, es
 push      dx
 push      ax
-call FixedMulBSPLocal_
+
+;start inlined FixedMulBSPLocal_
+
+push  si
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+;mov  CX, SS   ; dont restore DS
+;mov  DS, CX
+
+pop   si
+
+;end inlined FixedMulBSPLocal_
+
 
 ; mov cx, low word
 ; mov bx, high word
@@ -3395,7 +3612,55 @@ SELFMODIFY_get_rwscalestep_lo_3:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_3:
 mov       dx, 01000h
-call FixedMulBSPLocal_
+
+;start inlined FixedMulBSPLocal_
+
+push  si
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+pop   si
+
+;end inlined FixedMulBSPLocal_
+
+
 neg       dx
 neg       ax
 sbb       dx, 0
@@ -3434,9 +3699,12 @@ skip_pixhigh_step:
 
 cmp       dx, word ptr [bp - 034h]
 jg        do_pixlow_step
-jne       skip_pixlow_step
+jne       jmp_to_skip_pixlow_step
 cmp       ax, word ptr [bp - 036h]
-jbe       skip_pixlow_step
+ja        do_pixlow_step
+
+jmp_to_skip_pixlow_step:
+jmp       skip_pixlow_step
 do_pixlow_step:
 
 ; pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
@@ -3447,7 +3715,54 @@ mov       di, dx	; store for later
 mov       si, ax	; store for later
 les       bx, dword ptr [bp - 032h]
 mov       cx, es
-call FixedMulBSPLocal_
+
+;start inlined FixedMulBSPLocal_
+
+push  si
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+;mov  CX, SS   ; dont restore DS yet
+;mov  DS, CX
+
+pop   si
+
+;end inlined FixedMulBSPLocal_
+
 
 SELFMODIFY_sub__centeryfrac_shiftright4_lo_1:
 mov       cx, 01000h
@@ -3465,7 +3780,50 @@ SELFMODIFY_get_rwscalestep_lo_4:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_4:
 mov       dx, 01000h
-call FixedMulBSPLocal_
+
+;start inlined FixedMulBSPLocal_
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+;end inlined FixedMulBSPLocal_
+
 neg       dx
 neg       ax
 sbb       dx, 0
@@ -4267,9 +4625,7 @@ mov ax, es
 dec ax
 xor dx, dx
 
-pop   di
-pop   si
-jmp FastDiv3232FFFF_done
+jmp FastDiv3232FFFF_done_di_si
 
 compare_low_word_3232:
 cmp   ax, si
@@ -4281,9 +4637,7 @@ mov ax, es
 dec ax
 dec ax
 
-pop   di
-pop   si
-jmp FastDiv3232FFFF_done  
+jmp FastDiv3232FFFF_done_di_si  
 
 
 ; do jmp. highest priority, overwrite previously written thing.
@@ -4347,6 +4701,7 @@ q1_ready_3232:
 mov  ax, es
 xor  dx, dx;
 
+FastDiv3232FFFF_done_di_si:
 pop   di
 pop   si
 
@@ -5625,8 +5980,6 @@ PUBLIC R_DrawPSprite_
 ; bp - 010h   tx    fracbits
 ; bp - 012h   psp
 
-push  si
-push  di
 push  bp
 mov   bp, sp
 sub   sp, 010h
@@ -5873,7 +6226,14 @@ cmp   ax, word ptr [bp - 0Eh]
 jle   vis_x1_greater_than_x1_2
 sub   ax, word ptr [bp - 0Eh]
 
-call  FastMul16u32u_
+; inlined FastMul16u32u_
+
+XCHG CX, AX    ; AX stored in CX
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
 add   word ptr [si + 016h], ax
 adc   word ptr [si + 018h], dx
 vis_x1_greater_than_x1_2:
@@ -5898,8 +6258,6 @@ SELFMODIFY_BSP_fixedcolormap_5:
 mov   byte ptr [si + 1], 00h
 
 LEAVE_MACRO
-pop   di
-pop   si
 ret   
 
 
@@ -5908,8 +6266,6 @@ mark_shadow_draw:
 ; do shadow draw
 mov   byte ptr [si + 1], COLORMAP_SHADOW
 LEAVE_MACRO
-pop   di
-pop   si
 ret   
 
 
@@ -5921,8 +6277,6 @@ mov   al, byte ptr es:[bx + (MAXLIGHTSCALE-1)]
 add   bx, (MAXLIGHTSCALE-1)                      ; todo necessary?
 mov   byte ptr [si + 1], al
 LEAVE_MACRO
-pop   di
-pop   si
 ret   
 
 
@@ -5936,6 +6290,8 @@ PUBLIC R_PrepareMaskedPSprites_
 push  bx
 push  cx
 push  dx
+push  si ; used in inner functions.
+push  di
 
 mov   bx, word ptr ds:[_r_cachedplayerMobjsecnum]
 mov   ax, SECTORS_SEGMENT
@@ -6009,6 +6365,8 @@ xor   dh, dh
 call  R_DrawPSprite_
 sprite_2_null:
 
+pop   di
+pop   si
 pop   dx
 pop   cx
 pop   bx
