@@ -6417,6 +6417,11 @@ NOT_NF_SUBSECTOR  = 07FFFh
 PROC R_RenderBSPNode_ FAR
 PUBLIC R_RenderBSPNode_ 
 
+; bp - 2    bsp segment (NODES_SEGMENT)
+; bp - 4    dy
+; bp - 6    sp
+; bp - 8    temp stack. left lo
+
 push  bx
 push  cx
 push  dx
@@ -6426,20 +6431,22 @@ push  bp
 mov   bp, sp
 sub   sp, ((MAX_BSP_DEPTH * 2) + (MAX_BSP_DEPTH * 1) + 8)
 mov   cx, word ptr ds:[_numnodes]
-xor   si, si
-dec   cx
-label_3:
+xor   si, si      ; sp = 0
+dec   cx          ; cx is bspnum = numnodes - 1
+main_bsp_loop:
 test  ch, (NF_SUBSECTOR SHR 8)
-jne   label_1
+jne   after_inner_loop
+
+; inner loop
 mov   ax, NODES_SEGMENT
-mov   di, OFFSET _viewx + 2
 mov   bx, cx
 mov   word ptr [bp - 2], ax
-mov   dx, word ptr [di]
-mov   di, OFFSET _viewy + 2
+mov   dx, word ptr ds:[_viewx + 2]
 mov   es, ax
-mov   ax, word ptr [di]
-shl   bx, 3
+mov   ax, word ptr ds:[_viewy + 2]
+shl   bx, 1          ; es:bx is node.
+shl   bx, 1
+shl   bx, 1
 mov   word ptr [bp - 4], ax
 mov   ax, word ptr es:[bx + 2]
 sub   dx, word ptr es:[bx]
@@ -6451,28 +6458,46 @@ xor   di, ax
 xor   di, word ptr es:[bx + 4]
 mov   word ptr [bp - 8], di
 test  byte ptr [bp - 7], 080h ; sign check
-je    label_2
+
+
+;			// check signs... if one side is positive and the other negative, then we dont need to multiply to 
+;			// figure out which is larger
+;			if ((intermediate ^ dy ^ bsp->dx) & 0x8000){
+
+je    calculate_larger_side
 rol   ax, 1    ; ROLAND1
 and   ax, 1
 mov   dl, al
-label_9:
+calculate_next_bspnum:
+
+;		bspnum = node_children[bspnum].children[side ^ 1];
+; side is dl
 mov   ax, NODE_CHILDREN_SEGMENT
-mov   di, si
 mov   bx, cx
 mov   byte ptr [bp + si - 048h], dl       ; stack_side
-shl   bx, 2
+shl   bx, 1
+shl   bx, 1
 xor   dh, dh
-add   di, si
 add   dx, dx
-mov   word ptr [bp + di - 0C8h], cx       ; stack_bsp lookup
+sal   si, 1
+mov   word ptr [bp + si - 0C8h], cx       ; stack_bsp lookup
+sar   si, 1
 mov   es, ax
 add   bx, dx
 inc   si
 mov   cx, word ptr es:[bx]
-jmp   label_3
-label_1:
+jmp   main_bsp_loop
+after_inner_loop:
 jmp   label_4
-label_2:
+
+calculate_larger_side:
+;				fixed_t left =	FastMul1616(bsp->dy, dx);
+;				fixed_t right = FastMul1616(bsp->dx, dy);
+;				side = right > left;
+
+; dx is dx
+; di is dy
+
 mov   ax, word ptr es:[bx + 6]
 imul  dx
 mov   es, word ptr [bp - 2]
@@ -6482,62 +6507,90 @@ mov   dx, word ptr [bp - 4]
 mov   ax, word ptr es:[bx + 4]
 imul  dx
 cmp   dx, di
-jg    label_10
-jne   label_11
+jg    right_is_greater
+jne   left_is_greater
 cmp   ax, word ptr [bp - 8]
-jbe   label_11
-label_10:
+jbe   left_is_greater
+right_is_greater:
 mov   dl, 1
-jmp   label_9
-label_11:
+jmp   calculate_next_bspnum
+left_is_greater:
 xor   dl, dl
-jmp   label_9
+jmp   calculate_next_bspnum
+
 label_4:
+
 cmp   cx, -1
-jne   label_12
+jne   call_rsubsector_bspnum
 xor   ax, ax
-label_8:
+call_rsubsector:
 call  R_Subsector_
+
+;		if (sp == 0) {
+;			//back at root node and not visible. All done!
+;			return;
+;		}
+
 test  si, si
-je    label_5
+je    exit_renderbspnode
+
+;		sp--;
+;		bspnum = stack_bsp[sp];
+;		side = stack_side[sp];
+
 dec   si
 mov   di, si
-add   di, si
+add   di, si   ; make di the word lookup
 mov   bl, byte ptr [bp + si - 048h]  ; stack_side
 mov   word ptr [bp - 6], di
-label_7:
+
+
+
+;		// Possibly divide back space.
+;		//Walk back up the tree until we find
+;		//a node that has a visible backspace.
+
+loop_check_bbox:
 mov   cx, word ptr [bp + di - 0C8h]  ; stack_bsp lookup
-xor   bl, 1
+xor   bl, 1       ; side ^ 1
 xor   bh, bh
 mov   dx, cx
 mov   ax, bx
 add   dh, (NODES_RENDER_SEGMENT SHR 8)
-shl   ax, 3
+shl   ax, 1
+shl   ax, 1
+shl   ax, 1
 call  R_CheckBBox_
 test  al, al
-je    label_6
+je    exit_check_bbox_loop
+mov   word ptr [bp - 6], di
+
 mov   dx, NODE_CHILDREN_SEGMENT
 mov   ax, cx
 add   bx, bx
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   es, dx
 add   bx, ax
 mov   cx, word ptr es:[bx]
-jmp   label_3
-label_12:
+jmp   main_bsp_loop
+
+
+
+call_rsubsector_bspnum:
 and   ch, (NOT_NF_SUBSECTOR SHR 8)
 mov   ax, cx
-jmp   label_8
-label_6:
+jmp   call_rsubsector
+exit_check_bbox_loop:
 test  si, si
-je    label_5
-sub   word ptr [bp - 6], 2
+je    exit_renderbspnode
+dec   di       ; di is the word lookup
+dec   di
 mov   bl, byte ptr [bp + si - 049h]   ; stack_side lookup, following dec not included yet
-mov   di, word ptr [bp - 6]
 dec   si
-jmp   label_7
-label_5:
-leave 
+jmp   loop_check_bbox
+exit_renderbspnode:
+LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
