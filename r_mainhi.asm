@@ -1121,9 +1121,14 @@ mov   word ptr [bp - 4], dx
 mov   si, word ptr [bx + 6]
 shl   dx, 1
 shl   dx, 1
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shl   si, 3
+ELSE
 shl   si, 1
 shl   si, 1
 shl   si, 1
+ENDIF
+
 mov   word ptr [bp - 0Ah], dx
 mov   word ptr [bp - 0Ch], si
 mov   si, word ptr [bx]       ;v1
@@ -1562,9 +1567,17 @@ mov       di, ax
 
 
 
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shl       di, 3
+ELSE
 shl       di, 1
 shl       di, 1
 shl       di, 1
+ENDIF
+
+
 add       di, _visplaneheaders  ; _di is plheader
 mov       byte ptr cs:[SELFMODIFY_setisceil + 1], cl  ; write cl value
 test      cl, cl
@@ -2094,9 +2107,15 @@ je   got_vissprite
 inc   word ptr ds:[_vissprite_p]
 got_vissprite:
 ; mul by 28h or 40. SIZEOF_VISSPRITE_T
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+sal   si, 3   ; x7  08h
+ELSE
 sal   si, 1   ; x2  02h
 sal   si, 1   ; x4  04h
 sal   si, 1   ; x8  08h
+ENDIF
+
 mov   bx, si
 sal   si, 1   ; x16 10h
 sal   si, 1   ; x32 20h
@@ -2375,9 +2394,18 @@ mov   es, si
 
 loop_things_in_thinglist:
 ; multiply by 18h (SIZEOF_MOBJ_POS_T), AX maxes at MAX_THINKERS - 1 (839), cant 8 bit mul
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+sal   ax, 3
+
+ELSE
 sal   ax, 1
 sal   ax, 1
 sal   ax, 1
+
+ENDIF
+
+
 mov   si, ax
 sal   si, 1
 add   si, ax
@@ -2565,7 +2593,13 @@ mov       word ptr [bp - 048h], ax
 ; si is linedefOffset
 
 mov       cx, si
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 sar       si, 3
+ELSE
+sar       si, 1
+sar       si, 1
+sar       si, 1
+ENDIF
 mov       ax, SEENLINES_SEGMENT
 mov       es, ax
 mov       al, 1
@@ -4280,10 +4314,16 @@ jg    do_yh_floorclip
 ; finish the shift 12
 ; todo: we are assuming this cant be negative. If it can be,
 ; we must do the full sar rcr with the 4th byte. seems fine so far?
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shr   ax, 4
+ELSE
 shr   ax, 1
 shr   ax, 1
 shr   ax, 1
 shr   ax, 1
+ENDIF
+
 
 ; cx is still floor
 cmp   ax, cx
@@ -6460,7 +6500,8 @@ cmp   ax, word ptr es:[bx]         ; bspcoord[BOXTOP]
 jl    viewy_less_than_top
 xor   ax, ax
 boxy_calculated:
-shl   al, 2
+shl   al, 1
+shl   al, 1
 add   al, dl
 cmp   al, 5
 je    return_1
@@ -6793,9 +6834,14 @@ SELFMODIFY_BSP_viewx_hi_6:
 mov   dx, 01000h
 SELFMODIFY_BSP_viewy_hi_6:
 mov   cx, 01000h
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shl       bx, 3
+ELSE
 shl   bx, 1       ; es:bx is node.. bspnum is bx shift right 3.
 shl   bx, 1
 shl   bx, 1
+ENDIF
 
 ;        int16_t dx = viewx.h.intbits - bsp->x;
 ;			int16_t dy = viewy.h.intbits - bsp->y;
