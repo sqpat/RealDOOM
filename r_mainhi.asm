@@ -2252,11 +2252,31 @@ mov   bx, word ptr [si + 01Eh]
 mov   cx, word ptr [si + 020h]
 
 ; inlined FastMul16u32u
-XCHG CX, AX    ; AX stored in CX
-MUL  CX        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
-ADD  DX, CX    ; add 
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+
+
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
+
+   ; set up eax
+   db 066h, 098h                    ; cwde (prepare AX)
+
+   ; actual mul
+   db 066h, 0F7h, 0E1h              ; mul ecx
+   ; set up return
+   db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
+   
+
+ELSE
+
+   XCHG CX, AX    ; AX stored in CX
+   MUL  CX        ; AX * CX
+   XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+   MUL  BX        ; AX * BX
+   ADD  DX, CX    ; add 
+ENDIF
 
 add   word ptr [si + 016h], ax
 adc   word ptr [si + 018h], dx
@@ -3209,44 +3229,65 @@ mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
 
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
 
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
 
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
+   ; set up eax
+   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
+   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
 
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
+   ; actual mul
+   db 066h, 0F7h, 0E9h              ; imul ecx
+   ; set up return
+   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
 
-MUL  CX       ; AX*CX
+ELSE
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
+   mov   es, ax	; store ax in es
+   mov   ds, dx    ; store dx in ds
+   mov   ax, dx	; ax holds dx
+   CWD				; S0 in DX
 
-;mov  CX, SS   ; dont restore DS 
-;mov  DS, CX
+   AND   DX, BX	; S0*BX
+   NEG   DX
+   mov   SI, DX	; DI stores hi word return
+
+   ; AX still stores DX
+   MUL  CX         ; DX*CX
+   add  SI, AX    ; low word result into high word return
+
+   mov  AX, DS    ; restore DX from ds
+   MUL  BX         ; DX*BX
+   XCHG BX, AX    ; BX will hold low word return. store bx in ax
+   add  SI, DX    ; add high word to result
+
+   mov  DX, ES    ; restore AX from ES
+   mul  DX        ; BX*AX  
+   add  BX, DX    ; high word result into low word return
+   ADC  SI, 0
+
+   mov  AX, CX   ; AX holds CX
+   CWD           ; S1 in DX
+
+   mov  CX, ES   ; AX from ES
+   AND  DX, CX   ; S1*AX
+   NEG  DX
+   ADD  SI, DX   ; result into high word return
+
+   MUL  CX       ; AX*CX
+
+   ADD  AX, BX	  ; set up final return value
+   ADC  DX, SI
+
+   ;mov  CX, SS   ; dont restore DS 
+   ;mov  DS, CX
+ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
@@ -3281,44 +3322,63 @@ mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
 
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
+   ; set up eax
+   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
+   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
 
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
+   ; actual mul
+   db 066h, 0F7h, 0E9h              ; imul ecx
+   ; set up return
+   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
 
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
+ELSE
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
+   mov   es, ax	; store ax in es
+   mov   ds, dx    ; store dx in ds
+   mov   ax, dx	; ax holds dx
+   CWD				; S0 in DX
 
-MUL  CX       ; AX*CX
+   AND   DX, BX	; S0*BX
+   NEG   DX
+   mov   SI, DX	; DI stores hi word return
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
+   ; AX still stores DX
+   MUL  CX         ; DX*CX
+   add  SI, AX    ; low word result into high word return
 
-mov  CX, SS   ; restore DS
-mov  DS, CX
+   mov  AX, DS    ; restore DX from ds
+   MUL  BX         ; DX*BX
+   XCHG BX, AX    ; BX will hold low word return. store bx in ax
+   add  SI, DX    ; add high word to result
+
+   mov  DX, ES    ; restore AX from ES
+   mul  DX        ; BX*AX  
+   add  BX, DX    ; high word result into low word return
+   ADC  SI, 0
+
+   mov  AX, CX   ; AX holds CX
+   CWD           ; S1 in DX
+
+   mov  CX, ES   ; AX from ES
+   AND  DX, CX   ; S1*AX
+   NEG  DX
+   ADD  SI, DX   ; result into high word return
+
+   MUL  CX       ; AX*CX
+
+   ADD  AX, BX	  ; set up final return value
+   ADC  DX, SI
+
+   mov  CX, SS   ; restore DS
+   mov  DS, CX
+ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
@@ -3370,44 +3430,63 @@ mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
 
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
+   ; set up eax
+   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
+   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
 
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
+   ; actual mul
+   db 066h, 0F7h, 0E9h              ; imul ecx
+   ; set up return
+   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
 
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
+ELSE
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
+   mov   es, ax	; store ax in es
+   mov   ds, dx    ; store dx in ds
+   mov   ax, dx	; ax holds dx
+   CWD				; S0 in DX
 
-MUL  CX       ; AX*CX
+   AND   DX, BX	; S0*BX
+   NEG   DX
+   mov   SI, DX	; DI stores hi word return
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
+   ; AX still stores DX
+   MUL  CX         ; DX*CX
+   add  SI, AX    ; low word result into high word return
 
-mov  CX, SS   ; restore DS
-mov  DS, CX
+   mov  AX, DS    ; restore DX from ds
+   MUL  BX         ; DX*BX
+   XCHG BX, AX    ; BX will hold low word return. store bx in ax
+   add  SI, DX    ; add high word to result
+
+   mov  DX, ES    ; restore AX from ES
+   mul  DX        ; BX*AX  
+   add  BX, DX    ; high word result into low word return
+   ADC  SI, 0
+
+   mov  AX, CX   ; AX holds CX
+   CWD           ; S1 in DX
+
+   mov  CX, ES   ; AX from ES
+   AND  DX, CX   ; S1*AX
+   NEG  DX
+   ADD  SI, DX   ; result into high word return
+
+   MUL  CX       ; AX*CX
+
+   ADD  AX, BX	  ; set up final return value
+   ADC  DX, SI
+
+   mov  CX, SS   ; restore DS
+   mov  DS, CX
+ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
@@ -3448,44 +3527,64 @@ mov       dx, 01000h
 
 ;start inlined FixedMulBSPLocal_
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
 
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
+   ; set up eax
+   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
+   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
 
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
+   ; actual mul
+   db 066h, 0F7h, 0E9h              ; imul ecx
+   ; set up return
+   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
 
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
+ELSE
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
+   mov   es, ax	; store ax in es
+   mov   ds, dx    ; store dx in ds
+   mov   ax, dx	; ax holds dx
+   CWD				; S0 in DX
 
-MUL  CX       ; AX*CX
+   AND   DX, BX	; S0*BX
+   NEG   DX
+   mov   SI, DX	; DI stores hi word return
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
+   ; AX still stores DX
+   MUL  CX         ; DX*CX
+   add  SI, AX    ; low word result into high word return
 
-mov  CX, SS   ; restore DS
-mov  DS, CX
+   mov  AX, DS    ; restore DX from ds
+   MUL  BX         ; DX*BX
+   XCHG BX, AX    ; BX will hold low word return. store bx in ax
+   add  SI, DX    ; add high word to result
+
+   mov  DX, ES    ; restore AX from ES
+   mul  DX        ; BX*AX  
+   add  BX, DX    ; high word result into low word return
+   ADC  SI, 0
+
+   mov  AX, CX   ; AX holds CX
+   CWD           ; S1 in DX
+
+   mov  CX, ES   ; AX from ES
+   AND  DX, CX   ; S1*AX
+   NEG  DX
+   ADD  SI, DX   ; result into high word return
+
+   MUL  CX       ; AX*CX
+
+   ADD  AX, BX	  ; set up final return value
+   ADC  DX, SI
+
+   mov  CX, SS   ; restore DS
+   mov  DS, CX
+
+ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
@@ -3582,48 +3681,68 @@ push      ax
 
 ;start inlined FixedMulBSPLocal_
 
-push  si
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
 
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
+   ; set up eax
+   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
+   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
 
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
+   ; actual mul
+   db 066h, 0F7h, 0E9h              ; imul ecx
+   ; set up return
+   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
 
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
+ELSE
 
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
+   push  si
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
+   mov   es, ax	; store ax in es
+   mov   ds, dx    ; store dx in ds
+   mov   ax, dx	; ax holds dx
+   CWD				; S0 in DX
 
-MUL  CX       ; AX*CX
+   AND   DX, BX	; S0*BX
+   NEG   DX
+   mov   SI, DX	; DI stores hi word return
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
+   ; AX still stores DX
+   MUL  CX         ; DX*CX
+   add  SI, AX    ; low word result into high word return
 
-;mov  CX, SS   ; dont restore DS
-;mov  DS, CX
+   mov  AX, DS    ; restore DX from ds
+   MUL  BX         ; DX*BX
+   XCHG BX, AX    ; BX will hold low word return. store bx in ax
+   add  SI, DX    ; add high word to result
 
-pop   si
+   mov  DX, ES    ; restore AX from ES
+   mul  DX        ; BX*AX  
+   add  BX, DX    ; high word result into low word return
+   ADC  SI, 0
+
+   mov  AX, CX   ; AX holds CX
+   CWD           ; S1 in DX
+
+   mov  CX, ES   ; AX from ES
+   AND  DX, CX   ; S1*AX
+   NEG  DX
+   ADD  SI, DX   ; result into high word return
+
+   MUL  CX       ; AX*CX
+
+   ADD  AX, BX	  ; set up final return value
+   ADC  DX, SI
+
+   ;mov  CX, SS   ; dont restore DS
+   ;mov  DS, CX
+
+   pop   si
+
+ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
@@ -3649,48 +3768,67 @@ mov       dx, 01000h
 
 ;start inlined FixedMulBSPLocal_
 
-push  si
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
 
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
+   ; set up eax
+   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
+   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
 
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
+   ; actual mul
+   db 066h, 0F7h, 0E9h              ; imul ecx
+   ; set up return
+   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
 
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
+ELSE
+   push  si
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
+   mov   es, ax	; store ax in es
+   mov   ds, dx    ; store dx in ds
+   mov   ax, dx	; ax holds dx
+   CWD				; S0 in DX
 
-MUL  CX       ; AX*CX
+   AND   DX, BX	; S0*BX
+   NEG   DX
+   mov   SI, DX	; DI stores hi word return
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
+   ; AX still stores DX
+   MUL  CX         ; DX*CX
+   add  SI, AX    ; low word result into high word return
 
-mov  CX, SS   ; restore DS
-mov  DS, CX
+   mov  AX, DS    ; restore DX from ds
+   MUL  BX         ; DX*BX
+   XCHG BX, AX    ; BX will hold low word return. store bx in ax
+   add  SI, DX    ; add high word to result
 
-pop   si
+   mov  DX, ES    ; restore AX from ES
+   mul  DX        ; BX*AX  
+   add  BX, DX    ; high word result into low word return
+   ADC  SI, 0
+
+   mov  AX, CX   ; AX holds CX
+   CWD           ; S1 in DX
+
+   mov  CX, ES   ; AX from ES
+   AND  DX, CX   ; S1*AX
+   NEG  DX
+   ADD  SI, DX   ; result into high word return
+
+   MUL  CX       ; AX*CX
+
+   ADD  AX, BX	  ; set up final return value
+   ADC  DX, SI
+
+   mov  CX, SS   ; restore DS
+   mov  DS, CX
+
+   pop   si
+ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
@@ -3752,48 +3890,68 @@ mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
 
-push  si
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
 
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
+   ; set up eax
+   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
+   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
 
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
+   ; actual mul
+   db 066h, 0F7h, 0E9h              ; imul ecx
+   ; set up return
+   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
 
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
+ELSE
 
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
+   push  si
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
+   mov   es, ax	; store ax in es
+   mov   ds, dx    ; store dx in ds
+   mov   ax, dx	; ax holds dx
+   CWD				; S0 in DX
 
-MUL  CX       ; AX*CX
+   AND   DX, BX	; S0*BX
+   NEG   DX
+   mov   SI, DX	; DI stores hi word return
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
+   ; AX still stores DX
+   MUL  CX         ; DX*CX
+   add  SI, AX    ; low word result into high word return
 
-;mov  CX, SS   ; dont restore DS yet
-;mov  DS, CX
+   mov  AX, DS    ; restore DX from ds
+   MUL  BX         ; DX*BX
+   XCHG BX, AX    ; BX will hold low word return. store bx in ax
+   add  SI, DX    ; add high word to result
 
-pop   si
+   mov  DX, ES    ; restore AX from ES
+   mul  DX        ; BX*AX  
+   add  BX, DX    ; high word result into low word return
+   ADC  SI, 0
+
+   mov  AX, CX   ; AX holds CX
+   CWD           ; S1 in DX
+
+   mov  CX, ES   ; AX from ES
+   AND  DX, CX   ; S1*AX
+   NEG  DX
+   ADD  SI, DX   ; result into high word return
+
+   MUL  CX       ; AX*CX
+
+   ADD  AX, BX	  ; set up final return value
+   ADC  DX, SI
+
+   ;mov  CX, SS   ; dont restore DS yet
+   ;mov  DS, CX
+
+   pop   si
+
+ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
@@ -3817,44 +3975,64 @@ mov       dx, 01000h
 
 ;start inlined FixedMulBSPLocal_
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
 
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
+   ; set up eax
+   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
+   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
 
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
+   ; actual mul
+   db 066h, 0F7h, 0E9h              ; imul ecx
+   ; set up return
+   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
 
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
+ELSE
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
+   mov   es, ax	; store ax in es
+   mov   ds, dx    ; store dx in ds
+   mov   ax, dx	; ax holds dx
+   CWD				; S0 in DX
 
-MUL  CX       ; AX*CX
+   AND   DX, BX	; S0*BX
+   NEG   DX
+   mov   SI, DX	; DI stores hi word return
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
+   ; AX still stores DX
+   MUL  CX         ; DX*CX
+   add  SI, AX    ; low word result into high word return
 
-mov  CX, SS   ; restore DS
-mov  DS, CX
+   mov  AX, DS    ; restore DX from ds
+   MUL  BX         ; DX*BX
+   XCHG BX, AX    ; BX will hold low word return. store bx in ax
+   add  SI, DX    ; add high word to result
+
+   mov  DX, ES    ; restore AX from ES
+   mul  DX        ; BX*AX  
+   add  BX, DX    ; high word result into low word return
+   ADC  SI, 0
+
+   mov  AX, CX   ; AX holds CX
+   CWD           ; S1 in DX
+
+   mov  CX, ES   ; AX from ES
+   AND  DX, CX   ; S1*AX
+   NEG  DX
+   ADD  SI, DX   ; result into high word return
+
+   MUL  CX       ; AX*CX
+
+   ADD  AX, BX	  ; set up final return value
+   ADC  DX, SI
+
+   mov  CX, SS   ; restore DS
+   mov  DS, CX
+
+ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
@@ -4418,6 +4596,8 @@ mov   ds, dx    ; store dx in ds
 mov   ax, dx	; ax holds dx
 CWD				; S0 in DX
 
+; todo inlined fixedmul do 386
+
 AND   DX, BX	; S0*BX
 NEG   DX
 mov   SI, DX	; DI stores hi word return
@@ -4492,14 +4672,21 @@ mov   si, ax
 jmp   light_set
 
 
-fast_div_32_16_FFFF:
+; begin fast_div_32_16_FFFF
 
-xchg dx, cx   ; cx was 0, dx is FFFF
-div bx        ; after this dx stores remainder, ax stores q1
-xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
-div bx
-mov dx, cx   ; q1:q0 is dx:ax
-jmp FastDiv3232FFFF_done 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+   ; unused portion of code for 386. 
+ELSE
+
+   fast_div_32_16_FFFF:
+
+   xchg dx, cx   ; cx was 0, dx is FFFF
+   div bx        ; after this dx stores remainder, ax stores q1
+   xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+   div bx
+   mov dx, cx   ; q1:q0 is dx:ax
+   jmp FastDiv3232FFFF_done 
+ENDIF
 
 
 use_max_light:
@@ -4512,172 +4699,196 @@ light_set:
 
 ; if top 16 bits missing just do a 32 / 16
 mov  ax, -1
-cwd
 
-test cx, cx
-je fast_div_32_16_FFFF
-
-main_3232_div:
-
-push  si
-push  di
+; continue fast_div_32_16_FFFF
 
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+   ; set up eax
+   db 066h, 098h                    ; cwde (prepare EAX)
+   ; set up edx
+   db 066h, 031h, 0D2h              ; xor edx, edx (must be 0, not FFFF FFFF)
 
-XOR SI, SI ; zero this out to get high bits of numhi
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
 
+   ; divide
+   db 066h, 0F7h, 0F1h              ; div ecx
 
+   ; set up return
+   db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
 
+   jmp FastDiv3232FFFF_done 
 
-test ch, ch
-jne shift_bits_3232
-; shift a whole byte immediately
+ELSE
+   cwd
 
-mov ch, cl
-mov cl, bh
-mov bh, bl
-xor bl, bl
+   test cx, cx
+   je fast_div_32_16_FFFF
 
-; dont need a full shift 8 because we know everything is FF
-mov  si, 000FFh
-xor al, al
+   main_3232_div:
 
-shift_bits_3232:
-
-; less than a byte to shift
-; shift until MSB is 1
-; DX gets 1s so we can skip it.
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232  
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
+   push  si
+   push  di
 
 
 
-; store this
-done_shifting_3232:
-
-; we overshifted by one and caught it in the carry bit. lets shift back right one.
-
-RCR CX, 1
-RCR BX, 1
-
-
-; SI:DX:AX holds divisor...
-; CX:BX holds dividend...
-; numhi = SI:DX
-; numlo = AX:00...
-
-
-; save numlo word in sp.
-; avoid going to memory... lets do interrupt magic
-mov di, ax
-
-
-; set up first div. 
-; dx:ax becomes numhi
-mov   ax, dx
-mov   dx, si    
-
-; store these two long term...
-mov   si, bx
+   XOR SI, SI ; zero this out to get high bits of numhi
 
 
 
-; numhi is 00:SI in this case?
 
-;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
-; DX:AX = numhi.wu
+   test ch, ch
+   jne shift_bits_3232
+   ; shift a whole byte immediately
+
+   mov ch, cl
+   mov cl, bh
+   mov bh, bl
+   xor bl, bl
+
+   ; dont need a full shift 8 because we know everything is FF
+   mov  si, 000FFh
+   xor al, al
+
+   shift_bits_3232:
+
+   ; less than a byte to shift
+   ; shift until MSB is 1
+   ; DX gets 1s so we can skip it.
+
+   SAL BX, 1
+   RCL CX, 1
+   JC done_shifting_3232  
+   SAL AX, 1
+   RCL SI, 1
+
+   SAL BX, 1
+   RCL CX, 1
+   JC done_shifting_3232
+   SAL AX, 1
+   RCL SI, 1
+
+   SAL BX, 1
+   RCL CX, 1
+   JC done_shifting_3232
+   SAL AX, 1
+   RCL SI, 1
+
+   SAL BX, 1
+   RCL CX, 1
+   JC done_shifting_3232
+   SAL AX, 1
+   RCL SI, 1
+
+   SAL BX, 1
+   RCL CX, 1
+   JC done_shifting_3232
+   SAL AX, 1
+   RCL SI, 1
+
+   SAL BX, 1
+   RCL CX, 1
+   JC done_shifting_3232
+   SAL AX, 1
+   RCL SI, 1
+
+   SAL BX, 1
+   RCL CX, 1
+   JC done_shifting_3232
+   SAL AX, 1
+   RCL SI, 1
+
+   SAL BX, 1
+   RCL CX, 1
 
 
-div   cx
 
-; rhat = dx
-; qhat = ax
-;    c1 = FastMul16u16u(qhat , den0);
+   ; store this
+   done_shifting_3232:
 
-mov   bx, dx					; bx stores rhat
-mov   es, ax     ; store qhat
+   ; we overshifted by one and caught it in the carry bit. lets shift back right one.
 
-mul   si   						; DX:AX = c1
+   RCR CX, 1
+   RCR BX, 1
 
 
-; c1 hi = dx, c2 lo = bx
-cmp   dx, bx
+   ; SI:DX:AX holds divisor...
+   ; CX:BX holds dividend...
+   ; numhi = SI:DX
+   ; numlo = AX:00...
 
-ja    check_c1_c2_diff_3232
-jne   q1_ready_3232
-cmp   ax, di
-jbe   q1_ready_3232
-check_c1_c2_diff_3232:
 
-; (c1 - c2.wu > den.wu)
+   ; save numlo word in sp.
+   ; avoid going to memory... lets do interrupt magic
+   mov di, ax
 
-sub   ax, di
-sbb   dx, bx
-cmp   dx, cx
-ja    qhat_subtract_2_3232
-je    compare_low_word_3232
 
-qhat_subtract_1_3232:
-mov ax, es
-dec ax
-xor dx, dx
+   ; set up first div. 
+   ; dx:ax becomes numhi
+   mov   ax, dx
+   mov   dx, si    
 
-jmp FastDiv3232FFFF_done_di_si
+   ; store these two long term...
+   mov   si, bx
 
-compare_low_word_3232:
-cmp   ax, si
-jbe   qhat_subtract_1_3232
 
-; ugly but rare occurrence i think?
-qhat_subtract_2_3232:
-mov ax, es
-dec ax
-dec ax
 
-jmp FastDiv3232FFFF_done_di_si  
+   ; numhi is 00:SI in this case?
+
+   ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+   ; DX:AX = numhi.wu
+
+
+   div   cx
+
+   ; rhat = dx
+   ; qhat = ax
+   ;    c1 = FastMul16u16u(qhat , den0);
+
+   mov   bx, dx					; bx stores rhat
+   mov   es, ax     ; store qhat
+
+   mul   si   						; DX:AX = c1
+
+
+   ; c1 hi = dx, c2 lo = bx
+   cmp   dx, bx
+
+   ja    check_c1_c2_diff_3232
+   jne   q1_ready_3232
+   cmp   ax, di
+   jbe   q1_ready_3232
+   check_c1_c2_diff_3232:
+
+   ; (c1 - c2.wu > den.wu)
+
+   sub   ax, di
+   sbb   dx, bx
+   cmp   dx, cx
+   ja    qhat_subtract_2_3232
+   je    compare_low_word_3232
+
+   qhat_subtract_1_3232:
+   mov ax, es
+   dec ax
+   xor dx, dx
+
+   jmp FastDiv3232FFFF_done_di_si
+
+   compare_low_word_3232:
+   cmp   ax, si
+   jbe   qhat_subtract_1_3232
+
+   ; ugly but rare occurrence i think?
+   qhat_subtract_2_3232:
+   mov ax, es
+   dec ax
+   dec ax
+
+   jmp FastDiv3232FFFF_done_di_si  
+ENDIF
 
 
 ; do jmp. highest priority, overwrite previously written thing.
@@ -4735,15 +4946,22 @@ mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
 jmp   just_do_draw0
 
 
+; continue fast_div_32_16_FFFF
 
-q1_ready_3232:
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+ELSE
+   q1_ready_3232:
 
-mov  ax, es
-xor  dx, dx;
+   mov  ax, es
+   xor  dx, dx;
 
-FastDiv3232FFFF_done_di_si:
-pop   di
-pop   si
+   FastDiv3232FFFF_done_di_si:
+   pop   di
+   pop   si
+ENDIF
+
+; end fast_div_32_16_FFFF
+
 
 FastDiv3232FFFF_done:
 
@@ -6268,11 +6486,30 @@ sub   ax, word ptr [bp - 0Eh]
 
 ; inlined FastMul16u32u_
 
-XCHG CX, AX    ; AX stored in CX
-MUL  CX        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
-ADD  DX, CX    ; add 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+
+
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
+
+   ; set up eax
+   db 066h, 098h                    ; cwde (prepare AX)
+
+   ; actual mul
+   db 066h, 0F7h, 0E1h              ; mul ecx
+   ; set up return
+   db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
+   
+
+ELSE
+
+   XCHG CX, AX    ; AX stored in CX
+   MUL  CX        ; AX * CX
+   XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+   MUL  BX        ; AX * BX
+   ADD  DX, CX    ; add 
+ENDIF
 
 add   word ptr [si + 016h], ax
 adc   word ptr [si + 018h], dx

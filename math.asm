@@ -579,262 +579,354 @@ ENDP
 
 @ 
 
-PROC FixedMulTrig_
-PUBLIC FixedMulTrig_
 
-; DX:AX  *  CX:BX
-;  0  1   2  3
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
-; AX * CX:BX
-; The difference between FixedMulTrig and FixedMul1632:
-; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
-; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
-; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
-; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
+    PROC FixedMulTrig_
+    PUBLIC FixedMulTrig_
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
 
 
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
+    PROC FixedMulTrigNoShift_
+    PUBLIC FixedMulTrigNoShift_
+    ; pass in the index already shifted to be a dword lookup..
 
-; AX is param 1 (segment)
-; DX is param 2 (fineangle or lookup)
-; CX:BX is value 2
 
-sal dx, 1
-sal dx, 1   ; DWORD lookup index
+    ; lookup the fine angle
 
+    mov es, ax
+    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
 
-PROC FixedMulTrigNoShift_
-PUBLIC FixedMulTrigNoShift_
-; pass in the index already shifted to be a dword lookup..
+    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
 
-push  si
 
-; lookup the fine angle
+    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
+    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
+    db  066h, 0F7h, 0EBh                 ; imul ebx
+    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
 
 
-mov si, dx
-mov ds, ax  ; put segment in ES
-lodsw
-mov es, ax
-lodsw
+    ret
 
-mov   DX, AX    ; store sign bits in DX
-AND   AX, BX	; S0*BX
-NEG   AX
-mov   SI, AX	; SI stores hi word return
 
-mov   AX, DX    ; restore sign bits from DX
 
-AND  AX, CX    ; DX*CX
-NEG  AX
-add  SI, AX    ; low word result into high word return
+    ENDP
 
-; DX already has sign bits..
 
-; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-; UNLESS BX is 0. then its also 0!
+ELSE
 
-; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-MOV  AX, BX    ; create BX copy
-SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
+    PROC FixedMulTrig_
+    PUBLIC FixedMulTrig_
 
-AND  AX, DX    ; 0 or BX - 1
-ADD  SI, AX    ; add DX * BX high word. 
+    ; DX:AX  *  CX:BX
+    ;  0  1   2  3
 
+    ; AX * CX:BX
+    ; The difference between FixedMulTrig and FixedMul1632:
+    ; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
+    ; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
+    ; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
+    ; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
+    ;
+    ; 
+    ;BYTE
+    ; RETURN VALUE
+    ;                3       2       1		0
+    ;                DONTUSE USE     USE    DONTUSE
 
-AND  DX, BX    ; DX * BX low bits
-NEG  DX
-XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
 
-mov  AX, ES    ; grab AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
+    ;                               AXBXhi	 AXBXlo
+    ;                       DXBXhi  DXBXlo          
+    ;               S0BXhi  S0BXlo                          
+    ;
+    ;                       AXCXhi  AXCXlo
+    ;               DXCXhi  DXCXlo  
+    ;                       
+    ;               AXS1hi  AXS1lo
+    ;                               
+    ;                       
+    ;       
 
-mov  AX, CX   ; AX holds CX
+    ; AX is param 1 (segment)
+    ; DX is param 2 (fineangle or lookup)
+    ; CX:BX is value 2
 
-CWD           ; S1 in DX
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
 
-MUL  CX       ; AX*CX
+    PROC FixedMulTrigNoShift_
+    PUBLIC FixedMulTrigNoShift_
+    ; pass in the index already shifted to be a dword lookup..
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
- 
-MOV CX, SS
-MOV DS, CX    ; put DS back from SS
+    push  si
 
-pop   si
-ret
+    ; lookup the fine angle
 
 
+    mov si, dx
+    mov ds, ax  ; put segment in ES
+    lodsw
+    mov es, ax
+    lodsw
 
-ENDP
+    mov   DX, AX    ; store sign bits in DX
+    AND   AX, BX	; S0*BX
+    NEG   AX
+    mov   SI, AX	; SI stores hi word return
 
+    mov   AX, DX    ; restore sign bits from DX
 
+    AND  AX, CX    ; DX*CX
+    NEG  AX
+    add  SI, AX    ; low word result into high word return
 
+    ; DX already has sign bits..
 
-PROC FixedMulTrig16_
-PUBLIC FixedMulTrig16_
+    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+    ; UNLESS BX is 0. then its also 0!
 
-; DX:AX  *  CX:00
-;  0  1   2  
+    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+    MOV  AX, BX    ; create BX copy
+    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
+    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
 
-; DX:AX * CX:00
-; The difference between FixedMulTrig and FixedMul1632:
-; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
-; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
-; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
-; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
+    AND  AX, DX    ; 0 or BX - 1
+    ADD  SI, AX    ; add DX * BX high word. 
 
 
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
+    AND  DX, BX    ; DX * BX low bits
+    NEG  DX
+    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
 
-; AX is param 1 (segment)
-; DX is param 2 (fineangle or lookup)
-; CX:00 is value 2
+    mov  AX, ES    ; grab AX from ES
+    mul  DX        ; BX*AX  
+    add  BX, DX    ; high word result into low word return
+    ADC  SI, 0
 
-; DX:AX * CX
+    mov  AX, CX   ; AX holds CX
 
-; BX is used by this function and not preserved! fine in our use case.
+    CWD           ; S1 in DX
 
+    mov  CX, ES   ; AX from ES
+    AND  DX, CX   ; S1*AX
+    NEG  DX
+    ADD  SI, DX   ; result into high word return
 
-; lookup the fine angle
+    MUL  CX       ; AX*CX
 
-SAL dx, 1
-SAL dx, 1   ; DWORD lookup index
-MOV BX, dx
-MOV es, ax  ; put segment in ES
-MOV ax, es:[BX]
-MOV dx, es:[BX+2]
+    ADD  AX, BX	  ; set up final return value
+    ADC  DX, SI
+    
+    MOV CX, SS
+    MOV DS, CX    ; put DS back from SS
 
+    pop   si
+    ret
 
 
-AND  DX, CX    ; DX*CX
-NEG  DX
-MOV  BX, DX    ; store high result
 
+    ENDP
+ENDIF
 
-MUL  CX       ; AX*CX
-ADD  DX, BX   
- 
 
-ret
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
+    PROC FixedMulTrig16_
+    PUBLIC FixedMulTrig16_
 
-ENDP
+    ; lookup the fine angle
+    mov es, ax
 
+    ; todo improve zeroing out of high 16 bits.
+    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
 
+    ; no shift of dx needed..
+    db  026h, 066h, 08bh, 06bh, 0, 0     ; mov  eax, dword ptr es:[4*edx]
+    db  066h, 081h, 0E3h, 0FFh, 0FFh, 0, 0  ;  and ebx, 0x0000FFFF   
+    db  066h, 0F7h, 0EBh                 ; imul ebx
 
-PROC FastMulTrig16_
-PUBLIC FastMulTrig16_
+    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
 
-; DX:AX  *  BX
-;  0  1      2  
+    ret
 
-; DX:AX * BX
-; (dont shift answer 16)
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE DONTUSE USE    USE
 
 
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
+    ENDP
+ELSE
 
-; AX is param 1 (segment)
-; DX is param 2 (fineangle or lookup)
-; BX is value 2
+    PROC FixedMulTrig16_
+    PUBLIC FixedMulTrig16_
 
-; DX:AX * BX
-; need to sign extend BX to CX...
+    ; DX:AX  *  CX:00
+    ;  0  1   2  
 
-; do lookup..
+    ; DX:AX * CX:00
+    ; The difference between FixedMulTrig and FixedMul1632:
+    ; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
+    ; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
+    ; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
+    ; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
+    ;
+    ; 
+    ;BYTE
+    ; RETURN VALUE
+    ;                3       2       1		0
+    ;                DONTUSE USE     USE    DONTUSE
 
-SAL dx, 1
-SAL dx, 1   ; DWORD lookup index
-xchg BX, dx
 
-MOV es, ax  ; put segment in ES
-MOV ax, es:[BX]
-MOV bx, es:[BX+2]
+    ;                               AXBXhi	 AXBXlo
+    ;                       DXBXhi  DXBXlo          
+    ;               S0BXhi  S0BXlo                          
+    ;
+    ;                       AXCXhi  AXCXlo
+    ;               DXCXhi  DXCXlo  
+    ;                       
+    ;               AXS1hi  AXS1lo
+    ;                               
+    ;                       
+    ;       
 
+    ; AX is param 1 (segment)
+    ; DX is param 2 (fineangle or lookup)
+    ; CX:00 is value 2
 
+    ; DX:AX * CX
 
-; begin multiply...
+    ; BX is used by this function and not preserved! fine in our use case.
 
-AND   BX, DX
-NEG   BX        ; get sign mult for 16 bit param * high trig.
 
-MOV   ES, BX    ; store it in ES
+    ; lookup the fine angle
 
-MOV   BX, AX  ; BX stores trig param lowbits
-MOV   AX, DX  ; AX stores 16 bit param 
+    SAL dx, 1
+    SAL dx, 1   ; DWORD lookup index
+    MOV BX, dx
+    MOV es, ax  ; put segment in ES
+    MOV ax, es:[BX]
+    MOV dx, es:[BX+2]
 
-CWD   ; DX gets 16 bit arg's sign bits
-AND   DX, BX  ; still need to neg. move after mul for pipelining
-XCHG  DX, BX  ; swap params
 
-MUL   DX
 
-NEG   BX      ; finish the sign multiply from above, after the queue is full from mul
-ADD   DX, BX  ; add first sign bits back
-MOV   BX, ES  ; add second sign bits back
-ADD   DX, BX
+    AND  DX, CX    ; DX*CX
+    NEG  DX
+    MOV  BX, DX    ; store high result
 
 
+    MUL  CX       ; AX*CX
+    ADD  DX, BX   
+    
 
-ret
+    ret
 
 
-ENDP
+
+    ENDP
+
+ENDIF
+
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+
+    PROC FastMulTrig16_
+    PUBLIC FastMulTrig16_
+
+    ; lookup the fine angle
+    mov es, ax
+
+    ; todo improve zeroing out of high 16 bits.
+    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
+
+    ; no shift of dx needed..
+    db  026h, 066h, 08bh, 06bh, 0, 0     ; mov  eax, dword ptr es:[4*edx]
+    db  066h, 081h, 0E1h, 0FFh, 0FFh, 0, 0  ;  and ecx, 0x0000FFFF   
+    db  066h, 0F7h, 0E9h                 ; imul ecx
+    db  066h, 00Fh, 0A4h, 0C2h, 010h     ; shld edx, eax, 0x10
+
+    ret
+
+
+
+    ENDP
+
+ELSE
+
+
+    PROC FastMulTrig16_
+    PUBLIC FastMulTrig16_
+
+    ; DX:AX  *  BX
+    ;  0  1      2  
+
+    ; DX:AX * BX
+    ; (dont shift answer 16)
+    ;
+    ; 
+    ;BYTE
+    ; RETURN VALUE
+    ;                3       2       1		0
+    ;                DONTUSE DONTUSE USE    USE
+
+
+    ;                               AXBXhi	 AXBXlo
+    ;                       DXBXhi  DXBXlo          
+    ;               S0BXhi  S0BXlo                          
+    ;
+    ;               AXS1hi  AXS1lo
+    ;                               
+    ;                       
+    ;       
+
+    ; AX is param 1 (segment)
+    ; DX is param 2 (fineangle or lookup)
+    ; BX is value 2
+
+    ; DX:AX * BX
+    ; need to sign extend BX to CX...
+
+    ; do lookup..
+
+    SAL dx, 1
+    SAL dx, 1   ; DWORD lookup index
+    xchg BX, dx
+
+    MOV es, ax  ; put segment in ES
+    MOV ax, es:[BX]
+    MOV bx, es:[BX+2]
+
+
+
+    ; begin multiply...
+
+    AND   BX, DX
+    NEG   BX        ; get sign mult for 16 bit param * high trig.
+
+    MOV   ES, BX    ; store it in ES
+
+    MOV   BX, AX  ; BX stores trig param lowbits
+    MOV   AX, DX  ; AX stores 16 bit param 
+
+    CWD   ; DX gets 16 bit arg's sign bits
+    AND   DX, BX  ; still need to neg. move after mul for pipelining
+    XCHG  DX, BX  ; swap params
+
+    MUL   DX
+
+    NEG   BX      ; finish the sign multiply from above, after the queue is full from mul
+    ADD   DX, BX  ; add first sign bits back
+    MOV   BX, ES  ; add second sign bits back
+    ADD   DX, BX
+
+
+
+    ret
+
+
+    ENDP
+
+ENDIF
 
 COMMENT @
 
@@ -2157,218 +2249,244 @@ endp
 
 
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
+    PROC FastDiv3232FFFF_ FAR
+    PUBLIC FastDiv3232FFFF_
 
-fast_div_32_16_FFFF:
+    ; EDX:EAX as 00000000 FFFFFFFF
 
-xchg dx, cx   ; cx was 0, dx is FFFF
-div bx        ; after this dx stores remainder, ax stores q1
-xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
-div bx
-mov dx, cx   ; q1:q0 is dx:ax
-retf 
+    db 066h, 031h, 0C0h              ; xor eax, eax
+    db 066h, 099h                    ; cdq
+    db 066h, 048h                    ; dec eax
 
 
-; NOTE: this may not work right for negative params or DX:AX  besides 0xFFFFFFFF
-; TODO: We only use the low 24 bits of output from this function. can we optimize..?
-;FastDiv3232FFFF_
-; DX:AX / CX:BX
+    ; set up ecx
+    db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+    db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
 
-PROC FastDiv3232FFFF_ FAR
-PUBLIC FastDiv3232FFFF_
+    ; divide
+    db 066h, 0F7h, 0F1h              ; div ecx
 
+    ; set up return
+    db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
+    ret
 
+    ENDP
 
-; if top 16 bits missing just do a 32 / 16
-mov  ax, -1
-cwd
+ELSE
 
-test cx, cx
-je fast_div_32_16_FFFF
+    fast_div_32_16_FFFF:
 
-main_3232_div:
+    xchg dx, cx   ; cx was 0, dx is FFFF
+    div bx        ; after this dx stores remainder, ax stores q1
+    xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+    div bx
+    mov dx, cx   ; q1:q0 is dx:ax
+    retf 
 
-push  si
-push  di
 
+    ; NOTE: this may not work right for negative params or DX:AX  besides 0xFFFFFFFF
+    ; TODO: We only use the low 24 bits of output from this function. can we optimize..?
+    ;FastDiv3232FFFF_
+    ; DX:AX / CX:BX
 
+    PROC FastDiv3232FFFF_ FAR
+    PUBLIC FastDiv3232FFFF_
 
-XOR SI, SI ; zero this out to get high bits of numhi
 
 
+    ; if top 16 bits missing just do a 32 / 16
+    mov  ax, -1
+    cwd
 
+    test cx, cx
+    je fast_div_32_16_FFFF
 
-test ch, ch
-jne shift_bits_3232
-; shift a whole byte immediately
+    main_3232_div:
 
-mov ch, cl
-mov cl, bh
-mov bh, bl
-xor bl, bl
+    push  si
+    push  di
 
-; dont need a full shift 8 because we know everything is FF
-mov  si, 000FFh
-xor al, al
 
-shift_bits_3232:
 
-; less than a byte to shift
-; shift until MSB is 1
-; DX gets 1s so we can skip it.
+    XOR SI, SI ; zero this out to get high bits of numhi
 
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232  
-SAL AX, 1
-RCL SI, 1
 
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
 
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
 
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
+    test ch, ch
+    jne shift_bits_3232
+    ; shift a whole byte immediately
 
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
+    mov ch, cl
+    mov cl, bh
+    mov bh, bl
+    xor bl, bl
 
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
+    ; dont need a full shift 8 because we know everything is FF
+    mov  si, 000FFh
+    xor al, al
 
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232
-SAL AX, 1
-RCL SI, 1
+    shift_bits_3232:
 
-SAL BX, 1
-RCL CX, 1
+    ; less than a byte to shift
+    ; shift until MSB is 1
+    ; DX gets 1s so we can skip it.
 
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232  
+    SAL AX, 1
+    RCL SI, 1
 
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
 
-; store this
-done_shifting_3232:
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
 
-; we overshifted by one and caught it in the carry bit. lets shift back right one.
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
 
-RCR CX, 1
-RCR BX, 1
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
 
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
 
-; SI:DX:AX holds divisor...
-; CX:BX holds dividend...
-; numhi = SI:DX
-; numlo = AX:00...
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
 
+    SAL BX, 1
+    RCL CX, 1
 
-; save numlo word in sp.
-; avoid going to memory... lets do interrupt magic
-mov di, ax
 
 
-; set up first div. 
-; dx:ax becomes numhi
-mov   ax, dx
-mov   dx, si    
+    ; store this
+    done_shifting_3232:
 
-; store these two long term...
-mov   si, bx
+    ; we overshifted by one and caught it in the carry bit. lets shift back right one.
 
+    RCR CX, 1
+    RCR BX, 1
 
 
-; numhi is 00:SI in this case?
+    ; SI:DX:AX holds divisor...
+    ; CX:BX holds dividend...
+    ; numhi = SI:DX
+    ; numlo = AX:00...
 
-;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
-; DX:AX = numhi.wu
 
+    ; save numlo word in sp.
+    ; avoid going to memory... lets do interrupt magic
+    mov di, ax
 
-div   cx
 
-; rhat = dx
-; qhat = ax
-;    c1 = FastMul16u16u(qhat , den0);
+    ; set up first div. 
+    ; dx:ax becomes numhi
+    mov   ax, dx
+    mov   dx, si    
 
-mov   bx, dx					; bx stores rhat
-mov   es, ax     ; store qhat
+    ; store these two long term...
+    mov   si, bx
 
-mul   si   						; DX:AX = c1
 
 
-; c1 hi = dx, c2 lo = bx
-cmp   dx, bx
+    ; numhi is 00:SI in this case?
 
-ja    check_c1_c2_diff_3232
-jne   q1_ready_3232
-cmp   ax, di
-jbe   q1_ready_3232
-check_c1_c2_diff_3232:
+    ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+    ; DX:AX = numhi.wu
 
-; (c1 - c2.wu > den.wu)
 
-sub   ax, di
-sbb   dx, bx
-cmp   dx, cx
-ja    qhat_subtract_2_3232
-je    compare_low_word_3232
+    div   cx
 
-qhat_subtract_1_3232:
-mov ax, es
-dec ax
-xor dx, dx
+    ; rhat = dx
+    ; qhat = ax
+    ;    c1 = FastMul16u16u(qhat , den0);
 
-pop   di
-pop   si
-retf  
+    mov   bx, dx					; bx stores rhat
+    mov   es, ax     ; store qhat
 
-compare_low_word_3232:
-cmp   ax, si
-jbe   qhat_subtract_1_3232
+    mul   si   						; DX:AX = c1
 
-; ugly but rare occurrence i think?
-qhat_subtract_2_3232:
-mov ax, es
-dec ax
-dec ax
 
-pop   di
-pop   si
-retf  
+    ; c1 hi = dx, c2 lo = bx
+    cmp   dx, bx
 
+    ja    check_c1_c2_diff_3232
+    jne   q1_ready_3232
+    cmp   ax, di
+    jbe   q1_ready_3232
+    check_c1_c2_diff_3232:
 
+    ; (c1 - c2.wu > den.wu)
 
+    sub   ax, di
+    sbb   dx, bx
+    cmp   dx, cx
+    ja    qhat_subtract_2_3232
+    je    compare_low_word_3232
 
+    qhat_subtract_1_3232:
+    mov ax, es
+    dec ax
+    xor dx, dx
 
+    pop   di
+    pop   si
+    retf  
 
-q1_ready_3232:
+    compare_low_word_3232:
+    cmp   ax, si
+    jbe   qhat_subtract_1_3232
 
-mov  ax, es
-xor  dx, dx;
+    ; ugly but rare occurrence i think?
+    qhat_subtract_2_3232:
+    mov ax, es
+    dec ax
+    dec ax
 
-pop   di
-pop   si
-retf
+    pop   di
+    pop   si
+    retf  
 
 
-endp
 
+
+
+
+    q1_ready_3232:
+
+    mov  ax, es
+    xor  dx, dx;
+
+    pop   di
+    pop   si
+    retf
+
+
+    endp
+
+ENDIF
 
 
 
