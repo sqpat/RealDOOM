@@ -19,7 +19,7 @@ Simply run the makeall script and select your build option (286, 386, 8086, chip
 
 If running on real hardware, a 486 or Pentium should generally run the game okay in high quality. A 386 or 286 should be fast and also use low or potato detail to get an agreeable framereate.
 
-The "minimum spec" is a standard 4.77 MhZ 8088 machine with a VGA card, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets (C&T SCAT, VLSI SCAMP, VLSI TOPCAT... ) support EMS 4.0 and you will be able to use their appropriate EMS drivers or SQEMM, which is faster.
+The "minimum spec" is a standard 4.77 MhZ 8088 machine with a VGA card, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets (C&T SCAT, VLSI SCAMP, VLSI TOPCAT... ) support EMS 4.0 and you will be able to use their appropriate EMS drivers or SQEMM, or the chipset specific build if available, which is faster.
 
 ### Removed features (not planned to be re-added)
  - joystick support
@@ -34,10 +34,8 @@ There are also a lot of hard caps on things like texture size and count, node co
 
 
 ### Known bugs:
- - player arrow renders incorrectly in automap
  - some corruption may be happening in single pixel sprite draws
  - span/plane draws may lack texture precision and be a little 'fuzzy'
- - doom 2 mission 3 is incredibly laggy (too many large textures at once)
  
 ### High-Level Roadmap:
  Not necessarily meant to be accurate, but just to give an overview of the general order in which things are probably going to be built.
@@ -96,20 +94,29 @@ There are also a lot of hard caps on things like texture size and count, node co
   - 386 math build option (WIP, only FixedMul)
   - improved rendering fidelity
 
-**v0.24** : More ASM improvements
- - Entire render pipeline ASM optimzied
- - core physics functions rewritten in asm
- - more code moved into offloaded binary
+ (Jan 8, 2025
+ ~~**v0.25** : More ASM improvements~~
+  - main render pipeline ASM optimzied
+  - increased texture cache size
+  - more code moved into offloaded binary
+  - various render and engine bugfixes
+  - additional 386 optimized math functions
     
-**v0.25** : Full feature compatibility?
-  - sound code?
+**v0.30** : Improved feature compatibility
+  - core physics functions rewritten in asm
   - fix save/load game?
+  - fix demo recording
+  - more code moved into offloaded binary
+  - improved span drawing fidelity 
 
-**v0.26** : Final Doom Support
-  - sound code?
-  - fix save/load game?
+**v0.40** : Sound Support, Alpha release
+  - sound and music code
+  - more code moved into offloaded binary
+  - fixing of all known bugs? (hopefully)
  
  **v0.xx** : Continued improvement
+  - improved custom WAD support.
+  - TNT, Plutonia support?
   - continued moving of code to asm, optimizations, etc
   - Entire codebase in asm? Remove c lib dependencies?
   - Remove MS-DOS dependencies, self boot?
@@ -123,4 +130,4 @@ There are also a lot of hard caps on things like texture size and count, node co
 Various performance benchmarks can be found in this spreadsheet:
 [https://docs.google.com/spreadsheets/d/1gt8gqvKrvJh5GH_xDKoZ98G4jY873s6zx_Y5EaFbb7M/](url)
 
-For the most part, a 386SX currently runs RealDOOM about as fast as it does DOOM 1.9. 32 bit bus cpus all generally run it 0-30% worse. A very fast 286 achieves around 4-5 FPS in high quality, 7.5 in low, and 10 in potato quality.
+For the most part, a 386SX currently runs RealDOOM ~20% faster than (vanilla) DOOM 1.9. 32 bit bus cpus all generally run it 5-10% worse than vanilla. A very fast 286 achieves around 6-7 FPS in high quality, 9-10 in low, and 13-14 in potato quality.
