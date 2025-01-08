@@ -95,7 +95,7 @@ There are also a lot of hard caps on things like texture size and count, node co
   - improved rendering fidelity
 
 (Jan 8, 2025)      
-~~**v0.25** : More ASM improvements~~
+~~**v0.24** : More ASM improvements~~
   - main render pipeline ASM optimzied
   - increased texture cache size
   - more code moved into offloaded binary
