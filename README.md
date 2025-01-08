@@ -63,29 +63,29 @@ There are also a lot of hard caps on things like texture size and count, node co
      - fixed finale
      - added 286 build option
 
- (May 23, 2024)      
- ~~**v0.20** : Commercial game/feature support~~
+(May 23, 2024)      
+~~**v0.20** : Commercial game/feature support~~
   - doom 1 wad support, full timedemo compatibility
   - doom 2 wad support, full timedemo compatibility
   - medium memory model
   - ems visplane allocation
   - texture cache improvements
   - many bugfixes, memory organization improvements
- 
- (Jun 18, 2024)
- ~~**v0.21** : ASM improvements~~
+
+(Jun 18, 2024)      
+~~**v0.21** : ASM improvements~~
   - R_DrawColumn, R_DrawSpan, R_MapPlane ASM optimized
   - Potato quality implemented
   - FixedMul ASM Optimized
 
- (Aug 20, 2024)
- ~~**v0.22** : More ASM improvements~~
+(Aug 20, 2024)      
+~~**v0.22** : More ASM improvements~~
   - FixedDiv ASM optimized
   - Additional render pipeline optimization
   - Textures paragraph/segment aligned
 
- (Oct 11, 2024)
- ~~**v0.23** : Memory, Build~~
+(Oct 11, 2024)      
+~~**v0.23** : Memory, Build~~
   - fixed DS to 0x3C00
   - build tools to support fixed DS and binary offloading to file
   - offloaded render function binaries loaded into EMS memory at runtime
@@ -94,8 +94,8 @@ There are also a lot of hard caps on things like texture size and count, node co
   - 386 math build option (WIP, only FixedMul)
   - improved rendering fidelity
 
- (Jan 8, 2025
- ~~**v0.25** : More ASM improvements~~
+(Jan 8, 2025)      
+~~**v0.25** : More ASM improvements~~
   - main render pipeline ASM optimzied
   - increased texture cache size
   - more code moved into offloaded binary
