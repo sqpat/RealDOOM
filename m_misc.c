@@ -88,8 +88,8 @@ boolean M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		leng
     if (!fp){
 	    return false;
     }
-	//todo re-enable with demos re-enabled. or dont use far_fwrite or something.
-     //count = FAR_fwrite (source, 1, length, fp);
+
+    count = FAR_fwrite (source, 1, length, fp);
     fclose (fp);
 	
     if (count < length){
@@ -103,37 +103,36 @@ boolean M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		leng
 // M_ReadFile
 //
 
-/*
-filelength_t
-M_ReadFile
-(int8_t const*	name,
-  byte __far*	bufferRef ){
-    filelength_t count, length;
-	filehandle_t handle;
-    struct stat	fileinfo;
-    byte		__far *buf;
-	
-    handle = open (name, O_RDONLY | O_BINARY, 0666);
-#ifdef CHECK_FOR_ERRORS
 
+filelength_t M_ReadFile (int8_t const*	name, byte __far*	buffer ){ 
+    filelength_t count, length;
+	
+
+    FILE* fp = fopen(name, "rb");
+    fseek(fp, 0L, SEEK_END);
+    length = ftell(fp);
+#ifdef CHECK_FOR_ERRORS
 	if (handle == -1)
 		I_Error ("Couldn't read file %s", name);
 #endif
-	if (fstat (handle,&fileinfo) == -1)
+
+/*
+	if (fp == NULL){
 		I_Error ("Couldn't read file %s", name);
-    length = fileinfo.st_size;
-    *bufferRef = Z_MallocEMS (length, PU_STATIC, 1);
-	buf = Z_LoadBytesFromEMS(*bufferRef);
-    count = read (handle, buf, length);
-    close (handle);
+    }
+    */
+    fseek(fp, 0L, SEEK_SET);
+
+    FAR_fread(buffer, 1, length, fp);
+
+    fclose (fp);
 #ifdef CHECK_FOR_ERRORS
     if (count < length)
 		I_Error ("Couldn't read file %s", name);
 #endif		
-    //*buffer = buf;
     return length;
 }
-*/
+
 
 //
 // DEFAULTS

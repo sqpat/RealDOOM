@@ -672,33 +672,36 @@ void __near G_DoCompleted (void)  {
 // Can be called by the startup code or the menu task. 
 //
 
-//int8_t    savename[256];
+// todo make larger?
+int8_t    savename[16];
+int8_t versionstring[12] = "version 109";  // hardcoded from VERSION. todo dynamically generate?
 
 void __far G_LoadGame (int8_t* name)  { 
-    //strcpy (savename, name); 
-    //gameaction = ga_loadgame; 
+    strcpy (savename, name); 
+    gameaction = ga_loadgame; 
 } 
  
 #define VERSIONSIZE             16 
 
+void __near R_ExecuteSetViewSize (void);
 
 void __near G_DoLoadGame (void)  { 
-	/*
+	
 	filelength_t         length;
 	byte         a,b,c;
-	int8_t        vcheck[VERSIONSIZE];
-	byte*           savebuffer;
+	byte __far*           savebuffer = MK_FP(0x5000, 0);
     gameaction = ga_nothing; 
     
-    length = M_ReadFile (savename, &savebufferRef); 
-	savebuffer = Z_LoadBytesFromEMS(savebufferRef);
+    Z_QuickMapScratch_5000();
+
+    length = M_ReadFile (savename, savebuffer); 
     save_p = savebuffer + SAVESTRINGSIZE;
     
     // skip the description field 
-    memset (vcheck,0,sizeof(vcheck)); 
-    sprintf (vcheck,"version %i",VERSION); 
-    if (locallib_strcmp ((int8_t*)save_p, vcheck)) 
+    if (locallib_strcmp ((int8_t*)save_p, versionstring)) {
+        
         return;                         // bad version 
+    }
     save_p += VERSIONSIZE; 
                          
     gameskill = *save_p++; 
@@ -729,15 +732,15 @@ void __near G_DoLoadGame (void)  {
         I_Error ("Bad savegame");
 #endif
    
-    Z_FreeEMS (savebufferRef); 
+
  
-    if (setsizeneeded)
+    if (setsizeneeded){
         R_ExecuteSetViewSize ();
+    }
     
     // draw the pattern into the back screen
 	R_FillBackScreen ();   
 
-	*/
 } 
  
 
@@ -751,13 +754,11 @@ void __far G_SaveGame(int8_t   slot, int8_t __far* description ) {
     locallib_strcpy (savedescription, description); 
     sendsave = true; 
 } 
- 
 void __near G_DoSaveGame (void)  { 
 	
 	int8_t        name[100];
 	int8_t        name2[VERSIONSIZE];
     int8_t numstring[2];    
-    int8_t versionstring[4] = "109";  // hardcoded from VERSION. todo dynamically generate?
 
     int8_t*       description; 
 	filelength_t         length;
@@ -768,8 +769,6 @@ void __near G_DoSaveGame (void)  {
     combine_strings(name, SAVEGAMENAME, numstring);
     combine_strings(name, name, ".dsg");
 
-    memset (name2,0,sizeof(name2)); 
-    combine_strings(name2, "version ", versionstring);
 
     description = savedescription; 
 
@@ -781,7 +780,7 @@ void __near G_DoSaveGame (void)  {
     FAR_memcpy (save_p, description, SAVESTRINGSIZE); 
     save_p += SAVESTRINGSIZE; 
 
-    FAR_memcpy (save_p, name2, VERSIONSIZE); 
+    FAR_memcpy (save_p, versionstring, VERSIONSIZE); 
     save_p += VERSIONSIZE; 
          
 	*save_p++ = gameskill;

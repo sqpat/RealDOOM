@@ -177,7 +177,7 @@ int16_t 	r_cachedplayerMobjsecnum;
 int16_t			validcount = 1;
 
 
-int16_t 			setdetail;
+int16_t 			pendingdetail;
 //
 // precalculated math tables
 //
@@ -1675,13 +1675,7 @@ int16_t		ceilinglinenum;
 int16_t		numspechit;
 
 int16_t lastcalculatedsector;
-//
-// RADIUS ATTACK
-//
-mobj_t __near*		bombsource;
-mobj_t __near*		bombspot;
-mobj_pos_t __far*		bombspot_pos;
-int16_t		bombdamage;
+
 
 
 

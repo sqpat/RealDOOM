@@ -222,10 +222,10 @@ void __near  R_ExecuteSetViewSize(void) {
 		viewheight = (setblocks * 168 / 10)&~7;
 	}
 
-	detailshift.b.bytelow = setdetail;
-	detailshift.b.bytehigh = (setdetail << 2); // high bit contains preshifted by four setdetail
+	detailshift.b.bytelow = pendingdetail;
+	detailshift.b.bytehigh = (pendingdetail << 2); // high bit contains preshifted by four pendingdetail
 
-	detailshift2minus =  (2-setdetail);
+	detailshift2minus =  (2-pendingdetail);
 	detailshiftitercount = 1 << (detailshift2minus);
 	detailshiftandval = 0 - detailshiftitercount;
 	

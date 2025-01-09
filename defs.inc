@@ -83,8 +83,11 @@ _viletryy =                         _NULL_OFFSET + 00084h
 _maskedtexture = 					_NULL_OFFSET + 00088h
 ; 89 free
 _spechit =       					_NULL_OFFSET + 0008Ah
-; 9A free
-; up to a3 free
+_bombsource =       				_NULL_OFFSET + 0009Ah
+_bombspot =       					_NULL_OFFSET + 0009Ch
+_bombdamage =       				_NULL_OFFSET + 0009Eh
+_bombspot_pos = 					_NULL_OFFSET + 000A0h
+
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
 ;_ss_variable_space = 				_NULL_OFFSET + 000ACh

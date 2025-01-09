@@ -1262,7 +1262,7 @@ R_PointToAngle(y, x);
 	// init subsystems
 
 
-	DEBUG_PRINT("\nZ_InitEMS: Init EMS memory allocation daemon.");
+	DEBUG_PRINT("\nZ_InitEMS: Initialize EMS memory regions.");
 	Z_InitEMS();
 
 	DEBUG_PRINT("\nW_Init: Init WADfiles.");
@@ -1275,7 +1275,7 @@ R_PointToAngle(y, x);
 	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
 	Z_GetEMSPageMap();
 
-	DEBUG_PRINT("\nZ_LoadBinaries: Load game data into memory");
+	DEBUG_PRINT("\nZ_LoadBinaries: Load game code into memory");
 	Z_LoadBinaries();
 
 	DEBUG_PRINT("\nM_LoadDefaults	: Load system defaults.");

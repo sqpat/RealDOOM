@@ -124,16 +124,10 @@
 //#define MAXSPECIALCROSS		8
 //extern int16_t		spechit[MAXSPECIALCROSS];
 #define spechit                         (((int16_t  __near*)                 (_NULL_OFFSET + 0x008A)))
-
-// #define markfloor                       (*((boolean __near*)                 (_NULL_OFFSET + 0x008A)))
-// #define markceiling                     (*((boolean __near*)                 (_NULL_OFFSET + 0x008B)))
-
-//#define rw_scale                        (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x008C)))
-//#define topfrac                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x0090)))
-//#define bottomfrac                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0094)))
-//#define pixlow                          (*((fixed_t __near *)                (_NULL_OFFSET + 0x0098)))
-//#define pixhigh                         (*((fixed_t __near *)                (_NULL_OFFSET + 0x009C)))
-//#define rw_angle1                       (*((angle_t __near *)                (_NULL_OFFSET + 0x00A0)))
+#define bombsource                      (*((mobj_t  __near* __near*)         (_NULL_OFFSET + 0x009A)))
+#define bombspot                        (*((mobj_t  __near* __near*)         (_NULL_OFFSET + 0x009C)))
+#define bombdamage                      (*((int16_t  __near*)                (_NULL_OFFSET + 0x009E)))
+#define bombspot_pos                    (*((mobj_pos_t  __far* __near*)      (_NULL_OFFSET + 0x0100)))
 
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
@@ -403,7 +397,7 @@ extern int8_t               skytextureloaded;
 extern int16_t              r_cachedplayerMobjsecnum;
 extern int16_t			    validcount;
 
-extern int16_t 			    setdetail;
+extern int16_t 			    pendingdetail;
 extern uint16_t			    clipangle;
 extern uint16_t			    fieldofview;
 extern boolean		        setsizeneeded;
@@ -994,10 +988,6 @@ extern int16_t		ceilinglinenum;
 extern int16_t		numspechit;
 
 extern int16_t lastcalculatedsector;
-extern mobj_t __near*		bombsource;
-extern mobj_t __near*		bombspot;
-extern mobj_pos_t __far*		bombspot_pos;
-extern int16_t		bombdamage;
 extern fixed_t_union		bestslidefrac;
 extern int16_t		bestslidelinenum;
 extern fixed_t_union		tmxmove;
