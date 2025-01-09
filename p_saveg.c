@@ -35,24 +35,21 @@
 //
 // P_ArchivePlayers
 //
-void P_ArchivePlayers (void) {/*
-    int16_t		j;
-    player_t*	dest;
+void P_ArchivePlayers (void) {
 		
-	
-
 	
 	PADSAVEP();
 
-	dest = (player_t __far*)save_p;
-	FAR_memcpy (dest,&players,sizeof(player_t));
+	FAR_memcpy (save_p,&player,sizeof(player_t));
 	save_p += sizeof(player_t);
-	for (j=0 ; j<NUMPSPRITES ; j++) {
-		if (dest->psprites[j].state) {
-			dest->psprites[j].state  = (state_t *)(dest->psprites[j].state-states);
-		}
-	}
-	*/
+	FAR_memcpy (save_p,psprites,NUMPSPRITES*sizeof(pspdef_t));
+	save_p += NUMPSPRITES*sizeof(player_t);
+//	for (j=0 ; j<NUMPSPRITES ; j++) {
+//		if (psprites[j].state) {
+//			psprites[j].state  = (state_t *)(psprites[j].state-states);
+//		}
+//	}
+	
 }
 
 
@@ -61,29 +58,22 @@ void P_ArchivePlayers (void) {/*
 // P_UnArchivePlayers
 //
 void P_UnArchivePlayers (void) {
-	/*
-    int16_t		i;
-    int16_t		j;
+	
 	
 	PADSAVEP();
 
-	FAR_memcpy (&players,save_p, sizeof(player_t));
+	FAR_memcpy (&player,save_p, sizeof(player_t));
 	save_p += sizeof(player_t);
 	
 	// will be set when unarc thinker
-	players.moRef = NULL_THINKERREF;	
-	players.message = -1;
-	players.attackerRef = NULL_THINKERREF;
+	playerMobjRef = NULL_THINKERREF;	
+	player.message = -1;
+	player.attackerRef = NULL_THINKERREF;
 
-	for (j=0 ; j<NUMPSPRITES ; j++)
-	{
-	    if (players. psprites[j].state)
-	    {
-		players. psprites[j].state 
-		    = &states[ (int16_t)psprites[j].state ];
-	    }
-	}
-	*/
+	FAR_memcpy (psprites,save_p, NUMPSPRITES*sizeof(pspdef_t));
+	save_p += NUMPSPRITES*sizeof(pspdef_t);
+
+	
 }
 
 
@@ -91,55 +81,61 @@ void P_UnArchivePlayers (void) {
 // P_ArchiveWorld
 //
 void P_ArchiveWorld (void) {
-	/*
+	
     int16_t			i;
     int16_t			j;
-    sector_t*		sec;
-    line_t*		li;
-    side_t*		si;
-    int16_t*		put;
-	side_t* sides;
-	line_t* lines;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-	put = (int16_t __far*)save_p;
+    sector_t 		 __far*		sec;
+    sector_physics_t __far*		sec_phys;
+
+    line_t			 __far*		li;
+    line_physics_t	 __far*		li_phys;
+
+
+    side_t  		__far*		si;
+    side_render_t  	__far*		si_rend;
+    int16_t 		__far*      put = (int16_t __far*)save_p;
     
     // do sectors
-    for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
-    {
-	*put++ = sec->floorheight >> FRACBITS;
-	*put++ = sec->ceilingheight >> FRACBITS;
-	*put++ = sec->floorpic;
-	*put++ = sec->ceilingpic;
-	*put++ = sec->lightlevel;
-	*put++ = sec->special;		// needed?
-	*put++ = sec->tag;		// needed?
+
+
+
+
+    for (i=0, sec = sectors, sec_phys = sectors_physics ;  i<numsectors ; i++,sec++,sec_phys++) {
+		*put++ = sec->floorheight >> SHORTFLOORBITS;
+		*put++ = sec->ceilingheight >> SHORTFLOORBITS;
+		*put++ = sec->floorpic;
+		*put++ = sec->ceilingpic;
+		*put++ = sec->lightlevel;
+		*put++ = sec_phys->special;		
+		*put++ = sec_phys->tag;		
     }
 
-	lines = (line_t*) Z_LoadBytesFromConventional(linesRef);
-    // do lines
-    for (i=0, li = lines ; i<numlines ; i++,li++)
-    {
-	*put++ = li->flags;
-	*put++ = li->special;
-	*put++ = li->tag;
-	for (j=0 ; j<2 ; j++)
-	{
-	    if (li->sidenum[j] == -1)
-		continue;
-	    
-		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
-		si = &sides[li->sidenum[j]];
+	
+	// todo page in si_render
 
-	    *put++ = si->textureoffset >> FRACBITS;
-	    *put++ = si->rowoffset >> FRACBITS;
-	    *put++ = si->toptexture;
-	    *put++ = si->bottomtexture;
-	    *put++ = si->midtexture;	
-	}
+    // do lines
+    for (i=0, li = lines, li_phys = lines_physics ; i<numlines ; i++,li++,li_phys++) {
+		
+		*put++ = lineflagslist[i]; // todo bit 9?
+		*put++ = li_phys->special;
+		*put++ = li_phys->tag;
+		for (j=0 ; j<2 ; j++) {
+			if (li->sidenum[j] == -1){
+				continue;
+			}
+			
+			si 		= &sides[li->sidenum[j]];
+			si_rend = &sides_render[li->sidenum[j]];
+			*put++ 	= si->textureoffset;
+			*put++ 	= si_rend->rowoffset;
+			*put++ 	= si->toptexture;
+			*put++ 	= si->bottomtexture;
+			*put++ 	= si->midtexture;	
+		}
     }
 	
     save_p = (byte *)put;
-	*/
+	
 }
 
 
@@ -148,53 +144,53 @@ void P_ArchiveWorld (void) {
 // P_UnArchiveWorld
 //
 void P_UnArchiveWorld (void) {
-	/*
+	
     int16_t			i;
     int16_t			j;
-    sector_t*		sec;
-    line_t*		li;
-    side_t*		si;
-    int16_t*		get;
-	side_t* sides;
-	line_t* lines;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-	get = (int16_t __far*)save_p;
+    sector_t 			__far*		sec;
+    sector_physics_t 	__far*		sec_phys;
+    line_t  			__far*		li;
+    line_physics_t  	__far*		li_phys;
+    side_t  			__far*		si;
+    side_render_t  		__far*		si_rend;
+    int16_t 			__far*		get = (int16_t __far*)save_p;
 
     // do sectors
-    for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
-    {
-	sec->floorheight = *get++ << FRACBITS;
-	sec->ceilingheight = *get++ << FRACBITS;
-	sec->floorpic = *get++;
-	sec->ceilingpic = *get++;
-	sec->lightlevel = *get++;
-	sec->special = *get++;		// needed?
-	sec->tag = *get++;		// needed?
-	sec->specialdataRef = NULL_THINKERREF;
-	sec->soundtargetRef = NULL_THINKERREF;
+    for (i=0, sec = sectors, sec_phys = sectors_physics; i<numsectors ; i++,sec++,sec_phys++) {
+		sec->floorheight   	= *get++ << SHORTFLOORBITS;
+		sec->ceilingheight 	= *get++ << SHORTFLOORBITS;
+		sec->floorpic      	= *get++;
+		sec->ceilingpic    	= *get++;
+		sec->lightlevel 	= *get++;
+		sec_phys->special 		= *get++;		// needed?
+		sec_phys->tag 			= *get++;		// needed?
+		sec_phys->specialdataRef = NULL_THINKERREF;
+		//sec_phys->soundtargetRef = NULL_THINKERREF;
     }
     
     // do lines
 	for (i=0 ; i<numlines ; i++,li++) {
-		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		li = &lines[i];
-		li->flags = *get++;
-		li->special = *get++;
-		li->tag = *get++;
+		li_phys = &lines_physics[i];
+		lineflagslist[i] 	= *get++;  // todo bit 9?
+		li_phys->special 		= *get++;
+		li_phys->tag 			= *get++;
 		for (j=0 ; j<2 ; j++) {
-			if (li->sidenum[j] == -1)
+			if (li->sidenum[j] == -1){
 				continue;
-			sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
-			si = &sides[li->sidenum[j]];
-			si->textureoffset = *get++ << FRACBITS;
-			si->rowoffset = *get++ << FRACBITS;
-			si->toptexture = *get++;
-			si->bottomtexture = *get++;
-			si->midtexture = *get++;
+			}
+
+			si 					= &sides[li->sidenum[j]];
+			si_rend 			= &sides_render[li->sidenum[j]];
+			si->textureoffset 	= *get++;
+			si_rend->rowoffset  = *get++;
+			si->toptexture 		= *get++;
+			si->bottomtexture 	= *get++;
+			si->midtexture 		= *get++;
 		}
     }
     save_p = (byte *)get;	
-	*/
+	
 }
 
 
@@ -216,106 +212,106 @@ typedef enum {
 // P_ArchiveThinkers
 //
 void P_ArchiveThinkers (void) {
-	/*
-    THINKERREF		th;
-    mobj_t*		mobj;
-	void*	thinkerobj;
+	
+    THINKERREF				th;
+	mobj_t __near*		mobj;
 	
     // save off the current thinkers
-    for (th = thinkerlist[0].next ; th != 0; th=thinkerlist[th].next)
-    {
-	if (thinkerlist[th].functionType == TF_MOBJTHINKER)
-	{
-		thinkerobj = Z_LoadThinkerFromConventional(thinkerlist[th].memref);
+    for (th = thinkerlist[0].next ; th != 0; th=thinkerlist[th].next) {
+		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_MOBJTHINKER_HIGHBITS) {
+			mobj = &thinkerlist[th].data;
 
-		*save_p++ = tc_mobj;
-	    PADSAVEP();
-	    mobj = (mobj_t *)save_p;
-	    FAR_memcpy (mobj, thinkerobj, sizeof(*mobj));
-	    save_p += sizeof(*mobj);
-	    mobj->state = (state_t *)(mobj->state - states);
-	    
-		// todo what to do here
-	    //if (mobj->player)
-			//mobj->player = mobj->player
-	    continue;
-	}
+			*save_p++ = tc_mobj;
+			PADSAVEP();
+			FAR_memcpy (save_p, mobj, sizeof(mobj_t));
+			save_p += sizeof(mobj_t);
+			//mobj->state = (state_t *)(mobj->state - states);
+			
+			// todo what to do here
+			//if (mobj->player)
+				//mobj->player = mobj->player
+			continue;
+		}
 		
-	// I_Error ("P_ArchiveThinkers: Unknown thinker function");
+		//I_Error ("P_ArchiveThinkers: Unknown thinker function");
     }
 
     // add a terminating marker
     *save_p++ = tc_end;	
-	*/
+	
 	}
 
 
+void  __near P_InitThinkers (void);
 
 //
 // P_UnArchiveThinkers
 //
 void P_UnArchiveThinkers (void) {
-	/*
-    byte		tclass;
-    THINKERREF		currentthinker;
-	THINKERREF		next;
-	THINKERREF thinkerRef;
-	mobj_t* mobj;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
+	
+    byte				tclass;
+    THINKERREF			currentthinker;
+	THINKERREF			next;
+	THINKERREF 			thinkerRef;
+	mobj_t __near* 		mobj;
+	mobj_pos_t __far * 	mobj_pos;
 	
     
     // remove all the current thinkers
     currentthinker = thinkerlist[0].next;
-	while (currentthinker != 0)
-	{
+	while (currentthinker != 0) {
 		next = thinkerlist[currentthinker].next;
 
-		if (thinkerlist[currentthinker].functionType == TF_MOBJTHINKER) {
-			P_RemoveMobj(thinkerlist[currentthinker].memref);
-		} 
-		else {
-			Z_FreeEMS(thinkerlist[currentthinker].memref);
+		if (thinkerlist[currentthinker].prevFunctype & TF_FUNCBITS == TF_MOBJTHINKER_HIGHBITS) {
+			P_RemoveMobj(&thinkerlist[currentthinker].data);
+		} else {
+			memset(&thinkerlist[currentthinker].data, 0, sizeof(mobj_t));
 		}
 
-	currentthinker = next;
+		currentthinker = next;
     }
     P_InitThinkers ();
 	
     // read in saved thinkers
-    while (1)
-    {
-	tclass = *save_p++;
-	switch (tclass)
-	{
-	  case tc_end:
-	    return; 	// end of list
-			
-	  case tc_mobj:
-	    PADSAVEP();
-		thinkerRef = Z_MallocEMS(sizeof(*mobj), PU_LEVEL, 0x00, ALLOC_TYPE_LEVSPEC);
-		mobj = (mobj_t*)Z_LoadThinkerFromConventional(thinkerRef);
-	    FAR_memcpy (mobj, save_p, sizeof(*mobj));
-	    save_p += sizeof(*mobj);
-	    mobj->state = &states[(int16_t)mobj->state];
-	    mobj->targetRef = NULL_THINKERREF;
-	    if (mobj->player) {
-			mobj->player = &players;
-			mobj->player->moRef = thinkerRef;
-	    }
-	    P_SetThingPosition (thinkerRef);
-	    mobj->info = &mobjinfo[mobj->type];
-		mobj->floorz = sectors[mobj->secnum].floorheight;
-	    mobj->ceilingz = sectors[mobj->secnum].ceilingheight;
+    while (1) {
+		tclass = *save_p++;
+		switch (tclass) {
+			case tc_end:
+				return; 	// end of list
+					
+			case tc_mobj:
+				PADSAVEP();
+				
+				mobj =  P_CreateThinker(TF_MOBJTHINKER_HIGHBITS);
+				thinkerRef = GETTHINKERREF(mobj);
+				mobj_pos = &mobjposlist[thinkerRef];
+				FAR_memcpy (mobj, save_p, sizeof(mobj_t));
+				save_p += sizeof(mobj_t);
+				//mobj->state = &states[(int16_t)mobj->state];
+				mobj->targetRef = NULL_THINKERREF;
+				
+				// todo player detect
+				/*
+				if (mobj->player) {
+					mobj->player = &players;
+					mobj->player->moRef = thinkerRef;
+				}
+				*/
+				P_SetThingPosition (mobj, mobj_pos, mobj->secnum);
+				//mobj->info = &mobjinfo[mobj->type];
+				mobj->floorz = sectors[mobj->secnum].floorheight;
+				mobj->ceilingz = sectors[mobj->secnum].ceilingheight;
 
-		mobj->thinkerRef = P_AddThinker (thinkerRef, TF_MOBJTHINKER);
-	    break;
-			
-	  default:
-	    I_Error ("Unknown tclass %i in savegame",tclass);
-	}
+				//mobj->thinkerRef = P_AddThinker (thinkerRef, TF_MOBJTHINKER);
+				break;
+				
+					
+			default:
+				I_Error ("Unknown tclass %i in savegame",tclass);
+		}
 	
     }
-	*/
+	
 }
 
 

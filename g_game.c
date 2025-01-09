@@ -753,24 +753,35 @@ void __far G_SaveGame(int8_t   slot, int8_t __far* description ) {
 } 
  
 void __near G_DoSaveGame (void)  { 
-	/*
+	
 	int8_t        name[100];
 	int8_t        name2[VERSIONSIZE];
+    int8_t numstring[2];    
+    int8_t versionstring[4] = "109";  // hardcoded from VERSION. todo dynamically generate?
+
     int8_t*       description; 
 	filelength_t         length;
-	byte*       savebuffer;
+	byte __far*       savebuffer; 
+    numstring[0] = '0' + savegameslot;
+    numstring[1] = '\0';
 
-    sprintf (name,SAVEGAMENAME"%d.dsg",savegameslot); 
+    combine_strings(name, SAVEGAMENAME, numstring);
+    combine_strings(name, name, ".dsg");
+
+    memset (name2,0,sizeof(name2)); 
+    combine_strings(name2, "version ", versionstring);
+
     description = savedescription; 
 
-	savebuffer = (byte*)Z_LoadBytesFromEMS(savebufferRef);
-    save_p = savebuffer = screen0+0x4000; 
+    Z_QuickMapScratch_5000();
+
+	
+    save_p = savebuffer = MK_FP(0x5000, 0);
          
-    memcpy (save_p, description, SAVESTRINGSIZE); 
+    FAR_memcpy (save_p, description, SAVESTRINGSIZE); 
     save_p += SAVESTRINGSIZE; 
-    memset (name2,0,sizeof(name2)); 
-    sprintf (name2,"version %i",VERSION); 
-    memcpy (save_p, name2, VERSIONSIZE); 
+
+    FAR_memcpy (save_p, name2, VERSIONSIZE); 
     save_p += VERSIONSIZE; 
          
 	*save_p++ = gameskill;
@@ -800,11 +811,11 @@ void __near G_DoSaveGame (void)  {
     gameaction = ga_nothing; 
     savedescription[0] = 0;              
          
-    players.message = GGSAVED; 
+    player.message = GGSAVED; 
 
     // draw the pattern into the back screen
     R_FillBackScreen ();        
-	*/
+	
 } 
  
 

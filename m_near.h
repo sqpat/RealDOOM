@@ -919,7 +919,7 @@ extern boolean		castattacking;
 
 extern boolean  st_stopped;
 extern uint16_t armsbgarray[1];
-extern byte*           save_p;
+extern byte __far*           save_p;
 
 
 extern THINKERREF	activeceilings[MAXCEILINGS];

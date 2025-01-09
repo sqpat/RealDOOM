@@ -1526,7 +1526,7 @@ boolean		castattacking;
 boolean  st_stopped = true;
 uint16_t armsbgarray[1] = { armsbg };
 
-byte*           save_p;
+byte __far* save_p;
 
 THINKERREF	activeceilings[MAXCEILINGS];
 THINKERREF		activeplats[MAXPLATS];
