@@ -46,6 +46,7 @@ _detailshiftandval = 				_NULL_OFFSET + 00024h
 _ceilphyspage =                  	_NULL_OFFSET + 00026h
 _floorphyspage =                 	_NULL_OFFSET + 00027h
 
+
 ;_ds_x1 = 							_NULL_OFFSET + 00028h
 ;_ds_x2 = 							_NULL_OFFSET + 0002Ah
 ; UNUSED 02Ch
@@ -58,7 +59,7 @@ _dc_colormap_index = 				_NULL_OFFSET + 00042h
 _fuzzpos =							_NULL_OFFSET + 00043h
 _dc_yl = 							_NULL_OFFSET + 00044h
 _dc_yh = 							_NULL_OFFSET + 00046h
-; 48, 4a, 4c, 4e unused
+; 48, 4a, 4c, 4e unused 
 ;_dc_iscale = 						_NULL_OFFSET + 00048h
 ;_dc_texturemid = 					_NULL_OFFSET + 0004Ch
 _dc_x = 							_NULL_OFFSET + 00050h
@@ -76,19 +77,14 @@ _centeryfrac_shiftright4 = 			_NULL_OFFSET + 00074h
 _viewangle =                		_NULL_OFFSET + 00078h
 _viewz_shortheight = 				_NULL_OFFSET + 0007Ch
 _viewangle_shiftright1 = 			_NULL_OFFSET + 0007Eh
-;_rw_x = 							_NULL_OFFSET + 00080h
-;_rw_stopx = 						_NULL_OFFSET + 00082h 
-;_rw_offset = 						_NULL_OFFSET + 00084h
+_viletryx =                         _NULL_OFFSET + 00080h
+_viletryy =                         _NULL_OFFSET + 00084h
+
 _maskedtexture = 					_NULL_OFFSET + 00088h
-;_segtextured = 						_NULL_OFFSET + 00089h
-;_markfloor = 						_NULL_OFFSET + 0008Ah
-;_markceiling = 						_NULL_OFFSET + 0008Bh
-;_rw_scale =		 					_NULL_OFFSET + 0008Ch
-;_topfrac =						    _NULL_OFFSET + 00090h
-;_bottomfrac =					    _NULL_OFFSET + 00094h
-;_pixlow =					 	    _NULL_OFFSET + 00098h
-;_pixhigh =					 	    _NULL_OFFSET + 0009Ch
-;_rw_angle1 =                        _NULL_OFFSET + 000A0h
+; 89 free
+_spechit =       					_NULL_OFFSET + 0008Ah
+; 9A free
+; up to a3 free
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
 ;_ss_variable_space = 				_NULL_OFFSET + 000ACh
@@ -103,9 +99,15 @@ _spanfunc_main_loop_count = 		_NULL_OFFSET + 000E4h
 _skipdirectdraws = 					_NULL_OFFSET + 000E5h
 _jump_mult_table_3 = 				_NULL_OFFSET + 000E6h
 _screen_segments = 					_NULL_OFFSET + 000EEh
-; F8 FA unused
-;_func_farcall_scratch_addr =		_NULL_OFFSET + 000FCh
-; 0100 0102 unused
+_numbraintargets = 					_NULL_OFFSET + 000F8h
+_braintargeton = 					_NULL_OFFSET + 000FAh
+_brainspit_easy = 					_NULL_OFFSET + 000FCh
+_floatok = 							_NULL_OFFSET + 000FDh
+_corpsehitRef = 					_NULL_OFFSET + 000FEh
+_vileobj = 							_NULL_OFFSET + 00100h
+
+
+;  0102 unused
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
@@ -228,7 +230,7 @@ _colfunc_masked_call_lookup =        _NULL_OFFSET + 003D0h
 _ems_backfill_page_order =           _NULL_OFFSET + 00454h
 _movedirangles =                     _NULL_OFFSET + 00470h
 _braintargets =                      _NULL_OFFSET + 00480h
-
+_tmbbox =                            _NULL_OFFSET + 004C0h
 _spanfunc_call_lookup =              _NULL_OFFSET + 004D0h
 
 

@@ -117,11 +117,14 @@
 #define viewz_shortheight               (*((short_height_t __near *)         (_NULL_OFFSET + 0x007C)))
 #define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x007E)))
 
-// #define rw_x                            (*((int16_t __near *)                (_NULL_OFFSET + 0x0080)))
-// #define rw_stopx                        (*((int16_t __near *)                (_NULL_OFFSET + 0x0082)))
-//#define rw_offset                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0084)))
+#define viletryx                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0080)))
+#define viletryy                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0084)))
+
 #define maskedtexture                   (*((boolean __near*)                 (_NULL_OFFSET + 0x0088)))
-//#define segtextured                     (*((boolean __near*)                 (_NULL_OFFSET + 0x0089)))
+//#define MAXSPECIALCROSS		8
+//extern int16_t		spechit[MAXSPECIALCROSS];
+#define spechit                         (((int16_t  __near*)                 (_NULL_OFFSET + 0x008A)))
+
 // #define markfloor                       (*((boolean __near*)                 (_NULL_OFFSET + 0x008A)))
 // #define markceiling                     (*((boolean __near*)                 (_NULL_OFFSET + 0x008B)))
 
@@ -154,10 +157,17 @@
 #define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E5))
 #define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x00E6))
 #define screen_segments                 ((segment_t __near *)                (_NULL_OFFSET + 0x00EE))
-// f8 fa unused
-// fc fe unused
-// 100 102 unused
-// 104 is constant
+#define numbraintargets                 (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F8))
+#define braintargeton                   (*(int16_t __near *)                 (_NULL_OFFSET + 0x00FA))
+#define brainspit_easy                  (*(boolean __near *)                 (_NULL_OFFSET + 0x00FC))
+// If "floatok" true, move would be ok
+// if within "tmfloorz - tmceilingz".
+#define floatok                         (*(boolean __near *)                 (_NULL_OFFSET + 0x00FD))
+#define corpsehitRef                    (*(THINKERREF __near *)              (_NULL_OFFSET + 0x00FE))
+//todo test
+#define vileobj                         (*(mobj_t __near * __near *)         (_NULL_OFFSET + 0x0100))
+
+//  102 unused
 #define viewangle_shiftright3           (*((fineangle_t __near*)             (_NULL_OFFSET + 0x0104)))
 // 108 is constant
 #define dc_source_segment               (*((segment_t __near*)               (_NULL_OFFSET + 0x010A)))
@@ -190,9 +200,6 @@
 #define hudneedsupdate                  (*((uint8_t    __near*)              (_NULL_OFFSET + 0x016E)))
 
 // 16F free
-
-
-
 
 // 6-16 bytes... space it out in case of size growth
 #define allocatedflatsperpage           (((int8_t    __near*)                (_NULL_OFFSET + 0x0170)))
@@ -286,8 +293,11 @@
 #define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x0454)))
 #define movedirangles                   (((uint16_t  __near*)                (_NULL_OFFSET + 0x0470)))
 #define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x0480)))
-// todo fill this up
-// 4c0
+
+
+#define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x04C0)))
+
+
 
 #define spanfunc_call_table             (((uint32_t  __near*)                (_NULL_OFFSET + 0x04D0)))
 
@@ -722,7 +732,7 @@ extern cheatseq_t      cheat_choppers;
 extern cheatseq_t      cheat_clev;
 extern cheatseq_t      cheat_mypos;
 extern boolean do_st_refresh;
-
+ 
 extern int8_t st_palette;
 
 extern int16_t  st_calc_lastcalc;
@@ -939,7 +949,6 @@ extern int16_t currentThinkerListHead;
 extern mobj_t __near* setStateReturn;
 extern mobj_pos_t __far* setStateReturn_pos;
 extern uint16_t oldentertics;
-extern boolean brainspit_easy;
 
    
 
@@ -958,17 +967,10 @@ extern boolean brainspit_easy;
 typedef int8_t dirtype_t;
 extern dirtype_t opposite[9];
 extern dirtype_t diags[4];
-extern int16_t		numbraintargets;
-extern int16_t		braintargeton;
-
-extern THINKERREF		corpsehitRef;
-extern mobj_t __near*		vileobj;
-extern fixed_t_union		viletryx;
-extern fixed_t_union		viletryy;
 
 
 
-extern fixed_t_union		tmbbox[4];
+
 extern mobj_t __near*		tmthing;
 extern mobj_pos_t __far*		tmthing_pos;
 extern int16_t		tmflags1;
@@ -978,7 +980,6 @@ extern fixed_t_union		tmy;
 
 // If "floatok" true, move would be ok
 // if within "tmfloorz - tmceilingz".
-extern boolean		floatok;
 
 extern short_height_t		tmfloorz;
 extern short_height_t		tmceilingz;
@@ -990,9 +991,6 @@ extern int16_t		ceilinglinenum;
 
 // keep track of special lines as they are hit,
 // but don't process them until the move is proven valid
-#define MAXSPECIALCROSS		8
-
-extern int16_t		spechit[MAXSPECIALCROSS];
 extern int16_t		numspechit;
 
 extern int16_t lastcalculatedsector;

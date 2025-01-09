@@ -1542,7 +1542,7 @@ weaponinfo_t	weaponinfo[NUMWEAPONS] = {
 		S_PUNCH,
 		S_PUNCH1,
 		S_NULL
-    },	
+    },	 
     {
 		// pistol
 		am_clip,
@@ -1632,7 +1632,6 @@ mobj_t __near* setStateReturn;
 mobj_pos_t __far* setStateReturn_pos;
 uint16_t oldentertics;
 
-boolean brainspit_easy = 0;
    
 
 //
@@ -1651,16 +1650,9 @@ dirtype_t diags[] = {
 
 
 
-int16_t		numbraintargets;
-int16_t		braintargeton;
-
-THINKERREF		corpsehitRef;
-mobj_t __near*		vileobj;
-fixed_t_union		viletryx;
-fixed_t_union		viletryy;
 
 
-fixed_t_union		tmbbox[4];
+
 mobj_t __near*		tmthing;
 mobj_pos_t __far*		tmthing_pos;
 int16_t		tmflags1;
@@ -1668,9 +1660,6 @@ fixed_t_union		tmx;
 fixed_t_union		tmy;
 
 
-// If "floatok" true, move would be ok
-// if within "tmfloorz - tmceilingz".
-boolean		floatok;
 
 short_height_t		tmfloorz;
 short_height_t		tmceilingz;
@@ -1683,7 +1672,6 @@ int16_t		ceilinglinenum;
 // keep track of special lines as they are hit,
 // but don't process them until the move is proven valid
 
-int16_t		spechit[MAXSPECIALCROSS];
 int16_t		numspechit;
 
 int16_t lastcalculatedsector;

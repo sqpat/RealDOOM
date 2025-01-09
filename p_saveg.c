@@ -319,7 +319,7 @@ void P_UnArchiveThinkers (void) {
 // P_ArchiveSpecials
 //
 
-/*
+
 enum {
     tc_ceiling,
     tc_door,
@@ -331,7 +331,7 @@ enum {
     tc_endspecials
 
 } specials_e;	
-*/
+
 
 
 //
@@ -346,30 +346,33 @@ enum {
 // T_PlatRaise, (plat_t: sector_t *), - active list
 //
 void P_ArchiveSpecials (void) {
-	/*
-    THINKERREF		th;
-    ceiling_t*		ceiling;
-    vldoor_t*		door;
-    floormove_t*	floor;
-    plat_t*		plat;
-    lightflash_t*	flash;
-    strobe_t*		strobe;
-    glow_t*		glow;
+	
+    THINKERREF			th;
+    ceiling_t __far*	ceiling;
+    vldoor_t __far*		door;
+    floormove_t __far*	floor;
+    plat_t __far*		plat;
+    lightflash_t __far*	flash;
+    strobe_t __far*		strobe;
+    glow_t __far*		glow;
     int16_t			i;
-	void*		thinkerobj;
+	mobj_t _near*			thinkerobj;
 	
     // save off the current thinkers
     for (th = thinkerlist[0].next ; th != 0 ; th=thinkerlist[th].next) {
-		thinkerobj = Z_LoadThinkerFromConventional(thinkerlist[th].memref);
-		if (thinkerlist[th].functionType == TF_NULL) {
-			for (i = 0; i < MAXCEILINGS;i++)
-				if (activeceilings[i] == thinkerlist[th].memref)
+		thinkerobj = &thinkerlist[th].data;
+
+		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_NULL_HIGHBITS) {
+			for (i = 0; i < MAXCEILINGS;i++){
+				if (activeceilings[i] == th) {
 					break;
+				}
+			}
 	    
 			if (i<MAXCEILINGS) {
 				*save_p++ = tc_ceiling;
 				PADSAVEP();
-				ceiling = (ceiling_t *)save_p;
+				ceiling = (ceiling_t __far*)save_p;
 				FAR_memcpy (ceiling, thinkerobj, sizeof(*ceiling));
 				save_p += sizeof(*ceiling);
 				//ceiling->secnum = ceiling->secnum
@@ -377,10 +380,10 @@ void P_ArchiveSpecials (void) {
 			continue;
 		}
 			
-		if (thinkerlist[th].functionType == TF_MOVECEILING) {
+		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_MOVECEILING_HIGHBITS) {
 			*save_p++ = tc_ceiling;
 			PADSAVEP();
-			ceiling = (ceiling_t *)save_p;
+			ceiling = (ceiling_t __far*)save_p;
 			FAR_memcpy (ceiling, thinkerobj, sizeof(*ceiling));
 			save_p += sizeof(*ceiling);
 			//ceiling->secnum = ceiling->secnum
@@ -388,57 +391,57 @@ void P_ArchiveSpecials (void) {
 			continue;
 		}
 			
-		if (thinkerlist[th].functionType == TF_VERTICALDOOR) {
+		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_VERTICALDOOR_HIGHBITS) {
 			*save_p++ = tc_door;
 			PADSAVEP();
-			door = (vldoor_t *)save_p;
+			door = (vldoor_t __far*)save_p;
 			FAR_memcpy (door, thinkerobj, sizeof(*door));
 			save_p += sizeof(*door);
 			//door->secnum = door->secnum;
 			continue;
 		}
 			
-		if (thinkerlist[th].functionType == TF_MOVEFLOOR) {
+		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_MOVEFLOOR_HIGHBITS) {
 			*save_p++ = tc_floor;
 			PADSAVEP();
-			floor = (floormove_t *)save_p;
+			floor = (floormove_t __far*)save_p;
 			FAR_memcpy (floor, thinkerobj, sizeof(*floor));
 			save_p += sizeof(*floor);
 			//floor->secnum = floor->secnum;
 			continue;
 		}
 			
-		if (thinkerlist[th].functionType == TF_PLATRAISE) {
+		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_PLATRAISE_HIGHBITS) {
 			*save_p++ = tc_plat;
 			PADSAVEP();
-			plat = (plat_t *)save_p;
+			plat = (plat_t __far*)save_p;
 			FAR_memcpy (plat, thinkerobj, sizeof(*plat));
 			save_p += sizeof(*plat);
 			//plat->secnum = plat->secnum;
 			continue;
 		}
 			
-		if (thinkerlist[th].functionType == TF_LIGHTFLASH) {
+		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_LIGHTFLASH_HIGHBITS) {
 			*save_p++ = tc_flash;
 			PADSAVEP();
-			flash = (lightflash_t *)save_p;
+			flash = (lightflash_t __far*)save_p;
 			FAR_memcpy (flash, thinkerobj, sizeof(*flash));
 			save_p += sizeof(*flash);
 			//flash->secnum = flash->secnum;
 			continue;
 		}
 			
-		if (thinkerlist[th].functionType == TF_STROBEFLASH) {
+		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_STROBEFLASH_HIGHBITS) {
 			*save_p++ = tc_strobe;
 			PADSAVEP();
-			strobe = (strobe_t *)save_p;
+			strobe = (strobe_t __far *)save_p;
 			FAR_memcpy (strobe, thinkerobj, sizeof(*strobe));
 			save_p += sizeof(*strobe);
 			//strobe->secnum = strobe->secnum;
 			continue;
 		}
 			
-		if (thinkerlist[th].functionType == TF_GLOW) {
+		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_GLOW_HIGHBITS) {
 			*save_p++ = tc_glow;
 			PADSAVEP();
 			glow = (glow_t *)save_p;
@@ -453,7 +456,7 @@ void P_ArchiveSpecials (void) {
 
     // add a terminating marker
     *save_p++ = tc_endspecials;	
-	*/
+	
 }
 
 
@@ -461,140 +464,153 @@ void P_ArchiveSpecials (void) {
 // P_UnArchiveSpecials
 //
 void P_UnArchiveSpecials (void) {
-	/*
-    byte		tclass;
-    ceiling_t*		ceiling;
-    vldoor_t*		door;
-    floormove_t*	floor;
-    plat_t*		plat;
-    lightflash_t*	flash;
-    strobe_t*		strobe;
-    glow_t*		glow;
-	THINKERREF thinkerRef;
+	
+    byte					tclass;
+    ceiling_t __near*		ceiling;
+    vldoor_t __near*		door;
+    floormove_t __near*		floor;
+    plat_t __near*			plat;
+    lightflash_t __near*	flash;
+    strobe_t __near*		strobe;
+    glow_t __near*			glow;
+	THINKERREF 				thinkerRef;
 	
     // read in saved thinkers
-    /*
-	while (1)
-    {
-	tclass = *save_p++;
-	function.acp1 = NULL;
-	switch (tclass)
-	{
-	  case tc_endspecials:
-	    return;	// end of list
-			
-	  case tc_ceiling:
-	    PADSAVEP();
-		thinkerRef = Z_MallocEMS(sizeof(*ceiling), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
-		ceiling = (ceiling_t*)Z_LoadBytesFromEMS(thinkerRef);
+    
+	while (1) {
+		tclass = *save_p++;
+		//function.acp1 = NULL;
+		switch (tclass) {
+			case tc_endspecials:
+				return;	// end of list
+					
+			case tc_ceiling:
+				PADSAVEP();
 
-	    FAR_memcpy (ceiling, save_p, sizeof(*ceiling));
-	    save_p += sizeof(*ceiling);
-	    ceiling->sector = &sectors[(int16_t)ceiling->sector];
-	    ceiling->sector->specialdataRef = thinkerRef;
+				ceiling =  P_CreateThinker(TF_MOVECEILING_HIGHBITS);
+				thinkerRef = GETTHINKERREF(ceiling);
 
-		if (ceiling->thinkerRef.function.acp1) {
-			function.acp1 = (actionf_p1)T_MoveCeiling;
+				FAR_memcpy (ceiling, save_p, sizeof(*ceiling));
+				save_p += sizeof(*ceiling);
+				//ceiling->sector = &sectors[(int16_t)ceiling->sector];
+				//ceiling->sector->specialdataRef = thinkerRef;
+				sectors_physics[ceiling->secnum].specialdataRef = thinkerRef;
+
+				//if (ceiling->thinkerRef.function.acp1) {
+				//	function.acp1 = (actionf_p1)T_MoveCeiling;
+				//}
+				//function.acp1 = (actionf_p1)T_MoveFloor;
+				//ceiling->thinkerRef = P_AddThinker(thinkerRef, function);
+
+
+
+				P_AddActiveCeiling(thinkerRef);
+				break;
+						
+			case tc_door:
+				PADSAVEP();
+
+				door =  P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
+				thinkerRef = GETTHINKERREF(door);
+
+
+				FAR_memcpy (door, save_p, sizeof(*door));
+				save_p += sizeof(*door);
+				//door->sector = &sectors[(int16_t)door->sector];
+				//door->sector->specialdataRef = thinkerRef;
+				sectors_physics[door->secnum].specialdataRef = thinkerRef;
+
+				//door->thinker.function.acp1 = (actionf_p1)T_VerticalDoor;
+				//door->thinker.memref = thinkerRef;
+				//P_AddThinker (&door->thinker);
+				break;
+						
+			case tc_floor:
+				PADSAVEP();
+
+				floor =  P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+				thinkerRef = GETTHINKERREF(floor);
+
+
+				FAR_memcpy (floor, save_p, sizeof(*floor));
+				save_p += sizeof(*floor);
+				//floor->sector = &sectors[(int16_t)floor->sector];
+				sectors_physics[floor->secnum].specialdataRef = thinkerRef;
+				//floor->thinker.function.acp1 = (actionf_p1)T_MoveFloor;
+				//floor->thinker.memref = thinkerRef;
+				//P_AddThinker (&floor->thinker);
+				break;
+						
+			case tc_plat:
+				PADSAVEP();
+
+				plat =  P_CreateThinker(TF_PLATRAISE_HIGHBITS);
+				thinkerRef = GETTHINKERREF(plat);
+
+
+				FAR_memcpy (plat, save_p, sizeof(*plat));
+				save_p += sizeof(*plat);
+				//plat->sector = &sectors[(int16_t)plat->sector];
+				sectors_physics[plat->secnum].specialdataRef = thinkerRef;
+
+				//if (plat->thinker.function.acp1){
+				//	plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+				//}
+
+				//plat->thinker.memref = thinkerRef;
+				//P_AddThinker (&plat->thinker);
+				P_AddActivePlat(thinkerRef);
+				break;
+						
+			case tc_flash:
+				PADSAVEP();
+
+				flash =  P_CreateThinker(TF_LIGHTFLASH_HIGHBITS);
+				thinkerRef = GETTHINKERREF(flash);
+
+
+				FAR_memcpy (flash, save_p, sizeof(*flash));
+				save_p += sizeof(*flash);
+				//flash->sector = &sectors[(int16_t)flash->sector];
+				//flash->thinker.function.acp1 = (actionf_p1)T_LightFlash;
+				//flash->thinker.memref = thinkerRef;
+				//P_AddThinker (&flash->thinker);
+				break;
+						
+			case tc_strobe:
+				PADSAVEP();
+				
+				strobe =  P_CreateThinker(TF_STROBEFLASH_HIGHBITS);
+				thinkerRef = GETTHINKERREF(strobe);
+
+				FAR_memcpy (strobe, save_p, sizeof(*strobe));
+				save_p += sizeof(*strobe);
+				//strobe->sector = &sectors[(int16_t)strobe->sector];
+				//strobe->thinker.function.acp1 = (actionf_p1)T_StrobeFlash;
+				//strobe->thinker.memref = thinkerRef;
+				break;
+						
+			case tc_glow:
+				PADSAVEP();
+
+				glow =  P_CreateThinker(TF_GLOW);
+				thinkerRef = GETTHINKERREF(glow);
+
+
+				FAR_memcpy (glow, save_p, sizeof(*glow));
+				save_p += sizeof(*glow);
+				//glow->sector = &sectors[(int16_t)glow->sector];
+				//glow->thinker.function.acp1 = (actionf_p1)T_Glow;
+				//glow->thinker.memref = thinkerRef;
+				//P_AddThinker (&glow->thinker);
+				break;
+						
+			default:
+				I_Error ("P_UnarchiveSpecials:Unknown tclass %i "
+					"in savegame",tclass);
 		}
- 
-
-		function.acp1 = (actionf_p1)T_MoveFloor;
-		ceiling->thinkerRef = P_AddThinker(thinkerRef, function);
-
-
-	    P_AddActiveCeiling(ceiling);
-	    break;
-				
-	  case tc_door:
-	    PADSAVEP();
-		thinkerRef = Z_MallocEMS(sizeof(*door), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
-		door = (vldoor_t*)Z_LoadBytesFromEMS(thinkerRef);
-
-	    FAR_memcpy (door, save_p, sizeof(*door));
-	    save_p += sizeof(*door);
-	    door->sector = &sectors[(int16_t)door->sector];
-	    door->sector->specialdataRef = thinkerRef;
-	    door->thinker.function.acp1 = (actionf_p1)T_VerticalDoor;
-		door->thinker.memref = thinkerRef;
-		P_AddThinker (&door->thinker);
-	    break;
-				
-	  case tc_floor:
-	    PADSAVEP();
-		thinkerRef = Z_MallocEMS(sizeof(*floor), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
-		floor = (floormove_t*)Z_LoadBytesFromEMS(thinkerRef);
-
-	    FAR_memcpy (floor, save_p, sizeof(*floor));
-	    save_p += sizeof(*floor);
-	    floor->sector = &sectors[(int16_t)floor->sector];
-	    floor->sector->specialdataRef = thinkerRef;
-	    floor->thinker.function.acp1 = (actionf_p1)T_MoveFloor;
-		floor->thinker.memref = thinkerRef;
-		P_AddThinker (&floor->thinker);
-	    break;
-				
-	  case tc_plat:
-	    PADSAVEP();
-		thinkerRef = Z_MallocEMS(sizeof(*plat), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
-		plat = (plat_t*)Z_LoadBytesFromEMS(thinkerRef);
-
-	    FAR_memcpy (plat, save_p, sizeof(*plat));
-	    save_p += sizeof(*plat);
-	    plat->sector = &sectors[(int16_t)plat->sector];
-	    plat->sector->specialdataRef = thinkerRef;
-
-	    if (plat->thinker.function.acp1)
-		plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
-
-		plat->thinker.memref = thinkerRef;
-		P_AddThinker (&plat->thinker);
-	    P_AddActivePlat(thinkerRef);
-	    break;
-				
-	  case tc_flash:
-	    PADSAVEP();
-		thinkerRef = Z_MallocEMS(sizeof(*flash), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
-		flash = (lightflash_t*)Z_LoadBytesFromEMS(thinkerRef);
-
-	    FAR_memcpy (flash, save_p, sizeof(*flash));
-	    save_p += sizeof(*flash);
-	    flash->sector = &sectors[(int16_t)flash->sector];
-	    flash->thinker.function.acp1 = (actionf_p1)T_LightFlash;
-		flash->thinker.memref = thinkerRef;
-		P_AddThinker (&flash->thinker);
-	    break;
-				
-	  case tc_strobe:
-	    PADSAVEP();
-		thinkerRef = Z_MallocEMS(sizeof(*strobe), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
-		strobe = (strobe_t*)Z_LoadBytesFromEMS(thinkerRef);
-		
-	    FAR_memcpy (strobe, save_p, sizeof(*strobe));
-	    save_p += sizeof(*strobe);
-	    strobe->sector = &sectors[(int16_t)strobe->sector];
-	    strobe->thinker.function.acp1 = (actionf_p1)T_StrobeFlash;
-		strobe->thinker.memref = thinkerRef;
-		break;
-				
-	  case tc_glow:
-	    PADSAVEP();
-		thinkerRef = Z_MallocEMS(sizeof(*glow), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
-		glow = (glow_t*)Z_LoadBytesFromEMS(thinkerRef);
-
-	    FAR_memcpy (glow, save_p, sizeof(*glow));
-	    save_p += sizeof(*glow);
-	    glow->sector = &sectors[(int16_t)glow->sector];
-	    glow->thinker.function.acp1 = (actionf_p1)T_Glow;
-		glow->thinker.memref = thinkerRef;
-		P_AddThinker (&glow->thinker);
-	    break;
-				
-	  default:
-	    I_Error ("P_UnarchiveSpecials:Unknown tclass %i "
-		     "in savegame",tclass);
-	}
 	
-    }*/
+    }
 
 }
 
