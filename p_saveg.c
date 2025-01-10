@@ -189,7 +189,7 @@ void P_UnArchiveWorld (void) {
 			si->midtexture 		= *get++;
 		}
     }
-    save_p = (byte *)get;	
+    save_p = (byte __far *)get;	
 	
 }
 
@@ -253,12 +253,12 @@ void P_ArchiveThinkers (void) {
 }
 
 
-void  __near P_InitThinkers (void);
+void  __far P_InitThinkers (void);
 
 //
 // P_UnArchiveThinkers
 //
-void P_UnArchiveThinkers (void) {
+void __near P_UnArchiveThinkers (void) {
 	
     byte				tclass;
     THINKERREF			currentthinker;
@@ -266,14 +266,15 @@ void P_UnArchiveThinkers (void) {
 	THINKERREF 			th;
 	mobj_t __near* 		mobj;
 	mobj_pos_t __far * 	mobj_pos;
-	
+	int16_t i;
     
     // remove all the current thinkers
     currentthinker = thinkerlist[0].next;
 	while (currentthinker != 0) {
+		int16_t functype = thinkerlist[th].prevFunctype & TF_FUNCBITS;
 		next = thinkerlist[currentthinker].next;
 
-		if (thinkerlist[currentthinker].prevFunctype & TF_FUNCBITS == TF_MOBJTHINKER_HIGHBITS) {
+		if (functype == TF_MOBJTHINKER_HIGHBITS) {
 			P_RemoveMobj(&thinkerlist[currentthinker].data);
 		} else {
 			memset(&thinkerlist[currentthinker].data, 0, sizeof(mobj_t));
@@ -293,7 +294,7 @@ void P_UnArchiveThinkers (void) {
 					
 			case tc_mobj:
 				PADSAVEP();
-				mobj =  P_CreateThinker(TF_MOBJTHINKER_HIGHBITS);
+				mobj = (mobj_t __near*)P_CreateThinker(TF_MOBJTHINKER_HIGHBITS);
 				th = GETTHINKERREF(mobj);
 				mobj_pos = &mobjposlist_6800[th];
 				
@@ -322,11 +323,10 @@ void P_UnArchiveThinkers (void) {
 				
 					
 			default:
-				I_Error ("Unknown tclass %i in savegame",tclass);
+				I_Error ("tclass a %i",tclass);
 		}
 	
     }
-	//I_Error("here2");
 	
 }
 
@@ -622,8 +622,7 @@ void P_UnArchiveSpecials (void) {
 				break;
 						
 			default:
-				I_Error ("P_UnarchiveSpecials:Unknown tclass %i "
-					"in savegame",tclass);
+				I_Error ("tclass b %i",tclass);
 		}
 	
     }

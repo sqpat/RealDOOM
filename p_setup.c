@@ -59,7 +59,7 @@ void __near P_LoadLineDefs(int16_t lump);
 void __near P_LoadBlockMap(int16_t lump);
 void __near P_LoadThings(int16_t lump);
 void __near P_LoadSegs(int16_t lump);	
-void __near P_InitThinkers (void);
+void __far P_InitThinkers (void);
 void __near Z_FreeConventionalAllocations();
 void __near P_GroupLines();
 void __far P_SpawnSpecials(void);
@@ -868,7 +868,7 @@ void __near P_GroupLines(void) {
 //
 // P_InitThinkers
 //
-void  __near P_InitThinkers (void) {
+void  __far P_InitThinkers (void) {
 	int16_t i;
 	thinkerlist[0].next = 1;
 	thinkerlist[0].prevFunctype = 1;

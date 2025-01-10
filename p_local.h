@@ -115,7 +115,7 @@ typedef struct thinker_s {
 
 
 
-void __near* __near P_CreateThinker(uint16_t thinkfunc);
+void __near* __far P_CreateThinker(uint16_t thinkfunc);
 
 void __near P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
 void __near P_RemoveThinker(THINKERREF thinkerRef);
@@ -237,7 +237,7 @@ __near P_PathTraverse
   boolean	__near(*  trav) (intercept_t  __far*));
 
 void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* mobj_pos);
-void __near P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* mobj_pos, int16_t knownsecnum);
+void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* mobj_pos, int16_t knownsecnum);
 
 
 //

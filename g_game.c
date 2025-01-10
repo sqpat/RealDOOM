@@ -664,6 +664,7 @@ void __near G_DoCompleted (void)  {
     WI_Start (&wminfo); 
 } 
 
+/*
  void __near dolog(int16_t a){
 
 	FILE* fp = fopen("log2.txt", "ab");
@@ -680,7 +681,7 @@ void __near G_DoCompleted (void)  {
 
  void __near dologbig(int32_t a){
     int8_t  hexdigits[17] = "0123456789ABCDEF";
-	FILE* fp = fopen("log2.txt", "ab");
+	FILE* fp = fopen("log.txt", "ab");
     
     fputc(hexdigits[a>>28]   , fp);
     fputc(hexdigits[(a&0xFFFFFFF)>>24]   , fp);
@@ -694,6 +695,7 @@ void __near G_DoCompleted (void)  {
     fclose(fp);
 
 }
+*/
 
 
 //
@@ -703,7 +705,6 @@ void __near G_DoCompleted (void)  {
 
 // todo make larger?
 
-//int16_t setval = 0;
 
 void __far G_LoadGame (int8_t* name)  { 
     strcpy (savename, name); 
@@ -771,16 +772,14 @@ void __near G_DoLoadGame (void)  {
     //Z_QuickMapScratch_5000();
 
     P_UnArchiveThinkers (); 
-    //dolog(save_p-savebuffer);
     P_UnArchiveSpecials (); 
-    I_Error("here");
 #ifdef CHECK_FOR_ERRORS
 
     if (*save_p != 0x1d) 
         I_Error ("Bad savegame");
 #endif
    
-
+    Z_QuickMapPhysics();
  
     if (setsizeneeded){
         R_ExecuteSetViewSize ();

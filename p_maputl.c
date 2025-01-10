@@ -546,7 +546,7 @@ void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_
 // based on it's x y.
 // Sets thing->subsector properly
 //
-void __near P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum) {
+void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum) {
 
 
 

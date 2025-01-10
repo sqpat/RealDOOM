@@ -34,7 +34,6 @@
 
 // OPTIMIZE: closed two sided lines as single sided
 
-extern int16_t setval;
 
 
 #define SC_INDEX			0x3C4
@@ -903,7 +902,6 @@ void __near R_RenderOneSeg () {
 
 */
 
-int16_t setval = 0;
 //
 // R_StoreWallRange
 // A wall segment will be drawn
