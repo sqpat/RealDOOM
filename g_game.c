@@ -674,6 +674,8 @@ void __near G_DoCompleted (void)  {
 
 // todo make larger?
 
+//int16_t setval = 0;
+
 void __far G_LoadGame (int8_t* name)  { 
     strcpy (savename, name); 
     gameaction = ga_loadgame; 
@@ -682,11 +684,12 @@ void __far G_LoadGame (int8_t* name)  {
 #define VERSIONSIZE             16 
 
 void __near R_ExecuteSetViewSize (void);
+void Z_QuickMapRender_4000To9000_9000Only();
 
 void __near G_DoLoadGame (void)  { 
 	
 	filelength_t         length;
-	byte         a,b,c;
+	
 	byte __far*           savebuffer = MK_FP(0x5000, 0);
     gameaction = ga_nothing; 
     
@@ -696,8 +699,8 @@ void __near G_DoLoadGame (void)  {
     save_p = savebuffer + SAVESTRINGSIZE;
     
     // skip the description field 
-    if (locallib_strcmp ((int8_t*)save_p, versionstring)) {
-        //I_Error("%s %s", save_p, versionstring);
+    if (locallib_strcmp ((int8_t __far*)save_p, versionstring)) {
+        //I_Error("%Fs %Fs", save_p, versionstring);
         return;                         // bad version 
     }
     save_p += VERSIONSIZE; 
@@ -710,19 +713,26 @@ void __near G_DoLoadGame (void)  {
 
     // load a base level 
     G_InitNew (gameskill, gameepisode, gamemap); 
+
+    // todo reload the file, re-set memory because G_InitNew ran a million things.
+	Z_QuickMapPhysics();
+    Z_QuickMapScratch_5000();
+	Z_QuickMapRender_4000To9000_9000Only();
+
+    length = M_ReadFile (savename, savebuffer); 
+
  
     // get the times 
-    a = *save_p++; 
-    b = *save_p++; 
-    c = *save_p++; 
-	leveltime.b.intbytelow = a;
-	leveltime.b.fracbytehigh = b;
-	leveltime.b.fracbytelow = c;
+    leveltime.b.intbytelow = *save_p++; 
+    leveltime.b.fracbytehigh = *save_p++; 
+    leveltime.b.fracbytelow = *save_p++; 
          
     // dearchive all the modifications
     P_UnArchivePlayers (); 
+
     P_UnArchiveWorld (); 
     P_UnArchiveThinkers (); 
+    //I_Error("here");
     P_UnArchiveSpecials (); 
 #ifdef CHECK_FOR_ERRORS
 
@@ -762,6 +772,8 @@ void __far G_SaveGame(int8_t   slot, int8_t __far* description ) {
     
     sendsave = true; 
 } 
+
+
 void __near G_DoSaveGame (void)  { 
 	
 	int8_t name[13] = "doomsav0.dsg";
@@ -800,7 +812,10 @@ void __near G_DoSaveGame (void)  {
 	*save_p++ = leveltime.b.intbytelow;
 	*save_p++ = leveltime.b.fracbytehigh;
 	*save_p++ = leveltime.b.fracbytelow;
- 
+
+	// page in si_render_9000
+	Z_QuickMapRender_4000To9000_9000Only();
+
     P_ArchivePlayers (); 
     P_ArchiveWorld (); 
     P_ArchiveThinkers (); 

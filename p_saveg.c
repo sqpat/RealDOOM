@@ -111,7 +111,6 @@ void P_ArchiveWorld (void) {
     }
 
 	
-	// todo page in si_render
 
     // do lines
     for (i=0, li = lines, li_phys = lines_physics ; i<numlines ; i++,li++,li_phys++) {
@@ -125,7 +124,7 @@ void P_ArchiveWorld (void) {
 			}
 			
 			si 		= &sides[li->sidenum[j]];
-			si_rend = &sides_render[li->sidenum[j]];
+			si_rend = &sides_render_9000[li->sidenum[j]];
 			*put++ 	= si->textureoffset;
 			*put++ 	= si_rend->rowoffset;
 			*put++ 	= si->toptexture;
@@ -181,7 +180,7 @@ void P_UnArchiveWorld (void) {
 			}
 
 			si 					= &sides[li->sidenum[j]];
-			si_rend 			= &sides_render[li->sidenum[j]];
+			si_rend 			= &sides_render_9000[li->sidenum[j]];
 			si->textureoffset 	= *get++;
 			si_rend->rowoffset  = *get++;
 			si->toptexture 		= *get++;
@@ -214,17 +213,24 @@ typedef enum {
 void P_ArchiveThinkers (void) {
 	
     THINKERREF				th;
-	mobj_t __near*		mobj;
+	mobj_t 		__near*		mobj;
+	mobj_pos_t   __far*		mobj_pos;
 	
     // save off the current thinkers
     for (th = thinkerlist[0].next ; th != 0; th=thinkerlist[th].next) {
 		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_MOBJTHINKER_HIGHBITS) {
-			mobj = &thinkerlist[th].data;
+			mobj 	 = &thinkerlist[th].data;
+			mobj_pos = &mobjposlist[th];
 
 			*save_p++ = tc_mobj;
 			PADSAVEP();
 			FAR_memcpy (save_p, mobj, sizeof(mobj_t));
 			save_p += sizeof(mobj_t);
+
+			FAR_memcpy (save_p, mobj_pos, sizeof(mobj_pos_t));
+			save_p += sizeof(mobj_pos_t);
+
+
 			//mobj->state = (state_t *)(mobj->state - states);
 			
 			// todo what to do here
@@ -252,7 +258,7 @@ void P_UnArchiveThinkers (void) {
     byte				tclass;
     THINKERREF			currentthinker;
 	THINKERREF			next;
-	THINKERREF 			thinkerRef;
+	THINKERREF 			th;
 	mobj_t __near* 		mobj;
 	mobj_pos_t __far * 	mobj_pos;
 	
@@ -272,6 +278,7 @@ void P_UnArchiveThinkers (void) {
     }
     P_InitThinkers ();
 	
+
     // read in saved thinkers
     while (1) {
 		tclass = *save_p++;
@@ -283,10 +290,14 @@ void P_UnArchiveThinkers (void) {
 				PADSAVEP();
 				
 				mobj =  P_CreateThinker(TF_MOBJTHINKER_HIGHBITS);
-				thinkerRef = GETTHINKERREF(mobj);
-				mobj_pos = &mobjposlist[thinkerRef];
+				th = GETTHINKERREF(mobj);
+				mobj_pos = &mobjposlist[th];
+				
 				FAR_memcpy (mobj, save_p, sizeof(mobj_t));
 				save_p += sizeof(mobj_t);
+				FAR_memcpy (mobj_pos, save_p, sizeof(mobj_pos_t));
+				save_p += sizeof(mobj_pos_t);
+				
 				//mobj->state = &states[(int16_t)mobj->state];
 				mobj->targetRef = NULL_THINKERREF;
 				
@@ -311,6 +322,7 @@ void P_UnArchiveThinkers (void) {
 		}
 	
     }
+	//I_Error("here2");
 	
 }
 
