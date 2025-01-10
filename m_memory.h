@@ -178,10 +178,9 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define SAVESTRINGSIZE        24u
 
-#define baselowermemoryaddress    (0x31120000)
+#define baselowermemoryaddress    (0x31160000)
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
-#define size_font_widths         (HU_FONTSIZE * sizeof(int8_t))
 #define size_finesine            (10240u * sizeof(int32_t))
 #define size_events              (sizeof(event_t) * MAXEVENTS)
 #define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
@@ -195,8 +194,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 
-#define font_widths        ((int8_t __far*)             MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
-#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(font_widths , size_font_widths))
+#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
 #define finecosine         ((int32_t __far*)            (finesine + 0x2000))  // 10240
 #define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
 #define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
@@ -226,7 +224,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 //todo recalculate after moving stuff around...
 
 
-// font_widths          3112:0000
 // finesine             3116:0000
 // finecosine           3116:2000
 // events               3B16:0000
@@ -378,6 +375,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_ammnumpatchoffsets    ((sizeof(uint16_t) * 10))
 #define size_doomednum             ((sizeof(int16_t) * NUMMOBJTYPES))
 #define size_linespeciallist       ((sizeof(int16_t) * MAXLINEANIMS))
+#define size_font_widths           (HU_FONTSIZE * sizeof(int8_t))
 
 
 
@@ -388,12 +386,13 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define sectors_soundorgs      ((sector_soundorg_t __far* )   MAKE_FULL_SEGMENT(sectors_physics_far, size_sectors_physics ))
 #define sector_soundtraversed  ((int8_t __far*)               MAKE_FULL_SEGMENT(sectors_soundorgs, size_sectors_soundorgs ))
 
-#define intercepts         ((intercept_t __far*)          MAKE_FULL_SEGMENT(sector_soundtraversed, size_sector_soundtraversed ))
-#define ammnumpatchbytes   ((byte __far *)                MAKE_FULL_SEGMENT(intercepts, size_intercepts ))
-#define ammnumpatchoffsets ((uint16_t __far*)             (((int32_t)ammnumpatchbytes) + 0x020C))
-#define doomednum          ((int16_t __far*)              MAKE_FULL_SEGMENT(ammnumpatchbytes, (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
-#define linespeciallist    ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum, size_doomednum ))
-#define fwipe_code_area    ((byte __far*)                 MAKE_FULL_SEGMENT(linespeciallist,     size_linespeciallist))
+#define intercepts             ((intercept_t __far*)          MAKE_FULL_SEGMENT(sector_soundtraversed, size_sector_soundtraversed ))
+#define ammnumpatchbytes       ((byte __far *)                MAKE_FULL_SEGMENT(intercepts, size_intercepts ))
+#define ammnumpatchoffsets     ((uint16_t __far*)             (((int32_t)ammnumpatchbytes) + 0x020C))
+#define doomednum              ((int16_t __far*)              MAKE_FULL_SEGMENT(ammnumpatchbytes, (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
+#define linespeciallist        ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum, size_doomednum ))
+#define font_widths            ((int8_t __far*)               MAKE_FULL_SEGMENT(linespeciallist,     size_linespeciallist))
+#define fwipe_code_area        ((byte __far*)                 MAKE_FULL_SEGMENT(font_widths , size_font_widths))
 
 
 #define thinkerlist_segment           ((segment_t) ((int32_t)thinkerlist_far >> 16))
@@ -430,8 +429,9 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // 4CA4:020C  xxxx ammnumpatchoffsets
 // 4CC6:0000  xxxx doomednum
 // 4CD8:0000  xxxx linespeciallist
-// 4CE0:0000  xxxx fwipe_code_area
-// 4D12:0000  xxxx [empty]
+// 4CE0:0000  xxxx font_widths
+// 4CE4:0000  xxxx fwipe_code_area
+// 4D16:0000  xxxx [empty]
 
 
 // 12000 bytes free?
