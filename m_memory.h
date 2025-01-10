@@ -178,9 +178,10 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define SAVESTRINGSIZE        24u
 
-#define baselowermemoryaddress    (0x31160000)
+#define baselowermemoryaddress    (0x31120000)
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
+#define size_font_widths         (HU_FONTSIZE * sizeof(int8_t))
 #define size_finesine            (10240u * sizeof(int32_t))
 #define size_events              (sizeof(event_t) * MAXEVENTS)
 #define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
@@ -191,13 +192,12 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_savegamestrings     (10 * SAVESTRINGSIZE)
 
 
-#define FINE_SINE_ARGUMENT  base_lower_memory_segment
-#define FINE_COSINE_ARGUMENT FINE_SINE_ARGUMENT + 0x200
 
 
 
-#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
-#define finecosine         ((int32_t __far*)            (baselowermemoryaddress + 0x2000))  // 10240
+#define font_widths        ((int8_t __far*)             MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
+#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(font_widths , size_font_widths))
+#define finecosine         ((int32_t __far*)            (finesine + 0x2000))  // 10240
 #define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
 #define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
 #define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
@@ -220,8 +220,13 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define savegamestrings_segment       ((segment_t) ((int32_t)savegamestrings >> 16))
 #define base_lower_end_segment        ((segment_t) ((int32_t)base_lower_end >> 16))
 
+#define FINE_SINE_ARGUMENT  finesine_segment
+#define FINE_COSINE_ARGUMENT FINE_SINE_ARGUMENT + 0x200
+
 //todo recalculate after moving stuff around...
 
+
+// font_widths          3112:0000
 // finesine             3116:0000
 // finecosine           3116:2000
 // events               3B16:0000

@@ -105,16 +105,12 @@ boolean M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		leng
 
 
 filelength_t M_ReadFile (int8_t const*	name, byte __far*	buffer ){ 
-    filelength_t count, length;
+    int32_t length;
 	
 
     FILE* fp = fopen(name, "rb");
     fseek(fp, 0L, SEEK_END);
     length = ftell(fp);
-#ifdef CHECK_FOR_ERRORS
-	if (handle == -1)
-		I_Error ("Couldn't read file %s", name);
-#endif
 
 /*
 	if (fp == NULL){
@@ -122,14 +118,10 @@ filelength_t M_ReadFile (int8_t const*	name, byte __far*	buffer ){
     }
     */
     fseek(fp, 0L, SEEK_SET);
-
     FAR_fread(buffer, 1, length, fp);
 
     fclose (fp);
-#ifdef CHECK_FOR_ERRORS
-    if (count < length)
-		I_Error ("Couldn't read file %s", name);
-#endif		
+
     return length;
 }
 

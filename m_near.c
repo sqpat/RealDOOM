@@ -857,6 +857,9 @@ uint8_t		message_counter;
 
 
 // offsets within segment stored
+// long long time ago to get binary size down, constants like these were hardcoded.
+// todo: one day to make more wads play nice by calculating dynamically again. We can do this
+//   in m_init style asm offloaded code that wont make binary bigger anyway.
 uint16_t hu_font[HU_FONTSIZE]  ={ 8468,
 	8368, 8252, 8124, 7980, 7848,
 	7788, 7668, 7548, 7452, 7376,
@@ -2196,6 +2199,8 @@ segment_t 					segloopcachedsegment[2];
 int16_t 					segloopcachedbasecol[2];
 uint8_t 					segloopheightvalcache[2];
 
+int8_t    savename[16];
+int8_t versionstring[12] = "version 109";  // hardcoded from VERSION. todo dynamically generate?
 
 /*
 uint16_t shift4lookup[256] = 

@@ -1154,6 +1154,8 @@ extern segment_t 				segloopcachedsegment[2];
 extern int16_t 					segloopcachedbasecol[2];
 extern uint8_t 					segloopheightvalcache[2];
 
+extern int8_t    savename[16];
+extern int8_t versionstring[12];
 
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)

@@ -673,8 +673,6 @@ void __near G_DoCompleted (void)  {
 //
 
 // todo make larger?
-int8_t    savename[16];
-int8_t versionstring[12] = "version 109";  // hardcoded from VERSION. todo dynamically generate?
 
 void __far G_LoadGame (int8_t* name)  { 
     strcpy (savename, name); 
@@ -699,7 +697,7 @@ void __near G_DoLoadGame (void)  {
     
     // skip the description field 
     if (locallib_strcmp ((int8_t*)save_p, versionstring)) {
-        
+        //I_Error("%s %s", save_p, versionstring);
         return;                         // bad version 
     }
     save_p += VERSIONSIZE; 
@@ -750,37 +748,46 @@ void __near G_DoLoadGame (void)  {
 // Description is a 24 byte text string 
 //
 void __far G_SaveGame(int8_t   slot, int8_t __far* description ) { 
+    int8_t i;
     savegameslot = slot; 
-    locallib_strcpy (savedescription, description); 
+    
+
+    // todo: memcpy, locallib_strcpy not working
+    //FAR_memcpy((int8_t __far*)savedescription, description, SAVESTRINGSIZE); 
+    
+    for (i = 0; i < SAVESTRINGSIZE; i++){
+        savedescription[i] = description[i];
+    }
+    
+    
     sendsave = true; 
 } 
 void __near G_DoSaveGame (void)  { 
 	
-	int8_t        name[100];
-	int8_t        name2[VERSIONSIZE];
-    int8_t numstring[2];    
+	int8_t name[13] = "doomsav0.dsg";
+    int8_t i;
 
-    int8_t*       description; 
 	filelength_t         length;
 	byte __far*       savebuffer; 
-    numstring[0] = '0' + savegameslot;
-    numstring[1] = '\0';
+    name[7] = '0' + savegameslot;
 
-    combine_strings(name, SAVEGAMENAME, numstring);
-    combine_strings(name, name, ".dsg");
-
-
-    description = savedescription; 
 
     Z_QuickMapScratch_5000();
 
 	
     save_p = savebuffer = MK_FP(0x5000, 0);
          
-    FAR_memcpy (save_p, description, SAVESTRINGSIZE); 
+
+    // todo: memcpy, locallib_strcpy not working
+    //FAR_memcpy (save_p, savedescription, SAVESTRINGSIZE); 
+    for (i = 0; i < SAVESTRINGSIZE; i++){
+        save_p[i] = savedescription[i];
+    }
     save_p += SAVESTRINGSIZE; 
 
-    FAR_memcpy (save_p, versionstring, VERSIONSIZE); 
+
+    FAR_memcpy (save_p, versionstring, 12); 
+    //FAR_memcpy (save_p, versionstring, VERSIONSIZE); 
     save_p += VERSIONSIZE; 
          
 	*save_p++ = gameskill;

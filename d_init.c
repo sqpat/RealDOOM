@@ -430,6 +430,9 @@ void __near HU_Init(void){
 		makethreecharint(j++, ext);
 		combine_strings(buffer, "STCFN", ext );
 		W_CacheLumpNameDirect(buffer, (byte __far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
+		
+		font_widths[i] = (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i]))->width);
+	
 	}
 
 

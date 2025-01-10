@@ -802,14 +802,14 @@ void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int1
 int16_t __near M_StringWidth(int8_t __far* string) {
     int16_t             i;
     int16_t             w = 0;
-    int16_t             c;
+    int16_t             len = locallib_strlen(string);
     
-    for (i = 0;i < locallib_strlen(string);i++) {
-        c = locallib_toupper(string[i]) - HU_FONTSTART;
+    for (i = 0;i < len;i++) {
+        int16_t c = locallib_toupper(string[i]) - HU_FONTSTART;
         if (c < 0 || c >= HU_FONTSIZE)
             w += 4;
         else {
-            w += (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
+            w += font_widths[c];
         }
     }
                 
@@ -864,7 +864,7 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
             continue;
         }
 
-        w = (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
+        w = font_widths[c];
 
         if (cx+w > SCREENWIDTH){
             break;
@@ -950,6 +950,7 @@ boolean __far M_Responder (event_t __far*  ev) {
             saveStringEnter = 0;
             offset = saveSlot*SAVESTRINGSIZE;
             // skip FAR_strcpy, it includes a big unecessary nonportable function into the build
+            // todo just farmemset?
             for (j = 0; j < SAVESTRINGSIZE; j++){
                 savegamestrings[offset+j] = saveOldString[j];
             }
@@ -966,17 +967,22 @@ boolean __far M_Responder (event_t __far*  ev) {
                                 
           default:
             ch = locallib_toupper(ch);
-            if (ch != 32)
+            if (ch != 32){
                 if (ch-HU_FONTSTART < 0 || ch-HU_FONTSTART >= HU_FONTSIZE){
                     break;
                 }
+            }
+
+
             if (ch >= 32 && ch <= 127 &&
-                saveCharIndex < SAVESTRINGSIZE-1 &&
+                saveCharIndex < (SAVESTRINGSIZE-1) &&
                 M_StringWidth(&savegamestrings[saveSlot*SAVESTRINGSIZE]) <
                 (SAVESTRINGSIZE-2)*8) {
-                savegamestrings[saveSlot*SAVESTRINGSIZE+saveCharIndex++] = ch;
-                savegamestrings[saveSlot*SAVESTRINGSIZE+saveCharIndex] = 0;
+                    savegamestrings[saveSlot*SAVESTRINGSIZE+saveCharIndex] = ch;
+                    saveCharIndex++;
+                    savegamestrings[saveSlot*SAVESTRINGSIZE+saveCharIndex] = 0;
             }
+
             break;
         }
         return true;

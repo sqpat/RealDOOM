@@ -400,7 +400,7 @@ void __near F_TextWrite (void) {
 			continue;
 		}
 			
-		w =  (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
+		w = font_widths[c];
 		if (cx+w > SCREENWIDTH) {
 			break;
 		}
@@ -585,7 +585,7 @@ void __near F_CastPrint (int8_t* text) {
 		}
 			
 	
-		w = (((patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
+		w = font_widths[c];
 		width += w;
     }
     
@@ -603,7 +603,7 @@ void __near F_CastPrint (int8_t* text) {
 			continue;
 		}
 			
-		w = (((patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
+		w = font_widths[c];
 		V_DrawPatch(cx, 180, 0, (patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]));
 		cx+=w;
     }
