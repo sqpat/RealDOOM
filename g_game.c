@@ -664,7 +664,36 @@ void __near G_DoCompleted (void)  {
     WI_Start (&wminfo); 
 } 
 
- 
+ void __near dolog(int16_t a){
+
+	FILE* fp = fopen("log2.txt", "ab");
+    
+    fputc('0'+a / 10000, fp);
+    fputc('0'+(a%10000) / 1000 , fp);
+    fputc('0'+(a%1000) / 100  , fp);
+    fputc('0'+(a%100) / 10   , fp);
+    fputc('0'+ a % 10  , fp);
+    fputc('\n'         , fp);
+    fclose(fp);
+
+}
+
+ void __near dologbig(int32_t a){
+    int8_t  hexdigits[17] = "0123456789ABCDEF";
+	FILE* fp = fopen("log2.txt", "ab");
+    
+    fputc(hexdigits[a>>28]   , fp);
+    fputc(hexdigits[(a&0xFFFFFFF)>>24]   , fp);
+    fputc(hexdigits[(a&0xFFFFFF)>>20]   , fp);
+    fputc(hexdigits[(a&0xFFFFF)>>16]   , fp);
+    fputc(hexdigits[(a&0xFFFF)>>12]   , fp);
+    fputc(hexdigits[(a&0xFFF)>>8]   , fp);
+    fputc(hexdigits[(a&0xFF)>>4]   , fp);
+    fputc(hexdigits[a%16]   , fp);
+    fputc('\n'         , fp);
+    fclose(fp);
+
+}
 
 
 //
@@ -689,6 +718,7 @@ void Z_QuickMapRender_4000To9000_9000Only();
 void __near G_DoLoadGame (void)  { 
 	
 	filelength_t         length;
+//	FILE* fp = fopen("log2.txt", "wb");
 	
 	byte __far*           savebuffer = MK_FP(0x5000, 0);
     gameaction = ga_nothing; 
@@ -714,26 +744,36 @@ void __near G_DoLoadGame (void)  {
     // load a base level 
     G_InitNew (gameskill, gameepisode, gamemap); 
 
-    // todo reload the file, re-set memory because G_InitNew ran a million things.
-	Z_QuickMapPhysics();
+    // reload the file, re-set memory because G_InitNew ran a million things.
+	Z_QuickMapPhysics();        // may be unnecessary, G_InitNew runs it?
     Z_QuickMapScratch_5000();
-	Z_QuickMapRender_4000To9000_9000Only();
 
     length = M_ReadFile (savename, savebuffer); 
 
  
     // get the times 
-    leveltime.b.intbytelow = *save_p++; 
+    leveltime.b.intbytelow   = *save_p++; 
     leveltime.b.fracbytehigh = *save_p++; 
-    leveltime.b.fracbytelow = *save_p++; 
-         
-    // dearchive all the modifications
-    P_UnArchivePlayers (); 
+    leveltime.b.fracbytelow  = *save_p++; 
 
+
+    // dearchive all the modifications
+    //dolog(save_p-savebuffer);
+    P_UnArchivePlayers (); 
+    //dolog(save_p-savebuffer);
+
+    // sides_render in 9000
+	Z_QuickMapRender_4000To9000_9000Only();
     P_UnArchiveWorld (); 
+    //dolog(save_p-savebuffer);
+    // mobjposlist back in 9000
+    //Z_QuickMapPhysics();
+    //Z_QuickMapScratch_5000();
+
     P_UnArchiveThinkers (); 
-    //I_Error("here");
+    //dolog(save_p-savebuffer);
     P_UnArchiveSpecials (); 
+    I_Error("here");
 #ifdef CHECK_FOR_ERRORS
 
     if (*save_p != 0x1d) 
@@ -776,7 +816,7 @@ void __far G_SaveGame(int8_t   slot, int8_t __far* description ) {
 
 void __near G_DoSaveGame (void)  { 
 	
-	int8_t name[13] = "doomsav0.dsg";
+    int8_t name[13] = "doomsav0.dsg";
     int8_t i;
 
 	filelength_t         length;
@@ -818,6 +858,9 @@ void __near G_DoSaveGame (void)  {
 
     P_ArchivePlayers (); 
     P_ArchiveWorld (); 
+    // mobjposlist back in 9000
+    //Z_QuickMapPhysics();
+    //Z_QuickMapScratch_5000();
     P_ArchiveThinkers (); 
     P_ArchiveSpecials (); 
          

@@ -31,6 +31,7 @@
 #define PADSAVEP()	save_p += (4 - ((int32_t) save_p & 3)) & 3
 
 
+ void __near dologbig(int32_t a);
 
 //
 // P_ArchivePlayers
@@ -43,7 +44,7 @@ void P_ArchivePlayers (void) {
 	FAR_memcpy (save_p,&player,sizeof(player_t));
 	save_p += sizeof(player_t);
 	FAR_memcpy (save_p,psprites,NUMPSPRITES*sizeof(pspdef_t));
-	save_p += NUMPSPRITES*sizeof(player_t);
+	save_p += NUMPSPRITES*sizeof(pspdef_t);
 //	for (j=0 ; j<NUMPSPRITES ; j++) {
 //		if (psprites[j].state) {
 //			psprites[j].state  = (state_t *)(psprites[j].state-states);
@@ -133,7 +134,7 @@ void P_ArchiveWorld (void) {
 		}
     }
 	
-    save_p = (byte *)put;
+    save_p = (byte __far*)put;
 	
 }
 
@@ -206,6 +207,7 @@ typedef enum {
 } thinkerclass_t;
 
 
+ void __near dolog(int16_t a);
 
 //
 // P_ArchiveThinkers
@@ -213,14 +215,17 @@ typedef enum {
 void P_ArchiveThinkers (void) {
 	
     THINKERREF				th;
-	mobj_t 		__near*		mobj;
+	mobj_t 		 __near*	mobj;
 	mobj_pos_t   __far*		mobj_pos;
+	int16_t i;
 	
     // save off the current thinkers
+    
     for (th = thinkerlist[0].next ; th != 0; th=thinkerlist[th].next) {
-		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_MOBJTHINKER_HIGHBITS) {
+		int16_t functype = thinkerlist[th].prevFunctype & TF_FUNCBITS;
+		if (functype == TF_MOBJTHINKER_HIGHBITS) {
 			mobj 	 = &thinkerlist[th].data;
-			mobj_pos = &mobjposlist[th];
+			mobj_pos = &mobjposlist_6800[th];
 
 			*save_p++ = tc_mobj;
 			PADSAVEP();
@@ -238,14 +243,14 @@ void P_ArchiveThinkers (void) {
 				//mobj->player = mobj->player
 			continue;
 		}
-		
+		// todo reenable error?		
 		//I_Error ("P_ArchiveThinkers: Unknown thinker function");
     }
 
     // add a terminating marker
     *save_p++ = tc_end;	
 	
-	}
+}
 
 
 void  __near P_InitThinkers (void);
@@ -288,10 +293,9 @@ void P_UnArchiveThinkers (void) {
 					
 			case tc_mobj:
 				PADSAVEP();
-				
 				mobj =  P_CreateThinker(TF_MOBJTHINKER_HIGHBITS);
 				th = GETTHINKERREF(mobj);
-				mobj_pos = &mobjposlist[th];
+				mobj_pos = &mobjposlist_6800[th];
 				
 				FAR_memcpy (mobj, save_p, sizeof(mobj_t));
 				save_p += sizeof(mobj_t);
@@ -368,7 +372,7 @@ void P_ArchiveSpecials (void) {
     strobe_t __far*		strobe;
     glow_t __far*		glow;
     int16_t			i;
-	mobj_t _near*			thinkerobj;
+	mobj_t __near*		thinkerobj;
 	
     // save off the current thinkers
     for (th = thinkerlist[0].next ; th != 0 ; th=thinkerlist[th].next) {
@@ -385,8 +389,8 @@ void P_ArchiveSpecials (void) {
 				*save_p++ = tc_ceiling;
 				PADSAVEP();
 				ceiling = (ceiling_t __far*)save_p;
-				FAR_memcpy (ceiling, thinkerobj, sizeof(*ceiling));
-				save_p += sizeof(*ceiling);
+				FAR_memcpy (ceiling, thinkerobj, sizeof(ceiling_t));
+				save_p += sizeof(ceiling_t);
 				//ceiling->secnum = ceiling->secnum
 			}
 			continue;
@@ -396,8 +400,8 @@ void P_ArchiveSpecials (void) {
 			*save_p++ = tc_ceiling;
 			PADSAVEP();
 			ceiling = (ceiling_t __far*)save_p;
-			FAR_memcpy (ceiling, thinkerobj, sizeof(*ceiling));
-			save_p += sizeof(*ceiling);
+			FAR_memcpy (ceiling, thinkerobj, sizeof(ceiling_t));
+			save_p += sizeof(ceiling_t);
 			//ceiling->secnum = ceiling->secnum
 			
 			continue;
@@ -407,8 +411,8 @@ void P_ArchiveSpecials (void) {
 			*save_p++ = tc_door;
 			PADSAVEP();
 			door = (vldoor_t __far*)save_p;
-			FAR_memcpy (door, thinkerobj, sizeof(*door));
-			save_p += sizeof(*door);
+			FAR_memcpy (door, thinkerobj, sizeof(vldoor_t));
+			save_p += sizeof(vldoor_t);
 			//door->secnum = door->secnum;
 			continue;
 		}
@@ -417,8 +421,8 @@ void P_ArchiveSpecials (void) {
 			*save_p++ = tc_floor;
 			PADSAVEP();
 			floor = (floormove_t __far*)save_p;
-			FAR_memcpy (floor, thinkerobj, sizeof(*floor));
-			save_p += sizeof(*floor);
+			FAR_memcpy (floor, thinkerobj, sizeof(floormove_t));
+			save_p += sizeof(floormove_t);
 			//floor->secnum = floor->secnum;
 			continue;
 		}
@@ -427,8 +431,8 @@ void P_ArchiveSpecials (void) {
 			*save_p++ = tc_plat;
 			PADSAVEP();
 			plat = (plat_t __far*)save_p;
-			FAR_memcpy (plat, thinkerobj, sizeof(*plat));
-			save_p += sizeof(*plat);
+			FAR_memcpy (plat, thinkerobj, sizeof(plat_t));
+			save_p += sizeof(plat_t);
 			//plat->secnum = plat->secnum;
 			continue;
 		}
@@ -437,8 +441,8 @@ void P_ArchiveSpecials (void) {
 			*save_p++ = tc_flash;
 			PADSAVEP();
 			flash = (lightflash_t __far*)save_p;
-			FAR_memcpy (flash, thinkerobj, sizeof(*flash));
-			save_p += sizeof(*flash);
+			FAR_memcpy (flash, thinkerobj, sizeof(lightflash_t));
+			save_p += sizeof(lightflash_t);
 			//flash->secnum = flash->secnum;
 			continue;
 		}
@@ -447,8 +451,8 @@ void P_ArchiveSpecials (void) {
 			*save_p++ = tc_strobe;
 			PADSAVEP();
 			strobe = (strobe_t __far *)save_p;
-			FAR_memcpy (strobe, thinkerobj, sizeof(*strobe));
-			save_p += sizeof(*strobe);
+			FAR_memcpy (strobe, thinkerobj, sizeof(strobe_t));
+			save_p += sizeof(strobe_t);
 			//strobe->secnum = strobe->secnum;
 			continue;
 		}
@@ -456,9 +460,9 @@ void P_ArchiveSpecials (void) {
 		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_GLOW_HIGHBITS) {
 			*save_p++ = tc_glow;
 			PADSAVEP();
-			glow = (glow_t *)save_p;
-			FAR_memcpy (glow, thinkerobj, sizeof(*glow));
-			save_p += sizeof(*glow);
+			glow = (glow_t __far *)save_p;
+			FAR_memcpy (glow, thinkerobj, sizeof(glow_t));
+			save_p += sizeof(glow_t);
 			//glow->secnum = glow->secnum;
 			continue;
 		}
