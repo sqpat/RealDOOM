@@ -191,11 +191,13 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_savegamestrings     (10 * SAVESTRINGSIZE)
 
 
+#define FINE_SINE_ARGUMENT  base_lower_memory_segment
+#define FINE_COSINE_ARGUMENT FINE_SINE_ARGUMENT + 0x200
 
 
 
 #define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
-#define finecosine         ((int32_t __far*)            (finesine + 0x2000))  // 10240
+#define finecosine         ((int32_t __far*)            (baselowermemoryaddress + 0x2000))  // 10240
 #define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
 #define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
 #define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
@@ -217,9 +219,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define subsector_lines_segment       ((segment_t) ((int32_t)subsector_lines >> 16))
 #define savegamestrings_segment       ((segment_t) ((int32_t)savegamestrings >> 16))
 #define base_lower_end_segment        ((segment_t) ((int32_t)base_lower_end >> 16))
-
-#define FINE_SINE_ARGUMENT  finesine_segment
-#define FINE_COSINE_ARGUMENT FINE_SINE_ARGUMENT + 0x200
 
 //todo recalculate after moving stuff around...
 
