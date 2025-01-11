@@ -162,6 +162,7 @@ void __far P_UnArchiveWorld (void) {
 		sec->floorpic      	= *get++;
 		sec->ceilingpic    	= *get++;
 		sec->lightlevel 	= *get++;
+		sec->thinglistRef   = NULL_THINKERREF;  // erase this. garbage value from p_setup, we will fix it later unarchivng mobj pos
 		sec_phys->special 		= *get++;		// needed?
 		sec_phys->tag 			= *get++;		// needed?
 		sec_phys->specialdataRef = NULL_THINKERREF;
@@ -303,6 +304,7 @@ void __far P_UnArchiveThinkers (void) {
 				FAR_memcpy (mobj_pos, save_p, sizeof(mobj_pos_t));
 				save_p += sizeof(mobj_pos_t);
 				
+				mobj_pos->snextRef = NULL_THINKERREF; // garbage value. P_SetThingPosition will fix
 				//mobj->state = &states[(int16_t)mobj->state];
 				mobj->targetRef = NULL_THINKERREF;
 				// todo tracerref fine?
@@ -505,8 +507,8 @@ void __far P_UnArchiveSpecials (void) {
 				ceiling =  P_CreateThinker(TF_MOVECEILING_HIGHBITS);
 				thinkerRef = GETTHINKERREF(ceiling);
 
-				FAR_memcpy (ceiling, save_p, sizeof(*ceiling));
-				save_p += sizeof(*ceiling);
+				FAR_memcpy (ceiling, save_p, sizeof(ceiling_t));
+				save_p += sizeof(ceiling_t);
 				//ceiling->sector = &sectors[(int16_t)ceiling->sector];
 				//ceiling->sector->specialdataRef = thinkerRef;
 				sectors_physics[ceiling->secnum].specialdataRef = thinkerRef;
@@ -529,8 +531,8 @@ void __far P_UnArchiveSpecials (void) {
 				thinkerRef = GETTHINKERREF(door);
 
 
-				FAR_memcpy (door, save_p, sizeof(*door));
-				save_p += sizeof(*door);
+				FAR_memcpy (door, save_p, sizeof(vldoor_t));
+				save_p += sizeof(vldoor_t);
 				//door->sector = &sectors[(int16_t)door->sector];
 				//door->sector->specialdataRef = thinkerRef;
 				sectors_physics[door->secnum].specialdataRef = thinkerRef;
@@ -547,8 +549,8 @@ void __far P_UnArchiveSpecials (void) {
 				thinkerRef = GETTHINKERREF(floor);
 
 
-				FAR_memcpy (floor, save_p, sizeof(*floor));
-				save_p += sizeof(*floor);
+				FAR_memcpy (floor, save_p, sizeof(floormove_t));
+				save_p += sizeof(floormove_t);
 				//floor->sector = &sectors[(int16_t)floor->sector];
 				sectors_physics[floor->secnum].specialdataRef = thinkerRef;
 				//floor->thinker.function.acp1 = (actionf_p1)T_MoveFloor;
@@ -563,8 +565,8 @@ void __far P_UnArchiveSpecials (void) {
 				thinkerRef = GETTHINKERREF(plat);
 
 
-				FAR_memcpy (plat, save_p, sizeof(*plat));
-				save_p += sizeof(*plat);
+				FAR_memcpy (plat, save_p, sizeof(plat_t));
+				save_p += sizeof(plat_t);
 				//plat->sector = &sectors[(int16_t)plat->sector];
 				sectors_physics[plat->secnum].specialdataRef = thinkerRef;
 
@@ -584,8 +586,8 @@ void __far P_UnArchiveSpecials (void) {
 				thinkerRef = GETTHINKERREF(flash);
 
 
-				FAR_memcpy (flash, save_p, sizeof(*flash));
-				save_p += sizeof(*flash);
+				FAR_memcpy (flash, save_p, sizeof(lightflash_t));
+				save_p += sizeof(lightflash_t);
 				//flash->sector = &sectors[(int16_t)flash->sector];
 				//flash->thinker.function.acp1 = (actionf_p1)T_LightFlash;
 				//flash->thinker.memref = thinkerRef;
@@ -598,8 +600,8 @@ void __far P_UnArchiveSpecials (void) {
 				strobe =  P_CreateThinker(TF_STROBEFLASH_HIGHBITS);
 				thinkerRef = GETTHINKERREF(strobe);
 
-				FAR_memcpy (strobe, save_p, sizeof(*strobe));
-				save_p += sizeof(*strobe);
+				FAR_memcpy (strobe, save_p, sizeof(strobe_t));
+				save_p += sizeof(strobe_t);
 				//strobe->sector = &sectors[(int16_t)strobe->sector];
 				//strobe->thinker.function.acp1 = (actionf_p1)T_StrobeFlash;
 				//strobe->thinker.memref = thinkerRef;
@@ -612,8 +614,8 @@ void __far P_UnArchiveSpecials (void) {
 				thinkerRef = GETTHINKERREF(glow);
 
 
-				FAR_memcpy (glow, save_p, sizeof(*glow));
-				save_p += sizeof(*glow);
+				FAR_memcpy (glow, save_p, sizeof(glow_t));
+				save_p += sizeof(glow_t);
 				//glow->sector = &sectors[(int16_t)glow->sector];
 				//glow->thinker.function.acp1 = (actionf_p1)T_Glow;
 				//glow->thinker.memref = thinkerRef;

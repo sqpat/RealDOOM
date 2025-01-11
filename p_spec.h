@@ -268,28 +268,16 @@ typedef struct {
 // #define VDOORSPEED		FRACUNIT*2
 #define VDOORWAIT		150
 
-void
-EV_VerticalDoor
-( int16_t linenum,
-	THINKERREF	thingRef );
+void EV_VerticalDoor (int16_t linenum, THINKERREF thingRef );
 
-int16_t
-EV_DoDoor
-(uint8_t linetag,
-  vldoor_e	type );
+int16_t EV_DoDoor (uint8_t linetag, vldoor_e type );
 
-int16_t
-EV_DoLockedDoor
-(uint8_t linetag, int16_t linepsecial,
-  vldoor_e	type,
-	THINKERREF thingRef);
+int16_t EV_DoLockedDoor (uint8_t linetag, int16_t linepsecial, vldoor_e type, THINKERREF thingRef);
 
 void __near T_VerticalDoor(vldoor_t __near* door, THINKERREF doorRef);
-void    P_SpawnDoorCloseIn30 (int16_t secnum);
+void P_SpawnDoorCloseIn30 (int16_t secnum);
 
-void
-P_SpawnDoorRaiseIn5Mins
-( int16_t		secnum );
+void P_SpawnDoorRaiseIn5Mins ( int16_t secnum );
 
  
 
