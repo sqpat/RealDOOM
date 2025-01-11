@@ -285,6 +285,7 @@ void __far P_UnArchiveThinkers (void) {
     }
     P_InitThinkers ();
 	
+	FAR_memset(blocklinks, 0, MAX_BLOCKLINKS_SIZE);
 
     // read in saved thinkers
     while (1) {
@@ -304,6 +305,7 @@ void __far P_UnArchiveThinkers (void) {
 				FAR_memcpy (mobj_pos, save_p, sizeof(mobj_pos_t));
 				save_p += sizeof(mobj_pos_t);
 				
+				mobj->bnextRef = NULL_THINKERREF; // garbage value. P_SetThingPosition will fix
 				mobj_pos->snextRef = NULL_THINKERREF; // garbage value. P_SetThingPosition will fix
 				//mobj->state = &states[(int16_t)mobj->state];
 				mobj->targetRef = NULL_THINKERREF;
@@ -313,7 +315,7 @@ void __far P_UnArchiveThinkers (void) {
 				if (mobj->type == MT_PLAYER) {
 					playerMobjRef = th;
 				}
-				
+
 				P_SetThingPosition (mobj, mobj_pos, mobj->secnum);
 				//mobj->info = &mobjinfo[mobj->type];
 				mobj->floorz = sectors[mobj->secnum].floorheight;
