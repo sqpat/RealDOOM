@@ -36,7 +36,7 @@
 //
 // P_ArchivePlayers
 //
-void P_ArchivePlayers (void) {
+void __far P_ArchivePlayers (void) {
 		
 	
 	PADSAVEP();
@@ -58,7 +58,7 @@ void P_ArchivePlayers (void) {
 //
 // P_UnArchivePlayers
 //
-void P_UnArchivePlayers (void) {
+void __far P_UnArchivePlayers (void) {
 	
 	
 	PADSAVEP();
@@ -81,12 +81,12 @@ void P_UnArchivePlayers (void) {
 //
 // P_ArchiveWorld
 //
-void P_ArchiveWorld (void) {
+void __far P_ArchiveWorld (void) {
 	
     int16_t			i;
     int16_t			j;
     sector_t 		 __far*		sec;
-    sector_physics_t __far*		sec_phys;
+    sector_physics_t __near*		sec_phys;
 
     line_t			 __far*		li;
     line_physics_t	 __far*		li_phys;
@@ -143,12 +143,12 @@ void P_ArchiveWorld (void) {
 //
 // P_UnArchiveWorld
 //
-void P_UnArchiveWorld (void) {
+void __far P_UnArchiveWorld (void) {
 	
     int16_t			i;
     int16_t			j;
     sector_t 			__far*		sec;
-    sector_physics_t 	__far*		sec_phys;
+    sector_physics_t 	__near*		sec_phys;
     line_t  			__far*		li;
     line_physics_t  	__far*		li_phys;
     side_t  			__far*		si;
@@ -207,12 +207,12 @@ typedef enum {
 } thinkerclass_t;
 
 
- void __near dolog(int16_t a);
+ void __far dolog(int16_t a);
 
 //
 // P_ArchiveThinkers
 //
-void P_ArchiveThinkers (void) {
+void __far P_ArchiveThinkers (void) {
 	
     THINKERREF				th;
 	mobj_t 		 __near*	mobj;
@@ -258,7 +258,7 @@ void  __far P_InitThinkers (void);
 //
 // P_UnArchiveThinkers
 //
-void __near P_UnArchiveThinkers (void) {
+void __far P_UnArchiveThinkers (void) {
 	
     byte				tclass;
     THINKERREF			currentthinker;
@@ -305,14 +305,13 @@ void __near P_UnArchiveThinkers (void) {
 				
 				//mobj->state = &states[(int16_t)mobj->state];
 				mobj->targetRef = NULL_THINKERREF;
+				// todo tracerref fine?
 				
-				// todo player detect
-				/*
-				if (mobj->player) {
-					mobj->player = &players;
-					mobj->player->moRef = thinkerRef;
+				
+				if (mobj->type == MT_PLAYER) {
+					playerMobjRef = th;
 				}
-				*/
+				
 				P_SetThingPosition (mobj, mobj_pos, mobj->secnum);
 				//mobj->info = &mobjinfo[mobj->type];
 				mobj->floorz = sectors[mobj->secnum].floorheight;
@@ -361,7 +360,7 @@ enum {
 // T_Glow, (glow_t: sector_t *),
 // T_PlatRaise, (plat_t: sector_t *), - active list
 //
-void P_ArchiveSpecials (void) {
+void __far P_ArchiveSpecials (void) {
 	
     THINKERREF			th;
     ceiling_t __far*	ceiling;
@@ -479,7 +478,7 @@ void P_ArchiveSpecials (void) {
 //
 // P_UnArchiveSpecials
 //
-void P_UnArchiveSpecials (void) {
+void __far P_UnArchiveSpecials (void) {
 	
     byte					tclass;
     ceiling_t __near*		ceiling;

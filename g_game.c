@@ -376,6 +376,7 @@ void __near G_DoNewGame(void) {
 }
 
 
+//int16_t setval = 0;
  
 //
 // G_Ticker
@@ -743,7 +744,7 @@ void __near G_DoLoadGame (void)  {
 	*save_p++; *save_p++; *save_p++;
 
     // load a base level 
-    G_InitNew (gameskill, gameepisode, gamemap); 
+    G_InitNew (gameskill, gameepisode, gamemap);    // runs p_setup, sets fwipe, etc.
 
     // reload the file, re-set memory because G_InitNew ran a million things.
 	Z_QuickMapPhysics();        // may be unnecessary, G_InitNew runs it?
@@ -787,6 +788,10 @@ void __near G_DoLoadGame (void)  {
     
     // draw the pattern into the back screen
 	R_FillBackScreen ();   
+
+
+
+    //setval = 1;
 
 } 
  

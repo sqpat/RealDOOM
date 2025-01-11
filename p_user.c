@@ -48,11 +48,7 @@
 // P_Thrust
 // Moves the given origin along a given angle.
 //
-void
-P_Thrust
-( 
-  fineangle_t	angle,
-  fixed_t	move )  {
+void P_Thrust (fineangle_t angle, fixed_t move )  {
 
 	// todo
 	move <<= 11;
@@ -88,14 +84,16 @@ void P_CalcHeight ()  {
 
 	player.bob.w >>= 2;
 
-    if (player.bob.w>MAXBOB)
+    if (player.bob.w>MAXBOB){
 		player.bob.w = MAXBOB;
+	}
     if ((player.cheats & CF_NOMOMENTUM) || !onground) {
 		player.viewzvalue = playerMobj_pos->z;
 		player.viewzvalue.h.intbits += VIEWHEIGHT_HIGHBITS;
 
-		if (player.viewzvalue.w > temp.w)
+		if (player.viewzvalue.w > temp.w){
 			player.viewzvalue = temp;
+		}
 
 		player.viewzvalue.w = playerMobj_pos->z.w + player.viewheightvalue.w;
 		return;
@@ -117,21 +115,24 @@ void P_CalcHeight ()  {
 
 		if (player.viewheightvalue.w < VIEWHEIGHT/2) {
 			player.viewheightvalue.w = VIEWHEIGHT/2;
-			if (player.deltaviewheight.w <= 0)
+			if (player.deltaviewheight.w <= 0){
 				player.deltaviewheight.w = 1;
+			}
 		}
 		
 		if (player.deltaviewheight.w)	 {
 			player.deltaviewheight.w += FRACUNIT/4;
-			if (!player.deltaviewheight.w)
+			if (!player.deltaviewheight.w){
 				player.deltaviewheight.w = 1;
+			}
 		}
     }
 	player.viewzvalue.w = playerMobj_pos->z.w + player.viewheightvalue.w + bob;
 
 
-    if (player.viewzvalue.w > temp.w)
+    if (player.viewzvalue.w > temp.w){
 		player.viewzvalue = temp;
+	}
 }
 
 
@@ -185,11 +186,13 @@ void P_DeathThink () {
     P_MovePsprites();
 	
     // fall to the ground
-    if (player.viewheightvalue.w > 6*FRACUNIT)
+    if (player.viewheightvalue.w > 6*FRACUNIT){
 		player.viewheightvalue.h.intbits -= 1;
+	}
 
-    if (player.viewheightvalue.w < 6*FRACUNIT)
+    if (player.viewheightvalue.w < 6*FRACUNIT){
 		player.viewheightvalue.w = 6*FRACUNIT;
+	}
 
 	player.deltaviewheight.w = 0;
 	
@@ -210,26 +213,30 @@ void P_DeathThink () {
 			//  so fade damage flash down.
 			playerMobj_pos->angle = angle;
 
-			if (player.damagecount)
+			if (player.damagecount){
 				player.damagecount--;
+			}
 		}
-		else if (delta.hu.intbits < ANG180_HIGHBITS)
+		else if (delta.hu.intbits < ANG180_HIGHBITS){
 			playerMobj_pos->angle.wu += ANG5;
-		else
+		} else{
 			playerMobj_pos->angle.wu -= ANG5;
+		}
     }
-    else if (player.damagecount)
+    else if (player.damagecount){
 		player.damagecount--;
+	}
 	
 
 
-    if (player.cmd.buttons & BT_USE)
+    if (player.cmd.buttons & BT_USE){
 		player.playerstate = PST_REBORN;
+	}
 
 }
 
 
-
+extern int16_t setval;
 //
 // P_PlayerThink
 //
@@ -238,10 +245,11 @@ void __near P_PlayerThink (void) {
     weapontype_t	newweapon;
 
     // fixme: do this in the cheat code
-    if (player.cheats & CF_NOCLIP)
+    if (player.cheats & CF_NOCLIP){
 		playerMobj_pos->flags1 |= MF_NOCLIP;
-    else
+	} else {
 		playerMobj_pos->flags1 &= ~MF_NOCLIP;
+	}
     
     // chain saw run forward
     cmd = &player.cmd;
@@ -261,11 +269,12 @@ void __near P_PlayerThink (void) {
     // Move around.
     // Reactiontime is used to prevent movement
     //  for a bit after a teleport.
-    if (playerMobj->reactiontime)
+    if (playerMobj->reactiontime){
 		playerMobj->reactiontime--;
-    else
+	} else {
 		P_MovePlayer();
-    
+	}
+
     P_CalcHeight();
 
 	if (sectors_physics[playerMobj->secnum].special) {
@@ -274,8 +283,9 @@ void __near P_PlayerThink (void) {
     // Check for weapon change.
 
     // A special event has no other buttons.
-    if (cmd->buttons & BT_SPECIAL)
+    if (cmd->buttons & BT_SPECIAL){
 		cmd->buttons = 0;			
+	}
 		
     if (cmd->buttons & BT_CHANGE) {
 		// The actual changing of the weapon is done
@@ -325,34 +335,43 @@ void __near P_PlayerThink (void) {
     // Counters, time dependend power ups.
 
     // Strength counts up to diminish fade.
-    if (player.powers[pw_strength])
+    if (player.powers[pw_strength]){
 		player.powers[pw_strength]++;
+	}
 		
-    if (player.powers[pw_invulnerability])
+    if (player.powers[pw_invulnerability]){
 		player.powers[pw_invulnerability]--;
+	}
 
 
-    if (player.powers[pw_invisibility])
-		if (! --player.powers[pw_invisibility] )
+    if (player.powers[pw_invisibility]){
+		if (! --player.powers[pw_invisibility] ){
 			playerMobj_pos->flags2 &= ~MF_SHADOW;
+		}
+	}
 			
-    if (player.powers[pw_infrared])
+    if (player.powers[pw_infrared]){
 		player.powers[pw_infrared]--;
+	}
 		
-    if (player.powers[pw_ironfeet])
+    if (player.powers[pw_ironfeet]){
 		player.powers[pw_ironfeet]--;
+	}
 		
-    if (player.damagecount)
+    if (player.damagecount){
 		player.damagecount--;
+	}
 		
-    if (player.bonuscount)
+    if (player.bonuscount){
 		player.bonuscount--;
+	}
 
     player.fixedcolormapvalue = 0;
     // Handling colormaps.
     if (player.powers[pw_invulnerability]) {
-		if (player.powers[pw_invulnerability] > 4*32 || (player.powers[pw_invulnerability]&8) )
+		if (player.powers[pw_invulnerability] > 4*32 || (player.powers[pw_invulnerability]&8) ){
 			player.fixedcolormapvalue = INVERSECOLORMAP;
+		}
     } else if (player.powers[pw_infrared])	 {
 		if (player.powers[pw_infrared] > 4*32 || (player.powers[pw_infrared]&8) ) {
 			// almost full bright
