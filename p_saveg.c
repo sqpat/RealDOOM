@@ -126,7 +126,7 @@ void __far P_ArchivePlayers (void) {
     saveplayer->bonuscount			= player.bonuscount;
     //saveplayer->attacker			= player.viewzvalue;
     saveplayer->extralightvalue		= player.extralightvalue;
-    saveplayer->fixedcolormapvalue = player.fixedcolormapvalue;
+    saveplayer->fixedcolormapvalue  = player.fixedcolormapvalue;
     saveplayer->colormap			= player.colormap;
     saveplayer->didsecret			= player.didsecret;
 
@@ -298,7 +298,22 @@ void __far P_ArchiveWorld (void) {
     // do lines
     for (i=0, li = lines, li_phys = lines_physics ; i<numlines ; i++,li++,li_phys++) {
 		
-		*put++ = lineflagslist[i]; // todo bit 9?
+		// vanilla line flags:
+		// #define ML_BLOCKING		1
+		// #define ML_BLOCKMONSTERS	2
+		// #define ML_TWOSIDED		4
+		// #define ML_DONTPEGTOP		8
+		// #define ML_DONTPEGBOTTOM	16	
+		// #define ML_SECRET		32
+		// #define ML_SOUNDBLOCK		64
+		// #define ML_DONTDRAW		128
+		// #define ML_MAPPED		256
+		int16_t flags = lineflagslist[i];
+		// make this bit 9
+		if ((seenlines_6800[i/8] & (0x01 << (i % 8)))){
+			flags |= 0x100;
+		}
+		*put++ = flags;
 		*put++ = li_phys->special;
 		*put++ = li_phys->tag;
 		for (j=0 ; j<2 ; j++) {
@@ -353,9 +368,14 @@ void __far P_UnArchiveWorld (void) {
     
     // do lines
 	for (i=0 ; i<numlines ; i++,li++) {
-		li = &lines[i];
-		li_phys = &lines_physics[i];
-		lineflagslist[i] 	= *get++;  // todo bit 9?
+		int16_t flags 			= *get++;
+		uint8_t flags8bit       = (flags&0xFF);
+		int8_t mapped 			= (flags & 0x0100) >> (8-(i % 8));
+
+		li 						= &lines[i];
+		li_phys 				= &lines_physics[i];
+		lineflagslist[i] 	    = flags8bit;
+		seenlines_6800[i/8] 	|= mapped;
 		li_phys->special 		= *get++;
 		li_phys->tag 			= *get++;
 		for (j=0 ; j<2 ; j++) {
