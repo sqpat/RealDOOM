@@ -379,9 +379,10 @@ void __far P_ArchiveSpecials (void) {
 	
     // save off the current thinkers
     for (th = thinkerlist[0].next ; th != 0 ; th=thinkerlist[th].next) {
+		int16_t functype = thinkerlist[th].prevFunctype & TF_FUNCBITS;
 		thinkerobj = &thinkerlist[th].data;
 
-		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_NULL_HIGHBITS) {
+		if (functype == TF_NULL_HIGHBITS) {
 			for (i = 0; i < MAXCEILINGS;i++){
 				if (activeceilings[i] == th) {
 					break;
@@ -399,7 +400,7 @@ void __far P_ArchiveSpecials (void) {
 			continue;
 		}
 			
-		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_MOVECEILING_HIGHBITS) {
+		if (functype == TF_MOVECEILING_HIGHBITS) {
 			*save_p++ = tc_ceiling;
 			PADSAVEP();
 			ceiling = (ceiling_t __far*)save_p;
@@ -410,7 +411,7 @@ void __far P_ArchiveSpecials (void) {
 			continue;
 		}
 			
-		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_VERTICALDOOR_HIGHBITS) {
+		if (functype == TF_VERTICALDOOR_HIGHBITS) {
 			*save_p++ = tc_door;
 			PADSAVEP();
 			door = (vldoor_t __far*)save_p;
@@ -420,7 +421,7 @@ void __far P_ArchiveSpecials (void) {
 			continue;
 		}
 			
-		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_MOVEFLOOR_HIGHBITS) {
+		if (functype == TF_MOVEFLOOR_HIGHBITS) {
 			*save_p++ = tc_floor;
 			PADSAVEP();
 			floor = (floormove_t __far*)save_p;
@@ -430,7 +431,7 @@ void __far P_ArchiveSpecials (void) {
 			continue;
 		}
 			
-		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_PLATRAISE_HIGHBITS) {
+		if (functype == TF_PLATRAISE_HIGHBITS) {
 			*save_p++ = tc_plat;
 			PADSAVEP();
 			plat = (plat_t __far*)save_p;
@@ -440,7 +441,7 @@ void __far P_ArchiveSpecials (void) {
 			continue;
 		}
 			
-		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_LIGHTFLASH_HIGHBITS) {
+		if (functype == TF_LIGHTFLASH_HIGHBITS) {
 			*save_p++ = tc_flash;
 			PADSAVEP();
 			flash = (lightflash_t __far*)save_p;
@@ -450,7 +451,7 @@ void __far P_ArchiveSpecials (void) {
 			continue;
 		}
 			
-		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_STROBEFLASH_HIGHBITS) {
+		if (functype == TF_STROBEFLASH_HIGHBITS) {
 			*save_p++ = tc_strobe;
 			PADSAVEP();
 			strobe = (strobe_t __far *)save_p;
@@ -460,7 +461,7 @@ void __far P_ArchiveSpecials (void) {
 			continue;
 		}
 			
-		if (thinkerlist[th].prevFunctype & TF_FUNCBITS == TF_GLOW_HIGHBITS) {
+		if (functype == TF_GLOW_HIGHBITS) {
 			*save_p++ = tc_glow;
 			PADSAVEP();
 			glow = (glow_t __far *)save_p;
