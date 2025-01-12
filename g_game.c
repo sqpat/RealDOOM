@@ -138,8 +138,8 @@ void __near G_BuildTiccmd (int8_t index) {
     boolean     bstrafe; 
 	int8_t         speed;
 	int8_t         tspeed;
-	int16_t         forward;
-	int16_t         side;
+	int32_t         forward;
+	int32_t         side;
     
 	ticcmd_t __near* cmd = &localcmds[index];
 

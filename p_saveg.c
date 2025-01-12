@@ -26,6 +26,66 @@
 #include "m_near.h"
 
 
+// vanilla doom defs for comparison:
+
+
+typedef struct
+{
+    int32_t		state;	// ptr instead of int16_t
+    int32_t		tics;   // instead of int16_t
+    fixed_t	sx;
+    fixed_t	sy;
+
+} pspdef_vanilla_t;
+
+
+#define MAXPLAYERS_VANILLA 4
+
+typedef struct 
+{
+    mobj_t*				mo;
+    int32_t 			playerstate;
+    ticcmd_t			cmd;				// same byte structure as vanilla
+    fixed_t				viewzvalue;
+    fixed_t				viewheightvalue;
+    fixed_t         	deltaviewheight;
+    fixed_t         	bob;	
+    int32_t				health;	
+    int32_t				armorpoints;
+    int32_t				armortype;	
+    int32_t				powers[NUMPOWERS];
+    int8_t				cards[NUMCARDS];
+    int8_t				backpack;
+    int32_t				frags[MAXPLAYERS_VANILLA];
+    int32_t				readyweapon;
+    int32_t				pendingweapon;
+    int8_t				weaponowned[NUMWEAPONS];
+    int32_t				ammo[NUMAMMO];
+    int32_t				maxammo[NUMAMMO];
+    int32_t				attackdown;
+    int32_t				usedown;
+    int32_t				cheats;		
+    int32_t				refire;		
+    int32_t				killcount;
+    int32_t				itemcount;
+    int32_t				secretcount;
+    int8_t*				message;	
+    int32_t				damagecount;
+    int32_t				bonuscount;
+    mobj_t*				attacker;
+    int32_t				extralightvalue;
+    int32_t				fixedcolormapvalue;
+    int32_t				colormap;	
+    pspdef_vanilla_t	psprites_field[NUMPSPRITES];
+    int8_t				didsecret;	
+
+} player_vanilla_t;
+
+
+
+
+
+
 // Pads save_p to a 4-byte boundary
 //  so that the load/save works on SGI&Gecko.
 #define PADSAVEP()	save_p += (4 - ((int32_t) save_p & 3)) & 3
@@ -37,19 +97,79 @@
 // P_ArchivePlayers
 //
 void __far P_ArchivePlayers (void) {
-		
-	
+	player_vanilla_t __far * saveplayer;
+	int16_t i;
 	PADSAVEP();
+	saveplayer = (player_vanilla_t __far *) save_p;
+	FAR_memset (saveplayer,0,sizeof(player_vanilla_t));
+	saveplayer->playerstate 		= player.playerstate;
+	saveplayer->cmd			 		= player.cmd;
+    saveplayer->viewzvalue			= player.viewzvalue.w;
+    saveplayer->viewheightvalue		= player.viewheightvalue.w;
+    saveplayer->deltaviewheight		= player.deltaviewheight.w;
+    saveplayer->bob					= player.bob.w;
+    saveplayer->health				= player.health;	
+    saveplayer->armorpoints			= player.armorpoints;
+    saveplayer->armortype			= player.armortype;
+    saveplayer->backpack			= player.backpack;
+    saveplayer->readyweapon			= player.readyweapon;
+    saveplayer->pendingweapon		= player.pendingweapon;
+    saveplayer->attackdown			= player.attackdown;
+    saveplayer->usedown				= player.usedown;
+    saveplayer->cheats				= player.cheats;
+    saveplayer->refire				= player.refire;
+    saveplayer->killcount			= player.killcount;
+    saveplayer->itemcount			= player.itemcount;
+    saveplayer->secretcount			= player.secretcount;
+    //saveplayer->message				= player.message;
+    saveplayer->damagecount			= player.damagecount;
+    saveplayer->bonuscount			= player.bonuscount;
+    //saveplayer->attacker			= player.viewzvalue;
+    saveplayer->extralightvalue		= player.extralightvalue;
+    saveplayer->fixedcolormapvalue = player.fixedcolormapvalue;
+    saveplayer->colormap			= player.colormap;
+    saveplayer->didsecret			= player.didsecret;
 
-	FAR_memcpy (save_p,&player,sizeof(player_t));
-	save_p += sizeof(player_t);
-	FAR_memcpy (save_p,psprites,NUMPSPRITES*sizeof(pspdef_t));
-	save_p += NUMPSPRITES*sizeof(pspdef_t);
+	for (i = 0; i < NUMPOWERS; i++){
+	    saveplayer->powers[i]			= player.powers[i];
+	}
+
+	for (i = 0; i < NUMCARDS; i++){
+	    saveplayer->cards[i]			= player.cards[i];
+	}
+
+	for (i = 0; i < MAXPLAYERS_VANILLA; i++){
+	    saveplayer->frags[i]			= 0; //player.frags[i];
+	}
+
+	for (i = 0; i < NUMAMMO; i++){
+		saveplayer->ammo[i]				= player.ammo[i];
+		saveplayer->maxammo[i]			= player.maxammo[i];
+	}
+
+	for (i = 0; i < NUMWEAPONS; i++){
+	    saveplayer->weaponowned[i]		= player.weaponowned[i];
+	}
+
+	for (i = 0; i < NUMPSPRITES; i++){
+	    saveplayer->psprites_field[i].state	= psprites[i].statenum;
+	    saveplayer->psprites_field[i].tics	= psprites[i].tics;
+	    saveplayer->psprites_field[i].sx	= psprites[i].sx;
+	    saveplayer->psprites_field[i].sy	= psprites[i].sy;
+	}
+
+
+
+
+
 //	for (j=0 ; j<NUMPSPRITES ; j++) {
 //		if (psprites[j].state) {
 //			psprites[j].state  = (state_t *)(psprites[j].state-states);
 //		}
 //	}
+
+	save_p += sizeof(player_vanilla_t);
+
 	
 }
 
@@ -59,20 +179,82 @@ void __far P_ArchivePlayers (void) {
 // P_UnArchivePlayers
 //
 void __far P_UnArchivePlayers (void) {
-	
+	player_vanilla_t __far * saveplayer;
+	int16_t i;
+
 	
 	PADSAVEP();
+	saveplayer = (player_vanilla_t __far *) save_p;
 
-	FAR_memcpy (&player,save_p, sizeof(player_t));
-	save_p += sizeof(player_t);
-	
-	// will be set when unarc thinker
+	player.playerstate 				= saveplayer->playerstate;
+	player.cmd			 			= saveplayer->cmd;
+    player.viewzvalue.w				= saveplayer->viewzvalue;
+    player.viewheightvalue.w		= saveplayer->viewheightvalue;
+    player.deltaviewheight.w		= saveplayer->deltaviewheight;
+    player.bob.w					= saveplayer->bob;
+    player.health					= saveplayer->health;	
+    player.armorpoints				= saveplayer->armorpoints;
+    player.armortype				= saveplayer->armortype;
+    player.backpack					= saveplayer->backpack;
+    player.readyweapon				= saveplayer->readyweapon;
+    player.pendingweapon			= saveplayer->pendingweapon;
+    player.attackdown				= saveplayer->attackdown;
+    player.usedown					= saveplayer->usedown;
+    player.cheats					= saveplayer->cheats;
+    player.refire					= saveplayer->refire;
+    player.killcount				= saveplayer->killcount;
+    player.itemcount				= saveplayer->itemcount;
+    player.secretcount				= saveplayer->secretcount;
+    //player.message				= saveplayer->message;
+    player.damagecount				= saveplayer->damagecount;
+    player.bonuscount				= saveplayer->bonuscount;
+    //player.viewzvalue				= saveplayer->attacker;
+    player.extralightvalue			= saveplayer->extralightvalue;
+    player.fixedcolormapvalue 		= saveplayer->fixedcolormapvalue;
+    player.colormap					= saveplayer->colormap;
+    player.didsecret				= saveplayer->didsecret;
+
+	for (i = 0; i < NUMPOWERS; i++){
+	    player.powers[i]			= saveplayer->powers[i];
+	}
+
+	for (i = 0; i < NUMCARDS; i++){
+	    player.cards[i]				= saveplayer->cards[i];
+	}
+
+	/*
+	// UNUSED
+	for (i = 0; i < MAXPLAYERS_VANILLA; i++){
+		player.frags[i]			= saveplayer->frags[i]; //player.frags[i];
+	}
+	*/
+
+	for (i = 0; i < NUMAMMO; i++){
+		player.ammo[i]				= saveplayer->ammo[i];
+		player.maxammo[i]			= saveplayer->maxammo[i];
+	}
+
+	for (i = 0; i < NUMWEAPONS; i++){
+	    player.weaponowned[i]		= saveplayer->weaponowned[i];
+	}
+
+	for (i = 0; i < NUMPSPRITES; i++){
+	    psprites[i].statenum		= saveplayer->psprites_field[i].state;
+	    psprites[i].tics			= saveplayer->psprites_field[i].tics;
+	    psprites[i].sx				= saveplayer->psprites_field[i].sx;
+	    psprites[i].sy				= saveplayer->psprites_field[i].sy;
+	}
+
+
+
+
+	// will be set when unarchive thinkers
 	playerMobjRef = NULL_THINKERREF;	
 	player.message = -1;
 	player.attackerRef = NULL_THINKERREF;
 
-	FAR_memcpy (psprites,save_p, NUMPSPRITES*sizeof(pspdef_t));
-	save_p += NUMPSPRITES*sizeof(pspdef_t);
+	
+	save_p += sizeof(player_vanilla_t);
 
 	
 }
