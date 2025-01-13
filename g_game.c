@@ -842,9 +842,15 @@ void __near G_DoSaveGame (void)  {
     save_p += SAVESTRINGSIZE; 
 
 
-    FAR_memcpy (save_p, versionstring, 12); 
+    FAR_memcpy (save_p, versionstring, 12);
+    
     //FAR_memcpy (save_p, versionstring, VERSIONSIZE); 
-    save_p += VERSIONSIZE; 
+    save_p += 12; 
+    *save_p++ = 0; // last 4 bytes of versionsize...
+    *save_p++ = 0;
+    *save_p++ = 0;
+    *save_p++ = 0;
+    //save_p += VERSIONSIZE; 
          
 	*save_p++ = gameskill;
 	*save_p++ = gameepisode;
@@ -856,7 +862,6 @@ void __near G_DoSaveGame (void)  {
 	*save_p++ = leveltime.b.intbytelow;
 	*save_p++ = leveltime.b.fracbytehigh;
 	*save_p++ = leveltime.b.fracbytelow;
-
 	// page in si_render_9000
 	Z_QuickMapRender_4000To9000_9000Only();
 

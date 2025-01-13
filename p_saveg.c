@@ -43,7 +43,7 @@ typedef struct
 
 typedef struct 
 {
-    mobj_t*				mo;
+    int32_t				mo;
     int32_t 			playerstate;
     ticcmd_t			cmd;				// same byte structure as vanilla
     fixed_t				viewzvalue;
@@ -54,12 +54,12 @@ typedef struct
     int32_t				armorpoints;
     int32_t				armortype;	
     int32_t				powers[NUMPOWERS];
-    int8_t				cards[NUMCARDS];
-    int8_t				backpack;
+    int32_t				cards[NUMCARDS];
+    int32_t				backpack;
     int32_t				frags[MAXPLAYERS_VANILLA];
     int32_t				readyweapon;
     int32_t				pendingweapon;
-    int8_t				weaponowned[NUMWEAPONS];
+    int32_t				weaponowned[NUMWEAPONS];
     int32_t				ammo[NUMAMMO];
     int32_t				maxammo[NUMAMMO];
     int32_t				attackdown;
@@ -69,19 +69,68 @@ typedef struct
     int32_t				killcount;
     int32_t				itemcount;
     int32_t				secretcount;
-    int8_t*				message;	
+    int32_t				message;	
     int32_t				damagecount;
     int32_t				bonuscount;
-    mobj_t*				attacker;
+    int32_t				attacker;
     int32_t				extralightvalue;
     int32_t				fixedcolormapvalue;
     int32_t				colormap;	
     pspdef_vanilla_t	psprites_field[NUMPSPRITES];
-    int8_t				didsecret;	
+    int32_t				didsecret;	
 
 } player_vanilla_t;
 
 
+typedef struct thinker_vanilla_s
+{
+    int32_t	prev;
+	int32_t	next;
+    int32_t	function;
+    
+} thinker_vanilla_t;
+
+
+// Map Object definition.
+typedef struct  {
+
+    thinker_vanilla_t	thinker;
+    fixed_t				x;
+    fixed_t				y;
+    fixed_t				z;
+    int32_t				snext;
+    int32_t				sprev;
+    angle_t				angle;	// orientation
+    int32_t				sprite;	// used to find patch_t and flip value
+    int32_t				frame;	// might be ORed with FF_FULLBRIGHT
+    int32_t				bnext;
+    int32_t				bprev;
+    int32_t				subsector;
+    fixed_t				floorz;
+    fixed_t				ceilingz;
+    fixed_t				radius;
+    fixed_t				height;	
+    fixed_t				momx;
+    fixed_t				momy;
+    fixed_t				momz;
+    int32_t				validcount;
+    int32_t				type;
+    int32_t				info;	// &mobjinfo[mobj->type]
+    int32_t				tics;	// state tic counter
+    int32_t				state;
+    int32_t				flags;
+    int32_t				health;
+    int32_t				movedir;	// 0-7
+    int32_t				movecount;	// when 0, select a new dir
+    int32_t				target;
+    int32_t				reactiontime;   
+    int32_t				threshold;
+    int32_t				player;
+    int32_t				lastlook;	
+    mapthing_t			spawnpoint;	
+    int32_t				tracer;	
+    
+} mobj_vanilla_t;
 
 
 
@@ -91,7 +140,6 @@ typedef struct
 #define PADSAVEP()	save_p += (4 - ((int32_t) save_p & 3)) & 3
 
 
- void __near dologbig(int32_t a);
 
 //
 // P_ArchivePlayers
@@ -100,6 +148,7 @@ void __far P_ArchivePlayers (void) {
 	player_vanilla_t __far * saveplayer;
 	int16_t i;
 	PADSAVEP();
+
 	saveplayer = (player_vanilla_t __far *) save_p;
 	FAR_memset (saveplayer,0,sizeof(player_vanilla_t));
 	saveplayer->playerstate 		= player.playerstate;
@@ -410,8 +459,7 @@ typedef enum {
 } thinkerclass_t;
 
 
- void __far dolog(int16_t a);
-
+ 
 //
 // P_ArchiveThinkers
 //
@@ -420,6 +468,7 @@ void __far P_ArchiveThinkers (void) {
     THINKERREF				th;
 	mobj_t 		 __near*	mobj;
 	mobj_pos_t   __far*		mobj_pos;
+	mobj_vanilla_t __far *  savemobj;
 	int16_t i;
 	
     // save off the current thinkers
@@ -427,18 +476,66 @@ void __far P_ArchiveThinkers (void) {
     for (th = thinkerlist[0].next ; th != 0; th=thinkerlist[th].next) {
 		int16_t functype = thinkerlist[th].prevFunctype & TF_FUNCBITS;
 		if (functype == TF_MOBJTHINKER_HIGHBITS) {
+			fixed_t_union flags;
+			int32_t scratch;
 			mobj 	 = &thinkerlist[th].data;
 			mobj_pos = &mobjposlist_6800[th];
 
 			*save_p++ = tc_mobj;
 			PADSAVEP();
-			FAR_memcpy (save_p, mobj, sizeof(mobj_t));
-			save_p += sizeof(mobj_t);
+			savemobj = (mobj_vanilla_t __far *) save_p;
+			FAR_memset(savemobj, 0, sizeof(mobj_vanilla_t));
 
-			FAR_memcpy (save_p, mobj_pos, sizeof(mobj_pos_t));
-			save_p += sizeof(mobj_pos_t);
+			//savemobj->thinker			= th;				// should recalculate in AddThinker/CreateThinker
+			savemobj->x 				= mobj_pos->x.w;
+			savemobj->y 				= mobj_pos->y.w;
+			savemobj->z 				= mobj_pos->z.w;
+			// savemobj->snext 			= mobj_pos-> //	? should recalculate in setposition
+			// savemobj->sprev 			= mobj_pos-> //	? should recalculate in setposition
+			savemobj->angle 			= mobj_pos->angle;
+			savemobj->state 			= mobj_pos->stateNum;
+			flags.h.intbits 			= mobj_pos->flags2;
+			flags.h.fracbits 			= mobj_pos->flags1;
+			savemobj->flags 			= flags.w;
 
+			
+			//savemobj->sprite 			= mobj->	// todo! unused?
+			//savemobj->frame 			= mobj->	// todo! unused?
+			// savemobj->bnext 			= mobj->	// dont store? should recalculate in setposition
+			// savemobj->bprev 			= mobj->	// dont store? should recalculate in setposition
+			// savemobj->subsector 		= mobj->	// dont store? should recalculate in setposition
+			// scratch = mobj->floorz;
+			// scratch <<= (16-SHORTFLOORBITS);
+			// savemobj->floorz 			= scratch;	// dont store? recalc from sector on deserialize
+			// scratch = mobj->ceilingz;
+			// scratch <<= (16-SHORTFLOORBITS);
+			// savemobj->ceilingz 			= scratch;	// dont store? recalc from sector on deserialize
+			scratch = mobj->radius;
+			scratch <<= (16-SHORTFLOORBITS);
+			savemobj->radius 			= scratch;
+			savemobj->height 			= mobj->height.w;
+			savemobj->momx 				= mobj->momx.w;
+			savemobj->momy 				= mobj->momy.w;
+			savemobj->momz 				= mobj->momz.w;
+			//savemobj->validcount 		= mobj->validcount;   TODO: seems unused in vanilla?
+			savemobj->type 				= mobj->type;
+			// savemobj->info 				= mobj->info;		recalculated from type during deserialize
+			savemobj->tics				= mobj->tics;
+			savemobj->health 			= mobj->health;
+			savemobj->movedir 			= mobj->movedir;
+			savemobj->movecount 		= mobj->movecount;
+			// savemobj->target 			= mobj->	unused/nulled
+			savemobj->reactiontime 		= mobj->reactiontime;
+			savemobj->threshold 		= mobj->threshold;
+			savemobj->player 			= (mobj->type == MT_PLAYER) ? 1 : 0;
+			//savemobj->lastlook 			= mobj->lastlook	//	elated to multiple players. unused.
+			savemobj->spawnpoint 		= nightmarespawns[th];
+			savemobj->tracer 			= mobj->tracerRef; 		// bug in vanilla i guess? trivial to make work right in realdoom
 
+			
+			save_p += sizeof(mobj_vanilla_t);
+
+			
 			//mobj->state = (state_t *)(mobj->state - states);
 			
 			// todo what to do here
@@ -452,7 +549,6 @@ void __far P_ArchiveThinkers (void) {
 
     // add a terminating marker
     *save_p++ = tc_end;	
-	
 }
 
 
@@ -463,12 +559,15 @@ void  __far P_InitThinkers (void);
 //
 void __far P_UnArchiveThinkers (void) {
 	
-    byte				tclass;
-    THINKERREF			currentthinker;
-	THINKERREF			next;
-	THINKERREF 			th;
-	mobj_t __near* 		mobj;
-	mobj_pos_t __far * 	mobj_pos;
+    byte					tclass;
+    THINKERREF				currentthinker;
+	THINKERREF				next;
+	THINKERREF 				th;
+	mobj_t __near* 			mobj;
+	mobj_pos_t __far * 		mobj_pos;
+	mobj_vanilla_t __far * 	savemobj;
+	fixed_t_union flags;
+
 	int16_t i;
     
     // remove all the current thinkers
@@ -502,11 +601,31 @@ void __far P_UnArchiveThinkers (void) {
 				th = GETTHINKERREF(mobj);
 				mobj_pos = &mobjposlist_6800[th];
 				
-				FAR_memcpy (mobj, save_p, sizeof(mobj_t));
-				save_p += sizeof(mobj_t);
-				FAR_memcpy (mobj_pos, save_p, sizeof(mobj_pos_t));
-				save_p += sizeof(mobj_pos_t);
-				
+				savemobj = (mobj_vanilla_t __far *) save_p;
+
+				mobj_pos->x.w 				= savemobj->x;
+				mobj_pos->y.w 				= savemobj->y;
+				mobj_pos->z.w 				= savemobj->z;
+				mobj_pos->angle 			= savemobj->angle;
+				mobj_pos->stateNum 			= savemobj->state;
+				flags.w 					= savemobj->flags;
+				mobj_pos->flags1			= flags.h.fracbits;
+				mobj_pos->flags2			= flags.h.intbits;
+				mobj->radius 				= savemobj->radius >> FRACBITS;
+				mobj->height.w 				= savemobj->height;
+				mobj->momx.w 				= savemobj->momx;
+				mobj->momy.w 				= savemobj->momy;
+				mobj->momz.w 				= savemobj->momz;
+				mobj->type 					= savemobj->type;
+				mobj->tics					= savemobj->tics;
+				mobj->health 				= savemobj->health;
+				mobj->movedir 				= savemobj->movedir;
+				mobj->movecount 			= savemobj->movecount;
+				mobj->reactiontime 			= savemobj->reactiontime;
+				mobj->threshold 			= savemobj->threshold;
+				nightmarespawns[th] 		= savemobj->spawnpoint;
+				mobj->tracerRef 			= savemobj->tracer; 		// bug in vanilla i guess? trivial to make work right in realdoom
+
 				mobj->bnextRef = NULL_THINKERREF; // garbage value. P_SetThingPosition will fix
 				mobj_pos->snextRef = NULL_THINKERREF; // garbage value. P_SetThingPosition will fix
 				//mobj->state = &states[(int16_t)mobj->state];
@@ -524,6 +643,8 @@ void __far P_UnArchiveThinkers (void) {
 				mobj->ceilingz = sectors[mobj->secnum].ceilingheight;
 
 				//mobj->thinkerRef = P_AddThinker (thinkerRef, TF_MOBJTHINKER);
+				save_p += sizeof(mobj_vanilla_t);
+
 				break;
 				
 					
