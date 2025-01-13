@@ -134,6 +134,106 @@ typedef struct  {
 
 
 
+typedef struct
+{
+    thinker_vanilla_t	thinker;
+    int32_t				type;
+    int32_t				sector;
+    fixed_t				bottomheight;
+    fixed_t				topheight;
+    fixed_t				speed;
+    int32_t				crush;
+    int32_t				direction;
+    int32_t				tag;                   
+    int32_t				olddirection;
+    
+} ceiling_vanilla_t;
+
+typedef struct
+{
+    thinker_vanilla_t	thinker;
+    int32_t				type;
+    int32_t				sector;
+    fixed_t				topheight;
+    fixed_t				speed;
+    int32_t             direction;
+    int32_t             topwait;
+    int32_t             topcountdown;
+    
+} vldoor_vanilla_t;
+
+typedef struct
+{
+    thinker_vanilla_t	thinker;
+    int32_t				type;
+    int32_t				crush;
+    int32_t				sector;
+    int32_t				direction;
+    int32_t				newspecial;
+    int16_t				texture;
+    fixed_t				floordestheight;
+    fixed_t				speed;
+
+} floormove_vanilla_t;
+
+typedef struct
+{
+    thinker_vanilla_t	thinker;
+    int32_t				sector;
+    fixed_t				speed;
+    fixed_t				low;
+    fixed_t				high;
+    int32_t				wait;
+    int32_t				count;
+    int32_t				status;
+    int32_t				oldstatus;
+    int32_t				crush;
+    int32_t				tag;
+    int32_t				type;
+    
+} plat_vanilla_t;
+
+
+
+typedef struct
+{
+    thinker_vanilla_t	thinker;
+    int32_t				sector;
+    int32_t				count;
+    int32_t				maxlight;
+    int32_t				minlight;
+    int32_t				maxtime;
+    int32_t				mintime;
+    
+} lightflash_vanilla_t;
+
+
+
+typedef struct
+{
+    thinker_vanilla_t	thinker;
+    int32_t				sector;
+    int32_t				count;
+    int32_t				minlight;
+    int32_t				maxlight;
+    int32_t				darktime;
+    int32_t				brighttime;
+    
+} strobe_vanilla_t;
+
+
+
+
+typedef struct
+{
+    thinker_vanilla_t	thinker;
+    int32_t				sector;
+    int32_t				minlight;
+    int32_t				maxlight;
+    int32_t				direction;
+
+} glow_vanilla_t;
+
 
 // Pads save_p to a 4-byte boundary
 //  so that the load/save works on SGI&Gecko.
@@ -201,7 +301,12 @@ void __far P_ArchivePlayers (void) {
 	}
 
 	for (i = 0; i < NUMPSPRITES; i++){
-	    saveplayer->psprites_field[i].state	= psprites[i].statenum;
+	    if (psprites[i].statenum == STATENUM_NULL){
+			saveplayer->psprites_field[i].state	= 0;
+		} else {
+			saveplayer->psprites_field[i].state	= psprites[i].statenum;
+		}
+
 	    saveplayer->psprites_field[i].tics	= psprites[i].tics;
 	    saveplayer->psprites_field[i].sx	= psprites[i].sx;
 	    saveplayer->psprites_field[i].sy	= psprites[i].sy;
@@ -499,8 +604,12 @@ void __far P_ArchiveThinkers (void) {
 			savemobj->flags 			= flags.w;
 
 			
-			//savemobj->sprite 			= mobj->	// todo! unused?
-			//savemobj->frame 			= mobj->	// todo! unused?
+			savemobj->sprite 			= states[mobj_pos->stateNum].sprite;
+			savemobj->frame 			= states[mobj_pos->stateNum].frame;
+			if (savemobj->frame & FF_FULLBRIGHT){
+				savemobj->frame &= FF_FRAMEMASK; // get rid of fullbright
+				savemobj->frame |= 0x8000;       // add vanilla FULLBRIGHT mask
+			}
 			// savemobj->bnext 			= mobj->	// dont store? should recalculate in setposition
 			// savemobj->bprev 			= mobj->	// dont store? should recalculate in setposition
 			// savemobj->subsector 		= mobj->	// dont store? should recalculate in setposition
@@ -689,21 +798,14 @@ enum {
 //
 void __far P_ArchiveSpecials (void) {
 	
-    THINKERREF			th;
-    ceiling_t __far*	ceiling;
-    vldoor_t __far*		door;
-    floormove_t __far*	floor;
-    plat_t __far*		plat;
-    lightflash_t __far*	flash;
-    strobe_t __far*		strobe;
-    glow_t __far*		glow;
+    THINKERREF					th;
+    int32_t 					scratch;
+
     int16_t			i;
-	mobj_t __near*		thinkerobj;
-	
+
     // save off the current thinkers
     for (th = thinkerlist[0].next ; th != 0 ; th=thinkerlist[th].next) {
 		int16_t functype = thinkerlist[th].prevFunctype & TF_FUNCBITS;
-		thinkerobj = &thinkerlist[th].data;
 
 		if (functype == TF_NULL_HIGHBITS) {
 			for (i = 0; i < MAXCEILINGS;i++){
@@ -712,87 +814,190 @@ void __far P_ArchiveSpecials (void) {
 				}
 			}
 	    
+			// copy nonactive ceilings
 			if (i<MAXCEILINGS) {
-				*save_p++ = tc_ceiling;
+				ceiling_vanilla_t __far*	saveceiling;
+				ceiling_t __near*			sourceceiling = (ceiling_t __near*)&thinkerlist[th].data;
+				*save_p++ 					= tc_ceiling;
 				PADSAVEP();
-				ceiling = (ceiling_t __far*)save_p;
-				FAR_memcpy (ceiling, thinkerobj, sizeof(ceiling_t));
-				save_p += sizeof(ceiling_t);
-				//ceiling->secnum = ceiling->secnum
+				saveceiling 				= (ceiling_vanilla_t __far*)save_p;
+				FAR_memset (saveceiling, 0, sizeof(ceiling_vanilla_t));
+				saveceiling->type = 		sourceceiling->type;
+				saveceiling->sector = 		sourceceiling->secnum;
+				scratch 					= sourceceiling->bottomheight;
+				saveceiling->bottomheight 	= scratch << (16-SHORTFLOORBITS); 
+				scratch 					= sourceceiling->topheight;
+				saveceiling->topheight	 	= scratch << (16-SHORTFLOORBITS); 
+				scratch 					= sourceceiling->speed;
+				saveceiling->speed		 	= scratch << (16-SHORTFLOORBITS); 
+				saveceiling->crush			= sourceceiling->crush;
+				saveceiling->direction		= sourceceiling->direction;
+				saveceiling->tag			= sourceceiling->tag;
+				saveceiling->olddirection	= sourceceiling->olddirection;
+
+				save_p += sizeof(ceiling_vanilla_t);
+
 			}
 			continue;
 		}
 			
 		if (functype == TF_MOVECEILING_HIGHBITS) {
-			*save_p++ = tc_ceiling;
+			ceiling_vanilla_t __far*	saveceiling;
+			ceiling_t __near*			sourceceiling = (ceiling_t __near*)&thinkerlist[th].data;
+			*save_p++ 					= tc_ceiling;
 			PADSAVEP();
-			ceiling = (ceiling_t __far*)save_p;
-			FAR_memcpy (ceiling, thinkerobj, sizeof(ceiling_t));
-			save_p += sizeof(ceiling_t);
-			//ceiling->secnum = ceiling->secnum
-			
+			saveceiling 				= (ceiling_vanilla_t __far*)save_p;
+			FAR_memset (saveceiling, 0, sizeof(ceiling_vanilla_t));
+			saveceiling->type 			= sourceceiling->type;
+			saveceiling->sector 		= sourceceiling->secnum;
+			scratch 					= sourceceiling->bottomheight;
+			saveceiling->bottomheight 	= scratch << (16-SHORTFLOORBITS); 
+			scratch 					= sourceceiling->topheight;
+			saveceiling->topheight	 	= scratch << (16-SHORTFLOORBITS); 
+			scratch 					= sourceceiling->speed;
+			saveceiling->speed		 	= scratch << (16-SHORTFLOORBITS); 
+			saveceiling->crush			= sourceceiling->crush;
+			saveceiling->direction		= sourceceiling->direction;
+			saveceiling->tag			= sourceceiling->tag;
+			saveceiling->olddirection	= sourceceiling->olddirection;
+
+			save_p += sizeof(ceiling_vanilla_t);
+
 			continue;
 		}
 			
 		if (functype == TF_VERTICALDOOR_HIGHBITS) {
-			*save_p++ = tc_door;
+			vldoor_vanilla_t __far*		savedoor;
+			vldoor_t __near*			sourcedoor = (vldoor_t __near*)&thinkerlist[th].data;
+			*save_p++ 				= tc_door;
 			PADSAVEP();
-			door = (vldoor_t __far*)save_p;
-			FAR_memcpy (door, thinkerobj, sizeof(vldoor_t));
-			save_p += sizeof(vldoor_t);
-			//door->secnum = door->secnum;
-			continue;
+			savedoor 				= (vldoor_vanilla_t __far*)save_p;
+			FAR_memset (savedoor, 0, sizeof(vldoor_vanilla_t));
+			savedoor->type 			= sourcedoor->type;
+			savedoor->sector 		= sourcedoor->secnum;
+			scratch 				= sourcedoor->topheight;
+			savedoor->topheight	 	= scratch << (16-SHORTFLOORBITS); 
+			scratch 				= sourcedoor->speed;
+			savedoor->speed		 	= scratch << (16-SHORTFLOORBITS); 
+			savedoor->direction		= sourcedoor->direction;
+			savedoor->topwait		= sourcedoor->topwait;
+			savedoor->topcountdown	= sourcedoor->topcountdown;
+
+			save_p += sizeof(vldoor_vanilla_t);
+
 		}
 			
 		if (functype == TF_MOVEFLOOR_HIGHBITS) {
-			*save_p++ = tc_floor;
+			floormove_vanilla_t __far*	savefloor;
+			floormove_t __near*			sourcefloor = (floormove_t __near*)&thinkerlist[th].data;
+			*save_p++ 					= tc_floor;
 			PADSAVEP();
-			floor = (floormove_t __far*)save_p;
-			FAR_memcpy (floor, thinkerobj, sizeof(floormove_t));
-			save_p += sizeof(floormove_t);
-			//floor->secnum = floor->secnum;
-			continue;
+			savefloor 					= (floormove_vanilla_t __far*)save_p;
+			FAR_memset (savefloor, 0, sizeof(floormove_vanilla_t));
+			savefloor->type 			= sourcefloor->type;
+			savefloor->crush 			= sourcefloor->crush;
+			savefloor->sector 			= sourcefloor->secnum;
+			savefloor->direction		= sourcefloor->direction;
+			savefloor->newspecial		= sourcefloor->newspecial;
+			savefloor->texture			= sourcefloor->texture;
+			scratch 					= sourcefloor->floordestheight;
+			savefloor->floordestheight	= scratch << (16-SHORTFLOORBITS); 
+			scratch 					= sourcefloor->speed;
+			savefloor->speed		 	= scratch << (16-SHORTFLOORBITS); 
+
+			save_p += sizeof(floormove_vanilla_t);
 		}
 			
+
+
+
 		if (functype == TF_PLATRAISE_HIGHBITS) {
-			*save_p++ = tc_plat;
+			plat_vanilla_t __far*	saveplat;
+			plat_t __near*			sourceplat = (plat_t __near*)&thinkerlist[th].data;
+			*save_p++ 					= tc_plat;
 			PADSAVEP();
-			plat = (plat_t __far*)save_p;
-			FAR_memcpy (plat, thinkerobj, sizeof(plat_t));
-			save_p += sizeof(plat_t);
-			//plat->secnum = plat->secnum;
+			saveplat 					= (plat_vanilla_t __far*)save_p;
+			FAR_memset (saveplat, 0, sizeof(plat_vanilla_t));
+			saveplat->sector 			= sourceplat->secnum;
+			scratch 					= sourceplat->speed;
+			saveplat->speed		 		= scratch << (16-SHORTFLOORBITS); 
+			scratch 					= sourceplat->low;
+			saveplat->low		 		= scratch << (16-SHORTFLOORBITS); 
+			scratch 					= sourceplat->high;
+			saveplat->high		 		= scratch << (16-SHORTFLOORBITS); 
+			saveplat->wait 				= sourceplat->wait;
+			saveplat->count 			= sourceplat->count;
+			saveplat->status 			= sourceplat->status;
+			saveplat->oldstatus 		= sourceplat->oldstatus;
+			saveplat->crush 			= sourceplat->crush;
+			saveplat->tag 				= sourceplat->tag;
+			saveplat->type 				= sourceplat->type;
+
+
+
+			save_p += sizeof(plat_vanilla_t);
 			continue;
 		}
+
 			
 		if (functype == TF_LIGHTFLASH_HIGHBITS) {
-			*save_p++ = tc_flash;
+			lightflash_vanilla_t __far*	saveflash;
+			lightflash_t __near*			sourceflash = (lightflash_t __near*)&thinkerlist[th].data;
+			*save_p++ 					= tc_flash;
 			PADSAVEP();
-			flash = (lightflash_t __far*)save_p;
-			FAR_memcpy (flash, thinkerobj, sizeof(lightflash_t));
-			save_p += sizeof(lightflash_t);
-			//flash->secnum = flash->secnum;
+			saveflash 					= (lightflash_vanilla_t __far*)save_p;
+			FAR_memset (saveflash, 0, sizeof(lightflash_vanilla_t));
+			saveflash->sector 			= sourceflash->secnum;
+			saveflash->count			= sourceflash->count;
+			saveflash->maxlight			= sourceflash->maxlight;
+			saveflash->minlight			= sourceflash->minlight;
+			saveflash->maxtime			= sourceflash->maxtime;
+			saveflash->mintime			= sourceflash->mintime;
+
+			save_p += sizeof(lightflash_vanilla_t);
 			continue;
 		}
+
+
 			
 		if (functype == TF_STROBEFLASH_HIGHBITS) {
-			*save_p++ = tc_strobe;
+			strobe_vanilla_t __far*	savestrobe;
+			strobe_t __near*			sourcestrobe = (strobe_t __near*)&thinkerlist[th].data;
+			*save_p++ 					= tc_strobe;
 			PADSAVEP();
-			strobe = (strobe_t __far *)save_p;
-			FAR_memcpy (strobe, thinkerobj, sizeof(strobe_t));
-			save_p += sizeof(strobe_t);
-			//strobe->secnum = strobe->secnum;
+			savestrobe 					= (strobe_vanilla_t __far*)save_p;
+			FAR_memset (savestrobe, 0, sizeof(strobe_vanilla_t));
+			savestrobe->sector 			= sourcestrobe->secnum;
+			savestrobe->count			= sourcestrobe->count;
+			savestrobe->minlight		= sourcestrobe->minlight;
+			savestrobe->maxlight		= sourcestrobe->maxlight;
+			savestrobe->darktime		= sourcestrobe->darktime;
+			savestrobe->brighttime		= sourcestrobe->brighttime;
+
+			save_p += sizeof(strobe_vanilla_t);
 			continue;
 		}
 			
+
+
+
+
 		if (functype == TF_GLOW_HIGHBITS) {
-			*save_p++ = tc_glow;
+			glow_vanilla_t __far*	saveglow;
+			glow_t __near*			sourceglow = (glow_t __near*)&thinkerlist[th].data;
+			*save_p++ 				= tc_glow;
 			PADSAVEP();
-			glow = (glow_t __far *)save_p;
-			FAR_memcpy (glow, thinkerobj, sizeof(glow_t));
-			save_p += sizeof(glow_t);
-			//glow->secnum = glow->secnum;
+			saveglow 				= (glow_vanilla_t __far*)save_p;
+			FAR_memset (saveglow, 0, sizeof(glow_vanilla_t));
+			saveglow->sector 		= sourceglow->secnum;
+			saveglow->minlight		= sourceglow->minlight;
+			saveglow->maxlight		= sourceglow->maxlight;
+			saveglow->direction		= sourceglow->direction;
+
+			save_p += sizeof(glow_vanilla_t);
 			continue;
 		}
+		
     }
 	
 
