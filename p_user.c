@@ -236,7 +236,6 @@ void P_DeathThink () {
 }
 
 
-extern int16_t setval;
 //
 // P_PlayerThink
 //

@@ -376,7 +376,6 @@ void __near G_DoNewGame(void) {
 }
 
 
-//int16_t setval = 0;
  
 //
 // G_Ticker
@@ -791,7 +790,6 @@ void __near G_DoLoadGame (void)  {
 
 
 
-    //setval = 1;
 
 } 
  
@@ -940,6 +938,7 @@ void __near G_ReadDemoTiccmd (ticcmd_t __near* cmd)  {
 
 void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  { 
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
+
 	Z_QuickMapDemo();
 	if (gamekeydown['q']){           // press q to end demo recording 
         G_CheckDemoStatus (); 
@@ -958,10 +957,11 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  {
 		Z_QuickMapPhysics();
 		return;
     } 
-        
+
+    // i hate this call. why is it here? get rid of it? - sq
     G_ReadDemoTiccmd (cmd);         // make SURE it is exactly the same 
-	demo_p = (uint16_t)(demo_addr - demobuffer);
-	Z_QuickMapPhysics();
+    // G_ReadDemoTiccmd updates demo_p and calls Z_QuickMapPhysics already..
+
 
 } 
  
@@ -980,7 +980,6 @@ void __far G_DeferedPlayDemo (int8_t* name)  {
     defdemoname = name; 
     gameaction = ga_playdemo; 
 } 
-int16_t setval = 0;
  
 void __near G_DoPlayDemo (void)  { 
     skill_t skill; 
@@ -989,7 +988,6 @@ void __near G_DoPlayDemo (void)  {
 	Z_QuickMapDemo();
 
 	gameaction = ga_nothing;
-		setval = 1;
 
 	W_CacheLumpNameDirect(defdemoname, demobuffer);
 	demo_addr = (byte __far*)(demobuffer);

@@ -70,7 +70,7 @@
 #define ST_NUMFACES \
           (ST_FACESTRIDE*ST_NUMPAINFACES+ST_NUMEXTRAFACES)
 
-
+#define NEAR_SEGMENT 0x3C00
 #define _NULL_OFFSET 0x30
 
 #define currentscreen                   (*(byte __far * __near *)            (_NULL_OFFSET + 0x0000))
