@@ -301,8 +301,8 @@ void __far P_ArchivePlayers (void) {
 	}
 
 	for (i = 0; i < NUMPSPRITES; i++){
-	    if (psprites[i].statenum == 0){
-			saveplayer->psprites_field[i].state	= STATENUM_NULL;
+	    if (psprites[i].statenum == STATENUM_NULL){
+			saveplayer->psprites_field[i].state	= 0;
 		} else {
 			saveplayer->psprites_field[i].state	= psprites[i].statenum;
 		}
@@ -312,15 +312,6 @@ void __far P_ArchivePlayers (void) {
 	    saveplayer->psprites_field[i].sy	= psprites[i].sy;
 	}
 
-
-
-
-
-//	for (j=0 ; j<NUMPSPRITES ; j++) {
-//		if (psprites[j].state) {
-//			psprites[j].state  = (state_t *)(psprites[j].state-states);
-//		}
-//	}
 
 	save_p += sizeof(player_vanilla_t);
 
@@ -633,6 +624,9 @@ void __far P_ArchiveThinkers (void) {
 			savemobj->type 				= mobj->type;
 			// savemobj->info 				= mobj->info;		recalculated from type during deserialize
 			savemobj->tics				= mobj->tics;
+			if (mobj->tics == 0xFF){
+				savemobj->tics = -1;
+			}
 			savemobj->health 			= mobj->health;
 			savemobj->movedir 			= mobj->movedir;
 			savemobj->movecount 		= mobj->movecount;
@@ -648,7 +642,6 @@ void __far P_ArchiveThinkers (void) {
 			save_p += sizeof(mobj_vanilla_t);
 
 			
-			//mobj->state = (state_t *)(mobj->state - states);
 			
 			// todo what to do here
 			//if (mobj->player)
@@ -749,7 +742,7 @@ void __far P_UnArchiveThinkers (void) {
 					playerMobjRef = th;
 				}
 
-				P_SetThingPosition (mobj, mobj_pos, mobj->secnum);
+				P_SetThingPosition (mobj, mobj_pos, -1);
 				//mobj->info = &mobjinfo[mobj->type];
 				mobj->floorz = sectors[mobj->secnum].floorheight;
 				mobj->ceilingz = sectors[mobj->secnum].ceilingheight;
