@@ -301,8 +301,8 @@ void __far P_ArchivePlayers (void) {
 	}
 
 	for (i = 0; i < NUMPSPRITES; i++){
-	    if (psprites[i].statenum == STATENUM_NULL){
-			saveplayer->psprites_field[i].state	= 0;
+	    if (psprites[i].statenum == 0){
+			saveplayer->psprites_field[i].state	= STATENUM_NULL;
 		} else {
 			saveplayer->psprites_field[i].state	= psprites[i].statenum;
 		}
