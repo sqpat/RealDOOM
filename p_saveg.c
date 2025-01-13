@@ -430,7 +430,6 @@ void __far P_ArchiveWorld (void) {
 
 
 
-
     for (i=0, sec = sectors, sec_phys = sectors_physics ;  i<numsectors ; i++,sec++,sec_phys++) {
 		*put++ = sec->floorheight >> SHORTFLOORBITS;
 		*put++ = sec->ceilingheight >> SHORTFLOORBITS;
@@ -517,8 +516,8 @@ void __far P_UnArchiveWorld (void) {
     // do lines
 	for (i=0 ; i<numlines ; i++,li++) {
 		int16_t flags 			= *get++;
-		uint8_t flags8bit       = (flags&0xFF);
-		int8_t mapped 			= (flags & 0x0100) >> (8-(i % 8));
+		uint8_t flags8bit       = (flags & 0xFF);
+		uint8_t mapped 			= (flags & 0x0100) >> (8-(i % 8));
 
 		li 						= &lines[i];
 		li_phys 				= &lines_physics[i];
@@ -614,7 +613,7 @@ void __far P_ArchiveThinkers (void) {
 			// scratch <<= (16-SHORTFLOORBITS);
 			// savemobj->ceilingz 			= scratch;	// dont store? recalc from sector on deserialize
 			scratch = mobj->radius;
-			scratch <<= (16-SHORTFLOORBITS);
+			scratch <<= FRACBITS;
 			savemobj->radius 			= scratch;
 			savemobj->height 			= mobj->height.w;
 			savemobj->momx 				= mobj->momx.w;
@@ -729,25 +728,21 @@ void __far P_UnArchiveThinkers (void) {
 				mobj->reactiontime 			= savemobj->reactiontime;
 				mobj->threshold 			= savemobj->threshold;
 				nightmarespawns[th] 		= savemobj->spawnpoint;
-				mobj->tracerRef 			= savemobj->tracer; 		// bug in vanilla i guess? trivial to make work right in realdoom
+				//mobj->tracerRef 			= savemobj->tracer; 		// bug in vanilla i guess? no guarantee thinkers get the same thinkerref again so probbaly a bug here too,
 
 				mobj->bnextRef = NULL_THINKERREF; // garbage value. P_SetThingPosition will fix
 				mobj_pos->snextRef = NULL_THINKERREF; // garbage value. P_SetThingPosition will fix
-				//mobj->state = &states[(int16_t)mobj->state];
 				mobj->targetRef = NULL_THINKERREF;
-				// todo tracerref fine?
 				
 				
 				if (mobj->type == MT_PLAYER) {
 					playerMobjRef = th;
 				}
 
-				P_SetThingPosition (mobj, mobj_pos, -1);
-				//mobj->info = &mobjinfo[mobj->type];
+				P_SetThingPosition (mobj, mobj_pos, -1);	// generate secnum and various blocklink etc fields
 				mobj->floorz = sectors[mobj->secnum].floorheight;
 				mobj->ceilingz = sectors[mobj->secnum].ceilingheight;
 
-				//mobj->thinkerRef = P_AddThinker (thinkerRef, TF_MOBJTHINKER);
 				save_p += sizeof(mobj_vanilla_t);
 
 				break;
