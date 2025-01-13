@@ -56,6 +56,7 @@
 //  specially to allow map reloads.
 // But: the reload feature is a fragile hack...
 
+
 #define SCRATCH_FILE_LOAD_LOCATION  (filelump_t __far*)(0x50000000)
 
 void __near W_AddFile(int8_t *filename) {
@@ -66,12 +67,30 @@ void __near W_AddFile(int8_t *filename) {
 	int32_t				length;
 	uint16_t			startlump;
 	filelump_t __far*		fileinfo;
+    filelump_t		singleinfo;
 	FILE* usefp;
 
 
 	int32_t lastpos = 0;
 	int32_t lastsize = 0;
 	int32_t diff;
+	int8_t  iswad = false;
+
+	// bleh. can a file be called "A.wad.wad" ?
+	for (i = 0; filename[i] != '\0'; i++){
+		if (filename[i+0] == '.'){
+			if (filename[i+1] == 'w'){
+				if (filename[i+2] == 'a'){
+					if (filename[i+3] == 'd'){
+						if (filename[i+4] == '\0'){
+							iswad = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
 
 
 	// open the file and add to directory
@@ -85,14 +104,11 @@ void __near W_AddFile(int8_t *filename) {
 	}
 	*/
 
-	if (!wadfilefp){
-		wadfilefp = fopen(filename, "rb");
-		usefp = wadfilefp;
-	} else {
-		// timedemo case
-		wadfilefp2 = fopen(filename, "rb");
-		usefp = wadfilefp2;
-	}
+	wadfiles[currentloadedfileindex] = fopen(filename, "rb");
+	usefp = wadfiles[currentloadedfileindex];
+
+
+
 
 	if (!usefp) {
 		DEBUG_PRINT("\tcouldn't open %s\n", filename);
@@ -103,40 +119,66 @@ void __near W_AddFile(int8_t *filename) {
 	DEBUG_PRINT("\n\tadding %s\n", filename);
 	startlump = numlumps;
  
-	// WAD file
-	FAR_fread(&header, sizeof(header), 1, usefp);
+	if (!iswad) {
+		// single lump file
+		int8_t upr_name[8];
+
+		fileinfo = &singleinfo;
+		singleinfo.filepos = 0;
+		fseek(usefp, 0L, SEEK_END);
+		singleinfo.size = ftell(usefp);
+		fseek(usefp, 0L, SEEK_SET);
+		
+		// first file is always a real wad. that doesn't use these fields.
+		filetolumpindex[currentloadedfileindex-1] = numlumps;
+		filetolumpsize[currentloadedfileindex-1] = singleinfo.size;
+		numlumps++;
+		memset(upr_name, 0, 8);
+		// not perfect, what if filename has multiple dots or no dot, etc.
+		for (i = 0; (filename[i] != '.') && (i < 8); i++){
+			upr_name[i] = filename[i];
+		}
+
+		locallib_strupr(upr_name);
+		// upper the name and make it a wad lump name...
+		FAR_memcpy(singleinfo.name, upr_name, 8);
+
+	} else {
+		// WAD file
+		FAR_fread(&header, sizeof(header), 1, usefp);	
+
+		// 0x4957 == "IW" && 0x4144 == "AD"
+		if (((uint16_t)(header.identification[0])) == 0x4957 && 
+			((uint16_t)(header.identification[2])) == 0x4144
+		) {
+			#ifdef CHECK_FOR_ERRORS
+					// Homebrew levels?
+				// 0x5057 == "PW" && 0x4144 == "AD"
+				if (((uint16_t)(header.identification[0])) == 0x5057 && 
+					((uint16_t)(header.identification[2])) == 0x4144
+				) {
+						I_Error("Wad file %s doesn't have IWAD "
+							"or PWAD id\n", filename);
+					}
+			#endif
+
+			modifiedgame = true;
+		}
+		//header.numlumps = (header.numlumps);
+		//header.infotableofs = (header.infotableofs);
+		length = header.numlumps * sizeof(filelump_t);
+
+		// let's piggyback off scratch EMS block
+		fileinfo = SCRATCH_FILE_LOAD_LOCATION;
+		fseek(usefp, header.infotableofs, SEEK_SET);
+		FAR_fread(fileinfo, length, 1, usefp);
+		numlumps += header.numlumps;
+
+	}
+
+	currentloadedfileindex++;
 	
 
-
-
-	// 0x4957 == "IW" && 0x4144 == "AD"
-	if (((uint16_t)(header.identification[0])) == 0x4957 && 
-	 	((uint16_t)(header.identification[2])) == 0x4144
-	 ) {
-#ifdef CHECK_FOR_ERRORS
-		// Homebrew levels?
-	// 0x5057 == "PW" && 0x4144 == "AD"
-	if (((uint16_t)(header.identification[0])) == 0x5057 && 
-	 	((uint16_t)(header.identification[2])) == 0x4144
-	 ) {
-			I_Error("Wad file %s doesn't have IWAD "
-				"or PWAD id\n", filename);
-		}
-#endif
-
-		modifiedgame = true;
-	}
-	//header.numlumps = (header.numlumps);
-	//header.infotableofs = (header.infotableofs);
-	length = header.numlumps * sizeof(filelump_t);
-
-	// let's piggyback off scratch EMS block
-	fileinfo = SCRATCH_FILE_LOAD_LOCATION;
-	fseek(usefp, header.infotableofs, SEEK_SET);
-	FAR_fread(fileinfo, length, 1, usefp);
-	numlumps += header.numlumps;
-
-	// numlumps 1264
  
 	lump_p = &lumpinfoinit[startlump];
 

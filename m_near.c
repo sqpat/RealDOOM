@@ -1750,14 +1750,17 @@ int16_t		numlinespecials;
 
 
 // newend is one past the last valid seg
-cliprange_t __near*	newend;
-cliprange_t	solidsegs[MAXSEGS];
-uint8_t usedtexturepagemem[NUM_TEXTURE_PAGES];
-uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
-uint16_t                     numlumps;
-FILE* wadfilefp;
-FILE* wadfilefp2;
-  
+cliprange_t __near*			newend;
+cliprange_t					solidsegs[MAXSEGS];
+uint8_t 					usedtexturepagemem[NUM_TEXTURE_PAGES];
+uint8_t 					usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
+
+uint16_t                    numlumps;
+FILE*                		wadfiles[MAX_WADFILES];
+int16_t                		filetolumpindex[MAX_WADFILES-1] = {-1, -1, -1};
+int32_t                		filetolumpsize[MAX_WADFILES-1];
+int8_t                     	currentloadedfileindex = 0;
+
 
 
 //

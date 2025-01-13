@@ -980,6 +980,7 @@ void __far G_DeferedPlayDemo (int8_t* name)  {
     defdemoname = name; 
     gameaction = ga_playdemo; 
 } 
+int16_t setval = 0;
  
 void __near G_DoPlayDemo (void)  { 
     skill_t skill; 
@@ -988,6 +989,8 @@ void __near G_DoPlayDemo (void)  {
 	Z_QuickMapDemo();
 
 	gameaction = ga_nothing;
+		setval = 1;
+
 	W_CacheLumpNameDirect(defdemoname, demobuffer);
 	demo_addr = (byte __far*)(demobuffer);
 	demo_p = 0;

@@ -149,7 +149,6 @@ void _fmemmove(char __far *dest, const void __far *src, size_t size);
 //
 
 
-
 int16_t W_CheckNumForName (int8_t* name) {
     union {
 		int8_t    s[9];
@@ -230,11 +229,23 @@ int16_t W_GetNumForName(int8_t* name) {
 //
 
 int32_t W_LumpLength5000(int16_t lump) {
+	int8_t i;
+	for (i = 0; i < currentloadedfileindex-1; i++){
+		if (lump == filetolumpindex[i]){
+			return filetolumpsize[i];
+		}
+	}
 	return (lumpinfo5000[lump + 1].position - lumpinfo5000[lump].position) + lumpinfo5000[lump].sizediff;
 }
 
 
 int32_t W_LumpLength9000(int16_t lump) {
+	int8_t i;
+	for (i = 0; i < currentloadedfileindex-1; i++){
+		if (lump == filetolumpindex[i]){
+			return filetolumpsize[i];
+		}
+	}
 	return (lumpinfo9000[lump + 1].position - lumpinfo9000[lump].position) + lumpinfo9000[lump].sizediff;
 }
 
@@ -261,7 +272,6 @@ int32_t W_LumpLength (int16_t lump) {
 //
 
 
-
 void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 	//filelength_t         c;  // size, leave as 32 bit
     lumpinfo_t __far* l;
@@ -270,6 +280,8 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 #endif
     int32_t startoffset;
 	filelength_t         lumpsize;
+	int8_t  fileindex = 0;
+	int8_t  i;
 
 	// use 5000 page if we are trying to write to 9000 page
 	boolean is5000Page = ((int32_t) dest >= 0x90000000) && ((int32_t)dest < 0xA0000000);
@@ -298,11 +310,17 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
     	I_BeginRead ();
 	#endif
 
- 
+	for (i = 0; i < currentloadedfileindex-1; i++){
+		if (lump == filetolumpindex[i]){
+			fileindex = i+1;	// this is a single lump file
+			break;
+		}
+	}
 	startoffset = l->position + start;
-    fseek(wadfilefp, startoffset, SEEK_SET);
 
-	FAR_fread(dest, size ? size : lumpsize, 1, wadfilefp);
+    fseek(wadfiles[fileindex], startoffset, SEEK_SET);
+
+	FAR_fread(dest, size ? size : lumpsize, 1, wadfiles[fileindex]);
  
 
  

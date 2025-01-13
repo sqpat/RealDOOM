@@ -1063,6 +1063,8 @@ typedef	struct {
 
 
 #define MAXSEGS		32
+#define MAX_WADFILES 4
+
 
 // newend is one past the last valid seg
 extern cliprange_t __near*	newend;
@@ -1070,8 +1072,10 @@ extern cliprange_t	solidsegs[MAXSEGS];
 extern uint8_t usedtexturepagemem[NUM_TEXTURE_PAGES];
 extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
 extern uint16_t                     numlumps;
-extern FILE* wadfilefp;
-extern FILE* wadfilefp2;
+extern FILE*               		    wadfiles[MAX_WADFILES];
+extern int16_t                	    filetolumpindex[MAX_WADFILES-1];
+extern int32_t                		filetolumpsize[MAX_WADFILES-1];
+extern int8_t                       currentloadedfileindex;
   
 
 

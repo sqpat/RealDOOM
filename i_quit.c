@@ -168,12 +168,11 @@ void hackDSBack();
 //
 // called from I_Error
 void __near I_Shutdown(void) {
-	
-	if (wadfilefp) {
-		fclose(wadfilefp);
-	}
-	if (wadfilefp2){
-		fclose(wadfilefp2);
+	int8_t i;
+	for (i = 0; i < currentloadedfileindex; i++){
+		if (wadfiles[i]){
+			fclose(wadfiles[i]);
+		}
 	}
 
 	I_ShutdownGraphics();
