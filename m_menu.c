@@ -903,42 +903,8 @@ boolean __far M_Responder (event_t __far*  ev) {
 
     ch = -1;
     
-    if (ev->type == ev_mouse && menu_mousewait < ticcount) {
-        menu_mousey += ev->data3;
-        if (menu_mousey < menu_lasty-30) {
-            ch = KEY_DOWNARROW;
-            menu_mousewait = ticcount + 5;
-            menu_mousey = menu_lasty -= 30;
-        } else if (menu_mousey > menu_lasty+30) {
-            ch = KEY_UPARROW;
-            menu_mousewait = ticcount + 5;
-            menu_mousey = menu_lasty += 30;
-        }
-                
-        menu_mousex += ev->data2;
-        if (menu_mousex < menu_lastx-30) {
-            ch = KEY_LEFTARROW;
-            menu_mousewait = ticcount + 5;
-            menu_mousex = menu_lastx -= 30;
-        } else if (menu_mousex > menu_lastx+30) {
-            ch = KEY_RIGHTARROW;
-            menu_mousewait = ticcount + 5;
-            mousex = menu_lastx += 30;
-        }
-                
-        if (ev->data1&1) {
-            ch = KEY_ENTER;
-            menu_mousewait = ticcount + 15;
-        }
-                        
-        if (ev->data1&2) {
-            ch = KEY_BACKSPACE;
-            menu_mousewait = ticcount + 15;
-        }
-    } else {
-        if (ev->type == ev_keydown) {
-            ch = ev->data1;
-        }
+    if (ev->type == ev_keydown) {
+        ch = ev->data1;
     }
 
     if (ch == -1) {
@@ -1273,6 +1239,8 @@ void __far M_Drawer (int8_t isFromWipe) {
     int16_t               max;
     int8_t                string[40];
     int16_t                 start;
+    int16_t                 menu_drawer_x;
+    int16_t                 menu_drawer_y;
     
 
     inhelpscreens = false;

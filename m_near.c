@@ -574,7 +574,6 @@ boolean*        mousebuttons = &mousearray[1];          // allow [-1]
 
 // mouse values are used once 
 int16_t             mousex;
-int16_t             mousey;
 
 int32_t             dclicktime;
 int32_t             dclickstate;
@@ -1151,13 +1150,6 @@ int16_t    skullName[2] = {5, 6};
 // current menudef
 menu_t __near* currentMenu;      
 
-int16_t     menu_mousewait = 0;
-int16_t     menu_mousey = 0;
-int16_t     menu_lasty = 0;
-int16_t     menu_mousex = 0;
-int16_t     menu_lastx = 0;
-int16_t        menu_drawer_x;
-int16_t        menu_drawer_y;
 
 #ifndef CODEGEN_SKIP_MENU
 

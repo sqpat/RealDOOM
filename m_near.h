@@ -645,7 +645,6 @@ extern int8_t             turnheld;
 extern boolean         mousearray[4]; 
 extern boolean*        mousebuttons;
 extern int16_t             mousex;
-extern int16_t             mousey;
 extern int32_t             dclicktime;
 extern int32_t             dclickstate;
 extern int32_t             dclicks;
@@ -804,13 +803,6 @@ extern int16_t  whichSkull;             // which skull to draw
 extern int16_t  skullName[2];
 extern menu_t   __near* currentMenu;      
 
-extern int16_t     menu_mousewait;
-extern int16_t     menu_mousey;
-extern int16_t     menu_lasty;
-extern int16_t     menu_mousex;
-extern int16_t     menu_lastx;
-extern int16_t        menu_drawer_x;
-extern int16_t        menu_drawer_y;
 
 
 

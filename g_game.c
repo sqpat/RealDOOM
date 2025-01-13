@@ -151,17 +151,17 @@ void __near G_BuildTiccmd (int8_t index) {
 
     // use two stage accelerative turning
     // on the keyboard 
-    if (
-         gamekeydown[key_right]
-        || gamekeydown[key_left]) 
+    if ( gamekeydown[key_right] || gamekeydown[key_left]) {
         turnheld += 1; 
-    else 
+    } else {
         turnheld = 0; 
+    }
 
-    if (turnheld < SLOWTURNTICS) 
+    if (turnheld < SLOWTURNTICS) {
         tspeed = 2;             // slow turn 
-    else 
+    } else {
         tspeed = speed;
+    }
 
     // let movement keys cancel each other out
     if (strafe)  { 
@@ -173,10 +173,12 @@ void __near G_BuildTiccmd (int8_t index) {
         }
  
     } else { 
-        if (gamekeydown[key_right]) 
+        if (gamekeydown[key_right]) {
             cmd->angleturn -= angleturn[tspeed]; 
-        if (gamekeydown[key_left]) 
+        }
+        if (gamekeydown[key_left]) {
             cmd->angleturn += angleturn[tspeed]; 
+        }
     } 
 
     if (gamekeydown[key_up])  {
@@ -185,15 +187,18 @@ void __near G_BuildTiccmd (int8_t index) {
     if (gamekeydown[key_down])  {
         forward -= forwardmove[speed]; 
     }
-    if (gamekeydown[key_straferight]) 
+    if (gamekeydown[key_straferight]) {
         side += sidemove[speed]; 
-    if (gamekeydown[key_strafeleft]) 
+    }
+    if (gamekeydown[key_strafeleft]) {
         side -= sidemove[speed];
+    }
  
     // buttons
     
-    if (gamekeydown[key_fire] || mousebuttons[mousebfire]) 
+    if (gamekeydown[key_fire] || mousebuttons[mousebfire]) {
         cmd->buttons |= BT_ATTACK; 
+    }
  
     if (gamekeydown[key_use] ) { 
         cmd->buttons |= BT_USE;
@@ -216,8 +221,9 @@ void __near G_BuildTiccmd (int8_t index) {
     // forward double click
     if (mousebuttons[mousebforward] != dclickstate && dclicktime > 1 ) { 
         dclickstate = mousebuttons[mousebforward];
-        if (dclickstate) 
+        if (dclickstate) {
             dclicks++; 
+        }
         if (dclicks == 2)  { 
             cmd->buttons |= BT_USE; 
             dclicks = 0; 
@@ -236,8 +242,9 @@ void __near G_BuildTiccmd (int8_t index) {
     bstrafe = mousebuttons[mousebstrafe]  ;
     if (bstrafe != dclickstate2 && dclicktime2 > 1 )  { 
         dclickstate2 = bstrafe; 
-        if (dclickstate2) 
+        if (dclickstate2) {
             dclicks2++; 
+        }
         if (dclicks2 == 2) { 
             cmd->buttons |= BT_USE; 
             dclicks2 = 0; 
@@ -252,23 +259,23 @@ void __near G_BuildTiccmd (int8_t index) {
         } 
     } 
  
-    forward += mousey; 
-    if (strafe) 
+    if (strafe) {
         side += mousex*2;
-    else 
+    } else {
         cmd->angleturn -= mousex*0x8; 
-
-    mousex = mousey = 0; 
+    }
+    mousex =  0; 
          
-    if (forward > MAXPLMOVE) 
+    if (forward > MAXPLMOVE) {
         forward = MAXPLMOVE; 
-    else if (forward < -MAXPLMOVE) 
+    } else if (forward < -MAXPLMOVE) {
         forward = -MAXPLMOVE; 
-    if (side > MAXPLMOVE) 
+    }
+    if (side > MAXPLMOVE) {
         side = MAXPLMOVE; 
-    else if (side < -MAXPLMOVE) 
+    } else if (side < -MAXPLMOVE) {
         side = -MAXPLMOVE; 
- 
+    }
     cmd->forwardmove += forward; 
     cmd->sidemove += side;
     
@@ -338,11 +345,10 @@ boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up men
 			return false; // always let key up events filter down
 
 		case ev_mouse:
-			mousearray[0] = ev->data1 & 1;
-			mousearray[1] = ev->data1 & 2;
-			mousearray[2] = ev->data1 & 4;
-			mousex = FastDiv3216u(FastMul16u32((mouseSensitivity + 5), ev->data2), 10);
-			mousey = FastDiv3216u(FastMul16u32((mouseSensitivity + 5),ev->data3), 10);
+			mousebuttons[0] = ev->data1 & 1;
+			mousebuttons[1] = ev->data1 & 2;
+			mousebuttons[2] = ev->data1 & 4;
+			mousex = FastDiv3216u(FastMul1616((mouseSensitivity + 5), ev->data2), 10);
 			return true; // eat events
 
  

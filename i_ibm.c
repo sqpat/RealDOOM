@@ -256,27 +256,22 @@ void __near I_ReadMouse(void) {
     //
     // mouse events
     //
-    if (!mousepresent)
-    {
-        return;
-    }
 
     ev.type = ev_mouse;
 
 
 
 	// 16 bit version
-	in.x.ax = 3;  // read buttons / position
-	int86(0X33, &in, &out);
+	in.x.ax = 0x03;  // read buttons / position
+	int86(0x33, &in, &out);
 
 	ev.data1 = out.x.bx;
+	in.x.ax = 0x0B;  // read counters
+	int86(0x33, &in, &out);
 
-	in.x.ax = 11;  // read counters
 	ev.data2 = out.x.cx;
-	ev.data3 = -out.x.dx;
-
-
-
+	//ev.data3 = -out.x.dx; // dont use mouse forward/back movement
+	ev.data3 = 0;
 	D_PostEvent(&ev);
 
 
@@ -288,7 +283,9 @@ void __near I_StartTic(void) {
 	uint8_t k;
 	event_t ev;
 	
-    I_ReadMouse();
+    if (mousepresent){
+		I_ReadMouse();
+	}
 
 
 	//

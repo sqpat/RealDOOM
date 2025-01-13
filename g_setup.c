@@ -164,7 +164,7 @@ void __near G_DoLoadLevel(void) {
 
 	// clear cmd building stuff
 	memset(gamekeydown, 0, sizeof(gamekeydown));
-	mousex = mousey = 0;
+	mousex = 0;
 	sendpause = sendsave = paused = false;
 	memset(mousebuttons, 0, sizeof(mousebuttons));
 
