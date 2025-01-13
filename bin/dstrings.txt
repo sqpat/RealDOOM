@@ -5,8 +5,8 @@ you can't do load while in a net game!\n\npress a key.
 you can't quickload during a netgame!\n\npress a key.
 you haven't picked a quicksave slot yet!\n\npress a key.
 you can't save if you aren't playing!\n\npress a key.
-quicksave over your game named\n\n'%s'?\n\npress y or n.
-do you want to quickload the game named\n\n'%s'?\n\npress y or n.
+quicksave over your game named\n\n'
+do you want to quickload the game named\n\n'
 are you sure? this skill level\nisn't even remotely fair.\n\npress y or n.
 this is the shareware version of doom.\n\nyou need to order the entire trilogy.\n\npress a key.
 Messages OFF
@@ -303,3 +303,4 @@ S_Init: Setting up sound.\n
 HU_Init: Setting up heads up display.\n
 ST_Init: Init status bar.\n
 Potato detail\n
+'?\n\npress y or n.

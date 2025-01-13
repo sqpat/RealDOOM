@@ -340,31 +340,35 @@ void __near M_QuickSaveResponse(int16_t ch){
 }
 
 void __near M_QuickSave(void){
-        /*
-    int8_t temp[256];
-    int8_t    tempstring[80];
-    if (!usergame)
-    {
+        
+    int8_t temp1[50];
+    int8_t temp2[25];
+    int8_t finalstring[150];
+    if (!usergame) {
         S_StartSound(NULL,sfx_oof);
         return;
     }
 
-    if (gamestate != GS_LEVEL)
+    if (gamestate != GS_LEVEL){
         return;
+    }
         
 
-    if (quickSaveSlot < 0) // hack for -1 on a uint_8
-    {
+    if (quickSaveSlot < 0){ // hack for -1 on a uint_8
         M_StartControlPanel();
         M_ReadSaveStrings();
         M_SetupNextMenu(&SaveDef);
         quickSaveSlot = -2;     // means to pick a slot now
         return;
     }
-    getStringByIndex(QSPROMPT, temp);
-    sprintf(tempstring, temp,&savegamestrings[quickSaveSlot*SAVESTRINGSIZE]);
-    M_StartMessage(tempstring,M_QuickSaveResponse,true);
-    */
+    getStringByIndex(QSPROMPT, temp1);
+    getStringByIndex(QLQLPROMPTEND, temp2);
+    combine_strings(finalstring, temp1, &savegamestrings[quickSaveSlot*SAVESTRINGSIZE]);
+    combine_strings(finalstring, finalstring, temp2);
+    
+    
+    M_StartMessage(finalstring,M_QuickSaveResponse,true);
+    
 }
 
 
@@ -373,8 +377,7 @@ void __near M_QuickSave(void){
 // M_QuickLoad
 //
 void __near M_QuickLoadResponse(int16_t ch){
-    if (ch == 'y')
-    {
+    if (ch == 'y') {
         M_LoadSelect(quickSaveSlot);
         S_StartSound(NULL,sfx_swtchx);
     }
@@ -382,19 +385,25 @@ void __near M_QuickLoadResponse(int16_t ch){
 
 
 void __near M_QuickLoad(void){
-    /*
-    int8_t temp[256];
-    int8_t    tempstring[80];
-if (quickSaveSlot < 0) // means to pick a slot now
-    {
-        getStringByIndex(QSAVESPOT, temp);
-        M_StartMessage(temp,NULL,false);
+    
+    int8_t temp1[50];
+    int8_t temp2[25];
+    int8_t finalstring[150];
+    if (quickSaveSlot < 0) { // means to pick a slot now
+    
+        getStringByIndex(QSAVESPOT, finalstring);
+        M_StartMessage(finalstring,NULL,false);
         return;
     }
-    getStringByIndex(QLPROMPT, temp);
-    sprintf(tempstring, temp,&savegamestrings[quickSaveSlot*SAVESTRINGSIZE]);
-    M_StartMessage(tempstring,M_QuickLoadResponse,true);
-    */
+
+    getStringByIndex(QLPROMPT, temp1);
+    getStringByIndex(QLQLPROMPTEND, temp2);
+    combine_strings(finalstring, temp1, &savegamestrings[quickSaveSlot*SAVESTRINGSIZE]);
+    combine_strings(finalstring, finalstring, temp2);
+
+
+    M_StartMessage(finalstring,M_QuickLoadResponse,true);
+    
 }
 
 
