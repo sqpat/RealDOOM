@@ -575,12 +575,12 @@ boolean*        mousebuttons = &mousearray[1];          // allow [-1]
 // mouse values are used once 
 int16_t             mousex;
 
-int32_t             dclicktime;
-int32_t             dclickstate;
-int32_t             dclicks;
-int32_t             dclicktime2;
-int32_t             dclickstate2;
-int32_t             dclicks2;
+int16_t             dclicktime;
+int16_t             dclickstate;
+int16_t             dclicks;
+int16_t             dclicktime2;
+int16_t             dclickstate2;
+int16_t             dclicks2;
 
  
 int8_t             savegameslot;
@@ -1419,11 +1419,11 @@ int8_t     quitsounds2[8] ={
 task HeadTask;
 void( __interrupt __far_func *OldInt8)(void);
 volatile int32_t TaskServiceRate = 0x10000L;
-volatile int32_t TaskServiceCount = 0;
+volatile fixed_t_union TaskServiceCount;
 
-volatile int32_t TS_TimesInInterrupt;
+volatile int16_t TS_TimesInInterrupt;
 int8_t TS_Installed = false;
-volatile int32_t TS_InInterrupt = false;
+volatile int8_t TS_InInterrupt = false;
 
 int8_t NUMANIMS[NUMEPISODES_FOR_ANIMS] = {
 

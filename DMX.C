@@ -1,10 +1,3 @@
-#define TRUE (1 == 1)
-#define FALSE (!TRUE)
-
-//#define LOCKMEMORY
-//#define NOINTS
-//#define USE_USRHOOKS
-
 #include "dmx.h"
 #include <dos.h>
 #include <conio.h>
@@ -13,6 +6,9 @@
 #include <stdlib.h>
 #include "m_near.h"
 #include "doomdef.h"
+
+// todo all pulled from fastdoom i think and very 32 bit based. need to make this more 16 bit friendly overall
+// and less generalized and more specialized
 
 
 /*---------------------------------------------------------------------
@@ -58,12 +54,10 @@ void TS_SetClockSpeed(int32_t speed){
 uint16_t TS_SetTimer(int32_t TickBase){
 
 	uint16_t speed;
-	// VITI95: OPTIMIZE
 	//speed =   1192030L / TickBase;
 	speed = 1192030L / 35;
 
-	if (speed < TaskServiceRate)
-	{
+	if (speed < TaskServiceRate) {
 		TS_SetClockSpeed(speed);
 	}
 
@@ -84,32 +78,28 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 	resetDS();
 
 	TS_TimesInInterrupt++;
-	TaskServiceCount += TaskServiceRate;
-	//todo implement this in asm via carry flag rather than a 32 bit add.
-	if (TaskServiceCount > 0xffffL)
-	{
-		TaskServiceCount &= 0xffff;
+	TaskServiceCount.w += TaskServiceRate;
+	//todo implement this in asm via carry flag rather than a 32 bit add. 
+	// only need a 16 bit variable too.
+	if (TaskServiceCount.h.intbits) {
+		TaskServiceCount.h.intbits = 0;
 		_chain_intr(OldInt8);
 	}
 
 	outp(0x20, 0x20); // Acknowledge interrupt
 
-	if (TS_InInterrupt)
-	{
+	if (TS_InInterrupt) {
 		return;
 	}
 
-	TS_InInterrupt = TRUE;
+	TS_InInterrupt = true;
 	_enable();
 
 
-	while (TS_TimesInInterrupt)
-	{
-		if (HeadTask.active)
-		{
+	while (TS_TimesInInterrupt) {
+		if (HeadTask.active) {
 			HeadTask.count += TaskServiceRate;
-			if (HeadTask.count >= HeadTask.rate)
-			{
+			if (HeadTask.count >= HeadTask.rate) {
 				HeadTask.count -= HeadTask.rate;
 				HeadTask.TaskService();
 			}
@@ -120,7 +110,7 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 	_disable();
 
 
-	TS_InInterrupt = FALSE;
+	TS_InInterrupt = false;
 
 
 
@@ -135,18 +125,17 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 
 void TS_Startup(void){
 
-	if (!TS_Installed)
-	{
+	if (!TS_Installed) {
 
 		TaskServiceRate = 0x10000L;
-		TaskServiceCount = 0;
+		TaskServiceCount.w = 0;
 
 		TS_TimesInInterrupt = 0;
 
 		OldInt8 = _dos_getvect(0x08);
 		_dos_setvect(0x08, TS_ServiceScheduleIntEnabled);
 
-		TS_Installed = TRUE;
+		TS_Installed = true;
 	}
 
 }
@@ -163,8 +152,7 @@ void TS_ScheduleTask( void(*Function)(void ), uint16_t rate) {
 	HeadTask.TaskService = Function;
 	HeadTask.rate = TS_SetTimer(rate);
 	HeadTask.count = 0;
-	HeadTask.priority = 1;
-	HeadTask.active = FALSE;
+	HeadTask.active = false;
 
 }
 
@@ -178,7 +166,7 @@ void TS_ScheduleTask( void(*Function)(void ), uint16_t rate) {
 
 void TS_Dispatch(){
 	_disable();
-	HeadTask.active = TRUE;
+	HeadTask.active = true;
 	_enable();
 }
 

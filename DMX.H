@@ -28,9 +28,8 @@ typedef struct task{
 	struct task *prev;
 	void(*TaskService)(void);
 	uint16_t rate;
-	volatile long count;
-	int priority;
-	int active;
+	volatile int32_t count;
+	int8_t active;
 } task;
 
 

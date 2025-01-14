@@ -645,12 +645,12 @@ extern int8_t             turnheld;
 extern boolean         mousearray[4]; 
 extern boolean*        mousebuttons;
 extern int16_t             mousex;
-extern int32_t             dclicktime;
-extern int32_t             dclickstate;
-extern int32_t             dclicks;
-extern int32_t             dclicktime2;
-extern int32_t             dclickstate2;
-extern int32_t             dclicks2;
+extern int16_t             dclicktime;
+extern int16_t             dclickstate;
+extern int16_t             dclicks;
+extern int16_t             dclicktime2;
+extern int16_t             dclickstate2;
+extern int16_t             dclicks2;
 extern int8_t             savegameslot;
 extern ticcmd_t localcmds[BACKUPTICS];
 
@@ -861,12 +861,12 @@ extern int8_t     quitsounds2[8];
 
 extern task HeadTask;
 extern void( __interrupt __far_func *OldInt8)(void);
-extern volatile int32_t TaskServiceRate;;
-extern volatile int32_t TaskServiceCount;
+extern volatile int32_t TaskServiceRate;
+extern volatile fixed_t_union TaskServiceCount;
 
-extern volatile int32_t TS_TimesInInterrupt;
+extern volatile int16_t TS_TimesInInterrupt;
 extern int8_t TS_Installed;
-extern volatile int32_t TS_InInterrupt;
+extern volatile int8_t TS_InInterrupt;
 
 extern int8_t NUMANIMS[NUMEPISODES_FOR_ANIMS];
 extern wianim_t __far*wianims[NUMEPISODES_FOR_ANIMS];
