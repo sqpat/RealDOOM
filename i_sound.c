@@ -69,7 +69,8 @@ void I_SetSfxVolume(uint8_t volume) {
 // Song API
 //
 
-int16_t I_RegisterSong(void __far*data) {
+int16_t I_RegisterSong() {
+    // always use MUSIC SEGMENT, 0
 	/*
     int16_t rc = MUS_RegisterSong(data);
 #ifdef SNDDEBUG

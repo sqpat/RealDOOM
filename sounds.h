@@ -73,16 +73,17 @@ typedef struct {
     // lump number of music
     int16_t		lumpnum;
     
-    // music data
-    void __far*	data;
-
     // music handle once registered
 	int16_t handle;
     
 } musicinfo_t;
 
 
+// the complete set of sound effects
+extern sfxinfo_t	S_sfx[];
 
+// the complete set of music
+extern musicinfo_t	S_music[];
 
 
 //

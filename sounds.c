@@ -25,9 +25,10 @@
 // Information about all the music
 //
 
-/*
+// these full structs are too big for DGROUP right now.
+
 musicinfo_t S_music[] = {
-    { 0 },
+    { 0 }  /*,
     { "e1m1", 0 },
     { "e1m2", 0 },
     { "e1m3", 0 },
@@ -94,19 +95,17 @@ musicinfo_t S_music[] = {
     { "ultima", 0 },
     { "read_m", 0 },
     { "dm2ttl", 0 },
-    { "dm2int", 0 } 
+    { "dm2int", 0 } */
 };
 
-*/
 //
 // Information about all the sfx
 //
 
-/*
 
 sfxinfo_t S_sfx[] = {
   // S_sfx[0] needs to be a dummy for odd reasons.
-  { "none", false,  0, 0},
+  { "none", false,  0, 0} /*,
 
   { "pistol", false, 64, 0},
   { "shotgn", false, 64, 0},
@@ -215,7 +214,6 @@ sfxinfo_t S_sfx[] = {
   { "skeact", false, 70, 0},
   { "skesit", false, 70, 0},
   { "skeatk", false, 70, 0},
-  { "radio", false, 60, 0} 
+  { "radio", false, 60, 0} */
 };
 
-*/

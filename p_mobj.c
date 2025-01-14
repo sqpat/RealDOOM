@@ -887,7 +887,7 @@ void __near P_RemoveMobj (mobj_t __near* mobj) {
     P_UnsetThingPosition (mobj, &mobjposlist_6800[mobjRef]);
     
     // stop any playing sound
-    S_StopSound (mobj);
+    S_StopSound (mobjRef);
 
 	// free block
 	P_RemoveThinker(GETTHINKERREF(mobj));
