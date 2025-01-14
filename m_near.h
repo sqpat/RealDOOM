@@ -791,8 +791,6 @@ extern int16_t  messageLastMenuActive;
 extern boolean  messageNeedsInput;
 extern void     (__near *messageRoutine)(int16_t response);
 extern int8_t   gammamsg[5];
-extern int16_t  endmsg[NUM_QUITMESSAGES];
-extern int16_t  endmsg2[NUM_QUITMESSAGES];
 extern int16_t  saveStringEnter;
 extern int16_t  saveSlot;       // which slot to save in
 extern int16_t  saveCharIndex;  // which char we're editing
@@ -854,9 +852,7 @@ extern int8_t     menu_epi;
 extern int8_t    detailNames[2];
 extern int8_t    msgNames[2];
 
-extern int8_t     quitsounds[8];
 
-extern int8_t     quitsounds2[8];
 
 
 extern task HeadTask;

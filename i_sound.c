@@ -18,6 +18,7 @@
 //
 
 #include <stdio.h>
+#include <dos.h>
 
 #include "dmx.h"
 
@@ -32,6 +33,89 @@
 #include "doomdef.h"
 #include "doomstat.h"
 #include "m_near.h"
+
+
+//todo put this all in a separate file when done
+
+void MUS_PauseSong(int16_t handle){
+
+}
+
+void MUS_ResumeSong(int16_t handle){
+
+}
+void MUS_SetMasterVolume(int16_t volume){
+
+}
+int16_t MUS_RegisterSong(void __far*data){
+    return 0;
+}
+int16_t MUS_UnregisterSong(int16_t handle){
+    return 0;
+}
+int16_t MUS_QrySongPlaying(int16_t handle){
+    return 0;
+}
+int16_t MUS_StopSong(int16_t handle){
+    return 0;
+}
+int16_t MUS_ChainSong(int16_t handle, int16_t next){
+    return 0;
+}
+int16_t MUS_PlaySong(int16_t handle, int16_t volume){
+    return 0;
+}
+int16_t SFX_PlayPatch(void __far*vdata, int16_t pitch, int16_t sep, int16_t vol, int16_t unk1, int16_t unk2){
+    return 0;
+}
+void SFX_StopPatch(int16_t handle){
+
+}
+int16_t SFX_Playing(int16_t handle){
+    return 0;
+}
+void SFX_SetOrigin(int16_t handle, int16_t  pitch, int16_t sep, int16_t vol){
+    
+}
+int16_t GF1_Detect(void){
+    return 0;
+}
+void GF1_SetMap(void __far*data, int16_t len){
+    
+}
+int16_t SB_Detect(int16_t *port, uint8_t *irq, uint8_t *dma, int16_t *unk){
+    return 0;
+}
+void SB_SetCard(int16_t port, uint8_t irq, uint8_t dma){
+    
+}
+int16_t AL_Detect(int16_t *port, int16_t *unk){
+    return 0;
+}
+void AL_SetCard(int16_t port, void __far*data){
+    
+}
+int16_t MPU_Detect(int16_t *port, int16_t *unk){
+    return 0;
+}
+void MPU_SetCard(int16_t port){
+    
+}
+int16_t DMX_Init(int16_t rate, int16_t maxsng, int16_t mdev, int16_t sdev){
+    return 0;
+}
+void DMX_DeInit(void){
+    
+}
+void WAV_PlayMode(int16_t channels, int16_t samplerate){
+    
+}
+int16_t CODEC_Detect(int16_t *port, uint8_t *dma){
+    return 0;
+}
+int16_t ENS_Detect(void){
+    return 0;
+}
 
 //
 // I_StartupTimer
@@ -69,67 +153,62 @@ void I_SetSfxVolume(uint8_t volume) {
 // Song API
 //
 
+//todo
+#define MUSIC_SEGMENT 0xD000
+
 int16_t I_RegisterSong() {
     // always use MUSIC SEGMENT, 0
-	/*
+	//todo use scratch instead?
+    byte __far * data = MK_FP(MUSIC_SEGMENT, 0);
+
     int16_t rc = MUS_RegisterSong(data);
-#ifdef SNDDEBUG
-    if (rc<0) printf("MUS_Reg() returned %d\n", rc);
-#endif
+    #ifdef SNDDEBUG
+        if (rc<0) DEBUG_PRINT("MUS_Reg() returned %d\n", rc);
+    #endif
     return rc;
-	*/
-	return 1;
+	
 }
 
 void I_UnRegisterSong(int16_t handle) {
-	/*
     int16_t rc = MUS_UnregisterSong(handle);
 #ifdef SNDDEBUG
-    if (rc < 0) printf("MUS_Unreg() returned %d\n", rc);
+    if (rc < 0) DEBUG_PRINT("MUS_Unreg() returned %d\n", rc);
 #endif
-*/
 }
 
 int16_t I_QrySongPlaying(int16_t handle) {
-	/*
     int16_t rc = MUS_QrySongPlaying(handle);
-#ifdef SNDDEBUG
-    if (rc < 0) printf("MUS_QrySP() returned %d\n", rc);
-#endif
+    #ifdef SNDDEBUG
+        if (rc < 0) DEBUG_PRINT("MUS_QrySP() returned %d\n", rc);
+    #endif
     return rc;
-	*/
-	return 1;
 }
 //
 // Stops a song.  MUST be called before I_UnregisterSong().
 //
 void I_StopSong(int16_t handle) {
-	/*
     int16_t rc;
     rc = MUS_StopSong(handle);
-#ifdef SNDDEBUG
-    if (rc < 0) printf("MUS_StopSong() returned %d\n", rc);
-#endif
+    #ifdef SNDDEBUG
+        if (rc < 0) DEBUG_PRINT("MUS_StopSong() returned %d\n", rc);
+    #endif
     // Fucking kluge pause
     {
         ticcount_t s;
         for (s = ticcount; ticcount - s < 10; );
     }
-	*/
 }
 
 void I_PlaySong(int16_t handle, boolean looping) {
-	/*
 	int16_t rc;
     rc = MUS_ChainSong(handle, looping ? handle : -1);
-#ifdef SNDDEBUG
-    if (rc < 0) printf("MUS_ChainSong() returned %d\n", rc);
-#endif
+    #ifdef SNDDEBUG
+        if (rc < 0) DEBUG_PRINT("MUS_ChainSong() returned %d\n", rc);
+    #endif
     rc = MUS_PlaySong(handle, snd_MusicVolume);
-#ifdef SNDDEBUG
-    if (rc < 0) printf("MUS_PlaySong() returned %d\n", rc);
-#endif
-*/
+    #ifdef SNDDEBUG
+        if (rc < 0) DEBUG_PRINT("MUS_PlaySong() returned %d\n", rc);
+    #endif
 }
 
 //
@@ -151,7 +230,6 @@ int16_t I_GetSfxLumpNum(sfxinfo_t* sfx) {
 }
 
 int16_t I_StartSound(int16_t id, void  __far*data, uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority) {
-	/*
     // hacks out certain PC sounds
     if (snd_SfxDevice == snd_PC
     && (data == S_sfx[sfx_posact].data
@@ -164,33 +242,31 @@ int16_t I_StartSound(int16_t id, void  __far*data, uint8_t vol, uint8_t sep, uin
         return -1;
     }
     return SFX_PlayPatch(data, sep, pitch, vol, 0, 100);
-	*/
-	return -1;
 }
 
 void I_StopSound(int16_t handle) {
-    //SFX_StopPatch(handle);
+    SFX_StopPatch(handle);
 }
 
 boolean I_SoundIsPlaying(int16_t handle) {
-    //return SFX_Playing(handle);
-	return 0;
+    return SFX_Playing(handle);
 }
 
 void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch) {
-    //SFX_SetOrigin(handle, pitch, sep, vol);
+    SFX_SetOrigin(handle, pitch, sep, vol);
 }
 
 //
 // Sound startup stuff
 //
 
+int16_t __near M_CheckParm (int8_t *check);
+
 void I_sndArbitrateCards(void) {
 
      // todo when we redo this, checkparm is __near to init code so do that there
 
 
-	/*
     boolean gus, adlib, sb, midi, codec, ensoniq;
     int16_t i, wait, dmxlump;
 
@@ -202,29 +278,15 @@ void I_sndArbitrateCards(void) {
     //
     // check command-line parameters- overrides config file
     //
-    if (M_CheckParm("-nosound"))
-    {
-        snd_MusicDevice = snd_SfxDevice = snd_none;
-    }
-    if (M_CheckParm("-nosfx"))
-    {
-        snd_SfxDevice = snd_none;
-    }
-    if (M_CheckParm("-nomusic"))
-    {
-        snd_MusicDevice = snd_none;
-    }
 
-    if (snd_MusicDevice > snd_MPU && snd_MusicDevice <= snd_MPU3)
-    {
+
+    if (snd_MusicDevice > snd_MPU && snd_MusicDevice <= snd_MPU3) {
         snd_MusicDevice = snd_MPU;
     }
-    if (snd_MusicDevice == snd_SB)
-    {
+    if (snd_MusicDevice == snd_SB) {
         snd_MusicDevice = snd_Adlib;
     }
-    if (snd_MusicDevice == snd_PAS)
-    {
+    if (snd_MusicDevice == snd_PAS) {
         snd_MusicDevice = snd_Adlib;
     }
 
@@ -241,86 +303,79 @@ void I_sndArbitrateCards(void) {
     //
     // initialize whatever i've got
     //
-    if (ensoniq)
-    {
-        if (ENS_Detect())
-        {
-            printf("Dude.  The ENSONIQ ain't responding.\n");
+    if (ensoniq) {
+        if (ENS_Detect()) {
+            #ifdef SNDDEBUG
+                DEBUG_PRINT("Dude.  The ENSONIQ ain't responding.\n");
+            #endif
         }
     }
-    if (codec)
-    {
-        if (CODEC_Detect(&snd_SBport, &snd_SBdma))
-        {
-            printf("CODEC.  The CODEC ain't responding.\n");
+    if (codec) {
+        if (CODEC_Detect(&snd_SBport, &snd_SBdma)) {
+            #ifdef SNDDEBUG
+                DEBUG_PRINT("CODEC.  The CODEC ain't responding.\n");
+            #endif
         }
     }
-    if (gus)
-    {
-        fprintf(stderr, "GUS1\n");
-        if (GF1_Detect())
-        {
-            printf("Dude.  The GUS ain't responding.\n");
-        }
-        else
-        {
-            fprintf(stderr, "GUS2\n");
-            if (commercial)
-            {
+    if (gus) {
+
+        if (GF1_Detect()) {
+            #ifdef SNDDEBUG
+                DEBUG_PRINT("Dude.  The GUS ain't responding.\n");
+            #endif
+        } else {
+            byte __far * location = MK_FP(0x5000, 0);
+            if (commercial) {
                 dmxlump = W_GetNumForName("dmxgusc");
             }
-            else
-            {
+            else {
                 dmxlump = W_GetNumForName("dmxgus");
             }
-			gf1memref = W_CacheLumpNumEMS(dmxlump, PU_CACHE);
+            W_CacheLumpNumDirect(dmxlump, location);
 			
-            GF1_SetMap(Z_LoadBytesFromEMS(gf1memref), lumpinfo[dmxlump].size);
+            GF1_SetMap(location, lumpinfo9000[dmxlump+1].position - lumpinfo9000[dmxlump].position + lumpinfo9000[dmxlump].sizediff);
         }
 
     }
-    if (sb)
-    {
+    if (sb) {
 
-	if (SB_Detect(&snd_SBport, &snd_SBirq, &snd_SBdma, 0))
-        {
-            printf("SB isn't responding at p=0x%x, i=%d, d=%d\n",
-                   snd_SBport, snd_SBirq, snd_SBdma);
-        }
-        else
-        {
+        if (SB_Detect(&snd_SBport, &snd_SBirq, &snd_SBdma, 0)) {
+                #ifdef SNDDEBUG
+                    DEBUG_PRINT("SB isn't responding at p=0x%x, i=%d, d=%d\n", snd_SBport, snd_SBirq, snd_SBdma);
+                #endif
+        } else {
             SB_SetCard(snd_SBport, snd_SBirq, snd_SBdma);
         }
 
-		}
+    }
 
-    if (adlib)
-    {
+    if (adlib) {
 
-	if (AL_Detect(&wait, 0))
-        {
-            printf("Dude.  The Adlib isn't responding.\n");
-        }
-        else
-        {
-            AL_SetCard(wait, Z_LoadBytesFromEMS( W_CacheLumpNameEMS("genmidi", PU_STATIC)));
+	    if (AL_Detect(&wait, 0)) {
+            #ifdef SNDDEBUG
+                DEBUG_PRINT("Dude.  The Adlib isn't responding.\n");
+            #endif
+        } else {
+            //todo move this into AL_SetCard
+            byte __far * location = MK_FP(0x5000, 0);
+            Z_QuickMapScratch_5000();
+            W_CacheLumpNameDirect("genmidi", location);
+            AL_SetCard(wait, location);
+            Z_QuickMapPhysics();
         }
     }
 
-    if (midi)
-    {
+    if (midi) {
 
 
-        if (MPU_Detect(&snd_Mport, &i))
-        {
-            printf("The MPU-401 isn't reponding @ p=0x%x.\n", snd_Mport);
-        }
-        else
-        {
+        if (MPU_Detect(&snd_Mport, &i)) {
+            #ifdef SNDDEBUG
+                DEBUG_PRINT("The MPU-401 isn't reponding @ p=0x%x.\n", snd_Mport);
+            #endif
+        } else {
             MPU_SetCard(snd_Mport);
         }
     }
-	*/
 }
 
 //
@@ -328,11 +383,11 @@ void I_sndArbitrateCards(void) {
 // Inits all sound stuff
 //
 void __far I_StartupSound(void) {
-
+    int16_t rc;
     //
     // initialize dmxCodes[]
     //
-	/*
+    int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
     dmxCodes[0] = 0;
     dmxCodes[snd_PC] = AHW_PC_SPEAKER;
     dmxCodes[snd_Adlib] = AHW_ADLIB;
@@ -344,13 +399,11 @@ void __far I_StartupSound(void) {
     dmxCodes[snd_ENSONIQ] = AHW_ENSONIQ;
     dmxCodes[snd_CODEC] = AHW_CODEC;
     
-	*/
 
     //
     // inits sound library timer stuff
     //
     I_StartupTimer();
-	/*
     //
     // pick the sound cards i'm going to use
     //
@@ -360,15 +413,16 @@ void __far I_StartupSound(void) {
     //
     // inits DMX sound library
     //
-    printf("  calling DMX_Init\n");
+    #ifdef SNDDEBUG
+        DEBUG_PRINT("  calling DMX_Init\n");
+    #endif
 
-    //rc = DMX_Init(SND_TICRATE, SND_MAXSONGS, dmxCodes[snd_MusicDevice], dmxCodes[snd_SfxDevice]);
+    rc = DMX_Init(SND_TICRATE, SND_MAXSONGS, dmxCodes[snd_MusicDevice], dmxCodes[snd_SfxDevice]);
 
-	*/
 
 }
 
 
 void I_SetChannels(int8_t channels) {
-    //WAV_PlayMode(channels, SND_SAMPLERATE);
+    WAV_PlayMode(channels, SND_SAMPLERATE);
 }

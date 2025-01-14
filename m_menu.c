@@ -665,13 +665,35 @@ void __near M_FinishReadThis(int16_t choice){
 
 
 void __near M_QuitResponse(int16_t ch){
-    if (ch != 'y')
-        return;
+    int8_t     quitsounds[8];
 
-    if (commercial)
-        S_StartSound(NULL, quitsounds2[(gametic >> 2) & 7]);
-    else
+    if (ch != 'y'){
+        return;
+    }
+
+    if (commercial){
+
+        quitsounds [0] = sfx_vilact;
+        quitsounds [0] = sfx_getpow;
+        quitsounds [0] = sfx_boscub;
+        quitsounds [0] = sfx_slop;
+        quitsounds [0] = sfx_skeswg;
+        quitsounds [0] = sfx_kntdth;
+        quitsounds [0] = sfx_bspact;
+        quitsounds [0] = sfx_sgtatk;
+
         S_StartSound(NULL, quitsounds[(gametic >> 2) & 7]);
+    } else {
+        quitsounds [0] = sfx_pldeth;
+        quitsounds [1] = sfx_dmpain;
+        quitsounds [2] = sfx_popain;
+        quitsounds [3] = sfx_slop;
+        quitsounds [4] = sfx_telept;
+        quitsounds [5] = sfx_posit1;
+        quitsounds [6] = sfx_posit3;
+        quitsounds [7] = sfx_sgtatk;
+        S_StartSound(NULL, quitsounds[(gametic >> 2) & 7]);
+    }
     I_WaitVBL(105);
 
     I_Quit();
@@ -689,8 +711,32 @@ void __near M_QuitDOOM(int16_t choice) {
     int8_t chosenendmsg = (gametic >> 2) % NUM_QUITMESSAGES;
     getStringByIndex(DOSY, temp2);
     if (commercial) {
+        int16_t endmsg2[NUM_QUITMESSAGES];
+        // QuitDOOM II messages
+        endmsg2[0] = QUITMSG;
+        endmsg2[1] = QUITMSGD21;
+        endmsg2[2] = QUITMSGD22;
+        endmsg2[3] = QUITMSGD23;
+        endmsg2[4] = QUITMSGD24;
+        endmsg2[5] = QUITMSGD25;
+        endmsg2[6] = QUITMSGD26;
+        endmsg2[7] = QUITMSGD27;
+
         getStringByIndex(endmsg2[chosenendmsg], temp);
     } else {
+
+        int16_t endmsg[NUM_QUITMESSAGES];
+        // DOOM1
+        endmsg[0] = QUITMSG;
+        endmsg[1] = QUITMSGD11;
+        endmsg[2] = QUITMSGD12;
+        endmsg[3] = QUITMSGD13;
+        endmsg[4] = QUITMSGD14;
+        endmsg[5] = QUITMSGD15;
+        endmsg[6] = QUITMSGD16;
+        endmsg[7] = QUITMSGD17;
+            
+
         getStringByIndex(endmsg[chosenendmsg], temp);
     }
 

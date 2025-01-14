@@ -1101,30 +1101,9 @@ int8_t gammamsg[5] ={
     GAMMALVL4
 };
 
-int16_t endmsg[NUM_QUITMESSAGES] ={
-    // DOOM1
-    QUITMSG,
-    QUITMSGD11,
-    QUITMSGD12,
-    QUITMSGD13,
-    QUITMSGD14,
-    QUITMSGD15,
-    QUITMSGD16,
-    QUITMSGD17
-};
 
-int16_t endmsg2[NUM_QUITMESSAGES] ={
-    // QuitDOOM II messages
-    QUITMSG,
-    QUITMSGD21,
-    QUITMSGD22,
-    QUITMSGD23,
-    QUITMSGD24,
-    QUITMSGD25,
-    QUITMSGD26,
-    QUITMSGD27
 
-};
+
 
 // we are going to be entering a savegame string
 int16_t                     saveStringEnter;
@@ -1393,27 +1372,7 @@ int8_t    msgNames[2]          = {15, 14};
 //
 // M_QuitDOOM
 //
-int8_t     quitsounds[8] ={
-    sfx_pldeth,
-    sfx_dmpain,
-    sfx_popain,
-    sfx_slop,
-    sfx_telept,
-    sfx_posit1,
-    sfx_posit3,
-    sfx_sgtatk
-};
 
-int8_t     quitsounds2[8] ={
-    sfx_vilact,
-    sfx_getpow,
-    sfx_boscub,
-    sfx_slop,
-    sfx_skeswg,
-    sfx_kntdth,
-    sfx_bspact,
-    sfx_sgtatk
-};
 
 
 task HeadTask;

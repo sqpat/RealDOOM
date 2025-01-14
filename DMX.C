@@ -56,6 +56,7 @@ uint16_t TS_SetTimer(int32_t TickBase){
 	uint16_t speed;
 	//speed =   1192030L / TickBase;
 	speed = 1192030L / 35;
+	// ~ 34058
 
 	if (speed < TaskServiceRate) {
 		TS_SetClockSpeed(speed);

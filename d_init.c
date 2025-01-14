@@ -1264,6 +1264,23 @@ R_PointToAngle(y, x);
 		autostart = true;
 	}
 
+	p = M_CheckParm("-nosound");
+	
+	if (p && p < myargc - 1) {
+        snd_MusicDevice = snd_SfxDevice = snd_none;
+    }
+	p = M_CheckParm("-nosfx");
+	
+	if (p && p < myargc - 1) {
+        snd_SfxDevice = snd_none;
+    }
+	p = M_CheckParm("-nomusic");
+
+	if (p && p < myargc - 1) {
+        snd_MusicDevice = snd_none;
+    }
+
+
 	// init subsystems
 
 
