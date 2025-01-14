@@ -74,7 +74,7 @@ void	__near F_CastDrawer (void);
 // Flips horizontally, e.g. to mirror face.
 //
 // patch always 0x50000000
-void __near V_DrawPatchFlipped (int16_t		x, int16_t		y) {
+void __near V_DrawPatchFlipped (int16_t	x, int16_t y) {
 
 	int16_t		    count;
 	int16_t		    col = 0;
