@@ -878,6 +878,7 @@ void __near R_PrepareMaskedPSprites(void) ;
 void __far R_WriteBackViewConstants();
 void __near R_DrawPSprite (pspdef_t __near* psp, spritenum_t sprite, spriteframenum_t frame,  vissprite_t __near* vis);
 void __near R_MarkL1SpriteCacheLRU(int8_t index);
+void __near V_DrawPatchFlipped2 (int16_t	x, int16_t y) ;
 
 void __far D_DoomMain2(void) {
 	int16_t             p;
@@ -902,8 +903,8 @@ void __far D_DoomMain2(void) {
 /*
 
 
-	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(R_RenderBSPNode, (byte __far *)R_MarkL1SpriteCacheLRU - (byte __far *)R_RenderBSPNode, 1, fp);
+	FILE *fp = fopen("output8.bin", "wb");
+	FAR_fwrite(V_DrawPatchFlipped2, (byte __far *)F_StartFinale - (byte __far *)V_DrawPatchFlipped2, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

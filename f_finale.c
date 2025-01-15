@@ -64,7 +64,7 @@ void	__near F_CastTicker (void);
 boolean __near F_CastResponder (event_t __far *ev);
 void	__near F_CastDrawer (void);
 
-
+ 
 
 
 
@@ -74,7 +74,10 @@ void	__near F_CastDrawer (void);
 // Flips horizontally, e.g. to mirror face.
 //
 // patch always 0x50000000
-void __near V_DrawPatchFlipped (int16_t	x, int16_t y) {
+void __near V_DrawPatchFlipped (int16_t	x, int16_t y) ;
+
+/*
+void __near V_DrawPatchFlipped2 (int16_t	x, int16_t y) {
 
 	int16_t		    count;
 	int16_t		    col = 0;
@@ -88,14 +91,13 @@ void __near V_DrawPatchFlipped (int16_t	x, int16_t y) {
 	x -= (patch->leftoffset);
 
 	//if (!0)
-	V_MarkRect(x, y, (w), (patch->height));
+	V_MarkRect(x, y, w, (patch->height));
 
 	desttop = MK_FP(screen0_segment,  (y * SCREENWIDTH_UNSIGNED) + x);
 
-
 	for (; col < w; x++, col++, desttop++) {
-		column = (column_t  __far*)MK_FP(0x5000 + (patch->columnofs[w - 1 - col]) << 4, 0);
-
+		//column = (column_t  __far*)MK_FP(0x5000 + (patch->columnofs[w - 1 - col]) << 4, 0);
+		column = (column_t  __far*)MK_FP(0x5000, (patch->columnofs[w - 1 - col]));
 		// step through the posts in a column 
 		while (column->topdelta != 0xff) {
 			source = (byte  __far*)column + 3;
@@ -112,7 +114,7 @@ void __near V_DrawPatchFlipped (int16_t	x, int16_t y) {
 	}
 }
 
-
+*/
 //
 // F_StartFinale
 //
