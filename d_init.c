@@ -882,6 +882,8 @@ void __near V_DrawPatchFlipped2 (int16_t	x, int16_t y) ;
 void __near F_CastPrint (int8_t* text) ;
 void __near F_CastDrawer (void);
 void __near F_DrawPatchCol ( int16_t		x, column_t __far*	column);
+void	__near F_StartCast (void);
+void __near F_TextWrite (void) ;
 
 void __far D_DoomMain2(void) {
 	int16_t             p;
@@ -906,9 +908,8 @@ void __far D_DoomMain2(void) {
 /*
 
 
-
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(F_CastDrawer, (byte __far *)F_DrawPatchCol - (byte __far *)F_CastDrawer, 1, fp);
+	FAR_fwrite(F_TextWrite, (byte __far *)F_StartCast - (byte __far *)F_TextWrite, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

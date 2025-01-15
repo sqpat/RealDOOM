@@ -345,7 +345,9 @@ void __far F_Ticker (void) {
 //
 
 #include "hu_stuff.h"
+void __near F_TextWrite (void);
 
+/*
 void __near F_TextWrite (void) {
 	uint16_t dest = 0;
     
@@ -423,7 +425,7 @@ void __near F_TextWrite (void) {
 		cx+=w;
     }
 }
-
+*/
 
 //
 // F_StartCast

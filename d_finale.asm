@@ -27,14 +27,19 @@ EXTRN getStringByIndex_:PROC
 EXTRN Z_QuickMapStatusNoScreen4_:PROC
 EXTRN Z_QuickMapRender7000_:PROC
 EXTRN Z_QuickMapScratch_5000_:PROC
+EXTRN Z_QuickMapScreen0_:PROC
 EXTRN W_CacheLumpNumDirect_:PROC
+EXTRN W_CacheLumpNameDirect_:PROC
+EXTRN getStringByIndex_:PROC
 
 EXTRN _hu_font:WORD
-EXTRN _finaleflat:DWORD
-EXTRN _finaletext:WORD
-EXTRN _finalestage:WORD
-EXTRN _finalecount:WORD
-EXTRN _caststate:DWORD
+EXTRN _finaleflat:DWORD                         ; todo make cs var
+EXTRN _finaletext:WORD                         ; todo make cs var
+EXTRN _finalestage:WORD                         ; todo make cs var
+EXTRN _finalecount:WORD                         ; todo make cs var
+EXTRN _caststate:DWORD                         ; todo make cs var
+EXTRN _castnum:BYTE                             ; todo make CS var
+EXTRN _castorder:WORD                             ; todo make CS var
 EXTRN _gamestate:BYTE
 EXTRN _gameaction:BYTE
 EXTRN _viewactive:BYTE
@@ -43,9 +48,7 @@ EXTRN _commercial:BYTE
 EXTRN _gamemap:BYTE
 EXTRN _gameepisode:BYTE
 EXTRN _filename_argument:BYTE
-EXTRN _castorder:WORD
 EXTRN _firstspritelump:WORD
-EXTRN _castnum:BYTE                             ; todo make CS var
 
 .CODE
 
@@ -396,6 +399,29 @@ str_bossback:
 db "BOSSBACK", 0
 
 
+PROC F_CopyString9_ NEAR
+PUBLIC F_CopyString9_
+
+push  si
+push  di
+push  cx
+mov   di, ax
+push  ds
+pop   es
+push  cs
+pop   ds
+mov   cx, 9
+mov   si, OFFSET str_bossback
+rep   movsb
+pop   cx
+pop   di
+pop   si
+push  ss
+pop   ds
+
+ENDP
+
+
 PROC F_CastDrawer_ NEAR
 PUBLIC F_CastDrawer_
 
@@ -416,21 +442,8 @@ mov   ax, OFFSET _filename_argument
 
 ; todo make this a function as we use it more
 ; copy 9 bytes "BOSSBACK" to ds. gross...
-push  si
-push  di
-mov   di, ax
-push  ds
-pop   es
-push  cs
-pop   ds
-mov   cx, 9
-mov   si, OFFSET str_bossback
-rep   movsb
-pop   di
-pop   si
-push  ss
-pop   ds
 
+call  F_CopyString9_
 
 call  V_DrawFullscreenPatch_
 mov   al, byte ptr ds:[_castnum]
@@ -458,8 +471,8 @@ mov   ax, SPRITES_SEGMENT
 mov   es, ax
 mov   al, byte ptr [bp - 2]
 and   al, FF_FRAMEMASK
-xor   ah, ah
-imul  ax, ax, 019h           ; todo sizeof spriteframe_t
+mov   ah, 019h           ; todo sizeof spriteframe_t
+mul   ah
 mov   bx, word ptr es:[bx]
 add   bx, ax
 mov   cx, word ptr es:[bx]
@@ -471,7 +484,7 @@ add   ax, cx
 mov   cx, SCRATCH_SEGMENT_5000
 call  W_CacheLumpNumDirect_
 test  dl, dl
-je    label_1
+je    not_flipped
 mov   dx, 170                ; y param
 mov   ax, SCREENWIDTHOVER2
 call  V_DrawPatchFlipped_
@@ -480,18 +493,185 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_1:
-push  SCRATCH_SEGMENT_5000
+not_flipped:
+mov   ax, SCRATCH_SEGMENT_5000
+push  ax
+xor   ax, ax
+push  ax
 mov   dx, 170                ; y param
 mov   ax, SCREENWIDTHOVER2
-push  0
 xor   bx, bx
 call  V_DrawPatch_
-leave 
+LEAVE_MACRO 
 pop   dx
 pop   cx
 pop   bx
 ret   
+
+
+ENDP
+
+
+
+PROC F_TextWrite_ NEAR
+PUBLIC F_TextWrite_
+
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 029Eh
+lea       bx, [bp - 029Eh]
+mov       word ptr [bp - 4], bx
+les       bx, dword ptr ds:[_finaleflat]
+mov       al, byte ptr es:[bx]
+mov       byte ptr [bp - 014h], al
+mov       al, byte ptr es:[bx + 1]
+mov       byte ptr [bp - 013h], al
+mov       al, byte ptr es:[bx + 2]
+mov       byte ptr [bp - 012h], al
+mov       al, byte ptr es:[bx + 3]
+mov       byte ptr [bp - 011h], al
+mov       al, byte ptr es:[bx + 4]
+mov       byte ptr [bp - 010h], al
+mov       al, byte ptr es:[bx + 5]
+mov       byte ptr [bp - 0Fh], al
+mov       al, byte ptr es:[bx + 6]
+mov       byte ptr [bp - 0Eh], al
+mov       al, byte ptr es:[bx + 7]
+mov       byte ptr [bp - 0Dh], al
+mov       cx, SCRATCH_SEGMENT_5000
+mov       al, byte ptr es:[bx + 8]
+xor       dx, dx
+mov       byte ptr [bp - 0Ch], al
+call      Z_QuickMapScratch_5000_
+call      Z_QuickMapScreen0_
+xor       bx, bx
+lea       ax, [bp - 014h]
+mov       word ptr [bp - 2], dx
+call      W_CacheLumpNameDirect_
+cld       
+label_11:
+mov       ax, word ptr [bp - 2]
+and       ax, 63
+shl       ax, 6
+xor       bx, bx
+mov       word ptr [bp - 8], ax
+label_10:
+mov       ax, 64
+mov       si, word ptr [bp - 8]
+mov       cx, SCRATCH_SEGMENT_5000
+mov       word ptr [bp - 6], SCREEN0_SEGMENT
+mov       di, dx
+mov       es, word ptr [bp - 6]
+inc       bx
+push      ds
+push      di
+xchg      ax, cx
+mov       ds, ax
+shr       cx, 1
+rep       movsw 
+adc       cx, cx
+rep       movsb 
+pop       di
+pop       ds
+add       dx, 64                     ; dest+= 64
+cmp       bx, 5
+jl        label_10
+inc       word ptr [bp - 2]
+cmp       word ptr [bp - 2], SCREENHEIGHT
+jb        label_11
+call      Z_QuickMapStatusNoScreen4_
+mov       cx, SCREENHEIGHT
+mov       bx, SCREENWIDTH
+xor       dx, dx
+xor       ax, ax
+call      V_MarkRect_
+lea       bx, [bp - 029Eh]
+mov       ax, word ptr ds:[_finaletext]
+mov       cx, ds
+mov       si, 10
+
+call      getStringByIndex_
+mov       ax, word ptr ds:[_finalecount]
+sub       ax, si
+mov       bx, 3
+CWD       
+idiv      bx
+mov       di, si
+mov       cx, ax
+test      ax, ax
+jl        label_7
+label_2:
+test      cx, cx
+je        label_6
+mov       bx, word ptr [bp - 4]
+mov       al, byte ptr [bx]
+cbw      
+inc       word ptr [bp - 4]
+mov       dx, ax
+test      ax, ax
+je        label_6
+cmp       ax, 10
+jne       label_8
+mov       si, ax
+add       di, 11
+label_5:
+dec       cx
+jmp       label_2
+label_7:
+xor       cx, ax
+jmp       label_2
+label_8:
+xor       ah, ah
+
+call      locallib_toupper_
+mov       dl, al
+xor       dh, dh
+sub       dx, HU_FONTSTART
+test      dx, dx
+jl        label_3
+cmp       dx, HU_FONTSIZE
+jle       label_4
+label_3:
+add       si, 4
+jmp       label_5
+label_4:
+mov       ax, FONT_WIDTHS_SEGMENT
+mov       bx, dx
+mov       es, ax
+mov       al, byte ptr es:[bx]
+cbw      
+mov       bx, si
+add       bx, ax
+mov       word ptr [bp - 0Ah], bx
+cmp       bx, SCREENWIDTH
+jle       label_9
+label_6:
+leave     
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+ret       
+label_9:
+mov       bx, dx
+add       bx, dx
+push      ST_GRAPHICS_SEGMENT
+mov       ax, word ptr ds:[bx + _hu_font]
+mov       dx, di
+push      ax
+xor       bx, bx
+mov       ax, si
+call      V_DrawPatch_
+mov       si, word ptr [bp - 0Ah]
+dec       cx
+jmp       label_2
 
 
 ENDP
