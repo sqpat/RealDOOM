@@ -1076,7 +1076,7 @@ int16_t	t6text = T6TEXT;
 int16_t	finaletext;
 int8_t __far* finaleflat;
 int8_t	finale_laststage;
-
+int8_t  filename_argument[9];
 
 
 // 1 = message to be printed

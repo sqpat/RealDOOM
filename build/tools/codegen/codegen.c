@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 145
+#define CONSTANTS_COUNT 148
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -173,7 +173,11 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "FONT_WIDTHS_SEGMENT",
     "ST_GRAPHICS_SEGMENT",
     "HU_FONTSTART",
-    "HU_FONTSIZE"
+    "HU_FONTSIZE",
+    "CASTORDEROFFSET",
+    "FF_FRAMEMASK",
+    "FF_FULLBRIGHT"
+
 
 };
 
@@ -344,7 +348,11 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     font_widths_segment,
     ST_GRAPHICS_SEGMENT,
     HU_FONTSTART,
-    HU_FONTSIZE
+    HU_FONTSIZE,
+    castorderoffset,
+    FF_FRAMEMASK,
+    FF_FULLBRIGHT
+
     
 };
 

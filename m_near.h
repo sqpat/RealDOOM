@@ -784,6 +784,7 @@ extern int16_t	t6text;
 extern int16_t	finaletext;
 extern int8_t __far* finaleflat;
 extern int8_t	finale_laststage;
+extern int8_t   filename_argument[9];
 
 extern uint8_t  messageToPrint;
 extern int8_t   menu_messageString[105];

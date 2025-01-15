@@ -632,6 +632,7 @@ void __near F_CastPrint (int8_t* text) {
 // F_CastDrawer
 //
 
+/*
 void __near F_CastDrawer (void) {
     spritedef_t __far*	  sprite;
     spriteframe_t __far*  sprframe;
@@ -675,7 +676,7 @@ void __near F_CastDrawer (void) {
 	}
 
 }
-
+*/
 
 //
 // F_DrawPatchCol

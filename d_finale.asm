@@ -22,20 +22,30 @@ EXTRN V_DrawPatch_:PROC
 EXTRN V_MarkRect_:PROC
 EXTRN locallib_toupper_:PROC
 EXTRN S_ChangeMusic_:PROC
+EXTRN V_DrawFullscreenPatch_:PROC
+EXTRN getStringByIndex_:PROC
+EXTRN Z_QuickMapStatusNoScreen4_:PROC
+EXTRN Z_QuickMapRender7000_:PROC
+EXTRN Z_QuickMapScratch_5000_:PROC
+EXTRN W_CacheLumpNumDirect_:PROC
 
 EXTRN _hu_font:WORD
 EXTRN _finaleflat:DWORD
 EXTRN _finaletext:WORD
 EXTRN _finalestage:WORD
 EXTRN _finalecount:WORD
-EXTRN _gamestate:byte
-EXTRN _gameaction:byte
-EXTRN _viewactive:byte
-EXTRN _automapactive:byte
-EXTRN _commercial:byte
-EXTRN _gamemap:byte
-EXTRN _gameepisode:byte
-
+EXTRN _caststate:DWORD
+EXTRN _gamestate:BYTE
+EXTRN _gameaction:BYTE
+EXTRN _viewactive:BYTE
+EXTRN _automapactive:BYTE
+EXTRN _commercial:BYTE
+EXTRN _gamemap:BYTE
+EXTRN _gameepisode:BYTE
+EXTRN _filename_argument:BYTE
+EXTRN _castorder:WORD
+EXTRN _firstspritelump:WORD
+EXTRN _castnum:BYTE                             ; todo make CS var
 
 .CODE
 
@@ -252,31 +262,33 @@ ENDP
 ; FINALE FLAT STRINGS
 
 flat_slime16:
-db 053h, 04Ch, 049h, 04Dh, 045h, 031h, 036h, 000h   ; SLIME16
+db "SLIME16", 0
 flat_rrock14:
-db 052h, 052h, 04Fh, 043h, 04Bh, 032h, 034h, 000h   ; RROCK14
+db "RROCK14", 0
 flat_rrock07:
-db 052h, 052h, 04Fh, 043h, 04Bh, 030h, 037h, 000h   ; RROCK07
+db "RROCK07", 0
 flat_floor4_8:
-db 046h, 04Ch, 04Fh, 04Fh, 052h, 034h, 05Fh, 038h, 000h   ; FLOOR4_8
+db "FLOOR4_8", 0
 flat_rrock13:
-db 052h, 052h, 04Fh, 043h, 04Bh, 032h, 033h, 000h   ; RROCK13
+db "RROCK13", 0
 flat_rrock19:
-db 052h, 052h, 04Fh, 043h, 04Bh, 032h, 039h, 000h   ; RROCK19
+db "RROCK19", 0
 
 flat_sflr6_1:
-db 053h, 046h, 04Ch, 052h, 036h, 05Fh, 031h, 000h   ; SFLR6_1
+db "SFLR6_1", 0
 flat_mflr8_4:
-db 04Dh, 046h, 04Ch, 052h, 038h, 05Fh, 034h, 000h   ; MFLR8_4
+db "MFLR8_4", 0
 flat_mflr8_3:
-db 04Dh, 046h, 04Ch, 052h, 038h, 05Fh, 033h, 000h   ; MFLR8_3
+db "MFLR8_3", 0
 
 ; lookups for doom1 case
 
 flat_noncommercial_lookup:
 dw flat_floor4_8, flat_sflr6_1, flat_mflr8_4, flat_mflr8_3
 
-
+; BIG TODO: if other build versions are to be implemented then
+;  the strings above must be added to and switch cases changed a bit. could make a big fat lookup table with all fields?
+;  once this is overlaid it probably wont be a big problem.
 PROC F_StartFinale_ NEAR
 PUBLIC F_StartFinale_
 
@@ -378,6 +390,108 @@ mov   ax, 31   ; set finale_music
 add   cx, 236
 jmp   got_flat_values_and_music
 
+ENDP
+
+str_bossback:
+db "BOSSBACK", 0
+
+
+PROC F_CastDrawer_ NEAR
+PUBLIC F_CastDrawer_
+
+
+push  bx
+push  cx
+push  dx
+push  bp
+mov   bp, sp
+sub   sp, 068h
+les   bx, dword ptr ds:[_caststate]
+mov   al, byte ptr es:[bx]
+mov   byte ptr [bp - 4], al
+mov   al, byte ptr es:[bx + 1]
+xor   dx, dx
+mov   byte ptr [bp - 2], al
+mov   ax, OFFSET _filename_argument
+
+; todo make this a function as we use it more
+; copy 9 bytes "BOSSBACK" to ds. gross...
+push  si
+push  di
+mov   di, ax
+push  ds
+pop   es
+push  cs
+pop   ds
+mov   cx, 9
+mov   si, OFFSET str_bossback
+rep   movsb
+pop   di
+pop   si
+push  ss
+pop   ds
+
+
+call  V_DrawFullscreenPatch_
+mov   al, byte ptr ds:[_castnum]
+cbw
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr ds:[bx + _castorder]
+mov   cx, ds
+xor   ah, ah
+lea   bx, [bp - 068h] ; text param (100 length)
+add   ax, CASTORDEROFFSET
+
+call  getStringByIndex_
+
+call  Z_QuickMapStatusNoScreen4_
+lea   ax, [bp - 068h]  ; ; text param (100 length)
+call  F_CastPrint_
+call  Z_QuickMapRender7000_
+mov   al, byte ptr [bp - 4]
+xor   ah, ah
+mov   bx, ax
+shl   bx, 2
+sub   bx, ax
+mov   ax, SPRITES_SEGMENT
+mov   es, ax
+mov   al, byte ptr [bp - 2]
+and   al, FF_FRAMEMASK
+xor   ah, ah
+imul  ax, ax, 019h           ; todo sizeof spriteframe_t
+mov   bx, word ptr es:[bx]
+add   bx, ax
+mov   cx, word ptr es:[bx]
+mov   dl, byte ptr es:[bx + 010h]
+call  Z_QuickMapScratch_5000_
+mov   ax, word ptr ds:[_firstspritelump]
+xor   bx, bx
+add   ax, cx
+mov   cx, SCRATCH_SEGMENT_5000
+call  W_CacheLumpNumDirect_
+test  dl, dl
+je    label_1
+mov   dx, 170                ; y param
+mov   ax, SCREENWIDTHOVER2
+call  V_DrawPatchFlipped_
+LEAVE_MACRO
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_1:
+push  SCRATCH_SEGMENT_5000
+mov   dx, 170                ; y param
+mov   ax, SCREENWIDTHOVER2
+push  0
+xor   bx, bx
+call  V_DrawPatch_
+leave 
+pop   dx
+pop   cx
+pop   bx
+ret   
 
 
 ENDP
