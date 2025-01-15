@@ -36,94 +36,91 @@ push  bx
 push  cx
 push  si
 push  di
+push  ds
 push  bp
 mov   bp, sp
-sub   sp, 010h
-push  ax
-mov   si, dx
-mov   ax, SCRATCH_SEGMENT_5000
+sub   sp, 2
+mov   bx, SCRATCH_SEGMENT_5000
+mov   ds, bx
 xor   bx, bx
-mov   es, ax
-sub   si, word ptr es:[bx + 6]
-mov   dx, si
-imul  si, si, SCREENWIDTH
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 0Eh], 0
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[bx + 4]
-mov   cx, word ptr es:[bx + 2]
-sub   word ptr [bp - 012h], ax
-mov   bx, word ptr [bp - 0Ah]
-mov   ax, word ptr [bp - 012h]
-mov   word ptr [bp - 8], SCREEN0_SEGMENT
-call  V_MarkRect_
-mov   cx, word ptr [bp - 012h]
-mov   ax, word ptr [bp - 0Ah]
-add   cx, si
-test  ax, ax
-jle   jump_to_exit_drawpatchflipped
-mov   bx, ax
-dec   bx
-shl   bx, 1
-shl   bx, 1
-mov   ax, SCRATCH_SEGMENT_5000
-mov   word ptr [bp - 6], ax
-mov   word ptr [bp - 0Ch], ax
-mov   word ptr [bp - 010h], bx
+sub   dx, word ptr ds:[bx + 6]
+mov   es, dx   ; store
+mov   si, ax
+mov   ax, SCREENWIDTH
+mul   dx
+xchg  si, ax
+mov   di, word ptr ds:[bx]
+mov   word ptr [bp - 2], 0    ; loop counter?
+mov   word ptr cs:[SELFMODIFY_cmp_col_to_patch_width+3], di
+sub   ax, word ptr ds:[bx + 4]
+mov   cx, word ptr ds:[bx + 2]
+mov   dx, es   ; get dx back
 
+push  ds    ; store ds 0x5000
+push  ss
+pop   ds    ; restore ds for this func call
+mov   bx, di
+add   si, ax
+call  V_MarkRect_
+
+pop   ds    ; restore ds 0x5000
+mov   cx, si
+
+test  di, di
+jle   exit_drawpatchflipped
+dec   di
+shl   di, 1
+shl   di, 1
+mov   dx, di
+mov   ax, SCREEN0_SEGMENT
+mov   es, ax    ; for movsw
 draw_next_column_flipped:
-mov   es, word ptr [bp - 0Ch]
-mov   bx, word ptr [bp - 010h]
-mov   bx, word ptr es:[bx + 8]
-cmp   byte ptr es:[bx], 0FFh
-je    label_2
+; ds:dx is patch 
+mov   bx, dx        
+mov   bx, word ptr ds:[bx + 8]   ; get columnofs
+mov   al, byte ptr ds:[bx]      ; get column topdelta
+cmp   al, 0FFh
+je    iterate_to_next_column_flipped
 draw_next_post_flipped:
-mov   ax, word ptr [bp - 6]
-mov   es, ax
-mov   word ptr [bp - 2], ax
-mov   al, byte ptr es:[bx]
-xor   ah, ah
-imul  ax, ax, SCREENWIDTH
-mov   di, word ptr [bp - 8]
-mov   word ptr [bp - 4], di
+; al has ds:[bx]
+mov   ah, SCREENWIDTHOVER2
+mul   ah        ; 8 bit mul faster than 16, doesnt kill dx
+sal   ax, 1     ; times 2
+
+    ; desttop is cx
+    ; dest = es:di.    dest = desttop + column->topdelta*SCREENWIDTH;
 mov   di, cx
 add   di, ax
-mov   al, byte ptr es:[bx + 1]
+mov   al, byte ptr ds:[bx + 1] ; get column length
 lea   si, [bx + 3]
-xor   ah, ah
-mov   ds, word ptr [bp - 2]
-mov   es, word ptr [bp - 4]
 loop_copy_pixel:
-dec   ax
-cmp   ax, 0FFFFh   ; todo js?
-je    done_drawing_post_flipped
+dec   al
+js    done_drawing_post_flipped  ; jump if -1
 
 movsb
 add   di, SCREENWIDTH-1
 jmp   loop_copy_pixel
-jump_to_exit_drawpatchflipped:
-jmp   exit_drawpatchflipped
 done_drawing_post_flipped:
-mov   es, word ptr [bp - 6]
-mov   al, byte ptr es:[bx + 1]
+mov   al, byte ptr ds:[bx + 1]  ; grab length again.
 xor   ah, ah
+; bx is column offset
+; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
+
 add   bx, ax
 add   bx, 4
-cmp   byte ptr es:[bx], 0FFh
+mov   al, byte ptr ds:[bx]      ; get column topdelta
+cmp   al, 0FFh
 jne   draw_next_post_flipped
-label_2:
-inc   word ptr [bp - 012h]
-inc   word ptr [bp - 0Eh]
-add   word ptr [bp - 010h], -4
-mov   ax, word ptr [bp - 0Eh]
-inc   cx
-cmp   ax, word ptr [bp - 0Ah]
-jge   exit_drawpatchflipped
-jmp   draw_next_column_flipped
+iterate_to_next_column_flipped:
+inc   word ptr [bp - 2]
+sub   dx, 4         ; iterate backwards a column..
+inc   cx            ; increment desttop x.
+SELFMODIFY_cmp_col_to_patch_width:
+cmp   word ptr [bp - 2], 01000h
+jnge   draw_next_column_flipped
 exit_drawpatchflipped:
 LEAVE_MACRO
-mov   ax, ss
-mov   ds, ax
+pop   ds
 pop   di
 pop   si
 pop   cx
