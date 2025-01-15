@@ -33,7 +33,7 @@ EXTRN W_CacheLumpNameDirect_:PROC
 EXTRN getStringByIndex_:PROC
 
 EXTRN _hu_font:WORD
-EXTRN _finaleflat:DWORD                         ; todo make cs var
+EXTRN _finaleflat:WORD                         ; todo make cs var
 EXTRN _finaletext:WORD                         ; todo make cs var
 EXTRN _finalestage:WORD                         ; todo make cs var
 EXTRN _finalecount:WORD                         ; todo make cs var
@@ -325,7 +325,7 @@ got_flat_values_and_music:
 ; bx is text for the flat graphic
 mov   dx, 1
 mov   word ptr ds:[_finaleflat], bx
-mov   word ptr ds:[_finaleflat+2], cs
+
 xor   ah, ah
 mov   word ptr ds:[_finaletext], cx
 call  S_ChangeMusic_
@@ -399,25 +399,53 @@ str_bossback:
 db "BOSSBACK", 0
 
 
+; copy string from cs:bx to ds:ax
+
 PROC F_CopyString9_ NEAR
 PUBLIC F_CopyString9_
 
 push  si
 push  di
 push  cx
+push  ax
 mov   di, ax
+
 push  ds
-pop   es
+pop   es    ; es = ds
+
 push  cs
-pop   ds
-mov   cx, 9
-mov   si, OFFSET str_bossback
-rep   movsb
+pop   ds    ; ds = cs
+
+mov   si, bx
+
+mov   ax, 0
+stosw       ; zero out
+stosw
+stosw
+stosw
+stosb
+mov  cx, 9
+sub  di, cx
+
+do_next_char:
+lodsb
+stosb
+test  al, al
+je    done_writing
+loop do_next_char
+
+
+done_writing:
+
+push  ss
+pop   ds    ; restore ds
+
+pop   ax
 pop   cx
 pop   di
 pop   si
-push  ss
-pop   ds
+
+ret
 
 ENDP
 
@@ -442,8 +470,10 @@ mov   ax, OFFSET _filename_argument
 
 ; todo make this a function as we use it more
 ; copy 9 bytes "BOSSBACK" to ds. gross...
-
+push  bx
+mov   bx, OFFSET str_bossback
 call  F_CopyString9_
+pop   bx
 
 call  V_DrawFullscreenPatch_
 mov   al, byte ptr ds:[_castnum]
@@ -527,34 +557,21 @@ mov       bp, sp
 sub       sp, 029Eh
 lea       bx, [bp - 029Eh]
 mov       word ptr [bp - 4], bx
-les       bx, dword ptr ds:[_finaleflat]
-mov       al, byte ptr es:[bx]
-mov       byte ptr [bp - 014h], al
-mov       al, byte ptr es:[bx + 1]
-mov       byte ptr [bp - 013h], al
-mov       al, byte ptr es:[bx + 2]
-mov       byte ptr [bp - 012h], al
-mov       al, byte ptr es:[bx + 3]
-mov       byte ptr [bp - 011h], al
-mov       al, byte ptr es:[bx + 4]
-mov       byte ptr [bp - 010h], al
-mov       al, byte ptr es:[bx + 5]
-mov       byte ptr [bp - 0Fh], al
-mov       al, byte ptr es:[bx + 6]
-mov       byte ptr [bp - 0Eh], al
-mov       al, byte ptr es:[bx + 7]
-mov       byte ptr [bp - 0Dh], al
-mov       cx, SCRATCH_SEGMENT_5000
-mov       al, byte ptr es:[bx + 8]
-xor       dx, dx
-mov       byte ptr [bp - 0Ch], al
+
 call      Z_QuickMapScratch_5000_
 call      Z_QuickMapScreen0_
+
+mov       bx, word ptr ds:[_finaleflat]
+mov       ax, OFFSET _filename_argument
+call      F_CopyString9_
 xor       bx, bx
-lea       ax, [bp - 014h]
+
+mov       cx, SCRATCH_SEGMENT_5000
+xor       dx, dx
+
 mov       word ptr [bp - 2], dx
 call      W_CacheLumpNameDirect_
-cld       
+
 label_11:
 mov       ax, word ptr [bp - 2]
 and       ax, 63
