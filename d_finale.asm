@@ -18,8 +18,10 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
+EXTRN V_DrawPatch_:PROC
 EXTRN V_MarkRect_:PROC
-
+EXTRN locallib_toupper_:PROC
+EXTRN _hu_font:WORD
 .CODE
 
 SCRATCH_SEGMENT_5000 = 05000h
@@ -27,9 +29,6 @@ SCRATCH_SEGMENT_5000 = 05000h
 
 PROC V_DrawPatchFlipped_ NEAR
 PUBLIC V_DrawPatchFlipped_
-
-
-
 
 
 push  bx
@@ -132,5 +131,118 @@ ret
 
 ENDP
 
+PROC F_CastPrint_ NEAR
+PUBLIC F_CastPrint_
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+mov   di, ax
+mov   bx, ax
+xor   cx, cx
+test  ax, ax
+je    label_1
+label_11:
+mov   al, byte ptr [bx]
+cbw
+inc   bx
+mov   dx, ax
+test  ax, ax
+jne   label_2
+label_1:
+mov   ax, cx
+CWD
+sub   ax, dx
+sar   ax, 1
+mov   cx, SCREENWIDTHOVER2
+mov   si, di
+sub   cx, ax
+test  di, di
+je    exit_castprint
+label_9:
+mov   al, byte ptr [si]
+cbw
+inc   si
+mov   dx, ax
+test  ax, ax
+jne   label_4
+exit_castprint:
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_2:
+xor   ah, ah
+
+call  locallib_toupper_
+mov   dl, al
+xor   dh, dh
+sub   dx, HU_FONTSTART
+test  dx, dx
+jl    label_5
+cmp   dx, HU_FONTSIZE
+jle   label_6
+label_5:
+add   cx, 4
+label_3:
+test  bx, bx
+jne   label_11
+jmp   label_1
+label_6:
+mov   ax, FONT_WIDTHS_SEGMENT
+mov   si, dx
+mov   es, ax
+mov   al, byte ptr es:[si]
+cbw
+add   cx, ax
+jmp   label_3
+label_4:
+xor   ah, ah
+
+call  locallib_toupper_
+
+mov   dl, al
+xor   dh, dh
+sub   dx, HU_FONTSTART
+test  dx, dx
+jl    label_7
+cmp   dx, HU_FONTSIZE
+jle   label_8
+label_7:
+add   cx, 4
+label_10:
+test  si, si
+jne   label_9
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_8:
+mov   ax, FONT_WIDTHS_SEGMENT
+mov   bx, dx
+mov   es, ax
+mov   al, byte ptr es:[bx]
+push  ST_GRAPHICS_SEGMENT
+cbw
+add   bx, dx
+mov   di, ax
+mov   ax, word ptr ds:[bx + _hu_font]
+mov   dx, 180   ; y coord for draw patch.
+push  ax
+xor   bx, bx
+mov   ax, cx
+call  V_DrawPatch_
+add   cx, di
+jmp   label_10
+
+
+ENDP
 
 END

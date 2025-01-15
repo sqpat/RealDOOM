@@ -406,6 +406,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define ammnumpatchoffsets_segment    ((segment_t) ((int32_t)ammnumpatchoffsets >> 16))
 #define doomednum_segment             ((segment_t) ((int32_t)doomednum >> 16))
 #define linespeciallist_segment       ((segment_t) ((int32_t)linespeciallist >> 16))
+#define font_widths_segment           ((segment_t) ((int32_t)font_widths >> 16))
 #define fwipe_code_area_segment       ((segment_t) ((int32_t)fwipe_code_area >> 16))
 // 4CE0h
 

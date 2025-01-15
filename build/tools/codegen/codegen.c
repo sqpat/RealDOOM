@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 141
+#define CONSTANTS_COUNT 145
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -169,7 +169,11 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SIZEOF_SPRITEFRAME_T",
     "SPRITES_SEGMENT",
     "MAXVISSPRITES",
-    "FWIPE_CODE_AREA_SEGMENT"
+    "FWIPE_CODE_AREA_SEGMENT",
+    "FONT_WIDTHS_SEGMENT",
+    "ST_GRAPHICS_SEGMENT",
+    "HU_FONTSTART",
+    "HU_FONTSIZE"
 
 };
 
@@ -336,7 +340,11 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     sizeof(spriteframe_t),
     sprites_segment,
     MAXVISSPRITES,
-    fwipe_code_area_segment
+    fwipe_code_area_segment,
+    font_widths_segment,
+    ST_GRAPHICS_SEGMENT,
+    HU_FONTSTART,
+    HU_FONTSIZE
     
 };
 

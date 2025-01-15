@@ -564,6 +564,8 @@ boolean __near F_CastResponder (event_t __far* ev) {
 }
 
 
+void __near F_CastPrint (int8_t* text) ;
+/*
 void __near F_CastPrint (int8_t* text) {
     int8_t*	ch;
     int16_t		c;
@@ -611,7 +613,7 @@ void __near F_CastPrint (int8_t* text) {
     }
 	
 }
-
+*/
 
 //
 // F_CastDrawer
