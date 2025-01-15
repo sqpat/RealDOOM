@@ -64,53 +64,52 @@ test  ax, ax
 jle   jump_to_exit_drawpatchflipped
 mov   bx, ax
 dec   bx
-shl   bx, 2
-mov   word ptr [bp - 0Ch], SCRATCH_SEGMENT_5000
+shl   bx, 1
+shl   bx, 1
+mov   ax, SCRATCH_SEGMENT_5000
+mov   word ptr [bp - 6], ax
+mov   word ptr [bp - 0Ch], ax
 mov   word ptr [bp - 010h], bx
+
 draw_next_column_flipped:
 mov   es, word ptr [bp - 0Ch]
-mov   ax, SCRATCH_SEGMENT_5000
 mov   bx, word ptr [bp - 010h]
-mov   word ptr [bp - 6], ax
 mov   bx, word ptr es:[bx + 8]
-mov   es, ax
-mov   di, bx
 cmp   byte ptr es:[bx], 0FFh
 je    label_2
 draw_next_post_flipped:
 mov   ax, word ptr [bp - 6]
 mov   es, ax
 mov   word ptr [bp - 2], ax
-mov   al, byte ptr es:[di]
+mov   al, byte ptr es:[bx]
 xor   ah, ah
 imul  ax, ax, SCREENWIDTH
-mov   si, word ptr [bp - 8]
-mov   word ptr [bp - 4], si
-mov   si, cx
-add   si, ax
-mov   al, byte ptr es:[di + 1]
-lea   bx, [di + 3]
+mov   di, word ptr [bp - 8]
+mov   word ptr [bp - 4], di
+mov   di, cx
+add   di, ax
+mov   al, byte ptr es:[bx + 1]
+lea   si, [bx + 3]
 xor   ah, ah
+mov   ds, word ptr [bp - 2]
+mov   es, word ptr [bp - 4]
 loop_copy_pixel:
 dec   ax
 cmp   ax, 0FFFFh   ; todo js?
 je    done_drawing_post_flipped
-mov   es, word ptr [bp - 2]
-add   si, SCREENWIDTH
-mov   dl, byte ptr es:[bx]
-mov   es, word ptr [bp - 4]
-inc   bx
-mov   byte ptr es:[si - SCREENWIDTH], dl
+
+movsb
+add   di, SCREENWIDTH-1
 jmp   loop_copy_pixel
 jump_to_exit_drawpatchflipped:
 jmp   exit_drawpatchflipped
 done_drawing_post_flipped:
 mov   es, word ptr [bp - 6]
-mov   al, byte ptr es:[di + 1]
+mov   al, byte ptr es:[bx + 1]
 xor   ah, ah
-add   di, ax
-add   di, 4
-cmp   byte ptr es:[di], 0FFh
+add   bx, ax
+add   bx, 4
+cmp   byte ptr es:[bx], 0FFh
 jne   draw_next_post_flipped
 label_2:
 inc   word ptr [bp - 012h]
@@ -123,6 +122,8 @@ jge   exit_drawpatchflipped
 jmp   draw_next_column_flipped
 exit_drawpatchflipped:
 LEAVE_MACRO
+mov   ax, ss
+mov   ds, ax
 pop   di
 pop   si
 pop   cx
