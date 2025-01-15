@@ -141,34 +141,28 @@ push  dx
 push  si
 push  di
 mov   di, ax
-mov   bx, ax
+mov   si, ax
 xor   cx, cx
 test  ax, ax
-je    label_1
-label_11:
-mov   al, byte ptr [bx]
+je    char_is_string_end
+check_next_character_width:
+lodsb
 cbw
-inc   bx
-mov   dx, ax
 test  ax, ax
-jne   label_2
-label_1:
-mov   ax, cx
-CWD
-sub   ax, dx
+jne   char_not_string_end
+char_is_string_end:
+mov   ax, cx        ; cx is width
 sar   ax, 1
 mov   cx, SCREENWIDTHOVER2
-mov   si, di
-sub   cx, ax
+mov   si, di        ; di is original text ptr. restore si to base
+sub   cx, ax        ; 160 - width/2
 test  di, di
 je    exit_castprint
-label_9:
-mov   al, byte ptr [si]
+print_next_char:
+lodsb
 cbw
-inc   si
-mov   dx, ax
 test  ax, ax
-jne   label_4
+jne   do_char_upper
 exit_castprint:
 pop   di
 pop   si
@@ -176,71 +170,66 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_2:
+char_not_string_end:
 xor   ah, ah
 
 call  locallib_toupper_
-mov   dl, al
-xor   dh, dh
-sub   dx, HU_FONTSTART
-test  dx, dx
-jl    label_5
-cmp   dx, HU_FONTSIZE
-jle   label_6
-label_5:
+sub   al, HU_FONTSTART
+jl    bad_glyph
+cmp   al, HU_FONTSIZE
+jle   lookup_glyph_width
+bad_glyph:
 add   cx, 4
-label_3:
-test  bx, bx
-jne   label_11
-jmp   label_1
-label_6:
-mov   ax, FONT_WIDTHS_SEGMENT
-mov   si, dx
-mov   es, ax
-mov   al, byte ptr es:[si]
-cbw
-add   cx, ax
-jmp   label_3
-label_4:
-xor   ah, ah
-
-call  locallib_toupper_
-
-mov   dl, al
-xor   dh, dh
-sub   dx, HU_FONTSTART
-test  dx, dx
-jl    label_7
-cmp   dx, HU_FONTSIZE
-jle   label_8
-label_7:
-add   cx, 4
-label_10:
+check_next_character_for_zero:
 test  si, si
-jne   label_9
+jne   check_next_character_width
+jmp   char_is_string_end
+lookup_glyph_width:
+mov   bx, FONT_WIDTHS_SEGMENT
+mov   es, bx
+cbw 
+mov   bx, ax
+mov   al, byte ptr es:[bx]
+add   cx, ax        ; add glyph width
+jmp   check_next_character_for_zero
+do_char_upper:
+xor   ah, ah
+
+call  locallib_toupper_
+
+sub   al, HU_FONTSTART
+jl    bad_glyph2
+cmp   al, HU_FONTSIZE
+jle   lookup_glyph_width2
+bad_glyph2:
+add   cx, 4
+draw_next_glyph:
+test  si, si
+jne   print_next_char
 pop   di
 pop   si
 pop   dx
 pop   cx
 pop   bx
 ret   
-label_8:
-mov   ax, FONT_WIDTHS_SEGMENT
-mov   bx, dx
-mov   es, ax
-mov   al, byte ptr es:[bx]
-push  ST_GRAPHICS_SEGMENT
+lookup_glyph_width2:
+mov   bx, FONT_WIDTHS_SEGMENT
+mov   es, bx
 cbw
-add   bx, dx
+mov   bx, ax
+mov   al, byte ptr es:[bx]
+mov   di, ST_GRAPHICS_SEGMENT    
+push  di        ; v_ drawpatch arg
+sal   bx, 1
 mov   di, ax
 mov   ax, word ptr ds:[bx + _hu_font]
 mov   dx, 180   ; y coord for draw patch.
-push  ax
+push  ax           ; v_ drawpatch arg
 xor   bx, bx
 mov   ax, cx
 call  V_DrawPatch_
 add   cx, di
-jmp   label_10
+jmp   draw_next_glyph
 
 
 ENDP

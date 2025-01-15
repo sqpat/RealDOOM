@@ -905,8 +905,9 @@ void __far D_DoomMain2(void) {
 /*
 
 
-	FILE *fp = fopen("output8.bin", "wb");
-	FAR_fwrite(F_CastPrint, (byte __far *)F_StartFinale - (byte __far *)F_CastPrint, 1, fp);
+
+	FILE *fp = fopen("output9.bin", "wb");
+	FAR_fwrite(F_StartFinale, (byte __far *)F_Responder - (byte __far *)F_StartFinale, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*
