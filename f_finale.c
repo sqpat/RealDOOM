@@ -118,6 +118,7 @@ void __near V_DrawPatchFlipped2 (int16_t	x, int16_t y) {
 //
 // F_StartFinale
 //
+/*
 void __far F_StartFinale (void) {
 	int16_t finalemusic;
 
@@ -285,7 +286,7 @@ void __far F_StartFinale (void) {
     finalecount = 0;
 }
 
-
+*/
 
 boolean __far F_Responder (event_t  __far*event) {
     if (finalestage == 2){
@@ -355,13 +356,25 @@ void __near F_TextWrite (void) {
     int16_t		c;
     int16_t		cx;
     int16_t		cy;
+	int8_t      finaleflat_near[9];
+	// todo improve in asm.
+	finaleflat_near[0] = finaleflat[0];
+	finaleflat_near[1] = finaleflat[1];
+	finaleflat_near[2] = finaleflat[2];
+	finaleflat_near[3] = finaleflat[3];
+	finaleflat_near[4] = finaleflat[4];
+	finaleflat_near[5] = finaleflat[5];
+	finaleflat_near[6] = finaleflat[6];
+	finaleflat_near[7] = finaleflat[7];
+	finaleflat_near[8] = finaleflat[8];
+
      // erase the entire screen to a tiled background
 	//byte __far* src = (byte __far*)0x50000000;
 
 	Z_QuickMapScratch_5000(); // 5000
 	Z_QuickMapScreen0();      // 8000
 	// 9400-9c00 carries wad stuff
-	W_CacheLumpNameDirect(finaleflat, MK_FP(0x5000, 0x0000));
+	W_CacheLumpNameDirect(finaleflat_near, MK_FP(0x5000, 0x0000));
 	//I_Error("finale flat %s", finaleflat);
 
     for (y=0 ; y<SCREENHEIGHT ; y++) {

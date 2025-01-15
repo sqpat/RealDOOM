@@ -21,7 +21,22 @@ INSTRUCTION_SET_MACRO
 EXTRN V_DrawPatch_:PROC
 EXTRN V_MarkRect_:PROC
 EXTRN locallib_toupper_:PROC
+EXTRN S_ChangeMusic_:PROC
+
 EXTRN _hu_font:WORD
+EXTRN _finaleflat:DWORD
+EXTRN _finaletext:WORD
+EXTRN _finalestage:WORD
+EXTRN _finalecount:WORD
+EXTRN _gamestate:byte
+EXTRN _gameaction:byte
+EXTRN _viewactive:byte
+EXTRN _automapactive:byte
+EXTRN _commercial:byte
+EXTRN _gamemap:byte
+EXTRN _gameepisode:byte
+
+
 .CODE
 
 SCRATCH_SEGMENT_5000 = 05000h
@@ -230,6 +245,139 @@ mov   ax, cx
 call  V_DrawPatch_
 add   cx, di
 jmp   draw_next_glyph
+
+
+ENDP
+
+; FINALE FLAT STRINGS
+
+flat_slime16:
+db 053h, 04Ch, 049h, 04Dh, 045h, 031h, 036h, 000h   ; SLIME16
+flat_rrock14:
+db 052h, 052h, 04Fh, 043h, 04Bh, 032h, 034h, 000h   ; RROCK14
+flat_rrock07:
+db 052h, 052h, 04Fh, 043h, 04Bh, 030h, 037h, 000h   ; RROCK07
+flat_floor4_8:
+db 046h, 04Ch, 04Fh, 04Fh, 052h, 034h, 05Fh, 038h, 000h   ; FLOOR4_8
+flat_rrock13:
+db 052h, 052h, 04Fh, 043h, 04Bh, 032h, 033h, 000h   ; RROCK13
+flat_rrock19:
+db 052h, 052h, 04Fh, 043h, 04Bh, 032h, 039h, 000h   ; RROCK19
+
+flat_sflr6_1:
+db 053h, 046h, 04Ch, 052h, 036h, 05Fh, 031h, 000h   ; SFLR6_1
+flat_mflr8_4:
+db 04Dh, 046h, 04Ch, 052h, 038h, 05Fh, 034h, 000h   ; MFLR8_4
+flat_mflr8_3:
+db 04Dh, 046h, 04Ch, 052h, 038h, 05Fh, 033h, 000h   ; MFLR8_3
+
+; lookups for doom1 case
+
+flat_noncommercial_lookup:
+dw flat_floor4_8, flat_sflr6_1, flat_mflr8_4, flat_mflr8_3
+
+
+PROC F_StartFinale_ NEAR
+PUBLIC F_StartFinale_
+
+
+push  bx
+push  cx
+push  dx
+push  si
+mov   bx, word ptr ds:[_finaleflat]
+mov   cx, word ptr ds:[_finaletext]
+mov   byte ptr ds:[_gameaction], 0
+xor   al, al
+mov   byte ptr ds:[_gamestate], 2
+mov   byte ptr ds:[_viewactive], al
+mov   byte ptr ds:[_automapactive], al
+cmp   byte ptr ds:[_commercial], 0
+je    jump_to_handle_doom1
+mov   al, byte ptr ds:[_gamemap]
+cmp   al, 15
+jae   commercial_above_or_equal_to_15
+cmp   al, 11
+jne   commercial_below_15_not_11
+; commercial case 11
+mov   bx, OFFSET flat_rrock14
+mov   cx, 242
+got_flat_values:
+mov   ax, 65 ; set finale_music
+got_flat_values_and_music:
+; ax is finale music
+; cs is finaletext
+; bx is text for the flat graphic
+mov   dx, 1
+mov   word ptr ds:[_finaleflat], bx
+mov   word ptr ds:[_finaleflat+2], cs
+xor   ah, ah
+mov   word ptr ds:[_finaletext], cx
+call  S_ChangeMusic_
+xor   ax, ax
+mov   bx, word ptr ds:[_finaleflat]
+mov   word ptr ds:[_finalestage], ax
+mov   word ptr ds:[_finalecount], ax
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+commercial_above_or_equal_to_15:
+ja    commercial_above_15
+; commercial case 15 
+mov   bx, OFFSET flat_rrock13
+mov   cx, 245       ; todo put these in defines too?
+jmp   got_flat_values
+commercial_above_15:
+cmp   al, 31
+jne   commercial_above_15_not_31
+; commercial case 31
+mov   bx, OFFSET flat_rrock19
+mov   cx, 246
+jmp   got_flat_values
+commercial_above_15_not_31:
+cmp   al, 30
+jne   commercial_above_15_not_31_30
+; commercial case 30
+mov   bx, OFFSET flat_floor4_8
+mov   cx, 244
+jmp   got_flat_values
+commercial_above_15_not_31_30:
+cmp   al, 20
+jne   got_flat_values
+;commercial case 20
+mov   bx, OFFSET flat_floor4_8
+mov   cx, 243
+jmp   got_flat_values
+jump_to_handle_doom1:
+jmp   handle_doom1
+commercial_below_15_not_11:
+cmp   al, 6
+jne   got_flat_values
+; commercial case 6
+mov   bx, OFFSET flat_slime16
+mov   cx, 241
+jmp   got_flat_values
+handle_doom1:
+mov   cl, byte ptr ds:[_gameepisode]
+dec   cl
+cmp   cl, 3 
+ja    got_string
+; 0 to 3
+xor   ch, ch
+mov   si, cx
+sal   si, 1
+
+mov   bx, word ptr cs:[si + flat_noncommercial_lookup]
+got_string:
+mov   al, byte ptr ds:[_gameepisode]
+cbw
+mov   cx, ax
+mov   ax, 31   ; set finale_music
+add   cx, 236
+jmp   got_flat_values_and_music
+
 
 
 ENDP

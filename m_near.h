@@ -782,7 +782,7 @@ extern int16_t	t6text;
 #endif
 
 extern int16_t	finaletext;
-extern int8_t *	finaleflat;
+extern int8_t __far* finaleflat;
 extern int8_t	finale_laststage;
 
 extern uint8_t  messageToPrint;
