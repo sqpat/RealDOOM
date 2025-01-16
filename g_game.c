@@ -420,6 +420,7 @@ void __near G_Ticker (void)  {
             G_DoCompleted (); 
             break; 
           case ga_victory: 
+            //todo overlay goes here
             F_StartFinale (); 
             break; 
           case ga_worlddone: 

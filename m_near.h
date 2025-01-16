@@ -762,7 +762,6 @@ extern uint8_t mapnamest[32];
 
 extern int16_t		finalestage;
 
-extern int16_t		finalecount;
  
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
@@ -781,9 +780,6 @@ extern int16_t	t5text;
 extern int16_t	t6text;
 #endif
 
-extern int16_t	finaletext;
-extern int8_t __near* finaleflat;
-extern int8_t	finale_laststage;
 extern int8_t   filename_argument[9];
 
 extern uint8_t  messageToPrint;

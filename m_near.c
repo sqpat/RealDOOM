@@ -1052,7 +1052,6 @@ uint8_t mapnamest[] =	// TNT WAD map names. {
 //  0 = text, 1 = art screen, 2 = character cast
 int16_t		finalestage;
 
-int16_t		finalecount;
 
 
  
@@ -1073,9 +1072,6 @@ int16_t	t5text = T5TEXT;
 int16_t	t6text = T6TEXT;
 #endif
 
-int16_t	finaletext;
-int8_t __near* finaleflat;
-int8_t	finale_laststage;
 int8_t  filename_argument[9];
 
 

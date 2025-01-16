@@ -24,6 +24,7 @@ EXTRN locallib_toupper_:PROC
 EXTRN S_ChangeMusic_:PROC
 EXTRN V_DrawFullscreenPatch_:PROC
 EXTRN getStringByIndex_:PROC
+EXTRN locallib_strlen_:PROC
 EXTRN Z_QuickMapStatusNoScreen4_:PROC
 EXTRN Z_QuickMapRender7000_:PROC
 EXTRN Z_QuickMapScratch_5000_:PROC
@@ -34,13 +35,13 @@ EXTRN W_CacheLumpNameDirect_:PROC
 EXTRN W_CacheLumpNumDirectFragment_:PROC
 EXTRN W_GetNumForName_:PROC
 EXTRN S_StartSound_:PROC
+EXTRN S_StartMusic_:PROC
 EXTRN combine_strings_:PROC
 
 EXTRN _hu_font:WORD
-EXTRN _finaleflat:WORD                         ; todo make cs var
-EXTRN _finaletext:WORD                         ; todo make cs var
 EXTRN _finalestage:WORD                         ; todo make cs var
-EXTRN _finalecount:WORD                         ; todo make cs var
+
+EXTRN _player:WORD
 EXTRN _gamestate:BYTE
 EXTRN _gameaction:BYTE
 EXTRN _viewactive:BYTE
@@ -50,7 +51,6 @@ EXTRN _gamemap:BYTE
 EXTRN _gameepisode:BYTE
 EXTRN _filename_argument:BYTE
 EXTRN _firstspritelump:WORD
-EXTRN _finale_laststage:BYTE
 EXTRN _is_ultimate:BYTE
 EXTRN _wipegamestate:BYTE
 
@@ -74,6 +74,17 @@ _CSDATA_castdeath:
 db    0
 _CSDATA_caststate:
 dw    0, STATES_SEGMENT  ; hardcoded segment..
+_CSDATA_finaleflat:
+dw    0
+_CSDATA_finaletext:
+dw    0
+_CSDATA_finalecount:
+dw    0
+_CSDATA_finale_laststage:
+db    0
+
+
+
 
 
 
@@ -347,8 +358,8 @@ push  bx
 push  cx
 push  dx
 push  si
-mov   bx, word ptr ds:[_finaleflat]
-mov   cx, word ptr ds:[_finaletext]
+mov   bx, word ptr cs:[_CSDATA_finaleflat]
+mov   cx, word ptr cs:[_CSDATA_finaletext]
 mov   byte ptr ds:[_gameaction], 0
 xor   al, al
 mov   byte ptr ds:[_gamestate], 2
@@ -371,15 +382,15 @@ got_flat_values_and_music:
 ; cs is finaletext
 ; bx is text for the flat graphic
 mov   dx, 1
-mov   word ptr ds:[_finaleflat], bx
+mov   word ptr cs:[_CSDATA_finaleflat], bx
 
 xor   ah, ah
-mov   word ptr ds:[_finaletext], cx
+mov   word ptr cs:[_CSDATA_finaletext], cx
 call  S_ChangeMusic_
 xor   ax, ax
-mov   bx, word ptr ds:[_finaleflat]
+mov   bx, word ptr cs:[_CSDATA_finaleflat]
 mov   word ptr ds:[_finalestage], ax
-mov   word ptr ds:[_finalecount], ax
+mov   word ptr cs:[_CSDATA_finalecount], ax
 pop   si
 pop   dx
 pop   cx
@@ -389,7 +400,7 @@ commercial_above_or_equal_to_15:
 ja    commercial_above_15
 ; commercial case 15 
 mov   bx, OFFSET flat_rrock13
-mov   cx, C5TEXT       ; todo put these in defines too?
+mov   cx, C5TEXT
 jmp   got_flat_values
 commercial_above_15:
 cmp   al, 31
@@ -515,7 +526,7 @@ xor   dx, dx
 mov   byte ptr [bp - 2], al
 mov   ax, OFFSET _filename_argument
 
-; todo make this a function as we use it more
+
 ; copy 9 bytes "BOSSBACK" to ds. gross...
 push  bx
 mov   bx, OFFSET str_bossback
@@ -609,7 +620,7 @@ mov       word ptr [bp - 4], bx
 call      Z_QuickMapScratch_5000_
 call      Z_QuickMapScreen0_
 
-mov       bx, word ptr ds:[_finaleflat]
+mov       bx, word ptr cs:[_CSDATA_finaleflat]
 mov       ax, OFFSET _filename_argument
 call      F_CopyString9_
 xor       bx, bx
@@ -691,12 +702,12 @@ xor       ax, ax
 
 call      V_MarkRect_
 lea       bx, [bp - 029Eh]
-mov       ax, word ptr ds:[_finaletext]
+mov       ax, word ptr cs:[_CSDATA_finaletext]
 mov       cx, ds
 mov       si, 10
 
 call      getStringByIndex_
-mov       ax, word ptr ds:[_finalecount]
+mov       ax, word ptr cs:[_CSDATA_finalecount]
 sub       ax, si
 mov       bx, 3
 CWD       
@@ -857,7 +868,7 @@ call  Z_QuickMapScratch_5000_
 xor   ax, ax
 call  V_MarkRect_
 ;    scrolled = 320 - (finalecount-230)/2;
-mov   ax, word ptr ds:[_finalecount]
+mov   ax, word ptr cs:[_CSDATA_finalecount]
 sub   ax, 230            
 cwd
 sub   ax, dx     ; i dont know what this cwd sub does.
@@ -965,7 +976,7 @@ inc   dx
 call  F_DrawPatchCol_
 cmp   dx, SCREENWIDTH
 jl    draw_next_bunny_column
-mov   ax, word ptr ds:[_finalecount]
+mov   ax, word ptr cs:[_CSDATA_finalecount]
 cmp   ax, FINALE_PHASE_1_CHANGE
 jl    exit_bunnyscroll
 cmp   ax, FINALE_PHASE_2_CHANGE
@@ -979,14 +990,14 @@ cmp   ax, 6
 jle   finale_stage_calculated
 mov   bx, 6     ; cap fianle to 6.
 finale_stage_calculated:
-mov   al, byte ptr ds:[_finale_laststage]
+mov   al, byte ptr cs:[_CSDATA_finale_laststage]
 cbw  
 cmp   bx, ax
 jle   draw_end0_patch
 mov   dx, 1
 xor   ax, ax
 call  S_StartSound_
-mov   byte ptr ds:[_finale_laststage], bl
+mov   byte ptr cs:[_CSDATA_finale_laststage], bl
 draw_end0_patch:
 mov   cl, bl  ; get finale stage in cl
 mov   bx, OFFSET str_end0
@@ -1032,7 +1043,7 @@ push  ax
 mov   ax, (SCREENWIDTH-13*8)/2
 xor   bx, bx
 call  V_DrawPatch_
-mov   byte ptr ds:[_finale_laststage], 0
+mov   byte ptr cs:[_CSDATA_finale_laststage], 0
 LEAVE_MACRO
 pop   di
 pop   si
@@ -1155,9 +1166,7 @@ pop   bx
 ret   
 do_castticker:
 call  Z_QuickMapPhysics_
-mov   ax, word ptr cs:[_CSDATA_caststate+2]
-mov   bx, word ptr cs:[_CSDATA_caststate]       ; todo LES
-mov   es, ax
+les   bx, dword ptr cs:[_CSDATA_caststate]       
 cmp   byte ptr es:[bx + 2], 0FFh
 je    label_1
 jmp   label_2
@@ -1245,12 +1254,9 @@ dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
 shl   ax, 1
 shl   ax, 1
-mov   bx, word ptr cs:[_CSDATA_caststate+2]   ; todo necessary?
 sub   ax, dx
 mov   dx, word ptr cs:[_CSDATA_caststate]
 add   ax, ax
-cmp   bx, STATES_SEGMENT
-jne   label_6
 cmp   dx, ax
 je    label_5
 jmp   label_6
@@ -1321,10 +1327,8 @@ sub   ax, dx
 add   ax, ax
 mov   word ptr cs:[_CSDATA_caststate], ax
 xor   byte ptr cs:[_CSDATA_castonmelee], 1
-mov   ax, word ptr cs:[_CSDATA_caststate+2]   ; todo necessary?
-mov   dx, word ptr cs:[_CSDATA_caststate]
-cmp   ax, STATES_SEGMENT
-jne   jump_to_label_28
+
+mov   dx, word ptr cs:[_CSDATA_caststate]   ; check if state 0
 test  dx, dx
 jne   jump_to_label_28
 cmp   byte ptr cs:[_CSDATA_castonmelee], 0
@@ -1546,6 +1550,79 @@ call  S_StartSound_
 mov   al, 1
 pop   bx
 ret   
+
+
+ENDP
+
+TEXTWAIT = 250
+
+PROC F_Ticker_ FAR
+PUBLIC F_Ticker_
+
+
+push  bx
+push  cx
+push  dx
+push  bp
+mov   bp, sp
+sub   sp, 029Ah
+cmp   byte ptr [_commercial], 0
+je    done_checking_skipping
+cmp   word ptr cs:[_CSDATA_finalecount], 50
+jle   done_checking_skipping
+cmp   byte ptr [_player + 7], 0   ; player.cmd.buttons
+je    done_checking_skipping
+cmp   byte ptr [_gamemap], 30
+jne   do_worlddone
+call  F_StartCast_
+done_checking_skipping:
+inc   word ptr cs:[_CSDATA_finalecount]
+cmp   word ptr [_finalestage], 2
+je    call_fcastticker
+cmp   byte ptr [_commercial], 0
+je    do_noncommerical
+exit_fticker:
+LEAVE_MACRO
+pop   dx
+pop   cx
+pop   bx
+retf  
+do_worlddone:
+mov   byte ptr [_gameaction], GA_WORLDDONE
+jmp   done_checking_skipping
+call_fcastticker:
+call  F_CastTicker_
+jmp   exit_fticker
+do_noncommerical:
+lea   bx, [bp - 029Ah]
+mov   ax, word ptr cs:[_CSDATA_finaletext]
+mov   cx, ds
+call  getStringByIndex_
+cmp   word ptr [_finalestage], 0
+jne   exit_fticker
+lea   ax, [bp - 029Ah]
+mov   dx, ds
+
+call  locallib_strlen_
+mov   dx, ax
+shl   ax, 2
+sub   ax, dx
+add   ax, TEXTWAIT
+cmp   ax, word ptr cs:[_CSDATA_finalecount]
+jge   exit_fticker
+mov   word ptr [_finalestage], 1
+xor   ax, ax
+mov   byte ptr [_wipegamestate], 0FFh
+mov   word ptr cs:[_CSDATA_finalecount], ax
+cmp   byte ptr [_gameepisode], 3
+jne   exit_fticker
+mov   ax, MUS_BUNNY
+call  S_StartMusic_
+LEAVE_MACRO
+pop   dx
+pop   cx
+pop   bx
+retf  
 
 
 ENDP

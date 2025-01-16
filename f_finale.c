@@ -299,6 +299,7 @@ boolean __far F_Responder (event_t  __far*event) {
 //
 // F_Ticker
 //
+/*
 void __far F_Ticker (void) {
 	// big enough for any string here
 	int8_t text[666];
@@ -337,7 +338,7 @@ void __far F_Ticker (void) {
     }
 
 }
-
+*/
 
 
 //

@@ -869,6 +869,7 @@ void check_is_ultimate(){
 void	__near F_StartCast (void);
 void	__near F_CastTicker (void);
 boolean __near F_CastResponder (event_t __far *ev);
+void __far F_Ticker (void) ;
 
 
 //void checkDS(int16_t a);
@@ -901,7 +902,7 @@ void __far D_DoomMain2(void) {
 
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(F_CastResponder, (byte __far *)R_CheckTextureNumForName - (byte __far *)F_CastResponder, 1, fp);
+	FAR_fwrite(F_Ticker, (byte __far *)R_CheckTextureNumForName - (byte __far *)F_Ticker, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*
