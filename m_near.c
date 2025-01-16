@@ -1048,9 +1048,6 @@ uint8_t mapnamest[] =	// TNT WAD map names. {
 #endif
 
 
-// Stage of animation:
-//  0 = text, 1 = art screen, 2 = character cast
-int16_t		finalestage;
 
 
 

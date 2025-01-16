@@ -902,7 +902,7 @@ void __far D_DoomMain2(void) {
 
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(F_Ticker, (byte __far *)R_CheckTextureNumForName - (byte __far *)F_Ticker, 1, fp);
+	FAR_fwrite(F_Responder, (byte __far *)R_CheckTextureNumForName - (byte __far *)F_Responder, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

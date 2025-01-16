@@ -760,7 +760,6 @@ extern uint8_t mapnamest[32];
 
 
 
-extern int16_t		finalestage;
 
  
 

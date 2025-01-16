@@ -39,7 +39,6 @@ EXTRN S_StartMusic_:PROC
 EXTRN combine_strings_:PROC
 
 EXTRN _hu_font:WORD
-EXTRN _finalestage:WORD                         ; todo make cs var
 
 EXTRN _player:WORD
 EXTRN _gamestate:BYTE
@@ -79,6 +78,10 @@ dw    0
 _CSDATA_finaletext:
 dw    0
 _CSDATA_finalecount:
+dw    0
+; Stage of animation:
+;  0 = text, 1 = art screen, 2 = character cast
+_CSDATA_finalestage:
 dw    0
 _CSDATA_finale_laststage:
 db    0
@@ -389,7 +392,7 @@ mov   word ptr cs:[_CSDATA_finaletext], cx
 call  S_ChangeMusic_
 xor   ax, ax
 mov   bx, word ptr cs:[_CSDATA_finaleflat]
-mov   word ptr ds:[_finalestage], ax
+mov   word ptr cs:[_CSDATA_finalestage], ax
 mov   word ptr cs:[_CSDATA_finalecount], ax
 pop   si
 pop   dx
@@ -1111,7 +1114,7 @@ PUBLIC F_StartCast_
 push  bx
 push  dx
 
-cmp   word ptr [_finalestage], 2
+cmp   word ptr cs:[_CSDATA_finalestage], 2
 je    dont_force_screenwipe
 mov   byte ptr [_wipegamestate], 0FFh  ; force screen wipe
 dont_force_screenwipe:
@@ -1139,7 +1142,7 @@ mov   byte ptr cs:[_CSDATA_castframes], al
 mov   byte ptr cs:[_CSDATA_castonmelee], al
 mov   byte ptr cs:[_CSDATA_castattacking], al
 mov   ax, MUS_EVIL
-mov   word ptr [_finalestage], 2
+mov   word ptr cs:[_CSDATA_finalestage], 2
 call  S_ChangeMusic_
 pop   dx
 pop   bx
@@ -1577,7 +1580,7 @@ jne   do_worlddone
 call  F_StartCast_
 done_checking_skipping:
 inc   word ptr cs:[_CSDATA_finalecount]
-cmp   word ptr [_finalestage], 2
+cmp   word ptr cs:[_CSDATA_finalestage], 2
 je    call_fcastticker
 cmp   byte ptr [_commercial], 0
 je    do_noncommerical
@@ -1598,7 +1601,7 @@ lea   bx, [bp - 029Ah]
 mov   ax, word ptr cs:[_CSDATA_finaletext]
 mov   cx, ds
 call  getStringByIndex_
-cmp   word ptr [_finalestage], 0
+cmp   word ptr cs:[_CSDATA_finalestage], 0
 jne   exit_fticker
 lea   ax, [bp - 029Ah]
 mov   dx, ds
@@ -1610,7 +1613,7 @@ sub   ax, dx
 add   ax, TEXTWAIT
 cmp   ax, word ptr cs:[_CSDATA_finalecount]
 jge   exit_fticker
-mov   word ptr [_finalestage], 1
+mov   word ptr cs:[_CSDATA_finalestage], 1
 xor   ax, ax
 mov   byte ptr [_wipegamestate], 0FFh
 mov   word ptr cs:[_CSDATA_finalecount], ax
@@ -1624,6 +1627,21 @@ pop   cx
 pop   bx
 retf  
 
+
+ENDP
+
+
+
+PROC F_Responder_ FAR
+PUBLIC F_Responder_
+
+cmp  word ptr cs:[_CSDATA_finalestage], 2
+je   call_castresponder
+xor  al, al
+retf 
+call_castresponder:
+call F_CastResponder_
+retf 
 
 ENDP
 
@@ -1643,7 +1661,7 @@ PUBLIC F_Drawer_
 
 push  bx
 push  dx
-mov   ax, word ptr [_finalestage]
+mov   ax, word ptr cs:[_CSDATA_finalestage]
 cmp   ax, 2
 je    call_castdrawer
 test  ax, ax

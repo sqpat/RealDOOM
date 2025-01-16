@@ -70,7 +70,7 @@ typedef int8_t cheat_t;
 
 typedef struct player_s{
 
-    ticcmd_t		cmd;  // 12 bytes
+    ticcmd_t		cmd;  // 8 bytes
 
     // Determine POV,
     //  including viewpoint bobbing during movement.

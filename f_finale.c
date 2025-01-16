@@ -74,7 +74,6 @@ void	__near F_CastDrawer (void);
 // Flips horizontally, e.g. to mirror face.
 //
 // patch always 0x50000000
-void __near V_DrawPatchFlipped (int16_t	x, int16_t y) ;
 
 /*
 void __near V_DrawPatchFlipped2 (int16_t	x, int16_t y) {
@@ -114,11 +113,9 @@ void __near V_DrawPatchFlipped2 (int16_t	x, int16_t y) {
 	}
 }
 
-*/
 //
 // F_StartFinale
 //
-/*
 void __far F_StartFinale (void) {
 	int16_t finalemusic;
 
@@ -286,7 +283,6 @@ void __far F_StartFinale (void) {
     finalecount = 0;
 }
 
-*/
 
 boolean __far F_Responder (event_t  __far*event) {
     if (finalestage == 2){
@@ -299,7 +295,6 @@ boolean __far F_Responder (event_t  __far*event) {
 //
 // F_Ticker
 //
-/*
 void __far F_Ticker (void) {
 	// big enough for any string here
 	int8_t text[666];
@@ -338,7 +333,6 @@ void __far F_Ticker (void) {
     }
 
 }
-*/
 
 
 //
@@ -348,7 +342,6 @@ void __far F_Ticker (void) {
 #include "hu_stuff.h"
 void __near F_TextWrite (void);
 
-/*
 void __near F_TextWrite (void) {
 	uint16_t dest = 0;
     
@@ -426,12 +419,10 @@ void __near F_TextWrite (void) {
 		cx+=w;
     }
 }
-*/
 
 //
 // F_StartCast
 //
-/*
 void __near F_StartCast (void) {
 	//todoaddr inline later
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
@@ -449,12 +440,10 @@ void __near F_StartCast (void) {
     castattacking = false;
     S_ChangeMusic(mus_evil, true);
 }
-*/
 
 //
 // F_CastTicker
 //
-/*
 void __near F_CastTicker (void) {
     int16_t		st;
     int16_t		sfx;
@@ -553,11 +542,9 @@ void __near F_CastTicker (void) {
 	}
 }
 
-*/
 //
 // F_CastResponder
 //
-/*
 
 boolean __near F_CastResponder (event_t __far* ev) {
  	//todoaddr inline later
@@ -580,10 +567,7 @@ boolean __near F_CastResponder (event_t __far* ev) {
 	
     return true;
 }
-*/
 
-void __near F_CastPrint (int8_t* text) ;
-/*
 void __near F_CastPrint (int8_t* text) {
     int8_t*	ch;
     int16_t		c;
@@ -631,13 +615,11 @@ void __near F_CastPrint (int8_t* text) {
     }
 	
 }
-*/
 
 //
 // F_CastDrawer
 //
 
-/*
 void __near F_CastDrawer (void) {
     spritedef_t __far*	  sprite;
     spriteframe_t __far*  sprframe;
@@ -681,15 +663,11 @@ void __near F_CastDrawer (void) {
 	}
 
 }
-*/
 
 //
 // F_DrawPatchCol
 //
 
-void __near F_DrawPatchCol ( int16_t		x, column_t __far*	column);
-
-/*
 void __near F_DrawPatchCol ( int16_t		x, column_t __far*	column) {
     
     byte __far*	source;
@@ -712,14 +690,10 @@ void __near F_DrawPatchCol ( int16_t		x, column_t __far*	column) {
 		column = (column_t  __far*)(  (byte  __far*)column + column->length + 4 );
     }
 }
-*/
 
 //
 // F_BunnyScroll
 //
-void __near F_BunnyScroll (void);
-
-/*
 void __near F_BunnyScroll (void) {
     int16_t		scrolled;
 	int8_t	name[10];
@@ -821,14 +795,11 @@ void __near F_BunnyScroll (void) {
 
 
 }
-*/
 
 
 //
 // F_Drawer
 //
-void __far F_Drawer (void);
-/*
 void __far F_Drawer (void) {
     if (finalestage == 2) {
 		F_CastDrawer ();  // F_CastDrawer calls F_CastPrint which restores physics quickmap
