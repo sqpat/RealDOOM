@@ -495,7 +495,8 @@ call  Z_QuickMapRender7000_
 mov   al, byte ptr [bp - 4]
 xor   ah, ah
 mov   bx, ax
-shl   bx, 2
+shl   bx, 1
+shl   bx, 1
 sub   bx, ax
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
@@ -716,6 +717,68 @@ call      V_DrawPatch_
 mov       si, word ptr [bp - 0Ah]
 dec       cx
 jmp       loop_count
+
+
+ENDP
+
+
+PROC F_DrawPatchCol_ NEAR
+PUBLIC F_DrawPatchCol_
+
+
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 8
+mov   di, bx
+mov   word ptr [bp - 6], cx
+mov   word ptr [bp - 8], SCREEN0_SEGMENT
+mov   es, word ptr [bp - 6]
+mov   cx, ax
+cmp   byte ptr es:[di], 0FFh
+je    exit_drawpatchcol
+draw_next_post:
+mov   ax, word ptr [bp - 6]
+mov   es, ax
+mov   word ptr [bp - 2], ax
+mov   al, byte ptr es:[di]
+xor   ah, ah
+mov   dx, SCREENWIDTH
+mul   dx
+mov   si, word ptr [bp - 8]
+mov   word ptr [bp - 4], si
+mov   si, cx
+add   si, ax
+mov   al, byte ptr es:[di + 1]
+lea   bx, [di + 3]
+xor   ah, ah
+draw_next_pixel:
+dec   ax
+cmp   ax, 0FFFFh             ; todo js
+jne   label_1
+mov   es, word ptr [bp - 6]
+mov   al, byte ptr es:[di + 1]
+xor   ah, ah
+add   di, ax
+add   di, 4
+cmp   byte ptr es:[di], 0FFh
+jne   draw_next_post
+exit_drawpatchcol:
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+ret   
+label_1:
+mov   es, word ptr [bp - 2]
+mov   dl, byte ptr es:[bx]
+mov   es, word ptr [bp - 4]
+inc   bx
+mov   byte ptr es:[si], dl
+add   si, SCREENWIDTH
+jmp   draw_next_pixel
 
 
 ENDP

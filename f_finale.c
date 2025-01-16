@@ -683,6 +683,10 @@ void __near F_CastDrawer (void) {
 //
 // F_DrawPatchCol
 //
+
+void __near F_DrawPatchCol ( int16_t		x, column_t __far*	column);
+
+/*
 void __near F_DrawPatchCol ( int16_t		x, column_t __far*	column) {
     
     byte __far*	source;
@@ -705,7 +709,7 @@ void __near F_DrawPatchCol ( int16_t		x, column_t __far*	column) {
 		column = (column_t  __far*)(  (byte  __far*)column + column->length + 4 );
     }
 }
-
+*/
 
 //
 // F_BunnyScroll
