@@ -41,8 +41,6 @@ EXTRN _finaleflat:WORD                         ; todo make cs var
 EXTRN _finaletext:WORD                         ; todo make cs var
 EXTRN _finalestage:WORD                         ; todo make cs var
 EXTRN _finalecount:WORD                         ; todo make cs var
-EXTRN _caststate:DWORD                         ; todo make cs var
-EXTRN _castnum:BYTE                             ; todo make CS var
 EXTRN _gamestate:BYTE
 EXTRN _gameaction:BYTE
 EXTRN _viewactive:BYTE
@@ -55,13 +53,29 @@ EXTRN _firstspritelump:WORD
 EXTRN _finale_laststage:BYTE
 EXTRN _is_ultimate:BYTE
 EXTRN _wipegamestate:BYTE
-EXTRN _castattacking:BYTE
-EXTRN _castdeath:BYTE
-EXTRN _castonmelee:BYTE
-EXTRN _castframes:BYTE
-EXTRN _casttics:BYTE
 
 .CODE
+
+; vars and data..
+
+_CSDATA_castattacking:
+db    0
+_CSDATA__castdeath:
+db    0
+_CSDATA_castonmelee:
+db    0
+_CSDATA_castframes:
+db    0
+_CSDATA_casttics:
+db    0
+_CSDATA_castnum:
+db    0
+_CSDATA_castdeath:
+db    0
+_CSDATA_caststate:
+dw    0, STATES_SEGMENT  ; hardcoded segment..
+
+
 
 
 _CSDATA_castorder:
@@ -83,6 +97,7 @@ db    CC_SPIDER-castorderoffset,    MT_SPIDER
 db    CC_CYBER-castorderoffset,     MT_CYBORG
 db    CC_HERO-castorderoffset,      MT_PLAYER
 
+MAX_CASTNUM = 017
 
 SCRATCH_SEGMENT_5000 = 05000h
 
@@ -492,7 +507,7 @@ push  dx
 push  bp
 mov   bp, sp
 sub   sp, 068h
-les   bx, dword ptr ds:[_caststate]
+les   bx, dword ptr cs:[_CSDATA_caststate]
 mov   al, byte ptr es:[bx]
 mov   byte ptr [bp - 4], al
 mov   al, byte ptr es:[bx + 1]
@@ -508,7 +523,7 @@ call  F_CopyString9_
 pop   bx
 
 call  V_DrawFullscreenPatch_
-mov   al, byte ptr ds:[_castnum]
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw
 mov   bx, ax
 add   bx, ax
@@ -1091,7 +1106,7 @@ mov   byte ptr [_wipegamestate], 0FFh  ; force screen wipe
 dont_force_screenwipe:
 mov   al, byte ptr cs:[_CSDATA_castorder+1]     ;  castorder[castnum].type). castnum is 0.
 xor   ah, ah
-mov   byte ptr [_castnum], 0
+mov   byte ptr cs:[_CSDATA_castnum], 0
 ; call getSeeState
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
@@ -1101,17 +1116,17 @@ shl   bx, 1
 sub   bx, ax
 mov   ax, STATES_SEGMENT
 add   bx, bx
-mov   word ptr [_caststate+2], ax
-mov   word ptr [_caststate], bx
+
+mov   word ptr cs:[_CSDATA_caststate], bx
 mov   es, ax
 mov   al, byte ptr es:[bx + 2]
 mov   dx, 1
-mov   byte ptr [_casttics], al
+mov   byte ptr cs:[_CSDATA_casttics], al
 xor   al, al
-mov   byte ptr [_castdeath], 0
-mov   byte ptr [_castframes], al
-mov   byte ptr [_castonmelee], al
-mov   byte ptr [_castattacking], al
+mov   byte ptr cs:[_CSDATA_castdeath], 0
+mov   byte ptr cs:[_CSDATA_castframes], al
+mov   byte ptr cs:[_CSDATA_castonmelee], al
+mov   byte ptr cs:[_CSDATA_castattacking], al
 mov   ax, MUS_EVIL
 mov   word ptr [_finalestage], 2
 call  S_ChangeMusic_
@@ -1121,7 +1136,6 @@ ret
 
 ENDP
 
-MAX_CASTNUM = 017
 
 PROC F_CastTicker_ NEAR
 PUBLIC F_CastTicker_
@@ -1131,8 +1145,8 @@ PUBLIC F_CastTicker_
 push  bx
 push  dx
 
-dec   byte ptr [_casttics]
-cmp   byte ptr [_casttics], 0
+dec   byte ptr cs:[_CSDATA_casttics]
+cmp   byte ptr cs:[_CSDATA_casttics], 0
 jle   do_castticker
 exit_castticker:
 
@@ -1141,20 +1155,20 @@ pop   bx
 ret   
 do_castticker:
 call  Z_QuickMapPhysics_
-mov   ax, word ptr [_caststate+2]
-mov   bx, word ptr [_caststate]
+mov   ax, word ptr cs:[_CSDATA_caststate+2]
+mov   bx, word ptr cs:[_CSDATA_caststate]       ; todo LES
 mov   es, ax
 cmp   byte ptr es:[bx + 2], 0FFh
 je    label_1
 jmp   label_2
 label_1:
-inc   byte ptr [_castnum]
-mov   byte ptr [_castdeath], 0
-cmp   byte ptr [_castnum], MAX_CASTNUM
+inc   byte ptr cs:[_CSDATA_castnum]
+mov   byte ptr cs:[_CSDATA_castdeath], 0
+cmp   byte ptr cs:[_CSDATA_castnum], MAX_CASTNUM
 jne   label_8
-mov   byte ptr [_castnum], 0
+mov   byte ptr cs:[_CSDATA_castnum], 0
 label_8:
-mov   al, byte ptr [_castnum]
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1166,7 +1180,7 @@ mov   dl, al
 xor   dh, dh
 xor   ax, ax
 call  S_StartSound_
-mov   al, byte ptr [_castnum]
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1178,21 +1192,21 @@ mov   dx, ax
 shl   ax, 1
 shl   ax, 1
 sub   ax, dx
-mov   word ptr [_caststate], STATES_SEGMENT
+
 add   ax, ax
-mov   byte ptr [_castframes], 0
+mov   byte ptr cs:[_CSDATA_castframes], 0
 label_40:
-mov   word ptr [_caststate], ax
+mov   word ptr cs:[_CSDATA_caststate], ax
 label_28:
-cmp   byte ptr [_castattacking], 0
+cmp   byte ptr cs:[_CSDATA_castattacking], 0
 je    label_6
-cmp   byte ptr [_castframes], 24
+cmp   byte ptr cs:[_CSDATA_castframes], 24
 jne   label_9
 label_5:
 xor   al, al
-mov   byte ptr [_castattacking], al
-mov   byte ptr [_castframes], al
-mov   al, byte ptr [_castnum]
+mov   byte ptr cs:[_CSDATA_castattacking], al
+mov   byte ptr cs:[_CSDATA_castframes], al
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1205,23 +1219,22 @@ shl   ax, 1
 shl   ax, 1
 sub   ax, dx
 add   ax, ax
-mov   word ptr [_caststate+2], STATES_SEGMENT
-mov   word ptr [_caststate], ax
+mov   word ptr cs:[_CSDATA_caststate], ax
 label_6:
-les   bx, dword ptr [_caststate]
+les   bx, dword ptr cs:[_CSDATA_caststate]
 mov   al, byte ptr es:[bx + 2]
-mov   byte ptr [_casttics], al
+mov   byte ptr cs:[_CSDATA_casttics], al
 cmp   al, 0FFh
 je    label_7
 jmp   exit_castticker
 label_7:
-mov   byte ptr [_casttics], 15
+mov   byte ptr cs:[_CSDATA_casttics], 15
  
 pop   dx
 pop   bx
 ret   
 label_9:
-mov   al, byte ptr [_castnum]
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1232,9 +1245,9 @@ dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
 shl   ax, 1
 shl   ax, 1
-mov   bx, word ptr [_caststate+2]
+mov   bx, word ptr cs:[_CSDATA_caststate+2]   ; todo necessary?
 sub   ax, dx
-mov   dx, word ptr [_caststate]
+mov   dx, word ptr cs:[_CSDATA_caststate]
 add   ax, ax
 cmp   bx, STATES_SEGMENT
 jne   label_6
@@ -1257,10 +1270,9 @@ mov   dx, ax
 shl   dx, 1
 shl   dx, 1
 sub   dx, ax
-mov   word ptr [_caststate+2], STATES_SEGMENT
 add   dx, dx
-inc   byte ptr [_castframes]
-mov   word ptr [_caststate], dx
+inc   byte ptr cs:[_CSDATA_castframes]
+mov   word ptr cs:[_CSDATA_caststate], dx
 cmp   ax, S_TROO_ATK3
 jb    label_10
 jmp   label_11
@@ -1283,15 +1295,15 @@ mov   dl, al
 xor   dh, dh
 xor   ax, ax
 call  S_StartSound_
-cmp   byte ptr [_castframes], 0Ch
+cmp   byte ptr cs:[_CSDATA_castframes], 0Ch
 je    label_27
 jump_to_label_28:
 jmp   label_28
 label_27:
-mov   byte ptr [_castattacking], 1
-cmp   byte ptr [_castonmelee], 0
+mov   byte ptr cs:[_CSDATA_castattacking], 1
+cmp   byte ptr cs:[_CSDATA_castonmelee], 0
 jne   jump_to_label_29
-mov   al, byte ptr [_castnum]
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1307,18 +1319,17 @@ shl   ax, 1
 shl   ax, 1
 sub   ax, dx
 add   ax, ax
-mov   word ptr [_caststate+2], STATES_SEGMENT
-mov   word ptr [_caststate], ax
-xor   byte ptr [_castonmelee], 1
-mov   ax, word ptr [_caststate+2]
-mov   dx, word ptr [_caststate]
+mov   word ptr cs:[_CSDATA_caststate], ax
+xor   byte ptr cs:[_CSDATA_castonmelee], 1
+mov   ax, word ptr cs:[_CSDATA_caststate+2]   ; todo necessary?
+mov   dx, word ptr cs:[_CSDATA_caststate]
 cmp   ax, STATES_SEGMENT
 jne   jump_to_label_28
 test  dx, dx
 jne   jump_to_label_28
-cmp   byte ptr [_castonmelee], 0
+cmp   byte ptr cs:[_CSDATA_castonmelee], 0
 je    label_36
-mov   al, byte ptr [_castnum]
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1331,7 +1342,7 @@ shl   ax, 1
 shl   ax, 1
 sub   ax, dx
 add   ax, ax
-mov   word ptr [_caststate+2], STATES_SEGMENT
+
 jmp   label_40
 label_11:
 ja    label_12
@@ -1447,7 +1458,7 @@ jne   jump_to_label_14
 mov   ax, SFX_DSHTGN
 jmp   label_13
 label_29:
-mov   al, byte ptr [_castnum]
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1457,7 +1468,7 @@ db    09Ah
 dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
 jmp   label_26
 label_25:
-mov   al, byte ptr [_castnum]
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1471,7 +1482,7 @@ shl   ax, 1
 shl   ax, 1
 sub   ax, dx
 add   ax, ax
-mov   word ptr [_caststate+2], STATES_SEGMENT
+
 jmp   label_40
 
 
@@ -1487,7 +1498,7 @@ mov   bx, ax
 mov   es, dx
 cmp   byte ptr es:[bx], 0
 jne   exit_fresponder_return0
-cmp   byte ptr [_castdeath], 0
+cmp   byte ptr cs:[_CSDATA_castdeath], 0
 je    do_castdeath
 mov   al, 1
 pop   bx
@@ -1497,13 +1508,13 @@ xor   al, al
 pop   bx
 ret   
 do_castdeath:
-mov   al, byte ptr [_castnum]
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bx + _CSDATA_castorder+1]
 xor   ah, ah
-mov   byte ptr [_castdeath], 1
+mov   byte ptr cs:[_CSDATA_castdeath], 1
 db    09Ah
 dw    GETDEATHSTATEADDR, INFOFUNCLOADSEGMENT
 
@@ -1513,15 +1524,14 @@ shl   bx, 1
 sub   bx, ax
 mov   ax, STATES_SEGMENT
 add   bx, bx
-mov   word ptr [_caststate+2], ax
-mov   word ptr [_caststate], bx
+mov   word ptr cs:[_CSDATA_caststate], bx
 mov   es, ax
 mov   al, byte ptr es:[bx + 2]
-mov   byte ptr [_casttics], al
+mov   byte ptr cs:[_CSDATA_casttics], al
 xor   al, al
-mov   byte ptr [_castframes], al
-mov   byte ptr [_castattacking], al
-mov   al, byte ptr [_castnum]
+mov   byte ptr cs:[_CSDATA_castframes], al
+mov   byte ptr cs:[_CSDATA_castattacking], al
+mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax

@@ -899,14 +899,7 @@ typedef struct {
     mobjtype_t	type;
 } castinfo_t;
 
-
-extern int8_t		castnum;
-extern int8_t		casttics;
-extern state_t __far*	caststate;
-extern boolean		castdeath;
-extern int8_t		castframes;
-extern int8_t		castonmelee;
-extern boolean		castattacking;
+ 
 
 extern boolean  st_stopped;
 extern uint16_t armsbgarray[1];

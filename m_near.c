@@ -1448,15 +1448,6 @@ int16_t	sp_state;
 
 
 
-
-int8_t		castnum;
-int8_t		casttics;
-state_t __far*	caststate;
-boolean		castdeath;
-int8_t		castframes;
-int8_t		castonmelee;
-boolean		castattacking;
-
 boolean  st_stopped = true;
 uint16_t armsbgarray[1] = { armsbg };
 
