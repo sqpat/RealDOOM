@@ -781,8 +781,6 @@ str_pfub1:
 db "PFUB1", 0
 str_pfub2:
 db "PFUB2", 0
-str_end:
-db "END", 0
 str_end0:
 db "END0", 0
 
@@ -834,21 +832,33 @@ label_3:
 mov   word ptr [bp - 0Ch], SCREENWIDTH
 label_6:
 push  0
-mov   ax, OFFSET str_pfub2
+
 mov   cx, SCRATCH_SEGMENT_5000
+
+
+mov   bx, OFFSET str_pfub2
+mov   ax, OFFSET _filename_argument
+call  F_CopyString9_
+
+
 xor   bx, bx
 push  0
 xor   dx, dx
 call  W_GetNumForName_
 call  W_CacheLumpNumDirectFragment_
 push  0
-mov   ax, OFFSET str_pfub2
+
+mov   bx, OFFSET str_pfub2
+mov   ax, OFFSET _filename_argument
+call  F_CopyString9_
+
+
 mov   bx, di
 push  0
 mov   cx, si
 call  W_GetNumForName_
 call  W_CacheLumpNumDirectFragment_
-cld   
+
 label_16:
 mov   ax, word ptr [bp - 0Ch]
 add   ax, dx
@@ -873,12 +883,20 @@ label_2:
 add   word ptr [bp - 4], ax
 adc   word ptr [bp - 6], bx
 cmp   byte ptr [bp - 2], 0
-jne   label_17
-jmp   label_10
-label_17:
+jne   use_pfub1
+jmp   use_pfub2
+use_pfub1:
 push  word ptr [bp - 6]
-mov   ax, OFFSET str_pfub1
-label_11:
+mov   bx, OFFSET str_pfub1
+
+
+
+draw_chosen_pfub:
+
+mov   ax, OFFSET _filename_argument
+call  F_CopyString9_
+
+
 mov   bx, di
 push  word ptr [bp - 4]
 mov   cx, si
@@ -896,9 +914,9 @@ cmp   dx, SCREENWIDTH
 jl    label_16
 mov   ax, word ptr ds:[_finalecount]
 cmp   ax, FINALE_PHASE_1_CHANGE
-jl    label_15
+jl    exit_bunnyscroll
 cmp   ax, FINALE_PHASE_2_CHANGE
-jl    label_14
+jl    draw_end_patch
 sub   ax, FINALE_PHASE_2_CHANGE
 mov   bx, 5
 CWD   
@@ -917,22 +935,14 @@ xor   ax, ax
 call  S_StartSound_
 mov   byte ptr ds:[_finale_laststage], bl
 draw_end0_patch:
-lea   dx, [bp - 0Ah]
-lea   ax, [bp - 018h]
-add   bl, 030h    ; ascii '0'
-push  ds
-mov   cx, ds
-mov   byte ptr [bp - 0Ah], bl
-push  dx
+mov   cl, bl  ; get finale stage in cl
 mov   bx, OFFSET str_end0
-mov   dx, ds
-mov   byte ptr [bp - 9], 0
-
-call  combine_strings_
+mov   ax, OFFSET _filename_argument
+call  F_CopyString9_
+add   byte ptr [_filename_argument+3], cl ; add to the '0'
 
 mov   bx, word ptr [bp - 8]
 mov   cx, word ptr [bp - 0Eh]
-lea   ax, [bp - 018h]        ; name addr
 mov   dx, (SCREENHEIGHT-8*8)/2
 call  W_CacheLumpNameDirect_
 push  word ptr [bp - 0Eh]
@@ -940,7 +950,7 @@ mov   ax, (SCREENWIDTH-13*8)/2
 push  word ptr [bp - 8]
 xor   bx, bx
 call  V_DrawPatch_
-label_15:
+exit_bunnyscroll:
 LEAVE_MACRO
 pop   di
 pop   si
@@ -948,10 +958,14 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_14:
-mov   bx, word ptr [bp - 8]
+draw_end_patch:
 mov   cx, word ptr [bp - 0Eh]
-mov   ax, OFFSET str_end
+mov   bx, OFFSET str_end0
+mov   ax, OFFSET _filename_argument
+call  F_CopyString9_
+mov   bx, word ptr [bp - 8]
+
+
 mov   dx, (SCREENHEIGHT-8*8)/2
 call W_CacheLumpNameDirect_
 push  word ptr [bp - 0Eh]
@@ -985,12 +999,21 @@ xor   ah, ah
 push  0
 mov   word ptr [bp - 4], ax
 mov   word ptr [bp - 6], ax
-mov   ax, OFFSET str_pfub1
+
+mov   bx, OFFSET str_pfub1
+mov   ax, OFFSET _filename_argument
+call  F_CopyString9_
 xor   bx, bx
+
+
 call  W_GetNumForName_
 call  W_CacheLumpNumDirectFragment_
 push  0
-mov   ax, OFFSET str_pfub1
+
+mov   bx, OFFSET str_pfub1
+mov   ax, OFFSET _filename_argument
+call  F_CopyString9_
+
 mov   bx, di
 push  0
 mov   cx, si
@@ -1001,10 +1024,10 @@ mov   ax, word ptr [bp - 0Ch]
 add   ax, dx
 sub   ax, SCREENWIDTH
 jmp   label_8
-label_10:
+use_pfub2:
 push  word ptr [bp - 6]
-mov   ax, OFFSET str_pfub2         ; string addr...
-jmp   label_11
+mov   bx, OFFSET str_pfub2         ; string addr...
+jmp   draw_chosen_pfub
 
 
 ENDP

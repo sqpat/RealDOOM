@@ -907,7 +907,7 @@ void __far D_DoomMain2(void) {
 	//I_Error("%lx", colfunc_masked_call_table[0]);
 
 
-/**/
+/*
 
 
 	FILE *fp = fopen("output9.bin", "wb");
