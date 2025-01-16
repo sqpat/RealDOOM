@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/16 13:23:03
+Created on:       25/01/16 15:19:05
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -48,13 +48,13 @@ hu_lib_TEXT            CODE           AUTO           02b3:4a60       000001b1
 m_menu_TEXT            CODE           AUTO           02b3:4c20       00001470
 sounds_TEXT            CODE           AUTO           02b3:6090       00000000
 D_WIPE_TEXT            CODE           AUTO           02b3:6090       000002f1
-D_FINALE_TEXT          CODE           AUTO           02b3:6382       0000078c
-D_ALGO_TEXT            CODE           AUTO           02b3:6b0e       00000045
-dmx_TEXT               CODE           AUTO           02b3:6b60       000001b5
-dutils_TEXT            CODE           AUTO           02b3:6d20       0000008b
-wi_stuff_TEXT          CODE           AUTO           02b3:6db0       00000f16
-MATH_TEXT              CODE           AUTO           02b3:7cc6       00000791
-f_finale_TEXT          CODE           AUTO           02b3:8460       00000464
+D_FINALE_TEXT          CODE           AUTO           02b3:6382       00000aab
+D_ALGO_TEXT            CODE           AUTO           02b3:6e2e       00000045
+dmx_TEXT               CODE           AUTO           02b3:6e80       000001b5
+dutils_TEXT            CODE           AUTO           02b3:7040       0000008b
+wi_stuff_TEXT          CODE           AUTO           02b3:70d0       00000f16
+MATH_TEXT              CODE           AUTO           02b3:7fe6       00000791
+f_finale_TEXT          CODE           AUTO           02b3:8780       00000144
 g_setup_TEXT           CODE           AUTO           02b3:88d0       000002c0
 r_setup_TEXT           CODE           AUTO           02b3:8b90       00000445
 st_setup_TEXT          CODE           AUTO           02b3:8fe0       000001fa
@@ -905,88 +905,88 @@ Module: d_finale.obj(d_finale.ASM)
 02b3:6382*     V_DrawPatchFlipped_
 02b3:641f*     F_CastPrint_
 02b3:66b7*     F_TextWrite_
-02b3:6ab1      F_Drawer_
+02b3:6a94      F_CastTicker_
+02b3:6dd0      F_Drawer_
 02b3:67d2*     F_DrawPatchCol_
 02b3:6a37      F_StartCast_
 Module: d_algo.obj(d_algo.ASM)
-02b3:6b37      hackDSBack_
-02b3:6b53*     D_ALGO_END_
-02b3:6b0e      resetDS_
-02b3:6b16*     hackDS_
+02b3:6e57      hackDSBack_
+02b3:6e73*     D_ALGO_END_
+02b3:6e2e      resetDS_
+02b3:6e36*     hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
-02b3:6b60      TS_FreeTaskList_
-02b3:6b62      TS_SetClockSpeed_
-02b3:6bac+     TS_SetTimer_
-02b3:6bd6      TS_SetTimerToMaxTaskRate_
-02b3:6be6+     TS_ServiceScheduleIntEnabled_
-02b3:6c9a+     TS_Startup_
-02b3:6ce2      TS_ScheduleTask_
-02b3:6d0c      TS_Dispatch_
+02b3:6e80      TS_FreeTaskList_
+02b3:6e82      TS_SetClockSpeed_
+02b3:6ecc+     TS_SetTimer_
+02b3:6ef6      TS_SetTimerToMaxTaskRate_
+02b3:6f06+     TS_ServiceScheduleIntEnabled_
+02b3:6fba+     TS_Startup_
+02b3:7002      TS_ScheduleTask_
+02b3:702c      TS_Dispatch_
 Module: dutils.obj(C:\REALDOOM\dutils.c)
-02b3:6d20      cht_CheckCheat_
-02b3:6d78      cht_GetParam_
+02b3:7040      cht_CheckCheat_
+02b3:7098      cht_GetParam_
 Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
-02b3:6db0*     WI_GetPatch_
-02b3:6dc2*     WI_GetAnimPatch_
-02b3:6dd4+     maketwocharint_
-02b3:6dfa+     WI_slamBackground_
-02b3:6e32+     WI_drawLF_
-02b3:6e98+     WI_drawEL_
-02b3:6eec+     WI_drawOnLnode_
-02b3:6fd2+     WI_updateAnimatedBack_
-02b3:70fa+     WI_drawAnimatedBack_
-02b3:717c+     WI_drawNum_
-02b3:7256+     WI_drawPercent_
-02b3:729a+     WI_drawTime_
-02b3:7342*     WI_initNoState_
-02b3:7354*     WI_initShowNextLoc_
-02b3:7368+     WI_updateShowNextLoc_
-02b3:739a*     WI_drawNoState_
-02b3:73a0+     WI_drawShowNextLoc_
-02b3:741a*     WI_initStats_
-02b3:7442+     WI_initAnimatedBack_
-02b3:74c4+     WI_updateStats_
-02b3:76ca+     WI_drawStats_
-02b3:77e4*     WI_checkForAccelerate_
-02b3:7824+     WI_loadData_
-02b3:7a18*     WI_End_
-02b3:7a18*     WI_unloadData_
-02b3:7a1e+     WI_updateNoState_
-02b3:7a2e*     G_WorldDone_
-02b3:7a52      WI_Ticker_
-02b3:7aaa      WI_Drawer_
-02b3:7adc+     WI_initVariables_
-02b3:7b38+     WI_Init_
-02b3:7cb0      WI_Start_
+02b3:70d0*     WI_GetPatch_
+02b3:70e2*     WI_GetAnimPatch_
+02b3:70f4+     maketwocharint_
+02b3:711a+     WI_slamBackground_
+02b3:7152+     WI_drawLF_
+02b3:71b8+     WI_drawEL_
+02b3:720c+     WI_drawOnLnode_
+02b3:72f2+     WI_updateAnimatedBack_
+02b3:741a+     WI_drawAnimatedBack_
+02b3:749c+     WI_drawNum_
+02b3:7576+     WI_drawPercent_
+02b3:75ba+     WI_drawTime_
+02b3:7662*     WI_initNoState_
+02b3:7674*     WI_initShowNextLoc_
+02b3:7688+     WI_updateShowNextLoc_
+02b3:76ba*     WI_drawNoState_
+02b3:76c0+     WI_drawShowNextLoc_
+02b3:773a*     WI_initStats_
+02b3:7762+     WI_initAnimatedBack_
+02b3:77e4+     WI_updateStats_
+02b3:79ea+     WI_drawStats_
+02b3:7b04*     WI_checkForAccelerate_
+02b3:7b44+     WI_loadData_
+02b3:7d38*     WI_End_
+02b3:7d38*     WI_unloadData_
+02b3:7d3e+     WI_updateNoState_
+02b3:7d4e*     G_WorldDone_
+02b3:7d72      WI_Ticker_
+02b3:7dca      WI_Drawer_
+02b3:7dfc+     WI_initVariables_
+02b3:7e58+     WI_Init_
+02b3:7fd0      WI_Start_
 Module: math.obj(math.ASM)
-02b3:8087      FastDiv32u16u_
-02b3:8219      FastDiv3232FFFF_
-02b3:7dd7      FixedMulTrigNoShift_
-02b3:7eb9      FastMul16u32u_
-02b3:8019      FixedDiv_
-02b3:7e22*     FixedMulTrig16_
-02b3:7ece      div48_32_
-02b3:812d*     FastDiv3232_RPTA_
-02b3:8329*     div48_32_whole_
-02b3:7e3c      FastMulTrig16_
-02b3:7e65      FixedMulTrigSpeed_
-02b3:7eaa*     FixedMul16u32u_
-02b3:80a5      FastDiv3216u_
-02b3:82c2      FixedDivWholeA_
-02b3:7cff*     FixedMulBig16u32_
-02b3:7dd3      FixedMulTrig_
-02b3:7d93      FixedMul1632_
-02b3:7d52      FixedMul2432_
-02b3:7d08      FixedMul2424_
-02b3:7cc6      FixedMul_
-02b3:80fc      FastDiv3232_shift_3_8_
-02b3:7e81      FixedMulBig1632_
-02b3:7e95      FixedMul16u32_
-02b3:7e69      FixedMulTrigSpeedNoShift_
+02b3:83a7      FastDiv32u16u_
+02b3:8539      FastDiv3232FFFF_
+02b3:80f7      FixedMulTrigNoShift_
+02b3:81d9      FastMul16u32u_
+02b3:8339      FixedDiv_
+02b3:8142*     FixedMulTrig16_
+02b3:81ee      div48_32_
+02b3:844d*     FastDiv3232_RPTA_
+02b3:8649*     div48_32_whole_
+02b3:815c      FastMulTrig16_
+02b3:8185      FixedMulTrigSpeed_
+02b3:81ca*     FixedMul16u32u_
+02b3:83c5      FastDiv3216u_
+02b3:85e2      FixedDivWholeA_
+02b3:801f*     FixedMulBig16u32_
+02b3:80f3      FixedMulTrig_
+02b3:8072      FixedMul2432_
+02b3:80b3      FixedMul1632_
+02b3:8028      FixedMul2424_
+02b3:7fe6      FixedMul_
+02b3:841c      FastDiv3232_shift_3_8_
+02b3:81a1      FixedMulBig1632_
+02b3:81b5      FixedMul16u32_
+02b3:8189      FixedMulTrigSpeedNoShift_
 Module: f_finale.obj(C:\REALDOOM\f_finale.c)
-02b3:8460      F_Responder_
-02b3:846e      F_Ticker_
-02b3:850e+     F_CastTicker_
+02b3:8780      F_Responder_
+02b3:878e      F_Ticker_
 02b3:882e+     F_CastResponder_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 02b3:88d0      R_CheckTextureNumForName_
@@ -1317,9 +1317,9 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 1a2c:217d*     R_FindPlane_
 1a2c:3569*     R_DrawColumnPrep_
 1a2c:3ba1*     R_DrawPSprite_
-1a2c:3fe9      R_RenderBSPNode_
 1a2c:2554*     R_ProjectSprite_
 1a2c:248c*     R_CheckPlane_
+1a2c:3fe9      R_RenderBSPNode_
 1a2c:1f91*     FixedMulTrigNoShiftBSPLocal_
 1a2c:1e58*     R_ScaleFromGlobalAngle_
 1a2c:3df3*     R_PointToAngle16_

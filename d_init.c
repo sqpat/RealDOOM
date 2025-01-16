@@ -901,7 +901,7 @@ void __far D_DoomMain2(void) {
 
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(F_StartCast, (byte __far *)F_CastTicker - (byte __far *)F_StartCast, 1, fp);
+	FAR_fwrite(F_CastTicker, (byte __far *)F_CastResponder - (byte __far *)F_CastTicker, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

@@ -28,9 +28,9 @@ EXTRN Z_QuickMapStatusNoScreen4_:PROC
 EXTRN Z_QuickMapRender7000_:PROC
 EXTRN Z_QuickMapScratch_5000_:PROC
 EXTRN Z_QuickMapScreen0_:PROC
+EXTRN Z_QuickMapPhysics_:PROC
 EXTRN W_CacheLumpNumDirect_:PROC
 EXTRN W_CacheLumpNameDirect_:PROC
-EXTRN getStringByIndex_:PROC
 EXTRN W_CacheLumpNumDirectFragment_:PROC
 EXTRN W_GetNumForName_:PROC
 EXTRN S_StartSound_:PROC
@@ -328,7 +328,7 @@ cmp   al, 11
 jne   commercial_below_15_not_11
 ; commercial case 11
 mov   bx, OFFSET flat_rrock14
-mov   cx, 242
+mov   cx, C2TEXT
 got_flat_values:
 mov   ax, 65 ; set finale_music
 got_flat_values_and_music:
@@ -354,28 +354,28 @@ commercial_above_or_equal_to_15:
 ja    commercial_above_15
 ; commercial case 15 
 mov   bx, OFFSET flat_rrock13
-mov   cx, 245       ; todo put these in defines too?
+mov   cx, C5TEXT       ; todo put these in defines too?
 jmp   got_flat_values
 commercial_above_15:
 cmp   al, 31
 jne   commercial_above_15_not_31
 ; commercial case 31
 mov   bx, OFFSET flat_rrock19
-mov   cx, 246
+mov   cx, C6TEXT
 jmp   got_flat_values
 commercial_above_15_not_31:
 cmp   al, 30
 jne   commercial_above_15_not_31_30
 ; commercial case 30
 mov   bx, OFFSET flat_floor4_8
-mov   cx, 244
+mov   cx, C4TEXT
 jmp   got_flat_values
 commercial_above_15_not_31_30:
 cmp   al, 20
 jne   got_flat_values
 ;commercial case 20
 mov   bx, OFFSET flat_floor4_8
-mov   cx, 243
+mov   cx, C3TEXT
 jmp   got_flat_values
 jump_to_handle_doom1:
 jmp   handle_doom1
@@ -384,7 +384,7 @@ cmp   al, 6
 jne   got_flat_values
 ; commercial case 6
 mov   bx, OFFSET flat_slime16
-mov   cx, 241
+mov   cx, C1TEXT
 jmp   got_flat_values
 handle_doom1:
 mov   cl, byte ptr ds:[_gameepisode]
@@ -402,7 +402,7 @@ mov   al, byte ptr ds:[_gameepisode]
 cbw
 mov   cx, ax
 mov   ax, 31   ; set finale_music
-add   cx, 236
+add   cx, (E1TEXT-1)
 jmp   got_flat_values_and_music
 
 ENDP
@@ -1099,6 +1099,351 @@ ret
 
 ENDP
 
+MAX_CASTNUM = 017
+
+PROC F_CastTicker_ NEAR
+PUBLIC F_CastTicker_
+
+; lots of switch block shenanigans going on. 
+
+push  bx
+push  dx
+push  bp
+mov   bp, sp
+sub   sp, 0Ch
+mov   word ptr [bp - 4], GETMISSILESTATEADDR
+mov   word ptr [bp - 2], INFOFUNCLOADSEGMENT
+mov   word ptr [bp - 0Ch], GETSEESTATEADDR
+mov   word ptr [bp - 0Ah], INFOFUNCLOADSEGMENT
+mov   word ptr [bp - 8], GETMELEESTATEADDR
+dec   byte ptr [_casttics]
+mov   word ptr [bp - 6], INFOFUNCLOADSEGMENT
+cmp   byte ptr [_casttics], 0
+jle   do_castticker
+exit_castticker:
+LEAVE_MACRO
+pop   dx
+pop   bx
+ret   
+do_castticker:
+call  Z_QuickMapPhysics_
+mov   ax, word ptr [_caststate+2]
+mov   bx, word ptr [_caststate]
+mov   es, ax
+cmp   byte ptr es:[bx + 2], 0FFh
+je    label_1
+jmp   label_2
+label_1:
+inc   byte ptr [_castnum]
+mov   byte ptr [_castdeath], 0
+cmp   byte ptr [_castnum], MAX_CASTNUM
+jne   label_8
+mov   byte ptr [_castnum], 0
+label_8:
+mov   al, byte ptr [_castnum]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bx + _castorder+1]
+xor   ah, ah
+call  dword ptr [bp - 0Ch]
+mov   dl, al
+xor   dh, dh
+xor   ax, ax
+call  S_StartSound_
+mov   al, byte ptr [_castnum]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bx + _castorder+1]
+xor   ah, ah
+call  dword ptr  [bp - 0Ch]
+mov   dx, ax
+shl   ax, 2
+sub   ax, dx
+mov   word ptr [_caststate], STATES_SEGMENT
+add   ax, ax
+mov   byte ptr [_castframes], 0
+label_40:
+mov   word ptr [_caststate], ax
+label_28:
+cmp   byte ptr [_castattacking], 0
+je    label_6
+cmp   byte ptr [_castframes], 24
+jne   label_9
+label_5:
+xor   al, al
+mov   byte ptr [_castattacking], al
+mov   byte ptr [_castframes], al
+mov   al, byte ptr [_castnum]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bx + _castorder+1]
+xor   ah, ah
+call  dword ptr [bp - 0Ch]
+mov   dx, ax
+shl   ax, 2
+sub   ax, dx
+add   ax, ax
+mov   word ptr [_caststate+2], STATES_SEGMENT
+mov   word ptr [_caststate], ax
+label_6:
+les   bx, dword ptr [_caststate]
+mov   al, byte ptr es:[bx + 2]
+mov   byte ptr [_casttics], al
+cmp   al, 0FFh
+je    label_7
+jmp   exit_castticker
+label_7:
+mov   byte ptr [_casttics], 15
+LEAVE_MACRO 
+pop   dx
+pop   bx
+ret   
+label_9:
+mov   al, byte ptr [_castnum]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bx + _castorder+1]
+xor   ah, ah
+call  dword ptr [bp - 0Ch]
+mov   dx, ax
+shl   ax, 2
+mov   bx, word ptr [_caststate+2]
+sub   ax, dx
+mov   dx, word ptr [_caststate]
+add   ax, ax
+cmp   bx, STATES_SEGMENT
+jne   label_6
+cmp   dx, ax
+je    label_5
+jmp   label_6
+label_2:
+cmp   word ptr es:[bx + 4], 0
+jne   label_3
+jmp   label_1
+label_3:
+cmp   ax, STATES_SEGMENT
+jne   label_4
+cmp   bx, (S_PLAY_ATK1 * 6)   ; 6 is sizeof state
+jne   label_4
+jmp   label_5
+label_4:
+mov   ax, word ptr es:[bx + 4]
+mov   dx, ax
+shl   dx, 2
+sub   dx, ax
+mov   word ptr [_caststate+2], STATES_SEGMENT
+add   dx, dx
+inc   byte ptr [_castframes]
+mov   word ptr [_caststate], dx
+cmp   ax, S_TROO_ATK3
+jb    label_10
+jmp   label_11
+label_10:
+cmp   ax, S_SKEL_FIST4
+jb    label_35
+jmp   label_34
+label_35:
+cmp   ax, S_SPOS_ATK2
+jb    label_32
+jmp   label_33
+label_32:
+cmp   ax, S_POSS_ATK2
+je    label_31
+jmp   label_30
+label_31:
+mov   ax, 1
+label_13:
+mov   dl, al
+xor   dh, dh
+xor   ax, ax
+call  S_StartSound_
+cmp   byte ptr [_castframes], 0Ch
+je    label_27
+jump_to_label_28:
+jmp   label_28
+label_27:
+mov   byte ptr [_castattacking], 1
+cmp   byte ptr [_castonmelee], 0
+jne   jump_to_label_29
+mov   al, byte ptr [_castnum]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bx + _castorder+1]
+xor   ah, ah
+call  dword ptr [bp - 4]
+label_26:
+mov   dx, ax
+shl   ax, 2
+sub   ax, dx
+add   ax, ax
+mov   word ptr [_caststate+2], STATES_SEGMENT
+mov   word ptr [_caststate], ax
+xor   byte ptr [_castonmelee], 1
+mov   ax, word ptr [_caststate+2]
+mov   dx, word ptr [_caststate]
+cmp   ax, STATES_SEGMENT
+jne   jump_to_label_28
+test  dx, dx
+jne   jump_to_label_28
+cmp   byte ptr [_castonmelee], 0
+je    label_36
+mov   al, byte ptr [_castnum]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bx + _castorder+1]
+xor   ah, ah
+call  dword ptr [bp - 8]
+mov   dx, ax
+shl   ax, 2
+sub   ax, dx
+add   ax, ax
+mov   word ptr [_caststate+2], STATES_SEGMENT
+jmp   label_40
+label_11:
+ja    label_12
+mov   ax, SFX_CLAW
+jmp   label_13
+jump_to_label_29:
+jmp   label_29
+label_12:
+cmp   ax, S_SPID_ATK2
+jae   label_44
+cmp   ax, S_BOSS_ATK2
+jae   label_43
+cmp   ax, S_HEAD_ATK2
+jne   label_42
+label_21:
+mov   ax, SFX_FIRSHT
+jmp   label_13
+label_44:
+cmp   ax, S_SPID_ATK3
+ja    label_22
+mov   ax, SFX_SHOTGN
+jmp   label_13
+label_22:
+cmp   ax, S_CYBER_ATK4
+jae   label_23
+cmp   ax, S_CYBER_ATK2
+jne   label_24
+label_37:
+mov   ax, SFX_RLAUNC
+jmp   label_13
+label_36:
+jmp   label_25
+label_23:
+jbe   label_37
+cmp   ax, S_PAIN_ATK3
+jne   label_38
+mov   ax, SFX_SKLATK
+jmp   label_13
+label_38:
+cmp   ax, S_CYBER_ATK6
+je    label_37
+label_14:
+xor   ax, ax
+jmp   label_13
+label_24:
+cmp   ax, S_BSPI_ATK2
+jne   label_14
+mov   ax, SFX_PLASMA
+jmp   label_13
+label_43:
+jbe   label_21
+cmp   ax, S_SKULL_ATK2
+jne   label_39
+mov   ax, SFX_SKLATK
+jmp   label_13
+label_39:
+cmp   ax, S_BOS2_ATK2
+je    label_21
+jmp   label_14
+label_42:
+cmp   ax, S_SARG_ATK2
+jne   label_14
+mov   ax, SFX_SGTATK
+jmp   label_13
+label_34:
+ja    label_20
+mov   ax, SFX_SKEPCH
+jmp   label_13
+label_20:
+cmp   ax, S_FATT_ATK5
+jae   label_19
+cmp   ax, S_FATT_ATK2
+jne   label_18
+label_15:
+mov   ax, SFX_FIRSHT
+jmp   label_13
+label_19:
+jbe   label_15
+cmp   ax, S_FATT_ATK8
+jb    label_14
+jbe   label_15
+cmp   ax, S_CPOS_ATK2
+jb    label_14
+cmp   ax, S_CPOS_ATK4
+ja    label_14
+mov   ax, SFX_SHOTGN
+jmp   label_13
+label_18:
+cmp   ax, S_SKEL_MISS2
+jne   label_14
+mov   ax, SFX_SKEATK
+jmp   label_13
+label_33:
+ja    label_16
+mov   ax, SFX_SHOTGN
+jmp   label_13
+label_16:
+cmp   ax, S_SKEL_FIST2
+jne   label_17
+mov   ax, SFX_SKESWG
+jmp   label_13
+label_17:
+cmp   ax, S_VILE_ATK2
+je    label_41
+jump_to_label_14:
+jmp   label_14
+label_41:
+mov   ax, SFX_VILATK
+jmp   label_13
+label_30:
+cmp   ax, S_PLAY_ATK1
+jne   jump_to_label_14
+mov   ax, SFX_DSHTGN
+jmp   label_13
+label_29:
+mov   al, byte ptr [_castnum]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bx + _castorder+1]
+xor   ah, ah
+call  dword ptr [bp - 8]
+jmp   label_26
+label_25:
+mov   al, byte ptr [_castnum]
+cbw  
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bx + _castorder+1]
+xor   ah, ah
+call  dword ptr [bp - 4]
+mov   dx, ax
+shl   ax, 2
+sub   ax, dx
+add   ax, ax
+mov   word ptr [_caststate+2], STATES_SEGMENT
+jmp   label_40
+
+
+ENDP
 
 str_help2:
 db "HELP2", 0

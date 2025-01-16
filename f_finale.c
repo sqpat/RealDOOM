@@ -453,6 +453,7 @@ void __near F_StartCast (void) {
 //
 // F_CastTicker
 //
+/*
 void __near F_CastTicker (void) {
     int16_t		st;
     int16_t		sfx;
@@ -551,7 +552,7 @@ void __near F_CastTicker (void) {
 	}
 }
 
-
+*/
 //
 // F_CastResponder
 //

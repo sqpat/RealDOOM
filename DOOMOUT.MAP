@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/16 13:23:04
+Created on:       25/01/16 15:21:35
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -53,8 +53,8 @@ dutils_TEXT            CODE           AUTO           02b3:5fe0       0000008b
 wi_stuff_TEXT          CODE           AUTO           02b3:6070       00000f16
 MEMORY_TEXT            CODE           AUTO           02b3:6f86       00000000
 MATH_TEXT              CODE           AUTO           02b3:6f86       00000791
-D_FINALE_TEXT          CODE           AUTO           02b3:7718       0000078c
-f_finale_TEXT          CODE           AUTO           02b3:7eb0       00000464
+D_FINALE_TEXT          CODE           AUTO           02b3:7718       00000aab
+f_finale_TEXT          CODE           AUTO           02b3:81d0       00000144
 g_setup_TEXT           CODE           AUTO           02b3:8320       000002c0
 r_setup_TEXT           CODE           AUTO           02b3:85e0       00000445
 st_setup_TEXT          CODE           AUTO           02b3:8a30       000001fa
@@ -954,8 +954,8 @@ Module: math.obj(math.ASM)
 02b3:7582      FixedDivWholeA_
 02b3:6fbf*     FixedMulBig16u32_
 02b3:7093      FixedMulTrig_
-02b3:7053      FixedMul1632_
 02b3:7012      FixedMul2432_
+02b3:7053      FixedMul1632_
 02b3:6fc8      FixedMul2424_
 02b3:6f86      FixedMul_
 02b3:73bc      FastDiv3232_shift_3_8_
@@ -970,13 +970,13 @@ Module: d_finale.obj(d_finale.ASM)
 02b3:7718*     V_DrawPatchFlipped_
 02b3:77b5*     F_CastPrint_
 02b3:7a4d*     F_TextWrite_
-02b3:7e47      F_Drawer_
+02b3:7e2a      F_CastTicker_
+02b3:8166      F_Drawer_
 02b3:7b68*     F_DrawPatchCol_
 02b3:7dcd      F_StartCast_
 Module: f_finale.obj(C:\REALDOOM\f_finale.c)
-02b3:7eb0      F_Responder_
-02b3:7ebe      F_Ticker_
-02b3:7f5e+     F_CastTicker_
+02b3:81d0      F_Responder_
+02b3:81de      F_Ticker_
 02b3:827e+     F_CastResponder_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 02b3:8320      R_CheckTextureNumForName_
@@ -1307,9 +1307,9 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 19d1:217d*     R_FindPlane_
 19d1:3569*     R_DrawColumnPrep_
 19d1:3ba1*     R_DrawPSprite_
-19d1:3fe9      R_RenderBSPNode_
 19d1:2554*     R_ProjectSprite_
 19d1:248c*     R_CheckPlane_
+19d1:3fe9      R_RenderBSPNode_
 19d1:1f91*     FixedMulTrigNoShiftBSPLocal_
 19d1:1e58*     R_ScaleFromGlobalAngle_
 19d1:3df3*     R_PointToAngle16_
@@ -1676,4 +1676,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00026ba0 (158624.)
 Entry point address: 1f42:22d8
-Link time: 00:00.19
+Link time: 00:00.74
