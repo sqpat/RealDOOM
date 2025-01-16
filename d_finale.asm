@@ -725,43 +725,41 @@ ENDP
 PROC F_DrawPatchCol_ NEAR
 PUBLIC F_DrawPatchCol_
 
+; technically i think this is only called with single post columns...
 
 push  dx
 push  si
 push  di
 
-mov   di, bx
 mov   ds, cx
 mov   cx, SCREEN0_SEGMENT
 mov   es, cx
-mov   cx, ax
-cmp   byte ptr ds:[di], 0FFh
+mov   cx, ax    ; dest x 
+cmp   byte ptr ds:[bx], 0FFh
 je    exit_drawpatchcol
 draw_next_post:
-mov   al, byte ptr ds:[di]
+mov   al, byte ptr ds:[bx]  ; get topdelta..
 xor   ah, ah
 mov   dx, SCREENWIDTH
 mul   dx
-mov   si, cx
-add   si, ax
-mov   al, byte ptr ds:[di + 1]
-lea   bx, [di + 3]
+mov   di, cx    ; screen x
+add   di, ax    ; plus column topdelta
+mov   al, byte ptr ds:[bx + 1]  ; get count
+lea   si, [bx + 3]              ; column pixels
 xor   ah, ah
+xchg  ax, cx     ; count in cx so we can loop.
 draw_next_pixel:
-dec   ax
-js   done_with_post
-mov   dl, byte ptr ds:[bx]
-inc   bx
-mov   byte ptr es:[si], dl
-add   si, SCREENWIDTH
-jmp   draw_next_pixel
+movsb
+add   di, (SCREENWIDTH - 1)
+loop  draw_next_pixel
 
 done_with_post:
-mov   al, byte ptr ds:[di + 1]
+xchg  ax, cx                ; restore cx.
+mov   al, byte ptr ds:[bx + 1]
 xor   ah, ah
-add   di, ax
-add   di, 4
-cmp   byte ptr ds:[di], 0FFh
+add   bx, ax
+add   bx, 4                     ; next post address
+cmp   byte ptr ds:[bx], 0FFh
 jne   draw_next_post
 exit_drawpatchcol:
 push  ss
