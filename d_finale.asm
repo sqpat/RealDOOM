@@ -55,6 +55,12 @@ EXTRN _filename_argument:BYTE
 EXTRN _firstspritelump:WORD
 EXTRN _finale_laststage:BYTE
 EXTRN _is_ultimate:BYTE
+EXTRN _wipegamestate:BYTE
+EXTRN _castattacking:BYTE
+EXTRN _castdeath:BYTE
+EXTRN _castonmelee:BYTE
+EXTRN _castframes:BYTE
+EXTRN _casttics:BYTE
 
 .CODE
 
@@ -1045,6 +1051,51 @@ push  bx
 mov   bx, OFFSET str_pfub2         ; string addr...
 jmp   draw_chosen_pfub
 
+
+ENDP
+
+
+
+
+PROC F_StartCast_ NEAR
+PUBLIC F_StartCast_
+
+
+push  bx
+push  dx
+
+cmp   word ptr [_finalestage], 2
+je    dont_force_screenwipe
+mov   byte ptr [_wipegamestate], 0FFh  ; force screen wipe
+dont_force_screenwipe:
+mov   al, byte ptr [_castorder+1]     ;  castorder[castnum].type). castnum is 0.
+xor   ah, ah
+mov   byte ptr [_castnum], 0
+; call getSeeState
+db    09Ah
+dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+mov   bx, ax
+shl   bx, 2
+sub   bx, ax
+mov   ax, STATES_SEGMENT
+add   bx, bx
+mov   word ptr [_caststate+2], ax
+mov   word ptr [_caststate], bx
+mov   es, ax
+mov   al, byte ptr es:[bx + 2]
+mov   dx, 1
+mov   byte ptr [_casttics], al
+xor   al, al
+mov   byte ptr [_castdeath], 0
+mov   byte ptr [_castframes], al
+mov   byte ptr [_castonmelee], al
+mov   byte ptr [_castattacking], al
+mov   ax, MUS_EVIL
+mov   word ptr [_finalestage], 2
+call  S_ChangeMusic_
+pop   dx
+pop   bx
+ret   
 
 ENDP
 

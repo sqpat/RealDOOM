@@ -857,15 +857,18 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 
 // check for doom ultimate.
 void check_is_ultimate(){
-	int16_t bytes[3];
+	int16_t words[3];
 	FILE* fp = fopen("doom.wad", "rb");
-	fread (bytes, sizeof(int16_t), 3, fp);
+	fread (words, sizeof(int16_t), 3, fp);
 	fclose(fp);
-	if (bytes[2] == 0x0902){
+	if (words[2] == 0x0902){
 		is_ultimate = true;
 		EpiDef.numitems = 4;
 	}
 }
+void	__near F_StartCast (void);
+void	__near F_CastTicker (void);
+boolean __near F_CastResponder (event_t __far *ev);
 
 
 //void checkDS(int16_t a);
@@ -898,7 +901,7 @@ void __far D_DoomMain2(void) {
 
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(F_Drawer, (byte __far *)R_CheckTextureNumForName - (byte __far *)F_Drawer, 1, fp);
+	FAR_fwrite(F_StartCast, (byte __far *)F_CastTicker - (byte __far *)F_StartCast, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

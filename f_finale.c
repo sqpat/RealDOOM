@@ -430,7 +430,7 @@ void __near F_TextWrite (void) {
 //
 // F_StartCast
 //
-
+/*
 void __near F_StartCast (void) {
 	//todoaddr inline later
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
@@ -448,7 +448,7 @@ void __near F_StartCast (void) {
     castattacking = false;
     S_ChangeMusic(mus_evil, true);
 }
-
+*/
 
 //
 // F_CastTicker

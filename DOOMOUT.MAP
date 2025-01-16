@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/16 12:33:01
+Created on:       25/01/16 13:23:04
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -53,8 +53,8 @@ dutils_TEXT            CODE           AUTO           02b3:5fe0       0000008b
 wi_stuff_TEXT          CODE           AUTO           02b3:6070       00000f16
 MEMORY_TEXT            CODE           AUTO           02b3:6f86       00000000
 MATH_TEXT              CODE           AUTO           02b3:6f86       00000791
-D_FINALE_TEXT          CODE           AUTO           02b3:7718       0000072f
-f_finale_TEXT          CODE           AUTO           02b3:7e50       000004d0
+D_FINALE_TEXT          CODE           AUTO           02b3:7718       0000078c
+f_finale_TEXT          CODE           AUTO           02b3:7eb0       00000464
 g_setup_TEXT           CODE           AUTO           02b3:8320       000002c0
 r_setup_TEXT           CODE           AUTO           02b3:85e0       00000445
 st_setup_TEXT          CODE           AUTO           02b3:8a30       000001fa
@@ -970,14 +970,14 @@ Module: d_finale.obj(d_finale.ASM)
 02b3:7718*     V_DrawPatchFlipped_
 02b3:77b5*     F_CastPrint_
 02b3:7a4d*     F_TextWrite_
-02b3:7dea      F_Drawer_
+02b3:7e47      F_Drawer_
 02b3:7b68*     F_DrawPatchCol_
+02b3:7dcd      F_StartCast_
 Module: f_finale.obj(C:\REALDOOM\f_finale.c)
-02b3:7e50      F_Responder_
-02b3:7e5e      F_Ticker_
-02b3:7efe+     F_StartCast_
-02b3:7f6a+     F_CastTicker_
-02b3:828a+     F_CastResponder_
+02b3:7eb0      F_Responder_
+02b3:7ebe      F_Ticker_
+02b3:7f5e+     F_CastTicker_
+02b3:827e+     F_CastResponder_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 02b3:8320      R_CheckTextureNumForName_
 02b3:8380      R_TextureNumForName_

@@ -288,6 +288,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0586))
 #define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x063C))
 
+#define InfoFuncLoadSegment              ((segment_t) ((int32_t)InfoFuncLoadAddr >> 16))
+
 //#define SIZE_D_INFO          0x0698
 #define SIZE_D_INFO            0x069C
 // 0x93E9
