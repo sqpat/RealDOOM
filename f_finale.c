@@ -824,6 +824,8 @@ void __near F_BunnyScroll (void) {
 //
 // F_Drawer
 //
+void __far F_Drawer (void);
+/*
 void __far F_Drawer (void) {
     if (finalestage == 2) {
 		F_CastDrawer ();  // F_CastDrawer calls F_CastPrint which restores physics quickmap
@@ -856,6 +858,7 @@ void __far F_Drawer (void) {
 			
 	
 }
+*/
 
 
 #endif

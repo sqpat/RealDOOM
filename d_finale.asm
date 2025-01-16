@@ -54,6 +54,7 @@ EXTRN _gameepisode:BYTE
 EXTRN _filename_argument:BYTE
 EXTRN _firstspritelump:WORD
 EXTRN _finale_laststage:BYTE
+EXTRN _is_ultimate:BYTE
 
 .CODE
 
@@ -1044,6 +1045,84 @@ push  bx
 mov   bx, OFFSET str_pfub2         ; string addr...
 jmp   draw_chosen_pfub
 
+
+ENDP
+
+
+str_help2:
+db "HELP2", 0
+str_credit:
+db "CREDIT", 0
+str_victory2:
+db "VICTORY2", 0
+str_endpic:
+db "ENDPIC", 0
+
+PROC F_Drawer_ FAR
+PUBLIC F_Drawer_
+
+
+
+push  bx
+push  dx
+mov   ax, word ptr [_finalestage]
+cmp   ax, 2
+je    call_castdrawer
+test  ax, ax
+je    call_textwrite
+mov   bl, byte ptr [_gameepisode]
+xor   bh, bh
+mov   ax, OFFSET _filename_argument
+cmp   bl, 4
+ja    exit_fdrawer
+je    fdrawer_episode4
+cmp   bl, 2
+je    fdrawer_episode2
+ja    fdrawer_episode3
+
+
+fdrawer_episode1:
+
+
+
+cmp   byte ptr [_is_ultimate], 0
+jne   do_ultimate_fullscreenpatch
+mov   bx, OFFSET str_help2
+do_finaledraw:
+call  F_CopyString9_
+
+xor   dx, dx
+call  V_DrawFullscreenPatch_
+exit_fdrawer:
+pop   dx
+pop   bx
+retf  
+
+call_castdrawer:
+call  F_CastDrawer_
+pop   dx
+pop   bx
+retf  
+call_textwrite:
+call  F_TextWrite_
+pop   dx
+pop   bx
+retf  
+
+do_ultimate_fullscreenpatch:
+mov   bx, OFFSET str_credit
+jmp   do_finaledraw
+fdrawer_episode2:
+mov   bx, OFFSET str_victory2
+jmp   do_finaledraw
+fdrawer_episode3:
+call  F_BunnyScroll_
+pop   dx
+pop   bx
+retf  
+fdrawer_episode4:
+mov   bx, OFFSET str_endpic
+jmp   do_finaledraw
 
 ENDP
 
