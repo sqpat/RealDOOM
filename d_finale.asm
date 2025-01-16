@@ -901,7 +901,8 @@ jl    xcoord_ready
 jmp   calculate_xcoord
 xcoord_ready:
 mov   bx, word ptr [bp - 8]
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   es, word ptr [bp - 0Eh]
 add   bx, ax
 mov   ax, word ptr es:[bx + 8]
@@ -1095,7 +1096,8 @@ mov   byte ptr [_castnum], 0
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   bx, ax
-shl   bx, 2
+shl   bx, 1
+shl   bx, 1
 sub   bx, ax
 mov   ax, STATES_SEGMENT
 add   bx, bx
@@ -1173,7 +1175,8 @@ xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 sub   ax, dx
 mov   word ptr [_caststate], STATES_SEGMENT
 add   ax, ax
@@ -1198,7 +1201,8 @@ xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 sub   ax, dx
 add   ax, ax
 mov   word ptr [_caststate+2], STATES_SEGMENT
@@ -1226,7 +1230,8 @@ xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   bx, word ptr [_caststate+2]
 sub   ax, dx
 mov   dx, word ptr [_caststate]
@@ -1249,7 +1254,8 @@ jmp   label_5
 label_4:
 mov   ax, word ptr es:[bx + 4]
 mov   dx, ax
-shl   dx, 2
+shl   dx, 1
+shl   dx, 1
 sub   dx, ax
 mov   word ptr [_caststate+2], STATES_SEGMENT
 add   dx, dx
@@ -1297,7 +1303,8 @@ dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
 
 label_26:
 mov   dx, ax
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 sub   ax, dx
 add   ax, ax
 mov   word ptr [_caststate+2], STATES_SEGMENT
@@ -1320,7 +1327,8 @@ xor   ah, ah
 db    09Ah
 dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 sub   ax, dx
 add   ax, ax
 mov   word ptr [_caststate+2], STATES_SEGMENT
@@ -1459,7 +1467,8 @@ db    09Ah
 dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
 
 mov   dx, ax
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 sub   ax, dx
 add   ax, ax
 mov   word ptr [_caststate+2], STATES_SEGMENT
@@ -1472,28 +1481,22 @@ PROC F_CastResponder_ NEAR
 PUBLIC F_CastResponder_
 
 
+
 push  bx
-push  bp
-mov   bp, sp
-sub   sp, 8
 mov   bx, ax
 mov   es, dx
-mov   word ptr [bp - 8], GETDEATHSTATEADDR
-mov   word ptr [bp - 6], INFOFUNCLOADSEGMENT
 cmp   byte ptr es:[bx], 0
 jne   exit_fresponder_return0
 cmp   byte ptr [_castdeath], 0
-je    label_51
+je    do_castdeath
 mov   al, 1
-LEAVE_MACRO 
 pop   bx
 ret   
 exit_fresponder_return0:
 xor   al, al
-LEAVE_MACRO 
 pop   bx
 ret   
-label_51:
+do_castdeath:
 mov   al, byte ptr [_castnum]
 cbw  
 mov   bx, ax
@@ -1501,9 +1504,12 @@ add   bx, ax
 mov   al, byte ptr [bx + _CSDATA_castorder+1]
 xor   ah, ah
 mov   byte ptr [_castdeath], 1
-call  dword ptr [bp - 8]
+db    09Ah
+dw    GETDEATHSTATEADDR, INFOFUNCLOADSEGMENT
+
 mov   bx, ax
-shl   bx, 2
+shl   bx, 1
+shl   bx, 1
 sub   bx, ax
 mov   ax, STATES_SEGMENT
 add   bx, bx
@@ -1520,17 +1526,14 @@ cbw
 mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bx + _CSDATA_castorder+1]
-xor   ah, ah
-imul  ax, ax, 0Bh
-mov   word ptr [bp - 4], ax
+mov   ah, 0Bh  ; sizeof mobjinfo?
+mul   ah
+mov   bx, ax
 xor   ax, ax
-mov   word ptr [bp - 2], ax
-mov   bx, word ptr [bp - 4]
 mov   dl, byte ptr [bx + _mobjinfo + 3]
 xor   dh, dh
 call  S_StartSound_
 mov   al, 1
-LEAVE_MACRO
 pop   bx
 ret   
 
