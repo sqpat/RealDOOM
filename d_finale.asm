@@ -31,6 +31,10 @@ EXTRN Z_QuickMapScreen0_:PROC
 EXTRN W_CacheLumpNumDirect_:PROC
 EXTRN W_CacheLumpNameDirect_:PROC
 EXTRN getStringByIndex_:PROC
+EXTRN W_CacheLumpNumDirectFragment_:PROC
+EXTRN W_GetNumForName_:PROC
+EXTRN S_StartSound_:PROC
+EXTRN combine_strings_:PROC
 
 EXTRN _hu_font:WORD
 EXTRN _finaleflat:WORD                         ; todo make cs var
@@ -49,6 +53,7 @@ EXTRN _gamemap:BYTE
 EXTRN _gameepisode:BYTE
 EXTRN _filename_argument:BYTE
 EXTRN _firstspritelump:WORD
+EXTRN _finale_laststage:BYTE
 
 .CODE
 
@@ -769,7 +774,237 @@ pop   si
 pop   dx
 ret   
 
+ENDP
 
+
+str_pfub1:
+db "PFUB1", 0
+str_pfub2:
+db "PFUB2", 0
+str_end:
+db "END", 0
+str_end0:
+db "END0", 0
+
+
+FINALE_PHASE_1_CHANGE = 1130
+FINALE_PHASE_2_CHANGE = 1180
+
+
+PROC F_BunnyScroll_ NEAR
+PUBLIC F_BunnyScroll_
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 018h
+xor   ax, ax
+mov   cx, SCREENHEIGHT
+mov   word ptr [bp - 4], ax
+mov   word ptr [bp - 6], ax
+xor   al, al
+mov   bx, SCREENWIDTH
+mov   byte ptr [bp - 2], al
+xor   ah, ah
+xor   dx, dx
+mov   word ptr [bp - 8], ax
+call  Z_QuickMapScratch_5000_
+xor   ax, ax
+call  V_MarkRect_
+;    scrolled = 320 - (finalecount-230)/2;
+mov   ax, word ptr ds:[_finalecount]
+sub   ax, 230            
+cwd
+sub   ax, dx     ; i dont know what this cwd sub does.
+sar   ax, 1
+mov   word ptr [bp - 0Eh], SCRATCH_SEGMENT_5000
+mov   dx, SCREENWIDTH
+mov   si, 05400h    ; lookup offset
+sub   dx, ax
+xor   di, di
+mov   word ptr [bp - 0Ch], dx
+cmp   dx, SCREENWIDTH
+jg    label_3
+jmp   label_4
+label_3:
+mov   word ptr [bp - 0Ch], SCREENWIDTH
+label_6:
+push  0
+mov   ax, OFFSET str_pfub2
+mov   cx, SCRATCH_SEGMENT_5000
+xor   bx, bx
+push  0
+xor   dx, dx
+call  W_GetNumForName_
+call  W_CacheLumpNumDirectFragment_
+push  0
+mov   ax, OFFSET str_pfub2
+mov   bx, di
+push  0
+mov   cx, si
+call  W_GetNumForName_
+call  W_CacheLumpNumDirectFragment_
+cld   
+label_16:
+mov   ax, word ptr [bp - 0Ch]
+add   ax, dx
+cmp   ax, SCREENWIDTH
+jl    label_8
+jmp   label_9
+label_8:
+mov   bx, word ptr [bp - 8]
+shl   ax, 2
+mov   es, word ptr [bp - 0Eh]
+add   bx, ax
+mov   ax, word ptr es:[bx + 8]
+sub   ax, word ptr [bp - 4]
+mov   bx, word ptr es:[bx + 0Ah]
+sbb   bx, word ptr [bp - 6]
+test  bx, bx
+jg    label_2
+jne   label_1
+cmp   ax, 15000          ; kinda arbitrary "almost 16384" number
+jbe   label_1
+label_2:
+add   word ptr [bp - 4], ax
+adc   word ptr [bp - 6], bx
+cmp   byte ptr [bp - 2], 0
+jne   label_17
+jmp   label_10
+label_17:
+push  word ptr [bp - 6]
+mov   ax, OFFSET str_pfub1
+label_11:
+mov   bx, di
+push  word ptr [bp - 4]
+mov   cx, si
+call  W_GetNumForName_
+call  W_CacheLumpNumDirectFragment_
+xor   ax, ax
+label_1:
+mov   bx, di
+mov   cx, si
+add   bx, ax
+mov   ax, dx
+inc   dx
+call  F_DrawPatchCol_
+cmp   dx, SCREENWIDTH
+jl    label_16
+mov   ax, word ptr ds:[_finalecount]
+cmp   ax, FINALE_PHASE_1_CHANGE
+jl    label_15
+cmp   ax, FINALE_PHASE_2_CHANGE
+jl    label_14
+sub   ax, FINALE_PHASE_2_CHANGE
+mov   bx, 5
+CWD   
+idiv  bx
+mov   bx, ax
+cmp   ax, 6
+jle   label_13
+mov   bx, 6
+label_13:
+mov   al, byte ptr ds:[_finale_laststage]
+cbw  
+cmp   bx, ax
+jle   draw_end0_patch
+mov   dx, 1
+xor   ax, ax
+call  S_StartSound_
+mov   byte ptr ds:[_finale_laststage], bl
+draw_end0_patch:
+lea   dx, [bp - 0Ah]
+lea   ax, [bp - 018h]
+add   bl, 030h    ; ascii '0'
+push  ds
+mov   cx, ds
+mov   byte ptr [bp - 0Ah], bl
+push  dx
+mov   bx, OFFSET str_end0
+mov   dx, ds
+mov   byte ptr [bp - 9], 0
+
+call  combine_strings_
+
+mov   bx, word ptr [bp - 8]
+mov   cx, word ptr [bp - 0Eh]
+lea   ax, [bp - 018h]        ; name addr
+mov   dx, (SCREENHEIGHT-8*8)/2
+call  W_CacheLumpNameDirect_
+push  word ptr [bp - 0Eh]
+mov   ax, (SCREENWIDTH-13*8)/2
+push  word ptr [bp - 8]
+xor   bx, bx
+call  V_DrawPatch_
+label_15:
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_14:
+mov   bx, word ptr [bp - 8]
+mov   cx, word ptr [bp - 0Eh]
+mov   ax, OFFSET str_end
+mov   dx, (SCREENHEIGHT-8*8)/2
+call W_CacheLumpNameDirect_
+push  word ptr [bp - 0Eh]
+mov   ax, (SCREENWIDTH-13*8)/2
+push  word ptr [bp - 8]
+xor   bx, bx
+call  V_DrawPatch_
+mov   byte ptr ds:[_finale_laststage], 0
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_4:
+test  dx, dx
+jl    label_5
+jmp   label_6
+label_5:
+mov   word ptr [bp - 0Ch], di
+jmp   label_6
+label_9:
+mov   al, byte ptr [bp - 2]
+test  al, al
+jne   label_7
+mov   byte ptr [bp - 2], 1
+push  0
+mov   cx, SCRATCH_SEGMENT_5000
+xor   ah, ah
+push  0
+mov   word ptr [bp - 4], ax
+mov   word ptr [bp - 6], ax
+mov   ax, OFFSET str_pfub1
+xor   bx, bx
+call  W_GetNumForName_
+call  W_CacheLumpNumDirectFragment_
+push  0
+mov   ax, OFFSET str_pfub1
+mov   bx, di
+push  0
+mov   cx, si
+call  W_GetNumForName_
+call  W_CacheLumpNumDirectFragment_
+label_7:
+mov   ax, word ptr [bp - 0Ch]
+add   ax, dx
+sub   ax, SCREENWIDTH
+jmp   label_8
+label_10:
+push  word ptr [bp - 6]
+mov   ax, OFFSET str_pfub2         ; string addr...
+jmp   label_11
 
 
 ENDP

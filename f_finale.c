@@ -714,6 +714,9 @@ void __near F_DrawPatchCol ( int16_t		x, column_t __far*	column) {
 //
 // F_BunnyScroll
 //
+void __near F_BunnyScroll (void);
+
+/*
 void __near F_BunnyScroll (void) {
     int16_t		scrolled;
 	int8_t	name[10];
@@ -815,6 +818,7 @@ void __near F_BunnyScroll (void) {
 
 
 }
+*/
 
 
 //
