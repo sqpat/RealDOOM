@@ -567,46 +567,80 @@ call      F_CopyString9_
 xor       bx, bx
 
 mov       cx, SCRATCH_SEGMENT_5000
-xor       dx, dx
+xor       di, di                    ; dest offset 0
 
-mov       word ptr [bp - 2], dx
+xor       dx, dx
 call      W_CacheLumpNameDirect_
 
-label_11:
-mov       ax, word ptr [bp - 2]
-and       ax, 63
-shl       ax, 6
-xor       bx, bx
-mov       word ptr [bp - 8], ax
-label_10:
-mov       ax, 64
-mov       si, word ptr [bp - 8]
-mov       cx, SCRATCH_SEGMENT_5000
-mov       word ptr [bp - 6], SCREEN0_SEGMENT
-mov       di, dx
-mov       es, word ptr [bp - 6]
-inc       bx
-push      ds
-push      di
-xchg      ax, cx
+
+;    for (y=0 ; y<SCREENHEIGHT ; y++) {
+;		for (x=0 ; x<SCREENWIDTH/64 ; x++) {
+;			FAR_memcpy (MK_FP(screen0_segment, dest), MK_FP(0x5000, ((y&63)<<6)), 64);
+;			dest += 64;
+;		}
+ ;   }
+
+mov       ax, SCRATCH_SEGMENT_5000
 mov       ds, ax
-shr       cx, 1
+mov       ax, SCREEN0_SEGMENT
+mov       es, ax
+mov       dx, di    ; zeroed
+mov       cx, di
+mov       bh, 32
+mov       bl, 63
+
+loop_draw_fullscreen_next_row:
+mov       ax, dx
+and       ax, bx    ; 63, technically 32 is set in bh but we shift left 6 and clobber that bit.
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
+    shl       ax, 6
+ELSE
+    shl       ax, 1
+    shl       ax, 1
+    shl       ax, 1
+    shl       ax, 1
+    shl       ax, 1
+    shl       ax, 1
+ENDIF
+
+loop_draw_fullscreen_next_column:
+
+; repeat flat five times
+mov       si, ax
+mov       cl, bh    ; 32
+rep       movsw
+mov       si, ax
+mov       cl, bh
 rep       movsw 
-adc       cx, cx
-rep       movsb 
-pop       di
+mov       si, ax
+mov       cl, bh
+rep       movsw 
+mov       si, ax
+mov       cl, bh
+rep       movsw 
+mov       si, ax
+mov       cl, bh
+rep       movsw 
+
+
+
+inc       dx
+cmp       dx, SCREENHEIGHT
+jb        loop_draw_fullscreen_next_row
+
+; restore ds
+push      ss
 pop       ds
-add       dx, 64                     ; dest+= 64
-cmp       bx, 5
-jl        label_10
-inc       word ptr [bp - 2]
-cmp       word ptr [bp - 2], SCREENHEIGHT
-jb        label_11
+
+
 call      Z_QuickMapStatusNoScreen4_
 mov       cx, SCREENHEIGHT
 mov       bx, SCREENWIDTH
 xor       dx, dx
 xor       ax, ax
+
+
 call      V_MarkRect_
 lea       bx, [bp - 029Eh]
 mov       ax, word ptr ds:[_finaletext]
@@ -621,74 +655,67 @@ CWD
 idiv      bx
 mov       di, si
 mov       cx, ax
-test      ax, ax
-jl        label_7
-label_2:
+jl        exit_ftextwrite
+loop_count:
 test      cx, cx
-je        label_6
+je        exit_ftextwrite
 mov       bx, word ptr [bp - 4]
 mov       al, byte ptr [bx]
 cbw      
 inc       word ptr [bp - 4]
 mov       dx, ax
 test      ax, ax
-je        label_6
+je        exit_ftextwrite
 cmp       ax, 10
-jne       label_8
+jne       do_char_upper_ftextwrite
 mov       si, ax
 add       di, 11
-label_5:
+do_next_glyph_ftextwrite:
 dec       cx
-jmp       label_2
-label_7:
-xor       cx, ax
-jmp       label_2
-label_8:
+jmp       loop_count
+do_char_upper_ftextwrite:
 xor       ah, ah
 
 call      locallib_toupper_
-mov       dl, al
-xor       dh, dh
-sub       dx, HU_FONTSTART
-test      dx, dx
-jl        label_3
-cmp       dx, HU_FONTSIZE
-jle       label_4
-label_3:
+mov       bl, al
+sub       bl, HU_FONTSTART
+jl        bad_glyph_ftextwrite
+cmp       bl, HU_FONTSIZE
+jle       lookup_glyph_width_ftextwrite
+bad_glyph_ftextwrite:
 add       si, 4
-jmp       label_5
-label_4:
+jmp       do_next_glyph_ftextwrite
+lookup_glyph_width_ftextwrite:
 mov       ax, FONT_WIDTHS_SEGMENT
-mov       bx, dx
 mov       es, ax
+xor       bh, bh                    ; zero high bits.
 mov       al, byte ptr es:[bx]
 cbw      
-mov       bx, si
-add       bx, ax
-mov       word ptr [bp - 0Ah], bx
-cmp       bx, SCREENWIDTH
-jle       label_9
-label_6:
-leave     
+add       ax, si
+mov       word ptr [bp - 0Ah], ax
+cmp       ax, SCREENWIDTH
+jle       do_draw_glyph_ftextwrite
+exit_ftextwrite:
+LEAVE_MACRO    
 pop       di
 pop       si
 pop       dx
 pop       cx
 pop       bx
 ret       
-label_9:
-mov       bx, dx
-add       bx, dx
-push      ST_GRAPHICS_SEGMENT
-mov       ax, word ptr ds:[bx + _hu_font]
-mov       dx, di
+do_draw_glyph_ftextwrite:
+sal       bx, 1
+mov       ax, ST_GRAPHICS_SEGMENT
 push      ax
+mov       ax, word ptr ds:[bx + _hu_font]
+push      ax
+mov       dx, di
 xor       bx, bx
 mov       ax, si
 call      V_DrawPatch_
 mov       si, word ptr [bp - 0Ah]
 dec       cx
-jmp       label_2
+jmp       loop_count
 
 
 ENDP
