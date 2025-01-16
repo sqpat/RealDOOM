@@ -1069,10 +1069,13 @@ void __near AM_drawCrosshair() {
     screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
 
 }
+
+//void __far G_ExitLevel (void) ;
+
 void __far AM_Drawer (void) {
 
 	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
-	G_ExitLevel();
+	//G_ExitLevel();
 
 /*
 	I_Error("%lx %lx %lx %lx", 

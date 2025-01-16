@@ -20,4 +20,4 @@
 #define R_DrawFuzzColumnCodeSize       0xFC1
 #define R_MaskedConstantsCodeSize      0xEB
 #define R_DrawSkyColumnCodeSize        0x6C2
-#define WipeCodeSize                   0x767
+#define WipeCodeSize                   0x9D1

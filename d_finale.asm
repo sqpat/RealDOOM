@@ -788,6 +788,7 @@ db "END0", 0
 FINALE_PHASE_1_CHANGE = 1130
 FINALE_PHASE_2_CHANGE = 1180
 
+; function can probably be optimized and made smaller, I haven't really tried - sq
 
 PROC F_BunnyScroll_ NEAR
 PUBLIC F_BunnyScroll_
@@ -806,7 +807,7 @@ mov   word ptr [bp - 4], ax
 mov   word ptr [bp - 6], ax
 xor   al, al
 mov   bx, SCREENWIDTH
-mov   byte ptr [bp - 2], al
+mov   byte ptr [bp - 2], al ; bp - 2 is pic2 boolean
 xor   ah, ah
 xor   dx, dx
 mov   word ptr [bp - 8], ax
@@ -824,29 +825,34 @@ mov   dx, SCREENWIDTH
 mov   si, 05400h    ; lookup offset
 sub   dx, ax
 xor   di, di
-mov   word ptr [bp - 0Ch], dx
+mov   word ptr [bp - 0Ch], dx   ; bp - 0Ch is scrolled
 cmp   dx, SCREENWIDTH
-jg    label_3
-jmp   label_4
-label_3:
-mov   word ptr [bp - 0Ch], SCREENWIDTH
-label_6:
-push  0
+jg    cap_scrolled_to_320
 
-mov   cx, SCRATCH_SEGMENT_5000
+test  dx, dx
+jge   scrolled_ready
+
+mov   word ptr [bp - 0Ch], di   ; zero out scrolled
+jmp   scrolled_ready
+
+cap_scrolled_to_320:
+mov   word ptr [bp - 0Ch], SCREENWIDTH
+scrolled_ready:
 
 
 mov   bx, OFFSET str_pfub2
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 
-
 xor   bx, bx
-push  0
-xor   dx, dx
+push  bx
+push  bx
+mov   cx, SCRATCH_SEGMENT_5000
+mov   dx, bx
 call  W_GetNumForName_
 call  W_CacheLumpNumDirectFragment_
-push  0
+xor   bx, bx
+push  bx
 
 mov   bx, OFFSET str_pfub2
 mov   ax, OFFSET _filename_argument
@@ -854,18 +860,19 @@ call  F_CopyString9_
 
 
 mov   bx, di
-push  0
+xor   cx, cx
+push  cx
 mov   cx, si
 call  W_GetNumForName_
 call  W_CacheLumpNumDirectFragment_
 
-label_16:
-mov   ax, word ptr [bp - 0Ch]
+draw_next_bunny_column:
+mov   ax, word ptr [bp - 0Ch]   ; get scrolled
 add   ax, dx
 cmp   ax, SCREENWIDTH
-jl    label_8
-jmp   label_9
-label_8:
+jl    xcoord_ready
+jmp   calculate_xcoord
+xcoord_ready:
 mov   bx, word ptr [bp - 8]
 shl   ax, 2
 mov   es, word ptr [bp - 0Eh]
@@ -875,18 +882,20 @@ sub   ax, word ptr [bp - 4]
 mov   bx, word ptr es:[bx + 0Ah]
 sbb   bx, word ptr [bp - 6]
 test  bx, bx
-jg    label_2
-jne   label_1
+jg    load_next_fullscreenpatch_chunk
+jne   go_draw_patchcol
 cmp   ax, 15000          ; kinda arbitrary "almost 16384" number
-jbe   label_1
-label_2:
+jbe   go_draw_patchcol
+load_next_fullscreenpatch_chunk:
 add   word ptr [bp - 4], ax
 adc   word ptr [bp - 6], bx
 cmp   byte ptr [bp - 2], 0
 jne   use_pfub1
 jmp   use_pfub2
 use_pfub1:
-push  word ptr [bp - 6]
+mov   bx, word ptr [bp - 6]
+push  bx
+
 mov   bx, OFFSET str_pfub1
 
 
@@ -898,12 +907,13 @@ call  F_CopyString9_
 
 
 mov   bx, di
-push  word ptr [bp - 4]
+mov   cx, word ptr [bp - 4]
+push  cx
 mov   cx, si
 call  W_GetNumForName_
 call  W_CacheLumpNumDirectFragment_
 xor   ax, ax
-label_1:
+go_draw_patchcol:
 mov   bx, di
 mov   cx, si
 add   bx, ax
@@ -911,7 +921,7 @@ mov   ax, dx
 inc   dx
 call  F_DrawPatchCol_
 cmp   dx, SCREENWIDTH
-jl    label_16
+jl    draw_next_bunny_column
 mov   ax, word ptr ds:[_finalecount]
 cmp   ax, FINALE_PHASE_1_CHANGE
 jl    exit_bunnyscroll
@@ -920,12 +930,12 @@ jl    draw_end_patch
 sub   ax, FINALE_PHASE_2_CHANGE
 mov   bx, 5
 CWD   
-idiv  bx
-mov   bx, ax
+div   bx
+mov   bx, ax        
 cmp   ax, 6
-jle   label_13
-mov   bx, 6
-label_13:
+jle   finale_stage_calculated
+mov   bx, 6     ; cap fianle to 6.
+finale_stage_calculated:
 mov   al, byte ptr ds:[_finale_laststage]
 cbw  
 cmp   bx, ax
@@ -945,9 +955,12 @@ mov   bx, word ptr [bp - 8]
 mov   cx, word ptr [bp - 0Eh]
 mov   dx, (SCREENHEIGHT-8*8)/2
 call  W_CacheLumpNameDirect_
-push  word ptr [bp - 0Eh]
+mov   ax, word ptr [bp - 0Eh]
+push  ax
+mov   ax, word ptr [bp - 8]
+push  ax
+
 mov   ax, (SCREENWIDTH-13*8)/2
-push  word ptr [bp - 8]
 xor   bx, bx
 call  V_DrawPatch_
 exit_bunnyscroll:
@@ -968,9 +981,12 @@ mov   bx, word ptr [bp - 8]
 
 mov   dx, (SCREENHEIGHT-8*8)/2
 call W_CacheLumpNameDirect_
-push  word ptr [bp - 0Eh]
+mov   ax, word ptr [bp - 0Eh]
+push  ax
+mov   ax, word ptr [bp - 8]
+push  ax
+
 mov   ax, (SCREENWIDTH-13*8)/2
-push  word ptr [bp - 8]
 xor   bx, bx
 call  V_DrawPatch_
 mov   byte ptr ds:[_finale_laststage], 0
@@ -981,22 +997,18 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_4:
-test  dx, dx
-jl    label_5
-jmp   label_6
-label_5:
-mov   word ptr [bp - 0Ch], di
-jmp   label_6
-label_9:
+
+calculate_xcoord:
 mov   al, byte ptr [bp - 2]
 test  al, al
-jne   label_7
+jne   currently_pic2
+; load pic2 into 0x5000 seg
 mov   byte ptr [bp - 2], 1
-push  0
+xor   cx, cx
+push  cx
+push  cx
 mov   cx, SCRATCH_SEGMENT_5000
 xor   ah, ah
-push  0
 mov   word ptr [bp - 4], ax
 mov   word ptr [bp - 6], ax
 
@@ -1008,24 +1020,27 @@ xor   bx, bx
 
 call  W_GetNumForName_
 call  W_CacheLumpNumDirectFragment_
-push  0
+xor   ax, ax
+push  ax
 
 mov   bx, OFFSET str_pfub1
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 
 mov   bx, di
-push  0
+xor   cx, cx
+push  cx
 mov   cx, si
 call  W_GetNumForName_
 call  W_CacheLumpNumDirectFragment_
-label_7:
-mov   ax, word ptr [bp - 0Ch]
+currently_pic2:
+mov   ax, word ptr [bp - 0Ch] ; get scrolled
 add   ax, dx
 sub   ax, SCREENWIDTH
-jmp   label_8
+jmp   xcoord_ready
 use_pfub2:
-push  word ptr [bp - 6]
+mov   bx,  word ptr [bp - 6]
+push  bx
 mov   bx, OFFSET str_pfub2         ; string addr...
 jmp   draw_chosen_pfub
 
