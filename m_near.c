@@ -1448,26 +1448,6 @@ int16_t	sp_state;
 
 
 
-castinfo_t	castorder[] = {
-    {CC_ZOMBIE-castorderoffset, MT_POSSESSED},
-    {CC_SHOTGUN-castorderoffset, MT_SHOTGUY},
-    {CC_HEAVY-castorderoffset, MT_CHAINGUY},
-    {CC_IMP-castorderoffset, MT_TROOP},
-    {CC_DEMON-castorderoffset, MT_SERGEANT},
-    {CC_LOST-castorderoffset, MT_SKULL},
-    {CC_CACO-castorderoffset, MT_HEAD},
-    {CC_HELL-castorderoffset, MT_KNIGHT},
-    {CC_BARON-castorderoffset, MT_BRUISER},
-    {CC_ARACH-castorderoffset, MT_BABY},
-    {CC_PAIN-castorderoffset, MT_PAIN},
-    {CC_REVEN-castorderoffset, MT_UNDEAD},
-    {CC_MANCU-castorderoffset, MT_FATSO},
-    {CC_ARCH-castorderoffset, MT_VILE},
-    {CC_SPIDER-castorderoffset, MT_SPIDER},
-    {CC_CYBER-castorderoffset, MT_CYBORG},
-    {CC_HERO-castorderoffset, MT_PLAYER},
-
-};
 
 int8_t		castnum;
 int8_t		casttics;

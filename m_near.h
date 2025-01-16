@@ -899,8 +899,6 @@ typedef struct {
     mobjtype_t	type;
 } castinfo_t;
 
-#define MAX_CASTNUM 17
-extern castinfo_t	castorder[MAX_CASTNUM];
 
 extern int8_t		castnum;
 extern int8_t		casttics;

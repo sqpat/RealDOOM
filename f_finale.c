@@ -556,6 +556,7 @@ void __near F_CastTicker (void) {
 //
 // F_CastResponder
 //
+/*
 
 boolean __near F_CastResponder (event_t __far* ev) {
  	//todoaddr inline later
@@ -578,7 +579,7 @@ boolean __near F_CastResponder (event_t __far* ev) {
 	
     return true;
 }
-
+*/
 
 void __near F_CastPrint (int8_t* text) ;
 /*
