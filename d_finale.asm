@@ -1108,20 +1108,12 @@ PUBLIC F_CastTicker_
 
 push  bx
 push  dx
-push  bp
-mov   bp, sp
-sub   sp, 0Ch
-mov   word ptr [bp - 4], GETMISSILESTATEADDR
-mov   word ptr [bp - 2], INFOFUNCLOADSEGMENT
-mov   word ptr [bp - 0Ch], GETSEESTATEADDR
-mov   word ptr [bp - 0Ah], INFOFUNCLOADSEGMENT
-mov   word ptr [bp - 8], GETMELEESTATEADDR
+
 dec   byte ptr [_casttics]
-mov   word ptr [bp - 6], INFOFUNCLOADSEGMENT
 cmp   byte ptr [_casttics], 0
 jle   do_castticker
 exit_castticker:
-LEAVE_MACRO
+
 pop   dx
 pop   bx
 ret   
@@ -1146,7 +1138,8 @@ mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bx + _castorder+1]
 xor   ah, ah
-call  dword ptr [bp - 0Ch]
+db    09Ah
+dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dl, al
 xor   dh, dh
 xor   ax, ax
@@ -1157,7 +1150,8 @@ mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bx + _castorder+1]
 xor   ah, ah
-call  dword ptr  [bp - 0Ch]
+db    09Ah
+dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
 shl   ax, 2
 sub   ax, dx
@@ -1181,7 +1175,8 @@ mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bx + _castorder+1]
 xor   ah, ah
-call  dword ptr [bp - 0Ch]
+db    09Ah
+dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
 shl   ax, 2
 sub   ax, dx
@@ -1197,7 +1192,7 @@ je    label_7
 jmp   exit_castticker
 label_7:
 mov   byte ptr [_casttics], 15
-LEAVE_MACRO 
+ 
 pop   dx
 pop   bx
 ret   
@@ -1208,7 +1203,8 @@ mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bx + _castorder+1]
 xor   ah, ah
-call  dword ptr [bp - 0Ch]
+db    09Ah
+dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
 shl   ax, 2
 mov   bx, word ptr [_caststate+2]
@@ -1275,7 +1271,10 @@ mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bx + _castorder+1]
 xor   ah, ah
-call  dword ptr [bp - 4]
+
+db    09Ah
+dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
+
 label_26:
 mov   dx, ax
 shl   ax, 2
@@ -1298,7 +1297,8 @@ mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bx + _castorder+1]
 xor   ah, ah
-call  dword ptr [bp - 8]
+db    09Ah
+dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
 shl   ax, 2
 sub   ax, dx
@@ -1425,7 +1425,8 @@ mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bx + _castorder+1]
 xor   ah, ah
-call  dword ptr [bp - 8]
+db    09Ah
+dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
 jmp   label_26
 label_25:
 mov   al, byte ptr [_castnum]
@@ -1434,7 +1435,9 @@ mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bx + _castorder+1]
 xor   ah, ah
-call  dword ptr [bp - 4]
+db    09Ah
+dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
+
 mov   dx, ax
 shl   ax, 2
 sub   ax, dx
