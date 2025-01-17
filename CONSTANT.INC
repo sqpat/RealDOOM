@@ -1761,6 +1761,10 @@ GA_PLAYDEMO = 05h
 GA_COMPLETED = 06h
 GA_VICTORY = 07h
 GA_WORLDDONE = 08h
+GS_LEVEL = 00h
+GS_INTERMISSION = 01h
+GS_FINALE = 02h
+GS_DEMOSCREEN = 03h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h

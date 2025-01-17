@@ -86,15 +86,18 @@
 
 #define ceilphyspage                    (*((int8_t __near*)                  (_NULL_OFFSET + 0x0026)))
 #define floorphyspage                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0027)))
-
-//#define ds_x1                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0028)))
-//#define ds_x2                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x002A)))
-// unused
+#define gameaction                      (*((gameaction_t __near*)            (_NULL_OFFSET + 0x0028)))
+#define viewactive                      (*((boolean __near*)                 (_NULL_OFFSET + 0x0029)))
+#define automapactive                   (*((boolean __near*)                 (_NULL_OFFSET + 0x002A)))
+#define commercial                      (*((boolean __near*)                 (_NULL_OFFSET + 0x002B)))
+#define registered                      (*((boolean __near*)                 (_NULL_OFFSET + 0x002C)))
+#define shareware                       (*((boolean __near*)                 (_NULL_OFFSET + 0x002D)))
 #define ds_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002E)))
 #define fixedcolormap                   (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002F)))
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
 #define ds_source_segment               (*((segment_t __near*)               (_NULL_OFFSET + 0x003E)))
-// unused
+#define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0040)))
+#define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0041)))
 #define dc_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0042)))
 #define fuzzpos                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0043)))
 #define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0044)))
@@ -131,8 +134,10 @@
 
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
-//ss_variable_space[10]
-//#define ss_variable_space               ((int16_t __near *)                  (_NULL_OFFSET + 0x00AC))
+#define filename_argument               ((int8_t __near *)                   (_NULL_OFFSET + 0x00AC))
+#define is_ultimate                     (*(boolean __near *)                 (_NULL_OFFSET + 0x00B5))
+#define firstspritelump                 (*(int16_t  __near *)                (_NULL_OFFSET + 0x00B6))
+// to B8 to C0
 #define mfloorclip                      (*(int16_t __far * __near *)         (_NULL_OFFSET + 0x00C0))
 #define mfloorclip_offset               (*(int16_t __near *)                 (_NULL_OFFSET + 0x00C0))
 #define mfloorclip_segment              (*(segment_t __near *)               (_NULL_OFFSET + 0x00C2))
@@ -192,8 +197,8 @@
 #define screenblocks                    (*((uint8_t    __near*)              (_NULL_OFFSET + 0x016B)))
 #define lastvisplane                    (*((int16_t    __near*)              (_NULL_OFFSET + 0x016C)))
 #define hudneedsupdate                  (*((uint8_t    __near*)              (_NULL_OFFSET + 0x016E)))
+#define gamestate                       (*((gamestate_t __near*)             (_NULL_OFFSET + 0x016F)))
 
-// 16F free
 
 // 6-16 bytes... space it out in case of size growth
 #define allocatedflatsperpage           (((int8_t    __near*)                (_NULL_OFFSET + 0x0170)))
@@ -218,7 +223,7 @@
 // 1AC free
 
 #define active_visplanes                (((int8_t    __near*)                (_NULL_OFFSET + 0x01B0)))
-// 1B5 free
+#define wipegamestate                   (*((gamestate_t __near*)             (_NULL_OFFSET + 0x01B5)))
 #define visplane_offset                 (((uint16_t    __near*)              (_NULL_OFFSET + 0x01B6)))
 
 
@@ -324,7 +329,6 @@ extern uint8_t              snd_Mport8bit;
 
 
 // wipegamestate can be set to -1 to force a wipe on the next draw
-extern gamestate_t          wipegamestate;
 
 
 #define MAXWADFILES             3
@@ -348,9 +352,6 @@ extern boolean              advancedemo;
 
 extern boolean              modifiedgame;
 
-extern boolean              shareware;
-extern boolean              registered;
-extern boolean              commercial;
 
 extern int8_t               demosequence;
 
@@ -409,7 +410,6 @@ extern int16_t              spritelights;
 extern int16_t              numflats;
 extern int16_t              firstpatch;
 extern int16_t              numpatches;
-extern int16_t              firstspritelump;
 extern int16_t              numspritelumps;
 extern int16_t              numtextures;
 extern int16_t              activetexturepages[NUM_TEXTURE_L1_CACHE_PAGES];
@@ -469,7 +469,6 @@ extern int8_t               followplayer;
 extern boolean              am_stopped;
 extern boolean              am_bigstate;
 extern int8_t               am_buffer[20];
-extern boolean              automapactive;
 extern fline_t              am_fl;
 extern mline_t              am_ml;
 extern mline_t              am_l;
@@ -590,12 +589,9 @@ extern uint8_t	usegamma;
 
 //default_t	defaults[NUM_DEFAULTS];
  
-extern gameaction_t    gameaction; 
-extern gamestate_t     gamestate; 
+
 extern skill_t         gameskill; 
 extern boolean         respawnmonsters;
-extern int8_t             gameepisode; 
-extern int8_t             gamemap;
 extern boolean         paused; 
 extern boolean         sendpause;              // send a pause event next tic 
 extern boolean         sendsave;               // send a save event next tic 
@@ -603,7 +599,6 @@ extern boolean         usergame;               // ok to save / end game
 extern boolean         timingdemo;             // if true, exit with report on completion 
 extern boolean         noblit;                 // for comparative timing purposes 
 extern ticcount_t             starttime;              // for comparative timing purposes       
-extern boolean         viewactive; 
 extern player_t        player;
 extern THINKERREF      playerMobjRef;
 
@@ -779,7 +774,6 @@ extern int16_t	t5text;
 extern int16_t	t6text;
 #endif
 
-extern int8_t   filename_argument[9];
 
 extern uint8_t  messageToPrint;
 extern int8_t   menu_messageString[105];
@@ -1122,7 +1116,6 @@ extern cache_node_page_count_t  spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 extern cache_node_page_count_t	texturecache_nodes[NUM_TEXTURE_PAGES];
 extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 
-extern boolean				    is_ultimate;
 extern segment_t			    spritewidths_segment;
 
 //extern uint8_t 					seglooptexmodulo[2]; // 0 would be fine too...

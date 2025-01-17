@@ -3,7 +3,7 @@
 #include "m_near.h"
 #include "sounds.h"
 
-#define CONSTANTS_COUNT 1762
+#define CONSTANTS_COUNT 1766
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -1796,7 +1796,12 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "GA_PLAYDEMO",
     "GA_COMPLETED",
     "GA_VICTORY",
-    "GA_WORLDDONE"
+    "GA_WORLDDONE",
+    "GS_LEVEL",
+    "GS_INTERMISSION",
+    "GS_FINALE",
+    "GS_DEMOSCREEN"
+
 
 
 
@@ -3595,7 +3600,12 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     ga_playdemo,
     ga_completed,
     ga_victory,
-    ga_worlddone
+    ga_worlddone,
+
+    GS_LEVEL,
+    GS_INTERMISSION,
+    GS_FINALE,
+    GS_DEMOSCREEN
 
 
     

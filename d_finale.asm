@@ -40,17 +40,7 @@ EXTRN S_StartMusic_:PROC
 EXTRN _hu_font:WORD
 
 EXTRN _player:WORD
-EXTRN _gamestate:BYTE
-EXTRN _gameaction:BYTE
-EXTRN _viewactive:BYTE
-EXTRN _automapactive:BYTE
-EXTRN _commercial:BYTE
-EXTRN _gamemap:BYTE
-EXTRN _gameepisode:BYTE
-EXTRN _filename_argument:BYTE
-EXTRN _firstspritelump:WORD
-EXTRN _is_ultimate:BYTE
-EXTRN _wipegamestate:BYTE
+
 
 .CODE
 
@@ -1005,7 +995,7 @@ mov   cl, bl  ; get finale stage in cl
 mov   bx, OFFSET str_end0
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
-add   byte ptr [_filename_argument+3], cl ; add to the '0'
+add   byte ptr ds:[_filename_argument+3], cl ; add to the '0'
 
 mov   bx, word ptr [bp - 8]
 mov   cx, word ptr [bp - 0Eh]
@@ -1115,7 +1105,7 @@ push  dx
 
 cmp   word ptr cs:[_CSDATA_finalestage], 2
 je    dont_force_screenwipe
-mov   byte ptr [_wipegamestate], 0FFh  ; force screen wipe
+mov   byte ptr ds:[_wipegamestate], 0FFh  ; force screen wipe
 dont_force_screenwipe:
 mov   al, byte ptr cs:[_CSDATA_castorder+1]     ;  castorder[castnum].type). castnum is 0.
 xor   ah, ah
@@ -1568,20 +1558,20 @@ push  dx
 push  bp
 mov   bp, sp
 sub   sp, 029Ah
-cmp   byte ptr [_commercial], 0
+cmp   byte ptr ds:[_commercial], 0
 je    done_checking_skipping
 cmp   word ptr cs:[_CSDATA_finalecount], 50
 jle   done_checking_skipping
 cmp   byte ptr [_player + 7], 0   ; player.cmd.buttons
 je    done_checking_skipping
-cmp   byte ptr [_gamemap], 30
+cmp   byte ptr ds:[_gamemap], 30
 jne   do_worlddone
 call  F_StartCast_
 done_checking_skipping:
 inc   word ptr cs:[_CSDATA_finalecount]
 cmp   word ptr cs:[_CSDATA_finalestage], 2
 je    call_fcastticker
-cmp   byte ptr [_commercial], 0
+cmp   byte ptr ds:[_commercial], 0
 je    do_noncommerical
 exit_fticker:
 LEAVE_MACRO
@@ -1590,7 +1580,7 @@ pop   cx
 pop   bx
 retf  
 do_worlddone:
-mov   byte ptr [_gameaction], GA_WORLDDONE
+mov   byte ptr ds:[_gameaction], GA_WORLDDONE
 jmp   done_checking_skipping
 call_fcastticker:
 call  F_CastTicker_
@@ -1614,9 +1604,9 @@ cmp   ax, word ptr cs:[_CSDATA_finalecount]
 jge   exit_fticker
 mov   word ptr cs:[_CSDATA_finalestage], 1
 xor   ax, ax
-mov   byte ptr [_wipegamestate], 0FFh
+mov   byte ptr ds:[_wipegamestate], 0FFh
 mov   word ptr cs:[_CSDATA_finalecount], ax
-cmp   byte ptr [_gameepisode], 3
+cmp   byte ptr ds:[_gameepisode], 3
 jne   exit_fticker
 mov   ax, MUS_BUNNY
 call  S_StartMusic_
@@ -1665,7 +1655,7 @@ cmp   ax, 2
 je    call_castdrawer
 test  ax, ax
 je    call_textwrite
-mov   bl, byte ptr [_gameepisode]
+mov   bl, byte ptr ds:[_gameepisode]
 xor   bh, bh
 mov   ax, OFFSET _filename_argument
 cmp   bl, 4
@@ -1680,7 +1670,7 @@ fdrawer_episode1:
 
 
 
-cmp   byte ptr [_is_ultimate], 0
+cmp   byte ptr ds:[_is_ultimate], 0
 jne   do_ultimate_fullscreenpatch
 mov   bx, OFFSET str_help2
 do_finaledraw:

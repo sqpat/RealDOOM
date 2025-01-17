@@ -91,7 +91,9 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, SECTORS_SEGMENT, 00, SECTORS_SEGMENT, 00, 00
 ; 0x1B0
 ; _active_visplanes[5]... one byte free
-db  1, 2, 3, 0, 0, 0
+db  1, 2, 3, 0, 0
+; 0x1B5 wipegamestate
+db  GS_DEMOSCREEN
 ; 0x1B6  _visplane_offset[25]
 dw 	0, 646 ,1292, 1938, 2584
 dw	3230,  3876, 4522, 5168, 5814 

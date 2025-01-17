@@ -47,14 +47,22 @@ _ceilphyspage =                  	_NULL_OFFSET + 00026h
 _floorphyspage =                 	_NULL_OFFSET + 00027h
 
 
-;_ds_x1 = 							_NULL_OFFSET + 00028h
-;_ds_x2 = 							_NULL_OFFSET + 0002Ah
-; UNUSED 02Ch
+_gameaction =                 		_NULL_OFFSET + 00028h
+_viewactive =                 		_NULL_OFFSET + 00029h
+_automapactive =                 	_NULL_OFFSET + 0002Ah
+_commercial =                 		_NULL_OFFSET + 0002Bh
+_registered =                 		_NULL_OFFSET + 0002Ch
+_shareware =                 		_NULL_OFFSET + 0002Dh
+
 _ds_colormap_index = 				_NULL_OFFSET + 0002Eh
 _fixedcolormap = 					_NULL_OFFSET + 0002Fh
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
 _ds_source_segment = 				_NULL_OFFSET + 0003Eh
-; UNUSED 040
+_gameepisode = 						_NULL_OFFSET + 00040h
+_gamemap = 							_NULL_OFFSET + 00041h
+
+
+
 _dc_colormap_index = 				_NULL_OFFSET + 00042h
 _fuzzpos =							_NULL_OFFSET + 00043h
 _dc_yl = 							_NULL_OFFSET + 00044h
@@ -90,8 +98,13 @@ _bombspot_pos = 					_NULL_OFFSET + 000A0h
 
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
-;_ss_variable_space = 				_NULL_OFFSET + 000ACh
-; AC to C0 unused?
+_filename_argument = 				_NULL_OFFSET + 000ACh
+_is_ultimate = 						_NULL_OFFSET + 000B5h
+_firstspritelump = 					_NULL_OFFSET + 000B6h
+
+; B8 to C0 unused?
+
+
 _mfloorclip = 						_NULL_OFFSET + 000C0h
 _mceilingclip = 					_NULL_OFFSET + 000C4h
 _spanfunc_prt = 					_NULL_OFFSET + 000CCh
@@ -143,6 +156,7 @@ _visplanedirty =            		_NULL_OFFSET + 0016Ah
 _screenblocks =            			_NULL_OFFSET + 0016Bh
 _lastvisplane =            			_NULL_OFFSET + 0016Ch
 _hudneedsupdate =                   _NULL_OFFSET + 0016Eh
+_gamestate =                        _NULL_OFFSET + 0016Fh
 
 
 ; 170h
@@ -171,7 +185,7 @@ _frontsector =          	        _NULL_OFFSET + 001A4h
 _backsector =               	    _NULL_OFFSET + 001A8h
 ; 1AC free
 _active_visplanes =             	_NULL_OFFSET + 001B0h
-; 1B5 free
+_wipegamestate =                    _NULL_OFFSET + 001B5h
 _visplane_offset =              	_NULL_OFFSET + 001B6h
 ; up to 1E8
 _dirtybox =              			_NULL_OFFSET + 001E8h
@@ -299,7 +313,7 @@ COMPILE_8086 = 0
 IFNDEF COMPILE_INSTRUCTIONSET
 	COMPILE_INSTRUCTIONSET = COMPILE_8086
 ENDIF
-
+ 
 
 LEAVE_MACRO MACRO 
 

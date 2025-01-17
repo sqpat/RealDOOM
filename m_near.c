@@ -63,8 +63,6 @@ uint8_t snd_SBport8bit;
 uint8_t snd_Mport8bit;
 
 
-// wipegamestate can be set to -1 to force a wipe on the next draw
-gamestate_t     wipegamestate = GS_DEMOSCREEN;
 
 
 
@@ -87,9 +85,6 @@ int8_t          startmap;
 boolean         autostart;
 boolean         advancedemo;
 boolean         modifiedgame;
-boolean         shareware;
-boolean         registered;	// doom 1 
-boolean         commercial; // doom 2 +
 
 
 
@@ -238,7 +233,6 @@ int16_t             numflats;
 int16_t             firstpatch;
 int16_t             numpatches;
 
-int16_t             firstspritelump;
 int16_t             numspritelumps;
 
 int16_t             numtextures;
@@ -335,7 +329,6 @@ int8_t followplayer = 1; // specifies whether to follow the player around
 boolean am_stopped = true;
 boolean am_bigstate=0;
 int8_t  am_buffer[20];
-boolean    	automapactive = false;
 fline_t am_fl;
 mline_t am_ml;
 mline_t am_l;
@@ -500,12 +493,8 @@ uint8_t	usegamma;
 
 //default_t	defaults[NUM_DEFAULTS];
  
-gameaction_t    gameaction; 
-gamestate_t     gamestate; 
 skill_t         gameskill; 
 boolean         respawnmonsters;
-int8_t             gameepisode; 
-int8_t             gamemap;
  
 boolean         paused; 
 boolean         sendpause;              // send a pause event next tic 
@@ -517,7 +506,6 @@ boolean         timingdemo;             // if true, exit with report on completi
 boolean         noblit;                 // for comparative timing purposes 
 ticcount_t             starttime;              // for comparative timing purposes       
  
-boolean         viewactive; 
  
 player_t        player;
 
@@ -1069,7 +1057,6 @@ int16_t	t5text = T5TEXT;
 int16_t	t6text = T6TEXT;
 #endif
 
-int8_t  filename_argument[9];
 
 
 // 1 = message to be printed
@@ -2101,7 +2088,6 @@ uint8_t blocksizelookup[256]={
 cache_node_page_count_t 	spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 cache_node_page_count_t		texturecache_nodes[NUM_TEXTURE_PAGES];
 cache_node_t 				flatcache_nodes[NUM_FLAT_CACHE_PAGES];
-boolean						is_ultimate = false;
 segment_t   				spritewidths_segment;
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
