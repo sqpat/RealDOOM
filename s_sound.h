@@ -23,6 +23,7 @@
 #include "z_zone.h"
 #include "doomdef.h"
 #include "p_mobj.h"
+#include "sounds.h"
 
 typedef uint8_t musicenum_t;
 typedef uint8_t sfxenum_t;
@@ -34,7 +35,20 @@ typedef uint8_t sfxenum_t;
 //
  
 
+#define MAX_CHANNELS 3
+ 
 
+typedef struct {
+    // sound information (if null, channel avail.)
+    sfxinfo_t*	sfxinfo;
+
+    // origin of sound
+	THINKERREF	originRef;
+
+    // handle of the sound being played
+    int16_t		handle;
+    
+} channel_t;
 //
 // Per level startup code.
 // Kills playing sounds at start of level,

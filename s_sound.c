@@ -65,43 +65,8 @@
 
 #define NA			0
 
- 
-
-typedef struct {
-    // sound information (if null, channel avail.)
-    sfxinfo_t*	sfxinfo;
-
-    // origin of sound
-	THINKERREF	originRef;
-
-    // handle of the sound being played
-    int16_t		handle;
-    
-} channel_t;
-
-#define MAX_CHANNELS 1
-
-// the set of channels available
-channel_t	channels[MAX_CHANNELS];
 
 
-
-// These are not used, but should be (menu).
-// Maximum volume of a sound effect.
-// Internal default is max out of 0-15.
-
-
-// whether songs are mus_paused
-boolean		mus_paused;	
-
-// music currently being played
-musicinfo_t*	mus_playing=0;
-
-// following is set
-//  by the defaults code in M_misc:
-// number of channels available
-
-ticcount_t		nextcleanup;
 
 //
 // Internals.

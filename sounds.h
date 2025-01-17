@@ -79,11 +79,6 @@ typedef struct {
 } musicinfo_t;
 
 
-// the complete set of sound effects
-extern sfxinfo_t	S_sfx[];
-
-// the complete set of music
-extern musicinfo_t	S_music[];
 
 
 //
@@ -276,7 +271,8 @@ typedef uint8_t  musicenum_t;
 #define sfx_skesit  106
 #define sfx_skeatk  107
 #define sfx_radio   108
-#define NUMSFX      109
+//#define NUMSFX      109
+#define NUMSFX      1
 
 typedef uint8_t sfxenum_t;
 

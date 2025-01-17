@@ -36,6 +36,8 @@
 #include "p_local.h"
 #include "z_zone.h"
 #include "d_englsh.h"
+#include "sounds.h"
+#include "s_sound.h"
 
 
 #define NUM_CACHE_LUMPS 4
@@ -95,7 +97,7 @@
 #define ds_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002E)))
 #define fixedcolormap                   (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002F)))
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
-#define ds_source_segment               (*((segment_t __near*)               (_NULL_OFFSET + 0x003E)))
+#define ds_source_segment               (*((byte __far* __near*)             (_NULL_OFFSET + 0x003C)))
 #define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0040)))
 #define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0041)))
 #define dc_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0042)))
@@ -136,7 +138,7 @@
 #define bombsource                      (*((mobj_t  __near* __near*)         (_NULL_OFFSET + 0x009A)))
 #define bombspot                        (*((mobj_t  __near* __near*)         (_NULL_OFFSET + 0x009C)))
 #define bombdamage                      (*((int16_t  __near*)                (_NULL_OFFSET + 0x009E)))
-#define bombspot_pos                    (*((mobj_pos_t  __far* __near*)      (_NULL_OFFSET + 0x0100)))
+#define bombspot_pos                    (*((mobj_pos_t  __far* __near*)      (_NULL_OFFSET + 0x00A0)))
 
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
@@ -1156,5 +1158,18 @@ extern int32_t codestartposition[NUM_OVERLAYS];
 extern boolean    				plutonia;
 extern boolean    				tnt;
 #endif
+
+// the complete set of sound effects
+extern sfxinfo_t	S_sfx[];
+
+// the complete set of music
+extern musicinfo_t	S_music[];
+
+
+
+extern channel_t	channels[MAX_CHANNELS];
+extern boolean		mus_paused;	
+extern musicinfo_t*	mus_playing;
+extern ticcount_t		nextcleanup;
 
 //extern uint16_t shift4lookup[256];

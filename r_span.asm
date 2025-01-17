@@ -255,7 +255,7 @@ mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
 ; yfrac16 already in cx
 ; todo why is this -2?. should this be 'fixed'
-lds   bx, dword ptr ds:[_ds_source_segment-2] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
+lds   bx, dword ptr ds:[_ds_source_segment] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 
 
 
@@ -1399,7 +1399,7 @@ mov   bl, cl
 add   bx, bx
 add   ax, word ptr ds:[bx + _FLAT_CACHE_PAGE]
 
-mov   word ptr ds:[_ds_source_segment], ax
+mov   word ptr ds:[_ds_source_segment+2], ax
 mov   ax, word ptr [si]
 mov   dx, word ptr [si + 2]
 SELFMODIFY_SPAN_viewz_lo_1:

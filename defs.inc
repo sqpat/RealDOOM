@@ -57,7 +57,7 @@ _shareware =                 		_NULL_OFFSET + 0002Dh
 _ds_colormap_index = 				_NULL_OFFSET + 0002Eh
 _fixedcolormap = 					_NULL_OFFSET + 0002Fh
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
-_ds_source_segment = 				_NULL_OFFSET + 0003Eh
+_ds_source_segment = 				_NULL_OFFSET + 0003Ch
 _gameepisode = 						_NULL_OFFSET + 00040h
 _gamemap = 							_NULL_OFFSET + 00041h
 
