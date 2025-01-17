@@ -14,6 +14,7 @@
 #include "st_stuff.h"
 #include "hu_stuff.h"
 #include "wi_stuff.h"
+#include "f_finale.h"
 
 #include <dos.h>
 #include <conio.h>
@@ -43,7 +44,9 @@ void __far R_MASKED_END();
 void __far D_ALGO_END();
 void __far R_SKY_END();
 void __far R_WriteBackViewConstantsSpan();
-
+void __far V_DrawPatchFlipped();
+void __far F_START();
+void __far F_END();
 /*
 void checkDS(int16_t a) {
 	struct SREGS        sregs;
@@ -76,6 +79,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	uint16_t codesize4;
 	uint16_t codesize5;
 	uint16_t codesize6;
+	uint16_t codesize7;
     
     codesize1 = FP_OFF(R_DrawSpan) - FP_OFF(R_DrawColumn);
     // write filesize..
@@ -122,6 +126,13 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // write data
     FAR_fwrite((byte __far *)I_ReadScreen, codesize6, 1, fp);
 
+    // 56 variable space at start of segment
+    codesize7 = FP_OFF(F_END) - FP_OFF(F_START);
+    // write filesize..
+    fwrite(&codesize7, 2, 1, fp);
+    // write data
+    FAR_fwrite((byte __far *)F_START, codesize7, 1, fp);
+
 
     fclose(fp);
     printf("Generated doomcode.bin file\n");
@@ -158,7 +169,11 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define wipe_StartScreenOffset                0x%X\n", FP_OFF(wipe_StartScreen)               - FP_OFF(I_ReadScreen));
 	fprintf(fp, "#define wipe_WipeLoopOffset                   0x%X\n", FP_OFF(wipe_WipeLoop)                  - FP_OFF(I_ReadScreen));
 
-
+    // finale offsets
+    fprintf(fp, "#define F_StartFinaleOffset                   0x%X\n", FP_OFF(F_StartFinale)                  - FP_OFF(F_START));
+    fprintf(fp, "#define F_ResponderOffset                     0x%X\n", FP_OFF(F_Responder)                    - FP_OFF(F_START));
+    fprintf(fp, "#define F_TickerOffset                        0x%X\n", FP_OFF(F_Ticker)                       - FP_OFF(F_START));
+    fprintf(fp, "#define F_DrawerOffset                        0x%X\n", FP_OFF(F_Drawer)                       - FP_OFF(F_START));
 
 	fprintf(fp, "\n");
 
@@ -168,6 +183,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_MaskedConstantsCodeSize      0x%X\n", codesize4);
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize5);
 	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize6);
+	fprintf(fp, "#define FinaleCodeSize                 0x%X\n", codesize7);
 
 
 

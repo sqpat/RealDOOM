@@ -3,7 +3,7 @@
 #include "m_near.h"
 #include "sounds.h"
 
-#define CONSTANTS_COUNT 1766
+#define CONSTANTS_COUNT 1767
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -170,7 +170,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SIZEOF_SPRITEFRAME_T",
     "SPRITES_SEGMENT",
     "MAXVISSPRITES",
-    "FWIPE_CODE_AREA_SEGMENT",
+    "CODE_OVERLAY_SEGMENT",
+    "CODE_OVERLAY_END_SEGMENT",
     "FONT_WIDTHS_SEGMENT",
     "ST_GRAPHICS_SEGMENT",
     "HU_FONTSTART",
@@ -1970,7 +1971,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     sizeof(spriteframe_t),
     sprites_segment,
     MAXVISSPRITES,
-    fwipe_code_area_segment,
+    code_overlay_segment,
+    code_overlay_end_segment,
     font_widths_segment,
     ST_GRAPHICS_SEGMENT,
     HU_FONTSTART,

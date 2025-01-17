@@ -23,6 +23,10 @@ INSTRUCTION_SET_MACRO
 
 .CODE
 
+PROC F_START_ NEAR
+PUBLIC F_START_
+ENDP
+
 ; vars and data..
 
 ; weird quirk: linker/compiler make the segment overlap with the previous one, so some functions run over into this code!
@@ -1830,5 +1834,10 @@ mov   bx, OFFSET str_endpic
 jmp   do_finaledraw
 
 ENDP
+
+PROC F_END_ NEAR
+PUBLIC F_END_
+ENDP
+
 
 END

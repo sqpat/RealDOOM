@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/16 22:30:25
+Created on:       25/01/16 23:02:04
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -965,6 +965,7 @@ Module: p_saveg.obj(C:\REALDOOM\p_saveg.c)
 Module: d_finale.obj(d_finale.ASM)
 0c4c:02c4*     F_CastDrawer_
 0c4c:0b7a      F_Responder_
+0c4c:000e*     F_START_
 0c4c:04eb*     F_BunnyScroll_
 0c4c:01cf      F_StartFinale_
 0c4c:0ad1      F_Ticker_
@@ -973,6 +974,7 @@ Module: d_finale.obj(d_finale.ASM)
 0c4c:00e3*     F_CastPrint_
 0c4c:037d*     F_TextWrite_
 0c4c:0754*     F_CastTicker_
+0c4c:0c03*     F_END_
 0c4c:0ba6      F_Drawer_
 0c4c:0496*     F_DrawPatchCol_
 0c4c:0a51*     F_CastResponder_

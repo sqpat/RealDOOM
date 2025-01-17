@@ -392,9 +392,10 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define ammnumpatchoffsets     ((uint16_t __far*)             (((int32_t)ammnumpatchbytes) + 0x020C))
 #define doomednum              ((int16_t __far*)              MAKE_FULL_SEGMENT(ammnumpatchbytes, (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
 #define linespeciallist        ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum, size_doomednum ))
-#define font_widths            ((int8_t __far*)               MAKE_FULL_SEGMENT(linespeciallist,     size_linespeciallist))
-#define fwipe_code_area        ((byte __far*)                 MAKE_FULL_SEGMENT(font_widths , size_font_widths))
-
+#define font_widths            ((int8_t __far*)               MAKE_FULL_SEGMENT(linespeciallist, size_linespeciallist))
+#define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(font_widths, size_font_widths))
+#define code_overlay_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start, WipeCodeSize))
+// WipeCodeSize
 
 #define thinkerlist_segment           ((segment_t) ((int32_t)thinkerlist_far >> 16))
 #define mobjinfo_segment              ((segment_t) ((int32_t)mobjinfo_far >> 16))
@@ -409,7 +410,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define doomednum_segment             ((segment_t) ((int32_t)doomednum >> 16))
 #define linespeciallist_segment       ((segment_t) ((int32_t)linespeciallist >> 16))
 #define font_widths_segment           ((segment_t) ((int32_t)font_widths >> 16))
-#define fwipe_code_area_segment       ((segment_t) ((int32_t)fwipe_code_area >> 16))
+#define code_overlay_segment          ((segment_t) ((int32_t)code_overlay_start >> 16))
+#define code_overlay_end_segment      ((segment_t) ((int32_t)code_overlay_end >> 16))
 // 4CE0h
 
  // 3C00:4000

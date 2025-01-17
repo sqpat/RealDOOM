@@ -506,7 +506,7 @@ void __near Z_LoadBinaries() {
 	Z_QuickMapPhysics();
 
 	fread(&codesize, 2, 1, fp2);
-	FAR_fread(fwipe_code_area, codesize, 1, fp2);
+	FAR_fread(code_overlay_start, codesize, 1, fp2);
 
 
 	fclose(fp2);
@@ -565,6 +565,7 @@ void __near Z_LoadBinaries() {
 	{
 		// far array of near pts
 		// stick 4 bytes of data 4 bytes behind this func.
+		// todo put this in overlay manager
 		int16_t __far *  finaledata = (int16_t __far *)((int32_t)V_DrawPatchFlipped - 4);
 
 		finaledata[0] = (int16_t)(hu_font);
