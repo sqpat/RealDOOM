@@ -883,15 +883,17 @@ void __near G_DoSaveGame (void)  {
     *save_p++ = 0x1d;           // consistancy marker 
          
     length = save_p - savebuffer; 
-#ifdef CHECK_FOR_ERRORS
-	if (length > SAVEGAMESIZE)
+
+	if (length > SAVEGAMESIZE){
         I_Error ("Savegame buffer overrun"); 
-#endif
+    }
     M_WriteFile (name, savebuffer, length); 
     gameaction = ga_nothing; 
     savedescription[0] = 0;              
          
     player.message = GGSAVED; 
+    //hudneedsupdate = 6;
+	Z_QuickMapPhysics();
 
     // draw the pattern into the back screen
     R_FillBackScreen ();        

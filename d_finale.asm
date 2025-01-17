@@ -298,6 +298,8 @@ flat_rrock14:
 db "RROCK14", 0
 flat_rrock07:
 db "RROCK07", 0
+flat_rrock17:
+db "RROCK17", 0
 flat_floor4_8:
 db "FLOOR4_8", 0
 flat_rrock13:
@@ -314,7 +316,7 @@ db "MFLR8_3", 0
 
 ; lookups for doom1 case
 
-flat_noncommercial_lookup:
+flat_nondoom2_lookup:
 dw flat_floor4_8, flat_sflr6_1, flat_mflr8_4, flat_mflr8_3
 
 ; BIG TODO: if other build versions are to be implemented then
@@ -339,10 +341,10 @@ cmp   byte ptr ds:[_commercial], 0
 je    jump_to_handle_doom1
 mov   al, byte ptr ds:[_gamemap]
 cmp   al, 15
-jae   commercial_above_or_equal_to_15
+jae   doom2_above_or_equal_to_15
 cmp   al, 11
-jne   commercial_below_15_not_11
-; commercial case 11
+jne   doom2_below_15_not_11
+; doom2 case 11
 mov   bx, OFFSET flat_rrock14 - OFFSET F_START_
 mov   cx, C2TEXT
 got_flat_values:
@@ -370,39 +372,40 @@ pop   dx
 pop   cx
 pop   bx
 retf  
-commercial_above_or_equal_to_15:
-ja    commercial_above_15
-; commercial case 15 
+
+doom2_above_or_equal_to_15:
+ja    doom2_above_15
+; doom2 case 15 
 mov   bx, OFFSET flat_rrock13 - OFFSET F_START_
 mov   cx, C5TEXT
 jmp   got_flat_values
-commercial_above_15:
+doom2_above_15:
 cmp   al, 31
-jne   commercial_above_15_not_31
-; commercial case 31
+jne   doom2_above_15_not_31
+; doom2 case 31
 mov   bx, OFFSET flat_rrock19 - OFFSET F_START_
 mov   cx, C6TEXT
 jmp   got_flat_values
-commercial_above_15_not_31:
+doom2_above_15_not_31:
 cmp   al, 30
-jne   commercial_above_15_not_31_30
-; commercial case 30
-mov   bx, OFFSET flat_floor4_8 - OFFSET F_START_
+jne   doom2_above_15_not_31_30
+; doom2 case 30
+mov   bx, OFFSET flat_rrock17 - OFFSET F_START_
 mov   cx, C4TEXT
 jmp   got_flat_values
-commercial_above_15_not_31_30:
+doom2_above_15_not_31_30:
 cmp   al, 20
 jne   got_flat_values
-;commercial case 20
+;doom2 case 20
 mov   bx, OFFSET flat_floor4_8 - OFFSET F_START_
 mov   cx, C3TEXT
 jmp   got_flat_values
 jump_to_handle_doom1:
 jmp   handle_doom1
-commercial_below_15_not_11:
+doom2_below_15_not_11:
 cmp   al, 6
 jne   got_flat_values
-; commercial case 6
+; doom2 case 6
 mov   bx, OFFSET flat_slime16 - OFFSET F_START_
 mov   cx, C1TEXT
 jmp   got_flat_values
@@ -416,7 +419,7 @@ xor   ch, ch
 mov   si, cx
 sal   si, 1
 
-mov   bx, word ptr cs:[si + flat_noncommercial_lookup - OFFSET F_START_]
+mov   bx, word ptr cs:[si + flat_nondoom2_lookup - OFFSET F_START_]
 got_string:
 mov   al, byte ptr ds:[_gameepisode]
 cbw
