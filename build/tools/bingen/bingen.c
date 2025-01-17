@@ -14,14 +14,13 @@
 #include "st_stuff.h"
 #include "hu_stuff.h"
 #include "wi_stuff.h"
-#include "f_finale.h"
 
 #include <dos.h>
 #include <conio.h>
 
 #include <stdlib.h>
 #include "m_memory.h"
-#include "m_near.h"
+//#include "m_near.h"
 
 void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
 void __far R_DrawColumn (void);
@@ -45,6 +44,10 @@ void __far D_ALGO_END();
 void __far R_SKY_END();
 void __far R_WriteBackViewConstantsSpan();
 void __far V_DrawPatchFlipped();
+void __far F_StartFinale();
+void __far F_Drawer();
+void __far F_Responder();
+void __far F_Ticker();
 void __far F_START();
 void __far F_END();
 /*

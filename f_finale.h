@@ -27,17 +27,6 @@
 // FINALE
 //
 
-// Called by main loop.
-boolean __far F_Responder (event_t __far* ev);
-
-// Called by main loop.
-void __far F_Ticker (void);
-
-// Called by main loop.
-void __far F_Drawer (void);
-
-
-void __far F_StartFinale (void);
 
 
 

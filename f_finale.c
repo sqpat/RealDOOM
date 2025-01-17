@@ -59,10 +59,7 @@ void __far F_StartFinale(void) {
 #define	TEXTSPEED	3
 #define	TEXTWAIT	250
 
-void	__near F_StartCast (void);
-void	__near F_CastTicker (void);
-boolean __near F_CastResponder (event_t __far *ev);
-void	__near F_CastDrawer (void);
+
 
  
 

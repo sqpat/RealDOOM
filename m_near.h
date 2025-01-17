@@ -521,6 +521,11 @@ extern void                 (__far* wipe_WipeLoopCall)();
 extern void                 (__far* R_WriteBackMaskedFrameConstantsCall)();
 extern void                 (__far* R_WriteBackViewConstantsMaskedCall)();
 
+extern void                 (__far* F_StartFinale)();
+extern void                 (__far* F_Ticker)();
+extern void                 (__far* F_Drawer)();
+extern boolean              (__far* F_Responder)(event_t  __far*event);
+
 
 extern int16_t              currentlumpindex;
 extern uint16_t             maskedcount;
@@ -1154,6 +1159,9 @@ extern uint8_t 					segloopheightvalcache[2];
 extern int8_t    savename[16];
 extern int8_t versionstring[12];
 
+extern int8_t  currentoverlay;
+extern int32_t fwipecodestartposition;
+extern int32_t finalecodestartposition;
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 extern boolean    				plutonia;

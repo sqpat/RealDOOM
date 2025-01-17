@@ -801,6 +801,7 @@ void __near G_WorldDone (void)  {
 			case 11:
 			case 20:
 			case 30:
+		        Z_SetOverlay(OVERLAY_ID_FINALE);
 				F_StartFinale ();
 				break;
         }

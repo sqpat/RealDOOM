@@ -580,7 +580,6 @@ fixed_t32	FixedMulBig16322(int16_t a, fixed_t b);
 
 
 void copystr8(int8_t __far* dst, int8_t __far* src);
-void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) ;
 
 int16_t countleadingzeroes(uint32_t num);
 uint32_t divllu(fixed_t_union num_input, fixed_t_union den);
@@ -866,17 +865,12 @@ void check_is_ultimate(){
 		EpiDef.numitems = 4;
 	}
 }
-void	__near F_StartCast (void);
-void	__near F_CastTicker (void);
-boolean __near F_CastResponder (event_t __far *ev);
-void __far F_Ticker (void) ;
 
 
 //void checkDS(int16_t a);
 void __far wipe_WipeLoop();
 void __far I_ReadScreen();
 uint16_t   __far  R_CheckTextureNumForName(int8_t *name);
-void __far F_Drawer (void);
 
 void __far D_DoomMain2(void) {
 	int16_t             p;

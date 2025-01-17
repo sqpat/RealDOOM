@@ -15,9 +15,9 @@
 #define wipe_StartScreenOffset                0x259
 #define wipe_WipeLoopOffset                   0x268
 #define F_StartFinaleOffset                   0x1AE
-#define F_ResponderOffset                     0xB0B
-#define F_TickerOffset                        0xA6A
-#define F_DrawerOffset                        0xB36
+#define F_ResponderOffset                     0xAFF
+#define F_TickerOffset                        0xA5E
+#define F_DrawerOffset                        0xB2A
 
 #define R_DrawColumnCodeSize           0xB26
 #define R_DrawSpanCodeSize             0xD34
@@ -25,4 +25,4 @@
 #define R_MaskedConstantsCodeSize      0xEB
 #define R_DrawSkyColumnCodeSize        0x6C2
 #define WipeCodeSize                   0x31B
-#define FinaleCodeSize                 0xB92
+#define FinaleCodeSize                 0xB86

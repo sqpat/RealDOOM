@@ -365,7 +365,6 @@ found:
 
 void __far I_UpdateNoBlit(void);
 void __far I_FinishUpdate(void);
-void __far V_DrawPatchFlipped();
 
 void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
@@ -505,8 +504,13 @@ void __near Z_LoadBinaries() {
 
 	Z_QuickMapPhysics();
 
+	fwipecodestartposition = ftell(fp2);
+
 	fread(&codesize, 2, 1, fp2);
-	FAR_fread(code_overlay_start, codesize, 1, fp2);
+	fseek(fp2, codesize, SEEK_CUR);
+	finalecodestartposition = ftell(fp2);
+	
+	//FAR_fread(code_overlay_start, codesize, 1, fp2);
 
 
 	fclose(fp2);
@@ -562,15 +566,6 @@ void __near Z_LoadBinaries() {
 	S_StartSound_addr =		 			(uint32_t)(S_StartSound);
 	S_StartMusic_addr =		 			(uint32_t)(S_StartMusic);
 
-	{
-		// far array of near pts
-		// stick 4 bytes of data 4 bytes behind this func.
-		// todo put this in overlay manager
-		int16_t __far *  finaledata = (int16_t __far *)((int32_t)V_DrawPatchFlipped - 4);
-
-		finaledata[0] = (int16_t)(hu_font);
-		finaledata[1] = (int16_t)(&player);
-	}
 	
 
 }

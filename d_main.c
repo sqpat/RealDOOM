@@ -696,6 +696,7 @@ void __near D_Display (void) {
     // save the current screen if about to wipe
     if (gamestate != wipegamestate) {
         wipe = true;
+		Z_SetOverlay(OVERLAY_ID_WIPE);
         wipe_StartScreenCall();
     } else {
         wipe = false;
@@ -734,6 +735,7 @@ void __near D_Display (void) {
 		break;
 
       case GS_FINALE:
+        Z_SetOverlay(OVERLAY_ID_FINALE);
         F_Drawer ();
 		Z_QuickMapPhysics(); // put this here, instead of 3 spots in f_drawer...
         break;
@@ -837,6 +839,7 @@ void __near D_Display (void) {
     
     // wipe update
 #ifndef SKIPWIPE
+	Z_SetOverlay(OVERLAY_ID_WIPE);
 	wipe_WipeLoopCall();
 #endif
 }

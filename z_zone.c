@@ -809,6 +809,56 @@ void __far Z_QuickMapUnmapAll() {
 }
 
 
+void __far Z_SetOverlay(int8_t wipeId){
+	int16_t codesize;
+	int32_t codeoffset;
+	FILE* fp;
+	if (currentoverlay == wipeId){
+		return;
+	}
+	
+	currentoverlay = wipeId;
+
+	// todo just make it an array. no switch case here.
+	switch (wipeId) {
+		case OVERLAY_ID_WIPE:
+			codeoffset = fwipecodestartposition;
+			break;
+		
+		case OVERLAY_ID_FINALE:
+			codeoffset = finalecodestartposition;
+			break;
+	}
+
+
+	fp = fopen("DOOMCODE.BIN", "rb"); 
+	fseek(fp, codeoffset, SEEK_SET);
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(code_overlay_start, codesize, 1, fp);
+	fclose(fp);
+
+
+	// runtime linking... yay
+	switch(wipeId){
+		case OVERLAY_ID_WIPE:
+			break;
+		
+		case OVERLAY_ID_FINALE:
+			{
+				int16_t __far *  finaledata = (int16_t __far *)((int32_t)code_overlay_start);
+
+				finaledata[0] = (int16_t)(hu_font);
+				finaledata[1] = (int16_t)(&player);
+			}
+			break;
+	}
+
+
+
+}
+
+
+
 /*
 
 

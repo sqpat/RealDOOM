@@ -29,6 +29,13 @@ ENDP
 
 ; vars and data..
 
+_CSDATA_hu_font_ptr:
+dw    0
+_CSDATA_player_ptr:
+dw    0
+
+
+
 ; weird quirk: linker/compiler make the segment overlap with the previous one, so some functions run over into this code!
 ; so these first fields dont end up 0 aligned either. which makes them complicated to write to at runtime.
  
@@ -56,13 +63,6 @@ db    CC_SPIDER-castorderoffset,    MT_SPIDER
 db    CC_CYBER-castorderoffset,     MT_CYBORG
 db    CC_HERO-castorderoffset,      MT_PLAYER
 
-
-; stick these 4 bytes before the func, so we can get a safe addr for it.
-; note: can probably put this back and 0 and 2 once the code is exported.
-_CSDATA_hu_font_ptr:
-dw    0
-_CSDATA_player_ptr:
-dw    0
 
 
 MAX_CASTNUM = 017
@@ -93,7 +93,7 @@ mul   dx
 xchg  si, ax
 mov   di, word ptr ds:[bx]
 mov   word ptr [bp - 2], 0    ; loop counter?
-mov   word ptr cs:[SELFMODIFY_cmp_col_to_patch_width+3], di
+mov   word ptr cs:[SELFMODIFY_cmp_col_to_patch_width+3 - OFFSET F_START_], di
 sub   ax, word ptr ds:[bx + 4]
 mov   cx, word ptr ds:[bx + 2]
 mov   dx, es   ; get dx back
@@ -272,7 +272,7 @@ mov   di, ST_GRAPHICS_SEGMENT
 push  di        ; v_ drawpatch arg
 sal   bx, 1
 mov   di, ax
-add   bx, word ptr cs:[_CSDATA_hu_font_ptr]
+add   bx, word ptr cs:[_CSDATA_hu_font_ptr - OFFSET F_START_]
 mov   ax, word ptr ds:[bx]
 mov   dx, 180   ; y coord for draw patch.
 push  ax           ; v_ drawpatch arg
@@ -343,7 +343,7 @@ jae   commercial_above_or_equal_to_15
 cmp   al, 11
 jne   commercial_below_15_not_11
 ; commercial case 11
-mov   bx, OFFSET flat_rrock14
+mov   bx, OFFSET flat_rrock14 - OFFSET F_START_
 mov   cx, C2TEXT
 got_flat_values:
 mov   ax, 65 ; set finale_music
@@ -373,28 +373,28 @@ retf
 commercial_above_or_equal_to_15:
 ja    commercial_above_15
 ; commercial case 15 
-mov   bx, OFFSET flat_rrock13
+mov   bx, OFFSET flat_rrock13 - OFFSET F_START_
 mov   cx, C5TEXT
 jmp   got_flat_values
 commercial_above_15:
 cmp   al, 31
 jne   commercial_above_15_not_31
 ; commercial case 31
-mov   bx, OFFSET flat_rrock19
+mov   bx, OFFSET flat_rrock19 - OFFSET F_START_
 mov   cx, C6TEXT
 jmp   got_flat_values
 commercial_above_15_not_31:
 cmp   al, 30
 jne   commercial_above_15_not_31_30
 ; commercial case 30
-mov   bx, OFFSET flat_floor4_8
+mov   bx, OFFSET flat_floor4_8 - OFFSET F_START_
 mov   cx, C4TEXT
 jmp   got_flat_values
 commercial_above_15_not_31_30:
 cmp   al, 20
 jne   got_flat_values
 ;commercial case 20
-mov   bx, OFFSET flat_floor4_8
+mov   bx, OFFSET flat_floor4_8 - OFFSET F_START_
 mov   cx, C3TEXT
 jmp   got_flat_values
 jump_to_handle_doom1:
@@ -403,7 +403,7 @@ commercial_below_15_not_11:
 cmp   al, 6
 jne   got_flat_values
 ; commercial case 6
-mov   bx, OFFSET flat_slime16
+mov   bx, OFFSET flat_slime16 - OFFSET F_START_
 mov   cx, C1TEXT
 jmp   got_flat_values
 handle_doom1:
@@ -416,7 +416,7 @@ xor   ch, ch
 mov   si, cx
 sal   si, 1
 
-mov   bx, word ptr cs:[si + flat_noncommercial_lookup]
+mov   bx, word ptr cs:[si + flat_noncommercial_lookup - OFFSET F_START_]
 got_string:
 mov   al, byte ptr ds:[_gameepisode]
 cbw
@@ -503,7 +503,7 @@ mov   ax, OFFSET _filename_argument
 
 ; copy 9 bytes "BOSSBACK" to ds. gross...
 push  bx
-mov   bx, OFFSET str_bossback
+mov   bx, OFFSET str_bossback - OFFSET F_START_
 call  F_CopyString9_
 pop   bx
 
@@ -516,7 +516,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder - OFFSET F_START_]
 mov   cx, ds
 xor   ah, ah
 lea   bx, [bp - 068h] ; text param (100 length)
@@ -783,7 +783,7 @@ do_draw_glyph_ftextwrite:
 sal       bx, 1
 mov       ax, ST_GRAPHICS_SEGMENT
 push      ax
-add       bx, word ptr cs:[_CSDATA_hu_font_ptr]
+add       bx, word ptr cs:[_CSDATA_hu_font_ptr - OFFSET F_START_]
 mov       ax, word ptr ds:[bx]
 push      ax
 mov       dx, di
@@ -917,7 +917,7 @@ mov   word ptr [bp - 0Ch], SCREENWIDTH
 scrolled_ready:
 
 
-mov   bx, OFFSET str_pfub2
+mov   bx, OFFSET str_pfub2 - OFFSET F_START_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 
@@ -939,7 +939,7 @@ dw _W_CacheLumpNumDirectFragment_addr
 xor   bx, bx
 push  bx
 
-mov   bx, OFFSET str_pfub2
+mov   bx, OFFSET str_pfub2 - OFFSET F_START_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 
@@ -987,7 +987,7 @@ use_pfub1:
 mov   bx, word ptr [bp - 6]
 push  bx
 
-mov   bx, OFFSET str_pfub1
+mov   bx, OFFSET str_pfub1 - OFFSET F_START_
 
 
 
@@ -1046,7 +1046,7 @@ dw _S_StartSound_addr
 mov   byte ptr ds:[_finale_laststage], bl
 draw_end0_patch:
 mov   cl, bl  ; get finale stage in cl
-mov   bx, OFFSET str_end0
+mov   bx, OFFSET str_end0 - OFFSET F_START_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 add   byte ptr ds:[_filename_argument+3], cl ; add to the '0'
@@ -1077,7 +1077,7 @@ pop   bx
 ret   
 draw_end_patch:
 mov   cx, word ptr [bp - 0Eh]
-mov   bx, OFFSET str_end0
+mov   bx, OFFSET str_end0 - OFFSET F_START_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 mov   bx, word ptr [bp - 8]
@@ -1120,7 +1120,7 @@ xor   ah, ah
 mov   word ptr [bp - 4], ax
 mov   word ptr [bp - 6], ax
 
-mov   bx, OFFSET str_pfub1
+mov   bx, OFFSET str_pfub1 - OFFSET F_START_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 xor   bx, bx
@@ -1136,7 +1136,7 @@ dw _W_CacheLumpNumDirectFragment_addr
 xor   ax, ax
 push  ax
 
-mov   bx, OFFSET str_pfub1
+mov   bx, OFFSET str_pfub1 - OFFSET F_START_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 
@@ -1159,7 +1159,7 @@ jmp   xcoord_ready
 use_pfub2:
 mov   bx,  word ptr [bp - 6]
 push  bx
-mov   bx, OFFSET str_pfub2         ; string addr...
+mov   bx, OFFSET str_pfub2 - OFFSET F_START_         ; string addr...
 jmp   draw_chosen_pfub
 
 
@@ -1179,7 +1179,7 @@ cmp   word ptr ds:[_finalestage], 2
 je    dont_force_screenwipe
 mov   byte ptr ds:[_wipegamestate], 0FFh  ; force screen wipe
 dont_force_screenwipe:
-mov   al, byte ptr cs:[_CSDATA_castorder+1]     ;  castorder[castnum].type). castnum is 0.
+mov   al, byte ptr cs:[_CSDATA_castorder+1 - OFFSET F_START_]     ;  castorder[castnum].type). castnum is 0.
 xor   ah, ah
 mov   byte ptr ds:[_castnum], 0
 ; call getSeeState
@@ -1252,7 +1252,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
@@ -1266,7 +1266,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
@@ -1292,7 +1292,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
@@ -1320,7 +1320,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
@@ -1388,7 +1388,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 
 db    09Ah
@@ -1412,7 +1412,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
 dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
@@ -1541,7 +1541,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
 dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
@@ -1551,7 +1551,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
 dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
@@ -1591,7 +1591,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 mov   byte ptr ds:[_castdeath], 1
 db    09Ah
@@ -1614,7 +1614,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 mov   ah, 0Bh  ; sizeof mobjinfo?
 mul   ah
 mov   bx, ax
@@ -1647,7 +1647,7 @@ cmp   byte ptr ds:[_commercial], 0
 je    done_checking_skipping
 cmp   word ptr ds:[_finalecount], 50
 jle   done_checking_skipping
-mov   bx, word ptr cs:[_CSDATA_player_ptr]
+mov   bx, word ptr cs:[_CSDATA_player_ptr - OFFSET F_START_]
 cmp   byte ptr ds:[bx + 7], 0   ; player.cmd.buttons
 je    done_checking_skipping
 cmp   byte ptr ds:[_gamemap], 30
@@ -1765,7 +1765,7 @@ fdrawer_episode1:
 
 cmp   byte ptr ds:[_is_ultimate], 0
 jne   do_ultimate_fullscreenpatch
-mov   bx, OFFSET str_help2
+mov   bx, OFFSET str_help2 - OFFSET F_START_
 do_finaledraw:
 call  F_CopyString9_
 
@@ -1790,10 +1790,10 @@ pop   bx
 retf  
 
 do_ultimate_fullscreenpatch:
-mov   bx, OFFSET str_credit
+mov   bx, OFFSET str_credit - OFFSET F_START_
 jmp   do_finaledraw
 fdrawer_episode2:
-mov   bx, OFFSET str_victory2
+mov   bx, OFFSET str_victory2 - OFFSET F_START_
 jmp   do_finaledraw
 fdrawer_episode3:
 call  F_BunnyScroll_
@@ -1801,7 +1801,7 @@ pop   dx
 pop   bx
 retf  
 fdrawer_episode4:
-mov   bx, OFFSET str_endpic
+mov   bx, OFFSET str_endpic - OFFSET F_START_
 jmp   do_finaledraw
 
 ENDP

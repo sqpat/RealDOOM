@@ -321,7 +321,8 @@ boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up men
 	}
 
 	if (gamestate == GS_FINALE) {
-		if (F_Responder(ev)) {
+        Z_SetOverlay(OVERLAY_ID_FINALE);
+        if (F_Responder(ev)) {
 			return true; // finale ate the event
 		}
 	}
@@ -420,7 +421,7 @@ void __near G_Ticker (void)  {
             G_DoCompleted (); 
             break; 
           case ga_victory: 
-            //todo overlay goes here
+            Z_SetOverlay(OVERLAY_ID_FINALE);
             F_StartFinale (); 
             break; 
           case ga_worlddone: 
@@ -486,6 +487,7 @@ void __near G_Ticker (void)  {
             break;
                          
         case GS_FINALE: 
+            Z_SetOverlay(OVERLAY_ID_FINALE);
 			F_Ticker();
 			break;
  

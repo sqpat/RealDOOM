@@ -439,6 +439,11 @@ void (__far* wipe_WipeLoopCall)() = 										  ((void    (__far *)())     					
 void (__far* R_WriteBackMaskedFrameConstantsCall)() = 						  ((void    (__far *)())     							(MK_FP(maskedconstants_funcarea_segment, R_WriteBackMaskedFrameConstantsOffset)));
 void (__far* R_WriteBackViewConstantsMaskedCall)() = 						  ((void    (__far *)())     							(MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMaskedOffset)));
 
+void (__far* F_StartFinale)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_StartFinaleOffset)));
+void (__far* F_Ticker)() = 											  		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_TickerOffset)));
+void (__far* F_Drawer)() = 											  		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_DrawerOffset)));
+boolean (__far* F_Responder)() = 										      ((boolean (__far *)(event_t  __far*event))     		(MK_FP(code_overlay_segment, 		 	 F_ResponderOffset)));
+
 
 
 
@@ -2105,6 +2110,10 @@ uint8_t 					segloopheightvalcache[2];
 
 int8_t    savename[16];
 int8_t versionstring[12] = "version 109";  // hardcoded from VERSION. todo dynamically generate?
+
+int8_t  currentoverlay = OVERLAY_ID_UNMAPPED;
+int32_t fwipecodestartposition;
+int32_t finalecodestartposition;
 
 /*
 uint16_t shift4lookup[256] = 

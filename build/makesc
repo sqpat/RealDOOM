@@ -105,7 +105,7 @@ GLOBOBJS = &
  dutils.obj &
  info.obj &
  d_math.obj &
- d_finale.obj
+ 
  dmx.obj &
  memory.obj &
  math.obj &

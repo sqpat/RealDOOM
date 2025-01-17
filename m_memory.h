@@ -394,7 +394,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define linespeciallist        ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum, size_doomednum ))
 #define font_widths            ((int8_t __far*)               MAKE_FULL_SEGMENT(linespeciallist, size_linespeciallist))
 #define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(font_widths, size_font_widths))
-#define code_overlay_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start, WipeCodeSize))
+#define code_overlay_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start, FinaleCodeSize))
 // WipeCodeSize
 
 #define thinkerlist_segment           ((segment_t) ((int32_t)thinkerlist_far >> 16))
@@ -434,7 +434,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // 4CC6:0000  xxxx doomednum
 // 4CD8:0000  xxxx linespeciallist
 // 4CE0:0000  xxxx font_widths
-// 4CE4:0000  xxxx fwipe_code_area
+// 4CE4:0000  xxxx code_overlay_segment
 // 4D16:0000  xxxx [empty]
 
 

@@ -145,6 +145,7 @@
 byte __far* __near Z_InitEMS(void);
 //void Z_InitUMB(void);
 void __far Z_QuickMapUnmapAll();
+void __far Z_SetOverlay(int8_t wipeId);
 
  
 #if defined(__CHIPSET_BUILD)
@@ -359,7 +360,9 @@ void __far Z_QuickMapUnmapAll();
 // 32
 #define FIRST_DEMO_LOGICAL_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4
 
-
+#define OVERLAY_ID_UNMAPPED 0
+#define OVERLAY_ID_WIPE 1
+#define OVERLAY_ID_FINALE 2
 
 
 #define TASK_PHYSICS 0
