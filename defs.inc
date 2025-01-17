@@ -187,7 +187,6 @@ _backsector =               	    _NULL_OFFSET + 001A8h
 _active_visplanes =             	_NULL_OFFSET + 001B0h
 _wipegamestate =                    _NULL_OFFSET + 001B5h
 _visplane_offset =              	_NULL_OFFSET + 001B6h
-; up to 1E8
 _dirtybox =              			_NULL_OFFSET + 001E8h
 _ticcount =			              	_NULL_OFFSET + 001F0h
 
@@ -249,6 +248,23 @@ _movedirangles =                     _NULL_OFFSET + 00470h
 _braintargets =                      _NULL_OFFSET + 00480h
 _tmbbox =                            _NULL_OFFSET + 004C0h
 _spanfunc_call_lookup =              _NULL_OFFSET + 004D0h
+
+
+
+_V_DrawPatch_addr =              	 _NULL_OFFSET + 00554h
+_locallib_toupper_addr =              _NULL_OFFSET + 00558h
+_S_ChangeMusic_addr =              	 _NULL_OFFSET + 0055Ch
+_V_DrawFullscreenPatch_addr =         _NULL_OFFSET + 00560h
+_getStringByIndex_addr =              _NULL_OFFSET + 00564h
+_locallib_strlen_addr =               _NULL_OFFSET + 00568h
+_Z_QuickMapStatusNoScreen4_addr =     _NULL_OFFSET + 0056Ch
+_Z_QuickMapRender7000_addr =          _NULL_OFFSET + 00570h
+_Z_QuickMapScreen0_addr =             _NULL_OFFSET + 00574h
+_W_CacheLumpNameDirect_addr =         _NULL_OFFSET + 00578h
+_W_CacheLumpNumDirectFragment_addr =  _NULL_OFFSET + 0057Ch
+_W_GetNumForName_addr =               _NULL_OFFSET + 00580h
+_S_StartSound_addr =              	 _NULL_OFFSET + 00584h
+_S_StartMusic_addr =              	 _NULL_OFFSET + 00588h
 
 
 ; 38Ch

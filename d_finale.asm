@@ -18,27 +18,9 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
-EXTRN V_DrawPatch_:PROC
-EXTRN V_MarkRect_:PROC
-EXTRN locallib_toupper_:PROC
-EXTRN S_ChangeMusic_:PROC
-EXTRN V_DrawFullscreenPatch_:PROC
-EXTRN getStringByIndex_:PROC
-EXTRN locallib_strlen_:PROC
-EXTRN Z_QuickMapStatusNoScreen4_:PROC
-EXTRN Z_QuickMapRender7000_:PROC
-EXTRN Z_QuickMapScratch_5000_:PROC
-EXTRN Z_QuickMapScreen0_:PROC
-EXTRN Z_QuickMapPhysics_:PROC
-EXTRN W_CacheLumpNumDirect_:PROC
-EXTRN W_CacheLumpNameDirect_:PROC
-EXTRN W_CacheLumpNumDirectFragment_:PROC
-EXTRN W_GetNumForName_:PROC
-EXTRN S_StartSound_:PROC
-EXTRN S_StartMusic_:PROC
+
 
 EXTRN _hu_font:WORD
-
 EXTRN _player:WORD
 
 
@@ -138,7 +120,9 @@ push  ss
 pop   ds    ; restore ds for this func call
 mov   bx, di
 add   si, ax
-call  V_MarkRect_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_MarkRect_addr
 
 pop   ds    ; restore ds 0x5000
 mov   cx, si
@@ -251,7 +235,10 @@ ret
 char_not_string_end:
 xor   ah, ah
 
-call  locallib_toupper_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _locallib_toupper_addr
+
 sub   al, HU_FONTSTART
 jl    bad_glyph
 cmp   al, HU_FONTSIZE
@@ -273,7 +260,9 @@ jmp   check_next_character_for_zero
 do_char_upper:
 xor   ah, ah
 
-call  locallib_toupper_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _locallib_toupper_addr
 
 sub   al, HU_FONTSTART
 jl    bad_glyph2
@@ -305,7 +294,12 @@ mov   dx, 180   ; y coord for draw patch.
 push  ax           ; v_ drawpatch arg
 xor   bx, bx
 mov   ax, cx
-call  V_DrawPatch_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawPatch_addr
+
+
 add   cx, di
 jmp   draw_next_glyph
 
@@ -378,7 +372,11 @@ mov   word ptr cs:[_CSDATA_finaleflat], bx
 
 xor   ah, ah
 mov   word ptr cs:[_CSDATA_finaletext], cx
-call  S_ChangeMusic_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_ChangeMusic_addr
+
 xor   ax, ax
 mov   bx, word ptr cs:[_CSDATA_finaleflat]
 mov   word ptr cs:[_CSDATA_finalestage], ax
@@ -525,7 +523,11 @@ mov   bx, OFFSET str_bossback
 call  F_CopyString9_
 pop   bx
 
-call  V_DrawFullscreenPatch_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawFullscreenPatch_addr
+
+
 mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw
 mov   bx, ax
@@ -536,12 +538,22 @@ xor   ah, ah
 lea   bx, [bp - 068h] ; text param (100 length)
 add   ax, CASTORDEROFFSET
 
-call  getStringByIndex_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _getStringByIndex_addr
 
-call  Z_QuickMapStatusNoScreen4_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapStatusNoScreen4_addr
+
+
 lea   ax, [bp - 068h]  ; ; text param (100 length)
 call  F_CastPrint_
-call  Z_QuickMapRender7000_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapRender7000_addr
+
 mov   al, byte ptr [bp - 4]
 xor   ah, ah
 mov   bx, ax
@@ -558,12 +570,20 @@ mov   bx, word ptr es:[bx]
 add   bx, ax
 mov   cx, word ptr es:[bx]
 mov   dl, byte ptr es:[bx + 010h]
-call  Z_QuickMapScratch_5000_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapScratch_5000_addr
+
 mov   ax, word ptr ds:[_firstspritelump]
 xor   bx, bx
 add   ax, cx
 mov   cx, SCRATCH_SEGMENT_5000
-call  W_CacheLumpNumDirect_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNumDirect_addr
+
 test  dl, dl
 je    not_flipped
 mov   dx, 170                ; y param
@@ -582,7 +602,11 @@ push  ax
 mov   dx, 170                ; y param
 mov   ax, SCREENWIDTHOVER2
 xor   bx, bx
-call  V_DrawPatch_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawPatch_addr
+
 LEAVE_MACRO 
 pop   dx
 pop   cx
@@ -609,8 +633,14 @@ sub       sp, 029Eh
 lea       bx, [bp - 029Eh]
 mov       word ptr [bp - 4], bx
 
-call      Z_QuickMapScratch_5000_
-call      Z_QuickMapScreen0_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapScratch_5000_addr
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapScreen0_addr
+
 
 mov       bx, word ptr cs:[_CSDATA_finaleflat]
 mov       ax, OFFSET _filename_argument
@@ -621,7 +651,10 @@ mov       cx, SCRATCH_SEGMENT_5000
 xor       di, di                    ; dest offset 0
 
 xor       dx, dx
-call      W_CacheLumpNameDirect_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNameDirect_addr
 
 
 ;    for (y=0 ; y<SCREENHEIGHT ; y++) {
@@ -685,20 +718,26 @@ push      ss
 pop       ds
 
 
-call      Z_QuickMapStatusNoScreen4_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapStatusNoScreen4_addr
 mov       cx, SCREENHEIGHT
 mov       bx, SCREENWIDTH
 xor       dx, dx
 xor       ax, ax
 
 
-call      V_MarkRect_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_MarkRect_addr
 lea       bx, [bp - 029Eh]
 mov       ax, word ptr cs:[_CSDATA_finaletext]
 mov       cx, ds
 mov       si, 10
 
-call      getStringByIndex_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _getStringByIndex_addr
 mov       ax, word ptr cs:[_CSDATA_finalecount]
 sub       ax, si
 mov       bx, 3
@@ -727,7 +766,9 @@ jmp       loop_count
 do_char_upper_ftextwrite:
 xor       ah, ah
 
-call      locallib_toupper_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _locallib_toupper_addr
 mov       bl, al
 sub       bl, HU_FONTSTART
 jl        bad_glyph_ftextwrite
@@ -763,7 +804,9 @@ push      ax
 mov       dx, di
 xor       bx, bx
 mov       ax, si
-call      V_DrawPatch_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawPatch_addr
 mov       si, word ptr [bp - 0Ah]
 dec       cx
 jmp       loop_count
@@ -856,9 +899,13 @@ mov   byte ptr [bp - 2], al ; bp - 2 is pic2 boolean
 xor   ah, ah
 xor   dx, dx
 mov   word ptr [bp - 8], ax
-call  Z_QuickMapScratch_5000_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapScratch_5000_addr
 xor   ax, ax
-call  V_MarkRect_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_MarkRect_addr
 ;    scrolled = 320 - (finalecount-230)/2;
 mov   ax, word ptr cs:[_CSDATA_finalecount]
 sub   ax, 230            
@@ -894,8 +941,16 @@ push  bx
 push  bx
 mov   cx, SCRATCH_SEGMENT_5000
 mov   dx, bx
-call  W_GetNumForName_
-call  W_CacheLumpNumDirectFragment_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_GetNumForName_addr
+
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNumDirectFragment_addr
+
 xor   bx, bx
 push  bx
 
@@ -908,8 +963,13 @@ mov   bx, di
 xor   cx, cx
 push  cx
 mov   cx, si
-call  W_GetNumForName_
-call  W_CacheLumpNumDirectFragment_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_GetNumForName_addr
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNumDirectFragment_addr
 
 draw_next_bunny_column:
 mov   ax, word ptr [bp - 0Ch]   ; get scrolled
@@ -956,8 +1016,13 @@ mov   bx, di
 mov   cx, word ptr [bp - 4]
 push  cx
 mov   cx, si
-call  W_GetNumForName_
-call  W_CacheLumpNumDirectFragment_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_GetNumForName_addr
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNumDirectFragment_addr
 xor   ax, ax
 go_draw_patchcol:
 mov   bx, di
@@ -988,7 +1053,11 @@ cmp   bx, ax
 jle   draw_end0_patch
 mov   dx, 1
 xor   ax, ax
-call  S_StartSound_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   byte ptr cs:[_CSDATA_finale_laststage], bl
 draw_end0_patch:
 mov   cl, bl  ; get finale stage in cl
@@ -1000,7 +1069,9 @@ add   byte ptr ds:[_filename_argument+3], cl ; add to the '0'
 mov   bx, word ptr [bp - 8]
 mov   cx, word ptr [bp - 0Eh]
 mov   dx, (SCREENHEIGHT-8*8)/2
-call  W_CacheLumpNameDirect_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNameDirect_addr
 mov   ax, word ptr [bp - 0Eh]
 push  ax
 mov   ax, word ptr [bp - 8]
@@ -1008,7 +1079,9 @@ push  ax
 
 mov   ax, (SCREENWIDTH-13*8)/2
 xor   bx, bx
-call  V_DrawPatch_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawPatch_addr
 exit_bunnyscroll:
 LEAVE_MACRO
 pop   di
@@ -1026,7 +1099,9 @@ mov   bx, word ptr [bp - 8]
 
 
 mov   dx, (SCREENHEIGHT-8*8)/2
-call W_CacheLumpNameDirect_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNameDirect_addr
 mov   ax, word ptr [bp - 0Eh]
 push  ax
 mov   ax, word ptr [bp - 8]
@@ -1034,7 +1109,9 @@ push  ax
 
 mov   ax, (SCREENWIDTH-13*8)/2
 xor   bx, bx
-call  V_DrawPatch_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawPatch_addr
 mov   byte ptr cs:[_CSDATA_finale_laststage], 0
 LEAVE_MACRO
 pop   di
@@ -1064,8 +1141,13 @@ call  F_CopyString9_
 xor   bx, bx
 
 
-call  W_GetNumForName_
-call  W_CacheLumpNumDirectFragment_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_GetNumForName_addr
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNumDirectFragment_addr
 xor   ax, ax
 push  ax
 
@@ -1077,8 +1159,13 @@ mov   bx, di
 xor   cx, cx
 push  cx
 mov   cx, si
-call  W_GetNumForName_
-call  W_CacheLumpNumDirectFragment_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_GetNumForName_addr
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNumDirectFragment_addr
 currently_pic2:
 mov   ax, word ptr [bp - 0Ch] ; get scrolled
 add   ax, dx
@@ -1132,7 +1219,9 @@ mov   byte ptr cs:[_CSDATA_castonmelee], al
 mov   byte ptr cs:[_CSDATA_castattacking], al
 mov   ax, MUS_EVIL
 mov   word ptr cs:[_CSDATA_finalestage], 2
-call  S_ChangeMusic_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_ChangeMusic_addr
 pop   dx
 pop   bx
 ret   
@@ -1157,7 +1246,12 @@ pop   dx
 pop   bx
 ret   
 do_castticker:
-call  Z_QuickMapPhysics_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _Z_QuickMapPhysics_addr
+
+
 les   bx, dword ptr cs:[_CSDATA_caststate]       
 cmp   byte ptr es:[bx + 2], 0FFh
 je    label_1
@@ -1180,7 +1274,9 @@ dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dl, al
 xor   dh, dh
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 mov   al, byte ptr cs:[_CSDATA_castnum]
 cbw  
 mov   bx, ax
@@ -1292,7 +1388,9 @@ label_13:
 mov   dl, al
 xor   dh, dh
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 cmp   byte ptr cs:[_CSDATA_castframes], 0Ch
 je    label_27
 jump_to_label_28:
@@ -1538,7 +1636,9 @@ mov   bx, ax
 xor   ax, ax
 mov   dl, byte ptr [bx + _mobjinfo + 3]
 xor   dh, dh
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 mov   al, 1
 pop   bx
 ret   
@@ -1589,13 +1689,18 @@ do_noncommerical:
 lea   bx, [bp - 029Ah]
 mov   ax, word ptr cs:[_CSDATA_finaletext]
 mov   cx, ds
-call  getStringByIndex_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _getStringByIndex_addr
 cmp   word ptr cs:[_CSDATA_finalestage], 0
 jne   exit_fticker
 lea   ax, [bp - 029Ah]
 mov   dx, ds
 
-call  locallib_strlen_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _locallib_strlen_addr
+
 mov   dx, ax
 shl   ax, 2
 sub   ax, dx
@@ -1609,7 +1714,9 @@ mov   word ptr cs:[_CSDATA_finalecount], ax
 cmp   byte ptr ds:[_gameepisode], 3
 jne   exit_fticker
 mov   ax, MUS_BUNNY
-call  S_StartMusic_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartMusic_addr
 LEAVE_MACRO
 pop   dx
 pop   cx
@@ -1677,7 +1784,9 @@ do_finaledraw:
 call  F_CopyString9_
 
 xor   dx, dx
-call  V_DrawFullscreenPatch_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawFullscreenPatch_addr
 exit_fdrawer:
 pop   dx
 pop   bx

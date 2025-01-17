@@ -300,6 +300,21 @@
 
 #define spanfunc_call_table             (((uint32_t  __near*)                (_NULL_OFFSET + 0x04D0)))
 
+#define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0554)))
+#define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0558)))
+#define S_ChangeMusic_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x055C)))
+#define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0560)))
+#define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0564)))
+#define locallib_strlen_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0568)))
+#define Z_QuickMapStatusNoScreen4_addr    (*((uint32_t  __near*)             (_NULL_OFFSET + 0x056C)))
+#define Z_QuickMapRender7000_addr         (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0570)))
+#define Z_QuickMapScreen0_addr            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0574)))
+#define W_CacheLumpNameDirect_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0578)))
+#define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)             (_NULL_OFFSET + 0x057C)))
+#define W_GetNumForName_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0580)))
+#define S_StartSound_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0584)))
+#define S_StartMusic_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0588)))
+
 
 
 
