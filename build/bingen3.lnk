@@ -38,7 +38,6 @@ file hu_lib.obj
 file m_menu.obj
 file sounds.obj
 file d_wipe.obj
-file d_finale.obj
 file d_algo.obj
 file dmx.obj
 file dutils.obj
@@ -47,12 +46,14 @@ file math.obj
 file math386.obj
 
 
-file f_finale.obj
 file g_setup.obj
 file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
 file p_saveg.obj
+
+NEWSEGMENT
+file d_finale.obj
 
 
 #todo put these in the future wad segment. maybe pull out p_tick.

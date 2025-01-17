@@ -36,7 +36,6 @@ EXTRN W_CacheLumpNumDirectFragment_:PROC
 EXTRN W_GetNumForName_:PROC
 EXTRN S_StartSound_:PROC
 EXTRN S_StartMusic_:PROC
-EXTRN combine_strings_:PROC
 
 EXTRN _hu_font:WORD
 
