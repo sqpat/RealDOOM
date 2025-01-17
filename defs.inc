@@ -67,13 +67,18 @@ _dc_colormap_index = 				_NULL_OFFSET + 00042h
 _fuzzpos =							_NULL_OFFSET + 00043h
 _dc_yl = 							_NULL_OFFSET + 00044h
 _dc_yh = 							_NULL_OFFSET + 00046h
-; 48, 4a, 4c, 4e unused 
-;_dc_iscale = 						_NULL_OFFSET + 00048h
-;_dc_texturemid = 					_NULL_OFFSET + 0004Ch
+_castattacking =                 	_NULL_OFFSET + 00048h
+_castdeath =                     	_NULL_OFFSET + 00049h
+_castonmelee =                   	_NULL_OFFSET + 0004Ah
+_castframes =                    	_NULL_OFFSET + 0004Bh
+_casttics =                      	_NULL_OFFSET + 0004Ch
+_castnum =                       	_NULL_OFFSET + 0004Dh
+_finaleflat =                    	_NULL_OFFSET + 0004Eh
+
 _dc_x = 							_NULL_OFFSET + 00050h
 _lastopening =                   	_NULL_OFFSET + 00052h
 _planezlight = 						_NULL_OFFSET + 00054h
-;_planeheight = 						_NULL_OFFSET + 00058h
+_caststate =                        _NULL_OFFSET + 00058h
 _basexscale = 						_NULL_OFFSET + 0005Ch
 _baseyscale = 						_NULL_OFFSET + 00060h
 _viewx = 							_NULL_OFFSET + 00064h
@@ -102,8 +107,11 @@ _filename_argument = 				_NULL_OFFSET + 000ACh
 _is_ultimate = 						_NULL_OFFSET + 000B5h
 _firstspritelump = 					_NULL_OFFSET + 000B6h
 
-; B8 to C0 unused?
-
+_finaletext =                    	_NULL_OFFSET + 000B8h
+_finalecount =                   	_NULL_OFFSET + 000BAh
+_finalestage =                   	_NULL_OFFSET + 000BCh
+_finale_laststage =              	_NULL_OFFSET + 000BEh
+; bf free
 
 _mfloorclip = 						_NULL_OFFSET + 000C0h
 _mceilingclip = 					_NULL_OFFSET + 000C4h
@@ -228,7 +236,7 @@ _FixedMul_addr =               		 _NULL_OFFSET + 002C0h
 _FastDiv3232_addr =                  _NULL_OFFSET + 002C8h
 _R_GetMaskedColumnSegment_addr =     _NULL_OFFSET + 002CCh
 
-
+ 
 _colfunc_call_lookup =               _NULL_OFFSET + 002D0h
 
 ; 354

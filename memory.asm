@@ -35,13 +35,15 @@ dw                                       DRAWSPAN_BX_OFFSET, 0000h
 
 ;0x40
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-;0x50   0x54 = _planezlight (dword, so segment in 56)
-dw 0,  0,  0,  ZLIGHT_SEGMENT,  0,  0,  0,  0
+;0x50   0x54 = _planezlight (dword, so segment in 56)	 0x58 caststate (0x5A is STATES_SEGMENT) 
+dw 0,  0,  0,  ZLIGHT_SEGMENT,  0,  STATES_SEGMENT,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+;0xA0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+;0xB0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ; _mfloorclip segment = c2, _mceilingclip segment = c6
 dw 0,  OPENINGS_SEGMENT,  0,  OPENINGS_SEGMENT,  0,  0,  0,  0
@@ -295,7 +297,7 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00
 
 
-
+ 
 ENDS _FIXEDDATA
 
 GROUP DGROUP _FIXEDDATA

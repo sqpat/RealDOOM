@@ -31,36 +31,7 @@ ENDP
 
 ; weird quirk: linker/compiler make the segment overlap with the previous one, so some functions run over into this code!
 ; so these first fields dont end up 0 aligned either. which makes them complicated to write to at runtime.
-
-
-_CSDATA_castattacking:
-db    0
-_CSDATA_castdeath:
-db    0
-_CSDATA_castonmelee:
-db    0
-_CSDATA_castframes:
-db    0
-_CSDATA_casttics:
-db    0
-_CSDATA_castnum:
-db    0
-_CSDATA_caststate:
-dw    0, STATES_SEGMENT  ; hardcoded segment..
-_CSDATA_finaleflat:
-dw    0
-_CSDATA_finaletext:
-dw    0
-_CSDATA_finalecount:
-dw    0
-; Stage of animation:
-;  0 = text, 1 = art screen, 2 = character cast
-_CSDATA_finalestage:
-dw    0
-_CSDATA_finale_laststage:
-db    0
-
-
+ 
 
 
 
@@ -357,8 +328,8 @@ push  bx
 push  cx
 push  dx
 push  si
-mov   bx, word ptr cs:[_CSDATA_finaleflat]
-mov   cx, word ptr cs:[_CSDATA_finaletext]
+mov   bx, word ptr ds:[_finaleflat]
+mov   cx, word ptr ds:[_finaletext]
 mov   byte ptr ds:[_gameaction], 0
 xor   al, al
 mov   byte ptr ds:[_gamestate], 2
@@ -381,19 +352,19 @@ got_flat_values_and_music:
 ; cs is finaletext
 ; bx is text for the flat graphic
 mov   dx, 1
-mov   word ptr cs:[_CSDATA_finaleflat], bx
+mov   word ptr ds:[_finaleflat], bx
 
 xor   ah, ah
-mov   word ptr cs:[_CSDATA_finaletext], cx
+mov   word ptr ds:[_finaletext], cx
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_ChangeMusic_addr
 
 xor   ax, ax
-mov   bx, word ptr cs:[_CSDATA_finaleflat]
-mov   word ptr cs:[_CSDATA_finalestage], ax
-mov   word ptr cs:[_CSDATA_finalecount], ax
+mov   bx, word ptr ds:[_finaleflat]
+mov   word ptr ds:[_finalestage], ax
+mov   word ptr ds:[_finalecount], ax
 pop   si
 pop   dx
 pop   cx
@@ -521,7 +492,7 @@ push  dx
 push  bp
 mov   bp, sp
 sub   sp, 068h
-les   bx, dword ptr cs:[_CSDATA_caststate]
+les   bx, dword ptr ds:[_caststate]
 mov   al, byte ptr es:[bx]
 mov   byte ptr [bp - 4], al
 mov   al, byte ptr es:[bx + 1]
@@ -541,7 +512,7 @@ db 01Eh  ;
 dw _V_DrawFullscreenPatch_addr
 
 
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   al, byte ptr ds:[_castnum]
 cbw
 mov   bx, ax
 add   bx, ax
@@ -655,7 +626,7 @@ db 01Eh  ;
 dw _Z_QuickMapScreen0_addr
 
 
-mov       bx, word ptr cs:[_CSDATA_finaleflat]
+mov       bx, word ptr ds:[_finaleflat]
 mov       ax, OFFSET _filename_argument
 call      F_CopyString9_
 xor       bx, bx
@@ -744,14 +715,14 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_MarkRect_addr
 lea       bx, [bp - 029Eh]
-mov       ax, word ptr cs:[_CSDATA_finaletext]
+mov       ax, word ptr ds:[_finaletext]
 mov       cx, ds
 mov       si, 10
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _getStringByIndex_addr
-mov       ax, word ptr cs:[_CSDATA_finalecount]
+mov       ax, word ptr ds:[_finalecount]
 sub       ax, si
 mov       bx, 3
 CWD       
@@ -921,7 +892,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_MarkRect_addr
 ;    scrolled = 320 - (finalecount-230)/2;
-mov   ax, word ptr cs:[_CSDATA_finalecount]
+mov   ax, word ptr ds:[_finalecount]
 sub   ax, 230            
 cwd
 sub   ax, dx     ; i dont know what this cwd sub does.
@@ -1047,7 +1018,7 @@ inc   dx
 call  F_DrawPatchCol_
 cmp   dx, SCREENWIDTH
 jl    draw_next_bunny_column
-mov   ax, word ptr cs:[_CSDATA_finalecount]
+mov   ax, word ptr ds:[_finalecount]
 cmp   ax, FINALE_PHASE_1_CHANGE
 jl    exit_bunnyscroll
 cmp   ax, FINALE_PHASE_2_CHANGE
@@ -1061,7 +1032,7 @@ cmp   ax, 6
 jle   finale_stage_calculated
 mov   bx, 6     ; cap fianle to 6.
 finale_stage_calculated:
-mov   al, byte ptr cs:[_CSDATA_finale_laststage]
+mov   al, byte ptr ds:[_finale_laststage]
 cbw  
 cmp   bx, ax
 jle   draw_end0_patch
@@ -1072,7 +1043,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-mov   byte ptr cs:[_CSDATA_finale_laststage], bl
+mov   byte ptr ds:[_finale_laststage], bl
 draw_end0_patch:
 mov   cl, bl  ; get finale stage in cl
 mov   bx, OFFSET str_end0
@@ -1126,7 +1097,7 @@ xor   bx, bx
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawPatch_addr
-mov   byte ptr cs:[_CSDATA_finale_laststage], 0
+mov   byte ptr ds:[_finale_laststage], 0
 LEAVE_MACRO
 pop   di
 pop   si
@@ -1204,13 +1175,13 @@ PUBLIC F_StartCast_
 push  bx
 push  dx
 
-cmp   word ptr cs:[_CSDATA_finalestage], 2
+cmp   word ptr ds:[_finalestage], 2
 je    dont_force_screenwipe
 mov   byte ptr ds:[_wipegamestate], 0FFh  ; force screen wipe
 dont_force_screenwipe:
 mov   al, byte ptr cs:[_CSDATA_castorder+1]     ;  castorder[castnum].type). castnum is 0.
 xor   ah, ah
-mov   byte ptr cs:[_CSDATA_castnum], 0
+mov   byte ptr ds:[_castnum], 0
 ; call getSeeState
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
@@ -1221,18 +1192,18 @@ sub   bx, ax
 mov   ax, STATES_SEGMENT
 add   bx, bx
 
-mov   word ptr cs:[_CSDATA_caststate], bx
+mov   word ptr ds:[_caststate], bx
 mov   es, ax
 mov   al, byte ptr es:[bx + 2]
 mov   dx, 1
-mov   byte ptr cs:[_CSDATA_casttics], al
+mov   byte ptr ds:[_casttics], al
 xor   al, al
-mov   byte ptr cs:[_CSDATA_castdeath], 0
-mov   byte ptr cs:[_CSDATA_castframes], al
-mov   byte ptr cs:[_CSDATA_castonmelee], al
-mov   byte ptr cs:[_CSDATA_castattacking], al
+mov   byte ptr ds:[_castdeath], 0
+mov   byte ptr ds:[_castframes], al
+mov   byte ptr ds:[_castonmelee], al
+mov   byte ptr ds:[_castattacking], al
 mov   ax, MUS_EVIL
-mov   word ptr cs:[_CSDATA_finalestage], 2
+mov   word ptr ds:[_finalestage], 2
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_ChangeMusic_addr
@@ -1251,8 +1222,8 @@ PUBLIC F_CastTicker_
 push  bx
 push  dx
 
-dec   byte ptr cs:[_CSDATA_casttics]
-cmp   byte ptr cs:[_CSDATA_casttics], 0
+dec   byte ptr ds:[_casttics]
+cmp   byte ptr ds:[_casttics], 0
 jle   do_castticker
 exit_castticker:
 
@@ -1266,18 +1237,18 @@ db 01Eh  ;
 dw _Z_QuickMapPhysics_addr
 
 
-les   bx, dword ptr cs:[_CSDATA_caststate]       
+les   bx, dword ptr ds:[_caststate]       
 cmp   byte ptr es:[bx + 2], 0FFh
 je    label_1
 jmp   label_2
 label_1:
-inc   byte ptr cs:[_CSDATA_castnum]
-mov   byte ptr cs:[_CSDATA_castdeath], 0
-cmp   byte ptr cs:[_CSDATA_castnum], MAX_CASTNUM
+inc   byte ptr ds:[_castnum]
+mov   byte ptr ds:[_castdeath], 0
+cmp   byte ptr ds:[_castnum], MAX_CASTNUM
 jne   label_8
-mov   byte ptr cs:[_CSDATA_castnum], 0
+mov   byte ptr ds:[_castnum], 0
 label_8:
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1291,7 +1262,7 @@ xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1305,19 +1276,19 @@ shl   ax, 1
 sub   ax, dx
 
 add   ax, ax
-mov   byte ptr cs:[_CSDATA_castframes], 0
+mov   byte ptr ds:[_castframes], 0
 label_40:
-mov   word ptr cs:[_CSDATA_caststate], ax
+mov   word ptr ds:[_caststate], ax
 label_28:
-cmp   byte ptr cs:[_CSDATA_castattacking], 0
+cmp   byte ptr ds:[_castattacking], 0
 je    label_6
-cmp   byte ptr cs:[_CSDATA_castframes], 24
+cmp   byte ptr ds:[_castframes], 24
 jne   label_9
 label_5:
 xor   al, al
-mov   byte ptr cs:[_CSDATA_castattacking], al
-mov   byte ptr cs:[_CSDATA_castframes], al
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   byte ptr ds:[_castattacking], al
+mov   byte ptr ds:[_castframes], al
+mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1330,22 +1301,22 @@ shl   ax, 1
 shl   ax, 1
 sub   ax, dx
 add   ax, ax
-mov   word ptr cs:[_CSDATA_caststate], ax
+mov   word ptr ds:[_caststate], ax
 label_6:
-les   bx, dword ptr cs:[_CSDATA_caststate]
+les   bx, dword ptr ds:[_caststate]
 mov   al, byte ptr es:[bx + 2]
-mov   byte ptr cs:[_CSDATA_casttics], al
+mov   byte ptr ds:[_casttics], al
 cmp   al, 0FFh
 je    label_7
 jmp   exit_castticker
 label_7:
-mov   byte ptr cs:[_CSDATA_casttics], 15
+mov   byte ptr ds:[_casttics], 15
  
 pop   dx
 pop   bx
 ret   
 label_9:
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1357,7 +1328,7 @@ mov   dx, ax
 shl   ax, 1
 shl   ax, 1
 sub   ax, dx
-mov   dx, word ptr cs:[_CSDATA_caststate]
+mov   dx, word ptr ds:[_caststate]
 add   ax, ax
 cmp   dx, ax
 je    label_5
@@ -1379,8 +1350,8 @@ shl   dx, 1
 shl   dx, 1
 sub   dx, ax
 add   dx, dx
-inc   byte ptr cs:[_CSDATA_castframes]
-mov   word ptr cs:[_CSDATA_caststate], dx
+inc   byte ptr ds:[_castframes]
+mov   word ptr ds:[_caststate], dx
 cmp   ax, S_TROO_ATK3
 jb    label_10
 jmp   label_11
@@ -1405,15 +1376,15 @@ xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-cmp   byte ptr cs:[_CSDATA_castframes], 0Ch
+cmp   byte ptr ds:[_castframes], 0Ch
 je    label_27
 jump_to_label_28:
 jmp   label_28
 label_27:
-mov   byte ptr cs:[_CSDATA_castattacking], 1
-cmp   byte ptr cs:[_CSDATA_castonmelee], 0
+mov   byte ptr ds:[_castattacking], 1
+cmp   byte ptr ds:[_castonmelee], 0
 jne   jump_to_label_29
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1429,15 +1400,15 @@ shl   ax, 1
 shl   ax, 1
 sub   ax, dx
 add   ax, ax
-mov   word ptr cs:[_CSDATA_caststate], ax
-xor   byte ptr cs:[_CSDATA_castonmelee], 1
+mov   word ptr ds:[_caststate], ax
+xor   byte ptr ds:[_castonmelee], 1
 
-mov   dx, word ptr cs:[_CSDATA_caststate]   ; check if state 0
+mov   dx, word ptr ds:[_caststate]   ; check if state 0
 test  dx, dx
 jne   jump_to_label_28
-cmp   byte ptr cs:[_CSDATA_castonmelee], 0
+cmp   byte ptr ds:[_castonmelee], 0
 je    label_36
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1566,7 +1537,7 @@ jne   jump_to_label_14
 mov   ax, SFX_DSHTGN
 jmp   label_13
 label_29:
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1576,7 +1547,7 @@ db    09Ah
 dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
 jmp   label_26
 label_25:
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
@@ -1606,7 +1577,7 @@ mov   bx, ax
 mov   es, dx
 cmp   byte ptr es:[bx], 0
 jne   exit_fresponder_return0
-cmp   byte ptr cs:[_CSDATA_castdeath], 0
+cmp   byte ptr ds:[_castdeath], 0
 je    do_castdeath
 mov   al, 1
 pop   bx
@@ -1616,13 +1587,13 @@ xor   al, al
 pop   bx
 ret   
 do_castdeath:
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr [bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
 xor   ah, ah
-mov   byte ptr cs:[_CSDATA_castdeath], 1
+mov   byte ptr ds:[_castdeath], 1
 db    09Ah
 dw    GETDEATHSTATEADDR, INFOFUNCLOADSEGMENT
 
@@ -1632,18 +1603,18 @@ shl   bx, 1
 sub   bx, ax
 mov   ax, STATES_SEGMENT
 add   bx, bx
-mov   word ptr cs:[_CSDATA_caststate], bx
+mov   word ptr ds:[_caststate], bx
 mov   es, ax
 mov   al, byte ptr es:[bx + 2]
-mov   byte ptr cs:[_CSDATA_casttics], al
+mov   byte ptr ds:[_casttics], al
 xor   al, al
-mov   byte ptr cs:[_CSDATA_castframes], al
-mov   byte ptr cs:[_CSDATA_castattacking], al
-mov   al, byte ptr cs:[_CSDATA_castnum]
+mov   byte ptr ds:[_castframes], al
+mov   byte ptr ds:[_castattacking], al
+mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr [bx + _CSDATA_castorder+1]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1]
 mov   ah, 0Bh  ; sizeof mobjinfo?
 mul   ah
 mov   bx, ax
@@ -1674,7 +1645,7 @@ mov   bp, sp
 sub   sp, 029Ah
 cmp   byte ptr ds:[_commercial], 0
 je    done_checking_skipping
-cmp   word ptr cs:[_CSDATA_finalecount], 50
+cmp   word ptr ds:[_finalecount], 50
 jle   done_checking_skipping
 mov   bx, word ptr cs:[_CSDATA_player_ptr]
 cmp   byte ptr ds:[bx + 7], 0   ; player.cmd.buttons
@@ -1683,8 +1654,8 @@ cmp   byte ptr ds:[_gamemap], 30
 jne   do_worlddone
 call  F_StartCast_
 done_checking_skipping:
-inc   word ptr cs:[_CSDATA_finalecount]
-cmp   word ptr cs:[_CSDATA_finalestage], 2
+inc   word ptr ds:[_finalecount]
+cmp   word ptr ds:[_finalestage], 2
 je    call_fcastticker
 cmp   byte ptr ds:[_commercial], 0
 je    do_noncommerical
@@ -1702,12 +1673,12 @@ call  F_CastTicker_
 jmp   exit_fticker
 do_noncommerical:
 lea   bx, [bp - 029Ah]
-mov   ax, word ptr cs:[_CSDATA_finaletext]
+mov   ax, word ptr ds:[_finaletext]
 mov   cx, ds
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _getStringByIndex_addr
-cmp   word ptr cs:[_CSDATA_finalestage], 0
+cmp   word ptr ds:[_finalestage], 0
 jne   exit_fticker
 lea   ax, [bp - 029Ah]
 mov   dx, ds
@@ -1720,12 +1691,12 @@ mov   dx, ax
 shl   ax, 2
 sub   ax, dx
 add   ax, TEXTWAIT
-cmp   ax, word ptr cs:[_CSDATA_finalecount]
+cmp   ax, word ptr ds:[_finalecount]
 jge   exit_fticker
-mov   word ptr cs:[_CSDATA_finalestage], 1
+mov   word ptr ds:[_finalestage], 1
 xor   ax, ax
 mov   byte ptr ds:[_wipegamestate], 0FFh
-mov   word ptr cs:[_CSDATA_finalecount], ax
+mov   word ptr ds:[_finalecount], ax
 cmp   byte ptr ds:[_gameepisode], 3
 jne   exit_fticker
 mov   ax, MUS_BUNNY
@@ -1746,7 +1717,7 @@ ENDP
 PROC F_Responder_ FAR
 PUBLIC F_Responder_
 
-cmp  word ptr cs:[_CSDATA_finalestage], 2
+cmp  word ptr ds:[_finalestage], 2
 je   call_castresponder
 xor  al, al
 retf 
@@ -1772,7 +1743,7 @@ PUBLIC F_Drawer_
 
 push  bx
 push  dx
-mov   ax, word ptr cs:[_CSDATA_finalestage]
+mov   ax, word ptr ds:[_finalestage]
 cmp   ax, 2
 je    call_castdrawer
 test  ax, ax

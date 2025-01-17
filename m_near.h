@@ -102,12 +102,19 @@
 #define fuzzpos                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0043)))
 #define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0044)))
 #define dc_yh                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0046)))
-//unused
+#define castattacking                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0048)))
+#define castdeath                       (*((int8_t __near*)                  (_NULL_OFFSET + 0x0049)))
+#define castonmelee                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x004A)))
+#define castframes                      (*((int8_t __near*)                  (_NULL_OFFSET + 0x004B)))
+#define casttics                        (*((int8_t __near*)                  (_NULL_OFFSET + 0x004C)))
+#define castnum                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x004D)))
+#define finaleflat                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x004E)))
+
 #define dc_x                            (*((int16_t __near*)                 (_NULL_OFFSET + 0x0050)))
 #define lastopening                     (*((uint16_t    __near*)             (_NULL_OFFSET + 0x0052)))
 
 #define planezlight                     (*(uint8_t __far * __near *)         (_NULL_OFFSET + 0x0054))
-//#define planeheight                     (*((fixed_t __near *)                (_NULL_OFFSET + 0x0058)))
+#define caststate                       (*((state_t __far* __near*)          (_NULL_OFFSET + 0x0058)))
 #define basexscale                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x005C)))
 #define baseyscale                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0060)))
 #define viewx                           (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0064)))
@@ -119,7 +126,6 @@
 #define viewangle                       (*((angle_t __near *)                (_NULL_OFFSET + 0x0078)))
 #define viewz_shortheight               (*((short_height_t __near *)         (_NULL_OFFSET + 0x007C)))
 #define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x007E)))
-
 #define viletryx                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0080)))
 #define viletryy                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0084)))
 
@@ -137,7 +143,11 @@
 #define filename_argument               ((int8_t __near *)                   (_NULL_OFFSET + 0x00AC))
 #define is_ultimate                     (*(boolean __near *)                 (_NULL_OFFSET + 0x00B5))
 #define firstspritelump                 (*(int16_t  __near *)                (_NULL_OFFSET + 0x00B6))
-// to B8 to C0
+#define finaletext                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B8)))
+#define finalecount                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x00BA)))
+#define finalestage                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x00BC)))
+#define finale_laststage                (*((int8_t __near*)                  (_NULL_OFFSET + 0x00BE)))
+// BF free
 #define mfloorclip                      (*(int16_t __far * __near *)         (_NULL_OFFSET + 0x00C0))
 #define mfloorclip_offset               (*(int16_t __near *)                 (_NULL_OFFSET + 0x00C0))
 #define mfloorclip_segment              (*(segment_t __near *)               (_NULL_OFFSET + 0x00C2))

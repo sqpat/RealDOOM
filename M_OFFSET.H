@@ -14,10 +14,10 @@
 #define R_DrawSkyPlaneDynamicOffset           0x5E0
 #define wipe_StartScreenOffset                0x259
 #define wipe_WipeLoopOffset                   0x268
-#define F_StartFinaleOffset                   0x1C1
-#define F_ResponderOffset                     0xB6C
-#define F_TickerOffset                        0xAC3
-#define F_DrawerOffset                        0xB98
+#define F_StartFinaleOffset                   0x1AE
+#define F_ResponderOffset                     0xB0B
+#define F_TickerOffset                        0xA6A
+#define F_DrawerOffset                        0xB36
 
 #define R_DrawColumnCodeSize           0xB26
 #define R_DrawSpanCodeSize             0xD34
@@ -25,4 +25,4 @@
 #define R_MaskedConstantsCodeSize      0xEB
 #define R_DrawSkyColumnCodeSize        0x6C2
 #define WipeCodeSize                   0x31B
-#define FinaleCodeSize                 0xBF5
+#define FinaleCodeSize                 0xB92
