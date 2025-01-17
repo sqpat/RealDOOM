@@ -45,10 +45,10 @@
 #define HUD_FONTHEIGHT 7
 #define HUD_LINEHEIGHT HUD_FONTHEIGHT + 1
 
-#define HU_TITLE	(mapnames[(gameepisode-1)*9+gamemap-1])
-#define HU_TITLE2	(mapnames2[gamemap-1])
-#define HU_TITLEP	(mapnamesp[gamemap-1])
-#define HU_TITLET	(mapnamest[gamemap-1])
+#define HU_TITLE	(((gameepisode-1)*9+gamemap-1) >= 36 ? NEWLEVELMSG - title_string_offset :  HUSTR_E1M1 - title_string_offset + ((gameepisode-1)*9+gamemap-1))
+#define HU_TITLE2	(HUSTR_1  - title_string_offset    + (gamemap-1))
+#define HU_TITLEP	(PHUSTR_1 - title_string_offset + (gamemap-1))
+#define HU_TITLET	(THUSTR_1 - title_string_offset + (gamemap-1))
 #define HU_TITLEHEIGHT	1
 #define HU_TITLEX	0
 #define HU_TITLEY   167 - HUD_FONTHEIGHT
@@ -112,17 +112,17 @@ void __far HU_Start(void) {
 
 
 	if (commercial) {
-#if (EXE_VERSION < EXE_VERSION_FINAL)
-		sindex = HU_TITLE2;
-#else
-		if (plutonia) {
-			sindex = HU_TITLEP;
-		} else if (tnt) {
-			sindex = HU_TITLET;
-		} else {
+		#if (EXE_VERSION < EXE_VERSION_FINAL)
 			sindex = HU_TITLE2;
-		}
-#endif
+		#else
+			if (plutonia) {
+				sindex = HU_TITLEP;
+			} else if (tnt) {
+				sindex = HU_TITLET;
+			} else {
+				sindex = HU_TITLE2;
+			}
+		#endif
 	} else {
 		sindex = HU_TITLE;
 	}

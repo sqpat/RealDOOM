@@ -246,11 +246,6 @@ typedef enum {
  // Height, in lines. 
 #define ST_OUTHEIGHT            1
 
-#define ST_MAPWIDTH     \
-    (strlen(mapnames[(gameepisode-1)*9+(gamemap-1)]))
-
-#define ST_MAPTITLEX \
-    (SCREENWIDTH - ST_MAPWIDTH * ST_CHATFONTWIDTH)
 
 #define ST_MAPTITLEY            0
 #define ST_MAPHEIGHT            1

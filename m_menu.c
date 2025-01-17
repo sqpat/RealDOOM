@@ -1115,7 +1115,7 @@ boolean __far M_Responder (event_t __far*  ev) {
             if (usegamma > 4){
                 usegamma = 0;
             }
-            player.message = gammamsg[usegamma];
+            player.message = GAMMALVL0 + usegamma;
             I_SetPalette (0);
             return true;
                                 
