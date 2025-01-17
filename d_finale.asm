@@ -20,17 +20,18 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN _hu_font:WORD
-EXTRN _player:WORD
-
 
 .CODE
 
 ; vars and data..
 
+; weird quirk: linker/compiler make the segment overlap with the previous one, so some functions run over into this code!
+; so these first fields dont end up 0 aligned either. which makes them complicated to write to at runtime.
+
+
 _CSDATA_castattacking:
 db    0
-_CSDATA__castdeath:
+_CSDATA_castdeath:
 db    0
 _CSDATA_castonmelee:
 db    0
@@ -39,8 +40,6 @@ db    0
 _CSDATA_casttics:
 db    0
 _CSDATA_castnum:
-db    0
-_CSDATA_castdeath:
 db    0
 _CSDATA_caststate:
 dw    0, STATES_SEGMENT  ; hardcoded segment..
@@ -81,6 +80,15 @@ db    CC_ARCH-castorderoffset,      MT_VILE
 db    CC_SPIDER-castorderoffset,    MT_SPIDER
 db    CC_CYBER-castorderoffset,     MT_CYBORG
 db    CC_HERO-castorderoffset,      MT_PLAYER
+
+
+; stick these 4 bytes before the func, so we can get a safe addr for it.
+; note: can probably put this back and 0 and 2 once the code is exported.
+_CSDATA_hu_font_ptr:
+dw    0
+_CSDATA_player_ptr:
+dw    0
+
 
 MAX_CASTNUM = 017
 
@@ -289,7 +297,8 @@ mov   di, ST_GRAPHICS_SEGMENT
 push  di        ; v_ drawpatch arg
 sal   bx, 1
 mov   di, ax
-mov   ax, word ptr ds:[bx + _hu_font]
+add   bx, word ptr cs:[_CSDATA_hu_font_ptr]
+mov   ax, word ptr ds:[bx]
 mov   dx, 180   ; y coord for draw patch.
 push  ax           ; v_ drawpatch arg
 xor   bx, bx
@@ -799,7 +808,8 @@ do_draw_glyph_ftextwrite:
 sal       bx, 1
 mov       ax, ST_GRAPHICS_SEGMENT
 push      ax
-mov       ax, word ptr ds:[bx + _hu_font]
+add       bx, word ptr cs:[_CSDATA_hu_font_ptr]
+mov       ax, word ptr ds:[bx]
 push      ax
 mov       dx, di
 xor       bx, bx
@@ -1662,7 +1672,8 @@ cmp   byte ptr ds:[_commercial], 0
 je    done_checking_skipping
 cmp   word ptr cs:[_CSDATA_finalecount], 50
 jle   done_checking_skipping
-cmp   byte ptr [_player + 7], 0   ; player.cmd.buttons
+mov   bx, word ptr cs:[_CSDATA_player_ptr]
+cmp   byte ptr ds:[bx + 7], 0   ; player.cmd.buttons
 je    done_checking_skipping
 cmp   byte ptr ds:[_gamemap], 30
 jne   do_worlddone

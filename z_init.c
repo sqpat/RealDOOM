@@ -33,6 +33,7 @@
 #include "hu_stuff.h"
 #include "wi_stuff.h"
 #include "s_sound.h"
+#include "f_finale.h"
 
 #include <dos.h>
 #include <conio.h>
@@ -364,6 +365,7 @@ found:
 
 void __far I_UpdateNoBlit(void);
 void __far I_FinishUpdate(void);
+void __far V_DrawPatchFlipped();
 
 void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
@@ -544,21 +546,31 @@ void __near Z_LoadBinaries() {
 	R_GetMaskedColumnSegment_addr = (uint32_t)(R_GetMaskedColumnSegment);
 	getspritetexture_addr = 		(uint32_t)(getspritetexture);
 
-	 V_DrawPatch_addr =				 		(uint32_t)(V_DrawPatch);
-	 locallib_toupper_addr =				(uint32_t)(locallib_toupper);
-	 S_ChangeMusic_addr =				 	(uint32_t)(S_ChangeMusic);
-	 V_DrawFullscreenPatch_addr =			(uint32_t)(V_DrawFullscreenPatch);
-	 getStringByIndex_addr =				(uint32_t)(getStringByIndex);
-	 locallib_strlen_addr =			 		(uint32_t)(locallib_strlen);
-	 Z_QuickMapStatusNoScreen4_addr =		(uint32_t)(Z_QuickMapStatusNoScreen4);
-	 Z_QuickMapRender7000_addr =		 	(uint32_t)(Z_QuickMapRender7000);
-	 Z_QuickMapScreen0_addr =		 		(uint32_t)(Z_QuickMapScreen0);
-	 W_CacheLumpNameDirect_addr =		 	(uint32_t)(W_CacheLumpNameDirect);
-	 W_CacheLumpNumDirectFragment_addr =	(uint32_t)(W_CacheLumpNumDirectFragment);
-	 W_GetNumForName_addr =		 			(uint32_t)(W_GetNumForName);
-	 S_StartSound_addr =		 			(uint32_t)(S_StartSound);
-	 S_StartMusic_addr =		 			(uint32_t)(S_StartMusic);
+	// todo think of a better solution for dynamic linking of func locations for overlaid code.
+	V_DrawPatch_addr =			 		(uint32_t)(V_DrawPatch);
+	locallib_toupper_addr =				(uint32_t)(locallib_toupper);
+	S_ChangeMusic_addr =			 	(uint32_t)(S_ChangeMusic);
+	V_DrawFullscreenPatch_addr =		(uint32_t)(V_DrawFullscreenPatch);
+	getStringByIndex_addr =				(uint32_t)(getStringByIndex);
+	locallib_strlen_addr =			 	(uint32_t)(locallib_strlen);
+	Z_QuickMapStatusNoScreen4_addr =	(uint32_t)(Z_QuickMapStatusNoScreen4);
+	Z_QuickMapRender7000_addr =		 	(uint32_t)(Z_QuickMapRender7000);
+	Z_QuickMapScreen0_addr =			(uint32_t)(Z_QuickMapScreen0);
+	W_CacheLumpNameDirect_addr =		(uint32_t)(W_CacheLumpNameDirect);
+	W_CacheLumpNumDirectFragment_addr =	(uint32_t)(W_CacheLumpNumDirectFragment);
+	W_GetNumForName_addr =		 		(uint32_t)(W_GetNumForName);
+	S_StartSound_addr =		 			(uint32_t)(S_StartSound);
+	S_StartMusic_addr =		 			(uint32_t)(S_StartMusic);
 
+	{
+		// far array of near pts
+		// stick 4 bytes of data 4 bytes behind this func.
+		int16_t __far *  finaledata = (int16_t __far *)((int32_t)V_DrawPatchFlipped - 4);
+
+		finaledata[0] = (int16_t)(hu_font);
+		finaledata[1] = (int16_t)(&player);
+	}
+	
 
 }
 
