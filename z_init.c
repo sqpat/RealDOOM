@@ -504,11 +504,11 @@ void __near Z_LoadBinaries() {
 
 	Z_QuickMapPhysics();
 
-	fwipecodestartposition = ftell(fp2);
+	codestartposition[0] = ftell(fp2);
 
 	fread(&codesize, 2, 1, fp2);
 	fseek(fp2, codesize, SEEK_CUR);
-	finalecodestartposition = ftell(fp2);
+	codestartposition[1] = ftell(fp2);
 	
 	//FAR_fread(code_overlay_start, codesize, 1, fp2);
 

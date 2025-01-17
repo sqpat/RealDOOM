@@ -2112,8 +2112,7 @@ int8_t    savename[16];
 int8_t versionstring[12] = "version 109";  // hardcoded from VERSION. todo dynamically generate?
 
 int8_t  currentoverlay = OVERLAY_ID_UNMAPPED;
-int32_t fwipecodestartposition;
-int32_t finalecodestartposition;
+int32_t codestartposition[NUM_OVERLAYS];
 
 /*
 uint16_t shift4lookup[256] = 

@@ -1160,8 +1160,7 @@ extern int8_t    savename[16];
 extern int8_t versionstring[12];
 
 extern int8_t  currentoverlay;
-extern int32_t fwipecodestartposition;
-extern int32_t finalecodestartposition;
+extern int32_t codestartposition[NUM_OVERLAYS];
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 extern boolean    				plutonia;

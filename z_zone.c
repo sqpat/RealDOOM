@@ -818,18 +818,7 @@ void __far Z_SetOverlay(int8_t wipeId){
 	}
 	
 	currentoverlay = wipeId;
-
-	// todo just make it an array. no switch case here.
-	switch (wipeId) {
-		case OVERLAY_ID_WIPE:
-			codeoffset = fwipecodestartposition;
-			break;
-		
-		case OVERLAY_ID_FINALE:
-			codeoffset = finalecodestartposition;
-			break;
-	}
-
+	codeoffset = codestartposition[wipeId-1];
 
 	fp = fopen("DOOMCODE.BIN", "rb"); 
 	fseek(fp, codeoffset, SEEK_SET);
