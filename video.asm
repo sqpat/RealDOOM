@@ -319,7 +319,8 @@ push  cx
 push  si
 push  di
 push  dx
-
+push  bx
+push  ds
 mov   es, word ptr ds:[_screen_segments]
 
 
@@ -340,7 +341,7 @@ mov   ds, bx
 xor   bx, bx
 
 
-sub   dl, byte ptr ds:[bx + 6]	; patch width
+sub   dl, byte ptr ds:[bx + 6]	; patch topoffset
 xor   dh, dh
 
 ; si = y * screenwidth
@@ -366,33 +367,18 @@ ENDIF
 add    si, ax
 
 
-sub   si, word ptr ds:[bx + 4]
+sub   si, word ptr ds:[bx + 4]	; patch left offset
 
 
-cmp   cl, 0
 
-
-mov   cx, word ptr ds:[bx + 2]
-mov   bx, word ptr ds:[bx]
-push ds
-
-mov  di, ss
-mov  ds, di
-
-
-push es
-call  V_MarkRect_
-pop  es
-pop  ds
+; no need to mark rect. we do it in outer func..
 
 
 ; 	desttop = MK_FP(screen_segments[scrn], offset); 
 
 
-
 ; load patch addr again
 mov   word ptr cs:[OFFSET SELFMODIFY_offset_add_di5000Screen0_ + 2], si
-xor   bx, bx
 
 ;    w = (patch->width); 
 mov   ax, word ptr ds:[bx]
@@ -541,10 +527,9 @@ cmp   ax, 0F030h		; compare to width
 jge   jumpexit5000Screen0_
 jmp   draw_next_column5000Screen0_
 jumpexit5000Screen0_:
+pop   ds
+pop   bx
 pop   dx
-mov   ax, ss
-mov   ds, ax
-
 pop   di
 pop   si
 pop   cx
@@ -890,20 +875,107 @@ push      ss
 pop       ds
 
 
+; note; ax is always _filename_argument ptr
+
+
+mov       bx, OFFSET str_brdr_t
+call      CopyString9_
+xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
+call      W_CacheLumpNameDirect_
+
+; reused parameters for the next region of code
+
+mov       di, word ptr ds:[_viewwindowy]
+mov       si, word ptr ds:[_viewwindowx]
+
+
+xor       bx, bx
+lea       dx, [di - 8]
+loop_brdr_top:
+lea       ax, [si + bx]
+call      V_DrawPatch5000Screen0_
+add       bx, 8
+cmp       bx, ds:[_scaledviewwidth]
+jl        loop_brdr_top
+done_with_brdr_top_loop:
+
+
+mov       bx, OFFSET str_brdr_b
+call      CopyString9_
+xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
+call      W_CacheLumpNameDirect_
+
+mov       dx, word ptr ds:[_viewheight]
+add       dx, di
+
+xor       bx, bx
+loop_brdr_bot:
+lea       ax, [si + bx]
+call      V_DrawPatch5000Screen0_
+add       bx, 8
+cmp       bx, word ptr ds:[_scaledviewwidth]
+jl        loop_brdr_bot
+done_with_brdr_bot_loop:
+
+
+mov       bx, OFFSET str_brdr_l
+call      CopyString9_
+xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
+call      W_CacheLumpNameDirect_
+
+mov       si, word ptr ds:[_viewwindowx]
+sub       si, 8
+xor       bx, bx
+loop_brdr_left:
+lea       dx, [di + bx]
+mov       ax, si
+call      V_DrawPatch5000Screen0_
+add       bx, 8
+cmp       bx, word ptr ds:[_viewheight]
+jl        loop_brdr_left
+
+done_with_brdr_left_loop:
+
+
+mov       bx, OFFSET str_brdr_r
+call      CopyString9_
+xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
+call      W_CacheLumpNameDirect_
+
+add       si, word ptr ds:[_scaledviewwidth]
+add       si, 8
+
+xor       bx, bx
+loop_brdr_right:
+lea       dx, [di + bx]
+mov       ax, si
+call      V_DrawPatch5000Screen0_
+
+add       bx, 8
+
+cmp       bx, word ptr ds:[_viewheight]
+jl        loop_brdr_right
+
+done_with_brdr_right_loop:
+
 mov       bx, OFFSET str_brdr_tl
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
-mov       di, word ptr [_viewwindowy]
-mov       si, word ptr [_viewwindowx]
 
-mov       dx, di
-mov       ax, si
+;mov       di, word ptr ds:[_viewwindowy]
+mov       si, word ptr ds:[_viewwindowx]
 
-sub       dx, 8
-sub       ax, 8
+
+lea       dx, [di - 8]
+lea       ax, [si - 8]
+
 call      V_DrawPatch5000Screen0_		; todo make a version based on segment 5000
 
 
@@ -915,11 +987,10 @@ call      W_CacheLumpNameDirect_
 
 
 
-mov       dx, di
+lea       dx, [di - 8]
 mov       ax, si
 
-sub       dx, 8
-add       ax, word ptr [_scaledviewwidth]
+add       ax, word ptr ds:[_scaledviewwidth]
 call      V_DrawPatch5000Screen0_
 
 mov       bx, OFFSET str_brdr_bl
@@ -929,9 +1000,8 @@ mov       cx, SCRATCH_PAGE_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 mov       dx, di
-mov       ax, si
+lea       ax, [si - 8]
 
-sub       ax, 8
 add       dx, word ptr ds:[_viewheight]
 
 call      V_DrawPatch5000Screen0_
@@ -945,7 +1015,7 @@ call      W_CacheLumpNameDirect_
 mov       dx, di
 mov       ax, si
 
-add       ax, word ptr [_scaledviewwidth]
+add       ax, word ptr ds:[_scaledviewwidth]
 add       dx, word ptr ds:[_viewheight]
 
 
