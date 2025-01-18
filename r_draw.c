@@ -1187,6 +1187,7 @@ void __far R_DrawSpanLow(void) {
 //  for variable screen sizes
 // Also draws a beveled edge.
 //
+/*
 void __far R_FillBackScreen (void)  { 
  
 
@@ -1204,13 +1205,15 @@ void __far R_FillBackScreen (void)  {
 
     int8_t*	name;
 	
-    if (scaledviewwidth == 320)
+    if (scaledviewwidth == 320){
 		return;
+	}
 	
-    if (commercial)
+    if (commercial){
 		name = name2;
-    else
+	} else{
 		name = name1;
+	}
 	Z_QuickMapScratch_5000();
 
 	src = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
@@ -1293,7 +1296,7 @@ void __far R_FillBackScreen (void)  {
 
 
 } 
- 
+ */
 
 //
 // Copy a screen buffer.

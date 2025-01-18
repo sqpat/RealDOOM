@@ -28,6 +28,7 @@
 
 #define SECNUM_NULL -1
 #define LINENUM_NULL -1
+#define SBARHEIGHT		32
  
 // max values in doom 1 and doom2 combined
 #define MAX_SIDES				2587u

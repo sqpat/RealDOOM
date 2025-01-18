@@ -26,10 +26,13 @@ INSTRUCTION_SET_MACRO
 _destscreen = (_NULL_OFFSET + 0008h)
 
 
-
 .CODE
-EXTRN	V_MarkRect_:PROC
-
+EXTRN V_MarkRect_:PROC
+EXTRN _viewwindowx:WORD
+EXTRN _viewwindowy:WORD
+EXTRN _scaledviewwidth:WORD
+EXTRN W_CacheLumpNameDirect_:PROC  
+EXTRN Z_QuickMapScratch_5000_:PROC  
 
 PROC V_DrawPatch_ FAR
 PUBLIC V_DrawPatch_
@@ -294,6 +297,262 @@ jmp   donemarkingrect
 ENDP
 
 
+
+PROC V_DrawPatch5000Screen0_ NEAR
+PUBLIC V_DrawPatch5000Screen0_
+
+; ax is x
+; dl is y
+
+; patch is 5000:0000
+
+ 
+
+; todo: modify stack amount
+; todo: use dx for storing a loop var
+; todo: use cx more effectively. ch and cl?
+; todo: change input to not be bp based
+; possible todo: interrupts, sp
+; todo: make 8086
+
+push  cx
+push  si
+push  di
+push  dx
+
+mov   es, word ptr ds:[_screen_segments]
+
+
+cmp   byte ptr ds:[_skipdirectdraws], 0
+je    doing_draws5000Screen0_
+jumptoexit5000Screen0_:
+jmp   jumpexit5000Screen0_
+doing_draws5000Screen0_:
+
+;    y -= (patch->topoffset); 
+;    x -= (patch->leftoffset); 
+;	offset = y * SCREENWIDTH + x;
+
+; load patch
+
+mov   bx, SCRATCH_PAGE_SEGMENT_5000
+mov   ds, bx
+xor   bx, bx
+
+
+sub   dl, byte ptr ds:[bx + 6]	; patch width
+xor   dh, dh
+
+; si = y * screenwidth
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
+imul   si, dx , SCREENWIDTH
+
+ELSE
+
+mov    si, dx
+mov    di, ax
+mov    ax, SCREENWIDTH
+mul    dx
+mov    dx, si
+mov    si, ax
+mov    ax, di
+
+
+ENDIF
+
+add    si, ax
+
+
+sub   si, word ptr ds:[bx + 4]
+
+
+cmp   cl, 0
+
+
+mov   cx, word ptr ds:[bx + 2]
+mov   bx, word ptr ds:[bx]
+push ds
+
+mov  di, ss
+mov  ds, di
+
+
+push es
+call  V_MarkRect_
+pop  es
+pop  ds
+
+
+; 	desttop = MK_FP(screen_segments[scrn], offset); 
+
+
+
+; load patch addr again
+mov   word ptr cs:[OFFSET SELFMODIFY_offset_add_di5000Screen0_ + 2], si
+xor   bx, bx
+
+;    w = (patch->width); 
+mov   ax, word ptr ds:[bx]
+
+add   bx, 8
+mov   word ptr cs:[OFFSET SELFMODIFY_compare_instruction5000Screen0_ + 1], ax  ; store width
+mov   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction5000Screen0_ + 1], bx  ; store column
+test  ax, ax
+jle   jumptoexit5000Screen0_
+; store patch segment (???) remove;
+
+draw_next_column5000Screen0_:
+
+dec   word ptr cs:[OFFSET SELFMODIFY_compare_instruction5000Screen0_ + 1] ; decrement count ahead of time
+
+;		column = (column_t __far *)((byte __far*)patch + (patch->columnofs[col])); 
+
+; ds:si is patch segment
+; es:di is screen pixel target
+
+SELFMODIFY_setup_bx_instruction5000Screen0_:
+mov   bx, 0F030h               ; F030h is target for self modifying code     
+
+; si equals colofs lookup
+mov   si, word ptr ds:[bx]
+
+;		while (column->topdelta != 0xff )  
+; check topdelta for 0xFFh
+cmp   byte ptr ds:[si], 0FFh
+jne   draw_next_column_patch5000Screen0_
+jmp   column_done5000Screen0_
+
+
+; here we render the next patch in the column.
+draw_next_column_patch5000Screen0_:
+
+
+; grab both column fields at once. si + 0 is topdelta. si + 1 is column length
+mov   ax, word ptr ds:[si]
+
+mov   cl, ah
+xor   ah, ah      ; al contains topdelta
+
+; todo: figure this out.
+; either one works on its own, but the else branch will fail regardless
+; of which code is in it if the if is active. Probably related to 
+; selfmodifying code references.
+
+;IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+;imul   di, ax, SCREENWIDTH
+;mov    dx, SCREENWIDTH - 1 
+
+;ELSEIF
+
+mov   di, SCREENWIDTH
+mul   di
+mov   dx, di
+mov   di, ax
+dec   dx
+
+;ENDIF
+
+
+
+SELFMODIFY_offset_add_di5000Screen0_:
+add   di, 0F030h   ; retrieve offset
+
+
+add   si, 3
+; figure out loop counts
+mov   bl, cl
+and   bx, 0007h
+mov   al, byte ptr ss:[_jump_mult_table_3 + bx]
+mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels5000Screen0_ + 1], al
+shr   cx, 1
+shr   cx, 1
+shr   cx, 1
+je    done_drawing_8_pixels5000Screen0_
+
+
+; bx, cx unused...
+
+;  todo full unroll
+
+draw_8_more_pixels5000Screen0_:
+
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+
+loop   draw_8_more_pixels5000Screen0_
+
+; todo: variable jmp here
+
+done_drawing_8_pixels5000Screen0_:
+
+SELFMODIFY_offset_draw_remaining_pixels5000Screen0_:
+db 0EBh, 00h		; jump rel8
+
+
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+
+
+; restore stuff we changed above
+done_drawing_pixels5000Screen0_:
+check_for_next_column5000Screen0_:
+
+inc si
+cmp   byte ptr ds:[si], 0FFh
+
+
+je    column_done5000Screen0_
+jmp   draw_next_column_patch5000Screen0_
+column_done5000Screen0_:
+add   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction5000Screen0_ + 1], 4
+inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di5000Screen0_ + 2]
+xor   ax, ax
+SELFMODIFY_compare_instruction5000Screen0_:
+cmp   ax, 0F030h		; compare to width
+jge   jumpexit5000Screen0_
+jmp   draw_next_column5000Screen0_
+jumpexit5000Screen0_:
+pop   dx
+mov   ax, ss
+mov   ds, ax
+
+pop   di
+pop   si
+pop   cx
+ret
+
+ENDP
+
+
 jumptoexitdirect:
 jmp   jumpexitdirect
 
@@ -480,6 +739,264 @@ pop   si
 retf  
 
 ENDP
+
+
+
+; copy string from cs:bx to ds:_filename_argument
+; return _filename_argument in ax
+
+PROC CopyString9_ NEAR
+PUBLIC CopyString9_
+
+push  si
+push  di
+push  cx
+
+mov   di, OFFSET _filename_argument
+
+push  ds
+pop   es    ; es = ds
+
+push  cs
+pop   ds    ; ds = cs
+
+mov   si, bx
+
+mov   ax, 0
+stosw       ; zero out
+stosw
+stosw
+stosw
+stosb
+mov  cx, 9
+sub  di, cx
+
+do_next_char:
+lodsb
+stosb
+test  al, al
+je    done_writing
+loop do_next_char
+
+
+done_writing:
+
+mov   ax, OFFSET _filename_argument   ; ax now points to the near string
+
+push  ss
+pop   ds    ; restore ds
+
+pop   cx
+pop   di
+pop   si
+
+ret
+
+ENDP
+
+
+str_name_1:
+db "FLOOR7_2", 0
+str_name_2:
+db "GRNROCK", 0
+str_brdr_t:
+db "brdr_t", 0
+str_brdr_l:
+db "brdr_l", 0
+str_brdr_r:
+db "brdr_r", 0
+str_brdr_b:
+db "brdr_b", 0
+str_brdr_tl:
+db "brdr_tl", 0
+str_brdr_bl:
+db "brdr_bl", 0
+str_brdr_tr:
+db "brdr_tr", 0
+str_brdr_br:
+db "brdr_br", 0
+
+PROC R_FillBackScreen_ FAR
+PUBLIC R_FillBackScreen_
+
+SBARHEIGHT = 32
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 0Eh
+
+cmp       word ptr [_scaledviewwidth], SCREENWIDTH
+jne       continue_fillbackscreen
+jmp       exit_fillbackscreen
+
+continue_fillbackscreen:
+mov       bx, OFFSET _commercial
+cmp       byte ptr [bx], 0
+jne       is_doom2
+; not doom2
+mov       bx, OFFSET str_name_1
+jmp       name_ready
+is_doom2:
+mov       bx, OFFSET str_name_2
+name_ready:
+call      Z_QuickMapScratch_5000_
+
+call      CopyString9_
+xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
+call      W_CacheLumpNameDirect_
+
+xor       bx, bx
+mov       ax, SCREEN0_SEGMENT
+mov       es, ax
+; todo loop iter
+mov       word ptr [bp - 0Eh], bx
+cld       
+loop_border_copy_outer:
+mov       ax, word ptr [bp - 0Eh]
+and       ax, 63
+mov       word ptr [bp - 2], SCRATCH_PAGE_SEGMENT_5000
+shl       ax, 6
+xor       dx, dx
+mov       word ptr [bp - 4], ax
+loop_border_copy_inner:
+mov       ax, 64
+mov       si, word ptr [bp - 4]
+mov       cx, word ptr [bp - 2]
+mov       di, bx
+push      ds
+push      di
+xchg      ax, cx
+mov       ds, ax
+shr       cx, 1
+rep 	  movsw
+adc       cx, cx
+rep 	  movsb
+pop       di
+pop       ds
+inc       dx
+add       bx, 64
+cmp       dx, (SCREENWIDTH/64)
+jl        loop_border_copy_inner
+inc       word ptr [bp - 0Eh]
+cmp       word ptr [bp - 0Eh], (SCREENHEIGHT - SBARHEIGHT)
+jb        loop_border_copy_outer
+
+
+
+mov       bx, OFFSET str_brdr_tl
+call      CopyString9_
+xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
+call      W_CacheLumpNameDirect_
+
+mov       dx, word ptr [_viewwindowy]
+mov       ax, word ptr [_viewwindowx]
+xor       bx, bx
+
+sub       dx, 8
+sub       ax, 8
+call      V_DrawPatch5000Screen0_		; todo make a version based on segment 5000
+
+
+mov       bx, OFFSET str_brdr_tr
+call      CopyString9_
+xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
+call      W_CacheLumpNameDirect_
+
+mov       dx, word ptr [_viewwindowy]
+mov       ax, word ptr [_viewwindowx]
+xor       bx, bx
+
+sub       dx, 8
+add       ax, word ptr [_scaledviewwidth]
+call      V_DrawPatch5000Screen0_
+
+mov       bx, OFFSET str_brdr_bl
+call      CopyString9_
+xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
+call      W_CacheLumpNameDirect_
+
+mov       dx, word ptr [_viewwindowy]
+mov       ax, word ptr [_viewwindowx]
+sub       ax, 8
+add       dx, word ptr ds:[_viewheight]
+xor       bx, bx
+
+call      V_DrawPatch5000Screen0_
+
+mov       bx, OFFSET str_brdr_br
+call      CopyString9_
+xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
+call      W_CacheLumpNameDirect_
+
+mov       dx, word ptr [_viewwindowy]
+mov       ax, word ptr [_viewwindowx]
+add       ax, word ptr [_scaledviewwidth]
+add       dx, word ptr ds:[_viewheight]
+xor       bx, bx
+
+
+call      V_DrawPatch5000Screen0_
+
+
+xor       cx, cx
+mov       bx, cx
+mov       ax, 0AC00h
+mov       es, ax
+mov       ax, 08000h
+mov       ds, ax
+
+mov       dx, SC_INDEX
+mov       ax, (SC_MAPMASK + 0100h)  ; al/ah will store the two bytes
+
+loop_brdr_screencopy_outer:
+
+out       dx, al
+inc       dx				; 0x3C5
+
+xchg      al, ah
+out       dx, al
+dec       dx
+shl       al, 1
+xchg      al, ah
+
+mov       si, bx
+xor       di, di
+mov       cx, 03480h
+
+loop_brdr_screencopy_inner:				; todo loop
+movsb
+add       si, 3
+loop      loop_brdr_screencopy_inner
+
+inc       bx
+cmp       bx, 4
+jl        loop_brdr_screencopy_outer
+
+push      ss
+pop       ds
+
+exit_fillbackscreen:
+LEAVE_MACRO
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+retf     
+
+
+ENDP
+
 
 
 END
