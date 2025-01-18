@@ -890,17 +890,14 @@ push      ss
 pop       ds
 
 
-; reused parameters for the next region of code
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
-mov       di, word ptr [_viewwindowy]
-mov       si, word ptr [_viewwindowx]
-; note; ax is always _filename_argument ptr
-
 mov       bx, OFFSET str_brdr_tl
 call      CopyString9_
 xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
+mov       di, word ptr [_viewwindowy]
+mov       si, word ptr [_viewwindowx]
 
 mov       dx, di
 mov       ax, si
@@ -913,7 +910,9 @@ call      V_DrawPatch5000Screen0_		; todo make a version based on segment 5000
 mov       bx, OFFSET str_brdr_tr
 call      CopyString9_
 xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
 call      W_CacheLumpNameDirect_
+
 
 
 mov       dx, di
@@ -926,6 +925,7 @@ call      V_DrawPatch5000Screen0_
 mov       bx, OFFSET str_brdr_bl
 call      CopyString9_
 xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 mov       dx, di
@@ -939,6 +939,7 @@ call      V_DrawPatch5000Screen0_
 mov       bx, OFFSET str_brdr_br
 call      CopyString9_
 xor       bx, bx
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 mov       dx, di
@@ -951,7 +952,7 @@ add       dx, word ptr ds:[_viewheight]
 call      V_DrawPatch5000Screen0_
 
 
-mov       bx, bx
+xor       bx, bx
 mov       ax, 0AC00h
 mov       es, ax
 mov       ax, SCREEN0_SEGMENT

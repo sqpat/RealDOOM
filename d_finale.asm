@@ -662,11 +662,9 @@ mov       bl, 64
 xor       ax, ax
 loop_draw_fullscreen_next_row:
 
-add       ax, bl
-and       ax, 0FFFh
 
 
-loop_draw_fullscreen_next_column:
+
 
 ; repeat flat five times
 mov       si, ax
@@ -685,6 +683,8 @@ mov       si, ax
 mov       cl, bh
 rep       movsw 
 
+add       ax, bl
+and       ax, 0FFFh
 
 
 inc       dx
