@@ -658,22 +658,13 @@ mov       es, ax
 mov       dx, di    ; zeroed
 mov       cx, di
 mov       bh, 32
-mov       bl, 63
-
+mov       bl, 64
+xor       ax, ax
 loop_draw_fullscreen_next_row:
-mov       ax, dx
-and       ax, bx    ; 63, technically 32 is set in bh but we shift left 6 and clobber that bit.
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 
-    shl       ax, 6
-ELSE
-    shl       ax, 1
-    shl       ax, 1
-    shl       ax, 1
-    shl       ax, 1
-    shl       ax, 1
-    shl       ax, 1
-ENDIF
+add       ax, bl
+and       ax, 0FFFh
+
 
 loop_draw_fullscreen_next_column:
 

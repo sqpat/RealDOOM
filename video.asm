@@ -826,9 +826,6 @@ push      cx
 push      dx
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 0Eh
 
 cmp       word ptr [_scaledviewwidth], SCREENWIDTH
 jne       continue_fillbackscreen
@@ -854,50 +851,59 @@ call      W_CacheLumpNameDirect_
 xor       bx, bx
 mov       ax, SCREEN0_SEGMENT
 mov       es, ax
-; todo loop iter
-mov       word ptr [bp - 0Eh], bx
+mov       ax, SCRATCH_PAGE_SEGMENT_5000
+mov       ds, ax
+
+xor       di, di
+mov       dx, 32
+xor       ax, ax
 cld       
 loop_border_copy_outer:
-mov       ax, word ptr [bp - 0Eh]
-and       ax, 63
-mov       word ptr [bp - 2], SCRATCH_PAGE_SEGMENT_5000
-shl       ax, 6
-xor       dx, dx
-mov       word ptr [bp - 4], ax
-loop_border_copy_inner:
-mov       ax, 64
-mov       si, word ptr [bp - 4]
-mov       cx, word ptr [bp - 2]
-mov       di, bx
-push      ds
-push      di
-xchg      ax, cx
-mov       ds, ax
-shr       cx, 1
+
+
+
+; do 5 times
+mov       cx, dx
+mov       si, ax	; reset source texture
 rep 	  movsw
-adc       cx, cx
-rep 	  movsb
-pop       di
-pop       ds
-inc       dx
-add       bx, 64
-cmp       dx, (SCREENWIDTH/64)
-jl        loop_border_copy_inner
-inc       word ptr [bp - 0Eh]
-cmp       word ptr [bp - 0Eh], (SCREENHEIGHT - SBARHEIGHT)
+mov       cx, dx
+mov       si, ax	; reset source texture
+rep 	  movsw
+mov       cx, dx
+mov       si, ax	; reset source texture
+rep 	  movsw
+mov       cx, dx
+mov       si, ax	; reset source texture
+rep 	  movsw
+mov       cx, dx
+mov       si, ax	; reset source texture
+rep 	  movsw
+
+add       ax, 64	  ; add 64
+and       ax, 00FFFh  ; mod by flat size
+
+inc       bx
+cmp       bx, (SCREENHEIGHT - SBARHEIGHT)
 jb        loop_border_copy_outer
 
+push      ss
+pop       ds
 
+
+; reused parameters for the next region of code
+mov       cx, SCRATCH_PAGE_SEGMENT_5000
+mov       di, word ptr [_viewwindowy]
+mov       si, word ptr [_viewwindowx]
+; note; ax is always _filename_argument ptr
 
 mov       bx, OFFSET str_brdr_tl
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
-mov       dx, word ptr [_viewwindowy]
-mov       ax, word ptr [_viewwindowx]
-xor       bx, bx
+
+mov       dx, di
+mov       ax, si
 
 sub       dx, 8
 sub       ax, 8
@@ -907,12 +913,11 @@ call      V_DrawPatch5000Screen0_		; todo make a version based on segment 5000
 mov       bx, OFFSET str_brdr_tr
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
-mov       dx, word ptr [_viewwindowy]
-mov       ax, word ptr [_viewwindowx]
-xor       bx, bx
+
+mov       dx, di
+mov       ax, si
 
 sub       dx, 8
 add       ax, word ptr [_scaledviewwidth]
@@ -921,38 +926,35 @@ call      V_DrawPatch5000Screen0_
 mov       bx, OFFSET str_brdr_bl
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
-mov       dx, word ptr [_viewwindowy]
-mov       ax, word ptr [_viewwindowx]
+mov       dx, di
+mov       ax, si
+
 sub       ax, 8
 add       dx, word ptr ds:[_viewheight]
-xor       bx, bx
 
 call      V_DrawPatch5000Screen0_
 
 mov       bx, OFFSET str_brdr_br
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
-mov       dx, word ptr [_viewwindowy]
-mov       ax, word ptr [_viewwindowx]
+mov       dx, di
+mov       ax, si
+
 add       ax, word ptr [_scaledviewwidth]
 add       dx, word ptr ds:[_viewheight]
-xor       bx, bx
 
 
 call      V_DrawPatch5000Screen0_
 
 
-xor       cx, cx
-mov       bx, cx
+mov       bx, bx
 mov       ax, 0AC00h
 mov       es, ax
-mov       ax, 08000h
+mov       ax, SCREEN0_SEGMENT
 mov       ds, ax
 
 mov       dx, SC_INDEX
@@ -966,14 +968,14 @@ inc       dx				; 0x3C5
 xchg      al, ah
 out       dx, al
 dec       dx
-shl       al, 1
+shl       al, 1				; plane bit for next iteration
 xchg      al, ah
 
 mov       si, bx
 xor       di, di
-mov       cx, 03480h
+mov       cx, SCREENWIDTH * (SCREENHEIGHT - SBARHEIGHT) / 4   ; 03480h
 
-loop_brdr_screencopy_inner:				; todo loop
+loop_brdr_screencopy_inner:	
 movsb
 add       si, 3
 loop      loop_brdr_screencopy_inner
@@ -986,7 +988,7 @@ push      ss
 pop       ds
 
 exit_fillbackscreen:
-LEAVE_MACRO
+
 pop       di
 pop       si
 pop       dx
