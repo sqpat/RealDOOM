@@ -314,10 +314,10 @@ db "MFLR8_4", 0
 flat_mflr8_3:
 db "MFLR8_3", 0
 
-; lookups for doom1 case
+; lookups for doom1 (noncommercial) case
 
 flat_nondoom2_lookup:
-dw flat_floor4_8, flat_sflr6_1, flat_mflr8_4, flat_mflr8_3
+dw flat_floor4_8 - OFFSET F_START_, flat_sflr6_1 - OFFSET F_START_, flat_mflr8_4 - OFFSET F_START_, flat_mflr8_3 - OFFSET F_START_
 
 ; BIG TODO: if other build versions are to be implemented then
 ;  the strings above must be added to and switch cases changed a bit. could make a big fat lookup table with all fields?
@@ -330,8 +330,6 @@ push  bx
 push  cx
 push  dx
 push  si
-mov   bx, word ptr ds:[_finaleflat]
-mov   cx, word ptr ds:[_finaletext]
 mov   byte ptr ds:[_gameaction], 0
 xor   al, al
 mov   byte ptr ds:[_gamestate], 2
@@ -364,7 +362,6 @@ db 01Eh  ;
 dw _S_ChangeMusic_addr
 
 xor   ax, ax
-mov   bx, word ptr ds:[_finaleflat]
 mov   word ptr ds:[_finalestage], ax
 mov   word ptr ds:[_finalecount], ax
 pop   si
@@ -662,8 +659,6 @@ xor       ax, ax
 loop_draw_fullscreen_next_row:
 
 
-add       ax, 64	  ; add 64 (next texel row)
-and       ax, 00FFFh  ; mod by flat size
 
 
 
@@ -684,6 +679,8 @@ mov       si, ax
 mov       cl, bh
 rep       movsw 
 
+add       ax, 64	  ; add 64 (next texel row)
+and       ax, 00FFFh  ; mod by flat size
 
 
 inc       dx
@@ -1023,7 +1020,7 @@ div   bx
 mov   bx, ax        
 cmp   ax, 6
 jle   finale_stage_calculated
-mov   bx, 6     ; cap finale to 6.
+mov   bx, 6     ; cap fianle to 6.
 finale_stage_calculated:
 mov   al, byte ptr ds:[_finale_laststage]
 cbw  
