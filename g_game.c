@@ -674,7 +674,7 @@ void __near G_DoCompleted (void)  {
 } 
 
 /*
- void __near dolog(int16_t a){
+ void __far dolog(int16_t a){
 
 	FILE* fp = fopen("log2.txt", "ab");
     
@@ -687,7 +687,7 @@ void __near G_DoCompleted (void)  {
     fclose(fp);
 
 }
-
+/*
  void __near dologbig(int32_t a){
     int8_t  hexdigits[17] = "0123456789ABCDEF";
 	FILE* fp = fopen("log.txt", "ab");

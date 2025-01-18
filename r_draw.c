@@ -1332,8 +1332,9 @@ void __far R_DrawViewBorder (void)  {
     uint16_t		ofs;
     uint16_t		i; 
  
-    if (scaledviewwidth == SCREENWIDTH) 
+    if (scaledviewwidth == SCREENWIDTH){
 		return; 
+	}
   
     top = ((SCREENHEIGHT-SBARHEIGHT)-viewheight)>>1; 
     side = (SCREENWIDTH-scaledviewwidth)>>1; 

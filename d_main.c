@@ -795,6 +795,9 @@ void __near D_Display (void) {
             	R_DrawViewBorder ();    // erase old menu stuff
 			}
 			borderdrawcount--;
+			if (hudneedsupdate){
+				hudneedsupdate++;
+			}
         	
 
 		}
