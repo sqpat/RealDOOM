@@ -729,6 +729,7 @@ ENDP
 
 ; copy string from cs:bx to ds:_filename_argument
 ; return _filename_argument in ax
+; todo make use cs:si or something?
 
 PROC CopyString9_ NEAR
 PUBLIC CopyString9_
@@ -831,7 +832,7 @@ call      Z_QuickMapScratch_5000_
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
-call      W_CacheLumpNameDirect_
+call      W_CacheLumpNameDirect_		; todo once this is in asm dont re-set cx a billion times... push cx pop cx
 
 xor       bx, bx
 mov       ax, SCREEN0_SEGMENT
@@ -842,7 +843,7 @@ mov       ds, ax
 xor       di, di
 mov       dx, 32
 xor       ax, ax
-cld       
+cld       				; prob not necessary
 loop_border_copy_outer:
 
 
@@ -864,7 +865,7 @@ mov       cx, dx
 mov       si, ax	; reset source texture
 rep 	  movsw
 
-add       ax, 64	  ; add 64
+add       ax, 64	  ; add 64 (next texel row)
 and       ax, 00FFFh  ; mod by flat size
 
 inc       bx

@@ -658,11 +658,12 @@ mov       es, ax
 mov       dx, di    ; zeroed
 mov       cx, di
 mov       bh, 32
-mov       bl, 64
 xor       ax, ax
 loop_draw_fullscreen_next_row:
 
 
+add       ax, 64	  ; add 64 (next texel row)
+and       ax, 00FFFh  ; mod by flat size
 
 
 
@@ -683,8 +684,6 @@ mov       si, ax
 mov       cl, bh
 rep       movsw 
 
-add       ax, bl
-and       ax, 0FFFh
 
 
 inc       dx
@@ -1024,7 +1023,7 @@ div   bx
 mov   bx, ax        
 cmp   ax, 6
 jle   finale_stage_calculated
-mov   bx, 6     ; cap fianle to 6.
+mov   bx, 6     ; cap finale to 6.
 finale_stage_calculated:
 mov   al, byte ptr ds:[_finale_laststage]
 cbw  
