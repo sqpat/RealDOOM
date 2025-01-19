@@ -687,7 +687,6 @@ extern int16_t             dclicktime2;
 extern int16_t             dclickstate2;
 extern int16_t             dclicks2;
 extern int8_t             savegameslot;
-extern ticcmd_t localcmds[BACKUPTICS];
 
 extern skill_t d_skill; 
 extern int8_t     d_episode;

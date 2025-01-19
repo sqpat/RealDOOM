@@ -370,8 +370,8 @@ void __near G_DoNewGame(void) {
 }
 
 
+void __near G_CopyCmd(ticcmd_t __near * destcmd, int8_t srcindex);
  
-//
 // G_Ticker
 // Make ticcmd_ts for the players.
 //
@@ -426,8 +426,8 @@ void __near G_Ticker (void)  {
 	buf = (gametic) % BACKUPTICS;
 
 	cmd = &player.cmd;
-
-	memcpy(cmd, &localcmds[buf], sizeof(ticcmd_t));
+    G_CopyCmd(cmd, buf);   // get rid of this once this func in asm
+	
 
 	if (demoplayback) {
 		G_ReadDemoTiccmd(cmd);

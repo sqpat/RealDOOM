@@ -555,7 +555,6 @@ uint8_t             mousebforward;
 // todo i think these fit in 16 bits... 
 fixed_t         	forwardmove[2] = {0x19, 0x32}; 
 fixed_t         	sidemove[2]    = {0x18, 0x28};
-int16_t         	angleturn[3]   = {640, 1280, 320};        // + slow turn 
 
 
 int8_t             turnheld;                               // for accelerative turning 
@@ -576,7 +575,6 @@ int16_t             dclicks2;
 
  
 int8_t             savegameslot;
-ticcmd_t localcmds[BACKUPTICS];
 
 
 

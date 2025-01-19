@@ -24,7 +24,6 @@ EXTRN _mousepresent:BYTE
 EXTRN resetDS_:PROC
 EXTRN I_ReadMouse_:PROC
 EXTRN D_PostEvent_:PROC
-EXTRN _localcmds:WORD
 EXTRN _key_strafe:BYTE
 EXTRN _key_straferight:BYTE
 EXTRN _key_strafeleft:BYTE
@@ -436,6 +435,64 @@ jmp  key_selected
 
 ENDP
 
+;  ticcmd_t localcmds[BACKUPTICS];
+;  8 bytes each, 16 entries
+
+
+_localcmds:
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+
+
+
+PROC G_CopyCmd_  NEAR
+PUBLIC G_CopyCmd_
+
+    push    si
+    push    di
+    
+    push    ds              ; es:di is player.cmd
+    pop     es
+    mov     di, ax
+
+    push    cs              ; ds:si is _localcmds struct
+    pop     ds
+
+    xor     dh, dh
+    mov     si, dx
+    sal     si, 1
+    sal     si, 1
+    sal     si, 1      ; 8 bytes per
+    add     si, OFFSET _localcmds
+
+    movsw
+    movsw
+    movsw
+    movsw   ; copy one cmd
+    
+    mov     ax, ss
+    mov     ds, ax
+    
+    pop     di
+    pop     si
+    ret
+
+ENDP
+
 
 _gamekeydown:   ;  256 bytes.
 db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -544,7 +601,7 @@ add       si, ax
 mov       di, si
 xor       ax, ax
 
-push      ds
+push      cs
 pop       es
 
 stosw 
@@ -589,7 +646,7 @@ jmp       finished_checking_turn
 
 turn_is_held:
 inc       byte ptr [_turnheld]
-cmp       byte ptr [_turnheld], 6            ; todo SLOWTURNTICS
+cmp       byte ptr [_turnheld], SLOWTURNTICS
 jl        finished_checking_turn
 mov       dl, dh
 jmp       check_strafe
@@ -611,7 +668,7 @@ cbw
 mov       bx, ax
 add       bx, ax
 mov       ax, word ptr cs:[bx + _angleturn]
-sub       word ptr [si + 2], ax
+sub       word ptr cs:[si + 2], ax
 handle_checking_left_turn:
 mov       bl, byte ptr [_key_left]
 xor       bh, bh
@@ -623,7 +680,7 @@ cbw
 mov       bx, ax
 add       bx, ax
 mov       ax, word ptr cs:[bx + _angleturn]
-add       word ptr [si + 2], ax
+add       word ptr cs:[si + 2], ax
 jmp       done_handling_strafe
 
 handle_strafe:
@@ -722,7 +779,7 @@ cmp       byte ptr [bx], 0
 je        done_handling_fire
 
 fire_pressed:
-or        byte ptr [si + 7], BT_ATTACK
+or        byte ptr cs:[si + 7], BT_ATTACK
 done_handling_fire:
 mov       bl, byte ptr [_key_use]
 xor       bh, bh
@@ -744,17 +801,17 @@ jge       done_checking_weapons
 jmp       loop_handle_weapon_swap
 use_pressed:
 xor       ax, ax
-or        byte ptr [si + 7], BT_USE
+or        byte ptr cs:[si + 7], BT_USE
 mov       word ptr [_dclicks], ax
 jmp       done_handling_use
 
 handle_weapon_change:
 mov       al, dl
-or        byte ptr [si + 7], BT_CHANGE
+or        byte ptr cs:[si + 7], BT_CHANGE
 shl       al, 1
 shl       al, 1
 shl       al, 1
-or        byte ptr [si + 7], al
+or        byte ptr cs:[si + 7], al
 done_checking_weapons:
 mov       al, byte ptr [_mousebforward]
 mov       bx, word ptr [_mousebuttons]
@@ -809,12 +866,12 @@ mov       ax, word ptr [_mousex]
 shl       ax, 1
 shl       ax, 1
 shl       ax, 1
-sub       word ptr [si + 2], ax
+sub       word ptr cs:[si + 2], ax
 jmp       done_handling_mousex
 
 handle_double_click:
 xor       ax, ax
-or        byte ptr [si + 7], BT_USE
+or        byte ptr cs:[si + 7], BT_USE
 mov       word ptr [_dclicks2], ax
 
 done_handling_mouse_strafe:
@@ -856,12 +913,12 @@ mov       cx, word ptr [_forwardmove + 4]
 done_checking_sidemove:
 ; add sidemove/forwardmove to cmd
 mov       al, byte ptr [bp - 4]
-add       byte ptr [si + 1], cl
-add       byte ptr [si], al
+add       byte ptr cs:[si + 1], cl
+add       byte ptr cs:[si], al
 cmp       byte ptr [_sendpause], 0
 je        dont_pause
 mov       byte ptr [_sendpause], 0
-mov       byte ptr [si + 7], 081h            ; todo BT_SPECIAL | BTS_PAUSE
+mov       byte ptr cs:[si + 7], (BT_SPECIAL OR BTS_PAUSE) 
 dont_pause:
 cmp       byte ptr [_sendsave], 0
 jne       handle_save_press
@@ -892,10 +949,10 @@ jmp       overwrite_forwardmove
 handle_save_press:
 mov       al, byte ptr [_savegameslot]
 shl       al, 1
-shl       al, 1
-or        al, 082h                       ; todo
+shl       al, 1 ;; BTS_SAVESHIFT
+or        al, (BT_SPECIAL OR BTS_SAVEGAME)
 mov       byte ptr [_sendsave], 0
-mov       byte ptr [si + 7], al
+mov       byte ptr cs:[si + 7], al
 LEAVE_MACRO     
 pop       di
 pop       si
