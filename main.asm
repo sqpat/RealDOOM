@@ -19,10 +19,13 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN _kbdhead:WORD
+EXTRN _kbdhead:BYTE
+EXTRN _kbdtail:BYTE
 EXTRN _keyboardque:WORD
+EXTRN _mousepresent:BYTE
 EXTRN resetDS_:PROC
-
+EXTRN I_ReadMouse_:PROC
+EXTRN D_PostEvent_:PROC
 
 .CODE
 
@@ -248,6 +251,142 @@ pop    bx
 
 
 iret   
+
+
+
+ENDP
+
+do_exit:
+LEAVE_MACRO
+pop     dx
+pop     bx
+ret
+lshift_not_held:
+cmp  ah, SC_RSHIFT
+je   rshift_held
+jmp  rshift_not_held
+
+PROC I_StartTic_ NEAR
+PUBLIC I_StartTic_
+
+push bx
+push dx
+push bp
+mov  bp, sp
+sub  sp, 0Eh
+cmp  byte ptr [_mousepresent], 0
+je   no_mouse
+
+call I_ReadMouse_
+
+no_mouse:
+loop_next_char:
+mov  al, byte ptr [_kbdtail]
+cmp  al, byte ptr [_kbdhead]
+jae  do_exit
+cmp  al, KBDQUESIZE
+jbe  kbpos_ready
+cmp  byte ptr [_kbdhead], KBDQUESIZE
+jbe  kbpos_ready
+sub  al, KBDQUESIZE
+sub  byte ptr [_kbdhead], KBDQUESIZE
+mov  byte ptr [_kbdtail], al
+kbpos_ready:
+mov  bl, byte ptr [_kbdtail]
+and  bl, KBDQUESIZE - 1
+xor  bh, bh
+mov  al, byte ptr [bx + _keyboardque]
+mov  ah, al
+and  ah, 07Fh                 ; some constant
+
+;		// extended keyboard shift key bullshit
+
+
+inc  byte ptr [_kbdtail]
+cmp  ah, SC_LSHIFT
+jne  lshift_not_held
+rshift_held:
+mov  dl, byte ptr [_kbdtail]
+xor  dh, dh
+mov  bx, dx
+sub  bx, 2
+and  bx, KBDQUESIZE - 1
+cmp  byte ptr [bx + _keyboardque], 0E0h   ; special / pause keys
+je   loop_next_char
+and  al, 080h       ; keyup/down
+or   al, SC_RSHIFT
+rshift_not_held:
+cmp  al, 0E0h       ; special/pause keys
+je   loop_next_char
+mov  dl, byte ptr [_kbdtail]
+xor  dh, dh
+mov  bx, dx
+sub  bx, 2
+xor  bh, bh
+and  bl, KBDQUESIZE - 1
+cmp  byte ptr [bx + _keyboardque], 0E1h   ; pause key bullshit
+je   loop_next_char
+cmp  al, 0C5h                            ; dunno
+jne  not_c5_press
+cmp  byte ptr [bx + _keyboardque], 09Dh
+je   is_9D_press
+not_c5_press:
+test al, 080h   ; keyup/down
+je   is_keydown
+mov  byte ptr [bp - 0Eh], 1
+check_pressed_key:
+and  al, 07Fh                            ; keycode
+mov  dl, al
+cmp  dl, SC_UPARROW
+je   case_uparrow
+cmp  dl, SC_DOWNARROW
+je   case_downarrow
+cmp  dl, SC_RIGHTARROW
+je   case_rightarrow
+cmp  dl, SC_LEFTARROW
+je   case_leftarrow
+default_case_key:
+mov  dx, SCANTOKEY_SEGMENT
+xor  ah, ah
+mov  es, dx
+mov  bx, ax
+mov  dl, byte ptr es:[bx]
+xor  al, al
+xor  dh, dh
+mov  word ptr [bp - 0Bh], ax
+mov  word ptr [bp - 0Dh], dx
+lea  ax, [bp - 0Eh]
+mov  dx, ds
+call D_PostEvent_
+jmp  loop_next_char
+case_uparrow:
+mov  word ptr [bp - 0Dh], KEY_UPARROW
+key_selected:
+mov  word ptr [bp - 0Bh], 0
+lea  ax, [bp - 0Eh]
+mov  dx, ds
+call D_PostEvent_
+jmp  loop_next_char
+is_9D_press:
+mov  word ptr [bp - 0Dh], KEY_PAUSE
+lea  ax, [bp - 0Eh]
+mov  byte ptr [bp - 0Eh], dh
+mov  dx, ds
+mov  word ptr [bp - 0Bh], 0
+call D_PostEvent_
+jmp  loop_next_char
+is_keydown:
+mov  byte ptr [bp - 0Eh], 0
+jmp  check_pressed_key
+case_downarrow:
+mov  word ptr [bp - 0Dh], KEY_DOWNARROW
+jmp  key_selected
+case_leftarrow:
+mov  word ptr [bp - 0Dh], KEY_LEFTARROW
+jmp  key_selected
+case_rightarrow:
+mov  word ptr [bp - 0Dh], KEY_RIGHTARROW
+jmp  key_selected
 
 
 

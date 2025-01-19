@@ -588,6 +588,17 @@ extern int16_t              p_init_maxframe;
 
 
 
+#define KEY_LSHIFT      0xfe
+
+#define KEY_INS         (0x80+0x52)
+#define KEY_DEL         (0x80+0x53)
+#define KEY_PGUP        (0x80+0x49)
+#define KEY_PGDN        (0x80+0x51)
+#define KEY_HOME        (0x80+0x47)
+#define KEY_END         (0x80+0x4f)
+
+#define SC_RSHIFT       0x36
+#define SC_LSHIFT       0x2a
 
 extern boolean grmode;
 extern boolean mousepresent;
