@@ -19,15 +19,98 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN _all_cheats:WORD
 
 
 .CODE
 
-
+; ALL THE CHEAT DATA inlined here in CS rather than in DGROUP.
 
 ; Called in st_stuff module, which handles the input.
 ; Returns a 1 if the cheat was successful, 0 if failed.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;; CHEAT STRINGS ;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+cheat_mus_seq:
+db "idmus", 1, 0, 0, 0FFh
+cheat_choppers_seq:
+db "idchoppers", 0FFh
+cheat_god_seq:
+db "iddqd", 0FFh
+cheat_ammo_seq:
+db "idkfa", 0FFh
+cheat_ammonokey_seq:
+db "idfa", 0FFh
+; Smashing Pumpkins Into Samml Piles Of Putried Debris. 
+cheat_noclip_seq:
+db "idspispopd", 0FFh
+cheat_commercial_noclip_seq:
+db "idclip", 0FFh
+cheat_powerup_seq0:
+db "idbeholdv", 0FFh
+cheat_powerup_seq1:
+db "idbeholds", 0FFh
+cheat_powerup_seq2:
+db "idbeholdi", 0FFh
+cheat_powerup_seq3:
+db "idbeholdr", 0FFh
+cheat_powerup_seq4:
+db "idbeholda", 0FFh
+cheat_powerup_seq5:
+db "idbeholdl", 0FFh
+cheat_powerup_seq6:
+db "idbehold", 0FFh
+cheat_clev_seq:
+db "idclev", 1, 0, 0, 0FFh
+cheat_mypos_seq:
+db "idmypos", 0FFh
+cheat_amap_seq:
+db "iddt", 0FFh
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;; CHEAT SEQUENCES ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; todo: reverse order. 0 then inlined string! get rid of above structs.
+
+BASE_CHEAT_ADDRESS:
+cheat_powerup0:
+dw  OFFSET cheat_powerup_seq0, 0
+cheat_powerup1:
+dw  OFFSET cheat_powerup_seq1, 0
+cheat_powerup2:
+dw  OFFSET cheat_powerup_seq2, 0
+cheat_powerup3:
+dw  OFFSET cheat_powerup_seq3, 0
+cheat_powerup4:
+dw  OFFSET cheat_powerup_seq4, 0
+cheat_powerup5:
+dw  OFFSET cheat_powerup_seq5, 0
+cheat_powerup6:
+dw  OFFSET cheat_powerup_seq6, 0
+
+cheat_amap:
+dw  OFFSET cheat_amap_seq, 0
+cheat_mus:
+dw  OFFSET cheat_mus_seq, 0
+cheat_god:
+dw  OFFSET cheat_god_seq, 0
+cheat_ammo:
+dw  OFFSET cheat_ammo_seq, 0
+cheat_ammonokey:
+dw  OFFSET cheat_ammonokey_seq, 0
+cheat_noclip:
+dw  OFFSET cheat_noclip_seq, 0
+cheat_commercial_noclip:
+dw  OFFSET cheat_commercial_noclip_seq, 0
+cheat_choppers:
+dw  OFFSET cheat_choppers_seq, 0
+cheat_clev:
+dw  OFFSET cheat_clev_seq, 0
+cheat_mypos:
+dw  OFFSET cheat_mypos_seq, 0
 
 
 PROC cht_CheckCheat_ NEAR
@@ -36,57 +119,56 @@ PUBLIC cht_CheckCheat_
 
 push bx
 push si
-mov  dh, dl
-cbw 
+ 
+; argument is preshifted by 2 (as the struct offset should be)
 mov  bx, ax
-add  bx, ax
-mov  bx, word ptr [bx + _all_cheats]
-xor  dl, dl
-cmp  word ptr [bx + 2], 0
-je   label_1
-label_7:
-mov  si, word ptr [bx + 2]
-mov  al, byte ptr [si]
+add  bx, OFFSET BASE_CHEAT_ADDRESS
+cmp  word ptr cs:[bx + 2], 0
+je   initialize_cheat
+cheat_initialized:
+mov  si, word ptr cs:[bx + 2]   ; si stores p
+mov  al, byte ptr cs:[si]
 test al, al
-jne  label_2
-lea  ax, [si + 1]
-mov  word ptr [bx + 2], ax
-mov  byte ptr [si], dh
-label_5:
-mov  si, word ptr [bx + 2]
-mov  al, byte ptr [si]
+jne  char_not_null
+lea  ax, [si + 1]               ; advance p
+mov  word ptr cs:[bx + 2], ax   ; store updated p ptr in cheat (should we just inc si?)
+mov  byte ptr cs:[si], dl       ; store keypress
+check_cheat_result:
+mov  si, word ptr cs:[bx + 2]
+mov  al, byte ptr cs:[si]
 cmp  al, 1
-je   label_3
+je   reached_custom_param
 cmp  al, 0FFh
-je   label_4
-label_8:
-mov  al, dl
+je   reached_end_of_cheat
+return_fail:
+mov  al, 0
 pop  si
 pop  bx
 ret  
-label_1:
-mov  ax, word ptr [bx]
-mov  word ptr [bx + 2], ax
-jmp  label_7
-label_2:
-cmp  dh, al
-jne  label_6
+initialize_cheat:
+mov  ax, word ptr cs:[bx]
+mov  word ptr cs:[bx + 2], ax   ; set p to start of cht
+jmp  cheat_initialized
+char_not_null:
+cmp  dl, al
+jne  char_not_match
+; char match
 inc  si
-mov  word ptr [bx + 2], si
-jmp  label_5
-label_6:
-mov  ax, word ptr [bx]
-mov  word ptr [bx + 2], ax
-jmp  label_5
-label_3:
+mov  word ptr cs:[bx + 2], si
+jmp  check_cheat_result
+char_not_match:
+mov  ax, word ptr cs:[bx]       ; reset cheat ptr
+mov  word ptr cs:[bx + 2], ax
+jmp  check_cheat_result
+reached_custom_param:
 inc  si
-mov  word ptr [bx + 2], si
-jmp  label_8
-label_4:
-mov  ax, word ptr [bx]
-mov  dl, 1
-mov  word ptr [bx + 2], ax
-mov  al, dl
+mov  word ptr cs:[bx + 2], si
+jmp  return_fail
+reached_end_of_cheat:
+; return success
+mov  ax, word ptr cs:[bx]
+mov  word ptr cs:[bx + 2], ax
+mov  al, 1
 pop  si
 pop  bx
 ret  
@@ -100,43 +182,39 @@ ENDP
 PROC cht_GetParam_ NEAR
 PUBLIC cht_GetParam_
 
-
 push bx
-push si
 push di
-mov  si, dx
-cbw 
+mov  di, dx
+ 
+; argument is preshifted by 2 (as the struct offset should be)
 mov  bx, ax
-add  bx, ax
-mov  bx, word ptr [bx + _all_cheats]
-mov  bx, word ptr [bx]
+add  bx, OFFSET BASE_CHEAT_ADDRESS
+mov  bx, word ptr cs:[bx]        ; get str addr
 loop_find_param_marker:
-mov  di, bx
 inc  bx
-cmp  byte ptr [di], 1       ; 1 is marker for custom params position in cheat
+cmp  byte ptr cs:[bx-1], 1       ; 1 is marker for custom params position in cheat
 jne  loop_find_param_marker
+
 check_next_cheat_char:
-mov  al, byte ptr [bx]
-mov  byte ptr [si], al
-inc  si
-mov  byte ptr [bx], 0
+mov  al, byte ptr cs:[bx]
+mov  byte ptr ds:[di], al
+inc  di
+mov  byte ptr cs:[bx], 0
 inc  bx
 test al, al
 je   end_of_custom_param
-cmp  byte ptr [bx], 0FFh
+cmp  byte ptr cs:[bx], 0FFh
 jne  check_next_cheat_char
 end_of_custom_param:
-cmp  byte ptr [bx], 0FFh
+cmp  byte ptr cs:[bx], 0FFh
 je   getparam_return_0
 getparam_return_1:
 pop  di
-pop  si
 pop  bx
 ret  
 getparam_return_0:
-mov  byte ptr [si], 0
+mov  byte ptr [di], 0
 pop  di
-pop  si
 pop  bx
 ret  
 

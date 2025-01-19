@@ -725,7 +725,7 @@ st_number_t      w_maxammo[4];
 
 
 
-// used to use appopriately pained face
+// used to use appopriately pained face 
 int16_t      st_oldhealth = -1;
 
 // used for evil grin
@@ -744,109 +744,7 @@ int16_t      keyboxes[3];
 uint8_t      st_randomnumber;
 
 
-
-// Massive bunches of cheat shit
-//  to keep it from being easy to figure them out.
-// Yeah, right...
-uint8_t   cheat_mus_seq[] = {
-    'i', 'd', 'm', 'u', 's', 1, 0, 0, 0xff
-};
-
-uint8_t   cheat_choppers_seq[] = {
-    'i', 'd', 'c', 'h', 'o', 'p', 'p', 'e', 'r', 's', 0xff // idchoppers
-};
-
-uint8_t   cheat_god_seq[] = {
-    'i', 'd', 'd', 'q', 'd', 0xff // iddqd
-};
-
-uint8_t   cheat_ammo_seq[] = {
-    'i', 'd', 'k', 'f', 'a', 0xff // idkfa
-};
-
-uint8_t   cheat_ammonokey_seq[] = {
-    'i', 'd', 'f', 'a', 0xff // idfa
-};
-
-
-// Smashing Pumpkins Into Samml Piles Of Putried Debris. 
-uint8_t   cheat_noclip_seq[] = {
-    'i', 'd', 's', 'p', 'i', // idspispopd
-    's', 'p', 'o', 'p', 'd', 0xff
-};
-
-//
-uint8_t   cheat_commercial_noclip_seq[] = {
-    'i', 'd', 'c', 'l', 'i', 'p', 0xff // idclip
-}; 
-
-
-
-uint8_t   cheat_powerup_seq[7][10] = {
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'v', 0xff}, // beholdv
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 's', 0xff}, // beholds
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'i', 0xff}, // beholdi
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'r', 0xff}, // beholdr
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'a', 0xff}, // beholda
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'l', 0xff}, // beholdl
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 0xff}     // behold
-};
-
-
-uint8_t   cheat_clev_seq[] = {
-    'i', 'd', 'c', 'l', 'e', 'v', 1, 0, 0, 0xff // idclev
-};
-
-
-// my position cheat
-uint8_t   cheat_mypos_seq[] = {
-    'i', 'd', 'm', 'y', 'p', 'o', 's', 0xff // idmypos   
-}; 
-
-
-uint8_t 		cheat_amap_seq[] = {'i', 'd', 'd', 't', 0xff};
-cheatseq_t 		cheat_amap = { cheat_amap_seq, 0 };
-cheatseq_t      cheat_mus = { cheat_mus_seq, 0 };
-cheatseq_t      cheat_god = { cheat_god_seq, 0 };
-cheatseq_t      cheat_ammo = { cheat_ammo_seq, 0 };
-cheatseq_t      cheat_ammonokey = { cheat_ammonokey_seq, 0 };
-cheatseq_t      cheat_noclip = { cheat_noclip_seq, 0 };
-cheatseq_t      cheat_commercial_noclip = { cheat_commercial_noclip_seq, 0 };
-cheatseq_t      cheat_choppers = { cheat_choppers_seq, 0 };
-cheatseq_t      cheat_clev = { cheat_clev_seq, 0 };
-cheatseq_t      cheat_mypos = { cheat_mypos_seq, 0 };
-
-
-cheatseq_t      cheat_powerup[7] = {
-    { cheat_powerup_seq[0], 0 },
-    { cheat_powerup_seq[1], 0 },
-    { cheat_powerup_seq[2], 0 },
-    { cheat_powerup_seq[3], 0 },
-    { cheat_powerup_seq[4], 0 },
-    { cheat_powerup_seq[5], 0 },
-    { cheat_powerup_seq[6], 0 }
-};
-cheatseq_t __near*     all_cheats[NUM_CHEATS] = {
-    &cheat_powerup[0],
-    &cheat_powerup[1],
-    &cheat_powerup[2],
-    &cheat_powerup[3],
-    &cheat_powerup[4],
-    &cheat_powerup[5],
-    &cheat_powerup[6],
-
-    &cheat_amap,
-    &cheat_mus,
-    &cheat_god,
-    &cheat_ammo,
-    &cheat_ammonokey,
-    &cheat_noclip,
-    &cheat_commercial_noclip,
-    &cheat_choppers,
-    &cheat_clev,
-    &cheat_mypos
-
-};
+ 
 
 boolean do_st_refresh;
 

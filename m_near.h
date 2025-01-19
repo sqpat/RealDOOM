@@ -723,55 +723,31 @@ extern int16_t      st_facecount;
 extern int16_t      st_faceindex;
 extern int16_t      keyboxes[3];
 extern uint8_t      st_randomnumber;
-extern uint8_t   cheat_mus_seq[9];
 
-extern uint8_t   cheat_choppers_seq[11];
-
-extern uint8_t   cheat_god_seq[6];
-extern uint8_t   cheat_ammo_seq[6];
-
-extern uint8_t   cheat_ammonokey_seq[5];
-extern uint8_t   cheat_noclip_seq[11];
-extern uint8_t   cheat_commercial_noclip_seq[7];
-extern uint8_t   cheat_powerup_seq[7][10];
-extern uint8_t   cheat_clev_seq[10];
-// my position cheat
-extern uint8_t   cheat_mypos_seq[8];
 
 // Now what?
 #define NUM_CHEATS 17
 
+// these get shifted by 2 in the functions, so pass them in pre-shifted.
 #define CHEATID_BEHOLDV         0
-#define CHEATID_BEHOLDS         1
-#define CHEATID_BEHOLDI         2
-#define CHEATID_BEHOLDR         3
-#define CHEATID_BEHOLDA         4
-#define CHEATID_BEHOLDL         5
-#define CHEATID_BEHOLD          6
-#define CHEATID_AUTOMAP         7
-#define CHEATID_MUSIC           8
-#define CHEATID_GODMODE         9
-#define CHEATID_AMMOANDKEYS     10
-#define CHEATID_AMMONOKEYS      11
-#define CHEATID_NOCLIP          12
-#define CHEATID_NOCLIPDOOM2     13
-#define CHEATID_CHOPPERS        14
-#define CHEATID_CHANGE_LEVEL    15
-#define CHEATID_MAPPOS          16
+#define CHEATID_BEHOLDS         4
+#define CHEATID_BEHOLDI         8
+#define CHEATID_BEHOLDR         12
+#define CHEATID_BEHOLDA         16
+#define CHEATID_BEHOLDL         20
+#define CHEATID_BEHOLD          24
+#define CHEATID_AUTOMAP         28
+#define CHEATID_MUSIC           32
+#define CHEATID_GODMODE         36
+#define CHEATID_AMMOANDKEYS     40
+#define CHEATID_AMMONOKEYS      44
+#define CHEATID_NOCLIP          48
+#define CHEATID_NOCLIPDOOM2     52
+#define CHEATID_CHOPPERS        56
+#define CHEATID_CHANGE_LEVEL    60
+#define CHEATID_MAPPOS          64
 
-extern uint8_t              cheat_amap_seq[];
-extern cheatseq_t           cheat_amap;
-extern cheatseq_t      cheat_mus;
-extern cheatseq_t      cheat_god;
-extern cheatseq_t      cheat_ammo;
-extern cheatseq_t      cheat_ammonokey;
-extern cheatseq_t      cheat_noclip;
-extern cheatseq_t      cheat_commercial_noclip;
-extern cheatseq_t      cheat_powerup[7];
-extern cheatseq_t __near * all_cheats[NUM_CHEATS];
-extern cheatseq_t      cheat_choppers;
-extern cheatseq_t      cheat_clev;
-extern cheatseq_t      cheat_mypos;
+
 extern boolean do_st_refresh;
  
 extern int8_t st_palette;

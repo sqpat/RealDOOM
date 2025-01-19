@@ -26,7 +26,7 @@
 // Returns a 1 if the cheat was successful, 0 if failed.
 //
 /*
-int8_t __near cht_CheckCheat ( int8_t cheatId, int8_t key ) {
+int8_t __near cht_CheckCheat ( int8_t cheatId, int8_t key ) { 
 	int8_t rc = 0;
     cheatseq_t __near* cht = all_cheats[cheatId];
 
