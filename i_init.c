@@ -133,9 +133,7 @@ void __interrupt I_KeyboardISR(void);
 //
 void __near I_StartupKeyboard(void) {
 	int8_t i = 0;
-	for (i = 0; i < KBDQUESIZE; i++) {
-		keyboardque[i] = 0;
-	}
+
 
 	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
 	_dos_setvect(KEYBOARDINT, I_KeyboardISR);

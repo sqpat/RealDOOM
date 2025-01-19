@@ -476,9 +476,7 @@ union REGS regs;
 struct SREGS segregs;
 
 boolean novideo; // if true, stay in text mode for debugging
-#define KBDQUESIZE 32
-byte keyboardque[KBDQUESIZE];
-uint8_t kbdtail, kbdhead;
+
 union REGS in, out;
 
 

@@ -608,9 +608,7 @@ extern struct SREGS segregs;
 
 extern boolean novideo; // if true, stay in text mode for debugging
 #define KBDQUESIZE 32
-extern byte keyboardque[KBDQUESIZE];
-extern uint8_t kbdtail;
-extern uint8_t kbdhead;
+
 extern union REGS in;
 extern union REGS out;
 extern void (__interrupt __far_func *oldkeyboardisr) (void);

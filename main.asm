@@ -19,9 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN _kbdhead:BYTE
-EXTRN _kbdtail:BYTE
-EXTRN _keyboardque:WORD
+
 EXTRN _mousepresent:BYTE
 EXTRN resetDS_:PROC
 EXTRN I_ReadMouse_:PROC
@@ -225,6 +223,16 @@ pop  bx
 ret  
 
 ENDP
+; 32 bytes
+_keyboardque:
+db 0, 0, 0, 0, 0, 0, 0, 0
+db 0, 0, 0, 0, 0, 0, 0, 0
+db 0, 0, 0, 0, 0, 0, 0, 0
+db 0, 0, 0, 0, 0, 0, 0, 0
+_kbdtail:
+db 0
+_kbdhead:
+db 0
 
 
 PROC I_KeyboardISR_  INTERRUPT
@@ -233,19 +241,15 @@ PUBLIC I_KeyboardISR_
 
 push   bx
 push   ax
-push   ds
 
-mov    ax, FIXED_DS_SEGMENT         ; todo put this stuff in cs
-mov    ds, ax
 in     al, 060h                     ; read kb
-mov    bl, byte ptr [_kbdhead]
+mov    bl, byte ptr cs:[_kbdhead]
 and    bx, KBDQUESIZE - 1           ; wraparound keyboard queue
-mov    byte ptr [bx + _keyboardque], al
-inc    byte ptr [_kbdhead]
+mov    byte ptr cs:[bx + _keyboardque], al
+inc    byte ptr cs:[_kbdhead]
 mov    al, 020h
 out    KBDQUESIZE, al
 
-pop    ds
 pop    ax
 pop    bx
 
@@ -274,6 +278,8 @@ push dx
 push bp
 mov  bp, sp
 sub  sp, 0Eh
+; event is created at 0Eh and passed to D_PostEvent and stored in stack
+
 cmp  byte ptr [_mousepresent], 0
 je   no_mouse
 
@@ -281,54 +287,54 @@ call I_ReadMouse_
 
 no_mouse:
 loop_next_char:
-mov  al, byte ptr [_kbdtail]
-cmp  al, byte ptr [_kbdhead]
+mov  al, byte ptr cs:[_kbdtail]
+cmp  al, byte ptr cs:[_kbdhead]
 jae  do_exit
 cmp  al, KBDQUESIZE
 jbe  kbpos_ready
-cmp  byte ptr [_kbdhead], KBDQUESIZE
+cmp  byte ptr cs:[_kbdhead], KBDQUESIZE
 jbe  kbpos_ready
 sub  al, KBDQUESIZE
-sub  byte ptr [_kbdhead], KBDQUESIZE
-mov  byte ptr [_kbdtail], al
+sub  byte ptr cs:[_kbdhead], KBDQUESIZE
+mov  byte ptr cs:[_kbdtail], al
 kbpos_ready:
-mov  bl, byte ptr [_kbdtail]
+mov  bl, byte ptr cs:[_kbdtail]
 and  bl, KBDQUESIZE - 1
 xor  bh, bh
-mov  al, byte ptr [bx + _keyboardque]
+mov  al, byte ptr cs:[bx + _keyboardque]
 mov  ah, al
 and  ah, 07Fh                 ; some constant
 
 ;		// extended keyboard shift key bullshit
 
 
-inc  byte ptr [_kbdtail]
+inc  byte ptr cs:[_kbdtail]
 cmp  ah, SC_LSHIFT
 jne  lshift_not_held
 rshift_held:
-mov  dl, byte ptr [_kbdtail]
+mov  dl, byte ptr cs:[_kbdtail]
 xor  dh, dh
 mov  bx, dx
 sub  bx, 2
 and  bx, KBDQUESIZE - 1
-cmp  byte ptr [bx + _keyboardque], 0E0h   ; special / pause keys
+cmp  byte ptr cs:[bx + _keyboardque], 0E0h   ; special / pause keys
 je   loop_next_char
 and  al, 080h       ; keyup/down
 or   al, SC_RSHIFT
 rshift_not_held:
 cmp  al, 0E0h       ; special/pause keys
 je   loop_next_char
-mov  dl, byte ptr [_kbdtail]
+mov  dl, byte ptr cs:[_kbdtail]
 xor  dh, dh
 mov  bx, dx
 sub  bx, 2
 xor  bh, bh
 and  bl, KBDQUESIZE - 1
-cmp  byte ptr [bx + _keyboardque], 0E1h   ; pause key bullshit
+cmp  byte ptr cs:[bx + _keyboardque], 0E1h   ; pause key bullshit
 je   loop_next_char
 cmp  al, 0C5h                            ; dunno
 jne  not_c5_press
-cmp  byte ptr [bx + _keyboardque], 09Dh
+cmp  byte ptr cs:[bx + _keyboardque], 09Dh
 je   is_9D_press
 not_c5_press:
 test al, 080h   ; keyup/down
