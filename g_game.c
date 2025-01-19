@@ -275,6 +275,10 @@ void __near G_BuildTiccmd (int8_t index) {
 
  */
  
+void __near G_SetGameKeyDown(int8_t key);
+void __near G_SetGameKeyUp(int8_t key);
+boolean __near G_GetGameKey(int8_t keyr);
+
 //
 // G_Responder  
 // Get info needed to make ticcmd_ts for the players.
@@ -316,14 +320,16 @@ boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up men
 				return true;
 			}
 			if (ev->data1 < NUMKEYS) {
-				gamekeydown[ev->data1] = true;
-			}
+                G_SetGameKeyDown(ev->data1);
+            }
+            
+
 			return true; // eat key down events
 
 		case ev_keyup:
 			if (ev->data1 < NUMKEYS) {
-				gamekeydown[ev->data1] = false;
-			}
+                G_SetGameKeyUp(ev->data1);
+            }
 			return false; // always let key up events filter down
 
 		case ev_mouse:
@@ -927,12 +933,13 @@ void __near G_ReadDemoTiccmd (ticcmd_t __near* cmd)  {
 
 }
 
+boolean __near G_GetGameKey(int8_t keyr);
 
 void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  { 
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 
 	Z_QuickMapDemo();
-	if (gamekeydown['q']){           // press q to end demo recording 
+	if (G_GetGameKey('q')){           // press q to end demo recording 
         G_CheckDemoStatus (); 
     }
 	

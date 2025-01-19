@@ -551,13 +551,13 @@ uint8_t             key_speed;
 uint8_t             mousebfire;
 uint8_t             mousebstrafe;
 uint8_t             mousebforward;
- 
+
+// todo i think these fit in 16 bits... 
 fixed_t         	forwardmove[2] = {0x19, 0x32}; 
 fixed_t         	sidemove[2]    = {0x18, 0x28};
 int16_t         	angleturn[3]   = {640, 1280, 320};        // + slow turn 
 
 
-boolean				gamekeydown[NUMKEYS];
 int8_t             turnheld;                               // for accelerative turning 
  
 boolean         mousearray[4]; 

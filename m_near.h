@@ -675,8 +675,7 @@ extern uint8_t             mousebstrafe;
 extern uint8_t             mousebforward;
 extern fixed_t             forwardmove[2];
 extern fixed_t             sidemove[2];
-extern int16_t         angleturn[3];
-extern boolean				gamekeydown[NUMKEYS];
+
 extern int8_t             turnheld;
 extern boolean         mousearray[4]; 
 extern boolean*        mousebuttons;

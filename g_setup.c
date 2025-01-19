@@ -122,7 +122,7 @@ uint16_t     __far R_TextureNumForName(int8_t* name) {
 
 //
  
-
+void __near G_ResetGameKeys();
 
 void __near G_DoLoadLevel(void) {
 	#ifdef MOVE_P_SETUP
@@ -163,7 +163,7 @@ void __near G_DoLoadLevel(void) {
 	//Z_CheckHeap ();
 
 	// clear cmd building stuff
-	memset(gamekeydown, 0, sizeof(gamekeydown));
+	G_ResetGameKeys();
 	mousex = 0;
 	sendpause = sendsave = paused = false;
 	memset(mousebuttons, 0, sizeof(mousebuttons));
