@@ -92,14 +92,6 @@ boolean __far AM_Responder (event_t __far* ev);
  
 
 
-//
-// G_BuildTiccmd
-// Builds a ticcmd from all of the available inputs
-// or reads it from the demo buffer. 
-// If recording a demo, write it out 
-// 
-
-
 
 
 //
@@ -132,6 +124,14 @@ uint8_t __far R_FlatNumForName(int8_t* name) {
 
 
 
+
+//
+// G_BuildTiccmd
+// Builds a ticcmd from all of the available inputs
+// or reads it from the demo buffer. 
+// If recording a demo, write it out 
+// 
+/*
 void __near G_BuildTiccmd (int8_t index) { 
 	int8_t         i;
 	int8_t     strafe;
@@ -292,7 +292,7 @@ void __near G_BuildTiccmd (int8_t index) {
 } 
  
 
- 
+ */
  
 //
 // G_Responder  
