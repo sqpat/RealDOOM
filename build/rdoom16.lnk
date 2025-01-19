@@ -47,6 +47,7 @@ file dutils.obj
 file wi_stuff.obj
 file memory.obj
 file math.obj
+file main.obj
 
 #these files put in overlay 
 file g_setup.obj

@@ -43,6 +43,7 @@ file dmx.obj
 file dutils.obj
 file wi_stuff.obj
 file math.obj
+file main.obj
 
 
 file g_setup.obj

@@ -866,6 +866,8 @@ void check_is_ultimate(){
 	}
 }
 
+int8_t __near cht_CheckCheat ( int8_t cheatId, int8_t key );
+void __near cht_GetParam ( int8_t cheatId, int8_t __near* buffer );
 
 //void checkDS(int16_t a);
 void __far wipe_WipeLoop();
@@ -881,7 +883,7 @@ void __far D_DoomMain2(void) {
 	int8_t            title[128];
 #endif
 	int8_t            wadfile[20];
-	#define DGROUP_SIZE 0x3a30
+	#define DGROUP_SIZE 0x3660
 	struct SREGS sregs;
 
 // 9870
@@ -896,7 +898,7 @@ void __far D_DoomMain2(void) {
 
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(F_Responder, (byte __far *)R_CheckTextureNumForName - (byte __far *)F_Responder, 1, fp);
+	FAR_fwrite(cht_CheckCheat, (byte __far *)cht_GetParam - (byte __far *)cht_CheckCheat, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

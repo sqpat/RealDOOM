@@ -25,6 +25,7 @@
 // Called in st_stuff module, which handles the input.
 // Returns a 1 if the cheat was successful, 0 if failed.
 //
+/*
 int8_t __near cht_CheckCheat ( int8_t cheatId, int8_t key ) {
 	int8_t rc = 0;
     cheatseq_t __near* cht = all_cheats[cheatId];
@@ -50,6 +51,7 @@ int8_t __near cht_CheckCheat ( int8_t cheatId, int8_t key ) {
 
     return rc;
 }
+*/
 
 void __near cht_GetParam ( int8_t cheatId, int8_t __near* buffer ) {
 

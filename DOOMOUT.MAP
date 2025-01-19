@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/19 10:37:43
+Created on:       25/01/19 10:48:13
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -49,10 +49,11 @@ m_menu_TEXT            CODE           AUTO           02c1:4a50       00001476
 sounds_TEXT            CODE           AUTO           02c1:5ed0       00000000
 D_ALGO_TEXT            CODE           AUTO           02c1:5ed0       00000045
 dmx_TEXT               CODE           AUTO           02c1:5f20       000001b5
-dutils_TEXT            CODE           AUTO           02c1:60e0       0000009c
-wi_stuff_TEXT          CODE           AUTO           02c1:6180       00000f32
-MEMORY_TEXT            CODE           AUTO           02c1:70b2       00000000
-MATH_TEXT              CODE           AUTO           02c1:70b2       00000791
+dutils_TEXT            CODE           AUTO           02c1:60e0       0000003a
+wi_stuff_TEXT          CODE           AUTO           02c1:6120       00000f32
+MEMORY_TEXT            CODE           AUTO           02c1:7052       00000000
+MATH_TEXT              CODE           AUTO           02c1:7052       00000791
+MAIN_TEXT              CODE           AUTO           02c1:77e4       00000062
 g_setup_TEXT           CODE           AUTO           02c1:7850       000002dc
 r_setup_TEXT           CODE           AUTO           02c1:7b30       00000445
 st_setup_TEXT          CODE           AUTO           02c1:7f80       000001fa
@@ -881,66 +882,67 @@ Module: dmx.obj(C:\REALDOOM\dmx.c)
 02c1:60a2      TS_ScheduleTask_
 02c1:60cc      TS_Dispatch_
 Module: dutils.obj(C:\REALDOOM\dutils.c)
-02c1:60e0      cht_CheckCheat_
-02c1:6142      cht_GetParam_
+02c1:60e0      cht_GetParam_
 Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
-02c1:6180*     WI_GetPatch_
-02c1:6192*     WI_GetAnimPatch_
-02c1:61a4+     maketwocharint_
-02c1:61ca+     WI_slamBackground_
-02c1:6202+     WI_drawLF_
-02c1:6268+     WI_drawEL_
-02c1:62bc+     WI_drawOnLnode_
-02c1:63a2+     WI_updateAnimatedBack_
-02c1:64ca+     WI_drawAnimatedBack_
-02c1:654c+     WI_drawNum_
-02c1:6626+     WI_drawPercent_
-02c1:666a+     WI_drawTime_
-02c1:6712*     WI_initNoState_
-02c1:6724*     WI_initShowNextLoc_
-02c1:6738+     WI_updateShowNextLoc_
-02c1:676a*     WI_drawNoState_
-02c1:6770+     WI_drawShowNextLoc_
-02c1:67ec*     WI_initStats_
-02c1:6814+     WI_initAnimatedBack_
-02c1:6898+     WI_updateStats_
-02c1:6a9e+     WI_drawStats_
-02c1:6bb8*     WI_checkForAccelerate_
-02c1:6bf8+     WI_loadData_
-02c1:6df8*     WI_End_
-02c1:6df8*     WI_unloadData_
-02c1:6dfe+     WI_updateNoState_
-02c1:6e0e*     G_WorldDone_
-02c1:6e38      WI_Ticker_
-02c1:6e94      WI_Drawer_
-02c1:6ec6+     WI_initVariables_
-02c1:6f22+     WI_Init_
-02c1:709c      WI_Start_
+02c1:6120*     WI_GetPatch_
+02c1:6132*     WI_GetAnimPatch_
+02c1:6144+     maketwocharint_
+02c1:616a+     WI_slamBackground_
+02c1:61a2+     WI_drawLF_
+02c1:6208+     WI_drawEL_
+02c1:625c+     WI_drawOnLnode_
+02c1:6342+     WI_updateAnimatedBack_
+02c1:646a+     WI_drawAnimatedBack_
+02c1:64ec+     WI_drawNum_
+02c1:65c6+     WI_drawPercent_
+02c1:660a+     WI_drawTime_
+02c1:66b2*     WI_initNoState_
+02c1:66c4*     WI_initShowNextLoc_
+02c1:66d8+     WI_updateShowNextLoc_
+02c1:670a*     WI_drawNoState_
+02c1:6710+     WI_drawShowNextLoc_
+02c1:678c*     WI_initStats_
+02c1:67b4+     WI_initAnimatedBack_
+02c1:6838+     WI_updateStats_
+02c1:6a3e+     WI_drawStats_
+02c1:6b58*     WI_checkForAccelerate_
+02c1:6b98+     WI_loadData_
+02c1:6d98*     WI_End_
+02c1:6d98*     WI_unloadData_
+02c1:6d9e+     WI_updateNoState_
+02c1:6dae*     G_WorldDone_
+02c1:6dd8      WI_Ticker_
+02c1:6e34      WI_Drawer_
+02c1:6e66+     WI_initVariables_
+02c1:6ec2+     WI_Init_
+02c1:703c      WI_Start_
 Module: math.obj(math.ASM)
-02c1:7473      FastDiv32u16u_
-02c1:7605      FastDiv3232FFFF_
-02c1:71c3      FixedMulTrigNoShift_
-02c1:72a5      FastMul16u32u_
-02c1:7405      FixedDiv_
-02c1:720e*     FixedMulTrig16_
-02c1:72ba      div48_32_
-02c1:7519*     FastDiv3232_RPTA_
-02c1:7715*     div48_32_whole_
-02c1:7228      FastMulTrig16_
-02c1:7251      FixedMulTrigSpeed_
-02c1:7296*     FixedMul16u32u_
-02c1:7491      FastDiv3216u_
-02c1:76ae      FixedDivWholeA_
-02c1:70eb*     FixedMulBig16u32_
-02c1:71bf      FixedMulTrig_
-02c1:713e      FixedMul2432_
-02c1:717f      FixedMul1632_
-02c1:70f4      FixedMul2424_
-02c1:70b2      FixedMul_
-02c1:74e8      FastDiv3232_shift_3_8_
-02c1:726d      FixedMulBig1632_
-02c1:7281      FixedMul16u32_
-02c1:7255      FixedMulTrigSpeedNoShift_
+02c1:7413      FastDiv32u16u_
+02c1:75a5      FastDiv3232FFFF_
+02c1:7163      FixedMulTrigNoShift_
+02c1:7245      FastMul16u32u_
+02c1:73a5      FixedDiv_
+02c1:71ae*     FixedMulTrig16_
+02c1:725a      div48_32_
+02c1:74b9*     FastDiv3232_RPTA_
+02c1:76b5*     div48_32_whole_
+02c1:71c8      FastMulTrig16_
+02c1:71f1      FixedMulTrigSpeed_
+02c1:7236*     FixedMul16u32u_
+02c1:7431      FastDiv3216u_
+02c1:764e      FixedDivWholeA_
+02c1:708b*     FixedMulBig16u32_
+02c1:715f      FixedMulTrig_
+02c1:70de      FixedMul2432_
+02c1:711f      FixedMul1632_
+02c1:7094      FixedMul2424_
+02c1:7052      FixedMul_
+02c1:7488      FastDiv3232_shift_3_8_
+02c1:720d      FixedMulBig1632_
+02c1:7221      FixedMul16u32_
+02c1:71f5      FixedMulTrigSpeedNoShift_
+Module: main.obj(main.ASM)
+02c1:77e4      cht_CheckCheat_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 02c1:7850      R_CheckTextureNumForName_
 02c1:78b0      R_TextureNumForName_
@@ -1638,4 +1640,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00026270 (156272.)
 Entry point address: 1eb4:22e8
-Link time: 00:00.74
+Link time: 00:00.20
