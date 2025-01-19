@@ -22,6 +22,7 @@
 #include "doomdef.h"
 #include "d_event.h"
 
+#define SLOWTURNTICS    6 
 
 
 //

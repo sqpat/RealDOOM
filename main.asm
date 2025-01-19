@@ -468,7 +468,14 @@ mov       bl, byte ptr [_key_strafe]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
 jne       label_1
-jmp       label_3
+
+mov       al, byte ptr [_mousebstrafe]
+mov       bx, word ptr [_mousebuttons]
+xor       ah, ah
+add       bx, ax
+mov       al, byte ptr [bx]
+test      al, al
+je       label_2
 label_1:
 mov       al, 1
 label_2:
@@ -483,7 +490,14 @@ mov       bl, byte ptr [_key_right]
 mov       word ptr [bp - 6], cx
 cmp       byte ptr [bx + _gamekeydown], 0
 jne       label_11
-jmp       label_13
+
+mov       bl, byte ptr [_key_left]
+mov       al, byte ptr [bx + _gamekeydown]
+test      al, al
+jne       label_11
+mov       byte ptr [_turnheld], al
+jmp       label_14
+
 label_11:
 inc       byte ptr [_turnheld]
 cmp       byte ptr [_turnheld], 6            ; todo SLOWTURNTICS
@@ -495,7 +509,32 @@ mov       dl, 2
 label_15:
 cmp       byte ptr [bp - 2], 0
 jne       label_16
-jmp       label_17
+
+mov       bl, byte ptr [_key_right]
+xor       bh, bh
+cmp       byte ptr [bx + _gamekeydown], 0
+je        label_18
+mov       al, dl
+cbw      
+mov       bx, ax
+add       bx, ax
+mov       ax, word ptr [bx + _angleturn]
+sub       word ptr [si + 2], ax
+label_18:
+mov       bl, byte ptr [_key_left]
+xor       bh, bh
+cmp       byte ptr [bx + _gamekeydown], 0
+jne       label_19
+jmp       label_20
+label_19:
+mov       al, dl
+cbw      
+mov       bx, ax
+add       bx, ax
+mov       ax, word ptr [bx + _angleturn]
+add       word ptr [si + 2], ax
+jmp       label_20
+
 label_16:
 mov       bl, byte ptr [_key_right]
 xor       bh, bh
@@ -571,7 +610,16 @@ mov       bl, byte ptr [_key_fire]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
 jne       label_46
-jmp       label_47
+
+mov       al, byte ptr [_mousebfire]
+mov       bx, word ptr [_mousebuttons]
+xor       ah, ah
+mov       word ptr [bp - 8], bx
+mov       bx, ax
+add       bx, word ptr [bp - 8]
+cmp       byte ptr [bx], 0
+je        label_50
+
 label_46:
 or        byte ptr [si + 7], 1
 label_50:
@@ -588,7 +636,11 @@ cbw
 mov       bx, ax
 cmp       byte ptr [bx + _gamekeydown+ 031h], 0          ; ascii '1'
 jne       label_56
-jmp       label_57
+
+inc       dl
+cmp       dl, 8
+jge       label_39
+jmp       label_38
 label_56:
 mov       al, dl
 or        byte ptr [si + 7], 4
@@ -621,7 +673,17 @@ cbw
 cmp       ax, word ptr [_dclickstate]
 jne       label_55
 label_35:
-jmp       label_36
+
+inc       word ptr [_dclicktime]
+cmp       word ptr [_dclicktime], 20
+jng       label_34
+
+xor       ax, ax
+mov       word ptr [_dclicks], ax
+mov       word ptr [_dclickstate], ax
+jmp       label_34
+
+
 label_55:
 cmp       word ptr [_dclicktime], 1
 jle       label_35
@@ -632,7 +694,11 @@ inc       word ptr [_dclicks]
 label_54:
 cmp       word ptr [_dclicks], 2
 je        label_53
-jmp       label_32
+
+xor       ax, ax
+mov       word ptr [_dclicktime], ax
+jmp       label_34
+
 label_53:
 xor       ax, ax
 or        byte ptr [si + 7], 2
@@ -666,7 +732,16 @@ inc       word ptr [_dclicks2]
 label_28:
 cmp       word ptr [_dclicks2], 2
 je        label_27
-jmp       label_26
+
+xor       ax, ax
+mov       word ptr [_dclicktime2], ax
+jmp       label_40
+label_23:
+mov       ax, word ptr [_mousex]
+shl       ax, 3
+sub       word ptr [si + 2], ax
+jmp       label_24
+
 label_27:
 xor       ax, ax
 or        byte ptr [si + 7], 2
@@ -697,9 +772,9 @@ label_21:
 mov       ax, word ptr [_forwardmove + 6]
 cmp       di, ax
 jg        label_68
-jne       label_67
+jne       label_8
 cmp       cx, word ptr [_forwardmove + 4]
-jbe       label_67
+jbe       label_8
 label_68:
 mov       cx, word ptr [_forwardmove + 4]
 label_12:
@@ -720,135 +795,46 @@ pop       dx
 pop       cx
 pop       bx
 ret       
-label_23:
-mov       ax, word ptr [_mousex]
-shl       ax, 3
-sub       word ptr [si + 2], ax
-jmp       label_24
-label_3:
-mov       al, byte ptr [_mousebstrafe]
-mov       bx, word ptr [_mousebuttons]
-xor       ah, ah
-add       bx, ax
-mov       al, byte ptr [bx]
-test      al, al
-je        label_4
-jmp       label_1
-label_4:
-jmp       label_2
 label_71:
-jmp       label_5
-
-;; todo move this up
-label_13:
-mov       bl, byte ptr [_key_left]
-mov       al, byte ptr [bx + _gamekeydown]
-test      al, al
-je        label_22
-jmp       label_11
-label_22:
-mov       byte ptr [_turnheld], al
-jmp       label_14
-label_67:
-jmp       label_8
-label_52:
-mov       al, byte ptr [_savegameslot]
-shl       al, 2
-or        al, 082h                       ; todo
-mov       byte ptr [_sendsave], 0
-mov       byte ptr [si + 7], al
-leave     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-ret       
-label_17:
-mov       bl, byte ptr [_key_right]
-xor       bh, bh
-cmp       byte ptr [bx + _gamekeydown], 0
-je        label_18
-mov       al, dl
-cbw      
-mov       bx, ax
-add       bx, ax
-mov       ax, word ptr [bx + _angleturn]
-sub       word ptr [si + 2], ax
-label_18:
-mov       bl, byte ptr [_key_left]
-xor       bh, bh
-cmp       byte ptr [bx + _gamekeydown], 0
-jne       label_19
-jmp       label_20
-label_19:
-mov       al, dl
-cbw      
-mov       bx, ax
-add       bx, ax
-mov       ax, word ptr [bx + _angleturn]
-add       word ptr [si + 2], ax
-jmp       label_20
-label_47:
-mov       al, byte ptr [_mousebfire]
-mov       bx, word ptr [_mousebuttons]
-xor       ah, ah
-mov       word ptr [bp - 8], bx
-mov       bx, ax
-add       bx, word ptr [bp - 8]
-cmp       byte ptr [bx], 0
-je        label_51
-jmp       label_46
-label_51:
-jmp       label_50
-label_49:
-xor       ax, ax
-or        byte ptr [si + 7], 2
-mov       word ptr [_dclicks], ax
-jmp       label_48
-label_57:
-inc       dl
-cmp       dl, 8
-jge       label_37
-jmp       label_38
-label_37:
-jmp       label_39
-label_32:
-xor       ax, ax
-mov       word ptr [_dclicktime], ax
-jmp       label_34
-label_36:
-inc       word ptr [_dclicktime]
-cmp       word ptr [_dclicktime], 20
-jg        label_33
-jmp       label_34
-label_33:
-xor       ax, ax
-mov       word ptr [_dclicks], ax
-mov       word ptr [_dclickstate], ax
-jmp       label_34
-label_26:
-xor       ax, ax
-mov       word ptr [_dclicktime2], ax
-jmp       label_40
-
-label_5:
 mov       dx, word ptr [_forwardmove + 6]
 mov       ax, word ptr [_forwardmove + 4]
 neg       dx
 neg       ax
 sbb       dx, 0
 cmp       dx, word ptr [bp - 6]
-jle       label_6
-jmp       label_7
-label_6:
+jnle      label_7
 je        label_60
-label_61:
 jmp       label_21
 label_60:
 cmp       ax, word ptr [bp - 4]
-jbe       label_61
+jbe       label_21
 jmp       label_7
+
+
+
+label_52:
+mov       al, byte ptr [_savegameslot]
+shl       al, 2
+or        al, 082h                       ; todo
+mov       byte ptr [_sendsave], 0
+mov       byte ptr [si + 7], al
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+ret       
+
+
+label_49:
+xor       ax, ax
+or        byte ptr [si + 7], 2
+mov       word ptr [_dclicks], ax
+jmp       label_48
+
+
+
 label_8:
 mov       dx, ax
 mov       ax, word ptr [_forwardmove + 4]

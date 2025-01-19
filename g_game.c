@@ -88,7 +88,6 @@ boolean __far AM_Responder (event_t __far* ev);
 #define TURBOTHRESHOLD  0x32
 
 
-#define SLOWTURNTICS    6 
  
 
 
