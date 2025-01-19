@@ -96,24 +96,6 @@
 
 
 
-#ifdef __DEMO_ONLY_BINARY
-void WI_Start(wbstartstruct_t __near* wbstartstruct) {
-
-}
-void WI_Init(void) {
-}
-void WI_Drawer() {
-
-}
-void WI_End() {
-
-}
-
-void WI_Ticker(void) {
-
-}
-
-#else
 
 // consider loading at startup...
 
@@ -989,5 +971,4 @@ void __far WI_Start(wbstartstruct_t __near* wbstartstruct) {
 
 }
 
-#endif
 

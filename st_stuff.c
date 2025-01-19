@@ -85,7 +85,7 @@ boolean __near ST_Responder (event_t __far* ev) {
     if (ev->type == ev_keydown) {
         if (gameskill != sk_nightmare) {
             // 'dqd' cheat for toggleable god mode
-            if (cht_CheckCheat(&cheat_god, ev->data1)) {
+            if (cht_CheckCheat(CHEATID_GODMODE, ev->data1)) {
                 player.cheats ^= CF_GODMODE;
                 if (player.cheats & CF_GODMODE) {
                     playerMobj->health = 100;
@@ -98,7 +98,7 @@ boolean __near ST_Responder (event_t __far* ev) {
                 }
             }
             // 'fa' cheat for killer fucking arsenal
-            else if (cht_CheckCheat(&cheat_ammonokey, ev->data1)) {
+            else if (cht_CheckCheat(CHEATID_AMMONOKEYS, ev->data1)) {
                 player.armorpoints = 200;
                 player.armortype = 2;
                 
@@ -113,7 +113,7 @@ boolean __near ST_Responder (event_t __far* ev) {
                 player.message = STSTR_FAADDED;
             }
             // 'kfa' cheat for key full ammo
-            else if (cht_CheckCheat(&cheat_ammo, ev->data1)) {
+            else if (cht_CheckCheat(CHEATID_AMMOANDKEYS, ev->data1)) {
                 player.armorpoints = 200;
                 player.armortype = 2;
                 
@@ -134,12 +134,12 @@ boolean __near ST_Responder (event_t __far* ev) {
 
 
         // 'mus' cheat for changing music
-            else if (cht_CheckCheat(&cheat_mus, ev->data1)) {
+            else if (cht_CheckCheat(CHEATID_MUSIC, ev->data1)) {
                 
                 int8_t    buf[3];
                 int16_t             musnum;
                 player.message = STSTR_MUS;
-                cht_GetParam(&cheat_mus, buf);
+                cht_GetParam(CHEATID_MUSIC, buf);
                 if (commercial) {
                     musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
                     
@@ -158,7 +158,7 @@ boolean __near ST_Responder (event_t __far* ev) {
                     }
                 }
             
-            } else if(!commercial && cht_CheckCheat(&cheat_noclip, ev->data1)) { 
+            } else if(!commercial && cht_CheckCheat(CHEATID_NOCLIP, ev->data1)) { 
                 player.cheats ^= CF_NOCLIP;
                 
                 if (player.cheats & CF_NOCLIP){
@@ -166,7 +166,7 @@ boolean __near ST_Responder (event_t __far* ev) {
                 } else{
                     player.message = STSTR_NCOFF;
                 }
-            } else if (commercial && cht_CheckCheat(&cheat_commercial_noclip, ev->data1)) {
+            } else if (commercial && cht_CheckCheat(CHEATID_NOCLIPDOOM2, ev->data1)) {
                 player.cheats ^= CF_NOCLIP;
                 
                 if (player.cheats & CF_NOCLIP){
@@ -179,7 +179,7 @@ boolean __near ST_Responder (event_t __far* ev) {
             for (i=0;i<6;i++) {
 
                 
-                if (cht_CheckCheat(&cheat_powerup[i], ev->data1)) {
+                if (cht_CheckCheat(CHEATID_BEHOLDV + i, ev->data1)) {
                     if (!player.powers[i]){
                         P_GivePower( i);
                     } else if (i!=pw_strength){
@@ -193,14 +193,14 @@ boolean __near ST_Responder (event_t __far* ev) {
             }
             
             // 'behold' power-up menu
-            if (cht_CheckCheat(&cheat_powerup[6], ev->data1)) {
+            if (cht_CheckCheat(CHEATID_BEHOLD, ev->data1)) {
                 player.message = STSTR_BEHOLD;
-            } else if (cht_CheckCheat(&cheat_choppers, ev->data1)) {
+            } else if (cht_CheckCheat(CHEATID_CHOPPERS, ev->data1)) {
                 // 'choppers' invulnerability & chainsaw
                 player.weaponowned[wp_chainsaw] = true;
                 player.powers[pw_invulnerability] = true;
                 player.message = STSTR_CHOPPERS;
-            } else if (cht_CheckCheat(&cheat_mypos, ev->data1)) {
+            } else if (cht_CheckCheat(CHEATID_MAPPOS, ev->data1)) {
                 // 'mypos' for player position
 
                 //todo: test/fix this      player pos  
@@ -224,13 +224,13 @@ boolean __near ST_Responder (event_t __far* ev) {
             }
         }
 
-        if (cht_CheckCheat(&cheat_clev, ev->data1)) {
+        if (cht_CheckCheat(CHEATID_CHANGE_LEVEL, ev->data1)) {
             int8_t              buf[3];
             int8_t               epsd;
             int8_t               map;
             int8_t               max_epsd = 4;
 
-            cht_GetParam(&cheat_clev, buf);
+            cht_GetParam(CHEATID_CHANGE_LEVEL, buf);
             
             if (commercial) {
                 epsd = 0;

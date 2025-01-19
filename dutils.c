@@ -19,13 +19,15 @@
 #include "dutils.h"
 #include "i_system.h"
 #include "z_zone.h"
+#include "m_near.h"
 
 //
 // Called in st_stuff module, which handles the input.
 // Returns a 1 if the cheat was successful, 0 if failed.
 //
-int8_t __near cht_CheckCheat ( cheatseq_t __near* cht, int8_t key ) {
+int8_t __near cht_CheckCheat ( int8_t cheatId, int8_t key ) {
 	int8_t rc = 0;
+    cheatseq_t __near* cht = all_cheats[cheatId];
 
     if (!cht->p){
 	    cht->p = cht->sequence; // initialize if first time
@@ -49,9 +51,10 @@ int8_t __near cht_CheckCheat ( cheatseq_t __near* cht, int8_t key ) {
     return rc;
 }
 
-void __near cht_GetParam ( cheatseq_t __near* cht, int8_t __near* buffer ) {
+void __near cht_GetParam ( int8_t cheatId, int8_t __near* buffer ) {
 
     uint8_t *p, c;
+    cheatseq_t __near* cht = all_cheats[cheatId];
 
     p = cht->sequence;
     while (*(p++) != 1);

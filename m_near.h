@@ -739,6 +739,26 @@ extern uint8_t   cheat_clev_seq[10];
 extern uint8_t   cheat_mypos_seq[8];
 
 // Now what?
+#define NUM_CHEATS 17
+
+#define CHEATID_BEHOLDV         0
+#define CHEATID_BEHOLDS         1
+#define CHEATID_BEHOLDI         2
+#define CHEATID_BEHOLDR         3
+#define CHEATID_BEHOLDA         4
+#define CHEATID_BEHOLDL         5
+#define CHEATID_BEHOLD          6
+#define CHEATID_AUTOMAP         7
+#define CHEATID_MUSIC           8
+#define CHEATID_GODMODE         9
+#define CHEATID_AMMOANDKEYS     10
+#define CHEATID_AMMONOKEYS      11
+#define CHEATID_NOCLIP          12
+#define CHEATID_NOCLIPDOOM2     13
+#define CHEATID_CHOPPERS        14
+#define CHEATID_CHANGE_LEVEL    15
+#define CHEATID_MAPPOS          16
+
 extern uint8_t              cheat_amap_seq[];
 extern cheatseq_t           cheat_amap;
 extern cheatseq_t      cheat_mus;
@@ -748,6 +768,7 @@ extern cheatseq_t      cheat_ammonokey;
 extern cheatseq_t      cheat_noclip;
 extern cheatseq_t      cheat_commercial_noclip;
 extern cheatseq_t      cheat_powerup[7];
+extern cheatseq_t __near * all_cheats[NUM_CHEATS];
 extern cheatseq_t      cheat_choppers;
 extern cheatseq_t      cheat_clev;
 extern cheatseq_t      cheat_mypos;

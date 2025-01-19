@@ -812,6 +812,10 @@ cheatseq_t      cheat_ammo = { cheat_ammo_seq, 0 };
 cheatseq_t      cheat_ammonokey = { cheat_ammonokey_seq, 0 };
 cheatseq_t      cheat_noclip = { cheat_noclip_seq, 0 };
 cheatseq_t      cheat_commercial_noclip = { cheat_commercial_noclip_seq, 0 };
+cheatseq_t      cheat_choppers = { cheat_choppers_seq, 0 };
+cheatseq_t      cheat_clev = { cheat_clev_seq, 0 };
+cheatseq_t      cheat_mypos = { cheat_mypos_seq, 0 };
+
 
 cheatseq_t      cheat_powerup[7] = {
     { cheat_powerup_seq[0], 0 },
@@ -822,10 +826,28 @@ cheatseq_t      cheat_powerup[7] = {
     { cheat_powerup_seq[5], 0 },
     { cheat_powerup_seq[6], 0 }
 };
+cheatseq_t __near*     all_cheats[NUM_CHEATS] = {
+    &cheat_powerup[0],
+    &cheat_powerup[1],
+    &cheat_powerup[2],
+    &cheat_powerup[3],
+    &cheat_powerup[4],
+    &cheat_powerup[5],
+    &cheat_powerup[6],
 
-cheatseq_t      cheat_choppers = { cheat_choppers_seq, 0 };
-cheatseq_t      cheat_clev = { cheat_clev_seq, 0 };
-cheatseq_t      cheat_mypos = { cheat_mypos_seq, 0 };
+    &cheat_amap,
+    &cheat_mus,
+    &cheat_god,
+    &cheat_ammo,
+    &cheat_ammonokey,
+    &cheat_noclip,
+    &cheat_commercial_noclip,
+    &cheat_choppers,
+    &cheat_clev,
+    &cheat_mypos
+
+};
+
 boolean do_st_refresh;
 
 int8_t st_palette = 0;

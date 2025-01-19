@@ -37,7 +37,7 @@ typedef struct cheatseq_s {
     uint8_t __near*	p;    
 } cheatseq_t;
 
-int8_t __near cht_CheckCheat ( cheatseq_t __near* cht, int8_t key );
-void __near cht_GetParam ( cheatseq_t __near* cht, int8_t __near* buffer );
+int8_t __near cht_CheckCheat ( int8_t cheatId, int8_t key );
+void __near cht_GetParam ( int8_t cheatId, int8_t __near* buffer );
 
 #endif
