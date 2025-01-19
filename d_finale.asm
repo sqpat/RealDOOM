@@ -1203,6 +1203,10 @@ ret
 
 ENDP
 
+check_nextstate_for_null:
+cmp   word ptr es:[bx + 4], 0
+je    select_next_monster
+jmp   select_next_anim
 
 PROC F_CastTicker_ NEAR
 PUBLIC F_CastTicker_
@@ -1227,17 +1231,19 @@ db 01Eh  ;
 dw _Z_QuickMapPhysics_addr
 
 
-les   bx, dword ptr ds:[_caststate]       
+les   bx, dword ptr ds:[_caststate]    
+; check caststate->tcis   
 cmp   byte ptr es:[bx + 2], 0FFh
-je    label_1
-jmp   label_2
-label_1:
+je    select_next_monster
+jmp   check_nextstate_for_null
+select_next_monster:
 inc   byte ptr ds:[_castnum]
 mov   byte ptr ds:[_castdeath], 0
 cmp   byte ptr ds:[_castnum], MAX_CASTNUM
-jne   label_8
+jne   got_castnum
+; reset to first monster
 mov   byte ptr ds:[_castnum], 0
-label_8:
+got_castnum:
 mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
@@ -1267,14 +1273,14 @@ sub   ax, dx
 
 add   ax, ax
 mov   byte ptr ds:[_castframes], 0
-label_40:
+done_with_attack_frame_switch:
 mov   word ptr ds:[_caststate], ax
-label_28:
+finished_attack_frame_switch_check:
 cmp   byte ptr ds:[_castattacking], 0
-je    label_6
+je    cast_not_attacking
 cmp   byte ptr ds:[_castframes], 24
-jne   label_9
-label_5:
+jne   check_see_state
+stopattack:
 xor   al, al
 mov   byte ptr ds:[_castattacking], al
 mov   byte ptr ds:[_castframes], al
@@ -1292,20 +1298,20 @@ shl   ax, 1
 sub   ax, dx
 add   ax, ax
 mov   word ptr ds:[_caststate], ax
-label_6:
+cast_not_attacking:
 les   bx, dword ptr ds:[_caststate]
 mov   al, byte ptr es:[bx + 2]
 mov   byte ptr ds:[_casttics], al
 cmp   al, 0FFh
-je    label_7
+je    set_casttics_to_15
 jmp   exit_castticker
-label_7:
+set_casttics_to_15:
 mov   byte ptr ds:[_casttics], 15
  
 pop   dx
 pop   bx
 ret   
-label_9:
+check_see_state:
 mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
@@ -1321,19 +1327,17 @@ sub   ax, dx
 mov   dx, word ptr ds:[_caststate]
 add   ax, ax
 cmp   dx, ax
-je    label_5
-jmp   label_6
-label_2:
-cmp   word ptr es:[bx + 4], 0
-jne   label_3
-jmp   label_1
-label_3:
-cmp   ax, STATES_SEGMENT
-jne   label_4
+je    stopattack
+jmp   cast_not_attacking
+
+select_next_anim:
+;		if (caststate == &states[S_PLAY_ATK1]){
+
 cmp   bx, (S_PLAY_ATK1 * 6)   ; 6 is sizeof state
-jne   label_4
-jmp   label_5
-label_4:
+jne   do_next_state
+jmp   stopattack
+
+do_next_state:
 mov   ax, word ptr es:[bx + 4]
 mov   dx, ax
 shl   dx, 1
@@ -1342,24 +1346,145 @@ sub   dx, ax
 add   dx, dx
 inc   byte ptr ds:[_castframes]
 mov   word ptr ds:[_caststate], dx
+; switch block nastiness
 cmp   ax, S_TROO_ATK3
-jb    label_10
-jmp   label_11
-label_10:
+jb    b_strooatk3
+jmp   ae_strooatk3
+b_strooatk3:
 cmp   ax, S_SKEL_FIST4
-jb    label_35
-jmp   label_34
-label_35:
+jb    b_sskelfist4
+ja    a_sskelfist4
+mov   ax, SFX_SKEPCH
+jmp   selected_sfx
+
+b_sskelfist4:
 cmp   ax, S_SPOS_ATK2
-jb    label_32
-jmp   label_33
-label_32:
-cmp   ax, S_POSS_ATK2
-je    label_31
-jmp   label_30
-label_31:
+jb    b_ssposatk2
+ja    a_ssposatk2
+mov   ax, SFX_SHOTGN
+jmp   selected_sfx
+
+
+e_spossatk2:
 mov   ax, 1
-label_13:
+jmp   selected_sfx
+a_ssposatk2:
+cmp   ax, S_SKEL_FIST2
+jne   ne_sskelfist2
+mov   ax, SFX_SKESWG
+jmp   selected_sfx
+b_ssposatk2:
+cmp   ax, S_POSS_ATK2
+je    e_spossatk2
+
+cmp   ax, S_PLAY_ATK1
+jne   default_no_sfx
+mov   ax, SFX_DSHTGN
+jmp   selected_sfx
+
+ne_sskelfist2:
+cmp   ax, S_VILE_ATK2
+je    e_svileatk2
+jmp   default_no_sfx
+e_svileatk2:
+mov   ax, SFX_VILATK
+jmp   selected_sfx
+
+
+
+
+ae_strooatk3:
+ja    a_strooatk3
+mov   ax, SFX_CLAW
+jmp   selected_sfx
+
+a_sskelfist4:
+cmp   ax, S_FATT_ATK5
+jae   ae_sfattatk5
+cmp   ax, S_FATT_ATK2
+jne   ne_sfattatk2
+
+e_sfattatk8:
+mov   ax, SFX_FIRSHT
+jmp   selected_sfx
+
+a_strooatk3:
+cmp   ax, S_SPID_ATK2
+jae   ae_sspidatk2
+cmp   ax, S_BOSS_ATK2
+jae   ae_sbossatk2
+cmp   ax, S_HEAD_ATK2
+jne   ne_sheadatk2
+e_sbossatk2:
+mov   ax, SFX_FIRSHT
+jmp   SHORT selected_sfx
+ae_sspidatk2:
+cmp   ax, S_SPID_ATK3
+ja    a_sspidatk3
+mov   ax, SFX_SHOTGN
+jmp   selected_sfx
+a_sspidatk3:
+cmp   ax, S_CYBER_ATK4
+jae   ae_scyberatk4
+cmp   ax, S_CYBER_ATK2
+jne   ne_scyberatk2
+e_scyberatk6:
+mov   ax, SFX_RLAUNC
+jmp   selected_sfx
+
+ae_scyberatk4:
+jbe   e_scyberatk6
+cmp   ax, S_PAIN_ATK3
+jne   ne_spainatk3
+mov   ax, SFX_SKLATK
+jmp   selected_sfx
+ne_sfattatk2:
+cmp   ax, S_SKEL_MISS2
+jne   default_no_sfx
+mov   ax, SFX_SKEATK
+jmp   selected_sfx
+
+ne_spainatk3:
+cmp   ax, S_CYBER_ATK6
+je    e_scyberatk6
+default_no_sfx:
+xor   ax, ax
+jmp   selected_sfx
+ne_scyberatk2:
+cmp   ax, S_BSPI_ATK2
+jne   default_no_sfx
+mov   ax, SFX_PLASMA
+jmp   selected_sfx
+ae_sbossatk2:
+jbe   e_sbossatk2
+cmp   ax, S_SKULL_ATK2
+jne   ne_sskullatk2
+mov   ax, SFX_SKLATK
+jmp   selected_sfx
+ne_sskullatk2:
+cmp   ax, S_BOS2_ATK2
+je    e_sbossatk2
+jmp   default_no_sfx
+ae_sfattatk5:
+jbe   e_sfattatk8
+cmp   ax, S_FATT_ATK8
+jb    default_no_sfx
+jbe   e_sfattatk8
+cmp   ax, S_CPOS_ATK2
+jb    default_no_sfx
+cmp   ax, S_CPOS_ATK4
+ja    default_no_sfx
+mov   ax, SFX_SHOTGN
+jmp   selected_sfx
+ne_sheadatk2:
+cmp   ax, S_SARG_ATK2
+jne   default_no_sfx
+mov   ax, SFX_SGTATK
+jmp   selected_sfx
+
+
+
+selected_sfx:
 mov   dl, al
 xor   dh, dh
 xor   ax, ax
@@ -1367,13 +1492,13 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 cmp   byte ptr ds:[_castframes], 0Ch
-je    label_27
-jump_to_label_28:
-jmp   label_28
-label_27:
+je    do_attack_frame
+jump_to_finished_attack_frame_switch_check:
+jmp   finished_attack_frame_switch_check
+do_attack_frame:
 mov   byte ptr ds:[_castattacking], 1
 cmp   byte ptr ds:[_castonmelee], 0
-jne   jump_to_label_29
+jne   get_melee_state
 mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
@@ -1384,7 +1509,7 @@ xor   ah, ah
 db    09Ah
 dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
 
-label_26:
+got_state:
 mov   dx, ax
 shl   ax, 1
 shl   ax, 1
@@ -1395,9 +1520,9 @@ xor   byte ptr ds:[_castonmelee], 1
 
 mov   dx, word ptr ds:[_caststate]   ; check if state 0
 test  dx, dx
-jne   jump_to_label_28
+jne   jump_to_finished_attack_frame_switch_check
 cmp   byte ptr ds:[_castonmelee], 0
-je    label_36
+je    non_melee_second_state
 mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
@@ -1412,121 +1537,8 @@ shl   ax, 1
 sub   ax, dx
 add   ax, ax
 
-jmp   label_40
-label_11:
-ja    label_12
-mov   ax, SFX_CLAW
-jmp   label_13
-jump_to_label_29:
-jmp   label_29
-label_12:
-cmp   ax, S_SPID_ATK2
-jae   label_44
-cmp   ax, S_BOSS_ATK2
-jae   label_43
-cmp   ax, S_HEAD_ATK2
-jne   label_42
-label_21:
-mov   ax, SFX_FIRSHT
-jmp   label_13
-label_44:
-cmp   ax, S_SPID_ATK3
-ja    label_22
-mov   ax, SFX_SHOTGN
-jmp   label_13
-label_22:
-cmp   ax, S_CYBER_ATK4
-jae   label_23
-cmp   ax, S_CYBER_ATK2
-jne   label_24
-label_37:
-mov   ax, SFX_RLAUNC
-jmp   label_13
-label_36:
-jmp   label_25
-label_23:
-jbe   label_37
-cmp   ax, S_PAIN_ATK3
-jne   label_38
-mov   ax, SFX_SKLATK
-jmp   label_13
-label_38:
-cmp   ax, S_CYBER_ATK6
-je    label_37
-label_14:
-xor   ax, ax
-jmp   label_13
-label_24:
-cmp   ax, S_BSPI_ATK2
-jne   label_14
-mov   ax, SFX_PLASMA
-jmp   label_13
-label_43:
-jbe   label_21
-cmp   ax, S_SKULL_ATK2
-jne   label_39
-mov   ax, SFX_SKLATK
-jmp   label_13
-label_39:
-cmp   ax, S_BOS2_ATK2
-je    label_21
-jmp   label_14
-label_42:
-cmp   ax, S_SARG_ATK2
-jne   label_14
-mov   ax, SFX_SGTATK
-jmp   label_13
-label_34:
-ja    label_20
-mov   ax, SFX_SKEPCH
-jmp   label_13
-label_20:
-cmp   ax, S_FATT_ATK5
-jae   label_19
-cmp   ax, S_FATT_ATK2
-jne   label_18
-label_15:
-mov   ax, SFX_FIRSHT
-jmp   label_13
-label_19:
-jbe   label_15
-cmp   ax, S_FATT_ATK8
-jb    label_14
-jbe   label_15
-cmp   ax, S_CPOS_ATK2
-jb    label_14
-cmp   ax, S_CPOS_ATK4
-ja    label_14
-mov   ax, SFX_SHOTGN
-jmp   label_13
-label_18:
-cmp   ax, S_SKEL_MISS2
-jne   label_14
-mov   ax, SFX_SKEATK
-jmp   label_13
-label_33:
-ja    label_16
-mov   ax, SFX_SHOTGN
-jmp   label_13
-label_16:
-cmp   ax, S_SKEL_FIST2
-jne   label_17
-mov   ax, SFX_SKESWG
-jmp   label_13
-label_17:
-cmp   ax, S_VILE_ATK2
-je    label_41
-jump_to_label_14:
-jmp   label_14
-label_41:
-mov   ax, SFX_VILATK
-jmp   label_13
-label_30:
-cmp   ax, S_PLAY_ATK1
-jne   jump_to_label_14
-mov   ax, SFX_DSHTGN
-jmp   label_13
-label_29:
+jmp   done_with_attack_frame_switch
+get_melee_state:
 mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
@@ -1535,8 +1547,8 @@ mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
 dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
-jmp   label_26
-label_25:
+jmp   got_state
+non_melee_second_state:
 mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
@@ -1552,8 +1564,7 @@ shl   ax, 1
 sub   ax, dx
 add   ax, ax
 
-jmp   label_40
-
+jmp   done_with_attack_frame_switch
 
 ENDP
 
