@@ -217,25 +217,7 @@ void __near G_BuildTiccmd (int8_t index) {
     if (mousebuttons[mousebforward])
         forward += forwardmove[speed];
     
-    // forward double click
-    if (mousebuttons[mousebforward] != dclickstate && dclicktime > 1 ) { 
-        dclickstate = mousebuttons[mousebforward];
-        if (dclickstate) {
-            dclicks++; 
-        }
-        if (dclicks == 2)  { 
-            cmd->buttons |= BT_USE; 
-            dclicks = 0; 
-        } 
-        else 
-            dclicktime = 0; 
-    } else { 
-        dclicktime += 1; 
-        if (dclicktime > 20) { 
-            dclicks = 0; 
-            dclickstate = 0; 
-        } 
-    }
+
     
     // strafe double click
     bstrafe = mousebuttons[mousebstrafe]  ;

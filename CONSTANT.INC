@@ -1814,6 +1814,7 @@ BTS_PAUSE = 01h
 BTS_SAVEGAME = 02h
 BTS_SAVEMASK = 01Ch
 BTS_SAVESHIFT = 02h
+NUMWEAPONS = 09h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h

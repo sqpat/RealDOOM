@@ -438,6 +438,7 @@ ENDP
 PROC G_BuildTiccmd_ NEAR
 PUBLIC G_BuildTiccmd_
 
+; bp - 2      strafe
 
 
 push      bx
@@ -452,22 +453,19 @@ cbw
 mov       si, OFFSET _localcmds
 shl       ax, 3
 add       si, ax
-mov       cx, 8
 mov       di, si
-xor       al, al
-push      di
+xor       ax, ax
+
 push      ds
 pop       es
-mov       ah, al
-shr       cx, 1
+mov       cx, 4
 rep       stosw 
-adc       cx, cx
-rep       stosb 
-pop       di
+
+
 mov       bl, byte ptr [_key_strafe]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-jne       label_1
+jne       strafe_is_on
 
 mov       al, byte ptr [_mousebstrafe]
 mov       bx, word ptr [_mousebuttons]
@@ -475,10 +473,10 @@ xor       ah, ah
 add       bx, ax
 mov       al, byte ptr [bx]
 test      al, al
-je       label_2
-label_1:
+je        strafe_is_not_on
+strafe_is_on:
 mov       al, 1
-label_2:
+strafe_is_not_on:
 mov       bl, byte ptr [_key_speed]
 mov       byte ptr [bp - 2], al
 xor       cx, cx
@@ -489,79 +487,84 @@ mov       dh, byte ptr [bx + _gamekeydown]
 mov       bl, byte ptr [_key_right]
 mov       word ptr [bp - 6], cx
 cmp       byte ptr [bx + _gamekeydown], 0
-jne       label_11
+jne       turn_is_held
 
 mov       bl, byte ptr [_key_left]
 mov       al, byte ptr [bx + _gamekeydown]
 test      al, al
-jne       label_11
+jne       turn_is_held
 mov       byte ptr [_turnheld], al
-jmp       label_14
+jmp       finished_checking_turn
 
-label_11:
+turn_is_held:
 inc       byte ptr [_turnheld]
 cmp       byte ptr [_turnheld], 6            ; todo SLOWTURNTICS
-jl        label_14
+jl        finished_checking_turn
 mov       dl, dh
-jmp       label_15
-label_14:
+jmp       check_strafe
+finished_checking_turn:
 mov       dl, 2
-label_15:
-cmp       byte ptr [bp - 2], 0
-jne       label_16
+check_strafe:
+; let movement keys cancel each other out
 
+cmp       byte ptr [bp - 2], 0
+jne       handle_strafe
+handle_no_strafe:
 mov       bl, byte ptr [_key_right]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-je        label_18
+je        handle_checking_left_turn
+handle_right_turn:
 mov       al, dl
 cbw      
 mov       bx, ax
 add       bx, ax
 mov       ax, word ptr [bx + _angleturn]
 sub       word ptr [si + 2], ax
-label_18:
+handle_checking_left_turn:
 mov       bl, byte ptr [_key_left]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-jne       label_19
-jmp       label_20
-label_19:
+je        done_handling_strafe
+handle_left_turn:
 mov       al, dl
 cbw      
 mov       bx, ax
 add       bx, ax
 mov       ax, word ptr [bx + _angleturn]
 add       word ptr [si + 2], ax
-jmp       label_20
+jmp       done_handling_strafe
 
-label_16:
+handle_strafe:
 mov       bl, byte ptr [_key_right]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-je        label_43
+je        handle_checking_strafe_left
+handle_strafe_right:
 mov       al, dh
 cbw      
 mov       bx, ax
 shl       bx, 2
 add       cx, word ptr [bx + _sidemove]
 adc       di, word ptr [bx + _sidemove+2]
-label_43:
+handle_checking_strafe_left:
 mov       bl, byte ptr [_key_left]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-je        label_20
+je        done_handling_strafe
+handle_strafe_left:
 mov       al, dh
 cbw      
 mov       bx, ax
 shl       bx, 2
 sub       cx, word ptr [bx + _sidemove]
 sbb       di, word ptr [bx + _sidemove+2]
-label_20:
+done_handling_strafe:
 mov       bl, byte ptr [_key_up]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-je        label_41
+je        up_not_pressed
+up_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
@@ -570,11 +573,12 @@ mov       ax, word ptr [bx + _forwardmove]
 add       word ptr [bp - 4], ax
 mov       ax, word ptr [bx + _forwardmove+2]
 adc       word ptr [bp - 6], ax
-label_41:
+up_not_pressed:
 mov       bl, byte ptr [_key_down]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-je        label_42
+je        down_not_pressed
+down_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
@@ -583,34 +587,36 @@ mov       ax, word ptr [bx + _forwardmove]
 sub       word ptr [bp - 4], ax
 mov       ax, word ptr [bx + _forwardmove+2]
 sbb       word ptr [bp - 6], ax
-label_42:
+down_not_pressed:
 mov       bl, byte ptr [_key_straferight]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-je        label_44
+je        straferight_not_pressed
+straferight_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
 shl       bx, 2
 add       cx, word ptr [bx + _sidemove]
 adc       di, word ptr [bx + _sidemove+2]
-label_44:
+straferight_not_pressed:
 mov       bl, byte ptr [_key_strafeleft]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-je        label_45
+je        strafeleft_not_pressed
+strafeleft_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
 shl       bx, 2
 sub       cx, word ptr [bx + _sidemove]
 sbb       di, word ptr [bx + _sidemove]
-label_45:
+strafeleft_not_pressed:
 mov       bl, byte ptr [_key_fire]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-jne       label_46
-
+jne       fire_pressed
+; check mouse fire
 mov       al, byte ptr [_mousebfire]
 mov       bx, word ptr [_mousebuttons]
 xor       ah, ah
@@ -618,35 +624,43 @@ mov       word ptr [bp - 8], bx
 mov       bx, ax
 add       bx, word ptr [bp - 8]
 cmp       byte ptr [bx], 0
-je        label_50
+je        done_handling_fire
 
-label_46:
-or        byte ptr [si + 7], 1
-label_50:
+fire_pressed:
+or        byte ptr [si + 7], BT_ATTACK
+done_handling_fire:
 mov       bl, byte ptr [_key_use]
 xor       bh, bh
 cmp       byte ptr [bx + _gamekeydown], 0
-je        label_48
-jmp       label_49
-label_48:
+jne       use_pressed
+
+done_handling_use:
 xor       dl, dl
-label_38:
+loop_handle_weapon_swap:
 mov       al, dl
 cbw      
 mov       bx, ax
-cmp       byte ptr [bx + _gamekeydown+ 031h], 0          ; ascii '1'
-jne       label_56
+cmp       byte ptr [bx + _gamekeydown+ 031h], 0          ; 031h is ascii '1'
+jne       handle_weapon_change
 
 inc       dl
-cmp       dl, 8
-jge       label_39
-jmp       label_38
-label_56:
+cmp       dl, NUMWEAPONS - 1
+jge       done_checking_weapons
+jmp       loop_handle_weapon_swap
+use_pressed:
+xor       ax, ax
+or        byte ptr [si + 7], BT_USE
+mov       word ptr [_dclicks], ax
+jmp       done_handling_use
+
+handle_weapon_change:
 mov       al, dl
-or        byte ptr [si + 7], 4
-shl       al, 3
+or        byte ptr [si + 7], BT_CHANGE
+shl       al, 1
+shl       al, 1
+shl       al, 1
 or        byte ptr [si + 7], al
-label_39:
+done_checking_weapons:
 mov       al, byte ptr [_mousebforward]
 mov       bx, word ptr [_mousebuttons]
 xor       ah, ah
@@ -654,16 +668,17 @@ mov       word ptr [bp - 8], bx
 mov       bx, ax
 add       bx, word ptr [bp - 8]
 cmp       byte ptr [bx], 0
-je        label_58
+je        mouse_forward_not_pressed
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 2
+shl       bx, 1
+shl       bx, 1
 mov       ax, word ptr [bx + _forwardmove]
 add       word ptr [bp - 4], ax
 mov       ax, word ptr [bx + _forwardmove+2]
 adc       word ptr [bp - 6], ax
-label_58:
+mouse_forward_not_pressed:
 mov       al, byte ptr [_mousebforward]
 mov       bx, word ptr [_mousebuttons]
 xor       ah, ah
@@ -827,11 +842,6 @@ pop       bx
 ret       
 
 
-label_49:
-xor       ax, ax
-or        byte ptr [si + 7], 2
-mov       word ptr [_dclicks], ax
-jmp       label_48
 
 
 
