@@ -41,7 +41,6 @@ file d_wipe.obj
 
 file d_algo.obj
 file dmx.obj
-file dutils.obj
 file wi_stuff.obj
 file math.obj
 file main.obj

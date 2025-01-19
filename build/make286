@@ -105,7 +105,6 @@ GLOBOBJS = &
  wi_stuff.obj &
  s_sound.obj &
  sounds.obj &
- dutils.obj &
  info.obj &
  d_math.obj &
  dmx.obj &

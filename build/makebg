@@ -119,9 +119,8 @@ GLOBOBJS = $(GLOBOBJS) &
  wi_stuff.obj &
  s_sound.obj &
  sounds.obj &
- dutils.obj &
- d_wipe.obj &
- info.obj &
+  d_wipe.obj &
+info.obj &
  d_math.obj &
  d_finale.obj &
  dmx.obj &
@@ -157,7 +156,7 @@ bingen.exe : $(GLOBOBJS)
 !endif
  wstrip bingen.exe
 
-obj\.obj : obj\
+obj.obj : obj\
 
 .c.obj : 
  wcc $(CCOPTS) $[*
