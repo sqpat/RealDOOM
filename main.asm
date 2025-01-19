@@ -292,9 +292,13 @@ pop    bx
 
 iret   
 
-
-
 ENDP
+
+
+
+
+; todo not heavily optimized
+
 
 do_exit:
 LEAVE_MACRO
@@ -435,10 +439,13 @@ jmp  key_selected
 ENDP
 
 
+; todo not heavily optimized
 PROC G_BuildTiccmd_ NEAR
 PUBLIC G_BuildTiccmd_
 
 ; bp - 2      strafe
+; bp - 4      forward lo
+; bp - 6      forward hi
 
 
 push      bx
@@ -448,18 +455,23 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 8
+sub       sp, 6
 cbw      
 mov       si, OFFSET _localcmds
-shl       ax, 3
+shl       ax, 1
+shl       ax, 1
+shl       ax, 1
 add       si, ax
 mov       di, si
 xor       ax, ax
 
 push      ds
 pop       es
-mov       cx, 4
-rep       stosw 
+
+stosw 
+stosw 
+stosw 
+stosw 
 
 
 mov       bl, byte ptr [_key_strafe]
@@ -544,7 +556,8 @@ handle_strafe_right:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 2
+shl       bx, 1
+shl       bx, 1
 add       cx, word ptr [bx + _sidemove]
 adc       di, word ptr [bx + _sidemove+2]
 handle_checking_strafe_left:
@@ -556,7 +569,8 @@ handle_strafe_left:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 2
+shl       bx, 1
+shl       bx, 1
 sub       cx, word ptr [bx + _sidemove]
 sbb       di, word ptr [bx + _sidemove+2]
 done_handling_strafe:
@@ -568,7 +582,8 @@ up_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 2
+shl       bx, 1
+shl       bx, 1
 mov       ax, word ptr [bx + _forwardmove]
 add       word ptr [bp - 4], ax
 mov       ax, word ptr [bx + _forwardmove+2]
@@ -582,7 +597,8 @@ down_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 2
+shl       bx, 1
+shl       bx, 1
 mov       ax, word ptr [bx + _forwardmove]
 sub       word ptr [bp - 4], ax
 mov       ax, word ptr [bx + _forwardmove+2]
@@ -596,7 +612,8 @@ straferight_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 2
+shl       bx, 1
+shl       bx, 1
 add       cx, word ptr [bx + _sidemove]
 adc       di, word ptr [bx + _sidemove+2]
 straferight_not_pressed:
@@ -608,7 +625,8 @@ strafeleft_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 2
+shl       bx, 1
+shl       bx, 1
 sub       cx, word ptr [bx + _sidemove]
 sbb       di, word ptr [bx + _sidemove]
 strafeleft_not_pressed:
@@ -620,9 +638,7 @@ jne       fire_pressed
 mov       al, byte ptr [_mousebfire]
 mov       bx, word ptr [_mousebuttons]
 xor       ah, ah
-mov       word ptr [bp - 8], bx
-mov       bx, ax
-add       bx, word ptr [bp - 8]
+add       bx, ax
 cmp       byte ptr [bx], 0
 je        done_handling_fire
 
@@ -664,9 +680,7 @@ done_checking_weapons:
 mov       al, byte ptr [_mousebforward]
 mov       bx, word ptr [_mousebuttons]
 xor       ah, ah
-mov       word ptr [bp - 8], bx
-mov       bx, ax
-add       bx, word ptr [bp - 8]
+add       bx, ax
 cmp       byte ptr [bx], 0
 je        mouse_forward_not_pressed
 mov       al, dh
@@ -679,46 +693,8 @@ add       word ptr [bp - 4], ax
 mov       ax, word ptr [bx + _forwardmove+2]
 adc       word ptr [bp - 6], ax
 mouse_forward_not_pressed:
-mov       al, byte ptr [_mousebforward]
-mov       bx, word ptr [_mousebuttons]
-xor       ah, ah
-add       bx, ax
-mov       al, byte ptr [bx]
-cbw      
-cmp       ax, word ptr [_dclickstate]
-jne       label_55
-label_35:
 
-inc       word ptr [_dclicktime]
-cmp       word ptr [_dclicktime], 20
-jng       label_34
-
-xor       ax, ax
-mov       word ptr [_dclicks], ax
-mov       word ptr [_dclickstate], ax
-jmp       label_34
-
-
-label_55:
-cmp       word ptr [_dclicktime], 1
-jle       label_35
-mov       word ptr [_dclickstate], ax
-test      ax, ax
-je        label_54
-inc       word ptr [_dclicks]
-label_54:
-cmp       word ptr [_dclicks], 2
-je        label_53
-
-xor       ax, ax
-mov       word ptr [_dclicktime], ax
-jmp       label_34
-
-label_53:
-xor       ax, ax
-or        byte ptr [si + 7], 2
-mov       word ptr [_dclicks], ax
-label_34:
+; check mouse strafe double click?
 mov       al, byte ptr [_mousebstrafe]
 mov       bx, word ptr [_mousebuttons]
 xor       ah, ah
@@ -726,83 +702,90 @@ add       bx, ax
 mov       al, byte ptr [bx]
 cbw      
 cmp       ax, word ptr [_dclickstate2]
-jne       label_29
-label_30:
+jne       strafe_clickstate_nonequal
+handle_strafe_clickstate:
 inc       word ptr [_dclicktime2]
 cmp       word ptr [_dclicktime2], 20  
-jg        label_31
-jmp       label_40
-label_31:
+jng       done_handling_mouse_strafe
 xor       ax, ax
 mov       word ptr [_dclicks2], ax
 mov       word ptr [_dclickstate2], ax
-jmp       label_40
-label_29:
+jmp       done_handling_mouse_strafe
+strafe_clickstate_nonequal:
 cmp       word ptr [_dclicktime2], 1
-jle       label_30
+jle       handle_strafe_clickstate
 mov       word ptr [_dclickstate2], ax
 test      ax, ax
-je        label_28
+je        dont_increment_dclicks2
 inc       word ptr [_dclicks2]
-label_28:
+dont_increment_dclicks2:
 cmp       word ptr [_dclicks2], 2
-je        label_27
+je        handle_double_click
 
 xor       ax, ax
 mov       word ptr [_dclicktime2], ax
-jmp       label_40
-label_23:
+jmp       done_handling_mouse_strafe
+strafe_on_add_mousex:
 mov       ax, word ptr [_mousex]
-shl       ax, 3
+shl       ax, 1
+shl       ax, 1
+shl       ax, 1
 sub       word ptr [si + 2], ax
-jmp       label_24
+jmp       done_handling_mousex
 
-label_27:
+handle_double_click:
 xor       ax, ax
-or        byte ptr [si + 7], 2
+or        byte ptr [si + 7], BT_USE
 mov       word ptr [_dclicks2], ax
-label_40:
+
+done_handling_mouse_strafe:
 cmp       byte ptr [bp - 2], 0
-je        label_23
+je        strafe_on_add_mousex
+; set angle turn
 mov       ax, word ptr [_mousex]
 add       ax, ax
 cwd       
 add       cx, ax
 adc       di, dx
-label_24:
-xor       ax, ax
-mov       word ptr [_mousex], ax
+done_handling_mousex:
+
+; limit move speed to max move (forward_move[1])
+
+mov       word ptr [_mousex], 0
 mov       ax, word ptr [bp - 6]
 cmp       ax, word ptr [_forwardmove + 6]
-jg        label_25
-jne       label_71
+jg        clip_forwardmove_to_max
+jne       check_negative_max_forward
 mov       ax, word ptr [bp - 4]
 cmp       ax, word ptr [_forwardmove + 4]
-jbe       label_71
-label_25:
+jbe       check_negative_max_forward
+clip_forwardmove_to_max:
 mov       ax, word ptr [_forwardmove + 4]
-label_7:
+overwrite_forwardmove:
 mov       word ptr [bp - 4], ax
-label_21:
+dont_overwrite_forwardmove:
 mov       ax, word ptr [_forwardmove + 6]
+
+; compare side to maxmove
 cmp       di, ax
-jg        label_68
-jne       label_8
+jg        clip_sidemove_to_max
+jne       check_negative_max_side
 cmp       cx, word ptr [_forwardmove + 4]
-jbe       label_8
-label_68:
+jbe       check_negative_max_side
+clip_sidemove_to_max:
 mov       cx, word ptr [_forwardmove + 4]
-label_12:
+done_checking_sidemove:
+; add sidemove/forwardmove to cmd
 mov       al, byte ptr [bp - 4]
 add       byte ptr [si + 1], cl
 add       byte ptr [si], al
 cmp       byte ptr [_sendpause], 0
-je        label_59
+je        dont_pause
 mov       byte ptr [_sendpause], 0
 mov       byte ptr [si + 7], 081h            ; todo BT_SPECIAL | BTS_PAUSE
-label_59:
+dont_pause:
 cmp       byte ptr [_sendsave], 0
-jne       label_52
+jne       handle_save_press
 LEAVE_MACRO
 pop       di
 pop       si
@@ -810,26 +793,27 @@ pop       dx
 pop       cx
 pop       bx
 ret       
-label_71:
+check_negative_max_forward:
 mov       dx, word ptr [_forwardmove + 6]
 mov       ax, word ptr [_forwardmove + 4]
 neg       dx
 neg       ax
 sbb       dx, 0
 cmp       dx, word ptr [bp - 6]
-jnle      label_7
-je        label_60
-jmp       label_21
-label_60:
+jnle      overwrite_forwardmove
+je        check_forwardmove_negative_lowbits
+jmp       dont_overwrite_forwardmove
+check_forwardmove_negative_lowbits:
 cmp       ax, word ptr [bp - 4]
-jbe       label_21
-jmp       label_7
+jbe       dont_overwrite_forwardmove
+jmp       overwrite_forwardmove
 
 
 
-label_52:
+handle_save_press:
 mov       al, byte ptr [_savegameslot]
-shl       al, 2
+shl       al, 1
+shl       al, 1
 or        al, 082h                       ; todo
 mov       byte ptr [_sendsave], 0
 mov       byte ptr [si + 7], al
@@ -842,26 +826,22 @@ pop       bx
 ret       
 
 
-
-
-
-label_8:
+check_negative_max_side:
 mov       dx, ax
 mov       ax, word ptr [_forwardmove + 4]
 neg       dx
 neg       ax
 sbb       dx, 0
 cmp       di, dx
-jl        label_9
-je        label_10
-jump_to_label_12:
-jmp       label_12
-label_10:
+jl        clip_sidemove_to_negative_max
+je        check_sidemove_negative_lowbits
+jmp       done_checking_sidemove
+check_sidemove_negative_lowbits:
 cmp       cx, ax
-jae       jump_to_label_12
-label_9:
+jae       done_checking_sidemove
+clip_sidemove_to_negative_max:
 mov       cx, ax
-jmp       label_12
+jmp       done_checking_sidemove
 
 ENDP
 
