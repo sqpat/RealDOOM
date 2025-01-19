@@ -51,7 +51,6 @@ int8_t __near cht_CheckCheat ( int8_t cheatId, int8_t key ) {
 
     return rc;
 }
-*/
 
 void __near cht_GetParam ( int8_t cheatId, int8_t __near* buffer ) {
 
@@ -71,5 +70,6 @@ void __near cht_GetParam ( int8_t cheatId, int8_t __near* buffer ) {
 	    *buffer = 0;
 
 }
+*/
 
 

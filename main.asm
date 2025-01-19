@@ -94,4 +94,55 @@ ret
  
 ENDP
 
+
+; get custom param for change level, change music type cheats.
+
+PROC cht_GetParam_ NEAR
+PUBLIC cht_GetParam_
+
+
+push bx
+push si
+push di
+mov  si, dx
+cbw 
+mov  bx, ax
+add  bx, ax
+mov  bx, word ptr [bx + _all_cheats]
+mov  bx, word ptr [bx]
+loop_find_param_marker:
+mov  di, bx
+inc  bx
+cmp  byte ptr [di], 1       ; 1 is marker for custom params position in cheat
+jne  loop_find_param_marker
+check_next_cheat_char:
+mov  al, byte ptr [bx]
+mov  byte ptr [si], al
+inc  si
+mov  byte ptr [bx], 0
+inc  bx
+test al, al
+je   end_of_custom_param
+cmp  byte ptr [bx], 0FFh
+jne  check_next_cheat_char
+end_of_custom_param:
+cmp  byte ptr [bx], 0FFh
+je   getparam_return_0
+getparam_return_1:
+pop  di
+pop  si
+pop  bx
+ret  
+getparam_return_0:
+mov  byte ptr [si], 0
+pop  di
+pop  si
+pop  bx
+ret  
+
+ENDP
+
+
+
+
 end
