@@ -536,7 +536,7 @@ boolean __far AM_Responder ( event_t __far* ev ) {
 		  default:
 			rc = false;
 		}
-		if ( cht_CheckCheat(&cheat_amap, ev->data1)) {
+		if ( cht_CheckCheat(CHEATID_AUTOMAP, ev->data1)) {
 			rc = false;
 			am_cheating = (am_cheating+1) % 3;
 		}

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/19 10:36:11
+Created on:       25/01/19 10:37:43
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -499,7 +499,7 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 22c2:0907+     _cheat_clev_seq
 22c2:0911+     _cheat_mypos_seq
 22c2:0919+     _cheat_amap_seq
-22c2:091e      _cheat_amap
+22c2:091e+     _cheat_amap
 22c2:0922+     _cheat_mus
 22c2:0926+     _cheat_god
 22c2:092a+     _cheat_ammo
