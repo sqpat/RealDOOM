@@ -3,10 +3,11 @@
 #include "m_near.h"
 #include "sounds.h"
 
-#define CONSTANTS_COUNT 1768
+#define CONSTANTS_COUNT 1770
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
+	"FIXED_DS_SEGMENT",
     "SECTORS_SEGMENT",
     "VERTEXES_SEGMENT",
     "SIDES_SEGMENT",
@@ -1802,7 +1803,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "GS_INTERMISSION",
     "GS_FINALE",
     "GS_DEMOSCREEN",
-	"SBARHEIGHT"
+	"SBARHEIGHT",
+	"KBDQUESIZE"
 
 
 
@@ -1813,6 +1815,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
 
 segment_t SEGMENTS[CONSTANTS_COUNT] = {
+	FIXED_DS_SEGMENT,
     sectors_segment,
     vertexes_segment, 
     sides_segment, 
@@ -3609,7 +3612,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     GS_INTERMISSION,
     GS_FINALE,
     GS_DEMOSCREEN,
-	SBARHEIGHT
+	SBARHEIGHT,
+	KBDQUESIZE
 
     
 };
@@ -3679,7 +3683,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     char* varname;
     segment_t segment;
     int16_t i;
-    fprintf(fp, "; Far Segments\n");
+    fprintf(fp, "; Far Segments and other constants \n");
 
     for (i = 0; i < CONSTANTS_COUNT; i++){
         varname = CONSTANTS[i];

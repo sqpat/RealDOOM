@@ -1,4 +1,5 @@
-; Far Segments
+; Far Segments and other constants 
+FIXED_DS_SEGMENT = 03C00h
 SECTORS_SEGMENT = 0E000h
 VERTEXES_SEGMENT = 0E15Ch
 SIDES_SEGMENT = 0E2F3h
@@ -1767,6 +1768,7 @@ GS_INTERMISSION = 01h
 GS_FINALE = 02h
 GS_DEMOSCREEN = 03h
 SBARHEIGHT = 020h
+KBDQUESIZE = 020h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h

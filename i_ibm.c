@@ -375,6 +375,7 @@ void I_TimerISR(void) {
 // I_KeyboardISR
 //
 
+/*
 void __interrupt I_KeyboardISR(void) {
 // Get the scan code
 	byte value;
@@ -389,7 +390,7 @@ void __interrupt I_KeyboardISR(void) {
 
     _outbyte(0x20, 0x20);
 }
-
+*/
 
 
 

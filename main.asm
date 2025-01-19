@@ -19,9 +19,13 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN _kbdhead:WORD
+EXTRN _keyboardque:WORD
+EXTRN resetDS_:PROC
 
 
 .CODE
+
 
 ; ALL THE CHEAT DATA inlined here in CS rather than in DGROUP.
 
@@ -73,7 +77,6 @@ db "iddt", 0FFh
 ;;;;;;;;;;;;; CHEAT SEQUENCES ;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; todo: reverse order. 0 then inlined string! get rid of above structs.
 
 BASE_CHEAT_ADDRESS:
 cheat_powerup0:
@@ -220,6 +223,35 @@ ret
 
 ENDP
 
+
+PROC I_KeyboardISR_  INTERRUPT
+PUBLIC I_KeyboardISR_
+
+
+push   bx
+push   ax
+push   ds
+
+mov    ax, FIXED_DS_SEGMENT         ; todo put this stuff in cs
+mov    ds, ax
+in     al, 060h                     ; read kb
+mov    bl, byte ptr [_kbdhead]
+and    bx, KBDQUESIZE - 1           ; wraparound keyboard queue
+mov    byte ptr [bx + _keyboardque], al
+inc    byte ptr [_kbdhead]
+mov    al, 020h
+out    KBDQUESIZE, al
+
+pop    ds
+pop    ax
+pop    bx
+
+
+iret   
+
+
+
+ENDP
 
 
 
