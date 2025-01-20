@@ -61,9 +61,37 @@ EXTRN _savegameslot:BYTE
 EXTRN _sendsave:BYTE
 EXTRN _sendpause:BYTE
 
-EXTRN _defaults:WORD
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
+
+
+EXTRN _mouseSensitivity
+EXTRN _sfxVolume:BYTE
+EXTRN _musicVolume:BYTE
+EXTRN _showMessages:BYTE
+EXTRN _key_right:BYTE
+EXTRN _key_left:BYTE
+EXTRN _key_up:BYTE
+EXTRN _key_down:BYTE
+EXTRN _key_strafeleft:BYTE
+EXTRN _key_straferight:BYTE
+EXTRN _key_fire:BYTE
+EXTRN _key_use:BYTE
+EXTRN _key_strafe:BYTE
+EXTRN _key_speed:BYTE
+EXTRN _usemouse:BYTE
+EXTRN _mousebfire:BYTE
+EXTRN _mousebstrafe:BYTE
+EXTRN _mousebforward:BYTE
+EXTRN _detailLevel:BYTE
+EXTRN _numChannels:BYTE
+EXTRN _snd_DesiredMusicDevice:BYTE
+EXTRN _snd_DesiredSfxDevice:BYTE
+EXTRN _snd_SBport8bit:BYTE
+EXTRN _snd_SBirq:BYTE
+EXTRN _snd_SBdma:BYTE
+EXTRN _snd_Mport8bit:BYTE
+EXTRN _usegamma:BYTE
 
 
 
@@ -1049,14 +1077,129 @@ ENDP
 
 
 
-SIZEOF_DEFAULT_T = 7
-NUM_DEFAULTS = 28
 _str_config:
 db "-config", 0
 _str_default_file:
 db "\tdefault file: %s\n", 0    ; todo check if escapes have to be done as bytes
 _used_defaultfile:              ; used filename with default value. recorded here after loaddefaults, till savedefaults in case changed.
 db "default.cfg", 0, 0
+
+str_defaultname_00:
+db "mouse_sensitivity", 0
+str_defaultname_01:
+db "sfx_volume", 0
+str_defaultname_02:
+db "music_volume", 0
+str_defaultname_03:
+db "show_messages", 0
+str_defaultname_04:
+db "key_right", 0
+str_defaultname_05:
+db "key_left", 0
+str_defaultname_06:
+db "key_up", 0
+str_defaultname_07:
+db "key_down", 0
+str_defaultname_08:
+db "key_strafeleft", 0
+str_defaultname_09:
+db "key_straferight", 0
+str_defaultname_10:
+db "key_fire", 0
+str_defaultname_11:
+db "key_use", 0
+str_defaultname_12:
+db "key_strafe", 0
+str_defaultname_13:
+db "key_speed", 0
+str_defaultname_14:
+db "use_mouse", 0
+str_defaultname_15:
+db "mouseb_fire", 0
+str_defaultname_16:
+db "mouseb_strafe", 0
+str_defaultname_17:
+db "mouseb_forward", 0
+str_defaultname_18:
+db "screenblocks", 0
+str_defaultname_19:
+db "detaillevel", 0
+str_defaultname_20:
+db "snd_channels", 0
+str_defaultname_21:
+db "snd_musicdevice", 0
+str_defaultname_22:
+db "snd_sfxdevice", 0
+str_defaultname_23:
+db "snd_sbport", 0
+str_defaultname_24:
+db "snd_sbirq", 0
+str_defaultname_25:
+db "snd_sbdma", 0
+str_defaultname_26:
+db "snd_mport", 0
+str_defaultname_27:
+db "usegamma", 0
+
+; 7 bytes per.
+_defaults:
+dw OFFSET str_defaultname_00, OFFSET _mouseSensitivity
+db  5, 0, 0
+dw OFFSET str_defaultname_01, OFFSET _sfxVolume
+db  8, 0, 0
+dw OFFSET str_defaultname_02, OFFSET _musicVolume
+db  8, 0, 0
+dw OFFSET str_defaultname_03, OFFSET _showMessages
+db  1, 0, 0
+dw OFFSET str_defaultname_04, OFFSET _key_right
+db  SC_RIGHTARROW, 1, 0
+dw OFFSET str_defaultname_05, OFFSET _key_left
+db  SC_LEFTARROW, 1, 0
+dw OFFSET str_defaultname_06, OFFSET _key_up
+db  SC_UPARROW, 1, 0
+dw OFFSET str_defaultname_07, OFFSET _key_down
+db  SC_DOWNARROW, 1, 0
+dw OFFSET str_defaultname_08, OFFSET _key_strafeleft
+db  SC_COMMA, 1, 0
+dw OFFSET str_defaultname_09, OFFSET _key_straferight
+db  SC_PERIOD, 1, 0
+dw OFFSET str_defaultname_10, OFFSET _key_fire
+db  SC_RCTRL, 1, 0
+dw OFFSET str_defaultname_11, OFFSET _key_use
+db  SC_SPACE, 1, 0
+dw OFFSET str_defaultname_12, OFFSET _key_strafe
+db  SC_RALT, 1, 0
+dw OFFSET str_defaultname_13, OFFSET _key_speed
+db  SC_RSHIFT, 1, 0
+dw OFFSET str_defaultname_14, OFFSET _usemouse
+db  0, 0, 0
+dw OFFSET str_defaultname_15, OFFSET _mousebfire
+db 0, 0, 0
+dw OFFSET str_defaultname_16, OFFSET _mousebstrafe
+db 1, 0, 0
+dw OFFSET str_defaultname_17, OFFSET _mousebforward
+db 2, 0, 0
+dw OFFSET str_defaultname_18, OFFSET _screenblocks
+db  9, 0, 0
+dw OFFSET str_defaultname_19, OFFSET _detailLevel
+db  0, 0, 0
+dw OFFSET str_defaultname_20, OFFSET _numChannels
+db  3, 0, 0
+dw OFFSET str_defaultname_21, OFFSET _snd_DesiredMusicDevice
+db  0, 0, 0
+dw OFFSET str_defaultname_22, OFFSET _snd_DesiredSfxDevice
+db  0, 0, 0
+dw OFFSET str_defaultname_23, OFFSET _snd_SBport8bit
+db  022h, 0, 0 ; must be shifted one...
+dw OFFSET str_defaultname_24, OFFSET _snd_SBirq
+db  5, 0, 0
+dw OFFSET str_defaultname_25, OFFSET _snd_SBdma
+db  1, 0, 0
+dw OFFSET str_defaultname_26, OFFSET _snd_Mport8bit
+db  033h, 0, 0  ; must be shifted one..
+dw OFFSET str_defaultname_27, OFFSET _usegamma
+db  0, 0, 0    
+
 
 
 
@@ -1077,8 +1220,8 @@ xor   bx, bx
 
 mov   cx, NUM_DEFAULTS
 loop_set_default_values:
-mov   si, word ptr [bx + _defaults + 2]
-mov   al, byte ptr [bx + _defaults + 4]
+mov   si, word ptr cs:[bx + _defaults + 2]
+mov   al, byte ptr cs:[bx + _defaults + 4]
 add   bx, 7               ; 
 mov   byte ptr [si], al
 loop  loop_set_default_values
@@ -1149,14 +1292,14 @@ mov   es, dx
 xor   bx, bx
 
 loop_defaults_to_set_initial_values:
-cmp   byte ptr [bx + _defaults + 5], 0
+cmp   byte ptr cs:[bx + _defaults + 5], 0
 je    no_pointer_load_next_defaults_value
-mov   si, word ptr [bx + _defaults + 2]
+mov   si, word ptr cs:[bx + _defaults + 2]
 mov   al, byte ptr [si]
-mov   byte ptr [bx + _defaults + 6], al
+mov   byte ptr cs:[bx + _defaults + 6], al
 xor   ah, ah
 mov   si, ax
-mov   di, word ptr [bx + _defaults + 2]
+mov   di, word ptr cs:[bx + _defaults + 2]
 mov   al, byte ptr es:[si]
 mov   byte ptr [di], al
 no_pointer_load_next_defaults_value:
@@ -1281,14 +1424,14 @@ call  sscanf_uint8_
 mov   byte ptr [bp + 078h], al
 scan_next_default_name_for_match:
 lea   ax, [bp - 02Ah]
-mov   cx, ds
+mov   cx, cs
 mov   dx, ds
-mov   bx, word ptr [si + _defaults]
+mov   bx, word ptr cs:[si + _defaults]
 
 call  locallib_strcmp_
 test  ax, ax
 jne   no_match_increment_default
-mov   bx, word ptr [si + _defaults + 2]
+mov   bx, word ptr cs:[si + _defaults + 2]
 mov   al, byte ptr [bp + 078h]
 mov   byte ptr [bx], al
 jmp   character_finished_handling
@@ -1311,11 +1454,7 @@ push  cx
 push  dx
 push  si
 push  di
-push  bp
 
-
-mov   bp, sp
-sub   sp, 4
 
 mov   ax, OFFSET _used_defaultfile
 call  CopyString13_
@@ -1330,106 +1469,101 @@ mov   cx, ax
 test  ax, ax
 je    exit_msavedefaults
 xor   bh, bh
-mov   di, 9                     ; tab characters \t
 cld   
-label_3:
-mov   al, bh
-cbw  
-imul  si, ax, SIZEOF_DEFAULT_T
-cmp   byte ptr [si + _defaults + 5], 0
-jne   label_9
-label_5:
-mov   al, bh
-cbw  
-imul  si, ax, SIZEOF_DEFAULT_T
-mov   si, word ptr [si + _defaults + 2]
-mov   al, byte ptr [si]
-xor   bl, bl
-mov   byte ptr [bp - 2], al
-label_2:
-mov   al, bh
-cbw  
-imul  si, ax, SIZEOF_DEFAULT_T
-mov   al, bl
-mov   si, word ptr [si + _defaults]
-cbw  
-add   si, ax
-mov   al, byte ptr [si]
+loop_next_default:
+mov   al, SIZEOF_DEFAULT_T
+mul   bh
+mov   si, ax
+cmp   byte ptr cs:[si + _defaults + 5], 0
+jne   get_untranslated_value
+mov   di, word ptr cs:[si + _defaults + 2]
+mov   al, byte ptr [di]
+got_value_to_write:         ; if we got untranslated value we skip here with value in al.
+
+mov   bl, al             ; store the value.
+mov   si, word ptr cs:[si + _defaults]  ; string ptr
+
+write_next_default_name_character:
+
+lods  byte ptr cs:[si]
 test  al, al
-je    label_4
+je    done_writing_default_name
 cbw  
-mov   dx, cx
+mov   dx, cx    ; get fp
 call  fputc_
-inc   bl
-jmp   label_2
-label_7:
-mov   al, byte ptr [bp - 2]
+jmp   write_next_default_name_character
+
+print_last_digit:
+mov   al, bl
 xor   ah, ah
-mov   dx, cx
+mov   dx, cx    ; get fp
 add   ax, 030h       ;  add '0' char to digit
 call  fputc_
 mov   ax, 0Ah  ; line feed character \n
-mov   dx, cx
-inc   bh
+mov   dx, cx    ; get fp
 call  fputc_
+inc   bh
 cmp   bh, NUM_DEFAULTS
-jl    label_3
+jl    loop_next_default
 mov   ax, cx
 call  fclose_
 exit_msavedefaults:
-LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
 pop   cx
 pop   bx
 ret   
-label_9:
-mov   ax, OFFSET _defaults
-add   ax, si
-add   ax, 6
-mov   word ptr [si + _defaults + 2], ax
-jmp   label_5
-label_4:
-mov   dx, cx
-mov   ax, di
+get_untranslated_value:        ; this is pointing pointer to cs value instead of ds value. BAD
+mov   al, byte ptr cs:[si + _defaults + 6]  ; get the untranslated value
+jmp   got_value_to_write
+done_writing_default_name:
+mov   dx, cx    ; fp
+mov   ax, 9     ; tab char
 call  fputc_
-mov   dx, cx
-mov   ax, di
+mov   dx, cx    ; fp
+mov   ax, 9     ; tab char
 call  fputc_
-mov   al, byte ptr [bp - 2]
-cmp   al, 200
-jb    label_6
-mov   ax, 032h       ;   '2' char
-mov   dx, cx
-sub   byte ptr [bp - 2], 200
-label_1:
-call  fputc_
-label_8:
-mov   al, byte ptr [bp - 2]
-cmp   al, 0Ah  ; line feed character \n
-jb    label_7
+
+mov   si, 0             ; if nonzero then we have printed a 100s digit and thus a zero 10s digit must be printed.
+
+mov   al, bl
+; note: AH gets divide result and AL gets mod!
 xor   ah, ah
-mov   word ptr [bp - 4], 0Ah  ; line feed character \n
+db    0D4h, 00Ah	    ; divide by 10 using AAM
+mov   bl, al            ; bl gets last digit.
+mov   al, ah
+xor   ah, ah
+db    0D4h, 00Ah	    ; divide by 10 using AAM
+;     bl is 1s digit
+;     al is 10s digit
+;     ah is 100s digit
+
+test  ah, ah
+je    handle_tens_number
 mov   si, ax
-cwd   
-idiv  word ptr [bp - 4]
+mov   dx, cx         ; fp
+mov   al, ah
+xor   ah, ah
 add   ax, 030h       ;   '0' char
-mov   dx, cx
 call  fputc_
+
 mov   ax, si
-mov   si, 0Ah   ; line feed character \n
-cwd   
-idiv  si
-mov   byte ptr [bp - 2], dl
-jmp   label_7
-label_6:
-cmp   al, 100
-jb    label_8
-mov   ax, 031h       ;  '1' char
-mov   dx, cx
-sub   byte ptr [bp - 2], 100
-jmp   label_1
+
+handle_tens_number:
+test  si, si
+jne   force_print_tens_digit    ; even if 0
+test  al, al
+je    print_last_digit
+force_print_tens_digit:
+
+xor   ah, ah
+mov   dx, cx         ; fp
+add   ax, 030h       ;   '0' char
+call  fputc_
+
+jmp   print_last_digit
+
 
 endp
 

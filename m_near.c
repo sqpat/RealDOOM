@@ -495,7 +495,6 @@ uint8_t			numChannels;
 uint8_t	usegamma;
 
 
-//default_t	defaults[NUM_DEFAULTS];
  
 skill_t         gameskill; 
 boolean         respawnmonsters;
@@ -585,45 +584,7 @@ int16_t	rndindex = 0;
 int16_t	prndindex = 0;
 uint8_t		usemouse;
 
- 
-default_t	defaults[NUM_DEFAULTS] ={
-    {"mouse_sensitivity",&mouseSensitivity, 5},
-    {"sfx_volume",&sfxVolume, 8},
-    {"music_volume",&musicVolume, 8},
-    {"show_messages",&showMessages, 1},
-    
-    {"key_right",&key_right, SC_RIGHTARROW, 1},
-    {"key_left",&key_left, SC_LEFTARROW, 1},
-    {"key_up",&key_up, SC_UPARROW, 1},
-    {"key_down",&key_down, SC_DOWNARROW, 1},
-    {"key_strafeleft",&key_strafeleft, SC_COMMA, 1},
-    {"key_straferight",&key_straferight, SC_PERIOD, 1},
 
-    {"key_fire",&key_fire, SC_RCTRL, 1},
-    {"key_use",&key_use, SC_SPACE, 1},
-    {"key_strafe",&key_strafe, SC_RALT, 1},
-    {"key_speed",&key_speed, SC_RSHIFT, 1},
-
-    {"use_mouse",&usemouse, 0},
-    {"mouseb_fire",&mousebfire,0},
-    {"mouseb_strafe",&mousebstrafe,1},
-    {"mouseb_forward",&mousebforward,2},
-
-    {"screenblocks",&screenblocks, 9},
-    {"detaillevel",&detailLevel, 0},
-
-    {"snd_channels",&numChannels, 3},
-    {"snd_musicdevice",&snd_DesiredMusicDevice, 0},
-    {"snd_sfxdevice",&snd_DesiredSfxDevice, 0},
-    {"snd_sbport",&snd_SBport8bit, 0x22}, // must be shifted one...
-    {"snd_sbirq",&snd_SBirq, 5},
-    {"snd_sbdma",&snd_SBdma, 1},
-    {"snd_mport",&snd_Mport8bit, 0x33},  // must be shifted one..
-
-    {"usegamma",&usegamma, 0}
-	 
-
-};
 
 
 int8_t*   defdemoname; 

@@ -631,7 +631,6 @@ extern uint8_t	usegamma;
 #define NUMKEYS         256 
 
 
-//default_t	defaults[NUM_DEFAULTS];
  
 
 extern skill_t         gameskill; 
@@ -701,7 +700,6 @@ extern int8_t**		myargv;
 extern int16_t	rndindex;
 extern int16_t	prndindex;
 extern uint8_t		usemouse;
-extern default_t	defaults[28];
 
 
 extern int8_t*   defdemoname; 
