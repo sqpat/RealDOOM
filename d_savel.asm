@@ -282,44 +282,45 @@ mov   word ptr [bp - 4], cx
 
 mov   cx, word ptr [_numsectors]
 
-mov   di, _sectors_physics
-lds   bx, dword ptr [_save_p]
-
-xor   si, si
-
+mov   bx, _sectors_physics      ; in near segment. use SS
+lds   si, dword ptr [_save_p]
+xor   di, di
 
 
 load_next_sector:
-; todo change to si/di not bx/si
-mov   ax, word ptr ds:[bx]
+
+lodsw           
 shl   ax, 3
-mov   word ptr es:[si], ax
+stosw           ; 00 -> 00
 
-mov   ax, word ptr ds:[bx + 2]
+lodsw           
 shl   ax, 3
-add   bx, 2
-mov   word ptr es:[si + 2], ax
+stosw           ; 02 -> 02
 
-mov   al, byte ptr ds:[bx + 2]
-add   bx, 2
-mov   byte ptr es:[si + 4], al
-mov   al, byte ptr ds:[bx + 2]
-add   bx, 2
-mov   byte ptr es:[si + 5], al
-mov   al, byte ptr ds:[bx + 2]
-add   bx, 4
-mov   word ptr es:[si + 8], 0
-mov   byte ptr es:[si + 0Eh], al
-mov   al, byte ptr ds:[bx]
-add   bx, 2
-mov   byte ptr ss:[di + 0Eh], al
-mov   al, byte ptr ds:[bx]
-mov   word ptr ss:[di + 8], 0
-add   bx, 2
-mov   byte ptr ss:[di + 0Eh], al
+lodsw
+stosb           ; 04 -> 04
 
-add   si, SIZEOF_SECTOR_T
-add   di, SIZEOF_SECTOR_PHYSICS_T
+lodsw
+stosb           ; 06 -> 05
+
+xor   ax, ax
+inc   di
+inc   di
+stosb           ; (zero) -> 08
+
+lodsw           
+mov   byte ptr es:[di+5], al        ; 08 -> 0Eh   ; di is 9, 9 + 5 = e..
+
+; write sector_phys stuff
+
+lodsw           
+mov   byte ptr ss:[bx + 0Eh], al
+lodsw
+mov   byte ptr ss:[bx + 0Fh], al
+mov   word ptr ss:[bx + 8], 0
+
+add   di, (SIZEOF_SECTOR_T - 9)
+add   bx, SIZEOF_SECTOR_PHYSICS_T
 
 loop  load_next_sector
 
@@ -327,8 +328,6 @@ done_loading_sectors:
 
 push  ss
 pop   ds
-
-
 
 mov   word ptr [bp - 0Ah], 0
 
@@ -345,9 +344,9 @@ sub   cx, ax
 xor   ch, ch
 mov   es, word ptr [bp - 4]
 and   cl, 7
-mov   si, word ptr [bp - 0Ah]
+mov   di, word ptr [bp - 0Ah]
 xor   cx, ax
-mov   dx, word ptr es:[bx]
+mov   dx, word ptr es:[si]
 sub   cx, ax
 mov   ax, 8
 mov   byte ptr [bp - 2], dl
@@ -359,37 +358,37 @@ and   dh, 1
 mov   es, ax
 mov   al, byte ptr [bp - 2]
 sar   dx, cl
-mov   byte ptr es:[si], al
-mov   ax, si
+mov   byte ptr es:[di], al
+mov   ax, di
 mov   cx, dx
 cwd
 shl   dx, 3
 sbb   ax, dx
 sar   ax, 3
-mov   di, word ptr [bp - 0Eh]
+mov   bx, word ptr [bp - 0Eh]
 mov   word ptr [bp - 8], LINES_SEGMENT
-add   bx, 4
+add   si, 4
 mov   dx, SEENLINES_6800_SEGMENT
-mov   si, ax
+mov   di, ax
 mov   es, dx
-or    byte ptr es:[si], cl
+or    byte ptr es:[di], cl
 mov   es, word ptr [bp - 4]
-mov   si, word ptr [bp - 010h]
-mov   al, byte ptr es:[bx - 2]
+mov   di, word ptr [bp - 010h]
+mov   al, byte ptr es:[si - 2]
 mov   es, word ptr [bp - 0Ch]
-add   bx, 2
-mov   byte ptr es:[si + 0Fh], al
+add   si, 2
+mov   byte ptr es:[di + 0Fh], al
 mov   es, word ptr [bp - 4]
-mov   word ptr [bp - 6], di
-mov   al, byte ptr es:[bx - 2]
+mov   word ptr [bp - 6], bx
+mov   al, byte ptr es:[si - 2]
 mov   es, word ptr [bp - 0Ch]
 mov   cx, SIDES_RENDER_9000_SEGMENT
-mov   byte ptr es:[si + 0Eh], al
+mov   byte ptr es:[di + 0Eh], al
 xor   ax, ax
 label_7:
 mov   es, word ptr [bp - 8]
-mov   si, word ptr [bp - 6]
-cmp   word ptr es:[si], -1
+mov   di, word ptr [bp - 6]
+cmp   word ptr es:[di], -1
 jne   label_8
 label_5:
 inc   ax
@@ -405,47 +404,48 @@ jge   done_loading_lines
 jmp   load_next_line
 done_loading_lines:
 
-mov   word ptr [_save_p], bx
+mov   word ptr [_save_p], si
 
-LEAVE
+LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
 pop   cx
 pop   bx
 retf  
+
 label_8:
 mov   word ptr [bp - 012h], SIDES_SEGMENT
-mov   di, word ptr [bp - 6]
-mov   si, word ptr es:[si]
+mov   bx, word ptr [bp - 6]
 mov   di, word ptr es:[di]
+mov   bx, word ptr es:[bx]
 mov   es, word ptr [bp - 4]
-shl   si, 3
-mov   dx, word ptr es:[bx]
+shl   di, 3
+mov   dx, word ptr es:[si]
 mov   es, word ptr [bp - 012h]
-add   bx, 2
-mov   word ptr es:[si + 6], dx
+add   si, 2
+mov   word ptr es:[di + 6], dx
 mov   es, word ptr [bp - 4]
-shl   di, 2
-mov   dx, word ptr es:[bx]
+shl   bx, 2
+mov   dx, word ptr es:[si]
 mov   es, cx
-add   bx, 2
+add   si, 2
+mov   word ptr es:[bx], dx
+mov   es, word ptr [bp - 4]
+mov   dx, word ptr es:[si]
+mov   es, word ptr [bp - 012h]
+add   si, 2
 mov   word ptr es:[di], dx
 mov   es, word ptr [bp - 4]
-mov   dx, word ptr es:[bx]
+mov   dx, word ptr es:[si]
 mov   es, word ptr [bp - 012h]
-add   bx, 2
-mov   word ptr es:[si], dx
+add   si, 2
+mov   word ptr es:[di + 2], dx
 mov   es, word ptr [bp - 4]
-mov   dx, word ptr es:[bx]
+mov   dx, word ptr es:[si]
 mov   es, word ptr [bp - 012h]
-add   bx, 2
-mov   word ptr es:[si + 2], dx
-mov   es, word ptr [bp - 4]
-mov   dx, word ptr es:[bx]
-mov   es, word ptr [bp - 012h]
-add   bx, 2
-mov   word ptr es:[si + 4], dx
+add   si, 2
+mov   word ptr es:[di + 4], dx
 jmp   label_5
 
 
