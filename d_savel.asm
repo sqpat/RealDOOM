@@ -92,22 +92,20 @@ PUBLIC P_UnArchivePlayers_
 
 push  bx
 push  cx
-push  dx
 push  si
 push  di
 
 mov   ax, word ptr [_save_p]
 
 ;	PADSAVEP();
-; todo probably improvable
-mov   dx, 4
 and   ax, 3
-sub   dx, ax
-mov   ax, dx
-and   ax, 3
-add   word ptr [_save_p], ax
-les   cx, dword ptr [_save_p]
-mov   bx, cx
+jz    dont_pad
+mov   cx, 4
+sub   cx, ax
+add   word ptr [_save_p], cx
+dont_pad:
+les   bx, dword ptr [_save_p]
+
 mov   al, byte ptr es:[bx + 4]
 mov   byte ptr [_player + 01Dh], al
 
@@ -119,19 +117,9 @@ pop   ds
 lea   si, [bx + 8]
 mov   di, OFFSET _player
 
-movsw           ; 008h -> 000h
-movsw           ; 00Ah -> 002h
-movsw           ; 00Ch -> 004h
-movsw           ; 00Eh -> 006h 
-movsw           ; 010h -> 008h
-movsw           ; 012h -> 00Ah
-movsw           ; 014h -> 00Ch
-movsw           ; 016h -> 00Eh
-movsw           ; 018h -> 010h
-movsw           ; 01Ah -> 012h
-movsw           ; 01Ch -> 014h
-movsw           ; 01Eh -> 016h
-movsw           ; 020h -> 018h
+mov   cx, 13
+rep   movsw
+mov   cx, bx
 inc   si
 inc   si
 movsw           ; 024h -> 01Ah
@@ -146,7 +134,7 @@ pop   ds
 
 
 
-mov   al, byte ptr es:[bx + 05ch]
+mov   al, byte ptr es:[bx + 05Ch]
 mov   byte ptr [_player + 022h], al
 
 mov   al, byte ptr es:[bx + 070h]
@@ -192,6 +180,7 @@ cmp   bx, NUMPOWERS * 2  ; sizeof dw
 jne   load_next_power
 mov   si, cx
 xor   bx, bx
+
 load_next_key:
 inc   bx
 mov   al, byte ptr es:[si + 044h]
@@ -201,10 +190,12 @@ cmp   bx, NUMCARDS
 jl    load_next_key
 mov   si, cx
 xor   bx, bx
+
 load_next_ammo:
 mov   ax, word ptr es:[si + 09ch]
 mov   word ptr [bx + _player + 03Ch], ax
-add   bx, 2
+inc   bx
+inc   bx
 mov   ax, word ptr es:[si + 0ach]
 add   si, 4
 mov   word ptr [bx + _player + 042h], ax
@@ -212,6 +203,7 @@ cmp   bx, NUMAMMO * 2
 jne   load_next_ammo
 mov   si, cx
 xor   bx, bx
+
 load_next_weapon:
 inc   bx
 mov   al, byte ptr es:[si + 078h]
@@ -249,7 +241,6 @@ mov   word ptr [_player + 05Ch], ax
 
 pop   di
 pop   si
-pop   dx
 pop   cx
 pop   bx
 retf  
@@ -260,6 +251,8 @@ jmp   done_with_psprite
 
 
 ENDP
+
+
 
 
 END
