@@ -272,13 +272,10 @@ push  cx
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 012h
 
 mov   cx, SECTORS_SEGMENT
 mov   es, cx
-mov   word ptr [bp - 4], cx
+
 
 mov   cx, word ptr [_numsectors]
 
@@ -290,11 +287,15 @@ xor   di, di
 load_next_sector:
 
 lodsw           
-shl   ax, 3
+shl   ax, 1
+shl   ax, 1
+shl   ax, 1
 stosw           ; 00 -> 00
 
 lodsw           
-shl   ax, 3
+shl   ax, 1
+shl   ax, 1
+shl   ax, 1
 stosw           ; 02 -> 02
 
 lodsw
@@ -326,87 +327,111 @@ loop  load_next_sector
 
 done_loading_sectors:
 
-push  ss
-pop   ds
 
-mov   word ptr [bp - 0Ah], 0
+; loop counter
+xor   dx, dx
+
 
 do_load_lines:
-mov   word ptr [bp - 010h], 0
-mov   word ptr [bp - 0Ch], LINES_PHYSICS_SEGMENT
-mov   word ptr [bp - 0Eh], 0
+
+xor   di, di
 load_next_line:
-mov   ax, word ptr [bp - 0Ah]
-mov   cx, word ptr [bp - 0Ah]
-sar   ax, 0Fh
-xor   cx, ax
-sub   cx, ax
-xor   ch, ch
-mov   es, word ptr [bp - 4]
-and   cl, 7
-mov   di, word ptr [bp - 0Ah]
-xor   cx, ax
-mov   dx, word ptr es:[si]
-sub   cx, ax
-mov   ax, 8
-mov   byte ptr [bp - 2], dl
-sub   ax, cx
-xor   dl, dl
-mov   cx, ax
 mov   ax, LINEFLAGSLIST_SEGMENT
-and   dh, 1
 mov   es, ax
-mov   al, byte ptr [bp - 2]
-sar   dx, cl
-mov   byte ptr es:[di], al
-mov   ax, di
-mov   cx, dx
-cwd
-shl   dx, 3
-sbb   ax, dx
-sar   ax, 3
-mov   bx, word ptr [bp - 0Eh]
-mov   word ptr [bp - 8], LINES_SEGMENT
-add   si, 4
-mov   dx, SEENLINES_6800_SEGMENT
-mov   di, ax
-mov   es, dx
-or    byte ptr es:[di], cl
-mov   es, word ptr [bp - 4]
-mov   di, word ptr [bp - 010h]
-mov   al, byte ptr es:[si - 2]
-mov   es, word ptr [bp - 0Ch]
-add   si, 2
+
+mov   bx, dx  ; get counter
+mov   ch, dl
+mov   cl, 8
+and   ch, 7
+sub   cl, ch    ; cl has (8-(i % 8));
+
+lodsw          
+mov   byte ptr es:[bx], al          ; copy 8 flags...
+
+and   ax, 0100h
+sar   ax, cl    ; dl has the flag.
+
+
+mov   cx, SEENLINES_6800_SEGMENT
+mov   es, cx
+sar   bx, 1
+sar   bx, 1
+sar   bx, 1
+or    byte ptr es:[bx], al
+
+
+
+; copy li_phys felds
+mov   ax, LINES_PHYSICS_SEGMENT
+mov   es, ax
+lodsw
 mov   byte ptr es:[di + 0Fh], al
-mov   es, word ptr [bp - 4]
-mov   word ptr [bp - 6], bx
-mov   al, byte ptr es:[si - 2]
-mov   es, word ptr [bp - 0Ch]
-mov   cx, SIDES_RENDER_9000_SEGMENT
+lodsw
 mov   byte ptr es:[di + 0Eh], al
-xor   ax, ax
-label_7:
-mov   es, word ptr [bp - 8]
-mov   di, word ptr [bp - 6]
-cmp   word ptr es:[di], -1
-jne   label_8
-label_5:
-inc   ax
-add   word ptr [bp - 6], 2
-cmp   ax, 2
-jl    label_7
-inc   word ptr [bp - 0Ah]
-add   word ptr [bp - 010h], SIZEOF_LINE_PHYSICS_T
-mov   ax, word ptr [bp - 0Ah]
-add   word ptr [bp - 0Eh], SIZEOF_LINE_T
-cmp   ax, word ptr [_numlines]
+
+
+; time to do sides...
+
+xor   cx, cx  ; line count
+load_next_side:
+mov   bx, di
+sar   bx, 1
+sar   bx, 1   ; LINES offset
+
+mov   ax, LINES_SEGMENT
+mov   es, ax
+
+add   bx, cx                ; add side offset.
+mov   bx, word ptr es:[bx] 
+
+cmp   bx, 0FFFFh
+je    skip_side
+
+mov   ax, SIDES_RENDER_9000_SEGMENT
+mov   es, ax
+sal   bx, 1
+sal   bx, 1  ; 4 bytes per.
+
+push  dx
+lodsw 
+xchg   ax, dx    ; hold onto this
+lodsw
+mov   word ptr es:[bx]  , ax    ; rowoffset
+
+mov   ax, SIDES_SEGMENT
+mov   es, ax
+sal   bx, 1    ; 8 bytes each, not 4
+
+lodsw 
+mov   word ptr es:[bx+0], ax    ; top
+lodsw 
+mov   word ptr es:[bx+2], ax    ; mid
+lodsw 
+mov   word ptr es:[bx+4], ax    ; bot
+mov   word ptr es:[bx+6], dx    ; textureoffset
+pop   dx
+
+skip_side:
+add   cx, 2
+cmp   cx, 4
+jnge  load_next_side
+
+
+finish_line_iteration:
+inc   dx
+add   di, SIZEOF_LINE_PHYSICS_T
+cmp   dx, word ptr ss:[_numlines]
 jge   done_loading_lines
 jmp   load_next_line
 done_loading_lines:
 
+
+
+push  ss
+pop   ds
+
 mov   word ptr [_save_p], si
 
-LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
@@ -414,39 +439,6 @@ pop   cx
 pop   bx
 retf  
 
-label_8:
-mov   word ptr [bp - 012h], SIDES_SEGMENT
-mov   bx, word ptr [bp - 6]
-mov   di, word ptr es:[di]
-mov   bx, word ptr es:[bx]
-mov   es, word ptr [bp - 4]
-shl   di, 3
-mov   dx, word ptr es:[si]
-mov   es, word ptr [bp - 012h]
-add   si, 2
-mov   word ptr es:[di + 6], dx
-mov   es, word ptr [bp - 4]
-shl   bx, 2
-mov   dx, word ptr es:[si]
-mov   es, cx
-add   si, 2
-mov   word ptr es:[bx], dx
-mov   es, word ptr [bp - 4]
-mov   dx, word ptr es:[si]
-mov   es, word ptr [bp - 012h]
-add   si, 2
-mov   word ptr es:[di], dx
-mov   es, word ptr [bp - 4]
-mov   dx, word ptr es:[si]
-mov   es, word ptr [bp - 012h]
-add   si, 2
-mov   word ptr es:[di + 2], dx
-mov   es, word ptr [bp - 4]
-mov   dx, word ptr es:[si]
-mov   es, word ptr [bp - 012h]
-add   si, 2
-mov   word ptr es:[di + 4], dx
-jmp   label_5
 
 
 ENDP

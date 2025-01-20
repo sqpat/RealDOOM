@@ -763,7 +763,6 @@ void __near G_DoLoadGame (void)  {
 	Z_QuickMapRender_4000To9000_9000Only();
     P_UnArchiveWorld (); 
     // 5000 014c
-
     // 5000 05F2
     // 5000 2A64
     //dolog(save_p-savebuffer);
