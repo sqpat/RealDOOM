@@ -1056,7 +1056,7 @@ NUM_DEFAULTS = 28
 _str_config:
 db "-config", 0
 _str_default_file:
-db "\tdefault file: %s\n", 0
+db "\tdefault file: %s\n", 0    ; todo check if escapes have to be done as bytes
 _str_default_filename:
 db "default.cfg", 0
 
@@ -1122,27 +1122,27 @@ mov   ax, word ptr [_defaultfile]
 call  fopen_
 
 mov   bx, ax
-mov   word ptr [bp + 076h], ax
+mov   word ptr [bp + 076h], ax          ; store fopen fp file handle
 test  ax, ax
 jne   defaults_file_loaded
 ; bad file
 defaults_file_closed:
 mov   dx, SCANTOKEY_SEGMENT
+mov   es, dx
 xor   bx, bx
 
 loop_defaults_to_set_initial_values:
 cmp   byte ptr [bx + _defaults + 5], 0
-je    load_next_defaults_value
+je    no_pointer_load_next_defaults_value
 mov   si, word ptr [bx + _defaults + 2]
 mov   al, byte ptr [si]
 mov   byte ptr [bx + _defaults + 6], al
 xor   ah, ah
-mov   es, dx
 mov   si, ax
 mov   di, word ptr [bx + _defaults + 2]
 mov   al, byte ptr es:[si]
 mov   byte ptr [di], al
-load_next_defaults_value:
+no_pointer_load_next_defaults_value:
 add   bx, SIZEOF_DEFAULT_T
 cmp   bx, NUM_DEFAULTS * SIZEOF_DEFAULT_T
 jne   loop_defaults_to_set_initial_values
@@ -1163,8 +1163,9 @@ call  CopyString13_
 
 mov   word ptr [_defaultfile], ax
 jmp   got_defaults_filename
-defaults_file_loaded:
 
+
+defaults_file_loaded:
 
 ; bx is file pointer..
 xor   al, al
