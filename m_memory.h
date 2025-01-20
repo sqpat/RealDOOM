@@ -556,6 +556,15 @@ FREEBYTES           7EE0:0000
 #define seenlines_6800             ((uint8_t __far*)           MAKE_FULL_SEGMENT(mobjposlist_6800           , size_mobjposlist))
 #define empty_render_6800          ((byte __far*)              MAKE_FULL_SEGMENT(seenlines_6800             , size_seenlines))
 
+#define colormaps_6800_segment               ((segment_t) ((int32_t)colormaps_6800 >> 16))
+#define colfunc_jump_lookup_6800_segment     ((segment_t) ((int32_t)colfunc_jump_lookup_6800 >> 16))
+#define dc_yl_lookup_6800_segment            ((segment_t) ((int32_t)dc_yl_lookup_6800 >> 16))
+#define colfunc_function_area_6800_segment   ((segment_t) ((int32_t)colfunc_function_area_6800 >> 16))
+#define mobjposlist_6800_segment             ((segment_t) ((int32_t)mobjposlist_6800 >> 16))
+#define seenlines_6800_segment               ((segment_t) ((int32_t)seenlines_6800 >> 16))
+#define empty_render_6800_segment       ((segment_t) ((int32_t)empty_render_6800 >> 16))
+
+
 
 // seenlines_segment:  6FE8:0000
 // empty:              6FF6:0000
@@ -1412,6 +1421,10 @@ spritedefs_bytes    7410:0000
 #define segs_render_9000      ((seg_render_t __far*)       (0x90000000 + 0))
 #define seg_normalangles_9000 ((fineangle_t  __far*)       MAKE_FULL_SEGMENT(segs_render_9000             , size_segs_render))
 #define sides_render_9000     ((side_render_t __far*)      MAKE_FULL_SEGMENT(seg_normalangles_9000        , size_seg_normalangles))
+
+#define segs_render_9000_segment      ((segment_t) ((int32_t)segs_render_9000 >> 16))
+#define seg_normalangles_9000_segment ((segment_t) ((int32_t)seg_normalangles_9000 >> 16))
+#define sides_render_9000_segment     ((segment_t) ((int32_t)sides_render_9000 >> 16))
 
 
 /*

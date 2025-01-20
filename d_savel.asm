@@ -110,8 +110,7 @@ les   cx, dword ptr [_save_p]
 mov   bx, cx
 mov   al, byte ptr es:[bx + 4]
 mov   byte ptr [_player + 01Dh], al
-push  ds  ; store ds
-push  es  ; store es
+
 
 push  es  ; swap ds/es
 push  ds
@@ -119,73 +118,74 @@ pop   es
 pop   ds
 lea   si, [bx + 8]
 mov   di, OFFSET _player
-movsw 
-movsw 
-movsw 
-movsw 
 
-pop   es  ; retrieve es
-pop   ds  ; retrieve ds 
+movsw           ; 008h -> 000h
+movsw           ; 00Ah -> 002h
+movsw           ; 00Ch -> 004h
+movsw           ; 00Eh -> 006h 
+movsw           ; 010h -> 008h
+movsw           ; 012h -> 00Ah
+movsw           ; 014h -> 00Ch
+movsw           ; 016h -> 00Eh
+movsw           ; 018h -> 010h
+movsw           ; 01Ah -> 012h
+movsw           ; 01Ch -> 014h
+movsw           ; 01Eh -> 016h
+movsw           ; 020h -> 018h
+inc   si
+inc   si
+movsw           ; 024h -> 01Ah
+inc   si
+inc   si
+movsw           ; 028h -> 01Ch
 
-mov   ax, word ptr es:[bx + 010h]
-mov   word ptr [_player + 8], ax
-mov   ax, word ptr es:[bx + 014h]
-mov   word ptr [_player + 0Ch], ax
-mov   ax, word ptr es:[bx + 018h]
-mov   word ptr [_player + 010h], ax
-mov   ax, word ptr es:[bx + 01ch]
-mov   word ptr [_player + 014h], ax
-mov   ax, word ptr es:[bx + 020h]
-mov   word ptr [_player + 018h], ax
-mov   ax, word ptr es:[bx + 024h]
-mov   word ptr [_player + 01Ah], ax
-mov   al, byte ptr es:[bx + 028h]
-mov   byte ptr [_player + 01Ch], al
+push  es  ; swap ds/es
+push  ds
+pop   es
+pop   ds
+
+
+
 mov   al, byte ptr es:[bx + 05ch]
 mov   byte ptr [_player + 022h], al
+
 mov   al, byte ptr es:[bx + 070h]
-mov   byte ptr [_player + 030h], al
-mov   al, byte ptr es:[bx + 074h]
-mov   byte ptr [_player + 031h], al
-mov   al, byte ptr es:[bx + 0bch]
-mov   byte ptr [_player + 04Ch], al
-mov   al, byte ptr es:[bx + 0c0h]
-mov   byte ptr [_player + 04Dh], al
-mov   al, byte ptr es:[bx + 0c4h]
+mov   ah, byte ptr es:[bx + 074h]
+mov   word ptr [_player + 030h], ax
+
+mov   al, byte ptr es:[bx + 0BCh]
+mov   ah, byte ptr es:[bx + 0C0h]
+mov   word ptr [_player + 04Ch], ax
+
+mov   al, byte ptr es:[bx + 0C4h]
 mov   byte ptr [_player + 03Bh], al
-mov   al, byte ptr es:[bx + 0c8h]
+mov   al, byte ptr es:[bx + 0C8h]
 mov   byte ptr [_player + 05Dh], al
-mov   ax, word ptr es:[bx + 0cch]
-mov   si, cx
+
+mov   ax, word ptr es:[bx + 0CCh]
 mov   word ptr [_player + 043h], ax
-mov   ax, word ptr es:[bx + 0d0h]
-mov   dx, word ptr es:[bx + 012h]
+mov   ax, word ptr es:[bx + 0D0h]
 mov   word ptr [_player + 050h], ax
-mov   ax, word ptr es:[bx + 0d4h]
-mov   word ptr [_player + 0Ah], dx
+mov   ax, word ptr es:[bx + 0D4h]
 mov   word ptr [_player + 052h], ax
-mov   ax, word ptr es:[bx + 0dch]
-mov   dx, word ptr es:[bx + 016h]
+mov   ax, word ptr es:[bx + 0DCh]
 mov   word ptr [_player + 058h], ax
-mov   al, byte ptr es:[bx + 0e0h]
-mov   word ptr [_player + 0Eh], dx
+mov   al, byte ptr es:[bx + 0E0h]
 mov   byte ptr [_player + 05Ah], al
-mov   al, byte ptr es:[bx + 0e8h]
-mov   dx, word ptr es:[bx + 01ah]
-mov   byte ptr [_player + 05Eh], al
-mov   al, byte ptr es:[bx + 0ech]
-mov   word ptr [_player + 012h], dx
-mov   byte ptr [_player + 05Fh], al
-mov   al, byte ptr es:[bx + 0f0h]
-mov   dx, word ptr es:[bx + 01eh]
-mov   byte ptr [_player + 060h], al
-mov   al, byte ptr es:[bx + 0114h]
-mov   word ptr [_player + 016h], dx
-mov   byte ptr [_player + 061h], al
-xor   bx, cx
+
+mov   al, byte ptr es:[bx + 0E8h]
+mov   ah, byte ptr es:[bx + 0ECh]
+mov   word ptr [_player + 05Eh], ax
+
+mov   al, byte ptr es:[bx + 0F0h]
+mov   ah, byte ptr es:[bx + 0114h]
+mov   word ptr [_player + 060h], ax
+
+mov   si, cx
+xor   bx, bx
 load_next_power:
 add   bx, 2
-mov   ax, word ptr es:[si + 02ch]
+mov   ax, word ptr es:[si + 02Ch]
 add   si, 4
 mov   word ptr [bx + _player + 01Ch], ax
 cmp   bx, NUMPOWERS * 2  ; sizeof dw
@@ -230,14 +230,14 @@ done_with_psprite:
 mov   ax, word ptr es:[si + 0F8h]
 mov   word ptr [bx + _psprites + 2], ax
 mov   ax, word ptr es:[si + 0FCh]
-mov   dx, word ptr es:[si + 0FEh]
 mov   word ptr [bx + _psprites + 4], ax
-mov   word ptr [bx + _psprites + 6], dx
+mov   ax, word ptr es:[si + 0FEh]
+mov   word ptr [bx + _psprites + 6], ax
 mov   ax, word ptr es:[si + 0100h]
-mov   dx, word ptr es:[si + 0102h]
 mov   word ptr [bx + _psprites + 8], ax
+mov   ax, word ptr es:[si + 0102h]
+mov   word ptr [bx + _psprites + 0Ah], ax
 add   si, SIZEOF_PSPDEF_VANILLA_T
-mov   word ptr [bx + _psprites + 0Ah], dx
 add   bx, SIZEOF_PSPDEF_T
 cmp   bx, SIZEOF_PSPDEF_T * NUMPSPRITES
 jne   load_next_sprite

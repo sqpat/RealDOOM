@@ -486,6 +486,7 @@ void __far P_ArchiveWorld (void) {
 //
 // P_UnArchiveWorld
 //
+/**/
 void __far P_UnArchiveWorld (void) {
 	
     int16_t			i;

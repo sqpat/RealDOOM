@@ -4,7 +4,7 @@
 #include "sounds.h"
 #include "g_game.h"
 
-#define CONSTANTS_COUNT 1865
+#define CONSTANTS_COUNT 1875
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -15,6 +15,20 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "LINES_SEGMENT",
     "LINEFLAGSLIST_SEGMENT",
     "SEENLINES_SEGMENT",
+
+	"COLORMAPS_6800_SEGMENT",
+	"COLFUNC_JUMP_LOOKUP_6800_SEGMENT",
+	"DC_YL_LOOKUP_6800_SEGMENT",
+	"COLFUNC_FUNCTION_AREA_6800_SEGMENT",
+	"MOBJPOSLIST_6800_SEGMENT",
+	"SEENLINES_6800_SEGMENT",
+	"EMPTY_RENDER_6800_SEGMENT",
+
+	"SEGS_RENDER_9000_SEGMENT",
+	"SEG_NORMALANGLES_9000_SEGMENT",
+	"SIDES_RENDER_9000_SEGMENT",
+
+
     "SUBSECTORS_SEGMENT",
     "SUBSECTOR_LINES_SEGMENT",
     "NODES_SEGMENT",
@@ -1924,6 +1938,20 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     lines_segment, 
     lineflagslist_segment ,
     seenlines_segment, 
+
+	colormaps_6800_segment,
+	colfunc_jump_lookup_6800_segment,
+	dc_yl_lookup_6800_segment,
+	colfunc_function_area_6800_segment,
+	mobjposlist_6800_segment,
+	seenlines_6800_segment,
+	empty_render_6800_segment,
+
+	segs_render_9000_segment,
+	seg_normalangles_9000_segment,
+	sides_render_9000_segment,
+
+
     subsectors_segment, 
     subsector_lines_segment, 
     nodes_segment, 
