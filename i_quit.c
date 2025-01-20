@@ -187,6 +187,34 @@ void __near I_Shutdown(void) {
 
 
 
+
+
+//
+// M_CheckParm
+// Checks for the given parameter
+// in the program's command line arguments.
+// Returns the argument number (1 to argc-1)
+// or 0 if not present
+
+
+int16_t __far M_CheckParm (int8_t *check) {
+    int16_t		i;
+	// ASSUMES *check is LOWERCASE. dont pass in uppercase!
+	// myargv must be tolower()
+	// trying to avoid strcasecmp dependency.
+    for (i = 1;i<myargc;i++) {
+		// technically this runs over and over for myargv, 
+		// but its during initialization so who cares speed-wise. 
+		// code is smaller to stick it here rather than make a loop elsewhere (i think)
+		locallib_strlwr(myargv[i]);
+		if ( !locallib_strcmp(check, myargv[i]) )
+			return i;
+		}
+
+    return 0;
+}
+
+
 //
 // M_SaveDefaults
 //
@@ -231,6 +259,113 @@ void __near M_SaveDefaults (void) {
 	
     fclose (f);
 }
+
+
+//
+// M_LoadDefaults
+//
+
+/*
+void __far M_LoadDefaults(void) {
+	int16_t		i;
+	FILE*	f;
+	int8_t	strparm[80];
+	int8_t	def[80];
+	uint8_t		parm;
+
+	// set everything to base values
+	for (i = 0; i < NUM_DEFAULTS; i++){
+		*defaults[i].location = defaults[i].defaultvalue;
+	}
+
+	// check for a custom default file
+	i = M_CheckParm("-config");
+	if (i && i < myargc - 1) {
+		defaultfile = myargv[i + 1];
+		DEBUG_PRINT("	default file: %s\n", defaultfile);
+	} else {
+		defaultfile = "default.cfg";
+	}
+	// read the file in, overriding any set defaults
+	f = fopen(defaultfile, "r");
+	if (f) {
+		int8_t readphase = 0; // getting param 0
+		int8_t defindex = 0;
+		int8_t strparmindex = 0;
+		while (!feof(f)) {
+			// fscanf  replacement
+			// removed fscanf which includes like 4 KB of c library cruft.
+
+			char c = fgetc(f);
+			boolean iswhitespace = c == ' ' || c == '\t';
+			boolean isnewline = c == '\n' || c == '\r';
+			
+			// readphase 0 = read param name
+			// readphase 1 = read param value
+
+			if (readphase == 0){
+				if (!iswhitespace && ! isnewline){
+					def[defindex] = c;
+					defindex++;
+				} else if (iswhitespace){
+					def[defindex] = '\0';
+					readphase = 1;
+				} else { // isnewline
+					// no value found.
+					readphase = 0;
+					defindex = 0;
+					strparmindex = 0;
+				}
+			} else if (readphase == 1){
+				if (iswhitespace){
+					continue;
+				} else if (!isnewline){
+					strparm[strparmindex] = c;
+					strparmindex++;
+				} else { // isnewline
+					// done reading value!
+					strparm[strparmindex] = '\0';
+						readphase = 0;
+						defindex = 0;
+					if (strparmindex == 0){
+						// no value found.
+						strparmindex = 0;
+						continue;
+					}
+					strparmindex = 0;
+					parm = 0;
+					//printf("\nDefault found: %s : %s", def, strparm);
+
+
+					// sscanf replacement. get uint8_t value of strparm
+					parm = sscanf_uint8(strparm);
+
+
+					for (i = 0; i < NUM_DEFAULTS; i++) {
+						if (!locallib_strcmp(def, defaults[i].name)) {
+							*(defaults[i].location) = parm;
+							break;
+						}
+					}
+				}
+			}
+
+
+
+		}
+		
+
+		fclose(f);
+	}
+	for (i = 0; i < NUM_DEFAULTS; i++) {
+		if (defaults[i].scantranslate) {
+			parm = *defaults[i].location;
+			defaults[i].untranslated = parm;
+			*defaults[i].location = scantokey[parm];
+		}
+	}
+}
+*/
 
 
 

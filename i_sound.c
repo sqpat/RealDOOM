@@ -260,7 +260,7 @@ void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch
 // Sound startup stuff
 //
 
-int16_t __near M_CheckParm (int8_t *check);
+int16_t __far M_CheckParm (int8_t *check);
 
 void I_sndArbitrateCards(void) {
 

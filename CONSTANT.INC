@@ -1816,6 +1816,8 @@ BTS_SAVEMASK = 01Ch
 BTS_SAVESHIFT = 02h
 NUMWEAPONS = 09h
 BACKUPTICS = 010h
+SIZEOF_DEFAULT_T = 07h
+NUM_DEFAULTS = 01Ch
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h

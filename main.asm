@@ -20,10 +20,18 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN _mousepresent:BYTE
 EXTRN resetDS_:PROC
 EXTRN I_ReadMouse_:PROC
 EXTRN D_PostEvent_:PROC
+EXTRN M_CheckParm_:PROC
+EXTRN fopen_:PROC
+EXTRN fgetc_:PROC
+EXTRN fclose_:PROC
+EXTRN DEBUG_PRINT_:PROC
+EXTRN locallib_strcmp_:PROC
+EXTRN sscanf_uint8_:PROC
+
+EXTRN _mousepresent:BYTE
 EXTRN _key_strafe:BYTE
 EXTRN _key_straferight:BYTE
 EXTRN _key_strafeleft:BYTE
@@ -52,9 +60,10 @@ EXTRN _savegameslot:BYTE
 EXTRN _sendsave:BYTE
 EXTRN _sendpause:BYTE
 
-EXTRN _sendsave:BYTE
-EXTRN _sendsave:BYTE
-EXTRN _sendsave:BYTE
+EXTRN _defaults:WORD
+EXTRN _defaultfile:BYTE
+EXTRN _myargc:WORD
+EXTRN _myargv:BYTE
 
 
 
@@ -978,6 +987,307 @@ jae       done_checking_sidemove
 clip_sidemove_to_negative_max:
 mov       cx, ax
 jmp       done_checking_sidemove
+
+ENDP
+
+
+; copy string from cs:bx to ds:_filename_argument
+; return _filename_argument in ax
+; todo make use cs:si or something?
+
+PROC CopyString13_ NEAR
+PUBLIC CopyString13_
+
+push  si
+push  di
+push  cx
+
+mov   di, OFFSET _filename_argument
+
+push  ds
+pop   es    ; es = ds
+
+push  cs
+pop   ds    ; ds = cs
+
+mov   si, ax
+
+mov   ax, 0
+stosw       ; zero out
+stosw
+stosw
+stosw
+stosw
+stosw
+stosb
+
+mov  cx, 13
+sub  di, cx
+
+do_next_char:
+lodsb
+stosb
+test  al, al
+je    done_writing
+loop do_next_char
+
+
+done_writing:
+
+mov   ax, OFFSET _filename_argument   ; ax now points to the near string
+
+push  ss
+pop   ds    ; restore ds
+
+pop   cx
+pop   di
+pop   si
+
+ret
+
+ENDP
+
+
+
+
+SIZEOF_DEFAULT_T = 7
+NUM_DEFAULTS = 28
+
+_str_config:
+db "-config", 0
+_str_default_file:
+db "\tdefault file: %s\n", 0
+_str_default_filename:
+db "default.cfg", 0
+
+
+PROC M_LoadDefaults_  FAR
+PUBLIC M_LoadDefaults_
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 0AAh
+sub   bp, 080h
+xor   bx, bx
+
+
+loop_set_default_values:
+mov   si, word ptr [bx + _defaults + 2]
+mov   al, byte ptr [bx + _defaults + 4]
+add   bx, 7               ; 
+mov   byte ptr [si], al
+cmp   bx, NUM_DEFAULTS * SIZEOF_DEFAULT_T  ; c4, can be single byte check
+jne   loop_set_default_values
+
+
+mov   ax, OFFSET _str_config
+call  CopyString13_
+
+
+call  M_CheckParm_
+
+
+
+test  ax, ax
+je    set_default_defaultsfilename
+mov   dx, word ptr [_myargc]
+dec   dx
+cmp   ax, dx
+jge   set_default_defaultsfilename
+mov   bx, word ptr [_myargv]
+add   ax, ax
+add   bx, ax
+mov   ax, word ptr [bx + 2]   ; pointer to myargv for default filename
+push  ax
+mov   word ptr [_defaultfile], ax  ; store filename ptr
+
+mov   ax, OFFSET _str_default_file
+call  CopyString13_
+push  ax
+
+call  DEBUG_PRINT_
+add   sp, 4
+
+got_defaults_filename:
+
+
+
+mov   dx, OFFSET _fopen_r_argument
+mov   ax, word ptr [_defaultfile]
+call  fopen_
+
+mov   bx, ax
+mov   word ptr [bp + 076h], ax
+test  ax, ax
+jne   defaults_file_loaded
+; bad file
+defaults_file_closed:
+mov   dx, SCANTOKEY_SEGMENT
+xor   bx, bx
+
+loop_defaults_to_set_initial_values:
+cmp   byte ptr [bx + _defaults + 5], 0
+je    load_next_defaults_value
+mov   si, word ptr [bx + _defaults + 2]
+mov   al, byte ptr [si]
+mov   byte ptr [bx + _defaults + 6], al
+xor   ah, ah
+mov   es, dx
+mov   si, ax
+mov   di, word ptr [bx + _defaults + 2]
+mov   al, byte ptr es:[si]
+mov   byte ptr [di], al
+load_next_defaults_value:
+add   bx, SIZEOF_DEFAULT_T
+cmp   bx, NUM_DEFAULTS * SIZEOF_DEFAULT_T
+jne   loop_defaults_to_set_initial_values
+
+exit_mloaddefaults:
+lea   sp, [bp + 080h]
+pop   bp
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+set_default_defaultsfilename:
+
+mov   ax, OFFSET _str_default_filename
+call  CopyString13_
+
+mov   word ptr [_defaultfile], ax
+jmp   got_defaults_filename
+defaults_file_loaded:
+
+
+; bx is file pointer..
+xor   al, al
+;		int8_t readphase = 0; // getting param 0
+;		int8_t defindex = 0;
+;		int8_t strparmindex = 0;
+mov   byte ptr [bp + 07Ah], al          ; readphase
+mov   byte ptr [bp + 07Ch], al
+mov   byte ptr [bp + 07Eh], al          ; strparmindex
+test  byte ptr [bx + 6], 010h    ; check feof
+jne   end_loop_close_file
+handle_next_char:
+mov   ax, word ptr [bp + 076h]
+call  fgetc_
+mov   dl, al
+cmp   al, 020h                    ; space charcater
+jne   not_space
+is_tab_or_space:
+mov   ah, 1
+checked_for_tab_or_space:
+; ah = 1 if whitespace.
+; dl is copy of char...
+cmp   dl, 0Ah                     ; line feed character \n
+jne   not_linefeed
+is_linefeed_or_carriage_return:
+mov   al, 1
+checked_for_endline:
+; ah = 1 if whiteespace, al = 1 if newline
+cmp   byte ptr [bp + 07Ah], 0       ; check readphase
+jne   readphase_not_0
+; readphase is 0
+test  ah, ah
+jne   readphase_0_whitespace_or_newline
+test  al, al
+jne   readphase_0_whitespace_or_newline
+mov   al, byte ptr [bp + 07Ch]
+cbw  
+mov   si, ax
+inc   byte ptr [bp + 07Ch]
+mov   byte ptr [bp + si - 02Ah], dl
+character_finished_handling:
+mov   bx, word ptr [bp + 076h]
+test  byte ptr [bx + 6], 010h        ; test feof
+je    handle_next_char      
+end_loop_close_file:
+mov   ax, word ptr [bp + 076h]      ; retrieve FP
+call  fclose_
+jmp   defaults_file_closed
+not_space:
+cmp   al, 9                           ; tab characters \t
+je    is_tab_or_space
+xor   ah, ah
+jmp   checked_for_tab_or_space
+not_linefeed:
+cmp   dl, 0Dh                         ; carriage return characters \r
+je    is_linefeed_or_carriage_return
+xor   al, al
+jmp   checked_for_endline
+readphase_0_whitespace_or_newline:
+test  ah, ah
+je    readphase_0_whitespace
+mov   al, byte ptr [bp + 07Ch]
+cbw  
+mov   si, ax
+mov   byte ptr [bp + 07Ah], 1
+mov   byte ptr [bp + si - 02Ah], 0
+jmp   character_finished_handling
+readphase_0_whitespace:
+mov   byte ptr [bp + 07Ah], ah
+mov   byte ptr [bp + 07Ch], ah
+mov   byte ptr [bp + 07Eh], ah
+jmp   character_finished_handling
+readphase_not_0:
+cmp   byte ptr [bp + 07Ah], 1
+jne   character_finished_handling
+test  ah, ah
+jne   character_finished_handling
+test  al, al
+jne   hit_newline
+mov   al, byte ptr [bp + 07Eh]
+cbw  
+mov   si, ax
+inc   byte ptr [bp + 07Eh]
+mov   byte ptr [bp + si + 026h], dl
+jmp   character_finished_handling
+hit_newline:
+mov   al, byte ptr [bp + 07Eh]      ; get strparmindex
+cbw  
+mov   si, ax
+xor   al, al
+mov   byte ptr [bp + 07Ah], al
+mov   byte ptr [bp + 07Ch], al
+mov   byte ptr [bp + si + 026h], al
+cmp   byte ptr [bp + 07Eh], 0
+je    character_finished_handling
+; prepare to get param...
+mov   byte ptr [bp + 07Eh], al
+xor   di, di
+lea   ax, [bp + 026h]
+xor   si, si
+
+call  sscanf_uint8_
+mov   byte ptr [bp + 078h], al
+scan_next_default_name_for_match:
+lea   ax, [bp - 02Ah]
+mov   cx, ds
+mov   dx, ds
+mov   bx, word ptr [si + _defaults]
+
+call  locallib_strcmp_
+test  ax, ax
+jne   no_match_increment_default
+mov   bx, word ptr [si + _defaults + 2]
+mov   al, byte ptr [bp + 078h]
+mov   byte ptr [bx], al
+jmp   character_finished_handling
+no_match_increment_default:
+inc   di
+add   si, SIZEOF_DEFAULT_T
+cmp   di, NUM_DEFAULTS
+jl    scan_next_default_name_for_match
+jmp   character_finished_handling
+
 
 ENDP
 

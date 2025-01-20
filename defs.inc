@@ -103,7 +103,7 @@ _bombspot_pos = 					_NULL_OFFSET + 000A0h
 
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
-_filename_argument = 				_NULL_OFFSET + 000ACh
+;_filename_argument = 				_NULL_OFFSET + 000ACh
 _is_ultimate = 						_NULL_OFFSET + 000B5h
 _firstspritelump = 					_NULL_OFFSET + 000B6h
 
@@ -260,22 +260,25 @@ _spanfunc_call_lookup =              _NULL_OFFSET + 004D0h
 
 
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00554h
-_locallib_toupper_addr =              _NULL_OFFSET + 00558h
+_locallib_toupper_addr =             _NULL_OFFSET + 00558h
 _S_ChangeMusic_addr =              	 _NULL_OFFSET + 0055Ch
-_V_DrawFullscreenPatch_addr =         _NULL_OFFSET + 00560h
-_getStringByIndex_addr =              _NULL_OFFSET + 00564h
-_locallib_strlen_addr =               _NULL_OFFSET + 00568h
-_Z_QuickMapStatusNoScreen4_addr =     _NULL_OFFSET + 0056Ch
-_Z_QuickMapRender7000_addr =          _NULL_OFFSET + 00570h
-_Z_QuickMapScreen0_addr =             _NULL_OFFSET + 00574h
-_W_CacheLumpNameDirect_addr =         _NULL_OFFSET + 00578h
-_W_CacheLumpNumDirectFragment_addr =  _NULL_OFFSET + 0057Ch
-_W_GetNumForName_addr =               _NULL_OFFSET + 00580h
-_S_StartSound_addr =              	 _NULL_OFFSET + 00584h
-_S_StartMusic_addr =              	 _NULL_OFFSET + 00588h
+_V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00560h
+_getStringByIndex_addr =             _NULL_OFFSET + 00564h
+_locallib_strlen_addr =              _NULL_OFFSET + 00568h
+_Z_QuickMapStatusNoScreen4_addr =    _NULL_OFFSET + 0056Ch
+_Z_QuickMapRender7000_addr =         _NULL_OFFSET + 00570h
+_Z_QuickMapScreen0_addr =            _NULL_OFFSET + 00574h
+_W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00578h
+_W_CacheLumpNumDirectFragment_addr = _NULL_OFFSET + 0057Ch
+_W_GetNumForName_addr =              _NULL_OFFSET + 00580h
+_S_StartSound_addr =                 _NULL_OFFSET + 00584h
+_S_StartMusic_addr =             	 _NULL_OFFSET + 00588h
+; 13 bytes
+_filename_argument = 				 _NULL_OFFSET + 0058Ch
 
-
-; 38Ch
+; 599h
+_fopen_r_argument = 				 _NULL_OFFSET + 0059Ah
+_fopen_w_argument = 				 _NULL_OFFSET + 0059Ch
 
 
 

@@ -97,7 +97,7 @@ void __far I_StartupSound(void);
 
 
 
-int16_t __near M_CheckParm (int8_t *check);
+int16_t __far M_CheckParm (int8_t *check);
 
 
 //
