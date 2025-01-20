@@ -702,7 +702,6 @@ extern int16_t	rndindex;
 extern int16_t	prndindex;
 extern uint8_t		usemouse;
 extern default_t	defaults[28];
-extern int8_t*	defaultfile;
 
 
 extern int8_t*   defdemoname; 

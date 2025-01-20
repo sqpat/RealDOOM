@@ -586,7 +586,7 @@ int16_t	prndindex = 0;
 uint8_t		usemouse;
 
  
-default_t	defaults[28] ={
+default_t	defaults[NUM_DEFAULTS] ={
     {"mouse_sensitivity",&mouseSensitivity, 5},
     {"sfx_volume",&sfxVolume, 8},
     {"music_volume",&musicVolume, 8},
@@ -625,7 +625,6 @@ default_t	defaults[28] ={
 
 };
 
-int8_t*	defaultfile;
 
 int8_t*   defdemoname; 
 skill_t d_skill; 

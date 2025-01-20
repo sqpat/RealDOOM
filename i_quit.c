@@ -218,6 +218,8 @@ int16_t __far M_CheckParm (int8_t *check) {
 //
 // M_SaveDefaults
 //
+void __near M_SaveDefaults (void);
+/*
 void __near M_SaveDefaults (void) {
     int8_t		i;
     int8_t		j;
@@ -258,8 +260,9 @@ void __near M_SaveDefaults (void) {
     }
 	
     fclose (f);
-}
 
+}
+*/
 
 //
 // M_LoadDefaults

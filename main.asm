@@ -26,6 +26,7 @@ EXTRN D_PostEvent_:PROC
 EXTRN M_CheckParm_:PROC
 EXTRN fopen_:PROC
 EXTRN fgetc_:PROC
+EXTRN fputc_:PROC
 EXTRN fclose_:PROC
 EXTRN DEBUG_PRINT_:PROC
 EXTRN locallib_strcmp_:PROC
@@ -61,7 +62,6 @@ EXTRN _sendsave:BYTE
 EXTRN _sendpause:BYTE
 
 EXTRN _defaults:WORD
-EXTRN _defaultfile:BYTE
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
 
@@ -991,9 +991,8 @@ jmp       done_checking_sidemove
 ENDP
 
 
-; copy string from cs:bx to ds:_filename_argument
+; copy string from cs:ax to ds:_filename_argument
 ; return _filename_argument in ax
-; todo make use cs:si or something?
 
 PROC CopyString13_ NEAR
 PUBLIC CopyString13_
@@ -1052,13 +1051,14 @@ ENDP
 
 SIZEOF_DEFAULT_T = 7
 NUM_DEFAULTS = 28
-
 _str_config:
 db "-config", 0
 _str_default_file:
 db "\tdefault file: %s\n", 0    ; todo check if escapes have to be done as bytes
-_str_default_filename:
-db "default.cfg", 0
+_used_defaultfile:              ; used filename with default value. recorded here after loaddefaults, till savedefaults in case changed.
+db "default.cfg", 0, 0
+
+
 
 
 PROC M_LoadDefaults_  FAR
@@ -1075,20 +1075,17 @@ sub   sp, 0AAh
 sub   bp, 080h
 xor   bx, bx
 
-
+mov   cx, NUM_DEFAULTS
 loop_set_default_values:
 mov   si, word ptr [bx + _defaults + 2]
 mov   al, byte ptr [bx + _defaults + 4]
 add   bx, 7               ; 
 mov   byte ptr [si], al
-cmp   bx, NUM_DEFAULTS * SIZEOF_DEFAULT_T  ; c4, can be single byte check
-jne   loop_set_default_values
+loop  loop_set_default_values
 
 
 mov   ax, OFFSET _str_config
 call  CopyString13_
-
-
 call  M_CheckParm_
 
 
@@ -1099,26 +1096,46 @@ mov   dx, word ptr [_myargc]
 dec   dx
 cmp   ax, dx
 jge   set_default_defaultsfilename
-mov   bx, word ptr [_myargv]
+mov   si, word ptr [_myargv]
 add   ax, ax
-add   bx, ax
-mov   ax, word ptr [bx + 2]   ; pointer to myargv for default filename
-push  ax
-mov   word ptr [_defaultfile], ax  ; store filename ptr
+add   si, ax
+mov   si, word ptr [si + 2]   ; pointer to myargv for default filename
+push  si
+mov   bx, si  ; cache
+
+; copy updated filename locally
+
+mov   di, OFFSET _used_defaultfile
+push  cs
+pop   es
+mov   cx, 12        ; 12 chars max for 8.3 filename 
+
+loop_copy_new_defaults_filename:
+lodsb
+stosb
+cmp   al, 0
+je    done_copying_new_defaults_filename
+loop loop_copy_new_defaults_filename
+done_copying_new_defaults_filename:
 
 mov   ax, OFFSET _str_default_file
 call  CopyString13_
-push  ax
+push  ax                            ; a little roundabout. i think we could copy to CS first, then join with the other branch 
 
 call  DEBUG_PRINT_
 add   sp, 4
 
-got_defaults_filename:
+
+
+set_default_defaultsfilename:
+mov   ax, OFFSET _used_defaultfile
+call  CopyString13_
+
 
 
 
 mov   dx, OFFSET _fopen_r_argument
-mov   ax, word ptr [_defaultfile]
+;mov   ax, OFFSET _filename_argument    ; already set above
 call  fopen_
 
 mov   bx, ax
@@ -1156,13 +1173,6 @@ pop   dx
 pop   cx
 pop   bx
 retf  
-set_default_defaultsfilename:
-
-mov   ax, OFFSET _str_default_filename
-call  CopyString13_
-
-mov   word ptr [_defaultfile], ax
-jmp   got_defaults_filename
 
 
 defaults_file_loaded:
@@ -1292,5 +1302,135 @@ jmp   character_finished_handling
 
 ENDP
 
+PROC M_SaveDefaults_  NEAR
+PUBLIC M_SaveDefaults_
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+
+
+mov   bp, sp
+sub   sp, 4
+
+mov   ax, OFFSET _used_defaultfile
+call  CopyString13_
+
+
+mov   dx, OFFSET  _fopen_w_argument
+;mov   ax, OFFSET _filename_argument  ; already set above
+call  fopen_
+
+
+mov   cx, ax
+test  ax, ax
+je    exit_msavedefaults
+xor   bh, bh
+mov   di, 9                     ; tab characters \t
+cld   
+label_3:
+mov   al, bh
+cbw  
+imul  si, ax, SIZEOF_DEFAULT_T
+cmp   byte ptr [si + _defaults + 5], 0
+jne   label_9
+label_5:
+mov   al, bh
+cbw  
+imul  si, ax, SIZEOF_DEFAULT_T
+mov   si, word ptr [si + _defaults + 2]
+mov   al, byte ptr [si]
+xor   bl, bl
+mov   byte ptr [bp - 2], al
+label_2:
+mov   al, bh
+cbw  
+imul  si, ax, SIZEOF_DEFAULT_T
+mov   al, bl
+mov   si, word ptr [si + _defaults]
+cbw  
+add   si, ax
+mov   al, byte ptr [si]
+test  al, al
+je    label_4
+cbw  
+mov   dx, cx
+call  fputc_
+inc   bl
+jmp   label_2
+label_7:
+mov   al, byte ptr [bp - 2]
+xor   ah, ah
+mov   dx, cx
+add   ax, 030h       ;  add '0' char to digit
+call  fputc_
+mov   ax, 0Ah  ; line feed character \n
+mov   dx, cx
+inc   bh
+call  fputc_
+cmp   bh, NUM_DEFAULTS
+jl    label_3
+mov   ax, cx
+call  fclose_
+exit_msavedefaults:
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_9:
+mov   ax, OFFSET _defaults
+add   ax, si
+add   ax, 6
+mov   word ptr [si + _defaults + 2], ax
+jmp   label_5
+label_4:
+mov   dx, cx
+mov   ax, di
+call  fputc_
+mov   dx, cx
+mov   ax, di
+call  fputc_
+mov   al, byte ptr [bp - 2]
+cmp   al, 200
+jb    label_6
+mov   ax, 032h       ;   '2' char
+mov   dx, cx
+sub   byte ptr [bp - 2], 200
+label_1:
+call  fputc_
+label_8:
+mov   al, byte ptr [bp - 2]
+cmp   al, 0Ah  ; line feed character \n
+jb    label_7
+xor   ah, ah
+mov   word ptr [bp - 4], 0Ah  ; line feed character \n
+mov   si, ax
+cwd   
+idiv  word ptr [bp - 4]
+add   ax, 030h       ;   '0' char
+mov   dx, cx
+call  fputc_
+mov   ax, si
+mov   si, 0Ah   ; line feed character \n
+cwd   
+idiv  si
+mov   byte ptr [bp - 2], dl
+jmp   label_7
+label_6:
+cmp   al, 100
+jb    label_8
+mov   ax, 031h       ;  '1' char
+mov   dx, cx
+sub   byte ptr [bp - 2], 100
+jmp   label_1
+
+endp
 
 end
