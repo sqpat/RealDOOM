@@ -486,8 +486,8 @@ void __far P_ArchiveWorld (void) {
 //
 // P_UnArchiveWorld
 //
-/**/
-void __far P_UnArchiveWorld2 (void) {
+/*
+void __far P_UnArchiveWorld (void) {
 	
     int16_t			i;
     int16_t			j;
@@ -543,7 +543,7 @@ void __far P_UnArchiveWorld2 (void) {
 	
 }
 
-
+*/
 
 
 
