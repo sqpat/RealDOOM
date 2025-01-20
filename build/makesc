@@ -104,10 +104,10 @@ GLOBOBJS = &
  sounds.obj &
  info.obj &
  d_math.obj &
- 
  dmx.obj &
  memory.obj &
  math.obj &
+ d_savel.obj &
  main.obj &
  d_algo.obj &
  r_math.obj &

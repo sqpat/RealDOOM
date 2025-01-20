@@ -757,13 +757,20 @@ void __far D_DoomMain2(void) {
 //  9800
 // 0
 	//I_Error("%lx", colfunc_masked_call_table[0]);
-
-
+/*
+02a3:88a0      P_ArchivePlayers_
+02a3:8b56      P_UnArchivePlayers_
+02a3:8d4a      P_ArchiveWorld_
+02a3:8f4e      P_UnArchiveWorld_
+02a3:913c      P_ArchiveThinkers_
+02a3:93b6      P_UnArchiveThinkers_
+02a3:9600      P_ArchiveSpecials_
+02a3:9bda      P_UnArchiveSpecials_
+*/
 /*
 
-
-	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(M_LoadDefaults, (byte __far *)I_Quit - (byte __far *)M_LoadDefaults, 1, fp);
+	FILE *fp = fopen("output8.bin", "wb");
+	FAR_fwrite(P_UnArchiveThinkers, (byte __far *)P_ArchiveSpecials - (byte __far *)P_UnArchiveThinkers, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

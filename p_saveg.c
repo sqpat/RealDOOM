@@ -323,6 +323,7 @@ void __far P_ArchivePlayers (void) {
 //
 // P_UnArchivePlayers
 //
+/*
 void __far P_UnArchivePlayers (void) {
 	player_vanilla_t __far * saveplayer;
 	int16_t i;
@@ -342,7 +343,7 @@ void __far P_UnArchivePlayers (void) {
     player.armortype				= saveplayer->armortype;
     player.backpack					= saveplayer->backpack;
     player.readyweapon				= saveplayer->readyweapon;
-    player.pendingweapon			= saveplayer->pendingweapon;
+    player.pendingweapon			= saveplayer->pendingweapon; 
     player.attackdown				= saveplayer->attackdown;
     player.usedown					= saveplayer->usedown;
     player.cheats					= saveplayer->cheats;
@@ -367,12 +368,10 @@ void __far P_UnArchivePlayers (void) {
 	    player.cards[i]				= saveplayer->cards[i];
 	}
 
-	/*
 	// UNUSED
-	for (i = 0; i < MAXPLAYERS_VANILLA; i++){
-		player.frags[i]			= saveplayer->frags[i]; //player.frags[i];
-	}
-	*/
+//	for (i = 0; i < MAXPLAYERS_VANILLA; i++){
+//		player.frags[i]			= saveplayer->frags[i]; //player.frags[i];
+//	}
 
 	for (i = 0; i < NUMAMMO; i++){
 		player.ammo[i]				= saveplayer->ammo[i];
@@ -406,7 +405,7 @@ void __far P_UnArchivePlayers (void) {
 
 	
 }
-
+*/
 
 //
 // P_ArchiveWorld
