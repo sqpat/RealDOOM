@@ -23,6 +23,8 @@ INSTRUCTION_SET_MACRO
 EXTRN resetDS_:PROC
 EXTRN _save_p:DWORD
 EXTRN _playerMobjRef:WORD
+EXTRN _numlines:WORD
+EXTRN _numsectors:WORD
 EXTRN _player:PLAYER_T
 
 .CODE
@@ -252,6 +254,202 @@ jmp   done_with_psprite
 
 ENDP
 
+
+
+
+
+SIZEOF_SECTOR_T = 16
+SIZEOF_SECTOR_PHYSICS_T = 16
+SIZEOF_LINE_PHYSICS_T = 16
+SIZEOF_LINE_T = 4
+
+PROC P_UnArchiveWorld_  FAR
+PUBLIC P_UnArchiveWorld_
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 012h
+
+mov   cx, SECTORS_SEGMENT
+mov   es, cx
+mov   word ptr [bp - 4], cx
+
+mov   cx, word ptr [_numsectors]
+
+mov   di, _sectors_physics
+lds   bx, dword ptr [_save_p]
+
+xor   si, si
+
+
+
+load_next_sector:
+; todo change to si/di not bx/si
+mov   ax, word ptr ds:[bx]
+shl   ax, 3
+mov   word ptr es:[si], ax
+
+mov   ax, word ptr ds:[bx + 2]
+shl   ax, 3
+add   bx, 2
+mov   word ptr es:[si + 2], ax
+
+mov   al, byte ptr ds:[bx + 2]
+add   bx, 2
+mov   byte ptr es:[si + 4], al
+mov   al, byte ptr ds:[bx + 2]
+add   bx, 2
+mov   byte ptr es:[si + 5], al
+mov   al, byte ptr ds:[bx + 2]
+add   bx, 4
+mov   word ptr es:[si + 8], 0
+mov   byte ptr es:[si + 0Eh], al
+mov   al, byte ptr ds:[bx]
+add   bx, 2
+mov   byte ptr ss:[di + 0Eh], al
+mov   al, byte ptr ds:[bx]
+mov   word ptr ss:[di + 8], 0
+add   bx, 2
+mov   byte ptr ss:[di + 0Eh], al
+
+add   si, SIZEOF_SECTOR_T
+add   di, SIZEOF_SECTOR_PHYSICS_T
+
+loop  load_next_sector
+
+done_loading_sectors:
+
+push  ss
+pop   ds
+
+
+
+mov   word ptr [bp - 0Ah], 0
+
+do_load_lines:
+mov   word ptr [bp - 010h], 0
+mov   word ptr [bp - 0Ch], LINES_PHYSICS_SEGMENT
+mov   word ptr [bp - 0Eh], 0
+load_next_line:
+mov   ax, word ptr [bp - 0Ah]
+mov   cx, word ptr [bp - 0Ah]
+sar   ax, 0Fh
+xor   cx, ax
+sub   cx, ax
+xor   ch, ch
+mov   es, word ptr [bp - 4]
+and   cl, 7
+mov   si, word ptr [bp - 0Ah]
+xor   cx, ax
+mov   dx, word ptr es:[bx]
+sub   cx, ax
+mov   ax, 8
+mov   byte ptr [bp - 2], dl
+sub   ax, cx
+xor   dl, dl
+mov   cx, ax
+mov   ax, LINEFLAGSLIST_SEGMENT
+and   dh, 1
+mov   es, ax
+mov   al, byte ptr [bp - 2]
+sar   dx, cl
+mov   byte ptr es:[si], al
+mov   ax, si
+mov   cx, dx
+cwd
+shl   dx, 3
+sbb   ax, dx
+sar   ax, 3
+mov   di, word ptr [bp - 0Eh]
+mov   word ptr [bp - 8], LINES_SEGMENT
+add   bx, 4
+mov   dx, SEENLINES_6800_SEGMENT
+mov   si, ax
+mov   es, dx
+or    byte ptr es:[si], cl
+mov   es, word ptr [bp - 4]
+mov   si, word ptr [bp - 010h]
+mov   al, byte ptr es:[bx - 2]
+mov   es, word ptr [bp - 0Ch]
+add   bx, 2
+mov   byte ptr es:[si + 0Fh], al
+mov   es, word ptr [bp - 4]
+mov   word ptr [bp - 6], di
+mov   al, byte ptr es:[bx - 2]
+mov   es, word ptr [bp - 0Ch]
+mov   cx, SIDES_RENDER_9000_SEGMENT
+mov   byte ptr es:[si + 0Eh], al
+xor   ax, ax
+label_7:
+mov   es, word ptr [bp - 8]
+mov   si, word ptr [bp - 6]
+cmp   word ptr es:[si], -1
+jne   label_8
+label_5:
+inc   ax
+add   word ptr [bp - 6], 2
+cmp   ax, 2
+jl    label_7
+inc   word ptr [bp - 0Ah]
+add   word ptr [bp - 010h], SIZEOF_LINE_PHYSICS_T
+mov   ax, word ptr [bp - 0Ah]
+add   word ptr [bp - 0Eh], SIZEOF_LINE_T
+cmp   ax, word ptr [_numlines]
+jge   done_loading_lines
+jmp   load_next_line
+done_loading_lines:
+
+mov   word ptr [_save_p], bx
+
+LEAVE
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+label_8:
+mov   word ptr [bp - 012h], SIDES_SEGMENT
+mov   di, word ptr [bp - 6]
+mov   si, word ptr es:[si]
+mov   di, word ptr es:[di]
+mov   es, word ptr [bp - 4]
+shl   si, 3
+mov   dx, word ptr es:[bx]
+mov   es, word ptr [bp - 012h]
+add   bx, 2
+mov   word ptr es:[si + 6], dx
+mov   es, word ptr [bp - 4]
+shl   di, 2
+mov   dx, word ptr es:[bx]
+mov   es, cx
+add   bx, 2
+mov   word ptr es:[di], dx
+mov   es, word ptr [bp - 4]
+mov   dx, word ptr es:[bx]
+mov   es, word ptr [bp - 012h]
+add   bx, 2
+mov   word ptr es:[si], dx
+mov   es, word ptr [bp - 4]
+mov   dx, word ptr es:[bx]
+mov   es, word ptr [bp - 012h]
+add   bx, 2
+mov   word ptr es:[si + 2], dx
+mov   es, word ptr [bp - 4]
+mov   dx, word ptr es:[bx]
+mov   es, word ptr [bp - 012h]
+add   bx, 2
+mov   word ptr es:[si + 4], dx
+jmp   label_5
+
+
+ENDP
 
 
 
