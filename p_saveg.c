@@ -1003,7 +1003,8 @@ void __far P_ArchiveSpecials (void) {
 //
 // P_UnArchiveSpecials
 //
-void __far P_UnArchiveSpecials2 (void) {
+/*
+void __far P_UnArchiveSpecials (void) {
 	
     byte					tclass;
     ceiling_t 				__near*	ceiling;
@@ -1187,4 +1188,5 @@ void __far P_UnArchiveSpecials2 (void) {
     }
 
 }
+*/
 
