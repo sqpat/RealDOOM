@@ -26,6 +26,8 @@ EXTRN P_InitThinkers_:PROC
 EXTRN P_CreateThinker_:PROC
 EXTRN P_SetThingPosition_:PROC
 EXTRN P_RemoveMobj_:PROC
+EXTRN P_AddActiveCeiling_:PROC
+EXTRN P_AddActivePlat_:PROC
 
 EXTRN _save_p:DWORD
 EXTRN _playerMobjRef:WORD
@@ -505,8 +507,11 @@ retf
 
 ENDP
 
-str_bad_tclass:
+str_bad_tclass_1:
 db "Unknown tclass %i in savegame", 0
+str_bad_tclass_2:
+db "P_UnarchiveSpecials:Unknown tclass %i in savegame"
+
 
 SIZEOF_THINKER_T = 44
 SIZEOF_MOBJ_VANILLA_T = 09Ah
@@ -576,7 +581,7 @@ pop       ds
 xor       ah, ah
 push      ax
 
-mov ax, OFFSET str_bad_tclass
+mov ax, OFFSET str_bad_tclass_1
 call CopyString13Save_
 push      ax
 call      I_Error_
@@ -789,6 +794,391 @@ jmp       load_next_thinker
 
 
 ENDP
+
+SIZEOF_CEILING_VANILLA_T = 030h
+SIZEOF_FLOORMOVE_VANILLA_T = 02Ah
+SIZEOF_VLDOOR_VANILLA_T = 028h
+SIZEOF_PLAT_VANILLA_T = 038h
+SIZEOF_STROBE_VANILLA_T = 024h
+SIZEOF_LIGHTFLASH_VANILLA_T = 024h
+SIZEOF_GLOW_VANILLA_T = 01Ch
+
+jump_table_unarchive_specials:
+dw  OFFSET  load_ceiling_special    ; 0
+dw  OFFSET  load_door_special       ; 1
+dw  OFFSET  load_movefloor_special  ; 2
+dw  OFFSET  load_platraise_special  ; 3
+dw  OFFSET  load_flash_special      ; 4
+dw  OFFSET  load_strobe_special     ; 5
+dw  OFFSET  load_glow_special       ; 6
+dw  OFFSET  end_specials            ; 7
+
+PROC P_UnArchiveSpecials_  FAR
+PUBLIC P_UnArchiveSpecials_
+
+
+push   bx
+push   cx
+push   dx
+push   si
+push   di
+
+load_next_special:
+
+xor    ax, ax
+les    si, dword ptr [_save_p]
+lods   byte ptr es:[si]
+mov    word ptr [_save_p], si
+cmp    al, 7
+ja     bad_special_thinkerclass
+mov    dx, ax
+mov    bx, dx
+add    bx, dx
+jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials]
+; default case
+bad_special_thinkerclass:
+xor    ah, ah
+
+mov ax, OFFSET str_bad_tclass_2
+call CopyString13Save_
+push   ax
+;push   cs  ??
+
+call   I_Error_
+
+; thinker_type...
+
+load_ceiling_special:
+; PADSAVEP()
+mov    ax, word ptr [_save_p]
+mov    dx, 4
+and    ax, 3
+sub    dx, ax
+mov    ax, dx
+mov    bx, SIZEOF_THINKER_T
+and    ax, 3
+add    word ptr [_save_p], ax
+
+mov    ax, TF_MOVECEILING_HIGHBITS
+xor    dx, dx
+call   P_CreateThinker_
+mov    si, ax
+sub    ax, (_thinkerlist + 4)
+div    bx
+les    bx, dword ptr [_save_p]
+mov    di, ax
+mov    al, byte ptr es:[bx + 0Ch]
+mov    byte ptr [si], al
+mov    ax, word ptr es:[bx + 010h]
+mov    word ptr [si + 1], ax
+mov    ax, word ptr es:[bx + 014h]
+mov    dx, word ptr es:[bx + 016h]
+mov    cx, 0Dh
+loop_shift_thing_2:
+sar    dx, 1
+rcr    ax, 1
+loop   loop_shift_thing_2
+mov    word ptr [si + 3], ax
+mov    ax, word ptr es:[bx + 018h]
+mov    dx, word ptr es:[bx + 01Ah]
+mov    cx, 0Dh
+loop_shift_thing_1:
+sar    dx, 1
+rcr    ax, 1
+loop   loop_shift_thing_1
+mov    word ptr [si + 5], ax
+mov    al, byte ptr es:[bx + 020h]
+mov    byte ptr [si + 9], al
+mov    al, byte ptr es:[bx + 024h]
+mov    byte ptr [si + 0Ah], al
+mov    al, byte ptr es:[bx + 028h]
+mov    byte ptr [si + 0Bh], al
+mov    al, byte ptr es:[bx + 02Ch]
+mov    byte ptr [si + 0Ch], al
+mov    ax, word ptr [si + 1]
+add    bx, SIZEOF_CEILING_VANILLA_T
+shl    ax, 4
+mov    word ptr [_save_p], bx
+mov    bx, ax
+mov    ax, di
+mov    word ptr [bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
+call   P_AddActiveCeiling_
+jmp    load_next_special
+
+load_door_special:
+; PADSAVEP()
+mov    ax, word ptr [_save_p]
+mov    dx, 4
+and    ax, 3
+sub    dx, ax
+mov    ax, dx
+mov    bx, SIZEOF_THINKER_T
+and    ax, 3
+add    word ptr [_save_p], ax
+mov    ax, TF_VERTICALDOOR_HIGHBITS
+xor    dx, dx
+call   P_CreateThinker_
+mov    si, ax
+sub    ax, (_thinkerlist + 4)
+div    bx
+les    bx, dword ptr [_save_p]
+mov    di, ax
+mov    al, byte ptr es:[bx + 0Ch]
+mov    byte ptr [si], al
+mov    ax, word ptr es:[bx + 010h]
+mov    word ptr [si + 1], ax
+mov    ax, word ptr es:[bx + 014h]
+mov    dx, word ptr es:[bx + 016h]
+mov    cx, 0Dh
+loop_shift_thing_3:
+sar    dx, 1
+rcr    ax, 1
+loop   loop_shift_thing_3
+mov    word ptr [si + 3], ax
+mov    ax, word ptr es:[bx + 018h]
+mov    dx, word ptr es:[bx + 01Ah]
+mov    cx, 0Dh
+loop_shift_thing_4:
+sar    dx, 1
+rcr    ax, 1
+loop   loop_shift_thing_4
+mov    word ptr [si + 5], ax
+mov    ax, word ptr es:[bx + 01Ch]
+mov    word ptr [si + 7], ax
+mov    ax, word ptr es:[bx + 020h]
+mov    word ptr [si + 9], ax
+mov    ax, word ptr es:[bx + 024h]
+mov    word ptr [si + 0Bh], ax
+mov    ax, word ptr [si + 1]
+add    bx, SIZEOF_VLDOOR_VANILLA_T
+shl    ax, 4
+mov    word ptr [_save_p], bx
+mov    bx, ax
+mov    word ptr [bx + (_sectors_physics + 8)], di  ; sectors_physics specialdataRef
+jmp    load_next_special
+
+load_movefloor_special:
+
+; PADSAVEP()
+mov    ax, word ptr [_save_p]
+mov    dx, 4
+and    ax, 3
+sub    dx, ax
+mov    ax, dx
+mov    bx, SIZEOF_THINKER_T
+and    ax, 3
+add    word ptr [_save_p], ax
+mov    ax, TF_MOVEFLOOR_HIGHBITS
+xor    dx, dx
+call   P_CreateThinker_
+mov    si, ax
+sub    ax, (_thinkerlist + 4)
+div    bx
+les    bx, dword ptr [_save_p]
+mov    di, ax
+mov    al, byte ptr es:[bx + 0Ch]
+mov    byte ptr [si], al
+mov    al, byte ptr es:[bx + 010h]
+mov    byte ptr [si + 1], al
+mov    ax, word ptr es:[bx + 014h]
+mov    word ptr [si + 2], ax
+mov    al, byte ptr es:[bx + 018h]
+mov    byte ptr [si + 4], al
+mov    al, byte ptr es:[bx + 01Ch]
+mov    byte ptr [si + 5], al
+mov    al, byte ptr es:[bx + 020h]
+mov    byte ptr [si + 6], al
+mov    ax, word ptr es:[bx + 022h]
+mov    dx, word ptr es:[bx + 024h]
+mov    cx, 0Dh
+loop_shift_thing_5:
+sar    dx, 1
+rcr    ax, 1
+loop   loop_shift_thing_5
+mov    word ptr [si + 7], ax
+mov    ax, word ptr es:[bx + 026h]
+mov    dx, word ptr es:[bx + 028h]
+mov    cx, 0Dh
+loop_shift_thing_6:
+sar    dx, 1
+rcr    ax, 1
+loop   loop_shift_thing_6
+mov    word ptr [si + 9], ax
+mov    al, byte ptr es:[bx + 020h]
+mov    byte ptr [si + 6], al
+mov    ax, word ptr [si + 2]
+add    bx, SIZEOF_FLOORMOVE_VANILLA_T
+shl    ax, 4
+mov    word ptr [_save_p], bx
+mov    bx, ax
+mov    word ptr [bx + (_sectors_physics + 8)], di  ; sectors_physics specialdataRef
+jmp    load_next_special
+
+load_platraise_special:
+; PADSAVEP()
+mov    ax, word ptr [_save_p]
+mov    dx, 4
+and    ax, 3
+sub    dx, ax
+mov    ax, dx
+mov    bx, SIZEOF_THINKER_T
+and    ax, 3
+add    word ptr [_save_p], ax
+mov    ax, TF_PLATRAISE_HIGHBITS
+xor    dx, dx
+call   P_CreateThinker_
+mov    si, ax
+sub    ax, (_thinkerlist + 4)
+div    bx
+les    bx, dword ptr [_save_p]
+mov    di, ax
+mov    ax, word ptr es:[bx + 0Ch]
+mov    word ptr [si], ax
+mov    ax, word ptr es:[bx + 010h]
+mov    dx, word ptr es:[bx + 012h]
+mov    cx, 0Dh
+loop_shift_thing_7:
+sar    dx, 1
+rcr    ax, 1
+loop   loop_shift_thing_7
+mov    word ptr [si + 2], ax
+mov    ax, word ptr es:[bx + 014h]
+mov    dx, word ptr es:[bx + 016h]
+mov    cx, 0Dh
+loop_shift_thing_8:
+sar    dx, 1
+rcr    ax, 1
+loop   loop_shift_thing_8
+mov    word ptr [si + 4], ax
+mov    ax, word ptr es:[bx + 018h]
+mov    dx, word ptr es:[bx + 01Ah]
+mov    cx, 0Dh
+loop_shift_thing_9:
+sar    dx, 1
+rcr    ax, 1
+loop   loop_shift_thing_9
+mov    word ptr [si + 6], ax
+mov    al, byte ptr es:[bx + 01Ch]
+mov    byte ptr [si + 8], al
+mov    al, byte ptr es:[bx + 020h]
+mov    byte ptr [si + 9], al
+mov    al, byte ptr es:[bx + 024h]
+mov    byte ptr [si + 0Ah], al
+mov    al, byte ptr es:[bx + 028h]
+mov    byte ptr [si + 0Bh], al
+mov    al, byte ptr es:[bx + 02Ch]
+mov    byte ptr [si + 0Ch], al
+mov    al, byte ptr es:[bx + 030h]
+mov    byte ptr [si + 0Dh], al
+mov    al, byte ptr es:[bx + 034h]
+mov    byte ptr [si + 0Eh], al
+mov    ax, word ptr [si]
+add    bx, SIZEOF_PLAT_VANILLA_T
+shl    ax, 4
+mov    word ptr [_save_p], bx
+mov    bx, ax
+mov    ax, di
+mov    word ptr [bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
+call   P_AddActivePlat_
+jmp    load_next_special
+
+load_flash_special:
+; PADSAVEP()
+mov    ax, word ptr [_save_p]
+mov    dx, 4
+and    ax, 3
+sub    dx, ax
+mov    ax, dx
+and    ax, 3
+add    word ptr [_save_p], ax
+mov    ax, TF_LIGHTFLASH_HIGHBITS
+call   P_CreateThinker_
+les    bx, dword ptr [_save_p]
+mov    si, ax
+mov    ax, word ptr es:[bx + 0Ch]
+mov    word ptr [si], ax
+mov    ax, word ptr es:[bx + 010h]
+mov    word ptr [si + 2], ax
+mov    al, byte ptr es:[bx + 014h]
+mov    byte ptr [si + 4], al
+mov    al, byte ptr es:[bx + 018h]
+mov    byte ptr [si + 5], al
+mov    al, byte ptr es:[bx + 01Ch]
+add    bx, SIZEOF_LIGHTFLASH_VANILLA_T
+mov    byte ptr [si + 6], al
+mov    al, byte ptr es:[bx - 4]
+mov    word ptr [_save_p], bx
+mov    byte ptr [si + 7], al
+jmp    load_next_special
+
+load_strobe_special:
+; PADSAVEP()
+mov    ax, word ptr [_save_p]
+mov    dx, 4
+and    ax, 3
+sub    dx, ax
+mov    ax, dx
+and    ax, 3
+add    word ptr [_save_p], ax
+mov    ax, TF_STROBEFLASH_HIGHBITS
+call   P_CreateThinker_
+les    si, dword ptr [_save_p]
+mov    bx, ax
+mov    ax, word ptr es:[si + 0Ch]
+mov    word ptr [bx], ax
+mov    ax, word ptr es:[si + 010h]
+mov    word ptr [bx + 2], ax
+mov    al, byte ptr es:[si + 014h]
+mov    byte ptr [bx + 4], al
+mov    al, byte ptr es:[si + 018h]
+mov    byte ptr [bx + 5], al
+mov    ax, word ptr es:[si + 01Ch]
+add    si, SIZEOF_STROBE_VANILLA_T
+mov    word ptr [bx + 6], ax
+mov    ax, word ptr es:[si - 4]
+mov    word ptr [_save_p], si
+mov    word ptr [bx + 8], ax
+jmp    load_next_special
+
+load_glow_special:
+; PADSAVEP()
+mov    ax, word ptr [_save_p]
+mov    dx, 4
+and    ax, 3
+sub    dx, ax
+mov    ax, dx
+and    ax, 3
+add    word ptr [_save_p], ax
+mov    ax, TF_GLOW_HIGHBITS
+call   P_CreateThinker_
+les    bx, dword ptr [_save_p]
+mov    si, ax
+mov    ax, word ptr es:[bx + 0Ch]
+mov    word ptr [si], ax
+mov    al, byte ptr es:[bx + 010h]
+mov    byte ptr [si + 2], al
+mov    al, byte ptr es:[bx + 014h]
+add    bx, SIZEOF_GLOW_VANILLA_T
+mov    byte ptr [si + 3], al
+mov    ax, word ptr es:[bx - 4]
+mov    word ptr [_save_p], bx
+mov    word ptr [si + 4], ax
+jmp    load_next_special
+
+end_specials:           ; todo i guess this can piggyback on another exit.
+
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+
+
+retf   
+
+
+ENDP
+
 
 
 END

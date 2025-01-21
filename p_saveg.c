@@ -661,8 +661,8 @@ void  __far P_InitThinkers (void);
 //
 // P_UnArchiveThinkers
 //
-
-void __far P_UnArchiveThinkers2 (void) {
+/*
+void __far P_UnArchiveThinkers (void) {
 	
     byte					tclass;
     THINKERREF				currentthinker;
@@ -757,7 +757,7 @@ void __far P_UnArchiveThinkers2 (void) {
 	
 }
 
-
+*/
 //
 // P_ArchiveSpecials
 //
@@ -1003,7 +1003,7 @@ void __far P_ArchiveSpecials (void) {
 //
 // P_UnArchiveSpecials
 //
-void __far P_UnArchiveSpecials (void) {
+void __far P_UnArchiveSpecials2 (void) {
 	
     byte					tclass;
     ceiling_t 				__near*	ceiling;
