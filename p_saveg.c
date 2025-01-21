@@ -661,6 +661,7 @@ void  __far P_InitThinkers (void);
 //
 // P_UnArchiveThinkers
 //
+/*
 void __far P_UnArchiveThinkers (void) {
 	
     byte					tclass;
@@ -756,7 +757,7 @@ void __far P_UnArchiveThinkers (void) {
 	
 }
 
-
+*/
 //
 // P_ArchiveSpecials
 //

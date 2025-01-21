@@ -20,7 +20,13 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN resetDS_:PROC
+
+EXTRN I_Error_:PROC
+EXTRN P_InitThinkers_:PROC
+EXTRN P_CreateThinker_:PROC
+EXTRN P_SetThingPosition_:PROC
+EXTRN P_RemoveMobj_:PROC
+
 EXTRN _save_p:DWORD
 EXTRN _playerMobjRef:WORD
 EXTRN _numlines:WORD
@@ -85,6 +91,62 @@ PLAYER_T STRUC
     player_backpack           db ?
 
 PLAYER_T ENDS
+
+
+; copy string from cs:ax to ds:_filename_argument
+; return _filename_argument in ax
+
+PROC CopyString13_ NEAR
+PUBLIC CopyString13_
+
+push  si
+push  di
+push  cx
+
+mov   di, OFFSET _filename_argument
+
+push  ds
+pop   es    ; es = ds
+
+push  cs
+pop   ds    ; ds = cs
+
+mov   si, ax
+
+mov   ax, 0
+stosw       ; zero out
+stosw
+stosw
+stosw
+stosw
+stosw
+stosb
+
+mov  cx, 13
+sub  di, cx
+
+do_next_char:
+lodsb
+stosb
+test  al, al
+je    done_writing
+loop do_next_char
+
+
+done_writing:
+
+mov   ax, OFFSET _filename_argument   ; ax now points to the near string
+
+push  ss
+pop   ds    ; restore ds
+
+pop   cx
+pop   di
+pop   si
+
+ret
+
+ENDP
 
 
 
@@ -443,6 +505,237 @@ retf
 
 ENDP
 
+str_bad_tclass:
+db "Unknown tclass %i in savegame", 0
+
+SIZEOF_THINKER_T = 44
+SIZEOF_MOBJ_VANILLA_T = 09Ah
+SIZEOF_MOBJ_T = 028h
+SIZEOF_MOBJPOS_T = 018h
+
+
+PROC P_UnArchiveThinkers_  FAR
+PUBLIC P_UnArchiveThinkers_
+
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 8
+mov       bx, _thinkerlist + 2    ; thinkerlist next
+mov       dx, word ptr [bx]
+
+imul      bx, ax, SIZEOF_THINKER_T
+loop_zeroing_thinkers:
+imul      di, dx, SIZEOF_THINKER_T
+mov       ax, word ptr [bx + _thinkerlist]
+
+add       di, (_thinkerlist + 4)
+and       ax, TF_FUNCBITS
+mov       dx, word ptr [di - 2]         ; get next
+cmp       ax, TF_MOBJTHINKER_HIGHBITS
+je        call_removemobj
+; zero out thinker
+mov       cx, SIZEOF_MOBJ_T / 2
+
+push      ds
+pop       es
+mov       ah, al
+rep stosw 
+
+sub       di, SIZEOF_MOBJ_T
+
+jmp       check_next_thinker_to_zero
+
+call_removemobj:
+mov       ax, di
+call      P_RemoveMobj_
+check_next_thinker_to_zero:
+test      dx, dx
+jne       loop_zeroing_thinkers
+
+call      P_InitThinkers_
+mov       cx, MAX_BLOCKLINKS_SIZE / 2
+mov       dx, BLOCKLINKS_SEGMENT
+xor       al, al
+xor       di, di
+mov       es, dx
+push      di
+mov       ah, al
+rep stosw 
+
+pop       di
+load_next_thinker:
+les       bx, dword ptr [_save_p]
+mov       dl, byte ptr es:[bx]
+inc       bx
+mov       word ptr [_save_p], bx
+cmp       dl, 1
+je        label_7
+jmp       label_6
+label_7:
+mov       ax, bx
+mov       dx, 4
+and       ax, 3
+sub       dx, ax
+mov       ax, dx
+mov       cx, SIZEOF_THINKER_T
+and       ax, 3
+add       word ptr [_save_p], ax
+mov       ax, TF_MOBJTHINKER_HIGHBITS
+xor       dx, dx
+call      P_CreateThinker_
+mov       bx, ax
+mov       word ptr [bp - 6], ax
+sub       ax, ((_thinkerlist + 4))        ; todo fix this garbage...?
+div       cx
+mov       cx, ax
+imul      si, ax, SIZEOF_MOBJPOS_T
+mov       word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
+mov       word ptr [bp - 4], si
+mov       es, word ptr [_save_p+2]
+mov       di, word ptr [bp - 4]
+mov       si, word ptr [_save_p]
+mov       word ptr [bp - 8], es
+mov       dx, word ptr es:[si + 0Ch]
+mov       ax, word ptr es:[si + 0Eh]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[di], dx
+mov       word ptr es:[di + 2], ax
+mov       es, word ptr [bp - 8]
+mov       ax, word ptr es:[si + 010h]
+mov       dx, word ptr es:[si + 012h]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[di + 4], ax
+mov       word ptr es:[di + 6], dx
+mov       es, word ptr [bp - 8]
+mov       dx, word ptr es:[si + 014h]
+mov       ax, word ptr es:[si + 016h]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[di + 8], dx
+mov       word ptr es:[di + 0Ah], ax
+mov       es, word ptr [bp - 8]
+mov       ax, word ptr es:[si + 020h]
+mov       dx, word ptr es:[si + 022h]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[di + 0Eh], ax
+mov       word ptr es:[di + 010h], dx
+mov       es, word ptr [bp - 8]
+mov       ax, word ptr es:[si + 064h]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[di + 012h], ax
+mov       es, word ptr [bp - 8]
+mov       ax, word ptr es:[si + 068h]
+mov       dx, word ptr es:[si + 06ah]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[di + 014h], ax
+mov       word ptr es:[di + 016h], dx
+imul      di, cx, 0Ah
+mov       es, word ptr [bp - 8]
+mov       ax, word ptr es:[si + 042h]
+mov       byte ptr [bx + 01eh], al
+mov       ax, word ptr es:[si + 044h]
+mov       dx, word ptr es:[si + 046h]
+mov       word ptr [bx + 0Ah], ax
+mov       word ptr [bx + 0Ch], dx
+mov       ax, word ptr es:[si + 048h]
+mov       dx, word ptr es:[si + 04ah]
+mov       word ptr [bx + 0Eh], ax
+mov       word ptr [bx + 010h], dx
+mov       ax, word ptr es:[si + 04ch]
+mov       dx, word ptr es:[si + 04eh]
+mov       word ptr [bx + 012h], ax
+mov       word ptr [bx + 014h], dx
+mov       ax, word ptr es:[si + 050h]
+mov       dx, word ptr es:[si + 052h]
+mov       word ptr [bx + 016h], ax
+mov       word ptr [bx + 018h], dx
+mov       al, byte ptr es:[si + 058h]
+mov       byte ptr [bx + 01ah], al
+mov       al, byte ptr es:[si + 060h]
+mov       byte ptr [bx + 01bh], al
+mov       ax, word ptr es:[si + 06ch]
+mov       word ptr [bx + 01ch], ax
+mov       al, byte ptr es:[si + 070h]
+mov       byte ptr [bx + 01fh], al
+mov       ax, word ptr es:[si + 074h]
+mov       word ptr [bx + 020h], ax
+mov       al, byte ptr es:[si + 07ch]
+mov       byte ptr [bx + 024h], al
+mov       al, byte ptr es:[si + 080h]
+push      ds
+mov       byte ptr [bx + 025h], al
+mov       ax, NIGHTMARESPAWNS_SEGMENT
+mov       ds, word ptr [bp - 8]
+mov       es, ax
+lea       si, [si + 08ch]                 ; todo this
+movsw     
+movsw     
+movsw     
+movsw     
+movsw     
+pop       ds
+mov       si, word ptr [bp - 4]
+mov       word ptr [bx + 2], 0
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[si + 0Ch], 0
+mov       word ptr [bx + 022h], 0
+cmp       byte ptr [bx + 01ah], 0
+je        record_player_mobj
+label_2:
+mov       dx, 0FFFFh
+mov       bx, word ptr [bp - 4]
+mov       cx, word ptr [bp - 2]
+mov       ax, word ptr [bp - 6]
+call      P_SetThingPosition_
+mov       bx, word ptr [bp - 6]
+mov       bx, word ptr [bx + 4]
+mov       ax, SECTORS_SEGMENT
+shl       bx, 4
+mov       es, ax
+mov       ax, word ptr es:[bx]
+mov       bx, word ptr [bp - 6]
+mov       word ptr [bx + 6], ax
+mov       bx, word ptr [bx + 4]
+shl       bx, 4
+add       bx, 2
+mov       ax, word ptr es:[bx]
+mov       bx, word ptr [bp - 6]
+add       word ptr [_save_p], SIZEOF_MOBJ_VANILLA_T 
+mov       word ptr [bx + 8], ax
+jmp       load_next_thinker
+
+label_6:
+test      dl, dl
+jne       bad_thinkerclass
+leave     
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+retf      
+record_player_mobj:
+mov       word ptr [_playerMobjRef], cx
+jmp       label_2
+bad_thinkerclass:
+xor       dh, dh
+push      dx
+
+mov ax, OFFSET str_bad_tclass
+call CopyString13_
+
+push      ax
+
+call      I_Error_
+add       sp, 4
+jmp       load_next_thinker
+
+ENDP
 
 
 END

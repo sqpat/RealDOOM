@@ -154,7 +154,7 @@ __near P_SpawnMobj
   mobjtype_t	type, 
 	int16_t knownsecnum );
 
-void 	__near P_RemoveMobj (mobj_t __near* mobj);
+void 	__far P_RemoveMobj (mobj_t __near* mobj);
 
 boolean	__near P_SetMobjState(mobj_t __near* mobj, statenum_t state);
 void __near P_MobjThinker(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef);

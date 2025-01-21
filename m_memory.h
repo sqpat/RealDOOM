@@ -728,6 +728,10 @@ mobjposlist           6B14:0000  // 6AFC?? todo
 #define blocklinks          ((THINKERREF __far*)    MAKE_FULL_SEGMENT(0x64000000, 0))
 #define nightmarespawns     ((mapthing_t __far *)   MAKE_FULL_SEGMENT(blocklinks, size_blocklinks))
 
+#define blocklinks_segment      ((segment_t) ((int32_t)blocklinks >> 16))
+#define nightmarespawns_segment ((segment_t) ((int32_t)nightmarespawns >> 16))
+
+
 //blocklinks       6400:0000
 //nightmarespanws  65EC:0000
 //[empty]          6000:7f8a
