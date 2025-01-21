@@ -1099,7 +1099,6 @@ void __far P_UnArchiveSpecials (void) {
 				floor->texture			= savefloor->texture;
 				floor->floordestheight	= savefloor->floordestheight >> (16-SHORTFLOORBITS);
 				floor->speed			= savefloor->speed >> (16-SHORTFLOORBITS);
-				floor->texture			= savefloor->texture;
 
 				save_p += sizeof(floormove_vanilla_t);
 				sectors_physics[floor->secnum].specialdataRef = thinkerRef;

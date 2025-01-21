@@ -826,11 +826,14 @@ push   dx
 push   si
 push   di
 
-les    si, dword ptr [_save_p]
+lds    si, dword ptr [_save_p]
 load_next_special:
 
 xor    ax, ax
-lods   byte ptr es:[si]
+lodsb
+mov    dx, ds   ; store segreg
+push   ss
+pop    ds
 cmp    al, 7
 ja     bad_special_thinkerclass
 mov    bx, ax
@@ -844,7 +847,6 @@ and    cx, 3
 
 mov    di, SIZEOF_THINKER_T
 
-mov    dx, es   ; store segreg
 
 jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials]
 
@@ -867,47 +869,56 @@ add    si, cx
 mov    cx, dx
 mov    ax, TF_MOVECEILING_HIGHBITS
 call   P_CreateThinker_
-mov    es, cx
+push   ds
+pop    es
+mov    ds, cx
+
 mov    bx, ax
 sub    ax, (_thinkerlist + 4)
 xor    dx, dx
 div    di           ; store thinkerref
-mov    di, ax
-mov    al, byte ptr es:[si + 0Ch]
-mov    byte ptr [bx], al
-mov    ax, word ptr es:[si + 010h]
-mov    word ptr [bx + 1], ax
-mov    ax, word ptr es:[si + 014h]
-mov    dx, word ptr es:[si + 016h]
+mov    di, bx
+mov    bx, ax
+mov    al, byte ptr ds:[si + 0Ch]
+stosb
+mov    ax, word ptr ds:[si + 010h]
+stosw
+mov    ax, word ptr ds:[si + 014h]
+mov    dx, word ptr ds:[si + 016h]
 mov    cx, 0Dh
 loop_shift_thing_2:
 sar    dx, 1
 rcr    ax, 1
 loop   loop_shift_thing_2
-mov    word ptr [bx + 3], ax
-mov    ax, word ptr es:[si + 018h]
-mov    dx, word ptr es:[si + 01Ah]
+stosw
+mov    ax, word ptr ds:[si + 018h]
+mov    dx, word ptr ds:[si + 01Ah]
 mov    cx, 0Dh
 loop_shift_thing_1:
 sar    dx, 1
 rcr    ax, 1
 loop   loop_shift_thing_1
-mov    word ptr [bx + 5], ax
-mov    al, byte ptr es:[si + 020h]
-mov    byte ptr [bx + 9], al
-mov    al, byte ptr es:[si + 024h]
-mov    byte ptr [bx + 0Ah], al
-mov    al, byte ptr es:[si + 028h]
-mov    byte ptr [bx + 0Bh], al
-mov    al, byte ptr es:[si + 02Ch]
-mov    byte ptr [bx + 0Ch], al
-mov    ax, word ptr [bx + 1]
+stosw
+mov    al, byte ptr ds:[si + 020h]
+add    di, 2
+stosb
+mov    al, byte ptr ds:[si + 024h]
+stosb
+mov    al, byte ptr ds:[si + 028h]
+stosb
+mov    al, byte ptr ds:[si + 02Ch]
+stosb
+mov    ax, word ptr [di - 0Ch]        ; di is 0Dh, we want 1
 add    si, SIZEOF_CEILING_VANILLA_T
 shl    ax, 4
-mov    bx, ax
-mov    ax, di
+xchg   ax, bx
+
+mov    cx, ds
+push   ss
+pop    ds
 mov    word ptr [bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
 call   P_AddActiveCeiling_
+mov    ds, cx
 jmp    load_next_special
 
 load_door_special:
@@ -916,43 +927,47 @@ add    si, cx
 mov    cx, dx
 mov    ax, TF_VERTICALDOOR_HIGHBITS
 call   P_CreateThinker_
-mov    es, cx
+push   ds
+pop    es
+mov    ds, cx
+
 mov    bx, ax
 sub    ax, (_thinkerlist + 4)
 xor    dx, dx
 div    di
-mov    di, ax
-mov    al, byte ptr es:[si + 0Ch]
-mov    byte ptr [bx], al
-mov    ax, word ptr es:[si + 010h]
-mov    word ptr [bx + 1], ax
-mov    ax, word ptr es:[si + 014h]
-mov    dx, word ptr es:[si + 016h]
+mov    di, bx
+mov    bx, ax
+mov    al, byte ptr ds:[si + 0Ch]
+stosb
+mov    ax, word ptr ds:[si + 010h]
+stosw
+mov    ax, word ptr ds:[si + 014h]
+mov    dx, word ptr ds:[si + 016h]
 mov    cx, 0Dh
 loop_shift_thing_3:
 sar    dx, 1
 rcr    ax, 1
 loop   loop_shift_thing_3
-mov    word ptr [bx + 3], ax
-mov    ax, word ptr es:[si + 018h]
-mov    dx, word ptr es:[si + 01Ah]
+stosw
+mov    ax, word ptr ds:[si + 018h]
+mov    dx, word ptr ds:[si + 01Ah]
 mov    cx, 0Dh
 loop_shift_thing_4:
 sar    dx, 1
 rcr    ax, 1
 loop   loop_shift_thing_4
-mov    word ptr [bx + 5], ax
-mov    ax, word ptr es:[si + 01Ch]
-mov    word ptr [bx + 7], ax
-mov    ax, word ptr es:[si + 020h]
-mov    word ptr [bx + 9], ax
-mov    ax, word ptr es:[si + 024h]
-mov    word ptr [bx + 0Bh], ax
-mov    ax, word ptr [bx + 1]
+stosw
+mov    ax, word ptr ds:[si + 01Ch]
+stosw
+mov    ax, word ptr ds:[si + 020h]
+stosw
+mov    ax, word ptr ds:[si + 024h]
+stosw
+mov    ax, word ptr [di - 0Ch]  ; di is 0Dh, we want 1
 add    si, SIZEOF_VLDOOR_VANILLA_T
 shl    ax, 4
-mov    bx, ax
-mov    word ptr [bx + (_sectors_physics + 8)], di  ; sectors_physics specialdataRef
+mov    di, ax
+mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
 jmp    load_next_special
 
 load_movefloor_special:
@@ -962,47 +977,49 @@ add    si, cx
 mov    cx, dx
 mov    ax, TF_MOVEFLOOR_HIGHBITS
 call   P_CreateThinker_
-mov    es, cx
+push   ds
+pop    es
+mov    ds, cx
+
 mov    bx, ax
 sub    ax, (_thinkerlist + 4)
 xor    dx, dx
 div    di
-mov    di, ax
-mov    al, byte ptr es:[si + 0Ch]
-mov    byte ptr [bx], al
-mov    al, byte ptr es:[si + 010h]
-mov    byte ptr [bx + 1], al
-mov    ax, word ptr es:[si + 014h]
-mov    word ptr [bx + 2], ax
-mov    al, byte ptr es:[si + 018h]
-mov    byte ptr [bx + 4], al
-mov    al, byte ptr es:[si + 01Ch]
-mov    byte ptr [bx + 5], al
-mov    al, byte ptr es:[si + 020h]
-mov    byte ptr [bx + 6], al
-mov    ax, word ptr es:[si + 022h]
-mov    dx, word ptr es:[si + 024h]
+mov    di, bx
+mov    bx, ax
+mov    al, byte ptr ds:[si + 0Ch]
+stosb
+mov    al, byte ptr ds:[si + 010h]
+stosb
+mov    ax, word ptr ds:[si + 014h]
+stosw
+mov    al, byte ptr ds:[si + 018h]
+stosb
+mov    al, byte ptr ds:[si + 01Ch]
+stosb
+mov    al, byte ptr ds:[si + 020h]
+stosb
+mov    ax, word ptr ds:[si + 022h]
+mov    dx, word ptr ds:[si + 024h]
 mov    cx, 0Dh
 loop_shift_thing_5:
 sar    dx, 1
 rcr    ax, 1
 loop   loop_shift_thing_5
-mov    word ptr [bx + 7], ax
-mov    ax, word ptr es:[si + 026h]
-mov    dx, word ptr es:[si + 028h]
+stosw
+mov    ax, word ptr ds:[si + 026h]
+mov    dx, word ptr ds:[si + 028h]
 mov    cx, 0Dh
 loop_shift_thing_6:
 sar    dx, 1
 rcr    ax, 1
 loop   loop_shift_thing_6
-mov    word ptr [bx + 9], ax
-mov    al, byte ptr es:[si + 020h]
-mov    byte ptr [bx + 6], al
-mov    ax, word ptr [bx + 2]
+stosw
+mov    ax, word ptr [di - 9]    ; di is + 0Bh, we want 2..
 add    si, SIZEOF_FLOORMOVE_VANILLA_T
 shl    ax, 4
-mov    bx, ax
-mov    word ptr [bx + (_sectors_physics + 8)], di  ; sectors_physics specialdataRef
+mov    di, ax
+mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
 jmp    load_next_special
 
 load_platraise_special:
@@ -1011,59 +1028,67 @@ add    si, cx
 mov    cx, dx
 mov    ax, TF_PLATRAISE_HIGHBITS
 call   P_CreateThinker_
-mov    es, cx
+push   ds
+pop    es
+mov    ds, cx
+
 mov    bx, ax
 sub    ax, (_thinkerlist + 4)
 xor    dx, dx
 div    di
-mov    di, ax
-mov    ax, word ptr es:[si + 0Ch]
-mov    word ptr [bx], ax
-mov    ax, word ptr es:[si + 010h]
-mov    dx, word ptr es:[si + 012h]
+mov    di, bx
+mov    bx, ax
+mov    ax, word ptr ds:[si + 0Ch]
+stosw
+mov    ax, word ptr ds:[si + 010h]
+mov    dx, word ptr ds:[si + 012h]
 mov    cx, 0Dh
 loop_shift_thing_7:
 sar    dx, 1
 rcr    ax, 1
 loop   loop_shift_thing_7
-mov    word ptr [bx + 2], ax
-mov    ax, word ptr es:[si + 014h]
-mov    dx, word ptr es:[si + 016h]
+stosw
+mov    ax, word ptr ds:[si + 014h]
+mov    dx, word ptr ds:[si + 016h]
 mov    cx, 0Dh
 loop_shift_thing_8:
 sar    dx, 1
 rcr    ax, 1
 loop   loop_shift_thing_8
-mov    word ptr [bx + 4], ax
-mov    ax, word ptr es:[si + 018h]
-mov    dx, word ptr es:[si + 01Ah]
+stosw
+mov    ax, word ptr ds:[si + 018h]
+mov    dx, word ptr ds:[si + 01Ah]
 mov    cx, 0Dh
 loop_shift_thing_9:
 sar    dx, 1
 rcr    ax, 1
 loop   loop_shift_thing_9
-mov    word ptr [bx + 6], ax
-mov    al, byte ptr es:[si + 01Ch]
-mov    byte ptr [bx + 8], al
-mov    al, byte ptr es:[si + 020h]
-mov    byte ptr [bx + 9], al
-mov    al, byte ptr es:[si + 024h]
-mov    byte ptr [bx + 0Ah], al
-mov    al, byte ptr es:[si + 028h]
-mov    byte ptr [bx + 0Bh], al
-mov    al, byte ptr es:[si + 02Ch]
-mov    byte ptr [bx + 0Ch], al
-mov    al, byte ptr es:[si + 030h]
-mov    byte ptr [bx + 0Dh], al
-mov    al, byte ptr es:[si + 034h]
-mov    byte ptr [bx + 0Eh], al
-mov    ax, word ptr [bx]
+stosw
+mov    al, byte ptr ds:[si + 01Ch]
+stosb
+mov    al, byte ptr ds:[si + 020h]
+stosb
+mov    al, byte ptr ds:[si + 024h]
+stosb
+mov    al, byte ptr ds:[si + 028h]
+stosb
+mov    al, byte ptr ds:[si + 02Ch]
+stosb
+mov    al, byte ptr ds:[si + 030h]
+stosb
+mov    al, byte ptr ds:[si + 034h]
+stosb
+mov    ax, word ptr es:[di-0Fh]  ; di is 0F, we want 0
 add    si, SIZEOF_PLAT_VANILLA_T
 shl    ax, 4
-mov    bx, ax
-mov    ax, di
+; todo xchg
+xchg   ax, bx
 mov    word ptr [bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
+mov    cx, ds
+push   ss
+pop    ds
 call   P_AddActivePlat_
+mov    ds, cx
 jmp    load_next_special
 
 load_flash_special:
@@ -1072,22 +1097,25 @@ add    si, cx
 mov    cx, dx
 mov    ax, TF_LIGHTFLASH_HIGHBITS
 call   P_CreateThinker_
-mov    es, cx
-mov    bx, ax
-mov    ax, word ptr es:[si + 0Ch]
-mov    word ptr [bx], ax
-mov    ax, word ptr es:[si + 010h]
-mov    word ptr [bx + 2], ax
-mov    al, byte ptr es:[si + 014h]
-mov    byte ptr [bx + 4], al
-mov    al, byte ptr es:[si + 018h]
-mov    byte ptr [bx + 5], al
-mov    al, byte ptr es:[si + 01Ch]
-add    si, SIZEOF_LIGHTFLASH_VANILLA_T
-mov    byte ptr [bx + 6], al
-mov    al, byte ptr es:[si - 4]     ; todo i hate this. fix
+push   ds
+pop    es
+mov    ds, cx
 
-mov    byte ptr [bx + 7], al
+mov    di, ax
+mov    ax, word ptr ds:[si + 0Ch]
+stosw
+mov    ax, word ptr ds:[si + 010h]
+stosw
+mov    al, byte ptr ds:[si + 014h]
+stosb
+mov    al, byte ptr ds:[si + 018h]
+stosb
+mov    al, byte ptr ds:[si + 01Ch]
+stosb
+mov    al, byte ptr ds:[si + 020h]
+stosb
+
+add    si, SIZEOF_LIGHTFLASH_VANILLA_T
 jmp    load_next_special
 
 load_strobe_special:
@@ -1096,22 +1124,24 @@ add    si, cx
 mov    cx, dx
 mov    ax, TF_STROBEFLASH_HIGHBITS
 call   P_CreateThinker_
-mov    es, cx
-mov    bx, ax
-mov    ax, word ptr es:[si + 0Ch]
-mov    word ptr [bx], ax
-mov    ax, word ptr es:[si + 010h]
-mov    word ptr [bx + 2], ax
-mov    al, byte ptr es:[si + 014h]
-mov    byte ptr [bx + 4], al
-mov    al, byte ptr es:[si + 018h]
-mov    byte ptr [bx + 5], al
-mov    ax, word ptr es:[si + 01Ch]
-add    si, SIZEOF_STROBE_VANILLA_T
-mov    word ptr [bx + 6], ax
-mov    ax, word ptr es:[si - 4]
+push   ds
+pop    es
+mov    ds, cx
 
-mov    word ptr [bx + 8], ax
+mov    di, ax
+mov    ax, word ptr ds:[si + 0Ch]
+stosw
+mov    ax, word ptr ds:[si + 010h]
+stosw
+mov    al, byte ptr ds:[si + 014h]
+stosb
+mov    al, byte ptr ds:[si + 018h]
+stosb
+mov    ax, word ptr ds:[si + 01Ch]
+stosw
+mov    ax, word ptr ds:[si + 020h]
+stosw
+add    si, SIZEOF_STROBE_VANILLA_T
 jmp    load_next_special
 
 load_glow_special:
@@ -1120,17 +1150,20 @@ add    si, cx
 mov    cx, dx
 mov    ax, TF_GLOW_HIGHBITS
 call   P_CreateThinker_
-mov    es, cx
-mov    bx, ax
-mov    ax, word ptr es:[si + 0Ch]
-mov    word ptr [bx], ax
-mov    al, byte ptr es:[si + 010h]
-mov    byte ptr [bx + 2], al
-mov    al, byte ptr es:[si + 014h]
+push   ds
+pop    es
+mov    ds, cx
+
+mov    di, ax
+mov    ax, word ptr ds:[si + 0Ch]
+stosw
+mov    al, byte ptr ds:[si + 010h]
+stosb
+mov    al, byte ptr ds:[si + 014h]
+stosb
+mov    ax, word ptr ds:[si + 018h]     ; todo get rid of this
+stosw
 add    si, SIZEOF_GLOW_VANILLA_T
-mov    byte ptr [bx + 3], al
-mov    ax, word ptr es:[si - 4]     ; todo get rid of this
-mov    word ptr [bx + 4], ax
 jmp    load_next_special
 
 
