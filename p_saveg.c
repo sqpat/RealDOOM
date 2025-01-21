@@ -661,13 +661,13 @@ void  __far P_InitThinkers (void);
 //
 // P_UnArchiveThinkers
 //
-/*
-void __far P_UnArchiveThinkers (void) {
+
+void __far P_UnArchiveThinkers2 (void) {
 	
     byte					tclass;
     THINKERREF				currentthinker;
 	THINKERREF				next;
-	THINKERREF 				th;
+	THINKERREF 				th = 0;
 	mobj_t __near* 			mobj;
 	mobj_pos_t __far * 		mobj_pos;
 	mobj_vanilla_t __far * 	savemobj;
@@ -678,7 +678,7 @@ void __far P_UnArchiveThinkers (void) {
     // remove all the current thinkers
     currentthinker = thinkerlist[0].next;
 	while (currentthinker != 0) {
-		int16_t functype = thinkerlist[th].prevFunctype & TF_FUNCBITS;
+		int16_t functype = thinkerlist[currentthinker].prevFunctype & TF_FUNCBITS;
 		next = thinkerlist[currentthinker].next;
 
 		if (functype == TF_MOBJTHINKER_HIGHBITS) {
@@ -757,7 +757,7 @@ void __far P_UnArchiveThinkers (void) {
 	
 }
 
-*/
+
 //
 // P_ArchiveSpecials
 //

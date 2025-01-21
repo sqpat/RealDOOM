@@ -763,6 +763,7 @@ void __near G_DoLoadGame (void)  {
 	Z_QuickMapRender_4000To9000_9000Only();
     P_UnArchiveWorld (); 
     // 5000 014c
+    //  2ba4
     // 5000 05F2
     // 5000 2A64
     //dolog(save_p-savebuffer);
@@ -771,6 +772,9 @@ void __near G_DoLoadGame (void)  {
     //Z_QuickMapScratch_5000();
 
     P_UnArchiveThinkers (); 
+    //I_Error("%lx", save_p);
+    // 2b01 -> 346b
+    // 5ecf
     P_UnArchiveSpecials (); 
 #ifdef CHECK_FOR_ERRORS
 
