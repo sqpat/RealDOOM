@@ -50,6 +50,12 @@ void __far F_Responder();
 void __far F_Ticker();
 void __far F_START();
 void __far F_END();
+void __far P_LOADSTART();
+void __far P_LOADEND();
+void __far P_UnArchivePlayers();
+void __far P_UnArchiveWorld();
+void __far P_UnArchiveThinkers();
+void __far P_UnArchiveSpecials();
 /*
 void checkDS(int16_t a) {
 	struct SREGS        sregs;
@@ -83,6 +89,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	uint16_t codesize5;
 	uint16_t codesize6;
 	uint16_t codesize7;
+	uint16_t codesize8;
     
     codesize1 = FP_OFF(R_DrawSpan) - FP_OFF(R_DrawColumn);
     // write filesize..
@@ -129,15 +136,21 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // write data
     FAR_fwrite((byte __far *)I_ReadScreen, codesize6, 1, fp);
 
-    // 56 variable space at start of segment
     codesize7 = FP_OFF(F_END) - FP_OFF(F_START);
     // write filesize..
     fwrite(&codesize7, 2, 1, fp);
     // write data
     FAR_fwrite((byte __far *)F_START, codesize7, 1, fp);
 
+    codesize8 = FP_OFF(P_LOADEND) - FP_OFF(P_LOADSTART);
+    // write filesize..
+    fwrite(&codesize8, 2, 1, fp);
+    // write data
+    FAR_fwrite((byte __far *)P_LOADSTART, codesize8, 1, fp);
+
 
     fclose(fp);
+    
     printf("Generated doomcode.bin file\n");
 
     // todo many of these not used? clean up?
@@ -178,6 +191,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define F_TickerOffset                        0x%X\n", FP_OFF(F_Ticker)                       - FP_OFF(F_START));
     fprintf(fp, "#define F_DrawerOffset                        0x%X\n", FP_OFF(F_Drawer)                       - FP_OFF(F_START));
 
+    // load offsets
+    fprintf(fp, "#define P_UnArchivePlayersOffset              0x%X\n", FP_OFF(P_UnArchivePlayers)             - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_UnArchiveWorldOffset                0x%X\n", FP_OFF(P_UnArchiveWorld)               - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_UnArchiveThinkersOffset             0x%X\n", FP_OFF(P_UnArchiveThinkers)            - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_UnArchiveSpecialsOffset             0x%X\n", FP_OFF(P_UnArchiveSpecials)            - FP_OFF(P_LOADSTART));
+
 	fprintf(fp, "\n");
 
 	fprintf(fp, "#define R_DrawColumnCodeSize           0x%X\n", codesize1);
@@ -187,6 +206,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize5);
 	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize6);
 	fprintf(fp, "#define FinaleCodeSize                 0x%X\n", codesize7);
+	fprintf(fp, "#define LoadCodeSize                   0x%X\n", codesize8);
 
 
 

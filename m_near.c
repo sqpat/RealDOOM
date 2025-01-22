@@ -445,6 +445,11 @@ void (__far* F_Ticker)() = 											  		  ((void    (__far *)())     							(M
 void (__far* F_Drawer)() = 											  		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_DrawerOffset)));
 boolean (__far* F_Responder)() = 										      ((boolean (__far *)(event_t  __far*event))     		(MK_FP(code_overlay_segment, 		 	 F_ResponderOffset)));
 
+void (__far* P_UnArchivePlayers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchivePlayersOffset)));
+void (__far* P_UnArchiveWorld)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveWorldOffset)));
+void (__far* P_UnArchiveThinkers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveThinkersOffset)));
+void (__far* P_UnArchiveSpecials)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveSpecialsOffset)));
+
 
 
 
@@ -1134,7 +1139,6 @@ int16_t	sp_state;
 boolean  st_stopped = true;
 uint16_t armsbgarray[1] = { armsbg };
 
-byte __far* save_p;
 
 THINKERREF	activeceilings[MAXCEILINGS];
 THINKERREF		activeplats[MAXPLATS];
@@ -1368,40 +1372,11 @@ int8_t                     	currentloadedfileindex = 0;
 
 
 
-//
-// MAP related Lookup tables.
-// Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
-//
-int16_t             numvertexes;
-int16_t             numsegs;
-int16_t             numsectors;
-int16_t             numsubsectors;
-int16_t             numnodes;
-int16_t             numlines;
-int16_t             numsides;
 
 
 #ifdef PRECALCULATE_OPENINGS
 lineopening_t __far*	lineopenings;
 #endif
-
-// BLOCKMAP
-// Created from axis aligned bounding box
-// of the map, a rectangular array of
-// blocks of size ...
-// Used to speed up collision detection
-// by spatial subdivision in 2D.
-//
-// Blockmap size.
-int16_t             bmapwidth;
-int16_t             bmapheight;     // size in mapblocks
-
-								// offsets in blockmap are from here
-
-// origin of block map
-int16_t         bmaporgx;
-int16_t         bmaporgy;
-
 
 
 

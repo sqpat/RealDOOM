@@ -47,7 +47,6 @@ file wi_stuff.obj
 file memory.obj
 file math.obj
 file main.obj
-file d_savel.obj
 
 
 #these files put in overlay 
@@ -56,7 +55,6 @@ file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
 file p_saveg.obj
-
 
 
 #todo put these in the future wad segment. maybe pull out p_tick.

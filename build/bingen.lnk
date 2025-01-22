@@ -43,7 +43,6 @@ file dmx.obj
 file wi_stuff.obj
 file math.obj
 file main.obj
-file d_savel.obj
 
 
 file g_setup.obj
@@ -54,6 +53,10 @@ file p_saveg.obj
 
 NEWSEGMENT
 file d_finale.obj
+
+NEWSEGMENT
+file d_savel.obj
+
 
 
 #todo put these in the future wad segment. maybe pull out p_tick.

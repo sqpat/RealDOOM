@@ -21,25 +21,19 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN I_Error_:PROC
-EXTRN P_InitThinkers_:PROC
-EXTRN P_CreateThinker_:PROC
-EXTRN P_SetThingPosition_:PROC
-EXTRN P_RemoveMobj_:PROC
-EXTRN P_AddActiveCeiling_:PROC
-EXTRN P_AddActivePlat_:PROC
-
-EXTRN _save_p:DWORD
-EXTRN _playerMobjRef:WORD
-EXTRN _numlines:WORD
-EXTRN _numsectors:WORD
-EXTRN _player:PLAYER_T
+;EXTRN _playerMobjRef:WORD
+;EXTRN _player:PLAYER_T
 
 .CODE
  
-PROC P_LOADSTART
-PUBLIC P_LOADSTART
+PROC P_LOADSTART_
+PUBLIC P_LOADSTART_
 ENDP
+
+_CSDATA_playerMobjRef_ptr:
+dw    0
+_CSDATA_player_ptr:
+dw    0
 
 SIZEOF_PLAYER_VANILLA_T = 0118h
 SIZEOF_PSPDEF_VANILLA_T = 16
@@ -106,19 +100,20 @@ push  cx
 push  si
 push  di
 
-mov   ax, word ptr [_save_p]
+mov   ax, word ptr ds:[_save_p]
 
 ;	PADSAVEP();
 and   ax, 3
 jz    dont_pad
 mov   cx, 4
 sub   cx, ax
-add   word ptr [_save_p], cx
+add   word ptr ds:[_save_p], cx
 dont_pad:
-les   bx, dword ptr [_save_p]
+les   bx, dword ptr ds:[_save_p]
 
 mov   al, byte ptr es:[bx + 4]
-mov   byte ptr [_player + 01Dh], al
+mov   di, word ptr cs:[_CSDATA_player_ptr - OFFSET P_LOADSTART_]
+mov   byte ptr [di + 01Dh], al
 
 
 push  es  ; swap ds/es
@@ -126,7 +121,6 @@ push  ds
 pop   es
 pop   ds
 lea   si, [bx + 8]
-mov   di, OFFSET _player
 
 mov   cx, 13
 rep   movsw
@@ -143,42 +137,43 @@ push  ds
 pop   es
 pop   ds
 
+mov   di, word ptr cs:[_CSDATA_player_ptr - OFFSET P_LOADSTART_]
 
 
 mov   al, byte ptr es:[bx + 05Ch]
-mov   byte ptr [_player + 022h], al
+mov   byte ptr [di + 022h], al
 
 mov   al, byte ptr es:[bx + 070h]
 mov   ah, byte ptr es:[bx + 074h]
-mov   word ptr [_player + 030h], ax
+mov   word ptr [di + 030h], ax
 
 mov   al, byte ptr es:[bx + 0BCh]
 mov   ah, byte ptr es:[bx + 0C0h]
-mov   word ptr [_player + 04Ch], ax
+mov   word ptr [di + 04Ch], ax
 
 mov   al, byte ptr es:[bx + 0C4h]
-mov   byte ptr [_player + 03Bh], al
+mov   byte ptr [di + 03Bh], al
 mov   al, byte ptr es:[bx + 0C8h]
-mov   byte ptr [_player + 05Dh], al
+mov   byte ptr [di + 05Dh], al
 
 mov   ax, word ptr es:[bx + 0CCh]
-mov   word ptr [_player + 043h], ax
+mov   word ptr [di + 043h], ax
 mov   ax, word ptr es:[bx + 0D0h]
-mov   word ptr [_player + 050h], ax
+mov   word ptr [di + 050h], ax
 mov   ax, word ptr es:[bx + 0D4h]
-mov   word ptr [_player + 052h], ax
+mov   word ptr [di + 052h], ax
 mov   ax, word ptr es:[bx + 0DCh]
-mov   word ptr [_player + 058h], ax
+mov   word ptr [di + 058h], ax
 mov   al, byte ptr es:[bx + 0E0h]
-mov   byte ptr [_player + 05Ah], al
+mov   byte ptr [di + 05Ah], al
 
 mov   al, byte ptr es:[bx + 0E8h]
 mov   ah, byte ptr es:[bx + 0ECh]
-mov   word ptr [_player + 05Eh], ax
+mov   word ptr [di + 05Eh], ax
 
 mov   al, byte ptr es:[bx + 0F0h]
 mov   ah, byte ptr es:[bx + 0114h]
-mov   word ptr [_player + 060h], ax
+mov   word ptr [di + 060h], ax
 
 mov   si, cx
 xor   bx, bx
@@ -186,7 +181,7 @@ load_next_power:
 add   bx, 2
 mov   ax, word ptr es:[si + 02Ch]
 add   si, 4
-mov   word ptr [bx + _player + 01Ch], ax
+mov   word ptr [bx + di + 01Ch], ax
 cmp   bx, NUMPOWERS * 2  ; sizeof dw
 jne   load_next_power
 mov   si, cx
@@ -196,7 +191,7 @@ load_next_key:
 inc   bx
 mov   al, byte ptr es:[si + 044h]
 add   si, 4
-mov   byte ptr [bx + _player + 029h], al
+mov   byte ptr [bx + di + 029h], al
 cmp   bx, NUMCARDS
 jl    load_next_key
 mov   si, cx
@@ -204,12 +199,12 @@ xor   bx, bx
 
 load_next_ammo:
 mov   ax, word ptr es:[si + 09ch]
-mov   word ptr [bx + _player + 03Ch], ax
+mov   word ptr [bx + di + 03Ch], ax
 inc   bx
 inc   bx
 mov   ax, word ptr es:[si + 0ach]
 add   si, 4
-mov   word ptr [bx + _player + 042h], ax
+mov   word ptr [bx + di + 042h], ax
 cmp   bx, NUMAMMO * 2
 jne   load_next_ammo
 mov   si, cx
@@ -219,7 +214,7 @@ load_next_weapon:
 inc   bx
 mov   al, byte ptr es:[si + 078h]
 add   si, 4
-mov   byte ptr [bx + _player + 031h], al
+mov   byte ptr [bx + di + 031h], al
 cmp   bx, NUMWEAPONS
 jl    load_next_weapon
 mov   si, cx
@@ -244,11 +239,14 @@ add   si, SIZEOF_PSPDEF_VANILLA_T
 add   bx, SIZEOF_PSPDEF_T
 cmp   bx, SIZEOF_PSPDEF_T * NUMPSPRITES
 jne   load_next_sprite
-mov   word ptr [_player + 056h], 0FFFFh
+mov   word ptr [di + 056h], 0FFFFh
 xor   ax, ax
-add   word ptr [_save_p], SIZEOF_PLAYER_VANILLA_T 
-mov   word ptr [_playerMobjRef], ax
-mov   word ptr [_player + 05Ch], ax
+add   word ptr ds:[_save_p], SIZEOF_PLAYER_VANILLA_T 
+
+mov   word ptr [di + 05Ch], ax
+
+mov   di, word ptr cs:[_CSDATA_playerMobjRef_ptr - OFFSET P_LOADSTART_]
+mov   word ptr [di], ax
 
 pop   di
 pop   si
@@ -286,10 +284,10 @@ mov   cx, SECTORS_SEGMENT
 mov   es, cx
 
 
-mov   cx, word ptr [_numsectors]
+mov   cx, word ptr ds:[_numsectors]
 
 mov   bx, _sectors_physics      ; in near segment. use SS
-lds   si, dword ptr [_save_p]
+lds   si, dword ptr ds:[_save_p]
 xor   di, di
 
 
@@ -439,7 +437,7 @@ done_loading_lines:
 push  ss
 pop   ds
 
-mov   word ptr [_save_p], si
+mov   word ptr ds:[_save_p], si
 
 pop   di
 pop   si
@@ -511,10 +509,10 @@ exit_unarchivethinkers:
 LEAVE_MACRO     
 push      ss
 pop       ds
-;sub       si, word ptr [_save_p]
+;sub       si, word ptr ds:[_save_p]
 
 end_specials:           ; todo i guess this can piggyback on another exit.
-mov       word ptr [_save_p], si
+mov       word ptr ds:[_save_p], si
 
 pop       di
 pop       si
@@ -529,21 +527,34 @@ pop       ds
 xor       ah, ah
 push      ax
 
-mov ax, OFFSET str_bad_tclass_1
+mov ax, OFFSET str_bad_tclass_1 - OFFSET P_LOADSTART_
 push      cs
 push      ax
-call      I_Error_
+;call      I_Error_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _I_Error_addr
+
+
 ;add       sp, 4
 ;jmp       load_next_thinker
 
 call_removemobj:
 mov       ax, di
-call      P_RemoveMobj_
+;call      P_RemoveMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_RemoveMobj_addr
+
+
 check_next_thinker_to_zero:
 test      si, si
 jne       loop_zeroing_thinkers
 
-call      P_InitThinkers_
+;call      P_InitThinkers_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_InitThinkers_addr
 
 ; zero blocklinks.
 mov       cx, MAX_BLOCKLINKS_SIZE / 2
@@ -553,7 +564,7 @@ xor       ax, ax
 xor       di, di
 rep stosw 
 
-mov       si, word ptr [_save_p]
+mov       si, word ptr ds:[_save_p]
 
 load_next_thinker:
 mov       ds, word ptr  ss:[_save_p+2]
@@ -575,7 +586,10 @@ xor       dx, dx
 push      ds                              ; store p_save seg
 push      ss
 pop       ds                              ; restore ds to normal
-call      P_CreateThinker_
+;call   P_CreateThinker_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_CreateThinker_addr
 pop       ds                              ; ds is save seg again
 
 mov       bx, ax                          ; mobj pointer to bx
@@ -654,7 +668,12 @@ stosb               ; 05Ah -> 1Bh  type
 cmp       al, MT_PLAYER
 jne       not_loading_player
 
-mov       word ptr ss:[_playerMobjRef], cx  ; ds is clobbered. use ss.
+push      bx
+
+mov       bx, word ptr cs:[_CSDATA_playerMobjRef_ptr - OFFSET P_LOADSTART_]
+mov       word ptr ss:[bx], cx  ; ds is clobbered. use ss.
+
+pop       bx
 not_loading_player:
 
 
@@ -719,7 +738,11 @@ mov       dx, 0FFFFh                       ; -1
 push      ss
 pop       ds                            ; restore ds
 
-call      P_SetThingPosition_
+;call      P_SetThingPosition_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetThingPosition_addr
+
 ; di is mobj
 mov       bx, word ptr [di + 4]            ; get mobj secnum
 mov       ax, SECTORS_SEGMENT
@@ -752,14 +775,14 @@ SIZEOF_LIGHTFLASH_VANILLA_T = 024h
 SIZEOF_GLOW_VANILLA_T = 01Ch
 
 jump_table_unarchive_specials:
-dw  OFFSET  load_ceiling_special    ; 0
-dw  OFFSET  load_door_special       ; 1
-dw  OFFSET  load_movefloor_special  ; 2
-dw  OFFSET  load_platraise_special  ; 3
-dw  OFFSET  load_flash_special      ; 4
-dw  OFFSET  load_strobe_special     ; 5
-dw  OFFSET  load_glow_special       ; 6
-dw  OFFSET  end_specials            ; 7
+dw  OFFSET  load_ceiling_special - OFFSET P_LOADSTART_    ; 0
+dw  OFFSET  load_door_special - OFFSET P_LOADSTART_       ; 1
+dw  OFFSET  load_movefloor_special - OFFSET P_LOADSTART_  ; 2
+dw  OFFSET  load_platraise_special - OFFSET P_LOADSTART_  ; 3
+dw  OFFSET  load_flash_special - OFFSET P_LOADSTART_      ; 4
+dw  OFFSET  load_strobe_special - OFFSET P_LOADSTART_     ; 5
+dw  OFFSET  load_glow_special - OFFSET P_LOADSTART_       ; 6
+dw  OFFSET  end_specials - OFFSET P_LOADSTART_            ; 7
 
 PROC P_UnArchiveSpecials_  FAR
 PUBLIC P_UnArchiveSpecials_
@@ -771,7 +794,7 @@ push   dx
 push   si
 push   di
 
-lds    si, dword ptr [_save_p]
+lds    si, dword ptr ds:[_save_p]
 load_next_special:
 
 xor    ax, ax
@@ -793,16 +816,19 @@ and    cx, 3
 mov    di, SIZEOF_THINKER_T
 
 
-jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials]
+jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials - OFFSET P_LOADSTART_]
 
 ; default case
 bad_special_thinkerclass:
 xor    ah, ah
 
-mov    ax, OFFSET str_bad_tclass_2
+mov    ax, OFFSET str_bad_tclass_2 - OFFSET P_LOADSTART_
 push   cs
 push   ax
-call   I_Error_
+;call      I_Error_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _I_Error_addr
 
 ; thinker_type...
 
@@ -811,7 +837,11 @@ load_ceiling_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_MOVECEILING_HIGHBITS
-call   P_CreateThinker_
+;call   P_CreateThinker_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_CreateThinker_addr
+
 push   ds
 pop    es
 mov    ds, cx
@@ -860,7 +890,11 @@ mov    cx, ds
 push   ss
 pop    ds
 mov    word ptr [bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
-call   P_AddActiveCeiling_
+;call   P_AddActiveCeiling_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_AddActiveCeiling_addr
+
 mov    ds, cx
 jmp    load_next_special
 
@@ -869,7 +903,10 @@ load_door_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_VERTICALDOOR_HIGHBITS
-call   P_CreateThinker_
+;call   P_CreateThinker_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_CreateThinker_addr
 push   ds
 pop    es
 mov    ds, cx
@@ -919,7 +956,10 @@ load_movefloor_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_MOVEFLOOR_HIGHBITS
-call   P_CreateThinker_
+;call   P_CreateThinker_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_CreateThinker_addr
 push   ds
 pop    es
 mov    ds, cx
@@ -970,7 +1010,10 @@ load_platraise_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_PLATRAISE_HIGHBITS
-call   P_CreateThinker_
+;call   P_CreateThinker_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_CreateThinker_addr
 push   ds
 pop    es
 mov    ds, cx
@@ -1030,7 +1073,11 @@ mov    word ptr [bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdata
 mov    cx, ds
 push   ss
 pop    ds
-call   P_AddActivePlat_
+;call   P_AddActivePlat_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_AddActivePlat_addr
+
 mov    ds, cx
 jmp    load_next_special
 
@@ -1039,7 +1086,10 @@ load_flash_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_LIGHTFLASH_HIGHBITS
-call   P_CreateThinker_
+;call   P_CreateThinker_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_CreateThinker_addr
 push   ds
 pop    es
 mov    ds, cx
@@ -1066,7 +1116,10 @@ load_strobe_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_STROBEFLASH_HIGHBITS
-call   P_CreateThinker_
+;call   P_CreateThinker_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_CreateThinker_addr
 push   ds
 pop    es
 mov    ds, cx
@@ -1092,7 +1145,10 @@ load_glow_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_GLOW_HIGHBITS
-call   P_CreateThinker_
+;call   P_CreateThinker_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_CreateThinker_addr
 push   ds
 pop    es
 mov    ds, cx
@@ -1113,6 +1169,9 @@ jmp    load_next_special
 
 ENDP
 
+PROC P_LOADEND_
+PUBLIC P_LOADEND_
+ENDP
 
 
 END

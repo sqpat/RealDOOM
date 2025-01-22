@@ -362,6 +362,7 @@ found:
  
  
 
+void  __far P_InitThinkers (void);
 
 void __far I_UpdateNoBlit(void);
 void __far I_FinishUpdate(void);
@@ -504,12 +505,17 @@ void __near Z_LoadBinaries() {
 
 	Z_QuickMapPhysics();
 
+//todo should these be plus 2?
 	codestartposition[0] = ftell(fp2);
 
 	fread(&codesize, 2, 1, fp2);
 	fseek(fp2, codesize, SEEK_CUR);
 	codestartposition[1] = ftell(fp2);
-	
+
+	fread(&codesize, 2, 1, fp2);
+	fseek(fp2, codesize, SEEK_CUR);
+	codestartposition[2] = ftell(fp2);
+
 	//FAR_fread(code_overlay_start, codesize, 1, fp2);
 
 
@@ -567,6 +573,14 @@ void __near Z_LoadBinaries() {
 	S_StartMusic_addr =		 			(uint32_t)(S_StartMusic);
 
 	
+	I_Error_addr =		 				(uint32_t)(I_Error);
+	P_InitThinkers_addr =		 		(uint32_t)(P_InitThinkers);
+	P_CreateThinker_addr =		 		(uint32_t)(P_CreateThinker);
+	P_SetThingPosition_addr =	 		(uint32_t)(P_SetThingPosition);
+	P_RemoveMobj_addr =		 			(uint32_t)(P_RemoveMobj);
+	P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
+	P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);
+
 
 }
 

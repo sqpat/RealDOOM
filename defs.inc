@@ -215,8 +215,7 @@ _maskedtexturecol =					 _NULL_OFFSET + 0021Ch
 _masked_headers =                    _NULL_OFFSET + 00220h
 _curseg =                          	 _NULL_OFFSET + 00280h
 _curseg_render =                     _NULL_OFFSET + 00282h
-;_walllights =                        _NULL_OFFSET + 00284h
-;_maskedtexmodulo =                   _NULL_OFFSET + 00286h
+_save_p =                            _NULL_OFFSET + 00284h
 _maskednextlookup =                  _NULL_OFFSET + 00288h
 _maskedprevlookup =                  _NULL_OFFSET + 0028Ah
 _maskedtexrepeat =                   _NULL_OFFSET + 0028Ch
@@ -279,6 +278,26 @@ _filename_argument = 				 _NULL_OFFSET + 0058Ch
 ; 599h
 _fopen_r_argument = 				 _NULL_OFFSET + 0059Ah
 _fopen_w_argument = 				 _NULL_OFFSET + 0059Ch
+
+_numsectors =						 _NULL_OFFSET + 0059Eh
+_numlines =						     _NULL_OFFSET + 005A0h
+_numvertexes =						 _NULL_OFFSET + 005A2h
+_numsegs =						     _NULL_OFFSET + 005A4h
+_numsubsectors =				     _NULL_OFFSET + 005A6h
+_numnodes =						 	 _NULL_OFFSET + 005A8h
+_numsides =						 	 _NULL_OFFSET + 005AAh
+_bmapwidth =						 _NULL_OFFSET + 005ACh
+_bmapheight =						 _NULL_OFFSET + 005AEh
+_bmaporgx =						 	 _NULL_OFFSET + 005B0h
+_bmaporgy =				             _NULL_OFFSET + 005B2h
+
+_I_Error_addr =                      _NULL_OFFSET + 005B4h
+_P_InitThinkers_addr =               _NULL_OFFSET + 005B8h
+_P_CreateThinker_addr =              _NULL_OFFSET + 005BCh
+_P_SetThingPosition_addr =           _NULL_OFFSET + 005C0h
+_P_RemoveMobj_addr =                 _NULL_OFFSET + 005C4h
+_P_AddActiveCeiling_addr =           _NULL_OFFSET + 005C8h
+_P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
 
 
 

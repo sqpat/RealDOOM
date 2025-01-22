@@ -24,13 +24,14 @@
 // Persistent storage/archiving.
 // These are the load / save game routines.
 void __far P_ArchivePlayers (void);
-void __far P_UnArchivePlayers (void);
 void __far P_ArchiveWorld (void);
-void __far P_UnArchiveWorld (void);
 void __far P_ArchiveThinkers (void);
-void __far P_UnArchiveThinkers (void);
 void __far P_ArchiveSpecials (void);
-void __far P_UnArchiveSpecials (void);
+
+//void __far P_UnArchivePlayers (void);
+//void __far P_UnArchiveWorld (void);
+//void __far P_UnArchiveThinkers (void);
+//void __far P_UnArchiveSpecials (void);
 
 
 

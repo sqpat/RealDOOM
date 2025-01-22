@@ -320,7 +320,7 @@ void __near P_LoadSubsectors(int16_t lump) {
 	for (i = 0; i < numsubsectors; i++)
 	{
 		ms = &data[i];
-		subsector_lines[i]  = (ms->numsegs);
+		subsector_lines[i]  = (ms->nummapsectorsegs);
 		subsectors[i].firstline = (ms->firstseg);
 
 	}

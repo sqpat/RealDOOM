@@ -53,7 +53,6 @@ EXTRN _fieldofview:WORD
 EXTRN _pspritescale:WORD
 EXTRN _player:WORD
 EXTRN _r_cachedplayerMobjsecnum:WORD
-EXTRN _numnodes:WORD
 
 
 .CODE

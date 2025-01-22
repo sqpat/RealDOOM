@@ -18,6 +18,10 @@
 #define F_ResponderOffset                     0xADB
 #define F_TickerOffset                        0xA3A
 #define F_DrawerOffset                        0xB06
+#define P_UnArchivePlayersOffset              0x4
+#define P_UnArchiveWorldOffset                0x180
+#define P_UnArchiveThinkersOffset             0x2B9
+#define P_UnArchiveSpecialsOffset             0x43F
 
 #define R_DrawColumnCodeSize           0xB26
 #define R_DrawSpanCodeSize             0xD34
@@ -26,3 +30,4 @@
 #define R_DrawSkyColumnCodeSize        0x6C2
 #define WipeCodeSize                   0x31B
 #define FinaleCodeSize                 0xB62
+#define LoadCodeSize                   0x6C0

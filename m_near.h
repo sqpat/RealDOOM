@@ -263,8 +263,8 @@
 #define masked_headers                  (((masked_header_t  __near*)         (_NULL_OFFSET + 0x0220)))
 #define curseg                          (*((int16_t  __near*)                (_NULL_OFFSET + 0x0280)))
 #define curseg_render                   (*((seg_render_t  __near* __near*)   (_NULL_OFFSET + 0x0282)))
-//#define walllights                      (*((int16_t  __near*)                (_NULL_OFFSET + 0x0284)))
-//#define maskedtexmodulo                 (*((uint16_t __near*)                (_NULL_OFFSET + 0x0286)))
+#define save_p                          (*((byte  __far* __near*)            (_NULL_OFFSET + 0x0284)))
+
 #define maskednextlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x0288)))
 #define maskedprevlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x028A)))
 #define maskedtexrepeat                 (*((int16_t __near*)                 (_NULL_OFFSET + 0x028C)))
@@ -312,27 +312,45 @@
 
 #define spanfunc_call_table             (((uint32_t  __near*)                (_NULL_OFFSET + 0x04D0)))
 
-#define V_DrawPatch_addr                  (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0554)))
-#define locallib_toupper_addr             (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0558)))
-#define S_ChangeMusic_addr                (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x055C)))
-#define V_DrawFullscreenPatch_addr        (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0560)))
-#define getStringByIndex_addr             (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0564)))
-#define locallib_strlen_addr              (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0568)))
-#define Z_QuickMapStatusNoScreen4_addr    (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x056C)))
-#define Z_QuickMapRender7000_addr         (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0570)))
-#define Z_QuickMapScreen0_addr            (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0574)))
-#define W_CacheLumpNameDirect_addr        (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0578)))
-#define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x057C)))
-#define W_GetNumForName_addr              (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0580)))
-#define S_StartSound_addr                 (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0584)))
-#define S_StartMusic_addr                 (*((uint32_t  __far* __near*)      (_NULL_OFFSET + 0x0588)))
+#define V_DrawPatch_addr                  (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0554)))
+#define locallib_toupper_addr             (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0558)))
+#define S_ChangeMusic_addr                (*((uint32_t  __near*)              (_NULL_OFFSET + 0x055C)))
+#define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0560)))
+#define getStringByIndex_addr             (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0564)))
+#define locallib_strlen_addr              (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0568)))
+#define Z_QuickMapStatusNoScreen4_addr    (*((uint32_t  __near*)              (_NULL_OFFSET + 0x056C)))
+#define Z_QuickMapRender7000_addr         (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0570)))
+#define Z_QuickMapScreen0_addr            (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0574)))
+#define W_CacheLumpNameDirect_addr        (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0578)))
+#define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)              (_NULL_OFFSET + 0x057C)))
+#define W_GetNumForName_addr              (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0580)))
+#define S_StartSound_addr                 (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0584)))
+#define S_StartMusic_addr                 (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0588)))
 // 13 bytes
 #define filename_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x058C))
 // 599h free
 #define fopen_r_argument                  ((int8_t __near *)                 (_NULL_OFFSET + 0x059A))
 #define fopen_w_argument                  ((int8_t __near *)                 (_NULL_OFFSET + 0x059C))
 
+#define numsectors                        (*(int16_t __near *)               (_NULL_OFFSET + 0x059E))
+#define numlines                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05A0))
+#define numvertexes                       (*(int16_t __near *)               (_NULL_OFFSET + 0x05A2))
+#define numsegs                           (*(int16_t __near *)               (_NULL_OFFSET + 0x05A4))
+#define numsubsectors                     (*(int16_t __near *)               (_NULL_OFFSET + 0x05A6))
+#define numnodes                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05A8))
+#define numsides                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05AA))
+#define bmapwidth                         (*(int16_t __near *)               (_NULL_OFFSET + 0x05AC))
+#define bmapheight                        (*(int16_t __near *)               (_NULL_OFFSET + 0x05AE))
+#define bmaporgx                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05B0))
+#define bmaporgy                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05B2))
 
+#define I_Error_addr                      (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B4)))
+#define P_InitThinkers_addr               (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B8)))
+#define P_CreateThinker_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05BC)))
+#define P_SetThingPosition_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C0)))
+#define P_RemoveMobj_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
+#define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
+#define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
 
 
 
@@ -530,6 +548,11 @@ extern void                 (__far* F_StartFinale)();
 extern void                 (__far* F_Ticker)();
 extern void                 (__far* F_Drawer)();
 extern boolean              (__far* F_Responder)(event_t  __far*event);
+
+extern void                 (__far* P_UnArchivePlayers)();
+extern void                 (__far* P_UnArchiveWorld)();
+extern void                 (__far* P_UnArchiveThinkers)();
+extern void                 (__far* P_UnArchiveSpecials)();
 
 
 extern int16_t              currentlumpindex;
@@ -918,7 +941,6 @@ typedef struct {
 
 extern boolean  st_stopped;
 extern uint16_t armsbgarray[1];
-extern byte __far*           save_p;
 
 
 extern THINKERREF	activeceilings[MAXCEILINGS];
@@ -1075,20 +1097,9 @@ extern int8_t                       currentloadedfileindex;
 
 
 
-extern int16_t             numvertexes;
-extern int16_t             numsegs;
-extern int16_t             numsectors;
-extern int16_t             numsubsectors;
-extern int16_t             numnodes;
-extern int16_t             numlines;
-extern int16_t             numsides;
 #ifdef PRECALCULATE_OPENINGS
 extern lineopening_t __far*	lineopenings;
 #endif
-extern int16_t             bmapwidth;
-extern int16_t             bmapheight;     // size in mapblocks
-extern int16_t         bmaporgx;
-extern int16_t         bmaporgy;
 
 
 

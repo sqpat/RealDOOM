@@ -396,6 +396,7 @@ void __near G_Ticker (void)  {
             G_DoNewGame (); 
             break; 
           case ga_loadgame: 
+            Z_SetOverlay(OVERLAY_ID_LOADGAME);
             G_DoLoadGame (); 
             break; 
           case ga_savegame: 
@@ -757,24 +758,10 @@ void __near G_DoLoadGame (void)  {
     // dearchive all the modifications
     //dolog(save_p-savebuffer);
     P_UnArchivePlayers (); 
-    //dolog(save_p-savebuffer);
-
-    // sides_render in 9000
 	Z_QuickMapRender_4000To9000_9000Only();
     P_UnArchiveWorld (); 
-    // 5000 014c
-    //  2ba4
-    // 5000 05F2
-    // 5000 2A64
-    //dolog(save_p-savebuffer);
-    // mobjposlist back in 9000
-    //Z_QuickMapPhysics();
-    //Z_QuickMapScratch_5000();
-
     P_UnArchiveThinkers (); 
-    //I_Error("%lx", save_p);
-    // 2b01 -> 346b
-    // 5ecf
+
     P_UnArchiveSpecials (); 
 #ifdef CHECK_FOR_ERRORS
 
