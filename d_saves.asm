@@ -50,35 +50,31 @@ push      di
 push      bp
 mov       bp, sp
 sub       sp, 4
-mov       bx, _save_p
-mov       ax, word ptr [bx]
-mov       dx, 4
+
+les       bx, dword ptr ds:[_save_p]
+mov       word ptr [bp - 2], es             ; todo remove
+
+mov       dx, bx
+mov       ax, 4
+and       dx, 3
+sub       ax, dx
 and       ax, 3
-sub       dx, ax
-mov       ax, dx
-mov       si, bx
-and       ax, 3
-add       word ptr [bx], ax
-mov       cx, SIZEOF_PLAYER_VANILLA_T
-mov       ax, word ptr [si + 2]
-mov       bx, word ptr [bx]
-mov       word ptr [bp - 2], ax
+add       bx, ax
+mov       word ptr ds:[_save_p], bx         ; todo remove use si
+mov       cx, SIZEOF_PLAYER_VANILLA_T / 2
+
+
 mov       di, bx
-mov       es, word ptr [bp - 2]
-xor       al, al
-push      di
-mov       ah, al
-shr       cx, 1
+xor       ax, ax
 rep stosw
-adc       cx, cx
-rep stosb
-pop       di
+
+
 mov       al, byte ptr ds:[_player + 01Dh]
 mov       word ptr es:[bx + 6], 0
-xor       ah, ah
+;xor       ah, ah  ; xored above
 mov       word ptr es:[bx + 4], ax
 mov       si, OFFSET _player
-lea       di, [di + 8]
+lea       di, [bx + 8]
 movsw     
 movsw     
 movsw     
