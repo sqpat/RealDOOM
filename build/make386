@@ -112,7 +112,7 @@ GLOBOBJS = &
  math.obj &
  math386.obj &
  main.obj &
- d_savel.obj &
+ d_saves.obj &
  d_algo.obj &
  r_math.obj &
  r_mainhi.obj &

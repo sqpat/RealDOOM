@@ -57,6 +57,8 @@ file d_finale.obj
 NEWSEGMENT
 file d_savel.obj
 
+NEWSEGMENT
+file d_saves.obj
 
 #todo put these in the future wad segment. maybe pull out p_tick.
 NEWSEGMENT

@@ -15,7 +15,7 @@
 ;
 
 INCLUDE constant.inc
-
+INCLUDE asmtypes.inc
 
 
 SCREENWIDTH			=   320

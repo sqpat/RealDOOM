@@ -35,58 +35,7 @@ dw    0
 _CSDATA_player_ptr:
 dw    0
 
-SIZEOF_PLAYER_VANILLA_T = 0118h
-SIZEOF_PSPDEF_VANILLA_T = 16
-SIZEOF_PSPDEF_T = 12
-NUMPSPRITES = 2
-NUMPOWERS = 6
-NUMCARDS = 6
-NUMAMMO = 4
 
-
-PLAYER_T STRUC 
-
-    ; cmd struct 8 bytes
-    player_cmd_forwardmove    db ?
-    player_cmd_sidemove       db ?
-    player_cmd_angleturn      dw ?
-    player_cmd_consistancy    dw ?
-    player_cmd_chatchar       db ?
-    player_cmd_buttons        db ?
-    player_viewzvalue         dd ?
-    player_viewheightvalue    dd ?
-    player_deltaviewheight    dd ?
-    player_bob                dd ?
-    player_health             dw ?
-    player_armorpoints        dw ?
-    player_armortype	      db ?
-    player_playerstate        db ?
-    player_powers             dw NUMPOWERS   DUP(?)
-    player_cards              db NUMCARDS    DUP(?)
-    player_readyweapon        db ?
-    player_pendingweapon      db ?
-    player_weaponowned        db NUMWEAPONS  DUP(?)
-    player_cheats		      db ?
-    player_ammo               dw NUMAMMO     DUP(?)
-    player_maxammo            dw NUMAMMO     DUP(?)
-    player_attackdown         db ?
-    player_usedown            db ?
-    player_killcount          dw ?
-    player_itemcount          dw ?
-    player_secretcount        dw ?
-    player_message            dw ?
-	player_messagestring      dw ?
-    player_damagecount        dw ?
-    player_bonuscount         db ?
-    player_refire		      db ?
-    player_attackerRef        dw ?
-    player_extralightvalue    db ?
-    player_fixedcolormapvalue db ?
-    player_colormap	          db ?
-    player_didsecret	      db ?
-    player_backpack           db ?
-
-PLAYER_T ENDS
 
 
 

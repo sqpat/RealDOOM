@@ -3,8 +3,9 @@
 #include "m_near.h"
 #include "sounds.h"
 #include "g_game.h"
+#include "p_saveg.h"
 
-#define CONSTANTS_COUNT 1902
+#define CONSTANTS_COUNT 1909
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -1948,7 +1949,15 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"TF_PREVBITS",
 	"BLOCKLINKS_SEGMENT",
 	"NIGHTMARESPAWNS_SEGMENT",
-	"MAX_BLOCKLINKS_SIZE"
+	"MAX_BLOCKLINKS_SIZE",
+
+	"SIZEOF_PLAYER_VANILLA_T",
+	"SIZEOF_PSPDEF_VANILLA_T",
+	"SIZEOF_PSPDEF_T",
+	"NUMPSPRITES",
+	"NUMPOWERS",
+	"NUMCARDS",
+	"NUMAMMO"
 
 
 
@@ -3905,7 +3914,17 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	TF_PREVBITS,
 	blocklinks_segment,
 	nightmarespawns_segment,
-	MAX_BLOCKLINKS_SIZE
+	MAX_BLOCKLINKS_SIZE,
+
+	sizeof(player_vanilla_t),
+	sizeof(pspdef_vanilla_t),
+	sizeof(pspdef_t),
+	NUMPSPRITES,
+	NUMPOWERS,
+	NUMCARDS,
+	NUMAMMO
+
+
 
 
 
