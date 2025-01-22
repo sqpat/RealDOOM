@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/22 10:13:05
+Created on:       25/01/22 13:36:09
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -81,10 +81,10 @@ p_user_TEXT            CODE           AUTO           0daf:c760       000006c8
 r_bsp_TEXT             CODE           AUTO           1a92:0000       00000024
 r_data_TEXT            CODE           AUTO           1a92:0030       00001c44
 R_MATH_TEXT            CODE           AUTO           1a92:1c74       000001ed
-R_MAINHI_TEXT          CODE           AUTO           1a92:1e62       000025ab
-R_COLUMN_TEXT          CODE           AUTO           1a92:440e       00000b26
-R_SPAN_TEXT            CODE           AUTO           1a92:4f34       00000d33
-R_SKY_TEXT             CODE           AUTO           1a92:5c68       000006c2
+R_MAINHI_TEXT          CODE           AUTO           1a92:1e62       000025a7
+R_COLUMN_TEXT          CODE           AUTO           1a92:440a       00000b26
+R_SPAN_TEXT            CODE           AUTO           1a92:4f30       00000d33
+R_SKY_TEXT             CODE           AUTO           1a92:5c64       000006c2
 r_draw_TEXT            CODE           AUTO           1a92:6330       000000fb
 r_main_TEXT            CODE           AUTO           1a92:6430       000001ea
 r_plane_TEXT           CODE           AUTO           1a92:6620       00000000
@@ -1248,47 +1248,47 @@ Module: r_math.obj(r_math.ASM)
 1a92:1cea      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
 1a92:2203*     R_AddLine_
-1a92:28ea*     R_StoreWallRange_
-1a92:3aa9*     R_ClipSolidWallSegment_
-1a92:3b57*     R_ClipPassWallSegment_
-1a92:3e35*     R_CheckBBox_
-1a92:23a6*     R_Subsector_
+1a92:28e6*     R_StoreWallRange_
+1a92:3aa5*     R_ClipSolidWallSegment_
+1a92:3b53*     R_ClipPassWallSegment_
+1a92:3e31*     R_CheckBBox_
+1a92:23a2*     R_Subsector_
 1a92:1ef3*     FixedMulBSPLocal_
 1a92:1fe6*     R_PointToDist_
 1a92:20d8*     R_HandleEMSVisplanePagination_
 1a92:1f2c*     FixedDivBSPLocal_
-1a92:3d70      R_PrepareMaskedPSprites_
-1a92:40d8      R_WriteBackViewConstants_
-1a92:427e      R_WriteBackFrameConstants_
+1a92:3d6c      R_PrepareMaskedPSprites_
+1a92:40d4      R_WriteBackViewConstants_
+1a92:427a      R_WriteBackFrameConstants_
 1a92:205f      R_ClearPlanes_
-1a92:2888*     R_AddSprites_
+1a92:2884*     R_AddSprites_
 1a92:2187*     R_FindPlane_
-1a92:3572*     R_DrawColumnPrep_
-1a92:3baa*     R_DrawPSprite_
-1a92:2496*     R_CheckPlane_
-1a92:255e*     R_ProjectSprite_
+1a92:356e*     R_DrawColumnPrep_
+1a92:3ba6*     R_DrawPSprite_
+1a92:2492*     R_CheckPlane_
+1a92:255a*     R_ProjectSprite_
 1a92:1f9b*     FixedMulTrigNoShiftBSPLocal_
-1a92:3ff2      R_RenderBSPNode_
+1a92:3fee      R_RenderBSPNode_
 1a92:1e62*     R_ScaleFromGlobalAngle_
-1a92:3dfc*     R_PointToAngle16_
+1a92:3df8*     R_PointToAngle16_
 Module: r_column.obj(r_column.ASM)
-1a92:440e      R_DrawColumn_
+1a92:440a      R_DrawColumn_
 Module: r_span.obj(r_span.ASM)
-1a92:4f34      R_DrawSpan_
-1a92:5642*     R_FixedMulLocal_
-1a92:5b6f      R_WriteBackViewConstantsSpan_
-1a92:5588*     R_DrawSpanPrep_
-1a92:580a      R_DrawPlanes_
-1a92:5c67*     R_SPAN_END_
-1a92:567e*     R_MapPlane_
-1a92:4f37*     R_DrawSpanActual_
-1a92:55f3*     R_FixedMulTrigLocal_
+1a92:4f30      R_DrawSpan_
+1a92:563e*     R_FixedMulLocal_
+1a92:5b6b      R_WriteBackViewConstantsSpan_
+1a92:5584*     R_DrawSpanPrep_
+1a92:5806      R_DrawPlanes_
+1a92:5c63*     R_SPAN_END_
+1a92:567a*     R_MapPlane_
+1a92:4f33*     R_DrawSpanActual_
+1a92:55ef*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1a92:5c68      R_DrawSkyColumn_
-1a92:5e35*     R_DrawSkyColumnDynamic_
-1a92:62b9      R_DrawSkyPlane_
-1a92:632a      R_SKY_END_
-1a92:6248      R_DrawSkyPlaneDynamic_
+1a92:5c64      R_DrawSkyColumn_
+1a92:5e31*     R_DrawSkyColumnDynamic_
+1a92:62b5      R_DrawSkyPlane_
+1a92:6326      R_SKY_END_
+1a92:6244      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1a92:6330      R_VideoErase_
 1a92:63b4      R_DrawViewBorder_

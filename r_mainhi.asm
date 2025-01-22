@@ -1243,14 +1243,15 @@ mov   dx, word ptr es:[bx]
 cmp   ax, dx
 je    exit_addline
 ;	if (!(lineflagslist[curseglinedef] & ML_TWOSIDED)) {
+dec   dx       ; x2 -1 for calls later.
+
 mov   bx, LINEFLAGSLIST_SEGMENT
 mov   es, bx
 mov   bx, word ptr [bp - 4]
 test  byte ptr es:[bx], ML_TWOSIDED
 jne   not_single_sided_line
-mov   word ptr ds:[_backsector], 0FFFFh   ; does this ever get properly used or checked? can we just ignore?
+mov   word ptr ds:[_backsector], SECNUM_NULL   ; does this ever get properly used or checked? can we just ignore?
 clipsolid:
-dec   dx
 call  R_ClipSolidWallSegment_
 exit_addline:
 LEAVE_MACRO 
@@ -1282,6 +1283,8 @@ mov   word ptr ds:[_backsector], si
 mov   es, word ptr ds:[_backsector + 2]
 
 mov   di, word ptr ds:[_frontsector]
+;es:si backsector
+;es:di frontsector.
 
 ; todo do in order with lodsw and compare ax?
 
@@ -1292,23 +1295,23 @@ mov   di, word ptr ds:[_frontsector]
 
 
 ; weird. this kills performance on pentium by 3%.
-xchg  ax, bx   ; store first in bx
+xchg  ax, bx   ; store x1 in bx
 
-lods  word ptr es:[si]
-cmp   ax, word ptr es:[di+2]
+lods  word ptr es:[si]        ; backsector  floor
+cmp   ax, word ptr es:[di+2]  ; frontsector ceiling
 jge   clipsolid_ax_swap
-xchg  ax, cx                  ; cx has old di+0
-lods  word ptr es:[si]
-cmp   ax, word ptr es:[di]
+xchg  ax, cx                  ; cx has old si+0 (backsector floor)
+lods  word ptr es:[si]        ; backsector  ceiling
+cmp   ax, word ptr es:[di]    ; frontsector floor
 jle   clipsolid_ax_swap
 
 ;    // Window.
 ;    if (backsector->ceilingheight != frontsector->ceilingheight
 ;	|| backsector->floorheight != frontsector->floorheight)
 
-cmp   ax, word ptr es:[di + 2]
+cmp   ax, word ptr es:[di + 2]      ; backsector ceiling vs frontsector ceiling
 jne   clippass
-cmp   cx, word ptr es:[di]
+cmp   cx, word ptr es:[di]          ; backsector floor vs frontsector floor
 jne   clippass
 
 ; if (backsector->ceilingpic == frontsector->ceilingpic
@@ -1318,31 +1321,30 @@ jne   clippass
 ;		return;
 ;    }
 
-lods  word ptr es:[si]
-
+lods  word ptr es:[si]           ; al floorpic   ah ceilingpic
 cmp   ax, word ptr es:[di + 4]
 jne   clippass
-mov   al, byte ptr es:[si + 08h] ; si offset by 6..
+
+mov   al, byte ptr es:[si + 08h] ; 0E is lightlevels. offset by 6..
 cmp   al, byte ptr es:[di + 0Eh]
 jne   clippass
-;    fall thru and return.
-mov   si, LINES_SEGMENT
-mov   es, si
-mov   si, word ptr [bp - 0Ch]
+
+;    fall thru and return if midtexture doesnt match.
+mov   ax, SIDES_SEGMENT
+mov   es, ax
+mov   si, word ptr [bp - 0Ch]    ; presumably curlinesidedef.
 cmp   word ptr es:[si + 4], 0
-jne   clippass
-jmp   exit_addline
+je    exit_addline
+
 clippass:
-dec   dx
-xchg  ax, bx                   ; grab cached first
+xchg  ax, bx                   ; grab cached x1
 call  R_ClipPassWallSegment_
 LEAVE_MACRO
 pop   cx
 pop   ax
 ret   
 clipsolid_ax_swap:
-xchg  ax, bx
-dec   dx
+xchg  ax, bx                   ; grab cached x1
 call  R_ClipSolidWallSegment_
 LEAVE_MACRO 
 pop   cx
