@@ -2566,7 +2566,7 @@ mov       [bp - 016h], ax
 lods      word ptr es:[si]
 mov       [bp - 01Ch], ax
 lods      word ptr es:[si]
-mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], ax
+mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+2], ax
 
 mov       ax, word ptr [di+_sides_render]
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1], ax
@@ -3114,9 +3114,8 @@ tempangle_not_smaller_than_fineang180:
 
 mov       bx, word ptr ds:[_curseg_render]
 SELFMODIFY_BSP_sidetextureoffset:
-mov       cx, 01000h
-add       cx, word ptr [bx + 4]
-add       ax, cx
+add       dx, 01000h
+add       dx, word ptr [bx + 4]
 ; rw_offset ready to be written to rendersegloop:
 mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1], ax
 mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1], dx
