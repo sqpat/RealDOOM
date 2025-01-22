@@ -69,203 +69,274 @@ xor       ax, ax
 rep stosw
 
 
-mov       al, byte ptr ds:[_player + 01Dh]
+mov       si, OFFSET _player
+mov       al, byte ptr ds:[si + 01Dh]
 mov       word ptr es:[bx + 6], 0
 ;xor       ah, ah  ; xored above
 mov       word ptr es:[bx + 4], ax
-mov       si, OFFSET _player
-lea       di, [bx + 8]
-movsw     
-movsw     
-movsw     
-movsw     
-mov       dx, word ptr ds:[_player + 08h]
-mov       ax, word ptr ds:[_player + 0Ah]
-mov       word ptr es:[bx + 010h], dx
-mov       word ptr es:[bx + 012h], ax
-mov       ax, word ptr ds:[_player + 0Ch]
-mov       dx, word ptr ds:[_player + 0Eh]
-mov       word ptr es:[bx + 014h], ax
-mov       word ptr es:[bx + 016h], dx
-mov       dx, word ptr ds:[_player + 010h]
-mov       ax, word ptr ds:[_player + 012h]
-mov       word ptr es:[bx + 018h], dx
-mov       word ptr es:[bx + 01ah], ax
-mov       ax, word ptr ds:[_player + 014h]
-mov       dx, word ptr ds:[_player + 016h]
-mov       word ptr es:[bx + 01ch], ax
-mov       word ptr es:[bx + 01eh], dx
-mov       ax, word ptr ds:[_player + 018h]
+lea       di, [bx + 8]                  
+movsw                           ; 0 -> 8    
+movsw                           ; 2 -> A
+movsw                           ; 4 -> C
+movsw                           ; 6 -> E    ticcmd
+
+movsw                           ; 8  -> 10
+movsw                           ; A  -> 12  viewzvalue
+movsw                           ; C  -> 14
+movsw                           ; E  -> 16  viewheightvalue
+movsw                           ; 10 -> 18
+movsw                           ; 12 -> 1A  deltaviewheight
+movsw                           ; 14 -> 1C  
+movsw                           ; 16 -> 1E  bob
+
+lodsw
+cwd
+stosw                           ; 18 -> 20
+xchg      ax, dx
+stosw                           ; 18 -> 22  health
+
+lodsw
+cwd
+stosw                           ; 1A -> 24
+xchg      ax, dx
+stosw                           ; 1A -> 26  armorpoints
+
+lodsb
+cbw
+cwd
+stosw                           ; 1C -> 28
+xchg      ax, dx
+stosw                           ; 1C -> 2A  armortype
+
+;         si now 1d    di now 2C
+
+inc       si  ; si now 1E
+mov       cx, NUMPOWERS
+
+loop_save_powers:
+lodsw
 cwd       
-mov       word ptr es:[bx + 020h], ax
-mov       word ptr es:[bx + 022h], dx
-mov       ax, word ptr ds:[_player + 01Ah]
+stosw
+xchg      ax, dx
+stosw
+loop      loop_save_powers
+
+;         si 02Ah,   di 044h
+
+mov       cx, NUMCARDS
+loop_save_keys:
+lodsb
+cbw
 cwd       
-mov       word ptr es:[bx + 024h], ax
-mov       word ptr es:[bx + 026h], dx
-mov       al, byte ptr ds:[_player + 01Ch]
-cbw      
+stosw
+xchg      ax, dx
+stosw
+loop      loop_save_keys
+
+;         si 030h,    di 05Ch
+add       di, 014h              ; backpack, MAX_PLAYERS * dword for frag count,
+;         si  030h,   di 070h
+
+lodsb     ; ready weapon
+cbw
 cwd       
-mov       word ptr es:[bx + 028h], ax
-mov       word ptr es:[bx + 02ah], dx
-mov       al, byte ptr ds:[_player + 062h]
-cbw      
+stosw
+xchg      ax, dx
+stosw
+;         si  031h,   di 078h
+
+lodsb     ; pending weapon
+cbw
 cwd       
-mov       word ptr es:[bx + 05ch], ax
-mov       word ptr es:[bx + 05eh], dx
-mov       al, byte ptr ds:[_player + 030h]
-mov       word ptr es:[bx + 072h], 0
-xor       ah, ah
-mov       word ptr es:[bx + 070h], ax
-mov       al, byte ptr ds:[_player + 031h]
-mov       word ptr es:[bx + 076h], 0
-mov       word ptr es:[bx + 074h], ax
-mov       al, byte ptr ds:[_player + 04Ch]
-cbw      
+stosw
+xchg      ax, dx
+stosw
+;         si  032h,   di 078h
+
+mov       cx, NUMWEAPONS
+loop_save_weaponowned:
+lodsb
+cbw
 cwd       
-mov       word ptr es:[bx + 0bch], ax
-mov       word ptr es:[bx + 0beh], dx
-mov       al, byte ptr ds:[_player + 04Dh]
-cbw      
+stosw
+xchg      ax, dx
+stosw
+loop      loop_save_weaponowned
+
+;         si  03Bh,   di 09Ch
+
+lodsb     ; cheats
+cbw
+cwd   
+mov       word ptr es:[di + 028h], ax     ; cheats is (base)di + C4h
+mov       word ptr es:[di + 02Ah], dx
+
+
+;         si  03Ch,   di 09Ch
+
+mov       cx, NUMAMMO
+loop_save_ammo:
+lodsw
 cwd       
-mov       word ptr es:[bx + 0c0h], ax
-mov       word ptr es:[bx + 0c2h], dx
-mov       al, byte ptr ds:[_player + 03Bh]
-cbw      
+stosw
+xchg      ax, dx
+stosw
+loop      loop_save_ammo
+
+;         si  044h,   di 0ACh
+
+mov       cx, NUMAMMO
+loop_save_max_ammo:
+lodsw
 cwd       
-mov       word ptr es:[bx + 0c4h], ax
-mov       word ptr es:[bx + 0c6h], dx
-mov       al, byte ptr ds:[_player + 05Bh]
-cbw      
+stosw
+xchg      ax, dx
+stosw
+loop      loop_save_max_ammo
+
+;         si  04Ch,   di 0BCh
+
+lodsb     ; attackdown
+cbw
+cwd   
+stosw
+xchg      ax, dx
+stosw
+;         si  04Dh,   di 0C0h
+
+lodsb     ; usedown
+cbw
+cwd   
+stosw
+xchg      ax, dx
+stosw
+;         si  04Eh,   di 0C4h
+
+add       di, 8             ; cheats, refire (c4, c8)
+;         si  04Eh,   di 0CCh
+
+lodsw     ; killcount
 cwd       
-mov       word ptr es:[bx + 0c8h], ax
-mov       word ptr es:[bx + 0cah], dx
-mov       ax, word ptr ds:[_player + 04Eh]
+stosw
+xchg      ax, dx
+stosw
+;         si  050h,   di 0D0h
+
+lodsw     ; itemcount
 cwd       
-mov       word ptr es:[bx + 0cch], ax
-mov       word ptr es:[bx + 0ceh], dx
-mov       ax, word ptr ds:[_player + 050h]
+stosw
+xchg      ax, dx
+stosw
+;         si  052h,   di 0D4h
+
+lodsw     ; secretcount
 cwd       
-mov       word ptr es:[bx + 0d0h], ax
-mov       word ptr es:[bx + 0d2h], dx
-mov       ax, word ptr ds:[_player + 052h]
+stosw
+xchg      ax, dx
+stosw
+;         si  054h,   di 0D8h
+
+add       si, 4             ; message, messagestring
+add       di, 4             ; message
+;         si  058h,   di 0DCh
+
+lodsw     ; damagecount
 cwd       
-mov       word ptr es:[bx + 0d4h], ax
-mov       word ptr es:[bx + 0d6h], dx
-mov       ax, word ptr ds:[_player + 058h]
+stosw
+xchg      ax, dx
+stosw
+;         si  05Ah,   di 0E0h
+
+
+lodsb     ; bonuscount
+cbw
 cwd       
-mov       word ptr es:[bx + 0dch], ax
-mov       word ptr es:[bx + 0deh], dx
-mov       al, byte ptr ds:[_player + 05Ah]
-cbw      
-cwd       
-mov       word ptr es:[bx + 0e0h], ax
-mov       word ptr es:[bx + 0e2h], dx
-mov       al, byte ptr ds:[_player + 05Eh]
-cbw      
-cwd       
-mov       word ptr es:[bx + 0e8h], ax
-mov       word ptr es:[bx + 0eah], dx
-mov       al, byte ptr ds:[_player + 05Fh]
-mov       word ptr es:[bx + 0eeh], 0
-xor       ah, ah
-mov       word ptr es:[bx + 0ech], ax
-mov       al, byte ptr ds:[_player + 060h]
-cbw      
-cwd       
-mov       word ptr es:[bx + 0f0h], ax
-mov       word ptr es:[bx + 0f2h], dx
-mov       al, byte ptr ds:[_player + 061h]
-cbw      
-cwd       
-mov       word ptr [bp - 4], bx
-mov       word ptr es:[bx + 0114h], ax
-xor       si, si
-mov       word ptr es:[bx + 0116h], dx
-label_2:
-mov       ax, word ptr ds:[si + _player + 01Eh]
-add       bx, 4
-cwd       
-mov       word ptr es:[bx + 028h], ax
-add       si, 2
-mov       word ptr es:[bx + 02ah], dx
-cmp       si, 0Ch
-jne       label_2
-les       bx, dword ptr [bp - 4]
-xor       si, si
-label_3:
-mov       al, byte ptr ds:[si + _player + 02Ah]
-cbw      
-add       bx, 4
-cwd       
-mov       word ptr es:[bx + 040h], ax
+stosw
+xchg      ax, dx
+stosw
+;         si  05Bh,   di 0E4h
+
+
+lodsb       ; refire            
+cbw
+cwd
+mov       word ptr es:[di - 01Ch], ax     ; refire is (base)di + C8h
+mov       word ptr es:[di - 01Ah], dx
+
+
+;         si  05Ch,   di 0E4h
 inc       si
-mov       word ptr es:[bx + 042h], dx
-cmp       si, 6
-jl        label_3
-les       bx, dword ptr [bp - 4]
-xor       ax, ax
-label_4:
-add       bx, 4
-mov       word ptr es:[bx + 05ch], 0
-inc       ax
-mov       word ptr es:[bx + 05eh], 0
-cmp       ax, 4
-jl        label_4
-les       bx, dword ptr [bp - 4]
-xor       si, si
-label_5:
-mov       ax, word ptr ds:[si + _player + 03Ch]
+inc       si                ; attackerref
+add       di, 4             ; attacker
+;         si  05Eh,   di 0E8h
+
+
+lodsb     ; extralightvalue
+cbw
 cwd       
-mov       word ptr es:[bx + 09ch], ax
-mov       word ptr es:[bx + 09eh], dx
-mov       ax, word ptr ds:[si + _player + 044h]
-add       bx, 4
+stosw
+xchg      ax, dx
+stosw
+;         si  05Fh,   di 0ECh
+
+lodsb     ; fixedcolormapvalue
+xor       ah, ah
 cwd       
-mov       word ptr es:[bx + 0a8h], ax
-add       si, 2
-mov       word ptr es:[bx + 0aah], dx
-cmp       si, 8
-jne       label_5
-les       bx, dword ptr [bp - 4]
-xor       si, si
-label_6:
-mov       al, byte ptr ds:[si + _player + 032h]
-cbw      
-add       bx, 4
+stosw
+xchg      ax, dx
+stosw
+;         si  060h,   di 0F0h
+
+lodsb     ; colormap
+xor       ah, ah
 cwd       
-mov       word ptr es:[bx + 074h], ax
-inc       si
-mov       word ptr es:[bx + 076h], dx
-cmp       si, 9
-jl        label_6
-les       bx, dword ptr [bp - 4]
-xor       si, si
-label_1:
-mov       ax, word ptr ds:[si + _psprites + 0]
+stosw
+xchg      ax, dx
+stosw
+;         si  061h,   di 0F4h
+
+lodsb     ; didsecret
+cbw
+cwd       
+mov       word ptr es:[di + 020h], ax     ; didsecret is 0114h
+mov       word ptr es:[di + 022h], dx
+
+;         si  062h,   di 0F4h
+
+lodsb     ; backpack
+cbw
+cwd       
+mov       word ptr es:[di - 098h], ax     ; backpack is (base)di + 5Ch
+mov       word ptr es:[di - 096h], dx
+;         si  063h,   di 0F4h
+; should be 63 F4
+
+; psprite states
+
+
+mov       si, _psprites
+mov       cx, NUMPSPRITES
+loop_save_next_psprite:
+lodsw
 cmp       ax, 0FFFFh
-je        label_7
-mov       word ptr es:[bx + 0f6h], 0
-mov       word ptr es:[bx + 0f4h], ax
-label_8:
-mov       ax, word ptr ds:[si +  + _psprites + 2]
+je        skip_statenum_write           ; no need to write zeros. we already memset.
+;mov       word ptr es:[di + 0f6h], 0
+stosw
+add       di, 2
+done_with_statenum_write:
+
+lodsw
 cwd       
-mov       word ptr es:[bx + 0f8h], ax
-mov       word ptr es:[bx + 0fah], dx
-mov       ax, word ptr ds:[si + _psprites + 4]
-mov       dx, word ptr ds:[si + _psprites + 6]
-mov       word ptr es:[bx + 0fch], ax
-mov       word ptr es:[bx + 0feh], dx
-add       bx, 010h
-mov       dx, word ptr ds:[si + _psprites + 8]
-mov       ax, word ptr ds:[si + _psprites + 0Ah]
-mov       word ptr es:[bx + 0f0h], dx
-add       si, 0Ch
-mov       word ptr es:[bx + 0f2h], ax
-cmp       si, 018h
-jne       label_1
-mov       bx, _save_p
-add       word ptr [bx], SIZEOF_PLAYER_VANILLA_T
+stosw
+xchg      ax, dx
+stosw
+movsw
+movsw
+movsw
+movsw
+loop      loop_save_next_psprite
+
+add       word ptr ds:[_save_p], SIZEOF_PLAYER_VANILLA_T
 LEAVE_MACRO 
 pop       di
 pop       si
@@ -273,10 +344,9 @@ pop       dx
 pop       cx
 pop       bx
 retf      
-label_7:
-mov       word ptr es:[bx + 0f4h], 0
-mov       word ptr es:[bx + 0f6h], 0
-jmp       label_8
+skip_statenum_write:
+add       di, 4
+jmp       done_with_statenum_write
 
 
 
