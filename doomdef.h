@@ -55,7 +55,7 @@ enum { VERSION =  109 };
 #define DEBUG_PRINTING 1
 
 #if DEBUG_PRINTING
-    void __far DEBUG_PRINT (int8_t *error, ...);
+    void __far DEBUG_PRINT (int8_t __far*error, ...);
 #else
     //void __far DEBUG_PRINT (int8_t *error, ...);
 	#define DEBUG_PRINT(...)
@@ -422,7 +422,7 @@ int16_t __far locallib_strncasecmp(char __near *str1, char __far *str2, int16_t 
 void __far combine_strings(char __far *dest, char __far *src1, char __far *src2);
 void __far makesavegamename(char __far *dest, int8_t number);
 void __far locallib_strcpy(char __far *dest, char __far *src);
-void __far locallib_printf (int8_t *str, va_list argptr);
+void __far locallib_printf (int8_t __far* str, va_list argptr);
 
 void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n);
 int16_t __far locallib_strlen(char __far *src);

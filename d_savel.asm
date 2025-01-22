@@ -95,61 +95,6 @@ PLAYER_T STRUC
 PLAYER_T ENDS
 
 
-; copy string from cs:ax to ds:_filename_argument
-; return _filename_argument in ax
-
-PROC CopyString13Save_ NEAR
-PUBLIC CopyString13Save_
-
-push  si
-push  di
-push  cx
-
-mov   di, OFFSET _filename_argument
-
-push  ds
-pop   es    ; es = ds
-
-push  cs
-pop   ds    ; ds = cs
-
-mov   si, ax
-
-mov   ax, 0
-stosw       ; zero out
-stosw
-stosw
-stosw
-stosw
-stosw
-stosb
-
-mov  cx, 13
-sub  di, cx
-
-do_next_char:
-lodsb
-stosb
-test  al, al
-je    done_writing
-loop do_next_char
-
-
-done_writing:
-
-mov   ax, OFFSET _filename_argument   ; ax now points to the near string
-
-push  ss
-pop   ds    ; restore ds
-
-pop   cx
-pop   di
-pop   si
-
-ret
-
-ENDP
-
 
 
 PROC P_UnArchivePlayers_  FAR
@@ -585,7 +530,7 @@ xor       ah, ah
 push      ax
 
 mov ax, OFFSET str_bad_tclass_1
-call CopyString13Save_
+push      cs
 push      ax
 call      I_Error_
 ;add       sp, 4
@@ -855,10 +800,8 @@ bad_special_thinkerclass:
 xor    ah, ah
 
 mov    ax, OFFSET str_bad_tclass_2
-call   CopyString13Save_
+push   cs
 push   ax
-;push   cs  ??
-
 call   I_Error_
 
 ; thinker_type...

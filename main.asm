@@ -1262,7 +1262,7 @@ loop loop_copy_new_defaults_filename
 done_copying_new_defaults_filename:
 
 mov   ax, OFFSET _str_default_file
-call  CopyString13_
+push  cs
 push  ax                            ; a little roundabout. i think we could copy to CS first, then join with the other branch 
 
 call  DEBUG_PRINT_

@@ -372,7 +372,7 @@ void __far locallib_printstringnear (int8_t __near *str){
 	locallib_printstringfar(str);
 }
 
-void __far locallib_printf (int8_t *str, va_list argptr){
+void __far locallib_printf (int8_t __far*str, va_list argptr){
     int16_t i = 0;
     int8_t longflag = false;
 	
@@ -462,7 +462,7 @@ void __far locallib_printf (int8_t *str, va_list argptr){
 #if DEBUG_PRINTING
 
 
-void __far DEBUG_PRINT (int8_t *error, ...){
+void __far DEBUG_PRINT (int8_t __far *error, ...){
     va_list argptr;
     
 	va_start(argptr, error);

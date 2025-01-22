@@ -409,11 +409,10 @@ void __near I_Shutdown(void);
 //
 // I_Error
 //
-void __far I_Error (int8_t *error, ...){
+void __far I_Error (int8_t __far *error, ...){
     va_list argptr;
-    I_Shutdown();
-    
-	va_start(argptr, error);
+	I_Shutdown();
+    va_start(argptr, error);
     locallib_printf(error, argptr);
     va_end(argptr);
     putchar('\n');

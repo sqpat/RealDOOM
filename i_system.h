@@ -56,7 +56,7 @@ void __near I_StartTic (void);
 void __near I_Quit (void);
 
 
-void __far I_Error (int8_t *error, ...);
+void __far I_Error (int8_t __far *error, ...);
 
 void __far I_BeginRead(void);
 void __far I_EndRead(void);
