@@ -42,39 +42,31 @@ PROC P_ArchivePlayers_ FAR
 PUBLIC P_ArchivePlayers_
 
 
-push      bx
 push      cx
 push      dx
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 4
 
-les       bx, dword ptr ds:[_save_p]
-mov       word ptr [bp - 2], es             ; todo remove
+les       di, dword ptr ds:[_save_p]
 
-mov       dx, bx
+mov       dx, di
 mov       ax, 4
 and       dx, 3
 sub       ax, dx
 and       ax, 3
-add       bx, ax
-mov       word ptr ds:[_save_p], bx         ; todo remove use si
+add       di, ax
+
 mov       cx, SIZEOF_PLAYER_VANILLA_T / 2
 
 
-mov       di, bx
+mov       dx, di
 xor       ax, ax
 rep stosw
 
+mov       di, dx
 
 mov       si, OFFSET _player
-mov       al, byte ptr ds:[si + 01Dh]
-mov       word ptr es:[bx + 6], 0
-;xor       ah, ah  ; xored above
-mov       word ptr es:[bx + 4], ax
-lea       di, [bx + 8]                  
+lea       di, [di + 8]                  
 movsw                           ; 0 -> 8    
 movsw                           ; 2 -> A
 movsw                           ; 4 -> C
@@ -110,7 +102,11 @@ stosw                           ; 1C -> 2A  armortype
 
 ;         si now 1d    di now 2C
 
-inc       si  ; si now 1E
+lodsb     ; si now 1E               ; playerstate
+xor       ah, ah
+mov       word ptr es:[di - 028h], ax     ; playerstate is (base)di + 4
+
+;         si now 1E    di now 2C
 mov       cx, NUMPOWERS
 
 loop_save_powers:
@@ -336,13 +332,14 @@ movsw
 movsw
 loop      loop_save_next_psprite
 
-add       word ptr ds:[_save_p], SIZEOF_PLAYER_VANILLA_T
-LEAVE_MACRO 
+add       di, 4         ; for didsecret
+mov       word ptr ds:[_save_p], di
+
+
 pop       di
 pop       si
 pop       dx
 pop       cx
-pop       bx
 retf      
 skip_statenum_write:
 add       di, 4
