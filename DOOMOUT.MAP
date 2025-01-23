@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/23 14:09:57
+Created on:       25/01/23 14:36:41
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -57,8 +57,8 @@ g_setup_TEXT           CODE           AUTO           02af:7f80       000002ca
 r_setup_TEXT           CODE           AUTO           02af:8250       00000445
 st_setup_TEXT          CODE           AUTO           02af:86a0       000001fa
 hu_setup_TEXT          CODE           AUTO           02af:88a0       000000c1
-p_saveg_TEXT           CODE           AUTO           02af:8970       00000672
-D_SAVES_TEXT           CODE           AUTO           02af:8fe2       0000047c
+p_saveg_TEXT           CODE           AUTO           02af:8970       00000000
+D_SAVES_TEXT           CODE           AUTO           02af:8970       00000ae6
 s_sound_TEXT           CODE           AUTO           0bf5:0000       000004f0
 p_ceilng_TEXT          CODE           AUTO           0bf5:04f0       000003ae
 p_doors_TEXT           CODE           AUTO           0bf5:08a0       000006da
@@ -927,14 +927,14 @@ Module: st_setup.obj(C:\REALDOOM\st_setup.c)
 Module: hu_setup.obj(C:\REALDOOM\hu_setup.c)
 02af:88a0      HU_Start_
 Module: p_saveg.obj(C:\REALDOOM\p_saveg.c)
-02af:8970      P_ArchiveSpecials_
 2264:2180*     _specials_e
 Module: d_saves.obj(d_saves.ASM)
-02af:945e*     P_SAVEEND_
-02af:8fe2*     P_SAVESTART_
-02af:9116      P_ArchiveWorld_
-02af:8fe6      P_ArchivePlayers_
-02af:91dc      P_ArchiveThinkers_
+02af:9456*     P_SAVEEND_
+02af:8970*     P_SAVESTART_
+02af:8aa4      P_ArchiveWorld_
+02af:8dec      P_ArchiveSpecials_
+02af:8974      P_ArchivePlayers_
+02af:8b6a      P_ArchiveThinkers_
 Module: s_sound.obj(C:\REALDOOM\s_sound.c)
 0bf5:0000      S_SetMusicVolume_
 0bf5:001a*     S_StopMusic_
@@ -1605,4 +1605,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000257f0 (153584.)
 Entry point address: 1e5b:2298
-Link time: 00:00.74
+Link time: 00:00.20

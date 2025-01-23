@@ -347,6 +347,7 @@ void __far P_UnArchiveWorld (void) {
 //
 // Thinkers
 //
+/*
 typedef enum {
     tc_end,
     tc_mobj
@@ -354,7 +355,7 @@ typedef enum {
 } thinkerclass_t;
 
 
- 
+ */
 //
 // P_ArchiveThinkers
 //
@@ -587,6 +588,7 @@ enum {
 // T_Glow, (glow_t: sector_t *),
 // T_PlatRaise, (plat_t: sector_t *), - active list
 //
+/*
 void __far P_ArchiveSpecials (void) {
 	
     THINKERREF					th;
@@ -797,6 +799,7 @@ void __far P_ArchiveSpecials (void) {
     *save_p++ = tc_endspecials;	
 	
 }
+*/
 
 
 //

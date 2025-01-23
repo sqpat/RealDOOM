@@ -24,6 +24,7 @@ INSTRUCTION_SET_MACRO
 ;EXTRN _playerMobjRef:WORD
 
 EXTRN _player:PLAYER_T
+EXTRN _activeceilings:WORD
 
 .CODE
  
@@ -355,7 +356,6 @@ SIZEOF_SECTOR_T = 16
 SIZEOF_SECTOR_PHYSICS_T = 16
 SIZEOF_LINE_PHYSICS_T = 16
 SIZEOF_LINE_T = 4
-SIDE_2_ID = -2      ; impossible side id, use as marker for 2nd iter
 
 PROC P_ArchiveWorld_ FAR
 PUBLIC P_ArchiveWorld_
@@ -765,6 +765,679 @@ mov       bx, OFFSET _save_p
 add       word ptr ds:[bx], SIZEOF_MOBJ_VANILLA_T
 jmp       iterate_to_next_thinker
 
+
+ENDP
+
+
+SIZEOF_CEILING_VANILLA_T = 030h
+SIZEOF_FLOORMOVE_VANILLA_T = 02Ah
+SIZEOF_VLDOOR_VANILLA_T = 028h
+SIZEOF_PLAT_VANILLA_T = 038h
+SIZEOF_STROBE_VANILLA_T = 024h
+SIZEOF_LIGHTFLASH_VANILLA_T = 024h
+SIZEOF_GLOW_VANILLA_T = 01Ch
+
+MAXCEILINGS = 30
+
+PROC P_ArchiveSpecials_ FAR
+PUBLIC P_ArchiveSpecials_
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 020h
+mov       si, OFFSET _thinkerlist + 2
+mov       si, word ptr [si]
+test      si, si
+jne       save_next_special
+jmp       exit_archive_specials
+save_next_special:
+imul      bx, si, SIZEOF_THINKER_T
+mov       ax, word ptr [bx + OFFSET _thinkerlist]
+and       ax, TF_FUNCBITS
+
+
+mov       word ptr [bp - 4], ax
+test      ax, ax
+je        label_10
+jmp       label_11
+label_10:
+xor       bx, bx
+cmp       si, word ptr [_activeceilings]
+je        label_9
+label_12:
+inc       ax
+add       bx, 2
+cmp       ax, MAXCEILINGS
+jge       label_9
+cmp       si, word ptr [bx + _activeceilings]
+jne       label_12
+label_9:
+cmp       ax, MAXCEILINGS
+jl        label_13
+jmp       iterate_to_next_special
+label_13:
+imul      ax, si, SIZEOF_THINKER_T
+mov       bx, _save_p
+mov       di, _save_p
+add       ax, OFFSET _thinkerlist + 4
+mov       bx, word ptr [bx]
+mov       word ptr [bp - 6], ax
+lea       ax, [bx + 1]
+mov       es, word ptr [di + 2]
+mov       word ptr [di], ax
+mov       byte ptr es:[bx], 0
+mov       ax, word ptr [di]
+mov       dx, ax
+mov       bx, 4
+and       dx, 3
+sub       bx, dx
+mov       dx, bx
+and       dx, 3
+add       ax, dx
+mov       word ptr [di], ax
+mov       bx, ax
+mov       ax, word ptr [di + 2]
+mov       cx, SIZEOF_CEILING_VANILLA_T
+mov       word ptr [bp - 01ah], ax
+mov       di, bx
+mov       es, word ptr [bp - 01ah]
+xor       al, al
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       di, word ptr [bp - 6]
+label_22:
+mov       al, byte ptr [di]
+cbw      
+cwd       
+mov       word ptr es:[bx + 0Ch], ax
+mov       word ptr es:[bx + 0Eh], dx
+mov       ax, word ptr [di + 1]
+cwd       
+mov       word ptr es:[bx + 010h], ax
+mov       word ptr es:[bx + 012h], dx
+mov       ax, word ptr [di + 3]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[bx + 014h], ax
+mov       word ptr es:[bx + 016h], dx
+mov       ax, word ptr [di + 5]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[bx + 018h], ax
+mov       word ptr es:[bx + 01ah], dx
+mov       ax, word ptr [di + 7]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[bx + 01ch], ax
+mov       word ptr es:[bx + 01eh], dx
+mov       al, byte ptr [di + 9]
+cbw      
+cwd       
+mov       word ptr es:[bx + 020h], ax
+mov       word ptr es:[bx + 022h], dx
+mov       al, byte ptr [di + 0Ah]
+cbw      
+cwd       
+mov       word ptr es:[bx + 024h], ax
+mov       word ptr es:[bx + 026h], dx
+mov       al, byte ptr [di + 0Bh]
+cbw      
+cwd       
+mov       word ptr es:[bx + 028h], ax
+mov       word ptr es:[bx + 02ah], dx
+mov       al, byte ptr [di + 0Ch]
+cbw      
+cwd       
+mov       word ptr es:[bx + 02ch], ax
+mov       word ptr es:[bx + 02eh], dx
+mov       bx, _save_p
+add       word ptr [bx], SIZEOF_CEILING_VANILLA_T
+iterate_to_next_special:
+imul      si, si, SIZEOF_THINKER_T
+mov       si, word ptr [si + OFFSET _thinkerlist + 2]
+test      si, si
+je        exit_archive_specials
+jmp       save_next_special
+exit_archive_specials:
+mov       bx, _save_p
+les       si, dword ptr [bx]
+inc       word ptr [bx]
+mov       byte ptr es:[si], 7
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+retf      
+label_11:
+add       bx, OFFSET _thinkerlist + 4
+mov       word ptr [bp - 2], bx
+cmp       ax, TF_MOVECEILING_HIGHBITS
+jne       label_19
+jmp       label_18
+label_19:
+cmp       ax, TF_VERTICALDOOR_HIGHBITS
+je        label_16
+jmp       label_17
+label_16:
+mov       bx, _save_p
+mov       bx, word ptr [bx]
+mov       di, _save_p
+lea       ax, [bx + 1]
+mov       es, word ptr [di + 2]
+mov       word ptr [di], ax
+mov       byte ptr es:[bx], 1
+mov       ax, word ptr [di]
+mov       dx, ax
+mov       bx, 4
+and       dx, 3
+sub       bx, dx
+mov       dx, bx
+and       dx, 3
+add       ax, dx
+mov       word ptr [di], ax
+mov       bx, ax
+mov       ax, word ptr [di + 2]
+mov       cx, SIZEOF_VLDOOR_VANILLA_T
+mov       word ptr [bp - 020h], ax
+mov       di, bx
+mov       es, word ptr [bp - 020h]
+xor       al, al
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       di, word ptr [bp - 2]
+mov       al, byte ptr [di]
+cbw      
+cwd       
+mov       word ptr es:[bx + 0Ch], ax
+mov       word ptr es:[bx + 0Eh], dx
+mov       ax, word ptr [di + 1]
+cwd       
+mov       word ptr es:[bx + 010h], ax
+mov       word ptr es:[bx + 012h], dx
+mov       ax, word ptr [di + 3]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[bx + 014h], ax
+mov       word ptr es:[bx + 016h], dx
+mov       ax, word ptr [di + 5]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[bx + 018h], ax
+mov       word ptr es:[bx + 01ah], dx
+mov       ax, word ptr [di + 7]
+cwd       
+mov       word ptr es:[bx + 01ch], ax
+mov       word ptr es:[bx + 01eh], dx
+mov       ax, word ptr [di + 9]
+cwd       
+mov       word ptr es:[bx + 020h], ax
+mov       word ptr es:[bx + 022h], dx
+mov       ax, word ptr [di + 0Bh]
+cwd       
+mov       word ptr es:[bx + 024h], ax
+mov       word ptr es:[bx + 026h], dx
+mov       bx, _save_p
+add       word ptr [bx], SIZEOF_VLDOOR_VANILLA_T
+label_17:
+cmp       word ptr [bp - 4], TF_MOVEFLOOR_HIGHBITS
+je        label_21
+jmp       label_20
+label_21:
+imul      ax, si, SIZEOF_THINKER_T
+mov       bx, _save_p
+mov       di, _save_p
+add       ax, OFFSET _thinkerlist + 4
+mov       bx, word ptr [bx]
+mov       word ptr [bp - 01ch], ax
+lea       ax, [bx + 1]
+mov       es, word ptr [di + 2]
+mov       word ptr [di], ax
+mov       byte ptr es:[bx], 2
+mov       ax, word ptr [di]
+mov       dx, ax
+mov       bx, 4
+and       dx, 3
+sub       bx, dx
+mov       dx, bx
+and       dx, 3
+add       ax, dx
+mov       word ptr [di], ax
+mov       bx, ax
+mov       ax, word ptr [di + 2]
+mov       cx, SIZEOF_FLOORMOVE_VANILLA_T
+mov       word ptr [bp - 0Eh], ax
+mov       di, bx
+mov       es, word ptr [bp - 0Eh]
+xor       al, al
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       di, word ptr [bp - 01ch]
+mov       al, byte ptr [di]
+mov       word ptr es:[bx + 0Eh], 0
+xor       ah, ah
+mov       word ptr es:[bx + 0Ch], ax
+mov       al, byte ptr [di + 1]
+cbw      
+cwd       
+mov       word ptr es:[bx + 010h], ax
+mov       word ptr es:[bx + 012h], dx
+mov       ax, word ptr [di + 2]
+cwd       
+mov       word ptr es:[bx + 014h], ax
+mov       word ptr es:[bx + 016h], dx
+mov       al, byte ptr [di + 4]
+cbw      
+cwd       
+mov       word ptr es:[bx + 018h], ax
+mov       word ptr es:[bx + 01ah], dx
+mov       al, byte ptr [di + 5]
+mov       word ptr es:[bx + 01eh], 0
+xor       ah, ah
+mov       word ptr es:[bx + 01ch], ax
+mov       al, byte ptr [di + 6]
+mov       word ptr es:[bx + 020h], ax
+mov       ax, word ptr [di + 7]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[bx + 022h], ax
+mov       word ptr es:[bx + 024h], dx
+mov       ax, word ptr [di + 9]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[bx + 026h], ax
+mov       word ptr es:[bx + 028h], dx
+mov       bx, _save_p
+add       word ptr [bx], SIZEOF_FLOORMOVE_VANILLA_T
+label_20:
+imul      bx, si, SIZEOF_THINKER_T
+mov       ax, word ptr [bp - 4]
+add       bx, OFFSET _thinkerlist + 4
+cmp       ax, TF_PLATRAISE_HIGHBITS
+jne       label_7
+jmp       label_8
+label_7:
+cmp       ax, TF_LIGHTFLASH_HIGHBITS
+jne       label_6
+jmp       label_5
+label_6:
+cmp       ax, TF_STROBEFLASH_HIGHBITS
+jne       label_4
+jmp       label_3
+label_4:
+cmp       ax, TF_GLOW_HIGHBITS
+je        label_2
+jmp       iterate_to_next_special
+label_2:
+mov       di, _save_p
+mov       ax, word ptr [di]
+mov       dx, ax
+inc       dx
+mov       es, word ptr [di + 2]
+mov       word ptr [di], dx
+mov       di, ax
+mov       byte ptr es:[di], 6
+mov       di, _save_p
+mov       ax, word ptr [di]
+mov       dx, ax
+mov       di, 4
+and       dx, 3
+sub       di, dx
+mov       dx, di
+mov       di, _save_p
+and       dx, 3
+add       ax, dx
+mov       word ptr [di], ax
+mov       word ptr [bp - 010h], ax
+mov       ax, word ptr [di + 2]
+mov       cx, SIZEOF_GLOW_VANILLA_T
+mov       word ptr [bp - 0Ch], ax
+mov       di, word ptr [bp - 010h]
+mov       es, word ptr [bp - 0Ch]
+xor       al, al
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       ax, word ptr [bx]
+cwd       
+mov       word ptr es:[di + 0Ch], ax
+mov       word ptr es:[di + 0Eh], dx
+mov       al, byte ptr [bx + 2]
+mov       word ptr es:[di + 012h], 0
+xor       ah, ah
+mov       word ptr es:[di + 010h], ax
+mov       al, byte ptr [bx + 3]
+mov       word ptr es:[di + 016h], 0
+mov       word ptr es:[di + 014h], ax
+mov       ax, word ptr [bx + 4]
+mov       bx, di
+cwd       
+mov       word ptr es:[bx + 018h], ax
+mov       word ptr es:[bx + 01ah], dx
+mov       bx, _save_p
+add       word ptr [bx], SIZEOF_GLOW_VANILLA_T
+jmp       iterate_to_next_special
+label_18:
+mov       bx, _save_p
+mov       bx, word ptr [bx]
+mov       di, _save_p
+lea       ax, [bx + 1]
+mov       es, word ptr [di + 2]
+mov       word ptr [di], ax
+mov       byte ptr es:[bx], 0
+mov       ax, word ptr [di]
+mov       dx, ax
+mov       bx, 4
+and       dx, 3
+sub       bx, dx
+mov       dx, bx
+and       dx, 3
+add       ax, dx
+mov       word ptr [di], ax
+mov       bx, ax
+mov       ax, word ptr [di + 2]
+mov       cx, SIZEOF_CEILING_VANILLA_T
+mov       word ptr [bp - 01eh], ax
+mov       di, bx
+mov       es, word ptr [bp - 01eh]
+xor       al, al
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       di, word ptr [bp - 2]
+jmp       label_22
+label_8:
+mov       di, _save_p
+mov       ax, word ptr [di]
+mov       dx, ax
+inc       dx
+mov       es, word ptr [di + 2]
+mov       word ptr [di], dx
+mov       di, ax
+mov       byte ptr es:[di], 3
+mov       di, _save_p
+mov       ax, word ptr [di]
+mov       dx, ax
+mov       di, 4
+and       dx, 3
+sub       di, dx
+mov       dx, di
+mov       di, _save_p
+and       dx, 3
+add       ax, dx
+mov       word ptr [di], ax
+mov       word ptr [bp - 012h], ax
+mov       ax, word ptr [di + 2]
+mov       cx, SIZEOF_PLAT_VANILLA_T 
+mov       word ptr [bp - 0Ah], ax
+mov       di, word ptr [bp - 012h]
+mov       es, word ptr [bp - 0Ah]
+xor       al, al
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       ax, word ptr [bx]
+cwd       
+mov       word ptr es:[di + 0Ch], ax
+mov       word ptr es:[di + 0Eh], dx
+mov       ax, word ptr [bx + 2]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[di + 010h], ax
+mov       word ptr es:[di + 012h], dx
+mov       ax, word ptr [bx + 4]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[di + 014h], ax
+mov       word ptr es:[di + 016h], dx
+mov       ax, word ptr [bx + 6]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[di + 018h], ax
+mov       word ptr es:[di + 01ah], dx
+mov       al, byte ptr [bx + 8]
+cbw      
+cwd       
+mov       word ptr es:[di + 01ch], ax
+mov       word ptr es:[di + 01eh], dx
+mov       al, byte ptr [bx + 9]
+cbw      
+cwd       
+mov       word ptr es:[di + 020h], ax
+mov       word ptr es:[di + 022h], dx
+mov       al, byte ptr [bx + 0Ah]
+mov       word ptr es:[di + 026h], 0
+xor       ah, ah
+mov       word ptr es:[di + 024h], ax
+mov       al, byte ptr [bx + 0Bh]
+mov       word ptr es:[di + 02ah], 0
+mov       word ptr es:[di + 028h], ax
+mov       al, byte ptr [bx + 0Ch]
+cbw      
+cwd       
+mov       word ptr es:[di + 02ch], ax
+mov       word ptr es:[di + 02eh], dx
+mov       al, byte ptr [bx + 0Dh]
+cbw      
+cwd       
+mov       word ptr es:[di + 030h], ax
+mov       word ptr es:[di + 032h], dx
+mov       al, byte ptr [bx + 0Eh]
+mov       bx, di
+xor       ah, ah
+mov       word ptr es:[bx + 036h], 0
+mov       word ptr es:[bx + 034h], ax
+mov       bx, _save_p
+add       word ptr [bx], SIZEOF_PLAT_VANILLA_T 
+jmp       iterate_to_next_special
+label_5:
+mov       di, _save_p
+mov       ax, word ptr [di]
+mov       dx, ax
+inc       dx
+mov       es, word ptr [di + 2]
+mov       word ptr [di], dx
+mov       di, ax
+mov       byte ptr es:[di], 4
+mov       di, _save_p
+mov       ax, word ptr [di]
+mov       dx, ax
+mov       di, 4
+and       dx, 3
+sub       di, dx
+mov       dx, di
+mov       di, _save_p
+and       dx, 3
+add       ax, dx
+mov       word ptr [di], ax
+mov       word ptr [bp - 018h], ax
+mov       ax, word ptr [di + 2]
+mov       cx, SIZEOF_LIGHTFLASH_VANILLA_T
+mov       word ptr [bp - 016h], ax
+les       di, dword ptr [bp - 018h]
+xor       al, al
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw
+adc       cx, cx
+rep stosb 
+pop       di
+mov       ax, word ptr [bx]
+cwd       
+mov       word ptr es:[di + 0Ch], ax
+mov       word ptr es:[di + 0Eh], dx
+mov       ax, word ptr [bx + 2]
+cwd       
+mov       word ptr es:[di + 010h], ax
+mov       word ptr es:[di + 012h], dx
+mov       al, byte ptr [bx + 4]
+mov       word ptr es:[di + 016h], 0
+xor       ah, ah
+mov       word ptr es:[di + 014h], ax
+mov       al, byte ptr [bx + 5]
+mov       word ptr es:[di + 01ah], 0
+mov       word ptr es:[di + 018h], ax
+mov       al, byte ptr [bx + 6]
+cbw      
+cwd       
+mov       word ptr es:[di + 01ch], ax
+mov       word ptr es:[di + 01eh], dx
+mov       al, byte ptr [bx + 7]
+cbw      
+mov       bx, di
+cwd       
+mov       word ptr es:[bx + 020h], ax
+mov       word ptr es:[bx + 022h], dx
+mov       bx, _save_p
+add       word ptr [bx], SIZEOF_LIGHTFLASH_VANILLA_T
+jmp       iterate_to_next_special
+label_3:
+mov       di, _save_p
+mov       ax, word ptr [di]
+mov       dx, ax
+inc       dx
+mov       es, word ptr [di + 2]
+mov       word ptr [di], dx
+mov       di, ax
+mov       byte ptr es:[di], 5
+mov       di, _save_p
+mov       ax, word ptr [di]
+mov       dx, ax
+mov       di, 4
+and       dx, 3
+sub       di, dx
+mov       dx, di
+mov       di, _save_p
+and       dx, 3
+add       ax, dx
+mov       word ptr [di], ax
+mov       word ptr [bp - 8], ax
+mov       ax, word ptr [di + 2]
+mov       cx, SIZEOF_STROBE_VANILLA_T
+mov       word ptr [bp - 014h], ax
+mov       di, word ptr [bp - 8]
+mov       es, word ptr [bp - 014h]
+xor       al, al
+push      di
+mov       ah, al
+shr       cx, 1
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       ax, word ptr [bx]
+cwd       
+mov       word ptr es:[di + 0Ch], ax
+mov       word ptr es:[di + 0Eh], dx
+mov       ax, word ptr [bx + 2]
+cwd       
+mov       word ptr es:[di + 010h], ax
+mov       word ptr es:[di + 012h], dx
+mov       al, byte ptr [bx + 4]
+mov       word ptr es:[di + 016h], 0
+xor       ah, ah
+mov       word ptr es:[di + 014h], ax
+mov       al, byte ptr [bx + 5]
+mov       word ptr es:[di + 01ah], 0
+mov       word ptr es:[di + 018h], ax
+mov       ax, word ptr [bx + 6]
+cwd       
+mov       word ptr es:[di + 01ch], ax
+mov       word ptr es:[di + 01eh], dx
+mov       ax, word ptr [bx + 8]
+mov       bx, di
+cwd       
+mov       word ptr es:[bx + 020h], ax
+mov       word ptr es:[bx + 022h], dx
+mov       bx, _save_p
+add       word ptr [bx], SIZEOF_STROBE_VANILLA_T
+jmp       iterate_to_next_special
+add       byte ptr [bx + si], al
+add       byte ptr [bx + si], al
 
 ENDP
 
