@@ -533,13 +533,14 @@ retf
 ENDP
 
 
-SIZEOF_THINKER_T = 44
+SIZEOF_THINKER_T = 02Ch
 SIZEOF_MOBJ_VANILLA_T = 09Ah
 SIZEOF_MOBJ_T = 028h
 SIZEOF_MOBJPOS_T = 018h
 SIZEOF_THINKER_VANILLA_T = 12
 SIZEOF_MAPTHING_T = 10
 SIZEOF_STATE_T = 6
+VANILLA_FULLBRIGHT = 08000h
 
 PROC P_ArchiveThinkers_ FAR
 PUBLIC P_ArchiveThinkers_
@@ -550,30 +551,38 @@ push      cx
 push      dx
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 8
-mov       ax, word ptr ds:[_thinkerlist + 2]
-mov       word ptr [bp - 6], ax
-test      ax, ax
+
+les       di, dword ptr ds:[_save_p]
+mov       dx, word ptr ds:[_thinkerlist + 2]
+test      dx, dx
 je        exit_archivethinkers
 loop_check_next_thinker:
-imul      bx, word ptr [bp - 6], SIZEOF_THINKER_T
-mov       ax, word ptr [bx + OFFSET _thinkerlist]
+mov       ax, SIZEOF_THINKER_T
+push      dx    ; backup  th
+mul       dx
+pop       dx    ; restore th
+xchg      ax, bx
+
+mov       ax, word ptr ss:[bx + OFFSET _thinkerlist]
 and       ax, TF_FUNCBITS
 cmp       ax, TF_MOBJTHINKER_HIGHBITS
 je        do_save_next_thinker
+mov       dx, bx
 iterate_to_next_thinker:
-imul      bx, word ptr [bp - 6], SIZEOF_THINKER_T
-mov       ax, word ptr [bx + OFFSET _thinkerlist + 2]
-mov       word ptr [bp - 6], ax
-test      ax, ax
+mov       ax, SIZEOF_THINKER_T
+mul       dx
+xchg      ax, bx
+mov       dx, word ptr ss:[bx + OFFSET _thinkerlist + 2] ; next th
+test      dx, dx
 jne       loop_check_next_thinker
 exit_archivethinkers:
-les       si, dword ptr ds:[_save_p]
-inc       word ptr ds:[_save_p]
-mov       byte ptr es:[si], 0       ; tc_end
-LEAVE_MACRO
+mov       al, 0
+stosb                                   ; tc_end
+push      ss
+pop       ds
+
+mov       word ptr ds:[_save_p], di     ; write back _save_p
+
 pop       di
 pop       si
 pop       dx
@@ -582,181 +591,172 @@ pop       bx
 retf      
 
 do_save_next_thinker:
-imul      si, word ptr [bp - 6], SIZEOF_MOBJPOS_T
-add       bx, OFFSET _thinkerlist + 4
-mov       word ptr [bp - 4], bx
-les       bx, dword ptr ds:[_save_p]
-mov       byte ptr es:[bx], 1       ; tc_mobj
-inc       bx
-;inc       word ptr ds:[_save_p]    ; writes back after..
+; dx is index..
+mov       ax, SIZEOF_MOBJPOS_T
+push      dx
+mul       dx         ; dx is thinker index.
+pop       dx
+xchg      si, ax     ; si gets mobjpos_t
+
+mov       al, 1
+stosb
+
 
 
 ; PADSAVEP
-mov       ax, bx
-mov       dx, ax
-mov       bx, 4
-and       dx, 3
-sub       bx, dx
-mov       dx, bx
-and       dx, 3
-add       ax, dx
+mov       cx, di
+mov       ax, 4
+and       cx, 3
+sub       ax, cx
+and       ax, 3
+add       di, ax
 
-mov       word ptr ds:[_save_p], ax
-mov       bx, ax
-mov       ax, word ptr ds:[_save_p + 2]
-mov       word ptr [bp - 2], ax
-mov       di, bx
-mov       es, word ptr [bp - 2]
-mov       word ptr [bp - 8], MOBJPOSLIST_6800_SEGMENT
+
+
+; default everything to zero
+mov       ax, MOBJPOSLIST_6800_SEGMENT
+mov       ds, ax
+
+
 mov       cx, SIZEOF_MOBJ_VANILLA_T / 2
 xor       ax, ax
 rep       stosw 
 
-mov       es, word ptr [bp - 8]
-mov       dx, word ptr es:[si]
-mov       ax, word ptr es:[si + 2]
-mov       es, word ptr [bp - 2]
-mov       word ptr es:[bx + 0Ch], dx
-mov       word ptr es:[bx + 0Eh], ax
-mov       es, word ptr [bp - 8]
-mov       ax, word ptr es:[si + 4]
-mov       dx, word ptr es:[si + 6]
-mov       es, word ptr [bp - 2]
-mov       word ptr es:[bx + 010h], ax
-mov       word ptr es:[bx + 012h], dx
-mov       es, word ptr [bp - 8]
-mov       dx, word ptr es:[si + 8]
-mov       ax, word ptr es:[si + 0Ah]
-mov       es, word ptr [bp - 2]
-mov       word ptr es:[bx + 014h], dx
-mov       word ptr es:[bx + 016h], ax
-mov       es, word ptr [bp - 8]
-mov       ax, word ptr es:[si + 0Eh]
-mov       dx, word ptr es:[si + 010h]
-mov       es, word ptr [bp - 2]
-mov       word ptr es:[bx + 020h], ax
-mov       word ptr es:[bx + 022h], dx
-mov       es, word ptr [bp - 8]
-mov       ax, word ptr es:[si + 012h]
-mov       es, word ptr [bp - 2]
-mov       word ptr es:[bx + 066h], 0
-mov       word ptr es:[bx + 064h], ax
-mov       es, word ptr [bp - 8]
-mov       ax, word ptr es:[si + 016h]
-mov       dx, word ptr es:[si + 014h]
-mov       es, word ptr [bp - 2]
-mov       word ptr es:[bx + 068h], dx
-mov       word ptr es:[bx + 06ah], ax
-mov       es, word ptr [bp - 8]
-imul      di, word ptr es:[si + 012h], SIZEOF_STATE_T
+
+lea       di, [di + 12 - SIZEOF_MOBJ_VANILLA_T] ; skip thinker fields
+
+movsw   ; x
+movsw
+movsw   ; y
+movsw
+movsw   ; z
+movsw                   ; di + 18h    si + 0Ch now 
+
+add       di, 8         ; di + 20h    skip snext sprev
+add       si, 2         ; si + 0Eh
+
+movsw   ; angle         ; di + 22h    si + 010h
+movsw                   ; di + 24h    si + 012h
+
+
+
+
+
+lodsw                   ; si + 014h
+mov       word ptr ds:[di + 040h], ax   ; di + 64h          statenum
+xchg      ax, cx        ; cx gets statenum. 
+
+lodsw                   ; si + 016h
+mov       word ptr ds:[di + 044h], ax   ; di + 68h          flags1
+lodsw                   ; si + 018h
+mov       word ptr ds:[di + 046h], ax   ; di + 6Ah          flags2
+
+
+; 			savemobj->sprite 			= states[mobj_pos->stateNum].sprite;
+;			savemobj->frame 			= states[mobj_pos->stateNum].frame;
+;			if (savemobj->frame & FF_FULLBRIGHT){
+;				savemobj->frame &= FF_FRAMEMASK; // get rid of fullbright
+;				savemobj->frame |= 0x8000;       // add vanilla FULLBRIGHT mask
+;			}
+
+
 mov       ax, STATES_SEGMENT
-mov       es, ax
-mov       al, byte ptr es:[di]
-mov       es, word ptr [bp - 2]
-xor       ah, ah
-mov       word ptr es:[bx + 026h], 0
-mov       word ptr es:[bx + 024h], ax
-mov       es, word ptr [bp - 8]
-imul      si, word ptr es:[si + 012h], SIZEOF_STATE_T
-mov       ax, STATES_SEGMENT
-mov       es, ax
-mov       al, byte ptr es:[si + 1]
-mov       es, word ptr [bp - 2]
-xor       ah, ah
-mov       word ptr es:[bx + 02ah], 0
-mov       word ptr es:[bx + 028h], ax
-inc       si
-test      byte ptr es:[bx + 028h], FF_FULLBRIGHT
-je        not_fullbright
-mov       word ptr es:[bx + 02ah], 0
-and       word ptr es:[bx + 028h], FF_FRAMEMASK
-or        byte ptr es:[bx + 029h], FF_FULLBRIGHT
-not_fullbright:
-mov       si, word ptr [bp - 4]
-mov       al, byte ptr [si + 01eh]
-mov       es, word ptr [bp - 2]
-xor       ah, ah
-mov       word ptr es:[bx + 040h], 0
-mov       word ptr es:[bx + 042h], ax
-mov       dx, word ptr [si + 0Ah]
-mov       ax, word ptr [si + 0Ch]
-mov       word ptr es:[bx + 044h], dx
-mov       word ptr es:[bx + 046h], ax
-mov       ax, word ptr [si + 0Eh]
-mov       dx, word ptr [si + 010h]
-mov       word ptr es:[bx + 048h], ax
-mov       word ptr es:[bx + 04ah], dx
-mov       ax, word ptr [si + 012h]
-mov       dx, word ptr [si + 014h]
-mov       word ptr es:[bx + 04ch], ax
-mov       word ptr es:[bx + 04eh], dx
-mov       ax, word ptr [si + 016h]
-mov       dx, word ptr [si + 018h]
-mov       word ptr es:[bx + 050h], ax
-mov       word ptr es:[bx + 052h], dx
-mov       al, byte ptr [si + 01ah]
-mov       word ptr es:[bx + 05ah], 0
-xor       ah, ah
-mov       word ptr es:[bx + 058h], ax
-mov       al, byte ptr [si + 01bh]
-mov       word ptr es:[bx + 062h], 0
-mov       word ptr es:[bx + 060h], ax
-cmp       byte ptr [si + 01bh], -1
-jne       skip_set_tics_32bit
-mov       word ptr es:[bx + 060h], -1
-mov       word ptr es:[bx + 062h], -1
-skip_set_tics_32bit:
-mov       si, word ptr [bp - 4]
-mov       ax, word ptr [si + 01ch]
-mov       es, word ptr [bp - 2]
-cwd       
-mov       word ptr es:[bx + 06ch], ax
-mov       word ptr es:[bx + 06eh], dx
-mov       al, byte ptr [si + 01fh]
-cbw      
-cwd       
-mov       word ptr es:[bx + 070h], ax
-mov       word ptr es:[bx + 072h], dx
-mov       ax, word ptr [si + 020h]
-cwd       
-mov       word ptr es:[bx + 074h], ax
-mov       word ptr es:[bx + 076h], dx
-mov       al, byte ptr [si + 024h]
-cbw      
-cwd       
-mov       word ptr es:[bx + 07ch], ax
-mov       word ptr es:[bx + 07eh], dx
-mov       al, byte ptr [si + 025h]
-cbw      
-cwd       
-mov       word ptr es:[bx + 080h], ax
-mov       word ptr es:[bx + 082h], dx
-xor       ax, ax
-cmp       byte ptr [si + 01ah], 0
-jne       skip_player_set
-mov       ax, 1
-skip_player_set:
-imul      si, word ptr [bp - 6], SIZEOF_MAPTHING_T
-mov       es, word ptr [bp - 2]
-cwd       
-mov       word ptr es:[bx + 084h], ax
-push      ds
-mov       word ptr es:[bx + 086h], dx
-mov       ax, NIGHTMARESPAWNS_SEGMENT
-lea       di, [bx + 08ch]
 mov       ds, ax
-movsw     
-movsw     
-movsw     
-movsw     
-movsw     
-mov       si, word ptr [bp - 4]
+; 6 bytes per.
+mov       si, cx
+sal       si, 1
+add       si, cx
+sal       si, 1
+
+xor       ah, ah
+lodsb
+stosw     ; sprite  ; di + 026
+inc       di
+inc       di        ; di + 028
+lodsb
+test      ax, FF_FULLBRIGHT
+jne       skip_framemask
+and       ax, FF_FRAMEMASK
+or        ax, VANILLA_FULLBRIGHT 
+skip_framemask:
+stosw     ; frame   ; di + 02A
+
+add       di, 018h      ; di + 42h . skip a bunch of stuff related to sprites, bprev..
+
+push      ss
 pop       ds
-mov       ax, word ptr [si + 026h]
-mov       word ptr es:[bx + 098h], 0
-mov       word ptr es:[bx + 096h], ax
-mov       bx, OFFSET _save_p
-add       word ptr ds:[bx], SIZEOF_MOBJ_VANILLA_T
+
+lea       si, [bx + _thinkerlist + 4 + 0Ah ]       ; point to mobj + 0Ah now
+
+mov       al, byte ptr ds:[si + 014h]   ; 042h <- 01Eh (14h + 0a) radius
+xor       ah, ah
+stosw     ; di + 044h
+
+
+movsw      
+movsw               ; di 048h <- si 0Eh  height
+movsw
+movsw               ; di 04Ch <- si 12h  momx
+movsw
+movsw               ; di 050h <- si 16h  momy
+movsw
+movsw               ; di 054h <- si 1Ah  momz
+
+add       di, 4
+lodsb
+; ah still 0
+stosw               ; di 05Ah <- si 1Bh  type
+
+
+add       di, 6
+lodsb
+; ah still 0
+stosw               ; di 062h <- si 01Ch  tics
+
+add       di, 0Ah
+movsw               ; di 06Eh <- si 01Eh  health
+
+add       di, 2     ; di + 070h
+inc       si        ; si + 01Fh
+
+movsb               ; di 071h <- si 020h   movedir
+
+add       di, 3
+movsw               ; di 076h <- si 022h   movecount
+
+add       di, 6     ; di + 07Ch
+add       si, 2     ; si + 024h
+
+movsb               ; di 07Dh <- si 025h   reactiontime
+
+add       di, 3     ; di + 080h
+movsb               ; di 081h <- si 026h   threshold
+
+
+add       di, 0Bh   ; di + 08Ch
+
+mov       ax, NIGHTMARESPAWNS_SEGMENT
+mov       ds, ax
+
+; get index
+
+mov       ax, SIZEOF_MAPTHING_T
+push      dx
+mul       dx
+pop       dx
+xchg      ax, si
+
+; copy nightmarespawn
+movsw  ; x 
+movsw  ; y   
+movsw  ; angle   
+movsw  ; type   
+movsw  ; options   
+
+; di now 096h
+
+
+add       di, (SIZEOF_MOBJ_VANILLA_T - 096h)        
 jmp       iterate_to_next_thinker
 
 
