@@ -537,6 +537,242 @@ retf
 ENDP
 
 
+SIZEOF_THINKER_T = 44
+SIZEOF_MOBJ_VANILLA_T = 09Ah
+SIZEOF_MOBJ_T = 028h
+SIZEOF_MOBJPOS_T = 018h
+SIZEOF_THINKER_VANILLA_T = 12
+SIZEOF_MAPTHING_T = 10
+SIZEOF_STATE_T = 6
+
+PROC P_ArchiveThinkers_ FAR
+PUBLIC P_ArchiveThinkers_
+
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 8
+mov       bx, OFFSET _thinkerlist + 2
+mov       ax, word ptr [bx]
+mov       word ptr [bp - 6], ax
+test      ax, ax
+je        exit_archivethinkers
+loop_check_next_thinker:
+imul      bx, word ptr [bp - 6], SIZEOF_THINKER_T
+mov       ax, word ptr [bx + OFFSET _thinkerlist]
+;and       ax, TF_FUNCBITS
+xor       al, al
+and       ax, 0F8h
+cmp       ax, TF_MOBJTHINKER_HIGHBITS
+je        do_save_next_thinker
+iterate_to_next_thinker:
+imul      bx, word ptr [bp - 6], SIZEOF_THINKER_T
+mov       ax, word ptr [bx + OFFSET _thinkerlist + 2]
+mov       word ptr [bp - 6], ax
+test      ax, ax
+jne       loop_check_next_thinker
+exit_archivethinkers:
+mov       bx, OFFSET _save_p
+les       si, dword ptr [bx]
+inc       word ptr [bx]
+mov       byte ptr es:[si], 0
+LEAVE_MACRO
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+retf      
+do_save_next_thinker:
+imul      si, word ptr [bp - 6], SIZEOF_MOBJPOS_T
+add       bx, OFFSET _thinkerlist + 4
+mov       word ptr [bp - 4], bx
+mov       bx, OFFSET _save_p
+mov       bx, word ptr [bx]
+mov       di, OFFSET _save_p
+lea       ax, [bx + 1]
+mov       es, word ptr [di + 2]
+mov       word ptr [di], ax
+mov       byte ptr es:[bx], 1
+mov       ax, word ptr [di]
+mov       dx, ax
+mov       bx, 4
+and       dx, 3
+sub       bx, dx
+mov       dx, bx
+and       dx, 3
+add       ax, dx
+mov       word ptr [di], ax
+mov       bx, ax
+mov       ax, word ptr [di + 2]
+mov       cx, SIZEOF_MOBJ_VANILLA_T
+mov       word ptr [bp - 2], ax
+mov       di, bx
+mov       es, word ptr [bp - 2]
+xor       al, al
+mov       word ptr [bp - 8], MOBJPOSLIST_6800_SEGMENT
+push      di
+mov       ah, al
+shr       cx, 1
+
+rep stosw 
+adc       cx, cx
+rep stosb 
+pop       di
+mov       es, word ptr [bp - 8]
+mov       dx, word ptr es:[si]
+mov       ax, word ptr es:[si + 2]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[bx + 0Ch], dx
+mov       word ptr es:[bx + 0Eh], ax
+mov       es, word ptr [bp - 8]
+mov       ax, word ptr es:[si + 4]
+mov       dx, word ptr es:[si + 6]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[bx + 010h], ax
+mov       word ptr es:[bx + 012h], dx
+mov       es, word ptr [bp - 8]
+mov       dx, word ptr es:[si + 8]
+mov       ax, word ptr es:[si + 0Ah]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[bx + 014h], dx
+mov       word ptr es:[bx + 016h], ax
+mov       es, word ptr [bp - 8]
+mov       ax, word ptr es:[si + 0Eh]
+mov       dx, word ptr es:[si + 010h]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[bx + 020h], ax
+mov       word ptr es:[bx + 022h], dx
+mov       es, word ptr [bp - 8]
+mov       ax, word ptr es:[si + 012h]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[bx + 066h], 0
+mov       word ptr es:[bx + 064h], ax
+mov       es, word ptr [bp - 8]
+mov       ax, word ptr es:[si + 016h]
+mov       dx, word ptr es:[si + 014h]
+mov       es, word ptr [bp - 2]
+mov       word ptr es:[bx + 068h], dx
+mov       word ptr es:[bx + 06ah], ax
+mov       es, word ptr [bp - 8]
+imul      di, word ptr es:[si + 012h], SIZEOF_STATE_T
+mov       ax, STATES_SEGMENT
+mov       es, ax
+mov       al, byte ptr es:[di]
+mov       es, word ptr [bp - 2]
+xor       ah, ah
+mov       word ptr es:[bx + 026h], 0
+mov       word ptr es:[bx + 024h], ax
+mov       es, word ptr [bp - 8]
+imul      si, word ptr es:[si + 012h], SIZEOF_STATE_T
+mov       ax, STATES_SEGMENT
+mov       es, ax
+mov       al, byte ptr es:[si + 1]
+mov       es, word ptr [bp - 2]
+xor       ah, ah
+mov       word ptr es:[bx + 02ah], 0
+mov       word ptr es:[bx + 028h], ax
+inc       si
+test      byte ptr es:[bx + 028h], FF_FULLBRIGHT
+je        not_fullbright
+mov       word ptr es:[bx + 02ah], 0
+and       word ptr es:[bx + 028h], FF_FRAMEMASK
+or        byte ptr es:[bx + 029h], FF_FULLBRIGHT
+not_fullbright:
+mov       si, word ptr [bp - 4]
+mov       al, byte ptr [si + 01eh]
+mov       es, word ptr [bp - 2]
+xor       ah, ah
+mov       word ptr es:[bx + 040h], 0
+mov       word ptr es:[bx + 042h], ax
+mov       dx, word ptr [si + 0Ah]
+mov       ax, word ptr [si + 0Ch]
+mov       word ptr es:[bx + 044h], dx
+mov       word ptr es:[bx + 046h], ax
+mov       ax, word ptr [si + 0Eh]
+mov       dx, word ptr [si + 010h]
+mov       word ptr es:[bx + 048h], ax
+mov       word ptr es:[bx + 04ah], dx
+mov       ax, word ptr [si + 012h]
+mov       dx, word ptr [si + 014h]
+mov       word ptr es:[bx + 04ch], ax
+mov       word ptr es:[bx + 04eh], dx
+mov       ax, word ptr [si + 016h]
+mov       dx, word ptr [si + 018h]
+mov       word ptr es:[bx + 050h], ax
+mov       word ptr es:[bx + 052h], dx
+mov       al, byte ptr [si + 01ah]
+mov       word ptr es:[bx + 05ah], 0
+xor       ah, ah
+mov       word ptr es:[bx + 058h], ax
+mov       al, byte ptr [si + 01bh]
+mov       word ptr es:[bx + 062h], 0
+mov       word ptr es:[bx + 060h], ax
+cmp       byte ptr [si + 01bh], -1
+jne       skip_set_tics_32bit
+mov       word ptr es:[bx + 060h], -1
+mov       word ptr es:[bx + 062h], -1
+skip_set_tics_32bit:
+mov       si, word ptr [bp - 4]
+mov       ax, word ptr [si + 01ch]
+mov       es, word ptr [bp - 2]
+cwd       
+mov       word ptr es:[bx + 06ch], ax
+mov       word ptr es:[bx + 06eh], dx
+mov       al, byte ptr [si + 01fh]
+cbw      
+cwd       
+mov       word ptr es:[bx + 070h], ax
+mov       word ptr es:[bx + 072h], dx
+mov       ax, word ptr [si + 020h]
+cwd       
+mov       word ptr es:[bx + 074h], ax
+mov       word ptr es:[bx + 076h], dx
+mov       al, byte ptr [si + 024h]
+cbw      
+cwd       
+mov       word ptr es:[bx + 07ch], ax
+mov       word ptr es:[bx + 07eh], dx
+mov       al, byte ptr [si + 025h]
+cbw      
+cwd       
+mov       word ptr es:[bx + 080h], ax
+mov       word ptr es:[bx + 082h], dx
+xor       ax, ax
+cmp       byte ptr [si + 01ah], 0
+jne       skip_player_set
+mov       ax, 1
+skip_player_set:
+imul      si, word ptr [bp - 6], SIZEOF_MAPTHING_T
+mov       es, word ptr [bp - 2]
+cwd       
+mov       word ptr es:[bx + 084h], ax
+push      ds
+mov       word ptr es:[bx + 086h], dx
+mov       ax, NIGHTMARESPAWNS_SEGMENT
+lea       di, [bx + 08ch]
+mov       ds, ax
+movsw     
+movsw     
+movsw     
+movsw     
+movsw     
+mov       si, word ptr [bp - 4]
+pop       ds
+mov       ax, word ptr [si + 026h]
+mov       word ptr es:[bx + 098h], 0
+mov       word ptr es:[bx + 096h], ax
+mov       bx, OFFSET _save_p
+add       word ptr [bx], SIZEOF_MOBJ_VANILLA_T
+jmp       iterate_to_next_thinker
+
+
+ENDP
 
 PROC P_SAVEEND_
 PUBLIC P_SAVEEND_

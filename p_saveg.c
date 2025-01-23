@@ -358,6 +358,8 @@ typedef enum {
 //
 // P_ArchiveThinkers
 //
+
+/*
 void __far P_ArchiveThinkers (void) {
 	
     THINKERREF				th;
@@ -451,7 +453,7 @@ void __far P_ArchiveThinkers (void) {
     // add a terminating marker
     *save_p++ = tc_end;	
 }
-
+*/
 
 void  __far P_InitThinkers (void);
 
