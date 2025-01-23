@@ -369,11 +369,11 @@ push  si
 push  di
 
 mov   cx, word ptr ds:[_numsectors]
+les   di, dword ptr ds:[_save_p]
 mov   ax, SECTORS_SEGMENT
 mov   ds, ax
 mov   bx, _sectors_physics + 14  ; offset to tags
 
-les   di, dword ptr ds:[_save_p]
 
 xor   si, si
 loop_save_next_sector:
@@ -420,7 +420,7 @@ done_saving_sectors:
 
 
 xor   dx, dx
-xor   si, si
+mov   si, 14
 
 loop_save_next_line:
 
@@ -433,8 +433,8 @@ mov   cx, SEENLINES_6800_SEGMENT
 mov   ds, cx
 sar   bx, 1
 sar   bx, 1
-sar   bx, 1
-mov   ah, byte ptr ds:[bx]   ; get seenlines bit
+sar   bx, 1                  ; 8 bits per.
+mov   ah, byte ptr ds:[bx]   ; get seenlines bit in byte
 
 mov   cl, dl
 and   cl, 7
@@ -446,7 +446,7 @@ stosw          ; write lineflags.
 mov   ax, LINES_PHYSICS_SEGMENT
 mov   ds, ax
 
-mov   cx, word ptr ds:[si+14]   ; special and tag
+mov   cx, word ptr ds:[si]      ; special and tag, 0E and 0F offsets
 xor   ah, ah
 
 mov   al, ch                    ; swapped order
@@ -458,9 +458,9 @@ stosw                           ; tag
 
 mov   ax, LINES_SEGMENT
 mov   ds, ax
-mov   bx, si
-sar   bx, 1
-sar   bx, 1                     ; 4 bytes per line instead of 16 per line phys
+mov   bx, bx
+sal   bx, 1
+sal   bx, 1                     ; 4 bytes per line 
 
 mov   ax, word ptr ds:[bx]      ; side1
 mov   cx, word ptr ds:[bx+2]    ; side2
@@ -472,20 +472,23 @@ je    done_checking_side
 sal   ax, 1
 sal   ax, 1     ; 4 per side_render
 
-xchg  bx, ax    ; shove this in bx
-xchg  bx, si    ; then swap with si to use string ops
+push  si
+xchg  si, ax    ; shove this in si
+
 mov   ax, SIDES_SEGMENT
 push  ax
 mov   ax, SIDES_RENDER_9000_SEGMENT
 mov   ds, ax
 
-mov   ax, ds:[si]               ; hold onto rowoffset  from siderender
+;mov   ax, ds:[si]               ; hold onto rowoffset  from siderender
+lodsw 
+inc    si                       ; we want to read si + 6 after the sal...
 ; could be weird and lodsw and inc then get the +6 free later.
 
 pop   ds                        ; sides_segment again
 
-sal   si, 1                     ; 8 per side 
-add   si, 6
+sal    si, 1                     ; 8 per side 
+;add   si, 6
 
 movsw                           ; textureoffset. si now 8
 stosw                           ; write rowoffset
@@ -494,8 +497,8 @@ movsw                           ; toptexture
 movsw                           ; midtexture
 movsw                           ; bottexture
 
-mov  si, bx                     ; restore real si
 
+pop   si
 done_checking_side:
 cmp   cx, SIDE_2_ID             ; already checked side 2
 je    done_saving_lines
@@ -512,9 +515,8 @@ add   si, SIZEOF_LINE_PHYSICS_T
 inc   dx                                ; increment line
 cmp   dx, word ptr ss:[_numlines]
 
-jge   exit_archive_world
+jl    loop_save_next_line
 
-jmp   loop_save_next_line
 
 
 

@@ -855,7 +855,6 @@ void __near G_DoSaveGame (void)  {
 
     P_ArchivePlayers (); 
     P_ArchiveWorld (); 
-    I_Error("done");
     // mobjposlist back in 9000
     //Z_QuickMapPhysics();
     //Z_QuickMapScratch_5000();
