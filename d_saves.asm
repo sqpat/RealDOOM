@@ -355,7 +355,7 @@ SIZEOF_SECTOR_T = 16
 SIZEOF_SECTOR_PHYSICS_T = 16
 SIZEOF_LINE_PHYSICS_T = 16
 SIZEOF_LINE_T = 4
-
+SIDE_2_ID = -2      ; impossible side id, use as marker for 2nd iter
 
 PROC P_ArchiveWorld_ FAR
 PUBLIC P_ArchiveWorld_
@@ -367,189 +367,170 @@ push  cx
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 016h
 
-mov   cx, SECTORS_SEGMENT
-mov   word ptr [bp - 014h], _sectors_physics
-xor   dx, dx
-mov   ax, word ptr ds:[_save_p + 2]
-mov   bx, word ptr ds:[_save_p]
-mov   word ptr [bp - 2], ax
+mov   cx, word ptr ds:[_numsectors]
+mov   ax, SECTORS_SEGMENT
+mov   ds, ax
+mov   bx, _sectors_physics + 14  ; offset to tags
+
+les   di, dword ptr ds:[_save_p]
+
 xor   si, si
 loop_save_next_sector:
-cmp   dx, word ptr ds:[_numsectors]
-jge   done_saving_sectors
+
+; si is sector pointer (in ds)
+; bx is sector_physics (in ss)
 
 do_save_next_sector:
-mov   es, cx
-add   bx, 2
-mov   ax, word ptr es:[si]
-mov   es, word ptr [bp - 2]
-sar   ax, 3
-mov   word ptr es:[bx - 2], ax
-mov   es, cx
-add   bx, 2
-mov   ax, word ptr es:[si + 2]
-mov   es, word ptr [bp - 2]
-sar   ax, 3
-mov   word ptr es:[bx - 2], ax
-mov   es, cx
-add   bx, 2
-mov   al, byte ptr es:[si + 4]
-mov   es, word ptr [bp - 2]
-xor   ah, ah
-mov   word ptr es:[bx - 2], ax
-mov   es, cx
-add   bx, 2
-mov   al, byte ptr es:[si + 5]
-mov   es, word ptr [bp - 2]
-mov   di, word ptr [bp - 014h]
-mov   word ptr es:[bx - 2], ax
-mov   es, cx
-add   bx, 2
-mov   al, byte ptr es:[si + 0Eh]
-mov   es, word ptr [bp - 2]
-inc   dx
-mov   word ptr es:[bx - 2], ax
-add   bx, 2
-mov   al, byte ptr [di + 0Eh]
-add   si, SIZEOF_SECTOR_T
-mov   word ptr es:[bx - 2], ax
-add   bx, 2
-mov   al, byte ptr [di + 0Fh]
-add   word ptr [bp - 014h], SIZEOF_SECTOR_PHYSICS_T
-mov   word ptr es:[bx - 2], ax
-jmp   loop_save_next_sector
+
+lodsw                   ; todo shr?? can this be negative
+sar   ax, 1
+sar   ax, 1
+sar   ax, 1
+stosw           ; floorheight
+
+lodsw                   ; todo shr?? can this be negative
+sar   ax, 1
+sar   ax, 1
+sar   ax, 1
+stosw           ; ceilingheight
+
+xor   ah, ah    ; zero high bit for next 5 writes.
+
+lodsb           ; floorpic
+stosw
+
+lodsb           ; ceiling pic
+stosw
+
+mov   al, byte ptr ds:[si + 8]  ; si is 6, 0Dh is lightlevel
+stosw
+
+mov   al, byte ptr ss:[bx]      ; special
+stosw
+
+mov   al, byte ptr ss:[bx+1]    ; tag
+stosw
+
+add   si, (SIZEOF_SECTOR_T - 6)
+add   bx, SIZEOF_SECTOR_PHYSICS_T
+loop  loop_save_next_sector
+
 done_saving_sectors:
-xor   ax, ax
-mov   word ptr [bp - 8], ax
-mov   word ptr [bp - 012h], ax
-mov   word ptr [bp - 0Ah], ax
+
+
+xor   dx, dx
+xor   si, si
 
 loop_save_next_line:
-mov   ax, word ptr [bp - 8]
-cmp   ax, word ptr ss:[_numlines]
-jl    label_3
-jmp   exit_archive_world
-label_3:
+
 mov   ax, LINEFLAGSLIST_SEGMENT
-mov   si, word ptr [bp - 8]
-mov   es, ax
-mov   al, byte ptr es:[si]
-mov   byte ptr [bp - 0Ch], al
-mov   ax, word ptr [bp - 8]
-mov   cx, word ptr [bp - 8]
-sar   ax, 0Fh
-xor   cx, ax
-sub   cx, ax
-and   cx, 7
-xor   cx, ax
-sub   cx, ax
-mov   ax, 1
-shl   ax, cl
-mov   cx, ax
-mov   ax, word ptr [bp - 8]
-cwd   
-shl   dx, 3
-sbb   ax, dx
-sar   ax, 3
-mov   dx, SEENLINES_6800_SEGMENT
-mov   di, ax
-mov   es, dx
-mov   al, byte ptr es:[di]
-mov   byte ptr [bp - 0Bh], 0
+mov   ds, ax
+mov   bx, dx
+mov   al, byte ptr ds:[bx]
+
+mov   cx, SEENLINES_6800_SEGMENT
+mov   ds, cx
+sar   bx, 1
+sar   bx, 1
+sar   bx, 1
+mov   ah, byte ptr ds:[bx]   ; get seenlines bit
+
+mov   cl, dl
+and   cl, 7
+shr   ah, cl   ; shift ah by 0-7 to get it in the LSB
+and   ah, 1    ; turn off all other bits. 9 bit spot is now seenline
+
+stosw          ; write lineflags.
+
+mov   ax, LINES_PHYSICS_SEGMENT
+mov   ds, ax
+
+mov   cx, word ptr ds:[si+14]   ; special and tag
 xor   ah, ah
-mov   si, word ptr [bp - 0Ch]
-test  ax, cx
-je    dont_turn_on_seenline
 
-or    si, 0100h      ; bit 9 for flags
+mov   al, ch                    ; swapped order
+stosw                           ; special       ; todo convert these tags to vanilla values
 
-dont_turn_on_seenline:
-mov   es, word ptr [bp - 2]
-mov   dx, LINES_SEGMENT
-mov   word ptr [bp - 4], dx
-add   bx, 2
-mov   cx, SIDES_RENDER_9000_SEGMENT
-mov   word ptr es:[bx - 2], si
-mov   dx, LINES_PHYSICS_SEGMENT
-mov   es, dx
-mov   si, word ptr [bp - 0Ah]
-add   bx, 2
-mov   al, byte ptr es:[si + 0Fh]
-mov   es, word ptr [bp - 2]
-xor   ah, ah
-mov   word ptr es:[bx - 2], ax
-mov   es, dx
-add   bx, 2
-mov   al, byte ptr es:[si + 0Eh]
-mov   si, word ptr [bp - 012h]
-mov   es, word ptr [bp - 2]
-mov   word ptr [bp - 6], si
-mov   word ptr es:[bx - 2], ax
-xor   al, al
-check_next_sidenum:
-les   si, dword ptr [bp - 6]
-cmp   word ptr es:[si], -1
-je    finish_saving_side
-mov   word ptr [bp - 016h], SIDES_SEGMENT
-mov   si, word ptr es:[si]
-mov   di, word ptr [bp - 6]
-shl   si, 3
-mov   di, word ptr es:[di]
-mov   es, word ptr [bp - 016h]
-add   bx, 2
-mov   dx, word ptr es:[si + 6]
-mov   es, word ptr [bp - 2]
-shl   di, 2
-mov   word ptr es:[bx - 2], dx
-mov   es, cx
-add   bx, 2
-mov   dx, word ptr es:[di]
-mov   es, word ptr [bp - 2]
-mov   word ptr es:[bx - 2], dx
-mov   es, word ptr [bp - 016h]
-add   bx, 2
-mov   dx, word ptr es:[si]
-mov   es, word ptr [bp - 2]
-mov   word ptr es:[bx - 2], dx
-mov   es, word ptr [bp - 016h]
-add   bx, 2
-mov   dx, word ptr es:[si + 2]
-mov   es, word ptr [bp - 2]
-mov   word ptr es:[bx - 2], dx
-mov   es, word ptr [bp - 016h]
-add   bx, 2
-mov   dx, word ptr es:[si + 4]
-mov   es, word ptr [bp - 2]
-mov   word ptr es:[bx - 2], dx
-jmp   finish_saving_side
+mov   al, cl
+stosw                           ; tag
 
-finish_saving_side:
-inc   ax
-add   word ptr [bp - 6], 2
-cmp   ax, 2                             ; 2nd side
-jl    check_next_sidenum
-inc   word ptr [bp - 8]
-add   word ptr [bp - 012h], 4
-add   word ptr [bp - 0Ah], SIZEOF_LINE_PHYSICS_T
+
+mov   ax, LINES_SEGMENT
+mov   ds, ax
+mov   bx, si
+sar   bx, 1
+sar   bx, 1                     ; 4 bytes per line instead of 16 per line phys
+
+mov   ax, word ptr ds:[bx]      ; side1
+mov   cx, word ptr ds:[bx+2]    ; side2
+
+check_next_side:
+cmp   ax, -1
+je    done_checking_side
+
+sal   ax, 1
+sal   ax, 1     ; 4 per side_render
+
+xchg  bx, ax    ; shove this in bx
+xchg  bx, si    ; then swap with si to use string ops
+mov   ax, SIDES_SEGMENT
+push  ax
+mov   ax, SIDES_RENDER_9000_SEGMENT
+mov   ds, ax
+
+mov   ax, ds:[si]               ; hold onto rowoffset  from siderender
+; could be weird and lodsw and inc then get the +6 free later.
+
+pop   ds                        ; sides_segment again
+
+sal   si, 1                     ; 8 per side 
+add   si, 6
+
+movsw                           ; textureoffset. si now 8
+stosw                           ; write rowoffset
+sub   si, 8                     ; back to si + 0
+movsw                           ; toptexture
+movsw                           ; midtexture
+movsw                           ; bottexture
+
+mov  si, bx                     ; restore real si
+
+done_checking_side:
+cmp   cx, SIDE_2_ID             ; already checked side 2
+je    done_saving_lines
+xchg  ax, cx                    ; set ax to side 2 
+mov   cx, SIDE_2_ID             ; set side 2 marker to quit next iter
+jmp   check_next_side
+
+
+
+done_saving_lines:
+
+add   si, SIZEOF_LINE_PHYSICS_T
+
+inc   dx                                ; increment line
+cmp   dx, word ptr ss:[_numlines]
+
+jge   exit_archive_world
+
 jmp   loop_save_next_line
 
 
 
 
 exit_archive_world:
-mov   word ptr ds:[_save_p], bx
-LEAVE_MACRO 
+push  ss
+pop   ds
+
+mov   word ptr ds:[_save_p], di
+
 pop   di
 pop   si
 pop   dx
 pop   cx
 pop   bx
 retf  
-cld   
 
 ENDP
 
