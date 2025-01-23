@@ -458,12 +458,14 @@ stosw                           ; tag
 
 mov   ax, LINES_SEGMENT
 mov   ds, ax
-mov   bx, bx
+mov   bx, dx
 sal   bx, 1
 sal   bx, 1                     ; 4 bytes per line 
 
 mov   ax, word ptr ds:[bx]      ; side1
-mov   cx, word ptr ds:[bx+2]    ; side2
+mov   bx, word ptr ds:[bx+2]    ; side2
+mov   cx, 2                     ; num sides
+push  si
 
 check_next_side:
 cmp   ax, -1
@@ -472,7 +474,6 @@ je    done_checking_side
 sal   ax, 1
 sal   ax, 1     ; 4 per side_render
 
-push  si
 xchg  si, ax    ; shove this in si
 
 mov   ax, SIDES_SEGMENT
@@ -480,14 +481,14 @@ push  ax
 mov   ax, SIDES_RENDER_9000_SEGMENT
 mov   ds, ax
 
-;mov   ax, ds:[si]               ; hold onto rowoffset  from siderender
-lodsw 
+
+lodsw                           ; rowoffset into ax
 inc    si                       ; we want to read si + 6 after the sal...
 ; could be weird and lodsw and inc then get the +6 free later.
 
 pop   ds                        ; sides_segment again
 
-sal    si, 1                     ; 8 per side 
+sal    si, 1                    ; 8 per side, not 4.
 ;add   si, 6
 
 movsw                           ; textureoffset. si now 8
@@ -498,17 +499,12 @@ movsw                           ; midtexture
 movsw                           ; bottexture
 
 
-pop   si
 done_checking_side:
-cmp   cx, SIDE_2_ID             ; already checked side 2
-je    done_saving_lines
-xchg  ax, cx                    ; set ax to side 2 
-mov   cx, SIDE_2_ID             ; set side 2 marker to quit next iter
-jmp   check_next_side
+xchg   ax, bx
+loop   check_next_side
 
+pop    si
 
-
-done_saving_lines:
 
 add   si, SIZEOF_LINE_PHYSICS_T
 
@@ -558,16 +554,14 @@ push      bp
 mov       bp, sp
 sub       sp, 8
 mov       bx, OFFSET _thinkerlist + 2
-mov       ax, word ptr [bx]
+mov       ax, word ptr ds:[bx]
 mov       word ptr [bp - 6], ax
 test      ax, ax
 je        exit_archivethinkers
 loop_check_next_thinker:
 imul      bx, word ptr [bp - 6], SIZEOF_THINKER_T
 mov       ax, word ptr [bx + OFFSET _thinkerlist]
-;and       ax, TF_FUNCBITS
-xor       al, al
-and       ax, 0F8h
+and       ax, TF_FUNCBITS
 cmp       ax, TF_MOBJTHINKER_HIGHBITS
 je        do_save_next_thinker
 iterate_to_next_thinker:
@@ -580,7 +574,7 @@ exit_archivethinkers:
 mov       bx, OFFSET _save_p
 les       si, dword ptr [bx]
 inc       word ptr [bx]
-mov       byte ptr es:[si], 0
+mov       byte ptr es:[si], 0       ; tc_end
 LEAVE_MACRO
 pop       di
 pop       si
@@ -593,12 +587,12 @@ imul      si, word ptr [bp - 6], SIZEOF_MOBJPOS_T
 add       bx, OFFSET _thinkerlist + 4
 mov       word ptr [bp - 4], bx
 mov       bx, OFFSET _save_p
-mov       bx, word ptr [bx]
+mov       bx, word ptr ds:[bx]
 mov       di, OFFSET _save_p
 lea       ax, [bx + 1]
 mov       es, word ptr [di + 2]
 mov       word ptr [di], ax
-mov       byte ptr es:[bx], 1
+mov       byte ptr es:[bx], 1       ; tc_mobj
 mov       ax, word ptr [di]
 mov       dx, ax
 mov       bx, 4
@@ -768,7 +762,7 @@ mov       ax, word ptr [si + 026h]
 mov       word ptr es:[bx + 098h], 0
 mov       word ptr es:[bx + 096h], ax
 mov       bx, OFFSET _save_p
-add       word ptr [bx], SIZEOF_MOBJ_VANILLA_T
+add       word ptr ds:[bx], SIZEOF_MOBJ_VANILLA_T
 jmp       iterate_to_next_thinker
 
 
