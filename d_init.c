@@ -736,6 +736,8 @@ void check_is_ultimate(){
 void __far wipe_WipeLoop();
 void __far I_ReadScreen();
 uint16_t   __far  R_CheckTextureNumForName(int8_t *name);
+void __far P_ArchiveWorld (void);
+void __far P_ArchiveThinkers (void);
 
 
 
@@ -770,7 +772,7 @@ void __far D_DoomMain2(void) {
 /*
 
 	FILE *fp = fopen("output8.bin", "wb");
-	FAR_fwrite(P_UnArchiveThinkers, (byte __far *)P_ArchiveSpecials - (byte __far *)P_UnArchiveThinkers, 1, fp);
+	FAR_fwrite(P_ArchiveWorld, (byte __far *)P_ArchiveThinkers - (byte __far *)P_ArchiveWorld, 1, fp);
 	fclose(fp);
 	exit(0);
 	/*

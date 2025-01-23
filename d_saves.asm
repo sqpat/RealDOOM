@@ -352,6 +352,206 @@ jmp       done_with_statenum_write
 ENDP
 
 
+PROC P_ArchiveWorld_ FAR
+PUBLIC P_ArchiveWorld_
+
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 016h
+mov   si, _save_p
+mov   cx, SECTORS_SEGMENT
+mov   word ptr [bp - 014h], _sectors_physics
+xor   dx, dx
+mov   ax, word ptr [si + 2]
+mov   bx, word ptr [si]
+mov   word ptr [bp - 2], ax
+xor   si, si
+label_8:
+mov   di, _numsectors
+cmp   dx, word ptr [di]
+jge   label_1
+jmp   label_2
+label_1:
+mov   word ptr [bp - 0Eh], LINES_SEGMENT
+xor   ax, ax
+mov   word ptr [bp - 010h], LINES_PHYSICS_SEGMENT
+mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 012h], ax
+mov   word ptr [bp - 0Ah], ax
+label_13:
+mov   si, _numlines
+mov   ax, word ptr [bp - 8]
+cmp   ax, word ptr [si]
+jl    label_3
+jmp   label_4
+label_3:
+mov   ax, LINEFLAGSLIST_SEGMENT
+mov   si, word ptr [bp - 8]
+mov   es, ax
+mov   al, byte ptr es:[si]
+mov   byte ptr [bp - 0Ch], al
+mov   ax, word ptr [bp - 8]
+mov   cx, word ptr [bp - 8]
+sar   ax, 0Fh
+xor   cx, ax
+sub   cx, ax
+and   cx, 7
+xor   cx, ax
+sub   cx, ax
+mov   ax, 1
+shl   ax, cl
+mov   cx, ax
+mov   ax, word ptr [bp - 8]
+cwd   
+shl   dx, 3
+sbb   ax, dx
+sar   ax, 3
+mov   dx, SEENLINES_6800_SEGMENT
+mov   di, ax
+mov   es, dx
+mov   al, byte ptr es:[di]
+mov   byte ptr [bp - 0Bh], 0
+xor   ah, ah
+mov   si, word ptr [bp - 0Ch]
+test  ax, cx
+jne   label_5
+label_9:
+mov   es, word ptr [bp - 2]
+mov   dx, word ptr [bp - 0Eh]
+add   bx, 2
+mov   cx, SIDES_RENDER_9000_SEGMENT
+mov   word ptr es:[bx - 2], si
+mov   es, word ptr [bp - 010h]
+mov   si, word ptr [bp - 0Ah]
+add   bx, 2
+mov   al, byte ptr es:[si + 0Fh]
+mov   es, word ptr [bp - 2]
+xor   ah, ah
+mov   word ptr [bp - 4], dx
+mov   word ptr es:[bx - 2], ax
+mov   es, word ptr [bp - 010h]
+add   bx, 2
+mov   al, byte ptr es:[si + 0Eh]
+mov   si, word ptr [bp - 012h]
+mov   es, word ptr [bp - 2]
+mov   word ptr [bp - 6], si
+mov   word ptr es:[bx - 2], ax
+xor   al, al
+label_12:
+les   si, dword ptr [bp - 6]
+cmp   word ptr es:[si], -1
+jne   label_11
+label_10:
+inc   ax
+add   word ptr [bp - 6], 2
+cmp   ax, 2
+jl    label_12
+inc   word ptr [bp - 8]
+add   word ptr [bp - 012h], 4
+add   word ptr [bp - 0Ah], 010h ; todo
+jmp   label_13
+label_5:
+jmp   label_6
+label_11:
+jmp   label_7
+label_2:
+mov   es, cx
+add   bx, 2
+mov   ax, word ptr es:[si]
+mov   es, word ptr [bp - 2]
+sar   ax, 3
+mov   word ptr es:[bx - 2], ax
+mov   es, cx
+add   bx, 2
+mov   ax, word ptr es:[si + 2]
+mov   es, word ptr [bp - 2]
+sar   ax, 3
+mov   word ptr es:[bx - 2], ax
+mov   es, cx
+add   bx, 2
+mov   al, byte ptr es:[si + 4]
+mov   es, word ptr [bp - 2]
+xor   ah, ah
+mov   word ptr es:[bx - 2], ax
+mov   es, cx
+add   bx, 2
+mov   al, byte ptr es:[si + 5]
+mov   es, word ptr [bp - 2]
+mov   di, word ptr [bp - 014h]
+mov   word ptr es:[bx - 2], ax
+mov   es, cx
+add   bx, 2
+mov   al, byte ptr es:[si + 0Eh]
+mov   es, word ptr [bp - 2]
+inc   dx
+mov   word ptr es:[bx - 2], ax
+add   bx, 2
+mov   al, byte ptr [di + 0Eh]
+add   si, 010h                   ; todo?
+mov   word ptr es:[bx - 2], ax
+add   bx, 2
+mov   al, byte ptr [di + 0Fh]
+add   word ptr [bp - 014h], 010h ; todo
+mov   word ptr es:[bx - 2], ax
+jmp   label_8
+label_6:
+or    si, 0100h      ; bit 9 for flags
+jmp   label_9
+label_7:
+mov   word ptr [bp - 016h], SIDES_SEGMENT
+mov   si, word ptr es:[si]
+mov   di, word ptr [bp - 6]
+shl   si, 3
+mov   di, word ptr es:[di]
+mov   es, word ptr [bp - 016h]
+add   bx, 2
+mov   dx, word ptr es:[si + 6]
+mov   es, word ptr [bp - 2]
+shl   di, 2
+mov   word ptr es:[bx - 2], dx
+mov   es, cx
+add   bx, 2
+mov   dx, word ptr es:[di]
+mov   es, word ptr [bp - 2]
+mov   word ptr es:[bx - 2], dx
+mov   es, word ptr [bp - 016h]
+add   bx, 2
+mov   dx, word ptr es:[si]
+mov   es, word ptr [bp - 2]
+mov   word ptr es:[bx - 2], dx
+mov   es, word ptr [bp - 016h]
+add   bx, 2
+mov   dx, word ptr es:[si + 2]
+mov   es, word ptr [bp - 2]
+mov   word ptr es:[bx - 2], dx
+mov   es, word ptr [bp - 016h]
+add   bx, 2
+mov   dx, word ptr es:[si + 4]
+mov   es, word ptr [bp - 2]
+mov   word ptr es:[bx - 2], dx
+jmp   label_10
+label_4:
+mov   si, _save_p
+mov   ax, word ptr [bp - 2]
+mov   word ptr [si], bx
+mov   word ptr [si + 2], ax
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+cld   
+
+ENDP
 
 
 

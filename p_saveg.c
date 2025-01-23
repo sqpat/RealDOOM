@@ -206,6 +206,7 @@ void __far P_UnArchivePlayers (void) {
 //
 // P_ArchiveWorld
 //
+/*
 void __far P_ArchiveWorld (void) {
 	
     int16_t			i;
@@ -277,7 +278,7 @@ void __far P_ArchiveWorld (void) {
 	
 }
 
-
+*/
 
 //
 // P_UnArchiveWorld
