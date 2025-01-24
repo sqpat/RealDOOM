@@ -235,7 +235,7 @@ typedef struct mobj_s {
     uint8_t		radius;
 
     // Movement direction, movement generation (zig-zagging).
-    int8_t			movedir;	// 0-7  // uses 4 bits
+    uint8_t			movedir;	// 0-7  // uses 4 bits
     int16_t			movecount;	// when 0, select a new dir
 
     // Thing being chased/attacked (or NULL),
@@ -246,11 +246,11 @@ typedef struct mobj_s {
     // Used by player to freeze a bit after teleporting.
 	
 	// uses 5 bits, up to 18. 
-	int8_t			reactiontime;
+	uint8_t			reactiontime;
 
     // If >0, the target will be chased
     // no matter what (even if shot)
-    int8_t			threshold;
+    uint8_t			threshold;
 
     // For nightmare respawn.
     //mapthing_t		spawnpoint;	

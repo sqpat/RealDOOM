@@ -818,8 +818,9 @@ void __near A_Chase (mobj_t __near*	actor, mobj_pos_t __far* actor_pos){
 	sfxenum_t (__far  * getActiveSound)(uint8_t) = getActiveSoundAddr;
 	sfxenum_t (__far  * getAttackSound)(uint8_t) = getAttackSoundAddr;
 
-    if (actor->reactiontime)
+    if (actor->reactiontime){
 		actor->reactiontime--;
+	}
 				
 
     // modify target threshold
@@ -843,11 +844,11 @@ void __near A_Chase (mobj_t __near*	actor, mobj_pos_t __far* actor_pos){
 		actor_pos->angle.hu.fracbits = 0;
 		delta = actor_pos->angle.hu.intbits - movedirangles[actor->movedir];
 		
-		if (delta > 0)
+		if (delta > 0){
 			actor_pos->angle.hu.intbits -= ANG90_HIGHBITS / 2;
-		else if (delta < 0)
+		} else if (delta < 0){
 			actor_pos->angle.hu.intbits += ANG90_HIGHBITS / 2;
-		
+		}
  
     }
 

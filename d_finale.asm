@@ -1177,10 +1177,9 @@ db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   bx, ax
 shl   bx, 1
+add   bx, ax
 shl   bx, 1
-sub   bx, ax
 mov   ax, STATES_SEGMENT
-add   bx, bx
 
 mov   word ptr ds:[_caststate], bx
 mov   es, ax

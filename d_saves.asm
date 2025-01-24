@@ -611,6 +611,8 @@ sub       ax, cx
 and       ax, 3
 add       di, ax
 
+push      dx
+
 
 
 ; default everything to zero
@@ -623,7 +625,7 @@ xor       ax, ax
 rep       stosw 
 
 
-lea       di, [di + 12 - SIZEOF_MOBJ_VANILLA_T] ; skip thinker fields
+lea       di, [di + 0Ch - SIZEOF_MOBJ_VANILLA_T] ; skip thinker fields and undo rep stosw
 
 movsw   ; x
 movsw
@@ -633,7 +635,7 @@ movsw   ; z
 movsw                   ; di + 18h    si + 0Ch now 
 
 add       di, 8         ; di + 20h    skip snext sprev
-add       si, 2         ; si + 0Eh
+add       si, 2         ; si + 0Eh    skip snextRef
 
 movsw   ; angle         ; di + 22h    si + 010h
 movsw                   ; di + 24h    si + 012h
@@ -643,13 +645,14 @@ movsw                   ; di + 24h    si + 012h
 
 
 lodsw                   ; si + 014h
-mov       word ptr ds:[di + 040h], ax   ; di + 64h          statenum
+mov       word ptr es:[di + 040h], ax   ; di + 64h          statenum
 xchg      ax, cx        ; cx gets statenum. 
 
-lodsw                   ; si + 016h
-mov       word ptr ds:[di + 044h], ax   ; di + 68h          flags1
-lodsw                   ; si + 018h
-mov       word ptr ds:[di + 046h], ax   ; di + 6Ah          flags2
+lea       di, [di + 044h]
+movsw ; si + 016h di + 6Ah          flags1
+movsw ; si + 018h di + 6Ch          flags2
+
+lea       di, [di - 048h]   ; di + 024h
 
 
 ; 			savemobj->sprite 			= states[mobj_pos->stateNum].sprite;
@@ -669,13 +672,13 @@ add       si, cx
 sal       si, 1
 
 xor       ah, ah
-lodsb
+lodsb     ; si + 0
 stosw     ; sprite  ; di + 026
 inc       di
 inc       di        ; di + 028
-lodsb
+lodsb     ; si + 1
 test      ax, FF_FULLBRIGHT
-jne       skip_framemask
+je        skip_framemask
 and       ax, FF_FRAMEMASK
 or        ax, VANILLA_FULLBRIGHT 
 skip_framemask:
@@ -708,23 +711,39 @@ lodsb
 stosw               ; di 05Ah <- si 1Bh  type
 
 
-add       di, 6
-lodsb
-; ah still 0
+add       di, 6     ; di 060h <- si 1Bh
+lodsb               ;            si 1Ch
+cbw
+cwd
+
 stosw               ; di 062h <- si 01Ch  tics
+xchg      ax, dx
+stosw               ; di 064h <- si 01Ch  tics
 
-add       di, 0Ah
-movsw               ; di 06Eh <- si 01Eh  health
 
-add       di, 2     ; di + 070h
+add       di, 08h   ; di 06Ch <- si 01Ch
+
+lodsw
+cwd
+stosw               ; di 06Eh <- si 01Eh  health
+xchg      ax, dx
+stosw               ; di 070h <- si 01Eh  health
+
+
 inc       si        ; si + 01Fh
 
 movsb               ; di 071h <- si 020h   movedir
 
 add       di, 3
-movsw               ; di 076h <- si 022h   movecount
 
-add       di, 6     ; di + 07Ch
+lodsw
+cwd
+stosw               ; di 076h <- si 022h   movecount
+xchg      ax, dx
+stosw              ; di 078h <- si 022h   movecount
+
+
+add       di, 4     ; di + 07Ch
 add       si, 2     ; si + 024h
 
 movsb               ; di 07Dh <- si 025h   reactiontime
@@ -732,14 +751,24 @@ movsb               ; di 07Dh <- si 025h   reactiontime
 add       di, 3     ; di + 080h
 movsb               ; di 081h <- si 026h   threshold
 
+add       di, 3     ; di + 084h
+; di 05Ah is player
 
-add       di, 0Bh   ; di + 08Ch
+mov       ax, word ptr es:[di - 02Ah]
+cmp       ax, MT_PLAYER
+jne       not_saving_player
+mov       al, 1
+stosb
+dec       di
+not_saving_player:
+add       di, 08h   ; di + 08Ch
 
 mov       ax, NIGHTMARESPAWNS_SEGMENT
 mov       ds, ax
 
 ; get index
 
+pop       dx    ; restore th index. dx was used for cwds above...
 mov       ax, SIZEOF_MAPTHING_T
 push      dx
 mul       dx
