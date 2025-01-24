@@ -802,6 +802,30 @@ SIZEOF_GLOW_VANILLA_T = 01Ch
 
 MAXCEILINGS = 30
 
+jump_table_archive_specials:
+;dw  OFFSET  iterate_to_next_special - OFFSET P_SAVESTART_  ; 1 mobj, skip
+;dw  OFFSET  save_platraise_special  - OFFSET P_SAVESTART_  ; 2
+;dw  OFFSET  save_ceiling_special    - OFFSET P_SAVESTART_  ; 3
+;dw  OFFSET  save_door_special       - OFFSET P_SAVESTART_  ; 4
+;dw  OFFSET  save_movefloor_special  - OFFSET P_SAVESTART_  ; 5
+;dw  OFFSET  iterate_to_next_special - OFFSET P_SAVESTART_  ; 6 flicker?? not saved apparently, skip
+;dw  OFFSET  save_flash_special      - OFFSET P_SAVESTART_  ; 7
+;dw  OFFSET  save_strobe_special     - OFFSET P_SAVESTART_  ; 8
+;dw  OFFSET  save_glow_special       - OFFSET P_SAVESTART_  ; 9
+;dw  OFFSET  iterate_to_next_special - OFFSET P_SAVESTART_  ; 10 deleteme skip
+
+dw  OFFSET  iterate_to_next_special  ; 1 mobj, skip
+dw  OFFSET  save_platraise_special   ; 2
+dw  OFFSET  save_ceiling_special     ; 3
+dw  OFFSET  save_door_special        ; 4
+dw  OFFSET  save_movefloor_special   ; 5
+dw  OFFSET  iterate_to_next_special  ; 6 flicker?? not saved apparently, skip
+dw  OFFSET  save_flash_special       ; 7
+dw  OFFSET  save_strobe_special      ; 8
+dw  OFFSET  save_glow_special        ; 9
+dw  OFFSET  iterate_to_next_special  ; 10 deleteme skip
+
+
 PROC P_ArchiveSpecials_ FAR
 PUBLIC P_ArchiveSpecials_
 
@@ -813,21 +837,54 @@ push      di
 push      bp
 mov       bp, sp
 sub       sp, 020h
-mov       si, OFFSET _thinkerlist + 2
-mov       si, word ptr [si]
+
+mov       si, word ptr ds:[_thinkerlist + 2]
 test      si, si
-jne       save_next_special
-jmp       exit_archive_specials
+je        exit_archive_specials
 save_next_special:
+
 imul      bx, si, SIZEOF_THINKER_T
 mov       ax, word ptr [bx + OFFSET _thinkerlist]
 and       ax, TF_FUNCBITS
 
 
-mov       word ptr [bp - 4], ax
-test      ax, ax
+
 je        is_null_funcbits
-jmp       not_null_funcbits
+
+add       bx, OFFSET _thinkerlist + 4
+mov       word ptr [bp - 2], bx         ; becomes si i think
+
+rol       ax, 1
+rol       ax, 1
+rol       ax, 1
+rol       ax, 1
+rol       ax, 1  ; put func bits (most sig 5) into least sig bits
+
+dec       ax     ; offset 0 case. could just minus two in the lookup...
+shl       ax, 1  ; word lookup
+
+xchg      ax, di
+
+jmp       word ptr cs:[di + OFFSET jump_table_archive_specials ]
+;jmp       word ptr cs:[di + OFFSET jump_table_archive_specials - OFFSET P_SAVESTART_]
+
+iterate_to_next_special:
+imul      si, si, SIZEOF_THINKER_T
+mov       si, word ptr ds:[si + OFFSET _thinkerlist + 2]
+test      si, si
+jne       save_next_special
+exit_archive_specials:
+les       di, dword ptr ds:[_save_p]
+inc       word ptr ds:[_save_p]
+mov       byte ptr es:[di], 7
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+retf      
+
 is_null_funcbits:
 xor       bx, bx
 cmp       si, word ptr [_activeceilings]
@@ -872,7 +929,7 @@ mov       cx, SIZEOF_CEILING_VANILLA_T / 2
 xor       ax, ax
 rep       stosw 
 mov       di, word ptr [bp - 6]
-do_save_ceiling_stuff:
+
 mov       al, byte ptr [di]
 cbw      
 cwd       
@@ -932,37 +989,14 @@ cbw
 cwd       
 mov       word ptr es:[bx + 02ch], ax
 mov       word ptr es:[bx + 02eh], dx
-mov       bx, _save_p
-add       word ptr [bx], SIZEOF_CEILING_VANILLA_T
-iterate_to_next_special:
-imul      si, si, SIZEOF_THINKER_T
-mov       si, word ptr [si + OFFSET _thinkerlist + 2]
-test      si, si
-je        exit_archive_specials
-jmp       save_next_special
-exit_archive_specials:
-mov       bx, _save_p
-les       si, dword ptr [bx]
-inc       word ptr [bx]
-mov       byte ptr es:[si], 7
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-retf      
-not_null_funcbits:
-add       bx, OFFSET _thinkerlist + 4
-mov       word ptr [bp - 2], bx
-cmp       ax, TF_MOVECEILING_HIGHBITS
-jne       not_ceiling
-jmp       do_save_ceiling
-not_ceiling:
-cmp       ax, TF_VERTICALDOOR_HIGHBITS
-je        do_save_door
-jmp       not_door
-do_save_door:
+
+add       word ptr ds:[_save_p], SIZEOF_CEILING_VANILLA_T
+; fall thru
+jmp       iterate_to_next_special
+
+
+
+save_door_special:
 mov       bx, _save_p
 mov       bx, word ptr [bx]
 mov       di, _save_p
@@ -1031,13 +1065,10 @@ mov       ax, word ptr [di + 0Bh]
 cwd       
 mov       word ptr es:[bx + 024h], ax
 mov       word ptr es:[bx + 026h], dx
-mov       bx, _save_p
-add       word ptr [bx], SIZEOF_VLDOOR_VANILLA_T
-not_door:
-cmp       word ptr [bp - 4], TF_MOVEFLOOR_HIGHBITS
-je        do_save_floormove
-jmp       not_floormove
-do_save_floormove:
+add       word ptr ds:[_save_p], SIZEOF_VLDOOR_VANILLA_T
+jmp       iterate_to_next_special
+
+save_movefloor_special:
 imul      ax, si, SIZEOF_THINKER_T
 mov       bx, _save_p
 mov       di, _save_p
@@ -1110,28 +1141,10 @@ and       ax, 0E000h
 xor       dx, ax
 mov       word ptr es:[bx + 026h], ax
 mov       word ptr es:[bx + 028h], dx
-mov       bx, _save_p
-add       word ptr [bx], SIZEOF_FLOORMOVE_VANILLA_T
-not_floormove:
-imul      bx, si, SIZEOF_THINKER_T
-mov       ax, word ptr [bp - 4]
-add       bx, OFFSET _thinkerlist + 4
-cmp       ax, TF_PLATRAISE_HIGHBITS
-jne       not_platraise
-jmp       do_save_platraise
-not_platraise:
-cmp       ax, TF_LIGHTFLASH_HIGHBITS
-jne       not_lightflash
-jmp       do_save_lightflash
-not_lightflash:
-cmp       ax, TF_STROBEFLASH_HIGHBITS
-jne       not_strobe
-jmp       do_save_strobeflash
-not_strobe:
-cmp       ax, TF_GLOW_HIGHBITS
-je        do_save_glow
+add       word ptr ds:[_save_p], SIZEOF_FLOORMOVE_VANILLA_T
 jmp       iterate_to_next_special
-do_save_glow:
+
+save_glow_special:
 mov       di, _save_p
 mov       ax, word ptr [di]
 mov       dx, ax
@@ -1177,10 +1190,11 @@ mov       bx, di
 cwd       
 mov       word ptr es:[bx + 018h], ax
 mov       word ptr es:[bx + 01ah], dx
-mov       bx, _save_p
-add       word ptr [bx], SIZEOF_GLOW_VANILLA_T
+
+add       word ptr ds:[_save_p], SIZEOF_GLOW_VANILLA_T
 jmp       iterate_to_next_special
-do_save_ceiling:
+
+save_ceiling_special:
 mov       bx, _save_p
 mov       bx, word ptr [bx]
 mov       di, _save_p
@@ -1206,8 +1220,72 @@ mov       cx, SIZEOF_CEILING_VANILLA_T / 2
 xor       ax, ax
 rep       stosw 
 mov       di, word ptr [bp - 2]
-jmp       do_save_ceiling_stuff
-do_save_platraise:
+
+mov       al, byte ptr [di]
+cbw      
+cwd       
+mov       word ptr es:[bx + 0Ch], ax
+mov       word ptr es:[bx + 0Eh], dx
+mov       ax, word ptr [di + 1]
+cwd       
+mov       word ptr es:[bx + 010h], ax
+mov       word ptr es:[bx + 012h], dx
+mov       ax, word ptr [di + 3]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[bx + 014h], ax
+mov       word ptr es:[bx + 016h], dx
+mov       ax, word ptr [di + 5]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[bx + 018h], ax
+mov       word ptr es:[bx + 01ah], dx
+mov       ax, word ptr [di + 7]
+cwd       
+mov       cl, 0Dh
+shl       dx, cl
+rol       ax, cl
+xor       dx, ax
+and       ax, 0E000h
+xor       dx, ax
+mov       word ptr es:[bx + 01ch], ax
+mov       word ptr es:[bx + 01eh], dx
+mov       al, byte ptr [di + 9]
+cbw      
+cwd       
+mov       word ptr es:[bx + 020h], ax
+mov       word ptr es:[bx + 022h], dx
+mov       al, byte ptr [di + 0Ah]
+cbw      
+cwd       
+mov       word ptr es:[bx + 024h], ax
+mov       word ptr es:[bx + 026h], dx
+mov       al, byte ptr [di + 0Bh]
+cbw      
+cwd       
+mov       word ptr es:[bx + 028h], ax
+mov       word ptr es:[bx + 02ah], dx
+mov       al, byte ptr [di + 0Ch]
+cbw      
+cwd       
+mov       word ptr es:[bx + 02ch], ax
+mov       word ptr es:[bx + 02eh], dx
+
+add       word ptr ds:[_save_p], SIZEOF_CEILING_VANILLA_T
+jmp       iterate_to_next_special
+
+save_platraise_special:
+
 mov       di, _save_p
 mov       ax, word ptr [di]
 mov       dx, ax
@@ -1304,10 +1382,10 @@ mov       bx, di
 xor       ah, ah
 mov       word ptr es:[bx + 036h], 0
 mov       word ptr es:[bx + 034h], ax
-mov       bx, _save_p
-add       word ptr [bx], SIZEOF_PLAT_VANILLA_T 
+add       word ptr ds:[_save_p], SIZEOF_PLAT_VANILLA_T 
 jmp       iterate_to_next_special
-do_save_lightflash:
+
+save_flash_special:
 mov       di, _save_p
 mov       ax, word ptr [di]
 mov       dx, ax
@@ -1363,10 +1441,10 @@ mov       bx, di
 cwd       
 mov       word ptr es:[bx + 020h], ax
 mov       word ptr es:[bx + 022h], dx
-mov       bx, _save_p
-add       word ptr [bx], SIZEOF_LIGHTFLASH_VANILLA_T
+add       word ptr ds:[_save_p], SIZEOF_LIGHTFLASH_VANILLA_T
 jmp       iterate_to_next_special
-do_save_strobeflash:
+
+save_strobe_special:
 mov       di, _save_p
 mov       ax, word ptr [di]
 mov       dx, ax
@@ -1421,11 +1499,9 @@ mov       bx, di
 cwd       
 mov       word ptr es:[bx + 020h], ax
 mov       word ptr es:[bx + 022h], dx
-mov       bx, _save_p
-add       word ptr [bx], SIZEOF_STROBE_VANILLA_T
+add       word ptr ds:[_save_p], SIZEOF_STROBE_VANILLA_T
 jmp       iterate_to_next_special
-add       byte ptr [bx + si], al
-add       byte ptr [bx + si], al
+
 
 ENDP
 

@@ -678,6 +678,7 @@ void __far P_ArchiveSpecials (void) {
 
 			save_p += sizeof(vldoor_vanilla_t);
 
+			continue;
 		}
 			
 		if (functype == TF_MOVEFLOOR_HIGHBITS) {
@@ -699,6 +700,7 @@ void __far P_ArchiveSpecials (void) {
 			savefloor->speed		 	= scratch << (16-SHORTFLOORBITS); 
 
 			save_p += sizeof(floormove_vanilla_t);
+			continue;
 		}
 			
 
