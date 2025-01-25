@@ -746,7 +746,7 @@ pop   es    ; es = ds
 push  cs
 pop   ds    ; ds = cs
 
-mov   si, bx
+mov   si, ax
 
 mov   ax, 0
 stosw       ; zero out
@@ -805,7 +805,6 @@ db "brdr_br", 0
 PROC R_FillBackScreen_ FAR
 PUBLIC R_FillBackScreen_
 
-SBARHEIGHT = 32
 
 push      bx
 push      cx
@@ -813,13 +812,12 @@ push      dx
 push      si
 push      di
 
-cmp       word ptr [_scaledviewwidth], SCREENWIDTH
+cmp       word ptr ds:[_scaledviewwidth], SCREENWIDTH
 jne       continue_fillbackscreen
 jmp       exit_fillbackscreen
 
 continue_fillbackscreen:
-mov       bx, OFFSET _commercial
-cmp       byte ptr [bx], 0
+cmp       byte ptr ds:[_commercial], 0
 jne       is_doom2
 ; not doom2
 mov       bx, OFFSET str_name_1
@@ -828,7 +826,7 @@ is_doom2:
 mov       bx, OFFSET str_name_2
 name_ready:
 call      Z_QuickMapScratch_5000_
-
+xchg      ax, bx
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
@@ -879,7 +877,7 @@ pop       ds
 ; note; ax is always _filename_argument ptr
 
 
-mov       bx, OFFSET str_brdr_t
+mov       ax, OFFSET str_brdr_t
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
@@ -902,7 +900,7 @@ jl        loop_brdr_top
 done_with_brdr_top_loop:
 
 
-mov       bx, OFFSET str_brdr_b
+mov       ax, OFFSET str_brdr_b
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
@@ -921,7 +919,7 @@ jl        loop_brdr_bot
 done_with_brdr_bot_loop:
 
 
-mov       bx, OFFSET str_brdr_l
+mov       ax, OFFSET str_brdr_l
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
@@ -941,7 +939,7 @@ jl        loop_brdr_left
 done_with_brdr_left_loop:
 
 
-mov       bx, OFFSET str_brdr_r
+mov       ax, OFFSET str_brdr_r
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
@@ -963,7 +961,7 @@ jl        loop_brdr_right
 
 done_with_brdr_right_loop:
 
-mov       bx, OFFSET str_brdr_tl
+mov       ax, OFFSET str_brdr_tl
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
@@ -980,7 +978,7 @@ lea       ax, [si - 8]
 call      V_DrawPatch5000Screen0_		; todo make a version based on segment 5000
 
 
-mov       bx, OFFSET str_brdr_tr
+mov       ax, OFFSET str_brdr_tr
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
@@ -994,7 +992,7 @@ mov       ax, si
 add       ax, word ptr ds:[_scaledviewwidth]
 call      V_DrawPatch5000Screen0_
 
-mov       bx, OFFSET str_brdr_bl
+mov       ax, OFFSET str_brdr_bl
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
@@ -1007,7 +1005,7 @@ add       dx, word ptr ds:[_viewheight]
 
 call      V_DrawPatch5000Screen0_
 
-mov       bx, OFFSET str_brdr_br
+mov       ax, OFFSET str_brdr_br
 call      CopyString9_
 xor       bx, bx
 mov       cx, SCRATCH_PAGE_SEGMENT_5000
