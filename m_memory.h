@@ -971,7 +971,24 @@ skytexture         5400:0000
 
 
 #define wioffsets        ((uint16_t __far*)   MAKE_FULL_SEGMENT(0x78000000, size_level_finished_graphic))
-#define wianimoffsets               ((uint16_t __far*)   MAKE_FULL_SEGMENT(wioffsets, size_wioffsets))
+#define wianimoffsets    ((uint16_t __far*)   MAKE_FULL_SEGMENT(wioffsets, size_wioffsets))
+
+
+#define wioffsets_segment            ((segment_t) ((int32_t)wioffsets >> 16))
+#define wianimoffsets_segment        ((segment_t) ((int32_t)wianimoffsets >> 16))
+#define wigraphicspage0_segment      ((segment_t) ((int32_t)wigraphicspage0 >> 16))
+#define lnodex_segment               ((segment_t) ((int32_t)lnodex >> 16))
+#define lnodey_segment               ((segment_t) ((int32_t)lnodey >> 16))
+#define epsd0animinfo_segment        ((segment_t) ((int32_t)epsd0animinfo >> 16))
+#define epsd1animinfo_segment        ((segment_t) ((int32_t)epsd1animinfo >> 16))
+#define epsd2animinfo_segment        ((segment_t) ((int32_t)epsd2animinfo >> 16))
+#define wigraphics_segment           ((segment_t) ((int32_t)wigraphics >> 16))
+#define pars_segment                 ((segment_t) ((int32_t)pars >> 16))
+#define cpars_segment                ((segment_t) ((int32_t)cpars >> 16))
+#define wigraphicslevelname_segment  ((segment_t) ((int32_t)wigraphicslevelname >> 16))
+#define wianimspage_segment          ((segment_t) ((int32_t)wianimspage >> 16))
+
+
 
 // todo make this work
 /*

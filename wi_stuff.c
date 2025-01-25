@@ -116,15 +116,6 @@
 #define NUM_WI_ANIM_ITEMS 	30
 
 
-
-patch_t __far* __near WI_GetPatch(int16_t i) {
-	return (patch_t __far*)(wigraphicspage0 + wioffsets[i]);
-}
-
-patch_t __far* __near WI_GetAnimPatch(int16_t i) {
-	return (patch_t __far*)(wianimspage + wianimoffsets[i]);
-}
-
 //
 // GENERAL DATA
 //
@@ -147,6 +138,27 @@ patch_t __far* __near WI_GetAnimPatch(int16_t i) {
 // in seconds
 #define SHOWNEXTLOCDELAY	4
 //#define SHOWLASTLOCDELAY	SHOWNEXTLOCDELAY
+
+patch_t __far* __near WI_GetPatch(int16_t i);
+void __near maketwocharint(int16_t j, char __far *str );
+void __near WI_slamBackground(void);
+void __near WI_drawEL(void);
+void __near WI_drawLF(void);
+
+void __far  V_DrawPatch ( int16_t x, int16_t y, int8_t scrn, patch_t __far* patch);
+patch_t __far* __near WI_GetAnimPatch(int16_t i);
+
+
+
+/*
+patch_t __far* __near WI_GetPatch(int16_t i) {
+	return (patch_t __far*)(wigraphicspage0 + wioffsets[i]);
+}
+
+patch_t __far* __near WI_GetAnimPatch(int16_t i) {
+	return (patch_t __far*)(wianimspage + wianimoffsets[i]);
+}
+
 
 
 //
@@ -204,6 +216,7 @@ void __near WI_drawEL(void) {
     V_DrawPatch((SCREENWIDTH - (lname->width))>>1, y, FB, lname);
 
 }
+*/
 
 void __near WI_drawOnLnode ( int16_t n, uint8_t* cRef ) {
 
@@ -239,6 +252,7 @@ void __near WI_drawOnLnode ( int16_t n, uint8_t* cRef ) {
 		V_DrawPatch(lnodeX, lnodeY, FB, (WI_GetPatch(cRef[i])));
     }
 }
+
 
 
 
