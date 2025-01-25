@@ -26,7 +26,10 @@ EXTRN W_CacheLumpNameDirect_:PROC
 EXTRN S_StartSound_:PROC
 EXTRN M_Random_:PROC
 EXTRN combine_strings_:PROC
-
+EXTRN Z_QuickMapPhysics_:PROC
+EXTRN Z_QuickMapIntermission_:PROC
+EXTRN S_ChangeMusic_:PROC
+EXTRN WI_Init_:NEAR
 .DATA
 
 
@@ -525,7 +528,6 @@ mov   byte ptr es:[bx + 0Eh], -1
 mov   di, ax
 
 call  M_Random_
-nop   
 xor   ah, ah
 cwd   
 idiv  di
@@ -680,7 +682,6 @@ label_21:
 mov   cl, byte ptr es:[bx + 1]
 
 call  M_Random_
-nop   
 xor   ah, ah
 xor   ch, ch
 jmp   label_20
@@ -1623,7 +1624,6 @@ mov   ax, di
 ; first pushed is cs
 
 call  combine_strings_
-nop   
 lea   dx, [bp - 01eh]
 push  ds
 mov   bx, di
@@ -1633,7 +1633,6 @@ push  dx
 mov   dx, ds
 
 call  combine_strings_
-nop   
 lea   dx, [bp - 022h]
 push  ds
 mov   bx, di
@@ -1643,7 +1642,6 @@ push  dx
 mov   dx, ds
 
 call  combine_strings_
-nop   
 mov   bx, word ptr [bp - 012h]
 mov   ax, di
 mov   cx, word ptr [bp - 8]
@@ -1785,5 +1783,354 @@ ret
 
 ENDP
 
+
+
+
+PROC WI_Ticker_ FAR
+PUBLIC WI_Ticker_
+
+push  bx
+push  dx
+inc   word ptr ds:[_bcnt]
+cmp   word ptr ds:[_bcnt], 1
+jne   music_already_init
+cmp   byte ptr ds:[_commercial], 0
+je    set_doom1_music
+;set doom2 music
+mov   dx, 1
+mov   ax, MUS_DM2INT
+call_music:
+call  S_ChangeMusic_
+music_already_init:
+call  Z_QuickMapIntermission_
+call  WI_checkForAccelerate_
+mov   al, byte ptr ds:[_state]
+cmp   al, -1
+je    branch_NoState
+cmp   al, 1
+je    branch_ShowNextLoc
+test  al, al
+je    branch_StatCount
+done_with_state_branch:
+call  Z_QuickMapPhysics_
+pop   dx
+pop   bx
+retf  
+set_doom1_music:
+mov   dx, 1
+mov   ax, MUS_INTER
+jmp   call_music
+branch_StatCount:
+call  WI_updateStats_
+jmp   done_with_state_branch
+branch_ShowNextLoc:
+call  WI_updateShowNextLoc_
+jmp   done_with_state_branch
+branch_NoState:
+call  WI_updateNoState_
+call  Z_QuickMapPhysics_
+pop   dx
+pop   bx
+retf  
+
+ENDP
+
+PROC WI_Drawer_ FAR
+PUBLIC WI_Drawer_
+
+cmp   byte ptr ds:[_unloaded], 0
+je    not_unloaded_do_draw
+retf  
+not_unloaded_do_draw:
+call  Z_QuickMapIntermission_
+mov   al, byte ptr ds:[_state]
+cmp   al, -1
+jne   not_nostate
+call  WI_drawNoState_
+invalid_state:
+call  Z_QuickMapPhysics_
+retf
+
+not_nostate:
+cmp   al, 1
+je    do_ShowNextLoc
+test  al, al
+jne   invalid_state
+call  WI_drawStats_
+call  Z_QuickMapPhysics_
+retf
+
+do_ShowNextLoc:
+call  WI_drawShowNextLoc_
+call  Z_QuickMapPhysics_
+retf
+
+ENDP
+
+
+
+
+PROC WI_initVariables_ NEAR
+PUBLIC WI_initVariables_
+
+
+push  bx
+push  dx
+push  si
+push  di
+mov   bx, ax
+mov   dx, ax
+xor   ax, ax
+mov   word ptr ds:[_acceleratestage], ax
+mov   word ptr ds:[_bcnt], ax
+mov   word ptr ds:[_cnt], ax
+mov   ax, ds
+mov   es, ax
+mov   di, OFFSET _plrs
+lea   si, [bx + 0Ch]
+movsw 
+movsw 
+movsw 
+movsw 
+movsb 
+cmp   word ptr [bx + 4], 0
+je    label_114
+label_117:
+mov   bx, dx
+cmp   word ptr [bx + 6], 0
+jne   label_115
+mov   word ptr [bx + 6], 1
+label_115:
+mov   bx, dx
+cmp   word ptr [bx + 8], 0
+je    label_116
+mov   word ptr ds:[_wbs], dx
+pop   di
+pop   si
+pop   dx
+pop   bx
+ret   
+label_114:
+mov   word ptr [bx + 4], 1
+jmp   label_117
+label_116:
+mov   word ptr [bx + 8], 1
+mov   word ptr ds:[_wbs], dx
+pop   di
+pop   si
+pop   dx
+pop   bx
+ret   
+
+
+
+ENDP
+
+str_cwilv:
+db "CWILV", 0
+str_wilv:
+db "WILV", 0
+
+COMMENT @
+
+PROC WI_Init_ NEAR
+PUBLIC WI_Init_
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 018h
+mov   word ptr [bp - 6], WIGRAPHICSPAGE0_SEGMENT
+xor   ax, ax
+xor   di, di
+mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 2], ax
+mov   word ptr [bp - 4], ax
+
+loop_wi_items:
+xor   dl, dl
+loop_to_9:
+mov   al, dl
+cbw  
+mov   bx, di
+mov   si, ax
+add   bx, ax
+mov   ax, WIGRAPHICS_SEGMENT
+mov   es, ax
+mov   al, byte ptr es:[bx]
+inc   dl
+mov   byte ptr [bp + si - 018h], al
+cmp   dl, 9
+jl    loop_to_9
+lea   ax, [bp - 018h]
+mov   bx, word ptr [bp - 2]
+mov   cx, word ptr [bp - 6]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_GetNumForName_addr
+
+mov   si, ax
+call  W_LumpLength_
+mov   dx, ax
+mov   ax, si
+add   di, 9
+call  W_CacheLumpNameDirect_
+add   word ptr [bp - 2], dx
+mov   ax, WIOFFSETS_SEGMENT
+mov   bx, word ptr [bp - 4]
+mov   es, ax
+mov   ax, word ptr [bp - 8]
+add   word ptr [bp - 4], 2
+mov   word ptr es:[bx], ax
+add   word ptr [bp - 8], dx
+cmp   word ptr [bp - 4], (NUM_WI_ITEMS * 2)
+jne   loop_wi_items
+
+
+mov   al, byte ptr ds:[_commercial]
+test  al, al
+je    do_nondoom2_wi_init
+; doom2 case
+mov   bx, word ptr ds:[_wbs]
+mov   cx, ds
+mov   al, byte ptr [bx + 2]
+lea   bx, [bp - 0Eh]
+cbw  
+lea   dx, [bp - 0Eh]
+call  maketwocharint_
+mov   bx, OFFSET str_cwilv
+lea   ax, [bp - 018h]
+push  ds
+mov   cx, cs
+push  dx
+mov   dx, ds
+
+call  combine_strings_
+
+mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
+lea   ax, [bp - 018h]
+xor   bx, bx
+call  W_CacheLumpNameDirect_
+mov   bx, word ptr ds:[_wbs]
+mov   cx, ds
+mov   al, byte ptr [bx + 3]
+lea   bx, [bp - 0Eh]
+cbw  
+lea   dx, [bp - 0Eh]
+call  maketwocharint_
+mov   bx, OFFSET str_cwilv
+lea   ax, [bp - 018h]
+push  ds
+mov   cx, cs
+push  dx
+mov   dx, ds
+
+label_103:
+
+call  combine_strings_
+mov   bx, NEXT_OFFSET
+mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
+lea   ax, [bp - 018h]
+call  W_CacheLumpNameDirect_
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+do_nondoom2_wi_init:
+lea   dx, [bp - 0Ah]
+mov   bx, word ptr ds:[_wbs]
+mov   byte ptr [bp - 9], al
+push  ds
+push  dx
+mov   al, byte ptr [bx]
+mov   cx, cs
+mov   bx, OFFSET str_wilv
+add   al, 030h    ; '0' char
+mov   dx, ds
+mov   byte ptr [bp - 0Ah], al
+lea   ax, [bp - 018h]
+call  combine_strings_
+
+lea   dx, [bp - 0Ah]
+mov   bx, word ptr ds:[_wbs]
+push  ds
+mov   cx, ds
+push  dx
+mov   al, byte ptr [bx + 2]
+lea   bx, [bp - 018h]
+add   al, 030h    ; '0' char
+mov   dx, ds
+mov   byte ptr [bp - 0Ah], al
+lea   ax, [bp - 018h]
+call  combine_strings_
+
+mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
+lea   ax, [bp - 018h]
+xor   bx, bx
+lea   dx, [bp - 0Ah]
+call  W_CacheLumpNameDirect_
+mov   bx, word ptr ds:[_wbs]
+push  ds
+mov   cx, cs
+push  dx
+mov   al, byte ptr [bx]
+mov   bx, OFFSET str_wilv
+add   al, 030h    ; '0' char
+mov   dx, ds
+mov   byte ptr [bp - 0Ah], al
+lea   ax, [bp - 018h]
+call  combine_strings_
+
+lea   dx, [bp - 0Ah]
+mov   bx, word ptr ds:[_wbs]
+push  ds
+mov   cx, ds
+push  dx
+mov   al, byte ptr [bx + 3]
+lea   bx, [bp - 018h]
+add   al, 030h    ; '0' char
+mov   dx, ds
+mov   byte ptr [bp - 0Ah], al
+lea   ax, [bp - 018h]
+call  combine_strings_
+
+mov   bx, NEXT_OFFSET
+mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
+lea   ax, [bp - 018h]
+call  W_CacheLumpNameDirect_
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+ENDP
+
+@
+
+PROC WI_Start_ FAR
+PUBLIC WI_Start_
+
+mov   byte ptr [_unloaded], 0
+call  WI_initVariables_
+call  WI_Init_
+call  WI_loadData_
+call  WI_initStats_
+call  Z_QuickMapPhysics_
+retf
+
+ENDP
 
 END

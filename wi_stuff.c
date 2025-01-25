@@ -801,7 +801,6 @@ void __near WI_updateNoState(void) {
     }
 
 }
-*/
 
 
 
@@ -881,7 +880,7 @@ void __near WI_initVariables(wbstartstruct_t __near* wbstartstruct) {
 		wbs->maxsecret = 1;
 	}
 }
-
+*/
 
 void __near WI_Init(void) {
 
@@ -949,6 +948,7 @@ void __near WI_Init(void) {
 		W_CacheLumpNameDirect(name, dst);
 	}
 }	
+/*
 
 void __far WI_Start(wbstartstruct_t __near* wbstartstruct) {
 	unloaded = false;
@@ -965,3 +965,4 @@ void __far WI_Start(wbstartstruct_t __near* wbstartstruct) {
 }
 
 
+*/
