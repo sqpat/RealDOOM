@@ -259,6 +259,11 @@ void __near WI_updateShowNextLoc(void);
 void __near WI_drawShowNextLoc(void);
 void __near WI_drawNoState(void);
 void __near WI_initStats(void);
+void __near WI_checkForAccelerate(void);
+void __near WI_updateStats(void);
+void __near WI_loadData(void);
+void __near WI_updateNoState(void);
+void __near WI_drawStats(void);
 
 
 /*
@@ -523,7 +528,6 @@ void __near WI_initStats(void) {
     WI_initAnimatedBack();
 }
 
-*/
 
 void __near WI_updateStats(void) {
 
@@ -668,8 +672,6 @@ void __near WI_checkForAccelerate(void) {
 
 
 
- 
-
 void __near WI_loadData(void) {
     int16_t		i;
 	int8_t	name1[9] = "INTERPIC";
@@ -782,7 +784,6 @@ void __near G_WorldDone (void)  {
     }
 } 
 
-
 void __near WI_unloadData(void){
 	unloaded = true;
 }
@@ -800,7 +801,7 @@ void __near WI_updateNoState(void) {
     }
 
 }
-
+*/
 
 
 

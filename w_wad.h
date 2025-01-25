@@ -61,7 +61,7 @@ typedef struct {
 int16_t	W_CheckNumForName (int8_t* name);
 int16_t	W_GetNumForName(int8_t* name);
 
-int32_t	W_LumpLength (int16_t lump);
+int32_t	__far W_LumpLength (int16_t lump);
 
 
 void W_CacheLumpNumDirectFragment(int16_t lump, byte __far* dest, int32_t offset);

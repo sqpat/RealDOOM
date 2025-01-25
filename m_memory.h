@@ -1476,7 +1476,7 @@ compositetexturepage    4F2C:0000
 compositetextureoffset  4F2C:01AC
 [done]                  4F64:0000
 //FREEBYTES
-3264 bytes free
+2496 bytes free
 
 
 */
