@@ -715,10 +715,6 @@ ENDP
 
 tag_conversions_to_vanilla:
 dw 1323, 1044, 86, 77, 99, 666, 667, 999
-PROC ConvertTagFromVanilla NEAR
-;todo
-ret
-ENDP
 
 PROC SaveTagToVanilla NEAR
 lodsb
@@ -739,6 +735,7 @@ use_tag:
 stosw
 xor   ax, ax
 stosw
+ret
 
 ENDP
 

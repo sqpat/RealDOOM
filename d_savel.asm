@@ -809,7 +809,7 @@ call   LoadShortHeight16_
 call   LoadShortHeight16_
 call   LoadInt8_
 call   LoadInt8_
-call   LoadInt8_
+call   LoadTagToVanilla
 call   LoadInt8_
 
 
@@ -940,7 +940,7 @@ call   LoadInt8_
 call   LoadInt8_
 call   LoadInt8_
 call   LoadInt8_
-call   LoadInt8_        ; todo tag
+call   LoadTagToVanilla
 call   LoadInt8_
 
 
@@ -1040,6 +1040,81 @@ jmp    load_next_special
 
 ENDP
 
+
+PROC LoadTagToVanilla NEAR
+lodsw
+inc   si
+inc   si
+
+cmp   ax, 1323
+jne   not_1323
+mov   al, 56
+stosb
+ret
+
+not_1323:
+cmp   ax, 1044
+jne   not_1044
+mov   al, 57
+stosb
+ret
+
+
+not_1044:
+cmp   ax, 86
+jne   not_86
+mov   al, 58
+stosb
+ret
+
+
+not_86:
+cmp   ax, 77
+jne   not_77
+mov   al, 59
+stosb
+ret
+
+
+not_77:
+cmp   ax, 99
+jne   not_99
+mov   al, 60
+stosb
+ret
+
+
+not_99:
+cmp   ax, 666
+jne   not_666
+mov   al, 61
+stosb
+ret
+
+
+not_666:
+cmp   ax, 667
+jne   not_667
+mov   al, 62
+stosb
+ret
+
+not_667:
+cmp   ax, 999
+jne   not_999
+mov   al, 63
+; fall thru
+
+not_999:
+
+stosb
+ret 
+
+
+
+
+
+ENDP
 
 
 PROC LoadInt8_ NEAR

@@ -30,4 +30,4 @@
 #define R_DrawSkyColumnCodeSize        0x6C2
 #define WipeCodeSize                   0x31B
 #define FinaleCodeSize                 0xB60
-#define LoadCodeSize                   0x63A
+#define LoadCodeSize                   0x685
