@@ -82,24 +82,10 @@ movsw                           ; 12 -> 1A  deltaviewheight
 movsw                           ; 14 -> 1C  
 movsw                           ; 16 -> 1E  bob
 
-lodsw
-cwd
-stosw                           ; 18 -> 20
-xchg      ax, dx
-stosw                           ; 18 -> 22  health
+call      SaveInt16_            ; 18 -> 22  health
+call      SaveInt16_            ; 1A -> 26  armorpoints
+call      SaveInt8_             ; 1C -> 2A  armortype
 
-lodsw
-cwd
-stosw                           ; 1A -> 24
-xchg      ax, dx
-stosw                           ; 1A -> 26  armorpoints
-
-lodsb
-cbw
-cwd
-stosw                           ; 1C -> 28
-xchg      ax, dx
-stosw                           ; 1C -> 2A  armortype
 
 ;         si now 1d    di now 2C
 
@@ -111,53 +97,29 @@ mov       word ptr es:[di - 028h], ax     ; playerstate is (base)di + 4
 mov       cx, NUMPOWERS
 
 loop_save_powers:
-lodsw
-cwd       
-stosw
-xchg      ax, dx
-stosw
+
+call      SaveInt16_
+
 loop      loop_save_powers
 
 ;         si 02Ah,   di 044h
 
 mov       cx, NUMCARDS
 loop_save_keys:
-lodsb
-cbw
-cwd       
-stosw
-xchg      ax, dx
-stosw
+call      SaveInt8_
+
 loop      loop_save_keys
 
 ;         si 030h,    di 05Ch
 add       di, 014h              ; backpack, MAX_PLAYERS * dword for frag count,
 ;         si  030h,   di 070h
 
-lodsb     ; ready weapon
-cbw
-cwd       
-stosw
-xchg      ax, dx
-stosw
-;         si  031h,   di 078h
-
-lodsb     ; pending weapon
-cbw
-cwd       
-stosw
-xchg      ax, dx
-stosw
-;         si  032h,   di 078h
+call      SaveInt8_     ;         si  031h,   di 078h
+call      SaveInt8_     ;         si  032h,   di 078h
 
 mov       cx, NUMWEAPONS
 loop_save_weaponowned:
-lodsb
-cbw
-cwd       
-stosw
-xchg      ax, dx
-stosw
+call      SaveInt8_
 loop      loop_save_weaponowned
 
 ;         si  03Bh,   di 09Ch
@@ -173,85 +135,38 @@ mov       word ptr es:[di + 02Ah], dx
 
 mov       cx, NUMAMMO
 loop_save_ammo:
-lodsw
-cwd       
-stosw
-xchg      ax, dx
-stosw
+call      SaveInt16_
+
 loop      loop_save_ammo
 
 ;         si  044h,   di 0ACh
 
 mov       cx, NUMAMMO
 loop_save_max_ammo:
-lodsw
-cwd       
-stosw
-xchg      ax, dx
-stosw
+call      SaveInt16_
 loop      loop_save_max_ammo
 
 ;         si  04Ch,   di 0BCh
 
-lodsb     ; attackdown
-cbw
-cwd   
-stosw
-xchg      ax, dx
-stosw
-;         si  04Dh,   di 0C0h
+call      SaveInt8_         ; attackdown       si  04Dh,   di 0C0h
+call      SaveInt8_         ; usedown          si  04Eh,   di 0C4h
 
-lodsb     ; usedown
-cbw
-cwd   
-stosw
-xchg      ax, dx
-stosw
-;         si  04Eh,   di 0C4h
 
 add       di, 8             ; cheats, refire (c4, c8)
 ;         si  04Eh,   di 0CCh
 
-lodsw     ; killcount
-cwd       
-stosw
-xchg      ax, dx
-stosw
-;         si  050h,   di 0D0h
+call      SaveInt16_         ; killcount       si  050h,   di 0D0h
+call      SaveInt16_         ; itemcount       si  052h,   di 0D4h
+call      SaveInt16_         ; secretcount     si  054h,   di 0D8h
 
-lodsw     ; itemcount
-cwd       
-stosw
-xchg      ax, dx
-stosw
-;         si  052h,   di 0D4h
 
-lodsw     ; secretcount
-cwd       
-stosw
-xchg      ax, dx
-stosw
-;         si  054h,   di 0D8h
 
 add       si, 4             ; message, messagestring
 add       di, 4             ; message
 ;         si  058h,   di 0DCh
 
-lodsw     ; damagecount
-cwd       
-stosw
-xchg      ax, dx
-stosw
-;         si  05Ah,   di 0E0h
-
-
-lodsb     ; bonuscount
-cbw
-cwd       
-stosw
-xchg      ax, dx
-stosw
-;         si  05Bh,   di 0E4h
+call      SaveInt16_         ; damagecount     si  05Ah,   di 0E0h
+call      SaveInt8_          ; bonuscount      si  05Bh,   di 0E4h
 
 
 lodsb       ; refire            
@@ -268,29 +183,11 @@ add       di, 4             ; attacker
 ;         si  05Eh,   di 0E8h
 
 
-lodsb     ; extralightvalue
-cbw
-cwd       
-stosw
-xchg      ax, dx
-stosw
-;         si  05Fh,   di 0ECh
+call      SaveInt8_          ; extralightvalue      si  05Fh,   di 0ECh
+call      SaveInt8_          ; fixedcolormapvalue   si  060h,   di 0F0h
+call      SaveUInt8_         ; colormap             si  061h,   di 0F4h
 
-lodsb     ; fixedcolormapvalue
-xor       ah, ah
-cwd       
-stosw
-xchg      ax, dx
-stosw
-;         si  060h,   di 0F0h
 
-lodsb     ; colormap
-xor       ah, ah
-cwd       
-stosw
-xchg      ax, dx
-stosw
-;         si  061h,   di 0F4h
 
 lodsb     ; didsecret
 cbw
@@ -322,11 +219,8 @@ stosw
 add       di, 2
 done_with_statenum_write:
 
-lodsw
-cwd       
-stosw
-xchg      ax, dx
-stosw
+call      SaveInt16_   
+
 movsw
 movsw
 movsw
@@ -705,29 +599,22 @@ movsw               ; di 050h <- si 16h  momy
 movsw
 movsw               ; di 054h <- si 1Ah  momz
 
-add       di, 4
+add       di, 4     ; skip validcount
+
 lodsb
 ; ah still 0
 stosw               ; di 05Ah <- si 1Bh  type
 
 
 add       di, 6     ; di 060h <- si 1Bh
-lodsb               ;            si 1Ch
-cbw
-cwd
 
-stosw               ; di 062h <- si 01Ch  tics
-xchg      ax, dx
-stosw               ; di 064h <- si 01Ch  tics
+call      SaveInt8_ ; di 064h <- si 01Ch  tics
 
 
 add       di, 08h   ; di 06Ch <- si 01Ch
 
-lodsw
-cwd
-stosw               ; di 06Eh <- si 01Eh  health
-xchg      ax, dx
-stosw               ; di 070h <- si 01Eh  health
+
+call      SaveInt16_  ; di 070h <- si 01Eh  health
 
 
 inc       si        ; si + 01Fh
@@ -736,11 +623,7 @@ movsb               ; di 071h <- si 020h   movedir
 
 add       di, 3
 
-lodsw
-cwd
-stosw               ; di 076h <- si 022h   movecount
-xchg      ax, dx
-stosw              ; di 078h <- si 022h   movecount
+call      SaveInt16_  ; di 078h <- si 022h   movecount
 
 
 add       di, 4     ; di + 07Ch
@@ -754,7 +637,7 @@ movsb               ; di 081h <- si 026h   threshold
 add       di, 3     ; di + 084h
 ; di 05Ah is player
 
-mov       ax, word ptr es:[di - 02Ah]
+mov       ax, word ptr es:[di - 02Ch]
 cmp       ax, MT_PLAYER
 jne       not_saving_player
 mov       al, 1
