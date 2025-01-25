@@ -712,6 +712,36 @@ stosw
 ret
 ENDP
 
+
+tag_conversions_to_vanilla:
+dw 1323, 1044, 86, 77, 99, 666, 667, 999
+PROC ConvertTagFromVanilla NEAR
+;todo
+ret
+ENDP
+
+PROC SaveTagToVanilla NEAR
+lodsb
+xor   ah, ah
+
+cmp   al, 56
+jb    use_tag
+cmp   al, 63
+ja    use_tag
+sub   al, 56
+
+sal   ax, 1     ; word lookup
+xchg  ax, bx
+mov   bx, word ptr cs:[tag_conversions_to_vanilla + bx]
+xchg  ax, bx
+
+use_tag:
+stosw
+xor   ax, ax
+stosw
+
+ENDP
+
 PROC SaveShortHeight_ NEAR
 
 lodsw
@@ -943,7 +973,7 @@ call      SaveShortHeight_  ; topheight         di = 01Ch, si = 07h
 call      SaveShortHeight_  ; speed             di = 020h, si = 09h
 call      SaveUInt8_        ; crush             di = 024h, si = 0Ah
 call      SaveInt8_         ; direction         di = 028h, si = 0Bh
-call      SaveInt8_         ; tag               di = 02Ch, si = 0Ch     ; todo translate tag properly
+call      SaveTagToVanilla  ; tag               di = 02Ch, si = 0Ch
 call      SaveInt8_         ; olddirection      di = 030h, si = 0Dh
 jmp       iterate_to_next_special
 
@@ -957,7 +987,7 @@ call      SaveInt8_         ; count             di = 024h, si = 0Bh
 call      SaveUInt8_        ; status            di = 028h, si = 0Ch
 call      SaveUInt8_        ; oldstatus         di = 02Ch, si = 0Dh
 call      SaveUInt8_        ; crush             di = 030h, si = 0Eh
-call      SaveInt8_         ; tag               di = 034h, si = 0Fh
+call      SaveTagToVanilla  ; tag               di = 034h, si = 0Fh
 call      SaveUInt8_        ; type              di = 038h, si = 10h
 
     
