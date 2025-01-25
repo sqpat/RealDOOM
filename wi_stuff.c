@@ -69,34 +69,6 @@
 //U #define WK 1
 
 
-// GLOBAL LOCATIONS
-#define WI_TITLEY		2
-#define WI_SPACINGY    		33
-
-// SINGPLE-PLAYER STUFF
-#define SP_STATSX		50
-#define SP_STATSY		50
-
-#define SP_TIMEX		16
-#define SP_TIMEY		(SCREENHEIGHT-32)
-
-
-// NET GAME STUFF
-#define NG_STATSY		50
-
-#define NG_SPACINGX    		64
-
-
-
-
-
-#define ANIM_ALWAYS 0
-#define ANIM_RANDOM 1
-#define ANIM_LEVEL 2
-
-
-
-
 // consider loading at startup...
 
 
@@ -110,12 +82,6 @@
  
 
 
-
-#define NEXT_OFFSET 		MAX_LEVEL_COMPLETE_GRAPHIC_SIZE
-#define NUM_WI_ITEMS 		28
-#define NUM_WI_ANIM_ITEMS 	30
-
-
 //
 // GENERAL DATA
 //
@@ -123,20 +89,11 @@
 //
 // Locally used stuff.
 //
-#define FB 0
 
+ 
 
-// States for single-player
-#define SP_KILLS		0
-#define SP_ITEMS		2
-#define SP_SECRET		4
-#define SP_TIME			8 
-#define SP_PAR			ST_TIME
-
-#define SP_PAUSE		1
 
 // in seconds
-#define SHOWNEXTLOCDELAY	4
 //#define SHOWLASTLOCDELAY	SHOWNEXTLOCDELAY
 
 patch_t __far* __near WI_GetPatch(int16_t i);
@@ -255,6 +212,7 @@ void __near WI_drawOnLnode ( int16_t n, uint8_t* cRef ) {
 
 */
 
+/*
 
 void __near WI_initAnimatedBack(void) {
     int16_t		i;
@@ -286,9 +244,23 @@ void __near WI_initAnimatedBack(void) {
     }
 
 }
+
+*/
 void __near WI_updateAnimatedBack(void);
 void __near WI_drawAnimatedBack(void);
 void __near WI_drawOnLnode ( int16_t n, uint8_t* cRef );
+
+
+void __near WI_drawPercent ( int16_t x, int16_t y, int16_t p );
+void __near WI_drawTime ( int16_t x, int16_t y, int16_t t );
+void __near WI_initNoState(void);
+void __near WI_initShowNextLoc(void);
+void __near WI_updateShowNextLoc(void);
+void __near WI_drawShowNextLoc(void);
+void __near WI_drawNoState(void);
+void __near WI_initStats(void);
+
+
 /*
 void __near WI_updateAnimatedBack(void) {
     int16_t		i;
@@ -370,6 +342,7 @@ void __near WI_drawAnimatedBack(void) {
 //  otherwise only use as many as necessary.
 // Returns new x position.
 //
+/*
 
 int16_t __near WI_drawNum ( int16_t x, int16_t y, int16_t n, int16_t digits ){
     
@@ -549,6 +522,8 @@ void __near WI_initStats(void) {
 
     WI_initAnimatedBack();
 }
+
+*/
 
 void __near WI_updateStats(void) {
 

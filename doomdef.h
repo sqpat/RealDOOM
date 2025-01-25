@@ -123,6 +123,35 @@ enum { VERSION =  109 };
 // State updates, number of tics / second.
 #define TICRATE		35
 
+
+// GLOBAL LOCATIONS
+#define WI_TITLEY		2
+
+
+// SINGPLE-PLAYER STUFF
+#define SP_STATSX		50
+#define SP_STATSY		50
+
+#define SP_TIMEX		16
+#define SP_TIMEY		(SCREENHEIGHT-32)
+
+
+#define ANIM_ALWAYS 0
+#define ANIM_RANDOM 1
+#define ANIM_LEVEL 2
+
+
+
+
+#define NEXT_OFFSET 		MAX_LEVEL_COMPLETE_GRAPHIC_SIZE
+#define NUM_WI_ITEMS 		28
+#define NUM_WI_ANIM_ITEMS 	30
+
+#define FB 0
+
+#define SHOWNEXTLOCDELAY	4
+
+
 // The current state of the game: whether we are
 // playing, gazing at the intermission screen,
 // the game final animation, or a demo. 
