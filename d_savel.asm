@@ -402,7 +402,7 @@ ENDP
 str_bad_tclass_1:
 db "Unknown tclass %i in savegame", 0
 str_bad_tclass_2:
-db "P_UnarchiveSpecials:Unknown tclass %i in savegame"
+db "P_UnarchiveSpecials:Unknown tclass %i in savegame", 0
 
 
 SIZEOF_THINKER_T = 44

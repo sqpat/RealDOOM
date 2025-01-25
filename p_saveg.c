@@ -562,7 +562,7 @@ void __far P_UnArchiveThinkers (void) {
 // P_ArchiveSpecials
 //
 
-
+/*
 enum {
     tc_ceiling,
     tc_door,
@@ -574,7 +574,7 @@ enum {
     tc_endspecials
 
 } specials_e;	
-
+*/
 
 
 //

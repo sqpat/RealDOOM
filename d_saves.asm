@@ -791,6 +791,60 @@ jmp       iterate_to_next_thinker
 
 ENDP
 
+PROC SaveInt8_ NEAR
+
+lodsb
+cbw        ; sign extend 16
+cwd        ; sign extend 32
+stosw
+xchg      ax, dx
+stosw     
+ret
+ENDP
+
+PROC SaveUInt8_ NEAR
+
+movsb 
+xor       ax, ax
+stosb
+stosw
+ret
+ENDP
+
+PROC SaveInt16_ NEAR
+
+lodsw
+cwd       ; sign extend 32
+stosw
+xchg      ax, dx
+stosw     
+ret
+ENDP
+
+PROC SaveUInt16_ NEAR
+
+movsw    
+xor       ax, ax
+stosw     
+ret
+ENDP
+
+PROC SaveShortHeight_ NEAR
+
+lodsw
+xchg      ax, dx
+xor       ax, ax
+sar       dx, 1       ; shift 13 left
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+stosw
+xchg      ax, dx
+stosw
+ret
+ENDP
 
 SIZEOF_CEILING_VANILLA_T = 030h
 SIZEOF_FLOORMOVE_VANILLA_T = 02Ah
@@ -802,6 +856,10 @@ SIZEOF_GLOW_VANILLA_T = 01Ch
 
 MAXCEILINGS = 30
 
+; maps func highbits to save marker types
+_tc_enum_lookup:
+db  -1, 3, 0, 1, 2, -1, 4, 5, 6    
+
 jump_table_archive_specials:
 ;dw  OFFSET  iterate_to_next_special - OFFSET P_SAVESTART_  ; 1 mobj, skip
 ;dw  OFFSET  save_platraise_special  - OFFSET P_SAVESTART_  ; 2
@@ -812,7 +870,6 @@ jump_table_archive_specials:
 ;dw  OFFSET  save_flash_special      - OFFSET P_SAVESTART_  ; 7
 ;dw  OFFSET  save_strobe_special     - OFFSET P_SAVESTART_  ; 8
 ;dw  OFFSET  save_glow_special       - OFFSET P_SAVESTART_  ; 9
-;dw  OFFSET  iterate_to_next_special - OFFSET P_SAVESTART_  ; 10 deleteme skip
 
 dw  OFFSET  iterate_to_next_special  ; 1 mobj, skip
 dw  OFFSET  save_platraise_special   ; 2
@@ -823,7 +880,17 @@ dw  OFFSET  iterate_to_next_special  ; 6 flicker?? not saved apparently, skip
 dw  OFFSET  save_flash_special       ; 7
 dw  OFFSET  save_strobe_special      ; 8
 dw  OFFSET  save_glow_special        ; 9
-dw  OFFSET  iterate_to_next_special  ; 10 deleteme skip
+
+erase_size_table:
+dw  0
+dw  SIZEOF_PLAT_VANILLA_T       / 2
+dw  SIZEOF_CEILING_VANILLA_T    / 2
+dw  SIZEOF_VLDOOR_VANILLA_T     / 2
+dw  SIZEOF_FLOORMOVE_VANILLA_T  / 2
+dw  0
+dw  SIZEOF_LIGHTFLASH_VANILLA_T / 2
+dw  SIZEOF_STROBE_VANILLA_T     / 2
+dw  SIZEOF_GLOW_VANILLA_T       / 2
 
 
 PROC P_ArchiveSpecials_ FAR
@@ -834,25 +901,29 @@ push      cx
 push      dx
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 020h
 
-mov       si, word ptr ds:[_thinkerlist + 2]
-test      si, si
+les       di, dword ptr ds:[_save_p]
+mov       cx, word ptr ds:[_thinkerlist + 2]
+test      cx, cx
 je        exit_archive_specials
 save_next_special:
+mov       ax, SIZEOF_THINKER_T
+mul       cx
+xchg      ax, si
 
-imul      bx, si, SIZEOF_THINKER_T
-mov       ax, word ptr [bx + OFFSET _thinkerlist]
+mov       ax, word ptr ds:[si + OFFSET _thinkerlist]
 and       ax, TF_FUNCBITS
 
 
 
-je        is_null_funcbits
+je        is_null_funcbits  ; no thinker. go check to see if its an inactive ceiling though
 
-add       bx, OFFSET _thinkerlist + 4
-mov       word ptr [bp - 2], bx         ; becomes si i think
+cmp       ax, TF_FIREFLICKER_HIGHBITS       ; not serialized apparently
+je        iterate_to_next_special
+cmp       ax, TF_MOBJTHINKER_HIGHBITS       ; not serialized here
+je        iterate_to_next_special
+
+
 
 rol       ax, 1
 rol       ax, 1
@@ -860,24 +931,74 @@ rol       ax, 1
 rol       ax, 1
 rol       ax, 1  ; put func bits (most sig 5) into least sig bits
 
+cmp       ax, 10  ; funcbits too large or delete_me case
+jge       iterate_to_next_special
+; we do some checks above to guarantee we know this is a valid thinker to serialize so now we can run common code here.
+
+
+
+; prep jump addr
+
 dec       ax     ; offset 0 case. could just minus two in the lookup...
-shl       ax, 1  ; word lookup
 
-xchg      ax, di
+force_ceiling:          ; active ceilings jump here from null thinker case.
+add       si, OFFSET _thinkerlist + 4   ; data pointer
 
-jmp       word ptr cs:[di + OFFSET jump_table_archive_specials ]
-;jmp       word ptr cs:[di + OFFSET jump_table_archive_specials - OFFSET P_SAVESTART_]
+xchg      ax, bx
+mov       al, byte ptr cs:[bx + OFFSET _tc_enum_lookup]
+;mov       al, byte ptr cs:[bx + OFFSET _tc_enum_lookup - OFFSET P_SAVESTART_]
+stosb     ; write tc_type  
+
+shl       bx, 1  ; word lookup
+
+; PADSAVEP
+
+mov       dx, di
+mov       ax, 4
+and       dx, 3
+sub       ax, dx
+and       ax, 3
+add       di, ax
+
+; going in:
+; mobj is ds:si
+; save_p is es:di
+
+; default the thinker memory area to 0.
+
+push      cx
+mov       dx, word ptr cs:[bx + OFFSET erase_size_table ]
+;mov       dx, word ptr cs:[bx + OFFSET erase_size_table - OFFSET P_SAVESTART_]
+mov       cx, dx
+xor       ax, ax
+rep       stosw 
+pop       cx
+
+sal       dx, 1
+sub       di, dx ; reset di 
+
+add       di, 12 ; skip 12 byte thinker field
+
+
+
+jmp       word ptr cs:[bx + OFFSET jump_table_archive_specials ]
+;jmp       word ptr cs:[bx + OFFSET jump_table_archive_specials - OFFSET P_SAVESTART_]
 
 iterate_to_next_special:
-imul      si, si, SIZEOF_THINKER_T
-mov       si, word ptr ds:[si + OFFSET _thinkerlist + 2]
-test      si, si
+
+mov       ax, SIZEOF_THINKER_T
+mul       cx
+xchg      ax, bx
+
+mov       cx, word ptr ds:[bx + OFFSET _thinkerlist + 2]    ; thinker next
+test      cx, cx
 jne       save_next_special
 exit_archive_specials:
-les       di, dword ptr ds:[_save_p]
-inc       word ptr ds:[_save_p]
-mov       byte ptr es:[di], 7
-LEAVE_MACRO     
+
+mov       al, 7
+stosb
+mov       word ptr ds:[_save_p], di
+
 pop       di
 pop       si
 pop       dx
@@ -886,621 +1007,99 @@ pop       bx
 retf      
 
 is_null_funcbits:
-xor       bx, bx
-cmp       si, word ptr [_activeceilings]
-je        found_ceiling
+mov       bx, OFFSET _activeceilings
+xor       ax, ax
+cmp       cx, word ptr ds:[bx]
+je        end_ceiling_search
+
 check_next_ceiling:
 inc       ax
 add       bx, 2
 cmp       ax, MAXCEILINGS
-jge       found_ceiling
-cmp       si, word ptr [bx + _activeceilings]
+jge       iterate_to_next_special
+cmp       cx, word ptr ds:[bx]
 jne       check_next_ceiling
-found_ceiling:
-cmp       ax, MAXCEILINGS
-jl        can_add_ceiling
-jmp       iterate_to_next_special
-can_add_ceiling:
-imul      ax, si, SIZEOF_THINKER_T
-mov       bx, _save_p
-mov       di, _save_p
-add       ax, OFFSET _thinkerlist + 4
-mov       bx, word ptr [bx]
-mov       word ptr [bp - 6], ax
-lea       ax, [bx + 1]
-mov       es, word ptr [di + 2]
-mov       word ptr [di], ax
-mov       byte ptr es:[bx], 0
-mov       ax, word ptr [di]
-mov       dx, ax
-mov       bx, 4
-and       dx, 3
-sub       bx, dx
-mov       dx, bx
-and       dx, 3
-add       ax, dx
-mov       word ptr [di], ax
-mov       bx, ax
-mov       ax, word ptr [di + 2]
-mov       word ptr [bp - 01ah], ax
-mov       di, bx
-mov       es, word ptr [bp - 01ah]
-mov       cx, SIZEOF_CEILING_VANILLA_T / 2
-xor       ax, ax
-rep       stosw 
-mov       di, word ptr [bp - 6]
-
-mov       al, byte ptr [di]
-cbw      
-cwd       
-mov       word ptr es:[bx + 0Ch], ax
-mov       word ptr es:[bx + 0Eh], dx
-mov       ax, word ptr [di + 1]
-cwd       
-mov       word ptr es:[bx + 010h], ax
-mov       word ptr es:[bx + 012h], dx
-mov       ax, word ptr [di + 3]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[bx + 014h], ax
-mov       word ptr es:[bx + 016h], dx
-mov       ax, word ptr [di + 5]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[bx + 018h], ax
-mov       word ptr es:[bx + 01ah], dx
-mov       ax, word ptr [di + 7]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[bx + 01ch], ax
-mov       word ptr es:[bx + 01eh], dx
-mov       al, byte ptr [di + 9]
-cbw      
-cwd       
-mov       word ptr es:[bx + 020h], ax
-mov       word ptr es:[bx + 022h], dx
-mov       al, byte ptr [di + 0Ah]
-cbw      
-cwd       
-mov       word ptr es:[bx + 024h], ax
-mov       word ptr es:[bx + 026h], dx
-mov       al, byte ptr [di + 0Bh]
-cbw      
-cwd       
-mov       word ptr es:[bx + 028h], ax
-mov       word ptr es:[bx + 02ah], dx
-mov       al, byte ptr [di + 0Ch]
-cbw      
-cwd       
-mov       word ptr es:[bx + 02ch], ax
-mov       word ptr es:[bx + 02eh], dx
-
-add       word ptr ds:[_save_p], SIZEOF_CEILING_VANILLA_T
-; fall thru
-jmp       iterate_to_next_special
-
+end_ceiling_search:
+mov       ax, 2                 ; tc_ceil flag
+jmp       force_ceiling
 
 
 save_door_special:
-mov       bx, _save_p
-mov       bx, word ptr [bx]
-mov       di, _save_p
-lea       ax, [bx + 1]
-mov       es, word ptr [di + 2]
-mov       word ptr [di], ax
-mov       byte ptr es:[bx], 1
-mov       ax, word ptr [di]
-mov       dx, ax
-mov       bx, 4
-and       dx, 3
-sub       bx, dx
-mov       dx, bx
-and       dx, 3
-add       ax, dx
-mov       word ptr [di], ax
-mov       bx, ax
-mov       ax, word ptr [di + 2]
-mov       word ptr [bp - 020h], ax
-mov       di, bx
-mov       es, word ptr [bp - 020h]
-mov       cx, SIZEOF_VLDOOR_VANILLA_T / 2
-xor       ax, ax
-rep       stosw
-
-
-mov       di, word ptr [bp - 2]
-mov       al, byte ptr [di]
-cbw      
-cwd       
-mov       word ptr es:[bx + 0Ch], ax
-mov       word ptr es:[bx + 0Eh], dx
-mov       ax, word ptr [di + 1]
-cwd       
-mov       word ptr es:[bx + 010h], ax
-mov       word ptr es:[bx + 012h], dx
-mov       ax, word ptr [di + 3]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[bx + 014h], ax
-mov       word ptr es:[bx + 016h], dx
-mov       ax, word ptr [di + 5]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[bx + 018h], ax
-mov       word ptr es:[bx + 01ah], dx
-mov       ax, word ptr [di + 7]
-cwd       
-mov       word ptr es:[bx + 01ch], ax
-mov       word ptr es:[bx + 01eh], dx
-mov       ax, word ptr [di + 9]
-cwd       
-mov       word ptr es:[bx + 020h], ax
-mov       word ptr es:[bx + 022h], dx
-mov       ax, word ptr [di + 0Bh]
-cwd       
-mov       word ptr es:[bx + 024h], ax
-mov       word ptr es:[bx + 026h], dx
-add       word ptr ds:[_save_p], SIZEOF_VLDOOR_VANILLA_T
+call      SaveInt8_         ; type,        di = 010h, si = 01h
+call      SaveUInt16_       ; sector       di = 014h, si = 03h
+call      SaveShortHeight_  ; topheight    di = 018h, si = 05h
+call      SaveShortHeight_  ; speed        di = 01Ch, si = 07h
+call      SaveInt16_        ; direction    di = 020h, si = 09h
+call      SaveInt16_        ; topwait      di = 024h, si = 0Bh
+call      SaveInt16_        ; topcountdown di = 028h, si = 0Dh
 jmp       iterate_to_next_special
 
 save_movefloor_special:
-imul      ax, si, SIZEOF_THINKER_T
-mov       bx, _save_p
-mov       di, _save_p
-add       ax, OFFSET _thinkerlist + 4
-mov       bx, word ptr [bx]
-mov       word ptr [bp - 01ch], ax
-lea       ax, [bx + 1]
-mov       es, word ptr [di + 2]
-mov       word ptr [di], ax
-mov       byte ptr es:[bx], 2
-mov       ax, word ptr [di]
-mov       dx, ax
-mov       bx, 4
-and       dx, 3
-sub       bx, dx
-mov       dx, bx
-and       dx, 3
-add       ax, dx
-mov       word ptr [di], ax
-mov       bx, ax
-mov       ax, word ptr [di + 2]
-mov       word ptr [bp - 0Eh], ax
-mov       di, bx
-mov       es, word ptr [bp - 0Eh]
-mov       cx, SIZEOF_FLOORMOVE_VANILLA_T / 2
-xor       ax, ax
-rep       stosw 
-mov       di, word ptr [bp - 01ch]
-mov       al, byte ptr [di]
-mov       word ptr es:[bx + 0Eh], 0
-xor       ah, ah
-mov       word ptr es:[bx + 0Ch], ax
-mov       al, byte ptr [di + 1]
-cbw      
-cwd       
-mov       word ptr es:[bx + 010h], ax
-mov       word ptr es:[bx + 012h], dx
-mov       ax, word ptr [di + 2]
-cwd       
-mov       word ptr es:[bx + 014h], ax
-mov       word ptr es:[bx + 016h], dx
-mov       al, byte ptr [di + 4]
-cbw      
-cwd       
-mov       word ptr es:[bx + 018h], ax
-mov       word ptr es:[bx + 01ah], dx
-mov       al, byte ptr [di + 5]
-mov       word ptr es:[bx + 01eh], 0
-xor       ah, ah
-mov       word ptr es:[bx + 01ch], ax
-mov       al, byte ptr [di + 6]
-mov       word ptr es:[bx + 020h], ax
-mov       ax, word ptr [di + 7]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[bx + 022h], ax
-mov       word ptr es:[bx + 024h], dx
-mov       ax, word ptr [di + 9]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[bx + 026h], ax
-mov       word ptr es:[bx + 028h], dx
-add       word ptr ds:[_save_p], SIZEOF_FLOORMOVE_VANILLA_T
+call      SaveInt8_         ; type              di = 010h, si = 01h
+call      SaveUInt8_        ; crush             di = 014h, si = 02h
+call      SaveUInt16_       ; sector            di = 018h, si = 04h
+call      SaveInt8_         ; direction         di = 01Ch, si = 05h
+call      SaveUInt8_        ; newspecial        di = 020h, si = 06h
+movsw                       ; texture           di = 022h, si = 08h
+call      SaveShortHeight_  ; floordestheight   di = 026h, si = 0Ah
+call      SaveShortHeight_  ; speed             di = 02Ah, si = 0Ch
 jmp       iterate_to_next_special
 
 save_glow_special:
-mov       di, _save_p
-mov       ax, word ptr [di]
-mov       dx, ax
-inc       dx
-mov       es, word ptr [di + 2]
-mov       word ptr [di], dx
-mov       di, ax
-mov       byte ptr es:[di], 6
-mov       di, _save_p
-mov       ax, word ptr [di]
-mov       dx, ax
-mov       di, 4
-and       dx, 3
-sub       di, dx
-mov       dx, di
-mov       di, _save_p
-and       dx, 3
-add       ax, dx
-mov       word ptr [di], ax
-mov       word ptr [bp - 010h], ax
-mov       ax, word ptr [di + 2]
-mov       word ptr [bp - 0Ch], ax
-mov       di, word ptr [bp - 010h]
-mov       es, word ptr [bp - 0Ch]
-mov       cx, SIZEOF_GLOW_VANILLA_T / 2
-xor       ax, ax
-push      di
-rep       stosw 
-pop       di
-mov       ax, word ptr [bx]
-cwd       
-mov       word ptr es:[di + 0Ch], ax
-mov       word ptr es:[di + 0Eh], dx
-mov       al, byte ptr [bx + 2]
-mov       word ptr es:[di + 012h], 0
-xor       ah, ah
-mov       word ptr es:[di + 010h], ax
-mov       al, byte ptr [bx + 3]
-mov       word ptr es:[di + 016h], 0
-mov       word ptr es:[di + 014h], ax
-mov       ax, word ptr [bx + 4]
-mov       bx, di
-cwd       
-mov       word ptr es:[bx + 018h], ax
-mov       word ptr es:[bx + 01ah], dx
-
-add       word ptr ds:[_save_p], SIZEOF_GLOW_VANILLA_T
+call      SaveUInt16_       ; sector            di = 010h, si = 02h
+call      SaveUInt8_        ; minlight          di = 014h, si = 03h
+call      SaveUInt8_        ; maxlight          di = 018h, si = 04h
+call      SaveInt16_        ; direction         di = 01Ch, si = 06h
 jmp       iterate_to_next_special
 
 save_ceiling_special:
-mov       bx, _save_p
-mov       bx, word ptr [bx]
-mov       di, _save_p
-lea       ax, [bx + 1]
-mov       es, word ptr [di + 2]
-mov       word ptr [di], ax
-mov       byte ptr es:[bx], 0
-mov       ax, word ptr [di]
-mov       dx, ax
-mov       bx, 4
-and       dx, 3
-sub       bx, dx
-mov       dx, bx
-and       dx, 3
-add       ax, dx
-mov       word ptr [di], ax
-mov       bx, ax
-mov       ax, word ptr [di + 2]
-mov       word ptr [bp - 01eh], ax
-mov       di, bx
-mov       es, word ptr [bp - 01eh]
-mov       cx, SIZEOF_CEILING_VANILLA_T / 2
-xor       ax, ax
-rep       stosw 
-mov       di, word ptr [bp - 2]
-
-mov       al, byte ptr [di]
-cbw      
-cwd       
-mov       word ptr es:[bx + 0Ch], ax
-mov       word ptr es:[bx + 0Eh], dx
-mov       ax, word ptr [di + 1]
-cwd       
-mov       word ptr es:[bx + 010h], ax
-mov       word ptr es:[bx + 012h], dx
-mov       ax, word ptr [di + 3]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[bx + 014h], ax
-mov       word ptr es:[bx + 016h], dx
-mov       ax, word ptr [di + 5]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[bx + 018h], ax
-mov       word ptr es:[bx + 01ah], dx
-mov       ax, word ptr [di + 7]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[bx + 01ch], ax
-mov       word ptr es:[bx + 01eh], dx
-mov       al, byte ptr [di + 9]
-cbw      
-cwd       
-mov       word ptr es:[bx + 020h], ax
-mov       word ptr es:[bx + 022h], dx
-mov       al, byte ptr [di + 0Ah]
-cbw      
-cwd       
-mov       word ptr es:[bx + 024h], ax
-mov       word ptr es:[bx + 026h], dx
-mov       al, byte ptr [di + 0Bh]
-cbw      
-cwd       
-mov       word ptr es:[bx + 028h], ax
-mov       word ptr es:[bx + 02ah], dx
-mov       al, byte ptr [di + 0Ch]
-cbw      
-cwd       
-mov       word ptr es:[bx + 02ch], ax
-mov       word ptr es:[bx + 02eh], dx
-
-add       word ptr ds:[_save_p], SIZEOF_CEILING_VANILLA_T
+call      SaveInt8_         ; type              di = 010h, si = 01h
+call      SaveUInt16_       ; sector            di = 014h, si = 03h
+call      SaveShortHeight_  ; bottomheight      di = 018h, si = 05h
+call      SaveShortHeight_  ; topheight         di = 01Ch, si = 07h
+call      SaveShortHeight_  ; speed             di = 020h, si = 09h
+call      SaveUInt8_        ; crush             di = 024h, si = 0Ah
+call      SaveInt8_         ; direction         di = 028h, si = 0Bh
+call      SaveInt8_         ; tag               di = 02Ch, si = 0Ch     ; todo translate tag properly
+call      SaveInt8_         ; olddirection      di = 030h, si = 0Dh
 jmp       iterate_to_next_special
 
 save_platraise_special:
+call      SaveUInt16_       ; sector            di = 010h, si = 02h
+call      SaveShortHeight_  ; speed             di = 014h, si = 04h
+call      SaveShortHeight_  ; low               di = 018h, si = 06h
+call      SaveShortHeight_  ; high              di = 01Ch, si = 08h
+call      SaveInt8_         ; wait              di = 020h, si = 0Ah
+call      SaveInt8_         ; count             di = 024h, si = 0Bh
+call      SaveUInt8_        ; status            di = 028h, si = 0Ch
+call      SaveUInt8_        ; oldstatus         di = 02Ch, si = 0Dh
+call      SaveUInt8_        ; crush             di = 030h, si = 0Eh
+call      SaveInt8_         ; tag               di = 034h, si = 0Fh
+call      SaveUInt8_        ; type              di = 038h, si = 10h
 
-mov       di, _save_p
-mov       ax, word ptr [di]
-mov       dx, ax
-inc       dx
-mov       es, word ptr [di + 2]
-mov       word ptr [di], dx
-mov       di, ax
-mov       byte ptr es:[di], 3
-mov       di, _save_p
-mov       ax, word ptr [di]
-mov       dx, ax
-mov       di, 4
-and       dx, 3
-sub       di, dx
-mov       dx, di
-mov       di, _save_p
-and       dx, 3
-add       ax, dx
-mov       word ptr [di], ax
-mov       word ptr [bp - 012h], ax
-mov       ax, word ptr [di + 2]
-mov       word ptr [bp - 0Ah], ax
-mov       di, word ptr [bp - 012h]
-mov       es, word ptr [bp - 0Ah]
-mov       cx, SIZEOF_PLAT_VANILLA_T / 2
-xor       ax, ax
-push      di
-rep       stosw 
-
-pop       di
-mov       ax, word ptr [bx]
-cwd       
-mov       word ptr es:[di + 0Ch], ax
-mov       word ptr es:[di + 0Eh], dx
-mov       ax, word ptr [bx + 2]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[di + 010h], ax
-mov       word ptr es:[di + 012h], dx
-mov       ax, word ptr [bx + 4]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[di + 014h], ax
-mov       word ptr es:[di + 016h], dx
-mov       ax, word ptr [bx + 6]
-cwd       
-mov       cl, 0Dh
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0E000h
-xor       dx, ax
-mov       word ptr es:[di + 018h], ax
-mov       word ptr es:[di + 01ah], dx
-mov       al, byte ptr [bx + 8]
-cbw      
-cwd       
-mov       word ptr es:[di + 01ch], ax
-mov       word ptr es:[di + 01eh], dx
-mov       al, byte ptr [bx + 9]
-cbw      
-cwd       
-mov       word ptr es:[di + 020h], ax
-mov       word ptr es:[di + 022h], dx
-mov       al, byte ptr [bx + 0Ah]
-mov       word ptr es:[di + 026h], 0
-xor       ah, ah
-mov       word ptr es:[di + 024h], ax
-mov       al, byte ptr [bx + 0Bh]
-mov       word ptr es:[di + 02ah], 0
-mov       word ptr es:[di + 028h], ax
-mov       al, byte ptr [bx + 0Ch]
-cbw      
-cwd       
-mov       word ptr es:[di + 02ch], ax
-mov       word ptr es:[di + 02eh], dx
-mov       al, byte ptr [bx + 0Dh]
-cbw      
-cwd       
-mov       word ptr es:[di + 030h], ax
-mov       word ptr es:[di + 032h], dx
-mov       al, byte ptr [bx + 0Eh]
-mov       bx, di
-xor       ah, ah
-mov       word ptr es:[bx + 036h], 0
-mov       word ptr es:[bx + 034h], ax
-add       word ptr ds:[_save_p], SIZEOF_PLAT_VANILLA_T 
+    
 jmp       iterate_to_next_special
 
 save_flash_special:
-mov       di, _save_p
-mov       ax, word ptr [di]
-mov       dx, ax
-inc       dx
-mov       es, word ptr [di + 2]
-mov       word ptr [di], dx
-mov       di, ax
-mov       byte ptr es:[di], 4
-mov       di, _save_p
-mov       ax, word ptr [di]
-mov       dx, ax
-mov       di, 4
-and       dx, 3
-sub       di, dx
-mov       dx, di
-mov       di, _save_p
-and       dx, 3
-add       ax, dx
-mov       word ptr [di], ax
-mov       word ptr [bp - 018h], ax
-mov       ax, word ptr [di + 2]
-mov       word ptr [bp - 016h], ax
-les       di, dword ptr [bp - 018h]
-mov       cx, SIZEOF_LIGHTFLASH_VANILLA_T / 2
-xor       ax, ax
-push      di
-rep       stosw
-
-pop       di
-mov       ax, word ptr [bx]
-cwd       
-mov       word ptr es:[di + 0Ch], ax
-mov       word ptr es:[di + 0Eh], dx
-mov       ax, word ptr [bx + 2]
-cwd       
-mov       word ptr es:[di + 010h], ax
-mov       word ptr es:[di + 012h], dx
-mov       al, byte ptr [bx + 4]
-mov       word ptr es:[di + 016h], 0
-xor       ah, ah
-mov       word ptr es:[di + 014h], ax
-mov       al, byte ptr [bx + 5]
-mov       word ptr es:[di + 01ah], 0
-mov       word ptr es:[di + 018h], ax
-mov       al, byte ptr [bx + 6]
-cbw      
-cwd       
-mov       word ptr es:[di + 01ch], ax
-mov       word ptr es:[di + 01eh], dx
-mov       al, byte ptr [bx + 7]
-cbw      
-mov       bx, di
-cwd       
-mov       word ptr es:[bx + 020h], ax
-mov       word ptr es:[bx + 022h], dx
-add       word ptr ds:[_save_p], SIZEOF_LIGHTFLASH_VANILLA_T
+call      SaveUInt16_       ; sector            di = 010h, si = 02h
+call      SaveInt16_        ; count             di = 014h, si = 04h
+call      SaveUInt8_        ; maxlight          di = 018h, si = 05h
+call      SaveUInt8_        ; minlight          di = 01Ch, si = 06h
+call      SaveInt8_         ; maxtime           di = 020h, si = 07h
+call      SaveInt8_         ; mintime           di = 024h, si = 08h
 jmp       iterate_to_next_special
 
 save_strobe_special:
-mov       di, _save_p
-mov       ax, word ptr [di]
-mov       dx, ax
-inc       dx
-mov       es, word ptr [di + 2]
-mov       word ptr [di], dx
-mov       di, ax
-mov       byte ptr es:[di], 5
-mov       di, _save_p
-mov       ax, word ptr [di]
-mov       dx, ax
-mov       di, 4
-and       dx, 3
-sub       di, dx
-mov       dx, di
-mov       di, _save_p
-and       dx, 3
-add       ax, dx
-mov       word ptr [di], ax
-mov       word ptr [bp - 8], ax
-mov       ax, word ptr [di + 2]
-mov       word ptr [bp - 014h], ax
-mov       di, word ptr [bp - 8]
-mov       es, word ptr [bp - 014h]
-mov       cx, SIZEOF_STROBE_VANILLA_T / 2
-xor       ax, ax
-push      di
-rep       stosw 
-
-pop       di
-mov       ax, word ptr [bx]
-cwd       
-mov       word ptr es:[di + 0Ch], ax
-mov       word ptr es:[di + 0Eh], dx
-mov       ax, word ptr [bx + 2]
-cwd       
-mov       word ptr es:[di + 010h], ax
-mov       word ptr es:[di + 012h], dx
-mov       al, byte ptr [bx + 4]
-mov       word ptr es:[di + 016h], 0
-xor       ah, ah
-mov       word ptr es:[di + 014h], ax
-mov       al, byte ptr [bx + 5]
-mov       word ptr es:[di + 01ah], 0
-mov       word ptr es:[di + 018h], ax
-mov       ax, word ptr [bx + 6]
-cwd       
-mov       word ptr es:[di + 01ch], ax
-mov       word ptr es:[di + 01eh], dx
-mov       ax, word ptr [bx + 8]
-mov       bx, di
-cwd       
-mov       word ptr es:[bx + 020h], ax
-mov       word ptr es:[bx + 022h], dx
-add       word ptr ds:[_save_p], SIZEOF_STROBE_VANILLA_T
+call      SaveUInt16_       ; sector            di = 010h, si = 02h
+call      SaveInt16_        ; count             di = 014h, si = 04h
+call      SaveUInt8_        ; minlight          di = 018h, si = 05h
+call      SaveUInt8_        ; maxlight          di = 01Ch, si = 06h
+call      SaveInt16_        ; darktime          di = 020h, si = 08h
+call      SaveInt16_        ; brighttime        di = 024h, si = 0Ah
 jmp       iterate_to_next_special
+
+
+
 
 
 ENDP
