@@ -352,6 +352,10 @@
 #define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
 #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
 
+#define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x05D0))
+
+//0x60C
+
 
 
 
@@ -553,6 +557,11 @@ extern void                 (__far* P_UnArchivePlayers)();
 extern void                 (__far* P_UnArchiveWorld)();
 extern void                 (__far* P_UnArchiveThinkers)();
 extern void                 (__far* P_UnArchiveSpecials)();
+
+extern void                 (__far* P_ArchivePlayers)();
+extern void                 (__far* P_ArchiveWorld)();
+extern void                 (__far* P_ArchiveThinkers)();
+extern void                 (__far* P_ArchiveSpecials)();
 
 
 extern int16_t              currentlumpindex;
@@ -943,7 +952,7 @@ extern boolean  st_stopped;
 extern uint16_t armsbgarray[1];
 
 
-extern THINKERREF	activeceilings[MAXCEILINGS];
+
 extern THINKERREF	activeplats[MAXPLATS];
 extern weaponinfo_t	weaponinfo[NUMWEAPONS];
 extern fixed_t		bulletslope;

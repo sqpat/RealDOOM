@@ -50,15 +50,13 @@ file g_setup.obj
 file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
-file p_saveg.obj
+
 NEWSEGMENT
 file d_finale.obj
 
 NEWSEGMENT
 file d_savel.obj
 
-NEWSEGMENT
-file d_saves.obj
 
 #todo put these in the future wad segment. maybe pull out p_tick.
 NEWSEGMENT

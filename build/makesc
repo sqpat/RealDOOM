@@ -74,7 +74,6 @@ GLOBOBJS = &
  p_switch.obj &
  p_mobj.obj &
  p_telept.obj &
- p_saveg.obj &
  p_tick.obj &
  p_user.obj &
  r_init.obj &
@@ -107,7 +106,6 @@ GLOBOBJS = &
  dmx.obj &
  memory.obj &
  math.obj &
- d_saves.obj &
  main.obj &
  d_algo.obj &
  r_math.obj &

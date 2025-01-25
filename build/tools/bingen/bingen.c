@@ -56,6 +56,10 @@ void __far P_UnArchivePlayers();
 void __far P_UnArchiveWorld();
 void __far P_UnArchiveThinkers();
 void __far P_UnArchiveSpecials();
+void __far P_ArchivePlayers();
+void __far P_ArchiveWorld();
+void __far P_ArchiveThinkers();
+void __far P_ArchiveSpecials();
 /*
 void checkDS(int16_t a) {
 	struct SREGS        sregs;
@@ -196,6 +200,10 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define P_UnArchiveWorldOffset                0x%X\n", FP_OFF(P_UnArchiveWorld)               - FP_OFF(P_LOADSTART));
     fprintf(fp, "#define P_UnArchiveThinkersOffset             0x%X\n", FP_OFF(P_UnArchiveThinkers)            - FP_OFF(P_LOADSTART));
     fprintf(fp, "#define P_UnArchiveSpecialsOffset             0x%X\n", FP_OFF(P_UnArchiveSpecials)            - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_ArchivePlayersOffset                0x%X\n", FP_OFF(P_ArchivePlayers)               - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_ArchiveWorldOffset                  0x%X\n", FP_OFF(P_ArchiveWorld)                 - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_ArchiveThinkersOffset               0x%X\n", FP_OFF(P_ArchiveThinkers)              - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_ArchiveSpecialsOffset               0x%X\n", FP_OFF(P_ArchiveSpecials)              - FP_OFF(P_LOADSTART));
 
 	fprintf(fp, "\n");
 
@@ -206,7 +214,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize5);
 	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize6);
 	fprintf(fp, "#define FinaleCodeSize                 0x%X\n", codesize7);
-	fprintf(fp, "#define LoadCodeSize                   0x%X\n", codesize8);
+	fprintf(fp, "#define SaveLoadCodeSize               0x%X\n", codesize8);
 
 
 

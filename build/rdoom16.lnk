@@ -54,8 +54,6 @@ file g_setup.obj
 file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
-file p_saveg.obj
-file d_saves.obj
 
 
 

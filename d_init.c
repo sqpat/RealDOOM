@@ -736,8 +736,6 @@ void check_is_ultimate(){
 void __far wipe_WipeLoop();
 void __far I_ReadScreen();
 uint16_t   __far  R_CheckTextureNumForName(int8_t *name);
-void __far P_ArchiveWorld (void);
-void __far P_ArchiveThinkers (void);
 
 
 
@@ -753,24 +751,7 @@ void __far D_DoomMain2(void) {
 	#define DGROUP_SIZE 0x3660
 	struct SREGS sregs;
 
-// 9870
-// 9860
-// 9830
-//  9800
-// 0
-	//I_Error("%lx", colfunc_masked_call_table[0]);
 /*
-02a3:88a0      P_ArchivePlayers_
-02a3:8b56      P_UnArchivePlayers_
-02a3:8d4a      P_ArchiveWorld_
-02a3:8f4e      P_UnArchiveWorld_
-02a3:913c      P_ArchiveThinkers_
-02a3:93b6      P_UnArchiveThinkers_
-02a3:9600      P_ArchiveSpecials_
-02a3:9bda      P_UnArchiveSpecials_
-*/
-/*
-
 	FILE *fp = fopen("output8.bin", "wb");
 	FAR_fwrite(P_ArchiveWorld, (byte __far *)P_ArchiveThinkers - (byte __far *)P_ArchiveWorld, 1, fp);
 	fclose(fp);

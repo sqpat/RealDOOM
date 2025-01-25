@@ -22,6 +22,10 @@
 #define P_UnArchiveWorldOffset                0x180
 #define P_UnArchiveThinkersOffset             0x2BA
 #define P_UnArchiveSpecialsOffset             0x440
+#define P_ArchivePlayersOffset                0x685
+#define P_ArchiveWorldOffset                  0x780
+#define P_ArchiveThinkersOffset               0x846
+#define P_ArchiveSpecialsOffset               0x9DE
 
 #define R_DrawColumnCodeSize           0xB26
 #define R_DrawSpanCodeSize             0xD34
@@ -30,4 +34,4 @@
 #define R_DrawSkyColumnCodeSize        0x6C2
 #define WipeCodeSize                   0x31B
 #define FinaleCodeSize                 0xB60
-#define LoadCodeSize                   0x685
+#define SaveLoadCodeSize               0xB2C

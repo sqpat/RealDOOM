@@ -450,6 +450,11 @@ void (__far* P_UnArchiveWorld)() = 											  ((void    (__far *)())     					
 void (__far* P_UnArchiveThinkers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveThinkersOffset)));
 void (__far* P_UnArchiveSpecials)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveSpecialsOffset)));
 
+void (__far* P_ArchivePlayers)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchivePlayersOffset)));
+void (__far* P_ArchiveWorld)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveWorldOffset)));
+void (__far* P_ArchiveThinkers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveThinkersOffset)));
+void (__far* P_ArchiveSpecials)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveSpecialsOffset)));
+
 
 
 
@@ -1140,7 +1145,6 @@ boolean  st_stopped = true;
 uint16_t armsbgarray[1] = { armsbg };
 
 
-THINKERREF	activeceilings[MAXCEILINGS];
 THINKERREF		activeplats[MAXPLATS];
 
 

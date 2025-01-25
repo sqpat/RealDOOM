@@ -298,6 +298,10 @@ _P_SetThingPosition_addr =           _NULL_OFFSET + 005C0h
 _P_RemoveMobj_addr =                 _NULL_OFFSET + 005C4h
 _P_AddActiveCeiling_addr =           _NULL_OFFSET + 005C8h
 _P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
+_activeceilings =                    _NULL_OFFSET + 005D0h
+
+;//0x60C
+
 
 
 

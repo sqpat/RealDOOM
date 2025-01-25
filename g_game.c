@@ -396,10 +396,11 @@ void __near G_Ticker (void)  {
             G_DoNewGame (); 
             break; 
           case ga_loadgame: 
-            Z_SetOverlay(OVERLAY_ID_LOADGAME);
+            Z_SetOverlay(OVERLAY_ID_SAVELOADGAME);
             G_DoLoadGame (); 
             break; 
           case ga_savegame: 
+            Z_SetOverlay(OVERLAY_ID_SAVELOADGAME);
             G_DoSaveGame (); 
             break; 
           case ga_playdemo: 

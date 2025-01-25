@@ -839,7 +839,7 @@ void __far Z_SetOverlay(int8_t wipeId){
 				finaledata[0] = (int16_t)(hu_font);
 				finaledata[1] = (int16_t)(&player);
 			}
-		case OVERLAY_ID_LOADGAME:
+		case OVERLAY_ID_SAVELOADGAME:
 			{
 				int16_t __far *  loaddata = (int16_t __far *)((int32_t)code_overlay_start);
 
