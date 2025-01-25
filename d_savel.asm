@@ -801,37 +801,22 @@ xor    dx, dx
 div    di           ; store thinkerref
 mov    di, bx
 mov    bx, ax
-mov    al, byte ptr ds:[si + 0Ch]
-stosb
-mov    ax, word ptr ds:[si + 010h]
-stosw
-mov    ax, word ptr ds:[si + 014h]
-mov    dx, word ptr ds:[si + 016h]
-mov    cx, 0Dh
-loop_shift_thing_2:
-sar    dx, 1
-rcr    ax, 1
-loop   loop_shift_thing_2
-stosw
-mov    ax, word ptr ds:[si + 018h]
-mov    dx, word ptr ds:[si + 01Ah]
-mov    cx, 0Dh
-loop_shift_thing_1:
-sar    dx, 1
-rcr    ax, 1
-loop   loop_shift_thing_1
-stosw
-mov    al, byte ptr ds:[si + 020h]
-add    di, 2
-stosb
-mov    al, byte ptr ds:[si + 024h]
-stosb
-mov    al, byte ptr ds:[si + 028h]
-stosb
-mov    al, byte ptr ds:[si + 02Ch]
-stosb
+
+add    si, 12
+call   LoadInt8_
+call   LoadInt16_
+call   LoadShortHeight16_
+call   LoadShortHeight16_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt8_
+
+
+
+
 mov    ax, word ptr [di - 0Ch]        ; di is 0Dh, we want 1
-add    si, SIZEOF_CEILING_VANILLA_T
+
 shl    ax, 4
 xchg   ax, bx
 
@@ -866,34 +851,19 @@ xor    dx, dx
 div    di
 mov    di, bx
 mov    bx, ax
-mov    al, byte ptr ds:[si + 0Ch]
-stosb
-mov    ax, word ptr ds:[si + 010h]
-stosw
-mov    ax, word ptr ds:[si + 014h]
-mov    dx, word ptr ds:[si + 016h]
-mov    cx, 0Dh
-loop_shift_thing_3:
-sar    dx, 1
-rcr    ax, 1
-loop   loop_shift_thing_3
-stosw
-mov    ax, word ptr ds:[si + 018h]
-mov    dx, word ptr ds:[si + 01Ah]
-mov    cx, 0Dh
-loop_shift_thing_4:
-sar    dx, 1
-rcr    ax, 1
-loop   loop_shift_thing_4
-stosw
-mov    ax, word ptr ds:[si + 01Ch]
-stosw
-mov    ax, word ptr ds:[si + 020h]
-stosw
-mov    ax, word ptr ds:[si + 024h]
-stosw
+
+add    si, 12
+call   LoadInt8_
+call   LoadInt16_
+call   LoadShortHeight16_
+call   LoadShortHeight16_
+call   LoadInt16_
+call   LoadInt16_
+call   LoadInt16_
+
+
+
 mov    ax, word ptr [di - 0Ch]  ; di is 0Dh, we want 1
-add    si, SIZEOF_VLDOOR_VANILLA_T
 shl    ax, 4
 mov    di, ax
 mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
@@ -919,36 +889,22 @@ xor    dx, dx
 div    di
 mov    di, bx
 mov    bx, ax
-mov    al, byte ptr ds:[si + 0Ch]
-stosb
-mov    al, byte ptr ds:[si + 010h]
-stosb
-mov    ax, word ptr ds:[si + 014h]
-stosw
-mov    al, byte ptr ds:[si + 018h]
-stosb
-mov    al, byte ptr ds:[si + 01Ch]
-stosb
-mov    al, byte ptr ds:[si + 020h]
-stosb
-mov    ax, word ptr ds:[si + 022h]
-mov    dx, word ptr ds:[si + 024h]
-mov    cx, 0Dh
-loop_shift_thing_5:
-sar    dx, 1
-rcr    ax, 1
-loop   loop_shift_thing_5
-stosw
-mov    ax, word ptr ds:[si + 026h]
-mov    dx, word ptr ds:[si + 028h]
-mov    cx, 0Dh
-loop_shift_thing_6:
-sar    dx, 1
-rcr    ax, 1
-loop   loop_shift_thing_6
-stosw
+
+add    si, 12
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt16_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadShortHeight16_
+call   LoadShortHeight16_
+
+
+
+
 mov    ax, word ptr [di - 9]    ; di is + 0Bh, we want 2..
-add    si, SIZEOF_FLOORMOVE_VANILLA_T
+
 shl    ax, 4
 mov    di, ax
 mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
@@ -973,48 +929,25 @@ xor    dx, dx
 div    di
 mov    di, bx
 mov    bx, ax
-mov    ax, word ptr ds:[si + 0Ch]
-stosw
-mov    ax, word ptr ds:[si + 010h]
-mov    dx, word ptr ds:[si + 012h]
-mov    cx, 0Dh
-loop_shift_thing_7:
-sar    dx, 1
-rcr    ax, 1
-loop   loop_shift_thing_7
-stosw
-mov    ax, word ptr ds:[si + 014h]
-mov    dx, word ptr ds:[si + 016h]
-mov    cx, 0Dh
-loop_shift_thing_8:
-sar    dx, 1
-rcr    ax, 1
-loop   loop_shift_thing_8
-stosw
-mov    ax, word ptr ds:[si + 018h]
-mov    dx, word ptr ds:[si + 01Ah]
-mov    cx, 0Dh
-loop_shift_thing_9:
-sar    dx, 1
-rcr    ax, 1
-loop   loop_shift_thing_9
-stosw
-mov    al, byte ptr ds:[si + 01Ch]
-stosb
-mov    al, byte ptr ds:[si + 020h]
-stosb
-mov    al, byte ptr ds:[si + 024h]
-stosb
-mov    al, byte ptr ds:[si + 028h]
-stosb
-mov    al, byte ptr ds:[si + 02Ch]
-stosb
-mov    al, byte ptr ds:[si + 030h]
-stosb
-mov    al, byte ptr ds:[si + 034h]
-stosb
+
+add    si, 12
+call   LoadInt16_
+call   LoadShortHeight16_
+call   LoadShortHeight16_
+call   LoadShortHeight16_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt8_        ; todo tag
+call   LoadInt8_
+
+
+
+
 mov    ax, word ptr es:[di-0Fh]  ; di is 0F, we want 0
-add    si, SIZEOF_PLAT_VANILLA_T
+
 shl    ax, 4
 ; todo xchg
 xchg   ax, bx
@@ -1044,20 +977,15 @@ pop    es
 mov    ds, cx
 
 mov    di, ax
-mov    ax, word ptr ds:[si + 0Ch]
-stosw
-mov    ax, word ptr ds:[si + 010h]
-stosw
-mov    al, byte ptr ds:[si + 014h]
-stosb
-mov    al, byte ptr ds:[si + 018h]
-stosb
-mov    al, byte ptr ds:[si + 01Ch]
-stosb
-mov    al, byte ptr ds:[si + 020h]
-stosb
 
-add    si, SIZEOF_LIGHTFLASH_VANILLA_T
+add    si, 12
+call   LoadInt16_
+call   LoadInt16_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt8_
+
 jmp    load_next_special
 
 load_strobe_special:
@@ -1074,19 +1002,15 @@ pop    es
 mov    ds, cx
 
 mov    di, ax
-mov    ax, word ptr ds:[si + 0Ch]
-stosw
-mov    ax, word ptr ds:[si + 010h]
-stosw
-mov    al, byte ptr ds:[si + 014h]
-stosb
-mov    al, byte ptr ds:[si + 018h]
-stosb
-mov    ax, word ptr ds:[si + 01Ch]
-stosw
-mov    ax, word ptr ds:[si + 020h]
-stosw
-add    si, SIZEOF_STROBE_VANILLA_T
+
+add    si, 12
+call   LoadInt16_
+call   LoadInt16_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt16_
+call   LoadInt16_
+
 jmp    load_next_special
 
 load_glow_special:
@@ -1103,20 +1027,58 @@ pop    es
 mov    ds, cx
 
 mov    di, ax
-mov    ax, word ptr ds:[si + 0Ch]
-stosw
-mov    al, byte ptr ds:[si + 010h]
-stosb
-mov    al, byte ptr ds:[si + 014h]
-stosb
-mov    ax, word ptr ds:[si + 018h]     ; todo get rid of this
-stosw
-add    si, SIZEOF_GLOW_VANILLA_T
+
+add    si, 12
+call   LoadInt16_
+call   LoadInt8_
+call   LoadInt8_
+call   LoadInt16_
+
 jmp    load_next_special
 
 
 
 ENDP
+
+
+
+PROC LoadInt8_ NEAR
+
+lodsw
+stosb
+inc    si
+inc    si
+ret
+
+ENDP
+
+PROC LoadInt16_ NEAR
+
+lodsw
+stosw
+inc    si
+inc    si
+ret
+
+ENDP
+
+PROC LoadShortHeight16_ NEAR
+
+lodsw
+xchg   ax, dx
+lodsw
+sal    dx, 1
+rcl    ax, 1
+sal    dx, 1
+rcl    ax, 1
+sal    dx, 1
+rcl    ax, 1
+stosw
+ret
+
+ENDP
+
+
 
 PROC P_LOADEND_
 PUBLIC P_LOADEND_

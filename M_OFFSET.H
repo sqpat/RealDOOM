@@ -15,13 +15,13 @@
 #define wipe_StartScreenOffset                0x259
 #define wipe_WipeLoopOffset                   0x268
 #define F_StartFinaleOffset                   0x1B6
-#define F_ResponderOffset                     0xADB
-#define F_TickerOffset                        0xA3A
-#define F_DrawerOffset                        0xB06
+#define F_ResponderOffset                     0xAD9
+#define F_TickerOffset                        0xA38
+#define F_DrawerOffset                        0xB04
 #define P_UnArchivePlayersOffset              0x4
 #define P_UnArchiveWorldOffset                0x180
-#define P_UnArchiveThinkersOffset             0x2B9
-#define P_UnArchiveSpecialsOffset             0x43F
+#define P_UnArchiveThinkersOffset             0x2BA
+#define P_UnArchiveSpecialsOffset             0x440
 
 #define R_DrawColumnCodeSize           0xB26
 #define R_DrawSpanCodeSize             0xD34
@@ -29,5 +29,5 @@
 #define R_MaskedConstantsCodeSize      0xEB
 #define R_DrawSkyColumnCodeSize        0x6C2
 #define WipeCodeSize                   0x31B
-#define FinaleCodeSize                 0xB62
-#define LoadCodeSize                   0x6C0
+#define FinaleCodeSize                 0xB60
+#define LoadCodeSize                   0x63A
