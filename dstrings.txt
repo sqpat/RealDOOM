@@ -5,8 +5,8 @@ you can't do load while in a net game!\n\npress a key.
 you can't quickload during a netgame!\n\npress a key.
 you haven't picked a quicksave slot yet!\n\npress a key.
 you can't save if you aren't playing!\n\npress a key.
-quicksave over your game named\n\n'%s'?\n\npress y or n.
-do you want to quickload the game named\n\n'%s'?\n\npress y or n.
+quicksave over your game named\n\n'
+do you want to quickload the game named\n\n'
 are you sure? this skill level\nisn't even remotely fair.\n\npress y or n.
 this is the shareware version of doom.\n\nyou need to order the entire trilogy.\n\npress a key.
 Messages OFF
@@ -289,16 +289,18 @@ look, bud. you leave now\nand you forfeit your body count!
 just leave. when you come\nback, i'll be waiting with a bat.
 you're lucky i don't smack\nyou for thinking about leaving.
 NEWLEVEL
-===========================================================================\nATTENTION:  This version of DOOM has been modified.  If you would like to\nget a copy of the original game, call 1-800-IDGAMES or see the readme file.\n        You will not receive technical support for modified games.\n                      press enter to continue\n===========================================================================\n
+
 ===========================================================================\n              This version is NOT SHAREWARE, do not distribute!\n         Please report software piracy to the SPA: 1-800-388-PIR8\n===========================================================================\n
 ===========================================================================\n                            Do not distribute!\n         Please report software piracy to the SPA: 1-800-388-PIR8\n===========================================================================\n
 	registered version.\n
 	shareware version.\n
 	commercial version.\n
-M_Init: Init miscellaneous info
+M_Init: Init miscellaneous info\n
 R_Init: Init DOOM refresh daemon - 
-P_Init: Init Playloop state.
+\nP_Init: Init Playloop state.\n
 I_Init: Setting up machine state.\n
-S_Init: Setting up sound.
-HU_Init: Setting up heads up display.
-ST_Init: Init status bar.
+S_Init: Setting up sound.\n
+HU_Init: Setting up heads up display.\n
+ST_Init: Init status bar.\n
+Potato detail\n
+'?\n\npress y or n.
