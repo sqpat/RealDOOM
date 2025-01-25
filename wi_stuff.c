@@ -217,7 +217,7 @@ void __near WI_drawEL(void) {
 
 }
 */
-
+/*
 void __near WI_drawOnLnode ( int16_t n, uint8_t* cRef ) {
 
     int16_t		i = 0;
@@ -253,7 +253,7 @@ void __near WI_drawOnLnode ( int16_t n, uint8_t* cRef ) {
     }
 }
 
-
+*/
 
 
 void __near WI_initAnimatedBack(void) {
@@ -286,7 +286,10 @@ void __near WI_initAnimatedBack(void) {
     }
 
 }
-
+void __near WI_updateAnimatedBack(void);
+void __near WI_drawAnimatedBack(void);
+void __near WI_drawOnLnode ( int16_t n, uint8_t* cRef );
+/*
 void __near WI_updateAnimatedBack(void) {
     int16_t		i;
     wianim_t __far*	a;
@@ -360,7 +363,7 @@ void __near WI_drawAnimatedBack(void) {
 	}
 
 }
-
+*/
 //
 // Draws a number.
 // If digits > 0, then use that many digits minimum,

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/25 00:04:59
+Created on:       25/01/25 00:40:30
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -49,11 +49,11 @@ m_menu_TEXT            CODE           AUTO           02af:4530       00001476
 sounds_TEXT            CODE           AUTO           02af:59b0       00000000
 D_ALGO_TEXT            CODE           AUTO           02af:59b0       00000045
 dmx_TEXT               CODE           AUTO           02af:5a00       000001b5
-D_WI_TEXT              CODE           AUTO           02af:5bb6       00000136
-wi_stuff_TEXT          CODE           AUTO           02af:5cf0       00000d8e
-MEMORY_TEXT            CODE           AUTO           02af:6a7e       00000000
-MATH_TEXT              CODE           AUTO           02af:6a7e       00000791
-MAIN_TEXT              CODE           AUTO           02af:7210       00000cef
+D_WI_TEXT              CODE           AUTO           02af:5bb6       00000396
+wi_stuff_TEXT          CODE           AUTO           02af:5f50       00000b28
+MEMORY_TEXT            CODE           AUTO           02af:6a78       00000000
+MATH_TEXT              CODE           AUTO           02af:6a78       00000791
+MAIN_TEXT              CODE           AUTO           02af:720a       00000cef
 g_setup_TEXT           CODE           AUTO           02af:7f00       000002ca
 r_setup_TEXT           CODE           AUTO           02af:81d0       00000445
 st_setup_TEXT          CODE           AUTO           02af:8620       000001fa
@@ -843,75 +843,75 @@ Module: d_wi.obj(d_wi.ASM)
 02af:5c00      WI_slamBackground_
 02af:5bb6      WI_GetPatch_
 02af:5c37      WI_drawLF_
-02af:5bc8      WI_GetAnimPatch_
+02af:5eca      WI_drawAnimatedBack_
+02af:5bc8*     WI_GetAnimPatch_
+02af:5da7      WI_updateAnimatedBack_
 02af:5c9b      WI_drawEL_
+02af:5cec      WI_drawOnLnode_
 02af:5bda      maketwocharint_
 Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
-02af:5cf0+     WI_drawOnLnode_
-02af:5dc8+     WI_updateAnimatedBack_
-02af:5eee+     WI_drawAnimatedBack_
-02af:5f72+     WI_drawNum_
-02af:602e+     WI_drawPercent_
-02af:606c+     WI_drawTime_
-02af:610a*     WI_initNoState_
-02af:611c*     WI_initShowNextLoc_
-02af:6130+     WI_updateShowNextLoc_
-02af:6162*     WI_drawNoState_
-02af:6168+     WI_drawShowNextLoc_
-02af:61e4*     WI_initStats_
-02af:620c+     WI_initAnimatedBack_
-02af:6290+     WI_updateStats_
-02af:6496+     WI_drawStats_
-02af:6584*     WI_checkForAccelerate_
-02af:65c4+     WI_loadData_
-02af:67c4*     WI_End_
-02af:67c4*     WI_unloadData_
-02af:67ca+     WI_updateNoState_
-02af:67da*     G_WorldDone_
-02af:6804      WI_Ticker_
-02af:6860      WI_Drawer_
-02af:6892+     WI_initVariables_
-02af:68ee+     WI_Init_
-02af:6a68      WI_Start_
+02af:5f50+     WI_initAnimatedBack_
+02af:5fec+     WI_drawNum_
+02af:60a8+     WI_drawPercent_
+02af:60e6+     WI_drawTime_
+02af:6184*     WI_initNoState_
+02af:6196*     WI_initShowNextLoc_
+02af:61aa+     WI_updateShowNextLoc_
+02af:61dc*     WI_drawNoState_
+02af:61e2+     WI_drawShowNextLoc_
+02af:625e*     WI_initStats_
+02af:628a+     WI_updateStats_
+02af:6490+     WI_drawStats_
+02af:657e*     WI_checkForAccelerate_
+02af:65be+     WI_loadData_
+02af:67be*     WI_End_
+02af:67be*     WI_unloadData_
+02af:67c4+     WI_updateNoState_
+02af:67d4*     G_WorldDone_
+02af:67fe      WI_Ticker_
+02af:685a      WI_Drawer_
+02af:688c+     WI_initVariables_
+02af:68e8+     WI_Init_
+02af:6a62      WI_Start_
 Module: math.obj(math.ASM)
-02af:6e3f      FastDiv32u16u_
-02af:6fd1      FastDiv3232FFFF_
-02af:6b8f      FixedMulTrigNoShift_
-02af:6c71      FastMul16u32u_
-02af:6dd1      FixedDiv_
-02af:6bda*     FixedMulTrig16_
-02af:6c86      div48_32_
-02af:6ee5*     FastDiv3232_RPTA_
-02af:70e1*     div48_32_whole_
-02af:6bf4      FastMulTrig16_
-02af:6c1d      FixedMulTrigSpeed_
-02af:6c62*     FixedMul16u32u_
-02af:6e5d      FastDiv3216u_
-02af:707a      FixedDivWholeA_
-02af:6ab7*     FixedMulBig16u32_
-02af:6b8b      FixedMulTrig_
-02af:6b0a      FixedMul2432_
-02af:6b4b      FixedMul1632_
-02af:6ac0      FixedMul2424_
-02af:6a7e      FixedMul_
-02af:6eb4      FastDiv3232_shift_3_8_
-02af:6c39      FixedMulBig1632_
-02af:6c4d      FixedMul16u32_
-02af:6c21      FixedMulTrigSpeedNoShift_
+02af:6e39      FastDiv32u16u_
+02af:6fcb      FastDiv3232FFFF_
+02af:6b89      FixedMulTrigNoShift_
+02af:6c6b      FastMul16u32u_
+02af:6dcb      FixedDiv_
+02af:6bd4*     FixedMulTrig16_
+02af:6c80      div48_32_
+02af:6edf*     FastDiv3232_RPTA_
+02af:70db*     div48_32_whole_
+02af:6bee      FastMulTrig16_
+02af:6c17      FixedMulTrigSpeed_
+02af:6c5c*     FixedMul16u32u_
+02af:6e57      FastDiv3216u_
+02af:7074      FixedDivWholeA_
+02af:6ab1*     FixedMulBig16u32_
+02af:6b85      FixedMulTrig_
+02af:6b04      FixedMul2432_
+02af:6b45      FixedMul1632_
+02af:6aba      FixedMul2424_
+02af:6a78      FixedMul_
+02af:6eae      FastDiv3232_shift_3_8_
+02af:6c33      FixedMulBig1632_
+02af:6c47      FixedMul16u32_
+02af:6c1b      FixedMulTrigSpeedNoShift_
 Module: main.obj(main.ASM)
-02af:757a      G_CopyCmd_
-02af:76cc      G_GetGameKey_
-02af:76b2      G_SetGameKeyDown_
-02af:76bf      G_SetGameKeyUp_
-02af:7c7c      M_LoadDefaults_
-02af:73aa      I_KeyboardISR_
-02af:76a1      G_ResetGameKeys_
-02af:7a19*     CopyString13_
-02af:76d8      G_BuildTiccmd_
-02af:72e7      cht_CheckCheat_
-02af:7e32      M_SaveDefaults_
-02af:734f      cht_GetParam_
-02af:73d2      I_StartTic_
+02af:7574      G_CopyCmd_
+02af:76c6      G_GetGameKey_
+02af:76ac      G_SetGameKeyDown_
+02af:76b9      G_SetGameKeyUp_
+02af:7c76      M_LoadDefaults_
+02af:73a4      I_KeyboardISR_
+02af:769b      G_ResetGameKeys_
+02af:7a13*     CopyString13_
+02af:76d2      G_BuildTiccmd_
+02af:72e1      cht_CheckCheat_
+02af:7e2c      M_SaveDefaults_
+02af:7349      cht_GetParam_
+02af:73cc      I_StartTic_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 02af:7f00      R_CheckTextureNumForName_
 02af:7f60      R_TextureNumForName_
@@ -1599,4 +1599,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00024c90 (150672.)
 Entry point address: 1da5:2298
-Link time: 00:00.20
+Link time: 00:00.19
