@@ -32,8 +32,7 @@ EXTRN S_ChangeMusic_:PROC
 
 EXTRN _bcnt:WORD
 EXTRN _wbs:WORD
-EXTRN _wianims:WORD
-EXTRN _NUMANIMS:WORD
+
 EXTRN _state:WORD
 
 EXTRN _cnt_secret:WORD
@@ -63,6 +62,15 @@ EXTRN _plrs:WORD
 
 
 .CODE
+
+
+
+
+_NUMANIMS:
+db    10, 9, 6
+
+_wianims:
+dw 0, EPSD0ANIMINFO_SEGMENT, 0, EPSD1ANIMINFO_SEGMENT, 0, EPSD2ANIMINFO_SEGMENT
 
 
 
@@ -413,13 +421,13 @@ mov   bx, word ptr ds:[_wbs]
 mov   al, byte ptr [bx]
 cbw  
 mov   bx, ax
-mov   al, byte ptr ds:[bx + _NUMANIMS]
+mov   al, byte ptr cs:[bx + _NUMANIMS]
 cbw  
 cmp   cx, ax
 jge   exit_update_animated_back
 shl   bx, 2
-mov   dx, word ptr ds:[bx + _wianims]
-mov   ax, word ptr ds:[bx + _wianims + 2]
+mov   dx, word ptr cs:[bx + _wianims]
+mov   ax, word ptr cs:[bx + _wianims + 2]
 mov   bx, dx
 mov   dx, word ptr [_bcnt]
 add   bx, si
@@ -542,13 +550,13 @@ mov   bx, word ptr ds:[_wbs]
 mov   al, byte ptr [bx]
 cbw  
 mov   bx, ax
-mov   al, byte ptr [bx + _NUMANIMS]
+mov   al, byte ptr cs:[bx + _NUMANIMS]
 cbw  
 cmp   cx, ax
 jge   jump_to_exit_update_animated_back
 shl   bx, 2
-mov   ax, word ptr ds:[bx + _wianims]
-mov   dx, word ptr ds:[bx + _wianims+2]
+mov   ax, word ptr cs:[bx + _wianims]
+mov   dx, word ptr cs:[bx + _wianims+2]
 mov   bx, ax
 mov   es, dx
 add   bx, si
@@ -612,13 +620,13 @@ mov   bx, word ptr ds:[_wbs]
 mov   al, byte ptr [bx]
 cbw  
 mov   bx, ax
-mov   al, byte ptr [bx + _NUMANIMS]
+mov   al, byte ptr cs:[bx + _NUMANIMS]
 cbw  
 cmp   si, ax
 jge   exit_init_animated_back
 shl   bx, 2
-mov   ax, word ptr [bx + _wianims]
-mov   dx, word ptr [bx + _wianims + 2]
+mov   ax, word ptr cs:[bx + _wianims]
+mov   dx, word ptr cs:[bx + _wianims + 2]
 mov   bx, ax
 mov   es, dx
 add   bx, di
@@ -1531,14 +1539,14 @@ mov   bx, word ptr ds:[_wbs]
 mov   al, byte ptr [bx]
 cbw  
 mov   bx, ax
-mov   al, byte ptr ds:[bx + _NUMANIMS]
+mov   al, byte ptr cs:[bx + _NUMANIMS]
 cbw  
 cmp   ax, word ptr [bp - 0Ah]
 jle   label_61
 shl   bx, 2
 mov   word ptr [bp - 2], 0
-mov   dx, word ptr [bx + _wianims]
-mov   ax, word ptr [bx + _wianims+2]
+mov   dx, word ptr cs:[bx + _wianims]
+mov   ax, word ptr cs:[bx + _wianims+2]
 mov   bx, word ptr [bp - 014h]
 mov   word ptr [bp - 0Eh], ax
 mov   word ptr [bp - 0Ch], ax

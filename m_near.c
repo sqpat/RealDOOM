@@ -1077,20 +1077,6 @@ volatile int16_t TS_TimesInInterrupt;
 int8_t TS_Installed = false;
 volatile int8_t TS_InInterrupt = false;
 
-int8_t NUMANIMS[NUMEPISODES_FOR_ANIMS] = {
-
-    10,
-    9,
-    6
-};
-
-wianim_t __far*wianims[NUMEPISODES_FOR_ANIMS] = {
-
-    epsd0animinfo,
-    epsd1animinfo,
-    epsd2animinfo
-};
-
 
 // used to accelerate or skip a stage
 int16_t		acceleratestage;
