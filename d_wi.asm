@@ -21,18 +21,16 @@ INSTRUCTION_SET_MACRO
 
 EXTRN Z_SetOverlay_:PROC
 EXTRN W_LumpLength_:PROC
-
-EXTRN S_StartSound_:PROC
 EXTRN M_Random_:PROC
 EXTRN Z_QuickMapPhysics_:PROC
 EXTRN Z_QuickMapIntermission_:PROC
-EXTRN S_ChangeMusic_:PROC
+
 .DATA
 
+; these could mostly be local to the code if this code was loaded HIGH
 
 EXTRN _bcnt:WORD
 EXTRN _wbs:WORD
-
 EXTRN _state:WORD
 
 EXTRN _cnt_secret:WORD
@@ -87,6 +85,20 @@ mov       es, ax
 mov       dx, WIGRAPHICSPAGE0_SEGMENT
 mov       ax, word ptr es:[bx]
 pop       bx
+ret
+
+ENDP
+
+PROC WI_GetPatchESBX_ NEAR
+PUBLIC WI_GetPatchESBX_
+
+mov       bx, ax
+shl       bx, 1		; word lookup
+mov       ax, WIOFFSETS_SEGMENT
+mov       es, ax
+mov       bx, word ptr es:[bx]
+mov       ax, WIGRAPHICSPAGE0_SEGMENT
+mov       es, ax
 ret
 
 ENDP
@@ -296,88 +308,86 @@ push  bx
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 8
-mov   bx, ax
-mov   word ptr [bp - 8], dx
-mov   si, word ptr ds:[_wbs]
-mov   al, byte ptr [si]
-cbw  
-mov   dx, ax
-shl   ax, 2
-add   ax, dx
-add   ax, ax
-add   bx, ax
-mov   ax, LNODEX_SEGMENT
-add   bx, bx
-mov   es, ax
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 6], ax
-mov   ax, LNODEY_SEGMENT
-mov   byte ptr [bp - 2], 0
-mov   es, ax
-xor   cx, cx
-mov   ax, word ptr es:[bx]
-mov   si, word ptr [bp - 8]
-mov   word ptr [bp - 4], ax
-label_3:
-mov   al, byte ptr [si]
-xor   ah, ah
-call  WI_GetPatch_
-mov   bx, ax
-mov   es, dx
-mov   dx, word ptr [bp - 6]
-mov   ax, word ptr [bp - 4]
-mov   di, word ptr es:[bx]
-sub   dx, word ptr es:[bx + 4]
-sub   ax, word ptr es:[bx + 6]
-add   di, dx
-mov   bx, word ptr es:[bx + 2]
-add   bx, ax
-test  dx, dx
-jl    label_1
-cmp   di, SCREENWIDTH
-jge   label_1
-test  ax, ax
-jl    label_1
-cmp   bx, SCREENHEIGHT
-jae   label_1
-label_4:
-cmp   cx, 2
-jl    label_2
-exit_wi_drawonlnode:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-label_1:
-inc   cx
-inc   si
-cmp   cx, 2
-jne   label_3
-cmp   byte ptr [bp - 2], 0
-jne   label_4
-jmp   exit_wi_drawonlnode
-label_2:
-mov   bx, word ptr [bp - 8]
-add   bx, cx
-mov   al, byte ptr [bx]
-xor   ah, ah
-call  WI_GetPatch_
+
+;int16_t index = wbs->epsd*10 + n;
+
+mov   si, dx					; store cref in si.
+
 xor   bx, bx
-push  dx
-mov   dx, word ptr [bp - 4]
-push  ax
-mov   ax, word ptr [bp - 6]
+xchg  ax, bx					; store n in bx
+mov   ah, byte ptr ds:[_wbs + 0]	; wbs->epsd
+
+db    0D5h, 00Ah					; AAD to mul by 10
+
+add   bx, ax						; plus n
+shl   bx, 1   ; word lookup
+
+mov   ax, LNODEX_SEGMENT		; eventually put this in the cs seg?
+mov   es, ax
+mov   di, word ptr es:[bx]		; di = lnodex
+
+mov   ax, LNODEY_SEGMENT		; eventually put this in the cs seg?
+mov   es, ax
+mov   dx, word ptr es:[bx]		; dx = lnodey
+
+mov   cx, 2
+
+loop_drawonlnode:
+mov   ax, cx
+;     xor ah ah for free since cx is 0 or 1..
+lodsb							    ;  WI_GetPatch(cRef[i]);
+call  WI_GetPatchESBX_				; todo what if this just returned es:bx or whatever
+
+;		left = lnodeX - (ci->leftoffset);
+;		if (left >= 0
+mov   ax, di						; copy lonodex
+sub   ax, word ptr es:[bx + 4]
+cmp   ax, 0
+jnge  failed_inc_i				
+
+; 		right = left + (ci->width)
+;		&& right < SCREENWIDTH
+
+add   ax, word ptr es:[bx + 0]
+cmp   ax, SCREENWIDTH
+jge   failed_inc_i
+
+;       top = lnodeY - (ci->topoffset);
+;			&& top >= 0
+
+mov   ax, dx						; copy lnodey
+sub   ax, word ptr es:[bx + 6]
+cmp   ax, 0
+jnge  failed_inc_i	
+
+;		bottom = top + (ci->height);
+;			&& bottom < SCREENHEIGHT
+
+add   ax, word ptr es:[bx + 2]
+cmp   ax, SCREENHEIGHT
+jge   failed_inc_i
+
+; draw patch
+
+
+;		V_DrawPatch(lnodeX, lnodeY, FB, (WI_GetPatch(cRef[i])));
+
+mov   ax, di		; lnodex
+; dx is already lnodey
+push  es
+push  bx
+xor   bx, bx
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawPatch_addr
 
-LEAVE_MACRO
+jmp   exit_wi_drawonlnode
+
+failed_inc_i:
+loop  loop_drawonlnode
+
+exit_wi_drawonlnode:
 pop   di
 pop   si
 pop   cx
@@ -1119,7 +1129,9 @@ idiv  bx
 mov   dx, SFX_BAREXP
 mov   word ptr ds:[_cnt_par], ax
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 mov   word ptr ds:[_sp_state], 10
 label_55:
 cmp   word ptr ds:[_acceleratestage], 0
@@ -1138,7 +1150,11 @@ test  byte ptr ds:[_bcnt], 3
 jne   label_90
 mov   dx, 1
 xor   ax, ax
-call  S_StartSound_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 label_90:
 imul  ax, word ptr ds:[_plrs+1], 100
 mov   bx, word ptr ds:[_wbs]
@@ -1149,7 +1165,10 @@ jg    exit_wi_updatestats
 mov   dx, SFX_BAREXP
 mov   word ptr ds:[_cnt_kills], ax
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 inc   word ptr ds:[_sp_state]
 jmp   exit_wi_updatestats
 jump_to_label_89:
@@ -1162,7 +1181,10 @@ test  byte ptr ds:[_bcnt], 3
 jne   label_88
 mov   dx, sfx_pistol
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 label_88:
 imul  ax, word ptr ds:[_plrs+3], 100
 mov   bx, word ptr ds:[_wbs]
@@ -1173,7 +1195,10 @@ jg    exit_wi_updatestats
 mov   dx, SFX_BAREXP
 mov   word ptr ds:[_cnt_items], ax
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 inc   word ptr ds:[_sp_state]
 pop   dx
 pop   cx
@@ -1187,7 +1212,10 @@ test  byte ptr ds:[_bcnt], 3
 jne   label_57
 mov   dx, sfx_pistol
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 label_57:
 imul  ax, word ptr ds:[_plrs+5], 100
 mov   bx, word ptr ds:[_wbs]
@@ -1201,7 +1229,10 @@ label_83:
 mov   dx, SFX_BAREXP
 mov   word ptr ds:[_cnt_secret], ax
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 inc   word ptr ds:[_sp_state]
 pop   dx
 pop   cx
@@ -1214,7 +1245,10 @@ test  byte ptr ds:[_bcnt], 3
 jne   label_60
 mov   dx, 1
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 label_60:
 add   word ptr ds:[_cnt_time], 3
 mov   ax, word ptr ds:[_cnt_time]
@@ -1237,7 +1271,10 @@ cmp   ax, word ptr ds:[_plrs+7]
 jl    jump_to_exit_wi_updatestats_2
 mov   dx, SFX_BAREXP
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 inc   word ptr ds:[_sp_state]
 pop   dx
 pop   cx
@@ -1265,7 +1302,10 @@ label_89:
 mov   dx, 3
 xor   ax, ax
 mov   bx, OFFSET _commercial
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 cmp   byte ptr [bx], 0
 je    label_52
 call  WI_initNoState_
@@ -1761,7 +1801,11 @@ je    set_doom1_music
 mov   dx, 1
 mov   ax, MUS_DM2INT
 call_music:
-call  S_ChangeMusic_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_ChangeMusic_addr
+
 music_already_init:
 call  Z_QuickMapIntermission_
 call  WI_checkForAccelerate_
