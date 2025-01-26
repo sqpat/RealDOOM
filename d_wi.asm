@@ -19,6 +19,7 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
+EXTRN WI_Init2_:NEAR
 EXTRN Z_SetOverlay_:PROC
 EXTRN W_LumpLength_:PROC
 
@@ -1941,7 +1942,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ah					   ; room for lump name string
+sub   sp, 0Eh					   ; room for lump name string
 
 xor   si, si
 mov   dx, si 					   ; loop ctr
@@ -1949,7 +1950,8 @@ mov   bx, si 					   ; size/dst offset
 
 loop_wi_items:
 
-mov   word ptr cs:[SELFMODIFY_wi_set_loopcount+2], dx
+mov   word ptr [bp - 0Ch], dx
+mov   word ptr [bp - 0Eh], bx
 
 mov   ax, WIGRAPHICS_SEGMENT
 mov   ds, ax
@@ -1970,6 +1972,7 @@ push  ss
 pop   ds ; restore ds
 
 
+
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _W_GetNumForName_addr
@@ -1980,18 +1983,18 @@ call  W_LumpLength_
 
 xchg  ax, di				; di gets size. ax gets lumpnum
 
-
 mov   cx, WIGRAPHICSPAGE0_SEGMENT  ; dest segment for W_CacheLumpNameDirect_ for loop
+mov   bx, word ptr [bp - 0Eh]
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _W_CacheLumpNameDirect_addr
+dw _W_CacheLumpNumDirect_addr
 
 mov   ax, WIOFFSETS_SEGMENT
 mov   es, ax
 
-SELFMODIFY_wi_set_loopcount:
-mov   dx, 01000h
+mov   dx, word ptr [bp - 0Ch]  ; todo fix the above functions to not clobber registers.
+mov   bx, word ptr [bp - 0Eh]
 
 xchg  ax, di        ; size in ax
 
@@ -2114,7 +2117,7 @@ call  WI_Init_
 call  WI_loadData_
 call  WI_initStats_
 
-;call  Z_QuickMapPhysics_
+call  Z_QuickMapPhysics_
 retf
 
 ENDP
