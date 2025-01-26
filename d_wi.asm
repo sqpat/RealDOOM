@@ -19,13 +19,11 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
-EXTRN WI_Init2_:NEAR
 EXTRN Z_SetOverlay_:PROC
 EXTRN W_LumpLength_:PROC
 
 EXTRN S_StartSound_:PROC
 EXTRN M_Random_:PROC
-EXTRN combine_strings_:PROC
 EXTRN Z_QuickMapPhysics_:PROC
 EXTRN Z_QuickMapIntermission_:PROC
 EXTRN S_ChangeMusic_:PROC
@@ -98,32 +96,7 @@ mov       ax, word ptr es:[bx]
 pop       bx
 ret
 
-ENDP
-
-PROC maketwocharint_ NEAR
-PUBLIC maketwocharint_
-
-push      dx
-push      si
-mov       si, ax
-mov       es, cx
-mov       cx, 10
-cwd       
-idiv      cx
-add       ax, 030h   ; '0' char
-mov       byte ptr es:[bx], al
-mov       ax, si
-cwd       
-idiv      cx
-mov       byte ptr es:[bx + 2], 0
-add       dx, 030h   ; '0' char
-mov       byte ptr es:[bx + 1], dl
-pop       si
-pop       dx
-ret       
-
-ENDP
-
+ENDP 
 
 PROC WI_slamBackground_ NEAR
 PUBLIC WI_slamBackground_
@@ -1453,8 +1426,6 @@ str_wi_name1:
 db "INTERPIC", 0
 str_wi_name2:
 db "WIMAP0", 0
-str_wia:
-db "WIA", 0
 
 PROC WI_loadData_ NEAR
 PUBLIC WI_loadData_
@@ -1477,13 +1448,13 @@ movsw
 movsw 
 movsw 
 movsw 
-movsb 
+;movsb 
 lea   di, [bp - 02Ch]
 mov   si, OFFSET str_wi_name2
 movsw 
 movsw 
 movsw 
-movsw 
+;movsw 
 movsb 
 push    ss
 pop     ds
@@ -1593,57 +1564,40 @@ jne   label_64
 jmp   label_65
 label_64:
 mov   bx, word ptr ds:[_wbs]
-mov   al, byte ptr [bx]
-mov   cx, ds
-add   al, 030h					; '0' char
-lea   bx, [bp - 01eh]
-mov   byte ptr [bp - 01ah], al
+
+
+
+; "WIA" 57 49 41
+
+mov   al, 041h					
+mov   ah, byte ptr [bx]			; wbs->epsd
+add   ah, 030h					; '0' char
+
+mov   word ptr [bp - 022h], 04957h  ; "WI"
+mov   word ptr [bp - 020h], ax      ; "A#"
+
 mov   ax, word ptr [bp - 0Ah]
-mov   byte ptr [bp - 019h], 0
-call  maketwocharint_
-lea   bx, [bp - 022h]
+db    0D4h, 00Ah	    ; divide by 10 using AAM
+xchg  al, ah
+add   ax, 03030h				; add '0' to each character
+mov   word ptr [bp - 01Eh], ax      ; "##"
+
 mov   ax, word ptr [bp - 2]
-mov   cx, ds
-lea   dx, [bp - 01ah]
-call  maketwocharint_
-push  ds
-push  dx
-mov   cx, cs
-mov   bx, OFFSET str_wia
-mov   dx, ds
-mov   ax, di
+db    0D4h, 00Ah	    ; divide by 10 using AAM
+xchg  al, ah
+add   ax, 03030h				; add '0' to each character
+mov   word ptr [bp - 01Ch], ax       ; "##"
+mov   byte ptr [bp - 01Ah], 0        ; null term
 
 
-; cx is ds
-; ax is di (stack ptr)
-; bx is offset
-; dx is ds
-; first pushed is ds
-; first pushed is offset
-; first pushed is cs
 
-call  combine_strings_
-lea   dx, [bp - 01eh]
-push  ds
-mov   bx, di
-mov   cx, ds
-mov   ax, di
-push  dx
-mov   dx, ds
 
-call  combine_strings_
-lea   dx, [bp - 022h]
-push  ds
-mov   bx, di
-mov   cx, ds
-mov   ax, di
-push  dx
-mov   dx, ds
 
-call  combine_strings_
+
 mov   bx, word ptr [bp - 012h]
-mov   ax, di
+lea   ax, [bp - 022h]
 mov   cx, word ptr [bp - 8]
+
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1925,10 +1879,6 @@ ret
 
 ENDP
 
-str_cwilv:
-db "CWILV", 0
-str_wilv:
-db "WILV", 0
 
 
 PROC WI_Init_ NEAR
