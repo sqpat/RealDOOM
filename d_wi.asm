@@ -22,14 +22,12 @@ INSTRUCTION_SET_MACRO
 EXTRN Z_SetOverlay_:PROC
 EXTRN W_LumpLength_:PROC
 
-EXTRN W_CacheLumpNameDirect_:PROC
 EXTRN S_StartSound_:PROC
 EXTRN M_Random_:PROC
 EXTRN combine_strings_:PROC
 EXTRN Z_QuickMapPhysics_:PROC
 EXTRN Z_QuickMapIntermission_:PROC
 EXTRN S_ChangeMusic_:PROC
-EXTRN WI_Init_:NEAR
 .DATA
 
 
@@ -1931,7 +1929,6 @@ db "CWILV", 0
 str_wilv:
 db "WILV", 0
 
-COMMENT @
 
 PROC WI_Init_ NEAR
 PUBLIC WI_Init_
@@ -1944,171 +1941,159 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 018h
-mov   word ptr [bp - 6], WIGRAPHICSPAGE0_SEGMENT
-xor   ax, ax
-xor   di, di
-mov   word ptr [bp - 8], ax
-mov   word ptr [bp - 2], ax
-mov   word ptr [bp - 4], ax
+sub   sp, 0Ah					   ; room for lump name string
+
+xor   si, si
+mov   dx, si 					   ; loop ctr
+mov   bx, si 					   ; size/dst offset
 
 loop_wi_items:
-xor   dl, dl
-loop_to_9:
-mov   al, dl
-cbw  
-mov   bx, di
-mov   si, ax
-add   bx, ax
+
+mov   word ptr cs:[SELFMODIFY_wi_set_loopcount+2], dx
+
 mov   ax, WIGRAPHICS_SEGMENT
-mov   es, ax
-mov   al, byte ptr es:[bx]
-inc   dl
-mov   byte ptr [bp + si - 018h], al
-cmp   dl, 9
-jl    loop_to_9
-lea   ax, [bp - 018h]
-mov   bx, word ptr [bp - 2]
-mov   cx, word ptr [bp - 6]
+mov   ds, ax
+push  ss
+pop   es
+
+
+lea   di, [bp - 0Ah]
+mov   ax, di	; store this address as arg for getnumforname
+
+movsw
+movsw
+movsw
+movsw
+movsb ; copy nine bytes
+
+push  ss
+pop   ds ; restore ds
+
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _W_GetNumForName_addr
 
-mov   si, ax
+
+mov   di, ax				; ax has lump num, cache in di
 call  W_LumpLength_
-mov   dx, ax
-mov   ax, si
-add   di, 9
-call  W_CacheLumpNameDirect_
-add   word ptr [bp - 2], dx
+
+xchg  ax, di				; di gets size. ax gets lumpnum
+
+
+mov   cx, WIGRAPHICSPAGE0_SEGMENT  ; dest segment for W_CacheLumpNameDirect_ for loop
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNameDirect_addr
+
 mov   ax, WIOFFSETS_SEGMENT
-mov   bx, word ptr [bp - 4]
 mov   es, ax
-mov   ax, word ptr [bp - 8]
-add   word ptr [bp - 4], 2
-mov   word ptr es:[bx], ax
-add   word ptr [bp - 8], dx
-cmp   word ptr [bp - 4], (NUM_WI_ITEMS * 2)
-jne   loop_wi_items
+
+SELFMODIFY_wi_set_loopcount:
+mov   dx, 01000h
+
+xchg  ax, di        ; size in ax
+
+mov   di, dx
+mov   word ptr es:[di], bx		; write old size
+
+add   bx, ax				; add lump size to offset 
+
+inc   dx
+inc   dx
+
+cmp   dx, (NUM_WI_ITEMS * 2)
+
+jl    loop_wi_items
 
 
-mov   al, byte ptr ds:[_commercial]
-test  al, al
+
+; done with setup loop
+
+
+mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
+xor   bx, bx
+mov   si, word ptr ds:[_wbs]
+lea   di, [bp - 0Ah]
+
+
+
+cmp   byte ptr ds:[_commercial], 0
 je    do_nondoom2_wi_init
 ; doom2 case
-mov   bx, word ptr ds:[_wbs]
-mov   cx, ds
-mov   al, byte ptr [bx + 2]
-lea   bx, [bp - 0Eh]
-cbw  
-lea   dx, [bp - 0Eh]
-call  maketwocharint_
-mov   bx, OFFSET str_cwilv
-lea   ax, [bp - 018h]
-push  ds
-mov   cx, cs
-push  dx
-mov   dx, ds
 
-call  combine_strings_
 
-mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
-lea   ax, [bp - 018h]
-xor   bx, bx
-call  W_CacheLumpNameDirect_
-mov   bx, word ptr ds:[_wbs]
-mov   cx, ds
-mov   al, byte ptr [bx + 3]
-lea   bx, [bp - 0Eh]
-cbw  
-lea   dx, [bp - 0Eh]
-call  maketwocharint_
-mov   bx, OFFSET str_cwilv
-lea   ax, [bp - 018h]
-push  ds
-mov   cx, cs
-push  dx
-mov   dx, ds
+; 
+; CWILV00  = 43 57 49 4C 56 30 30 0
 
-label_103:
+mov   word ptr [di + 0], 05743h ; "CW"
+mov   word ptr [di + 2], 04C49h ; "IL"
+mov   byte ptr [di + 4], 056h ; "V"
 
-call  combine_strings_
-mov   bx, NEXT_OFFSET
-mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
-lea   ax, [bp - 018h]
-call  W_CacheLumpNameDirect_
-leave 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
+
+mov   al, byte ptr [si+2]		; wbs ->last
+db    0D4h, 00Ah	    ; divide by 10 using AAM
+add   ax, 03030h				; add '0' to each character
+mov   word ptr [di + 5], ax  ; numbers for string
+
+mov   byte ptr [di + 7], 00h ; null terminator
+
+mov   ax, di
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNameDirect_addr
+
+
+mov   al, byte ptr [si+3]		; wbs ->next
+db    0D4h, 00Ah	    ; divide by 10 using AAM
+add   ax, 03030h				; add '0' to each character
+mov   word ptr [di + 5], ax  ; numbers for string
+
+jmp   do_final_init_call_and_exit
 
 do_nondoom2_wi_init:
-lea   dx, [bp - 0Ah]
-mov   bx, word ptr ds:[_wbs]
-mov   byte ptr [bp - 9], al
-push  ds
-push  dx
-mov   al, byte ptr [bx]
-mov   cx, cs
-mov   bx, OFFSET str_wilv
-add   al, 030h    ; '0' char
-mov   dx, ds
-mov   byte ptr [bp - 0Ah], al
-lea   ax, [bp - 018h]
-call  combine_strings_
+ 
+; WILV00  = 57 49 4C 56 30 30 0
 
-lea   dx, [bp - 0Ah]
-mov   bx, word ptr ds:[_wbs]
-push  ds
-mov   cx, ds
-push  dx
-mov   al, byte ptr [bx + 2]
-lea   bx, [bp - 018h]
-add   al, 030h    ; '0' char
-mov   dx, ds
-mov   byte ptr [bp - 0Ah], al
-lea   ax, [bp - 018h]
-call  combine_strings_
+mov   word ptr [di + 0], 04957h ; "WI"
+mov   word ptr [di + 2], 0564Ch ; "LV"
 
-mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
-lea   ax, [bp - 018h]
-xor   bx, bx
-lea   dx, [bp - 0Ah]
-call  W_CacheLumpNameDirect_
-mov   bx, word ptr ds:[_wbs]
-push  ds
-mov   cx, cs
-push  dx
-mov   al, byte ptr [bx]
-mov   bx, OFFSET str_wilv
-add   al, 030h    ; '0' char
-mov   dx, ds
-mov   byte ptr [bp - 0Ah], al
-lea   ax, [bp - 018h]
-call  combine_strings_
+mov   al, byte ptr [si]			; wbs ->epsd
+mov   ah, byte ptr [si+2]		; wbs ->last
+add   ax, 03030h				; add '0' to each character
+mov   word ptr [di + 4], ax  ; numbers for string
+mov   byte ptr [di + 6], 00h ; null terminator
 
-lea   dx, [bp - 0Ah]
-mov   bx, word ptr ds:[_wbs]
-push  ds
-mov   cx, ds
-push  dx
-mov   al, byte ptr [bx + 3]
-lea   bx, [bp - 018h]
-add   al, 030h    ; '0' char
-mov   dx, ds
-mov   byte ptr [bp - 0Ah], al
-lea   ax, [bp - 018h]
-call  combine_strings_
+
+
+mov   ax, di
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNameDirect_addr
+
+
+mov   al, byte ptr [si+3]		; wbs ->next
+add   al, 030h	 				; add '0' to character
+mov   byte ptr [di + 5], al   ; update number for string
+
+
+do_final_init_call_and_exit:
+
 
 mov   bx, NEXT_OFFSET
 mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
-lea   ax, [bp - 018h]
-call  W_CacheLumpNameDirect_
-leave 
+;xchg  ax, di
+lea   ax, [bp - 0Ah]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNameDirect_addr
+
+
+do_exit:
+LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
@@ -2118,7 +2103,7 @@ ret
 
 ENDP
 
-@
+
 
 PROC WI_Start_ FAR
 PUBLIC WI_Start_
@@ -2128,7 +2113,8 @@ call  WI_initVariables_
 call  WI_Init_
 call  WI_loadData_
 call  WI_initStats_
-call  Z_QuickMapPhysics_
+
+;call  Z_QuickMapPhysics_
 retf
 
 ENDP

@@ -660,6 +660,7 @@ void __near G_DoCompleted (void)  {
     }
         
     WI_Start (&wminfo); 
+    I_Error("%x %x %x %Fs", wioffsets[0], wioffsets[1], wioffsets[2], wigraphics );
 } 
 
 /*
