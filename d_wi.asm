@@ -633,6 +633,17 @@ jmp   label_9
 ENDP
 
 
+PROC WI_initShowNextLoc_ NEAR
+PUBLIC WI_initShowNextLoc_
+
+
+mov   byte ptr ds:[_state], 1
+mov   word ptr ds:[_cnt], SHOWNEXTLOCDELAY * TICRATE
+mov   word ptr ds:[_acceleratestage], 0
+
+; fall thru
+
+ENDP
 
 PROC WI_initAnimatedBack_ NEAR
 PUBLIC WI_initAnimatedBack_
@@ -963,24 +974,13 @@ PROC WI_initNoState_ NEAR
 PUBLIC WI_initNoState_
 
 mov   byte ptr ds:[_state], -1
-xor   ax, ax
 mov   word ptr ds:[_cnt], 10
-mov   word ptr ds:[_acceleratestage], ax
+mov   word ptr ds:[_acceleratestage], 0
 ret   
 
 ENDP
 
-PROC WI_initShowNextLoc_ NEAR
-PUBLIC WI_initShowNextLoc_
 
-
-mov   byte ptr ds:[_state], 1
-xor   ax, ax
-mov   word ptr ds:[_cnt], SHOWNEXTLOCDELAY * TICRATE
-mov   word ptr ds:[_acceleratestage], ax
-jmp 	WI_initAnimatedBack_
-
-ENDP
 
 
 PROC WI_updateShowNextLoc_ NEAR
@@ -994,24 +994,20 @@ jne   WI_initNoState_
 mov   ax, word ptr ds:[_cnt]
 and   ax, 31
 cmp   ax, 20
-jae   label_43
-mov   al, 1
-mov   byte ptr ds:[_snl_pointeron], al
+jae   set_ptr_off
+mov   byte ptr ds:[_snl_pointeron], 1
 ret   
-label_43:
-xor   al, al
-mov   byte ptr ds:[_snl_pointeron], al
+set_ptr_off:
+mov   byte ptr ds:[_snl_pointeron], 0
 ret   
 
-label_36:
+drawel_and_exit:
 call  WI_drawEL_
 pop   dx
 pop   cx
 pop   bx
 ret   
-label_44:
-cbw  
-jmp   label_39
+
 
 ENDP
 
@@ -1019,9 +1015,8 @@ PROC WI_drawNoState_ NEAR
 PUBLIC WI_drawNoState_
 
 mov   byte ptr ds:[_snl_pointeron], 1
-call  WI_drawShowNextLoc_
-ret
-; could just fall thru...
+
+    ; fall thru
 ENDP
 
 PROC WI_drawShowNextLoc_ NEAR
@@ -1030,55 +1025,59 @@ PUBLIC WI_drawShowNextLoc_
 push  bx
 push  cx
 push  dx
-mov   bx, OFFSET _commercial
 call  WI_slamBackground_
 call  WI_drawAnimatedBack_
 cmp   byte ptr ds:[_commercial], 0
-jne   label_37
+jne   skip_drawing_pointer
 mov   bx, word ptr ds:[_wbs]
 cmp   byte ptr [bx], 2
-jg    label_36
+jg    drawel_and_exit
+
+;		last = (wbs->last == 8) ? wbs->next - 1 : wbs->last;
+
+xor   ax, ax                ; zero out ah
 mov   al, byte ptr [bx + 2]
 cmp   al, 8
-jne   label_44
+jne   set_last
 mov   al, byte ptr [bx + 3]
-cbw  
 dec   ax
-label_39:
+set_last:
 mov   cx, ax
 xor   bx, bx
 test  ax, ax
-jl    label_45
-label_47:
+
+jl    done_with_splat
+loop_splat:
 mov   dx, OFFSET _splatRef
 mov   ax, bx
 inc   bx
 call  WI_drawOnLnode_
 cmp   bx, cx
-jle   label_47
-label_45:
+jle   loop_splat
+done_with_splat:
+
+; check secret
 mov   bx, word ptr ds:[_wbs]
 cmp   byte ptr [bx + 1], 0
-je    label_46
+je    skip_drawing_secret_splat
 mov   dx, OFFSET _splatRef
 mov   ax, 8
 call  WI_drawOnLnode_
-label_46:
+
+skip_drawing_secret_splat:
 cmp   byte ptr ds:[_snl_pointeron], 0
-je    label_37
-mov   bx, word ptr ds:[_wbs]
+je    skip_drawing_pointer
 mov   al, byte ptr [bx + 3]
 mov   dx, OFFSET _yahRef
 cbw  
 call  WI_drawOnLnode_
-label_37:
-mov   bx, OFFSET _commercial
-cmp   byte ptr [bx], 0
-je    label_36
-mov   bx, word ptr ds:[_wbs]
+
+skip_drawing_pointer:
+cmp   byte ptr ds:[_commercial], 0
+je    drawel_and_exit
 cmp   byte ptr [bx + 3], 30
 je    exit_this_func_todo
-jmp   label_36
+jmp   drawel_and_exit
 exit_this_func_todo:
 pop   dx
 pop   cx
@@ -1091,13 +1090,12 @@ ENDP
 PROC WI_initStats_ NEAR
 PUBLIC WI_initStats_
 
-xor   al, al
+xor   ax, ax
 mov   byte ptr ds:[_state], al
-xor   ah, ah
-mov   word ptr ds:[_sp_state], 1
 mov   word ptr ds:[_acceleratestage], ax
-mov   ax, -1
+mov   word ptr ds:[_sp_state], 1
 mov   word ptr ds:[_cnt_pause], TICRATE
+dec   ax    ; ax -1
 mov   word ptr ds:[_cnt_secret], ax
 mov   word ptr ds:[_cnt_items], ax
 mov   word ptr ds:[_cnt_kills], ax
@@ -1118,9 +1116,9 @@ push  cx
 push  dx
 call  WI_updateAnimatedBack_
 cmp   word ptr ds:[_acceleratestage], 0
-je    label_92
+je    skip_accelerate
 cmp   word ptr ds:[_sp_state], 10
-je    label_92
+je    skip_accelerate
 xor   ax, ax
 mov   word ptr ds:[_acceleratestage], ax
 imul  ax, word ptr ds:[_plrs+1], 100
@@ -1160,10 +1158,12 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_92:
+
+
+skip_accelerate:
 mov   ax, word ptr ds:[_sp_state]
 cmp   ax, 2
-jne   label_91
+jne   sp_state_not_2
 add   word ptr ds:[_cnt_kills], ax
 test  byte ptr ds:[_bcnt], 3
 jne   label_90
@@ -1192,9 +1192,10 @@ inc   word ptr ds:[_sp_state]
 jmp   exit_wi_updatestats
 jump_to_label_89:
 jmp   label_89
-label_91:
+
+sp_state_not_2:
 cmp   ax, 4
-jne   label_87
+jne   sp_state_not_4
 add   word ptr ds:[_cnt_items], 2
 test  byte ptr ds:[_bcnt], 3
 jne   label_88
@@ -1223,9 +1224,9 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_87:
+sp_state_not_4:
 cmp   ax, 6
-jne   label_58
+jne   sp_state_not_6
 add   word ptr ds:[_cnt_secret], 2
 test  byte ptr ds:[_bcnt], 3
 jne   label_57
@@ -1257,9 +1258,9 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_58:
+sp_state_not_6:
 cmp   ax, 8
-jne   label_59
+jne   sp_state_not_8
 test  byte ptr ds:[_bcnt], 3
 jne   label_60
 mov   dx, 1
@@ -1299,16 +1300,16 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_59:
+sp_state_not_8:
 cmp   ax, 10
-jne   label_56
+jne   sp_state_not_10
 jmp   label_55
-label_56:
+sp_state_not_10:
 test  byte ptr ds:[_sp_state], 1
-jne   label_54
+jne   sp_state_is_odd
 jump_to_exit_wi_updatestats:
 jmp   exit_wi_updatestats
-label_54:
+sp_state_is_odd:
 dec   word ptr ds:[_cnt_pause]
 jne   jump_to_exit_wi_updatestats
 mov   word ptr ds:[_cnt_pause], TICRATE
@@ -1318,14 +1319,13 @@ pop   cx
 pop   bx
 ret   
 label_89:
-mov   dx, 3
+mov   dx, SFX_SGCOCK
 xor   ax, ax
-mov   bx, OFFSET _commercial
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[_commercial], 0
 je    label_52
 call  WI_initNoState_
 pop   dx
@@ -1526,9 +1526,8 @@ movsb
 push    ss
 pop     ds
 
-mov   bx, OFFSET _commercial
 lea   di, [bp - 02Ch]
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[_commercial], 0
 je    label_77
 lea   di, [bp - 036h]
 label_50:
@@ -1539,13 +1538,12 @@ lea   di, [bp - 036h]
 label_51:
 mov   dx, 1
 mov   ax, di
-mov   bx, OFFSET _commercial
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawFullscreenPatch_addr
 
-mov   al, byte ptr [bx]
+mov   al, byte ptr ds:[_commercial]
 test  al, al
 je    label_76
 label_61:
@@ -1720,13 +1718,6 @@ ENDP
 
 
 
-label_68:
-cmp   al, 31
-je    label_72
-cmp   al, 30
-je    label_71
-cmp   al, 014h
-jmp   label_70
 
 
 
@@ -1757,37 +1748,48 @@ ret
 PROC G_WorldDone_ NEAR
 PUBLIC G_WorldDone_
 
-push  bx
-mov   bx, OFFSET _gameaction
-mov   byte ptr [bx], 8
+
+mov   byte ptr ds:[_gameaction], 8
 cmp   byte ptr ds:[_secretexit], 0
-jne   label_85
-label_73:
-mov   bx, OFFSET _commercial
-cmp   byte ptr [bx], 0
-je    label_69
-mov   bx, OFFSET _gamemap
-mov   al, byte ptr [bx]
+jne   did_secret_stuff
+continue_world_done:
+
+cmp   byte ptr ds:[_commercial], 0
+je    exit_worlddone
+
+mov   al, byte ptr ds:[_gamemap]
 cmp   al, 15
-jae   jump_to_label_68
+jae   gamemap_ae_15
 cmp   al, 11
-je    label_71
+je    gamemap_finalesetup
 cmp   al, 6
-label_70:
-je    label_71
-label_69:
-pop   bx
+je    gamemap_finalesetup
+exit_worlddone:
 ret   
 
-label_85:
+did_secret_stuff:
 mov   byte ptr [_player + 061h], 1 	; player didsecret
-jmp   label_73
-jump_to_label_68:
-ja    label_68
-label_72:
+jmp   continue_world_done
+
+gamemap_a_15:
+cmp   al, 31
+je    gamemap_31
+cmp   al, 30
+je    gamemap_finalesetup
+cmp   al, 20
+je    gamemap_finalesetup
+ret   
+
+
+gamemap_ae_15:
+ja    gamemap_a_15
+
+
+
+gamemap_31:
 cmp   byte ptr ds:[_secretexit], 0
-je    label_69
-label_71:
+je    exit_worlddone
+gamemap_finalesetup:
 mov   ax, 2
 
 call  Z_SetOverlay_			; todo remove.
