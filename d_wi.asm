@@ -425,14 +425,6 @@ ret
 
 ENDP
 
-exit_update_animated_back:
-LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
 
 
 PROC WI_updateAnimatedBack_ NEAR
@@ -441,121 +433,107 @@ PUBLIC WI_updateAnimatedBack_
 push  bx
 push  cx
 push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   bx, OFFSET _commercial
-cmp   byte ptr ds:[bx], 0
-jne   exit_update_animated_back
-mov   bx, word ptr ds:[_wbs]
-cmp   byte ptr [bx], 2		; check episode
-jg    exit_update_animated_back
-xor   cx, cx
-xor   si, si
-label_6:
-mov   bx, word ptr ds:[_wbs]
-mov   al, byte ptr [bx]
-cbw  
-mov   bx, ax
-mov   al, byte ptr cs:[bx + _NUMANIMS]
-cbw  
-cmp   cx, ax
-jge   exit_update_animated_back
-shl   bx, 2
-mov   dx, word ptr cs:[bx + _wianims]
-mov   ax, word ptr cs:[bx + _wianims + 2]
-mov   bx, dx
-mov   dx, word ptr [_bcnt]
-add   bx, si
-mov   es, ax
-mov   word ptr [bp - 2], ax
-cmp   dx, word ptr es:[bx + 0Ch]
-je    label_5
-label_12:
-add   si, SIZEOF_WIANIM_T
-inc   cx
-jmp   label_6
 
-label_5:
-mov   al, byte ptr es:[bx]
-cmp   al, 2
-jne   label_10
+cmp   byte ptr ds:[_commercial], 0
+jne   exit_update_animated_back   ; not for doom2 
+mov   bx, word ptr ds:[_wbs]    ; 
+
+mov   al, byte ptr [bx]         ; get epsd
+cmp   al, 2                     ; > epsd 2?
+jg    exit_update_animated_back
+cbw
+
+mov   dl, byte ptr [bx + 3]     ; cache wbs->next for loop
+
+xor   cx, cx                    ; zero out ch..
+xchg  ax, bx                    ; bx gets epsd
+
+mov   cl, byte ptr cs:[bx + _NUMANIMS] ; cl gets num anims (loop amount)
+sal   bx, 1
+sal   bx, 1                             ; dword lookup 
+les   bx, dword ptr cs:[bx + _wianims]  ; es:bx is wianims
+
+loop_update_animated_back:
+
+mov   ax, word ptr [_bcnt]
+cmp   ax, word ptr es:[bx + 0Ch]
+jne   finish_update_anim_loop_iter
+
+
+mov   al, byte ptr es:[bx]      ; get anim type
+cmp   al, ANIM_RANDOM
+je    update_anim_random
+cmp   al, ANIM_ALWAYS
+je    update_anim_always
+cmp   al, ANIM_LEVEL
+je    update_anim_level
+
+; fall thru
+finish_update_anim_loop_iter:
+add   bx, SIZEOF_WIANIM_T
+loop  loop_update_animated_back
+
+exit_update_animated_back:
+
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+
+update_anim_level:
 cmp   byte ptr [_state], 0
-jne   label_11
+jne   continue_level_check
 cmp   cx, 7
-je    label_12
-label_11:
-mov   di, word ptr ds:[_wbs]
-mov   al, byte ptr [di + 3]
-mov   es, word ptr [bp - 2]
+je    finish_update_anim_loop_iter
+continue_level_check:
+mov   al, dl                        ; dh is cached wbs next
+
 cmp   al, byte ptr es:[bx + 5]
-jne   label_12
-inc   byte ptr es:[bx + 0Eh]
+jne   finish_update_anim_loop_iter
+inc   byte ptr es:[bx + 0Eh]        ; increment ctr
 mov   al, byte ptr es:[bx + 0Eh]
 cmp   al, byte ptr es:[bx + 2]
-jne   label_13
+jne   dont_dec_ctr
 dec   byte ptr es:[bx + 0Eh]
-label_13:
-mov   es, word ptr [bp - 2]
-mov   dl, byte ptr es:[bx + 1]
-mov   ax, word ptr [_bcnt]
-xor   dh, dh
-add   ax, dx
-mov   word ptr es:[bx + 0Ch], ax
-add   si, SIZEOF_WIANIM_T
-inc   cx
-jmp   label_6
-label_10:
-cmp   al, 1
-jne   label_16
-add   byte ptr es:[bx + 0Eh], al
-mov   al, byte ptr es:[bx + 0Eh]
-cmp   al, byte ptr es:[bx + 2]
-je    label_14
+dont_dec_ctr:
+
+update_anim_set_nexttic_to_bcnt_plus_period:
+xor   ax, ax
 mov   al, byte ptr es:[bx + 1]
-xor   ah, ah
-add   ax, dx
+add   ax, word ptr [_bcnt]
 mov   word ptr es:[bx + 0Ch], ax
-add   si, SIZEOF_WIANIM_T
-inc   cx
-jmp   label_6
-label_16:
-test  al, al
-jne   label_12
+
+jmp   finish_update_anim_loop_iter
+
+update_anim_random:
 inc   byte ptr es:[bx + 0Eh]
 mov   al, byte ptr es:[bx + 0Eh]
 cmp   al, byte ptr es:[bx + 2]
-jl    label_15
-mov   byte ptr es:[bx + 0Eh], 0
-label_15:
-mov   es, word ptr [bp - 2]
-mov   dl, byte ptr es:[bx + 1]
-mov   ax, word ptr [_bcnt]
-xor   dh, dh
-add   ax, dx
-mov   word ptr es:[bx + 0Ch], ax
-add   si, SIZEOF_WIANIM_T
-inc   cx
-jmp   label_6
-label_14:
-mov   al, byte ptr es:[bx + 5]
-cbw  
-mov   byte ptr es:[bx + 0Eh], -1
-mov   di, ax
+jne   update_anim_set_nexttic_to_bcnt_plus_period
+
 
 call  WI_MRandomLocal_
+div   byte ptr es:[bx + 5]
+mov   al, ah
+xor   ah, ah
 
-cwd   
-idiv  di
-mov   ax, word ptr [_bcnt]
-mov   es, word ptr [bp - 2]
-add   ax, dx
+add   ax, word ptr [_bcnt]
 mov   word ptr es:[bx + 0Ch], ax
-add   si, SIZEOF_WIANIM_T
-inc   cx
-jmp   label_6
+jmp   finish_update_anim_loop_iter
+
+update_anim_always:
+inc   byte ptr es:[bx + 0Eh]
+mov   al, byte ptr es:[bx + 0Eh]
+cmp   al, byte ptr es:[bx + 2]
+jnge  update_anim_set_nexttic_to_bcnt_plus_period
+mov   byte ptr es:[bx + 0Eh], 0
+
+jmp   update_anim_set_nexttic_to_bcnt_plus_period
+
+
+
+
 
 ENDP
 
@@ -571,8 +549,7 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 2
-mov   bx, OFFSET _commercial
-cmp   byte ptr ds:[bx], 0
+cmp   byte ptr ds:[_commercial], 0
 je    label_7
 jump_to_exit_update_animated_back:
 jmp   exit_update_animated_back
