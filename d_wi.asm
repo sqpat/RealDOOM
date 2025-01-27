@@ -869,25 +869,27 @@ mov   si, 1
 call  WI_GetPatch_
 mov   word ptr [bp - 4], ax
 mov   word ptr [bp - 2], dx
-label_48:
+loop_divide_60:
 mov   ax, di
 cwd   
 idiv  si
 mov   bx, 60
 cwd   
 idiv  bx
-imul  si, si, 60                ; todo
+mov   bx, dx
+mov   ax, 60
+mul   si
+xchg  ax, si
 mov   cx, 2
 mov   ax, word ptr [bp - 6]
-mov   bx, dx
 mov   dx, word ptr [bp - 8]
 call  WI_drawNum_
 les   bx, dword ptr [bp - 4]
 sub   ax, word ptr es:[bx]
 mov   word ptr [bp - 6], ax
 cmp   si, 60
-jne   label_40
-label_41:
+jne   check_tdiv
+do_draw_patch:
 push  word ptr [bp - 2]
 mov   dx, word ptr [bp - 8]
 mov   ax, word ptr [bp - 6]
@@ -896,12 +898,12 @@ xor   bx, bx
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawPatch_addr
-label_42:
+do_next_drawtime_iter:
 mov   ax, di
 cwd   
 idiv  si
 test  ax, ax
-jne   label_48
+jne   loop_divide_60
 exit_wi_drawtime:
 LEAVE_MACRO 
 pop   di
@@ -909,13 +911,13 @@ pop   si
 pop   cx
 ret   
 
-label_40:
+check_tdiv:
 mov   ax, di
 cwd   
 idiv  si
 test  ax, ax
-jne   label_41
-jmp   label_42
+jne   do_draw_patch
+jmp   do_next_drawtime_iter
 draw_sucks:
 mov   ax, 25
 call  WI_GetPatch_
@@ -1889,33 +1891,27 @@ movsw
 movsw 
 movsb 
 cmp   word ptr [bx + 4], 0
-je    label_114
-label_117:
+jne   dont_set_maxkills
+mov   word ptr [bx + 4], 1
+dont_set_maxkills:
 mov   bx, dx
 cmp   word ptr [bx + 6], 0
-jne   label_115
+jne   dont_set_maxitems
 mov   word ptr [bx + 6], 1
-label_115:
+dont_set_maxitems:
 mov   bx, dx
 cmp   word ptr [bx + 8], 0
-je    label_116
-mov   word ptr ds:[_wbs], dx
-pop   di
-pop   si
-pop   dx
-pop   bx
-ret   
-label_114:
-mov   word ptr [bx + 4], 1
-jmp   label_117
-label_116:
+jne   dont_set_maxsecret
 mov   word ptr [bx + 8], 1
+dont_set_maxsecret:
 mov   word ptr ds:[_wbs], dx
 pop   di
 pop   si
 pop   dx
 pop   bx
 ret   
+
+
 
 
 
