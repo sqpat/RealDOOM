@@ -185,6 +185,7 @@ void __near WI_drawOnLnode ( int16_t n, uint8_t* cRef ) {
     boolean	fits = false;
 	patch_t __far* ci;
 	int16_t index = wbs->epsd*10 + n;
+	
 	int16_t lnodeX = lnodex[index];
 	int16_t lnodeY = lnodey[index];
 

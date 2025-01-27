@@ -21,7 +21,6 @@ INSTRUCTION_SET_MACRO
 
 EXTRN Z_SetOverlay_:PROC
 EXTRN W_LumpLength_:PROC
-EXTRN M_Random_:PROC
 EXTRN Z_QuickMapPhysics_:PROC
 EXTRN Z_QuickMapIntermission_:PROC
 
@@ -50,6 +49,7 @@ EXTRN _tmxmove:WORD
 
 EXTRN _player:PLAYER_T
 EXTRN _secretexit:BYTE
+EXTRN _rndindex:BYTE
 EXTRN _F_StartFinale:DWORD
 EXTRN _cnt_time:WORD
 EXTRN _unloaded:BYTE
@@ -61,6 +61,9 @@ EXTRN _plrs:WORD
 
 .CODE
 
+PROC WI_STARTMARKER NEAR
+PUBLIC WI_STARTMARKER
+ENDP
 
 
 
@@ -102,6 +105,31 @@ mov       es, ax
 ret
 
 ENDP
+
+; M_Random preserving es:bx
+PROC WI_MRandomLocal_ NEAR
+PUBLIC WI_MRandomLocal_
+;    rndindex = (rndindex+1)&0xff;
+;    return rndtable[rndindex];
+
+push      es
+push      bx
+
+mov       ax, RNDTABLE_SEGMENT
+mov       es, ax
+xor       ax, ax
+mov       bx, ax
+inc       byte ptr ds:[_rndindex]
+mov       bl, byte ptr ds:[_rndindex]
+mov       al, byte ptr es:[bx]
+
+pop       bx
+pop       es
+
+ret
+
+ENDP
+
 
 PROC WI_GetAnimPatch_ NEAR
 PUBLIC WI_GetAnimPatch_
@@ -517,8 +545,8 @@ cbw
 mov   byte ptr es:[bx + 0Eh], -1
 mov   di, ax
 
-call  M_Random_
-xor   ah, ah
+call  WI_MRandomLocal_
+
 cwd   
 idiv  di
 mov   ax, word ptr [_bcnt]
@@ -612,84 +640,75 @@ PUBLIC WI_initAnimatedBack_
 push  bx
 push  cx
 push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   bx, OFFSET _commercial
-cmp   byte ptr ds:[bx], 0
-jne   jump_to_label_19
-mov   bx, word ptr ds:[_wbs]
-cmp   byte ptr [bx], 2
-jg    jump_to_label_19
-xor   si, si
-xor   di, di
-label_18:
-mov   bx, word ptr ds:[_wbs]
-mov   al, byte ptr [bx]
-cbw  
-mov   bx, ax
-mov   al, byte ptr cs:[bx + _NUMANIMS]
-cbw  
-cmp   si, ax
-jge   exit_init_animated_back
-shl   bx, 2
-mov   ax, word ptr cs:[bx + _wianims]
-mov   dx, word ptr cs:[bx + _wianims + 2]
-mov   bx, ax
-mov   es, dx
-add   bx, di
-mov   word ptr [bp - 2], dx
-mov   al, byte ptr es:[bx]
-mov   byte ptr es:[bx + 0Eh], -1
-test  al, al
-je    label_21
-cmp   al, 1
-jne   label_22
-mov   al, byte ptr es:[bx + 5]
-cbw  
-mov   cx, ax
+cmp   byte ptr ds:[_commercial], 0
+jne   exit_init_animated_back   ; not for doom2 
+mov   bx, word ptr ds:[_wbs]    ; 
 
-call  M_Random_
-xor   ah, ah
-label_20:
-cwd   
-idiv  cx
-mov   ax, word ptr ds:[_bcnt]
-inc   ax
-mov   es, word ptr [bp - 2]
-add   ax, dx
-label_19:
-mov   word ptr es:[bx + 0Ch], ax
-label_35:
-add   di, SIZEOF_WIANIM_T
-inc   si
-jmp   label_18
-jump_to_label_19:
-jmp   exit_init_animated_back
-label_21:
-mov   cl, byte ptr es:[bx + 1]
+mov   al, byte ptr [bx]         ; get epsd
+cmp   al, 2                     ; > epsd 2?
+jg    exit_init_animated_back
+cbw
+xor   cx, cx                    ; zero out ch..
 
-call  M_Random_
-xor   ah, ah
-xor   ch, ch
-jmp   label_20
-label_22:
-cmp   al, 2
-jne   label_35
-mov   ax, word ptr ds:[_bcnt]
-inc   ax
-jmp   label_19
+xchg  ax, bx                    ; bx gets epsd
+
+mov   cl, byte ptr cs:[bx + _NUMANIMS] ; cl gets num anims (loop amount)
+
+sal   bx, 1
+sal   bx, 1                             ; dword lookup 
+les   bx, dword ptr cs:[bx + _wianims]  ; es:bx is wianims
+loop_init_animated_back:
+
+mov   al, byte ptr es:[bx]              ; get anim type
+mov   byte ptr es:[bx + 0Eh], -1        ; ctr -1
+cmp   al, ANIM_ALWAYS
+je    init_anim_always
+cmp   al, ANIM_RANDOM
+je    init_anim_random
+cmp   al, ANIM_LEVEL
+je    init_anim_level
+finish_init_anim_loop_iter:
+add   bx, SIZEOF_WIANIM_T               ; bx is next wi_anim
+
+
+loop  loop_init_animated_back
+
 
 exit_init_animated_back:
-LEAVE_MACRO 
-pop   di
-pop   si
+
 pop   dx
 pop   cx
 pop   bx
 ret   
+
+init_anim_always:
+mov   dl, byte ptr es:[bx + 1]
+call  WI_MRandomLocal_
+jmp   do_modulostep
+
+init_anim_random:
+mov   dl, byte ptr es:[bx + 5]
+call  WI_MRandomLocal_
+
+do_modulostep:
+
+div   dl
+mov   al, ah            ; take modulo result.
+xor   ah, ah
+
+add_bcnt_plus_1_etc:
+; plus bcnt plus 1
+add   ax, word ptr ds:[_bcnt]
+inc   ax
+mov   word ptr es:[bx + 0Ch], ax    ; write nexttic
+
+jmp   finish_init_anim_loop_iter
+
+init_anim_level:
+xor   ax, ax
+jmp   add_bcnt_plus_1_etc
+
+
 
 ENDP
 
@@ -2122,6 +2141,12 @@ call  WI_initStats_
 call  Z_QuickMapPhysics_
 retf
 
+ENDP
+
+
+
+PROC WI_ENDMARKER NEAR
+PUBLIC WI_ENDMARKER
 ENDP
 
 END
