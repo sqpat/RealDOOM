@@ -876,7 +876,7 @@ idiv  si
 mov   bx, 60
 cwd   
 idiv  bx
-imul  si, si, 60
+imul  si, si, 60                ; todo
 mov   cx, 2
 mov   ax, word ptr [bp - 6]
 mov   bx, dx
@@ -1084,34 +1084,36 @@ push  bx
 push  cx
 push  dx
 call  WI_updateAnimatedBack_
+mov   bx, word ptr ds:[_wbs]
+
 cmp   word ptr ds:[_acceleratestage], 0
 je    skip_accelerate
 cmp   word ptr ds:[_sp_state], 10
 je    skip_accelerate
 xor   ax, ax
 mov   word ptr ds:[_acceleratestage], ax
-imul  ax, word ptr ds:[_plrs+1], 100
-mov   bx, word ptr ds:[_wbs]
-mov   cx, word ptr [bx + 4]
-cwd   
-idiv  cx
+
+mov   ax, 100
+mul   word ptr ds:[_plrs+1]
+idiv  word ptr [bx + 4]
 mov   word ptr ds:[_cnt_kills], ax
-imul  ax, word ptr ds:[_plrs+3], 100
-mov   cx, word ptr [bx + 6]
-cwd   
-idiv  cx
+
+mov   ax, 100
+mul   word ptr ds:[_plrs+3]
+idiv  word ptr [bx + 6]
 mov   word ptr ds:[_cnt_items], ax
-imul  ax, word ptr ds:[_plrs+5], 100
-mov   cx, word ptr [bx + 8]
-cwd   
-idiv  cx
+
+mov   ax, 100
+mul   word ptr ds:[_plrs+5]
+idiv  word ptr [bx + 8]
 mov   word ptr ds:[_cnt_secret], ax
+
 mov   ax, word ptr ds:[_plrs+7]
 mov   word ptr ds:[_cnt_time], ax
 mov   ax, word ptr [bx + 0Ah]
-mov   bx, TICRATE
+mov   cx, TICRATE
 cwd   
-idiv  bx
+idiv  cx
 mov   dx, SFX_BAREXP
 mov   word ptr ds:[_cnt_par], ax
 xor   ax, ax
@@ -1119,9 +1121,9 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 mov   word ptr ds:[_sp_state], 10
-label_55:
+done_checking_sp_state:
 cmp   word ptr ds:[_acceleratestage], 0
-jne   jump_to_label_89
+jne   play_sgcock_sfx
 exit_wi_updatestats:
 pop   dx
 pop   cx
@@ -1135,19 +1137,19 @@ cmp   ax, 2
 jne   sp_state_not_2
 add   word ptr ds:[_cnt_kills], ax
 test  byte ptr ds:[_bcnt], 3
-jne   label_90
-mov   dx, 1
+jne   dont_play_pistol_sfx
+mov   dx, SFX_PISTOL
 xor   ax, ax
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-label_90:
-imul  ax, word ptr ds:[_plrs+1], 100
-mov   bx, word ptr ds:[_wbs]
-cwd   
+dont_play_pistol_sfx:
+mov  ax, 100
+mul  word ptr ds:[_plrs+1]
 idiv  word ptr [bx + 4]
+
 cmp   ax, word ptr ds:[_cnt_kills]
 jg    exit_wi_updatestats
 mov   dx, SFX_BAREXP
@@ -1159,25 +1161,32 @@ dw _S_StartSound_addr
 
 inc   word ptr ds:[_sp_state]
 jmp   exit_wi_updatestats
-jump_to_label_89:
-jmp   label_89
-
-sp_state_not_2:
-cmp   ax, 4
-jne   sp_state_not_4
-add   word ptr ds:[_cnt_items], 2
-test  byte ptr ds:[_bcnt], 3
-jne   label_88
-mov   dx, sfx_pistol
+play_sgcock_sfx:
+mov   dx, SFX_SGCOCK
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-label_88:
-imul  ax, word ptr ds:[_plrs+3], 100
-mov   bx, word ptr ds:[_wbs]
-cwd   
+cmp   byte ptr ds:[_commercial], 0
+je    do_initshownextloc
+call  WI_initNoState_
+pop   dx
+pop   cx
+pop   bx
+ret   
+do_initshownextloc:
+call  WI_initShowNextLoc_
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+
+
+dont_play_pistol_sfx_2:
+mov   ax, 100
+mul   word ptr ds:[_plrs+3]
 idiv  word ptr [bx + 6]
 cmp   ax, word ptr ds:[_cnt_items]
 jg    exit_wi_updatestats
@@ -1193,28 +1202,39 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-sp_state_not_4:
-cmp   ax, 6
-jne   sp_state_not_6
-add   word ptr ds:[_cnt_secret], 2
+sp_state_not_2:
+cmp   ax, 4
+jne   sp_state_not_4
+add   word ptr ds:[_cnt_items], 2
 test  byte ptr ds:[_bcnt], 3
-jne   label_57
+jne   dont_play_pistol_sfx_2
 mov   dx, sfx_pistol
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-label_57:
-imul  ax, word ptr ds:[_plrs+5], 100
-mov   bx, word ptr ds:[_wbs]
-cwd   
+sp_state_not_4:
+cmp   ax, 6
+jne   sp_state_not_6
+add   word ptr ds:[_cnt_secret], 2
+test  byte ptr ds:[_bcnt], 3
+jne   dont_play_pistol_sfx_3
+mov   dx, SFX_PISTOL
+xor   ax, ax
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
+dont_play_pistol_sfx_3:
+mov   ax, 100
+mul   word ptr ds:[_plrs+5]
 idiv  word ptr [bx + 8]
 cmp   ax, word ptr ds:[_cnt_secret]
-jle   label_83
+jle   play_barexp_sfx
 jump_to_exit_wi_updatestats_2:
 jmp   exit_wi_updatestats
-label_83:
+play_barexp_sfx:
 mov   dx, SFX_BAREXP
 mov   word ptr ds:[_cnt_secret], ax
 xor   ax, ax
@@ -1231,25 +1251,25 @@ sp_state_not_6:
 cmp   ax, 8
 jne   sp_state_not_8
 test  byte ptr ds:[_bcnt], 3
-jne   label_60
-mov   dx, 1
+jne   dont_play_pistol_sfx_4
+mov   dx, SFX_PISTOL
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-label_60:
+dont_play_pistol_sfx_4:
 add   word ptr ds:[_cnt_time], 3
 mov   ax, word ptr ds:[_cnt_time]
 cmp   ax, word ptr ds:[_plrs+7]
-jl    label_86
+jl    dont_set_time
 mov   ax, word ptr ds:[_plrs+7]
 mov   word ptr ds:[_cnt_time], ax
-label_86:
-mov   bx, word ptr ds:[_wbs]
+dont_set_time:
+
 mov   ax, word ptr [bx + 0Ah]
-mov   cx, TICRATE
 cwd   
+mov   cx, TICRATE
 idiv  cx
 add   word ptr ds:[_cnt_par], 3
 cmp   ax, word ptr ds:[_cnt_par]
@@ -1260,6 +1280,7 @@ cmp   ax, word ptr ds:[_plrs+7]
 jl    jump_to_exit_wi_updatestats_2
 mov   dx, SFX_BAREXP
 xor   ax, ax
+
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
@@ -1272,7 +1293,7 @@ ret
 sp_state_not_8:
 cmp   ax, 10
 jne   sp_state_not_10
-jmp   label_55
+jmp   done_checking_sp_state
 sp_state_not_10:
 test  byte ptr ds:[_sp_state], 1
 jne   sp_state_is_odd
@@ -1287,27 +1308,6 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_89:
-mov   dx, SFX_SGCOCK
-xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
-
-cmp   byte ptr ds:[_commercial], 0
-je    label_52
-call  WI_initNoState_
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_52:
-call  WI_initShowNextLoc_
-pop   dx
-pop   cx
-pop   bx
-ret   
-cld   
 
 ENDP
 
@@ -1398,13 +1398,13 @@ mov   bx, word ptr ds:[_cnt_time]
 call  WI_drawTime_
 mov   bx, word ptr ds:[_wbs]
 cmp   byte ptr [bx], 3
-jl    label_93
+jl    done_exit_draw_stats
 pop   si
 pop   dx
 pop   cx
 pop   bx
 ret   
-label_93:
+done_exit_draw_stats:
 mov   ax, 010
 call  WI_GetPatch_
 xor   bx, bx
