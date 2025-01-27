@@ -551,8 +551,9 @@ sal   bx, 1
 sal   bx, 1                             ; dword lookup 
 les   di, dword ptr cs:[bx + _wianims]  ; es:bx is wianims
 mov   si, es
+
 loop_draw_animated_back:
-mov   al, byte ptr es:[di + 0Eh]
+mov   al, byte ptr es:[di + 0Eh]        ; get ctr
 test  al, al
 jnge  finish_draw_anim_loop_iter
 cbw  
@@ -562,6 +563,7 @@ cbw
 mov   dx, word ptr es:[di + 3]  ; get loc.x and loc.y here
 
 sal   ax, 1
+mov   bx, di
 add   bx, ax
 
 mov   bx, word ptr es:[bx + 6] ; pref lookup
@@ -1465,6 +1467,7 @@ db "INTERPIC", 0
 str_wi_name2:
 db "WIMAP0", 0
 
+; this function is a mess and the loop could be cleaned up but it works.
 PROC WI_loadData_ NEAR
 PUBLIC WI_loadData_
 
@@ -1499,14 +1502,14 @@ pop     ds
 
 lea   di, [bp - 02Ch]
 cmp   byte ptr ds:[_commercial], 0
-je    label_77
+je    add_episode_to_name
 lea   di, [bp - 036h]
-label_50:
+name_set:
 mov   bx, word ptr ds:[_wbs]
 cmp   byte ptr [bx], 3
-jne   label_51
+jne   dont_set_name1
 lea   di, [bp - 036h]
-label_51:
+dont_set_name1:
 mov   dx, 1
 mov   ax, di
 
@@ -1516,24 +1519,22 @@ dw _V_DrawFullscreenPatch_addr
 
 mov   al, byte ptr ds:[_commercial]
 test  al, al
-je    label_76
-label_61:
-mov   word ptr [bp - 2], 0
-cld   
-label_75:
+je    load_assets
+done_loading_assets:
+
+mov   bx, 14
+loop_set_numref:
 
 ;	for (i = 0; i < 10; i++) {
 ;		numRef[i] = 14 + i;
 ;	}
         				
 
-mov   al, byte ptr [bp - 2]
-mov   bx, word ptr [bp - 2]
-add   al, 14
-inc   word ptr [bp - 2]
-mov   byte ptr ds:[bx + _numRef], al
-cmp   word ptr [bp - 2], 10
-jl    label_75
+mov   byte ptr ds:[bx + _numRef - 14], bl
+inc   bx
+cmp   bl, 24
+jl    loop_set_numref
+
 LEAVE_MACRO
 pop   di
 pop   si
@@ -1543,18 +1544,18 @@ pop   bx
 ret   
 
 
-label_77:
+add_episode_to_name:
 mov   bx, word ptr ds:[_wbs]
 mov   al, byte ptr [bx]
 add   byte ptr [bp - 027h], al
-jmp   label_50
-label_76:
+jmp   name_set
+load_assets:
 mov   byte ptr ds:[_yahRef+1], 1
 mov   byte ptr ds:[_splatRef], 2
 mov   bx, word ptr ds:[_wbs]
 mov   byte ptr ds:[_yahRef], al
 cmp   byte ptr [bx], 3
-jge   label_61
+jge   done_loading_assets
 xor   ah, ah
 mov   word ptr [bp - 8], WIANIMSPAGE_SEGMENT
 mov   word ptr [bp - 016h], ax
@@ -1562,7 +1563,8 @@ mov   word ptr [bp - 6], ax
 mov   word ptr [bp - 012h], ax
 mov   word ptr [bp - 0Ah], ax
 mov   word ptr [bp - 014h], ax
-label_63:
+
+loop_load_anim:
 mov   bx, word ptr ds:[_wbs]
 mov   al, byte ptr [bx]
 cbw  
@@ -1570,7 +1572,7 @@ mov   bx, ax
 mov   al, byte ptr cs:[bx + _NUMANIMS]
 cbw  
 cmp   ax, word ptr [bp - 0Ah]
-jle   label_61
+jle   done_loading_assets
 shl   bx, 2
 mov   word ptr [bp - 2], 0
 mov   dx, word ptr cs:[bx + _wianims]
@@ -1584,21 +1586,21 @@ mov   word ptr [bp - 010h], bx
 add   ax, ax
 mov   word ptr [bp - 4], bx
 mov   word ptr [bp - 018h], ax
-label_74:
+continue_finish_load_loop_iter:
 les   bx, dword ptr [bp - 010h]
 mov   al, byte ptr es:[bx + 2]
 cbw  
-cmp   ax, word ptr [bp - 2]
-jg    label_62
+cmp   ax, word ptr [bp - 2] ; check count
+jg    check_for_load_hack
 add   word ptr [bp - 014h], SIZEOF_WIANIM_T
 inc   word ptr [bp - 0Ah]
-jmp   label_63
-label_62:
+jmp   loop_load_anim
+check_for_load_hack:
 mov   bx, word ptr ds:[_wbs]
 cmp   byte ptr [bx], 1
-jne   label_64
-jmp   label_65
-label_64:
+jne   dont_do_load_hack
+jmp   continue_check_for_load_hack
+dont_do_load_hack:
 mov   bx, word ptr ds:[_wbs]
 
 
@@ -1660,16 +1662,18 @@ mov   ax, word ptr [bp - 016h]
 mov   es, word ptr [bp - 0Ch]
 mov   bx, word ptr [bp - 4]
 inc   word ptr [bp - 016h]
-label_67:
+done_with_load_hack:
+finish_load_loop_iter:
+
 mov   word ptr es:[bx + 6], ax
 add   word ptr [bp - 4], 2
 inc   word ptr [bp - 2]
-jmp   label_74
-label_65:
+jmp   continue_finish_load_loop_iter
+continue_check_for_load_hack:
 cmp   word ptr [bp - 0Ah], 8
-je    label_66
-jmp   label_64
-label_66:
+je    do_load_hack
+jmp   dont_do_load_hack
+do_load_hack:
 
 ;						// HACK ALERT!
 ;						anim->pRef[i] = epsd1animinfo[4].pRef[i];
@@ -1683,7 +1687,7 @@ add   bx, 046h 						; offset for this field
 mov   ax, word ptr es:[bx]
 mov   es, word ptr [bp - 0Ch]
 mov   bx, word ptr [bp - 4]
-jmp   label_67
+jmp   done_with_load_hack
 
 ENDP
 
