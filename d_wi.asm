@@ -131,21 +131,6 @@ ret
 ENDP
 
 
-PROC WI_GetAnimPatch_ NEAR
-PUBLIC WI_GetAnimPatch_
-
-push      bx
-mov       bx, ax
-add       bx, ax
-mov       ax, WIANIMOFFSETS_SEGMENT
-mov       es, ax
-mov       dx, WIANIMSPAGE_SEGMENT
-mov       ax, word ptr es:[bx]
-pop       bx
-ret
-
-ENDP 
-
 PROC WI_slamBackground_ NEAR
 PUBLIC WI_slamBackground_
 
@@ -538,6 +523,9 @@ jmp   update_anim_set_nexttic_to_bcnt_plus_period
 ENDP
 
 
+
+
+
 PROC WI_drawAnimatedBack_ NEAR
 PUBLIC WI_drawAnimatedBack_
 
@@ -546,65 +534,74 @@ push  cx
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
 cmp   byte ptr ds:[_commercial], 0
-je    label_7
-jump_to_exit_update_animated_back:
-jmp   exit_update_animated_back
-label_7:
-mov   bx, word ptr ds:[_wbs]
-cmp   byte ptr [bx], 2
-jg    jump_to_exit_update_animated_back
-xor   cx, cx
-xor   si, si
+jne   exit_draw_animated_back   ; not for doom2 
+mov   bx, word ptr ds:[_wbs]    ; 
 
-label_9:
-mov   bx, word ptr ds:[_wbs]
-mov   al, byte ptr [bx]
-cbw  
-mov   bx, ax
-mov   al, byte ptr cs:[bx + _NUMANIMS]
-cbw  
-cmp   cx, ax
-jge   jump_to_exit_update_animated_back
-shl   bx, 2
-mov   ax, word ptr cs:[bx + _wianims]
-mov   dx, word ptr cs:[bx + _wianims+2]
-mov   bx, ax
-mov   es, dx
-add   bx, si
-mov   al, byte ptr es:[bx + 0Eh]
-mov   word ptr [bp - 2], dx
+mov   al, byte ptr [bx]         ; get epsd
+cmp   al, 2                     ; > epsd 2?
+jg    exit_draw_animated_back
+cbw
+
+xor   cx, cx                    ; zero out ch..
+xchg  ax, bx                    ; bx gets epsd
+
+mov   cl, byte ptr cs:[bx + _NUMANIMS] ; cl gets num anims (loop amount)
+sal   bx, 1
+sal   bx, 1                             ; dword lookup 
+les   di, dword ptr cs:[bx + _wianims]  ; es:bx is wianims
+mov   si, es
+loop_draw_animated_back:
+mov   al, byte ptr es:[di + 0Eh]
 test  al, al
-jge   label_8
-add   si, SIZEOF_WIANIM_T
-inc   cx
-jmp   label_9
-label_8:
+jnge  finish_draw_anim_loop_iter
 cbw  
-mov   di, bx
-add   ax, ax
-add   di, ax
-mov   ax, word ptr es:[di + 6]
-call  WI_GetAnimPatch_
-push  dx
-mov   es, word ptr [bp - 2]
-push  ax
-mov   dl, byte ptr es:[bx + 4]
-mov   al, byte ptr es:[bx + 3]
+
+; draw patch
+
+mov   dx, word ptr es:[di + 3]  ; get loc.x and loc.y here
+
+sal   ax, 1
+add   bx, ax
+
+mov   bx, word ptr es:[bx + 6] ; pref lookup
+sal   bx, 1
+mov   ax, WIANIMSPAGE_SEGMENT
+push  ax                    ; segment arg to drawpatch
+mov   ax, WIANIMOFFSETS_SEGMENT
+mov   es, ax
+
+mov   ax, word ptr es:[bx]  ; anim patch offset
+push  ax                    ; offset arg to drawpatch
+
+
+xor   ax, ax                ; set loc args
+mov   al, dl
+mov   dl, dh
 xor   dh, dh
-xor   ah, ah
-xor   bx, bx
+xor   bx, bx                ; fb argument
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawPatch_addr
 
-add   si, SIZEOF_WIANIM_T
-inc   cx
-jmp   label_9
+
+mov   es, si
+
+finish_draw_anim_loop_iter:
+add   di, SIZEOF_WIANIM_T
+loop  loop_draw_animated_back
+
+
+exit_draw_animated_back:
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+
 
 
 ENDP
@@ -701,6 +698,9 @@ jmp   add_bcnt_plus_1_etc
 ENDP
 
 
+;int16_t __near WI_drawNum ( int16_t x, int16_t y, int16_t n, int16_t digits ){
+
+
 PROC WI_drawNum_ NEAR
 PUBLIC WI_drawNum_
 
@@ -709,88 +709,88 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 6
-mov   di, ax
-mov   word ptr [bp - 2], dx
-mov   si, bx
+mov   di, ax                    ; di stores x
+mov   word ptr [bp - 2], dx     ; y
+mov   si, bx                    ; si holds n
 mov   al, byte ptr [_numRef]
 xor   ah, ah
 call  WI_GetPatch_
 mov   bx, ax
 mov   es, dx
-mov   ax, word ptr es:[bx]
+mov   ax, word ptr es:[bx]      ; fontwidth
 mov   word ptr [bp - 4], ax
 test  cx, cx
-jl    label_23
-label_27:
+jl    digits_negative
+check_neg:
 test  si, si
-jl    label_24
+jl    set_neg_on
 xor   ax, ax
-label_26:
+neg_set:
 mov   word ptr [bp - 6], ax
 test  ax, ax
-je    label_32
+je    dont_neg_n
 neg   si
-label_32:
+dont_neg_n:
 cmp   si, 1994				; if non-number dont draw it
-je    label_31
-label_29:
+je    exit_drawnum
+loop_digits:
 dec   cx
-cmp   cx, -1
-je    label_30
-mov   ax, si
+js    exit_digits_loop      ; catch -1 with js
+mov   ax, si                ; ax gets n
 mov   bx, 10
 cwd   
 idiv  bx
-mov   bx, dx
+mov   bx, dx                ; bx gets modulo..
+mov   si, ax                ; si updated
+
 mov   al, byte ptr [bx + _numRef]
 xor   ah, ah
-sub   di, word ptr [bp - 4]
+sub   di, word ptr [bp - 4]     ; x -= fontwidth
 call  WI_GetPatch_
 xor   bx, bx
 push  dx
-mov   dx, word ptr [bp - 2]
+mov   dx, word ptr [bp - 2]     ; set y
 push  ax
-mov   ax, di
+mov   ax, di                    ; set x
+
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawPatch_addr
-mov   ax, si
-mov   bx, 10
-cwd   
-idiv  bx
-mov   si, ax
-jmp   label_29
-label_23:
+
+jmp   loop_digits
+digits_negative:
+
+; calculate digits
 test  si, si
-jne   label_28
+jne   not_zero
 mov   cx, 1
-jmp   label_27
-label_28:
+jmp   check_neg
+not_zero:
 mov   ax, si
 xor   cx, cx
 test  si, si
-je    label_27
+je    check_neg
 mov   bx, 10
-label_25:
+loop_div_10:
 cwd   
 idiv  bx
 inc   cx
 test  ax, ax
-jne   label_25
-jmp   label_27
-label_24:
+jne   loop_div_10
+jmp   check_neg
+set_neg_on:
 mov   ax, 1
-jmp   label_26
-label_31:
+jmp   neg_set
+exit_drawnum:
 xor   ax, ax
 LEAVE_MACRO 
 pop   di
 pop   si
 ret   
-label_30:
+exit_digits_loop:
 cmp   word ptr [bp - 6], 0
-je    label_33
-mov   ax, 12
+je    return_x_and_exit
+mov   ax, 12                ; todo constant
 call  WI_GetPatch_
 sub   di, 8
 xor   bx, bx
@@ -801,7 +801,7 @@ mov   ax, di
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawPatch_addr
-label_33:
+return_x_and_exit:
 mov   ax, di
 LEAVE_MACRO 
 pop   di
@@ -818,20 +818,12 @@ PUBLIC WI_drawPercent_
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
 mov   si, ax
 mov   di, dx
-mov   word ptr [bp - 2], bx
+mov   cx, bx
 test  bx, bx
-jge   label_34
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-ret   
-label_34:
+jnge  exit_draw_percent
+
 mov   ax, 13
 call  WI_GetPatch_
 push  dx
@@ -839,15 +831,15 @@ xor   bx, bx
 push  ax
 mov   dx, di
 mov   ax, si
-mov   cx, -1
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawPatch_addr
-mov   bx, word ptr [bp - 2]
+mov   bx, cx
+mov   cx, -1
 mov   dx, di
 mov   ax, si
 call  WI_drawNum_
-LEAVE_MACRO 
+exit_draw_percent:
 pop   di
 pop   si
 pop   cx
