@@ -28,6 +28,68 @@ INSTRUCTION_SET_MACRO
 
 
 
+WIPATCH_YOU_ARE_HERE_L = 0
+WIPATCH_YOU_ARE_HERE_R = 1
+WIPATCH_SPLAT = 2
+WIPATCH_KILLS = 3
+WIPATCH_ITEMS = 4
+WIPATCH_FINISHED = 5
+WIPATCH_TOTAL = 6
+WIPATCH_SCRT = 7
+WIPATCH_F = 8
+WIPATCH_TIME = 9
+WIPATCH_PAR = 10
+WIPATCH_YOU = 11
+WIPATCH_MINUS = 12
+WIPATCH_PERCENT = 13
+WIPATCH_NUM_0 = 14
+WIPATCH_NUM_1 = 15
+WIPATCH_NUM_2 = 16
+WIPATCH_NUM_3 = 17
+WIPATCH_NUM_4 = 18
+WIPATCH_NUM_5 = 19
+WIPATCH_NUM_6 = 20
+WIPATCH_NUM_7 = 21
+WIPATCH_NUM_8 = 22
+WIPATCH_NUM_9 = 23
+WIPATCH_COLON = 24
+WIPATCH_SUCKS = 25
+WIPATCH_SECRET = 26
+WIPATCH_ENTERING = 27
+
+NOSTATE = -1
+STATCOUNT = 0
+SHOWNEXTLOC = 1
+
+
+db "WIURH0"      , 0, 0, 0
+db "WIURH1"      , 0, 0, 0
+db "WISPLAT"        , 0, 0
+db "WIOSTK"      , 0, 0, 0
+db "WIOSTI"      , 0, 0, 0
+db "WIF", 0, 0, 0, 0, 0, 0
+db "WIMSTT"      , 0, 0, 0
+db "WIOSTS"      , 0, 0, 0
+db "WIOSTF"      , 0, 0, 0
+db "WITIME"      , 0, 0, 0
+db "WIPAR"    , 0, 0, 0, 0
+db "WIMSTAR"        , 0, 0
+db "WIMINUS"        , 0, 0
+db "WIPCNT"      , 0, 0, 0
+db "WINUM0"      , 0, 0, 0
+db "WINUM1"      , 0, 0, 0
+db "WINUM2"      , 0, 0, 0
+db "WINUM3"      , 0, 0, 0
+db "WINUM4"      , 0, 0, 0
+db "WINUM5"      , 0, 0, 0
+db "WINUM6"      , 0, 0, 0
+db "WINUM7"      , 0, 0, 0
+db "WINUM8"      , 0, 0, 0
+db "WINUM9"      , 0, 0, 0
+db "WICOLON"        , 0, 0
+db "WISUCKS"        , 0, 0
+db "WISCRT2"        , 0, 0
+db "WIENTER"        , 0, 0
 
 
 
@@ -142,7 +204,7 @@ dw 00800h, 02803h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h
 
 
 _wigraphics:
-db "IURH0"    , 0, 0, 0, 0
+db "WIURH0"      , 0, 0, 0
 db "WIURH1"      , 0, 0, 0
 db "WISPLAT"        , 0, 0
 db "WIOSTK"      , 0, 0, 0
@@ -849,6 +911,7 @@ idiv  bx
 mov   bx, dx                ; bx gets modulo..
 mov   si, ax                ; si updated
 
+; todo just add by 14?
 mov   al, byte ptr cs:[bx + _numRef - OFFSET WI_STARTMARKER_]
 xor   ah, ah
 sub   di, word ptr [bp - 4]     ; x -= fontwidth
@@ -896,7 +959,7 @@ ret
 exit_digits_loop:
 cmp   word ptr [bp - 6], 0
 je    return_x_and_exit
-mov   ax, 12                ; todo constant
+mov   ax, WIPATCH_MINUS
 call  WI_GetPatch_
 sub   di, 8
 xor   bx, bx
@@ -930,7 +993,7 @@ mov   cx, bx
 test  bx, bx
 jnge  exit_draw_percent
 
-mov   ax, 13
+mov   ax, WIPATCH_PERCENT
 call  WI_GetPatch_
 push  dx
 xor   bx, bx
@@ -970,7 +1033,7 @@ test  bx, bx
 jl    exit_wi_drawtime
 cmp   bx, (61*59)
 jg    draw_sucks
-mov   ax, 24
+mov   ax, WIPATCH_COLON
 mov   si, 1
 call  WI_GetPatch_
 mov   word ptr [bp - 4], ax
@@ -1025,7 +1088,7 @@ test  ax, ax
 jne   do_draw_patch
 jmp   do_next_drawtime_iter
 draw_sucks:
-mov   ax, 25
+mov   ax, WIPATCH_SUCKS
 call  WI_GetPatch_
 xor   bx, bx
 mov   si, ax
@@ -1452,7 +1515,7 @@ mov   si, ax
 call  WI_slamBackground_
 call  WI_drawAnimatedBack_
 call  WI_drawLF_
-mov   ax, 3
+mov   ax, WIPATCH_KILLS
 xor   bx, bx
 call  WI_GetPatch_
 push  dx
@@ -1466,7 +1529,7 @@ mov   dx, SP_STATSY
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_]
 call  WI_drawPercent_
-mov   ax, 4
+mov   ax, WIPATCH_ITEMS
 lea   cx, [si + 032h]
 call  WI_GetPatch_
 push  dx
@@ -1481,7 +1544,7 @@ mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_]
 mov   dx, cx
 call  WI_drawPercent_
-mov   ax, 26				; todo this patch
+mov   ax, WIPATCH_SECRET
 call  WI_GetPatch_
 mov   cx, si
 xor   bx, bx
@@ -1498,7 +1561,7 @@ mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_]
 mov   dx, cx
 call  WI_drawPercent_
-mov   ax, 9
+mov   ax, WIPATCH_TIME
 call  WI_GetPatch_
 xor   bx, bx
 push  dx
@@ -1521,7 +1584,7 @@ pop   cx
 pop   bx
 ret   
 done_exit_draw_stats:
-mov   ax, 010
+mov   ax, WIPATCH_PAR
 call  WI_GetPatch_
 xor   bx, bx
 push  dx
@@ -1915,11 +1978,11 @@ mov   byte ptr ds:[bx + 04Dh], 0
 done_with_checking_for_accel:
 
 mov   al, byte ptr cs:[_state - OFFSET WI_STARTMARKER_]
-cmp   al, -1
+cmp   al, NOSTATE
 je    branch_NoState
-cmp   al, 1                     ; todo StatCount etc constant
+cmp   al, SHOWNEXTLOC
 je    branch_ShowNextLoc
-test  al, al
+cmp   al, STATCOUNT
 je    branch_StatCount
 done_with_state_branch:
 
@@ -1958,7 +2021,7 @@ not_unloaded_do_draw:
 
 
 mov   al, byte ptr cs:[_state - OFFSET WI_STARTMARKER_]
-cmp   al, -1
+cmp   al, NOSTATE
 jne   not_nostate
 call  WI_drawNoState_
 
@@ -1968,9 +2031,9 @@ exit_wi_drawer:
 retf
 
 not_nostate:
-cmp   al, 1
+cmp   al, SHOWNEXTLOC
 je    do_ShowNextLoc
-test  al, al
+cmp   al, STATCOUNT
 jne   invalid_state
 call  WI_drawStats_
 jmp   exit_wi_drawer
