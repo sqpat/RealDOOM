@@ -946,29 +946,13 @@ skytexture         5400:0000
 // largest level complete graphic in ultimate doom somewhere..
 
 
-#define size_lnodex           ((sizeof(int16_t) * (9*3)))
-#define size_lnodey           ((sizeof(int16_t) * (9*3)))
-#define size_epsd0animinfo    (16 * 10)
-#define size_epsd1animinfo    (16 * 9)
-#define size_epsd2animinfo    (16 * 6)
-#define size_wigraphics       (NUM_WI_ITEMS * 9)
-#define size_pars             ((sizeof(int16_t) * (4*10)))
-#define size_cpars            ((sizeof(int16_t) * (32)))
 
 #define size_wioffsets        (sizeof(uint16_t) * NUM_WI_ITEMS)
 #define size_wianimoffsets    (sizeof(uint16_t) * NUM_WI_ANIM_ITEMS)
 
 
 #define wigraphicspage0  ((byte __far* )     0x70000000) 
-#define lnodex           ((int16_t __far*)   MAKE_FULL_SEGMENT(wigraphicspage0, size_wigraphicspage0))
-#define lnodey           ((int16_t __far*)   MAKE_FULL_SEGMENT(lnodex,          size_lnodex))
-#define epsd0animinfo    ((wianim_t __far*)  MAKE_FULL_SEGMENT(lnodey,          size_lnodey))
-#define epsd1animinfo    ((wianim_t __far*)  MAKE_FULL_SEGMENT(epsd0animinfo,   size_epsd0animinfo))
-#define epsd2animinfo    ((wianim_t __far*)  MAKE_FULL_SEGMENT(epsd1animinfo,   size_epsd1animinfo))
-#define wigraphics       ((int8_t __far*)    MAKE_FULL_SEGMENT(epsd2animinfo,   size_epsd2animinfo))
-#define pars             ((int16_t __far*)   MAKE_FULL_SEGMENT(wigraphics,      size_wigraphics))
-#define cpars            ((int16_t __far*)   MAKE_FULL_SEGMENT(pars,            size_pars))
-#define wianim_codespace ((byte __far*)      MAKE_FULL_SEGMENT(cpars,           size_cpars))
+#define wianim_codespace ((byte __far*)      MAKE_FULL_SEGMENT(wigraphicspage0, size_wigraphicspage0))
 #define wianim_7000_end  ((byte __far*)      MAKE_FULL_SEGMENT(wianim_codespace, WI_StuffCodeSize))
 
 
@@ -979,14 +963,6 @@ skytexture         5400:0000
 #define wioffsets_segment            ((segment_t) ((int32_t)wioffsets >> 16))
 #define wianimoffsets_segment        ((segment_t) ((int32_t)wianimoffsets >> 16))
 #define wigraphicspage0_segment      ((segment_t) ((int32_t)wigraphicspage0 >> 16))
-#define lnodex_segment               ((segment_t) ((int32_t)lnodex >> 16))
-#define lnodey_segment               ((segment_t) ((int32_t)lnodey >> 16))
-#define epsd0animinfo_segment        ((segment_t) ((int32_t)epsd0animinfo >> 16))
-#define epsd1animinfo_segment        ((segment_t) ((int32_t)epsd1animinfo >> 16))
-#define epsd2animinfo_segment        ((segment_t) ((int32_t)epsd2animinfo >> 16))
-#define wigraphics_segment           ((segment_t) ((int32_t)wigraphics >> 16))
-#define pars_segment                 ((segment_t) ((int32_t)pars >> 16))
-#define cpars_segment                ((segment_t) ((int32_t)cpars >> 16))
 #define wigraphicslevelname_segment  ((segment_t) ((int32_t)wigraphicslevelname >> 16))
 #define wianimspage_segment          ((segment_t) ((int32_t)wianimspage >> 16))
 #define wianim_codespace_segment     ((segment_t) ((int32_t)wianim_codespace >> 16))

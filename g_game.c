@@ -656,14 +656,10 @@ void __near G_DoCompleted (void)  {
 
     // pars need intermission data mapped in.
     Z_QuickMapIntermission();
- 	if ( commercial ){
-        wminfo.partime = cpars[gamemap-1]; 
-    } else {
-        wminfo.partime = pars[10*gameepisode+gamemap]; 
-    }
-        
+    
 
     WI_Start (&wminfo, secretexit); 
+
     Z_QuickMapPhysics();
 } 
 

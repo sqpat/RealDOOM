@@ -5,7 +5,7 @@
 #include "g_game.h"
 #include "p_saveg.h"
 
-#define CONSTANTS_COUNT 1941
+#define CONSTANTS_COUNT 1933
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -1962,14 +1962,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"WIOFFSETS_SEGMENT",
 	"WIANIMOFFSETS_SEGMENT",
 	"WIGRAPHICSPAGE0_SEGMENT",
-	"LNODEX_SEGMENT",
-	"LNODEY_SEGMENT",
-	"EPSD0ANIMINFO_SEGMENT",
-	"EPSD1ANIMINFO_SEGMENT",
-	"EPSD2ANIMINFO_SEGMENT",
-	"WIGRAPHICS_SEGMENT",
-	"PARS_SEGMENT",
-	"CPARS_SEGMENT",
 	"WIGRAPHICSLEVELNAME_SEGMENT",
 	"WIANIMSPAGE_SEGMENT",
 	"MAX_LEVEL_COMPLETE_GRAPHIC_SIZE",
@@ -3965,14 +3957,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	wioffsets_segment,
 	wianimoffsets_segment,
 	wigraphicspage0_segment,
-	lnodex_segment,
-	lnodey_segment,
-	epsd0animinfo_segment,
-	epsd1animinfo_segment,
-	epsd2animinfo_segment,
-	wigraphics_segment,
-	pars_segment,
-	cpars_segment,
 	wigraphicslevelname_segment,
 	wianimspage_segment,
 	MAX_LEVEL_COMPLETE_GRAPHIC_SIZE,

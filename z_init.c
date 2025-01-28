@@ -456,10 +456,6 @@ void __near Z_LoadBinaries() {
 	}
 
 
-	// load consecutive memory contents in one call here. 
-	Z_QuickMapIntermission();
-	//760
-	FAR_fread(lnodex, 1, 928, fp);			// TODO eventually remove this from doomdata and bake data into d_wi.asm
 
 	// FOD3
 	Z_QuickMapPalette();

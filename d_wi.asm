@@ -44,8 +44,6 @@ db    10, 9, 6
 _unloaded:
 db 0
 
-_wianims:
-dw 0, EPSD0ANIMINFO_SEGMENT, 0, EPSD1ANIMINFO_SEGMENT, 0, EPSD2ANIMINFO_SEGMENT
 
 _bcnt:
 dw 0
@@ -95,9 +93,100 @@ _secretexit:
 db 0
 
 
+; lnodex
+_lnodex:
+dw 000B9h, 00094h, 00045h, 000D1h, 00074h, 000A6h, 00047h, 00087h, 00047h
+dw 000FEh, 00061h, 000BCh, 00080h, 000D6h, 00085h, 000D0h, 00094h, 000EBh
+dw 0009Ch, 00030h, 001AEh, 00009h, 00182h, 00017h, 000C6h, 0018Ch, 00019h
+
+_lnodey:
+
+dw 000A4h, 0008Fh, 0007Ah, 00066h, 00059h, 00037h, 00038h, 0001Dh, 00018h
+dw 00019h, 00032h, 00040h, 0004Eh, 0005Ch, 00082h, 00088h, 0008Ch, 0009Eh
+dw 000A8h, 0009Ah, 0005Fh, 0004Bh, 00030h, 00017h, 00030h, 00019h, 00088h
+
+; wbs struct data dumps. maybe reorganize nicely one day?
+
+_epsd0animinfo:
+dw 00B00h, 0E003h, 00068h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 0B803h, 000A0h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 07003h, 00088h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 04803h, 00070h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 05803h, 00060h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 04003h, 00030h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 0C003h, 00028h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 08803h, 00010h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 05003h, 00010h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 04003h, 00018h, 00000h, 00000h, 00000h, 00000h, 00000h
+
+_epsd1animinfo:
+dw 00B02h, 08001h, 00188h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B02h, 08001h, 00288h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B02h, 08001h, 00388h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B02h, 08001h, 00488h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B02h, 08001h, 00588h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B02h, 08001h, 00688h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B02h, 08001h, 00788h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B02h, 0C003h, 00890h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B02h, 08001h, 00888h, 00000h, 00000h, 00000h, 00000h, 00000h
+
+_epsd2animinfo:
+dw 00B00h, 06803h, 000A8h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 02803h, 00088h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 0A003h, 00060h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 06803h, 00050h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00B00h, 07803h, 00020h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00800h, 02803h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h
 
 
-; todo move the anims data here instead of using doomdata/segment loader.
+
+
+_wigraphics:
+db "IURH0"    , 0, 0, 0, 0
+db "WIURH1"      , 0, 0, 0
+db "WISPLAT"        , 0, 0
+db "WIOSTK"      , 0, 0, 0
+db "WIOSTI"      , 0, 0, 0
+db "WIF", 0, 0, 0, 0, 0, 0
+db "WIMSTT"      , 0, 0, 0
+db "WIOSTS"      , 0, 0, 0
+db "WIOSTF"      , 0, 0, 0
+db "WITIME"      , 0, 0, 0
+db "WIPAR"    , 0, 0, 0, 0
+db "WIMSTAR"        , 0, 0
+db "WIMINUS"        , 0, 0
+db "WIPCNT"      , 0, 0, 0
+db "WINUM0"      , 0, 0, 0
+db "WINUM1"      , 0, 0, 0
+db "WINUM2"      , 0, 0, 0
+db "WINUM3"      , 0, 0, 0
+db "WINUM4"      , 0, 0, 0
+db "WINUM5"      , 0, 0, 0
+db "WINUM6"      , 0, 0, 0
+db "WINUM7"      , 0, 0, 0
+db "WINUM8"      , 0, 0, 0
+db "WINUM9"      , 0, 0, 0
+db "WICOLON"        , 0, 0
+db "WISUCKS"        , 0, 0
+db "WISCRT2"        , 0, 0
+db "WIENTER"        , 0, 0
+
+_pars:
+dw 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h
+dw 00000h, 0041Ah, 00A41h, 01068h, 00C4Eh, 0168Fh, 0189Ch, 0189Ch, 0041Ah, 0168Fh
+dw 00000h, 00C4Eh, 00C4Eh, 00C4Eh, 01068h, 00C4Eh, 03138h, 020D0h, 0041Ah, 0173Eh
+dw 00000h, 00C4Eh, 00627h, 00C4Eh, 01482h, 00C4Eh, 00C4Eh, 0168Fh, 0041Ah, 01275h 
+
+_cpars:
+dw 0041Ah, 00C4Eh, 01068h, 01068h, 00C4Eh, 01482h, 01068h, 01068h
+dw 024EAh, 00C4Eh, 01CB6h, 01482h, 01482h, 01482h, 01CB6h, 01482h
+dw 0396Ch, 01482h, 01CB6h, 01482h, 020D0h, 01482h, 0189Ch, 01482h
+dw 01482h, 02904h, 02D1Eh, 0396Ch, 02904h, 0189Ch, 01068h, 0041Ah
+
+
+_wianims:
+dw _epsd0animinfo - OFFSET WI_STARTMARKER_, _epsd1animinfo - OFFSET WI_STARTMARKER_, _epsd2animinfo - OFFSET WI_STARTMARKER_
+
 
 
 PROC WI_GetPatch_ NEAR
@@ -313,11 +402,13 @@ mov       es, ax
 mov       dx, word ptr es:[bx + 2]
 mov       ax, dx
 push      es
-shl       ax, 2
+shl       ax, 1
+shl       ax, 1
 push      bx
 add       dx, ax
 mov       ax, SCREENWIDTH
-sar       dx, 2
+sar       dx, 1
+sar       dx, 1
 sub       ax, word ptr es:[bx]
 add       dx, 2
 sar       ax, 1
@@ -358,13 +449,9 @@ db    0D5h, 00Ah					; AAD to mul by 10
 add   bx, ax						; plus n
 shl   bx, 1   ; word lookup
 
-mov   ax, LNODEX_SEGMENT		; eventually put this in the cs seg?
-mov   es, ax
-mov   di, word ptr es:[bx]		; di = lnodex
+mov   di, word ptr cs:[bx + _lnodex - OFFSET WI_STARTMARKER_]		; di = lnodex
 
-mov   ax, LNODEY_SEGMENT		; eventually put this in the cs seg?
-mov   es, ax
-mov   dx, word ptr es:[bx]		; dx = lnodey
+mov   dx, word ptr cs:[bx + _lnodey - OFFSET WI_STARTMARKER_]		; dx = lnodey
 
 mov   cx, 2
 
@@ -372,7 +459,7 @@ loop_drawonlnode:
 mov   ax, cx
 ;     xor ah ah for free since cx is 0 or 1..
 lods  byte ptr cs:[si]							    ;  WI_GetPatch(cRef[i]);
-call  WI_GetPatchESBX_				; todo what if this just returned es:bx or whatever
+call  WI_GetPatchESBX_
 
 ;		left = lnodeX - (ci->leftoffset);
 ;		if (left >= 0
@@ -457,18 +544,17 @@ xor   cx, cx                    ; zero out ch..
 xchg  ax, bx                    ; bx gets epsd
 
 mov   cl, byte ptr cs:[bx + _NUMANIMS - OFFSET WI_STARTMARKER_] ; cl gets num anims (loop amount)
-sal   bx, 1
-sal   bx, 1                             ; dword lookup 
-les   bx, dword ptr cs:[bx + _wianims - OFFSET WI_STARTMARKER_]  ; es:bx is wianims
+sal   bx, 1                             ; word lookup 
+mov   bx, word ptr cs:[bx + _wianims - OFFSET WI_STARTMARKER_]  ; cs:bx is wianims
 
 loop_update_animated_back:
 
 mov   ax, word ptr cs:[_bcnt - OFFSET WI_STARTMARKER_]
-cmp   ax, word ptr es:[bx + 0Ch]
+cmp   ax, word ptr cs:[bx + 0Ch]
 jne   finish_update_anim_loop_iter
 
 
-mov   al, byte ptr es:[bx]      ; get anim type
+mov   al, byte ptr cs:[bx]      ; get anim type
 cmp   al, ANIM_RANDOM
 je    update_anim_random
 cmp   al, ANIM_ALWAYS
@@ -497,45 +583,45 @@ je    finish_update_anim_loop_iter
 continue_level_check:
 mov   al, dl                        ; dh is cached wbs next
 
-cmp   al, byte ptr es:[bx + 5]
+cmp   al, byte ptr cs:[bx + 5]
 jne   finish_update_anim_loop_iter
-inc   byte ptr es:[bx + 0Eh]        ; increment ctr
-mov   al, byte ptr es:[bx + 0Eh]
-cmp   al, byte ptr es:[bx + 2]
+inc   byte ptr cs:[bx + 0Eh]        ; increment ctr
+mov   al, byte ptr cs:[bx + 0Eh]
+cmp   al, byte ptr cs:[bx + 2]
 jne   dont_dec_ctr
-dec   byte ptr es:[bx + 0Eh]
+dec   byte ptr cs:[bx + 0Eh]
 dont_dec_ctr:
 
 update_anim_set_nexttic_to_bcnt_plus_period:
 xor   ax, ax
-mov   al, byte ptr es:[bx + 1]
+mov   al, byte ptr cs:[bx + 1]
 add   ax, word ptr cs:[_bcnt - OFFSET WI_STARTMARKER_]
-mov   word ptr es:[bx + 0Ch], ax
+mov   word ptr cs:[bx + 0Ch], ax
 
 jmp   finish_update_anim_loop_iter
 
 update_anim_random:
-inc   byte ptr es:[bx + 0Eh]
-mov   al, byte ptr es:[bx + 0Eh]
-cmp   al, byte ptr es:[bx + 2]
+inc   byte ptr cs:[bx + 0Eh]
+mov   al, byte ptr cs:[bx + 0Eh]
+cmp   al, byte ptr cs:[bx + 2]
 jne   update_anim_set_nexttic_to_bcnt_plus_period
 
 
 call  WI_MRandomLocal_
-div   byte ptr es:[bx + 5]
+div   byte ptr cs:[bx + 5]
 mov   al, ah
 xor   ah, ah
 
 add   ax, word ptr cs:[_bcnt - OFFSET WI_STARTMARKER_]
-mov   word ptr es:[bx + 0Ch], ax
+mov   word ptr cs:[bx + 0Ch], ax
 jmp   finish_update_anim_loop_iter
 
 update_anim_always:
-inc   byte ptr es:[bx + 0Eh]
-mov   al, byte ptr es:[bx + 0Eh]
-cmp   al, byte ptr es:[bx + 2]
+inc   byte ptr cs:[bx + 0Eh]
+mov   al, byte ptr cs:[bx + 0Eh]
+cmp   al, byte ptr cs:[bx + 2]
 jnge  update_anim_set_nexttic_to_bcnt_plus_period
-mov   byte ptr es:[bx + 0Eh], 0
+mov   byte ptr cs:[bx + 0Eh], 0
 
 jmp   update_anim_set_nexttic_to_bcnt_plus_period
 
@@ -555,7 +641,6 @@ PUBLIC WI_drawAnimatedBack_
 push  bx
 push  cx
 push  dx
-push  si
 push  di
 cmp   byte ptr ds:[_commercial], 0
 jne   exit_draw_animated_back   ; not for doom2 
@@ -570,26 +655,25 @@ xor   cx, cx                    ; zero out ch..
 xchg  ax, bx                    ; bx gets epsd
 
 mov   cl, byte ptr cs:[bx + _NUMANIMS - OFFSET WI_STARTMARKER_] ; cl gets num anims (loop amount)
-sal   bx, 1
-sal   bx, 1                             ; dword lookup 
-les   di, dword ptr cs:[bx + _wianims - OFFSET WI_STARTMARKER_]  ; es:bx is wianims
-mov   si, es
+sal   bx, 1                             ; word lookup 
+mov   di, word ptr cs:[bx + _wianims - OFFSET WI_STARTMARKER_]  ; cs:bx is wianims
+
 
 loop_draw_animated_back:
-mov   al, byte ptr es:[di + 0Eh]        ; get ctr
+mov   al, byte ptr cs:[di + 0Eh]        ; get ctr
 test  al, al
 jnge  finish_draw_anim_loop_iter
 cbw  
 
 ; draw patch
 
-mov   dx, word ptr es:[di + 3]  ; get loc.x and loc.y here
+mov   dx, word ptr cs:[di + 3]  ; get loc.x and loc.y here
 
 sal   ax, 1
 mov   bx, di
 add   bx, ax
 
-mov   bx, word ptr es:[bx + 6] ; pref lookup
+mov   bx, word ptr cs:[bx + 6] ; pref lookup
 sal   bx, 1
 mov   ax, WIANIMSPAGE_SEGMENT
 push  ax                    ; segment arg to drawpatch
@@ -611,7 +695,6 @@ db 01Eh  ;
 dw _V_DrawPatch_addr
 
 
-mov   es, si
 
 finish_draw_anim_loop_iter:
 add   di, SIZEOF_WIANIM_T
@@ -620,7 +703,6 @@ loop  loop_draw_animated_back
 
 exit_draw_animated_back:
 pop   di
-pop   si
 pop   dx
 pop   cx
 pop   bx
@@ -664,13 +746,12 @@ xchg  ax, bx                    ; bx gets epsd
 
 mov   cl, byte ptr cs:[bx + _NUMANIMS - OFFSET WI_STARTMARKER_] ; cl gets num anims (loop amount)
 
-sal   bx, 1
-sal   bx, 1                             ; dword lookup 
-les   bx, dword ptr cs:[bx + _wianims - OFFSET WI_STARTMARKER_]  ; es:bx is wianims
+sal   bx, 1                             ; word lookup 
+mov   bx, word ptr cs:[bx + _wianims - OFFSET WI_STARTMARKER_]  ; cs:bx is wianims
 loop_init_animated_back:
 
-mov   al, byte ptr es:[bx]              ; get anim type
-mov   byte ptr es:[bx + 0Eh], -1        ; ctr -1
+mov   al, byte ptr cs:[bx]              ; get anim type
+mov   byte ptr cs:[bx + 0Eh], -1        ; ctr -1
 cmp   al, ANIM_ALWAYS
 je    init_anim_always
 cmp   al, ANIM_RANDOM
@@ -692,12 +773,12 @@ pop   bx
 ret   
 
 init_anim_always:
-mov   dl, byte ptr es:[bx + 1]
+mov   dl, byte ptr cs:[bx + 1]
 call  WI_MRandomLocal_
 jmp   do_modulostep
 
 init_anim_random:
-mov   dl, byte ptr es:[bx + 5]
+mov   dl, byte ptr cs:[bx + 5]
 call  WI_MRandomLocal_
 
 do_modulostep:
@@ -710,7 +791,7 @@ add_bcnt_plus_1_etc:
 ; plus bcnt plus 1
 add   ax, word ptr cs:[_bcnt - OFFSET WI_STARTMARKER_]
 inc   ax
-mov   word ptr es:[bx + 0Ch], ax    ; write nexttic
+mov   word ptr cs:[bx + 0Ch], ax    ; write nexttic
 
 jmp   finish_init_anim_loop_iter
 
@@ -1350,7 +1431,6 @@ ENDP
 PROC WI_drawStats_ NEAR
 PUBLIC WI_drawStats_
 
-
 push  bx
 push  cx
 push  dx
@@ -1362,7 +1442,8 @@ mov   si, ax
 mov   es, dx
 mov   dx, word ptr es:[si + 2]
 mov   ax, dx
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 sub   ax, dx
 cwd   
 sub   ax, dx
@@ -1564,10 +1645,10 @@ mov   al, byte ptr cs:[bx + _NUMANIMS - OFFSET WI_STARTMARKER_]
 cbw  
 cmp   ax, word ptr [bp - 0Ah]
 jle   done_loading_assets
-shl   bx, 2
+shl   bx, 1
 mov   word ptr [bp - 2], 0
 mov   dx, word ptr cs:[bx + _wianims - OFFSET WI_STARTMARKER_]
-mov   ax, word ptr cs:[bx + _wianims+2 - OFFSET WI_STARTMARKER_]
+mov   ax, cs
 mov   bx, word ptr [bp - 014h]
 mov   word ptr [bp - 0Eh], ax
 mov   word ptr [bp - 0Ch], ax
@@ -1676,12 +1757,11 @@ do_load_hack:
 ;						anim->pRef[i] = epsd1animinfo[4].pRef[i];
 
 
-mov   ax, EPSD1ANIMINFO_SEGMENT
+
 mov   bx, word ptr [bp - 2]
-mov   es, ax
-add   bx, bx
-add   bx, 046h 						; offset for this field
-mov   ax, word ptr es:[bx]
+
+sal   bx, 1
+mov   ax, word ptr cs:[bx + _epsd1animinfo + 046h - OFFSET WI_STARTMARKER_] ; 046h is the offset for this field..
 mov   es, word ptr [bp - 0Ch]
 mov   bx, word ptr [bp - 4]
 jmp   done_with_load_hack
@@ -1910,11 +1990,10 @@ PUBLIC WI_initVariables_
 
 
 push  bx
-push  dx
 push  si
 push  di
-mov   bx, ax
-mov   dx, ax
+mov   word ptr cs:[_wbs - OFFSET WI_STARTMARKER_], ax
+xchg  ax, bx
 xor   ax, ax
 mov   word ptr cs:[_acceleratestage - OFFSET WI_STARTMARKER_], ax
 mov   word ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], ax
@@ -1923,29 +2002,59 @@ push  cs
 pop   es
 mov   di, OFFSET _plrs - OFFSET WI_STARTMARKER_
 lea   si, [bx + 0Ch]
+
 movsw 
 movsw 
 movsw 
 movsw 
 movsb 
+
+; 	if ( commercial ){
+;        wminfo.partime = cpars[gamemap-1]; 
+;    } else {
+;        wminfo.partime = pars[10*gameepisode+gamemap]; 
+;    }
+
+
+mov   al, byte ptr ds:[_gamemap]
+cbw
+cmp   byte ptr ds:[_commercial], 0
+je    use_pars
+
+use_cpars:
+dec   ax
+sal   ax, 1
+xchg  ax, si
+mov   ax, word ptr cs:[_cpars + si - OFFSET WI_STARTMARKER_]
+
+jmp done_getting_pars
+
+use_pars:
+xchg  ax, si
+mov   ah, byte ptr ds:[_gameepisode]
+db    0D5h, 00Ah					; AAD to mul by 10
+add   si, ax
+sal   si, 1
+mov   ax, word ptr cs:[_pars + si - OFFSET WI_STARTMARKER_]
+
+done_getting_pars:
+mov   word ptr [bx + 0Ah], ax        ; set partime
+
+
 cmp   word ptr [bx + 4], 0
 jne   dont_set_maxkills
 mov   word ptr [bx + 4], 1
 dont_set_maxkills:
-mov   bx, dx
 cmp   word ptr [bx + 6], 0
 jne   dont_set_maxitems
 mov   word ptr [bx + 6], 1
 dont_set_maxitems:
-mov   bx, dx
 cmp   word ptr [bx + 8], 0
 jne   dont_set_maxsecret
 mov   word ptr [bx + 8], 1
 dont_set_maxsecret:
-mov   word ptr cs:[_wbs - OFFSET WI_STARTMARKER_], dx
 pop   di
 pop   si
-pop   dx
 pop   bx
 ret   
 
@@ -1970,20 +2079,19 @@ push  bp
 mov   bp, sp
 sub   sp, 0Eh					   ; room for lump name string
 
-xor   si, si
-mov   dx, si 					   ; loop ctr
-mov   bx, si 					   ; size/dst offset
+xor   dx, dx                       ; loop ctr
+mov   bx, dx 					   ; size/dst offset
+mov   si, OFFSET _wigraphics - OFFSET WI_STARTMARKER_
 
 loop_wi_items:
 
 mov   word ptr [bp - 0Ch], dx
 mov   word ptr [bp - 0Eh], bx
 
-mov   ax, WIGRAPHICS_SEGMENT
-mov   ds, ax
+push  cs
+pop   ds
 push  ss
 pop   es
-
 
 lea   di, [bp - 0Ah]
 mov   ax, di	; store this address as arg for getnumforname
@@ -2065,6 +2173,7 @@ mov   byte ptr [di + 4], 056h ; "V"
 
 mov   al, byte ptr [si+2]		; wbs ->last
 db    0D4h, 00Ah	    ; divide by 10 using AAM
+xchg  al, ah
 add   ax, 03030h				; add '0' to each character
 mov   word ptr [di + 5], ax  ; numbers for string
 
@@ -2079,6 +2188,7 @@ dw _W_CacheLumpNameDirect_addr
 
 mov   al, byte ptr [si+3]		; wbs ->next
 db    0D4h, 00Ah	    ; divide by 10 using AAM
+xchg  al, ah
 add   ax, 03030h				; add '0' to each character
 mov   word ptr [di + 5], ax  ; numbers for string
 

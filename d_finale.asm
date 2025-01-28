@@ -34,11 +34,6 @@ dw    0
 
 
 
-; weird quirk: linker/compiler make the segment overlap with the previous one, so some functions run over into this code!
-; so these first fields dont end up 0 aligned either. which makes them complicated to write to at runtime.
- 
-
-
 
 
 
@@ -320,7 +315,7 @@ dw flat_floor4_8 - OFFSET F_START_, flat_sflr6_1 - OFFSET F_START_, flat_mflr8_4
 ; BIG TODO: if other build versions are to be implemented then
 ;  the strings above must be added to and switch cases changed a bit. could make a big fat lookup table with all fields?
 ;  once this is overlaid it probably wont be a big problem.
-PROC F_StartFinale_ NEAR
+PROC F_StartFinale_ FAR
 PUBLIC F_StartFinale_
 
 
