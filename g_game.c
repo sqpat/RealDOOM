@@ -472,7 +472,10 @@ void __near G_Ticker (void)  {
 			break;
          
         case GS_INTERMISSION: 
-            WI_Ticker (); 
+            Z_QuickMapIntermission();
+            WI_Ticker ();
+            Z_QuickMapPhysics();
+
             break;
                          
         case GS_FINALE: 
@@ -612,9 +615,9 @@ void __near G_DoCompleted (void)  {
             }
         }
     } else {
-        if (secretexit) 
+        if (secretexit) {
             wminfo.next = 8;    // go to secret level 
-        else if (gamemap == 9) {
+        } else if (gamemap == 9) {
             // returning from secret level 
             switch (gameepisode)  { 
                 case 1: 
@@ -659,8 +662,9 @@ void __near G_DoCompleted (void)  {
         wminfo.partime = pars[10*gameepisode+gamemap]; 
     }
         
-    WI_Start (&wminfo); 
 
+    WI_Start (&wminfo, secretexit); 
+    Z_QuickMapPhysics();
 } 
 
 /*

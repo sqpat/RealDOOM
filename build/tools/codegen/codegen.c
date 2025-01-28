@@ -5,7 +5,7 @@
 #include "g_game.h"
 #include "p_saveg.h"
 
-#define CONSTANTS_COUNT 1938
+#define CONSTANTS_COUNT 1941
 #define LOCALS_COUNT 19
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -1988,7 +1988,10 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"NEXT_OFFSET",
 	"NUM_WI_ITEMS",
 	"NUM_WI_ANIM_ITEMS",
-	"FB"
+	"FB",
+	"F_STARTFINALEOFFSET",
+	"WIANIM_CODESPACE_SEGMENT",
+	"WIANIM_7000_END_SEGMENT"
 
 
 
@@ -3987,7 +3990,11 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	NEXT_OFFSET,
 	NUM_WI_ITEMS,
 	NUM_WI_ANIM_ITEMS,
-	FB
+	FB,
+	F_StartFinaleOffset,
+	wianim_codespace_segment,
+	wianim_7000_end_segment
+
 
 
 

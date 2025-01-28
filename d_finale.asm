@@ -31,8 +31,6 @@ ENDP
 
 _CSDATA_hu_font_ptr:
 dw    0
-_CSDATA_player_ptr:
-dw    0
 
 
 
@@ -1647,7 +1645,7 @@ cmp   byte ptr ds:[_commercial], 0
 je    done_checking_skipping
 cmp   word ptr ds:[_finalecount], 50
 jle   done_checking_skipping
-mov   bx, word ptr cs:[_CSDATA_player_ptr - OFFSET F_START_]
+mov   bx, word ptr ds:[_player_ptr]
 cmp   byte ptr ds:[bx + 7], 0   ; player.cmd.buttons
 je    done_checking_skipping
 cmp   byte ptr ds:[_gamemap], 30

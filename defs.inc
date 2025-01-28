@@ -103,7 +103,8 @@ _bombspot_pos = 					_NULL_OFFSET + 000A0h
 
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
-;_filename_argument = 				_NULL_OFFSET + 000ACh
+_player_ptr = 						_NULL_OFFSET + 000ACh
+; free
 _is_ultimate = 						_NULL_OFFSET + 000B5h
 _firstspritelump = 					_NULL_OFFSET + 000B6h
 
@@ -275,7 +276,7 @@ _S_StartMusic_addr =             	 _NULL_OFFSET + 00588h
 ; 13 bytes
 _filename_argument = 				 _NULL_OFFSET + 0058Ch
 
-; 599h
+_rndindex = 						 _NULL_OFFSET + 00599h
 _fopen_r_argument = 				 _NULL_OFFSET + 0059Ah
 _fopen_w_argument = 				 _NULL_OFFSET + 0059Ch
 
@@ -300,7 +301,11 @@ _P_AddActiveCeiling_addr =           _NULL_OFFSET + 005C8h
 _P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
 _activeceilings =                    _NULL_OFFSET + 005D0h
 
-;//0x60C
+_Z_SetOverlay_addr =                 _NULL_OFFSET + 0060Ch
+_W_LumpLength_addr =                 _NULL_OFFSET + 00610h
+
+
+;//0x618
 
 
 

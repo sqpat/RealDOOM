@@ -731,7 +731,11 @@ void __near D_Display (void) {
         break;
 
       case GS_INTERMISSION:
+		Z_QuickMapIntermission();
         WI_Drawer ();
+	    Z_QuickMapPhysics();
+
+
 		break;
 
       case GS_FINALE:
@@ -926,6 +930,7 @@ void __near D_DoomLoop (void) {
         }
 		S_UpdateSounds (playerMobjRef);// move positional sounds
  		// Update display, next frame, with current state.
+
 
 #ifdef DETAILED_BENCH_STATS
 		cachedtics = ticcount;

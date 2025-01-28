@@ -947,6 +947,7 @@ R_PointToAngle(y, x);
 	//FindResponseFile ();
 	//P_Init();
 
+	player_ptr = &player;
 
 	if (!access("doom2.wad", R_OK)) {
 		commercial = true;

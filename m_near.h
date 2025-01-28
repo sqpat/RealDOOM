@@ -142,7 +142,10 @@
 
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
-//#define filename_argument               ((int8_t __near *)                   (_NULL_OFFSET + 0x00AC))
+#define player_ptr                      (*((player_t __near* _near*)         (_NULL_OFFSET + 0x00AC)))
+
+// ae-b4 free
+
 #define is_ultimate                     (*(boolean __near *)                 (_NULL_OFFSET + 0x00B5))
 #define firstspritelump                 (*(int16_t  __near *)                (_NULL_OFFSET + 0x00B6))
 #define finaletext                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B8)))
@@ -312,23 +315,24 @@
 
 #define spanfunc_call_table             (((uint32_t  __near*)                (_NULL_OFFSET + 0x04D0)))
 
-#define V_DrawPatch_addr                  (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0554)))
-#define locallib_toupper_addr             (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0558)))
-#define S_ChangeMusic_addr                (*((uint32_t  __near*)              (_NULL_OFFSET + 0x055C)))
-#define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0560)))
-#define getStringByIndex_addr             (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0564)))
-#define locallib_strlen_addr              (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0568)))
-#define Z_QuickMapStatusNoScreen4_addr    (*((uint32_t  __near*)              (_NULL_OFFSET + 0x056C)))
-#define Z_QuickMapRender7000_addr         (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0570)))
-#define Z_QuickMapScreen0_addr            (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0574)))
-#define W_CacheLumpNameDirect_addr        (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0578)))
-#define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)              (_NULL_OFFSET + 0x057C)))
-#define W_GetNumForName_addr              (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0580)))
-#define S_StartSound_addr                 (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0584)))
-#define S_StartMusic_addr                 (*((uint32_t  __near*)              (_NULL_OFFSET + 0x0588)))
-// 13 bytes
+#define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0554)))
+#define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0558)))
+#define S_ChangeMusic_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x055C)))
+#define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0560)))
+#define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0564)))
+#define locallib_strlen_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0568)))
+#define Z_QuickMapStatusNoScreen4_addr    (*((uint32_t  __near*)             (_NULL_OFFSET + 0x056C)))
+#define Z_QuickMapRender7000_addr         (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0570)))
+#define Z_QuickMapScreen0_addr            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0574)))
+#define W_CacheLumpNameDirect_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0578)))
+#define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)             (_NULL_OFFSET + 0x057C)))
+#define W_GetNumForName_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0580)))
+#define S_StartSound_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0584)))
+#define S_StartMusic_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0588)))
+// 13 bytes (12345678.123) fileame format incl . and null term
 #define filename_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x058C))
-// 599h free
+
+#define rndindex                          (*(uint8_t __near *)               (_NULL_OFFSET + 0x0599))
 #define fopen_r_argument                  ((int8_t __near *)                 (_NULL_OFFSET + 0x059A))
 #define fopen_w_argument                  ((int8_t __near *)                 (_NULL_OFFSET + 0x059C))
 
@@ -355,7 +359,10 @@
 #define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x05D0))
 
 //0x60C
+#define Z_SetOverlay_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x060C)))
+#define W_LumpLength_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x0610)))
 
+	
 
 
 
@@ -553,6 +560,11 @@ extern void                 (__far* F_Ticker)();
 extern void                 (__far* F_Drawer)();
 extern boolean              (__far* F_Responder)(event_t  __far*event);
 
+extern void (__far* WI_Start)(wbstartstruct_t __near*, boolean);
+extern void (__far* WI_Ticker)();
+extern void (__far* WI_Drawer)();
+
+
 extern void                 (__far* P_UnArchivePlayers)();
 extern void                 (__far* P_UnArchiveWorld)();
 extern void                 (__far* P_UnArchiveThinkers)();
@@ -729,7 +741,6 @@ extern int8_t     d_map;
 
 extern int16_t		myargc;
 extern int8_t**		myargv;
-extern int16_t	rndindex;
 extern int16_t	prndindex;
 extern uint8_t		usemouse;
 
@@ -913,37 +924,11 @@ extern int8_t TS_Installed;
 extern volatile int8_t TS_InInterrupt;
 
 
-extern int16_t		acceleratestage;
-extern stateenum_t	state;
-extern wbstartstruct_t __near*	wbs;
 extern wbplayerstruct_t plrs;  // wbs->plyr[]
-extern uint16_t 		cnt;
-extern uint16_t 		bcnt;
-extern int16_t		cnt_kills;
-extern int16_t		cnt_items;
-extern int16_t		cnt_secret;
-extern int16_t		cnt_time;
-extern int16_t		cnt_par;
-extern int16_t		cnt_pause;
-extern boolean unloaded;
-extern uint8_t		yahRef[2];
-extern uint8_t		splatRef;
-extern uint8_t		numRef[10];
-extern boolean		snl_pointeron;
-extern int16_t	sp_state;
 
 
 #define castorderoffset CC_ZOMBIE
-//
-// Final DOOM 2 animation
-// Casting by id Software.
-//   in order of appearance
-//
-typedef struct {
-
-	uint8_t		nameindex;
-    mobjtype_t	type;
-} castinfo_t;
+ 
 
  
 

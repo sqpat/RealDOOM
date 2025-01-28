@@ -360,8 +360,6 @@ found:
 
 
  
- 
-
 void  __far P_InitThinkers (void);
 
 void __far I_UpdateNoBlit(void);
@@ -461,7 +459,7 @@ void __near Z_LoadBinaries() {
 	// load consecutive memory contents in one call here. 
 	Z_QuickMapIntermission();
 	//760
-	FAR_fread(lnodex, 1, 928, fp);
+	FAR_fread(lnodex, 1, 928, fp);			// TODO eventually remove this from doomdata and bake data into d_wi.asm
 
 	// FOD3
 	Z_QuickMapPalette();
@@ -503,6 +501,11 @@ void __near Z_LoadBinaries() {
 	fread(&codesize, 2, 1, fp2);
 	FAR_fread(drawskyplane_area, codesize, 1, fp2);
 
+
+	Z_QuickMapIntermission();
+	fread(&codesize, 2, 1, fp2);
+	FAR_fread(wianim_codespace, codesize, 1, fp2);
+ 
 	Z_QuickMapPhysics();
 
 //todo should these be plus 2?
@@ -580,6 +583,9 @@ void __near Z_LoadBinaries() {
 	P_RemoveMobj_addr =		 			(uint32_t)(P_RemoveMobj);
 	P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
 	P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);
+
+	Z_SetOverlay_addr =	 				(uint32_t)(Z_SetOverlay);
+	W_LumpLength_addr =	 				(uint32_t)(W_LumpLength);
 
 
 }

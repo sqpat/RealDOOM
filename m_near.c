@@ -445,6 +445,12 @@ void (__far* F_Ticker)() = 											  		  ((void    (__far *)())     							(M
 void (__far* F_Drawer)() = 											  		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_DrawerOffset)));
 boolean (__far* F_Responder)() = 										      ((boolean (__far *)(event_t  __far*event))     		(MK_FP(code_overlay_segment, 		 	 F_ResponderOffset)));
 
+void (__far* WI_Start)(wbstartstruct_t __near*, boolean) = 					  ((void    (__far *)(wbstartstruct_t __near*, boolean))(MK_FP(wianim_codespace_segment, 		 WI_StartOffset)));
+void (__far* WI_Ticker)() = 										  	 	  ((void    (__far *)())     							(MK_FP(wianim_codespace_segment, 		 WI_TickerOffset)));
+void (__far* WI_Drawer)() = 										 		  ((void    (__far *)())     							(MK_FP(wianim_codespace_segment, 		 WI_DrawerOffset)));
+
+
+
 void (__far* P_UnArchivePlayers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchivePlayersOffset)));
 void (__far* P_UnArchiveWorld)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveWorldOffset)));
 void (__far* P_UnArchiveThinkers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveThinkersOffset)));
@@ -590,7 +596,6 @@ int8_t             savegameslot;
 
 int16_t		myargc;
 int8_t**		myargv;
-int16_t	rndindex = 0;
 int16_t	prndindex = 0;
 uint8_t		usemouse;
 
@@ -1078,52 +1083,15 @@ int8_t TS_Installed = false;
 volatile int8_t TS_InInterrupt = false;
 
 
-// used to accelerate or skip a stage
-int16_t		acceleratestage;
 
-
- // specifies current state
-stateenum_t	state;
-
-// contains information passed into intermission
-wbstartstruct_t __near*	wbs;
 
 wbplayerstruct_t plrs;  // wbs->plyr[]
 
 // used for general timing
-uint16_t 		cnt;
-
-// used for timing of background animation
-uint16_t 		bcnt;
-
-// signals to refresh everything for one frame
-
-int16_t		cnt_kills;
-int16_t		cnt_items;
-int16_t		cnt_secret;
-int16_t		cnt_time;
-int16_t		cnt_par;
-int16_t		cnt_pause;
 
 
-boolean unloaded = false;
-
-//
-//	GRAPHICS
-//
 
 
-// You Are Here graphic
-uint8_t		yahRef[2];
-
-// splat
-uint8_t		splatRef;
-
-
-// 0-9 graphic
-uint8_t		numRef[10];
-boolean		snl_pointeron = false;
-int16_t	sp_state;
 
 
 

@@ -968,6 +968,8 @@ skytexture         5400:0000
 #define wigraphics       ((int8_t __far*)    MAKE_FULL_SEGMENT(epsd2animinfo,   size_epsd2animinfo))
 #define pars             ((int16_t __far*)   MAKE_FULL_SEGMENT(wigraphics,      size_wigraphics))
 #define cpars            ((int16_t __far*)   MAKE_FULL_SEGMENT(pars,            size_pars))
+#define wianim_codespace ((byte __far*)      MAKE_FULL_SEGMENT(cpars,           size_cpars))
+#define wianim_7000_end  ((byte __far*)      MAKE_FULL_SEGMENT(wianim_codespace, WI_StuffCodeSize))
 
 
 #define wioffsets        ((uint16_t __far*)   MAKE_FULL_SEGMENT(0x78000000, size_level_finished_graphic))
@@ -987,7 +989,8 @@ skytexture         5400:0000
 #define cpars_segment                ((segment_t) ((int32_t)cpars >> 16))
 #define wigraphicslevelname_segment  ((segment_t) ((int32_t)wigraphicslevelname >> 16))
 #define wianimspage_segment          ((segment_t) ((int32_t)wianimspage >> 16))
-
+#define wianim_codespace_segment     ((segment_t) ((int32_t)wianim_codespace >> 16))
+#define wianim_7000_end_segment      ((segment_t) ((int32_t)wianim_7000_end >> 16))
 
 
 // todo make this work
@@ -1008,32 +1011,20 @@ skytexture         5400:0000
 This area used during intermission task
 
 7000:0000  wigraphicspage0
-7FA0:0000  lnodex
-7FA4:0000  lnodey
-7FA8:0000  epsd0animinfo
-7FB2:0000  epsd1animinfo
-7FBB:0000  epsd2animinfo
-7FC1:01FC  wigraphics
-7FD1:0000  pars
-7FD6:0000  cpars
-7FDA:0000  [empty]
+74CF0:0000  lnodex
+74D3:0000  lnodey
+74D7:0000  epsd0animinfo
+74E1:0000  epsd1animinfo
+74EA:0000  epsd2animinfo
+74F0:01FC  wigraphics
+7500:0000  pars
+7505:0000  cpars
+7509:0000  wianim_codespace
+75D9?:0000  [empty]
+// still 8816 bytes free. not much to use it on?
 
-608 bytes free?
+
 */
-
-
-
-/*
-wioffsets      7A4F:0000
-wianimoffsets  7A53:0000
-[empty]        7A57:0000
-*/
-//6800 free? but intermission memory usage isnt common...
-
-
-
-
-
 
 
 

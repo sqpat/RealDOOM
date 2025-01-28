@@ -98,8 +98,6 @@ GLOBOBJS = &
  hu_setup.obj &
  hu_stuff.obj &
  hu_lib.obj &
- d_wi.obj &
- wi_stuff.obj &
  s_sound.obj &
  sounds.obj &
  info.obj &
