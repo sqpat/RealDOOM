@@ -924,7 +924,6 @@ extern int8_t TS_Installed;
 extern volatile int8_t TS_InInterrupt;
 
 
-extern wbplayerstruct_t plrs;  // wbs->plyr[]
 
 
 #define castorderoffset CC_ZOMBIE

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/27 20:12:20
+Created on:       25/01/27 20:39:18
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -41,7 +41,7 @@ d_main_TEXT            CODE           AUTO           02b4:0720       00000f7a
 d_net_TEXT             CODE           AUTO           02b4:16a0       00000105
 g_game_TEXT            CODE           AUTO           02b4:17b0       00000a9f
 m_misc_TEXT            CODE           AUTO           02b4:2250       000000d7
-am_map_TEXT            CODE           AUTO           02b4:2330       000012fb
+am_map_TEXT            CODE           AUTO           02b4:2330       00001300
 st_stuff_TEXT          CODE           AUTO           02b4:3630       00000b71
 hu_stuff_TEXT          CODE           AUTO           02b4:41b0       000001d2
 hu_lib_TEXT            CODE           AUTO           02b4:4390       000001b3
@@ -105,7 +105,7 @@ YIB                    DATA           DGROUP         2238:000c       00000000
 YI                     DATA           DGROUP         2238:000c       00000012
 YIE                    DATA           DGROUP         2239:000e       00000000
 DATA                   DATA           DGROUP         2239:000e       00000000
-_BSS                   BSS            DGROUP         223a:0000       00000a40
+_BSS                   BSS            DGROUP         223a:0000       00000a36
 STACK                  STACK          DGROUP         22de:0000       00001000
 
 
@@ -176,10 +176,10 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20c8:1c34      _tmx
 20c8:1c38      _tmthing_pos
 20c8:1c3c      _bestslidefrac
-20c8:1c40      _setStateReturn_pos
-20c8:1c44      _bulletslope
-20c8:1c48      _activeplats
-20c8:1c84      _leveltime
+20c8:1c40      _bulletslope
+20c8:1c44      _activeplats
+20c8:1c80      _leveltime
+20c8:1c84      _setStateReturn_pos
 20c8:1c88      _TaskServiceCount
 20c8:1c8c      _OldInt8
 20c8:1c90      _st_stuff_buf
@@ -208,22 +208,22 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20c8:1d72      _segloopheightvalcache
 20c8:1d74      _emshandle
 20c8:1d76      _pagenum9000
-20c8:1d78      _numlumps
-20c8:1d7a      _spritewidths_segment
-20c8:1d7c      _numlinespecials
-20c8:1d7e      _lastanim
+20c8:1d78      _spritewidths_segment
+20c8:1d7a      _numlinespecials
+20c8:1d7c      _lastanim
+20c8:1d7e      _numlumps
 20c8:1d80      _newend
 20c8:1d82      _attackrange16
 20c8:1d84      _la_damage
 20c8:1d86      _linetarget
 20c8:1d88      _shootthing
-20c8:1d8a      _bestslidelinenum
-20c8:1d8c      _ceilinglinenum
-20c8:1d8e      _tmthing
-20c8:1d90      _tmfloorz
-20c8:1d92      _lastcalculatedsector
-20c8:1d94      _tmdropoffz
-20c8:1d96      _tmceilingz
+20c8:1d8a      _ceilinglinenum
+20c8:1d8c      _tmthing
+20c8:1d8e      _tmfloorz
+20c8:1d90      _lastcalculatedsector
+20c8:1d92      _tmdropoffz
+20c8:1d94      _tmceilingz
+20c8:1d96      _bestslidelinenum
 20c8:1d98      _numspechit
 20c8:1d9a      _tmflags1
 20c8:1d9c      _oldentertics
@@ -293,100 +293,99 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20c8:1e1c      _pagetic
 20c8:1e1e*     _snd_SBport
 20c8:1e20*     _snd_Mport
-20c8:1e22*     _plrs
-20c8:1e2b      _HeadTask
-20c8:1e3a      _w_title
-20c8:1e93      _w_message
-20c8:1ffc      _menu_messageString
-20c8:2065      _oldweaponsowned
-20c8:206e      _wminfo
-20c8:2083      _player
-20c8:20e6      _mus_paused
-20c8:20e7      _levelTimer
-20c8:20e8      _nofit
-20c8:20e9      _earlyout
-20c8:20ea      _crushchange
-20c8:20eb      _onground
-20c8:20ec      _menu_epi
-20c8:20ed      _messageNeedsInput
-20c8:20ee      _message_on
-20c8:20ef      _message_dontfuckwithme
-20c8:20f0      _message_counter
-20c8:20f1      _message_nottobefuckedwith
-20c8:20f2      _messageToPrint
-20c8:20f3      _st_randomnumber
-20c8:20f4      _do_st_refresh
-20c8:20f5      _secretexit
-20c8:20f6      _d_map
-20c8:20f7      _st_statusbaron
-20c8:20f8      _updatedthisframe
-20c8:20f9      _st_firsttime
-20c8:20fa      _st_gamestate
-20c8:20fb      _usemouse
-20c8:20fc      _mousebforward
-20c8:20fd      _d_episode
-20c8:20fe      _turnheld
-20c8:20ff      _d_skill
-20c8:2100      _mousebstrafe
-20c8:2101      _savegameslot
-20c8:2102      _key_speed
-20c8:2103      _mousebfire
-20c8:2104      _key_left
-20c8:2105      _key_fire
-20c8:2106      _key_strafe
-20c8:2107      _key_straferight
-20c8:2108      _demoplayback
-20c8:2109      _key_up
-20c8:210a      _singledemo
-20c8:210b      _netdemo
-20c8:210c      _key_down
-20c8:210d      _key_use
-20c8:210e      _key_right
-20c8:210f      _key_strafeleft
-20c8:2110      _paused
-20c8:2111      _timingdemo
-20c8:2112      _sendsave
-20c8:2113      _gameskill
-20c8:2114      _noblit
-20c8:2115      _respawnmonsters
-20c8:2116      _demorecording
-20c8:2117      _usegamma
-20c8:2118      _sendpause
-20c8:2119      _usergame
-20c8:211a      _borderdrawcount
-20c8:211b      _numChannels
-20c8:211c      _mousepresent
-20c8:211d      _novideo
-20c8:211e      _setsizeneeded
-20c8:211f      _setblocks
-20c8:2120      _sfxVolume
-20c8:2121      _showMessages
-20c8:2122      _mouseSensitivity
-20c8:2123      _menuactive
-20c8:2124      _screenSize
-20c8:2125      _inhelpscreens
-20c8:2126      _quickSaveSlot
-20c8:2127      _detailLevel
-20c8:2128      _musicVolume
-20c8:2129      _eventtail
-20c8:212a      _startmap
-20c8:212b      _modifiedgame
-20c8:212c      _snd_SBport8bit
-20c8:212d      _autostart
-20c8:212e      _advancedemo
-20c8:212f      _nomonsters
-20c8:2130      _startskill
-20c8:2131      _fastparm
-20c8:2132      _eventhead
-20c8:2133      _respawnparm
-20c8:2134      _startepisode
-20c8:2135      _snd_Mport8bit
-20c8:2136      _demosequence
-20c8:2137      _snd_SBirq
-20c8:2138      _snd_MusicVolume
-20c8:2139      _snd_SfxVolume
-20c8:213a      _snd_DesiredSfxDevice
-20c8:213b      _snd_MusicDevice
+20c8:1e22      _HeadTask
+20c8:1e31      _w_title
+20c8:1e8a      _w_message
+20c8:1ff3      _menu_messageString
+20c8:205c      _oldweaponsowned
+20c8:2065      _wminfo
+20c8:207a      _player
+20c8:20dd      _mus_paused
+20c8:20de      _levelTimer
+20c8:20df      _earlyout
+20c8:20e0      _crushchange
+20c8:20e1      _nofit
+20c8:20e2      _onground
+20c8:20e3      _menu_epi
+20c8:20e4      _messageNeedsInput
+20c8:20e5      _message_on
+20c8:20e6      _message_dontfuckwithme
+20c8:20e7      _message_counter
+20c8:20e8      _message_nottobefuckedwith
+20c8:20e9      _messageToPrint
+20c8:20ea      _st_randomnumber
+20c8:20eb      _do_st_refresh
+20c8:20ec      _secretexit
+20c8:20ed      _d_map
+20c8:20ee      _st_statusbaron
+20c8:20ef      _updatedthisframe
+20c8:20f0      _st_firsttime
+20c8:20f1      _st_gamestate
+20c8:20f2      _usemouse
+20c8:20f3      _mousebforward
+20c8:20f4      _d_episode
+20c8:20f5      _turnheld
+20c8:20f6      _d_skill
+20c8:20f7      _mousebstrafe
+20c8:20f8      _savegameslot
+20c8:20f9      _key_speed
+20c8:20fa      _mousebfire
+20c8:20fb      _key_left
+20c8:20fc      _key_fire
+20c8:20fd      _key_strafe
+20c8:20fe      _key_straferight
+20c8:20ff      _demoplayback
+20c8:2100      _key_up
+20c8:2101      _singledemo
+20c8:2102      _netdemo
+20c8:2103      _key_down
+20c8:2104      _key_use
+20c8:2105      _key_right
+20c8:2106      _key_strafeleft
+20c8:2107      _paused
+20c8:2108      _timingdemo
+20c8:2109      _sendsave
+20c8:210a      _gameskill
+20c8:210b      _noblit
+20c8:210c      _respawnmonsters
+20c8:210d      _demorecording
+20c8:210e      _usegamma
+20c8:210f      _sendpause
+20c8:2110      _usergame
+20c8:2111      _borderdrawcount
+20c8:2112      _numChannels
+20c8:2113      _mousepresent
+20c8:2114      _novideo
+20c8:2115      _setsizeneeded
+20c8:2116      _setblocks
+20c8:2117      _sfxVolume
+20c8:2118      _showMessages
+20c8:2119      _mouseSensitivity
+20c8:211a      _menuactive
+20c8:211b      _screenSize
+20c8:211c      _inhelpscreens
+20c8:211d      _quickSaveSlot
+20c8:211e      _detailLevel
+20c8:211f      _musicVolume
+20c8:2120      _eventtail
+20c8:2121      _startmap
+20c8:2122      _modifiedgame
+20c8:2123      _snd_SBport8bit
+20c8:2124      _autostart
+20c8:2125      _advancedemo
+20c8:2126      _nomonsters
+20c8:2127      _startskill
+20c8:2128      _fastparm
+20c8:2129      _eventhead
+20c8:212a      _respawnparm
+20c8:212b      _startepisode
+20c8:212c      _snd_Mport8bit
+20c8:212d      _demosequence
+20c8:212e      _snd_SBirq
+20c8:212f      _snd_MusicVolume
+20c8:2130      _snd_SfxVolume
+20c8:2131      _snd_DesiredSfxDevice
+20c8:2132      _snd_MusicDevice
 20c8:0650      _singletics
 20c8:0651      _skytextureloaded
 20c8:0652      _validcount
@@ -515,9 +514,9 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20c8:0d19*     _S_music
 20c8:0d1f      _S_sfx
 20c8:0d2c      _mus_playing
-20c8:213c      _snd_SfxDevice
-20c8:213d      _snd_SBdma
-20c8:213e      _snd_DesiredMusicDevice
+20c8:2133      _snd_SfxDevice
+20c8:2134      _snd_SBdma
+20c8:2135      _snd_DesiredMusicDevice
 Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:0000      D_InitStrings_
 0000:00aa+     D_GetCursorColumnRow_
@@ -1290,7 +1289,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 1cbf:1bcd      __doclose_
 1cbf:1c63      __shutdown_stream_
 1cbf:1c77      fclose_
-20c8:2140+     ___RmTmpFileFn
+20c8:2136+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(intx086.c)
 1cbf:1c9a+     int86x_
 1cbf:1d3c      int86_
@@ -1304,8 +1303,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(accss.c)
 1cbf:20c7      access_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 20c8:0dac      ___iob
-20c8:2144      ___OpenStreams
-20c8:2146      ___ClosedStreams
+20c8:213a      ___OpenStreams
+20c8:213c      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(setbuf.c)
 1cbf:20fd      setbuf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(i4m.asm)
@@ -1339,10 +1338,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 1cbf:2466      __do_exit_with_msg_
 1cbf:2545      __GETDS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-20c8:2148      __argc
-20c8:214a      __argv
-20c8:214c      ___argc
-20c8:214e      ___argv
+20c8:213e      __argc
+20c8:2140      __argv
+20c8:2142      ___argc
+20c8:2144      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fputc.c)
 1cbf:254f      fputc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(chainint)
@@ -1354,7 +1353,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 20c8:0ed2      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 1cbf:27e0      __get_errno_ptr_
-20c8:2150+     _errno
+20c8:2146+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
 20c8:0ed4      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
@@ -1385,7 +1384,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 1cbf:2c31      _nfree_
 1cbf:2c31      free_
-20c8:2152+     ___MiniHeapFreeRover
+20c8:2148+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 1cbf:2cf6      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dointr)
@@ -1461,7 +1460,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 1cbf:370c      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 1cbf:3728      __get_doserrno_ptr_
-20c8:2156+     __doserrno
+20c8:214c+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 20c8:0f42      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -1494,10 +1493,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 1cbf:3b72      __EnterWVIDEO_
 20c8:0f4a+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-20c8:215a      ____Argv
-20c8:215c      ____Argc
+20c8:2150      ____Argv
+20c8:2152      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-20c8:215e      ___historical_splitparms
+20c8:2154      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nrealloc.c)
 1cbf:3b8e*     _nrealloc_
 1cbf:3b8e      realloc_
@@ -1546,4 +1545,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00023de0 (146912.)
 Entry point address: 1cbf:2298
-Link time: 00:00.20
+Link time: 00:00.19

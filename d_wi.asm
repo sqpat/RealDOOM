@@ -22,8 +22,8 @@ INSTRUCTION_SET_MACRO
 
 .DATA
 
-; these could mostly be local to the code if this code was loaded HIGH
 
+; TODO: could encode a lot of the wi stuff data in here instead of loaded via doomcode and thus reduce management code in the main binary
 ;WI_STARTMARKER_ = 0
 
 
@@ -1164,12 +1164,13 @@ ret
 
 
 skip_accelerate:
+
 mov   ax, word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_]
 cmp   ax, 2
 jne   sp_state_not_2
 add   word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_], ax
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
-jne   dont_play_pistol_sfx
+jne   do_update_kills
 mov   dx, SFX_PISTOL
 xor   ax, ax
 
@@ -1177,22 +1178,18 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-dont_play_pistol_sfx:
-mov  ax, 100
-mul  word ptr cs:[_plrs+1 - OFFSET WI_STARTMARKER_]
-idiv  word ptr [bx + 4]
+do_update_kills:
 
+mov   ax, 100
+mul   word ptr cs:[_plrs+1 - OFFSET WI_STARTMARKER_]
+idiv  word ptr [bx + 4]
 cmp   ax, word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_]
 jg    exit_wi_updatestats
-mov   dx, SFX_BAREXP
 mov   word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_], ax
-xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
 
-inc   word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_]
-jmp   exit_wi_updatestats
+jmp   play_barexp_sfx_inc_state_exit
+
+
 play_sgcock_sfx:
 mov   dx, SFX_SGCOCK
 xor   ax, ax
@@ -1216,73 +1213,70 @@ ret
 
 
 
-dont_play_pistol_sfx_2:
-mov   ax, 100
-mul   word ptr cs:[_plrs+3 - OFFSET WI_STARTMARKER_]
-idiv  word ptr [bx + 6]
-cmp   ax, word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_]
-jg    exit_wi_updatestats
-jmp   play_barexp_sfx_save_items
+
 
 sp_state_not_2:
 cmp   ax, 4
 jne   sp_state_not_4
 add   word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_], 2
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
-jne   dont_play_pistol_sfx_2
+jne   do_update_items
 mov   dx, sfx_pistol
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
+do_update_items:
+mov   ax, 100
+mul   word ptr cs:[_plrs+3 - OFFSET WI_STARTMARKER_]
+idiv  word ptr [bx + 6]
+cmp   ax, word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_]
+jg    exit_wi_updatestats_2
+
+mov   word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_], ax
+play_barexp_sfx_inc_state_exit:
+
+mov   dx, SFX_BAREXP
+xor   ax, ax
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
+inc   word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_]
+exit_wi_updatestats_2:
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+
+
+
 sp_state_not_4:
 cmp   ax, 6
 jne   sp_state_not_6
 add   word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_], 2
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
-jne   dont_play_pistol_sfx_3
+jne   do_update_secrets
 mov   dx, SFX_PISTOL
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-dont_play_pistol_sfx_3:
+do_update_secrets:
 mov   ax, 100
 mul   word ptr cs:[_plrs+5 - OFFSET WI_STARTMARKER_]
 idiv  word ptr [bx + 8]
 cmp   ax, word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_]
-jle   play_barexp_sfx
-jump_to_exit_wi_updatestats_2:
-jmp   exit_wi_updatestats
-play_barexp_sfx:
-mov   dx, SFX_BAREXP
+jg    exit_wi_updatestats_2
 mov   word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_], ax
-xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+jmp   play_barexp_sfx_inc_state_exit
 
-inc   word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_]
-pop   dx
-pop   cx
-pop   bx
-ret   
-play_barexp_sfx_save_items:
-mov   dx, SFX_BAREXP
-mov   word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_], ax
-xor   ax, ax
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
 
-inc   word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_]
-pop   dx
-pop   cx
-pop   bx
-ret   
 
 
 sp_state_not_6:

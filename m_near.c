@@ -1085,7 +1085,6 @@ volatile int8_t TS_InInterrupt = false;
 
 
 
-wbplayerstruct_t plrs;  // wbs->plyr[]
 
 // used for general timing
 
