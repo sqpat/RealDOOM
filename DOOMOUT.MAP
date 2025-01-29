@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/28 16:49:42
+Created on:       25/01/28 16:56:24
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -77,7 +77,7 @@ p_user_TEXT            CODE           AUTO           0a52:c6f0       000006c8
 r_bsp_TEXT             CODE           AUTO           172e:0000       00000024
 r_data_TEXT            CODE           AUTO           172e:0030       00001b30
 R_MATH_TEXT            CODE           AUTO           172e:1b60       000001ed
-R_MAINHI_TEXT          CODE           AUTO           172e:1d4e       000025a7
+R_MAINHI_TEXT          CODE           AUTO           172e:1d4e       000025a5
 r_draw_TEXT            CODE           AUTO           172e:4300       000000fb
 r_main_TEXT            CODE           AUTO           172e:4400       000001ea
 r_plane_TEXT           CODE           AUTO           172e:45f0       00000000
@@ -1155,28 +1155,28 @@ Module: r_math.obj(r_math.ASM)
 Module: r_mainhi.obj(r_mainhi.ASM)
 172e:20ef*     R_AddLine_
 172e:27d2*     R_StoreWallRange_
-172e:3991*     R_ClipSolidWallSegment_
-172e:3a3f*     R_ClipPassWallSegment_
-172e:3d1d*     R_CheckBBox_
+172e:398f*     R_ClipSolidWallSegment_
+172e:3a3d*     R_ClipPassWallSegment_
+172e:3d1b*     R_CheckBBox_
 172e:228e*     R_Subsector_
 172e:1ddf*     FixedMulBSPLocal_
 172e:1ed2*     R_PointToDist_
 172e:1fc4*     R_HandleEMSVisplanePagination_
 172e:1e18*     FixedDivBSPLocal_
-172e:3c58      R_PrepareMaskedPSprites_
-172e:3fc0      R_WriteBackViewConstants_
-172e:4166      R_WriteBackFrameConstants_
+172e:3c56      R_PrepareMaskedPSprites_
+172e:3fbe      R_WriteBackViewConstants_
+172e:4164      R_WriteBackFrameConstants_
 172e:1f4b      R_ClearPlanes_
 172e:2770*     R_AddSprites_
 172e:2073*     R_FindPlane_
 172e:345a*     R_DrawColumnPrep_
-172e:3a92*     R_DrawPSprite_
+172e:3a90*     R_DrawPSprite_
 172e:237e*     R_CheckPlane_
 172e:2446*     R_ProjectSprite_
 172e:1e87*     FixedMulTrigNoShiftBSPLocal_
-172e:3eda      R_RenderBSPNode_
+172e:3ed8      R_RenderBSPNode_
 172e:1d4e*     R_ScaleFromGlobalAngle_
-172e:3ce4*     R_PointToAngle16_
+172e:3ce2*     R_PointToAngle16_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 172e:4300      R_VideoErase_
 172e:4384      R_DrawViewBorder_
@@ -1545,4 +1545,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00023d80 (146816.)
 Entry point address: 1c9f:2438
-Link time: 00:00.20
+Link time: 00:00.19

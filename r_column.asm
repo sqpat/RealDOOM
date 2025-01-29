@@ -134,6 +134,7 @@ pixel_loop_fast:
 ; 0xE size
 DRAW_SINGLE_PIXEL MACRO 
    ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
+   ; todo retry on real 286
 
     mov    al,dh
 	and    al,ah                  ; ah is 7F

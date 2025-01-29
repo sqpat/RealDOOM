@@ -5086,7 +5086,7 @@ mov   si, dx            ; dc_texturemid+2 to si
 ; so that we have register space to use bp now instead of a bit later.
 ; (for carrying dc_texturemid)
 
-cli 				    ; disable interrupts
+
 push  bp
 mov   bp, cx	        ; dc_texturemid to bp
 
@@ -5105,7 +5105,7 @@ dw 0300h
 ; addr 0300 + first byte (4x colormap.)
 
 pop   bp 
-sti					; re-enable interrupts
+
 
 pop   di 
 pop   si
