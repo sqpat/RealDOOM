@@ -12,9 +12,9 @@
 #define R_DrawSkyColumnOffset                 0x0
 #define R_DrawSkyPlaneOffset                  0x651
 #define R_DrawSkyPlaneDynamicOffset           0x5E0
-#define WI_StartOffset                        0x1000
-#define WI_TickerOffset                       0xE08
-#define WI_DrawerOffset                       0xE90
+#define WI_StartOffset                        0x1005
+#define WI_TickerOffset                       0xE0D
+#define WI_DrawerOffset                       0xE95
 #define wipe_StartScreenOffset                0x259
 #define wipe_WipeLoopOffset                   0x268
 #define F_StartFinaleOffset                   0x1B4
@@ -35,7 +35,7 @@
 #define R_DrawFuzzColumnCodeSize       0xFC1
 #define R_MaskedConstantsCodeSize      0xEB
 #define R_DrawSkyColumnCodeSize        0x6C2
-#define WI_StuffCodeSize               0x1018
+#define WI_StuffCodeSize               0x101D
 #define WipeCodeSize                   0x31B
 #define FinaleCodeSize                 0xB5D
 #define SaveLoadCodeSize               0xB27

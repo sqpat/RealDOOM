@@ -1211,7 +1211,8 @@ call  WI_drawOnLnode_
 skip_drawing_pointer:
 cmp   byte ptr ds:[_commercial], 0
 je    drawel_and_exit
-cmp   byte ptr [bx + 3], 30
+mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
+cmp   byte ptr [bx + 3], 30 ; dont show for wolf level
 jne   drawel_and_exit
 
 exit_this_func_todo:
@@ -1219,6 +1220,7 @@ pop   dx
 pop   cx
 pop   bx
 ret   
+
 drawel_and_exit:
 call  WI_drawEL_
 pop   dx
