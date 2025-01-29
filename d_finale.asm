@@ -342,7 +342,7 @@ got_flat_values:
 mov   ax, 65 ; set finale_music
 got_flat_values_and_music:
 ; ax is finale music
-; cs is finaletext
+; cx is finaletext
 ; bx is text for the flat graphic
 mov   dx, 1
 mov   word ptr ds:[_finaleflat], bx
@@ -729,7 +729,7 @@ mov       si, ax
 add       di, 11
 do_next_glyph_ftextwrite:
 dec       cx
-jmp       loop_count
+jmp       loop_count        ; todo should this be a loop?
 do_char_upper_ftextwrite:
 xor       ah, ah
 
