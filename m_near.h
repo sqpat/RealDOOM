@@ -101,7 +101,7 @@
 #define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0040)))
 #define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0041)))
 #define dc_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0042)))
-#define fuzzpos                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0043)))
+//#define fuzzpos                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0043)))
 #define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0044)))
 #define dc_yh                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0046)))
 #define castattacking                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0048)))

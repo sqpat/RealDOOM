@@ -27,6 +27,7 @@ void __far R_DrawColumn (void);
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 void __far R_DrawColumnPrepMaskedMulti();
 void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
+void __far R_MASKED_STARTMARKER();
 void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
 void __far R_DrawSkyPlaneDynamic(int16_t minx, int16_t maxx, visplane_t __far*		pl);
 void __near R_SortVisSprites (void);
@@ -114,12 +115,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)R_DrawSpan, codesize[1], 1, fp);
 
     // DrawFuzzColumn thru R_DrawColumnPrepMaskedMulti
-    codesize[2] = FP_OFF(R_WriteBackViewConstantsMasked) - FP_OFF(R_DrawFuzzColumn);
+    codesize[2] = FP_OFF(R_WriteBackViewConstantsMasked) - FP_OFF(R_MASKED_STARTMARKER);
     
     // write filesize..
     fwrite(&codesize[2], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_DrawFuzzColumn, codesize[2], 1, fp);
+    FAR_fwrite((byte __far *)R_MASKED_STARTMARKER, codesize[2], 1, fp);
 
     // This func gets loaded in two spots... R_DrawMaskedColumn thru end
     codesize[3] = FP_OFF(R_MASKED_END) - FP_OFF(R_WriteBackViewConstantsMasked);
@@ -171,12 +172,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define R_DrawColumnOffset                    0x%X\n", FP_OFF(R_DrawColumn)                    - FP_OFF(R_DrawColumn));
 
     // masked offsets
-	fprintf(fp, "#define R_DrawColumnPrepMaskedMultiOffset     0x%X\n", FP_OFF(R_DrawColumnPrepMaskedMulti)     - FP_OFF(R_DrawFuzzColumn));
-    fprintf(fp, "#define R_DrawFuzzColumnOffset                0x%X\n", FP_OFF(R_DrawFuzzColumn)                - FP_OFF(R_DrawFuzzColumn));
-	fprintf(fp, "#define R_DrawSingleMaskedColumnOffset        0x%X\n", FP_OFF(R_DrawSingleMaskedColumn)        - FP_OFF(R_DrawFuzzColumn));
-	fprintf(fp, "#define R_DrawMaskedColumnOffset              0x%X\n", FP_OFF(R_DrawMaskedColumn)              - FP_OFF(R_DrawFuzzColumn));
-	fprintf(fp, "#define R_SortVisSpritesOffset                0x%X\n", FP_OFF(R_SortVisSprites)                - FP_OFF(R_DrawFuzzColumn));
-	fprintf(fp, "#define R_DrawMaskedOffset                    0x%X\n", FP_OFF(R_DrawMasked)                    - FP_OFF(R_DrawFuzzColumn));
+	fprintf(fp, "#define R_DrawColumnPrepMaskedMultiOffset     0x%X\n", FP_OFF(R_DrawColumnPrepMaskedMulti)     - FP_OFF(R_MASKED_STARTMARKER));
+    fprintf(fp, "#define R_DrawFuzzColumnOffset                0x%X\n", FP_OFF(R_DrawFuzzColumn)                - FP_OFF(R_MASKED_STARTMARKER));
+	fprintf(fp, "#define R_DrawSingleMaskedColumnOffset        0x%X\n", FP_OFF(R_DrawSingleMaskedColumn)        - FP_OFF(R_MASKED_STARTMARKER));
+	fprintf(fp, "#define R_DrawMaskedColumnOffset              0x%X\n", FP_OFF(R_DrawMaskedColumn)              - FP_OFF(R_MASKED_STARTMARKER));
+	fprintf(fp, "#define R_SortVisSpritesOffset                0x%X\n", FP_OFF(R_SortVisSprites)                - FP_OFF(R_MASKED_STARTMARKER));
+	fprintf(fp, "#define R_DrawMaskedOffset                    0x%X\n", FP_OFF(R_DrawMasked)                    - FP_OFF(R_MASKED_STARTMARKER));
 
     // masked selfmodifying code offsets
     fprintf(fp, "#define R_WriteBackViewConstantsMaskedOffset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked)  - FP_OFF(R_WriteBackViewConstantsMasked));

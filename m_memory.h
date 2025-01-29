@@ -274,7 +274,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
  // or 9380:0000
 #define InfoFuncLoadAddr      ((byte __far *) MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes))
-// note: entry point to the function is not necessarily the first byte of the compiled binary. (jump tables and stuff for swithc cases)
+// note: entry point to the function is not necessarily the first byte of the compiled binary. (jump tables and stuff for switch cases)
 #define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0034))
 #define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x00B2))
 #define getXDeathStateAddr    ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x010A))
@@ -613,7 +613,7 @@ FREEBYTES           7EE0:0000
 #define render_8400_end              ((byte __far*)            MAKE_FULL_SEGMENT(drawfuzzcol_area,           size_drawfuzzcol_area)) 
 // 87FBh
 
-#define spritepostdatasizes        ((uint16_t __far*)          (0x88000000 ))
+#define spritepostdatasizes        ((uint16_t __far*)          MAKE_FULL_SEGMENT(drawfuzzcol_area,           size_drawfuzzcol_area)) 
 #define spritetotaldatasizes       ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,        size_spritepostdatasizes))
 #define maskedpostdataofs          ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritetotaldatasizes,       size_spritetotaldatasizes))
 #define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdataofs,          size_maskedpostdataofs))
@@ -644,15 +644,14 @@ FREEBYTES 3568 free
 // MOVE SOME OTHER RENDER CODE HERE?
 
 
- spritepostdatasizes    8800:0000
- spritetotaldatasizes   88AD:0000
- maskedpostdataofs      895A:0000
- maskedpixeldataofs     8A32:0000
- drawfuzzcol_area       8B0A:0000
-//todo change
-[empty]                 8BF7:0000 
+ spritepostdatasizes              87FE:0000
+ spritetotaldatasizes             88AB:0000
+ maskedpostdataofs                8958:0000
+ maskedpixeldataofs               8A30:0000
+ maskedconstants_funcarea_segment 8B08:0000
+ render_8800_end_segment          8B17:0000 
 
-FREEBYTES 144 free
+FREEBYTES 3728 free (!). move some here
  */
 
 
@@ -1346,8 +1345,7 @@ spritedefs_bytes    7410:0000
 #define texturepatchlump_offset_far ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites_far       , size_player_vissprites))
 #define visplaneheaders_far         ((visplaneheader_t __far*)   MAKE_FULL_SEGMENT(texturepatchlump_offset_far , size_texturepatchlump_offset))
 #define visplanepiclights_far       ((visplanepiclight_t __far*) MAKE_FULL_SEGMENT(visplaneheaders_far         , size_visplaneheaders))
-#define fuzzoffset_far              ((int16_t __far*)            MAKE_FULL_SEGMENT(visplanepiclights_far       , size_visplanepiclights))
-#define scalelightfixed_far         ((uint8_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset_far              , size_fuzzoffset))
+#define scalelightfixed_far         ((uint8_t __far*)            MAKE_FULL_SEGMENT(visplanepiclights_far       , size_visplanepiclights))
 #define scalelight_far              ((uint8_t __far*)            MAKE_FULL_SEGMENT(scalelightfixed_far         , size_scalelightfixed))
 #define patch_sizes_far             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight_far              , size_scalelight))
 #define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
@@ -1373,7 +1371,6 @@ spritedefs_bytes    7410:0000
 #define texturepatchlump_offset_segment   ((segment_t) ((int32_t)texturepatchlump_offset_far >> 16))
 #define visplaneheaders_segment           ((segment_t) ((int32_t)visplaneheaders_far >> 16))
 #define visplanepiclights_segment         ((segment_t) ((int32_t)visplanepiclights_far >> 16))
-#define fuzzoffset_segment                ((segment_t) ((int32_t)fuzzoffset_far >> 16))
 #define scalelightfixed_segment           ((segment_t) ((int32_t)scalelightfixed_far >> 16))
 #define scalelight_segment                ((segment_t) ((int32_t)scalelight_far >> 16))
 #define patch_sizes_segment               ((segment_t) ((int32_t)patch_sizes_far >> 16))
@@ -1394,7 +1391,6 @@ spritedefs_bytes    7410:0000
 #define texturepatchlump_offset ((uint16_t __near*)           (0x4000 + ((texturepatchlump_offset_segment - segs_render_segment)<<4)))
 #define visplaneheaders         ((visplaneheader_t __near*)   (0x4000 + ((visplaneheaders_segment         - segs_render_segment)<<4)))
 #define visplanepiclights       ((visplanepiclight_t __near*) (0x4000 + ((visplanepiclights_segment       - segs_render_segment)<<4)))
-#define fuzzoffset              ((int16_t __near*)            (0x4000 + ((fuzzoffset_segment              - segs_render_segment)<<4)))
 #define scalelightfixed         ((uint8_t __near*)            (0x4000 + ((scalelightfixed_segment         - segs_render_segment)<<4)))
 #define scalelight              ((uint8_t __near*)            (0x4000 + ((scalelight_segment              - segs_render_segment)<<4)))
 #define patch_sizes             ((uint16_t __near*)           (0x4000 + ((patch_sizes_segment             - segs_render_segment)<<4)))
@@ -1425,7 +1421,7 @@ player_vissprites       4AAA:0000   EAA0
 texturepatchlump_offset 4AAF:0000   EAF0
 visplaneheaders         4AE5:0000   EE50
 visplanepiclights       4B24:0000   F240
-fuzzoffset              4B34:0000   F340
+fuzzoffset              4B34:0000   F340    ; todo removed update
 scalelightfixed         4B3D:0000   F3D0
 scalelight              4B40:0000   F400
 patch_sizes             4B70:0000   F700

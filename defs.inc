@@ -64,7 +64,7 @@ _gamemap = 							_NULL_OFFSET + 00041h
 
 
 _dc_colormap_index = 				_NULL_OFFSET + 00042h
-_fuzzpos =							_NULL_OFFSET + 00043h
+; 043h free
 _dc_yl = 							_NULL_OFFSET + 00044h
 _dc_yh = 							_NULL_OFFSET + 00046h
 _castattacking =                 	_NULL_OFFSET + 00048h

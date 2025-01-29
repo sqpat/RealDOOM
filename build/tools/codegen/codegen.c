@@ -5,8 +5,8 @@
 #include "g_game.h"
 #include "p_saveg.h"
 
-#define CONSTANTS_COUNT 1933
-#define LOCALS_COUNT 19
+#define CONSTANTS_COUNT 1932
+#define LOCALS_COUNT 18
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
 	"FIXED_DS_SEGMENT",
@@ -137,7 +137,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "TEXTUREPATCHLUMP_OFFSET_SEGMENT",
     "VISPLANEHEADERS_SEGMENT",
     "VISPLANEPICLIGHTS_SEGMENT",
-    "FUZZOFFSET_SEGMENT",
     "SCALELIGHTFIXED_SEGMENT",
     "SCALELIGHT_SEGMENT",
     "PATCH_SIZES_SEGMENT",
@@ -2125,7 +2124,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     texturepatchlump_offset_segment,
     visplaneheaders_segment,
     visplanepiclights_segment,
-    fuzzoffset_segment,
     scalelightfixed_segment,
     scalelight_segment,
     patch_sizes_segment,
@@ -4003,7 +4001,6 @@ char* LOCALS[LOCALS_COUNT] = {
     "_texturepatchlump_offset",
     "_visplaneheaders",
     "_visplanepiclights",
-    "_fuzzoffset",
     "_scalelightfixed",
     "_scalelight",
     "_patch_sizes",
@@ -4034,7 +4031,6 @@ void __near* VALUES[LOCALS_COUNT] = {
     texturepatchlump_offset,
     visplaneheaders,
     visplanepiclights,
-    fuzzoffset,
     scalelightfixed,
 
     scalelight,

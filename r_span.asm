@@ -875,6 +875,7 @@ index_set:
 
 les    bx, dword ptr ds:[_planezlight]
 xlat  byte ptr es:[bx]
+; mov  al, byte ptr cs:[bx + _cs_zlight_offset]
 colormap_ready:
 
 mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump-OFFSET R_DrawSpan_], al
