@@ -22,6 +22,8 @@
 #include "m_memory.h"
 //#include "m_near.h"
 
+void __far R_SPAN_STARTMARKER();
+void __far R_SPAN_ENDMARKER();
 void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
 void __far R_DrawColumn (void);
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
@@ -97,14 +99,14 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     //FILE*  fp2 = fopen("doomcod2.bin", "wb");
 	uint16_t codesize[9];
     
-    codesize[0] = FP_OFF(R_DrawSpan) - FP_OFF(R_DrawColumn);
+    codesize[0] = FP_OFF(R_SPAN_STARTMARKER) - FP_OFF(R_DrawColumn);
     // write filesize..
     fwrite(&codesize[0], 2, 1, fp);
     // write data
     FAR_fwrite((byte __far *)R_DrawColumn, codesize[0], 1, fp);
 
     
-    codesize[1] = FP_OFF(R_DrawSkyColumn) - FP_OFF(R_DrawSpan);
+    codesize[1] = FP_OFF(R_SPAN_ENDMARKER) - FP_OFF(R_SPAN_STARTMARKER);
     
     //FAR_fwrite((byte __far *)R_MapPlane, FP_OFF(R_DrawSkyColumn) - FP_OFF(R_MapPlane), 1, fp2);
     //fclose(fp2);
@@ -112,7 +114,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // write filesize..
     fwrite(&codesize[1], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_DrawSpan, codesize[1], 1, fp);
+    FAR_fwrite((byte __far *)R_SPAN_STARTMARKER, codesize[1], 1, fp);
 
     // DrawFuzzColumn thru R_DrawColumnPrepMaskedMulti
     codesize[2] = FP_OFF(R_WriteBackViewConstantsMasked) - FP_OFF(R_MASKED_STARTMARKER);
@@ -184,9 +186,10 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define R_WriteBackMaskedFrameConstantsOffset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
 
     // span offsets
-    //fprintf(fp, "#define R_MapPlaneOffset                      0x%X\n", FP_OFF(R_MapPlane)                      - FP_OFF(R_DrawSpan));
-	fprintf(fp, "#define R_DrawPlanesOffset                    0x%X\n", FP_OFF(R_DrawPlanes)                    - FP_OFF(R_DrawSpan));
-	fprintf(fp, "#define R_WriteBackViewConstantsSpanOffset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan)    - FP_OFF(R_DrawSpan));
+    //fprintf(fp, "#define R_MapPlaneOffset                      0x%X\n", FP_OFF(R_MapPlane)                      - FP_OFF(R_SPAN_STARTMARKER));
+	fprintf(fp, "#define R_DrawSpanOffset                      0x%X\n", FP_OFF(R_DrawSpan)                      - FP_OFF(R_SPAN_STARTMARKER));
+	fprintf(fp, "#define R_DrawPlanesOffset                    0x%X\n", FP_OFF(R_DrawPlanes)                    - FP_OFF(R_SPAN_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpanOffset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan)    - FP_OFF(R_SPAN_STARTMARKER));
 
 
     // sky offsets

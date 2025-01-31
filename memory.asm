@@ -248,7 +248,8 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 
 ; diff between R_DrawSpanActual_ and R_DrawSpan_ label. E9 jmp rel16
-R_DRAWSPANACTUAL_DIFF = 03h
+; 0A0h is size of span jump table. 3 is size of diff mentioned in above line
+R_DRAWSPANACTUAL_DIFF = 3 + 0A0h
 
 ;500 (null offset + 4D0) spanfunc_call_table
 ; drawspan settings...

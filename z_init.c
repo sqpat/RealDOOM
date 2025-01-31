@@ -460,16 +460,10 @@ void __near Z_LoadBinaries() {
 	// FOD3
 	Z_QuickMapPalette();
 	
-	FAR_fread(spanfunc_jump_lookup_9000, 2, 80, fp);
-
-/*
-	FAR_memcpy((byte __far *)spanfunc_function_area_9000, 
-	(byte __far *)R_DrawSpan,
-	 FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan));
-*/
+	
 
 	fread(&codesize, 2, 1, fp2);
-	FAR_fread(spanfunc_function_area_9000, codesize, 1, fp2);
+	FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp2);
 
 
 
