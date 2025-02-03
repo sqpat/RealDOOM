@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/30 19:08:01
+Created on:       25/02/03 13:02:09
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -27,7 +27,7 @@ Segment                Class          Group          Address         Size
 m_near_TEXT            CODE           AUTO           0000:0000       00000000
 d_init_TEXT            CODE           AUTO           0000:0000       00000c41
 st_init_TEXT           CODE           AUTO           0000:0c50       00000247
-r_init_TEXT            CODE           AUTO           0000:0ea0       00000c67
+r_init_TEXT            CODE           AUTO           0000:0ea0       00000c6f
 w_init_TEXT            CODE           AUTO           0000:1b10       00000376
 i_init_TEXT            CODE           AUTO           0000:1e90       000000a5
 z_umb_TEXT             CODE           AUTO           0000:1f40       00000000
@@ -543,9 +543,9 @@ Module: r_init.obj(C:\REALDOOM\r_init.c)
 0000:103e+     R_GenerateLookup_
 0000:15e6+     R_InitTextures_
 0000:1988+     R_InitTextures2_
-0000:19da+     R_InitPatches_
-0000:1a54+     R_InitData_
-0000:1a9a      R_Init_
+0000:19e2+     R_InitPatches_
+0000:1a5c+     R_InitData_
+0000:1aa2      R_Init_
 Module: w_init.obj(C:\REALDOOM\w_init.c)
 0000:1b10      W_AddFile_
 Module: i_init.obj(C:\REALDOOM\i_init.c)
@@ -1545,4 +1545,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00023d70 (146800.)
 Entry point address: 1c9e:2438
-Link time: 00:00.74
+Link time: 00:00.75

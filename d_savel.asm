@@ -810,7 +810,14 @@ call   LoadInt8_
 
 mov    ax, word ptr [di - 0Ch]        ; di is 0Dh, we want 1
 
-shl    ax, 4
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    shl    ax, 4
+ELSE
+    shl    ax, 1
+    shl    ax, 1
+    shl    ax, 1
+    shl    ax, 1
+ENDIF
 xchg   ax, bx
 
 mov    cx, ds
@@ -857,7 +864,14 @@ call   LoadInt16_
 
 
 mov    ax, word ptr [di - 0Ch]  ; di is 0Dh, we want 1
-shl    ax, 4
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    shl    ax, 4
+ELSE
+    shl    ax, 1
+    shl    ax, 1
+    shl    ax, 1
+    shl    ax, 1
+ENDIF
 mov    di, ax
 mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
 jmp    load_next_special
@@ -898,7 +912,14 @@ call   LoadShortHeight16_
 
 mov    ax, word ptr [di - 9]    ; di is + 0Bh, we want 2..
 
-shl    ax, 4
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    shl    ax, 4
+ELSE
+    shl    ax, 1
+    shl    ax, 1
+    shl    ax, 1
+    shl    ax, 1
+ENDIF
 mov    di, ax
 mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
 jmp    load_next_special
@@ -941,7 +962,14 @@ call   LoadInt8_
 
 mov    ax, word ptr es:[di-0Fh]  ; di is 0F, we want 0
 
-shl    ax, 4
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    shl    ax, 4
+ELSE
+    shl    ax, 1
+    shl    ax, 1
+    shl    ax, 1
+    shl    ax, 1
+ENDIF
 ; todo xchg
 xchg   ax, bx
 mov    word ptr [bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef

@@ -37,13 +37,30 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
+
+compileinstructionset = $(USE_ISA)
+
+!ifeq compileinstructionset 1
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -1 -s $(EXTERNCOPT)
+!else
+!ifeq compileinstructionset 2
 CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s $(EXTERNCOPT)
+!else
+!ifeq compileinstructionset 3
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -3 -s $(EXTERNCOPT)
+!else
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -0 -s $(EXTERNCOPT)
+!endif
+!endif
+!endif
+
+
+
 ASMOPTS = /d_USED000=0 $(EXTERNASMOPT)
  
-build386 = $(BUILD_386)
 build286chipset = $(286_CHIPSET)
 
-!ifeq build386 1
+!ifeq compileinstructionset 3
 GLOBOBJS = $(GLOBOBJS) math386.obj
 !endif
 
@@ -138,7 +155,7 @@ info.obj &
  video.obj 
  
 bingen.exe : $(GLOBOBJS) 
-!ifeq build386 1
+!ifeq compileinstructionset 3
  wlink @build/bingen3.lnk 
 !else
 !ifeq build286chipset 1

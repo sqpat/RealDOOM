@@ -16,56 +16,56 @@ GOTO PRINT_EXIT
 
 :MAKE_8086
     wmake -f build\make16 clean
-    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=0"
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=0" USE_ISA="0"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
     wmake -f build\make16 clean
-    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=0"
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=0" USE_ISA="0"
     bingen.exe
     wmake -f build\make16
 GOTO END
 
 :MAKE_186
     wmake -f build\make186 clean
-    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=1"
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=1" USE_ISA="1"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
     wmake -f build\make186 clean
-    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=1"
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=1" USE_ISA="1"
     bingen.exe
     wmake -f build\make186
 GOTO END
 
 :MAKE_286
     wmake -f build\make286 clean
-    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2"
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" USE_ISA="2"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
     wmake -f build\make286 clean
-    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2"
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" USE_ISA="2"
     bingen.exe
     wmake -f build\make286
 GOTO END
 
 :MAKE_386
     wmake -f build\make386 clean
-    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=3" BUILD_386="1"
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=3" USE_ISA="3"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
     wmake -f build\make386 clean
-    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=3" BUILD_386="1"
+    wmake -f build\makebg EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=3" USE_ISA="3"
     bingen.exe
     wmake -f build\make386
 GOTO END

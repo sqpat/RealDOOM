@@ -33,7 +33,7 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp 
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp -0
 #CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp -wx 
  
 #doom8088 build opts for comparison

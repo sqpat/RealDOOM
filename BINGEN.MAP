@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/30 19:08:00
+Created on:       25/02/03 13:02:08
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -27,7 +27,7 @@ Segment                Class          Group          Address         Size
 m_near_TEXT            CODE           AUTO           0000:0000       00000000
 d_init_TEXT            CODE           AUTO           0000:0000       00000c41
 st_init_TEXT           CODE           AUTO           0000:0c50       00000247
-r_init_TEXT            CODE           AUTO           0000:0ea0       00000c67
+r_init_TEXT            CODE           AUTO           0000:0ea0       00000c6f
 w_init_TEXT            CODE           AUTO           0000:1b10       00000376
 i_init_TEXT            CODE           AUTO           0000:1e90       000000a5
 z_umb_TEXT             CODE           AUTO           0000:1f40       00000000
@@ -58,7 +58,7 @@ g_setup_TEXT           CODE           AUTO           02b0:87e0       000002cc
 r_setup_TEXT           CODE           AUTO           02b0:8ab0       00000445
 st_setup_TEXT          CODE           AUTO           02b0:8f00       000001fa
 hu_setup_TEXT          CODE           AUTO           02b0:9100       000000c1
-D_FINALE_TEXT          CODE           AUTO           0bcc:0002       00000b5d
+D_FINALE_TEXT          CODE           AUTO           0bcc:0002       00000b5e
 D_SAVEL_TEXT           CODE           AUTO           0c82:0000       00000b27
 s_sound_TEXT           CODE           AUTO           0d35:0000       00000463
 p_ceilng_TEXT          CODE           AUTO           0d35:0470       000003ae
@@ -550,9 +550,9 @@ Module: r_init.obj(C:\REALDOOM\r_init.c)
 0000:103e+     R_GenerateLookup_
 0000:15e6+     R_InitTextures_
 0000:1988+     R_InitTextures2_
-0000:19da+     R_InitPatches_
-0000:1a54+     R_InitData_
-0000:1a9a      R_Init_
+0000:19e2+     R_InitPatches_
+0000:1a5c+     R_InitData_
+0000:1aa2      R_Init_
 Module: w_init.obj(C:\REALDOOM\w_init.c)
 0000:1b10      W_AddFile_
 Module: i_init.obj(C:\REALDOOM\i_init.c)
@@ -923,7 +923,7 @@ Module: hu_setup.obj(C:\REALDOOM\hu_setup.c)
 02b0:9100      HU_Start_
 Module: d_finale.obj(d_finale.ASM)
 0bcc:0297*     F_CastDrawer_
-0bcc:0ad8      F_Responder_
+0bcc:0ad9      F_Responder_
 0bcc:0002      F_START_
 0bcc:04b7*     F_BunnyScroll_
 0bcc:01b6      F_StartFinale_
@@ -933,8 +933,8 @@ Module: d_finale.obj(d_finale.ASM)
 0bcc:00c2*     F_CastPrint_
 0bcc:034d*     F_TextWrite_
 0bcc:071a*     F_CastTicker_
-0bcc:0b5f      F_END_
-0bcc:0b03      F_Drawer_
+0bcc:0b60      F_END_
+0bcc:0b04      F_Drawer_
 0bcc:0462*     F_DrawPatchCol_
 0bcc:09c2*     F_CastResponder_
 0bcc:06b7*     F_StartCast_
@@ -1694,4 +1694,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002b090 (176272.)
 Entry point address: 228d:26d0
-Link time: 00:00.30
+Link time: 00:00.75

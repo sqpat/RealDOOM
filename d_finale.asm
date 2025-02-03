@@ -1681,7 +1681,8 @@ db 01Eh  ;
 dw _locallib_strlen_addr
 
 mov   dx, ax
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 sub   ax, dx
 add   ax, TEXTWAIT
 cmp   ax, word ptr ds:[_finalecount]

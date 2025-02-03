@@ -684,6 +684,10 @@ void R_InitTextures2(){
 	// Precalculate whatever possible.  
 	// done using 7000 above ?
 
+	texturedefs_offset_6000[0] = 0;
+	//FAR_memset(SCRATCH_ADDRESS_7000, 0x00, 0xFFFFu);	// zero out scratch page
+
+
 	for (i = 0; i < numtextures; i++){
 		texturecompositesizes[i] = 0;
 		texturetranslation[i] = i;
