@@ -128,7 +128,7 @@ void I_StartupTimer(void) {
 
 	DEBUG_PRINT("I_StartupTimer()\n");
 	// installs master timer.  Must be done before StartupTimer()!
-	TS_ScheduleTask(I_TimerISR, 35);
+	TS_ScheduleMainTask(I_TimerISR);
 	TS_Dispatch();
 }
 
@@ -378,6 +378,160 @@ void I_sndArbitrateCards(void) {
     }
 }
 
+
+void MUS_ServiceRoutine(){
+/*
+	if (finishplaying){
+		return;
+	}	
+
+
+	currentsong_ticks_to_process ++;
+	
+	while (currentsong_ticks_to_process >= 0){
+
+		// ok lets actually process events....
+		int16_t increment 			= 1; // 1 for the event
+		byte doing_loop 			= false;
+		byte __far* currentlocation = muslocation + currentsong_playing_offset;
+		uint8_t eventbyte 			= currentlocation[0];
+		uint8_t event     			= (eventbyte & 0x70) >> 4;
+		int8_t  channel   			= (eventbyte & 0x0F);
+		byte lastflag  				= (eventbyte & 0x80);
+		int16_t_union delay_amt		= {0};
+
+
+		// // todo is this the right way...?
+		// if (channel > currentsong_primary_channels && channel < 10 && channel != PERCUSSION_CHANNEL){
+		// 	printf("primary changed channel to percussion %i", channel);
+		// 	channel = PERCUSSION_CHANNEL;
+		// } else if ((channel - 10) > currentsong_secondary_channels && channel != PERCUSSION_CHANNEL){
+		// 	//todo get rid of secondaries?
+		// 	printf("secondary changed channel to percussion %i", channel);
+		// 	channel = PERCUSSION_CHANNEL;
+		// }
+
+		switch (event){
+			case 0:
+				// Release Note
+				{
+					byte value 			  = currentlocation[1];
+					byte key		  = value & 0x7F;
+					playingdriver->releaseNote(channel, value);
+
+				}
+				increment++;
+				break;
+			case 1:
+				// Play Note
+				{
+					uint8_t value 			  = currentlocation[1];
+					byte volume = -1;  		// -1 means repeat..
+					uint8_t key		  = value & 0x7F;
+					if (value & 0x80){
+						volume = currentlocation[2] & 0x7F;
+						increment++;
+					}
+					playingdriver->playNote(channel, key, volume);
+					increment++;
+				}
+
+				break;
+			case 2:
+				// Pitch Bend
+				{
+					byte value 			  = currentlocation[1];
+					increment++;
+					playingdriver->pitchWheel(channel, value);
+
+				}
+				break;
+			case 3:
+				// System Event
+				{
+					byte controllernumber = currentlocation[1] & 0x7F;
+					playingdriver->changeControl(channel, controllernumber, 0);
+					increment++;
+				}
+
+				break;
+				
+			case 4:
+				// Controller
+				{
+					uint8_t controllernumber  = currentlocation[1] & 0x7F; // values above 127 used for instrument change & 0x7F;
+					uint8_t value 			  = currentlocation[2] & 0x7F; // values above 127 used for instrument change & 0x7F; ?
+
+					playingdriver->changeControl(channel, controllernumber, value);
+					increment++;
+					increment++;
+				}
+				break;
+			case 5:
+				// End of Measure
+				// do nothing..
+				//printf("End of Measure\n");
+
+				break;
+			case 6:
+				// Finish
+				printmessage("\nSong over\n");
+				if (currentsong_looping){
+					// is this right?
+					doing_loop = true;
+				} else {
+					if (loops_enabled){
+						doing_loop = true;
+					} else {
+						finishplaying = 1;
+					}
+				}
+				if (doing_loop){
+					printmessage("LOOPING SONG!\n");
+				}
+				break;
+			case 7:
+				// Unused
+				printmessage("UNUSED EVENT 7?\n");
+				increment++;   // advance for one data byte
+				break;
+		}
+
+		currentsong_playing_offset += increment;
+
+		while (lastflag){
+			// i dont think delays > 32768 are valid..
+			currentlocation = muslocation + currentsong_playing_offset;
+			delay_amt.bu.bytehigh = delay_amt.bu.bytelow;
+			delay_amt.bu.bytehigh >>= 1;	// shift 128.
+			lastflag = currentlocation[0];
+			delay_amt.bu.bytelow = (lastflag);
+
+			lastflag &= 0x80;
+			currentsong_playing_offset++;
+		}
+		//printf("%li %li %hhx\n", currentsong_ticks_to_process, currentsong_ticks_to_process - delay_amt, eventbyte);
+		currentsong_ticks_to_process -= delay_amt.hu;
+
+		//todo how to handle loop/end song plus last flag?
+		if (doing_loop){
+			// todo do we have to reset or something?
+			currentsong_playing_offset = currentsong_start_offset;
+		}
+		if (finishplaying){
+			break;
+		}
+
+
+	}
+	called = 1;
+	currentsong_int_count++;
+	playingtime++;
+
+*/
+}
+
+
 //
 // I_StartupSound
 // Inits all sound stuff
@@ -419,8 +573,14 @@ void __far I_StartupSound(void) {
 
     rc = DMX_Init(SND_TICRATE, SND_MAXSONGS, dmxCodes[snd_MusicDevice], dmxCodes[snd_SfxDevice]);
 
+    MUSTask.TaskService = MUS_ServiceRoutine; 
+
+
 
 }
+
+
+
 
 
 void I_SetChannels(int8_t channels) {

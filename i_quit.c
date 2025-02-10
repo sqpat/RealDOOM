@@ -52,58 +52,29 @@ void __near I_ShutdownGraphics(void) {
 #define FALSE (!TRUE)
 
 
-void TS_FreeTaskList(void);
-void TS_SetClockSpeed(int32_t speed);
-void TS_SetTimerToMaxTaskRate(void);
-//void __interrupt __far_func TS_ServiceSchedule(void);
 void __interrupt __far_func TS_ServiceScheduleIntEnabled(void);
 //void RestoreRealTimeClock(void);
-
 
 
 int16_t __far I_ResetMouse(void);
 
 
-/*---------------------------------------------------------------------
-   Function: TS_Terminate
 
-   Ends processing of a specific task.
----------------------------------------------------------------------*/
+void __near I_ShutdownTimer(void) {
+	// set timer to maximum rate
 
-void __near TS_Terminate() {
-	//_disable();
-	//free(&HeadTask);
-	TS_SetTimerToMaxTaskRate();
-	//_enable();
-
-
-}
-
-/*---------------------------------------------------------------------
-   Function: TS_Shutdown
-
-   Ends processing of all tasks.
----------------------------------------------------------------------*/
-
-void __near TS_Shutdown(void) {
+	_disable();
+	outp(0x43, 0x36);
+	outp(0x40, 0x00);
+	outp(0x40, 0x00);
+	_enable();	
 	if (TS_Installed) {
-		TS_FreeTaskList();
-		TS_SetClockSpeed(0);
 		_dos_setvect(0x08, OldInt8);
-
-
 		// Set Date and Time from CMOS
 		//      RestoreRealTimeClock();
-
 		TS_Installed = FALSE;
 	}
 }
-
-void __near I_ShutdownTimer(void) {
-	TS_Terminate();
-	TS_Shutdown();
-}
-
 
 
 void __near I_ShutdownKeyboard(void) {
@@ -124,12 +95,6 @@ void __near I_ShutdownMouse(void) {
 
 	I_ResetMouse();
 }
-
-
-
-
- 
-
 
 
 void __near Z_ShutdownEMS() {

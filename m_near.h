@@ -915,11 +915,12 @@ extern int8_t    msgNames[2];
 
 
 extern task HeadTask;
+extern task MUSTask;
+
 extern void( __interrupt __far_func *OldInt8)(void);
-extern volatile int32_t TaskServiceRate;
 extern volatile fixed_t_union TaskServiceCount;
 
-extern volatile int16_t TS_TimesInInterrupt;
+extern volatile int8_t TS_TimesInInterrupt;
 extern int8_t TS_Installed;
 extern volatile int8_t TS_InInterrupt;
 

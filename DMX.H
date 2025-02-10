@@ -24,16 +24,13 @@ void StopTimer(void);
 */
 
 typedef struct task{
-	struct task *next;
-	struct task *prev;
 	void(*TaskService)(void);
-	uint16_t rate;
-	volatile int32_t count;
+	volatile int8_t count;
 	int8_t active;
 } task;
 
 
-void TS_ScheduleTask(void(*Function)(void ), uint16_t rate);
+void TS_ScheduleMainTask(void(*Function)(void ));
 void TS_Dispatch(void);
 void TS_SetTaskRate(task *Task, uint16_t rate);
 

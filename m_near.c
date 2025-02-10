@@ -1073,34 +1073,22 @@ int8_t    msgNames[2]          = {15, 14};
 
 
 
-task HeadTask;
+task HeadTask = {NULL, 0, false};
+task MUSTask = {NULL, 0, false};
+
 void( __interrupt __far_func *OldInt8)(void);
-volatile int32_t TaskServiceRate = 0x10000L;
 volatile fixed_t_union TaskServiceCount;
 
-volatile int16_t TS_TimesInInterrupt;
+volatile int8_t TS_TimesInInterrupt;
 int8_t TS_Installed = false;
 volatile int8_t TS_InInterrupt = false;
 
 
-
-
-
 // used for general timing
-
-
-
-
-
-
 
 boolean  st_stopped = true;
 uint16_t armsbgarray[1] = { armsbg };
-
-
 THINKERREF		activeplats[MAXPLATS];
-
-
 weaponinfo_t	weaponinfo[NUMWEAPONS] = {
 
     {

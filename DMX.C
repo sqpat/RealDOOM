@@ -21,54 +21,25 @@
    Function prototypes
 ---------------------------------------------------------------------*/
 
-void TS_FreeTaskList(void);
-void TS_SetClockSpeed(int32_t speed);
 uint16_t TS_SetTimer(int32_t TickBase);
 void TS_SetTimerToMaxTaskRate(void);
 void __interrupt __far_func TS_ServiceScheduleIntEnabled(void);
 void TS_Startup(void);
 
+#define HZ_RATE_35 				(1192030L / 35)
+#define HZ_RATE_140 			(1192030L / 140)
+// 140 / 35
+#define HZ_INTERRUPTS_PER_TICK  4
 
-void TS_FreeTaskList(void){
 
-	//_disable();
-	//free(&HeadTask);
-	//_enable();
-}
 
-void TS_SetClockSpeed(int32_t speed){
-
-	_disable();
-	if ((speed > 0) && (speed < 0x10000L)) {
-		TaskServiceRate = speed;
-	} else {
-		TaskServiceRate = 0x10000L;
-	}
-
-	outp(0x43, 0x36);
-	outp(0x40, TaskServiceRate);			// todo will this work 16 bit
-	outp(0x40, TaskServiceRate >> 8);
-	_enable();
-}
-
-uint16_t TS_SetTimer(int32_t TickBase){
-
-	uint16_t speed;
-	//speed =   1192030L / TickBase;
-	speed = 1192030L / 35;
-	// ~ 34058
-
-	if (speed < TaskServiceRate) {
-		TS_SetClockSpeed(speed);
-	}
-
-	return (speed);
-}
 
 void TS_SetTimerToMaxTaskRate(void){
-
+	// reset interrupt rate
 	_disable();
-	TS_SetClockSpeed(0x10000L);
+	outp(0x43, 0x36);
+	outp(0x40, 0x00);
+	outp(0x40, 0x00);
 	_enable();
 }
 
@@ -79,7 +50,7 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 	resetDS();
 
 	TS_TimesInInterrupt++;
-	TaskServiceCount.w += TaskServiceRate;
+	TaskServiceCount.w += HZ_RATE_140;
 	//todo implement this in asm via carry flag rather than a 32 bit add. 
 	// only need a 16 bit variable too.
 	if (TaskServiceCount.h.intbits) {
@@ -89,25 +60,29 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 
 	outp(0x20, 0x20); // Acknowledge interrupt
 
+	// catch multiple runs?
 	if (TS_InInterrupt) {
 		return;
 	}
 
 	TS_InInterrupt = true;
+
 	_enable();
-
-
 	while (TS_TimesInInterrupt) {
 		if (HeadTask.active) {
-			HeadTask.count += TaskServiceRate;
-			if (HeadTask.count >= HeadTask.rate) {
-				HeadTask.count -= HeadTask.rate;
+			HeadTask.count ++;
+			if (HeadTask.count >= HZ_INTERRUPTS_PER_TICK) {
+				HeadTask.count -= HZ_INTERRUPTS_PER_TICK;
 				HeadTask.TaskService();
 			}
 		}
+		if (MUSTask.active) {
+			// every tick...
+			MUSTask.TaskService();
+		}
+		
 		TS_TimesInInterrupt--;
 	}
-
 	_disable();
 
 
@@ -128,14 +103,11 @@ void TS_Startup(void){
 
 	if (!TS_Installed) {
 
-		TaskServiceRate = 0x10000L;
 		TaskServiceCount.w = 0;
-
 		TS_TimesInInterrupt = 0;
 
 		OldInt8 = _dos_getvect(0x08);
 		_dos_setvect(0x08, TS_ServiceScheduleIntEnabled);
-
 		TS_Installed = true;
 	}
 
@@ -148,12 +120,16 @@ void TS_Startup(void){
    Schedules a new task for processing.
 ---------------------------------------------------------------------*/
 
-void TS_ScheduleTask( void(*Function)(void ), uint16_t rate) {
+void TS_ScheduleMainTask( void(*Function)(void )) {
 	TS_Startup();
+	
+	_disable();
+	outp(0x43, 0x36);
+	outp(0x40, HZ_RATE_140);			// todo will this work 16 bit
+	outp(0x40, (HZ_RATE_140) >> 8);
+	_enable();
+
 	HeadTask.TaskService = Function;
-	HeadTask.rate = TS_SetTimer(rate);
-	HeadTask.count = 0;
-	HeadTask.active = false;
 
 }
 
@@ -166,8 +142,10 @@ void TS_ScheduleTask( void(*Function)(void ), uint16_t rate) {
 ---------------------------------------------------------------------*/
 
 void TS_Dispatch(){
+	
 	_disable();
 	HeadTask.active = true;
+	MUSTask.active = true;
 	_enable();
 }
 
