@@ -47,7 +47,7 @@ CCOPTS = -zp1 -oaxet -oi -zq -j -mm -1 -s $(EXTERNCOPT)
 CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s $(EXTERNCOPT)
 !else
 !ifeq compileinstructionset 3
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -3 -s $(EXTERNCOPT)
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s $(EXTERNCOPT)
 !else
 CCOPTS = -zp1 -oaxet -oi -zq -j -mm -0 -s $(EXTERNCOPT)
 !endif
