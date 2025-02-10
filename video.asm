@@ -52,10 +52,10 @@ PUBLIC V_DrawPatch_
 ; possible todo: interrupts, sp
 ; todo: make 8086
 
-push  cx
-push  si
-push  di
-push  bp
+push  cx   ; +2
+push  si   ; +4
+push  di   ; +6
+push  bp   ; +8       thus 0A 0C is far patch
 mov   bp, sp
 push  dx
 
@@ -80,6 +80,10 @@ doing_draws:
 
 lds   bx, dword ptr [bp + 0Ch]
 sub   dl, byte ptr ds:[bx + 6]
+add   bx, 8
+; for 486 with larger prefetch queues we must write this BX as early as possible.
+mov   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction + 1], bx  ; store column
+
 xor   dh, dh
 
 ; si = y * screenwidth
@@ -106,7 +110,7 @@ ENDIF
 add    si, ax
 
 
-sub   si, word ptr ds:[bx + 4]
+sub   si, word ptr ds:[bx - 4]	; bx has 8 added to it
 
 
 cmp   cl, 0
@@ -126,9 +130,7 @@ mov   bx, word ptr [bp + 0Ch]
 ;    w = (patch->width); 
 mov   ax, word ptr ds:[bx]
 
-add   bx, 8
 mov   word ptr cs:[OFFSET SELFMODIFY_compare_instruction + 1], ax  ; store width
-mov   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction + 1], bx  ; store column
 test  ax, ax
 jle   jumptoexit
 ; store patch segment (???) remove;
@@ -142,10 +144,10 @@ dec   word ptr cs:[OFFSET SELFMODIFY_compare_instruction + 1] ; decrement count 
 ; ds:si is patch segment
 ; es:di is screen pixel target
 
-SELFMODIFY_setup_bx_instruction:
-mov   bx, 0F030h               ; F030h is target for self modifying code     
 ; grab patch offset into di
 mov   si, word ptr [bp + 0Ch]
+SELFMODIFY_setup_bx_instruction:
+mov   bx, 0F030h               ; F030h is target for self modifying code     
 ; si equals colofs lookup
 add   si, word ptr ds:[bx]
 
@@ -280,8 +282,8 @@ pop   si
 pop   cx
 retf  4
 domarkrect:
-mov   cx, word ptr ds:[bx + 2]
-mov   bx, word ptr ds:[bx]
+mov   cx, word ptr ds:[bx - 6]	; bx was offset by 8...
+mov   bx, word ptr ds:[bx - 8]
 push ds
 
 mov  di, ss
@@ -335,10 +337,13 @@ doing_draws5000Screen0_:
 ;	offset = y * SCREENWIDTH + x;
 
 ; load patch
+; for 486 with larger prefetch queues we must write this BX as early as possible.
+mov   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction5000Screen0_ + 1], 8  ; store column
 
 mov   bx, SCRATCH_PAGE_SEGMENT_5000
 mov   ds, bx
 xor   bx, bx
+
 
 
 sub   dl, byte ptr ds:[bx + 6]	; patch topoffset
@@ -383,9 +388,7 @@ mov   word ptr cs:[OFFSET SELFMODIFY_offset_add_di5000Screen0_ + 2], si
 ;    w = (patch->width); 
 mov   ax, word ptr ds:[bx]
 
-add   bx, 8
 mov   word ptr cs:[OFFSET SELFMODIFY_compare_instruction5000Screen0_ + 1], ax  ; store width
-mov   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction5000Screen0_ + 1], bx  ; store column
 test  ax, ax
 jle   jumptoexit5000Screen0_
 ; store patch segment (???) remove;
@@ -571,6 +574,7 @@ mul   dx
 mov   word ptr cs:[SELFMODIFY_retrievepatchoffset+1], bx
 ; load destscreen into es:bx to calc desttop
 mov   di, bx
+mov   word ptr cs:[SELFMODIFY_retrievenextcoloffset + 1], di
 les   bx, dword ptr ds:[_destscreen]
 mov   ds, cx
 
@@ -599,7 +603,6 @@ mov   ax, word ptr ds:[di]  ; get width
 mov   word ptr cs:[SELFMODIFY_compare_instruction_direct + 1], ax
 test  ax, ax
 jle   jumptoexitdirect
-mov   word ptr cs:[SELFMODIFY_retrievenextcoloffset + 1], di
 
 draw_next_column_direct:
 
