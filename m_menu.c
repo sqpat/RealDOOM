@@ -457,12 +457,14 @@ void __near M_SfxVol(int16_t choice){
     switch(choice)
     {
       case 0:
-        if (sfxVolume)
-        sfxVolume--;
+        if (sfxVolume){
+            sfxVolume--;
+        }
         break;
       case 1:
-        if (sfxVolume < 15)
-        sfxVolume++;
+        if (sfxVolume < 15){
+            sfxVolume++;
+        }
         break;
     }
         
@@ -473,12 +475,14 @@ void __near M_MusicVol(int16_t choice){
     switch(choice)
     {
       case 0:
-        if (musicVolume)
-        musicVolume--;
+        if (musicVolume){
+            musicVolume--;
+        }
         break;
       case 1:
-        if (musicVolume < 15)
-        musicVolume++;
+        if (musicVolume < 15){
+            musicVolume++;
+        }
         break;
     }
         

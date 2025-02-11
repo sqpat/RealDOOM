@@ -249,10 +249,6 @@ int16_t activespritepages[NUM_SPRITE_L1_CACHE_PAGES]; // always gets reset to de
 uint8_t activespritenumpages[NUM_SPRITE_L1_CACHE_PAGES]; // always gets reset to defaults at start of frame
 int16_t spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
 
- 
-
-
-
 int8_t spritecache_l2_head = -1;
 int8_t spritecache_l2_tail = -1;
 
@@ -261,7 +257,6 @@ int8_t flatcache_l2_tail = NUM_FLAT_CACHE_PAGES-1;
 
 int8_t texturecache_l2_head = -1;
 int8_t texturecache_l2_tail = -1;
-
 
 int16_t cachedlumps[NUM_CACHE_LUMPS];
 segment_t cachedsegmentlumps[NUM_CACHE_LUMPS];
@@ -273,16 +268,10 @@ int16_t   cachedtex2 = -1;
 uint8_t   cachedcollength = 0;
 uint8_t   cachedcollength2 = 0;
 
-
-
 int8_t 	am_cheating = 0;
 int8_t 	am_grid = 0;
 
-
-
 // size of window on screen
-
-
 mpoint_t 	m_paninc; // how far the window pans each tic (map coords)
 int16_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
 int16_t 	ftom_zoommul; // how far the window zooms in each tic (fb coords)
@@ -1933,7 +1922,7 @@ sfxinfo_t S_sfx[] = {
 
 
 // the set of channels available
-channel_t	channels[MAX_CHANNELS];
+channel_t	channels[MAX_SFX_CHANNELS];
 
 // These are not used, but should be (menu).
 // Maximum volume of a sound effect.
@@ -1974,3 +1963,142 @@ uint16_t shift4lookup[256] =
 3856, 3872, 3888, 3904, 3920, 3936, 3952, 3968, 3984, 4000, 4016, 4032, 4048, 4064, 4080
 };
 */
+
+/* Driver descriptor */
+
+OPLdata OPL2driverdata;
+/*
+
+driverBlock OPL2driver = {
+	DRV_OPL2,			// driverID
+	sizeof(OPLdata),		// datasize
+	OPLinitDriver,
+	OPL2detectHardware,
+	OPL2initHardware,
+	OPL2deinitHardware,
+
+	OPLplayNote,
+	OPLreleaseNote,
+	OPLpitchWheel,
+	OPLchangeControl,
+	OPLplayMusic,
+	OPLstopMusic,
+	OPLchangeSystemVolume
+};
+
+driverBlock OPL3driver = {
+	DRV_OPL3,			// driverID
+	sizeof(OPLdata),		// datasize
+	OPLinitDriver,
+	OPL3detectHardware,
+	OPL3initHardware,
+	OPL3deinitHardware,
+
+	OPLplayNote,
+	OPLreleaseNote,
+	OPLpitchWheel,
+	OPLchangeControl,
+	OPLplayMusic,
+	OPLstopMusic,
+	OPLchangeSystemVolume
+};
+*/
+uint8_t	OPLsinglevoice = 0;
+driverBlock	*playingdriver;// = &OPL2driver;
+
+uint16_t 			currentsong_looping;
+uint16_t 			currentsong_start_offset;
+uint16_t 			currentsong_playing_offset;
+uint16_t 			currentsong_length;
+int16_t 			currentsong_primary_channels;
+int16_t 			currentsong_secondary_channels;
+uint16_t 			currentsong_num_instruments;       // 0-127
+
+uint16_t 			currentsong_play_timer;
+uint32_t 			currentsong_int_count;
+int16_t 			currentsong_ticks_to_process = 0;
+
+
+uint8_t				playingstate = ST_PLAYING;			
+uint16_t			playingpercussMask = 1 << PERCUSSION;	// todo #define? or should other instruments be forced into percussion?
+int16_t     		playingvolume = DEFAULT_VOLUME;
+volatile uint32_t 	playingtime = 0;
+volatile int16_t 	finishplaying = 0;
+//uint8_t 			instrumentlookup[MAX_INSTRUMENTS];
+uint8_t 			*instrumentlookup;
+int8_t				loops_enabled = false;
+//AdlibChannelEntry   AdLibChannels[MAX_MUSIC_CHANNELS];
+AdlibChannelEntry   *AdLibChannels;
+//OP2instrEntry 		AdLibInstrumentList[MAX_INSTRUMENTS_PER_TRACK];
+OP2instrEntry 		*AdLibInstrumentList;
+
+uint8_t OPLchannels = OPL2CHANNELS;
+uint8_t OPL3mode = 0;
+
+
+uint8_t op_num[9] = { 0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12};
+int8_t noteVolumetable[128] = {
+	  0,   1,   3,   5,   6,   8,  10,  11,
+	 13,  14,  16,  17,  19,  20,  22,  23,
+	 25,  26,  27,  29,  30,  32,  33,  34,
+	 36,  37,  39,  41,  43,  45,  47,  49,
+	 50,  52,  54,  55,  57,  59,  60,  61,
+	 63,  64,  66,  67,  68,  69,  71,  72,
+	 73,  74,  75,  76,  77,  79,  80,  81,
+	 82,  83,  84,  84,  85,  86,  87,  88,
+	 89,  90,  91,  92,  92,  93,  94,  95,
+	 96,  96,  97,  98,  99,  99, 100, 101,
+	101, 102, 103, 103, 104, 105, 105, 106,
+	107, 107, 108, 109, 109, 110, 110, 111,
+	112, 112, 113, 113, 114, 114, 115, 115,
+	116, 117, 117, 118, 118, 119, 119, 120,
+	120, 121, 121, 122, 122, 123, 123, 123,
+	124, 124, 125, 125, 126, 126, 127, 127};
+
+// for low 7 notes
+uint16_t freqtable[7] = {
+	345, 365, 387, 410, 435, 460, 488
+};
+// for the rest.
+uint16_t freqtable2[12] = {
+	517, 547, 580, 615, 651, 690, 731, 774, 820, 869, 921, 975
+};
+
+
+/*
+//todo how to calculate...?
+uint16_t pitchwheeltable[] = {				    
+	 29193U,29219U,29246U,29272U,29299U,29325U,29351U,29378U,  
+	 29405U,29431U,29458U,29484U,29511U,29538U,29564U,29591U,  
+	 29618U,29644U,29671U,29698U,29725U,29752U,29778U,29805U,  
+	 29832U,29859U,29886U,29913U,29940U,29967U,29994U,30021U,  
+	 30048U,30076U,30103U,30130U,30157U,30184U,30212U,30239U,  
+	 30266U,30293U,30321U,30348U,30376U,30403U,30430U,30458U,  
+	 30485U,30513U,30541U,30568U,30596U,30623U,30651U,30679U,  
+	 30706U,30734U,30762U,30790U,30817U,30845U,30873U,30901U,  
+	 30929U,30957U,30985U,31013U,31041U,31069U,31097U,31125U,  
+	 31153U,31181U,31209U,31237U,31266U,31294U,31322U,31350U,  
+	 31379U,31407U,31435U,31464U,31492U,31521U,31549U,31578U,  
+	 31606U,31635U,31663U,31692U,31720U,31749U,31778U,31806U,  
+	 31835U,31864U,31893U,31921U,31950U,31979U,32008U,32037U,  
+	 32066U,32095U,32124U,32153U,32182U,32211U,32240U,32269U,  
+	 32298U,32327U,32357U,32386U,32415U,32444U,32474U,32503U,  
+	 32532U,32562U,32591U,32620U,32650U,32679U,32709U,32738U,  
+	 32768U,32798U,32827U,32857U,32887U,32916U,32946U,32976U,  
+	 33005U,33035U,33065U,33095U,33125U,33155U,33185U,33215U,  
+	 33245U,33275U,33305U,33335U,33365U,33395U,33425U,33455U,  
+	 33486U,33516U,33546U,33576U,33607U,33637U,33667U,33698U,  
+	 33728U,33759U,33789U,33820U,33850U,33881U,33911U,33942U,  
+	 33973U,34003U,34034U,34065U,34095U,34126U,34157U,34188U,  
+	 34219U,34250U,34281U,34312U,34343U,34374U,34405U,34436U,  
+	 34467U,34498U,34529U,34560U,34591U,34623U,34654U,34685U,  
+	 34716U,34748U,34779U,34811U,34842U,34874U,34905U,34937U,  
+	 34968U,35000U,35031U,35063U,35095U,35126U,35158U,35190U,  
+	 35221U,35253U,35285U,35317U,35349U,35381U,35413U,35445U,  
+	 35477U,35509U,35541U,35573U,35605U,35637U,35669U,35702U,  
+	 35734U,35766U,35798U,35831U,35863U,35895U,35928U,35960U,  
+	 35993U,36025U,36058U,36090U,36123U,36155U,36188U,36221U,  
+	 36254U,36286U,36319U,36352U,36385U,36417U,36450U,36483U,  
+	 36516U,36549U,36582U,36615U,36648U,36681U,36715U,36748U}; 
+*/
+

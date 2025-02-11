@@ -19,6 +19,10 @@
 // this will make it easier to build collections of function binaries, 
 // export them to file and load them at runtime into EMS memory locations
 
+#ifndef __M_NEAR_H__
+#define __M_NEAR_H__
+
+
 #include "dutils.h"
 
 #include "am_map.h"
@@ -1167,6 +1171,131 @@ extern boolean    				plutonia;
 extern boolean    				tnt;
 #endif
 
+
+
+
+#define MAX_MUSIC_CHANNELS	16		// total channels 0..CHANNELS-1
+#define PERCUSSION	15		// percussion channel
+#define MAX_INSTRUMENTS 175
+#define MAX_INSTRUMENTS_PER_TRACK 0x1C // largest in doom1 or doom2
+#define DEFAULT_PITCH_BEND 0x80
+extern uint8_t	playingstate;
+#define DEFAULT_VOLUME  256
+#define MUTE_VOLUME  0
+
+
+#define ADLIBPORT	0x388
+#define SBPORT		0x228
+#define SBPROPORT	0x220
+#define OPL2PORT	0x388		/* universal port number */
+#define OPL3PORT	0x388
+
+#define OPL2CHANNELS	9
+#define OPL3CHANNELS	18
+
+/* DP_SINGLE_VOICE: param1 codes */
+#define DPP_SINGLE_VOICE_OFF	0	/* default: off */
+#define DPP_SINGLE_VOICE_ON	1
+
+
+#define DRV_OPL2    0x01
+#define DRV_OPL3	0x02
+
+#define ST_EMPTY	0		// music block is empty
+#define ST_STOPPED	1		// music block is used but not playing
+#define ST_PLAYING	2		// music block is used and playing
+#define ST_PAUSED	3		// music block is used and paused
+					// any number >= 3 means `paused'
+#define NUM_CONTROLLERS 10
+
+
+/* Internal variables */
+typedef struct {
+	uint8_t	channelInstr[MAX_MUSIC_CHANNELS];		// instrument #
+	uint8_t	channelVolume[MAX_MUSIC_CHANNELS];	// volume
+	uint8_t	channelLastVolume[MAX_MUSIC_CHANNELS];	// last volume
+	int8_t	channelPan[MAX_MUSIC_CHANNELS];		// pan, 0=normal
+	int8_t	channelPitch[MAX_MUSIC_CHANNELS];		// pitch wheel, 0=normal
+	uint8_t	channelSustain[MAX_MUSIC_CHANNELS];	// sustain pedal value
+	uint8_t	channelModulation[MAX_MUSIC_CHANNELS];	// modulation pot value
+} OPLdata;
+
+
+typedef struct  {
+	int8_t	driverID;
+	uint16_t	datasize;
+
+	int8_t	(*initDriver)(void);
+    
+	int8_t	(*detectHardware)(uint16_t port, uint8_t irq, uint8_t dma);
+	int8_t	(*initHardware)(uint16_t port, uint8_t irq, uint8_t dma);
+	int8_t	(*deinitHardware)(void);
+
+	void	(*playNote)(uint8_t channel, uint8_t note, int8_t noteVolume);
+	void	(*releaseNote)(uint8_t channel, uint8_t note);
+	void	(*pitchWheel)(uint8_t channel, uint8_t pitch);
+	void	(*changeControl)(uint8_t channel, uint8_t controller, uint8_t value);
+	void	(*playMusic)();
+	void	(*stopMusic)();
+	void	(*changeSystemVolume)(int16_t volume);
+	int8_t	(*sendMIDI)(uint8_t command, uint8_t par1, uint8_t par2);
+
+} driverBlock;
+
+
+/* OPL2 instrument */
+typedef struct{
+/*00*/	uint8_t    trem_vibr_1;	/* OP 1: tremolo/vibrato/sustain/KSR/multi */
+/*01*/	uint8_t	att_dec_1;	/* OP 1: attack rate/decay rate */
+/*02*/	uint8_t	sust_rel_1;	/* OP 1: sustain level/release rate */
+/*03*/	uint8_t	wave_1;		/* OP 1: waveform select */
+/*04*/	uint8_t	scale_1;	/* OP 1: key scale lesvel */
+/*05*/	uint8_t	level_1;	/* OP 1: output level */
+/*06*/	uint8_t	feedback;	/* feedback/AM-FM (both operators) */
+/*07*/	uint8_t trem_vibr_2;	/* OP 2: tremolo/vibrato/sustain/KSR/multi */
+/*08*/	uint8_t	att_dec_2;	/* OP 2: attack rate/decay rate */
+/*09*/	uint8_t	sust_rel_2;	/* OP 2: sustain level/release rate */
+/*0A*/	uint8_t	wave_2;		/* OP 2: waveform select */
+/*0B*/	uint8_t	scale_2;	/* OP 2: key scale level */
+/*0C*/	uint8_t	level_2;	/* OP 2: output level */
+/*0D*/	uint8_t	unused;
+/*0E*/	int16_t	basenote;	/* base note offset */
+} OPL2instrument;
+
+/* OP2 instrument file entry */
+typedef struct  {
+/*00*/	uint16_t	    flags;			// see FL_xxx below
+/*02*/	uint8_t	        finetune;		// finetune value for 2-voice sounds
+/*03*/	uint8_t	        note;			// note # for fixed instruments
+/*04*/	OPL2instrument  instr[2];	// instruments
+} OP2instrEntry;
+
+typedef struct  {
+	uint8_t	controllers[NUM_CONTROLLERS][MAX_MUSIC_CHANNELS]; // MUS controllers
+	uint8_t	channelLastVolume[MAX_MUSIC_CHANNELS];	// last volume
+	uint8_t	pitchWheel[MAX_MUSIC_CHANNELS];		// pitch wheel value
+	int8_t	realChannels[MAX_MUSIC_CHANNELS];		// real MIDI output channels
+	uint8_t	percussions[128/8];		// bit-map of used percussions
+} MIDIdata;
+
+/* OPL channel (voice) data */
+typedef struct {
+	uint8_t	channel;		/* MUS channel number */
+	uint8_t	note;			/* note number */
+	uint8_t	flags;			/* see CH_xxx below */
+	uint8_t	realnote;		/* adjusted note number */
+	uint8_t	pitchwheel;		/* pitch-wheel value */
+	int8_t	finetune;		/* frequency fine-tune */
+	int8_t  noteVolume;		/* note volume */
+	int8_t	realvolume;		/* adjusted note volume */
+	OPL2instrument* instr;	    /* current instrument */
+	uint32_t time;			/* note start time */
+}  AdlibChannelEntry;
+
+
+
+
+
 // the complete set of sound effects
 extern sfxinfo_t	S_sfx[];
 
@@ -1175,9 +1304,78 @@ extern musicinfo_t	S_music[];
 
 
 
-extern channel_t	channels[MAX_CHANNELS];
+extern channel_t	channels[MAX_SFX_CHANNELS];
 extern boolean		mus_paused;	
 extern musicinfo_t*	mus_playing;
-extern ticcount_t		nextcleanup;
+extern ticcount_t	nextcleanup;
 
 //extern uint16_t shift4lookup[256];
+
+extern      OPLdata OPL2driverdata;
+/*
+extern      driverBlock OPL2driver;
+extern      driverBlock OPL3driver;
+*/ 
+extern      uint8_t OPLsinglevoice;
+
+extern      driverBlock *playingdriver;
+
+extern uint16_t 			currentsong_looping;
+extern uint16_t 			currentsong_start_offset;
+extern uint16_t 			currentsong_playing_offset;
+extern uint16_t 			currentsong_length;
+extern int16_t 			    currentsong_primary_channels;
+extern int16_t 			    currentsong_secondary_channels;
+extern uint16_t 			currentsong_num_instruments;       // 0-127
+
+extern uint16_t 			currentsong_play_timer;
+extern uint32_t 			currentsong_int_count;
+extern int16_t 			    currentsong_ticks_to_process;
+
+
+extern uint8_t				playingstate;
+extern uint16_t			    playingpercussMask;
+extern int16_t     		    playingvolume;
+extern volatile uint32_t 	playingtime;
+extern volatile int16_t 	finishplaying;
+// extern OP2instrEntry 		AdLibInstrumentList[MAX_INSTRUMENTS_PER_TRACK];
+extern uint8_t 			    *instrumentlookup;
+//extern uint8_t 			    instrumentlookup[MAX_INSTRUMENTS];
+extern int8_t				loops_enabled;
+//extern AdlibChannelEntry    AdLibChannels[MAX_MUSIC_CHANNELS];
+extern AdlibChannelEntry    *AdLibChannels;
+//extern OP2instrEntry 		AdLibInstrumentList[MAX_INSTRUMENTS_PER_TRACK];
+extern OP2instrEntry 		*AdLibInstrumentList;
+
+
+
+void	OPLplayNote(uint8_t channel, uint8_t note, int8_t noteVolume);
+void	OPLreleaseNote(uint8_t channel, uint8_t note);
+void    OPLpitchWheel(uint8_t channel, uint8_t pitch);
+void	OPLchangeControl(uint8_t channel, uint8_t controller, uint8_t value);
+void	OPLplayMusic();
+void	OPLstopMusic();
+void	OPLchangeSystemVolume(int16_t systemVolume);
+int8_t	OPLinitDriver(void);
+int8_t	OPL2detectHardware(uint16_t port, uint8_t irq, uint8_t dma);
+int8_t	OPL2initHardware(uint16_t port, uint8_t irq, uint8_t dma);
+int8_t	OPL2deinitHardware(void);
+int8_t	OPL3detectHardware(uint16_t port, uint8_t irq, uint8_t dma);
+int8_t	OPL3initHardware(uint16_t port, uint8_t irq, uint8_t dma);
+int8_t	OPL3deinitHardware(void);
+
+extern uint8_t OPLchannels;
+extern uint8_t OPL3mode;
+
+
+
+extern uint8_t op_num[9];
+
+extern int8_t noteVolumetable[128];
+
+extern uint16_t freqtable[7];
+extern uint16_t freqtable2[12];
+
+
+
+#endif

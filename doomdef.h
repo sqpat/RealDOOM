@@ -52,7 +52,7 @@ enum { VERSION =  109 };
 //#define PRECALCULATE_OPENINGS
 
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
-#define DEBUG_PRINTING 1
+//#define DEBUG_PRINTING 1
 
 #if DEBUG_PRINTING
     void __far DEBUG_PRINT (int8_t __far*error, ...);
@@ -429,6 +429,13 @@ inline uint16_t FastMul8u8u(uint8_t a, uint8_t b);
 #pragma aux FastMul8u8u =   \
 "MUL ah"  \
     parm [al] [ah]       \
+    modify [ah al]   \
+    value [ax];
+    // get quotient and remainder/modulo
+inline int16_t_union FastDiv16u_8u(uint16_t ax, uint8_t dl);
+#pragma aux FastDiv16u_8u =   \
+"div dl"  \
+    parm [ax] [dl]       \
     modify [ah al]   \
     value [ax];
 

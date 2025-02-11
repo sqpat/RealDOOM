@@ -135,9 +135,10 @@ GLOBOBJS = $(GLOBOBJS) &
  d_wi.obj &
  wi_stuff.obj &
  s_sound.obj &
+ sc_adlib.obj &
  sounds.obj &
-  d_wipe.obj &
-info.obj &
+ d_wipe.obj &
+ info.obj &
  d_math.obj &
  d_finale.obj &
  dmx.obj &

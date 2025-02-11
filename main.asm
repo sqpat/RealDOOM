@@ -28,7 +28,9 @@ EXTRN fopen_:PROC
 EXTRN fgetc_:PROC
 EXTRN fputc_:PROC
 EXTRN fclose_:PROC
-EXTRN DEBUG_PRINT_:PROC
+; todo only include if necessary via flags...
+;EXTRN DEBUG_PRINT_:PROC
+
 EXTRN locallib_strcmp_:PROC
 EXTRN sscanf_uint8_:PROC
 
@@ -1261,11 +1263,11 @@ je    done_copying_new_defaults_filename
 loop loop_copy_new_defaults_filename
 done_copying_new_defaults_filename:
 
-mov   ax, OFFSET _str_default_file
-push  cs
-push  ax                            ; a little roundabout. i think we could copy to CS first, then join with the other branch 
+;mov   ax, OFFSET _str_default_file
+;push  cs
+;push  ax                            ; a little roundabout. i think we could copy to CS first, then join with the other branch 
+;call  DEBUG_PRINT_
 
-call  DEBUG_PRINT_
 add   sp, 4
 
 
