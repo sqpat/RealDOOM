@@ -34,28 +34,7 @@
 #include "doomstat.h"
 #include "m_near.h"
 #include "sc_music.h"
-
-
-//todo put this all in a separate file when done
-
-void MUS_PauseSong(){
-
-}
-
-void MUS_ResumeSong(){
-
-}
-void MUS_SetMasterVolume(int16_t volume){
-
-}
-
-int16_t MUS_QrySongPlaying(){
-    return 0;
-}
-int16_t MUS_StopSong(){
-    return 0;
-}
-
+ 
 
 int16_t SFX_PlayPatch(void __far*vdata, int16_t pitch, int16_t sep, int16_t vol, int16_t unk1, int16_t unk2){
     return 0;
@@ -125,13 +104,14 @@ void I_StartupTimer(void) {
 }
 
 void I_PauseSong() {
+    // todo implement
 }
 
 void I_ResumeSong() {
+    // todo implement
 }
 
 void I_SetMusicVolume(uint8_t volume) {
-    //MUS_SetMasterVolume(volume);
     snd_MusicVolume = volume;
 }
 
@@ -165,16 +145,6 @@ int16_t I_LoadSong(uint16_t lump) {
         currentsong_secondary_channels  = worddata[5];  // always 0??
         currentsong_num_instruments     = worddata[6];  // varies..  but 0-127
         // reserved   
-		printmessage("Parsed values: \n");
-		printmessage("length:             0x%x\n",currentsong_length);
-		printmessage("start offset:       0x%x\n",currentsong_start_offset);
-		printmessage("primary channels:   0x%x\n",currentsong_primary_channels);
-		printmessage("secondary channels: 0x%x\n",currentsong_secondary_channels);
-		printmessage("num instruments:    0x%x\n",currentsong_num_instruments);	// todo dynamically load the data from the main bank at startup to take less memory?
-
-		if (currentsong_num_instruments > MAX_INSTRUMENTS_PER_TRACK){
-			printerror("Too many instruments! %i vs max of %i", currentsong_num_instruments, MAX_INSTRUMENTS_PER_TRACK);
-		}
 
 		currentsong_playing_offset = currentsong_start_offset;
 		currentsong_play_timer = 0;
@@ -209,7 +179,6 @@ int16_t I_LoadSong(uint16_t lump) {
                 }
             }
         }
-        printmessage("Read instrument data!\n");
 
         
         // reload mus
@@ -227,20 +196,23 @@ int16_t I_LoadSong(uint16_t lump) {
 	
 }
 
-void I_UnRegisterSong() {
-
-}
-
 
 
 void I_StopSong() {
     playingstate = ST_STOPPED;
     // todo signal driver pause?
-
+    if (playingdriver){
+        playingdriver->stopMusic();
+    }
 }
 
 void I_PlaySong(boolean looping) {
     playingstate = ST_PLAYING;
+    loops_enabled = true;
+    if (playingdriver){
+        playingdriver->stopMusic();
+    }
+
 }
 
 //
@@ -513,24 +485,15 @@ void MUS_ServiceRoutine(){
 				break;
 			case 6:
 				// Finish
-				printmessage("\nSong over\n");
-				if (currentsong_looping){
-					// is this right?
-					doing_loop = true;
-				} else {
-					if (loops_enabled){
-						doing_loop = true;
-					} else {
-						playingstate = ST_STOPPED;
-					}
-				}
-				if (doing_loop){
-					printmessage("LOOPING SONG!\n");
+
+                if (loops_enabled){
+                    doing_loop = true;
+                } else {
+                    playingstate = ST_STOPPED;
 				}
 				break;
 			case 7:
 				// Unused
-				printmessage("UNUSED EVENT 7?\n");
 				increment++;   // advance for one data byte
 				break;
 		}
@@ -615,9 +578,6 @@ void __far I_StartupSound(void) {
     playingdriver->initDriver();
 
 }
-
-
-
 
 
 void I_SetChannels(int8_t channels) {

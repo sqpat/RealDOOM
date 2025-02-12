@@ -1208,6 +1208,11 @@ extern uint8_t	playingstate;
 					// any number >= 3 means `paused'
 #define NUM_CONTROLLERS 10
 
+ 
+#define DRV_SBMIDI	0x0005
+#define SBMIDIPORT	0x220
+#define MPU401PORT	0x330
+#define DRV_MPU401	0x0004
 
 /* Internal variables */
 typedef struct {
@@ -1222,9 +1227,6 @@ typedef struct {
 
 
 typedef struct  {
-	int8_t	driverID;
-	uint16_t	datasize;
-
 	int8_t	(*initDriver)(void);
     
 	int8_t	(*detectHardware)(uint16_t port, uint8_t irq, uint8_t dma);
@@ -1320,7 +1322,6 @@ extern      uint8_t OPLsinglevoice;
 
 extern      driverBlock *playingdriver;
 
-extern uint16_t 			currentsong_looping;
 extern uint16_t 			currentsong_start_offset;
 extern uint16_t 			currentsong_playing_offset;
 extern uint16_t 			currentsong_length;
@@ -1336,16 +1337,10 @@ extern uint8_t				playingstate;
 extern uint16_t			    playingpercussMask;
 extern int16_t     		    playingvolume;
 extern volatile uint32_t 	playingtime;
-// extern OP2instrEntry 		AdLibInstrumentList[MAX_INSTRUMENTS_PER_TRACK];
-//extern uint8_t 			    *instrumentlookup;
-//extern uint8_t 			    instrumentlookup[MAX_INSTRUMENTS];
 extern int8_t				loops_enabled;
-//extern AdlibChannelEntry    AdLibChannels[MAX_MUSIC_CHANNELS];
-//extern AdlibChannelEntry    *AdLibChannels;
-//extern OP2instrEntry 		AdLibInstrumentList[MAX_INSTRUMENTS_PER_TRACK];
-//extern OP2instrEntry 		*AdLibInstrumentList;
-
-extern uint8_t wad_skip_read_bytes;
+extern uint16_t 			SBMIDIport;
+extern uint8_t	 			runningStatus;
+extern uint16_t 			MPU401port;
 
 
 

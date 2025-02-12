@@ -1970,8 +1970,6 @@ OPLdata OPL2driverdata;
 
 
 driverBlock OPL2driver = {
-	DRV_OPL2,			// driverID
-	sizeof(OPLdata),		// datasize
 	OPLinitDriver,
 	OPL2detectHardware,
 	OPL2initHardware,
@@ -1988,8 +1986,6 @@ driverBlock OPL2driver = {
 
 /*
 driverBlock OPL3driver = {
-	DRV_OPL3,			// driverID
-	sizeof(OPLdata),		// datasize
 	OPLinitDriver,
 	OPL3detectHardware,
 	OPL3initHardware,
@@ -2007,7 +2003,6 @@ driverBlock OPL3driver = {
 uint8_t	OPLsinglevoice = 0;
 driverBlock	*playingdriver = NULL;// = &OPL2driver;
 
-uint16_t 			currentsong_looping;
 uint16_t 			currentsong_start_offset;
 uint16_t 			currentsong_playing_offset;
 uint16_t 			currentsong_length;
@@ -2023,13 +2018,12 @@ uint8_t				playingstate = ST_EMPTY;
 uint16_t			playingpercussMask = 1 << PERCUSSION;	// todo #define? or should other instruments be forced into percussion?
 int16_t     		playingvolume = DEFAULT_VOLUME;
 volatile uint32_t 	playingtime = 0;
-//uint8_t 			instrumentlookup[MAX_INSTRUMENTS];
-//uint8_t 			*instrumentlookup;
 int8_t				loops_enabled = false;
-//AdlibChannelEntry   AdLibChannels[MAX_MUSIC_CHANNELS];
-//AdlibChannelEntry   *AdLibChannels;
-//OP2instrEntry 		AdLibInstrumentList[MAX_INSTRUMENTS_PER_TRACK];
-//OP2instrEntry 		*AdLibInstrumentList;
+uint16_t 			SBMIDIport = SBMIDIPORT;
+uint8_t	 			runningStatus = 0;
+uint16_t 			MPU401port = MPU401PORT;
+
+
 
 uint8_t OPLchannels = OPL2CHANNELS;
 uint8_t OPL3mode = 0;

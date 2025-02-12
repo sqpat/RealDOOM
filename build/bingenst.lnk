@@ -62,6 +62,9 @@ file d_savel.obj
 NEWSEGMENT
 file s_sound.obj
 file sc_adlib.obj
+file sc_midi.obj
+file sc_sbmid.obj
+file sc_mpu.obj
 file p_ceilng.obj
 file p_doors.obj
 file p_enemy.obj

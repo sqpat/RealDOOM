@@ -72,11 +72,6 @@ int16_t I_LoadSong(uint16_t lump);
 // MUS format.  Returns a handle which will be passed to all other music
 // functions.
 
-void I_UnRegisterSong();
-// called by anything which is finished with a song and no longer needs
-// the sound library to be aware of it.  All songs should be stopped
-// before calling this, but it will double check and stop it if necessary.
-
 void I_LoopSong();
 // called by anything that wishes to start music.
 // plays a song, and when the song is done, starts playing it again in

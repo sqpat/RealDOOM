@@ -100,15 +100,8 @@ void S_StopMusic(void) {
 		}
 
         I_StopSong();
-        I_UnRegisterSong();
-        //Z_ChangeTag(mus_playing->data, PU_CACHE);
-
-        //_dpmi_unlockregion(mus_playing->data, lumpinfo[mus_playing->lumpnum].size);
-
         mus_playing = mus_None;
     }
-
-
 }
 
 void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
