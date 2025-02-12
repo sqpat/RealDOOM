@@ -98,6 +98,7 @@
 #define PAGE_4800_OFFSET - 18
 #define PAGE_4C00_OFFSET - 17
 
+#define INDEXED_PAGE_FRAME_OFFSET (0)
 
 
 // Null page register. Represents 'map this to its original conventional page"
@@ -224,6 +225,7 @@ void __far Z_SetOverlay(int8_t wipeId);
     #define Z_QuickMap1AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], 1)
 
     // unused dummy args
+
     #define INDEXED_PAGE_9000_OFFSET (0)
     #define INDEXED_PAGE_9400_OFFSET (0)
     #define INDEXED_PAGE_9800_OFFSET (0)
@@ -346,12 +348,16 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 //90
 #define FLAT_DATA_PAGES                             (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-//93 todo remove these and make them shared with something...?
 
+//93
+#define MUS_DATA_PAGES                              FLAT_DATA_PAGES + 3
+
+//93 todo remove these and make them shared with something...?
 // todo eventuall yjust include this in the spritecache area...
 //#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 90 (+1 for 0 index = 95)
-#define NUM_EMS4_SWAP_PAGES                         (int16_t) (FLAT_DATA_PAGES + 3)
+
+// 97? (+1 for 0 index = 95)
+#define NUM_EMS4_SWAP_PAGES                         (int16_t) (MUS_DATA_PAGES + 4)
 // 91 in use currently (including page 0)
 
 

@@ -1062,8 +1062,8 @@ int8_t    msgNames[2]          = {15, 14};
 
 
 
-task HeadTask = {NULL, 0, false};
-task MUSTask = {NULL, 0, false};
+task HeadTask = {0, false};
+task MUSTask = {0, false};
 
 void( __interrupt __far_func *OldInt8)(void);
 volatile fixed_t_union TaskServiceCount;
@@ -1933,7 +1933,7 @@ channel_t	channels[MAX_SFX_CHANNELS];
 boolean		mus_paused;	
 
 // music currently being played
-musicinfo_t*	mus_playing=0;
+uint8_t		mus_playing=0;
 
 // following is set
 //  by the defaults code in M_misc:
@@ -1967,7 +1967,7 @@ uint16_t shift4lookup[256] =
 /* Driver descriptor */
 
 OPLdata OPL2driverdata;
-/*
+
 
 driverBlock OPL2driver = {
 	DRV_OPL2,			// driverID
@@ -1986,6 +1986,7 @@ driverBlock OPL2driver = {
 	OPLchangeSystemVolume
 };
 
+/*
 driverBlock OPL3driver = {
 	DRV_OPL3,			// driverID
 	sizeof(OPLdata),		// datasize
@@ -2004,7 +2005,7 @@ driverBlock OPL3driver = {
 };
 */
 uint8_t	OPLsinglevoice = 0;
-driverBlock	*playingdriver;// = &OPL2driver;
+driverBlock	*playingdriver = NULL;// = &OPL2driver;
 
 uint16_t 			currentsong_looping;
 uint16_t 			currentsong_start_offset;
@@ -2015,26 +2016,23 @@ int16_t 			currentsong_secondary_channels;
 uint16_t 			currentsong_num_instruments;       // 0-127
 
 uint16_t 			currentsong_play_timer;
-uint32_t 			currentsong_int_count;
 int16_t 			currentsong_ticks_to_process = 0;
 
 
-uint8_t				playingstate = ST_PLAYING;			
+uint8_t				playingstate = ST_EMPTY;			
 uint16_t			playingpercussMask = 1 << PERCUSSION;	// todo #define? or should other instruments be forced into percussion?
 int16_t     		playingvolume = DEFAULT_VOLUME;
 volatile uint32_t 	playingtime = 0;
-volatile int16_t 	finishplaying = 0;
 //uint8_t 			instrumentlookup[MAX_INSTRUMENTS];
-uint8_t 			*instrumentlookup;
+//uint8_t 			*instrumentlookup;
 int8_t				loops_enabled = false;
 //AdlibChannelEntry   AdLibChannels[MAX_MUSIC_CHANNELS];
-AdlibChannelEntry   *AdLibChannels;
+//AdlibChannelEntry   *AdLibChannels;
 //OP2instrEntry 		AdLibInstrumentList[MAX_INSTRUMENTS_PER_TRACK];
-OP2instrEntry 		*AdLibInstrumentList;
+//OP2instrEntry 		*AdLibInstrumentList;
 
 uint8_t OPLchannels = OPL2CHANNELS;
 uint8_t OPL3mode = 0;
-
 
 uint8_t op_num[9] = { 0x00, 0x01, 0x02, 0x08, 0x09, 0x0A, 0x10, 0x11, 0x12};
 int8_t noteVolumetable[128] = {

@@ -38,44 +38,6 @@
 
 
 
-// 8 MB worth. 
-#define MAX_PAGE_FRAMES 512
- 
-
-
-// ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
-//uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE = 0;
-
-//uint16_t remainingconventional = 0;
-//uint16_t conventional1head = 	  0;
-
-
-
-
-// todo turn these into dynamic allocations
-  
- 
-
-//byte __far*			pageFrameArea;
-
-// count allocations etc, can be used for benchmarking purposes.
-
- 
-
- 
-
- 
-
-// EMS 4.0 functionality
-
-// page for 0x9000 block where we will store thinkers in physics code, then visplanes etc in render code
-
-//these offsets at runtime must have pagenum9000 added to them
-
-
-
-
-//#define pageswapargs_scratch5000_offset pageswapargs_textinfo_offset + num_textinfo_params
 
 
 #ifdef __SCAMP_BUILD

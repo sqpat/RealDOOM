@@ -69,13 +69,7 @@ struct sfxinfo_struct {
 typedef struct {
     // up to 6-character name
     int8_t*	name;
-
-    // lump number of music
-    int16_t		lumpnum;
-    
-    // music handle once registered
-	int16_t handle;
-    
+        
 } musicinfo_t;
 
 

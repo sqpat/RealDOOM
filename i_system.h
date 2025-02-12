@@ -65,31 +65,31 @@ void __far I_EndRead(void);
 //  MUSIC I/O
 //
 
-int16_t I_RegisterSong();
+int16_t I_LoadSong(uint16_t lump);
 // called by anything that wants to register a song lump with the sound lib
 // calls Paul's function of the similar name to register music only.
 // note that the song data is the same for any sound card and is paul's
 // MUS format.  Returns a handle which will be passed to all other music
 // functions.
 
-void I_UnRegisterSong(int16_t handle);
+void I_UnRegisterSong();
 // called by anything which is finished with a song and no longer needs
 // the sound library to be aware of it.  All songs should be stopped
 // before calling this, but it will double check and stop it if necessary.
 
-void I_LoopSong(int16_t handle);
+void I_LoopSong();
 // called by anything that wishes to start music.
 // plays a song, and when the song is done, starts playing it again in
 // an endless loop.  the start is faded in over three seconds.
 
-void I_StopSong(int16_t handle);
+void I_StopSong();
 // called by anything that wishes to stop music.
 // stops a song abruptly.
 void I_SetMusicVolume(uint8_t volume);
-void I_ResumeSong(int16_t handle);
-void I_PlaySong(int16_t handle, boolean looping);
-void I_PauseSong(int16_t handle);
-void I_ResumeSong(int16_t handle);
+void I_ResumeSong();
+void I_PlaySong(boolean looping);
+void I_PauseSong();
+void I_ResumeSong();
 
 //  SFX I/O
 //

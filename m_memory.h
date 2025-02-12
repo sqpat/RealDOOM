@@ -178,6 +178,17 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // 3767u shareware
 // 8756u doom2
 
+
+#define tempmusdataloc 0xCC000000
+#define size_AdLibInstrumentList (sizeof(OP2instrEntry) * MAX_INSTRUMENTS_PER_TRACK)
+#define size_AdlibChannels       (sizeof(AdlibChannelEntry) * MAX_MUSIC_CHANNELS)
+#define size_instrumentlookup    (sizeof(uint8_t) * MAX_INSTRUMENTS)
+
+
+#define AdLibInstrumentList      ((OP2instrEntry __far*)      MAKE_FULL_SEGMENT(tempmusdataloc, 0))  // 10240
+#define AdLibChannels            ((AdlibChannelEntry __far*)  MAKE_FULL_SEGMENT(AdLibInstrumentList, size_AdLibInstrumentList))
+#define instrumentlookup         ((uint8_t __far*)            MAKE_FULL_SEGMENT(AdLibChannels, size_AdlibChannels))
+
 #define SAVESTRINGSIZE        24u
 
 #define baselowermemoryaddress    (0x31160000)

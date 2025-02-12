@@ -157,6 +157,7 @@ byte __far *__near Z_InitEMS() {
 	// todo test 3, 2 MB, etc. i know we use less..
 	//int16_t numPagesToAllocate = NUM_EMS4_SWAP_PAGES; //256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
 	int16_t pageframebase;
+	int8_t  i;
 
 
 	// todo check for device...
@@ -243,8 +244,14 @@ byte __far *__near Z_InitEMS() {
 	}
 
 
-	// do initial page remapping
+	// do initial page remapping for ems page frame
+	for (i = 0; i < 4; i++){
+		regs.w.ax = 0x4400 + i;  
+		regs.w.bx = i + MUS_DATA_PAGES;
+		regs.w.dx = emshandle; // handle
 
+		intx86(EMS_INT, &regs, &regs);
+	}	
 
 	//*size = numPagesToAllocate * PAGE_FRAME_SIZE;
 

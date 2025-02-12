@@ -95,16 +95,17 @@ void S_SetMusicVolume(uint8_t volume) {
 
 void S_StopMusic(void) {
     if (mus_playing) {
-        if (mus_paused)
-            I_ResumeSong(mus_playing->handle);
+        if (mus_paused){
+            I_ResumeSong();
+		}
 
-        I_StopSong(mus_playing->handle);
-        I_UnRegisterSong(mus_playing->handle);
+        I_StopSong();
+        I_UnRegisterSong();
         //Z_ChangeTag(mus_playing->data, PU_CACHE);
 
         //_dpmi_unlockregion(mus_playing->data, lumpinfo[mus_playing->lumpnum].size);
 
-        mus_playing = 0;
+        mus_playing = mus_None;
     }
 
 
@@ -115,7 +116,6 @@ void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
 	
     musicinfo_t*	music;
 	int8_t		namebuf[9];
-	return;
 
     if (snd_MusicDevice == snd_Adlib && musicnum == mus_intro) {
         musicnum = mus_introa;
@@ -127,30 +127,28 @@ void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
 		#endif
     } else {
 		music = &S_music[musicnum];
-	}
+	}	
 
-    if (mus_playing == music){
+    if (mus_playing == musicnum){
 		return;
 	}
 
     // shutdown old music
     S_StopMusic();
 
-    // get lumpnum if neccessary
-    if (!music->lumpnum) {
-		combine_strings(namebuf, "d", music->name);
-		music->lumpnum = W_GetNumForName(namebuf);
-    }
+	// todo use music->name
+	//combine_strings(namebuf, "d", music->name);
+	combine_strings(namebuf, "d_", "e1m1");
 
     // load & register it
     //music->data = (void __far*) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
-    music->handle = I_RegisterSong();
+    I_LoadSong(W_GetNumForName(namebuf));
     //_dpmi_lockregion(music->data, lumpinfo[music->lumpnum].size);
+    mus_playing = musicnum;
 
     // play it
-    I_PlaySong(music->handle, looping);
+    I_PlaySong(looping);
 
-    mus_playing = music;
 
 	
 }
@@ -277,14 +275,14 @@ void S_SetSfxVolume(uint8_t volume) {
 //
 void S_PauseSound(void) {
     if (mus_playing && !mus_paused) {
-		I_PauseSong(mus_playing->handle);
+		I_PauseSong();
 		mus_paused = true;
     }
 }
 
 void S_ResumeSound(void) {
     if (mus_playing && mus_paused) {
-		I_ResumeSong(mus_playing->handle);
+		I_ResumeSong();
 		mus_paused = false;
     }
 }
@@ -570,7 +568,7 @@ void S_UpdateSounds(THINKERREF listenerRef) {
     }
     // kill music if it is a single-play && finished
     // if (	mus_playing
-    //      && !I_QrySongPlaying(mus_playing->handle)
+    //      && !I_QrySongPlaying()
     //      && !mus_paused )
     // S_StopMusic();
 	

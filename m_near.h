@@ -1288,7 +1288,7 @@ typedef struct {
 	int8_t	finetune;		/* frequency fine-tune */
 	int8_t  noteVolume;		/* note volume */
 	int8_t	realvolume;		/* adjusted note volume */
-	OPL2instrument* instr;	    /* current instrument */
+	OPL2instrument __far * instr;	    /* current instrument */
 	uint32_t time;			/* note start time */
 }  AdlibChannelEntry;
 
@@ -1306,14 +1306,14 @@ extern musicinfo_t	S_music[];
 
 extern channel_t	channels[MAX_SFX_CHANNELS];
 extern boolean		mus_paused;	
-extern musicinfo_t*	mus_playing;
+extern uint8_t		mus_playing;
 extern ticcount_t	nextcleanup;
 
 //extern uint16_t shift4lookup[256];
 
 extern      OPLdata OPL2driverdata;
-/*
 extern      driverBlock OPL2driver;
+/*
 extern      driverBlock OPL3driver;
 */ 
 extern      uint8_t OPLsinglevoice;
@@ -1329,7 +1329,6 @@ extern int16_t 			    currentsong_secondary_channels;
 extern uint16_t 			currentsong_num_instruments;       // 0-127
 
 extern uint16_t 			currentsong_play_timer;
-extern uint32_t 			currentsong_int_count;
 extern int16_t 			    currentsong_ticks_to_process;
 
 
@@ -1337,15 +1336,16 @@ extern uint8_t				playingstate;
 extern uint16_t			    playingpercussMask;
 extern int16_t     		    playingvolume;
 extern volatile uint32_t 	playingtime;
-extern volatile int16_t 	finishplaying;
 // extern OP2instrEntry 		AdLibInstrumentList[MAX_INSTRUMENTS_PER_TRACK];
-extern uint8_t 			    *instrumentlookup;
+//extern uint8_t 			    *instrumentlookup;
 //extern uint8_t 			    instrumentlookup[MAX_INSTRUMENTS];
 extern int8_t				loops_enabled;
 //extern AdlibChannelEntry    AdLibChannels[MAX_MUSIC_CHANNELS];
-extern AdlibChannelEntry    *AdLibChannels;
+//extern AdlibChannelEntry    *AdLibChannels;
 //extern OP2instrEntry 		AdLibInstrumentList[MAX_INSTRUMENTS_PER_TRACK];
-extern OP2instrEntry 		*AdLibInstrumentList;
+//extern OP2instrEntry 		*AdLibInstrumentList;
+
+extern uint8_t wad_skip_read_bytes;
 
 
 

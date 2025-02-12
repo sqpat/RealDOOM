@@ -115,14 +115,25 @@ typedef struct  {
 uint8_t 	OPLwriteReg(uint16_t reg, uint8_t data);
 int8_t		OPLconvertVolume(uint8_t data, int8_t noteVolume);
 int8_t		OPLpanVolume(int8_t noteVolume, int8_t pan);
-void	  	OPLwriteVolume(uint8_t channel, OPL2instrument* instr, int8_t noteVolume);
-void	  	OPLwritePan(uint8_t channel, OPL2instrument* instr, int8_t pan);
-void	  	OPLwriteInstrument(uint8_t channel, OPL2instrument* instr);
 void	  	OPLinit(uint16_t port, uint8_t OPL3);
 void	  	OPLdeinit(void);
 int16_t		OPL2detect(uint16_t port);
 int16_t		OPL3detect(uint16_t port);
 
  
+void donothing();
+
+#ifdef showerrors
+	#define printerror printf
+#else
+	#define printerror(...) donothing
+#endif
+
+#ifdef showmessages
+	#define printmessage printf
+#else
+	#define printmessage(...) donothing
+#endif
+
 
 #endif

@@ -44,6 +44,8 @@ void TS_SetTimerToMaxTaskRate(void){
 }
 
 void	resetDS();
+void I_TimerISR(void);
+void MUS_ServiceRoutine(void);
 
 void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 
@@ -71,14 +73,15 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 	while (TS_TimesInInterrupt) {
 		if (HeadTask.active) {
 			HeadTask.count ++;
+			// every 4 tics
 			if (HeadTask.count >= HZ_INTERRUPTS_PER_TICK) {
 				HeadTask.count -= HZ_INTERRUPTS_PER_TICK;
-				HeadTask.TaskService();
+				I_TimerISR();
 			}
 		}
 		if (MUSTask.active) {
 			// every tick...
-			MUSTask.TaskService();
+			MUS_ServiceRoutine();
 		}
 		
 		TS_TimesInInterrupt--;
@@ -120,7 +123,7 @@ void TS_Startup(void){
    Schedules a new task for processing.
 ---------------------------------------------------------------------*/
 
-void TS_ScheduleMainTask( void(*Function)(void )) {
+void TS_ScheduleMainTask( ) {
 	TS_Startup();
 	
 	_disable();
@@ -129,7 +132,6 @@ void TS_ScheduleMainTask( void(*Function)(void )) {
 	outp(0x40, (HZ_RATE_140) >> 8);
 	_enable();
 
-	HeadTask.TaskService = Function;
 
 }
 

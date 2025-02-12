@@ -34,17 +34,6 @@ void donothing(){
 
 
 
-#ifdef showerrors
-	#define printerror printf
-#else
-	#define printerror(...) donothing
-#endif
-
-#ifdef showmessages
-	#define printmessage printf
-#else
-	#define printmessage(...) donothing
-#endif
 
 /* Watcom C */
 uint8_t _OPL2writeReg(uint16_t port, uint16_t reg, uint8_t data);
@@ -159,7 +148,7 @@ int8_t OPLpanVolume(int8_t noteVolume, int8_t pan){
 /*
  * Write volume data to a channel
  */
-void OPLwriteVolume(uint8_t channel, OPL2instrument *instr, int8_t noteVolume){
+void OPLwriteVolume(uint8_t channel, OPL2instrument __far  *instr, int8_t noteVolume){
     OPLwriteChannel(0x40, channel, ((instr->feedback & 1) ?
 	OPLconvertVolume(instr->level_1, noteVolume) : instr->level_1) | instr->scale_1,
 	OPLconvertVolume(instr->level_2, noteVolume) | instr->scale_2);
@@ -168,7 +157,7 @@ void OPLwriteVolume(uint8_t channel, OPL2instrument *instr, int8_t noteVolume){
 /*
  * Write pan (balance) data to a channel
  */
-void OPLwritePan(uint8_t channel, OPL2instrument *instr, int8_t pan){
+void OPLwritePan(uint8_t channel, OPL2instrument __far  *instr, int8_t pan){
     uint8_t bits;
     if (pan < -36) {
 		bits = 0x10;		// left
@@ -195,7 +184,7 @@ void OPLwritePan(uint8_t channel, OPL2instrument *instr, int8_t pan){
  *    data[5]    data[12]  reg. 0x40 - output level (bottom 6 bits only)
  *          data[6]        reg. 0xC0 - feedback/AM-FM (both operators)
  */
-void OPLwriteInstrument(uint8_t channel, OPL2instrument *instr){
+void OPLwriteInstrument(uint8_t channel, OPL2instrument __far  *instr){
     OPLwriteChannel(0x40, channel, 0x3F, 0x3F);		// no volume
     OPLwriteChannel(0x20, channel, instr->trem_vibr_1, instr->trem_vibr_2);
     OPLwriteChannel(0x60, channel, instr->att_dec_1,   instr->att_dec_2);
@@ -329,7 +318,8 @@ void writeFrequency(uint8_t slot, uint8_t note, uint8_t pitchwheel, uint8_t keyO
     if (pitchwheel!= DEFAULT_PITCH_BEND) {
 		fixed_t_union product;
 		//product.wu = FastMul16u16u(freq, pitchwheeltable[pitchwheel + 128]);
-        product.hu.intbits = 50;
+        //product.hu.intbits = 50;
+		product.wu = FastMul16u16u(freq, 32767u);
 		// need to shift 15 right... or instead:
 		freq = product.hu.intbits << 1;
 		if (freq >= 1024) {
@@ -344,7 +334,7 @@ void writeFrequency(uint8_t slot, uint8_t note, uint8_t pitchwheel, uint8_t keyO
     OPLwriteFreq(slot, freq, octave, keyOn);
 }
 
-void writeModulation(uint8_t slot, OPL2instrument *instr, uint8_t state){
+void writeModulation(uint8_t slot, OPL2instrument __far  *instr, uint8_t state){
     if (state){
 		state = 0x40;	/* enable Frequency Vibrato */
 	}
@@ -373,10 +363,10 @@ int8_t calcVolumeOPL(uint8_t channelVolume, uint16_t systemVolume, int8_t noteVo
 }
 
 uint8_t occupyChannel(uint8_t slot, uint8_t channel,
-	uint8_t note, int8_t noteVolume, OP2instrEntry *instrument, uint8_t secondary){
-    OPL2instrument *instr;
+	uint8_t note, int8_t noteVolume, OP2instrEntry __far *instrument, uint8_t secondary){
+    OPL2instrument __far *instr;
 	int16_t pitchadder;
-    AdlibChannelEntry *ch = &AdLibChannels[slot];
+    AdlibChannelEntry __far *ch = &AdLibChannels[slot];
 
     //playingChannels++;
 
@@ -449,7 +439,7 @@ uint8_t occupyChannel(uint8_t slot, uint8_t channel,
 }
 
 void releaseChannel(uint8_t slot, uint8_t killed){
-    AdlibChannelEntry *ch = &AdLibChannels[slot];
+    AdlibChannelEntry __far* ch = &AdLibChannels[slot];
     //playingChannels--;
     writeFrequency(slot, ch->realnote, ch->pitchwheel, 0);
     ch->channel |= CH_FREE;
@@ -494,7 +484,6 @@ int8_t findFreeChannel(uint8_t flag){
     /* find some 2nd-voice channel and determine the oldest */
     for(i = 0; i < OPLchannels; i++) {
 		if (AdLibChannels[i].flags & CH_SECONDARY) {
-			
 			releaseChannel(i, -1);
 			return i;
 		} else
@@ -514,7 +503,7 @@ int8_t findFreeChannel(uint8_t flag){
     return -1;
 }
 
-OP2instrEntry *getInstrument(uint8_t channel, uint8_t note) {
+OP2instrEntry __far * getInstrument(uint8_t channel, uint8_t note) {
     uint8_t instrnumber;
     uint8_t instrindex;
 
@@ -539,7 +528,7 @@ OP2instrEntry *getInstrument(uint8_t channel, uint8_t note) {
 // code 1: play note
 void OPLplayNote(uint8_t channel, uint8_t note, int8_t noteVolume){
     int8_t i;
-    OP2instrEntry *instr = getInstrument(channel, note);
+    OP2instrEntry __far* instr = getInstrument(channel, note);
 
     if (instr == NULL){
 		printerror( "null instrument? %i %i\n", channel, note);
@@ -584,7 +573,7 @@ void OPLpitchWheel(uint8_t channel, uint8_t pitch){
 
     OPL2driverdata.channelPitch[channel] = pitch;
     for(i = 0; i < OPLchannels; i++) {
-        AdlibChannelEntry *ch = &AdLibChannels[i];
+        AdlibChannelEntry __far  *ch = &AdLibChannels[i];
 
 		if (ch->channel == id) {
 			int16_t pitchadder;
@@ -608,7 +597,7 @@ void OPLchangeControl(uint8_t channel, uint8_t controller, uint8_t value){
 		case 2:
 			OPL2driverdata.channelModulation[channel] = value;
 			for(i = 0; i < OPLchannels; i++) {
-                AdlibChannelEntry *ch = &AdLibChannels[i];
+                AdlibChannelEntry __far  *ch = &AdLibChannels[i];
 				if (ch->channel == id) {
 					uint8_t flags = ch->flags;
 					ch->time = playingtime;
@@ -629,7 +618,7 @@ void OPLchangeControl(uint8_t channel, uint8_t controller, uint8_t value){
 		case 3:		/* change volume */
 			OPL2driverdata.channelVolume[channel] = value;
 			for(i = 0; i < OPLchannels; i++) {
-                AdlibChannelEntry *ch = &AdLibChannels[i];
+                AdlibChannelEntry __far* ch = &AdLibChannels[i];
 				if (ch->channel == id) {
 					ch->time = playingtime;
 					ch->realvolume = calcVolumeOPL(value, playingvolume, ch->noteVolume);
@@ -640,7 +629,7 @@ void OPLchangeControl(uint8_t channel, uint8_t controller, uint8_t value){
 		case 4:			/* change pan (balance) */
 			OPL2driverdata.channelPan[channel] = value -= 64;
 			for(i = 0; i < OPLchannels; i++) {
-                AdlibChannelEntry *ch = &AdLibChannels[i];
+                AdlibChannelEntry __far* ch = &AdLibChannels[i];
 				if (ch->channel == id) {
 					ch->time = playingtime;
 					OPLwritePan(i, ch->instr, value);
@@ -679,7 +668,7 @@ void OPLchangeSystemVolume(int16_t systemVolume){
     uint8_t *channelVolume = OPL2driverdata.channelVolume;
     uint8_t i;
     for(i = 0; i < OPLchannels; i++) {
-        AdlibChannelEntry *ch = &AdLibChannels[i];
+        AdlibChannelEntry __far* ch = &AdLibChannels[i];
 		ch->realvolume = calcVolumeOPL(channelVolume[ch->channel & 0xF], systemVolume, ch->noteVolume);
 		if (playingstate == ST_PLAYING){
 			OPLwriteVolume(i, ch->instr, ch->realvolume);
@@ -690,9 +679,9 @@ void OPLchangeSystemVolume(int16_t systemVolume){
 
 int8_t OPLinitDriver(void){
     int8_t i;
-	memset(channels, 0xFF, sizeof channels);
+	FAR_memset(AdLibChannels, 0xFF, size_AdlibChannels);
     for(i = 0; i < OPLchannels; i++) {
-        AdlibChannelEntry *ch = &AdLibChannels[i];
+        AdlibChannelEntry __far* ch = &AdLibChannels[i];
 		ch->pitchwheel = DEFAULT_PITCH_BEND;
 	}
     //OPLinstruments = NULL;

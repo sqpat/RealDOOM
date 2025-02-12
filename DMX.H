@@ -24,13 +24,12 @@ void StopTimer(void);
 */
 
 typedef struct task{
-	void(*TaskService)(void);
 	volatile int8_t count;
 	int8_t active;
 } task;
 
 
-void TS_ScheduleMainTask(void(*Function)(void ));
+void TS_ScheduleMainTask();
 void TS_Dispatch(void);
 void TS_SetTaskRate(task *Task, uint16_t rate);
 
@@ -39,9 +38,6 @@ void MUS_ResumeSong(int16_t handle);
 void MUS_SetMasterVolume(int16_t volume);
 int16_t MUS_RegisterSong(void __far*data);
 int16_t MUS_UnregisterSong(int16_t handle);
-int16_t MUS_QrySongPlaying(int16_t handle);
-int16_t MUS_StopSong(int16_t handle);
-int16_t MUS_ChainSong(int16_t handle, int16_t next);
 int16_t MUS_PlaySong(int16_t handle, int16_t volume);
 int16_t SFX_PlayPatch(void __far*vdata, int16_t pitch, int16_t sep, int16_t vol, int16_t unk1, int16_t unk2);
 void SFX_StopPatch(int16_t handle);

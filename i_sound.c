@@ -33,38 +33,30 @@
 #include "doomdef.h"
 #include "doomstat.h"
 #include "m_near.h"
+#include "sc_music.h"
 
 
 //todo put this all in a separate file when done
 
-void MUS_PauseSong(int16_t handle){
+void MUS_PauseSong(){
 
 }
 
-void MUS_ResumeSong(int16_t handle){
+void MUS_ResumeSong(){
 
 }
 void MUS_SetMasterVolume(int16_t volume){
 
 }
-int16_t MUS_RegisterSong(void __far*data){
+
+int16_t MUS_QrySongPlaying(){
     return 0;
 }
-int16_t MUS_UnregisterSong(int16_t handle){
+int16_t MUS_StopSong(){
     return 0;
 }
-int16_t MUS_QrySongPlaying(int16_t handle){
-    return 0;
-}
-int16_t MUS_StopSong(int16_t handle){
-    return 0;
-}
-int16_t MUS_ChainSong(int16_t handle, int16_t next){
-    return 0;
-}
-int16_t MUS_PlaySong(int16_t handle, int16_t volume){
-    return 0;
-}
+
+
 int16_t SFX_PlayPatch(void __far*vdata, int16_t pitch, int16_t sep, int16_t vol, int16_t unk1, int16_t unk2){
     return 0;
 }
@@ -128,16 +120,14 @@ void I_StartupTimer(void) {
 
 	DEBUG_PRINT("I_StartupTimer()\n");
 	// installs master timer.  Must be done before StartupTimer()!
-	TS_ScheduleMainTask(I_TimerISR);
+	TS_ScheduleMainTask();
 	TS_Dispatch();
 }
 
-void I_PauseSong(int16_t handle) {
-    //MUS_PauseSong(handle);
+void I_PauseSong() {
 }
 
-void I_ResumeSong(int16_t handle) {
-    //MUS_ResumeSong(handle);
+void I_ResumeSong() {
 }
 
 void I_SetMusicVolume(uint8_t volume) {
@@ -154,61 +144,103 @@ void I_SetSfxVolume(uint8_t volume) {
 //
 
 //todo
-#define MUSIC_SEGMENT 0xD000
+#define MUSIC_SEGMENT EMS_PAGE
 
-int16_t I_RegisterSong() {
+int16_t I_LoadSong(uint16_t lump) {
     // always use MUSIC SEGMENT, 0
 	//todo use scratch instead?
+	int8_t i;
     byte __far * data = MK_FP(MUSIC_SEGMENT, 0);
+    int16_t __far *  worddata = (int16_t __far *)data;
+    W_CacheLumpNumDirect(lump, data);
 
-    int16_t rc = MUS_RegisterSong(data);
-    #ifdef SNDDEBUG
-        if (rc<0) DEBUG_PRINT("MUS_Reg() returned %d\n", rc);
-    #endif
-    return rc;
+    //I_Error("made it %i %x %x", lump, worddata[0], worddata[1]);
+
+
+    // MUS_Parseheader inlined
+    if (worddata[0] == 0x554D && worddata[1] == 0x1A53 ){     // MUS file header
+        currentsong_length              = worddata[2];  // how do larger that 64k files work?
+        currentsong_start_offset        = worddata[3];  // varies
+        currentsong_primary_channels    = worddata[4];  // max at  0x07?
+        currentsong_secondary_channels  = worddata[5];  // always 0??
+        currentsong_num_instruments     = worddata[6];  // varies..  but 0-127
+        // reserved   
+		printmessage("Parsed values: \n");
+		printmessage("length:             0x%x\n",currentsong_length);
+		printmessage("start offset:       0x%x\n",currentsong_start_offset);
+		printmessage("primary channels:   0x%x\n",currentsong_primary_channels);
+		printmessage("secondary channels: 0x%x\n",currentsong_secondary_channels);
+		printmessage("num instruments:    0x%x\n",currentsong_num_instruments);	// todo dynamically load the data from the main bank at startup to take less memory?
+
+		if (currentsong_num_instruments > MAX_INSTRUMENTS_PER_TRACK){
+			printerror("Too many instruments! %i vs max of %i", currentsong_num_instruments, MAX_INSTRUMENTS_PER_TRACK);
+		}
+
+		currentsong_playing_offset = currentsong_start_offset;
+		currentsong_play_timer = 0;
+		currentsong_ticks_to_process = 0;
+		
+
+		// parse instruements
+		FAR_memset(instrumentlookup, 0xFF, MAX_INSTRUMENTS);
+		for (i = 0; i < currentsong_num_instruments; i++){
+			uint16_t instrument = worddata[8+i];
+			if (instrument > 127){
+				instrument -= 7;
+			}
+			instrumentlookup[instrument] = i;	// this instrument is index i in AdLibInstrumentList
+		}
+
+
+
+
+        {
+            // dynamically load used instruments
+            uint8_t i;
+            W_CacheLumpNameDirect("genmidi", data); // load instrument data.
+            for (i = 0; i < MAX_INSTRUMENTS; i++){
+                uint8_t instrumentindex = instrumentlookup[i];
+                if (instrumentindex != 0xFF){
+                    // 8 for the string at the start of the lump...
+                    uint16_t offset = 8 +(sizeof(OP2instrEntry) * i);
+
+                    //far_fread(&AdLibInstrumentList[instrumentindex], sizeof(OP2instrEntry), 1, fp);
+                    FAR_memcpy(&AdLibInstrumentList[instrumentindex], MK_FP(MUSIC_SEGMENT, offset), sizeof(OP2instrEntry));
+                }
+            }
+        }
+        printmessage("Read instrument data!\n");
+
+        
+        // reload mus
+        W_CacheLumpNumDirect(lump, data);
+
+		return 1; 
+    } else {
+		printerror("Bad header %x %x", worddata[0], worddata[1]);
+		return - 1;
+	}
+
+
+
+
 	
 }
 
-void I_UnRegisterSong(int16_t handle) {
-    int16_t rc = MUS_UnregisterSong(handle);
-#ifdef SNDDEBUG
-    if (rc < 0) DEBUG_PRINT("MUS_Unreg() returned %d\n", rc);
-#endif
+void I_UnRegisterSong() {
+
 }
 
-int16_t I_QrySongPlaying(int16_t handle) {
-    int16_t rc = MUS_QrySongPlaying(handle);
-    #ifdef SNDDEBUG
-        if (rc < 0) DEBUG_PRINT("MUS_QrySP() returned %d\n", rc);
-    #endif
-    return rc;
-}
-//
-// Stops a song.  MUST be called before I_UnregisterSong().
-//
-void I_StopSong(int16_t handle) {
-    int16_t rc;
-    rc = MUS_StopSong(handle);
-    #ifdef SNDDEBUG
-        if (rc < 0) DEBUG_PRINT("MUS_StopSong() returned %d\n", rc);
-    #endif
-    // Fucking kluge pause
-    {
-        ticcount_t s;
-        for (s = ticcount; ticcount - s < 10; );
-    }
+
+
+void I_StopSong() {
+    playingstate = ST_STOPPED;
+    // todo signal driver pause?
+
 }
 
-void I_PlaySong(int16_t handle, boolean looping) {
-	int16_t rc;
-    rc = MUS_ChainSong(handle, looping ? handle : -1);
-    #ifdef SNDDEBUG
-        if (rc < 0) DEBUG_PRINT("MUS_ChainSong() returned %d\n", rc);
-    #endif
-    rc = MUS_PlaySong(handle, snd_MusicVolume);
-    #ifdef SNDDEBUG
-        if (rc < 0) DEBUG_PRINT("MUS_PlaySong() returned %d\n", rc);
-    #endif
+void I_PlaySong(boolean looping) {
+    playingstate = ST_PLAYING;
 }
 
 //
@@ -263,6 +295,8 @@ void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch
 int16_t __far M_CheckParm (int8_t *check);
 
 void I_sndArbitrateCards(void) {
+
+/*
 
      // todo when we redo this, checkparm is __near to init code so do that there
 
@@ -376,15 +410,20 @@ void I_sndArbitrateCards(void) {
             MPU_SetCard(snd_Mport);
         }
     }
+    */
 }
 
 
-void MUS_ServiceRoutine(){
-/*
-	if (finishplaying){
-		return;
-	}	
 
+void MUS_ServiceRoutine(){
+
+    if (playingstate != ST_PLAYING){
+        return;
+    }
+
+	if (playingdriver == NULL){
+        return;
+    }
 
 	currentsong_ticks_to_process ++;
 	
@@ -393,13 +432,12 @@ void MUS_ServiceRoutine(){
 		// ok lets actually process events....
 		int16_t increment 			= 1; // 1 for the event
 		byte doing_loop 			= false;
-		byte __far* currentlocation = muslocation + currentsong_playing_offset;
+		byte __far* currentlocation = MK_FP(MUSIC_SEGMENT, currentsong_playing_offset);
 		uint8_t eventbyte 			= currentlocation[0];
 		uint8_t event     			= (eventbyte & 0x70) >> 4;
 		int8_t  channel   			= (eventbyte & 0x0F);
 		byte lastflag  				= (eventbyte & 0x80);
 		int16_t_union delay_amt		= {0};
-
 
 		// // todo is this the right way...?
 		// if (channel > currentsong_primary_channels && channel < 10 && channel != PERCUSSION_CHANNEL){
@@ -415,7 +453,7 @@ void MUS_ServiceRoutine(){
 			case 0:
 				// Release Note
 				{
-					byte value 			  = currentlocation[1];
+					byte value 	      = currentlocation[1];
 					byte key		  = value & 0x7F;
 					playingdriver->releaseNote(channel, value);
 
@@ -425,7 +463,7 @@ void MUS_ServiceRoutine(){
 			case 1:
 				// Play Note
 				{
-					uint8_t value 			  = currentlocation[1];
+					uint8_t value 	= currentlocation[1];
 					byte volume = -1;  		// -1 means repeat..
 					uint8_t key		  = value & 0x7F;
 					if (value & 0x80){
@@ -483,7 +521,7 @@ void MUS_ServiceRoutine(){
 					if (loops_enabled){
 						doing_loop = true;
 					} else {
-						finishplaying = 1;
+						playingstate = ST_STOPPED;
 					}
 				}
 				if (doing_loop){
@@ -501,7 +539,7 @@ void MUS_ServiceRoutine(){
 
 		while (lastflag){
 			// i dont think delays > 32768 are valid..
-			currentlocation = muslocation + currentsong_playing_offset;
+			currentlocation = MK_FP(MUSIC_SEGMENT, currentsong_playing_offset);
 			delay_amt.bu.bytehigh = delay_amt.bu.bytelow;
 			delay_amt.bu.bytehigh >>= 1;	// shift 128.
 			lastflag = currentlocation[0];
@@ -518,17 +556,15 @@ void MUS_ServiceRoutine(){
 			// todo do we have to reset or something?
 			currentsong_playing_offset = currentsong_start_offset;
 		}
-		if (finishplaying){
+		if (playingstate == ST_STOPPED){
 			break;
 		}
 
 
 	}
-	called = 1;
-	currentsong_int_count++;
 	playingtime++;
 
-*/
+
 }
 
 
@@ -561,7 +597,7 @@ void __far I_StartupSound(void) {
     //
     // pick the sound cards i'm going to use
     //
-    I_sndArbitrateCards();
+    //I_sndArbitrateCards();
 
 
     //
@@ -573,9 +609,10 @@ void __far I_StartupSound(void) {
 
     rc = DMX_Init(SND_TICRATE, SND_MAXSONGS, dmxCodes[snd_MusicDevice], dmxCodes[snd_SfxDevice]);
 
-    MUSTask.TaskService = MUS_ServiceRoutine; 
 
-
+    playingdriver = &OPL2driver;
+    playingdriver->initHardware(ADLIBPORT, 0, 0);
+    playingdriver->initDriver();
 
 }
 
