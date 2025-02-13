@@ -12,34 +12,6 @@
 #include <malloc.h>
 #include <dos.h>
 
-/* MUS -> MIDI controller number conversion */
-const uint8_t MUS2MIDIctrl[] = {	/* MUS controller: */
-	0xFF,				/*  0 - instrument--event 0xC0 */
-	0,				/*  1 - bank select */
-	1,				/*  2 - modulation pot */
-	7,				/*  3 - volume */
-	10,				/*  4 - pan (balance) pot */
-	11,				/*  5 - expression pot */
-	91,				/*  6 - reverb depth */
-	93,				/*  7 - chorus depth */
-	64,				/*  8 - sustain pedal (hold) */
-	67,				/*  9 - soft pedal */
-	120,				/* 10 - all sounds off */
-	123,				/* 11 - all notes off */
-	126,				/* 12 - mono */
-	127,				/* 13 - poly */
-	121};				/* 14 - reset all controllers */
-
-MIDIdata mididriverData;
-
-
-/* MIDI channel occupation map */
-uint8_t MIDIchannels[MAX_MUSIC_CHANNELS];
-
-/* last MIDI channel access time */
-uint32_t MIDItime[MAX_MUSIC_CHANNELS];
-
-uint16_t percussMask;
 
 /* send a MIDI event to driver */
 #define SENDMIDI(chn, cmd, par1, par2)	\
@@ -106,8 +78,7 @@ int8_t findFreeMIDIChannel(uint8_t channel){
     }
 
     if ( (i = oldest) != 0xFF) {
-        MIDIdata *olddata = &mididriverData;
-        olddata->realChannels[MIDIchannels[i]] = 0xFF;
+        mididriverData->realChannels[MIDIchannels[i]] = 0xFF;
         stopChannel(i);
         MIDIchannels[i] = channel;
 
@@ -121,13 +92,12 @@ int8_t findFreeMIDIChannel(uint8_t channel){
 // send all tracked controller values to the MIDI output
 void updateControllers(uint8_t channel){
     uint8_t i, value;
-    MIDIdata *data = &mididriverData;
     int8_t MIDIchannel;
 
-    if ( (MIDIchannel = data->realChannels[channel]) >= 0) {
-        SENDMIDI(MIDIchannel, MIDI_PATCH, data->controllers[ctrlPatch][channel], 0);
+    if ( (MIDIchannel = mididriverData->realChannels[channel]) >= 0) {
+        SENDMIDI(MIDIchannel, MIDI_PATCH, mididriverData->controllers[ctrlPatch][channel], 0);
         for (i = ctrlPatch + 1; i < NUM_CONTROLLERS; i++) {
-            value = data->controllers[i][channel];
+            value = mididriverData->controllers[i][channel];
             if (i == ctrlVolume){
                 if (MIDIchannel == MIDI_PERC){
                     continue;
@@ -139,7 +109,7 @@ void updateControllers(uint8_t channel){
         }
         
         {
-            uint8_t pitch = data->pitchWheel[channel];
+            uint8_t pitch = mididriverData->pitchWheel[channel];
             uint8_t pitch_high = pitch >> 1 & 0x7F;
             uint8_t pitch_low = (pitch & 1) ? 0x80 : 0; // todo 64?
             SENDMIDI(MIDIchannel, MIDI_PITCH_WHEEL, pitch_low, pitch_high);
@@ -151,15 +121,14 @@ void updateControllers(uint8_t channel){
 
 // send system volume
 void sendSystemVolume(int16_t systemVolume){
-    MIDIdata *data = &mididriverData;
     int8_t i;
 
     for(i = 0; i < MAX_MUSIC_CHANNELS; i++) {
         int8_t MIDIchannel;
-        if ( (MIDIchannel = data->realChannels[i]) >= 0){
+        if ( (MIDIchannel = mididriverData->realChannels[i]) >= 0){
             if (MIDIchannel != MIDI_PERC){
                 SENDMIDI(MIDIchannel, MIDI_CONTROL, MUS2MIDIctrl[ctrlVolume],
-                    calcVolume(systemVolume, data->controllers[ctrlVolume][i]));
+                    calcVolume(systemVolume, mididriverData->controllers[ctrlVolume][i]));
             }
         }
     }
@@ -168,28 +137,27 @@ void sendSystemVolume(int16_t systemVolume){
 
 // code 1: play note
 void MIDIplayNote(uint8_t channel, uint8_t note, int8_t volume){
-    MIDIdata *data = &mididriverData;
     int8_t MIDIchannel;
 
     if (volume == -1){
-	    volume = data->channelLastVolume[channel];
+	    volume = mididriverData->channelLastVolume[channel];
     } else{
-	    data->channelLastVolume[channel] = volume;
+	    mididriverData->channelLastVolume[channel] = volume;
     }
 
-    if ( (MIDIchannel = data->realChannels[channel]) < 0) {
+    if ( (MIDIchannel = mididriverData->realChannels[channel]) < 0) {
         if ( (MIDIchannel = findFreeMIDIChannel(channel)) < 0){
             return;
         }
-        data->realChannels[channel] = MIDIchannel;
+        mididriverData->realChannels[channel] = MIDIchannel;
         updateControllers(channel);
     }
 
     if (MIDIchannel == MIDI_PERC) {
         int16_t_union intermediate;
         //intermediate.hu = FastMul8u8u(playingvolume, );
-        data->percussions[note >> 3] |= (1 << (note & 7));
-        intermediate.hu = FastMul8u8u(calcVolume(playingvolume, data->controllers[ctrlVolume][channel]), volume);
+        mididriverData->percussions[note >> 3] |= (1 << (note & 7));
+        intermediate.hu = FastMul8u8u(calcVolume(playingvolume, mididriverData->controllers[ctrlVolume][channel]), volume);
 
         intermediate = FastDiv16u_8u(intermediate.hu, 127);
         volume = intermediate.bu.bytelow;
@@ -201,12 +169,11 @@ void MIDIplayNote(uint8_t channel, uint8_t note, int8_t volume){
 
 // code 0: release note
 void MIDIreleaseNote(uint8_t channel, uint8_t note){
-    MIDIdata *data = &mididriverData;
     int8_t MIDIchannel;
 
-    if ( (MIDIchannel = data->realChannels[channel]) >= 0) {
+    if ( (MIDIchannel = mididriverData->realChannels[channel]) >= 0) {
         if (MIDIchannel == MIDI_PERC){
-            data->percussions[note >> 3] &= ~(1 << (note & 7));
+            mididriverData->percussions[note >> 3] &= ~(1 << (note & 7));
         }
 
         TOUCH(MIDIchannel);
@@ -216,12 +183,11 @@ void MIDIreleaseNote(uint8_t channel, uint8_t note){
 
 // code 2: change pitch wheel (bender)
 void MIDIpitchWheel(uint8_t channel, uint8_t pitch){
-    MIDIdata *data = &mididriverData;
     int8_t MIDIchannel;
 
-    data->pitchWheel[channel] = pitch;
+    mididriverData->pitchWheel[channel] = pitch;
 
-    if ( (MIDIchannel = data->realChannels[channel]) >= 0) {
+    if ( (MIDIchannel = mididriverData->realChannels[channel]) >= 0) {
         uint8_t pitch_high = pitch >> 1 & 0x7F;
         uint8_t pitch_low = (pitch & 1) ? 0x80 : 0; // todo 64?
         TOUCH(MIDIchannel);
@@ -232,14 +198,13 @@ void MIDIpitchWheel(uint8_t channel, uint8_t pitch){
 
 // code 4: change control
 void MIDIchangeControl(uint8_t channel, uint8_t controller, uint8_t value){
-    MIDIdata *data = &mididriverData;
     int8_t MIDIchannel;
 
     if (controller < NUM_CONTROLLERS){
-	    data->controllers[controller][channel] = value;
+	    mididriverData->controllers[controller][channel] = value;
     }
 
-    if ( (MIDIchannel = data->realChannels[channel]) < 0){
+    if ( (MIDIchannel = mididriverData->realChannels[channel]) < 0){
 	    return;
     }
 
@@ -258,13 +223,13 @@ void MIDIchangeControl(uint8_t channel, uint8_t controller, uint8_t value){
             case ctrlResetCtrls:	/* Reset All Controllers */
                 /* Perhaps, some controllers should be added or removed,
                 I don't know the exact implementation of this command */
-                data->controllers[ctrlBank	  ][channel] = 0;
-                data->controllers[ctrlModulation  ][channel] = 0;
-                data->controllers[ctrlPan	  ][channel] = 64;
-                data->controllers[ctrlExpression  ][channel] = 127;
-                data->controllers[ctrlSustainPedal][channel] = 0;
-                data->controllers[ctrlSoftPedal	  ][channel] = 0;
-                data->pitchWheel		   [channel] = DEFAULT_PITCH_BEND;
+                mididriverData->controllers[ctrlBank	  ][channel] = 0;
+                mididriverData->controllers[ctrlModulation  ][channel] = 0;
+                mididriverData->controllers[ctrlPan	  ][channel] = 64;
+                mididriverData->controllers[ctrlExpression  ][channel] = 127;
+                mididriverData->controllers[ctrlSustainPedal][channel] = 0;
+                mididriverData->controllers[ctrlSoftPedal	  ][channel] = 0;
+                mididriverData->pitchWheel		   [channel] = DEFAULT_PITCH_BEND;
                 break;
         }
         SENDMIDI(MIDIchannel, MIDI_CONTROL, MUS2MIDIctrl[controller], value);
@@ -272,35 +237,34 @@ void MIDIchangeControl(uint8_t channel, uint8_t controller, uint8_t value){
 }
 
 void MIDIplayMusic(){
-    MIDIdata *data = &mididriverData;
     int8_t i;
 
+    FAR_memset(mididriverData, 0, size_mididriverData);
     for (i = 0; i < MAX_MUSIC_CHANNELS; i++) {
-        data->controllers[ctrlPatch	  ][i] = 0;
-        data->controllers[ctrlBank	  ][i] = 0;
-        data->controllers[ctrlModulation  ][i] = 0;
-        data->controllers[ctrlVolume	  ][i] = 127;
-        data->controllers[ctrlPan	  ][i] = 64;
-        data->controllers[ctrlExpression  ][i] = 127;
-        data->controllers[ctrlReverb	  ][i] = 0;
-        data->controllers[ctrlChorus	  ][i] = 0;
-        data->controllers[ctrlSustainPedal][i] = 0;
-        data->controllers[ctrlSoftPedal	  ][i] = 0;
-        data->channelLastVolume            [i] = 0; /* last volume--anything */
-        data->pitchWheel		   [i] = DEFAULT_PITCH_BEND;
-        data->realChannels		   [i] = -1; /* no assignment */
+        mididriverData->controllers[ctrlPatch	  ][i] = 0;
+        mididriverData->controllers[ctrlBank	  ][i] = 0;
+        mididriverData->controllers[ctrlModulation  ][i] = 0;
+        mididriverData->controllers[ctrlVolume	  ][i] = 127;
+        mididriverData->controllers[ctrlPan	  ][i] = 64;
+        mididriverData->controllers[ctrlExpression  ][i] = 127;
+        mididriverData->controllers[ctrlReverb	  ][i] = 0;
+        mididriverData->controllers[ctrlChorus	  ][i] = 0;
+        mididriverData->controllers[ctrlSustainPedal][i] = 0;
+        mididriverData->controllers[ctrlSoftPedal	  ][i] = 0;
+        mididriverData->channelLastVolume            [i] = 0; /* last volume--anything */
+        mididriverData->pitchWheel		   [i] = DEFAULT_PITCH_BEND;
+        mididriverData->realChannels		   [i] = -1; /* no assignment */
     }
-    memset(data->percussions, 0, sizeof data->percussions);
+    
     SENDMIDI(MIDI_PERC, MIDI_CONTROL, MUS2MIDIctrl[ctrlVolume], 127);
     SENDMIDI(MIDI_PERC, MIDI_CONTROL, MUS2MIDIctrl[ctrlResetCtrls], 0);
 }
 
 void MIDIstopMusic(){
     int8_t i;
-    MIDIdata *data = &mididriverData;
 
     for (i = 0; i < MAX_MUSIC_CHANNELS; i++) {
-        int8_t MIDIchannel = data->realChannels[i];
+        int8_t MIDIchannel = mididriverData->realChannels[i];
         if (MIDIchannel < 0){
             continue;
         }
@@ -310,7 +274,7 @@ void MIDIstopMusic(){
         } else {
             uint8_t j;
             for(j = 0; j < 128; j++){
-                if (data->percussions[j >> 3] & (1 << (j & 7))){
+                if (mididriverData->percussions[j >> 3] & (1 << (j & 7))){
                     SENDMIDI(MIDI_PERC, MIDI_NOTE_OFF, j, 127);
                 }
             }
@@ -326,8 +290,8 @@ void MIDIchangeSystemVolume(int16_t systemVolume){
 } 
 
 int8_t MIDIinitDriver(void){
-    memset(MIDIchannels, 0xFF, sizeof MIDIchannels);
+    FAR_memset(MIDIchannels, 0xFF, size_MIDIchannels);
     MIDIchannels[MIDI_PERC] = ~(0xFF >> 1); /* mark perc. channel as always occupied */
-    memset(MIDItime, 0, sizeof MIDItime);
+    FAR_memset(MIDItime, 0, size_MIDItime);
     return 0;
 } 

@@ -718,3 +718,6 @@ int8_t OPL3deinitHardware(void){
     return 0;
 }
 
+int8_t OPLsendMIDI(uint8_t command, uint8_t par1, uint8_t par2){
+    return 0;
+}

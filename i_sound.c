@@ -129,7 +129,6 @@ void I_SetSfxVolume(uint8_t volume) {
 int16_t I_LoadSong(uint16_t lump) {
     // always use MUSIC SEGMENT, 0
 	//todo use scratch instead?
-	int8_t i;
     byte __far * data = MK_FP(MUSIC_SEGMENT, 0);
     int16_t __far *  worddata = (int16_t __far *)data;
     W_CacheLumpNumDirect(lump, data);
@@ -150,39 +149,41 @@ int16_t I_LoadSong(uint16_t lump) {
 		currentsong_play_timer = 0;
 		currentsong_ticks_to_process = 0;
 		
+        // todo cleaner, check for opl3 too, etc
+        if (playingdriver && playingdriver->driverId == MUS_DRIVER_TYPE_OPL2){
 
-		// parse instruements
-		FAR_memset(instrumentlookup, 0xFF, MAX_INSTRUMENTS);
-		for (i = 0; i < currentsong_num_instruments; i++){
-			uint16_t instrument = worddata[8+i];
-			if (instrument > 127){
-				instrument -= 7;
-			}
-			instrumentlookup[instrument] = i;	// this instrument is index i in AdLibInstrumentList
-		}
+	        int8_t  i;
+            uint8_t j;
+            // parse instruements
+            FAR_memset(instrumentlookup, 0xFF, MAX_INSTRUMENTS);
+            for (i = 0; i < currentsong_num_instruments; i++){
+                uint16_t instrument = worddata[8+i];
+                if (instrument > 127){
+                    instrument -= 7;
+                }
+                instrumentlookup[instrument] = i;	// this instrument is index i in AdLibInstrumentList
+            }
 
 
 
-
-        {
             // dynamically load used instruments
-            uint8_t i;
             W_CacheLumpNameDirect("genmidi", data); // load instrument data.
-            for (i = 0; i < MAX_INSTRUMENTS; i++){
-                uint8_t instrumentindex = instrumentlookup[i];
+            for (j = j; j < MAX_INSTRUMENTS; j++){
+                uint8_t instrumentindex = instrumentlookup[j];
                 if (instrumentindex != 0xFF){
                     // 8 for the string at the start of the lump...
-                    uint16_t offset = 8 +(sizeof(OP2instrEntry) * i);
+                    uint16_t offset = 8 +(sizeof(OP2instrEntry) * j);
 
                     //far_fread(&AdLibInstrumentList[instrumentindex], sizeof(OP2instrEntry), 1, fp);
                     FAR_memcpy(&AdLibInstrumentList[instrumentindex], MK_FP(MUSIC_SEGMENT, offset), sizeof(OP2instrEntry));
                 }
             }
+            // reload mus
+            W_CacheLumpNumDirect(lump, data);
+
         }
 
         
-        // reload mus
-        W_CacheLumpNumDirect(lump, data);
 
 		return 1; 
     } else {
@@ -573,8 +574,18 @@ void __far I_StartupSound(void) {
     rc = DMX_Init(SND_TICRATE, SND_MAXSONGS, dmxCodes[snd_MusicDevice], dmxCodes[snd_SfxDevice]);
 
 
+/*
     playingdriver = &OPL2driver;
     playingdriver->initHardware(ADLIBPORT, 0, 0);
+    playingdriver->initDriver();
+*/
+/*
+    playingdriver = &MPU401driver;
+    playingdriver->initHardware(MPU401PORT, 0, 0);
+    playingdriver->initDriver();
+    */
+    playingdriver = &SBMIDIdriver;
+    playingdriver->initHardware(SBMIDIPORT, 0, 0);
     playingdriver->initDriver();
 
 }

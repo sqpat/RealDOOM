@@ -139,7 +139,6 @@ int8_t MPU401sendMIDI(uint8_t command, uint8_t par1, uint8_t par2){
 }
 
  
-
 int8_t MPU401detectHardware(uint16_t port, uint8_t irq, uint8_t dma){
     int16_t savedMPU401port = MPU401port;
     int8_t result;
@@ -162,19 +161,3 @@ int8_t MPU401initHardware(uint16_t port, uint8_t irq, uint8_t dma){
 int8_t MPU401deinitHardware(void){
     return MPU401sendCommand(MPU401_RESET);
 }
-
-driverBlock MPU401driver = {
-	MIDIinitDriver,
-	MPU401detectHardware,
-	MPU401initHardware,
-	MPU401deinitHardware,
-
-	MIDIplayNote,
-	MIDIreleaseNote,
-	MIDIpitchWheel,
-	MIDIchangeControl,
-	MIDIplayMusic,
-	MIDIstopMusic,
-	MIDIchangeSystemVolume,
-	MPU401sendMIDI
-};

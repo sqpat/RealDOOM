@@ -97,20 +97,3 @@ int8_t SBMIDIdeinitHardware(void){
     return 0;
 }
 
-
-driverBlock SBMIDIdriver = {
-
-	MIDIinitDriver,
-	SBMIDIdetectHardware,
-	SBMIDIinitHardware,
-	SBMIDIdeinitHardware,
-
-	MIDIplayNote,
-	MIDIreleaseNote,
-	MIDIpitchWheel,
-	MIDIchangeControl,
-	MIDIplayMusic,
-	MIDIstopMusic,
-	MIDIchangeSystemVolume,
-	SBMIDIsendMIDI
-};

@@ -106,7 +106,6 @@ GLOBOBJS = &
  sc_midi.obj &
  sc_sbmid.obj &
  sc_mpu.obj &
-
  sounds.obj &
  info.obj &
  d_math.obj &
