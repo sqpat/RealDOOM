@@ -116,10 +116,9 @@ int8_t MPU401reset(void){
 /* send MIDI command */
 int8_t MPU401sendMIDI(uint8_t command, uint8_t par1, uint8_t par2){
     uint8_t event = command & MIDI_EVENT_MASK;
-
-    if (event == MIDI_NOTE_ON){
-
-    } else if (event == MIDI_NOTE_OFF) {
+    //if (event == MIDI_NOTE_ON){
+    //} else 
+    if (event == MIDI_NOTE_OFF) {
 
         /* convert NOTE_OFF to NOTE_ON with zero velocity */
         command = (command & 0x0F) | MIDI_NOTE_ON;

@@ -147,16 +147,6 @@ int16_t		OPL3detect(uint16_t port);
 
 
 
-void	MIDIplayNote(uint8_t channel, uint8_t note, int8_t noteVolume);
-void	MIDIreleaseNote(uint8_t channel, uint8_t note);
-void	MIDIpitchWheel(uint8_t channel, uint8_t pitch);
-void	MIDIchangeControl(uint8_t channel, uint8_t controller, uint8_t value);
-void	MIDIplayMusic();
-void	MIDIstopMusic();
-void	MIDIchangeSystemVolume(int16_t noteVolume);
-int8_t  MIDIinitDriver(void);
-
-
 void donothing();
 
 #ifdef showerrors

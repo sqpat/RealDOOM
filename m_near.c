@@ -2000,6 +2000,7 @@ driverBlock OPL3driver = {
 	OPLplayMusic,
 	OPLstopMusic,
 	OPLchangeSystemVolume,
+	OPLsendMIDI,
 	MUS_DRIVER_TYPE_OPL3
 
 };
@@ -2150,7 +2151,6 @@ driverBlock MPU401driver = {
 
 
 driverBlock SBMIDIdriver = {
-
 	MIDIinitDriver,
 	SBMIDIdetectHardware,
 	SBMIDIinitHardware,

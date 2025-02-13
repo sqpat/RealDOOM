@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/02/13 11:42:32
+Created on:       25/02/13 13:43:11
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          21ce:0000            00003020
+DGROUP                          21ce:0000            00003030
 
 
 
@@ -56,11 +56,11 @@ g_setup_TEXT           CODE           AUTO           026c:70e0       000002cc
 r_setup_TEXT           CODE           AUTO           026c:73b0       00000445
 st_setup_TEXT          CODE           AUTO           026c:7800       000001fa
 hu_setup_TEXT          CODE           AUTO           026c:7a00       000000c1
-s_sound_TEXT           CODE           AUTO           0a19:0000       00000495
+s_sound_TEXT           CODE           AUTO           0a19:0000       0000049d
 sc_adlib_TEXT          CODE           AUTO           0a19:04a0       00000d05
-sc_midi_TEXT           CODE           AUTO           0a19:11b0       00000680
+sc_midi_TEXT           CODE           AUTO           0a19:11b0       00000678
 sc_sbmid_TEXT          CODE           AUTO           0a19:1830       000000c6
-sc_mpu_TEXT            CODE           AUTO           0a19:1900       00000145
+sc_mpu_TEXT            CODE           AUTO           0a19:1900       00000141
 p_ceilng_TEXT          CODE           AUTO           0a19:1a50       000003ae
 p_doors_TEXT           CODE           AUTO           0a19:1e00       000006da
 p_enemy_TEXT           CODE           AUTO           0a19:24e0       00002657
@@ -100,17 +100,17 @@ _NULL                  BEGDATA        DGROUP         21ce:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         21d0:0000       00000002
 _FIXEDDATA             DATA           DGROUP         21d1:0000       00000614
 _DATA                  DATA           DGROUP         2233:0000       00000a6a
-CONST                  DATA           DGROUP         22d9:000a       0000038a
-CONST2                 DATA           DGROUP         2312:0004       0000010d
-XIB                    DATA           DGROUP         2323:0002       00000000
-XI                     DATA           DGROUP         2323:0002       0000000c
-XIE                    DATA           DGROUP         2323:000e       00000000
-YIB                    DATA           DGROUP         2323:000e       00000000
-YI                     DATA           DGROUP         2323:000e       00000012
-YIE                    DATA           DGROUP         2325:0000       00000000
-DATA                   DATA           DGROUP         2325:0000       00000000
-_BSS                   BSS            DGROUP         2325:0000       00000aa6
-STACK                  STACK          DGROUP         23d0:0000       00001000
+CONST                  DATA           DGROUP         22d9:000a       0000038c
+CONST2                 DATA           DGROUP         2312:0006       0000010d
+XIB                    DATA           DGROUP         2323:0004       00000000
+XI                     DATA           DGROUP         2323:0004       0000000c
+XIE                    DATA           DGROUP         2324:0000       00000000
+YIB                    DATA           DGROUP         2324:0000       00000000
+YI                     DATA           DGROUP         2324:0000       00000012
+YIE                    DATA           DGROUP         2325:0002       00000000
+DATA                   DATA           DGROUP         2325:0002       00000000
+_BSS                   BSS            DGROUP         2326:0000       00000aa6
+STACK                  STACK          DGROUP         23d1:0000       00001000
 
 
                         +----------------+
@@ -124,280 +124,280 @@ Address        Symbol
 =======        ======
 
 Module: m_near.obj(C:\REALDOOM\m_near.c)
-21ce:1570      _OPL2driverdata
-21ce:15e0      _savename
-21ce:15f0      _texturecache_nodes
-21ce:1650      _spritecache_nodes
-21ce:16a0      _dl
-21ce:16b0      _anims
-21ce:1770      _usedtexturepagemem
-21ce:1788      _solidsegs
-21ce:1808      _wadfiles
-21ce:1810      _strace
-21ce:1820      _trace
-21ce:1830      _switchlist
-21ce:18f8      _buttonlist
-21ce:1920      _saveOldString
-21ce:1938      _w_ammo
-21ce:1960      _w_keyboxes
-21ce:1978      _w_maxammo
-21ce:19a0      _w_faces
-21ce:19a8      _w_arms
-21ce:19d8      _w_armsbg
-21ce:19e0      _segregs
-21ce:19e8      _am_l
-21ce:19f0      _am_fl
-21ce:19f8      _am_lc
-21ce:1a00      _am_ml
-21ce:1a08      _markpoints
-21ce:1a30      _cachedsegmentlumps
-21ce:1a38      _cachedlumps
-21ce:1a40      _activenumpages
-21ce:1a48      _spriteL1LRU
-21ce:1a50      _activespritepages
-21ce:1a58      _textureL1LRU
-21ce:1a68      _activetexturepages
-21ce:1a78      _nextcleanup
-21ce:1a7c      _codestartposition
-21ce:1a88      _flatcache_nodes
-21ce:1a94      _segloopcachedsegment
-21ce:1a98      _segloopcachedbasecol
-21ce:1a9c      _segloopprevlookup
-21ce:1aa0      _levelTimeCount
-21ce:1aa4      _usedspritepagemem
-21ce:1ab8      _filetolumpsize
-21ce:1ac4      _intercept_p
-21ce:1ac8      _bottomslope
-21ce:1acc      _sightzstart
-21ce:1ad0      _cachedt2x
-21ce:1ad4      _cachedt2y
-21ce:1ad8      _aimslope
-21ce:1adc      _topslope
-21ce:1ae0      _shootz
-21ce:1ae4      _tmy
-21ce:1ae8      _tmx
-21ce:1aec      _tmthing_pos
-21ce:1af0      _bestslidefrac
-21ce:1af4      _tmymove
-21ce:1af8      _tmxmove
-21ce:1afc      _linetarget_pos
-21ce:1b00      _bulletslope
-21ce:1b04      _activeplats
-21ce:1b40      _leveltime
-21ce:1b44      _setStateReturn_pos
-21ce:1b48      _TaskServiceCount
-21ce:1b4c      _OldInt8
-21ce:1b50      _w_armor
-21ce:1b5c      _st_stuff_buf
-21ce:1b90      _w_health
-21ce:1b9c+     _mousearray
-21ce:1ba0      _starttime
-21ce:1ba4      _gametic
-21ce:1ba8      _maketic
-21ce:1bac      _gametime
-21ce:1bb0      _p_init_sprtemp
-21ce:1bb4      _am_scale_ftom
-21ce:1bb8      _am_buffer
-21ce:1bcc      _am_max_scale_mtof
-21ce:1bd0      _am_scale_mtof
-21ce:1bd4      _screen_oldloc
-21ce:1bd8      _m_paninc
-21ce:1bdc      _activespritenumpages
-21ce:1be0      _channels
-21ce:1bf2      _lineopening
-21ce:1bf8      _keyboxes
-21ce:1bfe      _w_ready
-21ce:1c08      _out
-21ce:1c16      _in
-21ce:1c24      _regs
-21ce:1c32*     _percussMask
-21ce:1c34      _currentsong_length
-21ce:1c36      _currentsong_start_offset
-21ce:1c38      _currentsong_num_instruments
-21ce:1c3a      _currentsong_primary_channels
-21ce:1c3c      _currentsong_secondary_channels
-21ce:1c3e      _currentsong_play_timer
-21ce:1c40      _currentsong_playing_offset
-21ce:1c42      _segloopheightvalcache
-21ce:1c44      _emshandle
-21ce:1c46      _pagenum9000
-21ce:1c48      _spritewidths_segment
-21ce:1c4a      _numlinespecials
-21ce:1c4c      _lastanim
-21ce:1c4e      _numlumps
-21ce:1c50      _newend
-21ce:1c52      _attackrange16
-21ce:1c54      _la_damage
-21ce:1c56      _shootthing
-21ce:1c58      _ceilinglinenum
-21ce:1c5a      _tmthing
-21ce:1c5c      _tmfloorz
-21ce:1c5e      _lastcalculatedsector
-21ce:1c60      _tmdropoffz
-21ce:1c62      _tmceilingz
-21ce:1c64      _linetarget
-21ce:1c66      _bestslidelinenum
-21ce:1c68      _numspechit
-21ce:1c6a      _tmflags1
-21ce:1c6c      _setStateReturn
-21ce:1c6e      _numswitches
-21ce:1c70      _oldentertics
-21ce:1c72      _currentThinkerListHead
-21ce:1c74      _whichSkull
-21ce:1c76      _currentMenu
-21ce:1c78      _skullAnimCounter
-21ce:1c7a      _messageLastMenuActive
-21ce:1c7c      _saveStringEnter
-21ce:1c7e      _itemOn
-21ce:1c80      _saveCharIndex
-21ce:1c82      _messageRoutine
-21ce:1c84      _saveSlot
-21ce:1c86      _st_calc_lastcalc
-21ce:1c88      _defdemoname
-21ce:1c8a      _dclicks
-21ce:1c8c      _dclicktime
-21ce:1c8e      _dclickstate
-21ce:1c90      _dclicktime2
-21ce:1c92      _mousex
-21ce:1c94      _myargc
-21ce:1c96      _myargv
-21ce:1c98      _dclickstate2
-21ce:1c9a      _dclicks2
-21ce:1c9c      _demo_p
-21ce:1c9e      _totalkills
-21ce:1ca0      _totalitems
-21ce:1ca2      _totalsecret
-21ce:1ca4      _playerMobjRef
-21ce:1ca6      _p_init_maxframe
-21ce:1ca8      _EMS_PAGE
-21ce:1caa      _am_min_level_x
-21ce:1cac      _am_min_level_y
-21ce:1cae      _screen_viewport_height
-21ce:1cb0      _screen_topright_y
-21ce:1cb2      _screen_topright_x
-21ce:1cb4      _screen_viewport_width
-21ce:1cb6      _am_min_scale_mtof
-21ce:1cb8      _old_screen_viewport_width
-21ce:1cba      _old_screen_botleft_x
-21ce:1cbc      _old_screen_botleft_y
-21ce:1cbe      _screen_botleft_y
-21ce:1cc0      _am_max_level_y
-21ce:1cc2      _am_max_level_x
-21ce:1cc4      _old_screen_viewport_height
-21ce:1cc6      _screen_botleft_x
-21ce:1cc8      _ftom_zoommul
-21ce:1cca      _mtof_zoommul
-21ce:1ccc      _skytexture
-21ce:1cce      _spritelights
-21ce:1cd0      _numpatches
-21ce:1cd2      _pspritescale
-21ce:1cd4      _firstpatch
-21ce:1cd6      _numtextures
-21ce:1cd8      _numspritelumps
-21ce:1cda      _numflats
-21ce:1cdc      _scaledviewwidth
-21ce:1cde      _viewwindowoffset
-21ce:1ce0      _r_cachedplayerMobjsecnum
-21ce:1ce2      _viewwindowx
-21ce:1ce4      _viewwindowy
-21ce:1ce6      _pendingdetail
-21ce:1ce8      _pagename
-21ce:1cea      _pagetic
-21ce:1cec*     _snd_SBport
-21ce:1cee*     _snd_Mport
-21ce:1cf0      _w_title
-21ce:1d49      _w_message
-21ce:1eb2      _menu_messageString
-21ce:1f1b      _oldweaponsowned
-21ce:1f24      _wminfo
-21ce:1f39      _player
-21ce:1f9c      _mus_paused
-21ce:1f9d      _levelTimer
-21ce:1f9e      _crushchange
-21ce:1f9f      _nofit
-21ce:1fa0      _earlyout
-21ce:1fa1      _onground
-21ce:1fa2      _TS_TimesInInterrupt
-21ce:1fa3      _menu_epi
-21ce:1fa4      _messageNeedsInput
-21ce:1fa5      _message_on
-21ce:1fa6      _message_dontfuckwithme
-21ce:1fa7      _message_counter
-21ce:1fa8      _message_nottobefuckedwith
-21ce:1fa9      _messageToPrint
-21ce:1faa      _st_randomnumber
-21ce:1fab      _do_st_refresh
-21ce:1fac      _secretexit
-21ce:1fad      _st_statusbaron
-21ce:1fae      _updatedthisframe
-21ce:1faf      _st_firsttime
-21ce:1fb0      _st_gamestate
-21ce:1fb1      _usemouse
-21ce:1fb2      _d_episode
-21ce:1fb3      _turnheld
-21ce:1fb4      _d_skill
-21ce:1fb5      _d_map
-21ce:1fb6      _savegameslot
-21ce:1fb7      _mousebforward
-21ce:1fb8      _key_speed
-21ce:1fb9      _mousebfire
-21ce:1fba      _key_left
-21ce:1fbb      _key_fire
-21ce:1fbc      _key_strafe
-21ce:1fbd      _key_straferight
-21ce:1fbe      _key_up
-21ce:1fbf      _mousebstrafe
-21ce:1fc0      _key_down
-21ce:1fc1      _key_use
-21ce:1fc2      _key_right
-21ce:1fc3      _key_strafeleft
-21ce:1fc4      _timingdemo
-21ce:1fc5      _sendsave
-21ce:1fc6      _noblit
-21ce:1fc7      _demoplayback
-21ce:1fc8      _demorecording
-21ce:1fc9      _singledemo
-21ce:1fca      _netdemo
-21ce:1fcb      _sendpause
-21ce:1fcc      _usergame
-21ce:1fcd      _paused
-21ce:1fce      _borderdrawcount
-21ce:1fcf      _numChannels
-21ce:1fd0      _gameskill
-21ce:1fd1      _respawnmonsters
-21ce:1fd2      _novideo
-21ce:1fd3      _usegamma
-21ce:1fd4      _mousepresent
-21ce:1fd5      _setsizeneeded
-21ce:1fd6      _menuactive
-21ce:1fd7      _screenSize
-21ce:1fd8      _inhelpscreens
-21ce:1fd9      _quickSaveSlot
-21ce:1fda      _detailLevel
-21ce:1fdb      _setblocks
-21ce:1fdc      _eventtail
-21ce:1fdd      _startmap
-21ce:1fde      _modifiedgame
-21ce:1fdf      _sfxVolume
-21ce:1fe0      _autostart
-21ce:1fe1      _showMessages
-21ce:1fe2      _advancedemo
-21ce:1fe3      _mouseSensitivity
-21ce:1fe4      _startskill
-21ce:1fe5      _fastparm
-21ce:1fe6      _eventhead
-21ce:1fe7      _startepisode
-21ce:1fe8      _musicVolume
-21ce:1fe9      _demosequence
-21ce:1fea      _snd_SBirq
-21ce:1feb      _snd_MusicVolume
-21ce:1fec      _snd_SBport8bit
-21ce:1fed      _snd_SfxVolume
-21ce:1fee      _nomonsters
-21ce:1fef      _snd_DesiredSfxDevice
-21ce:1ff0      _snd_MusicDevice
-21ce:1ff1      _snd_SfxDevice
-21ce:1ff2      _respawnparm
+21ce:1580      _OPL2driverdata
+21ce:15f0      _savename
+21ce:1600      _texturecache_nodes
+21ce:1660      _spritecache_nodes
+21ce:16b0      _dl
+21ce:16c0      _anims
+21ce:1780      _usedtexturepagemem
+21ce:1798      _solidsegs
+21ce:1818      _wadfiles
+21ce:1820      _strace
+21ce:1830      _trace
+21ce:1840      _switchlist
+21ce:1908      _buttonlist
+21ce:1930      _saveOldString
+21ce:1948      _w_ammo
+21ce:1970      _w_keyboxes
+21ce:1988      _w_maxammo
+21ce:19b0      _w_faces
+21ce:19b8      _w_arms
+21ce:19e8      _w_armsbg
+21ce:19f0      _segregs
+21ce:19f8      _am_l
+21ce:1a00      _am_fl
+21ce:1a08      _am_lc
+21ce:1a10      _am_ml
+21ce:1a18      _markpoints
+21ce:1a40      _cachedsegmentlumps
+21ce:1a48      _cachedlumps
+21ce:1a50      _activenumpages
+21ce:1a58      _spriteL1LRU
+21ce:1a60      _activespritepages
+21ce:1a68      _textureL1LRU
+21ce:1a78      _activetexturepages
+21ce:1a88      _nextcleanup
+21ce:1a8c      _codestartposition
+21ce:1a98      _flatcache_nodes
+21ce:1aa4      _segloopcachedsegment
+21ce:1aa8      _segloopcachedbasecol
+21ce:1aac      _segloopprevlookup
+21ce:1ab0      _levelTimeCount
+21ce:1ab4      _usedspritepagemem
+21ce:1ac8      _filetolumpsize
+21ce:1ad4      _intercept_p
+21ce:1ad8      _bottomslope
+21ce:1adc      _sightzstart
+21ce:1ae0      _cachedt2x
+21ce:1ae4      _cachedt2y
+21ce:1ae8      _aimslope
+21ce:1aec      _topslope
+21ce:1af0      _shootz
+21ce:1af4      _tmy
+21ce:1af8      _tmx
+21ce:1afc      _tmthing_pos
+21ce:1b00      _bestslidefrac
+21ce:1b04      _tmymove
+21ce:1b08      _tmxmove
+21ce:1b0c      _linetarget_pos
+21ce:1b10      _bulletslope
+21ce:1b14      _activeplats
+21ce:1b50      _leveltime
+21ce:1b54      _setStateReturn_pos
+21ce:1b58      _TaskServiceCount
+21ce:1b5c      _OldInt8
+21ce:1b60      _w_armor
+21ce:1b6c      _st_stuff_buf
+21ce:1ba0      _w_health
+21ce:1bac+     _mousearray
+21ce:1bb0      _starttime
+21ce:1bb4      _gametic
+21ce:1bb8      _maketic
+21ce:1bbc      _gametime
+21ce:1bc0      _p_init_sprtemp
+21ce:1bc4      _am_scale_ftom
+21ce:1bc8      _am_buffer
+21ce:1bdc      _am_max_scale_mtof
+21ce:1be0      _am_scale_mtof
+21ce:1be4      _screen_oldloc
+21ce:1be8      _m_paninc
+21ce:1bec      _activespritenumpages
+21ce:1bf0      _channels
+21ce:1c02      _lineopening
+21ce:1c08      _keyboxes
+21ce:1c0e      _w_ready
+21ce:1c18      _out
+21ce:1c26      _in
+21ce:1c34      _regs
+21ce:1c42*     _percussMask
+21ce:1c44      _currentsong_length
+21ce:1c46      _currentsong_start_offset
+21ce:1c48      _currentsong_num_instruments
+21ce:1c4a      _currentsong_primary_channels
+21ce:1c4c      _currentsong_secondary_channels
+21ce:1c4e      _currentsong_play_timer
+21ce:1c50      _currentsong_playing_offset
+21ce:1c52      _segloopheightvalcache
+21ce:1c54      _emshandle
+21ce:1c56      _pagenum9000
+21ce:1c58      _spritewidths_segment
+21ce:1c5a      _numlinespecials
+21ce:1c5c      _lastanim
+21ce:1c5e      _numlumps
+21ce:1c60      _newend
+21ce:1c62      _attackrange16
+21ce:1c64      _la_damage
+21ce:1c66      _shootthing
+21ce:1c68      _ceilinglinenum
+21ce:1c6a      _tmthing
+21ce:1c6c      _tmfloorz
+21ce:1c6e      _lastcalculatedsector
+21ce:1c70      _tmdropoffz
+21ce:1c72      _tmceilingz
+21ce:1c74      _linetarget
+21ce:1c76      _bestslidelinenum
+21ce:1c78      _numspechit
+21ce:1c7a      _tmflags1
+21ce:1c7c      _setStateReturn
+21ce:1c7e      _numswitches
+21ce:1c80      _oldentertics
+21ce:1c82      _currentThinkerListHead
+21ce:1c84      _whichSkull
+21ce:1c86      _currentMenu
+21ce:1c88      _skullAnimCounter
+21ce:1c8a      _messageLastMenuActive
+21ce:1c8c      _saveStringEnter
+21ce:1c8e      _itemOn
+21ce:1c90      _saveCharIndex
+21ce:1c92      _messageRoutine
+21ce:1c94      _saveSlot
+21ce:1c96      _st_calc_lastcalc
+21ce:1c98      _defdemoname
+21ce:1c9a      _dclicks
+21ce:1c9c      _dclicktime
+21ce:1c9e      _dclickstate
+21ce:1ca0      _dclicktime2
+21ce:1ca2      _mousex
+21ce:1ca4      _myargc
+21ce:1ca6      _myargv
+21ce:1ca8      _dclickstate2
+21ce:1caa      _dclicks2
+21ce:1cac      _demo_p
+21ce:1cae      _totalkills
+21ce:1cb0      _totalitems
+21ce:1cb2      _totalsecret
+21ce:1cb4      _playerMobjRef
+21ce:1cb6      _p_init_maxframe
+21ce:1cb8      _EMS_PAGE
+21ce:1cba      _am_min_level_x
+21ce:1cbc      _am_min_level_y
+21ce:1cbe      _screen_viewport_height
+21ce:1cc0      _screen_topright_y
+21ce:1cc2      _screen_topright_x
+21ce:1cc4      _screen_viewport_width
+21ce:1cc6      _am_min_scale_mtof
+21ce:1cc8      _old_screen_viewport_width
+21ce:1cca      _old_screen_botleft_x
+21ce:1ccc      _old_screen_botleft_y
+21ce:1cce      _screen_botleft_y
+21ce:1cd0      _am_max_level_y
+21ce:1cd2      _am_max_level_x
+21ce:1cd4      _old_screen_viewport_height
+21ce:1cd6      _screen_botleft_x
+21ce:1cd8      _ftom_zoommul
+21ce:1cda      _mtof_zoommul
+21ce:1cdc      _skytexture
+21ce:1cde      _spritelights
+21ce:1ce0      _numpatches
+21ce:1ce2      _pspritescale
+21ce:1ce4      _firstpatch
+21ce:1ce6      _numtextures
+21ce:1ce8      _numspritelumps
+21ce:1cea      _numflats
+21ce:1cec      _scaledviewwidth
+21ce:1cee      _viewwindowoffset
+21ce:1cf0      _r_cachedplayerMobjsecnum
+21ce:1cf2      _viewwindowx
+21ce:1cf4      _viewwindowy
+21ce:1cf6      _pendingdetail
+21ce:1cf8      _pagename
+21ce:1cfa      _pagetic
+21ce:1cfc*     _snd_SBport
+21ce:1cfe*     _snd_Mport
+21ce:1d00      _w_title
+21ce:1d59      _w_message
+21ce:1ec2      _menu_messageString
+21ce:1f2b      _oldweaponsowned
+21ce:1f34      _wminfo
+21ce:1f49      _player
+21ce:1fac      _mus_paused
+21ce:1fad      _levelTimer
+21ce:1fae      _crushchange
+21ce:1faf      _nofit
+21ce:1fb0      _earlyout
+21ce:1fb1      _onground
+21ce:1fb2      _TS_TimesInInterrupt
+21ce:1fb3      _menu_epi
+21ce:1fb4      _messageNeedsInput
+21ce:1fb5      _message_on
+21ce:1fb6      _message_dontfuckwithme
+21ce:1fb7      _message_counter
+21ce:1fb8      _message_nottobefuckedwith
+21ce:1fb9      _messageToPrint
+21ce:1fba      _st_randomnumber
+21ce:1fbb      _do_st_refresh
+21ce:1fbc      _secretexit
+21ce:1fbd      _st_statusbaron
+21ce:1fbe      _updatedthisframe
+21ce:1fbf      _st_firsttime
+21ce:1fc0      _st_gamestate
+21ce:1fc1      _usemouse
+21ce:1fc2      _d_episode
+21ce:1fc3      _turnheld
+21ce:1fc4      _d_skill
+21ce:1fc5      _d_map
+21ce:1fc6      _savegameslot
+21ce:1fc7      _mousebforward
+21ce:1fc8      _key_speed
+21ce:1fc9      _mousebfire
+21ce:1fca      _key_left
+21ce:1fcb      _key_fire
+21ce:1fcc      _key_strafe
+21ce:1fcd      _key_straferight
+21ce:1fce      _key_up
+21ce:1fcf      _mousebstrafe
+21ce:1fd0      _key_down
+21ce:1fd1      _key_use
+21ce:1fd2      _key_right
+21ce:1fd3      _key_strafeleft
+21ce:1fd4      _timingdemo
+21ce:1fd5      _sendsave
+21ce:1fd6      _noblit
+21ce:1fd7      _demoplayback
+21ce:1fd8      _demorecording
+21ce:1fd9      _singledemo
+21ce:1fda      _netdemo
+21ce:1fdb      _sendpause
+21ce:1fdc      _usergame
+21ce:1fdd      _paused
+21ce:1fde      _borderdrawcount
+21ce:1fdf      _numChannels
+21ce:1fe0      _gameskill
+21ce:1fe1      _respawnmonsters
+21ce:1fe2      _novideo
+21ce:1fe3      _usegamma
+21ce:1fe4      _mousepresent
+21ce:1fe5      _setsizeneeded
+21ce:1fe6      _menuactive
+21ce:1fe7      _screenSize
+21ce:1fe8      _inhelpscreens
+21ce:1fe9      _quickSaveSlot
+21ce:1fea      _detailLevel
+21ce:1feb      _setblocks
+21ce:1fec      _eventtail
+21ce:1fed      _startmap
+21ce:1fee      _modifiedgame
+21ce:1fef      _sfxVolume
+21ce:1ff0      _autostart
+21ce:1ff1      _showMessages
+21ce:1ff2      _advancedemo
+21ce:1ff3      _mouseSensitivity
+21ce:1ff4      _startskill
+21ce:1ff5      _fastparm
+21ce:1ff6      _eventhead
+21ce:1ff7      _startepisode
+21ce:1ff8      _musicVolume
+21ce:1ff9      _demosequence
+21ce:1ffa      _snd_SBirq
+21ce:1ffb      _snd_MusicVolume
+21ce:1ffc      _snd_SBport8bit
+21ce:1ffd      _snd_SfxVolume
+21ce:1ffe      _nomonsters
+21ce:1fff      _snd_DesiredSfxDevice
+21ce:2000      _snd_MusicDevice
+21ce:2001      _snd_SfxDevice
+21ce:2002      _respawnparm
 21ce:0650      _singletics
 21ce:0651      _skytextureloaded
 21ce:0652      _validcount
@@ -534,7 +534,7 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 21ce:0d60      _playingpercussMask
 21ce:0d62      _playingvolume
 21ce:0d64      _playingtime
-21ce:1444      _snd_prefixen
+21ce:1446      _snd_prefixen
 21ce:0d68      _loops_enabled
 21ce:0d6a      _SBMIDIport
 21ce:0d6c      _runningStatus
@@ -548,9 +548,9 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 21ce:0e22      _MUS2MIDIctrl
 21ce:0e31*     _MPU401driver
 21ce:0e62      _SBMIDIdriver
-21ce:1ff3      _snd_SBdma
-21ce:1ff4      _snd_DesiredMusicDevice
-21ce:1ff5      _snd_Mport8bit
+21ce:2003      _snd_SBdma
+21ce:2004      _snd_DesiredMusicDevice
+21ce:2005      _snd_Mport8bit
 Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:0000      D_InitStrings_
 0000:00aa+     D_GetCursorColumnRow_
@@ -897,19 +897,19 @@ Module: s_sound.obj(C:\REALDOOM\s_sound.c)
 0a19:0000      S_SetMusicVolume_
 0a19:001a*     S_StopMusic_
 0a19:0038      S_ChangeMusic_
-0a19:0098      S_StartMusic_
-0a19:00a4      S_StopChannel_
-0a19:011c+     S_AdjustSoundParams_
-0a19:0126      S_SetSfxVolume_
-0a19:012a      S_PauseSound_
-0a19:0144      S_ResumeSound_
-0a19:015e      S_StopSound_
-0a19:018e+     S_getChannel_
-0a19:0226+     S_StartSoundAtVolume_
-0a19:0382      S_StartSoundFromRef_
-0a19:0398      S_StartSound_
-0a19:03b0      S_StartSoundWithParams_
-0a19:03b2      S_UpdateSounds_
+0a19:00a0      S_StartMusic_
+0a19:00ac      S_StopChannel_
+0a19:0124+     S_AdjustSoundParams_
+0a19:012e      S_SetSfxVolume_
+0a19:0132      S_PauseSound_
+0a19:014c      S_ResumeSound_
+0a19:0166      S_StopSound_
+0a19:0196+     S_getChannel_
+0a19:022e+     S_StartSoundAtVolume_
+0a19:038a      S_StartSoundFromRef_
+0a19:03a0      S_StartSound_
+0a19:03b8      S_StartSoundWithParams_
+0a19:03ba      S_UpdateSounds_
 Module: sc_adlib.obj(C:\REALDOOM\sc_adlib.c)
 0a19:04a0*     donothing_
 0a19:04a2+     OPLwriteReg_
@@ -956,13 +956,13 @@ Module: sc_midi.obj(C:\REALDOOM\sc_midi.c)
 0a19:12a8+     updateControllers_
 0a19:137e+     sendSystemVolume_
 0a19:13dc      MIDIplayNote_
-0a19:14c8      MIDIreleaseNote_
-0a19:1536      MIDIpitchWheel_
-0a19:15ae      MIDIchangeControl_
-0a19:169c      MIDIplayMusic_
-0a19:1766      MIDIstopMusic_
-0a19:17e6      MIDIchangeSystemVolume_
-0a19:17f2      MIDIinitDriver_
+0a19:14be      MIDIreleaseNote_
+0a19:152c      MIDIpitchWheel_
+0a19:159c      MIDIchangeControl_
+0a19:1694      MIDIplayMusic_
+0a19:175e      MIDIstopMusic_
+0a19:17de      MIDIchangeSystemVolume_
+0a19:17ea      MIDIinitDriver_
 Module: sc_sbmid.obj(C:\REALDOOM\sc_sbmid.c)
 0a19:1830+     SBMIDIsendByte_
 0a19:1882*     SBMIDIsendBlock_
@@ -976,9 +976,9 @@ Module: sc_mpu.obj(C:\REALDOOM\sc_mpu.c)
 0a19:1994*     MPU401reset_
 0a19:19a6      MPU401deinitHardware_
 0a19:19ac      MPU401sendMIDI_
-0a19:19f2      MPU401detectHardware_
-0a19:1a04      MPU401initHardware_
-0a19:1a16+     MPU401sendCommand_
+0a19:19ee      MPU401detectHardware_
+0a19:1a00      MPU401initHardware_
+0a19:1a12+     MPU401sendCommand_
 Module: p_ceilng.obj(C:\REALDOOM\p_ceilng.c)
 0a19:1a5c      T_MoveCeiling_
 0a19:1baa      EV_DoCeiling_
@@ -1376,7 +1376,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 1dab:1d6d      __doclose_
 1dab:1e03      __shutdown_stream_
 1dab:1e17      fclose_
-21ce:1ff6+     ___RmTmpFileFn
+21ce:2006+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(intx086.c)
 1dab:1e3a+     int86x_
 1dab:1edc      int86_
@@ -1390,8 +1390,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(accss.c)
 1dab:2267      access_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 21ce:0f16      ___iob
-21ce:1ffa      ___OpenStreams
-21ce:1ffc      ___ClosedStreams
+21ce:200a      ___OpenStreams
+21ce:200c      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(setbuf.c)
 1dab:229d      setbuf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(i4m.asm)
@@ -1425,10 +1425,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 1dab:2606      __do_exit_with_msg_
 1dab:26e5      __GETDS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-21ce:1ffe      __argc
-21ce:2000      __argv
-21ce:2002      ___argc
-21ce:2004      ___argv
+21ce:200e      __argc
+21ce:2010      __argv
+21ce:2012      ___argc
+21ce:2014      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fputc.c)
 1dab:26ef      fputc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(chainint)
@@ -1440,7 +1440,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 21ce:103c      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 1dab:2980      __get_errno_ptr_
-21ce:2006+     _errno
+21ce:2016+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
 21ce:103e      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
@@ -1471,7 +1471,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 1dab:2dd1      _nfree_
 1dab:2dd1      free_
-21ce:2008+     ___MiniHeapFreeRover
+21ce:2018+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 1dab:2e96      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dointr)
@@ -1479,7 +1479,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(dointr)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(segread.c)
 1dab:32ff      segread_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(istable.c)
-21ce:1450      __IsTable
+21ce:1452      __IsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(lseek.c)
 1dab:3317      lseek_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tell.c)
@@ -1547,7 +1547,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 1dab:38ac      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 1dab:38c8      __get_doserrno_ptr_
-21ce:200c+     __doserrno
+21ce:201c+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 21ce:10ac      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -1572,18 +1572,18 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
 1dab:3cf8      __doserror_
 1dab:3d06*     __doserror1_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
-21ce:1552      __Start_XI
-21ce:155e      __End_XI
-21ce:155e      __Start_YI
-21ce:1570      __End_YI
+21ce:1554      __Start_XI
+21ce:1560      __End_XI
+21ce:1560      __Start_YI
+21ce:1572      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 1dab:3d12      __EnterWVIDEO_
 21ce:10b4+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-21ce:2010      ____Argv
-21ce:2012      ____Argc
+21ce:2020      ____Argv
+21ce:2022      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-21ce:2014      ___historical_splitparms
+21ce:2024      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nrealloc.c)
 1dab:3d2e*     _nrealloc_
 1dab:3d2e      realloc_
@@ -1630,6 +1630,6 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         +-----------------------+
 
 Stack size:  1000 (4096.)
-Memory size:  00024d00 (150784.)
+Memory size:  00024d10 (150800.)
 Entry point address: 1dab:2438
-Link time: 00:00.75
+Link time: 00:00.74

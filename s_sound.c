@@ -131,11 +131,16 @@ void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
 
 	// todo use music->name
 	//combine_strings(namebuf, "d", music->name);
-	combine_strings(namebuf, "d_", "e1m1");
+	combine_strings(namebuf, "d_", "RUNNI2");
 
     // load & register it
     //music->data = (void __far*) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
     I_LoadSong(W_GetNumForName(namebuf));
+    
+	if (playingdriver){
+		playingdriver->playMusic();  // todo rename. this sets up variables in the driver for the track
+	}
+
     //_dpmi_lockregion(music->data, lumpinfo[music->lumpnum].size);
     mus_playing = musicnum;
 
