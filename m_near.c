@@ -1986,7 +1986,6 @@ driverBlock OPL2driver = {
 	MUS_DRIVER_TYPE_OPL2
 };
 
-/*
 driverBlock OPL3driver = {
 	OPLinitDriver,
 	OPL3detectHardware,
@@ -2004,7 +2003,7 @@ driverBlock OPL3driver = {
 	MUS_DRIVER_TYPE_OPL3
 
 };
-*/
+
 uint8_t	OPLsinglevoice = 0;
 driverBlock	*playingdriver = NULL;// = &OPL2driver;
 

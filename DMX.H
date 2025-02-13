@@ -51,8 +51,6 @@ int16_t AL_Detect(int16_t *port, int16_t *unk);
 void AL_SetCard(int16_t port, void __far*data);
 int16_t MPU_Detect(int16_t *port, int16_t *unk);
 void MPU_SetCard(int16_t port);
-int16_t DMX_Init(int16_t rate, int16_t maxsng, int16_t mdev, int16_t sdev);
-void DMX_DeInit(void);
 void WAV_PlayMode(int16_t channels, int16_t samplerate);
 int16_t CODEC_Detect(int16_t *port, uint8_t *dma);
 int16_t ENS_Detect(void);

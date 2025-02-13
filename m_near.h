@@ -1316,9 +1316,7 @@ extern ticcount_t	nextcleanup;
 
 extern      OPLdata OPL2driverdata;
 extern      driverBlock OPL2driver;
-/*
 extern      driverBlock OPL3driver;
-*/ 
 extern      uint8_t OPLsinglevoice;
 
 extern      driverBlock *playingdriver;

@@ -72,12 +72,6 @@ int16_t MPU_Detect(int16_t *port, int16_t *unk){
 void MPU_SetCard(int16_t port){
     
 }
-int16_t DMX_Init(int16_t rate, int16_t maxsng, int16_t mdev, int16_t sdev){
-    return 0;
-}
-void DMX_DeInit(void){
-    
-}
 void WAV_PlayMode(int16_t channels, int16_t samplerate){
     
 }
@@ -538,20 +532,12 @@ void MUS_ServiceRoutine(){
 //
 void __far I_StartupSound(void) {
     int16_t rc;
+    int16_t useport;
+    int16_t irq = 0;
+    int16_t dma = 0;
     //
     // initialize dmxCodes[]
     //
-    int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
-    dmxCodes[0] = 0;
-    dmxCodes[snd_PC] = AHW_PC_SPEAKER;
-    dmxCodes[snd_Adlib] = AHW_ADLIB;
-    dmxCodes[snd_SB] = AHW_SOUND_BLASTER;
-    dmxCodes[snd_PAS] = AHW_MEDIA_VISION;
-    dmxCodes[snd_GUS] = AHW_ULTRA_SOUND;
-    dmxCodes[snd_MPU] = AHW_MPU_401;
-    dmxCodes[snd_AWE] = AHW_AWE32;
-    dmxCodes[snd_ENSONIQ] = AHW_ENSONIQ;
-    dmxCodes[snd_CODEC] = AHW_CODEC;
     
 
     //
@@ -562,31 +548,52 @@ void __far I_StartupSound(void) {
     // pick the sound cards i'm going to use
     //
     //I_sndArbitrateCards();
+    
+    
+    //I_Error ("%i %i\n", snd_MusicDevice, snd_DesiredMusicDevice);
+    // todo actually detect hw eventually. for now just set music device to desired music device.
+
+    snd_MusicDevice = snd_DesiredMusicDevice;
+
+    switch (snd_MusicDevice){
+        case snd_Adlib:
+            playingdriver = &OPL2driver;
+            useport = ADLIBPORT;
+
+            break;
+        case snd_MPU:   // wave blaster
+            playingdriver = &SBMIDIdriver;
+            if (snd_Mport){
+                useport = snd_Mport;
+            } else {
+                useport = SBMIDIPORT;
+            }
+            break;
+        case snd_MPU2:  // sound canvas
+        case snd_MPU3:  // general midi
+            playingdriver = &MPU401driver;
+            if (snd_Mport){
+                useport = snd_Mport;
+            } else {
+                useport = MPU401PORT;
+            }
+            break;
+        
+        case snd_SB:
+            playingdriver = &OPL3driver;
+            useport = ADLIBPORT;
+            break;
+
+        
+    }
+    if (playingdriver){
+        playingdriver->initHardware(useport, 0, 0);
+        playingdriver->initDriver();
+    }
 
 
-    //
-    // inits DMX sound library
-    //
-    #ifdef SNDDEBUG
-        DEBUG_PRINT("  calling DMX_Init\n");
-    #endif
-
-    rc = DMX_Init(SND_TICRATE, SND_MAXSONGS, dmxCodes[snd_MusicDevice], dmxCodes[snd_SfxDevice]);
 
 
-/*
-    playingdriver = &OPL2driver;
-    playingdriver->initHardware(ADLIBPORT, 0, 0);
-    playingdriver->initDriver();
-*/
-/*
-    playingdriver = &MPU401driver;
-    playingdriver->initHardware(MPU401PORT, 0, 0);
-    playingdriver->initDriver();
-    */
-    playingdriver = &SBMIDIdriver;
-    playingdriver->initHardware(SBMIDIPORT, 0, 0);
-    playingdriver->initDriver();
 
 }
 

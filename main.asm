@@ -1192,13 +1192,13 @@ db  0, 0, 0
 dw OFFSET str_defaultname_22, OFFSET _snd_DesiredSfxDevice
 db  0, 0, 0
 dw OFFSET str_defaultname_23, OFFSET _snd_SBport8bit
-db  022h, 0, 0 ; must be shifted one...
+db  022h, 0, 0 ; must be shifted one nibble
 dw OFFSET str_defaultname_24, OFFSET _snd_SBirq
 db  5, 0, 0
 dw OFFSET str_defaultname_25, OFFSET _snd_SBdma
 db  1, 0, 0
 dw OFFSET str_defaultname_26, OFFSET _snd_Mport8bit
-db  033h, 0, 0  ; must be shifted one..
+db  033h, 0, 0  ; must be shifted one nibble
 dw OFFSET str_defaultname_27, OFFSET _usegamma
 db  0, 0, 0    
 
