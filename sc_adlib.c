@@ -665,6 +665,15 @@ void OPLstopMusic(){
 	}
 }
 
+void OPLpauseMusic(){
+    OPLshutup();
+}
+
+void OPLresumeMusic(){
+
+}
+
+
 void OPLchangeSystemVolume(uint8_t systemVolume){ // volume is 0-16
     uint8_t *channelVolume = OPL2driverdata.channelVolume;
     uint8_t i;

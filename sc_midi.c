@@ -288,6 +288,14 @@ void MIDIstopMusic(){
     }
 }
 
+void MIDIpauseMusic(){
+    MIDIstopMusic();
+}
+
+void MIDIresumeMusic(){
+
+}
+
 void MIDIchangeSystemVolume(uint8_t systemVolume){
     if (playingstate == ST_PLAYING){
 	    sendSystemVolume(systemVolume);

@@ -98,11 +98,17 @@ void I_StartupTimer(void) {
 }
 
 void I_PauseSong() {
-    // todo implement
+    playingstate = ST_PAUSED;
+    if (playingdriver){
+        playingdriver->pauseMusic();
+    }
 }
 
 void I_ResumeSong() {
-    // todo implement
+    playingstate = ST_PLAYING;
+    if (playingdriver){
+        playingdriver->resumeMusic();
+    }
 }
 
 void I_SetMusicVolume(uint8_t volume) {

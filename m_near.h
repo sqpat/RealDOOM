@@ -1238,6 +1238,8 @@ typedef struct  {
 	void	(*changeControl)(uint8_t channel, uint8_t controller, uint8_t value);
 	void	(*playMusic)();
 	void	(*stopMusic)();
+	void	(*pauseMusic)();
+	void	(*resumeMusic)();
 	void	(*changeSystemVolume)(uint8_t volume);
 	int8_t	(*sendMIDI)(uint8_t command, uint8_t par1, uint8_t par2);
 	int8_t	driverId;
@@ -1347,6 +1349,8 @@ void    OPLpitchWheel(uint8_t channel, uint8_t pitch);
 void	OPLchangeControl(uint8_t channel, uint8_t controller, uint8_t value);
 void	OPLplayMusic();
 void	OPLstopMusic();
+void	OPLpauseMusic();
+void	OPLresumeMusic();
 void	OPLchangeSystemVolume(uint8_t systemVolume);
 int8_t 	OPLsendMIDI(uint8_t command, uint8_t par1, uint8_t par2);
 
@@ -1364,6 +1368,8 @@ void	MIDIpitchWheel(uint8_t channel, uint8_t pitch);
 void	MIDIchangeControl(uint8_t channel, uint8_t controller, uint8_t value);
 void	MIDIplayMusic();
 void	MIDIstopMusic();
+void	MIDIpauseMusic();
+void	MIDIresumeMusic();
 void	MIDIchangeSystemVolume(uint8_t noteVolume);
 int8_t  MIDIinitDriver(void);
 int8_t 	MPU401initHardware(uint16_t port, uint8_t irq, uint8_t dma);

@@ -1980,6 +1980,8 @@ driverBlock OPL2driver = {
 	OPLchangeControl,
 	OPLplayMusic,
 	OPLstopMusic,
+	OPLpauseMusic,
+	OPLresumeMusic,
 	OPLchangeSystemVolume,
 	OPLsendMIDI,
 	MUS_DRIVER_TYPE_OPL2
@@ -1997,6 +1999,8 @@ driverBlock OPL3driver = {
 	OPLchangeControl,
 	OPLplayMusic,
 	OPLstopMusic,
+	OPLpauseMusic,
+	OPLresumeMusic,
 	OPLchangeSystemVolume,
 	OPLsendMIDI,
 	MUS_DRIVER_TYPE_OPL3
@@ -2138,6 +2142,8 @@ driverBlock MPU401driver = {
 	MIDIchangeControl,
 	MIDIplayMusic,
 	MIDIstopMusic,
+	MIDIpauseMusic,
+	MIDIresumeMusic,
 	MIDIchangeSystemVolume,
 	MPU401sendMIDI,
 	MUS_DRIVER_TYPE_MPU401
@@ -2159,6 +2165,8 @@ driverBlock SBMIDIdriver = {
 	MIDIchangeControl,
 	MIDIplayMusic,
 	MIDIstopMusic,
+	MIDIpauseMusic,
+	MIDIresumeMusic,
 	MIDIchangeSystemVolume,
 	SBMIDIsendMIDI,
 	MUS_DRIVER_TYPE_SBMIDI
