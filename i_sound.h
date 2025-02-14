@@ -24,6 +24,8 @@
 #define SND_MAXSONGS    40      // max number of songs in game
 #define SND_SAMPLERATE  11025   // sample rate of sound effects
 
+
+
 #define snd_none 0
 #define snd_PC 1
 #define snd_Adlib 2

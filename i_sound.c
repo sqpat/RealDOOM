@@ -144,7 +144,8 @@ int16_t I_LoadSong(uint16_t lump) {
 		currentsong_ticks_to_process = 0;
 		
         // todo cleaner, check for opl3 too, etc
-        if (playingdriver && playingdriver->driverId == MUS_DRIVER_TYPE_OPL2){
+        if (playingdriver && ((playingdriver->driverId == MUS_DRIVER_TYPE_OPL2) ||
+            (playingdriver->driverId == MUS_DRIVER_TYPE_OPL3)) ){
 
 	        int8_t  i;
             uint8_t j;
@@ -532,7 +533,7 @@ void MUS_ServiceRoutine(){
 //
 void __far I_StartupSound(void) {
     int16_t rc;
-    int16_t useport;
+    int16_t useport = 0;
     int16_t irq = 0;
     int16_t dma = 0;
     //
@@ -564,7 +565,7 @@ void __far I_StartupSound(void) {
         case snd_MPU:   // wave blaster
             playingdriver = &SBMIDIdriver;
             if (snd_Mport){
-                useport = snd_Mport;
+                useport = snd_SBport;
             } else {
                 useport = SBMIDIPORT;
             }
@@ -586,6 +587,8 @@ void __far I_StartupSound(void) {
 
         
     }
+
+    //I_Error("fields %i %x %x %x", snd_MusicDevice, useport, snd_Mport, snd_SBport);
     if (playingdriver){
         playingdriver->initHardware(useport, 0, 0);
         playingdriver->initDriver();

@@ -49,19 +49,18 @@ const int8_t snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S'
 
 //int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
 
-int16_t snd_SBport;
-uint8_t snd_SBirq, snd_SBdma; // sound blaster variables
-int16_t snd_Mport; // midi variables
+uint8_t  snd_SBirq; // sound blaster variables
+uint8_t  snd_SBdma;
 
-uint8_t snd_MusicVolume; // maximum volume for music
-uint8_t snd_SfxVolume; // maximum volume for sound
+uint8_t  snd_MusicVolume; // maximum volume for music
+uint8_t  snd_SfxVolume; // maximum volume for sound
 
-uint8_t snd_SfxDevice; // current sfx card # (index to dmxCodes)
-uint8_t snd_MusicDevice; // current music card # (index to dmxCodes)
-uint8_t snd_DesiredSfxDevice;
-uint8_t snd_DesiredMusicDevice;
-uint8_t snd_SBport8bit;
-uint8_t snd_Mport8bit;
+uint8_t  snd_SfxDevice; // current sfx card # (index to dmxCodes)
+uint8_t  snd_MusicDevice; // current music card # (index to dmxCodes)
+uint8_t  snd_DesiredSfxDevice;
+uint8_t  snd_DesiredMusicDevice;
+uint16_t snd_SBport;
+uint16_t snd_Mport;
 
 
 
@@ -2063,7 +2062,7 @@ uint16_t freqtable2[12] = {
 
 /*
 //todo how to calculate...?
-uint16_t pitchwheeltable[] = {				    
+uint16_t pitchwheeltable[256] = {				    
 	 29193U,29219U,29246U,29272U,29299U,29325U,29351U,29378U,  
 	 29405U,29431U,29458U,29484U,29511U,29538U,29564U,29591U,  
 	 29618U,29644U,29671U,29698U,29725U,29752U,29778U,29805U,  

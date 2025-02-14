@@ -32,7 +32,6 @@ EXTRN fclose_:PROC
 ;EXTRN DEBUG_PRINT_:PROC
 
 EXTRN locallib_strcmp_:PROC
-EXTRN sscanf_uint8_:PROC
 
 EXTRN _mousepresent:BYTE
 EXTRN _key_strafe:BYTE
@@ -89,10 +88,10 @@ EXTRN _detailLevel:BYTE
 EXTRN _numChannels:BYTE
 EXTRN _snd_DesiredMusicDevice:BYTE
 EXTRN _snd_DesiredSfxDevice:BYTE
-EXTRN _snd_SBport8bit:BYTE
+EXTRN _snd_SBport:WORD
 EXTRN _snd_SBirq:BYTE
 EXTRN _snd_SBdma:BYTE
-EXTRN _snd_Mport8bit:BYTE
+EXTRN _snd_Mport:WORD
 EXTRN _usegamma:BYTE
 
 
@@ -1191,13 +1190,13 @@ dw OFFSET str_defaultname_21, OFFSET _snd_DesiredMusicDevice
 db  0, 0, 0
 dw OFFSET str_defaultname_22, OFFSET _snd_DesiredSfxDevice
 db  0, 0, 0
-dw OFFSET str_defaultname_23, OFFSET _snd_SBport8bit
+dw OFFSET str_defaultname_23, OFFSET _snd_SBport
 db  022h, 0, 0 ; must be shifted one nibble
 dw OFFSET str_defaultname_24, OFFSET _snd_SBirq
 db  5, 0, 0
 dw OFFSET str_defaultname_25, OFFSET _snd_SBdma
 db  1, 0, 0
-dw OFFSET str_defaultname_26, OFFSET _snd_Mport8bit
+dw OFFSET str_defaultname_26, OFFSET _snd_Mport
 db  033h, 0, 0  ; must be shifted one nibble
 dw OFFSET str_defaultname_27, OFFSET _usegamma
 db  0, 0, 0    
@@ -1222,10 +1221,23 @@ xor   bx, bx
 
 mov   cx, NUM_DEFAULTS
 loop_set_default_values:
+xor   ax, ax
 mov   si, word ptr cs:[bx + _defaults + 2]
-mov   al, byte ptr cs:[bx + _defaults + 4]
+mov   al, byte ptr cs:[bx + _defaults + 4] ; default...
 add   bx, 7               ; 
+cmp   si, OFFSET _snd_SBport    ; 16 bit value special case
+je    shift4_write_word
+cmp   si, OFFSET _snd_Mport    ; 16 bit value special case
+je    shift4_write_word
 mov   byte ptr [si], al
+jmp   wrote_byte
+shift4_write_word:
+sal   ax, 1
+sal   ax, 1
+sal   ax, 1
+sal   ax, 1
+mov   word ptr [si], ax
+wrote_byte:
 loop  loop_set_default_values
 
 
@@ -1418,12 +1430,30 @@ cmp   byte ptr [bp + 07Eh], 0
 je    character_finished_handling
 ; prepare to get param...
 mov   byte ptr [bp + 07Eh], al
-xor   di, di
-lea   ax, [bp + 026h]
+xor   ax, ax
+mov   di, ax
+mov   si, ax
+mov   cx, ax
+
+;lea   ax, [bp + 026h]
+;call  sscanf_uint8_                 ; todo inline this
+
+
+read_next_digit:
+mov   cl, 10
+mul   cl         ; mul by 10
+mov   cl, byte ptr [bp + si + 026h];
+add   ax, cx     ; add next char
+sub   ax, 030h   ; but sub '0' from char
+inc   si
+cmp   byte ptr [bp + si + 026h], 0 ; check for null term
+jne   read_next_digit
+
+
+
+mov   word ptr [bp + 078h], ax
 xor   si, si
 
-call  sscanf_uint8_
-mov   byte ptr [bp + 078h], al
 scan_next_default_name_for_match:
 lea   ax, [bp - 02Ah]
 mov   cx, cs
@@ -1434,8 +1464,17 @@ call  locallib_strcmp_
 test  ax, ax
 jne   no_match_increment_default
 mov   bx, word ptr cs:[si + _defaults + 2]
-mov   al, byte ptr [bp + 078h]
+mov   ax, word ptr [bp + 078h]
+; if one of the 16 bit ones then write word..
+cmp   bx, OFFSET _snd_SBport
+je    do_word_write
+cmp   bx, OFFSET _snd_Mport
+je    do_word_write
+do_byte_write:
 mov   byte ptr [bx], al
+jmp   character_finished_handling
+do_word_write:
+mov   word ptr [bx], ax
 jmp   character_finished_handling
 no_match_increment_default:
 inc   di
@@ -1479,10 +1518,19 @@ mov   si, ax
 cmp   byte ptr cs:[si + _defaults + 5], 0
 jne   get_untranslated_value
 mov   di, word ptr cs:[si + _defaults + 2]
+cmp   di, OFFSET _snd_Mport
+je    get_16_bit
+cmp   di, OFFSET _snd_SBport
+je    get_16_bit
+xor   ah, ah
 mov   al, byte ptr [di]
+jmp   got_value_to_write
+get_16_bit:
+mov   ax, word ptr [di]
+
 got_value_to_write:         ; if we got untranslated value we skip here with value in al.
 
-mov   bl, al             ; store the value.
+mov   di, ax             ; store the value.
 mov   si, word ptr cs:[si + _defaults]  ; string ptr
 
 write_next_default_name_character:
@@ -1497,9 +1545,8 @@ jmp   write_next_default_name_character
 
 print_last_digit:
 mov   al, bl
-xor   ah, ah
 mov   dx, cx    ; get fp
-add   ax, 030h       ;  add '0' char to digit
+add   al, 030h       ;  add '0' char to digit
 call  fputc_
 mov   ax, 0Ah  ; line feed character \n
 mov   dx, cx    ; get fp
@@ -1529,25 +1576,22 @@ call  fputc_
 
 mov   si, 0             ; if nonzero then we have printed a 100s digit and thus a zero 10s digit must be printed.
 
-mov   al, bl
+mov   ax, di
 ; note: AH gets divide result and AL gets mod!
+mov   dl, 10
+div   dl
+mov   bl, ah            ; bl gets last digit.
 xor   ah, ah
-db    0D4h, 00Ah	    ; divide by 10 using AAM
-mov   bl, al            ; bl gets last digit.
-mov   al, ah
-xor   ah, ah
-db    0D4h, 00Ah	    ; divide by 10 using AAM
+div   dl
 ;     bl is 1s digit
-;     al is 10s digit
-;     ah is 100s digit
+;     ah is 10s digit
+;     al is 100s digit
 
-test  ah, ah
+test  al, al
 je    handle_tens_number
 mov   si, ax
 mov   dx, cx         ; fp
-mov   al, ah
-xor   ah, ah
-add   ax, 030h       ;   '0' char
+add   al, 030h       ;   '0' char
 call  fputc_
 
 mov   ax, si
@@ -1555,13 +1599,13 @@ mov   ax, si
 handle_tens_number:
 test  si, si
 jne   force_print_tens_digit    ; even if 0
-test  al, al
+test  ah, ah
 je    print_last_digit
 force_print_tens_digit:
 
-xor   ah, ah
+mov   al, ah
 mov   dx, cx         ; fp
-add   ax, 030h       ;   '0' char
+add   al, 030h       ;   '0' char
 call  fputc_
 
 jmp   print_last_digit

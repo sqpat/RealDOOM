@@ -248,7 +248,7 @@ void __near D_RedrawTitle(int8_t __near *title) {
  
  
 
-
+/*
 
 
  uint8_t __far sscanf_uint8(int8_t* strparm){
@@ -263,7 +263,7 @@ void __near D_RedrawTitle(int8_t __near *title) {
 	}
 	
 }
-
+*/
 
 
 void __near makethreecharint(int16_t j, char __far *str ){

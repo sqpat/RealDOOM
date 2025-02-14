@@ -376,9 +376,8 @@
 
 
 extern const int8_t         snd_prefixen[];
-extern int16_t              snd_SBport;
-extern uint8_t              snd_SBirq, snd_SBdma; // sound blaster variables
-extern int16_t              snd_Mport; // midi variables
+extern uint8_t              snd_SBirq; // sound blaster variables
+extern uint8_t              snd_SBdma;
 
 extern uint8_t              snd_MusicVolume; // maximum volume for music
 extern uint8_t              snd_SfxVolume; // maximum volume for sound
@@ -387,8 +386,8 @@ extern uint8_t              snd_SfxDevice; // current sfx card # (index to dmxCo
 extern uint8_t              snd_MusicDevice; // current music card # (index to dmxCodes)
 extern uint8_t              snd_DesiredSfxDevice;
 extern uint8_t              snd_DesiredMusicDevice;
-extern uint8_t              snd_SBport8bit;
-extern uint8_t              snd_Mport8bit;
+extern uint16_t             snd_SBport;
+extern uint16_t             snd_Mport;
 
 
 // wipegamestate can be set to -1 to force a wipe on the next draw
@@ -1388,6 +1387,9 @@ extern int8_t noteVolumetable[128];
 
 extern uint16_t freqtable[7];
 extern uint16_t freqtable2[12];
+
+//extern uint16_t pitchwheeltable[256];
+
 
 /* MUS -> MIDI controller number conversion */
 extern uint8_t 	MUS2MIDIctrl[15];

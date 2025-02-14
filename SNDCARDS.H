@@ -27,25 +27,5 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #ifndef __SNDCARDS_H
 #define __SNDCARDS_H
 
-#define ASS_VERSION_STRING "1.1"
-
-typedef enum
-   {
-//   ASS_NoSound,
-   SoundBlaster,
-   ProAudioSpectrum,
-   SoundMan16,
-   Adlib,
-   GenMidi,
-   SoundCanvas,
-   Awe32,
-   WaveBlaster,
-   SoundScape,
-   UltraSound,
-   SoundSource,
-   TandySoundSource,
-   PC,
-   NumSoundCards
-   } soundcardnames;
 
 #endif
