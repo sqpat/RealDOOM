@@ -211,8 +211,8 @@ void OPLshutup(void){
  * Initialize hardware upon startup
  */
 void OPLinit(uint16_t port, uint8_t OPL3){
-
-    if ( (OPL3mode = OPL3) != 0) {
+	OPL3mode = OPL3;
+    if (OPL3mode != 0) {
 		OPLchannels = OPL3CHANNELS;
 		OPLwriteReg(0x105, 0x01);	// enable YMF262/OPL3 mode
 		OPLwriteReg(0x104, 0x00);	// disable 4-operator mode
