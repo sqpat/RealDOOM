@@ -26,13 +26,13 @@
 // Shuts down all sound stuff
 //
 void __near I_ShutdownSound(void) {
-	/*
-	ticcount_t s;
-	S_PauseSound();
-	s = ticcount + 30;
-	while (s != ticcount);
-	DMX_DeInit();
-	*/
+
+    if (playingdriver){
+        playingdriver->stopMusic();
+		playingdriver->deinitHardware();
+    }
+
+
 }
 
 //
