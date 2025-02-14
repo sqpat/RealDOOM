@@ -26,6 +26,7 @@
 /* calculate MIDI channel volume */
 int8_t calcVolume(uint16_t MUSvolume, uint8_t noteVolume){
     fixed_t_union result;
+    MUSvolume <<= 2; // instead of 0-127, 0-256
     result.wu = FastMul16u16u (MUSvolume, (uint16_t)noteVolume);
     
     // instead of shift 8 use fracbyte high
@@ -102,7 +103,7 @@ void updateControllers(uint8_t channel){
                 if (MIDIchannel == MIDI_PERC){
                     continue;
                 } else {
-                    value = calcVolume(playingvolume, value);
+                    value = calcVolume(snd_MusicVolume, value);
                 }
             }
             SENDMIDI(MIDIchannel, MIDI_CONTROL, MUS2MIDIctrl[i], value);
@@ -120,7 +121,7 @@ void updateControllers(uint8_t channel){
 }
 
 // send system volume
-void sendSystemVolume(int16_t systemVolume){
+void sendSystemVolume(uint8_t systemVolume){
     int8_t i;
 
     for(i = 0; i < MAX_MUSIC_CHANNELS; i++) {
@@ -156,9 +157,8 @@ void MIDIplayNote(uint8_t channel, uint8_t note, int8_t volume){
 
     if (MIDIchannel == MIDI_PERC) {
         int16_t_union intermediate;
-        //intermediate.hu = FastMul8u8u(playingvolume, );
         mididriverData->percussions[note >> 3] |= (1 << (note & 7));
-        intermediate.hu = FastMul8u8u(calcVolume(playingvolume, mididriverData->controllers[ctrlVolume][channel]), volume);
+        intermediate.hu = FastMul8u8u(calcVolume(snd_MusicVolume, mididriverData->controllers[ctrlVolume][channel]), volume);
 
         intermediate = FastDiv16u_8u(intermediate.hu, 127);
         volume = intermediate.bu.bytelow;
@@ -221,7 +221,8 @@ void MIDIchangeControl(uint8_t channel, uint8_t controller, uint8_t value){
                 if (MIDIchannel == MIDI_PERC){
                     return;
                 }
-                value = calcVolume(playingvolume, value);
+                
+                value = calcVolume(snd_MusicVolume, value);
                 break;
             case ctrlResetCtrls:	/* Reset All Controllers */
                 /* Perhaps, some controllers should be added or removed,
@@ -287,7 +288,7 @@ void MIDIstopMusic(){
     }
 }
 
-void MIDIchangeSystemVolume(int16_t systemVolume){
+void MIDIchangeSystemVolume(uint8_t systemVolume){
     if (playingstate == ST_PLAYING){
 	    sendSystemVolume(systemVolume);
     }

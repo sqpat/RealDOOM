@@ -80,16 +80,18 @@ void S_StopChannel(int8_t cnum);
 
 void S_SetMusicVolume(uint8_t volume) {
 	
-	if ( volume > 127) {
-		#ifdef CHECK_FOR_ERRORS
-        	I_Error("Attempt to set music volume at %d", volume);
-		#endif
-    }
+	//volume &= 127; // necessary?
 
     I_SetMusicVolume(127);
     I_SetMusicVolume(volume);
     snd_MusicVolume = volume;
-	
+
+	if (playingdriver){
+		playingdriver->changeSystemVolume(volume);
+	}
+
+
+
 }
 
 

@@ -312,6 +312,12 @@ void __near HU_Init(void){
 //
 void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 
+
+  S_SetSfxVolume(sfxVolume);
+  S_SetMusicVolume(musicVolume);
+  mus_paused = 0;
+
+
 	/*
 
   int16_t		i;
@@ -321,9 +327,7 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
   // Whatever these did with DMX, these are rather dummies now.
   I_SetChannels(numChannels);
 
-  S_SetSfxVolume(sfxVolume);
   // No music with Linux - another dummy.
-  S_SetMusicVolume(musicVolume);
 
   // Allocating the internal channels for mixing
   // (the maximum numer of sounds rendered
@@ -1224,7 +1228,7 @@ R_PointToAngle(y, x);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
-	//S_Init(sfxVolume * 8, musicVolume * 8);
+	S_Init(sfxVolume * 8, musicVolume  * 8);
 
 #if DEBUG_PRINTING
 	getStringByIndex(HU_INIT_TEXT, textbuffer);

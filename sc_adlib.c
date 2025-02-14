@@ -347,6 +347,7 @@ int8_t calcVolumeOPL(uint8_t channelVolume, uint16_t systemVolume, int8_t noteVo
 	fixed_t_union volume_product;
 	int16_t_union intermediate;
     intermediate.hu = FastMul8u8u(channelVolume, noteVolume);
+    systemVolume <<= 2; // instead of 0-127, 0-512
 	volume_product.wu = FastMul16u16u(intermediate.hu, systemVolume);
 	// divide by 256...
 	intermediate.bu.bytelow = volume_product.bu.fracbytehigh;
@@ -387,7 +388,7 @@ uint8_t occupyChannel(uint8_t slot, uint8_t channel,
 	}
 
 	ch->noteVolume = noteVolume;
-    ch->realvolume = calcVolumeOPL(OPL2driverdata.channelVolume[channel], playingvolume, noteVolume);
+    ch->realvolume = calcVolumeOPL(OPL2driverdata.channelVolume[channel], snd_MusicVolume, noteVolume);
     
 	
 	if (instrument->flags & FL_FIXED_PITCH){
@@ -621,7 +622,7 @@ void OPLchangeControl(uint8_t channel, uint8_t controller, uint8_t value){
                 AdlibChannelEntry __far* ch = &AdLibChannels[i];
 				if (ch->channel == id) {
 					ch->time = playingtime;
-					ch->realvolume = calcVolumeOPL(value, playingvolume, ch->noteVolume);
+					ch->realvolume = calcVolumeOPL(value, snd_MusicVolume, ch->noteVolume);
 					OPLwriteVolume(i, ch->instr, ch->realvolume);
 				}
 			}
@@ -664,7 +665,7 @@ void OPLstopMusic(){
 	}
 }
 
-void OPLchangeSystemVolume(int16_t systemVolume){
+void OPLchangeSystemVolume(uint8_t systemVolume){ // volume is 0-16
     uint8_t *channelVolume = OPL2driverdata.channelVolume;
     uint8_t i;
     for(i = 0; i < OPLchannels; i++) {

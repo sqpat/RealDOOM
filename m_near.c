@@ -2019,7 +2019,6 @@ int16_t 			currentsong_ticks_to_process = 0;
 
 uint8_t				playingstate = ST_EMPTY;			
 uint16_t			playingpercussMask = 1 << PERCUSSION;	// todo #define? or should other instruments be forced into percussion?
-int16_t     		playingvolume = DEFAULT_VOLUME;
 volatile uint32_t 	playingtime = 0;
 int8_t				loops_enabled = false;
 uint16_t 			SBMIDIport = SBMIDIPORT;

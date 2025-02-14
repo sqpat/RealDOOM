@@ -53,7 +53,7 @@ void	MIDIpitchWheel(uint8_t channel, uint8_t pitch);
 void	MIDIchangeControl(uint8_t channel, uint8_t controller, uint8_t value);
 void	MIDIplayMusic();
 void	MIDIstopMusic();
-void	MIDIchangeSystemVolume(int16_t noteVolume);
+void	MIDIchangeSystemVolume(uint8_t systemVolume);
 int8_t  MIDIinitDriver(void);
 
 
