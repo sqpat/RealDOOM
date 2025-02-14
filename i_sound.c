@@ -505,10 +505,10 @@ void MUS_ServiceRoutine(){
 		while (lastflag){
 			// i dont think delays > 32768 are valid..
 			currentlocation = MK_FP(MUSIC_SEGMENT, currentsong_playing_offset);
-			delay_amt.bu.bytehigh = delay_amt.bu.bytelow;
-			delay_amt.bu.bytehigh >>= 1;	// shift 128.
-			lastflag = currentlocation[0];
-			delay_amt.bu.bytelow = (lastflag);
+			delay_amt.hu <<= 7;
+			//delay_amt.bu.bytehigh >>= 1;	// shift 128.
+			lastflag = currentlocation[0] ;
+			delay_amt.bu.bytelow += (lastflag & 0x7F);
 
 			lastflag &= 0x80;
 			currentsong_playing_offset++;

@@ -317,11 +317,11 @@ void writeFrequency(uint8_t slot, uint8_t note, uint8_t pitchwheel, uint8_t keyO
 
     if (pitchwheel!= DEFAULT_PITCH_BEND) {
 		fixed_t_union product;
-		//product.wu = FastMul16u16u(freq, pitchwheeltable[pitchwheel + 128]);
-        //product.hu.intbits = 50;
-		product.wu = FastMul16u16u(freq, 32767u);
-		// need to shift 15 right... or instead:
-		freq = product.hu.intbits << 1;
+		int16_t pitchshiftval = 128 - pitchwheeltable[pitchwheel];
+		product.wu = FastMul16u16u(freq, pitchshiftval);
+		freq = (product.productresult_mid.usemid << 1) + ((product.productresult_mid.throwawaylow & 0x80) ? 1 : 0);
+
+
 		if (freq >= 1024) {
 			freq >>= 1;
 			octave++;
@@ -572,6 +572,7 @@ void OPLpitchWheel(uint8_t channel, uint8_t pitch){
     uint8_t i;
     uint8_t id = channel;
 
+	pitch -= DEFAULT_PITCH_BEND;
     OPL2driverdata.channelPitch[channel] = pitch;
     for(i = 0; i < OPLchannels; i++) {
         AdlibChannelEntry __far  *ch = &AdLibChannels[i];

@@ -1393,7 +1393,7 @@ extern int8_t noteVolumetable[128];
 extern uint16_t freqtable[7];
 extern uint16_t freqtable2[12];
 
-//extern uint16_t pitchwheeltable[256];
+extern int8_t pitchwheeltable[256];
 
 
 /* MUS -> MIDI controller number conversion */
