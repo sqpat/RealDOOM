@@ -1409,4 +1409,7 @@ extern uint16_t 	percussMask;
 extern driverBlock 	MPU401driver;
 extern driverBlock 	SBMIDIdriver;
 
+extern uint8_t lastfreechannel;
+
+
 #endif

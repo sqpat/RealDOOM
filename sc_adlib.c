@@ -462,19 +462,20 @@ void releaseSustain(uint8_t channel){
 	}
 }
 
+
 int8_t findFreeChannel(uint8_t flag){
-    static uint8_t last = 0xFF;
+    
     uint8_t i;
     uint8_t oldest = 0xFF;
     uint32_t oldesttime = playingtime;
 
     /* find free channel */
     for(i = 0; i < OPLchannels; i++) {
-		if (++last == OPLchannels){	/* use cyclic `Next Fit' algorithm */
-			last = 0;
+		if (++lastfreechannel == OPLchannels){	/* use cyclic `Next Fit' algorithm */
+			lastfreechannel = 0;
 		}
-		if (AdLibChannels[last].flags & CH_FREE){
-			return last;
+		if (AdLibChannels[lastfreechannel].flags & CH_FREE){
+			return lastfreechannel;
 		}
     }
 

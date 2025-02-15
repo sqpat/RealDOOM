@@ -2153,3 +2153,5 @@ driverBlock SBMIDIdriver = {
 	MUS_DRIVER_TYPE_SBMIDI
 
 };
+
+uint8_t lastfreechannel = 0xFF;

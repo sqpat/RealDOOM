@@ -24,6 +24,12 @@ INSTRUCTION_SET_MACRO
 .DATA
 
 
+EXTRN _OPL3mode:BYTE
+EXTRN _OPLchannels:BYTE
+EXTRN _playingtime:DWORD
+EXTRN _snd_MusicVolume:BYTE
+EXTRN _lastfreechannel:BYTE
+EXTRN _playingstate:BYTE
 
 
 .CODE
@@ -110,14 +116,14 @@ PUBLIC  OPLwriteChannel_
 0x000000000000006e:  89 C2             mov   dx, ax
 0x0000000000000070:  89 D8             mov   ax, bx
 0x0000000000000072:  0E                push  cs
-0x0000000000000073:  E8 8C FF          call  2
+0x0000000000000073:  E8 8C FF          call  OPLwriteReg_
 0x0000000000000076:  88 C8             mov   al, cl
 0x0000000000000078:  30 E4             xor   ah, ah
 0x000000000000007a:  83 C3 03          add   bx, 3
 0x000000000000007d:  89 C2             mov   dx, ax
 0x000000000000007f:  89 D8             mov   ax, bx
 0x0000000000000081:  0E                push  cs
-0x0000000000000082:  E8 7D FF          call  2
+0x0000000000000082:  E8 7D FF          call  OPLwriteReg_
 0x0000000000000085:  C9                LEAVE_MACRO 
 0x0000000000000086:  5E                pop   si
 0x0000000000000087:  CB                retf  
@@ -146,7 +152,7 @@ PUBLIC  OPLwriteFreq_
 0x00000000000000a6:  89 CA             mov   dx, cx
 0x00000000000000a8:  B8 A0 00          mov   ax, 0xa0
 0x00000000000000ab:  0E                push  cs
-0x00000000000000ac:  E8 EF 00          call  0x19e
+0x00000000000000ac:  E8 EF 00          call  OPLwriteValue_
 0x00000000000000af:  8A 46 FC          mov   al, byte ptr [bp - 4]
 0x00000000000000b2:  8B 56 F8          mov   dx, word ptr [bp - 8]
 0x00000000000000b5:  30 E4             xor   ah, ah
@@ -162,7 +168,7 @@ PUBLIC  OPLwriteFreq_
 0x00000000000000cd:  89 C3             mov   bx, ax
 0x00000000000000cf:  B8 B0 00          mov   ax, 0xb0
 0x00000000000000d2:  0E                push  cs
-0x00000000000000d3:  E8 C8 00          call  0x19e
+0x00000000000000d3:  E8 C8 00          call  OPLwriteValue_
 0x00000000000000d6:  C9                LEAVE_MACRO 
 0x00000000000000d7:  CB                retf  
 
@@ -244,7 +250,7 @@ PUBLIC  OPLwriteVolume_
 0x0000000000000136:  89 CA             mov   dx, cx
 0x0000000000000138:  30 E4             xor   ah, ah
 0x000000000000013a:  0E                push  cs
-0x000000000000013b:  E8 9A FF          call  0xd8
+0x000000000000013b:  E8 9A FF          call  OPLconvertVolume_
 0x000000000000013e:  8E C7             mov   es, di
 0x0000000000000140:  26 0A 47 0B       or    al, byte ptr es:[bx + 0xb]
 0x0000000000000144:  30 E4             xor   ah, ah
@@ -262,7 +268,7 @@ PUBLIC  OPLwriteVolume_
 0x0000000000000164:  B8 40 00          mov   ax, 0x40
 0x0000000000000167:  30 FF             xor   bh, bh
 0x0000000000000169:  0E                push  cs
-0x000000000000016a:  E8 CF FE          call  0x3c
+0x000000000000016a:  E8 CF FE          call  OPLwriteChannel_
 0x000000000000016d:  C9                LEAVE_MACRO 
 0x000000000000016e:  5F                pop   di
 0x000000000000016f:  5E                pop   si
@@ -270,7 +276,7 @@ PUBLIC  OPLwriteVolume_
 0x0000000000000171:  89 CA             mov   dx, cx
 0x0000000000000173:  26 8A 47 05       mov   al, byte ptr es:[bx + 5]
 0x0000000000000177:  0E                push  cs
-0x0000000000000178:  E8 5D FF          call  0xd8
+0x0000000000000178:  E8 5D FF          call  OPLconvertVolume_
 0x000000000000017b:  98                cbw  
 0x000000000000017c:  EB D5             jmp   0x153
 
@@ -294,7 +300,14 @@ PUBLIC  OPLwritePan_
 0x0000000000000196:  30 F6             xor   dh, dh
 0x0000000000000198:  B8 C0 00          mov   ax, 0xc0
 0x000000000000019b:  30 FF             xor   bh, bh
-0x000000000000019d:  FC                cld   
+
+; fallthru
+ENDP
+
+PROC  OPLwriteValue_ FAR
+PUBLIC  OPLwriteValue_
+
+
 0x000000000000019e:  51                push  cx
 0x000000000000019f:  88 C1             mov   cl, al
 0x00000000000001a1:  88 D0             mov   al, dl
@@ -309,21 +322,23 @@ PUBLIC  OPLwritePan_
 0x00000000000001b5:  01 D0             add   ax, dx
 0x00000000000001b7:  89 DA             mov   dx, bx
 0x00000000000001b9:  0E                push  cs
-0x00000000000001ba:  E8 45 FE          call  2
+0x00000000000001ba:  E8 45 FE          call  OPLwriteReg_
 0x00000000000001bd:  59                pop   cx
 0x00000000000001be:  CB                retf  
 
+; part of writepan
+0x00000000000001bf:  B0 10             mov   al, 0x10
+0x00000000000001c1:  EB CB             jmp   0x18e
+0x00000000000001c3:  B0 30             mov   al, 0x30
+0x00000000000001c5:  EB C7             jmp   0x18e
+0x00000000000001c7:  FC                cld   
 
 ENDP
 
 PROC  OPLwriteInstrument_ FAR
 PUBLIC  OPLwriteInstrument_
 
-0x00000000000001bf:  B0 10             mov   al, 0x10
-0x00000000000001c1:  EB CB             jmp   0x18e
-0x00000000000001c3:  B0 30             mov   al, 0x30
-0x00000000000001c5:  EB C7             jmp   0x18e
-0x00000000000001c7:  FC                cld   
+
 0x00000000000001c8:  52                push  dx
 0x00000000000001c9:  56                push  si
 0x00000000000001ca:  57                push  di
@@ -339,7 +354,7 @@ PUBLIC  OPLwriteInstrument_
 0x00000000000001e2:  B8 40 00          mov   ax, 0x40
 0x00000000000001e5:  89 CB             mov   bx, cx
 0x00000000000001e7:  0E                push  cs
-0x00000000000001e8:  E8 51 FE          call  0x3c
+0x00000000000001e8:  E8 51 FE          call  OPLwriteChannel_
 0x00000000000001eb:  8B 56 FE          mov   dx, word ptr [bp - 2]
 0x00000000000001ee:  8E C7             mov   es, di
 0x00000000000001f0:  B8 20 00          mov   ax, 0x20
@@ -348,7 +363,7 @@ PUBLIC  OPLwriteInstrument_
 0x00000000000001fa:  30 ED             xor   ch, ch
 0x00000000000001fc:  30 FF             xor   bh, bh
 0x00000000000001fe:  0E                push  cs
-0x00000000000001ff:  E8 3A FE          call  0x3c
+0x00000000000001ff:  E8 3A FE          call  OPLwriteChannel_
 0x0000000000000202:  8B 56 FE          mov   dx, word ptr [bp - 2]
 0x0000000000000205:  8E C7             mov   es, di
 0x0000000000000207:  B8 60 00          mov   ax, 0x60
@@ -357,7 +372,7 @@ PUBLIC  OPLwriteInstrument_
 0x0000000000000212:  30 ED             xor   ch, ch
 0x0000000000000214:  30 FF             xor   bh, bh
 0x0000000000000216:  0E                push  cs
-0x0000000000000217:  E8 22 FE          call  0x3c
+0x0000000000000217:  E8 22 FE          call  OPLwriteChannel_
 0x000000000000021a:  8B 56 FE          mov   dx, word ptr [bp - 2]
 0x000000000000021d:  8E C7             mov   es, di
 0x000000000000021f:  B8 80 00          mov   ax, 0x80
@@ -366,7 +381,7 @@ PUBLIC  OPLwriteInstrument_
 0x000000000000022a:  30 ED             xor   ch, ch
 0x000000000000022c:  30 FF             xor   bh, bh
 0x000000000000022e:  0E                push  cs
-0x000000000000022f:  E8 0A FE          call  0x3c
+0x000000000000022f:  E8 0A FE          call  OPLwriteChannel_
 0x0000000000000232:  8B 56 FE          mov   dx, word ptr [bp - 2]
 0x0000000000000235:  8E C7             mov   es, di
 0x0000000000000237:  B8 E0 00          mov   ax, 0xe0
@@ -375,7 +390,7 @@ PUBLIC  OPLwriteInstrument_
 0x0000000000000242:  30 ED             xor   ch, ch
 0x0000000000000244:  30 FF             xor   bh, bh
 0x0000000000000246:  0E                push  cs
-0x0000000000000247:  E8 F2 FD          call  0x3c
+0x0000000000000247:  E8 F2 FD          call  OPLwriteChannel_
 0x000000000000024a:  8E C7             mov   es, di
 0x000000000000024c:  26 8A 5C 06       mov   bl, byte ptr es:[si + 6]
 0x0000000000000250:  8B 56 FE          mov   dx, word ptr [bp - 2]
@@ -383,7 +398,7 @@ PUBLIC  OPLwriteInstrument_
 0x0000000000000256:  B8 C0 00          mov   ax, 0xc0
 0x0000000000000259:  30 FF             xor   bh, bh
 0x000000000000025b:  0E                push  cs
-0x000000000000025c:  E8 3F FF          call  0x19e
+0x000000000000025c:  E8 3F FF          call  OPLwriteValue_
 0x000000000000025f:  C9                LEAVE_MACRO 
 0x0000000000000260:  5F                pop   di
 0x0000000000000261:  5E                pop   si
@@ -403,15 +418,15 @@ PUBLIC  OPLinit_
 0x0000000000000274:  BA 20 00          mov   dx, 0x20
 0x0000000000000277:  B8 01 00          mov   ax, 1
 0x000000000000027a:  0E                push  cs
-0x000000000000027b:  E8 84 FD          call  2
+0x000000000000027b:  E8 84 FD          call  OPLwriteReg_
 0x000000000000027e:  BA 40 00          mov   dx, 0x40
 0x0000000000000281:  B8 08 00          mov   ax, 8
 0x0000000000000284:  0E                push  cs
-0x0000000000000285:  E8 7A FD          call  2
+0x0000000000000285:  E8 7A FD          call  OPLwriteReg_
 0x0000000000000288:  B8 BD 00          mov   ax, 0xbd
 0x000000000000028b:  31 D2             xor   dx, dx
 0x000000000000028d:  0E                push  cs
-0x000000000000028e:  E8 71 FD          call  2
+0x000000000000028e:  E8 71 FD          call  OPLwriteReg_
 
 ; fallthru to oplshutup
 
@@ -440,25 +455,25 @@ PUBLIC  OPLshutup_
 0x00000000000002b6:  89 C2             mov   dx, ax
 0x00000000000002b8:  B8 40 00          mov   ax, 0x40
 0x00000000000002bb:  0E                push  cs
-0x00000000000002bc:  E8 7D FD          call  0x3c
+0x00000000000002bc:  E8 7D FD          call  OPLwriteChannel_
 0x00000000000002bf:  B9 FF 00          mov   cx, 0xff
 0x00000000000002c2:  B8 60 00          mov   ax, 0x60
 0x00000000000002c5:  89 F2             mov   dx, si
 0x00000000000002c7:  89 CB             mov   bx, cx
 0x00000000000002c9:  0E                push  cs
-0x00000000000002ca:  E8 6F FD          call  0x3c
+0x00000000000002ca:  E8 6F FD          call  OPLwriteChannel_
 0x00000000000002cd:  B9 0F 00          mov   cx, 0xf
 0x00000000000002d0:  B8 80 00          mov   ax, 0x80
 0x00000000000002d3:  89 F2             mov   dx, si
 0x00000000000002d5:  89 CB             mov   bx, cx
 0x00000000000002d7:  0E                push  cs
-0x00000000000002d8:  E8 61 FD          call  0x3c
+0x00000000000002d8:  E8 61 FD          call  OPLwriteChannel_
 0x00000000000002db:  B8 B0 00          mov   ax, 0xb0
 0x00000000000002de:  89 F2             mov   dx, si
 0x00000000000002e0:  31 DB             xor   bx, bx
 0x00000000000002e2:  FE 46 FE          inc   byte ptr [bp - 2]
 0x00000000000002e5:  0E                push  cs
-0x00000000000002e6:  E8 B5 FE          call  0x19e
+0x00000000000002e6:  E8 B5 FE          call  OPLwriteValue_
 0x00000000000002e9:  8A 46 FE          mov   al, byte ptr [bp - 2]
 0x00000000000002ec:  3A 06 B0 0D       cmp   al, byte ptr ds:[_OPLchannels]
 0x00000000000002f0:  72 B9             jb    0x2ab
@@ -477,11 +492,11 @@ ENDP
 0x00000000000002fc:  B8 05 01          mov   ax, 0x105
 0x00000000000002ff:  C6 06 B0 0D 12    mov   byte ptr ds:[_OPLchannels], 0x12
 0x0000000000000304:  0E                push  cs
-0x0000000000000305:  E8 FA FC          call  2
+0x0000000000000305:  E8 FA FC          call  OPLwriteReg_
 0x0000000000000308:  B8 04 01          mov   ax, 0x104
 0x000000000000030b:  31 D2             xor   dx, dx
 0x000000000000030d:  0E                push  cs
-0x000000000000030e:  E8 F1 FC          call  2
+0x000000000000030e:  E8 F1 FC          call  OPLwriteReg_
 0x0000000000000311:  E9 60 FF          jmp   0x274
 
 
@@ -491,31 +506,31 @@ PUBLIC  OPLdeinit_
 
 0x0000000000000314:  52                push  dx
 0x0000000000000315:  0E                push  cs
-0x0000000000000316:  E8 79 FF          call  0x292
+0x0000000000000316:  E8 79 FF          call  OPLshutup_
 0x0000000000000319:  80 3E B1 0D 00    cmp   byte ptr ds:[_OPL3mode], 0
 0x000000000000031e:  75 1E             jne   0x33e
 0x0000000000000320:  BA 20 00          mov   dx, 0x20
 0x0000000000000323:  B8 01 00          mov   ax, 1
 0x0000000000000326:  0E                push  cs
-0x0000000000000327:  E8 D8 FC          call  2
+0x0000000000000327:  E8 D8 FC          call  OPLwriteReg_
 0x000000000000032a:  B8 08 00          mov   ax, 8
 0x000000000000032d:  31 D2             xor   dx, dx
 0x000000000000032f:  0E                push  cs
-0x0000000000000330:  E8 CF FC          call  2
+0x0000000000000330:  E8 CF FC          call  OPLwriteReg_
 0x0000000000000333:  B8 BD 00          mov   ax, 0xbd
 0x0000000000000336:  31 D2             xor   dx, dx
 0x0000000000000338:  0E                push  cs
-0x0000000000000339:  E8 C6 FC          call  2
+0x0000000000000339:  E8 C6 FC          call  OPLwriteReg_
 0x000000000000033c:  5A                pop   dx
 0x000000000000033d:  CB                retf  
 0x000000000000033e:  B8 05 01          mov   ax, 0x105
 0x0000000000000341:  31 D2             xor   dx, dx
 0x0000000000000343:  0E                push  cs
-0x0000000000000344:  E8 BB FC          call  2
+0x0000000000000344:  E8 BB FC          call  OPLwriteReg_
 0x0000000000000347:  B8 04 01          mov   ax, 0x104
 0x000000000000034a:  31 D2             xor   dx, dx
 0x000000000000034c:  0E                push  cs
-0x000000000000034d:  E8 B2 FC          call  2
+0x000000000000034d:  E8 B2 FC          call  OPLwriteReg_
 0x0000000000000350:  EB CE             jmp   0x320
 
 ENDP
@@ -531,11 +546,11 @@ PUBLIC  OPL2detect_
 0x0000000000000357:  BA 60 00          mov   dx, 0x60
 0x000000000000035a:  B8 04 00          mov   ax, 4
 0x000000000000035d:  0E                push  cs
-0x000000000000035e:  E8 A1 FC          call  2
+0x000000000000035e:  E8 A1 FC          call  OPLwriteReg_
 0x0000000000000361:  BA 80 00          mov   dx, 0x80
 0x0000000000000364:  B8 04 00          mov   ax, 4
 0x0000000000000367:  0E                push  cs
-0x0000000000000368:  E8 97 FC          call  2
+0x0000000000000368:  E8 97 FC          call  OPLwriteReg_
 0x000000000000036b:  89 CA             mov   dx, cx
 0x000000000000036d:  EC                in    al, dx
 0x000000000000036e:  2A E4             sub   ah, ah
@@ -544,12 +559,12 @@ PUBLIC  OPL2detect_
 0x0000000000000375:  B8 02 00          mov   ax, 2
 0x0000000000000378:  80 E7 E0          and   bh, 0xe0
 0x000000000000037b:  0E                push  cs
-0x000000000000037c:  E8 83 FC          call  2
+0x000000000000037c:  E8 83 FC          call  OPLwriteReg_
 0x000000000000037f:  BA 21 00          mov   dx, 0x21
 0x0000000000000382:  B8 04 00          mov   ax, 4
 0x0000000000000385:  B3 FF             mov   bl, 0xff
 0x0000000000000387:  0E                push  cs
-0x0000000000000388:  E8 77 FC          call  2
+0x0000000000000388:  E8 77 FC          call  OPLwriteReg_
 0x000000000000038b:  89 CA             mov   dx, cx
 0x000000000000038d:  FC                cld   
 0x000000000000038e:  FE CB             dec   bl
@@ -564,12 +579,12 @@ PUBLIC  OPL2detect_
 0x000000000000039f:  88 C3             mov   bl, al
 0x00000000000003a1:  B8 04 00          mov   ax, 4
 0x00000000000003a4:  0E                push  cs
-0x00000000000003a5:  E8 5A FC          call  2
+0x00000000000003a5:  E8 5A FC          call  OPLwriteReg_
 0x00000000000003a8:  BA 80 00          mov   dx, 0x80
 0x00000000000003ab:  B8 04 00          mov   ax, 4
 0x00000000000003ae:  80 E3 E0          and   bl, 0xe0
 0x00000000000003b1:  0E                push  cs
-0x00000000000003b2:  E8 4D FC          call  2
+0x00000000000003b2:  E8 4D FC          call  OPLwriteReg_
 0x00000000000003b5:  84 FF             test  bh, bh
 0x00000000000003b7:  75 0C             jne   0x3c5
 0x00000000000003b9:  80 FB C0          cmp   bl, 0xc0
@@ -597,7 +612,7 @@ PUBLIC  OPL3detect_
 0x00000000000003cc:  52                push  dx
 0x00000000000003cd:  89 C2             mov   dx, ax
 0x00000000000003cf:  0E                push  cs
-0x00000000000003d0:  E8 7F FF          call  0x352
+0x00000000000003d0:  E8 7F FF          call  OPL2detect_
 0x00000000000003d3:  85 C0             test  ax, ax
 0x00000000000003d5:  75 02             jne   0x3d9
 0x00000000000003d7:  5A                pop   dx
@@ -673,7 +688,7 @@ PUBLIC  writeFrequency_
 0x0000000000000456:  30 ED             xor   ch, ch
 0x0000000000000458:  30 E4             xor   ah, ah
 0x000000000000045a:  0E                push  cs
-0x000000000000045b:  E8 2A FC          call  0x88       ; todo only use, inline
+0x000000000000045b:  E8 2A FC          call  OPLwriteFreq_       ; todo only use, inline
 0x000000000000045e:  C9                LEAVE_MACRO 
 0x000000000000045f:  5F                pop   di
 0x0000000000000460:  5E                pop   si
@@ -725,7 +740,7 @@ PUBLIC  writeModulation_
 0x00000000000004b5:  30 FF             xor   bh, bh
 0x00000000000004b7:  30 F6             xor   dh, dh
 0x00000000000004b9:  0E                push  cs
-0x00000000000004ba:  E8 7F FB          call  0x3c
+0x00000000000004ba:  E8 7F FB          call  OPLwriteChannel_
 0x00000000000004bd:  C9                LEAVE_MACRO 
 0x00000000000004be:  CB                retf  
 0x00000000000004bf:  26 8A 07          mov   al, byte ptr es:[bx]
@@ -793,8 +808,8 @@ PUBLIC  occupyChannel_
 0x000000000000052a:  80 BF 30 17 28    cmp   byte ptr [bx + 0x1730], 0x28
 0x000000000000052f:  72 05             jb    0x536
 0x0000000000000531:  26 80 4C 02 04    or    byte ptr es:[si + 2], 4
-0x0000000000000536:  8B 16 A4 0D       mov   dx, word ptr [0xda4]
-0x000000000000053a:  8B 1E A6 0D       mov   bx, word ptr [0xda6]
+0x0000000000000536:  8B 16 A4 0D       mov   dx, word ptr ds:[_playingtime]
+0x000000000000053a:  8B 1E A6 0D       mov   bx, word ptr ds:[_playingtime + 2]
 0x000000000000053e:  8E 46 F6          mov   es, word ptr [bp - 0xa]
 0x0000000000000541:  26 89 54 0C       mov   word ptr es:[si + 0xc], dx
 0x0000000000000545:  26 89 5C 0E       mov   word ptr es:[si + 0xe], bx
@@ -806,7 +821,7 @@ PUBLIC  occupyChannel_
 0x0000000000000555:  8A 87 F0 16       mov   al, byte ptr [bx + 0x16f0]
 0x0000000000000559:  8E 46 F6          mov   es, word ptr [bp - 0xa]
 0x000000000000055c:  8A 5E FE          mov   bl, byte ptr [bp - 2]
-0x000000000000055f:  8A 16 48 21       mov   dl, byte ptr [0x2148]
+0x000000000000055f:  8A 16 48 21       mov   dl, byte ptr ds:[_snd_MusicVolume]
 0x0000000000000563:  30 FF             xor   bh, bh
 0x0000000000000565:  26 88 44 06       mov   byte ptr es:[si + 6], al
 0x0000000000000569:  98                cbw  
@@ -816,7 +831,7 @@ PUBLIC  occupyChannel_
 0x0000000000000572:  89 CB             mov   bx, cx
 0x0000000000000574:  30 E4             xor   ah, ah
 0x0000000000000576:  0E                push  cs
-0x0000000000000577:  E8 4A FF          call  0x4c4
+0x0000000000000577:  E8 4A FF          call  calcVolumeOPL_
 0x000000000000057a:  8E 46 F6          mov   es, word ptr [bp - 0xa]
 0x000000000000057d:  26 88 44 07       mov   byte ptr es:[si + 7], al
 0x0000000000000581:  8E 46 0C          mov   es, word ptr [bp + 0xc]
@@ -868,7 +883,7 @@ PUBLIC  occupyChannel_
 0x000000000000060f:  89 FB             mov   bx, di
 0x0000000000000611:  8B 46 F2          mov   ax, word ptr [bp - 0xe]
 0x0000000000000614:  0E                push  cs
-0x0000000000000615:  E8 B0 FB          call  0x1c8
+0x0000000000000615:  E8 B0 FB          call  OPLwriteInstrument_
 0x0000000000000618:  8E 46 F6          mov   es, word ptr [bp - 0xa]
 0x000000000000061b:  26 F6 44 02 04    test  byte ptr es:[si + 2], 4
 0x0000000000000620:  75 79             jne   0x69b
@@ -884,7 +899,7 @@ PUBLIC  occupyChannel_
 0x000000000000063a:  89 C2             mov   dx, ax
 0x000000000000063c:  8B 46 F4          mov   ax, word ptr [bp - 0xc]
 0x000000000000063f:  0E                push  cs
-0x0000000000000640:  E8 3B FB          call  0x17e
+0x0000000000000640:  E8 3B FB          call  OPLwritePan_
 0x0000000000000643:  8E 46 F6          mov   es, word ptr [bp - 0xa]
 0x0000000000000646:  26 8A 44 07       mov   al, byte ptr es:[si + 7]
 0x000000000000064a:  8B 4E F8          mov   cx, word ptr [bp - 8]
@@ -893,7 +908,7 @@ PUBLIC  occupyChannel_
 0x0000000000000650:  89 C2             mov   dx, ax
 0x0000000000000652:  8B 46 F4          mov   ax, word ptr [bp - 0xc]
 0x0000000000000655:  0E                push  cs
-0x0000000000000656:  E8 C5 FA          call  0x11e
+0x0000000000000656:  E8 C5 FA          call  OPLwriteVolume_
 0x0000000000000659:  8E 46 F6          mov   es, word ptr [bp - 0xa]
 0x000000000000065c:  8A 56 FA          mov   dl, byte ptr [bp - 6]
 0x000000000000065f:  B9 01 00          mov   cx, 1
@@ -902,7 +917,7 @@ PUBLIC  occupyChannel_
 0x0000000000000669:  30 F6             xor   dh, dh
 0x000000000000066b:  30 FF             xor   bh, bh
 0x000000000000066d:  0E                push  cs
-0x000000000000066e:  E8 79 FD          call  0x3ea
+0x000000000000066e:  E8 79 FD          call  writeFrequency_
 0x0000000000000671:  8A 46 FC          mov   al, byte ptr [bp - 4]
 0x0000000000000674:  C9                LEAVE_MACRO 
 0x0000000000000675:  5F                pop   di
@@ -928,7 +943,7 @@ PUBLIC  occupyChannel_
 0x00000000000006a1:  8B 46 F2          mov   ax, word ptr [bp - 0xe]
 0x00000000000006a4:  89 FB             mov   bx, di
 0x00000000000006a6:  0E                push  cs
-0x00000000000006a7:  E8 D8 FD          call  0x482
+0x00000000000006a7:  E8 D8 FD          call  writeModulation_
 0x00000000000006aa:  E9 75 FF          jmp   0x622
 0x00000000000006ad:  8E 46 F6          mov   es, word ptr [bp - 0xa]
 0x00000000000006b0:  26 C6 44 05 80    mov   byte ptr es:[si + 5], 0x80
@@ -965,7 +980,7 @@ PUBLIC  releaseChannel_
 0x00000000000006ee:  30 FF             xor   bh, bh
 0x00000000000006f0:  30 F6             xor   dh, dh
 0x00000000000006f2:  0E                push  cs
-0x00000000000006f3:  E8 F4 FC          call  0x3ea
+0x00000000000006f3:  E8 F4 FC          call  writeFrequency_
 0x00000000000006f6:  8E C7             mov   es, di
 0x00000000000006f8:  26 C6 44 02 80    mov   byte ptr es:[si + 2], 0x80
 0x00000000000006fd:  26 80 0C 80       or    byte ptr es:[si], 0x80
@@ -983,13 +998,13 @@ PUBLIC  releaseChannel_
 0x0000000000000713:  B8 80 00          mov   ax, 0x80
 0x0000000000000716:  89 CB             mov   bx, cx
 0x0000000000000718:  0E                push  cs
-0x0000000000000719:  E8 20 F9          call  0x3c
+0x0000000000000719:  E8 20 F9          call  OPLwriteChannel_
 0x000000000000071c:  B9 3F 00          mov   cx, 0x3f
 0x000000000000071f:  8B 56 FC          mov   dx, word ptr [bp - 4]
 0x0000000000000722:  B8 40 00          mov   ax, 0x40
 0x0000000000000725:  89 CB             mov   bx, cx
 0x0000000000000727:  0E                push  cs
-0x0000000000000728:  E8 11 F9          call  0x3c
+0x0000000000000728:  E8 11 F9          call  OPLwriteChannel_
 0x000000000000072b:  C9                LEAVE_MACRO 
 0x000000000000072c:  5F                pop   di
 0x000000000000072d:  5E                pop   si
@@ -1024,7 +1039,7 @@ PUBLIC  releaseSustain_
 0x000000000000075c:  74 06             je    0x764
 0x000000000000075e:  31 D2             xor   dx, dx
 0x0000000000000760:  0E                push  cs
-0x0000000000000761:  E8 5E FF          call  0x6c2
+0x0000000000000761:  E8 5E FF          call  releaseChannel_
 0x0000000000000764:  FE C3             inc   bl
 0x0000000000000766:  3A 1E B0 0D       cmp   bl, byte ptr ds:[_OPLchannels]
 0x000000000000076a:  72 D4             jb    0x740
@@ -1048,18 +1063,18 @@ PUBLIC  findFreeChannel_
 0x0000000000000778:  83 EC 04          sub   sp, 4
 0x000000000000077b:  88 46 FC          mov   byte ptr [bp - 4], al
 0x000000000000077e:  C6 46 FE FF       mov   byte ptr [bp - 2], 0xff
-0x0000000000000782:  8B 3E A4 0D       mov   di, word ptr [0xda4]
-0x0000000000000786:  8B 16 A6 0D       mov   dx, word ptr [0xda6]
+0x0000000000000782:  8B 3E A4 0D       mov   di, word ptr ds:[_playingtime]
+0x0000000000000786:  8B 16 A6 0D       mov   dx, word ptr ds:[_playingtime + 2]
 0x000000000000078a:  30 DB             xor   bl, bl
 0x000000000000078c:  80 3E B0 0D 00    cmp   byte ptr ds:[_OPLchannels], 0
 0x0000000000000791:  76 30             jbe   0x7c3
 0x0000000000000793:  B9 3F CC          mov   cx, 0xcc3f
-0x0000000000000796:  FE 06 5A 10       inc   byte ptr [0x105a]
-0x000000000000079a:  A0 5A 10          mov   al, byte ptr [0x105a]
+0x0000000000000796:  FE 06 5A 10       inc   byte ptr ds:[_lastfreechannel]
+0x000000000000079a:  A0 5A 10          mov   al, byte ptr ds:[_lastfreechannel]
 0x000000000000079d:  3A 06 B0 0D       cmp   al, byte ptr ds:[_OPLchannels]
 0x00000000000007a1:  75 03             jne   0x7a6
 0x00000000000007a3:  E9 7B 00          jmp   0x821
-0x00000000000007a6:  A0 5A 10          mov   al, byte ptr [0x105a]
+0x00000000000007a6:  A0 5A 10          mov   al, byte ptr ds:[_lastfreechannel]
 0x00000000000007a9:  30 E4             xor   ah, ah
 0x00000000000007ab:  89 C6             mov   si, ax
 0x00000000000007ad:  C1 E6 04          shl   si, 4
@@ -1112,17 +1127,17 @@ PUBLIC  findFreeChannel_
 0x0000000000000820:  CB                retf  
 
 
-0x0000000000000821:  C6 06 5A 10 00    mov   byte ptr [0x105a], 0
+0x0000000000000821:  C6 06 5A 10 00    mov   byte ptr ds:[_lastfreechannel], 0
 0x0000000000000826:  E9 7D FF          jmp   0x7a6
 0x0000000000000829:  BA FF 00          mov   dx, 0xff
 0x000000000000082c:  0E                push  cs
-0x000000000000082d:  E8 92 FE          call  0x6c2
+0x000000000000082d:  E8 92 FE          call  releaseChannel_
 0x0000000000000830:  88 C8             mov   al, cl
 0x0000000000000832:  EB E6             jmp   0x81a
 0x0000000000000834:  BA FF 00          mov   dx, 0xff
 0x0000000000000837:  30 E4             xor   ah, ah
 0x0000000000000839:  0E                push  cs
-0x000000000000083a:  E8 85 FE          call  0x6c2
+0x000000000000083a:  E8 85 FE          call  releaseChannel_
 0x000000000000083d:  8A 46 FE          mov   al, byte ptr [bp - 2]
 0x0000000000000840:  C9                LEAVE_MACRO 
 0x0000000000000841:  5F                pop   di
@@ -1142,7 +1157,7 @@ PUBLIC  getInstrument_
 0x000000000000084a:  BB 01 00          mov   bx, 1
 0x000000000000084d:  88 C1             mov   cl, al
 0x000000000000084f:  D3 E3             shl   bx, cl
-0x0000000000000851:  85 1E A0 0D       test  word ptr [0xda0], bx
+0x0000000000000851:  85 1E A0 0D       test  word ptr ds:[_playingpercussMask], bx
 0x0000000000000855:  74 24             je    0x87b
 0x0000000000000857:  80 FA 23          cmp   dl, 0x23
 0x000000000000085a:  72 18             jb    0x874
@@ -1189,7 +1204,7 @@ PUBLIC  OPLplayNote_
 0x00000000000008a2:  30 F6             xor   dh, dh
 0x00000000000008a4:  30 E4             xor   ah, ah
 0x00000000000008a6:  0E                push  cs
-0x00000000000008a7:  E8 9E FF          call  0x848
+0x00000000000008a7:  E8 9E FF          call  getInstrument_
 0x00000000000008aa:  89 C6             mov   si, ax
 0x00000000000008ac:  89 D7             mov   di, dx
 0x00000000000008ae:  85 D2             test  dx, dx
@@ -1201,7 +1216,7 @@ PUBLIC  OPLplayNote_
 0x00000000000008bc:  B8 02 00          mov   ax, 2
 0x00000000000008bf:  30 E4             xor   ah, ah
 0x00000000000008c1:  0E                push  cs
-0x00000000000008c2:  E8 AB FE          call  0x770
+0x00000000000008c2:  E8 AB FE          call  findFreeChannel_
 0x00000000000008c5:  88 46 F6          mov   byte ptr [bp - 0xa], al
 0x00000000000008c8:  3C FF             cmp   al, 0xff
 0x00000000000008ca:  75 09             jne   0x8d5
@@ -1226,8 +1241,8 @@ PUBLIC  OPLplayNote_
 0x00000000000008eb:  56                push  si
 0x00000000000008ec:  30 E4             xor   ah, ah
 0x00000000000008ee:  0E                push  cs
-0x00000000000008ef:  E8 EE FB          call  0x4e0
-0x00000000000008f2:  80 3E 99 0D 00    cmp   byte ptr [0xd99], 0
+0x00000000000008ef:  E8 EE FB          call  occupyChannel_
+0x00000000000008f2:  80 3E 99 0D 00    cmp   byte ptr ds:[_OPLsinglevoice], 0
 0x00000000000008f7:  75 D3             jne   0x8cc
 0x00000000000008f9:  8E C7             mov   es, di
 0x00000000000008fb:  26 83 3C 04       cmp   word ptr es:[si], 4
@@ -1237,7 +1252,7 @@ PUBLIC  OPLplayNote_
 0x0000000000000907:  B8 03 00          mov   ax, 3
 0x000000000000090a:  30 E4             xor   ah, ah
 0x000000000000090c:  0E                push  cs
-0x000000000000090d:  E8 60 FE          call  0x770
+0x000000000000090d:  E8 60 FE          call  findFreeChannel_
 0x0000000000000910:  88 46 F8          mov   byte ptr [bp - 8], al
 0x0000000000000913:  3C FF             cmp   al, 0xff
 0x0000000000000915:  74 B5             je    0x8cc
@@ -1254,7 +1269,7 @@ PUBLIC  OPLplayNote_
 0x000000000000092d:  56                push  si
 0x000000000000092e:  30 E4             xor   ah, ah
 0x0000000000000930:  0E                push  cs
-0x0000000000000931:  E8 AC FB          call  0x4e0
+0x0000000000000931:  E8 AC FB          call  occupyChannel_
 0x0000000000000934:  C9                LEAVE_MACRO 
 0x0000000000000935:  5F                pop   di
 0x0000000000000936:  5E                pop   si
@@ -1300,7 +1315,7 @@ PUBLIC  OPLreleaseNote_
 0x000000000000097e:  73 13             jae   0x993
 0x0000000000000980:  31 D2             xor   dx, dx
 0x0000000000000982:  0E                push  cs
-0x0000000000000983:  E8 3C FD          call  0x6c2
+0x0000000000000983:  E8 3C FD          call  releaseChannel_
 0x0000000000000986:  FE C3             inc   bl
 0x0000000000000988:  3A 1E B0 0D       cmp   bl, byte ptr ds:[_OPLchannels]
 0x000000000000098c:  72 D1             jb    0x95f
@@ -1355,8 +1370,8 @@ PUBLIC  OPLpitchWheel_
 0x00000000000009f1:  CB                retf  
 
 
-0x00000000000009f2:  8B 16 A4 0D       mov   dx, word ptr [0xda4]
-0x00000000000009f6:  A1 A6 0D          mov   ax, word ptr [0xda6]
+0x00000000000009f2:  8B 16 A4 0D       mov   dx, word ptr ds:[_playingtime]
+0x00000000000009f6:  A1 A6 0D          mov   ax, word ptr ds:[_playingtime + 2]
 0x00000000000009f9:  26 89 47 0E       mov   word ptr es:[bx + 0xe], ax
 0x00000000000009fd:  26 8A 47 05       mov   al, byte ptr es:[bx + 5]
 0x0000000000000a01:  98                cbw  
@@ -1373,7 +1388,7 @@ PUBLIC  OPLpitchWheel_
 0x0000000000000a1e:  89 C3             mov   bx, ax
 0x0000000000000a20:  8B 46 F8          mov   ax, word ptr [bp - 8]
 0x0000000000000a23:  0E                push  cs
-0x0000000000000a24:  E8 C3 F9          call  0x3ea
+0x0000000000000a24:  E8 C3 F9          call  writeFrequency_
 0x0000000000000a27:  EB B9             jmp   0x9e2
 
 
@@ -1427,8 +1442,8 @@ PUBLIC  OPLchangeControl_
 0x0000000000000a9f:  73 C4             jae       0xa65
 0x0000000000000aa1:  EB DB             jmp       0xa7e
 0x0000000000000aa3:  26 8A 57 02       mov       dl, byte ptr es:[bx + 2]
-0x0000000000000aa7:  8B 0E A4 0D       mov       cx, word ptr [0xda4]
-0x0000000000000aab:  8B 36 A6 0D       mov       si, word ptr [0xda6]
+0x0000000000000aa7:  8B 0E A4 0D       mov       cx, word ptr ds:[_playingtime]
+0x0000000000000aab:  8B 36 A6 0D       mov       si, word ptr ds:[_playingtime + 2]
 0x0000000000000aaf:  26 89 4F 0C       mov       word ptr es:[bx + 0xc], cx
 0x0000000000000ab3:  26 89 77 0E       mov       word ptr es:[bx + 0xe], si
 0x0000000000000ab7:  80 7E F6 28       cmp       byte ptr [bp - 0xa], 0x28
@@ -1441,7 +1456,7 @@ PUBLIC  OPLchangeControl_
 0x0000000000000acf:  26 8B 4F 0A       mov       cx, word ptr es:[bx + 0xa]
 0x0000000000000ad3:  89 F3             mov       bx, si
 0x0000000000000ad5:  0E                push      cs
-0x0000000000000ad6:  E8 A9 F9          call      0x482
+0x0000000000000ad6:  E8 A9 F9          call      writeModulation_
 0x0000000000000ad9:  EB BA             jmp       0xa95
 0x0000000000000adb:  26 80 67 02 FB    and       byte ptr es:[bx + 2], 0xfb
 0x0000000000000ae0:  26 3A 57 02       cmp       dl, byte ptr es:[bx + 2]
@@ -1452,7 +1467,7 @@ PUBLIC  OPLchangeControl_
 0x0000000000000af0:  89 CB             mov       bx, cx
 0x0000000000000af2:  89 F1             mov       cx, si
 0x0000000000000af4:  0E                push      cs
-0x0000000000000af5:  E8 8A F9          call      0x482
+0x0000000000000af5:  E8 8A F9          call      writeModulation_
 0x0000000000000af8:  EB 9B             jmp       0xa95
 0x0000000000000afa:  88 C3             mov       bl, al
 0x0000000000000afc:  8A 46 F6          mov       al, byte ptr [bp - 0xa]
@@ -1477,19 +1492,19 @@ PUBLIC  OPLchangeControl_
 0x0000000000000b35:  3A 06 B0 0D       cmp       al, byte ptr ds:[_OPLchannels]
 0x0000000000000b39:  72 D7             jb        0xb12
 0x0000000000000b3b:  E9 27 FF          jmp       0xa65
-0x0000000000000b3e:  A1 A4 0D          mov       ax, word ptr [0xda4]
-0x0000000000000b41:  8B 16 A6 0D       mov       dx, word ptr [0xda6]
+0x0000000000000b3e:  A1 A4 0D          mov       ax, word ptr ds:[_playingtime]
+0x0000000000000b41:  8B 16 A6 0D       mov       dx, word ptr ds:[_playingtime + 2]
 0x0000000000000b45:  26 89 44 0C       mov       word ptr es:[si + 0xc], ax
 0x0000000000000b49:  26 8A 44 06       mov       al, byte ptr es:[si + 6]
 0x0000000000000b4d:  26 89 54 0E       mov       word ptr es:[si + 0xe], dx
 0x0000000000000b51:  98                cbw      
-0x0000000000000b52:  8A 16 48 21       mov       dl, byte ptr [0x2148]
+0x0000000000000b52:  8A 16 48 21       mov       dl, byte ptr ds:[_snd_MusicVolume]
 0x0000000000000b56:  89 C3             mov       bx, ax
 0x0000000000000b58:  8A 46 F6          mov       al, byte ptr [bp - 0xa]
 0x0000000000000b5b:  30 F6             xor       dh, dh
 0x0000000000000b5d:  30 E4             xor       ah, ah
 0x0000000000000b5f:  0E                push      cs
-0x0000000000000b60:  E8 61 F9          call      0x4c4
+0x0000000000000b60:  E8 61 F9          call      calcVolumeOPL_
 0x0000000000000b63:  8E C1             mov       es, cx
 0x0000000000000b65:  26 8B 5C 08       mov       bx, word ptr es:[si + 8]
 0x0000000000000b69:  26 88 44 07       mov       byte ptr es:[si + 7], al
@@ -1498,7 +1513,7 @@ PUBLIC  OPLchangeControl_
 0x0000000000000b72:  89 C2             mov       dx, ax
 0x0000000000000b74:  8B 46 F4          mov       ax, word ptr [bp - 0xc]
 0x0000000000000b77:  0E                push      cs
-0x0000000000000b78:  E8 A3 F5          call      0x11e
+0x0000000000000b78:  E8 A3 F5          call      OPLwriteVolume_
 0x0000000000000b7b:  EB B2             jmp       0xb2f
 0x0000000000000b7d:  80 6E F6 40       sub       byte ptr [bp - 0xa], 0x40
 0x0000000000000b81:  88 C3             mov       bl, al
@@ -1524,8 +1539,8 @@ PUBLIC  OPLchangeControl_
 0x0000000000000bbc:  3A 06 B0 0D       cmp       al, byte ptr ds:[_OPLchannels]
 0x0000000000000bc0:  72 D7             jb        0xb99
 0x0000000000000bc2:  E9 A0 FE          jmp       0xa65
-0x0000000000000bc5:  A1 A4 0D          mov       ax, word ptr [0xda4]
-0x0000000000000bc8:  8B 16 A6 0D       mov       dx, word ptr [0xda6]
+0x0000000000000bc5:  A1 A4 0D          mov       ax, word ptr ds:[_playingtime]
+0x0000000000000bc8:  8B 16 A6 0D       mov       dx, word ptr ds:[_playingtime + 2]
 0x0000000000000bcc:  26 8B 77 08       mov       si, word ptr es:[bx + 8]
 0x0000000000000bd0:  26 8B 4F 0A       mov       cx, word ptr es:[bx + 0xa]
 0x0000000000000bd4:  26 89 47 0C       mov       word ptr es:[bx + 0xc], ax
@@ -1536,7 +1551,7 @@ PUBLIC  OPLchangeControl_
 0x0000000000000be2:  89 C2             mov       dx, ax
 0x0000000000000be4:  8B 46 F2          mov       ax, word ptr [bp - 0xe]
 0x0000000000000be7:  0E                push      cs
-0x0000000000000be8:  E8 93 F5          call      0x17e
+0x0000000000000be8:  E8 93 F5          call      OPLwritePan_
 0x0000000000000beb:  EB C9             jmp       0xbb6
 0x0000000000000bed:  88 C3             mov       bl, al
 0x0000000000000bef:  30 FF             xor       bh, bh
@@ -1546,7 +1561,7 @@ PUBLIC  OPLchangeControl_
 0x0000000000000bfa:  73 9A             jae       0xb96
 0x0000000000000bfc:  89 D8             mov       ax, bx
 0x0000000000000bfe:  0E                push      cs
-0x0000000000000bff:  E8 30 FB          call      0x732
+0x0000000000000bff:  E8 30 FB          call      releaseSustain_
 0x0000000000000c02:  C9                LEAVE_MACRO     
 0x0000000000000c03:  5E                pop       si
 0x0000000000000c04:  59                pop       cx
@@ -1604,7 +1619,7 @@ PUBLIC  OPLstopMusic_
 
 0x0000000000000c53:  BA FF 00          mov       dx, 0xff
 0x0000000000000c56:  0E                push      cs
-0x0000000000000c57:  E8 68 FA          call      0x6c2
+0x0000000000000c57:  E8 68 FA          call      releaseChannel_
 0x0000000000000c5a:  EB EB             jmp       0xc47
 
 
@@ -1644,10 +1659,10 @@ PUBLIC  OPLchangeSystemVolume_
 0x0000000000000ca0:  30 F6             xor       dh, dh
 0x0000000000000ca2:  8A 05             mov       al, byte ptr [di]
 0x0000000000000ca4:  0E                push      cs
-0x0000000000000ca5:  E8 1C F8          call      0x4c4
+0x0000000000000ca5:  E8 1C F8          call      calcVolumeOPL_
 0x0000000000000ca8:  8E C1             mov       es, cx
 0x0000000000000caa:  26 88 44 07       mov       byte ptr es:[si + 7], al
-0x0000000000000cae:  80 3E 9E 0D 02    cmp       byte ptr [0xd9e], 2
+0x0000000000000cae:  80 3E 9E 0D 02    cmp       byte ptr ds:[_playingstate], 2
 0x0000000000000cb3:  74 13             je        0xcc8
 0x0000000000000cb5:  FE 46 FC          inc       byte ptr [bp - 4]
 0x0000000000000cb8:  8A 46 FC          mov       al, byte ptr [bp - 4]
@@ -1668,7 +1683,7 @@ PUBLIC  OPLchangeSystemVolume_
 0x0000000000000cd1:  89 C2             mov       dx, ax
 0x0000000000000cd3:  8B 46 FA          mov       ax, word ptr [bp - 6]
 0x0000000000000cd6:  0E                push      cs
-0x0000000000000cd7:  E8 44 F4          call      0x11e
+0x0000000000000cd7:  E8 44 F4          call      OPLwriteVolume_
 0x0000000000000cda:  EB D9             jmp       0xcb5
 
 ENDP
@@ -1723,7 +1738,7 @@ PUBLIC  OPL2initHardware_
 
 0x0000000000000d22:  31 D2             xor       dx, dx
 0x0000000000000d24:  0E                push      cs
-0x0000000000000d25:  E8 3C F5          call      0x264
+0x0000000000000d25:  E8 3C F5          call      OPLinit_
 0x0000000000000d28:  30 C0             xor       al, al
 0x0000000000000d2a:  CB                retf    
 
@@ -1735,7 +1750,7 @@ PUBLIC  OPL3initHardware_
 
 0x0000000000000d2c:  BA 01 00          mov       dx, 1
 0x0000000000000d2f:  0E                push      cs
-0x0000000000000d30:  E8 31 F5          call      0x264
+0x0000000000000d30:  E8 31 F5          call      OPLinit_
 0x0000000000000d33:  30 C0             xor       al, al
 0x0000000000000d35:  CB                retf    
 
@@ -1746,7 +1761,7 @@ PUBLIC  OPLdeinitHardware_
 
 
 0x0000000000000d36:  0E                push      cs
-0x0000000000000d37:  E8 DA F5          call      0x314
+0x0000000000000d37:  E8 DA F5          call      OPLdeinit_
 ENDP
 
 PROC  OPLsendMIDI_ FAR
