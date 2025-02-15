@@ -30,7 +30,14 @@ EXTRN _playingtime:DWORD
 EXTRN _snd_MusicVolume:BYTE
 EXTRN _lastfreechannel:BYTE
 EXTRN _playingstate:BYTE
-
+EXTRN _OPL2driverdata:WORD
+EXTRN _playingpercussMask:WORD
+EXTRN _op_num:WORD
+EXTRN _freqtable:WORD
+EXTRN _freqtable2:WORD
+EXTRN _noteVolumetable:WORD
+EXTRN _pitchwheeltable:WORD
+EXTRN _OPLsinglevoice:WORD
 
 .CODE
 
@@ -116,7 +123,7 @@ mov   al, bl
 out   dx, al
 dec   dx
 mov   cx, 36     ; delay amount
-loop_delay_2
+loop_delay_2:
 in    al, dx
 loop  loop_delay_2
 pop   cx
@@ -268,7 +275,6 @@ ENDP
 
 PROC  OPLwriteVolume_ NEAR
 PUBLIC  OPLwriteVolume_
-
 
 push  si
 push  di
@@ -653,8 +659,42 @@ retf
 
 ENDP
 
+PROC  OPL2detectHardware_ FAR
+PUBLIC  OPL2detectHardware_
+call  OPL2detect_
+retf
 ENDP
 
+
+PROC  OPL3detectHardware_ FAR
+PUBLIC  OPL3detectHardware_
+call  OPL3detect_
+retf
+ENDP
+
+PROC  OPL2deinitHardware_ FAR
+PUBLIC  OPL2deinitHardware_
+ENDP
+PROC  OPL3deinitHardware_ FAR
+PUBLIC  OPL3deinitHardware_
+
+call  OPLdeinit_
+xor   ax, ax
+retf
+ENDP
+
+
+PROC  OPLpauseMusic_ FAR
+PUBLIC  OPLpauseMusic_
+call  OPLshutup_
+ENDP
+
+PROC  OPLresumeMusic_ FAR
+PUBLIC  OPLresumeMusic_
+
+retf
+
+ENDP
 
 PROC  writeFrequency_ FAR       ; two inlined writevalues? todo 
 PUBLIC  writeFrequency_
@@ -849,8 +889,8 @@ set_channel_secondary_flag:
 mov   bl, byte ptr [bp - 2]
 mov   es, word ptr [bp - 0Ah]
 xor   bh, bh
-mov   byte ptr es:[si + 2], dl   ; ch->flags
-cmp   byte ptr ds:[bx _OPL2driverdata + 060h], MOD_MIN      ; channelModulation
+mov   byte ptr es:[si + 2], dl                              ; ch->flags
+cmp   byte ptr ds:[bx + _OPL2driverdata + 060h], MOD_MIN      ; channelModulation
 jb    dont_set_vibrato
 or    byte ptr es:[si + 2], CH_VIBRATO
 dont_set_vibrato:
@@ -867,7 +907,7 @@ mov   word ptr es:[si + 0Eh], bx
 ;	}
 
 cmp   al, -1
-je    use_last_volum
+je    use_last_volume
 mov   bl, byte ptr [bp - 2]
 xor   bh, bh
 mov   byte ptr ds:[bx + _OPL2driverdata + 020h], al     ; channelLastVolume
@@ -930,7 +970,7 @@ cmp   byte ptr [bp + 0Eh], 0
 jne   use_secondary
 mov   ax, word ptr [bp + 0Ch]    ; todo commonize this with below
 add   di, 4
-jmp   instr_set:
+jmp   instr_set
 use_secondary:
 mov   ax, word ptr [bp + 0Ch]
 add   di, 014h
@@ -1851,6 +1891,7 @@ call      OPLinit_
 xor       al, al
 retf    
 
+ENDP
 
 ; same for opl2 or 3
 PROC  OPLdeinitHardware_ FAR
