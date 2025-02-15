@@ -48,39 +48,7 @@ int16_t SFX_Playing(int16_t handle){
 void SFX_SetOrigin(int16_t handle, int16_t  pitch, int16_t sep, int16_t vol){
     
 }
-int16_t GF1_Detect(void){
-    return 0;
-}
-void GF1_SetMap(void __far*data, int16_t len){
-    
-}
-int16_t SB_Detect(int16_t *port, uint8_t *irq, uint8_t *dma, int16_t *unk){
-    return 0;
-}
-void SB_SetCard(int16_t port, uint8_t irq, uint8_t dma){
-    
-}
-int16_t AL_Detect(int16_t *port, int16_t *unk){
-    return 0;
-}
-void AL_SetCard(int16_t port, void __far*data){
-    
-}
-int16_t MPU_Detect(int16_t *port, int16_t *unk){
-    return 0;
-}
-void MPU_SetCard(int16_t port){
-    
-}
-void WAV_PlayMode(int16_t channels, int16_t samplerate){
-    
-}
-int16_t CODEC_Detect(int16_t *port, uint8_t *dma){
-    return 0;
-}
-int16_t ENS_Detect(void){
-    return 0;
-}
+
 
 //
 // I_StartupTimer
@@ -109,10 +77,6 @@ void I_ResumeSong() {
     if (playingdriver){
         playingdriver->resumeMusic();
     }
-}
-
-void I_SetMusicVolume(uint8_t volume) {
-    snd_MusicVolume = volume;
 }
 
 void I_SetSfxVolume(uint8_t volume) {
@@ -413,15 +377,6 @@ void MUS_ServiceRoutine(){
 		byte lastflag  				= (eventbyte & 0x80);
 		int16_t_union delay_amt		= {0};
 
-		// // todo is this the right way...?
-		// if (channel > currentsong_primary_channels && channel < 10 && channel != PERCUSSION_CHANNEL){
-		// 	printf("primary changed channel to percussion %i", channel);
-		// 	channel = PERCUSSION_CHANNEL;
-		// } else if ((channel - 10) > currentsong_secondary_channels && channel != PERCUSSION_CHANNEL){
-		// 	//todo get rid of secondaries?
-		// 	printf("secondary changed channel to percussion %i", channel);
-		// 	channel = PERCUSSION_CHANNEL;
-		// }
 
 		switch (event){
 			case 0:
@@ -604,9 +559,4 @@ void __far I_StartupSound(void) {
 
 
 
-}
-
-
-void I_SetChannels(int8_t channels) {
-    WAV_PlayMode(channels, SND_SAMPLERATE);
 }

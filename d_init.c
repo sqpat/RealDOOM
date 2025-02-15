@@ -755,11 +755,13 @@ void __far D_DoomMain2(void) {
 	#define DGROUP_SIZE 0x3660
 	struct SREGS sregs;
 
-
+/*
 	FILE *fp = fopen("output9.bin", "wb");
 	FAR_fwrite(SM_OPL_STARTMARKER, (byte __far *)SM_OPL_ENDMARKER - (byte __far *)SM_OPL_STARTMARKER, 1, fp);
 	fclose(fp);
 	exit(0);
+	*/
+
 	/*
 
 

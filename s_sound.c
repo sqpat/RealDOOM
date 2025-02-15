@@ -82,8 +82,6 @@ void S_SetMusicVolume(uint8_t volume) {
 	
 	//volume &= 127; // necessary?
 
-    I_SetMusicVolume(127);
-    I_SetMusicVolume(volume);
     snd_MusicVolume = volume;
 
 	if (playingdriver){
@@ -133,7 +131,7 @@ void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
 
 	// todo use music->name
 	//combine_strings(namebuf, "d", music->name);
-	combine_strings(namebuf, "d_", "RUNNI2");
+	combine_strings(namebuf, "d_", "e1m1");
 
     // load & register it
     //music->data = (void __far*) W_CacheLumpNum(music->lumpnum, PU_MUSIC);

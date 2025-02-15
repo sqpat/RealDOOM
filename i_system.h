@@ -80,7 +80,6 @@ void I_LoopSong();
 void I_StopSong();
 // called by anything that wishes to stop music.
 // stops a song abruptly.
-void I_SetMusicVolume(uint8_t volume);
 void I_ResumeSong();
 void I_PlaySong(boolean looping);
 void I_PauseSong();
@@ -109,7 +108,6 @@ void I_StopSound(int16_t handle);
 boolean I_SoundIsPlaying(int16_t handle);
 // called by S_*()'s to see if a channel is still playing.  Returns 0
 // if no longer playing, 1 if playing.
-void I_SetChannels(int8_t channels);
 
 
 

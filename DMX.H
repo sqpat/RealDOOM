@@ -36,24 +36,12 @@ void TS_SetTaskRate(task *Task, uint16_t rate);
 void MUS_PauseSong(int16_t handle);
 void MUS_ResumeSong(int16_t handle);
 void MUS_SetMasterVolume(int16_t volume);
-int16_t MUS_RegisterSong(void __far*data);
-int16_t MUS_UnregisterSong(int16_t handle);
 int16_t MUS_PlaySong(int16_t handle, int16_t volume);
 int16_t SFX_PlayPatch(void __far*vdata, int16_t pitch, int16_t sep, int16_t vol, int16_t unk1, int16_t unk2);
 void SFX_StopPatch(int16_t handle);
 int16_t SFX_Playing(int16_t handle);
 void SFX_SetOrigin(int16_t handle, int16_t  pitch, int16_t sep, int16_t vol);
-int16_t GF1_Detect(void);
-void GF1_SetMap(void __far*data, int16_t len);
-int16_t SB_Detect(int16_t *port, uint8_t *irq, uint8_t *dma, int16_t *unk);
-void SB_SetCard(int16_t port, uint8_t irq, uint8_t dma);
-int16_t AL_Detect(int16_t *port, int16_t *unk);
-void AL_SetCard(int16_t port, void __far*data);
-int16_t MPU_Detect(int16_t *port, int16_t *unk);
-void MPU_SetCard(int16_t port);
-void WAV_PlayMode(int16_t channels, int16_t samplerate);
-int16_t CODEC_Detect(int16_t *port, uint8_t *dma);
-int16_t ENS_Detect(void);
+
 
 
 #define AHW_PC_SPEAKER 1
