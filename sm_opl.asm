@@ -48,8 +48,12 @@ REGISTER_FEEDBACK   = 0C0h
 REGISTER_WAVEFORM   = 0E0h
 REGISTER_KEY_ON_OFF = 0B0h
 
+DEFAULT_PITCH_BEND  = 080h
+CH_FREE             = 080h
 
-
+ADLIBINSTRUMENTLIST_SEGMENT = 0CC00h
+ADLIBCHANNELS_SEGMENT       = 0CC3Fh
+INSTRUMENTLOOKUP_SEGMENT    = 0CC51h
 
 ; donothing
 ;
@@ -618,18 +622,19 @@ PUBLIC  OPL3detect_
 0x00000000000003cd:  89 C2             mov   dx, ax
 0x00000000000003d0:  E8 7F FF          call  OPL2detect_
 0x00000000000003d3:  85 C0             test  ax, ax
-0x00000000000003d5:  75 02             jne   0x3d9
+0x00000000000003d5:  75 02             jne   continue_detecting_opl3
 0x00000000000003d7:  5A                pop   dx
 0x00000000000003d8:  CB                retf  
-
+continue_detecting_opl3:
 0x00000000000003d9:  EC                in    al, dx
 0x00000000000003da:  2A E4             sub   ah, ah
 0x00000000000003dc:  A8 04             test  al, 4
 
-0x00000000000003de:  74 04             je    0x3e4
+0x00000000000003de:  74 04             je    return_opl3_detected
 0x00000000000003e0:  31 C0             xor   ax, ax
 0x00000000000003e2:  5A                pop   dx
 0x00000000000003e3:  CB                retf  
+return_opl3_detected:
 0x00000000000003e4:  B8 01 00          mov   ax, 1
 0x00000000000003e7:  5A                pop   dx
 0x00000000000003e8:  CB                retf  
@@ -643,6 +648,12 @@ ENDP
 PROC  writeFrequency_ FAR       ; two inlined writevalues? todo 
 PUBLIC  writeFrequency_
 
+;void writeFrequency(uint8_t slot, uint8_t note, uint8_t pitchwheel, uint8_t keyOn){
+; al = slot
+; dl = note
+; bl = pitchwheel
+; cl = keyon
+
 0x00000000000003ea:  56                push  si
 0x00000000000003eb:  57                push  di
 0x00000000000003ec:  55                push  bp
@@ -652,19 +663,21 @@ PUBLIC  writeFrequency_
 0x00000000000003f5:  88 DF             mov   bh, bl
 0x00000000000003f7:  88 4E FC          mov   byte ptr [bp - 4], cl
 0x00000000000003fa:  80 FA 07          cmp   dl, 7
-0x00000000000003fd:  73 63             jae   0x462
+0x00000000000003fd:  73 63             jae   note_greater_than_7
 0x00000000000003ff:  30 F6             xor   dh, dh
 0x0000000000000401:  89 D6             mov   si, dx
 0x0000000000000403:  01 D6             add   si, dx
 0x0000000000000405:  30 DB             xor   bl, bl
-0x0000000000000407:  8B B4 3C 0E       mov   si, word ptr [si + 0xe3c]
-0x000000000000040b:  80 FF 80          cmp   bh, 0x80
-0x000000000000040e:  74 35             je    0x445
+0x0000000000000407:  8B B4 3C 0E       mov   si, word ptr ds:[si + _freqtable]
+
+freq_and_octave_ready:
+0x000000000000040b:  80 FF 80          cmp   bh, DEFAULT_PITCH_BEND
+0x000000000000040e:  74 35             je    skip_pitch_wheel_calculation
 0x0000000000000410:  88 F8             mov   al, bh
 0x0000000000000412:  30 E4             xor   ah, ah
 0x0000000000000414:  89 C7             mov   di, ax
-0x0000000000000416:  8A 85 62 0E       mov   al, byte ptr [di + 0xe62]
-0x000000000000041a:  BA 80 00          mov   dx, 0x80
+0x0000000000000416:  8A 85 62 0E       mov   al, byte ptr ds:[di + _pitchwheeltable]
+0x000000000000041a:  BA 80 00          mov   dx, DEFAULT_PITCH_BEND
 0x000000000000041d:  98                cbw  
 0x000000000000041e:  29 C2             sub   dx, ax
 0x0000000000000420:  89 F0             mov   ax, si
@@ -672,19 +685,22 @@ PUBLIC  writeFrequency_
 0x0000000000000424:  89 56 FA          mov   word ptr [bp - 6], dx
 0x0000000000000427:  89 46 F8          mov   word ptr [bp - 8], ax
 0x000000000000042a:  8A 46 FB          mov   al, byte ptr [bp - 5]
-0x000000000000042d:  A8 80             test  al, 0x80
-0x000000000000042f:  74 4D             je    0x47e
-0x0000000000000431:  BE 01 00          mov   si, 1
+0x000000000000042d:  A8 80             test  al, 080h
+0x000000000000042f:  74 4D             je    zero_last_bit
+0x0000000000000431:  BE 01 00          mov   si, 1      ; si holds that one bit...
+got_last_bit:
 0x0000000000000434:  8B 46 F9          mov   ax, word ptr [bp - 7]
 0x0000000000000437:  01 C0             add   ax, ax
 0x0000000000000439:  01 C6             add   si, ax
-0x000000000000043b:  81 FE 00 04       cmp   si, 0x400
-0x000000000000043f:  72 04             jb    0x445
+0x000000000000043b:  81 FE 00 04       cmp   si, 1024
+0x000000000000043f:  72 04             jb    skip_pitch_wheel_calculation
 0x0000000000000441:  D1 EE             shr   si, 1
 0x0000000000000443:  FE C3             inc   bl
+skip_pitch_wheel_calculation:
 0x0000000000000445:  80 FB 07          cmp   bl, 7
-0x0000000000000448:  76 02             jbe   0x44c
+0x0000000000000448:  76 02             jbe   octave_lower_than_7
 0x000000000000044a:  B3 07             mov   bl, 7
+octave_lower_than_7:
 0x000000000000044c:  8A 4E FC          mov   cl, byte ptr [bp - 4]
 0x000000000000044f:  8A 46 FE          mov   al, byte ptr [bp - 2]
 0x0000000000000452:  89 F2             mov   dx, si
@@ -697,10 +713,11 @@ PUBLIC  writeFrequency_
 0x0000000000000460:  5E                pop   si
 0x0000000000000461:  CB                retf  
 
+note_greater_than_7:
 
 0x0000000000000462:  30 F6             xor   dh, dh
 0x0000000000000464:  89 D0             mov   ax, dx
-0x0000000000000466:  B2 0C             mov   dl, 0xc
+0x0000000000000466:  B2 0C             mov   dl, 12
 0x0000000000000468:  2D 07 00          sub   ax, 7
 0x000000000000046b:  F6 F2             div   dl
 0x000000000000046d:  89 C1             mov   cx, ax
@@ -709,10 +726,11 @@ PUBLIC  writeFrequency_
 0x0000000000000472:  89 C6             mov   si, ax
 0x0000000000000474:  01 C6             add   si, ax
 0x0000000000000476:  88 CB             mov   bl, cl
-0x0000000000000478:  8B B4 4A 0E       mov   si, word ptr [si + 0xe4a]
-0x000000000000047c:  EB 8D             jmp   0x40b
+0x0000000000000478:  8B B4 4A 0E       mov   si, word ptr ds:[si + _freqtable2]
+0x000000000000047c:  EB 8D             jmp   freq_and_octave_ready
+zero_last_bit:
 0x000000000000047e:  31 F6             xor   si, si
-0x0000000000000480:  EB B2             jmp   0x434
+0x0000000000000480:  EB B2             jmp   got_last_bit
 
 ENDP
 
@@ -725,28 +743,31 @@ PUBLIC  writeModulation_
 0x0000000000000488:  88 46 FE          mov   byte ptr [bp - 2], al
 0x000000000000048b:  8E C1             mov   es, cx
 0x000000000000048d:  84 D2             test  dl, dl
-0x000000000000048f:  74 02             je    0x493
-0x0000000000000491:  B2 40             mov   dl, 0x40
-0x0000000000000493:  26 8A 47 07       mov   al, byte ptr es:[bx + 7]
+0x000000000000048f:  74 02             je    dont_enable_vibrato
+0x0000000000000491:  B2 40             mov   dl, 040h       ; frequency vibrato
+dont_enable_vibrato:
+0x0000000000000493:  26 8A 47 07       mov   al, byte ptr es:[bx + 7]   ; instr->trem_vibr_2
 0x0000000000000497:  08 D0             or    al, dl
 0x0000000000000499:  30 E4             xor   ah, ah
 0x000000000000049b:  89 C1             mov   cx, ax
-0x000000000000049d:  26 F6 47 06 01    test  byte ptr es:[bx + 6], 1
-0x00000000000004a2:  74 1B             je    0x4bf
+0x000000000000049d:  26 F6 47 06 01    test  byte ptr es:[bx + 6], 1    ; instr->feedback
+0x00000000000004a2:  74 1B             je    feedback_one
 0x00000000000004a4:  26 8A 1F          mov   bl, byte ptr es:[bx]
 0x00000000000004a7:  30 FF             xor   bh, bh
 0x00000000000004a9:  89 D8             mov   ax, bx
 0x00000000000004ab:  08 D0             or    al, dl
+feedback_checked:
 0x00000000000004ad:  8A 56 FE          mov   dl, byte ptr [bp - 2]
 0x00000000000004b0:  88 C3             mov   bl, al
-0x00000000000004b2:  B8 20 00          mov   ax, 0x20
+0x00000000000004b2:  B8 20 00          mov   ax, 020h
 0x00000000000004b5:  30 FF             xor   bh, bh
 0x00000000000004b7:  30 F6             xor   dh, dh
 0x00000000000004ba:  E8 7F FB          call  OPLwriteChannel_
 0x00000000000004bd:  C9                LEAVE_MACRO 
 0x00000000000004be:  CB                retf  
-0x00000000000004bf:  26 8A 07          mov   al, byte ptr es:[bx]
-0x00000000000004c2:  EB E9             jmp   0x4ad
+feedback_one:
+0x00000000000004bf:  26 8A 07          mov   al, byte ptr es:[bx]   ; instr->trem_vibr_1
+0x00000000000004c2:  EB E9             jmp   feedback_checked
 
 ENDP
 
@@ -765,17 +786,25 @@ PUBLIC  calcVolumeOPL_
 0x00000000000004cb:  F7 E2             mul   dx
 0x00000000000004cd:  88 E3             mov   bl, ah
 0x00000000000004cf:  88 D7             mov   bh, dl
-0x00000000000004d1:  B2 7F             mov   dl, 0x7f
+0x00000000000004d1:  B2 7F             mov   dl, 127
 0x00000000000004d3:  89 D8             mov   ax, bx
 0x00000000000004d5:  F6 F2             div   dl
 0x00000000000004d7:  89 C3             mov   bx, ax
-0x00000000000004d9:  3C 7F             cmp   al, 0x7f
-0x00000000000004db:  76 02             jbe   0x4df
-0x00000000000004dd:  B0 7F             mov   al, 0x7f
+0x00000000000004d9:  3C 7F             cmp   al, 07Fh
+0x00000000000004db:  76 02             jbe   already_below_127
+0x00000000000004dd:  B0 7F             mov   al, 07Fh
+already_below_127:
 0x00000000000004df:  CB                retf  
 
 
 ENDP
+
+CH_SECONDARY = 1
+MOD_MIN      = 40
+CH_VIBRATO   = 4
+PERCUSSION_CHANNEL = 15
+FL_FIXED_PITCH = 1
+
 
 PROC  occupyChannel_ FAR
 PUBLIC  occupyChannel_
@@ -784,44 +813,60 @@ PUBLIC  occupyChannel_
 0x00000000000004e1:  57                push  di
 0x00000000000004e2:  55                push  bp
 0x00000000000004e3:  89 E5             mov   bp, sp
-0x00000000000004e5:  83 EC 0E          sub   sp, 0xe
-0x00000000000004e8:  8B 7E 0A          mov   di, word ptr [bp + 0xa]
+0x00000000000004e5:  83 EC 0E          sub   sp, 0Eh
+0x00000000000004e8:  8B 7E 0A          mov   di, word ptr [bp + 0Ah]
 0x00000000000004eb:  88 46 FC          mov   byte ptr [bp - 4], al
 0x00000000000004ee:  88 56 FE          mov   byte ptr [bp - 2], dl
 0x00000000000004f1:  88 5E FA          mov   byte ptr [bp - 6], bl
 0x00000000000004f4:  88 C8             mov   al, cl
 0x00000000000004f6:  8A 5E FC          mov   bl, byte ptr [bp - 4]
-0x00000000000004f9:  C7 46 F6 3F CC    mov   word ptr [bp - 0xa], 0xcc3f
+0x00000000000004f9:  C7 46 F6 3F CC    mov   word ptr [bp - 0Ah], ADLIBCHANNELS_SEGMENT
 0x00000000000004fe:  30 FF             xor   bh, bh
-0x0000000000000500:  8E 46 F6          mov   es, word ptr [bp - 0xa]
+0x0000000000000500:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
 0x0000000000000503:  C1 E3 04          shl   bx, 4
 0x0000000000000506:  8A 66 FA          mov   ah, byte ptr [bp - 6]
 0x0000000000000509:  26 88 17          mov   byte ptr es:[bx], dl
 0x000000000000050c:  89 DE             mov   si, bx
 0x000000000000050e:  26 88 67 01       mov   byte ptr es:[bx + 1], ah
-0x0000000000000512:  80 7E 0E 00       cmp   byte ptr [bp + 0xe], 0
-0x0000000000000516:  75 03             jne   0x51b
-0x0000000000000518:  E9 5F 01          jmp   0x67a
-0x000000000000051b:  BA 01 00          mov   dx, 1
+0x0000000000000512:  80 7E 0E 00       cmp   byte ptr [bp + 0Eh], 0
+0x0000000000000516:  75 03             jne   set_channel_secondary_flag_on
+0x000000000000067a:  31 D2             xor   dx, dx
+0x000000000000067c:  E9 9F FE          jmp   set_channel_secondary_flag
+set_channel_secondary_flag_on:
+0x000000000000051b:  BA 01 00          mov   dx, CH_SECONDARY
+set_channel_secondary_flag:
 0x000000000000051e:  8A 5E FE          mov   bl, byte ptr [bp - 2]
-0x0000000000000521:  8E 46 F6          mov   es, word ptr [bp - 0xa]
+0x0000000000000521:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
 0x0000000000000524:  30 FF             xor   bh, bh
-0x0000000000000526:  26 88 54 02       mov   byte ptr es:[si + 2], dl
-0x000000000000052a:  80 BF 30 17 28    cmp   byte ptr [bx + 0x1730], 0x28
-0x000000000000052f:  72 05             jb    0x536
-0x0000000000000531:  26 80 4C 02 04    or    byte ptr es:[si + 2], 4
+0x0000000000000526:  26 88 54 02       mov   byte ptr es:[si + 2], dl   ; ch->flags
+0x000000000000052a:  80 BF 30 17 28    cmp   byte ptr [bx _OPL2driverdata + 060h], MOD_MIN                ; channelModulation
+0x000000000000052f:  72 05             jb    dont_set_vibrato
+0x0000000000000531:  26 80 4C 02 04    or    byte ptr es:[si + 2], CH_VIBRATO
+dont_set_vibrato:
 0x0000000000000536:  8B 16 A4 0D       mov   dx, word ptr ds:[_playingtime]
 0x000000000000053a:  8B 1E A6 0D       mov   bx, word ptr ds:[_playingtime + 2]
-0x000000000000053e:  8E 46 F6          mov   es, word ptr [bp - 0xa]
-0x0000000000000541:  26 89 54 0C       mov   word ptr es:[si + 0xc], dx
-0x0000000000000545:  26 89 5C 0E       mov   word ptr es:[si + 0xe], bx
-0x0000000000000549:  3C FF             cmp   al, 0xff
-0x000000000000054b:  74 03             je    0x550
-0x000000000000054d:  E9 2F 01          jmp   0x67f
+0x000000000000053e:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
+0x0000000000000541:  26 89 54 0C       mov   word ptr es:[si + 0Ch], dx
+0x0000000000000545:  26 89 5C 0E       mov   word ptr es:[si + 0Eh], bx
+
+;   if (noteVolume == -1){
+;		noteVolume = OPL2driverdata.channelLastVolume[channel];
+;	} else{
+;		OPL2driverdata.channelLastVolume[channel] = noteVolume;
+;	}
+
+0x0000000000000549:  3C FF             cmp   al, -1
+0x000000000000054b:  74 03             je    use_last_volum
+0x000000000000067f:  8A 5E FE          mov   bl, byte ptr [bp - 2]
+0x0000000000000682:  30 FF             xor   bh, bh
+0x0000000000000684:  88 87 F0 16       mov   byte ptr [bx + _OPL2driverdata + 020h], al     ; channelLastVolume
+0x0000000000000688:  E9 CE FE          jmp   volume_is_set
+use_last_volume:
 0x0000000000000550:  8A 5E FE          mov   bl, byte ptr [bp - 2]
 0x0000000000000553:  30 FF             xor   bh, bh
-0x0000000000000555:  8A 87 F0 16       mov   al, byte ptr [bx + 0x16f0]
-0x0000000000000559:  8E 46 F6          mov   es, word ptr [bp - 0xa]
+0x0000000000000555:  8A 87 F0 16       mov   al, byte ptr [bx + _OPL2driverdata + 020h]     ; channelLastVolume
+volume_is_set:
+0x0000000000000559:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
 0x000000000000055c:  8A 5E FE          mov   bl, byte ptr [bp - 2]
 0x000000000000055f:  8A 16 48 21       mov   dl, byte ptr ds:[_snd_MusicVolume]
 0x0000000000000563:  30 FF             xor   bh, bh
@@ -829,88 +874,103 @@ PUBLIC  occupyChannel_
 0x0000000000000569:  98                cbw  
 0x000000000000056a:  30 F6             xor   dh, dh
 0x000000000000056c:  89 C1             mov   cx, ax
-0x000000000000056e:  8A 87 E0 16       mov   al, byte ptr [bx + 0x16e0]
+0x000000000000056e:  8A 87 E0 16       mov   al, byte ptr [bx + _OPL2driverdata + 010h]     ; channelVolume
 0x0000000000000572:  89 CB             mov   bx, cx
 0x0000000000000574:  30 E4             xor   ah, ah
 0x0000000000000577:  E8 4A FF          call  calcVolumeOPL_
-0x000000000000057a:  8E 46 F6          mov   es, word ptr [bp - 0xa]
+0x000000000000057a:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
 0x000000000000057d:  26 88 44 07       mov   byte ptr es:[si + 7], al
-0x0000000000000581:  8E 46 0C          mov   es, word ptr [bp + 0xc]
-0x0000000000000584:  26 F6 05 01       test  byte ptr es:[di], 1
-0x0000000000000588:  75 03             jne   0x58d
-0x000000000000058a:  E9 FE 00          jmp   0x68b
+0x0000000000000581:  8E 46 0C          mov   es, word ptr [bp + 0Ch]
+0x0000000000000584:  26 F6 05 01       test  byte ptr es:[di], FL_FIXED_PITCH
+0x0000000000000588:  75 03             jne   set_note_to_instrument_note
+0x000000000000068b:  80 7E FE 0F       cmp   byte ptr [bp - 2], PERCUSSION_CHANNEL
+0x000000000000068f:  74 03             jne   set_note
+0x0000000000000694:  C6 46 FA 3C       mov   byte ptr [bp - 6], 60    ; C-5
+0x0000000000000698:  E9 F9 FE          jmp   set_note
+set_note_to_instrument_note:
 0x000000000000058d:  26 8A 45 03       mov   al, byte ptr es:[di + 3]
 0x0000000000000591:  88 46 FA          mov   byte ptr [bp - 6], al
-0x0000000000000594:  80 7E 0E 00       cmp   byte ptr [bp + 0xe], 0
-0x0000000000000598:  75 03             jne   0x59d
-0x000000000000059a:  E9 10 01          jmp   0x6ad
-0x000000000000059d:  8E 46 0C          mov   es, word ptr [bp + 0xc]
+set_note:
+0x0000000000000594:  80 7E 0E 00       cmp   byte ptr [bp + 0Eh], 0
+0x0000000000000598:  75 03             jne   lookup_instrument_finetune
+use_fixed_pitch:
+0x00000000000006ad:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
+0x00000000000006b0:  26 C6 44 05 80    mov   byte ptr es:[si + 5], DEFAULT_PITCH_BEND
+0x00000000000006b5:  E9 F9 FE          jmp   finetune_set
+lookup_instrument_finetune:
+0x000000000000059d:  8E 46 0C          mov   es, word ptr [bp + 0Ch]
 0x00000000000005a0:  26 F6 05 04       test  byte ptr es:[di], 4
-0x00000000000005a4:  74 F4             je    0x59a
+0x00000000000005a4:  74 F4             je    use_fixed_pitch
 0x00000000000005a6:  26 8A 45 02       mov   al, byte ptr es:[di + 2]
-0x00000000000005aa:  8E 46 F6          mov   es, word ptr [bp - 0xa]
+0x00000000000005aa:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
 0x00000000000005ad:  26 88 44 05       mov   byte ptr es:[si + 5], al
+finetune_set:
 0x00000000000005b1:  8A 5E FE          mov   bl, byte ptr [bp - 2]
 0x00000000000005b4:  30 FF             xor   bh, bh
-0x00000000000005b6:  8A 87 10 17       mov   al, byte ptr [bx + 0x1710]
+0x00000000000005b6:  8A 87 10 17       mov   al, byte ptr [bx + _OPL2driverdata + 030h]     ; channelpitch
 0x00000000000005ba:  98                cbw  
-0x00000000000005bb:  8E 46 F6          mov   es, word ptr [bp - 0xa]
+0x00000000000005bb:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
 0x00000000000005be:  89 C2             mov   dx, ax
 0x00000000000005c0:  26 8A 44 05       mov   al, byte ptr es:[si + 5]
 0x00000000000005c4:  98                cbw  
 0x00000000000005c5:  01 D0             add   ax, dx
 0x00000000000005c7:  26 88 44 04       mov   byte ptr es:[si + 4], al
-0x00000000000005cb:  80 7E 0E 00       cmp   byte ptr [bp + 0xe], 0
-0x00000000000005cf:  75 03             jne   0x5d4
-0x00000000000005d1:  E9 E4 00          jmp   0x6b8
-0x00000000000005d4:  8B 46 0C          mov   ax, word ptr [bp + 0xc]
-0x00000000000005d7:  83 C7 14          add   di, 0x14
+0x00000000000005cb:  80 7E 0E 00       cmp   byte ptr [bp + 0Eh], 0
+0x00000000000005cf:  75 03             jne   use_secondary
+0x00000000000006b8:  8B 46 0C          mov   ax, word ptr [bp + 0Ch]    ; todo commonize this with below
+0x00000000000006bb:  83 C7 04          add   di, 4
+0x00000000000006be:  E9 19 FF          jmp   instr_set:
+use_secondary:
+0x00000000000005d4:  8B 46 0C          mov   ax, word ptr [bp + 0Ch]
+0x00000000000005d7:  83 C7 14          add   di, 014h
+instr_set:
 0x00000000000005da:  89 46 F8          mov   word ptr [bp - 8], ax
-0x00000000000005dd:  8E 46 F6          mov   es, word ptr [bp - 0xa]
+0x00000000000005dd:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
 0x00000000000005e0:  8B 46 F8          mov   ax, word ptr [bp - 8]
 0x00000000000005e3:  26 89 7C 08       mov   word ptr es:[si + 8], di
-0x00000000000005e7:  26 89 44 0A       mov   word ptr es:[si + 0xa], ax
+0x00000000000005e7:  26 89 44 0A       mov   word ptr es:[si + 0Ah], ax
 0x00000000000005eb:  8E C0             mov   es, ax
-0x00000000000005ed:  26 8A 45 0E       mov   al, byte ptr es:[di + 0xe]
+0x00000000000005ed:  26 8A 45 0E       mov   al, byte ptr es:[di + 0Eh]
 0x00000000000005f1:  00 46 FA          add   byte ptr [bp - 6], al
-0x00000000000005f4:  80 66 FA 7F       and   byte ptr [bp - 6], 0x7f
-0x00000000000005f8:  8E 46 F6          mov   es, word ptr [bp - 0xa]
+0x00000000000005f4:  80 66 FA 7F       and   byte ptr [bp - 6], 07Fh
+0x00000000000005f8:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
 0x00000000000005fb:  8A 46 FA          mov   al, byte ptr [bp - 6]
-0x00000000000005fe:  C6 46 F3 00       mov   byte ptr [bp - 0xd], 0
+0x00000000000005fe:  C6 46 F3 00       mov   byte ptr [bp - 0Dh], 0
 0x0000000000000602:  26 88 44 03       mov   byte ptr es:[si + 3], al
 0x0000000000000606:  8A 46 FC          mov   al, byte ptr [bp - 4]
 0x0000000000000609:  8B 4E F8          mov   cx, word ptr [bp - 8]
-0x000000000000060c:  88 46 F2          mov   byte ptr [bp - 0xe], al
+0x000000000000060c:  88 46 F2          mov   byte ptr [bp - 0Eh], al
 0x000000000000060f:  89 FB             mov   bx, di
-0x0000000000000611:  8B 46 F2          mov   ax, word ptr [bp - 0xe]
+0x0000000000000611:  8B 46 F2          mov   ax, word ptr [bp - 0Eh]
 0x0000000000000615:  E8 B0 FB          call  OPLwriteInstrument_
-0x0000000000000618:  8E 46 F6          mov   es, word ptr [bp - 0xa]
-0x000000000000061b:  26 F6 44 02 04    test  byte ptr es:[si + 2], 4
-0x0000000000000620:  75 79             jne   0x69b
+0x0000000000000618:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
+0x000000000000061b:  26 F6 44 02 04    test  byte ptr es:[si + 2], CH_VIBRATO
+0x0000000000000620:  75 79             jne   writevibrato
+done_with_vibrato:
 0x0000000000000622:  8A 5E FE          mov   bl, byte ptr [bp - 2]
 0x0000000000000625:  8A 56 FC          mov   dl, byte ptr [bp - 4]
 0x0000000000000628:  8B 4E F8          mov   cx, word ptr [bp - 8]
 0x000000000000062b:  30 FF             xor   bh, bh
-0x000000000000062d:  88 56 F4          mov   byte ptr [bp - 0xc], dl
-0x0000000000000630:  8A 87 00 17       mov   al, byte ptr [bx + 0x1700]
-0x0000000000000634:  88 7E F5          mov   byte ptr [bp - 0xb], bh
+0x000000000000062d:  88 56 F4          mov   byte ptr [bp - 0Ch], dl
+0x0000000000000630:  8A 87 00 17       mov   al, byte ptr [bx + _OPL2driverdata + 020h]
+0x0000000000000634:  88 7E F5          mov   byte ptr [bp - 0Bh], bh
 0x0000000000000637:  98                cbw  
 0x0000000000000638:  89 FB             mov   bx, di
 0x000000000000063a:  89 C2             mov   dx, ax
-0x000000000000063c:  8B 46 F4          mov   ax, word ptr [bp - 0xc]
+0x000000000000063c:  8B 46 F4          mov   ax, word ptr [bp - 0Ch]
 0x0000000000000640:  E8 3B FB          call  OPLwritePan_
-0x0000000000000643:  8E 46 F6          mov   es, word ptr [bp - 0xa]
+0x0000000000000643:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
 0x0000000000000646:  26 8A 44 07       mov   al, byte ptr es:[si + 7]
 0x000000000000064a:  8B 4E F8          mov   cx, word ptr [bp - 8]
 0x000000000000064d:  98                cbw  
 0x000000000000064e:  89 FB             mov   bx, di
 0x0000000000000650:  89 C2             mov   dx, ax
-0x0000000000000652:  8B 46 F4          mov   ax, word ptr [bp - 0xc]
+0x0000000000000652:  8B 46 F4          mov   ax, word ptr [bp - 0Ch]
 0x0000000000000656:  E8 C5 FA          call  OPLwriteVolume_
-0x0000000000000659:  8E 46 F6          mov   es, word ptr [bp - 0xa]
+0x0000000000000659:  8E 46 F6          mov   es, word ptr [bp - 0Ah]
 0x000000000000065c:  8A 56 FA          mov   dl, byte ptr [bp - 6]
 0x000000000000065f:  B9 01 00          mov   cx, 1
-0x0000000000000662:  8B 46 F4          mov   ax, word ptr [bp - 0xc]
+0x0000000000000662:  8B 46 F4          mov   ax, word ptr [bp - 0Ch]
 0x0000000000000665:  26 8A 5C 04       mov   bl, byte ptr es:[si + 4]
 0x0000000000000669:  30 F6             xor   dh, dh
 0x000000000000066b:  30 FF             xor   bh, bh
@@ -921,32 +981,13 @@ PUBLIC  occupyChannel_
 0x0000000000000676:  5E                pop   si
 0x0000000000000677:  CA 06 00          retf  6
 
-
-
-
-0x000000000000067a:  31 D2             xor   dx, dx
-0x000000000000067c:  E9 9F FE          jmp   0x51e
-0x000000000000067f:  8A 5E FE          mov   bl, byte ptr [bp - 2]
-0x0000000000000682:  30 FF             xor   bh, bh
-0x0000000000000684:  88 87 F0 16       mov   byte ptr [bx + 0x16f0], al
-0x0000000000000688:  E9 CE FE          jmp   0x559
-0x000000000000068b:  80 7E FE 0F       cmp   byte ptr [bp - 2], 0xf
-0x000000000000068f:  74 03             je    0x694
-0x0000000000000691:  E9 00 FF          jmp   0x594
-0x0000000000000694:  C6 46 FA 3C       mov   byte ptr [bp - 6], 0x3c
-0x0000000000000698:  E9 F9 FE          jmp   0x594
+writevibrato:
 0x000000000000069b:  BA 01 00          mov   dx, 1
 0x000000000000069e:  8B 4E F8          mov   cx, word ptr [bp - 8]
-0x00000000000006a1:  8B 46 F2          mov   ax, word ptr [bp - 0xe]
+0x00000000000006a1:  8B 46 F2          mov   ax, word ptr [bp - 0Eh]
 0x00000000000006a4:  89 FB             mov   bx, di
 0x00000000000006a7:  E8 D8 FD          call  writeModulation_
-0x00000000000006aa:  E9 75 FF          jmp   0x622
-0x00000000000006ad:  8E 46 F6          mov   es, word ptr [bp - 0xa]
-0x00000000000006b0:  26 C6 44 05 80    mov   byte ptr es:[si + 5], 0x80
-0x00000000000006b5:  E9 F9 FE          jmp   0x5b1
-0x00000000000006b8:  8B 46 0C          mov   ax, word ptr [bp + 0xc]
-0x00000000000006bb:  83 C7 04          add   di, 4
-0x00000000000006be:  E9 19 FF          jmp   0x5da
+0x00000000000006aa:  E9 75 FF          jmp   done_with_vibrato
 
 
 ENDP
@@ -964,7 +1005,7 @@ PUBLIC  releaseChannel_
 0x00000000000006c9:  83 EC 04          sub   sp, 4
 0x00000000000006cc:  88 56 FE          mov   byte ptr [bp - 2], dl
 0x00000000000006cf:  C6 46 FD 00       mov   byte ptr [bp - 3], 0
-0x00000000000006d3:  BF 3F CC          mov   di, 0xcc3f
+0x00000000000006d3:  BF 3F CC          mov   di, ADLIBCHANNELS_SEGMENT
 0x00000000000006d6:  88 46 FC          mov   byte ptr [bp - 4], al
 0x00000000000006d9:  31 C9             xor   cx, cx
 0x00000000000006db:  8B 76 FC          mov   si, word ptr [bp - 4]
@@ -977,25 +1018,25 @@ PUBLIC  releaseChannel_
 0x00000000000006f0:  30 F6             xor   dh, dh
 0x00000000000006f3:  E8 F4 FC          call  writeFrequency_
 0x00000000000006f6:  8E C7             mov   es, di
-0x00000000000006f8:  26 C6 44 02 80    mov   byte ptr es:[si + 2], 0x80
-0x00000000000006fd:  26 80 0C 80       or    byte ptr es:[si], 0x80
+0x00000000000006f8:  26 C6 44 02 80    mov   byte ptr es:[si + 2], CH_FREE
+0x00000000000006fd:  26 80 0C 80       or    byte ptr es:[si], CH_FREE
 0x0000000000000701:  80 7E FE 00       cmp   byte ptr [bp - 2], 0
-0x0000000000000705:  75 06             jne   0x70d
+0x0000000000000705:  75 06             jne   kill_channel
 0x0000000000000707:  C9                LEAVE_MACRO 
 0x0000000000000708:  5F                pop   di
 0x0000000000000709:  5E                pop   si
 0x000000000000070a:  59                pop   cx
 0x000000000000070b:  5B                pop   bx
 0x000000000000070c:  CB                retf  
-
-0x000000000000070d:  B9 0F 00          mov   cx, 0xf
+kill_channel:
+0x000000000000070d:  B9 0F 00          mov   cx, 0Fh
 0x0000000000000710:  8B 56 FC          mov   dx, word ptr [bp - 4]
-0x0000000000000713:  B8 80 00          mov   ax, 0x80
+0x0000000000000713:  B8 80 00          mov   ax, REGISTER_SUSTAIN
 0x0000000000000716:  89 CB             mov   bx, cx
 0x0000000000000719:  E8 20 F9          call  OPLwriteChannel_
-0x000000000000071c:  B9 3F 00          mov   cx, 0x3f
+0x000000000000071c:  B9 3F 00          mov   cx, 03Fh
 0x000000000000071f:  8B 56 FC          mov   dx, word ptr [bp - 4]
-0x0000000000000722:  B8 40 00          mov   ax, 0x40
+0x0000000000000722:  B8 40 00          mov   ax, REGISTER_VOLUME
 0x0000000000000725:  89 CB             mov   bx, cx
 0x0000000000000728:  E8 11 F9          call  OPLwriteChannel_
 0x000000000000072b:  C9                LEAVE_MACRO 
@@ -1017,24 +1058,27 @@ PUBLIC  releaseSustain_
 0x0000000000000735:  88 C7             mov   bh, al
 0x0000000000000737:  30 DB             xor   bl, bl
 0x0000000000000739:  80 3E B0 0D 00    cmp   byte ptr ds:[_OPLchannels], 0
-0x000000000000073e:  76 2C             jbe   0x76c
+0x000000000000073e:  76 2C             jbe   exit_release_sustain
+loop_release_sustain:
 0x0000000000000740:  88 D8             mov   al, bl
 0x0000000000000742:  30 E4             xor   ah, ah
 0x0000000000000744:  89 C2             mov   dx, ax
-0x0000000000000746:  BE 3F CC          mov   si, 0xcc3f
+0x0000000000000746:  BE 3F CC          mov   si, ADLIBCHANNELS_SEGMENT
 0x0000000000000749:  C1 E2 04          shl   dx, 4
 0x000000000000074c:  8E C6             mov   es, si
 0x000000000000074e:  89 D6             mov   si, dx
 0x0000000000000750:  26 3A 3C          cmp   bh, byte ptr es:[si]
-0x0000000000000753:  75 0F             jne   0x764
+0x0000000000000753:  75 0F             jne   skip_release_channel
 0x0000000000000755:  83 C6 02          add   si, 2
 0x0000000000000758:  26 F6 04 02       test  byte ptr es:[si], 2
-0x000000000000075c:  74 06             je    0x764
+0x000000000000075c:  74 06             je    skip_release_channel
 0x000000000000075e:  31 D2             xor   dx, dx
 0x0000000000000761:  E8 5E FF          call  releaseChannel_
+skip_release_channel:
 0x0000000000000764:  FE C3             inc   bl
 0x0000000000000766:  3A 1E B0 0D       cmp   bl, byte ptr ds:[_OPLchannels]
-0x000000000000076a:  72 D4             jb    0x740
+0x000000000000076a:  72 D4             jb    loop_release_sustain
+exit_release_sustain:
 0x000000000000076c:  5E                pop   si
 0x000000000000076d:  5A                pop   dx
 0x000000000000076e:  5B                pop   bx
@@ -1060,7 +1104,7 @@ PUBLIC  findFreeChannel_
 0x000000000000078a:  30 DB             xor   bl, bl
 0x000000000000078c:  80 3E B0 0D 00    cmp   byte ptr ds:[_OPLchannels], 0
 0x0000000000000791:  76 30             jbe   0x7c3
-0x0000000000000793:  B9 3F CC          mov   cx, 0xcc3f
+0x0000000000000793:  B9 3F CC          mov   cx, ADLIBCHANNELS_SEGMENT
 0x0000000000000796:  FE 06 5A 10       inc   byte ptr ds:[_lastfreechannel]
 0x000000000000079a:  A0 5A 10          mov   al, byte ptr ds:[_lastfreechannel]
 0x000000000000079d:  3A 06 B0 0D       cmp   al, byte ptr ds:[_OPLchannels]
@@ -1085,14 +1129,14 @@ PUBLIC  findFreeChannel_
 0x00000000000007d2:  88 C8             mov   al, cl
 0x00000000000007d4:  30 E4             xor   ah, ah
 0x00000000000007d6:  89 C3             mov   bx, ax
-0x00000000000007d8:  BE 3F CC          mov   si, 0xcc3f
+0x00000000000007d8:  BE 3F CC          mov   si, ADLIBCHANNELS_SEGMENT
 0x00000000000007db:  C1 E3 04          shl   bx, 4
 0x00000000000007de:  8E C6             mov   es, si
 0x00000000000007e0:  8D 77 02          lea   si, [bx + 2]
 0x00000000000007e3:  26 F6 04 01       test  byte ptr es:[si], 1
 0x00000000000007e7:  75 40             jne   0x829
-0x00000000000007e9:  26 8B 47 0E       mov   ax, word ptr es:[bx + 0xe]
-0x00000000000007ed:  83 C3 0C          add   bx, 0xc
+0x00000000000007e9:  26 8B 47 0E       mov   ax, word ptr es:[bx + 0Eh]
+0x00000000000007ed:  83 C3 0C          add   bx, 0Ch
 0x00000000000007f0:  39 C2             cmp   dx, ax
 0x00000000000007f2:  77 07             ja    0x7fb
 0x00000000000007f4:  75 0D             jne   0x803
@@ -1155,7 +1199,7 @@ PUBLIC  getInstrument_
 0x000000000000085f:  77 13             ja    0x874
 0x0000000000000861:  88 D3             mov   bl, dl
 0x0000000000000863:  80 C3 5D          add   bl, 0x5d
-0x0000000000000866:  B8 51 CC          mov   ax, 0xcc51
+0x0000000000000866:  B8 51 CC          mov   ax, INSTRUMENTLOOKUP_SEGMENT
 0x0000000000000869:  30 FF             xor   bh, bh
 0x000000000000086b:  8E C0             mov   es, ax
 0x000000000000086d:  26 8A 07          mov   al, byte ptr es:[bx]
@@ -1171,7 +1215,7 @@ PUBLIC  getInstrument_
 0x000000000000087f:  8A 9F D0 16       mov   bl, byte ptr [bx + 0x16d0]
 0x0000000000000883:  EB E1             jmp   0x866
 0x0000000000000885:  30 E4             xor   ah, ah
-0x0000000000000887:  BA 00 CC          mov   dx, 0xcc00
+0x0000000000000887:  BA 00 CC          mov   dx, ADLIBINSTRUMENTLIST_SEGMENT
 0x000000000000088a:  6B C0 24          imul  ax, ax, 0x24
 0x000000000000088d:  59                pop   cx
 0x000000000000088e:  5B                pop   bx
@@ -1187,7 +1231,7 @@ PUBLIC  OPLplayNote_
 0x0000000000000892:  57                push  di
 0x0000000000000893:  55                push  bp
 0x0000000000000894:  89 E5             mov   bp, sp
-0x0000000000000896:  83 EC 0A          sub   sp, 0xa
+0x0000000000000896:  83 EC 0A          sub   sp, 0Ah
 0x0000000000000899:  88 46 FE          mov   byte ptr [bp - 2], al
 0x000000000000089c:  88 56 FC          mov   byte ptr [bp - 4], dl
 0x000000000000089f:  88 5E FA          mov   byte ptr [bp - 6], bl
@@ -1205,7 +1249,7 @@ PUBLIC  OPLplayNote_
 0x00000000000008bc:  B8 02 00          mov   ax, 2
 0x00000000000008bf:  30 E4             xor   ah, ah
 0x00000000000008c2:  E8 AB FE          call  findFreeChannel_
-0x00000000000008c5:  88 46 F6          mov   byte ptr [bp - 0xa], al
+0x00000000000008c5:  88 46 F6          mov   byte ptr [bp - 0Ah], al
 0x00000000000008c8:  3C FF             cmp   al, 0xff
 0x00000000000008ca:  75 09             jne   0x8d5
 0x00000000000008cc:  C9                LEAVE_MACRO 
@@ -1225,7 +1269,7 @@ PUBLIC  OPLplayNote_
 0x00000000000008e2:  30 FF             xor   bh, bh
 0x00000000000008e4:  30 F6             xor   dh, dh
 0x00000000000008e6:  89 C1             mov   cx, ax
-0x00000000000008e8:  8A 46 F6          mov   al, byte ptr [bp - 0xa]
+0x00000000000008e8:  8A 46 F6          mov   al, byte ptr [bp - 0Ah]
 0x00000000000008eb:  56                push  si
 0x00000000000008ec:  30 E4             xor   ah, ah
 0x00000000000008ef:  E8 EE FB          call  occupyChannel_
@@ -1287,7 +1331,7 @@ PUBLIC  OPLreleaseNote_
 0x000000000000095f:  88 D8             mov   al, bl
 0x0000000000000961:  30 E4             xor   ah, ah
 0x0000000000000963:  89 C2             mov   dx, ax
-0x0000000000000965:  BE 3F CC          mov   si, 0xcc3f
+0x0000000000000965:  BE 3F CC          mov   si, ADLIBCHANNELS_SEGMENT
 0x0000000000000968:  C1 E2 04          shl   dx, 4
 0x000000000000096b:  8E C6             mov   es, si
 0x000000000000096d:  89 D6             mov   si, dx
@@ -1338,7 +1382,7 @@ PUBLIC  OPLpitchWheel_
 0x00000000000009c8:  C6 46 F9 00       mov   byte ptr [bp - 7], 0
 0x00000000000009cc:  88 46 F8          mov   byte ptr [bp - 8], al
 0x00000000000009cf:  8B 5E F8          mov   bx, word ptr [bp - 8]
-0x00000000000009d2:  B8 3F CC          mov   ax, 0xcc3f
+0x00000000000009d2:  B8 3F CC          mov   ax, ADLIBCHANNELS_SEGMENT
 0x00000000000009d5:  C1 E3 04          shl   bx, 4
 0x00000000000009d8:  8E C0             mov   es, ax
 0x00000000000009da:  26 8A 07          mov   al, byte ptr es:[bx]
@@ -1356,10 +1400,10 @@ PUBLIC  OPLpitchWheel_
 
 0x00000000000009f2:  8B 16 A4 0D       mov   dx, word ptr ds:[_playingtime]
 0x00000000000009f6:  A1 A6 0D          mov   ax, word ptr ds:[_playingtime + 2]
-0x00000000000009f9:  26 89 47 0E       mov   word ptr es:[bx + 0xe], ax
+0x00000000000009f9:  26 89 47 0E       mov   word ptr es:[bx + 0Eh], ax
 0x00000000000009fd:  26 8A 47 05       mov   al, byte ptr es:[bx + 5]
 0x0000000000000a01:  98                cbw  
-0x0000000000000a02:  26 89 57 0C       mov   word ptr es:[bx + 0xc], dx
+0x0000000000000a02:  26 89 57 0C       mov   word ptr es:[bx + 0Ch], dx
 0x0000000000000a06:  89 C2             mov   dx, ax
 0x0000000000000a08:  8A 46 FE          mov   al, byte ptr [bp - 2]
 0x0000000000000a0b:  30 E4             xor   ah, ah
@@ -1386,8 +1430,8 @@ PUBLIC  OPLchangeControl_
 0x0000000000000a3d:  56                push      si
 0x0000000000000a3e:  55                push      bp
 0x0000000000000a3f:  89 E5             mov       bp, sp
-0x0000000000000a41:  83 EC 0E          sub       sp, 0xe
-0x0000000000000a44:  88 5E F6          mov       byte ptr [bp - 0xa], bl
+0x0000000000000a41:  83 EC 0E          sub       sp, 0Eh
+0x0000000000000a44:  88 5E F6          mov       byte ptr [bp - 0Ah], bl
 0x0000000000000a47:  88 46 FE          mov       byte ptr [bp - 2], al
 0x0000000000000a4a:  80 FA 08          cmp       dl, 8
 0x0000000000000a4d:  77 16             ja        0xa65
@@ -1397,14 +1441,14 @@ PUBLIC  OPLchangeControl_
 0x0000000000000a55:  2E FF A7 EA 0E    jmp       word ptr cs:[bx + 0xeea]
 0x0000000000000a5a:  88 C3             mov       bl, al
 0x0000000000000a5c:  30 FF             xor       bh, bh
-0x0000000000000a5e:  8A 46 F6          mov       al, byte ptr [bp - 0xa]
+0x0000000000000a5e:  8A 46 F6          mov       al, byte ptr [bp - 0Ah]
 0x0000000000000a61:  88 87 D0 16       mov       byte ptr [bx + 0x16d0], al
 0x0000000000000a65:  C9                LEAVE_MACRO     
 0x0000000000000a66:  5E                pop       si
 0x0000000000000a67:  59                pop       cx
 0x0000000000000a68:  CB                retf      
 0x0000000000000a69:  88 C3             mov       bl, al
-0x0000000000000a6b:  8A 46 F6          mov       al, byte ptr [bp - 0xa]
+0x0000000000000a6b:  8A 46 F6          mov       al, byte ptr [bp - 0Ah]
 0x0000000000000a6e:  30 FF             xor       bh, bh
 0x0000000000000a70:  88 76 FC          mov       byte ptr [bp - 4], dh
 0x0000000000000a73:  88 87 30 17       mov       byte ptr [bx + 0x1730], al
@@ -1412,7 +1456,7 @@ PUBLIC  OPLchangeControl_
 0x0000000000000a7c:  76 E7             jbe       0xa65
 0x0000000000000a7e:  8A 46 FC          mov       al, byte ptr [bp - 4]
 0x0000000000000a81:  30 E4             xor       ah, ah
-0x0000000000000a83:  BA 3F CC          mov       dx, 0xcc3f
+0x0000000000000a83:  BA 3F CC          mov       dx, ADLIBCHANNELS_SEGMENT
 0x0000000000000a86:  89 C3             mov       bx, ax
 0x0000000000000a88:  8E C2             mov       es, dx
 0x0000000000000a8a:  C1 E3 04          shl       bx, 4
@@ -1427,16 +1471,16 @@ PUBLIC  OPLchangeControl_
 0x0000000000000aa3:  26 8A 57 02       mov       dl, byte ptr es:[bx + 2]
 0x0000000000000aa7:  8B 0E A4 0D       mov       cx, word ptr ds:[_playingtime]
 0x0000000000000aab:  8B 36 A6 0D       mov       si, word ptr ds:[_playingtime + 2]
-0x0000000000000aaf:  26 89 4F 0C       mov       word ptr es:[bx + 0xc], cx
-0x0000000000000ab3:  26 89 77 0E       mov       word ptr es:[bx + 0xe], si
-0x0000000000000ab7:  80 7E F6 28       cmp       byte ptr [bp - 0xa], 0x28
+0x0000000000000aaf:  26 89 4F 0C       mov       word ptr es:[bx + 0Ch], cx
+0x0000000000000ab3:  26 89 77 0E       mov       word ptr es:[bx + 0Eh], si
+0x0000000000000ab7:  80 7E F6 28       cmp       byte ptr [bp - 0Ah], 0x28
 0x0000000000000abb:  72 1E             jb        0xadb
 0x0000000000000abd:  26 80 4F 02 04    or        byte ptr es:[bx + 2], 4
 0x0000000000000ac2:  26 3A 57 02       cmp       dl, byte ptr es:[bx + 2]
 0x0000000000000ac6:  74 CD             je        0xa95
 0x0000000000000ac8:  BA 01 00          mov       dx, 1
 0x0000000000000acb:  26 8B 77 08       mov       si, word ptr es:[bx + 8]
-0x0000000000000acf:  26 8B 4F 0A       mov       cx, word ptr es:[bx + 0xa]
+0x0000000000000acf:  26 8B 4F 0A       mov       cx, word ptr es:[bx + 0Ah]
 0x0000000000000ad3:  89 F3             mov       bx, si
 0x0000000000000ad5:  0E                push      cs
 0x0000000000000ad6:  E8 A9 F9          call      writeModulation_
@@ -1445,7 +1489,7 @@ PUBLIC  OPLchangeControl_
 0x0000000000000ae0:  26 3A 57 02       cmp       dl, byte ptr es:[bx + 2]
 0x0000000000000ae4:  74 AF             je        0xa95
 0x0000000000000ae6:  26 8B 4F 08       mov       cx, word ptr es:[bx + 8]
-0x0000000000000aea:  26 8B 77 0A       mov       si, word ptr es:[bx + 0xa]
+0x0000000000000aea:  26 8B 77 0A       mov       si, word ptr es:[bx + 0Ah]
 0x0000000000000aee:  31 D2             xor       dx, dx
 0x0000000000000af0:  89 CB             mov       bx, cx
 0x0000000000000af2:  89 F1             mov       cx, si
@@ -1453,7 +1497,7 @@ PUBLIC  OPLchangeControl_
 0x0000000000000af5:  E8 8A F9          call      writeModulation_
 0x0000000000000af8:  EB 9B             jmp       0xa95
 0x0000000000000afa:  88 C3             mov       bl, al
-0x0000000000000afc:  8A 46 F6          mov       al, byte ptr [bp - 0xa]
+0x0000000000000afc:  8A 46 F6          mov       al, byte ptr [bp - 0Ah]
 0x0000000000000aff:  30 FF             xor       bh, bh
 0x0000000000000b01:  88 76 FA          mov       byte ptr [bp - 6], dh
 0x0000000000000b04:  88 87 E0 16       mov       byte ptr [bx + 0x16e0], al
@@ -1461,10 +1505,10 @@ PUBLIC  OPLchangeControl_
 0x0000000000000b0d:  77 03             ja        0xb12
 0x0000000000000b0f:  E9 53 FF          jmp       0xa65
 0x0000000000000b12:  8A 46 FA          mov       al, byte ptr [bp - 6]
-0x0000000000000b15:  C6 46 F5 00       mov       byte ptr [bp - 0xb], 0
-0x0000000000000b19:  88 46 F4          mov       byte ptr [bp - 0xc], al
-0x0000000000000b1c:  B9 3F CC          mov       cx, 0xcc3f
-0x0000000000000b1f:  8B 76 F4          mov       si, word ptr [bp - 0xc]
+0x0000000000000b15:  C6 46 F5 00       mov       byte ptr [bp - 0Bh], 0
+0x0000000000000b19:  88 46 F4          mov       byte ptr [bp - 0Ch], al
+0x0000000000000b1c:  B9 3F CC          mov       cx, ADLIBCHANNELS_SEGMENT
+0x0000000000000b1f:  8B 76 F4          mov       si, word ptr [bp - 0Ch]
 0x0000000000000b22:  8E C1             mov       es, cx
 0x0000000000000b24:  C1 E6 04          shl       si, 4
 0x0000000000000b27:  26 8A 04          mov       al, byte ptr es:[si]
@@ -1477,13 +1521,13 @@ PUBLIC  OPLchangeControl_
 0x0000000000000b3b:  E9 27 FF          jmp       0xa65
 0x0000000000000b3e:  A1 A4 0D          mov       ax, word ptr ds:[_playingtime]
 0x0000000000000b41:  8B 16 A6 0D       mov       dx, word ptr ds:[_playingtime + 2]
-0x0000000000000b45:  26 89 44 0C       mov       word ptr es:[si + 0xc], ax
+0x0000000000000b45:  26 89 44 0C       mov       word ptr es:[si + 0Ch], ax
 0x0000000000000b49:  26 8A 44 06       mov       al, byte ptr es:[si + 6]
-0x0000000000000b4d:  26 89 54 0E       mov       word ptr es:[si + 0xe], dx
+0x0000000000000b4d:  26 89 54 0E       mov       word ptr es:[si + 0Eh], dx
 0x0000000000000b51:  98                cbw      
 0x0000000000000b52:  8A 16 48 21       mov       dl, byte ptr ds:[_snd_MusicVolume]
 0x0000000000000b56:  89 C3             mov       bx, ax
-0x0000000000000b58:  8A 46 F6          mov       al, byte ptr [bp - 0xa]
+0x0000000000000b58:  8A 46 F6          mov       al, byte ptr [bp - 0Ah]
 0x0000000000000b5b:  30 F6             xor       dh, dh
 0x0000000000000b5d:  30 E4             xor       ah, ah
 0x0000000000000b5f:  0E                push      cs
@@ -1492,15 +1536,15 @@ PUBLIC  OPLchangeControl_
 0x0000000000000b65:  26 8B 5C 08       mov       bx, word ptr es:[si + 8]
 0x0000000000000b69:  26 88 44 07       mov       byte ptr es:[si + 7], al
 0x0000000000000b6d:  98                cbw      
-0x0000000000000b6e:  26 8B 4C 0A       mov       cx, word ptr es:[si + 0xa]
+0x0000000000000b6e:  26 8B 4C 0A       mov       cx, word ptr es:[si + 0Ah]
 0x0000000000000b72:  89 C2             mov       dx, ax
-0x0000000000000b74:  8B 46 F4          mov       ax, word ptr [bp - 0xc]
+0x0000000000000b74:  8B 46 F4          mov       ax, word ptr [bp - 0Ch]
 0x0000000000000b77:  0E                push      cs
 0x0000000000000b78:  E8 A3 F5          call      OPLwriteVolume_
 0x0000000000000b7b:  EB B2             jmp       0xb2f
-0x0000000000000b7d:  80 6E F6 40       sub       byte ptr [bp - 0xa], 0x40
+0x0000000000000b7d:  80 6E F6 40       sub       byte ptr [bp - 0Ah], 0x40
 0x0000000000000b81:  88 C3             mov       bl, al
-0x0000000000000b83:  8A 46 F6          mov       al, byte ptr [bp - 0xa]
+0x0000000000000b83:  8A 46 F6          mov       al, byte ptr [bp - 0Ah]
 0x0000000000000b86:  30 FF             xor       bh, bh
 0x0000000000000b88:  88 76 F8          mov       byte ptr [bp - 8], dh
 0x0000000000000b8b:  88 87 00 17       mov       byte ptr [bx + 0x1700], al
@@ -1508,10 +1552,10 @@ PUBLIC  OPLchangeControl_
 0x0000000000000b94:  77 03             ja        0xb99
 0x0000000000000b96:  E9 CC FE          jmp       0xa65
 0x0000000000000b99:  8A 46 F8          mov       al, byte ptr [bp - 8]
-0x0000000000000b9c:  C6 46 F3 00       mov       byte ptr [bp - 0xd], 0
-0x0000000000000ba0:  88 46 F2          mov       byte ptr [bp - 0xe], al
-0x0000000000000ba3:  8B 5E F2          mov       bx, word ptr [bp - 0xe]
-0x0000000000000ba6:  B8 3F CC          mov       ax, 0xcc3f
+0x0000000000000b9c:  C6 46 F3 00       mov       byte ptr [bp - 0Dh], 0
+0x0000000000000ba0:  88 46 F2          mov       byte ptr [bp - 0Eh], al
+0x0000000000000ba3:  8B 5E F2          mov       bx, word ptr [bp - 0Eh]
+0x0000000000000ba6:  B8 3F CC          mov       ax, ADLIBCHANNELS_SEGMENT
 0x0000000000000ba9:  C1 E3 04          shl       bx, 4
 0x0000000000000bac:  8E C0             mov       es, ax
 0x0000000000000bae:  26 8A 07          mov       al, byte ptr es:[bx]
@@ -1525,20 +1569,20 @@ PUBLIC  OPLchangeControl_
 0x0000000000000bc5:  A1 A4 0D          mov       ax, word ptr ds:[_playingtime]
 0x0000000000000bc8:  8B 16 A6 0D       mov       dx, word ptr ds:[_playingtime + 2]
 0x0000000000000bcc:  26 8B 77 08       mov       si, word ptr es:[bx + 8]
-0x0000000000000bd0:  26 8B 4F 0A       mov       cx, word ptr es:[bx + 0xa]
-0x0000000000000bd4:  26 89 47 0C       mov       word ptr es:[bx + 0xc], ax
-0x0000000000000bd8:  8A 46 F6          mov       al, byte ptr [bp - 0xa]
-0x0000000000000bdb:  26 89 57 0E       mov       word ptr es:[bx + 0xe], dx
+0x0000000000000bd0:  26 8B 4F 0A       mov       cx, word ptr es:[bx + 0Ah]
+0x0000000000000bd4:  26 89 47 0C       mov       word ptr es:[bx + 0Ch], ax
+0x0000000000000bd8:  8A 46 F6          mov       al, byte ptr [bp - 0Ah]
+0x0000000000000bdb:  26 89 57 0E       mov       word ptr es:[bx + 0Eh], dx
 0x0000000000000bdf:  98                cbw      
 0x0000000000000be0:  89 F3             mov       bx, si
 0x0000000000000be2:  89 C2             mov       dx, ax
-0x0000000000000be4:  8B 46 F2          mov       ax, word ptr [bp - 0xe]
+0x0000000000000be4:  8B 46 F2          mov       ax, word ptr [bp - 0Eh]
 0x0000000000000be7:  0E                push      cs
 0x0000000000000be8:  E8 93 F5          call      OPLwritePan_
 0x0000000000000beb:  EB C9             jmp       0xbb6
 0x0000000000000bed:  88 C3             mov       bl, al
 0x0000000000000bef:  30 FF             xor       bh, bh
-0x0000000000000bf1:  8A 46 F6          mov       al, byte ptr [bp - 0xa]
+0x0000000000000bf1:  8A 46 F6          mov       al, byte ptr [bp - 0Ah]
 0x0000000000000bf4:  88 87 20 17       mov       byte ptr [bx + 0x1720], al
 0x0000000000000bf8:  3C 40             cmp       al, 0x40
 0x0000000000000bfa:  73 9A             jae       0xb96
@@ -1586,7 +1630,7 @@ PUBLIC  OPLstopMusic_
 0x0000000000000c30:  88 D8             mov       al, bl
 0x0000000000000c32:  30 E4             xor       ah, ah
 0x0000000000000c34:  89 C6             mov       si, ax
-0x0000000000000c36:  BA 3F CC          mov       dx, 0xcc3f
+0x0000000000000c36:  BA 3F CC          mov       dx, ADLIBCHANNELS_SEGMENT
 0x0000000000000c39:  C1 E6 04          shl       si, 4
 0x0000000000000c3c:  8E C2             mov       es, dx
 0x0000000000000c3e:  83 C6 02          add       si, 2
@@ -1626,7 +1670,7 @@ PUBLIC  OPLchangeSystemVolume_
 0x0000000000000c75:  8A 46 FC          mov       al, byte ptr [bp - 4]
 0x0000000000000c78:  C6 46 FB 00       mov       byte ptr [bp - 5], 0
 0x0000000000000c7c:  88 46 FA          mov       byte ptr [bp - 6], al
-0x0000000000000c7f:  B9 3F CC          mov       cx, 0xcc3f
+0x0000000000000c7f:  B9 3F CC          mov       cx, ADLIBCHANNELS_SEGMENT
 0x0000000000000c82:  8B 76 FA          mov       si, word ptr [bp - 6]
 0x0000000000000c85:  8E C1             mov       es, cx
 0x0000000000000c87:  C1 E6 04          shl       si, 4
@@ -1662,7 +1706,7 @@ PUBLIC  OPLchangeSystemVolume_
 
 0x0000000000000cc8:  98                cbw      
 0x0000000000000cc9:  26 8B 5C 08       mov       bx, word ptr es:[si + 8]
-0x0000000000000ccd:  26 8B 4C 0A       mov       cx, word ptr es:[si + 0xa]
+0x0000000000000ccd:  26 8B 4C 0A       mov       cx, word ptr es:[si + 0Ah]
 0x0000000000000cd1:  89 C2             mov       dx, ax
 0x0000000000000cd3:  8B 46 FA          mov       ax, word ptr [bp - 6]
 0x0000000000000cd6:  0E                push      cs
@@ -1680,7 +1724,7 @@ PUBLIC  OPLinitDriver_
 0x0000000000000cdf:  57                push      di
 0x0000000000000ce0:  B9 20 01          mov       cx, 0x120
 0x0000000000000ce3:  B0 FF             mov       al, 0xff
-0x0000000000000ce5:  BA 3F CC          mov       dx, 0xcc3f
+0x0000000000000ce5:  BA 3F CC          mov       dx, ADLIBCHANNELS_SEGMENT
 0x0000000000000ce8:  31 FF             xor       di, di
 0x0000000000000cea:  8E C2             mov       es, dx
 0x0000000000000cec:  57                push      di
@@ -1697,7 +1741,7 @@ PUBLIC  OPLinitDriver_
 0x0000000000000d01:  30 FF             xor       bh, bh
 0x0000000000000d03:  39 D8             cmp       ax, bx
 0x0000000000000d05:  7D 13             jge       0xd1a
-0x0000000000000d07:  BB 3F CC          mov       bx, 0xcc3f
+0x0000000000000d07:  BB 3F CC          mov       bx, ADLIBCHANNELS_SEGMENT
 0x0000000000000d0a:  C1 E0 04          shl       ax, 4
 0x0000000000000d0d:  8E C3             mov       es, bx
 0x0000000000000d0f:  89 C3             mov       bx, ax
