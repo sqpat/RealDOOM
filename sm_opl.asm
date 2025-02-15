@@ -900,22 +900,18 @@ mov   word ptr es:[si + 0Eh], bx
 ;	} else{
 ;		OPL2driverdata.channelLastVolume[channel] = noteVolume;
 ;	}
+mov   bl, byte ptr [bp - 2]
+xor   bh, bh
 
 cmp   al, -1
 je    use_last_volume
-mov   bl, byte ptr [bp - 2]
-xor   bh, bh
 mov   byte ptr ds:[bx + _OPL2driverdata + 020h], al     ; channelLastVolume
 jmp   volume_is_set
 use_last_volume:
-mov   bl, byte ptr [bp - 2]
-xor   bh, bh
 mov   al, byte ptr ds:[bx + _OPL2driverdata + 020h]     ; channelLastVolume
 volume_is_set:
-mov   es, word ptr [bp - 0Ah]
-mov   bl, byte ptr [bp - 2]
+
 mov   dl, byte ptr ds:[_snd_MusicVolume]
-xor   bh, bh
 mov   byte ptr es:[si + 6], al
 cbw  
 xor   dh, dh
@@ -1276,7 +1272,8 @@ jmp   look_up_instrument
 found_instrument:
 xor   ah, ah
 mov   dx, ADLIBINSTRUMENTLIST_SEGMENT
-imul  ax, ax, SIZEOF_OP2INSTRENTRY
+mov   ah, SIZEOF_OP2INSTRENTRY
+mul   ah
 pop   cx
 pop   bx
 ret  
@@ -1297,7 +1294,7 @@ mov   byte ptr [bp - 4], dl
 mov   byte ptr [bp - 6], bl
 xor   dh, dh
 xor   ah, ah
-call  getInstrument_
+call  getInstrument_        ; todo inline. used once. 
 mov   si, ax
 mov   di, dx
 test  dx, dx
@@ -1310,7 +1307,6 @@ je    channel_is_percussion
 channel_not_percussion:
 xor   ax, ax
 go_find_channel:
-xor   ah, ah
 call  findFreeChannel_
 mov   byte ptr [bp - 0Ah], al
 cmp   al, -1
@@ -1322,6 +1318,7 @@ pop   di
 pop   si
 pop   cx
 retf  
+
 channel_is_percussion:
 mov   ax, 2              ; slot for findfreechannel
 jmp   go_find_channel
@@ -1520,10 +1517,11 @@ push      si
 push      bp
 mov       bp, sp
 sub       sp, 0Eh
+; todo pre-prep bl, dont use 0ah 
 mov       byte ptr [bp - 0Ah], bl
 mov       byte ptr [bp - 2], al
 cmp       dl, 8
-ja        exit_oplchangecontrol
+ja        exit_oplchangecontrol     ; todo je change_control_sustain
 xor       dh, dh
 mov       bx, dx
 add       bx, dx
@@ -1878,6 +1876,13 @@ PUBLIC  OPL3initHardware_
 
 mov       al, 1
 call      OPLinit_
+
+ENDP
+PROC  OPLsendMIDI_ FAR
+PUBLIC  OPLsendMIDI_
+
+
+
 xor       al, al
 retf    
 
@@ -1891,13 +1896,6 @@ PUBLIC  OPLdeinitHardware_
 call      OPLdeinit_
 ENDP
 
-PROC  OPLsendMIDI_ FAR
-PUBLIC  OPLsendMIDI_
-
-xor       al, al
-retf      
-
-ENDP
 
 
 PROC  SM_OPL_ENDMARKER_
