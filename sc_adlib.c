@@ -150,8 +150,8 @@ int8_t OPLpanVolume(int8_t noteVolume, int8_t pan){
  */
 void OPLwriteVolume(uint8_t channel, OPL2instrument __far  *instr, int8_t noteVolume){
     OPLwriteChannel(0x40, channel, ((instr->feedback & 1) ?
-	OPLconvertVolume(instr->level_1, noteVolume) : instr->level_1) | instr->scale_1,
-	OPLconvertVolume(instr->level_2, noteVolume) | instr->scale_2);
+		OPLconvertVolume(instr->level_1, noteVolume) : instr->level_1) | instr->scale_1,
+		OPLconvertVolume(instr->level_2, noteVolume) | instr->scale_2);
 }
 
 /*
@@ -488,10 +488,11 @@ int8_t findFreeChannel(uint8_t flag){
 		if (AdLibChannels[i].flags & CH_SECONDARY) {
 			releaseChannel(i, -1);
 			return i;
-		} else
+		} else {
 			if (AdLibChannels[i].time < oldesttime) {
-			oldesttime = AdLibChannels[i].time;
-			oldest = i;
+				oldesttime = AdLibChannels[i].time;
+				oldest = i;
+			}
 		}
     }
 
@@ -537,11 +538,12 @@ void OPLplayNote(uint8_t channel, uint8_t note, int8_t noteVolume){
 		return;
 	}
 
-
-    if ( (i = findFreeChannel((channel == PERCUSSION) ? 2 : 0)) != -1) {
+	i = findFreeChannel((channel == PERCUSSION) ? 2 : 0);
+    if (i != -1) {
 		occupyChannel(i, channel, note, noteVolume, instr, 0);
 		if (!OPLsinglevoice && instr->flags == FL_DOUBLE_VOICE) {
-			if ( (i = findFreeChannel((channel == PERCUSSION) ? 3 : 1)) != -1){
+			i = findFreeChannel((channel == PERCUSSION) ? 3 : 1);
+			if ( i != -1){
 				occupyChannel(i, channel, note, noteVolume, instr, 1);
 			}
 		}
