@@ -260,9 +260,8 @@ xor       ah, ah
 mov       cx, MIDIDRIVERDATA_SEGMENT
 mov       si, ax
 mov       es, cx
-add       si, MIDIDATA_REALCHANNEL_OFFSET
 mov       ax, bx
-mov       byte ptr es:[si], 0FFh
+mov       byte ptr es:[si + MIDIDATA_REALCHANNEL_OFFSET], 0FFh
 
 call      stopChannel_
 mov       es, di
@@ -420,7 +419,7 @@ mov       es, dx
 mov       bh, byte ptr es:[si + MIDIDATA_REALCHANNEL_OFFSET]
 cmp       bl, -1
 je        use_last_volume
-mov       byte ptr es:[si], bl
+mov       byte ptr es:[si+MIDIDATA_LAST_VOLUME_OFFSET], bl
 jmp       got_volume
 go_find_channel:
 mov       dl, ch
@@ -715,6 +714,9 @@ jmp       do_generic_control
 
 ENDP
 
+DUMMY_BASE_CONTROLLER_VALUES:
+db 0, 0, 0, 127, 64, 127, 0, 0, 0, 0, 0, DEFAULT_PITCH_BEND, 0FFh
+
 PROC  MIDIplayMusic_    FAR
 PUBLIC  MIDIplayMusic_
 
@@ -733,28 +735,27 @@ mov       es, ax
 xor       ax, ax
 rep stosw 
 mov       bx, ax  ; zero out
+mov       di, ax  ; zero out
 
-loop_ready_channels:
+
+push      cs
+pop       ds
+
+mov       si, OFFSET DUMMY_BASE_CONTROLLER_VALUES
+mov       ah, MAX_MUSIC_CHANNELS
+
+loop_ready_controllers:
+lodsb     
+mov       cl, ah    ; 16 bytes words
+rep       stosb
+inc       bl
+cmp       bl, NUM_CONTROLLERS + 3    ; 3 controllers, lastvolumes, pitchwheels, realchannels
+jl        loop_ready_controllers
 
 ; todo make this a 16 byte string in cs and rep movsw over and over
 
-mov       byte ptr es:[bx + CTRLPATCH        * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[bx + CTRLBANK         * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[bx + CTRLMODULATION   * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[bx + CTRLVOLUME       * CONTROLLER_DATA_SIZE], 127
-mov       byte ptr es:[bx + CTRLPAN          * CONTROLLER_DATA_SIZE], 64
-mov       byte ptr es:[bx + CTRLEXPRESSION   * CONTROLLER_DATA_SIZE], 127
-mov       byte ptr es:[bx + CTRLREVERB       * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[bx + CTRLCHORUS       * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[bx + CTRLMODULATION   * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[bx + CTRLSUSTAINPEDAL * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[bx + CTRLSOFTPEDAL    * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[bx + MIDIDATA_LAST_VOLUME_OFFSET], al
-mov       byte ptr es:[bx + MIDIDATA_PITCH_WHEEL_OFFSET], DEFAULT_PITCH_BEND
-mov       byte ptr es:[bx + MIDIDATA_REALCHANNEL_OFFSET], 0FFh
-inc       bl
-cmp       bl, MAX_MUSIC_CHANNELS
-jl        loop_ready_channels
+push      ss
+pop       ds ; restore ds
 
 mov       bx, 127
 mov       ax, MIDI_CONTROL OR MIDI_PERC
