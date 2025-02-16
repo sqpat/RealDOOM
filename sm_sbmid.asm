@@ -107,6 +107,9 @@ MIDI_CHANNELS_SEGMENT       = 0CC0Eh
 MIDI_PERC                   = 9
 MIDITIME_SEGMENT            = 0CC12h
 
+SIZE_MIDICHANNELS           = 010h
+SIZE_MIDITIME               = 040h
+
 
 MIDIDATA_CONTROLLERS_OFFSET = 000h
 MIDIDATA_LAST_VOLUME_OFFSET = 0A0h
@@ -702,89 +705,80 @@ ENDP
 PROC  MIDIplayMusic_    FAR
 PUBLIC  MIDIplayMusic_
 
+;    FAR_memset((void __far*) (mididriverData->percussions), 0, sizeof(uint8_t) * (128/8));
+
 
 0x00000000000004ba:  53                push      bx
 0x00000000000004bb:  51                push      cx
 0x00000000000004bc:  52                push      dx
 0x00000000000004bd:  56                push      si
 0x00000000000004be:  57                push      di
-0x00000000000004bf:  B9 10 00          mov       cx, 0x10
-0x00000000000004c2:  BF D0 00          mov       di, 0xd0
-0x00000000000004c5:  31 D2             xor       dx, dx
-0x00000000000004c7:  30 C0             xor       al, al
-0x00000000000004c9:  8E C2             mov       es, dx
-0x00000000000004cb:  57                push      di
-0x00000000000004cc:  8A E0             mov       ah, al
-0x00000000000004ce:  D1 E9             shr       cx, 1
-0x00000000000004d0:  F3 AB             rep stosw word ptr es:[di], ax
-0x00000000000004d2:  13 C9             adc       cx, cx
-0x00000000000004d4:  F3 AA             rep stosb byte ptr es:[di], al
-0x00000000000004d6:  5F                pop       di
-0x00000000000004d7:  30 D2             xor       dl, dl
-0x00000000000004d9:  30 F6             xor       dh, dh
-0x00000000000004db:  FC                cld       
-0x00000000000004dc:  88 D0             mov       al, dl
-0x00000000000004de:  BB 00 CC          mov       bx, MIDIDRIVERDATA_SEGMENT
-0x00000000000004e1:  98                cbw      
-0x00000000000004e2:  8E C3             mov       es, bx
-0x00000000000004e4:  89 C3             mov       bx, ax
-0x00000000000004e6:  83 C3 10          add       bx, 0x10
-0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx - 0x10], dh
-0x00000000000004ed:  26 88 37          mov       byte ptr es:[bx], dh
-0x00000000000004f0:  89 C3             mov       bx, ax
-0x00000000000004f2:  83 C3 20          add       bx, 0x20
-0x00000000000004f5:  26 88 37          mov       byte ptr es:[bx], dh
-0x00000000000004f8:  89 C3             mov       bx, ax
-0x00000000000004fa:  83 C3 30          add       bx, 0x30
-0x00000000000004fd:  26 C6 07 7F       mov       byte ptr es:[bx], 0x7f
-0x0000000000000501:  89 C3             mov       bx, ax
-0x0000000000000503:  83 C3 40          add       bx, 0x40
-0x0000000000000506:  26 C6 07 40       mov       byte ptr es:[bx], 0x40
-0x000000000000050a:  89 C3             mov       bx, ax
-0x000000000000050c:  83 C3 50          add       bx, 0x50
-0x000000000000050f:  26 C6 07 7F       mov       byte ptr es:[bx], 0x7f
-0x0000000000000513:  89 C3             mov       bx, ax
-0x0000000000000515:  83 C3 60          add       bx, 0x60
-0x0000000000000518:  26 88 37          mov       byte ptr es:[bx], dh
-0x000000000000051b:  89 C3             mov       bx, ax
-0x000000000000051d:  83 C3 70          add       bx, 0x70
-0x0000000000000520:  26 88 37          mov       byte ptr es:[bx], dh
-0x0000000000000523:  89 C3             mov       bx, ax
-0x0000000000000525:  81 C3 80 00       add       bx, 0x80
-0x0000000000000529:  26 88 37          mov       byte ptr es:[bx], dh
-0x000000000000052c:  89 C3             mov       bx, ax
-0x000000000000052e:  81 C3 90 00       add       bx, 0x90
-0x0000000000000532:  26 88 37          mov       byte ptr es:[bx], dh
-0x0000000000000535:  89 C3             mov       bx, ax
-0x0000000000000537:  81 C3 A0 00       add       bx, 0xa0
-0x000000000000053b:  26 88 37          mov       byte ptr es:[bx], dh
-0x000000000000053e:  89 C3             mov       bx, ax
-0x0000000000000540:  81 C3 B0 00       add       bx, 0xb0
-0x0000000000000544:  26 C6 07 80       mov       byte ptr es:[bx], 0x80
-0x0000000000000548:  89 C3             mov       bx, ax
-0x000000000000054a:  81 C3 C0 00       add       bx, 0xc0
-0x000000000000054e:  FE C2             inc       dl
-0x0000000000000550:  26 C6 07 FF       mov       byte ptr es:[bx], 0xff
-0x0000000000000554:  80 FA 10          cmp       dl, 0x10
-0x0000000000000557:  7C 83             jl        0x4dc
-0x0000000000000559:  BB 7F 00          mov       bx, 0x7f
-0x000000000000055c:  B8 B9 00          mov       ax, 0xb9
-0x000000000000055f:  8A 16 B3 0D       mov       dl, 7   ; byte ptr [_MUS2MIDIctrl + 3]
+0x00000000000004bf:  B9 10 00          mov       cx, 010h / 2
+0x00000000000004c2:  BF D0 00          mov       di, 0D0h
+0x00000000000004c5:  31 D2             mov       ax, MIDIDRIVERDATA_SEGMENT
+0x00000000000004c9:  8E C2             mov       es, ax
+0x00000000000004c7:  30 C0             xor       ax, ax
+0x00000000000004d0:  F3 AB             rep stosw 
+0x00000000000004d7:  30 D2             mov       bx, ax  ; zero out
+
+loop_ready_channels:
+
+; todo make this a 16 byte string in cs and rep movsw over and over
+
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLPATCH        * CONTROLLER_DATA_SIZE], al
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLBANK         * CONTROLLER_DATA_SIZE], al
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLMODULATION   * CONTROLLER_DATA_SIZE], al
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLVOLUME       * CONTROLLER_DATA_SIZE], 127
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLPAN          * CONTROLLER_DATA_SIZE], 64
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLEXPRESSION   * CONTROLLER_DATA_SIZE], 127
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLREVERB       * CONTROLLER_DATA_SIZE], al
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLCHORUS       * CONTROLLER_DATA_SIZE], al
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLMODULATION   * CONTROLLER_DATA_SIZE], al
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLSUSTAINPEDAL * CONTROLLER_DATA_SIZE], al
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + CTRLSOFTPEDAL    * CONTROLLER_DATA_SIZE], al
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + MIDIDATA_LAST_VOLUME_OFFSET], al
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + MIDIDATA_PITCH_WHEEL_OFFSET], DEFAULT_PITCH_BEND
+0x00000000000004e9:  26 88 77 F0       mov       byte ptr es:[bx + MIDIDATA_REALCHANNEL_OFFSET], 0FFh
+0x000000000000054e:  FE C2             inc       bl
+0x0000000000000554:  80 FA 10          cmp       bl, 0x10
+0x0000000000000557:  7C 83             jl        loop_ready_channels
+
+0x0000000000000559:  BB 7F 00          mov       bx, 127
+0x000000000000055c:  B8 B9 00          mov       ax, MIDI_CONTROL OR MIDI_PERC
+0x000000000000055f:  8A 16 B3 0D       mov       dl, 7   ; volume control
 0x0000000000000563:  8B 36 9A 0D       mov       si, word ptr [_playingdriver]
 0x0000000000000567:  30 F6             xor       dh, dh
 0x0000000000000569:  FF 5C 34          call      dword ptr [si + 034h]
-0x000000000000056c:  B8 B9 00          mov       ax, 0xb9
+
+0x000000000000056c:  B8 B9 00          mov       ax, MIDI_CONTROL OR MIDI_PERC
 0x000000000000056f:  8B 36 9A 0D       mov       si, word ptr [_playingdriver]
 0x0000000000000573:  8A 16 BE 0D       mov       dl, 121  ; byte ptr [_MUS2MIDIctrl + e]
 0x0000000000000577:  31 DB             xor       bx, bx
 0x0000000000000579:  30 F6             xor       dh, dh
 0x000000000000057b:  FF 5C 34          call      dword ptr [si + 034h]
+
 0x000000000000057e:  5F                pop       di
 0x000000000000057f:  5E                pop       si
 0x0000000000000580:  5A                pop       dx
 0x0000000000000581:  59                pop       cx
 0x0000000000000582:  5B                pop       bx
 0x0000000000000583:  CB                retf      
+
+
+
+ENDP
+
+
+
+PROC  MIDIpauseMusic_    FAR
+PUBLIC  MIDIpauseMusic_
+ENDP
+; just calls stop music, fall thru
+
+PROC  MIDIstopMusic_    FAR
+PUBLIC  MIDIstopMusic_
+
+
 0x0000000000000584:  53                push      bx
 0x0000000000000585:  51                push      cx
 0x0000000000000586:  52                push      dx
@@ -794,19 +788,20 @@ PUBLIC  MIDIplayMusic_
 0x000000000000058a:  89 E5             mov       bp, sp
 0x000000000000058c:  83 EC 02          sub       sp, 2
 0x000000000000058f:  C6 46 FE 00       mov       byte ptr [bp - 2], 0
-0x0000000000000593:  BF 89 00          mov       di, 0x89
+0x0000000000000593:  BF 89 00          mov       di, MIDI_NOTE_OFF OR MIDI_PERC
+loop_stop_channels:
 0x0000000000000596:  8A 46 FE          mov       al, byte ptr [bp - 2]
 0x0000000000000599:  BA 00 CC          mov       dx, MIDIDRIVERDATA_SEGMENT
 0x000000000000059c:  98                cbw      
 0x000000000000059d:  8E C2             mov       es, dx
 0x000000000000059f:  89 C3             mov       bx, ax
-0x00000000000005a1:  26 8A 87 C0 00    mov       al, byte ptr es:[bx + 0xc0]
-0x00000000000005a6:  81 C3 C0 00       add       bx, 0xc0
+0x00000000000005a1:  26 8A 87 C0 00    mov       al, byte ptr es:[bx + MIDIDATA_REALCHANNEL_OFFSET]
 0x00000000000005aa:  84 C0             test      al, al
-0x00000000000005ac:  7C 3E             jl        0x5ec
-0x00000000000005ae:  3C 09             cmp       al, 9
-0x00000000000005b0:  75 4B             jne       0x5fd
+0x00000000000005ac:  7C 3E             jl        inc_loop_stop_channels
+0x00000000000005ae:  3C 09             cmp       al, MIDI_PERC
+0x00000000000005b0:  75 4B             jne       stop_non_perc_channel
 0x00000000000005b2:  30 ED             xor       ch, ch
+loop_stop_channels_perc:
 0x00000000000005b4:  88 EA             mov       dl, ch
 0x00000000000005b6:  30 F6             xor       dh, dh
 0x00000000000005b8:  B8 00 CC          mov       ax, MIDIDRIVERDATA_SEGMENT
@@ -814,36 +809,39 @@ PUBLIC  MIDIplayMusic_
 0x00000000000005bd:  8E C0             mov       es, ax
 0x00000000000005bf:  C1 FB 03          sar       bx, 3
 0x00000000000005c2:  88 E9             mov       cl, ch
-0x00000000000005c4:  81 C3 D0 00       add       bx, 0xd0
+0x00000000000005c4:  81 C3 D0 00       add       bx, MIDIDATA_PERCUSSIONS_OFFSET
 0x00000000000005c8:  80 E1 07          and       cl, 7
 0x00000000000005cb:  26 8A 07          mov       al, byte ptr es:[bx]
 0x00000000000005ce:  BB 01 00          mov       bx, 1
 0x00000000000005d1:  30 E4             xor       ah, ah
 0x00000000000005d3:  D3 E3             shl       bx, cl
 0x00000000000005d5:  85 D8             test      ax, bx
-0x00000000000005d7:  74 0C             je        0x5e5
-0x00000000000005d9:  BB 7F 00          mov       bx, 0x7f
+0x00000000000005d7:  74 0C             je        inc_loop_stop_channels_perc
+0x00000000000005d9:  BB 7F 00          mov       bx, 127
 0x00000000000005dc:  8B 36 9A 0D       mov       si, word ptr [_playingdriver]
 0x00000000000005e0:  89 F8             mov       ax, di
 0x00000000000005e2:  FF 5C 34          call      dword ptr [si + 034h]
+inc_loop_stop_channels_perc:
 0x00000000000005e5:  FE C5             inc       ch
-0x00000000000005e7:  80 FD 80          cmp       ch, 0x80
-0x00000000000005ea:  72 C8             jb        0x5b4
+0x00000000000005e7:  80 FD 80          cmp       ch, 128
+0x00000000000005ea:  72 C8             jb        loop_stop_channels_perc
+
+inc_loop_stop_channels:
 0x00000000000005ec:  FE 46 FE          inc       byte ptr [bp - 2]
-0x00000000000005ef:  80 7E FE 10       cmp       byte ptr [bp - 2], 0x10
-0x00000000000005f3:  7C A1             jl        0x596
+0x00000000000005ef:  80 7E FE 10       cmp       byte ptr [bp - 2], MAX_MUSIC_CHANNELS
+0x00000000000005f3:  7C A1             jl        loop_stop_channels
 0x00000000000005f5:  C9                LEAVE_MACRO     
 0x00000000000005f6:  5F                pop       di
 0x00000000000005f7:  5E                pop       si
 0x00000000000005f8:  5A                pop       dx
 0x00000000000005f9:  59                pop       cx
 0x00000000000005fa:  5B                pop       bx
-0x00000000000005fb:  FC                cld       
 0x00000000000005fc:  CB                retf      
+stop_non_perc_channel:
 0x00000000000005fd:  30 E4             xor       ah, ah
 0x00000000000005ff:  0E                push      cs
 0x0000000000000600:  E8 11 FA          call      stopChannel_
-0x0000000000000603:  EB E7             jmp       0x5ec
+0x0000000000000603:  EB E7             jmp       inc_loop_stop_channels
 
 
 PROC MIDIchangeSystemVolume_  FAR
@@ -905,44 +903,49 @@ inc_loop_change_system_volume:
 0x0000000000000648:  5A                pop       dx
 0x0000000000000649:  59                pop       cx
 0x000000000000064a:  5B                pop       bx
+ENDP
+
+
+
+PROC  MIDIresumeMusic_    FAR
+PUBLIC  MIDIresumeMusic_
+
+
 0x000000000000064b:  CB                retf    
 
 ENDP
 
-0x000000000000064c:  53                push      bx
+
+
+PROC  MIDIinitDriver_    FAR
+PUBLIC  MIDIinitDriver_
+
 0x000000000000064d:  51                push      cx
-0x000000000000064e:  52                push      dx
 0x000000000000064f:  57                push      di
-0x0000000000000650:  B9 10 00          mov       cx, 0x10
-0x0000000000000653:  B0 FF             mov       al, 0xff
-0x0000000000000655:  BA 0E CC          mov       dx, MIDI_CHANNELS_SEGMENT
+0x0000000000000650:  B9 10 00          mov       cx, SIZE_MIDICHANNELS / 2
+0x0000000000000655:  BA 0E CC          mov       ax, MIDI_CHANNELS_SEGMENT
+0x000000000000065a:  8E C2             mov       es, ax
+0x0000000000000653:  B0 FF             mov       ax, 0FFFFh
 0x0000000000000658:  31 FF             xor       di, di
-0x000000000000065a:  8E C2             mov       es, dx
-0x000000000000065c:  BB 09 00          mov       bx, 9
-0x000000000000065f:  57                push      di
-0x0000000000000660:  8A E0             mov       ah, al
-0x0000000000000662:  D1 E9             shr       cx, 1
-0x0000000000000664:  F3 AB             rep stosw word ptr es:[di], ax
-0x0000000000000666:  13 C9             adc       cx, cx
-0x0000000000000668:  F3 AA             rep stosb byte ptr es:[di], al
-0x000000000000066a:  5F                pop       di
-0x000000000000066b:  B9 40 00          mov       cx, 0x40
-0x000000000000066e:  BA 12 CC          mov       dx, MIDITIME_SEGMENT
-0x0000000000000671:  26 C6 07 80       mov       byte ptr es:[bx], 0x80
-0x0000000000000675:  30 C0             xor       al, al
-0x0000000000000677:  8E C2             mov       es, dx
-0x0000000000000679:  57                push      di
-0x000000000000067a:  8A E0             mov       ah, al
-0x000000000000067c:  D1 E9             shr       cx, 1
-0x000000000000067e:  F3 AB             rep stosw word ptr es:[di], ax
-0x0000000000000680:  13 C9             adc       cx, cx
-0x0000000000000682:  F3 AA             rep stosb byte ptr es:[di], al
-0x0000000000000684:  5F                pop       di
+0x0000000000000664:  F3 AB             rep       stosw 
+0x000000000000065c:  BB 09 00          mov       di, MIDI_PERC
+0x000000000000066b:  B9 40 00          mov       cx, SIZE_MIDITIME / 2
+0x0000000000000671:  26 C6 07 80       mov       byte ptr es:[di], 0x80
+0x000000000000066e:  BA 12 CC          mov       ax, MIDITIME_SEGMENT
+0x0000000000000677:  8E C2             mov       es, ax
+0x0000000000000675:  30 C0             xor       ax, ax
+0x0000000000000675:  30 C0             mov       di, ax
+0x000000000000067e:  F3 AB             rep       stosw 
 0x0000000000000685:  5F                pop       di
-0x0000000000000686:  5A                pop       dx
 0x0000000000000687:  59                pop       cx
-0x0000000000000688:  5B                pop       bx
 0x0000000000000689:  CB                retf      
+
+ENDP
+
+;;;; END OF GENERIC MIDI STUFF. 
+;;;; FOLLOWING IS SBMIDI
+
+
 0x000000000000068a:  00 00             add       byte ptr [bx + si], al
 0x000000000000068c:  00 00             add       byte ptr [bx + si], al
 0x000000000000068e:  00 00             add       byte ptr [bx + si], al

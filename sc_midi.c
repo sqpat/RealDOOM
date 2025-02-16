@@ -242,7 +242,7 @@ void MIDIchangeControl(uint8_t channel, uint8_t controller, uint8_t value){
 
 void MIDIplayMusic(){
     int8_t i;
-
+    // note this generates a 0000 segment in asm..
     FAR_memset((void __far*) (mididriverData->percussions), 0, sizeof(uint8_t) * (128/8));
     
     for (i = 0; i < MAX_MUSIC_CHANNELS; i++) {
