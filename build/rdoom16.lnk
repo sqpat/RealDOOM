@@ -60,8 +60,7 @@ file hu_setup.obj
 NEWSEGMENT
 file s_sound.obj
 file sm_opl.obj
-file sc_midi.obj
-file sc_sbmid.obj
+file sm_sbmid.obj
 file sc_mpu.obj
 file p_ceilng.obj
 file p_doors.obj

@@ -99,8 +99,7 @@ GLOBOBJS = &
  hu_lib.obj &
  s_sound.obj &
  sm_opl.obj &
- sc_midi.obj &
- sc_sbmid.obj &
+ sm_sbmid.obj &
  sc_mpu.obj &
  sounds.obj &
  info.obj &

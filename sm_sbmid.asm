@@ -28,6 +28,9 @@ EXTRN _playingtime:DWORD
 EXTRN _playingdriver:DWORD
 EXTRN _snd_MusicVolume:BYTE
 EXTRN _playingstate:BYTE
+EXTRN _SBMIDIport:WORD
+EXTRN _MUS2MIDIctrl:BYTE
+EXTRN _runningStatus:BYTE
 
 .CODE
 
@@ -117,6 +120,9 @@ MIDIDATA_PITCH_WHEEL_OFFSET = 0B0h
 MIDIDATA_REALCHANNEL_OFFSET = 0C0h
 MIDIDATA_PERCUSSIONS_OFFSET = 0D0h
 	
+MIDI_READ_POLL	    = 030h
+MIDI_READ_IRQ	    = 031h
+MIDI_WRITE_POLL     = 038h
 
 
 PROC  SM_SBMID_STARTMARKER_
@@ -244,7 +250,7 @@ jmp       inc_loop_channels_find_oldest
 done_looping_channels_find_oldest:
 mov       dl, ah
 cmp       ah, 0FFh
-je        dont_stop_channel:
+je        dont_stop_channel
 mov       di, MIDI_CHANNELS_SEGMENT
 mov       bl, ah
 mov       es, di
@@ -330,7 +336,7 @@ mov       al, byte ptr es:[bx]
 cmp       cl, CTRLVOLUME
 jne       not_volume_control
 cmp       ch, MIDI_PERC
-jne       go_calculate_volume:
+jne       go_calculate_volume
 
 increment_controller_loop:
 inc       cl
@@ -390,6 +396,13 @@ jmp       increment_controller_loop
 
 ENDP
 
+exit_playnote_2:
+LEAVE_MACRO     
+pop       si
+pop       cx
+retf      
+
+
 PROC  MIDIplayNote_    FAR
 PUBLIC  MIDIplayNote_
 
@@ -416,7 +429,7 @@ mov       ax, dx
 call      findFreeMIDIChannel_
 mov       bh, al
 test      al, al
-jl        exit_playnote
+jl        exit_playnote_2
 mov       si, MIDIDRIVERDATA_SEGMENT
 mov       es, si
 mov       si, dx
@@ -491,8 +504,8 @@ retf
 
 ENDP
 
-PROC  MIDIplayNote_    FAR
-PUBLIC  MIDIplayNote_
+PROC  MIDIreleaseNote_    FAR
+PUBLIC  MIDIreleaseNote_
 
 push      bx
 push      cx
@@ -996,9 +1009,10 @@ out       dx, al
 xor       ax, ax
 pop       dx
 pop       bx
-retf      
+ret  
 
 ENDP
+
 
 PROC  SBMIDIsendBlock_    NEAR
 PUBLIC  SBMIDIsendBlock_
@@ -1060,7 +1074,7 @@ call      SBMIDIsendByte_
 skip_send_byte:
 sti       
 xor       al, al
-retf      
+retf
 
 ENDP
 
