@@ -85,7 +85,6 @@ typedef struct  {
 
 
 
-uint8_t 	OPLwriteReg(uint16_t reg, uint8_t data);
 int8_t		OPLconvertVolume(uint8_t data, int8_t noteVolume);
 int8_t		OPLpanVolume(int8_t noteVolume, int8_t pan);
 void	  	OPLinit(uint16_t port, uint8_t OPL3);

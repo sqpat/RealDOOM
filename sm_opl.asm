@@ -24,21 +24,9 @@ INSTRUCTION_SET_MACRO
 .DATA
 
 
-EXTRN _OPL3mode:BYTE
-EXTRN _OPLchannels:BYTE
 EXTRN _playingtime:DWORD
 EXTRN _snd_MusicVolume:BYTE
-EXTRN _lastfreechannel:BYTE
 EXTRN _playingstate:BYTE
-EXTRN _OPL2driverdata:WORD
-EXTRN _playingpercussMask:WORD
-EXTRN _op_num:WORD
-EXTRN _freqtable:WORD
-EXTRN _freqtable2:WORD
-EXTRN _noteVolumetable:WORD
-EXTRN _pitchwheeltable:WORD
-EXTRN _OPLsinglevoice:WORD
-
 
 .CODE
 
@@ -69,14 +57,91 @@ INSTRUMENTLOOKUP_SEGMENT    = 0CC51h
 
 SIZE_ADLIBCHANNELS          = 0120h
 
+PLAYING_PERCUSSION_MASK     = 08000h
+
 PROC  SM_OPL_STARTMARKER_
 PUBLIC  SM_OPL_STARTMARKER_
 
 ENDP
 
 
-ENDP
-	
+_OPLchannels:
+db 9
+_OPL3mode:
+db 0
+_lastfreechannel:
+db 0FFh
+
+
+_op_num:
+db 000h, 001h, 002h, 008h, 009h, 00Ah, 010h, 011h, 012h
+
+
+_noteVolumetable:
+db	  0,   1,   3,   5,   6,   8,  10,  11
+db	 13,  14,  16,  17,  19,  20,  22,  23
+db	 25,  26,  27,  29,  30,  32,  33,  34
+db	 36,  37,  39,  41,  43,  45,  47,  49
+db	 50,  52,  54,  55,  57,  59,  60,  61
+db	 63,  64,  66,  67,  68,  69,  71,  72
+db	 73,  74,  75,  76,  77,  79,  80,  81
+db	 82,  83,  84,  84,  85,  86,  87,  88
+db	 89,  90,  91,  92,  92,  93,  94,  95
+db	 96,  96,  97,  98,  99,  99, 100, 101
+db	101, 102, 103, 103, 104, 105, 105, 106
+db	107, 107, 108, 109, 109, 110, 110, 111
+db	112, 112, 113, 113, 114, 114, 115, 115
+db	116, 117, 117, 118, 118, 119, 119, 120
+db	120, 121, 121, 122, 122, 123, 123, 123
+db	124, 124, 125, 125, 126, 126, 127, 127
+
+; for low 7 notes
+_freqtable:
+dw	345, 365, 387, 410, 435, 460, 488
+; for the rest.
+_freqtable2:
+dw	517, 547, 580, 615, 651, 690, 731, 774, 820, 869, 921, 975
+
+; todo compress more?
+_pitchwheeltable:
+db	14,14,14,14,14,14,14,14,14,14,13,13,13,13,13,13
+db	13,13,13,12,12,12,12,12,12,12,12,12,12,11,11,11
+db	11,11,11,11,11,11,10,10,10,10,10,10,10,10,10,10
+db	9,9,9,9,9,9,9,9,9,8,8,8,8,8,8,8
+db	8,8,7,7,7,7,7,7,7,7,7,6,6,6,6,6
+db	6,6,6,6,5,5,5,5,5,5,5,5,5,4,4,4
+db	4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,2
+db	2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1
+db	0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,-1
+db	-1,-1,-2,-2,-2,-2,-2,-2,-2,-2,-3,-3,-3,-3,-3,-3
+db	-3,-3,-3,-4,-4,-4,-4,-4,-4,-4,-4,-5,-5,-5,-5,-5
+db	-5,-5,-5,-6,-6,-6,-6,-6,-6,-6,-6,-7,-7,-7,-7,-7
+db	-7,-7,-7,-7,-8,-8,-8,-8,-8,-8,-8,-8,-9,-9,-9,-9
+db	-9,-9,-9,-9,-10,-10,-10,-10,-10,-10,-10,-10,-11,-11,-11,-11
+db	-11,-11,-11,-11,-12,-12,-12,-12,-12,-12,-12,-12,-13,-13,-13,-13
+db	-13,-13,-13,-14,-14,-14,-14,-14,-14,-14,-14,-15,-15,-15,-15,-15
+
+_OPL2driverdata:
+; channelinstr
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+; channelvolume
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+; channellastvolume
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+; channelpan
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+; channelpitch
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+; channelsustain
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+; channelmodulation
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+
+
+
+
+
 COMMENT @    
 PROC  logwrite_ NEAR
 PUBLIC  logwrite_
@@ -95,7 +160,7 @@ PUBLIC  OPLwriteReg_
 push  bx
 push  cx
 mov   bl, dl
-cmp   byte ptr ds:[_OPL3mode], 0
+cmp   byte ptr cs:[_OPL3mode], 0
 je    do_opl2_writereg
 do_opl3_writereg:
 mov   dx, ADLIB_PORT
@@ -154,7 +219,7 @@ sub   dl, 9
 channel_below_9:
 xor   dh, dh
 mov   si, dx
-mov   al, byte ptr ds:[si + _op_num]
+mov   al, byte ptr cs:[si + _op_num]
 xor   ah, ah
 mov   dx, ax
 mov   al, byte ptr [bp - 4]
@@ -232,7 +297,7 @@ mov   al, ah
 and   al, 07Fh
 cbw  
 mov   bx, ax
-mov   al, byte ptr ds:[bx + _noteVolumetable]
+mov   al, byte ptr cs:[bx + _noteVolumetable]
 mov   ah, dl
 mul   ah
 mov   dx, ax
@@ -451,14 +516,14 @@ ENDP
 PROC  OPLinit_ NEAR
 PUBLIC  OPLinit_
 
-mov   byte ptr ds:[_OPL3mode], al
+mov   byte ptr cs:[_OPL3mode], al
 test  al, al
 je    oplinit_opl2
 
 oplinit_opl3:
 mov   dx, 1
 mov   ax, 0105h      ; enable YMF262/OPL3 mode
-mov   byte ptr ds:[_OPLchannels], 18
+mov   byte ptr cs:[_OPLchannels], 18
 call  OPLwriteReg_
 mov   ax, 0104h      ; disable 4-operator mode
 xor   dx, dx
@@ -466,7 +531,7 @@ call  OPLwriteReg_
 jmp   finish_opl_init
 
 oplinit_opl2:
-mov   byte ptr ds:[_OPLchannels], 9
+mov   byte ptr cs:[_OPLchannels], 9
 finish_opl_init:
 mov   dx, REGISTER_MODULATOR
 mov   ax, 1
@@ -494,7 +559,7 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 mov   byte ptr [bp - 2], 0
-cmp   byte ptr ds:[_OPLchannels], 0
+cmp   byte ptr cs:[_OPLchannels], 0
 jbe   exit_opl_shutup
 mov   di, 03Fh               ; turn off volume
 loop_shutup_next_channel:
@@ -522,7 +587,7 @@ xor   bx, bx
 inc   byte ptr [bp - 2]
 call  OPLwriteValue_
 mov   al, byte ptr [bp - 2]
-cmp   al, byte ptr ds:[_OPLchannels]
+cmp   al, byte ptr cs:[_OPLchannels]
 jb    loop_shutup_next_channel
 exit_opl_shutup:
 LEAVE_MACRO 
@@ -545,7 +610,7 @@ PUBLIC  OPLdeinit_
 
 push  dx
 call  OPLshutup_
-cmp   byte ptr ds:[_OPL3mode], 0
+cmp   byte ptr cs:[_OPL3mode], 0
 jne   de_init_opl3
 de_init_opl2:
 mov   dx, 020h       ; enable Waveform Select
@@ -718,7 +783,7 @@ xor   dh, dh
 mov   si, dx
 add   si, dx
 xor   bl, bl
-mov   si, word ptr ds:[si + _freqtable]
+mov   si, word ptr cs:[si + _freqtable]
 
 freq_and_octave_ready:
 cmp   bh, DEFAULT_PITCH_BEND
@@ -726,7 +791,7 @@ je    skip_pitch_wheel_calculation
 mov   al, bh
 xor   ah, ah
 mov   di, ax
-mov   al, byte ptr ds:[di + _pitchwheeltable]
+mov   al, byte ptr cs:[di + _pitchwheeltable]
 mov   dx, DEFAULT_PITCH_BEND
 cbw  
 sub   dx, ax
@@ -776,7 +841,7 @@ cbw
 mov   si, ax
 add   si, ax
 mov   bl, cl
-mov   si, word ptr ds:[si + _freqtable2]
+mov   si, word ptr cs:[si + _freqtable2]
 jmp   freq_and_octave_ready
 zero_last_bit:
 xor   si, si
@@ -890,7 +955,7 @@ mov   bl, byte ptr [bp - 2]
 mov   es, word ptr [bp - 0Ah]
 xor   bh, bh
 mov   byte ptr es:[si + 2], dl                              ; ch->flags
-cmp   byte ptr ds:[bx + _OPL2driverdata + 060h], MOD_MIN      ; channelModulation
+cmp   byte ptr cs:[bx + _OPL2driverdata + 060h], MOD_MIN      ; channelModulation
 jb    dont_set_vibrato
 or    byte ptr es:[si + 2], CH_VIBRATO
 dont_set_vibrato:
@@ -910,10 +975,10 @@ xor   bh, bh
 
 cmp   al, -1
 je    use_last_volume
-mov   byte ptr ds:[bx + _OPL2driverdata + 020h], al     ; channelLastVolume
+mov   byte ptr cs:[bx + _OPL2driverdata + 020h], al     ; channelLastVolume
 jmp   volume_is_set
 use_last_volume:
-mov   al, byte ptr ds:[bx + _OPL2driverdata + 020h]     ; channelLastVolume
+mov   al, byte ptr cs:[bx + _OPL2driverdata + 020h]     ; channelLastVolume
 volume_is_set:
 
 mov   dl, byte ptr ds:[_snd_MusicVolume]
@@ -921,7 +986,7 @@ mov   byte ptr es:[si + 6], al
 cbw  
 xor   dh, dh
 mov   cx, ax
-mov   al, byte ptr ds:[bx + _OPL2driverdata + 010h]     ; channelVolume
+mov   al, byte ptr cs:[bx + _OPL2driverdata + 010h]     ; channelVolume
 mov   bx, cx
 xor   ah, ah
 call  calcVolumeOPL_
@@ -954,7 +1019,7 @@ mov   byte ptr es:[si + 5], al
 finetune_set:
 mov   bl, byte ptr [bp - 2]
 xor   bh, bh
-mov   al, byte ptr ds:[bx + _OPL2driverdata + 040h]     ; channelpitch
+mov   al, byte ptr cs:[bx + _OPL2driverdata + 040h]     ; channelpitch
 cbw  
 mov   es, word ptr [bp - 0Ah]
 mov   dx, ax
@@ -999,7 +1064,7 @@ mov   dl, byte ptr [bp - 4]
 mov   cx, word ptr [bp - 8]
 xor   bh, bh
 mov   byte ptr [bp - 0Ch], dl
-mov   al, byte ptr ds:[bx + _OPL2driverdata + 030h]     ; channelPan
+mov   al, byte ptr cs:[bx + _OPL2driverdata + 030h]     ; channelPan
 mov   byte ptr [bp - 0Bh], bh
 cbw  
 mov   bx, di
@@ -1104,7 +1169,7 @@ push  dx
 push  si
 mov   bh, al
 xor   bl, bl
-cmp   byte ptr ds:[_OPLchannels], 0
+cmp   byte ptr cs:[_OPLchannels], 0
 jbe   exit_release_sustain
 loop_release_sustain:
 mov   al, bl
@@ -1123,7 +1188,7 @@ xor   dx, dx
 call  releaseChannel_
 skip_release_channel:
 inc   bl
-cmp   bl, byte ptr ds:[_OPLchannels]
+cmp   bl, byte ptr cs:[_OPLchannels]
 jb    loop_release_sustain
 exit_release_sustain:
 pop   si
@@ -1149,18 +1214,18 @@ mov   byte ptr [bp - 2], 0FFh
 mov   di, word ptr ds:[_playingtime]
 mov   dx, word ptr ds:[_playingtime + 2]
 xor   bl, bl
-cmp   byte ptr ds:[_OPLchannels], 0
+cmp   byte ptr cs:[_OPLchannels], 0
 jbe   done_finding_free_channel_loop
 mov   cx, ADLIBCHANNELS_SEGMENT
 loop_search_for_free_channel:
-inc   byte ptr ds:[_lastfreechannel]
-mov   al, byte ptr ds:[_lastfreechannel]
-cmp   al, byte ptr ds:[_OPLchannels]
+inc   byte ptr cs:[_lastfreechannel]
+mov   al, byte ptr cs:[_lastfreechannel]
+cmp   al, byte ptr cs:[_OPLchannels]
 jne   dont_zero_free_channel
 set_free_channel_to_0:
-mov   byte ptr ds:[_lastfreechannel], 0
+mov   byte ptr cs:[_lastfreechannel], 0
 dont_zero_free_channel:
-mov   al, byte ptr ds:[_lastfreechannel]
+mov   al, byte ptr cs:[_lastfreechannel]
 xor   ah, ah
 mov   si, ax
 shl   si, 4
@@ -1169,7 +1234,7 @@ add   si, 2
 test  byte ptr es:[si], CH_FREE
 jne   exit_free_channel
 inc   bl
-cmp   bl, byte ptr ds:[_OPLchannels]
+cmp   bl, byte ptr cs:[_OPLchannels]
 jb    loop_search_for_free_channel
 done_finding_free_channel_loop:
 test  byte ptr [bp - 4], 1
@@ -1198,7 +1263,7 @@ mov   byte ptr [bp - 2], cl
 mov   di, word ptr es:[bx]
 do_next_free_channel_loop:
 inc   cl
-cmp   cl, byte ptr ds:[_OPLchannels]
+cmp   cl, byte ptr cs:[_OPLchannels]
 jb    loop_find_free_channel
 
 test  byte ptr [bp - 4], 2
@@ -1247,7 +1312,7 @@ push  cx
 mov   bx, 1
 mov   cl, al
 shl   bx, cl
-test  word ptr ds:[_playingpercussMask], bx
+test  bh, (PLAYING_PERCUSSION_MASK SHR 8)
 je    not_percussion
 cmp   dl, 35
 jb    return_null_instrument
@@ -1272,7 +1337,7 @@ ret
 not_percussion:
 mov   bl, al
 xor   bh, bh
-mov   bl, byte ptr ds:[bx + _OPL2driverdata + 00h]  ; channelInstr
+mov   bl, byte ptr cs:[bx + _OPL2driverdata + 00h]  ; channelInstr
 jmp   look_up_instrument
 found_instrument:
 xor   ah, ah
@@ -1343,8 +1408,8 @@ mov   cx, ax
 mov   al, byte ptr [bp - 0Ah]
 xor   ah, ah
 call  occupyChannel_
-cmp   byte ptr ds:[_OPLsinglevoice], 0
-jne   exit_play_note
+;cmp   byte ptr ds:[_OPLsinglevoice], 0
+;jne   exit_play_note
 mov   es, di
 cmp   word ptr es:[si], 4
 jne   exit_play_note
@@ -1396,10 +1461,10 @@ mov   bh, dl
 mov   cl, al
 xor   ah, ah
 mov   si, ax
-mov   al, byte ptr [si + _OPL2driverdata + 050h] ; channelSustain
+mov   al, byte ptr cs:[si + _OPL2driverdata + 050h] ; channelSustain
 xor   bl, bl
 mov   byte ptr [bp - 2], al
-cmp   byte ptr ds:[_OPLchannels], 0
+cmp   byte ptr cs:[_OPLchannels], 0
 jbe   exit_release_note
 continue_looping_release_note:
 mov   al, bl
@@ -1420,7 +1485,7 @@ xor   dx, dx
 call  releaseChannel_
 loop_check_next_channel_for_release:
 inc   bl
-cmp   bl, byte ptr ds:[_OPLchannels]
+cmp   bl, byte ptr cs:[_OPLchannels]
 jb    continue_looping_release_note
 exit_release_note:
 LEAVE_MACRO 
@@ -1452,8 +1517,8 @@ mov   byte ptr [bp - 6], al
 xor   bh, bh
 mov   al, byte ptr [bp - 2]
 mov   byte ptr [bp - 4], bh
-mov   byte ptr [bx + _OPL2driverdata + 040h], al ; channelPitch
-cmp   byte ptr ds:[_OPLchannels], 0
+mov   byte ptr cs:[bx + _OPL2driverdata + 040h], al ; channelPitch
+cmp   byte ptr cs:[_OPLchannels], 0
 jbe   exit_pitchwheel
 loop_pitchwheel:
 mov   al, byte ptr [bp - 4]
@@ -1469,7 +1534,7 @@ je    do_adjust_pitch
 check_pitchwheel_loop_for_increment:
 inc   byte ptr [bp - 4]
 mov   al, byte ptr [bp - 4]
-cmp   al, byte ptr ds:[_OPLchannels]
+cmp   al, byte ptr cs:[_OPLchannels]
 jb    loop_pitchwheel
 exit_pitchwheel:
 LEAVE_MACRO 
@@ -1537,7 +1602,7 @@ change_control_instrument:
 mov       bl, al
 xor       bh, bh
 mov       al, byte ptr [bp - 0Ah]
-mov       byte ptr ds:[bx + _OPL2driverdata + 00h], al  ; channelInstr
+mov       byte ptr cs:[bx + _OPL2driverdata + 00h], al  ; channelInstr
 ; fall thru exit
 exit_oplchangecontrol:
 LEAVE_MACRO     
@@ -1549,7 +1614,7 @@ mov       bl, al
 mov       al, byte ptr [bp - 0Ah]
 xor       bh, bh
 mov       byte ptr [bp - 4], dh
-mov       byte ptr ds:[bx + _OPL2driverdata + 060h], al  ; channelModulation
+mov       byte ptr cs:[bx + _OPL2driverdata + 060h], al  ; channelModulation
 loop_modulate_next_channel:
 mov       al, byte ptr [bp - 4]
 xor       ah, ah
@@ -1563,7 +1628,7 @@ je        found_channel_id_match_modulate
 increment_loop_modulate_next_channel:
 inc       byte ptr [bp - 4]
 mov       al, byte ptr [bp - 4]
-cmp       al, byte ptr ds:[_OPLchannels]
+cmp       al, byte ptr cs:[_OPLchannels]
 jae       exit_oplchangecontrol
 jmp       loop_modulate_next_channel
 found_channel_id_match_modulate:
@@ -1601,8 +1666,8 @@ mov       bl, al
 mov       al, byte ptr [bp - 0Ah]
 xor       bh, bh
 mov       byte ptr [bp - 6], dh
-mov       byte ptr [bx + _OPL2driverdata + 010h], al   ; channelVolume
-cmp       byte ptr ds:[_OPLchannels], 0
+mov       byte ptr cs:[bx + _OPL2driverdata + 010h], al   ; channelVolume
+cmp       byte ptr cs:[_OPLchannels], 0
 ja        dont_exit
 jmp       exit_oplchangecontrol      ; todo make jna
 dont_exit:
@@ -1620,7 +1685,7 @@ je        do_change_control_volume
 increment_change_control_volume:
 inc       byte ptr [bp - 6]
 mov       al, byte ptr [bp - 6]
-cmp       al, byte ptr ds:[_OPLchannels]
+cmp       al, byte ptr cs:[_OPLchannels]
 jb        loop_change_control_volume
 jmp       exit_oplchangecontrol
 do_change_control_volume:
@@ -1651,8 +1716,8 @@ mov       bl, al
 mov       al, byte ptr [bp - 0Ah]
 xor       bh, bh
 mov       byte ptr [bp - 8], dh
-mov       byte ptr [bx + _OPL2driverdata + 030h], al ; channelPan
-cmp       byte ptr ds:[_OPLchannels], 0
+mov       byte ptr cs:[bx + _OPL2driverdata + 030h], al ; channelPan
+cmp       byte ptr cs:[_OPLchannels], 0
 ja        dont_exit_change_control_pan
 jmp       exit_oplchangecontrol
 dont_exit_change_control_pan:
@@ -1670,7 +1735,7 @@ je        do_change_control_pan
 increment_change_control_pan_loop:
 inc       byte ptr [bp - 8]
 mov       al, byte ptr [bp - 8]
-cmp       al, byte ptr ds:[_OPLchannels]
+cmp       al, byte ptr cs:[_OPLchannels]
 jb        loop_change_control_pan
 jmp       exit_oplchangecontrol
 do_change_control_pan:
@@ -1691,7 +1756,7 @@ change_control_sustain:
 mov       bl, al
 xor       bh, bh
 mov       al, byte ptr [bp - 0Ah]
-mov       byte ptr [bx + _OPL2driverdata + 050h], al   ; channelSustain
+mov       byte ptr cs:[bx + _OPL2driverdata + 050h], al   ; channelSustain
 cmp       al, 040h       ; todo this value
 jae       exit_oplchangecontrol2
 mov       ax, bx
@@ -1715,10 +1780,10 @@ xor       al, al
 loop_next_music_channel:
 mov       bl, al
 xor       bh, bh
-mov       byte ptr [bx + _OPL2driverdata + 010h], 07Fh   ; channelVolume
-mov       byte ptr [bx + _OPL2driverdata + 020h], bh     ; channelLastVolume
+mov       byte ptr cs:[bx + _OPL2driverdata + 010h], 07Fh   ; channelVolume
+mov       byte ptr cs:[bx + _OPL2driverdata + 020h], bh     ; channelLastVolume
 inc       al
-mov       byte ptr [bx + _OPL2driverdata + 050h], bh ; channelSustain
+mov       byte ptr cs:[bx + _OPL2driverdata + 050h], bh ; channelSustain
 cmp       al, MAX_MUSIC_CHANNELS
 jb        loop_next_music_channel
 pop       bx
@@ -1734,7 +1799,7 @@ push      bx
 push      dx
 push      si
 xor       bl, bl
-cmp       byte ptr ds:[_OPLchannels], 0
+cmp       byte ptr cs:[_OPLchannels], 0
 jbe       exit_stop_music
 loop_stop_music:
 mov       al, bl
@@ -1750,7 +1815,7 @@ mov       dx, -1
 call      releaseChannel_
 increment_loop_stop_music:
 inc       bl
-cmp       bl, byte ptr ds:[_OPLchannels]
+cmp       bl, byte ptr cs:[_OPLchannels]
 jb        loop_stop_music
 exit_stop_music:
 pop       si
@@ -1792,7 +1857,7 @@ xor       ah, ah
 mov       dl, byte ptr [bp - 2]
 add       di, ax
 xor       dh, dh
-mov       al, byte ptr [di]
+mov       al, byte ptr cs:[di]
 call      calcVolumeOPL_
 mov       es, cx
 mov       byte ptr es:[si + 7], al
@@ -1808,7 +1873,7 @@ call      OPLwriteVolume_
 increment_loop_change_system_volume:
 inc       byte ptr [bp - 4]
 mov       al, byte ptr [bp - 4]
-cmp       al, byte ptr ds:[_OPLchannels]
+cmp       al, byte ptr cs:[_OPLchannels]
 jb        loop_change_system_volume
 
 LEAVE_MACRO     
@@ -1845,7 +1910,7 @@ mov       bx, 4
 mov       ax, ADLIBCHANNELS_SEGMENT
 mov       es, ax
 
-mov       cl, byte ptr ds:[_OPLchannels]
+mov       cl, byte ptr cs:[_OPLchannels]
 
 loop_init_channel:
 cmp       dx, cx
@@ -1907,8 +1972,8 @@ ENDP
 
 PROC  SM_OPL_ENDMARKER_
 PUBLIC  SM_OPL_ENDMARKER_
-
 ENDP
+
 
 
 END

@@ -740,8 +740,6 @@ void check_is_ultimate(){
 void __far wipe_WipeLoop();
 void __far I_ReadScreen();
 uint16_t   __far  R_CheckTextureNumForName(int8_t *name);
-void SM_OPL_ENDMARKER();
-void SM_OPL_STARTMARKER();
 
 void __far D_DoomMain2(void) {
 	int16_t             p;

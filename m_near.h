@@ -1315,10 +1315,8 @@ extern ticcount_t	nextcleanup;
 
 //extern uint16_t shift4lookup[256];
 
-extern      OPLdata OPL2driverdata;
 extern      driverBlock OPL2driver;
 extern      driverBlock OPL3driver;
-extern      uint8_t OPLsinglevoice;
 
 extern      driverBlock *playingdriver;
 
@@ -1409,7 +1407,6 @@ extern uint16_t 	percussMask;
 extern driverBlock 	MPU401driver;
 extern driverBlock 	SBMIDIdriver;
 
-extern uint8_t lastfreechannel;
 
 
 #endif
