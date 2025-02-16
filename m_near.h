@@ -1275,10 +1275,15 @@ typedef struct  {
 } OP2instrEntry;
 
 typedef struct  {
+	// 00
 	uint8_t	controllers[NUM_CONTROLLERS][MAX_MUSIC_CHANNELS]; // MUS controllers
+	// a0
 	uint8_t	channelLastVolume[MAX_MUSIC_CHANNELS];	// last volume
+	// b0
 	uint8_t	pitchWheel[MAX_MUSIC_CHANNELS];		// pitch wheel value
+	// c0
 	int8_t	realChannels[MAX_MUSIC_CHANNELS];		// real MIDI output channels
+	// d0
 	uint8_t	percussions[128/8];		// bit-map of used percussions
 } MIDIdata;
 
