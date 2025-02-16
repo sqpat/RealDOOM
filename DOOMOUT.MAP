@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/02/15 14:43:21
+Created on:       25/02/15 17:26:16
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -57,7 +57,7 @@ r_setup_TEXT           CODE           AUTO           026c:74a0       00000445
 st_setup_TEXT          CODE           AUTO           026c:78f0       000001fa
 hu_setup_TEXT          CODE           AUTO           026c:7af0       000000c1
 s_sound_TEXT           CODE           AUTO           0a28:0000       0000049b
-SM_OPL_TEXT            CODE           AUTO           0a28:049c       00000cac
+SM_OPL_TEXT            CODE           AUTO           0a28:049c       00000ca8
 sc_midi_TEXT           CODE           AUTO           0a28:1150       0000068a
 sc_sbmid_TEXT          CODE           AUTO           0a28:17e0       000000c6
 sc_mpu_TEXT            CODE           AUTO           0a28:18b0       00000141
@@ -895,48 +895,47 @@ Module: s_sound.obj(C:\REALDOOM\s_sound.c)
 0a28:03b6      S_StartSoundWithParams_
 0a28:03b8      S_UpdateSounds_
 Module: sm_opl.obj(sm_opl.ASM)
-0a28:1145      OPLsendMIDI_
-0a28:1139      OPL3initHardware_
-0a28:1131      OPL2initHardware_
-0a28:0861      OPLpauseMusic_
-0a28:049d*     OPLwriteReg_
-0a28:1083      OPLchangeSystemVolume_
-0a28:1032      OPLplayMusic_
-0a28:07c6*     OPL2detect_
-0a28:085a      OPL2deinitHardware_
-0a28:0dd4      OPLpitchWheel_
-0a28:04d6*     OPLwriteChannel_
-0a28:05b3*     OPLwriteVolume_
-0a28:1141*     OPLdeinitHardware_
-0a28:0d75      OPLreleaseNote_
-0a28:0b13*     releaseChannel_
-0a28:093d*     calcVolumeOPL_
-0a28:1148*     SM_OPL_ENDMARKER_
-0a28:085a      OPL3deinitHardware_
-0a28:06ed*     OPLinit_
-0a28:0959*     occupyChannel_
-0a28:049c*     donothing_
-0a28:078e*     OPLdeinit_
-0a28:0610*     OPLwritePan_
-0a28:10f9      OPLinitDriver_
-0a28:056e*     OPLconvertVolume_
-0a28:0855      OPL2detectHardware_
-0a28:0657*     OPLwriteInstrument_
-0a28:0c85*     getInstrument_
-0a28:0865*     writeFrequency_
+0a28:113d      OPLsendMIDI_
+0a28:1138      OPL3initHardware_
+0a28:1130      OPL2initHardware_
+0a28:0860      OPLpauseMusic_
+0a28:049c*     OPLwriteReg_
+0a28:1082      OPLchangeSystemVolume_
+0a28:1031      OPLplayMusic_
+0a28:07c5*     OPL2detect_
+0a28:0859      OPL2deinitHardware_
+0a28:0dd3      OPLpitchWheel_
+0a28:04d5*     OPLwriteChannel_
+0a28:05b2*     OPLwriteVolume_
+0a28:1140*     OPLdeinitHardware_
+0a28:0d74      OPLreleaseNote_
+0a28:0b12*     releaseChannel_
+0a28:093c*     calcVolumeOPL_
+0a28:1144*     SM_OPL_ENDMARKER_
+0a28:0859      OPL3deinitHardware_
+0a28:06ec*     OPLinit_
+0a28:0958*     occupyChannel_
+0a28:078d*     OPLdeinit_
+0a28:060f*     OPLwritePan_
+0a28:10f8      OPLinitDriver_
+0a28:056d*     OPLconvertVolume_
+0a28:0854      OPL2detectHardware_
+0a28:0656*     OPLwriteInstrument_
+0a28:0c84*     getInstrument_
+0a28:0864*     writeFrequency_
 0a28:049c*     SM_OPL_STARTMARKER_
-0a28:062f*     OPLwriteValue_
-0a28:072b*     OPLshutup_
-0a28:0520*     OPLwriteFreq_
-0a28:0e71      OPLchangeControl_
-0a28:0cce      OPLplayNote_
-0a28:08fc*     writeModulation_
-0a28:0838      OPL3detectHardware_
-0a28:104e      OPLstopMusic_
-0a28:058e*     OPLpanVolume_
-0a28:0bbd*     findFreeChannel_
-0a28:0b80*     releaseSustain_
-0a28:0864      OPLresumeMusic_
+0a28:062e*     OPLwriteValue_
+0a28:072a*     OPLshutup_
+0a28:051f*     OPLwriteFreq_
+0a28:0e70      OPLchangeControl_
+0a28:0ccd      OPLplayNote_
+0a28:08fb*     writeModulation_
+0a28:0837      OPL3detectHardware_
+0a28:104d      OPLstopMusic_
+0a28:058d*     OPLpanVolume_
+0a28:0bbc*     findFreeChannel_
+0a28:0b7f*     releaseSustain_
+0a28:0863      OPLresumeMusic_
 Module: sc_midi.obj(C:\REALDOOM\sc_midi.c)
 0a28:1150*     calcVolume_
 0a28:1164+     stopChannel_
@@ -1622,4 +1621,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00024ef0 (151280.)
 Entry point address: 1db5:2438
-Link time: 00:00.94
+Link time: 00:00.04

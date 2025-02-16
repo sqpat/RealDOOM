@@ -28,11 +28,6 @@
 
 
 
-void donothing(){
-
-}
-
-
 
 
 /* Watcom C */
@@ -521,7 +516,7 @@ OP2instrEntry __far * getInstrument(uint8_t channel, uint8_t note) {
 	instrindex = instrumentlookup[instrnumber];
 
 	if (instrindex == 0xFF){
-		printerror("Bad instrument index %i %i!!\n", instrnumber, instrindex);
+		//printerror("Bad instrument index %i %i!!\n", instrnumber, instrindex);
 		return NULL;
 	}
 	return &AdLibInstrumentList[instrindex];
@@ -534,7 +529,7 @@ void OPLplayNote(uint8_t channel, uint8_t note, int8_t noteVolume){
     OP2instrEntry __far* instr = getInstrument(channel, note);
 
     if (instr == NULL){
-		printerror( "null instrument? %i %i\n", channel, note);
+		//printerror( "null instrument? %i %i\n", channel, note);
 		return;
 	}
 

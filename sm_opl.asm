@@ -39,7 +39,9 @@ EXTRN _noteVolumetable:WORD
 EXTRN _pitchwheeltable:WORD
 EXTRN _OPLsinglevoice:WORD
 
+
 .CODE
+
 
 ADLIB_PORT = 0388h
 
@@ -67,22 +69,24 @@ INSTRUMENTLOOKUP_SEGMENT    = 0CC51h
 
 SIZE_ADLIBCHANNELS          = 0120h
 
-; donothing
-;
-
 PROC  SM_OPL_STARTMARKER_
 PUBLIC  SM_OPL_STARTMARKER_
 
 ENDP
 
 
-	
-PROC  donothing_ FAR
-PUBLIC  donothing_
-
-retf  
-
 ENDP
+	
+COMMENT @    
+PROC  logwrite_ NEAR
+PUBLIC  logwrite_
+pusha
+call  printerfunc_
+popa
+ret
+ENDP
+
+@
 
 
 PROC  OPLwriteReg_ NEAR
@@ -850,6 +854,7 @@ MOD_MIN      = 40
 CH_VIBRATO   = 4
 PERCUSSION_CHANNEL = 15
 FL_FIXED_PITCH = 1
+FL_DOUBLE_VOICE = 4
 
 
 PROC  occupyChannel_ NEAR
@@ -860,7 +865,7 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 0Eh
-mov   di, word ptr [bp + 0Ah]
+mov   di, word ptr [bp + 08h]
 mov   byte ptr [bp - 4], al
 mov   byte ptr [bp - 2], dl
 mov   byte ptr [bp - 6], bl
@@ -874,7 +879,7 @@ mov   ah, byte ptr [bp - 6]
 mov   byte ptr es:[bx], dl
 mov   si, bx
 mov   byte ptr es:[bx + 1], ah
-cmp   byte ptr [bp + 0Eh], 0
+cmp   byte ptr [bp + 0Ch], 0
 jne   set_channel_secondary_flag_on
 xor   dx, dx
 jmp   set_channel_secondary_flag
@@ -922,7 +927,7 @@ xor   ah, ah
 call  calcVolumeOPL_
 mov   es, word ptr [bp - 0Ah]
 mov   byte ptr es:[si + 7], al
-mov   es, word ptr [bp + 0Ch]
+mov   es, word ptr [bp + 0Ah]
 test  byte ptr es:[di], FL_FIXED_PITCH
 jne   set_note_to_instrument_note
 cmp   byte ptr [bp - 2], PERCUSSION_CHANNEL
@@ -933,15 +938,15 @@ set_note_to_instrument_note:
 mov   al, byte ptr es:[di + 3]
 mov   byte ptr [bp - 6], al
 set_note:
-cmp   byte ptr [bp + 0Eh], 0
+cmp   byte ptr [bp + 0Ch], 0
 jne   lookup_instrument_finetune
 use_fixed_pitch:
 mov   es, word ptr [bp - 0Ah]
 mov   byte ptr es:[si + 5], DEFAULT_PITCH_BEND
 jmp   finetune_set
 lookup_instrument_finetune:
-mov   es, word ptr [bp + 0Ch]
-test  byte ptr es:[di], 4
+mov   es, word ptr [bp + 0Ah]
+test  byte ptr es:[di], FL_DOUBLE_VOICE
 je    use_fixed_pitch
 mov   al, byte ptr es:[di + 2]
 mov   es, word ptr [bp - 0Ah]
@@ -957,13 +962,13 @@ mov   al, byte ptr es:[si + 5]
 cbw  
 add   ax, dx
 mov   byte ptr es:[si + 4], al
-cmp   byte ptr [bp + 0Eh], 0
+cmp   byte ptr [bp + 0Ch], 0
 jne   use_secondary
-mov   ax, word ptr [bp + 0Ch]    ; todo commonize this with below
+mov   ax, word ptr [bp + 0Ah]    ; todo commonize this with below
 add   di, 4
 jmp   instr_set
 use_secondary:
-mov   ax, word ptr [bp + 0Ch]
+mov   ax, word ptr [bp + 0Ah]
 add   di, 014h
 instr_set:
 mov   word ptr [bp - 8], ax
@@ -1298,6 +1303,8 @@ call  getInstrument_        ; todo inline. used once.
 mov   si, ax
 mov   di, dx
 test  dx, dx
+
+; todo clean this null check up
 jne   instr_not_null
 test  ax, ax
 je    instr_is_null_dont_play
@@ -1328,12 +1335,12 @@ mov   al, byte ptr [bp - 6]
 mov   bl, byte ptr [bp - 4]
 mov   dl, byte ptr [bp - 2]
 push  di
+push  si
 cbw  
 xor   bh, bh
 xor   dh, dh
 mov   cx, ax
 mov   al, byte ptr [bp - 0Ah]
-push  si
 xor   ah, ah
 call  occupyChannel_
 cmp   byte ptr ds:[_OPLsinglevoice], 0
@@ -1356,12 +1363,12 @@ mov   al, byte ptr [bp - 6]
 mov   bl, byte ptr [bp - 4]
 mov   dl, byte ptr [bp - 2]
 push  di
+push  si
 cbw  
 xor   bh, bh
 xor   dh, dh
 mov   cx, ax
 mov   al, byte ptr [bp - 8]
-push  si
 xor   ah, ah
 call  occupyChannel_
 LEAVE_MACRO 

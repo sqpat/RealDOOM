@@ -83,33 +83,6 @@ typedef struct  {
 #define OP2INSTRCOUNT	(128 + 81-35+1)	// instrument count
 
 
-#define BT_EMPTY	0
-#define BT_CONV		1		// conventional memory buffer
-#define BT_EMS		2		// EMS memory buffer
-#define BT_XMS		3		// XMS memory buffer
- 
-
-
- 
-#define TIMER_CNT18_2	0		// INT 08h: system timer (18.2 Hz)
-#define TIMER_CNT140	1		// INT 08h: system timer (140 Hz)
-#define TIMER_RTC1024	2		// INT 70h: RTC periodic interrupt (1024 Hz)
-#define TIMER_RTC512	3		// RTC: 512 Hz
-#define TIMER_RTC256	4		// RTC: 256 Hz
-#define TIMER_RTC128	5		// RTC: 128 Hz
-#define TIMER_RTC64	6		// RTC: 64 Hz
-
-#define TIMER_MIN	TIMER_CNT18_2
-#define TIMER_MAX	TIMER_RTC64
- 
-
-
- 
-
-
-
-
-
 
 
 uint8_t 	OPLwriteReg(uint16_t reg, uint8_t data);
@@ -136,30 +109,6 @@ int16_t		OPL3detect(uint16_t port);
 #define MIDI_PITCH_WHEEL 0xE0	// pitch wheel,   <bottom>, <top 7 bits>
 #define MIDI_EVENT_MASK	0xF0	// value to mask out the event number, not a command!
 
-/* the following events contain no channel number */
-#define MIDI_SYSEX	0xF0	// start of System Exclusive sequence
-#define MIDI_SYSEX2	0xF7	// System Exclusive sequence continue
-#define MIDI_TIMING	0xF8	// timing clock used when synchronization
-				// is required
-#define MIDI_START	0xFA	// start current sequence
-#define MIDI_CONTINUE	0xFB	// continue a stopped sequence
-#define MIDI_STOP	0xFC	// stop a sequence
-
-
-
-void donothing();
-
-#ifdef showerrors
-	#define printerror printf
-#else
-	#define printerror(...) donothing
-#endif
-
-#ifdef showmessages
-	#define printmessage printf
-#else
-	#define printmessage(...) donothing
-#endif
 
 
 #endif
