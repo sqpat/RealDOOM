@@ -93,17 +93,6 @@ void S_SetMusicVolume(uint8_t volume) {
 }
 
 
-void S_StopMusic(void) {
-    if (mus_playing) {
-        if (mus_paused){
-            I_ResumeSong();
-		}
-
-        I_StopSong();
-        mus_playing = mus_None;
-    }
-}
-
 void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
 
 	
@@ -115,9 +104,7 @@ void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
     }
 
     if ( (musicnum == mus_None) || (musicnum >= NUMMUSIC) ) {
-		#ifdef CHECK_FOR_ERRORS
-			I_Error("Bad music number %d", musicnum);
-		#endif
+		return; // bad music number?
     } else {
 		music = &S_music[musicnum];
 	}	
@@ -127,8 +114,15 @@ void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
 	}
 
     // shutdown old music
-    S_StopMusic();
-
+    if (mus_playing) {
+		playingstate = ST_STOPPED;
+			// todo signal driver pause?
+			if (playingdriver){
+				playingdriver->stopMusic();
+			}      
+		mus_playing = mus_None;
+    }
+	
 	// todo use music->name
 	//combine_strings(namebuf, "d", music->name);
 	combine_strings(namebuf, "d_", "e1m1");
@@ -145,8 +139,11 @@ void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
     mus_playing = musicnum;
 
     // play it
-    I_PlaySong(looping);
-
+    playingstate = ST_PLAYING;
+    loops_enabled = true;
+    if (playingdriver){
+        playingdriver->stopMusic();
+    }
 
 	
 }

@@ -56,9 +56,6 @@ void SFX_SetOrigin(int16_t handle, int16_t  pitch, int16_t sep, int16_t vol){
 
 
 void I_StartupTimer(void) {
-
-	void I_TimerISR(void);
-
 	DEBUG_PRINT("I_StartupTimer()\n");
 	// installs master timer.  Must be done before StartupTimer()!
 	TS_ScheduleMainTask();
@@ -162,24 +159,6 @@ int16_t I_LoadSong(uint16_t lump) {
 	
 }
 
-
-
-void I_StopSong() {
-    playingstate = ST_STOPPED;
-    // todo signal driver pause?
-    if (playingdriver){
-        playingdriver->stopMusic();
-    }
-}
-
-void I_PlaySong(boolean looping) {
-    playingstate = ST_PLAYING;
-    loops_enabled = true;
-    if (playingdriver){
-        playingdriver->stopMusic();
-    }
-
-}
 
 //
 // Retrieve the raw data lump index

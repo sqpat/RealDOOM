@@ -72,16 +72,13 @@ int16_t I_LoadSong(uint16_t lump);
 // MUS format.  Returns a handle which will be passed to all other music
 // functions.
 
-void I_LoopSong();
 // called by anything that wishes to start music.
 // plays a song, and when the song is done, starts playing it again in
 // an endless loop.  the start is faded in over three seconds.
 
-void I_StopSong();
 // called by anything that wishes to stop music.
 // stops a song abruptly.
 void I_ResumeSong();
-void I_PlaySong(boolean looping);
 void I_PauseSong();
 void I_ResumeSong();
 
