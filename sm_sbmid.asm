@@ -131,7 +131,6 @@ PUBLIC  SM_SBMID_STARTMARKER_
 ENDP
 
 PROC  calcVolume_   NEAR
-PUBLIC  calcVolume_
 
 
 shl       ax, 2
@@ -149,7 +148,6 @@ ret
 ENDP
 
 PROC  stopChannel_    NEAR
-PUBLIC  stopChannel_
 
 
 push      bx
@@ -179,7 +177,6 @@ ret
 ENDP
 
 PROC  findFreeMIDIChannel_  NEAR
-PUBLIC  findFreeMIDIChannel_
 
 push      bx
 push      cx
@@ -282,7 +279,6 @@ ret
 ENDP
 
 PROC  updateControllers_    NEAR
-PUBLIC  updateControllers_
 
 push      bx
 push      cx

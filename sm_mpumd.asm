@@ -28,7 +28,7 @@ EXTRN _playingtime:DWORD
 EXTRN _playingdriver:DWORD
 EXTRN _snd_MusicVolume:BYTE
 EXTRN _playingstate:BYTE
-EXTRN _SBMIDIport:WORD
+EXTRN _MPU401port:WORD
 EXTRN _MUS2MIDIctrl:BYTE
 EXTRN _runningStatus:BYTE
 
@@ -125,14 +125,12 @@ MIDI_READ_IRQ	    = 031h
 MIDI_WRITE_POLL     = 038h
 
 
-PROC  SM_SBMID_STARTMARKER_
-PUBLIC  SM_SBMID_STARTMARKER_
+PROC  SM_SBMPU_STARTMARKER_
+PUBLIC  SM_SBMPU_STARTMARKER_
 
 ENDP
 
 PROC  calcVolume_   NEAR
-PUBLIC  calcVolume_
-
 
 shl       ax, 2
 xor       dh, dh
@@ -149,8 +147,6 @@ ret
 ENDP
 
 PROC  stopChannel_    NEAR
-PUBLIC  stopChannel_
-
 
 push      bx
 push      cx
@@ -179,7 +175,6 @@ ret
 ENDP
 
 PROC  findFreeMIDIChannel_  NEAR
-PUBLIC  findFreeMIDIChannel_
 
 push      bx
 push      cx
@@ -282,7 +277,6 @@ ret
 ENDP
 
 PROC  updateControllers_    NEAR
-PUBLIC  updateControllers_
 
 push      bx
 push      cx
@@ -856,6 +850,7 @@ xor       ah, ah
 call      stopChannel_
 jmp       inc_loop_stop_channels
 
+ENDP
 
 PROC MIDIchangeSystemVolume_  FAR
 PUBLIC MIDIchangeSystemVolume_
@@ -969,50 +964,50 @@ PROC  MPU401sendByte_   NEAR
 PUBLIC  MPU401sendByte_
 
 
-0x0000000000000000:  53                push  bx
-0x0000000000000001:  51                push  cx
-0x0000000000000002:  52                push  dx
-0x0000000000000003:  55                push  bp
-0x0000000000000004:  89 E5             mov   bp, sp
-0x0000000000000006:  83 EC 02          sub   sp, 2
-0x0000000000000009:  88 46 FE          mov   byte ptr [bp - 2], al
-0x000000000000000c:  8B 1E AE 0D       mov   bx, word ptr [_MPU401port]
-0x0000000000000010:  B9 10 27          mov   cx, 10000      ; timeout
-0x0000000000000013:  43                inc   bx
+push  bx
+push  cx
+push  dx
+push  bp
+mov   bp, sp
+sub   sp, 2
+mov   byte ptr [bp - 2], al
+mov   bx, word ptr [_MPU401port]
+mov   cx, 10000      ; timeout
+inc   bx
 mpu_is_not_empty:
-0x0000000000000014:  89 DA             mov   dx, bx
-0x0000000000000016:  EC                in    al, dx
-0x0000000000000017:  2A E4             sub   ah, ah
-0x0000000000000019:  A8 40             test  al, MPU401_BUSY
-0x000000000000001b:  74 1E             je    mpu_is_busy
-0x000000000000001d:  A8 80             test  al, MPU401_EMPTY
-0x000000000000001f:  75 F3             jne   mpu_is_not_empty
-0x0000000000000021:  FB                sti   
-0x0000000000000023:  B0 64             mov   al, 100
+mov   dx, bx
+in    al, dx
+sub   ah, ah
+test  al, MPU401_BUSY
+je    mpu_is_busy
+test  al, MPU401_EMPTY
+jne   mpu_is_not_empty
+sti   
+mov   al, 100
 loop_mpu_delay:
-0x0000000000000026:  FE C8             dec   al
-0x0000000000000028:  75 FC             jne   loop_mpu_delay
-0x000000000000002a:  8B 16 AE 0D       mov   dx, word ptr [_MPU401port]
-0x000000000000002e:  EC                in    al, dx
-0x000000000000002f:  2A E4             sub   ah, ah
-0x0000000000000031:  49                dec   cx
-0x0000000000000032:  75 E0             jne   mpu_is_not_empty
-0x0000000000000034:  B0 FF             mov   al, -1
-0x0000000000000036:  C9                LEAVE_MACRO 
-0x0000000000000037:  5A                pop   dx
-0x0000000000000038:  59                pop   cx
-0x0000000000000039:  5B                pop   bx
-0x000000000000003a:  CB                ret
+dec   al
+jne   loop_mpu_delay
+mov   dx, word ptr [_MPU401port]
+in    al, dx
+sub   ah, ah
+dec   cx
+jne   mpu_is_not_empty
+mov   al, -1
+LEAVE_MACRO 
+pop   dx
+pop   cx
+pop   bx
+ret
 mpu_is_busy:
-0x000000000000003b:  8A 46 FE          mov   al, byte ptr [bp - 2]
-0x000000000000003e:  8B 16 AE 0D       mov   dx, word ptr [_MPU401port]
-0x0000000000000042:  EE                out   dx, al
-0x0000000000000043:  30 C0             xor   al, al
-0x0000000000000045:  C9                LEAVE_MACRO 
-0x0000000000000046:  5A                pop   dx
-0x0000000000000047:  59                pop   cx
-0x0000000000000048:  5B                pop   bx
-0x0000000000000049:  CB                ret
+mov   al, byte ptr [bp - 2]
+mov   dx, word ptr [_MPU401port]
+out   dx, al
+xor   al, al
+LEAVE_MACRO 
+pop   dx
+pop   cx
+pop   bx
+ret
 
 ENDP
 
@@ -1022,25 +1017,25 @@ PROC  MPU401sendBlock_    FAR
 PUBLIC  MPU401sendBlock_
 
 
-0x000000000000004a:  53                push  bx
-0x000000000000004b:  89 C3             mov   bx, ax
-0x000000000000004d:  C6 06 AC 0D 00    mov   byte ptr [_runningStatus], 0
-0x0000000000000052:  FA                cli   
+push  bx
+mov   bx, ax
+mov   byte ptr [_runningStatus], 0
+cli   
 loop_send_next_mpu_byte:
-0x0000000000000053:  4A                dec   dx
-0x0000000000000054:  83 FA FF          cmp   dx, -1
-0x0000000000000057:  75 06             jne   do_send_block
-0x0000000000000059:  FB                sti   
-0x000000000000005a:  FC                cld   
-0x000000000000005b:  30 C0             xor   al, al
-0x000000000000005d:  5B                pop   bx
-0x000000000000005e:  CB                retf  
+dec   dx
+cmp   dx, -1
+jne   do_send_block
+sti   
+cld   
+xor   al, al
+pop   bx
+retf  
 do_send_block:
-0x000000000000005f:  8A 07             mov   al, byte ptr [bx]
-0x0000000000000061:  30 E4             xor   ah, ah
-0x0000000000000063:  43                inc   bx
-0x0000000000000065:  E8 98 FF          call  MPU401sendByte_
-0x0000000000000068:  EB E9             jmp   loop_send_next_mpu_byte
+mov   al, byte ptr [bx]
+xor   ah, ah
+inc   bx
+call  MPU401sendByte_
+jmp   loop_send_next_mpu_byte
 
 
 ENDP
@@ -1050,16 +1045,16 @@ PROC  MPU401reset_    NEAR
 PUBLIC  MPU401reset_
 
 
-0x0000000000000094:  B8 FF 00          mov   ax, MPU401_RESET
-0x0000000000000097:  C6 06 AC 0D 00    mov   byte ptr [_runningStatus], 0
+mov   ax, MPU401_RESET
+mov   byte ptr [_runningStatus], 0
 
-0x000000000000009d:  E8 72 00          call  MPU401sendCommand_
-0x00000000000000a0:  84 C0             test  al, al
-0x00000000000000a2:  75 02             jne   do_second_trial
-0x00000000000000a4:  CB                ret  
+call  MPU401sendCommand_
+test  al, al
+jne   do_second_trial
+ret  
 do_second_trial:
-0x00000000000000a6:  B8 FF 00          mov   ax, MPU401_RESET
-0x00000000000000a9:  EB 67             jmp   MPU401sendCommand_
+mov   ax, MPU401_RESET
+jmp   MPU401sendCommand_
 
 ENDP
 
@@ -1068,52 +1063,52 @@ PROC  MPU401sendMIDI_    FAR
 PUBLIC  MPU401sendMIDI_
 
 
-0x00000000000000ac:  88 D6             mov   dh, dl
-0x00000000000000ae:  88 C2             mov   dl, al
-0x00000000000000b0:  80 E2 F0          and   dl, MIDI_EVENT_MASK
-0x00000000000000b3:  80 FA 80          cmp   dl, MIDI_NOTE_OFF
-0x00000000000000b6:  75 06             jne   not_midi_note_off_mpu
-0x00000000000000b8:  24 0F             and   al, 0Fh
-0x00000000000000ba:  30 DB             xor   bl, bl
-0x00000000000000bc:  0C 90             or    al, MIDI_NOTE_ON
+mov   dh, dl
+mov   dl, al
+and   dl, MIDI_EVENT_MASK
+cmp   dl, MIDI_NOTE_OFF
+jne   not_midi_note_off_mpu
+and   al, 0Fh
+xor   bl, bl
+or    al, MIDI_NOTE_ON
 not_midi_note_off_mpu:
-0x00000000000000be:  FA                cli   
-0x00000000000000bf:  3A 06 AC 0D       cmp   al, byte ptr [_runningStatus]
-0x00000000000000c3:  74 09             je    skip_send_byte_mpu
-0x00000000000000c5:  A2 AC 0D          mov   byte ptr [_runningStatus], al
-0x00000000000000c8:  30 E4             xor   ah, ah
+cli   
+cmp   al, byte ptr [_runningStatus]
+je    skip_send_byte_mpu
+mov   byte ptr [_runningStatus], al
+xor   ah, ah
 
-0x00000000000000cb:  E8 32 FF          call  MPU401sendByte_
+call  MPU401sendByte_
 skip_send_byte_mpu:
-0x00000000000000ce:  88 F0             mov   al, dh
-0x00000000000000d0:  30 E4             xor   ah, ah
+mov   al, dh
+xor   ah, ah
 
-0x00000000000000d3:  E8 2A FF          call  MPU401sendByte_
-0x00000000000000d6:  80 FA C0          cmp   dl, MIDI_PATCH
-0x00000000000000d9:  74 0D             je    skip_send_byte_mpu_2
-0x00000000000000db:  80 FA D0          cmp   dl, MIDI_CHAN_TOUCH
-0x00000000000000de:  74 08             je    skip_send_byte_mpu_2
-0x00000000000000e0:  30 FF             xor   bh, bh
-0x00000000000000e2:  89 D8             mov   ax, bx
+call  MPU401sendByte_
+cmp   dl, MIDI_PATCH
+je    skip_send_byte_mpu_2
+cmp   dl, MIDI_CHAN_TOUCH
+je    skip_send_byte_mpu_2
+xor   bh, bh
+mov   ax, bx
 
-0x00000000000000e5:  E8 18 FF          call  MPU401sendByte_
+call  MPU401sendByte_
 skip_send_byte_mpu_2:
-0x00000000000000e8:  FB                sti   
-0x00000000000000ea:  30 C0             xor   al, al
-0x00000000000000ec:  CB                retf  
+sti   
+xor   al, al
+retf  
 
 ENDP
 
 PROC  MPU401detectHardware_    FAR
 PUBLIC  MPU401detectHardware_
 
-0x00000000000000ee:  8B 16 AE 0D       mov   dx, word ptr [_MPU401port]
-0x00000000000000f2:  A3 AE 0D          mov   word ptr [_MPU401port], ax
+mov   dx, word ptr [_MPU401port]
+mov   word ptr [_MPU401port], ax
 
-0x00000000000000f6:  E8 9B FF          call  MPU401reset_
-0x00000000000000f9:  FE C0             inc   al
-0x00000000000000fb:  89 16 AE 0D       mov   word ptr [_MPU401port], dx
-0x00000000000000ff:  CB                retf  
+call  MPU401reset_
+inc   al
+mov   word ptr [_MPU401port], dx
+retf  
 
 ENDP
 
@@ -1121,92 +1116,99 @@ PROC  MPU401initHardware_    FAR
 PUBLIC  MPU401initHardware_
 
 
-0x0000000000000100:  A3 AE 0D          mov   word ptr [_MPU401port], ax
+mov   word ptr [_MPU401port], ax
 
-0x0000000000000104:  E8 8D FF          call  MPU401reset_
-0x0000000000000107:  84 C0             test  al, al
-0x0000000000000109:  74 03             je    set_uart_mode
-0x000000000000010b:  B0 FF             mov   al, -1
-0x000000000000010d:  CB                retf  
+call  MPU401reset_
+test  al, al
+je    set_uart_mode
+mov   al, -1
+retf  
 set_uart_mode:
-0x000000000000010e:  B8 3F 00          mov   ax, MPU401_SET_UART
-0x000000000000010e:  B8 3F 00          call  MPU401sendCommand_
-0x000000000000010d:  CB                retf  
+mov   ax, MPU401_SET_UART
+call  MPU401sendCommand_
+retf  
 
 ENDP
 
 
 PROC  MPU401deinitHardware_    FAR
 PUBLIC  MPU401deinitHardware_
-0x000000000000010e:  B8 3F 00          mov   ax, MPU401_RESET
-0x000000000000010e:  B8 3F 00          call  MPU401sendCommand_
-0x000000000000010d:  CB                retf  
+mov   ax, MPU401_RESET
+call  MPU401sendCommand_
+retf  
 ENDP
 
 PROC  MPU401sendCommand_    NEAR
 PUBLIC MPU401sendCommand_
 
-0x0000000000000112:  53                push  bx
-0x0000000000000113:  51                push  cx
-0x0000000000000114:  52                push  dx
-0x0000000000000115:  55                push  bp
-0x0000000000000116:  89 E5             mov   bp, sp
-0x0000000000000118:  83 EC 02          sub   sp, 2
-0x000000000000011b:  88 46 FE          mov   byte ptr [bp - 2], al
-0x000000000000011e:  8B 1E AE 0D       mov   bx, word ptr [_MPU401port]
-0x0000000000000122:  C6 06 AC 0D 00    mov   byte ptr [_runningStatus], 0
-0x0000000000000127:  43                inc   bx
-0x0000000000000128:  B9 FF FF          mov   cx, 0FFFFh
-0x000000000000012b:  89 DA             mov   dx, bx
+push  bx
+push  cx
+push  dx
+push  bp
+mov   bp, sp
+sub   sp, 2
+mov   byte ptr [bp - 2], al
+mov   bx, word ptr [_MPU401port]
+mov   byte ptr [_runningStatus], 0
+inc   bx
+mov   cx, 0FFFFh
+mov   dx, bx
 loop_sendcommand:
-0x000000000000012d:  EC                in    al, dx
-0x000000000000012e:  2A E4             sub   ah, ah
-0x0000000000000130:  A8 40             test  al, MPU401_BUSY
-0x0000000000000132:  75 03             jne   inc_loop_send_command
+in    al, dx
+sub   ah, ah
+test  al, MPU401_BUSY
+jne   inc_loop_send_command
 
 
-0x000000000000006a:  8A 46 FE          mov   al, byte ptr [bp - 2]
-0x000000000000006d:  B9 FF FF          mov   cx, 0FFFFh   ; timeout
-0x0000000000000070:  EE                out   dx, al
+mov   al, byte ptr [bp - 2]
+mov   cx, 0FFFFh   ; timeout
+out   dx, al
 loop_wait_on_mpu:
-0x0000000000000071:  89 DA             mov   dx, bx
-0x0000000000000073:  EC                in    al, dx
-0x0000000000000074:  2A E4             sub   ah, ah
-0x0000000000000076:  A8 80             test  al, MPU401_BUSY
-0x0000000000000078:  74 06             je    mpu_is_busy_sendcommand
+mov   dx, bx
+in    al, dx
+sub   ah, ah
+test  al, MPU401_BUSY
+je    mpu_is_busy_sendcommand
 inc_loop_wait_on_mpu:
-0x000000000000007a:  49                dec   cx
-0x000000000000007b:  75 F4             jne   loop_wait_on_mpu
-0x000000000000013a:  B0 FF             mov   al, 0FFh
-0x000000000000013c:  C9                LEAVE_MACRO 
-0x000000000000013d:  5A                pop   dx
-0x000000000000013e:  59                pop   cx
-0x000000000000013f:  5B                pop   bx
-0x0000000000000140:  CB                ret
+dec   cx
+jne   loop_wait_on_mpu
+mov   al, 0FFh
+LEAVE_MACRO 
+pop   dx
+pop   cx
+pop   bx
+ret
 
 mpu_is_busy_sendcommand:
-0x0000000000000080:  8B 16 AE 0D       mov   dx, word ptr [_MPU401port]
-0x0000000000000084:  EC                in    al, dx
-0x0000000000000085:  2A E4             sub   ah, ah
-0x0000000000000087:  3D FE 00          cmp   ax, MPU401_ACK
-0x000000000000008a:  75 EE             jne   inc_loop_wait_on_mpu
-0x000000000000008c:  30 C0             xor   al, al
-0x000000000000008e:  C9                LEAVE_MACRO 
-0x000000000000008f:  5A                pop   dx
-0x0000000000000090:  59                pop   cx
-0x0000000000000091:  5B                pop   bx
-0x0000000000000092:  CB                ret
+mov   dx, word ptr [_MPU401port]
+in    al, dx
+sub   ah, ah
+cmp   ax, MPU401_ACK
+jne   inc_loop_wait_on_mpu
+xor   al, al
+LEAVE_MACRO 
+pop   dx
+pop   cx
+pop   bx
+ret
 
 
 inc_loop_send_command:
-0x0000000000000137:  49                dec   cx
-0x0000000000000138:  75 F3             jne   loop_sendcommand
+dec   cx
+jne   loop_sendcommand
 
-0x000000000000013a:  B0 FF             mov   al, 0FFh
-0x000000000000013c:  C9                LEAVE_MACRO 
-0x000000000000013d:  5A                pop   dx
-0x000000000000013e:  59                pop   cx
-0x000000000000013f:  5B                pop   bx
-0x0000000000000140:  CB                ret
+mov   al, 0FFh
+LEAVE_MACRO 
+pop   dx
+pop   cx
+pop   bx
+ret
 
 ENDP
+
+PROC  SM_SBMPU_ENDMARKER_
+PUBLIC  SM_SBMPU_ENDMARKER_
+
+ENDP
+
+END

@@ -1019,7 +1019,7 @@ Module: sm_sbmid.obj(sm_sbmid.ASM)
 0d08:1781      MIDIpitchWheel_
 0d08:1496*     SM_SBMID_STARTMARKER_
 0d08:1a82*     SBMIDIsendBlock_
-Module: sc_mpu.obj(C:\REALDOOM\sc_mpu.c)
+Module: sm_mpumd.obj(C:\REALDOOM\sc_mpu.c)
 0d08:1af0+     MPU401sendByte_
 0d08:1b3a*     MPU401sendBlock_
 0d08:1b84*     MPU401reset_
