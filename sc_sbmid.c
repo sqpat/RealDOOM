@@ -68,7 +68,8 @@ int8_t SBMIDIsendMIDI(uint8_t command, uint8_t par1, uint8_t par2){
 
     _disable();
     if (runningStatus != command){
-	    SBMIDIsendByte(runningStatus = command);
+	    runningStatus = command;
+        SBMIDIsendByte(runningStatus);
     }
     SBMIDIsendByte(par1);
     if (event != MIDI_PATCH && event != MIDI_CHAN_TOUCH){
