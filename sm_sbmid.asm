@@ -385,8 +385,10 @@ not_volume_control:
 
 
 
+ENDP
 
-
+PROC  MIDIplayNote_    FAR
+PUBLIC  MIDIplayNote_
 
 0x0000000000000200:  51                push      cx
 0x0000000000000201:  56                push      si
@@ -399,19 +401,36 @@ not_volume_control:
 0x000000000000020f:  BA 00 CC          mov       dx, MIDIDRIVERDATA_SEGMENT
 0x0000000000000212:  89 C6             mov       si, ax
 0x0000000000000214:  8E C2             mov       es, dx
-0x0000000000000216:  81 C6 C0 00       add       si, 0xc0
-0x000000000000021a:  26 8A 3C          mov       bh, byte ptr es:[si]
-0x000000000000021d:  89 C6             mov       si, ax
-0x000000000000021f:  81 C6 A0 00       add       si, 0xa0
-0x0000000000000223:  80 FB FF          cmp       bl, 0xff
-0x0000000000000226:  74 03             je        0x22b
-0x0000000000000228:  E9 88 00          jmp       0x2b3
-0x000000000000022b:  26 8A 1C          mov       bl, byte ptr es:[si]
+0x000000000000021a:  26 8A 3C          mov       bh, byte ptr es:[si + MIDIDATA_REALCHANNEL_OFFSET]
+0x0000000000000223:  80 FB FF          cmp       bl, -1
+0x0000000000000226:  74 03             je        use_last_volume
+0x00000000000002b3:  26 88 1C          mov       byte ptr es:[si], bl
+0x00000000000002b6:  E9 75 FF          jmp       got_volume
+go_find_channel:
+0x00000000000002b9:  88 EA             mov       dl, ch
+0x00000000000002bb:  30 F6             xor       dh, dh
+0x00000000000002bd:  89 D0             mov       ax, dx
+0x00000000000002c0:  E8 7F FD          call      findFreeMIDIChannel_
+0x00000000000002c3:  88 C7             mov       bh, al
+0x00000000000002c5:  84 C0             test      al, al
+0x00000000000002c7:  7C E6             jl        exit_playnote
+0x00000000000002c9:  BE 00 CC          mov       si, MIDIDRIVERDATA_SEGMENT
+0x00000000000002cc:  8E C6             mov       es, si
+0x00000000000002ce:  89 D6             mov       si, dx
+0x00000000000002d0:  26 88 84 C0 00    mov       byte ptr es:[si + MIDIDATA_REALCHANNEL_OFFSET], al
+0x00000000000002d5:  89 D0             mov       ax, dx
+0x00000000000002dc:  E8 1D FE          call      updateControllers_
+0x00000000000002df:  E9 53 FF          jmp       channel_positive
+
+use_last_volume:
+0x000000000000022b:  26 8A 1C          mov       bl, byte ptr es:[si+MIDIDATA_LAST_VOLUME_OFFSET]
+got_volume:
 0x000000000000022e:  84 FF             test      bh, bh
-0x0000000000000230:  7D 03             jge       0x235
-0x0000000000000232:  E9 84 00          jmp       0x2b9
-0x0000000000000235:  80 FF 09          cmp       bh, 9
-0x0000000000000238:  75 3F             jne       0x279
+0x0000000000000230:  7D 03             jnge      go_find_channel
+
+channel_positive:
+0x0000000000000235:  80 FF 09          cmp       bh, MIDI_PERC
+0x0000000000000238:  75 3F             jne       play_not_percussion
 0x000000000000023a:  8A 46 FE          mov       al, byte ptr [bp - 2]
 0x000000000000023d:  BA 00 CC          mov       dx, MIDIDRIVERDATA_SEGMENT
 0x0000000000000240:  30 E4             xor       ah, ah
@@ -423,21 +442,22 @@ not_volume_control:
 0x000000000000024d:  C1 FE 03          sar       si, 3
 0x0000000000000250:  D2 E0             shl       al, cl
 0x0000000000000252:  88 E9             mov       cl, ch
-0x0000000000000254:  81 C6 D0 00       add       si, 0xd0
+
 0x0000000000000258:  30 ED             xor       ch, ch
-0x000000000000025a:  26 08 04          or        byte ptr es:[si], al
+0x000000000000025a:  26 08 04          or        byte ptr es:[si+MIDIDATA_PERCUSSIONS_OFFSET], al
 0x000000000000025d:  89 CE             mov       si, cx
-0x000000000000025f:  26 8A 54 30       mov       dl, byte ptr es:[si + 0x30]
-0x0000000000000263:  A0 2B 1F          mov       al, byte ptr [0x1f2b]
+0x000000000000025f:  26 8A 54 30       mov       dl, byte ptr es:[si + CTRLVOLUME * CONTROLLER_DATA_SIZE]
+0x0000000000000263:  A0 2B 1F          mov       al, byte ptr [_snd_MusicVolume]
 0x0000000000000266:  30 F6             xor       dh, dh
-0x0000000000000268:  83 C6 30          add       si, 0x30
+
 
 0x000000000000026c:  E8 91 FD          call      calcVolume_
-0x000000000000026f:  88 DC             mov       ah, bl
-0x0000000000000271:  B2 7F             mov       dl, 0x7f
-0x0000000000000273:  F6 E4             mul       ah
+0x0000000000000273:  F6 E4             mul       bl
+0x0000000000000271:  B2 7F             mov       dl, 127
 0x0000000000000275:  F6 F2             div       dl
 0x0000000000000277:  88 C3             mov       bl, al
+
+play_not_percussion:
 0x0000000000000279:  88 F8             mov       al, bh
 0x000000000000027b:  98                cbw      
 0x000000000000027c:  89 C6             mov       si, ax
@@ -452,35 +472,25 @@ not_volume_control:
 0x0000000000000296:  8A 56 FE          mov       dl, byte ptr [bp - 2]
 0x0000000000000299:  8B 36 9A 0D       mov       si, word ptr [_playingdriver]
 0x000000000000029d:  88 D8             mov       al, bl
-0x000000000000029f:  80 C9 90          or        cl, 0x90
+0x000000000000029f:  80 C9 90          or        cl, MIDI_NOTE_ON
 0x00000000000002a2:  30 E4             xor       ah, ah
 0x00000000000002a4:  30 F6             xor       dh, dh
 0x00000000000002a6:  30 ED             xor       ch, ch
 0x00000000000002a8:  89 C3             mov       bx, ax
 0x00000000000002aa:  89 C8             mov       ax, cx
 0x00000000000002ac:  FF 5C 34          call      dword ptr [si + 034h]
+exit_playnote:
 0x00000000000002af:  C9                LEAVE_MACRO     
 0x00000000000002b0:  5E                pop       si
 0x00000000000002b1:  59                pop       cx
 0x00000000000002b2:  CB                retf      
-0x00000000000002b3:  26 88 1C          mov       byte ptr es:[si], bl
-0x00000000000002b6:  E9 75 FF          jmp       0x22e
-0x00000000000002b9:  88 EA             mov       dl, ch
-0x00000000000002bb:  30 F6             xor       dh, dh
-0x00000000000002bd:  89 D0             mov       ax, dx
 
-0x00000000000002c0:  E8 7F FD          call      findFreeMIDIChannel_
-0x00000000000002c3:  88 C7             mov       bh, al
-0x00000000000002c5:  84 C0             test      al, al
-0x00000000000002c7:  7C E6             jl        0x2af
-0x00000000000002c9:  BE 00 CC          mov       si, MIDIDRIVERDATA_SEGMENT
-0x00000000000002cc:  8E C6             mov       es, si
-0x00000000000002ce:  89 D6             mov       si, dx
-0x00000000000002d0:  26 88 84 C0 00    mov       byte ptr es:[si + 0xc0], al
-0x00000000000002d5:  89 D0             mov       ax, dx
-0x00000000000002d7:  81 C6 C0 00       add       si, 0xc0
-0x00000000000002dc:  E8 1D FE          call      updateControllers_
-0x00000000000002df:  E9 53 FF          jmp       0x235
+
+ENDP
+
+PROC  MIDIplayNote_    FAR
+PUBLIC  MIDIplayNote_
+
 0x00000000000002e2:  53                push      bx
 0x00000000000002e3:  51                push      cx
 0x00000000000002e4:  56                push      si
@@ -489,12 +499,11 @@ not_volume_control:
 0x00000000000002ea:  30 E4             xor       ah, ah
 0x00000000000002ec:  8E C3             mov       es, bx
 0x00000000000002ee:  89 C3             mov       bx, ax
-0x00000000000002f0:  26 8A 97 C0 00    mov       dl, byte ptr es:[bx + 0xc0]
-0x00000000000002f5:  81 C3 C0 00       add       bx, 0xc0
+0x00000000000002f0:  26 8A 97 C0 00    mov       dl, byte ptr es:[bx + MIDIDATA_REALCHANNEL_OFFSET]
 0x00000000000002f9:  84 D2             test      dl, dl
-0x00000000000002fb:  7C 4F             jl        0x34c
-0x00000000000002fd:  80 FA 09          cmp       dl, 9
-0x0000000000000300:  75 19             jne       0x31b
+0x00000000000002fb:  7C 4F             jl        exit_releasenote
+0x00000000000002fd:  80 FA 09          cmp       dl, MIDI_PERC
+0x0000000000000300:  75 19             jne       release_non_percussion
 0x0000000000000302:  88 F0             mov       al, dh
 0x0000000000000304:  88 F1             mov       cl, dh
 0x0000000000000306:  89 C3             mov       bx, ax
@@ -502,9 +511,9 @@ not_volume_control:
 0x000000000000030b:  B0 01             mov       al, 1
 0x000000000000030d:  C1 FB 03          sar       bx, 3
 0x0000000000000310:  D2 E0             shl       al, cl
-0x0000000000000312:  81 C3 D0 00       add       bx, 0xd0
 0x0000000000000316:  F6 D0             not       al
-0x0000000000000318:  26 20 07          and       byte ptr es:[bx], al
+0x0000000000000318:  26 20 07          and       byte ptr es:[bx+MIDIDATA_PERCUSSIONS_OFFSET], al
+release_non_percussion:
 0x000000000000031b:  88 D0             mov       al, dl
 0x000000000000031d:  98                cbw      
 0x000000000000031e:  89 C3             mov       bx, ax
@@ -516,18 +525,26 @@ not_volume_control:
 0x000000000000032f:  26 89 07          mov       word ptr es:[bx], ax
 0x0000000000000332:  8B 36 9A 0D       mov       si, word ptr [_playingdriver]
 0x0000000000000336:  26 89 4F 02       mov       word ptr es:[bx + 2], cx
-0x000000000000033a:  BB 7F 00          mov       bx, 0x7f
+0x000000000000033a:  BB 7F 00          mov       bx, 127
 0x000000000000033d:  88 F1             mov       cl, dh
 0x000000000000033f:  88 D0             mov       al, dl
 0x0000000000000341:  30 ED             xor       ch, ch
-0x0000000000000343:  0C 80             or        al, 0x80
+0x0000000000000343:  0C 80             or        al, MIDI_NOTE_OFF
 0x0000000000000345:  89 CA             mov       dx, cx
 0x0000000000000347:  30 E4             xor       ah, ah
 0x0000000000000349:  FF 5C 34          call      dword ptr [si + 034h]
+exit_releasenote:
 0x000000000000034c:  5E                pop       si
 0x000000000000034d:  59                pop       cx
 0x000000000000034e:  5B                pop       bx
 0x000000000000034f:  CB                retf      
+
+
+ENDP
+
+PROC  MIDIpitchWheel_    FAR
+PUBLIC  MIDIpitchWheel_
+
 0x0000000000000350:  53                push      bx
 0x0000000000000351:  51                push      cx
 0x0000000000000352:  56                push      si
@@ -535,21 +552,19 @@ not_volume_control:
 0x0000000000000355:  88 D0             mov       al, dl
 0x0000000000000357:  30 FF             xor       bh, bh
 0x0000000000000359:  BA 00 CC          mov       dx, MIDIDRIVERDATA_SEGMENT
-0x000000000000035c:  8D B7 C0 00       lea       si, [bx + 0xc0]
 0x0000000000000360:  8E C2             mov       es, dx
-0x0000000000000362:  81 C3 B0 00       add       bx, 0xb0
-0x0000000000000366:  26 8A 14          mov       dl, byte ptr es:[si]
-0x0000000000000369:  26 88 07          mov       byte ptr es:[bx], al
+0x0000000000000366:  26 8A 14          mov       dl, byte ptr es:[bx + MIDIDATA_REALCHANNEL_OFFSET]
+0x0000000000000369:  26 88 07          mov       byte ptr es:[bx + MIDIDATA_PITCH_WHEEL_OFFSET], al
 0x000000000000036c:  84 D2             test      dl, dl
-0x000000000000036e:  7C 47             jl        0x3b7
+0x000000000000036e:  7C 47             jl        exit_pitchwheel
 0x0000000000000370:  88 C3             mov       bl, al
 0x0000000000000372:  30 FF             xor       bh, bh
 0x0000000000000374:  D1 FB             sar       bx, 1
 0x0000000000000376:  88 DE             mov       dh, bl
-0x0000000000000378:  80 E6 7F          and       dh, 0x7f
-0x000000000000037b:  A8 01             test      al, 1
-0x000000000000037d:  74 3C             je        0x3bb
-0x000000000000037f:  B9 80 00          mov       cx, 0x80
+0x0000000000000378:  80 E6 7F          and       dh, 07Fh
+0x000000000000037b:  A8 01             ror       al, 1
+0x000000000000037b:  A8 01             xchg      ax, cx
+0x000000000000037f:  B9 80 00          and       cx, 080h       ; cx gets al low bit ? 080h : 000h
 0x0000000000000382:  88 D0             mov       al, dl
 0x0000000000000384:  98                cbw      
 0x0000000000000385:  89 C3             mov       bx, ax
@@ -565,19 +580,24 @@ not_volume_control:
 0x00000000000003a3:  88 C8             mov       al, cl
 0x00000000000003a5:  88 D1             mov       cl, dl
 0x00000000000003a7:  30 FF             xor       bh, bh
-0x00000000000003a9:  80 C9 E0          or        cl, 0xe0
+0x00000000000003a9:  80 C9 E0          or        cl, MIDI_PITCH_WHEEL
 0x00000000000003ac:  30 E4             xor       ah, ah
 0x00000000000003ae:  30 ED             xor       ch, ch
 0x00000000000003b0:  89 C2             mov       dx, ax
 0x00000000000003b2:  89 C8             mov       ax, cx
 0x00000000000003b4:  FF 5C 34          call      dword ptr [si + 034h]
+exit_pitchwheel:
 0x00000000000003b7:  5E                pop       si
 0x00000000000003b8:  59                pop       cx
 0x00000000000003b9:  5B                pop       bx
 0x00000000000003ba:  CB                retf      
-0x00000000000003bb:  31 C9             xor       cx, cx
-0x00000000000003bd:  EB C3             jmp       0x382
-0x00000000000003bf:  FC                cld       
+
+ENDP
+
+PROC  MIDIchangeControl_    FAR
+PUBLIC  MIDIchangeControl_
+
+
 0x00000000000003c0:  51                push      cx
 0x00000000000003c1:  56                push      si
 0x00000000000003c2:  57                push      di
@@ -590,12 +610,20 @@ not_volume_control:
 0x00000000000003d0:  30 E4             xor       ah, ah
 0x00000000000003d2:  8E C1             mov       es, cx
 0x00000000000003d4:  89 C6             mov       si, ax
-0x00000000000003d6:  26 8A 8C C0 00    mov       cl, byte ptr es:[si + 0xc0]
-0x00000000000003db:  81 C6 C0 00       add       si, 0xc0
-0x00000000000003df:  80 FA 0A          cmp       dl, 0xa
-0x00000000000003e2:  72 66             jb        0x44a
+0x00000000000003d6:  26 8A 8C C0 00    mov       cl, byte ptr es:[si + MIDIDATA_REALCHANNEL_OFFSET]
+0x00000000000003df:  80 FA 0A          cmp       dl, NUM_CONTROLLERS
+0x00000000000003e2:  72 66             jnb       done_recording_controller_value
+record_controller_value:
+0x000000000000044a:  88 56 FE          mov       byte ptr [bp - 2], dl
+0x000000000000044d:  88 66 FF          mov       byte ptr [bp - 1], ah
+0x0000000000000450:  8B 76 FE          mov       si, word ptr [bp - 2]
+0x0000000000000453:  C1 E6 04          shl       si, 4
+0x0000000000000456:  01 C6             add       si, ax
+0x0000000000000458:  26 88 1C          mov       byte ptr es:[si], bl
+
+done_recording_controller_value:
 0x00000000000003e4:  84 C9             test      cl, cl
-0x00000000000003e6:  7C 5D             jl        0x445
+0x00000000000003e6:  7C 5D             jl        exit_changecontrol
 0x00000000000003e8:  88 C8             mov       al, cl
 0x00000000000003ea:  98                cbw      
 0x00000000000003eb:  89 C6             mov       si, ax
@@ -607,24 +635,26 @@ not_volume_control:
 0x00000000000003fc:  26 89 3C          mov       word ptr es:[si], di
 0x00000000000003ff:  26 89 44 02       mov       word ptr es:[si + 2], ax
 0x0000000000000403:  84 FF             test      bh, bh
-0x0000000000000405:  74 56             je        0x45d
-0x0000000000000407:  80 FF 0E          cmp       bh, 0xe
-0x000000000000040a:  77 39             ja        0x445
-0x000000000000040c:  74 61             je        0x46f
-0x000000000000040e:  80 FF 03          cmp       bh, 3
-0x0000000000000411:  75 14             jne       0x427
-0x0000000000000413:  80 F9 09          cmp       cl, 9
-0x0000000000000416:  74 2D             je        0x445
+0x0000000000000405:  74 56             je        do_patch_instrument
+0x0000000000000407:  80 FF 0E          cmp       bh, CTRLRESETCTRLS
+0x000000000000040a:  77 39             ja        exit_changecontrol
+0x000000000000040c:  74 61             je        do_reset_ctrls
+0x000000000000040e:  80 FF 03          cmp       bh, CTRLVOLUME
+0x0000000000000411:  75 14             jne       do_generic_control
+do_volume_control:
+0x0000000000000413:  80 F9 09          cmp       cl, MIDI_PERC
+0x0000000000000416:  74 2D             je        exit_changecontrol
 0x0000000000000418:  88 DA             mov       dl, bl
-0x000000000000041a:  A0 2B 1F          mov       al, byte ptr [0x1f2b]
+0x000000000000041a:  A0 2B 1F          mov       al, byte ptr [_snd_MusicVolume]
 0x000000000000041d:  30 F6             xor       dh, dh
 0x000000000000041f:  30 E4             xor       ah, ah
 0x0000000000000421:  0E                push      cs
 0x0000000000000422:  E8 DB FB          call      calcVolume_
 0x0000000000000425:  88 C3             mov       bl, al
+do_generic_control:
 0x0000000000000427:  8B 36 9A 0D       mov       si, word ptr [_playingdriver]
 0x000000000000042b:  88 D8             mov       al, bl
-0x000000000000042d:  80 C9 B0          or        cl, 0xb0
+0x000000000000042d:  80 C9 B0          or        cl, MIDI_CONTROL
 0x0000000000000430:  88 FB             mov       bl, bh
 0x0000000000000432:  30 E4             xor       ah, ah
 0x0000000000000434:  30 FF             xor       bh, bh
@@ -633,54 +663,46 @@ not_volume_control:
 0x000000000000043c:  89 C3             mov       bx, ax
 0x000000000000043e:  30 F6             xor       dh, dh
 0x0000000000000440:  89 C8             mov       ax, cx
+send_midi_and_exit:
 0x0000000000000442:  FF 5C 34          call      dword ptr [si + 034h]
+exit_changecontrol:
 0x0000000000000445:  C9                LEAVE_MACRO     
 0x0000000000000446:  5F                pop       di
 0x0000000000000447:  5E                pop       si
 0x0000000000000448:  59                pop       cx
 0x0000000000000449:  CB                retf      
-0x000000000000044a:  88 56 FE          mov       byte ptr [bp - 2], dl
-0x000000000000044d:  88 66 FF          mov       byte ptr [bp - 1], ah
-0x0000000000000450:  8B 76 FE          mov       si, word ptr [bp - 2]
-0x0000000000000453:  C1 E6 04          shl       si, 4
-0x0000000000000456:  01 C6             add       si, ax
-0x0000000000000458:  26 88 1C          mov       byte ptr es:[si], bl
-0x000000000000045b:  EB 87             jmp       0x3e4
+
+do_patch_instrument:
 0x000000000000045d:  8B 36 9A 0D       mov       si, word ptr [_playingdriver]
 0x0000000000000461:  88 C8             mov       al, cl
 0x0000000000000463:  88 DA             mov       dl, bl
-0x0000000000000465:  0C C0             or        al, 0xc0
+0x0000000000000465:  0C C0             or        al, MIDI_PATCH
 0x0000000000000467:  30 F6             xor       dh, dh
 0x0000000000000469:  30 DB             xor       bl, bl
 0x000000000000046b:  30 E4             xor       ah, ah
-0x000000000000046d:  EB D3             jmp       0x442
+0x000000000000046d:  EB D3             jmp       send_midi_and_exit
+do_reset_ctrls:
+0x0000000000000471:  30 E4             xor       ax, ax
 0x000000000000046f:  88 F0             mov       al, dh
-0x0000000000000471:  30 E4             xor       ah, ah
-0x0000000000000473:  BA 00 CC          mov       dx, MIDIDRIVERDATA_SEGMENT
 0x0000000000000476:  89 C6             mov       si, ax
-0x0000000000000478:  8E C2             mov       es, dx
-0x000000000000047a:  83 C6 10          add       si, 0x10
-0x000000000000047d:  26 88 24          mov       byte ptr es:[si], ah
-0x0000000000000480:  89 C6             mov       si, ax
-0x0000000000000482:  83 C6 20          add       si, 0x20
-0x0000000000000485:  26 88 24          mov       byte ptr es:[si], ah
-0x0000000000000488:  89 C6             mov       si, ax
-0x000000000000048a:  83 C6 40          add       si, 0x40
-0x000000000000048d:  26 C6 04 40       mov       byte ptr es:[si], 0x40
-0x0000000000000491:  89 C6             mov       si, ax
-0x0000000000000493:  83 C6 50          add       si, 0x50
-0x0000000000000496:  26 C6 04 7F       mov       byte ptr es:[si], 0x7f
-0x000000000000049a:  89 C6             mov       si, ax
-0x000000000000049c:  81 C6 80 00       add       si, 0x80
-0x00000000000004a0:  26 88 24          mov       byte ptr es:[si], ah
-0x00000000000004a3:  89 C6             mov       si, ax
-0x00000000000004a5:  81 C6 90 00       add       si, 0x90
-0x00000000000004a9:  26 88 24          mov       byte ptr es:[si], ah
-0x00000000000004ac:  89 C6             mov       si, ax
-0x00000000000004ae:  81 C6 B0 00       add       si, 0xb0
-0x00000000000004b2:  26 C6 04 80       mov       byte ptr es:[si], 0x80
-0x00000000000004b6:  E9 6E FF          jmp       0x427
-0x00000000000004b9:  FC                cld       
+0x0000000000000473:  BA 00 CC          mov       ax, MIDIDRIVERDATA_SEGMENT
+0x0000000000000478:  8E C2             mov       es, ax
+0x0000000000000471:  30 E4             xor       ax, ax
+0x000000000000047d:  26 88 24          mov       byte ptr es:[si + CTRLBANK * CONTROLLER_DATA_SIZE], al
+0x0000000000000485:  26 88 24          mov       byte ptr es:[si + CTRLMODULATION * CONTROLLER_DATA_SIZE], al
+0x000000000000048d:  26 C6 04 40       mov       byte ptr es:[si + CTRLPAN * CONTROLLER_DATA_SIZE], 64
+0x0000000000000496:  26 C6 04 7F       mov       byte ptr es:[si + CTRLEXPRESSION * CONTROLLER_DATA_SIZE], 127
+0x00000000000004a0:  26 88 24          mov       byte ptr es:[si + CTRLSUSTAINPEDAL * CONTROLLER_DATA_SIZE], al
+0x00000000000004a9:  26 88 24          mov       byte ptr es:[si + CTRLSOFTPEDAL * CONTROLLER_DATA_SIZE], al
+0x00000000000004b2:  26 C6 04 80       mov       byte ptr es:[si + MIDIDATA_PITCH_WHEEL_OFFSET], DEFAULT_PITCH_BEND
+0x00000000000004b6:  E9 6E FF          jmp       do_generic_control
+
+ENDP
+
+PROC  MIDIplayMusic_    FAR
+PUBLIC  MIDIplayMusic_
+
+
 0x00000000000004ba:  53                push      bx
 0x00000000000004bb:  51                push      cx
 0x00000000000004bc:  52                push      dx
