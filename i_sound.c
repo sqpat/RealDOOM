@@ -86,7 +86,7 @@ void I_SetSfxVolume(uint8_t volume) {
 
 //todo
 #define MUSIC_SEGMENT EMS_PAGE
-
+/*
 int16_t I_LoadSong(uint16_t lump) {
     // always use MUSIC SEGMENT, 0
 	//todo use scratch instead?
@@ -161,6 +161,7 @@ int16_t I_LoadSong(uint16_t lump) {
 
 	
 }
+*/
 
 
 //

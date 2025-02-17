@@ -82,6 +82,7 @@ GLOBOBJS = $(GLOBOBJS) &
  d_main.obj &
  i_ibm.obj &
  i_sound.obj &
+ sm_load.obj &
  f_finale.obj &
  d_init.obj &
  bingen.obj &

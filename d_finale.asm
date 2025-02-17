@@ -427,7 +427,6 @@ db "BOSSBACK", 0
 ; copy string from cs:bx to ds:ax
 
 PROC F_CopyString9_ NEAR
-PUBLIC F_CopyString9_
 
 push  si
 push  di

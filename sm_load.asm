@@ -23,9 +23,24 @@ INSTRUCTION_SET_MACRO
 ;=================================
 .DATA
 
+EXTRN _playingdriver:DWORD
+EXTRN _EMS_PAGE:WORD
+EXTRN _currentsong_start_offset:WORD
+EXTRN _currentsong_playing_offset:WORD
+EXTRN _currentsong_length:WORD
+EXTRN _currentsong_primary_channels:WORD
+EXTRN _currentsong_secondary_channels:WORD
+EXTRN _currentsong_num_instruments:WORD
+
+EXTRN _currentsong_play_timer:WORD
+EXTRN _currentsong_ticks_to_process:WORD
+
 
 .CODE
 
+; todo make struct mapping?
+
+DRIVERID_OFFSET   = 034h
 DRIVERDATA_OFFSET = 036h
 
 PROC  SM_LOAD_STARTMARKER_
@@ -33,11 +48,62 @@ PUBLIC  SM_LOAD_STARTMARKER_
 
 ENDP
 
+_str_genmidi:
+db "genmidi", 0
 
-db "GENMIDI", 0
 
 
+PROC F_CopyString9_ NEAR
 
+push  si
+push  di
+push  cx
+push  ax
+mov   di, OFFSET _filename_argument
+
+push  ds
+pop   es    ; es = ds
+
+push  cs
+pop   ds    ; ds = cs
+
+mov   si, ax
+
+mov   ax, 0
+stosw       ; zero out
+stosw
+stosw
+stosw
+stosb
+mov  cx, 9
+sub  di, cx
+
+do_next_char:
+lodsb
+stosb
+test  al, al
+je    done_writing
+loop do_next_char
+
+
+done_writing:
+
+push  ss
+pop   ds    ; restore ds
+
+pop   ax
+pop   cx
+pop   di
+pop   si
+
+ret
+
+ENDP
+
+PROC  I_LoadSong_
+PUBLIC  I_LoadSong_
+
+ENDP
 
 push      bx
 push      cx
@@ -86,7 +152,7 @@ test      si, si
 je        jump_to_return_success  ; no driver
 valid_driver_do_load:
 mov       es, ax
-mov       al, byte ptr es:[si + 034h]
+mov       al, byte ptr es:[si + DRIVERID_OFFSET] ; driver id offset
 cmp       al, MUS_DRIVER_TYPE_OPL2    ; only load instruments from genmidi for opl
 je        load_opl_instruments
 cmp       al, MUS_DRIVER_TYPE_OPL3
@@ -126,7 +192,7 @@ add       si, ax
 mov       ax, word ptr es:[si + 010h]
 cmp       ax, 127
 ja        set_percussion_instrument_id
-record_instrument_lookup;
+record_instrument_lookup:
 mov       si, word ptr [bp - 6]
 mov       es, word ptr [bp - 0Ch]
 add       si, ax
@@ -135,13 +201,17 @@ inc       dl
 jmp       loop_next_instrument_lookup
 jump_to_return_success:
 jmp       return_success
-set_percussion_instrument_id
+set_percussion_instrument_id:
 sub       ax, 7
 jmp       record_instrument_lookup
 done_loading_instrument_lookups:
 mov       bx, word ptr [bp - 0Ah]
 mov       cx, word ptr [bp - 8]
-mov       ax, 0x1184          ; todo "genmidi" ptr.
+
+mov       ax, OFFSET _str_genmidi ; - OFFSET SM_LOAD_STARTMARKER_
+call      F_CopyString9_
+mov       ax, OFFSET _filename_argument
+
 call      dword ptr ds:[_W_CacheLumpNameDirect_addr]
 cmp       dh, MAX_INSTRUMENTS
 jae       done_with_loading_instruments
