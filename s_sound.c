@@ -130,7 +130,7 @@ void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
     // load & register it
     //music->data = (void __far*) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
     I_LoadSong(W_GetNumForName(namebuf));
-    
+
 	if (playingdriver){
 		playingdriver->playMusic();  // todo rename. this sets up variables in the driver for the track
 	}

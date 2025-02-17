@@ -156,7 +156,7 @@
 #define finalecount                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x00BA)))
 #define finalestage                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x00BC)))
 #define finale_laststage                (*((int8_t __near*)                  (_NULL_OFFSET + 0x00BE)))
-// BF free
+#define playingstate	                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x00BF)))
 #define mfloorclip                      (*(int16_t __far * __near *)         (_NULL_OFFSET + 0x00C0))
 #define mfloorclip_offset               (*(int16_t __near *)                 (_NULL_OFFSET + 0x00C0))
 #define mfloorclip_segment              (*(segment_t __near *)               (_NULL_OFFSET + 0x00C2))
@@ -239,7 +239,7 @@
 #define frontsector                     (*((sector_t __far*  __near*)        (_NULL_OFFSET + 0x01A4)))
 #define backsector                      (*((sector_t __far*  __near*)        (_NULL_OFFSET + 0x01A8)))
 #define backsector_offset               (*((int16_t  __near*)                (_NULL_OFFSET + 0x01A8)))
-// 1AC free
+#define playingtime		                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01AC)))
 
 #define active_visplanes                (((int8_t    __near*)                (_NULL_OFFSET + 0x01B0)))
 #define wipegamestate                   (*((gamestate_t __near*)             (_NULL_OFFSET + 0x01B5)))
@@ -299,6 +299,8 @@
 
 #define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0388)))
 #define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038A)))
+#define snd_MusicVolume                 (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038B)))
+
 // todo fill this up
 #define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0390)))
 #define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x03B0)))
@@ -379,7 +381,6 @@ extern const int8_t         snd_prefixen[];
 extern uint8_t              snd_SBirq; // sound blaster variables
 extern uint8_t              snd_SBdma;
 
-extern uint8_t              snd_MusicVolume; // maximum volume for music
 extern uint8_t              snd_SfxVolume; // maximum volume for sound
 
 extern uint8_t              snd_SfxDevice; // current sfx card # (index to dmxCodes)
@@ -1178,7 +1179,6 @@ extern boolean    				tnt;
 #define MAX_INSTRUMENTS 175
 #define MAX_INSTRUMENTS_PER_TRACK 0x1C // largest in doom1 or doom2
 #define DEFAULT_PITCH_BEND 0x80
-extern uint8_t	playingstate;
 #define DEFAULT_VOLUME  256
 #define MUTE_VOLUME  0
 
@@ -1332,9 +1332,7 @@ extern uint16_t 			currentsong_play_timer;
 extern int16_t 			    currentsong_ticks_to_process;
 
 
-extern uint8_t				playingstate;
 extern uint16_t			    playingpercussMask;
-extern volatile uint32_t 	playingtime;
 extern int8_t				loops_enabled;
 
 

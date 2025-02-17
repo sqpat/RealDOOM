@@ -24,9 +24,6 @@ INSTRUCTION_SET_MACRO
 .DATA
 
 
-EXTRN _playingtime:DWORD
-EXTRN _snd_MusicVolume:BYTE
-EXTRN _playingstate:BYTE
 
 .CODE
 
@@ -1837,7 +1834,7 @@ xor       ah, ah
 mov       dl, byte ptr [bp - 2]
 add       di, ax
 xor       dh, dh
-mov       al, byte ptr cs:[di - OFFSET SM_OPL3_STARTMARKER_]
+mov       al, byte ptr cs:[di]
 call      calcVolumeOPL_
 
 mov       byte ptr cs:[si + 7 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], al

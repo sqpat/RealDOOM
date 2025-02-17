@@ -592,32 +592,33 @@ void __far I_StartupSound(void) {
         uint16_t codesize;
         // todo put in main conventional somewhere
         FILE* fp = fopen("DOOMCODE.BIN", "rb"); 
-        playingdriver = (driverBlock __far * ) MK_FP(0xCD00, 0000);
+        byte __far* codelocation = MK_FP(0xCD00, 0000);
         fseek(fp, musdriverstartposition[driverindex-1], SEEK_SET);
         fread(&codesize, 2, 1, fp);
-        FAR_fread(playingdriver, codesize, 1, fp);
+        FAR_fread(codelocation, codesize, 1, fp);
         fclose(fp);
-
+        
 
         // loader to set far segment for these func calls at runtime.   
         {
             int8_t i;
-            segment_t __far* ptr = (segment_t __far *) playingdriver;
-            segment_t seg = ((int32_t)playingdriver) >> 16;
+            segment_t __far* ptr = (segment_t __far *) codelocation;
+            segment_t seg = ((int32_t)codelocation) >> 16;
             for (i = 0; i < 13; i++){
                 ptr[2*i+1] = seg;
             }
 
 
-
+        // I_Error("%lx %lx %lx %x",
+        // codelocation, 
+        // ((driverBlock __far * ) codelocation)->initHardware,
+        // ((driverBlock __far * ) codelocation)->initDriver,
+        //  musdriverstartposition[driverindex-1]
+        // );
+            playingdriver = (driverBlock __far * ) ptr;
 
             playingdriver->initHardware(useport, 0, 0);
             playingdriver->initDriver();
-        I_Error("%lx %lx %x",
-        playingdriver, 
-        ((driverBlock __far * ) playingdriver)->initHardware,
-         musdriverstartposition[driverindex-1]
-        );
 
         }
     }

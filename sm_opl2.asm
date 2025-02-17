@@ -24,9 +24,6 @@ INSTRUCTION_SET_MACRO
 .DATA
 
 
-EXTRN _playingtime:DWORD
-EXTRN _snd_MusicVolume:BYTE
-EXTRN _playingstate:BYTE
 
 .CODE
 
@@ -1813,7 +1810,7 @@ push      cs
 pop       es
 mov       cx, (SIZE_ADLIBCHANNELS / 2)
 mov       ax, 0FFFFh
-mov       di, OFFSET _AdLibChannels - OFFSET SM_SBMID_STARTMARKER_
+mov       di, OFFSET _AdLibChannels - OFFSET SM_OPL2_STARTMARKER_
 rep       stosw 
 
 xor       dx, dx

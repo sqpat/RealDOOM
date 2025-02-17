@@ -24,11 +24,6 @@ INSTRUCTION_SET_MACRO
 .DATA
 
 
-EXTRN _playingtime:DWORD
-EXTRN _playingdriver:DWORD
-EXTRN _snd_MusicVolume:BYTE
-EXTRN _playingstate:BYTE
-
 .CODE
 
 ZERO_BYTE MACRO 
@@ -233,12 +228,10 @@ mov       bx, 07Fh
 or        cl, MIDI_CONTROL
 mov       dx, 120
 xor       ch, ch
-mov       si, word ptr [_playingdriver]
 mov       ax, cx
 call      MPU401sendMIDI_
 mov       bx, 07Fh
 mov       dx, 121
-mov       si, word ptr [_playingdriver]   ; todo sendmidi
 mov       ax, cx
 call      MPU401sendMIDI_
 pop       si
@@ -375,7 +368,7 @@ pop       bx
 ret      
 
 controller_not_zero:
-mov       si, word ptr [_playingdriver]
+mov       si, word ptr []
 mov       al, ch
 mov       dl, byte ptr cs:[bx + _mididriverdata - OFFSET SM_MPUMD_STARTMARKER_]
 or        al, MIDI_PATCH
@@ -416,7 +409,6 @@ and       al, 07Fh
 ror       dl, 1      ; 1s bit into 080h bit
 and       dx, 080h
 
-mov       si, word ptr [_playingdriver]
 
 mov       bl, al
 mov       al, ch
@@ -441,7 +433,6 @@ not_volume_control:
 mov       bl, al
 mov       al, cl
 xor       ah, ah
-mov       si, word ptr [_playingdriver]
 mov       di, ax
 xor       bh, bh
 mov       dl, byte ptr cs:[di + _MUS2MIDIctrl - OFFSET SM_MPUMD_STARTMARKER_]
@@ -540,7 +531,6 @@ mov       word ptr cs:[si + _miditime - OFFSET SM_MPUMD_STARTMARKER_], dx
 mov       cl, bh
 mov       word ptr cs:[si + 2 + _miditime - OFFSET SM_MPUMD_STARTMARKER_], ax
 mov       dl, byte ptr [bp - 2]
-mov       si, word ptr [_playingdriver]
 mov       al, bl
 or        cl, MIDI_NOTE_ON
 xor       ah, ah
@@ -591,7 +581,6 @@ shl       bx, 2
 mov       ax, word ptr [_playingtime]
 mov       cx, word ptr [_playingtime + 2]
 mov       word ptr cs:[bx + _miditime - OFFSET SM_MPUMD_STARTMARKER_], ax
-mov       si, word ptr [_playingdriver]
 mov       word ptr cs:[bx + 2 + _miditime - OFFSET SM_MPUMD_STARTMARKER_], cx
 mov       bx, 127
 mov       cl, dh
@@ -640,7 +629,6 @@ mov       ax, word ptr [_playingtime]
 mov       si, word ptr [_playingtime + 2]
 mov       word ptr cs:[bx + _miditime - OFFSET SM_MPUMD_STARTMARKER_], ax
 mov       word ptr cs:[bx + 2 + _miditime - OFFSET SM_MPUMD_STARTMARKER_], si
-mov       si, word ptr [_playingdriver]
 mov       bl, dh
 mov       al, cl
 mov       cl, dl
@@ -713,7 +701,6 @@ xor       ah, ah
 call      calcVolume_
 mov       bl, al
 do_generic_control:
-mov       si, word ptr [_playingdriver]
 mov       al, bl
 or        cl, MIDI_CONTROL
 mov       bl, bh
@@ -734,7 +721,6 @@ pop       cx
 retf      
 
 do_patch_instrument:
-mov       si, word ptr [_playingdriver]
 mov       al, cl
 mov       dl, bl
 or        al, MIDI_PATCH
@@ -804,12 +790,10 @@ pop       ds ; restore ds
 mov       bx, 127
 mov       ax, MIDI_CONTROL OR MIDI_PERC
 mov       dl, 7   ; volume control
-mov       si, word ptr [_playingdriver]
 xor       dh, dh
 call      MPU401sendMIDI_
 
 mov       ax, MIDI_CONTROL OR MIDI_PERC
-mov       si, word ptr [_playingdriver]
 mov       dl, 121  ; byte ptr [_MUS2MIDIctrl + e]
 xor       bx, bx
 xor       dh, dh
@@ -875,7 +859,6 @@ shl       bx, cl
 test      ax, bx
 je        inc_loop_stop_channels_perc
 mov       bx, 127
-mov       si, word ptr [_playingdriver]
 mov       ax, di
 call      MPU401sendMIDI_
 inc_loop_stop_channels_perc:
@@ -932,7 +915,6 @@ cmp       ch, MIDI_PERC
 je        inc_loop_change_system_volume
 ; inlined sendSystemVolume
 mov       bx, ax
-mov       si, word ptr [_playingdriver]
 mov       dl, byte ptr cs:[bx + _mididriverdata_controllers_ctrlvolume - OFFSET SM_MPUMD_STARTMARKER_]
 mov       al, byte ptr [bp - 2]
 xor       dh, dh

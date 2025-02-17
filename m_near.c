@@ -52,7 +52,6 @@ const int8_t snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S'
 uint8_t  snd_SBirq; // sound blaster variables
 uint8_t  snd_SBdma;
 
-uint8_t  snd_MusicVolume; // maximum volume for music
 uint8_t  snd_SfxVolume; // maximum volume for sound
 
 uint8_t  snd_SfxDevice; // current sfx card # (index to dmxCodes)
@@ -2000,9 +1999,8 @@ uint16_t 			currentsong_play_timer;
 int16_t 			currentsong_ticks_to_process = 0;
 
 
-uint8_t				playingstate = ST_EMPTY;			
+
 uint16_t			playingpercussMask = 1 << PERCUSSION;	// todo #define? or should other instruments be forced into percussion?
-volatile uint32_t 	playingtime = 0;
 int8_t				loops_enabled = false;
 
 int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];

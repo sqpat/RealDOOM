@@ -112,7 +112,7 @@ _finaletext =                    	_NULL_OFFSET + 000B8h
 _finalecount =                   	_NULL_OFFSET + 000BAh
 _finalestage =                   	_NULL_OFFSET + 000BCh
 _finale_laststage =              	_NULL_OFFSET + 000BEh
-; bf free
+_playingstate = 	                _NULL_OFFSET + 000BFh
 
 _mfloorclip = 						_NULL_OFFSET + 000C0h
 _mceilingclip = 					_NULL_OFFSET + 000C4h
@@ -192,7 +192,7 @@ _floortop =         	            _NULL_OFFSET + 001A0h
 
 _frontsector =          	        _NULL_OFFSET + 001A4h
 _backsector =               	    _NULL_OFFSET + 001A8h
-; 1AC free
+_playingtime =		                _NULL_OFFSET + 001ACh
 _active_visplanes =             	_NULL_OFFSET + 001B0h
 _wipegamestate =                    _NULL_OFFSET + 001B5h
 _visplane_offset =              	_NULL_OFFSET + 001B6h
@@ -246,6 +246,8 @@ _vga_read_port_lookup =              _NULL_OFFSET + 00370h
 _vissprite_p =                       _NULL_OFFSET + 00388h
 ; high byte always 0
 _cachedbyteheight =                  _NULL_OFFSET + 0038Ah
+_snd_MusicVolume =                   _NULL_OFFSET + 0038Bh
+; todo fill this up
 _savedescription =                   _NULL_OFFSET + 00390h
 _demoname =                          _NULL_OFFSET + 003B0h
 
