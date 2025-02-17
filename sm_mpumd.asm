@@ -105,7 +105,6 @@ SIZE_ADLIBCHANNELS          = 0120h
 
 PLAYING_PERCUSSION_MASK     = 08000h
 
-MIDI_CHANNELS_SEGMENT       = 0CC0Eh
 MIDI_PERC                   = 9
 MIDITIME_SEGMENT            = 0CC12h
 
@@ -161,6 +160,8 @@ db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 
 
+_midichannels:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 
 
@@ -226,13 +227,13 @@ mov       ax, 1
 shl       ax, cl
 test      ax, PLAYING_PERCUSSION_MASK
 jne       return_perc
-mov       dx, MIDI_CHANNELS_SEGMENT
+
 xor       al, al
 loop_music_channels:
 mov       bl, al
-mov       es, dx
+
 xor       bh, bh
-cmp       byte ptr es:[bx], 0FFh
+cmp       byte ptr cs:[bx + _midichannels], 0FFh
 je        set_found_channel
 inc       al
 cmp       al, MAX_MUSIC_CHANNELS
@@ -271,7 +272,7 @@ pop       bx
 ret      
 set_found_channel:
 mov       ah, byte ptr [bp - 2]
-mov       byte ptr es:[bx], ah
+mov       byte ptr cs:[bx + _midichannels], ah
 jmp       return_found_channel
 update_time_oldest:
 mov       ah, al
@@ -282,11 +283,9 @@ done_looping_channels_find_oldest:
 mov       dl, ah
 cmp       ah, 0FFh
 je        dont_stop_channel
-mov       di, MIDI_CHANNELS_SEGMENT
 mov       bl, ah
-mov       es, di
 xor       bh, bh
-mov       al, byte ptr es:[bx]
+mov       al, byte ptr cs:[bx + _midichannels]
 xor       ah, ah
 
 mov       si, ax
@@ -294,9 +293,8 @@ mov       ax, bx
 mov       byte ptr cs:[si + _mididriverdata_realChannels], 0FFh
 
 call      stopChannel_
-mov       es, di
 mov       al, byte ptr [bp - 2]
-mov       byte ptr es:[bx], al
+mov       byte ptr cs:[bx + _midichannels], al
 dont_stop_channel:
 mov       al, dl
 LEAVE_MACRO     
@@ -948,13 +946,12 @@ PUBLIC  MIDIinitDriver_
 push      cx
 push      di
 mov       cx, SIZE_MIDICHANNELS / 2
-mov       ax, MIDI_CHANNELS_SEGMENT
-mov       es, ax
+push      cs
+pop       es
 mov       ax, 0FFFFh
-xor       di, di
+mov       di, OFFSET _midichannels
 rep       stosw 
-mov       di, MIDI_PERC
-mov       byte ptr es:[di], 080h    ; mark perc channel occupied
+mov       byte ptr cs:[MIDI_PERC + _midichannels], 080h    ; mark perc channel occupied
 mov       cx, SIZE_MIDITIME / 2
 mov       ax, MIDITIME_SEGMENT
 mov       es, ax
