@@ -96,16 +96,8 @@ PLAYING_PERCUSSION_MASK     = 08000h
 MAX_INSTRUMENTS = 175
 MAX_INSTRUMENTS_PER_TRACK = 01Ch ; largest in doom1 or doom2
 
-
-ADLIBINSTRUMENTLIST_SEGMENT = 0CC00h
-;ADLIBCHANNELS_SEGMENT       = 0CC3Fh
-INSTRUMENTLOOKUP_SEGMENT    = 0CC51h
-
-SIZE_ADLIBCHANNELS          = 0120h
-
 PLAYING_PERCUSSION_MASK     = 08000h
 
-MIDIDRIVERDATA_SEGMENT      = 0CC00h
 MIDI_CHANNELS_SEGMENT       = 0CC0Eh
 MIDI_PERC                   = 9
 MIDITIME_SEGMENT            = 0CC12h
@@ -129,6 +121,42 @@ PROC  SM_SBMID_STARTMARKER_
 PUBLIC  SM_SBMID_STARTMARKER_
 
 ENDP
+
+
+_mididriverdata:
+_mididriverdata_controllers:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_controllers_ctrlbank:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_controllers_ctrlmodulation:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_controllers_ctrlvolume:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_controllers_ctrlpan:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_controllers_ctrlexpression:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_controllers_ctrlreverb:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_controllers_ctrlchorus:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_controllers_ctrlsustainpedal:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_controllers_ctrlsoftpedal:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_channelLastVolume:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_pitchWheel:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_realChannels:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+_mididriverdata_percussions:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+
+
+
+
 
 PROC  calcVolume_   NEAR
 
@@ -254,11 +282,10 @@ mov       es, di
 xor       bh, bh
 mov       al, byte ptr es:[bx]
 xor       ah, ah
-mov       cx, MIDIDRIVERDATA_SEGMENT
+
 mov       si, ax
-mov       es, cx
 mov       ax, bx
-mov       byte ptr es:[si + MIDIDATA_REALCHANNEL_OFFSET], 0FFh
+mov       byte ptr cs:[si + _mididriverdata_realChannels], 0FFh
 
 call      stopChannel_
 mov       es, di
@@ -290,11 +317,9 @@ mov       bp, sp
 sub       sp, 4
 mov       byte ptr [bp - 2], al
 mov       bl, al
-mov       ax, MIDIDRIVERDATA_SEGMENT
 xor       bh, bh
-mov       es, ax
-lea       si, [bx + MIDIDATA_REALCHANNEL_OFFSET]
-mov       ch, byte ptr es:[si]
+
+mov       ch, byte ptr cs:[bx + _mididriverdata_realChannels]
 test      ch, ch
 jge       controller_not_zero
 LEAVE_MACRO     
@@ -308,7 +333,7 @@ ret
 controller_not_zero:
 mov       si, word ptr [_playingdriver]
 mov       al, ch
-mov       dl, byte ptr es:[bx]
+mov       dl, byte ptr cs:[bx + _mididriverdata]
 or        al, MIDI_PATCH
 xor       dh, dh
 xor       bl, bl
@@ -321,13 +346,11 @@ mov       byte ptr [bp - 4], al
 controller_loop:
 mov       al, cl
 xor       ah, ah
-mov       dx, MIDIDRIVERDATA_SEGMENT
 mov       bx, ax
 mov       al, byte ptr [bp - 2]
 shl       bx, 4
-mov       es, dx
 add       bx, ax
-mov       al, byte ptr es:[bx]
+mov       al, byte ptr cs:[bx + _mididriverdata]
 cmp       cl, CTRLVOLUME
 jne       not_volume_control
 cmp       ch, MIDI_PERC
@@ -338,11 +361,9 @@ inc       cl
 cmp       cl, NUM_CONTROLLERS
 jb        controller_loop
 mov       al, byte ptr [bp - 2]
-mov       dx, MIDIDRIVERDATA_SEGMENT
 xor       ah, ah
-mov       es, dx
 mov       bx, ax
-mov       dl, byte ptr es:[bx + MIDIDATA_PITCH_WHEEL_OFFSET]       ; pitchWheel
+mov       dl, byte ptr cs:[bx + _mididriverdata_pitchWheel]       ; pitchWheel
 
 ; calculate pitch
 mov       al, dl
@@ -409,13 +430,13 @@ sub       sp, 2
 mov       ch, al
 mov       byte ptr [bp - 2], dl
 xor       ah, ah
-mov       dx, MIDIDRIVERDATA_SEGMENT
+
 mov       si, ax
-mov       es, dx
-mov       bh, byte ptr es:[si + MIDIDATA_REALCHANNEL_OFFSET]
+
+mov       bh, byte ptr cs:[si + _mididriverdata_realChannels]
 cmp       bl, -1
 je        use_last_volume
-mov       byte ptr es:[si+MIDIDATA_LAST_VOLUME_OFFSET], bl
+mov       byte ptr cs:[si+_mididriverdata_channelLastVolume], bl
 jmp       got_volume
 go_find_channel:
 mov       dl, ch
@@ -425,16 +446,14 @@ call      findFreeMIDIChannel_
 mov       bh, al
 test      al, al
 jl        exit_playnote_2
-mov       si, MIDIDRIVERDATA_SEGMENT
-mov       es, si
 mov       si, dx
-mov       byte ptr es:[si + MIDIDATA_REALCHANNEL_OFFSET], al
+mov       byte ptr cs:[si + _mididriverdata_realChannels], al
 mov       ax, dx
 call      updateControllers_
 jmp       channel_positive
 
 use_last_volume:
-mov       bl, byte ptr es:[si+MIDIDATA_LAST_VOLUME_OFFSET]
+mov       bl, byte ptr cs:[si+_mididriverdata_channelLastVolume]
 got_volume:
 test      bh, bh
 jnge      go_find_channel
@@ -443,9 +462,7 @@ channel_positive:
 cmp       bh, MIDI_PERC
 jne       play_not_percussion
 mov       al, byte ptr [bp - 2]
-mov       dx, MIDIDRIVERDATA_SEGMENT
 xor       ah, ah
-mov       es, dx
 mov       si, ax
 mov       cl, al
 mov       al, 1
@@ -455,9 +472,9 @@ shl       al, cl
 mov       cl, ch
 
 xor       ch, ch
-or        byte ptr es:[si+MIDIDATA_PERCUSSIONS_OFFSET], al
+or        byte ptr cs:[si+_mididriverdata_percussions], al
 mov       si, cx
-mov       dl, byte ptr es:[si + CTRLVOLUME * CONTROLLER_DATA_SIZE]
+mov       dl, byte ptr cs:[si + _mididriverdata_controllers_ctrlvolume]
 mov       al, byte ptr [_snd_MusicVolume]
 xor       dh, dh
 
@@ -506,11 +523,11 @@ push      bx
 push      cx
 push      si
 mov       dh, dl
-mov       bx, MIDIDRIVERDATA_SEGMENT
+
 xor       ah, ah
-mov       es, bx
+
 mov       bx, ax
-mov       dl, byte ptr es:[bx + MIDIDATA_REALCHANNEL_OFFSET]
+mov       dl, byte ptr cs:[bx + _mididriverdata_realChannels]
 test      dl, dl
 jl        exit_releasenote
 cmp       dl, MIDI_PERC
@@ -523,7 +540,7 @@ mov       al, 1
 sar       bx, 3
 shl       al, cl
 not       al
-and       byte ptr es:[bx+MIDIDATA_PERCUSSIONS_OFFSET], al
+and       byte ptr cs:[bx+_mididriverdata_percussions], al
 release_non_percussion:
 mov       al, dl
 cbw      
@@ -562,10 +579,9 @@ push      si
 mov       bl, al
 mov       al, dl
 xor       bh, bh
-mov       dx, MIDIDRIVERDATA_SEGMENT
-mov       es, dx
-mov       dl, byte ptr es:[bx + MIDIDATA_REALCHANNEL_OFFSET]
-mov       byte ptr es:[bx + MIDIDATA_PITCH_WHEEL_OFFSET], al
+
+mov       dl, byte ptr cs:[bx + _mididriverdata_realChannels]
+mov       byte ptr cs:[bx + _mididriverdata_pitchWheel], al
 test      dl, dl
 jl        exit_pitchwheel
 mov       bl, al
@@ -617,11 +633,9 @@ mov       bp, sp
 sub       sp, 2
 mov       dh, al
 mov       bh, dl
-mov       cx, MIDIDRIVERDATA_SEGMENT
 xor       ah, ah
-mov       es, cx
 mov       si, ax
-mov       cl, byte ptr es:[si + MIDIDATA_REALCHANNEL_OFFSET]
+mov       cl, byte ptr cs:[si + _mididriverdata_realChannels]
 cmp       dl, NUM_CONTROLLERS
 jnb       done_recording_controller_value
 record_controller_value:
@@ -630,7 +644,7 @@ mov       byte ptr [bp - 1], ah
 mov       si, word ptr [bp - 2]
 shl       si, 4
 add       si, ax
-mov       byte ptr es:[si], bl
+mov       byte ptr cs:[si + _mididriverdata_controllers], bl
 
 done_recording_controller_value:
 test      cl, cl
@@ -696,16 +710,14 @@ do_reset_ctrls:
 xor       ax, ax
 mov       al, dh
 mov       si, ax
-mov       ax, MIDIDRIVERDATA_SEGMENT
-mov       es, ax
 xor       ax, ax
-mov       byte ptr es:[si + CTRLBANK * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[si + CTRLMODULATION * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[si + CTRLPAN * CONTROLLER_DATA_SIZE], 64
-mov       byte ptr es:[si + CTRLEXPRESSION * CONTROLLER_DATA_SIZE], 127
-mov       byte ptr es:[si + CTRLSUSTAINPEDAL * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[si + CTRLSOFTPEDAL * CONTROLLER_DATA_SIZE], al
-mov       byte ptr es:[si + MIDIDATA_PITCH_WHEEL_OFFSET], DEFAULT_PITCH_BEND
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlbank], al
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlmodulation], al
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlpan], 64
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlexpression], 127
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlsustainpedal], al
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlsoftpedal], al
+mov       byte ptr cs:[si + _mididriverdata_pitchWheel], DEFAULT_PITCH_BEND
 jmp       do_generic_control
 
 ENDP
@@ -725,13 +737,13 @@ push      dx
 push      si
 push      di
 mov       cx, 010h / 2
-mov       di, 0D0h
-mov       ax, MIDIDRIVERDATA_SEGMENT
-mov       es, ax
+mov       di, OFFSET _mididriverdata_percussions
+push      cs
+pop       es
 xor       ax, ax
 rep stosw 
 mov       bx, ax  ; zero out
-mov       di, ax  ; zero out
+mov       di, OFFSET _mididriverdata
 
 
 push      cs
@@ -801,11 +813,11 @@ mov       byte ptr [bp - 2], 0
 mov       di, MIDI_NOTE_OFF OR MIDI_PERC
 loop_stop_channels:
 mov       al, byte ptr [bp - 2]
-mov       dx, MIDIDRIVERDATA_SEGMENT
+
 cbw      
-mov       es, dx
+
 mov       bx, ax
-mov       al, byte ptr es:[bx + MIDIDATA_REALCHANNEL_OFFSET]
+mov       al, byte ptr cs:[bx + _mididriverdata_realChannels]
 test      al, al
 jl        inc_loop_stop_channels
 cmp       al, MIDI_PERC
@@ -814,14 +826,13 @@ xor       ch, ch
 loop_stop_channels_perc:
 mov       dl, ch
 xor       dh, dh
-mov       ax, MIDIDRIVERDATA_SEGMENT
+
 mov       bx, dx
-mov       es, ax
+
 sar       bx, 3
 mov       cl, ch
-add       bx, MIDIDATA_PERCUSSIONS_OFFSET
 and       cl, 7
-mov       al, byte ptr es:[bx]
+mov       al, byte ptr cs:[bx+_mididriverdata_percussions]
 mov       bx, 1
 xor       ah, ah
 shl       bx, cl
@@ -874,11 +885,10 @@ xor       cl, cl
 
 loop_change_system_volume:
 mov       al, cl
-mov       dx, MIDIDRIVERDATA_SEGMENT
+
 cbw      
-mov       es, dx
 mov       bx, ax
-mov       ch, byte ptr es:[bx + MIDIDATA_REALCHANNEL_OFFSET]
+mov       ch, byte ptr cs:[bx + _mididriverdata_realChannels]
 
 test      ch, ch
 jl        inc_loop_change_system_volume
@@ -887,7 +897,7 @@ je        inc_loop_change_system_volume
 ; inlined sendSystemVolume
 mov       bx, ax
 mov       si, word ptr [_playingdriver]
-mov       dl, byte ptr es:[bx + CTRLVOLUME * CONTROLLER_DATA_SIZE]
+mov       dl, byte ptr cs:[bx + _mididriverdata_controllers_ctrlvolume]
 mov       al, byte ptr [bp - 2]
 xor       dh, dh
 xor       ah, ah
