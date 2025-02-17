@@ -1240,6 +1240,8 @@ typedef struct  {
 	void	(*resumeMusic)();
 	void	(*changeSystemVolume)(uint8_t volume);
 	int8_t	driverId;
+	int8_t	unused;
+	byte*   driverdata;
 
 } driverBlock;
 

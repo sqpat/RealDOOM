@@ -57,9 +57,6 @@ MAX_INSTRUMENTS = 175
 MAX_INSTRUMENTS_PER_TRACK = 01Ch ; largest in doom1 or doom2
 
 
-ADLIBINSTRUMENTLIST_SEGMENT = 0CC00h
-;ADLIBCHANNELS_SEGMENT       = 0CC3Fh
-INSTRUMENTLOOKUP_SEGMENT    = 0CC51h
 
 SIZE_ADLIBCHANNELS          = 0120h
 
@@ -98,6 +95,50 @@ dw  0
 dw	OFFSET 	OPLchangeSystemVolume_OPL2_- OFFSET SM_OPL2_STARTMARKER_
 dw  0
 db	MUS_DRIVER_TYPE_OPL2
+db	0
+
+; begin externally accessible driver data
+
+_adlibinstrumentlist:
+; 0x24 each, for 0x1C instances
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+
+
+_instrumentlookup:
+REPT MAX_INSTRUMENTS
+    ZERO_BYTE
+ENDM
+
+
 
 ;; END DRIVERBLOCK
 
@@ -170,10 +211,6 @@ db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 ; channelmodulation
 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-;_instrumentlookup:
-;REPT MAX_INSTRUMENTS
-;    ZERO_BYTE
-;ENDM
 
 _AdLibChannels:
 REPT MAX_MUSIC_CHANNELS * OPL3CHANNELS
@@ -1256,11 +1293,7 @@ add   bl, (128 - 35)
 look_up_instrument:
 xor   bh, bh
 
-mov   ax, INSTRUMENTLOOKUP_SEGMENT
-mov   es, ax
-mov   al, byte ptr es:[bx]
-
-;mov   al, byte ptr cs:[bx + _instrumentlookup - OFFSET SM_OPL2_STARTMARKER_]
+mov   al, byte ptr cs:[bx + _instrumentlookup - OFFSET SM_OPL2_STARTMARKER_]
 cmp   al, 0FFh
 jne   found_instrument
 
@@ -1277,9 +1310,10 @@ mov   bl, byte ptr cs:[bx + _OPL2driverdata + 00h - OFFSET SM_OPL2_STARTMARKER_]
 jmp   look_up_instrument
 found_instrument:
 xor   ah, ah
-mov   dx, ADLIBINSTRUMENTLIST_SEGMENT
+mov   dx, cs                ; todo make near ptr
 mov   ah, SIZEOF_OP2INSTRENTRY
 mul   ah
+add   ax, OFFSET _adlibinstrumentlist - OFFSET SM_OPL2_STARTMARKER_
 pop   cx
 pop   bx
 ret  

@@ -109,6 +109,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     //FILE*  fp2 = fopen("doomcod2.bin", "wb");
 	uint16_t codesize[9];
 	uint16_t muscodesize[4];
+	uint16_t maxmuscodesize;
     int8_t i;
     
     codesize[0] = FP_OFF(R_SPAN_STARTMARKER) - FP_OFF(R_DrawColumn);
@@ -178,18 +179,22 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     muscodesize[0] = FP_OFF(SM_OPL2_ENDMARKER) - FP_OFF(SM_OPL2_STARTMARKER);
     fwrite(&muscodesize[0], 2, 1, fp);
     FAR_fwrite((byte __far *)SM_OPL2_STARTMARKER, muscodesize[0], 1, fp);
+    maxmuscodesize = muscodesize[0] > maxmuscodesize ? muscodesize[0] : maxmuscodesize;
 
     muscodesize[1] = FP_OFF(SM_OPL3_ENDMARKER) - FP_OFF(SM_OPL3_STARTMARKER);
     fwrite(&muscodesize[1], 2, 1, fp);
     FAR_fwrite((byte __far *)SM_OPL3_STARTMARKER, muscodesize[1], 1, fp);
+    maxmuscodesize = muscodesize[1] > maxmuscodesize ? muscodesize[1] : maxmuscodesize;
 
     muscodesize[2] = FP_OFF(SM_MPUMD_ENDMARKER) - FP_OFF(SM_MPUMD_STARTMARKER);
     fwrite(&muscodesize[2], 2, 1, fp);
     FAR_fwrite((byte __far *)SM_MPUMD_STARTMARKER, muscodesize[2], 1, fp);
+    maxmuscodesize = muscodesize[2] > maxmuscodesize ? muscodesize[2] : maxmuscodesize;
 
     muscodesize[3] = FP_OFF(SM_SBMID_ENDMARKER) - FP_OFF(SM_SBMID_STARTMARKER);
     fwrite(&muscodesize[3], 2, 1, fp);
     FAR_fwrite((byte __far *)SM_SBMID_STARTMARKER, muscodesize[3], 1, fp);
+    maxmuscodesize = muscodesize[3] > maxmuscodesize ? muscodesize[3] : maxmuscodesize;
 
 
     fclose(fp);
@@ -262,6 +267,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize[6]);
 	fprintf(fp, "#define FinaleCodeSize                 0x%X\n", codesize[7]);
 	fprintf(fp, "#define SaveLoadCodeSize               0x%X\n", codesize[8]);
+	fprintf(fp, "#define MaximumMusDriverSize           0x%X\n", maxmuscodesize);
 
 
 

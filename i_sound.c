@@ -116,6 +116,9 @@ int16_t I_LoadSong(uint16_t lump) {
 
 	        int8_t  i;
             uint8_t j;
+            OP2instrEntry __far* adlibinstrumentlist = (OP2instrEntry __far*)&(playingdriver->driverdata);
+            uint8_t __far* instrumentlookup          = ((uint8_t __far*)     &(playingdriver->driverdata)) + size_AdLibInstrumentList;
+            
             // parse instruements
             FAR_memset(instrumentlookup, 0xFF, MAX_INSTRUMENTS);
             for (i = 0; i < currentsong_num_instruments; i++){
@@ -137,7 +140,7 @@ int16_t I_LoadSong(uint16_t lump) {
                     uint16_t offset = 8 +(sizeof(OP2instrEntry) * j);
 
                     //far_fread(&AdLibInstrumentList[instrumentindex], sizeof(OP2instrEntry), 1, fp);
-                    FAR_memcpy(&AdLibInstrumentList[instrumentindex], MK_FP(MUSIC_SEGMENT, offset), sizeof(OP2instrEntry));
+                    FAR_memcpy(&adlibinstrumentlist[instrumentindex], MK_FP(MUSIC_SEGMENT, offset), sizeof(OP2instrEntry));
                 }
             }
             // reload mus
@@ -592,18 +595,18 @@ void __far I_StartupSound(void) {
         uint16_t codesize;
         // todo put in main conventional somewhere
         FILE* fp = fopen("DOOMCODE.BIN", "rb"); 
-        byte __far* codelocation = MK_FP(0xCD00, 0000);
+        playingdriver = MK_FP(0xCC00, 0000);
         fseek(fp, musdriverstartposition[driverindex-1], SEEK_SET);
         fread(&codesize, 2, 1, fp);
-        FAR_fread(codelocation, codesize, 1, fp);
+        FAR_fread(playingdriver, codesize, 1, fp);
         fclose(fp);
         
 
         // loader to set far segment for these func calls at runtime.   
         {
             int8_t i;
-            segment_t __far* ptr = (segment_t __far *) codelocation;
-            segment_t seg = ((int32_t)codelocation) >> 16;
+            segment_t __far* ptr = (segment_t __far *) playingdriver;
+            segment_t seg = ((int32_t)playingdriver) >> 16;
             for (i = 0; i < 13; i++){
                 ptr[2*i+1] = seg;
             }
@@ -615,7 +618,7 @@ void __far I_StartupSound(void) {
         // ((driverBlock __far * ) codelocation)->initDriver,
         //  musdriverstartposition[driverindex-1]
         // );
-            playingdriver = (driverBlock __far * ) ptr;
+
 
             playingdriver->initHardware(useport, 0, 0);
             playingdriver->initDriver();

@@ -263,8 +263,8 @@ je        set_found_channel
 inc       al
 cmp       al, MAX_MUSIC_CHANNELS
 jb        loop_music_channels
-mov       cx, word ptr [_playingtime]
-mov       dx, word ptr [_playingtime + 2]
+mov       cx, word ptr ds:[_playingtime]
+mov       dx, word ptr ds:[_playingtime + 2]
 mov       ah, 0FFh
 
 xor       al, al
@@ -418,7 +418,7 @@ pop       bx
 ret
 go_calculate_volume:
 mov       dl, al
-mov       al, byte ptr [_snd_MusicVolume]
+mov       al, byte ptr ds:[_snd_MusicVolume]
 xor       dh, dh
 call      calcVolume_
 not_volume_control:
@@ -502,7 +502,7 @@ xor       ch, ch
 or        byte ptr cs:[si+_mididriverdata_percussions - OFFSET SM_SBMID_STARTMARKER_], al
 mov       si, cx
 mov       dl, byte ptr cs:[si + _mididriverdata_controllers_ctrlvolume - OFFSET SM_SBMID_STARTMARKER_]
-mov       al, byte ptr [_snd_MusicVolume]
+mov       al, byte ptr ds:[_snd_MusicVolume]
 xor       dh, dh
 
 
@@ -517,8 +517,8 @@ mov       al, bh
 cbw      
 mov       si, ax
 shl       si, 2
-mov       dx, word ptr [_playingtime]
-mov       ax, word ptr [_playingtime + 2]
+mov       dx, word ptr ds:[_playingtime]
+mov       ax, word ptr ds:[_playingtime + 2]
 mov       word ptr cs:[si + _miditime - OFFSET SM_SBMID_STARTMARKER_], dx
 mov       cl, bh
 mov       word ptr cs:[si + 2 + _miditime - OFFSET SM_SBMID_STARTMARKER_], ax
@@ -570,8 +570,8 @@ mov       al, dl
 cbw      
 mov       bx, ax
 shl       bx, 2
-mov       ax, word ptr [_playingtime]
-mov       cx, word ptr [_playingtime + 2]
+mov       ax, word ptr ds:[_playingtime]
+mov       cx, word ptr ds:[_playingtime + 2]
 mov       word ptr cs:[bx + _miditime - OFFSET SM_SBMID_STARTMARKER_], ax
 mov       word ptr cs:[bx + 2 + _miditime - OFFSET SM_SBMID_STARTMARKER_], cx
 mov       bx, 127
@@ -617,8 +617,8 @@ mov       al, dl
 cbw      
 mov       bx, ax
 shl       bx, 2
-mov       ax, word ptr [_playingtime]
-mov       si, word ptr [_playingtime + 2]
+mov       ax, word ptr ds:[_playingtime]
+mov       si, word ptr ds:[_playingtime + 2]
 mov       word ptr cs:[bx + _miditime - OFFSET SM_SBMID_STARTMARKER_], ax
 mov       word ptr cs:[bx + 2 + _miditime - OFFSET SM_SBMID_STARTMARKER_], si
 mov       bl, dh
@@ -671,8 +671,8 @@ mov       al, cl
 cbw      
 mov       si, ax
 shl       si, 2
-mov       di, word ptr [_playingtime]
-mov       ax, word ptr [_playingtime + 2]
+mov       di, word ptr ds:[_playingtime]
+mov       ax, word ptr ds:[_playingtime + 2]
 mov       word ptr cs:[si + _miditime - OFFSET SM_SBMID_STARTMARKER_], di
 mov       word ptr cs:[si + 2 + _miditime - OFFSET SM_SBMID_STARTMARKER_], ax
 test      bh, bh
@@ -686,7 +686,7 @@ do_volume_control:
 cmp       cl, MIDI_PERC
 je        exit_changecontrol
 mov       dl, bl
-mov       al, byte ptr [_snd_MusicVolume]
+mov       al, byte ptr ds:[_snd_MusicVolume]
 xor       dh, dh
 xor       ah, ah
 
@@ -878,7 +878,7 @@ jmp       inc_loop_stop_channels
 PROC MIDIchangeSystemVolume_SBMID_  FAR
 PUBLIC MIDIchangeSystemVolume_SBMID_
 
-cmp       byte ptr [_playingstate], 2
+cmp       byte ptr ds:[_playingstate], 2
 je        actually_change_system_volume
 retf      
 

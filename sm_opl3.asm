@@ -57,10 +57,6 @@ MAX_INSTRUMENTS = 175
 MAX_INSTRUMENTS_PER_TRACK = 01Ch ; largest in doom1 or doom2
 
 
-ADLIBINSTRUMENTLIST_SEGMENT = 0CC00h
-;ADLIBCHANNELS_SEGMENT       = 0CC3Fh
-INSTRUMENTLOOKUP_SEGMENT    = 0CC51h
-
 SIZE_ADLIBCHANNELS          = 0120h
 
 PLAYING_PERCUSSION_MASK     = 08000h
@@ -130,6 +126,48 @@ db	112, 112, 113, 113, 114, 114, 115, 115
 db	116, 117, 117, 118, 118, 119, 119, 120
 db	120, 121, 121, 122, 122, 123, 123, 123
 db	124, 124, 125, 125, 126, 126, 127, 127
+db	0
+
+; begin externally accessible driver data
+
+_adlibinstrumentlist:
+; 0x24 each, for 0x1C instances
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+dw  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+
+
+_instrumentlookup:
+REPT MAX_INSTRUMENTS
+    ZERO_BYTE
+ENDM
 
 ; for low 7 notes
 _freqtable:
@@ -1325,11 +1363,7 @@ add   bl, (128 - 35)
 look_up_instrument:
 xor   bh, bh
 
-mov   ax, INSTRUMENTLOOKUP_SEGMENT
-mov   es, ax
-mov   al, byte ptr es:[bx]
-
-;mov   al, byte ptr cs:[bx + _instrumentlookup - OFFSET SM_OPL3_STARTMARKER_]
+mov   al, byte ptr cs:[bx + _instrumentlookup - OFFSET SM_OPL3_STARTMARKER_]
 cmp   al, 0FFh
 jne   found_instrument
 
@@ -1346,9 +1380,10 @@ mov   bl, byte ptr cs:[bx + _OPL2driverdata + 00h - OFFSET SM_OPL3_STARTMARKER_]
 jmp   look_up_instrument
 found_instrument:
 xor   ah, ah
-mov   dx, ADLIBINSTRUMENTLIST_SEGMENT
+mov   dx, cs
 mov   ah, SIZEOF_OP2INSTRENTRY
 mul   ah
+add   ax, OFFSET _adlibinstrumentlist - OFFSET SM_OPL3_STARTMARKER_
 pop   cx
 pop   bx
 ret  

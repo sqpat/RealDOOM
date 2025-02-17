@@ -181,19 +181,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define tempmusdataloc 0xCC000000
 #define size_AdLibInstrumentList (sizeof(OP2instrEntry) * MAX_INSTRUMENTS_PER_TRACK)
-#define size_AdlibChannels       (sizeof(AdlibChannelEntry) * OPL3CHANNELS)
-#define size_instrumentlookup    (sizeof(uint8_t) * MAX_INSTRUMENTS)
-
-/* MIDI channel occupation map */
-// #define size_mididriverData      (sizeof(MIDIdata))
-// #define size_MIDIchannels        (sizeof(uint8_t) * MAX_MUSIC_CHANNELS)
-// #define size_MIDItime            (sizeof(uint32_t) * MAX_MUSIC_CHANNELS)
-
-
-
-#define AdLibInstrumentList      ((OP2instrEntry __far*)      MAKE_FULL_SEGMENT(tempmusdataloc, 0))  // 10240
-#define AdLibChannels            ((AdlibChannelEntry __far*)  MAKE_FULL_SEGMENT(AdLibInstrumentList, size_AdLibInstrumentList))
-#define instrumentlookup         ((uint8_t __far*)            MAKE_FULL_SEGMENT(AdLibChannels,       size_AdlibChannels))
 
 
 
