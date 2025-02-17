@@ -28,9 +28,6 @@ EXTRN _playingtime:DWORD
 EXTRN _playingdriver:DWORD
 EXTRN _snd_MusicVolume:BYTE
 EXTRN _playingstate:BYTE
-EXTRN _MPU401port:WORD
-EXTRN _MUS2MIDIctrl:BYTE
-EXTRN _runningStatus:BYTE
 
 .CODE
 
@@ -106,7 +103,6 @@ SIZE_ADLIBCHANNELS          = 0120h
 PLAYING_PERCUSSION_MASK     = 08000h
 
 MIDI_PERC                   = 9
-MIDITIME_SEGMENT            = 0CC12h
 
 SIZE_MIDICHANNELS           = 010h
 SIZE_MIDITIME               = 040h
@@ -163,7 +159,17 @@ db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 _midichannels:
 db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
+_miditime:
+dd 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
+_MUS2MIDIctrl:
+db 0FFh, 0, 1, 7, 10, 11, 91, 93, 64, 67, 120, 123, 126, 127, 121
+
+_runningStatus:
+db 0
+
+_MPU401port:
+dw 0330h
 
 PROC  calcVolume_   NEAR
 
@@ -241,17 +247,18 @@ jb        loop_music_channels
 mov       cx, word ptr [_playingtime]
 mov       dx, word ptr [_playingtime + 2]
 mov       ah, 0FFh
-mov       si, MIDITIME_SEGMENT
+
 xor       al, al
 loop_channels_find_oldest:
 mov       bl, al
 xor       bh, bh
-mov       es, si
-shl       bx, 2
-cmp       dx, word ptr es:[bx + 2]
+
+shl       bx, 1
+shl       bx, 1
+cmp       dx, word ptr cs:[bx + 2 + _miditime]
 ja        update_time_oldest
 jne       inc_loop_channels_find_oldest
-cmp       cx, word ptr es:[bx]
+cmp       cx, word ptr cs:[bx + _miditime]
 ja        update_time_oldest
 inc_loop_channels_find_oldest:
 inc       al
@@ -276,8 +283,8 @@ mov       byte ptr cs:[bx + _midichannels], ah
 jmp       return_found_channel
 update_time_oldest:
 mov       ah, al
-mov       cx, word ptr es:[bx]
-mov       dx, word ptr es:[bx + 2]
+mov       cx, word ptr cs:[bx + _miditime]
+mov       dx, word ptr cs:[bx + 2 + _miditime]
 jmp       inc_loop_channels_find_oldest
 done_looping_channels_find_oldest:
 mov       dl, ah
@@ -404,7 +411,7 @@ xor       ah, ah
 mov       si, word ptr [_playingdriver]
 mov       di, ax
 xor       bh, bh
-mov       dl, byte ptr [di + _MUS2MIDIctrl]
+mov       dl, byte ptr cs:[di + _MUS2MIDIctrl]
 mov       al, byte ptr [bp - 4]
 
 xor       dh, dh
@@ -493,14 +500,12 @@ play_not_percussion:
 mov       al, bh
 cbw      
 mov       si, ax
-mov       ax, MIDITIME_SEGMENT
 shl       si, 2
-mov       es, ax
 mov       dx, word ptr [_playingtime]
 mov       ax, word ptr [_playingtime + 2]
-mov       word ptr es:[si], dx
+mov       word ptr cs:[si + _miditime], dx
 mov       cl, bh
-mov       word ptr es:[si + 2], ax
+mov       word ptr cs:[si + 2 + _miditime], ax
 mov       dl, byte ptr [bp - 2]
 mov       si, word ptr [_playingdriver]
 mov       al, bl
@@ -549,14 +554,12 @@ release_non_percussion:
 mov       al, dl
 cbw      
 mov       bx, ax
-mov       ax, MIDITIME_SEGMENT
 shl       bx, 2
-mov       es, ax
 mov       ax, word ptr [_playingtime]
 mov       cx, word ptr [_playingtime + 2]
-mov       word ptr es:[bx], ax
+mov       word ptr cs:[bx + _miditime], ax
 mov       si, word ptr [_playingdriver]
-mov       word ptr es:[bx + 2], cx
+mov       word ptr cs:[bx + 2 + _miditime], cx
 mov       bx, 127
 mov       cl, dh
 mov       al, dl
@@ -599,13 +602,11 @@ and       cx, 080h       ; cx gets al low bit ? 080h : 000h
 mov       al, dl
 cbw      
 mov       bx, ax
-mov       ax, MIDITIME_SEGMENT
 shl       bx, 2
-mov       es, ax
 mov       ax, word ptr [_playingtime]
 mov       si, word ptr [_playingtime + 2]
-mov       word ptr es:[bx], ax
-mov       word ptr es:[bx + 2], si
+mov       word ptr cs:[bx + _miditime], ax
+mov       word ptr cs:[bx + 2 + _miditime], si
 mov       si, word ptr [_playingdriver]
 mov       bl, dh
 mov       al, cl
@@ -656,13 +657,11 @@ jl        exit_changecontrol
 mov       al, cl
 cbw      
 mov       si, ax
-mov       ax, MIDITIME_SEGMENT
 shl       si, 2
-mov       es, ax
 mov       di, word ptr [_playingtime]
 mov       ax, word ptr [_playingtime + 2]
-mov       word ptr es:[si], di
-mov       word ptr es:[si + 2], ax
+mov       word ptr cs:[si + _miditime], di
+mov       word ptr cs:[si + 2 + _miditime], ax
 test      bh, bh
 je        do_patch_instrument
 cmp       bh, CTRLRESETCTRLS
@@ -688,7 +687,7 @@ mov       bl, bh
 xor       ah, ah
 xor       bh, bh
 xor       ch, ch
-mov       dl, byte ptr [bx + _MUS2MIDIctrl]
+mov       dl, byte ptr cs:[bx + _MUS2MIDIctrl]
 mov       bx, ax
 xor       dh, dh
 mov       ax, cx
@@ -953,10 +952,9 @@ mov       di, OFFSET _midichannels
 rep       stosw 
 mov       byte ptr cs:[MIDI_PERC + _midichannels], 080h    ; mark perc channel occupied
 mov       cx, SIZE_MIDITIME / 2
-mov       ax, MIDITIME_SEGMENT
-mov       es, ax
 xor       ax, ax
-mov       di, ax
+; di should already be at this offset!
+;mov       di, OFFSET _miditime
 rep       stosw 
 pop       di
 pop       cx
@@ -985,7 +983,7 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 mov   byte ptr [bp - 2], al
-mov   bx, word ptr [_MPU401port]
+mov   bx, word ptr cs:[_MPU401port]
 mov   cx, 10000      ; timeout
 inc   bx
 mpu_is_not_empty:
@@ -1001,7 +999,7 @@ mov   al, 100
 loop_mpu_delay:
 dec   al
 jne   loop_mpu_delay
-mov   dx, word ptr [_MPU401port]
+mov   dx, word ptr cs:[_MPU401port]
 in    al, dx
 sub   ah, ah
 dec   cx
@@ -1014,7 +1012,7 @@ pop   bx
 ret
 mpu_is_busy:
 mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [_MPU401port]
+mov   dx, word ptr cs:[_MPU401port]
 out   dx, al
 xor   al, al
 LEAVE_MACRO 
@@ -1033,7 +1031,7 @@ PUBLIC  MPU401sendBlock_
 
 push  bx
 mov   bx, ax
-mov   byte ptr [_runningStatus], 0
+mov   byte ptr cs:[_runningStatus], 0
 cli   
 loop_send_next_mpu_byte:
 dec   dx
@@ -1060,7 +1058,7 @@ PUBLIC  MPU401reset_
 
 
 mov   ax, MPU401_RESET
-mov   byte ptr [_runningStatus], 0
+mov   byte ptr cs:[_runningStatus], 0
 
 call  MPU401sendCommand_
 test  al, al
@@ -1087,9 +1085,9 @@ xor   bl, bl
 or    al, MIDI_NOTE_ON
 not_midi_note_off_mpu:
 cli   
-cmp   al, byte ptr [_runningStatus]
+cmp   al, byte ptr cs:[_runningStatus]
 je    skip_send_byte_mpu
-mov   byte ptr [_runningStatus], al
+mov   byte ptr cs:[_runningStatus], al
 xor   ah, ah
 
 call  MPU401sendByte_
@@ -1116,12 +1114,12 @@ ENDP
 PROC  MPU401detectHardware_    FAR
 PUBLIC  MPU401detectHardware_
 
-mov   dx, word ptr [_MPU401port]
-mov   word ptr [_MPU401port], ax
+mov   dx, word ptr cs:[_MPU401port]
+mov   word ptr cs:[_MPU401port], ax
 
 call  MPU401reset_
 inc   al
-mov   word ptr [_MPU401port], dx
+mov   word ptr cs:[_MPU401port], dx
 retf  
 
 ENDP
@@ -1130,7 +1128,7 @@ PROC  MPU401initHardware_    FAR
 PUBLIC  MPU401initHardware_
 
 
-mov   word ptr [_MPU401port], ax
+mov   word ptr cs:[_MPU401port], ax
 
 call  MPU401reset_
 test  al, al
@@ -1162,8 +1160,8 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 mov   byte ptr [bp - 2], al
-mov   bx, word ptr [_MPU401port]
-mov   byte ptr [_runningStatus], 0
+mov   bx, word ptr cs:[_MPU401port]
+mov   byte ptr cs:[_runningStatus], 0
 inc   bx
 mov   cx, 0FFFFh
 mov   dx, bx
@@ -1194,7 +1192,7 @@ pop   bx
 ret
 
 mpu_is_busy_sendcommand:
-mov   dx, word ptr [_MPU401port]
+mov   dx, word ptr cs:[_MPU401port]
 in    al, dx
 sub   ah, ah
 cmp   ax, MPU401_ACK

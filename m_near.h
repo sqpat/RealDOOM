@@ -1340,9 +1340,6 @@ extern uint8_t				playingstate;
 extern uint16_t			    playingpercussMask;
 extern volatile uint32_t 	playingtime;
 extern int8_t				loops_enabled;
-extern uint16_t 			SBMIDIport;
-extern uint8_t	 			runningStatus;
-extern uint16_t 			MPU401port;
 
 
 
@@ -1400,7 +1397,6 @@ extern int8_t pitchwheeltable[256];
 
 
 /* MUS -> MIDI controller number conversion */
-extern uint8_t 	MUS2MIDIctrl[15];
 
 #define  MUS_DRIVER_TYPE_NONE   0
 #define  MUS_DRIVER_TYPE_OPL2 	1

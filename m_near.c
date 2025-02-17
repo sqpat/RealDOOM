@@ -2023,30 +2023,11 @@ uint8_t				playingstate = ST_EMPTY;
 uint16_t			playingpercussMask = 1 << PERCUSSION;	// todo #define? or should other instruments be forced into percussion?
 volatile uint32_t 	playingtime = 0;
 int8_t				loops_enabled = false;
-uint16_t 			SBMIDIport = SBMIDIPORT;
-uint8_t	 			runningStatus = 0;
-uint16_t 			MPU401port = MPU401PORT;
 
 
 
 
-/* MUS -> MIDI controller number conversion */
-uint8_t MUS2MIDIctrl[] = {	/* MUS controller: */
-	0xFF,				/*  0 - instrument--event 0xC0 */
-	0,				/*  1 - bank select */
-	1,				/*  2 - modulation pot */
-	7,				/*  3 - volume */
-	10,				/*  4 - pan (balance) pot */
-	11,				/*  5 - expression pot */
-	91,				/*  6 - reverb depth */
-	93,				/*  7 - chorus depth */
-	64,				/*  8 - sustain pedal (hold) */
-	67,				/*  9 - soft pedal */
-	120,				/* 10 - all sounds off */
-	123,				/* 11 - all notes off */
-	126,				/* 12 - mono */
-	127,				/* 13 - poly */
-	121};				/* 14 - reset all controllers */
+
 
 
 
