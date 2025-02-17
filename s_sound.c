@@ -91,13 +91,20 @@ void S_SetMusicVolume(uint8_t volume) {
 
 
 }
-
-
 void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
+	pendingmusicenum = musicnum;
+	pendingmusicenumlooping = looping;
+}
 
-	
+
+void S_ActuallyChangeMusic (  ) {
+
     musicinfo_t*	music;
 	int8_t		namebuf[9];
+	musicenum_t musicnum = pendingmusicenum;
+	boolean looping = pendingmusicenumlooping;
+	pendingmusicenum = 0;
+
 
     if (snd_MusicDevice == snd_Adlib && musicnum == mus_intro) {
         musicnum = mus_introa;

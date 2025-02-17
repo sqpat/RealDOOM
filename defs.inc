@@ -104,6 +104,9 @@ _bombspot_pos = 					_NULL_OFFSET + 000A0h
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
 _player_ptr = 						_NULL_OFFSET + 000ACh
+_pendingmusicenum =                 _NULL_OFFSET + 000AEh
+_pendingmusicenumlooping =          _NULL_OFFSET + 000AFh
+
 ; free
 _is_ultimate = 						_NULL_OFFSET + 000B5h
 _firstspritelump = 					_NULL_OFFSET + 000B6h

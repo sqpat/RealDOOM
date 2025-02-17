@@ -293,6 +293,8 @@ boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up men
 		return false;
 	}
 
+
+
 	if (gamestate == GS_LEVEL) {
 		if (HU_Responder(ev)) {
 			return true; // chat ate the event

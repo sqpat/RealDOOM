@@ -147,7 +147,10 @@
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
 #define player_ptr                      (*((player_t __near* _near*)         (_NULL_OFFSET + 0x00AC)))
+#define pendingmusicenum                (*((musicenum_t _near*)              (_NULL_OFFSET + 0x00AE)))
+#define pendingmusicenumlooping         (*((boolean _near*)              	 (_NULL_OFFSET + 0x00AF)))
 
+	
 // ae-b4 free
 
 #define is_ultimate                     (*(boolean __near *)                 (_NULL_OFFSET + 0x00B5))

@@ -930,7 +930,9 @@ void __near D_DoomLoop (void) {
         }
 		S_UpdateSounds (playerMobjRef);// move positional sounds
  		// Update display, next frame, with current state.
-
+		if (pendingmusicenum){
+			S_ActuallyChangeMusic();
+		}
 
 #ifdef DETAILED_BENCH_STATS
 		cachedtics = ticcount;
