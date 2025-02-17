@@ -126,31 +126,31 @@ ENDP
 
 ;; START DRIVERBLOCK
 
-dw	OFFSET 	MIDIinitDriver_MPU401_
+dw	OFFSET 	MIDIinitDriver_MPU401_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MPU401detectHardware_
+dw	OFFSET 	MPU401detectHardware_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MPU401initHardware_
+dw	OFFSET 	MPU401initHardware_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MPU401deinitHardware_
+dw	OFFSET 	MPU401deinitHardware_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MIDIplayNote_MPU401_
+dw	OFFSET 	MIDIplayNote_MPU401_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MIDIreleaseNote_MPU401_
+dw	OFFSET 	MIDIreleaseNote_MPU401_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MIDIpitchWheel_MPU401_
+dw	OFFSET 	MIDIpitchWheel_MPU401_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MIDIchangeControl_MPU401_
+dw	OFFSET 	MIDIchangeControl_MPU401_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MIDIplayMusic_MPU401_
+dw	OFFSET 	MIDIplayMusic_MPU401_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MIDIstopMusic_MPU401_
+dw	OFFSET 	MIDIstopMusic_MPU401_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MIDIpauseMusic_MPU401_
+dw	OFFSET 	MIDIpauseMusic_MPU401_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MIDIresumeMusic_MPU401_
+dw	OFFSET 	MIDIresumeMusic_MPU401_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
-dw	OFFSET 	MIDIchangeSystemVolume_MPU401_
+dw	OFFSET 	MIDIchangeSystemVolume_MPU401_ - OFFSET SM_MPUMD_STARTMARKER_
 dw  0
 db	MUS_DRIVER_TYPE_MPU401
 
@@ -272,7 +272,7 @@ loop_music_channels:
 mov       bl, al
 
 xor       bh, bh
-cmp       byte ptr cs:[bx + _midichannels], 0FFh
+cmp       byte ptr cs:[bx + _midichannels - OFFSET SM_MPUMD_STARTMARKER_], 0FFh
 je        set_found_channel
 inc       al
 cmp       al, MAX_MUSIC_CHANNELS
@@ -288,10 +288,10 @@ xor       bh, bh
 
 shl       bx, 1
 shl       bx, 1
-cmp       dx, word ptr cs:[bx + 2 + _miditime]
+cmp       dx, word ptr cs:[bx + 2 + _miditime - OFFSET SM_MPUMD_STARTMARKER_]
 ja        update_time_oldest
 jne       inc_loop_channels_find_oldest
-cmp       cx, word ptr cs:[bx + _miditime]
+cmp       cx, word ptr cs:[bx + _miditime - OFFSET SM_MPUMD_STARTMARKER_]
 ja        update_time_oldest
 inc_loop_channels_find_oldest:
 inc       al
@@ -312,12 +312,12 @@ pop       bx
 ret      
 set_found_channel:
 mov       ah, byte ptr [bp - 2]
-mov       byte ptr cs:[bx + _midichannels], ah
+mov       byte ptr cs:[bx + _midichannels - OFFSET SM_MPUMD_STARTMARKER_], ah
 jmp       return_found_channel
 update_time_oldest:
 mov       ah, al
-mov       cx, word ptr cs:[bx + _miditime]
-mov       dx, word ptr cs:[bx + 2 + _miditime]
+mov       cx, word ptr cs:[bx + _miditime - OFFSET SM_MPUMD_STARTMARKER_]
+mov       dx, word ptr cs:[bx + 2 + _miditime - OFFSET SM_MPUMD_STARTMARKER_]
 jmp       inc_loop_channels_find_oldest
 done_looping_channels_find_oldest:
 mov       dl, ah
@@ -325,16 +325,16 @@ cmp       ah, 0FFh
 je        dont_stop_channel
 mov       bl, ah
 xor       bh, bh
-mov       al, byte ptr cs:[bx + _midichannels]
+mov       al, byte ptr cs:[bx + _midichannels - OFFSET SM_MPUMD_STARTMARKER_]
 xor       ah, ah
 
 mov       si, ax
 mov       ax, bx
-mov       byte ptr cs:[si + _mididriverdata_realChannels], 0FFh
+mov       byte ptr cs:[si + _mididriverdata_realChannels - OFFSET SM_MPUMD_STARTMARKER_], 0FFh
 
 call      stopChannel_
 mov       al, byte ptr [bp - 2]
-mov       byte ptr cs:[bx + _midichannels], al
+mov       byte ptr cs:[bx + _midichannels - OFFSET SM_MPUMD_STARTMARKER_], al
 dont_stop_channel:
 mov       al, dl
 LEAVE_MACRO     
@@ -363,7 +363,7 @@ mov       byte ptr [bp - 2], al
 mov       bl, al
 xor       bh, bh
 
-mov       ch, byte ptr cs:[bx + _mididriverdata_realChannels]
+mov       ch, byte ptr cs:[bx + _mididriverdata_realChannels - OFFSET SM_MPUMD_STARTMARKER_]
 test      ch, ch
 jge       controller_not_zero
 LEAVE_MACRO     
@@ -377,7 +377,7 @@ ret
 controller_not_zero:
 mov       si, word ptr [_playingdriver]
 mov       al, ch
-mov       dl, byte ptr cs:[bx + _mididriverdata]
+mov       dl, byte ptr cs:[bx + _mididriverdata - OFFSET SM_MPUMD_STARTMARKER_]
 or        al, MIDI_PATCH
 xor       dh, dh
 xor       bl, bl
@@ -394,7 +394,7 @@ mov       bx, ax
 mov       al, byte ptr [bp - 2]
 shl       bx, 4
 add       bx, ax
-mov       al, byte ptr cs:[bx + _mididriverdata]
+mov       al, byte ptr cs:[bx + _mididriverdata - OFFSET SM_MPUMD_STARTMARKER_]
 cmp       cl, CTRLVOLUME
 jne       not_volume_control
 cmp       ch, MIDI_PERC
@@ -407,7 +407,7 @@ jb        controller_loop
 mov       al, byte ptr [bp - 2]
 xor       ah, ah
 mov       bx, ax
-mov       dl, byte ptr cs:[bx + _mididriverdata_pitchWheel]       ; pitchWheel
+mov       dl, byte ptr cs:[bx + _mididriverdata_pitchWheel - OFFSET SM_MPUMD_STARTMARKER_]       ; pitchWheel
 
 ; calculate pitch
 mov       al, dl
@@ -444,7 +444,7 @@ xor       ah, ah
 mov       si, word ptr [_playingdriver]
 mov       di, ax
 xor       bh, bh
-mov       dl, byte ptr cs:[di + _MUS2MIDIctrl]
+mov       dl, byte ptr cs:[di + _MUS2MIDIctrl - OFFSET SM_MPUMD_STARTMARKER_]
 mov       al, byte ptr [bp - 4]
 
 xor       dh, dh
@@ -477,10 +477,10 @@ xor       ah, ah
 
 mov       si, ax
 
-mov       bh, byte ptr cs:[si + _mididriverdata_realChannels]
+mov       bh, byte ptr cs:[si + _mididriverdata_realChannels - OFFSET SM_MPUMD_STARTMARKER_]
 cmp       bl, -1
 je        use_last_volume
-mov       byte ptr cs:[si+_mididriverdata_channelLastVolume], bl
+mov       byte ptr cs:[si+_mididriverdata_channelLastVolume - OFFSET SM_MPUMD_STARTMARKER_], bl
 jmp       got_volume
 go_find_channel:
 mov       dl, ch
@@ -491,13 +491,13 @@ mov       bh, al
 test      al, al
 jl        exit_playnote_2
 mov       si, dx
-mov       byte ptr cs:[si + _mididriverdata_realChannels], al
+mov       byte ptr cs:[si + _mididriverdata_realChannels - OFFSET SM_MPUMD_STARTMARKER_], al
 mov       ax, dx
 call      updateControllers_
 jmp       channel_positive
 
 use_last_volume:
-mov       bl, byte ptr cs:[si+_mididriverdata_channelLastVolume]
+mov       bl, byte ptr cs:[si+_mididriverdata_channelLastVolume - OFFSET SM_MPUMD_STARTMARKER_]
 got_volume:
 test      bh, bh
 jnge      go_find_channel
@@ -516,9 +516,9 @@ shl       al, cl
 mov       cl, ch
 
 xor       ch, ch
-or        byte ptr cs:[si+_mididriverdata_percussions], al
+or        byte ptr cs:[si+_mididriverdata_percussions - OFFSET SM_MPUMD_STARTMARKER_], al
 mov       si, cx
-mov       dl, byte ptr cs:[si + _mididriverdata_controllers_ctrlvolume]
+mov       dl, byte ptr cs:[si + _mididriverdata_controllers_ctrlvolume - OFFSET SM_MPUMD_STARTMARKER_]
 mov       al, byte ptr [_snd_MusicVolume]
 xor       dh, dh
 
@@ -536,9 +536,9 @@ mov       si, ax
 shl       si, 2
 mov       dx, word ptr [_playingtime]
 mov       ax, word ptr [_playingtime + 2]
-mov       word ptr cs:[si + _miditime], dx
+mov       word ptr cs:[si + _miditime - OFFSET SM_MPUMD_STARTMARKER_], dx
 mov       cl, bh
-mov       word ptr cs:[si + 2 + _miditime], ax
+mov       word ptr cs:[si + 2 + _miditime - OFFSET SM_MPUMD_STARTMARKER_], ax
 mov       dl, byte ptr [bp - 2]
 mov       si, word ptr [_playingdriver]
 mov       al, bl
@@ -569,7 +569,7 @@ mov       dh, dl
 xor       ah, ah
 
 mov       bx, ax
-mov       dl, byte ptr cs:[bx + _mididriverdata_realChannels]
+mov       dl, byte ptr cs:[bx + _mididriverdata_realChannels - OFFSET SM_MPUMD_STARTMARKER_]
 test      dl, dl
 jl        exit_releasenote
 cmp       dl, MIDI_PERC
@@ -582,7 +582,7 @@ mov       al, 1
 sar       bx, 3
 shl       al, cl
 not       al
-and       byte ptr cs:[bx+_mididriverdata_percussions], al
+and       byte ptr cs:[bx+_mididriverdata_percussions - OFFSET SM_MPUMD_STARTMARKER_], al
 release_non_percussion:
 mov       al, dl
 cbw      
@@ -590,9 +590,9 @@ mov       bx, ax
 shl       bx, 2
 mov       ax, word ptr [_playingtime]
 mov       cx, word ptr [_playingtime + 2]
-mov       word ptr cs:[bx + _miditime], ax
+mov       word ptr cs:[bx + _miditime - OFFSET SM_MPUMD_STARTMARKER_], ax
 mov       si, word ptr [_playingdriver]
-mov       word ptr cs:[bx + 2 + _miditime], cx
+mov       word ptr cs:[bx + 2 + _miditime - OFFSET SM_MPUMD_STARTMARKER_], cx
 mov       bx, 127
 mov       cl, dh
 mov       al, dl
@@ -620,8 +620,8 @@ mov       bl, al
 mov       al, dl
 xor       bh, bh
 
-mov       dl, byte ptr cs:[bx + _mididriverdata_realChannels]
-mov       byte ptr cs:[bx + _mididriverdata_pitchWheel], al
+mov       dl, byte ptr cs:[bx + _mididriverdata_realChannels - OFFSET SM_MPUMD_STARTMARKER_]
+mov       byte ptr cs:[bx + _mididriverdata_pitchWheel - OFFSET SM_MPUMD_STARTMARKER_], al
 test      dl, dl
 jl        exit_pitchwheel
 mov       bl, al
@@ -638,8 +638,8 @@ mov       bx, ax
 shl       bx, 2
 mov       ax, word ptr [_playingtime]
 mov       si, word ptr [_playingtime + 2]
-mov       word ptr cs:[bx + _miditime], ax
-mov       word ptr cs:[bx + 2 + _miditime], si
+mov       word ptr cs:[bx + _miditime - OFFSET SM_MPUMD_STARTMARKER_], ax
+mov       word ptr cs:[bx + 2 + _miditime - OFFSET SM_MPUMD_STARTMARKER_], si
 mov       si, word ptr [_playingdriver]
 mov       bl, dh
 mov       al, cl
@@ -673,7 +673,7 @@ mov       dh, al
 mov       bh, dl
 xor       ah, ah
 mov       si, ax
-mov       cl, byte ptr cs:[si + _mididriverdata_realChannels]
+mov       cl, byte ptr cs:[si + _mididriverdata_realChannels - OFFSET SM_MPUMD_STARTMARKER_]
 cmp       dl, NUM_CONTROLLERS
 jnb       done_recording_controller_value
 record_controller_value:
@@ -682,7 +682,7 @@ mov       byte ptr [bp - 1], ah
 mov       si, word ptr [bp - 2]
 shl       si, 4
 add       si, ax
-mov       byte ptr cs:[si + _mididriverdata_controllers], bl
+mov       byte ptr cs:[si + _mididriverdata_controllers - OFFSET SM_MPUMD_STARTMARKER_], bl
 
 done_recording_controller_value:
 test      cl, cl
@@ -693,8 +693,8 @@ mov       si, ax
 shl       si, 2
 mov       di, word ptr [_playingtime]
 mov       ax, word ptr [_playingtime + 2]
-mov       word ptr cs:[si + _miditime], di
-mov       word ptr cs:[si + 2 + _miditime], ax
+mov       word ptr cs:[si + _miditime - OFFSET SM_MPUMD_STARTMARKER_], di
+mov       word ptr cs:[si + 2 + _miditime - OFFSET SM_MPUMD_STARTMARKER_], ax
 test      bh, bh
 je        do_patch_instrument
 cmp       bh, CTRLRESETCTRLS
@@ -720,7 +720,7 @@ mov       bl, bh
 xor       ah, ah
 xor       bh, bh
 xor       ch, ch
-mov       dl, byte ptr cs:[bx + _MUS2MIDIctrl]
+mov       dl, byte ptr cs:[bx + _MUS2MIDIctrl - OFFSET SM_MPUMD_STARTMARKER_]
 mov       bx, ax
 xor       dh, dh
 mov       ax, cx
@@ -747,13 +747,13 @@ xor       ax, ax
 mov       al, dh
 mov       si, ax
 xor       ax, ax
-mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlbank], al
-mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlmodulation], al
-mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlpan], 64
-mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlexpression], 127
-mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlsustainpedal], al
-mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlsoftpedal], al
-mov       byte ptr cs:[si + _mididriverdata_pitchWheel], DEFAULT_PITCH_BEND
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlbank - OFFSET SM_MPUMD_STARTMARKER_], al
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlmodulation - OFFSET SM_MPUMD_STARTMARKER_], al
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlpan - OFFSET SM_MPUMD_STARTMARKER_], 64
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlexpression - OFFSET SM_MPUMD_STARTMARKER_], 127
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlsustainpedal - OFFSET SM_MPUMD_STARTMARKER_], al
+mov       byte ptr cs:[si + _mididriverdata_controllers_ctrlsoftpedal - OFFSET SM_MPUMD_STARTMARKER_], al
+mov       byte ptr cs:[si + _mididriverdata_pitchWheel - OFFSET SM_MPUMD_STARTMARKER_], DEFAULT_PITCH_BEND
 jmp       do_generic_control
 
 ENDP
@@ -773,19 +773,19 @@ push      dx
 push      si
 push      di
 mov       cx, 010h / 2
-mov       di, OFFSET _mididriverdata_percussions
+mov       di, OFFSET _mididriverdata_percussions - OFFSET SM_MPUMD_STARTMARKER_
 push      cs
 pop       es
 xor       ax, ax
 rep stosw 
 mov       bx, ax  ; zero out
-mov       di, OFFSET _mididriverdata
+mov       di, OFFSET _mididriverdata - OFFSET SM_MPUMD_STARTMARKER_
 
 
 push      cs
 pop       ds
 
-mov       si, OFFSET DUMMY_BASE_CONTROLLER_VALUES
+mov       si, OFFSET DUMMY_BASE_CONTROLLER_VALUES - OFFSET SM_MPUMD_STARTMARKER_
 mov       ah, MAX_MUSIC_CHANNELS
 
 loop_ready_controllers:
@@ -853,7 +853,7 @@ mov       al, byte ptr [bp - 2]
 cbw      
 
 mov       bx, ax
-mov       al, byte ptr cs:[bx + _mididriverdata_realChannels]
+mov       al, byte ptr cs:[bx + _mididriverdata_realChannels - OFFSET SM_MPUMD_STARTMARKER_]
 test      al, al
 jl        inc_loop_stop_channels
 cmp       al, MIDI_PERC
@@ -868,7 +868,7 @@ mov       bx, dx
 sar       bx, 3
 mov       cl, ch
 and       cl, 7
-mov       al, byte ptr cs:[bx+_mididriverdata_percussions]
+mov       al, byte ptr cs:[bx+_mididriverdata_percussions - OFFSET SM_MPUMD_STARTMARKER_]
 mov       bx, 1
 xor       ah, ah
 shl       bx, cl
@@ -924,7 +924,7 @@ mov       al, cl
 
 cbw      
 mov       bx, ax
-mov       ch, byte ptr cs:[bx + _mididriverdata_realChannels]
+mov       ch, byte ptr cs:[bx + _mididriverdata_realChannels - OFFSET SM_MPUMD_STARTMARKER_]
 
 test      ch, ch
 jl        inc_loop_change_system_volume
@@ -933,7 +933,7 @@ je        inc_loop_change_system_volume
 ; inlined sendSystemVolume
 mov       bx, ax
 mov       si, word ptr [_playingdriver]
-mov       dl, byte ptr cs:[bx + _mididriverdata_controllers_ctrlvolume]
+mov       dl, byte ptr cs:[bx + _mididriverdata_controllers_ctrlvolume - OFFSET SM_MPUMD_STARTMARKER_]
 mov       al, byte ptr [bp - 2]
 xor       dh, dh
 xor       ah, ah
@@ -981,13 +981,13 @@ mov       cx, SIZE_MIDICHANNELS / 2
 push      cs
 pop       es
 mov       ax, 0FFFFh
-mov       di, OFFSET _midichannels
+mov       di, OFFSET _midichannels - OFFSET SM_MPUMD_STARTMARKER_
 rep       stosw 
-mov       byte ptr cs:[MIDI_PERC + _midichannels], 080h    ; mark perc channel occupied
+mov       byte ptr cs:[MIDI_PERC + _midichannels - OFFSET SM_MPUMD_STARTMARKER_], 080h    ; mark perc channel occupied
 mov       cx, SIZE_MIDITIME / 2
 xor       ax, ax
 ; di should already be at this offset!
-;mov       di, OFFSET _miditime
+;mov       di, OFFSET _miditime - OFFSET SM_MPUMD_STARTMARKER_
 rep       stosw 
 pop       di
 pop       cx
@@ -1016,7 +1016,7 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 mov   byte ptr [bp - 2], al
-mov   bx, word ptr cs:[_MPU401port]
+mov   bx, word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_]
 mov   cx, 10000      ; timeout
 inc   bx
 mpu_is_not_empty:
@@ -1032,7 +1032,7 @@ mov   al, 100
 loop_mpu_delay:
 dec   al
 jne   loop_mpu_delay
-mov   dx, word ptr cs:[_MPU401port]
+mov   dx, word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_]
 in    al, dx
 sub   ah, ah
 dec   cx
@@ -1045,7 +1045,7 @@ pop   bx
 ret
 mpu_is_busy:
 mov   al, byte ptr [bp - 2]
-mov   dx, word ptr cs:[_MPU401port]
+mov   dx, word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_]
 out   dx, al
 xor   al, al
 LEAVE_MACRO 
@@ -1064,7 +1064,7 @@ PUBLIC  MPU401sendBlock_
 
 push  bx
 mov   bx, ax
-mov   byte ptr cs:[_runningStatus], 0
+mov   byte ptr cs:[_runningStatus - OFFSET SM_MPUMD_STARTMARKER_], 0
 cli   
 loop_send_next_mpu_byte:
 dec   dx
@@ -1091,7 +1091,7 @@ PUBLIC  MPU401reset_
 
 
 mov   ax, MPU401_RESET
-mov   byte ptr cs:[_runningStatus], 0
+mov   byte ptr cs:[_runningStatus - OFFSET SM_MPUMD_STARTMARKER_], 0
 
 call  MPU401sendCommand_
 test  al, al
@@ -1118,9 +1118,9 @@ xor   bl, bl
 or    al, MIDI_NOTE_ON
 not_midi_note_off_mpu:
 cli   
-cmp   al, byte ptr cs:[_runningStatus]
+cmp   al, byte ptr cs:[_runningStatus - OFFSET SM_MPUMD_STARTMARKER_]
 je    skip_send_byte_mpu
-mov   byte ptr cs:[_runningStatus], al
+mov   byte ptr cs:[_runningStatus - OFFSET SM_MPUMD_STARTMARKER_], al
 xor   ah, ah
 
 call  MPU401sendByte_
@@ -1147,12 +1147,12 @@ ENDP
 PROC  MPU401detectHardware_    FAR
 PUBLIC  MPU401detectHardware_
 
-mov   dx, word ptr cs:[_MPU401port]
-mov   word ptr cs:[_MPU401port], ax
+mov   dx, word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_]
+mov   word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_], ax
 
 call  MPU401reset_
 inc   al
-mov   word ptr cs:[_MPU401port], dx
+mov   word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_], dx
 retf  
 
 ENDP
@@ -1161,7 +1161,7 @@ PROC  MPU401initHardware_    FAR
 PUBLIC  MPU401initHardware_
 
 
-mov   word ptr cs:[_MPU401port], ax
+mov   word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_], ax
 
 call  MPU401reset_
 test  al, al
@@ -1193,8 +1193,8 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 mov   byte ptr [bp - 2], al
-mov   bx, word ptr cs:[_MPU401port]
-mov   byte ptr cs:[_runningStatus], 0
+mov   bx, word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_]
+mov   byte ptr cs:[_runningStatus - OFFSET SM_MPUMD_STARTMARKER_], 0
 inc   bx
 mov   cx, 0FFFFh
 mov   dx, bx
@@ -1225,7 +1225,7 @@ pop   bx
 ret
 
 mpu_is_busy_sendcommand:
-mov   dx, word ptr cs:[_MPU401port]
+mov   dx, word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_]
 in    al, dx
 sub   ah, ah
 cmp   ax, MPU401_ACK

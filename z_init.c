@@ -516,6 +516,14 @@ void __near Z_LoadBinaries() {
 	fseek(fp2, codesize, SEEK_CUR);
 	codestartposition[2] = ftell(fp2);
 
+	for (i = 0; i < MUS_DRIVER_COUNT-1; i++){
+		fread(&codesize, 2, 1, fp2);
+		fseek(fp2, codesize, SEEK_CUR);
+		musdriverstartposition[i] = ftell(fp2);
+
+	}
+
+
 	//FAR_fread(code_overlay_start, codesize, 1, fp2);
 
 

@@ -70,6 +70,16 @@ void __far WI_Start();
 void __far WI_Ticker();
 void __far WI_Drawer();
 
+void __far SM_OPL2_STARTMARKER();
+void __far SM_OPL3_STARTMARKER();
+void __far SM_MPUMD_STARTMARKER();
+void __far SM_SBMID_STARTMARKER();
+void __far SM_OPL2_ENDMARKER();
+void __far SM_OPL3_ENDMARKER();
+void __far SM_MPUMD_ENDMARKER();
+void __far SM_SBMID_ENDMARKER();
+
+
 
 /*
 void checkDS(int16_t a) {
@@ -98,6 +108,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FILE*  fp = fopen("doomcode.bin", "wb");
     //FILE*  fp2 = fopen("doomcod2.bin", "wb");
 	uint16_t codesize[9];
+	uint16_t muscodesize[4];
+    int8_t i;
     
     codesize[0] = FP_OFF(R_SPAN_STARTMARKER) - FP_OFF(R_DrawColumn);
     // write filesize..
@@ -162,6 +174,22 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fwrite(&codesize[8], 2, 1, fp);
     // write data
     FAR_fwrite((byte __far *)P_LOADSTART, codesize[8], 1, fp);
+
+    muscodesize[0] = FP_OFF(SM_OPL2_ENDMARKER) - FP_OFF(SM_OPL2_STARTMARKER);
+    fwrite(&muscodesize[0], 2, 1, fp);
+    FAR_fwrite((byte __far *)SM_OPL2_STARTMARKER, muscodesize[0], 1, fp);
+
+    muscodesize[1] = FP_OFF(SM_OPL3_ENDMARKER) - FP_OFF(SM_OPL3_STARTMARKER);
+    fwrite(&muscodesize[1], 2, 1, fp);
+    FAR_fwrite((byte __far *)SM_OPL3_STARTMARKER, muscodesize[1], 1, fp);
+
+    muscodesize[2] = FP_OFF(SM_MPUMD_ENDMARKER) - FP_OFF(SM_MPUMD_STARTMARKER);
+    fwrite(&muscodesize[2], 2, 1, fp);
+    FAR_fwrite((byte __far *)SM_MPUMD_STARTMARKER, muscodesize[2], 1, fp);
+
+    muscodesize[3] = FP_OFF(SM_SBMID_ENDMARKER) - FP_OFF(SM_SBMID_STARTMARKER);
+    fwrite(&muscodesize[3], 2, 1, fp);
+    FAR_fwrite((byte __far *)SM_SBMID_STARTMARKER, muscodesize[3], 1, fp);
 
 
     fclose(fp);

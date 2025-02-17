@@ -1376,14 +1376,14 @@ int8_t SBMIDIinitHardware(uint16_t port, uint8_t irq, uint8_t dma);
 int8_t SBMIDIdeinitHardware(void);
 
 
-
-/* MUS -> MIDI controller number conversion */
-
 #define  MUS_DRIVER_TYPE_NONE   0
 #define  MUS_DRIVER_TYPE_OPL2 	1
 #define  MUS_DRIVER_TYPE_OPL3 	2
 #define  MUS_DRIVER_TYPE_MPU401 3
 #define  MUS_DRIVER_TYPE_SBMIDI 4
+#define  MUS_DRIVER_COUNT 5
+extern int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
+
 
 extern uint16_t 	percussMask;
 

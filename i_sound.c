@@ -527,19 +527,13 @@ void __far printerfunc(uint16_t reg, uint8_t data){
 // Inits all sound stuff
 //
 
-void __far SM_OPL2_STARTMARKER();
-void __far SM_OPL3_STARTMARKER();
-void __far SM_SBMID_STARTMARKER();
-void __far SM_MPUMD_STARTMARKER();
 
 void __far I_StartupSound(void) {
-    int16_t rc;
     int16_t useport = 0;
     int16_t irq = 0;
     int16_t dma = 0;
     int8_t j = 0;
-    fixed_t_union useddriver;
-    useddriver.wu = 0;
+    int16_t driverindex = 0;
     //
     // initialize dmxCodes[]
     //
@@ -562,11 +556,11 @@ void __far I_StartupSound(void) {
 
     switch (snd_MusicDevice){
         case snd_Adlib:
-            useddriver.wu = (uint32_t)SM_OPL2_STARTMARKER;
+            driverindex = MUS_DRIVER_TYPE_OPL2;
             useport = ADLIBPORT;
             break;
         case snd_MPU:   // wave blaster
-            useddriver.wu = (uint32_t)SM_SBMID_STARTMARKER;
+            driverindex = MUS_DRIVER_TYPE_SBMIDI;
             if (snd_Mport){
                 useport = snd_SBport;
             } else {
@@ -575,7 +569,7 @@ void __far I_StartupSound(void) {
             break;
         case snd_MPU2:  // sound canvas
         case snd_MPU3:  // general midi
-            useddriver.wu = (uint32_t)SM_MPUMD_STARTMARKER;
+            driverindex = MUS_DRIVER_TYPE_MPU401;
 
             if (snd_Mport){
                 useport = snd_Mport;
@@ -585,30 +579,50 @@ void __far I_StartupSound(void) {
             break;
         
         case snd_SB:
-            useddriver.wu = (uint32_t)SM_OPL3_STARTMARKER;
+            driverindex = MUS_DRIVER_TYPE_OPL3;
             useport = ADLIBPORT;
             break;
 
         
     }
 
-    playingdriver = (driverBlock __far * ) useddriver.wu;
 
-    //I_Error("fields %i %x %x %x", snd_MusicDevice, useport, snd_Mport, snd_SBport);
-    if (playingdriver){
+
+    if (driverindex){
+        uint16_t codesize;
+        // todo put in main conventional somewhere
+        FILE* fp = fopen("DOOMCODE.BIN", "rb"); 
+        playingdriver = (driverBlock __far * ) MK_FP(0xCD00, 0000);
+        fseek(fp, musdriverstartposition[driverindex-1], SEEK_SET);
+        fread(&codesize, 2, 1, fp);
+        FAR_fread(playingdriver, codesize, 1, fp);
+        fclose(fp);
+
+
         // loader to set far segment for these func calls at runtime.   
-        int8_t i;
-        segment_t __far* ptr = (segment_t __far *) playingdriver;
-        segment_t seg = useddriver.hu.intbits;
-        for (i = 0; i < 13; i++){
-            ptr[2*i+1] = seg;
+        {
+            int8_t i;
+            segment_t __far* ptr = (segment_t __far *) playingdriver;
+            segment_t seg = ((int32_t)playingdriver) >> 16;
+            for (i = 0; i < 13; i++){
+                ptr[2*i+1] = seg;
+            }
 
+
+
+
+            playingdriver->initHardware(useport, 0, 0);
+            playingdriver->initDriver();
+        I_Error("%lx %lx %x",
+        playingdriver, 
+        ((driverBlock __far * ) playingdriver)->initHardware,
+         musdriverstartposition[driverindex-1]
+        );
 
         }
-        playingdriver->initHardware(useport, 0, 0);
-        playingdriver->initDriver();
-
     }
+
+
 
     I_StartupTimer();
 

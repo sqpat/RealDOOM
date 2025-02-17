@@ -2005,14 +2005,7 @@ uint16_t			playingpercussMask = 1 << PERCUSSION;	// todo #define? or should othe
 volatile uint32_t 	playingtime = 0;
 int8_t				loops_enabled = false;
 
-
-
-
-
-
-
-
-
+int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 
 uint16_t percussMask;
 
