@@ -1226,12 +1226,10 @@ typedef struct {
 
 
 typedef struct  {
-	int8_t	(*initDriver)(void);
-    
+	int8_t	(*initDriver)(void);    
 	int8_t	(*detectHardware)(uint16_t port, uint8_t irq, uint8_t dma);
 	int8_t	(*initHardware)(uint16_t port, uint8_t irq, uint8_t dma);
 	int8_t	(*deinitHardware)(void);
-
 	void	(*playNote)(uint8_t channel, uint8_t note, int8_t noteVolume);
 	void	(*releaseNote)(uint8_t channel, uint8_t note);
 	void	(*pitchWheel)(uint8_t channel, uint8_t pitch);
@@ -1241,7 +1239,6 @@ typedef struct  {
 	void	(*pauseMusic)();
 	void	(*resumeMusic)();
 	void	(*changeSystemVolume)(uint8_t volume);
-	int8_t	(*sendMIDI)(uint8_t command, uint8_t par1, uint8_t par2);
 	int8_t	driverId;
 
 } driverBlock;
@@ -1320,10 +1317,9 @@ extern ticcount_t	nextcleanup;
 
 //extern uint16_t shift4lookup[256];
 
-extern      driverBlock OPL2driver;
-extern      driverBlock OPL3driver;
+//extern      driverBlock OPL3driver;
 
-extern      driverBlock *playingdriver;
+extern      driverBlock __far* playingdriver;
 
 extern uint16_t 			currentsong_start_offset;
 extern uint16_t 			currentsong_playing_offset;
@@ -1362,38 +1358,23 @@ int8_t	OPL3detectHardware(uint16_t port, uint8_t irq, uint8_t dma);
 int8_t	OPL3initHardware(uint16_t port, uint8_t irq, uint8_t dma);
 int8_t	OPL3deinitHardware(void);
 
-void	MIDIplayNote(uint8_t channel, uint8_t note, int8_t noteVolume);
-void	MIDIreleaseNote(uint8_t channel, uint8_t note);
-void	MIDIpitchWheel(uint8_t channel, uint8_t pitch);
-void	MIDIchangeControl(uint8_t channel, uint8_t controller, uint8_t value);
-void	MIDIplayMusic();
-void	MIDIstopMusic();
-void	MIDIpauseMusic();
-void	MIDIresumeMusic();
-void	MIDIchangeSystemVolume(uint8_t noteVolume);
-int8_t  MIDIinitDriver(void);
+void	MIDIplayNote_MPU401(uint8_t channel, uint8_t note, int8_t noteVolume);
+void	MIDIreleaseNote_MPU401(uint8_t channel, uint8_t note);
+void	MIDIpitchWheel_MPU401(uint8_t channel, uint8_t pitch);
+void	MIDIchangeControl_MPU401(uint8_t channel, uint8_t controller, uint8_t value);
+void	MIDIplayMusic_MPU401();
+void	MIDIstopMusic_MPU401();
+void	MIDIpauseMusic_MPU401();
+void	MIDIresumeMusic_MPU401();
+void	MIDIchangeSystemVolume_MPU401(uint8_t noteVolume);
+int8_t  MIDIinitDriver_MPU401(void);
 int8_t 	MPU401initHardware(uint16_t port, uint8_t irq, uint8_t dma);
 int8_t 	MPU401detectHardware(uint16_t port, uint8_t irq, uint8_t dma);
-int8_t 	MPU401sendMIDI(uint8_t command, uint8_t par1, uint8_t par2);
 int8_t  MPU401deinitHardware(void);
 int8_t SBMIDIdetectHardware(uint16_t port, uint8_t irq, uint8_t dma);
 int8_t SBMIDIinitHardware(uint16_t port, uint8_t irq, uint8_t dma);
 int8_t SBMIDIdeinitHardware(void);
-int8_t SBMIDIsendMIDI(uint8_t command, uint8_t par1, uint8_t par2);
 
-extern uint8_t OPLchannels;
-extern uint8_t OPL3mode;
-
-
-
-extern uint8_t op_num[9];
-
-extern int8_t noteVolumetable[128];
-
-extern uint16_t freqtable[7];
-extern uint16_t freqtable2[12];
-
-extern int8_t pitchwheeltable[256];
 
 
 /* MUS -> MIDI controller number conversion */
@@ -1405,8 +1386,6 @@ extern int8_t pitchwheeltable[256];
 #define  MUS_DRIVER_TYPE_SBMIDI 4
 
 extern uint16_t 	percussMask;
-extern driverBlock 	MPU401driver;
-extern driverBlock 	SBMIDIdriver;
 
 
 

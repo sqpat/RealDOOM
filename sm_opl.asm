@@ -72,7 +72,37 @@ PROC  SM_OPL_STARTMARKER_
 PUBLIC  SM_OPL_STARTMARKER_
 
 ENDP
+;; START DRIVERBLOCK
 
+dw	OFFSET  OPLinitDriver_
+dw  0
+dw	OFFSET 	OPL2detectHardware_
+dw  0
+dw	OFFSET 	OPL2initHardware_
+dw  0
+dw	OFFSET 	OPL2deinitHardware_
+dw  0
+dw	OFFSET 	OPLplayNote_
+dw  0
+dw	OFFSET 	OPLreleaseNote_
+dw  0
+dw	OFFSET 	OPLpitchWheel_
+dw  0
+dw	OFFSET 	OPLchangeControl_
+dw  0
+dw	OFFSET 	OPLplayMusic_
+dw  0
+dw	OFFSET 	OPLstopMusic_
+dw  0
+dw	OFFSET 	OPLpauseMusic_
+dw  0
+dw	OFFSET 	OPLresumeMusic_
+dw  0
+dw	OFFSET 	OPLchangeSystemVolume_
+dw  0
+db	MUS_DRIVER_TYPE_OPL2
+
+;; END DRIVERBLOCK
 
 _OPLchannels:
 db 9

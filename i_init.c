@@ -153,4 +153,5 @@ void __near I_Init(void) {
 	I_StartupKeyboard();
 	DEBUG_PRINT("I_StartupSound\n");
 	I_StartupSound();
+
 }

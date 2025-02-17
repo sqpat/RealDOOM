@@ -5,7 +5,7 @@
 #include "g_game.h"
 #include "p_saveg.h"
 
-#define CONSTANTS_COUNT 1932
+#define CONSTANTS_COUNT 1936
 #define LOCALS_COUNT 18
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -146,7 +146,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SKYTEXTURE_TEXTURE_SEGMENT",
 
     "SPANFUNC_JUMP_LOOKUP_SEGMENT",
-    "SPANFUNC_FUNCTION_AREA_SEGMENT",
     "COLFUNC_MASKEDMAPPING_SEGMENT",
     "COLFUNC_SEGMENT",
     "R_DRAWCOLUMNPREPMASKEDMULTIOFFSET",
@@ -1982,7 +1981,14 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"FB",
 	"F_STARTFINALEOFFSET",
 	"WIANIM_CODESPACE_SEGMENT",
-	"WIANIM_7000_END_SEGMENT"
+	"WIANIM_7000_END_SEGMENT",
+
+	"MUS_DRIVER_TYPE_NONE",
+	"MUS_DRIVER_TYPE_OPL2",
+	"MUS_DRIVER_TYPE_OPL3",
+	"MUS_DRIVER_TYPE_MPU401",
+	"MUS_DRIVER_TYPE_SBMIDI"
+
 
 
 
@@ -2133,7 +2139,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     skytexture_texture_segment,
 
     spanfunc_jump_lookup_segment,
-    spanfunc_function_area_segment,
     colfunc_segment_maskedmapping,
     colfunc_segment,
     R_DrawColumnPrepMaskedMultiOffset,
@@ -3975,8 +3980,12 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	FB,
 	F_StartFinaleOffset,
 	wianim_codespace_segment,
-	wianim_7000_end_segment
-
+	wianim_7000_end_segment,
+	MUS_DRIVER_TYPE_NONE,
+	MUS_DRIVER_TYPE_OPL2,
+	MUS_DRIVER_TYPE_OPL3,
+	MUS_DRIVER_TYPE_MPU401,
+	MUS_DRIVER_TYPE_SBMIDI
 
 
 

@@ -1966,26 +1966,7 @@ uint16_t shift4lookup[256] =
 /* Driver descriptor */
 
 
-
-driverBlock OPL2driver = {
-	OPLinitDriver,
-	OPL2detectHardware,
-	OPL2initHardware,
-	OPL2deinitHardware,
-
-	OPLplayNote,
-	OPLreleaseNote,
-	OPLpitchWheel,
-	OPLchangeControl,
-	OPLplayMusic,
-	OPLstopMusic,
-	OPLpauseMusic,
-	OPLresumeMusic,
-	OPLchangeSystemVolume,
-	OPLsendMIDI,
-	MUS_DRIVER_TYPE_OPL2
-};
-
+/*
 driverBlock OPL3driver = {
 	OPLinitDriver,
 	OPL3detectHardware,
@@ -2004,9 +1985,9 @@ driverBlock OPL3driver = {
 	OPLsendMIDI,
 	MUS_DRIVER_TYPE_OPL3
 
-};
+};*/
 
-driverBlock	*playingdriver = NULL;// = &OPL2driver;
+driverBlock	__far*  playingdriver = NULL;// = &OPL2driver;
 
 uint16_t 			currentsong_start_offset;
 uint16_t 			currentsong_playing_offset;
@@ -2039,46 +2020,5 @@ uint16_t percussMask;
 
 
 
-driverBlock MPU401driver = {
-	MIDIinitDriver,
-	MPU401detectHardware,
-	MPU401initHardware,
-	MPU401deinitHardware,
 
-	MIDIplayNote,
-	MIDIreleaseNote,
-	MIDIpitchWheel,
-	MIDIchangeControl,
-	MIDIplayMusic,
-	MIDIstopMusic,
-	MIDIpauseMusic,
-	MIDIresumeMusic,
-	MIDIchangeSystemVolume,
-	MPU401sendMIDI,
-	MUS_DRIVER_TYPE_MPU401
-
-};
-
-
-
-
-driverBlock SBMIDIdriver = {
-	MIDIinitDriver,
-	SBMIDIdetectHardware,
-	SBMIDIinitHardware,
-	SBMIDIdeinitHardware,
-
-	MIDIplayNote,
-	MIDIreleaseNote,
-	MIDIpitchWheel,
-	MIDIchangeControl,
-	MIDIplayMusic,
-	MIDIstopMusic,
-	MIDIpauseMusic,
-	MIDIresumeMusic,
-	MIDIchangeSystemVolume,
-	SBMIDIsendMIDI,
-	MUS_DRIVER_TYPE_SBMIDI
-
-};
 

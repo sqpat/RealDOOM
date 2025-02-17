@@ -119,10 +119,43 @@ MIDI_READ_IRQ	    = 031h
 MIDI_WRITE_POLL     = 038h
 
 
-PROC  SM_SBMPU_STARTMARKER_
-PUBLIC  SM_SBMPU_STARTMARKER_
+PROC  SM_MPUMD_STARTMARKER_
+PUBLIC  SM_MPUMD_STARTMARKER_
 
 ENDP
+
+;; START DRIVERBLOCK
+
+dw	OFFSET 	MIDIinitDriver_MPU401_
+dw  0
+dw	OFFSET 	MPU401detectHardware_
+dw  0
+dw	OFFSET 	MPU401initHardware_
+dw  0
+dw	OFFSET 	MPU401deinitHardware_
+dw  0
+dw	OFFSET 	MIDIplayNote_MPU401_
+dw  0
+dw	OFFSET 	MIDIreleaseNote_MPU401_
+dw  0
+dw	OFFSET 	MIDIpitchWheel_MPU401_
+dw  0
+dw	OFFSET 	MIDIchangeControl_MPU401_
+dw  0
+dw	OFFSET 	MIDIplayMusic_MPU401_
+dw  0
+dw	OFFSET 	MIDIstopMusic_MPU401_
+dw  0
+dw	OFFSET 	MIDIpauseMusic_MPU401_
+dw  0
+dw	OFFSET 	MIDIresumeMusic_MPU401_
+dw  0
+dw	OFFSET 	MIDIchangeSystemVolume_MPU401_
+dw  0
+db	MUS_DRIVER_TYPE_MPU401
+
+;; END DRIVERBLOCK
+
 
 _mididriverdata:
 _mididriverdata_controllers:
@@ -202,12 +235,12 @@ mov       dx, 120
 xor       ch, ch
 mov       si, word ptr [_playingdriver]
 mov       ax, cx
-call      dword ptr [si + 034h]            ; todo sendmidi
+call      MPU401sendMIDI_
 mov       bx, 07Fh
 mov       dx, 121
 mov       si, word ptr [_playingdriver]   ; todo sendmidi
 mov       ax, cx
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 pop       si
 pop       dx
 pop       cx
@@ -350,7 +383,7 @@ xor       dh, dh
 xor       bl, bl
 xor       ah, ah
 mov       cl, 1
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 mov       al, ch
 or        al, MIDI_CONTROL           ; is this right?
 mov       byte ptr [bp - 4], al
@@ -391,7 +424,7 @@ xor       dh, dh
 or        al, MIDI_PITCH_WHEEL
 xor       bh, bh
 xor       ah, ah
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 LEAVE_MACRO     
 pop       di
 pop       si
@@ -415,7 +448,7 @@ mov       dl, byte ptr cs:[di + _MUS2MIDIctrl]
 mov       al, byte ptr [bp - 4]
 
 xor       dh, dh
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 jmp       increment_controller_loop
 
 
@@ -430,8 +463,8 @@ pop       cx
 retf      
 
 
-PROC  MIDIplayNote_    FAR
-PUBLIC  MIDIplayNote_
+PROC  MIDIplayNote_MPU401_    FAR
+PUBLIC  MIDIplayNote_MPU401_
 
 push      cx
 push      si
@@ -515,7 +548,7 @@ xor       dh, dh
 xor       ch, ch
 mov       bx, ax
 mov       ax, cx
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 exit_playnote:
 LEAVE_MACRO     
 pop       si
@@ -525,8 +558,8 @@ retf
 
 ENDP
 
-PROC  MIDIreleaseNote_    FAR
-PUBLIC  MIDIreleaseNote_
+PROC  MIDIreleaseNote_MPU401_    FAR
+PUBLIC  MIDIreleaseNote_MPU401_
 
 push      bx
 push      cx
@@ -567,7 +600,7 @@ xor       ch, ch
 or        al, MIDI_NOTE_OFF
 mov       dx, cx
 xor       ah, ah
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 exit_releasenote:
 pop       si
 pop       cx
@@ -577,8 +610,8 @@ retf
 
 ENDP
 
-PROC  MIDIpitchWheel_    FAR
-PUBLIC  MIDIpitchWheel_
+PROC  MIDIpitchWheel_MPU401_    FAR
+PUBLIC  MIDIpitchWheel_MPU401_
 
 push      bx
 push      cx
@@ -617,7 +650,7 @@ xor       ah, ah
 xor       ch, ch
 mov       dx, ax
 mov       ax, cx
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 exit_pitchwheel:
 pop       si
 pop       cx
@@ -626,8 +659,8 @@ retf
 
 ENDP
 
-PROC  MIDIchangeControl_    FAR
-PUBLIC  MIDIchangeControl_
+PROC  MIDIchangeControl_MPU401_    FAR
+PUBLIC  MIDIchangeControl_MPU401_
 
 
 push      cx
@@ -692,7 +725,7 @@ mov       bx, ax
 xor       dh, dh
 mov       ax, cx
 send_midi_and_exit:
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 exit_changecontrol:
 LEAVE_MACRO     
 pop       di
@@ -728,8 +761,8 @@ ENDP
 DUMMY_BASE_CONTROLLER_VALUES:
 db 0, 0, 0, 127, 64, 127, 0, 0, 0, 0, 0, DEFAULT_PITCH_BEND, 0FFh
 
-PROC  MIDIplayMusic_    FAR
-PUBLIC  MIDIplayMusic_
+PROC  MIDIplayMusic_MPU401_    FAR
+PUBLIC  MIDIplayMusic_MPU401_
 
 ;    FAR_memset((void __far*) (mididriverData->percussions), 0, sizeof(uint8_t) * (128/8));
 
@@ -773,14 +806,14 @@ mov       ax, MIDI_CONTROL OR MIDI_PERC
 mov       dl, 7   ; volume control
 mov       si, word ptr [_playingdriver]
 xor       dh, dh
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 
 mov       ax, MIDI_CONTROL OR MIDI_PERC
 mov       si, word ptr [_playingdriver]
 mov       dl, 121  ; byte ptr [_MUS2MIDIctrl + e]
 xor       bx, bx
 xor       dh, dh
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 
 pop       di
 pop       si
@@ -795,13 +828,13 @@ ENDP
 
 
 
-PROC  MIDIpauseMusic_    FAR
-PUBLIC  MIDIpauseMusic_
+PROC  MIDIpauseMusic_MPU401_    FAR
+PUBLIC  MIDIpauseMusic_MPU401_
 ENDP
 ; just calls stop music, fall thru
 
-PROC  MIDIstopMusic_    FAR
-PUBLIC  MIDIstopMusic_
+PROC  MIDIstopMusic_MPU401_    FAR
+PUBLIC  MIDIstopMusic_MPU401_
 
 
 push      bx
@@ -844,7 +877,7 @@ je        inc_loop_stop_channels_perc
 mov       bx, 127
 mov       si, word ptr [_playingdriver]
 mov       ax, di
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 inc_loop_stop_channels_perc:
 inc       ch
 cmp       ch, 128
@@ -865,10 +898,10 @@ stop_non_perc_channel:
 xor       ah, ah
 call      stopChannel_
 jmp       inc_loop_stop_channels
+ENDP
 
-
-PROC MIDIchangeSystemVolume_  FAR
-PUBLIC MIDIchangeSystemVolume_
+PROC MIDIchangeSystemVolume_MPU401_  FAR
+PUBLIC MIDIchangeSystemVolume_MPU401_
 
 cmp       byte ptr [_playingstate], 2
 je        actually_change_system_volume
@@ -914,7 +947,7 @@ xor       bh, bh
 or        al, MIDI_CONTROL
 xor       dh, dh
 xor       ah, ah
-call      dword ptr [si + 034h]
+call      MPU401sendMIDI_
 inc_loop_change_system_volume:
 inc       cl
 cmp       cl, MAX_MUSIC_CHANNELS
@@ -929,8 +962,8 @@ ENDP
 
 
 
-PROC  MIDIresumeMusic_    FAR
-PUBLIC  MIDIresumeMusic_
+PROC  MIDIresumeMusic_MPU401_    FAR
+PUBLIC  MIDIresumeMusic_MPU401_
 
 
 retf    
@@ -939,8 +972,8 @@ ENDP
 
 
 
-PROC  MIDIinitDriver_    FAR
-PUBLIC  MIDIinitDriver_
+PROC  MIDIinitDriver_MPU401_    FAR
+PUBLIC  MIDIinitDriver_MPU401_
 
 push      cx
 push      di
@@ -1071,7 +1104,7 @@ jmp   MPU401sendCommand_
 ENDP
 
 
-PROC  MPU401sendMIDI_    FAR
+PROC  MPU401sendMIDI_    NEAR
 PUBLIC  MPU401sendMIDI_
 
 
@@ -1107,7 +1140,7 @@ call  MPU401sendByte_
 skip_send_byte_mpu_2:
 sti   
 xor   al, al
-retf  
+ret  
 
 ENDP
 
@@ -1218,8 +1251,8 @@ ret
 
 ENDP
 
-PROC  SM_SBMPU_ENDMARKER_
-PUBLIC  SM_SBMPU_ENDMARKER_
+PROC  SM_MPUMD_ENDMARKER_
+PUBLIC  SM_MPUMD_ENDMARKER_
 
 ENDP
 

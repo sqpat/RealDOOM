@@ -526,11 +526,19 @@ void __far printerfunc(uint16_t reg, uint8_t data){
 // I_StartupSound
 // Inits all sound stuff
 //
+
+void __far SM_OPL_STARTMARKER();
+void __far SM_SBMID_STARTMARKER();
+void __far SM_MPUMD_STARTMARKER();
+
 void __far I_StartupSound(void) {
     int16_t rc;
     int16_t useport = 0;
     int16_t irq = 0;
     int16_t dma = 0;
+    int8_t j = 0;
+    fixed_t_union useddriver;
+    useddriver.wu = 0;
     //
     // initialize dmxCodes[]
     //
@@ -539,7 +547,6 @@ void __far I_StartupSound(void) {
     //
     // inits sound library timer stuff
     //
-    I_StartupTimer();
     //
     // pick the sound cards i'm going to use
     //
@@ -550,15 +557,16 @@ void __far I_StartupSound(void) {
     // todo actually detect hw eventually. for now just set music device to desired music device.
 
     snd_MusicDevice = snd_DesiredMusicDevice;
+    // I_Error("%lx %lx", playingdriver->initHardware, playingdriver);
 
     switch (snd_MusicDevice){
         case snd_Adlib:
-            playingdriver = &OPL2driver;
+            useddriver.wu = (uint32_t)SM_OPL_STARTMARKER;
             useport = ADLIBPORT;
 
             break;
         case snd_MPU:   // wave blaster
-            playingdriver = &SBMIDIdriver;
+            useddriver.wu = (uint32_t)SM_SBMID_STARTMARKER;
             if (snd_Mport){
                 useport = snd_SBport;
             } else {
@@ -567,7 +575,9 @@ void __far I_StartupSound(void) {
             break;
         case snd_MPU2:  // sound canvas
         case snd_MPU3:  // general midi
-            playingdriver = &MPU401driver;
+            useddriver.wu = (uint32_t)SM_MPUMD_STARTMARKER;
+            //playingdriver = &MPU401driver;
+
             if (snd_Mport){
                 useport = snd_Mport;
             } else {
@@ -576,21 +586,36 @@ void __far I_StartupSound(void) {
             break;
         
         case snd_SB:
-            playingdriver = &OPL3driver;
+            //playingdriver = &OPL3driver;
             useport = ADLIBPORT;
             break;
 
         
     }
+    //playingdriver = NULL;
+    //I_Error("hi");
+
 
     //I_Error("fields %i %x %x %x", snd_MusicDevice, useport, snd_Mport, snd_SBport);
-    if (playingdriver){
-        playingdriver->initHardware(useport, 0, 0);
-        playingdriver->initDriver();
+    if (useddriver.hu.intbits){
+        driverBlock __far* driverlocation = (driverBlock __far*) useddriver.wu;
+        // loader to set far segment for these func calls at runtime.   
+        if (driverlocation->driverId != MUS_DRIVER_TYPE_OPL3){
+            int8_t i;
+            segment_t __far* ptr = (segment_t __far *) driverlocation;
+            segment_t seg = useddriver.hu.intbits;
+            for (i = 0; i < 13; i++){
+                ptr[2*i+1] = seg;
+
+
+            }
+        }
+        driverlocation->initHardware(useport, 0, 0);
+        driverlocation->initDriver();
+
     }
+    playingdriver = useddriver.wu;
 
-
-
-
+    I_StartupTimer();
 
 }

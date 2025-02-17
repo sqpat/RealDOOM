@@ -195,10 +195,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define AdLibChannels            ((AdlibChannelEntry __far*)  MAKE_FULL_SEGMENT(AdLibInstrumentList, size_AdLibInstrumentList))
 #define instrumentlookup         ((uint8_t __far*)            MAKE_FULL_SEGMENT(AdLibChannels,       size_AdlibChannels))
 
-// #define mididriverData           ((MIDIdata __far*)           MAKE_FULL_SEGMENT(tempmusdataloc,      0))  // 10240
-// //CC0E
-// #define MIDIchannels             ((uint8_t __far*)            MAKE_FULL_SEGMENT(mididriverData,      size_mididriverData))
-// #define MIDItime                 ((uint32_t __far*)           MAKE_FULL_SEGMENT(MIDIchannels,        size_MIDItime))
 
 
 #define SAVESTRINGSIZE        24u
