@@ -68,46 +68,43 @@ SIZE_ADLIBCHANNELS          = 0120h
 
 PLAYING_PERCUSSION_MASK     = 08000h
 
-PROC  SM_OPL_STARTMARKER_
-PUBLIC  SM_OPL_STARTMARKER_
+PROC  SM_OPL2_STARTMARKER_
+PUBLIC  SM_OPL2_STARTMARKER_
 
 ENDP
 ;; START DRIVERBLOCK
 
-dw	OFFSET  OPLinitDriver_
+dw	OFFSET  OPLinitDriver_OPL2_
 dw  0
-dw	OFFSET 	OPL2detectHardware_
+dw	OFFSET 	OPL2detectHardware_OPL2_
 dw  0
-dw	OFFSET 	OPL2initHardware_
+dw	OFFSET 	OPL2initHardware_OPL2_
 dw  0
-dw	OFFSET 	OPL2deinitHardware_
+dw	OFFSET 	OPL2deinitHardware_OPL2_
 dw  0
-dw	OFFSET 	OPLplayNote_
+dw	OFFSET 	OPLplayNote_OPL2_
 dw  0
-dw	OFFSET 	OPLreleaseNote_
+dw	OFFSET 	OPLreleaseNote_OPL2_
 dw  0
-dw	OFFSET 	OPLpitchWheel_
+dw	OFFSET 	OPLpitchWheel_OPL2_
 dw  0
-dw	OFFSET 	OPLchangeControl_
+dw	OFFSET 	OPLchangeControl_OPL2_
 dw  0
-dw	OFFSET 	OPLplayMusic_
+dw	OFFSET 	OPLplayMusic_OPL2_
 dw  0
-dw	OFFSET 	OPLstopMusic_
+dw	OFFSET 	OPLstopMusic_OPL2_
 dw  0
-dw	OFFSET 	OPLpauseMusic_
+dw	OFFSET 	OPLpauseMusic_OPL2_
 dw  0
-dw	OFFSET 	OPLresumeMusic_
+dw	OFFSET 	OPLresumeMusic_OPL2_
 dw  0
-dw	OFFSET 	OPLchangeSystemVolume_
+dw	OFFSET 	OPLchangeSystemVolume_OPL2_
 dw  0
 db	MUS_DRIVER_TYPE_OPL2
 
 ;; END DRIVERBLOCK
 
-_OPLchannels:
-db 9
-_OPL3mode:
-db 0
+OPLCHANNELS = 9
 _lastfreechannel:
 db 0FFh
 
@@ -207,31 +204,10 @@ ENDP
 
 
 PROC  OPLwriteReg_ NEAR
-PUBLIC  OPLwriteReg_
 
 push  bx
 push  cx
 mov   bl, dl
-cmp   byte ptr cs:[_OPL3mode], 0
-je    do_opl2_writereg
-do_opl3_writereg:
-mov   dx, ADLIB_PORT
-or    ah, ah
-je    dont_inc_port_2
-inc   dx
-inc   dx
-
-dont_inc_port_2:
-out   dx, al
-in    al, dx
-mov   ah, al
-inc   dx
-mov   al, bl
-out   dx, al
-mov   al, ah
-pop   cx
-pop   bx
-ret  
 do_opl2_writereg:
 mov   dx, ADLIB_PORT
 out   dx, al
@@ -254,7 +230,6 @@ ret
 ENDP
 
 PROC  OPLwriteChannel_ NEAR
-PUBLIC  OPLwriteChannel_
 
 
 push  si
@@ -298,7 +273,6 @@ ENDP
 
 
 PROC  OPLwriteFreq_ NEAR ; todo used only once, inline?
-PUBLIC  OPLwriteFreq_
 
 
 push  bp
@@ -339,7 +313,6 @@ ENDP
 
 
 PROC  OPLconvertVolume_ NEAR
-PUBLIC  OPLconvertVolume_
 
 push  bx
 mov   ah, dl
@@ -365,7 +338,6 @@ ENDP
 
 
 PROC  OPLpanVolume_ NEAR
-PUBLIC  OPLpanVolume_
 
 
 push  bx
@@ -395,7 +367,6 @@ ENDP
 
 
 PROC  OPLwriteVolume_ NEAR
-PUBLIC  OPLwriteVolume_
 
 push  si
 push  di
@@ -446,8 +417,7 @@ jmp   do_writechannel_call
 ENDP
 
 
-PROC  OPLwritePan_ FAR
-PUBLIC  OPLwritePan_
+PROC  OPLwritePan_ NEAR
 
 mov   dh, al
 mov   es, cx
@@ -468,7 +438,6 @@ xor   bh, bh
 ENDP
 
 PROC  OPLwriteValue_ NEAR
-PUBLIC  OPLwriteValue_
 
 
 push  cx
@@ -500,7 +469,6 @@ jmp   pan_capped
 ENDP
 
 PROC  OPLwriteInstrument_ NEAR
-PUBLIC  OPLwriteInstrument_
 
 
 push  dx
@@ -566,24 +534,8 @@ ret
 ENDP
 
 PROC  OPLinit_ NEAR
-PUBLIC  OPLinit_
 
-mov   byte ptr cs:[_OPL3mode], al
-test  al, al
-je    oplinit_opl2
 
-oplinit_opl3:
-mov   dx, 1
-mov   ax, 0105h      ; enable YMF262/OPL3 mode
-mov   byte ptr cs:[_OPLchannels], 18
-call  OPLwriteReg_
-mov   ax, 0104h      ; disable 4-operator mode
-xor   dx, dx
-call  OPLwriteReg_
-jmp   finish_opl_init
-
-oplinit_opl2:
-mov   byte ptr cs:[_OPLchannels], 9
 finish_opl_init:
 mov   dx, REGISTER_MODULATOR
 mov   ax, 1
@@ -600,7 +552,6 @@ call  OPLwriteReg_
 ENDP
 
 PROC  OPLshutup_ NEAR
-PUBLIC  OPLshutup_
 
 push  bx
 push  cx
@@ -611,8 +562,7 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 mov   byte ptr [bp - 2], 0
-cmp   byte ptr cs:[_OPLchannels], 0
-jbe   exit_opl_shutup
+
 mov   di, 03Fh               ; turn off volume
 loop_shutup_next_channel:
 mov   al, byte ptr [bp - 2]
@@ -639,7 +589,7 @@ xor   bx, bx
 inc   byte ptr [bp - 2]
 call  OPLwriteValue_
 mov   al, byte ptr [bp - 2]
-cmp   al, byte ptr cs:[_OPLchannels]
+cmp   al, OPLCHANNELS
 jb    loop_shutup_next_channel
 exit_opl_shutup:
 LEAVE_MACRO 
@@ -656,14 +606,12 @@ ENDP
 
 
 
-PROC  OPLdeinit_ FAR
-PUBLIC  OPLdeinit_
+PROC  OPLdeinit_ NEAR
 
 
 push  dx
 call  OPLshutup_
-cmp   byte ptr cs:[_OPL3mode], 0
-jne   de_init_opl3
+
 de_init_opl2:
 mov   dx, 020h       ; enable Waveform Select
 mov   ax, 1
@@ -675,21 +623,19 @@ mov   ax, 0BDh       ; set vibrato/tremolo depth to low, set melodic mode
 xor   dx, dx
 call  OPLwriteReg_
 pop   dx
-retf  
-de_init_opl3:
-mov   ax, 0105h
-xor   dx, dx
-call  OPLwriteReg_
-mov   ax, 0104h
-xor   dx, dx
-call  OPLwriteReg_
-jmp   de_init_opl2
+ret
 
 ENDP
 
-PROC  OPL2detect_ FAR
-PUBLIC  OPL2detect_
 
+
+
+ENDP
+
+
+
+PROC  OPL2detectHardware_OPL2_ FAR
+PUBLIC  OPL2detectHardware_OPL2_
 
 push  bx
 push  cx
@@ -738,61 +684,20 @@ jne   return_opl2_not_detected
 cmp   bl, 0C0h
 jne   return_opl2_not_detected
 mov   ax, 1
+doexitinit:
 pop   dx
 pop   cx
 pop   bx
-retf  
+retf
 return_opl2_not_detected:
 xor   ax, ax
-pop   dx
-pop   cx
-pop   bx
-retf  
-
-
+jmp   doexitinit
 
 ENDP
 
-PROC  OPL3detectHardware_ FAR
-PUBLIC  OPL3detectHardware_
 
-
-push  dx
-mov   dx, ax
-call  OPL2detect_
-test  ax, ax
-jne   continue_detecting_opl3
-pop   dx
-retf
-continue_detecting_opl3:
-in    al, dx
-sub   ah, ah
-test  al, 4
-
-je    return_opl3_detected
-xor   ax, ax
-pop   dx
-retf
-return_opl3_detected:
-mov   ax, 1
-pop   dx
-retf  
-
-
-ENDP
-
-PROC  OPL2detectHardware_ FAR
-PUBLIC  OPL2detectHardware_
-call  OPL2detect_
-retf
-ENDP
-
-
-PROC  OPL2deinitHardware_ FAR
-PUBLIC  OPL2deinitHardware_
-ENDP
-PROC  OPL3deinitHardware_ FAR
-PUBLIC  OPL3deinitHardware_
+PROC  OPL2deinitHardware_OPL2_ FAR
+PUBLIC  OPL2deinitHardware_OPL2_
 
 call  OPLdeinit_
 xor   ax, ax
@@ -800,20 +705,19 @@ retf
 ENDP
 
 
-PROC  OPLpauseMusic_ FAR
-PUBLIC  OPLpauseMusic_
+PROC  OPLpauseMusic_OPL2_ FAR
+PUBLIC  OPLpauseMusic_OPL2_
 call  OPLshutup_
 ENDP
 
-PROC  OPLresumeMusic_ FAR
-PUBLIC  OPLresumeMusic_
+PROC  OPLresumeMusic_OPL2_ FAR
+PUBLIC  OPLresumeMusic_OPL2_
 
 retf
 
 ENDP
 
-PROC  writeFrequency_ FAR       ; two inlined writevalues? todo 
-PUBLIC  writeFrequency_
+PROC  writeFrequency_ NEAR       ; two inlined writevalues? todo 
 
 ;void writeFrequency(uint8_t slot, uint8_t note, uint8_t pitchwheel, uint8_t keyOn){
 ; al = slot
@@ -878,7 +782,7 @@ call  OPLwriteFreq_       ; todo only use, inline
 LEAVE_MACRO 
 pop   di
 pop   si
-retf  
+ret  
 
 note_greater_than_7:
 
@@ -901,8 +805,7 @@ jmp   got_last_bit
 
 ENDP
 
-PROC  writeModulation_ FAR
-PUBLIC  writeModulation_
+PROC  writeModulation_ NEAR
 
 push  bp
 mov   bp, sp
@@ -931,7 +834,7 @@ xor   bh, bh
 xor   dh, dh
 call  OPLwriteChannel_
 LEAVE_MACRO 
-retf  
+ret
 feedback_one:
 mov   al, byte ptr es:[bx]   ; instr->trem_vibr_1
 jmp   feedback_checked
@@ -940,8 +843,7 @@ ENDP
 
 
 
-PROC  calcVolumeOPL_ FAR
-PUBLIC  calcVolumeOPL_
+PROC  calcVolumeOPL_ NEAR
 
 ; dx = system volume
 ; al = channel volume
@@ -961,7 +863,7 @@ cmp   al, 07Fh
 jbe   already_below_127
 mov   al, 07Fh
 already_below_127:
-retf  
+ret  
 
 
 ENDP
@@ -975,7 +877,6 @@ FL_DOUBLE_VOICE = 4
 
 
 PROC  occupyChannel_ NEAR
-PUBLIC  occupyChannel_
 
 push  si
 push  di
@@ -1149,7 +1050,6 @@ jmp   done_with_vibrato
 ENDP
 
 PROC  releaseChannel_ NEAR
-PUBLIC  releaseChannel_
 
 
 push  bx
@@ -1205,15 +1105,12 @@ ret
 ENDP
 
 PROC  releaseSustain_ NEAR
-PUBLIC  releaseSustain_
 
 push  bx
 push  dx
 push  si
 mov   bh, al
 xor   bl, bl
-cmp   byte ptr cs:[_OPLchannels], 0
-jbe   exit_release_sustain
 loop_release_sustain:
 mov   al, bl
 xor   ah, ah
@@ -1231,7 +1128,7 @@ xor   dx, dx
 call  releaseChannel_
 skip_release_channel:
 inc   bl
-cmp   bl, byte ptr cs:[_OPLchannels]
+cmp   bl, OPLCHANNELS
 jb    loop_release_sustain
 exit_release_sustain:
 pop   si
@@ -1242,7 +1139,6 @@ ret
 ENDP
 
 PROC  findFreeChannel_ NEAR
-PUBLIC  findFreeChannel_
 
 ; todo work si out of this. use bx and change bl loop increment to smth else
 push  bx
@@ -1258,13 +1154,11 @@ mov   byte ptr [bp - 2], 0FFh
 mov   di, word ptr ds:[_playingtime]
 mov   dx, word ptr ds:[_playingtime + 2]
 xor   bl, bl
-cmp   byte ptr cs:[_OPLchannels], 0
-jbe   done_finding_free_channel_loop
 
 loop_search_for_free_channel:
 inc   byte ptr cs:[_lastfreechannel]
 mov   al, byte ptr cs:[_lastfreechannel]
-cmp   al, byte ptr cs:[_OPLchannels]
+cmp   al, OPLCHANNELS
 jne   dont_zero_free_channel
 set_free_channel_to_0:
 mov   byte ptr cs:[_lastfreechannel], 0
@@ -1277,7 +1171,7 @@ shl   si, 4
 test  byte ptr cs:[si + 2 + _AdLibChannels], CH_FREE
 jne   exit_free_channel
 inc   bl
-cmp   bl, byte ptr cs:[_OPLchannels]
+cmp   bl, OPLCHANNELS
 jb    loop_search_for_free_channel
 done_finding_free_channel_loop:
 test  byte ptr [bp - 4], 1
@@ -1306,7 +1200,7 @@ mov   byte ptr [bp - 2], cl
 mov   di, word ptr cs:[bx + 0Ch + _AdLibChannels]
 do_next_free_channel_loop:
 inc   cl
-cmp   cl, byte ptr cs:[_OPLchannels]
+cmp   cl, OPLCHANNELS
 jb    loop_find_free_channel
 
 test  byte ptr [bp - 4], 2
@@ -1348,7 +1242,6 @@ ret
 ENDP
 
 PROC  getInstrument_ NEAR
-PUBLIC  getInstrument_
 
 push  bx
 push  cx
@@ -1396,8 +1289,8 @@ ret
 
 ENDP
 
-PROC  OPLplayNote_ FAR
-PUBLIC  OPLplayNote_
+PROC  OPLplayNote_OPL2_ FAR
+PUBLIC  OPLplayNote_OPL2_
 
 push  cx
 push  si
@@ -1494,8 +1387,8 @@ jmp   go_find_channel_2
 
 ENDP
 
-PROC  OPLreleaseNote_ FAR
-PUBLIC  OPLreleaseNote_
+PROC  OPLreleaseNote_OPL2_ FAR
+PUBLIC  OPLreleaseNote_OPL2_
 
 push  bx
 push  cx
@@ -1510,8 +1403,6 @@ mov   si, ax
 mov   al, byte ptr cs:[si + _OPL2driverdata + 050h] ; channelSustain
 xor   bl, bl
 mov   byte ptr [bp - 2], al
-cmp   byte ptr cs:[_OPLchannels], 0
-jbe   exit_release_note
 continue_looping_release_note:
 mov   al, bl
 xor   ah, ah
@@ -1529,7 +1420,7 @@ xor   dx, dx
 call  releaseChannel_
 loop_check_next_channel_for_release:
 inc   bl
-cmp   bl, byte ptr cs:[_OPLchannels]
+cmp   bl, OPLCHANNELS
 jb    continue_looping_release_note
 exit_release_note:
 LEAVE_MACRO 
@@ -1544,8 +1435,8 @@ jmp   loop_check_next_channel_for_release
 
 ENDP
 
-PROC  OPLpitchWheel_ FAR
-PUBLIC  OPLpitchWheel_
+PROC  OPLpitchWheel_OPL2_ FAR
+PUBLIC  OPLpitchWheel_OPL2_
 
 push  bx
 push  cx
@@ -1560,8 +1451,6 @@ xor   bh, bh
 mov   al, byte ptr [bp - 2]
 mov   byte ptr [bp - 4], bh
 mov   byte ptr cs:[bx + _OPL2driverdata + 040h], al ; channelPitch
-cmp   byte ptr cs:[_OPLchannels], 0
-jbe   exit_pitchwheel
 loop_pitchwheel:
 mov   al, byte ptr [bp - 4]
 mov   byte ptr [bp - 7], 0
@@ -1575,7 +1464,7 @@ je    do_adjust_pitch
 check_pitchwheel_loop_for_increment:
 inc   byte ptr [bp - 4]
 mov   al, byte ptr [bp - 4]
-cmp   al, byte ptr cs:[_OPLchannels]
+cmp   al, OPLCHANNELS
 jb    loop_pitchwheel
 exit_pitchwheel:
 LEAVE_MACRO 
@@ -1622,8 +1511,8 @@ dw OFFSET exit_oplchangecontrol     ;- OFFSET SM_OPL_STARTMARKER_
 dw OFFSET change_control_sustain    ;- OFFSET SM_OPL_STARTMARKER_
 
 
-PROC  OPLchangeControl_ FAR
-PUBLIC  OPLchangeControl_
+PROC  OPLchangeControl_OPL2_ FAR
+PUBLIC  OPLchangeControl_OPL2_
 
 push      cx
 push      si
@@ -1667,7 +1556,7 @@ je        found_channel_id_match_modulate
 increment_loop_modulate_next_channel:
 inc       byte ptr [bp - 4]
 mov       al, byte ptr [bp - 4]
-cmp       al, byte ptr cs:[_OPLchannels]
+cmp       al, OPLCHANNELS
 jae       exit_oplchangecontrol
 jmp       loop_modulate_next_channel
 found_channel_id_match_modulate:
@@ -1706,10 +1595,7 @@ mov       al, byte ptr [bp - 0Ah]
 xor       bh, bh
 mov       byte ptr [bp - 6], dh
 mov       byte ptr cs:[bx + _OPL2driverdata + 010h], al   ; channelVolume
-cmp       byte ptr cs:[_OPLchannels], 0
-ja        dont_exit
-jmp       exit_oplchangecontrol      ; todo make jna
-dont_exit:
+
 loop_change_control_volume:
 mov       al, byte ptr [bp - 6]
 mov       byte ptr [bp - 0Bh], 0
@@ -1722,7 +1608,7 @@ je        do_change_control_volume
 increment_change_control_volume:
 inc       byte ptr [bp - 6]
 mov       al, byte ptr [bp - 6]
-cmp       al, byte ptr cs:[_OPLchannels]
+cmp       al, OPLCHANNELS
 jb        loop_change_control_volume
 jmp       exit_oplchangecontrol
 do_change_control_volume:
@@ -1754,9 +1640,6 @@ mov       al, byte ptr [bp - 0Ah]
 xor       bh, bh
 mov       byte ptr [bp - 8], dh
 mov       byte ptr cs:[bx + _OPL2driverdata + 030h], al ; channelPan
-cmp       byte ptr cs:[_OPLchannels], 0
-ja        dont_exit_change_control_pan
-jmp       exit_oplchangecontrol
 dont_exit_change_control_pan:
 loop_change_control_pan:
 mov       al, byte ptr [bp - 8]
@@ -1770,7 +1653,7 @@ je        do_change_control_pan
 increment_change_control_pan_loop:
 inc       byte ptr [bp - 8]
 mov       al, byte ptr [bp - 8]
-cmp       al, byte ptr cs:[_OPLchannels]
+cmp       al, OPLCHANNELS
 jb        loop_change_control_pan
 jmp       exit_oplchangecontrol
 do_change_control_pan:
@@ -1805,8 +1688,8 @@ retf
 
 ENDP
 
-PROC  OPLplayMusic_ FAR
-PUBLIC  OPLplayMusic_
+PROC  OPLplayMusic_OPL2_ FAR
+PUBLIC  OPLplayMusic_OPL2_
 
 
 push      bx
@@ -1827,15 +1710,13 @@ retf
 
 ENDP
 
-PROC  OPLstopMusic_ FAR
-PUBLIC  OPLstopMusic_
+PROC  OPLstopMusic_OPL2_ FAR
+PUBLIC  OPLstopMusic_OPL2_
 
 push      bx
 push      dx
 push      si
 xor       bl, bl
-cmp       byte ptr cs:[_OPLchannels], 0
-jbe       exit_stop_music
 loop_stop_music:
 mov       al, bl
 xor       ah, ah
@@ -1848,7 +1729,7 @@ mov       dx, -1
 call      releaseChannel_
 increment_loop_stop_music:
 inc       bl
-cmp       bl, byte ptr cs:[_OPLchannels]
+cmp       bl, OPLCHANNELS
 jb        loop_stop_music
 exit_stop_music:
 pop       si
@@ -1859,8 +1740,8 @@ retf
 
 ENDP
 
-PROC  OPLchangeSystemVolume_ FAR
-PUBLIC  OPLchangeSystemVolume_
+PROC  OPLchangeSystemVolume_OPL2_ FAR
+PUBLIC  OPLchangeSystemVolume_OPL2_
 
 push      bx
 push      cx
@@ -1904,7 +1785,7 @@ call      OPLwriteVolume_
 increment_loop_change_system_volume:
 inc       byte ptr [bp - 4]
 mov       al, byte ptr [bp - 4]
-cmp       al, byte ptr cs:[_OPLchannels]
+cmp       al, OPLCHANNELS
 jb        loop_change_system_volume
 
 LEAVE_MACRO     
@@ -1920,8 +1801,8 @@ retf
 
 ENDP
 
-PROC  OPLinitDriver_ FAR
-PUBLIC  OPLinitDriver_
+PROC  OPLinitDriver_OPL2_ FAR
+PUBLIC  OPLinitDriver_OPL2_
 
 push      bx
 push      cx
@@ -1939,7 +1820,7 @@ xor       dx, dx
 mov       cx, dx
 mov       bx, 4     ; pitchbend field offset in channel
 
-mov       cl, byte ptr cs:[_OPLchannels]
+mov       cl, OPLCHANNELS
 
 loop_init_channel:
 cmp       dx, cx
@@ -1960,8 +1841,8 @@ retf
 
 ENDP
 
-PROC  OPL2initHardware_ FAR
-PUBLIC  OPL2initHardware_
+PROC  OPL2initHardware_OPL2_ FAR
+PUBLIC  OPL2initHardware_OPL2_
 
 
 xor       ax, ax
@@ -1972,35 +1853,11 @@ retf
 
 ENDP
 
-PROC  OPL3initHardware_ FAR
-PUBLIC  OPL3initHardware_
-
-mov       al, 1
-call      OPLinit_
-
-ENDP
-PROC  OPLsendMIDI_ FAR
-PUBLIC  OPLsendMIDI_
 
 
 
-xor       al, al
-retf    
-
-ENDP
-
-; same for opl2 or 3
-PROC  OPLdeinitHardware_ FAR
-PUBLIC  OPLdeinitHardware_
-
-
-call      OPLdeinit_
-ENDP
-
-
-
-PROC  SM_OPL_ENDMARKER_
-PUBLIC  SM_OPL_ENDMARKER_
+PROC  SM_OPL2_ENDMARKER_
+PUBLIC  SM_OPL2_ENDMARKER_
 ENDP
 
 

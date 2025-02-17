@@ -527,7 +527,8 @@ void __far printerfunc(uint16_t reg, uint8_t data){
 // Inits all sound stuff
 //
 
-void __far SM_OPL_STARTMARKER();
+void __far SM_OPL2_STARTMARKER();
+void __far SM_OPL3_STARTMARKER();
 void __far SM_SBMID_STARTMARKER();
 void __far SM_MPUMD_STARTMARKER();
 
@@ -561,9 +562,8 @@ void __far I_StartupSound(void) {
 
     switch (snd_MusicDevice){
         case snd_Adlib:
-            useddriver.wu = (uint32_t)SM_OPL_STARTMARKER;
+            useddriver.wu = (uint32_t)SM_OPL2_STARTMARKER;
             useport = ADLIBPORT;
-
             break;
         case snd_MPU:   // wave blaster
             useddriver.wu = (uint32_t)SM_SBMID_STARTMARKER;
@@ -576,7 +576,6 @@ void __far I_StartupSound(void) {
         case snd_MPU2:  // sound canvas
         case snd_MPU3:  // general midi
             useddriver.wu = (uint32_t)SM_MPUMD_STARTMARKER;
-            //playingdriver = &MPU401driver;
 
             if (snd_Mport){
                 useport = snd_Mport;
@@ -586,35 +585,30 @@ void __far I_StartupSound(void) {
             break;
         
         case snd_SB:
-            //playingdriver = &OPL3driver;
+            useddriver.wu = (uint32_t)SM_OPL3_STARTMARKER;
             useport = ADLIBPORT;
             break;
 
         
     }
-    //playingdriver = NULL;
-    //I_Error("hi");
 
+    playingdriver = (driverBlock __far * ) useddriver.wu;
 
     //I_Error("fields %i %x %x %x", snd_MusicDevice, useport, snd_Mport, snd_SBport);
-    if (useddriver.hu.intbits){
-        driverBlock __far* driverlocation = (driverBlock __far*) useddriver.wu;
+    if (playingdriver){
         // loader to set far segment for these func calls at runtime.   
-        if (driverlocation->driverId != MUS_DRIVER_TYPE_OPL3){
-            int8_t i;
-            segment_t __far* ptr = (segment_t __far *) driverlocation;
-            segment_t seg = useddriver.hu.intbits;
-            for (i = 0; i < 13; i++){
-                ptr[2*i+1] = seg;
+        int8_t i;
+        segment_t __far* ptr = (segment_t __far *) playingdriver;
+        segment_t seg = useddriver.hu.intbits;
+        for (i = 0; i < 13; i++){
+            ptr[2*i+1] = seg;
 
 
-            }
         }
-        driverlocation->initHardware(useport, 0, 0);
-        driverlocation->initDriver();
+        playingdriver->initHardware(useport, 0, 0);
+        playingdriver->initDriver();
 
     }
-    playingdriver = useddriver.wu;
 
     I_StartupTimer();
 
