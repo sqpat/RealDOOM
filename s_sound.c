@@ -95,7 +95,7 @@ void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
 	pendingmusicenum = musicnum;
 	pendingmusicenumlooping = looping;
 }
-
+/*
 
 void S_ActuallyChangeMusic (  ) {
 
@@ -154,6 +154,7 @@ void S_ActuallyChangeMusic (  ) {
 
 	
 }
+*/
 
 //
 // Starts some music with the music id found in sounds.h.

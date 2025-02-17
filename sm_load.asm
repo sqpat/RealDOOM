@@ -34,14 +34,19 @@ EXTRN _currentsong_num_instruments:WORD
 
 EXTRN _currentsong_play_timer:WORD
 EXTRN _currentsong_ticks_to_process:WORD
+EXTRN _snd_MusicDevice:BYTE
+EXTRN _loops_enabled:BYTE
+EXTRN _mus_playing:BYTE
 
 
 .CODE
 
 ; todo make struct mapping?
 
-DRIVERID_OFFSET   = 034h
-DRIVERDATA_OFFSET = 036h
+DRIVERBLOCK_PLAYMUSIC_OFFSET  = 020h
+DRIVERBLOCK_STOPMUSIC_OFFSET  = 024h
+DRIVERBLOCK_DRIVERID_OFFSET   = 034h
+DRIVERBLOCK_DRIVERDATA_OFFSET = 036h
 
 PROC  SM_LOAD_STARTMARKER_
 PUBLIC  SM_LOAD_STARTMARKER_
@@ -50,6 +55,77 @@ ENDP
 
 _str_genmidi:
 db "genmidi", 0
+
+_songnamelist:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+db "d_e1m1", 0, 0, 0
+db "d_e1m2", 0, 0, 0
+db "d_e1m3", 0, 0, 0
+db "d_e1m4", 0, 0, 0
+db "d_e1m5", 0, 0, 0
+db "d_e1m6", 0, 0, 0
+db "d_e1m7", 0, 0, 0
+db "d_e1m8", 0, 0, 0
+db "d_e1m9", 0, 0, 0
+db "d_e2m1", 0, 0, 0
+db "d_e2m2", 0, 0, 0
+db "d_e2m3", 0, 0, 0
+db "d_e2m4", 0, 0, 0
+db "d_e2m5", 0, 0, 0
+db "d_e2m6", 0, 0, 0
+db "d_e2m7", 0, 0, 0
+db "d_e2m8", 0, 0, 0
+db "d_e2m9", 0, 0, 0
+db "d_e3m1", 0, 0, 0
+db "d_e3m2", 0, 0, 0
+db "d_e3m3", 0, 0, 0
+db "d_e3m4", 0, 0, 0
+db "d_e3m5", 0, 0, 0
+db "d_e3m6", 0, 0, 0
+db "d_e3m7", 0, 0, 0
+db "d_e3m8", 0, 0, 0
+db "d_e3m9", 0, 0, 0
+db "d_inter", 0, 0
+db "d_intro", 0, 0
+db "d_bunny", 0, 0
+db "d_victor", 0
+db "d_introa", 0
+db "d_runnin", 0
+db "d_stalks", 0
+db "d_countd", 0
+db "d_betwee", 0
+db "d_doom", 0, 0, 0
+db "d_the_da", 0
+db "d_shawn", 0, 0
+db "d_ddtblu", 0
+db "d_in_cit", 0
+db "d_dead", 0, 0, 0
+db "d_stlks2", 0
+db "d_theda2", 0
+db "d_doom2", 0, 0
+db "d_ddtbl2", 0
+db "d_runni2", 0
+db "d_dead2", 0, 0
+db "d_stlks3", 0
+db "d_romero", 0
+db "d_shawn2", 0
+db "d_messag", 0
+db "d_count2", 0
+db "d_ddtbl3", 0
+db "d_ampie", 0, 0
+db "d_theda3", 0
+db "d_adrian", 0
+db "d_messg2", 0
+db "d_romer2", 0
+db "d_tense", 0, 0
+db "d_shawn3", 0
+db "d_openin", 0
+db "d_evil", 0, 0, 0
+db "d_ultima", 0
+db "d_read_m", 0
+db "d_dm2ttl", 0
+db "d_dm2int", 0 
 
 
 
@@ -152,7 +228,7 @@ test      si, si
 je        jump_to_return_success  ; no driver
 valid_driver_do_load:
 mov       es, ax
-mov       al, byte ptr es:[si + DRIVERID_OFFSET] ; driver id offset
+mov       al, byte ptr es:[si + DRIVERBLOCK_DRIVERID_OFFSET] ; driver id offset
 cmp       al, MUS_DRIVER_TYPE_OPL2    ; only load instruments from genmidi for opl
 je        load_opl_instruments
 cmp       al, MUS_DRIVER_TYPE_OPL3
@@ -163,8 +239,8 @@ xor       dl, dl
 mov       es, word ptr [_playingdriver+2] ; todo les
 mov       cx, ax
 mov       word ptr [bp - 2], es
-add       cx, 036h        ; DRIVERDATA_OFFSET
-add       ax, DRIVERDATA_OFFSET + (MAX_INSTRUMENTS_PER_TRACK * SIZEOF_OP2INSTRENTRY)   
+add       cx, DRIVERBLOCK_DRIVERDATA_OFFSET        
+add       ax, DRIVERBLOCK_DRIVERDATA_OFFSET + (MAX_INSTRUMENTS_PER_TRACK * SIZEOF_OP2INSTRENTRY)   
 mov       word ptr [bp - 0Eh], cx
 mov       word ptr [bp - 6], ax
 mov       cx, MAX_INSTRUMENTS
@@ -272,7 +348,99 @@ pop       cx
 pop       bx
 retf    
 
+PROC  S_ActuallyChangeMusic_
+PUBLIC  S_ActuallyChangeMusic_
 
+push  bx
+push  cx
+push  dx
+push  bp
+mov   bp, sp
+sub   sp, 0Ch
+mov   al, byte ptr ds:[_pendingmusicenum]
+mov   byte ptr [bp - 2], al
+mov   byte ptr ds:[_pendingmusicenum], 0
+cmp   byte ptr ds:[_snd_MusicDevice], 2
+je    check_for_that_one_song_adlib_version
+jump_to_not_adlib:
+jmp   not_adlib
+check_for_that_one_song_adlib_version:
+cmp   al, MUS_INTRO
+jne   jump_to_not_adlib
+mov   byte ptr [bp - 2], MUS_INTROA
+continue_loading_song:
+mov   al, byte ptr [_mus_playing]
+cmp   al, byte ptr [bp - 2]
+jne   dont_exit_changesong
+jmp   exit_changesong
+dont_exit_changesong:
+test  al, al
+je    dont_stop_song
+mov   ax, word ptr [_playingdriver+2]
+mov   byte ptr ds:[_playingstate], 1
+mov   bx, word ptr [_playingdriver]
+test  ax, ax
+jne   valid_playdriver
+test  bx, bx
+je    null_playdriver
+valid_playdriver:
+mov   es, ax
+call  dword ptr es:[bx + DRIVERBLOCK_STOPMUSIC_OFFSET]
+null_playdriver:
+mov   byte ptr [_mus_playing], 0
+dont_stop_song:
+mov   al, byte ptr [bp - 2]
+mov   ah, 9
+mul   ah
+add   ax, OFFSET _songnamelist ; - OFFSET SM_LOAD_STARTMARKER_
+
+call  F_CopyString9_
+mov   ax, OFFSET _filename_argument
+call  dword ptr ds:[_W_GetNumForName_addr]
+call  I_LoadSong_
+mov   ax, word ptr [_playingdriver+2]
+mov   bx, word ptr [_playingdriver]
+test  ax, ax
+jne   do_call_playmusic
+test  bx, bx
+je    dont_call_playmusic    ; null driver
+do_call_playmusic:
+mov   es, ax
+call  dword ptr es:[bx + DRIVERBLOCK_PLAYMUSIC_OFFSET]
+dont_call_playmusic:
+mov   al, byte ptr [bp - 2]
+mov   byte ptr [_loops_enabled], 1
+mov   byte ptr [_mus_playing], al
+mov   byte ptr ds:[_playingstate], 2
+mov   ax, word ptr [_playingdriver+2]
+mov   bx, word ptr [_playingdriver]
+test  ax, ax
+jne   call_stop_music_and_exit
+test  bx, bx
+jne   call_stop_music_and_exit
+exit_changesong:
+LEAVE_MACRO 
+pop   dx
+pop   cx
+pop   bx
+retf  
+not_adlib:
+mov   al, byte ptr [bp - 2]
+test  al, al
+je    exit_changesong
+cmp   al, NUMMUSIC
+jae   exit_changesong
+jmp   continue_loading_song
+call_stop_music_and_exit:
+mov   es, ax
+call  dword ptr es:[bx + DRIVERBLOCK_STOPMUSIC_OFFSET]
+LEAVE_MACRO
+pop   dx
+pop   cx
+pop   bx
+retf  
+
+ENDP
 
 PROC  SM_LOAD_ENDMARKER_
 PUBLIC  SM_LOAD_ENDMARKER_

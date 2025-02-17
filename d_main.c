@@ -931,6 +931,7 @@ void __near D_DoomLoop (void) {
 		S_UpdateSounds (playerMobjRef);// move positional sounds
  		// Update display, next frame, with current state.
 		if (pendingmusicenum){
+			// todo should the default case be -1 instead of 0?
 			S_ActuallyChangeMusic();
 		}
 
