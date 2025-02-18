@@ -56,9 +56,9 @@ OPL3CHANNELS         = 18
 MAX_INSTRUMENTS = 175
 MAX_INSTRUMENTS_PER_TRACK = 01Ch ; largest in doom1 or doom2
 
-
-
-SIZE_ADLIBCHANNELS          = 0120h
+; todo use opl2 channel count here!
+; 120h 
+SIZE_ADLIBCHANNELS          = MAX_MUSIC_CHANNELS * OPL3CHANNELS
 
 PLAYING_PERCUSSION_MASK     = 08000h
 

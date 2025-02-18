@@ -1299,7 +1299,7 @@ typedef struct {
 	int8_t	finetune;		/* frequency fine-tune */
 	int8_t  noteVolume;		/* note volume */
 	int8_t	realvolume;		/* adjusted note volume */
-	OPL2instrument __far * instr;	    /* current instrument */
+	OPL2instrument _near * instr;	    /* current instrument */
 	uint32_t time;			/* note start time */
 }  AdlibChannelEntry;
 
