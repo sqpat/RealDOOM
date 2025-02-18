@@ -176,6 +176,10 @@ ret
 
 ENDP
 
+; todo put this somewhere real sigh
+PLAYINGDRIVER_LOCATION = 0CC00h
+
+
 PROC  I_LoadSong_
 PUBLIC  I_LoadSong_
 
@@ -188,18 +192,13 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 010h
 push      ax
 mov       di, word ptr ds:[_EMS_PAGE] ; music goes in ems page frame 1..
 xor       si, si
 xor       bx, bx
-mov       word ptr [bp - 0Ah], si
-mov       word ptr [bp - 8], di
 mov       cx, di
-mov       word ptr [bp - 010h], si
 call      dword ptr ds:[_W_CacheLumpNumDirect_addr]
 mov       es, di
-mov       word ptr [bp - 4], di
 cmp       word ptr es:[si], 0554Dh        ; MUS FILE HEADER WORD 1
 je        good_header
 jump_to_return_failure:
@@ -234,19 +233,15 @@ je        load_opl_instruments
 cmp       al, MUS_DRIVER_TYPE_OPL3
 jne       jump_to_return_success
 load_opl_instruments:
-mov       ax, word ptr [_playingdriver]
+mov       ax, word ptr [_playingdriver] ; should be 0
 xor       dl, dl
 mov       es, word ptr [_playingdriver+2] ; todo les
-mov       cx, ax
-mov       word ptr [bp - 2], es
-add       cx, DRIVERBLOCK_DRIVERDATA_OFFSET        
-add       ax, DRIVERBLOCK_DRIVERDATA_OFFSET + (MAX_INSTRUMENTS_PER_TRACK * SIZEOF_OP2INSTRENTRY)   
-mov       word ptr [bp - 0Eh], cx
-mov       word ptr [bp - 6], ax
+
+
 mov       cx, MAX_INSTRUMENTS
 mov       al, 0FFh
-mov       di, word ptr [bp - 6]
-mov       word ptr [bp - 0Ch], es
+mov       di, DRIVERBLOCK_DRIVERDATA_OFFSET + (MAX_INSTRUMENTS_PER_TRACK * SIZEOF_OP2INSTRENTRY)
+
 rep       stosb 
 loop_next_instrument_lookup:
 mov       al, dl
@@ -255,28 +250,30 @@ cmp       ax, word ptr [_currentsong_num_instruments]
 jae       done_loading_instrument_lookups
 mov       al, dl
 cbw      
-mov       si, word ptr [bp - 010h]
+
 add       ax, ax
-mov       es, word ptr [bp - 4]
-add       si, ax
+mov       es, word ptr ds:[_EMS_PAGE]
+mov       si, ax
 mov       ax, word ptr es:[si + 010h]
 cmp       ax, 127
 ja        set_percussion_instrument_id
 record_instrument_lookup:
-mov       si, word ptr [bp - 6]
-mov       es, word ptr [bp - 0Ch]
+mov       si, PLAYINGDRIVER_LOCATION
+mov       es, si
+mov       si, DRIVERBLOCK_DRIVERDATA_OFFSET + (MAX_INSTRUMENTS_PER_TRACK * SIZEOF_OP2INSTRENTRY)
 add       si, ax
 mov       byte ptr es:[si], dl
 inc       dl
 jmp       loop_next_instrument_lookup
+
 jump_to_return_success:
 jmp       return_success
 set_percussion_instrument_id:
 sub       ax, 7
 jmp       record_instrument_lookup
 done_loading_instrument_lookups:
-mov       bx, word ptr [bp - 0Ah]
-mov       cx, word ptr [bp - 8]
+xor       bx, bx
+mov       cx, word ptr ds:[_EMS_PAGE]
 
 mov       ax, OFFSET _str_genmidi ; - OFFSET SM_LOAD_STARTMARKER_
 call      F_CopyString9_
@@ -285,43 +282,49 @@ mov       ax, OFFSET _filename_argument
 call      dword ptr ds:[_W_CacheLumpNameDirect_addr]
 cmp       dh, MAX_INSTRUMENTS
 jae       done_with_loading_instruments
+
+mov       ax, PLAYINGDRIVER_LOCATION
+mov       es, ax
+mov       bx, DRIVERBLOCK_DRIVERDATA_OFFSET + (MAX_INSTRUMENTS_PER_TRACK * SIZEOF_OP2INSTRENTRY)
+mov       ds, word ptr [_EMS_PAGE]
+xor       dh, dh
+
 loop_load_next_instrument:
 mov       al, dh
-mov       si, word ptr [bp - 6]
+
 xor       ah, ah
-mov       es, word ptr [bp - 0Ch]
+mov       si, bx    ; get instrument lookup base
 add       si, ax
 mov       dl, byte ptr es:[si]
 cmp       dl, 0FFh
 je        inc_loop_load_next_instrument
-imul      si, ax, SIZEOF_OP2INSTRENTRY    ; todo no imul.
-mov       al, dl
-imul      ax, ax, SIZEOF_OP2INSTRENTRY
-mov       di, word ptr [bp - 0Eh]
-mov       cx, word ptr [_EMS_PAGE]
-mov       es, word ptr [bp - 2]
-add       si, 8
-add       di, ax
-mov       ax, SIZEOF_OP2INSTRENTRY
 
-push      ds
-push      di
-xchg      ax, cx
-mov       ds, ax
-shr       cx, 1
+mov       ah, SIZEOF_OP2INSTRENTRY    
+mul       ah
+; ax has offset of this instrument (source)
+add       ax, 8
+xchg      ax, si
+
+mov       al, SIZEOF_OP2INSTRENTRY    
+mul       dl
+add       ax, DRIVERBLOCK_DRIVERDATA_OFFSET
+xchg      ax, di
+
+mov       cx, SIZEOF_OP2INSTRENTRY / 2
+
 rep       movsw 
-adc       cx, cx
-rep       movsb 
-pop       di
-pop       ds
 inc_loop_load_next_instrument:
 inc       dh
 cmp       dh, MAX_INSTRUMENTS
 jb        loop_load_next_instrument
+
 done_with_loading_instruments:
-mov       bx, word ptr [bp - 0Ah]
-mov       cx, word ptr [bp - 8]
-mov       ax, word ptr [bp - 012h]
+push      ss
+pop       ds
+
+xor       bx, bx
+mov       cx, word ptr ds:[_EMS_PAGE]
+mov       ax, word ptr [bp - 2]
 call      dword ptr ds:[_W_CacheLumpNumDirect_addr]
 return_success:
 mov       ax, 1
