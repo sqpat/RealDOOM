@@ -40,4 +40,4 @@
 #define WipeCodeSize                   0x31B
 #define FinaleCodeSize                 0xB5E
 #define SaveLoadCodeSize               0xB27
-#define MaximumMusDriverSize           0x17D0
+#define MaximumMusDriverSize           0x17C0

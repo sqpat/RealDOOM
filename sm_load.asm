@@ -247,13 +247,7 @@ mov       cx, MAX_INSTRUMENTS
 mov       al, 0FFh
 mov       di, word ptr [bp - 6]
 mov       word ptr [bp - 0Ch], es
-push      di
-mov       ah, al
-shr       cx, 1
-rep       stosw 
-adc       cx, cx
 rep       stosb 
-pop       di
 loop_next_instrument_lookup:
 mov       al, dl
 cbw      
