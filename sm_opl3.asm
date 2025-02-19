@@ -299,10 +299,12 @@ PROC  OPLwriteChannel_ NEAR
 ;    OPLwriteReg(reg, data1);
 ;    OPLwriteReg(reg+3, data2);
 
-xchg  bl, dl    ; dl has data1
+; al gets regbase
+; bl gets channel
+; dl gets data1
+; dh gets data2
+
 xor   ah, ah
-mov   ch, ah
-mov   dh, ah
 mov   bh, ah    ; zero them all...
 
 cmp   bl, 9
@@ -312,12 +314,12 @@ sub   bl, 9
 channel_below_9:
 add   al, byte ptr cs:[bx + _op_num - OFFSET SM_OPL3_STARTMARKER_]
 ; ax is now reg
-; dx is data1
-; cx is data2
-mov   bx, ax     ; backup
+; dx is data1/2 still
+mov   bl, dh  ; store data2
+push  ax
 call  OPLwriteReg_
-mov   dx, cx
-mov   ax, bx
+mov   dx, bx  ; retrieve data2
+pop   ax
 add   ax, 3
 call  OPLwriteReg_
 ret
@@ -445,11 +447,12 @@ do_writechannel_call:
 
 mov   dl, byte ptr cs:[bx + 4]    ; instr->scale_1
 xor   dh, dh
-mov   cx, si
 or    ax, dx
-mov   dl, byte ptr [bp - 2]
-mov   bl, al
-mov   ax, 040h
+mov   dx, si    ; data 2
+mov   dh, dl
+mov   bl, byte ptr [bp - 2] ; channel
+mov   dl, al    ; data 1
+mov   al, 040h
 call  OPLwriteChannel_
 LEAVE_MACRO 
 pop   di
@@ -561,40 +564,32 @@ push  cx
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   byte ptr [bp - 2], 0
-mov   di, 03Fh               ; turn off volume
+
+xor   si, si                   ; channel/loop ctr
+mov   di, 03F3Fh               ; turn off volume
 loop_shutup_next_channel:
-mov   al, byte ptr [bp - 2]
-mov   cx, di
-xor   ah, ah
-mov   bx, di
-mov   si, ax
-mov   dx, ax
-mov   ax, REGISTER_VOLUME
+
+mov   dx, di    ; data 1/2
+mov   bx, si                 ; channel
+mov   al, REGISTER_VOLUME
 call  OPLwriteChannel_
-mov   cx, 0FFh               ; the fastest attack, decay
-mov   ax, REGISTER_ATTACK
-mov   dx, si
-mov   bx, cx
+mov   dx, 0FFFFh      ;data 1/2         ; the fastest attack, decay
+mov   al, REGISTER_ATTACK
+mov   bx, si
 call  OPLwriteChannel_
-mov   cx, 0Fh               ; ... and release
-mov   ax, REGISTER_SUSTAIN
-mov   dx, si
-mov   bx, cx
+mov   dx, 00F0Fh      ;data 1/2         ; ... and release
+mov   al, REGISTER_SUSTAIN
+mov   bx, si
 call  OPLwriteChannel_
-mov   ax, REGISTER_KEY_ON_OFF
+mov   al, REGISTER_KEY_ON_OFF
 mov   dx, si
 xor   dh, dh        
-inc   byte ptr [bp - 2]
+inc   si
 call  OPLwriteValue_
-mov   al, byte ptr [bp - 2]
-cmp   al, OPL3CHANNELS
+cmp   si, OPL3CHANNELS
 jb    loop_shutup_next_channel
+
 exit_opl_shutup:
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
@@ -842,34 +837,31 @@ ENDP
 
 PROC  writeModulation_ NEAR
 
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   byte ptr [bp - 2], al
+;void writeModulation(uint8_t slot, OPL2instrument __far  *instr, uint8_t state){
+; al slot
+; bx instr near ptr
+; dl state
+
 
 test  dl, dl
 je    dont_enable_vibrato
 mov   dl, 040h       ; frequency vibrato
 dont_enable_vibrato:
-mov   al, byte ptr cs:[bx + 7]   ; instr->trem_vibr_2
-or    al, dl
-xor   ah, ah
-mov   cx, ax
+mov   dh, byte ptr cs:[bx + 7]   ; instr->trem_vibr_2
+or    dh, dl
+; dh has data 2
+
 test  byte ptr cs:[bx + 6], 1    ; instr->feedback
 je    feedback_one
-mov   bl, byte ptr cs:[bx]
-xor   bh, bh
-mov   ax, bx
-or    al, dl
+or    dl, byte ptr cs:[bx]
 feedback_checked:
-mov   dl, byte ptr [bp - 2]
-mov   bl, al
-mov   ax, 020h
+; dl has data 1
+mov   bl, al    ; set channel
+mov   al, 020h
 call  OPLwriteChannel_
-LEAVE_MACRO 
 ret
 feedback_one:
-mov   al, byte ptr cs:[bx]   ; instr->trem_vibr_1
+mov   dl, byte ptr cs:[bx]   ; instr->trem_vibr_1
 jmp   feedback_checked
 
 ENDP
@@ -1039,60 +1031,43 @@ mov   ax, word ptr [bp - 0Eh]
 ;call  OPLwriteInstrument_
 ; inlined
 
-push  si
-push  di
 
-mov   si, di
-
-xor   ah, ah
-xchg  ax, di
-mov   cx, 03Fh
-mov   dx, di
-mov   ax, REGISTER_VOLUME
-mov   bx, cx
+mov   es, ax    ; cache channel
+mov   dx, 03F3Fh
+mov   bx, es
+mov   al, REGISTER_VOLUME
 call  OPLwriteChannel_
-mov   dx, di
+mov   bx, es
 
-mov   ax, REGISTER_MODULATOR
-mov   cl, byte ptr cs:[si + 7]   ; instr->trem_vibr_2
-mov   bl, byte ptr cs:[si]       ; instr->trem_vibr_1
-xor   ch, ch
-xor   bh, bh
+mov   al, REGISTER_MODULATOR
+mov   dh, byte ptr cs:[di + 7]   ; instr->trem_vibr_2
+mov   dl, byte ptr cs:[di]       ; instr->trem_vibr_1
+
 call  OPLwriteChannel_
-mov   dx, di
-
-mov   ax, REGISTER_ATTACK
-mov   cl, byte ptr cs:[si + 8]   ; instr->att_dec_2
-mov   bl, byte ptr cs:[si + 1]   ; instr->att_dec_1
-xor   ch, ch
-xor   bh, bh
+mov   bx, es
+mov   al, REGISTER_ATTACK
+mov   dh, byte ptr cs:[di + 8]   ; instr->att_dec_2
+mov   dl, byte ptr cs:[di + 1]   ; instr->att_dec_1
 call  OPLwriteChannel_
-mov   dx, di
+mov   bx, es
 
-mov   ax, REGISTER_SUSTAIN
-mov   cl, byte ptr cs:[si + 9]   ; instr->sust_rel_2
-mov   bl, byte ptr cs:[si + 2]   ; instr->sust_rel_1
-xor   ch, ch
-xor   bh, bh
+mov   al, REGISTER_SUSTAIN
+mov   dh, byte ptr cs:[di + 9]   ; instr->sust_rel_2
+mov   dl, byte ptr cs:[di + 2]   ; instr->sust_rel_1
 call  OPLwriteChannel_
-mov   dx, di
+mov   bx, es
 
-mov   ax, REGISTER_WAVEFORM
-mov   cl, byte ptr cs:[si + 0Ah] ; instr->wave_2
-mov   bl, byte ptr cs:[si + 3]   ; instr->wave_1
-xor   ch, ch
-xor   bh, bh
+mov   al, REGISTER_WAVEFORM
+mov   dh, byte ptr cs:[di + 0Ah] ; instr->wave_2
+mov   dl, byte ptr cs:[di + 3]   ; instr->wave_1
 call  OPLwriteChannel_
 
-mov   bl, byte ptr cs:[si + 6]   ; instr->feedback
-mov   dx, di
-or    bl, 030h
-mov   ax, REGISTER_FEEDBACK
-mov   dh, bl
+mov   dh, byte ptr cs:[di + 6]   ; instr->feedback
+mov   dx, es
+or    dh, 030h
+mov   al, REGISTER_FEEDBACK
 call  OPLwriteValue_
 
-pop   di
-pop   si
 
 test  byte ptr cs:[si + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], CH_VIBRATO
 jne   writevibrato
@@ -1179,15 +1154,14 @@ pop   cx
 pop   bx
 ret  
 kill_channel:
-mov   cx, PERCUSSION_CHANNEL
-mov   dx, word ptr [bp - 4]
-mov   ax, REGISTER_SUSTAIN
-mov   bx, cx
+mov   dx, (PERCUSSION_CHANNEL SHL 8) + PERCUSSION_CHANNEL
+mov   bx, word ptr [bp - 4]
+mov   al, REGISTER_SUSTAIN
+
 call  OPLwriteChannel_
-mov   cx, 03Fh
-mov   dx, word ptr [bp - 4]
-mov   ax, REGISTER_VOLUME
-mov   bx, cx
+mov   dx, 03F3Fh
+mov   bx, word ptr [bp - 4]
+mov   al, REGISTER_VOLUME
 call  OPLwriteChannel_
 LEAVE_MACRO 
 pop   di
