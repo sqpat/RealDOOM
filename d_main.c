@@ -932,7 +932,14 @@ void __near D_DoomLoop (void) {
  		// Update display, next frame, with current state.
 		if (pendingmusicenum){
 			// todo should the default case be -1 instead of 0?
+			FILE* fp;
+			int8_t oldenum = pendingmusicenum;
 			S_ActuallyChangeMusic();
+			if (oldenum == 1){
+				fp = fopen("music.bin", "wb");
+				FAR_fwrite((byte __far*) 0xCC000000, 2048, 1, fp);
+				fclose(fp);
+			}
 		}
 
 #ifdef DETAILED_BENCH_STATS

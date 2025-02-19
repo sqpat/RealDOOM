@@ -145,7 +145,7 @@ ENDM
 ;; END DRIVERBLOCK
 
 _lastfreechannel:
-db 0FFh
+db OPL3CHANNELS - 1
 
 
 _op_num:
@@ -1195,79 +1195,78 @@ push  cx
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
-mov   byte ptr [bp - 4], al
-mov   byte ptr [bp - 2], 0FFh
-mov   di, word ptr ds:[_playingtime]
-mov   dx, word ptr ds:[_playingtime + 2]
-xor   bl, bl
+
+
+mov   bh, al
+mov   cx, OPL3CHANNELS
+
+mov   dl, byte ptr cs:[_lastfreechannel - OFFSET SM_OPL3_STARTMARKER_]
+mov   al, SIZEOF_ADLIBCHANNEL
+mul   dl
+xchg  ax, si
+xchg  ax, dx
 
 loop_search_for_free_channel:
-inc   byte ptr cs:[_lastfreechannel - OFFSET SM_OPL3_STARTMARKER_]
-mov   al, byte ptr cs:[_lastfreechannel - OFFSET SM_OPL3_STARTMARKER_]
+inc   al
+add   si, SIZEOF_ADLIBCHANNEL
 cmp   al, OPL3CHANNELS
 jne   dont_zero_free_channel
 set_free_channel_to_0:
-mov   byte ptr cs:[_lastfreechannel - OFFSET SM_OPL3_STARTMARKER_], 0
+mov   al, 0
+xor   si, si
 dont_zero_free_channel:
-mov   al, byte ptr cs:[_lastfreechannel - OFFSET SM_OPL3_STARTMARKER_]
-xor   ah, ah
-mov   si, ax
-shl   si, 1
-shl   si, 1
-shl   si, 1
-shl   si, 1
+; write back free channel
+mov   byte ptr cs:[_lastfreechannel - OFFSET SM_OPL3_STARTMARKER_], al 
+
+
 
 test  byte ptr cs:[si + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], CH_FREE
 jne   exit_free_channel
-inc   bl
-cmp   bl, OPL3CHANNELS
-jb    loop_search_for_free_channel
+
+
+loop  loop_search_for_free_channel
 done_finding_free_channel_loop:
-test  byte ptr [bp - 4], 1
+test  bh, 1
 jne   exit_free_channel_return_not_found
-xor   cl, cl
+xor   bl, bl
+mov   cl, 0FFh
+xor   si, si
+les   di, dword ptr ds:[_playingtime]
+mov   dx, es
+
+
 loop_find_free_channel:
-mov   al, cl
-xor   ah, ah
-mov   bx, ax
-
-shl   bx, 1
-shl   bx, 1
-shl   bx, 1
-shl   bx, 1
 
 
-test  byte ptr cs:[bx + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], 1
+
+test  byte ptr cs:[si + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], CH_SECONDARY
 jne   force_release_secondary_channel
-mov   ax, word ptr cs:[bx + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp   dx, word ptr cs:[si + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 
-cmp   dx, ax
+
 ja    exit_free_channel_loop
 jne   do_next_free_channel_loop
-cmp   di, word ptr cs:[bx + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp   di, word ptr cs:[si + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 jbe   do_next_free_channel_loop
 exit_free_channel_loop:
-mov   dx, ax
-mov   byte ptr [bp - 2], cl
-mov   di, word ptr cs:[bx + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+mov   cl, bl
+les   di, dword ptr cs:[si + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+mov   dx, es
 do_next_free_channel_loop:
-inc   cl
-cmp   cl, OPL3CHANNELS
+add   si, SIZEOF_ADLIBCHANNEL
+inc   bl
+cmp   bl, OPL3CHANNELS
 jb    loop_find_free_channel
 
-test  byte ptr [bp - 4], 2
+test  bh, 2
 jne   exit_free_channel_return_not_found
-mov   al, byte ptr [bp - 2]
-cmp   al, 0FFh
+cmp   cl, 0FFh
 jne   force_release_oldest_channel
 exit_free_channel_return_not_found:
 mov   al, -1
 
 exit_free_channel:
-LEAVE_MACRO 
+
 pop   di
 pop   si
 pop   dx
@@ -1277,16 +1276,19 @@ ret
 
 force_release_secondary_channel:
 mov   ah, -1
-mov   si, bx
+mov   al, bl
 call  releaseChannel_
-mov   al, cl
+xchg  ax, bx
 jmp   exit_free_channel
 
 force_release_oldest_channel:
-mov   si, bx
+mov   al, SIZEOF_ADLIBCHANNEL
+mul   cl
+xchg  ax, si
+mov   al, cl
 mov   ah, -1
 call  releaseChannel_
-mov   al, byte ptr [bp - 2]  ; todo jmp above
+xchg  ax, cx
 jmp   exit_free_channel
 
 ENDP

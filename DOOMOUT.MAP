@@ -1,7 +1,11 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
+<<<<<<< Updated upstream
 Created on:       25/02/18 07:36:51
+=======
+Created on:       25/02/18 06:41:53
+>>>>>>> Stashed changes
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +17,11 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
+<<<<<<< Updated upstream
 DGROUP                          20bf:0000            00002e60
+=======
+DGROUP                          20c2:0000            00002e70
+>>>>>>> Stashed changes
 
 
 
@@ -38,6 +46,7 @@ i_quit_TEXT            CODE           AUTO           0270:0020       000001e8
 i_ibm_TEXT             CODE           AUTO           0270:0210       00000337
 i_sound_TEXT           CODE           AUTO           0270:0550       0000041f
 SM_LOAD_TEXT           CODE           AUTO           0270:0970       00000488
+<<<<<<< Updated upstream
 d_main_TEXT            CODE           AUTO           0270:0e00       00000f7c
 d_net_TEXT             CODE           AUTO           0270:1d80       00000105
 g_game_TEXT            CODE           AUTO           0270:1e90       00000a53
@@ -108,6 +117,78 @@ YIE                    DATA           DGROUP         21ff:000c       00000000
 DATA                   DATA           DGROUP         21ff:000c       00000000
 _BSS                   BSS            DGROUP         2200:0000       00000a44
 STACK                  STACK          DGROUP         22a5:0000       00001000
+=======
+d_main_TEXT            CODE           AUTO           0270:0e00       00000fab
+d_net_TEXT             CODE           AUTO           0270:1db0       00000105
+g_game_TEXT            CODE           AUTO           0270:1ec0       00000a53
+m_misc_TEXT            CODE           AUTO           0270:2920       000000d7
+am_map_TEXT            CODE           AUTO           0270:2a00       000012fb
+st_stuff_TEXT          CODE           AUTO           0270:3d00       00000b71
+hu_stuff_TEXT          CODE           AUTO           0270:4880       000001d2
+hu_lib_TEXT            CODE           AUTO           0270:4a60       000001b3
+m_menu_TEXT            CODE           AUTO           0270:4c20       00001476
+sounds_TEXT            CODE           AUTO           0270:60a0       00000000
+D_ALGO_TEXT            CODE           AUTO           0270:60a0       00000045
+dmx_TEXT               CODE           AUTO           0270:60f0       00000118
+MEMORY_TEXT            CODE           AUTO           0270:6208       00000000
+MATH_TEXT              CODE           AUTO           0270:6210       000006af
+MAIN_TEXT              CODE           AUTO           0270:68c0       00000d27
+g_setup_TEXT           CODE           AUTO           0270:75f0       000002cc
+r_setup_TEXT           CODE           AUTO           0270:78c0       00000445
+st_setup_TEXT          CODE           AUTO           0270:7d10       000001fa
+hu_setup_TEXT          CODE           AUTO           0270:7f10       000000c1
+s_sound_TEXT           CODE           AUTO           0a6e:0000       00000433
+p_ceilng_TEXT          CODE           AUTO           0a6e:0440       000003ae
+p_doors_TEXT           CODE           AUTO           0a6e:07f0       000006da
+p_enemy_TEXT           CODE           AUTO           0a6e:0ed0       00002657
+p_floor_TEXT           CODE           AUTO           0a6e:3530       0000081e
+p_inter_TEXT           CODE           AUTO           0a6e:3d50       00000c08
+p_lights_TEXT          CODE           AUTO           0a6e:4960       000003ed
+p_map_TEXT             CODE           AUTO           0a6e:4d50       00002282
+p_maputl_TEXT          CODE           AUTO           0a6e:6fe0       00000c7e
+P_MATH_TEXT            CODE           AUTO           0a6e:7c5e       000000da
+p_plats_TEXT           CODE           AUTO           0a6e:7d40       0000046d
+p_pspr_TEXT            CODE           AUTO           0a6e:81b0       00000bb7
+p_spec_TEXT            CODE           AUTO           0a6e:8d70       00001200
+p_switch_TEXT          CODE           AUTO           0a6e:9f70       00000b05
+p_mobj_TEXT            CODE           AUTO           0a6e:aa80       00001807
+p_telept_TEXT          CODE           AUTO           0a6e:c290       0000021f
+p_tick_TEXT            CODE           AUTO           0a6e:c4b0       00000202
+p_user_TEXT            CODE           AUTO           0a6e:c6c0       000006c8
+r_bsp_TEXT             CODE           AUTO           1747:0000       00000024
+r_data_TEXT            CODE           AUTO           1747:0030       00001b30
+R_MATH_TEXT            CODE           AUTO           1747:1b60       000001ed
+R_MAINHI_TEXT          CODE           AUTO           1747:1d4e       0000241b
+r_draw_TEXT            CODE           AUTO           1747:4170       000000fb
+r_main_TEXT            CODE           AUTO           1747:4270       000001ea
+r_plane_TEXT           CODE           AUTO           1747:4460       00000000
+r_segs_TEXT            CODE           AUTO           1747:4460       00000000
+r_things_TEXT          CODE           AUTO           1747:4460       00000000
+w_wad_TEXT             CODE           AUTO           1747:4460       000003de
+VIDEO_TEXT             CODE           AUTO           1747:483e       000004fc
+v_video_TEXT           CODE           AUTO           1747:4d40       00000218
+z_zone_TEXT            CODE           AUTO           1747:4f60       00000620
+d_math_TEXT            CODE           AUTO           1747:5580       00000000
+p_setup_TEXT           CODE           AUTO           1c9f:0000       000011ef
+p_sight_TEXT           CODE           AUTO           1c9f:11f0       00000793
+_TEXT                  CODE           AUTO           1c9f:1990       0000289e
+FAR_DATA               FAR_DATA       AUTO           20c1:000e       00000000
+_NULL                  BEGDATA        DGROUP         20c2:0000       00000020
+_AFTERNULL             BEGDATA        DGROUP         20c4:0000       00000002
+_FIXEDDATA             DATA           DGROUP         20c5:0000       00000614
+_DATA                  DATA           DGROUP         2127:0000       00000906
+CONST                  DATA           DGROUP         21b7:0006       00000396
+CONST2                 DATA           DGROUP         21f0:000c       0000010d
+XIB                    DATA           DGROUP         2201:000a       00000000
+XI                     DATA           DGROUP         2201:000a       0000000c
+XIE                    DATA           DGROUP         2202:0006       00000000
+YIB                    DATA           DGROUP         2202:0006       00000000
+YI                     DATA           DGROUP         2202:0006       00000012
+YIE                    DATA           DGROUP         2203:0008       00000000
+DATA                   DATA           DGROUP         2203:0008       00000000
+_BSS                   BSS            DGROUP         2204:0000       00000a44
+STACK                  STACK          DGROUP         22a9:0000       00001000
+>>>>>>> Stashed changes
 
 
                         +----------------+
@@ -121,6 +202,7 @@ Address        Symbol
 =======        ======
 
 Module: m_near.obj(C:\REALDOOM\m_near.c)
+<<<<<<< Updated upstream
 20bf:1410      _musdriverstartposition
 20bf:1420      _savename
 20bf:1430      _texturecache_nodes
@@ -528,6 +610,415 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 20bf:1e30      _respawnparm
 20bf:1e31      _snd_SBdma
 20bf:1e32      _snd_DesiredMusicDevice
+=======
+20c2:1420      _musdriverstartposition
+20c2:1430      _savename
+20c2:1440      _texturecache_nodes
+20c2:14a0      _spritecache_nodes
+20c2:14f0      _dl
+20c2:1500      _anims
+20c2:15c0      _usedtexturepagemem
+20c2:15d8      _solidsegs
+20c2:1658      _wadfiles
+20c2:1660      _strace
+20c2:1670      _trace
+20c2:1680      _switchlist
+20c2:1748      _buttonlist
+20c2:1770      _saveOldString
+20c2:1788      _w_ammo
+20c2:17b0      _w_keyboxes
+20c2:17c8      _w_maxammo
+20c2:17f0      _w_faces
+20c2:17f8      _w_arms
+20c2:1828      _w_armsbg
+20c2:1830      _segregs
+20c2:1838      _am_l
+20c2:1840      _am_fl
+20c2:1848      _am_lc
+20c2:1850      _am_ml
+20c2:1858      _markpoints
+20c2:1880      _cachedsegmentlumps
+20c2:1888      _cachedlumps
+20c2:1890      _activenumpages
+20c2:1898      _spriteL1LRU
+20c2:18a0      _activespritepages
+20c2:18a8      _textureL1LRU
+20c2:18b8      _activetexturepages
+20c2:18c8      _codestartposition
+20c2:18d4      _nextcleanup
+20c2:18d8      _flatcache_nodes
+20c2:18e4      _segloopcachedsegment
+20c2:18e8      _segloopcachedbasecol
+20c2:18ec      _segloopprevlookup
+20c2:18f0      _levelTimeCount
+20c2:18f4      _usedspritepagemem
+20c2:1908      _filetolumpsize
+20c2:1914      _intercept_p
+20c2:1918      _bottomslope
+20c2:191c      _sightzstart
+20c2:1920      _cachedt2x
+20c2:1924      _cachedt2y
+20c2:1928      _aimslope
+20c2:192c      _topslope
+20c2:1930      _shootz
+20c2:1934      _tmy
+20c2:1938      _tmx
+20c2:193c      _tmthing_pos
+20c2:1940      _bestslidefrac
+20c2:1944      _tmymove
+20c2:1948      _tmxmove
+20c2:194c      _linetarget_pos
+20c2:1950      _bulletslope
+20c2:1954      _activeplats
+20c2:1990      _leveltime
+20c2:1994      _setStateReturn_pos
+20c2:1998      _TaskServiceCount
+20c2:199c      _OldInt8
+20c2:19a0      _w_armor
+20c2:19ac      _st_stuff_buf
+20c2:19e0      _w_health
+20c2:19ec+     _mousearray
+20c2:19f0      _starttime
+20c2:19f4      _gametic
+20c2:19f8      _maketic
+20c2:19fc      _gametime
+20c2:1a00      _p_init_sprtemp
+20c2:1a04      _am_scale_ftom
+20c2:1a08      _am_buffer
+20c2:1a1c      _am_max_scale_mtof
+20c2:1a20      _am_scale_mtof
+20c2:1a24      _screen_oldloc
+20c2:1a28      _m_paninc
+20c2:1a2c      _activespritenumpages
+20c2:1a30      _channels
+20c2:1a42      _lineopening
+20c2:1a48      _keyboxes
+20c2:1a4e      _w_ready
+20c2:1a58      _out
+20c2:1a66      _in
+20c2:1a74      _regs
+20c2:1a82*     _percussMask
+20c2:1a84      _currentsong_length
+20c2:1a86      _currentsong_start_offset
+20c2:1a88      _currentsong_num_instruments
+20c2:1a8a      _currentsong_primary_channels
+20c2:1a8c      _currentsong_secondary_channels
+20c2:1a8e      _currentsong_play_timer
+20c2:1a90      _currentsong_playing_offset
+20c2:1a92      _segloopheightvalcache
+20c2:1a94      _emshandle
+20c2:1a96      _pagenum9000
+20c2:1a98      _spritewidths_segment
+20c2:1a9a      _numlinespecials
+20c2:1a9c      _lastanim
+20c2:1a9e      _numlumps
+20c2:1aa0      _newend
+20c2:1aa2      _attackrange16
+20c2:1aa4      _la_damage
+20c2:1aa6      _shootthing
+20c2:1aa8      _ceilinglinenum
+20c2:1aaa      _tmthing
+20c2:1aac      _tmfloorz
+20c2:1aae      _lastcalculatedsector
+20c2:1ab0      _tmdropoffz
+20c2:1ab2      _tmceilingz
+20c2:1ab4      _linetarget
+20c2:1ab6      _bestslidelinenum
+20c2:1ab8      _numspechit
+20c2:1aba      _tmflags1
+20c2:1abc      _setStateReturn
+20c2:1abe      _numswitches
+20c2:1ac0      _oldentertics
+20c2:1ac2      _currentThinkerListHead
+20c2:1ac4      _whichSkull
+20c2:1ac6      _currentMenu
+20c2:1ac8      _skullAnimCounter
+20c2:1aca      _messageLastMenuActive
+20c2:1acc      _saveStringEnter
+20c2:1ace      _itemOn
+20c2:1ad0      _saveCharIndex
+20c2:1ad2      _messageRoutine
+20c2:1ad4      _saveSlot
+20c2:1ad6      _st_calc_lastcalc
+20c2:1ad8      _defdemoname
+20c2:1ada      _dclicks
+20c2:1adc      _dclicktime
+20c2:1ade      _dclickstate
+20c2:1ae0      _dclicktime2
+20c2:1ae2      _mousex
+20c2:1ae4      _myargc
+20c2:1ae6      _myargv
+20c2:1ae8      _dclickstate2
+20c2:1aea      _dclicks2
+20c2:1aec      _demo_p
+20c2:1aee      _totalkills
+20c2:1af0      _totalitems
+20c2:1af2      _totalsecret
+20c2:1af4      _playerMobjRef
+20c2:1af6      _p_init_maxframe
+20c2:1af8      _EMS_PAGE
+20c2:1afa      _am_min_level_x
+20c2:1afc      _am_min_level_y
+20c2:1afe      _screen_viewport_height
+20c2:1b00      _screen_topright_y
+20c2:1b02      _screen_topright_x
+20c2:1b04      _screen_viewport_width
+20c2:1b06      _am_min_scale_mtof
+20c2:1b08      _old_screen_viewport_width
+20c2:1b0a      _old_screen_botleft_x
+20c2:1b0c      _old_screen_botleft_y
+20c2:1b0e      _screen_botleft_y
+20c2:1b10      _am_max_level_y
+20c2:1b12      _am_max_level_x
+20c2:1b14      _old_screen_viewport_height
+20c2:1b16      _screen_botleft_x
+20c2:1b18      _ftom_zoommul
+20c2:1b1a      _mtof_zoommul
+20c2:1b1c      _skytexture
+20c2:1b1e      _spritelights
+20c2:1b20      _numpatches
+20c2:1b22      _pspritescale
+20c2:1b24      _firstpatch
+20c2:1b26      _numtextures
+20c2:1b28      _numspritelumps
+20c2:1b2a      _numflats
+20c2:1b2c      _scaledviewwidth
+20c2:1b2e      _viewwindowoffset
+20c2:1b30      _r_cachedplayerMobjsecnum
+20c2:1b32      _viewwindowx
+20c2:1b34      _viewwindowy
+20c2:1b36      _pendingdetail
+20c2:1b38      _pagename
+20c2:1b3a      _pagetic
+20c2:1b3c      _snd_SBport
+20c2:1b3e      _snd_Mport
+20c2:1b40      _w_title
+20c2:1b99      _w_message
+20c2:1d02      _menu_messageString
+20c2:1d6b      _oldweaponsowned
+20c2:1d74      _wminfo
+20c2:1d89      _player
+20c2:1dec      _mus_paused
+20c2:1ded      _levelTimer
+20c2:1dee      _crushchange
+20c2:1def      _nofit
+20c2:1df0      _earlyout
+20c2:1df1      _onground
+20c2:1df2      _TS_TimesInInterrupt
+20c2:1df3      _menu_epi
+20c2:1df4      _messageNeedsInput
+20c2:1df5      _message_on
+20c2:1df6      _message_dontfuckwithme
+20c2:1df7      _message_counter
+20c2:1df8      _message_nottobefuckedwith
+20c2:1df9      _messageToPrint
+20c2:1dfa      _st_randomnumber
+20c2:1dfb      _do_st_refresh
+20c2:1dfc      _secretexit
+20c2:1dfd      _st_statusbaron
+20c2:1dfe      _updatedthisframe
+20c2:1dff      _st_firsttime
+20c2:1e00      _st_gamestate
+20c2:1e01      _usemouse
+20c2:1e02      _d_episode
+20c2:1e03      _turnheld
+20c2:1e04      _d_skill
+20c2:1e05      _d_map
+20c2:1e06      _savegameslot
+20c2:1e07      _mousebforward
+20c2:1e08      _key_speed
+20c2:1e09      _mousebfire
+20c2:1e0a      _key_left
+20c2:1e0b      _key_fire
+20c2:1e0c      _key_strafe
+20c2:1e0d      _key_straferight
+20c2:1e0e      _key_up
+20c2:1e0f      _mousebstrafe
+20c2:1e10      _key_down
+20c2:1e11      _key_use
+20c2:1e12      _key_right
+20c2:1e13      _key_strafeleft
+20c2:1e14      _timingdemo
+20c2:1e15      _sendsave
+20c2:1e16      _noblit
+20c2:1e17      _demoplayback
+20c2:1e18      _demorecording
+20c2:1e19      _singledemo
+20c2:1e1a      _netdemo
+20c2:1e1b      _sendpause
+20c2:1e1c      _usergame
+20c2:1e1d      _paused
+20c2:1e1e      _borderdrawcount
+20c2:1e1f      _numChannels
+20c2:1e20      _gameskill
+20c2:1e21      _respawnmonsters
+20c2:1e22      _novideo
+20c2:1e23      _usegamma
+20c2:1e24      _mousepresent
+20c2:1e25      _setsizeneeded
+20c2:1e26      _menuactive
+20c2:1e27      _screenSize
+20c2:1e28      _inhelpscreens
+20c2:1e29      _quickSaveSlot
+20c2:1e2a      _detailLevel
+20c2:1e2b      _setblocks
+20c2:1e2c      _eventtail
+20c2:1e2d      _startmap
+20c2:1e2e      _modifiedgame
+20c2:1e2f      _sfxVolume
+20c2:1e30      _autostart
+20c2:1e31      _showMessages
+20c2:1e32      _advancedemo
+20c2:1e33      _mouseSensitivity
+20c2:1e34      _startskill
+20c2:1e35      _fastparm
+20c2:1e36      _eventhead
+20c2:1e37      _startepisode
+20c2:0650      _singletics
+20c2:0651      _skytextureloaded
+20c2:0652      _validcount
+20c2:0654      _clipangle
+20c2:0656      _fieldofview
+20c2:0658      _spritecache_l2_head
+20c2:0659      _spritecache_l2_tail
+20c2:065a      _flatcache_l2_head
+20c2:065b      _flatcache_l2_tail
+20c2:065c      _texturecache_l2_head
+20c2:065d      _texturecache_l2_tail
+20c2:065e      _cachedtex
+20c2:0660      _cachedsegmenttex
+20c2:0662      _cachedsegmenttex2
+20c2:0664      _cachedtex2
+20c2:0666      _cachedcollength
+20c2:0667      _cachedcollength2
+20c2:0668      _am_cheating
+20c2:0669      _am_grid
+20c2:066a      _markpointnum
+20c2:066b      _followplayer
+20c2:066c      _am_stopped
+20c2:066d      _am_bigstate
+20c2:066e      _am_lastlevel
+20c2:066f      _am_lastepisode
+20c2:0670      _player_arrow
+20c2:06a8      _cheat_player_arrow
+20c2:0728      _thintriangle_guy
+20c2:0740      _pagesegments
+20c2:0750      _R_DrawPlanesCall
+20c2:0754      _R_WriteBackViewConstantsSpanCall
+20c2:0758      _R_DrawMaskedCall
+20c2:075c      _wipe_StartScreenCall
+20c2:0760      _wipe_WipeLoopCall
+20c2:0764      _R_WriteBackMaskedFrameConstantsCall
+20c2:0768      _R_WriteBackViewConstantsMaskedCall
+20c2:076c      _F_StartFinale
+20c2:0770      _F_Ticker
+20c2:0774      _F_Drawer
+20c2:0778      _F_Responder
+20c2:077c      _WI_Start
+20c2:0780      _WI_Ticker
+20c2:0784      _WI_Drawer
+20c2:0788      _P_UnArchivePlayers
+20c2:078c      _P_UnArchiveWorld
+20c2:0790      _P_UnArchiveThinkers
+20c2:0794      _P_UnArchiveSpecials
+20c2:0798      _P_ArchivePlayers
+20c2:079c      _P_ArchiveWorld
+20c2:07a0      _P_ArchiveThinkers
+20c2:07a4      _P_ArchiveSpecials
+20c2:07a8      _currentlumpindex
+20c2:07aa      _maskedcount
+20c2:07ac      _currentpostoffset
+20c2:07ae      _currentpostdataoffset
+20c2:07b0      _currentpixeloffset
+20c2:07b2      _grmode
+20c2:07b4      _oldkeyboardisr
+20c2:07b8      _viewactivestate
+20c2:07b9      _menuactivestate
+20c2:07ba      _inhelpscreensstate
+20c2:07bb      _fullscreen
+20c2:07bc      _oldgamestate
+20c2:07bd      _precache
+20c2:07c0      _forwardmove
+20c2:07c8      _sidemove
+20c2:07d0      _mousebuttons
+20c2:07d2      _prndindex
+20c2:07d4      _tallnum
+20c2:07e8      _shortnum
+20c2:07fc      _keys
+20c2:0808      _faces
+20c2:085c      _arms
+20c2:0874      _st_oldhealth
+20c2:0876      _st_facecount
+20c2:0878      _st_faceindex
+20c2:087a      _st_palette
+20c2:087c      _st_calc_oldhealth
+20c2:087e      _st_face_lastattackdown
+20c2:087f      _st_face_priority
+20c2:0880      _hu_font
+20c2:08fe      _skullName
+20c2:0902      _MainMenu
+20c2:0920      _MainDef
+20c2:092c+     _EpisodeMenu
+20c2:0940      _EpiDef
+20c2:094c+     _NewGameMenu
+20c2:0965      _NewDef
+20c2:0971+     _OptionsMenu
+20c2:0999      _OptionsDef
+20c2:09a5      _ReadMenu1
+20c2:09aa      _ReadDef1
+20c2:09b6+     _ReadMenu2
+20c2:09bb      _ReadDef2
+20c2:09c7+     _SoundMenu
+20c2:09db      _SoundDef
+20c2:09e7      _LoadMenu
+20c2:0a05      _LoadDef
+20c2:0a11+     _SaveMenu
+20c2:0a2f      _SaveDef
+20c2:0a3b      _detailNames
+20c2:0a3d      _msgNames
+20c2:0a3f      _HeadTask
+20c2:0a41      _MUSTask
+20c2:0a43      _TS_Installed
+20c2:0a44      _TS_InInterrupt
+20c2:0a45      _st_stopped
+20c2:0a46      _armsbgarray
+20c2:0a48      _weaponinfo
+20c2:0aac      _maxammo
+20c2:0ab4      _clipammo
+20c2:0ab8      _opposite
+20c2:0ac1      _diags
+20c2:0ac6      _filetolumpindex
+20c2:0acc      _currentloadedfileindex
+20c2:0ace      _pageswapargs
+20c2:0cfe      _current5000State
+20c2:0cff      _last5000State
+20c2:0d00      _current9000State
+20c2:0d01      _last9000State
+20c2:0d02      _currenttask
+20c2:0d03      _seglooptexrepeat
+20c2:0d06      _segloopnextlookup
+20c2:0d0a      _versionstring
+20c2:0d16      _currentoverlay
+20c2:12ec      _snd_prefixen
+20c2:0d17*     _S_music
+20c2:0d19      _S_sfx
+20c2:0d26      _mus_playing
+20c2:0d28      _playingdriver
+20c2:0d2c      _currentsong_ticks_to_process
+20c2:0d2e*     _playingpercussMask
+20c2:0d30      _loops_enabled
+20c2:1e38      _musicVolume
+20c2:1e39      _demosequence
+20c2:1e3a      _snd_SBirq
+20c2:1e3b      _snd_SfxVolume
+20c2:1e3c      _nomonsters
+20c2:1e3d      _snd_DesiredSfxDevice
+20c2:1e3e      _snd_MusicDevice
+20c2:1e3f      _snd_SfxDevice
+20c2:1e40      _respawnparm
+20c2:1e41      _snd_SBdma
+20c2:1e42      _snd_DesiredMusicDevice
+>>>>>>> Stashed changes
 Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:0000      D_InitStrings_
 0000:00aa+     D_GetCursorColumnRow_
@@ -645,12 +1136,21 @@ Module: d_main.obj(C:\REALDOOM\d_main.c)
 0270:1734      I_UpdateNoBlit_
 0270:1840+     D_Display_
 0270:1adc+     G_BeginRecording_
+<<<<<<< Updated upstream
 0270:1b68      D_PageTicker_
 0270:1b7a+     D_PageDrawer_
 0270:1b9e      D_DoAdvanceDemo_
 0270:1cb8+     Z_ClearDeadCode_
 0270:1cfe      D_DoomMain_
 0270:1d06*     D_DoomLoop_
+=======
+0270:1b94      D_PageTicker_
+0270:1ba6+     D_PageDrawer_
+0270:1bca      D_DoAdvanceDemo_
+0270:1ce4+     Z_ClearDeadCode_
+0270:1d2a      D_DoomMain_
+0270:1d32*     D_DoomLoop_
+>>>>>>> Stashed changes
 Module: d_net.obj(C:\REALDOOM\d_net.c)
 0270:1d80      NetUpdate_
 0270:1de2      TryRunTics_
@@ -1266,10 +1766,17 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fgetc.c)
 1c9c:1c2b      __fill_buffer_
 1c9c:1ce9      fgetc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
+<<<<<<< Updated upstream
 1c9c:1d6d      __doclose_
 1c9c:1e03      __shutdown_stream_
 1c9c:1e17      fclose_
 20bf:1e34+     ___RmTmpFileFn
+=======
+1c9f:1d6d      __doclose_
+1c9f:1e03      __shutdown_stream_
+1c9f:1e17      fclose_
+20c2:1e44+     ___RmTmpFileFn
+>>>>>>> Stashed changes
 Module: C:\WATCOM2\lib286\dos\clibm.lib(intx086.c)
 1c9c:1e3a+     int86x_
 1c9c:1edc      int86_
@@ -1282,9 +1789,15 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fread.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(accss.c)
 1c9c:2267      access_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
+<<<<<<< Updated upstream
 20bf:0db2      ___iob
 20bf:1e38      ___OpenStreams
 20bf:1e3a      ___ClosedStreams
+=======
+20c2:0db2      ___iob
+20c2:1e48      ___OpenStreams
+20c2:1e4a      ___ClosedStreams
+>>>>>>> Stashed changes
 Module: C:\WATCOM2\lib286\dos\clibm.lib(setbuf.c)
 1c9c:229d      setbuf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(i4m.asm)
@@ -1318,10 +1831,17 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 1c9c:2606      __do_exit_with_msg_
 1c9c:26e5      __GETDS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
+<<<<<<< Updated upstream
 20bf:1e3c      __argc
 20bf:1e3e      __argv
 20bf:1e40      ___argc
 20bf:1e42      ___argv
+=======
+20c2:1e4c      __argc
+20c2:1e4e      __argv
+20c2:1e50      ___argc
+20c2:1e52      ___argv
+>>>>>>> Stashed changes
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fputc.c)
 1c9c:26ef      fputc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(chainint)
@@ -1332,8 +1852,13 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 1c9c:2979*     __set_commode_
 20bf:0ed8      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
+<<<<<<< Updated upstream
 1c9c:2980      __get_errno_ptr_
 20bf:1e44+     _errno
+=======
+1c9f:2980      __get_errno_ptr_
+20c2:1e54+     _errno
+>>>>>>> Stashed changes
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
 20bf:0eda      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
@@ -1362,9 +1887,15 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(__lseek.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 1c9c:2d9b      __close_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
+<<<<<<< Updated upstream
 1c9c:2dd1      _nfree_
 1c9c:2dd1      free_
 20bf:1e46+     ___MiniHeapFreeRover
+=======
+1c9f:2dd1      _nfree_
+1c9f:2dd1      free_
+20c2:1e56+     ___MiniHeapFreeRover
+>>>>>>> Stashed changes
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 1c9c:2e96      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dointr)
@@ -1372,7 +1903,11 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(dointr)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(segread.c)
 1c9c:32ff      segread_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(istable.c)
+<<<<<<< Updated upstream
 20bf:12ec      __IsTable
+=======
+20c2:12f8      __IsTable
+>>>>>>> Stashed changes
 Module: C:\WATCOM2\lib286\dos\clibm.lib(lseek.c)
 1c9c:3317      lseek_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tell.c)
@@ -1439,8 +1974,13 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(iomode.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 1c9c:38ac      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
+<<<<<<< Updated upstream
 1c9c:38c8      __get_doserrno_ptr_
 20bf:1e4a+     __doserrno
+=======
+1c9f:38c8      __get_doserrno_ptr_
+20c2:1e5a+     __doserrno
+>>>>>>> Stashed changes
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 20bf:0f48      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -1465,18 +2005,32 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
 1c9c:3cf8      __doserror_
 1c9c:3d06*     __doserror1_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
+<<<<<<< Updated upstream
 20bf:13ee      __Start_XI
 20bf:13fa      __End_XI
 20bf:13fa      __Start_YI
 20bf:140c      __End_YI
+=======
+20c2:13fa      __Start_XI
+20c2:1406      __End_XI
+20c2:1406      __Start_YI
+20c2:1418      __End_YI
+>>>>>>> Stashed changes
 Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 1c9c:3d12      __EnterWVIDEO_
 20bf:0f50+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
+<<<<<<< Updated upstream
 20bf:1e4e      ____Argv
 20bf:1e50      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
 20bf:1e52      ___historical_splitparms
+=======
+20c2:1e5e      ____Argv
+20c2:1e60      ____Argc
+Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
+20c2:1e62      ___historical_splitparms
+>>>>>>> Stashed changes
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nrealloc.c)
 1c9c:3d2e*     _nrealloc_
 1c9c:3d2e      realloc_
@@ -1523,6 +2077,11 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         +-----------------------+
 
 Stack size:  1000 (4096.)
+<<<<<<< Updated upstream
 Memory size:  00023a50 (146000.)
 Entry point address: 1c9c:2438
+=======
+Memory size:  00023a90 (146064.)
+Entry point address: 1c9f:2438
+>>>>>>> Stashed changes
 Link time: 00:00.75
