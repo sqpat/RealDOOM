@@ -144,10 +144,6 @@ ENDM
 
 ;; END DRIVERBLOCK
 
-_OPLchannels:
-db 9
-_OPL3mode:
-db 0
 _lastfreechannel:
 db 0FFh
 
@@ -247,15 +243,11 @@ ENDP
 
 
 PROC  OPLwriteReg_ NEAR
-
-push  bx
-push  cx
-mov   bl, dl
-cmp   byte ptr cs:[_OPL3mode - OFFSET SM_OPL3_STARTMARKER_], 0
-je    do_opl2_writereg
+; todo selfmodify?
 do_opl3_writereg:
-mov   dx, ADLIB_PORT
 or    ah, ah
+mov   ah, dl
+mov   dx, ADLIB_PORT
 je    dont_inc_port_2
 inc   dx
 inc   dx
@@ -263,15 +255,16 @@ inc   dx
 dont_inc_port_2:
 out   dx, al
 in    al, dx
-mov   ah, al
+xchg  al, ah
 inc   dx
-mov   al, bl
 out   dx, al
 mov   al, ah
-pop   cx
-pop   bx
 ret  
-do_opl2_writereg:
+
+COMMENT @
+do_opl2_writereg:   ; todo is this well tested?
+push  cx
+mov   ah, dl
 mov   dx, ADLIB_PORT
 out   dx, al
 mov   cx, 6
@@ -279,16 +272,16 @@ loop_delay_1:
 in    al, dx
 loop  loop_delay_1
 inc   dx
-mov   al, bl
+mov   al, ah
 out   dx, al
 dec   dx
-mov   cx, 36     ; delay amount
+mov   cx, 36     ; delay amount. todo look into reducing... its a func call so time is wasted in calls etc?
 loop_delay_2:
 in    al, dx
 loop  loop_delay_2
 pop   cx
-pop   bx
 ret  
+@
 
 ENDP
 
@@ -535,27 +528,19 @@ jmp   pan_capped
 
 ENDP
 
+; idea: move init out of driver and into a separate dynamically loaded block so its not ever-present..
+
+PROC  OPL3initHardware_OPL3_ FAR
+PUBLIC  OPL3initHardware_OPL3_
 
 
-PROC  OPLinit_ NEAR
-
-mov   byte ptr cs:[_OPL3mode - OFFSET SM_OPL3_STARTMARKER_], al
-test  al, al
-je    oplinit_opl2
-
-oplinit_opl3:
 mov   dx, 1
 mov   ax, 0105h      ; enable YMF262/OPL3 mode
-mov   byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_], 18
+
 call  OPLwriteReg_
 mov   ax, 0104h      ; disable 4-operator mode
 xor   dx, dx
 call  OPLwriteReg_
-jmp   finish_opl_init
-
-oplinit_opl2:
-mov   byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_], 9
-finish_opl_init:
 mov   dx, REGISTER_MODULATOR
 mov   ax, 1
 call  OPLwriteReg_
@@ -566,9 +551,12 @@ mov   ax, 0BDh         ; set vibrato/tremolo depth to low, set melodic mode
 xor   dx, dx
 call  OPLwriteReg_
 
-; fallthru to oplshutup
+call  OPLshutup_
+xor       al, al
+retf
 
 ENDP
+
 
 PROC  OPLshutup_ NEAR
 
@@ -607,7 +595,7 @@ xor   dh, dh
 inc   byte ptr [bp - 2]
 call  OPLwriteValue_
 mov   al, byte ptr [bp - 2]
-cmp   al, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp   al, OPL3CHANNELS
 jb    loop_shutup_next_channel
 exit_opl_shutup:
 LEAVE_MACRO 
@@ -726,8 +714,15 @@ PUBLIC  OPL3deinitHardware_OPL3_
 
 push  dx
 call  OPLshutup_
-cmp   byte ptr cs:[_OPL3mode - OFFSET SM_OPL3_STARTMARKER_], 0
-jne   de_init_opl3
+
+de_init_opl3:
+mov   ax, 0105h
+xor   dx, dx
+call  OPLwriteReg_
+mov   ax, 0104h
+xor   dx, dx
+call  OPLwriteReg_
+
 de_init_opl2:
 mov   dx, 020h       ; enable Waveform Select
 mov   ax, 1
@@ -741,14 +736,7 @@ call  OPLwriteReg_
 pop   dx
 xor   ax, ax
 retf
-de_init_opl3:
-mov   ax, 0105h
-xor   dx, dx
-call  OPLwriteReg_
-mov   ax, 0104h
-xor   dx, dx
-call  OPLwriteReg_
-jmp   de_init_opl2
+
 
 
 
@@ -900,22 +888,23 @@ PROC  calcVolumeOPL_ NEAR
 ; al = channel volume
 
 
-mov   ah, bl
+
+mul   bl
 shl   dx, 1
 shl   dx, 1
-mul   ah
 mul   dx
-mov   bl, ah
-mov   bh, dl
+mov   al, ah
+mov   ah, dl    ; mid 16 bits of result.
 mov   dl, 127
-mov   ax, bx
 div   dl
-mov   bx, ax
+
 cmp   al, 07Fh
-jbe   already_below_127
-mov   al, 07Fh
-already_below_127:
+jnbe  cap_at_127
 ret
+cap_at_127:
+mov   al, 07Fh
+ret
+
 
 
 ENDP
@@ -1243,7 +1232,7 @@ xor   dx, dx
 call  releaseChannel_
 skip_release_channel:
 inc   bl
-cmp   bl, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp   bl, OPL3CHANNELS
 jb    loop_release_sustain
 exit_release_sustain:
 pop   si
@@ -1273,7 +1262,7 @@ xor   bl, bl
 loop_search_for_free_channel:
 inc   byte ptr cs:[_lastfreechannel - OFFSET SM_OPL3_STARTMARKER_]
 mov   al, byte ptr cs:[_lastfreechannel - OFFSET SM_OPL3_STARTMARKER_]
-cmp   al, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp   al, OPL3CHANNELS
 jne   dont_zero_free_channel
 set_free_channel_to_0:
 mov   byte ptr cs:[_lastfreechannel - OFFSET SM_OPL3_STARTMARKER_], 0
@@ -1289,7 +1278,7 @@ shl   si, 1
 test  byte ptr cs:[si + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], CH_FREE
 jne   exit_free_channel
 inc   bl
-cmp   bl, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp   bl, OPL3CHANNELS
 jb    loop_search_for_free_channel
 done_finding_free_channel_loop:
 test  byte ptr [bp - 4], 1
@@ -1321,7 +1310,7 @@ mov   byte ptr [bp - 2], cl
 mov   di, word ptr cs:[bx + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 do_next_free_channel_loop:
 inc   cl
-cmp   cl, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp   cl, OPL3CHANNELS
 jb    loop_find_free_channel
 
 test  byte ptr [bp - 4], 2
@@ -1528,7 +1517,7 @@ xor   dx, dx
 call  releaseChannel_
 loop_check_next_channel_for_release:
 inc   bl
-cmp   bl, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp   bl, OPL3CHANNELS
 jb    continue_looping_release_note
 exit_release_note:
 LEAVE_MACRO 
@@ -1575,7 +1564,7 @@ je    do_adjust_pitch
 check_pitchwheel_loop_for_increment:
 inc   byte ptr [bp - 4]
 mov   al, byte ptr [bp - 4]
-cmp   al, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp   al, OPL3CHANNELS
 jb    loop_pitchwheel
 exit_pitchwheel:
 LEAVE_MACRO 
@@ -1670,7 +1659,7 @@ je        found_channel_id_match_modulate
 increment_loop_modulate_next_channel:
 inc       byte ptr [bp - 4]
 mov       al, byte ptr [bp - 4]
-cmp       al, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp       al, OPL3CHANNELS
 jae       exit_oplchangecontrol
 jmp       loop_modulate_next_channel
 found_channel_id_match_modulate:
@@ -1724,7 +1713,7 @@ je        do_change_control_volume
 increment_change_control_volume:
 inc       byte ptr [bp - 6]
 mov       al, byte ptr [bp - 6]
-cmp       al, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp       al, OPL3CHANNELS
 jb        loop_change_control_volume
 jmp       exit_oplchangecontrol
 do_change_control_volume:
@@ -1772,7 +1761,7 @@ je        do_change_control_pan
 increment_change_control_pan_loop:
 inc       byte ptr [bp - 8]
 mov       al, byte ptr [bp - 8]
-cmp       al, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp       al, OPL3CHANNELS
 jb        loop_change_control_pan
 jmp       exit_oplchangecontrol
 do_change_control_pan:
@@ -1851,7 +1840,7 @@ mov       dx, -1
 call      releaseChannel_
 increment_loop_stop_music:
 inc       bl
-cmp       bl, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp       bl, OPL3CHANNELS
 jb        loop_stop_music
 exit_stop_music:
 pop       si
@@ -1910,7 +1899,7 @@ call      OPLwriteVolume_
 increment_loop_change_system_volume:
 inc       byte ptr [bp - 4]
 mov       al, byte ptr [bp - 4]
-cmp       al, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp       al, OPL3CHANNELS
 jb        loop_change_system_volume
 
 LEAVE_MACRO     
@@ -1945,7 +1934,7 @@ xor       dx, dx
 mov       cx, dx
 mov       bx, 4     ; pitchbend field offset in channel
 
-mov       cl, byte ptr cs:[_OPLchannels - OFFSET SM_OPL3_STARTMARKER_]
+mov       cl, OPL3CHANNELS
 
 loop_init_channel:
 cmp       dx, cx
@@ -1966,16 +1955,6 @@ retf
 
 ENDP
 
-
-PROC  OPL3initHardware_OPL3_ FAR
-PUBLIC  OPL3initHardware_OPL3_
-
-mov       al, 1
-call      OPLinit_
-xor       al, al
-retf
-
-ENDP
 
 
 
