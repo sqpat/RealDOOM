@@ -707,10 +707,12 @@ PROC  writeFrequency_ NEAR       ; two inlined writevalues? todo
 ; al = slot
 ; dl = note
 ; bl = pitchwheel
-; cl = keyon
+; bh = keyon
 
+push  cx
 push  si
 
+mov   cl, bh
 mov   ch, al    ; ch gets slot
 
 cmp   dl, 7
@@ -767,8 +769,8 @@ mov   al, 0B0h
 call  OPLwriteValue_
 
 
-
 pop   si
+pop   cx
 
 ret
 
@@ -1083,11 +1085,9 @@ mov   dx, ax
 mov   ax, word ptr [bp - 0Ch]
 call  OPLwriteVolume_
 mov   dl, byte ptr [bp - 6]
-mov   cx, 1
+mov   bh, 1
 mov   ax, word ptr [bp - 0Ch]
 mov   bl, byte ptr cs:[si + 4 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_] 
-xor   dh, dh
-xor   bh, bh
 call  writeFrequency_
 mov   al, byte ptr [bp - 4]
 LEAVE_MACRO 
@@ -1121,7 +1121,7 @@ push  di
 mov   di, ax  ; store slot and killed.
 
 
-xor   cx, cx
+xor   bh, bh
 
 mov   dx, word ptr cs:[si + 3 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 mov   bl, dh
@@ -1423,28 +1423,28 @@ ENDP
 PROC  OPLreleaseNote_OPL3_ FAR
 PUBLIC  OPLreleaseNote_OPL3_
 
+;void OPLreleaseNote(uint8_t channel, uint8_t note){
+
+; al channel
+; dl note
+
 push  bx
 push  cx
 push  si
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   bh, dl
+
+mov   ch, dl
 mov   cl, al
 xor   ah, ah
 mov   si, ax
 mov   al, byte ptr cs:[si + _OPL2driverdata + 050h - OFFSET SM_OPL3_STARTMARKER_] ; channelSustain
 xor   bl, bl
-mov   byte ptr [bp - 2], al
+mov   bh, al
 xor   si, si
 continue_looping_release_note:
 
-cmp   cl, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp   cx, word ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 jne   loop_check_next_channel_for_release
-
-cmp   bh, byte ptr cs:[si + 1 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-jne   loop_check_next_channel_for_release
-cmp   byte ptr [bp - 2], 040h        ; todo whats this mean
+cmp   bh, 040h        ; todo whats this mean
 jae   add_sustain_flag
 ;si good
 mov   al, bl
@@ -1456,7 +1456,7 @@ add   si, SIZEOF_ADLIBCHANNEL
 cmp   bl, OPL3CHANNELS
 jb    continue_looping_release_note
 exit_release_note:
-LEAVE_MACRO 
+
 pop   si
 pop   cx
 pop   bx
@@ -1471,62 +1471,68 @@ ENDP
 PROC  OPLpitchWheel_OPL3_ FAR
 PUBLIC  OPLpitchWheel_OPL3_
 
+;void OPLpitchWheel(uint8_t channel, uint8_t pitch){
+
+; al channel
+; dl pitch
+
 push  bx
 push  cx
-push  bp
-mov   bp, sp
-sub   sp, 8
-mov   byte ptr [bp - 2], dl
-sub   byte ptr [bp - 2], DEFAULT_PITCH_BEND
-mov   bl, al
-mov   byte ptr [bp - 6], al
-xor   bh, bh
-mov   al, byte ptr [bp - 2]
-mov   byte ptr [bp - 4], bh
-mov   byte ptr cs:[bx + _OPL2driverdata + 040h - OFFSET SM_OPL3_STARTMARKER_], al ; channelPitch
-loop_pitchwheel:
-mov   al, byte ptr [bp - 4]
-mov   byte ptr [bp - 7], 0
-mov   byte ptr [bp - 8], al
-mov   bx, word ptr [bp - 8]
+push  si
+push  di
 
-shl   bx, 1
-shl   bx, 1
-shl   bx, 1
-shl   bx, 1
-mov   al, byte ptr cs:[bx + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-cmp   al, byte ptr [bp - 6]
+sub   dl, DEFAULT_PITCH_BEND
+mov   di, dx
+mov   byte ptr cs:[bx + _OPL2driverdata + 040h - OFFSET SM_OPL3_STARTMARKER_], dl ; channelPitch
+
+mov   ch, al
+mov   cl, 0
+xor   si, si
+loop_pitchwheel:
+
+cmp   ch, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 je    do_adjust_pitch
 check_pitchwheel_loop_for_increment:
-inc   byte ptr [bp - 4]
-mov   al, byte ptr [bp - 4]
-cmp   al, OPL3CHANNELS
+inc   cl
+cmp   cl, OPL3CHANNELS
+add   si, SIZEOF_ADLIBCHANNEL
 jb    loop_pitchwheel
 exit_pitchwheel:
-LEAVE_MACRO 
+pop   di
+pop   si
 pop   cx
 pop   bx
 retf  
 
 do_adjust_pitch:
-mov   dx, word ptr ds:[_playingtime]
-mov   ax, word ptr ds:[_playingtime + 2]
-mov   word ptr cs:[bx + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], ax
-mov   al, byte ptr cs:[bx + 5 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-cbw  
-mov   word ptr cs:[bx + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dx
-mov   dx, ax
-mov   al, byte ptr [bp - 2]
-xor   ah, ah
-mov   cx, 1
-add   ax, dx
-mov   dl, byte ptr cs:[bx + 3 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-mov   byte ptr cs:[bx + 4 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], al
-xor   ah, ah
-xor   dh, dh
-mov   bx, ax
-mov   ax, word ptr [bp - 8]
+;	ch->time = playingtime;
+;	pitchadder = (int16_t)ch->finetune + pitch;
+;	ch->pitchwheel = (pitchadder & 0xFF);
+;	writeFrequency(i, ch->realnote, ch->pitchwheel, 1);
+
+; set time
+les   ax, dword ptr ds:[_playingtime]
+mov   word ptr cs:[si + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], ax
+mov   word ptr cs:[si + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], es
+
+; set pitchwheel
+mov   al, byte ptr cs:[si + 5 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+add   ax, di
+mov   byte ptr cs:[si + 4 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], al
+
+; call writeFrequency
+
+;realnote
+mov   dl, byte ptr cs:[si + 3 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+
+; pitchwheel and keyon
+mov   bh, 1
+mov   bl, al
+mov   al, cl  ; get loop iter
+
 call  writeFrequency_
+
+
 jmp   check_pitchwheel_loop_for_increment
 
 
