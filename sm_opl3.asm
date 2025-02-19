@@ -243,7 +243,7 @@ ENDP
 
 
 PROC  OPLwriteReg_ NEAR
-; todo selfmodify?
+
 do_opl3_writereg:
 or    ah, ah
 mov   ah, dl
@@ -285,41 +285,41 @@ ret
 
 ENDP
 
+;void OPLwriteChannel(uint8_t regbase, uint8_t channel, uint8_t data1, uint8_t data2){
+
+
 PROC  OPLwriteChannel_ NEAR
 
-push  si
-push  bp
-mov   bp, sp
-sub   sp, 4
-mov   byte ptr [bp - 4], al
-mov   byte ptr [bp - 2], bl
-xor   bx, bx
-cmp   dl, 9
+;   uint16_t reg = 0;
+;    if (channel >= 9){
+;        channel -= 9;
+;        reg = 0x100;
+;    }
+;    reg += regbase+op_num[channel];
+;    OPLwriteReg(reg, data1);
+;    OPLwriteReg(reg+3, data2);
+
+xchg  bl, dl    ; dl has data1
+xor   ah, ah
+mov   ch, ah
+mov   dh, ah
+mov   bh, ah    ; zero them all...
+
+cmp   bl, 9
 jb    channel_below_9
-mov   bx, 0100h
-sub   dl, 9
+inc   ah    ; add 0x100
+sub   bl, 9
 channel_below_9:
-xor   dh, dh
-mov   si, dx
-mov   al, byte ptr cs:[si + _op_num - OFFSET SM_OPL3_STARTMARKER_]
-xor   ah, ah
-mov   dx, ax
-mov   al, byte ptr [bp - 4]
-add   ax, dx
-add   bx, ax
-mov   al, byte ptr [bp - 2]
-xor   ah, ah
-mov   dx, ax
-mov   ax, bx
+add   al, byte ptr cs:[bx + _op_num - OFFSET SM_OPL3_STARTMARKER_]
+; ax is now reg
+; dx is data1
+; cx is data2
+mov   bx, ax     ; backup
 call  OPLwriteReg_
-mov   al, cl
-xor   ah, ah
-add   bx, 3
-mov   dx, ax
+mov   dx, cx
 mov   ax, bx
+add   ax, 3
 call  OPLwriteReg_
-LEAVE_MACRO 
-pop   si
 ret
 
 
@@ -333,9 +333,7 @@ PROC  OPLwriteFreq_ NEAR ; todo used only once, inline?
 ;    OPLwriteValue(0xA0, channel, freq & 0xFF);
 ;    OPLwriteValue(0xB0, channel, (freq >> 8) | (octave << 2) | (keyon << 5));
 
-push  bp
-mov   bp, sp
-sub   sp, 8
+
 shl   cx, 1
 shl   cx, 1
 shl   cx, 1
@@ -359,7 +357,6 @@ call  OPLwriteValue_
 mov   dx, bx
 mov   al, 0B0h
 call  OPLwriteValue_
-LEAVE_MACRO 
 ret  
 
 
@@ -453,7 +450,6 @@ or    ax, dx
 mov   dl, byte ptr [bp - 2]
 mov   bl, al
 mov   ax, 040h
-xor   bh, bh
 call  OPLwriteChannel_
 LEAVE_MACRO 
 pop   di
@@ -869,8 +865,6 @@ feedback_checked:
 mov   dl, byte ptr [bp - 2]
 mov   bl, al
 mov   ax, 020h
-xor   bh, bh
-xor   dh, dh
 call  OPLwriteChannel_
 LEAVE_MACRO 
 ret
