@@ -710,10 +710,7 @@ PROC  writeFrequency_ NEAR       ; two inlined writevalues? todo
 ; cl = keyon
 
 push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 8
+
 mov   ch, al    ; ch gets slot
 
 cmp   dl, 7
@@ -771,8 +768,6 @@ call  OPLwriteValue_
 
 
 
-LEAVE_MACRO 
-pop   di
 pop   si
 
 ret
@@ -802,12 +797,12 @@ jmp   freq_and_octave_ready
 do_pitch_wheel_calculation:
 mov   al, bl
 xor   ah, ah
-xchg  ax, di
-mov   al, byte ptr cs:[di + _pitchwheeltable - OFFSET SM_OPL3_STARTMARKER_]
-cbw  
 mov   dx, DEFAULT_PITCH_BEND
-sub   dx, ax    ; pitchshiftval
-mov   ax, si
+xchg  ax, si    ; si gets lookup. ax gets freq.
+sub   dl, byte ptr cs:[si + _pitchwheeltable - OFFSET SM_OPL3_STARTMARKER_]
+
+
+
 mul   dx    ; product.wu
 
 ;		int16_t pitchshiftval = 128 - pitchwheeltable[pitchwheel];
