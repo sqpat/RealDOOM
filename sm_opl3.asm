@@ -389,7 +389,7 @@ PROC  OPLwriteVolume_ NEAR
 ; al channel 
 ; dl volume
 ; bx near ptr
-
+push  cx
 
 mov   ch, al    ; store channel
 mov   cl, dl    ; store volume
@@ -412,6 +412,7 @@ mov   dl, al    ; data 1 set
 mov   bl, ch ; channel
 mov   al, 040h
 call  OPLwriteChannel_
+pop   cx
 ret  
 
 feedback_zero:
@@ -864,7 +865,7 @@ PROC  calcVolumeOPL_ NEAR
 
 ; dx = system volume
 ; al = channel volume
-
+; bl = note volume
 
 
 mul   bl
@@ -1789,6 +1790,8 @@ retf
 
 ENDP
 
+ST_PLAYING = 2
+
 PROC  OPLchangeSystemVolume_OPL3_ FAR
 PUBLIC  OPLchangeSystemVolume_OPL3_
 
@@ -1797,50 +1800,48 @@ push      cx
 push      dx
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 6
-mov       byte ptr [bp - 2], al
-mov       byte ptr [bp - 4], 0
+
+; al = systemvolume 0-16
+
+
+xor       si, si
+mov       cx, si
+mov       ch, al    ; ch holds system volume
 loop_change_system_volume:
-mov       al, byte ptr [bp - 4]
-mov       byte ptr [bp - 5], 0
-mov       byte ptr [bp - 6], al
-mov       si, word ptr [bp - 6]
-shl       si, 1
-shl       si, 1
-shl       si, 1
-shl       si, 1
-mov       al, byte ptr cs:[si + 6 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-cbw      
-mov       bx, ax
+
+mov       bl, byte ptr cs:[si + 6 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 mov       al, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-and       al, 0Fh
-mov       di, OFFSET _OPL2driverdata + 010h - OFFSET SM_OPL3_STARTMARKER_  ; channelVolume
-xor       ah, ah
-mov       dl, byte ptr [bp - 2]
-add       di, ax
-xor       dh, dh
-mov       al, byte ptr cs:[di]
+and       ax, 0Fh
+mov       di, ax
+mov       al, byte ptr cs:[di + OFFSET _OPL2driverdata + 010h - OFFSET SM_OPL3_STARTMARKER_]
+xor       dx, dx
+mov       dl, ch
+; dx = system volume
+; al = channel volume
+; bl = note volume
 call      calcVolumeOPL_
 
+; al gets volume...
+
 mov       byte ptr cs:[si + 7 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], al
-cmp       byte ptr ds:[_playingstate], 2
+cmp       byte ptr ds:[_playingstate], ST_PLAYING
 jne       increment_loop_change_system_volume
 
-cbw      
+xchg      ax, dx    ; put volume in dl
 mov       bx, word ptr cs:[si + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+mov       al, cl
 
-mov       dx, ax
-mov       ax, word ptr [bp - 6]
+; al channel 
+; dl volume
+; bx near ptr
+
 call      OPLwriteVolume_
 increment_loop_change_system_volume:
-inc       byte ptr [bp - 4]
-mov       al, byte ptr [bp - 4]
-cmp       al, OPL3CHANNELS
+inc       cl
+add       si, SIZEOF_ADLIBCHANNEL
+cmp       cl, OPL3CHANNELS
 jb        loop_change_system_volume
 
-LEAVE_MACRO     
 pop       di
 pop       si
 pop       dx
