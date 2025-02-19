@@ -1107,55 +1107,49 @@ jmp   done_with_vibrato
 ENDP
 
 PROC  releaseChannel_ NEAR
+; void releaseChannel(uint8_t slot, uint8_t killed){
 
+; al slot
+; ah killed
+; todo: si channel ptr?
 
 push  bx
 push  cx
-push  si
+push  dx
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
-mov   byte ptr [bp - 2], dl
-mov   byte ptr [bp - 3], 0
 
-mov   byte ptr [bp - 4], al
+mov   di, ax  ; store slot and killed.
+
+
 xor   cx, cx
-mov   si, word ptr [bp - 4]
 
-shl   si, 1
-shl   si, 1
-shl   si, 1
-shl   si, 1
-mov   ax, word ptr [bp - 4]
-mov   bl, byte ptr cs:[si + 4 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-mov   dl, byte ptr cs:[si + 3 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-xor   bh, bh
-xor   dh, dh
+mov   dx, word ptr cs:[si + 3 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+mov   bl, dh
 call  writeFrequency_
 mov   byte ptr cs:[si + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], CH_FREE
 or    byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], CH_FREE
-cmp   byte ptr [bp - 2], 0
+test  di, 0FF00h  ; test high byte
 jne   kill_channel
-LEAVE_MACRO 
+
 pop   di
-pop   si
+pop   dx
 pop   cx
 pop   bx
 ret  
+
 kill_channel:
 mov   dx, (PERCUSSION_CHANNEL SHL 8) + PERCUSSION_CHANNEL
-mov   bx, word ptr [bp - 4]
+mov   bx, di   ; low bits was al
 mov   al, REGISTER_SUSTAIN
 
 call  OPLwriteChannel_
 mov   dx, 03F3Fh
-mov   bx, word ptr [bp - 4]
+mov   bx, di    ; low bits was al
 mov   al, REGISTER_VOLUME
 call  OPLwriteChannel_
-LEAVE_MACRO 
+
 pop   di
-pop   si
+pop   dx
 pop   cx
 pop   bx
 ret
@@ -1165,36 +1159,28 @@ ENDP
 
 PROC  releaseSustain_ NEAR
 
+; al is channel
+
 push  bx
-push  dx
 push  si
+xor   si, si
+mov   bx, si
 mov   bh, al
-xor   bl, bl
 loop_release_sustain:
-mov   al, bl
-xor   ah, ah
-mov   dx, ax
-
-shl   dx, 1
-shl   dx, 1
-shl   dx, 1
-shl   dx, 1
-
-mov   si, dx
 cmp   bh, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 jne   skip_release_channel
-add   si, 2
-test  byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], 2
+test  byte ptr cs:[si + _AdLibChannels + 2 - OFFSET SM_OPL3_STARTMARKER_], CH_SUSTAIN
 je    skip_release_channel
-xor   dx, dx
+mov   al, bl
+cbw   ; always use 0 al..
 call  releaseChannel_
 skip_release_channel:
+add   si, SIZEOF_ADLIBCHANNEL
 inc   bl
 cmp   bl, OPL3CHANNELS
 jb    loop_release_sustain
 exit_release_sustain:
 pop   si
-pop   dx
 pop   bx
 ret  
 
@@ -1289,23 +1275,18 @@ pop   bx
 ret  
 
 force_release_secondary_channel:
-mov   dx, -1
+mov   ah, -1
+mov   si, bx
 call  releaseChannel_
 mov   al, cl
 jmp   exit_free_channel
 
 force_release_oldest_channel:
-mov   dx, -1
-xor   ah, ah
+mov   si, bx
+mov   ah, -1
 call  releaseChannel_
 mov   al, byte ptr [bp - 2]  ; todo jmp above
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret  
+jmp   exit_free_channel
 
 ENDP
 
@@ -1455,15 +1436,9 @@ mov   si, ax
 mov   al, byte ptr cs:[si + _OPL2driverdata + 050h - OFFSET SM_OPL3_STARTMARKER_] ; channelSustain
 xor   bl, bl
 mov   byte ptr [bp - 2], al
+xor   si, si
 continue_looping_release_note:
-mov   al, bl
-xor   ah, ah
-mov   dx, ax
-shl   dx, 1
-shl   dx, 1
-shl   dx, 1
-shl   dx, 1
-mov   si, dx
+
 cmp   cl, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 jne   loop_check_next_channel_for_release
 
@@ -1471,10 +1446,13 @@ cmp   bh, byte ptr cs:[si + 1 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 jne   loop_check_next_channel_for_release
 cmp   byte ptr [bp - 2], 040h        ; todo whats this mean
 jae   add_sustain_flag
-xor   dx, dx
+;si good
+mov   al, bl
+xor   ah, ah
 call  releaseChannel_
 loop_check_next_channel_for_release:
 inc   bl
+add   si, SIZEOF_ADLIBCHANNEL
 cmp   bl, OPL3CHANNELS
 jb    continue_looping_release_note
 exit_release_note:
@@ -1783,21 +1761,17 @@ push      bx
 push      dx
 push      si
 xor       bl, bl
+xor       si, si
 loop_stop_music:
-mov       al, bl
-xor       ah, ah
-mov       si, ax
-shl       si, 1
-shl       si, 1
-shl       si, 1
-shl       si, 1
-add       si, 2
-test      byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], CH_FREE
+
+test      byte ptr cs:[si + _AdLibChannels + 2 - OFFSET SM_OPL3_STARTMARKER_], CH_FREE
 jne       increment_loop_stop_music
-mov       dx, -1
+mov       ah, -1
+mov       al, bl
 call      releaseChannel_
 increment_loop_stop_music:
 inc       bl
+add       si, SIZEOF_ADLIBCHANNEL
 cmp       bl, OPL3CHANNELS
 jb        loop_stop_music
 exit_stop_music:
