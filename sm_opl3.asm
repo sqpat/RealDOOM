@@ -336,36 +336,35 @@ ENDP
 
 PROC  OPLwriteFreq_ NEAR ; todo used only once, inline?
 
+;void OPLwriteFreq(uint8_t channel, uint16_t freq, uint8_t octave, uint8_t keyon){
+;    OPLwriteValue(0xA0, channel, freq & 0xFF);
+;    OPLwriteValue(0xB0, channel, (freq >> 8) | (octave << 2) | (keyon << 5));
 
 push  bp
 mov   bp, sp
 sub   sp, 8
-mov   byte ptr [bp - 6], al
-mov   word ptr [bp - 8], dx
-mov   byte ptr [bp - 4], bl
-mov   byte ptr [bp - 2], cl
-mov   al, byte ptr [bp - 8]
-mov   cl, byte ptr [bp - 6]
-xor   ah, ah
-xor   ch, ch
-mov   bx, ax
-mov   dx, cx
-mov   ax, 0A0h
+shl   cx, 1
+shl   cx, 1
+shl   cx, 1
+shl   cx, 1
+shl   cx, 1
+shl   bx, 1
+shl   bx, 1
+or    bl, cl
+or    bl, dh
+;  bl has (freq >> 8) | (octave << 2) | (keyon << 5)
+
+mov   bh, bl
+mov   bl, al    ; channel/freq for 2nd call
+
+mov   dh, dl
+mov   dl, al    ; channel/freq for 1st call
+mov   al, 0A0h
+
 call  OPLwriteValue_
-mov   al, byte ptr [bp - 4]
-mov   dx, word ptr [bp - 8]
-xor   ah, ah
-shr   dx, 8
-shl   ax, 2
-or    dx, ax
-mov   al, byte ptr [bp - 2]
-xor   ah, ah
-shl   ax, 5
-or    ax, dx
-xor   ah, ah
-mov   dx, cx
-mov   bx, ax
-mov   ax, 0B0h
+
+mov   dx, bx
+mov   al, 0B0h
 call  OPLwriteValue_
 LEAVE_MACRO 
 ret  
@@ -481,51 +480,57 @@ ENDP
 
 PROC  OPLwritePan_ NEAR
 
-mov   dh, al
+; al contains pan
+; dl contains channel
+; bx contains instr near ptr 
 
-cmp   dl, -36
+cmp   al, -36
 jl    pan_less_than_minus_36
-cmp   dl, 36
+cmp   al, 36
 jle   pan_not_greater_than_36
-mov   al, PAN_RIGHT_CHANNEL
+mov   dh, PAN_RIGHT_CHANNEL
 pan_capped:
-mov   bl, byte ptr cs:[bx + 6]
-mov   dl, dh
-or    bl, al
-xor   dh, dh
-mov   ax, REGISTER_FEEDBACK
-xor   bh, bh
+;dh has pan flag.
+
+; dl already has old al
+or    dh, byte ptr cs:[bx + 6]
+mov   al, REGISTER_FEEDBACK
+
 
 ; fallthru
 ENDP
 
 PROC  OPLwriteValue_ NEAR
 
+;    uint16_t regnum = channel;
+;    if (channel >= 9){
+;        regnum += (0x100 - 9);
+;    }
+;    OPLwriteReg(regnum + regbase, value);
 
-push  cx
-mov   cl, al
-mov   al, dl
+; ax regbase (ah not necessarily zeroed?)
+; dl channel dh value
+
+
 xor   ah, ah
+add   al, dl    ; regnum + regbase
 cmp   dl, 9
 jb    dont_add_regnum_lookup_offset
-add   ax, (0100h - 9)
+add   ax, (0100h - 9)   ; + 0x100 - 9
 dont_add_regnum_lookup_offset:
-mov   dl, bl
+
+mov   dl, dh
 xor   dh, dh
-mov   bx, dx
-mov   dl, cl
-add   ax, dx
-mov   dx, bx
 call  OPLwriteReg_
-pop   cx
+
 ret
 
 ; part of writepan
 pan_less_than_minus_36:
-mov   al, PAN_LEFT_CHANNEL
+mov   dh, PAN_LEFT_CHANNEL
 jmp   pan_capped
 pan_not_greater_than_36:
-mov   al, PAN_BOTH_CHANNELS
+mov   dh, PAN_BOTH_CHANNELS
 jmp   pan_capped
 
 ENDP
@@ -598,7 +603,7 @@ mov   bx, cx
 call  OPLwriteChannel_
 mov   ax, REGISTER_KEY_ON_OFF
 mov   dx, si
-xor   bx, bx
+xor   dh, dh        
 inc   byte ptr [bp - 2]
 call  OPLwriteValue_
 mov   al, byte ptr [bp - 2]
@@ -1100,7 +1105,7 @@ mov   bl, byte ptr cs:[si + 6]   ; instr->feedback
 mov   dx, di
 or    bl, 030h
 mov   ax, REGISTER_FEEDBACK
-xor   bh, bh
+mov   dh, bl
 call  OPLwriteValue_
 
 pop   di
@@ -1118,8 +1123,8 @@ mov   al, byte ptr cs:[bx + _OPL2driverdata + 030h - OFFSET SM_OPL3_STARTMARKER_
 mov   byte ptr [bp - 0Bh], bh
 cbw  
 mov   bx, di
-mov   dx, ax
-mov   ax, word ptr [bp - 0Ch]
+
+mov   dx, word ptr [bp - 0Ch]
 call  OPLwritePan_
 
 mov   al, byte ptr cs:[si + 7 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
@@ -1780,8 +1785,8 @@ mov       al, byte ptr [bp - 0Ah]
 mov       word ptr cs:[bx + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dx
 cbw      
 mov       bx, si
-mov       dx, ax
-mov       ax, word ptr [bp - 0Eh]
+mov       ax, ax
+mov       dx, word ptr [bp - 0Eh]
 call      OPLwritePan_
 jmp       increment_change_control_pan_loop
 change_control_sustain:
