@@ -368,20 +368,17 @@ ENDP
 PROC  OPLconvertVolume_ NEAR
 
 push  bx
-mov   ah, dl
+; al data, ah notevolume
 mov   dl, 03Fh
 sub   dl, al
 mov   al, ah
-and   al, 07Fh
-cbw  
+and   ax, 07Fh
 mov   bx, ax
 mov   al, byte ptr cs:[bx + _noteVolumetable - OFFSET SM_OPL3_STARTMARKER_]
-mov   ah, dl
-mul   ah
-mov   dx, ax
-add   dx, ax
+mul   dl
+sal   ax, 1
 mov   al, 03Fh
-sub   al, dh
+sub   al, ah
 pop   bx
 ret  
 
@@ -419,51 +416,45 @@ ret
 ENDP
 
 
+;void OPLwriteVolume(uint8_t channel, OPL2instrument __far  *instr, int8_t noteVolume){
+
 PROC  OPLwriteVolume_ NEAR
 
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   byte ptr [bp - 2], al
+; al channel 
+; dl volume
+; bx near ptr
 
-mov   al, dl
-cbw  
 
-mov   cx, ax
+mov   ch, al    ; store channel
+mov   cl, dl    ; store volume
+
+mov   ah, dl
 mov   al, byte ptr cs:[bx + 0Ch] ; instr->level_2
-mov   dx, cx
-xor   ah, ah
 call  OPLconvertVolume_
 
 or    al, byte ptr cs:[bx + 0Bh] ; instr->scale_2
-xor   ah, ah
-mov   si, ax
+mov   dh, al  ; store data2 in dh
+
+
 test  byte ptr cs:[bx + 6], 1     ; instr->feedback
 jne   feedback_zero
 mov   al, byte ptr cs:[bx + 5]    ; instr->level_1
 do_writechannel_call:
-
-mov   dl, byte ptr cs:[bx + 4]    ; instr->scale_1
-xor   dh, dh
-or    ax, dx
-mov   dx, si    ; data 2
-mov   dh, dl
-mov   bl, byte ptr [bp - 2] ; channel
-mov   dl, al    ; data 1
+; dh already set with data2
+or    al, byte ptr cs:[bx + 4]    ; instr->scale_1
+mov   dl, al    ; data 1 set
+mov   bl, ch ; channel
 mov   al, 040h
 call  OPLwriteChannel_
-LEAVE_MACRO 
-pop   di
-pop   si
 ret  
 
 feedback_zero:
-mov   dx, cx
+mov   ah, cl    ; notevolume
+mov   cl, dh    ; cache data2
 mov   al, byte ptr cs:[bx + 5]   ;instr->level_1
 call  OPLconvertVolume_
-cbw  
+mov   dh, cl    ; restore data2
+
 jmp   do_writechannel_call
 
 
@@ -560,7 +551,6 @@ ENDP
 PROC  OPLshutup_ NEAR
 
 push  bx
-push  cx
 push  dx
 push  si
 push  di
@@ -593,7 +583,6 @@ exit_opl_shutup:
 pop   di
 pop   si
 pop   dx
-pop   cx
 pop   bx
 ret 
 
