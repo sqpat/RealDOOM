@@ -329,40 +329,6 @@ ret
 ENDP
 
 
-PROC  OPLwriteFreq_ NEAR ; todo used only once, inline?
-
-;void OPLwriteFreq(uint8_t channel, uint16_t freq, uint8_t octave, uint8_t keyon){
-;    OPLwriteValue(0xA0, channel, freq & 0xFF);
-;    OPLwriteValue(0xB0, channel, (freq >> 8) | (octave << 2) | (keyon << 5));
-
-
-shl   cx, 1
-shl   cx, 1
-shl   cx, 1
-shl   cx, 1
-shl   cx, 1
-shl   bx, 1
-shl   bx, 1
-or    bl, cl
-or    bl, dh
-;  bl has (freq >> 8) | (octave << 2) | (keyon << 5)
-
-mov   bh, bl
-mov   bl, al    ; channel/freq for 2nd call
-
-mov   dh, dl
-mov   dl, al    ; channel/freq for 1st call
-mov   al, 0A0h
-
-call  OPLwriteValue_
-
-mov   dx, bx
-mov   al, 0B0h
-call  OPLwriteValue_
-ret  
-
-
-ENDP
 
 
 PROC  OPLconvertVolume_ NEAR
@@ -748,55 +714,63 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 8
-mov   byte ptr [bp - 2], al
-mov   bh, bl
-mov   byte ptr [bp - 4], cl
+mov   ch, al    ; ch gets slot
+
 cmp   dl, 7
 jae   note_greater_than_7
 xor   dh, dh
 mov   si, dx
-add   si, dx
-xor   bl, bl
+sal   si, 1
+xor   bh, bh    ; octave 0
 mov   si, word ptr cs:[si + _freqtable - OFFSET SM_OPL3_STARTMARKER_]
 
 freq_and_octave_ready:
-cmp   bh, DEFAULT_PITCH_BEND
-je    skip_pitch_wheel_calculation
-mov   al, bh
-xor   ah, ah
-mov   di, ax
-mov   al, byte ptr cs:[di + _pitchwheeltable - OFFSET SM_OPL3_STARTMARKER_]
-mov   dx, DEFAULT_PITCH_BEND
-cbw  
-sub   dx, ax
-mov   ax, si
-mul   dx
-mov   word ptr [bp - 6], dx
-mov   word ptr [bp - 8], ax
-mov   al, byte ptr [bp - 5]
-test  al, 080h
-je    zero_last_bit
-mov   si, 1      ; si holds that one bit...
-got_last_bit:
-mov   ax, word ptr [bp - 7]
-add   ax, ax
-add   si, ax
-cmp   si, 1024
-jb    skip_pitch_wheel_calculation
-shr   si, 1
-inc   bl
-skip_pitch_wheel_calculation:
-cmp   bl, 7
-jbe   octave_lower_than_7
-mov   bl, 7
-octave_lower_than_7:
-mov   cl, byte ptr [bp - 4]
-mov   al, byte ptr [bp - 2]
+; si has freq
+; bh has octave.
+cmp   bl, DEFAULT_PITCH_BEND
+jne    do_pitch_wheel_calculation
+
+done_with_pitch_wheel_calculation:
+
+
 mov   dx, si
-xor   bh, bh
-xor   ch, ch
-xor   ah, ah
-call  OPLwriteFreq_       ; todo only use, inline
+
+
+;call  OPLwriteFreq_       ; inlined
+
+;void OPLwriteFreq(uint8_t channel, uint16_t freq, uint8_t octave, uint8_t keyon){
+;    OPLwriteValue(0xA0, channel, freq & 0xFF);
+;    OPLwriteValue(0xB0, channel, (freq >> 8) | (octave << 2) | (keyon << 5));
+; cl has keyon
+; ch has channel
+; dx has freq 
+; bh has octave
+
+shl   cl, 1
+shl   cl, 1
+shl   cl, 1
+shl   cl, 1
+shl   cl, 1
+shl   bh, 1
+shl   bh, 1
+or    bh, cl
+or    bh, dh
+;  bl has (freq >> 8) | (octave << 2) | (keyon << 5)
+
+
+mov   dh, dl
+mov   dl, ch    ; channel/freq for 1st call
+mov   al, 0A0h
+
+call  OPLwriteValue_
+
+mov   dh, bh    ; octave
+mov   dl, ch    ; channel
+mov   al, 0B0h
+call  OPLwriteValue_
+
+
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -805,22 +779,54 @@ ret
 
 note_greater_than_7:
 
-xor   dh, dh
-mov   ax, dx
+
+mov   al, dl
+sub   al, 7
+cbw
 mov   dl, 12
-sub   ax, 7
 div   dl
-mov   cx, ax
-mov   al, ah
+
+cmp   al, 7
+jbe   octave_lower_than_7
+mov   al, 7
+octave_lower_than_7:
+mov   bh, al    ; store octave
+
+mov   al, ah    
 cbw  
+sal   ax, 1
 mov   si, ax
-add   si, ax
-mov   bl, cl
 mov   si, word ptr cs:[si + _freqtable2 - OFFSET SM_OPL3_STARTMARKER_]
+; si gets freq
 jmp   freq_and_octave_ready
-zero_last_bit:
-xor   si, si
-jmp   got_last_bit
+do_pitch_wheel_calculation:
+mov   al, bl
+xor   ah, ah
+xchg  ax, di
+mov   al, byte ptr cs:[di + _pitchwheeltable - OFFSET SM_OPL3_STARTMARKER_]
+cbw  
+mov   dx, DEFAULT_PITCH_BEND
+sub   dx, ax    ; pitchshiftval
+mov   ax, si
+mul   dx    ; product.wu
+
+;		int16_t pitchshiftval = 128 - pitchwheeltable[pitchwheel];
+;		product.wu = FastMul16u16u(freq, pitchshiftval);
+;		freq = (product.productresult_mid.usemid << 1) + ((product.productresult_mid.throwawaylow & 0x80) ? 1 : 0);
+
+; shift 9 so ..
+
+rcl   ax, 1  ; get carry flag
+rcl   dx, 1  ; get carry flag   ; shift 1
+mov   al, ah
+mov   ah, dl
+xchg  ax, si
+cmp   si, 1024
+jb    done_with_pitch_wheel_calculation
+shr   si, 1
+inc   bh
+jmp   done_with_pitch_wheel_calculation
+
 
 ENDP
 

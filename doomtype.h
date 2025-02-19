@@ -163,7 +163,7 @@ typedef union _fixed_t_union {
 	} bu;
 
 	struct productresult_mid_t {
-		int8_t throwawayhigh;
+		int8_t throwawayhigh;		// errr these are reversed.
 		int16_t usemid;
 		int8_t throwawaylow;
 	} productresult_mid;
