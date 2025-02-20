@@ -835,9 +835,7 @@ PROC  writeModulation_ NEAR
 
 ; bx is modified
 
-test  dl, dl
-je    dont_enable_vibrato
-mov   dl, 040h       ; frequency vibrato
+; dl comes with 040h or 0.
 dont_enable_vibrato:
 mov   dh, byte ptr cs:[bx + 7]   ; instr->trem_vibr_2
 or    dh, dl
@@ -888,6 +886,7 @@ ret
 
 ENDP
 
+; todo put in codegen
 CH_SECONDARY = 1
 MOD_MIN      = 40
 CH_VIBRATO   = 4
@@ -912,16 +911,16 @@ push  si
 
 
 cbw   
-mov   si, ax
-shl   si, 1     ; 16 bytes per channel...
-shl   si, 1     ; 16 bytes per channel...
-shl   si, 1     ; 16 bytes per channel...
-shl   si, 1     ; 16 bytes per channel...
+mov   di, ax
+shl   di, 1     
+shl   di, 1     
+shl   di, 1     
+shl   di, 1     ; 16 bytes per channel...
 xor   bh, bh
 
 ; dh secondary flag
 ; bx = channel index 
-; si = AdLibChannel ptr
+; di = AdLibChannel ptr
 ; ch = note
 ; cl = notevolume
 
@@ -933,9 +932,9 @@ xor   bh, bh
 ;	}
 
 ; write channel
-mov   byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], bl
+mov   byte ptr cs:[di + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], bl
 ; write note
-mov   byte ptr cs:[si + 1 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], ch
+mov   byte ptr cs:[di + 1 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], ch
 cmp   dh, 0    ; check flag
 jne   set_channel_secondary_flag_on
 xor   ah, ah
@@ -948,15 +947,15 @@ cmp   byte ptr cs:[bx + _OPL2driverdata + 060h - OFFSET SM_OPL3_STARTMARKER_], M
 jb    dont_set_vibrato
 or    ah, CH_VIBRATO
 dont_set_vibrato:
-mov   byte ptr cs:[si + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], ah                           ; ch->flags
+mov   byte ptr cs:[di + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], ah                           ; ch->flags
 
 ;    ch->time = playingtime;
 
 
 push  ax    ; temp store slot for les.
 les   ax, dword ptr ds:[_playingtime]
-mov   word ptr cs:[si + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], ax
-mov   word ptr cs:[si + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], es
+mov   word ptr cs:[di + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], ax
+mov   word ptr cs:[di + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], es
 pop   ax    ; restore
 
 ;   if (noteVolume == -1){
@@ -990,7 +989,7 @@ volume_is_set:
 ;	ch->noteVolume = noteVolume;
 ;   ch->realvolume = calcVolumeOPL(OPL2driverdata.channelVolume[channel], snd_MusicVolume, noteVolume);
 
-mov   byte ptr cs:[si + 6 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], cl   ; notevolume
+mov   byte ptr cs:[di + 6 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], cl   ; notevolume
 
 mov   es, ax   ; store slot
 mov   al, byte ptr cs:[bx + _OPL2driverdata + 010h - OFFSET SM_OPL3_STARTMARKER_]     ; channelVolume
@@ -1003,7 +1002,7 @@ xor   dh, dh
 
 call  calcVolumeOPL_
 ; record realvolume
-mov   byte ptr cs:[si + 7 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], al
+mov   byte ptr cs:[di + 7 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], al
 
 ; ax/dx free...
 
@@ -1014,7 +1013,7 @@ mov   byte ptr cs:[si + 7 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], al
 ; cl has channel
 ; es low has slot
 ; es high has channel flags copy
-; di has instr
+; si has instr
 
 
 ;	if (instrument->flags & FL_FIXED_PITCH){
@@ -1024,14 +1023,14 @@ mov   byte ptr cs:[si + 7 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], al
 ;	}
 
 
-test  byte ptr cs:[di], FL_FIXED_PITCH
+test  byte ptr cs:[si], FL_FIXED_PITCH
 jne   set_note_to_instrument_note
 cmp   cl, PERCUSSION_CHANNEL
 jne   set_note
 mov   bh, 60    ; C-5
 jmp   set_note
 set_note_to_instrument_note:
-mov   bh, byte ptr cs:[di + 3]  ; update note
+mov   bh, byte ptr cs:[si + 3]  ; update note
 
 set_note:
 
@@ -1048,11 +1047,11 @@ mov   dh, DEFAULT_PITCH_BEND
 jmp   finetune_set
 lookup_instrument_finetune:
 
-test  byte ptr cs:[di], FL_DOUBLE_VOICE
+test  byte ptr cs:[si], FL_DOUBLE_VOICE
 je    use_fixed_pitch
-mov   dh, byte ptr cs:[di + 2]
+mov   dh, byte ptr cs:[si + 2]
 finetune_set:
-mov   byte ptr cs:[si + 5 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dh
+mov   byte ptr cs:[di + 5 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dh
 
 
 mov   bl, cl    ; set channel lookup
@@ -1061,9 +1060,9 @@ xor   bh, bh
 
 ; es high has channel flags copy
 ; es low has slot
-; di has instr ptr
+; si has instr ptr
 ; bx channel lookup
-; dh is ch finetune (becomes pitchwheel)
+; dh is channel finetune (becomes pitchwheel)
 ; dl has note
 ; ch has secondary flag 
 ; cl has channel
@@ -1073,7 +1072,7 @@ xor   bh, bh
 
 
 add   dh, byte ptr cs:[bx + _OPL2driverdata + 040h - OFFSET SM_OPL3_STARTMARKER_]     ; channelpitch
-mov   byte ptr cs:[si + 4 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dh
+mov   byte ptr cs:[di + 4 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dh
 
 ;    if (secondary) {
 ;		instr = &instrument->instr[1];
@@ -1085,11 +1084,11 @@ mov   byte ptr cs:[si + 4 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dh
 cmp   ch, 0    ; check secondary
 jne   use_secondary
 
-add   di, 4
+add   si, 4
 jmp   instr_set
 use_secondary:
 
-add   di, 014h
+add   si, 014h
 instr_set:
 
 ;    ch->instr = instr;
@@ -1099,24 +1098,24 @@ instr_set:
 
 
 
-mov   word ptr cs:[si + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], di
-add   dl, byte ptr cs:[di + 0Eh]
+mov   word ptr cs:[di + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], si
+add   dl, byte ptr cs:[si + 0Eh]
 and   dl, 07Fh
 
-mov   byte ptr cs:[si + 3 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dl
+mov   byte ptr cs:[di + 3 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dl
 
 
 
 
 ; es high has channel flags copy
 ; es low has slot
-; di has instr ptr
+; si has instr ptr
 ; bx channel lookup
 ; dh is pitchwheel
 ; dl has note
 ; ch unused
 ; cl has channel
-; di is instr
+; si is instr
 
 
 ;call  OPLwriteInstrument_
@@ -1131,31 +1130,31 @@ mov   al, REGISTER_VOLUME
 call  OPLwriteChannel_
 
 mov   bx, es
-mov   dh, byte ptr cs:[di + 7]   ; instr->trem_vibr_2
-mov   dl, byte ptr cs:[di]       ; instr->trem_vibr_1
+mov   dh, byte ptr cs:[si + 7]   ; instr->trem_vibr_2
+mov   dl, byte ptr cs:[si]       ; instr->trem_vibr_1
 mov   al, REGISTER_MODULATOR
 call  OPLwriteChannel_
 
 mov   bx, es
-mov   dh, byte ptr cs:[di + 8]   ; instr->att_dec_2
-mov   dl, byte ptr cs:[di + 1]   ; instr->att_dec_1
+mov   dh, byte ptr cs:[si + 8]   ; instr->att_dec_2
+mov   dl, byte ptr cs:[si + 1]   ; instr->att_dec_1
 mov   al, REGISTER_ATTACK
 call  OPLwriteChannel_
 
 mov   bx, es
-mov   dh, byte ptr cs:[di + 9]   ; instr->sust_rel_2
-mov   dl, byte ptr cs:[di + 2]   ; instr->sust_rel_1
+mov   dh, byte ptr cs:[si + 9]   ; instr->sust_rel_2
+mov   dl, byte ptr cs:[si + 2]   ; instr->sust_rel_1
 mov   al, REGISTER_SUSTAIN
 call  OPLwriteChannel_
 
 mov   bx, es
-mov   dh, byte ptr cs:[di + 0Ah] ; instr->wave_2
-mov   dl, byte ptr cs:[di + 3]   ; instr->wave_1
+mov   dh, byte ptr cs:[si + 0Ah] ; instr->wave_2
+mov   dl, byte ptr cs:[si + 3]   ; instr->wave_1
 mov   al, REGISTER_WAVEFORM
 call  OPLwriteChannel_
 
 mov   dx, es
-mov   dh, byte ptr cs:[di + 6]   ; instr->feedback
+mov   dh, byte ptr cs:[si + 6]   ; instr->feedback
 or    dh, 030h
 mov   al, REGISTER_FEEDBACK
 call  OPLwriteValue_
@@ -1167,12 +1166,12 @@ call  OPLwriteValue_
 ; stack high has pitchwheel
 ; stack low has note
 
-; di has instr ptr
+; si has instr ptr
 ; dh is pitchwheel
 ; dl has note
 ; ch unused
 ; cl has channel
-; di is instr
+; si is instr
 
 mov   ax, es
 test  ah, CH_VIBRATO
@@ -1189,16 +1188,16 @@ mov   al, byte ptr cs:[bx + _OPL2driverdata + 030h - OFFSET SM_OPL3_STARTMARKER_
 ; stack low has note
 ; es low  is slot
 ; bx channel lookup
-; di is instr
+; si is instr
 
 mov   dx, es    ; get channel/slot
-mov   bx, di    ; instr
+mov   bx, si    ; instr
 
 call  OPLwritePan_
 
 ;realvolume
-mov   dl, byte ptr cs:[si + 7 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-mov   bx, di    ; instr
+mov   dl, byte ptr cs:[di + 7 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+mov   bx, si    ; instr
 mov   ax, es
 call  OPLwriteVolume_
 
@@ -1215,8 +1214,8 @@ ret
 
 writevibrato:
 
-mov   dx, 1  ; vibrato on
-mov   bx, di  ; instr
+mov   dx, 040h  ; vibrato on
+mov   bx, si  ; instr
 ; al already has slot
 call  writeModulation_
 
@@ -1503,7 +1502,6 @@ mov   cl, byte ptr [bp - 6]
 mov   ch, byte ptr [bp - 4]
 mov   bl, byte ptr [bp - 2]
 
-mov   di, si
 
 mov   al, byte ptr [bp - 0Ah]
 mov   dh, 0
@@ -1742,7 +1740,7 @@ modulate_vibrato_on:
 or        byte ptr cs:[bx + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], CH_VIBRATO
 cmp       dl, byte ptr cs:[bx + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 je        increment_loop_modulate_next_channel
-mov       dx, 1
+mov       dx, 040h
 mov       si, word ptr cs:[bx + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 
 mov       bx, si
