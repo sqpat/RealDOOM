@@ -1898,23 +1898,20 @@ PUBLIC  OPLstopMusic_OPL3_
 
 push      bx
 push      dx
-push      si
-xor       bl, bl
-xor       si, si
+mov       bx, _AdLibChannels + 2 - OFFSET SM_OPL3_STARTMARKER_
+mov       dx, 0FF00h ;   -1 dh  0 dl
 loop_stop_music:
 
-test      byte ptr cs:[si + _AdLibChannels + 2 - OFFSET SM_OPL3_STARTMARKER_], CH_FREE
+test      byte ptr cs:[bx], CH_FREE
 jne       increment_loop_stop_music
-mov       ah, -1
-mov       al, bl
+mov       ax, dx    ; -1 in dh
 call      releaseChannel_
 increment_loop_stop_music:
-inc       bl
-add       si, SIZEOF_ADLIBCHANNEL
-cmp       bl, OPL3CHANNELS
+inc       dl
+add       bx, SIZEOF_ADLIBCHANNEL
+cmp       dl, OPL3CHANNELS
 jb        loop_stop_music
 exit_stop_music:
-pop       si
 pop       dx
 pop       bx
 retf      
@@ -1931,7 +1928,6 @@ push      bx
 push      cx
 push      dx
 push      si
-push      di
 
 ; al = systemvolume 0-16
 
@@ -1941,13 +1937,13 @@ mov       cx, si
 mov       ch, al    ; ch holds system volume
 loop_change_system_volume:
 
-mov       bl, byte ptr cs:[si + 6 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 mov       al, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 and       ax, 0Fh
-mov       di, ax
-mov       al, byte ptr cs:[di + OFFSET _OPL2driverdata + 010h - OFFSET SM_OPL3_STARTMARKER_]
+mov       bx, ax
+mov       al, byte ptr cs:[bx + OFFSET _OPL2driverdata + 010h - OFFSET SM_OPL3_STARTMARKER_]
 xor       dx, dx
 mov       dl, ch
+mov       bl, byte ptr cs:[si + 6 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 ; dx = system volume
 ; al = channel volume
 ; bl = note volume
@@ -1974,7 +1970,6 @@ add       si, SIZEOF_ADLIBCHANNEL
 cmp       cl, OPL3CHANNELS
 jb        loop_change_system_volume
 
-pop       di
 pop       si
 pop       dx
 pop       cx
