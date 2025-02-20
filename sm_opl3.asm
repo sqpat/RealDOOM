@@ -1701,184 +1701,172 @@ dw OFFSET change_control_sustain    - OFFSET SM_OPL3_STARTMARKER_
 PROC  OPLchangeControl_OPL3_ FAR
 PUBLIC  OPLchangeControl_OPL3_
 
+;void OPLchangeControl(uint8_t channel, uint8_t controller, uint8_t value){
+
+; al channel
+; dl controller
+; bl value
+
 push      cx
 push      si
-push      bp
-mov       bp, sp
-sub       sp, 0Eh
+push      di
+
 ; todo pre-prep bl, dont use 0ah 
-mov       byte ptr [bp - 0Ah], bl
-mov       byte ptr [bp - 2], al
+
 cmp       dl, 8
 ja        exit_oplchangecontrol     ; todo je change_control_sustain
-xor       dh, dh
-mov       bx, dx
-add       bx, dx
-jmp       word ptr cs:[bx + change_control_lookup - OFFSET SM_OPL3_STARTMARKER_]
+cbw
+xchg      ax, bx    ; bx has channel field. al has value
+mov       si, dx
+sal       si, 1
+jmp       word ptr cs:[si + change_control_lookup - OFFSET SM_OPL3_STARTMARKER_]
 change_control_instrument:
-mov       bl, al
-xor       bh, bh
-mov       al, byte ptr [bp - 0Ah]
 mov       byte ptr cs:[bx + _OPL2driverdata + 00h - OFFSET SM_OPL3_STARTMARKER_], al  ; channelInstr
 ; fall thru exit
 exit_oplchangecontrol:
-LEAVE_MACRO     
+pop       di
 pop       si
 pop       cx
-retf      
+retf     
+
+change_control_sustain:
+mov       byte ptr cs:[bx + _OPL2driverdata + 050h - OFFSET SM_OPL3_STARTMARKER_], al   ; channelSustain
+cmp       al, 040h       ; todo this value
+jae       exit_oplchangecontrol
+mov       ax, bx
+call      releaseSustain_
+jmp exit_oplchangecontrol
 change_control_modulation:
-mov       bl, al
-mov       al, byte ptr [bp - 0Ah]
-xor       bh, bh
-mov       byte ptr [bp - 4], dh
+
+xor       di, di    ; loop counter
+mov       si, di    ; loop channel ptr
+mov       ch, bl    ; ch gets channel
+mov       cl, al    ; cl gets value
+
 mov       byte ptr cs:[bx + _OPL2driverdata + 060h - OFFSET SM_OPL3_STARTMARKER_], al  ; channelModulation
 loop_modulate_next_channel:
-mov       al, byte ptr [bp - 4]
-xor       ah, ah
-mov       bx, ax
-shl       bx, 1
-shl       bx, 1
-shl       bx, 1
-shl       bx, 1
-mov       dl, byte ptr cs:[bx + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-cmp       dl, byte ptr [bp - 2]
+cmp       ch, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+
 je        found_channel_id_match_modulate
 increment_loop_modulate_next_channel:
-inc       byte ptr [bp - 4]
-mov       al, byte ptr [bp - 4]
-cmp       al, OPL3CHANNELS
+inc       di
+add       si, SIZEOF_ADLIBCHANNEL
+cmp       di, OPL3CHANNELS
 jae       exit_oplchangecontrol
 jmp       loop_modulate_next_channel
 found_channel_id_match_modulate:
-mov       dl, byte ptr cs:[bx + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-mov       cx, word ptr ds:[_playingtime]
-mov       si, word ptr ds:[_playingtime + 2]
-mov       word ptr cs:[bx + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], cx
-mov       word ptr cs:[bx + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], si
-cmp       byte ptr [bp - 0Ah], MOD_MIN
+
+mov       al, byte ptr cs:[si + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+les       dx, dword ptr ds:[_playingtime]
+mov       word ptr cs:[si + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dx
+mov       word ptr cs:[si + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], es
+
+cmp       cl, MOD_MIN   ; value
 jb        modulate_vibrato_off
 modulate_vibrato_on:
-or        byte ptr cs:[bx + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], CH_VIBRATO
-cmp       dl, byte ptr cs:[bx + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+
+or        byte ptr cs:[si + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], CH_VIBRATO
+cmp       al, byte ptr cs:[si + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 je        increment_loop_modulate_next_channel
 mov       dx, 040h
-mov       si, word ptr cs:[bx + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+mov       bx, word ptr cs:[si + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+mov       ax, di 
+; al slot
+; bx instr near ptr
+; dl state
 
-mov       bx, si
 call      writeModulation_
 jmp       increment_loop_modulate_next_channel
 modulate_vibrato_off:
 and       byte ptr cs:[bx + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], (0100h - CH_VIBRATO)   ; NOT CH_VIBRATO 0FBh
-cmp       dl, byte ptr cs:[bx + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+cmp       al, byte ptr cs:[si + 2 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 je        increment_loop_modulate_next_channel
-mov       cx, word ptr cs:[bx + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+mov       bx, word ptr cs:[si + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 
 xor       dx, dx
-mov       bx, cx
-mov       cx, si
+mov       ax, di
 call      writeModulation_
 jmp       increment_loop_modulate_next_channel
 
 change_control_volume:
-mov       bl, al
-mov       al, byte ptr [bp - 0Ah]
-xor       bh, bh
-mov       byte ptr [bp - 6], dh
+
+xor       di, di    ; loop counter
+mov       si, di    ; loop channel ptr
+mov       ch, bl    ; ch gets channel
+mov       cl, al    ; cl gets value
+
 mov       byte ptr cs:[bx + _OPL2driverdata + 010h - OFFSET SM_OPL3_STARTMARKER_], al   ; channelVolume
 loop_change_control_volume:
-mov       al, byte ptr [bp - 6]
-mov       byte ptr [bp - 0Bh], 0
-mov       byte ptr [bp - 0Ch], al
-mov       si, word ptr [bp - 0Ch]
-shl       si, 1
-shl       si, 1
-shl       si, 1
-shl       si, 1
-mov       al, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-cmp       al, byte ptr [bp - 2]
+
+; cmp channel
+cmp       ch, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 je        do_change_control_volume
 increment_change_control_volume:
-inc       byte ptr [bp - 6]
-mov       al, byte ptr [bp - 6]
-cmp       al, OPL3CHANNELS
+inc       di
+add       si, SIZEOF_ADLIBCHANNEL
+
+
+cmp       di, OPL3CHANNELS
 jb        loop_change_control_volume
 jmp       exit_oplchangecontrol
 do_change_control_volume:
-mov       ax, word ptr ds:[_playingtime]
-mov       dx, word ptr ds:[_playingtime + 2]
+les       ax, dword ptr ds:[_playingtime]
 mov       word ptr cs:[si + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], ax
+mov       word ptr cs:[si + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], es
+
 mov       al, byte ptr cs:[si + 6 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-mov       word ptr cs:[si + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dx
 cbw      
-mov       dl, byte ptr ds:[_snd_MusicVolume]
-mov       bx, ax
-mov       al, byte ptr [bp - 0Ah]
-xor       dh, dh
-xor       ah, ah
+xchg      ax, bx
+mov       al, byte ptr ds:[_snd_MusicVolume]
+cbw      
+xchg      ax, dx
+mov       al, cl    ; get value field..
+cbw      
 call      calcVolumeOPL_
 
 mov       bx, word ptr cs:[si + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 mov       byte ptr cs:[si + 7 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], al
 cbw      
 
-mov       dx, ax
-mov       ax, word ptr [bp - 0Ch]
+xchg      ax, dx
+mov       ax, di
 call      OPLwriteVolume_
 jmp       increment_change_control_volume
+
 change_control_pan:
-sub       byte ptr [bp - 0Ah], 64
-mov       bl, al
-mov       al, byte ptr [bp - 0Ah]
-xor       bh, bh
-mov       byte ptr [bp - 8], dh
+
+sub       al, 64
+
+xor       di, di    ; loop counter
+mov       si, di    ; loop channel ptr
+mov       ch, bl    ; ch gets channel
+mov       cl, al    ; cl gets value
+
 mov       byte ptr cs:[bx + _OPL2driverdata + 030h - OFFSET SM_OPL3_STARTMARKER_], al ; channelPan
+
 dont_exit_change_control_pan:
 loop_change_control_pan:
-mov       al, byte ptr [bp - 8]
-mov       byte ptr [bp - 0Dh], 0
-mov       byte ptr [bp - 0Eh], al
-mov       bx, word ptr [bp - 0Eh]
-shl       bx, 1
-shl       bx, 1
-shl       bx, 1
-shl       bx, 1
-mov       al, byte ptr cs:[bx + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-cmp       al, byte ptr [bp - 2]
+
+cmp       ch, byte ptr cs:[bx + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 je        do_change_control_pan
 increment_change_control_pan_loop:
-inc       byte ptr [bp - 8]
-mov       al, byte ptr [bp - 8]
-cmp       al, OPL3CHANNELS
+inc       di
+add       si, SIZEOF_ADLIBCHANNEL
+cmp       di, OPL3CHANNELS
 jb        loop_change_control_pan
 jmp       exit_oplchangecontrol
 do_change_control_pan:
-mov       ax, word ptr ds:[_playingtime]
-mov       dx, word ptr ds:[_playingtime + 2]
-mov       si, word ptr cs:[bx + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-
+les       ax, dword ptr ds:[_playingtime]
 mov       word ptr cs:[bx + 0Ch + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], ax
-mov       al, byte ptr [bp - 0Ah]
-mov       word ptr cs:[bx + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], dx
+mov       word ptr cs:[bx + 0Eh + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_], es
+mov       bx, word ptr cs:[bx + 8 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+
+mov       al, cl
 cbw      
-mov       bx, si
-mov       ax, ax
-mov       dx, word ptr [bp - 0Eh]
+mov       dx, di
 call      OPLwritePan_
 jmp       increment_change_control_pan_loop
-change_control_sustain:
-mov       bl, al
-xor       bh, bh
-mov       al, byte ptr [bp - 0Ah]
-mov       byte ptr cs:[bx + _OPL2driverdata + 050h - OFFSET SM_OPL3_STARTMARKER_], al   ; channelSustain
-cmp       al, 040h       ; todo this value
-jae       exit_oplchangecontrol2
-mov       ax, bx
-call      releaseSustain_
-exit_oplchangecontrol2:
-LEAVE_MACRO     
-pop       si
-pop       cx
-retf    
+
 
 
 ENDP
