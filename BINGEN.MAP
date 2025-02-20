@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/02/19 21:50:38
+Created on:       25/02/19 22:12:21
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -63,9 +63,9 @@ D_FINALE_TEXT          CODE           AUTO           0bf7:0002       00000b5e
 D_SAVEL_TEXT           CODE           AUTO           0cad:0000       00000b27
 s_sound_TEXT           CODE           AUTO           0d60:0000       00000433
 SM_OPL2_TEXT           CODE           AUTO           0d60:0434       000013b3
-SM_OPL3_TEXT           CODE           AUTO           0d60:17e8       000010d2
-SM_SBMID_TEXT          CODE           AUTO           0d60:28ba       0000072c
-SM_MPUMD_TEXT          CODE           AUTO           0d60:2fe6       000007ce
+SM_OPL3_TEXT           CODE           AUTO           0d60:17e8       000010d5
+SM_SBMID_TEXT          CODE           AUTO           0d60:28be       0000072c
+SM_MPUMD_TEXT          CODE           AUTO           0d60:2fea       000007ce
 p_ceilng_TEXT          CODE           AUTO           0d60:37c0       000003ae
 p_doors_TEXT           CODE           AUTO           0d60:3b70       000006da
 p_enemy_TEXT           CODE           AUTO           0d60:4250       00002657
@@ -968,59 +968,59 @@ Module: sm_opl2.obj(sm_opl2.ASM)
 Module: sm_opl3.obj(sm_opl3.ASM)
 0d60:2205*     OPLpauseMusic_OPL3_
 0d60:25a7*     OPLreleaseNote_OPL3_
-0d60:28ba      SM_OPL3_ENDMARKER_
+0d60:28bd      SM_OPL3_ENDMARKER_
 0d60:21d4*     OPL3deinitHardware_OPL3_
 0d60:2524*     OPLplayNote_OPL3_
 0d60:20dd*     OPL3initHardware_OPL3_
-0d60:264c*     OPLchangeControl_OPL3_
-0d60:2889*     OPLinitDriver_OPL3_
-0d60:2818*     OPLstopMusic_OPL3_
+0d60:264f*     OPLchangeControl_OPL3_
+0d60:288c*     OPLinitDriver_OPL3_
+0d60:281b*     OPLstopMusic_OPL3_
 0d60:25e6*     OPLpitchWheel_OPL3_
-0d60:283c*     OPLchangeSystemVolume_OPL3_
+0d60:283f*     OPLchangeSystemVolume_OPL3_
 0d60:2208*     OPLresumeMusic_OPL3_
-0d60:27f9*     OPLplayMusic_OPL3_
+0d60:27fc*     OPLplayMusic_OPL3_
 0d60:21b8*     OPL3detectHardware_OPL3_
 0d60:17e8      SM_OPL3_STARTMARKER_
 Module: sm_sbmid.obj(sm_sbmid.ASM)
-0d60:2cdd*     MIDIpitchWheel_SBMID_
-0d60:2e58*     MIDIstopMusic_SBMID_
-0d60:2f3c*     SBMIDIsendByte_
-0d60:2bcd*     MIDIplayNote_SBMID_
-0d60:2f93*     SBMIDIsendMIDI_
-0d60:2fd2*     SBMIDIdetectHardware_
-0d60:2c80*     MIDIreleaseNote_SBMID_
-0d60:2fe6      SM_SBMID_ENDMARKER_
-0d60:2fdb*     SBMIDIinitHardware_
-0d60:2e0e*     MIDIplayMusic_SBMID_
-0d60:2f1c*     MIDIresumeMusic_SBMID_
-0d60:2fdf*     SBMIDIdeinitHardware_
-0d60:2e58*     MIDIpauseMusic_SBMID_
-0d60:28ba      SM_SBMID_STARTMARKER_
-0d60:2f72*     SBMIDIsendBlock_
-0d60:2d39*     MIDIchangeControl_SBMID_
-0d60:2ec3*     MIDIchangeSystemVolume_SBMID_
-0d60:2f1d*     MIDIinitDriver_SBMID_
+0d60:2ce1*     MIDIpitchWheel_SBMID_
+0d60:2e5c*     MIDIstopMusic_SBMID_
+0d60:2f40*     SBMIDIsendByte_
+0d60:2bd1*     MIDIplayNote_SBMID_
+0d60:2f97*     SBMIDIsendMIDI_
+0d60:2fd6*     SBMIDIdetectHardware_
+0d60:2c84*     MIDIreleaseNote_SBMID_
+0d60:2fea      SM_SBMID_ENDMARKER_
+0d60:2fdf*     SBMIDIinitHardware_
+0d60:2e12*     MIDIplayMusic_SBMID_
+0d60:2f20*     MIDIresumeMusic_SBMID_
+0d60:2fe3*     SBMIDIdeinitHardware_
+0d60:2e5c*     MIDIpauseMusic_SBMID_
+0d60:28be      SM_SBMID_STARTMARKER_
+0d60:2f76*     SBMIDIsendBlock_
+0d60:2d3d*     MIDIchangeControl_SBMID_
+0d60:2ec7*     MIDIchangeSystemVolume_SBMID_
+0d60:2f21*     MIDIinitDriver_SBMID_
 Module: sm_mpumd.obj(sm_mpumd.ASM)
-0d60:373c*     MPU401initHardware_
-0d60:36b3*     MPU401sendBlock_
-0d60:3465*     MIDIchangeControl_MPU401_
-0d60:3728*     MPU401detectHardware_
-0d60:36d3*     MPU401reset_
-0d60:32f9*     MIDIplayNote_MPU401_
-0d60:3648*     MIDIresumeMusic_MPU401_
-0d60:353a*     MIDIplayMusic_MPU401_
-0d60:35ef*     MIDIchangeSystemVolume_MPU401_
-0d60:3584*     MIDIpauseMusic_MPU401_
-0d60:3584*     MIDIstopMusic_MPU401_
-0d60:3409*     MIDIpitchWheel_MPU401_
-0d60:3649*     MIDIinitDriver_MPU401_
-0d60:2fe6      SM_MPUMD_STARTMARKER_
-0d60:3758*     MPU401sendCommand_
-0d60:33ac*     MIDIreleaseNote_MPU401_
-0d60:3668*     MPU401sendByte_
-0d60:36e9*     MPU401sendMIDI_
-0d60:3751*     MPU401deinitHardware_
-0d60:37b4      SM_MPUMD_ENDMARKER_
+0d60:3740*     MPU401initHardware_
+0d60:36b7*     MPU401sendBlock_
+0d60:3469*     MIDIchangeControl_MPU401_
+0d60:372c*     MPU401detectHardware_
+0d60:36d7*     MPU401reset_
+0d60:32fd*     MIDIplayNote_MPU401_
+0d60:364c*     MIDIresumeMusic_MPU401_
+0d60:353e*     MIDIplayMusic_MPU401_
+0d60:35f3*     MIDIchangeSystemVolume_MPU401_
+0d60:3588*     MIDIpauseMusic_MPU401_
+0d60:3588*     MIDIstopMusic_MPU401_
+0d60:340d*     MIDIpitchWheel_MPU401_
+0d60:364d*     MIDIinitDriver_MPU401_
+0d60:2fea      SM_MPUMD_STARTMARKER_
+0d60:375c*     MPU401sendCommand_
+0d60:33b0*     MIDIreleaseNote_MPU401_
+0d60:366c*     MPU401sendByte_
+0d60:36ed*     MPU401sendMIDI_
+0d60:3755*     MPU401deinitHardware_
+0d60:37b8      SM_MPUMD_ENDMARKER_
 Module: p_ceilng.obj(C:\REALDOOM\p_ceilng.c)
 0d60:37cc      T_MoveCeiling_
 0d60:391a      EV_DoCeiling_

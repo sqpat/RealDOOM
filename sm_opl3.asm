@@ -1624,6 +1624,10 @@ push  di
 
 sub   dl, DEFAULT_PITCH_BEND
 mov   di, dx
+
+cbw
+mov   bx, ax
+
 mov   byte ptr cs:[bx + _OPL2driverdata + 040h - OFFSET SM_OPL3_STARTMARKER_], dl ; channelPitch
 
 mov   ch, al
@@ -1635,8 +1639,8 @@ cmp   ch, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 je    do_adjust_pitch
 check_pitchwheel_loop_for_increment:
 inc   cl
-cmp   cl, OPL3CHANNELS
 add   si, SIZEOF_ADLIBCHANNEL
+cmp   cl, OPL3CHANNELS
 jb    loop_pitchwheel
 exit_pitchwheel:
 pop   di
