@@ -53,8 +53,6 @@ SIZEOF_OP2INSTRENTRY = 024h
 MAX_MUSIC_CHANNELS   = 16
 OPL3CHANNELS         = 18
 
-MAX_INSTRUMENTS = 175
-MAX_INSTRUMENTS_PER_TRACK = 01Ch ; largest in doom1 or doom2
 
 ; todo use opl2 channel count here!
 ; 120h 
