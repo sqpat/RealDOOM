@@ -1209,6 +1209,7 @@ mov   bl, dh  ; pitchwheel
 mov   ax, es  ; channel al
 call  writeFrequency_
 
+mov   bl, cl  ; restore channel. dont need to push/pop it
 pop   si
 ret
 
@@ -1418,31 +1419,30 @@ PUBLIC  OPLplayNote_OPL3_
 ; al channel  -2
 ; dl note     -4
 ; bl volume   -6
+
 push  bx
 push  cx
 push  si
-
-push  bp
-mov   bp, sp
-sub   sp, 0Ah
-mov   byte ptr [bp - 2], al
-mov   byte ptr [bp - 4], dl
-mov   byte ptr [bp - 6], bl
-xor   dh, dh
-xor   ah, ah
-;call  getInstrument_        ; todo inline. used once. 
+push  di
 
 
 
-mov   bx, 1
-mov   cl, al
-shl   bx, cl
-test  bh, (PLAYING_PERCUSSION_MASK SHR 8)
-je    not_percussion
+mov   ch, bl
+mov   cl, al    
+
+; ch has volume
+; cl/al has channel
+; dl has note
+
+;call  getInstrument_        ; inlined. used once. 
+
+
+cmp   al, PERCUSSION_CHANNEL
+jne   not_percussion
 cmp   dl, 35
-jb    return_null_instrument
+jb    instr_is_null_dont_play
 cmp   dl, 81
-ja    return_null_instrument
+ja    instr_is_null_dont_play
 mov   bl, dl
 add   bl, (128 - 35)
 look_up_instrument:
@@ -1451,88 +1451,105 @@ xor   bh, bh
 mov   al, byte ptr cs:[bx + _instrumentlookup - OFFSET SM_OPL3_STARTMARKER_]
 cmp   al, 0FFh
 jne   found_instrument
+; todo better jmp maze...
 
-return_null_instrument:
-xor   ax, ax
-jmp   got_instrument
+jmp   instr_is_null_dont_play
 not_percussion:
 mov   bl, al
 xor   bh, bh
 mov   bl, byte ptr cs:[bx + _OPL2driverdata + 00h - OFFSET SM_OPL3_STARTMARKER_]  ; channelInstr
 jmp   look_up_instrument
 found_instrument:
-xor   ah, ah
 mov   ah, SIZEOF_OP2INSTRENTRY
 mul   ah
 add   ax, OFFSET _adlibinstrumentlist - OFFSET SM_OPL3_STARTMARKER_
 got_instrument:
 
-mov   si, ax
+xchg  ax, si
 
-test  ax, ax
-je    instr_is_null_dont_play
+
 instr_not_null:
-cmp   byte ptr [bp - 2], PERCUSSION_CHANNEL
+; ch stores volume
+; cl stores channel
+; si is instr
+; dl is note
+
+cmp   cl, PERCUSSION_CHANNEL
 je    channel_is_percussion
 channel_not_percussion:
 xor   ax, ax
 go_find_channel:
 call  findFreeChannel_
-mov   byte ptr [bp - 0Ah], al
+
 cmp   al, -1
 jne   occupy_found_channel
-instr_is_null_dont_play:
-exit_play_note:
-LEAVE_MACRO 
-pop   si
-pop   cx
-pop   bx
-retf  
+
+jmp exit_play_note
 
 channel_is_percussion:
 mov   ax, 2              ; slot for findfreechannel
 jmp   go_find_channel
 occupy_found_channel:
 
-; al channel  -2
-; dl note     -4
-; bl volume   -6
-
-mov   cl, byte ptr [bp - 6]
-mov   ch, byte ptr [bp - 4]
-mov   bl, byte ptr [bp - 2]
+; cl stores channel
+; ch stores volume
+; si is instr
+; dl is note
+; al has slot
 
 
-mov   al, byte ptr [bp - 0Ah]
-mov   dh, 0
+xor   dh, dh  ; secondary 0
+mov   bl, cl  ; bl gets channel
+mov   cl, ch  ; cl gets volume.
+mov   ch, dl  ; ch gets note
+
+push  cx      ; store note/volume
+
+; bl SHOULD have channel
+; dh should have flag (0)
+; cl should have volume
+; ch should have note
+
+; al already has freechannel/i
+
+;		occupyChannel(i, channel, note, noteVolume, instr, 0);
+
+
 call  occupyChannel_
+
+; bl returns with channel
+; si is popped..
+pop   cx  ; retrieve note/volume
+
+; cl now has volume
+; ch now has note
+; bl now has channel
 
 cmp   word ptr cs:[si], FL_DOUBLE_VOICE
 jne   exit_play_note
-cmp   byte ptr [bp - 2], PERCUSSION_CHANNEL
+cmp   bl, PERCUSSION_CHANNEL
 je    channel_is_percussion_2
 channel_not_percussion_2:
 mov   ax, 1
 go_find_channel_2:
 xor   ah, ah
 call  findFreeChannel_
-mov   byte ptr [bp - 8], al
+; al has new i/channel
 cmp   al, -1
 je    exit_play_note
-mov   cl, byte ptr [bp - 6]
-mov   ch, byte ptr [bp - 4]
-mov   bl, byte ptr [bp - 2]
-mov   di, si
-mov   al, byte ptr [bp - 8]
+; play 2nd voice
+
+; bl channel
+; cl/ch have volume/note.
+; si has instr...
+; al has slot.
+
 mov   dh, 1
 
-; bx = channel index 
-; si = AdLibChannel ptr
-; ch = note
-; cl = notevolume
-
 call  occupyChannel_
-LEAVE_MACRO 
+instr_is_null_dont_play:
+exit_play_note:
+pop   di
 pop   si
 pop   cx
 pop   bx
