@@ -932,6 +932,7 @@ void __near D_DoomLoop (void) {
  		// Update display, next frame, with current state.
 		if (pendingmusicenum){
 			// todo should the default case be -1 instead of 0?
+			Z_SetOverlay(OVERLAY_ID_MUS_LOADER);
 			S_ActuallyChangeMusic();
 		}
 

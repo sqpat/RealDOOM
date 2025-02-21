@@ -84,7 +84,6 @@ void S_StartMusic(musicenum_t music_id);
 //  and set whether looping
 void S_ChangeMusic ( musicenum_t music_id, boolean looping );
 
-void S_ActuallyChangeMusic (  );
 
 
 // Stops the music fer sure.

@@ -168,7 +168,6 @@ PLAYINGDRIVER_LOCATION = 0CC00h
 
 
 PROC  I_LoadSong_
-PUBLIC  I_LoadSong_
 
 ENDP
 
@@ -256,7 +255,7 @@ done_loading_instrument_lookups:
 xor       bx, bx
 mov       cx, word ptr ds:[_EMS_PAGE]
 
-mov       ax, OFFSET _str_genmidi ; - OFFSET SM_LOAD_STARTMARKER_
+mov       ax, OFFSET _str_genmidi - OFFSET SM_LOAD_STARTMARKER_
 call      F_CopyString9_
 mov       ax, OFFSET _filename_argument
 
@@ -370,7 +369,7 @@ dont_stop_song:
 mov   al, byte ptr [bp - 2]
 mov   ah, 9
 mul   ah
-add   ax, OFFSET _songnamelist ; - OFFSET SM_LOAD_STARTMARKER_
+add   ax, OFFSET _songnamelist - OFFSET SM_LOAD_STARTMARKER_
 
 call  F_CopyString9_
 mov   ax, OFFSET _filename_argument

@@ -792,8 +792,8 @@ void __far Z_SetOverlay(int8_t wipeId){
 	// runtime linking... yay
 	switch(wipeId){
 		case OVERLAY_ID_WIPE:
+		case OVERLAY_ID_MUS_LOADER:
 			break;
-		
 		case OVERLAY_ID_FINALE:
 			{
 				int16_t __far *  finaledata = (int16_t __far *)((int32_t)code_overlay_start);
@@ -807,7 +807,6 @@ void __far Z_SetOverlay(int8_t wipeId){
 
 				loaddata[0] = (int16_t)(&playerMobjRef);
 			}
-
 			break;
 	}
 

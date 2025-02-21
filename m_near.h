@@ -587,6 +587,8 @@ extern void                 (__far* P_ArchiveWorld)();
 extern void                 (__far* P_ArchiveThinkers)();
 extern void                 (__far* P_ArchiveSpecials)();
 
+extern void                 (__far* S_ActuallyChangeMusic)();
+
 
 extern int16_t              currentlumpindex;
 extern uint16_t             maskedcount;

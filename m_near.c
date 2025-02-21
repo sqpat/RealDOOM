@@ -447,6 +447,7 @@ void (__far* P_ArchiveWorld)() = 											  ((void    (__far *)())     							
 void (__far* P_ArchiveThinkers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveThinkersOffset)));
 void (__far* P_ArchiveSpecials)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveSpecialsOffset)));
 
+void (__far* S_ActuallyChangeMusic)() = 									  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 S_ActuallyChangeMusicOffset)));
 
 
 
