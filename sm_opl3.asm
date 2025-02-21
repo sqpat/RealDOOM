@@ -351,35 +351,6 @@ ret
 ENDP
 
 
-PROC  OPLpanVolume_ NEAR
-
-
-push  bx
-mov   bl, al
-mov   al, dl
-test  dl, dl
-jl    pan_below_0
-mov   al, bl
-pop   bx
-ret
-pan_below_0:
-cbw  
-mov   dx, ax
-mov   al, bl
-add   dx, 64
-cbw  
-imul  dx
-cwd
-shl   dx, 6
-sbb   ax, dx
-sar   ax, 6      ; / div 64
-and   al, 07Fh
-pop   bx
-ret  
-
-ENDP
-
-
 ;void OPLwriteVolume(uint8_t channel, OPL2instrument __far  *instr, int8_t noteVolume){
 
 PROC  OPLwriteVolume_ NEAR
@@ -1276,34 +1247,7 @@ ret
 
 ENDP
 
-PROC  releaseSustain_ NEAR
 
-; al is channel
-
-push  bx
-push  si
-xor   si, si
-mov   bx, si
-mov   bh, al
-loop_release_sustain:
-cmp   bh, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
-jne   skip_release_channel
-test  byte ptr cs:[si + _AdLibChannels + 2 - OFFSET SM_OPL3_STARTMARKER_], CH_SUSTAIN
-je    skip_release_channel
-mov   al, bl
-cbw   ; always use 0 al..
-call  releaseChannel_
-skip_release_channel:
-add   si, SIZEOF_ADLIBCHANNEL
-inc   bl
-cmp   bl, OPL3CHANNELS
-jb    loop_release_sustain
-exit_release_sustain:
-pop   si
-pop   bx
-ret  
-
-ENDP
 
 PROC  findFreeChannel_ NEAR
 
@@ -1733,9 +1677,32 @@ change_control_sustain:
 mov       byte ptr cs:[bx + _OPL2driverdata + 050h - OFFSET SM_OPL3_STARTMARKER_], al   ; channelSustain
 cmp       al, 040h       ; todo this value
 jae       exit_oplchangecontrol
-mov       ax, bx
-call      releaseSustain_
+
+;call      releaseSustain_ ; inlined
+
+
+; bl has channel
+
+
+xor   si, si
+mov   cx, si
+
+loop_release_sustain:
+cmp   bl, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
+jne   skip_release_channel
+test  byte ptr cs:[si + _AdLibChannels + 2 - OFFSET SM_OPL3_STARTMARKER_], CH_SUSTAIN
+je    skip_release_channel
+mov   ax, cx
+; ch is 0, ah/killed becomes zero
+call  releaseChannel_
+skip_release_channel:
+add   si, SIZEOF_ADLIBCHANNEL
+inc   cl
+cmp   cl, OPL3CHANNELS
+jb    loop_release_sustain
+
 jmp exit_oplchangecontrol
+
 change_control_modulation:
 
 xor       di, di    ; loop counter
