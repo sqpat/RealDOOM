@@ -334,7 +334,7 @@ void I_sndArbitrateCards(void) {
     */
 }
 
-
+/*
 
 void MUS_ServiceRoutine(){
 
@@ -358,7 +358,7 @@ void MUS_ServiceRoutine(){
 		uint8_t event     			= (eventbyte & 0x70) >> 4;
 		int8_t  channel   			= (eventbyte & 0x0F);
 		byte lastflag  				= (eventbyte & 0x80);
-		int16_t_union delay_amt		= {0};
+		int16_t_union delay_amt		= {0}; 
 
 
 		switch (event){
@@ -469,7 +469,7 @@ void MUS_ServiceRoutine(){
 
 
 }
-
+*/
 
 
 //

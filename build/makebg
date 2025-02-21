@@ -146,6 +146,7 @@ GLOBOBJS = $(GLOBOBJS) &
  d_math.obj &
  d_finale.obj &
  dmx.obj &
+ d_int.obj &
  memory.obj &
  math.obj &
  main.obj &

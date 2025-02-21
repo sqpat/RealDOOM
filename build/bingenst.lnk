@@ -42,6 +42,7 @@ file d_wipe.obj
 
 file d_algo.obj
 file dmx.obj
+file d_int.obj
 file d_wi.obj
 file wi_stuff.obj
 file math.obj
