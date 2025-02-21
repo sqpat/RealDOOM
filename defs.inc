@@ -64,7 +64,7 @@ _gamemap = 							_NULL_OFFSET + 00041h
 
 
 _dc_colormap_index = 				_NULL_OFFSET + 00042h
-; 043h free
+_snd_MusicDevice =				    _NULL_OFFSET + 00043h
 _dc_yl = 							_NULL_OFFSET + 00044h
 _dc_yh = 							_NULL_OFFSET + 00046h
 _castattacking =                 	_NULL_OFFSET + 00048h
@@ -135,7 +135,7 @@ _corpsehitRef = 					_NULL_OFFSET + 000FEh
 _vileobj = 							_NULL_OFFSET + 00100h
 
 
-;  0102 unused
+_EMS_PAGE =                 	    _NULL_OFFSET + 00102h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
@@ -309,6 +309,14 @@ _activeceilings =                    _NULL_OFFSET + 005D0h
 _Z_SetOverlay_addr =                 _NULL_OFFSET + 0060Ch
 _W_LumpLength_addr =                 _NULL_OFFSET + 00610h
 
+_playingdriver =                     _NULL_OFFSET + 00614h
+_currentsong_start_offset =          _NULL_OFFSET + 00618h
+_currentsong_playing_offset =        _NULL_OFFSET + 0061Ah
+_currentsong_ticks_to_process =      _NULL_OFFSET + 0061Ch
+_loops_enabled =    			     _NULL_OFFSET + 0061Eh
+_mus_playing =    			      	 _NULL_OFFSET + 0061Fh
+
+	
 
 ;//0x618
 

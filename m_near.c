@@ -55,7 +55,6 @@ uint8_t  snd_SBdma;
 uint8_t  snd_SfxVolume; // maximum volume for sound
 
 uint8_t  snd_SfxDevice; // current sfx card # (index to dmxCodes)
-uint8_t  snd_MusicDevice; // current music card # (index to dmxCodes)
 uint8_t  snd_DesiredSfxDevice;
 uint8_t  snd_DesiredMusicDevice;
 uint16_t snd_SBport;
@@ -462,7 +461,6 @@ uint16_t currentpostoffset = 0;
 uint16_t currentpostdataoffset = 0;
 uint16_t currentpixeloffset = 0;
 // global colof offset for masked texture colofs
-segment_t EMS_PAGE;
 
 
 spriteframe_t __far* p_init_sprtemp;
@@ -1930,8 +1928,6 @@ channel_t	channels[MAX_SFX_CHANNELS];
 // whether songs are mus_paused
 boolean		mus_paused;	
 
-// music currently being played
-uint8_t		mus_playing=0;
 
 // following is set
 //  by the defaults code in M_misc:
@@ -1986,26 +1982,13 @@ driverBlock OPL3driver = {
 
 };*/
 
-driverBlock	__far*  playingdriver = NULL;// = &OPL2driver;
-
-uint16_t 			currentsong_start_offset;
-uint16_t 			currentsong_playing_offset;
-uint16_t 			currentsong_length;
-int16_t 			currentsong_primary_channels;
-int16_t 			currentsong_secondary_channels;
-uint16_t 			currentsong_num_instruments;       // 0-127
-
-uint16_t 			currentsong_play_timer;
-int16_t 			currentsong_ticks_to_process = 0;
 
 
 
-uint16_t			playingpercussMask = 1 << PERCUSSION;	// todo #define? or should other instruments be forced into percussion?
-int8_t				loops_enabled = false;
+
 
 int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 
-uint16_t percussMask;
 
 
 

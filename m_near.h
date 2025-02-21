@@ -105,7 +105,7 @@
 #define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0040)))
 #define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0041)))
 #define dc_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0042)))
-//#define fuzzpos                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0043)))
+#define snd_MusicDevice				    (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0043)))
 #define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0044)))
 #define dc_yh                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0046)))
 #define castattacking                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0048)))
@@ -188,7 +188,7 @@
 //todo test
 #define vileobj                         (*(mobj_t __near * __near *)         (_NULL_OFFSET + 0x0100))
 
-//  102 unused
+#define EMS_PAGE                 	    (*((segment_t __near*)               (_NULL_OFFSET + 0x0102)))
 #define viewangle_shiftright3           (*((fineangle_t __near*)             (_NULL_OFFSET + 0x0104)))
 // 108 is constant
 #define dc_source_segment               (*((segment_t __near*)               (_NULL_OFFSET + 0x010A)))
@@ -269,7 +269,6 @@
 
 #define maskedtexturecol                (*((uint16_t  __far* __near*)        (_NULL_OFFSET + 0x021C)))
 #define maskedtexturecol_offset         (*((int16_t  __near*)                (_NULL_OFFSET + 0x021C)))
-// 220
 #define masked_headers                  (((masked_header_t  __near*)         (_NULL_OFFSET + 0x0220)))
 #define curseg                          (*((int16_t  __near*)                (_NULL_OFFSET + 0x0280)))
 #define curseg_render                   (*((seg_render_t  __near* __near*)   (_NULL_OFFSET + 0x0282)))
@@ -370,8 +369,15 @@
 //0x60C
 #define Z_SetOverlay_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x060C)))
 #define W_LumpLength_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x0610)))
+#define playingdriver                     (*((driverBlock __far* __near *)   (_NULL_OFFSET + 0x0614)))
+#define currentsong_start_offset          (*((uint16_t __near*)              (_NULL_OFFSET + 0x0618)))
+#define currentsong_playing_offset        (*((uint16_t __near*)              (_NULL_OFFSET + 0x061A)))
+#define currentsong_ticks_to_process      (*((int16_t __near*)               (_NULL_OFFSET + 0x061C)))
+#define loops_enabled    			      (*((int8_t __near*)                (_NULL_OFFSET + 0x061E)))
+#define mus_playing    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x061F)))
 
 	
+
 
 
 
@@ -387,7 +393,6 @@ extern uint8_t              snd_SBdma;
 extern uint8_t              snd_SfxVolume; // maximum volume for sound
 
 extern uint8_t              snd_SfxDevice; // current sfx card # (index to dmxCodes)
-extern uint8_t              snd_MusicDevice; // current music card # (index to dmxCodes)
 extern uint8_t              snd_DesiredSfxDevice;
 extern uint8_t              snd_DesiredMusicDevice;
 extern uint16_t             snd_SBport;
@@ -588,8 +593,6 @@ extern uint16_t             maskedcount;
 extern uint16_t             currentpostoffset;
 extern uint16_t             currentpostdataoffset;
 extern uint16_t             currentpixeloffset;
-
-extern segment_t            EMS_PAGE;
 
 extern spriteframe_t __far* p_init_sprtemp;
 extern int16_t              p_init_maxframe;
@@ -1317,28 +1320,14 @@ extern musicinfo_t	S_music[];
 
 extern channel_t	channels[MAX_SFX_CHANNELS];
 extern boolean		mus_paused;	
-extern uint8_t		mus_playing;
 extern ticcount_t	nextcleanup;
 
 //extern uint16_t shift4lookup[256];
 
 //extern      driverBlock OPL3driver;
 
-extern      driverBlock __far* playingdriver;
-
-extern uint16_t 			currentsong_start_offset;
-extern uint16_t 			currentsong_playing_offset;
-extern uint16_t 			currentsong_length;
-extern int16_t 			    currentsong_primary_channels;
-extern int16_t 			    currentsong_secondary_channels;
-extern uint16_t 			currentsong_num_instruments;       // 0-127
-
-extern uint16_t 			currentsong_play_timer;
-extern int16_t 			    currentsong_ticks_to_process;
 
 
-extern uint16_t			    playingpercussMask;
-extern int8_t				loops_enabled;
 
 
 

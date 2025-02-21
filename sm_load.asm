@@ -23,20 +23,7 @@ INSTRUCTION_SET_MACRO
 ;=================================
 .DATA
 
-EXTRN _playingdriver:DWORD
-EXTRN _EMS_PAGE:WORD
-EXTRN _currentsong_start_offset:WORD
-EXTRN _currentsong_playing_offset:WORD
-EXTRN _currentsong_length:WORD
-EXTRN _currentsong_primary_channels:WORD
-EXTRN _currentsong_secondary_channels:WORD
-EXTRN _currentsong_num_instruments:WORD
 
-EXTRN _currentsong_play_timer:WORD
-EXTRN _currentsong_ticks_to_process:WORD
-EXTRN _snd_MusicDevice:BYTE
-EXTRN _loops_enabled:BYTE
-EXTRN _mus_playing:BYTE
 
 
 .CODE
@@ -206,21 +193,15 @@ jmp       return_failure
 good_header:
 cmp       word ptr es:[si + 2], 01A53h    ; MUS FILE HEADER WORD 2
 jne       jump_to_return_failure
-mov       word ptr [_currentsong_play_timer], si
-mov       word ptr [_currentsong_ticks_to_process], si
-mov       ax, word ptr es:[si + 4]
-mov       cx, word ptr es:[si + 8]
-mov       word ptr [_currentsong_length], ax
-mov       word ptr [_currentsong_primary_channels], cx
+
+mov       word ptr ds:[_currentsong_ticks_to_process], si
 mov       ax, word ptr es:[si + 6]
-mov       cx, word ptr es:[si + 0Ah]
-mov       word ptr [_currentsong_start_offset], ax
-mov       word ptr [_currentsong_secondary_channels], cx
-mov       word ptr [_currentsong_playing_offset], ax
-mov       ax, word ptr [_playingdriver + 2]
-mov       cx, word ptr es:[si + 0Ch]
-mov       si, word ptr [_playingdriver]
-mov       word ptr [_currentsong_num_instruments], cx
+mov       word ptr ds:[_currentsong_start_offset], ax
+mov       word ptr ds:[_currentsong_playing_offset], ax
+mov       ax, word ptr ds:[_playingdriver + 2]
+mov       bx, word ptr es:[si + 0Ch] ; num instruments
+mov       si, word ptr ds:[_playingdriver]
+; bx holds onto num instruments
 test      ax, ax
 jne       valid_driver_do_load
 test      si, si
@@ -233,9 +214,9 @@ je        load_opl_instruments
 cmp       al, MUS_DRIVER_TYPE_OPL3
 jne       jump_to_return_success
 load_opl_instruments:
-mov       ax, word ptr [_playingdriver] ; should be 0
+mov       ax, word ptr ds:[_playingdriver] ; should be 0
 xor       dl, dl
-mov       es, word ptr [_playingdriver+2] ; todo les
+mov       es, word ptr ds:[_playingdriver+2] ; todo les
 
 
 mov       cx, MAX_INSTRUMENTS
@@ -246,7 +227,7 @@ rep       stosb
 loop_next_instrument_lookup:
 mov       al, dl
 cbw      
-cmp       ax, word ptr [_currentsong_num_instruments]
+cmp       ax, bx
 jae       done_loading_instrument_lookups
 mov       al, dl
 cbw      
@@ -286,7 +267,7 @@ jae       done_with_loading_instruments
 mov       ax, PLAYINGDRIVER_LOCATION
 mov       es, ax
 mov       bx, DRIVERBLOCK_DRIVERDATA_OFFSET + (MAX_INSTRUMENTS_PER_TRACK * SIZEOF_OP2INSTRENTRY)
-mov       ds, word ptr [_EMS_PAGE]
+mov       ds, word ptr ds:[_EMS_PAGE]
 xor       dh, dh
 
 loop_load_next_instrument:
@@ -366,16 +347,16 @@ cmp   al, MUS_INTRO
 jne   jump_to_not_adlib
 mov   byte ptr [bp - 2], MUS_INTROA
 continue_loading_song:
-mov   al, byte ptr [_mus_playing]
+mov   al, byte ptr ds:[_mus_playing]
 cmp   al, byte ptr [bp - 2]
 jne   dont_exit_changesong
 jmp   exit_changesong
 dont_exit_changesong:
 test  al, al
 je    dont_stop_song
-mov   ax, word ptr [_playingdriver+2]
+mov   ax, word ptr ds:[_playingdriver+2]
 mov   byte ptr ds:[_playingstate], 1
-mov   bx, word ptr [_playingdriver]
+mov   bx, word ptr ds:[_playingdriver]
 test  ax, ax
 jne   valid_playdriver
 test  bx, bx
@@ -384,7 +365,7 @@ valid_playdriver:
 mov   es, ax
 call  dword ptr es:[bx + DRIVERBLOCK_STOPMUSIC_OFFSET]
 null_playdriver:
-mov   byte ptr [_mus_playing], 0
+mov   byte ptr ds:[_mus_playing], 0
 dont_stop_song:
 mov   al, byte ptr [bp - 2]
 mov   ah, 9
@@ -395,8 +376,8 @@ call  F_CopyString9_
 mov   ax, OFFSET _filename_argument
 call  dword ptr ds:[_W_GetNumForName_addr]
 call  I_LoadSong_
-mov   ax, word ptr [_playingdriver+2]
-mov   bx, word ptr [_playingdriver]
+mov   ax, word ptr ds:[_playingdriver+2]
+mov   bx, word ptr ds:[_playingdriver]
 test  ax, ax
 jne   do_call_playmusic
 test  bx, bx
@@ -406,11 +387,11 @@ mov   es, ax
 call  dword ptr es:[bx + DRIVERBLOCK_PLAYMUSIC_OFFSET]
 dont_call_playmusic:
 mov   al, byte ptr [bp - 2]
-mov   byte ptr [_loops_enabled], 1
-mov   byte ptr [_mus_playing], al
+mov   byte ptr ds:[_loops_enabled], 1
+mov   byte ptr ds:[_mus_playing], al
 mov   byte ptr ds:[_playingstate], 2
-mov   ax, word ptr [_playingdriver+2]
-mov   bx, word ptr [_playingdriver]
+mov   ax, word ptr ds:[_playingdriver+2]
+mov   bx, word ptr ds:[_playingdriver]
 test  ax, ax
 jne   call_stop_music_and_exit
 test  bx, bx
