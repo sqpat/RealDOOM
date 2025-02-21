@@ -470,62 +470,8 @@ void MUS_ServiceRoutine(){
 
 }
 
-/*
-
-byte __far * theptr = MK_FP(0xc800, 0);
-
-void __far finishlogging(){
-    FILE* fp = fopen("outp.txt", "wb");
-    byte __far * baseptr = MK_FP(0xc800, 0);
-    int32_t amount = (int32_t)baseptr - (int32_t)theptr;
-    FAR_fwrite(baseptr, amount, 1, fp);
-    fclose(fp);
-}
 
 
-void __far printerfunc(uint16_t reg, uint8_t data){
-
-    // uint8_t chars[8];
-    // chars[0] = ((ptr & 0xF0000000) >> 28) ;
-    // chars[1] = ((ptr & 0x0F000000) >> 24) ;
-    // chars[2] = ((ptr & 0x00F00000) >> 20) ;
-    // chars[3] = ((ptr & 0x000F0000) >> 16) ;
-    // chars[4] = ((ptr & 0x0000F000) >> 12) ;
-    // chars[5] = ((ptr & 0x00000F00) >> 8) ;
-    // chars[6] = ((ptr & 0x000000F0) >> 4) ;
-    // chars[7] = ((ptr & 0x0000000F) ) ;
-
-    uint8_t chars[6];
-    uint8_t i;
-    
-    chars[0] = ((reg & 0xF000) >> 12) ;
-    chars[1] = ((reg & 0x0F00) >> 8) ;
-    chars[2] = ((reg & 0x00F0) >> 4) ;
-    chars[3] = ((reg & 0x000F) >> 0) ;
-
-    chars[4] = ((data & 0xF0) >> 4) ;
-    chars[5] = ((data & 0x0F) ) ;
-
-    for (i = 0; i < 6; i++){
-        if (chars[i] >= 10){
-            chars[i] = chars[i] + 'A' - 10;
-        } else {
-            chars[i] = chars[i] + '0';
-        }
-        *theptr = chars[i];
-        theptr++;
-
-        if (i == 3){
-            *theptr = ' ';
-            theptr++;
-        }
-    }
-
-    *theptr = '\n';
-    theptr++;
-}
-
-*/
 //
 // I_StartupSound
 // Inits all sound stuff

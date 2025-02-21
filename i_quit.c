@@ -25,12 +25,22 @@
 // I_ShutdownSound
 // Shuts down all sound stuff
 //
+/*
+
+void __near finishlogging(){
+    FILE* fp = fopen("outp.txt", "wb");
+    FAR_fwrite(MK_FP(0xDC00, 0), 16384, 1, fp);
+    fclose(fp);
+}
+*/
+
 void __near I_ShutdownSound(void) {
 
     if (playingdriver){
         playingdriver->stopMusic();
 		playingdriver->deinitHardware();
     }
+	//finishlogging();
 
 
 }

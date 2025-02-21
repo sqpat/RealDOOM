@@ -21,11 +21,14 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 ;=================================
+
 .DATA
 
 
 
 .CODE
+
+
 
 ZERO_BYTE MACRO 
     db 0
@@ -222,25 +225,117 @@ ENDM
 
 
 
+COMMENT @
+
+; for writing port stuff to file.
+
+_ptr:
+dw 0
 
 
-
-
-
-
-COMMENT @    
 PROC  logwrite_ NEAR
 PUBLIC  logwrite_
-pusha
-call  printerfunc_
-popa
+
+push es
+push di
+push bx
+push ax
+mov  di, 0DC00h
+mov  es, di
+mov  di, word ptr cs:[_ptr - OFFSET SM_OPL3_STARTMARKER_]
+
+mov  bx, ax ; backup
+
+;char 4
+mov  al, bh
+sar  al, 4
+and  al, 0Fh
+cmp  al, 9
+jng   dont_add_extra_4
+add  al, 7 ; '0' and 'a' diff minus 10
+dont_add_extra_4:
+add  al, 030h  ; '0'
+stosb
+
+;char 3
+mov  al, bh
+and  al, 0Fh
+cmp  al, 9
+jng   dont_add_extra_3
+add  al, 7 ; '0' and 'a' diff minus 10
+dont_add_extra_3:
+add  al, 030h  ; '0'
+stosb
+
+
+;char 2
+mov  al, bl
+sar  ax, 4
+and  al, 0Fh
+cmp  al, 9
+jng   dont_add_extra_2
+add  al, 7 ; '0' and 'a' diff minus 10
+dont_add_extra_2:
+add  al, 030h  ; '0'
+stosb
+
+;char 1
+and  al, 0Fh
+cmp  al, 9
+jng   dont_add_extra_1
+add  al, 7 ; '0' and 'a' diff minus 10
+dont_add_extra_1:
+add  al, 030h  ; '0'
+stosb
+
+
+
+mov  al, 020h ; space
+stosb
+
+;char 6
+mov  al, dl
+sar  al, 4
+and  al, 0Fh
+cmp  al, 9
+jng   dont_add_extra_6
+add  al, 7 ; '0' and 'a' diff minus 10
+dont_add_extra_6:
+add  al, 030h  ; '0'
+stosb
+
+
+;char 5
+mov  al, dl
+and  al, 0Fh
+cmp  al, 9
+jng   dont_add_extra_5
+add  al, 7 ; '0' and 'a' diff minus 10
+dont_add_extra_5:
+add  al, 030h  ; '0'
+stosb
+
+
+mov  al, 0Ah ; newline
+stosb
+
+mov  word ptr cs:[_ptr - OFFSET SM_OPL3_STARTMARKER_], di
+
+
+pop  ax
+pop  bx
+pop  di
+pop  es
+
 ret
 ENDP
-
 @
 
 
 PROC  OPLwriteReg_ NEAR
+
+; use this to log to file to debug vs sqmus, older versions, etc...
+;call logwrite_
 
 do_opl3_writereg:
 or    ah, ah
@@ -256,7 +351,7 @@ in    al, dx
 xchg  al, ah
 inc   dx
 out   dx, al
-mov   al, ah
+mov   al, ah    ; todo do we ever use this
 ret  
 
 COMMENT @
