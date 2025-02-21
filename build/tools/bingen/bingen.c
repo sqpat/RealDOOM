@@ -109,7 +109,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     //FILE*  fp2 = fopen("doomcod2.bin", "wb");
 	uint16_t codesize[9];
 	uint16_t muscodesize[4];
-	uint16_t maxmuscodesize;
+	uint16_t maxmuscodesize = 0;
     int8_t i;
     
     codesize[0] = FP_OFF(R_SPAN_STARTMARKER) - FP_OFF(R_DrawColumn);
@@ -202,7 +202,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     printf("Generated doomcode.bin file\n");
 
     // todo many of these not used? clean up?
-    fp = fopen("m_offsets.h", "wb");
+    fp = fopen("m_offset.h", "wb");
 	// bsp offsets
     fprintf(fp, "#define R_DrawColumnOffset                    0x%X\n", FP_OFF(R_DrawColumn)                    - FP_OFF(R_DrawColumn));
 
