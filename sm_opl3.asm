@@ -1661,6 +1661,7 @@ push  cx
 push  si
 push  di
 
+xor   dh, dh
 sub   dl, DEFAULT_PITCH_BEND
 mov   di, dx
 
@@ -1756,6 +1757,7 @@ cmp       dl, 8
 ja        exit_oplchangecontrol     ; todo je change_control_sustain
 cbw
 xchg      ax, bx    ; bx has channel field. al has value
+xor       dh, dh
 mov       si, dx
 sal       si, 1
 jmp       word ptr cs:[si + change_control_lookup - OFFSET SM_OPL3_STARTMARKER_]

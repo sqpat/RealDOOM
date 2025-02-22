@@ -1586,10 +1586,8 @@ PUBLIC  OPLpitchWheel_OPL2_
 push  bx
 push  cx
 push  si
-push  di
 
 sub   dl, DEFAULT_PITCH_BEND
-mov   di, dx
 
 cbw
 mov   bx, ax
@@ -1609,7 +1607,6 @@ add   si, SIZEOF_ADLIBCHANNEL
 cmp   cl, OPL2CHANNELS
 jb    loop_pitchwheel
 exit_pitchwheel:
-pop   di
 pop   si
 pop   cx
 pop   bx
@@ -1683,6 +1680,7 @@ cmp       dl, 8
 ja        exit_oplchangecontrol     ; todo je change_control_sustain
 cbw
 xchg      ax, bx    ; bx has channel field. al has value
+xor       dh, dh
 mov       si, dx
 sal       si, 1
 jmp       word ptr cs:[si + change_control_lookup - OFFSET SM_OPL2_STARTMARKER_]
