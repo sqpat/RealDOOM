@@ -250,7 +250,9 @@ _vissprite_p =                       _NULL_OFFSET + 00388h
 ; high byte always 0
 _cachedbyteheight =                  _NULL_OFFSET + 0038Ah
 _snd_MusicVolume =                   _NULL_OFFSET + 0038Bh
-; todo fill this up
+_currentMusPage = 					 _NULL_OFFSET + 0038Ch
+
+; todo fill this up (38D to 38F free)
 _savedescription =                   _NULL_OFFSET + 00390h
 _demoname =                          _NULL_OFFSET + 003B0h
 
@@ -315,7 +317,7 @@ _currentsong_playing_offset =        _NULL_OFFSET + 0061Ah
 _currentsong_ticks_to_process =      _NULL_OFFSET + 0061Ch
 _loops_enabled =    			     _NULL_OFFSET + 0061Eh
 _mus_playing =    			      	 _NULL_OFFSET + 0061Fh
-
+_Z_QuickMapPageFrame_addr = 		 _NULL_OFFSET + 00620h
 	
 
 ;//0x618

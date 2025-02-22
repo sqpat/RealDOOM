@@ -151,7 +151,7 @@
 #define pendingmusicenumlooping         (*((boolean _near*)              	 (_NULL_OFFSET + 0x00AF)))
 
 	
-// ae-b4 free
+// b0-b4 free
 
 #define is_ultimate                     (*(boolean __near *)                 (_NULL_OFFSET + 0x00B5))
 #define firstspritelump                 (*(int16_t  __near *)                (_NULL_OFFSET + 0x00B6))
@@ -302,6 +302,10 @@
 #define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0388)))
 #define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038A)))
 #define snd_MusicVolume                 (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038B)))
+#define currentMusPage					(*((uint8_t __near*)                 (_NULL_OFFSET + 0x038C)))
+
+// 38D-38F free
+
 
 // todo fill this up
 #define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0390)))
@@ -375,13 +379,14 @@
 #define currentsong_ticks_to_process      (*((int16_t __near*)               (_NULL_OFFSET + 0x061C)))
 #define loops_enabled    			      (*((int8_t __near*)                (_NULL_OFFSET + 0x061E)))
 #define mus_playing    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x061F)))
-
+#define Z_QuickMapPageFrame_addr          (*((uint32_t __near*)              (_NULL_OFFSET + 0x0620)))
 	
 
 
 
-
-
+// biggest MUS in doom1/2 is 64808... divided by 4 this 
+// gives us 128 free bytes of overlap per page and fits the 64808 barely.
+#define MUS_SIZE_PER_PAGE 16256
 
 
 

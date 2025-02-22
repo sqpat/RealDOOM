@@ -1942,6 +1942,7 @@ ST_EMPTY = 00h
 ST_STOPPED = 01h
 ST_PLAYING = 02h
 ST_PAUSED = 03h
+MUS_SIZE_PER_PAGE = 03F80h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h

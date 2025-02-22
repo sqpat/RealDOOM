@@ -30,7 +30,7 @@
 #define P_ArchiveWorldOffset                  0x77B
 #define P_ArchiveThinkersOffset               0x841
 #define P_ArchiveSpecialsOffset               0x9D9
-#define S_ActuallyChangeMusicOffset           0x3AA
+#define S_ActuallyChangeMusicOffset           0x3EF
 
 #define R_DrawColumnCodeSize           0xB26
 #define R_DrawSpanCodeSize             0xDD3
@@ -41,5 +41,5 @@
 #define WipeCodeSize                   0x31B
 #define FinaleCodeSize                 0xB5E
 #define SaveLoadCodeSize               0xB27
-#define SMLoadCodeSize                 0x467
+#define SMLoadCodeSize                 0x4AC
 #define MaximumMusDriverSize           0x101C

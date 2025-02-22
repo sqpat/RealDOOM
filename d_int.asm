@@ -18,8 +18,9 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
+MUS_SIZE_PER_PAGE = 16256
 
-
+EXTRN  Z_QuickMapPageFrame_:PROC
 
 
 .CODE
@@ -27,6 +28,23 @@ INSTRUCTION_SET_MACRO
 PROC D_INTERRUPT_STARTMARKER_
 PUBLIC D_INTERRUPT_STARTMARKER_
 ENDP
+
+;; todo do this locally...
+COMMENT @
+PROC Z_MapPageFrame_
+
+;   bx is value
+
+push dx
+mov  ax, 04400h ; always page 0
+mov  dx, _emshandle
+mov  
+pop  dx
+ret
+
+@
+
+
 
 _mus_service_routine_jmp_table:
 dw OFFSET release_note_routine
@@ -37,6 +55,8 @@ dw controller_event_routine
 dw end_of_measure_routine
 dw finish_song_routine
 dw unused_routine
+
+
 
 PROC MUS_ServiceRoutine_
 PUBLIC MUS_ServiceRoutine_
@@ -96,6 +116,15 @@ jump_to_exit_MUS_serviceroutine:
 jmp   exit_MUS_serviceroutine
 jump_to_label_5:
 jmp   label_5
+page_in_new_mus_page:
+inc       byte ptr ds:[_currentMusPage]
+xor       ax, ax
+mov       dl, byte ptr ds:[_currentMusPage]
+; in theory bad things might happen if currentmuspage went beyond 4?
+call      dword ptr ds:[_Z_QuickMapPageFrame_addr]
+sub       bx, MUS_SIZE_PER_PAGE
+jmp       done_paging_in_new_mus_page
+
 
 release_note_routine:
 mov   si, _playingdriver
@@ -111,10 +140,20 @@ call  dword ptr es:[si + 014h]
 label_2:
 unused_routine:
 mov   si, 2
-inc_service_routine_loop:
 end_of_measure_routine:
-mov   bx, _currentsong_playing_offset
-add   word ptr [bx], si
+
+inc_service_routine_loop:
+mov   bx, word ptr ds:[_currentsong_playing_offset]
+add   bx, si
+
+; if bx over MUS_SIZE_PER_PAGE page next page in, sub MUS_SIZE_PER_PAGE...
+cmp   bx, MUS_SIZE_PER_PAGE
+jge   page_in_new_mus_page
+
+done_paging_in_new_mus_page:
+mov       word ptr ds:[_currentsong_playing_offset], bx
+
+
 cmp   byte ptr [bp - 6], 0
 je    add_increment_to_currentsong_ticks_to_process
 read_delay_loop:
@@ -145,6 +184,13 @@ je    inc_playing_time_and_exit
 jmp   service_routine_loop
 loop_song:
 mov   bx, _currentsong_start_offset
+
+; move back to page 0
+mov       byte ptr ds:[_currentMusPage], 0
+xor       ax, ax
+cwd
+call      dword ptr ds:[_Z_QuickMapPageFrame_addr]
+
 mov   ax, word ptr [bx]
 mov   bx, _currentsong_playing_offset
 mov   word ptr [bx], ax

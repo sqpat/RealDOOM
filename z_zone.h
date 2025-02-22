@@ -479,7 +479,11 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
 
+// EMS page frame stuff
+void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber);
+
 // EMS 4.0 stuff
+
 void __far Z_QuickMapPhysics();
 void __far Z_QuickMapRender();
 void __far Z_QuickMapRender_4000To9000();

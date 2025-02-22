@@ -24,6 +24,7 @@ INSTRUCTION_SET_MACRO
 .DATA
 
 
+MUS_SIZE_PER_PAGE = 16256
 
 
 .CODE
@@ -178,25 +179,99 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-push      ax
+push      ax        ; bp - 2 becomes lump
 mov       di, word ptr ds:[_EMS_PAGE] ; music goes in ems page frame 1..
 xor       si, si
+
+
+mov       byte ptr ds:[_currentMusPage], 0 ; reset 'current mus page'
+
+; set page 0
+xor       ax, ax
+mov       dx, ax
+call      dword ptr ds:[_Z_QuickMapPageFrame_addr]
+
+
+; cx:bx load location
+; push:push for offset
 xor       bx, bx
 mov       cx, di
-call      dword ptr ds:[_W_CacheLumpNumDirect_addr]
+push      bx
+push      bx    ; 0 for first int32_t offset.
+mov       ax, word ptr [bp - 2]
+call      dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
+
 mov       es, di
-cmp       word ptr es:[si], 0554Dh        ; MUS FILE HEADER WORD 1
-je        good_header
-jump_to_return_failure:
-jmp       return_failure
-good_header:
-cmp       word ptr es:[si + 2], 01A53h    ; MUS FILE HEADER WORD 2
-jne       jump_to_return_failure
+
 
 mov       word ptr ds:[_currentsong_ticks_to_process], si
+mov       ax, word ptr es:[si+4]  ; length
+
+; now we must page in pages into the page frame one by one.
+; then we must load the mus data in one page at a time... then set to page 0 again
+
+; ax has length
+xor       si, si
+loop_sub_len:
+inc       si
+sub       ax, MUS_SIZE_PER_PAGE ; some 'slack' or overlap per page.
+jnc       loop_sub_len
+
+cmp       si, 1
+je        skip_loading_extra_pages
+
+; si equals numbers of pages the mus file takes up
+dec       si        ; offset for first load. was already loaded above
+mov       di, 1
+; di will be loop counter.
+; but si will decrement...
+
+
+
+load_next_mus_page:
+
+; set page di
+xor       ax, ax    ; page logical page i into ems page frame's physical page 0
+mov       dx, di
+call      dword ptr ds:[_Z_QuickMapPageFrame_addr]
+
+; 16256 is 07Fh shifted 7... this could with 8 bit mul and shfits faster but who cares.
+mov       ax, MUS_SIZE_PER_PAGE
+mul       di
+
+; SET PARAMS FOR _W_CacheLumpNumDirectFragment_addr
+; CX:BX:  Dest
+mov       cx, word ptr ds:[_EMS_PAGE]
+xor       bx, bx
+; PUSH:PUSH: offset
+push      bx    ; 0 for high offset word.
+push      ax    ; low offset word.
+; AX : LUMP
+mov       ax, word ptr [bp - 2]
+call      dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
+
+inc       di
+dec       si
+jnz       load_next_mus_page
+
+
+; set page 0 again
+xor       ax, ax
+mov       dx, ax
+call      dword ptr ds:[_Z_QuickMapPageFrame_addr]
+
+
+
+skip_loading_extra_pages:
+
+xor       si, si
+mov       es, word ptr ds:[_EMS_PAGE] ; music goes in ems page frame 1..
+
+
 mov       ax, word ptr es:[si + 6]
 mov       word ptr ds:[_currentsong_start_offset], ax
 mov       word ptr ds:[_currentsong_playing_offset], ax
+
 mov       ax, word ptr ds:[_playingdriver + 2]
 mov       bx, word ptr es:[si + 0Ch] ; num instruments
 mov       si, word ptr ds:[_playingdriver]
@@ -302,10 +377,19 @@ done_with_loading_instruments:
 push      ss
 pop       ds
 
-xor       bx, bx
+; load first 16384 again
+
+; SET PARAMS 
 mov       cx, word ptr ds:[_EMS_PAGE]
+xor       bx, bx
+
+push      bx
+push      bx    ; 0 for int32_t offset.
+
 mov       ax, word ptr [bp - 2]
-call      dword ptr ds:[_W_CacheLumpNumDirect_addr]
+call      dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
+
+
 return_success:
 mov       ax, 1
 LEAVE_MACRO     

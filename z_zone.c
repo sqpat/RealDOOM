@@ -52,11 +52,24 @@
 #else
 
 
+
+
+void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
+	// page frame index 0 to 3
+	// count 
+	regs.h.ah = 0x44;
+	regs.h.al = pageframeindex;
+	regs.w.bx = pagenumber + MUS_DATA_PAGES;
+	regs.w.dx = emshandle; // handle
+	intx86(EMS_INT, &regs, &regs);
+}
+
+#define MAX_COUNT_ITER 8
+
 // note: emm386 only supports up to 8 args at a time.
 // its kind of infrequent that we go more than 8 at once, and thus not a big perf hit, 
 // so let's just do this for simplicity
 
-#define MAX_COUNT_ITER 8
 
 void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 

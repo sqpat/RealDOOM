@@ -5,7 +5,7 @@
 #include "g_game.h"
 #include "p_saveg.h"
 
-#define CONSTANTS_COUNT 1943
+#define CONSTANTS_COUNT 1944
 #define LOCALS_COUNT 18
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -1996,7 +1996,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"ST_EMPTY",
 	"ST_STOPPED",
 	"ST_PLAYING",
-	"ST_PAUSED"	
+	"ST_PAUSED",
+	"MUS_SIZE_PER_PAGE"
 
 
 
@@ -4001,19 +4002,12 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	ST_EMPTY,
 	ST_STOPPED,
 	ST_PLAYING,
-	ST_PAUSED	
+	ST_PAUSED,
+	MUS_SIZE_PER_PAGE
 
 
 
 
-
-
-
-
-
-
-
-    
 };
 
 char* LOCALS[LOCALS_COUNT] = {
