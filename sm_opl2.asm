@@ -1386,7 +1386,6 @@ PUBLIC  OPLplayNote_OPL2_
 ; dl note     -4
 ; bl volume   -6
 
-push  bx
 push  cx
 push  si
 push  di
@@ -1518,7 +1517,6 @@ exit_play_note:
 pop   di
 pop   si
 pop   cx
-pop   bx
 retf  
 channel_is_percussion_2:
 mov   ax, 3
@@ -1535,7 +1533,6 @@ PUBLIC  OPLreleaseNote_OPL2_
 ; al channel
 ; dl note
 
-push  bx
 push  cx
 push  si
 
@@ -1566,7 +1563,6 @@ exit_release_note:
 
 pop   si
 pop   cx
-pop   bx
 retf  
 add_sustain_flag:
 or    byte ptr cs:[si + 3 + _AdLibChannels - OFFSET SM_OPL2_STARTMARKER_], CH_SUSTAIN
@@ -1583,7 +1579,6 @@ PUBLIC  OPLpitchWheel_OPL2_
 ; al channel
 ; dl pitch
 
-push  bx
 push  cx
 push  si
 
@@ -1609,7 +1604,6 @@ jb    loop_pitchwheel
 exit_pitchwheel:
 pop   si
 pop   cx
-pop   bx
 retf  
 
 do_adjust_pitch:
