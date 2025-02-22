@@ -548,7 +548,6 @@ ENDP
 PROC  MIDIreleaseNote_MPU401_    FAR
 PUBLIC  MIDIreleaseNote_MPU401_
 
-push      bx
 push      cx
 push      si
 mov       dh, dl
@@ -590,7 +589,6 @@ call      MPU401sendMIDI_
 exit_releasenote:
 pop       si
 pop       cx
-pop       bx
 retf      
 
 
@@ -599,7 +597,6 @@ ENDP
 PROC  MIDIpitchWheel_MPU401_    FAR
 PUBLIC  MIDIpitchWheel_MPU401_
 
-push      bx
 push      cx
 push      si
 mov       bl, al
@@ -639,7 +636,6 @@ call      MPU401sendMIDI_
 exit_pitchwheel:
 pop       si
 pop       cx
-pop       bx
 retf      
 
 ENDP

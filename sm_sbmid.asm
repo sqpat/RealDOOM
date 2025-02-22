@@ -541,7 +541,6 @@ ENDP
 PROC  MIDIreleaseNote_SBMID_    FAR
 PUBLIC  MIDIreleaseNote_SBMID_
 
-push      bx
 push      cx
 push      si
 mov       dh, dl
@@ -583,7 +582,6 @@ call      SBMIDIsendMIDI_
 exit_releasenote:
 pop       si
 pop       cx
-pop       bx
 retf      
 
 
@@ -592,7 +590,6 @@ ENDP
 PROC  MIDIpitchWheel_SBMID_    FAR
 PUBLIC  MIDIpitchWheel_SBMID_
 
-push      bx
 push      cx
 push      si
 mov       bl, al
@@ -632,7 +629,6 @@ call      SBMIDIsendMIDI_
 exit_pitchwheel:
 pop       si
 pop       cx
-pop       bx
 retf      
 
 ENDP
