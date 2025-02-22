@@ -70,28 +70,22 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 0Ah
-mov   bx, _playingstate
-cmp   byte ptr [bx], ST_PLAYING
+cmp   byte ptr ds:[_playingstate], ST_PLAYING
 jne   jump_to_exit_MUS_serviceroutine
-mov   bx, _playingdriver
-mov   dx, word ptr [bx + 2]
-mov   ax, word ptr [bx]
+mov   dx, word ptr ds:[_playingdriver + 2]
+mov   ax, word ptr ds:[_playingdriver]
 test  dx, dx 
 jne   playingdriver_not_null
 test  ax, ax
 je    jump_to_exit_MUS_serviceroutine
 playingdriver_not_null:
-mov   bx, _currentsong_ticks_to_process
-inc   word ptr [bx]
+inc   word ptr ds:[_currentsong_ticks_to_process]
 service_routine_loop:
-mov   bx, _currentsong_ticks_to_process
-cmp   word ptr [bx], 0
+
+cmp   word ptr ds:[_currentsong_ticks_to_process], 0
 jl    jump_to_label_5
-mov   di, _EMS_PAGE
-mov   bx, _currentsong_playing_offset
-mov   ax, word ptr [di]
-mov   bx, word ptr [bx]
-mov   es, ax
+mov   es, word ptr ds:[_EMS_PAGE]
+mov   bx, word ptr ds:[_currentsong_playing_offset]
 mov   al, byte ptr es:[bx]
 mov   si, 1
 mov   cl, al
@@ -127,11 +121,8 @@ jmp       done_paging_in_new_mus_page
 
 
 release_note_routine:
-mov   si, _playingdriver
 mov   al, byte ptr es:[bx + 1]
-mov   bx, _playingdriver
-mov   si, word ptr [si]
-mov   es, word ptr [bx + 2]
+les   si, dword ptr ds:[_playingdriver]
 mov   bl, dl
 xor   bh, bh
 mov   dx, ax
@@ -157,50 +148,42 @@ mov       word ptr ds:[_currentsong_playing_offset], bx
 cmp   byte ptr [bp - 6], 0
 je    add_increment_to_currentsong_ticks_to_process
 read_delay_loop:
-mov   bx, _currentsong_playing_offset
-mov   si, _EMS_PAGE
-mov   bx, word ptr [bx]
-mov   es, word ptr [si]
+mov   bx, word ptr ds:[_currentsong_playing_offset]
+mov   es, word ptr ds:[_EMS_PAGE]
 mov   al, byte ptr es:[bx]
 shl   cx, 7
 mov   ah, al
 inc   bx
 and   ah, 07Fh
-mov   si, _currentsong_playing_offset
 add   cl, ah
 and   al, 080h
-mov   word ptr [si], bx
+mov   word ptr ds:[_currentsong_playing_offset], bx
 test  al, al
 jne   read_delay_loop
 add_increment_to_currentsong_ticks_to_process:
-mov   bx, _currentsong_ticks_to_process
-sub   word ptr [bx], cx
+sub   word ptr ds:[_currentsong_ticks_to_process], cx
 cmp   byte ptr [bp - 2], 0
 jne   loop_song
 done_looping_song:
-mov   bx, _playingstate
-cmp   byte ptr [bx], 1
+cmp   byte ptr ds:[_playingstate], 1
 je    inc_playing_time_and_exit
 jmp   service_routine_loop
 loop_song:
-mov   bx, _currentsong_start_offset
 
 ; move back to page 0
-mov       byte ptr ds:[_currentMusPage], 0
-xor       ax, ax
+mov   byte ptr ds:[_currentMusPage], 0
+xor   ax, ax
 cwd
-call      dword ptr ds:[_Z_QuickMapPageFrame_addr]
+call  dword ptr ds:[_Z_QuickMapPageFrame_addr]
 
-mov   ax, word ptr [bx]
-mov   bx, _currentsong_playing_offset
-mov   word ptr [bx], ax
+mov   ax, word ptr ds:[_currentsong_start_offset]
+mov   word ptr ds:[_currentsong_playing_offset], ax
 jmp   done_looping_song
 
 inc_playing_time_and_exit:
 label_5:
-mov   bx, _playingtime
-add   word ptr [bx], 1
-adc   word ptr [bx + 2], 0
+add   word ptr ds:[_playingtime], 1
+adc   word ptr ds:[_playingtime + 2], 0
 exit_MUS_serviceroutine:
 LEAVE_MACRO
 pop   di
@@ -221,11 +204,8 @@ mov   al, byte ptr es:[bx + 2]
 mov   si, 2
 and   al, 07Fh
 use_last_volume:
-mov   di, _playingdriver
-mov   bx, _playingdriver
 cbw  
-mov   di, word ptr [di]
-mov   es, word ptr [bx + 2]
+les   di, dword ptr ds:[_playingdriver]
 mov   bx, ax
 mov   al, byte ptr [bp - 4]
 xor   ah, ah
@@ -237,11 +217,8 @@ inc   si
 call  dword ptr es:[di + 010h]
 jmp   inc_service_routine_loop
 pitch_bend_routine:
-mov   di, _playingdriver
 mov   al, byte ptr es:[bx + 1]
-mov   bx, _playingdriver
-mov   di, word ptr [di]
-mov   es, word ptr [bx + 2]
+les   di, dword ptr ds:[_playingdriver]
 mov   bl, dl
 xor   bh, bh
 mov   dx, ax
@@ -250,46 +227,38 @@ mov   si, 2
 call  dword ptr es:[di + 018h]
 jmp   inc_service_routine_loop
 system_event_routine:
-mov   si, _playingdriver
 mov   byte ptr [bp - 8], dl
 mov   al, byte ptr es:[bx + 1]
-mov   bx, _playingdriver
 and   al, 07Fh
-mov   si, word ptr [si]
 mov   byte ptr [bp - 7], ah
 mov   dx, ax
-mov   es, word ptr [bx + 2]
+les   si, dword ptr ds:[_playingdriver]
 mov   ax, word ptr [bp - 8]
 xor   bx, bx
 call  dword ptr es:[si + 01ch]
 mov   si, 2
 jmp  inc_service_routine_loop
 controller_event_routine:
-mov   si, _playingdriver
-mov   di, _playingdriver
 mov   dh, byte ptr es:[bx + 1]
 mov   byte ptr [bp - 7], ah
 and   dh, 07Fh
 mov   bl, byte ptr es:[bx + 2]
-mov   si, word ptr [si]
 and   bl, 07Fh
 mov   byte ptr [bp - 8], dh
 mov   al, dl
-mov   es, word ptr [di + 2]
+les   si, dword ptr ds:[_playingdriver]
 mov   dx, word ptr [bp - 8]
 xor   bh, bh
 call  dword ptr es:[si + 01Ch]
 mov   si, 3
 jmp   inc_service_routine_loop
 finish_song_routine:
-mov   bx, _loops_enabled
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[_loops_enabled], 0
 je    label_3
 mov   byte ptr [bp - 2], 1
 jmp   inc_service_routine_loop
 label_3:
-mov   bx, _playingstate
-mov   byte ptr [bx], ST_STOPPED
+mov   byte ptr ds:[_playingstate], ST_STOPPED
 jmp   inc_service_routine_loop
 
 
