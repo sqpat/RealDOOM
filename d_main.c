@@ -933,7 +933,6 @@ void __near D_DoomLoop (void) {
 		if (pendingmusicenum){
 			// todo should the default case be -1 instead of 0?
 			Z_SetOverlay(OVERLAY_ID_MUS_LOADER);
-			playingstate = ST_STOPPED;
 			S_ActuallyChangeMusic();
 		}
 

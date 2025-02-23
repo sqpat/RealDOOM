@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/02/22 19:22:25
+Created on:       25/02/23 09:45:37
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -37,7 +37,7 @@ i_main_TEXT            CODE           AUTO           02b9:0000       00000012
 i_quit_TEXT            CODE           AUTO           02b9:0020       00000204
 i_ibm_TEXT             CODE           AUTO           02b9:0230       00000337
 i_sound_TEXT           CODE           AUTO           02b9:0570       0000027c
-d_main_TEXT            CODE           AUTO           02b9:07f0       00000f9e
+d_main_TEXT            CODE           AUTO           02b9:07f0       00000f98
 d_net_TEXT             CODE           AUTO           02b9:1790       00000105
 g_game_TEXT            CODE           AUTO           02b9:18a0       00000a53
 m_misc_TEXT            CODE           AUTO           02b9:2300       000000d5
@@ -626,12 +626,12 @@ Module: d_main.obj(C:\REALDOOM\d_main.c)
 02b9:113a      I_UpdateNoBlit_
 02b9:1246+     D_Display_
 02b9:14e2+     G_BeginRecording_
-02b9:157a      D_PageTicker_
-02b9:158c+     D_PageDrawer_
-02b9:15b0      D_DoAdvanceDemo_
-02b9:16ca+     Z_ClearDeadCode_
-02b9:1710      D_DoomMain_
-02b9:1718*     D_DoomLoop_
+02b9:1574      D_PageTicker_
+02b9:1586+     D_PageDrawer_
+02b9:15aa      D_DoAdvanceDemo_
+02b9:16c4+     Z_ClearDeadCode_
+02b9:170a      D_DoomMain_
+02b9:1712*     D_DoomLoop_
 Module: d_net.obj(C:\REALDOOM\d_net.c)
 02b9:1790      NetUpdate_
 02b9:17f2      TryRunTics_
@@ -1511,4 +1511,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00023d70 (146800.)
 Entry point address: 1c9e:2438
-Link time: 00:00.30
+Link time: 00:00.29

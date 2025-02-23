@@ -414,23 +414,22 @@ PUBLIC  S_ActuallyChangeMusic_
 push  bx
 push  cx
 push  dx
-push  bp
-mov   bp, sp
-sub   sp, 0Ch
+push  di
 mov   al, byte ptr ds:[_pendingmusicenum]
-mov   byte ptr [bp - 2], al
+mov   di, ax
 mov   byte ptr ds:[_pendingmusicenum], 0
 cmp   byte ptr ds:[_snd_MusicDevice], 2
 je    check_for_that_one_song_adlib_version
-jump_to_not_adlib:
+
 jmp   not_adlib
 check_for_that_one_song_adlib_version:
 cmp   al, MUS_INTRO
-jne   jump_to_not_adlib
-mov   byte ptr [bp - 2], MUS_INTROA
+jne   not_adlib
+mov   di, MUS_INTROA
 continue_loading_song:
-mov   al, byte ptr ds:[_mus_playing]
-cmp   al, byte ptr [bp - 2]
+mov   ax, di
+mov   ah, byte ptr ds:[_mus_playing]
+cmp   al, ah
 jne   dont_exit_changesong
 jmp   exit_changesong
 dont_exit_changesong:
@@ -441,15 +440,14 @@ mov   byte ptr ds:[_playingstate], 1
 mov   bx, word ptr ds:[_playingdriver]
 test  ax, ax
 jne   valid_playdriver
-test  bx, bx
-je    null_playdriver
+jmp   null_playdriver
 valid_playdriver:
 mov   es, ax
 call  dword ptr es:[bx + DRIVERBLOCK_STOPMUSIC_OFFSET]
 null_playdriver:
 mov   byte ptr ds:[_mus_playing], 0
 dont_stop_song:
-mov   al, byte ptr [bp - 2]
+mov   ax, di
 mov   ah, 9
 mul   ah
 add   ax, OFFSET _songnamelist - OFFSET SM_LOAD_STARTMARKER_
@@ -468,37 +466,30 @@ do_call_playmusic:
 mov   es, ax
 call  dword ptr es:[bx + DRIVERBLOCK_PLAYMUSIC_OFFSET]
 dont_call_playmusic:
-mov   al, byte ptr [bp - 2]
+mov   ax, di
 mov   byte ptr ds:[_loops_enabled], 1
 mov   byte ptr ds:[_mus_playing], al
 mov   byte ptr ds:[_playingstate], 2
 mov   ax, word ptr ds:[_playingdriver+2]
-mov   bx, word ptr ds:[_playingdriver]
 test  ax, ax
 jne   call_stop_music_and_exit
-test  bx, bx
-jne   call_stop_music_and_exit
 exit_changesong:
-LEAVE_MACRO 
+pop   di
 pop   dx
 pop   cx
 pop   bx
 retf  
 not_adlib:
-mov   al, byte ptr [bp - 2]
+mov   ax, di
 test  al, al
 je    exit_changesong
 cmp   al, NUMMUSIC
 jae   exit_changesong
 jmp   continue_loading_song
 call_stop_music_and_exit:
-mov   es, ax
+les   bx, dword ptr ds:[_playingdriver]
 call  dword ptr es:[bx + DRIVERBLOCK_STOPMUSIC_OFFSET]
-LEAVE_MACRO
-pop   dx
-pop   cx
-pop   bx
-retf  
+jmp   exit_changesong
 
 ENDP
 
