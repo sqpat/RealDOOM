@@ -1,0 +1,14 @@
+# newdoom.EXE Linker directive file
+
+option quiet
+option map
+# tested as low as 3000 successfully. 2000 crashes sometimes, sorta deep into demos??
+option stack=2536
+debug all
+libpath %WATCOM%\lib286
+libpath %WATCOM%\lib286\dos
+format dos
+name print16
+
+ 
+file dumprint.obj

@@ -317,15 +317,84 @@ in     al, 060h                     ; read kb
 mov    bl, byte ptr cs:[_kbdhead]
 and    bx, KBDQUESIZE - 1           ; wraparound keyboard queue
 mov    byte ptr cs:[bx + _keyboardque], al
+
+mov    ah, al   ; store for checking...
+
 inc    byte ptr cs:[_kbdhead]
 mov    al, 020h
 out    KBDQUESIZE, al
+
+cmp    ah, 0B5h     ; / keydown
+jne    skip_ctrl_c
+call   dumpstacktrace_
+skip_ctrl_c:
 
 pop    ax
 pop    bx
 
 
 iret   
+
+ENDP
+
+
+_used_dumpfile:
+
+db "dumpdump.bin", 0
+
+; old ax, bx on the stack already!
+
+PROC dumpstacktrace_ NEAR
+PUBLIC dumpstacktrace_
+
+push  ax
+push  bx
+push  cx
+push  dx
+push  di
+push  si
+push  es
+push  ds
+push  ss
+push  cs
+push  sp
+push  bp
+mov   bp, sp
+
+mov   ax, OFFSET _used_dumpfile
+call  CopyString13_
+
+mov   dx, OFFSET _fopen_w_argument
+call  fopen_
+mov   bx, ax    ; store 
+xor   di, di
+
+mov   cx, 256
+
+nextbyte:
+mov   dx, bx
+mov   al, byte ptr ss:[bp + di]
+call  fputc_
+inc   di
+loop  nextbyte
+
+mov   ax, bx
+call  fclose_
+
+LEAVE_MACRO
+pop   ax  ; sp
+pop   ax  ; cs
+pop   ax  ; ss
+pop   ax  ; ds
+pop   es
+pop   si
+pop   di
+pop   dx
+pop   cx
+pop   bx
+pop   ax
+
+ret
 
 ENDP
 

@@ -1,0 +1,17 @@
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -0 -s -zdp -d__COMPILER_WATCOM
+
+GLOBOBJS = &
+ dumprint.obj 
+
+print16.exe : $(GLOBOBJS)
+ wlink @dumprint.lnk
+ copy print16.exe dumprint.exe
+ wstrip dumprint.exe
+
+.c.obj :
+ wcc $(CCOPTS) $[*
+
+clean : .SYMBOLIC
+ del *.obj
+ del *.err
+ del dumprint.exe
