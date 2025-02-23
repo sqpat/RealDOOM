@@ -30,7 +30,7 @@
 
 boolean M_WriteFile (int8_t const* name, void __far* source,filelength_t length );
 
-filelength_t M_ReadFile (int8_t const* name, byte __far* bufferRef );
+void M_ReadFile (int8_t const* name, byte __far* bufferRef );
 
 // Returns a number from 0 to 255,
 // from a lookup table.

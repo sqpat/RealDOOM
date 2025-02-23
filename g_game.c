@@ -719,7 +719,6 @@ void Z_QuickMapRender_4000To9000_9000Only();
 
 void __near G_DoLoadGame (void)  { 
 	
-	filelength_t         length;
 //	FILE* fp = fopen("log2.txt", "wb");
 	
 	byte __far*           savebuffer = MK_FP(0x5000, 0);
@@ -727,7 +726,7 @@ void __near G_DoLoadGame (void)  {
     
     Z_QuickMapScratch_5000();
 
-    length = M_ReadFile (savename, savebuffer); 
+    M_ReadFile (savename, savebuffer); 
     save_p = savebuffer + SAVESTRINGSIZE;
     
     // skip the description field 
@@ -750,7 +749,7 @@ void __near G_DoLoadGame (void)  {
 	Z_QuickMapPhysics();        // may be unnecessary, G_InitNew runs it?
     Z_QuickMapScratch_5000();
 
-    length = M_ReadFile (savename, savebuffer); 
+    M_ReadFile (savename, savebuffer); 
 
  
     // get the times 

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/02/22 17:18:47
+Created on:       25/02/22 19:22:25
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -40,7 +40,7 @@ i_sound_TEXT           CODE           AUTO           02b9:0570       0000027c
 d_main_TEXT            CODE           AUTO           02b9:07f0       00000f9e
 d_net_TEXT             CODE           AUTO           02b9:1790       00000105
 g_game_TEXT            CODE           AUTO           02b9:18a0       00000a53
-m_misc_TEXT            CODE           AUTO           02b9:2300       000000d7
+m_misc_TEXT            CODE           AUTO           02b9:2300       000000d5
 am_map_TEXT            CODE           AUTO           02b9:23e0       000012fb
 st_stuff_TEXT          CODE           AUTO           02b9:36e0       00000b71
 hu_stuff_TEXT          CODE           AUTO           02b9:4260       000001d2
@@ -1511,4 +1511,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00023d70 (146800.)
 Entry point address: 1c9e:2438
-Link time: 00:00.29
+Link time: 00:00.30

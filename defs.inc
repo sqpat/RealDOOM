@@ -249,8 +249,8 @@ _vga_read_port_lookup =              _NULL_OFFSET + 00370h
 _vissprite_p =                       _NULL_OFFSET + 00388h
 ; high byte always 0
 _cachedbyteheight =                  _NULL_OFFSET + 0038Ah
-_snd_MusicVolume =                   _NULL_OFFSET + 0038Bh
 _currentMusPage = 					 _NULL_OFFSET + 0038Ch
+_snd_MusicVolume =                   _NULL_OFFSET + 0038Dh
 
 ; todo fill this up (38D to 38F free)
 _savedescription =                   _NULL_OFFSET + 00390h

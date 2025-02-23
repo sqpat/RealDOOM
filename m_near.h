@@ -301,8 +301,9 @@
 
 #define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0388)))
 #define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038A)))
-#define snd_MusicVolume                 (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038B)))
+// dont use this byte!!! its always 0 on purpose.
 #define currentMusPage					(*((uint8_t __near*)                 (_NULL_OFFSET + 0x038C)))
+#define snd_MusicVolume                 (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038D)))
 
 // 38D-38F free
 

@@ -104,7 +104,7 @@ boolean M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		leng
 //
 
 
-filelength_t M_ReadFile (int8_t const*	name, byte __far*	buffer ){ 
+void M_ReadFile (int8_t const*	name, byte __far*	buffer ){ 
     int32_t length;
 	
 
@@ -122,7 +122,6 @@ filelength_t M_ReadFile (int8_t const*	name, byte __far*	buffer ){
 
     fclose (fp);
 
-    return length;
 }
 
 
