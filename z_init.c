@@ -389,29 +389,7 @@ void __near Z_LoadBinaries() {
 
 	fp2 = fopen("DOOMCODE.BIN", "rb"); 
 	fread(&codesize, 2, 1, fp2);
-	FAR_fread(colfunc_function_area_6800, codesize, 1, fp2);
-
-
-
-
-
-	// 400
-	FAR_fread(colfunc_jump_lookup_6800,  2, SCREENHEIGHT * 2, fp);
-	// 400
-	//FAR_fread(dc_yl_lookup, 2, SCREENHEIGHT, fp);
-
-
-	#ifdef MOVE_P_SIGHT
-		FAR_memcpy(PSightFuncLoadAddr, (byte __far *)P_CheckSight, SIZE_PSight);
-	#endif
-	
-	#ifdef MOVE_P_SETUP
-		FAR_memcpy(PSetupFuncLoadAddr, (byte __far *)P_SetupLevel, SIZE_PSetup);
-	#endif
-	// copy psetup and pfunc..
-	// 6736 bytes
-	//FAR_memcpy(PSetupFuncLoadAddr, (byte __far *)P_SetupLevel, 0x1A50);
-	//fclose(fp);
+	FAR_fread(colfunc_jump_lookup_6800, codesize, 1, fp2);
 
 
 	// all data now in this file instead of spread out a

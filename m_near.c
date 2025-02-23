@@ -1723,78 +1723,6 @@ int32_t codestartposition[NUM_OVERLAYS];
 // Information about all the music
 //
 
-// these full structs are too big for DGROUP right now.
-
-musicinfo_t S_music[] = {
-    { 0 }  /*,
-    { "e1m1", 0 },
-    { "e1m2", 0 },
-    { "e1m3", 0 },
-    { "e1m4", 0 },
-    { "e1m5", 0 },
-    { "e1m6", 0 },
-    { "e1m7", 0 },
-    { "e1m8", 0 },
-    { "e1m9", 0 },
-    { "e2m1", 0 },
-    { "e2m2", 0 },
-    { "e2m3", 0 },
-    { "e2m4", 0 },
-    { "e2m5", 0 },
-    { "e2m6", 0 },
-    { "e2m7", 0 },
-    { "e2m8", 0 },
-    { "e2m9", 0 },
-    { "e3m1", 0 },
-    { "e3m2", 0 },
-    { "e3m3", 0 },
-    { "e3m4", 0 },
-    { "e3m5", 0 },
-    { "e3m6", 0 },
-    { "e3m7", 0 },
-    { "e3m8", 0 },
-    { "e3m9", 0 },
-    { "inter", 0 },
-    { "intro", 0 },
-    { "bunny", 0 },
-    { "victor", 0 },
-    { "introa", 0 },
-    { "runnin", 0 },
-    { "stalks", 0 },
-    { "countd", 0 },
-    { "betwee", 0 },
-    { "doom", 0 },
-    { "the_da", 0 },
-    { "shawn", 0 },
-    { "ddtblu", 0 },
-    { "in_cit", 0 },
-    { "dead", 0 },
-    { "stlks2", 0 },
-    { "theda2", 0 },
-    { "doom2", 0 },
-    { "ddtbl2", 0 },
-    { "runni2", 0 },
-    { "dead2", 0 },
-    { "stlks3", 0 },
-    { "romero", 0 },
-    { "shawn2", 0 },
-    { "messag", 0 },
-    { "count2", 0 },
-    { "ddtbl3", 0 },
-    { "ampie", 0 },
-    { "theda3", 0 },
-    { "adrian", 0 },
-    { "messg2", 0 },
-    { "romer2", 0 },
-    { "tense", 0 },
-    { "shawn3", 0 },
-    { "openin", 0 },
-    { "evil", 0 },
-    { "ultima", 0 },
-    { "read_m", 0 },
-    { "dm2ttl", 0 },
-    { "dm2int", 0 } */
-};
 
 //
 // Information about all the sfx
@@ -1803,6 +1731,7 @@ musicinfo_t S_music[] = {
 
 sfxinfo_t S_sfx[] = {
   // S_sfx[0] needs to be a dummy for odd reasons.
+  // todo: move this into asm 
   { "none", false,  0, 0} /*,
 
   { "pistol", false, 64, 0},

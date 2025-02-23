@@ -32,7 +32,7 @@
 #define P_ArchiveSpecialsOffset               0x9D9
 #define S_ActuallyChangeMusicOffset           0x3EF
 
-#define R_DrawColumnCodeSize           0xB26
+#define R_DrawColumnCodeSize           0xE46
 #define R_DrawSpanCodeSize             0xDD3
 #define R_DrawFuzzColumnCodeSize       0x100C
 #define R_MaskedConstantsCodeSize      0xEB

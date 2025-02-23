@@ -25,6 +25,8 @@
 void __far R_SPAN_STARTMARKER();
 void __far R_SPAN_ENDMARKER();
 void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
+void __far R_COLUMN_STARTMARKER();
+void __far R_COLUMN_ENDMARKER();
 void __far R_DrawColumn (void);
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 void __far R_DrawColumnPrepMaskedMulti();
@@ -116,11 +118,11 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	uint16_t maxmuscodesize = 0;
     int8_t i;
     
-    codesize[0] = FP_OFF(R_SPAN_STARTMARKER) - FP_OFF(R_DrawColumn);
+    codesize[0] = FP_OFF(R_COLUMN_ENDMARKER) - FP_OFF(R_COLUMN_STARTMARKER);
     // write filesize..
     fwrite(&codesize[0], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_DrawColumn, codesize[0], 1, fp);
+    FAR_fwrite((byte __far *)R_COLUMN_STARTMARKER, codesize[0], 1, fp);
 
     
     codesize[1] = FP_OFF(R_SPAN_ENDMARKER) - FP_OFF(R_SPAN_STARTMARKER);

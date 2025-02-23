@@ -524,7 +524,7 @@ FREEBYTES           7EE0:0000
 #define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t))
 #define size_colfunc_jump_lookup   (sizeof(uint16_t) * SCREENHEIGHT)
 #define size_dc_yl_lookup          (sizeof(uint16_t) * SCREENHEIGHT)
-#define size_colfunc_function_area R_DrawColumnCodeSize
+#define size_colfunc_function_area R_DrawColumnCodeSize - size_colfunc_jump_lookup - size_dc_yl_lookup
 
 // currently using:  2962
 // can stick lookup tables (800 bytes) in

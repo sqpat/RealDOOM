@@ -21,15 +21,9 @@
 
 // NOT called by W_Ticker. Fixme.
 
-#ifndef MOVE_P_SETUP
 
-void
-__far P_SetupLevel
-( int8_t		episode,
-  int8_t		map,
-  skill_t	skill);
+void __far P_SetupLevel ( int8_t episode, int8_t map, skill_t skill);
 
-#endif
 
 // Called by startup code.
 void __near P_Init (void);
