@@ -2599,10 +2599,10 @@ je        out_of_drawsegs
 
 mov       ax, SEG_LINEDEFS_SEGMENT
 mov       es, ax
-mov       si, word ptr ds:[_curseg]
-add       si, si
+mov       bx, word ptr ds:[_curseg]
+sal       bx, 1
 mov       ax, LINEFLAGSLIST_SEGMENT
-mov       si, word ptr es:[si]
+mov       si, word ptr es:[bx]
 mov       es, ax
 mov       al, byte ptr es:[si]
 xor       ah, ah
@@ -2625,8 +2625,8 @@ mov       al, 1
 and       cl, 7
 shl       al, cl
 or        byte ptr es:[si], al
-mov       bx, word ptr ds:[_curseg]
-add       bx, bx
+
+; bx still curseg word lookup
 
 mov       ax, word ptr [bx+_seg_normalangles]
 
@@ -2828,38 +2828,48 @@ xchg      ax, dx
 stos      word ptr es:[di]             ; +10h
 xchg      ax, dx
 
+mov       si, cs
+mov       ds, si
+ASSUME DS:R_MAINHI_TEXT
 ; rw_scalestep is ready. write it forward as selfmodifying code here
 
-mov       word ptr cs:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
-mov       word ptr cs:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
-mov       word ptr cs:[SELFMODIFY_get_rwscalestep_lo_3+1], ax
-mov       word ptr cs:[SELFMODIFY_get_rwscalestep_lo_4+1], ax
-mov       word ptr cs:[SELFMODIFY_get_rwscalestep_hi_1+1], dx
-mov       word ptr cs:[SELFMODIFY_get_rwscalestep_hi_2+1], dx
-mov       word ptr cs:[SELFMODIFY_get_rwscalestep_hi_3+1], dx
-mov       word ptr cs:[SELFMODIFY_get_rwscalestep_hi_4+1], dx
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_3+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_4+1], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+5], ax
+mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+3], ax
+
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_3+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_4+1], ax
 
 
-mov       word ptr cs:[SELFMODIFY_add_rwscale_lo+5], ax
-mov       word ptr cs:[SELFMODIFY_add_rwscale_hi+5], dx
-mov       word ptr cs:[SELFMODIFY_sub_rwscale_lo+3], ax
-mov       word ptr cs:[SELFMODIFY_sub_rwscale_hi+3], dx
+mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+5], ax
+mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3], ax
 
 
 
+; todo change these in 386 mode to just 
 SELFMODIFY_BSP_detailshift_1:
-shl   ax, 1
-rcl   dx, 1
+shl   dx, 1
+rcl   ax, 1
 shift_rw_scale_once:
-shl   ax, 1
-rcl   dx, 1
+shl   dx, 1
+rcl   ax, 1
 finished_shifting_rw_scale:
 
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_1+3], ax
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_lo_2+3], ax
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_1+3], dx
-mov       word ptr cs:[SELFMODIFY_add_to_rwscale_hi_2+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_1+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2+3], ax
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_1+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+3], ax
 
+mov       si, ss   ; restore DS
+mov       ds, si
+ASSUME DS:DGROUP  ; lods coming up
 
 
 
@@ -2895,7 +2905,6 @@ rcr       dx, 1
 sar       ax, 1
 rcr       dx, 1
 
-; todo selfmodify viewz
 
 SELFMODIFY_BSP_viewz_lo_7:
 sub       dx, 01000h
@@ -2929,36 +2938,44 @@ mov       byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], NULL_TEX_COL
 cmp       word ptr ds:[_backsector], SECNUM_NULL
+
+
+
 je        handle_single_sided_line
 jmp       handle_two_sided_line
 
 handle_single_sided_line:
 
+mov       ax, cs
+mov       ds, ax
+ASSUME DS:R_MAINHI_TEXT
 
 SELFMODIFY_BSP_drawtype_1:
 SELFMODIFY_BSP_drawtype_1_AFTER = SELFMODIFY_BSP_drawtype_1 + 2
+
+
 mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER) SHL 8) + 0EBh
-mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER
-mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER
-mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_AFTER
-mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
 
 ;mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_AFTER) SHL 8) + 0E2h  ; LOOP instruction
-;mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4], ax
+;mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4], ax
 
 
  
-mov       word ptr cs:[SELFMODIFY_BSP_drawtype_2], 089B8h   ; mov ax, xx89
-mov       word ptr cs:[SELFMODIFY_BSP_drawtype_1], ((SELFMODIFY_BSP_drawtype_1_TARGET - SELFMODIFY_BSP_drawtype_1_AFTER) SHL 8) + 0EBh
+mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2], 089B8h   ; mov ax, xx89
+mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1], ((SELFMODIFY_BSP_drawtype_1_TARGET - SELFMODIFY_BSP_drawtype_1_AFTER) SHL 8) + 0EBh
 
-mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+0], 026h    ; es:
-mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], 087C7h  ; next 2 bytes of following instr (mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
+mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0], 026h    ; es:
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1], 087C7h  ; next 2 bytes of following instr (mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
 
-mov       byte ptr cs:[SELFMODIFY_BSP_midtexture], 039h     ; cmp di,
-mov       word ptr cs:[SELFMODIFY_BSP_midtexture+1], 07CF7h   ; (cmp di,) si, jl
+mov       byte ptr ds:[SELFMODIFY_BSP_midtexture], 039h     ; cmp di,
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1], 07CF7h   ; (cmp di,) si, jl
 
 
 SELFMODIFY_BSP_drawtype_1_TARGET:
@@ -2975,10 +2992,10 @@ mov       ax, word ptr es:[bx]
 
 
 
-mov       word ptr cs:[SELFMODIFY_BSP_set_midtexture+1], ax
+mov       word ptr ds:[SELFMODIFY_BSP_set_midtexture+1], ax
 ; are any bits set?
 or        al, ah
-or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], al
+or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1], al
 
 
 
@@ -2988,7 +3005,7 @@ test      byte ptr [bp - 048h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
 mov       ax, word ptr [bp - 046h]
-mov       word ptr cs:[SELFMODIFY_set_midtexturemid_lo+1], ax
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], ax
 mov       ax, word ptr [bp - 044h]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
@@ -3006,7 +3023,7 @@ sar       ax, 1
 rcr       cx, 1
 sar       ax, 1
 rcr       cx, 1
-mov       word ptr cs:[SELFMODIFY_set_midtexturemid_lo+1], cx
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], cx
 
 
 mov       bx, word ptr [bp - 01Ch]
@@ -3018,6 +3035,11 @@ inc       cx
 add       ax, cx
 done_with_bottom_peg:
 ; cx:ax has rw_midtexturemid
+
+mov       bx, ss   ; restore DS
+mov       ds, bx
+ASSUME DS:DGROUP
+
 
 SELFMODIFY_BSP_siderenderrowoffset_1:
 add       ax, 01000h
@@ -3503,25 +3525,26 @@ sbb       dx, 0
 ; dx:ax are topstep
 
 mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], dx
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo+5], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi+5], dx
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi+5], ax
 
 
 SELFMODIFY_BSP_detailshift_2:
-shl       ax, 1
-rcl       dx, 1
+shl       dx, 1
+rcl       ax, 1
 shift_topstep_once:
-shl       ax, 1
-rcl       dx, 1
+shl       dx, 1
+rcl       ax, 1
 
 finished_shifting_topstep:
 
-
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+3], ax
+xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_1+3], ax
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+3], dx
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+3], dx
 
 
 mov       cx, word ptr [bp - 034h]
@@ -3599,23 +3622,25 @@ sbb       dx, 0
 ; dx:ax are bottomstep
 
 mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3], dx
 mov       word ptr ds:[SELFMODIFY_add_botstep_lo+5], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_hi+5], dx
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_hi+5], ax
 
 SELFMODIFY_BSP_detailshift_3:
-shl       ax, 1
-rcl       dx, 1
+shl       dx, 1
+rcl       ax, 1
 shift_botstep_once:
-shl       ax, 1
-rcl       dx, 1
+shl       dx, 1
+rcl       ax, 1
 
 finished_shifting_botstep:
 
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3], ax
+xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_1+3], ax
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+3], dx
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3], dx
 
 
 
@@ -3843,21 +3868,23 @@ sbb       dx, 0
 
 
 mov       word ptr ds:[SELFMODIFY_sub_pixhigh_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_sub_pixhigh_hi+3], dx
 mov       word ptr ds:[SELFMODIFY_add_pixhighstep_lo+5], ax
-mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+5], dx
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_sub_pixhigh_hi+3], ax
+mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+5], ax
 
 SELFMODIFY_BSP_detailshift_4:
-shl       ax, 1
-rcl       dx, 1
+shl       dx, 1
+rcl       ax, 1
 shift_pixhighstep_once:
-shl       ax, 1
-rcl       dx, 1
+shl       dx, 1
+rcl       ax, 1
 done_shifting_pixhighstep:
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_2+3], ax
+xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_1+3], ax
 mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_2+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1+3], dx
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_2+3], dx
 
 
 ; put these back where they need to be.
@@ -4040,21 +4067,23 @@ sbb       dx, 0
 
 
 mov       word ptr ds:[SELFMODIFY_sub_pixlow_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_sub_pixlow_hi+3], dx
 mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+5], ax
-mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+5], dx
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_sub_pixlow_hi+3], ax
+mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+5], ax
 
 SELFMODIFY_BSP_detailshift_5:
-shl       ax, 1
-rcl       dx, 1
+shl       dx, 1
+rcl       ax, 1
 shift_pixlowstep_once:
-shl       ax, 1
-rcl       dx, 1
+shl       dx, 1
+rcl       ax, 1
 done_shifting_pixlowstep:
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2+3], ax
+xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1+3], ax
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_2+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1+3], dx
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2+3], dx
 
 
 
@@ -4069,14 +4098,13 @@ skip_pixlow_step:
 
 
 xchg  ax, cx
-mov   ax, word ptr [bp - 038h]    ; rw_x
-mov   bx, ax
-mov   di, ax
+mov   bx, word ptr [bp - 038h]    ; rw_x
+mov   di, bx
 SELFMODIFY_detailshift_and_1:
 
 and   bx, 01000h
 mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1], bx
-mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1], ax	
+mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1], di
 
 ; self modify code in the function to set constants rather than
 ; repeatedly reading loop-constant or function-constant variables.
@@ -5566,6 +5594,9 @@ ret
 
 handle_two_sided_line:
 
+; jumped to with ds as cs
+ASSUME DS:R_MAINHI_TEXT
+
 
 ; nop 
 
@@ -5573,25 +5604,33 @@ SELFMODIFY_BSP_drawtype_2:
 SELFMODIFY_BSP_drawtype_2_AFTER = SELFMODIFY_BSP_drawtype_2+2
 
 mov       ax, 0c089h 
-mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
-mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
-mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3], ax
-;mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4], ax
-mov       word ptr cs:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
+mov       si, cs
+mov       ds, si
+ASSUME DS:R_MAINHI_TEXT
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3], ax
+;mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
 
 
-mov       word ptr cs:[SELFMODIFY_BSP_drawtype_1], 0EBB8h   ; mov ax, xxeB
-mov       word ptr cs:[SELFMODIFY_BSP_drawtype_2], ((SELFMODIFY_BSP_drawtype_2_TARGET - SELFMODIFY_BSP_drawtype_2_AFTER) SHL 8) + 0EBh
+mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1], 0EBB8h   ; mov ax, xxeB
+mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2], ((SELFMODIFY_BSP_drawtype_2_TARGET - SELFMODIFY_BSP_drawtype_2_AFTER) SHL 8) + 0EBh
 
-mov       word ptr cs:[SELFMODIFY_BSP_midtexture], 0E9h
-mov       word ptr cs:[SELFMODIFY_BSP_midtexture+1], (SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) 
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture], 0E9h
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1], (SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) 
 
-mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+0], 0E9h ; jmp short rel16
-mov       word ptr cs:[SELFMODIFY_BSP_midtexture_return_jmp+1], SELFMODIFY_BSP_midtexture_return_jmp_TARGET - SELFMODIFY_BSP_midtexture_return_jmp_AFTER
+mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0], 0E9h ; jmp short rel16
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1], SELFMODIFY_BSP_midtexture_return_jmp_TARGET - SELFMODIFY_BSP_midtexture_return_jmp_AFTER
 
+
+mov       si, ss   ; restore DS
+mov       ds, si
+ASSUME DS:DGROUP
 
 SELFMODIFY_BSP_drawtype_2_TARGET:
 ; nomidtexture. this will be checked before top/bot, have to set it to 0.
+
 
 
 
@@ -7291,7 +7330,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5], ax
 
 
-; d1 e0 d1 d7  = shl ax, 1 rcl di, 1
 mov      al,  0
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2], ax
@@ -7301,6 +7339,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2], ax
 ; inverse. do shifts
 ; d1 e0 d1 d2  = shl ax, 1; rcl dx, 1
 ; d1 e0 d1 d7  = shl ax, 1; rcl di, 1
+; d1 e2 d1 d0  = shl dx, 1; rcl ax, 1
+
 mov      ax, 0e0d1h 
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0], ax
@@ -7379,14 +7419,15 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2], ax
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 
 ; d1 e0 d1 d2   =  shl ax, 1; rcl dx, 1.
-mov      ax, 0e0d1h
+; d1 e2 d1 d0   = shl dx, 1; rcl ax, 1
+
+mov      ax, 0E2D1h
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0], ax
-
-mov      ax, 0d2d1h
+mov      ax, 0D0D1h
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2], ax
