@@ -23,7 +23,7 @@ INCLUDE defs.inc
 
 .DATA
 
-
+SCAMP_PAGE_FRAME_BASE_INDEX = 4    ; todo ??? d000?
 SCAMP_PAGE_SELECT_REGISTER = 0E8h
 SCAMP_PAGE_SET_REGISTER = 0EAh
 
@@ -207,8 +207,34 @@ pop si
 ret
 ENDP
 
+COMMENT @
+void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
+	// page frame index 0 to 3
+	// count 
+	regs.h.ah = 0x44;
+	regs.h.al = pageframeindex;
+	regs.w.bx = pagenumber + MUS_DATA_PAGES;
+	regs.w.dx = emshandle; // handle
+	intx86(EMS_INT, &regs, &regs);
+}
+@
 
 
+; pageframeindex al
+; pagenumber dl 
 
+PROC Z_QuickMapPageFrame_ NEAR
+PUBLIC Z_QuickMapPageFrame_
+;push dx
+
+add  ax, SCAMP_PAGE_FRAME_BASE_INDEX
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, dx
+add  ax, MUS_DATA_PAGES
+out  SCAMP_PAGE_SET_REGISTER, ax
+
+;pop dx
+ret
+ENDP
 
 END

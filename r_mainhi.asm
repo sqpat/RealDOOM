@@ -3404,7 +3404,7 @@ call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1], ax
 dont_mark_ceiling:
 
-cmp       byte ptr ds:[bp - 04Ah], 0 ; markfloor
+cmp       byte ptr [bp - 04Ah], 0 ; markfloor
 je        dont_mark_floor
 xor       cx, cx
 SELFMODIFY_set_floorplaneindex:
@@ -3430,6 +3430,12 @@ mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
 
+ASSUME DS:R_MAINHI_TEXT
+
+; make ds equal to cs for self modifying codes
+push      cs
+pop       ds
+
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
    ; set up ecx
@@ -3450,7 +3456,7 @@ ELSE
    push  si
 
    mov   es, ax	; store ax in es
-   mov   ds, dx    ; store dx in ds
+   push  dx       ; store dx in stack
    mov   ax, dx	; ax holds dx
    CWD				; S0 in DX
 
@@ -3459,11 +3465,11 @@ ELSE
    mov   SI, DX	; DI stores hi word return
 
    ; AX still stores DX
-   MUL  CX         ; DX*CX
+   MUL  CX        ; DX*CX
    add  SI, AX    ; low word result into high word return
 
-   mov  AX, DS    ; restore DX from ds
-   MUL  BX         ; DX*BX
+   pop  AX        ; restore old DX from stack
+   MUL  BX        ; DX*BX
    XCHG BX, AX    ; BX will hold low word return. store bx in ax
    add  SI, DX    ; add high word to result
 
@@ -3485,8 +3491,6 @@ ELSE
    ADD  AX, BX	  ; set up final return value
    ADC  DX, SI
 
-   mov  CX, SS   ; restore DS
-   mov  DS, CX
    pop  si
 ENDIF
 
@@ -3498,10 +3502,10 @@ sbb       dx, 0
 
 ; dx:ax are topstep
 
-mov       word ptr cs:[SELFMODIFY_sub_topstep_lo+3], ax
-mov       word ptr cs:[SELFMODIFY_sub_topstep_hi+3], dx
-mov       word ptr cs:[SELFMODIFY_add_topstep_lo+5], ax
-mov       word ptr cs:[SELFMODIFY_add_topstep_hi+5], dx
+mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3], ax
+mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], dx
+mov       word ptr ds:[SELFMODIFY_add_topstep_lo+5], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi+5], dx
 
 
 SELFMODIFY_BSP_detailshift_2:
@@ -3514,10 +3518,10 @@ rcl       dx, 1
 finished_shifting_topstep:
 
 
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_1+3], ax
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_1+3], dx
-mov       word ptr cs:[SELFMODIFY_add_to_topfrac_hi_2+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_1+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+3], dx
 
 
 mov       cx, word ptr [bp - 034h]
@@ -3548,7 +3552,7 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 ELSE
    push  si
    mov   es, ax	; store ax in es
-   mov   ds, dx    ; store dx in ds
+   push  dx       ; store dx in stack
    mov   ax, dx	; ax holds dx
    CWD				; S0 in DX
 
@@ -3557,11 +3561,11 @@ ELSE
    mov   SI, DX	; DI stores hi word return
 
    ; AX still stores DX
-   MUL  CX         ; DX*CX
+   MUL  CX        ; DX*CX
    add  SI, AX    ; low word result into high word return
 
-   mov  AX, DS    ; restore DX from ds
-   MUL  BX         ; DX*BX
+   pop  AX        ; restore old DX from stack
+   MUL  BX        ; DX*BX
    XCHG BX, AX    ; BX will hold low word return. store bx in ax
    add  SI, DX    ; add high word to result
 
@@ -3583,8 +3587,6 @@ ELSE
    ADD  AX, BX	  ; set up final return value
    ADC  DX, SI
 
-   mov  CX, SS   ; restore DS
-   mov  DS, CX
    pop  si
 ENDIF
 
@@ -3596,10 +3598,10 @@ sbb       dx, 0
 
 ; dx:ax are bottomstep
 
-mov       word ptr cs:[SELFMODIFY_sub_botstep_lo+3], ax
-mov       word ptr cs:[SELFMODIFY_sub_botstep_hi+3], dx
-mov       word ptr cs:[SELFMODIFY_add_botstep_lo+5], ax
-mov       word ptr cs:[SELFMODIFY_add_botstep_hi+5], dx
+mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3], ax
+mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3], dx
+mov       word ptr ds:[SELFMODIFY_add_botstep_lo+5], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_hi+5], dx
 
 SELFMODIFY_BSP_detailshift_3:
 shl       ax, 1
@@ -3610,15 +3612,15 @@ rcl       dx, 1
 
 finished_shifting_botstep:
 
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_1+3], ax
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_1+3], dx
-mov       word ptr cs:[SELFMODIFY_add_to_bottomfrac_hi_2+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_1+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3], dx
 
 
 
 
-cmp       word ptr ds:[_backsector], SECNUM_NULL
+cmp       word ptr ss:[_backsector], SECNUM_NULL
 jne       backsector_not_null
 jmp       skip_pixlow_step
 jmp_to_skip_pixhigh_step:
@@ -3704,7 +3706,7 @@ ELSE
    push  si
 
    mov   es, ax	; store ax in es
-   mov   ds, dx    ; store dx in ds
+   push  dx       ; store dx in stack
    mov   ax, dx	; ax holds dx
    CWD				; S0 in DX
 
@@ -3714,10 +3716,10 @@ ELSE
 
    ; AX still stores DX
    MUL  CX         ; DX*CX
-   add  SI, AX    ; low word result into high word return
+   add  SI, AX     ; low word result into high word return
 
-   mov  AX, DS    ; restore DX from ds
-   MUL  BX         ; DX*BX
+   pop  AX        ; restore old DX from stack
+   MUL  BX        ; DX*BX
    XCHG BX, AX    ; BX will hold low word return. store bx in ax
    add  SI, DX    ; add high word to result
 
@@ -3739,9 +3741,7 @@ ELSE
    ADD  AX, BX	  ; set up final return value
    ADC  DX, SI
 
-   ;mov  CX, SS   ; dont restore DS
-   ;mov  DS, CX
-
+   
    pop   si
 
 ENDIF
@@ -3791,7 +3791,7 @@ ELSE
    push  si
 
    mov   es, ax	; store ax in es
-   mov   ds, dx    ; store dx in ds
+   push  dx       ; store dx in stack
    mov   ax, dx	; ax holds dx
    CWD				; S0 in DX
 
@@ -3800,11 +3800,11 @@ ELSE
    mov   SI, DX	; DI stores hi word return
 
    ; AX still stores DX
-   MUL  CX         ; DX*CX
+   MUL  CX        ; DX*CX
    add  SI, AX    ; low word result into high word return
 
-   mov  AX, DS    ; restore DX from ds
-   MUL  BX         ; DX*BX
+   pop  AX        ; restore DX from stack
+   MUL  BX        ; DX*BX
    XCHG BX, AX    ; BX will hold low word return. store bx in ax
    add  SI, DX    ; add high word to result
 
@@ -3826,8 +3826,6 @@ ELSE
    ADD  AX, BX	  ; set up final return value
    ADC  DX, SI
 
-   mov  CX, SS   ; restore DS
-   mov  DS, CX
 
    pop   si
 ENDIF
@@ -3844,10 +3842,10 @@ sbb       dx, 0
 ; self modifying code to write to pixlowstep usages.
 
 
-mov       word ptr cs:[SELFMODIFY_sub_pixhigh_lo+3], ax
-mov       word ptr cs:[SELFMODIFY_sub_pixhigh_hi+3], dx
-mov       word ptr cs:[SELFMODIFY_add_pixhighstep_lo+5], ax
-mov       word ptr cs:[SELFMODIFY_add_pixhighstep_hi+5], dx
+mov       word ptr ds:[SELFMODIFY_sub_pixhigh_lo+3], ax
+mov       word ptr ds:[SELFMODIFY_sub_pixhigh_hi+3], dx
+mov       word ptr ds:[SELFMODIFY_add_pixhighstep_lo+5], ax
+mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+5], dx
 
 SELFMODIFY_BSP_detailshift_4:
 shl       ax, 1
@@ -3856,10 +3854,10 @@ shift_pixhighstep_once:
 shl       ax, 1
 rcl       dx, 1
 done_shifting_pixhighstep:
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_1+3], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_lo_2+3], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_1+3], dx
-mov       word ptr cs:[SELFMODIFY_add_to_pixhigh_hi_2+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_1+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_2+3], dx
 
 
 ; put these back where they need to be.
@@ -3913,7 +3911,7 @@ ELSE
    push  si
 
    mov   es, ax	; store ax in es
-   mov   ds, dx    ; store dx in ds
+   push  dx       ; store dx in stack
    mov   ax, dx	; ax holds dx
    CWD				; S0 in DX
 
@@ -3922,11 +3920,11 @@ ELSE
    mov   SI, DX	; DI stores hi word return
 
    ; AX still stores DX
-   MUL  CX         ; DX*CX
+   MUL  CX        ; DX*CX
    add  SI, AX    ; low word result into high word return
 
-   mov  AX, DS    ; restore DX from ds
-   MUL  BX         ; DX*BX
+   pop  AX        ; restore old DX from stack
+   MUL  BX        ; DX*BX
    XCHG BX, AX    ; BX will hold low word return. store bx in ax
    add  SI, DX    ; add high word to result
 
@@ -3948,8 +3946,6 @@ ELSE
    ADD  AX, BX	  ; set up final return value
    ADC  DX, SI
 
-   ;mov  CX, SS   ; dont restore DS yet
-   ;mov  DS, CX
 
    pop   si
 
@@ -3968,8 +3964,6 @@ sbb       ax, dx
 
 mov       word ptr [bp - 026h], cx
 mov       word ptr [bp - 024h], ax
-mov       bx, si	; cached values
-mov       cx, di	; cached values
 SELFMODIFY_get_rwscalestep_lo_4:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_4:
@@ -3978,6 +3972,9 @@ mov       dx, 01000h
 ;start inlined FixedMulBSPLocal_
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+
+mov       cx, di	; cached values
+mov       bx, si	; cached values
 
    ; set up ecx
    db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
@@ -3995,44 +3992,40 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
 ELSE
 
-   mov   es, ax	; store ax in es
-   mov   ds, dx    ; store dx in ds
-   mov   ax, dx	; ax holds dx
+   xchg  ax, cx	; store ax in cx
+   mov   es, dx   ; store dx in es
+   xchg  ax, dx	; ax holds dx
    CWD				; S0 in DX
 
-   AND   DX, BX	; S0*BX
+   AND   DX, SI	; S0*BX   ; si has bx's value
    NEG   DX
-   mov   SI, DX	; DI stores hi word return
+   mov   BX, DX   ; stores hi word return
 
    ; AX still stores DX
-   MUL  CX         ; DX*CX
-   add  SI, AX    ; low word result into high word return
+   MUL  DI        ; DX*CX  ; di has cx's value
+   add  BX, AX    ; low word result into high word return
 
-   mov  AX, DS    ; restore DX from ds
-   MUL  BX         ; DX*BX
-   XCHG BX, AX    ; BX will hold low word return. store bx in ax
-   add  SI, DX    ; add high word to result
+   mov  AX, ES    ; restore old DX from stack
+   MUL  SI        ; DX*BX   ; si has bx's value
+   XCHG SI, AX    ; BX will hold low word return. store bx in ax
+   add  BX, DX    ; add high word to result
 
-   mov  DX, ES    ; restore AX from ES
-   mul  DX        ; BX*AX  
-   add  BX, DX    ; high word result into low word return
-   ADC  SI, 0
+   mul  CX        ; BX*AX   ; cx has original ax
+   add  SI, DX    ; high word result into low word return
+   ADC  BX, 0
 
-   mov  AX, CX   ; AX holds CX
+   mov  AX, DI   ; AX holds CX  ; di has cx's value
    CWD           ; S1 in DX
 
-   mov  CX, ES   ; AX from ES
-   AND  DX, CX   ; S1*AX
+   AND  DX, CX   ; S1*AX   ; cx has old ax
    NEG  DX
-   ADD  SI, DX   ; result into high word return
+   ADD  BX, DX   ; result into high word return
 
    MUL  CX       ; AX*CX
 
-   ADD  AX, BX	  ; set up final return value
-   ADC  DX, SI
+   ADD  AX, SI	  ; set up final return value
+   ADC  DX, BX
 
-   mov  CX, SS   ; restore DS
-   mov  DS, CX
 
 ENDIF
 
@@ -4046,10 +4039,10 @@ sbb       dx, 0
 ; self modifying code to write to pixlowstep usages.
 
 
-mov       word ptr cs:[SELFMODIFY_sub_pixlow_lo+3], ax
-mov       word ptr cs:[SELFMODIFY_sub_pixlow_hi+3], dx
-mov       word ptr cs:[SELFMODIFY_add_pixlowstep_lo+5], ax
-mov       word ptr cs:[SELFMODIFY_add_pixlowstep_hi+5], dx
+mov       word ptr ds:[SELFMODIFY_sub_pixlow_lo+3], ax
+mov       word ptr ds:[SELFMODIFY_sub_pixlow_hi+3], dx
+mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+5], ax
+mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+5], dx
 
 SELFMODIFY_BSP_detailshift_5:
 shl       ax, 1
@@ -4058,10 +4051,10 @@ shift_pixlowstep_once:
 shl       ax, 1
 rcl       dx, 1
 done_shifting_pixlowstep:
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_1+3], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_lo_2+3], ax
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_1+3], dx
-mov       word ptr cs:[SELFMODIFY_add_to_pixlow_hi_2+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2+3], dx
 
 
 
@@ -4082,20 +4075,20 @@ mov   di, ax
 SELFMODIFY_detailshift_and_1:
 
 and   bx, 01000h
-mov   word ptr cs:[SELFMODIFY_add_rw_x_base4_to_ax+1], bx
-mov   word ptr cs:[SELFMODIFY_compare_ax_to_start_rw_x+1], ax	
+mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1], bx
+mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1], ax	
 
 ; self modify code in the function to set constants rather than
 ; repeatedly reading loop-constant or function-constant variables.
 
-mov   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1], 0
+mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1], 0
 
 
 
 mov   ax, word ptr [bp - 03Ah]
-mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_1+1], ax
-mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_2+1], ax
-mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_3+1], ax
+mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_1+1], ax
+mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_2+1], ax
+mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_3+1], ax
 
 
 cmp   byte ptr [bp - 04Ah], 0 ;markfloor
@@ -4109,8 +4102,8 @@ mov   ax, ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER
 mov   si, ((SELFMODIFY_BSP_markfloor_2_TARGET - SELFMODIFY_BSP_markfloor_2_AFTER) SHL 8) + 0EBh
 do_markfloor_selfmodify:
 
-mov   word ptr cs:[SELFMODIFY_BSP_markfloor_1], ax
-mov   word ptr cs:[SELFMODIFY_BSP_markfloor_2], si
+mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1], ax
+mov   word ptr ds:[SELFMODIFY_BSP_markfloor_2], si
 
 mov   ah, byte ptr [bp - 049h] ;markceiling
 cmp   ah, 0   
@@ -4126,8 +4119,8 @@ mov   ax, ((SELFMODIFY_BSP_markceiling_1_TARGET - SELFMODIFY_BSP_markceiling_1_A
 mov   si, ((SELFMODIFY_BSP_markceiling_2_TARGET - SELFMODIFY_BSP_markceiling_2_AFTER) SHL 8) + 0EBh
 do_markceiling_selfmodify:
 
-mov   word ptr cs:[SELFMODIFY_BSP_markceiling_1], ax
-mov   word ptr cs:[SELFMODIFY_BSP_markceiling_2], si
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1], ax
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2], si
 
 xchg  ax, cx
 
@@ -4188,6 +4181,10 @@ skip_sub_base4diff:
 ;	base_bottomfrac = bottomfrac;
 ;	base_pixlow     = pixlow;
 ;	base_pixhigh    = pixhigh;
+
+mov  AX, SS   ; restore DS
+mov  DS, AX
+ASSUME DS:DGROUP
 
 lea   si, [bp - 032h]
 
@@ -4899,14 +4896,14 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_s
 jmp   just_do_draw0
 in_texture_bounds0:
 xchg  ax, dx
-sub   al, byte ptr [_segloopcachedbasecol]
-mul   byte ptr [_segloopheightvalcache]
+sub   al, byte ptr ds:[_segloopcachedbasecol]
+mul   byte ptr ds:[_segloopheightvalcache]
 jmp   add_base_segment_and_draw0
 SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
 non_repeating_texture0:
-cmp   dx, word ptr [_segloopnextlookup]
+cmp   dx, word ptr ds:[_segloopnextlookup]
 jge   out_of_texture_bounds0
-cmp   dx, word ptr [_segloopprevlookup]
+cmp   dx, word ptr ds:[_segloopprevlookup]
 jge   in_texture_bounds0
 out_of_texture_bounds0:
 push  bx
@@ -4918,12 +4915,12 @@ mov   ax, 01000h
 call  R_GetColumnSegment_
 pop   bx
 
-mov   dx, word ptr [_segloopcachedsegment]
+mov   dx, word ptr ds:[_segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
 
 COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
 ; see above, but all textures in vanilla are po2 so this is not necessary for now.
-mov   dh, byte ptr [_seglooptexmodulo]
+mov   dh, byte ptr ds:[_seglooptexmodulo]
 mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1], dh
 
 cmp   dh, 0
@@ -4937,11 +4934,11 @@ mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], ((SELFMODIFY_BSP_che
 check_seglooptexrepeat0:
 @
 
-mov   dh, byte ptr [_seglooptexrepeat]
+mov   dh, byte ptr ds:[_seglooptexrepeat]
 cmp   dh, 0
 je    seglooptexrepeat0_is_jmp
 ; modulo is seglooptexrepeat - 1
-mov   dl, byte ptr [_segloopheightvalcache]
+mov   dl, byte ptr ds:[_segloopheightvalcache]
 mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
 mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
 
@@ -5389,9 +5386,9 @@ jmp   add_base_segment_and_draw1
 
 SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET:
 non_repeating_texture1:
-cmp   dx, word ptr [2 + _segloopnextlookup]
+cmp   dx, word ptr ds:[2 + _segloopnextlookup]
 jge   out_of_texture_bounds1
-cmp   dx, word ptr [2 + _segloopprevlookup]
+cmp   dx, word ptr ds:[2 + _segloopprevlookup]
 jge   in_texture_bounds1
 out_of_texture_bounds1:
 push  bx
@@ -5402,7 +5399,7 @@ mov   ax, 01000h
 call  R_GetColumnSegment_
 pop   bx
 
-mov   dx, word ptr [2 + _segloopcachedsegment]
+mov   dx, word ptr ds:[2 + _segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
 
 
@@ -6062,7 +6059,7 @@ cmp   bx, si
 je    write_back_newend_and_return
 ;    while (next++ != newend) {
 
-mov   cx, word ptr [_newend] ; cache old newend
+mov   cx, word ptr ds:[_newend] ; cache old newend
 
 check_to_remove_posts:
 mov   ax, bx
@@ -6081,9 +6078,9 @@ mov   dx, di
 ;// Post is entirely visible (above start),  so insert a new clippost.
 call  R_StoreWallRange_          ; 			R_StoreWallRange (first, last);
 mov   ax, cx                     ;        backup first
-mov   cx, word ptr [_newend]     
+mov   cx, word ptr ds:[_newend]     
 add   cx, 8
-mov   word ptr [_newend], cx
+mov   word ptr ds:[_newend], cx
 
 ; rep movsw setup
 mov   bx, ds
@@ -6120,7 +6117,7 @@ jmp   crunch
 
 done_removing_posts:
     
-mov   word ptr [_newend], di   ; newend = start+1;
+mov   word ptr ds:[_newend], di   ; newend = start+1;
 
 ret   
 
@@ -6520,9 +6517,9 @@ mov   word ptr [si + 026h], bx
 
 ;    if (player.powers[pw_invisibility] > 4*32
 
-cmp   word ptr [_player + 020h + 2 * pw_invisibility], (4*32)
+cmp   word ptr ds:[_player + 020h + 2 * pw_invisibility], (4*32)
 jg    mark_shadow_draw
-test  byte ptr [_player + 020h + 2 * pw_invisibility], 8
+test  byte ptr ds:[_player + 020h + 2 * pw_invisibility], 8
 jne   mark_shadow_draw
 
 SELFMODIFY_BSP_fixedcolormap_4:
