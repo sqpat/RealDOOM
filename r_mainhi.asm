@@ -1806,6 +1806,11 @@ SELFMODIFY_BSP_viewx_hi_1:
 sbb   ax, 01000h
 stosw
 xchg   cx, ax						
+
+; todo:
+; sub [bp - 016h], 01000h
+; sbb [bp - 014h], 01000h
+
 lodsw
 SELFMODIFY_BSP_viewy_lo_1:
 sub   ax, 01000h
@@ -1815,7 +1820,6 @@ SELFMODIFY_BSP_viewy_hi_1:
 sbb   ax, 01000h
 stosw
 
-lea   si, [bp - 0Ah]
 ;    gxt.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, viewangle_shiftright1 ,tr_x.w);
 
 mov   ax, FINECOSINE_SEGMENT
@@ -1827,15 +1831,13 @@ call  FixedMulTrigNoShiftBSPLocal_
 
 
 
-mov   cx, ax		; store gxt
+mov   si, ax		; store gxt
 xchg  di, dx		; get viewangle_shiftright1 into dx
 
 ; cx:bx = tr_y
-lodsw
-xchg  ax, bx
-lodsw
-xchg  ax, cx
-xchg  ax, si
+les   bx, dword ptr [bp - 0Ah]
+mov   cx, es
+
 
 ; di:si has gxt
 
@@ -3354,7 +3356,6 @@ ELSE
 
    ;mov  CX, SS   ; dont restore DS 
    ;mov  DS, CX
-   pop  si
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
@@ -3407,7 +3408,6 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
 
 ELSE
-   push si
    mov   es, ax	; store ax in es
    mov   ds, dx    ; store dx in ds
    mov   ax, dx	; ax holds dx
@@ -3446,7 +3446,6 @@ ELSE
 
    mov  CX, SS   ; restore DS
    mov  DS, CX
-   pop  si
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
@@ -3522,7 +3521,6 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
 
 ELSE
-   push  si
 
    mov   es, ax	; store ax in es
    push  dx       ; store dx in stack
@@ -3560,7 +3558,6 @@ ELSE
    ADD  AX, BX	  ; set up final return value
    ADC  DX, SI
 
-   pop  si
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
@@ -3620,7 +3617,7 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
 
 ELSE
-   push  si
+
    mov   es, ax	; store ax in es
    push  dx       ; store dx in stack
    mov   ax, dx	; ax holds dx
@@ -3657,7 +3654,7 @@ ELSE
    ADD  AX, BX	  ; set up final return value
    ADC  DX, SI
 
-   pop  si
+   pop  si       ; restore si after these several mults
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
