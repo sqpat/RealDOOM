@@ -1587,7 +1587,7 @@ ENDIF
 add       di, _visplaneheaders  ; _di is plheader
 mov       byte ptr cs:[SELFMODIFY_setisceil + 1], cl  ; write cl value
 test      cl, cl
-;mov       cx, word ptr [bp - 03Ah]
+
 mov       cx, bx    ; cx holds stop
 
 je        check_plane_is_floor
@@ -2460,6 +2460,13 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 
 
 
+out_of_drawsegs:
+LEAVE_MACRO
+pop       di
+pop       si
+pop       cx
+pop       bx
+ret       
 
 
 
@@ -2494,24 +2501,23 @@ MAXDRAWSEGS = 256
 
 PROC R_StoreWallRange_ NEAR
 PUBLIC R_StoreWallRange_ 
-; bp - 1     ; frontsectorlightlevel
-; bp - 2     ; backsectorlightlevel
-; bp - 3     ; frontsectorfloorpic
-; bp - 4     ; backsectorfloorpic
-; bp - 5     ; frontsectorceilingpic
-; bp - 6     ; backsectorceilingpic
-; bp - 8     ; UNUSED
-; bp - 0Ah   ; UNUSED
-; bp - 0Ch   ; UNUSED
-; bp - 0Eh   ; offsetangle
-; bp - 010h  ; frontsectorfloorheight
-; bp - 012h  ; frontsectorceilingheight
-; bp - 014h  ; side toptexture
-; bp - 016h  ; side bottomtexture
-; bp - 018h  ; hyp lo
-; bp - 01Ah  ; hyp hi
-; bp - 01Ch  ; side midtexture
-; bp - 01Eh  ; UNUSED
+
+; bp - 2  ; ax arg
+; bp - 4  ; dx arg
+; bp - 6     ; hyp lo
+; bp - 8     ; hyp hi
+; bp - 0Ah   ; side toptexture
+; bp - 0Ch   ; side bottomtexture
+; bp - 0Eh   ; side midtexture
+; bp - 010h  ; v1.x
+; bp - 012h  ; v1.y
+; bp - 014h  ; lineflags
+; bp - 016h  ; offsetangle
+; bp - 018h  ; _rw_x
+; bp - 01Ah  ; _rw_stopx
+; bp - 01Ch  ; frontsectorfloorheight
+; bp - 01Dh  ; frontsectorceilingpic
+; bp - 01Eh  ; backsectorceilingpic
 ; bp - 020h  ; pixhigh hi
 ; bp - 022h  ; pixhigh lo
 ; bp - 024h  ; pixlow hi
@@ -2524,20 +2530,20 @@ PUBLIC R_StoreWallRange_
 ; bp - 032h  ; rw_scale lo
 ; bp - 034h  ; worldbottom hi
 ; bp - 036h  ; worldbottom lo
-; bp - 038h  ; _rw_x
-; bp - 03Ah  ; _rw_stopx
-; bp - 03Ch  ; v1.x ; selfmodify forward?
-; bp - 03Eh  ; v1.y ; selfmodify forward?
+; bp - 037h  ; frontsectorfloorpic
+; bp - 038h  ; backsectorfloorpic
+; bp - 039h  ; frontsectorlightlevel
+; bp - 03Ah  ; backsectorlightlevel
+; bp - 03Ch  ; 
+; bp - 03Eh  ; 
 ; bp - 040h  ; backsectorfloorheight
 ; bp - 042h  ; backsectorceilingheight
 ; bp - 044h  ; worldtop hi
 ; bp - 046h  ; worldtop lo
-; bp - 048h  ; lineflags
+; bp - 048h  ; frontsectorceilingheight
 ; bp - 049h  ; markceiling
 ; bp - 04Ah  ; markfloor
 
-; bp - 04Ch  ; dx arg
-; bp - 04Eh  ; ax arg
 
 ; bp + 012h   ; rw_angle lo from R_AddLine
 ; bp + 014h   ; rw_angle hi from R_AddLine
@@ -2549,58 +2555,71 @@ push      si ; +4
 push      di ; +2
 push      bp ; +0
 mov       bp, sp
-sub       sp, 04Ah
-push      ax
-push      dx
+push      ax ; bp - 2
+push      dx ; bp - 4
 xor       ax, ax
-mov       word ptr [bp - 018h], ax ; should be - 2
-mov       word ptr [bp - 01Ah], ax ; should be - 4
+
 
 SELFMODIFY_get_curseg_render_1:
 mov       bx, 01000h 
-mov       si, SIDES_SEGMENT
-mov       es, si
+
+push      ax ; bp - 6
+push      ax ; bp - 8
+
 mov       si, word ptr ds:[bx + 6]
 shl       si, 1
 shl       si, 1
 mov       di, si
 shl       si, 1
 
-; TODO! reorder stack and do pushes.
+mov       cx, ds  ; store for later.
+mov       ax, SIDES_SEGMENT
+mov       ds, ax
 
+; TODO! reorder stack and do pushes.
+; make this movsw
 ; read all the sides fields now. ;preshift them as they are word lookups
-lods      word ptr es:[si]
-mov       [bp - 014h], ax     ; should be - 6
-lods      word ptr es:[si]
+
+lodsw
+push ax   ; bp - 0Ah
+lodsw
 sal       ax, 1               ; preshift
-mov       [bp - 016h], ax     ; should be - 8
-lods      word ptr es:[si]
-mov       [bp - 01Ch], ax     ; should be - 0Ah
-lods      word ptr es:[si]
+push ax   ; bp - 0Ch
+lodsw
+push ax   ; bp - 0Eh
+lodsw
+
+
+les        si, dword ptr ss:[bx]   ; vertexes
+
+
 mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], ax
 
-mov       ax, word ptr [di+_sides_render]
+; todo pull this out into outer func?
+mov       ax, word ptr ss:[di+_sides_render]
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1], ax
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1], ax
 
-mov       si, word ptr ds:[bx]
 mov       ax, VERTEXES_SEGMENT 
-mov       es, ax	; if put into ds we could lodsw a bit... worth?
+mov       ds, ax	; if put into ds we could lodsw a bit... worth?
 shl       si, 1
 shl       si, 1
-lods 	    word ptr es:[si]
-mov       word ptr [bp - 03Ch], ax       ; should be - 0Ch
-lods 	    word ptr es:[si]
-mov       word ptr [bp - 03Eh], ax       ; should be - 0Eh
+lodsw
+push      ax       ; bp - 010h
+lodsw
+push      ax       ; bp - 012h
 
-mov       si, word ptr ds:[bx + 2]
+
+mov       si, es ; les earlier
 shl       si, 1
 shl       si, 1
 
-lods 	    word ptr es:[si]
+lodsw
 mov       word ptr cs:[SELFMODIFY_BSP_v2x+1], ax
-lods      word ptr es:[si]
+lodsw
 mov       word ptr cs:[SELFMODIFY_BSP_v2y+1], ax
+
+mov       ds, cx  ; restore ds..
 
 mov       bx, word ptr ds:[_ds_p]
 cmp       bx, (MAXDRAWSEGS * SIZEOF_DRAWSEG_T)
@@ -2615,7 +2634,8 @@ mov       si, word ptr es:[bx]
 mov       es, ax
 mov       al, byte ptr es:[si]
 xor       ah, ah
-mov       word ptr [bp - 048h], ax         ; should be - 0Eh?
+push      ax      ; bp - 014h
+
 
 ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
 ; si is linedefOffset
@@ -2673,34 +2693,30 @@ sub       ax, dx
 sar       ax, 1
 
 and       al, 0FCh
-mov       word ptr [bp - 0Eh], ax
+push      ax  ; bp - 016h
 mov       si, FINE_ANG90_NOSHIFT
 cmp       ax, si
-jb        offsetangle_below_ang_90
-offsetangle_above_ang_90:
-xor       ax, ax
-mov       dx, ax
-jmp       do_set_rw_distance
-out_of_drawsegs:
-LEAVE_MACRO
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
+jnb        offsetangle_above_ang_90
 
 offsetangle_below_ang_90:
-mov       dx, word ptr [bp - 03Eh]
-mov       ax, word ptr [bp - 03Ch]
+les       dx, dword ptr [bp - 012h]
+mov       ax, es
 call      R_PointToDist_
-mov       word ptr [bp - 018h], ax
-mov       word ptr [bp - 01ah], dx
-sub       si, word ptr [bp - 0Eh]
+mov       word ptr [bp - 6], ax
+mov       word ptr [bp - 8], dx
+sub       si, word ptr [bp - 016h]
 mov       bx, ax
 mov       cx, dx
 mov       ax, FINESINE_SEGMENT
 mov       dx, si
 call     FixedMulTrigNoShiftBSPLocal_
+
+jmp       do_set_rw_distance
+offsetangle_above_ang_90:
+xor       ax, ax
+mov       dx, ax
+
+
 
 do_set_rw_distance:
 
@@ -2714,21 +2730,23 @@ done_setting_rw_distance:
 les       di, dword ptr ds:[_ds_p]
 SELFMODIFY_get_curseg_2:
 mov       ax, 01000h
-stos      word ptr es:[di]             ; +0
+stosw              ; +0
 
-mov       ax, word ptr [bp - 04Ch]
-mov       word ptr [bp - 038h], ax   ; rw_x
-stos      word ptr es:[di]             ; +2
 
-mov       ax, word ptr [bp - 04Eh]
-stos      word ptr es:[di]             ; +4
+mov       ax, word ptr [bp - 2]
+push      ax   ; bp - 018h rw_x
+stosw              ; +2
 
-mov       ax, word ptr [bp - 04Eh]
+mov       ax, word ptr [bp - 4]
+stosw              ; +4
+
 inc       ax
-mov       word ptr [bp - 03Ah], ax
+push      ax   ; bp - 01Ah  rw_stopx
+sub       sp, 032h
+
 mov       ax, XTOVIEWANGLE_SEGMENT
-mov       bx, word ptr [bp - 04Ch]
-mov       cx, es  ; store ds_p+2
+mov       bx, word ptr [bp - 2]
+mov       cx, es  ; store ds_p+2 segment
 mov       es, ax
 add       bx, bx
 SELFMODIFY_set_viewanglesr3_3:
@@ -2737,22 +2755,22 @@ add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
 mov       word ptr [bp - 032h], ax
 mov       word ptr [bp - 030h], dx
-mov       es, cx ; restore es as ds_p+2
-stos      word ptr es:[di]             ; +6
+mov       es, cx ; restore es as ds_p+2 segment
+stosw             ; +6
 xchg      ax, dx
-stos      word ptr es:[di]             ; +8
+stosw             ; +8
 xchg      ax, dx                       ; put DX back; need it later.
-mov       si, word ptr [bp - 04Eh]
-cmp       si, word ptr [bp - 04Ch]
+mov       si, word ptr [bp - 4]
+cmp       si, word ptr [bp - 2]
 
 jg        stop_greater_than_start
 
 ; ds_p is es:di
 ;		ds_p->scale2 = ds_p->scale1;
 
-stos      word ptr es:[di]      ; +0Ah
+stosw      ; +0Ah
 xchg      ax, dx
-stos      word ptr es:[di]      ; +0Ch
+stosw      ; +0Ch
 xchg      ax, dx
 jmp       scales_set
 handle_negative_3216:
@@ -2798,6 +2816,7 @@ xor dx, dx
 jmp div_done
 
 stop_greater_than_start:
+
 sal       si, 1
 mov       ax, XTOVIEWANGLE_SEGMENT
 mov       es, ax
@@ -2806,10 +2825,10 @@ mov       ax, 01000h
 add       ax, word ptr es:[si]
 call      R_ScaleFromGlobalAngle_
 mov       es, cx ; restore es as ds_p+2
-mov       bx, word ptr [bp - 04Eh]
+mov       bx, word ptr [bp - 4]
 stos      word ptr es:[di]             ; +0Ah
 xchg      ax, dx
-sub       bx, word ptr [bp - 04Ch]
+sub       bx, word ptr [bp - 2]
 stos      word ptr es:[di]             ; +0Ch
 xchg      ax, dx
 sub       ax, word ptr [bp - 032h]
@@ -2901,14 +2920,14 @@ scales_set:
 ; si = frontsector
 les       si, dword ptr ds:[_frontsector]
 lods      word ptr es:[si]
-mov       word ptr [bp - 010h], ax
+mov       word ptr [bp - 01Ch], ax
 xchg      ax, bx
 lods      word ptr es:[si]
-mov       word ptr [bp - 012h], ax
+mov       word ptr [bp - 048h], ax
 xchg      ax, cx
 lods      word ptr es:[si]
-mov       byte ptr [bp - 3], al
-mov       byte ptr [bp - 5], ah
+mov       byte ptr [bp - 037h], al
+mov       byte ptr [bp - 01Dh], ah
 ; BIG TODO: make this di used some other way
 ; (di:si is worldtop)
 
@@ -2916,7 +2935,7 @@ mov       byte ptr [bp - 5], ah
 ;	worldtop.w -= viewz.w;
 
 mov       al, byte ptr es:[si + 08h]  ; + 6 from lodsw/lodsb = 0eh
-mov       byte ptr [bp - 1], al
+mov       byte ptr [bp - 039h], al
 xchg      ax, cx  ; ax has frontsectorceilingheight
 
 xor       dx, dx
@@ -3004,7 +3023,7 @@ SELFMODIFY_BSP_drawtype_1_TARGET:
 
 ;es:bx still side
 mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, [bp - 01Ch]
+mov       bx, [bp - 0Eh]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
@@ -3023,7 +3042,7 @@ or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1], al
 
 mov       ax, 0101h
 mov       word ptr [bp - 04Ah], ax ; set markfloor and markceiling
-test      byte ptr [bp - 048h], ML_DONTPEGBOTTOM
+test      byte ptr [bp - 014h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
 mov       ax, word ptr [bp - 046h]
@@ -3035,7 +3054,7 @@ jmp       done_with_bottom_peg
 
 
 do_peg_bottom:
-mov       ax, word ptr [bp - 010h]
+mov       ax, word ptr [bp - 01Ch]
 SELFMODIFY_BSP_viewz_shortheight_5:
 sub       ax, 01000h
 xor       cx, cx
@@ -3048,7 +3067,7 @@ rcr       cx, 1
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], cx
 
 
-mov       bx, word ptr [bp - 01Ch]
+mov       bx, word ptr [bp - 0Eh]
 mov       cx, TEXTUREHEIGHTS_SEGMENT
 mov       es, cx
 xor       cx, cx
@@ -3105,27 +3124,27 @@ mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured], ((SELFMODIFY_BSP_get_seg
 jmp       seg_textured_check_done
 do_seg_textured_stuff:
 mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured], 0C089h ; nop
-mov       ax, word ptr [bp - 0Eh]
+mov       ax, word ptr [bp - 016h]
 cmp       ax, FINE_ANG180_NOSHIFT
 jbe       offsetangle_greater_than_fineang180
 neg       ax
 and       ah, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
-mov       word ptr [bp - 0Eh], ax
+mov       word ptr [bp - 016h], ax
 offsetangle_greater_than_fineang180:
-mov       ax, word ptr [bp - 01ah]
-or        ax, word ptr [bp - 018h]
+mov       ax, word ptr [bp - 8]
+or        ax, word ptr [bp - 6]
 jne       hyp_already_set   		; todo what is hyp about
-mov       dx, word ptr [bp - 03Eh]
-mov       ax, word ptr [bp - 03Ch]
+les       dx, dword ptr [bp - 012h]
+mov       ax, es
 call      R_PointToDist_
-mov       word ptr [bp - 018h], ax
-mov       word ptr [bp - 01ah], dx
+mov       word ptr [bp - 6], ax
+mov       word ptr [bp - 8], dx
 hyp_already_set:
-mov       dx, word ptr [bp - 0Eh]
+mov       dx, word ptr [bp - 016h]
 cmp       dx, FINE_ANG90_NOSHIFT
 ja        offsetangle_greater_than_fineang90
-mov       bx, word ptr [bp - 018h]
-mov       cx, word ptr [bp - 01ah]
+les       cx, dword ptr [bp - 8]
+mov       bx, es
 mov       ax, FINESINE_SEGMENT
 call      FixedMulTrigNoShiftBSPLocal_
 ; used later, dont change?
@@ -3133,8 +3152,8 @@ call      FixedMulTrigNoShiftBSPLocal_
 xchg      ax, dx
 jmp       done_with_offsetangle_stuff
 offsetangle_greater_than_fineang90:
-les       dx, dword ptr [bp - 018h]
-mov       ax, es  ; bp - 01Ah
+les       dx, dword ptr [bp - 8]
+mov       ax, es  ; bp - 6
 
 
 
@@ -3177,7 +3196,7 @@ mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1], ax
 SELFMODIFY_BSP_fixedcolormap_3:
 jne       seg_textured_check_done    ; dont check walllights if fixedcolormap
 SELFMODIFY_BSP_fixedcolormap_3_AFTER:
-mov       al, byte ptr [bp - 1]
+mov       al, byte ptr [bp - 039h]
 xor       ah, ah
 SELFMODIFY_BSP_extralight2:
 mov       dl, 0
@@ -3191,12 +3210,12 @@ sar       ax, 1
 ENDIF
 xor       dh, dh
 add       dx, ax
-mov       ax, word ptr [bp - 03Eh]
+mov       ax, word ptr [bp - 012h]
 SELFMODIFY_BSP_v2y:
 cmp       ax, 01000h
 je        v1y_equals_v2y
 
-mov       ax, word ptr [bp - 03Ch]
+mov       ax, word ptr [bp - 010h]
 SELFMODIFY_BSP_v2x:
 cmp       ax, 01000h
 jne       v1x_equals_v2x
@@ -3231,17 +3250,17 @@ mov   word ptr cs:[SELFMODIFY_add_wallights+2], ax
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
 seg_textured_check_done:
-mov       ax, word ptr [bp - 010h]
+mov       ax, word ptr [bp - 01Ch]
 SELFMODIFY_BSP_viewz_shortheight_4:
 cmp       ax, 01000h
 jl        not_above_viewplane
 mov       byte ptr [bp - 04Ah], 0
 not_above_viewplane:
-mov       ax, word ptr [bp - 012h]
+mov       ax, word ptr [bp - 048h]
 SELFMODIFY_BSP_viewz_shortheight_3:
 cmp       ax, 01000h
 jg        not_below_viewplane
-mov       al, byte ptr [bp - 5]
+mov       al, byte ptr [bp - 01Dh]
 cmp       al, byte ptr ds:[_skyflatnum]
 je        not_below_viewplane
 mov       byte ptr [bp - 049h], 0  ;markceiling
@@ -3439,9 +3458,9 @@ je        dont_mark_ceiling
 mov       cx, 1
 SELFMODIFY_set_ceilingplaneindex:
 mov       ax, 0FFFFh
-mov       bx, word ptr [bp - 03Ah]
+mov       bx, word ptr [bp - 01Ah]  ; todo les
 dec       bx
-mov       dx, word ptr [bp - 038h]    ; rw_x
+mov       dx, word ptr [bp - 018h]    ; rw_x
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1], ax
 dont_mark_ceiling:
@@ -3451,14 +3470,14 @@ je        dont_mark_floor
 xor       cx, cx
 SELFMODIFY_set_floorplaneindex:
 mov       ax, 0FFFFh
-mov       bx, word ptr [bp - 03Ah]
+mov       bx, word ptr [bp - 01Ah]  ; todo les
 dec       bx
-mov       dx, word ptr [bp - 038h]   ; rw_x
+mov       dx, word ptr [bp - 018h]   ; rw_x
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_floorplaneindex+1], ax
 dont_mark_floor:
-mov       ax, word ptr [bp - 04Eh]
-cmp       ax, word ptr [bp - 04Ch]
+mov       ax, word ptr [bp - 4]
+cmp       ax, word ptr [bp - 2]
 jge       at_least_one_column_to_draw
 jmp       check_spr_top_clip
 at_least_one_column_to_draw:
@@ -4118,7 +4137,7 @@ skip_pixlow_step:
 
 
 xchg  ax, cx
-mov   bx, word ptr [bp - 038h]    ; rw_x
+mov   bx, word ptr [bp - 018h]    ; rw_x
 mov   di, bx
 SELFMODIFY_detailshift_and_1:
 
@@ -4133,7 +4152,7 @@ mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1], 0
 
 
 
-mov   ax, word ptr [bp - 03Ah]
+mov   ax, word ptr [bp - 01Ah]
 mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_1+1], ax
 mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_2+1], ax
 mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_3+1], ax
@@ -4330,13 +4349,13 @@ SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET:
 xchg  ax, bx	; get xoffset  back
 SELFMODIFY_add_rw_x_base4_to_ax:
 add   ax, 1000h
-mov   word ptr [bp - 038h], ax    ; rw_x
+mov   word ptr [bp - 018h], ax    ; rw_x
 SELFMODIFY_compare_ax_to_start_rw_x:
 cmp   ax, 1000h
 jl    pre_increment_values
 
 SELFMODIFY_cmp_di_to_rw_stopx_3:
-cmp   ax, 01000h   ; cmp   di, word ptr [bp - 03Ah]
+cmp   ax, 01000h   ; cmp   di, word ptr [bp - 01Ah]
 jl    jump_to_start_per_column_inner_loop  ; 026hish out of range
 
 finish_outer_loop:
@@ -4428,7 +4447,7 @@ pre_increment_values:
 SELFMODIFY_add_iter_to_rw_x:
 ; ax was already up-to-date rw_x
 add   ax, 1
-mov   word ptr [bp - 038h], ax     ; rw_x
+mov   word ptr [bp - 018h], ax     ; rw_x
 SELFMODIFY_add_to_rwscale_lo_2:
 add   word ptr [bp - 032h], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
@@ -4457,7 +4476,7 @@ adc   word ptr [bp - 020h], 01000h
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET:
 ; this is right before inner loop start
 SELFMODIFY_cmp_di_to_rw_stopx_1:
-cmp   ax, 01000h   ; cmp   ax, word ptr [bp - 03Ah]
+cmp   ax, 01000h   ; cmp   ax, word ptr [bp - 01Ah]
 jge   jump_to_finish_outer_loop_2
 
 start_per_column_inner_loop:
@@ -5185,10 +5204,10 @@ finished_inner_loop_iter:
 ;			rw_scale.w  += rwscaleshift
 
 SELFMODIFY_add_detailshiftitercount:
-add   word ptr [bp - 038h], 0   ; rw_x
-mov   ax, word ptr [bp - 038h]  ; rw_x
+add   word ptr [bp - 018h], 0   ; rw_x
+mov   ax, word ptr [bp - 018h]  ; rw_x
 SELFMODIFY_cmp_di_to_rw_stopx_2:
-cmp   ax, 01000h   ; cmp   di, word ptr [bp - 03Ah]
+cmp   ax, 01000h   ; cmp   di, word ptr [bp - 01Ah]
 jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
 
 
@@ -5427,9 +5446,8 @@ add   dx, cx
 
 done_adding_modulo1:
 sub   dx, cx
-mov   ah, byte ptr [1 + _segloopheightvalcache]
 sub   al, dl
-mul   ah
+mul   ah  byte ptr [1 + _segloopheightvalcache]
 jmp   add_base_segment_and_draw1
 
 @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
@@ -5534,12 +5552,12 @@ continue_checking_spr_top_clip:
 
 cmp       word ptr es:[bx + 016h], 0
 jne       check_spr_bottom_clip
-mov       si, word ptr [bp - 04Ch]
+mov       si, word ptr [bp - 2]
 add       si, si
 add       si, OFFSET_CEILINGCLIP
 mov       di, word ptr ds:[_lastopening]
-mov       cx, word ptr [bp - 03Ah]
-sub       cx, word ptr [bp - 04Ch]
+mov       cx, word ptr [bp - 01Ah]
+sub       cx, word ptr [bp - 2]
 mov       ax, OPENINGS_SEGMENT
 mov       es, ax
 mov       ds, ax
@@ -5550,12 +5568,12 @@ rep movsw
 mov       ax, ss
 mov       ds, ax
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 04Ch]
+sub       ax, word ptr [bp - 2]
 mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
 add       ax, ax
 mov       word ptr es:[bx + 016h], ax
-mov       ax, word ptr [bp - 03Ah]
-sub       ax, word ptr [bp - 04Ch]
+mov       ax, word ptr [bp - 01Ah]
+sub       ax, word ptr [bp - 2]
 add       word ptr ds:[_lastopening], ax
 check_spr_bottom_clip:
 ; es:si is ds_p
@@ -5567,14 +5585,14 @@ jmp       continue_checking_spr_bottom_clip
 continue_checking_spr_bottom_clip:
 cmp       word ptr es:[bx + 018h], 0
 jne       check_silhouettes_then_exit
-mov       si, word ptr [bp - 04Ch]
+mov       si, word ptr [bp - 2]
 add       si, si
 add       si, OFFSET_FLOORCLIP
 mov       ax, OPENINGS_SEGMENT
 mov       di, word ptr ds:[_lastopening]
 add       di, di
-mov       cx, word ptr [bp - 03Ah]
-sub       cx, word ptr [bp - 04Ch]
+mov       cx, word ptr [bp - 01Ah]
+sub       cx, word ptr [bp - 2]
 mov       es, ax
 mov       ds, ax
 rep movsw 
@@ -5583,12 +5601,12 @@ mov       ax, ss
 mov       ds, ax
 
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 04Ch]
+sub       ax, word ptr [bp - 2]
 mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
 add       ax, ax
 mov       word ptr es:[bx + 018h], ax
-mov       ax, word ptr [bp - 03Ah]
-sub       ax, word ptr [bp - 04Ch]
+mov       ax, word ptr [bp - 01Ah]
+sub       ax, word ptr [bp - 2]
 add       word ptr ds:[_lastopening], ax
 check_silhouettes_then_exit:
 cmp       byte ptr ds:[_maskedtexture], 0
@@ -5670,10 +5688,10 @@ lods      word ptr es:[si]
 mov       word ptr [bp - 042h], ax
 xchg      ax, bx   ; store for later
 lods      word ptr es:[si]
-mov       byte ptr [bp - 4], al
-mov       byte ptr [bp - 6], ah
+mov       byte ptr [bp - 038h], al
+mov       byte ptr [bp - 01Eh], ah
 mov       al, byte ptr es:[si + 08h]  ; 0eh with the 6 from lodsw.
-mov       byte ptr [bp - 2], al
+mov       byte ptr [bp - 03Ah], al
 xchg      ax, cx
 
 ;		ds_p->sprtopclip_offset = ds_p->sprbottomclip_offset = 0;
@@ -5689,7 +5707,7 @@ mov       byte ptr es:[si + 01ch], cl ; SIL_NONE
 ; es:si is ds_p
 ;		if (frontsectorfloorheight > backsectorfloorheight) {
 
-cmp       ax, word ptr [bp - 010h]
+cmp       ax, word ptr [bp - 01Ch]
 jl        set_bsilheight_to_frontsectorfloorheight
 SELFMODIFY_BSP_viewz_shortheight_2:
 cmp       ax, 01000h
@@ -5700,12 +5718,12 @@ mov       word ptr es:[si + 012h], MAXSHORT
 jmp       bsilheight_set
 set_bsilheight_to_frontsectorfloorheight:
 mov       byte ptr es:[si + 01ch], SIL_BOTTOM
-mov       cx, word ptr [bp - 010h]
+mov       cx, word ptr [bp - 01Ch]
 mov       word ptr es:[si + 012h], cx
 bsilheight_set:
 
 xchg      ax, bx   ; retrieved from before
-cmp       ax, word ptr [bp - 012h]
+cmp       ax, word ptr [bp - 048h]
 jg        set_tsilheight_to_frontsectorceilingheight
 SELFMODIFY_BSP_viewz_shortheight_1:
 cmp       ax, 01000h
@@ -5716,14 +5734,14 @@ mov       word ptr es:[si + 014h], MINSHORT
 jmp       tsilheight_set
 set_tsilheight_to_frontsectorceilingheight:
 or        byte ptr es:[si + 01ch], SIL_TOP
-mov       cx, word ptr [bp - 012h]
+mov       cx, word ptr [bp - 048h]
 mov       word ptr es:[si + 014h], cx
 tsilheight_set:
 ; es:si is still ds_p
 
 ; if (backsectorceilingheight <= frontsectorfloorheight) {
 
-cmp       ax, word ptr [bp - 010h]
+cmp       ax, word ptr [bp - 01Ch]
 jg        back_ceiling_greater_than_front_floor
 
 ; ds_p->sprbottomclip_offset = offset_negonearray;
@@ -5738,7 +5756,7 @@ back_ceiling_greater_than_front_floor:
 ; if (backsectorfloorheight >= frontsectorceilingheight) {
 ; ax is backsectorfloorheight
 mov       ax, word ptr [bp - 040h]
-cmp       ax, word ptr [bp - 012h]
+cmp       ax, word ptr [bp - 048h]
 jl        back_floor_less_than_front_ceiling
 
 ; ds_p->sprtopclip_offset = offset_screenheightarray;
@@ -5793,9 +5811,9 @@ sbb       cx, 01000h
 
 ; todo skyflatnum should be a per level constant??
 mov       al, byte ptr ds:[_skyflatnum]
-cmp       al, byte ptr [bp - 5]
+cmp       al, byte ptr [bp - 01Dh]
 jne       not_a_skyflat
-cmp       al, byte ptr [bp - 6]
+cmp       al, byte ptr [bp - 01Eh]
 jne       not_a_skyflat
 ;di/si are worldhigh..
 
@@ -5816,10 +5834,10 @@ cmp       cx, word ptr [bp - 034h]
 jne       set_markfloor_true
 cmp       bx, word ptr [bp - 036h]
 jne       set_markfloor_true
-mov       ax, word ptr [bp - 4]
+mov       ax, word ptr [bp - 038h]
 cmp       al, ah
 jne       set_markfloor_true
-mov       ax, word ptr [bp - 2]
+mov       ax, word ptr [bp - 03Ah]
 cmp       al, ah
 jne       set_markfloor_true
 set_markfloor_false:
@@ -5834,11 +5852,11 @@ jne       set_markceiling_true
 cmp       word ptr [bp - 046h], si
 jne       set_markceiling_true
 
-mov       ax, word ptr [bp - 6]
+mov       ax, word ptr [bp - 01Eh]
 cmp       al, ah
 jne       set_markceiling_true
 
-mov       ax, word ptr [bp - 2]
+mov       ax, word ptr [bp - 03Ah]
 cmp       al, ah
 jne       set_markceiling_true
 set_markceiling_false:
@@ -5858,10 +5876,10 @@ markceiling_set:
 ;		}
 
 mov       dx, word ptr [bp - 042h]
-cmp       dx, word ptr [bp - 010h]
+cmp       dx, word ptr [bp - 01Ch]
 jle       closed_door_detected
 mov       ax, word ptr [bp - 040h]
-cmp       ax, word ptr [bp - 012h]
+cmp       ax, word ptr [bp - 048h]
 jl        not_closed_door 
 closed_door_detected:
 mov       ax, 0101h
@@ -5889,7 +5907,7 @@ setup_toptexture:
 ; toptexture = texturetranslation[side->toptexture];
 
 mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, word ptr [bp - 014h]
+mov       bx, word ptr [bp - 0Ah]
 mov       es, ax
 add       bx, bx
 mov       ax, word ptr es:[bx]
@@ -5917,7 +5935,7 @@ or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
 
 
-test      byte ptr [bp - 048h], ML_DONTPEGTOP
+test      byte ptr [bp - 014h], ML_DONTPEGTOP
 jne       set_toptexture_to_worldtop
 calculate_toptexturemid:
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_toptexturemid, backsectorceilingheight);
@@ -5937,7 +5955,7 @@ rcr       ax, 1
 ;dx:ax are toptexturemid for now..
 mov       bx, TEXTUREHEIGHTS_SEGMENT
 mov       es, bx
-mov       bx, word ptr [bp - 014h]
+mov       bx, word ptr [bp - 0Ah]
 
 add       dl, byte ptr es:[bx]
 adc       dh, 0
@@ -5967,7 +5985,7 @@ cmp       si, word ptr [bp - 036h]
 jbe       bottexture_zero
 setup_bottexture:
 mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, word ptr [bp - 016h]
+mov       bx, word ptr [bp - 0Ch]
 ; preshifted
 mov       es, ax
 mov       ax, word ptr es:[bx]
@@ -5991,7 +6009,7 @@ or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
 
 
 
-test      byte ptr [bp - 048h], ML_DONTPEGBOTTOM
+test      byte ptr [bp - 014h], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here
 mov       ax, word ptr [bp - 046h]
@@ -6015,7 +6033,7 @@ mov       ax, 01000h
 
 add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1], ax
 add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1], ax
-cmp       word ptr [bp - 01Ch], 0
+cmp       word ptr [bp - 0Eh], 0
 
 ; // allocate space for masked texture tables
 ; if (side->midtexture) {
@@ -6034,14 +6052,14 @@ side_has_midtexture:
 ; lastopening += rw_stopx - rw_x;
 
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 038h]    ; rw_x
+sub       ax, word ptr [bp - 018h]    ; rw_x
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], ax
 mov       ax, word ptr es:[bx + 01ah]
 add       ax, ax
 mov       word ptr ds:[_maskedtexturecol], ax
-mov       ax, word ptr [bp - 03Ah]
-sub       ax, word ptr [bp - 038h]    ; rw_x
+mov       ax, word ptr [bp - 01Ah]
+sub       ax, word ptr [bp - 018h]    ; rw_x
 add       word ptr ds:[_lastopening], ax
 mov       al, 1
 mov       byte ptr ds:[_maskedtexture], al
@@ -6055,6 +6073,7 @@ jmp do_selfmodify_bottexture
 
 
 ENDP
+
 
 ;R_ClipSolidWallSegment_
 
