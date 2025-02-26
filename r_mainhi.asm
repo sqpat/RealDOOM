@@ -1135,7 +1135,9 @@ mov   dx, VERTEXES_SEGMENT
 shl   si, 1
 shl   si, 1
 mov   es, dx
-mov   word ptr ds:[_curseg], ax
+mov   word ptr cs:[SELFMODIFY_get_curseg_2 + 1], ax
+sal   ax, 1
+mov   word ptr cs:[SELFMODIFY_get_curseg_1 + 1], ax ; preshift
 mov   ax, word ptr es:[si]
 mov   dx, word ptr es:[si + 2]
 mov   si, word ptr [bx + 2]
@@ -1143,7 +1145,10 @@ shl   si, 1
 shl   si, 1
 mov   di, word ptr es:[si]       ; v2.x
 mov   cx, word ptr es:[si + 2]   ; v2.y
-mov   word ptr ds:[_curseg_render], bx
+mov   word ptr cs:[SELFMODIFY_get_curseg_render_1 + 1], bx
+add   bx, 4
+mov   word ptr cs:[SELFMODIFY_get_curseg_render_2 + 2], bx ; todo can we store ahead the lookup instead of the ptr
+
 call  R_PointToAngle16Old_    ; todo debug why this doesnt work with the other one. stack corruption?
 mov   bx, ax
 mov   si, dx      ; SI: BX stores angle1
@@ -1424,9 +1429,9 @@ mov   byte ptr ds:[_floorphyspage], al
 
 ;  es:bx holds frontsector
 mov   word ptr ds:[_ceiltop], ax
-mov   word ptr ds:[_ceiltop+2], ax
+
 mov   word ptr ds:[_floortop], ax
-mov   word ptr ds:[_floortop+2], ax
+
 
 
 mov   dx, word ptr es:[bx]
@@ -2097,7 +2102,7 @@ mov   word ptr cs:[SELFMODIFY_set_ax_to_x2+1], dx
 ;        return;
 
 test  dx, dx
-jl    jump_to_exit_project_sprite_2
+jl    jump_to_exit_project_sprite_2  ; 06Ah ish out of range
 
 mov   si, word ptr ds:[_vissprite_p]
 cmp  si, MAXVISSPRITES
@@ -2548,10 +2553,11 @@ sub       sp, 04Ah
 push      ax
 push      dx
 xor       ax, ax
-mov       word ptr [bp - 018h], ax
-mov       word ptr [bp - 01Ah], ax
+mov       word ptr [bp - 018h], ax ; should be - 2
+mov       word ptr [bp - 01Ah], ax ; should be - 4
 
-mov       bx, word ptr ds:[_curseg_render]
+SELFMODIFY_get_curseg_render_1:
+mov       bx, 01000h 
 mov       si, SIDES_SEGMENT
 mov       es, si
 mov       si, word ptr ds:[bx + 6]
@@ -2559,16 +2565,19 @@ shl       si, 1
 shl       si, 1
 mov       di, si
 shl       si, 1
-; read all the sides fields now
 
+; TODO! reorder stack and do pushes.
+
+; read all the sides fields now. ;preshift them as they are word lookups
 lods      word ptr es:[si]
-mov       [bp - 014h], ax
+mov       [bp - 014h], ax     ; should be - 6
 lods      word ptr es:[si]
-mov       [bp - 016h], ax
+sal       ax, 1               ; preshift
+mov       [bp - 016h], ax     ; should be - 8
 lods      word ptr es:[si]
-mov       [bp - 01Ch], ax
+mov       [bp - 01Ch], ax     ; should be - 0Ah
 lods      word ptr es:[si]
-mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+2], ax
+mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], ax
 
 mov       ax, word ptr [di+_sides_render]
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1], ax
@@ -2580,9 +2589,9 @@ mov       es, ax	; if put into ds we could lodsw a bit... worth?
 shl       si, 1
 shl       si, 1
 lods 	    word ptr es:[si]
-mov       word ptr [bp - 03Ch], ax
+mov       word ptr [bp - 03Ch], ax       ; should be - 0Ch
 lods 	    word ptr es:[si]
-mov       word ptr [bp - 03Eh], ax
+mov       word ptr [bp - 03Eh], ax       ; should be - 0Eh
 
 mov       si, word ptr ds:[bx + 2]
 shl       si, 1
@@ -2599,14 +2608,14 @@ je        out_of_drawsegs
 
 mov       ax, SEG_LINEDEFS_SEGMENT
 mov       es, ax
-mov       bx, word ptr ds:[_curseg]
-sal       bx, 1
+SELFMODIFY_get_curseg_1:
+mov       bx, 01000h
 mov       ax, LINEFLAGSLIST_SEGMENT
 mov       si, word ptr es:[bx]
 mov       es, ax
 mov       al, byte ptr es:[si]
 xor       ah, ah
-mov       word ptr [bp - 048h], ax
+mov       word ptr [bp - 048h], ax         ; should be - 0Eh?
 
 ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
 ; si is linedefOffset
@@ -2631,9 +2640,20 @@ or        byte ptr es:[si], al
 mov       ax, word ptr [bx+_seg_normalangles]
 
 mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
-mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_2+1], ax
+xchg      ax, si
 
 
+SELFMODIFY_set_viewanglesr3_1:
+mov       ax, 01000h
+;add       ah, 8  ; preadded
+sub       ax, si
+and       ah, FINE_ANGLE_HIGH_BYTE
+
+; set centerangle in rendersegloop
+mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
+
+
+xchg      ax, si
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl       ax, SHORTTOFINESHIFT
@@ -2692,7 +2712,8 @@ mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1], dx
 
 done_setting_rw_distance:
 les       di, dword ptr ds:[_ds_p]
-mov       ax, word ptr ds:[_curseg]
+SELFMODIFY_get_curseg_2:
+mov       ax, 01000h
 stos      word ptr es:[di]             ; +0
 
 mov       ax, word ptr [bp - 04Ch]
@@ -2707,6 +2728,7 @@ inc       ax
 mov       word ptr [bp - 03Ah], ax
 mov       ax, XTOVIEWANGLE_SEGMENT
 mov       bx, word ptr [bp - 04Ch]
+mov       cx, es  ; store ds_p+2
 mov       es, ax
 add       bx, bx
 SELFMODIFY_set_viewanglesr3_3:
@@ -2715,13 +2737,14 @@ add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
 mov       word ptr [bp - 032h], ax
 mov       word ptr [bp - 030h], dx
-mov       es, word ptr ds:[_ds_p+2]
+mov       es, cx ; restore es as ds_p+2
 stos      word ptr es:[di]             ; +6
 xchg      ax, dx
 stos      word ptr es:[di]             ; +8
 xchg      ax, dx                       ; put DX back; need it later.
-mov       cx, word ptr [bp - 04Eh]
-cmp       cx, word ptr [bp - 04Ch]
+mov       si, word ptr [bp - 04Eh]
+cmp       si, word ptr [bp - 04Ch]
+
 jg        stop_greater_than_start
 
 ; ds_p is es:di
@@ -2775,15 +2798,14 @@ xor dx, dx
 jmp div_done
 
 stop_greater_than_start:
-mov       si, cx
-add       si, cx
+sal       si, 1
 mov       ax, XTOVIEWANGLE_SEGMENT
 mov       es, ax
 SELFMODIFY_set_viewanglesr3_2:
 mov       ax, 01000h
 add       ax, word ptr es:[si]
 call      R_ScaleFromGlobalAngle_
-mov       es, word ptr ds:[_ds_p+2]
+mov       es, cx ; restore es as ds_p+2
 mov       bx, word ptr [bp - 04Eh]
 stos      word ptr es:[di]             ; +0Ah
 xchg      ax, dx
@@ -2822,7 +2844,7 @@ div_done:
 
 
 
-mov       es, word ptr ds:[_ds_p+2]
+mov       es, cx ; restore es as ds_p+2
 stos      word ptr es:[di]             ; +0Eh
 xchg      ax, dx
 stos      word ptr es:[di]             ; +10h
@@ -3036,15 +3058,16 @@ add       ax, cx
 done_with_bottom_peg:
 ; cx:ax has rw_midtexturemid
 
-mov       bx, ss   ; restore DS
-mov       ds, bx
-ASSUME DS:DGROUP
 
 
 SELFMODIFY_BSP_siderenderrowoffset_1:
 add       ax, 01000h
 
-mov       word ptr cs:[SELFMODIFY_set_midtexturemid_hi+1], ax
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_hi+1], ax
+
+mov       bx, ss   ; restore DS
+mov       ds, bx
+ASSUME DS:DGROUP
 
 
 les       bx, dword ptr ds:[_ds_p]
@@ -3107,15 +3130,16 @@ mov       ax, FINESINE_SEGMENT
 call      FixedMulTrigNoShiftBSPLocal_
 ; used later, dont change?
 ; dx:ax is rw_offset
+xchg      ax, dx
 jmp       done_with_offsetangle_stuff
 offsetangle_greater_than_fineang90:
-mov       ax, word ptr [bp - 018h]
-mov       dx, word ptr [bp - 01ah]
+les       dx, dword ptr [bp - 018h]
+mov       ax, es  ; bp - 01Ah
 
 
 
 done_with_offsetangle_stuff:
-; dx:ax is rw_offset
+; ax:dx is rw_offset
 
 xor       cx, cx
 SELFMODIFY_set_rw_normal_angle_shift3:
@@ -3128,31 +3152,26 @@ sbb       bx, word ptr [bp + 14h]   ; rw_angle hi from R_AddLine
 cmp       bx, ANG180_HIGHBITS
 jae       tempangle_not_smaller_than_fineang180
 ; bx is already _rw_offset
-neg       dx
 neg       ax
-sbb       dx, 0
+neg       dx
+sbb       ax, 0
 tempangle_not_smaller_than_fineang180:
 
 
 
 
-mov       bx, word ptr ds:[_curseg_render]
 SELFMODIFY_BSP_sidetextureoffset:
-add       dx, 01000h
-add       dx, word ptr [bx + 4]
+add       ax, 01000h
+SELFMODIFY_get_curseg_render_2:
+add       ax, word ptr ds:[01000h]
 ; rw_offset ready to be written to rendersegloop:
-mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1], ax
-mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1], dx
+mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1], dx
+mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1], ax
 
-SELFMODIFY_set_viewanglesr3_1:
-mov       ax, 01000h
-add       ah, 8
-SELFMODIFY_sub_rw_normal_angle_2:
-sub       ax, 01000h
-and       ah, FINE_ANGLE_HIGH_BYTE
 
-; set centerangle in rendersegloop
-mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
+
+
+
 
 
 SELFMODIFY_BSP_fixedcolormap_3:
@@ -3200,7 +3219,8 @@ jmp       done_setting_ax_to_wallights
 lightnum_greater_than_0:
 cmp       dx, LIGHTLEVELS
 jl        lightnum_less_than_lightlevels
-mov       ax, word ptr ds:[_lightmult48lookup + + (2 * (LIGHTLEVELS - 1))]
+; todo is this is hardcoded value?
+mov       ax, word ptr ds:[_lightmult48lookup + (2 * (LIGHTLEVELS - 1))]
 done_setting_ax_to_wallights:
 add       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
 
@@ -4243,6 +4263,8 @@ SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET:
 mov   al, 0 ; xoffset is 0
 mov   dx, SC_DATA  ; cheat this out of the loop..
 
+; todo try to put cs in ds here
+
 continue_outer_rendersegloop:
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET:
@@ -4315,10 +4337,10 @@ jl    pre_increment_values
 
 SELFMODIFY_cmp_di_to_rw_stopx_3:
 cmp   ax, 01000h   ; cmp   di, word ptr [bp - 03Ah]
-jl    jump_to_start_per_column_inner_loop
+jl    jump_to_start_per_column_inner_loop  ; 026hish out of range
 
 finish_outer_loop:
-; todo: self modifying code for step values.
+; self modifying code for step values.
 
 
 
@@ -5731,7 +5753,6 @@ back_floor_less_than_front_ceiling:
 ; worldhigh.w -= viewz.w;
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldlow, backsectorfloorheight);
 ; worldlow.w -= viewz.w;
-; TODO! viewz as constants in the function.
 
 mov       di, word ptr [bp - 042h]
 xor       si, si
@@ -5770,6 +5791,7 @@ sbb       cx, 01000h
 ; 	worldtop = worldhigh;
 ; }
 
+; todo skyflatnum should be a per level constant??
 mov       al, byte ptr ds:[_skyflatnum]
 cmp       al, byte ptr [bp - 5]
 jne       not_a_skyflat
@@ -5794,7 +5816,6 @@ cmp       cx, word ptr [bp - 034h]
 jne       set_markfloor_true
 cmp       bx, word ptr [bp - 036h]
 jne       set_markfloor_true
-; todo: use words
 mov       ax, word ptr [bp - 4]
 cmp       al, ah
 jne       set_markfloor_true
@@ -5884,6 +5905,11 @@ jne       toptexture_not_zero
 toptexture_zero:
 mov       word ptr cs:[SELFMODIFY_BSP_toptexture], ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
 jmp       toptexture_stuff_done
+set_toptexture_to_worldtop:
+mov       ax, word ptr [bp - 046h]
+mov       dx, word ptr [bp - 044h]
+jmp       do_selfmodify_toptexture
+
 toptexture_not_zero:
 mov       word ptr cs:[SELFMODIFY_BSP_toptexture], 0468Bh ; mov   ax, word ptr [bp - 02Dh] first two bytes
 ; are any bits set?
@@ -5909,24 +5935,20 @@ rcr       ax, 1
 sar       dx, 1
 rcr       ax, 1
 ;dx:ax are toptexturemid for now..
-mov       cx, TEXTUREHEIGHTS_SEGMENT
+mov       bx, TEXTUREHEIGHTS_SEGMENT
+mov       es, bx
 mov       bx, word ptr [bp - 014h]
-mov       es, cx
-xor       cx, cx
-mov       cl, byte ptr es:[bx]
-inc       cx
 
-add       dx, cx
+add       dl, byte ptr es:[bx]
+adc       dh, 0
+inc       dx
+
 SELFMODIFY_BSP_viewz_lo_1:
 sub       ax, 01000h
 SELFMODIFY_BSP_viewz_hi_1:
 sbb       dx, 01000h
 
-jmp       do_selfmodify_toptexture
 
-set_toptexture_to_worldtop:
-mov       ax, word ptr [bp - 046h]
-mov       dx, word ptr [bp - 044h]
 do_selfmodify_toptexture:
 ; set _rw_toptexturemid in rendersegloop
 
@@ -5946,8 +5968,8 @@ jbe       bottexture_zero
 setup_bottexture:
 mov       ax, TEXTURETRANSLATION_SEGMENT
 mov       bx, word ptr [bp - 016h]
+; preshifted
 mov       es, ax
-add       bx, bx
 mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
@@ -6256,73 +6278,70 @@ PW_INVISIBILITY = 02h
 
 ;void __near R_DrawPSprite (pspdef_t __near* psp, 
 
-; AX is pointer to pspdef_t
-; DX is spritenum
-; BX is frame
-; CX is vissprite_t ptr
+; BX is pointer to pspdef_t
+; AX is spritenum
+; CX is frame
+; SI is vissprite_t ptr
 
 PROC R_DrawPSprite_ NEAR
 PUBLIC R_DrawPSprite_ 
 
 
 ; bp - 2      frame (arg)
-; bp - 4      flip
-; bp - 6      UNUSED  (filtered out)
-; bp - 8      usedwidth
-; bp - 0Ah    tx    intbits
+; bp - 4      tx    fracbits
+; bp - 6      tx    intbits
+; bp - 8      psp
+; bp - 0Ah    flip
 ; bp - 0Ch    spriteindex
 ; bp - 0Eh    temp  intbits
-; bp - 010h   tx    fracbits
-; bp - 012h   psp
+; bp - 010h   usedwidth
 
 push  bp
 mov   bp, sp
-sub   sp, 010h
-push  ax
-mov   byte ptr [bp - 2], bl
-mov   si, cx
+push  cx   ; bp - 2
 
-xchg  ax, bx   ; bx gets ax (psp)
-xchg  ax, cx   ; cx gets old bx (frame)
-
-mov   ax, word ptr [bx + 4]       ; get psp->sx lo
-mov   word ptr [bp - 010h], ax
-mov   ax, word ptr [bx + 6]       ; get psp->sx hi
-mov   word ptr [bp - 0Ah], ax
-
-mov   al, dl
 xor   ah, ah
 mov   di, ax
-add   di, ax
+sal   ax, 1
 add   di, ax  ; shifted 3
+
+push  word ptr [bx + 4]         ; bp - 4  tx fracbits
+push  word ptr [bx + 6]         ; bp - 6  tx intbits
+push  bx                        ; bp - 8
+
 
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
-xchg  ax, cx   ; get old bl value (frame)
 
-and   al, FF_FRAMEMASK
-xor   ah, ah
-mov   cx, ax
+and   cx, FF_FRAMEMASK
 
 ; spriteframe_t is 25 bytes in size. get offset...
 
-sal   ax, 1  ; ax:2  cx:1
-sal   ax, 1  ; ax:4  cx:1
-add   ax, cx ; ax:5  cx:1
-mov   cx, ax ; ax:5  cx:5
-sal   ax, 1  ; ax:10 cx:5
-sal   ax, 1  ; ax:20 cx:5
-add   ax, cx ; ax:25 cx:5
+
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+imul  bx, cx, SIZEOF_SPRITEFRAME_T
+mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
+push  word ptr es:[bx + di + 010h]    ; 0Ah
+mov   bx, word ptr es:[di + bx]       ; get spriteindex
+
+ELSE
+mov   al, SIZEOF_SPRITEFRAME_T
+mul   cl
+mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
+add   di, ax
+push  word ptr es:[di + 010h]    ; 0Ah
+mov   bx, word ptr es:[di]       ; get spriteindex
+ENDIF
+
 
 
 ;	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[sprite].spriteframesOffset]);
 
-mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
-add   di, ax
-mov   bx, word ptr es:[di]        ; get spriteindex
-mov   al, byte ptr es:[di + 010h] ; get flip
-mov   word ptr [bp - 0Ch], bx     ; todo maybe get rid of.
-mov   byte ptr [bp - 4], al
+push  bx                         ; 0Ch
+sub   sp, 4
+
 mov   ax, SPRITEOFFSETS_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx] ; spriteoffsets[spriteindex]
@@ -6331,20 +6350,21 @@ SELFMODIFY_BSP_centerx_7:
 mov   di, 01000h
 
 ;	tx.h.intbits += spriteoffsets[spriteindex];
+sub   ax, 160;  -160 * fracunit
+add   word ptr [bp - 6], ax
 
-add   word ptr [bp - 0Ah], ax
-sub   word ptr [bp - 0Ah], 160   ;  -160 * fracunit
 SELFMODIFY_BSP_pspritescale_1:
-mov   ax, 01000h
+mov   bx, 01000h
 SELFMODIFY_BSP_pspritescale_1_AFTER = SELFMODIFY_BSP_pspritescale_1+2
 pspritescale_nonzero_1:
-mov   bx, word ptr [bp - 010h]
-mov   cx, word ptr [bp - 0Ah]
+mov   ax, word ptr [bp - 4]
 
 ; inlined FixedMul16u32_
-XCHG BX, AX    ; AX stored in BX
+
 MUL  BX        ; AX * BX
-MOV  AX, CX    ; CX to AX
+
+mov   ax, word ptr [bp - 6]
+
 MOV  CX, DX    ; CX stores low word
 CWD            ; S1 in DX
 AND  DX, BX    ; S1 * AX
@@ -6358,8 +6378,8 @@ adc   di, dx
 jmp   x1_calculcated
 SELFMODIFY_BSP_pspritescale_1_TARGET:
 pspritescale_zero_1:
-mov   ax, word ptr [bp - 010h]
-adc   di, word ptr [bp - 0Ah]
+mov   ax, word ptr [bp - 4]
+add   di, word ptr [bp - 6]
 x1_calculcated:
 mov   bx, word ptr [bp - 0Ch]
 mov   es, word ptr ds:[_spritewidths_segment]
@@ -6371,23 +6391,24 @@ jne   usedwidth_not_1_2
 mov   ax, 256     ; hardcoded special case value..  todo make constant
 
 usedwidth_not_1_2:
-mov   word ptr [bp - 8], ax
-add   word ptr [bp - 0Ah], ax
+mov   word ptr [bp - 010h], ax
+add   word ptr [bp - 6], ax
 SELFMODIFY_BSP_centerx_8:
 mov   di, 01000h
 
 SELFMODIFY_BSP_pspritescale_2:
-mov   ax, 01000h
+mov   bx, 01000h
 SELFMODIFY_BSP_pspritescale_2_AFTER = SELFMODIFY_BSP_pspritescale_2 + 2
 
 pspritescale_nonzero_2:
-mov   bx, word ptr [bp - 010h]
-mov   cx, word ptr [bp - 0Ah]
+mov   ax, word ptr [bp - 4]
 
-; inlined FixedMul16u32_
-XCHG BX, AX    ; AX stored in BX
+; inlined FixedMul16u32_ ; todo 32 bit version
+
 MUL  BX        ; AX * BX
-MOV  AX, CX    ; CX to AX
+
+mov  AX, word ptr [bp - 6] ; load cx into ax directly...
+
 MOV  CX, DX    ; CX stores low word
 CWD            ; S1 in DX
 AND  DX, BX    ; S1 * AX
@@ -6402,9 +6423,9 @@ jmp   x2_calculcated
 
 SELFMODIFY_BSP_pspritescale_2_TARGET:
 pspritescale_zero_2:
-mov   ax, word ptr [bp - 010h]
-add   di, word ptr [bp - 0Ah]
-jmp   x2_calculcated
+mov   ax, word ptr [bp - 4]
+add   di, word ptr [bp - 6]
+
 
 x2_calculcated:
 mov   ax, SPRITETOPOFFSETS_SEGMENT
@@ -6425,9 +6446,9 @@ jne   tempbits_not_minus128
 mov   di, 129   ; hack to fit data in 8 bits
 
 tempbits_not_minus128:
-mov   bx, word ptr [bp - 012h]
-mov   ax, word ptr [bx + 8]
-mov   cx, word ptr [bx + 0Ah]
+mov   bx, word ptr [bp - 8]
+les   ax, dword ptr [bx + 8]
+mov   cx, es
 mov   bx, FRACUNIT_OVER_2
 sbb   cx, di
 sub   bx, ax
@@ -6489,7 +6510,7 @@ mov   bx, 01000h
 SELFMODIFY_BSP_pspriteiscale_hi_1:
 mov   cx, 01000h
 
-cmp   byte ptr [bp - 4], 0       ; check flip
+cmp   byte ptr [bp - 0Ah], 0       ; check flip
 jne   flip_on
 
 flip_off:
@@ -6507,7 +6528,7 @@ sbb   cx, 0
 
 ; mov ax, 0; add ax, -1; adc di, -1 optimized 
 
-mov   ax, word ptr [bp - 8]
+mov   ax, word ptr [bp - 010h]
 dec   ax
 mov   word ptr [si + 016h], -1
 mov   word ptr [si + 018h], ax
@@ -6588,7 +6609,6 @@ mov   ax, SCALELIGHTFIXED_SEGMENT
 mov   bx, word ptr ds:[_spritelights]  ; todo remove when prepare... func is in asm
 mov   es, ax
 mov   al, byte ptr es:[bx + (MAXLIGHTSCALE-1)]
-add   bx, (MAXLIGHTSCALE-1)                      ; todo necessary?
 mov   byte ptr [si + 1], al
 LEAVE_MACRO
 ret   
@@ -6650,15 +6670,13 @@ first_iter:
 mov   bx, word ptr ds:[_psprites]
 cmp   bx, STATENUM_NULL
 je    sprite_1_null
-add   bx, bx
+sal   bx, 1
 mov   ax, STATES_RENDER_SEGMENT
-mov   cx, OFFSET _player_vissprites
 mov   es, ax
-mov   ax, OFFSET _psprites
-mov   dl, byte ptr es:[bx]
-mov   bl, byte ptr es:[bx+1]
-xor   bh, bh
-xor   dh, dh
+mov   si, OFFSET _player_vissprites
+mov   ax, word ptr es:[bx]
+mov   cl, ah
+mov   bx, OFFSET _psprites
 call  R_DrawPSprite_
 sprite_1_null:
 
@@ -6667,15 +6685,13 @@ second_iter:
 mov   bx, word ptr ds:[_psprites + 0Ch]
 cmp   bx, -1
 je    sprite_2_null
-add   bx, bx
+sal   bx, 1
 mov   ax, STATES_RENDER_SEGMENT
-mov   cx, OFFSET _player_vissprites + 028h
 mov   es, ax
-mov   ax, OFFSET _psprites + 0Ch
-mov   dl, byte ptr es:[bx]
-mov   bl, byte ptr es:[bx+1]
-xor   bh, bh
-xor   dh, dh
+mov   si, OFFSET _player_vissprites + 028h
+mov   ax, word ptr es:[bx]
+mov   cl, ah
+mov   bx, OFFSET _psprites + 0Ch
 call  R_DrawPSprite_
 sprite_2_null:
 
@@ -7298,7 +7314,7 @@ mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+2], ah
 ; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
 
 cmp      al, 1
-jb       jump_to_set_to_zero
+jb       jump_to_set_to_zero ; 19h bytesish out of range.
 je       set_to_one
 jmp      set_to_two
 jump_to_set_to_zero:
@@ -7505,10 +7521,10 @@ je       pspritescale_zero_selfmodifies
 mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_3+1], ax
-mov      al, 0B8h
+mov      al, 0BBh  ; mov bx, imm16
 mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_1], al
 mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_2], al
-mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_3], al
+mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_3], 0B8h
 jmp      done_with_pspritescale_zero_selfmodifies
 pspritescale_zero_selfmodifies:
 
@@ -7695,11 +7711,14 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_6+1], ax
 
 
 mov      ax, word ptr ss:[_viewangle_shiftright3]
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_1+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_2+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_3+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_4+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_5+2], ax
+
+add      ah, 8
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_1+1], ax
+
 
 mov      ax, word ptr ss:[_viewangle_shiftright1]
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_1+1], ax
