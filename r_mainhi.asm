@@ -701,8 +701,8 @@ shr   bx, 1
 and   bl, 0FCh
 mov   es, ax
 mov   ax, si
-mov   cx, word ptr es:[bx + 2]
-mov   bx, word ptr es:[bx]
+les   bx, dword ptr es:[bx]
+mov   cx, es
 call  FixedDivBSPLocal_
 
 pop   di
@@ -766,8 +766,8 @@ mov   ax, FINECOSINE_SEGMENT
 mov   es, ax
 
 
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
+les   ax, dword ptr es:[di]
+mov   dx, es
 xor   bx, bx
 
 call FixedDivBSPLocal_  ; TODO! FixedDivWholeB? Optimize?
@@ -778,8 +778,8 @@ mov   ax, FINESINE_SEGMENT
 mov   es, ax
 SELFMODIFY_BSP_centerx_3:
 mov   cx, 01000h
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
+les   ax, dword ptr es:[di]
+mov   dx, es
 xor   bx, bx
 call FixedDivBSPLocal_  ; TODO! FixedDivWholeB? Optimize?
 neg   dx
@@ -1120,7 +1120,7 @@ mov   word ptr [bp - 4], dx
 mov   si, word ptr [bx + 6]
 shl   dx, 1
 shl   dx, 1
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 shl   si, 3
 ELSE
 shl   si, 1
@@ -1130,21 +1130,22 @@ ENDIF
 
 mov   word ptr [bp - 0Ah], dx
 mov   word ptr [bp - 0Ch], si
-mov   si, word ptr [bx]       ;v1
-mov   dx, VERTEXES_SEGMENT
+les   si, dword ptr [bx]       ;v1
+mov   di, es                   ;v2
+mov   cx, VERTEXES_SEGMENT
 shl   si, 1
 shl   si, 1
-mov   es, dx
+mov   es, cx
 mov   word ptr cs:[SELFMODIFY_get_curseg_2 + 1], ax
 sal   ax, 1
 mov   word ptr cs:[SELFMODIFY_get_curseg_1 + 1], ax ; preshift
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
-mov   si, word ptr [bx + 2]
-shl   si, 1
-shl   si, 1
-mov   di, word ptr es:[si]       ; v2.x
-mov   cx, word ptr es:[si + 2]   ; v2.y
+les   ax, dword ptr es:[si]
+mov   dx, es
+shl   di, 1
+shl   di, 1
+mov   es, cx
+les   di, dword ptr es:[di]       ; v2.x
+mov   cx, es   ; v2.y
 mov   word ptr cs:[SELFMODIFY_get_curseg_render_1 + 1], bx
 add   bx, 4
 mov   word ptr cs:[SELFMODIFY_get_curseg_render_2 + 2], bx ; todo can we store ahead the lookup instead of the ptr
@@ -1178,12 +1179,11 @@ SELFMODIFY_BSP_viewangle_hi_1:
 sbb   bx, 01000h
 
 SELFMODIFY_BSP_clipangle_4:
-mov   ax, 01000h
+lea   ax, [bx + 01000h]
 SELFMODIFY_BSP_viewangle_lo_2:
 sub   di, 01000h
 SELFMODIFY_BSP_viewangle_hi_2:
 sbb   dx, 01000h
-add   ax, bx
 SELFMODIFY_BSP_fieldofview_1:
 cmp   ax, 01000h
 jbe   done_checking_left
@@ -1274,8 +1274,8 @@ add   bx, word ptr [bp - 0Ah]
 mov   bx, word ptr es:[bx]
 shl   bx, 1
 shl   bx, 1
-add   bx, _sides_render + 2    ; secnum field in this side_render_t
-mov   si, word ptr [bx]
+    ; secnum field in this side_render_t
+mov   si, word ptr ds:[bx + _sides_render + 2]
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shl   si, 4
 ELSE
@@ -1677,6 +1677,7 @@ sal       bx, 1   ; bx is 2 per index
 
 ; dx/ax is plheader->height
 ; done with old plheader..
+
 mov       ax, word ptr ds:[di]
 mov       dx, word ptr ds:[di + 2]
 
@@ -3465,9 +3466,9 @@ je        dont_mark_ceiling
 mov       cx, 1
 SELFMODIFY_set_ceilingplaneindex:
 mov       ax, 0FFFFh
-mov       bx, word ptr [bp - 01Ah]  ; todo les
+les       bx, dword ptr [bp - 01Ah]
+mov       dx, es
 dec       bx
-mov       dx, word ptr [bp - 018h]    ; rw_x
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1], ax
 dont_mark_ceiling:
@@ -3477,9 +3478,9 @@ je        dont_mark_floor
 xor       cx, cx
 SELFMODIFY_set_floorplaneindex:
 mov       ax, 0FFFFh
-mov       bx, word ptr [bp - 01Ah]  ; todo les
+les       bx, dword ptr [bp - 01Ah]
+mov       dx, es
 dec       bx
-mov       dx, word ptr [bp - 018h]   ; rw_x
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_floorplaneindex+1], ax
 dont_mark_floor:
@@ -4641,8 +4642,8 @@ neg   bx
 add   bx, 4095
 shl   bx, 1
 shl   bx, 1
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
+les   ax, dword ptr es:[bx]
+mov   dx, es
 neg   dx
 neg   ax
 sbb   dx, 0
@@ -4654,8 +4655,8 @@ jmp   seg_non_textured
 non_subtracted_finetangent:
 shl   bx, 1
 shl   bx, 1
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
+les   ax, dword ptr es:[bx]
+mov   dx, es
 finetangent_ready:
 ; calculate texture column
 SELFMODIFY_set_bx_rw_distance_lo:
@@ -6746,25 +6747,21 @@ PUBLIC R_PointToAngle16_
 
 ; todo reorder params?
 
-push bx
-push cx
 mov  cx, dx
 mov  dx, ax
-xor  ax, ax
+xor  ax, ax ; todo maybe just insert negative? does sbb work tho?
+mov  bx, ax
 SELFMODIFY_BSP_viewx_lo_5:
 sub  ax, 01000h
 SELFMODIFY_BSP_viewx_hi_5:
 sbb  dx, 01000h
-xor  bx, bx
 SELFMODIFY_BSP_viewy_lo_5:
 sub  bx, 01000h
 SELFMODIFY_BSP_viewy_hi_5:
 sbb  cx, 01000h
-mov  bx, bx
+
 
 call R_PointToAngle_
-pop  cx
-pop  bx
 
 
 ret  
@@ -6781,6 +6778,8 @@ dw R_CBB_SWITCH_CASE_08, R_CBB_SWITCH_CASE_09, R_CBB_SWITCH_CASE_10
 
 PROC R_CheckBBox_ NEAR
 PUBLIC R_CheckBBox_ 
+
+; todo should this inline in R_RenderBSPNode_? used once...
 
 ; jmp table for switch block.... 
 
@@ -6869,57 +6868,69 @@ pop   cx
 pop   bx
 ret   
 R_CBB_SWITCH_CASE_00:
-mov   ax, word ptr es:[bx + 6]
-mov   si, word ptr es:[bx + 4]
+; dx
+; di
+; si
+; ax
+mov   ax, es
 
-mov   dx, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 2]
+les   dx, dword ptr es:[bx]
+mov   di, es
+
+mov   es, ax
+les   si, dword ptr es:[bx + 4]
+mov   ax, es
 
 
 R_CBB_SWITCH_CASE_05:  ; unused
 boxpos_switchblock_done:
 ;	angle1.wu = R_PointToAngle16(x1, y1) - viewangle.wu;
 
+; di holds 
 call  R_PointToAngle16_
 SELFMODIFY_BSP_viewangle_lo_3:
 sub   ax, 01000h
 SELFMODIFY_BSP_viewangle_hi_3:
 sbb   dx, 01000h
 ;di:bx stores angle1
-mov   bx, ax      ; bx ptr unused at this point; cache ax in it
-mov   di, dx      ; cache dx
+
+xchg  ax, si
+xchg  dx, di      ; cache dx/angle1 intbits. retrieve old cx
 
 ;	angle2.wu = R_PointToAngle16(x2, y2) - viewangle.wu;
 
-mov   ax, si
-mov   dx, cx
 call  R_PointToAngle16_
 ;cx:si stores angle2
-mov   si, ax
+; di:si is angle1 currently
+; ax:dx will be dspan
+
+; todo/swap cx/dx roles. this mov doesnt have to happen.
 mov   cx, dx
-mov   ax, bx
-mov   dx, bx      ; cache angle1 fracbits in dx
+mov   dx, si
+
 SELFMODIFY_BSP_viewangle_lo_4:
-sub   si, 01000h
+sub   ax, 01000h
 SELFMODIFY_BSP_viewangle_hi_4:
 sbb   cx, 01000h
 
-;	span.wu = angle1.wu - angle2.wu;
-; bx:ax is span
-; eventually bx:si
+mov   word ptr cs:[SELFMODIFY_BSP_forward_angle2_lobits+1], ax
 
-sub   ax, si
-mov   bx, di
+
+
+;	span.wu = angle1.wu - angle2.wu;
+; bx:si becomes span
+
+sub   si, ax
+mov   bx, di      ; angle1 intbits
 sbb   bx, cx
 
-mov   word ptr cs:[SELFMODIFY_BSP_forward_angle2_lobits+1], si
 
 ;	// Sitting on a line?
 ;	if (span.hu.intbits >= ANG180_HIGHBITS){
 ;		return true;
 ;	}
 
-mov   si, ax   ; span low bits in si
+; span low bits are in si
 cmp   bx, ANG180_HIGHBITS
 jae   return_1
 
@@ -6928,8 +6939,8 @@ jae   return_1
 
 
 SELFMODIFY_BSP_clipangle_7:
-mov   ax, 01000h
-add   ax, di
+lea   ax, [di + 01000h]
+
 
 ; ax:dx is tspan.
 
@@ -7064,53 +7075,96 @@ ret
 
 
 R_CBB_SWITCH_CASE_01:
-mov   ax, word ptr es:[bx + 6]
-mov   cx, word ptr es:[bx]
-mov   si, word ptr es:[bx + 4]
-mov   dx, cx
+; di dx
+; 
+; si
+; ax
+mov   di, word ptr es:[bx]
+mov   dx, di
+
+les   si, dword ptr es:[bx+4]
+mov   ax, es
+
+
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_02:
-mov   ax, word ptr es:[bx + 6]
-mov   si, word ptr es:[bx + 4]
-mov   dx, word ptr es:[bx + 2]
-mov   cx, word ptr es:[bx]
+
+; di 
+; dx
+; si
+; ax
+mov   ax, es
+les   di, dword ptr es:[bx]
+mov   dx, es
+mov   es, ax
+les   si, dword ptr es:[bx+4]
+mov   ax, es
+
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_03:
 R_CBB_SWITCH_CASE_07:
-mov   cx, word ptr es:[bx]
-mov   dx, cx
-mov   si, cx
-mov   ax, cx
+; di dx si ax
+mov   di, word ptr es:[bx]
+mov   dx, di
+mov   si, di
+mov   ax, di
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_04:
+; di 
+; dx
+; si ax
+;
 mov   si, word ptr es:[bx + 4]
-mov   dx, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 2]
 mov   ax, si
+les   dx, dword ptr es:[bx]
+mov   di, es
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_06:
+; di
+; dx
+;
+; si ax
 mov   si, word ptr es:[bx + 6]
-mov   dx, word ptr es:[bx + 2]
-mov   cx, word ptr es:[bx]
 mov   ax, si
+les   di, dword ptr es:[bx]
+mov   dx, es
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_08:
-mov   ax, word ptr es:[bx + 4]
-mov   si, word ptr es:[bx + 6]
-mov   dx, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 2]
+; dx
+; di
+; ax
+; si
+mov   ax, es
+les   dx, dword ptr es:[bx]
+mov   di, es
+mov   es, ax
+les   ax, dword ptr es:[bx+4]
+mov   si, es
+
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_09:
-mov   ax, word ptr es:[bx + 4]
-mov   cx, word ptr es:[bx + 2]
-mov   si, word ptr es:[bx + 6]
-mov   dx, cx
+;
+; di dx
+; ax
+; si
+mov   di, word ptr es:[bx + 2]
+mov   dx, di
+les   ax, dword ptr es:[bx+4]
+mov   si, es
+
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_10:
-mov   ax, word ptr es:[bx + 4]
-mov   si, word ptr es:[bx + 6]
-mov   dx, word ptr es:[bx + 2]
-mov   cx, word ptr es:[bx]
+; di
+; dx
+; ax
+; si
+mov   ax, es
+les   di, dword ptr es:[bx]
+mov   dx, es
+mov   es, ax
+les   ax, dword ptr es:[bx+4]
+mov   si, es
+
 jmp   boxpos_switchblock_done
 
 ENDP
@@ -7753,7 +7807,7 @@ mov      ax, word ptr ss:[_viewangle]
 mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_3+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_4+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_4+1], ax
 mov      ax, word ptr ss:[_viewangle+2]
 mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_2+2], ax
@@ -7774,10 +7828,10 @@ mov      ax, word ptr ss:[_clipangle]
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_2+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_3+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_4+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_4+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_5+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_6+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_7+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_7+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_8+1], ax
 
 
