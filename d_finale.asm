@@ -106,8 +106,7 @@ mov   cx, si
 test  di, di
 jle   exit_drawpatchflipped
 dec   di
-shl   di, 1
-shl   di, 1
+SHIFT_MACRO shl di 2
 mov   dx, di
 mov   ax, SCREEN0_SEGMENT
 mov   es, ax    ; for movsw
@@ -533,8 +532,7 @@ dw _Z_QuickMapRender7000_addr
 mov   al, byte ptr [bp - 4]
 xor   ah, ah
 mov   bx, ax
-shl   bx, 1
-shl   bx, 1
+SHIFT_MACRO shl bx 2
 sub   bx, ax
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
@@ -946,8 +944,7 @@ jl    xcoord_ready
 jmp   calculate_xcoord
 xcoord_ready:
 mov   bx, word ptr [bp - 8]
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 mov   es, word ptr [bp - 0Eh]
 add   bx, ax
 mov   ax, word ptr es:[bx + 8]
@@ -1258,8 +1255,7 @@ xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 sub   ax, dx
 
 add   ax, ax
@@ -1284,8 +1280,7 @@ xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 sub   ax, dx
 add   ax, ax
 mov   word ptr ds:[_caststate], ax
@@ -1312,8 +1307,7 @@ xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 sub   ax, dx
 mov   dx, word ptr ds:[_caststate]
 add   ax, ax
@@ -1331,8 +1325,7 @@ jmp   stopattack
 do_next_state:
 mov   ax, word ptr es:[bx + 4]
 mov   dx, ax
-shl   dx, 1
-shl   dx, 1
+SHIFT_MACRO shl ax 2
 sub   dx, ax
 add   dx, dx
 inc   byte ptr ds:[_castframes]
@@ -1502,8 +1495,7 @@ dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
 
 got_state:
 mov   dx, ax
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 sub   ax, dx
 add   ax, ax
 mov   word ptr ds:[_caststate], ax
@@ -1523,8 +1515,7 @@ xor   ah, ah
 db    09Ah
 dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
 mov   dx, ax
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 sub   ax, dx
 add   ax, ax
 
@@ -1550,8 +1541,7 @@ db    09Ah
 dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
 
 mov   dx, ax
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 sub   ax, dx
 add   ax, ax
 
@@ -1590,8 +1580,7 @@ db    09Ah
 dw    GETDEATHSTATEADDR, INFOFUNCLOADSEGMENT
 
 mov   bx, ax
-shl   bx, 1
-shl   bx, 1
+SHIFT_MACRO shl bx 2
 sub   bx, ax
 mov   ax, STATES_SEGMENT
 add   bx, bx
@@ -1680,8 +1669,7 @@ db 01Eh  ;
 dw _locallib_strlen_addr
 
 mov   dx, ax
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 sub   ax, dx
 add   ax, TEXTWAIT
 cmp   ax, word ptr ds:[_finalecount]

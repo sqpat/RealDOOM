@@ -701,9 +701,7 @@ mov       bp, sp
 sub       sp, 6
 cbw      
 mov       si, OFFSET _localcmds
-shl       ax, 1
-shl       ax, 1
-shl       ax, 1
+SHIFT_MACRO shl ax 3
 add       si, ax
 mov       di, si
 xor       ax, ax
@@ -799,8 +797,7 @@ handle_strafe_right:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 1
-shl       bx, 1
+SHIFT_MACRO shl bx 2
 add       cx, word ptr [bx + _sidemove]
 adc       di, word ptr [bx + _sidemove+2]
 handle_checking_strafe_left:
@@ -812,8 +809,7 @@ handle_strafe_left:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 1
-shl       bx, 1
+SHIFT_MACRO shl bx 2
 sub       cx, word ptr [bx + _sidemove]
 sbb       di, word ptr [bx + _sidemove+2]
 done_handling_strafe:
@@ -825,8 +821,7 @@ up_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 1
-shl       bx, 1
+SHIFT_MACRO shl bx 2
 mov       ax, word ptr [bx + _forwardmove]
 add       word ptr [bp - 4], ax
 mov       ax, word ptr [bx + _forwardmove+2]
@@ -840,8 +835,7 @@ down_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 1
-shl       bx, 1
+SHIFT_MACRO shl bx 2
 mov       ax, word ptr [bx + _forwardmove]
 sub       word ptr [bp - 4], ax
 mov       ax, word ptr [bx + _forwardmove+2]
@@ -855,8 +849,7 @@ straferight_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 1
-shl       bx, 1
+SHIFT_MACRO shl bx 2
 add       cx, word ptr [bx + _sidemove]
 adc       di, word ptr [bx + _sidemove+2]
 straferight_not_pressed:
@@ -868,8 +861,7 @@ strafeleft_pressed:
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 1
-shl       bx, 1
+SHIFT_MACRO shl bx 2
 sub       cx, word ptr [bx + _sidemove]
 sbb       di, word ptr [bx + _sidemove]
 strafeleft_not_pressed:
@@ -915,9 +907,7 @@ jmp       done_handling_use
 handle_weapon_change:
 mov       al, dl
 or        byte ptr cs:[si + 7], BT_CHANGE
-shl       al, 1
-shl       al, 1
-shl       al, 1
+SHIFT_MACRO shl al 3
 or        byte ptr cs:[si + 7], al
 done_checking_weapons:
 mov       al, byte ptr [_mousebforward]
@@ -929,8 +919,7 @@ je        mouse_forward_not_pressed
 mov       al, dh
 cbw      
 mov       bx, ax
-shl       bx, 1
-shl       bx, 1
+SHIFT_MACRO shl bx 2
 mov       ax, word ptr [bx + _forwardmove]
 add       word ptr [bp - 4], ax
 mov       ax, word ptr [bx + _forwardmove+2]
@@ -970,9 +959,7 @@ mov       word ptr [_dclicktime2], ax
 jmp       done_handling_mouse_strafe
 strafe_on_add_mousex:
 mov       ax, word ptr [_mousex]
-shl       ax, 1
-shl       ax, 1
-shl       ax, 1
+SHIFT_MACRO shl ax 3
 sub       word ptr cs:[si + 2], ax
 jmp       done_handling_mousex
 
@@ -1055,8 +1042,8 @@ jmp       overwrite_forwardmove
 
 handle_save_press:
 mov       al, byte ptr [_savegameslot]
-shl       al, 1
-shl       al, 1 ;; BTS_SAVESHIFT
+SHIFT_MACRO shl al 2
+;; BTS_SAVESHIFT
 or        al, (BT_SPECIAL OR BTS_SAVEGAME)
 mov       byte ptr [_sendsave], 0
 mov       byte ptr cs:[si + 7], al
@@ -1301,10 +1288,7 @@ je    shift4_write_word
 mov   byte ptr [si], al
 jmp   wrote_byte
 shift4_write_word:
-sal   ax, 1
-sal   ax, 1
-sal   ax, 1
-sal   ax, 1
+SHIFT_MACRO shl ax 4
 mov   word ptr [si], ax
 wrote_byte:
 loop  loop_set_default_values

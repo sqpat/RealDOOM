@@ -270,8 +270,7 @@ loop_channels_find_oldest:
 mov       bl, al
 xor       bh, bh
 
-shl       bx, 1
-shl       bx, 1
+SHIFT_MACRO shl bx 2
 cmp       dx, word ptr cs:[bx + 2 + _miditime - OFFSET SM_SBMID_STARTMARKER_]
 ja        update_time_oldest
 jne       inc_loop_channels_find_oldest
@@ -445,7 +444,6 @@ retf
 
 
 PROC  MIDIplayNote_SBMID_    FAR
-PUBLIC  MIDIplayNote_SBMID_
 
 push      cx
 push      si
@@ -539,7 +537,6 @@ retf
 ENDP
 
 PROC  MIDIreleaseNote_SBMID_    FAR
-PUBLIC  MIDIreleaseNote_SBMID_
 
 push      cx
 push      si
@@ -588,7 +585,6 @@ retf
 ENDP
 
 PROC  MIDIpitchWheel_SBMID_    FAR
-PUBLIC  MIDIpitchWheel_SBMID_
 
 push      cx
 push      si
@@ -634,7 +630,6 @@ retf
 ENDP
 
 PROC  MIDIchangeControl_SBMID_    FAR
-PUBLIC  MIDIchangeControl_SBMID_
 
 
 push      cx
@@ -734,7 +729,6 @@ DUMMY_BASE_CONTROLLER_VALUES:
 db 0, 0, 0, 127, 64, 127, 0, 0, 0, 0, 0, DEFAULT_PITCH_BEND, 0FFh
 
 PROC  MIDIplayMusic_SBMID_    FAR
-PUBLIC  MIDIplayMusic_SBMID_
 
 ;    FAR_memset((void __far*) (mididriverData->percussions), 0, sizeof(uint8_t) * (128/8));
 
@@ -799,12 +793,10 @@ ENDP
 
 
 PROC  MIDIpauseMusic_SBMID_    FAR
-PUBLIC  MIDIpauseMusic_SBMID_
 ENDP
 ; just calls stop music, fall thru
 
 PROC  MIDIstopMusic_SBMID_    FAR
-PUBLIC  MIDIstopMusic_SBMID_
 
 
 push      bx
@@ -870,7 +862,6 @@ jmp       inc_loop_stop_channels
 
 
 PROC MIDIchangeSystemVolume_SBMID_  FAR
-PUBLIC MIDIchangeSystemVolume_SBMID_
 
 cmp       byte ptr ds:[_playingstate], 2
 je        actually_change_system_volume
@@ -931,7 +922,6 @@ ENDP
 
 
 PROC  MIDIresumeMusic_SBMID_    FAR
-PUBLIC  MIDIresumeMusic_SBMID_
 
 
 retf    
@@ -941,7 +931,6 @@ ENDP
 
 
 PROC  MIDIinitDriver_SBMID_    FAR
-PUBLIC  MIDIinitDriver_SBMID_
 
 push      cx
 push      di
@@ -974,7 +963,6 @@ DSP_WRITE_DATA    = 0Ch
 DSP_DATA_AVAIL    = 0Eh
 
 PROC  SBMIDIsendByte_    NEAR
-PUBLIC  SBMIDIsendByte_
 
 push      bx
 push      dx
@@ -1024,7 +1012,6 @@ ENDP
 
 
 PROC  SBMIDIsendBlock_    NEAR
-PUBLIC  SBMIDIsendBlock_
 
 push      bx
 mov       bx, ax
@@ -1052,7 +1039,6 @@ ret
 ENDP
 
 PROC  SBMIDIsendMIDI_    NEAR
-PUBLIC  SBMIDIsendMIDI_
 
 mov       dh, dl
 mov       dl, al
@@ -1088,7 +1074,6 @@ ret
 ENDP
 
 PROC  SBMIDIdetectHardware_    FAR
-PUBLIC  SBMIDIdetectHardware_
 
 mov       byte ptr cs:[_runningStatus - OFFSET SM_SBMID_STARTMARKER_], 0
 mov       al, 1
@@ -1097,13 +1082,11 @@ retf
 ENDP
 
 PROC  SBMIDIinitHardware_    FAR
-PUBLIC  SBMIDIinitHardware_
 
 mov       word ptr cs:[_SBMIDIport - OFFSET SM_SBMID_STARTMARKER_], ax
 ENDP
 
 PROC  SBMIDIdeinitHardware_    FAR
-PUBLIC  SBMIDIdeinitHardware_
 
 xor       al, al
 mov       byte ptr cs:[_runningStatus - OFFSET SM_SBMID_STARTMARKER_], al

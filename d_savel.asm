@@ -236,15 +236,11 @@ xor   di, di
 load_next_sector:
 
 lodsw           
-shl   ax, 1
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 3
 stosw           ; 00 -> 00
 
 lodsw           
-shl   ax, 1
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 3
 stosw           ; 02 -> 02
 
 lodsw
@@ -338,8 +334,7 @@ je    skip_side
 
 mov   ax, SIDES_RENDER_9000_SEGMENT
 mov   es, ax
-sal   bx, 1
-sal   bx, 1  ; 4 bytes per.
+SHIFT_MACRO shl bx 2
 
 push  dx
 lodsw 
@@ -689,10 +684,7 @@ dw _P_SetThingPosition_addr
 mov       bx, word ptr [di + 4]            ; get mobj secnum
 mov       ax, SECTORS_SEGMENT
 mov       es, ax
-shl       bx, 1
-shl       bx, 1
-shl       bx, 1
-shl       bx, 1
+SHIFT_MACRO shl bx 4
 mov       ax, word ptr es:[bx]
 mov       word ptr [di + 6], ax              ; floorz
 mov       ax, word ptr es:[bx + 2]
@@ -1489,8 +1481,7 @@ stosw                           ; tag
 mov   ax, LINES_SEGMENT
 mov   ds, ax
 mov   bx, dx
-sal   bx, 1
-sal   bx, 1                     ; 4 bytes per line 
+SHIFT_MACRO shl bx 2
 
 mov   ax, word ptr ds:[bx]      ; side1
 mov   bx, word ptr ds:[bx+2]    ; side2
@@ -1501,8 +1492,7 @@ check_next_side:
 cmp   ax, -1
 je    done_checking_side
 
-sal   ax, 1
-sal   ax, 1     ; 4 per side_render
+SHIFT_MACRO shl ax 2
 
 xchg  si, ax    ; shove this in si
 
@@ -1962,11 +1952,10 @@ je        iterate_to_next_special
 
 
 
-rol       ax, 1
-rol       ax, 1
-rol       ax, 1
-rol       ax, 1
-rol       ax, 1  ; put func bits (most sig 5) into least sig bits
+SHIFT_MACRO rol ax 5
+
+
+; put func bits (most sig 5) into least sig bits
 
 cmp       ax, 10  ; funcbits too large or delete_me case
 jge       iterate_to_next_special

@@ -46,11 +46,10 @@ cmp   ax, 0800h
 jae   octant_6_out_of_bounds
 
 mov   es, word ptr ds:[_tantoangle]
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 mov   bx, ax
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
+les   ax, dword ptr es:[bx]
+mov   dx, es
 add   dx, 0c000h
 
 retf  
@@ -100,11 +99,10 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_7_out_of_bounds
 mov   es, word ptr ds:[_tantoangle]
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 mov   bx, ax
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
+les   ax, dword ptr es:[bx]
+mov   dx, es
 neg   dx
 neg   ax
 sbb   dx, 0
@@ -191,12 +189,10 @@ cmp   ax, 0800h
 jae   octant_0_out_of_bounds
 
 mov   es, word ptr ds:[_tantoangle]
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 mov   bx, ax
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
-
+les   ax, dword ptr es:[bx]
+mov   dx, es
 retf  
 
 
@@ -216,8 +212,7 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_1_out_of_bounds
 mov   es, word ptr ds:[_tantoangle]
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 mov   bx, ax
 mov   ax, 0ffffh
 sub   ax, word ptr es:[bx]
@@ -264,8 +259,7 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_3_out_of_bounds
 mov   es, word ptr ds:[_tantoangle]
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 mov   bx, ax
 mov   ax, 0ffffh
 sub   ax, word ptr es:[bx]
@@ -289,11 +283,10 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_2_out_of_bounds
 mov   es, word ptr ds:[_tantoangle]
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 mov   bx, ax
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
+les   ax, dword ptr es:[bx]
+mov   dx, es
 add   dx, 04000h
 
 retf  
@@ -327,11 +320,10 @@ cmp   ax, 0800h
 jae   octant_4_out_of_bounds
 
 mov   es, word ptr ds:[_tantoangle]
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 mov   bx, ax
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
+les   ax, dword ptr es:[bx]
+mov   dx, es
 add   dx, 08000h
 
 retf  
@@ -352,8 +344,7 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_5_out_of_bounds
 mov   es, word ptr ds:[_tantoangle]
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 mov   bx, ax
 mov   ax, 0ffffh
 sub   ax, word ptr es:[bx]

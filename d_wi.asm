@@ -404,11 +404,9 @@ push      di
 
 ;	y += (5 * (lname->height)) >>2;
 mov       dx, si
-shl       dx, 1
-shl       dx, 1
+SHIFT_MACRO shl dx 2
 add       dx, si		; 5 * height
-sar       dx, 1
-sar       dx, 1
+SHIFT_MACRO sar dx 2
 inc       dx			; += original 2
 inc       dx			; += original 2
 
@@ -464,13 +462,11 @@ mov       es, ax
 mov       dx, word ptr es:[bx + 2]
 mov       ax, dx
 push      es
-shl       ax, 1
-shl       ax, 1
+SHIFT_MACRO shl ax 2
 push      bx
 add       dx, ax
 mov       ax, SCREENWIDTH
-sar       dx, 1
-sar       dx, 1
+SHIFT_MACRO sar dx 2
 sub       ax, word ptr es:[bx]
 add       dx, 2
 sar       ax, 1
@@ -1507,8 +1503,7 @@ mov   si, ax
 mov   es, dx
 mov   dx, word ptr es:[si + 2]
 mov   ax, dx
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 sub   ax, dx
 cwd   
 sub   ax, dx

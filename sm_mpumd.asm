@@ -277,8 +277,7 @@ loop_channels_find_oldest:
 mov       bl, al
 xor       bh, bh
 
-shl       bx, 1
-shl       bx, 1
+SHIFT_MACRO shl bx 2
 cmp       dx, word ptr cs:[bx + 2 + _miditime - OFFSET SM_MPUMD_STARTMARKER_]
 ja        update_time_oldest
 jne       inc_loop_channels_find_oldest
@@ -452,7 +451,6 @@ retf
 
 
 PROC  MIDIplayNote_MPU401_    FAR
-PUBLIC  MIDIplayNote_MPU401_
 
 push      cx
 push      si
@@ -546,7 +544,6 @@ retf
 ENDP
 
 PROC  MIDIreleaseNote_MPU401_    FAR
-PUBLIC  MIDIreleaseNote_MPU401_
 
 push      cx
 push      si
@@ -595,7 +592,6 @@ retf
 ENDP
 
 PROC  MIDIpitchWheel_MPU401_    FAR
-PUBLIC  MIDIpitchWheel_MPU401_
 
 push      cx
 push      si
@@ -641,7 +637,6 @@ retf
 ENDP
 
 PROC  MIDIchangeControl_MPU401_    FAR
-PUBLIC  MIDIchangeControl_MPU401_
 
 
 push      cx
@@ -741,7 +736,6 @@ DUMMY_BASE_CONTROLLER_VALUES:
 db 0, 0, 0, 127, 64, 127, 0, 0, 0, 0, 0, DEFAULT_PITCH_BEND, 0FFh
 
 PROC  MIDIplayMusic_MPU401_    FAR
-PUBLIC  MIDIplayMusic_MPU401_
 
 ;    FAR_memset((void __far*) (mididriverData->percussions), 0, sizeof(uint8_t) * (128/8));
 
@@ -806,12 +800,10 @@ ENDP
 
 
 PROC  MIDIpauseMusic_MPU401_    FAR
-PUBLIC  MIDIpauseMusic_MPU401_
 ENDP
 ; just calls stop music, fall thru
 
 PROC  MIDIstopMusic_MPU401_    FAR
-PUBLIC  MIDIstopMusic_MPU401_
 
 
 push      bx
@@ -877,7 +869,6 @@ jmp       inc_loop_stop_channels
 ENDP
 
 PROC MIDIchangeSystemVolume_MPU401_  FAR
-PUBLIC MIDIchangeSystemVolume_MPU401_
 
 cmp       byte ptr ds:[_playingstate], 2
 je        actually_change_system_volume
@@ -938,7 +929,6 @@ ENDP
 
 
 PROC  MIDIresumeMusic_MPU401_    FAR
-PUBLIC  MIDIresumeMusic_MPU401_
 
 
 retf    
@@ -948,7 +938,6 @@ ENDP
 
 
 PROC  MIDIinitDriver_MPU401_    FAR
-PUBLIC  MIDIinitDriver_MPU401_
 
 push      cx
 push      di
@@ -981,7 +970,6 @@ MPU401_RESET = 0FFh
 MPU401_SET_UART = 03Fh
 
 PROC  MPU401sendByte_   NEAR
-PUBLIC  MPU401sendByte_
 
 
 push  bx
@@ -1034,7 +1022,6 @@ ENDP
 
 ; unused???
 PROC  MPU401sendBlock_    FAR
-PUBLIC  MPU401sendBlock_
 
 
 push  bx
@@ -1062,7 +1049,6 @@ ENDP
 
 
 PROC  MPU401reset_    NEAR
-PUBLIC  MPU401reset_
 
 
 mov   ax, MPU401_RESET
@@ -1080,7 +1066,6 @@ ENDP
 
 
 PROC  MPU401sendMIDI_    NEAR
-PUBLIC  MPU401sendMIDI_
 
 
 mov   dh, dl
@@ -1120,7 +1105,6 @@ ret
 ENDP
 
 PROC  MPU401detectHardware_    FAR
-PUBLIC  MPU401detectHardware_
 
 mov   dx, word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_]
 mov   word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_], ax
@@ -1133,7 +1117,6 @@ retf
 ENDP
 
 PROC  MPU401initHardware_    FAR
-PUBLIC  MPU401initHardware_
 
 
 mov   word ptr cs:[_MPU401port - OFFSET SM_MPUMD_STARTMARKER_], ax
@@ -1152,14 +1135,12 @@ ENDP
 
 
 PROC  MPU401deinitHardware_    FAR
-PUBLIC  MPU401deinitHardware_
 mov   ax, MPU401_RESET
 call  MPU401sendCommand_
 retf  
 ENDP
 
 PROC  MPU401sendCommand_    NEAR
-PUBLIC MPU401sendCommand_
 
 push  bx
 push  cx

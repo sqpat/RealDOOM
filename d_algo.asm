@@ -72,9 +72,9 @@ mov es, cx
 ; zero up till 3C00h
 mov cx, 03C00h
 sub cx, BASE_LOWER_MEMORY_SEGMENT
-sal cx, 1 ; 16 bytes per paragraphs divided by 2 (word writes) = shift 8
-sal cx, 1
-sal cx, 1 
+SHIFT_MACRO shl cx 3
+
+
 xor ax, ax
 mov di, ax
 rep stosw

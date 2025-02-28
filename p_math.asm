@@ -54,8 +54,7 @@ push  ax
 
 ; todo eventually return child value instead of node
 
-shl   si, 1     ; 2
-shl   si, 1     ; 4
+SHIFT_MACRO shl si 2
 
 mov   ax, NODE_CHILDREN_SEGMENT
 mov   es, ax

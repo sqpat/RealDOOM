@@ -810,13 +810,8 @@ mov   dx, si
 ; dx has freq 
 ; bh has octave
 
-shl   cl, 1
-shl   cl, 1
-shl   cl, 1
-shl   cl, 1
-shl   cl, 1
-shl   bh, 1
-shl   bh, 1
+SHIFT_MACRO shl cl 5
+SHIFT_MACRO shl bh 2
 or    bh, cl
 or    bh, dh
 ;  bl has (freq >> 8) | (octave << 2) | (keyon << 5)
@@ -933,8 +928,7 @@ PROC  calcVolumeOPL_ NEAR
 ; note: bx unmodified
 
 mul   bl
-shl   dx, 1
-shl   dx, 1
+SHIFT_MACRO shl dx 2
 mul   dx
 mov   al, ah
 mov   ah, dl    ; mid 16 bits of result.
@@ -978,10 +972,7 @@ push  si
 
 cbw   
 mov   di, ax
-shl   di, 1     
-shl   di, 1     
-shl   di, 1     
-shl   di, 1     ; 16 bytes per channel...
+SHIFT_MACRO shl di 4
 xor   bh, bh
 
 ; dh secondary flag

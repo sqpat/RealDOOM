@@ -804,8 +804,8 @@ ELSE
     SAL dx, 1   ; DWORD lookup index
     MOV BX, dx
     MOV es, ax  ; put segment in ES
-    MOV ax, es:[BX]
-    MOV dx, es:[BX+2]
+    les ax, dword ptr es:[BX]
+    mov dx, es
 
 
 
@@ -893,8 +893,8 @@ ELSE
     xchg BX, dx
 
     MOV es, ax  ; put segment in ES
-    MOV ax, es:[BX]
-    MOV bx, es:[BX+2]
+    les ax, dword ptr es:[BX]
+    mov bx, es
 
 
 
@@ -989,8 +989,7 @@ ENDP
 PROC FixedMulTrigSpeed_
 PUBLIC FixedMulTrigSpeed_
 
-SAL dx, 1
-SAL dx, 1   ; DWORD lookup index
+SHIFT_MACRO shl dx 2
 
 
 PROC FixedMulTrigSpeedNoShift_
@@ -999,8 +998,8 @@ PUBLIC FixedMulTrigSpeedNoShift_
 mov es, ax  ; put segment in ES
 xchg dx, bx
 
-MOV cx, es:[BX]
-MOV ax, es:[BX+2]
+les cx, dword ptr es:[BX]
+mov ax, es
 
 ; speed is dx, mul by ax:Cx 
 and dx, 07Fh  ; drop the 32 bit flag
@@ -1639,8 +1638,7 @@ do_shift_and_full_compare:
 
 ; store backup dx:ax in ds:es
 
-rol dx, 1
-rol dx, 1
+SHIFT_MACRO rol dx 2
 
 mov di, dx
 and di, 03h
@@ -1654,8 +1652,7 @@ jg    do_quick_return
 jne   restore_reg_then_do_full_divide ; below
 mov   di, dx      ; recover this
 mov   es, ax      ; back this up
-rol   ax, 1
-rol   ax, 1
+SHIFT_MACRO rol ax 2
 and   ax, 03h
 and   di, 0FFFCh  ; cx, 0FFFCh
 or    ax, di

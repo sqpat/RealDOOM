@@ -426,8 +426,7 @@ do_shift_and_full_compare:
 
 ; store backup dx:ax in ds:es
 
-rol dx, 1
-rol dx, 1
+SHIFT_MACRO rol dx 2
 
 mov di, dx
 and di, 03h
@@ -441,8 +440,7 @@ jg    do_quick_return
 jne   restore_reg_then_do_full_divide ; below
 mov   di, dx      ; recover this
 mov   es, ax      ; back this up
-rol   ax, 1
-rol   ax, 1
+SHIFT_MACRO rol ax 2
 and   ax, 03h
 and   di, 0FFFCh  ; cx, 0FFFCh
 or    ax, di
@@ -492,8 +490,7 @@ mov ax, es
 restore_reg_then_do_full_divide:
 
 ; restore dx
-ror dx, 1
-ror dx, 1
+SHIFT_MACRO ror dx 2
 
 
 do_full_divide:
@@ -1967,9 +1964,7 @@ SELFMODIFY_set_ax_to_angle_highword:
 sub   ax, 01212h
 
 add   ah, 090h
-rol   ax, 1
-rol   ax, 1
-rol   ax, 1
+SHIFT_MACRO rol ax 3
 and   ax, 7
 mov   bx, ax				; rot result
 skip_sprite_rotation:
