@@ -4716,8 +4716,6 @@ MUL  CX       ; AX*CX
 ADD  AX, BX	  ; set up final return value
 ADC  DX, SI
 
-mov  CX, SS   ; restore DS
-mov  DS, CX
 
 ; todo self modify the neg of this in somehow?
 SELFMODIFY_set_cx_rw_offset_lo:	
@@ -4741,20 +4739,24 @@ mov   cx, es
 ; store texturecolumn
 push  ax       ; later popped into ds
 
-cmp   cx, 3
-jge   use_max_light
+cmp   cl, 3
+jae   use_max_light
 do_lightscaleshift:
+
 mov   al, bh
 mov   ah, cl
-mov   dl, ch
-sar   dl, 1
-rcr   ax, 1
-sar   dl, 1
-rcr   ax, 1
-sar   dl, 1
-rcr   ax, 1
-sar   dl, 1
-rcr   ax, 1
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shr   ax, 4
+ELSE
+shr   ax, 1
+shr   ax, 1
+shr   ax, 1
+shr   ax, 1
+ENDIF
+
+; todo investigate selfmodify lookup here, write ahead byte value directly ahead.... also dont need to push pop si.
+;(talking about SELFMODIFY_add_wallights).
+; tricky due to fixedcolormap??
 mov   si, ax
 jmp   light_set
 
@@ -5061,6 +5063,7 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax		; todo: write these t
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1], dx  
 SELFMODIFY_add_wallights:
 
+; si is scalelight
 ; scalelight is pre-shifted 4 to save on the double sal every column.
 mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
 ;        set drawcolumn colormap function address
@@ -5574,7 +5577,7 @@ test      byte ptr es:[bx + 01ch], SIL_TOP
 jne       continue_checking_spr_top_clip
 cmp       byte ptr ds:[_maskedtexture], 0
 je        check_spr_bottom_clip
-jmp       continue_checking_spr_top_clip
+
 
 
 continue_checking_spr_top_clip:
