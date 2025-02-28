@@ -265,8 +265,6 @@ PUBLIC FixedMulBSPLocal_
 ; DX:AX  *  CX:BX
 ;  0  1      2  3
 
-; cheat since we cant use .386 stuff midfile? todo figure this out...
-
 ; set up ecx
 db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
 db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
@@ -2880,7 +2878,7 @@ mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_3+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_4+1], ax
-mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+5], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+4], ax
 mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+3], ax
 
 xchg      ax, dx
@@ -2890,7 +2888,7 @@ mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_3+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_4+1], ax
 
 
-mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+5], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+4], ax
 mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3], ax
 
 
@@ -2991,6 +2989,8 @@ les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], NULL_TEX_COL
 cmp       word ptr ds:[_backsector], SECNUM_NULL
 
+mov       ax, cs
+mov       ds, ax
 
 
 je        handle_single_sided_line
@@ -2998,8 +2998,6 @@ jmp       handle_two_sided_line
 
 handle_single_sided_line:
 
-mov       ax, cs
-mov       ds, ax
 ASSUME DS:R_MAINHI_TEXT
 
 SELFMODIFY_BSP_drawtype_1:
@@ -3490,6 +3488,14 @@ jge       at_least_one_column_to_draw
 jmp       check_spr_top_clip
 at_least_one_column_to_draw:
 
+; todo better use DS as a scratch var for mults etc ahead.
+
+ASSUME DS:R_MAINHI_TEXT
+; make ds equal to cs for self modifying codes
+mov       ax, cs
+mov       ds, ax
+
+
 SELFMODIFY_get_rwscalestep_lo_1:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_1:
@@ -3499,11 +3505,6 @@ mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
 
-ASSUME DS:R_MAINHI_TEXT
-
-; make ds equal to cs for self modifying codes
-push      cs
-pop       ds
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
@@ -3570,10 +3571,10 @@ sbb       dx, 0
 ; dx:ax are topstep
 
 mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_lo+5], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4], ax
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi+5], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4], ax
 
 
 SELFMODIFY_BSP_detailshift_2:
@@ -3667,10 +3668,10 @@ sbb       dx, 0
 ; dx:ax are bottomstep
 
 mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_lo+5], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4], ax
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_hi+5], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4], ax
 
 SELFMODIFY_BSP_detailshift_3:
 shl       dx, 1
@@ -3913,10 +3914,10 @@ sbb       dx, 0
 
 
 mov       word ptr ds:[SELFMODIFY_sub_pixhigh_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_add_pixhighstep_lo+5], ax
+mov       word ptr ds:[SELFMODIFY_add_pixhighstep_lo+4], ax
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_sub_pixhigh_hi+3], ax
-mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+5], ax
+mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+4], ax
 
 SELFMODIFY_BSP_detailshift_4:
 shl       dx, 1
@@ -4112,10 +4113,10 @@ sbb       dx, 0
 
 
 mov       word ptr ds:[SELFMODIFY_sub_pixlow_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+5], ax
+mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+4], ax
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_sub_pixlow_hi+3], ax
-mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+5], ax
+mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+4], ax
 
 SELFMODIFY_BSP_detailshift_5:
 shl       dx, 1
@@ -4255,50 +4256,49 @@ skip_sub_base4diff:
 ;	base_pixlow     = pixlow;
 ;	base_pixhigh    = pixhigh;
 
-mov  AX, SS   ; restore DS
-mov  DS, AX
-ASSUME DS:DGROUP
 
 lea   si, [bp - 032h]
 
-lodsw
-mov   word ptr cs:[SELFMODIFY_set_rw_scale_lo+1], ax
-lodsw
-mov   word ptr cs:[SELFMODIFY_set_rw_scale_hi+1], ax
-lodsw ; topfrac lo
-mov   word ptr cs:[SELFMODIFY_set_topfrac_lo+1], ax
-lodsw ; topfrac hi
-mov   word ptr cs:[SELFMODIFY_set_topfrac_hi+1], ax
-lodsw ; bottomfrac lo
-mov   word ptr cs:[SELFMODIFY_set_botfrac_lo+1], ax
-lodsw ; bottomfrac hi
-mov   word ptr cs:[SELFMODIFY_set_botfrac_hi+1], ax
+
+lods  word ptr ss:[si]
+mov   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1], ax
+lods  word ptr ss:[si]
+mov   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1], ax
+lods  word ptr ss:[si] ; topfrac lo
+mov   word ptr ds:[SELFMODIFY_set_topfrac_lo+1], ax
+lods  word ptr ss:[si] ; topfrac hi
+mov   word ptr ds:[SELFMODIFY_set_topfrac_hi+1], ax
+lods  word ptr ss:[si] ; bottomfrac lo
+mov   word ptr ds:[SELFMODIFY_set_botfrac_lo+1], ax
+lods  word ptr ss:[si] ; bottomfrac hi
+mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1], ax
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3:
 jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 + 2
-lodsw ; pixlow lo
-mov   word ptr cs:[SELFMODIFY_set_pixlow_lo+1], ax
-lodsw ; pixlow hi
-mov   word ptr cs:[SELFMODIFY_set_pixlow_hi+1], ax
-lodsw ; pixhigh lo
-mov   word ptr cs:[SELFMODIFY_set_pixhigh_lo+1], ax
-lodsw ; pixhigh hi
-mov   word ptr cs:[SELFMODIFY_set_pixhigh_hi+1], ax
+lods  word ptr ss:[si] ; pixlow lo
+mov   word ptr ds:[SELFMODIFY_set_pixlow_lo+1], ax
+lods  word ptr ss:[si] ; pixlow hi
+mov   word ptr ds:[SELFMODIFY_set_pixlow_hi+1], ax
+lods  word ptr ss:[si] ; pixhigh lo
+mov   word ptr ds:[SELFMODIFY_set_pixhigh_lo+1], ax
+lods  word ptr ss:[si] ; pixhigh hi
+mov   word ptr ds:[SELFMODIFY_set_pixhigh_hi+1], ax
+
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET:
 mov   al, 0 ; xoffset is 0
 mov   dx, SC_DATA  ; cheat this out of the loop..
 
-; todo try to put cs in ds here
 
 continue_outer_rendersegloop:
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET:
 cbw  
-mov   bx, ax	; copy xoffset to bx
-inc   byte ptr cs:[SELFMODIFY_set_al_to_xoffset+1]
+xchg  ax, bx	; xoffset to bx
+
+inc   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1]
 
 SELFMODIFY_detailshift_plus1_1:
-mov   al, byte ptr [bx + OFFSET _quality_port_lookup]	
+mov   al, byte ptr ss:[bx + OFFSET _quality_port_lookup]	
 out   dx, al
 
 ; pre inner loop.
@@ -4385,33 +4385,33 @@ cmp   al, 0
 
 jge   exit_rendersegloop ; exit before adding the other loop vars.
 SELFMODIFY_add_topstep_lo:
-add   word ptr cs:[SELFMODIFY_set_topfrac_lo+1], 01000h
+add   word ptr ds:[SELFMODIFY_set_topfrac_lo+1], 01000h
 SELFMODIFY_add_topstep_hi:
-adc   word ptr cs:[SELFMODIFY_set_topfrac_hi+1], 01000h
+adc   word ptr ds:[SELFMODIFY_set_topfrac_hi+1], 01000h
 
 SELFMODIFY_add_botstep_lo:
-add   word ptr cs:[SELFMODIFY_set_botfrac_lo+1], 01000h
+add   word ptr ds:[SELFMODIFY_set_botfrac_lo+1], 01000h
 SELFMODIFY_add_botstep_hi:
-adc   word ptr cs:[SELFMODIFY_set_botfrac_hi+1], 01000h
+adc   word ptr ds:[SELFMODIFY_set_botfrac_hi+1], 01000h
 
 SELFMODIFY_add_rwscale_lo:
-add   word ptr cs:[SELFMODIFY_set_rw_scale_lo+1], 01000h
+add   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1], 01000h
 SELFMODIFY_add_rwscale_hi:
-adc   word ptr cs:[SELFMODIFY_set_rw_scale_hi+1], 01000h
+adc   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2:
 je   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 + 2
 
 SELFMODIFY_add_pixlowstep_lo:
-add   word ptr cs:[SELFMODIFY_set_pixlow_lo+1], 01000h
+add   word ptr ds:[SELFMODIFY_set_pixlow_lo+1], 01000h
 SELFMODIFY_add_pixlowstep_hi:
-adc   word ptr cs:[SELFMODIFY_set_pixlow_hi+1], 01000h
+adc   word ptr ds:[SELFMODIFY_set_pixlow_hi+1], 01000h
 
 SELFMODIFY_add_pixhighstep_lo:
-add   word ptr cs:[SELFMODIFY_set_pixhigh_lo+1], 01000h
+add   word ptr ds:[SELFMODIFY_set_pixhigh_lo+1], 01000h
 SELFMODIFY_add_pixhighstep_hi:
-adc   word ptr cs:[SELFMODIFY_set_pixhigh_hi+1], 01000h
+adc   word ptr ds:[SELFMODIFY_set_pixhigh_hi+1], 01000h
 
 
 jmp   continue_outer_rendersegloop
@@ -4419,9 +4419,13 @@ jmp   continue_outer_rendersegloop
 
 exit_rendersegloop:
 ; zero out local caches.
+
+ASSUME DS:DGROUP
+mov   ax, ss
+mov   ds, ax
 mov   ax, 0FFFFh
-mov   word ptr ds:[_segloopnextlookup], ax
-mov   word ptr ds:[_segloopnextlookup+2], ax
+mov   word ptr ds:[_segloopnextlookup], ax         ; big todo: move these to cs after R_GetColumnSegment_ in asm
+mov   word ptr ds:[_segloopnextlookup+2], ax       ; then leave DS as CS this whole time.
 inc   ax
 ; zero both 
 mov   word ptr ds:[_seglooptexrepeat], ax
@@ -4488,8 +4492,12 @@ jge   jump_to_finish_outer_loop_2
 start_per_column_inner_loop:
 ; ax was rw_x
 ; now di is rw_x
-mov   di, ax   ; ax was still rw_x
 
+
+xchg  ax, di   ; ax was still rw_x
+; NOTE DS IS BAD HERE (cs)
+mov   ax, ss
+mov   ds, ax
 
 mov   ax, OPENINGS_SEGMENT
 mov   es, ax
@@ -4625,7 +4633,7 @@ seg_is_textured:
 mov   ax, XTOVIEWANGLE_SEGMENT
 mov   es, ax
 SELFMODIFY_set_rw_center_angle:
-mov   ax, 01000h			; mov   ax, word ptr ds:[_rw_centerangle]
+mov   ax, 01000h
 mov   bx, di
 add   ax, word ptr es:[bx+di]
 and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
@@ -4660,9 +4668,9 @@ mov   dx, es
 finetangent_ready:
 ; calculate texture column
 SELFMODIFY_set_bx_rw_distance_lo:
-mov   bx, 01000h	; mov   bx, word ptr ds:[_rw_distance]
+mov   bx, 01000h
 SELFMODIFY_set_cx_rw_distance_hi:
-mov   cx, 01000h	; mov   cx, word ptr ds:[_rw_distance+2]
+mov   cx, 01000h
 
 
 mov   es, ax	; store ax in es
@@ -4681,6 +4689,11 @@ MUL  CX         ; DX*CX
 add  SI, AX    ; low word result into high word return
 
 mov  AX, DS    ; restore DX from ds
+
+mov  DX, SS   ; restore DS here using the previous mul's prefetch..
+mov  DS, DX
+; NOTE1 DS RESTORED here//. but it doesnt have to be?
+
 MUL  BX         ; DX*BX
 XCHG BX, AX    ; BX will hold low word return. store bx in ax
 add  SI, DX    ; add high word to result
@@ -4706,12 +4719,12 @@ ADC  DX, SI
 mov  CX, SS   ; restore DS
 mov  DS, CX
 
-
-SELFMODIFY_set_cx_rw_offset_lo:	;
-mov   cx, 01000h			; mov   cx, word ptr ds:[_rw_offset]
-sub   cx, ax
+; todo self modify the neg of this in somehow?
+SELFMODIFY_set_cx_rw_offset_lo:	
+mov   cx, 01000h
+sub   cx, ax   ; cx is soon clobbered. so we only need AX?
 SELFMODIFY_set_ax_rw_offset_hi:
-mov   ax, 01000h            ; mov   ax, word ptr ds:[_rw_offset + 2]
+mov   ax, 01000h
 sbb   ax, dx
 
 ;	if (rw_scale.h.intbits >= 3) {
@@ -4725,8 +4738,8 @@ sbb   ax, dx
 les   bx, dword ptr [bp - 032h]
 mov   cx, es
 
-; store texture column
-push  ax
+; store texturecolumn
+push  ax       ; later popped into ds
 
 cmp   cx, 3
 jge   use_max_light
@@ -4967,6 +4980,7 @@ ENDIF
 
 ; do jmp. highest priority, overwrite previously written thing.
 seglooptexrepeat0_is_jmp:
+; NOTE1 next CS here
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw0
 in_texture_bounds0:
@@ -5103,13 +5117,15 @@ add_base_segment_and_draw0:
 SELFMODIFY_add_cached_segment0:
 add   ax, 01000h
 just_do_draw0:
-mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later.
+mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later. hard because we get a 2nd value with lds.
+
+push  bp
 SELFMODIFY_set_midtexturemid_hi:
 SELFMODIFY_set_toptexturemid_hi:
 mov   dx, 01000h
 SELFMODIFY_set_midtexturemid_lo:
 SELFMODIFY_set_toptexturemid_lo:
-mov   cx, 01000h
+mov   bp, 01000h
 
 ; fall thru in the case of top/bot column.
 PROC  R_DrawColumnPrep_ NEAR
@@ -5122,7 +5138,7 @@ push  di
 
 
 mov   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
-mov   es, ax ; store this segment for now, with offset pre-added
+mov   ds, ax ; store this segment for now, with offset pre-added
 
 SELFMODIFY_COLFUNC_get_dc_x:
 mov   ax, 01000h
@@ -5138,16 +5154,16 @@ sar   ax, 1
 
 ; si is dc_yl 
 mov   bx, si
-add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
+add   ax, word ptr ds:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
 SELFMODIFY_BSP_add_destview_offset:
 add   ax, 01000h
 
 ; di is dc_yh
 sub   di, bx                                 ;
-add   di, di                                 ; double diff (dc_yh - dc_yl) to get a word offset
-mov   di, word ptr es:[di]                   ; get the jump value
+sal   di, 1                                 ; double diff (dc_yh - dc_yl) to get a word offset
+mov   di, word ptr ds:[di]                   ; get the jump value
 xchg  ax, di								 ; di gets screen dest offset, ax gets jump value
-mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+mov   word ptr ds:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 
 xchg  ax, bx            ; dc_yl in ax
@@ -5159,8 +5175,6 @@ mov   si, dx            ; dc_texturemid+2 to si
 ; (for carrying dc_texturemid)
 
 
-push  bp
-mov   bp, cx	        ; dc_texturemid to bp
 
 ; dc_iscale loaded here..
 SELFMODIFY_BSP_set_dc_iscale_lo:
@@ -5168,15 +5182,17 @@ mov   bx, 01000h        ; dc_iscale +0
 SELFMODIFY_BSP_set_dc_iscale_hi:
 mov   cx, 01000h        ; dc_iscale +1
 
+
+
 ; dynamic call lookuptable based on used colormaps address being CS:00
 
+db 036h   ; ss: (prefix because we set ds instead of es above to save bytes..)
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 SELFMODIFY_COLFUNC_set_colormap_index_jump:
 dw 0300h
 ; addr 0300 + first byte (4x colormap.)
 
-pop   bp 
 
 
 pop   di 
@@ -5186,6 +5202,7 @@ pop   bx
 SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 
 ; the pop dx gets replaced with ret if bottom is calling
+pop   bp
 pop   dx
 pop   es
 
@@ -5231,6 +5248,8 @@ SELFMODIFY_add_to_bottomfrac_hi_1:
 adc   word ptr [bp - 028h], 01000h
 jmp   start_per_column_inner_loop
 jump_to_finish_outer_loop:
+mov   dx, cs
+mov   ds, dx
 mov   dx, SC_DATA  ; cheat this out of the loop..
 jmp   finish_outer_loop
 
@@ -5369,17 +5388,21 @@ add   ax, 01000h
 just_do_draw1:
 mov   word ptr ds:[_dc_source_segment], ax
 
+push  bp
+
 SELFMODIFY_set_bottexturemid_hi:
 mov   dx, 01000h
 SELFMODIFY_set_bottexturemid_lo:
-mov   cx, 01000h
+mov   bp, 01000h
 
 ; small idea: make these each three NOPs if its gonna be a bot only draw?
 SELFMODIFY_bottomtexonly_1:
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret], 0C3h  ; ret
 call  R_DrawColumnPrep_
+
+pop bp
 SELFMODIFY_bottomtexonly_2:
-mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret], 05Ah  ; pop dx
+mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret], 05Dh  ; pop bp
 
 pop   dx
 pop   es
@@ -5641,7 +5664,6 @@ ret
 handle_two_sided_line:
 
 ; jumped to with ds as cs
-ASSUME DS:R_MAINHI_TEXT
 
 
 ; nop 
@@ -5650,8 +5672,7 @@ SELFMODIFY_BSP_drawtype_2:
 SELFMODIFY_BSP_drawtype_2_AFTER = SELFMODIFY_BSP_drawtype_2+2
 
 mov       ax, 0c089h 
-mov       si, cs
-mov       ds, si
+
 ASSUME DS:R_MAINHI_TEXT
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
@@ -5670,14 +5691,14 @@ mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0], 0E9h ; jmp short
 mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1], SELFMODIFY_BSP_midtexture_return_jmp_TARGET - SELFMODIFY_BSP_midtexture_return_jmp_AFTER
 
 
-mov       si, ss   ; restore DS
-mov       ds, si
-ASSUME DS:DGROUP
 
 SELFMODIFY_BSP_drawtype_2_TARGET:
 ; nomidtexture. this will be checked before top/bot, have to set it to 0.
 
 
+mov       si, ss   ; restore DS
+mov       ds, si
+ASSUME DS:DGROUP
 
 
 ; short_height_t backsectorfloorheight = backsector->floorheight;
@@ -6079,6 +6100,7 @@ jmp do_selfmodify_bottexture
 
 
 ENDP
+
 
 
 ;R_ClipSolidWallSegment_
@@ -7387,7 +7409,7 @@ ASSUME DS:R_MAINHI_TEXT
 
 mov      ax,  word ptr ss:[_detailshift]
 add      ah, OFFSET _quality_port_lookup
-mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+2], ah
+mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+3], ah
 
 ; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
 
