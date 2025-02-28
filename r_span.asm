@@ -1150,7 +1150,7 @@ SELFMODIFY_SPAN_drawplaneiter:
 mov   ax, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
 cmp   ax, word ptr ds:[_lastvisplane]
 jge   exit_drawplanes
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
  shl   ax, 3
 ELSE
  shl   ax, 1
@@ -1267,7 +1267,7 @@ jmp   lookup_visplane_segment
 found_page_with_empty_space:
 
 mov   al, bl ; bl is usedflatindex
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
  shl   al, 2
 ELSE
  shl   al, 1
@@ -1296,7 +1296,7 @@ mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] =
 flat_loaded:
 mov   dx, word ptr [bp - 4] ; a byte, but read the 0 together
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
  sar   dx, 2
 ELSE
  sar   dx, 1
@@ -1321,7 +1321,7 @@ db 01Eh  ;
 dw _R_EvictFlatCacheEMSPage_addr
 
 ;call  R_EvictFlatCacheEMSPage_   ; al stores result..
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
  shl   al, 2
 ELSE
  shl   al, 1
@@ -1387,7 +1387,7 @@ in_flat_page_1:
 mov   word ptr ds:[_lastflatcacheindicesused], cx
 l1_cache_finished_updating:
 mov   ax, word ptr [bp - 4]
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
  sar   ax, 2
 ELSE
  sar   ax, 1

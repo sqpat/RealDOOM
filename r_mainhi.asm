@@ -118,8 +118,8 @@ call FixedMulTrig_
 mov es, si
 sal di, 1
 sal di, 1
-mov si, word ptr es:[di]
-mov di, word ptr es:[di+2]
+les si, dword ptr es:[di]
+mov di, es
 xchg dx, di
 xchg ax, si
 
@@ -1221,7 +1221,7 @@ done_checking_right:
 ; seg in view angle but not necessarily visible
 add   bh, (ANG90_HIGHBITS SHR 8)
 mov   ax, VIEWANGLETOX_SEGMENT
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 shr   bx, 3
 ELSE
 shr   bx, 1
@@ -1233,7 +1233,7 @@ add   bx, bx
 add   dh, (ANG90_HIGHBITS SHR 8)
 mov   ax, word ptr es:[bx]
 mov   bx, dx
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 shr   bx, 3
 ELSE
 shr   bx, 1
@@ -1282,7 +1282,7 @@ shl   si, 1
 shl   si, 1
 ENDIF
 mov   word ptr ds:[_backsector], si
-mov   es, word ptr ds:[_backsector + 2]
+mov   es, word ptr ds:[_backsector + 2]   ; todo can this be les
 
 mov   di, word ptr ds:[_frontsector]
 ;es:si backsector
@@ -1572,7 +1572,7 @@ mov       di, ax
 
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 shl       di, 3
 ELSE
 shl       di, 1
@@ -1736,29 +1736,28 @@ PUBLIC R_ProjectSprite_
 
 
 
-; bp - 2:	 	xscale hi
-; bp - 4:    	xscale lo
-; bp - 6:    	thingframe (byte, with SIZEOF_SPRITEFRAME_T high)
+; bp - 2:	 	thingframe (byte, with SIZEOF_SPRITEFRAME_T high)
+; bp - 4:    	
+; bp - 6:    	
 ; bp - 8:    	tr_y hi
-; bp - 0Ah:    	tr_y low
-; bp - 0Ch:    	tr_x hi
-; bp - 0Eh:    	tr_x lo
+; bp - 0Ah:    tr_y low
+; bp - 0Ch:    tr_x hi
+; bp - 0Eh:    tr_x lo
 ; bp - 010h:	thingz hi
 ; bp - 012h:	thingz lo
 ; bp - 014h:	thingy hi
-; bp - 016h:    thingy lo
+; bp - 016h:   thingy lo
 ; bp - 018h:	thingx hi
 ; bp - 01Ah:	thingx lo
-; bp - 01Ch:	UNUSED
-; bp - 01Eh:	UNUSED
-; bp - 020h:    spriteindex. used for spriteframes and spritetopindex?
+; bp - 01Ch:	xscale hi
+; bp - 01Eh:	xscale lo
+; bp - 020h:   spriteindex. used for spriteframes and spritetopindex?
 
 
 push  si
 push  es
 push  bp
 mov   bp, sp
-sub   sp, 020h
 mov   dx, es					   ; back this up...
 mov   bx, word ptr es:[si + 012h]  ; thing->stateNum
 mov   ax, STATES_RENDER_SEGMENT
@@ -1771,7 +1770,8 @@ mov   al, byte ptr es:[bx]		   ; states_render[thing->stateNum].sprite
 mov   byte ptr cs:[SELFMODIFY_set_ax_to_spriteframe+1], al		   
 mov   al, byte ptr es:[bx + 1]	; states_render[thing->stateNum].frame
 mov   ah, SIZEOF_SPRITEFRAME_T
-mov   word ptr [bp - 6], ax		
+push   ax    ; bp - 2
+sub   sp, 01Eh
 
 
 
@@ -1879,8 +1879,8 @@ SELFMODIFY_BSP_centerx_4:
 mov   ax, 01000h
 
 call  FixedDivWholeA_
-mov   word ptr [bp - 4], ax
-mov   word ptr [bp - 2], dx
+mov   word ptr [bp - 01Eh], ax
+mov   word ptr [bp - 01Ch], dx
 
 lea   si, [bp - 0Eh]
 lodsw
@@ -1968,7 +1968,7 @@ shl   di, 1
 sub   di, ax
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
-mov   ax, word ptr [bp - 6]
+mov   ax, word ptr [bp - 2]
 and   al, FF_FRAMEMASK
 mul   ah
 mov   di, word ptr es:[di]
@@ -2007,7 +2007,7 @@ rol   ax, 1
 and   ax, 7
 mov   bx, ax				; rot result
 skip_sprite_rotation:
-mov   ax, word ptr [bp - 6]
+mov   ax, word ptr [bp - 2]
 and   al, FF_FRAMEMASK
 mul   ah
 add   di, ax					; add frame offset
@@ -2026,8 +2026,8 @@ mov   ax, SPRITEOFFSETS_SEGMENT
 
 mov   es, ax
 mov   al, byte ptr es:[di]
-mov   bx, word ptr [bp - 4]
-mov   cx, word ptr [bp - 2]
+les   bx, dword ptr [bp - 01Eh]
+mov   cx, es
 xor   ah, ah
 
 sub   si, ax						; no need for sbb?
@@ -2081,8 +2081,8 @@ usedwidth_not_1:
 mov   word ptr cs:[SELFMODIFY_set_ax_to_usedwidth+1], ax
 
 
-mov   bx, word ptr [bp - 4]
-mov   cx, word ptr [bp - 2]
+les   bx, dword ptr [bp - 01Eh]
+mov   cx, es
 mov   dx, si
 
 add   dx, ax					; no need for adc
@@ -2112,8 +2112,8 @@ inc   word ptr ds:[_vissprite_p]
 got_vissprite:
 ; mul by 28h or 40. SIZEOF_VISSPRITE_T
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-sal   si, 3   ; x7  08h
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+sal   si, 3   ; x8  08h
 ELSE
 sal   si, 1   ; x2  02h
 sal   si, 1   ; x4  04h
@@ -2126,8 +2126,8 @@ sal   si, 1   ; x32 20h
 lea   si, [bx + si + OFFSET _vissprites] ; x40  28h
 
 
-mov   ax, word ptr [bp - 4]
-mov   di, word ptr [bp - 2]
+les   ax, dword ptr [bp - 01Eh]
+mov   di, es
 
 
 SELFMODIFY_BSP_detailshift2minus_2:
@@ -2213,8 +2213,8 @@ jl    x2_smaller_than_viewwidth
 mov   ax, bx
 dec   ax
 x2_smaller_than_viewwidth:
-mov   bx, word ptr [bp - 4]
-mov   cx, word ptr [bp - 2]
+les   bx, dword ptr [bp - 01Eh]
+mov   cx, es
 mov   word ptr [si + 4], ax
 mov   ax, 1
 call FixedDivWholeA_
@@ -2298,7 +2298,7 @@ jne   exit_set_shadow
 SELFMODIFY_BSP_fixedcolormap_2:
 jne   exit_set_fixed_colormap
 SELFMODIFY_BSP_fixedcolormap_2_AFTER:
-test  byte ptr [bp - 6], FF_FULLBRIGHT
+test  byte ptr [bp - 2], FF_FULLBRIGHT
 jne   exit_set_fullbright_colormap
 
 
@@ -2306,7 +2306,7 @@ jne   exit_set_fullbright_colormap
 
 ; shift 32 bit value by (12 - detailshift) right.
 ; but final result is capped at 48. so we dont have to do as much with the high word...
-mov   ax, word ptr [bp - 3] ; shift 8 by loading a byte higher.
+mov   ax, word ptr [bp - 01Dh] ; shift 8 by loading a byte higher.
 ; shift 2 more guaranteed
 sar   ax, 1
 sar   ax, 1
@@ -2419,8 +2419,9 @@ mov   es, si
 
 loop_things_in_thinglist:
 ; multiply by 18h (SIZEOF_MOBJ_POS_T), AX maxes at MAX_THINKERS - 1 (839), cant 8 bit mul
+; tested, imul si, ax, SIZEOF_MOBJ_POS_T  still slower
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 sal   ax, 3
 
 ELSE
@@ -2429,8 +2430,6 @@ sal   ax, 1
 sal   ax, 1
 
 ENDIF
-
-
 mov   si, ax
 sal   si, 1
 add   si, ax
@@ -2641,7 +2640,7 @@ push      ax      ; bp - 014h
 ; si is linedefOffset
 
 mov       cx, si
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 sar       si, 3
 ELSE
 sar       si, 1
@@ -2675,7 +2674,7 @@ mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
 
 xchg      ax, si
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 shl       ax, SHORTTOFINESHIFT
 ELSE
 shl       ax, 1
@@ -6781,8 +6780,6 @@ PUBLIC R_PointToAngle16_
 
 ; todo reorder params?
 
-mov  cx, dx
-mov  dx, ax
 xor  ax, ax ; todo maybe just insert negative? does sbb work tho?
 mov  bx, ax
 SELFMODIFY_BSP_viewx_lo_5:
@@ -6902,18 +6899,18 @@ pop   cx
 pop   bx
 ret   
 R_CBB_SWITCH_CASE_00:
-; dx
+; cx
 ; di
 ; si
-; ax
+; dx
 mov   ax, es
 
-les   dx, dword ptr es:[bx]
+les   cx, dword ptr es:[bx]
 mov   di, es
 
 mov   es, ax
 les   si, dword ptr es:[bx + 4]
-mov   ax, es
+mov   dx, es
 
 
 R_CBB_SWITCH_CASE_05:  ; unused
@@ -6930,7 +6927,8 @@ sbb   dx, 01000h
 
 xchg  ax, si
 xchg  dx, di      ; cache dx/angle1 intbits. retrieve old cx
-
+mov   cx, dx
+mov   dx, ax
 ;	angle2.wu = R_PointToAngle16(x2, y2) - viewangle.wu;
 
 call  R_PointToAngle16_
@@ -7109,94 +7107,94 @@ ret
 
 
 R_CBB_SWITCH_CASE_01:
-; di dx
+; di cx
 ; 
 ; si
-; ax
+; dx
 mov   di, word ptr es:[bx]
-mov   dx, di
+mov   cx, di
 
 les   si, dword ptr es:[bx+4]
-mov   ax, es
+mov   dx, es
 
 
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_02:
 
 ; di 
-; dx
+; cx
 ; si
-; ax
-mov   ax, es
-les   di, dword ptr es:[bx]
+; dx
 mov   dx, es
-mov   es, ax
+les   di, dword ptr es:[bx]
+mov   cx, es
+mov   es, dx
 les   si, dword ptr es:[bx+4]
-mov   ax, es
+mov   dx, es
 
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_03:
 R_CBB_SWITCH_CASE_07:
-; di dx si ax
+; di cx si dx
 mov   di, word ptr es:[bx]
-mov   dx, di
+mov   cx, di
 mov   si, di
-mov   ax, di
+mov   dx, di
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_04:
 ; di 
-; dx
-; si ax
+; cx
+; si dx
 ;
 mov   si, word ptr es:[bx + 4]
-mov   ax, si
-les   dx, dword ptr es:[bx]
+mov   dx, si
+les   cx, dword ptr es:[bx]
 mov   di, es
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_06:
 ; di
-; dx
+; cx
 ;
-; si ax
+; si dx
 mov   si, word ptr es:[bx + 6]
-mov   ax, si
+mov   dx, si
 les   di, dword ptr es:[bx]
-mov   dx, es
+mov   cx, es
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_08:
-; dx
+; cx
 ; di
-; ax
+; dx
 ; si
-mov   ax, es
-les   dx, dword ptr es:[bx]
+mov   dx, es
+les   cx, dword ptr es:[bx]
 mov   di, es
-mov   es, ax
-les   ax, dword ptr es:[bx+4]
+mov   es, dx
+les   dx, dword ptr es:[bx+4]
 mov   si, es
 
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_09:
 ;
-; di dx
-; ax
+; di cx
+; dx
 ; si
 mov   di, word ptr es:[bx + 2]
-mov   dx, di
-les   ax, dword ptr es:[bx+4]
+mov   cx, di
+les   dx, dword ptr es:[bx+4]
 mov   si, es
 
 jmp   boxpos_switchblock_done
 R_CBB_SWITCH_CASE_10:
 ; di
+; cx
 ; dx
-; ax
 ; si
-mov   ax, es
-les   di, dword ptr es:[bx]
 mov   dx, es
-mov   es, ax
-les   ax, dword ptr es:[bx+4]
+les   di, dword ptr es:[bx]
+mov   cx, es
+mov   es, dx
+les   dx, dword ptr es:[bx+4]
 mov   si, es
 
 jmp   boxpos_switchblock_done
@@ -7237,7 +7235,7 @@ mov   dx, 01000h
 SELFMODIFY_BSP_viewy_hi_6:
 mov   cx, 01000h
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 shl       bx, 3
 ELSE
 shl   bx, 1       ; es:bx is node.. bspnum is bx shift right 3.

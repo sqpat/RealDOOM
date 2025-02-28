@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/02/27 19:17:17
+Created on:       25/02/28 07:26:19
 Warning! W1027: file sm_sbmid.obj(sm_sbmid.ASM): redefinition of MIDIpitchWheel_SBMID_ ignored
 Warning! W1027: file sm_sbmid.obj(sm_sbmid.ASM): redefinition of MIDIstopMusic_SBMID_ ignored
 Warning! W1027: file sm_sbmid.obj(sm_sbmid.ASM): redefinition of SBMIDIsendByte_ ignored
@@ -105,15 +105,15 @@ p_user_TEXT            CODE           AUTO           1d83:0000       000006c8
 r_bsp_TEXT             CODE           AUTO           1df0:0000       00000024
 r_data_TEXT            CODE           AUTO           1df0:0030       00001b30
 R_MATH_TEXT            CODE           AUTO           1df0:1b60       000001ed
-R_MAINHI_TEXT          CODE           AUTO           1df0:1d4e       00002482
-R_COLUMN_TEXT          CODE           AUTO           1df0:41d0       00000e46
-R_SPAN_TEXT            CODE           AUTO           1df0:5016       00000dd3
-R_SKY_TEXT             CODE           AUTO           1df0:5dea       000006c2
+R_MAINHI_TEXT          CODE           AUTO           1df0:1d4e       0000247e
+R_COLUMN_TEXT          CODE           AUTO           1df0:41cc       00000e46
+R_SPAN_TEXT            CODE           AUTO           1df0:5012       00000dda
+R_SKY_TEXT             CODE           AUTO           1df0:5dec       000006c2
 r_draw_TEXT            CODE           AUTO           1df0:64b0       000000fb
 r_main_TEXT            CODE           AUTO           1df0:65b0       000001ea
 r_plane_TEXT           CODE           AUTO           1df0:67a0       00000000
 r_segs_TEXT            CODE           AUTO           1df0:67a0       00000000
-R_MASKED_TEXT          CODE           AUTO           1df0:67a0       000010f7
+R_MASKED_TEXT          CODE           AUTO           1df0:67a0       000010fa
 r_things_TEXT          CODE           AUTO           1df0:78a0       00000000
 w_wad_TEXT             CODE           AUTO           1df0:78a0       000003de
 VIDEO_TEXT             CODE           AUTO           1df0:7c7e       000004fc
@@ -136,7 +136,7 @@ YIB                    DATA           DGROUP         2d5e:0004       00000000
 YI                     DATA           DGROUP         2d5e:0004       00000012
 YIE                    DATA           DGROUP         2d5f:0006       00000000
 DATA                   DATA           DGROUP         2d5f:0006       00000000
-_BSS                   BSS            DGROUP         2d60:0000       00000b35
+_BSS                   BSS            DGROUP         2d60:0000       00000b33
 STACK                  STACK          DGROUP         2e14:0000       00001000
 
 
@@ -156,21 +156,21 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 2bac:1b60      _savename
 2bac:1b70      _texturecache_nodes
 2bac:1bd0      _spritecache_nodes
-2bac:1c20      _dl
-2bac:1c30      _anims
-2bac:1cf0      _usedtexturepagemem
-2bac:1d08      _solidsegs
-2bac:1d88      _wadfiles
-2bac:1d90      _strace
+2bac:1c20      _anims
+2bac:1ce0      _usedtexturepagemem
+2bac:1cf8      _solidsegs
+2bac:1d78      _wadfiles
+2bac:1d80      _strace
+2bac:1d90      _dl
 2bac:1da0      _trace
 2bac:1db0      _switchlist
 2bac:1e78      _buttonlist
 2bac:1ea0      _saveOldString
 2bac:1eb8      _w_ammo
-2bac:1ee0      _w_keyboxes
-2bac:1ef8      _w_maxammo
-2bac:1f20      _w_faces
-2bac:1f28      _w_arms
+2bac:1ee0      _w_maxammo
+2bac:1f08      _w_faces
+2bac:1f10      _w_arms
+2bac:1f40      _w_keyboxes
 2bac:1f58      _w_armsbg
 2bac:1f60      _segregs
 2bac:1f68      _am_l
@@ -209,11 +209,11 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 2bac:206c      _tmxmove
 2bac:2070      _linetarget_pos
 2bac:2074      _bulletslope
-2bac:2078      _activeplats
-2bac:20b4      _leveltime
-2bac:20b8      _setStateReturn_pos
-2bac:20bc      _TaskServiceCount
-2bac:20c0      _OldInt8
+2bac:2078      _leveltime
+2bac:207c      _setStateReturn_pos
+2bac:2080      _TaskServiceCount
+2bac:2084      _OldInt8
+2bac:2088      _activeplats
 2bac:20c4      _w_armor
 2bac:20d0      _st_stuff_buf
 2bac:2104      _w_health
@@ -223,10 +223,10 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 2bac:211c      _maketic
 2bac:2120      _gametime
 2bac:2124      _p_init_sprtemp
-2bac:2128      _am_scale_ftom
-2bac:212c      _am_buffer
-2bac:2140      _am_max_scale_mtof
-2bac:2144      _am_scale_mtof
+2bac:2128      _am_buffer
+2bac:213c      _am_max_scale_mtof
+2bac:2140      _am_scale_mtof
+2bac:2144      _am_scale_ftom
 2bac:2148      _screen_oldloc
 2bac:214c      _m_paninc
 2bac:2150      _activespritenumpages
@@ -237,35 +237,35 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 2bac:217c      _out
 2bac:218a      _in
 2bac:2198      _regs
-2bac:21a6      _segloopheightvalcache
-2bac:21a8      _emshandle
-2bac:21aa      _pagenum9000
-2bac:21ac      _spritewidths_segment
-2bac:21ae      _numlinespecials
+2bac:21a6      _pagenum9000
+2bac:21a8      _segloopheightvalcache
+2bac:21aa      _spritewidths_segment
+2bac:21ac      _numlinespecials
+2bac:21ae      _emshandle
 2bac:21b0      _lastanim
 2bac:21b2      _numlumps
 2bac:21b4      _newend
 2bac:21b6      _attackrange16
 2bac:21b8      _la_damage
-2bac:21ba      _shootthing
-2bac:21bc      _ceilinglinenum
-2bac:21be      _tmthing
-2bac:21c0      _tmfloorz
-2bac:21c2      _lastcalculatedsector
-2bac:21c4      _tmdropoffz
-2bac:21c6      _tmceilingz
-2bac:21c8      _linetarget
-2bac:21ca      _bestslidelinenum
-2bac:21cc      _numspechit
-2bac:21ce      _tmflags1
-2bac:21d0      _setStateReturn
+2bac:21ba      _ceilinglinenum
+2bac:21bc      _tmfloorz
+2bac:21be      _lastcalculatedsector
+2bac:21c0      _tmdropoffz
+2bac:21c2      _tmceilingz
+2bac:21c4      _linetarget
+2bac:21c6      _shootthing
+2bac:21c8      _bestslidelinenum
+2bac:21ca      _numspechit
+2bac:21cc      _tmflags1
+2bac:21ce      _setStateReturn
+2bac:21d0      _tmthing
 2bac:21d2      _numswitches
 2bac:21d4      _oldentertics
 2bac:21d6      _currentThinkerListHead
 2bac:21d8      _whichSkull
 2bac:21da      _currentMenu
-2bac:21dc      _skullAnimCounter
-2bac:21de      _messageLastMenuActive
+2bac:21dc      _messageLastMenuActive
+2bac:21de      _skullAnimCounter
 2bac:21e0      _saveStringEnter
 2bac:21e2      _itemOn
 2bac:21e4      _saveCharIndex
@@ -298,114 +298,114 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 2bac:221a      _old_screen_viewport_width
 2bac:221c      _old_screen_botleft_x
 2bac:221e      _old_screen_botleft_y
-2bac:2220      _screen_botleft_y
-2bac:2222      _am_max_level_y
-2bac:2224      _am_max_level_x
-2bac:2226      _old_screen_viewport_height
-2bac:2228      _screen_botleft_x
+2bac:2220      _am_max_level_y
+2bac:2222      _am_max_level_x
+2bac:2224      _old_screen_viewport_height
+2bac:2226      _screen_botleft_x
+2bac:2228      _screen_botleft_y
 2bac:222a      _ftom_zoommul
 2bac:222c      _mtof_zoommul
 2bac:222e      _skytexture
-2bac:2230      _spritelights
-2bac:2232      _numpatches
-2bac:2234      _pspritescale
-2bac:2236      _firstpatch
-2bac:2238      _numtextures
-2bac:223a      _numspritelumps
-2bac:223c      _numflats
-2bac:223e      _scaledviewwidth
-2bac:2240      _viewwindowoffset
-2bac:2242      _r_cachedplayerMobjsecnum
-2bac:2244      _viewwindowx
-2bac:2246      _viewwindowy
-2bac:2248      _pendingdetail
-2bac:224a      _pagename
-2bac:224c      _pagetic
-2bac:224e      _snd_SBport
-2bac:2250      _snd_Mport
-2bac:2252      _w_title
-2bac:22ab      _w_message
-2bac:2414      _menu_messageString
-2bac:247d      _oldweaponsowned
-2bac:2486      _wminfo
-2bac:249b      _player
-2bac:24fe      _mus_paused
-2bac:24ff      _levelTimer
-2bac:2500      _crushchange
-2bac:2501      _nofit
-2bac:2502      _earlyout
-2bac:2503      _onground
-2bac:2504      _TS_TimesInInterrupt
-2bac:2505      _menu_epi
-2bac:2506      _messageNeedsInput
-2bac:2507      _message_on
-2bac:2508      _message_dontfuckwithme
-2bac:2509      _message_counter
-2bac:250a      _message_nottobefuckedwith
-2bac:250b      _messageToPrint
-2bac:250c      _st_randomnumber
-2bac:250d      _do_st_refresh
-2bac:250e      _secretexit
-2bac:250f      _st_statusbaron
-2bac:2510      _updatedthisframe
-2bac:2511      _st_firsttime
-2bac:2512      _st_gamestate
-2bac:2513      _usemouse
-2bac:2514      _d_episode
-2bac:2515      _turnheld
-2bac:2516      _d_skill
-2bac:2517      _d_map
-2bac:2518      _savegameslot
-2bac:2519      _mousebforward
-2bac:251a      _key_speed
-2bac:251b      _mousebfire
-2bac:251c      _key_left
-2bac:251d      _key_fire
-2bac:251e      _key_strafe
-2bac:251f      _key_straferight
-2bac:2520      _key_up
-2bac:2521      _mousebstrafe
-2bac:2522      _key_down
-2bac:2523      _key_use
-2bac:2524      _key_right
-2bac:2525      _key_strafeleft
-2bac:2526      _timingdemo
-2bac:2527      _sendsave
-2bac:2528      _noblit
-2bac:2529      _demoplayback
-2bac:252a      _demorecording
-2bac:252b      _singledemo
-2bac:252c      _netdemo
-2bac:252d      _sendpause
-2bac:252e      _usergame
-2bac:252f      _paused
-2bac:2530      _borderdrawcount
-2bac:2531      _numChannels
-2bac:2532      _gameskill
-2bac:2533      _respawnmonsters
+2bac:2230      _numpatches
+2bac:2232      _pspritescale
+2bac:2234      _firstpatch
+2bac:2236      _numtextures
+2bac:2238      _numspritelumps
+2bac:223a      _numflats
+2bac:223c      _scaledviewwidth
+2bac:223e      _viewwindowoffset
+2bac:2240      _r_cachedplayerMobjsecnum
+2bac:2242      _viewwindowx
+2bac:2244      _viewwindowy
+2bac:2246      _pendingdetail
+2bac:2248      _pagename
+2bac:224a      _pagetic
+2bac:224c      _snd_SBport
+2bac:224e      _snd_Mport
+2bac:2250      _w_message
+2bac:23b9      _menu_messageString
+2bac:2422      _oldweaponsowned
+2bac:242b      _w_title
+2bac:2484      _wminfo
+2bac:2499      _player
+2bac:24fc      _mus_paused
+2bac:24fd      _levelTimer
+2bac:24fe      _crushchange
+2bac:24ff      _nofit
+2bac:2500      _earlyout
+2bac:2501      _onground
+2bac:2502      _TS_TimesInInterrupt
+2bac:2503      _menu_epi
+2bac:2504      _messageNeedsInput
+2bac:2505      _message_on
+2bac:2506      _message_dontfuckwithme
+2bac:2507      _message_counter
+2bac:2508      _message_nottobefuckedwith
+2bac:2509      _messageToPrint
+2bac:250a      _st_randomnumber
+2bac:250b      _do_st_refresh
+2bac:250c      _secretexit
+2bac:250d      _st_statusbaron
+2bac:250e      _updatedthisframe
+2bac:250f      _st_firsttime
+2bac:2510      _st_gamestate
+2bac:2511      _d_episode
+2bac:2512      _d_skill
+2bac:2513      _d_map
+2bac:2514      _savegameslot
+2bac:2515      _usemouse
+2bac:2516      _mousebforward
+2bac:2517      _key_speed
+2bac:2518      _mousebfire
+2bac:2519      _key_left
+2bac:251a      _key_fire
+2bac:251b      _key_strafe
+2bac:251c      _turnheld
+2bac:251d      _key_straferight
+2bac:251e      _key_up
+2bac:251f      _mousebstrafe
+2bac:2520      _key_down
+2bac:2521      _key_use
+2bac:2522      _key_right
+2bac:2523      _key_strafeleft
+2bac:2524      _timingdemo
+2bac:2525      _sendsave
+2bac:2526      _noblit
+2bac:2527      _demoplayback
+2bac:2528      _demorecording
+2bac:2529      _singledemo
+2bac:252a      _netdemo
+2bac:252b      _usergame
+2bac:252c      _paused
+2bac:252d      _borderdrawcount
+2bac:252e      _numChannels
+2bac:252f      _gameskill
+2bac:2530      _respawnmonsters
+2bac:2531      _usegamma
+2bac:2532      _sendpause
+2bac:2533      _mousepresent
 2bac:2534      _novideo
-2bac:2535      _usegamma
-2bac:2536      _mousepresent
-2bac:2537      _setsizeneeded
-2bac:2538      _menuactive
-2bac:2539      _screenSize
-2bac:253a      _inhelpscreens
-2bac:253b      _quickSaveSlot
-2bac:253c      _detailLevel
-2bac:253d      _setblocks
-2bac:253e      _eventtail
-2bac:253f      _startmap
-2bac:2540      _modifiedgame
-2bac:2541      _sfxVolume
-2bac:2542      _autostart
-2bac:2543      _showMessages
-2bac:2544      _advancedemo
-2bac:2545      _mouseSensitivity
-2bac:2546      _startskill
-2bac:2547      _fastparm
-2bac:2548      _eventhead
-2bac:2549      _startepisode
-2bac:254a      _musicVolume
+2bac:2535      _setsizeneeded
+2bac:2536      _menuactive
+2bac:2537      _screenSize
+2bac:2538      _inhelpscreens
+2bac:2539      _quickSaveSlot
+2bac:253a      _detailLevel
+2bac:253b      _setblocks
+2bac:253c      _eventtail
+2bac:253d      _startmap
+2bac:253e      _modifiedgame
+2bac:253f      _sfxVolume
+2bac:2540      _autostart
+2bac:2541      _showMessages
+2bac:2542      _advancedemo
+2bac:2543      _mouseSensitivity
+2bac:2544      _startskill
+2bac:2545      _fastparm
+2bac:2546      _eventhead
+2bac:2547      _startepisode
+2bac:2548      _musicVolume
+2bac:2549      _demosequence
 2bac:1110      _singletics
 2bac:1111      _skytextureloaded
 2bac:1112      _validcount
@@ -534,15 +534,14 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 2bac:17ce      _versionstring
 2bac:17da      _currentoverlay
 2bac:17db      _S_sfx
-2bac:254b      _demosequence
-2bac:254c      _snd_SBirq
-2bac:254d      _snd_SfxVolume
-2bac:254e      _nomonsters
-2bac:254f      _snd_DesiredSfxDevice
-2bac:2550      _snd_SfxDevice
-2bac:2551      _respawnparm
-2bac:2552      _snd_SBdma
-2bac:2553      _snd_DesiredMusicDevice
+2bac:254a      _snd_SBirq
+2bac:254b      _snd_SfxVolume
+2bac:254c      _nomonsters
+2bac:254d      _snd_DesiredSfxDevice
+2bac:254e      _snd_SfxDevice
+2bac:254f      _respawnparm
+2bac:2550      _snd_SBdma
+2bac:2551      _snd_DesiredMusicDevice
 Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:0000      D_InitStrings_
 0000:00aa+     D_GetCursorColumnRow_
@@ -1291,50 +1290,50 @@ Module: r_math.obj(r_math.ASM)
 1df0:1bd6      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
 1df0:20e9*     R_AddLine_
-1df0:27d6*     R_StoreWallRange_
-1df0:38c1*     R_ClipSolidWallSegment_
-1df0:396f*     R_ClipPassWallSegment_
-1df0:3c09*     R_CheckBBox_
-1df0:2295*     R_Subsector_
+1df0:27df*     R_StoreWallRange_
+1df0:38ba*     R_ClipSolidWallSegment_
+1df0:3968*     R_ClipPassWallSegment_
+1df0:3bfe*     R_CheckBBox_
+1df0:229b*     R_Subsector_
 1df0:1ddf*     FixedMulBSPLocal_
 1df0:1ed2*     R_PointToDist_
 1df0:1fbe*     R_HandleEMSVisplanePagination_
 1df0:1e18*     FixedDivBSPLocal_
-1df0:3b56      R_PrepareMaskedPSprites_
-1df0:3e96      R_WriteBackViewConstants_
-1df0:403e      R_WriteBackFrameConstants_
+1df0:3b4e      R_PrepareMaskedPSprites_
+1df0:3e92      R_WriteBackViewConstants_
+1df0:403a      R_WriteBackFrameConstants_
 1df0:1f49      R_ClearPlanes_
-1df0:276e*     R_AddSprites_
+1df0:2773*     R_AddSprites_
 1df0:206d*     R_FindPlane_
-1df0:3398*     R_DrawColumnPrep_
-1df0:39c2*     R_DrawPSprite_
-1df0:237f*     R_CheckPlane_
-1df0:2447*     R_ProjectSprite_
+1df0:3393*     R_DrawColumnPrep_
+1df0:39bb*     R_DrawPSprite_
+1df0:2385*     R_CheckPlane_
+1df0:2450*     R_ProjectSprite_
 1df0:1e87*     FixedMulTrigNoShiftBSPLocal_
-1df0:3db0      R_RenderBSPNode_
+1df0:3da9      R_RenderBSPNode_
 1df0:1d4e*     R_ScaleFromGlobalAngle_
-1df0:3bd6*     R_PointToAngle16_
+1df0:3bcf*     R_PointToAngle16_
 Module: r_column.obj(r_column.ASM)
-1df0:41d0      R_COLUMN_STARTMARKER_
-1df0:44f0      R_DrawColumn_
-1df0:5016      R_COLUMN_ENDMARKER_
+1df0:41cc      R_COLUMN_STARTMARKER_
+1df0:44ec      R_DrawColumn_
+1df0:5012      R_COLUMN_ENDMARKER_
 Module: r_span.obj(r_span.ASM)
-1df0:50b6      R_DrawSpan_
-1df0:5016      R_SPAN_STARTMARKER_
-1df0:57c4*     R_FixedMulLocal_
-1df0:5cf1      R_WriteBackViewConstantsSpan_
-1df0:570a*     R_DrawSpanPrep_
-1df0:598c      R_DrawPlanes_
-1df0:5de9      R_SPAN_ENDMARKER_
-1df0:5800*     R_MapPlane_
-1df0:50b9*     R_DrawSpanActual_
-1df0:5775*     R_FixedMulTrigLocal_
+1df0:50b2      R_DrawSpan_
+1df0:5012      R_SPAN_STARTMARKER_
+1df0:57c0*     R_FixedMulLocal_
+1df0:5cf4      R_WriteBackViewConstantsSpan_
+1df0:5706*     R_DrawSpanPrep_
+1df0:5988      R_DrawPlanes_
+1df0:5dec      R_SPAN_ENDMARKER_
+1df0:57fc*     R_MapPlane_
+1df0:50b5*     R_DrawSpanActual_
+1df0:5771*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1df0:5dea      R_DrawSkyColumn_
-1df0:5fb7*     R_DrawSkyColumnDynamic_
-1df0:643b      R_DrawSkyPlane_
-1df0:64ac      R_SKY_END_
-1df0:63ca      R_DrawSkyPlaneDynamic_
+1df0:5dec      R_DrawSkyColumn_
+1df0:5fb9*     R_DrawSkyColumnDynamic_
+1df0:643d      R_DrawSkyPlane_
+1df0:64ae      R_SKY_END_
+1df0:63cc      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1df0:64b0      R_VideoErase_
 1df0:6534      R_DrawViewBorder_
@@ -1347,20 +1346,20 @@ Module: r_main.obj(C:\REALDOOM\r_main.c)
 1df0:66a0      R_RenderPlayerView_
 Module: r_masked.obj(r_masked.ASM)
 1df0:67a0      R_MASKED_STARTMARKER_
-1df0:7897      R_MASKED_END_
-1df0:725e*     R_PointOnSegSide_
+1df0:789a      R_MASKED_END_
+1df0:7261*     R_PointOnSegSide_
 1df0:6d27*     R_DrawPlayerSprites_
-1df0:76be      R_SortVisSprites_
+1df0:76c1      R_SortVisSprites_
 1df0:6a17*     R_DrawMaskedSpriteShadow_
-1df0:7839      R_WriteBackMaskedFrameConstants_
+1df0:783c      R_WriteBackMaskedFrameConstants_
 1df0:6824      R_DrawFuzzColumn_
 1df0:6969      R_DrawSingleMaskedColumn_
-1df0:731b*     R_DrawSprite_
+1df0:731e*     R_DrawSprite_
 1df0:6b18*     R_DrawVisSprite_
-1df0:75dd      R_DrawMaskedColumn_
-1df0:721e*     FixedMul1632MaskedLocal_
-1df0:7581      R_DrawMasked_
-1df0:77ac      R_WriteBackViewConstantsMasked_
+1df0:75e0      R_DrawMaskedColumn_
+1df0:7221*     FixedMul1632MaskedLocal_
+1df0:7584      R_DrawMasked_
+1df0:77af      R_WriteBackViewConstantsMasked_
 1df0:6d4e*     R_RenderMaskedSegRange_
 1df0:6920      R_DrawColumnPrepMaskedMulti_
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
@@ -1466,7 +1465,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 2690:1d6d      __doclose_
 2690:1e03      __shutdown_stream_
 2690:1e17      fclose_
-2bac:2554+     ___RmTmpFileFn
+2bac:2552+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(intx086.c)
 2690:1e3a+     int86x_
 2690:1edc      int86_
@@ -1480,8 +1479,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(accss.c)
 2690:2267      access_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 2bac:1962      ___iob
-2bac:2558      ___OpenStreams
-2bac:255a      ___ClosedStreams
+2bac:2556      ___OpenStreams
+2bac:2558      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(setbuf.c)
 2690:229d      setbuf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(i4m.asm)
@@ -1523,10 +1522,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 2690:289e      __do_exit_with_msg_
 2690:297d      __GETDS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-2bac:255c      __argc
-2bac:255e      __argv
-2bac:2560      ___argc
-2bac:2562      ___argv
+2bac:255a      __argc
+2bac:255c      __argv
+2bac:255e      ___argc
+2bac:2560      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(chainint)
 2690:2988      _chain_intr_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
@@ -1534,7 +1533,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 2bac:1a88      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 2690:29af      __get_errno_ptr_
-2bac:2564+     _errno
+2bac:2562+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
 2bac:1a8a      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
@@ -1565,7 +1564,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 2690:2e00      _nfree_
 2690:2e00      free_
-2bac:2566+     ___MiniHeapFreeRover
+2bac:2564+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 2690:2ec5      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dointr)
@@ -1643,7 +1642,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 2690:398b      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 2690:39a7      __get_doserrno_ptr_
-2bac:256a+     __doserrno
+2bac:2568+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 2bac:1af8      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -1678,10 +1677,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 2690:494f      __EnterWVIDEO_
 2bac:1b00+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-2bac:256e      ____Argv
-2bac:2570      ____Argc
+2bac:256c      ____Argv
+2bac:256e      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-2bac:2572      ___historical_splitparms
+2bac:2570      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nrealloc.c)
 2690:496b*     _nrealloc_
 2690:496b      realloc_
@@ -1716,7 +1715,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(mbisdbcs.c)
 2bac:1b0a      ___IsDBCS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbislead.c)
 2690:4e28*     _ismbblead_
-2bac:2574      ___MBCSIsTable
+2bac:2572      ___MBCSIsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nmsize.c)
 2690:4e3f*     _msize_
 2690:4e3f      _nmsize_
@@ -1760,4 +1759,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002f140 (192832.)
 Entry point address: 2690:26d0
-Link time: 00:00.85
+Link time: 00:00.84

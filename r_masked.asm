@@ -1181,7 +1181,7 @@ lookup_is_ff:
 cbw
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 shl   ax, 3
 ELSE
 shl   ax, 1
@@ -1278,8 +1278,12 @@ sal   bx, 1
 
 
 mov   bx, word ptr es:[bx + di] ; get reverse side for the line
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386 ; todo more of this
+shl   bx, 2
+ELSE
 shl   bx, 1
 shl   bx, 1
+ENDIF
 
 mov   bx, word ptr ds:[bx + _sides_render + 2]   ; get backsecnum
 
