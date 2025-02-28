@@ -939,8 +939,7 @@ cmp   ax, word ptr [si + 4]
 jg    end_draw_sprite_normal_innerloop
 mov   bx, dx
 
-shl   bx, 1
-shl   bx, 1
+SHIFT_MACRO shl bx 2
 
 mov   ax, word ptr es:[bx + 8]
 mov   bx, word ptr es:[bx + 10]
@@ -1011,8 +1010,7 @@ cmp   ax, word ptr [si + 4]
 jg    end_draw_sprite_shadow_innerloop
 mov   bx, dx
 
-shl   bx, 1
-shl   bx, 1
+SHIFT_MACRO shl bx 2
 
 mov   ax, word ptr es:[bx + 8]
 mov   bx, word ptr es:[bx + 10]
@@ -1103,9 +1101,7 @@ mov   si, di
 lods  word ptr es:[si]  ; si 2 after
 
 mov   word ptr ds:[_curseg], ax  
-shl   ax, 1
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 3
 add   ah, (_segs_render SHR 8 ) 		; segs_render is ds:[0x4000] 
 mov   word ptr ds:[_curseg_render], ax
 mov   bx, ax
@@ -1142,8 +1138,7 @@ mov   ds, ax
 mov   ax, SIDES_SEGMENT
 mov   si, word ptr [bx + 6]			; get sidedefOffset
 mov   es, ax
-shl   si, 1
-shl   si, 1
+SHIFT_MACRO shl si 2
 mov   bx, si						; side_render_t is 4 bytes each
 shl   si, 1							; side_t is 8 bytes each
 add   bh, (_sides_render SHR 8 )		; sides render near addr is ds:[0xAE00]
@@ -1181,13 +1176,8 @@ lookup_is_ff:
 cbw
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-shl   ax, 3
-ELSE
-shl   ax, 1
-shl   ax, 1
-shl   ax, 1
-ENDIF
+SHIFT_MACRO shl ax 3
+
 
 
 mov   bx, ax
@@ -1236,10 +1226,9 @@ mov   cx, word ptr [bx+2]			; get v2 offset
 mov   bx, word ptr [bx]				; get v1 offset
 mov   ax, VERTEXES_SEGMENT
 
-shl   bx, 1
-shl   bx, 1
-shl   cx, 1
-shl   cx, 1
+SHIFT_MACRO shl bx 2
+SHIFT_MACRO shl cx 2
+
 
 mov   es, ax
 
@@ -1270,31 +1259,24 @@ mov   cx, 01000h		; get side_render secnum
 mov   bx, 1
 sub   bl, dl
 
-shl   di, 1
-shl   di, 1
+SHIFT_MACRO shl di 2
+
 mov   ax, LINES_SEGMENT
 mov   es, ax
 sal   bx, 1
 
 
 mov   bx, word ptr es:[bx + di] ; get reverse side for the line
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386 ; todo more of this
-shl   bx, 2
-ELSE
-shl   bx, 1
-shl   bx, 1
-ENDIF
+
+SHIFT_MACRO shl bx 2
+
+
 
 mov   bx, word ptr ds:[bx + _sides_render + 2]   ; get backsecnum
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shl   bx, 4
-ELSE
-shl   bx, 1
-shl   bx, 1
-shl   bx, 1
-shl   bx, 1
-ENDIF
+SHIFT_MACRO shl bx 4
+
+
 
 
 ; bx holds backsector
@@ -1303,15 +1285,7 @@ mov   ax, SECTORS_SEGMENT
 mov   es, ax
 mov   di, cx        ; retrieve side_render secnum from above
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shl   di, 4
-ELSE
-shl   di, 1
-shl   di, 1
-shl   di, 1
-shl   di, 1
-ENDIF
-
+SHIFT_MACRO SHL di 4
 
 ;mov   word ptr ds:[_frontsector], bx
 
@@ -1416,14 +1390,8 @@ xor   ah, ah
 
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-sar   ax, 4
-ELSE
-sar   ax, 1
-sar   ax, 1
-sar   ax, 1
-sar   ax, 1
-ENDIF
+SHIFT_MACRO sar ax 4
+
 
 mov   dx, ax
 SELFMODIFY_MASKED_extralight_1:
@@ -2247,16 +2215,13 @@ push  ax
 
 ; segs_render is 8 bytes each. need to get the index..
 
-shl   si, 1
-shl   si, 1
-shl   si, 1
+SHIFT_MACRO shl si 3
 
 ;mov   ax, SEGS_RENDER_SEGMENT
 ;mov   es, ax  ; ES for segs_render lookup
 
 mov   di, word ptr ds:[_segs_render + si]
-shl   di, 1
-shl   di, 1
+SHIFT_MACRO shl di 2
 
 mov   ax, VERTEXES_SEGMENT
 mov   es, ax  ; DS for vertexes lookup
@@ -2270,8 +2235,7 @@ mov   di, word ptr ds:[_segs_render + si + 2]
 
 ;mov   es, ax  ; juggle ax around isntead of putting on stack...
 
-shl   di, 1
-shl   di, 1
+SHIFT_MACRO shl di 2
 
 mov   si, word ptr es:[di]      ; ldx
 mov   di, word ptr es:[di + 2]  ; ldy
@@ -3134,14 +3098,8 @@ cmp   ax, word ptr ds:[_dc_yh]
 jg    increment_column_and_continue_loop
 mov   bx, di
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shr   bx, 4
-ELSE
-shr   bx, 1
-shr   bx, 1
-shr   bx, 1
-shr   bx, 1
-ENDIF
+SHIFT_MACRO shr bx 4
+
 
 SELFMODIFY_MASKED_dc_texturemid_hi_1:
 mov   dx, 01000h;  dc_texturemid intbits

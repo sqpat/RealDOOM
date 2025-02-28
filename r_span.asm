@@ -527,8 +527,9 @@ push  si
 
 ; lookup the fine angle
 
-sal dx, 1
-sal dx, 1   ; DWORD lookup index
+; DWORD lookup index
+SHIFT_MACRO sal dx 2
+
 mov si, dx
 
 mov ds, ax  ; cosine/sine segment in ds
@@ -865,14 +866,11 @@ SELFMODIFY_SPAN_fixedcolormap_1:
 mov   ax, ax
 SELFMODIFY_SPAN_fixedcolormap_1_AFTER:
 ; 		index = distance >> LIGHTZSHIFT;
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-sar   ax, 4
-ELSE
-sar   ax, 1
-sar   ax, 1
-sar   ax, 1
-sar   ax, 1
-ENDIF
+
+
+SHIFT_MACRO sar ax 4
+
+
 ;		if (index >= MAXLIGHTZ) {
 ;			index = MAXLIGHTZ - 1;
 ;		}
@@ -1150,13 +1148,8 @@ SELFMODIFY_SPAN_drawplaneiter:
 mov   ax, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
 cmp   ax, word ptr ds:[_lastvisplane]
 jge   exit_drawplanes
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
- shl   ax, 3
-ELSE
- shl   ax, 1
- shl   ax, 1
- shl   ax, 1
-ENDIF
+SHIFT_MACRO shl ax 3
+
 
 add   ax, offset _visplaneheaders
 ; todo lea si bx + _visplaneheaders
@@ -1186,14 +1179,7 @@ mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN_STARTMARKER_],
 mov   al, ch
 xor   ah, ah
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
- sar   ax, LIGHTSEGSHIFT
-ELSE
- sar   ax, 1
- sar   ax, 1
- sar   ax, 1
- sar   ax, 1
-ENDIF
+SHIFT_MACRO sar ax LIGHTSEGSHIFT
 
 
 SELFMODIFY_SPAN_extralight_1:
@@ -1267,12 +1253,8 @@ jmp   lookup_visplane_segment
 found_page_with_empty_space:
 
 mov   al, bl ; bl is usedflatindex
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
- shl   al, 2
-ELSE
- shl   al, 1
- shl   al, 1
-ENDIF
+SHIFT_MACRO shl al 2
+
 
 mov   ah, byte ptr ds:[bx + _allocatedflatsperpage]
 add   ah, al
@@ -1296,12 +1278,7 @@ mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] =
 flat_loaded:
 mov   dx, word ptr [bp - 4] ; a byte, but read the 0 together
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
- sar   dx, 2
-ELSE
- sar   dx, 1
- sar   dx, 1
-ENDIF
+SHIFT_MACRO sar dx 2
 
 
 ; dl = flatcacheL2pagenumber
@@ -1321,12 +1298,8 @@ db 01Eh  ;
 dw _R_EvictFlatCacheEMSPage_addr
 
 ;call  R_EvictFlatCacheEMSPage_   ; al stores result..
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
- shl   al, 2
-ELSE
- shl   al, 1
- shl   al, 1
-ENDIF
+SHIFT_MACRO shl al 2
+
 
 
 mov   byte ptr [bp - 4], al
@@ -1387,12 +1360,8 @@ in_flat_page_1:
 mov   word ptr ds:[_lastflatcacheindicesused], cx
 l1_cache_finished_updating:
 mov   ax, word ptr [bp - 4]
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
- sar   ax, 2
-ELSE
- sar   ax, 1
- sar   ax, 1
-ENDIF
+SHIFT_MACRO sar ax 2
+
 cbw  
 
 

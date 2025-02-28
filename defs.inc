@@ -397,6 +397,30 @@ ENDIF
 ENDM
 
 
+SHIFT_MACRO MACRO instruction, register, count
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+	&instruction &register, &count
+
+ELSEIF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	IF COUNT GE 4
+		&instruction &register, &count
+	ELSE
+		REPT &count
+			&instruction &register, 1
+		ENDM
+	ENDIF
+ELSE
+	REPT &count
+		&instruction &register, 1
+	ENDM
+ENDIF
+
+ENDM
+
+
+
 INSTRUCTION_SET_MACRO MACRO 
 
 ;IF COMPILE_INSTRUCTIONSET EQ COMPILE_386

@@ -116,8 +116,7 @@ call FixedMulTrig_
 ; inlined  16 bit times sine value
 
 mov es, si
-sal di, 1
-sal di, 1
+SHIFT_MACRO sal di 2
 les si, dword ptr es:[di]
 mov di, es
 xchg dx, di
@@ -751,8 +750,7 @@ mov   ax, 01000h
 sub   ah, 08h   ; FINE_ANG90
 and   ah, 01Fh    ; MOD_FINE_ANGLE
 
- shl   ax, 1
- shl   ax, 1
+SHIFT_MACRO shl ax 2
  
 SELFMODIFY_BSP_centerx_2:
 mov   cx, 01000h
@@ -1108,38 +1106,31 @@ mov   bx, ax
 shl   bx, 1
 mov   dl, byte ptr es:[si]
 mov   si, bx
-shl   bx, 1
-shl   bx, 1
+SHIFT_MACRO shl bx 2
 add   bh, (_segs_render SHR 8)
 mov   byte ptr [bp - 2], dl
 mov   dx, word ptr es:[si]
 mov   word ptr [bp - 4], dx
 mov   si, word ptr [bx + 6]
-shl   dx, 1
-shl   dx, 1
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-shl   si, 3
-ELSE
-shl   si, 1
-shl   si, 1
-shl   si, 1
-ENDIF
+SHIFT_MACRO shl dx 2
+
+SHIFT_MACRO shl si 3
+
+
 
 mov   word ptr [bp - 0Ah], dx
 mov   word ptr [bp - 0Ch], si
 les   si, dword ptr [bx]       ;v1
 mov   di, es                   ;v2
 mov   cx, VERTEXES_SEGMENT
-shl   si, 1
-shl   si, 1
+SHIFT_MACRO shl si 2
 mov   es, cx
 mov   word ptr cs:[SELFMODIFY_get_curseg_2 + 1], ax
 sal   ax, 1
 mov   word ptr cs:[SELFMODIFY_get_curseg_1 + 1], ax ; preshift
 les   ax, dword ptr es:[si]
 mov   dx, es
-shl   di, 1
-shl   di, 1
+SHIFT_MACRO shl di 2
 mov   es, cx
 les   di, dword ptr es:[di]       ; v2.x
 mov   cx, es   ; v2.y
@@ -1221,25 +1212,19 @@ done_checking_right:
 ; seg in view angle but not necessarily visible
 add   bh, (ANG90_HIGHBITS SHR 8)
 mov   ax, VIEWANGLETOX_SEGMENT
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-shr   bx, 3
-ELSE
-shr   bx, 1
-shr   bx, 1
-shr   bx, 1
-ENDIF
+
+SHIFT_MACRO shr bx 3
+
+
+
 mov   es, ax
 add   bx, bx
 add   dh, (ANG90_HIGHBITS SHR 8)
 mov   ax, word ptr es:[bx]
 mov   bx, dx
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-shr   bx, 3
-ELSE
-shr   bx, 1
-shr   bx, 1
-shr   bx, 1
-ENDIF
+SHIFT_MACRO shr bx 3
+
+
 add   bx, bx
 mov   dx, word ptr es:[bx]
 cmp   ax, dx
@@ -1269,22 +1254,18 @@ mov   si, LINES_SEGMENT
 mov   es, si
 add   bx, word ptr [bp - 0Ah]
 mov   bx, word ptr es:[bx]
-shl   bx, 1
-shl   bx, 1
+
+SHIFT_MACRO shl bx 2
+
+
     ; secnum field in this side_render_t
 mov   si, word ptr ds:[bx + _sides_render + 2]
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shl   si, 4
-ELSE
-shl   si, 1
-shl   si, 1
-shl   si, 1
-shl   si, 1
-ENDIF
-mov   word ptr ds:[_backsector], si
-mov   es, word ptr ds:[_backsector + 2]   ; todo can this be les
+SHIFT_MACRO shl si 4
 
-mov   di, word ptr ds:[_frontsector]
+mov   word ptr ds:[_backsector], si
+
+
+les   di, dword ptr ds:[_frontsector]
 ;es:si backsector
 ;es:di frontsector.
 
@@ -1385,20 +1366,12 @@ mov   word ptr cs:[SELFMODIFY_countvalue+1], ax    ; di stores count for later
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 
-shl   bx, 1
-shl   bx, 1
+SHIFT_MACRO shl bx 2
 
 mov   ax, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS] ; get subsec secnum
 
+SHIFT_MACRO shl ax 4
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
- shl   ax, 4
-ELSE
- shl   ax, 1
- shl   ax, 1
- shl   ax, 1
- shl   ax, 1
-ENDIF
 
 
 mov   word ptr ds:[_frontsector], ax
@@ -1571,14 +1544,9 @@ mov       di, ax
 
 
 
+SHIFT_MACRO shl di 3
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-shl       di, 3
-ELSE
-shl       di, 1
-shl       di, 1
-shl       di, 1
-ENDIF
+
 
 
 add       di, _visplaneheaders  ; _di is plheader
@@ -1682,13 +1650,12 @@ mov       dx, word ptr ds:[di + 2]
 
 ; generate index from di again. 
 sub       di, _visplaneheaders
-sar       di, 1
-sar       di, 1
+SHIFT_MACRO sar di 2
 mov       di, word ptr [di + _visplanepiclights]
 
 mov       word ptr [bx + _visplanepiclights], di
-sal       bx, 1
-sal       bx, 1 ; now bx is 8 per
+SHIFT_MACRO sal bx 2
+; now bx is 8 per
 
 ; set all plheader fields for lastvisplane...
 mov       word ptr [bx + _visplaneheaders], ax
@@ -1963,8 +1930,7 @@ not_too_far_off_side_lowbits:
 SELFMODIFY_set_ax_to_spriteframe:
 mov   ax, 00012h  ; leave high byte 0
 mov   di, ax
-shl   di, 1
-shl   di, 1
+SHIFT_MACRO shl di 2
 sub   di, ax
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
@@ -2112,17 +2078,13 @@ inc   word ptr ds:[_vissprite_p]
 got_vissprite:
 ; mul by 28h or 40. SIZEOF_VISSPRITE_T
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-sal   si, 3   ; x8  08h
-ELSE
-sal   si, 1   ; x2  02h
-sal   si, 1   ; x4  04h
-sal   si, 1   ; x8  08h
-ENDIF
+SHIFT_MACRO shl si 3
+
 
 mov   bx, si
-sal   si, 1   ; x16 10h
-sal   si, 1   ; x32 20h
+
+SHIFT_MACRO sal si 2
+; x32 20h
 lea   si, [bx + si + OFFSET _vissprites] ; x40  28h
 
 
@@ -2308,8 +2270,7 @@ jne   exit_set_fullbright_colormap
 ; but final result is capped at 48. so we dont have to do as much with the high word...
 mov   ax, word ptr [bp - 01Dh] ; shift 8 by loading a byte higher.
 ; shift 2 more guaranteed
-sar   ax, 1
-sar   ax, 1
+SHIFT_MACRO sar ax 2
 
 ; test for detailshift portion
 SELFMODIFY_BSP_detailshift_7:
@@ -2391,14 +2352,11 @@ mov   word ptr es:[bx + 6], dx
 mov   al, byte ptr es:[bx + 0Eh]		; sec->lightlevel
 xor   ah, ah
 mov   dx, ax
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-sar   dx, 4
-ELSE
-sar   dx, 1
-sar   dx, 1
-sar   dx, 1
-sar   dx, 1
-ENDIF
+
+SHIFT_MACRO sar dx 4
+
+
+
 SELFMODIFY_BSP_extralight1:
 mov   al, 0
 add   ax, dx
@@ -2421,15 +2379,10 @@ loop_things_in_thinglist:
 ; multiply by 18h (SIZEOF_MOBJ_POS_T), AX maxes at MAX_THINKERS - 1 (839), cant 8 bit mul
 ; tested, imul si, ax, SIZEOF_MOBJ_POS_T  still slower
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-sal   ax, 3
 
-ELSE
-sal   ax, 1
-sal   ax, 1
-sal   ax, 1
+SHIFT_MACRO sal ax 3
 
-ENDIF
+
 mov   si, ax
 sal   si, 1
 add   si, ax
@@ -2566,8 +2519,7 @@ push      ax ; bp - 6
 push      ax ; bp - 8
 
 mov       si, word ptr ds:[bx + 6]
-shl       si, 1
-shl       si, 1
+SHIFT_MACRO shl si 2
 mov       di, si
 shl       si, 1
 
@@ -2601,8 +2553,7 @@ mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1], ax
 
 mov       ax, VERTEXES_SEGMENT 
 mov       ds, ax	; if put into ds we could lodsw a bit... worth?
-shl       si, 1
-shl       si, 1
+SHIFT_MACRO shl si 2
 lodsw
 push      ax       ; bp - 010h
 lodsw
@@ -2610,8 +2561,7 @@ push      ax       ; bp - 012h
 
 
 mov       si, es ; les earlier
-shl       si, 1
-shl       si, 1
+SHIFT_MACRO shl si 2
 
 lodsw
 mov       word ptr cs:[SELFMODIFY_BSP_v2x+1], ax
@@ -2640,13 +2590,12 @@ push      ax      ; bp - 014h
 ; si is linedefOffset
 
 mov       cx, si
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-sar       si, 3
-ELSE
-sar       si, 1
-sar       si, 1
-sar       si, 1
-ENDIF
+
+
+SHIFT_MACRO sar si 3
+
+
+
 mov       ax, SEENLINES_SEGMENT
 mov       es, ax
 mov       al, 1
@@ -2674,13 +2623,11 @@ mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
 
 xchg      ax, si
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-shl       ax, SHORTTOFINESHIFT
-ELSE
-shl       ax, 1
-shl       ax, 1
-shl       ax, 1
-ENDIF
+
+SHIFT_MACRO shl ax SHORTTOFINESHIFT
+
+
+
 mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1], ax
 
 
@@ -3208,14 +3155,11 @@ mov       al, byte ptr [bp - 03Bh]
 xor       ah, ah
 SELFMODIFY_BSP_extralight2:
 mov       dl, 0
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-sar       ax, 4
-ELSE
-sar       ax, 1
-sar       ax, 1
-sar       ax, 1
-sar       ax, 1
-ENDIF
+
+SHIFT_MACRO sar ax 4
+
+
+
 xor       dh, dh
 add       dx, ax
 mov       ax, word ptr [bp - 012h]
@@ -4574,14 +4518,10 @@ jg    do_yh_floorclip
 ; todo: we are assuming this cant be negative. If it can be,
 ; we must do the full sar rcr with the 4th byte. seems fine so far?
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shr   ax, 4
-ELSE
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-ENDIF
+
+SHIFT_MACRO shr ax 4
+
+
 
 
 ; cx is still floor
@@ -4647,8 +4587,7 @@ jb    non_subtracted_finetangent
 ; mirrored values in lookup table
 neg   bx
 add   bx, 4095
-shl   bx, 1
-shl   bx, 1
+SHIFT_MACRO shl bx 2
 les   ax, dword ptr es:[bx]
 mov   dx, es
 neg   dx
@@ -4660,8 +4599,7 @@ jump_to_seg_non_textured:
 xor   dx, dx
 jmp   seg_non_textured
 non_subtracted_finetangent:
-shl   bx, 1
-shl   bx, 1
+SHIFT_MACRO shl bx 2
 les   ax, dword ptr es:[bx]
 mov   dx, es
 finetangent_ready:
@@ -4745,14 +4683,10 @@ do_lightscaleshift:
 mov   al, bh
 mov   ah, cl
 mov   si, ax
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shr   si, 4
-ELSE
-shr   si, 1
-shr   si, 1
-shr   si, 1
-shr   si, 1
-ENDIF
+
+SHIFT_MACRO shr si 4
+
+
 
 ; todo investigate selfmodify lookup here, write ahead byte value directly ahead.... also dont need to push pop si.
 ;(talking about SELFMODIFY_add_wallights).
@@ -6686,28 +6620,19 @@ push  di
 mov   bx, word ptr ds:[_r_cachedplayerMobjsecnum]
 mov   ax, SECTORS_SEGMENT
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shl   bx, 4
-ELSE
-shl   bx, 1
-shl   bx, 1
-shl   bx, 1
-shl   bx, 1
-ENDIF
+
+SHIFT_MACRO shl bx 4
+
+
 
 mov   es, ax
 mov   al, byte ptr es:[bx + 0Eh]  ; sector lightlevel byte offset
 xor   ah, ah
 mov   dx, ax
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-sar   dx, 4
-ELSE
-sar   dx, 1
-sar   dx, 1
-sar   dx, 1
-sar   dx, 1
-ENDIF
+
+SHIFT_MACRO sar dx 4
+
 
 SELFMODIFY_BSP_extralight3:
 mov   al, 0
@@ -6844,8 +6769,7 @@ cmp   ax, word ptr es:[bx]         ; bspcoord[BOXTOP]
 jl    viewy_less_than_top
 xor   ax, ax
 boxy_calculated:
-shl   al, 1
-shl   al, 1
+SHIFT_MACRO shl al 2
 add   al, dl
 cmp   al, 5
 je    return_1
@@ -7073,11 +6997,9 @@ mov   dx, VIEWANGLETOX_SEGMENT
 mov   es, dx
 lea   si, [di + ANG90_HIGHBITS]
 add   ch, (ANG90_HIGHBITS SHR 8)
-shr   si, 1
-shr   si, 1
+SHIFT_MACRO shr si 2
 mov   bx, cx
-shr   bx, 1
-shr   bx, 1
+SHIFT_MACRO shr bx 2
 and   si, 0FFFEh  ; need to and out the last bit. (is there a faster way?)
 and   bl, 0FEh    ; need to and out the last bit. (is there a faster way?)
 mov   si, word ptr es:[si]
@@ -7235,13 +7157,10 @@ mov   dx, 01000h
 SELFMODIFY_BSP_viewy_hi_6:
 mov   cx, 01000h
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-shl       bx, 3
-ELSE
-shl   bx, 1       ; es:bx is node.. bspnum is bx shift right 3.
-shl   bx, 1
-shl   bx, 1
-ENDIF
+
+SHIFT_MACRO shl bx 3
+
+
 
 ;        int16_t dx = viewx.h.intbits - bsp->x;
 ;			int16_t dy = viewy.h.intbits - bsp->y;
@@ -7326,13 +7245,12 @@ mov   cx, word ptr [bp + di - 0C0h]  ; stack_bsp lookup
 xor   bl, 1       ; side ^ 1
 xor   bh, bh
 mov   dx, cx
-sar   dx, 1    ; stack_bsp was stored preshifted..
-sar   dx, 1
+; stack_bsp was stored preshifted..
+SHIFT_MACRO sar dx 2
 add   dh, (NODES_RENDER_SEGMENT SHR 8)
 shl   bx, 1
 mov   ax, bx   ; todo get rid of this. go to ax directly.
-shl   ax, 1
-shl   ax, 1
+SHIFT_MACRO shl ax 2
 mov   es, dx
 call  R_CheckBBox_
 test  al, al
