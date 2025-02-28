@@ -483,7 +483,6 @@ extern uint8_t		        setblocks;
 extern uint16_t			    skytexture;
 
 extern uint16_t             pspritescale;
-extern int16_t              spritelights;
 extern int16_t              numflats;
 extern int16_t              firstpatch;
 extern int16_t              numpatches;

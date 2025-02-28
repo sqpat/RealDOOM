@@ -35,7 +35,6 @@ EXTRN R_PointToAngle16Old_:PROC
 EXTRN R_GetColumnSegment_:NEAR
 
 EXTRN _validcount:WORD
-EXTRN _spritelights:WORD
 EXTRN _spritewidths_segment:WORD
 
 
@@ -2329,7 +2328,8 @@ cmp   ax, MAXLIGHTSCALE
 jl    index_below_maxlightscale
 mov   di, MAXLIGHTSCALE - 1
 index_below_maxlightscale:
-mov   bx, word ptr ds:[_spritelights]
+SELFMODIFY_set_spritelights_1:
+mov   bx, 01000h
 mov   al, byte ptr ds:[_scalelightfixed+bx+di]
 mov   byte ptr [si + 1], al
 LEAVE_MACRO
@@ -2410,7 +2410,7 @@ mov   si, ax
 add   si, ax
 mov   ax, word ptr ds:[si + _lightmult48lookup]
 spritelights_set:
-mov   word ptr ds:[_spritelights], ax
+mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1], ax  ; todo get rid of this variable. self modify this forward.
 mov   ax, word ptr es:[bx + 8]
 test  ax, ax
 je    exit_add_sprites
@@ -5037,6 +5037,7 @@ mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], ((SELFMODIFY_BSP_che
 check_seglooptexrepeat0:
 @
 
+; todohigh get this dh and dl in same read?
 mov   dh, byte ptr ds:[_seglooptexrepeat]
 cmp   dh, 0
 je    seglooptexrepeat0_is_jmp
@@ -5522,10 +5523,10 @@ mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], dx
 jmp   check_seglooptexrepeat1
 seglooptexmodulo1_is_jmp:
 mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
+check_seglooptexrepeat1:
 @
 
 
-check_seglooptexrepeat1:
 ; todo get this dh and dl in same read
 mov   dh, byte ptr [1 + _seglooptexrepeat]
 cmp   dh, 0
@@ -5844,7 +5845,7 @@ sbb       cx, 01000h
 ; 	worldtop = worldhigh;
 ; }
 
-; todo skyflatnum should be a per level constant??
+; todohigh skyflatnum should be a per level constant??
 mov       al, byte ptr ds:[_skyflatnum]
 cmp       al, byte ptr [bp - 037h]
 jne       not_a_skyflat
@@ -6458,7 +6459,7 @@ SELFMODIFY_BSP_pspritescale_2_AFTER = SELFMODIFY_BSP_pspritescale_2 + 2
 pspritescale_nonzero_2:
 mov   ax, word ptr [bp - 4]
 
-; inlined FixedMul16u32_ ; todo 32 bit version
+; inlined FixedMul16u32_ ; todo 386 bit version
 
 MUL  BX        ; AX * BX
 
@@ -6661,10 +6662,11 @@ ret
 
 set_vis_colormap:
 mov   ax, SCALELIGHTFIXED_SEGMENT
-mov   bx, word ptr ds:[_spritelights]  ; todo remove when prepare... func is in asm
+SELFMODIFY_set_spritelights_2:
+mov   bx, 01000h
 mov   es, ax
 mov   al, byte ptr es:[bx + (MAXLIGHTSCALE-1)]
-mov   byte ptr [si + 1], al
+mov   byte ptr ds:[si + 1], al
 LEAVE_MACRO
 ret   
 
@@ -6718,7 +6720,9 @@ jb    calculate_spritelights
 ; use max spritelight
 mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]
 player_spritelights_set:
-mov   word ptr ds:[_spritelights], ax  ; todo get rid of this variable. self modify this forward.
+mov   word ptr cs:[SELFMODIFY_set_spritelights_2 + 1], ax 
+
+
 
 first_iter:
 

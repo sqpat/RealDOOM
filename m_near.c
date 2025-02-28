@@ -206,7 +206,6 @@ uint16_t			skytexture;
 //
 uint16_t         pspritescale;
 
-int16_t   spritelights;
 
 // constant arrays
 //  used for psprite clipping and initializing clipping
