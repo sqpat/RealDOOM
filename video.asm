@@ -199,9 +199,7 @@ mov   bl, cl
 and   bx, 0007h
 mov   al, byte ptr ss:[_jump_mult_table_3 + bx]
 mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels + 1], al
-shr   cx, 1
-shr   cx, 1
-shr   cx, 1
+SHIFT_MACRO shr cx 3
 je    done_drawing_8_pixels
 
 
@@ -456,9 +454,7 @@ mov   bl, cl
 and   bx, 0007h
 mov   al, byte ptr ss:[_jump_mult_table_3 + bx]
 mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels5000Screen0_ + 1], al
-shr   cx, 1
-shr   cx, 1
-shr   cx, 1
+SHIFT_MACRO shr cx 3
 je    done_drawing_8_pixels5000Screen0_
 
 
@@ -585,8 +581,7 @@ mov   ax, si
 ;	desttop = (byte __far*)(destscreen->w + y * (SCREENWIDTH / 4) + (x>>2));
 ;   es:bx is desttop
 
-sar   ax, 1
-sar   ax, 1
+SHIFT_MACRO SAR AX 2
 
 ;    w = (patch->width); 
 ;    for ( col = 0 ; col<w ; col++) 
@@ -643,9 +638,7 @@ mov   al, byte ptr ss:[_jump_mult_table_3 + si]
 mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels_direct + 1], al
 mov   ax,  ((SCREENWIDTH / 4) - 1)
 lea   si, [bx + 3]
-shr   cx, 1
-shr   cx, 1
-shr   cx, 1
+SHIFT_MACRO shr cx 3
 je    done_drawing_8_pixels_direct
 
 

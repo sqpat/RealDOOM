@@ -268,8 +268,8 @@ je        set_found_channel
 inc       al
 cmp       al, MAX_MUSIC_CHANNELS
 jb        loop_music_channels
-mov       cx, word ptr ds:[_playingtime]
-mov       dx, word ptr ds:[_playingtime + 2]
+les       cx, dword ptr ds:[_playingtime]
+mov       dx, es
 mov       ah, 0FFh
 
 xor       al, al

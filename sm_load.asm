@@ -456,8 +456,8 @@ call  F_CopyString9_
 mov   ax, OFFSET _filename_argument
 call  dword ptr ds:[_W_GetNumForName_addr]
 call  I_LoadSong_
-mov   ax, word ptr ds:[_playingdriver+2]
-mov   bx, word ptr ds:[_playingdriver]
+les   bx, dword ptr ds:[_playingdriver]
+mov   ax, bx
 test  ax, ax
 jne   do_call_playmusic
 test  bx, bx

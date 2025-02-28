@@ -93,9 +93,7 @@ lods  word ptr es:[si]
 mov   bx, ax
 mov   ch, 0     ; doing_loop
 and   bx, 070h ; bits 4, 5, 6 of al
-sar   bx, 1
-sar   bx, 1
-sar   bx, 1    ; shift 4 minus 1 - word lookup
+SHIFT_MACRO SAR BX 3
 ; bx stores event ptr
 
 mov   dl, al

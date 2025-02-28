@@ -1639,7 +1639,7 @@ sal       bx, 1   ; bx is 2 per index
 
 ; dx/ax is plheader->height
 ; done with old plheader..
-
+; es is in use..
 mov       ax, word ptr ds:[di]
 mov       dx, word ptr ds:[di + 2]
 
@@ -1940,10 +1940,12 @@ add   bx, ax
 cmp   byte ptr es:[bx + 018h], 0
 mov   bx, 0				; rot 0 on jmp
 je    skip_sprite_rotation
-mov   ax, word ptr [bp - 01Ah]
-mov   dx, word ptr [bp - 018h]
-mov   bx, word ptr [bp - 016h]
-mov   cx, word ptr [bp - 014h]
+
+
+les   ax, dword ptr [bp - 01Ah]
+mov   dx, es
+les   bx, dword ptr [bp - 016h]
+mov   cx, es
 
 
 SELFMODIFY_BSP_viewx_lo_3:
@@ -2209,9 +2211,8 @@ mov   ax, word ptr [si + 2]
 SELFMODIFY_sub_x1:
 sub   ax, 01234h
 jle   vis_x1_greater_than_x1
-mov   bx, word ptr [si + 01Eh]
-mov   cx, word ptr [si + 020h]
-
+les   bx, dword ptr [si + 01Eh]
+mov   cx, es
 ; inlined FastMul16u32u
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
@@ -5888,8 +5889,8 @@ toptexture_zero:
 mov       word ptr cs:[SELFMODIFY_BSP_toptexture], ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
 jmp       toptexture_stuff_done
 set_toptexture_to_worldtop:
-mov       ax, word ptr [bp - 040h]
-mov       dx, word ptr [bp - 03Eh]
+les       ax, dword ptr [bp - 040h]
+mov       dx, es
 jmp       do_selfmodify_toptexture
 
 toptexture_not_zero:
@@ -5976,8 +5977,8 @@ or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1], bl
 test      byte ptr [bp - 014h], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here
-mov       ax, word ptr [bp - 040h]
-mov       dx, word ptr [bp - 03Eh]
+les       ax, dword ptr [bp - 040h]
+mov       dx, es
 do_selfmodify_bottexture:
 
 ; set _rw_toptexturemid in rendersegloop
@@ -6112,8 +6113,8 @@ lea   di, [si + 4]
 add   bx, 4
 cmp   ax, cx
 je    done_removing_posts
-mov   ax, word ptr [bx]
-mov   dx, word ptr [bx + 2]
+les   ax, dword ptr [bx]
+mov   dx, es
 mov   word ptr [di], ax
 mov   si, di
 mov   word ptr [di + 2], dx

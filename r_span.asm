@@ -713,8 +713,8 @@ mov  si, di
 ; si is x * 4
 mov   es, ds:[_cachedheight_segment_storage]
 
-mov   ax, word ptr [bp - 010h]
-mov   dx, word ptr [bp - 0Eh]
+les   ax, dword ptr [bp - 010h]
+mov   dx, es
 ; TODO: do this shl outside of the function. borrow from es:di lookup's di
 shl   si, 1
 ; CACHEDHEIGHT LOOKUP
@@ -729,8 +729,8 @@ jne   go_generate_values	; comparing high word
 ; CACHED DISTANCE lookup
 use_cached_values:
 
-mov   ax, word ptr es:[si + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   dx, word ptr es:[si + 2 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+les   ax, dword ptr es:[si + 0 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   dx, es
 
 push  ax
 ; CACHEDXSTEP lookup. move these into temporary variable space
@@ -794,8 +794,8 @@ mov   bx, si          ; dword lookup if we add them
 mov   es, ds:[_distscale_segment_storage]
 ;todo bench without bx + si + 2 - sar again later etc.
 push  dx   ; store distance high word in case needed for colormap
-mov   cx, word ptr es:[bx + si + 2]	; distscale high word
-mov   bx, word ptr es:[bx + si]		; distscale low word
+les   bx, dword ptr es:[bx + si]		; distscale low word
+mov   cx, es                                   	; distscale high word
 
 call R_FixedMulLocal_
 
@@ -929,8 +929,8 @@ generate_distance_steps:
 
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx   ; cachedheight into dx
-mov   bx, word ptr es:[si + (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   cx, word ptr es:[si + 2 + (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+les   bx, dword ptr es:[si + 0 (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   cx, es
 
 
 ; not worth continuing to LEA because fixedmul destroys ES and then we have to store and restore from SI which is too much extra time
@@ -1097,10 +1097,10 @@ add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
 do_sky_flat_draw:
 ; todo revisit params. maybe these can be loaded in R_DrawSkyPlaneCallHigh
-mov   bx, word ptr [bp - 8] ; get visplane offset
-mov   cx, word ptr [bp - 6] ; and segment
-mov   dx, word ptr [si + 6]
-mov   ax, word ptr [si + 4]
+les   bx, dword ptr [bp - 8] ; get visplane offset
+mov   cx, es ; and segment
+les   ax, dword ptr [si + 4]
+mov   dx, es
 ;call  [_R_DrawSkyPlaneCallHigh]
 SELFMODIFY_SPAN_draw_skyplane_call:
 db    09Ah
@@ -1384,8 +1384,8 @@ add   bx, bx
 add   ax, word ptr ds:[bx + _FLAT_CACHE_PAGE]
 
 mov   word ptr ds:[_ds_source_segment+2], ax
-mov   ax, word ptr [si]
-mov   dx, word ptr [si + 2]
+les   ax, word ptr [si]
+mov   dx, es
 SELFMODIFY_SPAN_viewz_lo_1:
 sub   ax, 01000h
 SELFMODIFY_SPAN_viewz_hi_1:

@@ -317,10 +317,10 @@ xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
 
 ;    topscreen.w = sprtopscreen;
 
-mov   di, word ptr ds:[_sprtopscreen]
-mov   si, word ptr ds:[_sprtopscreen+2]
-mov   bx, word ptr ds:[_spryscale]
-mov   ax, word ptr ds:[_spryscale+2]
+les   di, dword ptr ds:[_sprtopscreen]
+mov   si, es
+les   bx, dword ptr ds:[_spryscale]
+mov   ax, es
 
 ;   topscreen = si:di 
 
@@ -575,8 +575,7 @@ mov   ax, dx  ; store dc_yh in ax...
 mov   dx, bx			; dx gets _dc_yl
 mov   cx, es    ; cache this
 mov   bx, word ptr ds:[_dc_x]
-mov   di, word ptr ds:[_mfloorclip]
-mov   es, word ptr ds:[_mfloorclip + 2]
+les   di, dword ptr ds:[_mfloorclip]
 add   bx, bx
 cmp   ax, word ptr es:[bx + di]   ; ax holds dc_yh
 jl    dc_yh_clipped_to_floor
@@ -585,8 +584,7 @@ dec   ax
 dc_yh_clipped_to_floor:
 
 
-mov   di, word ptr ds:[_mceilingclip]
-mov   es, word ptr ds:[_mceilingclip + 2]
+les   di, dword ptr ds:[_mceilingclip]
 
 cmp   dx, word ptr es:[bx + di]  ; _dc_yl compare
 jg    dc_yl_clipped_to_ceiling
@@ -722,8 +720,8 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MA
 
 
 
-mov   ax, word ptr ds:[si + 01Eh]   ; vis->xiscale
-mov   dx, word ptr ds:[si + 020h]
+les   ax, dword ptr ds:[si + 01Eh]   ; vis->xiscale
+mov   dx, es
 
 ; labs
 or    dx, dx
@@ -759,14 +757,14 @@ mov   word ptr ds:[di], 0		; di is _sprtopscreen
 SELFMODIFY_MASKED_centery_1:
 mov   word ptr ds:[di + 2], 01000h
 
-mov   ax, word ptr [si + 01Ah]  ; vis->scale
-mov   dx, word ptr [si + 01Ch]  
+les   ax, dword ptr [si + 01Ah]  ; vis->scale
+mov   dx, es
 
 mov   word ptr ds:[_spryscale], ax
 mov   word ptr ds:[_spryscale + 2], dx
 
-mov   bx, word ptr [si + 022h] ; vis->texturemid
-mov   cx, word ptr [si + 024h]
+les   bx, dword ptr [si + 022h] ; vis->texturemid
+mov   cx, es
 ; write this ahead
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASKED_STARTMARKER_], bx
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASKED_STARTMARKER_], cx
@@ -905,7 +903,7 @@ db 01Eh  ;
 dw _getspritetexture_addr
 
 mov   word ptr ds:[_lastvisspritesegment], ax
-mov   word ptr es, ax
+mov   es, ax
 mov   ax, word ptr [si + 026h]
 mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready

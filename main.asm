@@ -1024,8 +1024,9 @@ pop       cx
 pop       bx
 ret       
 check_negative_max_forward:
-mov       dx, word ptr [_forwardmove + 6]
-mov       ax, word ptr [_forwardmove + 4]
+
+les       ax, dword ptr [_forwardmove + 4]
+mov       dx, es
 neg       dx
 neg       ax
 sbb       dx, 0

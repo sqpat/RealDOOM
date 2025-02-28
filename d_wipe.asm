@@ -225,9 +225,7 @@ mov   dx, SCREEN3_SEGMENT
 mov   ds, dx
 mov   dx, (SCREENWIDTH - 2)
 mov   ch, cl
-shr   ch, 1
-shr   ch, 1
-shr   ch, 1
+SHIFT_MACRO shr ch 3
 je    done_outer_loop
 push  ax     ;gross. anywhere else we can store eight bits..?
 mov   ah, cl
@@ -316,9 +314,7 @@ mov   es, dx
 mov   dx, (SCREENWIDTH - 2)
 
 mov   ch, cl
-shr   ch, 1
-shr   ch, 1
-shr   ch, 1
+SHIFT_MACRO shr ch 3
 je    done_outer_loop_2
 push  ax     ;gross. anywhere else we can store eight bits..?
 mov   ah, cl

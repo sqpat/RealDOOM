@@ -61,7 +61,7 @@ mov   es, ax
 
 
 
-
+; todo lds?
 mov   ds, word ptr es:[si + 00h]   ; child 0
 mov   di, word ptr es:[si + 02h]   ; child 1
 
@@ -74,12 +74,13 @@ mov   es, ax  ; ES for nodes lookup
 
 ;  get lx, ly, ldx, ldy
 
-mov   bx, word ptr es:[si + 0];   lx
-mov   di, word ptr es:[si + 2];   ly
+les   bx, dword ptr es:[si + 0]   ; lx
+mov   di, es   					  ; ly
+mov   es, ax
 
+les   ax, dword ptr es:[si + 4]   ; ldx
+mov   si, es                      ; ldy
 
-mov   ax, word ptr es:[si + 4]   ; ldx
-mov   si, word ptr es:[si + 6]   ; ldy
 
 
 pop   es ; shove child 1 in es..

@@ -299,9 +299,7 @@ sar   ax, cl    ; dl has the flag.
 
 mov   cx, SEENLINES_6800_SEGMENT
 mov   es, cx
-sar   bx, 1
-sar   bx, 1
-sar   bx, 1
+SHIFT_MACRO SAR BX 3
 or    byte ptr es:[bx], al
 
 
@@ -320,8 +318,9 @@ mov   byte ptr es:[di + 0Eh], al
 xor   cx, cx  ; line count
 load_next_side:
 mov   bx, di
-sar   bx, 1
-sar   bx, 1   ; LINES offset
+SHIFT_MACRO SAR BX 2
+
+; LINES offset
 
 mov   ax, LINES_SEGMENT
 mov   es, ax
@@ -1406,15 +1405,11 @@ loop_save_next_sector:
 do_save_next_sector:
 
 lodsw                   ; todo shr?? can this be negative
-sar   ax, 1
-sar   ax, 1
-sar   ax, 1
+SHIFT_MACRO SAR AX 3
 stosw           ; floorheight
 
 lodsw                   ; todo shr?? can this be negative
-sar   ax, 1
-sar   ax, 1
-sar   ax, 1
+SHIFT_MACRO SAR AX 3
 stosw           ; ceilingheight
 
 xor   ah, ah    ; zero high bit for next 5 writes.
@@ -1453,9 +1448,7 @@ mov   al, byte ptr ds:[bx]
 
 mov   cx, SEENLINES_6800_SEGMENT
 mov   ds, cx
-sar   bx, 1
-sar   bx, 1
-sar   bx, 1                  ; 8 bits per.
+SHIFT_MACRO SAR BX 3
 mov   ah, byte ptr ds:[bx]   ; get seenlines bit in byte
 
 mov   cl, dl
@@ -1483,8 +1476,8 @@ mov   ds, ax
 mov   bx, dx
 SHIFT_MACRO shl bx 2
 
-mov   ax, word ptr ds:[bx]      ; side1
-mov   bx, word ptr ds:[bx+2]    ; side2
+lds   ax, dword ptr ds:[bx]      ; side1
+mov   bx, ds    ; side2
 mov   cx, 2                     ; num sides
 push  si
 

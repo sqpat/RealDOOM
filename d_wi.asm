@@ -1046,8 +1046,8 @@ mov   ax, 60
 mul   si
 xchg  ax, si
 mov   cx, 2
-mov   ax, word ptr [bp - 6]
-mov   dx, word ptr [bp - 8]
+les   dx, dword ptr [bp - 8]
+mov   ax, es
 call  WI_drawNum_
 les   bx, dword ptr [bp - 4]
 sub   ax, word ptr es:[bx]
@@ -1056,8 +1056,8 @@ cmp   si, 60
 jne   check_tdiv
 do_draw_patch:
 push  word ptr [bp - 2]
-mov   dx, word ptr [bp - 8]
-mov   ax, word ptr [bp - 6]
+les   dx, dword ptr [bp - 8]
+mov   ax, es
 push  word ptr [bp - 4]
 xor   bx, bx
 db 0FFh  ; lcall[addr]
@@ -1091,8 +1091,8 @@ mov   si, ax
 push  dx
 mov   es, dx
 push  ax
-mov   ax, word ptr [bp - 6]
-mov   dx, word ptr [bp - 8]
+les   dx, dword ptr [bp - 8]
+mov   ax, es
 sub   ax, word ptr es:[si]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -2186,11 +2186,12 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _W_CacheLumpNumDirect_addr
 
+les   bx, dword ptr [bp - 0Eh]
+mov   dx, es
+
 mov   ax, WIOFFSETS_SEGMENT
 mov   es, ax
 
-mov   dx, word ptr [bp - 0Ch]  ; todo fix the above functions to not clobber registers.
-mov   bx, word ptr [bp - 0Eh]
 
 xchg  ax, di        ; size in ax
 

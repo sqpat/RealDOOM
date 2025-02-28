@@ -1694,8 +1694,7 @@ mov ax, es
 restore_reg_then_do_full_divide:
 
 ; restore dx
-ror dx, 1
-ror dx, 1
+SHIFT_MACRO ror dx 2
 
 
 do_full_divide:
