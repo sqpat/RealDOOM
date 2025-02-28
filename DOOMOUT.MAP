@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/02/27 19:30:22
+Created on:       25/02/27 20:10:16
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -78,7 +78,7 @@ p_user_TEXT            CODE           AUTO           0a7d:c6c0       000006c8
 r_bsp_TEXT             CODE           AUTO           1756:0000       00000024
 r_data_TEXT            CODE           AUTO           1756:0030       00001b30
 R_MATH_TEXT            CODE           AUTO           1756:1b60       000001ed
-R_MAINHI_TEXT          CODE           AUTO           1756:1d4e       0000246d
+R_MAINHI_TEXT          CODE           AUTO           1756:1d4e       0000246c
 r_draw_TEXT            CODE           AUTO           1756:41c0       000000fb
 r_main_TEXT            CODE           AUTO           1756:42c0       000001ea
 r_plane_TEXT           CODE           AUTO           1756:44b0       00000000
@@ -1120,28 +1120,28 @@ Module: r_math.obj(r_math.ASM)
 Module: r_mainhi.obj(r_mainhi.ASM)
 1756:20e9*     R_AddLine_
 1756:27d6*     R_StoreWallRange_
-1756:38ac*     R_ClipSolidWallSegment_
-1756:395a*     R_ClipPassWallSegment_
-1756:3bf4*     R_CheckBBox_
+1756:38ab*     R_ClipSolidWallSegment_
+1756:3959*     R_ClipPassWallSegment_
+1756:3bf3*     R_CheckBBox_
 1756:2295*     R_Subsector_
 1756:1ddf*     FixedMulBSPLocal_
 1756:1ed2*     R_PointToDist_
 1756:1fbe*     R_HandleEMSVisplanePagination_
 1756:1e18*     FixedDivBSPLocal_
-1756:3b41      R_PrepareMaskedPSprites_
-1756:3e81      R_WriteBackViewConstants_
-1756:4029      R_WriteBackFrameConstants_
+1756:3b40      R_PrepareMaskedPSprites_
+1756:3e80      R_WriteBackViewConstants_
+1756:4028      R_WriteBackFrameConstants_
 1756:1f49      R_ClearPlanes_
 1756:276e*     R_AddSprites_
 1756:206d*     R_FindPlane_
-1756:3385*     R_DrawColumnPrep_
-1756:39ad*     R_DrawPSprite_
+1756:3384*     R_DrawColumnPrep_
+1756:39ac*     R_DrawPSprite_
 1756:237f*     R_CheckPlane_
 1756:2447*     R_ProjectSprite_
 1756:1e87*     FixedMulTrigNoShiftBSPLocal_
-1756:3d9b      R_RenderBSPNode_
+1756:3d9a      R_RenderBSPNode_
 1756:1d4e*     R_ScaleFromGlobalAngle_
-1756:3bc1*     R_PointToAngle16_
+1756:3bc0*     R_PointToAngle16_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1756:41c0      R_VideoErase_
 1756:4244      R_DrawViewBorder_

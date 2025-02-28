@@ -4682,7 +4682,7 @@ CWD				; S0 in DX
 
 AND   DX, BX	; S0*BX
 NEG   DX
-mov   SI, DX	; DI stores hi word return
+mov   SI, DX	; SI stores hi word return
 
 ; AX still stores DX
 MUL  CX         ; DX*CX
@@ -4737,7 +4737,7 @@ les   bx, dword ptr [bp - 032h]
 mov   cx, es
 
 ; store texturecolumn
-push  ax       ; later popped into ds
+push  ax       ; later popped into dx
 
 cmp   cl, 3
 jae   use_max_light
@@ -4745,19 +4745,30 @@ do_lightscaleshift:
 
 mov   al, bh
 mov   ah, cl
+mov   si, ax
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-shr   ax, 4
+shr   si, 4
 ELSE
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
+shr   si, 1
+shr   si, 1
+shr   si, 1
+shr   si, 1
 ENDIF
 
 ; todo investigate selfmodify lookup here, write ahead byte value directly ahead.... also dont need to push pop si.
 ;(talking about SELFMODIFY_add_wallights).
 ; tricky due to fixedcolormap??
-mov   si, ax
+; alternatively just add si's value here to it.
+
+do_light_write:
+SELFMODIFY_add_wallights:
+; si is scalelight
+; scalelight is pre-shifted 4 to save on the double sal every column.
+mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
+;        set drawcolumn colormap function address
+mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
+
+
 jmp   light_set
 
 
@@ -4779,7 +4790,9 @@ ENDIF
 
 
 use_max_light:
+; ugly 
 mov   si, MAXLIGHTSCALE - 1
+jmp   do_light_write
 light_set:
 
 ; INLINED FASTDIV3232FFF_ algo. only used here.
@@ -4818,7 +4831,6 @@ ELSE
 
    main_3232_div:
 
-   push  si
    push  di
 
 
@@ -5047,7 +5059,6 @@ ELSE
 
    FastDiv3232FFFF_done_di_si:
    pop   di
-   pop   si
 ENDIF
 
 ; end fast_div_32_16_FFFF
@@ -5059,15 +5070,9 @@ FastDiv3232FFFF_done:
 
 mov   dh, dl
 mov   dl, ah
-mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax		; todo: write these to code but masked has to as well..
+mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1], dx  
-SELFMODIFY_add_wallights:
 
-; si is scalelight
-; scalelight is pre-shifted 4 to save on the double sal every column.
-mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
-;        set drawcolumn colormap function address
-mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump], al
 
 ; store dc_x directly in code
 mov   word ptr cs:[SELFMODIFY_COLFUNC_get_dc_x+1], di
@@ -5090,7 +5095,7 @@ pop   si
 SELFMODIFY_BSP_midtexture:
 SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 3
 
-cmp   di, si
+cmp   di, si               ; todo should we check this earlier...?
 jl    mid_no_pixels_to_draw
 
 ; si:di are dc_yl, dc_yh
