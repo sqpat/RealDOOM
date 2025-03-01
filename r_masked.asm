@@ -526,6 +526,7 @@ mov   es, cx
 cmp   byte ptr es:[si], 0FFh  ; todo cant this check be only at the end? can this be called with 0 posts?
 je    jump_to_exit_draw_shadow_sprite
 draw_next_shadow_sprite_post:
+; es is in use
 mov   bx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
 mov   di, cx
@@ -540,11 +541,11 @@ MUL  BX        ; AX * BX
 ADD  DX, CX    ; add 
 
 
-mov   cx, word ptr ds:[_sprtopscreen]
-add   cx, ax
-mov   word ptr [bp - 2], cx
-mov   cx, word ptr ds:[_sprtopscreen + 2]
-adc   cx, dx
+add   ax, word ptr ds:[_sprtopscreen]
+mov   word ptr [bp - 2], ax
+adc   dx, word ptr ds:[_sprtopscreen + 2]
+mov   cx, dx
+
 ; todo cache above values to not grab these again?
 ; BX IS STILL _spryscale
 
@@ -813,7 +814,7 @@ xchg  ax, dx
 
 
 ; xiscalestep_shift = vis->xiscale << detailshift2minus;
-
+; es in use
 mov   bx, word ptr [si + 01Eh] ; DX:BX = vis->xiscale
 mov   dx, word ptr [si + 020h]
 
@@ -841,6 +842,7 @@ push bx;  [bp - 8]
 
 test  ax, ax
 je    base4diff_is_zero
+; es in use
 mov   dx, word ptr [si + 01Eh]
 mov   bx, word ptr [si + 020h]
 
@@ -923,6 +925,7 @@ mov   dx, SC_DATA
 SELFMODIFY_MASKED_detailshiftplus1_2:
 mov   al, byte ptr ds:[bx + 20]
 out   dx, al
+; es seems to be in use
 mov   di, word ptr [bp - 4]
 mov   dx, word ptr [bp - 2]
 SELFMODIFY_MASKED_set_ax_to_dc_x_base4:
@@ -2663,10 +2666,10 @@ do_R_PointOnSegSide_check:
 
 
 mov   si, word ptr es:[di]
-mov   cx, word ptr [bx + 0Ch]
-mov   ax, word ptr [bx + 6]
-mov   dx, word ptr [bx + 8]
-mov   bx, word ptr [bx + 0Ah]
+les   ax, dword ptr [bx + 6]
+mov   dx, es
+les   bx, dword ptr [bx + 0Ah]
+mov   cx, es
 
 ; todo this is the only place calling this? make sense to inline?
 call  R_PointOnSegSide_
@@ -2840,8 +2843,8 @@ mov   ds, cx
 jmp   iterate_next_drawseg_loop
 silhouette_is_3:
 
-mov   bx, word ptr es:[di + 018h]
-mov   dx, word ptr es:[di + 016h]
+les   dx, dword ptr es:[di + 016h]
+mov   bx, es
 
 silhouette_3_loop:
 
@@ -2925,8 +2928,8 @@ check_next_seg:
 cmp  word ptr es:[di + 01Ah], NULL_TEX_COL
 je   not_masked
 
-mov  ax, word ptr es:[di + 2]
-mov  cx, word ptr es:[di + 4]
+les  ax, dword ptr es:[di + 2]
+mov  cx, es
 
 call R_RenderMaskedSegRange_
 mov  es, si
@@ -2985,7 +2988,7 @@ jmp   exit_function
 draw_next_column_patch:
 
 ;        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
-
+;es in use
 mov   bx, word ptr ds:[_spryscale]
 mov   ax, word ptr ds:[_spryscale+2]
 
@@ -3027,6 +3030,7 @@ xor  ch, ch
 mov  es, dx   ;  es:ds stores old topscreen result
  
 
+; todo can this be 8 bit mul without the xor ch or not
 ;inlined fastmul16u32u
 MUL  CX        ; AX * CX
 XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
@@ -3240,8 +3244,8 @@ cmp       cx, word ptr [bx + si + 1Ah]
 jbe       prepare_find_best_index_subloop
 unsorted_next_is_best_next:
 mov       dh, al  ;  store bestindex ( i think)
-mov       cx, word ptr [bx + si + 1Ah]
-mov       di, word ptr [bx + si + 1Ah + 2]
+les       cx, dword ptr [bx + si + 1Ah]
+mov       di, es
 add       bx, si
 mov       word ptr [bp - 4], bx   ; todo dont add vissprites to this?
 

@@ -261,8 +261,8 @@ je        set_found_channel
 inc       al
 cmp       al, MAX_MUSIC_CHANNELS
 jb        loop_music_channels
-mov       cx, word ptr ds:[_playingtime]
-mov       dx, word ptr ds:[_playingtime + 2]
+les       cx, dword ptr ds:[_playingtime]
+mov       dx, es
 mov       ah, 0FFh
 
 xor       al, al
@@ -299,8 +299,8 @@ mov       byte ptr cs:[bx + _midichannels - OFFSET SM_SBMID_STARTMARKER_], ah
 jmp       return_found_channel
 update_time_oldest:
 mov       ah, al
-mov       cx, word ptr cs:[bx + _miditime - OFFSET SM_SBMID_STARTMARKER_]
-mov       dx, word ptr cs:[bx + 2 + _miditime - OFFSET SM_SBMID_STARTMARKER_]
+les       cx, dword ptr cs:[bx + _miditime - OFFSET SM_SBMID_STARTMARKER_]
+mov       dx, es
 jmp       inc_loop_channels_find_oldest
 done_looping_channels_find_oldest:
 mov       dl, ah
@@ -513,8 +513,8 @@ mov       al, bh
 cbw      
 mov       si, ax
 shl       si, 2
-mov       dx, word ptr ds:[_playingtime]
-mov       ax, word ptr ds:[_playingtime + 2]
+les       dx, dword ptr ds:[_playingtime]
+mov       ax, es
 mov       word ptr cs:[si + _miditime - OFFSET SM_SBMID_STARTMARKER_], dx
 mov       cl, bh
 mov       word ptr cs:[si + 2 + _miditime - OFFSET SM_SBMID_STARTMARKER_], ax
@@ -564,8 +564,8 @@ mov       al, dl
 cbw      
 mov       bx, ax
 shl       bx, 2
-mov       ax, word ptr ds:[_playingtime]
-mov       cx, word ptr ds:[_playingtime + 2]
+les       ax, dword ptr ds:[_playingtime]
+mov       cx, es
 mov       word ptr cs:[bx + _miditime - OFFSET SM_SBMID_STARTMARKER_], ax
 mov       word ptr cs:[bx + 2 + _miditime - OFFSET SM_SBMID_STARTMARKER_], cx
 mov       bx, 127
@@ -608,8 +608,8 @@ mov       al, dl
 cbw      
 mov       bx, ax
 shl       bx, 2
-mov       ax, word ptr ds:[_playingtime]
-mov       si, word ptr ds:[_playingtime + 2]
+les       ax, dword ptr ds:[_playingtime]
+mov       si, es
 mov       word ptr cs:[bx + _miditime - OFFSET SM_SBMID_STARTMARKER_], ax
 mov       word ptr cs:[bx + 2 + _miditime - OFFSET SM_SBMID_STARTMARKER_], si
 mov       bl, dh
@@ -660,8 +660,8 @@ mov       al, cl
 cbw      
 mov       si, ax
 shl       si, 2
-mov       di, word ptr ds:[_playingtime]
-mov       ax, word ptr ds:[_playingtime + 2]
+les       di, dword ptr ds:[_playingtime]
+mov       ax, es
 mov       word ptr cs:[si + _miditime - OFFSET SM_SBMID_STARTMARKER_], di
 mov       word ptr cs:[si + 2 + _miditime - OFFSET SM_SBMID_STARTMARKER_], ax
 test      bh, bh

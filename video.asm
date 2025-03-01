@@ -154,8 +154,7 @@ add   si, word ptr ds:[bx]
 ;		while (column->topdelta != 0xff )  
 ; check topdelta for 0xFFh
 cmp   byte ptr ds:[si], 0FFh
-jne   draw_next_column_patch
-jmp   column_done
+je   column_done
 
 
 ; here we render the next patch in the column.
@@ -166,26 +165,24 @@ draw_next_column_patch:
 mov   ax, word ptr ds:[si]
 
 mov   cl, ah
-xor   ah, ah      ; al contains topdelta
 
-; todo: figure this out.
-; either one works on its own, but the else branch will fail regardless
-; of which code is in it if the if is active. Probably related to 
-; selfmodifying code references.
+; cant optimize this because of the negative case with imul apparently.
 
-;IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-;imul   di, ax, SCREENWIDTH
-;mov    dx, SCREENWIDTH - 1 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+xor    ah, ah      ; al contains topdelta
+imul   di, ax, SCREENWIDTH
+mov    dx, SCREENWIDTH - 1 
 
-;ELSEIF
-
-mov   di, SCREENWIDTH
-mul   di
-mov   dx, di
+ELSEIF
+mov   ah, SCREENWIDTH / 4
+mul   ah
+sal   ax, 1
+sal   ax, 1
+mov   dx, SCREENWIDTH
 mov   di, ax
-dec   dx
 
-;ENDIF
+
+ENDIF
 
 
 
@@ -228,7 +225,6 @@ add di, dx
 
 loop   draw_8_more_pixels
 
-; todo: variable jmp here
 
 done_drawing_8_pixels:
 
@@ -260,14 +256,14 @@ inc si
 cmp   byte ptr ds:[si], 0FFh
 
 
-je    column_done
-jmp   draw_next_column_patch
+jne   draw_next_column_patch
 column_done:
 add   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction + 1], 4
 inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2]
 xor   ax, ax
 SELFMODIFY_compare_instruction:
 cmp   ax, 0F030h		; compare to width
+;jnge  draw_next_column		; relative out of range by 8 bytes
 jge   jumpexit
 jmp   draw_next_column
 jumpexit:

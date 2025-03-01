@@ -237,8 +237,8 @@ PUBLIC  R_DrawSkyColumnDynamic_
 
    sub    si, word ptr ds:[_centery]
    ; get middle sixteen bits of scale. top 8 are 0. todo: make this 24 somehow? used bp and sp?
-   mov    cx, word ptr ds:[_pspriteiscale+0] ; low word. 
-   mov    bx, word ptr ds:[_pspriteiscale+2] ; high word. top 8 are almost certainly zero ...?
+   lds    cx, dword ptr ds:[_pspriteiscale+0] ; low word. 
+   mov    bx, ds                              ; high word. top 8 are almost certainly zero ...?
 
    mov    ds, dx                          ; dx contained dc_source_segment
    

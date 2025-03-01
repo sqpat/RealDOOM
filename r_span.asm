@@ -713,8 +713,8 @@ mov  si, di
 ; si is x * 4
 mov   es, ds:[_cachedheight_segment_storage]
 
-les   ax, dword ptr [bp - 010h]
-mov   dx, es
+mov   ax, word ptr [bp - 010h]
+mov   dx, word ptr [bp - 0Eh]
 ; TODO: do this shl outside of the function. borrow from es:di lookup's di
 shl   si, 1
 ; CACHEDHEIGHT LOOKUP
@@ -1384,7 +1384,7 @@ add   bx, bx
 add   ax, word ptr ds:[bx + _FLAT_CACHE_PAGE]
 
 mov   word ptr ds:[_ds_source_segment+2], ax
-les   ax, word ptr [si]
+les   ax, dword ptr [si]
 mov   dx, es
 SELFMODIFY_SPAN_viewz_lo_1:
 sub   ax, 01000h
