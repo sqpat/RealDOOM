@@ -19,8 +19,8 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-
-
+; NOTE i think a lot of this function is an optimization candidate
+; todo move jump mult table to cs...
 .DATA
 
 _destscreen = (_NULL_OFFSET + 0008h)
@@ -245,7 +245,6 @@ add di, dx
 movsb
 add di, dx
 movsb
-add di, dx
 
 
 ; restore stuff we changed above
@@ -263,7 +262,7 @@ inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2]
 xor   ax, ax
 SELFMODIFY_compare_instruction:
 cmp   ax, 0F030h		; compare to width
-;jnge  draw_next_column		; relative out of range by 8 bytes
+;jnge  draw_next_column		; relative out of range by 5 bytes
 jge   jumpexit
 jmp   draw_next_column
 jumpexit:
@@ -275,16 +274,17 @@ pop   di
 pop   si
 pop   cx
 retf  4
+
 domarkrect:
-mov   cx, word ptr ds:[bx - 6]	; bx was offset by 8...
-mov   bx, word ptr ds:[bx - 8]
-push ds
+push  ds
+lds   bx, dword ptr ds:[bx - 8]
+mov   cx, ds
 
 mov  di, ss
 mov  ds, di
 
 
-push es
+push es 	; remove push/pop es and read this screen crashes
 call  V_MarkRect_
 pop  es
 pop  ds
@@ -500,7 +500,6 @@ add di, dx
 movsb
 add di, dx
 movsb
-add di, dx
 
 
 ; restore stuff we changed above
@@ -511,16 +510,17 @@ inc si
 cmp   byte ptr ds:[si], 0FFh
 
 
-je    column_done5000Screen0_
-jmp   draw_next_column_patch5000Screen0_
+jne   draw_next_column_patch5000Screen0_
 column_done5000Screen0_:
 add   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction5000Screen0_ + 1], 4
 inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di5000Screen0_ + 2]
 xor   ax, ax
 SELFMODIFY_compare_instruction5000Screen0_:
 cmp   ax, 0F030h		; compare to width
+;jnge  draw_next_column5000Screen0_   ; out of range 5 bytes
 jge   jumpexit5000Screen0_
 jmp   draw_next_column5000Screen0_
+
 jumpexit5000Screen0_:
 pop   ds
 pop   bx
@@ -676,7 +676,6 @@ add   di, ax
 movsb
 add   di, ax
 movsb
-add   di, ax
 
 
 done_drawing_column:

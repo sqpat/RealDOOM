@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/03/01 09:00:53
+Created on:       25/03/04 21:17:44
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -98,7 +98,7 @@ r_segs_TEXT            CODE           AUTO           1d79:6780       00000000
 R_MASKED_TEXT          CODE           AUTO           1d79:6780       000010e3
 r_things_TEXT          CODE           AUTO           1d79:7870       00000000
 w_wad_TEXT             CODE           AUTO           1d79:7870       000003de
-VIDEO_TEXT             CODE           AUTO           1d79:7c4e       000004f5
+VIDEO_TEXT             CODE           AUTO           1d79:7c4e       000004f4
 v_video_TEXT           CODE           AUTO           1d79:8150       00000218
 z_zone_TEXT            CODE           AUTO           1d79:8370       00000659
 d_math_TEXT            CODE           AUTO           1d79:89d0       00000000
@@ -1323,11 +1323,11 @@ Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 1d79:7c2a      W_CacheLumpNumDirect_
 1d79:7c38      W_CacheLumpNumDirectFragment_
 Module: video.obj(video.ASM)
-1d79:7f15*     CopyString9_
-1d79:7f8c      R_FillBackScreen_
-1d79:7e1a      V_DrawPatchDirect_
+1d79:7f14*     CopyString9_
+1d79:7f8b      R_FillBackScreen_
+1d79:7e19      V_DrawPatchDirect_
 1d79:7c4e      V_DrawPatch_
-1d79:7d45*     V_DrawPatch5000Screen0_
+1d79:7d44*     V_DrawPatch5000Screen0_
 Module: v_video.obj(C:\REALDOOM\v_video.c)
 1d79:8150      V_MarkRect_
 1d79:8182      V_CopyRect_
@@ -1707,4 +1707,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e9a0 (190880.)
 Entry point address: 2616:26d0
-Link time: 00:00.30
+Link time: 00:00.29
