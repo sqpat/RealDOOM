@@ -2928,8 +2928,8 @@ check_next_seg:
 cmp  word ptr es:[di + 01Ah], NULL_TEX_COL
 je   not_masked
 
-les  ax, dword ptr es:[di + 2]
-mov  cx, es
+mov  ax, word ptr es:[di + 2]
+mov  cx, word ptr es:[di + 4]
 
 call R_RenderMaskedSegRange_
 mov  es, si
