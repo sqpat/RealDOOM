@@ -317,10 +317,11 @@ xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
 
 ;    topscreen.w = sprtopscreen;
 
-les   di, dword ptr ds:[_sprtopscreen]
-mov   si, es
-les   bx, dword ptr ds:[_spryscale]
-mov   ax, es
+; es in use down below
+mov   di, word ptr ds:[_sprtopscreen]
+mov   si, word ptr ds:[_sprtopscreen+2]
+mov   bx, word ptr ds:[_spryscale]
+mov   ax, word ptr ds:[_spryscale+2]
 
 ;   topscreen = si:di 
 
