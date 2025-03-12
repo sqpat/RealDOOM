@@ -801,14 +801,9 @@ call   LoadInt8_
 
 mov    ax, word ptr [di - 0Ch]        ; di is 0Dh, we want 1
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-    shl    ax, 4
-ELSE
-    shl    ax, 1
-    shl    ax, 1
-    shl    ax, 1
-    shl    ax, 1
-ENDIF
+SHIFT_MACRO SHL AX 4
+
+
 xchg   ax, bx
 
 mov    cx, ds
@@ -903,14 +898,9 @@ call   LoadShortHeight16_
 
 mov    ax, word ptr [di - 9]    ; di is + 0Bh, we want 2..
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-    shl    ax, 4
-ELSE
-    shl    ax, 1
-    shl    ax, 1
-    shl    ax, 1
-    shl    ax, 1
-ENDIF
+SHIFT_MACRO SHL AX 4
+
+
 mov    di, ax
 mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
 jmp    load_next_special

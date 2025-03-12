@@ -173,12 +173,12 @@ xor    ah, ah      ; al contains topdelta
 imul   di, ax, SCREENWIDTH
 mov    dx, SCREENWIDTH - 1 
 
-ELSEIF
-mov   ah, SCREENWIDTH / 4
+ELSE
+; cant fit screenwidth in 1 byte but we can do this...
+mov   ah, SCREENWIDTH / 2
 mul   ah
 sal   ax, 1
-sal   ax, 1
-mov   dx, SCREENWIDTH
+mov   dx, SCREENWIDTH - 1
 mov   di, ax
 
 
@@ -424,11 +424,11 @@ xor   ah, ah      ; al contains topdelta
 ; of which code is in it if the if is active. Probably related to 
 ; selfmodifying code references.
 
-;IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-;imul   di, ax, SCREENWIDTH
-;mov    dx, SCREENWIDTH - 1 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+imul   di, ax, SCREENWIDTH
+mov    dx, SCREENWIDTH - 1 
 
-;ELSEIF
+ELSE
 
 mov   di, SCREENWIDTH
 mul   di
@@ -436,7 +436,7 @@ mov   dx, di
 mov   di, ax
 dec   dx
 
-;ENDIF
+ENDIF
 
 
 
