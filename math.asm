@@ -828,22 +828,34 @@ ENDIF
 
 
 
+;#pragma aux trig16params \
+;                    __modify [bx] \
+;                    __parm [ax] [dx] [bx] \
+;                    __value [dx ax];
+
+
+
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 
     PROC FastMulTrig16_
     PUBLIC FastMulTrig16_
 
-    ; lookup the fine angle
+    
+    ;db  066h, 025h, 0FFh, 0FFh, 0, 0        ;  and eax, 0x0000FFFF      ; todo necessary...?
+    ;db 066h, 08eh, 0c0h                   ; mov es, eax
+    
+    ; seems to work instead of the above
     mov es, ax
 
-    ; todo improve zeroing out of high 16 bits.
     db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
+    sal   dx, 2
 
-    ; no shift of dx needed..
-    db  026h, 066h, 08bh, 06bh, 0, 0     ; mov  eax, dword ptr es:[4*edx]
-    db  066h, 081h, 0E1h, 0FFh, 0FFh, 0, 0  ;  and ecx, 0x0000FFFF   
-    db  066h, 0F7h, 0E9h                 ; imul ecx
-    db  066h, 00Fh, 0A4h, 0C2h, 010h     ; shld edx, eax, 0x10
+    xchg  bx, ax                            ; get bx in ax for sign extend
+    db 066h, 098h                           ; cwde  (sign extend ax to eax for imul)
+
+    db 026h, 067h, 066h, 0F7h, 02Ah         ; imul dword ptr es:[edx]
+
+    db  066h, 00Fh, 0A4h, 0C2h, 010h        ; shld edx, eax, 0x10
 
     ret
 
@@ -856,11 +868,7 @@ ELSE
 
     PROC FastMulTrig16_
     PUBLIC FastMulTrig16_
-
-    ; DX:AX  *  BX
-    ;  0  1      2  
-
-    ; DX:AX * BX
+    ; ax:[dx * 4] * BX
     ; (dont shift answer 16)
     ;
     ; 
@@ -896,7 +904,7 @@ ELSE
     les ax, dword ptr es:[BX]
     mov bx, es
 
-
+    ;BX:AX * DX
 
     ; begin multiply...
 

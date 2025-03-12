@@ -711,18 +711,21 @@ void __near D_Display (void) {
     // do buffered drawing
     switch (gamestate) {
       case GS_LEVEL:
-        if (!gametic)
+        if (!gametic){
             break;
-        if (automapactive)
+		}
+        if (automapactive){
             AM_Drawer ();
-        if (wipe || (viewheight != 200 && fullscreen) )
+		}
+		if (wipe || (viewheight != 200 && fullscreen) ){
             redrawsbar = true;
-		if (inhelpscreensstate && !inhelpscreens) 
+		}
+		if (inhelpscreensstate && !inhelpscreens) {
 			redrawsbar = true;              // just put away the help screen
-		
-		if (inhelpscreens) {
+		}
+		if (inhelpscreens) {{
 			skipdirectdraws = true;
-		
+		}
 		}
 		ST_Drawer (viewheight == 200, redrawsbar);
 		skipdirectdraws = false;
