@@ -1354,6 +1354,9 @@ int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 
 	uint8_t __far* cacherefpage;
 	uint8_t __far* cacherefoffset;
+	uint8_t __far* secondarycacherefpage;
+	uint8_t __far* secondarycacherefoffset;
+	int16_t secondarymaxitersize = 0;
 	uint8_t __near* usedcacherefpage;
 
 
@@ -1379,6 +1382,10 @@ int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 			maxitersize = MAX_PATCHES;
 			cacherefpage = patchpage;
 			cacherefoffset = patchoffset;
+			//todo put these next to each other in memory and loop in one go!
+			secondarycacherefpage = compositetexturepage;
+			secondarycacherefoffset = compositetextureoffset;
+			secondarymaxitersize = MAX_TEXTURES;
 			usedcacherefpage = usedtexturepagemem;
 			#ifdef DETAILED_BENCH_STATS
 			patchcacheevictcount++;
@@ -1392,6 +1399,11 @@ int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 			maxitersize = MAX_TEXTURES;
 			cacherefpage = compositetexturepage;
 			cacherefoffset = compositetextureoffset;
+			//todo put these next to each other in memory and loop in one go!
+			secondarycacherefpage = patchpage;
+			secondarycacherefoffset = patchoffset;
+			secondarymaxitersize = MAX_PATCHES;
+
 			usedcacherefpage = usedtexturepagemem;
 			#ifdef DETAILED_BENCH_STATS
 			compositecacheevictcount++;
@@ -1436,10 +1448,24 @@ int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 		nodelist[evictedpage].pagecount = 0;
 		nodelist[evictedpage].numpages = 0;
 
+			//todo put these next to each other in memory and loop in one go!
+
 		for (k = 0; k < maxitersize; k++){
 			if ((cacherefpage[k] >> 2) == evictedpage){
+
 				cacherefpage[k] = 0xFF;
 				cacherefoffset[k] = 0xFF;
+
+
+			}
+		}
+
+		for (k = 0; k < secondarymaxitersize; k++){
+			if ((secondarycacherefpage[k]) >> 2 == evictedpage){
+				secondarycacherefpage[k] = 0xFF;
+				secondarycacherefoffset[k] = 0xFF;
+
+
 			}
 		}
 		usedcacherefpage[evictedpage] = 0;
@@ -1525,15 +1551,12 @@ int8_t __far R_EvictFlatCacheEMSPage(){
 
  
 	// remove the element and connext its next and prev togeter
-	next = nodelist[evictedpage].next;
-	prev = nodelist[evictedpage].prev;
-
-	flatcache_l2_tail = nodelist[evictedpage].next;
-	nodelist[flatcache_l2_tail].prev = -1;
+	flatcache_l2_tail = flatcache_nodes[evictedpage].next;	// tail is nextmost
+	flatcache_nodes[flatcache_l2_tail].prev = -1;
 	
-	nodelist[flatcache_l2_head].next = evictedpage;
-	nodelist[evictedpage].next = -1;
-	nodelist[evictedpage].prev = flatcache_l2_head;
+	flatcache_nodes[flatcache_l2_head].next = evictedpage;
+	flatcache_nodes[evictedpage].next = -1;
+	flatcache_nodes[evictedpage].prev = flatcache_l2_head;
 	flatcache_l2_head = evictedpage;
 
  
@@ -1695,7 +1718,7 @@ void __near R_GetNextTextureBlock(int16_t tex_index, uint16_t size, int8_t cache
 		patchpage  [tex_index] = texpage;
 		patchoffset[tex_index] = texoffset;
 	} else {
-		compositetexturepage[tex_index] = texpage;
+		compositetexturepage  [tex_index] = texpage;
 		compositetextureoffset[tex_index] = texoffset;
 	}
 

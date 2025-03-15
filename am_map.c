@@ -1078,6 +1078,14 @@ void __far AM_Drawer (void) {
 	//G_ExitLevel();
 
 /*
+	FILE* fp = fopen ("indump.txt", "w");
+	Z_QuickMapRender();
+	FAR_fwrite((byte __far*) flatindex, size_flatindex, 1, fp);
+	fclose(fp);
+	I_Error("done");
+	*/
+
+/*
 	I_Error("%lx %lx %lx %lx", 
 		playerMobj_pos->x.w, 
 		playerMobj_pos->y.w, 

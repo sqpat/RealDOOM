@@ -205,11 +205,12 @@ mov  si, word ptr cs:[bx + 2]   ; si stores p
 mov  al, byte ptr cs:[si]
 test al, al
 jne  char_not_null
-lea  ax, [si + 1]               ; advance p
-mov  word ptr cs:[bx + 2], ax   ; store updated p ptr in cheat (should we just inc si?)
 mov  byte ptr cs:[si], dl       ; store keypress
+inc  si                         ; advance p
+mov  word ptr cs:[bx + 2], si   ; store updated p ptr in cheat (should we just inc si?)
+
 check_cheat_result:
-mov  si, word ptr cs:[bx + 2]
+; si was inc'd
 mov  al, byte ptr cs:[si]
 cmp  al, 1
 je   reached_custom_param
@@ -232,8 +233,8 @@ inc  si
 mov  word ptr cs:[bx + 2], si
 jmp  check_cheat_result
 char_not_match:
-mov  ax, word ptr cs:[bx]       ; reset cheat ptr
-mov  word ptr cs:[bx + 2], ax
+mov  si, word ptr cs:[bx]       ; reset cheat ptr
+mov  word ptr cs:[bx + 2], si
 jmp  check_cheat_result
 reached_custom_param:
 inc  si

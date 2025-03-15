@@ -1257,27 +1257,29 @@ SHIFT_MACRO shl al 2
 
 
 mov   ah, byte ptr ds:[bx + _allocatedflatsperpage]
-add   ah, al
+add   al, ah
 inc   byte ptr ds:[bx + _allocatedflatsperpage]
-mov   byte ptr [bp - 4], ah
 found_flat:
-mov   ax, FLATTRANSLATION_SEGMENT
-mov   es, ax
+; al is usedflatindex
+mov   byte ptr [bp - 4], al
+mov   di, FLATTRANSLATION_SEGMENT
+mov   es, di
 mov   bl, cl
 xor   bh, bh
 
 mov   bl, byte ptr es:[bx]
-mov   ax, FLATINDEX_SEGMENT
-mov   es, ax
-mov   al, byte ptr [bp - 4]
+mov   di, FLATINDEX_SEGMENT
+mov   es, di
+
 mov   di, 1 ; update flat unloaded
 
 mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] = usedflatindex;
 
 ; check l2 cache next
 flat_loaded:
-mov   dx, word ptr [bp - 4] ; a byte, but read the 0 together
-
+; al is guaranteed usedflatindex...
+xor    ah, ah
+mov    dx, ax
 SHIFT_MACRO sar dx 2
 
 
@@ -1300,9 +1302,6 @@ dw _R_EvictFlatCacheEMSPage_addr
 ;call  R_EvictFlatCacheEMSPage_   ; al stores result..
 SHIFT_MACRO shl al 2
 
-
-
-mov   byte ptr [bp - 4], al
 jmp   found_flat
 
 not_in_flat_page_1:
