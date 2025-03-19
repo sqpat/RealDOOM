@@ -151,7 +151,7 @@ typedef uint8_t bwhere_e;
 typedef struct {
 	int16_t     linenum;
     bwhere_e	where;
-    uint8_t		btexture;
+    uint16_t	btexture;
     int16_t		btimer;
 	int16_t     soundorgX;
 	int16_t     soundorgY;
