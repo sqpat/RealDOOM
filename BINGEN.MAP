@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/03/19 15:53:13
+Created on:       25/03/19 17:15:19
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -89,8 +89,8 @@ r_data_TEXT            CODE           AUTO           1d67:0030       00001bb0
 R_MATH_TEXT            CODE           AUTO           1d67:1be0       000001db
 R_MAINHI_TEXT          CODE           AUTO           1d67:1dbc       000022db
 R_COLUMN_TEXT          CODE           AUTO           1d67:4098       00000e46
-R_SPAN_TEXT            CODE           AUTO           1d67:4ede       00000dbf
-R_SKY_TEXT             CODE           AUTO           1d67:5c9e       000006c0
+R_SPAN_TEXT            CODE           AUTO           1d67:4ede       00000db3
+R_SKY_TEXT             CODE           AUTO           1d67:5c92       000006c0
 r_draw_TEXT            CODE           AUTO           1d67:6360       000000fb
 r_main_TEXT            CODE           AUTO           1d67:6460       000001ea
 r_plane_TEXT           CODE           AUTO           1d67:6650       00000000
@@ -1270,19 +1270,19 @@ Module: r_span.obj(r_span.ASM)
 1d67:4f7e      R_DrawSpan_
 1d67:4ede      R_SPAN_STARTMARKER_
 1d67:568b*     R_FixedMulLocal_
-1d67:5ba5      R_WriteBackViewConstantsSpan_
+1d67:5b99      R_WriteBackViewConstantsSpan_
 1d67:55d2*     R_DrawSpanPrep_
 1d67:584b      R_DrawPlanes_
-1d67:5c9d      R_SPAN_ENDMARKER_
+1d67:5c91      R_SPAN_ENDMARKER_
 1d67:56c7*     R_MapPlane_
 1d67:4f81*     R_DrawSpanActual_
 1d67:563d*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1d67:5c9e      R_DrawSkyColumn_
-1d67:5e6b*     R_DrawSkyColumnDynamic_
-1d67:62ed      R_DrawSkyPlane_
-1d67:635e      R_SKY_END_
-1d67:627c      R_DrawSkyPlaneDynamic_
+1d67:5c92      R_DrawSkyColumn_
+1d67:5e5f*     R_DrawSkyColumnDynamic_
+1d67:62e1      R_DrawSkyPlane_
+1d67:6352      R_SKY_END_
+1d67:6270      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1d67:6360      R_VideoErase_
 1d67:63e4      R_DrawViewBorder_

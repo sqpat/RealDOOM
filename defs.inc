@@ -151,8 +151,8 @@ _cachedystep_segment_storage =    	_NULL_OFFSET + 0011Ah
 _pspriteiscale =                    _NULL_OFFSET + 0011Ch
 
 ; 120h
-
-_MULT_256 =                    		_NULL_OFFSET + 00120h
+;todo unused
+;_MULT_256 =                    		_NULL_OFFSET + 00120h
 _MULT_4096 =                    	_NULL_OFFSET + 00128h
 _FLAT_CACHE_PAGE =                  _NULL_OFFSET + 00130h
 _visplanelookupsegments =           _NULL_OFFSET + 00138h

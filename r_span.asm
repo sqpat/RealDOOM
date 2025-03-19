@@ -1031,6 +1031,7 @@ PUBLIC R_DrawPlanes_
 ; bp - 8 visplaneoffset
 ; bp - 6 visplanesegment
 ; bp - 4 usedflatindex
+; bp - 3 usedflatindex AND 3
 ; bp - 2 physindex
 
 push  bx
@@ -1205,7 +1206,6 @@ mov   ax, FLATINDEX_SEGMENT
 mov   es, ax
 
 mov   al, byte ptr es:[bx]
-mov   byte ptr [bp - 4], al
 ; going to use di to hold flatunloaded
 xor   di, di
 cmp   al, 0ffh
@@ -1261,7 +1261,6 @@ add   al, ah
 inc   byte ptr ds:[bx + _allocatedflatsperpage]
 found_flat:
 ; al is usedflatindex
-mov   byte ptr [bp - 4], al
 mov   di, FLATTRANSLATION_SEGMENT
 mov   es, di
 mov   bl, cl
@@ -1278,11 +1277,17 @@ mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] =
 
 ; check l2 cache next
 flat_loaded:
+; ah is already set above..
+mov   ah, al
+and   ah, 3
+mov   word ptr [bp - 4], ax     ; store usedflatindex only once, along with AND 3 of it
+
 ; al is guaranteed usedflatindex...
+; consider cwd mov dl, al
 xor    ah, ah
 mov    dx, ax
-SHIFT_MACRO sar dx 2
 
+SHIFT_MACRO sar dl 2
 
 ; dl = flatcacheL2pagenumber
 cmp   dl, byte ptr ds:[_currentflatpage+0]
@@ -1359,8 +1364,8 @@ mov   byte ptr ds:[_lastflatcacheindicesused+2], ah
 in_flat_page_1:
 mov   word ptr ds:[_lastflatcacheindicesused], cx
 l1_cache_finished_updating:
-mov   ax, word ptr [bp - 4]
-SHIFT_MACRO sar ax 2
+mov   al, byte ptr [bp - 4]
+SHIFT_MACRO sar al 2
 
 cbw  
 
@@ -1380,15 +1385,14 @@ flat_not_unloaded:
 ;! todo use a single 16 element lookup instead of two four element ones.
 ; cl is flatcacheL1pagenumber 
 
-mov   bx, word ptr [bp - 4]
-and   bx, 3
-add   bx, bx
-mov   ax, word ptr ds:[bx + _MULT_256]
-mov   bl, cl
-add   bx, bx
-add   ax, word ptr ds:[bx + _FLAT_CACHE_PAGE]
+; calculate flat page.
+; 7000h + 400h * l1 pagenumber + 100h * (usedflatindex &3)
+mov   al, cl
+SHIFT_MACRO sal   al 2
+add   al, byte ptr [bp - 3]
+add   al, 070h
 
-mov   word ptr ds:[_ds_source_segment+2], ax
+mov   byte ptr ds:[_ds_source_segment+3], al            ; low byte always zero!
 les   ax, dword ptr [si]
 mov   dx, es
 SELFMODIFY_SPAN_viewz_lo_1:
@@ -1438,8 +1442,7 @@ mov   al, byte ptr es:[00]    ; uses picnum from way above.
 
 xor   ah, ah
 add   ax, word ptr ds:[_firstflat]
-mov   bl, byte ptr [bp - 4]
-and   bl, 3
+mov   bl, byte ptr [bp - 3]     ; usedflatindex AND 3
 
 add   bx, bx
 mov   bx, word ptr ds:[bx + _MULT_4096]

@@ -204,7 +204,8 @@
 #define cachedystep_segment_storage     (*((segment_t __near*)               (_NULL_OFFSET + 0x011A)))
 #define pspriteiscale                   (*((fixed_t   __near*)               (_NULL_OFFSET + 0x011C)))
 
-#define MULT_256                        (((uint16_t   __near*)               (_NULL_OFFSET + 0x0120)))
+// 8 bytes free
+//#define MULT_256                        (((uint16_t   __near*)               (_NULL_OFFSET + 0x0120)))
 #define MULT_4096                       (((uint16_t   __near*)               (_NULL_OFFSET + 0x0128)))
 #define FLAT_CACHE_PAGE                 (((uint16_t   __near*)               (_NULL_OFFSET + 0x0130)))
 #define visplanelookupsegments          (((segment_t   __near*)              (_NULL_OFFSET + 0x0138)))
