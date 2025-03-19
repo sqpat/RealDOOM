@@ -367,9 +367,6 @@ found:
 
 
 
-void __far doflatlogA(int16_t lookup);
-void __far doflatlog(int16_t lookup, int16_t usedflatindex);
-void __far checkflat(int16_t lookup, int16_t usedflatindex);
  
 void  __far P_InitThinkers (void);
 
@@ -579,9 +576,6 @@ void __near Z_LoadBinaries() {
 	W_LumpLength_addr =	 				(uint32_t)(W_LumpLength);
 	Z_QuickMapPageFrame_addr =          (uint32_t)(Z_QuickMapPageFrame);
 
-	doflatlog_addr = 					(uint32_t)(doflatlog);
-	doflatlogA_addr =               	(uint32_t)(doflatlogA);
-	checkflat_addr =               		(uint32_t)(checkflat);
 
 
 

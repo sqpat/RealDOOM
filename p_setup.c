@@ -975,8 +975,6 @@ void __near P_GroupLines(void) {
 
 }
 
-extern int8_t  texset[MAX_FLATS];
-extern uint8_t texbytevalue[MAX_FLATS];
 
 //
 // P_InitThinkers
@@ -1101,8 +1099,6 @@ void __near Z_FreeConventionalAllocations() {
 		texturetranslation[i] = i;
 	}
 
-	memset(texset, 0, MAX_FLATS);
-	memset(texbytevalue, 0, MAX_FLATS);
 
 	
 	currentflatpage[0] = 0;
@@ -1118,8 +1114,10 @@ void __near Z_FreeConventionalAllocations() {
 
 	Z_QuickMapPhysics();
 
-	Z_QuickMapFlatCacheReset();
-	
+	// reset ems cache settings
+	for (i = 0; i < NUM_FLAT_L1_CACHE_PAGES; i ++){
+		pageswapargs[pageswapargs_flatcache_offset + i * PAGE_SWAP_ARG_MULT] = _EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE+i);
+	}	
 	// L1 cache stuff
 	for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES; i++) {
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;

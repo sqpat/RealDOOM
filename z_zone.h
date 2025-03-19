@@ -505,7 +505,6 @@ void __far Z_QuickMapScratch_8000();
 void __far Z_QuickMapScratch_7000();
 void __far Z_PushScratchFrame();
 void __far Z_PopScratchFrame();
-void __far Z_QuickMapFlatCacheReset();
 void __far Z_QuickMapFlatPage(int16_t page, int16_t offset);
 void __far Z_QuickMapUndoFlatCache();
 void __far Z_QuickMapMaskedExtraData();

@@ -48,6 +48,7 @@
 
 #define NUM_TEXTURE_L1_CACHE_PAGES 8
 #define NUM_SPRITE_L1_CACHE_PAGES 4
+#define NUM_FLAT_L1_CACHE_PAGES 4
 
 
 
@@ -381,9 +382,6 @@
 #define loops_enabled    			      (*((int8_t __near*)                (_NULL_OFFSET + 0x061E)))
 #define mus_playing    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x061F)))
 #define Z_QuickMapPageFrame_addr          (*((uint32_t __near*)              (_NULL_OFFSET + 0x0620)))
-#define doflatlog_addr          		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0624)))
-#define doflatlogA_addr          		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0628)))
-#define checkflat_addr          		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x062C)))
 	
 
 

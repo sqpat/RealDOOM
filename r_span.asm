@@ -1024,7 +1024,6 @@ PUBLIC R_DrawPlanes_
 ; ARGS none
 
 ; STACK
-; bp - 12h temp
 ; bp - 10h planeheight lo
 ; bp - 0Eh planeheight hi
 ; bp - 0Ch ds_x2
@@ -1041,7 +1040,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 12h
+sub   sp, 10h
 xor   ax, ax
 mov   word ptr [bp - 8], ax
 mov   word ptr [bp - 6], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
@@ -1177,7 +1176,6 @@ je    do_sky_flat_draw
 do_nonsky_flat_draw:
 
 mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN_STARTMARKER_], cl 
-mov   byte ptr [bp - 012h], cl
 mov   al, ch
 xor   ah, ah
 
@@ -1212,20 +1210,6 @@ mov   byte ptr [bp - 4], al
 xor   di, di
 cmp   al, 0ffh
 jne   flat_loaded
-
-push  ax
-;push  dx
-
-mov   al, byte ptr [bp - 012h]
-xor   ah, ah
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _doflatlogA_addr
-
-;pop   dx
-pop   ax
-
 mov   bx, di
 loop_find_flat:
 cmp   byte ptr ds:[bx + _allocatedflatsperpage], 4   ; if (allocatedflatsperpage[j]<4){
@@ -1300,7 +1284,6 @@ mov    dx, ax
 SHIFT_MACRO sar dx 2
 
 
-
 ; dl = flatcacheL2pagenumber
 cmp   dl, byte ptr ds:[_currentflatpage+0]
 je    in_flat_page_0
@@ -1347,7 +1330,6 @@ mov   ax, dx
 
 mov   bl, cl
 xor   bh, bh   ; ugly... can i do cx above
-; todo is this garbage??? 
 mov   byte ptr ds:[bx + _currentflatpage], al
 mov   dx, bx
 add   ax, FIRST_FLAT_CACHE_LOGICAL_PAGE
@@ -1407,23 +1389,6 @@ add   bx, bx
 add   ax, word ptr ds:[bx + _FLAT_CACHE_PAGE]
 
 mov   word ptr ds:[_ds_source_segment+2], ax
-
-; checkflat here. use ds_source_segment..
-
-push ax
-
-mov  dx, ax
-
-mov  al, byte ptr [bp - 012h]
-xor  ah, ah
-
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _checkflat_addr
-
-pop  ax
-
 les   ax, dword ptr [si]
 mov   dx, es
 SELFMODIFY_SPAN_viewz_lo_1:
@@ -1467,7 +1432,7 @@ mov   cx, word ptr ds:[bx + _FLAT_CACHE_PAGE]
 
 mov   ax, FLATTRANSLATION_SEGMENT
 mov   es, ax
-; todo what about just write forward the byte no lookup
+
 SELFMODIFY_SPAN_lookuppicnum:
 mov   al, byte ptr es:[00]    ; uses picnum from way above.
 
@@ -1479,30 +1444,9 @@ and   bl, 3
 add   bx, bx
 mov   bx, word ptr ds:[bx + _MULT_4096]
 
-push  bx
-push  cx
-
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _W_CacheLumpNumDirect_addr
-
-pop   cx
-pop   bx
-
-;push  dx
-
-mov   dx, word ptr [bp - 4]  ; usedflatindex
-
-mov   al, byte ptr [bp - 012h]
-xor   ah, ah
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _doflatlog_addr
-
-;pop   dx
-
-
 
 ;call  W_CacheLumpNumDirect_
 pop   cx
@@ -1848,4 +1792,3 @@ ENDP
 
 
 END
-

@@ -320,9 +320,6 @@ _mus_playing =    			      	 _NULL_OFFSET + 0061Fh
 _Z_QuickMapPageFrame_addr = 		 _NULL_OFFSET + 00620h
 
 
-_doflatlog_addr =      _NULL_OFFSET + 00624h
-_doflatlogA_addr =     _NULL_OFFSET + 00628h
-_checkflat_addr =      _NULL_OFFSET + 0062Ch
 
 ;//0x618
 
