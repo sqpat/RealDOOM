@@ -400,13 +400,29 @@ void __far Z_QuickMapRenderPlanesBack(){
 
 }
 
+void __far Z_QuickMapFlatCacheReset() {
+	// set these to point to 0, 1, 2, 3... todo inline in p_setup
+	int16_t i;
+	for (i = 0; i < 4; i ++){
+		pageswapargs[pageswapargs_flatcache_offset + i * PAGE_SWAP_ARG_MULT] = _EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE+i);
+	}
+
+}
+
 
 void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 	// offset 4 means reset defaults/current values.
-	if (offset != 4) {
+	FILE* fp = fopen("flatlog.txt", "ab");
+	fprintf(fp, "page flats %i %i [%i, %i, %i, %i]\n", page-FIRST_FLAT_CACHE_LOGICAL_PAGE, offset, 
+		pageswapargs[pageswapargs_flatcache_offset + 0 * PAGE_SWAP_ARG_MULT] ,
+		pageswapargs[pageswapargs_flatcache_offset + 1 * PAGE_SWAP_ARG_MULT] ,
+		pageswapargs[pageswapargs_flatcache_offset + 2 * PAGE_SWAP_ARG_MULT] ,
+		pageswapargs[pageswapargs_flatcache_offset + 3 * PAGE_SWAP_ARG_MULT] 
+	);
+	fclose(fp);
 
-		pageswapargs[pageswapargs_flatcache_offset + offset * PAGE_SWAP_ARG_MULT] = _EPR(page);
-	}
+
+	pageswapargs[pageswapargs_flatcache_offset + offset * PAGE_SWAP_ARG_MULT] = _EPR(page);
 
 	// todo change this to 1 with offset?
 	Z_QuickMap4AI(pageswapargs_flatcache_offset_size, INDEXED_PAGE_7000_OFFSET);

@@ -287,7 +287,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
 
 
-    printf("Generated m_offset.h file");
+    printf("Generated m_offset.h file\n");
 
  
     return 0;

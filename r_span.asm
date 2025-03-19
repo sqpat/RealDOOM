@@ -1024,6 +1024,7 @@ PUBLIC R_DrawPlanes_
 ; ARGS none
 
 ; STACK
+; bp - 12h temp
 ; bp - 10h planeheight lo
 ; bp - 0Eh planeheight hi
 ; bp - 0Ch ds_x2
@@ -1040,7 +1041,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 10h
+sub   sp, 12h
 xor   ax, ax
 mov   word ptr [bp - 8], ax
 mov   word ptr [bp - 6], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
@@ -1176,6 +1177,7 @@ je    do_sky_flat_draw
 do_nonsky_flat_draw:
 
 mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN_STARTMARKER_], cl 
+mov   byte ptr [bp - 012h], cl
 mov   al, ch
 xor   ah, ah
 
@@ -1210,6 +1212,20 @@ mov   byte ptr [bp - 4], al
 xor   di, di
 cmp   al, 0ffh
 jne   flat_loaded
+
+push  ax
+;push  dx
+
+mov   al, byte ptr [bp - 012h]
+xor   ah, ah
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _doflatlogA_addr
+
+;pop   dx
+pop   ax
+
 mov   bx, di
 loop_find_flat:
 cmp   byte ptr ds:[bx + _allocatedflatsperpage], 4   ; if (allocatedflatsperpage[j]<4){
@@ -1271,7 +1287,8 @@ mov   bl, byte ptr es:[bx]
 mov   di, FLATINDEX_SEGMENT
 mov   es, di
 
-mov   di, 1 ; update flat unloaded
+; di already nonzero
+;mov   di, 1 ; update flat unloaded
 
 mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] = usedflatindex;
 
@@ -1281,6 +1298,7 @@ flat_loaded:
 xor    ah, ah
 mov    dx, ax
 SHIFT_MACRO sar dx 2
+
 
 
 ; dl = flatcacheL2pagenumber
@@ -1329,6 +1347,7 @@ mov   ax, dx
 
 mov   bl, cl
 xor   bh, bh   ; ugly... can i do cx above
+; todo is this garbage??? 
 mov   byte ptr ds:[bx + _currentflatpage], al
 mov   dx, bx
 add   ax, FIRST_FLAT_CACHE_LOGICAL_PAGE
@@ -1374,6 +1393,11 @@ cmp   di, 0 ; di used to hold flatunlodaed
 jnz   flat_is_unloaded
 flat_not_unloaded:
 ; calculate ds_source_segment
+
+
+;! todo use a single 16 element lookup instead of two four element ones.
+; cl is flatcacheL1pagenumber 
+
 mov   bx, word ptr [bp - 4]
 and   bx, 3
 add   bx, bx
@@ -1383,6 +1407,23 @@ add   bx, bx
 add   ax, word ptr ds:[bx + _FLAT_CACHE_PAGE]
 
 mov   word ptr ds:[_ds_source_segment+2], ax
+
+; checkflat here. use ds_source_segment..
+
+push ax
+
+mov  dx, ax
+
+mov  al, byte ptr [bp - 012h]
+xor  ah, ah
+
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _checkflat_addr
+
+pop  ax
+
 les   ax, dword ptr [si]
 mov   dx, es
 SELFMODIFY_SPAN_viewz_lo_1:
@@ -1426,6 +1467,7 @@ mov   cx, word ptr ds:[bx + _FLAT_CACHE_PAGE]
 
 mov   ax, FLATTRANSLATION_SEGMENT
 mov   es, ax
+; todo what about just write forward the byte no lookup
 SELFMODIFY_SPAN_lookuppicnum:
 mov   al, byte ptr es:[00]    ; uses picnum from way above.
 
@@ -1437,9 +1479,30 @@ and   bl, 3
 add   bx, bx
 mov   bx, word ptr ds:[bx + _MULT_4096]
 
+push  bx
+push  cx
+
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _W_CacheLumpNumDirect_addr
+
+pop   cx
+pop   bx
+
+;push  dx
+
+mov   dx, word ptr [bp - 4]  ; usedflatindex
+
+mov   al, byte ptr [bp - 012h]
+xor   ah, ah
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _doflatlog_addr
+
+;pop   dx
+
+
 
 ;call  W_CacheLumpNumDirect_
 pop   cx

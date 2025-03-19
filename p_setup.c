@@ -975,6 +975,8 @@ void __near P_GroupLines(void) {
 
 }
 
+extern int8_t  texset[MAX_FLATS];
+extern uint8_t texbytevalue[MAX_FLATS];
 
 //
 // P_InitThinkers
@@ -1091,6 +1093,17 @@ void __near Z_FreeConventionalAllocations() {
 
 	//FAR_memset(visplanepiclights, 0x00, size_visplanepiclights);
 	FAR_memset(flatindex, 0xFF, size_flatindex);
+
+	for (i = 0; i < numflats; i++){
+		flattranslation[i] = i;
+	}
+	for (i = 0; i < numtextures; i++){
+		texturetranslation[i] = i;
+	}
+
+	memset(texset, 0, MAX_FLATS);
+	memset(texbytevalue, 0, MAX_FLATS);
+
 	
 	currentflatpage[0] = 0;
 	currentflatpage[1] = 1;
@@ -1105,6 +1118,8 @@ void __near Z_FreeConventionalAllocations() {
 
 	Z_QuickMapPhysics();
 
+	Z_QuickMapFlatCacheReset();
+	
 	// L1 cache stuff
 	for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES; i++) {
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;

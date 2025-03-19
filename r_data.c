@@ -162,6 +162,8 @@ void __near R_MarkL1TextureCacheLRU7(int8_t index){
 
 }
 
+int8_t  texset[MAX_FLATS];
+uint8_t texbytevalue[MAX_FLATS];
 
 
  
@@ -1497,6 +1499,81 @@ int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 	return *nodehead;
 }
 
+void __far doflatlogA(int16_t baselookup){
+
+	FILE* fp = fopen("flatlog.txt", "ab");
+	int16_t lookup = flattranslation[baselookup];
+	fprintf(fp, "looking for %i %i\n", lookup, baselookup);
+	fclose(fp);
+
+}
+
+void __far doflatlog(int16_t baselookup, int16_t usedflatindex, uint16_t offset, segment_t seg){
+	FILE* fp = fopen("flatlog.txt", "ab");
+	int16_t lookup = flattranslation[baselookup];
+	fprintf(fp, "in f %i %i %i %x   %i %i %i %i", lookup, baselookup, usedflatindex, seg + (offset >> 4)
+	
+			, currentflatpage[0]
+		, currentflatpage[1]
+		, currentflatpage[2]
+		, currentflatpage[3]
+	);
+
+	if (!texset[lookup]){
+		byte __far* targetaddr = MK_FP(seg, offset);
+		texset[lookup] = 1;
+		texbytevalue[lookup] = *((uint8_t __far*)(targetaddr));
+		fprintf(fp, " %x", texbytevalue[lookup]);
+
+	}
+
+	fprintf(fp, "\n");
+	fclose(fp);
+
+}
+
+void __far checkflat(int16_t baselookup, segment_t seg){
+
+	int16_t lookup = flattranslation[baselookup];
+
+	if (texset[lookup]){
+		byte __far* targetaddr = MK_FP(seg, 0);
+		if (texbytevalue[lookup] != *((uint8_t __far*)(targetaddr))){
+			I_Error("bad byte %i %i %x (expected) vs %x (real) %x\n %i %i   %i %i %i %i", lookup, baselookup, texbytevalue[lookup], *((uint8_t __far*)(targetaddr)), seg,
+			
+			
+				flatindex[lookup],
+				flatindex[baselookup]
+
+						, currentflatpage[0]
+		, currentflatpage[1]
+		, currentflatpage[2]
+		, currentflatpage[3]
+			 );
+			// 51 53 7f 67 7e00  - data from flat 46?
+			
+			// 51 53   7600
+
+			// 53 is 4
+			// 51 is 6
+			// 52 is 7
+
+
+			// page flats 47 3 [49, 50, 48, 47]
+			// 6 4    0 4 2 1
+
+
+			// next steps: 
+			// log with and without flattranslation. monitor that.
+			// why is 53 always 53 in logs??
+		}
+	} else {
+		FILE* fp = fopen("flatlog.txt", "ab");
+		fprintf(fp, "%i not set yet\n", lookup);
+		fclose(fp);
+	}
+
+}
 
 
 // MRU is the head. LRU is the tail.
@@ -1539,14 +1616,18 @@ void __far R_MarkL2FlatCacheLRU(int8_t index) {
 int8_t __far R_EvictFlatCacheEMSPage(){
 	int8_t evictedpage;
 	uint8_t i;
-	int8_t next, prev;
 	cache_node_t far* nodelist  = flatcache_nodes;
-	
+	FILE* fp = fopen("flatlog.txt", "ab");
+
 	#ifdef DETAILED_BENCH_STATS
 	flatcacheevictcount++;
 	#endif
 	 
 	evictedpage = flatcache_l2_tail;
+	fprintf(fp, "kill page %i\n", evictedpage);
+	fclose (fp);
+	fp = fopen("flatlog.txt", "ab");
+
 	// evicted page becomes the new head.
 
  
@@ -1570,11 +1651,16 @@ int8_t __far R_EvictFlatCacheEMSPage(){
 	for (i = 0; i < MAX_FLATS; i++){
 		
 		if ((flatindex[i] >> 2) == evictedpage){
+
+			fprintf(fp, "out f %i %i %i\n", i, evictedpage, flatindex[i]);
 			flatindex[i] = 0xFF;
 		}
 
 	}
+
+	fclose (fp);
 	return evictedpage;
+
 }
 
 
@@ -2409,13 +2495,13 @@ segment_t getcompositetexture(int16_t tex_index) {
 	
 	uint8_t texpage = compositetexturepage[tex_index];
 	uint8_t texoffset = compositetextureoffset[tex_index];
+	segment_t tex_segment;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_COMPOSITE;
 #endif
 
 
 	if (texpage == 0xFF) { // texture not loaded -  0xFFu is initial state (and impossible anyway)
-		segment_t tex_segment;
 		R_GetNextTextureBlock(tex_index, texturecompositesizes[tex_index], CACHETYPE_COMPOSITE);
 		texpage = compositetexturepage[tex_index];
 		texoffset = compositetextureoffset[tex_index];
@@ -2425,10 +2511,29 @@ segment_t getcompositetexture(int16_t tex_index) {
 		return tex_segment;
 	}
 
-	return 0x5000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+	tex_segment = 0x5000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+
+	// if (texbytevalue[tex_index] != *((uint8_t __far*)MK_FP(tex_segment, 0))){
+	// 	// FILE* fp = fopen("texdump.txt", "wb");
+	// 	// fwrite(texbytevalue, MAX_TEXTURES, 1, fp);
+	// 	// fclose(fp);
+	// 	I_Error ("caught bad value! b\n %i should be %x was %x", tex_index, texbytevalue[tex_index], *((uint8_t __far*)MK_FP(tex_segment, 0)));
+	// }
+
+	// 120 should be 4d was	
+	// 23 should be 6d was 4d
+	// 14 should be 8b was 95
+	// 24 should be 5 was 8f
+	// 24 should be 5 was 0 (?)
+	// 120 should be 4d was 69
+	// 24 should be 5 was 69
+	// todo on quit print all those values to file.
+
+	return tex_segment;
 
 
 }
+
 
 segment_t __far getspritetexture(int16_t index) {
 
