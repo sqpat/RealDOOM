@@ -1598,16 +1598,17 @@ void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdest
 
 		patchcol = (column_t __far*)((byte  __far*)patchcol + count + 4);
 
-		if (position < 0)
-		{
+		if (position < 0) {
 			count += position;
 			position = 0;
 		}
 
-		if (position + count > textureheight)
+		if (position + count > textureheight){
 			count = textureheight - position;
-		if (count > 0)
+		}
+		if (count > 0){
 			FAR_memcpy(MK_FP(currentdestsegment, position), source, count);
+		}
 
 
 	}
@@ -1937,6 +1938,9 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
 		currentlump = collump[currentRLEIndex].h;
 		nextcollumpRLE = collump[currentRLEIndex + 1].bu.bytelow;
+		if (nextcollumpRLE == 0) {
+			nextcollumpRLE = 256;
+		}
 
 		// increment starting texel index
 
@@ -1946,11 +1950,18 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 		if (x){
 			int16_t innercurrentRLEIndex = 0;
 			int16_t innercurrentlump = collump[0].h;
-			uint8_t innernextcollumpRLE = collump[1].bu.bytelow;
+			int16_t innernextcollumpRLE = collump[1].bu.bytelow;
 			uint8_t currentx = 0;
 			uint8_t diffpixels = 0;
 
+			// dont think 256 can happen in this case?
+
+
 			while (true){ 
+				if (innernextcollumpRLE == 0) {
+					innernextcollumpRLE = 256;
+				}
+
 				if ((currentx + innernextcollumpRLE) < x){
 					if (innercurrentlump == -1){
 						diffpixels += (innernextcollumpRLE);

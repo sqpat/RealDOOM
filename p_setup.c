@@ -1092,13 +1092,12 @@ void __near Z_FreeConventionalAllocations() {
 	//FAR_memset(visplanepiclights, 0x00, size_visplanepiclights);
 	FAR_memset(flatindex, 0xFF, size_flatindex);
 
-	for (i = 0; i < numflats; i++){
+	for (i = 0; i < MAX_FLATS; i++){
 		flattranslation[i] = i;
 	}
-	for (i = 0; i < numtextures; i++){
+	for (i = 0; i < MAX_TEXTURES; i++){
 		texturetranslation[i] = i;
 	}
-
 
 	
 	currentflatpage[0] = 0;

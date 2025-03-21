@@ -2534,7 +2534,7 @@ sal       ax, 1               ; preshift
 push ax   ; bp - 0Ch
 lodsw
 push ax   ; bp - 0Eh
-lodsw
+lodsw     ; textureoffset todo can be 8 bit
 
 
 les        si, dword ptr ss:[bx]   ; vertexes
@@ -4650,6 +4650,8 @@ ADD  AX, BX	  ; set up final return value
 ADC  DX, SI
 
 
+;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
+
 ; todo self modify the neg of this in somehow?
 SELFMODIFY_set_cx_rw_offset_lo:	
 mov   cx, 01000h
@@ -4657,6 +4659,8 @@ sub   cx, ax   ; cx is soon clobbered. so we only need AX?
 SELFMODIFY_set_ax_rw_offset_hi:
 mov   ax, 01000h
 sbb   ax, dx
+
+; texturecolumn = ax:cx...  or just ax (whole number)
 
 ;	if (rw_scale.h.intbits >= 3) {
 ;		index = MAXLIGHTSCALE - 1;
@@ -4985,7 +4989,7 @@ ELSE
    q1_ready_3232:
 
    mov  ax, es
-   xor  dx, dx;
+   xor  dx, dx
 
    FastDiv3232FFFF_done_di_si:
    pop   di
@@ -5015,7 +5019,7 @@ seg_non_textured:
 ;if (yh >= yl){
 mov   bx, di 			; store rw_x
 add   bx, bx
-mov   ax, OPENINGS_SEGMENT
+mov   ax, OPENINGS_SEGMENT ; todo is this necessary? just gets pushed later.
 mov   es, ax
 
 ; dx holds texturecolumn
@@ -5030,6 +5034,7 @@ jl    mid_no_pixels_to_draw
 
 ; si:di are dc_yl, dc_yh
 ; dx holds texturecolumn
+
 
 ; inlined function. 
 R_GetSourceSegment0_START:
@@ -5991,7 +5996,7 @@ bottexture_stuff_done:
 SELFMODIFY_BSP_siderenderrowoffset_2:
 mov       ax, 01000h
 
-;   extraselfmodify? or hold in vars till this pt and finally write the high bits
+;  extra selfmodify? or hold in vars till this pt and finally write the high bits
 ; 	rw_toptexturemid.h.intbits += side_render->rowoffset;
 ;	rw_bottomtexturemid.h.intbits += side_render->rowoffset;
 
