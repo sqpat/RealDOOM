@@ -1937,10 +1937,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 		}
 
 		currentlump = collump[currentRLEIndex].h;
-		nextcollumpRLE = collump[currentRLEIndex + 1].bu.bytelow;
-		if (nextcollumpRLE == 0) {
-			nextcollumpRLE = 256;
-		}
+		nextcollumpRLE = collump[currentRLEIndex + 1].bu.bytelow + 1;
 
 		// increment starting texel index
 
@@ -1950,7 +1947,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 		if (x){
 			int16_t innercurrentRLEIndex = 0;
 			int16_t innercurrentlump = collump[0].h;
-			int16_t innernextcollumpRLE = collump[1].bu.bytelow;
+			int16_t innernextcollumpRLE = collump[1].bu.bytelow + 1;
 			uint8_t currentx = 0;
 			uint8_t diffpixels = 0;
 
@@ -1958,9 +1955,6 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
 
 			while (true){ 
-				if (innernextcollumpRLE == 0) {
-					innernextcollumpRLE = 256;
-				}
 
 				if ((currentx + innernextcollumpRLE) < x){
 					if (innercurrentlump == -1){
@@ -1969,7 +1963,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 					currentx += innernextcollumpRLE;
 					innercurrentRLEIndex += 2;
 					innercurrentlump = collump[innercurrentRLEIndex].h;
-					innernextcollumpRLE = collump[innercurrentRLEIndex + 1].bu.bytelow;
+					innernextcollumpRLE = collump[innercurrentRLEIndex + 1].bu.bytelow + 1;
 					continue;
 				} else {
 					if (innercurrentlump == -1){
@@ -1990,7 +1984,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 			while (x >= nextcollumpRLE) {
 				currentRLEIndex += 2;
 				currentlump = collump[currentRLEIndex].h;
-				nextcollumpRLE += collump[currentRLEIndex + 1].bu.bytelow;
+				nextcollumpRLE += (collump[currentRLEIndex + 1].bu.bytelow + 1);
 			}
 
 			// if there is a defined lump, then there are not multiple patches for the column
@@ -2553,10 +2547,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 			//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
 			// should we change this to be 256 - the number? we dont want a branch.
 			// anyway, fix it in asm
-			subtractor = texturecolumnlump[n+1].bu.bytelow;
-			if (!subtractor){
-				subtractor = 256;
-			}
+			subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
 			runningbasetotal += subtractor;
 			lump = texturecolumnlump[n].h;
 			col -= subtractor;
@@ -2808,10 +2799,8 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 			//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
 			// should we change this to be 256 - the number? we dont want a branch.
 			// anyway, fix it in asm
-			subtractor = texturecolumnlump[n+1].bu.bytelow;
-			if (!subtractor){
-				subtractor = 256;
-			}
+			subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
+
 			runningbasetotal += subtractor;
 			lump = texturecolumnlump[n].h;
 			col -= subtractor;
