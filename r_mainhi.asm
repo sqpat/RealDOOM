@@ -1085,7 +1085,7 @@ PUBLIC R_AddLine_
 ; bp - 6       span   lo bits ?
 ; bp - 8     angle1 lo bits ?
 ; bp - 0Ah     curlinelinedef ?
-; bp - 0Ch     curlinelinedef ?
+; bp - 0Ch     curlinesidedef ?
 ; bp - 0Eh     _rw_scale hi
 ; bp - 010h    _rw_scale lo
 
@@ -2254,7 +2254,7 @@ mov   al, 00h
 test  al, 4
 jne   exit_set_shadow
 SELFMODIFY_BSP_fixedcolormap_2:
-jne   exit_set_fixed_colormap
+jmp SHORT   exit_set_fixed_colormap
 SELFMODIFY_BSP_fixedcolormap_2_AFTER:
 test  byte ptr [bp - 2], FF_FULLBRIGHT
 jne   exit_set_fullbright_colormap
@@ -3145,7 +3145,7 @@ mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1], ax
 
 
 SELFMODIFY_BSP_fixedcolormap_3:
-jne       seg_textured_check_done    ; dont check walllights if fixedcolormap
+jmp SHORT seg_textured_check_done    ; dont check walllights if fixedcolormap
 SELFMODIFY_BSP_fixedcolormap_3_AFTER:
 mov       al, byte ptr [bp - 03Bh]
 xor       ah, ah
@@ -4339,7 +4339,7 @@ SELFMODIFY_add_rwscale_hi:
 adc   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2:
-je   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET
+jmp SHORT   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 + 2
 
 SELFMODIFY_add_pixlowstep_lo:
@@ -4411,7 +4411,7 @@ SELFMODIFY_add_to_bottomfrac_hi_2:
 adc   word ptr [bp - 028h], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1:
-jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET
+jmp SHORT SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 + 2
 SELFMODIFY_add_to_pixlow_lo_2:
 add   word ptr [bp - 026h], 01000h
@@ -4474,7 +4474,7 @@ mov   ax, si
 skip_yl_ceil_clip:
 push  ax 				; store yl
 SELFMODIFY_BSP_markceiling_1:
-je    markceiling_done
+jmp SHORT    markceiling_done
 SELFMODIFY_BSP_markceiling_1_AFTER = SELFMODIFY_BSP_markceiling_1+2
 
 ;                       si = top = ceilingclip[rw_x]+1;
@@ -4559,7 +4559,7 @@ mov   byte ptr es:[bx+di + 0142h], cl
 SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
 SELFMODIFY_BSP_get_segtextured:
-je    jump_to_seg_non_textured
+jmp SHORT    jump_to_seg_non_textured
 SELFMODIFY_BSP_get_segtextured_AFTER:
 seg_is_textured:
 
@@ -5200,7 +5200,7 @@ SELFMODIFY_BSP_toptexture_TARGET:
 no_top_texture_draw:
 ; bx is already rw_x << 1
 SELFMODIFY_BSP_markceiling_2:
-je   check_bottom_texture
+jmp SHORT   check_bottom_texture
 SELFMODIFY_BSP_markceiling_2_AFTER:
 ; bx is already rw_x << 1
 mark_ceiling_si:
@@ -5319,7 +5319,8 @@ push  dx
 SELFMODIFY_BSP_check_seglooptexmodulo1:
 SELFMODIFY_BSP_set_seglooptexrepeat1:
 ; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
-je    non_repeating_texture1
+jmp SHORT non_repeating_texture1
+
 SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER:
 SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER:
 xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
