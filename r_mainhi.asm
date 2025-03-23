@@ -2360,9 +2360,8 @@ test  ax, ax
 jl    set_spritelights_to_zero
 cmp   ax, LIGHTLEVELS
 jge   set_spritelights_to_max
-mov   si, ax
-add   si, ax
-mov   ax, word ptr ds:[si + _lightmult48lookup]
+mov   ah, 48
+mul   ah
 spritelights_set:
 mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1], ax  ; todo get rid of this variable. self modify this forward.
 mov   ax, word ptr es:[bx + 8]
@@ -3174,13 +3173,15 @@ v1y_equals_v2y:
 dec       dx
 v1x_equals_v2x:
 test      dx, dx
+; todo i feel like these jump default cases can be better, and maybe we dont need test.
+
 jge       lightnum_greater_than_0
+lightnum_is_zero:
 xor		  ax, ax
 jmp       done_setting_ax_to_wallights
 lightnum_less_than_lightlevels:
-mov       bx, dx
-add       bx, dx
-mov       ax, word ptr ds:[bx + _lightmult48lookup]
+mov       al, 48
+mul       dl
 jmp       done_setting_ax_to_wallights
 
 lightnum_greater_than_0:
@@ -6692,11 +6693,10 @@ use_spritelights_zero:
 xor   ax, ax
 jmp   player_spritelights_set
 calculate_spritelights:
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-mov   ax, word ptr ds:[bx + _lightmult48lookup]
-jmp   player_spritelights_set
+mov   ah, 48
+mul   ah
+mov   word ptr cs:[SELFMODIFY_set_spritelights_2 + 1], ax 
+jmp   first_iter
 
 
 ENDP

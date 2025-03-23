@@ -1189,10 +1189,13 @@ cmp   al, LIGHTLEVELS
 jb    lightlevel_in_range
 mov   al, LIGHTLEVELS-1
 lightlevel_in_range:
+; ah is 0
+; shift 7
+xchg  al, ah
+sar   ax, 1
 
-add   ax, ax
-xchg  bx, ax
-mov   ax, word ptr ds:[bx + _lightshift7lookup]
+
+
 mov   word ptr ds:[_planezlight], ax
 ;mov   word ptr ds:[_planezlight + 2], ZLIGHT_SEGMENT  ; this is static and set in memory.asm
 
@@ -1426,13 +1429,18 @@ jle   start_single_plane_draw_loop
 jmp   do_next_drawplanes_loop
 ; flat is unloaded. load it in
 flat_is_unloaded:
-mov   bl, cl
-xor   bh, bh
 
-add   bx, bx
+; flat cache page is 7000h + 400h * cl
 
 push  cx
-mov   cx, word ptr ds:[bx + _FLAT_CACHE_PAGE]
+mov   ch, cl
+xor   cl, cl
+xor   bh, bh    ; for later
+
+sal   cx, 1
+sal   cx, 1   ; cx = 400h * cl 
+
+add   cx, FLAT_CACHE_BASE_SEGMENT
 
 mov   ax, FLATTRANSLATION_SEGMENT
 mov   es, ax

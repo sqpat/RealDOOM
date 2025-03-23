@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/03/22 07:37:19
+Created on:       25/03/22 08:39:38
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -87,15 +87,15 @@ p_user_TEXT            CODE           AUTO           0dac:f4e0       000006c8
 r_bsp_TEXT             CODE           AUTO           1d67:0000       00000024
 r_data_TEXT            CODE           AUTO           1d67:0030       00001b9a
 R_MATH_TEXT            CODE           AUTO           1d67:1bca       000001db
-R_MAINHI_TEXT          CODE           AUTO           1d67:1da6       000022d8
-R_COLUMN_TEXT          CODE           AUTO           1d67:407e       00000e46
-R_SPAN_TEXT            CODE           AUTO           1d67:4ec4       00000db3
-R_SKY_TEXT             CODE           AUTO           1d67:5c78       000006c0
+R_MAINHI_TEXT          CODE           AUTO           1d67:1da6       000022d1
+R_COLUMN_TEXT          CODE           AUTO           1d67:4078       00000e46
+R_SPAN_TEXT            CODE           AUTO           1d67:4ebe       00000db4
+R_SKY_TEXT             CODE           AUTO           1d67:5c72       000006c0
 r_draw_TEXT            CODE           AUTO           1d67:6340       000000fb
 r_main_TEXT            CODE           AUTO           1d67:6440       000001ea
 r_plane_TEXT           CODE           AUTO           1d67:6630       00000000
 r_segs_TEXT            CODE           AUTO           1d67:6630       00000000
-R_MASKED_TEXT          CODE           AUTO           1d67:6630       000010d5
+R_MASKED_TEXT          CODE           AUTO           1d67:6630       000010d2
 r_things_TEXT          CODE           AUTO           1d67:7710       00000000
 w_wad_TEXT             CODE           AUTO           1d67:7710       000003de
 VIDEO_TEXT             CODE           AUTO           1d67:7aee       000004df
@@ -1239,50 +1239,50 @@ Module: r_math.obj(r_math.ASM)
 1d67:1c3a      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
 1d67:211b*     R_AddLine_
-1d67:27f4*     R_StoreWallRange_
-1d67:376b*     R_ClipSolidWallSegment_
-1d67:3818*     R_ClipPassWallSegment_
-1d67:3ab8*     R_CheckBBox_
+1d67:27f1*     R_StoreWallRange_
+1d67:3765*     R_ClipSolidWallSegment_
+1d67:3812*     R_ClipPassWallSegment_
+1d67:3ab1*     R_CheckBBox_
 1d67:22bb*     R_Subsector_
 1d67:1e34*     FixedMulBSPLocal_
 1d67:1f05*     R_PointToDist_
 1d67:1ff0*     R_HandleEMSVisplanePagination_
 1d67:1e4e*     FixedDivBSPLocal_
-1d67:3a09      R_PrepareMaskedPSprites_
-1d67:3d44      R_WriteBackViewConstants_
-1d67:3eec      R_WriteBackFrameConstants_
+1d67:3a03      R_PrepareMaskedPSprites_
+1d67:3d3d      R_WriteBackViewConstants_
+1d67:3ee5      R_WriteBackFrameConstants_
 1d67:1f7c      R_ClearPlanes_
 1d67:278c*     R_AddSprites_
 1d67:209f*     R_FindPlane_
-1d67:3246*     R_DrawColumnPrep_
-1d67:386b*     R_DrawPSprite_
+1d67:3240*     R_DrawColumnPrep_
+1d67:3865*     R_DrawPSprite_
 1d67:23a4*     R_CheckPlane_
 1d67:246a*     R_ProjectSprite_
 1d67:1eba*     FixedMulTrigNoShiftBSPLocal_
-1d67:3c60      R_RenderBSPNode_
+1d67:3c59      R_RenderBSPNode_
 1d67:1da6*     R_ScaleFromGlobalAngle_
-1d67:3a89*     R_PointToAngle16_
+1d67:3a82*     R_PointToAngle16_
 Module: r_column.obj(r_column.ASM)
-1d67:407e      R_COLUMN_STARTMARKER_
-1d67:439e      R_DrawColumn_
-1d67:4ec4      R_COLUMN_ENDMARKER_
+1d67:4078      R_COLUMN_STARTMARKER_
+1d67:4398      R_DrawColumn_
+1d67:4ebe      R_COLUMN_ENDMARKER_
 Module: r_span.obj(r_span.ASM)
-1d67:4f64      R_DrawSpan_
-1d67:4ec4      R_SPAN_STARTMARKER_
-1d67:5671*     R_FixedMulLocal_
-1d67:5b7f      R_WriteBackViewConstantsSpan_
-1d67:55b8*     R_DrawSpanPrep_
-1d67:5831      R_DrawPlanes_
-1d67:5c77      R_SPAN_ENDMARKER_
-1d67:56ad*     R_MapPlane_
-1d67:4f67*     R_DrawSpanActual_
-1d67:5623*     R_FixedMulTrigLocal_
+1d67:4f5e      R_DrawSpan_
+1d67:4ebe      R_SPAN_STARTMARKER_
+1d67:566b*     R_FixedMulLocal_
+1d67:5b7a      R_WriteBackViewConstantsSpan_
+1d67:55b2*     R_DrawSpanPrep_
+1d67:582b      R_DrawPlanes_
+1d67:5c72      R_SPAN_ENDMARKER_
+1d67:56a7*     R_MapPlane_
+1d67:4f61*     R_DrawSpanActual_
+1d67:561d*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1d67:5c78      R_DrawSkyColumn_
-1d67:5e45*     R_DrawSkyColumnDynamic_
-1d67:62c7      R_DrawSkyPlane_
-1d67:6338      R_SKY_END_
-1d67:6256      R_DrawSkyPlaneDynamic_
+1d67:5c72      R_DrawSkyColumn_
+1d67:5e3f*     R_DrawSkyColumnDynamic_
+1d67:62c1      R_DrawSkyPlane_
+1d67:6332      R_SKY_END_
+1d67:6250      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1d67:6340      R_VideoErase_
 1d67:63c4      R_DrawViewBorder_
@@ -1295,20 +1295,20 @@ Module: r_main.obj(C:\REALDOOM\r_main.c)
 1d67:6530      R_RenderPlayerView_
 Module: r_masked.obj(r_masked.ASM)
 1d67:6630      R_MASKED_STARTMARKER_
-1d67:7705      R_MASKED_END_
-1d67:70d6*     R_PointOnSegSide_
+1d67:7702      R_MASKED_END_
+1d67:70d3*     R_PointOnSegSide_
 1d67:6ba8*     R_DrawPlayerSprites_
-1d67:752d      R_SortVisSprites_
+1d67:752a      R_SortVisSprites_
 1d67:68a7*     R_DrawMaskedSpriteShadow_
-1d67:76a7      R_WriteBackMaskedFrameConstants_
+1d67:76a4      R_WriteBackMaskedFrameConstants_
 1d67:66b4      R_DrawFuzzColumn_
 1d67:67f9      R_DrawSingleMaskedColumn_
-1d67:718e*     R_DrawSprite_
+1d67:718b*     R_DrawSprite_
 1d67:699e*     R_DrawVisSprite_
-1d67:744c      R_DrawMaskedColumn_
-1d67:7096*     FixedMul1632MaskedLocal_
-1d67:73f0      R_DrawMasked_
-1d67:761a      R_WriteBackViewConstantsMasked_
+1d67:7449      R_DrawMaskedColumn_
+1d67:7093*     FixedMul1632MaskedLocal_
+1d67:73ed      R_DrawMasked_
+1d67:7617      R_WriteBackViewConstantsMasked_
 1d67:6bcf*     R_RenderMaskedSegRange_
 1d67:67b0      R_DrawColumnPrepMaskedMulti_
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
@@ -1708,4 +1708,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e750 (190288.)
 Entry point address: 25ec:2720
-Link time: 00:00.75
+Link time: 00:00.29

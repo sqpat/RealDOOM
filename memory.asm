@@ -24,9 +24,9 @@ SEGMENT _FIXEDDATA  USE16 PARA PUBLIC 'DATA'
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ; spanfunc_segment_storage 0Eh
 dw SPANFUNC_JUMP_LOOKUP_SEGMENT
-; 010  _lightmult48lookup
-dw    0,  48,  96, 144, 192, 240, 288, 336
-dw  384, 432, 480, 528, 576, 624, 672, 720
+; 010  
+dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ; _quality_port_lookup 0x30
 db 1,  2,  4,  8,  3, 12,  3, 12, 15, 15, 15, 15
 ; _ds_source_segment  0x3C 
@@ -66,16 +66,17 @@ dw 00, 0100h, 0200h, 0300h
 ; MULT_4096 0x128
 dw 00, 01000h, 02000h, 03000h
 ; FLAT_CACHE_PAGE 0x130
-dw 07000h, 07400h, 07800h, 07C00h
+; todo unused
+dw  00, 00, 00, 00
 ; visplanelookupsegments  0x138
 dw 08400h, 08800h, 08C00h
 ; firstflat 0x13E
 dw 00h
 
 
-; lightshift7lookup 0x140
-dw  0,  128,  256, 384, 512,  640,  768, 896
-dw 1024, 1152, 1280, 1408, 1536, 1664, 1792, 1920
+; _lightshift7lookup 0x140
+dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, 00, 00
 
 ; 0x160
 ; currentflatpage 0x160, lastflatcacheindicesused 0x164

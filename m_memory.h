@@ -1165,6 +1165,7 @@ patchoffset                 83BD:01DC
 // this means spritewidths is a variable and not a constant, 
 // but it also means the ultimate doom version will work with either wad
 
+#define FLAT_CACHE_BASE_SEGMENT  0x7000
 
 #define size_nodes_render      MAX_NODES_RENDER_SIZE
 #define size_spritedefs        16114u

@@ -86,7 +86,7 @@
 #define tantoangle                      (*((segment_t  __near*)              (_NULL_OFFSET + 0x000C)))
 #define spanfunc_jump_segment_storage   (*((segment_t __near*)               (_NULL_OFFSET + 0x000E)))
 
-#define lightmult48lookup               (((int16_t __near*)                  (_NULL_OFFSET + 0x0010)))
+// 10 to 30 unused
 
 
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
@@ -194,11 +194,11 @@
 // 8 bytes free
 //#define MULT_256                        (((uint16_t   __near*)               (_NULL_OFFSET + 0x0120)))
 #define MULT_4096                       (((uint16_t   __near*)               (_NULL_OFFSET + 0x0128)))
-#define FLAT_CACHE_PAGE                 (((uint16_t   __near*)               (_NULL_OFFSET + 0x0130)))
+//#define FLAT_CACHE_PAGE                 (((uint16_t   __near*)               (_NULL_OFFSET + 0x0130)))
 #define visplanelookupsegments          (((segment_t   __near*)              (_NULL_OFFSET + 0x0138)))
 
 #define firstflat                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x013E)))
-#define lightshift7lookup               (*((int16_t    __near*)              (_NULL_OFFSET + 0x0140)))
+// 140-160 unused
 
 #define currentflatpage                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0160)))
 #define lastflatcacheindicesused        (((int8_t    __near*)                (_NULL_OFFSET + 0x0164)))

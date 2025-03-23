@@ -40,8 +40,7 @@ _destview    = 						_NULL_OFFSET + 00004h
 _tantoangle  = 						_NULL_OFFSET + 0000Ch
 _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 0000Eh
 
-_lightmult48lookup =                _NULL_OFFSET + 00010h
-
+; 010 to 030 unused
 
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
 _ds_source_segment = 				_NULL_OFFSET + 0003Ch
@@ -139,10 +138,12 @@ _pspriteiscale =                    _NULL_OFFSET + 0011Ch
 ;todo unused
 ;_MULT_256 =                    		_NULL_OFFSET + 00120h
 _MULT_4096 =                    	_NULL_OFFSET + 00128h
+; todo unused
 _FLAT_CACHE_PAGE =                  _NULL_OFFSET + 00130h
 _visplanelookupsegments =           _NULL_OFFSET + 00138h
 _firstflat =                  		_NULL_OFFSET + 0013Eh
 ; 140h
+; unused
 _lightshift7lookup =            	_NULL_OFFSET + 00140h
 ; 160h
 _currentflatpage =            		_NULL_OFFSET + 00160h

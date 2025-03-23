@@ -1408,9 +1408,8 @@ nop				; becomes inc ax, dec ax, or nop
 jl   set_walllights_zero
 cmp   ax, LIGHTLEVELS
 jge   clip_lights_to_max
-mov   bx, ax
-add   bx, ax
-mov   ax, word ptr ds:[bx + _lightmult48lookup]
+mov   ah, 48
+mul   ah
 jmp   lights_set
 
 
@@ -1428,8 +1427,7 @@ jmp   colormap_set
 
 
 clip_lights_to_max:
-;mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult48lookup[LIGHTLEVELS - 1];
-mov    ax, 720   ; hardcoded
+mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
 
 lights_set:
 add   ax, (SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT + _scalelightfixed)
