@@ -42,6 +42,12 @@ _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 0000Eh
 
 ; 010 to 030 unused
 
+_spanfunc_prt = 					_NULL_OFFSET + 00010h
+_spanfunc_destview_offset = 		_NULL_OFFSET + 00018h
+_spanfunc_inner_loop_count =		_NULL_OFFSET + 00020h
+_spanfunc_outp = 					_NULL_OFFSET + 00024h
+; 28 -2F unused
+
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
 _ds_source_segment = 				_NULL_OFFSET + 0003Ch
 
@@ -98,11 +104,8 @@ _playingstate = 	                _NULL_OFFSET + 000BFh
 
 _mfloorclip = 						_NULL_OFFSET + 000C0h
 _mceilingclip = 					_NULL_OFFSET + 000C4h
-_spanfunc_prt = 					_NULL_OFFSET + 000CCh
-_spanfunc_destview_offset = 		_NULL_OFFSET + 000D4h
-_spanfunc_inner_loop_count =		_NULL_OFFSET + 000DCh
-_spanfunc_outp = 					_NULL_OFFSET + 000E0h
-_spanfunc_main_loop_count = 		_NULL_OFFSET + 000E4h
+; cc - e3 unused
+; e4 unused
 _skipdirectdraws = 					_NULL_OFFSET + 000E5h
 ; e6-ed free
 _screen_segments = 					_NULL_OFFSET + 000EEh

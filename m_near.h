@@ -86,8 +86,17 @@
 #define tantoangle                      (*((segment_t  __near*)              (_NULL_OFFSET + 0x000C)))
 #define spanfunc_jump_segment_storage   (*((segment_t __near*)               (_NULL_OFFSET + 0x000E)))
 
-// 10 to 30 unused
 
+//spanfunc_prt[4]
+#define spanfunc_prt                    ((int16_t __near *)                  (_NULL_OFFSET + 0x0010))
+//spanfunc_destview_offset[4]
+#define spanfunc_destview_offset        ((uint16_t __near *)                 (_NULL_OFFSET + 0x0018))
+//spanfunc_inner_loop_count[4]
+#define spanfunc_inner_loop_count       ((int8_t __near *)                   (_NULL_OFFSET + 0x0020))
+//spanfunc_outp[4]
+#define spanfunc_outp                   ((uint8_t __near *)                  (_NULL_OFFSET + 0x0024))
+
+// 28 to 30 unused
 
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
 #define ds_source_segment               (*((byte __far* __near*)             (_NULL_OFFSET + 0x003C)))
@@ -149,15 +158,8 @@
 #define mceilingclip                    (*(int16_t __far * __near *)         (_NULL_OFFSET + 0x00C4))
 #define mceilingclip_offset             (*(int16_t __near *)                 (_NULL_OFFSET + 0x00C4))
 #define mceilingclip_segment            (*(segment_t __near *)               (_NULL_OFFSET + 0x00C6))
-//spanfunc_prt[4]
-#define spanfunc_prt                    ((int16_t __near *)                  (_NULL_OFFSET + 0x00CC))
-//spanfunc_destview_offset[4]
-#define spanfunc_destview_offset        ((uint16_t __near *)                 (_NULL_OFFSET + 0x00D4))
-//spanfunc_inner_loop_count[4]
-#define spanfunc_inner_loop_count       ((int8_t __near *)                   (_NULL_OFFSET + 0x00DC))
-//spanfunc_outp[4]
-#define spanfunc_outp                   ((uint8_t __near *)                  (_NULL_OFFSET + 0x00E0))
-//#define spanfunc_main_loop_count        (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E4))
+// cc - e4 unused
+
 #define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E5))
 // e6-ed free
 #define screen_segments                 ((segment_t __near *)                (_NULL_OFFSET + 0x00EE))

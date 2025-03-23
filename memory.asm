@@ -46,11 +46,12 @@ db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ;0xB0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ; _mfloorclip segment = c2, _mceilingclip segment = c6
+; 0xC0
 dw 0,  OPENINGS_SEGMENT,  0,  OPENINGS_SEGMENT,  0,  0,  0,  0
+; 0xD0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ; EEh screen_segments[5]
-db 0,  0,  0,  0,  0,  0, 19, 18, 15, 12,  9,  6,  3,  0
-dw                                                         8000h
+dw 0, 0, 0, 0, 0, 0, 0, 8000h
 ;  
 dw 8000h,  7000h,  6000h,  9C00h,    00, 00,     00,    00
 ; 0x100:
