@@ -2363,7 +2363,7 @@ jge   set_spritelights_to_max
 mov   ah, 48
 mul   ah
 spritelights_set:
-mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1], ax  ; todo get rid of this variable. self modify this forward.
+mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1], ax 
 mov   ax, word ptr es:[bx + 8]
 test  ax, ax
 je    exit_add_sprites
@@ -2522,8 +2522,6 @@ mov       cx, ds  ; store for later.
 mov       ax, SIDES_SEGMENT
 mov       ds, ax
 
-; TODO! reorder stack and do pushes.
-; make this movsw
 ; read all the sides fields now. ;preshift them as they are word lookups
 
 lodsw
@@ -2834,7 +2832,7 @@ mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3], ax
 
 
 
-; todo change these in 386 mode to just 
+; todo change these in 386 mode to shld?
 SELFMODIFY_BSP_detailshift_1:
 shl   dx, 1
 rcl   ax, 1
@@ -3168,30 +3166,35 @@ cmp       ax, 01000h
 jne       v1x_equals_v2x
 
 inc       dx
-jmp       v1x_equals_v2x
+jge       lightnum_greater_than_0
+mov       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+jmp       done_setting_ax_to_wallights
+
+
 v1y_equals_v2y:
 dec       dx
+jge       lightnum_greater_than_0
+mov       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+jmp       done_setting_ax_to_wallights
+
 v1x_equals_v2x:
 test      dx, dx
-; todo i feel like these jump default cases can be better, and maybe we dont need test.
 
 jge       lightnum_greater_than_0
-lightnum_is_zero:
-xor		  ax, ax
+mov       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
 jmp       done_setting_ax_to_wallights
+lightnum_max:
+mov      ax, 720 + _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+jmp      done_setting_ax_to_wallights
+lightnum_greater_than_0:
+cmp       dx, LIGHTLEVELS
+jnl       lightnum_max
+
 lightnum_less_than_lightlevels:
 mov       al, 48
 mul       dl
-jmp       done_setting_ax_to_wallights
-
-lightnum_greater_than_0:
-cmp       dx, LIGHTLEVELS
-jl        lightnum_less_than_lightlevels
-; todo is this is hardcoded value?
-mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
-
-done_setting_ax_to_wallights:
 add       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+done_setting_ax_to_wallights:
 
 
 ; write walllights to rendersegloop
