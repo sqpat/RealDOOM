@@ -96,13 +96,8 @@
 #define snd_MusicDevice				    (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0043)))
 #define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0044)))
 #define dc_yh                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0046)))
-#define castattacking                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0048)))
-#define castdeath                       (*((int8_t __near*)                  (_NULL_OFFSET + 0x0049)))
-#define castonmelee                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x004A)))
-#define castframes                      (*((int8_t __near*)                  (_NULL_OFFSET + 0x004B)))
-#define casttics                        (*((int8_t __near*)                  (_NULL_OFFSET + 0x004C)))
-#define castnum                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x004D)))
-#define finaleflat                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x004E)))
+#define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x0048))
+
 
 #define dc_x                            (*((int16_t __near*)                 (_NULL_OFFSET + 0x0050)))
 #define lastopening                     (*((uint16_t    __near*)             (_NULL_OFFSET + 0x0052)))
@@ -164,7 +159,7 @@
 #define spanfunc_outp                   ((uint8_t __near *)                  (_NULL_OFFSET + 0x00E0))
 //#define spanfunc_main_loop_count        (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E4))
 #define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E5))
-#define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x00E6))
+// e6-ed free
 #define screen_segments                 ((segment_t __near *)                (_NULL_OFFSET + 0x00EE))
 #define numbraintargets                 (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F8))
 #define braintargeton                   (*(int16_t __near *)                 (_NULL_OFFSET + 0x00FA))
@@ -303,7 +298,15 @@
 #define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358)))
 // lookup for what to write to the vga port for read  for fuzzcolumn
-// 360 free??
+// 360-367 free??
+#define castattacking                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0368)))
+#define castdeath                       (*((int8_t __near*)                  (_NULL_OFFSET + 0x0369)))
+#define castonmelee                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x036A)))
+#define castframes                      (*((int8_t __near*)                  (_NULL_OFFSET + 0x036B)))
+#define casttics                        (*((int8_t __near*)                  (_NULL_OFFSET + 0x036C)))
+#define castnum                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x036D)))
+#define finaleflat                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x036E)))
+
 #define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x0370)))
 
 #define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0388)))

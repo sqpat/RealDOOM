@@ -51,13 +51,8 @@ _dc_colormap_index = 				_NULL_OFFSET + 00042h
 _snd_MusicDevice =				    _NULL_OFFSET + 00043h
 _dc_yl = 							_NULL_OFFSET + 00044h
 _dc_yh = 							_NULL_OFFSET + 00046h
-_castattacking =                 	_NULL_OFFSET + 00048h
-_castdeath =                     	_NULL_OFFSET + 00049h
-_castonmelee =                   	_NULL_OFFSET + 0004Ah
-_castframes =                    	_NULL_OFFSET + 0004Bh
-_casttics =                      	_NULL_OFFSET + 0004Ch
-_castnum =                       	_NULL_OFFSET + 0004Dh
-_finaleflat =                    	_NULL_OFFSET + 0004Eh
+_jump_mult_table_3 = 				_NULL_OFFSET + 00048h
+
 
 _dc_x = 							_NULL_OFFSET + 00050h
 _lastopening =                   	_NULL_OFFSET + 00052h
@@ -109,7 +104,7 @@ _spanfunc_inner_loop_count =		_NULL_OFFSET + 000DCh
 _spanfunc_outp = 					_NULL_OFFSET + 000E0h
 _spanfunc_main_loop_count = 		_NULL_OFFSET + 000E4h
 _skipdirectdraws = 					_NULL_OFFSET + 000E5h
-_jump_mult_table_3 = 				_NULL_OFFSET + 000E6h
+; e6-ed free
 _screen_segments = 					_NULL_OFFSET + 000EEh
 _numbraintargets = 					_NULL_OFFSET + 000F8h
 _braintargeton = 					_NULL_OFFSET + 000FAh
@@ -247,6 +242,17 @@ _colfunc_call_lookup =               _NULL_OFFSET + 002D0h
 ; 354
 _getspritetexture_addr =             _NULL_OFFSET + 00354h
 _psprites =              			 _NULL_OFFSET + 00358h
+
+; 360-367 free
+_castattacking =                 	_NULL_OFFSET + 00368h
+_castdeath =                     	_NULL_OFFSET + 00369h
+_castonmelee =                   	_NULL_OFFSET + 0036Ah
+_castframes =                    	_NULL_OFFSET + 0036Bh
+_casttics =                      	_NULL_OFFSET + 0036Ch
+_castnum =                       	_NULL_OFFSET + 0036Dh
+_finaleflat =                    	_NULL_OFFSET + 0036Eh
+
+
 _vga_read_port_lookup =              _NULL_OFFSET + 00370h
 _vissprite_p =                       _NULL_OFFSET + 00388h
 ; high byte always 0

@@ -33,8 +33,8 @@ db 1,  2,  4,  8,  3, 12,  3, 12, 15, 15, 15, 15
 dw                                       DRAWSPAN_BX_OFFSET, 0000h
 
 
-;0x40
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+;0x40    48: jump_mult_table_3 
+db 0,  0,  0,  0,  0,  0,  0, 0, 19, 18, 15, 12,  9,  6,  3, 0
 ;0x50   0x54 = _planezlight (dword, so segment in 56)	 0x58 caststate (0x5A is STATES_SEGMENT) 
 dw 0,  0,  0,  ZLIGHT_SEGMENT,  0,  STATES_SEGMENT,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
@@ -48,7 +48,6 @@ db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ; _mfloorclip segment = c2, _mceilingclip segment = c6
 dw 0,  OPENINGS_SEGMENT,  0,  OPENINGS_SEGMENT,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-; E6h jump_mult_table_3[8]
 ; EEh screen_segments[5]
 db 0,  0,  0,  0,  0,  0, 19, 18, 15, 12,  9,  6,  3,  0
 dw                                                         8000h
@@ -73,8 +72,7 @@ dw 08400h, 08800h, 08C00h
 ; firstflat 0x13E
 dw 00h
 
-
-; _lightshift7lookup 0x140
+; unused 0x140
 dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 

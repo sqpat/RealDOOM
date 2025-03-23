@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/03/22 08:39:39
+Created on:       25/03/22 08:48:00
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -85,7 +85,7 @@ r_plane_TEXT           CODE           AUTO           1746:4370       00000000
 r_segs_TEXT            CODE           AUTO           1746:4370       00000000
 r_things_TEXT          CODE           AUTO           1746:4370       00000000
 w_wad_TEXT             CODE           AUTO           1746:4370       000003de
-VIDEO_TEXT             CODE           AUTO           1746:474e       000004df
+VIDEO_TEXT             CODE           AUTO           1746:474e       000004db
 v_video_TEXT           CODE           AUTO           1746:4c30       00000218
 z_zone_TEXT            CODE           AUTO           1746:4e50       00000655
 d_math_TEXT            CODE           AUTO           1746:54b0       00000000
@@ -1165,11 +1165,11 @@ Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 1746:472a      W_CacheLumpNumDirect_
 1746:4738      W_CacheLumpNumDirectFragment_
 Module: video.obj(video.ASM)
-1746:49ff*     CopyString9_
-1746:4a76      R_FillBackScreen_
-1746:490a      V_DrawPatchDirect_
+1746:49fb*     CopyString9_
+1746:4a72      R_FillBackScreen_
+1746:4907      V_DrawPatchDirect_
 1746:474e      V_DrawPatch_
-1746:483f*     V_DrawPatch5000Screen0_
+1746:483e*     V_DrawPatch5000Screen0_
 Module: v_video.obj(C:\REALDOOM\v_video.c)
 1746:4c30      V_MarkRect_
 1746:4c62      V_CopyRect_
