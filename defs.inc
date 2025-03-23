@@ -40,26 +40,11 @@ _destview    = 						_NULL_OFFSET + 00004h
 _tantoangle  = 						_NULL_OFFSET + 0000Ch
 _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 0000Eh
 
-_detailshift = 						_NULL_OFFSET + 00020h
-_detailshiftitercount = 			_NULL_OFFSET + 00022h
-_detailshiftandval = 				_NULL_OFFSET + 00024h
-_ceilphyspage =                  	_NULL_OFFSET + 00026h
-_floorphyspage =                 	_NULL_OFFSET + 00027h
+_lightmult48lookup =                _NULL_OFFSET + 00010h
 
 
-_gameaction =                 		_NULL_OFFSET + 00028h
-_viewactive =                 		_NULL_OFFSET + 00029h
-_automapactive =                 	_NULL_OFFSET + 0002Ah
-_commercial =                 		_NULL_OFFSET + 0002Bh
-_registered =                 		_NULL_OFFSET + 0002Ch
-_shareware =                 		_NULL_OFFSET + 0002Dh
-
-_ds_colormap_index = 				_NULL_OFFSET + 0002Eh
-_fixedcolormap = 					_NULL_OFFSET + 0002Fh
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
 _ds_source_segment = 				_NULL_OFFSET + 0003Ch
-_gameepisode = 						_NULL_OFFSET + 00040h
-_gamemap = 							_NULL_OFFSET + 00041h
 
 
 
@@ -232,7 +217,23 @@ _lastvisspritesegment2 =             _NULL_OFFSET + 00296h
 _lastvisspritepatch =                _NULL_OFFSET + 00298h
 _lastvisspritepatch2 =               _NULL_OFFSET + 0029Ah
 _ds_p =               				 _NULL_OFFSET + 0029Ch
-_lightmult48lookup =                 _NULL_OFFSET + 002A0h
+
+_olddb =							_NULL_OFFSET + 002A0h
+_detailshift = 						_NULL_OFFSET + 002B0h
+_detailshiftitercount = 			_NULL_OFFSET + 002B2h
+_detailshiftandval = 				_NULL_OFFSET + 002B4h
+_ceilphyspage =                  	_NULL_OFFSET + 002B6h
+_floorphyspage =                 	_NULL_OFFSET + 002B7h
+_gameaction =                 		_NULL_OFFSET + 002B8h
+_viewactive =                 		_NULL_OFFSET + 002B9h
+_automapactive =                 	_NULL_OFFSET + 002BAh
+_commercial =                 		_NULL_OFFSET + 002BBh
+_registered =                 		_NULL_OFFSET + 002BCh
+_shareware =                 		_NULL_OFFSET + 002BDh
+_ds_colormap_index = 				_NULL_OFFSET + 002BEh
+_fixedcolormap = 					_NULL_OFFSET + 002BFh
+
+
 
 _FixedMul_addr =               		 _NULL_OFFSET + 002C0h
 ;_FixedMul1632_addr =                 _NULL_OFFSET + 002C4h
@@ -251,6 +252,8 @@ _vissprite_p =                       _NULL_OFFSET + 00388h
 _cachedbyteheight =                  _NULL_OFFSET + 0038Ah
 _currentMusPage = 					 _NULL_OFFSET + 0038Ch
 _snd_MusicVolume =                   _NULL_OFFSET + 0038Dh
+_gameepisode = 						 _NULL_OFFSET + 0038Eh
+_gamemap = 							 _NULL_OFFSET + 0038Fh
 
 ; todo fill this up (38D to 38F free)
 _savedescription =                   _NULL_OFFSET + 00390h

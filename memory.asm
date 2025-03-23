@@ -24,9 +24,9 @@ SEGMENT _FIXEDDATA  USE16 PARA PUBLIC 'DATA'
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ; spanfunc_segment_storage 0Eh
 dw SPANFUNC_JUMP_LOOKUP_SEGMENT
-; 010h
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+; 010  _lightmult48lookup
+dw    0,  48,  96, 144, 192, 240, 288, 336
+dw  384, 432, 480, 528, 576, 624, 672, 720
 ; _quality_port_lookup 0x30
 db 1,  2,  4,  8,  3, 12,  3, 12, 15, 15, 15, 15
 ; _ds_source_segment  0x3C 
@@ -127,9 +127,10 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 280
 dw  00, 00, 00, 00, 00, NULL_TEX_COL, 00, NULL_TEX_COL
 dw  00, 00, 0FFFFh, 0FFFFh, 0FFFFh, 0FFFFh, 00, 00
-; 2A0  _lightmult48lookup
-dw    0,  48,  96, 144, 192, 240, 288, 336
-dw  384, 432, 480, 528, 576, 624, 672, 720
+; 2A0
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 2B0
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 2C0
 dw  00, 00, 00, 00, 00, 00, 00, 00
 

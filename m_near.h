@@ -85,26 +85,13 @@
 #define destscreen                      (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0008)))
 #define tantoangle                      (*((segment_t  __near*)              (_NULL_OFFSET + 0x000C)))
 #define spanfunc_jump_segment_storage   (*((segment_t __near*)               (_NULL_OFFSET + 0x000E)))
-#define olddb                           ((int16_t __near *)                  (_NULL_OFFSET + 0x0010))
-// 0 = high, 1 = low, = 2 potato
-#define detailshift                     (*((int16_t_union __near*)           (_NULL_OFFSET + 0x0020)))
-#define detailshiftitercount            (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0022)))
-#define detailshiftandval               (*((uint16_t __near*)                (_NULL_OFFSET + 0x0024)))
 
-#define ceilphyspage                    (*((int8_t __near*)                  (_NULL_OFFSET + 0x0026)))
-#define floorphyspage                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0027)))
-#define gameaction                      (*((gameaction_t __near*)            (_NULL_OFFSET + 0x0028)))
-#define viewactive                      (*((boolean __near*)                 (_NULL_OFFSET + 0x0029)))
-#define automapactive                   (*((boolean __near*)                 (_NULL_OFFSET + 0x002A)))
-#define commercial                      (*((boolean __near*)                 (_NULL_OFFSET + 0x002B)))
-#define registered                      (*((boolean __near*)                 (_NULL_OFFSET + 0x002C)))
-#define shareware                       (*((boolean __near*)                 (_NULL_OFFSET + 0x002D)))
-#define ds_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002E)))
-#define fixedcolormap                   (*((uint8_t __near*)                 (_NULL_OFFSET + 0x002F)))
+#define lightmult48lookup               (((int16_t __near*)                  (_NULL_OFFSET + 0x0010)))
+
+
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
 #define ds_source_segment               (*((byte __far* __near*)             (_NULL_OFFSET + 0x003C)))
-#define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0040)))
-#define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0041)))
+// 40, 41 free
 #define dc_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0042)))
 #define snd_MusicDevice				    (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0043)))
 #define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0044)))
@@ -288,7 +275,24 @@
 #define lastvisspritepatch              (*((int16_t __near*)                 (_NULL_OFFSET + 0x0298)))
 #define lastvisspritepatch2             (*((int16_t __near*)                 (_NULL_OFFSET + 0x029A)))
 #define ds_p                            (*((drawseg_t __far* __near*)        (_NULL_OFFSET + 0x029C)))
-#define lightmult48lookup               (((int16_t __near*)                  (_NULL_OFFSET + 0x02A0)))
+// 0x10 in length
+#define olddb                           ((int16_t __near *)                  (_NULL_OFFSET + 0x02A0))
+// 0 = high, 1 = low, = 2 potato
+#define detailshift                     (*((int16_t_union __near*)           (_NULL_OFFSET + 0x02B0)))
+#define detailshiftitercount            (*((uint8_t __near*)                 (_NULL_OFFSET + 0x02B2)))
+#define detailshiftandval               (*((uint16_t __near*)                (_NULL_OFFSET + 0x02B4)))
+
+#define ceilphyspage                    (*((int8_t __near*)                  (_NULL_OFFSET + 0x02B6)))
+#define floorphyspage                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x02B7)))
+#define gameaction                      (*((gameaction_t __near*)            (_NULL_OFFSET + 0x02B8)))
+#define viewactive                      (*((boolean __near*)                 (_NULL_OFFSET + 0x02B9)))
+#define automapactive                   (*((boolean __near*)                 (_NULL_OFFSET + 0x02BA)))
+#define commercial                      (*((boolean __near*)                 (_NULL_OFFSET + 0x02BB)))
+#define registered                      (*((boolean __near*)                 (_NULL_OFFSET + 0x02BC)))
+#define shareware                       (*((boolean __near*)                 (_NULL_OFFSET + 0x02BD)))
+#define ds_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x02BE)))
+#define fixedcolormap                   (*((uint8_t __near*)                 (_NULL_OFFSET + 0x02BF)))
+
 // more far pointers to functions... once they are in ASM-fixed locations, they should be callable normally
 #define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C0)))
 //#define FixedMul1632_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C4)))
@@ -299,6 +303,7 @@
 #define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358)))
 // lookup for what to write to the vga port for read  for fuzzcolumn
+// 360 free??
 #define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x0370)))
 
 #define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0388)))
@@ -306,6 +311,8 @@
 // dont use this byte!!! its always 0 on purpose.
 #define currentMusPage					(*((uint8_t __near*)                 (_NULL_OFFSET + 0x038C)))
 #define snd_MusicVolume                 (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038D)))
+#define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x038E)))
+#define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x038F)))
 
 // 38D-38F free
 

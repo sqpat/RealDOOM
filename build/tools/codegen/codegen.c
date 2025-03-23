@@ -4067,7 +4067,7 @@ char* LOCALS[LOCALS_COUNT] = {
     "_visplaneheaders",
     "_visplanepiclights",
     "_scalelightfixed",
-    "_scalelight",
+    "_scalelight",	// do not use i guess
     "_patch_sizes",
 
 

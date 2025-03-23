@@ -1428,7 +1428,8 @@ jmp   colormap_set
 
 
 clip_lights_to_max:
-mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult48lookup[LIGHTLEVELS - 1];
+;mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]    ;lightmult48lookup[LIGHTLEVELS - 1];
+mov    ax, 720   ; hardcoded
 
 lights_set:
 add   ax, (SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT + _scalelightfixed)

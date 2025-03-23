@@ -1354,7 +1354,11 @@ spritedefs_bytes    7410:0000
 #define scalelightfixed_far         ((uint8_t __far*)            MAKE_FULL_SEGMENT(visplanepiclights_far       , size_visplanepiclights))
 #define scalelight_far              ((uint8_t __far*)            MAKE_FULL_SEGMENT(scalelightfixed_far         , size_scalelightfixed))
 #define patch_sizes_far             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight_far              , size_scalelight))
-#define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
+
+// 4BfB - 4c00 free
+
+#define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(0x4C000000                  , 0))
+//#define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
 #define states_render               ((state_render_t __far*)     MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
 #define flatindex                   ((uint8_t __far*)            MAKE_FULL_SEGMENT(states_render           , size_states_render))
@@ -1431,21 +1435,21 @@ fuzzoffset              4B34:0000   F340    ; todo removed update
 scalelightfixed         4B3D:0000   F3D0
 scalelight              4B40:0000   F400
 patch_sizes             4B70:0000   F700
-viewangletox            4BAC:0000   FAC0
+viewangletox            4C00:0000   FAC0
 // 1392 bytes here?
 [near range over]       
 
-states_render           4DAC:0000
-flatindex               4E25:0000
-spritepage              4E2F:0000
-spriteoffset            4E2F:0565
-texturecollength        4EDC:0000
-texturecompositesizes   4EF7:0000
-compositetexturepage    4F2C:0000
-compositetextureoffset  4F2C:01AC
-[done]                  4F64:0000
+states_render           4E00:0000
+flatindex               4E79:0000
+spritepage              4E83:0000
+spriteoffset            4E83:0565
+texturecollength        4F30:0000
+texturecompositesizes   4F4B:0000
+compositetexturepage    4F80:0000 ; todo... move this up into 4B00 range
+compositetextureoffset  4F80:01AC
+[done]                  4FB8:0000
 //FREEBYTES
-2496 bytes free
+630 bytes free
 
 
 */

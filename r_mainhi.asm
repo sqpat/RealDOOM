@@ -2395,7 +2395,7 @@ xor   ax, ax
 jmp   spritelights_set
 set_spritelights_to_max:
 ; _NULL_OFFSET + 02A0h + 16 - 1 ... (0x2ee)
-mov   ax, word ptr ds:[_lightmult48lookup + (2 * (LIGHTLEVELS - 1))]
+mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
 jmp   spritelights_set
 
 
@@ -3187,7 +3187,8 @@ lightnum_greater_than_0:
 cmp       dx, LIGHTLEVELS
 jl        lightnum_less_than_lightlevels
 ; todo is this is hardcoded value?
-mov       ax, word ptr ds:[_lightmult48lookup + (2 * (LIGHTLEVELS - 1))]
+mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
+
 done_setting_ax_to_wallights:
 add       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
 
@@ -6596,7 +6597,7 @@ ret
 
 
 set_vis_colormap:
-mov   ax, SCALELIGHTFIXED_SEGMENT
+mov   ax, SCALELIGHTFIXED_SEGMENT   ; todo dont use segment
 SELFMODIFY_set_spritelights_2:
 mov   bx, 01000h
 mov   es, ax
@@ -6644,7 +6645,7 @@ ja    use_spritelights_zero
 cmp   al, LIGHTLEVELS
 jb    calculate_spritelights
 ; use max spritelight
-mov   ax, word ptr ds:[_lightmult48lookup + 2 * (LIGHTLEVELS - 1)]
+mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
 player_spritelights_set:
 mov   word ptr cs:[SELFMODIFY_set_spritelights_2 + 1], ax 
 
