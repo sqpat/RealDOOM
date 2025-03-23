@@ -123,9 +123,8 @@
 #define centeryfrac_shiftright4         (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0074)))
 #define viewangle                       (*((angle_t __near *)                (_NULL_OFFSET + 0x0078)))
 #define viewz_shortheight               (*((short_height_t __near *)         (_NULL_OFFSET + 0x007C)))
-#define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x007E)))
-#define viletryx                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0080)))
-#define viletryy                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0084)))
+#define screen_segments                 ((segment_t __near *)                (_NULL_OFFSET + 0x007E))
+
 
 #define maskedtexture                   (*((boolean __near*)                 (_NULL_OFFSET + 0x0088)))
 //#define MAXSPECIALCROSS		8
@@ -158,11 +157,15 @@
 #define mceilingclip                    (*(int16_t __far * __near *)         (_NULL_OFFSET + 0x00C4))
 #define mceilingclip_offset             (*(int16_t __near *)                 (_NULL_OFFSET + 0x00C4))
 #define mceilingclip_segment            (*(segment_t __near *)               (_NULL_OFFSET + 0x00C6))
-// cc - e4 unused
 
-#define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00E5))
-// e6-ed free
-#define screen_segments                 ((segment_t __near *)                (_NULL_OFFSET + 0x00EE))
+#define viletryx                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00CC)))
+#define viletryy                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00D0)))
+#define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x00D4)))
+#define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D6))
+
+
+// d7-f7 free
+
 #define numbraintargets                 (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F8))
 #define braintargeton                   (*(int16_t __near *)                 (_NULL_OFFSET + 0x00FA))
 #define brainspit_easy                  (*(boolean __near *)                 (_NULL_OFFSET + 0x00FC))

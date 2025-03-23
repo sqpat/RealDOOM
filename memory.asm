@@ -37,23 +37,27 @@ dw                                       DRAWSPAN_BX_OFFSET, 0000h
 db 0,  0,  0,  0,  0,  0,  0, 0, 19, 18, 15, 12,  9,  6,  3, 0
 ;0x50   0x54 = _planezlight (dword, so segment in 56)	 0x58 caststate (0x5A is STATES_SEGMENT) 
 dw 0,  0,  0,  ZLIGHT_SEGMENT,  0,  STATES_SEGMENT,  0,  0
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+;0x60
+dw 0, 0, 0, 0, 0, 0, 0, 0
+;0x70  7E = screen_segments
+dw 00, 00, 00, 00, 00, 00, 00, 8000h
+; 0x80
+dw 8000h,  7000h,  6000h,  9C00h,    00, 00,     00,    00
+; 0x90
+dw 0, 0, 0, 0, 0, 0, 0, 0
 ;0xA0
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+dw 0, 0, 0, 0, 0, 0, 0, 0
 ;0xB0
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+dw 0, 0, 0, 0, 0, 0, 0, 0
 ; _mfloorclip segment = c2, _mceilingclip segment = c6
 ; 0xC0
 dw 0,  OPENINGS_SEGMENT,  0,  OPENINGS_SEGMENT,  0,  0,  0,  0
 ; 0xD0
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-; EEh screen_segments[5]
-dw 0, 0, 0, 0, 0, 0, 0, 8000h
-;  
-dw 8000h,  7000h,  6000h,  9C00h,    00, 00,     00,    00
+dw 0, 0, 0, 0, 0, 0, 0, 0
+; 0xE0
+dw 0, 0, 0, 0, 0, 0, 0, 0
+; 0xF0
+dw 0, 0, 0, 0, 0, 0, 0, 0
 ; 0x100:
 ;  unused   0x0100
 ; _viewangle_shiftright3 0x104

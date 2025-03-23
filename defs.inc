@@ -74,9 +74,7 @@ _centery = 							_NULL_OFFSET + 00072h
 _centeryfrac_shiftright4 = 			_NULL_OFFSET + 00074h
 _viewangle =                		_NULL_OFFSET + 00078h
 _viewz_shortheight = 				_NULL_OFFSET + 0007Ch
-_viewangle_shiftright1 = 			_NULL_OFFSET + 0007Eh
-_viletryx =                         _NULL_OFFSET + 00080h
-_viletryy =                         _NULL_OFFSET + 00084h
+_screen_segments = 					_NULL_OFFSET + 0007Eh
 
 _maskedtexture = 					_NULL_OFFSET + 00088h
 ; 89 free
@@ -104,11 +102,16 @@ _playingstate = 	                _NULL_OFFSET + 000BFh
 
 _mfloorclip = 						_NULL_OFFSET + 000C0h
 _mceilingclip = 					_NULL_OFFSET + 000C4h
-; cc - e3 unused
-; e4 unused
-_skipdirectdraws = 					_NULL_OFFSET + 000E5h
-; e6-ed free
-_screen_segments = 					_NULL_OFFSET + 000EEh
+
+_viletryx =                         _NULL_OFFSET + 000CCh
+_viletryy =                         _NULL_OFFSET + 000D0h
+_viewangle_shiftright1 = 			_NULL_OFFSET + 000D4h
+_skipdirectdraws = 					_NULL_OFFSET + 000D6h
+
+
+; d7 - f7 unused
+
+
 _numbraintargets = 					_NULL_OFFSET + 000F8h
 _braintargeton = 					_NULL_OFFSET + 000FAh
 _brainspit_easy = 					_NULL_OFFSET + 000FCh
