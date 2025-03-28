@@ -153,7 +153,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // 0xCC00 BLOCK
 // going to leave c800 free for xt-ide, etc bios
 
-#define CC00Block 0xC000C000
+//#define CC00Block 0xC000C000
 
 
 //CC00 block (16k)
@@ -179,7 +179,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // 8756u doom2
 
 
-#define tempmusdataloc 0xCC000000
+// todo long term we move this somewhere in lower memory
+#define tempmusdataloc 0xDC000000
 #define size_AdLibInstrumentList (sizeof(OP2instrEntry) * MAX_INSTRUMENTS_PER_TRACK)
 
 

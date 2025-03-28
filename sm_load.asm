@@ -164,7 +164,7 @@ ret
 ENDP
 
 ; todo put this somewhere real sigh
-PLAYINGDRIVER_LOCATION = 0CC00h
+PLAYINGDRIVER_LOCATION = 0DC00h
 
 
 PROC  I_LoadSong_
