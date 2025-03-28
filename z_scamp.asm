@@ -26,6 +26,8 @@ INCLUDE defs.inc
 SCAMP_PAGE_FRAME_BASE_INDEX = 4    ; todo ??? d000?
 SCAMP_PAGE_SELECT_REGISTER = 0E8h
 SCAMP_PAGE_SET_REGISTER = 0EAh
+EMS_MEMORY_PAGE_OFFSET = 050h
+
 
 .CODE
  
@@ -223,17 +225,19 @@ void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 ; pageframeindex al
 ; pagenumber dl 
 
-PROC Z_QuickMapPageFrame_ NEAR
+PROC Z_QuickMapPageFrame_ FAR
 PUBLIC Z_QuickMapPageFrame_
-;push dx
 
-add  ax, SCAMP_PAGE_FRAME_BASE_INDEX
+add  al, SCAMP_PAGE_FRAME_BASE_INDEX	; add by 4 to get d000 (page frame) index. TODO unhardcode
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  ax, dx
-add  ax, MUS_DATA_PAGES
+; todo need xor ah/dh??
+;xor  ah, ah
+; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
+; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
+add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
 out  SCAMP_PAGE_SET_REGISTER, ax
 
-;pop dx
 ret
 ENDP
 

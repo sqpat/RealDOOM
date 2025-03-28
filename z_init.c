@@ -65,7 +65,15 @@ byte __far *__near Z_InitEMS() {
 	outp(0xED, 0xC0); // enable EMS and backfill
 
 	outp(0xEC, 0x0C);
-	outp(0xED, 0xF0); // enabled page D000
+	outp(0xED, 0xF0); // enabled page D000 as page frame
+
+	;outp(0xEC, 0x10);
+	;outp(0xED, 0xFF); // enable page D000 UMBs
+
+	;outp(0xEC, 0x11);
+	;outp(0xED, 0xAF); // enable page E000 UMBs. F000 read only.
+
+
 
 	// set default pages
 	for (i = 0xC; i < 0x24; i++){

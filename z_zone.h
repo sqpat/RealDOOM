@@ -109,31 +109,31 @@
 // Unindexed means it doesnt have the +pagenum9000 at the start included...
 
 #ifdef __SCAMP_BUILD
-#define EMS_MEMORY_OFFSET  0x0050
+#define EMS_MEMORY_PAGE_OFFSET  0x0050
 #define SCAMP_PAGE_9000_OFFSET   0x20
 #define _NPR(a)            a + SCAMP_PAGE_9000_OFFSET + 4
 // todo should this be minus?
-#define _EPR(a)            a + EMS_MEMORY_OFFSET
+#define _EPR(a)            a + EMS_MEMORY_PAGE_OFFSET
 #define CHIPSET_PAGE_9000 0x20
 #define EMS_AUTOINCREMENT_FLAG 0x40
 #elif defined(__SCAT_BUILD)
 // includes turn high bit on
-#define EMS_MEMORY_OFFSET 0x8080
+#define EMS_MEMORY_PAGE_OFFSET 0x8080
 #define _NPR(a)           0x03FF
 #define _NPR_UNINDEXED(a) 0x03FF
-#define _EPR(a)           a + EMS_MEMORY_OFFSET
+#define _EPR(a)           a + EMS_MEMORY_PAGE_OFFSET
 #define CHIPSET_PAGE_9000 0x14
 #define EMS_AUTOINCREMENT_FLAG 0x80
 #elif defined(__HT18_BUILD)
-#define EMS_MEMORY_OFFSET 0x0280
+#define EMS_MEMORY_PAGE_OFFSET 0x0280
 #define _NPR(a)           0x0000
 #define _NPR_UNINDEXED(a) 0x0000
-#define _EPR(a)           a + EMS_MEMORY_OFFSET
+#define _EPR(a)           a + EMS_MEMORY_PAGE_OFFSET
 #define CHIPSET_PAGE_9000 0x14
 #define EMS_AUTOINCREMENT_FLAG 0x80
 
 #else
-#define EMS_MEMORY_OFFSET 0x0000
+#define EMS_MEMORY_PAGE_OFFSET 0x0000
 #define _NPR(a) 0xFFFF
 #define _NPR_UNINDEXED(a) 0xFFFF
 

@@ -38,22 +38,13 @@
 
 
 
-
-
 #ifdef __SCAMP_BUILD
-
-// corresponds to 2 MB worth of address lines/ems pages.
-#define EMS_MEMORY_BASE   0x0080
- 
 #elif defined(__SCAT_BUILD)
-	#define EMS_MEMORY_BASE   0x8080
 #elif defined(__HT18_BUILD)
-	#define EMS_MEMORY_BASE   0x0280
 #else
 
 
-
-
+// todo rename to be something music related?
 void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 	// page frame index 0 to 3
 	// count 
