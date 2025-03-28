@@ -169,7 +169,6 @@ PLAYINGDRIVER_LOCATION = 0CC00h
 
 PROC  I_LoadSong_
 
-ENDP
 
 push      bx
 push      cx
@@ -407,6 +406,8 @@ pop       dx
 pop       cx
 pop       bx
 retf    
+ENDP
+
 
 PROC  S_ActuallyChangeMusic_
 PUBLIC  S_ActuallyChangeMusic_

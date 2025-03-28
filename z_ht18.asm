@@ -211,9 +211,31 @@ pop dx
 pop si
 ret
 
-
+ 
 
 ENDP
 
+;todo test
+
+PROC Z_QuickMapPageFrame_ FAR
+PUBLIC Z_QuickMapPageFrame_
+
+push dx
+push cx
+
+mov  cx, dx
+mov  dx, HT18_PAGE_SELECT_REGISTER
+out  dx, al
+mov  dx, HT18_PAGE_SET_REGISTER
+xchg ax, cx
+add  ax, MUS_DATA_PAGES
+out dx, ax
+
+pop cx
+pop dx
+
+ret
+
+ENDP
 
 END

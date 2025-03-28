@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/03/22 09:54:55
+Created on:       25/03/28 09:48:04
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -63,10 +63,10 @@ hu_setup_TEXT          CODE           AUTO           02ba:9800       000000c1
 D_FINALE_TEXT          CODE           AUTO           0c46:0002       00000b52
 D_SAVEL_TEXT           CODE           AUTO           0cfb:0004       00000b04
 s_sound_TEXT           CODE           AUTO           0dac:0000       0000043d
-SM_OPL2_TEXT           CODE           AUTO           0dac:043e       00000f41
-SM_OPL3_TEXT           CODE           AUTO           0dac:1380       0000100c
-SM_SBMID_TEXT          CODE           AUTO           0dac:238c       0000071e
-SM_MPUMD_TEXT          CODE           AUTO           0dac:2aaa       000007c0
+SM_OPL2_TEXT           CODE           AUTO           0dac:043e       00000f42
+SM_OPL3_TEXT           CODE           AUTO           0dac:1380       0000100d
+SM_SBMID_TEXT          CODE           AUTO           0dac:238e       0000071e
+SM_MPUMD_TEXT          CODE           AUTO           0dac:2aac       000007c0
 p_ceilng_TEXT          CODE           AUTO           0dac:3270       000003ae
 p_doors_TEXT           CODE           AUTO           0dac:3620       000006da
 p_enemy_TEXT           CODE           AUTO           0dac:3d00       00002657
@@ -942,15 +942,15 @@ Module: s_sound.obj(C:\REALDOOM\s_sound.c)
 Module: sm_opl2.obj(sm_opl2.ASM)
 0dac:0d71*     OPLpauseMusic_OPL2_
 0dac:10d9*     OPLreleaseNote_OPL2_
-0dac:137f      SM_OPL2_ENDMARKER_
+0dac:1380      SM_OPL2_ENDMARKER_
 0dac:0d50*     OPL2deinitHardware_OPL2_
 0dac:0c86*     OPL2initHardware_OPL2_
 0dac:1058*     OPLplayNote_OPL2_
 0dac:1179*     OPLchangeControl_OPL2_
-0dac:134e*     OPLinitDriver_OPL2_
+0dac:134f*     OPLinitDriver_OPL2_
 0dac:12e3*     OPLstopMusic_OPL2_
 0dac:1116*     OPLpitchWheel_OPL2_
-0dac:1303*     OPLchangeSystemVolume_OPL2_
+0dac:1304*     OPLchangeSystemVolume_OPL2_
 0dac:0d74*     OPLresumeMusic_OPL2_
 0dac:12c4*     OPLplayMusic_OPL2_
 0dac:0ce0*     OPL2detectHardware_OPL2_
@@ -958,25 +958,25 @@ Module: sm_opl2.obj(sm_opl2.ASM)
 Module: sm_opl3.obj(sm_opl3.ASM)
 0dac:1d78*     OPLpauseMusic_OPL3_
 0dac:20e0*     OPLreleaseNote_OPL3_
-0dac:238c      SM_OPL3_ENDMARKER_
+0dac:238d      SM_OPL3_ENDMARKER_
 0dac:1d47*     OPL3deinitHardware_OPL3_
 0dac:205f*     OPLplayNote_OPL3_
 0dac:1c50*     OPL3initHardware_OPL3_
 0dac:2186*     OPLchangeControl_OPL3_
-0dac:235b*     OPLinitDriver_OPL3_
+0dac:235c*     OPLinitDriver_OPL3_
 0dac:22f0*     OPLstopMusic_OPL3_
 0dac:211d*     OPLpitchWheel_OPL3_
-0dac:2310*     OPLchangeSystemVolume_OPL3_
+0dac:2311*     OPLchangeSystemVolume_OPL3_
 0dac:1d7b*     OPLresumeMusic_OPL3_
 0dac:22d1*     OPLplayMusic_OPL3_
 0dac:1d2b*     OPL3detectHardware_OPL3_
 0dac:1380      SM_OPL3_STARTMARKER_
 Module: sm_sbmid.obj(sm_sbmid.ASM)
-0dac:2aaa      SM_SBMID_ENDMARKER_
-0dac:238c      SM_SBMID_STARTMARKER_
+0dac:2aac      SM_SBMID_ENDMARKER_
+0dac:238e      SM_SBMID_STARTMARKER_
 Module: sm_mpumd.obj(sm_mpumd.ASM)
-0dac:2aaa      SM_MPUMD_STARTMARKER_
-0dac:326a      SM_MPUMD_ENDMARKER_
+0dac:2aac      SM_MPUMD_STARTMARKER_
+0dac:326c      SM_MPUMD_ENDMARKER_
 Module: p_ceilng.obj(C:\REALDOOM\p_ceilng.c)
 0dac:327c      T_MoveCeiling_
 0dac:33ca      EV_DoCeiling_
@@ -1708,4 +1708,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e750 (190288.)
 Entry point address: 25ec:2720
-Link time: 00:00.75
+Link time: 00:00.29

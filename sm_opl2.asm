@@ -1868,25 +1868,29 @@ ENDP
 PROC  OPLstopMusic_OPL2_ FAR
 PUBLIC  OPLstopMusic_OPL2_
 
-push      bx
-push      dx
-mov       bx, _AdLibChannels + 2 - OFFSET SM_OPL2_STARTMARKER_
-mov       dx, 0FF00h ;   -1 dh  0 dl
+push      si
+push      cx
+xor       si, si
+mov       cx, 0FF00h ;   -1 ch  0 cl
 loop_stop_music:
 
-test      byte ptr cs:[bx], CH_FREE
+test      byte ptr cs:[si + _AdLibChannels + 2 - OFFSET SM_OPL2_STARTMARKER_], CH_FREE
 jne       increment_loop_stop_music
-mov       ax, dx    ; -1 in dh
+mov       ax, cx    ; -1 in ch
 call      releaseChannel_
 increment_loop_stop_music:
-inc       dl
-add       bx, SIZEOF_ADLIBCHANNEL
-cmp       dl, OPL2CHANNELS
+inc       cl
+add       si, SIZEOF_ADLIBCHANNEL
+cmp       cl, OPL2CHANNELS
 jb        loop_stop_music
-exit_stop_music:
-pop       dx
-pop       bx
+
+pop      cx
+pop      si
+
+
+
 retf      
+ENDP
 
 
 ENDP
