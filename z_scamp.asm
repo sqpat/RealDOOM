@@ -232,7 +232,7 @@ add  al, SCAMP_PAGE_FRAME_BASE_INDEX	; add by 4 to get d000 (page frame) index. 
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  ax, dx
 ; todo need xor ah/dh??
-;xor  ah, ah
+xor  ah, ah
 ; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
 ; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
 add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)

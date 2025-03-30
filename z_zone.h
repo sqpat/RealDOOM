@@ -351,14 +351,13 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 //93
 #define MUS_DATA_PAGES                              FLAT_DATA_PAGES + 3
+//97
+#define MUS_DRIVER_PAGE                             (MUS_DATA_PAGES + 4)
 
-//93 todo remove these and make them shared with something...?
-// todo eventuall yjust include this in the spritecache area...
-//#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
 
-// 97? (+1 for 0 index = 95)
-#define NUM_EMS4_SWAP_PAGES                         (int16_t) (MUS_DATA_PAGES + 4)
-// 91 in use currently (including page 0)
+// 98? (+1 for 0)
+#define NUM_EMS4_SWAP_PAGES                         (int16_t) MUS_DRIVER_PAGE + 1
+
 
 
 // NUM_EMS4_SWAP_PAGES needs to be 104 to fit in 256 k + (2 MB EMS - 384k)

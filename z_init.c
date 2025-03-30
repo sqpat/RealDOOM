@@ -83,6 +83,16 @@ byte __far *__near Z_InitEMS() {
 	}
 
 
+	;outp(0xE8, 4);	 
+	;outpw(0xEA, EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES); // set default EMS pages for global stuff...
+	;outp(0xE8, 5);	 
+	;outpw(0xEA, 0x4D); // set default EMS pages for global stuff...
+	;outp(0xE8, 6);	 
+	;outpw(0xEA, 0x4E); // set default EMS pages for global stuff...
+	outp(0xE8, 7);	 
+	outpw(0xEA, EMS_MEMORY_PAGE_OFFSET + MUS_DRIVER_PAGE); // set default EMS page for music data driver?
+
+
 
 	//todo do we disable config after?
 
@@ -260,6 +270,14 @@ byte __far *__near Z_InitEMS() {
 
 		intx86(EMS_INT, &regs, &regs);
 	}	
+
+	// DC00 mus driver setup
+	regs.w.ax = 0x4403;  
+	regs.w.bx = i + MUS_DRIVER_PAGE;
+	regs.w.dx = emshandle; // handle
+
+	intx86(EMS_INT, &regs, &regs);
+
 
 	//*size = numPagesToAllocate * PAGE_FRAME_SIZE;
 
