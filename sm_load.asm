@@ -412,13 +412,19 @@ ENDP
 PROC  S_ActuallyChangeMusic_
 PUBLIC  S_ActuallyChangeMusic_
 
+mov   al, byte ptr ds:[_pendingmusicenum]
+mov   byte ptr ds:[_pendingmusicenum], 0
+cmp   ds:[_playingdriver+2], 0
+jne   do_changemusic
+ret
+do_changemusic:
+
+
 push  bx
 push  cx
 push  dx
 push  di
-mov   al, byte ptr ds:[_pendingmusicenum]
-mov   di, ax
-mov   byte ptr ds:[_pendingmusicenum], 0
+mov   di, ax    ;pendingmusicenum
 cmp   byte ptr ds:[_snd_MusicDevice], 2
 je    check_for_that_one_song_adlib_version
 

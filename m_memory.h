@@ -48,6 +48,10 @@
 // 0xE000 Block
 
 // may swap with EMS/0xD000 ?
+
+// toggle for d000 build
+//#define __USED000 1
+
 #ifdef __USED000
 #define uppermemoryblock    0xD0000000
 #else

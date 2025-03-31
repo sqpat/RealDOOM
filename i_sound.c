@@ -501,7 +501,16 @@ void __far I_StartupSound(void) {
     //I_Error ("%i %i\n", snd_MusicDevice, snd_DesiredMusicDevice);
     // todo actually detect hw eventually. for now just set music device to desired music device.
 
-    snd_MusicDevice = snd_DesiredMusicDevice;
+    #ifdef __USED000
+        snd_MusicDevice = snd_none;
+        driverindex = MUS_DRIVER_TYPE_NONE;
+        playingdriver = NULL;
+    #else
+        snd_MusicDevice = snd_DesiredMusicDevice;
+    #endif
+
+
+
     // I_Error("%lx %lx", playingdriver->initHardware, playingdriver);
 
     switch (snd_MusicDevice){
@@ -532,11 +541,8 @@ void __far I_StartupSound(void) {
             driverindex = MUS_DRIVER_TYPE_OPL3;
             useport = ADLIBPORT;
             break;
-
         
     }
-
-
 
     if (driverindex){
         uint16_t codesize;
