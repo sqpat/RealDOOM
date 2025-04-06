@@ -168,19 +168,19 @@ int16_t I_LoadSong(uint16_t lump) {
 // Retrieve the raw data lump index
 //  for a given SFX name.
 //
-int16_t I_GetSfxLumpNum(sfxenum_t sfx_id) {
-	int8_t namebuf[9];
-    int8_t part1[3];
-    if (sfx_id == sfx_chgun) {
-        sfx_id = sfx_pistol; 
-    }
-    part1[0] = 'd';
-    part1[1] = snd_prefixen[snd_SfxDevice];
-    part1[2] = '\0';
+// int16_t I_GetSfxLumpNum(sfxenum_t sfx_id) {
+// 	int8_t namebuf[9];
+//     int8_t part1[3];
+//     if (sfx_id == sfx_chgun) {
+//         sfx_id = sfx_pistol; 
+//     }
+//     part1[0] = 'd';
+//     part1[1] = snd_prefixen[snd_SfxDevice];
+//     part1[2] = '\0';
 
-    combine_strings(namebuf, part1, S_sfx[sfx_id].name);
-    return W_GetNumForName(namebuf);
-}
+//     combine_strings(namebuf, part1, S_sfx[sfx_id].name);
+//     return W_GetNumForName(namebuf);
+// }
 
 
 

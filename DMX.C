@@ -138,7 +138,9 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 			pcspeaker_currentoffset++;
 			if (pcspeaker_currentoffset == pcspeaker_endoffset){
 				pcspeaker_currentoffset = 0;
-				// ? turn off speaker?
+				// ? turn off speaker?				
+				outp(0x61, inp(0x61) & 0xFC);
+
 			}
 		}
 		

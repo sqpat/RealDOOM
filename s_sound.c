@@ -427,9 +427,7 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
   
 	// get lumpnum if necessary
 	// todo move this to initialization loop.
-	if (sfx->lumpnum < 0){
-		sfx->lumpnum = I_GetSfxLumpNum(sfx_id);
-	}
+
 
 	// cache data if necessary
 	// if (!sfx->data) {

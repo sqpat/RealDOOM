@@ -87,7 +87,6 @@ void I_ResumeSong();
 typedef uint8_t sfxenum_t;
 
 
-int16_t I_GetSfxLumpNum(sfxenum_t sfx);
 // called by routines which wish to play a sound effect at some later
 // time.  Pass it the lump name of a sound effect WITHOUT the sfx
 // prefix.  This means the maximum name length is 7 letters/digits.

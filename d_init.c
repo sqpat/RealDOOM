@@ -304,6 +304,10 @@ void __near HU_Init(void){
 
 }
 
+void 	I_SetSFXPrefix(int8_t filetype_char);
+// todo: near breaks this.
+int16_t   I_GetSfxLumpNum(sfxenum_t sfx);
+
 
 //
 // Initializes sound stuff, including volume
@@ -352,8 +356,15 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
  	// IF PC SPEAKER THEN LOAD ALL SFX.
 
 	// todo also set lumps in that data field...
+	// but they arent necessary for pc speaker!
+	// so for PCM sfx store them in-driver
+
+	I_SetSFXPrefix(snd_prefixen[snd_SfxDevice]);
+
+	// todo: pcm specific stuff
 
 	if (snd_SfxDevice == snd_PC){
+		// todo move this to an overlay?
 		uint16_t currentoffset = 0;
 		sfxenum_t i = 0;
 		pc_speaker_offsets[i] = 4;
@@ -1249,7 +1260,7 @@ R_PointToAngle(y, x);
 	maketic = 0;
 
 #if DEBUG_PRINTING
-	getStringByIndex(S_INIT_TEXT, textbuffer);
+	getStringByIndex(S_INIT_STRING_TEXT, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif

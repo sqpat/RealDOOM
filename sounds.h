@@ -30,7 +30,7 @@
 typedef struct sfxinfo_struct	sfxinfo_t;
 struct sfxinfo_struct {
     // up to 6-character name
-    int8_t*	name;
+    //int8_t*	name;
 
     // Sfx singularity (only one at a time)
     boolean		singularity;
@@ -47,7 +47,8 @@ struct sfxinfo_struct {
     int8_t		usefulness;
 
     // lump number of sfx
-    int16_t		lumpnum;		
+    // only for PCM. put it in another struct specific to that driver.
+    //int16_t		lumpnum;		
 };
 
 

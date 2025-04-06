@@ -325,7 +325,7 @@ int16_t getStringLength(int16_t stringindex);
 #define R_INIT_TEXT			298
 #define P_INIT_TEXT			299
 #define I_INIT_TEXT			300
-#define S_INIT_TEXT			301
+#define S_INIT_STRING_TEXT	301
 #define HU_INIT_TEXT		302
 #define ST_INIT_TEXT		303
 #define DETAILPOTATO	    304
