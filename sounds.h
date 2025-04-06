@@ -25,8 +25,9 @@
 //
 // SoundFX struct.
 //
-typedef struct sfxinfo_struct	sfxinfo_t;
 
+
+typedef struct sfxinfo_struct	sfxinfo_t;
 struct sfxinfo_struct {
     // up to 6-character name
     int8_t*	name;
@@ -37,19 +38,8 @@ struct sfxinfo_struct {
     // Sfx priority
     uint8_t		priority;
 
-    // referenced sound if a link
-    sfxinfo_t*	link;
-
-    // pitch if a link
-    // only used in one case - lets hardcode it
-    // int8_t 		pitch;
-
-    // volume if a link
-    // unused
-    // int8_t		volume;
-
     // sound data
-    void __far*	data;
+    //void __far*	data;
 
     // this is checked every second to see if sound
     // can be thrown out (if 0, then decrement, if -1,
@@ -265,8 +255,8 @@ typedef uint8_t  musicenum_t;
 #define sfx_skesit  106
 #define sfx_skeatk  107
 #define sfx_radio   108
-//#define NUMSFX      109
-#define NUMSFX      1
+#define NUMSFX      109
+//#define NUMSFX      1
 
 typedef uint8_t sfxenum_t;
 

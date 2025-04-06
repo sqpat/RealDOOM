@@ -84,8 +84,10 @@ void I_ResumeSong();
 
 //  SFX I/O
 //
+typedef uint8_t sfxenum_t;
 
-int16_t I_GetSfxLumpNum(sfxinfo_t* sfx);
+
+int16_t I_GetSfxLumpNum(sfxenum_t sfx);
 // called by routines which wish to play a sound effect at some later
 // time.  Pass it the lump name of a sound effect WITHOUT the sfx
 // prefix.  This means the maximum name length is 7 letters/digits.
@@ -93,7 +95,7 @@ int16_t I_GetSfxLumpNum(sfxinfo_t* sfx);
 // They refer to the card type.  The routine will cache in the
 // appropriate sound effect when it is played.
 
-int16_t I_StartSound (int16_t id, void  __far*data, uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority);
+int16_t I_StartSound (sfxenum_t id, uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority);
 // Starts a sound in a particular sound channel
 
 void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch);

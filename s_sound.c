@@ -358,9 +358,9 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
   uint8_t		priority;
   sfxinfo_t*	sfx;
   int8_t		cnum;
-  mobj_t*	playerMo;
+  mobj_t*	playerMo;	    
   THINKERREF    originRef = GETTHINKERREF(origin);
-  
+
 
 	// check for bogus sound #
 	if (sfx_id < 1 || sfx_id > NUMSFX) {
@@ -371,6 +371,7 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 	}
 	sfx = &S_sfx[sfx_id];
   
+	/*
 	// Initialize sound parameters
 	if (sfx->link) {
 		pitch = 150;//   sfx->pitch;
@@ -386,11 +387,13 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 		pitch = NORM_PITCH;
 		priority = NORM_PRIORITY;
 	}
+	*/
 
 
 	// Check to see if it is audible,
 	//  and if not, modify the params
-	if (originRef != playerMobjRef) {
+	if (origin && (originRef != playerMobjRef)){
+
 		mobj_pos_t __far* originMobjPos = &mobjposlist_6800[originRef];
 		rc = S_AdjustSoundParams(playerMobjRef, originRef, &volume, &sep, &pitch);
 	
@@ -404,11 +407,11 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 	} else {
 		sep = NORM_SEP;
 	}
-  
  
 
 	// kill old sound
 	S_StopSound(originRef);
+
 
 	// try to find a channel
 	cnum = S_getChannel(originRef, sfx);
@@ -423,11 +426,13 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 	//
   
 	// get lumpnum if necessary
-	if (sfx->lumpnum < 0)
-		sfx->lumpnum = I_GetSfxLumpNum(sfx);
+	// todo move this to initialization loop.
+	if (sfx->lumpnum < 0){
+		sfx->lumpnum = I_GetSfxLumpNum(sfx_id);
+	}
 
 	// cache data if necessary
-	if (!sfx->data) {
+	// if (!sfx->data) {
 		//sfx->data = (void __far *) W_CacheLumpNum(sfx->lumpnum, PU_MUSIC);
 
 		//_dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
@@ -435,7 +440,7 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 		//	     "S_StartSoundAtVolume: loading %d (lump %d) : 0x%x\n",
 		//       sfx_id, sfx->lumpnum, sfx->data );
     
-	}
+	// }
   
 	// increase the usefulness
 	if (sfx->usefulness++ < 0)
@@ -444,7 +449,6 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 	// Assigns the handle to one of the channels in the
 	//  mix/output buffer.
 	channels[cnum].handle = I_StartSound(sfx_id,
-				       sfx->data,
 				       volume,
 				       sep,
 				       pitch,
@@ -512,7 +516,8 @@ void S_UpdateSounds(THINKERREF listenerRef) {
 				if (--S_sfx[i].usefulness == -1) {
 					//Z_ChangeTag(S_sfx[i].data, PU_CACHE);
 							//_dpmi_unlockregion(S_sfx[i].data, lumpinfo[S_sfx[i].lumpnum].size);
-					S_sfx[i].data = 0;
+					
+					//S_sfx[i].data = 0;
 				}
 			}
 		}
@@ -532,8 +537,8 @@ void S_UpdateSounds(THINKERREF listenerRef) {
 			pitch = NORM_PITCH;
 			sep = NORM_SEP;
 
-			if (sfx->link)
-			{
+			// the only one with a link...
+			if ((sfx - S_sfx) == sfx_chgun) {
 				// link is only used once in the dataset and hardcoded there - rather than including all this extra
 				// data in memory we just hardcode the fields...
 				pitch = 150;

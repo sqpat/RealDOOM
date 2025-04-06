@@ -28,6 +28,8 @@ typedef struct task{
 	int8_t active;
 } task;
 
+typedef uint8_t sfxenum_t;
+
 
 void TS_ScheduleMainTask();
 void TS_Dispatch(void);
@@ -37,7 +39,7 @@ void MUS_PauseSong(int16_t handle);
 void MUS_ResumeSong(int16_t handle);
 void MUS_SetMasterVolume(int16_t volume);
 int16_t MUS_PlaySong(int16_t handle, int16_t volume);
-int16_t SFX_PlayPatch(void __far*vdata, int16_t pitch, int16_t sep, int16_t vol, int16_t unk1, int16_t unk2);
+int16_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t pitch, int16_t sep, int16_t vol, int16_t unk1, int16_t unk2);
 void SFX_StopPatch(int16_t handle);
 int16_t SFX_Playing(int16_t handle);
 void SFX_SetOrigin(int16_t handle, int16_t  pitch, int16_t sep, int16_t vol);

@@ -36,7 +36,7 @@
 #include "sc_music.h"
  
 
-int16_t SFX_PlayPatch(void __far*vdata, int16_t pitch, int16_t sep, int16_t vol, int16_t unk1, int16_t unk2){
+int16_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t pitch, int16_t sep, int16_t vol, int16_t unk1, int16_t unk2){
     return 0;
 }
 void SFX_StopPatch(int16_t handle){
@@ -168,38 +168,69 @@ int16_t I_LoadSong(uint16_t lump) {
 // Retrieve the raw data lump index
 //  for a given SFX name.
 //
-int16_t I_GetSfxLumpNum(sfxinfo_t* sfx) {
+int16_t I_GetSfxLumpNum(sfxenum_t sfx_id) {
 	int8_t namebuf[9];
     int8_t part1[3];
-    if (sfx->link) {
-        sfx = sfx->link;
+    if (sfx_id == sfx_chgun) {
+        sfx_id = sfx_pistol; 
     }
     part1[0] = 'd';
     part1[1] = snd_prefixen[snd_SfxDevice];
     part1[2] = '\0';
 
-    combine_strings(namebuf, part1, sfx->name);
+    combine_strings(namebuf, part1, S_sfx[sfx_id].name);
     return W_GetNumForName(namebuf);
 }
 
-int16_t I_StartSound(int16_t id, void  __far*data, uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority) {
+
+
+int16_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority) {
     // hacks out certain PC sounds
+    // if (snd_SfxDevice == snd_PC
+    //     && (data == S_sfx[sfx_posact].data
+    //     || data == S_sfx[sfx_bgact].data
+    //     || data == S_sfx[sfx_dmact].data
+    //     || data == S_sfx[sfx_dmpain].data
+    //     || data == S_sfx[sfx_popain].data
+    //     || data == S_sfx[sfx_sawidl].data)) {
+    //     return -1;
+    // }
+
     if (snd_SfxDevice == snd_PC
-    && (data == S_sfx[sfx_posact].data
-     || data == S_sfx[sfx_bgact].data
-     || data == S_sfx[sfx_dmact].data
-     || data == S_sfx[sfx_dmpain].data
-     || data == S_sfx[sfx_popain].data
-     || data == S_sfx[sfx_sawidl].data))
-    {
-        return -1;
+        && (sfx_id == sfx_posact)
+        || (sfx_id == sfx_bgact )
+        || (sfx_id == sfx_dmact )
+        || (sfx_id == sfx_dmpain)
+        || (sfx_id == sfx_popain)
+        || (sfx_id == sfx_sawidl) ) {
+            return -1;
     }
-    return SFX_PlayPatch(data, sep, pitch, vol, 0, 100);
+
+    if (snd_SfxDevice == snd_PC){
+        // todo how to resolve this? lump to id map?
+        //I_Error("start sound %i", sfx_id);
+        pcspeaker_currentoffset = pc_speaker_offsets[sfx_id-1];
+        pcspeaker_endoffset = pc_speaker_offsets[sfx_id];
+        return 0;
+    } else {
+        return SFX_PlayPatch(sfx_id, sep, pitch, vol, 0, 100);
+    }
+
+
+    
 }
 
 void I_StopSound(int16_t handle) {
-    SFX_StopPatch(handle);
+    
+    if (snd_SfxDevice == snd_PC){
+        pcspeaker_currentoffset = 0;
+    } else {
+        SFX_StopPatch(handle);
+    }
+    
+    
 }
+
 
 boolean I_SoundIsPlaying(int16_t handle) {
     return SFX_Playing(handle);
@@ -216,6 +247,10 @@ void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch
 int16_t __far M_CheckParm (int8_t *check);
 
 void I_sndArbitrateCards(void) {
+
+    snd_SfxVolume = 127;
+    snd_SfxDevice = snd_DesiredSfxDevice;
+
 
 /*
 
@@ -495,7 +530,7 @@ void __far I_StartupSound(void) {
     //
     // pick the sound cards i'm going to use
     //
-    //I_sndArbitrateCards();
+    I_sndArbitrateCards();
     
     
     //I_Error ("%i %i\n", snd_MusicDevice, snd_DesiredMusicDevice);

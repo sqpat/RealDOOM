@@ -313,9 +313,9 @@ void __near HU_Init(void){
 void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 
 
-  S_SetSfxVolume(sfxVolume);
-  S_SetMusicVolume(musicVolume);
-  mus_paused = 0;
+	S_SetSfxVolume(sfxVolume);
+	S_SetMusicVolume(musicVolume);
+	mus_paused = 0;
 
 
 	/*
@@ -347,6 +347,31 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 	S_sfx[i].lumpnum = S_sfx[i].usefulness = -1;
 
   */
+
+
+ 	// IF PC SPEAKER THEN LOAD ALL SFX.
+
+	// todo also set lumps in that data field...
+
+	if (snd_SfxDevice == snd_PC){
+		uint16_t currentoffset = 0;
+		sfxenum_t i = 0;
+		pc_speaker_offsets[i] = 4;
+
+
+		for (i=1 ; i < NUMSFX ; i++){
+			int16_t lumpnum = I_GetSfxLumpNum(i);
+			int16_t lumpsize = W_LumpLength(lumpnum);
+			W_CacheLumpNumDirect(lumpnum, MK_FP(PC_SPEAKER_SFX_DATA_SEGMENT, currentoffset));
+			
+			// todo can preprocess the sfx here.
+
+			currentoffset += lumpsize;
+			pc_speaker_offsets[i] = currentoffset+4;
+		}
+
+	}
+
 
 }
 
