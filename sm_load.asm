@@ -414,7 +414,7 @@ PUBLIC  S_ActuallyChangeMusic_
 
 mov   al, byte ptr ds:[_pendingmusicenum]
 mov   byte ptr ds:[_pendingmusicenum], 0
-cmp   ds:[_playingdriver+2], 0
+cmp   word ptr ds:[_playingdriver+2], 0
 jne   do_changemusic
 ret
 do_changemusic:

@@ -23,7 +23,7 @@ INSTRUCTION_SET_MACRO
 ;=================================
 .DATA
 
-
+EXTRN _pc_speaker_offsets:WORD
 
 
 .CODE
@@ -168,24 +168,6 @@ db 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S', 'S', 'S'
 ;    return W_GetNumForName(namebuf);
 ;}
 
-; set char 2 for the lump name
-
-PROC   I_SetSFXPrefix_
-PUBLIC I_SetSFXPrefix_
-
-    push bx
-    mov  al, byte ptr ds:[_snd_SfxDevice]
-    cbw
-    xchg ax, bx
-
-    mov al, byte ptr cs:[_snd_prefixen + bx]
-    mov byte ptr cs:[_currentnameprefix + 1], al
-
-    pop bx
-    ret
-
-ENDP
-
 
 PROC   I_GetSfxLumpNum_
 PUBLIC I_GetSfxLumpNum_
@@ -242,10 +224,112 @@ PUBLIC I_GetSfxLumpNum_
 
 ENDP
 
+; todo export
+PC_SPEAKER_SFX_DATA_SEGMENT = 0DE80h
 
-PROC  LoadSFXWadLumps_
+PROC   LoadSFXWadLumps_
+PUBLIC LoadSFXWadLumps_
+
+    push bx
+    push cx
+    push si
+    push di
+
+
+    ; set char 2 for the lump name
+    mov  al, byte ptr ds:[_snd_SfxDevice]
+    cbw
+    xchg ax, bx
+
+    mov al, byte ptr cs:[_snd_prefixen + bx]
+    mov byte ptr cs:[_currentnameprefix + 1], al
+
+
+    cmp byte ptr ds:[_snd_SfxDevice], SND_PC
+    jne not_pc_speaker
+
+    ; pc speaker load loop
+
+    ; SI is index
+    ; CX:BX is target address
+
+    mov  si, 1
+    xor  bx, bx   ;offset
+
+    mov  word ptr ds:[_pc_speaker_offsets], 4   ; fixed first value
+
+    loop_load_sfx:
+
+    mov  ax, si
+    call I_GetSfxLumpNum_
+    mov  di, ax  ; backup lump num
+    
+    db 0FFh  ; lcall[addr]
+    db 01Eh  ;
+    dw _W_LumpLength_addr
+
+    ; ax is lumpsize
+
+    xchg ax, di    ; ax gets lumpnum again. size to di.
+    mov  cx, PC_SPEAKER_SFX_DATA_SEGMENT
+
+    push bx
+    db 0FFh  ; lcall[addr]
+    db 01Eh  ;
+    dw _W_CacheLumpNumDirect_addr
+    pop  bx
+
+    add  bx, di
+
+    sal  si, 1
+    lea  di, [bx + 4]
+    mov  word ptr ds:[_pc_speaker_offsets + si], di
+    sar  si, 1
+
+    inc  si
+    cmp  si, NUMSFX
+    jne  loop_load_sfx
+
+    jmp  done_with_sfx_prep
+
+    not_pc_speaker:
+
+    cmp byte ptr ds:[_snd_SfxDevice], SND_SB
+    jne not_soundblaster
+    ; todo any others? to check?
+
+
+    not_soundblaster:
+    done_with_sfx_prep:
+    pop  di
+    pop  si
+    pop  cx
+    pop  bx
+
+    ret
 
 ENDP
+
+
+;	if (snd_SfxDevice == snd_PC){
+;		// todo move this to an overlay?
+;		uint16_t currentoffset = 0;
+;		sfxenum_t i = 0;
+;		pc_speaker_offsets[i] = 4;
+;
+;
+;		for (i=1 ; i < NUMSFX ; i++){
+;			int16_t lumpnum = I_GetSfxLumpNum(i);
+;			int16_t lumpsize = W_LumpLength(lumpnum);
+;			W_CacheLumpNumDirect(lumpnum, MK_FP(PC_SPEAKER_SFX_DATA_SEGMENT, currentoffset));
+;			
+;			// todo can preprocess the sfx here.
+;
+;			currentoffset += lumpsize;
+;			pc_speaker_offsets[i] = currentoffset+4;
+;		}
+;
+;	}
 
 
 

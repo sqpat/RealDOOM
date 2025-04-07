@@ -2,10 +2,11 @@
 #include "m_memory.h"
 #include "m_near.h"
 #include "sounds.h"
+#include "i_sound.h"
 #include "g_game.h"
 #include "p_saveg.h"
 
-#define CONSTANTS_COUNT 1966
+#define CONSTANTS_COUNT 1979
 #define LOCALS_COUNT 18
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -2020,7 +2021,21 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SCREEN3_LOGICAL_PAGE",
 	"FLAT_DATA_PAGES",
 	"MUS_DATA_PAGES",
-	"FLAT_CACHE_BASE_SEGMENT"
+	"FLAT_CACHE_BASE_SEGMENT",
+
+	"SND_NONE",
+ 	"SND_PC",
+ 	"SND_ADLIB",
+ 	"SND_SB",
+ 	"SND_PAS",
+	"SND_GUS",
+	"SND_MPU",
+	"SND_MPU2",
+	"SND_MPU3",
+	"SND_AWE",
+	"SND_ENSONIQ",
+	"SND_CODEC",
+	"NUM_SCARDS"
 
 
 
@@ -4051,8 +4066,20 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	SCREEN3_LOGICAL_PAGE,
 	FLAT_DATA_PAGES,
 	MUS_DATA_PAGES,
-	FLAT_CACHE_BASE_SEGMENT
-
+	FLAT_CACHE_BASE_SEGMENT,
+ 	snd_none,
+ 	snd_PC,
+ 	snd_Adlib,
+ 	snd_SB,
+ 	snd_PAS,
+	snd_GUS,
+	snd_MPU,
+	snd_MPU2,
+	snd_MPU3,
+	snd_AWE,
+	snd_ENSONIQ,
+	snd_CODEC,
+	NUM_SCARDS
 
 
 

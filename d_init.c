@@ -305,6 +305,8 @@ void __near HU_Init(void){
 }
 
 void 	I_SetSFXPrefix();
+void    LoadSFXWadLumps();
+
 // todo: near breaks this.
 int16_t   I_GetSfxLumpNum(sfxenum_t sfx);
 
@@ -359,6 +361,21 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 	// but they arent necessary for pc speaker!
 	// so for PCM sfx store them in-driver
 
+
+	LoadSFXWadLumps();
+	// I_Error("%x %x %x %x %x %x %x %x",
+	// 	pc_speaker_offsets[0],
+	// 	pc_speaker_offsets[1],
+	// 	pc_speaker_offsets[2],
+	// 	pc_speaker_offsets[3],
+	// 	pc_speaker_offsets[4],
+	// 	pc_speaker_offsets[5],
+	// 	pc_speaker_offsets[6],
+	// 	pc_speaker_offsets[7]
+	
+	// );
+
+	/*
 	I_SetSFXPrefix();
 
 	// todo: pcm specific stuff
@@ -382,7 +399,7 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 		}
 
 	}
-
+	*/
 
 }
 

@@ -1842,6 +1842,7 @@ sfxinfo_t S_sfx[] = {
 };
 */
 
+//todo move these booleans to a bitmap.
 sfxinfo_t S_sfx[] = {
   // S_sfx[0] needs to be a dummy for odd reasons.
   // todo: move this into asm 
