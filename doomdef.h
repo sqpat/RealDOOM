@@ -52,7 +52,7 @@ enum { VERSION =  109 };
 //#define PRECALCULATE_OPENINGS
 
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
-#define DEBUG_PRINTING 1
+//#define DEBUG_PRINTING 1
 
 #if DEBUG_PRINTING
     void __far DEBUG_PRINT (int8_t __far*error, ...);

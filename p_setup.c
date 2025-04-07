@@ -238,7 +238,6 @@ void S_Start(void) {
   
   S_ChangeMusic(mnum, true);
   
-  nextcleanup = 15;
 
 }
 

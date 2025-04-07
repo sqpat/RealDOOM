@@ -44,7 +44,8 @@ struct sfxinfo_struct {
     // this is checked every second to see if sound
     // can be thrown out (if 0, then decrement, if -1,
     // then throw out, if > 0, then it is in use)
-    int8_t		usefulness;
+    // note - we dont use this anymore and just do LRU and in use in the sfx cache.
+    //int8_t		usefulness;
 
     // lump number of sfx
     // only for PCM. put it in another struct specific to that driver.

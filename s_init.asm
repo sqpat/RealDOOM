@@ -23,7 +23,6 @@ INSTRUCTION_SET_MACRO
 ;=================================
 .DATA
 
-EXTRN _pc_speaker_offsets:WORD
 
 
 .CODE
@@ -224,8 +223,7 @@ PUBLIC I_GetSfxLumpNum_
 
 ENDP
 
-; todo export
-PC_SPEAKER_SFX_DATA_SEGMENT = 0DE80h
+
 
 PROC   LoadSFXWadLumps_
 PUBLIC LoadSFXWadLumps_
@@ -250,27 +248,35 @@ PUBLIC LoadSFXWadLumps_
 
     ; pc speaker load loop
 
-    ; SI is index
+    ; DI is index
     ; CX:BX is target address
 
-    mov  si, 1
+    mov  di, 1
+
+    mov  bx, PC_SPEAKER_OFFSETS_SEGMENT
+    mov  es, bx
+
     xor  bx, bx   ;offset
 
-    mov  word ptr ds:[_pc_speaker_offsets], 4   ; fixed first value
+
+    mov  word ptr es:[0], 4   ; fixed first value
 
     loop_load_sfx:
 
-    mov  ax, si
+
+    push es
+
+    mov  ax, di
     call I_GetSfxLumpNum_
-    mov  di, ax  ; backup lump num
+    mov  si, ax  ; backup lump num
     
     db 0FFh  ; lcall[addr]
     db 01Eh  ;
     dw _W_LumpLength_addr
 
-    ; ax is lumpsize
+    ; ax is lumpdize
 
-    xchg ax, di    ; ax gets lumpnum again. size to di.
+    xchg ax, si    ; ax gets lumpnum again. dize to si.
     mov  cx, PC_SPEAKER_SFX_DATA_SEGMENT
 
     push bx
@@ -278,16 +284,17 @@ PUBLIC LoadSFXWadLumps_
     db 01Eh  ;
     dw _W_CacheLumpNumDirect_addr
     pop  bx
+    pop  es
 
-    add  bx, di
+    add  bx, si
+    sal  di, 1
 
-    sal  si, 1
-    lea  di, [bx + 4]
-    mov  word ptr ds:[_pc_speaker_offsets + si], di
-    sar  si, 1
+    lea  ax, [bx + 4]
+    stosw
+    sar  di, 1
 
-    inc  si
-    cmp  si, NUMSFX
+
+    cmp  di, NUMSFX
     jne  loop_load_sfx
 
     jmp  done_with_sfx_prep

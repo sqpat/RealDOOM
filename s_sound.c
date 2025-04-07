@@ -183,7 +183,7 @@ void S_StopChannel(int8_t cnum) {
 		}
 		
 		// degrade usefulness of sound data
-		c->sfxinfo->usefulness--;
+		// c->sfxinfo->usefulness--;
 
 		c->sfxinfo = 0;
     }
@@ -441,8 +441,8 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 	// }
   
 	// increase the usefulness
-	if (sfx->usefulness++ < 0)
-		sfx->usefulness = 1;
+	// if (sfx->usefulness++ < 0)
+	// 	sfx->usefulness = 1;
   
 	// Assigns the handle to one of the channels in the
 	//  mix/output buffer.
@@ -508,19 +508,19 @@ void S_UpdateSounds(THINKERREF listenerRef) {
     //mobj_t*	listener = (mobj_t*)listener_p;
 
     // Clean up unused data.
-    if (gametic > nextcleanup) {
-		for (i=1 ; i<NUMSFX ; i++) {
-			if (S_sfx[i].usefulness < 1 && S_sfx[i].usefulness > -1) {
-				if (--S_sfx[i].usefulness == -1) {
-					//Z_ChangeTag(S_sfx[i].data, PU_CACHE);
-							//_dpmi_unlockregion(S_sfx[i].data, lumpinfo[S_sfx[i].lumpnum].size);
+    // if (gametic > nextcleanup) {
+	// 	for (i=1 ; i<NUMSFX ; i++) {
+	// 		if (S_sfx[i].usefulness < 1 && S_sfx[i].usefulness > -1) {
+	// 			if (--S_sfx[i].usefulness == -1) {
+	// 				//Z_ChangeTag(S_sfx[i].data, PU_CACHE);
+	// 						//_dpmi_unlockregion(S_sfx[i].data, lumpinfo[S_sfx[i].lumpnum].size);
 					
-					//S_sfx[i].data = 0;
-				}
-			}
-		}
-		nextcleanup = gametic + 15;
-    }
+	// 				//S_sfx[i].data = 0;
+	// 			}
+	// 		}
+	// 	}
+	// 	nextcleanup = gametic + 15;
+    // }
     
 	for (cnum=0 ; cnum<numChannels ; cnum++) {
 		c = &channels[cnum];

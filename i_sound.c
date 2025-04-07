@@ -209,6 +209,7 @@ int16_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep, uint8_t pitch,
     if (snd_SfxDevice == snd_PC){
         // todo how to resolve this? lump to id map?
         //I_Error("start sound %i", sfx_id);
+        //uint16_t *__far pc_speaker_offsets = (uint16_t *__far)(MK_FP(PC_SPEAKER_OFFSETS_SEGMENT, 0));
         pcspeaker_currentoffset = pc_speaker_offsets[sfx_id-1];
         pcspeaker_endoffset = pc_speaker_offsets[sfx_id];
         return 0;

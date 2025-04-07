@@ -1337,7 +1337,6 @@ extern sfxinfo_t	S_sfx[];
 
 extern channel_t	channels[MAX_SFX_CHANNELS];
 extern boolean		mus_paused;	
-extern ticcount_t	nextcleanup;
 
 //extern uint16_t shift4lookup[256];
 
@@ -1394,12 +1393,11 @@ int8_t SBMIDIdeinitHardware(void);
 extern int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 
 #define NUMSFX      109
-#define PC_SPEAKER_SFX_DATA_SEGMENT 0xDE80
+
 
 extern uint16_t pcspeaker_currentoffset;
 extern uint16_t pcspeaker_endoffset;
 
-extern uint16_t pc_speaker_offsets[NUMSFX];
 
 
 #endif

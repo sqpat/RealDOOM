@@ -1971,11 +1971,6 @@ channel_t	channels[MAX_SFX_CHANNELS];
 boolean		mus_paused;	
 
 
-// following is set
-//  by the defaults code in M_misc:
-// number of channels available
-
-ticcount_t		nextcleanup;
 
 
 /*
@@ -2034,7 +2029,6 @@ uint16_t pcspeaker_currentoffset;	// if nonzero then playing from that offset. c
 uint16_t pcspeaker_endoffset;
 
 
-uint16_t pc_speaker_offsets[NUMSFX];
 
 
 

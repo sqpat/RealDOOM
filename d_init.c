@@ -363,8 +363,11 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 
 
 	LoadSFXWadLumps();
-	// I_Error("%x %x %x %x %x %x %x %x",
-	// 	pc_speaker_offsets[0],
+	// {
+    //     // uint16_t *__far pc_speaker_offsets = (uint16_t *__far)(MK_FP(PC_SPEAKER_OFFSETS_SEGMENT, 0));
+
+	// I_Error("%x",
+	// 	pc_speaker_offsets[0]
 	// 	pc_speaker_offsets[1],
 	// 	pc_speaker_offsets[2],
 	// 	pc_speaker_offsets[3],
@@ -372,8 +375,8 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 	// 	pc_speaker_offsets[5],
 	// 	pc_speaker_offsets[6],
 	// 	pc_speaker_offsets[7]
-	
 	// );
+	// }
 
 	/*
 	I_SetSFXPrefix();
