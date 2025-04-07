@@ -164,8 +164,9 @@
 #define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D6))
 
 
-// d7-f7 free
+// d7-f6 free
 
+#define snd_SfxDevice                   (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00F7))
 #define numbraintargets                 (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F8))
 #define braintargeton                   (*(int16_t __near *)                 (_NULL_OFFSET + 0x00FA))
 #define brainspit_easy                  (*(boolean __near *)                 (_NULL_OFFSET + 0x00FC))
@@ -321,11 +322,6 @@
 #define snd_MusicVolume                 (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038D)))
 #define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x038E)))
 #define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x038F)))
-
-// 38D-38F free
-
-
-// todo fill this up
 #define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0390)))
 #define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x03B0)))
 
@@ -409,13 +405,11 @@
 
 
 
-extern const int8_t         snd_prefixen[];
 extern uint8_t              snd_SBirq; // sound blaster variables
 extern uint8_t              snd_SBdma;
 
 extern uint8_t              snd_SfxVolume; // maximum volume for sound
 
-extern uint8_t              snd_SfxDevice; // current sfx card # (index to dmxCodes)
 extern uint8_t              snd_DesiredSfxDevice;
 extern uint8_t              snd_DesiredMusicDevice;
 extern uint16_t             snd_SBport;

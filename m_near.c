@@ -45,7 +45,6 @@
 
 
 // todo most of these aren't used??
-const int8_t snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S', 'S', 'S' };
 
 //int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
 
@@ -54,7 +53,6 @@ uint8_t  snd_SBdma;
 
 uint8_t  snd_SfxVolume; // maximum volume for sound
 
-uint8_t  snd_SfxDevice; // current sfx card # (index to dmxCodes)
 uint8_t  snd_DesiredSfxDevice;
 uint8_t  snd_DesiredMusicDevice;
 uint16_t snd_SBport;

@@ -109,9 +109,10 @@ _viewangle_shiftright1 = 			_NULL_OFFSET + 000D4h
 _skipdirectdraws = 					_NULL_OFFSET + 000D6h
 
 
-; d7 - f7 unused
+; d7 - f6 unused
 
 
+_snd_SfxDevice = 					_NULL_OFFSET + 000F7h
 _numbraintargets = 					_NULL_OFFSET + 000F8h
 _braintargeton = 					_NULL_OFFSET + 000FAh
 _brainspit_easy = 					_NULL_OFFSET + 000FCh

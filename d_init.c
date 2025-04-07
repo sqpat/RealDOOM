@@ -304,7 +304,7 @@ void __near HU_Init(void){
 
 }
 
-void 	I_SetSFXPrefix(int8_t filetype_char);
+void 	I_SetSFXPrefix();
 // todo: near breaks this.
 int16_t   I_GetSfxLumpNum(sfxenum_t sfx);
 
@@ -359,7 +359,7 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 	// but they arent necessary for pc speaker!
 	// so for PCM sfx store them in-driver
 
-	I_SetSFXPrefix(snd_prefixen[snd_SfxDevice]);
+	I_SetSFXPrefix();
 
 	// todo: pcm specific stuff
 

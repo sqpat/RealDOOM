@@ -149,6 +149,10 @@ _songnamelist:
  db "radio" , 0
 
 
+_snd_prefixen:
+db 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S', 'S', 'S'
+
+
 
 ;int16_t I_GetSfxLumpNum(sfxenum_t sfx_id) {
 ;	int8_t namebuf[9];
@@ -169,7 +173,15 @@ _songnamelist:
 PROC   I_SetSFXPrefix_
 PUBLIC I_SetSFXPrefix_
 
+    push bx
+    mov  al, byte ptr ds:[_snd_SfxDevice]
+    cbw
+    xchg ax, bx
+
+    mov al, byte ptr cs:[_snd_prefixen + bx]
     mov byte ptr cs:[_currentnameprefix + 1], al
+
+    pop bx
     ret
 
 ENDP
