@@ -200,7 +200,7 @@ void S_Start(void) {
   	// kill all playing sounds at start of level
   	//  (trust me - a good idea)
   	for (cnum=0 ; cnum<numChannels ; cnum++){
-    	if (channels[cnum].sfxinfo){
+    	if (channels[cnum].sfx_id){
       		S_StopChannel(cnum);
 		}
 	}

@@ -71,7 +71,7 @@
 //
 // Internals.
 //
-int8_t S_getChannel (THINKERREF originRef, sfxinfo_t* sfxinfo );
+int8_t S_getChannel (THINKERREF originRef, sfxenum_t sfx_id );
 
 
 int16_t S_AdjustSoundParams ( THINKERREF listenerRef, THINKERREF sourceRef, uint8_t* vol, uint8_t* sep, uint8_t* pitch );
@@ -168,7 +168,7 @@ void S_StopChannel(int8_t cnum) {
 	
     channel_t*	c = &channels[cnum];
 
-    if (c->sfxinfo) {
+    if (c->sfx_id) {
 		// stop the sound playing
 		if (I_SoundIsPlaying(c->handle)) {
 			I_StopSound(c->handle);
@@ -177,15 +177,13 @@ void S_StopChannel(int8_t cnum) {
 		// check to see
 		//  if other channels are playing the sound
 		for (i=0 ; i<numChannels ; i++) {
-			if (cnum != i && c->sfxinfo == channels[i].sfxinfo) {
+			if (cnum != i && c->sfx_id == channels[i].sfx_id) {
 				break;
 			}
 		}
 		
-		// degrade usefulness of sound data
-		// c->sfxinfo->usefulness--;
 
-		c->sfxinfo = 0;
+		c->sfx_id = sfx_None;
     }
 
 
@@ -296,7 +294,7 @@ void S_StopSound(THINKERREF originRef) {
 
 
     for (cnum=0 ; cnum<numChannels ; cnum++) {
-		if (channels[cnum].sfxinfo && channels[cnum].originRef == originRef) {
+		if (channels[cnum].sfx_id && channels[cnum].originRef == originRef) {
 	    	S_StopChannel(cnum);
 	    	break;
 		}
@@ -309,7 +307,7 @@ void S_StopSound(THINKERREF originRef) {
 // S_getChannel :
 //   If none available, return -1.  Otherwise channel #.
 //
-int8_t S_getChannel (THINKERREF originRef, sfxinfo_t*	sfxinfo ) {
+int8_t S_getChannel (THINKERREF originRef, sfxenum_t sfx_id ) {
     // channel number to use
 
     int8_t		cnum;
@@ -318,7 +316,7 @@ int8_t S_getChannel (THINKERREF originRef, sfxinfo_t*	sfxinfo ) {
 
     // Find an open channel
     for (cnum=0 ; cnum<numChannels ; cnum++) {
-		if (!channels[cnum].sfxinfo) {
+		if (!channels[cnum].sfx_id) {
 			break;
 		} else if (originRef &&  channels[cnum].originRef == originRef) {
 			S_StopChannel(cnum);
@@ -329,9 +327,11 @@ int8_t S_getChannel (THINKERREF originRef, sfxinfo_t*	sfxinfo ) {
     // None available
     if (cnum == numChannels) {
 	// Look for lower priority
-		for (cnum=0 ; cnum<numChannels ; cnum++)
-			if (channels[cnum].sfxinfo->priority >= sfxinfo->priority) break;
-
+		for (cnum=0 ; cnum<numChannels ; cnum++){
+			if (sfx_priority[channels[cnum].sfx_id] >= sfx_priority[sfx_id]) {
+				break;
+			}
+		}
 		if (cnum == numChannels) {
 			// FUCK!  No lower priority.  Sorry, Charlie.    
 			return -1;
@@ -344,7 +344,7 @@ int8_t S_getChannel (THINKERREF originRef, sfxinfo_t*	sfxinfo ) {
     c = &channels[cnum];
 
     // channel is decided to be cnum.
-    c->sfxinfo = sfxinfo;
+    c->sfx_id = sfx_id;
     c->originRef = originRef;
 
     return cnum;
@@ -356,7 +356,7 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
   uint8_t		sep;
   uint8_t		pitch;
   uint8_t		priority;
-  sfxinfo_t*	sfx;
+//   sfxinfo_t*	sfx;
   int8_t		cnum;
   mobj_t*	playerMo;	    
   THINKERREF    originRef = GETTHINKERREF(origin);
@@ -369,7 +369,7 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 			I_Error("Bad sfx #: %d", sfx_id);
 		#endif
 	}
-	sfx = &S_sfx[sfx_id];
+	// sfx = &S_sfx[sfx_id];
   
 	/*
 	// Initialize sound parameters
@@ -414,7 +414,7 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 
 
 	// try to find a channel
-	cnum = S_getChannel(originRef, sfx);
+	cnum = S_getChannel(originRef, sfx_id);
   
 	if (cnum<0)
 		return;
@@ -501,7 +501,7 @@ void S_UpdateSounds(THINKERREF listenerRef) {
     uint8_t		volume;
     uint8_t		sep;
     uint8_t		pitch;
-    sfxinfo_t*	sfx;
+    sfxenum_t	sfx_id;
     channel_t*	c;
 	uint8_t         i;
 	//mobj_t*	listener_p = (mobj_t*)Z_LoadThinkerBytesFromEMS(listenerRef);
@@ -524,19 +524,17 @@ void S_UpdateSounds(THINKERREF listenerRef) {
     
 	for (cnum=0 ; cnum<numChannels ; cnum++) {
 		c = &channels[cnum];
-		sfx = c->sfxinfo;
+		sfx_id = c->sfx_id;
 
-		if (c->sfxinfo)
-		{
-			if (I_SoundIsPlaying(c->handle))
-			{
+		if (sfx_id) {
+			if (I_SoundIsPlaying(c->handle)) {
 			// initialize parameters
 			volume = snd_SfxVolume;
 			pitch = NORM_PITCH;
 			sep = NORM_SEP;
 
 			// the only one with a link...
-			if ((sfx - S_sfx) == sfx_chgun) {
+			if (sfx_id == sfx_chgun) {
 				// link is only used once in the dataset and hardcoded there - rather than including all this extra
 				// data in memory we just hardcode the fields...
 				pitch = 150;

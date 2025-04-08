@@ -1329,7 +1329,7 @@ typedef struct {
 
 
 // the complete set of sound effects
-extern sfxinfo_t	S_sfx[];
+extern uint8_t sfx_priority[];
 
 // the complete set of music
 

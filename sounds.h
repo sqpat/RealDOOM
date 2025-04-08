@@ -27,16 +27,16 @@
 //
 
 
-typedef struct sfxinfo_struct	sfxinfo_t;
-struct sfxinfo_struct {
+// typedef struct sfxinfo_struct	sfxinfo_t;
+// struct sfxinfo_struct {
     // up to 6-character name
     //int8_t*	name;
 
     // Sfx singularity (only one at a time)
-    boolean		singularity;
+    // boolean		singularity;
 
     // Sfx priority
-    uint8_t		priority;
+    // uint8_t		priority;
 
     // sound data
     //void __far*	data;
@@ -50,7 +50,7 @@ struct sfxinfo_struct {
     // lump number of sfx
     // only for PCM. put it in another struct specific to that driver.
     //int16_t		lumpnum;		
-};
+// };
 
 
 
@@ -58,11 +58,11 @@ struct sfxinfo_struct {
 //
 // MusicInfo struct.
 //
-typedef struct {
+// typedef struct {
     // up to 6-character name
-    int8_t*	name;
-        
-} musicinfo_t;
+    // int8_t*	name;
+        // 
+// } musicinfo_t;
 
 
 

@@ -40,7 +40,7 @@ typedef uint8_t sfxenum_t;
 
 typedef struct {
     // sound information (if null, channel avail.)
-    sfxinfo_t*	sfxinfo;
+    sfxenum_t	sfx_id;
 
     // origin of sound
 	THINKERREF	originRef;
