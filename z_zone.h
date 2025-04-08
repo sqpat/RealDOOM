@@ -351,11 +351,15 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 //93
 #define MUS_DATA_PAGES                              FLAT_DATA_PAGES + 3
+
 //97
-#define MUS_DRIVER_PAGE                             (MUS_DATA_PAGES + 4)
+#define SFX_DATA_PAGES                              (MUS_DATA_PAGES + 4)
+
+//99
+#define MUS_DRIVER_PAGE                             SFX_DATA_PAGES + 2
 
 
-// 98? (+1 for 0)
+// 100? (+1 for 0)
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) MUS_DRIVER_PAGE + 1
 
 

@@ -263,17 +263,24 @@ byte __far *__near Z_InitEMS() {
 
 
 	// do initial page remapping for ems page frame
-	for (i = 0; i < 4; i++){
-		regs.w.ax = 0x4400 + i;  
-		regs.w.bx = i + MUS_DATA_PAGES;
-		regs.w.dx = emshandle; // handle
+	regs.w.ax = 0x4400;  
+	regs.w.bx = MUS_DATA_PAGES;
+	regs.w.dx = emshandle; // handle
+	intx86(EMS_INT, &regs, &regs);
 
-		intx86(EMS_INT, &regs, &regs);
-	}	
+	regs.w.ax = 0x4401;  
+	regs.w.bx = SFX_DATA_PAGES;
+	regs.w.dx = emshandle; // handle
+	intx86(EMS_INT, &regs, &regs);
+
+	regs.w.ax = 0x4402;
+	regs.w.bx = SFX_DATA_PAGES+1;
+	regs.w.dx = emshandle; // handle
+	intx86(EMS_INT, &regs, &regs);
 
 	// DC00 mus driver setup
 	regs.w.ax = 0x4403;  
-	regs.w.bx = i + MUS_DRIVER_PAGE;
+	regs.w.bx = MUS_DRIVER_PAGE;
 	regs.w.dx = emshandle; // handle
 
 	intx86(EMS_INT, &regs, &regs);
