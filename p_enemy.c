@@ -786,10 +786,10 @@ void __near A_Look (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 		}
 		if (actor->type==MT_SPIDER || actor->type == MT_CYBORG) {
 			// full volume
-			S_StartSoundFromRef(NULL, sound);
+			S_StartSound(NULL, sound);
 		} else {
 
-			S_StartSoundFromRef(actor, sound);
+			S_StartSound(actor, sound);
 		}
     }
 
@@ -883,7 +883,7 @@ void __near A_Chase (mobj_t __near*	actor, mobj_pos_t __far* actor_pos){
 
     // check for melee attack
     if (getMeleeState(actor->type) && P_CheckMeleeRange (actor)) {
-		S_StartSoundFromRef(actor, getAttackSound(actor->type));
+		S_StartSound(actor, getAttackSound(actor->type));
 	
 		
 
@@ -935,7 +935,7 @@ void __near A_Chase (mobj_t __near*	actor, mobj_pos_t __far* actor_pos){
 	// make active sound
 	sound = getActiveSound(actor->type);
 	if (sound && P_Random() < 3) {
-		S_StartSoundFromRef(actor, sound);
+		S_StartSound(actor, sound);
 	}
 
 }
@@ -994,7 +994,7 @@ void __near A_PosAttack (mobj_t __near* actor){
 	angle = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
     slope = P_AimLineAttack (actor, angle, MISSILERANGE);
 
-	S_StartSoundFromRef(actor, sfx_pistol);
+	S_StartSound(actor, sfx_pistol);
     angle = MOD_FINE_ANGLE(angle + (((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
     damage = ((P_Random()%5)+1)*3;
 	P_LineAttack (actor, angle, MISSILERANGE, slope, damage);
@@ -1012,7 +1012,7 @@ void __near A_SPosAttack (mobj_t __near*	actor){
 		return;
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 
-	S_StartSoundFromRef(actor, sfx_shotgn);
+	S_StartSound(actor, sfx_shotgn);
     A_FaceTarget (actor);
 
 	bangle = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
@@ -1036,7 +1036,7 @@ void __near A_CPosAttack (mobj_t __near*	actor){
 		return;
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 
-	S_StartSoundFromRef(actor, sfx_shotgn);
+	S_StartSound(actor, sfx_shotgn);
     A_FaceTarget (actor);
 
 	bangle = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
@@ -1128,7 +1128,7 @@ void __near A_TroopAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 
 	if (P_CheckMeleeRange (actor)) {
 
-		S_StartSoundFromRef(actor, sfx_claw);
+		S_StartSound(actor, sfx_claw);
 		damage = (P_Random()%8+1)*3;
 
 		P_DamageMobj ((&thinkerlist[actor->targetRef].data), actor, actor, damage);
@@ -1197,7 +1197,7 @@ void __near A_BruisAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 		
     if (P_CheckMeleeRange (actor)){
 
-		S_StartSoundFromRef(actor, sfx_claw);
+		S_StartSound(actor, sfx_claw);
 		damage = (P_Random()%8+1)*10;
 
 		P_DamageMobj ((&thinkerlist[actor->targetRef].data), actor, actor, damage);
@@ -1334,7 +1334,7 @@ void __near A_SkelWhoosh (mobj_t __near* actor) {
 
     A_FaceTarget (actor);
 
-	S_StartSoundFromRef(actor,sfx_skeswg);
+	S_StartSound(actor,sfx_skeswg);
 }
 
 void __near A_SkelFist (mobj_t __near* actor) {
@@ -1348,7 +1348,7 @@ void __near A_SkelFist (mobj_t __near* actor) {
 	if (P_CheckMeleeRange (actor)) {
 		damage = ((P_Random()%10)+1)*6;
 
-		S_StartSoundFromRef(actor, sfx_skepch);
+		S_StartSound(actor, sfx_skepch);
 
 		P_DamageMobj ((&thinkerlist[actor->targetRef].data), actor, actor, damage);
     }
@@ -1508,7 +1508,7 @@ void __near A_VileChase (mobj_t __near* actor, mobj_pos_t __far* actor_pos) {
 
 				corpsehit = (mobj_t __near*)(&thinkerlist[corpsehitRef].data);
 				corpsehit_pos = &mobjposlist_6800[corpsehitRef];
-				S_StartSoundFromRef(corpsehit, sfx_slop);
+				S_StartSound(corpsehit, sfx_slop);
 				info = &mobjinfo[corpsehit->type];
 		    
 				P_SetMobjState (corpsehit,getRaiseState(corpsehit->type));
@@ -1534,7 +1534,7 @@ void __near A_VileChase (mobj_t __near* actor, mobj_pos_t __far* actor_pos) {
 // A_VileStart
 //
 void __near A_VileStart (mobj_t __near* actor){
-	S_StartSoundFromRef(actor, sfx_vilatk);
+	S_StartSound(actor, sfx_vilatk);
 }
 
 
@@ -1545,12 +1545,12 @@ void __near A_VileStart (mobj_t __near* actor){
 void __near A_Fire (mobj_t __near* actor, mobj_pos_t __far* actor_pos);
 
 void __near A_StartFire (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
-	S_StartSoundFromRef(actor,sfx_flamst);
+	S_StartSound(actor,sfx_flamst);
     A_Fire( actor, actor_pos);
 }
 
 void __near A_FireCrackle (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
-	S_StartSoundFromRef(actor,sfx_flame);
+	S_StartSound(actor,sfx_flame);
     A_Fire( actor, actor_pos);
 }
 
@@ -1683,7 +1683,7 @@ void __near A_VileAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 	if (!P_CheckSight(actor, actorTarget, actor_pos, actorTarget_pos)){
 		return;
 	}
-	S_StartSoundFromRef (actor, sfx_barexp);
+	S_StartSound (actor, sfx_barexp);
 	P_DamageMobj ((&thinkerlist[actor->targetRef].data), actor, actor, 20);
     an = (actor_pos->angle.hu.intbits >> 1) & 0xFFFC;
 
@@ -1719,7 +1719,7 @@ void __near A_VileAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 
 void __near A_FatRaise (mobj_t __near*	actor){
     A_FaceTarget (actor);
-	S_StartSoundFromRef (actor, sfx_manatk);
+	S_StartSound (actor, sfx_manatk);
 }
 
 
@@ -1822,7 +1822,7 @@ void __near A_SkullAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 
     destRef = actor->targetRef;	
 
-	S_StartSoundFromRef(actor, getAttackSound(actor->type));
+	S_StartSound(actor, getAttackSound(actor->type));
 	A_FaceTarget(actor);
 	dest = (mobj_t __near*)(&thinkerlist[destRef].data);
 	dest_pos = &mobjposlist_6800[destRef];
@@ -1971,23 +1971,23 @@ void __near A_Scream (mobj_t __near* actor){
     // Check for bosses.
     if (actor->type==MT_SPIDER || actor->type == MT_CYBORG) {
 		// full volume
-		S_StartSoundFromRef(NULL, sound);
+		S_StartSound(NULL, sound);
 	} else {
-		S_StartSoundFromRef(actor, sound);
+		S_StartSound(actor, sound);
 	}
 }
 
 
 void __near A_XScream (mobj_t __near* actor){
 
-	S_StartSoundFromRef(actor, sfx_slop);
+	S_StartSound(actor, sfx_slop);
 }
 
 void __near A_Pain (mobj_t __near* actor){
 	//todoaddr inline later
 	sfxenum_t (__far  * getPainSound)(uint8_t) = getPainSoundAddr;
 
-	S_StartSoundFromRef(actor, getPainSound(actor->type));
+	S_StartSound(actor, getPainSound(actor->type));
 }
 
 
@@ -2156,17 +2156,17 @@ void __near A_BossDeath (mobj_t __near* mo){
 
 
 void __near A_Hoof(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos){
-	S_StartSoundFromRef(mobj, sfx_hoof);
+	S_StartSound(mobj, sfx_hoof);
     A_Chase (mobj, mobj_pos);
 }
 
 void __near A_Metal (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos){
-	S_StartSoundFromRef(mobj, sfx_metal);
+	S_StartSound(mobj, sfx_metal);
 	A_Chase(mobj, mobj_pos);
 }
 
 void __near A_BabyMetal (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos){
-	S_StartSoundFromRef(mobj, sfx_bspwlk);
+	S_StartSound(mobj, sfx_bspwlk);
 	A_Chase(mobj, mobj_pos);
 }
 
@@ -2198,12 +2198,12 @@ void __near A_BrainAwake (){
 		}
     }
 	
-	S_StartSoundFromRef(NULL,sfx_bossit);
+	S_StartSound(NULL,sfx_bossit);
 }
 
 
 void __near A_BrainPain (){
-	S_StartSoundFromRef(NULL,sfx_bospn);
+	S_StartSound(NULL,sfx_bospn);
 }
 
 
@@ -2233,7 +2233,7 @@ void __near A_BrainScream (mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 		}
     }
 	
-	S_StartSoundFromRef(NULL,sfx_bosdth);
+	S_StartSound(NULL,sfx_bosdth);
 
 }
 
@@ -2303,7 +2303,7 @@ void __near A_BrainSpit (mobj_t __near* mo, mobj_pos_t __far* mo_pos){
     newmobj->reactiontime =  
 	FastDiv3216u(targ_pos->y.h.intbits - mo_pos->y.h.intbits, newmobj->momy.h.intbits) / states[newmobj_pos->stateNum].tics;
 
-	S_StartSoundFromRef(NULL, sfx_bospit);
+	S_StartSound(NULL, sfx_bospit);
 }
 
 
@@ -2312,7 +2312,7 @@ void __near A_SpawnFly (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
 // travelling cube sound
 void __near A_SpawnSound (mobj_t __near* mobj, mobj_pos_t __far* mo_pos){
-	S_StartSoundFromRef(mobj,sfx_boscub);
+	S_StartSound(mobj,sfx_boscub);
     A_SpawnFly(mobj, mo_pos);
 }
 
@@ -2338,7 +2338,7 @@ void __near A_SpawnFly (mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 	targ_pos = &mobjposlist_6800[targRef];
     // First spawn teleport fog.
     fogRef = P_SpawnMobj (targ_pos->x.w, targ_pos->y.w, targ_pos->z.w, MT_SPAWNFIRE, targ->secnum);
-    S_StartSoundFromRef (setStateReturn, sfx_telept);
+    S_StartSound (setStateReturn, sfx_telept);
 
     // Randomly select monster to spawn.
     r = P_Random ();
@@ -2396,5 +2396,5 @@ void __near A_PlayerScream () {
 		sound = sfx_pdiehi;
     }
     
-	S_StartSoundFromRef(playerMobj, sound);
+	S_StartSound(playerMobj, sound);
 }

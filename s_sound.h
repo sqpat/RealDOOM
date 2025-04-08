@@ -40,14 +40,18 @@ typedef uint8_t sfxenum_t;
 
 typedef struct {
     // sound information (if null, channel avail.)
-    sfxenum_t	sfx_id;
+
+    // hack for doing degen mobjs
+    int16_t     soundorg_secnum;
 
     // origin of sound
 	THINKERREF	originRef;
 
     // handle of the sound being played
     int16_t		handle;
-    
+
+    sfxenum_t	sfx_id;
+
 } channel_t;
 //
 // Per level startup code.
@@ -56,8 +60,6 @@ typedef struct {
 //
 void S_Start(void);
 
-void __near S_StartSoundFromRef(mobj_t __near* mobj, sfxenum_t	sfx_id);
-
 
 //
 // Start sound for thing at <origin>
@@ -65,16 +67,16 @@ void __near S_StartSoundFromRef(mobj_t __near* mobj, sfxenum_t	sfx_id);
 //
 void S_StartSound (mobj_t __near*	origin, sfxenum_t	sound_id );
 
-void S_StartSoundWithParams(int16_t x, int16_t y, sfxenum_t sound_id);
+void S_StartSoundWithParams(int16_t soundorg_secnum, sfxenum_t sound_id);
 
 
 
 // Will start a sound at a given volume.
-void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sound_id, uint8_t volume );
+void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum );
 
 
 // Stop sound for thing at <origin>
-void S_StopSound(THINKERREF originRef);
+void S_StopSound(THINKERREF originRef, int16_t soundorg_secnum);
 
 
 // Start music using <music_id> from sounds.h

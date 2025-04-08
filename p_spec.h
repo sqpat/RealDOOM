@@ -153,8 +153,7 @@ typedef struct {
     bwhere_e	where;
     uint16_t	btexture;
     int16_t		btimer;
-	int16_t     soundorgX;
-	int16_t     soundorgY;
+	int16_t     soundorg;  // sectorid
 
 } button_t;
 

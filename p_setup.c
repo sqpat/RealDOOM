@@ -948,7 +948,7 @@ void __near P_GroupLines(void) {
 
 		// set the degenmobj_t to the middle of the bounding box
 		
-
+		// todo does this have to be 32 bit? eventually investigate...
 		sectors_soundorgs[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) >> 1;
 		sectors_soundorgs[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) >> 1;
 

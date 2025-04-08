@@ -48,8 +48,6 @@ void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef) {
 	int16_t secnum = ceiling->secnum;
 	sector_t __far* ceilingsector = &sectors[secnum];
 	sector_physics_t __near* ceilingsector_physics = &sectors_physics[secnum];
-	int16_t soundorgX = sectors_soundorgs[secnum].soundorgX;
-	int16_t soundorgY = sectors_soundorgs[secnum].soundorgY;
 	//int16_t ceilingsecnum;
 
     switch(ceiling->direction) {
@@ -65,7 +63,7 @@ void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef) {
 					case silentCrushAndRaise:
 						break;
 					default:
-						S_StartSoundWithParams(soundorgX, soundorgY, sfx_stnmov);
+						S_StartSoundWithParams(secnum, sfx_stnmov);
 						// ? 
 						break;
 				}
@@ -79,7 +77,7 @@ void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef) {
 					break;
 					
 					case silentCrushAndRaise:
-						S_StartSoundWithParams(soundorgX, soundorgY, sfx_pstop);
+						S_StartSoundWithParams(secnum, sfx_pstop);
 					case fastCrushAndRaise:
 					case crushAndRaise:
 						ceiling->direction = -1;
@@ -103,7 +101,7 @@ void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef) {
 				switch(ceiling->type) {
 					case silentCrushAndRaise: break;
 						default:
-						S_StartSoundWithParams(soundorgX, soundorgY, sfx_stnmov);
+						S_StartSoundWithParams(secnum, sfx_stnmov);
 				}
 			}
 			
@@ -111,7 +109,7 @@ void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef) {
 			{
 				switch(ceiling->type) {
 					case silentCrushAndRaise:
-						S_StartSoundWithParams(soundorgX, soundorgY, sfx_pstop);
+						S_StartSoundWithParams(secnum, sfx_pstop);
 					case crushAndRaise:
 						ceiling->speed = CEILSPEED;
 					case fastCrushAndRaise:

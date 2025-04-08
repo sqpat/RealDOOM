@@ -236,7 +236,7 @@ void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef) {
 	uint8_t floortexture;
     res = T_MovePlane(floorsector, floor->speed, floor->floordestheight, floor->crush,0,floor->direction);
 	if (!(leveltime.h.fracbits & 7)) {
-		S_StartSoundWithParams(sectors_soundorgs[floorsecnum].soundorgX, sectors_soundorgs[floorsecnum].soundorgY, sfx_stnmov);
+		S_StartSoundWithParams(floorsecnum, sfx_stnmov);
 	}
 
     if (res == floor_pastdest) {
@@ -266,7 +266,7 @@ void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef) {
 		}
 		P_RemoveThinker(floorRef);
 
-		S_StartSoundWithParams(sectors_soundorgs[floorsecnum].soundorgX, sectors_soundorgs[floorsecnum].soundorgY, sfx_pstop);
+		S_StartSoundWithParams(floorsecnum, sfx_pstop);
     }
 
 }

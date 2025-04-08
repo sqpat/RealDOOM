@@ -79,7 +79,7 @@ void __near P_BringUpWeapon () {
 		player.pendingweapon = player.readyweapon;
 	}
 	if (player.pendingweapon == wp_chainsaw) {
-		S_StartSoundFromRef(playerMobj, sfx_sawup);
+		S_StartSound(playerMobj, sfx_sawup);
 	}
 		
     newstate = weaponinfo[player.pendingweapon].upstate;
@@ -205,7 +205,7 @@ void __near A_WeaponReady (  pspdef_t __near*	psp ) {
     }
     
     if (player.readyweapon == wp_chainsaw && psp->statenum == S_SAW) {
-		S_StartSoundFromRef (playerMobj, sfx_sawidl);
+		S_StartSound (playerMobj, sfx_sawidl);
     }
     
     // check for change
@@ -372,7 +372,7 @@ void __near A_Punch ( pspdef_t __near*	psp ) {
     // turn to face target
     if (linetarget)
     {
-		S_StartSoundFromRef(playerMobj, sfx_punch);
+		S_StartSound(playerMobj, sfx_punch);
 		playerMobj_pos->angle.wu = R_PointToAngle2 (playerMobj_pos->x, playerMobj_pos->y, linetarget_pos->x, linetarget_pos->y);
     }
 
@@ -400,10 +400,10 @@ void __near A_Saw (  pspdef_t __near*	psp ){
     P_LineAttack (playerMobj, angle, CHAINSAWRANGE, slope, damage);
 
     if (!linetarget) {
-		S_StartSoundFromRef(playerMobj, sfx_sawful);
+		S_StartSound(playerMobj, sfx_sawful);
 		return;
     }
-	S_StartSoundFromRef(playerMobj, sfx_sawhit);
+	S_StartSound(playerMobj, sfx_sawhit);
 	
     // turn to face target
     bigangle.wu = R_PointToAngle2 (playerMobj_pos->x, playerMobj_pos->y, linetarget_pos->x, linetarget_pos->y);
@@ -514,7 +514,7 @@ void __near P_GunShot (  boolean	accurate ) {
 //
 void __near A_FirePistol ( pspdef_t __near*	psp ) {
 	
-	S_StartSoundFromRef(playerMobj, sfx_pistol);
+	S_StartSound(playerMobj, sfx_pistol);
 
     P_SetMobjState (playerMobj, S_PLAY_ATK2);
     player.ammo[weaponinfo[player.readyweapon].ammo]--;
@@ -535,7 +535,7 @@ void __near A_FirePistol ( pspdef_t __near*	psp ) {
 void __near A_FireShotgun ( 	pspdef_t __near*	psp ){
     int8_t		i;
 
-	S_StartSoundFromRef(playerMobj, sfx_shotgn);
+	S_StartSound(playerMobj, sfx_shotgn);
     P_SetMobjState (playerMobj, S_PLAY_ATK2);
 
     player.ammo[weaponinfo[player.readyweapon].ammo]--;
@@ -561,7 +561,7 @@ void __near A_FireShotgun2 ( pspdef_t __near*	psp ) {
     fineangle_t	angle;
     int16_t		damage;
 	
-	S_StartSoundFromRef(playerMobj, sfx_dshtgn);
+	S_StartSound(playerMobj, sfx_dshtgn);
     P_SetMobjState (playerMobj, S_PLAY_ATK2);
 
     player.ammo[weaponinfo[player.readyweapon].ammo]-=2;
@@ -590,7 +590,7 @@ void __near A_FireShotgun2 ( pspdef_t __near*	psp ) {
 // A_FireCGun
 //
 void __near A_FireCGun (  pspdef_t __near*	psp ) {
-    S_StartSoundFromRef (playerMobj, sfx_pistol);
+    S_StartSound (playerMobj, sfx_pistol);
 
     if (!player.ammo[weaponinfo[player.readyweapon].ammo])
 	return;
@@ -629,16 +629,16 @@ void __near A_Light2 (pspdef_t __near *psp) {
 
 
 void __near A_OpenShotgun2 ( pspdef_t __near*	psp ) {
-	S_StartSoundFromRef(playerMobj, sfx_dbopn);
+	S_StartSound(playerMobj, sfx_dbopn);
 }
 
 void __near A_LoadShotgun2 (  pspdef_t __near*	psp ) {
-	S_StartSoundFromRef(playerMobj, sfx_dbload);
+	S_StartSound(playerMobj, sfx_dbload);
 }
 
 
 void __near A_CloseShotgun2 (   pspdef_t __near*	psp ){
-    S_StartSoundFromRef (playerMobj, sfx_dbcls);
+    S_StartSound (playerMobj, sfx_dbcls);
     A_ReFire(psp);
 }
 
@@ -686,7 +686,7 @@ void __near A_BFGSpray (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 // A_BFGsound
 //
 void __near  A_BFGsound (  pspdef_t __near*	psp ) {
-	S_StartSoundFromRef(playerMobj, sfx_bfg);
+	S_StartSound(playerMobj, sfx_bfg);
 }
 
 

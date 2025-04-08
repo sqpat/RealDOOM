@@ -928,7 +928,7 @@ void __near P_UpdateSpecials(void) {
 					sides[sidenum].bottomtexture = buttonlist[i].btexture;
 					break;
 				}
-				S_StartSoundWithParams(buttonlist[i].soundorgX, buttonlist[i].soundorgY, sfx_swtchn);
+				S_StartSoundWithParams(buttonlist[i].soundorg, sfx_swtchn);
 				memset(&buttonlist[i], 0, sizeof(button_t));
 			}
 		}

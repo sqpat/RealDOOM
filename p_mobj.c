@@ -686,14 +686,14 @@ void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) 
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[mobjsecnum].floorheight);
 	moRef = P_SpawnMobj(mobjx.w, mobjy.w, temp.w, MT_TFOG, mobjsecnum);
 	// initiate teleport sound
-	S_StartSoundFromRef(setStateReturn, sfx_telept);
+	S_StartSound(setStateReturn, sfx_telept);
 
 	// spawn a teleport fog at the new spot
 	subsecnum = R_PointInSubsector(x, y);
 	subsectorsecnum = subsectors[subsecnum].secnum;
 	moRef = P_SpawnMobj(x.w, y.w, temp.w, MT_TFOG, subsectorsecnum);
 
-	S_StartSoundFromRef(setStateReturn, sfx_telept);
+	S_StartSound(setStateReturn, sfx_telept);
 
 	// spawn the new monster
 
@@ -887,7 +887,7 @@ void __far P_RemoveMobj (mobj_t __near* mobj) {
     P_UnsetThingPosition (mobj, &mobjposlist_6800[mobjRef]);
     
     // stop any playing sound
-    S_StopSound (mobjRef);
+    S_StopSound (mobjRef, SECNUM_NULL);
 
 	// free block
 	P_RemoveThinker(GETTHINKERREF(mobj));

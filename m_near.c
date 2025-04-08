@@ -1716,134 +1716,13 @@ int8_t versionstring[12] = "version 109";  // hardcoded from VERSION. todo dynam
 int8_t  currentoverlay = OVERLAY_ID_UNMAPPED;
 int32_t codestartposition[NUM_OVERLAYS];
 
-
-//
-// Information about all the music
-//
-
-
+ 
 //
 // Information about all the sfx
 //
 
-/*
-sfxinfo_t S_sfx[] = {
-  // S_sfx[0] needs to be a dummy for odd reasons.
-  // todo: move this into asm 
-  { "none", false,  0, 0} /*,
 
-  { "pistol", false, 64, 0},
-  { "shotgn", false, 64, 0},
-  { "sgcock", false, 64, 0},
-  { "dshtgn", false, 64, 0},
-  { "dbopn", false, 64, 0},
-  { "dbcls", false, 64, 0},
-  { "dbload", false, 64, 0},
-  { "plasma", false, 64, 0},
-  { "bfg", false, 64, 0},
-  { "sawup", false, 64, 0},
-  { "sawidl", false, 118, 0},
-  { "sawful", false, 64, 0},
-  { "sawhit", false, 64, 0},
-  { "rlaunc", false, 64, 0},
-  { "rxplod", false, 70, 0},
-  { "firsht", false, 70, 0},
-  { "firxpl", false, 70, 0},
-  { "pstart", false, 100, 0},
-  { "pstop", false, 100, 0},
-  { "doropn", false, 100, 0},
-  { "dorcls", false, 100, 0},
-  { "stnmov", false, 119, 0},
-  { "swtchn", false, 78, 0},
-  { "swtchx", false, 78, 0},
-  { "plpain", false, 96, 0},
-  { "dmpain", false, 96, 0},
-  { "popain", false, 96, 0},
-  { "vipain", false, 96, 0},
-  { "mnpain", false, 96, 0},
-  { "pepain", false, 96, 0},
-  { "slop", false, 78, 0},
-  { "itemup", true, 78, 0},
-  { "wpnup", true, 78, 0},
-  { "oof", false, 96, 0},
-  { "telept", false, 32, 0},
-  { "posit1", true, 98, 0},
-  { "posit2", true, 98, 0},
-  { "posit3", true, 98, 0},
-  { "bgsit1", true, 98, 0},
-  { "bgsit2", true, 98, 0},
-  { "sgtsit", true, 98, 0},
-  { "cacsit", true, 98, 0},
-  { "brssit", true, 94, 0},
-  { "cybsit", true, 92, 0},
-  { "spisit", true, 90, 0},
-  { "bspsit", true, 90, 0},
-  { "kntsit", true, 90, 0},
-  { "vilsit", true, 90, 0},
-  { "mansit", true, 90, 0},
-  { "pesit", true, 90, 0},
-  { "sklatk", false, 70, 0},
-  { "sgtatk", false, 70, 0},
-  { "skepch", false, 70, 0},
-  { "vilatk", false, 70, 0},
-  { "claw", false, 70, 0},
-  { "skeswg", false, 70, 0},
-  { "pldeth", false, 32, 0},
-  { "pdiehi", false, 32, 0},
-  { "podth1", false, 70, 0},
-  { "podth2", false, 70, 0},
-  { "podth3", false, 70, 0},
-  { "bgdth1", false, 70, 0},
-  { "bgdth2", false, 70, 0},
-  { "sgtdth", false, 70, 0},
-  { "cacdth", false, 70, 0},
-  { "skldth", false, 70, 0},
-  { "brsdth", false, 32, 0},
-  { "cybdth", false, 32, 0},
-  { "spidth", false, 32, 0},
-  { "bspdth", false, 32, 0},
-  { "vildth", false, 32, 0},
-  { "kntdth", false, 32, 0},
-  { "pedth", false, 32, 0},
-  { "skedth", false, 32, 0},
-  { "posact", true, 120, 0},
-  { "bgact", true, 120, 0},
-  { "dmact", true, 120, 0},
-  { "bspact", true, 100, 0},
-  { "bspwlk", true, 100, 0},
-  { "vilact", true, 100, 0},
-  { "noway", false, 78, 0},
-  { "barexp", false, 60, 0},
-  { "punch", false, 64, 0},
-  { "hoof", false, 70, 0},
-  { "metal", false, 70, 0},
-  { "chgun", false, 64, &S_sfx[sfx_pistol]},
-  { "tink", false, 60, 0},
-  { "bdopn", false, 100, 0},
-  { "bdcls", false, 100, 0},
-  { "itmbk", false, 100, 0},
-  { "flame", false, 32, 0},
-  { "flamst", false, 32, 0},
-  { "getpow", false, 60, 0},
-  { "bospit", false, 70, 0},
-  { "boscub", false, 70, 0},
-  { "bossit", false, 70, 0},
-  { "bospn", false, 70, 0},
-  { "bosdth", false, 70, 0},
-  { "manatk", false, 70, 0},
-  { "mandth", false, 70, 0},
-  { "sssit", false, 70, 0},
-  { "ssdth", false, 70, 0},
-  { "keenpn", false, 70, 0},
-  { "keendt", false, 70, 0},
-  { "skeact", false, 70, 0},
-  { "skesit", false, 70, 0},
-  { "skeatk", false, 70, 0},
-  { "radio", false, 60, 0}
-};
-*/
-
-//todo move these to cs section of asm
+//todo move these to cs section of asm once sfx driver in asm. Not needed for pc speaker?
 uint8_t sfx_priority[] = {
   // S_sfx[0] needs to be a dummy for odd reasons.
   // todo: move this into asm 
@@ -2028,6 +1907,9 @@ driverBlock OPL3driver = {
 int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 uint16_t pcspeaker_currentoffset;	// if nonzero then playing from that offset. cant be zero anyway because thats part of the header of the first sfx.
 uint16_t pcspeaker_endoffset;
+
+int16_t soundOrgX;
+int16_t soundOrgY;
 
 
 

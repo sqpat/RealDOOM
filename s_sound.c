@@ -71,10 +71,10 @@
 //
 // Internals.
 //
-int8_t S_getChannel (THINKERREF originRef, sfxenum_t sfx_id );
+int8_t S_getChannel (THINKERREF originRef, int16_t soundorg_secnum, sfxenum_t sfx_id );
 
 
-int16_t S_AdjustSoundParams ( THINKERREF listenerRef, THINKERREF sourceRef, uint8_t* vol, uint8_t* sep, uint8_t* pitch );
+int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union x, fixed_t_union y, uint8_t* vol, uint8_t* sep, uint8_t* pitch );
 
 void S_StopChannel(int8_t cnum);
 
@@ -195,18 +195,21 @@ void S_StopChannel(int8_t cnum) {
 // If the sound is not audible, returns a 0.
 // Otherwise, modifies parameters and returns 1.
 //
-int16_t S_AdjustSoundParams ( THINKERREF listenerRef, THINKERREF sourceRef, uint8_t* vol, uint8_t* sep, uint8_t* pitch ){
+int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fixed_t_union sourceY, uint8_t* vol, uint8_t* sep, uint8_t* pitch ){
 	fixed_t	approx_dist;
     fixed_t	adx;
     fixed_t	ady;
     angle_t	angle;
 	mobj_pos_t __far * listener = (mobj_pos_t __far *)&mobjposlist_6800[listenerRef];
-	mobj_pos_t __far * source   = (mobj_pos_t __far *)&mobjposlist_6800[sourceRef];
-	return 0;
+	//mobj_pos_t __far * source   = (mobj_pos_t __far *)&mobjposlist_6800[sourceRef];
+	//return 0;
+
+
+
     // calculate the distance to sound origin
     //  and clip it if necessary
-    adx = labs(listener->x.w - source->x.w);
-    ady = labs(listener->y.w - source->y.w);
+    adx = labs(listener->x.w - sourceX.w);
+    ady = labs(listener->y.w - sourceY.w);
 
     // From _GG1_ p.428. Appox. eucledian distance fast.
     approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
@@ -220,8 +223,8 @@ int16_t S_AdjustSoundParams ( THINKERREF listenerRef, THINKERREF sourceRef, uint
     // angle of source to listener
     angle.w = R_PointToAngle2(listener->x,
 			    listener->y,
-			    source->x,
-			    source->y);
+			    sourceX,
+			    sourceY);
 
     if (angle.w > listener->angle.w){
 		angle.w = angle.w - listener->angle.w;
@@ -288,17 +291,28 @@ void S_ResumeSound(void) {
     }
 }
 
-void S_StopSound(THINKERREF originRef) {
+void S_StopSound(THINKERREF originRef, int16_t soundorg_secnum) {
 	
 	int8_t cnum;
 
-
-    for (cnum=0 ; cnum<numChannels ; cnum++) {
-		if (channels[cnum].sfx_id && channels[cnum].originRef == originRef) {
-	    	S_StopChannel(cnum);
-	    	break;
+	if (soundorg_secnum != SECNUM_NULL){
+		for (cnum=0 ; cnum<numChannels ; cnum++) {
+			if (channels[cnum].sfx_id && channels[cnum].soundorg_secnum == soundorg_secnum) {
+				S_StopChannel(cnum);
+				break;
+			}
 		}
-    }
+
+	} else {
+		for (cnum=0 ; cnum<numChannels ; cnum++) {
+			if (channels[cnum].sfx_id && channels[cnum].originRef == originRef) {
+				S_StopChannel(cnum);
+				break;
+			}
+		}
+
+	}
+
 
 
 }
@@ -307,7 +321,7 @@ void S_StopSound(THINKERREF originRef) {
 // S_getChannel :
 //   If none available, return -1.  Otherwise channel #.
 //
-int8_t S_getChannel (THINKERREF originRef, sfxenum_t sfx_id ) {
+int8_t S_getChannel (THINKERREF originRef, int16_t soundorg_secnum, sfxenum_t sfx_id ) {
     // channel number to use
 
     int8_t		cnum;
@@ -346,12 +360,13 @@ int8_t S_getChannel (THINKERREF originRef, sfxenum_t sfx_id ) {
     // channel is decided to be cnum.
     c->sfx_id = sfx_id;
     c->originRef = originRef;
+	c->soundorg_secnum = soundorg_secnum;
 
     return cnum;
 
 }
 
-void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t volume ) {
+void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum ) {
   int16_t		rc;
   uint8_t		sep;
   uint8_t		pitch;
@@ -360,7 +375,7 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
   int8_t		cnum;
   mobj_t*	playerMo;	    
   THINKERREF    originRef = GETTHINKERREF(origin);
-
+  uint8_t volume = snd_SfxVolume;
 
 	// check for bogus sound #
 	if (sfx_id < 1 || sfx_id > NUMSFX) {
@@ -392,14 +407,25 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 
 	// Check to see if it is audible,
 	//  and if not, modify the params
-	if (origin && (originRef != playerMobjRef)){
-
-		mobj_pos_t __far* originMobjPos = &mobjposlist_6800[originRef];
-		rc = S_AdjustSoundParams(playerMobjRef, originRef, &volume, &sep, &pitch);
-	
-		if ( originMobjPos->x.w == playerMobj_pos->x.w && originMobjPos->y.w == playerMobj_pos->y.w) {	
-			sep 	= NORM_SEP;
+	if ((origin || (soundorg_secnum != SECNUM_NULL)) && (originRef != playerMobjRef)){
+		fixed_t_union originX;
+		fixed_t_union originY;
+		if (soundorg_secnum != SECNUM_NULL){
+			originX.h.intbits = sectors_soundorgs[soundorg_secnum].soundorgX;
+			originY.h.intbits = sectors_soundorgs[soundorg_secnum].soundorgY;
+			originX.h.fracbits = 0;
+			originY.h.fracbits = 0;
+		} else {
+			mobj_pos_t __far* originMobjPos = &mobjposlist_6800[originRef];
+			originX = originMobjPos->x;
+			originY = originMobjPos->y;
 		}
+		rc = S_AdjustSoundParams(playerMobjRef, originX, originY, &volume, &sep, &pitch);
+		
+		if ( originX.w == playerMobj_pos->x.w && originY.w == playerMobj_pos->y.w) {	
+			sep = NORM_SEP;
+		}
+		
     
 		if (!rc) {
 			return;
@@ -410,11 +436,11 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
  
 
 	// kill old sound
-	S_StopSound(originRef);
+	S_StopSound(originRef, soundorg_secnum);
 
 
 	// try to find a channel
-	cnum = S_getChannel(originRef, sfx_id);
+	cnum = S_getChannel(originRef, soundorg_secnum, sfx_id);
   
 	if (cnum<0)
 		return;
@@ -435,7 +461,7 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 
 		//_dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
 		// fprintf( stderr,
-		//	     "S_StartSoundAtVolume: loading %d (lump %d) : 0x%x\n",
+		//	     "S_StartSoundWithPosition: loading %d (lump %d) : 0x%x\n",
 		//       sfx_id, sfx->lumpnum, sfx->data );
     
 	// }
@@ -454,39 +480,22 @@ void S_StartSoundAtVolume ( mobj_t __near* origin, sfxenum_t sfx_id, uint8_t vol
 
 }
 
-void __near S_StartSoundFromRef(mobj_t __near* mobj, sfxenum_t sfx_id)  {
-	
-	if (sfx_id == 0) {
-		return;
-	}
-
-	if (mobj) {
-		S_StartSoundAtVolume(mobj, sfx_id, snd_SfxVolume);
-	} else {
-		S_StartSoundAtVolume(mobj, sfx_id, snd_SfxVolume);
-	}
-	
-}
 
 void S_StartSound(mobj_t __near* mobj, sfxenum_t sfx_id) {
 	
 	if (sfx_id == 0) {
 		return;
 	}
-	if (mobj) {
-		S_StartSoundAtVolume(NULL_THINKERREF, sfx_id, snd_SfxVolume);
-	}
-	else {
-		S_StartSoundAtVolume(NULL_THINKERREF, sfx_id, snd_SfxVolume);
-	}
-	
-
-	 
+	S_StartSoundWithPosition(mobj, sfx_id, SECNUM_NULL);
 
 }
-void S_StartSoundWithParams(int16_t x, int16_t y, sfxenum_t sfx_id) {
-	//todo
-	//S_StartSoundAtVolume(NULL_THINKERREF, x, y, sfx_id, snd_SfxVolume);
+
+void S_StartSoundWithParams(int16_t soundorg_secnum, sfxenum_t sfx_id) {
+	if (sfx_id == 0) {
+		return;
+	}
+
+	S_StartSoundWithPosition(NULL_THINKERREF, sfx_id, soundorg_secnum);
 }
 
 //
@@ -549,9 +558,27 @@ void S_UpdateSounds(THINKERREF listenerRef) {
 
 			// check non-local sounds for distance clipping
 			//  or modify their params
-			if (c->originRef && listenerRef != c->originRef) {
+
+			// todo double check this logic once pcm sfx reimplemented...
+			if ((c->originRef && listenerRef != c->originRef) ||(c->soundorg_secnum != SECNUM_NULL)) {
+				fixed_t_union originX;
+				fixed_t_union originY;
+
+				if (c->soundorg_secnum != SECNUM_NULL){
+					originX.h.intbits = sectors_soundorgs[c->soundorg_secnum].soundorgX;
+					originY.h.intbits = sectors_soundorgs[c->soundorg_secnum].soundorgY;
+					originX.h.fracbits = 0;
+					originY.h.fracbits = 0;
+				} else {
+					mobj_pos_t __far* originMobjPos = &mobjposlist_6800[c->originRef];
+					originX = originMobjPos->x;
+					originY = originMobjPos->y;
+				}
+				
+				
 				audible = S_AdjustSoundParams(listenerRef,
-							c->originRef,
+							originX,
+							originY,
 							&volume,
 							&sep,
 							&pitch);

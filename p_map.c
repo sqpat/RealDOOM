@@ -1475,7 +1475,7 @@ boolean	__near PTR_UseTraverse (intercept_t __far* in) {
 #endif
 
  		if (lineopening.opentop < lineopening.openbottom) {
-			S_StartSoundFromRef (playerMobj, sfx_noway);
+			S_StartSound (playerMobj, sfx_noway);
 
 			// can't use through a wall
 			return false;	
