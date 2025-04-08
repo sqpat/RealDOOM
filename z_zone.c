@@ -796,6 +796,7 @@ void __far Z_SetOverlay(int8_t wipeId){
 	switch(wipeId){
 		case OVERLAY_ID_WIPE:
 		case OVERLAY_ID_MUS_LOADER:
+		case OVERLAY_ID_SOUND_INIT:
 			break;
 		case OVERLAY_ID_FINALE:
 			{

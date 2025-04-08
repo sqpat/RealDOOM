@@ -53,7 +53,6 @@ GLOBOBJS = &
  i_sound.obj &
  f_finale.obj &
  d_init.obj &
- s_init.obj &
  d_main.obj &
  d_net.obj &
  g_setup.obj &

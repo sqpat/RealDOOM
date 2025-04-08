@@ -370,8 +370,9 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define OVERLAY_ID_FINALE 2
 #define OVERLAY_ID_SAVELOADGAME 3
 #define OVERLAY_ID_MUS_LOADER 4
+#define OVERLAY_ID_SOUND_INIT 5
 
-#define NUM_OVERLAYS 4
+#define NUM_OVERLAYS 6
 
 
 #define TASK_PHYSICS 0

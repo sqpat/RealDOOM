@@ -445,6 +445,7 @@ void (__far* P_ArchiveThinkers)() = 										  ((void    (__far *)())     					
 void (__far* P_ArchiveSpecials)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveSpecialsOffset)));
 
 void (__far* S_ActuallyChangeMusic)() = 									  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 S_ActuallyChangeMusicOffset)));
+void (__far* LoadSFXWadLumps)() = 							        		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 LoadSFXWadLumpsOffset)));
 
 
 
@@ -1842,7 +1843,7 @@ sfxinfo_t S_sfx[] = {
 };
 */
 
-//todo move these booleans to a bitmap.
+//todo move these to cs section of asm
 uint8_t sfx_priority[] = {
   // S_sfx[0] needs to be a dummy for odd reasons.
   // todo: move this into asm 

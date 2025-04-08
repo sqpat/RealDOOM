@@ -33,6 +33,98 @@ PUBLIC  S_INIT_STARTMARKER_
 ENDP
 
 
+PROC   LoadSFXWadLumps_
+PUBLIC LoadSFXWadLumps_
+
+    push bx
+    push cx
+    push si
+    push di
+
+
+    ; set char 2 for the lump name
+    mov  al, byte ptr ds:[_snd_SfxDevice]
+    cbw
+    xchg ax, bx
+
+    mov al, byte ptr cs:[_snd_prefixen + bx - OFFSET S_INIT_STARTMARKER_]
+    mov byte ptr cs:[_currentnameprefix + 1 - OFFSET S_INIT_STARTMARKER_], al
+
+
+    cmp byte ptr ds:[_snd_SfxDevice], SND_PC
+    jne not_pc_speaker
+
+    ; pc speaker load loop
+
+    ; DI is index
+    ; CX:BX is target address
+
+    mov  di, 1
+
+    mov  bx, PC_SPEAKER_OFFSETS_SEGMENT
+    mov  es, bx
+
+    xor  bx, bx   ;offset
+
+
+    mov  word ptr es:[0], 4   ; fixed first value
+
+    loop_load_sfx:
+
+
+    push es
+
+    mov  ax, di
+    call I_GetSfxLumpNum_
+    mov  si, ax  ; backup lump num
+    
+    db 0FFh  ; lcall[addr]
+    db 01Eh  ;
+    dw _W_LumpLength_addr
+
+    ; ax is lumpdize
+
+    xchg ax, si    ; ax gets lumpnum again. dize to si.
+    mov  cx, PC_SPEAKER_SFX_DATA_SEGMENT
+
+    push bx
+    db 0FFh  ; lcall[addr]
+    db 01Eh  ;
+    dw _W_CacheLumpNumDirect_addr
+    pop  bx
+    pop  es
+
+    add  bx, si
+    sal  di, 1
+
+    lea  ax, [bx + 4]
+    stosw
+    sar  di, 1
+
+
+    cmp  di, NUMSFX
+    jne  loop_load_sfx
+
+    jmp  done_with_sfx_prep
+
+    not_pc_speaker:
+
+    cmp byte ptr ds:[_snd_SfxDevice], SND_SB
+    jne not_soundblaster
+    ; todo any others? to check?
+
+
+    not_soundblaster:
+    done_with_sfx_prep:
+    pop  di
+    pop  si
+    pop  cx
+    pop  bx
+
+    retf
+
+ENDP
+
 _currentnameprefix:
 db 'd', 'p'
 
@@ -168,7 +260,7 @@ db 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S', 'S', 'S'
 ;}
 
 
-PROC   I_GetSfxLumpNum_
+PROC   I_GetSfxLumpNum_ NEAR
 PUBLIC I_GetSfxLumpNum_
 
     push si
@@ -184,7 +276,7 @@ PUBLIC I_GetSfxLumpNum_
     pop  es
     push cs
     pop  ds
-    mov si, OFFSET _currentnameprefix
+    mov si, OFFSET _currentnameprefix - OFFSET S_INIT_STARTMARKER_
     mov di, _filename_argument
 
     ; copy 'd' and prefix
@@ -225,97 +317,7 @@ ENDP
 
 
 
-PROC   LoadSFXWadLumps_
-PUBLIC LoadSFXWadLumps_
 
-    push bx
-    push cx
-    push si
-    push di
-
-
-    ; set char 2 for the lump name
-    mov  al, byte ptr ds:[_snd_SfxDevice]
-    cbw
-    xchg ax, bx
-
-    mov al, byte ptr cs:[_snd_prefixen + bx]
-    mov byte ptr cs:[_currentnameprefix + 1], al
-
-
-    cmp byte ptr ds:[_snd_SfxDevice], SND_PC
-    jne not_pc_speaker
-
-    ; pc speaker load loop
-
-    ; DI is index
-    ; CX:BX is target address
-
-    mov  di, 1
-
-    mov  bx, PC_SPEAKER_OFFSETS_SEGMENT
-    mov  es, bx
-
-    xor  bx, bx   ;offset
-
-
-    mov  word ptr es:[0], 4   ; fixed first value
-
-    loop_load_sfx:
-
-
-    push es
-
-    mov  ax, di
-    call I_GetSfxLumpNum_
-    mov  si, ax  ; backup lump num
-    
-    db 0FFh  ; lcall[addr]
-    db 01Eh  ;
-    dw _W_LumpLength_addr
-
-    ; ax is lumpdize
-
-    xchg ax, si    ; ax gets lumpnum again. dize to si.
-    mov  cx, PC_SPEAKER_SFX_DATA_SEGMENT
-
-    push bx
-    db 0FFh  ; lcall[addr]
-    db 01Eh  ;
-    dw _W_CacheLumpNumDirect_addr
-    pop  bx
-    pop  es
-
-    add  bx, si
-    sal  di, 1
-
-    lea  ax, [bx + 4]
-    stosw
-    sar  di, 1
-
-
-    cmp  di, NUMSFX
-    jne  loop_load_sfx
-
-    jmp  done_with_sfx_prep
-
-    not_pc_speaker:
-
-    cmp byte ptr ds:[_snd_SfxDevice], SND_SB
-    jne not_soundblaster
-    ; todo any others? to check?
-
-
-    not_soundblaster:
-    done_with_sfx_prep:
-    pop  di
-    pop  si
-    pop  cx
-    pop  bx
-
-    ret
-
-ENDP
 
 
 ;	if (snd_SfxDevice == snd_PC){

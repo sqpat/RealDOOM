@@ -604,6 +604,7 @@ extern void                 (__far* P_ArchiveThinkers)();
 extern void                 (__far* P_ArchiveSpecials)();
 
 extern void                 (__far* S_ActuallyChangeMusic)();
+extern void 				(__far* LoadSFXWadLumps)();
 
 
 extern int16_t              currentlumpindex;

@@ -305,7 +305,6 @@ void __near HU_Init(void){
 }
 
 void 	I_SetSFXPrefix();
-void    LoadSFXWadLumps();
 
 // todo: near breaks this.
 int16_t   I_GetSfxLumpNum(sfxenum_t sfx);
@@ -324,85 +323,11 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 	mus_paused = 0;
 
 
-	/*
-
-  int16_t		i;
-  channel_t* channels;
-
-
-  // Whatever these did with DMX, these are rather dummies now.
-  I_SetChannels(numChannels);
-
-  // No music with Linux - another dummy.
-
-  // Allocating the internal channels for mixing
-  // (the maximum numer of sounds rendered
-  // simultaneously) within zone memory.
-  channelsRef =  Z_MallocEMS (numChannels*sizeof(channel_t), PU_STATIC, 0);
-  channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
-
-  // Free all channels for use
-  for (i=0 ; i<numChannels ; i++)
-	channels[i].sfxinfo = 0;
-
-  // no sounds are playing, and they are not mus_paused
-  mus_paused = 0;
-
-  // Note that sounds have not been cached (yet).
-  for (i=1 ; i<NUMSFX ; i++)
-	S_sfx[i].lumpnum = S_sfx[i].usefulness = -1;
-
-  */
-
-
- 	// IF PC SPEAKER THEN LOAD ALL SFX.
-
-	// todo also set lumps in that data field...
-	// but they arent necessary for pc speaker!
-	// so for PCM sfx store them in-driver
-
-
+	// load sound setup code into overlay
+	Z_SetOverlay(OVERLAY_ID_SOUND_INIT);
 	LoadSFXWadLumps();
-	// {
-    //     // uint16_t *__far pc_speaker_offsets = (uint16_t *__far)(MK_FP(PC_SPEAKER_OFFSETS_SEGMENT, 0));
-
-	// I_Error("%x",
-	// 	pc_speaker_offsets[0]
-	// 	pc_speaker_offsets[1],
-	// 	pc_speaker_offsets[2],
-	// 	pc_speaker_offsets[3],
-	// 	pc_speaker_offsets[4],
-	// 	pc_speaker_offsets[5],
-	// 	pc_speaker_offsets[6],
-	// 	pc_speaker_offsets[7]
-	// );
-	// }
-
-	/*
-	I_SetSFXPrefix();
-
-	// todo: pcm specific stuff
-
-	if (snd_SfxDevice == snd_PC){
-		// todo move this to an overlay?
-		uint16_t currentoffset = 0;
-		sfxenum_t i = 0;
-		pc_speaker_offsets[i] = 4;
 
 
-		for (i=1 ; i < NUMSFX ; i++){
-			int16_t lumpnum = I_GetSfxLumpNum(i);
-			int16_t lumpsize = W_LumpLength(lumpnum);
-			W_CacheLumpNumDirect(lumpnum, MK_FP(PC_SPEAKER_SFX_DATA_SEGMENT, currentoffset));
-			
-			// todo can preprocess the sfx here.
-
-			currentoffset += lumpsize;
-			pc_speaker_offsets[i] = currentoffset+4;
-		}
-
-	}
-	*/
 
 }
 
