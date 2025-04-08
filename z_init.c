@@ -408,7 +408,6 @@ void __far I_FinishUpdate(void);
 
 void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
-boolean __far P_CheckSight (  mobj_t __near* t1, mobj_t __near* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
  
 void __near Z_LoadBinaries() {
 	FILE* fp2;

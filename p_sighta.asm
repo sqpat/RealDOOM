@@ -38,9 +38,10 @@ EXTRN _strace:DWORD
 
 ; boolean __far P_CheckSight (  mobj_t __near* t1, mobj_t __near* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos ) {
 
-; todo change to near segments
-
-REJECTMATRIX_SEGMENT = 05C00h
+; ax = t1 (near ptr)
+; dx = t2 (near ptr)
+; bx = t1_pos (far offset)
+; cx = t2_pos (far offset)
 
 PROC    P_CheckSight_
 PUBLIC  P_CheckSight_
@@ -53,8 +54,9 @@ push cx			; bp - 2	; todo unused
 push ax			; bp - 4
 push dx			; bp - 6
 sub   sp, 08h
-mov   si, cx
+mov   si, cx    ; si gets t2_pos
 
+; todo clean up this di shuffling
 xchg  ax, cx
 mov   di, dx
 mov   ax, word ptr [di + 4]
@@ -91,20 +93,19 @@ xor   al, al
 LEAVE_MACRO
 pop   di
 pop   si
-retf  4
+retf 
 
 not_in_reject_table:
 inc   word ptr ds:[_validcount]
 
-; carry cx arg in si from above...
-; note: ES as segment is same for either position. all far mobjpos ptrs will be the same segment...
-mov   es, si
 
-mov   si, word ptr [bp + 0Ah]
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
 
-mov   ax, word ptr es:[bx + 8]
 mov   di, word ptr [bp - 4]
+mov   ax, word ptr es:[bx + 8]
 mov   word ptr [bp - 0Ah], ax
+
 mov   ax, word ptr [di + 0Ah]
 mov   dx, word ptr es:[bx + 0Ah]
 add   word ptr [bp - 0Ah], ax
@@ -185,7 +186,10 @@ call  P_CrossBSPNode_
 LEAVE_MACRO
 pop   di
 pop   si
-retf  4
+retf 
 
 ENDP
+
+
+
 END

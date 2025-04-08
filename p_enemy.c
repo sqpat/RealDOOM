@@ -19,6 +19,7 @@
 //
 
 #include <stdlib.h>
+#include <i86.h>
 
 #include "m_misc.h"
 #include "i_system.h"
@@ -231,10 +232,6 @@ boolean __near P_CheckMeleeRange (mobj_t __near* actor){
 	fixed_t actorX, actorY;
 	int16_t plradius;
 	
-#ifdef MOVE_P_SIGHT
-	//todoaddr inline later
-	boolean (__far  * P_CheckSight)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
-#endif
 	
     if (!actor->targetRef)
 		return false;
@@ -254,7 +251,7 @@ boolean __near P_CheckMeleeRange (mobj_t __near* actor){
 	plradius += (MELEERANGE - 20);
     if (dist.h.intbits >= plradius)
 		return false;
-    if (! P_CheckSight (actor, pl, actor_pos, pl_pos) )
+    if (! P_CheckSight (actor, pl, FP_OFF(actor_pos), FP_OFF(pl_pos)) )
 		return false;
 							
     return true;		
@@ -272,16 +269,13 @@ boolean __near P_CheckMissileRange (mobj_t __near* actor){
 	fixed_t_union actorTargety;
 	mobj_pos_t __far*	actor_pos;
 	//todoaddr inline later
-#ifdef MOVE_P_SIGHT
-	boolean (__far  * P_CheckSight)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
-#endif
 	statenum_t (__far  * getMeleeState)(uint8_t) = getMeleeStateAddr;
 
 	actorTarget = (mobj_t __near*)(&thinkerlist[actor->targetRef].data);
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 	actorTarget_pos = GET_MOBJPOS_FROM_MOBJ(actorTarget);
 
-	if (!P_CheckSight(actor, actorTarget, actor_pos, actorTarget_pos)) {
+	if (!P_CheckSight(actor, actorTarget, FP_OFF(actor_pos), FP_OFF(actorTarget_pos))) {
 
 		return false;
 	}
@@ -640,15 +634,12 @@ boolean __near P_LookForPlayers (mobj_t __near*	actor, boolean	allaround ) {
     fixed_t_union	dist;
 	mobj_pos_t __far* actor_pos;
 	//todoaddr inline later
-#ifdef MOVE_P_SIGHT
-	boolean (__far  * P_CheckSight)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
-#endif
 
  	if (player.health <= 0)
 		return false;		// dead
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 
-	if (!P_CheckSight(actor, playerMobj, actor_pos, playerMobj_pos)) {
+	if (!P_CheckSight(actor, playerMobj, FP_OFF(actor_pos), FP_OFF(playerMobj_pos))) {
 
 		return false;		// out of sight
 	}
@@ -712,9 +703,7 @@ void __near A_Look (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 	int16_t actorsecnum = actor->secnum;
 	//todoaddr inline later
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
-#ifdef MOVE_P_SIGHT
-	boolean (__far  * P_CheckSight)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
-#endif
+
 	actor->threshold = 0;	// any shot will wake up
 
 
@@ -739,7 +728,7 @@ void __near A_Look (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 			if (actor_pos->flags1 & MF_AMBUSH)
 			{
 				
-				if (P_CheckSight(actor, targ, actor_pos, targ_pos)) {
+				if (P_CheckSight(actor, targ, FP_OFF(actor_pos), FP_OFF(targ_pos))) {
 					goto seeyou;
 				}
 			}
@@ -1053,9 +1042,6 @@ void __near A_CPosRefire (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 	THINKERREF actortargetRef;
 	//todoaddr inline later
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
-#ifdef MOVE_P_SIGHT
-	boolean (__far  * P_CheckSight)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
-#endif
 
 	A_FaceTarget (actor);
 	
@@ -1067,7 +1053,7 @@ void __near A_CPosRefire (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 		return;
 
 	actorTarget = (mobj_t __near*)(&thinkerlist[actortargetRef].data);
-    if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actor, actorTarget, actor_pos, GET_MOBJPOS_FROM_MOBJ(actorTarget))) {
+    if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actor, actorTarget, FP_OFF(actor_pos), FP_OFF(GET_MOBJPOS_FROM_MOBJ(actorTarget)))) {
 
 		P_SetMobjState (actor, getSeeState(actor->type));
     }
@@ -1080,9 +1066,6 @@ void __near A_SpidRefire (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 	THINKERREF 	actortargetRef;
 	//todoaddr inline later
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
-#ifdef MOVE_P_SIGHT
-	boolean (__far  * P_CheckSight)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
-#endif
 	A_FaceTarget (actor);
 
 	actortargetRef = actor->targetRef;
@@ -1097,7 +1080,7 @@ void __near A_SpidRefire (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 
 	actorTarget = (mobj_t __near*)(&thinkerlist[actortargetRef].data);
 
-    if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actor, actorTarget, actor_pos, GET_MOBJPOS_FROM_MOBJ(actorTarget))) {
+    if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actor, actorTarget, FP_OFF(actor_pos), FP_OFF(GET_MOBJPOS_FROM_MOBJ(actorTarget)))) {
 		P_SetMobjState (actor, getSeeState(actor->type));
     }
 }
@@ -1560,9 +1543,6 @@ void __near A_Fire (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 	mobj_t __near* dest;
 	mobj_pos_t __far* dest_pos;
 	//todoaddr inline later
-#ifdef MOVE_P_SIGHT
-	boolean (__far  * P_CheckSight)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
-#endif
 
 
     destRef = actor->tracerRef;
@@ -1573,7 +1553,7 @@ void __near A_Fire (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
     // don't move it if the vile lost sight
 	dest = (mobj_t __near*)(&thinkerlist[destRef].data);
 	dest_pos = &mobjposlist_6800[destRef];
-	if (!P_CheckSight ((&thinkerlist[actor->targetRef].data), dest, &mobjposlist_6800[actor->targetRef], dest_pos) ){
+	if (!P_CheckSight ((&thinkerlist[actor->targetRef].data), dest, FP_OFF(&mobjposlist_6800[actor->targetRef]), FP_OFF(dest_pos)) ){
 		return;
 	}
 
@@ -1670,9 +1650,6 @@ void __near A_VileAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 	mobj_pos_t __far* actorTarget_pos;
 	mobj_pos_t __far* fire_pos;
 	//todoaddr inline later
-#ifdef MOVE_P_SIGHT
-	boolean (__far  * P_CheckSight)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
-#endif
 
 	if (!actor->targetRef)
 		return;
@@ -1680,7 +1657,7 @@ void __near A_VileAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 
     A_FaceTarget (actor);
 	actorTarget = (mobj_t __near*)(&thinkerlist[actor->targetRef].data);
-	if (!P_CheckSight(actor, actorTarget, actor_pos, actorTarget_pos)){
+	if (!P_CheckSight(actor, actorTarget, FP_OFF(actor_pos), FP_OFF(actorTarget_pos))){
 		return;
 	}
 	S_StartSound (actor, sfx_barexp);

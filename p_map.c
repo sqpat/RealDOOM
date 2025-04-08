@@ -18,6 +18,7 @@
 //
 
 #include <stdlib.h>
+#include <i86.h>
 
 #include "m_misc.h"
 #include "i_system.h"
@@ -1535,9 +1536,6 @@ boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __near*	thing, mobj
     fixed_t	dy;
     fixed_t_union	dist;
 	//todoaddr inline later
-#ifdef MOVE_P_SIGHT
-	boolean (__far  * P_CheckSight)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
-#endif
 
 	
 	if (!(thing_pos->flags1 & MF_SHOOTABLE)) {
@@ -1564,7 +1562,7 @@ boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __near*	thing, mobj
 		return true;	// out of range
 	}
 
-    if ( P_CheckSight (thing, bombspot, thing_pos, bombspot_pos) ) {
+    if ( P_CheckSight (thing, bombspot, FP_OFF(thing_pos), FP_OFF(bombspot_pos)) ) {
 		// must be in direct path
 		P_DamageMobj (thing, bombspot, bombsource, bombdamage - dist.h.intbits);
     }
