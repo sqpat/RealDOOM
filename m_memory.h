@@ -523,7 +523,7 @@ FREEBYTES           7EE0:0000
 // 0x6800 BLOCK PHYSICS
 
 // begin stuff that is paged out in sprite code
-// this is used boht in physics and part of render code
+// this is used both in physics and part of render code
 
 
 #define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t))

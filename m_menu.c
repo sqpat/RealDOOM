@@ -865,9 +865,9 @@ int16_t __near M_StringWidth(int8_t __far* string) {
     
     for (i = 0;i < len;i++) {
         int16_t c = locallib_toupper(string[i]) - HU_FONTSTART;
-        if (c < 0 || c >= HU_FONTSIZE)
+        if (c < 0 || c >= HU_FONTSIZE){
             w += 4;
-        else {
+        } else {
             w += font_widths[c];
         }
     }
@@ -885,9 +885,11 @@ int16_t __near M_StringHeight(int8_t __far* string){
     int16_t             h = HU_FONT_SIZE;
      
         
-     for (i = 0;i < locallib_strlen(string);i++)
-        if (string[i] == '\n')
+     for (i = 0;i < locallib_strlen(string);i++){
+        if (string[i] == '\n') {
             h += HU_FONT_SIZE;
+        }
+     }
                 
     return h;
 }

@@ -1399,8 +1399,6 @@ extern int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 extern uint16_t pcspeaker_currentoffset;
 extern uint16_t pcspeaker_endoffset;
 
-extern int16_t soundOrgX;
-extern int16_t soundOrgY;
 
 
 #endif

@@ -1908,8 +1908,6 @@ int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 uint16_t pcspeaker_currentoffset;	// if nonzero then playing from that offset. cant be zero anyway because thats part of the header of the first sfx.
 uint16_t pcspeaker_endoffset;
 
-int16_t soundOrgX;
-int16_t soundOrgY;
 
 
 

@@ -349,11 +349,11 @@ void __near I_StartTic(void) {
 // I_TimerISR
 //
 void	resetDS();
-void I_TimerISR(void) {
-	//resetDS();
-    ticcount++;
-    return ;
-}
+// void I_TimerISR(void) {
+// 	//resetDS();
+//     ticcount++;
+//     return ;
+// }
 
 //
 // Keyboard

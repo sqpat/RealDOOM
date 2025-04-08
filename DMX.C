@@ -44,7 +44,7 @@ void TS_SetTimerToMaxTaskRate(void){
 }
 
 void	resetDS();
-void I_TimerISR(void);
+// void I_TimerISR(void);
 void MUS_ServiceRoutine(void);
 
 //todo move this where it needs to go.
@@ -103,7 +103,8 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 			// every 4 tics
 			if (HeadTask.count >= HZ_INTERRUPTS_PER_TICK) {
 				HeadTask.count -= HZ_INTERRUPTS_PER_TICK;
-				I_TimerISR();
+				// I_TimerISR();
+			    ticcount++;
 			}
 		}
 		if (MUSTask.active) {

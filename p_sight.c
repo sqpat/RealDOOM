@@ -99,26 +99,28 @@ int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __nea
     fixed_t	left;
     fixed_t	right;
 
-    if (!node->dx.w)
-    {
-	if (x.w==node->x.w)
-	    return 2;
-	
-	if (x.w <= node->x.w)
-	    return node->dy.w > 0;
+    if (!node->dx.w) {
+		if (x.w==node->x.w){
+			return 2;
+		}
+		
+		if (x.w <= node->x.w){
+			return node->dy.w > 0;
+		}
 
-	return node->dy.w < 0;
+		return node->dy.w < 0;
     }
     
-    if (!node->dy.w)
-    {
-	if (x.w==node->y.w)
-	    return 2;
+    if (!node->dy.w) {
+		if (x.w==node->y.w){
+			return 2;
+		}
 
-	if (y.w <= node->y.w)
-	    return node->dx.w < 0;
+		if (y.w <= node->y.w){
+			return node->dx.w < 0;
+		}
 
-	return node->dx.w > 0;
+		return node->dx.w > 0;
     }
 	
     dx.w = (x.w - node->x.w);
@@ -127,11 +129,13 @@ int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __nea
     left = FastMul1616(node->dy.h.intbits,dx.h.intbits);
     right = FastMul1616(dy.h.intbits,node->dx.h.intbits);
 	
-    if (right < left)
+    if (right < left){
 		return 0;	// front side
+	}
     
-    if (left == right)
+    if (left == right){
 		return 2;
+	}
 
     return 1;		// back side
 }
@@ -147,22 +151,26 @@ int16_t  __near P_DivlineSide16 ( int16_t	x, int16_t	y, divline_t __near*	node )
 
     if (!node->dx.w) {
 		temp.w = node->x.w;
-		if (x==temp.h.intbits)
+		if (x==temp.h.intbits){
 			return 2;
+		}
 		
-		if (x <= temp.h.intbits)
+		if (x <= temp.h.intbits){
 			return node->dy.w > 0;
+		}
 
 		return node->dy.w < 0;
     }
     
     if (!node->dy.w) {
 		temp.w = node->y.w;
-		if (x==temp.h.intbits)
+		if (x==temp.h.intbits){
 			return 2;
+		}
 
-		if (y <= temp.h.intbits)
+		if (y <= temp.h.intbits){
 			return node->dx.w < 0;
+		}
 
 		return node->dx.w > 0;
     }
@@ -178,11 +186,12 @@ int16_t  __near P_DivlineSide16 ( int16_t	x, int16_t	y, divline_t __near*	node )
 	temp.w = node->dx.w;
     right = FastMul1616(dy.h.intbits,temp.h.intbits);
 	
-    if (right < left)
+    if (right < left){
 		return 0;	// front side
-    
-    if (left == right)
+	}
+    if (left == right){
 		return 2;
+	}
     return 1;		// back side
 }
 
@@ -201,11 +210,13 @@ int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, uint16_t no
 		temp.h.intbits = node->x;
 		temp.h.fracbits = 0;
 
-		if (x.w==temp.w)
+		if (x.w==temp.w){
 			return 2;
+		}
 		
-		if (x.w <= temp.w)
+		if (x.w <= temp.w){
 			return node->dy > 0;
+		}
 
 		return node->dy < 0;
     }
@@ -214,10 +225,12 @@ int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, uint16_t no
 		temp.h.intbits = node->y;
 		temp.h.fracbits = 0;
 
-		if (x.w==temp.w)
+		if (x.w==temp.w){
 			return 2;
-		if (y.w <= temp.w)
+		}
+		if (y.w <= temp.w){
 			return node->dx < 0;
+		}
 
 		return node->dx > 0;
     }
@@ -232,11 +245,13 @@ int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, uint16_t no
     left =  FastMul1616(node->dy, dx.h.intbits);
     right = FastMul1616(dy.h.intbits, node->dx);
 
-	if (right < left)
+	if (right < left){
 		return 0;	// front side
+	}
     
-    if (left == right)
+    if (left == right){
 		return 2;
+	}
     return 1;		// back side
 }
 
@@ -294,8 +309,9 @@ fixed_t __near P_InterceptVector2 (divline_t __near* v2, divline_t __near*	v1 ) 
 	
     den = FixedMul2432 (v1->dy.w,v2->dx.w) - FixedMul2432(v1->dx.w,v2->dy.w);
 
-    if (den == 0)
+    if (den == 0){
 		return 0;
+	}
     
     num = FixedMul2432 ( (v1->x.w - v2->x.w) ,v1->dy.w) + 
 		  FixedMul2432 ( (v2->y.w - v1->y.w) , v1->dx.w);
@@ -367,8 +383,9 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 		s2 = P_DivlineSide16 (v2.x, v2.y, &strace);
 
 		// line isn't crossed?
-		if (s1 == s2)
+		if (s1 == s2){
 			continue;
+		}
 		
 		divl.x.h.fracbits = 0;
 		divl.y.h.fracbits = 0;
@@ -387,8 +404,9 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 
 
 		// line isn't crossed?
-		if (s1 == s2)
-			continue;	
+		if (s1 == s2){
+			continue;
+		}	
 		
 
 		// stop because it is not two sided anyway
@@ -423,21 +441,21 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 
 		// possible occluder
 		// because of ceiling height differences
-		if (frontsector_local->ceilingheight < backsector_local->ceilingheight)
+		if (frontsector_local->ceilingheight < backsector_local->ceilingheight){
 			opentop = frontsector_local->ceilingheight;
-		else
+		} else {
 			opentop = backsector_local->ceilingheight;
+		}
 
 		// because of ceiling height differences
-		if (frontsector_local->floorheight > backsector_local->floorheight)
+		if (frontsector_local->floorheight > backsector_local->floorheight){
 			openbottom = frontsector_local->floorheight;
-		else
+		} else {
 			openbottom = backsector_local->floorheight;
+		}
 		
 		// quick test for totally closed doors
 		if (openbottom >= opentop) {
-
-
 			return false;		// stop
 		}
 	
@@ -448,20 +466,21 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 		 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  openbottom);
 			slope = FixedDiv (temp.w - sightzstart , frac);
-			if (slope > bottomslope)
+			if (slope > bottomslope){
 				bottomslope = slope;
+			}
 		}
 		
 		if (frontsector_local->ceilingheight != backsector_local->ceilingheight) {
 		 	// temp.h.intbits = opentop >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  opentop);
 			slope = FixedDiv (temp.w - sightzstart , frac);
-			if (slope < topslope)
+			if (slope < topslope){
 				topslope = slope;
+			}
 		}
 		
 		if (topslope <= bottomslope) {
-
 			return false;		// stop				
 		}
     }
