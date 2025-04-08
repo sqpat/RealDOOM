@@ -1496,7 +1496,7 @@ compositetextureoffset  4F80:01AC
 
 
 #define pc_speaker_offsets        ((uint16_t __far*)          MAKE_FULL_SEGMENT(PC_SPEAKER_OFFSETS_SEGMENT << 16,           0)) 
-#define pc_speaker_data           ((byte __far*)              MAKE_FULL_SEGMENT(PC_SPEAKER_SFX_DATA_SEGMENT << 16,          0)) 
+#define pc_speaker_data           ((uint16_t __far*)              MAKE_FULL_SEGMENT(PC_SPEAKER_SFX_DATA_SEGMENT << 16,          0)) 
 
  
 

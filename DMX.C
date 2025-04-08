@@ -49,28 +49,10 @@ void MUS_ServiceRoutine(void);
 
 //todo move this where it needs to go.
 
-uint16_t pc_speaker_freq_table[128] = {
-	   0, 6818, 6628, 6449, 6279, 6087, 5906, 5736, 
-	5575, 5423, 5279, 5120, 4971, 4830, 4697, 4554, 
-	4435, 4307, 4186, 4058, 3950, 3836, 3728, 3615, 
-	3519, 3418, 3323, 3224, 3131, 3043, 2960, 2875, 
-	2794, 2711, 2633, 2560, 2485, 2415, 2348, 2281, 
-	2213, 2153, 2089, 2032, 1975, 1918, 1864, 1810, 
-	1757, 1709, 1659, 1612, 1565, 1521, 1478, 1435, 
-	1395, 1355, 1316, 1280, 1242, 1207, 1173, 1140, 
-	1107, 1075, 1045, 1015,  986,  959,  931,  905, 
-	 879,  854,  829,  806,  783,  760,  739,  718, 
-	 697,  677,  658,  640,  621,  604,  586,  570,
-     553,  538,  522,  507,  493,  479,  465,  452, 
-	 439,  427,  415,  403,  391,  380,  369,  359, 
-	 348,  339,  329,  319,  310,  302,  293,  285,
-     276,  269,  261,  253,  246,  239,  232,  226, 
-     219,  213,  207,  201,  195,  190,  184,  179
 
-	};
 
-void playpcspeakernote(uint8_t samplebyte){
-	uint16_t value = pc_speaker_freq_table[samplebyte];
+void playpcspeakernote(uint16_t value){
+	
 
 	if (value){
 		uint8_t status = inp(0x61);
@@ -132,16 +114,18 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 		// pc speaker sfx support goes in here for now.
 		if (pcspeaker_currentoffset){
 			// send next sample
-			byte __far* data = MK_FP(PC_SPEAKER_SFX_DATA_SEGMENT, pcspeaker_currentoffset);
-			playpcspeakernote(*data);
+
+			_disable();
+			playpcspeakernote(*((uint16_t __far*)MK_FP(PC_SPEAKER_SFX_DATA_SEGMENT, pcspeaker_currentoffset)));
 			
-			pcspeaker_currentoffset++;
-			if (pcspeaker_currentoffset == pcspeaker_endoffset){
+			pcspeaker_currentoffset+=2;
+			if (pcspeaker_currentoffset >= pcspeaker_endoffset){
 				pcspeaker_currentoffset = 0;
-				// ? turn off speaker?				
+				// ? turn off speaker? todo should this be on next frame?
 				outp(0x61, inp(0x61) & 0xFC);
 
 			}
+			_enable();
 		}
 		
 		TS_TimesInInterrupt--;

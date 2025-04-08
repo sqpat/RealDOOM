@@ -23,7 +23,7 @@ INSTRUCTION_SET_MACRO
 ;=================================
 .DATA
 
-
+PC_SPEAKER_SFX_DATA_TEMP_SEGMENT = 0D7E0h
 
 .CODE
 
@@ -32,6 +32,7 @@ PROC  S_INIT_STARTMARKER_
 PUBLIC  S_INIT_STARTMARKER_
 ENDP
 
+; todo rewrite with offsets instead of segments
 
 PROC   LoadSFXWadLumps_
 PUBLIC LoadSFXWadLumps_
@@ -64,15 +65,15 @@ PUBLIC LoadSFXWadLumps_
     mov  bx, PC_SPEAKER_OFFSETS_SEGMENT
     mov  es, bx
 
-    xor  bx, bx   ;offset
+    mov  bx, 2   ;lets start at offset 2
 
 
-    mov  word ptr es:[0], 4   ; fixed first value
+    mov  word ptr es:[0], bx   ; fixed first value
 
     loop_load_sfx:
 
 
-    push es
+    push es ; store PC_SPEAKER_OFFSETS_SEGMENT
 
     mov  ax, di
     call I_GetSfxLumpNum_
@@ -84,20 +85,49 @@ PUBLIC LoadSFXWadLumps_
 
     ; ax is lumpdize
 
-    xchg ax, si    ; ax gets lumpnum again. dize to si.
-    mov  cx, PC_SPEAKER_SFX_DATA_SEGMENT
-
-    push bx
+    xchg ax, si    ; ax gets lumpnum again. size to si.
+    mov  cx, PC_SPEAKER_SFX_DATA_TEMP_SEGMENT   ; load the data into a temp spot...
+    push cx ; store this
+    push bx ; store current pointer
+    xor  bx, bx ; load into offset 0
     db 0FFh  ; lcall[addr]
     db 01Eh  ;
     dw _W_CacheLumpNumDirect_addr
     pop  bx
-    pop  es
+    pop  ds   ; ds gets PC_SPEAKER_SFX_DATA_TEMP_SEGMENT
+    
+    mov  ax, PC_SPEAKER_SFX_DATA_SEGMENT
+    mov  es, ax
 
-    add  bx, si
+    ; si has size
+
+    push di   ; back this up
+    mov  di, bx
+
+    lea  cx, [si - 4]   ; cx gets length - 4 (skip first 4 bytes)
+    mov  si, 4    ; skip first 4 bytes...
+
+    prep_next_sample:
+        xor  ax, ax   ; zero ah
+        lodsb         ; get sample
+        mov  bx, ax
+        sal  bx, 1
+        mov  ax, cs:[bx + OFFSET _pc_speaker_freq_table - OFFSET S_INIT_STARTMARKER_]
+        stosw
+        loop prep_next_sample
+
+    push ss
+    pop  ds
+
+    mov  bx, di  ; bx restored. has been incremented meanwhile...
+    xchg ax, di  ; grab this into ax
+    pop  di  ; di restored
+
+
+    pop  es  ; PC_SPEAKER_OFFSETS_SEGMENT
+
+    ; store ptr
     sal  di, 1
-
-    lea  ax, [bx + 4]
     stosw
     sar  di, 1
 
@@ -243,6 +273,24 @@ _songnamelist:
 _snd_prefixen:
 db 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S', 'S', 'S'
 
+_pc_speaker_freq_table:
+
+dw	   0, 6818, 6628, 6449, 6279, 6087, 5906, 5736
+dw	5575, 5423, 5279, 5120, 4971, 4830, 4697, 4554
+dw	4435, 4307, 4186, 4058, 3950, 3836, 3728, 3615
+dw	3519, 3418, 3323, 3224, 3131, 3043, 2960, 2875
+dw	2794, 2711, 2633, 2560, 2485, 2415, 2348, 2281
+dw	2213, 2153, 2089, 2032, 1975, 1918, 1864, 1810
+dw	1757, 1709, 1659, 1612, 1565, 1521, 1478, 1435
+dw	1395, 1355, 1316, 1280, 1242, 1207, 1173, 1140
+dw	1107, 1075, 1045, 1015, 986,  959,  931,  905
+dw  879,  854,  829,  806,  783,  760,  739,  718
+dw  697,  677,  658,  640,  621,  604,  586,  570
+dw  553,  538,  522,  507,  493,  479,  465,  452
+dw  439,  427,  415,  403,  391,  380,  369,  359
+dw  348,  339,  329,  319,  310,  302,  293,  285
+dw  276,  269,  261,  253,  246,  239,  232,  226
+dw  219,  213,  207,  201,  195,  190,  184,  179
 
 
 ;int16_t I_GetSfxLumpNum(sfxenum_t sfx_id) {

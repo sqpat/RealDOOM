@@ -43,5 +43,5 @@
 #define FinaleCodeSize                 0xB52
 #define SaveLoadCodeSize               0xB04
 #define SMLoadCodeSize                 0x49E
-#define SInitCodeSize                  0x325
+#define SInitCodeSize                  0x446
 #define MaximumMusDriverSize           0x100D
