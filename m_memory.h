@@ -757,6 +757,8 @@ mobjposlist           6B14:0000  // 6AFC?? todo
 
 #define rejectmatrix         ((byte __far *)      MAKE_FULL_SEGMENT(0x5C000000, 0))
 
+#define rejectmatrix_segment ((segment_t) ((int32_t)rejectmatrix >> 16))
+
 
 /*
 rejectmatrix       5C00:0000

@@ -1980,6 +1980,7 @@ SND_CODEC = 0Bh
 NUM_SCARDS = 0Ch
 PC_SPEAKER_SFX_DATA_SEGMENT = 0D500h
 PC_SPEAKER_OFFSETS_SEGMENT = 0D4F0h
+REJECTMATRIX_SEGMENT = 05C00h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h

@@ -121,7 +121,7 @@ PUBLIC LoadSFXWadLumps_
 
     mov  bx, di  ; bx restored. has been incremented meanwhile...
     xchg ax, di  ; grab this into ax
-    pop  di  ; di restored
+    pop  di      ; di restored
 
 
     pop  es  ; PC_SPEAKER_OFFSETS_SEGMENT

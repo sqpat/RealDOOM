@@ -11,11 +11,7 @@ libpath %WATCOM%\lib286\dos
 format dos
 name doomout
 
-#file p_setup.obj
-#NEWSEGMENT
-#file p_sight.obj
-#NEWSEGMENT
-
+ 
 file m_near.obj
 file d_init.obj
 file st_init.obj
@@ -101,6 +97,7 @@ file d_math.obj
 NEWSEGMENT
 file p_setup.obj
 file p_sight.obj
+file p_sighta.obj
 
 
 # here we move _DATA before CONST and CONST2.

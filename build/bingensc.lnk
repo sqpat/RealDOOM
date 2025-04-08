@@ -111,3 +111,4 @@ file d_math.obj
 NEWSEGMENT
 file p_setup.obj
 file p_sight.obj
+file p_sighta.obj

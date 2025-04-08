@@ -721,6 +721,7 @@ void check_is_ultimate(){
 void __far wipe_WipeLoop();
 void __far I_ReadScreen();
 uint16_t   __far  R_CheckTextureNumForName(int8_t *name);
+int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) ;
 
 void __far D_DoomMain2(void) {
 	int16_t             p;
@@ -734,14 +735,14 @@ void __far D_DoomMain2(void) {
 	#define DGROUP_SIZE 0x3660
 	struct SREGS sregs;
 
-/*
+	/*
+
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(SM_OPL_STARTMARKER, (byte __far *)SM_OPL_ENDMARKER - (byte __far *)SM_OPL_STARTMARKER, 1, fp);
+	FAR_fwrite(P_CheckSight, (byte __far *)P_DivlineSide - (byte __far *)P_CheckSight, 1, fp);
 	fclose(fp);
 	exit(0);
-	*/
+	
 
-	/*
 
 
 	fixed_t_union x, y;

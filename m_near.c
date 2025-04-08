@@ -1314,6 +1314,19 @@ lineopening_t __far*	lineopenings;
 
 // these are prepared for calls to outsw with autoincrementing ems register on
 
+// npr usage:
+// 4xxx: phys
+// 5xxx: phys
+// 6000, 6400 phys 6800, 6c00: menu
+// 7xxx: phys
+// 8xxx: phys
+// 9000, 9400, 9800: ???   9c00: screen4
+
+// 9000: segs physics?
+// 9400: lumpinfo?
+// 9800: lumpinfo?
+// investigate putting status in 9000-9c00 using some conventional pages?
+
 uint16_t pageswapargs[total_pages] = {
 	_NPR(PAGE_4000_OFFSET),	 _NPR(PAGE_4400_OFFSET),	 _NPR(PAGE_4800_OFFSET),	 _NPR(PAGE_4C00_OFFSET),	
 	_NPR(PAGE_5000_OFFSET),  _NPR(PAGE_5400_OFFSET),	 _NPR(PAGE_5800_OFFSET),	 _NPR(PAGE_5C00_OFFSET),	 
