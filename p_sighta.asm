@@ -38,6 +38,8 @@ EXTRN _strace:DWORD
 
 ; boolean __far P_CheckSight (  mobj_t __near* t1, mobj_t __near* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos ) {
 
+; todo change to near segments
+
 REJECTMATRIX_SEGMENT = 05C00h
 
 PROC    P_CheckSight_
@@ -47,33 +49,37 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Eh
-mov   si, word ptr [bp + 0Ah]
-mov   word ptr [bp - 4], ax
-mov   word ptr [bp - 6], dx
-mov   word ptr [bp - 2], cx
+push cx			; bp - 2	; todo unused
+push ax			; bp - 4
+push dx			; bp - 6
+sub   sp, 08h
+mov   si, cx
+
+xchg  ax, cx
 mov   di, dx
 mov   ax, word ptr [di + 4]
 cwd   
-mov   word ptr [bp - 0Ah], dx
-mov   dx, word ptr ds:[_numsectors]
-mov   di, word ptr [bp - 4]
-mov   cx, ax
+mov   di, cx  ; bp - 4 value
+xchg  ax, cx  ; back up low
 mov   ax, word ptr [di + 4]
-mul   dx
+mov   di, dx  ; back up high
+
+mul   word ptr ds:[_numsectors]
 add   ax, cx
-adc   dx, word ptr [bp - 0Ah]
-mov   word ptr [bp - 0Eh], ax
-mov   word ptr [bp - 0Ch], dx
-mov   cx, 3
-loop_shift:
-shr   word ptr [bp - 0Ch], 1
-rcr   word ptr [bp - 0Eh], 1
-loop  loop_shift
+adc   dx, di
+
+mov   cx, ax	; cx is preshifted
+
+shr   dx, 1
+rcr   ax, 1
+shr   dx, 1
+rcr   ax, 1
+shr   dx, 1
+rcr   ax, 1
+
 mov   dx, 1
-mov   cx, ax
+xchg  di, ax ; di gets post-shifted.
 mov   ax, REJECTMATRIX_SEGMENT
-mov   di, word ptr [bp - 0Eh]
 mov   es, ax
 and   cl, 7
 mov   al, byte ptr es:[di]
@@ -82,13 +88,20 @@ xor   ah, ah
 test  ax, dx
 je    not_in_reject_table
 xor   al, al
-leave 
+LEAVE_MACRO
 pop   di
 pop   si
 retf  4
+
 not_in_reject_table:
 inc   word ptr ds:[_validcount]
-mov   es, word ptr [bp - 2]
+
+; carry cx arg in si from above...
+; note: ES as segment is same for either position. all far mobjpos ptrs will be the same segment...
+mov   es, si
+
+mov   si, word ptr [bp + 0Ah]
+
 mov   ax, word ptr es:[bx + 8]
 mov   di, word ptr [bp - 4]
 mov   word ptr [bp - 0Ah], ax
@@ -108,7 +121,9 @@ mov   ax, word ptr [bp - 8]
 sbb   ax, dx
 mov   word ptr ds:[_sightzstart], cx
 mov   word ptr ds:[_sightzstart + 2], ax
-mov   es, word ptr [bp + 0Ch]
+
+; todo: a lot of movsw below
+
 mov   di, word ptr [bp - 6]
 mov   ax, word ptr es:[si + 8]
 mov   dx, word ptr es:[si + 0Ah]
@@ -128,43 +143,45 @@ sub   ax, dx
 sbb   cx, word ptr ds:[_sightzstart + 2]
 mov   word ptr ds:[_bottomslope], ax
 mov   word ptr ds:[_bottomslope+2], cx
-mov   es, word ptr [bp - 2]
+
 mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
 mov   word ptr ds:[_strace], ax
-mov   word ptr ds:[_strace+2], dx
-mov   dx, word ptr es:[bx + 4]
+mov   ax, word ptr es:[bx + 2]
+mov   word ptr ds:[_strace+2], ax
+
+mov   ax, word ptr es:[bx + 4]
+mov   word ptr ds:[_strace+4], ax
 mov   ax, word ptr es:[bx + 6]
-mov   word ptr ds:[_strace+4], dx
 mov   word ptr ds:[_strace+6], ax
-mov   es, word ptr [bp + 0Ch]
-mov   dx, word ptr es:[si]
+
+mov   ax, word ptr es:[si]
+mov   word ptr ds:[_cachedt2x], ax
 mov   ax, word ptr es:[si + 2]
-mov   word ptr ds:[_cachedt2x], dx
 mov   word ptr ds:[_cachedt2x+2], ax
-mov   dx, word ptr es:[si + 4]
+
+mov   ax, word ptr es:[si + 4]
+mov   word ptr ds:[_cachedt2y], ax
 mov   ax, word ptr es:[si + 6]
-mov   word ptr ds:[_cachedt2y], dx
 mov   word ptr ds:[_cachedt2y+2], ax
+
 mov   ax, word ptr es:[si]
 mov   dx, word ptr es:[si + 2]
-mov   es, word ptr [bp - 2]
 sub   ax, word ptr es:[bx]
 sbb   dx, word ptr es:[bx + 2]
 mov   word ptr ds:[_strace+8], ax
 mov   word ptr ds:[_strace+0Ah], dx
-mov   es, word ptr [bp + 0Ch]
+
 mov   dx, word ptr es:[si + 4]
 mov   ax, word ptr es:[si + 6]
-mov   es, word ptr [bp - 2]
 sub   dx, word ptr es:[bx + 4]
 sbb   ax, word ptr es:[bx + 6]
-
 mov   word ptr ds:[_strace+0Eh], ax
+mov   word ptr ds:[_strace+0Ch], dx
+
 mov   ax, word ptr ds:[_numnodes]
 dec   ax
-mov   word ptr ds:[_strace+0Ch], dx
 call  P_CrossBSPNode_
+
 LEAVE_MACRO
 pop   di
 pop   si
