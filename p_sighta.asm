@@ -163,12 +163,9 @@ sbb   cx, di
 mov   word ptr ds:[_bottomslope], ax
 mov   word ptr ds:[_bottomslope+2], cx
 
-pop   bx				; restore bx (t1 pos?)
 
 ; todo reorganize variables so we can just copy back to back
 
-xchg  bx, si
-mov   di, OFFSET _strace
 
 ; swap es and ds...
 
@@ -177,45 +174,45 @@ push  es
 pop   ds
 pop   es
 
-movsw
-movsw
-movsw
-movsw
-
-xchg  bx, si
-
 mov   di, OFFSET _cachedt2x
-
-movsw
-movsw
-
-mov   di, OFFSET _cachedt2y
-
-movsw
-movsw
-
-lea   bx, [bx - 8]
-lea   si, [si - 8]
-
-mov   di, OFFSET _strace + 8
-
-
-mov   ax, word ptr ds:[si]		; todo calc above and store in dx/cx?
-mov   dx, word ptr ds:[si + 2]
-sub   ax, word ptr ds:[bx]
-sbb   dx, word ptr ds:[bx + 2]
+lodsw
 stosw
 xchg  ax, dx
+lodsw
+stosw
+xchg  ax, cx	; cx:dx has si, si
+
+
+mov   di, OFFSET _cachedt2y	; todo remove once adjacent...
+lodsw
+stosw
+xchg  ax, bx
+lodsw
+stosw			; ax:bx has si+4, si+6
+
+pop   si		; restore old bx (t1 pos?)
+
+mov   di, OFFSET _strace
+
+movsw
+movsw
+movsw
+movsw
+
+; writing _strace + 8 now.
+
+xchg   ax, dx
+sub    ax, word ptr ds:[si - 8]
+sbb    cx, word ptr ds:[si - 6]
+stosw
+xchg   ax, cx
 stosw
 
-
-mov   ax, word ptr ds:[si + 4]
-mov   dx, word ptr ds:[si + 6]
-sub   ax, word ptr ds:[bx + 4]
-sbb   dx, word ptr ds:[bx + 6]
-
+xchg   ax, bx
+sub    ax, word ptr ds:[si - 4]
+sbb    dx, word ptr ds:[si - 2]
 stosw
-xchg  ax, dx
+xchg   ax, dx
 stosw
 
 push  ss
