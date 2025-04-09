@@ -547,7 +547,7 @@ void R_SetupFrame () {
     } else{
 		fixedcolormap = 0;
 	}
-    validcount++;
+    validcount_global++;
 	// i think this sets the view within the border for when screen size is increased/shrunk
     
 	destview = (byte __far*)(destscreen.w + viewwindowoffset);

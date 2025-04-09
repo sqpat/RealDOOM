@@ -936,11 +936,11 @@ void __near R_AddSprites (sector_t __far* sec) {
     // Thus we check whether its already added.
     
 
-	if (sec->validcount == validcount){
+	if (sec->validcount == validcount_global){
         return;         
 	}
     // Well, now it will be done.
-	sec->validcount = validcount;
+	sec->validcount = validcount_global;
         
     lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
 

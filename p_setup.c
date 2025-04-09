@@ -88,7 +88,7 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	Z_FreeConventionalAllocations();
 
 	// TODO reset 32 bit counters to start values here..
-	validcount = 1;
+	validcount_global = 1;
 
 	P_InitThinkers();
 

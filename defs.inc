@@ -109,9 +109,11 @@ _viewangle_shiftright1 = 			_NULL_OFFSET + 000D4h
 _skipdirectdraws = 					_NULL_OFFSET + 000D6h
 
 
-; d7 - f6 unused
+; d7 - f4 unused
 
+_validcount_global =				_NULL_OFFSET + 000F4h
 
+; f6 unused
 _snd_SfxDevice = 					_NULL_OFFSET + 000F7h
 _numbraintargets = 					_NULL_OFFSET + 000F8h
 _braintargeton = 					_NULL_OFFSET + 000FAh
@@ -336,6 +338,13 @@ _loops_enabled =    			     _NULL_OFFSET + 0061Eh
 _mus_playing =    			      	 _NULL_OFFSET + 0061Fh
 _Z_QuickMapPageFrame_addr = 		 _NULL_OFFSET + 00620h
 
+_sightzstart =				         _NULL_OFFSET + 00624h
+_topslope =				         	 _NULL_OFFSET + 00628h
+_bottomslope =					     _NULL_OFFSET + 0062Ch
+_cachedt2x =				         _NULL_OFFSET + 00630h
+_cachedt2y =					     _NULL_OFFSET + 00634h
+_strace =					         _NULL_OFFSET + 00638h
+;648h
 
 
 ;//0x618

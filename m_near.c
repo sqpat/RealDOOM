@@ -164,8 +164,6 @@ int16_t 	r_cachedplayerMobjsecnum;
 
 
 
-// increment every time a check is made
-int16_t			validcount = 1;
 
 
 int16_t 			pendingdetail;
@@ -1252,13 +1250,7 @@ fixed_t		aimslope;
 //
 // P_CheckSight
 //
-fixed_t		sightzstart;		// eye z of looker
-fixed_t		topslope;
-fixed_t		bottomslope;		// slopes to top and bottom of target
 
-divline_t	strace;			// from t1 to t2
-fixed_t_union		cachedt2x;
-fixed_t_union		cachedt2y;
 
 boolean		crushchange;
 boolean		nofit;

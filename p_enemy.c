@@ -138,11 +138,11 @@ __near P_RecursiveSound
 #endif
 
 	// wake up all monsters in this sector
-    if (soundsector->validcount == validcount && sector_soundtraversed[secnum] <= soundblocks+1) {
+    if (soundsector->validcount == validcount_global && sector_soundtraversed[secnum] <= soundblocks+1) {
 		return;		// already flooded
     }
 
-	soundsector->validcount = validcount;
+	soundsector->validcount = validcount_global;
 	sector_soundtraversed[secnum] = soundblocks+1;
 	//soundsector->soundtargetRef = 1;
 
@@ -203,12 +203,10 @@ __near P_RecursiveSound
 // If a monster yells at a player,
 // it will alert other monsters to the player.
 //
-void
-__near P_NoiseAlert
-(  ){
+void __near P_NoiseAlert (){
 
 
-    validcount++;
+    validcount_global++;
 	
     P_RecursiveSound (playerMobj->secnum, 0);
 

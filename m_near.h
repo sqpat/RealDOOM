@@ -164,8 +164,9 @@
 #define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D6))
 
 
-// d7-f6 free
-
+// d7-f4 free
+#define validcount_global	            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F4))
+// f6 free
 #define snd_SfxDevice                   (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00F7))
 #define numbraintargets                 (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F8))
 #define braintargeton                   (*(int16_t __near *)                 (_NULL_OFFSET + 0x00FA))
@@ -394,7 +395,14 @@
 #define loops_enabled    			      (*((int8_t __near*)                (_NULL_OFFSET + 0x061E)))
 #define mus_playing    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x061F)))
 #define Z_QuickMapPageFrame_addr          (*((uint32_t __near*)              (_NULL_OFFSET + 0x0620)))
-	
+
+#define sightzstart					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x0624)))
+#define topslope					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x0628)))
+#define bottomslope					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x062C)))
+#define cachedt2x					      (*((fixed_t_union __near*)         (_NULL_OFFSET + 0x0630)))
+#define cachedt2y					      (*((fixed_t_union __near*)         (_NULL_OFFSET + 0x0634)))
+#define strace					          (*((divline_t __near*)             (_NULL_OFFSET + 0x0638)))
+// 648
 
 
 
@@ -484,7 +492,6 @@ extern int16_t		        viewwindowoffset;
 
 extern int8_t               skytextureloaded;
 extern int16_t              r_cachedplayerMobjsecnum;
-extern int16_t			    validcount;
 
 extern int16_t 			    pendingdetail;
 extern uint16_t			    clipangle;
@@ -1044,13 +1051,8 @@ extern int16_t		la_damage;
 extern int16_t		attackrange16;
 
 extern fixed_t		aimslope;
-extern fixed_t		sightzstart;		// eye z of looker
-extern fixed_t		topslope;
-extern fixed_t		bottomslope;		// slopes to top and bottom of target
 
-extern divline_t	strace;			// from t1 to t2
-extern fixed_t_union		cachedt2x;
-extern fixed_t_union		cachedt2y;
+
 extern boolean		crushchange;
 extern boolean		nofit;
 extern intercept_t __far*	intercept_p;

@@ -249,7 +249,7 @@ boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,
 	tmfloorz = tmdropoffz = sectors[oldsecnum].floorheight;
     tmceilingz = sectors[oldsecnum].ceilingheight;
 			
-    validcount++;
+    validcount_global++;
     numspechit = 0;
     
     // stomp on any things contacted
@@ -591,7 +591,7 @@ boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_u
     tmceilingz = sectors[lastcalculatedsector].ceilingheight;
 	
 
-    validcount++;
+    validcount_global++;
     numspechit = 0;
 
 	if (tmflags1 & MF_NOCLIP) {

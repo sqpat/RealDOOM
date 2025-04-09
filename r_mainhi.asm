@@ -34,7 +34,6 @@ EXTRN R_PointToAngle16Old_:PROC
 
 EXTRN R_GetColumnSegment_:NEAR
 
-EXTRN _validcount:WORD
 EXTRN _spritewidths_segment:WORD
 
 
@@ -2340,7 +2339,7 @@ PUBLIC R_AddSprites_
 mov   bx, ax
 mov   es, dx
 mov   ax, word ptr es:[bx + 6]		; sec->validcount
-mov   dx, word ptr ds:[_validcount]
+mov   dx, word ptr ds:[_validcount_global]
 cmp   ax, dx
 je    exit_add_sprites_quick
 

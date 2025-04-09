@@ -26,13 +26,7 @@ INSTRUCTION_SET_MACRO
 
 .DATA
 
-EXTRN _validcount:BYTE
-EXTRN _sightzstart:DWORD
-EXTRN _bottomslope:DWORD
-EXTRN _topslope:DWORD
-EXTRN _cachedt2x:DWORD
-EXTRN _cachedt2y:DWORD
-EXTRN _strace:DWORD
+
 
 .CODE
 
@@ -101,7 +95,7 @@ pop   si
 retf 
 
 not_in_reject_table:
-inc   word ptr ds:[_validcount]
+inc   word ptr ds:[_validcount_global]
 
 
 mov   ax, MOBJPOSLIST_6800_SEGMENT
@@ -125,56 +119,51 @@ rcr   ax, 1
 sar   dx, 1
 rcr   ax, 1
 sub   cx, ax
-
 sbb   si, dx
-mov   word ptr ds:[_sightzstart], cx
+mov   word ptr ds:[_sightzstart], cx	; cx has sightzstart
 mov   word ptr ds:[_sightzstart + 2], si
-
-; todo: a lot of movsw below
 
 xchg  ax, si				; ax gets sightzstart+2
 pop   si					; recover si
 pop   di 					; grab t2 again
-push  bx					; store this...
+push  bx					; store this... we dont need it for a while
 xchg  ax, bx				; bx gets sightzstart+2
 
 ;    topslope = (t2_pos->z.w+t2->height.w) - sightzstart;
 
 mov   ax, word ptr es:[si + 8]
 mov   dx, word ptr es:[si + 0Ah]
-add   ax, word ptr [di + 0Ah]
-adc   dx, word ptr [di + 0Ch]	; last di use...
-
-
-mov   di, bx			; di gets sightzstart+2
-mov   bx, dx			
-mov   dx, cx			; cx had sightz_start
-
-sub   ax, dx			; subtract sightzstart	
-sbb   bx, di			
-mov   word ptr ds:[_topslope], ax
-mov   word ptr ds:[_topslope+2], bx
-
-
-mov   ax, word ptr es:[si + 8]
-mov   cx, word ptr es:[si + 0Ah]
-sub   ax, dx			; subtract sightzstart
-sbb   cx, di			
-mov   word ptr ds:[_bottomslope], ax
-mov   word ptr ds:[_bottomslope+2], cx
-
-
-; todo reorganize variables so we can just copy back to back
-
+add   ax, word ptr ds:[di + 0Ah]
+adc   dx, word ptr ds:[di + 0Ch]	; last di use...
+sub   ax, cx			; subtract sightzstart	
+sbb   dx, bx
 
 ; swap es and ds...
-
 push  ds
 push  es
 pop   ds
 pop   es
 
-mov   di, OFFSET _cachedt2x
+mov   di, OFFSET _topslope
+
+; write topslope
+stosw
+xchg  ax, dx
+stosw
+
+; cx:bx has sightzstart still..
+
+mov   ax, word ptr ds:[si + 8]
+mov   dx, word ptr ds:[si + 0Ah]
+sub   ax, cx			; subtract sightzstart
+sbb   dx, bx
+; write bottomslope
+stosw
+xchg  ax, dx
+stosw
+
+; carried over address from above
+;mov   di, OFFSET _cachedt2x
 lodsw
 stosw
 xchg  ax, dx
@@ -182,8 +171,8 @@ lodsw
 stosw
 xchg  ax, cx	; cx:dx has si, si
 
-
-mov   di, OFFSET _cachedt2y	; todo remove once adjacent...
+; carried over address from above
+;mov   di, OFFSET _cachedt2y	; todo remove once adjacent...
 lodsw
 stosw
 xchg  ax, bx
@@ -192,7 +181,8 @@ stosw			; ax:bx has si+4, si+6
 
 pop   si		; restore old bx (t1 pos?)
 
-mov   di, OFFSET _strace
+; carried over address from above
+;mov   di, OFFSET _strace
 
 movsw
 movsw
@@ -215,8 +205,8 @@ stosw
 xchg   ax, dx
 stosw
 
-push  ss
-pop   ds
+mov  ax, ss
+mov  ds, ax	; restore ds..
 
 mov   ax, word ptr ds:[_numnodes]
 dec   ax

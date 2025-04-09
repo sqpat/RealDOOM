@@ -67,7 +67,7 @@ boolean __far P_CheckSight (  mobj_t __near* t1, mobj_t __near* t2, mobj_pos_t _
 
     // An unobstructed LOS is possible.
     // Now look from eyes of t1 to any part of t2.
-    validcount++;
+    validcount_global++;
 	
     sightzstart = t1_pos->z.w + t1->height.w - (t1->height.w>>2);
     topslope = (t2_pos->z.w+t2->height.w) - sightzstart;
@@ -366,17 +366,17 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 
 
 		// allready checked other side?
-		// if (line->validcount == (validcount & 0xFF)) {
+		// if (line->validcount == (validcount_global & 0xFF)) {
 		
 
-		if (line_physics->validcount == validcount ) {
+		if (line_physics->validcount == validcount_global ) {
 			continue;
 		}
 		line = &lines[linedefOffset];
 		lineflags = lineflagslist[linedefOffset];
 
 		//line->validcount = (validcount & 0xFF);
-		line_physics->validcount = validcount;
+		line_physics->validcount = validcount_global;
 		linev1Offset = line_physics->v1Offset;
 		linev2Offset = line_physics->v2Offset & VERTEX_OFFSET_MASK;
 

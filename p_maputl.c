@@ -668,10 +668,10 @@ boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   f
 
 		ld_physics = &lines_physics[list];
 
-		if (ld_physics->validcount == validcount) {
+		if (ld_physics->validcount == validcount_global) {
 			continue; 	// line has already been checked
 		}
-		ld_physics->validcount = validcount;
+		ld_physics->validcount = validcount_global;
 			
 		if (!func(ld_physics, list)) {
 			return false;
@@ -941,7 +941,7 @@ void __near P_PathTraverse ( fixed_t_union x1, fixed_t_union y1, fixed_t_union x
 
     earlyout = flags & PT_EARLYOUT;
 	
-    validcount++;
+    validcount_global++;
     intercept_p = intercepts;
  
 	if (x1.h.fracbits & MAPBLOCK1000_LOWBITMASK == 0) {
