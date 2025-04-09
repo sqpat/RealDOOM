@@ -221,12 +221,15 @@ ENDP
 
 ;int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) {
 
+; node si
+; dx:ax x
+; cx:bx y
+
 ; todo make this take argument as si or something
 
 PROC    P_DivlineSide_ NEAR
 PUBLIC  P_DivlineSide_
 
-	push si
 	push di
 
 
@@ -241,118 +244,118 @@ PUBLIC  P_DivlineSide_
 ;
 ;		return node->dy.w < 0;
  ;   }
+	; todo reduce register juggling...
 
 	mov  di, bx
-	mov  bx, si
-	mov  si, ax
-	;mov  bx, word ptr [bp + 8]
+	mov  bx, ax
+
 	mov  ax, dx
 	mov  dx, cx
-	mov  cx, word ptr [bx + 0Ah]	; if (!node->dx.w) {
-	or   cx, word ptr [bx + 8]
-	jne  label_1
-	cmp  ax, word ptr [bx + 2]
-	jne  label_2
-	cmp  si, word ptr [bx]
-	je   label_3
-	label_2:
-	cmp  ax, word ptr [bx + 2]
-	jl   label_4
-	jne  label_5
-	cmp  si, word ptr [bx]
-	ja   label_5
-	label_4:
-	mov  ax, word ptr [bx + 0Eh]
+	mov  cx, word ptr [si + 0Ah]	; if (!node->dx.w) {
+	or   cx, word ptr [si + 8]
+	jne  node_dx_nonzero
+	cmp  ax, word ptr [si + 2]
+	jne  node_dx_not_x
+	cmp  bx, word ptr [si]
+	je   return_2
+	node_dx_not_x:
+	cmp  ax, word ptr [si + 2]
+	jl   x_less_than_nodex
+	jne  x_more_than_nodex
+	cmp  bx, word ptr [si]
+	ja   x_more_than_nodex
+	x_less_than_nodex:
+	mov  ax, word ptr [si + 0Eh]
 	test ax, ax
 	jg   divline_side_return_1
-	jne  label_13
-	cmp  word ptr [bx + 0Ch], 0
-	jbe  label_13
+	jne  return_0
+	cmp  word ptr [si + 0Ch], 0
+	jbe  return_0
 	divline_side_return_1:
 	mov  ax, 1
-	divline_side_return:
 	pop  di
-	pop  si
 	ret
 
-	label_3:
+	return_2:
 	mov  ax, 2
-	jmp  divline_side_return
-	label_13:
+	pop  di
+	ret
+	return_0:
 	xor  ax, ax
-	jmp  divline_side_return
-	label_5:
-	mov  ax, word ptr [bx + 0Eh]
-	test ax, ax
-	jl   divline_side_return_1
-	xor  ax, ax
-	jmp  divline_side_return
-	label_1:
-	mov  cx, word ptr [bx + 0Eh]
-	or   cx, word ptr [bx + 0Ch]
-	jne  label_15
-	cmp  ax, word ptr [bx + 6]
-	jne  label_16
-	cmp  si, word ptr [bx + 4]
-	je   label_3
-	label_16:
-	mov  ax, word ptr [bx + 6]
-	cmp  dx, ax
-	jl   label_11
-	jne  label_10
-	cmp  di, word ptr [bx + 4]
-	ja   label_10
-	label_11:
-	mov  ax, word ptr [bx + 0Ah]
+	pop  di
+	ret
+	x_more_than_nodex:
+	mov  ax, word ptr [si + 0Eh]
 	test ax, ax
 	jl   divline_side_return_1
 	xor  ax, ax
 	pop  di
-	pop  si
 	ret
-	label_10:
-	mov  ax, word ptr [bx + 0Ah]
+	node_dx_nonzero:
+	mov  cx, word ptr [si + 0Eh]
+	or   cx, word ptr [si + 0Ch]
+	jne  node_dy_nonzero
+	cmp  ax, word ptr [si + 6]
+	jne  node_dy_not_y
+	cmp  bx, word ptr [si + 4]
+	je   return_2
+	node_dy_not_y:
+	mov  ax, word ptr [si + 6]
+	cmp  dx, ax
+	jl   y_less_than_nodey
+	jne  y_more_than_nodey
+	cmp  di, word ptr [si + 4]
+	ja   y_more_than_nodey
+	y_less_than_nodey:
+	mov  ax, word ptr [si + 0Ah]
+	test ax, ax
+	jl   divline_side_return_1
+	xor  ax, ax
+	pop  di
+	ret
+	y_more_than_nodey:
+	mov  ax, word ptr [si + 0Ah]
 	test ax, ax
 	jg   divline_side_return_1
-	jne  label_9
-	cmp  word ptr [bx + 8], 0
+	jne  return_0_2
+	cmp  word ptr [si + 8], 0
 	ja   divline_side_return_1
-	label_9:
+	return_0_2:
 	xor  ax, ax
 	pop  di
-	pop  si
 	ret
-	label_15:
+	node_dy_nonzero:
 	mov  cx, ax
-	sub  si, word ptr [bx]
-	mov  ax, word ptr [bx + 0Eh]
-	sbb  cx, word ptr [bx + 2]
-	sub  di, word ptr [bx + 4]
+	sub  bx, word ptr [si]
+	mov  ax, word ptr [si + 0Eh]
+	sbb  cx, word ptr [si + 2]
+	sub  di, word ptr [si + 4]
 	mov  di, dx
 	mov  dx, cx
-	sbb  di, word ptr [bx + 6]
+	sbb  di, word ptr [si + 6]
 	imul dx
 	mov  cx, ax
-	mov  si, dx
+	mov  bx, dx
 	mov  ax, di
-	mov  dx, word ptr [bx + 0Ah]
+	mov  dx, word ptr [si + 0Ah]
 	imul dx
-	cmp  dx, si
-	jl   label_9
-	jne  label_14
+	cmp  dx, bx
+	jl   return_0_2
+	jne  compare_leftright
 	cmp  ax, cx
-	jb   label_9
-	label_14:
-	cmp  si, dx
-	je   label_8
-	label_7:
-	jmp  divline_side_return_1
-	label_8:
+	jb   return_0_2
+	compare_leftright:
+	cmp  bx, dx
+	je   compare_leftright_low
+	return_1_2:
+	mov  ax, 1
+	pop  di
+	ret
+	compare_leftright_low:
 	cmp  cx, ax
-	jne  label_7
+	jne  return_1_2
 	mov  ax, 2
 	pop  di
-	pop  si
 	ret
 
 
