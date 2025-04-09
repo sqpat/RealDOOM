@@ -361,6 +361,115 @@ PUBLIC  P_DivlineSide_
 
 ENDP
 
+
+PROC    P_DivlineSide16_ NEAR
+PUBLIC  P_DivlineSide16_
+
+	push cx
+	push si
+	push di
+	mov  cx, ax
+	mov  ax, word ptr [bx + 0Ah]
+	or   ax, word ptr [bx + 8]
+	jne  label_1
+	mov  ax, word ptr [bx + 2]
+	cmp  cx, ax
+	je   label_2
+	jg   label_3
+	mov  ax, word ptr [bx + 0Eh]
+	test ax, ax
+	jg   label_4
+	jne  return_0_divlineside_16
+	cmp  word ptr [bx + 0Ch], 0
+	jbe  return_0_divlineside_16
+	label_4:
+	mov  ax, 1
+	exit_divlineside_16:
+	pop  di
+	pop  si
+	pop  cx
+	ret  
+	label_2:
+	mov  ax, 2
+	jmp  exit_divlineside_16
+	return_0_divlineside_16:
+	xor  ax, ax
+	jmp  exit_divlineside_16
+	label_3:
+	mov  ax, word ptr [bx + 0Eh]
+	test ax, ax
+	jl   label_4
+	xor  ax, ax
+	jmp  exit_divlineside_16
+	label_1:
+	mov  ax, word ptr [bx + 0Eh]
+	or   ax, word ptr [bx + 0Ch]
+	jne  label_7
+	mov  ax, word ptr [bx + 6]
+	cmp  cx, ax
+	je   label_2
+	cmp  dx, ax
+	jg   label_8
+	mov  ax, word ptr [bx + 0Ah]
+	test ax, ax
+	jl   label_4
+	xor  ax, ax
+	pop  di
+	pop  si
+	pop  cx
+	ret  
+	label_8:
+	mov  ax, word ptr [bx + 0Ah]
+	test ax, ax
+	jg   label_4
+	jne  return_0_divlineside_16_2
+	cmp  word ptr [bx + 8], 0
+	ja   label_4
+	return_0_divlineside_16_2:
+	xor  ax, ax
+	pop  di
+	pop  si
+	pop  cx
+	ret  
+	label_7:
+	mov  ax, cx
+	xor  cx, cx
+	sub  cx, word ptr [bx]
+	mov  cx, ax
+	mov  di, dx
+	sbb  cx, word ptr [bx + 2]
+	xor  dx, dx
+	mov  ax, word ptr [bx + 0Eh]
+	sub  dx, word ptr [bx + 4]
+	mov  dx, cx
+	sbb  di, word ptr [bx + 6]
+	imul dx
+	mov  si, ax
+	mov  cx, dx
+	mov  ax, di
+	mov  dx, word ptr [bx + 0Ah]
+	imul dx
+	cmp  dx, cx
+	jl   return_0_divlineside_16_2
+	jne  label_6
+	cmp  ax, si
+	jb   return_0_divlineside_16_2
+	label_6:
+	cmp  cx, dx
+	je   label_5
+	label_9:
+	jmp  label_4
+	label_5:
+	cmp  si, ax
+	jne  label_9
+	mov  ax, 2
+	pop  di
+	pop  si
+	pop  cx
+	ret  
+
+ENDP
+
 PROC    P_DivlineSide2_
 PUBLIC  P_DivlineSide2_
 ENDP

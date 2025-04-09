@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/04/09 16:08:26
+Created on:       25/04/09 16:20:31
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -90,8 +90,8 @@ v_video_TEXT           CODE           AUTO           1718:4c40       00000218
 z_zone_TEXT            CODE           AUTO           1718:4e60       00000657
 d_math_TEXT            CODE           AUTO           1718:54c0       00000000
 p_setup_TEXT           CODE           AUTO           1c64:0000       00001227
-p_sight_TEXT           CODE           AUTO           1c64:1230       00000584
-P_SIGHTA_TEXT          CODE           AUTO           1c64:17b4       0000019f
+p_sight_TEXT           CODE           AUTO           1c64:1230       000004d0
+P_SIGHTA_TEXT          CODE           AUTO           1c64:1700       00000257
 _TEXT                  CODE           AUTO           1c64:1960       0000289e
 FAR_DATA               FAR_DATA       AUTO           2083:000e       00000000
 _NULL                  BEGDATA        DGROUP         2084:0000       00000020
@@ -1226,15 +1226,15 @@ Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 1c64:0f64+     Z_FreeConventionalAllocations_
 1c64:1210*     PSetupEndFunc_
 Module: p_sight.obj(C:\REALDOOM\p_sight.c)
-1c64:1230+     P_DivlineSide16_
-1c64:12e8+     P_DivlineSideNode_
-1c64:13c8+     P_InterceptVector2_
-1c64:1464+     P_CrossSubsector_
-1c64:1700      P_CrossBSPNode_
+1c64:1230+     P_DivlineSideNode_
+1c64:1310+     P_InterceptVector2_
+1c64:13ac+     P_CrossSubsector_
+1c64:164c      P_CrossBSPNode_
 Module: p_sighta.obj(p_sighta.ASM)
-1c64:17b4      P_CheckSight_
-1c64:188b      P_DivlineSide_
-1c64:1953*     P_DivlineSide2_
+1c64:1700      P_CheckSight_
+1c64:17d7      P_DivlineSide_
+1c64:1957*     P_DivlineSide2_
+1c64:189f      P_DivlineSide16_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 1c64:1960+     __open_flags_
 1c64:1b0e+     _fsopen_
@@ -1503,4 +1503,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000236f0 (145136.)
 Entry point address: 1c64:2408
-Link time: 00:00.75
+Link time: 00:00.74
