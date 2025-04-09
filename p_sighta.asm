@@ -219,6 +219,147 @@ retf
 
 ENDP
 
+;int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) {
 
+; todo make this take argument as si or something
+
+PROC    P_DivlineSide_ NEAR
+PUBLIC  P_DivlineSide_
+
+	push si
+	push di
+
+
+;    if (!node->dx.w) {
+;		if (x.w==node->x.w){
+;			return 2;
+;		}
+;		
+;		if (x.w <= node->x.w){
+;			return node->dy.w > 0;
+;		}
+;
+;		return node->dy.w < 0;
+ ;   }
+
+	mov  di, bx
+	mov  bx, si
+	mov  si, ax
+	;mov  bx, word ptr [bp + 8]
+	mov  ax, dx
+	mov  dx, cx
+	mov  cx, word ptr [bx + 0Ah]	; if (!node->dx.w) {
+	or   cx, word ptr [bx + 8]
+	jne  label_1
+	cmp  ax, word ptr [bx + 2]
+	jne  label_2
+	cmp  si, word ptr [bx]
+	je   label_3
+	label_2:
+	cmp  ax, word ptr [bx + 2]
+	jl   label_4
+	jne  label_5
+	cmp  si, word ptr [bx]
+	ja   label_5
+	label_4:
+	mov  ax, word ptr [bx + 0Eh]
+	test ax, ax
+	jg   divline_side_return_1
+	jne  label_13
+	cmp  word ptr [bx + 0Ch], 0
+	jbe  label_13
+	divline_side_return_1:
+	mov  ax, 1
+	divline_side_return:
+	pop  di
+	pop  si
+	ret
+
+	label_3:
+	mov  ax, 2
+	jmp  divline_side_return
+	label_13:
+	xor  ax, ax
+	jmp  divline_side_return
+	label_5:
+	mov  ax, word ptr [bx + 0Eh]
+	test ax, ax
+	jl   divline_side_return_1
+	xor  ax, ax
+	jmp  divline_side_return
+	label_1:
+	mov  cx, word ptr [bx + 0Eh]
+	or   cx, word ptr [bx + 0Ch]
+	jne  label_15
+	cmp  ax, word ptr [bx + 6]
+	jne  label_16
+	cmp  si, word ptr [bx + 4]
+	je   label_3
+	label_16:
+	mov  ax, word ptr [bx + 6]
+	cmp  dx, ax
+	jl   label_11
+	jne  label_10
+	cmp  di, word ptr [bx + 4]
+	ja   label_10
+	label_11:
+	mov  ax, word ptr [bx + 0Ah]
+	test ax, ax
+	jl   divline_side_return_1
+	xor  ax, ax
+	pop  di
+	pop  si
+	ret
+	label_10:
+	mov  ax, word ptr [bx + 0Ah]
+	test ax, ax
+	jg   divline_side_return_1
+	jne  label_9
+	cmp  word ptr [bx + 8], 0
+	ja   divline_side_return_1
+	label_9:
+	xor  ax, ax
+	pop  di
+	pop  si
+	ret
+	label_15:
+	mov  cx, ax
+	sub  si, word ptr [bx]
+	mov  ax, word ptr [bx + 0Eh]
+	sbb  cx, word ptr [bx + 2]
+	sub  di, word ptr [bx + 4]
+	mov  di, dx
+	mov  dx, cx
+	sbb  di, word ptr [bx + 6]
+	imul dx
+	mov  cx, ax
+	mov  si, dx
+	mov  ax, di
+	mov  dx, word ptr [bx + 0Ah]
+	imul dx
+	cmp  dx, si
+	jl   label_9
+	jne  label_14
+	cmp  ax, cx
+	jb   label_9
+	label_14:
+	cmp  si, dx
+	je   label_8
+	label_7:
+	jmp  divline_side_return_1
+	label_8:
+	cmp  cx, ax
+	jne  label_7
+	mov  ax, 2
+	pop  di
+	pop  si
+	ret
+
+
+ENDP
+
+PROC    P_DivlineSide2_
+PUBLIC  P_DivlineSide2_
+ENDP
 
 END

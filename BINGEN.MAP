@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/04/09 15:20:18
+Created on:       25/04/09 15:44:37
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -104,8 +104,8 @@ v_video_TEXT           CODE           AUTO           1d81:7fd0       00000218
 z_zone_TEXT            CODE           AUTO           1d81:81f0       00000657
 d_math_TEXT            CODE           AUTO           1d81:8850       00000000
 p_setup_TEXT           CODE           AUTO           2606:0000       00001227
-p_sight_TEXT           CODE           AUTO           2606:1230       00000664
-P_SIGHTA_TEXT          CODE           AUTO           2606:1894       000000d7
+p_sight_TEXT           CODE           AUTO           2606:1230       00000586
+P_SIGHTA_TEXT          CODE           AUTO           2606:17b6       000001b4
 _TEXT                  CODE           AUTO           2606:1970       0000382c
 FAR_DATA               FAR_DATA       AUTO           2b1f:000c       00000000
 _NULL                  BEGDATA        DGROUP         2b20:0000       00000020
@@ -1391,14 +1391,14 @@ Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 2606:0f64+     Z_FreeConventionalAllocations_
 2606:1210*     PSetupEndFunc_
 Module: p_sight.obj(C:\REALDOOM\p_sight.c)
-2606:1230+     P_DivlineSide_
-2606:130e+     P_DivlineSide16_
-2606:13c6+     P_DivlineSideNode_
-2606:14a6+     P_InterceptVector2_
-2606:1542+     P_CrossSubsector_
-2606:17e0      P_CrossBSPNode_
+2606:1230+     P_DivlineSide16_
+2606:12e8+     P_DivlineSideNode_
+2606:13c8+     P_InterceptVector2_
+2606:1464+     P_CrossSubsector_
+2606:1702      P_CrossBSPNode_
 Module: p_sighta.obj(p_sighta.ASM)
-2606:1894      P_CheckSight_
+2606:17b6      P_CheckSight_
+2606:188d      P_DivlineSide_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 2606:1970+     __open_flags_
 2606:1b1e+     _fsopen_
@@ -1705,4 +1705,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e600 (189952.)
 Entry point address: 2606:26b0
-Link time: 00:00.30
+Link time: 00:00.29

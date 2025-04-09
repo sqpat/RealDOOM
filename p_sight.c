@@ -91,10 +91,15 @@ boolean __far P_CheckSight (  mobj_t __near* t1, mobj_t __near* t2, mobj_pos_t _
 // Returns side 0 (front), 1 (back), or 2 (on).
 //
 
+#pragma aux P_DivlineSideParams \
+                    __modify [ax bx cx dx] \
+                    __parm [dx ax] [cx bx] [si] \
+                    __value [ax];
+#pragma aux (P_DivlineSideParams)  P_DivlineSide;
+int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node );
 
 
-
-
+/*
 
 int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) {
     fixed_t_union	dx;
@@ -142,6 +147,8 @@ int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __nea
 
     return 1;		// back side
 }
+
+*/
 
 int16_t  __near P_DivlineSide16 ( int16_t	x, int16_t	y, divline_t __near*	node ) {
     fixed_t_union	dx;
