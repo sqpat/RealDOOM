@@ -164,39 +164,62 @@ mov   word ptr ds:[_bottomslope], ax
 mov   word ptr ds:[_bottomslope+2], cx
 
 pop   bx				; restore bx (t1 pos?)
-mov   ax, word ptr es:[bx]
-mov   word ptr ds:[_strace], ax
-mov   ax, word ptr es:[bx + 2]
-mov   word ptr ds:[_strace+2], ax
 
-mov   ax, word ptr es:[bx + 4]
-mov   word ptr ds:[_strace+4], ax
-mov   ax, word ptr es:[bx + 6]
-mov   word ptr ds:[_strace+6], ax
+; todo reorganize variables so we can just copy back to back
 
-mov   ax, word ptr es:[si]
-mov   word ptr ds:[_cachedt2x], ax
-mov   ax, word ptr es:[si + 2]
-mov   word ptr ds:[_cachedt2x+2], ax
+xchg  bx, si
+mov   di, OFFSET _strace
 
-mov   ax, word ptr es:[si + 4]
-mov   word ptr ds:[_cachedt2y], ax
-mov   ax, word ptr es:[si + 6]
-mov   word ptr ds:[_cachedt2y+2], ax
+; swap es and ds...
 
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
-sub   ax, word ptr es:[bx]
-sbb   dx, word ptr es:[bx + 2]
-mov   word ptr ds:[_strace+8], ax
-mov   word ptr ds:[_strace+0Ah], dx
+push  ds
+push  es
+pop   ds
+pop   es
 
-mov   dx, word ptr es:[si + 4]
-mov   ax, word ptr es:[si + 6]
-sub   dx, word ptr es:[bx + 4]
-sbb   ax, word ptr es:[bx + 6]
-mov   word ptr ds:[_strace+0Eh], ax
-mov   word ptr ds:[_strace+0Ch], dx
+movsw
+movsw
+movsw
+movsw
+
+xchg  bx, si
+
+mov   di, OFFSET _cachedt2x
+
+movsw
+movsw
+
+mov   di, OFFSET _cachedt2y
+
+movsw
+movsw
+
+lea   bx, [bx - 8]
+lea   si, [si - 8]
+
+mov   di, OFFSET _strace + 8
+
+
+mov   ax, word ptr ds:[si]		; todo calc above and store in dx/cx?
+mov   dx, word ptr ds:[si + 2]
+sub   ax, word ptr ds:[bx]
+sbb   dx, word ptr ds:[bx + 2]
+stosw
+xchg  ax, dx
+stosw
+
+
+mov   ax, word ptr ds:[si + 4]
+mov   dx, word ptr ds:[si + 6]
+sub   ax, word ptr ds:[bx + 4]
+sbb   dx, word ptr ds:[bx + 6]
+
+stosw
+xchg  ax, dx
+stosw
+
+push  ss
+pop   ds
 
 mov   ax, word ptr ds:[_numnodes]
 dec   ax
