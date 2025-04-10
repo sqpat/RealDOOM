@@ -661,28 +661,20 @@ PROC    P_CrossSubsector_ NEAR
 PUBLIC  P_CrossSubsector_
 
 ; bp - 2	lineflags
-; bp - 4	unused (sectors segment)
-; bp - 6	unused (sectors segment)
-; bp - 8    opentop ?
-; bp - 0A   4x segnum
-; bp - 0C   2x segnum
-; bp - 0E    count
-; bp - 010  unused (v2x)
-; bp - 012	segnum
-; bp - 014   frac hibits
-; bp - 016   frac lonits
-; bp - 018  unused (was an intermediate)
-; bp - 01A   s1
-; bp - 01C  temp lobits (unused)
-; bp - 01E  temp hibits
-; bp - 020  (divl end)  
-; bp - 022  (divl)
-; bp - 024  (divl)
-; bp - 026  (divl)
-; bp - 028  (divl)
-; bp - 02A  (divl)
-; bp - 02C  (divl)
-; bp - 02E  divl
+; bp - 4    2x segnum
+; bp - 6	frac hibits
+; bp - 8    frac lonits
+; bp - 0A   count
+; bp - 0C 	(divl end)  
+; bp - 0E   (divl)
+; bp - 010  (divl)
+; bp - 012	(divl)
+; bp - 014  (divl)
+; bp - 016  (divl)
+; bp - 018  (divl)
+; bp - 01A  divl start
+
+
 
 
 push  bx
@@ -692,7 +684,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 02Eh
+sub   sp, 01Ah
 mov   bx, ax		; todo swap this argument order
 mov   ax, SUBSECTOR_LINES_SEGMENT
 mov   es, ax
@@ -701,21 +693,19 @@ mov   al, byte ptr es:[bx]			; count todo selfmodify this
 SHIFT_MACRO shl bx 2
 xor   ah, ah
 mov   es, dx
-mov   word ptr [bp - 0Eh], ax
+mov   word ptr [bp - 0Ah], ax
 mov   dx, word ptr es:[bx + 2]		; get segnum/firstline
-mov   word ptr [bp - 012h], dx
 test  ax, ax
 je    cross_subsector_return_1
 mov   ax, dx
 sal   ax, 1
-mov   word ptr [bp - 0Ch], ax		; store segnum x2?
-shl   ax, 1
-mov   word ptr [bp - 0Ah], ax		; store segnum x4?
+mov   word ptr [bp - 4], ax		; store segnum x2?
+
 
 cross_subsector_mainloop:
 mov   ax, SEG_LINEDEFS_SEGMENT
-mov   bx, word ptr [bp - 0Ch]
 mov   es, ax
+mov   bx, word ptr [bp - 4]
 mov   ax, word ptr es:[bx]
 mov   si, ax
 SHIFT_MACRO shl si 4
@@ -725,10 +715,8 @@ mov   dx, word ptr es:[si + 8]
 cmp   dx, word ptr ds:[_validcount_global]
 jne   do_full_loop_iteration
 cross_subsector_mainloop_increment:
-add   word ptr [bp - 0Ch], 2
-add   word ptr [bp - 0Ah], 4
-inc   word ptr [bp - 012h]
-dec   word ptr [bp - 0Eh]
+add   word ptr [bp - 4], 2
+dec   word ptr [bp - 0Ah]
 jne   cross_subsector_mainloop	
 cross_subsector_return_1:
 mov   al, 1
@@ -761,15 +749,15 @@ les   ax, dword ptr es:[bx]		; v2.x
 mov   cx, ax					; back up v2.x (es backs up v2.y)
 
 sub   ax, si
-mov   word ptr [bp - 024h], ax   ;	divl.dx.h.intbits = v2.x - v1.x;
+mov   word ptr [bp - 010h], ax   ;	divl.dx.h.intbits = v2.x - v1.x;
 mov   ax, es					; v2.y
 sub   ax, dx
 
-mov   word ptr [bp - 020h], ax  ;	divl.dy.h.intbits = v2.y - v1.y;
-mov   word ptr [bp - 028h], dx	;   v1.y
+mov   word ptr [bp - 0Ch], ax  ;	divl.dy.h.intbits = v2.y - v1.y;
+mov   word ptr [bp - 014h], dx	;   v1.y
 
 xchg  ax, si					; ax gets v1.x
-mov   word ptr [bp - 02Ch], ax  ;   v1.x
+mov   word ptr [bp - 018h], ax  ;   v1.x
 
 mov   bx, OFFSET _strace
 
@@ -783,16 +771,16 @@ cmp   ax, di
 je    cross_subsector_mainloop_increment
 ; set up divl
 xor   ax, ax
-mov   word ptr [bp - 02Eh], ax
-mov   word ptr [bp - 02Ah], ax
-mov   word ptr [bp - 026h], ax
-mov   word ptr [bp - 022h], ax
+mov   word ptr [bp - 01Ah], ax
+mov   word ptr [bp - 016h], ax
+mov   word ptr [bp - 012h], ax
+mov   word ptr [bp - 00Eh], ax
 
 les   bx, dword ptr ds:[_strace + 4] 
 mov   cx, es
 les   ax, dword ptr ds:[_strace] 
 mov   dx, es
-lea   si, [bp - 02Eh]
+lea   si, [bp - 01Ah]
 call  P_DivlineSide_
 mov   di, ax
 les   bx, dword ptr ds:[_cachedt2y] 
@@ -810,7 +798,8 @@ je    jump_to_cross_bsp_node_return_0_2	; todo optim out fallthru
 two_sided:
 mov   ax, SEGS_PHYSICS_SEGMENT
 mov   es, ax
-mov   bx, word ptr [bp - 0Ah]
+mov   bx, word ptr [bp - 4]	; word lookup
+sal   bx, 1						; dword lookup
 les   di, dword ptr es:[bx]
 mov   si, es
 
@@ -822,7 +811,6 @@ SHIFT_MACRO shl   si 4
 
 mov   ax, word ptr es:[di]
 
-add   bx, 2
 cmp   ax, word ptr es:[si]
 mov   ax, word ptr es:[di + 2]
 jne   floor_ceiling_heights_dont_match
@@ -841,7 +829,8 @@ set_opentop_to_frontsector:
 mov   ax, word ptr es:[di + 2]
 
 opentop_set:
-mov   word ptr [bp - 8], ax	; store opentop
+mov   cx, ax	; store opentop
+mov   word ptr cs:[SELFMODIFY_PSIGHT_setopentop + 1], ax
 mov   ax, word ptr es:[di]
 cmp   ax, word ptr es:[si]
 jg    set_openbottom_to_frontsector
@@ -852,9 +841,9 @@ jmp   cross_bsp_node_return_0	; todo optim out fallthru
 set_openbottom_to_frontsector:
 mov   bx, word ptr es:[di]
 openbottom_set:
-cmp   bx, word ptr [bp - 8]
+cmp   bx, cx
 jge   jump_to_cross_bsp_node_return_0_2
-lea   dx, [bp - 02Eh]
+lea   dx, [bp - 01Ah]
 push  di
 push  bx
 push  si
@@ -863,8 +852,8 @@ call  P_InterceptVector2_		; todo inline ?
 pop   si
 pop   bx
 pop   di
-mov   word ptr [bp - 016h], ax	; store frac
-mov   word ptr [bp - 014h], dx
+mov   word ptr [bp - 8], ax	; store frac
+mov   word ptr [bp - 6], dx
 mov   cx, SECTORS_SEGMENT
 mov   es, cx
 mov   cx, word ptr es:[di]
@@ -913,7 +902,8 @@ je    done_setting_topslope
 
 ; fixed height from shortheight
 xor   ax, ax
-mov   dx, word ptr [bp - 8]		; opentop
+SELFMODIFY_PSIGHT_setopentop:
+mov   dx, 01000h		; opentop
 sar   dx, 1
 rcr   ax, 1
 sar   dx, 1
@@ -924,7 +914,7 @@ rcr   ax, 1
 sub   ax, word ptr ds:[_sightzstart]
 sbb   dx, word ptr ds:[_sightzstart + 2]
 
-les   bx, dword ptr [bp - 016h]	; load frac into cx:bx
+les   bx, dword ptr [bp - 8]	; load frac into cx:bx
 mov   cx, es
 
 db 0FFh  ; lcall[addr]
@@ -941,7 +931,7 @@ update_topslope:
 mov   word ptr [bx], ax
 mov   word ptr [bx + 2], dx
 done_setting_topslope:
-les   dx, word ptr ds:[_topslope]
+les   dx, dword ptr ds:[_topslope]
 mov   ax, es
 cmp   ax, word ptr ds:[_bottomslope + 2]
 jl    cross_bsp_node_return_0
