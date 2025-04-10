@@ -361,7 +361,7 @@ PUBLIC  P_DivlineSide_
 
 ENDP
 
-; bx is always equal to strace todo optimize out
+; bx is always equal to strace
 PROC    P_DivlineSide16_ NEAR
 PUBLIC  P_DivlineSide16_
 
@@ -660,26 +660,26 @@ ENDP
 PROC    P_CrossSubsector_ NEAR
 PUBLIC  P_CrossSubsector_
 
-; bp - 2
+; bp - 2	lineflags
 ; bp - 4	unused (sectors segment)
 ; bp - 6	unused (sectors segment)
 ; bp - 8
 ; bp - 0A   4x segnum
 ; bp - 0C   2x segnum
 ; bp - 0E    count
-; bp - 010    
+; bp - 010   v2x
 ; bp - 012	segnum
 ; bp - 014   frac hibits
 ; bp - 016   frac lonits
 ; bp - 018
-; bp - 01A
+; bp - 01A   s1
 ; bp - 01C
-; bp - 01E
-; bp - 020    
+; bp - 01E  
+; bp - 020  (divl)  
 ; bp - 022
 ; bp - 024
 ; bp - 026
-; bp - 028
+; bp - 028  
 ; bp - 02A
 ; bp - 02C
 ; bp - 02E  divl
@@ -748,42 +748,47 @@ mov   byte ptr [bp - 2], al
 mov   ax, word ptr ds:[_validcount_global]
 mov   es, cx
 mov   word ptr es:[si + 8], ax
-mov   bx, VERTEXES_SEGMENT
-mov   di, word ptr es:[si]
-mov   ax, word ptr es:[si + 2]
+les   di, dword ptr es:[si]		; linev1Offset
+mov   bx, es					; linev2Offset
 SHIFT_MACRO shl   di 2
-and   ah, (VERTEX_OFFSET_MASK SHR 8)
-mov   es, bx
-mov   bx, ax
-mov   si, word ptr es:[di]
-mov   di, word ptr es:[di + 2]
+and   bh, (VERTEX_OFFSET_MASK SHR 8)
 SHIFT_MACRO shl   bx 2
-mov   dx, di
-mov   ax, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 2]
+mov   ax, VERTEXES_SEGMENT
+mov   es, ax
+mov   si, word ptr es:[di]		; v1.x
+mov   dx, word ptr es:[di + 2]  ; v1.y into dx
+les   ax, dword ptr es:[bx]		; v2.x
+
+mov   cx, ax					; back up v2.x (es backs up v2.y)
+
+sub   ax, si
+mov   word ptr [bp - 024h], ax   ;	divl.dx.h.intbits = v2.x - v1.x;
+mov   ax, es					; v2.y
+sub   ax, dx
+
+mov   word ptr [bp - 020h], ax  ;	divl.dy.h.intbits = v2.y - v1.y;
+mov   word ptr [bp - 028h], dx
+
+xchg  ax, si					; ax gets v1.x
+mov   word ptr [bp - 02Ch], ax
+
 mov   bx, OFFSET _strace
-mov   word ptr [bp - 010h], ax
-mov   ax, si
+
 call  P_DivlineSide16_
 ; bx still _strace
-mov   word ptr [bp - 01Ah], ax
-mov   dx, cx
-mov   ax, word ptr [bp - 010h]
+xchg  di, ax	; store s1 result
+mov   dx, es				; backed up v2.y
+mov   ax, cx				; backed up v2.x
 call  P_DivlineSide16_
-cmp   ax, word ptr [bp - 01Ah]
+cmp   ax, di
 je    cross_subsector_mainloop_increment
-mov   word ptr [bp - 02Ch], si
-mov   word ptr [bp - 028h], di
+; set up divl
 xor   ax, ax
-sub   cx, di
 mov   word ptr [bp - 02Eh], ax
 mov   word ptr [bp - 02Ah], ax
 mov   word ptr [bp - 026h], ax
 mov   word ptr [bp - 022h], ax
-mov   ax, word ptr [bp - 010h]
-mov   word ptr [bp - 020h], cx
-sub   ax, si
-mov   word ptr [bp - 024h], ax
+
 les   bx, dword ptr ds:[_strace + 4] 
 mov   cx, es
 les   ax, dword ptr ds:[_strace] 
@@ -798,20 +803,23 @@ mov   dx, es
 ; si still divl from above
 call  P_DivlineSide_
 cmp   di, ax
-jne   label_4
-jump_to_cross_subsector_mainloop_increment:
-jmp   cross_subsector_mainloop_increment
-label_4:
-test  byte ptr [bp - 2], ML_TWOSIDED
-jne   label_5
+je   side_crossed
+
+test  byte ptr [bp - 2], ML_TWOSIDED		; test flag
+jne   two_sided
 jump_to_cross_bsp_node_return_0:
 jmp   cross_bsp_node_return_0	; todo optim out fallthru
-label_5:
+side_crossed:
+jump_to_cross_subsector_mainloop_increment:
+jmp   cross_subsector_mainloop_increment
+
+two_sided:
 mov   ax, SEGS_PHYSICS_SEGMENT
 mov   es, ax
 mov   bx, word ptr [bp - 0Ah]
-mov   di, word ptr es:[bx]
-mov   si, word ptr es:[bx + 2]
+les   di, word ptr es:[bx]
+mov   si, es
+
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 
