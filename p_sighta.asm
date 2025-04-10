@@ -576,86 +576,6 @@ ret
 ENDP
 
 
-PROC    P_InterceptVector2_ NEAR
-PUBLIC  P_InterceptVector2_
-
-
-push  bp
-mov   bp, sp
-sub   sp, 8
-
-mov   si, dx
-mov   bx, word ptr [di + 8]
-mov   cx, word ptr [di + 0Ah]
-mov   ax, word ptr [si + 0Ch]
-mov   dx, word ptr [si + 0Eh]
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
-
-mov   word ptr [bp - 8], ax
-mov   word ptr [bp - 6], dx
-mov   bx, word ptr [di + 0Ch]
-mov   cx, word ptr [di + 0Eh]
-mov   ax, word ptr [si + 8]
-mov   dx, word ptr [si + 0Ah]
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
-
-mov   bx, word ptr [bp - 8]
-sub   bx, ax
-mov   ax, word ptr [bp - 6]
-sbb   ax, dx
-mov   word ptr [bp - 4], bx
-mov   word ptr [bp - 2], ax
-or    ax, bx
-je    denominator_0
-mov   bx, word ptr [si + 0Ch]
-mov   cx, word ptr [si + 0Eh]
-mov   ax, word ptr [si]
-mov   dx, word ptr [si + 2]
-sub   ax, word ptr [di]
-sbb   dx, word ptr [di + 2]
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
-
-mov   word ptr [bp - 8], ax
-mov   word ptr [bp - 6], dx
-mov   bx, word ptr [si + 8]
-mov   cx, word ptr [si + 0Ah]
-mov   ax, word ptr [di + 4]
-mov   dx, word ptr [di + 6]
-sub   ax, word ptr [si + 4]
-sbb   dx, word ptr [si + 6]
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
-
-mov   bx, word ptr [bp - 4]
-mov   cx, word ptr [bp - 2]
-add   ax, word ptr [bp - 8]
-adc   dx, word ptr [bp - 6]
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDiv_addr
-
-LEAVE_MACRO
-ret   
-denominator_0:
-xor   dx, dx
-LEAVE_MACRO 
-ret   
-
-
-ENDP
-
 
 PROC    P_CrossSubsector_ NEAR
 PUBLIC  P_CrossSubsector_
@@ -673,7 +593,10 @@ PUBLIC  P_CrossSubsector_
 ; bp - 016  (divl)
 ; bp - 018  (divl)
 ; bp - 01A  divl start
-
+; bp - 01Ch   [used by inlined P_InterceptVector2_ ]
+; bp - 01Eh   [used by inlined P_InterceptVector2_ ]
+; bp - 020h	  [used by inlined P_InterceptVector2_ ]
+; bp - 022h   [used by inlined P_InterceptVector2_ ]
 
 
 
@@ -684,7 +607,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 01Ah
+sub   sp, 022h
 mov   bx, ax		; todo swap this argument order
 mov   ax, SUBSECTOR_LINES_SEGMENT
 mov   es, ax
@@ -843,15 +766,86 @@ mov   bx, word ptr es:[di]
 openbottom_set:
 cmp   bx, cx
 jge   jump_to_cross_bsp_node_return_0_2
-lea   dx, [bp - 01Ah]
 push  di
 push  bx
 push  si
 mov   di, OFFSET _strace
-call  P_InterceptVector2_		; todo inline ?
+
+; inlined P_InterceptVector2_
+
+lea   si, [bp - 01Ah]
+mov   bx, word ptr [di + 8]
+mov   cx, word ptr [di + 0Ah]
+mov   ax, word ptr [si + 0Ch]
+mov   dx, word ptr [si + 0Eh]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
+
+mov   word ptr [bp - 022h], ax
+mov   word ptr [bp - 020h], dx
+mov   bx, word ptr [di + 0Ch]
+mov   cx, word ptr [di + 0Eh]
+mov   ax, word ptr [si + 8]
+mov   dx, word ptr [si + 0Ah]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
+
+mov   bx, word ptr [bp - 022h]
+sub   bx, ax
+mov   ax, word ptr [bp - 020h]
+sbb   ax, dx
+mov   word ptr [bp - 01Eh], bx
+mov   word ptr [bp - 01Ch], ax
+or    ax, bx
+je    denominator_0
+mov   bx, word ptr [si + 0Ch]
+mov   cx, word ptr [si + 0Eh]
+mov   ax, word ptr [si]
+mov   dx, word ptr [si + 2]
+sub   ax, word ptr [di]
+sbb   dx, word ptr [di + 2]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
+
+mov   word ptr [bp - 022h], ax
+mov   word ptr [bp - 020h], dx
+mov   bx, word ptr [si + 8]
+mov   cx, word ptr [si + 0Ah]
+mov   ax, word ptr [di + 4]
+mov   dx, word ptr [di + 6]
+sub   ax, word ptr [si + 4]
+sbb   dx, word ptr [si + 6]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
+
+mov   bx, word ptr [bp - 01Eh]
+mov   cx, word ptr [bp - 01Ch]
+add   ax, word ptr [bp - 022h]
+adc   dx, word ptr [bp - 020h]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
+
+jmp done_with_intercept_vector
+
+denominator_0:
+xor   dx, dx
+
+done_with_intercept_vector:
+
 pop   si
 pop   bx
 pop   di
+
 mov   word ptr [bp - 8], ax	; store frac
 mov   word ptr [bp - 6], dx
 mov   cx, SECTORS_SEGMENT
