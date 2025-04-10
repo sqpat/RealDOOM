@@ -579,14 +579,11 @@ ENDP
 PROC    P_InterceptVector2_ NEAR
 PUBLIC  P_InterceptVector2_
 
-push  bx
-push  cx
-push  si
-push  di
+
 push  bp
 mov   bp, sp
 sub   sp, 8
-mov   di, ax
+
 mov   si, dx
 mov   bx, word ptr [di + 8]
 mov   cx, word ptr [di + 0Ah]
@@ -650,18 +647,10 @@ db 01Eh  ;
 dw _FixedDiv_addr
 
 LEAVE_MACRO
-pop   di
-pop   si
-pop   cx
-pop   bx
 ret   
 denominator_0:
 xor   dx, dx
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
 ret   
 
 
@@ -672,28 +661,28 @@ PROC    P_CrossSubsector_ NEAR
 PUBLIC  P_CrossSubsector_
 
 ; bp - 2
-; bp - 4	sectors segment
-; bp - 6	sectors segment
+; bp - 4	unused (sectors segment)
+; bp - 6	unused (sectors segment)
 ; bp - 8
 ; bp - 0A   4x segnum
 ; bp - 0C   2x segnum
 ; bp - 0E    count
-; bp - 10    
-; bp - 12	segnum
-; bp - 14
-; bp - 16
-; bp - 18
-; bp - 1A
-; bp - 1C
-; bp - 1E
-; bp - 20    
-; bp - 22
-; bp - 24
-; bp - 26
-; bp - 28
-; bp - 2A
-; bp - 2C
-; bp - 2E
+; bp - 010    
+; bp - 012	segnum
+; bp - 014   frac hibits
+; bp - 016   frac lonits
+; bp - 018
+; bp - 01A
+; bp - 01C
+; bp - 01E
+; bp - 020    
+; bp - 022
+; bp - 024
+; bp - 026
+; bp - 028
+; bp - 02A
+; bp - 02C
+; bp - 02E  divl
 
 
 push  bx
@@ -728,13 +717,12 @@ mov   ax, SEG_LINEDEFS_SEGMENT
 mov   bx, word ptr [bp - 0Ch]
 mov   es, ax
 mov   ax, word ptr es:[bx]
-mov   cx, LINES_PHYSICS_SEGMENT
 mov   si, ax
-mov   es, cx
 SHIFT_MACRO shl si 4
-mov   bx, _validcount_global
+mov   cx, LINES_PHYSICS_SEGMENT
+mov   es, cx
 mov   dx, word ptr es:[si + 8]
-cmp   dx, word ptr [bx]
+cmp   dx, word ptr ds:[_validcount_global]
 jne   do_full_loop_iteration
 cross_subsector_mainloop_increment:
 add   word ptr [bp - 0Ch], 2
@@ -753,12 +741,11 @@ pop   bx
 ret   
 do_full_loop_iteration:
 mov   dx, LINEFLAGSLIST_SEGMENT
-mov   bx, ax
 mov   es, dx
+mov   bx, ax
 mov   al, byte ptr es:[bx]
-mov   bx, _validcount_global
 mov   byte ptr [bp - 2], al
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[_validcount_global]
 mov   es, cx
 mov   word ptr es:[si + 8], ax
 mov   bx, VERTEXES_SEGMENT
@@ -778,7 +765,7 @@ mov   bx, OFFSET _strace
 mov   word ptr [bp - 010h], ax
 mov   ax, si
 call  P_DivlineSide16_
-mov   bx, OFFSET _strace
+; bx still _strace
 mov   word ptr [bp - 01Ah], ax
 mov   dx, cx
 mov   ax, word ptr [bp - 010h]
@@ -796,25 +783,19 @@ mov   word ptr [bp - 022h], ax
 mov   ax, word ptr [bp - 010h]
 mov   word ptr [bp - 020h], cx
 sub   ax, si
-mov   si, OFFSET _strace + 4
 mov   word ptr [bp - 024h], ax
-mov   bx, OFFSET _strace + 4
-mov   cx, word ptr [si + 2]
-mov   si, OFFSET _strace
-mov   bx, word ptr [bx]
-mov   ax, word ptr [si]
-mov   dx, word ptr [si + 2]
+les   bx, dword ptr ds:[_strace + 4] 
+mov   cx, es
+les   ax, dword ptr ds:[_strace] 
+mov   dx, es
 lea   si, [bp - 02Eh]
 call  P_DivlineSide_
-mov   bx, OFFSET _cachedt2y
-mov   si, OFFSET _cachedt2y
 mov   di, ax
-mov   cx, word ptr [si + 2]
-mov   si, OFFSET _cachedt2x
-mov   bx, word ptr [bx]
-mov   ax, word ptr [si]
-mov   dx, word ptr [si + 2]
-lea   si, [bp - 02Eh]
+les   bx, dword ptr ds:[_cachedt2y] 
+mov   cx, es
+les   ax, dword ptr ds:[_cachedt2x] 
+mov   dx, es
+; si still divl from above
 call  P_DivlineSide_
 cmp   di, ax
 jne   label_4
@@ -827,41 +808,35 @@ jump_to_cross_bsp_node_return_0:
 jmp   cross_bsp_node_return_0	; todo optim out fallthru
 label_5:
 mov   ax, SEGS_PHYSICS_SEGMENT
-mov   bx, word ptr [bp - 0Ah]
-mov   word ptr [bp - 4], SECTORS_SEGMENT		; todo remove
 mov   es, ax
-mov   word ptr [bp - 6], SECTORS_SEGMENT		; todo remove
+mov   bx, word ptr [bp - 0Ah]
 mov   di, word ptr es:[bx]
 mov   si, word ptr es:[bx + 2]
-mov   es, word ptr [bp - 4]
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+
 SHIFT_MACRO shl   di 4
 SHIFT_MACRO shl   si 4
+
 mov   ax, word ptr es:[di]
-mov   es, word ptr [bp - 6]
+
 add   bx, 2
 cmp   ax, word ptr es:[si]
 jne   label_6
-mov   es, word ptr [bp - 4]
 mov   ax, word ptr es:[di + 2]
-mov   es, word ptr [bp - 6]
 cmp   ax, word ptr es:[si + 2]
 je    jump_to_cross_subsector_mainloop_increment
 label_6:
-mov   es, word ptr [bp - 4]
 mov   ax, word ptr es:[di + 2]
-mov   es, word ptr [bp - 6]
 cmp   ax, word ptr es:[si + 2]
 jl    label_7
 mov   ax, word ptr es:[si + 2]
 jmp   label_8
 label_7:
-mov   es, word ptr [bp - 4]
 mov   ax, word ptr es:[di + 2]
 label_8:
 mov   word ptr [bp - 8], ax
-mov   es, word ptr [bp - 4]
 mov   ax, word ptr es:[di]
-mov   es, word ptr [bp - 6]
 cmp   ax, word ptr es:[si]
 jg    label_9
 mov   bx, word ptr es:[si]
@@ -869,24 +844,29 @@ jmp   label_10
 jump_to_cross_bsp_node_return_0_2:
 jmp   cross_bsp_node_return_0	; todo optim out fallthru
 label_9:
-mov   es, word ptr [bp - 4]
 mov   bx, word ptr es:[di]
 label_10:
 cmp   bx, word ptr [bp - 8]
 jge   jump_to_cross_bsp_node_return_0_2
 lea   dx, [bp - 02Eh]
-mov   ax, OFFSET _strace
-call  P_InterceptVector2_		; todo inline
-mov   es, word ptr [bp - 4]
+push  di
+push  bx
+push  si
+mov   di, OFFSET _strace
+call  P_InterceptVector2_		; todo inline ?
+pop   si
+pop   bx
+pop   di
 mov   word ptr [bp - 016h], ax
 mov   word ptr [bp - 014h], dx
+mov   cx, SECTORS_SEGMENT
+mov   es, cx
 mov   cx, word ptr es:[di]
-mov   es, word ptr [bp - 6]
 cmp   cx, word ptr es:[si]
 je    label_11
 mov   cx, bx
 and   bx, 7
-sar   cx, 3
+SHIFT_MACRO sar   cx 3
 SHIFT_MACRO shl   bx 0Dh
 mov   word ptr [bp - 01Eh], cx
 mov   word ptr [bp - 01Ch], bx
@@ -919,13 +899,13 @@ label_12:
 mov   word ptr [bx], ax
 mov   word ptr [bx + 2], dx
 label_11:
-mov   es, word ptr [bp - 4]
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
 mov   ax, word ptr es:[di + 2]
-mov   es, word ptr [bp - 6]
 cmp   ax, word ptr es:[si + 2]
 je    label_13
 mov   ax, word ptr [bp - 8]
-sar   ax, 3
+SHIFT_MACRO sar   ax 3
 mov   word ptr [bp - 01Eh], ax
 mov   ax, word ptr [bp - 8]
 and   ax, 7
