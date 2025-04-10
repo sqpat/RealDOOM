@@ -149,6 +149,7 @@ int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __nea
 }
 
 */
+int16_t  __near P_DivlineSide16 ( int16_t	x, int16_t	y, divline_t __near*	node );
 
 /*
 

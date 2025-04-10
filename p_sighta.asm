@@ -361,110 +361,114 @@ PUBLIC  P_DivlineSide_
 
 ENDP
 
-
+; bx is always equal to strace todo optimize out
 PROC    P_DivlineSide16_ NEAR
 PUBLIC  P_DivlineSide16_
 
 	push cx
-	push si
-	push di
 	mov  cx, ax
 	mov  ax, word ptr [bx + 0Ah]
 	or   ax, word ptr [bx + 8]
-	jne  label_1
-	mov  ax, word ptr [bx + 2]
-	cmp  cx, ax
-	je   label_2
-	jg   label_3
+	jne  node_dx_nonzero_16
+	cmp  cx, word ptr [bx + 2]
+	je   return_2_16
 	mov  ax, word ptr [bx + 0Eh]
+	jg   test_x_highbits_16
 	test ax, ax
-	jg   label_4
+	jg   return_1_16
 	jne  return_0_divlineside_16
 	cmp  word ptr [bx + 0Ch], 0
 	jbe  return_0_divlineside_16
-	label_4:
+	return_1_16:
 	mov  ax, 1
-	exit_divlineside_16:
-	pop  di
-	pop  si
 	pop  cx
 	ret  
-	label_2:
+	return_2_16:
 	mov  ax, 2
-	jmp  exit_divlineside_16
+	pop  cx
+	ret  
 	return_0_divlineside_16:
 	xor  ax, ax
-	jmp  exit_divlineside_16
-	label_3:
-	mov  ax, word ptr [bx + 0Eh]
+	pop  cx
+	ret  
+	test_x_highbits_16:
 	test ax, ax
-	jl   label_4
+	jl   return_1_16
 	xor  ax, ax
-	jmp  exit_divlineside_16
-	label_1:
+	pop  cx
+	ret  
+	node_dx_nonzero_16:
 	mov  ax, word ptr [bx + 0Eh]
 	or   ax, word ptr [bx + 0Ch]
-	jne  label_7
+	jne  node_dy_nonzero_16
 	mov  ax, word ptr [bx + 6]
 	cmp  cx, ax
-	je   label_2
+	je   return_2_16
 	cmp  dx, ax
-	jg   label_8
+	jg   test_y_highbits_16
 	mov  ax, word ptr [bx + 0Ah]
 	test ax, ax
-	jl   label_4
+	jl   return_1_16
 	xor  ax, ax
-	pop  di
-	pop  si
 	pop  cx
-	ret  
-	label_8:
+	ret
+	
+	test_y_highbits_16:
 	mov  ax, word ptr [bx + 0Ah]
 	test ax, ax
-	jg   label_4
+	jg   return_1_16
 	jne  return_0_divlineside_16_2
 	cmp  word ptr [bx + 8], 0
-	ja   label_4
+	ja   return_1_16
 	return_0_divlineside_16_2:
 	xor  ax, ax
-	pop  di
-	pop  si
 	pop  cx
 	ret  
-	label_7:
-	mov  ax, cx
-	xor  cx, cx
-	sub  cx, word ptr [bx]
-	mov  cx, ax
-	mov  di, dx
+	node_dy_nonzero_16:
+	
+	push di	; need this extra register
+	; todo just mov and neg?	
+	xor  ax, ax
+	sub  ax, word ptr [bx]
 	sbb  cx, word ptr [bx + 2]
-	xor  dx, dx
-	mov  ax, word ptr [bx + 0Eh]
-	sub  dx, word ptr [bx + 4]
-	mov  dx, cx
+
+	mov  di, dx
+
+	xor  ax, ax
+	sub  ax, word ptr [bx + 4]
 	sbb  di, word ptr [bx + 6]
-	imul dx
-	mov  si, ax
+
+	xchg ax, cx		
+	imul word ptr [bx + 0Eh]
+	xchg ax, di		; cx:di gets result
 	mov  cx, dx
-	mov  ax, di
-	mov  dx, word ptr [bx + 0Ah]
-	imul dx
+	
+	imul word ptr [bx + 0Ah]
 	cmp  dx, cx
-	jl   return_0_divlineside_16_2
-	jne  label_6
-	cmp  ax, si
-	jb   return_0_divlineside_16_2
-	label_6:
+	jl   return_0_divlineside_16_3
+	jne  test_right_left_16
+	cmp  ax, di
+	jb   return_0_divlineside_16_3
+	test_right_left_16:
 	cmp  cx, dx
-	je   label_5
-	label_9:
-	jmp  label_4
-	label_5:
-	cmp  si, ax
-	jne  label_9
+	je   test_right_left_highbits_16
+	return_1_2_16:
+	mov  ax, 1
+	pop  di
+	pop  cx
+	ret  
+
+	return_0_divlineside_16_3:
+	xor  ax, ax
+	pop  di
+	pop  cx
+	ret  
+
+	test_right_left_highbits_16:
+	cmp  di, ax
+	jne  return_1_2_16
 	mov  ax, 2
 	pop  di
-	pop  si
 	pop  cx
 	ret  
 
