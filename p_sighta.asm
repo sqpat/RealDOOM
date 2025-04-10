@@ -480,10 +480,8 @@ PUBLIC  P_DivlineSideNode_
 
 
 SHIFT_MACRO shl si 3
-push  ax
-mov   ax, NODES_SEGMENT		; todo move this out?
-mov   es, ax
-pop   ax
+
+; es is NODES_SEGMENT
 cmp   word ptr es:[si + 4], 0
 jne   node_dx_nonzero_node
 
@@ -673,6 +671,10 @@ ENDP
 NF_SUBSECTOR  = 08000h
 NOT_NF_SUBSECTOR  = 07FFFh
 
+
+; what the heck?
+; openwatcom turned this from a recursive to iterative function??? hello?? 
+
 PROC    P_CrossBSPNode_ NEAR
 PUBLIC  P_CrossBSPNode_
 
@@ -684,24 +686,26 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 4
-push  ax
-test  byte ptr [bp - 5], (NF_SUBSECTOR SHR 8)
-je    label_1
-jmp   label_2
-label_1:
-mov   si, OFFSET _strace + 4
-mov   bx, OFFSET _strace + 4
-mov   cx, word ptr [si + 2]
+push  ax				; bp - 6
+test  ah, (NF_SUBSECTOR SHR 8)
+jne    is_subsector
+
+iterate_bsp_recursion:
 mov   si, OFFSET _strace
-mov   bx, word ptr [bx]
-mov   ax, word ptr [si]
-mov   dx, word ptr [si + 2]
+les   bx, dword ptr [si + 4]
+mov   cx, es
+les   ax, dword ptr [si]
+mov   dx, es
+
+mov   si, NODES_SEGMENT		; todo move this out?
+mov   es, si
 mov   si, word ptr [bp - 6]
+
 call  P_DivlineSideNode_
 and   al, 1
 mov   byte ptr [bp - 2], al
 mov   ax, word ptr [bp - 6]
-shl   ax, 2
+SHIFT_MACRO shl ax 2
 mov   word ptr [bp - 4], ax
 mov   al, byte ptr [bp - 2]
 cbw  
@@ -709,41 +713,48 @@ mov   bx, ax
 mov   di, ax
 add   bx, ax
 mov   ax, NODE_CHILDREN_SEGMENT
-add   bx, word ptr [bp - 4]
 mov   es, ax
+add   bx, word ptr [bp - 4]
 mov   ax, word ptr es:[bx]
 call  P_CrossBSPNode_
 test  al, al
 je    exit_crossbspnode
-mov   si, OFFSET _cachedt2y
-mov   bx, OFFSET _cachedt2y
-mov   cx, word ptr [si + 2]
 mov   si, OFFSET _cachedt2x
-mov   bx, word ptr [bx]
-mov   ax, word ptr [si]
-mov   dx, word ptr [si + 2]
+les   bx, dword ptr [si + 4]	; cachedt2y
+mov   cx, es
+les   ax, dword ptr [si] 
+mov   dx, es
+
+mov   si, NODES_SEGMENT
+mov   es, si
 mov   si, word ptr [bp - 6]
 call  P_DivlineSideNode_
 cmp   di, ax
 je    cross_bsp_node_return_1
+mov   ax, NODE_CHILDREN_SEGMENT
+mov   es, ax
 mov   al, byte ptr [bp - 2]
 xor   al, 1
-mov   dx, NODE_CHILDREN_SEGMENT
 cbw
 mov   bx, word ptr [bp - 4]
-add   ax, ax
-mov   es, dx
-add   bx, ax
+sal   ax, 1		
+add   bx, ax ; add side offset
+
+; this right here!!! inlined function call to itself.
+
 mov   ax, word ptr es:[bx]
 mov   word ptr [bp - 6], ax
 test  ah, (NF_SUBSECTOR SHR 8)
-je    label_1
-label_2:
+je    iterate_bsp_recursion
+
+; this fallthru should be impossible????
+is_subsector:
 mov   ax, word ptr [bp - 6]
 cmp   ax, 0FFFFh
 jne   do_subsector_flag
+; call with 0
 xor   ax, ax
-label_3:
+do_cross_subsector_call:
 call  P_CrossSubsector_
 exit_crossbspnode:
 LEAVE_MACRO 
@@ -755,7 +766,7 @@ pop   bx
 ret   
 do_subsector_flag:
 and   ah, (NOT_NF_SUBSECTOR SHR 8)
-jmp   label_3
+jmp   do_cross_subsector_call
 cross_bsp_node_return_1:
 mov   al, 1
 LEAVE_MACRO
