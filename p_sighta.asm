@@ -253,13 +253,14 @@ PUBLIC  P_DivlineSide_
 	mov  dx, cx
 	mov  cx, word ptr [si + 0Ah]	; if (!node->dx.w) {
 	or   cx, word ptr [si + 8]
+	; todo seems to be some repeated logic in here...
 	jne  node_dx_nonzero
 	cmp  ax, word ptr [si + 2]
 	jne  node_dx_not_x
 	cmp  bx, word ptr [si]
 	je   return_2
-	node_dx_not_x:
 	cmp  ax, word ptr [si + 2]
+	node_dx_not_x:
 	jl   x_less_than_nodex
 	jne  x_more_than_nodex
 	cmp  bx, word ptr [si]
@@ -325,24 +326,22 @@ PUBLIC  P_DivlineSide_
 	pop  di
 	ret
 	node_dy_nonzero:
-	mov  cx, ax
 	sub  bx, word ptr [si]
-	mov  ax, word ptr [si + 0Eh]
-	sbb  cx, word ptr [si + 2]
+	sbb  ax, word ptr [si + 2]
+
 	sub  di, word ptr [si + 4]
+	sbb  dx, word ptr [si + 6]
 	mov  di, dx
-	mov  dx, cx
-	sbb  di, word ptr [si + 6]
-	imul dx
-	mov  cx, ax
+
+	imul word ptr [si + 0Eh]
+
 	mov  bx, dx
-	mov  ax, di
-	mov  dx, word ptr [si + 0Ah]
-	imul dx
+	xchg ax, di	; bx:di gets result..
+	imul word ptr [si + 0Ah]
 	cmp  dx, bx
 	jl   return_0_2
 	jne  compare_leftright
-	cmp  ax, cx
+	cmp  ax, di
 	jb   return_0_2
 	compare_leftright:
 	cmp  bx, dx
@@ -352,7 +351,7 @@ PUBLIC  P_DivlineSide_
 	pop  di
 	ret
 	compare_leftright_low:
-	cmp  cx, ax
+	cmp  di, ax
 	jne  return_1_2
 	mov  ax, 2
 	pop  di
@@ -412,7 +411,7 @@ PUBLIC  P_DivlineSide16_
 	xor  ax, ax
 	pop  cx
 	ret
-	
+
 	test_y_highbits_16:
 	mov  ax, word ptr [bx + 0Ah]
 	test ax, ax
