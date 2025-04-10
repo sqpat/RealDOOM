@@ -663,25 +663,25 @@ PUBLIC  P_CrossSubsector_
 ; bp - 2	lineflags
 ; bp - 4	unused (sectors segment)
 ; bp - 6	unused (sectors segment)
-; bp - 8
+; bp - 8    opentop ?
 ; bp - 0A   4x segnum
 ; bp - 0C   2x segnum
 ; bp - 0E    count
-; bp - 010   v2x
+; bp - 010  unused (v2x)
 ; bp - 012	segnum
 ; bp - 014   frac hibits
 ; bp - 016   frac lonits
-; bp - 018
+; bp - 018  unused (was an intermediate)
 ; bp - 01A   s1
-; bp - 01C
-; bp - 01E  
-; bp - 020  (divl)  
-; bp - 022
-; bp - 024
-; bp - 026
-; bp - 028  
-; bp - 02A
-; bp - 02C
+; bp - 01C  temp lobits (unused)
+; bp - 01E  temp hibits
+; bp - 020  (divl end)  
+; bp - 022  (divl)
+; bp - 024  (divl)
+; bp - 026  (divl)
+; bp - 028  (divl)
+; bp - 02A  (divl)
+; bp - 02C  (divl)
 ; bp - 02E  divl
 
 
@@ -744,7 +744,7 @@ mov   dx, LINEFLAGSLIST_SEGMENT
 mov   es, dx
 mov   bx, ax
 mov   al, byte ptr es:[bx]
-mov   byte ptr [bp - 2], al
+mov   byte ptr [bp - 2], al				; todo selfmodify ahead
 mov   ax, word ptr ds:[_validcount_global]
 mov   es, cx
 mov   word ptr es:[si + 8], ax
@@ -758,7 +758,6 @@ mov   es, ax
 mov   si, word ptr es:[di]		; v1.x
 mov   dx, word ptr es:[di + 2]  ; v1.y into dx
 les   ax, dword ptr es:[bx]		; v2.x
-
 mov   cx, ax					; back up v2.x (es backs up v2.y)
 
 sub   ax, si
@@ -767,10 +766,10 @@ mov   ax, es					; v2.y
 sub   ax, dx
 
 mov   word ptr [bp - 020h], ax  ;	divl.dy.h.intbits = v2.y - v1.y;
-mov   word ptr [bp - 028h], dx
+mov   word ptr [bp - 028h], dx	;   v1.y
 
 xchg  ax, si					; ax gets v1.x
-mov   word ptr [bp - 02Ch], ax
+mov   word ptr [bp - 02Ch], ax  ;   v1.x
 
 mov   bx, OFFSET _strace
 
@@ -825,12 +824,11 @@ mov   ax, word ptr es:[di]
 
 add   bx, 2
 cmp   ax, word ptr es:[si]
-jne   floor_ceiling_heights_dont_match
 mov   ax, word ptr es:[di + 2]
+jne   floor_ceiling_heights_dont_match
 cmp   ax, word ptr es:[si + 2]
 je    jump_to_cross_subsector_mainloop_increment
 floor_ceiling_heights_dont_match:
-mov   ax, word ptr es:[di + 2]
 cmp   ax, word ptr es:[si + 2]
 jl    set_opentop_to_frontsector
 mov   ax, word ptr es:[si + 2]
@@ -841,8 +839,9 @@ jmp   cross_subsector_mainloop_increment
 
 set_opentop_to_frontsector:
 mov   ax, word ptr es:[di + 2]
+
 opentop_set:
-mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 8], ax	; store opentop
 mov   ax, word ptr es:[di]
 cmp   ax, word ptr es:[si]
 jg    set_openbottom_to_frontsector
@@ -864,32 +863,32 @@ call  P_InterceptVector2_		; todo inline ?
 pop   si
 pop   bx
 pop   di
-mov   word ptr [bp - 016h], ax
+mov   word ptr [bp - 016h], ax	; store frac
 mov   word ptr [bp - 014h], dx
 mov   cx, SECTORS_SEGMENT
 mov   es, cx
 mov   cx, word ptr es:[di]
 cmp   cx, word ptr es:[si]
 je    done_setting_bottomslope
-mov   cx, bx
-and   bx, 7
-SHIFT_MACRO sar   cx 3
-SHIFT_MACRO shl   bx 0Dh
-mov   word ptr [bp - 01Eh], cx
-mov   word ptr [bp - 01Ch], bx
-mov   cx, bx
-mov   bx, OFFSET _sightzstart
-mov   word ptr [bp - 01Ah], OFFSET _sightzstart
-sub   cx, word ptr [bx]
-mov   bx, word ptr [bp - 01Ah]
-mov   word ptr [bp - 01Ah], cx
-mov   cx, word ptr [bp - 01Eh]
-sbb   cx, word ptr [bx + 2]
-mov   word ptr [bp - 018h], cx
-mov   bx, ax
-mov   ax, word ptr [bp - 01Ah]
-mov   cx, dx
-mov   dx, word ptr [bp - 018h]
+
+; fixed height from shortheight
+
+xor   cx, cx
+sar   bx, 1
+rcr   cx, 1
+sar   bx, 1
+rcr   cx, 1
+sar   bx, 1
+rcr   cx, 1
+
+; BX:CX has what should become dx:ax
+; dx:ax has what should become cx:bx...
+
+xchg ax, cx
+sub   ax, word ptr ds:[_sightzstart]
+xchg dx, bx
+sbb   dx, word ptr ds:[_sightzstart + 2]
+xchg cx, bx			;  frac into cx:bx
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -911,19 +910,22 @@ mov   es, ax
 mov   ax, word ptr es:[di + 2]
 cmp   ax, word ptr es:[si + 2]
 je    done_setting_topslope
-mov   ax, word ptr [bp - 8]
-SHIFT_MACRO sar   ax 3
-mov   word ptr [bp - 01Eh], ax
-mov   ax, word ptr [bp - 8]
-and   ax, 7
-mov   bx, OFFSET _sightzstart
-SHIFT_MACRO shl   ax 0Dh		; todo macro? whats this
-mov   cx, word ptr [bp - 014h]
-mov   word ptr [bp - 01Ch], ax
-sub   ax, word ptr [bx]
-mov   dx, word ptr [bp - 01Eh]
-sbb   dx, word ptr [bx + 2]
-mov   bx, word ptr [bp - 016h]
+
+; fixed height from shortheight
+xor   ax, ax
+mov   dx, word ptr [bp - 8]		; opentop
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+
+sub   ax, word ptr ds:[_sightzstart]
+sbb   dx, word ptr ds:[_sightzstart + 2]
+
+les   bx, dword ptr [bp - 016h]	; load frac into cx:bx
+mov   cx, es
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -939,14 +941,12 @@ update_topslope:
 mov   word ptr [bx], ax
 mov   word ptr [bx + 2], dx
 done_setting_topslope:
-mov   bx, OFFSET _topslope
-mov   dx, word ptr [bx]
-mov   ax, word ptr [bx + 2]
-mov   bx, OFFSET _bottomslope
-cmp   ax, word ptr [bx + 2]
+les   dx, word ptr ds:[_topslope]
+mov   ax, es
+cmp   ax, word ptr ds:[_bottomslope + 2]
 jl    cross_bsp_node_return_0
 jne   jump_to_cross_subsector_mainloop_increment_2
-cmp   dx, word ptr [bx]
+cmp   dx, word ptr ds:[_bottomslope]
 ja    jump_to_cross_subsector_mainloop_increment_2
 cross_bsp_node_return_0:
 xor   al, al
