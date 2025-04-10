@@ -486,30 +486,30 @@ cmp   word ptr es:[si + 4], 0
 jne   node_dx_nonzero_node
 mov   ax, word ptr es:[si]
 cmp   dx, ax
-jne   label_2
+jne   node_dx_compare_1
 test  di, di
-je    label_3
+je    return_2_node
 cmp   dx, ax
-label_2:
-jl    label_4
-jne   label_6
+node_dx_compare_1:
+jl    node_dx_compare_2
+jne   node_dx_compare_3
 test  di, di
-jbe   label_4
-label_6:
+jbe   node_dx_compare_2
+node_dx_compare_3:
 cmp   word ptr es:[si + 6], 0
-jl    label_5
+jl    return_1_node
 return_0_node:
 xor   ax, ax
 pop   di
 ret   
-label_3:
+return_2_node:
 mov   ax, 2
 pop   di
 ret   
-label_4:
+node_dx_compare_2:
 cmp   word ptr es:[si + 6], 0
 jle   return_0_node
-label_5:
+return_1_node:
 mov   ax, 1
 pop   di
 ret   
@@ -518,56 +518,49 @@ cmp   word ptr es:[si + 6], 0
 jne   node_dy_nonzero_node
 mov   ax, word ptr es:[si + 2]
 cmp   dx, ax
-jne   label_10
+jne   node_dy_compare_1
 test  di, di
-je    label_3
-label_10:
+je    return_2_node
+node_dy_compare_1:
 cmp   cx, ax
-jl    label_7
-jne   label_8
+jl    node_dy_compare_2
+jne   node_dy_compare_3
 cmp   bx, 0
-jbe   label_7
-label_8:
+jbe   node_dy_compare_2
+node_dy_compare_3:
 cmp   word ptr es:[si + 4], 0
 jle   return_0_node
 mov   ax, 1
 pop   di
 ret   
-label_7:
+node_dy_compare_2:
 cmp   word ptr es:[si + 4], 0
 jge   return_0_node
-return_1_node:
+return_1_node_2:
 mov   ax, 1
 pop   di
 ret   
 
 node_dy_nonzero_node:
-mov   ax, word ptr es:[si]
-sub   di, 0
-sbb   dx, ax
-mov   ax, word ptr es:[si + 2]
-sub   bx, 0
-mov   bx, cx
-sbb   bx, ax
-mov   ax, word ptr es:[si + 6]
-imul  dx
+sub   dx, word ptr es:[si]
+sub   cx, word ptr es:[si + 2]
+xchg  ax, dx
+imul  word ptr es:[si + 6]
 
-mov   di, ax
-mov   cx, dx
-mov   ax, bx
-mov   dx, word ptr es:[si + 4]
-imul  dx
-cmp   dx, cx
+xchg  ax, cx
+mov   bx, dx				; result to bx:cx
+imul  word ptr es:[si + 4]
+cmp   dx, bx
 jl    return_0_node
-jne   label_11
-cmp   ax, di
-jae   label_11
+jne   compare_leftright_node
+cmp   ax, cx
+jae   compare_leftright_node
 jmp   return_0_node
-label_11:
-cmp   cx, dx
-jne   return_1_node
-cmp   di, ax
-jne   return_1_node
+compare_leftright_node:
+cmp   bx, dx
+jne   return_1_node_2
+cmp   cx, ax
+jne   return_1_node_2
 mov   ax, 2
 pop   di
 ret   
