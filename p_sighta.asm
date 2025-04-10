@@ -564,7 +564,8 @@ jl    return_0_node
 jne   compare_leftright_node
 cmp   ax, cx
 jae   compare_leftright_node
-jmp   return_0_node
+xor   ax, ax
+ret
 compare_leftright_node:
 cmp   bx, dx
 jne   return_1_node_2
