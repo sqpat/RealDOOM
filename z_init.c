@@ -578,6 +578,8 @@ void __near Z_LoadBinaries() {
 	M_Drawer_addr = 				(uint32_t)(M_Drawer);
 
 	FixedMul_addr = 				(uint32_t)(FixedMul);
+	FixedMul2432_addr = 			(uint32_t)(FixedMul2432);
+	FixedDiv_addr =					(uint32_t)(FixedDiv);
 	//FixedMul1632_addr = 			(uint32_t)(FixedMul1632);
 	FastDiv3232_addr = 				(uint32_t)(FastDiv3232FFFF);
 	R_GetMaskedColumnSegment_addr = (uint32_t)(R_GetMaskedColumnSegment);

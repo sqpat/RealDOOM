@@ -241,7 +241,7 @@ _fixedcolormap = 					_NULL_OFFSET + 002BFh
 
 
 _FixedMul_addr =               		 _NULL_OFFSET + 002C0h
-;_FixedMul1632_addr =                 _NULL_OFFSET + 002C4h
+_FixedDiv_addr =                     _NULL_OFFSET + 002C4h
 _FastDiv3232_addr =                  _NULL_OFFSET + 002C8h
 _R_GetMaskedColumnSegment_addr =     _NULL_OFFSET + 002CCh
 
@@ -252,7 +252,8 @@ _colfunc_call_lookup =               _NULL_OFFSET + 002D0h
 _getspritetexture_addr =             _NULL_OFFSET + 00354h
 _psprites =              			 _NULL_OFFSET + 00358h
 
-; 360-367 free
+_FixedMul2432_addr =                _NULL_OFFSET + 00360h
+; 364-367 free
 _castattacking =                 	_NULL_OFFSET + 00368h
 _castdeath =                     	_NULL_OFFSET + 00369h
 _castonmelee =                   	_NULL_OFFSET + 0036Ah

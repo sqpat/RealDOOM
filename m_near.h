@@ -297,15 +297,15 @@
 
 // more far pointers to functions... once they are in ASM-fixed locations, they should be callable normally
 #define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C0)))
-//#define FixedMul1632_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C4)))
+#define FixedDiv_addr	                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C4)))
 #define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
 #define R_GetMaskedColumnSegment_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
 #define colfunc_call_lookup             (((uint32_t  __near*)                (_NULL_OFFSET + 0x02D0)))
 #define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358)))
-// lookup for what to write to the vga port for read  for fuzzcolumn
-// 360-367 free??
+#define FixedMul2432_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0360)))
+// 364-367 free??
 #define castattacking                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0368)))
 #define castdeath                       (*((int8_t __near*)                  (_NULL_OFFSET + 0x0369)))
 #define castonmelee                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x036A)))

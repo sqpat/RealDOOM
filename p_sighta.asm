@@ -17,8 +17,10 @@
 	.MODEL  medium
 
 
-EXTRN FixedMul1632_:FAR
 EXTRN P_CrossBSPNode_:NEAR
+EXTRN FixedMul2432_:PROC
+
+; todo: move fixedmul2432 into this file? along with map stuff.
 
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
@@ -573,6 +575,102 @@ cmp   cx, ax
 jne   return_1_node_2
 mov   ax, 2
 ret   
+
+ENDP
+
+
+PROC    P_InterceptVector2_ NEAR
+PUBLIC  P_InterceptVector2_
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 8
+mov   di, ax
+mov   si, dx
+mov   bx, word ptr [di + 8]
+mov   cx, word ptr [di + 0Ah]
+mov   ax, word ptr [si + 0Ch]
+mov   dx, word ptr [si + 0Eh]
+
+;db 0FFh  ; lcall[addr]
+;db 01Eh  ;
+;dw _FixedMul2432_addr
+call FixedMul2432_
+
+mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 6], dx
+mov   bx, word ptr [di + 0Ch]
+mov   cx, word ptr [di + 0Eh]
+mov   ax, word ptr [si + 8]
+mov   dx, word ptr [si + 0Ah]
+
+;db 0FFh  ; lcall[addr]
+;db 01Eh  ;
+;dw _FixedMul2432_addr
+call FixedMul2432_
+
+mov   bx, word ptr [bp - 8]
+sub   bx, ax
+mov   ax, word ptr [bp - 6]
+sbb   ax, dx
+mov   word ptr [bp - 4], bx
+mov   word ptr [bp - 2], ax
+or    ax, bx
+je    denominator_0
+mov   bx, word ptr [si + 0Ch]
+mov   cx, word ptr [si + 0Eh]
+mov   ax, word ptr [si]
+mov   dx, word ptr [si + 2]
+sub   ax, word ptr [di]
+sbb   dx, word ptr [di + 2]
+
+;db 0FFh  ; lcall[addr]
+;db 01Eh  ;
+;dw _FixedMul2432_addr
+call FixedMul2432_		; todo why doesnt this work
+
+mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 6], dx
+mov   bx, word ptr [si + 8]
+mov   cx, word ptr [si + 0Ah]
+mov   ax, word ptr [di + 4]
+mov   dx, word ptr [di + 6]
+sub   ax, word ptr [si + 4]
+sbb   dx, word ptr [si + 6]
+
+;db 0FFh  ; lcall[addr]
+;db 01Eh  ;
+;dw _FixedMul2432_addr
+call FixedMul2432_
+
+mov   bx, word ptr [bp - 4]
+mov   cx, word ptr [bp - 2]
+add   ax, word ptr [bp - 8]
+adc   dx, word ptr [bp - 6]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
+
+LEAVE_MACRO
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+denominator_0:
+xor   dx, dx
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+
 
 ENDP
 

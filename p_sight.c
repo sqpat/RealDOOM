@@ -320,6 +320,10 @@ P_InterceptVector2
 }
 
 */
+fixed_t __near P_InterceptVector2 (divline_t __near* v2, divline_t __near*	v1 );
+
+/*
+
 fixed_t __near P_InterceptVector2 (divline_t __near* v2, divline_t __near*	v1 ) {
     fixed_t	frac;
     fixed_t	num;
@@ -337,6 +341,7 @@ fixed_t __near P_InterceptVector2 (divline_t __near* v2, divline_t __near*	v1 ) 
 
     return frac;
 }
+*/
 
 // int32_t  bspcounter = 0;
 
