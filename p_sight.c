@@ -350,6 +350,8 @@ fixed_t __near P_InterceptVector2 (divline_t __near* v2, divline_t __near*	v1 ) 
 // Returns true
 //  if strace crosses the given subsector successfully.
 //
+
+/*
 boolean __near P_CrossSubsector (uint16_t subsecnum) {
     int16_t		segnum;
 	int16_t linedefOffset;
@@ -447,14 +449,14 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 		frontsecnum = segs_physics[segnum].frontsecnum;
 		backsecnum = segs_physics[segnum].backsecnum;
 
-		/*
-		curlineside = seg_sides[segnum];
-		frontsecnum = sides[line->sidenum[curlineside]].secnum;
-		backsecnum =
-			line->flags & ML_TWOSIDED ?
-			sides[line->sidenum[curlineside ^ 1]].secnum
-			: SECNUM_NULL;
-			*/
+		
+		// curlineside = seg_sides[segnum];
+		// frontsecnum = sides[line->sidenum[curlineside]].secnum;
+		// backsecnum =
+		// 	line->flags & ML_TWOSIDED ?
+		// 	sides[line->sidenum[curlineside ^ 1]].secnum
+		// 	: SECNUM_NULL;
+			
 		frontsector_local = &sectors[frontsecnum];
 		backsector_local = &sectors[backsecnum];
 
@@ -513,6 +515,8 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 
     return true;		
 }
+
+*/
 
 //
 // P_CrossBSPNode

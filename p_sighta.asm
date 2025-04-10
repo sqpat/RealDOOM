@@ -17,7 +17,6 @@
 	.MODEL  medium
 
 
-EXTRN P_CrossSubsector_:NEAR
 EXTRN FixedMul2432_:PROC
 
 ; todo: move fixedmul2432 into this file? along with map stuff.
@@ -668,8 +667,293 @@ ret
 
 ENDP
 
-NF_SUBSECTOR  = 08000h
-NOT_NF_SUBSECTOR  = 07FFFh
+
+PROC    P_CrossSubsector_ NEAR
+PUBLIC  P_CrossSubsector_
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 02Eh
+mov   bx, ax
+mov   ax, SUBSECTOR_LINES_SEGMENT
+mov   es, ax
+mov   dx, SUBSECTORS_SEGMENT
+mov   al, byte ptr es:[bx]
+shl   bx, 2
+xor   ah, ah
+mov   es, dx
+mov   word ptr [bp - 0Eh], ax
+mov   dx, word ptr es:[bx + 2]
+add   bx, 2
+mov   word ptr [bp - 012h], dx
+test  ax, ax
+je    cross_subsector_return_1
+mov   ax, dx
+add   ax, dx
+mov   word ptr [bp - 0Ch], ax
+mov   ax, dx
+shl   ax, 2
+mov   word ptr [bp - 0Ah], ax
+label_1:
+mov   ax, SEG_LINEDEFS_SEGMENT
+mov   bx, word ptr [bp - 0Ch]
+mov   es, ax
+mov   ax, word ptr es:[bx]
+mov   cx, LINES_PHYSICS_SEGMENT
+mov   si, ax
+mov   es, cx
+shl   si, 4
+mov   bx, _validcount_global
+mov   dx, word ptr es:[si + 8]
+cmp   dx, word ptr [bx]
+jne   label_2
+label_3:
+add   word ptr [bp - 0Ch], 2
+add   word ptr [bp - 0Ah], 4
+inc   word ptr [bp - 012h]
+dec   word ptr [bp - 0Eh]
+jne   label_1
+cross_subsector_return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_2:
+mov   dx, LINEFLAGSLIST_SEGMENT
+mov   bx, ax
+mov   es, dx
+mov   al, byte ptr es:[bx]
+mov   bx, _validcount_global
+mov   byte ptr [bp - 2], al
+mov   ax, word ptr [bx]
+mov   es, cx
+mov   word ptr es:[si + 8], ax
+mov   bx, VERTEXES_SEGMENT
+mov   di, word ptr es:[si]
+mov   ax, word ptr es:[si + 2]
+shl   di, 2
+and   ah, (VERTEX_OFFSET_MASK SHR 8)
+mov   es, bx
+mov   bx, ax
+mov   si, word ptr es:[di]
+mov   di, word ptr es:[di + 2]
+shl   bx, 2
+mov   dx, di
+mov   ax, word ptr es:[bx]
+mov   cx, word ptr es:[bx + 2]
+mov   bx, OFFSET _strace
+mov   word ptr [bp - 010h], ax
+mov   ax, si
+call  P_DivlineSide16_
+mov   bx, OFFSET _strace
+mov   word ptr [bp - 01Ah], ax
+mov   dx, cx
+mov   ax, word ptr [bp - 010h]
+call  P_DivlineSide16_
+cmp   ax, word ptr [bp - 01Ah]
+je    label_3
+mov   word ptr [bp - 02Ch], si
+mov   word ptr [bp - 028h], di
+xor   ax, ax
+sub   cx, di
+mov   word ptr [bp - 02Eh], ax
+mov   word ptr [bp - 02Ah], ax
+mov   word ptr [bp - 026h], ax
+mov   word ptr [bp - 022h], ax
+mov   ax, word ptr [bp - 010h]
+mov   word ptr [bp - 020h], cx
+sub   ax, si
+mov   si, OFFSET _strace + 4
+mov   word ptr [bp - 024h], ax
+mov   bx, OFFSET _strace + 4
+mov   cx, word ptr [si + 2]
+mov   si, OFFSET _strace
+mov   bx, word ptr [bx]
+mov   ax, word ptr [si]
+mov   dx, word ptr [si + 2]
+lea   si, [bp - 02Eh]
+call  P_DivlineSide_
+mov   bx, OFFSET _cachedt2y
+mov   si, OFFSET _cachedt2y
+mov   di, ax
+mov   cx, word ptr [si + 2]
+mov   si, OFFSET _cachedt2x
+mov   bx, word ptr [bx]
+mov   ax, word ptr [si]
+mov   dx, word ptr [si + 2]
+lea   si, [bp - 02Eh]
+call  P_DivlineSide_
+cmp   di, ax
+jne   label_4
+jump_to_label_3:
+jmp   label_3
+label_4:
+test  byte ptr [bp - 2], ML_TWOSIDED
+jne   label_5
+jump_to_cross_bsp_node_return_0:
+jmp   cross_bsp_node_return_0	; todo optim out fallthru
+label_5:
+mov   ax, SEGS_PHYSICS_SEGMENT
+mov   bx, word ptr [bp - 0Ah]
+mov   word ptr [bp - 4], SECTORS_SEGMENT
+mov   es, ax
+mov   word ptr [bp - 6], SECTORS_SEGMENT
+mov   di, word ptr es:[bx]
+mov   si, word ptr es:[bx + 2]
+mov   es, word ptr [bp - 4]
+shl   di, 4
+shl   si, 4
+mov   ax, word ptr es:[di]
+mov   es, word ptr [bp - 6]
+add   bx, 2
+cmp   ax, word ptr es:[si]
+jne   label_6
+mov   es, word ptr [bp - 4]
+mov   ax, word ptr es:[di + 2]
+mov   es, word ptr [bp - 6]
+cmp   ax, word ptr es:[si + 2]
+je    jump_to_label_3
+label_6:
+mov   es, word ptr [bp - 4]
+mov   ax, word ptr es:[di + 2]
+mov   es, word ptr [bp - 6]
+cmp   ax, word ptr es:[si + 2]
+jl    label_7
+mov   ax, word ptr es:[si + 2]
+jmp   label_8
+label_7:
+mov   es, word ptr [bp - 4]
+mov   ax, word ptr es:[di + 2]
+label_8:
+mov   word ptr [bp - 8], ax
+mov   es, word ptr [bp - 4]
+mov   ax, word ptr es:[di]
+mov   es, word ptr [bp - 6]
+cmp   ax, word ptr es:[si]
+jg    label_9
+mov   bx, word ptr es:[si]
+jmp   label_10
+jump_to_cross_bsp_node_return_0_2:
+jmp   cross_bsp_node_return_0	; todo optim out fallthru
+label_9:
+mov   es, word ptr [bp - 4]
+mov   bx, word ptr es:[di]
+label_10:
+cmp   bx, word ptr [bp - 8]
+jge   jump_to_cross_bsp_node_return_0_2
+lea   dx, [bp - 02Eh]
+mov   ax, OFFSET _strace
+call  P_InterceptVector2_		; todo inline
+mov   es, word ptr [bp - 4]
+mov   word ptr [bp - 016h], ax
+mov   word ptr [bp - 014h], dx
+mov   cx, word ptr es:[di]
+mov   es, word ptr [bp - 6]
+cmp   cx, word ptr es:[si]
+je    label_11
+mov   cx, bx
+and   bx, 7
+sar   cx, 3
+shl   bx, 0Dh
+mov   word ptr [bp - 01Eh], cx
+mov   word ptr [bp - 01Ch], bx
+mov   cx, bx
+mov   bx, OFFSET _sightzstart
+mov   word ptr [bp - 01Ah], OFFSET _sightzstart
+sub   cx, word ptr [bx]
+mov   bx, word ptr [bp - 01Ah]
+mov   word ptr [bp - 01Ah], cx
+mov   cx, word ptr [bp - 01Eh]
+sbb   cx, word ptr [bx + 2]
+mov   word ptr [bp - 018h], cx
+mov   bx, ax
+mov   ax, word ptr [bp - 01Ah]
+mov   cx, dx
+mov   dx, word ptr [bp - 018h]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
+
+
+mov   bx, OFFSET _bottomslope
+cmp   dx, word ptr [bx + 2]
+jg    label_12
+jne   label_11
+cmp   ax, word ptr [bx]
+jbe   label_11
+label_12:
+mov   word ptr [bx], ax
+mov   word ptr [bx + 2], dx
+label_11:
+mov   es, word ptr [bp - 4]
+mov   ax, word ptr es:[di + 2]
+mov   es, word ptr [bp - 6]
+cmp   ax, word ptr es:[si + 2]
+je    label_13
+mov   ax, word ptr [bp - 8]
+sar   ax, 3
+mov   word ptr [bp - 01Eh], ax
+mov   ax, word ptr [bp - 8]
+and   ax, 7
+mov   bx, OFFSET _sightzstart
+shl   ax, 0Dh		; todo macro? whats this
+mov   cx, word ptr [bp - 014h]
+mov   word ptr [bp - 01Ch], ax
+sub   ax, word ptr [bx]
+mov   dx, word ptr [bp - 01Eh]
+sbb   dx, word ptr [bx + 2]
+mov   bx, word ptr [bp - 016h]
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
+
+mov   bx, OFFSET _topslope
+cmp   dx, word ptr [bx + 2]
+jl    label_14
+jne   label_13
+cmp   ax, word ptr [bx]
+jae   label_13
+label_14:
+mov   word ptr [bx], ax
+mov   word ptr [bx + 2], dx
+label_13:
+mov   bx, OFFSET _topslope
+mov   dx, word ptr [bx]
+mov   ax, word ptr [bx + 2]
+mov   bx, OFFSET _bottomslope
+cmp   ax, word ptr [bx + 2]
+jl    cross_bsp_node_return_0
+je    label_15
+jump_to_label_3_2:
+jmp   label_3
+label_15:
+cmp   dx, word ptr [bx]
+ja    jump_to_label_3_2
+cross_bsp_node_return_0:
+xor   al, al
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+
+ENDP
+
+
 
 
 ; what the heck?
