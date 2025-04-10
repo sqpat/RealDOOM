@@ -519,6 +519,8 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 // Returns true
 //  if strace crosses the given node successfully.
 //
+
+/*
 boolean __near P_CrossBSPNode (uint16_t bspnum) {
     int8_t		side;
 
@@ -549,5 +551,6 @@ boolean __near P_CrossBSPNode (uint16_t bspnum) {
     // cross the ending side		
     return P_CrossBSPNode (node_children[bspnum].children[side^1]);
 }
+*/
 
 

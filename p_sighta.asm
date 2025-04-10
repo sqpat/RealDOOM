@@ -17,7 +17,7 @@
 	.MODEL  medium
 
 
-EXTRN P_CrossBSPNode_:NEAR
+EXTRN P_CrossSubsector_:NEAR
 EXTRN FixedMul2432_:PROC
 
 ; todo: move fixedmul2432 into this file? along with map stuff.
@@ -667,6 +667,104 @@ pop   cx
 pop   bx
 ret   
 
+
+ENDP
+
+NF_SUBSECTOR  = 08000h
+NOT_NF_SUBSECTOR  = 07FFFh
+
+PROC    P_CrossBSPNode_ NEAR
+PUBLIC  P_CrossBSPNode_
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 4
+push  ax
+test  byte ptr [bp - 5], (NF_SUBSECTOR SHR 8)
+je    label_1
+jmp   label_2
+label_1:
+mov   si, OFFSET _strace + 4
+mov   bx, OFFSET _strace + 4
+mov   cx, word ptr [si + 2]
+mov   si, OFFSET _strace
+mov   bx, word ptr [bx]
+mov   ax, word ptr [si]
+mov   dx, word ptr [si + 2]
+mov   si, word ptr [bp - 6]
+call  P_DivlineSideNode_
+and   al, 1
+mov   byte ptr [bp - 2], al
+mov   ax, word ptr [bp - 6]
+shl   ax, 2
+mov   word ptr [bp - 4], ax
+mov   al, byte ptr [bp - 2]
+cbw  
+mov   bx, ax
+mov   di, ax
+add   bx, ax
+mov   ax, NODE_CHILDREN_SEGMENT
+add   bx, word ptr [bp - 4]
+mov   es, ax
+mov   ax, word ptr es:[bx]
+call  P_CrossBSPNode_
+test  al, al
+je    exit_crossbspnode
+mov   si, OFFSET _cachedt2y
+mov   bx, OFFSET _cachedt2y
+mov   cx, word ptr [si + 2]
+mov   si, OFFSET _cachedt2x
+mov   bx, word ptr [bx]
+mov   ax, word ptr [si]
+mov   dx, word ptr [si + 2]
+mov   si, word ptr [bp - 6]
+call  P_DivlineSideNode_
+cmp   di, ax
+je    cross_bsp_node_return_1
+mov   al, byte ptr [bp - 2]
+xor   al, 1
+mov   dx, NODE_CHILDREN_SEGMENT
+cbw
+mov   bx, word ptr [bp - 4]
+add   ax, ax
+mov   es, dx
+add   bx, ax
+mov   ax, word ptr es:[bx]
+mov   word ptr [bp - 6], ax
+test  ah, (NF_SUBSECTOR SHR 8)
+je    label_1
+label_2:
+mov   ax, word ptr [bp - 6]
+cmp   ax, 0FFFFh
+jne   do_subsector_flag
+xor   ax, ax
+label_3:
+call  P_CrossSubsector_
+exit_crossbspnode:
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+do_subsector_flag:
+and   ah, (NOT_NF_SUBSECTOR SHR 8)
+jmp   label_3
+cross_bsp_node_return_1:
+mov   al, 1
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
 
 ENDP
 
