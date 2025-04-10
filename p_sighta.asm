@@ -806,18 +806,13 @@ cmp   di, ax
 je   side_crossed
 
 test  byte ptr [bp - 2], ML_TWOSIDED		; test flag
-jne   two_sided
-jump_to_cross_bsp_node_return_0:
-jmp   cross_bsp_node_return_0	; todo optim out fallthru
-side_crossed:
-jump_to_cross_subsector_mainloop_increment:
-jmp   cross_subsector_mainloop_increment
+je    jump_to_cross_bsp_node_return_0_2	; todo optim out fallthru
 
 two_sided:
 mov   ax, SEGS_PHYSICS_SEGMENT
 mov   es, ax
 mov   bx, word ptr [bp - 0Ah]
-les   di, word ptr es:[bx]
+les   di, dword ptr es:[bx]
 mov   si, es
 
 mov   ax, SECTORS_SEGMENT
@@ -830,30 +825,34 @@ mov   ax, word ptr es:[di]
 
 add   bx, 2
 cmp   ax, word ptr es:[si]
-jne   label_6
+jne   floor_ceiling_heights_dont_match
 mov   ax, word ptr es:[di + 2]
 cmp   ax, word ptr es:[si + 2]
 je    jump_to_cross_subsector_mainloop_increment
-label_6:
+floor_ceiling_heights_dont_match:
 mov   ax, word ptr es:[di + 2]
 cmp   ax, word ptr es:[si + 2]
-jl    label_7
+jl    set_opentop_to_frontsector
 mov   ax, word ptr es:[si + 2]
-jmp   label_8
-label_7:
+jmp   opentop_set
+side_crossed:
+jump_to_cross_subsector_mainloop_increment:
+jmp   cross_subsector_mainloop_increment
+
+set_opentop_to_frontsector:
 mov   ax, word ptr es:[di + 2]
-label_8:
+opentop_set:
 mov   word ptr [bp - 8], ax
 mov   ax, word ptr es:[di]
 cmp   ax, word ptr es:[si]
-jg    label_9
+jg    set_openbottom_to_frontsector
 mov   bx, word ptr es:[si]
-jmp   label_10
+jmp   openbottom_set
 jump_to_cross_bsp_node_return_0_2:
 jmp   cross_bsp_node_return_0	; todo optim out fallthru
-label_9:
+set_openbottom_to_frontsector:
 mov   bx, word ptr es:[di]
-label_10:
+openbottom_set:
 cmp   bx, word ptr [bp - 8]
 jge   jump_to_cross_bsp_node_return_0_2
 lea   dx, [bp - 02Eh]
@@ -871,7 +870,7 @@ mov   cx, SECTORS_SEGMENT
 mov   es, cx
 mov   cx, word ptr es:[di]
 cmp   cx, word ptr es:[si]
-je    label_11
+je    done_setting_bottomslope
 mov   cx, bx
 and   bx, 7
 SHIFT_MACRO sar   cx 3
@@ -899,19 +898,19 @@ dw _FixedDiv_addr
 
 mov   bx, OFFSET _bottomslope
 cmp   dx, word ptr [bx + 2]
-jg    label_12
-jne   label_11
+jg    update_bottom_slope
+jne   done_setting_bottomslope
 cmp   ax, word ptr [bx]
-jbe   label_11
-label_12:
+jbe   done_setting_bottomslope
+update_bottom_slope:
 mov   word ptr [bx], ax
 mov   word ptr [bx + 2], dx
-label_11:
+done_setting_bottomslope:
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 mov   ax, word ptr es:[di + 2]
 cmp   ax, word ptr es:[si + 2]
-je    label_13
+je    done_setting_topslope
 mov   ax, word ptr [bp - 8]
 SHIFT_MACRO sar   ax 3
 mov   word ptr [bp - 01Eh], ax
@@ -932,24 +931,21 @@ dw _FixedDiv_addr
 
 mov   bx, OFFSET _topslope
 cmp   dx, word ptr [bx + 2]
-jl    label_14
-jne   label_13
+jl    update_topslope
+jne   done_setting_topslope
 cmp   ax, word ptr [bx]
-jae   label_13
-label_14:
+jae   done_setting_topslope
+update_topslope:
 mov   word ptr [bx], ax
 mov   word ptr [bx + 2], dx
-label_13:
+done_setting_topslope:
 mov   bx, OFFSET _topslope
 mov   dx, word ptr [bx]
 mov   ax, word ptr [bx + 2]
 mov   bx, OFFSET _bottomslope
 cmp   ax, word ptr [bx + 2]
 jl    cross_bsp_node_return_0
-je    label_15
-jump_to_cross_subsector_mainloop_increment_2:
-jmp   cross_subsector_mainloop_increment
-label_15:
+jne   jump_to_cross_subsector_mainloop_increment_2
 cmp   dx, word ptr [bx]
 ja    jump_to_cross_subsector_mainloop_increment_2
 cross_bsp_node_return_0:
@@ -961,6 +957,8 @@ pop   dx
 pop   cx
 pop   bx
 ret   
+jump_to_cross_subsector_mainloop_increment_2:
+jmp   cross_subsector_mainloop_increment
 
 ENDP
 
