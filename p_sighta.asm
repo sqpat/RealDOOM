@@ -671,6 +671,30 @@ ENDP
 PROC    P_CrossSubsector_ NEAR
 PUBLIC  P_CrossSubsector_
 
+; bp - 2
+; bp - 4	sectors segment
+; bp - 6	sectors segment
+; bp - 8
+; bp - 0A   4x segnum
+; bp - 0C   2x segnum
+; bp - 0E    count
+; bp - 10    
+; bp - 12	segnum
+; bp - 14
+; bp - 16
+; bp - 18
+; bp - 1A
+; bp - 1C
+; bp - 1E
+; bp - 20    
+; bp - 22
+; bp - 24
+; bp - 26
+; bp - 28
+; bp - 2A
+; bp - 2C
+; bp - 2E
+
 
 push  bx
 push  cx
@@ -680,27 +704,26 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 02Eh
-mov   bx, ax
+mov   bx, ax		; todo swap this argument order
 mov   ax, SUBSECTOR_LINES_SEGMENT
 mov   es, ax
 mov   dx, SUBSECTORS_SEGMENT
-mov   al, byte ptr es:[bx]
-shl   bx, 2
+mov   al, byte ptr es:[bx]			; count todo selfmodify this
+SHIFT_MACRO shl bx 2
 xor   ah, ah
 mov   es, dx
 mov   word ptr [bp - 0Eh], ax
-mov   dx, word ptr es:[bx + 2]
-add   bx, 2
+mov   dx, word ptr es:[bx + 2]		; get segnum/firstline
 mov   word ptr [bp - 012h], dx
 test  ax, ax
 je    cross_subsector_return_1
 mov   ax, dx
-add   ax, dx
-mov   word ptr [bp - 0Ch], ax
-mov   ax, dx
-shl   ax, 2
-mov   word ptr [bp - 0Ah], ax
-label_1:
+sal   ax, 1
+mov   word ptr [bp - 0Ch], ax		; store segnum x2?
+shl   ax, 1
+mov   word ptr [bp - 0Ah], ax		; store segnum x4?
+
+cross_subsector_mainloop:
 mov   ax, SEG_LINEDEFS_SEGMENT
 mov   bx, word ptr [bp - 0Ch]
 mov   es, ax
@@ -708,17 +731,17 @@ mov   ax, word ptr es:[bx]
 mov   cx, LINES_PHYSICS_SEGMENT
 mov   si, ax
 mov   es, cx
-shl   si, 4
+SHIFT_MACRO shl si 4
 mov   bx, _validcount_global
 mov   dx, word ptr es:[si + 8]
 cmp   dx, word ptr [bx]
-jne   label_2
-label_3:
+jne   do_full_loop_iteration
+cross_subsector_mainloop_increment:
 add   word ptr [bp - 0Ch], 2
 add   word ptr [bp - 0Ah], 4
 inc   word ptr [bp - 012h]
 dec   word ptr [bp - 0Eh]
-jne   label_1
+jne   cross_subsector_mainloop	
 cross_subsector_return_1:
 mov   al, 1
 LEAVE_MACRO 
@@ -728,7 +751,7 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_2:
+do_full_loop_iteration:
 mov   dx, LINEFLAGSLIST_SEGMENT
 mov   bx, ax
 mov   es, dx
@@ -741,13 +764,13 @@ mov   word ptr es:[si + 8], ax
 mov   bx, VERTEXES_SEGMENT
 mov   di, word ptr es:[si]
 mov   ax, word ptr es:[si + 2]
-shl   di, 2
+SHIFT_MACRO shl   di 2
 and   ah, (VERTEX_OFFSET_MASK SHR 8)
 mov   es, bx
 mov   bx, ax
 mov   si, word ptr es:[di]
 mov   di, word ptr es:[di + 2]
-shl   bx, 2
+SHIFT_MACRO shl   bx 2
 mov   dx, di
 mov   ax, word ptr es:[bx]
 mov   cx, word ptr es:[bx + 2]
@@ -761,7 +784,7 @@ mov   dx, cx
 mov   ax, word ptr [bp - 010h]
 call  P_DivlineSide16_
 cmp   ax, word ptr [bp - 01Ah]
-je    label_3
+je    cross_subsector_mainloop_increment
 mov   word ptr [bp - 02Ch], si
 mov   word ptr [bp - 028h], di
 xor   ax, ax
@@ -795,8 +818,8 @@ lea   si, [bp - 02Eh]
 call  P_DivlineSide_
 cmp   di, ax
 jne   label_4
-jump_to_label_3:
-jmp   label_3
+jump_to_cross_subsector_mainloop_increment:
+jmp   cross_subsector_mainloop_increment
 label_4:
 test  byte ptr [bp - 2], ML_TWOSIDED
 jne   label_5
@@ -805,14 +828,14 @@ jmp   cross_bsp_node_return_0	; todo optim out fallthru
 label_5:
 mov   ax, SEGS_PHYSICS_SEGMENT
 mov   bx, word ptr [bp - 0Ah]
-mov   word ptr [bp - 4], SECTORS_SEGMENT
+mov   word ptr [bp - 4], SECTORS_SEGMENT		; todo remove
 mov   es, ax
-mov   word ptr [bp - 6], SECTORS_SEGMENT
+mov   word ptr [bp - 6], SECTORS_SEGMENT		; todo remove
 mov   di, word ptr es:[bx]
 mov   si, word ptr es:[bx + 2]
 mov   es, word ptr [bp - 4]
-shl   di, 4
-shl   si, 4
+SHIFT_MACRO shl   di 4
+SHIFT_MACRO shl   si 4
 mov   ax, word ptr es:[di]
 mov   es, word ptr [bp - 6]
 add   bx, 2
@@ -822,7 +845,7 @@ mov   es, word ptr [bp - 4]
 mov   ax, word ptr es:[di + 2]
 mov   es, word ptr [bp - 6]
 cmp   ax, word ptr es:[si + 2]
-je    jump_to_label_3
+je    jump_to_cross_subsector_mainloop_increment
 label_6:
 mov   es, word ptr [bp - 4]
 mov   ax, word ptr es:[di + 2]
@@ -864,7 +887,7 @@ je    label_11
 mov   cx, bx
 and   bx, 7
 sar   cx, 3
-shl   bx, 0Dh
+SHIFT_MACRO shl   bx 0Dh
 mov   word ptr [bp - 01Eh], cx
 mov   word ptr [bp - 01Ch], bx
 mov   cx, bx
@@ -907,7 +930,7 @@ mov   word ptr [bp - 01Eh], ax
 mov   ax, word ptr [bp - 8]
 and   ax, 7
 mov   bx, OFFSET _sightzstart
-shl   ax, 0Dh		; todo macro? whats this
+SHIFT_MACRO shl   ax 0Dh		; todo macro? whats this
 mov   cx, word ptr [bp - 014h]
 mov   word ptr [bp - 01Ch], ax
 sub   ax, word ptr [bx]
@@ -936,11 +959,11 @@ mov   bx, OFFSET _bottomslope
 cmp   ax, word ptr [bx + 2]
 jl    cross_bsp_node_return_0
 je    label_15
-jump_to_label_3_2:
-jmp   label_3
+jump_to_cross_subsector_mainloop_increment_2:
+jmp   cross_subsector_mainloop_increment
 label_15:
 cmp   dx, word ptr [bx]
-ja    jump_to_label_3_2
+ja    jump_to_cross_subsector_mainloop_increment_2
 cross_bsp_node_return_0:
 xor   al, al
 LEAVE_MACRO
