@@ -477,52 +477,63 @@ PROC    P_DivlineSideNode_ NEAR
 PUBLIC  P_DivlineSideNode_
 
 
-push  di
-mov   di, ax
 SHIFT_MACRO shl si 3
-mov   ax, NODES_SEGMENT
+push  ax
+mov   ax, NODES_SEGMENT		; todo move this out?
 mov   es, ax
+pop   ax
 cmp   word ptr es:[si + 4], 0
 jne   node_dx_nonzero_node
-mov   ax, word ptr es:[si]
-cmp   dx, ax
+
+;		temp.h.intbits = node->x;
+;		temp.h.fracbits = 0;
+;
+;		if (x.w==temp.w){
+;			return 2;
+;		}
+;		
+;		if (x.w <= temp.w){
+;			return node->dy > 0;
+;		}
+;
+;		return node->dy < 0;
+
+
+cmp   dx, word ptr es:[si]
 jne   node_dx_compare_1
-test  di, di
+test  ax, ax
 je    return_2_node
-cmp   dx, ax
+cmp   dx, word ptr es:[si]
 node_dx_compare_1:
 jl    node_dx_compare_2
 jne   node_dx_compare_3
-test  di, di
+test  ax, ax
 jbe   node_dx_compare_2
 node_dx_compare_3:
 cmp   word ptr es:[si + 6], 0
 jl    return_1_node
 return_0_node:
 xor   ax, ax
-pop   di
 ret   
 return_2_node:
 mov   ax, 2
-pop   di
 ret   
 node_dx_compare_2:
 cmp   word ptr es:[si + 6], 0
 jle   return_0_node
 return_1_node:
 mov   ax, 1
-pop   di
 ret   
+
 node_dx_nonzero_node:
 cmp   word ptr es:[si + 6], 0
 jne   node_dy_nonzero_node
-mov   ax, word ptr es:[si + 2]
-cmp   dx, ax
+cmp   dx, word ptr es:[si + 2]
 jne   node_dy_compare_1
-test  di, di
+test  ax, ax
 je    return_2_node
 node_dy_compare_1:
-cmp   cx, ax
+cmp   cx, word ptr es:[si + 2]
 jl    node_dy_compare_2
 jne   node_dy_compare_3
 cmp   bx, 0
@@ -531,14 +542,12 @@ node_dy_compare_3:
 cmp   word ptr es:[si + 4], 0
 jle   return_0_node
 mov   ax, 1
-pop   di
 ret   
 node_dy_compare_2:
 cmp   word ptr es:[si + 4], 0
 jge   return_0_node
 return_1_node_2:
 mov   ax, 1
-pop   di
 ret   
 
 node_dy_nonzero_node:
@@ -562,7 +571,6 @@ jne   return_1_node_2
 cmp   cx, ax
 jne   return_1_node_2
 mov   ax, 2
-pop   di
 ret   
 
 ENDP

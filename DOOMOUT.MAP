@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/04/10 06:53:09
+Created on:       25/04/10 07:00:56
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -91,7 +91,7 @@ z_zone_TEXT            CODE           AUTO           1718:4e60       00000657
 d_math_TEXT            CODE           AUTO           1718:54c0       00000000
 p_setup_TEXT           CODE           AUTO           1c64:0000       00001227
 p_sight_TEXT           CODE           AUTO           1c64:1230       000003ec
-P_SIGHTA_TEXT          CODE           AUTO           1c64:161c       000002e0
+P_SIGHTA_TEXT          CODE           AUTO           1c64:161c       000002d8
 _TEXT                  CODE           AUTO           1c64:1900       0000289e
 FAR_DATA               FAR_DATA       AUTO           207d:000e       00000000
 _NULL                  BEGDATA        DGROUP         207e:0000       00000020
@@ -1232,7 +1232,7 @@ Module: p_sight.obj(C:\REALDOOM\p_sight.c)
 Module: p_sighta.obj(p_sighta.ASM)
 1c64:161c      P_CheckSight_
 1c64:16f3      P_DivlineSide_
-1c64:18fc*     P_DivlineSide2_
+1c64:18f4*     P_DivlineSide2_
 1c64:17b0      P_DivlineSide16_
 1c64:1857      P_DivlineSideNode_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
@@ -1503,4 +1503,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00023690 (145040.)
 Entry point address: 1c64:23a8
-Link time: 00:00.75
+Link time: 00:00.20
