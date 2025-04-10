@@ -147,8 +147,18 @@ _FLAT_CACHE_PAGE =                  _NULL_OFFSET + 00130h
 _visplanelookupsegments =           _NULL_OFFSET + 00138h
 _firstflat =                  		_NULL_OFFSET + 0013Eh
 ; 140h
-; unused
-_lightshift7lookup =            	_NULL_OFFSET + 00140h
+_castattacking =                 	_NULL_OFFSET + 00140h
+_castdeath =                     	_NULL_OFFSET + 00141h
+_castonmelee =                   	_NULL_OFFSET + 00142h
+_castframes =                    	_NULL_OFFSET + 00143h
+_casttics =                      	_NULL_OFFSET + 00144h
+_castnum =                       	_NULL_OFFSET + 00145h
+_finaleflat =                   	_NULL_OFFSET + 00146h
+; 147 free
+_FixedMul2432_addr =                _NULL_OFFSET + 00148h
+
+; 14C-160h free
+
 ; 160h
 _currentflatpage =            		_NULL_OFFSET + 00160h
 _lastflatcacheindicesused =         _NULL_OFFSET + 00164h
@@ -251,18 +261,7 @@ _colfunc_call_lookup =               _NULL_OFFSET + 002D0h
 ; 354
 _getspritetexture_addr =             _NULL_OFFSET + 00354h
 _psprites =              			 _NULL_OFFSET + 00358h
-
-_FixedMul2432_addr =                _NULL_OFFSET + 00360h
-; 364-367 free
-_castattacking =                 	_NULL_OFFSET + 00368h
-_castdeath =                     	_NULL_OFFSET + 00369h
-_castonmelee =                   	_NULL_OFFSET + 0036Ah
-_castframes =                    	_NULL_OFFSET + 0036Bh
-_casttics =                      	_NULL_OFFSET + 0036Ch
-_castnum =                       	_NULL_OFFSET + 0036Dh
-_finaleflat =                    	_NULL_OFFSET + 0036Eh
-
-
+; this is full... _psprites is two 0Ch sized structs... 
 _vga_read_port_lookup =              _NULL_OFFSET + 00370h
 _vissprite_p =                       _NULL_OFFSET + 00388h
 ; high byte always 0
@@ -271,8 +270,6 @@ _currentMusPage = 					 _NULL_OFFSET + 0038Ch
 _snd_MusicVolume =                   _NULL_OFFSET + 0038Dh
 _gameepisode = 						 _NULL_OFFSET + 0038Eh
 _gamemap = 							 _NULL_OFFSET + 0038Fh
-
-; todo fill this up (38D to 38F free)
 _savedescription =                   _NULL_OFFSET + 00390h
 _demoname =                          _NULL_OFFSET + 003B0h
 
@@ -300,7 +297,8 @@ _W_CacheLumpNumDirectFragment_addr = _NULL_OFFSET + 0057Ch
 _W_GetNumForName_addr =              _NULL_OFFSET + 00580h
 _S_StartSound_addr =                 _NULL_OFFSET + 00584h
 _S_StartMusic_addr =             	 _NULL_OFFSET + 00588h
-; 13 bytes
+
+; 13 bytes in length
 _filename_argument = 				 _NULL_OFFSET + 0058Ch
 
 _rndindex = 						 _NULL_OFFSET + 00599h

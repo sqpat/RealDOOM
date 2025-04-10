@@ -200,7 +200,18 @@
 #define visplanelookupsegments          (((segment_t   __near*)              (_NULL_OFFSET + 0x0138)))
 
 #define firstflat                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x013E)))
-// 140-160 unused
+
+
+#define castattacking                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0140)))
+#define castdeath                       (*((int8_t __near*)                  (_NULL_OFFSET + 0x0141)))
+#define castonmelee                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0142)))
+#define castframes                      (*((int8_t __near*)                  (_NULL_OFFSET + 0x0143)))
+#define casttics                        (*((int8_t __near*)                  (_NULL_OFFSET + 0x0144)))
+#define castnum                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0145)))
+#define finaleflat                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x0146)))
+// 147 free
+#define FixedMul2432_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0148)))
+// 14C-160 unused
 
 #define currentflatpage                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0160)))
 #define lastflatcacheindicesused        (((int8_t    __near*)                (_NULL_OFFSET + 0x0164)))
@@ -304,15 +315,8 @@
 #define colfunc_call_lookup             (((uint32_t  __near*)                (_NULL_OFFSET + 0x02D0)))
 #define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358)))
-#define FixedMul2432_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0360)))
 // 364-367 free??
-#define castattacking                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0368)))
-#define castdeath                       (*((int8_t __near*)                  (_NULL_OFFSET + 0x0369)))
-#define castonmelee                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x036A)))
-#define castframes                      (*((int8_t __near*)                  (_NULL_OFFSET + 0x036B)))
-#define casttics                        (*((int8_t __near*)                  (_NULL_OFFSET + 0x036C)))
-#define castnum                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x036D)))
-#define finaleflat                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x036E)))
+
 
 #define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x0370)))
 

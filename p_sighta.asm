@@ -596,10 +596,9 @@ mov   cx, word ptr [di + 0Ah]
 mov   ax, word ptr [si + 0Ch]
 mov   dx, word ptr [si + 0Eh]
 
-;db 0FFh  ; lcall[addr]
-;db 01Eh  ;
-;dw _FixedMul2432_addr
-call FixedMul2432_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
 
 mov   word ptr [bp - 8], ax
 mov   word ptr [bp - 6], dx
@@ -608,10 +607,9 @@ mov   cx, word ptr [di + 0Eh]
 mov   ax, word ptr [si + 8]
 mov   dx, word ptr [si + 0Ah]
 
-;db 0FFh  ; lcall[addr]
-;db 01Eh  ;
-;dw _FixedMul2432_addr
-call FixedMul2432_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
 
 mov   bx, word ptr [bp - 8]
 sub   bx, ax
@@ -628,10 +626,9 @@ mov   dx, word ptr [si + 2]
 sub   ax, word ptr [di]
 sbb   dx, word ptr [di + 2]
 
-;db 0FFh  ; lcall[addr]
-;db 01Eh  ;
-;dw _FixedMul2432_addr
-call FixedMul2432_		; todo why doesnt this work
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
 
 mov   word ptr [bp - 8], ax
 mov   word ptr [bp - 6], dx
@@ -642,10 +639,9 @@ mov   dx, word ptr [di + 6]
 sub   ax, word ptr [si + 4]
 sbb   dx, word ptr [si + 6]
 
-;db 0FFh  ; lcall[addr]
-;db 01Eh  ;
-;dw _FixedMul2432_addr
-call FixedMul2432_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
 
 mov   bx, word ptr [bp - 4]
 mov   cx, word ptr [bp - 2]

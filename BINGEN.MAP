@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/04/10 07:34:03
+Created on:       25/04/10 07:53:46
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -965,8 +965,8 @@ Module: sm_opl3.obj(sm_opl3.ASM)
 0db6:2501*     OPLchangeSystemVolume_OPL3_
 0db6:1f6b*     OPLresumeMusic_OPL3_
 0db6:24c1*     OPLplayMusic_OPL3_
-0db6:1570      SM_OPL3_STARTMARKER_
 0db6:1f1b*     OPL3detectHardware_OPL3_
+0db6:1570      SM_OPL3_STARTMARKER_
 Module: sm_sbmid.obj(sm_sbmid.ASM)
 0db6:2c9c      SM_SBMID_ENDMARKER_
 0db6:257e      SM_SBMID_STARTMARKER_
