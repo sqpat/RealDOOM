@@ -473,6 +473,120 @@ PUBLIC  P_DivlineSide16_
 
 ENDP
 
+PROC    P_DivlineSideNode_ NEAR
+PUBLIC  P_DivlineSideNode_
+
+
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 4
+mov   di, ax
+mov   word ptr [bp - 4], bx
+mov   bx, si
+shl   bx, 3
+mov   ax, NODES_SEGMENT
+mov   es, ax
+mov   word ptr [bp - 2], ax
+cmp   word ptr es:[bx + 4], 0
+jne   label_1
+mov   ax, word ptr es:[bx]
+cmp   dx, ax
+jne   label_2
+test  di, di
+je    label_3
+label_2:
+cmp   dx, ax
+jl    label_4
+jne   label_6
+test  di, di
+jbe   label_4
+label_6:
+cmp   word ptr es:[bx + 6], 0
+jl    label_5
+return_0_node:
+xor   ax, ax
+LEAVE_MACRO 
+pop   di
+ret   
+label_3:
+mov   ax, 2
+LEAVE_MACRO 
+pop   di
+ret   
+label_4:
+cmp   word ptr es:[bx + 6], 0
+jle   return_0_node
+label_5:
+mov   ax, 1
+LEAVE_MACRO 
+pop   di
+ret   
+label_1:
+cmp   word ptr es:[bx + 6], 0
+jne   label_9
+mov   ax, word ptr es:[bx + 2]
+cmp   dx, ax
+jne   label_10
+test  di, di
+je    label_3
+label_10:
+cmp   cx, ax
+jl    label_7
+jne   label_8
+cmp   word ptr [bp - 4], 0
+jbe   label_7
+label_8:
+cmp   word ptr es:[bx + 4], 0
+jle   return_0_node
+mov   ax, 1
+LEAVE_MACRO 
+pop   di
+ret   
+label_7:
+cmp   word ptr es:[bx + 4], 0
+jge   return_0_node
+return_1_node:
+mov   ax, 1
+LEAVE_MACRO 
+pop   di
+ret   
+
+label_9:
+mov   si, word ptr [bp - 4]
+mov   ax, word ptr es:[bx]
+sub   di, 0
+sbb   dx, ax
+mov   ax, word ptr es:[bx + 2]
+sub   si, 0
+mov   si, cx
+sbb   si, ax
+mov   ax, word ptr es:[bx + 6]
+imul  dx
+mov   es, word ptr [bp - 2]
+mov   di, ax
+mov   cx, dx
+mov   ax, si
+mov   dx, word ptr es:[bx + 4]
+imul  dx
+cmp   dx, cx
+jl    return_0_node
+jne   label_11
+cmp   ax, di
+jae   label_11
+jmp   return_0_node
+label_11:
+cmp   cx, dx
+jne   return_1_node
+cmp   di, ax
+jne   return_1_node
+mov   ax, 2
+LEAVE_MACRO 
+pop   di
+ret   
+
+ENDP
+
 PROC    P_DivlineSide2_
 PUBLIC  P_DivlineSide2_
 ENDP

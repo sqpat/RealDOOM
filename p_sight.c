@@ -210,6 +210,9 @@ int16_t  __near P_DivlineSide16 ( int16_t	x, int16_t	y, divline_t __near*	node )
 
 */
 
+#pragma aux (P_DivlineSideParams)  P_DivlineSideNode;
+int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, uint16_t nodenum );
+/*
 int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, uint16_t nodenum ) {
 
 	// NOTE: these nodes have proper 16 bit integer fields.
@@ -269,7 +272,7 @@ int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, uint16_t no
 	}
     return 1;		// back side
 }
-
+*/
 
 
 //
