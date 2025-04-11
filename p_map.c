@@ -302,12 +302,10 @@ boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 	int16_t linebot = v1y;
 	uint8_t flags;
 
-#ifndef	PRECALCULATE_OPENINGS
 	int16_t linefrontsecnum = ld_physics->frontsecnum;
 	int16_t linebacksecnum = ld_physics->backsecnum;
 	
 	int16_t lineside1 = ld->sidenum[1];
-#endif
 	if (linedx > 0) {
 		lineright += linedx;
 	} else if (linedx < 0){
@@ -363,11 +361,7 @@ boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
     }
 
     // set openrange, opentop, openbottom
-#ifdef	PRECALCULATE_OPENINGS
-	P_LoadLineOpening(linenum);
-#else
 	P_LineOpening (lineside1, linefrontsecnum, linebacksecnum);
-#endif
 	
     // adjust floor / ceiling heights
     if (lineopening.opentop < tmceilingz) {
@@ -890,11 +884,7 @@ boolean __near PTR_SlideTraverse (intercept_t __far* in) {
 
     // set openrange, opentop, openbottom
 	temp.h.fracbits = 0;
-#ifdef	PRECALCULATE_OPENINGS
-	P_LoadLineOpening(in ->d.linenum);
-#else
 	P_LineOpening (li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
-#endif
 	
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, (lineopening.opentop - lineopening.openbottom));
 
@@ -1087,11 +1077,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 		// A two sided line will restrict
 		// the possible target ranges.
 		li_physics = &lines_physics[in->d.linenum];
-#ifdef	PRECALCULATE_OPENINGS
-		P_LoadLineOpening(in->d.linenum);
-#else
 		P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
-#endif
 
 
 		if (lineopening.openbottom >= lineopening.opentop) {
@@ -1193,11 +1179,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
 			goto hitline;
 	
 		// crosses a two sided line
-#ifdef	PRECALCULATE_OPENINGS
-		P_LoadLineOpening(in->d.linenum);
-#else
 		P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
-#endif
 
 		dist = R_GetAttackRangeMult(attackrange16, in->frac);
 
@@ -1468,12 +1450,9 @@ boolean	__near PTR_UseTraverse (intercept_t __far* in) {
 	line_physics_t __far* line_physics = &lines_physics[in->d.linenum];
 
 	if (!line_physics->special) {
-#ifdef	PRECALCULATE_OPENINGS
-		P_LoadLineOpening(in->d.linenum);
-#else
+
 		line_t __far* line = &lines[in->d.linenum];
 		P_LineOpening(line->sidenum[1], line_physics->frontsecnum, line_physics->backsecnum);
-#endif
 
  		if (lineopening.opentop < lineopening.openbottom) {
 			S_StartSound (playerMobj, sfx_noway);

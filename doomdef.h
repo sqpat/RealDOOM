@@ -48,9 +48,6 @@ enum { VERSION =  109 };
 
 // MAIN FEATURE FLAGS
 
-// line opening caching. Doesn't measurably affect runtime performance. Uses extra memory and code so i guess lets keep it off.
-//#define PRECALCULATE_OPENINGS
-
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
 //#define DEBUG_PRINTING 1
 

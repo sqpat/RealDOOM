@@ -137,9 +137,6 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	W_CacheLumpNumDirect(lumpnum + ML_REJECT, rejectmatrix);
 
 	P_GroupLines();
-#ifdef PRECALCULATE_OPENINGS
-	P_CacheLineOpenings();
-#endif
 
 
 	 

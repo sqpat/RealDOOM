@@ -1298,9 +1298,6 @@ int8_t                     	currentloadedfileindex = 0;
 
 
 
-#ifdef PRECALCULATE_OPENINGS
-lineopening_t __far*	lineopenings;
-#endif
 
 
 

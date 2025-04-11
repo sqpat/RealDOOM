@@ -211,12 +211,7 @@ int8_t 	__near P_BoxOnLineSide (slopetype_t	lineslopetype, int16_t linedx, int16
 
 
 
-#ifdef	PRECALCULATE_OPENINGS
-void P_LoadLineOpening(int16_t linenumer);
-void P_UpdateLineOpening(int16_t secnum, boolean changedFloor);
-#else
 void 	__near P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
-#endif
 
 
 boolean __near P_BlockLinesIterator (int16_t x, int16_t y, boolean __near ( *  func)(line_physics_t __far* ld, int16_t ) );

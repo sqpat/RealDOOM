@@ -319,84 +319,7 @@ fixed_t __near P_InterceptVector ( divline_t __near*	v1 ) {
 }
 
 
-//
-// P_LineOpening
-// Sets opentop and openbottom to the window
-// through a two sided line.
-// OPTIMIZE: keep this precalculated
-//
 
-#ifdef	PRECALCULATE_OPENINGS
-
-
-void P_LoadLineOpening(int16_t linenum) {
-	
-	//recalc if cache dirty if necessary
-	if (lineopenings[linenum].cachebits) {
-
-		// we do the backsecnum check when setting bit dirty, so backsecnum always good
-		int16_t linefrontsecnum = lines_physics[linenum].frontsecnum;
-		int16_t linebacksecnum = lines_physics[linenum].backsecnum;
-
-		sector_t __far* front = &sectors[linefrontsecnum];
-		sector_t __far* back = &sectors[linebacksecnum];
-	 
-
-
-		if (lineopenings[linenum].cachebits & LO_CEILING_DIRTY_BIT) {
-			if (front->ceilingheight < back->ceilingheight) {
-				lineopenings[linenum].opentop = front->ceilingheight;
-			}
-			else {
-				lineopenings[linenum].opentop = back->ceilingheight;
-			}
-		}
-		if (lineopenings[linenum].cachebits & LO_FLOOR_DIRTY_BIT) {
-			if (front->floorheight > back->floorheight) {
-				lineopenings[linenum].openbottom = front->floorheight;
-				lineopenings[linenum].lowfloor = back->floorheight;
-			}
-			else {
-				lineopenings[linenum].openbottom = back->floorheight;
-				lineopenings[linenum].lowfloor = front->floorheight;
-			}
-		}
-
-		// this is used in two spots, we'll just calc ont he fly.
-		//lineopenings[linenum].openrange = lineopenings[linenum].opentop - lineopenings[linenum].openbottom;
-
-		lineopenings[linenum].cachebits = 0;
-	}
-	lineopening = lineopenings[linenum];
-}
-
-void P_UpdateLineOpening(int16_t secnum, boolean changedFloor) {
-	int16_t max = sectors[secnum].linecount;
-	int16_t i;
-
-#ifdef CHECK_FOR_ERRORS
-	if (secnum > numsectors || secnum < 0) {
-		I_Error("bad secnum %i", secnum);
-	}
-#endif
- 
-	
-	for (i = 0; i < max; i++) {
-		int16_t linenum = linebuffer[sectors[secnum].linesoffset + i];
-		int16_t lineside1 = lines[linenum].sidenum[1];
-		if (lineside1 == -1) {
-			// single sided line
-			continue;
-		}
-
-		lineopenings[linenum].cachebits |= 
-				(changedFloor ? LO_FLOOR_DIRTY_BIT : LO_CEILING_DIRTY_BIT);
-
-
-
-	}
-}
-#else
 
 void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum) {
 	sector_t __far*	front;
@@ -426,7 +349,6 @@ void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t l
  
 
 }
-#endif
 
 //
 // THING POSITION SETTING

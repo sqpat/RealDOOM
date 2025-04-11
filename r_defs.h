@@ -235,9 +235,6 @@ typedef struct lineopening_s {
 	short_height_t		opentop;
 	short_height_t 		openbottom;
 	short_height_t		lowfloor;
-#ifdef	PRECALCULATE_OPENINGS
-	byte				cachebits;
-#endif
 	//short_height_t		openrange; // not worth storing thousands of bytes of a subtraction result
 
 } lineopening_t;

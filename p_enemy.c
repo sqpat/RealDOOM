@@ -121,10 +121,8 @@ __near P_RecursiveSound
 	uint8_t checkflags;
 	int16_t checksidenum0;
 	int16_t checksidenum1;
-#ifndef		PRECALCULATE_OPENINGS
 	int16_t checkfrontsecnum;
 	int16_t checkbacksecnum;
-#endif
 	uint16_t lineoffset;
 
 #ifdef CHECK_FOR_ERRORS
@@ -158,22 +156,15 @@ __near P_RecursiveSound
 		check_physics = &lines_physics[linenumber];
 		checksidenum0 = check->sidenum[0];
 		checksidenum1 = check->sidenum[1];
-
-#ifndef		PRECALCULATE_OPENINGS
 		checkfrontsecnum = check_physics->frontsecnum;
 		checkbacksecnum = check_physics->backsecnum;
-#endif
 
 
 
 		if (!(checkflags & ML_TWOSIDED)) {
 			continue;
 		}
-#ifdef	PRECALCULATE_OPENINGS
-		P_LoadLineOpening(linenumber);
-#else
 		P_LineOpening(checksidenum1, checkfrontsecnum, checkbacksecnum);
-#endif
 
 		if (lineopening.opentop <= lineopening.openbottom) {
 			continue;	// closed door

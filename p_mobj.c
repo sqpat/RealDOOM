@@ -298,50 +298,7 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
  
 
 }
-#ifdef PRECALCULATE_OPENINGS
-
-void __near P_CacheLineOpenings() {
-	int16_t linenum, linefrontsecnum, linebacksecnum;
-	sector_t __far* front;
-	sector_t __far* back;
-	
-
-	lineopenings = (lineopening_t __far* )Z_GetNextPhysicsAddress(numlines * sizeof(lineopening_t));
-	FAR_memset(lineopenings, 0, numlines * sizeof(lineopening_t));
-
-	for (linenum = 0; linenum < numlines; linenum++) {
-		int16_t lineside1 = lines[linenum].sidenum[1];
-		if (lineside1 == -1) {
-			// single sided line
-			continue;
-		}
-		linefrontsecnum = lines_physics[linenum].frontsecnum;
-		linebacksecnum = lines_physics[linenum].backsecnum;
-
-		front = &sectors[linefrontsecnum];
-		back = &sectors[linebacksecnum];
-
-		if (front->ceilingheight < back->ceilingheight) {
-			lineopenings[linenum].opentop = front->ceilingheight;
-		}
-		else {
-			lineopenings[linenum].opentop = back->ceilingheight;
-		}
-		if (front->floorheight > back->floorheight) {
-			lineopenings[linenum].openbottom = front->floorheight;
-			lineopenings[linenum].lowfloor = back->floorheight;
-		}
-		else {
-			lineopenings[linenum].openbottom = back->floorheight;
-			lineopenings[linenum].lowfloor = front->floorheight;
-		}
-
-		//lineopenings[linenum].openrange = lineopenings[linenum].opentop - lineopenings[linenum].openbottom;
-	}
-	 
-}
-
-#endif
+ 
 
 //
 // P_ExplodeMissile  
