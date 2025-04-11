@@ -24,6 +24,12 @@ EXTRN resetDS_:PROC
 EXTRN I_ReadMouse_:PROC
 EXTRN D_PostEvent_:PROC
 EXTRN M_CheckParm_:PROC
+EXTRN M_StartControlPanel_:NEAR
+EXTRN HU_Responder_:NEAR
+EXTRN ST_Responder_:NEAR
+EXTRN AM_Responder_:PROC
+EXTRN FastDiv3216u_:PROC
+EXTRN Z_SetOverlay_:PROC
 EXTRN fopen_:PROC
 EXTRN fgetc_:PROC
 EXTRN fputc_:PROC
@@ -33,6 +39,10 @@ EXTRN fclose_:PROC
 
 EXTRN locallib_strcmp_:PROC
 
+
+EXTRN _F_Responder:DWORD
+EXTRN _singledemo:BYTE
+EXTRN _demoplayback:BYTE
 EXTRN _mousepresent:BYTE
 EXTRN _key_strafe:BYTE
 EXTRN _key_straferight:BYTE
@@ -601,6 +611,9 @@ PUBLIC G_CopyCmd_
 
 ENDP
 
+PROC GAMEKEYDOWNTHING_  NEAR
+PUBLIC GAMEKEYDOWNTHING_
+ENDP
 
 _gamekeydown:   ;  256 bytes.
 db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -1665,6 +1678,189 @@ call  fputc_
 
 jmp   print_last_digit
 
+
+ENDP
+
+PROC G_Responder_  NEAR
+PUBLIC G_Responder_
+
+push  bx
+push  cx
+push  si
+mov   bx, ax
+mov   cx, dx
+mov   si, OFFSET _gameaction
+cmp   byte ptr [si], 0
+jne   label_1
+cmp   byte ptr [_singledemo], 0
+jne   label_1
+cmp   byte ptr [_demoplayback], 0
+je    label_2
+label_10:
+mov   es, cx
+mov   al, byte ptr es:[bx]
+test  al, al
+je    label_3
+cmp   al, 2
+jne   label_4
+mov   si, word ptr es:[bx + 3]
+or    si, word ptr es:[bx + 1]
+jne   label_3
+label_4:
+xor   al, al
+pop   si
+pop   cx
+pop   bx
+ret   
+label_2:
+mov   si, OFFSET _gamestate
+cmp   byte ptr [si], 3
+je    label_10
+label_1:
+mov   si, OFFSET _gamestate
+cmp   byte ptr [si], 0
+je    label_23
+label_8:
+mov   si, OFFSET _gamestate
+cmp   byte ptr [si], 2
+je    label_9
+label_18:
+mov   es, cx
+mov   al, byte ptr es:[bx]
+cmp   al, 2
+je    label_20
+cmp   al, 1
+jne   label_21
+mov   ax, word ptr es:[bx + 3]
+test  ax, ax
+jl    label_22
+jne   label_4
+cmp   word ptr es:[bx + 1], 0100h
+jae   label_4
+label_22:
+mov   al, byte ptr es:[bx + 1]
+cbw
+call  G_SetGameKeyUp_
+jmp   label_4
+label_3:
+call  M_StartControlPanel_
+mov   al, 1
+pop   si
+pop   cx
+pop   bx
+ret   
+label_23:
+mov   ax, bx
+mov   dx, cx
+call  HU_Responder_
+test  al, al
+je    label_5
+mov   al, 1
+pop   si
+pop   cx
+pop   bx
+ret   
+label_5:
+mov   ax, bx
+mov   dx, cx
+call  ST_Responder_
+test  al, al
+je    label_6
+mov   al, 1
+pop   si
+pop   cx
+pop   bx
+ret   
+label_9:
+jmp   label_7
+label_6:
+mov   ax, bx
+mov   dx, cx
+call  AM_Responder_
+test  al, al
+je    label_8
+mov   al, 1
+pop   si
+pop   cx
+pop   bx
+ret   
+label_20:
+jmp   label_11
+label_21:
+jmp   label_12
+label_7:
+mov   ax, 2
+call Z_SetOverlay_
+mov   dx, cx
+mov   ax, bx
+call dword ptr [_F_Responder]
+test  al, al
+jne   label_19
+jmp   label_18
+label_19:
+mov   al, 1
+pop   si
+pop   cx
+pop   bx
+ret   
+label_12:
+test  al, al
+je    label_13
+jmp   label_4
+label_13:
+cmp   word ptr es:[bx + 3], 0
+jne   label_14
+cmp   word ptr es:[bx + 1], 0FFh
+je    label_15
+label_14:
+mov   ax, word ptr es:[bx + 3]
+test  ax, ax
+jl    label_16
+jne   label_17
+cmp   word ptr es:[bx + 1], 0100h
+jb    label_16
+label_17:
+mov   al, 1
+pop   si
+pop   cx
+pop   bx
+ret   
+label_15:
+mov   al, 1
+mov   byte ptr [_sendpause], al
+pop   si
+pop   cx
+pop   bx
+ret   
+label_16:
+mov   al, byte ptr es:[bx + 1]
+cbw
+call  G_SetGameKeyDown_
+jmp   label_17
+label_11:
+mov   al, byte ptr es:[bx + 1]
+mov   si, word ptr [_mousebuttons]
+and   al, 1
+mov   byte ptr [si], al
+mov   al, byte ptr es:[bx + 1]
+and   al, 2
+mov   byte ptr [si + 1], al
+mov   al, byte ptr es:[bx + 1]
+and   al, 4
+mov   byte ptr [si + 2], al
+mov   al, byte ptr [_mouseSensitivity]
+xor   ah, ah
+mov   dx, word ptr es:[bx + 5]
+add   ax, 5
+mov   bx, 0Ah
+imul  dx
+call  FastDiv3216u_
+mov   word ptr [_mousex], ax
+mov   al, 1
+pop   si
+pop   cx
+pop   bx
+ret   
 
 endp
 

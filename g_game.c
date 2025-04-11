@@ -283,6 +283,7 @@ boolean __near G_GetGameKey(int8_t keyr);
 // G_Responder  
 // Get info needed to make ticcmd_ts for the players.
 // 
+/*
 boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up menu if in demos
 	if (gameaction == ga_nothing && !singledemo &&
 		(demoplayback || gamestate == GS_DEMOSCREEN)) {
@@ -349,6 +350,7 @@ boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up men
 
 	return false;
 } 
+*/
  
 void __near G_DoWorldDone(void) {
 	gamestate = GS_LEVEL;
