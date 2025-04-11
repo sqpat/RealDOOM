@@ -273,13 +273,11 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define diskgraphicbytes_segment          ((segment_t) ((int32_t)diskgraphicbytes >> 16))
 
 
-//todo get rid of this.
-#ifdef MOVE_P_SIGHT
-// 0x92E80000
-#define PSightFuncLoadAddr      ((byte __far*) (MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes)))
-#define P_CheckSightAddr        ((boolean (__far *)(mobj_t __near* ,mobj_t __near* ,mobj_pos_t __far* ,mobj_pos_t __far* ))  (PSightFuncLoadAddr))
-#define SIZE_PSight             0x0A70*/
-#endif
+#define physics_highcode_segment 0x9400
+#define psight_codespace  ((byte __far*)      0x94000000)
+
+
+
 
 // end at 0x9380
 
@@ -300,6 +298,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define getDeathStateAddr     ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x04A8))
 #define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0586))
 #define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x063C))
+
+//#define P_CheckSightAddr      ((boolean (__far *)(mobj_t __near* ,mobj_t __near* ,uint16_t, uint16_t))  (PSightFuncLoadAddr))
 
 #define InfoFuncLoadSegment              ((segment_t) ((int32_t)InfoFuncLoadAddr >> 16))
 
@@ -813,8 +813,9 @@ rejectmatrix       5C00:0000
 #define ST_GRAPHICS_SEGMENT 0x7000u
 
 // tall % sign
+// todo remove...
 #define tallpercent  61304u
-#define tallpercent_patch  ((byte __far *) 0x7000EF78)
+#define tallpercent_patch  ((byte __far *) 0x8C00EF78)
 
 #define palettebytes_size  10752
 #define palettebytes ((byte __far*) 0x90000000)
@@ -905,6 +906,7 @@ skytexture         5400:0000
 // note drawspan code could fit here and colormap in 0x9c00...
 
 // main bar left
+// todo remove all this crap..
 #define sbar  44024u
 #define sbar_patch   ((byte __far *) 0x7000ABF8)
 
@@ -1501,5 +1503,6 @@ compositetextureoffset  4F80:01AC
 #define pc_speaker_data           ((uint16_t __far*)              MAKE_FULL_SEGMENT(PC_SPEAKER_SFX_DATA_SEGMENT << 16,          0)) 
 
  
+
 
 #endif

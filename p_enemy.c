@@ -231,8 +231,9 @@ boolean __near P_CheckMeleeRange (mobj_t __near* actor){
 	int16_t plradius;
 	
 	
-    if (!actor->targetRef)
+    if (!actor->targetRef){
 		return false;
+	}
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 		
 	actorX = actor_pos->x.w;
@@ -247,10 +248,12 @@ boolean __near P_CheckMeleeRange (mobj_t __near* actor){
 	
 	dist.w = P_AproxDistance (plx-actorX, ply-actorY);
 	plradius += (MELEERANGE - 20);
-    if (dist.h.intbits >= plradius)
+    if (dist.h.intbits >= plradius){
 		return false;
-    if (! P_CheckSight (actor, pl, FP_OFF(actor_pos), FP_OFF(pl_pos)) )
+	}
+    if (! P_CheckSight (actor, pl, FP_OFF(actor_pos), FP_OFF(pl_pos)) ){
 		return false;
+	}
 							
     return true;		
 }

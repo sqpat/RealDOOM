@@ -445,6 +445,9 @@ void (__far* P_ArchiveSpecials)() = 										  ((void    (__far *)())     					
 void (__far* S_ActuallyChangeMusic)() = 									  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 S_ActuallyChangeMusicOffset)));
 void (__far* LoadSFXWadLumps)() = 							        		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 LoadSFXWadLumpsOffset)));
 
+boolean (__far* P_CheckSight)() = 		  ((boolean (__far *)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4))     	(MK_FP(physics_highcode_segment, 		 P_CheckSightOffset)));
+
+
 
 
 int16_t                 currentlumpindex = 0;
@@ -1470,7 +1473,10 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), 
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), 
 
-	_EPR(EMS_VISPLANE_EXTRA_PAGE)
+	_EPR(EMS_VISPLANE_EXTRA_PAGE),
+	_NPR(PAGE_9400_OFFSET),
+	_NPR(PAGE_9800_OFFSET)
+
 
 };
 #else
@@ -1629,7 +1635,9 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), PAGE_5800_OFFSET,
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), PAGE_5C00_OFFSET,
 
-	_EPR(EMS_VISPLANE_EXTRA_PAGE), 		   PAGE_8400_OFFSET
+	_EPR(EMS_VISPLANE_EXTRA_PAGE), 		   PAGE_8400_OFFSET,
+	_NPR(PAGE_9400_OFFSET), PAGE_9400_OFFSET,
+	_NPR(PAGE_9800_OFFSET), PAGE_9800_OFFSET
 
 
 

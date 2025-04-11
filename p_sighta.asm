@@ -17,8 +17,6 @@
 	.MODEL  medium
 
 
-EXTRN FixedMul2432_:PROC
-
 ; todo: move fixedmul2432 into this file? along with map stuff.
 
 INCLUDE CONSTANT.INC
@@ -30,6 +28,11 @@ INSTRUCTION_SET_MACRO
 
 
 .CODE
+
+PROC    P_SIGHT_STARTMARKER_ 
+PUBLIC  P_SIGHT_STARTMARKER_
+ENDP
+
 
 ; boolean __far P_CheckSight (  mobj_t __near* t1, mobj_t __near* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos ) {
 
@@ -753,7 +756,7 @@ mov   ax, word ptr es:[di + 2]
 
 opentop_set:
 mov   cx, ax	; store opentop
-mov   word ptr cs:[SELFMODIFY_PSIGHT_setopentop + 1], ax
+mov   word ptr cs:[SELFMODIFY_PSIGHT_setopentop + 1 - P_SIGHT_STARTMARKER_], ax
 mov   ax, word ptr es:[di]
 cmp   ax, word ptr es:[si]
 jg    set_openbottom_to_frontsector
@@ -1056,8 +1059,8 @@ ret
 
 ENDP
 
-PROC    P_DivlineSide2_
-PUBLIC  P_DivlineSide2_
+PROC    P_SIGHT_ENDMARKER_
+PUBLIC  P_SIGHT_ENDMARKER_
 ENDP
 
 END

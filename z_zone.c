@@ -122,6 +122,11 @@ void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 }
 #endif
 
+void __far Z_QuickMapPhysicsCode(){
+	Z_QuickMap2AI(pageswapargs_physics_code_offset_size, INDEXED_PAGE_9400_OFFSET);
+	
+}
+
 void __far Z_QuickMapPhysics() {
 	//int16_t errorreg;
 

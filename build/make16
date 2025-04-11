@@ -69,8 +69,6 @@ GLOBOBJS = &
  p_plats.obj &
  p_pspr.obj &
  p_setup.obj &
- p_sight.obj &
- p_sighta.obj &
  p_spec.obj &
  p_switch.obj &
  p_mobj.obj &

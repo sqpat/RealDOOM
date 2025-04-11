@@ -32,6 +32,7 @@
 #define P_ArchiveSpecialsOffset               0x9BD
 #define LoadSFXWadLumpsOffset                 0x0
 #define S_ActuallyChangeMusicOffset           0x3EF
+#define P_CheckSightOffset                    0x0
 
 #define R_DrawColumnCodeSize           0xE46
 #define R_DrawSpanCodeSize             0xDAD
@@ -39,6 +40,7 @@
 #define R_MaskedConstantsCodeSize      0xEB
 #define R_DrawSkyColumnCodeSize        0x6C0
 #define WI_StuffCodeSize               0x1014
+#define PSightCodeSize                 0x604
 #define WipeCodeSize                   0x315
 #define FinaleCodeSize                 0xB52
 #define SaveLoadCodeSize               0xB04

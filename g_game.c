@@ -371,7 +371,7 @@ void __near G_DoNewGame(void) {
 	gameaction = ga_nothing;
 }
 
-
+int16_t setval;
 void __near G_CopyCmd(ticcmd_t __near * destcmd, int8_t srcindex);
  
 // G_Ticker
@@ -464,8 +464,11 @@ void __near G_Ticker (void)  {
     switch (gamestate)  { 
 		case GS_LEVEL:
 
+            Z_QuickMapPhysicsCode();
 			P_Ticker();
 
+            //  Z_QuickMapPhysics();
+            
 			ST_Ticker();
 			if (automapactive) {
 				AM_Ticker();

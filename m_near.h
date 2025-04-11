@@ -616,6 +616,9 @@ extern void                 (__far* P_ArchiveSpecials)();
 
 extern void                 (__far* S_ActuallyChangeMusic)();
 extern void 				(__far* LoadSFXWadLumps)();
+extern boolean 				(__far* P_CheckSight)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4);
+
+
 
 
 extern int16_t              currentlumpindex;

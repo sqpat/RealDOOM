@@ -514,7 +514,11 @@ void __near Z_LoadBinaries() {
 	fread(&codesize, 2, 1, fp2);
 	FAR_fread(wianim_codespace, codesize, 1, fp2);
  
+	Z_QuickMapPhysicsCode();
+	fread(&codesize, 2, 1, fp2);
+	FAR_fread(psight_codespace, codesize, 1, fp2);
 	Z_QuickMapPhysics();
+
 
 //todo should these be plus 2?
 	codestartposition[0] = ftell(fp2);
@@ -541,6 +545,8 @@ void __near Z_LoadBinaries() {
 		musdriverstartposition[i] = ftell(fp2);
 
 	}
+
+
 
 
 	//FAR_fread(code_overlay_start, codesize, 1, fp2);

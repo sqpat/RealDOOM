@@ -70,9 +70,12 @@ void __far WI_ENDMARKER();
 void __far SM_LOAD_STARTMARKER();
 void __far SM_LOAD_ENDMARKER();
 void __far S_ActuallyChangeMusic();
+boolean __far P_CheckSight (mobj_t __near* t1,mobj_t __near* t2, uint16_t t1_pos, uint16_t t2_pos);
 
 void __far S_INIT_STARTMARKER();
 void __far S_INIT_ENDMARKER();
+void __far P_SIGHT_STARTMARKER();
+void __far P_SIGHT_ENDMARKER();
 
 
 void __far WI_Start();
@@ -116,7 +119,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // Export .inc file with segment values, etc from the c coe
     FILE*  fp = fopen("doomcode.bin", "wb");
     //FILE*  fp2 = fopen("doomcod2.bin", "wb");
-	uint16_t codesize[11];
+	uint16_t codesize[12];
 	uint16_t muscodesize[4];
 	uint16_t maxmuscodesize = 0;
     int8_t i;
@@ -167,35 +170,42 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)WI_STARTMARKER, codesize[5], 1, fp);
 
 
-    codesize[6] = FP_OFF(hackDSBack) - FP_OFF(I_ReadScreen);
+    codesize[6] = FP_OFF(P_SIGHT_ENDMARKER) - FP_OFF(P_SIGHT_STARTMARKER);
     // write filesize..
     fwrite(&codesize[6], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)I_ReadScreen, codesize[6], 1, fp);
+    FAR_fwrite((byte __far *)P_SIGHT_STARTMARKER, codesize[6], 1, fp);
 
-    codesize[7] = FP_OFF(F_END) - FP_OFF(F_START);
+
+    codesize[7] = FP_OFF(hackDSBack) - FP_OFF(I_ReadScreen);
     // write filesize..
     fwrite(&codesize[7], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)F_START, codesize[7], 1, fp);
+    FAR_fwrite((byte __far *)I_ReadScreen, codesize[7], 1, fp);
 
-    codesize[8] = FP_OFF(P_LOADEND) - FP_OFF(P_LOADSTART);
+    codesize[8] = FP_OFF(F_END) - FP_OFF(F_START);
     // write filesize..
     fwrite(&codesize[8], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)P_LOADSTART, codesize[8], 1, fp);
+    FAR_fwrite((byte __far *)F_START, codesize[8], 1, fp);
 
-    codesize[9] = FP_OFF(SM_LOAD_ENDMARKER) - FP_OFF(SM_LOAD_STARTMARKER);
+    codesize[9] = FP_OFF(P_LOADEND) - FP_OFF(P_LOADSTART);
     // write filesize..
     fwrite(&codesize[9], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)SM_LOAD_STARTMARKER, codesize[9], 1, fp);
+    FAR_fwrite((byte __far *)P_LOADSTART, codesize[9], 1, fp);
 
-    codesize[10] = FP_OFF(S_INIT_ENDMARKER) - FP_OFF(S_INIT_STARTMARKER);
+    codesize[10] = FP_OFF(SM_LOAD_ENDMARKER) - FP_OFF(SM_LOAD_STARTMARKER);
     // write filesize..
     fwrite(&codesize[10], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)S_INIT_STARTMARKER, codesize[10], 1, fp);
+    FAR_fwrite((byte __far *)SM_LOAD_STARTMARKER, codesize[10], 1, fp);
+
+    codesize[11] = FP_OFF(S_INIT_ENDMARKER) - FP_OFF(S_INIT_STARTMARKER);
+    // write filesize..
+    fwrite(&codesize[11], 2, 1, fp);
+    // write data
+    FAR_fwrite((byte __far *)S_INIT_STARTMARKER, codesize[11], 1, fp);
 
 
     muscodesize[0] = FP_OFF(SM_OPL2_ENDMARKER) - FP_OFF(SM_OPL2_STARTMARKER);
@@ -283,6 +293,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     // musload offset
     fprintf(fp, "#define S_ActuallyChangeMusicOffset           0x%X\n", FP_OFF(S_ActuallyChangeMusic)          - FP_OFF(SM_LOAD_STARTMARKER));
+    fprintf(fp, "#define P_CheckSightOffset                    0x%X\n", FP_OFF(P_CheckSight)                   - FP_OFF(P_SIGHT_STARTMARKER));
 
 	fprintf(fp, "\n");
 
@@ -292,11 +303,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_MaskedConstantsCodeSize      0x%X\n", codesize[3]);
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize[4]);
 	fprintf(fp, "#define WI_StuffCodeSize               0x%X\n", codesize[5]);
-	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize[6]);
-	fprintf(fp, "#define FinaleCodeSize                 0x%X\n", codesize[7]);
-	fprintf(fp, "#define SaveLoadCodeSize               0x%X\n", codesize[8]);
-	fprintf(fp, "#define SMLoadCodeSize                 0x%X\n", codesize[9]);
-	fprintf(fp, "#define SInitCodeSize                  0x%X\n", codesize[10]);
+	fprintf(fp, "#define PSightCodeSize                 0x%X\n", codesize[6]);
+	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize[7]);
+	fprintf(fp, "#define FinaleCodeSize                 0x%X\n", codesize[8]);
+	fprintf(fp, "#define SaveLoadCodeSize               0x%X\n", codesize[9]);
+	fprintf(fp, "#define SMLoadCodeSize                 0x%X\n", codesize[10]);
+	fprintf(fp, "#define SInitCodeSize                  0x%X\n", codesize[11]);
 	fprintf(fp, "#define MaximumMusDriverSize           0x%X\n", maxmuscodesize);
 
 
