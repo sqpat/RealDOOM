@@ -179,7 +179,6 @@ void __near P_MovePsprites () ;
 void P_DeathThink () {
     angle_t		angle;
     angle_t		delta;
-	mobj_pos_t __far* playerattacker_pos;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 
@@ -202,8 +201,15 @@ void P_DeathThink () {
     P_CalcHeight();
 	
 	if (player.attackerRef && player.attackerRef != playerMobjRef) {
-		playerattacker_pos = &mobjposlist_6800[player.attackerRef];
-		angle.wu = R_PointToAngle2(playerMobj_pos->x, playerMobj_pos->y, playerattacker_pos->x, playerattacker_pos->y);
+
+		// FIX for doom2 timedemo 3 inconsistency
+		// use last recorded position of dead attacker if attacker was dead when player was killed.
+		if (useDeadAttackerRef){
+			angle.wu = R_PointToAngle2(playerMobj_pos->x, playerMobj_pos->y, deadAttackerX, deadAttackerY);
+		} else {
+			mobj_pos_t __far* playerattacker_pos  = &mobjposlist_6800[player.attackerRef];
+			angle.wu = R_PointToAngle2(playerMobj_pos->x, playerMobj_pos->y, playerattacker_pos->x, playerattacker_pos->y);
+		}
 	
 
 		delta.wu = angle.wu - playerMobj_pos->angle.wu;
@@ -216,14 +222,13 @@ void P_DeathThink () {
 			if (player.damagecount){
 				player.damagecount--;
 			}
-		}
-		else if (delta.hu.intbits < ANG180_HIGHBITS){
+
+		} else if (delta.hu.intbits < ANG180_HIGHBITS){
 			playerMobj_pos->angle.wu += ANG5;
 		} else{
 			playerMobj_pos->angle.wu -= ANG5;
 		}
-    }
-    else if (player.damagecount){
+    } else if (player.damagecount){
 		player.damagecount--;
 	}
 	

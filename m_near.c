@@ -1920,6 +1920,9 @@ uint16_t pcspeaker_endoffset;
 
 
 
+boolean useDeadAttackerRef;
+fixed_t_union deadAttackerX;
+fixed_t_union deadAttackerY;
 
 
 

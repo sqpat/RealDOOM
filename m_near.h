@@ -1405,6 +1405,10 @@ extern int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 extern uint16_t pcspeaker_currentoffset;
 extern uint16_t pcspeaker_endoffset;
 
+extern boolean useDeadAttackerRef;
+extern fixed_t_union deadAttackerX;
+extern fixed_t_union deadAttackerY;
+
 
 
 #endif

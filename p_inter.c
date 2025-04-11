@@ -658,7 +658,17 @@ void __near P_KillMobj (	mobj_t __near* source, mobj_t __near*	target, mobj_pos_
 		// even those caused by other monsters
 		player.killcount++;
     }
-    
+
+	// todo what else doesnt leave a corpse...?
+    if (target->type == MT_SKULL || target->type == MT_PAIN) {
+		THINKERREF targetref = GETTHINKERREF(target);
+		if (targetref == player.attackerRef){
+			useDeadAttackerRef = true;
+			deadAttackerX = target_pos->x;
+			deadAttackerY = target_pos->y;
+		}
+	}
+
     if (target->type == MT_PLAYER) {
 			
 		target_pos->flags1 &= ~MF_SOLID;
@@ -868,10 +878,23 @@ void __near P_DamageMobj (mobj_t __near*	target, mobj_t __near*	inflictor, mobj_
 
 		player.health -= damage; 	// mirror mobj health here for Dave
 		if (player.health < 0) {
-			player.health = 0;
+			player.health = 0;			
 		}
+
+	 
 	
 		player.attackerRef = GETTHINKERREF(source);
+		if (source->health > 0){
+			useDeadAttackerRef = false;
+		} else {
+			if (!useDeadAttackerRef){
+				mobj_pos_t __far* source_pos = GET_MOBJPOS_FROM_MOBJ(source);
+				useDeadAttackerRef = true;
+				deadAttackerX = source_pos->x;
+				deadAttackerY = source_pos->y;
+			}
+		}
+
 		player.damagecount += damage;	// add damage after armor / invuln
 
 		if (player.damagecount > 100) {
