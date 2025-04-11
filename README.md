@@ -1,41 +1,41 @@
 # RealDOOM
 
-[![Old Demo Recording](http://img.youtube.com/vi/AiPq9BUOa98/0.jpg)](https://www.youtube.com/watch?v=AiPq9BUOa98 "RealDOOM v 0.2-ish DOOM2 Map 20 gameplay")
-
+[![Real Hardware recording](https://img.youtube.com/vi/F9RYZJlCTsI/0.jpg)](https://www.youtube.com/watch?v=F9RYZJlCTsI "RealDOOM v 0.24 DOOM2 Recording")
 
 
 RealDOOM is an in progress port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical detail as the original game.
 
+The current release supports Shareware and commercial DOOM/DOOM2 as well as Ultimate DOOM. TNT and Plutonia are not currently supported. Custom wads are not currently supported.
 
-- As of release 0.11, the game is fully playable with the shareware DOOM1.WAD file. 
-- As of version 0.15, the game is no longer compatible with DOSBox because DOSBox lacks support for EMS 4.0 with backfill.
-- As of release 0.20, the game is fully playable with commercial DOOM.WAD and DOOM2.WAD files
-- Final/Ultimate DOOM WADs are planned to eventually be supported.
+The current development focus is on sound effects support and ASM rewrites of most of the codebase to reduce memory usage. This will be followed by re-adding removed features.
 
-The current development focus is on ASM rewrites of most of the render code. This will be followed by re-adding removed features.
+### Running RealDOOM
+
+RealDOOM is still in a pre-alpha state and so it does not cleanly support many hardware configurations yet. The easiest way to run it is to follow the instructions in the latest release notes.
+
+Performance on 32-bit PCs is similar to Vanilla DOOM, so performance should generally be okay on a 486 or Pentium. Slower machines might want to turn detail level to low or potato for faster framerates.
+
+The "minimum spec" is a standard 4.77 MhZ 8088 machine with a VGA card, 64kb of UMBs in E000 range, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets (C&T SCAT, VLSI SCAMP, VLSI TOPCAT... ) support EMS 4.0 and you will be able to use their appropriate EMS drivers or SQEMM, or the chipset specific build if available, which is faster.
+
+### Building RealDOOM
 
 Building RealDOOM requires openwatcom 2.0 and tasm 2.51.
 Simply run the makeall script and select your build option (286, 386, 8086, chipset, etc).
 
-If running on real hardware, a 486 or Pentium should generally run the game okay in high quality. A 386 or 286 should be fast and also use low or potato detail to get an agreeable framereate.
-
-The "minimum spec" is a standard 4.77 MhZ 8088 machine with a VGA card, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets (C&T SCAT, VLSI SCAMP, VLSI TOPCAT... ) support EMS 4.0 and you will be able to use their appropriate EMS drivers or SQEMM, or the chipset specific build if available, which is faster.
-
 ### Removed features (not planned to be re-added)
  - joystick support
 
-###  Broken/unimplemented features (planned to be fixed)
- - sound (will require writing a 16 bit library for this)
- - savegames (will require a rewrite of the archive/unarchive code)
- - multiplayer/networking? (not sure)
+###  Broken/unimplemented features 
+ - sound effects
+ - multiplayer/networking? (not sure if it will be re-added)
+ - custom wads
 
-
-There are also a lot of hard caps on things like texture size and count, node count, etc, which will probably make many custom WADs unplayable. oh well.
-
+There are also a lot of hard caps on things like texture size and count, node count, etc. 
 
 ### Known bugs:
- - some corruption may be happening in single pixel sprite draws
- - span/plane draws may lack texture precision and be a little 'fuzzy'
+ - span/plane draws use 16 and not 24 bit texture precision and be a little noisy
+ - minor doom2 timedemo3 desync at the very end of the timedemo
+ - occasional keyboard related memory leaks
  
 ### High-Level Roadmap:
  Not necessarily meant to be accurate, but just to give an overview of the general order in which things are probably going to be built.
@@ -101,27 +101,32 @@ There are also a lot of hard caps on things like texture size and count, node co
   - more code moved into offloaded binary
   - various render and engine bugfixes
   - additional 386 optimized math functions
-    
-**v0.30** : Improved feature compatibility
-  - core physics functions rewritten in asm
-  - fix save/load game?
+
+(Mar 31, 2025)
+~~**v0.25** : Improved feature compatibility~~~
+  - fix save/load game
   - fix demo recording
+  - implement music
   - more code moved into offloaded binary
-  - improved span drawing fidelity 
+
+**v0.30** : Improved feature compatibility
+  - improved custom WAD support
+  - core physics functions rewritten in asm
+  - more code moved into offloaded binary
+  - improved span drawing fidelity
+  - sfx code
 
 **v0.40** : Sound Support, Alpha release
-  - sound and music code
   - more code moved into offloaded binary
   - fixing of all known bugs? (hopefully)
+  - remove E000 UMB dependency?
  
  **v0.xx** : Continued improvement
-  - improved custom WAD support.
   - TNT, Plutonia support?
   - continued moving of code to asm, optimizations, etc
   - Entire codebase in asm? Remove c lib dependencies?
   - Remove MS-DOS dependencies, self boot?
   - highly optimized but non-timedemo conformant 286 super-optimized version?
-  - Protected mode 286 version? (Probably slower)
  
 
 
