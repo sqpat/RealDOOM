@@ -998,9 +998,9 @@ R_PointToAngle(y, x);
 	if (!commercial) {
 		memcpy(title, "                        ", 30);
 		if (is_ultimate){
-			combine_strings(title, title, " The Ultimate DOOM Startup v1.09");
+			combine_strings(title, title, " The Ultimate DOOM Startup v1.9");
 		} else {
-			combine_strings(title, title, "  DOOM System Startup v1.09  ");
+			combine_strings(title, title, "  DOOM System Startup v1.9  ");
 		}
 		combine_strings(title, title, "                        ");
 
@@ -1019,7 +1019,7 @@ R_PointToAngle(y, x);
 
 				}
 		#else
-					memcpy(title, "                         DOOM 2: Hell on Earth v1.09                           ", 127);
+					memcpy(title, "                         DOOM 2: Hell on Earth v1.9                           ", 127);
 					
 		#endif
 	}

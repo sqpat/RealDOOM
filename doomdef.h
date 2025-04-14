@@ -36,7 +36,7 @@
 // DOOM version
 enum { VERSION =  109 };
 
-#define VERSION_STRING "1.09"
+#define VERSION_STRING "1.9"
 
 #define EXE_VERSION_1_9         0
 #define EXE_VERSION_ULTIMATE    1

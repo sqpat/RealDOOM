@@ -67,31 +67,6 @@ void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, b
 void S_Start(void);
 void GAMEKEYDOWNTHING();
 
-void checker(int16_t a){
-	// if (snd_MusicDevice != 3){
-	// 	I_Error("a %i %i", a, snd_MusicDevice);
-	// }
-	// if (snd_SfxDevice != 1){
-	// 	I_Error("b %i %i", a, snd_SfxDevice);
-	// }
-
-	byte __far* data = (byte __far*)GAMEKEYDOWNTHING;
-	int16_t i = 0;
-	int16_t sum = 0;
-	FILE* fp = fopen ("blah.txt", "ab");
-	// if (gametic > 200){
-		for (i = 0; i < 256; i++){
-			sum+= data[i];
-			// if (data[i]){
-			// 	I_Error("%i %i", i, data[i]);
-			// }
-		}
-	// }
-
-	fprintf(fp, "%li %i \n", gametic, sum);
-	fclose(fp);
-
-}
 
 //
 // P_SetupLevel
@@ -112,15 +87,12 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	player.viewzvalue.w = 1;
 	
 	S_Start();
-	checker(0);
 	Z_FreeConventionalAllocations();
-	checker(1);
 
 	// TODO reset 32 bit counters to start values here..
 	validcount_global = 1;
 
 	P_InitThinkers();
-	checker(2);
 
 
 	// find map name
@@ -154,7 +126,6 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	P_LoadSectors(lumpnum + ML_SECTORS);
 	P_LoadSideDefs(lumpnum + ML_SIDEDEFS);
 
-	checker(3);
 
 	P_LoadLineDefs(lumpnum + ML_LINEDEFS);
 	P_LoadSubsectors(lumpnum + ML_SSECTORS);
@@ -163,7 +134,6 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	P_LoadSegs(lumpnum + ML_SEGS);
 
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
-	checker(4);
 
 
 	W_CacheLumpNumDirect(lumpnum + ML_REJECT, rejectmatrix);
@@ -177,7 +147,6 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 
 	// set up world state
 	P_SpawnSpecials();
-	checker(5);
 	
 	Z_QuickMapRender();
 	Z_QuickMapRenderPlanes();
@@ -191,7 +160,6 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 
 	Z_QuickMapPhysics();
  
-	checker(6);
 
  // reset last used segment cache
 	lastvisspritepatch = -1;    
@@ -205,7 +173,6 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 		}
 	}
 
-	checker(7);
 
 	// preload graphics
 	

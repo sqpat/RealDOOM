@@ -611,9 +611,6 @@ PUBLIC G_CopyCmd_
 
 ENDP
 
-PROC GAMEKEYDOWNTHING_  NEAR
-PUBLIC GAMEKEYDOWNTHING_
-ENDP
 
 _gamekeydown:   ;  256 bytes.
 db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0

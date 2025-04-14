@@ -880,7 +880,6 @@ void __near G_BeginRecording (void)  {
 	Z_QuickMapPhysics();
 
 } 
-void checker(int16_t a);
 
 //
 //  D_DoomLoop
@@ -932,7 +931,6 @@ void __near D_DoomLoop (void) {
 		} else {
             TryRunTics (); // will run at least one tic
         }
-		checker(gametic + 100);
 		S_UpdateSounds (playerMobjRef);// move positional sounds
  		// Update display, next frame, with current state.
 		if (pendingmusicenum){
