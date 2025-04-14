@@ -815,7 +815,7 @@ rejectmatrix       5C00:0000
 // tall % sign
 // todo remove...
 #define tallpercent  61304u
-#define tallpercent_patch  ((byte __far *) 0x8C00EF78)
+#define tallpercent_patch  ((byte __far *) 0x7000EF78)
 
 #define palettebytes_size  10752
 #define palettebytes ((byte __far*) 0x90000000)

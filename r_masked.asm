@@ -874,7 +874,7 @@ jz    do_16_bit_mul_after_all_vissprite
 dec   dx
 do_32_bit_mul_after_all_vissprite:
 
-;call FixedMul_
+;call FixedMul_ ; todo make a near one?
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMul_addr
@@ -2444,7 +2444,7 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 0502h	; for cliptop/clipbot
-push  ax        ; bp - 504h
+push  ax        ; bp - 504h                 ; todo move this to lower bp for smaller accesses.
 mov   bx, ax
 mov   ax, word ptr [bx + 2]
 mov   cx, word ptr [bx + 4]  ; spr->x2
