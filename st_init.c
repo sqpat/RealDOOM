@@ -81,7 +81,7 @@ void __near ST_loadGraphics(void) {
 	int8_t        i;
 	int8_t        j;
 	int16_t       facenum;
-	uint16_t      runningoffset = 0; 
+	uint16_t      runningoffset = hu_font[HU_FONTSIZE-1]; // address of the last lump..
 	uint16_t      currentlump = 0; 
 	uint16_t 	  size;
 

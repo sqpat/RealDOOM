@@ -283,7 +283,9 @@ void __near HU_Init(void){
 	int16_t		j;
 	int8_t	buffer[9];
 	int8_t	ext[4];
-
+	uint16_t runningoffset = 0;	// beginning of the graphics in the ST_GRAPHICS segment.
+	uint16_t size = 0;
+	int16_t lump;
 
 	Z_QuickMapStatus();
 
@@ -292,7 +294,13 @@ void __near HU_Init(void){
 	for (i = 0; i < HU_FONTSIZE; i++) {
 		makethreecharint(j++, ext);
 		combine_strings(buffer, "STCFN", ext );
-		W_CacheLumpNameDirect(buffer, (byte __far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
+
+		lump = W_GetNumForName(buffer);
+		size = W_LumpLength(lump);
+		runningoffset -= size;
+
+		hu_font[i] = runningoffset;
+		W_CacheLumpNumDirect(lump, (byte __far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
 		
 		font_widths[i] = (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i]))->width);
 	

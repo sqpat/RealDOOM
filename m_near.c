@@ -636,7 +636,8 @@ uint16_t         keys[NUMCARDS];// = { 61200u, 61096u, 60992u, 60872u, 60752u, 6
 // weapon ownership patches
 uint16_t arms[6][2];// = { {58908u, 0}, {58836u, 0}, {58776u, 0}, {58704u, 0}, {58632u, 0}, {58560u, 0} };
 
-// face status patches
+// face status patch offsets
+// long long time ago to get binary size down, constants like these were hardcoded.
 uint16_t         faces[ST_NUMFACES];
 /*
  = { 43216u,
@@ -733,9 +734,9 @@ uint8_t		message_counter;
 
 // offsets within segment stored
 // long long time ago to get binary size down, constants like these were hardcoded.
-// todo: one day to make more wads play nice by calculating dynamically again. We can do this
-//   in m_init style asm offloaded code that wont make binary bigger anyway.
-uint16_t hu_font[HU_FONTSIZE]  ={ 8468,
+uint16_t hu_font[HU_FONTSIZE];
+/*
+  ={ 8468,
 	8368, 8252, 8124, 7980, 7848,
 	7788, 7668, 7548, 7452, 7376,
 	7316, 7236, 7180, 7080, 6948,
@@ -750,7 +751,7 @@ uint16_t hu_font[HU_FONTSIZE]  ={ 8468,
 	1900, 1772, 1680, 1580, 1488,
 	1392, 1288
 };
-
+*/
 
 
 
