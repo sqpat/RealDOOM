@@ -1,10 +1,9 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/04/14 12:46:57
+Created on:       25/04/14 18:46:39
 Executable Image: bingen.exe
 creating a DOS executable
-Error! E2028: checker_ is an undefined reference
 
 
                         +------------+
@@ -35,14 +34,14 @@ i_init_TEXT            CODE           AUTO           0000:22f0       000000a5
 z_umb_TEXT             CODE           AUTO           0000:23a0       00000000
 z_init_TEXT            CODE           AUTO           0000:23a0       000008a3
 p_init_TEXT            CODE           AUTO           0000:2c50       00000464
-d_main_TEXT            CODE           AUTO           030c:0000       00000fa3
-i_quit_TEXT            CODE           AUTO           030c:0fb0       00000204
-i_ibm_TEXT             CODE           AUTO           030c:11c0       00000325
-i_sound_TEXT           CODE           AUTO           030c:14f0       00000242
-SM_LOAD_TEXT           CODE           AUTO           030c:1732       0000049e
-bingen_TEXT            CODE           AUTO           030c:1bd0       0000068d
-d_net_TEXT             CODE           AUTO           030c:2260       00000105
-g_game_TEXT            CODE           AUTO           030c:2370       000008ff
+d_main_TEXT            CODE           AUTO           030c:0000       00000f98
+i_quit_TEXT            CODE           AUTO           030c:0fa0       00000204
+i_ibm_TEXT             CODE           AUTO           030c:11b0       00000325
+i_sound_TEXT           CODE           AUTO           030c:14e0       00000242
+SM_LOAD_TEXT           CODE           AUTO           030c:1722       0000049e
+bingen_TEXT            CODE           AUTO           030c:1bc0       0000068d
+d_net_TEXT             CODE           AUTO           030c:2250       00000105
+g_game_TEXT            CODE           AUTO           030c:2360       00000903
 m_misc_TEXT            CODE           AUTO           030c:2c70       000000d5
 am_map_TEXT            CODE           AUTO           030c:2d50       000012fb
 st_stuff_TEXT          CODE           AUTO           030c:4050       00000b71
@@ -608,71 +607,71 @@ Module: d_main.obj(C:\REALDOOM\d_main.c)
 030c:0f1a*     D_DoomMain_
 030c:0f22*     D_DoomLoop_
 Module: i_quit.obj(C:\REALDOOM\i_quit.c)
-030c:0fb0+     I_ShutdownSound_
-030c:0fd8+     I_ShutdownGraphics_
-030c:1000+     I_ShutdownTimer_
-030c:1038+     I_ShutdownKeyboard_
-030c:106a+     I_ShutdownMouse_
-030c:1078+     Z_ShutdownEMS_
-030c:10ba      I_Shutdown_
-030c:10fc      M_CheckParm_
-030c:1154      I_Quit_
+030c:0fa0+     I_ShutdownSound_
+030c:0fc8+     I_ShutdownGraphics_
+030c:0ff0+     I_ShutdownTimer_
+030c:1028+     I_ShutdownKeyboard_
+030c:105a+     I_ShutdownMouse_
+030c:1068+     Z_ShutdownEMS_
+030c:10aa      I_Shutdown_
+030c:10ec      M_CheckParm_
+030c:1144      I_Quit_
 Module: i_ibm.obj(C:\REALDOOM\i_ibm.c)
-030c:11c0      I_WaitVBL_
-030c:11ee      I_SetPalette_
-030c:1266      I_UpdateBox_
-030c:132c      I_FinishUpdate_
-030c:134e      I_ReadMouse_
-030c:13aa*     I_InitDiskFlash_
-030c:13ac      I_ResetMouse_
-030c:13c6*     I_EndRead_
-030c:13c6*     I_BeginRead_
-030c:13c8      I_Error_
-030c:1426      I_InitGraphics_
+030c:11b0      I_WaitVBL_
+030c:11de      I_SetPalette_
+030c:1256      I_UpdateBox_
+030c:131c      I_FinishUpdate_
+030c:133e      I_ReadMouse_
+030c:139a*     I_InitDiskFlash_
+030c:139c      I_ResetMouse_
+030c:13b6*     I_EndRead_
+030c:13b6*     I_BeginRead_
+030c:13b8      I_Error_
+030c:1416      I_InitGraphics_
 Module: i_sound.obj(C:\REALDOOM\i_sound.c)
-030c:14f0*     SFX_PlayPatch_
-030c:14fa*     SFX_StopPatch_
-030c:14fc      I_SoundIsPlaying_
-030c:14fc*     SFX_Playing_
-030c:14fe*     SFX_SetOrigin_
-030c:1500*     I_StartupTimer_
-030c:1516      I_PauseSong_
-030c:153e      I_ResumeSong_
-030c:1566*     I_SetSfxVolume_
-030c:156a      I_StartSound_
-030c:15c0      I_StopSound_
-030c:15ca      I_UpdateSoundParams_
-030c:15d2*     I_sndArbitrateCards_
-030c:15f0      I_StartupSound_
+030c:14e0*     SFX_PlayPatch_
+030c:14ea*     SFX_StopPatch_
+030c:14ec      I_SoundIsPlaying_
+030c:14ec*     SFX_Playing_
+030c:14ee*     SFX_SetOrigin_
+030c:14f0*     I_StartupTimer_
+030c:1506      I_PauseSong_
+030c:152e      I_ResumeSong_
+030c:1556*     I_SetSfxVolume_
+030c:155a      I_StartSound_
+030c:15b0      I_StopSound_
+030c:15ba      I_UpdateSoundParams_
+030c:15c2*     I_sndArbitrateCards_
+030c:15e0      I_StartupSound_
 Module: sm_load.obj(sm_load.ASM)
-030c:1732      SM_LOAD_STARTMARKER_
-030c:1bd0      SM_LOAD_ENDMARKER_
-030c:1b21      S_ActuallyChangeMusic_
+030c:1722      SM_LOAD_STARTMARKER_
+030c:1bc0      SM_LOAD_ENDMARKER_
+030c:1b11      S_ActuallyChangeMusic_
 Module: bingen.obj(C:\REALDOOM\build\tools\bingen\bingen.c)
-030c:1bd0      main_
+030c:1bc0      main_
 Module: d_net.obj(C:\REALDOOM\d_net.c)
-030c:2260      NetUpdate_
-030c:22c2      TryRunTics_
+030c:2250      NetUpdate_
+030c:22b2      TryRunTics_
 Module: g_game.obj(C:\REALDOOM\g_game.c)
-030c:2370      R_FlatNumForName_
-030c:237e+     G_DoWorldDone_
-030c:23a0+     G_DoNewGame_
-030c:23f2      G_Ticker_
-030c:252a+     G_PlayerFinishLevel_
-030c:257c      G_PlayerReborn_
-030c:25f2      G_ExitLevel_
-030c:2600      G_SecretExitLevel_
-030c:2638+     G_DoCompleted_
-030c:279e      G_LoadGame_
-030c:27ca+     G_DoLoadGame_
-030c:28cc      G_SaveGame_
-030c:28fe+     G_DoSaveGame_
-030c:2a6c      G_DeferedInitNew_
-030c:2a7e+     G_ReadDemoTiccmd_
-030c:2ace+     G_WriteDemoTiccmd_
-030c:2b32      G_DeferedPlayDemo_
-030c:2b3e+     G_DoPlayDemo_
-030c:2bc8      G_CheckDemoStatus_
+030c:2360      R_FlatNumForName_
+030c:236e+     G_DoWorldDone_
+030c:2390+     G_DoNewGame_
+030c:23e2      G_Ticker_
+030c:251e+     G_PlayerFinishLevel_
+030c:2570      G_PlayerReborn_
+030c:25e6      G_ExitLevel_
+030c:25f4      G_SecretExitLevel_
+030c:262c+     G_DoCompleted_
+030c:2792      G_LoadGame_
+030c:27be+     G_DoLoadGame_
+030c:28c0      G_SaveGame_
+030c:28f2+     G_DoSaveGame_
+030c:2a60      G_DeferedInitNew_
+030c:2a72+     G_ReadDemoTiccmd_
+030c:2ac2+     G_WriteDemoTiccmd_
+030c:2b26      G_DeferedPlayDemo_
+030c:2b32+     G_DoPlayDemo_
+030c:2bbc      G_CheckDemoStatus_
 2b70:265e*     _setval
 Module: m_misc.obj(C:\REALDOOM\m_misc.c)
 030c:2c70      M_Random_
@@ -883,7 +882,6 @@ Module: main.obj(main.ASM)
 030c:81b7      cht_CheckCheat_
 030c:8d71      M_SaveDefaults_
 030c:8219      cht_GetParam_
-030c:84bf*     GAMEKEYDOWNTHING_
 030c:82f6      I_StartTic_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 030c:8fa0      R_CheckTextureNumForName_
@@ -1701,22 +1699,11 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(bfree.c)
 2669:5047      _bfree_
 
 
-                        +---------------------------+
-                        |   Unresolved References   |
-                        +---------------------------+
-
-Undefined Symbol                Referenced by
-================                =============
-
-checker_                        d_main.obj(C:\REALDOOM\d_main.c)
-
-
                         +--------------------+
                         |   Libraries Used   |
                         +--------------------+
 
 C:\WATCOM2\lib286\dos\clibm.lib
-
 
 
                         +-----------------------+
@@ -1726,4 +1713,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002ee90 (192144.)
 Entry point address: 2669:2580
-Link time: 00:00.00
+Link time: 00:00.85

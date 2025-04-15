@@ -50,20 +50,23 @@ void MUS_ServiceRoutine(void);
 //todo move this where it needs to go.
 
 
+uint16_t lastpcspeakernotevalue = 0;
 
 void playpcspeakernote(uint16_t value){
 	
 
 	if (value){
-		uint8_t status = inp(0x61);
-		outp (0x43, 0xB6);
-		outp (0x42, value &0xFF);
-		outp (0x42, value >> 8);
-		
-		//if (status != status | 3){
-			outp (0x61, status | 3);
-	//	}
-
+		if ((lastpcspeakernotevalue != value)){
+			uint8_t status ;
+			outp (0x43, 0xB6);
+			outp (0x42, value &0xFF);
+			outp (0x42, value >> 8);
+			
+			if (status != status | 3){
+				outp (0x61, status | 3);
+			}
+			lastpcspeakernotevalue = value;
+		}
 	} else {
 		uint8_t tmp = inp(0x61) & 0xFC;
 		outp(0x61, tmp);
