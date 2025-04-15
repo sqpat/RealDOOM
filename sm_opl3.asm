@@ -213,10 +213,6 @@ db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 ; channelmodulation
 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-;_instrumentlookup:
-;REPT MAX_INSTRUMENTS
-;    ZERO_BYTE
-;ENDM
 
 _AdLibChannels:
 REPT SIZE_ADLIBCHANNELS
@@ -1478,6 +1474,9 @@ ja    instr_is_null_dont_play
 mov   bl, dl
 add   bl, (128 - 35)
 look_up_instrument:
+cmp   bl, 174
+ja    instr_is_null_dont_play
+
 xor   bh, bh
 
 mov   al, byte ptr cs:[bx + _instrumentlookup - OFFSET SM_OPL3_STARTMARKER_]
@@ -1750,6 +1749,9 @@ mov       si, dx
 sal       si, 1
 jmp       word ptr cs:[si + change_control_lookup - OFFSET SM_OPL3_STARTMARKER_]
 change_control_instrument:
+; not needed?
+;cmp       al, 181
+;ja        exit_oplchangecontrol
 mov       byte ptr cs:[bx + _OPL2driverdata + 00h - OFFSET SM_OPL3_STARTMARKER_], al  ; channelInstr
 ; fall thru exit
 exit_oplchangecontrol:

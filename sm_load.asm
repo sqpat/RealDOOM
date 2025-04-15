@@ -311,11 +311,14 @@ mov       ax, word ptr es:[si + 010h]
 cmp       ax, 127
 ja        set_percussion_instrument_id
 record_instrument_lookup:
+cmp       ax, 174
+ja        skip_instrument_invalid_genmidi_instrument
 mov       si, PLAYINGDRIVER_LOCATION
 mov       es, si
 mov       si, DRIVERBLOCK_DRIVERDATA_OFFSET + (MAX_INSTRUMENTS_PER_TRACK * SIZEOF_OP2INSTRENTRY)
 add       si, ax
 mov       byte ptr es:[si], dl
+skip_instrument_invalid_genmidi_instrument:
 inc       dl
 jmp       loop_next_instrument_lookup
 

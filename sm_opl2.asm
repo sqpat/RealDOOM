@@ -1402,6 +1402,8 @@ ja    instr_is_null_dont_play
 mov   bl, dl
 add   bl, (128 - 35)
 look_up_instrument:
+cmp   bl, 174
+ja    instr_is_null_dont_play
 xor   bh, bh
 
 mov   al, byte ptr cs:[bx + _instrumentlookup - OFFSET SM_OPL2_STARTMARKER_]
