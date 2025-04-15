@@ -619,19 +619,27 @@ boolean          st_statusbaron;
 //uint16_t         sbar;
 
 // 0-9, tall numbers
-uint16_t         tallnum[10] = { 65216u, 64972u, 64636u, 64300u, 63984u, 63636u, 63296u, 63020u, 62672u, 62336u };
+uint16_t         tallnum[10];// = { 65216u, 64972u, 64636u, 64300u, 63984u, 63636u, 63296u, 63020u, 62672u, 62336u };
 
 
 // 0-9, short, yellow (,different!) numbers
-uint16_t         shortnum[10] = { 62268u, 62204u, 62128u, 62056u, 61996u, 61924u, 61852u, 61780u, 61704u, 61632u};
+uint16_t         shortnum[10];// = { 62268u, 62204u, 62128u, 62056u, 61996u, 61924u, 61852u, 61780u, 61704u, 61632u};
 
+uint16_t 		tallpercent;
+uint16_t		faceback;
+uint16_t		sbar;
+uint16_t		armsbg;
 
 // 3 key-cards, 3 skulls
-uint16_t         keys[NUMCARDS] = { 61200u, 61096u, 60992u, 60872u, 60752u, 60632u };
+uint16_t         keys[NUMCARDS];// = { 61200u, 61096u, 60992u, 60872u, 60752u, 60632u };
 
+// weapon ownership patches
+uint16_t arms[6][2];// = { {58908u, 0}, {58836u, 0}, {58776u, 0}, {58704u, 0}, {58632u, 0}, {58560u, 0} };
 
 // face status patches
-uint16_t         faces[ST_NUMFACES] = { 43216u,
+uint16_t         faces[ST_NUMFACES];
+/*
+ = { 43216u,
         42408u, 41600u, 40720u, 39836u, 38992u,
         38176u, 37352u, 36544u, 35736u, 34936u,
         34048u, 33164u, 32320u, 31504u, 30680u,
@@ -642,10 +650,8 @@ uint16_t         faces[ST_NUMFACES] = { 43216u,
         12668u, 11824u, 11008u, 10184u, 9376u,
         8540u
 
-};
+};*/
 
-// weapon ownership patches
-uint16_t arms[6][2] = { {58908u, 0}, {58836u, 0}, {58776u, 0}, {58704u, 0}, {58632u, 0}, {58560u, 0} };
 
 
 // ready-weapon widget
@@ -1072,7 +1078,7 @@ volatile int8_t TS_InInterrupt = false;
 // used for general timing
 
 boolean  st_stopped = true;
-uint16_t armsbgarray[1] = { armsbg };
+uint16_t armsbgarray[1];
 THINKERREF		activeplats[MAXPLATS];
 weaponinfo_t	weaponinfo[NUMWEAPONS] = {
 

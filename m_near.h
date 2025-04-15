@@ -797,10 +797,13 @@ extern st_stateenum_t   st_gamestate;
 extern boolean          st_statusbaron;
 extern uint16_t         tallnum[10];
 extern uint16_t         shortnum[10];
-
+extern uint16_t 		tallpercent;
+extern uint16_t			faceback;
+extern uint16_t			sbar;
+extern uint16_t			armsbg;
 extern uint16_t         keys[NUMCARDS];
 extern uint16_t         faces[ST_NUMFACES];
-extern uint16_t arms[6][2];
+extern uint16_t 		arms[6][2];
 extern st_number_t      w_ready;
 extern st_percent_t     w_health;
 extern st_multicon_t     w_armsbg;

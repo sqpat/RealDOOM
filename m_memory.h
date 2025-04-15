@@ -814,8 +814,8 @@ rejectmatrix       5C00:0000
 
 // tall % sign
 // todo remove...
-#define tallpercent  61304u
-#define tallpercent_patch  ((byte __far *) 0x7000EF78)
+//#define tallpercent  61304u
+//#define tallpercent_patch  ((byte __far *) 0x7000EF78)
 
 #define palettebytes_size  10752
 #define palettebytes ((byte __far*) 0x90000000)
@@ -907,15 +907,15 @@ skytexture         5400:0000
 
 // main bar left
 // todo remove all this crap..
-#define sbar  44024u
-#define sbar_patch   ((byte __far *) 0x7000ABF8)
+//#define sbar  44024u
+//#define sbar_patch   ((byte __far *) 0x7000ABF8)
 
 //#define faceback  57152u
-#define faceback_patch  ((byte __far *) 0x7000DF40)
+//#define faceback_patch  ((byte __far *) 0x7000DF40)
 
-#define armsbg_patch ((byte __far *)0x7000E668u)
+//#define armsbg_patch ((byte __far *)0x7000E668u)
 
-#define armsbg  58984u
+//#define armsbg  58984u
 
 
 #define size_menugraphics      0x0000

@@ -78,9 +78,12 @@
 
 void __near ST_loadGraphics(void) {
 
-	int8_t         i;
-	int8_t         j;
-	int16_t         facenum;
+	int8_t        i;
+	int8_t        j;
+	int16_t       facenum;
+	uint16_t      runningoffset = 0; 
+	uint16_t      currentlump = 0; 
+	uint16_t 	  size;
 
 	int8_t        namebuf[9] = "STTNUM0";
 	int8_t        namebuf2[9] = "STYSNUM0";
@@ -101,7 +104,13 @@ void __near ST_loadGraphics(void) {
 
 	// Load the numbers, tall and short
 	for (i = 0; i < 10; i++) {
+		size = W_LumpLength(W_GetNumForName(namebuf));
+		runningoffset -= size;
+		tallnum[i] = runningoffset;
 		W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, tallnum[i]));
+		size = W_LumpLength(W_GetNumForName(namebuf2));
+		runningoffset -= size;
+		shortnum[i] = runningoffset;
 		W_CacheLumpNameDirect(namebuf2, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, shortnum[i]));
 		namebuf[6]++;
 		namebuf2[7]++;
@@ -125,11 +134,17 @@ void __near ST_loadGraphics(void) {
 
 	// Load percent key.
 	//Note: why not load STMINUS here, too?
-	 W_CacheLumpNameDirect("STTPRCNT", tallpercent_patch);
+	currentlump = W_GetNumForName("STTPRCNT");
+	size = W_LumpLength(currentlump);
+	runningoffset -= size;
+	tallpercent = runningoffset;
+	W_CacheLumpNumDirect(currentlump, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, tallpercent));
 
 	// key cards
-	for (i = 0; i < NUMCARDS; i++)
-	{
+	for (i = 0; i < NUMCARDS; i++) {
+		size = W_LumpLength(W_GetNumForName(namebuf3));
+		runningoffset -= size;
+		keys[i] = runningoffset;
 		W_CacheLumpNameDirect(namebuf3, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, keys[i]));
 		namebuf3[6]++;
 	}
@@ -143,13 +158,19 @@ void __near ST_loadGraphics(void) {
 	// 120
 
 	// arms background
-	W_CacheLumpNameDirect("STARMS", armsbg_patch);
+	currentlump = W_GetNumForName("STARMS");
+	size = W_LumpLength(currentlump);
+	runningoffset -= size;
+	armsbg = runningoffset;
+	W_CacheLumpNumDirect(currentlump, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, armsbg));
 
 	// 1648 armsbgref
 
 	// arms ownership widgets
-	for (i = 0; i < 6; i++)
-	{
+	for (i = 0; i < 6; i++) {
+		size = W_LumpLength(W_GetNumForName(namebuf4));
+		runningoffset -= size;
+		arms[i][0] = runningoffset;
 
 		// gray #
 		 W_CacheLumpNameDirect(namebuf4, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, arms[i][0]));
@@ -162,14 +183,24 @@ void __near ST_loadGraphics(void) {
 	}
 
 
+	currentlump = W_GetNumForName("STFB0");
+	size = W_LumpLength(currentlump);
+	runningoffset -= size;
+	faceback = runningoffset;
 
 
 	// face backgrounds for different color players
-	W_CacheLumpNameDirect("STFB0", faceback_patch);
+	W_CacheLumpNumDirect(currentlump, MK_FP(ST_GRAPHICS_SEGMENT, faceback));
 	// 1408 facebakref
 
+	currentlump = W_GetNumForName("STBAR");
+	size = W_LumpLength(currentlump);
+	runningoffset -= size;
+	sbar = runningoffset;
+
+
 	// status bar background bits
-	W_CacheLumpNameDirect("STBAR", sbar_patch);
+	W_CacheLumpNumDirect(currentlump, MK_FP(ST_GRAPHICS_SEGMENT, sbar));
 	// 13128 sbarref
 
 	// face states
@@ -178,6 +209,11 @@ void __near ST_loadGraphics(void) {
 	{
 		for (j = 0; j < ST_NUMSTRAIGHTFACES; j++)
 		{
+
+			size = W_LumpLength(W_GetNumForName(namebuf5));
+			runningoffset -= size;
+			faces[facenum] = runningoffset;
+
 			W_CacheLumpNameDirect(namebuf5, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 			namebuf5[6]++;
 		}
@@ -185,12 +221,35 @@ void __near ST_loadGraphics(void) {
 		namebuf5[5]++;
 	
 	
+		currentlump = W_GetNumForName(namebuf10);
+		size = W_LumpLength(currentlump);
+		runningoffset -= size;
+		faces[facenum] = runningoffset;
+		W_CacheLumpNumDirect(currentlump, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+		
+		currentlump = W_GetNumForName(namebuf11);
+		size = W_LumpLength(currentlump);
+		runningoffset -= size;
+		faces[facenum] = runningoffset;
+		W_CacheLumpNumDirect(currentlump, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 
-		W_CacheLumpNameDirect(namebuf10, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
-		W_CacheLumpNameDirect(namebuf11, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
-		W_CacheLumpNameDirect(namebuf12, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
-		W_CacheLumpNameDirect(namebuf13, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
-		W_CacheLumpNameDirect(namebuf14, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+		currentlump = W_GetNumForName(namebuf12);
+		size = W_LumpLength(currentlump);
+		runningoffset -= size;
+		faces[facenum] = runningoffset;
+		W_CacheLumpNumDirect(currentlump, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+
+		currentlump = W_GetNumForName(namebuf13);
+		size = W_LumpLength(currentlump);
+		runningoffset -= size;
+		faces[facenum] = runningoffset;
+		W_CacheLumpNumDirect(currentlump, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+
+		currentlump = W_GetNumForName(namebuf14);
+		size = W_LumpLength(currentlump);
+		runningoffset -= size;
+		faces[facenum] = runningoffset;
+		W_CacheLumpNumDirect(currentlump, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 
 		namebuf10[5]++;
 		namebuf11[5]++;
@@ -199,8 +258,20 @@ void __near ST_loadGraphics(void) {
 		namebuf14[7]++;
 
 	}
-	W_CacheLumpNameDirect("STFGOD0", (byte __far *) MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
-	W_CacheLumpNameDirect("STFDEAD0", (byte __far *) MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+
+	currentlump = W_GetNumForName("STFGOD0");
+	size = W_LumpLength(currentlump);
+	runningoffset -= size;
+	faces[facenum] = runningoffset;
+
+	W_CacheLumpNumDirect(currentlump, (byte __far *) MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+
+	currentlump = W_GetNumForName("STFDEAD0");
+	size = W_LumpLength(currentlump);
+	runningoffset -= size;
+	faces[facenum] = runningoffset;
+
+	W_CacheLumpNumDirect(currentlump, (byte __far *) MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 	// 808 808 808
 	// 880 884 844 816 824
 	// 808 808 800
@@ -213,6 +284,9 @@ void __near ST_loadGraphics(void) {
 	// 908 944 844 816 824
 	// 808 836
 	// 23096 total
+
+    armsbgarray[0] = armsbg;
+
 }
 
 void __near ST_loadData(void) {

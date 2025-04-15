@@ -67,7 +67,7 @@ void __far locallib_printhex (uint32_t number, boolean islong, int8_t __near* ou
 void __near ST_refreshBackground(void) {
 
     if (st_statusbaron) {
-        V_DrawPatch(ST_X, 0, BG, (patch_t __far*)sbar_patch);
+        V_DrawPatch(ST_X, 0, BG, MK_FP(ST_GRAPHICS_SEGMENT, sbar));
         V_MarkRect (ST_X, ST_Y, ST_WIDTH, ST_HEIGHT); 
         V_CopyRect(ST_X, ST_Y*SCREENWIDTH+ST_X, ST_WIDTH, ST_HEIGHT);
     }
