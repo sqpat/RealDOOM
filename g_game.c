@@ -469,7 +469,7 @@ void __near G_Ticker (void)  {
             Z_QuickMapPhysicsCode();
 			P_Ticker();
 
-            //  Z_QuickMapPhysics();
+            Z_QuickMapPhysics();
             
 			ST_Ticker();
 			if (automapactive) {
