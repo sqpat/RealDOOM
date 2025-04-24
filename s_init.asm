@@ -158,7 +158,7 @@ ENDP
 _currentnameprefix:
 db 'd', 'p'
 
-_songnamelist:
+_sfxlist:
  db "123456" ; filler for sfx 0
  db "pistol"
  db "shotgn"
@@ -330,7 +330,7 @@ PUBLIC I_GetSfxLumpNum_
     ; copy 'd' and prefix
     movsw
 
-    ; si already equal to _songnamelist after movsw
+    ; si already equal to _sfxlist after movsw
     cbw
     sal  ax, 1
     add  si, ax ; x2

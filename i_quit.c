@@ -34,6 +34,8 @@ void __near finishlogging(){
 }
 */
 
+void	SB_Shutdown();
+
 void __near I_ShutdownSound(void) {
 
     if (playingdriver){
@@ -41,6 +43,8 @@ void __near I_ShutdownSound(void) {
 		playingdriver->deinitHardware();
     }
 	//finishlogging();
+	// sfx shutdown
+	SB_Shutdown();
 
 
 }

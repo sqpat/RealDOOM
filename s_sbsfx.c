@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include "DMX.H"
+#include "w_wad.h"
 #include <signal.h>
 #include <bios.h>
 #include <ctype.h>
@@ -82,6 +83,124 @@ uint8_t                 application_volume = MAX_APPLICATION_VOLUME; // Normally
 
 
 
+sfxinfo_t S_sfx[NUMSFX/4] =
+    {
+        // S_sfx[0] needs to be a dummy for odd reasons.
+        {"NONE", false, 0, 0},
+        {"PISTOL", false, 64, 0},
+        {"SHOTGN", false, 64, 0},
+        {"SGCOCK", false, 64, 0},
+        {"DSHTGN", false, 64, 0},
+        {"DBOPN", false, 64, 0},
+        {"DBCLS", false, 64, 0},
+        {"DBLOAD", false, 64, 0},
+        {"PLASMA", false, 64, 0},
+        {"BFG", false, 64, 0},
+        {"SAWUP", false, 64, 0},
+        {"SAWIDL", false, 118, 0},
+        {"SAWFUL", false, 64, 0},
+        {"SAWHIT", false, 64, 0},
+        {"RLAUNC", false, 64, 0},
+        {"RXPLOD", false, 70, 0},
+        {"FIRSHT", false, 70, 0},
+        {"FIRXPL", false, 70, 0},
+        {"PSTART", false, 100, 0},
+        {"PSTOP", false, 100, 0},
+        {"DOROPN", false, 100, 0},
+        {"DORCLS", false, 100, 0},
+        {"STNMOV", false, 119, 0},
+        {"SWTCHN", false, 78, 0},
+        {"SWTCHX", false, 78, 0},
+        {"PLPAIN", false, 96, 0},
+        {"DMPAIN", false, 96, 0}
+    };
+        /*
+        ,{"POPAIN", false, 96, 0}
+        ,{"VIPAIN", false, 96, 0},
+        {"MNPAIN", false, 96, 0},
+        {"PEPAIN", false, 96, 0},
+        {"SLOP", false, 78, 0},
+        {"ITEMUP", true, 78, 0},
+        {"WPNUP", true, 78, 0},
+        {"OOF", false, 96, 0},
+        {"TELEPT", false, 32, 0},
+        {"POSIT1", true, 98, 0},
+        {"POSIT2", true, 98, 0},
+        {"POSIT3", true, 98, 0},
+        {"BGSIT1", true, 98, 0},
+        {"BGSIT2", true, 98, 0},
+        {"SGTSIT", true, 98, 0},
+        {"CACSIT", true, 98, 0},
+        {"BRSSIT", true, 94, 0},
+        {"CYBSIT", true, 92, 0},
+        {"SPISIT", true, 90, 0},
+        {"BSPSIT", true, 90, 0},
+        {"KNTSIT", true, 90, 0},
+        {"VILSIT", true, 90, 0},
+        {"MANSIT", true, 90, 0},
+        {"PESIT", true, 90, 0},
+        {"SKLATK", false, 70, 0},
+        {"SGTATK", false, 70, 0},
+        {"SKEPCH", false, 70, 0}
+    };
+/*,
+        {"VILATK", false, 70, 0},
+        {"CLAW", false, 70, 0},
+        {"SKESWG", false, 70, 0},
+        {"PLDETH", false, 32, 0},
+        {"PDIEHI", false, 32, 0},
+        {"PODTH1", false, 70, 0},
+        {"PODTH2", false, 70, 0},
+        {"PODTH3", false, 70, 0},
+        {"BGDTH1", false, 70, 0},
+        {"BGDTH2", false, 70, 0},
+        {"SGTDTH", false, 70, 0},
+        {"CACDTH", false, 70, 0},
+        {"SKLDTH", false, 70, 0},
+        {"BRSDTH", false, 32, 0},
+        {"CYBDTH", false, 32, 0},
+        {"SPIDTH", false, 32, 0},
+        {"BSPDTH", false, 32, 0},
+        {"VILDTH", false, 32, 0},
+        {"KNTDTH", false, 32, 0},
+        {"PEDTH", false, 32, 0},
+        {"SKEDTH", false, 32, 0},
+        {"POSACT", true, 120, 0},
+        {"BGACT", true, 120, 0},
+        {"DMACT", true, 120, 0},
+        {"BSPACT", true, 100, 0},
+        {"BSPWLK", true, 100, 0},
+        {"VILACT", true, 100, 0},
+        {"NOWAY", false, 78, 0},
+        {"BAREXP", false, 60, 0},
+        {"PUNCH", false, 64, 0},
+        {"HOOF", false, 70, 0},
+        {"METAL", false, 70, 0},
+        {"CHGUN", false, 64, 0},
+        {"TINK", false, 60, 0},
+        {"BDOPN", false, 100, 0},
+        {"BDCLS", false, 100, 0},
+        {"ITMBK", false, 100, 0},
+        {"FLAME", false, 32, 0},
+        {"FLAMST", false, 32, 0},
+        {"GETPOW", false, 60, 0},
+        {"BOSPIT", false, 70, 0},
+        {"BOSCUB", false, 70, 0},
+        {"BOSSIT", false, 70, 0},
+        {"BOSPN", false, 70, 0},
+        {"BOSDTH", false, 70, 0},
+        {"MANATK", false, 70, 0},
+        {"MANDTH", false, 70, 0},
+        {"SSSIT", false, 70, 0},
+        {"SSDTH", false, 70, 0},
+        {"KEENPN", false, 70, 0},
+        {"KEENDT", false, 70, 0},
+        {"SKEACT", false, 70, 0},
+        {"SKESIT", false, 70, 0},
+        {"SKEATK", false, 70, 0},
+        {"RADIO", false, 60, 0}};
+*/
+
 void SB_Service_Mix22Khz(){
 	
 	int8_t i;
@@ -94,17 +213,17 @@ void SB_Service_Mix22Khz(){
 	for (i = 0; i < NUM_SFX_TO_MIX; i++){
 
 		if (!sb_voicelist[i].playing){
-			// printf("sound done!");
+
 		} else if (sb_voicelist[i].volume == 0){
             // dont play mute sound
 		} else {
 
 			// Keep track of current buffer
-			//printf("\nPlaying %lx size is %x", SB_CurrentDMABuffer, sfx_length);
+
 
 			if (sb_voicelist[i].currentsample >= sb_voicelist[i].length){
 				// sound done playing. 
-				// printf(" end sound!");
+
 				if (sb_voicelist[i].playing){
                     sb_voicelist[i].playing = false;
                 }
@@ -183,7 +302,6 @@ void SB_Service_Mix22Khz(){
                                 }
 
                                 if (extra_zero_length){
-                                    printf("\nzeroing extra %i", extra_zero_length);
                                     _fmemset(dma_buffer + copy_length, 0x80, extra_zero_length);
                                 }
 
@@ -281,7 +399,7 @@ void SB_Service_Mix22Khz(){
                         
                         // todo generalize to larger #s than transfer length?
                         do_second_copy = false;
-        				// printf("\ncaught while true!");
+
                         remaining_length -= copy_length;
                         if (!remaining_length){
                             break;  // if the sfx was less than a sample long i guess.
@@ -292,7 +410,7 @@ void SB_Service_Mix22Khz(){
                     }
                 }
                 sound_played++;
-				// printf(" %lx %x %i", MK_FP(SB_DMABufferSegment, SB_CurrentDMABufferOffset), SB_DMABufferEndOffset, SB_CurrentDMABufferOffset);
+
                 if (sb_voicelist[i].samplerate){
                     sb_voicelist[i].currentsample += copy_length;
                 } else {
@@ -317,7 +435,7 @@ void SB_Service_Mix22Khz(){
         _fmemset(MK_FP(SB_DMABufferSegment, 0), 0x80, SB_TotalBufferSize);
     } else if ( sound_played == 1){
         if (extra_zero_length){
-            printf("\nzeroing extra %i", extra_zero_length);
+
             _fmemset(extra_zero_copy_target, 0x80, extra_zero_length);
         }
 
@@ -326,7 +444,7 @@ void SB_Service_Mix22Khz(){
 
 	if (!remaining_22khz){
 		change_sampling_to_11_next_int = true;
-		printf("\n turning on 11 khz next int");
+
 
 	}
 
@@ -342,18 +460,18 @@ void SB_Service_Mix11Khz(){
 	for (i = 0; i < NUM_SFX_TO_MIX; i++){
 
 		if (!sb_voicelist[i].playing){
-			// printf("sound done!");
+
 		} else if (sb_voicelist[i].volume == 0){
             // dont play mute sound
 		} else {
 
 			
 			// Keep track of current buffer
-			//printf("\nPlaying %lx size is %x", SB_CurrentDMABuffer, sfx_length);
+
 
 			if (sb_voicelist[i].currentsample >= sb_voicelist[i].length){
 				// sound done playing. 
-				// printf(" end sound!");
+
 				if (sb_voicelist[i].playing){
                     sb_voicelist[i].playing = false;
                 }
@@ -469,7 +587,7 @@ void SB_Service_Mix11Khz(){
                         
                         // todo generalize to larger #s than transfer length?
                         do_second_copy = false;
-        				// printf("\ncaught while true!");
+
                         remaining_length -= copy_length;
                         if (!remaining_length){
                             break;  // if the sfx was less than a sample long i guess.
@@ -480,7 +598,7 @@ void SB_Service_Mix11Khz(){
                     }
                 }
                 sound_played++;
-				// printf(" %lx %x %i", MK_FP(SB_DMABufferSegment, SB_CurrentDMABufferOffset), SB_DMABufferEndOffset, SB_CurrentDMABufferOffset);
+
                 sb_voicelist[i].currentsample += copy_length;
 
 			}
@@ -501,7 +619,7 @@ void SB_Service_Mix11Khz(){
         _fmemset(MK_FP(SB_DMABufferSegment, 0), 0x80, SB_TotalBufferSize);
     } else if ( sound_played == 1){
         if (extra_zero_length){
-            printf("\nzeroing extra %i", extra_zero_length);
+
             _fmemset(extra_zero_copy_target, 0x80, extra_zero_length);
         }
 
@@ -526,14 +644,14 @@ void __interrupt __far SB_ServiceInterrupt(void) {
 		if (current_sampling_rate == SAMPLE_RATE_11_KHZ_FLAG){
 			current_sampling_rate = SAMPLE_RATE_22_KHZ_FLAG;
 		}
-		printf("\n turned on 22 khz");
+
 		SB_SetPlaybackRate(SAMPLE_RATE_22_KHZ_UINT);
 	} else if (change_sampling_to_11_next_int){
 		change_sampling_to_11_next_int = 0;
 		if (current_sampling_rate == SAMPLE_RATE_22_KHZ_FLAG){
 			current_sampling_rate = SAMPLE_RATE_11_KHZ_FLAG;
 		}
-		printf("\n turned on 11 khz");
+
 		SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_UINT);
 
 	}
@@ -546,14 +664,14 @@ void __interrupt __far SB_ServiceInterrupt(void) {
         outp(sb_port + SB_MixerAddressPort, 0x82);  //  MIXER_DSP4xxISR_Ack);
 
         SB_Mixer_Status = inp(sb_port + SB_MixerDataPort);
-		//printf("\nmixer status %i %i", sb_port, SB_Mixer_Status);
+
         // Check if a 16-bit DMA interrupt occurred
         if (SB_Mixer_Status & MIXER_16BITDMA_INT) {
             // Acknowledge 16-bit transfer interrupt
-            // printf (" 16bit! ");
+
 			inp(sb_port + 0x0F);	// SB_16BitDMAAck
         } else if (SB_Mixer_Status & MIXER_8BITDMA_INT) {
-            // printf (" 8bit! ");
+
             inp(sb_port + SB_DataAvailablePort);
         } else {
 
@@ -577,7 +695,7 @@ void __interrupt __far SB_ServiceInterrupt(void) {
 
 
 
-	// printf("\n and playing %lx", MK_FP(SB_DMABufferSegment, SB_CurrentDMABufferOffset));
+
 
 	
 
@@ -587,7 +705,7 @@ void __interrupt __far SB_ServiceInterrupt(void) {
 //  22 KHZ MODE LOOP
 //  22 KHZ MODE LOOP
 
-		SB_Service_Mix22Khz();
+		// SB_Service_Mix22Khz();
 
 	} else {
 
@@ -596,7 +714,7 @@ void __interrupt __far SB_ServiceInterrupt(void) {
 //  11 KHZ MODE LOOP
 
 
-		SB_Service_Mix11Khz();
+		// SB_Service_Mix11Khz();
 	}
 
 	last_sampling_rate = current_sampling_rate;
@@ -614,14 +732,14 @@ void SB_IncrementApplicationVolume(){
         return;
     }
     application_volume += 16; // volume step shifted 4
-    printf("\n Volume now %i or %i",application_volume, application_volume >> 4);
+
 }
 void SB_DecrementApplicationVolume(){
     if (application_volume == 0){
         return;
     }
     application_volume -= 16; // volume step shifted 4
-    printf("\n Volume now %i or %i",application_volume, application_volume >> 4);
+
 }
 
 
@@ -642,7 +760,7 @@ void SB_PlaySoundEffect(int8_t sfx_id){
             sb_voicelist[i].volume     = volnumber;
             
             // volume is 0-127
-            // printf("\nuse vol %i", volnumber);
+
             // volnumber += 5;
             // if (volnumber > 160){
             //     volnumber = 40;
@@ -651,7 +769,7 @@ void SB_PlaySoundEffect(int8_t sfx_id){
             if (sb_voicelist[i].samplerate){
                 if (!current_sampling_rate){
                     change_sampling_to_22_next_int = 1;
-                    printf("\nturning 22 khz mode on next int");
+
                 }
             }
 
@@ -659,7 +777,7 @@ void SB_PlaySoundEffect(int8_t sfx_id){
             return;
         }
     }
-    printf("\nNO CHANNELS FOUND");
+    // no channels found
     
 
 }
@@ -883,7 +1001,7 @@ DMA_PORT DMA_PortInfo[8] =
 #define DMA_OK 1
 
 int8_t SB_DMA_VerifyChannel(uint8_t channel) {
-    //printf("channel used %i", channel);
+
 	if (channel > DMA_MaxChannel_16_BIT) {
         return DMA_ERROR;
     } else if (channel == 2 || channel == 4) {	// invalid dma channels i guess
@@ -952,7 +1070,6 @@ int16_t DMA_SetupTransfer(uint8_t channel, byte __far* address, uint16_t length)
 
         // Send address
 
-		printf("\ndma addr %lx %x %x %x", addr, addr.bu.intbytehigh, addr.bu.fracbytehigh, addr.bu.fracbytelow);
 
         outp(port->address, addr.bu.fracbytelow);
         outp(port->address, addr.bu.fracbytehigh);
@@ -1041,11 +1158,10 @@ int8_t SB_SetupPlayback(){
     addr.hu.fracbits = 0;
 
     sbbuffer = (byte __far*)addr.wu;
-    printf ("\n buffer %lx", sbbuffer);
     if (SB_SetupDMABuffer(sbbuffer, SB_TotalBufferSize)){
         return SB_Error;
     }
-    printf ("  %x", SB_DMABufferSegment);
+
     _fmemset(MK_FP(SB_DMABufferSegment, 0), 0x80, SB_TotalBufferSize);
 
     SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_UINT);
@@ -1087,7 +1203,7 @@ int8_t SB_DMA_EndTransfer(int8_t channel) {
 
         // Clear flip-flop to lower byte with any data
         outp(channel < 4 ? 	0x0C: 0xD8, 0);
-        printf("\nDMA Clear Channel OK");
+
 		return DMA_OK;
     }
 
@@ -1231,7 +1347,7 @@ void SB_Shutdown(){
     if (sb_irq >= 8) {
         // IRQ_RestoreVector(sb_int);
     }
-	printf("\nRestored the interrupt %i %i %lx!", IRQ_TO_INTERRUPT_MAP[sb_irq], sb_irq, SB_OldInt);
+
 
     _dos_setvect(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
 
@@ -1271,7 +1387,7 @@ uint16_t SB_GetDSPVersion() {
     }
 
 	// SB_DSP_Version.hu = 0x101;
-    printf("DSP Version detected:  %x\n", SB_DSP_Version.hu);
+    // printf("DSP Version detected:  %x\n", SB_DSP_Version.hu);
 
     if (SB_DSP_Version.hu >= SB_DSP_Version4xx) {
         SB_MixerType = SB_TYPE_SB16;
@@ -1348,7 +1464,7 @@ int16_t SB_InitCard(){
         SB_OldInt = _dos_getvect(sb_int);
         if (sb_irq < 8) {
 			// 8 bit logic?
-			printf("Set the interrupt %i %i %lx!", sb_int, sb_irq, SB_OldInt);
+
             _dos_setvect(sb_int, SB_ServiceInterrupt);
         } else {
 			// 16 bit logic?
@@ -1360,6 +1476,32 @@ int16_t SB_InitCard(){
 
 
 	return status;
+
+}
+
+void S_TempInit2(){
+    // todo move this crap into asm. dump the 
+    uint8_t i;
+    char lumpname[9];
+
+    for (i = 1; i < NUMSFX/2; i++){
+        combine_strings(lumpname, "DS", S_sfx[i].name);
+        // DEBUG_PRINT("\nstr: %s", lumpname);
+        S_sfx[i].lump = W_GetNumForName(lumpname);
+    }
+
+
+    if (SB_InitCard() == SB_OK){
+        if (SB_SetupPlayback() == SB_OK){
+            DEBUG_PRINT("\nSound Blaster SFX Engine Initailized!.. ");
+
+        } else {
+            // printf("Error B\n");
+        }
+
+    } else {
+        DEBUG_PRINT("\nSB INIT Error A\n");
+    }
 
 }
 

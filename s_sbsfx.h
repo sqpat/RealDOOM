@@ -1,4 +1,5 @@
 #include "doomdef.h"
+#include "m_near.h"
 
 int16_t SB_InitCard();
 int8_t SB_SetupPlayback();
@@ -133,3 +134,24 @@ extern SB_VoiceInfo sb_sfx_info[NUM_SFX_LUMPS];
 extern int8_t* 			sfxfilename[NUM_SFX_LUMPS];
 extern uint8_t      application_volume;
 
+
+typedef struct sfxinfo_struct sfxinfo_t;
+
+struct sfxinfo_struct
+{
+    // up to 6-character name
+    char *name;
+
+    // Sfx singularity (only one at a time)
+    int8_t singularity;
+
+    // Sfx priority
+    uint8_t priority;
+
+    // lump number of sfx
+    int16_t lump;
+};
+
+sfxinfo_t S_sfx[NUMSFX/4];
+
+void S_TempInit2();
