@@ -94,16 +94,16 @@ typedef uint8_t sfxenum_t;
 // They refer to the card type.  The routine will cache in the
 // appropriate sound effect when it is played.
 
-int16_t I_StartSound (sfxenum_t id, uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority);
+int8_t I_StartSound (sfxenum_t id, uint8_t vol, uint8_t sep);
 // Starts a sound in a particular sound channel
 
-void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch);
+void I_UpdateSoundParams(int8_t handle, uint8_t vol, uint8_t sep);
 // Updates the volume, separation, and pitch of a sound channel
 
-void I_StopSound(int16_t handle);
+void I_StopSound(int8_t handle);
 // Stops a sound channel
 
-boolean I_SoundIsPlaying(int16_t handle);
+boolean I_SoundIsPlaying(int8_t handle);
 // called by S_*()'s to see if a channel is still playing.  Returns 0
 // if no longer playing, 1 if playing.
 

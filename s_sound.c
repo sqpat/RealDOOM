@@ -54,7 +54,6 @@
 // Adjustable by menu.
 #define NORM_VOLUME    		snd_MaxVolume
 
-#define NORM_PITCH     		128
 #define NORM_PRIORITY		64
 #define NORM_SEP		128
 
@@ -74,7 +73,7 @@
 int8_t S_getChannel (THINKERREF originRef, int16_t soundorg_secnum, sfxenum_t sfx_id );
 
 
-int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union x, fixed_t_union y, uint8_t* vol, uint8_t* sep, uint8_t* pitch );
+int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union x, fixed_t_union y, uint8_t* vol, uint8_t* sep );
 
 void S_StopChannel(int8_t cnum);
 
@@ -195,7 +194,7 @@ void S_StopChannel(int8_t cnum) {
 // If the sound is not audible, returns a 0.
 // Otherwise, modifies parameters and returns 1.
 //
-int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fixed_t_union sourceY, uint8_t* vol, uint8_t* sep, uint8_t* pitch ){
+int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fixed_t_union sourceY, uint8_t* vol, uint8_t* sep){
 	fixed_t	approx_dist;
     fixed_t	adx;
     fixed_t	ady;
@@ -369,7 +368,6 @@ int8_t S_getChannel (THINKERREF originRef, int16_t soundorg_secnum, sfxenum_t sf
 void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum ) {
   int16_t		rc;
   uint8_t		sep;
-  uint8_t		pitch;
   uint8_t		priority;
 //   sfxinfo_t*	sfx;
   int8_t		cnum;
@@ -389,7 +387,7 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 	/*
 	// Initialize sound parameters
 	if (sfx->link) {
-		pitch = 150;//   sfx->pitch;
+
 		priority = 0; // sfx->priority;
     
 		if (volume < 1) {
@@ -399,7 +397,7 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 			volume = snd_SfxVolume;
 		}
 	} else {
-		pitch = NORM_PITCH;
+
 		priority = NORM_PRIORITY;
 	}
 	*/
@@ -420,7 +418,7 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 			originX = originMobjPos->x;
 			originY = originMobjPos->y;
 		}
-		rc = S_AdjustSoundParams(playerMobjRef, originX, originY, &volume, &sep, &pitch);
+		rc = S_AdjustSoundParams(playerMobjRef, originX, originY, &volume, &sep);
 		
 		if ( originX.w == playerMobj_pos->x.w && originY.w == playerMobj_pos->y.w) {	
 			sep = NORM_SEP;
@@ -474,9 +472,7 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 	//  mix/output buffer.
 	channels[cnum].handle = I_StartSound(sfx_id,
 				       volume,
-				       sep,
-				       pitch,
-				       priority);
+				       sep);
 
 }
 
@@ -509,7 +505,7 @@ void S_UpdateSounds(THINKERREF listenerRef) {
     int8_t		cnum;
     uint8_t		volume;
     uint8_t		sep;
-    uint8_t		pitch;
+
     sfxenum_t	sfx_id;
     channel_t*	c;
 	uint8_t         i;
@@ -539,14 +535,13 @@ void S_UpdateSounds(THINKERREF listenerRef) {
 			if (I_SoundIsPlaying(c->handle)) {
 			// initialize parameters
 			volume = snd_SfxVolume;
-			pitch = NORM_PITCH;
 			sep = NORM_SEP;
 
 			// the only one with a link...
 			if (sfx_id == sfx_chgun) {
 				// link is only used once in the dataset and hardcoded there - rather than including all this extra
 				// data in memory we just hardcode the fields...
-				pitch = 150;
+
 				//volume += 0; 
 				if (volume < 1) {
 					S_StopChannel(cnum);
@@ -580,13 +575,12 @@ void S_UpdateSounds(THINKERREF listenerRef) {
 							originX,
 							originY,
 							&volume,
-							&sep,
-							&pitch);
+							&sep);
 				
 				if (!audible) {
 					S_StopChannel(cnum);
 				} else{
-					I_UpdateSoundParams(c->handle, volume, sep, pitch);
+					I_UpdateSoundParams(c->handle, volume, sep);
 				}
 			}
 			}

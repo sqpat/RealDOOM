@@ -48,7 +48,7 @@ typedef struct {
 	THINKERREF	originRef;
 
     // handle of the sound being played
-    int16_t		handle;
+    int8_t		handle;
 
     sfxenum_t	sfx_id;
 

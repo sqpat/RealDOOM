@@ -26,7 +26,6 @@ void( __interrupt __far *SB_OldInt)(void);
 
 SB_VoiceInfo        sb_voicelist[NUM_SFX_TO_MIX];
 
-SB_VoiceInfo        sb_sfx_info[NUM_SFX_LUMPS];
 
 
 #define MAX_VOLUME_SFX_FLAG 0x80
@@ -83,123 +82,118 @@ uint8_t                 application_volume = MAX_APPLICATION_VOLUME; // Normally
 
 
 
-sfxinfo_t S_sfx[NUMSFX/4] =
+sfxinfo_t S_sfx[NUMSFX] =
     {
         // S_sfx[0] needs to be a dummy for odd reasons.
-        {"NONE", false, 0, 0},
-        {"PISTOL", false, 64, 0},
-        {"SHOTGN", false, 64, 0},
-        {"SGCOCK", false, 64, 0},
-        {"DSHTGN", false, 64, 0},
-        {"DBOPN", false, 64, 0},
-        {"DBCLS", false, 64, 0},
-        {"DBLOAD", false, 64, 0},
-        {"PLASMA", false, 64, 0},
-        {"BFG", false, 64, 0},
-        {"SAWUP", false, 64, 0},
-        {"SAWIDL", false, 118, 0},
-        {"SAWFUL", false, 64, 0},
-        {"SAWHIT", false, 64, 0},
-        {"RLAUNC", false, 64, 0},
-        {"RXPLOD", false, 70, 0},
-        {"FIRSHT", false, 70, 0},
-        {"FIRXPL", false, 70, 0},
-        {"PSTART", false, 100, 0},
-        {"PSTOP", false, 100, 0},
-        {"DOROPN", false, 100, 0},
-        {"DORCLS", false, 100, 0},
-        {"STNMOV", false, 119, 0},
-        {"SWTCHN", false, 78, 0},
-        {"SWTCHX", false, 78, 0},
-        {"PLPAIN", false, 96, 0},
-        {"DMPAIN", false, 96, 0}
-    };
-        /*
-        ,{"POPAIN", false, 96, 0}
-        ,{"VIPAIN", false, 96, 0},
-        {"MNPAIN", false, 96, 0},
-        {"PEPAIN", false, 96, 0},
-        {"SLOP", false, 78, 0},
-        {"ITEMUP", true, 78, 0},
-        {"WPNUP", true, 78, 0},
-        {"OOF", false, 96, 0},
-        {"TELEPT", false, 32, 0},
-        {"POSIT1", true, 98, 0},
-        {"POSIT2", true, 98, 0},
-        {"POSIT3", true, 98, 0},
-        {"BGSIT1", true, 98, 0},
-        {"BGSIT2", true, 98, 0},
-        {"SGTSIT", true, 98, 0},
-        {"CACSIT", true, 98, 0},
-        {"BRSSIT", true, 94, 0},
-        {"CYBSIT", true, 92, 0},
-        {"SPISIT", true, 90, 0},
-        {"BSPSIT", true, 90, 0},
-        {"KNTSIT", true, 90, 0},
-        {"VILSIT", true, 90, 0},
-        {"MANSIT", true, 90, 0},
-        {"PESIT", true, 90, 0},
-        {"SKLATK", false, 70, 0},
-        {"SGTATK", false, 70, 0},
-        {"SKEPCH", false, 70, 0}
-    };
-/*,
-        {"VILATK", false, 70, 0},
-        {"CLAW", false, 70, 0},
-        {"SKESWG", false, 70, 0},
-        {"PLDETH", false, 32, 0},
-        {"PDIEHI", false, 32, 0},
-        {"PODTH1", false, 70, 0},
-        {"PODTH2", false, 70, 0},
-        {"PODTH3", false, 70, 0},
-        {"BGDTH1", false, 70, 0},
-        {"BGDTH2", false, 70, 0},
-        {"SGTDTH", false, 70, 0},
-        {"CACDTH", false, 70, 0},
-        {"SKLDTH", false, 70, 0},
-        {"BRSDTH", false, 32, 0},
-        {"CYBDTH", false, 32, 0},
-        {"SPIDTH", false, 32, 0},
-        {"BSPDTH", false, 32, 0},
-        {"VILDTH", false, 32, 0},
-        {"KNTDTH", false, 32, 0},
-        {"PEDTH", false, 32, 0},
-        {"SKEDTH", false, 32, 0},
-        {"POSACT", true, 120, 0},
-        {"BGACT", true, 120, 0},
-        {"DMACT", true, 120, 0},
-        {"BSPACT", true, 100, 0},
-        {"BSPWLK", true, 100, 0},
-        {"VILACT", true, 100, 0},
-        {"NOWAY", false, 78, 0},
-        {"BAREXP", false, 60, 0},
-        {"PUNCH", false, 64, 0},
-        {"HOOF", false, 70, 0},
-        {"METAL", false, 70, 0},
-        {"CHGUN", false, 64, 0},
-        {"TINK", false, 60, 0},
-        {"BDOPN", false, 100, 0},
-        {"BDCLS", false, 100, 0},
-        {"ITMBK", false, 100, 0},
-        {"FLAME", false, 32, 0},
-        {"FLAMST", false, 32, 0},
-        {"GETPOW", false, 60, 0},
-        {"BOSPIT", false, 70, 0},
-        {"BOSCUB", false, 70, 0},
-        {"BOSSIT", false, 70, 0},
-        {"BOSPN", false, 70, 0},
-        {"BOSDTH", false, 70, 0},
-        {"MANATK", false, 70, 0},
-        {"MANDTH", false, 70, 0},
-        {"SSSIT", false, 70, 0},
-        {"SSDTH", false, 70, 0},
-        {"KEENPN", false, 70, 0},
-        {"KEENDT", false, 70, 0},
-        {"SKEACT", false, 70, 0},
-        {"SKESIT", false, 70, 0},
-        {"SKEATK", false, 70, 0},
-        {"RADIO", false, 60, 0}};
-*/
+        {"NONE",    0x0000},
+        {"PISTOL",  0x0000},
+        {"SHOTGN",  0x0000},
+        {"SGCOCK",  0x0000},
+        {"DSHTGN",  0x0000},
+        {"DBOPN",   0x0000},
+        {"DBCLS",   0x0000},
+        {"DBLOAD",  0x0000},
+        {"PLASMA",  0x0000},
+        {"BFG",     0x0000},
+        {"SAWUP",   0x0000},
+        {"SAWIDL",  0x0000},
+        {"SAWFUL",  0x0000},
+        {"SAWHIT",  0x0000},
+        {"RLAUNC",  0x0000},
+        {"RXPLOD",  0x0000},
+        {"FIRSHT",  0x0000},
+        {"FIRXPL",  0x0000},
+        {"PSTART",  0x0000},
+        {"PSTOP",   0x0000},
+        {"DOROPN",  0x0000},
+        {"DORCLS",  0x0000},
+        {"STNMOV",  0x0000},
+        {"SWTCHN",  0x0000},
+        {"SWTCHX",  0x0000},
+        {"PLPAIN",  0x0000},
+        {"DMPAIN",  0x0000},
+        {"POPAIN",  0x0000},
+        {"VIPAIN",  0x0000},
+        {"MNPAIN",  0x0000},
+        {"PEPAIN",  0x0000},
+        {"SLOP",    0x0000},
+        {"ITEMUP",  SOUND_SINGULARITY_FLAG},
+        {"WPNUP",   SOUND_SINGULARITY_FLAG},
+        {"OOF",     0x0000},
+        {"TELEPT",  0x0000},
+        {"POSIT1",  SOUND_SINGULARITY_FLAG},
+        {"POSIT2",  SOUND_SINGULARITY_FLAG},
+        {"POSIT3",  SOUND_SINGULARITY_FLAG},
+        {"BGSIT1",  SOUND_SINGULARITY_FLAG},
+        {"BGSIT2",  SOUND_SINGULARITY_FLAG},
+        {"SGTSIT",  SOUND_SINGULARITY_FLAG},
+        {"CACSIT",  SOUND_SINGULARITY_FLAG},
+        {"BRSSIT",  SOUND_SINGULARITY_FLAG},
+        {"CYBSIT",  SOUND_SINGULARITY_FLAG},
+        {"SPISIT",  SOUND_SINGULARITY_FLAG},
+        {"BSPSIT",  SOUND_SINGULARITY_FLAG},
+        {"KNTSIT",  SOUND_SINGULARITY_FLAG},
+        {"VILSIT",  SOUND_SINGULARITY_FLAG},
+        {"MANSIT",  SOUND_SINGULARITY_FLAG},
+        {"PESIT",   SOUND_SINGULARITY_FLAG},
+        {"SKLATK",  0x0000},
+        {"SGTATK",  0x0000},
+        {"SKEPCH",  0x0000},
+        {"VILATK",  0x0000},
+        {"CLAW",    0x0000},
+        {"SKESWG",  0x0000},
+        {"PLDETH",  0x0000},
+        {"PDIEHI",  0x0000},
+        {"PODTH1",  0x0000},
+        {"PODTH2",  0x0000},
+        {"PODTH3",  0x0000},
+        {"BGDTH1",  0x0000},
+        {"BGDTH2",  0x0000},
+        {"SGTDTH",  0x0000},
+        {"CACDTH",  0x0000},
+        {"SKLDTH",  0x0000},
+        {"BRSDTH",  0x0000},
+        {"CYBDTH",  0x0000},
+        {"SPIDTH",  0x0000},
+        {"BSPDTH",  0x0000},
+        {"VILDTH",  0x0000},
+        {"KNTDTH",  0x0000},
+        {"PEDTH",   0x0000},
+        {"SKEDTH",  0x0000},
+        {"POSACT",  SOUND_SINGULARITY_FLAG},
+        {"BGACT",   SOUND_SINGULARITY_FLAG},
+        {"DMACT",   SOUND_SINGULARITY_FLAG},
+        {"BSPACT",  SOUND_SINGULARITY_FLAG},
+        {"BSPWLK",  SOUND_SINGULARITY_FLAG},
+        {"VILACT",  SOUND_SINGULARITY_FLAG},
+        {"NOWAY",   0x0000},
+        {"BAREXP",  0x0000},
+        {"PUNCH",   0x0000},
+        {"HOOF",    0x0000},
+        {"METAL",   0x0000},
+        {"CHGUN",   0x0000},
+        {"TINK",    0x0000},
+        {"BDOPN",   0x0000},
+        {"BDCLS",   0x0000},
+        {"ITMBK",   0x0000},
+        {"FLAME",   0x0000},
+        {"FLAMST",  0x0000},
+        {"GETPOW",  0x0000},
+        {"BOSPIT",  0x0000},
+        {"BOSCUB",  0x0000},
+        {"BOSSIT",  0x0000},
+        {"BOSPN",   0x0000},
+        {"BOSDTH",  0x0000},
+        {"MANATK",  0x0000},
+        {"MANDTH",  0x0000},
+        {"SSSIT",   0x0000},
+        {"SSDTH",   0x0000},
+        {"KEENPN",  0x0000},
+        {"KEENDT",  0x0000},
+        {"SKEACT",  0x0000},
+        {"SKESIT",  0x0000},
+        {"SKEATK",  0x0000},
+        {"RADIO",   0x0000}};
 
 void SB_Service_Mix22Khz(){
 	
@@ -745,42 +739,6 @@ void SB_DecrementApplicationVolume(){
 
 uint8_t volnumber = 90;
 
-
-
-void SB_PlaySoundEffect(int8_t sfx_id){
-	int8_t i;
-    for (i = 0; i < NUM_SFX_TO_MIX;i++){
-        if (sb_voicelist[i].playing == false){
-
-            sb_voicelist[i].currentsample = 0;
-            sb_voicelist[i].playing = true;
-            sb_voicelist[i].samplerate = sb_sfx_info[sfx_id].samplerate;
-            sb_voicelist[i].location   = sb_sfx_info[sfx_id].location;
-            sb_voicelist[i].length     = sb_sfx_info[sfx_id].length;
-            sb_voicelist[i].volume     = volnumber;
-            
-            // volume is 0-127
-
-            // volnumber += 5;
-            // if (volnumber > 160){
-            //     volnumber = 40;
-            // }
-            // sb_voicelist[i].volume     = 255;
-            if (sb_voicelist[i].samplerate){
-                if (!current_sampling_rate){
-                    change_sampling_to_22_next_int = 1;
-
-                }
-            }
-
-
-            return;
-        }
-    }
-    // no channels found
-    
-
-}
 
 
 
@@ -1339,9 +1297,8 @@ void SB_Shutdown(){
     // sfx_playing = false;
 
 	SB_StopPlayback();
-
     SB_RestoreVoiceVolume();
-    SB_ResetDSP();
+    SB_ResetDSP();  // todo why does this fail?
 
     // Restore the original interrupt		
     if (sb_irq >= 8) {
@@ -1483,11 +1440,19 @@ void S_TempInit2(){
     // todo move this crap into asm. dump the 
     uint8_t i;
     char lumpname[9];
-
+    uint16_t __far* scratch_lumplocation = (uint16_t __far*)0x50000000;
+    Z_QuickMapScratch_5000();
     for (i = 1; i < NUMSFX/2; i++){
         combine_strings(lumpname, "DS", S_sfx[i].name);
         // DEBUG_PRINT("\nstr: %s", lumpname);
-        S_sfx[i].lump = W_GetNumForName(lumpname);
+        S_sfx[i].lumpandflags |= (W_GetNumForName(lumpname) & SOUND_LUMP_BITMASK);
+        W_CacheLumpNumDirect(S_sfx[i].lumpandflags & SOUND_LUMP_BITMASK, (byte __far*)scratch_lumplocation);
+
+        if ((scratch_lumplocation[1] == SAMPLE_RATE_22_KHZ_UINT)){
+            S_sfx[i].lumpandflags |= SOUND_22_KHZ_FLAG;
+        }
+
+
     }
 
 
@@ -1505,3 +1470,59 @@ void S_TempInit2(){
 
 }
 
+
+
+int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
+    
+    int8_t i;
+    for (i = 0; i < NUM_SFX_TO_MIX;i++){
+        if (sb_voicelist[i].playing == false){
+
+            sb_voicelist[i].currentsample = 0;
+            sb_voicelist[i].playing = true;
+            sb_voicelist[i].samplerate = S_sfx[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG ? 1 : 0;
+            sb_voicelist[i].location   = (byte __far *) 0xD4000000;  //sb_sfx_info[sfx_id].location;
+            sb_voicelist[i].length     = W_LumpLength(S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK);
+            sb_voicelist[i].volume     = volnumber;
+            
+            // todo gotta clean out the bottom 
+            W_CacheLumpNumDirectWithOffset(S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, sb_voicelist[i].location, 0x18);
+
+            // volume is 0-127
+
+            // volnumber += 5;
+            // if (volnumber > 160){
+            //     volnumber = 40;
+            // }
+            // sb_voicelist[i].volume     = 255;
+            if (sb_voicelist[i].samplerate){
+                if (!current_sampling_rate){
+                    change_sampling_to_22_next_int = 1;
+
+                }
+            }
+
+
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+void SFX_StopPatch(int8_t handle){
+    if (handle > 0 && handle < NUM_SFX_TO_MIX){
+    sb_voicelist[handle].playing = false;
+    }
+}
+
+boolean SFX_Playing(int8_t handle){
+    if (handle > 0 && handle < NUM_SFX_TO_MIX){
+        return sb_voicelist[handle].playing;
+    }
+    return false;
+}
+
+void SFX_SetOrigin(int8_t handle, int16_t sep, int16_t vol){
+    
+}

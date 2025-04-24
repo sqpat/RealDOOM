@@ -117,7 +117,7 @@ typedef struct {
 	int8_t				samplerate;
 	uint16_t			length;
 	uint16_t			currentsample;
-	int8_t 	 			playing;
+	boolean 			playing;
 	int8_t 	 			volume;
 } SB_VoiceInfo ;
 
@@ -141,17 +141,17 @@ struct sfxinfo_struct
 {
     // up to 6-character name
     char *name;
-
-    // Sfx singularity (only one at a time)
-    int8_t singularity;
-
-    // Sfx priority
-    uint8_t priority;
-
+    // bit15 =   singularity
+    // bit14 =   1 for 22 khz 0 for 11 khz
+    // bit0-13 = lumpnum
     // lump number of sfx
-    int16_t lump;
+    uint16_t lumpandflags;
 };
 
-sfxinfo_t S_sfx[NUMSFX/4];
+#define SOUND_SINGULARITY_FLAG 0x8000 
+#define SOUND_22_KHZ_FLAG 0x4000 
+#define SOUND_LUMP_BITMASK 0x3FFF 
+
+sfxinfo_t S_sfx[NUMSFX];
 
 void S_TempInit2();

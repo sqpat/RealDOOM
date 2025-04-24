@@ -696,7 +696,6 @@ void __near P_KillMobj (	mobj_t __near* source, mobj_t __near*	target, mobj_pos_
 		target->tics = 1;
 	}
 		
-    //	I_StartSound (&actor->r, actor->info->deathsound);
 
 
     // Drop stuff.

@@ -351,6 +351,10 @@ void __far W_CacheLumpNumDirect (int16_t lump, byte __far* dest ) {
 	W_ReadLump(lump, dest, 0, 0);
 }
 
+void __far W_CacheLumpNumDirectWithOffset (int16_t lump, byte __far* dest, uint16_t offset) {
+	W_ReadLump(lump, dest, offset, 0);
+}
+
  
 // used for stuff > 64k, especially titlepics, to draw one ems frame at a tiem
 void W_CacheLumpNumDirectFragment (int16_t lump, byte __far* dest,int32_t offset){

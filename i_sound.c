@@ -34,20 +34,8 @@
 #include "doomstat.h"
 #include "m_near.h"
 #include "sc_music.h"
- 
+  
 
-int16_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t pitch, int16_t sep, int16_t vol, int16_t unk1, int16_t unk2){
-    return 0;
-}
-void SFX_StopPatch(int16_t handle){
-
-}
-int16_t SFX_Playing(int16_t handle){
-    return 0;
-}
-void SFX_SetOrigin(int16_t handle, int16_t  pitch, int16_t sep, int16_t vol){
-    
-}
 
 
 //
@@ -184,7 +172,7 @@ int16_t I_LoadSong(uint16_t lump) {
 
 
 
-int16_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority) {
+int8_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep) {
     // hacks out certain PC sounds
     // if (snd_SfxDevice == snd_PC
     //     && (data == S_sfx[sfx_posact].data
@@ -214,14 +202,14 @@ int16_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep, uint8_t pitch,
         pcspeaker_endoffset = pc_speaker_offsets[sfx_id];
         return 0;
     } else {
-        return SFX_PlayPatch(sfx_id, sep, pitch, vol, 0, 100);
+        return SFX_PlayPatch(sfx_id, sep, vol);
     }
 
 
     
 }
 
-void I_StopSound(int16_t handle) {
+void I_StopSound(int8_t handle) {
     
     if (snd_SfxDevice == snd_PC){
         pcspeaker_currentoffset = 0;
@@ -233,12 +221,12 @@ void I_StopSound(int16_t handle) {
 }
 
 
-boolean I_SoundIsPlaying(int16_t handle) {
+boolean I_SoundIsPlaying(int8_t handle) {
     return SFX_Playing(handle);
 }
 
-void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch) {
-    SFX_SetOrigin(handle, pitch, sep, vol);
+void I_UpdateSoundParams(int8_t handle, uint8_t vol, uint8_t sep) {
+    SFX_SetOrigin(handle, sep, vol);
 }
 
 //
