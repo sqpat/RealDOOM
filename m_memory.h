@@ -919,7 +919,9 @@ skytexture         5400:0000
 
 
 #define size_menugraphics      0x0000
+// note this is still gross.
 #define size_menugraphcispage4 0xAC64
+// and this is still gross too. we could move it deeper in the page frame if necessary?
 #define size_menuoffsets    ((sizeof(uint16_t) * NUM_MENU_ITEMS))
 
 #define menugraphicspage0   (byte __far* )0x50000000

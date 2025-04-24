@@ -56,6 +56,7 @@ file hu_setup.obj
 #todo put these in the future wad segment. maybe pull out p_tick.
 NEWSEGMENT
 file s_sound.obj
+file s_sbsfx.obj
 file p_ceilng.obj
 file p_doors.obj
 file p_enemy.obj

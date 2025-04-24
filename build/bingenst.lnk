@@ -64,6 +64,7 @@ file d_savel.obj
 #todo put these in the future wad segment. maybe pull out p_tick.
 NEWSEGMENT
 file s_sound.obj
+file s_sbsfx.obj
 file sm_opl2.obj
 file sm_opl3.obj
 file sm_sbmid.obj

@@ -138,6 +138,7 @@ GLOBOBJS = $(GLOBOBJS) &
  d_wi.obj &
  wi_stuff.obj &
  s_sound.obj &
+ s_sbsfx.obj &
  sm_opl2.obj &
  sm_opl3.obj &
  sm_sbmid.obj &

@@ -425,6 +425,15 @@ inline uint16_t FastMul8u8u(uint8_t a, uint8_t b);
     parm [al] [ah]       \
     modify [ah al]   \
     value [ax];
+
+inline uint16_t FastIMul8u8u(int8_t a, int8_t b);
+#pragma aux FastIMul8u8u =   \
+"IMUL ah"  \
+    parm [al] [ah]       \
+    modify [ah al]   \
+    value [ax];
+
+
     // get quotient and remainder/modulo
 inline int16_t_union FastDiv16u_8u(uint16_t ax, uint8_t dl);
 #pragma aux FastDiv16u_8u =   \
