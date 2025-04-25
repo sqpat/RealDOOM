@@ -624,15 +624,19 @@ void SB_Service_Mix11Khz(){
 }
 
 
+void	resetDS();
 
-void __interrupt __far SB_ServiceInterrupt(void) {
+void __interrupt __far_func SB_ServiceInterrupt(void) {
 	int8_t i;
 	int8_t sample_rate_this_instance;
+    resetDS();
     if (in_first_buffer){
         in_first_buffer = false;
     } else {
         in_first_buffer = true;
     }
+
+    ((byte __far*)(0xDA000000))[0] = 79;
 
 	if (change_sampling_to_22_next_int){
 		change_sampling_to_22_next_int = 0;
@@ -1100,7 +1104,7 @@ int8_t SB_SetupPlayback(){
 	SB_StopPlayback();
     SB_SetMixMode();
 
-    // todo why does malloc create garbage noise???
+    // todo choose a better spot for this...
     addr.wu = 0xDB000000;
     
 
@@ -1108,7 +1112,7 @@ int8_t SB_SetupPlayback(){
     addr.hu.fracbits = 0;
 
     sbbuffer = (byte __far*)addr.wu;
-    if (SB_SetupDMABuffer(sbbuffer, SB_TotalBufferSize)){
+    if (SB_SetupDMABuffer(sbbuffer, SB_TotalBufferSize) == SB_Error){
         return SB_Error;
     }
 
@@ -1116,7 +1120,7 @@ int8_t SB_SetupPlayback(){
 
     SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_UINT);
 
-    // SB_EnableInterrupt();
+    SB_EnableInterrupt();
 
 
 	// Turn on Speaker
@@ -1415,6 +1419,9 @@ int16_t SB_InitCard(){
 			// 8 bit logic?
 
             _dos_setvect(sb_int, SB_ServiceInterrupt);
+
+            // I_Error("%i %lx %lx %lx", sb_irq, SB_OldInt, _dos_getvect(sb_int), SB_ServiceInterrupt);
+
         } else {
 			// 16 bit logic?
             // status = IRQ_SetVector(Interrupt, SB_ServiceInterrupt);
