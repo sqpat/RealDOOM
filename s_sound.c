@@ -213,10 +213,8 @@ int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fix
     // From _GG1_ p.428. Appox. eucledian distance fast.
     approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
     
-    if (gamemap != 8
-	&& approx_dist > S_CLIPPING_DIST)
-    {
-	return 0;
+    if (gamemap != 8 && approx_dist > S_CLIPPING_DIST) {
+		return 0;
     }
     
     // angle of source to listener
@@ -235,26 +233,25 @@ int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fix
 	// todo optimize. 96 * finesine?
     *sep = 128 - (FixedMul(S_STEREO_SWING,finesine[angle.h.intbits >> 3])>>FRACBITS);
 
-    // volume calculation
-    if (approx_dist < S_CLOSE_DIST)
-    {
-	*vol = snd_SfxVolume;
-    }
-    else if (gamemap == 8)
-    {
-	if (approx_dist > S_CLIPPING_DIST)
-	    approx_dist = S_CLIPPING_DIST;
 
-	*vol = 15+ ((snd_SfxVolume-15)
-		    *((S_CLIPPING_DIST - approx_dist)>>FRACBITS))
-	    / S_ATTENUATOR;
-    }
-    else
-    {
-	// distance effect
-	*vol = (snd_SfxVolume
-		* ((S_CLIPPING_DIST - approx_dist)>>FRACBITS))
-	    / S_ATTENUATOR; 
+
+    // volume calculation
+    if (approx_dist < S_CLOSE_DIST) {
+		*vol = snd_SfxVolume;
+
+
+    } else if (gamemap == 8) {
+		if (approx_dist > S_CLIPPING_DIST)
+			approx_dist = S_CLIPPING_DIST;
+
+		*vol = 15+ ((snd_SfxVolume-15)
+				*((S_CLIPPING_DIST - approx_dist)>>FRACBITS))
+			/ S_ATTENUATOR;
+    } else {
+		// distance effect
+		*vol = (snd_SfxVolume
+			* ((S_CLIPPING_DIST - approx_dist)>>FRACBITS))
+			/ S_ATTENUATOR; 
     }
     
     return (*vol > 0);
@@ -421,7 +418,6 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 	}
 	*/
 
-
 	// Check to see if it is audible,
 	//  and if not, modify the params
 	if ((origin || (soundorg_secnum != SECNUM_NULL)) && (originRef != playerMobjRef)){
@@ -464,36 +460,9 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 		return;
 	}
 
-	//
-	// This is supposed to handle the loading/caching.
-	// For some odd reason, the caching is done nearly
-	//  each time the sound is needed?
-	//
-  
-	// get lumpnum if necessary
-	// todo move this to initialization loop.
+	// Note: I_StartSound [eventually] handles loading, cacheing, etc.
 
-
-	// cache data if necessary
-	// if (!sfx->data) {
-		//sfx->data = (void __far *) W_CacheLumpNum(sfx->lumpnum, PU_MUSIC);
-
-		//_dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
-		// fprintf( stderr,
-		//	     "S_StartSoundWithPosition: loading %d (lump %d) : 0x%x\n",
-		//       sfx_id, sfx->lumpnum, sfx->data );
-    
-	// }
-  
-	// increase the usefulness
-	// if (sfx->usefulness++ < 0)
-	// 	sfx->usefulness = 1;
-  
-	// Assigns the handle to one of the channels in the
-	//  mix/output buffer.
-	channels[cnum].handle = I_StartSound(sfx_id,
-				       volume,
-				       sep);
+	channels[cnum].handle = I_StartSound(sfx_id, volume, sep);
 
 }
 
