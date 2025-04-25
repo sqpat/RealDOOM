@@ -1076,6 +1076,7 @@ void __far AM_Drawer (void) {
 
 	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
 	//G_ExitLevel();
+	I_Error("out!");
 
 /*
 	FILE* fp = fopen ("indump.txt", "w");

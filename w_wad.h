@@ -68,7 +68,7 @@ void W_CacheLumpNumDirectFragment(int16_t lump, byte __far* dest, int32_t offset
 
 void W_CacheLumpNameDirect(int8_t* name, byte __far* dest);
 void __far W_CacheLumpNumDirect(int16_t lump, byte __far* dest);
-void __far W_CacheLumpNumDirectWithOffset (int16_t lump, byte __far* dest, uint16_t offset);
+void __far W_CacheLumpNumDirectWithOffset (int16_t lump, byte __far* dest, uint16_t offset, uint16_t length);
 
 
 // correct value for DOOM Sharware

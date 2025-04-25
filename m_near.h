@@ -1413,5 +1413,6 @@ extern fixed_t_union deadAttackerX;
 extern fixed_t_union deadAttackerY;
 
 
+extern boolean FORCE_5000_LUMP_LOAD;
 
 #endif

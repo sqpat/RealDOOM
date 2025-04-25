@@ -230,6 +230,7 @@ int16_t W_GetNumForName(int8_t* name) {
 
 int32_t W_LumpLength5000(int16_t lump) {
 	int8_t i;
+	// todo make this not a for loop.
 	for (i = 0; i < currentloadedfileindex-1; i++){
 		if (lump == filetolumpindex[i]){
 			return filetolumpsize[i];
@@ -241,6 +242,7 @@ int32_t W_LumpLength5000(int16_t lump) {
 
 int32_t W_LumpLength9000(int16_t lump) {
 	int8_t i;
+	// todo make this not a for loop.
 	for (i = 0; i < currentloadedfileindex-1; i++){
 		if (lump == filetolumpindex[i]){
 			return filetolumpsize[i];
@@ -256,12 +258,19 @@ int32_t __far W_LumpLength (int16_t lump) {
         I_Error ("W_LumpLength: %i >= numlumps",lump);
 #endif
 
+	if (FORCE_5000_LUMP_LOAD){
+		Z_QuickMapLumpInfo5000();
+		size = W_LumpLength5000(lump);
+		Z_UnmapLumpInfo5000();
+		return size;
 
+	} else {
 	 
-	Z_QuickMapLumpInfo();
-	size = W_LumpLength9000(lump);
-	Z_UnmapLumpInfo();
-	return size;
+		Z_QuickMapLumpInfo();
+		size = W_LumpLength9000(lump);
+		Z_UnmapLumpInfo();
+		return size;
+	}
 }
 
 
@@ -285,6 +294,7 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 
 	// use 5000 page if we are trying to write to 9000 page
 	boolean is5000Page = ((int32_t) dest >= 0x90000000) && ((int32_t)dest < 0xA0000000);
+	is5000Page |= FORCE_5000_LUMP_LOAD;
 
 	if (is5000Page) {
 		Z_QuickMapLumpInfo5000();
@@ -320,7 +330,7 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 
     fseek(wadfiles[fileindex], startoffset, SEEK_SET);
 
-	FAR_fread(dest, size ? size : lumpsize, 1, wadfiles[fileindex]);
+	FAR_fread(dest, size ? size : (lumpsize - start), 1, wadfiles[fileindex]);
  
 
  
@@ -351,8 +361,8 @@ void __far W_CacheLumpNumDirect (int16_t lump, byte __far* dest ) {
 	W_ReadLump(lump, dest, 0, 0);
 }
 
-void __far W_CacheLumpNumDirectWithOffset (int16_t lump, byte __far* dest, uint16_t offset) {
-	W_ReadLump(lump, dest, offset, 0);
+void __far W_CacheLumpNumDirectWithOffset (int16_t lump, byte __far* dest, uint16_t offset, uint16_t length) {
+	W_ReadLump(lump, dest, offset, length);
 }
 
  

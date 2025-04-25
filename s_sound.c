@@ -365,6 +365,25 @@ int8_t S_getChannel (THINKERREF originRef, int16_t soundorg_secnum, sfxenum_t sf
 
 }
 
+void logsound(int8_t cnum, sfxenum_t sfx_id){
+		
+	FILE* fp = fopen ("sound.txt", "ab");
+	// fprintf(fp, "channel %i %i %i\n", sfx_id, cnum);
+	if (cnum < 0){
+		fputc('n', fp);
+
+	} else {
+		fputc('0' + cnum % 10, fp);
+	}
+	fputc(' ', fp);
+	fputc('0' + (sfx_id / 100), fp);
+	fputc('0' + ((sfx_id / 10) % 10), fp);
+	fputc('0' + (sfx_id % 10), fp);
+	fputc('\0', fp);
+	fclose(fp);
+
+}
+
 void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum ) {
   int16_t		rc;
   uint8_t		sep;
@@ -439,9 +458,11 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 
 	// try to find a channel
 	cnum = S_getChannel(originRef, soundorg_secnum, sfx_id);
-  
-	if (cnum<0)
+	
+	// logsound(cnum, sfx_id);
+	if (cnum<0){
 		return;
+	}
 
 	//
 	// This is supposed to handle the loading/caching.

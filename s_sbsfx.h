@@ -152,6 +152,6 @@ struct sfxinfo_struct
 #define SOUND_22_KHZ_FLAG 0x4000 
 #define SOUND_LUMP_BITMASK 0x3FFF 
 
-sfxinfo_t S_sfx[NUMSFX];
+sfxinfo_t S_sfx[NUMSFX/4];
 
 void S_TempInit2();

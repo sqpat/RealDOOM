@@ -16,6 +16,7 @@
 #include <ctype.h>
 #include <malloc.h>
 #include "doomdef.h"
+#include "i_system.h"
 
 void SB_SetPlaybackRate(int16_t sample_rate);
 void SB_DSP1xx_BeginPlayback();
@@ -82,7 +83,7 @@ uint8_t                 application_volume = MAX_APPLICATION_VOLUME; // Normally
 
 
 
-sfxinfo_t S_sfx[NUMSFX] =
+sfxinfo_t S_sfx[NUMSFX/4] =
     {
         // S_sfx[0] needs to be a dummy for odd reasons.
         {"NONE",    0x0000},
@@ -111,7 +112,8 @@ sfxinfo_t S_sfx[NUMSFX] =
         {"SWTCHN",  0x0000},
         {"SWTCHX",  0x0000},
         {"PLPAIN",  0x0000},
-        {"DMPAIN",  0x0000},
+        {"DMPAIN",  0x0000}};
+/*
         {"POPAIN",  0x0000},
         {"VIPAIN",  0x0000},
         {"MNPAIN",  0x0000},
@@ -193,7 +195,7 @@ sfxinfo_t S_sfx[NUMSFX] =
         {"SKEACT",  0x0000},
         {"SKESIT",  0x0000},
         {"SKEATK",  0x0000},
-        {"RADIO",   0x0000}};
+        {"RADIO",   0x0000}};*/
 
 void SB_Service_Mix22Khz(){
 	
@@ -699,7 +701,7 @@ void __interrupt __far SB_ServiceInterrupt(void) {
 //  22 KHZ MODE LOOP
 //  22 KHZ MODE LOOP
 
-		// SB_Service_Mix22Khz();
+		SB_Service_Mix22Khz();
 
 	} else {
 
@@ -708,7 +710,7 @@ void __interrupt __far SB_ServiceInterrupt(void) {
 //  11 KHZ MODE LOOP
 
 
-		// SB_Service_Mix11Khz();
+		SB_Service_Mix11Khz();
 	}
 
 	last_sampling_rate = current_sampling_rate;
@@ -735,10 +737,6 @@ void SB_DecrementApplicationVolume(){
     application_volume -= 16; // volume step shifted 4
 
 }
-
-
-uint8_t volnumber = 90;
-
 
 
 
@@ -1103,13 +1101,7 @@ int8_t SB_SetupPlayback(){
     SB_SetMixMode();
 
     // todo why does malloc create garbage noise???
-    addr.wu = (uint32_t) _fmalloc(2*SB_TotalBufferSize + 15);  // add 15 bytes...
-    // round up to seg
-
-    if (addr.wu & 0x0F){
-        addr.wu += 0x10;
-        addr.wu -= (addr.wu & 0x0F);
-    }
+    addr.wu = 0xDB000000;
     
 
     addr.hu.intbits += (addr.hu.fracbits >> 4);
@@ -1124,7 +1116,7 @@ int8_t SB_SetupPlayback(){
 
     SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_UINT);
 
-    SB_EnableInterrupt();
+    // SB_EnableInterrupt();
 
 
 	// Turn on Speaker
@@ -1442,10 +1434,17 @@ void S_TempInit2(){
     char lumpname[9];
     uint16_t __far* scratch_lumplocation = (uint16_t __far*)0x50000000;
     Z_QuickMapScratch_5000();
-    for (i = 1; i < NUMSFX/2; i++){
+    for (i = 1; i < NUMSFX/4; i++){
         combine_strings(lumpname, "DS", S_sfx[i].name);
-        // DEBUG_PRINT("\nstr: %s", lumpname);
-        S_sfx[i].lumpandflags |= (W_GetNumForName(lumpname) & SOUND_LUMP_BITMASK);
+        S_sfx[i].lumpandflags = (W_GetNumForName(lumpname) & SOUND_LUMP_BITMASK);
+        if (S_sfx[i].lumpandflags == -1){
+            // nonexistent in the wad
+            S_sfx[i].lumpandflags = 0xFFFF;
+            continue;
+        }
+        
+        // DEBUG_PRINT("%i %i\n", i, S_sfx[i].lumpandflags & SOUND_LUMP_BITMASK);
+
         W_CacheLumpNumDirect(S_sfx[i].lumpandflags & SOUND_LUMP_BITMASK, (byte __far*)scratch_lumplocation);
 
         if ((scratch_lumplocation[1] == SAMPLE_RATE_22_KHZ_UINT)){
@@ -1455,13 +1454,15 @@ void S_TempInit2(){
 
     }
 
+    Z_QuickMapPhysics();
 
     if (SB_InitCard() == SB_OK){
         if (SB_SetupPlayback() == SB_OK){
-            DEBUG_PRINT("\nSound Blaster SFX Engine Initailized!.. ");
+            DEBUG_PRINT("Sound Blaster SFX Engine Initailized!..\n");
 
         } else {
-            // printf("Error B\n");
+            // DEBUG_PRINT("Error B\n");
+
         }
 
     } else {
@@ -1471,22 +1472,34 @@ void S_TempInit2(){
 }
 
 
-
 int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
     
     int8_t i;
+    // I_Error("\n here %i %lx\n", W_LumpLength(110), lumpinfo9000[110].position);
+    FORCE_5000_LUMP_LOAD = true;
     for (i = 0; i < NUM_SFX_TO_MIX;i++){
         if (sb_voicelist[i].playing == false){
-
             sb_voicelist[i].currentsample = 0;
             sb_voicelist[i].playing = true;
-            sb_voicelist[i].samplerate = S_sfx[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG ? 1 : 0;
+            sb_voicelist[i].samplerate = (S_sfx[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
             sb_voicelist[i].location   = (byte __far *) 0xD4000000;  //sb_sfx_info[sfx_id].location;
-            sb_voicelist[i].length     = W_LumpLength(S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK);
-            sb_voicelist[i].volume     = volnumber;
+            sb_voicelist[i].length     = W_LumpLength(S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK) - 32;
+            sb_voicelist[i].volume     = MAX_VOLUME_SFX_FLAG;
             
+
             // todo gotta clean out the bottom 
-            W_CacheLumpNumDirectWithOffset(S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, sb_voicelist[i].location, 0x18);
+            W_CacheLumpNumDirectWithOffset(S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, 
+                sb_voicelist[i].location, 
+                0x18, 
+                sb_voicelist[i].length);
+            
+            // {
+            //  uint16_t __far* loc = (uint16_t __far *) 0xD9000000;   
+            //  loc[0] = sb_voicelist[i].length;
+            //  loc[1] = S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
+            //  loc[2] = W_LumpLength(S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK);
+
+            // }
 
             // volume is 0-127
 
@@ -1495,24 +1508,25 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
             //     volnumber = 40;
             // }
             // sb_voicelist[i].volume     = 255;
+
             if (sb_voicelist[i].samplerate){
                 if (!current_sampling_rate){
                     change_sampling_to_22_next_int = 1;
 
                 }
             }
-
+            FORCE_5000_LUMP_LOAD = false;
 
             return i;
         }
     }
-
+    FORCE_5000_LUMP_LOAD = false;
     return -1;
 }
 
 void SFX_StopPatch(int8_t handle){
     if (handle > 0 && handle < NUM_SFX_TO_MIX){
-    sb_voicelist[handle].playing = false;
+        sb_voicelist[handle].playing = false;
     }
 }
 
