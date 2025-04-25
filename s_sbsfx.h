@@ -3,7 +3,6 @@
 
 int16_t SB_InitCard();
 int8_t SB_SetupPlayback();
-void SB_PlaySoundEffect(int8_t i);
 void SB_Shutdown();
 void SB_IncrementApplicationVolume();
 void SB_DecrementApplicationVolume();
@@ -123,8 +122,6 @@ typedef struct {
 
 
 extern SB_VoiceInfo sb_voicelist[NUM_SFX_TO_MIX];
-extern SB_VoiceInfo sb_sfx_info[NUM_SFX_LUMPS];
-extern int8_t* 		sfxfilename[NUM_SFX_LUMPS];
 extern uint8_t      application_volume;
 
 
@@ -137,7 +134,6 @@ typedef struct {
 
     
     int16_t_union       cache_position;
-    uint16_t            recency;
 } sound_cache_info_t;
 
 struct sfxinfo_struct
@@ -158,7 +154,7 @@ struct sfxinfo_struct
 #define SOUND_22_KHZ_FLAG 0x4000 
 #define SOUND_LUMP_BITMASK 0x3FFF 
 
-sfxinfo_t S_sfx[NUMSFX/2];
+sfxinfo_t S_sfx[NUMSFX];
 
 
 

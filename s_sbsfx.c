@@ -85,7 +85,7 @@ uint8_t                 sfx_page_lru[NUM_SFX_PAGES];    // recency
 
 
 
-sfxinfo_t S_sfx[NUMSFX/2] =
+sfxinfo_t S_sfx[NUMSFX] =
     {
         // S_sfx[0] needs to be a dummy for odd reasons.
         {"NONE",    0x0000},
@@ -141,8 +141,7 @@ sfxinfo_t S_sfx[NUMSFX/2] =
         {"PESIT",   SOUND_SINGULARITY_FLAG},
         {"SKLATK",  0x0000},
         {"SGTATK",  0x0000},
-        {"SKEPCH",  0x0000}};
-        /*
+        {"SKEPCH",  0x0000},
 
         {"VILATK",  0x0000},
 
@@ -199,7 +198,7 @@ sfxinfo_t S_sfx[NUMSFX/2] =
         {"SKEACT",  0x0000},
         {"SKESIT",  0x0000},
         {"SKEATK",  0x0000},
-        {"RADIO",   0x0000}};*/
+        {"RADIO",   0x0000}};
 
 void SB_Service_Mix22Khz(){
 	
@@ -1459,7 +1458,7 @@ void S_TempInit2(){
     char lumpname[9];
     uint16_t __far* scratch_lumplocation = (uint16_t __far*)0x50000000;
     Z_QuickMapScratch_5000();
-    for (i = 1; i < NUMSFX/2; i++){
+    for (i = 1; i < NUMSFX; i++){
         combine_strings(lumpname, "DS", S_sfx[i].name);
         S_sfx[i].lumpandflags = (W_GetNumForName(lumpname) & SOUND_LUMP_BITMASK);
         S_sfx[i].lumpsize.hu  = W_LumpLength(S_sfx[i].lumpandflags & SOUND_LUMP_BITMASK) - 32;;
