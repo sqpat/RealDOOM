@@ -373,7 +373,6 @@ void __near G_DoNewGame(void) {
 	gameaction = ga_nothing;
 }
 
-int16_t setval;
 void __near G_CopyCmd(ticcmd_t __near * destcmd, int8_t srcindex);
  
 // G_Ticker

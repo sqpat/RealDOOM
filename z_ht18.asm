@@ -26,6 +26,7 @@ INCLUDE defs.inc
 
 HT18_PAGE_SELECT_REGISTER = 01EEh
 HT18_PAGE_SET_REGISTER = 01ECh
+EXTRN _currentpageframes:BYTE
 
 .CODE
 
@@ -221,17 +222,21 @@ PROC Z_QuickMapPageFrame_ FAR
 PUBLIC Z_QuickMapPageFrame_
 
 push dx
-push cx
+push bx
 
-mov  cx, dx
+mov  bx, ax
+xor  bh, bh
+mov  ds:[_currentpageframes+bx], dl
+
+mov  bx, dx
 mov  dx, HT18_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
-xchg ax, cx
+xchg ax, bx
 add  ax, MUS_DATA_PAGES
 out dx, ax
 
-pop cx
+pop bx
 pop dx
 
 ret

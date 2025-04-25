@@ -80,10 +80,12 @@ int8_t   				in_first_buffer  = true;
                         // 240
 #define                 MAX_APPLICATION_VOLUME  (15 << 4)
 uint8_t                 application_volume = MAX_APPLICATION_VOLUME; // Normally 0-15, where 15 is max, but stored shifted left 4 for optim reasons
+uint8_t                 sfx_free_bytes[NUM_SFX_PAGES];  // free bytes per EMS page. Allocated in 256k chunks, so defaults to 64.. 
+uint8_t                 sfx_page_lru[NUM_SFX_PAGES];    // recency
 
 
 
-sfxinfo_t S_sfx[NUMSFX/4] =
+sfxinfo_t S_sfx[NUMSFX/2] =
     {
         // S_sfx[0] needs to be a dummy for odd reasons.
         {"NONE",    0x0000},
@@ -112,8 +114,7 @@ sfxinfo_t S_sfx[NUMSFX/4] =
         {"SWTCHN",  0x0000},
         {"SWTCHX",  0x0000},
         {"PLPAIN",  0x0000},
-        {"DMPAIN",  0x0000}};
-/*
+        {"DMPAIN",  0x0000},
         {"POPAIN",  0x0000},
         {"VIPAIN",  0x0000},
         {"MNPAIN",  0x0000},
@@ -140,8 +141,11 @@ sfxinfo_t S_sfx[NUMSFX/4] =
         {"PESIT",   SOUND_SINGULARITY_FLAG},
         {"SKLATK",  0x0000},
         {"SGTATK",  0x0000},
-        {"SKEPCH",  0x0000},
+        {"SKEPCH",  0x0000}};
+        /*
+
         {"VILATK",  0x0000},
+
         {"CLAW",    0x0000},
         {"SKESWG",  0x0000},
         {"PLDETH",  0x0000},
@@ -228,6 +232,13 @@ void SB_Service_Mix22Khz(){
                 uint16_t copy_length = SB_TransferLength;
                 uint16_t copy_offset;
                 int8_t   do_second_copy = false;
+                int16_t_union  cache_pos = S_sfx[sb_voicelist[i].sfx_id].cache_info.cache_position;
+                
+                // todo add if current offset > 16384 etc.
+                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh);
+                // form the offset.
+                cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
+                cache_pos.bu.bytelow = 0;
 
                 if (sb_voicelist[i].samplerate){
                     remaining_22khz = true;
@@ -259,7 +270,8 @@ void SB_Service_Mix22Khz(){
                 // stupid c89
                 {                
                     uint8_t __far * dma_buffer = MK_FP(SB_DMABufferSegment, copy_offset);
-                    uint8_t __far * source  = sb_voicelist[i].location + sb_voicelist[i].currentsample;
+                    uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + sb_voicelist[i].currentsample);
+
                     uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
                     int8_t volume = sb_voicelist[i].volume;
                     if (application_volume != MAX_APPLICATION_VOLUME){
@@ -471,6 +483,13 @@ void SB_Service_Mix11Khz(){
                 uint16_t copy_length = SB_TransferLength;
                 uint16_t copy_offset;
                 int8_t   do_second_copy = false;
+                int16_t_union  cache_pos = S_sfx[sb_voicelist[i].sfx_id].cache_info.cache_position;
+                
+                // todo add if current offset > 16384 etc.
+                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh);
+                // form the offset.
+                cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
+                cache_pos.bu.bytelow = 0;
                 
                 // if not the first copy, just copy to the next buffer
                 if (sb_voicelist[i].currentsample){
@@ -498,7 +517,7 @@ void SB_Service_Mix11Khz(){
                 // stupid c89
                 {                
                     uint8_t __far * dma_buffer = MK_FP(SB_DMABufferSegment, copy_offset);
-                    uint8_t __far * source  = sb_voicelist[i].location + sb_voicelist[i].currentsample;
+                    uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + sb_voicelist[i].currentsample);
                     uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
                     int8_t volume = sb_voicelist[i].volume;
                     if (application_volume != MAX_APPLICATION_VOLUME){
@@ -624,14 +643,15 @@ void	resetDS();
 void __interrupt __far_func SB_ServiceInterrupt(void) {
 	int8_t i;
 	int8_t sample_rate_this_instance;
-    resetDS();
+    uint8_t current_sfx_page;
+    resetDS();  // interrupts need this...
+    current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
+
     if (in_first_buffer){
         in_first_buffer = false;
     } else {
         in_first_buffer = true;
     }
-
-    ((byte __far*)(0xDA000000))[0] = 79;
 
 	if (change_sampling_to_22_next_int){
 		change_sampling_to_22_next_int = 0;
@@ -714,6 +734,9 @@ void __interrupt __far_func SB_ServiceInterrupt(void) {
 
 	last_sampling_rate = current_sampling_rate;
 
+    if (current_sfx_page != currentpageframes[SFX_PAGE_FRAME_INDEX]){
+        Z_QuickMapSFXPageFrame(current_sfx_page - NUM_MUSIC_PAGES);
+    }
 
     if (sb_irq > 7){
         outp(0xA0, 0x20);
@@ -1436,11 +1459,12 @@ void S_TempInit2(){
     char lumpname[9];
     uint16_t __far* scratch_lumplocation = (uint16_t __far*)0x50000000;
     Z_QuickMapScratch_5000();
-    for (i = 1; i < NUMSFX/4; i++){
+    for (i = 1; i < NUMSFX/2; i++){
         combine_strings(lumpname, "DS", S_sfx[i].name);
         S_sfx[i].lumpandflags = (W_GetNumForName(lumpname) & SOUND_LUMP_BITMASK);
         S_sfx[i].lumpsize.hu  = W_LumpLength(S_sfx[i].lumpandflags & SOUND_LUMP_BITMASK) - 32;;
-
+        S_sfx[i].cache_info.cache_position.hu = 0xFFFF;
+        
         if (S_sfx[i].lumpandflags == -1){
             // nonexistent in the wad
             S_sfx[i].lumpandflags = 0xFFFF;
@@ -1473,14 +1497,60 @@ void S_TempInit2(){
         DEBUG_PRINT("\nSB INIT Error A\n");
     }
 
+    // initialize SFX cache.
+    memset(sfx_free_bytes, 64, NUM_SFX_PAGES); 
+
+
 }
 
 
-void S_LoadSoundIntoCache(sfxenum_t sfx_id){
-    // check if sound already in cache (using map lookup)
-    // if (S_sfx[sfx_id].cache_info.cacheposition.bu.bytehigh != SOUND_NOT_IN_CACHE){
+// typedef struct {
+//     int16_t_union       cache_position;
+//     uint16_t            recency;
+// } sound_cache_info_t;
 
-    // }
+void S_LoadSoundIntoCache(sfxenum_t sfx_id){
+    uint8_t i;
+    int16_t_union lumpsize = S_sfx[sfx_id].lumpsize;
+    uint8_t sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
+    int16_t_union allocate_position;
+    for (i = 0; i < NUM_SFX_PAGES; i++){
+        if (sample_256_size <= sfx_free_bytes[i]){
+            allocate_position.bu.bytehigh = sfx_free_bytes[i];  // keep track of where to put the sound
+            allocate_position.bu.bytelow = 0;
+            sfx_free_bytes[i] -= sample_256_size;   // subtract...
+            goto found_page;
+        }
+    }
+
+    // ! no location found! must evict.
+
+    // todo... eviction code. then fall thru.
+    // set position to FF.
+    // set freebytes to 64
+    // evict all in the page.
+
+    return;
+
+    found_page:
+
+    // record page in high byte
+    // record offset (multiplied by 256) in low byte.
+    S_sfx[sfx_id].cache_info.cache_position.bu.bytehigh = i;
+    S_sfx[sfx_id].cache_info.cache_position.bu.bytelow = allocate_position.bu.bytehigh;
+
+    Z_QuickMapSFXPageFrame(i);
+    // Note - in theory an interrupt for an SFX can fire here during 
+    // this transfer and blow up our current SFX ems page. However
+    // we make absolutely sure in the interrupt  to page the SFX page 
+    // back to where its supposed to go.
+    W_CacheLumpNumDirectWithOffset(
+        S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, 
+        MK_FP(SFX_PAGE_SEGMENT, allocate_position.hu), 
+        0x18,           // skip header and padding.
+        lumpsize.hu);   // num bytes..
+
+
 }
 
 
@@ -1491,10 +1561,17 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
     FORCE_5000_LUMP_LOAD = true;
     for (i = 0; i < NUM_SFX_TO_MIX;i++){
         if (sb_voicelist[i].playing == false){
+            sb_voicelist[i].sfx_id = sfx_id;
             sb_voicelist[i].currentsample = 0;
             sb_voicelist[i].playing = true;
             sb_voicelist[i].samplerate = (S_sfx[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
-            sb_voicelist[i].location   = (byte __far *) 0xD4000000;  //sb_sfx_info[sfx_id].location;
+            // check if sound already in cache (using map lookup)
+            if (S_sfx[sfx_id].cache_info.cache_position.bu.bytehigh == SOUND_NOT_IN_CACHE){
+                S_LoadSoundIntoCache(sfx_id);
+            }
+            // todo mark LRU for sfx here
+
+
             sb_voicelist[i].length     = S_sfx[sfx_id].lumpsize.hu;
             
             //todo apply volume from vol. 
@@ -1502,10 +1579,7 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
             
 
             // todo gotta clean out the bottom 
-            W_CacheLumpNumDirectWithOffset(S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, 
-                sb_voicelist[i].location, 
-                0x18, 
-                sb_voicelist[i].length);
+
             
             // {
             //  uint16_t __far* loc = (uint16_t __far *) 0xD9000000;   

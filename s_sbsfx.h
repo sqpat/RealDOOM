@@ -113,31 +113,25 @@ void SB_StopPlayback();
 
 typedef struct {
 
-    uint8_t __far*  	location;
-	int8_t				samplerate;
-	uint16_t			length;
-	uint16_t			currentsample;
-	boolean 			playing;
+    sfxenum_t          	sfx_id;
+	int8_t				samplerate;         // could be figured out from sfxlumpinfo in theory
+	uint16_t			length;             // could be figured out from sfxlumpinfo in theory
+	uint16_t			currentsample;      // in bytes. could be multiples of 256 and stored in one byte though.
+	boolean 			playing;            
 	int8_t 	 			volume;
 } SB_VoiceInfo ;
 
 
-typedef struct {
-
-    uint8_t __far*  	location;
-	int8_t				samplerate;
-	uint16_t			length;
-} SB_SFXLumpInfo ;
-
 extern SB_VoiceInfo sb_voicelist[NUM_SFX_TO_MIX];
 extern SB_VoiceInfo sb_sfx_info[NUM_SFX_LUMPS];
-extern int8_t* 			sfxfilename[NUM_SFX_LUMPS];
+extern int8_t* 		sfxfilename[NUM_SFX_LUMPS];
 extern uint8_t      application_volume;
 
 
 typedef struct sfxinfo_struct sfxinfo_t;
 
 #define SOUND_NOT_IN_CACHE 0xFF
+#define SFX_PAGE_SEGMENT   0xD400
 
 typedef struct {
 
@@ -157,14 +151,14 @@ struct sfxinfo_struct
     uint16_t lumpandflags;
     int16_t_union lumpsize;
     
-    // sound_cache_info_t  cache_info;
+    sound_cache_info_t  cache_info;
 };
 
 #define SOUND_SINGULARITY_FLAG 0x8000 
 #define SOUND_22_KHZ_FLAG 0x4000 
 #define SOUND_LUMP_BITMASK 0x3FFF 
 
-sfxinfo_t S_sfx[NUMSFX/4];
+sfxinfo_t S_sfx[NUMSFX/2];
 
 
 

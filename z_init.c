@@ -283,6 +283,11 @@ byte __far *__near Z_InitEMS() {
 	regs.w.bx = MUS_DRIVER_PAGE;
 	regs.w.dx = emshandle; // handle
 
+	currentpageframes[0] = 0;
+	currentpageframes[1] = NUM_MUSIC_PAGES;
+	currentpageframes[2] = NUM_MUSIC_PAGES+1;	// todo
+	currentpageframes[3] = NUM_MUSIC_PAGES+NUM_SFX_PAGES;
+
 	intx86(EMS_INT, &regs, &regs);
 
 

@@ -2486,7 +2486,6 @@ void setchecksum(){
 }*/
 
 
-extern int16_t setval;
 
 // if texturecolumnlump, mask, etc are not stack vars but near vars, 
 // their values can be reused

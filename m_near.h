@@ -1414,5 +1414,6 @@ extern fixed_t_union deadAttackerY;
 
 
 extern boolean FORCE_5000_LUMP_LOAD;
+extern uint8_t currentpageframes[4];
 
 #endif

@@ -48,6 +48,11 @@
 void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 	// page frame index 0 to 3
 	// count 
+	if (currentpageframes[pageframeindex] == pagenumber){
+		return;
+	}
+	currentpageframes[pageframeindex] = pagenumber;
+
 	regs.h.ah = 0x44;
 	regs.h.al = pageframeindex;
 	regs.w.bx = pagenumber + MUS_DATA_PAGES;

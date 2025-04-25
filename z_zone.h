@@ -281,6 +281,10 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define NUM_FLAT_CACHE_PAGES                        0x6
 #define NUM_SPRITE_CACHE_PAGES                      0x14
 #define NUM_TEXTURE_PAGES                           0x18
+#define NUM_MUSIC_PAGES                             0x4
+#define NUM_SFX_PAGES                               0x4
+#define MUS_PAGE_FRAME_INDEX                        0x0
+#define SFX_PAGE_FRAME_INDEX                        0x1
 #elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  
 // todo revisit these numbers? might want less, and then more for sound
 //#define NUM_FLAT_CACHE_PAGES                        16
@@ -353,13 +357,13 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define MUS_DATA_PAGES                              FLAT_DATA_PAGES + 3
 
 //97
-#define SFX_DATA_PAGES                              (MUS_DATA_PAGES + 4)
+#define SFX_DATA_PAGES                              (MUS_DATA_PAGES + NUM_MUSIC_PAGES)
 
-//99
-#define MUS_DRIVER_PAGE                             SFX_DATA_PAGES + 2
+//101
+#define MUS_DRIVER_PAGE                             SFX_DATA_PAGES + NUM_SFX_PAGES
 
 
-// 100? (+1 for 0)
+// 102? (+1 for 0)
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) MUS_DRIVER_PAGE + 1
 
 
@@ -488,6 +492,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 // EMS page frame stuff
 void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber);
+#define Z_QuickMapSFXPageFrame(page)  Z_QuickMapPageFrame(1, page + NUM_MUSIC_PAGES)
 
 // EMS 4.0 stuff
 

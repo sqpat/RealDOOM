@@ -27,6 +27,7 @@ INCLUDE defs.inc
 SCAT_PAGE_SELECT_REGISTER = 020Ah
 SCAT_PAGE_SET_REGISTER = 0208h
 EMS_MEMORY_PAGE_OFFSET = 080h
+EXTRN _currentpageframes:BYTE
 
 .CODE
 
@@ -218,17 +219,22 @@ PROC Z_QuickMapPageFrame_ FAR
 PUBLIC Z_QuickMapPageFrame_
 
 push dx
-push cx
+push bx
 
-mov  cx, dx
+mov  bx, ax
+xor  bh, bh
+mov  ds:[_currentpageframes+bx], dl
+
+
+mov  bx, dx
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, SCAT_PAGE_SET_REGISTER
-xchg ax, cx
+xchg ax, bx
 add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
 out dx, ax
 
-pop cx
+pop bx
 pop dx
 
 ret

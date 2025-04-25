@@ -28,6 +28,7 @@ SCAMP_PAGE_SELECT_REGISTER = 0E8h
 SCAMP_PAGE_SET_REGISTER = 0EAh
 EMS_MEMORY_PAGE_OFFSET = 050h
 
+EXTRN _currentpageframes:BYTE
 
 .CODE
  
@@ -227,6 +228,12 @@ void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 
 PROC Z_QuickMapPageFrame_ FAR
 PUBLIC Z_QuickMapPageFrame_
+
+push bx
+mov  bx, ax
+xor  bh, bh
+mov  ds:[_currentpageframes+bx], dl
+pop  bx
 
 add  al, SCAMP_PAGE_FRAME_BASE_INDEX	; add by 4 to get d000 (page frame) index. TODO unhardcode
 out  SCAMP_PAGE_SELECT_REGISTER, al
