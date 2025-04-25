@@ -336,7 +336,8 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 	Z_SetOverlay(OVERLAY_ID_SOUND_INIT);
 	LoadSFXWadLumps();
 
-
+	// sb card setup for now..
+	S_TempInit2();
 
 }
 
@@ -1220,7 +1221,6 @@ R_PointToAngle(y, x);
 	D_RedrawTitle(title);
 #endif
 	S_Init(sfxVolume * 8, musicVolume  * 8);
-	S_TempInit2();
 
 #if DEBUG_PRINTING
 	getStringByIndex(HU_INIT_TEXT, textbuffer);

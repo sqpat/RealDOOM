@@ -80,125 +80,10 @@ int8_t   				in_first_buffer  = true;
                         // 240
 #define                 MAX_APPLICATION_VOLUME  (15 << 4)
 uint8_t                 application_volume = MAX_APPLICATION_VOLUME; // Normally 0-15, where 15 is max, but stored shifted left 4 for optim reasons
-uint8_t                 sfx_free_bytes[NUM_SFX_PAGES];  // free bytes per EMS page. Allocated in 256k chunks, so defaults to 64.. 
 uint8_t                 sfx_page_lru[NUM_SFX_PAGES];    // recency
 
 
 
-sfxinfo_t S_sfx[NUMSFX] =
-    {
-        // S_sfx[0] needs to be a dummy for odd reasons.
-        {"NONE",    0x0000},
-        {"PISTOL",  0x0000},
-        {"SHOTGN",  0x0000},
-        {"SGCOCK",  0x0000},
-        {"DSHTGN",  0x0000},
-        {"DBOPN",   0x0000},
-        {"DBCLS",   0x0000},
-        {"DBLOAD",  0x0000},
-        {"PLASMA",  0x0000},
-        {"BFG",     0x0000},
-        {"SAWUP",   0x0000},
-        {"SAWIDL",  0x0000},
-        {"SAWFUL",  0x0000},
-        {"SAWHIT",  0x0000},
-        {"RLAUNC",  0x0000},
-        {"RXPLOD",  0x0000},
-        {"FIRSHT",  0x0000},
-        {"FIRXPL",  0x0000},
-        {"PSTART",  0x0000},
-        {"PSTOP",   0x0000},
-        {"DOROPN",  0x0000},
-        {"DORCLS",  0x0000},
-        {"STNMOV",  0x0000},
-        {"SWTCHN",  0x0000},
-        {"SWTCHX",  0x0000},
-        {"PLPAIN",  0x0000},
-        {"DMPAIN",  0x0000},
-        {"POPAIN",  0x0000},
-        {"VIPAIN",  0x0000},
-        {"MNPAIN",  0x0000},
-        {"PEPAIN",  0x0000},
-        {"SLOP",    0x0000},
-        {"ITEMUP",  SOUND_SINGULARITY_FLAG},
-        {"WPNUP",   SOUND_SINGULARITY_FLAG},
-        {"OOF",     0x0000},
-        {"TELEPT",  0x0000},
-        {"POSIT1",  SOUND_SINGULARITY_FLAG},
-        {"POSIT2",  SOUND_SINGULARITY_FLAG},
-        {"POSIT3",  SOUND_SINGULARITY_FLAG},
-        {"BGSIT1",  SOUND_SINGULARITY_FLAG},
-        {"BGSIT2",  SOUND_SINGULARITY_FLAG},
-        {"SGTSIT",  SOUND_SINGULARITY_FLAG},
-        {"CACSIT",  SOUND_SINGULARITY_FLAG},
-        {"BRSSIT",  SOUND_SINGULARITY_FLAG},
-        {"CYBSIT",  SOUND_SINGULARITY_FLAG},
-        {"SPISIT",  SOUND_SINGULARITY_FLAG},
-        {"BSPSIT",  SOUND_SINGULARITY_FLAG},
-        {"KNTSIT",  SOUND_SINGULARITY_FLAG},
-        {"VILSIT",  SOUND_SINGULARITY_FLAG},
-        {"MANSIT",  SOUND_SINGULARITY_FLAG},
-        {"PESIT",   SOUND_SINGULARITY_FLAG},
-        {"SKLATK",  0x0000},
-        {"SGTATK",  0x0000},
-        {"SKEPCH",  0x0000},
-
-        {"VILATK",  0x0000},
-
-        {"CLAW",    0x0000},
-        {"SKESWG",  0x0000},
-        {"PLDETH",  0x0000},
-        {"PDIEHI",  0x0000},
-        {"PODTH1",  0x0000},
-        {"PODTH2",  0x0000},
-        {"PODTH3",  0x0000},
-        {"BGDTH1",  0x0000},
-        {"BGDTH2",  0x0000},
-        {"SGTDTH",  0x0000},
-        {"CACDTH",  0x0000},
-        {"SKLDTH",  0x0000},
-        {"BRSDTH",  0x0000},
-        {"CYBDTH",  0x0000},
-        {"SPIDTH",  0x0000},
-        {"BSPDTH",  0x0000},
-        {"VILDTH",  0x0000},
-        {"KNTDTH",  0x0000},
-        {"PEDTH",   0x0000},
-        {"SKEDTH",  0x0000},
-        {"POSACT",  SOUND_SINGULARITY_FLAG},
-        {"BGACT",   SOUND_SINGULARITY_FLAG},
-        {"DMACT",   SOUND_SINGULARITY_FLAG},
-        {"BSPACT",  SOUND_SINGULARITY_FLAG},
-        {"BSPWLK",  SOUND_SINGULARITY_FLAG},
-        {"VILACT",  SOUND_SINGULARITY_FLAG},
-        {"NOWAY",   0x0000},
-        {"BAREXP",  0x0000},
-        {"PUNCH",   0x0000},
-        {"HOOF",    0x0000},
-        {"METAL",   0x0000},
-        {"CHGUN",   0x0000},
-        {"TINK",    0x0000},
-        {"BDOPN",   0x0000},
-        {"BDCLS",   0x0000},
-        {"ITMBK",   0x0000},
-        {"FLAME",   0x0000},
-        {"FLAMST",  0x0000},
-        {"GETPOW",  0x0000},
-        {"BOSPIT",  0x0000},
-        {"BOSCUB",  0x0000},
-        {"BOSSIT",  0x0000},
-        {"BOSPN",   0x0000},
-        {"BOSDTH",  0x0000},
-        {"MANATK",  0x0000},
-        {"MANDTH",  0x0000},
-        {"SSSIT",   0x0000},
-        {"SSDTH",   0x0000},
-        {"KEENPN",  0x0000},
-        {"KEENDT",  0x0000},
-        {"SKEACT",  0x0000},
-        {"SKESIT",  0x0000},
-        {"SKEATK",  0x0000},
-        {"RADIO",   0x0000}};
 
 void SB_Service_Mix22Khz(){
 	
@@ -231,7 +116,7 @@ void SB_Service_Mix22Khz(){
                 uint16_t copy_length = SB_TransferLength;
                 uint16_t copy_offset;
                 int8_t   do_second_copy = false;
-                int16_t_union  cache_pos = S_sfx[sb_voicelist[i].sfx_id].cache_info.cache_position;
+                int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id].cache_position;
                 
                 // todo add if current offset > 16384 etc.
                 Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh);
@@ -482,7 +367,7 @@ void SB_Service_Mix11Khz(){
                 uint16_t copy_length = SB_TransferLength;
                 uint16_t copy_offset;
                 int8_t   do_second_copy = false;
-                int16_t_union  cache_pos = S_sfx[sb_voicelist[i].sfx_id].cache_info.cache_position;
+                int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id].cache_position;
                 
                 // todo add if current offset > 16384 etc.
                 Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh);
@@ -1454,34 +1339,34 @@ int16_t SB_InitCard(){
 
 void S_TempInit2(){
     // todo move this crap into asm. dump the 
-    uint8_t i;
-    char lumpname[9];
-    uint16_t __far* scratch_lumplocation = (uint16_t __far*)0x50000000;
-    Z_QuickMapScratch_5000();
-    for (i = 1; i < NUMSFX; i++){
-        combine_strings(lumpname, "DS", S_sfx[i].name);
-        S_sfx[i].lumpandflags = (W_GetNumForName(lumpname) & SOUND_LUMP_BITMASK);
-        S_sfx[i].lumpsize.hu  = W_LumpLength(S_sfx[i].lumpandflags & SOUND_LUMP_BITMASK) - 32;;
-        S_sfx[i].cache_info.cache_position.hu = 0xFFFF;
+    // uint8_t i;
+    // char lumpname[9];
+    // uint16_t __far* scratch_lumplocation = (uint16_t __far*)0x50000000;
+    // Z_QuickMapScratch_5000();
+    // for (i = 1; i < NUMSFX; i++){
+    //     combine_strings(lumpname, "DS", sfx_data[i].name);
+    //     sfx_data[i].lumpandflags = (W_GetNumForName(lumpname) & SOUND_LUMP_BITMASK);
+    //     sfx_data[i].lumpsize.hu  = W_LumpLength(sfx_data[i].lumpandflags & SOUND_LUMP_BITMASK) - 32;;
+    //     sfx_data[i].cache_position.hu = 0xFFFF;
         
-        if (S_sfx[i].lumpandflags == -1){
-            // nonexistent in the wad
-            S_sfx[i].lumpandflags = 0xFFFF;
-            continue;
-        }
+    //     if (sfx_data[i].lumpandflags == -1){
+    //         // nonexistent in the wad
+    //         sfx_data[i].lumpandflags = 0xFFFF;
+    //         continue;
+    //     }
         
-        // DEBUG_PRINT("%i %i\n", i, S_sfx[i].lumpandflags & SOUND_LUMP_BITMASK);
+    //     // DEBUG_PRINT("%i %i\n", i, sfx_data[i].lumpandflags & SOUND_LUMP_BITMASK);
 
-        W_CacheLumpNumDirect(S_sfx[i].lumpandflags & SOUND_LUMP_BITMASK, (byte __far*)scratch_lumplocation);
+    //     W_CacheLumpNumDirect(sfx_data[i].lumpandflags & SOUND_LUMP_BITMASK, (byte __far*)scratch_lumplocation);
 
-        if ((scratch_lumplocation[1] == SAMPLE_RATE_22_KHZ_UINT)){
-            S_sfx[i].lumpandflags |= SOUND_22_KHZ_FLAG;
-        }
+    //     if ((scratch_lumplocation[1] == SAMPLE_RATE_22_KHZ_UINT)){
+    //         sfx_data[i].lumpandflags |= SOUND_22_KHZ_FLAG;
+    //     }
 
 
-    }
+    // }
 
-    Z_QuickMapPhysics();
+    // Z_QuickMapPhysics();
 
     if (SB_InitCard() == SB_OK){
         if (SB_SetupPlayback() == SB_OK){
@@ -1496,8 +1381,6 @@ void S_TempInit2(){
         DEBUG_PRINT("\nSB INIT Error A\n");
     }
 
-    // initialize SFX cache.
-    memset(sfx_free_bytes, 64, NUM_SFX_PAGES); 
 
 
 }
@@ -1510,7 +1393,7 @@ void S_TempInit2(){
 
 void S_LoadSoundIntoCache(sfxenum_t sfx_id){
     uint8_t i;
-    int16_t_union lumpsize = S_sfx[sfx_id].lumpsize;
+    int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
     uint8_t sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
     int16_t_union allocate_position;
     for (i = 0; i < NUM_SFX_PAGES; i++){
@@ -1535,16 +1418,17 @@ void S_LoadSoundIntoCache(sfxenum_t sfx_id){
 
     // record page in high byte
     // record offset (multiplied by 256) in low byte.
-    S_sfx[sfx_id].cache_info.cache_position.bu.bytehigh = i;
-    S_sfx[sfx_id].cache_info.cache_position.bu.bytelow = allocate_position.bu.bytehigh;
+    sfx_data[sfx_id].cache_position.bu.bytehigh = i;
+    sfx_data[sfx_id].cache_position.bu.bytelow = allocate_position.bu.bytehigh;
 
+    // I_Error("%lx %lx %i %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
     Z_QuickMapSFXPageFrame(i);
     // Note - in theory an interrupt for an SFX can fire here during 
     // this transfer and blow up our current SFX ems page. However
     // we make absolutely sure in the interrupt  to page the SFX page 
     // back to where its supposed to go.
     W_CacheLumpNumDirectWithOffset(
-        S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, 
+        sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, 
         MK_FP(SFX_PAGE_SEGMENT, allocate_position.hu), 
         0x18,           // skip header and padding.
         lumpsize.hu);   // num bytes..
@@ -1563,15 +1447,15 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
             sb_voicelist[i].sfx_id = sfx_id;
             sb_voicelist[i].currentsample = 0;
             sb_voicelist[i].playing = true;
-            sb_voicelist[i].samplerate = (S_sfx[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
+            sb_voicelist[i].samplerate = (sfx_data[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
             // check if sound already in cache (using map lookup)
-            if (S_sfx[sfx_id].cache_info.cache_position.bu.bytehigh == SOUND_NOT_IN_CACHE){
+            if (sfx_data[sfx_id].cache_position.bu.bytehigh == SOUND_NOT_IN_CACHE){
                 S_LoadSoundIntoCache(sfx_id);
             }
             // todo mark LRU for sfx here
 
 
-            sb_voicelist[i].length     = S_sfx[sfx_id].lumpsize.hu;
+            sb_voicelist[i].length     = sfx_data[sfx_id].lumpsize.hu;
             
             //todo apply volume from vol. 
             sb_voicelist[i].volume     = MAX_VOLUME_SFX_FLAG;
@@ -1583,8 +1467,8 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
             // {
             //  uint16_t __far* loc = (uint16_t __far *) 0xD9000000;   
             //  loc[0] = sb_voicelist[i].length;
-            //  loc[1] = S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
-            //  loc[2] = W_LumpLength(S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK);
+            //  loc[1] = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
+            //  loc[2] = W_LumpLength(sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK);
 
             // }
 

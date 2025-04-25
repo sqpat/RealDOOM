@@ -34,6 +34,8 @@ ENDP
 
 ; todo rewrite with offsets instead of segments
 
+SINGULARITY_FLAG_HIGH =  (SOUND_SINGULARITY_FLAG SHR 8)
+
 PROC   LoadSFXWadLumps_
 PUBLIC LoadSFXWadLumps_
 
@@ -70,7 +72,7 @@ PUBLIC LoadSFXWadLumps_
 
     mov  word ptr es:[0], bx   ; fixed first value
 
-    loop_load_sfx:
+    loop_load_pc_sfx:
 
 
     push es ; store PC_SPEAKER_OFFSETS_SEGMENT
@@ -83,7 +85,7 @@ PUBLIC LoadSFXWadLumps_
     db 01Eh  ;
     dw _W_LumpLength_addr
 
-    ; ax is lumpdize
+    ; ax is lumpsize
 
     xchg ax, si    ; ax gets lumpnum again. size to si.
     mov  cx, PC_SPEAKER_SFX_DATA_TEMP_SEGMENT   ; load the data into a temp spot...
@@ -133,7 +135,7 @@ PUBLIC LoadSFXWadLumps_
 
 
     cmp  di, NUMSFX
-    jne  loop_load_sfx
+    jne  loop_load_pc_sfx
 
     jmp  done_with_sfx_prep
 
@@ -142,6 +144,107 @@ PUBLIC LoadSFXWadLumps_
     cmp byte ptr ds:[_snd_SfxDevice], SND_SB
     jne not_soundblaster
     ; todo any others? to check?
+
+    ; setup page
+
+    call dword ptr ds:[_Z_QuickMapScratch_5000_addr]
+
+    ; load sb sfx data here
+    ; sb sfx load loop
+    ; DI is index
+    ; CX:BX is target address
+
+    mov  di, SFX_DATA_SEGMENT
+    mov  es, di
+
+    mov  di, SIZEOF_SFX_INFO    ; skip first element.
+
+    loop_load_sb_sfx:
+
+
+    push es ; store SFX_DATA_SEGMENT
+    mov  word ptr es:[di+4], 0FFFFh   ; store default value for cache pos...
+
+    mov  ax, di
+    ; gross but its init code so who cares if its slow
+    mov  bl, 6 
+    div  bl
+    call I_GetSfxLumpNum_
+
+    pop  es
+    mov  si, ax  ; backup lump num
+
+    mov  word ptr es:[di+0], ax      ; store lump data  in sfx_data
+    
+
+    cmp  ax, 0FFFFh
+    je   bad_lump_skip
+
+    ; apply singularity...
+    mov  bl, byte ptr cs:[_singularity_list + di];
+    or   byte ptr es:[di+1], bl      ; or the singularity flag onto the field
+
+    push es
+
+    
+    db 0FFh  ; lcall[addr]
+    db 01Eh  ;
+    dw _W_LumpLength_addr
+
+    ; ax is lumpsize
+
+    sub  ax, 32     ; remove padding, header, etc from lump
+    pop  es
+    push es
+    mov  word ptr es:[di+2], ax      ; store lump_size in sfx_data
+
+
+    xchg ax, si    ; ax gets lumpnum again. size to si.
+    mov  cx, SCRATCH_SEGMENT_5000   ; load the data into a temp spot...
+    push cx ; store this
+    xor  bx, bx ; load into offset 0
+    db 0FFh  ; lcall[addr]
+    db 01Eh  ;
+    dw _W_CacheLumpNumDirect_addr   ; todo only load 4 bytes?
+
+    pop  ds   ; ds gets 0x5000
+    pop  es   ; SFX_DATA_SEGMENT
+    
+    mov  ax,  word ptr ds:[2]       ; get sample rate
+    cmp  ax,  SAMPLE_RATE_22_KHZ_UINT
+    je   write_22_khz_sample_bit
+    and   byte ptr es:[di + 1], (NOT_SOUND_22_KHZ_FLAG SHR 8)
+    jmp  done_with_sample_bit
+    write_22_khz_sample_bit:
+    or   byte ptr es:[di + 1], (SOUND_22_KHZ_FLAG SHR 8)
+
+    done_with_sample_bit:
+
+    push ss
+    pop  ds
+
+    bad_lump_skip:
+
+
+
+    add  di, SIZEOF_SFX_INFO
+
+    cmp  di, (NUMSFX * SIZEOF_SFX_INFO)
+    jne  loop_load_sb_sfx
+
+    ; restore 
+    call      dword ptr ds:[_Z_QuickMapPhysics_addr]
+
+    ; setup cache fields..
+    mov       cx, NUM_SFX_PAGES
+    mov       al, 040h     ; 64
+    mov       di, OFFSET _sfx_free_bytes
+    push      ds
+    pop       es
+    rep stosb
+
+
+    jmp  done_with_sfx_prep
 
 
     not_soundblaster:
@@ -154,6 +257,106 @@ PUBLIC LoadSFXWadLumps_
     retf
 
 ENDP
+
+COMMENT @
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 0Eh
+call      dword ptr [_Z_QuickMapScratch_5000_addr]
+mov       word ptr [bp - 4], SCRATCH_SEGMENT_5000
+mov       byte ptr [bp - 2], 1
+xor       di, di
+cld       
+
+; sfx load loop
+; DI is index
+; CX:BX is target address
+mov  di, 1
+mov  bx, SFX_DATA_SEGMENT
+mov  es, bx
+mov  bx, 2   ;lets start at offset 2
+mov  word ptr es:[0], bx   ; fixed first value
+
+start_loading_next_sfx:
+
+
+    push es ; store SFX_DATA_SEGMENT
+
+    mov  ax, di
+    call I_GetSfxLumpNum_
+    mov  si, ax  ; backup lump num
+    
+    db 0FFh  ; lcall[addr]
+    db 01Eh  ;
+    dw _W_LumpLength_addr
+
+    ; ax is lumpsize
+    xchg ax, si    ; ax gets lumpnum again. size to si.
+
+
+
+
+mov       dl, byte ptr [bp - 2]
+xor       dh, dh
+imul      si, dx, 6
+lea       ax, [bp - 0Eh]
+call      dword ptr [_W_GetNumForName_addr]
+and       ah, (SOUND_LUMP_BITMASK SHR 8)
+mov       word ptr [si + 0xd32], ax
+and       ah, (SOUND_LUMP_BITMASK SHR 8)
+call      dword ptr [_W_LumpLength_addr]
+sub       ax, 32
+mov       word ptr [si + 0xd34], ax
+mov       ax, word ptr [si + 0xd32]
+mov       word ptr [si + 0xd36], 0FFFFh
+cmp       ax, 0FFFFh
+jne       label_1
+increment_sb_sfx_loop:
+inc       byte ptr [bp - 2]
+cmp       byte ptr [bp - 2], 0x6d
+jb        start_loading_next_sfx
+; done loading..
+call      dword ptr [_Z_QuickMapPhysics_addr]
+
+
+;    // initialize SFX cache.
+;    memset(sfx_free_bytes, 64, NUM_SFX_PAGES); 
+
+mov       cx, NUM_SFX_PAGES / 2
+mov       ax, 04040h     ; 64
+mov       di, OFFSET _sfx_free_bytes
+push      ds
+pop       es
+rep stosw 
+adc       cx, cx
+rep stosb 
+
+LEAVE_MACRO
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+retf      
+label_1:
+mov       cx, SCRATCH_SEGMENT_5000
+and       ah, (SOUND_LUMP_BITMASK SHR 8)
+xor       bx, bx
+call      dword ptr [_W_CacheLumpNumDirect_addr]
+mov       es, word ptr [bp - 4]
+cmp       word ptr es:[di + 2], 0x5622
+jne       increment_sb_sfx_loop
+or        byte ptr [si + 0xd33], 0x40
+jmp       increment_sb_sfx_loop
+
+@
+
 
 _currentnameprefix:
 db 'd', 'p'
@@ -291,6 +494,22 @@ dw  439,  427,  415,  403,  391,  380,  369,  359
 dw  348,  339,  329,  319,  310,  302,  293,  285
 dw  276,  269,  261,  253,  246,  239,  232,  226
 dw  219,  213,  207,  201,  195,  190,  184,  179
+
+_singularity_list:
+ db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+ db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+ db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+ db 0, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, 0, 0, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH
+ db SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH
+ 
+ db SINGULARITY_FLAG_HIGH, 0, 0, 0, 0, 0, 0, 0, 0, 0
+ db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+ db 0, 0, 0, 0, 0, 0, 0, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH
+ db SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, SINGULARITY_FLAG_HIGH, 0, 0, 0, 0, 0, 0, 0
+ db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+ db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
 
 
 ;int16_t I_GetSfxLumpNum(sfxenum_t sfx_id) {

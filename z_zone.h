@@ -298,6 +298,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 // arg mult times size of int16
 
+#define SCRATCH_SEGMENT_5000 0x5000
 #define SCRATCH_ADDRESS_4000 (byte __far* )0x40000000
 #define SCRATCH_ADDRESS_5000 (byte __far* )0x50000000
 #define SCRATCH_ADDRESS_7000 (byte __far* )0x70000000

@@ -43,6 +43,9 @@
 #include "sounds.h"
 #include "s_sound.h"
 
+#define SAVESTRINGSIZE        24u
+
+
 
 #define NUM_CACHE_LUMPS 4
 
@@ -406,7 +409,12 @@
 #define cachedt2x					      (*((fixed_t_union __near*)         (_NULL_OFFSET + 0x0630)))
 #define cachedt2y					      (*((fixed_t_union __near*)         (_NULL_OFFSET + 0x0634)))
 #define strace					          (*((divline_t __near*)             (_NULL_OFFSET + 0x0638)))
-// 648
+
+// free bytes per EMS page. Allocated in 256k chunks, so defaults to 64.. 
+// leave what, 40 bytes just in case?
+#define sfx_free_bytes					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0648)))
+
+// 0x670
 
 
 

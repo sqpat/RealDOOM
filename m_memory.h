@@ -58,6 +58,19 @@
 #define uppermemoryblock    0xE0000000
 #endif
 
+typedef struct sfxinfo_struct sfxinfo_t;
+
+struct sfxinfo_struct{
+    // bit15 =   singularity
+    // bit14 =   1 for 22 khz 0 for 11 khz
+    // bit0-13 = lumpnum
+    // lump number of sfx
+    uint16_t lumpandflags;
+    int16_t_union lumpsize;
+    
+    int16_t_union       cache_position;
+};
+
 #define size_sectors            (MAX_SECTORS_SIZE)
 #define size_vertexes           (MAX_VERTEXES_SIZE)
 #define size_sides              (MAX_SIDES_SIZE)
@@ -191,9 +204,10 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define SAVESTRINGSIZE        24u
 
-#define baselowermemoryaddress    (0x31160000)
+#define baselowermemoryaddress    (0x30ED0000)
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
+#define size_sfxdata             (NUMSFX * sizeof(sfxinfo_t))
 #define size_finesine            (10240u * sizeof(int32_t))
 #define size_events              (sizeof(event_t) * MAXEVENTS)
 #define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
@@ -204,13 +218,12 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_savegamestrings     (10 * SAVESTRINGSIZE)
 
 
-#define FINE_SINE_ARGUMENT  base_lower_memory_segment
-#define FINE_COSINE_ARGUMENT FINE_SINE_ARGUMENT + 0x200
 
 
 
-#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
-#define finecosine         ((int32_t __far*)            (baselowermemoryaddress + 0x2000))  // 10240
+#define sfx_data           ((sfxinfo_t __far*)          (baselowermemoryaddress))
+#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(sfx_data, size_sfxdata))  // 10240
+#define finecosine         ((int32_t __far*)            (((int32_t)finesine) + 0x2000))  // 10240
 #define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
 #define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
 #define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
@@ -221,6 +234,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(savegamestrings , size_savegamestrings))
 
 
+#define sfx_data_segment              ((segment_t) ((int32_t)sfx_data  >> 16))
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
 // todo clean this and finecosine up
 #define finecosine_segment            ((segment_t) (finesine_segment + 0x200))
@@ -233,9 +247,12 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define savegamestrings_segment       ((segment_t) ((int32_t)savegamestrings >> 16))
 #define base_lower_end_segment        ((segment_t) ((int32_t)base_lower_end >> 16))
 
+#define FINE_SINE_ARGUMENT   finesine_segment
+#define FINE_COSINE_ARGUMENT finecosine_segment
+
 //todo recalculate after moving stuff around...
 
-
+// sfxdata              30ED:0000
 // finesine             3116:0000
 // finecosine           3116:2000
 // events               3B16:0000
@@ -1501,10 +1518,9 @@ compositetextureoffset  4F80:01AC
 
 
 
-#define pc_speaker_offsets        ((uint16_t __far*)          MAKE_FULL_SEGMENT(PC_SPEAKER_OFFSETS_SEGMENT << 16,           0)) 
+#define pc_speaker_offsets        ((uint16_t __far*)              MAKE_FULL_SEGMENT(PC_SPEAKER_OFFSETS_SEGMENT << 16,           0)) 
 #define pc_speaker_data           ((uint16_t __far*)              MAKE_FULL_SEGMENT(PC_SPEAKER_SFX_DATA_SEGMENT << 16,          0)) 
 
- 
 
 
 #endif

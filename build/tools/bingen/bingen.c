@@ -296,7 +296,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define P_CheckSightOffset                    0x%X\n", FP_OFF(P_CheckSight)                   - FP_OFF(P_SIGHT_STARTMARKER));
 
 	fprintf(fp, "\n");
-
+ 
 	fprintf(fp, "#define R_DrawColumnCodeSize           0x%X\n", codesize[0]);
     fprintf(fp, "#define R_DrawSpanCodeSize             0x%X\n", codesize[1]);
 	fprintf(fp, "#define R_DrawFuzzColumnCodeSize       0x%X\n", codesize[2]);

@@ -1,5 +1,9 @@
+#ifndef __S_SBSFX_H__
+#define __S_SBSFX_H__
+
 #include "doomdef.h"
 #include "m_near.h"
+
 
 int16_t SB_InitCard();
 int8_t SB_SetupPlayback();
@@ -125,36 +129,16 @@ extern SB_VoiceInfo sb_voicelist[NUM_SFX_TO_MIX];
 extern uint8_t      application_volume;
 
 
-typedef struct sfxinfo_struct sfxinfo_t;
 
 #define SOUND_NOT_IN_CACHE 0xFF
 #define SFX_PAGE_SEGMENT   0xD400
-
-typedef struct {
-
-    
-    int16_t_union       cache_position;
-} sound_cache_info_t;
-
-struct sfxinfo_struct
-{
-    // up to 6-character name
-    char *name;
-    // bit15 =   singularity
-    // bit14 =   1 for 22 khz 0 for 11 khz
-    // bit0-13 = lumpnum
-    // lump number of sfx
-    uint16_t lumpandflags;
-    int16_t_union lumpsize;
-    
-    sound_cache_info_t  cache_info;
-};
-
 #define SOUND_SINGULARITY_FLAG 0x8000 
 #define SOUND_22_KHZ_FLAG 0x4000 
 #define SOUND_LUMP_BITMASK 0x3FFF 
 
-sfxinfo_t S_sfx[NUMSFX];
+
+
+// sfxinfo_t S_sfx[NUMSFX];
 
 
 
@@ -165,3 +149,6 @@ sfxinfo_t S_sfx[NUMSFX];
 
 
 void S_TempInit2();
+
+
+#endif

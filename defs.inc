@@ -343,10 +343,12 @@ _bottomslope =					     _NULL_OFFSET + 0062Ch
 _cachedt2x =				         _NULL_OFFSET + 00630h
 _cachedt2y =					     _NULL_OFFSET + 00634h
 _strace =					         _NULL_OFFSET + 00638h
-;648h
+_sfx_free_bytes = 					 _NULL_OFFSET + 00648h
 
 
-;//0x618
+;670h
+
+
 
 
 

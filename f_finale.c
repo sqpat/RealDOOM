@@ -39,21 +39,7 @@
 #include "m_near.h"
 
 
-#ifdef __DEMO_ONLY_BINARY
 
-void __far F_Drawer(void) {
-}
-void __far F_Ticker(void) {
-}
-boolean __far F_Responder(event_t  __far*event) {
-
-}
-void __far F_StartFinale(void) {
-
-}
-
-
-#else
 
 
 #define	TEXTSPEED	3
@@ -832,4 +818,3 @@ void __far F_Drawer (void) {
 */
 
 
-#endif
