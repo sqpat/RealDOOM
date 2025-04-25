@@ -418,16 +418,11 @@ void SB_Service_Mix22Khz(){
 
 		}
 
-		// Call the caller's callback function
-		// if (SB_CallBack != NULL) {
-		//     MV_ServiceVoc();
-		// }
-
-		// send EOI to Interrupt Controller
 
 	}	// end for loop
 
     if (!sound_played){
+        // todo: keep track of if buffer is silent so we dont do this pointlessly over and over
         _fmemset(MK_FP(SB_DMABufferSegment, 0), 0x80, SB_TotalBufferSize);
     } else if ( sound_played == 1){
         if (extra_zero_length){
@@ -1444,6 +1439,8 @@ void S_TempInit2(){
     for (i = 1; i < NUMSFX/4; i++){
         combine_strings(lumpname, "DS", S_sfx[i].name);
         S_sfx[i].lumpandflags = (W_GetNumForName(lumpname) & SOUND_LUMP_BITMASK);
+        S_sfx[i].lumpsize.hu  = W_LumpLength(S_sfx[i].lumpandflags & SOUND_LUMP_BITMASK) - 32;;
+
         if (S_sfx[i].lumpandflags == -1){
             // nonexistent in the wad
             S_sfx[i].lumpandflags = 0xFFFF;
@@ -1479,6 +1476,14 @@ void S_TempInit2(){
 }
 
 
+void S_LoadSoundIntoCache(sfxenum_t sfx_id){
+    // check if sound already in cache (using map lookup)
+    // if (S_sfx[sfx_id].cache_info.cacheposition.bu.bytehigh != SOUND_NOT_IN_CACHE){
+
+    // }
+}
+
+
 int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
     
     int8_t i;
@@ -1490,7 +1495,9 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
             sb_voicelist[i].playing = true;
             sb_voicelist[i].samplerate = (S_sfx[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
             sb_voicelist[i].location   = (byte __far *) 0xD4000000;  //sb_sfx_info[sfx_id].location;
-            sb_voicelist[i].length     = W_LumpLength(S_sfx[sfx_id].lumpandflags & SOUND_LUMP_BITMASK) - 32;
+            sb_voicelist[i].length     = S_sfx[sfx_id].lumpsize.hu;
+            
+            //todo apply volume from vol. 
             sb_voicelist[i].volume     = MAX_VOLUME_SFX_FLAG;
             
 
