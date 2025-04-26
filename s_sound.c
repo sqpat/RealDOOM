@@ -523,58 +523,57 @@ void S_UpdateSounds(THINKERREF listenerRef) {
 
 		if (sfx_id) {
 			if (I_SoundIsPlaying(c->handle)) {
-			// initialize parameters
-			volume = snd_SfxVolume;
-			sep = NORM_SEP;
+				// initialize parameters
+				volume = snd_SfxVolume;
+				sep = NORM_SEP;
 
-			// the only one with a link...
-			if (sfx_id == sfx_chgun) {
-				// link is only used once in the dataset and hardcoded there - rather than including all this extra
-				// data in memory we just hardcode the fields...
+				// the only one with a link...
+				if (sfx_id == sfx_chgun) {
+					// link is only used once in the dataset and hardcoded there - rather than including all this extra
+					// data in memory we just hardcode the fields...
 
-				//volume += 0; 
-				if (volume < 1) {
-					S_StopChannel(cnum);
-					continue;
-				} else if (volume > snd_SfxVolume) {
-					volume = snd_SfxVolume;
+					//volume += 0; 
+					if (volume < 1) {
+						S_StopChannel(cnum);
+						continue;
+					} else if (volume > snd_SfxVolume) {
+						volume = snd_SfxVolume;
+					}
 				}
-			}
 
-			// check non-local sounds for distance clipping
-			//  or modify their params
+				// check non-local sounds for distance clipping
+				//  or modify their params
 
-			// todo double check this logic once pcm sfx reimplemented...
-			if ((c->originRef && listenerRef != c->originRef) ||(c->soundorg_secnum != SECNUM_NULL)) {
-				fixed_t_union originX;
-				fixed_t_union originY;
+				// todo double check this logic once pcm sfx reimplemented...
+				if ((c->originRef && listenerRef != c->originRef) ||(c->soundorg_secnum != SECNUM_NULL)) {
+					fixed_t_union originX;
+					fixed_t_union originY;
 
-				if (c->soundorg_secnum != SECNUM_NULL){
-					originX.h.intbits = sectors_soundorgs[c->soundorg_secnum].soundorgX;
-					originY.h.intbits = sectors_soundorgs[c->soundorg_secnum].soundorgY;
-					originX.h.fracbits = 0;
-					originY.h.fracbits = 0;
-				} else {
-					mobj_pos_t __far* originMobjPos = &mobjposlist_6800[c->originRef];
-					originX = originMobjPos->x;
-					originY = originMobjPos->y;
+					if (c->soundorg_secnum != SECNUM_NULL){
+						originX.h.intbits = sectors_soundorgs[c->soundorg_secnum].soundorgX;
+						originY.h.intbits = sectors_soundorgs[c->soundorg_secnum].soundorgY;
+						originX.h.fracbits = 0;
+						originY.h.fracbits = 0;
+					} else {
+						mobj_pos_t __far* originMobjPos = &mobjposlist_6800[c->originRef];
+						originX = originMobjPos->x;
+						originY = originMobjPos->y;
+					}
+					
+					
+					audible = S_AdjustSoundParams(listenerRef,
+								originX,
+								originY,
+								&volume,
+								&sep);
+					
+					if (!audible) {
+						S_StopChannel(cnum);
+					} else{
+						I_UpdateSoundParams(c->handle, volume, sep);
+					}
 				}
-				
-				
-				audible = S_AdjustSoundParams(listenerRef,
-							originX,
-							originY,
-							&volume,
-							&sep);
-				
-				if (!audible) {
-					S_StopChannel(cnum);
-				} else{
-					I_UpdateSoundParams(c->handle, volume, sep);
-				}
-			}
-			}
-			else {
+			} else {
 				// if channel is allocated but sound has stopped,
 				//  free it
 				S_StopChannel(cnum);

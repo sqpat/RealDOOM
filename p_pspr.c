@@ -515,6 +515,8 @@ void __near P_GunShot (  boolean	accurate ) {
 void __near A_FirePistol ( pspdef_t __near*	psp ) {
 	
 	S_StartSound(playerMobj, sfx_pistol);
+	// test two page sfx easily
+	// S_StartSound(playerMobj, sfx_barexp);
 
     P_SetMobjState (playerMobj, S_PLAY_ATK2);
     player.ammo[weaponinfo[player.readyweapon].ammo]--;

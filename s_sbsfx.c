@@ -25,7 +25,6 @@ void SB_DSP1xx_BeginPlayback();
 
 void( __interrupt __far *SB_OldInt)(void);
 
-SB_VoiceInfo        sb_voicelist[NUM_SFX_TO_MIX];
 
 
 
@@ -117,9 +116,13 @@ void SB_Service_Mix22Khz(){
                 uint16_t copy_offset;
                 int8_t   do_second_copy = false;
                 int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id].cache_position;
+                int8_t   page_add = 0;
+                if (sb_voicelist[i].currentsample >= 16384){
+                    // todo rol 2 in asm
+                    page_add = sb_voicelist[i].currentsample >> 14;
+                }
                 
-                // todo add if current offset > 16384 etc.
-                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh);
+                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
                 // form the offset.
                 cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
                 cache_pos.bu.bytelow = 0;
@@ -154,7 +157,7 @@ void SB_Service_Mix22Khz(){
                 // stupid c89
                 {                
                     uint8_t __far * dma_buffer = MK_FP(SB_DMABufferSegment, copy_offset);
-                    uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + sb_voicelist[i].currentsample);
+                    uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
 
                     uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
                     int8_t volume = sb_voicelist[i].volume;
@@ -359,6 +362,10 @@ void SB_Service_Mix11Khz(){
 			if (sb_voicelist[i].currentsample >= sb_voicelist[i].length){
 				// sound done playing. 
 
+                // if (sb_voicelist[i].sfx_id == sfx_barexp){
+                //     I_Error("sound done %i %i", sb_voicelist[i].currentsample, sb_voicelist[i].length);
+                // }
+
 				if (sb_voicelist[i].playing){
                     sb_voicelist[i].playing = false;
                 }
@@ -368,9 +375,14 @@ void SB_Service_Mix11Khz(){
                 uint16_t copy_offset;
                 int8_t   do_second_copy = false;
                 int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id].cache_position;
+                int8_t   page_add = 0;
+                if (sb_voicelist[i].currentsample >= 16384){
+                    // todo rol 2 in asm
+                    page_add = sb_voicelist[i].currentsample >> 14;
+                    // I_Error("page add %i %i", sb_voicelist[i].currentsample, page_add);
+                }
                 
-                // todo add if current offset > 16384 etc.
-                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh);
+                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
                 // form the offset.
                 cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
                 cache_pos.bu.bytelow = 0;
@@ -401,7 +413,7 @@ void SB_Service_Mix11Khz(){
                 // stupid c89
                 {                
                     uint8_t __far * dma_buffer = MK_FP(SB_DMABufferSegment, copy_offset);
-                    uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + sb_voicelist[i].currentsample);
+                    uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
                     uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
                     int8_t volume = sb_voicelist[i].volume;
                     if (application_volume != MAX_APPLICATION_VOLUME){
@@ -1396,13 +1408,37 @@ void S_LoadSoundIntoCache(sfxenum_t sfx_id){
     int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
     uint8_t sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
     int16_t_union allocate_position;
-    for (i = 0; i < NUM_SFX_PAGES; i++){
-        if (sample_256_size <= sfx_free_bytes[i]){
-            allocate_position.bu.bytehigh = sfx_free_bytes[i];  // keep track of where to put the sound
-            allocate_position.bu.bytelow = 0;
-            sfx_free_bytes[i] -= sample_256_size;   // subtract...
-            goto found_page;
+    int8_t pagecount;
+    if (sample_256_size <= 64) {
+
+        for (i = 0; i < NUM_SFX_PAGES; i++){
+            if (sample_256_size <= sfx_free_bytes[i]){
+                allocate_position.bu.bytehigh = 64 - sfx_free_bytes[i];  // keep track of where to put the sound
+                allocate_position.bu.bytelow = 0;
+                sfx_free_bytes[i] -= sample_256_size;   // subtract...
+                goto found_page;
+            }
         }
+        
+    } else {
+        int8_t j = 0;
+        pagecount = sample_256_size >> 6;
+        // greater than 1 EMS page in size...
+        for (i = 0; i < (NUM_SFX_PAGES-pagecount); i++){
+            if (sfx_free_bytes[i] == 64){
+                // note - because things are assigned in order from start to end, a full page means theres always
+                // empty room ahead of it and we can just write all in there.
+
+                allocate_position.hu = 0;    // page aligned. addr is 0...
+
+                for (j = 0; j < pagecount;j++){
+                    sfx_free_bytes[i+j] = 0;
+                }
+                sfx_free_bytes[i+j] -= sample_256_size & 63;
+                goto found_page_multiple;
+            }
+        }
+        goto evict_multiple;
     }
 
     // ! no location found! must evict.
@@ -1433,7 +1469,46 @@ void S_LoadSoundIntoCache(sfxenum_t sfx_id){
         0x18,           // skip header and padding.
         lumpsize.hu);   // num bytes..
 
+    return;
 
+    evict_multiple:
+    //todo
+    return;
+
+    found_page_multiple:
+    {
+        int8_t j;
+        uint16_t offset = 0;
+        int16_t lump = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
+        sfx_data[sfx_id].cache_position.bu.bytehigh = i;
+        sfx_data[sfx_id].cache_position.bu.bytelow = 0;
+
+        for (j = 0; j < pagecount; j++, offset+= 16384){
+
+            // I_Error("%lx %lx %i %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
+            Z_QuickMapSFXPageFrame(i+j);
+            // Note - in theory an interrupt for an SFX can fire here during 
+            // this transfer and blow up our current SFX ems page. However
+            // we make absolutely sure in the interrupt  to page the SFX page 
+            // back to where its supposed to go.
+            W_CacheLumpNumDirectWithOffset(
+                lump, 
+                MK_FP(SFX_PAGE_SEGMENT, 0), 
+                0x18 + offset,           // skip header and padding.
+                16384);   // num bytes..
+        }
+
+        // final case, leftover bytes...
+        Z_QuickMapSFXPageFrame(i+j);
+        W_CacheLumpNumDirectWithOffset(
+                lump, 
+                MK_FP(SFX_PAGE_SEGMENT, 0), 
+                0x18 + offset,           // skip header and padding.
+                lumpsize.hu & 16383);   // num bytes..
+
+
+        return;
+    }
 }
 
 
@@ -1496,18 +1571,18 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
 }
 
 void SFX_StopPatch(int8_t handle){
-    if (handle > 0 && handle < NUM_SFX_TO_MIX){
+    if (handle >= 0 && handle < NUM_SFX_TO_MIX){
         sb_voicelist[handle].playing = false;
     }
 }
 
 boolean SFX_Playing(int8_t handle){
-    if (handle > 0 && handle < NUM_SFX_TO_MIX){
+    if (handle >= 0 && handle < NUM_SFX_TO_MIX){
         return sb_voicelist[handle].playing;
     }
     return false;
 }
 
 void SFX_SetOrigin(int8_t handle, int16_t sep, int16_t vol){
-    
+    //todo this
 }

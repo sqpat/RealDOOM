@@ -109,23 +109,12 @@ enum SB_ERRORS
 void SB_StopPlayback();
 
 
-#define NUM_SFX_TO_MIX 8
 
 #define NUM_SFX_LUMPS 10
 
 
-typedef struct {
-
-    sfxenum_t          	sfx_id;
-	int8_t				samplerate;         // could be figured out from sfxlumpinfo in theory
-	uint16_t			length;             // could be figured out from sfxlumpinfo in theory
-	uint16_t			currentsample;      // in bytes. could be multiples of 256 and stored in one byte though.
-	boolean 			playing;            
-	int8_t 	 			volume;
-} SB_VoiceInfo ;
 
 
-extern SB_VoiceInfo sb_voicelist[NUM_SFX_TO_MIX];
 extern uint8_t      application_volume;
 
 

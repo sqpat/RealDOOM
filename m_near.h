@@ -1424,4 +1424,18 @@ extern fixed_t_union deadAttackerY;
 extern boolean FORCE_5000_LUMP_LOAD;
 extern uint8_t currentpageframes[4];
 
+
+
+typedef struct {
+
+    sfxenum_t          	sfx_id;
+	int8_t				samplerate;         // could be figured out from sfxlumpinfo in theory
+	uint16_t			length;             // could be figured out from sfxlumpinfo in theory
+	uint16_t			currentsample;      // in bytes. could be multiples of 256 and stored in one byte though.
+	boolean 			playing;            
+	int8_t 	 			volume;
+} SB_VoiceInfo ;
+#define NUM_SFX_TO_MIX 8
+extern SB_VoiceInfo sb_voicelist[NUM_SFX_TO_MIX];
+
 #endif
