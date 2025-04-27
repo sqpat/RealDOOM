@@ -1629,6 +1629,7 @@ void __near R_GetNextTextureBlock(int16_t tex_index, uint16_t size, int8_t cache
 	if (size & 0xFF) {
 		blocksize++;
 	}
+	// todo rol 2
 	numpages = blocksize >> 6; // num EMS pages needed
 	if (blocksize & 0x3F) {
 		numpages++;
@@ -1739,7 +1740,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 		blocksize++;
 	}
 
-	//todo shift right 6 can be a lookup...?
+	// todo rol 2
 	numpages = blocksize >> 6; // num EMS pages needed
 	if (blocksize & 0x3F) {
 		numpages++;

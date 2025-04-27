@@ -47,7 +47,7 @@ typedef struct {
   int8_t prev;
   int8_t next;
   
-  // floats are never anything but single page..
+  // flats are never anything but single page..
 } cache_node_t;
 
 

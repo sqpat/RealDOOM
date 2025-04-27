@@ -79,9 +79,422 @@ int8_t   				in_first_buffer  = true;
                         // 240
 #define                 MAX_APPLICATION_VOLUME  (15 << 4)
 uint8_t                 application_volume = MAX_APPLICATION_VOLUME; // Normally 0-15, where 15 is max, but stored shifted left 4 for optim reasons
-uint8_t                 sfx_page_lru[NUM_SFX_PAGES];    // recency
+
+// sfx cache is done by updating lru array ordering on sound start and play.
+// anything with an >0 reference count cannot be deallocated, as it means an sfx is currently playing in that page.
+
+// uint8_t                 sfx_page_lru[NUM_SFX_PAGES];                // recency, lru 
+int8_t                  sfx_page_reference_count[NUM_SFX_PAGES];    // number of active sfx in this page. incremented/decremented as sounds start and stop playing
+int8_t                  sfx_page_multipage_count[NUM_SFX_PAGES];    // 0 if its a single page allocation or > 0 means its a multipage allocation where 1 is the last, etc
+cache_node_page_count_t sfxcache_nodes[NUM_SFX_PAGES];
+int8_t                  sfxcache_tail;
+int8_t                  sfxcache_head;
+
+void __near S_UpdateLRUCache();
+
+void __near logcacheeventsimple(char a){
+    FILE* fp = fopen("cache.txt", "ab");
+    fputc(a, fp);
+    fputc('\n', fp);
+    fclose(fp);
+}
+void __near logcacheevent(char a, char b){
+    int8_t current = sfxcache_tail;
+    FILE* fp = fopen("cache.txt", "ab");
+    fputc(a, fp);
+    fputc(' ', fp);
+    fputc('0' + (b / 100), fp);
+    fputc('0' + ((b % 100) / 10), fp);
+    fputc('0' + (b % 10), fp);
+    fputc(' ', fp);
+    fputc('0' + sfxcache_tail, fp);
+    fputc(' ', fp);
+    fputc('0' + sfxcache_head, fp);
+    fputc(' ', fp);
+    fputc(' ', fp);
+
+    fputc('0' + sfx_page_reference_count[0], fp);
+    fputc(' ', fp);
+    fputc('0' + sfx_page_reference_count[1], fp);
+    fputc(' ', fp);
+    fputc('0' + sfx_page_reference_count[2], fp);
+    fputc(' ', fp);
+    fputc('0' + sfx_page_reference_count[3], fp);
+    fputc(' ', fp);
+    fputc(' ', fp);
 
 
+    fputc('0' + sfxcache_nodes[0].pagecount, fp);
+    fputc(' ', fp);
+    fputc('0' + sfxcache_nodes[1].pagecount, fp);
+    fputc(' ', fp);
+    fputc('0' + sfxcache_nodes[2].pagecount, fp);
+    fputc(' ', fp);
+    fputc('0' + sfxcache_nodes[3].pagecount, fp);
+    fputc(' ', fp);
+    fputc(' ', fp);
+
+    fputc('0' + (sfx_free_bytes[0]/10), fp);
+    fputc('0' + (sfx_free_bytes[0]%10), fp);
+    fputc(' ', fp);
+    fputc('0' + (sfx_free_bytes[1]/10), fp);
+    fputc('0' + (sfx_free_bytes[1]%10), fp);
+    fputc(' ', fp);
+    fputc('0' + (sfx_free_bytes[2]/10), fp);
+    fputc('0' + (sfx_free_bytes[2]%10), fp);
+    fputc(' ', fp);
+    fputc('0' + (sfx_free_bytes[3]/10), fp);
+    fputc('0' + (sfx_free_bytes[3]%10), fp);
+    fputc(' ', fp);
+    fputc(' ', fp);
+    
+    while (current != -1){
+        fputc('0' + sfxcache_nodes[current].prev, fp);
+        fputc('0' + current, fp);
+        fputc('0' + sfxcache_nodes[current].next, fp);
+        fputc(' ', fp);
+        current = sfxcache_nodes[current].next;
+
+    }
+
+    fputc('\n', fp);
+    fclose(fp);
+}
+
+void __near S_IncreaseRefCount(int8_t voice_index){
+    uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
+    uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
+    // uint8_t numpages  = sb_voicelist[i].length >> 14; // todo rol 2
+    if (numpages){
+        uint8_t currentpage = cachepage;
+        // find first then iterate over them all
+        while (sfxcache_nodes[currentpage].pagecount != 1){
+            currentpage = sfxcache_nodes[currentpage].prev;  // or prev?
+        }
+        // found first, now subtract from each one...
+        while (sfxcache_nodes[currentpage].pagecount != sfxcache_nodes[currentpage].numpages){
+            sfx_page_reference_count[currentpage]++;
+            currentpage = sfxcache_nodes[currentpage].next;  // or prev?
+        }
+        sfx_page_reference_count[currentpage]++;    // last one
+
+    } else {
+        sfx_page_reference_count[cachepage]++;
+    }
+}
+
+void __near S_DecreaseRefCount(int8_t voice_index){
+    uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
+    uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
+    int8_t startnode = cachepage;
+    int8_t endnode   = startnode;
+    // uint8_t numpages  = sb_voicelist[i].length >> 14; // todo rol 2
+    if (numpages){
+        uint8_t currentpage = cachepage;
+        // find first then iterate over them all
+        while (sfxcache_nodes[currentpage].pagecount != 1){
+            currentpage = sfxcache_nodes[currentpage].prev;  // or prev?
+        }
+        // found first, now subtract from each one...
+        while (sfxcache_nodes[currentpage].pagecount != sfxcache_nodes[currentpage].numpages){
+            sfx_page_reference_count[currentpage]--;
+            currentpage = sfxcache_nodes[currentpage].next;  // or prev?
+        }
+        sfx_page_reference_count[currentpage]--;
+
+
+    } else {
+        sfx_page_reference_count[cachepage]--;
+    }
+    // make sure reference count = 0 are all at the tail
+    S_UpdateLRUCache();
+
+}
+
+// contains logic for moving an element back one spot in the cache.
+// has to account for contiguous multipage allocations and has some ugly logic for that.
+void __near S_MoveCacheItemBackOne(int8_t currentpage){
+
+    // todo single item case but doesnt handle multi item case!
+    // todo also doesnt handle tail case!
+
+    // these are same for single item move.
+    int8_t prev_startpoint = currentpage; // oldest/LRU
+    int8_t next_startpoint = currentpage; // newest/MRU
+
+    // we are iterating from head to tail, going prev each step.
+    // so we have encountered a bad index  that must be moved next towards head.
+    // but we must move all its contiguous allocations, so iterate prev until we find it's end.
+
+    while (sfxcache_nodes[prev_startpoint].pagecount != 1){
+        prev_startpoint = sfxcache_nodes[prev_startpoint].prev;
+    }
+
+    // now prev and next represent the ends of the allocation whether thats single or multi page.
+
+    // prev_startpoint B
+    // next_startpoint C
+
+    {
+        int8_t swap = sfxcache_nodes[next_startpoint].next; // D
+        int8_t nextnext = sfxcache_nodes[swap].next;    // E
+
+        // currentpage is B
+        int8_t prev = sfxcache_nodes[prev_startpoint].prev; // A
+
+        //  tail/prev <---      ----> head/next
+        //       A B C D E becomes A D B C E
+        
+        sfxcache_nodes[nextnext].prev    = next_startpoint;
+        if (prev != -1){
+            sfxcache_nodes[prev].next    = swap;
+        } else {
+            // change tail?
+            // presumably sfxcache_tail WAS prev_startpoint.
+            sfxcache_tail = swap;
+        }
+        
+        sfxcache_nodes[swap].next        = prev_startpoint;
+        sfxcache_nodes[swap].prev        = prev;
+
+        sfxcache_nodes[next_startpoint].next = nextnext;
+        sfxcache_nodes[prev_startpoint].prev = swap;
+    }
+}
+            
+void __near S_UpdateLRUCache(){
+
+    // iterate thru the cache and make sure that all in-use (reference count nonzero)
+    // pages are clumped together in the head. this way we can assume theres no 
+    // 'swiss cheese' instances where there are LRU gaps between evictable and
+    // in-use pages. All evictable pages should be contiguous starting from head.
+    int8_t currentpage = sfxcache_head;
+    boolean found_evictable = false;
+
+    // todo handle tail!
+    while (currentpage != -1){
+        if (found_evictable){
+            // everything from this point on should be count 0...
+            if (sfx_page_reference_count[currentpage] != 0){
+                // problem! move this back to next
+                S_MoveCacheItemBackOne(currentpage); 
+
+            }
+
+        } else {
+            if (sfx_page_reference_count[currentpage] == 0){
+                // from here on they should all be 0...
+                found_evictable = true;
+            }
+        }
+       currentpage = sfxcache_nodes[currentpage].prev;
+	}
+    
+
+}
+
+void __near S_MarkSFXPageLRU(int8_t index) {
+
+	int8_t prev;
+	int8_t next;
+	int8_t pagecount;
+	int8_t previous_next;
+	int8_t lastindex;
+	int8_t lastindex_prev;
+	int8_t index_next;
+
+	if (index == sfxcache_head) {
+		return;
+	}
+
+	pagecount = sfxcache_nodes[index].pagecount;
+	// if pagecount is nonzero, then this is a pre-existing allocation which is multipage.
+	// so we want to find the head of this allocation, and check if it's the head.
+
+	if (pagecount){
+		// if this is multipage, then pagecount is nonzero.
+		
+		// could probably be unrolled in asm
+	 	while (sfxcache_nodes[index].numpages != sfxcache_nodes[index].pagecount){
+			index = sfxcache_nodes[index].next;
+		}
+
+		if (index == sfxcache_head) {
+			return;
+		}
+
+		// there are going to be cases where we call with numpages = 0, 
+		// but the allocation is sharing a page with the last page of a
+		// multi-page allocation. in this case, we want to back up and update the
+		// whole multi-page allocation.
+		
+	}
+
+	if (sfxcache_nodes[index].numpages){
+		// multipage  allocation being updated.
+		
+		// we know its pre-existing because numpages is set on the node;
+		// that means all the inner pages' next/prevs set and pagecount/numpages are also already set
+		// no need to set all that stuff, just the relevant outer allocations's prev/next.
+		// and update head/tail
+	
+
+		lastindex = index;
+		while (sfxcache_nodes[lastindex].pagecount != 1){
+			lastindex = sfxcache_nodes[lastindex].prev;
+		}
+		
+		lastindex_prev = sfxcache_nodes[lastindex].prev;
+		index_next = sfxcache_nodes[index].next;
+
+		if (sfxcache_tail == lastindex){
+			sfxcache_tail = index_next;
+			sfxcache_nodes[index_next].prev = -1;
+		} else {
+			sfxcache_nodes[lastindex_prev].next = index_next;
+			sfxcache_nodes[index_next].prev = lastindex_prev;
+		}
+
+		sfxcache_nodes[lastindex].prev = sfxcache_head;
+		sfxcache_nodes[sfxcache_head].next = lastindex;
+		// head's next doesnt change directly. it changes indirectly if index_prev changes.
+
+		sfxcache_nodes[index].next = -1;
+		sfxcache_head = index;
+
+		return;
+	} else {
+		// handle the simple one page case.
+
+		prev = sfxcache_nodes[index].prev;
+		next = sfxcache_nodes[index].next;
+
+		if (index == sfxcache_tail) {
+			sfxcache_tail = next;
+		} else {
+			sfxcache_nodes[prev].next = next; 
+		}
+
+		sfxcache_nodes[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+
+		sfxcache_nodes[index].prev = sfxcache_head;
+		sfxcache_nodes[index].next = -1;
+
+		// pagecount/numpages dont have to be zeroed - either p_setup 
+		// sets it to 0 in the initial case, or EvictCache in later cases.
+		//sfxcache_nodes[index].pagecount = 0;
+		//sfxcache_nodes[index].numpages  = 0;
+
+		sfxcache_nodes[sfxcache_head].next = index;
+		
+		
+		sfxcache_head = index;
+		return;
+
+	}
+
+
+}
+
+
+// note: numpages is 1-4, not 0-3 here.
+// this function needs to always leave the cache in a workable state...
+// if we remove excess pages due to the removed pages being part of a
+// multi-page allocation, then those now unused pages should be appropriately
+// put at the back of the queue so they will be the next loaded into.
+// the evicted pages are also moved to the front. numpages/pagecount are filled in by the code after this
+int8_t __near S_EvictSFXPage(int8_t numpages){
+
+	//todo revisit these vars.
+	int16_t evictedpage;
+	int8_t j;
+	int16_t currentpage;
+	int16_t k;
+	int8_t previous_next;
+
+
+    #ifdef DETAILED_BENCH_STATS
+    sfxcacheevictcount++;
+    #endif
+
+	currentpage = sfxcache_tail;
+
+	// go back enough pages to allocate them all.
+	for (j = 0; j < numpages-1; j++){
+		currentpage = sfxcache_nodes[currentpage].next;
+	}
+
+	evictedpage = currentpage;
+
+	// currentpage is the LRU page we can remove in which
+	// there is enough room to allocate numpages pages
+
+
+	//prevmost is tail (LRU)
+	//nextmost is head (MRU)
+
+	// need to evict at least numpages pages
+	// we'll remove the tail, up to numpages...
+	// if thats part of a multipage allocations, we'll remove that until the end
+	// in that case, we leave extra deallocated pages in the tail.
+
+ 
+	// true if 0 page allocation or 1st page of a multi-page
+	while (sfxcache_nodes[evictedpage].numpages != sfxcache_nodes[evictedpage].pagecount){
+		evictedpage = sfxcache_nodes[evictedpage].next;
+	}
+
+    if (sfx_page_reference_count[evictedpage]){
+        // the minimum required pages to evict overlapped with an in use page!
+        // fail gracefully.
+
+        return -1;
+    }
+
+	// clear cache data that was pointing to this page.
+	while (evictedpage != -1){
+
+		sfxcache_nodes[evictedpage].pagecount = 0;
+		sfxcache_nodes[evictedpage].numpages = 0;
+
+			//todo put these next to each other in memory and loop in one go!
+
+		for (k = 0; k < NUMSFX; k++){
+			if ((sfx_data[k].cache_position.bu.bytehigh) == evictedpage){
+				sfx_data[k].cache_position.bu.bytehigh = SOUND_NOT_IN_CACHE;
+			}
+		}
+
+
+
+		sfx_free_bytes[evictedpage] = 64;
+		evictedpage = sfxcache_nodes[evictedpage].prev;
+	}	
+
+
+	// connect old tail and old head.
+	sfxcache_nodes[sfxcache_tail].prev = sfxcache_head;
+	sfxcache_nodes[sfxcache_head].next = sfxcache_tail;
+
+
+	// current page is next head
+	//previous_head = sfxcache_head;
+	previous_next = sfxcache_nodes[currentpage].next;
+
+	sfxcache_head = currentpage;
+	sfxcache_nodes[currentpage].next = -1;
+
+
+	// new tail
+	sfxcache_nodes[previous_next].prev = -1;
+	sfxcache_tail = previous_next;
+
+
+
+
+
+	return sfxcache_head;
+}
 
 
 void SB_Service_Mix22Khz(){
@@ -108,8 +521,12 @@ void SB_Service_Mix22Khz(){
 				// sound done playing. 
 
 				if (sb_voicelist[i].playing){
+                    logcacheevent('b', sb_voicelist[i].sfx_id );
+                    S_DecreaseRefCount(i);                    
                     sb_voicelist[i].playing = false;
                 }
+
+
 
 			} else {
                 uint16_t copy_length = SB_TransferLength;
@@ -366,10 +783,13 @@ void SB_Service_Mix11Khz(){
                 //     I_Error("sound done %i %i", sb_voicelist[i].currentsample, sb_voicelist[i].length);
                 // }
 
-				if (sb_voicelist[i].playing){
+		    	if (sb_voicelist[i].playing){
+                    logcacheevent('c', sb_voicelist[i].sfx_id);
+                    S_DecreaseRefCount(i);                    
                     sb_voicelist[i].playing = false;
-                }
 
+
+                }
 			} else {
                 uint16_t copy_length = SB_TransferLength;
                 uint16_t copy_offset;
@@ -1392,19 +1812,32 @@ void S_TempInit2(){
     } else {
         DEBUG_PRINT("\nSB INIT Error A\n");
     }
+    { 
+        // initialize sfx cache at app start
+        int8_t i;
+            // just run thru the whole bunch in one go instead of multiple 
+        for ( i = 0; i < NUM_SFX_PAGES; i++) {
+            sfxcache_nodes[i].prev = i+1; // Mark unused entries
+            sfxcache_nodes[i].next = i-1; // Mark unused entries
+            sfxcache_nodes[i].pagecount = 0;
+            sfxcache_nodes[i].numpages = 0;
+        }  
+        sfxcache_head = 0;
+        sfxcache_tail = NUM_SFX_PAGES-1;
 
+        sfxcache_nodes[sfxcache_head].next = -1;
+        sfxcache_nodes[sfxcache_tail].prev = -1;
 
+    }
 
 }
 
 
-// typedef struct {
-//     int16_t_union       cache_position;
-//     uint16_t            recency;
-// } sound_cache_info_t;
 
-void S_LoadSoundIntoCache(sfxenum_t sfx_id){
-    uint8_t i;
+// todo return cache page
+
+int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
+    int8_t i;
     int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
     uint8_t sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
     int16_t_union allocate_position;
@@ -1419,10 +1852,11 @@ void S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 goto found_page;
             }
         }
+        goto evict_one;
         
     } else {
         int8_t j = 0;
-        pagecount = sample_256_size >> 6;
+        pagecount = sample_256_size >> 6;   // todo rol 2?
         // greater than 1 EMS page in size...
         for (i = 0; i < (NUM_SFX_PAGES-pagecount); i++){
             if (sfx_free_bytes[i] == 64){
@@ -1441,14 +1875,84 @@ void S_LoadSoundIntoCache(sfxenum_t sfx_id){
         goto evict_multiple;
     }
 
+    evict_one:
+
+//uint8_t                 sfx_page_lru[NUM_SFX_PAGES];    // recency
+
+    // lets locate a page to evict
+
+    i = S_EvictSFXPage(1);
+    if (i == -1){
+        return -1;
+    } else {
+        goto found_page;
+    }
+
+    /*    
+    for (i = NUM_SFX_PAGES-1; i >= 0; i--){
+        uint8_t pagenum = sfx_page_lru[i];
+        int8_t j;
+        if (sfx_page_reference_count[pagenum]){
+            continue;  // page in use...
+        }
+
+        // this page is empty.
+        if (sfx_page_multipage_count[pagenum]){
+            // but its part of a multi-page allocation! 
+            // is the rest of it also empty?
+
+        }
+
+
+        // find all sfx mapped to this page and mark erased. 
+        for (j = 1; j < NUMSFX; j++){
+            if (sfx_data[j].lumpsize.hu >= 16384){
+                // multi page sfx case...   
+                if(sfx_data[j].cache_position.bu.bytehigh == SOUND_NOT_IN_CACHE){
+                    continue;
+                } else {
+                    uint8_t numpages  = sb_voicelist[pagenum].length >> 14; // todo rol 2
+                    // while () {
+
+                    // }
+
+                }
+
+            } else {
+                // single page sfx case
+                if(sfx_data[j].cache_position.bu.bytehigh == i){
+                    // mapped to this page, so unmap it.
+                    sfx_data[j].cache_position.bu.bytehigh = SOUND_NOT_IN_CACHE; 
+                }
+            }
+        }
+        // set page to 64 free.
+
+        sfx_free_bytes[pagenum] = 64; // todo make a constant...
+
+        
+        
+        // if we make it thru the whole voice list with no collision for this page we are good
+        if (j == -1){
+            continue;
+        }
+
+        if (sample_256_size <= sfx_free_bytes[i]){
+            allocate_position.bu.bytehigh = (64 - sfx_free_bytes[i]) << 2;  // keep track of where to put the sound
+            allocate_position.bu.bytelow = 0;
+            sfx_free_bytes[i] -= sample_256_size;   // subtract...
+            goto found_page;
+        }
+    }
+    */
+
+
     // ! no location found! must evict.
 
     // todo... eviction code. then fall thru.
     // set position to FF.
     // set freebytes to 64
     // evict all in the page.
-
-    return;
 
     found_page:
 
@@ -1469,11 +1973,26 @@ void S_LoadSoundIntoCache(sfxenum_t sfx_id){
         0x18,           // skip header and padding.
         lumpsize.hu);   // num bytes..
 
-    return;
+    
+    
+
+    sfxcache_nodes[i].pagecount = 0
+    sfxcache_nodes[i].numpages = 0
+
+    return 0;
 
     evict_multiple:
     //todo
-    return;
+
+    i = S_EvictSFXPage(pagecount+1);
+    if (i == -1){
+        return -1;
+    } else {
+        goto found_page_multiple;
+    }
+
+    
+    
 
     found_page_multiple:
     {
@@ -1482,8 +2001,11 @@ void S_LoadSoundIntoCache(sfxenum_t sfx_id){
         int16_t lump = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
         sfx_data[sfx_id].cache_position.bu.bytehigh = i;
         sfx_data[sfx_id].cache_position.bu.bytelow = 0;
+        int8_t currentpage = i;
 
         for (j = 0; j < pagecount; j++, offset+= 16384){
+            sfxcache_nodes[currentpage].pagecount = pagecount - j;
+            sfxcache_nodes[currentpage].numpages = pagecount;
 
             // I_Error("%lx %lx %i %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
             Z_QuickMapSFXPageFrame(i+j);
@@ -1496,8 +2018,12 @@ void S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 MK_FP(SFX_PAGE_SEGMENT, 0), 
                 0x18 + offset,           // skip header and padding.
                 16384);   // num bytes..
+            currentpage = sfxcache_nodes[currentpage].prev;
         }
-
+        // mark last page
+        sfxcache_nodes[currentpage].pagecount = pagecount - j;
+        sfxcache_nodes[currentpage].numpages = pagecount;
+        
         // final case, leftover bytes...
         Z_QuickMapSFXPageFrame(i+j);
         W_CacheLumpNumDirectWithOffset(
@@ -1507,7 +2033,7 @@ void S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 lumpsize.hu & 16383);   // num bytes..
 
 
-        return;
+        return 0;
     }
 }
 
@@ -1515,22 +2041,49 @@ void S_LoadSoundIntoCache(sfxenum_t sfx_id){
 int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
     
     int8_t i;
+    
     // I_Error("\n here %i %lx\n", W_LumpLength(110), lumpinfo9000[110].position);
     FORCE_5000_LUMP_LOAD = true;
     for (i = 0; i < NUM_SFX_TO_MIX;i++){
         if (sb_voicelist[i].playing == false){
+            // check if sound already in cache (using map lookup)
+            if (sfx_data[sfx_id].cache_position.bu.bytehigh == SOUND_NOT_IN_CACHE){
+                // todo return and use page as cache page ahead rather than another lookup..
+                int8_t result = S_LoadSoundIntoCache(sfx_id);
+                if (result == -1){
+                    // couldnt make space in cache.
+                    return -1; 
+                }
+            }
             sb_voicelist[i].sfx_id = sfx_id;
             sb_voicelist[i].currentsample = 0;
             sb_voicelist[i].playing = true;
             sb_voicelist[i].samplerate = (sfx_data[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
-            // check if sound already in cache (using map lookup)
-            if (sfx_data[sfx_id].cache_position.bu.bytehigh == SOUND_NOT_IN_CACHE){
-                S_LoadSoundIntoCache(sfx_id);
-            }
-            // todo mark LRU for sfx here
-
-
             sb_voicelist[i].length     = sfx_data[sfx_id].lumpsize.hu;
+            
+
+            // ADD TO REFERENCE COUNT. do this whenever playing is set to true/false
+
+            // Mark LRU for sfx here
+
+            logcacheevent('e', sfx_id);
+            S_IncreaseRefCount(i);
+
+            S_MarkSFXPageLRU(i);
+            logcacheevent('f', sfx_id);
+
+            /*
+            // update cache, move cachepage to front
+            for (j = 0; j < NUM_SFX_PAGES; j++){
+                temp = sfx_page_lru[j];
+                sfx_page_lru[j] = prevpage;
+                if (temp == cachepage){
+                    break;
+                }
+                prevpage = temp;
+            }
+            */
+
             
             //todo apply volume from vol. 
             sb_voicelist[i].volume     = MAX_VOLUME_SFX_FLAG;
@@ -1572,7 +2125,11 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
 
 void SFX_StopPatch(int8_t handle){
     if (handle >= 0 && handle < NUM_SFX_TO_MIX){
+        S_DecreaseRefCount(handle);                    
+        logcacheevent('d', sb_voicelist[handle].sfx_id);
         sb_voicelist[handle].playing = false;
+
+
     }
 }
 
