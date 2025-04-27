@@ -207,7 +207,9 @@ void __near S_DecreaseRefCount(int8_t voice_index){
         sfx_page_reference_count[cachepage]--;
     }
     // make sure reference count = 0 are all at the tail
+    logcacheevent('!', sb_voicelist[voice_index].sfx_id );
     S_UpdateLRUCache();
+    logcacheevent('-', sb_voicelist[voice_index].sfx_id );
 
 }
 
@@ -278,6 +280,7 @@ void __near S_UpdateLRUCache(){
             if (sfx_page_reference_count[currentpage] != 0){
                 // problem! move this back to next
                 S_MoveCacheItemBackOne(currentpage); 
+                logcacheevent('$', 0);
 
             }
 
@@ -293,7 +296,7 @@ void __near S_UpdateLRUCache(){
 
 }
 
-void __near S_MarkSFXPageLRU(int8_t index) {
+void __near S_MarkSFXPageMRU(int8_t index) {
 
 	int8_t prev;
 	int8_t next;
@@ -521,7 +524,7 @@ void SB_Service_Mix22Khz(){
 				// sound done playing. 
 
 				if (sb_voicelist[i].playing){
-                    logcacheevent('b', sb_voicelist[i].sfx_id );
+                    logcacheevent('b', i);
                     S_DecreaseRefCount(i);                    
                     sb_voicelist[i].playing = false;
                 }
@@ -784,7 +787,7 @@ void SB_Service_Mix11Khz(){
                 // }
 
 		    	if (sb_voicelist[i].playing){
-                    logcacheevent('c', sb_voicelist[i].sfx_id);
+                    logcacheevent('c', i);
                     S_DecreaseRefCount(i);                    
                     sb_voicelist[i].playing = false;
 
@@ -1976,8 +1979,8 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
     
     
 
-    sfxcache_nodes[i].pagecount = 0
-    sfxcache_nodes[i].numpages = 0
+    sfxcache_nodes[i].pagecount = 0;
+    sfxcache_nodes[i].numpages = 0;
 
     return 0;
 
@@ -1999,16 +2002,16 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
         int8_t j;
         uint16_t offset = 0;
         int16_t lump = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
+        int8_t currentpage = i;
         sfx_data[sfx_id].cache_position.bu.bytehigh = i;
         sfx_data[sfx_id].cache_position.bu.bytelow = 0;
-        int8_t currentpage = i;
 
         for (j = 0; j < pagecount; j++, offset+= 16384){
-            sfxcache_nodes[currentpage].pagecount = pagecount - j;
-            sfxcache_nodes[currentpage].numpages = pagecount;
+            sfxcache_nodes[currentpage].pagecount = pagecount - j + 1;
+            sfxcache_nodes[currentpage].numpages = pagecount + 1;
 
             // I_Error("%lx %lx %i %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
-            Z_QuickMapSFXPageFrame(i+j);
+            Z_QuickMapSFXPageFrame(currentpage);
             // Note - in theory an interrupt for an SFX can fire here during 
             // this transfer and blow up our current SFX ems page. However
             // we make absolutely sure in the interrupt  to page the SFX page 
@@ -2021,11 +2024,11 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
             currentpage = sfxcache_nodes[currentpage].prev;
         }
         // mark last page
-        sfxcache_nodes[currentpage].pagecount = pagecount - j;
-        sfxcache_nodes[currentpage].numpages = pagecount;
-        
+        sfxcache_nodes[currentpage].pagecount = pagecount - j + 1;
+        sfxcache_nodes[currentpage].numpages = pagecount + 1;
+
         // final case, leftover bytes...
-        Z_QuickMapSFXPageFrame(i+j);
+        Z_QuickMapSFXPageFrame(currentpage);
         W_CacheLumpNumDirectWithOffset(
                 lump, 
                 MK_FP(SFX_PAGE_SEGMENT, 0), 
@@ -2057,7 +2060,6 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
             }
             sb_voicelist[i].sfx_id = sfx_id;
             sb_voicelist[i].currentsample = 0;
-            sb_voicelist[i].playing = true;
             sb_voicelist[i].samplerate = (sfx_data[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
             sb_voicelist[i].length     = sfx_data[sfx_id].lumpsize.hu;
             
@@ -2065,58 +2067,64 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
             // ADD TO REFERENCE COUNT. do this whenever playing is set to true/false
 
             // Mark LRU for sfx here
+            {
+                int8_t cachepage = sfx_data[sfx_id].cache_position.bu.bytehigh;
+                logcacheevent('0', sfx_id);
+                logcacheevent('p', cachepage);
+                S_IncreaseRefCount(i);
 
-            logcacheevent('e', sfx_id);
-            S_IncreaseRefCount(i);
+                logcacheevent('+', sfx_id);
+                S_MarkSFXPageMRU(cachepage);
+                logcacheevent('~', cachepage);
 
-            S_MarkSFXPageLRU(i);
-            logcacheevent('f', sfx_id);
-
-            /*
-            // update cache, move cachepage to front
-            for (j = 0; j < NUM_SFX_PAGES; j++){
-                temp = sfx_page_lru[j];
-                sfx_page_lru[j] = prevpage;
-                if (temp == cachepage){
-                    break;
+                /*
+                // update cache, move cachepage to front
+                for (j = 0; j < NUM_SFX_PAGES; j++){
+                    temp = sfx_page_lru[j];
+                    sfx_page_lru[j] = prevpage;
+                    if (temp == cachepage){
+                        break;
+                    }
+                    prevpage = temp;
                 }
-                prevpage = temp;
-            }
-            */
+                */
 
-            
-            //todo apply volume from vol. 
-            sb_voicelist[i].volume     = MAX_VOLUME_SFX_FLAG;
-            
+                
+                //todo apply volume from vol. 
+                sb_voicelist[i].volume     = MAX_VOLUME_SFX_FLAG;
+                
 
-            // todo gotta clean out the bottom 
+                // todo gotta clean out the bottom 
 
-            
-            // {
-            //  uint16_t __far* loc = (uint16_t __far *) 0xD9000000;   
-            //  loc[0] = sb_voicelist[i].length;
-            //  loc[1] = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
-            //  loc[2] = W_LumpLength(sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK);
+                
+                // {
+                //  uint16_t __far* loc = (uint16_t __far *) 0xD9000000;   
+                //  loc[0] = sb_voicelist[i].length;
+                //  loc[1] = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
+                //  loc[2] = W_LumpLength(sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK);
 
-            // }
+                // }
 
-            // volume is 0-127
+                // volume is 0-127
 
-            // volnumber += 5;
-            // if (volnumber > 160){
-            //     volnumber = 40;
-            // }
-            // sb_voicelist[i].volume     = 255;
+                // volnumber += 5;
+                // if (volnumber > 160){
+                //     volnumber = 40;
+                // }
+                // sb_voicelist[i].volume     = 255;
 
-            if (sb_voicelist[i].samplerate){
-                if (!current_sampling_rate){
-                    change_sampling_to_22_next_int = 1;
+                if (sb_voicelist[i].samplerate){
+                    if (!current_sampling_rate){
+                        change_sampling_to_22_next_int = 1;
 
+                    }
                 }
-            }
-            FORCE_5000_LUMP_LOAD = false;
+                FORCE_5000_LUMP_LOAD = false;
 
-            return i;
+                // only do this at the very end.
+                sb_voicelist[i].playing = true;
+                return i;
+            }
         }
     }
     FORCE_5000_LUMP_LOAD = false;
@@ -2125,8 +2133,8 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
 
 void SFX_StopPatch(int8_t handle){
     if (handle >= 0 && handle < NUM_SFX_TO_MIX){
+        logcacheevent('a', handle);
         S_DecreaseRefCount(handle);                    
-        logcacheevent('d', sb_voicelist[handle].sfx_id);
         sb_voicelist[handle].playing = false;
 
 

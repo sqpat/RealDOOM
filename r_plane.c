@@ -589,7 +589,7 @@ void __near R_DrawPlanes (void) {
 		}
 		cachealreadymarked:
 
-		R_MarkL2FlatCacheLRU(usedflatindex >> 2);
+		R_MarkL2FlatCacheMRU(usedflatindex >> 2);
 		
 
 		// load if necessary

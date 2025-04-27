@@ -44,7 +44,7 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 
 
 ; todo: eventually call these directly... 
-;EXTRN R_MarkL2FlatCacheLRU_:PROC
+;EXTRN R_MarkL2FlatCacheMRU_:PROC
 ;EXTRN Z_QuickMapFlatPage_:PROC
 ;EXTRN W_CacheLumpNumDirect_:PROC
 ;EXTRN Z_QuickMapVisplanePage_:PROC
@@ -1375,8 +1375,8 @@ cbw
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _R_MarkL2FlatCacheLRU_addr
-;call  R_MarkL2FlatCacheLRU_
+dw _R_MarkL2FlatCacheMRU_addr
+;call  R_MarkL2FlatCacheMRU_
 
 
 cmp   di, 0 ; di used to hold flatunlodaed

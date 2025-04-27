@@ -179,7 +179,7 @@ _allocatedflatsperpage =           	_NULL_OFFSET + 00170h
 _Z_QuickMapVisplanePage_addr =      _NULL_OFFSET + 00180h
 _R_EvictFlatCacheEMSPage_addr =     _NULL_OFFSET + 00184h
 _Z_QuickMapFlatPage_addr =        	_NULL_OFFSET + 00188h
-_R_MarkL2FlatCacheLRU_addr =        _NULL_OFFSET + 0018Ch
+_R_MarkL2FlatCacheMRU_addr =        _NULL_OFFSET + 0018Ch
 ; 190h
 _W_CacheLumpNumDirect_addr =        _NULL_OFFSET + 00190h
 

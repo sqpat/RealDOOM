@@ -575,7 +575,7 @@ void __near Z_LoadBinaries() {
 	Z_QuickMapVisplanePage_addr = 	(uint32_t)(Z_QuickMapVisplanePage);
 	R_EvictFlatCacheEMSPage_addr = 	(uint32_t)(R_EvictFlatCacheEMSPage);
 	Z_QuickMapFlatPage_addr =   	(uint32_t)(Z_QuickMapFlatPage);
-	R_MarkL2FlatCacheLRU_addr = 	(uint32_t)(R_MarkL2FlatCacheLRU);
+	R_MarkL2FlatCacheMRU_addr = 	(uint32_t)(R_MarkL2FlatCacheMRU);
 	W_CacheLumpNumDirect_addr = 	(uint32_t)(W_CacheLumpNumDirect);
 
 

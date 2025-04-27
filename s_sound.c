@@ -169,6 +169,7 @@ void S_StopChannel(int8_t cnum) {
 
     if (c->sfx_id) {
 		// stop the sound playing
+		// todo move the check into stop sound..
 		if (I_SoundIsPlaying(c->handle)) {
 			I_StopSound(c->handle);
 		}

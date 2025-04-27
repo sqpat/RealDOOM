@@ -63,7 +63,7 @@
 //todo: these can be inlined or made a faster algorithm later.
 
 
-void __near R_MarkL1SpriteCacheLRU(int8_t index){
+void __near R_MarkL1SpriteCacheMRU(int8_t index){
 
 	if (spriteL1LRU[0] == index){
 		return;
@@ -85,7 +85,7 @@ void __near R_MarkL1SpriteCacheLRU(int8_t index){
 	}
 }
 
-void __near R_MarkL1SpriteCacheLRU3(int8_t index){
+void __near R_MarkL1SpriteCacheMRU3(int8_t index){
 
 	spriteL1LRU[3] = spriteL1LRU[2];
 	spriteL1LRU[2] = spriteL1LRU[1];
@@ -95,7 +95,7 @@ void __near R_MarkL1SpriteCacheLRU3(int8_t index){
 }
 
 //todo make this work as a jump table in asm like a switch block fall thru thing.
-void __near R_MarkL1TextureCacheLRU(int8_t index){
+void __near R_MarkL1TextureCacheMRU(int8_t index){
 	
 	if (textureL1LRU[0] == index){
 		return;
@@ -148,7 +148,7 @@ void __near R_MarkL1TextureCacheLRU(int8_t index){
 
 }
 
-void __near R_MarkL1TextureCacheLRU7(int8_t index){
+void __near R_MarkL1TextureCacheMRU7(int8_t index){
 	//todo: make this function live in the above in the asm.
 	textureL1LRU[7] = textureL1LRU[6];
 	textureL1LRU[6] = textureL1LRU[5];
@@ -1113,7 +1113,7 @@ void __near checkpatchcache(int8_t id){
 */
 
 
-void __near R_MarkL2CompositeTextureCacheLRU(int8_t index) {
+void __near R_MarkL2CompositeTextureCacheMRU(int8_t index) {
 
  
 
@@ -1229,7 +1229,7 @@ void __near R_MarkL2CompositeTextureCacheLRU(int8_t index) {
 
 
 
-void __near R_MarkL2SpriteCacheLRU(int8_t index) {
+void __near R_MarkL2SpriteCacheMRU(int8_t index) {
 
 	int8_t prev;
 	int8_t next;
@@ -1500,7 +1500,7 @@ int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 
 // MRU is the head. LRU is the tail.
 //todo move to r_span.asm segment
-void __far R_MarkL2FlatCacheLRU(int8_t index) {
+void __far R_MarkL2FlatCacheMRU(int8_t index) {
 
 	cache_node_t far* nodelist  = flatcache_nodes;
 
@@ -2059,8 +2059,8 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 			if (activetexturepages[i] == realtexpage ) {
 
-				R_MarkL1TextureCacheLRU(i);
-				R_MarkL2CompositeTextureCacheLRU(realtexpage);
+				R_MarkL1TextureCacheMRU(i);
+				R_MarkL2CompositeTextureCacheMRU(realtexpage);
 				return i;
 			}
 
@@ -2071,7 +2071,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		startpage = textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1];
 
-		R_MarkL1TextureCacheLRU7(startpage);
+		R_MarkL1TextureCacheMRU7(startpage);
 
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage]) {
@@ -2094,7 +2094,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 
 
-		R_MarkL2CompositeTextureCacheLRU(realtexpage);
+		R_MarkL2CompositeTextureCacheMRU(realtexpage);
 		Z_QuickMapRenderTexture();
 		cachedtex = -1;
 		cachedtex2 = -1;
@@ -2130,9 +2130,9 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 			
 			for (j = 0; j <= numpages; j++) {
-				R_MarkL1TextureCacheLRU(i+j);
+				R_MarkL1TextureCacheMRU(i+j);
 			}
-			R_MarkL2CompositeTextureCacheLRU(realtexpage);
+			R_MarkL2CompositeTextureCacheMRU(realtexpage);
 			return i;
 		}
 
@@ -2174,7 +2174,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			int8_t currentpage = realtexpage; // pagenum - pageoffset
 			for (i = 0; i <= numpages; i++) {
 
-				R_MarkL1TextureCacheLRU(startpage+i);
+				R_MarkL1TextureCacheMRU(startpage+i);
 
 				activetexturepages[startpage + i]  = currentpage;
 
@@ -2188,7 +2188,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			}
 		}
 
-		R_MarkL2CompositeTextureCacheLRU(realtexpage);
+		R_MarkL2CompositeTextureCacheMRU(realtexpage);
 		Z_QuickMapRenderTexture();
 		
 		//todo: only -1 if its in the knocked out page? pretty infrequent though.
@@ -2234,9 +2234,9 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 
 			if (activespritepages[i] == realtexpage) {
-				R_MarkL1SpriteCacheLRU(i);
+				R_MarkL1SpriteCacheMRU(i);
 				//checkspritecache(34);
-				R_MarkL2SpriteCacheLRU(realtexpage);
+				R_MarkL2SpriteCacheMRU(realtexpage);
 				//checkspritecache(35);
 
 				return i;
@@ -2249,7 +2249,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 		startpage = spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES-1];
 
-		R_MarkL1SpriteCacheLRU3(startpage);
+		R_MarkL1SpriteCacheMRU3(startpage);
 
 
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
@@ -2274,7 +2274,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 		
 		Z_QuickMapSpritePage();
 		//checkspritecache(36);
-		R_MarkL2SpriteCacheLRU(realtexpage);
+		R_MarkL2SpriteCacheMRU(realtexpage);
 		//checkspritecache(37);
 
 		lastvisspritepatch = -1;
@@ -2301,11 +2301,11 @@ uint8_t __near getspritepage(uint8_t texpage) {
 			// all pages were good
 
 			for (j = 0; j <= numpages; j++) {
-				R_MarkL1SpriteCacheLRU(i+j);
+				R_MarkL1SpriteCacheMRU(i+j);
 
 			}
 			//checkspritecache(38);
-			R_MarkL2SpriteCacheLRU(realtexpage);
+			R_MarkL2SpriteCacheMRU(realtexpage);
 			//checkspritecache(39);
 
 			return i;
@@ -2346,7 +2346,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 			for (i = 0; i <= numpages; i++) {
 
-				R_MarkL1SpriteCacheLRU(startpage+i);
+				R_MarkL1SpriteCacheMRU(startpage+i);
 
 				activespritepages[startpage + i] = currentpage;
 				
@@ -2366,7 +2366,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 		// paged in
 		//checkspritecache(40);
-		R_MarkL2SpriteCacheLRU(realtexpage);
+		R_MarkL2SpriteCacheMRU(realtexpage);
 		//checkspritecache(41);
 
 		return startpage;
