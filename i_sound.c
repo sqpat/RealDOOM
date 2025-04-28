@@ -184,6 +184,10 @@ int8_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep) {
     //     return -1;
     // }
 
+    if (snd_SfxDevice == snd_none){
+        return -1;
+    }
+
     if (snd_SfxDevice == snd_PC
         && (sfx_id == sfx_posact)
         || (sfx_id == sfx_bgact )
