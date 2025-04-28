@@ -247,7 +247,12 @@ void __near S_MoveCacheItemBackOne(int8_t currentpage){
         //  tail/prev <---      ----> head/next
         //       A B C D E becomes A D B C E
         
-        sfxcache_nodes[nextnext].prev    = next_startpoint;
+        // update cache head if its been updated.
+        if (nextnext != -1){
+            sfxcache_nodes[nextnext].prev    = next_startpoint;
+        } else {
+            sfxcache_head = next_startpoint;
+        }
         if (prev != -1){
             sfxcache_nodes[prev].next    = swap;
         } else {
@@ -279,8 +284,11 @@ void __near S_UpdateLRUCache(){
             // everything from this point on should be count 0...
             if (sfx_page_reference_count[currentpage] != 0){
                 // problem! move this back to next
+                logcacheevent('%', currentpage);
+                // this breaks moving the two from a contiguous one.
+                // fix is to skip all pages of a multi page
                 S_MoveCacheItemBackOne(currentpage); 
-                logcacheevent('$', 0);
+                logcacheevent('$', currentpage);
 
             }
 
@@ -290,7 +298,14 @@ void __near S_UpdateLRUCache(){
                 found_evictable = true;
             }
         }
-       currentpage = sfxcache_nodes[currentpage].prev;
+        // if multipage...
+        if (sfxcache_nodes[currentpage].numpages){
+            // get to the last page
+            while (sfxcache_nodes[currentpage].pagecount != sfxcache_nodes[currentpage].numpages){
+                currentpage = sfxcache_nodes[currentpage].prev;
+            }
+        }
+        currentpage = sfxcache_nodes[currentpage].prev;
 	}
     
 
@@ -457,6 +472,7 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 	// clear cache data that was pointing to this page.
 	while (evictedpage != -1){
 
+        // zero these out..
 		sfxcache_nodes[evictedpage].pagecount = 0;
 		sfxcache_nodes[evictedpage].numpages = 0;
 
@@ -1978,9 +1994,9 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
 
     
     
-
-    sfxcache_nodes[i].pagecount = 0;
-    sfxcache_nodes[i].numpages = 0;
+    // don't do this! it defaults to zero, and is reset to zero during eviction if necessary.
+    // sfxcache_nodes[i].pagecount = 0;
+    // sfxcache_nodes[i].numpages = 0;
 
     return 0;
 
@@ -2070,7 +2086,6 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
             {
                 int8_t cachepage = sfx_data[sfx_id].cache_position.bu.bytehigh;
                 logcacheevent('0', sfx_id);
-                logcacheevent('p', cachepage);
                 S_IncreaseRefCount(i);
 
                 logcacheevent('+', sfx_id);
