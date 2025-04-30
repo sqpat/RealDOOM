@@ -67,10 +67,10 @@ void __far Z_QuickMapSFXPageFrame(uint8_t pagenumber){
 	// page frame index 0 to 3
 	// count 
 
-	// if (pagenumber > NUM_SFX_PAGES){
-	// 	// I_Error("bad page number");
-	// 	errorbreak = 3;
-	// }
+	if (pagenumber > NUM_SFX_PAGES){
+		I_Error("bad page number %i", pagenumber);
+		// errorbreak = 3;
+	}
 	if (currentpageframes[SFX_PAGE_FRAME_INDEX] == pagenumber){
 		return;
 	}

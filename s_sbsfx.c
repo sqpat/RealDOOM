@@ -89,109 +89,122 @@ int8_t                  sfx_page_multipage_count[NUM_SFX_PAGES];    // 0 if its 
 cache_node_page_count_t sfxcache_nodes[NUM_SFX_PAGES];
 int8_t                  sfxcache_tail;
 int8_t                  sfxcache_head;
+int8_t in_sound = false;
 
 void __near S_UpdateLRUCache();
+
+void __near logsimplecache(char a){
+    if (in_sound){
+        return;
+    } else {
+        FILE* fp = fopen("cache.txt", "ab");
+        fputc(a, fp);
+        fputc('\n', fp);
+        fclose(fp);
+    }
+}
 
 void __near logcacheevent(char a, char b){
     int8_t current = sfxcache_tail;
     int8_t i = 0;
-    if (errorbreak)
+    if (in_sound){
         return;
-    // FILE* fp = fopen("cache.txt", "ab");
-    // fputc(a, fp);
-    // fputc(' ', fp);
-    // fputc('0' + (b / 100), fp);
-    // fputc('0' + ((b % 100) / 10), fp);
-    // fputc('0' + (b % 10), fp);
-    // fputc(' ', fp);
-    // fputc('0' + sfxcache_tail, fp);
-    // fputc(' ', fp);
-    // fputc('0' + sfxcache_head, fp);
-    // fputc(' ', fp);
-    // fputc(' ', fp);
+    } else {
 
-    // fputc('0' + sfx_page_reference_count[0], fp);
-    // fputc(' ', fp);
-    // fputc('0' + sfx_page_reference_count[1], fp);
-    // fputc(' ', fp);
-    // fputc('0' + sfx_page_reference_count[2], fp);
-    // fputc(' ', fp);
-    // fputc('0' + sfx_page_reference_count[3], fp);
-    // fputc(' ', fp);
-    // fputc(' ', fp);
+        FILE* fp = fopen("cache.txt", "ab");
+        fputc(a, fp);
+        fputc(' ', fp);
+        fputc('0' + (b / 100), fp);
+        fputc('0' + ((b % 100) / 10), fp);
+        fputc('0' + (b % 10), fp);
+        fputc(' ', fp);
+        fputc('0' + sfxcache_tail, fp);
+        fputc(' ', fp);
+        fputc('0' + sfxcache_head, fp);
+        fputc(' ', fp);
+        fputc(' ', fp);
+
+        fputc('0' + sfx_page_reference_count[0], fp);
+        fputc(' ', fp);
+        fputc('0' + sfx_page_reference_count[1], fp);
+        fputc(' ', fp);
+        fputc('0' + sfx_page_reference_count[2], fp);
+        fputc(' ', fp);
+        fputc('0' + sfx_page_reference_count[3], fp);
+        fputc(' ', fp);
+        fputc(' ', fp);
 
 
-    // fputc('0' + sfxcache_nodes[0].pagecount, fp);
-    // fputc(' ', fp);
-    // fputc('0' + sfxcache_nodes[1].pagecount, fp);
-    // fputc(' ', fp);
-    // fputc('0' + sfxcache_nodes[2].pagecount, fp);
-    // fputc(' ', fp);
-    // fputc('0' + sfxcache_nodes[3].pagecount, fp);
-    // fputc(' ', fp);
-    // fputc(' ', fp);
+        fputc('0' + sfxcache_nodes[0].pagecount, fp);
+        fputc(' ', fp);
+        fputc('0' + sfxcache_nodes[1].pagecount, fp);
+        fputc(' ', fp);
+        fputc('0' + sfxcache_nodes[2].pagecount, fp);
+        fputc(' ', fp);
+        fputc('0' + sfxcache_nodes[3].pagecount, fp);
+        fputc(' ', fp);
+        fputc(' ', fp);
 
-    // fputc('0' + (sfx_free_bytes[0]/10), fp);
-    // fputc('0' + (sfx_free_bytes[0]%10), fp);
-    // fputc(' ', fp);
-    // fputc('0' + (sfx_free_bytes[1]/10), fp);
-    // fputc('0' + (sfx_free_bytes[1]%10), fp);
-    // fputc(' ', fp);
-    // fputc('0' + (sfx_free_bytes[2]/10), fp);
-    // fputc('0' + (sfx_free_bytes[2]%10), fp);
-    // fputc(' ', fp);
-    // fputc('0' + (sfx_free_bytes[3]/10), fp);
-    // fputc('0' + (sfx_free_bytes[3]%10), fp);
-    // fputc(' ', fp);
-    // fputc(' ', fp);
-    
-    while (current != -1){
-        // fputc('0' + sfxcache_nodes[current].prev, fp);
-        // fputc('0' + current, fp);
-        // fputc('0' + sfxcache_nodes[current].next, fp);
-        // fputc(' ', fp);
-        current = sfxcache_nodes[current].next;
-        i++;
-    }
-
-    // fputc('\n', fp);
-    // fclose(fp);
-
-    if (i != 4){
-        // I_Error("cache loop?");
-        errorbreak = 4;
-    }
-    if (sfxcache_nodes[sfxcache_tail].prev != -1){
-        // I_Error("bad tail?");
-        errorbreak = 5;
-    }
-    if (sfxcache_nodes[sfxcache_head].next != -1){
-        // I_Error("bad head?");
-        errorbreak = 6;
-    }
-    for (i = 0; i < 4; i++){
-        if (sfx_page_reference_count[i] < 0){
-            // I_Error("bad refcount?");
-        errorbreak = 7;
+        fputc('0' + (sfx_free_bytes[0]/10), fp);
+        fputc('0' + (sfx_free_bytes[0]%10), fp);
+        fputc(' ', fp);
+        fputc('0' + (sfx_free_bytes[1]/10), fp);
+        fputc('0' + (sfx_free_bytes[1]%10), fp);
+        fputc(' ', fp);
+        fputc('0' + (sfx_free_bytes[2]/10), fp);
+        fputc('0' + (sfx_free_bytes[2]%10), fp);
+        fputc(' ', fp);
+        fputc('0' + (sfx_free_bytes[3]/10), fp);
+        fputc('0' + (sfx_free_bytes[3]%10), fp);
+        fputc(' ', fp);
+        fputc(' ', fp);
+        
+        while (current != -1){
+            fputc('0' + sfxcache_nodes[current].prev, fp);
+            fputc('0' + current, fp);
+            fputc('0' + sfxcache_nodes[current].next, fp);
+            fputc(' ', fp);
+            current = sfxcache_nodes[current].next;
+            i++;
         }
-        if (sfx_free_bytes[i] > 64){
-            // I_Error("bad freebytes?");
-        errorbreak = 8;
+
+        fputc('\n', fp);
+        fclose(fp);
+
+        if (i != 4){
+            I_Error("cache loop?");
+            // errorbreak = 4;
         }
+        if (sfxcache_nodes[sfxcache_tail].prev != -1){
+            I_Error("bad tail?");
+            // errorbreak = 5;
+        }
+        if (sfxcache_nodes[sfxcache_head].next != -1){
+            I_Error("bad head?");
+            // errorbreak = 6;
+        }
+            for (i = 0; i < 4; i++){
+            if (sfx_page_reference_count[i] < 0){
+                I_Error("bad refcount?");
+                // errorbreak = 7;
+            }
+            if (sfx_free_bytes[i] > 64){
+                I_Error("bad freebytes?");
+                // errorbreak = 8;
+            }
+        }
+
+            if((forwardmove[0] != 0x19) || 
+                (forwardmove[1] != 0x32) || 
+                (sidemove[0] != 0x18) || 
+                (sidemove[1] != 0x28)){
+                    I_Error("leak detected? %i %i", a, b);
+            // errorbreak = 9;
+            // badbreak = a;
+            // badbreak2 = b;
+
+            }
     }
-
-        if((forwardmove[0] != 0x19) || 
-			(forwardmove[1] != 0x32) || 
-			(sidemove[0] != 0x18) || 
-			(sidemove[1] != 0x28)){
-				// I_Error("leak detected? %i %i", a, b);
-        errorbreak = 9;
-        badbreak = a;
-        badbreak2 = b;
-
-		}
-
-
 }
 
 
@@ -222,9 +235,11 @@ void __near S_DecreaseRefCount(int8_t voice_index){
     uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
     int8_t startnode = cachepage;
     int8_t endnode   = startnode;
+    logcacheevent('c', cachepage);
     // uint8_t numpages  = sb_voicelist[i].length >> 14; // todo rol 2
     if (numpages){
         uint8_t currentpage = cachepage;
+        logcacheevent('c', numpages);
         // find first then iterate over them all
         while (sfxcache_nodes[currentpage].pagecount != 1){
             currentpage = sfxcache_nodes[currentpage].prev;  // or prev?
@@ -241,9 +256,11 @@ void __near S_DecreaseRefCount(int8_t voice_index){
         sfx_page_reference_count[cachepage]--;
     }
     // make sure reference count = 0 are all at the tail
-    logcacheevent('!', sb_voicelist[voice_index].sfx_id );
+    // logcacheevent('!', sb_voicelist[voice_index].sfx_id );
+    logcacheevent('d', cachepage);
     S_UpdateLRUCache();
-    logcacheevent('-', sb_voicelist[voice_index].sfx_id );
+    logcacheevent('e', cachepage);
+    // logcacheevent('-', sb_voicelist[voice_index].sfx_id );
 
 }
 
@@ -314,15 +331,16 @@ void __near S_UpdateLRUCache(){
 
     // todo handle tail!
     while (currentpage != -1){
+        // logcacheevent('f', currentpage);
         if (found_evictable){
             // everything from this point on should be count 0...
             if (sfx_page_reference_count[currentpage] != 0){
                 // problem! move this back to next
-                logcacheevent('%', currentpage);
+                // logcacheevent('%', found_evictable);
                 // this breaks moving the two from a contiguous one.
                 // fix is to skip all pages of a multi page
                 S_MoveCacheItemBackOne(currentpage); 
-                logcacheevent('$', currentpage);
+                // logcacheevent('$', found_evictable);
 
             }
 
@@ -335,10 +353,13 @@ void __near S_UpdateLRUCache(){
         // if multipage...
         if (sfxcache_nodes[currentpage].numpages){
             // get to the last page
-            while (sfxcache_nodes[currentpage].pagecount != sfxcache_nodes[currentpage].numpages){
+            // logcacheevent('g', sfxcache_nodes[currentpage].numpages);
+            while (sfxcache_nodes[currentpage].pagecount != 1){
                 currentpage = sfxcache_nodes[currentpage].prev;
             }
         }
+        // logcacheevent('h', currentpage);
+        // logcacheevent('i', sfxcache_nodes[currentpage].prev);
         currentpage = sfxcache_nodes[currentpage].prev;
 	}
     
@@ -575,8 +596,8 @@ void SB_Service_Mix22Khz(){
 
 				if (sb_voicelist[i].playing){
                     logcacheevent('b', i);
-                    S_DecreaseRefCount(i);                    
                     sb_voicelist[i].playing = false;
+                    S_DecreaseRefCount(i);                    
                 }
 
 
@@ -592,7 +613,7 @@ void SB_Service_Mix22Khz(){
                     page_add = sb_voicelist[i].currentsample >> 14;
                 }
                 
-                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
+                // Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
                 // form the offset.
                 cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
                 cache_pos.bu.bytelow = 0;
@@ -836,9 +857,8 @@ void SB_Service_Mix11Khz(){
                 // }
 
 		    	if (sb_voicelist[i].playing){
-                    S_DecreaseRefCount(i);                    
                     sb_voicelist[i].playing = false;
-
+                    S_DecreaseRefCount(i);                    
 
                 }
 			} else {
@@ -853,7 +873,7 @@ void SB_Service_Mix11Khz(){
                     // I_Error("page add %i %i", sb_voicelist[i].currentsample, page_add);
                 }
                 
-                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
+                // Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
                 // logcacheevent(cache_pos.bu.bytehigh,  page_add);
 
                 // form the offset.
@@ -1018,10 +1038,11 @@ void __interrupt __far_func SB_ServiceInterrupt(void) {
     continuecall();
 }
 
+
 void __near continuecall(){
 	int8_t sample_rate_this_instance;
     uint8_t current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
-
+    in_sound = true;
     if (in_first_buffer){
         in_first_buffer = false;
     } else {
@@ -1110,7 +1131,7 @@ void __near continuecall(){
 	last_sampling_rate = current_sampling_rate;
 
     if (current_sfx_page != currentpageframes[SFX_PAGE_FRAME_INDEX]){
-        Z_QuickMapSFXPageFrame(current_sfx_page);
+        // Z_QuickMapSFXPageFrame(current_sfx_page);
     }
 
     if (sb_irq > 7){
@@ -1118,6 +1139,8 @@ void __near continuecall(){
     }
 
     outp(0x20, 0x20);
+    in_sound = false;
+
 }
 
 void SB_IncrementApplicationVolume(){
@@ -1896,8 +1919,9 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
     uint8_t sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
     int16_t_union allocate_position;
     int8_t pagecount;
+    logcacheevent('z', sample_256_size);
     if (sample_256_size <= 64) {
-
+        // todo go in head order?
         for (i = 0; i < NUM_SFX_PAGES; i++){
             if (sample_256_size <= sfx_free_bytes[i]){
                 allocate_position.bu.bytehigh = 64 - sfx_free_bytes[i];  // keep track of where to put the sound
@@ -1907,29 +1931,57 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
             }
         }
         // todo actually evict
-        return -1;
+
         goto evict_one;
         
     } else {
         int8_t j = 0;
+        
         pagecount = sample_256_size >> 6;   // todo rol 2?
         // greater than 1 EMS page in size...
-        for (i = 0; i < (NUM_SFX_PAGES-pagecount); i++){
-            if (sfx_free_bytes[i] == 64){
-                // note - because things are assigned in order from start to end, a full page means theres always
-                // empty room ahead of it and we can just write all in there.
+        for (i = sfxcache_head; i != -1; i = i = sfxcache_nodes[i].prev){
+            int8_t currentpage = i;
+            for (j = 0; j <= pagecount; j++){
+                if (currentpage == -1){
+                    break;
+                } else {
+                    int8_t needed;
 
-                allocate_position.hu = 0;    // page aligned. addr is 0...
 
-                for (j = 0; j < pagecount;j++){
-                    sfx_free_bytes[i+j] = 0;
+                    if (j < pagecount){
+                        needed = 64;
+                    } else {
+                        needed = sample_256_size & 63;
+                    }
+                    
+                    if (sfx_free_bytes[currentpage] >= needed){
+                        currentpage = sfxcache_nodes[currentpage].prev;
+                        continue;
+                    } else {
+                        break;
+                    }
                 }
-                sfx_free_bytes[i+j] -= sample_256_size & 63;
-                goto found_page_multiple;
             }
+            
+            if (j != (pagecount+1)){ // didnt find enough pages.
+                continue;
+            }
+
+            // page i works.
+
+            allocate_position.hu = 0;    // page aligned. addr is 0...
+            currentpage = i;
+            for (j = 0; j < pagecount; j++){
+                sfx_free_bytes[currentpage] = 0;
+                currentpage = sfxcache_nodes[currentpage].prev;
+            }
+
+            sfx_free_bytes[currentpage] -= sample_256_size & 63;
+            goto found_page_multiple;
+
         }
         // todo actually evict
-        return -1;
+
         goto evict_multiple;
     }
 
@@ -1939,10 +1991,15 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
 
     // lets locate a page to evict
 
+    logcacheevent('v', 1);
     i = S_EvictSFXPage(1);
+    logcacheevent('w', i);
     if (i == -1){
         return -1;
     } else {
+        sfx_free_bytes[i] -= sample_256_size & 63;
+        logcacheevent('x', i);
+
         goto found_page;
     }
 
@@ -2042,10 +2099,22 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
     evict_multiple:
     //todo
 
+    logcacheevent('v', pagecount+1);
     i = S_EvictSFXPage(pagecount+1);
+    logcacheevent('w', i);
     if (i == -1){
         return -1;
     } else {
+        int8_t j;
+        int8_t currentpage = i;
+        for (j = 0; j < pagecount;j++){
+            sfx_free_bytes[currentpage] = 0;
+            currentpage = sfxcache_nodes[currentpage].prev;
+        }
+        sfx_free_bytes[currentpage] -= sample_256_size & 63;
+        logcacheevent('x', i);
+
+
         goto found_page_multiple;
     }
 
@@ -2191,9 +2260,10 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
 
 void SFX_StopPatch(int8_t handle){
     if (handle >= 0 && handle < NUM_SFX_TO_MIX){
+        sb_voicelist[handle].playing = false;
         logcacheevent('a', handle);
         S_DecreaseRefCount(handle);                    
-        sb_voicelist[handle].playing = false;
+        logcacheevent('b', handle);
 
 
     }
