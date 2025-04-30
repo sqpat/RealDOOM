@@ -45,8 +45,6 @@ int8_t sb_dma_8  = UNDEFINED_DMA;
 int16_t     SB_IntController1Mask;
 int16_t     SB_IntController2Mask;
 
-byte __far* SB_DMABuffer;
-uint16_t  SB_DMABufferSegment;
 
 
 
@@ -56,7 +54,6 @@ uint8_t SB_MixerType = SB_TYPE_NONE;
 uint8_t SB_OriginalVoiceVolumeLeft = 255;
 uint8_t SB_OriginalVoiceVolumeRight = 255;
 
-byte __far * sbbuffer;
 
 
 // uint16_t SB_MixMode = 0; //SB_STEREO;
@@ -68,6 +65,9 @@ byte __far * sbbuffer;
 uint8_t SB_Mixer_Status;
 
 
+int16_t                        errorbreak = 0;
+int16_t                        badbreak = 0;
+int16_t                        badbreak2 = 0;
 
 
 uint8_t 				current_sampling_rate = SAMPLE_RATE_11_KHZ_FLAG;
@@ -92,74 +92,108 @@ int8_t                  sfxcache_head;
 
 void __near S_UpdateLRUCache();
 
-void __near logcacheeventsimple(char a){
-    FILE* fp = fopen("cache.txt", "ab");
-    fputc(a, fp);
-    fputc('\n', fp);
-    fclose(fp);
-}
 void __near logcacheevent(char a, char b){
     int8_t current = sfxcache_tail;
-    FILE* fp = fopen("cache.txt", "ab");
-    fputc(a, fp);
-    fputc(' ', fp);
-    fputc('0' + (b / 100), fp);
-    fputc('0' + ((b % 100) / 10), fp);
-    fputc('0' + (b % 10), fp);
-    fputc(' ', fp);
-    fputc('0' + sfxcache_tail, fp);
-    fputc(' ', fp);
-    fputc('0' + sfxcache_head, fp);
-    fputc(' ', fp);
-    fputc(' ', fp);
+    int8_t i = 0;
+    if (errorbreak)
+        return;
+    // FILE* fp = fopen("cache.txt", "ab");
+    // fputc(a, fp);
+    // fputc(' ', fp);
+    // fputc('0' + (b / 100), fp);
+    // fputc('0' + ((b % 100) / 10), fp);
+    // fputc('0' + (b % 10), fp);
+    // fputc(' ', fp);
+    // fputc('0' + sfxcache_tail, fp);
+    // fputc(' ', fp);
+    // fputc('0' + sfxcache_head, fp);
+    // fputc(' ', fp);
+    // fputc(' ', fp);
 
-    fputc('0' + sfx_page_reference_count[0], fp);
-    fputc(' ', fp);
-    fputc('0' + sfx_page_reference_count[1], fp);
-    fputc(' ', fp);
-    fputc('0' + sfx_page_reference_count[2], fp);
-    fputc(' ', fp);
-    fputc('0' + sfx_page_reference_count[3], fp);
-    fputc(' ', fp);
-    fputc(' ', fp);
+    // fputc('0' + sfx_page_reference_count[0], fp);
+    // fputc(' ', fp);
+    // fputc('0' + sfx_page_reference_count[1], fp);
+    // fputc(' ', fp);
+    // fputc('0' + sfx_page_reference_count[2], fp);
+    // fputc(' ', fp);
+    // fputc('0' + sfx_page_reference_count[3], fp);
+    // fputc(' ', fp);
+    // fputc(' ', fp);
 
 
-    fputc('0' + sfxcache_nodes[0].pagecount, fp);
-    fputc(' ', fp);
-    fputc('0' + sfxcache_nodes[1].pagecount, fp);
-    fputc(' ', fp);
-    fputc('0' + sfxcache_nodes[2].pagecount, fp);
-    fputc(' ', fp);
-    fputc('0' + sfxcache_nodes[3].pagecount, fp);
-    fputc(' ', fp);
-    fputc(' ', fp);
+    // fputc('0' + sfxcache_nodes[0].pagecount, fp);
+    // fputc(' ', fp);
+    // fputc('0' + sfxcache_nodes[1].pagecount, fp);
+    // fputc(' ', fp);
+    // fputc('0' + sfxcache_nodes[2].pagecount, fp);
+    // fputc(' ', fp);
+    // fputc('0' + sfxcache_nodes[3].pagecount, fp);
+    // fputc(' ', fp);
+    // fputc(' ', fp);
 
-    fputc('0' + (sfx_free_bytes[0]/10), fp);
-    fputc('0' + (sfx_free_bytes[0]%10), fp);
-    fputc(' ', fp);
-    fputc('0' + (sfx_free_bytes[1]/10), fp);
-    fputc('0' + (sfx_free_bytes[1]%10), fp);
-    fputc(' ', fp);
-    fputc('0' + (sfx_free_bytes[2]/10), fp);
-    fputc('0' + (sfx_free_bytes[2]%10), fp);
-    fputc(' ', fp);
-    fputc('0' + (sfx_free_bytes[3]/10), fp);
-    fputc('0' + (sfx_free_bytes[3]%10), fp);
-    fputc(' ', fp);
-    fputc(' ', fp);
+    // fputc('0' + (sfx_free_bytes[0]/10), fp);
+    // fputc('0' + (sfx_free_bytes[0]%10), fp);
+    // fputc(' ', fp);
+    // fputc('0' + (sfx_free_bytes[1]/10), fp);
+    // fputc('0' + (sfx_free_bytes[1]%10), fp);
+    // fputc(' ', fp);
+    // fputc('0' + (sfx_free_bytes[2]/10), fp);
+    // fputc('0' + (sfx_free_bytes[2]%10), fp);
+    // fputc(' ', fp);
+    // fputc('0' + (sfx_free_bytes[3]/10), fp);
+    // fputc('0' + (sfx_free_bytes[3]%10), fp);
+    // fputc(' ', fp);
+    // fputc(' ', fp);
     
     while (current != -1){
-        fputc('0' + sfxcache_nodes[current].prev, fp);
-        fputc('0' + current, fp);
-        fputc('0' + sfxcache_nodes[current].next, fp);
-        fputc(' ', fp);
+        // fputc('0' + sfxcache_nodes[current].prev, fp);
+        // fputc('0' + current, fp);
+        // fputc('0' + sfxcache_nodes[current].next, fp);
+        // fputc(' ', fp);
         current = sfxcache_nodes[current].next;
-
+        i++;
     }
 
-    fputc('\n', fp);
-    fclose(fp);
+    // fputc('\n', fp);
+    // fclose(fp);
+
+    if (i != 4){
+        // I_Error("cache loop?");
+        errorbreak = 4;
+    }
+    if (sfxcache_nodes[sfxcache_tail].prev != -1){
+        // I_Error("bad tail?");
+        errorbreak = 5;
+    }
+    if (sfxcache_nodes[sfxcache_head].next != -1){
+        // I_Error("bad head?");
+        errorbreak = 6;
+    }
+    for (i = 0; i < 4; i++){
+        if (sfx_page_reference_count[i] < 0){
+            // I_Error("bad refcount?");
+        errorbreak = 7;
+        }
+        if (sfx_free_bytes[i] > 64){
+            // I_Error("bad freebytes?");
+        errorbreak = 8;
+        }
+    }
+
+        if((forwardmove[0] != 0x19) || 
+			(forwardmove[1] != 0x32) || 
+			(sidemove[0] != 0x18) || 
+			(sidemove[1] != 0x28)){
+				// I_Error("leak detected? %i %i", a, b);
+        errorbreak = 9;
+        badbreak = a;
+        badbreak2 = b;
+
+		}
+
+
 }
+
 
 void __near S_IncreaseRefCount(int8_t voice_index){
     uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
@@ -592,7 +626,7 @@ void SB_Service_Mix22Khz(){
 
                 // stupid c89
                 {                
-                    uint8_t __far * dma_buffer = MK_FP(SB_DMABufferSegment, copy_offset);
+                    uint8_t __far * dma_buffer = MK_FP(sb_dmabuffer_segment, copy_offset);
                     uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
 
                     uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
@@ -735,7 +769,7 @@ void SB_Service_Mix22Khz(){
                         if (!remaining_length){
                             break;  // if the sfx was less than a sample long i guess.
                         }
-                        dma_buffer = MK_FP(SB_DMABufferSegment, 0); // to start of buffer.
+                        dma_buffer = sb_dmabuffer; // to start of buffer.
                         source     += copy_length;
                         sb_voicelist[i].currentsample += copy_length;
                     }
@@ -758,7 +792,7 @@ void SB_Service_Mix22Khz(){
 
     if (!sound_played){
         // todo: keep track of if buffer is silent so we dont do this pointlessly over and over
-        _fmemset(MK_FP(SB_DMABufferSegment, 0), 0x80, SB_TotalBufferSize);
+        _fmemset(sb_dmabuffer, 0x80, SB_TotalBufferSize);
     } else if ( sound_played == 1){
         if (extra_zero_length){
 
@@ -781,8 +815,7 @@ void SB_Service_Mix11Khz(){
 	int8_t i;
 	int8_t sound_played = 0;	// first sound copies. 2nd and more add. if no sounds played, clear buffer.
     uint16_t extra_zero_length = 0;
-    uint8_t __far *extra_zero_copy_target;
-
+    uint8_t __far *extra_zero_copy_target = NULL;
 	for (i = 0; i < NUM_SFX_TO_MIX; i++){
 
 		if (!sb_voicelist[i].playing){
@@ -803,7 +836,6 @@ void SB_Service_Mix11Khz(){
                 // }
 
 		    	if (sb_voicelist[i].playing){
-                    logcacheevent('c', i);
                     S_DecreaseRefCount(i);                    
                     sb_voicelist[i].playing = false;
 
@@ -822,6 +854,8 @@ void SB_Service_Mix11Khz(){
                 }
                 
                 Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
+                // logcacheevent(cache_pos.bu.bytehigh,  page_add);
+
                 // form the offset.
                 cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
                 cache_pos.bu.bytelow = 0;
@@ -851,7 +885,7 @@ void SB_Service_Mix11Khz(){
 
                 // stupid c89
                 {                
-                    uint8_t __far * dma_buffer = MK_FP(SB_DMABufferSegment, copy_offset);
+                    uint8_t __far * dma_buffer = MK_FP(sb_dmabuffer_segment, copy_offset);
                     uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
                     uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
                     int8_t volume = sb_voicelist[i].volume;
@@ -937,7 +971,7 @@ void SB_Service_Mix11Khz(){
                         if (!remaining_length){
                             break;  // if the sfx was less than a sample long i guess.
                         }
-                        dma_buffer = MK_FP(SB_DMABufferSegment, 0); // to start of buffer.
+                        dma_buffer = sb_dmabuffer; // to start of buffer.
                         source     += copy_length;
                         sb_voicelist[i].currentsample += copy_length;
                     }
@@ -961,10 +995,11 @@ void SB_Service_Mix11Khz(){
 	}	// end for loop
 
     if (!sound_played){
-        _fmemset(MK_FP(SB_DMABufferSegment, 0), 0x80, SB_TotalBufferSize);
+        // todo optimize and dont do this over and over...
+        _fmemset(sb_dmabuffer, 0x80, SB_TotalBufferSize);
     } else if ( sound_played == 1){
         if (extra_zero_length){
-
+            // examine this addr..
             _fmemset(extra_zero_copy_target, 0x80, extra_zero_length);
         }
 
@@ -973,14 +1008,19 @@ void SB_Service_Mix11Khz(){
 }
 
 
+
+void __near continuecall();
+
 void	resetDS();
 
 void __interrupt __far_func SB_ServiceInterrupt(void) {
-	int8_t i;
-	int8_t sample_rate_this_instance;
-    uint8_t current_sfx_page;
     resetDS();  // interrupts need this...
-    current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
+    continuecall();
+}
+
+void __near continuecall(){
+	int8_t sample_rate_this_instance;
+    uint8_t current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
 
     if (in_first_buffer){
         in_first_buffer = false;
@@ -1070,7 +1110,7 @@ void __interrupt __far_func SB_ServiceInterrupt(void) {
 	last_sampling_rate = current_sampling_rate;
 
     if (current_sfx_page != currentpageframes[SFX_PAGE_FRAME_INDEX]){
-        Z_QuickMapSFXPageFrame(current_sfx_page - NUM_MUSIC_PAGES);
+        Z_QuickMapSFXPageFrame(current_sfx_page);
     }
 
     if (sb_irq > 7){
@@ -1425,8 +1465,6 @@ int8_t SB_SetupDMABuffer( byte __far *buffer, uint16_t buffer_size) {
 
     sb_dma = dma_channel;
 
-    SB_DMABuffer 				= buffer;
-	SB_DMABufferSegment     	= FP_SEG(SB_DMABuffer);
     
     return SB_OK;
 }
@@ -1454,13 +1492,12 @@ void SB_EnableInterrupt() {
 int8_t SB_SetupPlayback(){
 	// todo double?
     fixed_t_union addr;
+    byte __far * sbbuffer;
 	SB_StopPlayback();
     SB_SetMixMode();
 
-    // todo choose a better spot for this...
-    addr.wu = 0xDB000000;
-    
-
+    // todo hardcode?
+    addr.wu = (uint32_t) sb_dmabuffer;
     addr.hu.intbits += (addr.hu.fracbits >> 4);
     addr.hu.fracbits = 0;
 
@@ -1469,7 +1506,7 @@ int8_t SB_SetupPlayback(){
         return SB_Error;
     }
 
-    _fmemset(MK_FP(SB_DMABufferSegment, 0), 0x80, SB_TotalBufferSize);
+    _fmemset(sb_dmabuffer, 0x80, SB_TotalBufferSize);
 
     SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_UINT);
 
@@ -1552,7 +1589,6 @@ void SB_StopPlayback(){
 	SB_WriteDSP(0xD3);	// speaker off
 
     // sfx_playing = false;
-    SB_DMABuffer = NULL;
     SB_CardActive = false;
 
 }
@@ -1657,7 +1693,6 @@ void SB_Shutdown(){
 
     _dos_setvect(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
 
-    SB_DMABuffer = NULL;
     // SB_CallBack = null;
     // SB_Installed = false;
 
@@ -1871,6 +1906,8 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 goto found_page;
             }
         }
+        // todo actually evict
+        return -1;
         goto evict_one;
         
     } else {
@@ -1891,6 +1928,8 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 goto found_page_multiple;
             }
         }
+        // todo actually evict
+        return -1;
         goto evict_multiple;
     }
 
@@ -2019,10 +2058,13 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
         uint16_t offset = 0;
         int16_t lump = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
         int8_t currentpage = i;
+        // if (sfx_id > NUMSFX){
+        //     I_Error("bad sfx!?");
+        // }
         sfx_data[sfx_id].cache_position.bu.bytehigh = i;
         sfx_data[sfx_id].cache_position.bu.bytelow = 0;
 
-        for (j = 0; j < pagecount; j++, offset+= 16384){
+        for (j = 0; j < pagecount; j++, offset += 16384){
             sfxcache_nodes[currentpage].pagecount = pagecount - j + 1;
             sfxcache_nodes[currentpage].numpages = pagecount + 1;
 
@@ -2034,8 +2076,8 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
             // back to where its supposed to go.
             W_CacheLumpNumDirectWithOffset(
                 lump, 
-                MK_FP(SFX_PAGE_SEGMENT, 0), 
-                0x18 + offset,           // skip header and padding.
+                SFX_PAGE_ADDRESS, 
+                0x18u + offset,           // skip header and padding.
                 16384);   // num bytes..
             currentpage = sfxcache_nodes[currentpage].prev;
         }
@@ -2047,8 +2089,8 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
         Z_QuickMapSFXPageFrame(currentpage);
         W_CacheLumpNumDirectWithOffset(
                 lump, 
-                MK_FP(SFX_PAGE_SEGMENT, 0), 
-                0x18 + offset,           // skip header and padding.
+                SFX_PAGE_ADDRESS, 
+                0x18u + offset,           // skip header and padding.
                 lumpsize.hu & 16383);   // num bytes..
 
 
@@ -2071,6 +2113,7 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
                 int8_t result = S_LoadSoundIntoCache(sfx_id);
                 if (result == -1){
                     // couldnt make space in cache.
+                    FORCE_5000_LUMP_LOAD = false;
                     return -1; 
                 }
             }

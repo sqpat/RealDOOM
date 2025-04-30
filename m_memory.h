@@ -204,10 +204,11 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define SAVESTRINGSIZE        24u
 
-#define baselowermemoryaddress    (0x30ED0000)
+#define baselowermemoryaddress    (0x30CD0000)
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
 #define size_sfxdata             (NUMSFX * sizeof(sfxinfo_t))
+#define size_sb_dmabuffer        (256 * 2)
 #define size_finesine            (10240u * sizeof(int32_t))
 #define size_events              (sizeof(event_t) * MAXEVENTS)
 #define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
@@ -222,7 +223,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 #define sfx_data           ((sfxinfo_t __far*)          (baselowermemoryaddress))
-#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(sfx_data, size_sfxdata))  // 10240
+#define sb_dmabuffer       ((uint8_t __far*)            MAKE_FULL_SEGMENT(sfx_data, size_sfxdata))  // 10240
+#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(sb_dmabuffer, size_sb_dmabuffer))  // 10240
 #define finecosine         ((int32_t __far*)            (((int32_t)finesine) + 0x2000))  // 10240
 #define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
 #define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
@@ -235,6 +237,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 #define sfx_data_segment              ((segment_t) ((int32_t)sfx_data  >> 16))
+#define sb_dmabuffer_segment          ((segment_t) ((int32_t)sb_dmabuffer  >> 16))
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
 // todo clean this and finecosine up
 #define finecosine_segment            ((segment_t) (finesine_segment + 0x200))
@@ -252,7 +255,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 //todo recalculate after moving stuff around...
 
-// sfxdata              30ED:0000
+// sfxdata              30CD:0000
+// sb_dmabuffer         30F6:0000
 // finesine             3116:0000
 // finecosine           3116:2000
 // events               3B16:0000

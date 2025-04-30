@@ -60,6 +60,30 @@ void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 	intx86(EMS_INT, &regs, &regs);
 }
 
+// extern int16_t errorbreak;
+
+// todo rename to be something music related?
+void __far Z_QuickMapSFXPageFrame(uint8_t pagenumber){
+	// page frame index 0 to 3
+	// count 
+
+	// if (pagenumber > NUM_SFX_PAGES){
+	// 	// I_Error("bad page number");
+	// 	errorbreak = 3;
+	// }
+	if (currentpageframes[SFX_PAGE_FRAME_INDEX] == pagenumber){
+		return;
+	}
+
+	currentpageframes[SFX_PAGE_FRAME_INDEX] = pagenumber;
+
+	regs.w.ax = 0x4400 + SFX_PAGE_FRAME_INDEX;
+	regs.w.bx = pagenumber + SFX_DATA_PAGES;
+	regs.w.dx = emshandle; // handle
+	intx86(EMS_INT, &regs, &regs);
+}
+
+
 #define MAX_COUNT_ITER 8
 
 // note: emm386 only supports up to 8 args at a time.

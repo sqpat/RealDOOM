@@ -889,6 +889,10 @@ void __near G_BeginRecording (void)  {
 // and sets up the video mode
 void __near I_InitGraphics(void);
 
+extern int16_t errorbreak;
+extern int16_t badbreak;
+extern int16_t badbreak2;
+
 void __near D_DoomLoop (void) {
 	// debugging stuff i need to find mem leaks...
 #ifdef DEBUGLOG_TO_FILE
@@ -937,6 +941,17 @@ void __near D_DoomLoop (void) {
 			// todo should the default case be -1 instead of 0?
 			Z_SetOverlay(OVERLAY_ID_MUS_LOADER);
 			S_ActuallyChangeMusic();
+		}
+
+		if (errorbreak){
+			I_Error("error was %i %i %i", errorbreak, badbreak, badbreak2);
+		}
+
+		if((forwardmove[0] != 0x19) || 
+			(forwardmove[1] != 0x32) || 
+			(sidemove[0] != 0x18) || 
+			(sidemove[1] != 0x28)){
+				I_Error("leak detected? %x %x %x");
 		}
 
 #ifdef DETAILED_BENCH_STATS

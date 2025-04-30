@@ -215,11 +215,11 @@ int8_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep) {
 
 void I_StopSound(int8_t handle) {
     
-    if (snd_SfxDevice == snd_PC){
-        pcspeaker_currentoffset = 0;
-    } else {
+    if (snd_SfxDevice == snd_SB) {
         SFX_StopPatch(handle);
-    }
+    } else if (snd_SfxDevice == snd_PC){
+        pcspeaker_currentoffset = 0;
+    } 
     
     
 }

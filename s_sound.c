@@ -391,7 +391,9 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
   mobj_t*	playerMo;	    
   THINKERREF    originRef = GETTHINKERREF(origin);
   uint8_t volume = snd_SfxVolume;
-
+  if (snd_SfxDevice == snd_none){
+	return;
+  }
 	// check for bogus sound #
 	if (sfx_id < 1 || sfx_id > NUMSFX) {
 
@@ -462,8 +464,10 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 	}
 
 	// Note: I_StartSound [eventually] handles loading, cacheing, etc.
-
-	channels[cnum].handle = I_StartSound(sfx_id, volume, sep);
+	rc = I_StartSound(sfx_id, volume, sep);
+	if (rc != -1){
+		channels[cnum].handle = rc;
+	}
 
 }
 

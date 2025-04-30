@@ -33,7 +33,6 @@ enum SB_ERRORS
     SB_OutOfMemory
 };
 
-// todo what does this mean
 #define SB_MixBufferSize    256
 #define SB_TotalBufferSize  (SB_MixBufferSize * 2)
 
@@ -121,6 +120,7 @@ extern uint8_t      application_volume;
 
 #define SOUND_NOT_IN_CACHE 0xFF
 #define SFX_PAGE_SEGMENT   0xD400
+#define SFX_PAGE_ADDRESS   (byte __far*) 0xD4000000
 #define SOUND_SINGULARITY_FLAG 0x8000 
 #define SOUND_22_KHZ_FLAG 0x4000 
 #define SOUND_LUMP_BITMASK 0x3FFF 
