@@ -91,7 +91,6 @@ int8_t                  sfxcache_tail;
 int8_t                  sfxcache_head;
 int8_t in_sound = false;
 
-void __near S_UpdateLRUCache();
 
 void __near logsimplecache(char a){
     if (in_sound){
@@ -208,8 +207,7 @@ void __near logcacheevent(char a, char b){
 }
 
 
-void __near S_IncreaseRefCount(int8_t voice_index){
-    uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
+void __near S_IncreaseRefCount(uint8_t cachepage){
     uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
     // uint8_t numpages  = sb_voicelist[i].length >> 14; // todo rol 2
     if (numpages){
@@ -255,12 +253,6 @@ void __near S_DecreaseRefCount(int8_t voice_index){
     } else {
         sfx_page_reference_count[cachepage]--;
     }
-    // make sure reference count = 0 are all at the tail
-    // logcacheevent('!', sb_voicelist[voice_index].sfx_id );
-    logcacheevent('d', cachepage);
-    S_UpdateLRUCache();
-    logcacheevent('e', cachepage);
-    // logcacheevent('-', sb_voicelist[voice_index].sfx_id );
 
 }
 
@@ -279,10 +271,12 @@ void __near S_MoveCacheItemBackOne(int8_t currentpage){
     // so we have encountered a bad index  that must be moved next towards head.
     // but we must move all its contiguous allocations, so iterate prev until we find it's end.
 
-    while (sfxcache_nodes[prev_startpoint].pagecount != 1){
-        prev_startpoint = sfxcache_nodes[prev_startpoint].prev;
+    if (sfxcache_nodes[prev_startpoint].numpages){
+        while (sfxcache_nodes[prev_startpoint].pagecount != 1){
+            prev_startpoint = sfxcache_nodes[prev_startpoint].prev;
+        }
     }
-
+    
     // now prev and next represent the ends of the allocation whether thats single or multi page.
 
     // prev_startpoint B
@@ -336,7 +330,7 @@ void __near S_UpdateLRUCache(){
             // everything from this point on should be count 0...
             if (sfx_page_reference_count[currentpage] != 0){
                 // problem! move this back to next
-                // logcacheevent('%', found_evictable);
+                // logcacheevent('%', currentpage);
                 // this breaks moving the two from a contiguous one.
                 // fix is to skip all pages of a multi page
                 S_MoveCacheItemBackOne(currentpage); 
@@ -1930,7 +1924,6 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 goto found_page;
             }
         }
-        // todo actually evict
 
         goto evict_one;
         
@@ -1980,7 +1973,6 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
             goto found_page_multiple;
 
         }
-        // todo actually evict
 
         goto evict_multiple;
     }
@@ -1989,6 +1981,7 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
 
 //uint8_t                 sfx_page_lru[NUM_SFX_PAGES];    // recency
 
+    S_UpdateLRUCache();
     // lets locate a page to evict
 
     logcacheevent('v', 1);
@@ -2097,7 +2090,7 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
     return 0;
 
     evict_multiple:
-    //todo
+    S_UpdateLRUCache();
 
     logcacheevent('v', pagecount+1);
     i = S_EvictSFXPage(pagecount+1);
@@ -2198,7 +2191,7 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
             {
                 int8_t cachepage = sfx_data[sfx_id].cache_position.bu.bytehigh;
                 logcacheevent('0', sfx_id);
-                S_IncreaseRefCount(i);
+                S_IncreaseRefCount(cachepage);
 
                 logcacheevent('+', sfx_id);
                 S_MarkSFXPageMRU(cachepage);
