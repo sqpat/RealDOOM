@@ -20,6 +20,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN int86x_:PROC
 EXTRN int86_:PROC
+EXTRN _DoINTR_:PROC
 
 .CODE
  
@@ -274,36 +275,28 @@ PUBLIC locallib_int86_
 
 
 push cx
-push si
 push bp
 mov  bp, sp
-sub  sp, 8
 
 
 
-;lea  si, [bp - 8]
-;mov  cx, si
-
+; inlined segread...
 push  ds
 push  ss
 push  cs
 push  es
 
-mov   cx, sp
+mov   cx, sp    ; [bp - 8]
 
-; inlined segread...  todo remove lea stuff and just push?
 ;mov  word ptr [si], es
 ;mov  word ptr [si + 2], cs
 ;mov  word ptr [si + 4], ss
 ;mov  word ptr [si + 6], ds
 
+call locallib_int86x_
+;call int86x_
 
-;call locallib_int86x_
-call  int86x_
-
-mov  sp, bp
-pop  bp
-pop  si
+LEAVE_MACRO
 pop  cx
 retf 
 
@@ -350,7 +343,9 @@ mov  al, byte ptr [bp - 01AH]
 lea  bx, [bp - 018h]
 xor  ah, ah
 
-call locallib_do_intr_
+;call locallib_do_intr_
+call _DoINTR_
+
 mov  bx, word ptr [bp - 2]
 mov  ax, word ptr [bp - 018h]
 mov  word ptr [bx], ax
