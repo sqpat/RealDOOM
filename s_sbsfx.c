@@ -65,10 +65,6 @@ uint8_t SB_OriginalVoiceVolumeRight = 255;
 uint8_t SB_Mixer_Status;
 
 
-int16_t                        errorbreak = 0;
-int16_t                        badbreak = 0;
-int16_t                        badbreak2 = 0;
-
 
 uint8_t 				current_sampling_rate = SAMPLE_RATE_11_KHZ_FLAG;
 uint8_t 				last_sampling_rate	  = SAMPLE_RATE_11_KHZ_FLAG;
@@ -172,24 +168,19 @@ void __near logcacheevent(char a, char b){
 
         if (i != 4){
             I_Error("cache loop?");
-            // errorbreak = 4;
         }
         if (sfxcache_nodes[sfxcache_tail].prev != -1){
             I_Error("bad tail?");
-            // errorbreak = 5;
         }
         if (sfxcache_nodes[sfxcache_head].next != -1){
             I_Error("bad head?");
-            // errorbreak = 6;
         }
             for (i = 0; i < 4; i++){
             if (sfx_page_reference_count[i] < 0){
                 I_Error("bad refcount?");
-                // errorbreak = 7;
             }
             if (sfx_free_bytes[i] > 64){
                 I_Error("bad freebytes?");
-                // errorbreak = 8;
             }
         }
 
@@ -198,9 +189,6 @@ void __near logcacheevent(char a, char b){
                 (sidemove[0] != 0x18) || 
                 (sidemove[1] != 0x28)){
                     I_Error("leak detected? %i %i", a, b);
-            // errorbreak = 9;
-            // badbreak = a;
-            // badbreak2 = b;
 
             }
     }
@@ -866,8 +854,13 @@ void SB_Service_Mix11Khz(){
                     page_add = sb_voicelist[i].currentsample >> 14;
                     // I_Error("page add %i %i", sb_voicelist[i].currentsample, page_add);
                 }
+
+                // if (!sound_played){
+                //     Z_SavePageFrameState();
+                // }
                 
                 // Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
+                
                 // logcacheevent(cache_pos.bu.bytehigh,  page_add);
 
                 // form the offset.
@@ -1012,10 +1005,14 @@ void SB_Service_Mix11Khz(){
         // todo optimize and dont do this over and over...
         _fmemset(sb_dmabuffer, 0x80, SB_TotalBufferSize);
     } else if ( sound_played == 1){
+        // Z_RestorePageFrameState();
         if (extra_zero_length){
             // examine this addr..
             _fmemset(extra_zero_copy_target, 0x80, extra_zero_length);
         }
+
+    } else {
+        // Z_RestorePageFrameState();
 
     }
 
@@ -1036,6 +1033,9 @@ void __interrupt __far_func SB_ServiceInterrupt(void) {
 void __near continuecall(){
 	int8_t sample_rate_this_instance;
     uint8_t current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
+
+    // Z_SavePageFrameState();
+
     in_sound = true;
     if (in_first_buffer){
         in_first_buffer = false;
@@ -1127,6 +1127,9 @@ void __near continuecall(){
     if (current_sfx_page != currentpageframes[SFX_PAGE_FRAME_INDEX]){
         // Z_QuickMapSFXPageFrame(current_sfx_page);
     }
+
+    // Z_RestorePageFrameState();
+
 
     if (sb_irq > 7){
         outp(0xA0, 0x20);

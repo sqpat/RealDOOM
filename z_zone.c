@@ -69,7 +69,6 @@ void __far Z_QuickMapSFXPageFrame(uint8_t pagenumber){
 
 	if (pagenumber > NUM_SFX_PAGES){
 		I_Error("bad page number %i", pagenumber);
-		// errorbreak = 3;
 	}
 	if (currentpageframes[SFX_PAGE_FRAME_INDEX] == pagenumber){
 		return;
@@ -83,6 +82,19 @@ void __far Z_QuickMapSFXPageFrame(uint8_t pagenumber){
 	intx86(EMS_INT, &regs, &regs);
 }
 
+void __far Z_SavePageFrameState(){
+
+	regs.h.ah = 0x47;
+	regs.w.dx = emshandle; // handle
+	intx86(EMS_INT, &regs, &regs);
+}
+
+void __far Z_RestorePageFrameState(){
+
+	regs.h.ah = 0x47;
+	regs.w.dx = emshandle; // handle
+	intx86(EMS_INT, &regs, &regs);
+}
 
 #define MAX_COUNT_ITER 8
 

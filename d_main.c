@@ -889,9 +889,6 @@ void __near G_BeginRecording (void)  {
 // and sets up the video mode
 void __near I_InitGraphics(void);
 
-extern int16_t errorbreak;
-extern int16_t badbreak;
-extern int16_t badbreak2;
 
 void __near D_DoomLoop (void) {
 	// debugging stuff i need to find mem leaks...
@@ -943,15 +940,14 @@ void __near D_DoomLoop (void) {
 			S_ActuallyChangeMusic();
 		}
 
-		if (errorbreak){
-			I_Error("error was %i %i %i", errorbreak, badbreak, badbreak2);
-		}
 
 		if((forwardmove[0] != 0x19) || 
 			(forwardmove[1] != 0x32) || 
 			(sidemove[0] != 0x18) || 
 			(sidemove[1] != 0x28)){
-				I_Error("leak detected? %x %x %x");
+				I_Error("leak detected? %lx %lx",
+				sidemove[0], sidemove[1]
+				);
 		}
 
 #ifdef DETAILED_BENCH_STATS

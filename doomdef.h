@@ -489,8 +489,13 @@ typedef uint8_t  THINKFUNCTION;
 
 #define NULL_THINKERREF 0
 
+int locallib_int86( int inter_no,
+           const union REGS *in_regs,
+           union REGS *out_regs );
 
-#define intx86(a, b, c) int86(a, b, c)
+
+#define intx86(a, b, c) locallib_int86(a, b, c)
+#define intx86old(a, b, c) int86(a, b, c)
 
 
 #define DPMI_INT 0x31
