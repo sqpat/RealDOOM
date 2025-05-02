@@ -148,13 +148,9 @@ void __far D_InitStrings() {
 // D_GetCursorColumn
 //
 int16_t __near D_GetCursorColumnRow(void) {
-	union REGS regs;
-
-	regs.h.ah = 3;
-	regs.h.bh = 0;
-	intx86(0x10, &regs, &regs);
-
-	return regs.w.dx;
+	fixed_t_union result;
+	result.wu = locallib_int86_10(0x0300, 0x0000, 0x0000);
+	return result.hu.intbits;
 }
 
 
@@ -163,14 +159,17 @@ int16_t __near D_GetCursorColumnRow(void) {
 //
 void __near D_SetCursorPosition(int16_t columnrow){
 
-	union REGS regs;
-
 	//regs.h.dh = row;
 	//regs.h.dl = column;
-	regs.w.dx = columnrow;
-	regs.h.ah = 2;
-	regs.h.bh = 0;
-	intx86(0x10, &regs, &regs);
+	// regs.w.dx = columnrow;
+	// regs.h.ah = 2;
+	// regs.h.bh = 0;
+	// intx86(0x10, &regs, &regs);
+
+	locallib_int86_10(0x0200, columnrow, 0x0000);
+
+
+
 }
 
 //
@@ -178,7 +177,6 @@ void __near D_SetCursorPosition(int16_t columnrow){
 //
 void __near D_DrawTitle(int8_t __near *string){
 
-	union REGS regs;
 	int16_t_union columnrow;
 	int16_t i;
 	int8_t COLOR;
@@ -203,12 +201,14 @@ void __near D_DrawTitle(int8_t __near *string){
 	for (i = 0; i < locallib_strlen(string); i++)
 	{
 		//Set character
-		regs.h.ah = 9;
-		regs.h.al = string[i];
-		regs.w.cx = 1;
-		regs.h.bl = COLOR;
-		regs.h.bh = 0;
-		intx86(0x10, &regs, &regs);
+		// regs.h.ah = 9;
+		// regs.h.al = string[i];
+		// regs.w.cx = 1;
+		// regs.h.bl = COLOR;
+		// regs.h.bh = 0;
+		// intx86(0x10, &regs, &regs);
+
+		locallib_int86_10_4args(0x900 + string[i], 0, COLOR, 1);
 
 		//Check cursor position
 		if (++column > 79){
@@ -736,14 +736,12 @@ int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __nea
 void __far D_DoomMain2(void) {
 	int16_t             p;
 	int8_t                    file[256];
-	union REGS regs;
 #if DEBUG_PRINTING
 	int8_t          textbuffer[280]; // must be 276 to fit the 3 line titles
 	int8_t            title[128];
 #endif
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x3660
-	struct SREGS sregs;
 
 	/*
 
@@ -1034,8 +1032,9 @@ R_PointToAngle(y, x);
 		#endif
 	}
 
-	regs.w.ax = 3;
-	intx86(0x10, &regs, &regs);
+	// set video mode?
+	locallib_int86_10(0x3, 0, 0);
+
 	D_DrawTitle(title);
 
 
