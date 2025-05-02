@@ -262,10 +262,14 @@ ENDP
 
 PROC locallib_int86_67_ FAR
 PROC locallib_int86_67_2arg_ FAR
+PROC locallib_int86_67_1arg_ FAR
 PROC locallib_int86_67_multiple_ FAR
+PROC locallib_int86_67_esdi_ FAR
 PUBLIC locallib_int86_67_
 PUBLIC locallib_int86_67_2arg_
+PUBLIC locallib_int86_67_1arg_
 PUBLIC locallib_int86_67_multiple_
+PUBLIC locallib_int86_67_esdi_
 
 int 067h
 retf 

@@ -182,6 +182,7 @@ byte __far *__near Z_InitEMS() {
 	// char	emmname[9] = "EMMXXXX0";
 
 
+	int16_t_union result;
 
 	int16_t pagestotal, pagesavail;
 	int16_t errorreg;
@@ -206,18 +207,16 @@ byte __far *__near Z_InitEMS() {
 	
 	*/
 
-	regs.h.ah = 0x40;
-	int86(EMS_INT, &regs, &regs);
-	errorreg = regs.h.ah;
+	result.hu = intx86_EMS_1arg(0x4000);
+	errorreg = result.bu.bytehigh;
 	if (errorreg) {
 		doerror(91, errorreg);
 	}
 
 
-	regs.h.ah = 0x46;
-	intx86(EMS_INT, &regs, &regs);
-	vernum = regs.h.al;
-	errorreg = regs.h.ah;
+	result.hu = intx86_EMS_1arg(0x4600);
+	vernum = result.bu.bytelow;
+	errorreg = result.bu.bytehigh;
 	if (errorreg != 0) {
 		doerror(90, errorreg); // EMS Error 0x46
 	}
@@ -229,6 +228,8 @@ byte __far *__near Z_InitEMS() {
 	// get page frame address
 	regs.h.ah = 0x41;
 	intx86(EMS_INT, &regs, &regs);
+	// result.hu = intx86_EMS_1arg(0x4100);
+
 	pageframebase = regs.w.bx;
 	errorreg = regs.h.ah;
 	if (errorreg != 0) {
@@ -240,6 +241,7 @@ byte __far *__near Z_InitEMS() {
 
 	regs.h.ah = 0x42;
 	intx86(EMS_INT, &regs, &regs);
+	// result.hu = intx86_EMS_1arg(0x4200);
 	pagesavail = regs.w.bx;
 	pagestotal = regs.w.dx;
 	DEBUG_PRINT("\n  %i pages total, %i pages available at frame %p", pagestotal, pagesavail, pageframebase);
@@ -251,6 +253,7 @@ byte __far *__near Z_InitEMS() {
 
 	regs.w.bx = NUM_EMS4_SWAP_PAGES; //numPagesToAllocate;
 	regs.h.ah = 0x43;
+	// result.hu = intx86_EMS_1arg(0x4300);
 	intx86(EMS_INT, &regs, &regs);
 	emshandle = regs.w.dx;
 	errorreg = regs.h.ah;
@@ -263,32 +266,35 @@ byte __far *__near Z_InitEMS() {
 
 
 	// do initial page remapping for ems page frame
-	regs.w.ax = 0x4400;  
-	regs.w.bx = MUS_DATA_PAGES;
-	regs.w.dx = emshandle; // handle
-	intx86(EMS_INT, &regs, &regs);
+	// regs.w.ax = 0x4400;  
+	// regs.w.bx = MUS_DATA_PAGES;
+	// regs.w.dx = emshandle; // handle
+	// intx86(EMS_INT, &regs, &regs);
+	intx86_EMS(0x4400, emshandle, MUS_DATA_PAGES);
 
-	regs.w.ax = 0x4401;  
-	regs.w.bx = SFX_DATA_PAGES;
-	regs.w.dx = emshandle; // handle
-	intx86(EMS_INT, &regs, &regs);
+	// regs.w.ax = 0x4401;  
+	// regs.w.bx = SFX_DATA_PAGES;
+	// regs.w.dx = emshandle; // handle
+	intx86_EMS(0x4401, emshandle, SFX_DATA_PAGES);
 
-	regs.w.ax = 0x4402;
-	regs.w.bx = SFX_DATA_PAGES+1;
-	regs.w.dx = emshandle; // handle
-	intx86(EMS_INT, &regs, &regs);
+	// regs.w.ax = 0x4402;
+	// regs.w.bx = SFX_DATA_PAGES+1;
+	// regs.w.dx = emshandle; // handle
+	intx86_EMS(0x4402, emshandle, SFX_DATA_PAGES+1);
+	// intx86(EMS_INT, &regs, &regs);
 
 	// DC00 mus driver setup
-	regs.w.ax = 0x4403;  
-	regs.w.bx = MUS_DRIVER_PAGE;
-	regs.w.dx = emshandle; // handle
+	// regs.w.ax = 0x4403;  
+	// regs.w.bx = MUS_DRIVER_PAGE;
+	// regs.w.dx = emshandle; // handle
+	intx86_EMS(0x4403, emshandle, MUS_DRIVER_PAGE);
 
 	currentpageframes[0] = 0;
 	currentpageframes[1] = NUM_MUSIC_PAGES;
 	currentpageframes[2] = NUM_MUSIC_PAGES+1;	// todo
 	currentpageframes[3] = NUM_MUSIC_PAGES+NUM_SFX_PAGES;
 
-	intx86(EMS_INT, &regs, &regs);
+	// intx86(EMS_INT, &regs, &regs);
 
 
 	//*size = numPagesToAllocate * PAGE_FRAME_SIZE;
@@ -317,11 +323,15 @@ void __near Z_GetEMSPageMap() {
 	// how weird. the call sometimes fails  if we dont do this?
 	memset(pagedata, 0, 256);
 
-	regs.w.ax = 0x5800;  // physical page
-	segregs.es = segregs.ds;
+	// regs.w.ax = 0x5800;  // physical page
+	// segregs.es = segregs.ds;
 	
-	regs.w.di = (int16_t)pagedata;
-	intx86(EMS_INT, &regs, &regs);
+	// regs.w.di = (int16_t)pagedata;
+	// intx86(EMS_INT, &regs, &regs);
+	
+	// ax, di, es
+	intx86_EMS_esdi(0x5800, (uint16_t)pagedata, 0x3C00);
+
 	errorreg = regs.h.ah;
 	//pagedata = MK_FP(sregs.es, regs.w.di);
 	if (errorreg != 0) {

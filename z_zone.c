@@ -159,7 +159,7 @@ void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 		//This is a near var. and  DS should be near by default.
 		//segregs.ds = pageswapargseg;
 		// regs.w.si = (int16_t)offset;
-		intx86(EMS_INT, &regs, &regs);
+		// intx86(EMS_INT, &regs, &regs);
 
 		intx86_EMS_multiple(0x5000, emshandle, min, (uint16_t)offset);
 
