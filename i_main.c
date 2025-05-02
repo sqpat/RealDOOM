@@ -81,12 +81,16 @@ void checkDS(int16_t a) {
 
 void hackDS();
 void hackDSBack();
+extern uint16_t __far* _GETDS;
 
 int16_t main ( int16_t argc, int8_t** argv ) { 
     myargc = argc; 
     myargv = argv; 
 
+	// set DS to 0x3C00. we must also do this in interrupts.
 	hackDS();
+	// override __GETDS mov ax, #### but im not sure anything uses it after init anyway?
+	_GETDS[1] = 0x3C00;
 
     D_DoomMain (); 
 

@@ -493,7 +493,19 @@ int locallib_int86( int inter_no,
            const union REGS *in_regs,
            union REGS *out_regs );
 
+#pragma aux locallib_int86_67_multiple_params \
+        __parm [ax] [dx] [cx] [si] \
+        __value [ax];
 
+#pragma aux (locallib_int86_67_multiple_params)  locallib_int86_67_multiple;
+
+uint16_t locallib_int86_67( uint16_t ax, uint16_t dx, uint16_t bx);
+uint16_t locallib_int86_67_2arg( uint16_t ax, uint16_t dx);
+uint16_t locallib_int86_67_multiple( uint16_t ax, uint16_t dx, uint16_t cx, uint16_t si);
+
+#define intx86_EMS(a, b, c) locallib_int86_67(a, b, c)
+#define intx86_EMS_2arg(a, b) locallib_int86_67_2arg(a, b)
+#define intx86_EMS_multiple(a, b, c, d) locallib_int86_67_multiple(a, b, c, d)
 #define intx86(a, b, c) locallib_int86(a, b, c)
 #define intx86old(a, b, c) int86(a, b, c)
 

@@ -18,9 +18,6 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
-EXTRN int86x_:PROC
-EXTRN int86_:PROC
-EXTRN _DoINTR_:PROC
 
 .CODE
  
@@ -261,6 +258,19 @@ jmp   inc_service_routine_loop
 ENDP
 
 
+; todo make this near.
+
+PROC locallib_int86_67_ FAR
+PROC locallib_int86_67_2arg_ FAR
+PROC locallib_int86_67_multiple_ FAR
+PUBLIC locallib_int86_67_
+PUBLIC locallib_int86_67_2arg_
+PUBLIC locallib_int86_67_multiple_
+
+int 067h
+retf 
+ENDP
+
 
 
 PROC locallib_int86_ FAR
@@ -286,7 +296,7 @@ push  ss
 push  cs
 push  es
 
-mov   cx, sp    ; [bp - 8]
+mov   cx, sp    ; [bp - 8]  ; todo move this inside the next call...
 
 ;mov  word ptr [si], es
 ;mov  word ptr [si + 2], cs
@@ -310,6 +320,9 @@ PUBLIC locallib_int86x_
 ; called after segread. whatssegread put in bx/cx?
 
 ; int86x
+
+; bp - 4: inner sregs
+; bp - 2: outer regs?
 
 push si
 push di
@@ -343,8 +356,7 @@ mov  al, byte ptr [bp - 01AH]
 lea  bx, [bp - 018h]
 xor  ah, ah
 
-;call locallib_do_intr_
-call _DoINTR_
+call locallib_do_intr_
 
 mov  bx, word ptr [bp - 2]
 mov  ax, word ptr [bp - 018h]
@@ -388,6 +400,7 @@ PROC locallib_do_intr_ FAR
 PUBLIC locallib_do_intr_
 ; _dointr
 
+pushf
 push  bp
 push  ds
 push  cx

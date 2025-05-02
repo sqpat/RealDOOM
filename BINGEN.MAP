@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/02 13:26:55
+Created on:       25/05/02 15:20:39
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -52,8 +52,8 @@ sounds_TEXT            CODE           AUTO           02ee:6440       00000000
 D_WIPE_TEXT            CODE           AUTO           02ee:6440       000002f1
 D_ALGO_TEXT            CODE           AUTO           02ee:6732       00000045
 dmx_TEXT               CODE           AUTO           02ee:6780       000001a2
-D_INT_TEXT             CODE           AUTO           02ee:6922       00000571
-D_WI_TEXT              CODE           AUTO           02ee:6e94       00001019
+D_INT_TEXT             CODE           AUTO           02ee:6922       00000570
+D_WI_TEXT              CODE           AUTO           02ee:6e92       00001019
 wi_stuff_TEXT          CODE           AUTO           02ee:7eb0       00000000
 MATH_TEXT              CODE           AUTO           02ee:7eb0       0000078b
 MAIN_TEXT              CODE           AUTO           02ee:863c       00000ecf
@@ -809,44 +809,44 @@ Module: dmx.obj(C:\REALDOOM\dmx.c)
 2da0:15ea+     _lastpcspeakernotevalue
 Module: d_int.obj(d_int.ASM)
 02ee:6932      MUS_ServiceRoutine_
-02ee:6b54*     locallib_do_intr_inner_
-02ee:6e93*     D_INTERRUPT_ENDMARKER_
+02ee:6b53*     locallib_do_intr_inner_
+02ee:6e92*     D_INTERRUPT_ENDMARKER_
 02ee:6922*     D_INTERRUPT_STARTMARKER_
-02ee:6a7d*     locallib_int86x_
-02ee:6b1e*     locallib_do_intr_
+02ee:6a7b*     locallib_int86x_
+02ee:6b1c*     locallib_do_intr_
 02ee:6a6a      locallib_int86_
 Module: d_wi.obj(d_wi.ASM)
-02ee:7ead      WI_ENDMARKER_
-02ee:77af*     WI_initStats_
-02ee:7294*     WI_slamBackground_
-02ee:761f*     WI_drawPercent_
-02ee:7c39*     WI_updateNoState_
-02ee:7d4d*     WI_initVariables_
-02ee:7c9e      WI_Ticker_
-02ee:6e94      WI_STARTMARKER_
-02ee:727b*     WI_MRandomLocal_
-02ee:756f*     WI_drawNum_
-02ee:772a*     WI_drawNoState_
-02ee:76e9*     WI_initNoState_
-02ee:7269*     WI_GetPatchESBX_
-02ee:7730*     WI_drawShowNextLoc_
-02ee:7257*     WI_GetPatch_
-02ee:76fe*     WI_updateShowNextLoc_
-02ee:7abe*     WI_loadData_
-02ee:7509*     WI_initAnimatedBack_
-02ee:74f5*     WI_initShowNextLoc_
-02ee:72cb*     WI_drawLF_
-02ee:7c4a*     G_WorldDone_
-02ee:7493*     WI_drawAnimatedBack_
-02ee:77df*     WI_updateStats_
-02ee:7e95      WI_Start_
-02ee:73da*     WI_updateAnimatedBack_
-02ee:7d26      WI_Drawer_
-02ee:7325*     WI_drawEL_
-02ee:7dbe*     WI_Init_
-02ee:7378*     WI_drawOnLnode_
-02ee:764e*     WI_drawTime_
-02ee:79be*     WI_drawStats_
+02ee:7eab      WI_ENDMARKER_
+02ee:77ad*     WI_initStats_
+02ee:7292*     WI_slamBackground_
+02ee:761d*     WI_drawPercent_
+02ee:7c37*     WI_updateNoState_
+02ee:7d4b*     WI_initVariables_
+02ee:7c9c      WI_Ticker_
+02ee:6e92      WI_STARTMARKER_
+02ee:7279*     WI_MRandomLocal_
+02ee:756d*     WI_drawNum_
+02ee:7728*     WI_drawNoState_
+02ee:76e7*     WI_initNoState_
+02ee:7267*     WI_GetPatchESBX_
+02ee:772e*     WI_drawShowNextLoc_
+02ee:7255*     WI_GetPatch_
+02ee:76fc*     WI_updateShowNextLoc_
+02ee:7abc*     WI_loadData_
+02ee:7507*     WI_initAnimatedBack_
+02ee:74f3*     WI_initShowNextLoc_
+02ee:72c9*     WI_drawLF_
+02ee:7c48*     G_WorldDone_
+02ee:7491*     WI_drawAnimatedBack_
+02ee:77dd*     WI_updateStats_
+02ee:7e93      WI_Start_
+02ee:73d8*     WI_updateAnimatedBack_
+02ee:7d24      WI_Drawer_
+02ee:7323*     WI_drawEL_
+02ee:7dbc*     WI_Init_
+02ee:7376*     WI_drawOnLnode_
+02ee:764c*     WI_drawTime_
+02ee:79bc*     WI_drawStats_
 Module: math.obj(math.ASM)
 02ee:826b      FastDiv32u16u_
 02ee:83fd      FastDiv3232FFFF_
@@ -1539,7 +1539,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(d_getvec.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(d_setvec.c)
 2899:2219      _dos_setvect_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(intx086.c)
-2899:2226      int86x_
+2899:2226+     int86x_
 2899:22c8      int86_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fputc.c)
 2899:22e9      fputc_
@@ -1796,4 +1796,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00030fd0 (200656.)
 Entry point address: 2899:2582
-Link time: 00:00.84
+Link time: 00:00.85

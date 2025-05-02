@@ -595,7 +595,7 @@ void SB_Service_Mix22Khz(){
                     page_add = sb_voicelist[i].currentsample >> 14;
                 }
                 
-                // Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
+                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
                 // form the offset.
                 cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
                 cache_pos.bu.bytelow = 0;
@@ -859,7 +859,7 @@ void SB_Service_Mix11Khz(){
                 //     Z_SavePageFrameState();
                 // }
                 
-                // Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
+                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
                 
                 // logcacheevent(cache_pos.bu.bytehigh,  page_add);
 
@@ -1125,7 +1125,7 @@ void __near continuecall(){
 	last_sampling_rate = current_sampling_rate;
 
     if (current_sfx_page != currentpageframes[SFX_PAGE_FRAME_INDEX]){
-        // Z_QuickMapSFXPageFrame(current_sfx_page);
+        Z_QuickMapSFXPageFrame(current_sfx_page);
     }
 
     // Z_RestorePageFrameState();
