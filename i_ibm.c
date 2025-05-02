@@ -241,6 +241,7 @@ void __far I_FinishUpdate(void) {
 void __near I_ReadMouse(void) {
 
     event_t ev;
+	reg_return_4word regresult;
 
     //
     // mouse events
@@ -251,14 +252,18 @@ void __near I_ReadMouse(void) {
 
 
 	// 16 bit version
-	in.x.ax = 0x03;  // read buttons / position
-	int86(0x33, &in, &out);
+	// in.x.ax = 0x03;  // read buttons / position
+	// int86(0x33, &in, &out);
+	regresult.qword = locallib_int86_33(0x0003);
 
-	ev.data1 = out.x.bx;
-	in.x.ax = 0x0B;  // read counters
-	int86(0x33, &in, &out);
 
-	ev.data2 = out.x.cx;
+
+	ev.data1 = regresult.w.bx;
+	// in.x.ax = 0x0B;  // read counters
+	// int86(0x33, &in, &out);
+	locallib_int86_33(0x000B);
+
+	ev.data2 = regresult.w.cx;
 	//ev.data3 = -out.x.dx; // dont use mouse forward/back movement
 	ev.data3 = 0;
 	D_PostEvent(&ev);

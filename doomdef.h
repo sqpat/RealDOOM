@@ -489,9 +489,6 @@ typedef uint8_t  THINKFUNCTION;
 
 #define NULL_THINKERREF 0
 
-int locallib_int86( int inter_no,
-           const union REGS *in_regs,
-           union REGS *out_regs );
 
 #pragma aux locallib_int86_67_multiple_params \
         __parm [ax] [dx] [cx] [si] \
@@ -512,15 +509,18 @@ int locallib_int86( int inter_no,
 #pragma aux (locallib_int86_10_params)  locallib_int86_10;
 
 
+
+
 uint16_t locallib_int86_33( uint16_t ax);
 uint32_t locallib_int86_10( uint16_t ax, uint16_t dx, uint16_t bx);
+uint64_t locallib_int86_67_1arg_return( uint16_t ax);
+uint64_t locallib_int86_67_3arg_return( uint16_t ax, uint16_t dx, uint16_t bx);
 void locallib_int86_10_4args( uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
 uint16_t locallib_int86_67( uint16_t ax, uint16_t dx, uint16_t bx);
 uint16_t locallib_int86_67_2arg( uint16_t ax, uint16_t dx);
 uint16_t locallib_int86_67_1arg( uint16_t ax);
 uint16_t locallib_int86_67_multiple( uint16_t ax, uint16_t dx, uint16_t cx, uint16_t si);
 uint16_t locallib_int86_67_esdi( uint16_t ax, uint16_t di, uint16_t es);
-#define intx86(a, b, c) locallib_int86(a, b, c)
 
 
 #define EMS_INT 0x67

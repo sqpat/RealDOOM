@@ -176,6 +176,7 @@ byte __far *__near Z_InitEMS() {
 	//int16_t numPagesToAllocate = NUM_EMS4_SWAP_PAGES; //256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
 	int16_t pageframebase;
 	int8_t  i;
+	reg_return_4word regresult;
 
 
 	// todo check for device...
@@ -226,12 +227,12 @@ byte __far *__near Z_InitEMS() {
 	}
 
 	// get page frame address
-	regs.h.ah = 0x41;
-	intx86(EMS_INT, &regs, &regs);
+	// regs.h.ah = 0x41;
+	regresult.qword = locallib_int86_67_1arg_return(0x4100);
 	// result.hu = locallib_int86_67_1arg(0x4100);
 
-	pageframebase = regs.w.bx;
-	errorreg = regs.h.ah;
+	pageframebase = regresult.w.bx;
+	errorreg = regresult.h.ah;
 	if (errorreg != 0) {
 		doerror(89, errorreg);/// EMS Error 0x41
 	}
@@ -239,11 +240,12 @@ byte __far *__near Z_InitEMS() {
 
 
 
-	regs.h.ah = 0x42;
-	intx86(EMS_INT, &regs, &regs);
+	// regs.h.ah = 0x42;
+	// intx86(EMS_INT, &regs, &regs);
+	regresult.qword = locallib_int86_67_1arg_return(0x4200);
 	// result.hu = locallib_int86_67_1arg(0x4200);
-	pagesavail = regs.w.bx;
-	pagestotal = regs.w.dx;
+	pagesavail = regresult.w.bx;
+	pagestotal = regresult.w.dx;
 	DEBUG_PRINT("\n  %i pages total, %i pages available at frame %p", pagestotal, pagesavail, pageframebase);
 
 	if (pagesavail < NUM_EMS4_SWAP_PAGES) {
@@ -251,12 +253,14 @@ byte __far *__near Z_InitEMS() {
 	}
 
 
-	regs.w.bx = NUM_EMS4_SWAP_PAGES; //numPagesToAllocate;
-	regs.h.ah = 0x43;
+	// regs.w.bx = NUM_EMS4_SWAP_PAGES; //numPagesToAllocate;
+	// regs.h.ah = 0x43;
 	// result.hu = locallib_int86_67_1arg(0x4300);
-	intx86(EMS_INT, &regs, &regs);
-	emshandle = regs.w.dx;
-	errorreg = regs.h.ah;
+	// intx86(EMS_INT, &regs, &regs);
+	regresult.qword = locallib_int86_67_3arg_return(0x4300, 0, NUM_EMS4_SWAP_PAGES);
+
+	emshandle = regresult.w.dx;
+	errorreg = regresult.h.ah;
 	if (errorreg != 0) {
 		// Error 0 = 0x00 = no error
 		// Error 137 = 0x89 = zero pages
@@ -309,15 +313,20 @@ byte __far *__near Z_InitEMS() {
 
 void __near Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
-	int16_t errorreg, i, numentries;
+	int16_t_union errorreg;
+	int16_t i, numentries;
+
+	reg_return_4word regresult;
  
 
-	regs.w.ax = 0x5801;  // physical page
-	intx86(EMS_INT, &regs, &regs);
-	errorreg = regs.h.ah;
-	numentries = regs.w.cx;
-	if (errorreg != 0) {
-		doerror(84, errorreg);// Call 5801 failed with value %i!\n
+	// regs.w.ax = 0x5801;  // physical page
+	// intx86(EMS_INT, &regs, &regs);
+
+	regresult.qword = locallib_int86_67_1arg_return(0x5801);
+	
+	numentries = regresult.w.cx;
+	if (regresult.h.ah != 0) {
+		doerror(84, regresult.h.ah);// Call 5801 failed with value %i!\n
 	}
 
 	// how weird. the call sometimes fails  if we dont do this?
@@ -330,12 +339,11 @@ void __near Z_GetEMSPageMap() {
 	// intx86(EMS_INT, &regs, &regs);
 	
 	// ax, di, es
-	locallib_int86_67_esdi(0x5800, (uint16_t)pagedata, 0x3C00);
+	errorreg.hu= locallib_int86_67_esdi(0x5800, (uint16_t)pagedata, 0x3C00);
 
-	errorreg = regs.h.ah;
 	//pagedata = MK_FP(sregs.es, regs.w.di);
-	if (errorreg != 0) {
-		doerror(83, errorreg);// Call 25 failed with value %i!\n
+	if (errorreg.bu.bytehigh != 0) {	
+		doerror(83, errorreg.bu.bytehigh);// Call 25 failed with value %i!\n
 	}
  
 	for (i = 0; i < numentries; i++) {

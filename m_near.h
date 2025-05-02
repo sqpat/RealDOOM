@@ -701,14 +701,10 @@ extern int16_t              p_init_maxframe;
 extern boolean grmode;
 extern boolean mousepresent;
 // REGS stuff used for int calls
-extern union REGS regs;
-extern struct SREGS segregs;
 
 extern boolean novideo; // if true, stay in text mode for debugging
 #define KBDQUESIZE 32
 
-extern union REGS in;
-extern union REGS out;
 extern void (__interrupt __far_func *oldkeyboardisr) (void);
 extern boolean             viewactivestate;
 extern boolean             menuactivestate;

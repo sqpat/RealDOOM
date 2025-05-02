@@ -472,13 +472,9 @@ int16_t             p_init_maxframe;
 boolean grmode = 0;
 boolean mousepresent;
 
-// REGS stuff used for int calls
-union REGS regs;
-struct SREGS segregs;
 
 boolean novideo; // if true, stay in text mode for debugging
 
-union REGS in, out;
 
 
 

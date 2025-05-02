@@ -190,5 +190,39 @@ typedef union _int16_t_union {
 
 } int16_t_union;
 
+
+
+
+
+
+
+
+typedef union _reg_return_4word {
+
+	uint64_t qword;
+
+	struct int16_t_values_ {
+		int16_t dx;
+		int16_t cx;
+		int16_t bx;
+		int16_t ax;
+	} w;
+
+	struct int8_t_values_ {
+		int8_t dl;
+		int8_t dh;
+		int8_t cl;
+		int8_t ch;
+		int8_t bl;
+		int8_t bh;
+		int8_t al;
+		int8_t ah;
+	
+	} h;
+
+} 
+reg_return_4word;
+
+
 #endif
 
