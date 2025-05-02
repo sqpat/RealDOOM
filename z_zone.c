@@ -58,7 +58,7 @@ void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 	// regs.w.bx = pagenumber + MUS_DATA_PAGES;
 	// regs.w.dx = emshandle; // handle
 				// ax					//dx		//bx
-	intx86_EMS(0x4400+pageframeindex, emshandle, pagenumber + MUS_DATA_PAGES);
+	locallib_int86_67(0x4400+pageframeindex, emshandle, pagenumber + MUS_DATA_PAGES);
 }
 
 // extern int16_t errorbreak;
@@ -81,7 +81,7 @@ void __far Z_QuickMapSFXPageFrame(uint8_t pagenumber){
 	// regs.w.bx = pagenumber + SFX_DATA_PAGES;
 	// regs.w.dx = emshandle; // handle
 	// intx86(EMS_INT, &regs, &regs);
-	intx86_EMS(0x4400+SFX_PAGE_FRAME_INDEX, emshandle, pagenumber + SFX_DATA_PAGES);
+	locallib_int86_67(0x4400+SFX_PAGE_FRAME_INDEX, emshandle, pagenumber + SFX_DATA_PAGES);
 
 }
 
@@ -90,14 +90,14 @@ void __far Z_SavePageFrameState(){
 	// regs.h.ah = 0x47;
 	// regs.w.dx = emshandle; // handle
 	// intx86(EMS_INT, &regs, &regs);
-	intx86_EMS_2arg(0x4700, emshandle);
+	locallib_int86_67_2arg(0x4700, emshandle);
 }
 
 void __far Z_RestorePageFrameState(){
 
 	// regs.h.ah = 0x48;
 	// regs.w.dx = emshandle; // handle
-	intx86_EMS_2arg(0x4700, emshandle);
+	locallib_int86_67_2arg(0x4700, emshandle);
 }
 
 #define MAX_COUNT_ITER 8
@@ -161,7 +161,7 @@ void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 		// regs.w.si = (int16_t)offset;
 		// intx86(EMS_INT, &regs, &regs);
 
-		intx86_EMS_multiple(0x5000, emshandle, min, (uint16_t)offset);
+		locallib_int86_67_multiple(0x5000, emshandle, min, (uint16_t)offset);
 
 		count -= MAX_COUNT_ITER;
 		offset+= MAX_COUNT_ITER*PAGE_SWAP_ARG_MULT;

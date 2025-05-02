@@ -547,8 +547,10 @@ void __near I_InitGraphics(void) {
 		return;
 	}
 	grmode = true;
-	regs.w.ax = 0x13;
-	intx86(0x10, (union REGS *)&regs, &regs);
+	// regs.w.ax = 0x13;
+	// intx86(0x10, (union REGS *)&regs, &regs);
+	// set video mode
+	locallib_int86_10(0x13, 0, 0);
 	currentscreen = (byte __far*) 0xA0000000L;
 	destscreen.w = 0xA0004000;
 

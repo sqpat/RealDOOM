@@ -55,8 +55,10 @@ void __near I_ShutdownSound(void) {
 void __near I_ShutdownGraphics(void) {
 	if (*(byte __far*)(MK_FP(0000, 0x449)) == 0x13) // don't reset mode if it didn't get set
 	{
-		regs.w.ax = 3;
-		intx86(0x10, &regs, &regs); // back to text mode
+		// regs.w.ax = 3;
+		// intx86(0x10, &regs, &regs); // back to text mode
+		locallib_int86_10(0x3, 0, 0);
+
 	}
 }
 
@@ -114,7 +116,7 @@ void __near I_ShutdownMouse(void) {
 void __near Z_ShutdownEMS() {
 
 
-	int16_t result;
+	int16_t_union result;
 
 	#if defined(__CHIPSET_BUILD)
 			// dont do anything
@@ -125,12 +127,15 @@ void __near Z_ShutdownEMS() {
 		if (emshandle) {
 			Z_QuickMapUnmapAll();
 
-			regs.w.dx = emshandle; // handle
-			regs.h.ah = 0x45;
-			intx86(EMS_INT, &regs, &regs);
-			result = regs.h.ah;
-			if (result != 0) {
-				DEBUG_PRINT("Failed deallocating EMS memory! %i!\n", result);
+			// regs.w.dx = emshandle; // handle
+			// regs.h.ah = 0x45;
+			// intx86(EMS_INT, &regs, &regs);
+			
+			result.hu = locallib_int86_67_2arg(0x4500, emshandle);
+
+			
+			if (result.bu.bytehigh != 0) {
+				DEBUG_PRINT("Failed deallocating EMS memory! %i!\n", result.bu.bytehigh);
 			}
 		}
 	#endif
@@ -375,11 +380,12 @@ void __near I_Quit(void) {
 	W_CacheLumpNameDirect("ENDOOM", (byte __far *)0xb8000000);
 	
 
-	regs.w.ax = 0x0200;
-	regs.h.bh = 0;
-	regs.h.dl = 0;
-	regs.h.dh = 23;
-	intx86(0x10, (union REGS *)&regs, &regs); // Set text pos
+	// regs.w.ax = 0x0200;
+	// regs.h.bh = 0;
+	// regs.h.dl = 0;
+	// regs.h.dh = 23;
+	// intx86(0x10, (union REGS *)&regs, &regs); // Set text pos
+	locallib_int86_10(0x0200, 0x2300, 0);
 	
 	//printf("\n");
 	Z_ShutdownEMS();

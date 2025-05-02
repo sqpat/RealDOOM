@@ -207,14 +207,14 @@ byte __far *__near Z_InitEMS() {
 	
 	*/
 
-	result.hu = intx86_EMS_1arg(0x4000);
+	result.hu = locallib_int86_67_1arg(0x4000);
 	errorreg = result.bu.bytehigh;
 	if (errorreg) {
 		doerror(91, errorreg);
 	}
 
 
-	result.hu = intx86_EMS_1arg(0x4600);
+	result.hu = locallib_int86_67_1arg(0x4600);
 	vernum = result.bu.bytelow;
 	errorreg = result.bu.bytehigh;
 	if (errorreg != 0) {
@@ -228,7 +228,7 @@ byte __far *__near Z_InitEMS() {
 	// get page frame address
 	regs.h.ah = 0x41;
 	intx86(EMS_INT, &regs, &regs);
-	// result.hu = intx86_EMS_1arg(0x4100);
+	// result.hu = locallib_int86_67_1arg(0x4100);
 
 	pageframebase = regs.w.bx;
 	errorreg = regs.h.ah;
@@ -241,7 +241,7 @@ byte __far *__near Z_InitEMS() {
 
 	regs.h.ah = 0x42;
 	intx86(EMS_INT, &regs, &regs);
-	// result.hu = intx86_EMS_1arg(0x4200);
+	// result.hu = locallib_int86_67_1arg(0x4200);
 	pagesavail = regs.w.bx;
 	pagestotal = regs.w.dx;
 	DEBUG_PRINT("\n  %i pages total, %i pages available at frame %p", pagestotal, pagesavail, pageframebase);
@@ -253,7 +253,7 @@ byte __far *__near Z_InitEMS() {
 
 	regs.w.bx = NUM_EMS4_SWAP_PAGES; //numPagesToAllocate;
 	regs.h.ah = 0x43;
-	// result.hu = intx86_EMS_1arg(0x4300);
+	// result.hu = locallib_int86_67_1arg(0x4300);
 	intx86(EMS_INT, &regs, &regs);
 	emshandle = regs.w.dx;
 	errorreg = regs.h.ah;
@@ -270,24 +270,24 @@ byte __far *__near Z_InitEMS() {
 	// regs.w.bx = MUS_DATA_PAGES;
 	// regs.w.dx = emshandle; // handle
 	// intx86(EMS_INT, &regs, &regs);
-	intx86_EMS(0x4400, emshandle, MUS_DATA_PAGES);
+	locallib_int86_67(0x4400, emshandle, MUS_DATA_PAGES);
 
 	// regs.w.ax = 0x4401;  
 	// regs.w.bx = SFX_DATA_PAGES;
 	// regs.w.dx = emshandle; // handle
-	intx86_EMS(0x4401, emshandle, SFX_DATA_PAGES);
+	locallib_int86_67(0x4401, emshandle, SFX_DATA_PAGES);
 
 	// regs.w.ax = 0x4402;
 	// regs.w.bx = SFX_DATA_PAGES+1;
 	// regs.w.dx = emshandle; // handle
-	intx86_EMS(0x4402, emshandle, SFX_DATA_PAGES+1);
+	locallib_int86_67(0x4402, emshandle, SFX_DATA_PAGES+1);
 	// intx86(EMS_INT, &regs, &regs);
 
 	// DC00 mus driver setup
 	// regs.w.ax = 0x4403;  
 	// regs.w.bx = MUS_DRIVER_PAGE;
 	// regs.w.dx = emshandle; // handle
-	intx86_EMS(0x4403, emshandle, MUS_DRIVER_PAGE);
+	locallib_int86_67(0x4403, emshandle, MUS_DRIVER_PAGE);
 
 	currentpageframes[0] = 0;
 	currentpageframes[1] = NUM_MUSIC_PAGES;
@@ -330,7 +330,7 @@ void __near Z_GetEMSPageMap() {
 	// intx86(EMS_INT, &regs, &regs);
 	
 	// ax, di, es
-	intx86_EMS_esdi(0x5800, (uint16_t)pagedata, 0x3C00);
+	locallib_int86_67_esdi(0x5800, (uint16_t)pagedata, 0x3C00);
 
 	errorreg = regs.h.ah;
 	//pagedata = MK_FP(sregs.es, regs.w.di);
