@@ -268,6 +268,7 @@ boolean __far P_GivePower (  int16_t /*powertype_t*/	power ) {
 	return true;
 }
 
+extern int16_t setval;
 
 
 //
@@ -291,6 +292,7 @@ void __near P_TouchSpecialThing ( mobj_t __near*	special, mobj_t __near*	toucher
     
 	
     sound = sfx_itemup;	
+	setval = 1;
 
     // Dead thing touching.
     // Can happen with a sliding player corpse.

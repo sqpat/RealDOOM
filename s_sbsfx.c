@@ -196,9 +196,7 @@ void __near logcacheevent(char a, char b){
 
 
 void __near S_IncreaseRefCount(uint8_t cachepage){
-    uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
-    // uint8_t numpages  = sb_voicelist[i].length >> 14; // todo rol 2
-    if (numpages){
+    if (sfxcache_nodes[cachepage].numpages){
         uint8_t currentpage = cachepage;
         // find first then iterate over them all
         while (sfxcache_nodes[currentpage].pagecount != 1){
@@ -910,7 +908,6 @@ void SB_Service_Mix11Khz(){
                             }
                             copy_length = remaining_length;
                         }
-
 
 
                         // MANUAL MIX?

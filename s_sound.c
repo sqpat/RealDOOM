@@ -70,7 +70,7 @@
 //
 // Internals.
 //
-int8_t S_getChannel (THINKERREF originRef, int16_t soundorg_secnum, sfxenum_t sfx_id );
+int8_t S_getChannel (mobj_t __near* origin , int16_t soundorg_secnum, sfxenum_t sfx_id );
 
 
 int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union x, fixed_t_union y, uint8_t* vol, uint8_t* sep );
@@ -288,7 +288,7 @@ void S_ResumeSound(void) {
     }
 }
 
-void S_StopSound(THINKERREF originRef, int16_t soundorg_secnum) {
+void S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
 	
 	int8_t cnum;
 
@@ -301,11 +301,15 @@ void S_StopSound(THINKERREF originRef, int16_t soundorg_secnum) {
 		}
 
 	} else {
-		for (cnum=0 ; cnum<numChannels ; cnum++) {
-			if (channels[cnum].sfx_id && channels[cnum].originRef == originRef) {
-				S_StopChannel(cnum);
-				break;
+		if (origin){
+		    THINKERREF originRef = GETTHINKERREF(origin);
+			for (cnum=0 ; cnum<numChannels ; cnum++) {
+				if (channels[cnum].sfx_id && channels[cnum].originRef == originRef) {
+					S_StopChannel(cnum);
+					break;
+				}
 			}
+
 		}
 
 	}
@@ -314,24 +318,42 @@ void S_StopSound(THINKERREF originRef, int16_t soundorg_secnum) {
 
 }
 
+void S_StopSoundMobjRef(mobj_t __near* origin) {
+	
+	int8_t cnum;
+	if (origin){
+		THINKERREF originRef = GETTHINKERREF(origin);
+
+		for (cnum=0 ; cnum<numChannels ; cnum++) {
+			if (channels[cnum].sfx_id && channels[cnum].originRef == originRef) {
+				S_StopChannel(cnum);
+				break;
+			}
+		}
+	}
+
+}
+
+#define NULL_THINKER_ORIGINREF 0xFFFF
 //
 // S_getChannel :
 //   If none available, return -1.  Otherwise channel #.
 //
-int8_t S_getChannel (THINKERREF originRef, int16_t soundorg_secnum, sfxenum_t sfx_id ) {
+int8_t S_getChannel (mobj_t __near* origin, int16_t soundorg_secnum, sfxenum_t sfx_id ) {
     // channel number to use
 
     int8_t		cnum;
-    
     channel_t*	c;
 
     // Find an open channel
     for (cnum=0 ; cnum<numChannels ; cnum++) {
 		if (!channels[cnum].sfx_id) {
 			break;
-		} else if (originRef &&  channels[cnum].originRef == originRef) {
-			S_StopChannel(cnum);
-			break;
+		} else if (origin){
+			if ( channels[cnum].originRef == GETTHINKERREF(origin)) {
+				S_StopChannel(cnum);
+				break;
+			}
 		}
     }
 
@@ -352,11 +374,15 @@ int8_t S_getChannel (THINKERREF originRef, int16_t soundorg_secnum, sfxenum_t sf
 		}
     }
 
+	// if (origin == NULL){
+	// 	I_Error("null origin??");
+	// }
+
     c = &channels[cnum];
 
     // channel is decided to be cnum.
     c->sfx_id = sfx_id;
-    c->originRef = originRef;
+    c->originRef = origin ? GETTHINKERREF(origin) : NULL_THINKER_ORIGINREF; // 
 	c->soundorg_secnum = soundorg_secnum;
 
     return cnum;
@@ -382,6 +408,8 @@ void logsound(int8_t cnum, sfxenum_t sfx_id){
 
 }
 
+int16_t setval = 0;
+
 void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum ) {
   int16_t		rc;
   uint8_t		sep;
@@ -390,6 +418,7 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
   int8_t		cnum;
   mobj_t*	playerMo;	    
   THINKERREF    originRef = GETTHINKERREF(origin);
+   
   uint8_t volume = snd_SfxVolume;
   if (snd_SfxDevice == snd_none){
 	return;
@@ -452,23 +481,21 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
  
 
 	// kill old sound
-	S_StopSound(originRef, soundorg_secnum);
+	S_StopSound(origin, soundorg_secnum);
 
 
 	// try to find a channel
-	cnum = S_getChannel(originRef, soundorg_secnum, sfx_id);
-	
+	cnum = S_getChannel(origin, soundorg_secnum, sfx_id);
+
 	// logsound(cnum, sfx_id);
-	if (cnum<0){
-		return;
-	}
+	if (cnum >= 0){
 
-	// Note: I_StartSound [eventually] handles loading, cacheing, etc.
-	rc = I_StartSound(sfx_id, volume, sep);
-	if (rc != -1){
-		channels[cnum].handle = rc;
+		// Note: I_StartSound [eventually] handles loading, cacheing, etc.
+		rc = I_StartSound(sfx_id, volume, sep);
+		if (rc != -1){
+			channels[cnum].handle = rc;
+		}
 	}
-
 }
 
 
@@ -550,7 +577,7 @@ void S_UpdateSounds(THINKERREF listenerRef) {
 				//  or modify their params
 
 				// todo double check this logic once pcm sfx reimplemented...
-				if ((c->originRef && listenerRef != c->originRef) ||(c->soundorg_secnum != SECNUM_NULL)) {
+				if ((c->originRef != NULL_THINKER_ORIGINREF && listenerRef != c->originRef) || (c->soundorg_secnum != SECNUM_NULL)) {
 					fixed_t_union originX;
 					fixed_t_union originY;
 
