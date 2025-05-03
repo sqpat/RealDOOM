@@ -189,12 +189,12 @@ int8_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep) {
     }
 
     if (snd_SfxDevice == snd_PC
-        && (sfx_id == sfx_posact)
+        && ((sfx_id == sfx_posact)
         || (sfx_id == sfx_bgact )
         || (sfx_id == sfx_dmact )
         || (sfx_id == sfx_dmpain)
         || (sfx_id == sfx_popain)
-        || (sfx_id == sfx_sawidl) ) {
+        || (sfx_id == sfx_sawidl) )) {
             return -1;
     }
 

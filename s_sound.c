@@ -408,7 +408,6 @@ void logsound(int8_t cnum, sfxenum_t sfx_id){
 
 }
 
-int16_t setval = 0;
 
 void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum ) {
   int16_t		rc;
@@ -492,6 +491,7 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 
 		// Note: I_StartSound [eventually] handles loading, cacheing, etc.
 		rc = I_StartSound(sfx_id, volume, sep);
+
 		if (rc != -1){
 			channels[cnum].handle = rc;
 		}
