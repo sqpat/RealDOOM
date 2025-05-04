@@ -73,8 +73,6 @@ int8_t 					change_sampling_to_11_next_int = 0;
 
 int8_t   				in_first_buffer  = true;
                         // 240
-#define                 MAX_APPLICATION_VOLUME  (15 << 4)
-uint8_t                 application_volume = MAX_APPLICATION_VOLUME; // Normally 0-15, where 15 is max, but stored shifted left 4 for optim reasons
 
 // sfx cache is done by updating lru array ordering on sound start and play.
 // anything with an >0 reference count cannot be deallocated, as it means an sfx is currently playing in that page.
@@ -632,11 +630,11 @@ void SB_Service_Mix22Khz(){
 
                     uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
                     int8_t volume = sb_voicelist[i].volume;
-                    if (application_volume != MAX_APPLICATION_VOLUME){
-                        int16_t_union volume_result;
-                        volume_result.hu = FastMul8u8u(volume, application_volume);
-                        volume = volume_result.bu.bytehigh;
-                    }
+                    // if (application_volume != MAX_APPLICATION_VOLUME){
+                    //     int16_t_union volume_result;
+                    //     volume_result.hu = FastMul8u8u(volume, application_volume);
+                    //     volume = volume_result.bu.bytehigh;
+                    // }
                     while (true){
 
                         if (remaining_length < copy_length){
@@ -894,11 +892,11 @@ void SB_Service_Mix11Khz(){
                     uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
                     uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
                     int8_t volume = sb_voicelist[i].volume;
-                    if (application_volume != MAX_APPLICATION_VOLUME){
-                        int16_t_union volume_result;
-                        volume_result.hu = FastMul8u8u(volume, application_volume);
-                        volume = volume_result.bu.bytehigh;
-                    }
+                    // if (application_volume != MAX_APPLICATION_VOLUME){
+                    //     int16_t_union volume_result;
+                    //     volume_result.hu = FastMul8u8u(volume, application_volume);
+                    //     volume = volume_result.bu.bytehigh;
+                    // }
                     while (true){
 
                         if (remaining_length < copy_length){
@@ -1134,21 +1132,6 @@ void __near continuecall(){
 
     outp(0x20, 0x20);
     in_sound = false;
-
-}
-
-void SB_IncrementApplicationVolume(){
-    if (application_volume == MAX_APPLICATION_VOLUME){
-        return;
-    }
-    application_volume += 16; // volume step shifted 4
-
-}
-void SB_DecrementApplicationVolume(){
-    if (application_volume == 0){
-        return;
-    }
-    application_volume -= 16; // volume step shifted 4
 
 }
 
@@ -2161,7 +2144,7 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
 }
 
 
-int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
+int8_t SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     
     int8_t i;
     
@@ -2211,7 +2194,7 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, int16_t sep, int16_t vol){
 
                 
                 //todo apply volume from vol. 
-                sb_voicelist[i].volume     = MAX_VOLUME_SFX_FLAG;
+                sb_voicelist[i].volume     = vol;
                 
 
                 // todo gotta clean out the bottom 

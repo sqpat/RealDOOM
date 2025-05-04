@@ -8,8 +8,6 @@
 int16_t SB_InitCard();
 int8_t SB_SetupPlayback();
 void SB_Shutdown();
-void SB_IncrementApplicationVolume();
-void SB_DecrementApplicationVolume();
 
 
 

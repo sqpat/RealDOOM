@@ -261,14 +261,7 @@ int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fix
 }
 
 void S_SetSfxVolume(uint8_t volume) {
-
-#ifdef CHECK_FOR_ERRORS
-	if ( volume > 127){
-		I_Error("Attempt to set sfx volume at %d", volume);
-	}
-#endif
     snd_SfxVolume = volume;
-
 }
 
 //
