@@ -85,7 +85,7 @@ int8_t                  sfxcache_tail;
 int8_t                  sfxcache_head;
 int8_t in_sound = false;
 
-
+#ifdef ENABLE_SFX_LOGGING
 
 
 void __near logcacheevent(char a, char b){
@@ -171,6 +171,12 @@ void __near logcacheevent(char a, char b){
             }
     }
 }
+
+#else
+
+#define logcacheevent(a, b) 
+
+#endif
 
 
 void __near S_IncreaseRefCount(uint8_t cachepage){
