@@ -2247,6 +2247,9 @@ boolean SFX_Playing(int8_t handle){
     return false;
 }
 
-void SFX_SetOrigin(int8_t handle, int16_t sep, int16_t vol){
-    //todo this
+void SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol){
+    if (sb_voicelist[handle].playing){
+        sb_voicelist[handle].sep = sep;
+        sb_voicelist[handle].volume = vol;
+    }
 }

@@ -1430,6 +1430,8 @@ typedef struct {
 	uint16_t			currentsample;      // in bytes. could be multiples of 256 and stored in one byte though.
 	boolean 			playing;            
 	int8_t 	 			volume;				// 16-127. 0-15 is mute. 128+ should be undefined?
+    //todo eventually implement stereo and sep?
+	uint8_t 	 		sep;				// stereo l/r mod
 } SB_VoiceInfo ;
 #define NUM_SFX_TO_MIX 8
 extern SB_VoiceInfo sb_voicelist[NUM_SFX_TO_MIX];

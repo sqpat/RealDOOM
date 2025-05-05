@@ -575,20 +575,7 @@ void S_UpdateSounds() {
 				volume = snd_SfxVolume;
 				sep = NORM_SEP;
 
-				// // the only one with a link...
-				// if (sfx_id == sfx_chgun) {
-				// 	// link is only used once in the dataset and hardcoded there - rather than including all this extra
-				// 	// data in memory we just hardcode the fields...
-
-				// 	//volume += 0; 
-
-				// 	if (volume < 1) {
-				// 		S_StopChannel(cnum);
-				// 		continue;
-				// 	} else if (volume > snd_SfxVolume) {
-				// 		volume = snd_SfxVolume;
-				// 	}
-				// }
+			
 
 				// check non-local sounds for distance clipping
 				//  or modify their params
@@ -626,6 +613,9 @@ void S_UpdateSounds() {
 			}
 		}
     }
+
+	// todo.. re-enable and test this!
+
     // kill music if it is a single-play && finished
     // if (	mus_playing
     //      && !I_QrySongPlaying()
