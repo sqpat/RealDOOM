@@ -77,7 +77,7 @@
 int8_t S_getChannel (mobj_t __near* origin , int16_t soundorg_secnum, sfxenum_t sfx_id );
 
 
-int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union x, fixed_t_union y, uint8_t* vol, uint8_t* sep );
+int16_t S_AdjustSoundParams ( fixed_t_union x, fixed_t_union y, uint8_t* vol, uint8_t* sep );
 
 void S_StopChannel(int8_t cnum);
 
@@ -203,41 +203,23 @@ void S_StopChannel(int8_t cnum) {
 //todo optimize to make this logic generally 16 bit 
 // instead of generally 32 bit. 
 // probably fine, does not affect physics.
-int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fixed_t_union sourceY, uint8_t* vol, uint8_t* sep){
-	fixed_t_union	approx_dist;
-    fixed_t_union	adx;
-    fixed_t_union	ady;
-    angle_t	angle;
+
+uint8_t S_AdjustSoundParamsSep ( fixed_t_union sourceX, fixed_t_union sourceY){
+
+	angle_t	angle;
 	fixed_t_union intermediate;
-	mobj_pos_t __far * listener = (mobj_pos_t __far *)&mobjposlist_6800[listenerRef];
-	//mobj_pos_t __far * source   = (mobj_pos_t __far *)&mobjposlist_6800[sourceRef];
-	//return 0;
-
-
-
-    // calculate the distance to sound origin
-    //  and clip it if necessary
-    adx.w = labs(listener->x.w - sourceX.w);
-    ady.w = labs(listener->y.w - sourceY.w);
-
-    // From _GG1_ p.428. Appox. eucledian distance fast.
-	intermediate.w = ((adx.w < ady.w ? adx.w : ady.w)>>1);
-    approx_dist.w = adx.w + ady.w - intermediate.w;
-    
-    if (gamemap != 8 && approx_dist.w > S_CLIPPING_DIST) {
-		return 0;
-    }
+	
     
     // angle of source to listener
-    angle.w = R_PointToAngle2(listener->x,
-			    listener->y,
+    angle.w = R_PointToAngle2(playerMobj_pos->x,
+			    playerMobj_pos->y,
 			    sourceX,
 			    sourceY);
 
-    if (angle.w > listener->angle.w){
-		angle.w = angle.w - listener->angle.w;
+    if (angle.w > playerMobj_pos->angle.w){
+		angle.w = angle.w - playerMobj_pos->angle.w;
 	} else{
-		angle.w = angle.w + (0xffffffff - listener->angle.w);
+		angle.w = angle.w + (0xffffffff - playerMobj_pos->angle.w);
 	}
 
 
@@ -247,30 +229,53 @@ int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fix
 	angle.h.intbits >>= 3;
 	// mul by 96... optimize with shifts and adds?
 	intermediate.h.intbits = FastMul16u32(S_STEREO_SWING_HIGH,finesine[angle.h.intbits]);
-    *sep = 128 - (intermediate.h.intbits);
+    return 128 - (intermediate.h.intbits);
 
+
+
+
+}
+
+uint8_t S_AdjustSoundParamsVol ( fixed_t_union sourceX, fixed_t_union sourceY){
+	fixed_t_union	approx_dist;
+    fixed_t_union	adx;
+    fixed_t_union	ady;
+	fixed_t_union intermediate;
+
+    // calculate the distance to sound origin
+    //  and clip it if necessary
+    adx.w = labs(playerMobj_pos->x.w - sourceX.w);
+    ady.w = labs(playerMobj_pos->y.w - sourceY.w);
+
+    // From _GG1_ p.428. Appox. eucledian distance fast.
+	intermediate.w = ((adx.w < ady.w ? adx.w : ady.w)>>1);
+    approx_dist.w = adx.w + ady.w - intermediate.w;
+    
+    if (gamemap != 8 && approx_dist.w > S_CLIPPING_DIST) {
+		return 0;
+    }
+    
     // volume calculation
     if (approx_dist.h.intbits < S_CLOSE_DIST_HIGH) {
-		*vol = snd_SfxVolume;
+		return snd_SfxVolume;
 
 
     } else if (gamemap != 8) {
 		// distance effect
 
 		intermediate.w = S_CLIPPING_DIST - approx_dist.w;
-		*vol = FastDiv3216u(FastMul1616(snd_SfxVolume, intermediate.h.intbits), S_ATTENUATOR); 
+		return FastDiv3216u(FastMul1616(snd_SfxVolume, intermediate.h.intbits), S_ATTENUATOR); 
 	} else { // gamemap == 8
 		if (approx_dist.h.intbits >= S_CLIPPING_DIST_HIGH){
-			*vol = 15;	// should this just be 0?
+			return 15;	// should this just be 0?
 		} else {
 			intermediate.w = S_CLIPPING_DIST - approx_dist.w;
-			*vol = 15 + FastDiv3216u(( FastMul1616((snd_SfxVolume-15), intermediate.h.intbits)),  S_ATTENUATOR);
+			return 15 + FastDiv3216u(( FastMul1616((snd_SfxVolume-15), intermediate.h.intbits)),  S_ATTENUATOR);
 		}
 
 
     }
     
-    return (*vol > 0);
 
 
 }
@@ -472,16 +477,19 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 			originX = originMobjPos->x;
 			originY = originMobjPos->y;
 		}
-		rc = S_AdjustSoundParams(playerMobjRef, originX, originY, &volume, &sep);
+		volume = S_AdjustSoundParamsVol(originX, originY);
 		
-		if ( originX.w == playerMobj_pos->x.w && originY.w == playerMobj_pos->y.w) {	
-			sep = NORM_SEP;
-		}
-		
-    
-		if (!rc) {
+		if (!volume) {
 			return;
 		}
+
+		if ( originX.w == playerMobj_pos->x.w && originY.w == playerMobj_pos->y.w) {	
+			sep = NORM_SEP;
+		} else {
+			sep = S_AdjustSoundParamsSep(originX, originY);
+		}
+		
+
 	} else {
 		sep = NORM_SEP;
 	}
@@ -527,7 +535,7 @@ void S_StartSoundWithParams(int16_t soundorg_secnum, sfxenum_t sfx_id) {
 //
 // Updates music & sounds
 //
-void S_UpdateSounds(THINKERREF listenerRef) {
+void S_UpdateSounds() {
 	
 
 	
@@ -567,25 +575,26 @@ void S_UpdateSounds(THINKERREF listenerRef) {
 				volume = snd_SfxVolume;
 				sep = NORM_SEP;
 
-				// the only one with a link...
-				if (sfx_id == sfx_chgun) {
-					// link is only used once in the dataset and hardcoded there - rather than including all this extra
-					// data in memory we just hardcode the fields...
+				// // the only one with a link...
+				// if (sfx_id == sfx_chgun) {
+				// 	// link is only used once in the dataset and hardcoded there - rather than including all this extra
+				// 	// data in memory we just hardcode the fields...
 
-					//volume += 0; 
-					if (volume < 1) {
-						S_StopChannel(cnum);
-						continue;
-					} else if (volume > snd_SfxVolume) {
-						volume = snd_SfxVolume;
-					}
-				}
+				// 	//volume += 0; 
+
+				// 	if (volume < 1) {
+				// 		S_StopChannel(cnum);
+				// 		continue;
+				// 	} else if (volume > snd_SfxVolume) {
+				// 		volume = snd_SfxVolume;
+				// 	}
+				// }
 
 				// check non-local sounds for distance clipping
 				//  or modify their params
 
-				// todo double check this logic once pcm sfx reimplemented...
-				if ((c->originRef != NULL_THINKER_ORIGINREF && listenerRef != c->originRef) || (c->soundorg_secnum != SECNUM_NULL)) {
+				// determine origin based on sector or source thinker ref.
+				if ((c->originRef != NULL_THINKER_ORIGINREF && playerMobjRef != c->originRef) || (c->soundorg_secnum != SECNUM_NULL)) {
 					fixed_t_union originX;
 					fixed_t_union originY;
 
@@ -601,15 +610,12 @@ void S_UpdateSounds(THINKERREF listenerRef) {
 					}
 					
 					
-					audible = S_AdjustSoundParams(listenerRef,
-								originX,
-								originY,
-								&volume,
-								&sep);
+					volume = S_AdjustSoundParamsVol(originX, originY);
 					
-					if (!audible) {
+					if (!volume) {
 						S_StopChannel(cnum);
 					} else{
+						sep = S_AdjustSoundParamsSep(originX, originY);
 						I_UpdateSoundParams(c->handle, volume, sep);
 					}
 				}

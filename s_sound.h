@@ -100,7 +100,7 @@ void S_ResumeSound(void);
 //
 // Updates music & sounds
 //
-void S_UpdateSounds(THINKERREF listenerRef);
+void S_UpdateSounds();
 
 void S_SetMusicVolume(uint8_t volume);
 void S_SetSfxVolume(uint8_t volume);
