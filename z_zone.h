@@ -282,7 +282,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define NUM_SPRITE_CACHE_PAGES                      0x14
 #define NUM_TEXTURE_PAGES                           0x18
 #define NUM_MUSIC_PAGES                             0x4
-#define NUM_SFX_PAGES                               0x4
+#define NUM_SFX_PAGES                               0x8
 #define MUS_PAGE_FRAME_INDEX                        0x0
 #define SFX_PAGE_FRAME_INDEX                        0x1
 #elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  

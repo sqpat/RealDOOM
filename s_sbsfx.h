@@ -135,7 +135,7 @@ extern uint8_t      application_volume;
 
 
 
-void S_TempInit2();
+void SB_StartInit();
 
 
 #endif

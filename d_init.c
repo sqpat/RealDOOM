@@ -60,12 +60,12 @@
 #include "p_local.h"
 #include "m_memory.h"
 #include "m_near.h"
+#include "s_sbsfx.h"
 
 #include <dos.h>
 
 #define MAX_STRINGS 306
 
-void S_TempInit2();
 
 void __far M_LoadDefaults();
 
@@ -337,7 +337,9 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 	LoadSFXWadLumps();
 
 	// sb card setup for now..
-	S_TempInit2();
+	if (snd_SfxDevice == snd_SB){
+		SB_StartInit();
+	}
 
 }
 

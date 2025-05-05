@@ -28,7 +28,7 @@ void( __interrupt __far *SB_OldInt)(void);
 
 
 
-#define MAX_VOLUME_SFX_FLAG 0x80
+#define MAX_VOLUME_SFX 0x7F
 
 
 
@@ -86,20 +86,12 @@ int8_t                  sfxcache_head;
 int8_t in_sound = false;
 
 
-void __near logsimplecache(char a){
-    if (in_sound){
-        return;
-    } else {
-        FILE* fp = fopen("cache.txt", "ab");
-        fputc(a, fp);
-        fputc('\n', fp);
-        fclose(fp);
-    }
-}
+
 
 void __near logcacheevent(char a, char b){
     int8_t current = sfxcache_tail;
     int8_t i = 0;
+    int8_t j = 0;
     if (in_sound){
         return;
     } else {
@@ -117,39 +109,26 @@ void __near logcacheevent(char a, char b){
         fputc(' ', fp);
         fputc(' ', fp);
 
-        fputc('0' + sfx_page_reference_count[0], fp);
-        fputc(' ', fp);
-        fputc('0' + sfx_page_reference_count[1], fp);
-        fputc(' ', fp);
-        fputc('0' + sfx_page_reference_count[2], fp);
-        fputc(' ', fp);
-        fputc('0' + sfx_page_reference_count[3], fp);
-        fputc(' ', fp);
+        for (j = 0; j < NUM_SFX_PAGES; j ++){
+            fputc('0' + sfx_page_reference_count[j], fp);
+            fputc(' ', fp);
+        }
+
         fputc(' ', fp);
 
+        for (j = 0; j < NUM_SFX_PAGES; j ++){
+            fputc('0' + sfxcache_nodes[j].pagecount, fp);
+            fputc(' ', fp);
+        }
 
-        fputc('0' + sfxcache_nodes[0].pagecount, fp);
-        fputc(' ', fp);
-        fputc('0' + sfxcache_nodes[1].pagecount, fp);
-        fputc(' ', fp);
-        fputc('0' + sfxcache_nodes[2].pagecount, fp);
-        fputc(' ', fp);
-        fputc('0' + sfxcache_nodes[3].pagecount, fp);
-        fputc(' ', fp);
         fputc(' ', fp);
 
-        fputc('0' + (sfx_free_bytes[0]/10), fp);
-        fputc('0' + (sfx_free_bytes[0]%10), fp);
-        fputc(' ', fp);
-        fputc('0' + (sfx_free_bytes[1]/10), fp);
-        fputc('0' + (sfx_free_bytes[1]%10), fp);
-        fputc(' ', fp);
-        fputc('0' + (sfx_free_bytes[2]/10), fp);
-        fputc('0' + (sfx_free_bytes[2]%10), fp);
-        fputc(' ', fp);
-        fputc('0' + (sfx_free_bytes[3]/10), fp);
-        fputc('0' + (sfx_free_bytes[3]%10), fp);
-        fputc(' ', fp);
+        for (j = 0; j < NUM_SFX_PAGES; j ++){
+            fputc('0' + (sfx_free_bytes[j]/10), fp);
+            fputc('0' + (sfx_free_bytes[j]%10), fp);
+            fputc(' ', fp);
+        }
+        
         fputc(' ', fp);
         
         while (current != -1){
@@ -164,7 +143,7 @@ void __near logcacheevent(char a, char b){
         fputc('\n', fp);
         fclose(fp);
 
-        if (i != 4){
+        if (i != NUM_SFX_PAGES){
             I_Error("cache loop?");
         }
         if (sfxcache_nodes[sfxcache_tail].prev != -1){
@@ -173,7 +152,8 @@ void __near logcacheevent(char a, char b){
         if (sfxcache_nodes[sfxcache_head].next != -1){
             I_Error("bad head?");
         }
-            for (i = 0; i < 4; i++){
+
+        for (i = 0; i < NUM_SFX_PAGES; i++){
             if (sfx_page_reference_count[i] < 0){
                 I_Error("bad refcount?");
             }
@@ -309,16 +289,16 @@ void __near S_UpdateLRUCache(){
 
     // todo handle tail!
     while (currentpage != -1){
-        // logcacheevent('f', currentpage);
+        logcacheevent('f', currentpage);
         if (found_evictable){
             // everything from this point on should be count 0...
             if (sfx_page_reference_count[currentpage] != 0){
                 // problem! move this back to next
-                // logcacheevent('%', currentpage);
+                logcacheevent('%', currentpage);
                 // this breaks moving the two from a contiguous one.
                 // fix is to skip all pages of a multi page
                 S_MoveCacheItemBackOne(currentpage); 
-                // logcacheevent('$', found_evictable);
+                logcacheevent('$', found_evictable);
 
             }
 
@@ -331,13 +311,13 @@ void __near S_UpdateLRUCache(){
         // if multipage...
         if (sfxcache_nodes[currentpage].numpages){
             // get to the last page
-            // logcacheevent('g', sfxcache_nodes[currentpage].numpages);
+            logcacheevent('g', sfxcache_nodes[currentpage].numpages);
             while (sfxcache_nodes[currentpage].pagecount != 1){
                 currentpage = sfxcache_nodes[currentpage].prev;
             }
         }
-        // logcacheevent('h', currentpage);
-        // logcacheevent('i', sfxcache_nodes[currentpage].prev);
+        logcacheevent('h', currentpage);
+        logcacheevent('i', sfxcache_nodes[currentpage].prev);
         currentpage = sfxcache_nodes[currentpage].prev;
 	}
     
@@ -562,8 +542,6 @@ void SB_Service_Mix22Khz(){
 
 		if (!sb_voicelist[i].playing){
 
-		} else if (sb_voicelist[i].volume == 0){
-            // dont play mute sound
 		} else {
 
 			// Keep track of current buffer
@@ -581,205 +559,218 @@ void SB_Service_Mix22Khz(){
 
 
 			} else {
-                uint16_t copy_length = SB_TransferLength;
-                uint16_t copy_offset;
-                int8_t   do_second_copy = false;
-                int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id].cache_position;
-                int8_t   page_add = 0;
-                if (sb_voicelist[i].currentsample >= 16384){
-                    // todo rol 2 in asm
-                    page_add = sb_voicelist[i].currentsample >> 14;
-                }
-                
-                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
-                // form the offset.
-                cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
-                cache_pos.bu.bytelow = 0;
 
-                if (sb_voicelist[i].samplerate){
-                    remaining_22khz = true;
-                }
-                
-                // if not the first copy, just copy to the next buffer
-                if (sb_voicelist[i].currentsample){
-                    // copy only to doubled buffer
-                    if (in_first_buffer){
-                        copy_offset = SB_TransferLength;    
+                if (sb_voicelist[i].volume == 0){
+                    // dont play/mix sounds this low? 
+                    if (sb_voicelist[i].samplerate){
+                        sb_voicelist[i].currentsample += SB_TransferLength;
                     } else {
-                        copy_offset = 0;
+                        sb_voicelist[i].currentsample += SB_TransferLength >> 1;
                     }
-                // if the first copy, copy two buffers worth.
+
+
                 } else {
-                    // double buffer for first write!
-                    // detect the run-over over the dma end buffer...
+
+                    uint16_t copy_length = SB_TransferLength;
+                    uint16_t copy_offset;
+                    int8_t   do_second_copy = false;
+                    int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id].cache_position;
+                    int8_t   page_add = 0;
+                    if (sb_voicelist[i].currentsample >= 16384){
+                        // todo rol 2 in asm
+                        page_add = sb_voicelist[i].currentsample >> 14;
+                    }
                     
-                    if (!in_first_buffer){
-                        do_second_copy = true;
-                        copy_offset = SB_TransferLength;
-                    } else {
-                        copy_length = SB_DoubleBufferLength;
-                        copy_offset = 0;
+                    Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
+                    // form the offset.
+                    cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
+                    cache_pos.bu.bytelow = 0;
+
+                    if (sb_voicelist[i].samplerate){
+                        remaining_22khz = true;
                     }
-
-                }
-
-                // stupid c89
-                {                
-                    uint8_t __far * dma_buffer = MK_FP(sb_dmabuffer_segment, copy_offset);
-                    uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
-
-                    uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
-                    int8_t volume = sb_voicelist[i].volume;
-                    // if (application_volume != MAX_APPLICATION_VOLUME){
-                    //     int16_t_union volume_result;
-                    //     volume_result.hu = FastMul8u8u(volume, application_volume);
-                    //     volume = volume_result.bu.bytehigh;
-                    // }
-                    while (true){
-
-                        if (remaining_length < copy_length){
-                            if (sound_played == 0){
-                                extra_zero_length = copy_length - remaining_length;
-                                extra_zero_copy_target = dma_buffer + remaining_length;
-                            }
-                            copy_length = remaining_length;
-                        }
-
-
-
-                        // MANUAL MIX?
-
-                        // volume is 0-127. if 128+ then use full volume.                                         
-                        if (volume & MAX_VOLUME_SFX_FLAG){
-                            // max volume. just use the bytes directly
-                            if (!sound_played){
-                                // first sound copied...
-                                
-                                if (sb_voicelist[i].samplerate){
-                                    _fmemcpy(dma_buffer, source, copy_length);
-                                } else {
-                                    int8_t j;
-                                    for (j = 0; j < copy_length/2; j++){
-                                        dma_buffer[2*j]   = source[j];
-                                        dma_buffer[2*j+1] = source[j];
-                                    }
-                                }
-
-                                if (extra_zero_length){
-                                    _fmemset(dma_buffer + copy_length, 0x80, extra_zero_length);
-                                }
-
-
-                            } else {
-                                uint16_t j;
-                                // subsequent sounds added
-                                // obviously needs imrpovement...
-                                if (sb_voicelist[i].samplerate){
-                                    for (j = 0; j < copy_length; j++){
-                                        int16_t total = dma_buffer[j] + source[j];
-                                        dma_buffer[j] = total >> 1;
-                                    }
-                                } else {
-                                    for (j = 0; j < copy_length/2; j++){
-                                        int16_t total = dma_buffer[2*j] + source[j];
-                                        dma_buffer[2*j] = total >> 1;
-                                        total = dma_buffer[2*j+1] + source[j];
-                                        dma_buffer[2*j+1] = total >> 1;
-                                    }
-                                }
-                            }
+                    
+                    // if not the first copy, just copy to the next buffer
+                    if (sb_voicelist[i].currentsample){
+                        // copy only to doubled buffer
+                        if (in_first_buffer){
+                            copy_offset = SB_TransferLength;    
                         } else {
-                            // DO VOLUME MIX
-
-                            if (!sound_played){
-                                // first sound copied...
-                                uint16_t j;
-                                
-                                if (sb_voicelist[i].samplerate){
-
-
-                                    for (j = 0; j < copy_length; j++){
-                                        int16_t_union total;
-                                        int8_t intermediate = (source[j] - 0x80);
-                                        total.h = FastIMul8u8u(volume, intermediate) << 1;
-                                        dma_buffer[j] = 0x80 + total.bu.bytehigh;
-
-                                        // dma_buffer[j] = 0x80 + total.bu.bytehigh;   // divide by 256 means take the high byte
-                                    }
-                                } else {
-                                    for (j = 0; j < copy_length/2; j++){
-                                        int16_t_union total;
-                                        int8_t intermediate = (source[j] - 0x80);
-                                        uint8_t result;
-                                        total.h = FastIMul8u8u(volume, intermediate) << 1;
-                                        result = 0x80 + total.bu.bytehigh;
-                                        // todo word copy
-                                        dma_buffer[2*j] = result;
-                                        dma_buffer[2*j+1] = result;
-
-                                        // dma_buffer[j] = 0x80 + total.bu.bytehigh;   // divide by 256 means take the high byte
-                                    }
-                                }
-
-                            } else {
-                                uint16_t j;
-                                // subsequent sounds added
-                                // obviously needs imrpovement...
-                                if (sb_voicelist[i].samplerate){
-
-                                    for (j = 0; j < copy_length; j++){
-                                        int16_t_union total;
-                                        int8_t intermediate = (source[j] - 0x80);
-                                        total.h = FastIMul8u8u(volume, intermediate) << 1;
-                                        total.bu.bytehigh += 0x80;
-
-                                        dma_buffer[j] = (dma_buffer[j] + total.bu.bytehigh) >> 1;
-                                        
-
-                                    }
-                                } else {
-                                    for (j = 0; j < copy_length/2; j++){
-                                        int16_t_union total;
-                                        int8_t intermediate = (source[j] - 0x80);
-                                        total.h = FastIMul8u8u(volume, intermediate) << 1;
-                                        total.bu.bytehigh += 0x80;
-
-                                        dma_buffer[2*j] = (dma_buffer[2*j]    + total.bu.bytehigh) >> 1;
-                                        dma_buffer[2*j+1] = (dma_buffer[2*j+1] + total.bu.bytehigh) >> 1;
-                                        
-
-                                    }
-                                }
-
-                            }
+                            copy_offset = 0;
                         }
-
-                        if (!do_second_copy){
-                            break;
-                        }
-
-                        // for when we are doing the first copy, but it runs over the edge of buffer and 
-                        // we must reset to write to the start of the buffer for the 2nd buffer's write
+                    // if the first copy, copy two buffers worth.
+                    } else {
+                        // double buffer for first write!
+                        // detect the run-over over the dma end buffer...
                         
-                        // todo generalize to larger #s than transfer length?
-                        do_second_copy = false;
-
-                        remaining_length -= copy_length;
-                        if (!remaining_length){
-                            break;  // if the sfx was less than a sample long i guess.
+                        if (!in_first_buffer){
+                            do_second_copy = true;
+                            copy_offset = SB_TransferLength;
+                        } else {
+                            copy_length = SB_DoubleBufferLength;
+                            copy_offset = 0;
                         }
-                        dma_buffer = sb_dmabuffer; // to start of buffer.
-                        source     += copy_length;
-                        sb_voicelist[i].currentsample += copy_length;
-                    }
-                }
-                sound_played++;
 
-                if (sb_voicelist[i].samplerate){
-                    sb_voicelist[i].currentsample += copy_length;
-                } else {
-                    sb_voicelist[i].currentsample += copy_length >> 1;
+                    }
+
+                    // stupid c89
+                    {                
+                        uint8_t __far * dma_buffer = MK_FP(sb_dmabuffer_segment, copy_offset);
+                        uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
+
+                        uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
+                        int8_t volume = sb_voicelist[i].volume;
+                        // if (application_volume != MAX_APPLICATION_VOLUME){
+                        //     int16_t_union volume_result;
+                        //     volume_result.hu = FastMul8u8u(volume, application_volume);
+                        //     volume = volume_result.bu.bytehigh;
+                        // }
+                        while (true){
+
+                            if (remaining_length < copy_length){
+                                if (sound_played == 0){
+                                    extra_zero_length = copy_length - remaining_length;
+                                    extra_zero_copy_target = dma_buffer + remaining_length;
+                                }
+                                copy_length = remaining_length;
+                            }
+
+
+
+                            // MANUAL MIX?
+
+                            // volume is 0-127. if 128+ then use full volume.                                         
+                            // todo change this from a constant check to a check for current sfx volume level (in settings)
+                            if (volume == MAX_VOLUME_SFX){
+                                // max volume. just use the bytes directly
+                                if (!sound_played){
+                                    // first sound copied...
+                                    
+                                    if (sb_voicelist[i].samplerate){
+                                        _fmemcpy(dma_buffer, source, copy_length);
+                                    } else {
+                                        int8_t j;
+                                        for (j = 0; j < copy_length/2; j++){
+                                            dma_buffer[2*j]   = source[j];
+                                            dma_buffer[2*j+1] = source[j];
+                                        }
+                                    }
+
+                                    if (extra_zero_length){
+                                        _fmemset(dma_buffer + copy_length, 0x80, extra_zero_length);
+                                    }
+
+
+                                } else {
+                                    uint16_t j;
+                                    // subsequent sounds added
+                                    // obviously needs imrpovement...
+                                    if (sb_voicelist[i].samplerate){
+                                        for (j = 0; j < copy_length; j++){
+                                            int16_t total = dma_buffer[j] + source[j];
+                                            dma_buffer[j] = total >> 1;
+                                        }
+                                    } else {
+                                        for (j = 0; j < copy_length/2; j++){
+                                            int16_t total = dma_buffer[2*j] + source[j];
+                                            dma_buffer[2*j] = total >> 1;
+                                            total = dma_buffer[2*j+1] + source[j];
+                                            dma_buffer[2*j+1] = total >> 1;
+                                        }
+                                    }
+                                }
+                            } else {
+                                // DO VOLUME MIX
+
+                                if (!sound_played){
+                                    // first sound copied...
+                                    uint16_t j;
+                                    
+                                    if (sb_voicelist[i].samplerate){
+
+
+                                        for (j = 0; j < copy_length; j++){
+                                            int16_t_union total;
+                                            int8_t intermediate = (source[j] - 0x80);
+                                            total.h = FastIMul8u8u(volume, intermediate) << 1;
+                                            dma_buffer[j] = 0x80 + total.bu.bytehigh;
+
+                                            // dma_buffer[j] = 0x80 + total.bu.bytehigh;   // divide by 256 means take the high byte
+                                        }
+                                    } else {
+                                        for (j = 0; j < copy_length/2; j++){
+                                            int16_t_union total;
+                                            int8_t intermediate = (source[j] - 0x80);
+                                            uint8_t result;
+                                            total.h = FastIMul8u8u(volume, intermediate) << 1;
+                                            result = 0x80 + total.bu.bytehigh;
+                                            // todo word copy
+                                            dma_buffer[2*j] = result;
+                                            dma_buffer[2*j+1] = result;  // divide by 256 means take the high byte
+                                        }
+                                    }
+
+                                } else {
+                                    uint16_t j;
+                                    // subsequent sounds added
+                                    // obviously needs imrpovement...
+                                    if (sb_voicelist[i].samplerate){
+
+                                        for (j = 0; j < copy_length; j++){
+                                            int16_t_union total;
+                                            int8_t intermediate = (source[j] - 0x80);
+                                            total.h = FastIMul8u8u(volume, intermediate) << 1;
+                                            total.bu.bytehigh += 0x80;
+
+                                            dma_buffer[j] = (dma_buffer[j] + total.bu.bytehigh) >> 1;
+                                            
+
+                                        }
+                                    } else {
+                                        for (j = 0; j < copy_length/2; j++){
+                                            int16_t_union total;
+                                            int8_t intermediate = (source[j] - 0x80);
+                                            total.h = FastIMul8u8u(volume, intermediate) << 1;
+                                            total.bu.bytehigh += 0x80;
+
+                                            dma_buffer[2*j] = (dma_buffer[2*j]    + total.bu.bytehigh) >> 1;
+                                            dma_buffer[2*j+1] = (dma_buffer[2*j+1] + total.bu.bytehigh) >> 1;
+                                            
+
+                                        }
+                                    }
+
+                                }
+                            }
+
+                            if (!do_second_copy){
+                                break;
+                            }
+
+                            // for when we are doing the first copy, but it runs over the edge of buffer and 
+                            // we must reset to write to the start of the buffer for the 2nd buffer's write
+                            
+                            // todo generalize to larger #s than transfer length?
+                            do_second_copy = false;
+
+                            remaining_length -= copy_length;
+                            if (!remaining_length){
+                                break;  // if the sfx was less than a sample long i guess.
+                            }
+                            dma_buffer = sb_dmabuffer; // to start of buffer.
+                            source     += copy_length;
+                            sb_voicelist[i].currentsample += copy_length;
+                        }
+                    }
+                    sound_played++;
+                    if (sb_voicelist[i].samplerate){
+                        sb_voicelist[i].currentsample += copy_length;
+                    } else {
+                        sb_voicelist[i].currentsample += copy_length >> 1;
+                    }
+
                 }
+
 
 			}
 
@@ -819,8 +810,6 @@ void SB_Service_Mix11Khz(){
 
 		if (!sb_voicelist[i].playing){
 
-		} else if (sb_voicelist[i].volume == 0){
-            // dont play mute sound
 		} else {
 
 			
@@ -840,147 +829,152 @@ void SB_Service_Mix11Khz(){
 
                 }
 			} else {
-                uint16_t copy_length = SB_TransferLength;
-                uint16_t copy_offset;
-                int8_t   do_second_copy = false;
-                int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id].cache_position;
-                int8_t   page_add = 0;
-                if (sb_voicelist[i].currentsample >= 16384){
-                    // todo rol 2 in asm
-                    page_add = sb_voicelist[i].currentsample >> 14;
-                    // I_Error("page add %i %i", sb_voicelist[i].currentsample, page_add);
-                }
 
-                // if (!sound_played){
-                //     Z_SavePageFrameState();
-                // }
-                
-                Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
-                
-                // logcacheevent(cache_pos.bu.bytehigh,  page_add);
-
-                // form the offset.
-                cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
-                cache_pos.bu.bytelow = 0;
-                
-                // if not the first copy, just copy to the next buffer
-                if (sb_voicelist[i].currentsample){
-                    // copy only to doubled buffer
-                    if (in_first_buffer){
-                        copy_offset = SB_TransferLength;    
-                    } else {
-                        copy_offset = 0;
-                    }
-                // if the first copy, copy two buffers worth.
+                if (sb_voicelist[i].volume == 0){
+                    // dont play/mix sounds this low? 
+                    sb_voicelist[i].currentsample += SB_TransferLength;
                 } else {
-                    // double buffer for first write!
-                    // detect the run-over over the dma end buffer...
-                    
-                    if (!in_first_buffer){
-                        do_second_copy = true;
-                        copy_offset = SB_TransferLength;
-                    } else {
-                        copy_length = SB_DoubleBufferLength;
-                        copy_offset = 0;
+                    uint16_t copy_length = SB_TransferLength;
+                    uint16_t copy_offset;
+                    int8_t   do_second_copy = false;
+                    int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id].cache_position;
+                    int8_t   page_add = 0;
+                    if (sb_voicelist[i].currentsample >= 16384){
+                        // todo rol 2 in asm
+                        page_add = sb_voicelist[i].currentsample >> 14;
+                        // I_Error("page add %i %i", sb_voicelist[i].currentsample, page_add);
                     }
 
-                }
-
-                // stupid c89
-                {                
-                    uint8_t __far * dma_buffer = MK_FP(sb_dmabuffer_segment, copy_offset);
-                    uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
-                    uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
-                    int8_t volume = sb_voicelist[i].volume;
-                    // if (application_volume != MAX_APPLICATION_VOLUME){
-                    //     int16_t_union volume_result;
-                    //     volume_result.hu = FastMul8u8u(volume, application_volume);
-                    //     volume = volume_result.bu.bytehigh;
+                    // if (!sound_played){
+                    //     Z_SavePageFrameState();
                     // }
-                    while (true){
+                    
+                    Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
+                    
+                    // logcacheevent(cache_pos.bu.bytehigh,  page_add);
 
-                        if (remaining_length < copy_length){
-                            if (sound_played == 0){
-                                extra_zero_length = copy_length - remaining_length;
-                                extra_zero_copy_target = dma_buffer + remaining_length;
-                            }
-                            copy_length = remaining_length;
-                        }
-
-
-                        // MANUAL MIX?
-
-                        // volume is 0-127. if 128+ then use full volume.                                         
-                        if (volume & MAX_VOLUME_SFX_FLAG){
-                            // max volume. just use the bytes directly
-                            if (!sound_played){
-                                // first sound copied...
-                                _fmemcpy(dma_buffer, source, copy_length);
-                            } else {
-                                uint16_t j;
-                                // subsequent sounds added
-                                // obviously needs imrpovement...
-                                for (j = 0; j < copy_length; j++){
-                                    int16_t total = dma_buffer[j] + source[j];
-                                    dma_buffer[j] = total >> 1;
-                                }
-
-                            }
-
+                    // form the offset.
+                    cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
+                    cache_pos.bu.bytelow = 0;
+                    
+                    // if not the first copy, just copy to the next buffer
+                    if (sb_voicelist[i].currentsample){
+                        // copy only to doubled buffer
+                        if (in_first_buffer){
+                            copy_offset = SB_TransferLength;    
                         } else {
-                            if (!sound_played){
-                                // first sound copied...
-                                uint16_t j;
-                                
-                                for (j = 0; j < copy_length; j++){
-                                    int16_t_union total;
-                                    int8_t intermediate = (source[j] - 0x80);
-                                    total.h = FastIMul8u8u(volume, intermediate) << 1;
-                                    dma_buffer[j] = 0x80 + total.bu.bytehigh;
+                            copy_offset = 0;
+                        }
+                    // if the first copy, copy two buffers worth.
+                    } else {
+                        // double buffer for first write!
+                        // detect the run-over over the dma end buffer...
+                        
+                        if (!in_first_buffer){
+                            do_second_copy = true;
+                            copy_offset = SB_TransferLength;
+                        } else {
+                            copy_length = SB_DoubleBufferLength;
+                            copy_offset = 0;
+                        }
 
-                                    // dma_buffer[j] = 0x80 + total.bu.bytehigh;   // divide by 256 means take the high byte
+                    }
+
+                    // stupid c89
+                    {                
+                        uint8_t __far * dma_buffer = MK_FP(sb_dmabuffer_segment, copy_offset);
+                        uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
+                        uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
+                        int8_t volume = sb_voicelist[i].volume;
+                        // if (application_volume != MAX_APPLICATION_VOLUME){
+                        //     int16_t_union volume_result;
+                        //     volume_result.hu = FastMul8u8u(volume, application_volume);
+                        //     volume = volume_result.bu.bytehigh;
+                        // }
+                        while (true){
+
+                            if (remaining_length < copy_length){
+                                if (sound_played == 0){
+                                    extra_zero_length = copy_length - remaining_length;
+                                    extra_zero_copy_target = dma_buffer + remaining_length;
+                                }
+                                copy_length = remaining_length;
+                            }
+
+
+                            // MANUAL MIX?
+
+                            // volume is 0-127. if 128+ then use full volume.                                         
+                            // todo change this from a constant check to a check for current sfx volume level (in settings)
+                            if (volume == MAX_VOLUME_SFX){
+                                // max volume. just use the bytes directly
+                                if (!sound_played){
+                                    // first sound copied...
+                                    _fmemcpy(dma_buffer, source, copy_length);
+                                } else {
+                                    uint16_t j;
+                                    // subsequent sounds added
+                                    // obviously needs imrpovement...
+                                    for (j = 0; j < copy_length; j++){
+                                        int16_t total = dma_buffer[j] + source[j];
+                                        dma_buffer[j] = total >> 1;
+                                    }
+
                                 }
 
                             } else {
-                                uint16_t j;
-                                // subsequent sounds added
-                                // obviously needs imrpovement...
-                                for (j = 0; j < copy_length; j++){
-                                    int16_t_union total;
-                                    int8_t intermediate = (source[j] - 0x80);
-                                    total.h = FastIMul8u8u(volume, intermediate) << 1;
-                                    total.bu.bytehigh += 0x80;
-
-                                    dma_buffer[j] = (dma_buffer[j] + total.bu.bytehigh) >> 1;
+                                if (!sound_played){
+                                    // first sound copied...
+                                    uint16_t j;
                                     
+                                    for (j = 0; j < copy_length; j++){
+                                        int16_t_union total;
+                                        int8_t intermediate = (source[j] - 0x80);
+                                        total.h = FastIMul8u8u(volume, intermediate) << 1;
+                                        dma_buffer[j] = 0x80 + total.bu.bytehigh; // divide by 256 means take the high byte
+                                    }
+
+                                } else {
+                                    uint16_t j;
+                                    // subsequent sounds added
+                                    // obviously needs imrpovement...
+                                    for (j = 0; j < copy_length; j++){
+                                        int16_t_union total;
+                                        int8_t intermediate = (source[j] - 0x80);
+                                        total.h = FastIMul8u8u(volume, intermediate) << 1;
+                                        total.bu.bytehigh += 0x80;
+
+                                        dma_buffer[j] = (dma_buffer[j] + total.bu.bytehigh) >> 1;
+                                        
+
+                                    }
 
                                 }
-
                             }
-                        }
 
-                        if (!do_second_copy){
-                            break;
-                        }
+                            if (!do_second_copy){
+                                break;
+                            }
 
-                        // for when we are doing the first copy, but it runs over the edge of buffer and 
-                        // we must reset to write to the start of the buffer for the 2nd buffer's write
-                        
-                        // todo generalize to larger #s than transfer length?
-                        do_second_copy = false;
+                            // for when we are doing the first copy, but it runs over the edge of buffer and 
+                            // we must reset to write to the start of the buffer for the 2nd buffer's write
+                            
+                            // todo generalize to larger #s than transfer length?
+                            do_second_copy = false;
 
-                        remaining_length -= copy_length;
-                        if (!remaining_length){
-                            break;  // if the sfx was less than a sample long i guess.
+                            remaining_length -= copy_length;
+                            if (!remaining_length){
+                                break;  // if the sfx was less than a sample long i guess.
+                            }
+                            dma_buffer = sb_dmabuffer; // to start of buffer.
+                            source     += copy_length;
+                            sb_voicelist[i].currentsample += copy_length;
                         }
-                        dma_buffer = sb_dmabuffer; // to start of buffer.
-                        source     += copy_length;
-                        sb_voicelist[i].currentsample += copy_length;
                     }
-                }
-                sound_played++;
+                    sound_played++;
 
-                sb_voicelist[i].currentsample += copy_length;
+                    sb_voicelist[i].currentsample += copy_length;
+                }
 
 			}
 
@@ -1823,7 +1817,7 @@ int16_t SB_InitCard(){
 
 }
 
-void S_TempInit2(){
+void SB_StartInit(){
     // todo move this crap into asm. dump the 
     // uint8_t i;
     // char lumpname[9];
@@ -1859,12 +1853,14 @@ void S_TempInit2(){
             DEBUG_PRINT("Sound Blaster SFX Engine Initailized!..\n");
 
         } else {
-            // DEBUG_PRINT("Error B\n");
+            DEBUG_PRINT("\nSB INIT Error A\n");
+            snd_SfxDevice = sfx_None;
 
         }
 
     } else {
-        DEBUG_PRINT("\nSB INIT Error A\n");
+        DEBUG_PRINT("\nSB INIT Error B\n");
+        snd_SfxDevice = sfx_None;
     }
     { 
         // initialize sfx cache at app start
@@ -2148,6 +2144,13 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     
     int8_t i;
     
+    // vol should be 0-127
+
+    if (vol > 127){
+        I_Error("bad vol!");
+    }
+
+
     // I_Error("\n here %i %lx\n", W_LumpLength(110), lumpinfo9000[110].position);
     FORCE_5000_LUMP_LOAD = true;
     for (i = 0; i < NUM_SFX_TO_MIX;i++){
@@ -2195,27 +2198,8 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
                 
                 //todo apply volume from vol. 
                 sb_voicelist[i].volume     = vol;
+                // sb_voicelist[i].volume     = MAX_VOLUME_SFX;
                 
-
-                // todo gotta clean out the bottom 
-
-                
-                // {
-                //  uint16_t __far* loc = (uint16_t __far *) 0xD9000000;   
-                //  loc[0] = sb_voicelist[i].length;
-                //  loc[1] = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
-                //  loc[2] = W_LumpLength(sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK);
-
-                // }
-
-                // volume is 0-127
-
-                // volnumber += 5;
-                // if (volnumber > 160){
-                //     volnumber = 40;
-                // }
-                // sb_voicelist[i].volume     = 255;
-
                 if (sb_voicelist[i].samplerate){
                     if (!current_sampling_rate){
                         change_sampling_to_22_next_int = 1;

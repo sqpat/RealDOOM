@@ -1429,7 +1429,7 @@ typedef struct {
 	uint16_t			length;             // could be figured out from sfxlumpinfo in theory
 	uint16_t			currentsample;      // in bytes. could be multiples of 256 and stored in one byte though.
 	boolean 			playing;            
-	int8_t 	 			volume;
+	int8_t 	 			volume;				// 16-127. 0-15 is mute. 128+ should be undefined?
 } SB_VoiceInfo ;
 #define NUM_SFX_TO_MIX 8
 extern SB_VoiceInfo sb_voicelist[NUM_SFX_TO_MIX];

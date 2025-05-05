@@ -42,14 +42,17 @@
 // when to clip out sounds
 // Does not fit the large outdoor areas.
 #define S_CLIPPING_DIST		(1200*0x10000)
+#define S_CLIPPING_DIST_HIGH	(1200)
 
 // Distance tp origin when sounds should be maxed out.
 // This should relate to movement clipping resolution
 // (see BLOCKMAP handling).
 #define S_CLOSE_DIST		(200*0x10000)
+#define S_CLOSE_DIST_HIGH		(200)
 
 
-#define S_ATTENUATOR		((S_CLIPPING_DIST-S_CLOSE_DIST)>>FRACBITS)
+// #define S_ATTENUATOR		((S_CLIPPING_DIST-S_CLOSE_DIST)>>FRACBITS)
+#define S_ATTENUATOR		1000
 
 // Adjustable by menu.
 #define NORM_VOLUME    		snd_MaxVolume
@@ -58,6 +61,7 @@
 #define NORM_SEP		128
 
 #define S_STEREO_SWING		(96*0x10000)
+#define S_STEREO_SWING_HIGH	(96)
 
 // percent attenuation from front to back
 #define S_IFRACVOL		30
@@ -195,11 +199,16 @@ void S_StopChannel(int8_t cnum) {
 // If the sound is not audible, returns a 0.
 // Otherwise, modifies parameters and returns 1.
 //
+
+//todo optimize to make this logic generally 16 bit 
+// instead of generally 32 bit. 
+// probably fine, does not affect physics.
 int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fixed_t_union sourceY, uint8_t* vol, uint8_t* sep){
-	fixed_t	approx_dist;
+	fixed_t_union	approx_dist;
     fixed_t	adx;
     fixed_t	ady;
     angle_t	angle;
+	fixed_t_union intermediate;
 	mobj_pos_t __far * listener = (mobj_pos_t __far *)&mobjposlist_6800[listenerRef];
 	//mobj_pos_t __far * source   = (mobj_pos_t __far *)&mobjposlist_6800[sourceRef];
 	//return 0;
@@ -212,9 +221,9 @@ int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fix
     ady = labs(listener->y.w - sourceY.w);
 
     // From _GG1_ p.428. Appox. eucledian distance fast.
-    approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
+    approx_dist.w = adx + ady - ((adx < ady ? adx : ady)>>1);
     
-    if (gamemap != 8 && approx_dist > S_CLIPPING_DIST) {
+    if (gamemap != 8 && approx_dist.w > S_CLIPPING_DIST) {
 		return 0;
     }
     
@@ -231,28 +240,29 @@ int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fix
 	}
 
     // stereo separation
-	// todo optimize. 96 * finesine?
-    *sep = 128 - (FixedMul(S_STEREO_SWING,finesine[angle.h.intbits >> 3])>>FRACBITS);
-
-
+	// todo optimize. 96 * finesine, only the high bits? no need for fixedmul?
+	intermediate.w = FixedMul(S_STEREO_SWING,finesine[angle.h.intbits >> 3]);
+    *sep = 128 - (intermediate.h.intbits);
 
     // volume calculation
-    if (approx_dist < S_CLOSE_DIST) {
+    if (approx_dist.h.intbits < S_CLOSE_DIST_HIGH) {
 		*vol = snd_SfxVolume;
 
 
-    } else if (gamemap == 8) {
-		if (approx_dist > S_CLIPPING_DIST)
-			approx_dist = S_CLIPPING_DIST;
-
-		*vol = 15+ ((snd_SfxVolume-15)
-				*((S_CLIPPING_DIST - approx_dist)>>FRACBITS))
-			/ S_ATTENUATOR;
-    } else {
+    } else if (gamemap != 8) {
 		// distance effect
-		*vol = (snd_SfxVolume
-			* ((S_CLIPPING_DIST - approx_dist)>>FRACBITS))
-			/ S_ATTENUATOR; 
+
+		intermediate.w = S_CLIPPING_DIST - approx_dist.w;
+		*vol = FastMul1616(snd_SfxVolume, intermediate.h.intbits) / S_ATTENUATOR; 
+	} else { // gamemap == 8
+		if (approx_dist.h.intbits >= S_CLIPPING_DIST_HIGH){
+			*vol = 15;	// should this just be 0?
+		} else {
+			intermediate.w = S_CLIPPING_DIST - approx_dist.w;
+			*vol = 15 + ( FastMul1616((snd_SfxVolume-15), intermediate.h.intbits)) / S_ATTENUATOR;
+		}
+
+
     }
     
     return (*vol > 0);
