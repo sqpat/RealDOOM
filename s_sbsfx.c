@@ -247,11 +247,22 @@ void __near S_MoveCacheItemBackOne(int8_t currentpage){
     // next_startpoint C
 
     {
-        int8_t swap = sfxcache_nodes[next_startpoint].next; // D
-        int8_t nextnext = sfxcache_nodes[swap].next;    // E
+
+        // if swap is part of a multipage... need to get its start/endpoint!
+
+        int8_t swap_tail = sfxcache_nodes[next_startpoint].next; // D
+        int8_t swap_head = swap_tail;
+        int8_t nextnext;
 
         // currentpage is B
         int8_t prev = sfxcache_nodes[prev_startpoint].prev; // A
+
+        if (sfxcache_nodes[swap_head].numpages){
+            while (sfxcache_nodes[swap_head].pagecount != sfxcache_nodes[swap_head].numpages){
+                swap_head = sfxcache_nodes[swap_head].next;
+            }
+        }
+        nextnext = sfxcache_nodes[swap_head].next;    // E
 
         //  tail/prev <---      ----> head/next
         //       A B C D E becomes A D B C E
@@ -263,18 +274,18 @@ void __near S_MoveCacheItemBackOne(int8_t currentpage){
             sfxcache_head = next_startpoint;
         }
         if (prev != -1){
-            sfxcache_nodes[prev].next    = swap;
+            sfxcache_nodes[prev].next    = swap_tail;
         } else {
             // change tail?
             // presumably sfxcache_tail WAS prev_startpoint.
-            sfxcache_tail = swap;
+            sfxcache_tail = swap_tail;
         }
         
-        sfxcache_nodes[swap].next        = prev_startpoint;
-        sfxcache_nodes[swap].prev        = prev;
+        sfxcache_nodes[swap_head].next   = prev_startpoint;
+        sfxcache_nodes[swap_tail].prev        = prev;
 
         sfxcache_nodes[next_startpoint].next = nextnext;
-        sfxcache_nodes[prev_startpoint].prev = swap;
+        sfxcache_nodes[prev_startpoint].prev = swap_head;
     }
 }
             
