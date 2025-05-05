@@ -1421,14 +1421,16 @@ extern boolean FORCE_5000_LUMP_LOAD;
 extern uint8_t currentpageframes[4];
 
 
+// in order to keep this 8 bytes, not 9 -> we put plauing as a flag on sfx_id which maxes at under 127.
+// sfx_id = 0 means not playing anyway so it works out.
+
 
 typedef struct {
 
     sfxenum_t          	sfx_id;
 	int8_t				samplerate;         // could be figured out from sfxlumpinfo in theory
 	uint16_t			length;             // could be figured out from sfxlumpinfo in theory
-	uint16_t			currentsample;      // in bytes. could be multiples of 256 and stored in one byte though.
-	boolean 			playing;            
+	uint16_t			currentsample;      // in bytes. could be multiples of 128 or 256 and stored in one byte though.
 	int8_t 	 			volume;				// 16-127. 0-15 is mute. 128+ should be undefined?
     //todo eventually implement stereo and sep?
 	uint8_t 	 		sep;				// stereo l/r mod

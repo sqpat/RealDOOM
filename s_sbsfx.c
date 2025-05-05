@@ -193,7 +193,7 @@ void __near S_IncreaseRefCount(uint8_t cachepage){
 }
 
 void __near S_DecreaseRefCount(int8_t voice_index){
-    uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
+    uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id & SFX_ID_MASK].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
     uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
     int8_t startnode = cachepage;
     int8_t endnode   = startnode;
@@ -201,7 +201,7 @@ void __near S_DecreaseRefCount(int8_t voice_index){
     // uint8_t numpages  = sb_voicelist[i].length >> 14; // todo rol 2
     if (numpages){
         uint8_t currentpage = cachepage;
-        logcacheevent('c', numpages);
+        logcacheevent('e', numpages);
         // find first then iterate over them all
         while (sfxcache_nodes[currentpage].pagecount != 1){
             currentpage = sfxcache_nodes[currentpage].prev;  // or prev?
@@ -551,7 +551,7 @@ void SB_Service_Mix22Khz(){
 
 	for (i = 0; i < NUM_SFX_TO_MIX; i++){
 
-		if (!sb_voicelist[i].playing){
+		if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){
 
 		} else {
 
@@ -561,9 +561,9 @@ void SB_Service_Mix22Khz(){
 			if (sb_voicelist[i].currentsample >= sb_voicelist[i].length){
 				// sound done playing. 
 
-				if (sb_voicelist[i].playing){
-                    logcacheevent('b', i);
-                    sb_voicelist[i].playing = false;
+				if (sb_voicelist[i].sfx_id & PLAYING_FLAG){
+                    sb_voicelist[i].sfx_id &= SFX_ID_MASK;
+                    logcacheevent('d', i);
                     S_DecreaseRefCount(i);                    
                 }
 
@@ -585,7 +585,7 @@ void SB_Service_Mix22Khz(){
                     uint16_t copy_length = SB_TransferLength;
                     uint16_t copy_offset;
                     int8_t   do_second_copy = false;
-                    int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id].cache_position;
+                    int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id & SFX_ID_MASK].cache_position;
                     int8_t   page_add = 0;
                     if (sb_voicelist[i].currentsample >= 16384){
                         // todo rol 2 in asm
@@ -819,7 +819,7 @@ void SB_Service_Mix11Khz(){
     uint8_t __far *extra_zero_copy_target = NULL;
 	for (i = 0; i < NUM_SFX_TO_MIX; i++){
 
-		if (!sb_voicelist[i].playing){
+		if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){
 
 		} else {
 
@@ -834,8 +834,8 @@ void SB_Service_Mix11Khz(){
                 //     I_Error("sound done %i %i", sb_voicelist[i].currentsample, sb_voicelist[i].length);
                 // }
 
-		    	if (sb_voicelist[i].playing){
-                    sb_voicelist[i].playing = false;
+		    	if (sb_voicelist[i].sfx_id & PLAYING_FLAG){
+                    sb_voicelist[i].sfx_id &= SFX_ID_MASK;
                     S_DecreaseRefCount(i);                    
 
                 }
@@ -848,7 +848,7 @@ void SB_Service_Mix11Khz(){
                     uint16_t copy_length = SB_TransferLength;
                     uint16_t copy_offset;
                     int8_t   do_second_copy = false;
-                    int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id].cache_position;
+                    int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id & SFX_ID_MASK].cache_position;
                     int8_t   page_add = 0;
                     if (sb_voicelist[i].currentsample >= 16384){
                         // todo rol 2 in asm
@@ -2165,7 +2165,7 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     // I_Error("\n here %i %lx\n", W_LumpLength(110), lumpinfo9000[110].position);
     FORCE_5000_LUMP_LOAD = true;
     for (i = 0; i < NUM_SFX_TO_MIX;i++){
-        if (sb_voicelist[i].playing == false){
+        if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){
             // check if sound already in cache (using map lookup)
             if (sfx_data[sfx_id].cache_position.bu.bytehigh == SOUND_NOT_IN_CACHE){
                 // todo return and use page as cache page ahead rather than another lookup..
@@ -2194,17 +2194,6 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
                 S_MarkSFXPageMRU(cachepage);
                 logcacheevent('~', cachepage);
 
-                /*
-                // update cache, move cachepage to front
-                for (j = 0; j < NUM_SFX_PAGES; j++){
-                    temp = sfx_page_lru[j];
-                    sfx_page_lru[j] = prevpage;
-                    if (temp == cachepage){
-                        break;
-                    }
-                    prevpage = temp;
-                }
-                */
 
                 
                 //todo apply volume from vol. 
@@ -2220,7 +2209,7 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
                 FORCE_5000_LUMP_LOAD = false;
 
                 // only do this at the very end.
-                sb_voicelist[i].playing = true;
+                sb_voicelist[i].sfx_id |= PLAYING_FLAG;
                 return i;
             }
         }
@@ -2230,25 +2219,30 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
 }
 
 void SFX_StopPatch(int8_t handle){
-    if (handle >= 0 && handle < NUM_SFX_TO_MIX){
-        sb_voicelist[handle].playing = false;
-        logcacheevent('a', handle);
-        S_DecreaseRefCount(handle);                    
-        logcacheevent('b', handle);
+    // if (handle >= 0 && handle < NUM_SFX_TO_MIX){
+        // disable interrupts... otherwise we might turn it off mid-interrupt and double dec ref count
+        _disable();
+        if (sb_voicelist[handle].sfx_id & PLAYING_FLAG){
+            sb_voicelist[handle].sfx_id &= SFX_ID_MASK;
+            logcacheevent('a', handle);
+            S_DecreaseRefCount(handle);
+            logcacheevent('b', handle);
+        }
+        _enable();
 
 
-    }
+    // }
 }
 
 boolean SFX_Playing(int8_t handle){
     if (handle >= 0 && handle < NUM_SFX_TO_MIX){
-        return sb_voicelist[handle].playing;
+        return (sb_voicelist[handle].sfx_id & PLAYING_FLAG);
     }
     return false;
 }
 
 void SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol){
-    if (sb_voicelist[handle].playing){
+    if (sb_voicelist[handle].sfx_id & PLAYING_FLAG){
         sb_voicelist[handle].sep = sep;
         sb_voicelist[handle].volume = vol;
     }

@@ -97,6 +97,8 @@ enum SB_ERRORS
 #define SB_TYPE_SB16 	6
 
 
+#define PLAYING_FLAG    0x80
+#define SFX_ID_MASK     0x7F
 
 #define SB_DSP_Version1xx 0x0100
 #define SB_DSP_Version2xx 0x0200
