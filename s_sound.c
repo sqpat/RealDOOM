@@ -205,8 +205,8 @@ void S_StopChannel(int8_t cnum) {
 // probably fine, does not affect physics.
 int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fixed_t_union sourceY, uint8_t* vol, uint8_t* sep){
 	fixed_t_union	approx_dist;
-    fixed_t	adx;
-    fixed_t	ady;
+    fixed_t_union	adx;
+    fixed_t_union	ady;
     angle_t	angle;
 	fixed_t_union intermediate;
 	mobj_pos_t __far * listener = (mobj_pos_t __far *)&mobjposlist_6800[listenerRef];
@@ -217,11 +217,12 @@ int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fix
 
     // calculate the distance to sound origin
     //  and clip it if necessary
-    adx = labs(listener->x.w - sourceX.w);
-    ady = labs(listener->y.w - sourceY.w);
+    adx.w = labs(listener->x.w - sourceX.w);
+    ady.w = labs(listener->y.w - sourceY.w);
 
     // From _GG1_ p.428. Appox. eucledian distance fast.
-    approx_dist.w = adx + ady - ((adx < ady ? adx : ady)>>1);
+	intermediate.w = ((adx.w < ady.w ? adx.w : ady.w)>>1);
+    approx_dist.w = adx.w + ady.w - intermediate.w;
     
     if (gamemap != 8 && approx_dist.w > S_CLIPPING_DIST) {
 		return 0;
@@ -239,9 +240,13 @@ int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fix
 		angle.w = angle.w + (0xffffffff - listener->angle.w);
 	}
 
+
+
     // stereo separation
-	// todo optimize. 96 * finesine, only the high bits? no need for fixedmul?
-	intermediate.w = FixedMul(S_STEREO_SWING,finesine[angle.h.intbits >> 3]);
+	// get fine angle
+	angle.h.intbits >>= 3;
+	// mul by 96... optimize with shifts and adds?
+	intermediate.h.intbits = FastMul16u32(S_STEREO_SWING_HIGH,finesine[angle.h.intbits]);
     *sep = 128 - (intermediate.h.intbits);
 
     // volume calculation
@@ -253,13 +258,13 @@ int16_t S_AdjustSoundParams ( THINKERREF listenerRef, fixed_t_union sourceX, fix
 		// distance effect
 
 		intermediate.w = S_CLIPPING_DIST - approx_dist.w;
-		*vol = FastMul1616(snd_SfxVolume, intermediate.h.intbits) / S_ATTENUATOR; 
+		*vol = FastDiv3216u(FastMul1616(snd_SfxVolume, intermediate.h.intbits), S_ATTENUATOR); 
 	} else { // gamemap == 8
 		if (approx_dist.h.intbits >= S_CLIPPING_DIST_HIGH){
 			*vol = 15;	// should this just be 0?
 		} else {
 			intermediate.w = S_CLIPPING_DIST - approx_dist.w;
-			*vol = 15 + ( FastMul1616((snd_SfxVolume-15), intermediate.h.intbits)) / S_ATTENUATOR;
+			*vol = 15 + FastDiv3216u(( FastMul1616((snd_SfxVolume-15), intermediate.h.intbits)),  S_ATTENUATOR);
 		}
 
 
