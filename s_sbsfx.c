@@ -29,6 +29,7 @@ void( __interrupt __far *SB_OldInt)(void);
 
 
 #define MAX_VOLUME_SFX 0x7F
+#define SFX_MAX_VOLUME		127
 
 
 
@@ -85,6 +86,7 @@ int8_t                  sfxcache_tail;
 int8_t                  sfxcache_head;
 int8_t in_sound = false;
 
+// #define ENABLE_SFX_LOGGING 1
 #ifdef ENABLE_SFX_LOGGING
 
 
@@ -460,6 +462,8 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 	int16_t k;
 	int8_t previous_next;
 
+    // if (numpages)
+        // return -1;
 
     #ifdef DETAILED_BENCH_STATS
     sfxcacheevictcount++;
@@ -499,9 +503,10 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
         return -1;
     }
 
-	// clear cache data that was pointing to this page.
+    // from evicted page back to tail.
 	while (evictedpage != -1){
 
+    	// clear cache data that was pointing to the page
         // zero these out..
 		sfxcache_nodes[evictedpage].pagecount = 0;
 		sfxcache_nodes[evictedpage].numpages = 0;
@@ -1377,7 +1382,7 @@ int8_t SB_DMA_VerifyChannel(uint8_t channel) {
 
 
 
-int16_t DMA_SetupTransfer(uint8_t channel, byte __far* address, uint16_t length) {
+int16_t DMA_SetupTransfer(uint8_t channel, uint16_t length) {
     
     if (SB_DMA_VerifyChannel(channel) == DMA_OK) {
 
@@ -1387,7 +1392,7 @@ int16_t DMA_SetupTransfer(uint8_t channel, byte __far* address, uint16_t length)
     	uint16_t transfer_length;
 		fixed_t_union addr;
 		
-		addr.wu = (uint32_t)address;
+		addr.wu = (uint32_t)sb_dmabuffer;
 		addr.hu.fracbits = addr.hu.fracbits + (addr.hu.intbits << 4) & 0xFFFF;  // equals offset (?)
 		addr.hu.intbits = (addr.hu.intbits >> 4) & 0xFF00;		// equals page
 
@@ -1456,7 +1461,7 @@ int16_t DMA_SetupTransfer(uint8_t channel, byte __far* address, uint16_t length)
 }
 
 
-int8_t SB_SetupDMABuffer( byte __far *buffer, uint16_t buffer_size) {
+int8_t SB_SetupDMABuffer(uint16_t buffer_size) {
     int8_t dma_channel;
     int8_t dma_status;
 
@@ -1470,7 +1475,7 @@ int8_t SB_SetupDMABuffer( byte __far *buffer, uint16_t buffer_size) {
         return SB_Error;
     }
 
-    if (DMA_SetupTransfer(dma_channel, buffer, buffer_size) == DMA_ERROR) {
+    if (DMA_SetupTransfer(dma_channel, buffer_size) == DMA_ERROR) {
         return SB_Error;
     }
 
@@ -1502,18 +1507,11 @@ void SB_EnableInterrupt() {
 
 int8_t SB_SetupPlayback(){
 	// todo double?
-    fixed_t_union addr;
     byte __far * sbbuffer;
 	SB_StopPlayback();
     SB_SetMixMode();
 
-    // todo hardcode?
-    addr.wu = (uint32_t) sb_dmabuffer;
-    addr.hu.intbits += (addr.hu.fracbits >> 4);
-    addr.hu.fracbits = 0;
-
-    sbbuffer = (byte __far*)addr.wu;
-    if (SB_SetupDMABuffer(sbbuffer, SB_TotalBufferSize) == SB_Error){
+    if (SB_SetupDMABuffer(SB_TotalBufferSize) == SB_Error){
         return SB_Error;
     }
 
@@ -1834,6 +1832,37 @@ int16_t SB_InitCard(){
 
 }
 
+void S_InitSFXCache(){
+    // initialize sfx cache at app start
+    int8_t i;
+        // just run thru the whole bunch in one go instead of multiple 
+    for ( i = 0; i < NUM_SFX_PAGES; i++) {
+        sfxcache_nodes[i].prev = i+1; // Mark unused entries
+        sfxcache_nodes[i].next = i-1; // Mark unused entries
+        sfxcache_nodes[i].pagecount = 0;
+        sfxcache_nodes[i].numpages = 0;
+		sfx_free_bytes[i] = 64;
+        sfx_page_reference_count[i] = 0;
+
+    }  
+
+    
+    for (i = 0; i < NUMSFX; i++){
+        sfx_data[i].cache_position.bu.bytehigh = SOUND_NOT_IN_CACHE;
+    }
+
+
+    sfxcache_head = 0;
+    sfxcache_tail = NUM_SFX_PAGES-1;
+
+    sfxcache_nodes[sfxcache_head].next = -1;
+    sfxcache_nodes[sfxcache_tail].prev = -1;
+
+    
+
+
+}
+
 void SB_StartInit(){
     // todo move this crap into asm. dump the 
     // uint8_t i;
@@ -1879,29 +1908,12 @@ void SB_StartInit(){
         DEBUG_PRINT("\nSB INIT Error B\n");
         snd_SfxDevice = sfx_None;
     }
-    { 
-        // initialize sfx cache at app start
-        int8_t i;
-            // just run thru the whole bunch in one go instead of multiple 
-        for ( i = 0; i < NUM_SFX_PAGES; i++) {
-            sfxcache_nodes[i].prev = i+1; // Mark unused entries
-            sfxcache_nodes[i].next = i-1; // Mark unused entries
-            sfxcache_nodes[i].pagecount = 0;
-            sfxcache_nodes[i].numpages = 0;
-        }  
-        sfxcache_head = 0;
-        sfxcache_tail = NUM_SFX_PAGES-1;
 
-        sfxcache_nodes[sfxcache_head].next = -1;
-        sfxcache_nodes[sfxcache_tail].prev = -1;
-
-    }
-
+    // nodes, etc now initialized in S_InitSFXCache which is called by S_SetSfxVolume earlier in S_Init
 }
 
 
 
-// todo return cache page
 
 int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
     int8_t i;
@@ -2077,8 +2089,26 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
         0x18,           // skip header and padding.
         lumpsize.hu);   // num bytes..
 
+    // loop here to apply application volume to sfx 
     
-    
+    if (snd_SfxVolume != MAX_VOLUME_SFX){
+        uint8_t __far* sfxbyte = MK_FP(SFX_PAGE_SEGMENT, allocate_position.hu);
+        int8_t multvolume = snd_SfxVolume;
+        int16_t j;
+        for (j = 0; j < lumpsize.hu; j++){
+            // multiply by 128 normalized. Take the high byte of a 8u 8u mul, shift left 1.
+            // have to also offset by 80 to get signed/unsigned
+            int16_t_union volume_result;
+            int8_t intermediate = sfxbyte[j] - 0x80;
+            volume_result.h = FastIMul8u8u(intermediate, multvolume) << 1;
+            volume_result.bu.bytehigh += 0x80;
+            sfxbyte[j] = volume_result.bu.bytehigh;
+
+        }
+
+    }
+
+
     // don't do this! it defaults to zero, and is reset to zero during eviction if necessary.
     // sfxcache_nodes[i].pagecount = 0;
     // sfxcache_nodes[i].numpages = 0;
@@ -2088,9 +2118,9 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
     evict_multiple:
     S_UpdateLRUCache();
 
-    logcacheevent('v', pagecount+1);
+    logcacheevent('s', pagecount+1);
     i = S_EvictSFXPage(pagecount+1);
-    logcacheevent('w', i);
+    logcacheevent('t', i);
     if (i == -1){
         return -1;
     } else {
@@ -2101,7 +2131,7 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
             currentpage = sfxcache_nodes[currentpage].prev;
         }
         sfx_free_bytes[currentpage] -= sample_256_size & 63;
-        logcacheevent('x', i);
+        logcacheevent('u', i);
 
 
         goto found_page_multiple;
@@ -2138,6 +2168,25 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 0x18u + offset,           // skip header and padding.
                 16384);   // num bytes..
             currentpage = sfxcache_nodes[currentpage].prev;
+
+                // loop here to apply application volume to sfx 
+    
+
+            if (snd_SfxVolume != MAX_VOLUME_SFX){
+                uint8_t __far* sfxbyte = SFX_PAGE_ADDRESS;
+                int8_t multvolume = snd_SfxVolume;
+                uint16_t j;
+                for (j = 0; j < 16384; j++){
+                    // multiply by 128 normalized. Take the high byte of a 8u 8u mul, shift left 1.
+                    // have to also offset by 80 to get signed/unsigned
+                    int16_t_union volume_result;
+                    int8_t intermediate = sfxbyte[j] - 0x80;
+                    volume_result.h = FastIMul8u8u(intermediate, multvolume) << 1;
+                    volume_result.bu.bytehigh += 0x80;
+                    sfxbyte[j] = volume_result.bu.bytehigh;
+
+                }
+            }
         }
         // mark last page
         sfxcache_nodes[currentpage].pagecount = pagecount - j + 1;
@@ -2151,7 +2200,21 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 0x18u + offset,           // skip header and padding.
                 lumpsize.hu & 16383);   // num bytes..
 
+        if (snd_SfxVolume != MAX_VOLUME_SFX){
+            uint8_t __far* sfxbyte = SFX_PAGE_ADDRESS;
+            int8_t multvolume = snd_SfxVolume;
+            uint16_t j;
+            for (j = 0; j < lumpsize.hu & 16383; j++){
+                // multiply by 128 normalized. Take the high byte of a 8u 8u mul, shift left 1.
+                // have to also offset by 80 to get signed/unsigned
+                int16_t_union volume_result;
+                int8_t intermediate = sfxbyte[j] - 0x80;
+                volume_result.h = FastIMul8u8u(intermediate, multvolume) << 1;
+                volume_result.bu.bytehigh += 0x80;
+                sfxbyte[j] = volume_result.bu.bytehigh;
 
+            }
+        }
         return 0;
     }
 }

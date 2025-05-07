@@ -33,11 +33,12 @@
 #include "p_local.h"
 
 #include "doomstat.h"
+#include <dos.h>
 #include "dmx.h"
 #include "m_near.h"
 //#include "dpmiapi.h"
 
-#define S_MAX_VOLUME		127
+
 
 // when to clip out sounds
 // Does not fit the large outdoor areas.
@@ -85,7 +86,7 @@ void S_SetMusicVolume(uint8_t volume) {
 	
 	//volume &= 127; // necessary?
 
-    snd_MusicVolume = volume;
+    snd_MusicVolume = volume << 3;
 
 	if (playingdriver){
 		playingdriver->changeSystemVolume(volume);
@@ -236,6 +237,8 @@ uint8_t S_AdjustSoundParamsSep ( fixed_t_union sourceX, fixed_t_union sourceY){
 
 }
 
+#define MAX_SOUND_VOLUME 127
+
 uint8_t S_AdjustSoundParamsVol ( fixed_t_union sourceX, fixed_t_union sourceY){
 	fixed_t_union	approx_dist;
     fixed_t_union	adx;
@@ -257,31 +260,49 @@ uint8_t S_AdjustSoundParamsVol ( fixed_t_union sourceX, fixed_t_union sourceY){
     
     // volume calculation
     if (approx_dist.h.intbits < S_CLOSE_DIST_HIGH) {
-		return snd_SfxVolume;
+		return MAX_SOUND_VOLUME;
 
 
     } else if (gamemap != 8) {
 		// distance effect
 
 		intermediate.w = S_CLIPPING_DIST - approx_dist.w;
-		return FastDiv3216u(FastMul1616(snd_SfxVolume, intermediate.h.intbits), S_ATTENUATOR); 
+		// 127 * intbits / 1000? probably just shift right 3.
+		return FastDiv3216u(FastMul1616(MAX_SOUND_VOLUME, intermediate.h.intbits), S_ATTENUATOR); 
 	} else { // gamemap == 8
 		if (approx_dist.h.intbits >= S_CLIPPING_DIST_HIGH){
 			return 15;	// should this just be 0?
 		} else {
 			intermediate.w = S_CLIPPING_DIST - approx_dist.w;
-			return 15 + FastDiv3216u(( FastMul1616((snd_SfxVolume-15), intermediate.h.intbits)),  S_ATTENUATOR);
+			
+			// todo... 112 * intbits over 1000. can we avoid the div...
+			return 15 + FastDiv3216u(( FastMul1616((MAX_SOUND_VOLUME-15), intermediate.h.intbits)),  S_ATTENUATOR);
 		}
 
-
     }
-    
-
 
 }
 
+void S_InitSFXCache();
+
 void S_SetSfxVolume(uint8_t volume) {
-    snd_SfxVolume = volume;
+	int8_t i;
+	if (volume){
+    	snd_SfxVolume = 7 + (volume << 3);
+	} else {
+    	snd_SfxVolume = 0;
+	}
+	//Kind of complicated... 
+	// unload sfx. stop all sfx.
+	// when we reload, the sfx will be premixed with application volume.
+	// this way we dont do it in interrupt.
+	_disable();
+	for (i = 0; i < NUM_SFX_TO_MIX; i++){
+		sb_voicelist[i].sfx_id = 0;	// turn off...
+	}
+
+	S_InitSFXCache();
+	_enable();
 }
 
 //
@@ -402,6 +423,7 @@ int8_t S_getChannel (mobj_t __near* origin, int16_t soundorg_secnum, sfxenum_t s
 
 }
 
+/*
 void logsound(int8_t cnum, sfxenum_t sfx_id){
 		
 	FILE* fp = fopen ("sound.txt", "ab");
@@ -420,7 +442,7 @@ void logsound(int8_t cnum, sfxenum_t sfx_id){
 	fclose(fp);
 
 }
-
+*/
 
 void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum ) {
   int16_t		rc;
@@ -431,7 +453,7 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
   mobj_t*	playerMo;	    
   THINKERREF    originRef = GETTHINKERREF(origin);
    
-  uint8_t volume = snd_SfxVolume;
+  uint8_t volume = MAX_SOUND_VOLUME;
   if (snd_SfxDevice == snd_none){
 	return;
   }
@@ -572,7 +594,7 @@ void S_UpdateSounds() {
 		if (sfx_id) {
 			if (I_SoundIsPlaying(c->handle)) {
 				// initialize parameters
-				volume = snd_SfxVolume;
+				volume = MAX_SOUND_VOLUME;
 				sep = NORM_SEP;
 
 			

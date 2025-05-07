@@ -466,8 +466,9 @@ void __near M_SfxVol(int16_t choice){
         }
         break;
     }
-        
-    S_SetSfxVolume(sfxVolume << 3);
+    // (0-15) << 3 + 7, except for used_volume of 0 where we ignore the +7
+    S_SetSfxVolume(sfxVolume);
+
 }
 
 void __near M_MusicVol(int16_t choice){
@@ -484,7 +485,7 @@ void __near M_MusicVol(int16_t choice){
         break;
     }
         
-    S_SetMusicVolume(musicVolume * 8);
+    S_SetMusicVolume(musicVolume);
 }
 
 
@@ -1168,8 +1169,8 @@ boolean __far M_Responder (event_t __far*  ev) {
             Z_QuickMapMenu();
 
 
-            S_StartSound(NULL,sfx_stnmov);
             currentMenu->menuitems[itemOn].routine(0);
+            S_StartSound(NULL,sfx_stnmov);
 
             Z_QuickMapByTaskNum(oldtask);
 
@@ -1183,8 +1184,8 @@ boolean __far M_Responder (event_t __far*  ev) {
             oldtask = currenttask;
             Z_QuickMapMenu();
 
-            S_StartSound(NULL,sfx_stnmov);
             currentMenu->menuitems[itemOn].routine(1);
+            S_StartSound(NULL,sfx_stnmov);
             
             Z_QuickMapByTaskNum(oldtask);
 

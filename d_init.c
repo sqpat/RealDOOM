@@ -1221,7 +1221,7 @@ R_PointToAngle(y, x);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
-	S_Init(sfxVolume * 8, musicVolume  * 8);
+	S_Init(sfxVolume, musicVolume);
 
 #if DEBUG_PRINTING
 	getStringByIndex(HU_INIT_TEXT, textbuffer);

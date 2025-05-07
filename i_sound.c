@@ -64,17 +64,17 @@ void I_ResumeSong() {
     }
 }
 
-void I_SetSfxVolume(uint8_t volume) {
-    snd_SfxVolume = volume;
-}
+// void I_SetSfxVolume(uint8_t volume) {
+//     snd_SfxVolume = volume;
+// }
 
 //
 // Song API
 //
 
 //todo
-#define MUSIC_SEGMENT EMS_PAGE
 /*
+#define MUSIC_SEGMENT EMS_PAGE
 int16_t I_LoadSong(uint16_t lump) {
     // always use MUSIC SEGMENT, 0
 	//todo use scratch instead?
@@ -239,13 +239,13 @@ void I_UpdateSoundParams(int8_t handle, uint8_t vol, uint8_t sep) {
 
 int16_t __far M_CheckParm (int8_t *check);
 
+/*
+
 void I_sndArbitrateCards(void) {
 
-    snd_SfxVolume = 127;
-    snd_SfxDevice = snd_DesiredSfxDevice;
+    snd_SfxVolume = SFX_MAX_VOLUME;
 
 
-/*
 
      // todo when we redo this, checkparm is __near to init code so do that there
 
@@ -254,7 +254,7 @@ void I_sndArbitrateCards(void) {
     int16_t i, wait, dmxlump;
 
  
-    snd_SfxVolume = 127;
+    snd_SfxVolume = SFX_MAX_VOLUME;
     snd_SfxDevice = snd_DesiredSfxDevice;
     snd_MusicDevice = snd_DesiredMusicDevice;
 
@@ -359,8 +359,9 @@ void I_sndArbitrateCards(void) {
             MPU_SetCard(snd_Mport);
         }
     }
-    */
 }
+
+    */
 
 /*
 
@@ -523,8 +524,8 @@ void __far I_StartupSound(void) {
     //
     // pick the sound cards i'm going to use
     //
-    I_sndArbitrateCards();
-    
+    snd_SfxDevice = snd_DesiredSfxDevice;
+
     
     //I_Error ("%i %i\n", snd_MusicDevice, snd_DesiredMusicDevice);
     // todo actually detect hw eventually. for now just set music device to desired music device.
