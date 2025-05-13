@@ -97,8 +97,29 @@ retf
 ENDP
 
 
+; nice for debug... 
+COMMENT @
+
+PROC getSPBP_ FAR
+PUBLIC getSPBP_
+
+mov dx, sp
+mov ax, bp
 
 
+retf
+
+
+PROC getDSSS_ FAR
+PUBLIC getDSSS_
+
+mov dx, ds
+mov ax, ss
+
+
+retf
+
+@
 
 PROC hackDSBack_ FAR
 PUBLIC hackDSBack_

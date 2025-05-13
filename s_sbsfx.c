@@ -18,8 +18,8 @@
 #include "doomdef.h"
 #include "i_system.h"
 
-void SB_SetPlaybackRate(int16_t sample_rate);
-void SB_DSP1xx_BeginPlayback();
+void __near SB_SetPlaybackRate(int16_t sample_rate);
+void __near SB_DSP1xx_BeginPlayback();
 
 
 
@@ -98,52 +98,52 @@ void __near logcacheevent(char a, char b){
         return;
     } else {
 
-        FILE* fp = fopen("cache.txt", "ab");
-        fputc(a, fp);
-        fputc(' ', fp);
-        fputc('0' + (b / 100), fp);
-        fputc('0' + ((b % 100) / 10), fp);
-        fputc('0' + (b % 10), fp);
-        fputc(' ', fp);
-        fputc('0' + sfxcache_tail, fp);
-        fputc(' ', fp);
-        fputc('0' + sfxcache_head, fp);
-        fputc(' ', fp);
-        fputc(' ', fp);
+        // FILE* fp = fopen("cache.txt", "ab");
+        // fputc(a, fp);
+        // fputc(' ', fp);
+        // fputc('0' + (b / 100), fp);
+        // fputc('0' + ((b % 100) / 10), fp);
+        // fputc('0' + (b % 10), fp);
+        // fputc(' ', fp);
+        // fputc('0' + sfxcache_tail, fp);
+        // fputc(' ', fp);
+        // fputc('0' + sfxcache_head, fp);
+        // fputc(' ', fp);
+        // fputc(' ', fp);
 
-        for (j = 0; j < NUM_SFX_PAGES; j ++){
-            fputc('0' + sfx_page_reference_count[j], fp);
-            fputc(' ', fp);
-        }
+        // for (j = 0; j < NUM_SFX_PAGES; j ++){
+        //     fputc('0' + sfx_page_reference_count[j], fp);
+        //     fputc(' ', fp);
+        // }
 
-        fputc(' ', fp);
+        // fputc(' ', fp);
 
-        for (j = 0; j < NUM_SFX_PAGES; j ++){
-            fputc('0' + sfxcache_nodes[j].pagecount, fp);
-            fputc(' ', fp);
-        }
+        // for (j = 0; j < NUM_SFX_PAGES; j ++){
+        //     fputc('0' + sfxcache_nodes[j].pagecount, fp);
+        //     fputc(' ', fp);
+        // }
 
-        fputc(' ', fp);
+        // fputc(' ', fp);
 
-        for (j = 0; j < NUM_SFX_PAGES; j ++){
-            fputc('0' + (sfx_free_bytes[j]/10), fp);
-            fputc('0' + (sfx_free_bytes[j]%10), fp);
-            fputc(' ', fp);
-        }
+        // for (j = 0; j < NUM_SFX_PAGES; j ++){
+        //     fputc('0' + (sfx_free_bytes[j]/10), fp);
+        //     fputc('0' + (sfx_free_bytes[j]%10), fp);
+        //     fputc(' ', fp);
+        // }
         
-        fputc(' ', fp);
+        // fputc(' ', fp);
         
         while (current != -1){
-            fputc('0' + sfxcache_nodes[current].prev, fp);
-            fputc('0' + current, fp);
-            fputc('0' + sfxcache_nodes[current].next, fp);
-            fputc(' ', fp);
+            // fputc('0' + sfxcache_nodes[current].prev, fp);
+            // fputc('0' + current, fp);
+            // fputc('0' + sfxcache_nodes[current].next, fp);
+            // fputc(' ', fp);
             current = sfxcache_nodes[current].next;
             i++;
         }
 
-        fputc('\n', fp);
-        fclose(fp);
+        // fputc('\n', fp);
+        // fclose(fp);
 
         if (i != NUM_SFX_PAGES){
             I_Error("cache loop?");
@@ -460,13 +460,14 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 	int8_t j;
 	int16_t currentpage;
 	int16_t k;
+	int16_t l = 0;
 	int8_t previous_next;
 
     // if (numpages)
-        // return -1;
+    //     return -1;
 
     #ifdef DETAILED_BENCH_STATS
-    sfxcacheevictcount++;
+        sfxcacheevictcount++;
     #endif
 
 	currentpage = sfxcache_tail;
@@ -474,6 +475,7 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 	// go back enough pages to allocate them all.
 	for (j = 0; j < numpages-1; j++){
 		currentpage = sfxcache_nodes[currentpage].next;
+        l++;
 	}
 
 	evictedpage = currentpage;
@@ -487,13 +489,14 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 
 	// need to evict at least numpages pages
 	// we'll remove the tail, up to numpages...
-	// if thats part of a multipage allocations, we'll remove that until the end
+	// if thats part of a multipage allocation, we'll remove from that page until the end of the multipage allocaiton too.
 	// in that case, we leave extra deallocated pages in the tail.
 
  
 	// true if 0 page allocation or 1st page of a multi-page
 	while (sfxcache_nodes[evictedpage].numpages != sfxcache_nodes[evictedpage].pagecount){
 		evictedpage = sfxcache_nodes[evictedpage].next;
+        l++;
 	}
 
     if (sfx_page_reference_count[evictedpage]){
@@ -503,11 +506,17 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
         return -1;
     }
 
+    // if (l > 4){
+    //     I_Error("huge dealloc?");
+    // }
+
     // from evicted page back to tail.
 	while (evictedpage != -1){
 
     	// clear cache data that was pointing to the page
         // zero these out..
+
+        //todo make this a word write
 		sfxcache_nodes[evictedpage].pagecount = 0;
 		sfxcache_nodes[evictedpage].numpages = 0;
 
@@ -519,6 +528,9 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 			}
 		}
 
+        // if (sfx_page_reference_count[evictedpage]){
+        //     I_Error("shouldn't happen!");
+        // }
 
 
 		sfx_free_bytes[evictedpage] = 64;
@@ -543,15 +555,11 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 	sfxcache_nodes[previous_next].prev = -1;
 	sfxcache_tail = previous_next;
 
-
-
-
-
-	return sfxcache_head;
+	return currentpage; // sfxcache_head
 }
 
 
-void SB_Service_Mix22Khz(){
+void __near SB_Service_Mix22Khz(){
 	
 	int8_t i;
 	int8_t remaining_22khz = false;	
@@ -572,11 +580,8 @@ void SB_Service_Mix22Khz(){
 			if (sb_voicelist[i].currentsample >= sb_voicelist[i].length){
 				// sound done playing. 
 
-				if (sb_voicelist[i].sfx_id & PLAYING_FLAG){
-                    sb_voicelist[i].sfx_id &= SFX_ID_MASK;
-                    logcacheevent('d', i);
-                    S_DecreaseRefCount(i);                    
-                }
+                sb_voicelist[i].sfx_id &= SFX_ID_MASK; // turn off playing flag
+                S_DecreaseRefCount(i);                    
 
 
 
@@ -823,15 +828,15 @@ void SB_Service_Mix22Khz(){
 }
 
 
-void SB_Service_Mix11Khz(){
+void __near SB_Service_Mix11Khz(){
 	int8_t i;
 	int8_t sound_played = 0;	// first sound copies. 2nd and more add. if no sounds played, clear buffer.
     uint16_t extra_zero_length = 0;
     uint8_t __far *extra_zero_copy_target = NULL;
 	for (i = 0; i < NUM_SFX_TO_MIX; i++){
 
-		if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){
-
+		if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){  
+            // not playing
 		} else {
 
 			
@@ -845,11 +850,9 @@ void SB_Service_Mix11Khz(){
                 //     I_Error("sound done %i %i", sb_voicelist[i].currentsample, sb_voicelist[i].length);
                 // }
 
-		    	if (sb_voicelist[i].sfx_id & PLAYING_FLAG){
-                    sb_voicelist[i].sfx_id &= SFX_ID_MASK;
-                    S_DecreaseRefCount(i);                    
+                sb_voicelist[i].sfx_id &= SFX_ID_MASK; // turn off playing flag
+                S_DecreaseRefCount(i);                    
 
-                }
 			} else {
 
                 if (sb_voicelist[i].volume == 0){
@@ -938,8 +941,16 @@ void SB_Service_Mix11Khz(){
                                     // subsequent sounds added
                                     // obviously needs imrpovement...
                                     for (j = 0; j < copy_length; j++){
+                                        // fast bad approx 
                                         int16_t total = dma_buffer[j] + source[j];
                                         dma_buffer[j] = total >> 1;
+
+                                        // more correct. more slow
+                                        // int16_t total = FastMul8u8u(sound_played, dma_buffer[j]) + source[j];
+                                        // int16_t_union result = FastDiv16u_8u(total, (sound_played + 1));
+                                        // dma_buffer[j] = result.bu.bytelow;
+
+
                                     }
 
                                 }
@@ -965,8 +976,15 @@ void SB_Service_Mix11Khz(){
                                         int8_t intermediate = (source[j] - 0x80);
                                         total.h = FastIMul8u8u(volume, intermediate) << 1;
                                         total.bu.bytehigh += 0x80;
-
+                                        // fast bad approx 
                                         dma_buffer[j] = (dma_buffer[j] + total.bu.bytehigh) >> 1;
+
+                                        // more correct. more slow
+                                        // total.hu = FastMul8u8u(sound_played, dma_buffer[j]) + total.bu.bytehigh;
+                                        // total = FastDiv16u_8u(total.hu, (sound_played + 1));
+                                        // dma_buffer[j] = total.bu.bytelow;
+
+
                                         
 
                                     }
@@ -1153,8 +1171,7 @@ void __near continuecall(){
 
 
 
-void SB_WriteDSP(byte value)
-{
+void __near SB_WriteDSP(byte value) {
     int16_t port = sb_port + SB_WritePort;
     uint16_t count = 0xFFFF;
 
@@ -1167,7 +1184,7 @@ void SB_WriteDSP(byte value)
     }
 }
 
-uint8_t SB_ReadDSP() {
+uint8_t __near SB_ReadDSP() {
     int16_t port = sb_port + SB_DataAvailablePort;
     uint16_t count;
 
@@ -1183,7 +1200,7 @@ uint8_t SB_ReadDSP() {
     return SB_Error;
 }
 
-int16_t SB_ResetDSP(){
+int16_t __near SB_ResetDSP(){
     volatile uint8_t count;
     int16_t port = sb_port + SB_ResetPort;
 
@@ -1208,7 +1225,7 @@ int16_t SB_ResetDSP(){
     return SB_CardNotReady;
 }
 
-void SB_SetPlaybackRate(int16_t sample_rate){
+void __near SB_SetPlaybackRate(int16_t sample_rate){
  
     if (SB_DSP_Version.hu < SB_DSP_Version4xx){
 
@@ -1239,7 +1256,7 @@ void SB_SetPlaybackRate(int16_t sample_rate){
     }
 }
 
-void SB_SetMixMode(){
+void __near SB_SetMixMode(){
     // todo is this even needed?
 /*
     //todo sb pro check
@@ -1296,7 +1313,7 @@ uint8_t IRQ_TO_INTERRUPT_MAP[16] =
 
 
 // todo hardcode these params, writes
-void SB_DSP1xx_BeginPlayback() {
+void __near SB_DSP1xx_BeginPlayback() {
     int16_t_union sample_length;
 	sample_length.hu = SB_MixBufferSize - 1;
 
@@ -1309,7 +1326,7 @@ void SB_DSP1xx_BeginPlayback() {
 
 }
 
-void SB_DSP2xx_BeginPlayback() {
+void __near SB_DSP2xx_BeginPlayback() {
 
     int16_t_union sample_length;
 	sample_length.hu = SB_MixBufferSize - 1;
@@ -1325,7 +1342,7 @@ void SB_DSP2xx_BeginPlayback() {
 
 }
 
-void SB_DSP4xx_BeginPlayback() {
+void __near SB_DSP4xx_BeginPlayback() {
     int16_t_union sample_length;
 	sample_length.hu = SB_MixBufferSize - 1;
 
@@ -1369,7 +1386,7 @@ DMA_PORT DMA_PortInfo[8] =
 #define DMA_ERROR 0
 #define DMA_OK 1
 
-int8_t SB_DMA_VerifyChannel(uint8_t channel) {
+int8_t __near SB_DMA_VerifyChannel(uint8_t channel) {
 
 	if (channel > DMA_MaxChannel_16_BIT) {
         return DMA_ERROR;
@@ -1382,7 +1399,7 @@ int8_t SB_DMA_VerifyChannel(uint8_t channel) {
 
 
 
-int16_t DMA_SetupTransfer(uint8_t channel, uint16_t length) {
+int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
     
     if (SB_DMA_VerifyChannel(channel) == DMA_OK) {
 
@@ -1461,7 +1478,7 @@ int16_t DMA_SetupTransfer(uint8_t channel, uint16_t length) {
 }
 
 
-int8_t SB_SetupDMABuffer(uint16_t buffer_size) {
+int8_t __near SB_SetupDMABuffer(uint16_t buffer_size) {
     int8_t dma_channel;
     int8_t dma_status;
 
@@ -1487,7 +1504,7 @@ int8_t SB_SetupDMABuffer(uint16_t buffer_size) {
 
 
 
-void SB_EnableInterrupt() {
+void __near SB_EnableInterrupt() {
     uint8_t mask;
 
     // Unmask system interrupt
@@ -1504,8 +1521,66 @@ void SB_EnableInterrupt() {
     }
 }
 
+void __near SB_DisableInterrupt(){
+    int mask;
 
-int8_t SB_SetupPlayback(){
+    // Restore interrupt mask
+    if (sb_irq < 8) {
+        mask = inp(0x21) & ~(1 << sb_irq);
+        mask |= SB_IntController1Mask & (1 << sb_irq);
+        outp(0x21, mask);
+    } else {
+        mask = inp(0x21) & ~(1 << 2);
+        mask |= SB_IntController1Mask & (1 << 2);
+        outp(0x21, mask);
+
+        mask = inp(0xA1) & ~(1 << (sb_irq - 8));
+        mask |= SB_IntController2Mask & (1 << (sb_irq - 8));
+        outp(0xA1, mask);
+    }
+}
+
+int8_t __near SB_DMA_EndTransfer(int8_t channel) {
+
+    if (SB_DMA_VerifyChannel(channel) == DMA_OK) {
+
+    // int Mask;	0x0A, 0xD4
+    // int Mode;	0x0B, 0xD6
+    // int Clear;	0x0C, 0xD8
+
+        // Mask off DMA channel
+        outp(channel < 4 ? 	0x0A: 0xD4, 4 | (channel & 0x3));
+
+        // Clear flip-flop to lower byte with any data
+        outp(channel < 4 ? 	0x0C: 0xD8, 0);
+
+		return DMA_OK;
+    }
+
+    return DMA_ERROR;
+}
+
+void __near SB_StopPlayback(){
+
+	SB_DisableInterrupt();
+
+    SB_WriteDSP(SB_DSP_Halt8bitTransfer);   // halt command
+
+    // Disable the DMA channel
+    // if (SB_MixMode & SB_SIXTEEN_BIT){
+        // SB_DMA_EndTransfer(sb_dma_16);
+    // } else {
+        SB_DMA_EndTransfer(sb_dma_8);
+    // }
+
+	SB_WriteDSP(0xD3);	// speaker off
+
+    // sfx_playing = false;
+    SB_CardActive = false;
+
+}
+
+int8_t __near SB_SetupPlayback(){
 	// todo double?
     byte __far * sbbuffer;
 	SB_StopPlayback();
@@ -1543,64 +1618,11 @@ int8_t SB_SetupPlayback(){
 
 }
 
-int8_t SB_DMA_EndTransfer(int8_t channel) {
 
-    if (SB_DMA_VerifyChannel(channel) == DMA_OK) {
 
-    // int Mask;	0x0A, 0xD4
-    // int Mode;	0x0B, 0xD6
-    // int Clear;	0x0C, 0xD8
 
-        // Mask off DMA channel
-        outp(channel < 4 ? 	0x0A: 0xD4, 4 | (channel & 0x3));
 
-        // Clear flip-flop to lower byte with any data
-        outp(channel < 4 ? 	0x0C: 0xD8, 0);
 
-		return DMA_OK;
-    }
-
-    return DMA_ERROR;
-}
-
-void SB_DisableInterrupt(){
-    int mask;
-
-    // Restore interrupt mask
-    if (sb_irq < 8) {
-        mask = inp(0x21) & ~(1 << sb_irq);
-        mask |= SB_IntController1Mask & (1 << sb_irq);
-        outp(0x21, mask);
-    } else {
-        mask = inp(0x21) & ~(1 << 2);
-        mask |= SB_IntController1Mask & (1 << 2);
-        outp(0x21, mask);
-
-        mask = inp(0xA1) & ~(1 << (sb_irq - 8));
-        mask |= SB_IntController2Mask & (1 << (sb_irq - 8));
-        outp(0xA1, mask);
-    }
-}
-
-void SB_StopPlayback(){
-
-	SB_DisableInterrupt();
-
-    SB_WriteDSP(SB_DSP_Halt8bitTransfer);   // halt command
-
-    // Disable the DMA channel
-    // if (SB_MixMode & SB_SIXTEEN_BIT){
-        // SB_DMA_EndTransfer(sb_dma_16);
-    // } else {
-        SB_DMA_EndTransfer(sb_dma_8);
-    // }
-
-	SB_WriteDSP(0xD3);	// speaker off
-
-    // sfx_playing = false;
-    SB_CardActive = false;
-
-}
 
 /*
 int8_t IRQ_RestoreVector(int8_t vector) {
@@ -1649,17 +1671,17 @@ int8_t IRQ_RestoreVector(int8_t vector) {
 #define SB_MIXER_SB16MidiRight 0x35
 
 
-uint8_t SB_ReadMixer(uint8_t reg) {
+uint8_t __near SB_ReadMixer(uint8_t reg) {
     outp(sb_port + SB_MixerAddressPort, reg);
     return inp(sb_port + SB_MixerDataPort);
 }
 
-void SB_WriteMixer(uint8_t reg,uint8_t data) {
+void __near SB_WriteMixer(uint8_t reg,uint8_t data) {
     outp(sb_port + SB_MixerAddressPort, reg);
     outp(sb_port + SB_MixerDataPort, data);
 }
 
-void SB_SaveVoiceVolume() {
+void __near SB_SaveVoiceVolume() {
     switch (SB_MixerType) {
 		case SB_TYPE_SBPro:
 		case SB_TYPE_SBPro2:
@@ -1673,7 +1695,7 @@ void SB_SaveVoiceVolume() {
 		}
 }
 
-void SB_RestoreVoiceVolume() {
+void __near SB_RestoreVoiceVolume() {
     switch (SB_MixerType) {
 		case SB_TYPE_SBPro:
 		case SB_TYPE_SBPro2:
@@ -1687,7 +1709,7 @@ void SB_RestoreVoiceVolume() {
     }
 }
 
-void SB_Shutdown(){
+void __far SB_Shutdown(){
     // sfx_playing = false;
 
 	SB_StopPlayback();
@@ -1710,21 +1732,21 @@ void SB_Shutdown(){
 
 
 
-void SB_SetVolume(uint8_t volume){
-    if (SB_MixerType == SB_TYPE_SB16) {
-        SB_WriteMixer(SB_MIXER_SB16VoiceLeft, volume & 0xf8);
-        SB_WriteMixer(SB_MIXER_SB16VoiceRight, volume & 0xf8);
+// void __near SB_SetVolume(uint8_t volume){
+//     if (SB_MixerType == SB_TYPE_SB16) {
+//         SB_WriteMixer(SB_MIXER_SB16VoiceLeft, volume & 0xf8);
+//         SB_WriteMixer(SB_MIXER_SB16VoiceRight, volume & 0xf8);
   
-    } else if (SB_MixerType == SB_TYPE_SBPro){
-        SB_WriteMixer(SB_SBProVoice, (volume & 0xF) + (volume >> 4));
+//     } else if (SB_MixerType == SB_TYPE_SBPro){
+//         SB_WriteMixer(SB_SBProVoice, (volume & 0xF) + (volume >> 4));
 
-    } 
-}
-
-
+//     } 
+// }
 
 
-uint16_t SB_GetDSPVersion() {
+
+
+uint16_t __near SB_GetDSPVersion() {
 
     SB_WriteDSP(0xE1);	// get version
 
@@ -1752,7 +1774,7 @@ uint16_t SB_GetDSPVersion() {
     return SB_DSP_Version.hu;
 }
 
-int16_t SB_InitCard(){
+int16_t __far  SB_InitCard(){
 	int8_t status;
 
 	//todo get these from environment variables or config file.
@@ -1832,7 +1854,7 @@ int16_t SB_InitCard(){
 
 }
 
-void S_InitSFXCache(){
+void __far S_InitSFXCache(){
     // initialize sfx cache at app start
     int8_t i;
         // just run thru the whole bunch in one go instead of multiple 
@@ -1863,7 +1885,7 @@ void S_InitSFXCache(){
 
 }
 
-void SB_StartInit(){
+void __far  SB_StartInit(){
     // todo move this crap into asm. dump the 
     // uint8_t i;
     // char lumpname[9];
@@ -1912,10 +1934,27 @@ void SB_StartInit(){
     // nodes, etc now initialized in S_InitSFXCache which is called by S_SetSfxVolume earlier in S_Init
 }
 
+void __far S_NormalizeSfxVolume(uint16_t offset, uint16_t length);
+// void S_NormalizeSfxVolume(uint16_t offset, uint16_t length){
+//     uint8_t __far* sfxbyte = MK_FP(SFX_PAGE_SEGMENT, offset);
+//     int8_t multvolume = snd_SfxVolume;
+//     uint16_t j;
+    
+//     for (j = 0; j < length; j++){
+//         // multiply by 128 normalized. Take the high byte of a 8u 8u mul, shift left 1.
+//         // have to also offset by 80 to get signed/unsigned
+//         int16_t_union volume_result;
+//         int8_t intermediate = sfxbyte[j] - 0x80;
+//         volume_result.h = FastIMul8u8u(intermediate, multvolume) << 1;
+//         volume_result.bu.bytehigh += 0x80;
+//         sfxbyte[j] = volume_result.bu.bytehigh;
+
+//     }
+
+// }
 
 
-
-int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
+int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
     int8_t i;
     int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
     uint8_t sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
@@ -2001,66 +2040,8 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
         sfx_free_bytes[i] -= sample_256_size & 63;
         logcacheevent('x', i);
 
-        goto found_page;
     }
-
-    /*    
-    for (i = NUM_SFX_PAGES-1; i >= 0; i--){
-        uint8_t pagenum = sfx_page_lru[i];
-        int8_t j;
-        if (sfx_page_reference_count[pagenum]){
-            continue;  // page in use...
-        }
-
-        // this page is empty.
-        if (sfx_page_multipage_count[pagenum]){
-            // but its part of a multi-page allocation! 
-            // is the rest of it also empty?
-
-        }
-
-
-        // find all sfx mapped to this page and mark erased. 
-        for (j = 1; j < NUMSFX; j++){
-            if (sfx_data[j].lumpsize.hu >= 16384){
-                // multi page sfx case...   
-                if(sfx_data[j].cache_position.bu.bytehigh == SOUND_NOT_IN_CACHE){
-                    continue;
-                } else {
-                    uint8_t numpages  = sb_voicelist[pagenum].length >> 14; // todo rol 2
-                    // while () {
-
-                    // }
-
-                }
-
-            } else {
-                // single page sfx case
-                if(sfx_data[j].cache_position.bu.bytehigh == i){
-                    // mapped to this page, so unmap it.
-                    sfx_data[j].cache_position.bu.bytehigh = SOUND_NOT_IN_CACHE; 
-                }
-            }
-        }
-        // set page to 64 free.
-
-        sfx_free_bytes[pagenum] = 64; // todo make a constant...
-
-        
-        
-        // if we make it thru the whole voice list with no collision for this page we are good
-        if (j == -1){
-            continue;
-        }
-
-        if (sample_256_size <= sfx_free_bytes[i]){
-            allocate_position.bu.bytehigh = (64 - sfx_free_bytes[i]) << 2;  // keep track of where to put the sound
-            allocate_position.bu.bytelow = 0;
-            sfx_free_bytes[i] -= sample_256_size;   // subtract...
-            goto found_page;
-        }
-    }
-    */
+    // continue to found_page
 
 
     // ! no location found! must evict.
@@ -2090,24 +2071,10 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
         lumpsize.hu);   // num bytes..
 
     // loop here to apply application volume to sfx 
-    
     if (snd_SfxVolume != MAX_VOLUME_SFX){
-        uint8_t __far* sfxbyte = MK_FP(SFX_PAGE_SEGMENT, allocate_position.hu);
-        int8_t multvolume = snd_SfxVolume;
-        int16_t j;
-        for (j = 0; j < lumpsize.hu; j++){
-            // multiply by 128 normalized. Take the high byte of a 8u 8u mul, shift left 1.
-            // have to also offset by 80 to get signed/unsigned
-            int16_t_union volume_result;
-            int8_t intermediate = sfxbyte[j] - 0x80;
-            volume_result.h = FastIMul8u8u(intermediate, multvolume) << 1;
-            volume_result.bu.bytehigh += 0x80;
-            sfxbyte[j] = volume_result.bu.bytehigh;
-
-        }
-
+        S_NormalizeSfxVolume(allocate_position.hu, lumpsize.h);
     }
-
+     
 
     // don't do this! it defaults to zero, and is reset to zero during eviction if necessary.
     // sfxcache_nodes[i].pagecount = 0;
@@ -2134,10 +2101,9 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
         logcacheevent('u', i);
 
 
-        goto found_page_multiple;
     }
 
-    
+    //. continue to found_page_multiple    
     
 
     found_page_multiple:
@@ -2170,26 +2136,15 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
             currentpage = sfxcache_nodes[currentpage].prev;
 
                 // loop here to apply application volume to sfx 
-    
-
+            
             if (snd_SfxVolume != MAX_VOLUME_SFX){
-                uint8_t __far* sfxbyte = SFX_PAGE_ADDRESS;
-                int8_t multvolume = snd_SfxVolume;
-                uint16_t j;
-                for (j = 0; j < 16384; j++){
-                    // multiply by 128 normalized. Take the high byte of a 8u 8u mul, shift left 1.
-                    // have to also offset by 80 to get signed/unsigned
-                    int16_t_union volume_result;
-                    int8_t intermediate = sfxbyte[j] - 0x80;
-                    volume_result.h = FastIMul8u8u(intermediate, multvolume) << 1;
-                    volume_result.bu.bytehigh += 0x80;
-                    sfxbyte[j] = volume_result.bu.bytehigh;
-
-                }
+                S_NormalizeSfxVolume(0, 16384);
             }
+
+
         }
         // mark last page
-        sfxcache_nodes[currentpage].pagecount = pagecount - j + 1;
+        sfxcache_nodes[currentpage].pagecount = 1;
         sfxcache_nodes[currentpage].numpages = pagecount + 1;
 
         // final case, leftover bytes...
@@ -2201,26 +2156,16 @@ int8_t S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 lumpsize.hu & 16383);   // num bytes..
 
         if (snd_SfxVolume != MAX_VOLUME_SFX){
-            uint8_t __far* sfxbyte = SFX_PAGE_ADDRESS;
-            int8_t multvolume = snd_SfxVolume;
-            uint16_t j;
-            for (j = 0; j < lumpsize.hu & 16383; j++){
-                // multiply by 128 normalized. Take the high byte of a 8u 8u mul, shift left 1.
-                // have to also offset by 80 to get signed/unsigned
-                int16_t_union volume_result;
-                int8_t intermediate = sfxbyte[j] - 0x80;
-                volume_result.h = FastIMul8u8u(intermediate, multvolume) << 1;
-                volume_result.bu.bytehigh += 0x80;
-                sfxbyte[j] = volume_result.bu.bytehigh;
-
-            }
+            S_NormalizeSfxVolume(0, lumpsize.hu & 16383);
         }
+
+        
         return 0;
     }
 }
 
 
-int8_t SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
+int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     
     int8_t i;
     
@@ -2287,7 +2232,7 @@ int8_t SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     return -1;
 }
 
-void SFX_StopPatch(int8_t handle){
+void __far SFX_StopPatch(int8_t handle){
     // if (handle >= 0 && handle < NUM_SFX_TO_MIX){
         // disable interrupts... otherwise we might turn it off mid-interrupt and double dec ref count
         _disable();
@@ -2303,14 +2248,14 @@ void SFX_StopPatch(int8_t handle){
     // }
 }
 
-boolean SFX_Playing(int8_t handle){
+boolean __far SFX_Playing(int8_t handle){
     if (handle >= 0 && handle < NUM_SFX_TO_MIX){
         return (sb_voicelist[handle].sfx_id & PLAYING_FLAG);
     }
     return false;
 }
 
-void SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol){
+void __far SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol){
     if (sb_voicelist[handle].sfx_id & PLAYING_FLAG){
         sb_voicelist[handle].sep = sep;
         sb_voicelist[handle].volume = vol;

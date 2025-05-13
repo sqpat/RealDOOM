@@ -283,7 +283,7 @@ uint8_t S_AdjustSoundParamsVol ( fixed_t_union sourceX, fixed_t_union sourceY){
 
 }
 
-void S_InitSFXCache();
+void __far S_InitSFXCache();
 
 void S_SetSfxVolume(uint8_t volume) {
 	int8_t i;

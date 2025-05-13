@@ -466,9 +466,8 @@ void __near M_SfxVol(int16_t choice){
         }
         break;
     }
-    // (0-15) << 3 + 7, except for used_volume of 0 where we ignore the +7
-    S_SetSfxVolume(sfxVolume);
-
+        
+    S_SetSfxVolume(sfxVolume << 3);
 }
 
 void __near M_MusicVol(int16_t choice){
@@ -485,7 +484,7 @@ void __near M_MusicVol(int16_t choice){
         break;
     }
         
-    S_SetMusicVolume(musicVolume);
+    S_SetMusicVolume(musicVolume * 8);
 }
 
 
@@ -708,44 +707,26 @@ void __near M_QuitResponse(int16_t ch){
 void __near M_QuitDOOM(int16_t choice) {
   // We pick index 0 which is language sensitive,
   //  or one at random, between 1 and maximum number.
-    int8_t temp[100];
-    int8_t temp2[100];
-    int8_t endstring[140];
-    int8_t chosenendmsg = (gametic >> 2) % NUM_QUITMESSAGES;
-    getStringByIndex(DOSY, temp2);
-    if (commercial) {
-        int16_t endmsg2[NUM_QUITMESSAGES];
-        // QuitDOOM II messages
-        endmsg2[0] = QUITMSG;
-        endmsg2[1] = QUITMSGD21;
-        endmsg2[2] = QUITMSGD22;
-        endmsg2[3] = QUITMSGD23;
-        endmsg2[4] = QUITMSGD24;
-        endmsg2[5] = QUITMSGD25;
-        endmsg2[6] = QUITMSGD26;
-        endmsg2[7] = QUITMSGD27;
-
-        getStringByIndex(endmsg2[chosenendmsg], temp);
+    int8_t temp2[30];
+    int8_t endstring[105];
+    int16_t chosenendmsg = (gametic >> 2) % NUM_QUITMESSAGES;
+    getStringByIndex(DOSY, MK_FP(0x3C00, (int16_t)temp2));
+    if (chosenendmsg == 0){
+        chosenendmsg = 2;
     } else {
 
-        int16_t endmsg[NUM_QUITMESSAGES];
-        // DOOM1
-        endmsg[0] = QUITMSG;
-        endmsg[1] = QUITMSGD11;
-        endmsg[2] = QUITMSGD12;
-        endmsg[3] = QUITMSGD13;
-        endmsg[4] = QUITMSGD14;
-        endmsg[5] = QUITMSGD15;
-        endmsg[6] = QUITMSGD16;
-        endmsg[7] = QUITMSGD17;
-            
+        if (commercial) {
+            // QuitDOOM II messages
+            chosenendmsg = QUITMSGD21 - 1 + chosenendmsg;
+        } else {
 
-        getStringByIndex(endmsg[chosenendmsg], temp);
+            // DOOM1
+            chosenendmsg = QUITMSGD11 - 1 + chosenendmsg;
+        }
     }
-
-    combine_strings(endstring, temp, "\n");
-    combine_strings(endstring, endstring, temp2);
-
+    getStringByIndex(chosenendmsg, endstring);
+    combine_strings_near(endstring, endstring, "\n");
+    combine_strings_near(endstring, endstring, temp2);
 
     M_StartMessage(endstring,M_QuitResponse,true);
 }
@@ -841,7 +822,6 @@ void __near M_DrawThermo (int16_t   x, int16_t   y, int16_t   thermWidth, int16_
 void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int16_t), boolean input ) {
     messageLastMenuActive = menuactive;
     messageToPrint = 1;
-    //messageString = 
     locallib_strcpy(menu_messageString, string);
     messageRoutine = routine;
     messageNeedsInput = input;
@@ -1169,8 +1149,8 @@ boolean __far M_Responder (event_t __far*  ev) {
             Z_QuickMapMenu();
 
 
-            currentMenu->menuitems[itemOn].routine(0);
             S_StartSound(NULL,sfx_stnmov);
+            currentMenu->menuitems[itemOn].routine(0);
 
             Z_QuickMapByTaskNum(oldtask);
 
@@ -1184,8 +1164,8 @@ boolean __far M_Responder (event_t __far*  ev) {
             oldtask = currenttask;
             Z_QuickMapMenu();
 
-            currentMenu->menuitems[itemOn].routine(1);
             S_StartSound(NULL,sfx_stnmov);
+            currentMenu->menuitems[itemOn].routine(1);
             
             Z_QuickMapByTaskNum(oldtask);
 

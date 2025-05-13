@@ -129,6 +129,7 @@
 // the following is crap
 #define LINE_NEVERSEE ML_DONTDRAW
 
+// #define __DEMO_ONLY_BINARY 1
 
 #ifdef __DEMO_ONLY_BINARY
 void __far AM_Drawer(void) {

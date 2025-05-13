@@ -5,9 +5,9 @@
 #include "m_near.h"
 
 
-int16_t SB_InitCard();
-int8_t SB_SetupPlayback();
-void SB_Shutdown();
+int16_t __far SB_InitCard();
+void __far SB_Shutdown();
+void __far SB_StartInit();
 
 
 
@@ -105,7 +105,6 @@ enum SB_ERRORS
 #define SB_DSP_Version201 0x0201
 #define SB_DSP_Version3xx 0x0300
 #define SB_DSP_Version4xx 0x0400
-void SB_StopPlayback();
 
 
 
@@ -114,7 +113,6 @@ void SB_StopPlayback();
 
 
 
-extern uint8_t      application_volume;
 
 
 
@@ -127,7 +125,6 @@ extern uint8_t      application_volume;
 
 
 
-// sfxinfo_t S_sfx[NUMSFX];
 
 
 
@@ -137,7 +134,6 @@ extern uint8_t      application_volume;
 
 
 
-void SB_StartInit();
 
 
 #endif

@@ -18,6 +18,9 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
+.DATA
+
+EXTRN _snd_SfxVolume:BYTE
 
 .CODE
  
@@ -306,6 +309,38 @@ ENDP
 
 
 
+
+; todo move to a sound asm file
+;void S_NormalizeSfxVolume(uint16_t offset, uint16_t length){
+
+PROC S_NormalizeSfxVolume_ FAR
+PUBLIC S_NormalizeSfxVolume_
+
+push si
+push cx
+mov  cl, byte ptr ds:[_snd_SfxVolume]
+mov  ch, 080h
+add  dx, ax       ; length+offset. end condition
+mov  si, ax       ; si gets offset
+mov  ax, 0D400h   ; segment
+mov  ds, ax
+do_next_byte:
+lodsb
+sub  al, cl
+imul cl
+sal  ax, 1
+add  ah, cl
+mov  byte ptr ds:[si-1], ah
+cmp  si, dx
+jb   do_next_byte
+exit_loop:
+mov  ax, ss
+mov  ds, ax
+pop  cx
+pop  si
+retf 
+
+ENDP
 
 
 PROC D_INTERRUPT_ENDMARKER_

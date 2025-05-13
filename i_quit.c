@@ -34,7 +34,7 @@ void __near finishlogging(){
 }
 */
 
-void	SB_Shutdown();
+void __far SB_Shutdown();
 
 void __near I_ShutdownSound(void) {
 

@@ -35,7 +35,7 @@ typedef uint8_t sfxenum_t;
 //
  
 
-#define MAX_SFX_CHANNELS 3
+#define MAX_SFX_CHANNELS 8
  
 
 typedef struct {

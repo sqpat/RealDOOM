@@ -533,6 +533,9 @@ ret
 ENDP
 
 
+
+
+
 jumptoexitdirect:
 jmp   jumpexitdirect
 
@@ -557,8 +560,8 @@ mov   es, cx
  
 
 ; patch is es:bx
-sub   ax, word ptr es:[bx + 4]
-sub   dx, word ptr es:[bx + 6]
+sub   ax, word ptr es:[bx + 4]	; leftoffset
+sub   dx, word ptr es:[bx + 6]  ; topoffset
 mov   si, ax  ; store x
 mov   ax, (SCREENWIDTH / 4)
 mul   dx
@@ -694,7 +697,7 @@ check_desttop_increment:
 
 inc   dx
 test  dx, 3
-jne   dont_increment_desttop
+jne   dont_increment_desttop						; todo change branch? 1/4 chance of fallthru?
 inc   word ptr cs:[SELFMODIFY_offset_set_di+1]
 dont_increment_desttop:
 SELFMODIFY_col_increment:

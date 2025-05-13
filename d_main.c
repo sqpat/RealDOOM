@@ -506,6 +506,21 @@ void __far combine_strings(char __far *dest, char __far *src1, char __far *src2)
 	dest[i] = '\0';
 }
 
+void __far combine_strings_near(char __near *dest, char __near *src1, char __near *src2){
+	int16_t i = 0;
+	int16_t j = 0;
+	while (src1[i] != '\0'){
+		dest[i] = src1[i];
+		i++;
+	}
+	while (src2[j] != '\0'){
+		dest[i] = src2[j];
+		i++;
+		j++;
+	}
+	dest[i] = '\0';
+}
+
 int16_t __far locallib_strcmp(char __far *str1, char __far *str2){
 	int16_t i = 0;
 	while (str1[i]){

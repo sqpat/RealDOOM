@@ -459,6 +459,7 @@ int16_t __far locallib_strncasecmp(char __near *str1, char __far *str2, int16_t 
 
 //int16_t __far locallib_strcasecmp(char __far *str1, char __far *str2);
 void __far combine_strings(char __far *dest, char __far *src1, char __far *src2);
+void __far combine_strings_near(char __near *dest, char __near *src1, char __near *src2);
 void __far makesavegamename(char __far *dest, int8_t number);
 void __far locallib_strcpy(char __far *dest, char __far *src);
 void __far locallib_printf (int8_t __far* str, va_list argptr);
