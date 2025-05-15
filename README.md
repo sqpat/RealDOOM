@@ -7,7 +7,7 @@ RealDOOM is an in progress port of the DOS version of DOOM (based on PCDOOMv2) t
 
 The current release supports Shareware and commercial DOOM/DOOM2 as well as Ultimate DOOM. TNT and Plutonia are not currently supported. Custom wads are not currently supported.
 
-The current development focus is on sound effects support and ASM rewrites of most of the codebase to reduce memory usage. This will be followed by re-adding removed features.
+The current development focus is on bugfixing and ASM rewrites of most of the codebase to reduce memory usage. 
 
 ### Running RealDOOM
 
@@ -26,7 +26,6 @@ Simply run the makeall script and select your build option (286, 386, 8086, chip
  - joystick support
 
 ###  Broken/unimplemented features 
- - sound effects
  - multiplayer/networking? (not sure if it will be re-added)
  - custom wads
 
@@ -34,10 +33,9 @@ There are also a lot of hard caps on things like texture size and count, node co
 
 ### Known bugs:
  - span/plane draws use 16 and not 24 bit texture precision and be a little noisy
- - minor doom2 timedemo3 desync at the very end of the timedemo
- - occasional keyboard related memory leaks
+ - occasional mystery crashes
  
-### High-Level Roadmap:
+### Release History:
  Not necessarily meant to be accurate, but just to give an overview of the general order in which things are probably going to be built.
 
 (Dec 4, 2023)      
@@ -102,31 +100,46 @@ There are also a lot of hard caps on things like texture size and count, node co
   - various render and engine bugfixes
   - additional 386 optimized math functions
 
-(Mar 31, 2025)
-~~**v0.25** : Improved feature compatibility~~~
+(Mar 31, 2025)      
+~~**v0.25** : Improved feature compatibility~~
   - fix save/load game
   - fix demo recording
   - implement music
   - more code moved into offloaded binary
 
-**v0.30** : Improved feature compatibility
-  - improved custom WAD support
-  - core physics functions rewritten in asm
-  - more code moved into offloaded binary
-  - improved span drawing fidelity
-  - sfx code
+(May 15, 2025)      
+~~**v0.26** : SFX implementation~~
+  - Implemented Speaker SFX
+  - Implemented Sound Blaster SFX
+  - various bugfixes
 
-**v0.40** : Sound Support, Alpha release
-  - more code moved into offloaded binary
-  - fixing of all known bugs? (hopefully)
-  - remove E000 UMB dependency?
+
+### Future Roadmap:
+
+**Alpha Goals:**
+ - Feature complete
+ - All known bugs fixed
+ - EMS paginated WAD fields
+ - improved span drawing fidelity
+
+
+**Beta Goals:**
+ - Focus on improved compatibility with more machines
+   - E000 UMB requirement removed
+ - "More" feature complete
+   - AWE32, Gravis SFX - etc
+ - Improved custom WAD support
+
+
+**"1.0" Goals:**
+ - Remove clib dependencies
+ - Entirely ASM application
+
+**Post 1.0 Goals:**
+ - EMS 3.2 compatible version
+ - Remove MS-DOS dependencies, self boot version?
+  
  
- **v0.xx** : Continued improvement
-  - TNT, Plutonia support?
-  - continued moving of code to asm, optimizations, etc
-  - Entire codebase in asm? Remove c lib dependencies?
-  - Remove MS-DOS dependencies, self boot?
-  - highly optimized but non-timedemo conformant 286 super-optimized version?
  
 
 
