@@ -1109,7 +1109,7 @@ void __far AM_Drawer (void) {
 	 
 */
 	//setval = 1;
-	I_Error("out!");
+	// I_Error("out! %x", playerMobj_pos->flags2);
 	// Clear automap frame buffer.
 	FAR_memset(screen0, BACKGROUND, automap_screenwidth*automap_screenheight);
 

@@ -272,18 +272,19 @@ typedef struct mobj_pos_s {
 	// List: thinker links.
 
 	// Info for drawing: position.
-	fixed_t_union		x;
-	fixed_t_union		y;
-	fixed_t_union		z;
+	fixed_t_union		x;      // 00h
+	fixed_t_union		y;      // 04h
+	fixed_t_union		z;      // 08h
+    
+	// todo one day move angle here. to not split the qword
+    // More list: links in sector (if needed)
+	THINKERREF	snextRef;       // 0Ch
 
-	// More list: links in sector (if needed)
-	THINKERREF	snextRef;
-
-	angle_t		angle;	// orientation
+	angle_t		angle;	// orientation  0Eh
 	
- 	statenum_t		stateNum;
-	int16_t			flags1;
-	int16_t			flags2;
+ 	statenum_t		stateNum;   // 12h
+	int16_t			flags1;     // 14h
+	int16_t			flags2;     // 16h
 
 
 } mobj_pos_t;

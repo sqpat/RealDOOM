@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 1998
+#define CONSTANTS_COUNT 2032
 #define LOCALS_COUNT 18
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -2057,9 +2057,48 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SIZEOF_SFX_INFO",
 	"SAMPLE_RATE_11_KHZ_UINT",
 	"SAMPLE_RATE_22_KHZ_UINT",
-	"SCRATCH_SEGMENT_5000"
+	"SCRATCH_SEGMENT_5000",
+
+ 	"MF_SPECIAL",
+    
+	"MF_SOLID",
+    "MF_SHOOTABLE",
+    "MF_NOSECTOR",
+    "MF_NOBLOCKMAP",
+    "MF_AMBUSH",
+
+    "MF_JUSTHIT",
+    "MF_JUSTATTACKED",
+    "MF_SPAWNCEILING",
+    "MF_NOGRAVITY",
+    "MF_DROPOFF",
+    
+	"MF_PICKUP",
+    "MF_NOCLIP",
+    "MF_SLIDE",
+    "MF_FLOAT",
+    "MF_TELEPORT",
+
+	"MF_MISSILE",
+    "MF_DROPPED",
+    "MF_SHADOW",
+    "MF_NOBLOOD",
+    "MF_CORPSE",
+    "MF_INFLOAT",
+    "MF_COUNTKILL",
+    "MF_COUNTITEM",
+    "MF_SKULLFLY",
+    "MF_NOTDMATCH",
+    "MF_TRANSSHIFT",
 
 
+	"PW_INVULNERABILITY",
+	"PW_STRENGTH",
+	"PW_INVISIBILITY",
+	"PW_IRONFEET",
+	"PW_ALLMAP",
+	"PW_INFRARED",
+	"NUMPOWERS"
 
 
 
@@ -4118,7 +4157,49 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	sizeof(sfxinfo_t),
 	SAMPLE_RATE_11_KHZ_UINT,
 	SAMPLE_RATE_22_KHZ_UINT,
-	SCRATCH_SEGMENT_5000
+	SCRATCH_SEGMENT_5000,
+
+ 	MF_SPECIAL,
+    
+	MF_SOLID,
+    MF_SHOOTABLE,
+    MF_NOSECTOR,
+    MF_NOBLOCKMAP,
+    MF_AMBUSH,
+
+    MF_JUSTHIT,
+    MF_JUSTATTACKED,
+    MF_SPAWNCEILING,
+    MF_NOGRAVITY,
+    MF_DROPOFF,
+    
+	MF_PICKUP,
+    MF_NOCLIP,
+    MF_SLIDE,
+    MF_FLOAT,
+    MF_TELEPORT,
+
+	MF_MISSILE,
+    
+	MF_DROPPED,
+    MF_SHADOW,
+    MF_NOBLOOD,
+    MF_CORPSE,
+    MF_INFLOAT,
+
+    MF_COUNTKILL,
+    MF_COUNTITEM,
+    MF_SKULLFLY,
+    MF_NOTDMATCH,
+    MF_TRANSSHIFT,
+
+	pw_invulnerability,
+	pw_strength,
+	pw_invisibility,
+	pw_ironfeet,
+	pw_allmap,
+	pw_infrared,
+	NUMPOWERS
 
 
 

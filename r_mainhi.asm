@@ -1744,7 +1744,7 @@ mov   es, bx					; es is SS i.e. destination segment
 mov   ds, dx					; ds is movsw source segment
 mov   ax, word ptr [si+010h]		; 010h
 mov   word ptr cs:[SELFMODIFY_set_ax_to_angle_highword+1], ax
-mov   al, byte ptr [si+016h]	; 016h
+mov   al, byte ptr [si+016h]	; 016h  flags2
 mov   byte ptr cs:[SELFMODIFY_set_al_to_flags2+1], al
 
 lea   di, [bp - 01Ah]			; di is the stack area to copy to..
@@ -2250,7 +2250,7 @@ mov   word ptr [si + 026h], bx
 
 SELFMODIFY_set_al_to_flags2:
 mov   al, 00h
-test  al, 4
+test  al, MF_SHADOW
 jne   exit_set_shadow
 SELFMODIFY_BSP_fixedcolormap_2:
 jmp SHORT   exit_set_fixed_colormap
@@ -6266,7 +6266,6 @@ ENDP
 
 FRACUNIT_OVER_2 = 08000h
 BASEYCENTER  = 100
-PW_INVISIBILITY = 02h
 
 ;R_DrawPSprite_
 
@@ -6572,9 +6571,9 @@ mov   word ptr [si + 026h], bx
 
 ;    if (player.powers[pw_invisibility] > 4*32
 
-cmp   word ptr ds:[_player + 020h + 2 * pw_invisibility], (4*32)
+cmp   word ptr ds:[_player + 01Eh + 2 * PW_INVISIBILITY], (4*32)
 jg    mark_shadow_draw
-test  byte ptr ds:[_player + 020h + 2 * pw_invisibility], 8
+test  byte ptr ds:[_player + 01Eh + 2 * PW_INVISIBILITY], 8
 jne   mark_shadow_draw
 
 SELFMODIFY_BSP_fixedcolormap_4:
