@@ -229,7 +229,6 @@ byte __far *__near Z_InitEMS() {
 	// get page frame address
 	// regs.h.ah = 0x41;
 	regresult.qword = locallib_int86_67_1arg_return(0x4100);
-	// result.hu = locallib_int86_67_1arg(0x4100);
 
 	pageframebase = regresult.w.bx;
 	errorreg = regresult.h.ah;
@@ -359,7 +358,7 @@ found:
 
 	 
 
-	// todo this is old and out of date, but informative.
+	// todo this is old and out of date, but instructive.
 	// update! or make a script that does this.
 
 	//					PHYSICS			RENDER					ST/HUD			DEMO		PALETTE			FWIPE				MENU		INTERMISSION

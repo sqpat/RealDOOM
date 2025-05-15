@@ -1361,7 +1361,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SFX_RADIO",
     "NUMSFX",
 
-    	"D_DEVSTR",
+	"D_DEVSTR",
 	"D_CDROM",
 	"QUITMSG",
 	"LOADNET",

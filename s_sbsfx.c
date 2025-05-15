@@ -1275,7 +1275,6 @@ void __near SB_SetMixMode(){
 
 }
 
-#define DMA_8_MAX_CHANNELS 4
 #define VALID_IRQ(irq) (((irq) >= 0) && ((irq) <= 15))
 
 #define INVALID_IRQ 0xFF
@@ -2041,6 +2040,7 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
         logcacheevent('x', i);
 
     }
+    allocate_position.hu = 0;
     // continue to found_page
 
 
@@ -2087,6 +2087,8 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
 
     logcacheevent('s', pagecount+1);
     i = S_EvictSFXPage(pagecount+1);
+    allocate_position.hu = 0;
+
     logcacheevent('t', i);
     if (i == -1){
         return -1;
