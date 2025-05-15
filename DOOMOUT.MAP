@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/14 22:09:29
+Created on:       25/05/14 22:54:15
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -42,7 +42,7 @@ d_net_TEXT             CODE           AUTO           02d8:1790       00000105
 g_game_TEXT            CODE           AUTO           02d8:18a0       00000903
 m_misc_TEXT            CODE           AUTO           02d8:21b0       000000d5
 am_map_TEXT            CODE           AUTO           02d8:2290       00001307
-st_stuff_TEXT          CODE           AUTO           02d8:35a0       00000b73
+st_stuff_TEXT          CODE           AUTO           02d8:35a0       00000b75
 hu_stuff_TEXT          CODE           AUTO           02d8:4120       000001d2
 hu_lib_TEXT            CODE           AUTO           02d8:4300       000001b3
 m_menu_TEXT            CODE           AUTO           02d8:44c0       00001410
@@ -687,17 +687,17 @@ Module: am_map.obj(C:\REALDOOM\am_map.c)
 Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
 02d8:35a0+     ST_refreshBackground_
 02d8:35e6      ST_Responder_
-02d8:3a3c+     ST_calcPainOffset_
-02d8:3a7e+     ST_updateFaceWidget_
-02d8:3cd8+     ST_updateWidgets_
-02d8:3d1c      ST_Ticker_
-02d8:3d2e+     ST_doPaletteStuff_
-02d8:3db6*     STlib_updateflag_
-02d8:3dca+     STlib_updateMultIcon_
-02d8:3e8c+     STlib_drawNum_
-02d8:3f9a+     STlib_updatePercent_
-02d8:3fd4+     ST_drawWidgets_
-02d8:40ae      ST_Drawer_
+02d8:3a3e+     ST_calcPainOffset_
+02d8:3a80+     ST_updateFaceWidget_
+02d8:3cda+     ST_updateWidgets_
+02d8:3d1e      ST_Ticker_
+02d8:3d30+     ST_doPaletteStuff_
+02d8:3db8*     STlib_updateflag_
+02d8:3dcc+     STlib_updateMultIcon_
+02d8:3e8e+     STlib_drawNum_
+02d8:3f9c+     STlib_updatePercent_
+02d8:3fd6+     ST_drawWidgets_
+02d8:40b0      ST_Drawer_
 Module: hu_stuff.obj(C:\REALDOOM\hu_stuff.c)
 02d8:4120      HU_Drawer_
 02d8:41b0      HU_Erase_
@@ -1575,4 +1575,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00024bd0 (150480.)
 Entry point address: 1e62:1c16
-Link time: 00:00.75
+Link time: 00:00.74

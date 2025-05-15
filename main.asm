@@ -198,6 +198,8 @@ cheat_mypos:
 dw  OFFSET cheat_mypos_seq, 0
 
 
+; ax is cheat index
+; dx is ptr
 PROC cht_CheckCheat_ NEAR
 PUBLIC cht_CheckCheat_
 

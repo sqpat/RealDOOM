@@ -179,7 +179,7 @@ boolean __near ST_Responder (event_t __far* ev) {
             for (i=0;i<6;i++) {
 
                 
-                if (cht_CheckCheat(CHEATID_BEHOLDV + i, ev->data1)) {
+                if (cht_CheckCheat(CHEATID_BEHOLDV + (i << 2), ev->data1)) {
                     if (!player.powers[i]){
                         P_GivePower( i);
                     } else if (i!=pw_strength){
