@@ -40,7 +40,7 @@ int16_t sb_port = -1;
 int16_t sb_dma  = -1;
 int16_t sb_irq  = -1;
 
-int8_t sb_dma_16 = UNDEFINED_DMA;
+// int8_t sb_dma_16 = UNDEFINED_DMA;
 int8_t sb_dma_8  = UNDEFINED_DMA;
 
 int16_t     SB_IntController1Mask;
@@ -1777,11 +1777,16 @@ int16_t __far  SB_InitCard(){
 	int8_t status;
 
 	//todo get these from environment variables or config file.
-	sb_irq      = FIXED_SB_IRQ;
-	sb_dma_8    = FIXED_SB_DMA_8;
-	sb_dma_16   = FIXED_SB_DMA_16;
-	sb_port 	= FIXED_SB_PORT;
-	SB_MixerType = SB_TYPE_SB16;
+	// sb_irq      = FIXED_SB_IRQ;
+	// sb_dma_8    = FIXED_SB_DMA_8;
+	// sb_dma_16   = FIXED_SB_DMA_16;
+	// sb_port 	= FIXED_SB_PORT;
+	// SB_MixerType = SB_TYPE_SB16;
+
+	sb_irq      = snd_SBirq;
+	sb_dma_8    = snd_SBdma;
+	sb_port 	= snd_SBport;
+
 
 
 
