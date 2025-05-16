@@ -283,8 +283,10 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define NUM_TEXTURE_PAGES                           0x18
 #define NUM_MUSIC_PAGES                             0x4
 #define NUM_SFX_PAGES                               0x8
+#define NUM_WAD_PAGES                               0x3
 #define MUS_PAGE_FRAME_INDEX                        0x0
 #define SFX_PAGE_FRAME_INDEX                        0x1
+#define WAD_PAGE_FRAME_INDEX                        0x2
 #elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  
 // todo revisit these numbers? might want less, and then more for sound
 //#define NUM_FLAT_CACHE_PAGES                        16
@@ -317,6 +319,8 @@ void __far Z_SetOverlay(int8_t wipeId);
 //#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
 #define EMS_VISPLANE_EXTRA_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5
 #define FIRST_VISPLANE_PAGE							5
+
+#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         15
 
 //#define EMS_VISPLANE_EXTRA_PAGE                     NUM_EMS4_SWAP_PAGES + 1
 // 15

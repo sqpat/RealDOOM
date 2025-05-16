@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2033
+#define CONSTANTS_COUNT 2034
 #define LOCALS_COUNT 18
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -2099,7 +2099,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"PW_ALLMAP",
 	"PW_INFRARED",
 	"NUMPOWERS",
-	"SFX_DATA_PAGES"
+	"SFX_DATA_PAGES",
+	"NUM_WAD_PAGES"
 
 
 
@@ -4202,7 +4203,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	pw_allmap,
 	pw_infrared,
 	NUMPOWERS,
-	SFX_DATA_PAGES
+	SFX_DATA_PAGES,
+	NUM_WAD_PAGES
 
 
 

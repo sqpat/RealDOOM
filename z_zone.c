@@ -68,9 +68,9 @@ void __far Z_QuickMapSFXPageFrame(uint8_t pagenumber){
 	// page frame index 0 to 3
 	// count 
 
-	if (pagenumber > NUM_SFX_PAGES){
-		I_Error("bad page number %i", pagenumber);
-	}
+	// if (pagenumber > NUM_SFX_PAGES){
+	// 	I_Error("bad page number %i", pagenumber);
+	// }
 	if (currentpageframes[SFX_PAGE_FRAME_INDEX] == pagenumber){
 		return;
 	}
@@ -82,6 +82,28 @@ void __far Z_QuickMapSFXPageFrame(uint8_t pagenumber){
 	// regs.w.dx = emshandle; // handle
 	// intx86(EMS_INT, &regs, &regs);
 	locallib_int86_67(0x4400+SFX_PAGE_FRAME_INDEX, emshandle, pagenumber + SFX_DATA_PAGES);
+
+}
+
+// todo rename to be something music related?
+void __far Z_QuickMapWADPageFrame(uint8_t pagenumber){
+	// page frame index 0 to 3
+	// count 
+
+	if (pagenumber > NUM_WAD_PAGES){
+		I_Error("bad page number %i", pagenumber);
+	}
+	if (currentpageframes[WAD_PAGE_FRAME_INDEX] == pagenumber){
+		return;
+	}
+
+	currentpageframes[WAD_PAGE_FRAME_INDEX] = pagenumber;
+
+	// regs.w.ax = 0x4400 + SFX_PAGE_FRAME_INDEX;
+	// regs.w.bx = pagenumber + SFX_DATA_PAGES;
+	// regs.w.dx = emshandle; // handle
+	// intx86(EMS_INT, &regs, &regs);
+	locallib_int86_67(0x4400+WAD_PAGE_FRAME_INDEX, emshandle, pagenumber + FIRST_LUMPINFO_LOGICAL_PAGE);
 
 }
 

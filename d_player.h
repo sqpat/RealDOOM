@@ -75,24 +75,24 @@ typedef struct player_s{
     // Determine POV,
     //  including viewpoint bobbing during movement.
     // Focal origin above r.z
-    fixed_t_union		viewzvalue;
+    fixed_t_union		viewzvalue;             // 08
     // Base height above floor for viewz.
-	fixed_t_union		viewheightvalue;
+	fixed_t_union		viewheightvalue;        // 0C
     // Bob/squat speed.
-	fixed_t_union     deltaviewheight;
+	fixed_t_union     deltaviewheight;          // 10
     // bounded/scaled total momentum.
-	fixed_t_union     bob; 
+	fixed_t_union     bob;                      // 14
     // This is only used between levels,
     // mo->health is used during levels.
-    int16_t		health;	
+    int16_t		health;	                        // 18
 
-    int16_t		armorpoints;
+    int16_t		armorpoints;                    // 1A
     // Armor type is 0-2.
-    int8_t			armortype;	
-    playerstate_t	playerstate;
+    int8_t			armortype;	                // 1C
+    playerstate_t	playerstate;                // 1D
 
     // Power ups. invinc and invis are tic counters.
-    int16_t		powers[NUMPOWERS];
+    int16_t		powers[NUMPOWERS];              // 1E
     boolean		cards[NUMCARDS];
     
     weapontype_t	readyweapon;

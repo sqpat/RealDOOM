@@ -1490,6 +1490,7 @@ compositetextureoffset  4F80:01AC
 
 #define lumpinfo5000 ((lumpinfo_t __far*) 0x54000000)
 #define lumpinfo9000 ((lumpinfo_t __far*) 0x94000000)
+#define lumpinfoD800 ((lumpinfo_t __far*) 0xD8000000)
 #define lumpinfoinit ((lumpinfo_t __far*) uppermemoryblock)
 
 

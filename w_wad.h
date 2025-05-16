@@ -44,6 +44,13 @@ typedef struct {
 //
 // WADFILE I/O related stuff.
 //
+
+// lumps are 13 bytes each?
+
+
+// 13 bytes each. LUMP_PER_EMS_PAGE is 1260
+#define LUMP_PER_EMS_PAGE 16384 / sizeof(lumpinfo_t)
+
 typedef struct {
 	int8_t	name[8];
 	// (probably could cap at 16 bit and use high bit as sizediff)

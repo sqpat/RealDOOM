@@ -283,7 +283,7 @@ byte __far *__near Z_InitEMS() {
 	// regs.w.ax = 0x4402;
 	// regs.w.bx = SFX_DATA_PAGES+1;
 	// regs.w.dx = emshandle; // handle
-	locallib_int86_67(0x4402, emshandle, SFX_DATA_PAGES+1);
+	locallib_int86_67(0x4402, emshandle, FIRST_LUMPINFO_LOGICAL_PAGE);
 	// intx86(EMS_INT, &regs, &regs);
 
 	// DC00 mus driver setup
