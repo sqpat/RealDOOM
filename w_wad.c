@@ -236,7 +236,7 @@ int32_t W_LumpLength5000(int16_t lump) {
 			return filetolumpsize[i];
 		}
 	}
-	return (lumpinfo5000[lump + 1].position - lumpinfo5000[lump].position) + lumpinfo5000[lump].sizediff;
+	return lumpinfo5000[lump].size;
 }
 
 
@@ -248,7 +248,29 @@ int32_t W_LumpLength9000(int16_t lump) {
 			return filetolumpsize[i];
 		}
 	}
-	return (lumpinfo9000[lump + 1].position - lumpinfo9000[lump].position) + lumpinfo9000[lump].sizediff;
+	return lumpinfo9000[lump].size;
+}
+
+int32_t W_LumpLengthD800(int16_t lump) {
+	int8_t i;	
+
+	// todo make this not a for loop.
+	for (i = 0; i < currentloadedfileindex-1; i++){
+		if (lump == filetolumpindex[i]){
+			return filetolumpsize[i];
+		}
+	}
+
+	i = 0;
+
+	while (lump >= LUMP_PER_EMS_PAGE){
+		lump -= LUMP_PER_EMS_PAGE;
+		i++;		
+	}
+
+	Z_QuickMapWADPageFrame(i);
+
+	return lumpinfoD800[lump].size;
 }
 
 int32_t __far W_LumpLength (int16_t lump) {

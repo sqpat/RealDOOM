@@ -186,43 +186,15 @@ void __near W_AddFile(int8_t *filename) {
 	for (i = startlump; i < numlumps; i++, lump_p++, fileinfo++) {
 
 		lump_p->position = (fileinfo->filepos);
+		lump_p->size = (fileinfo->size);
 
 		// set up the diff
-		if (i) {
-			diff = fileinfo->filepos - lastpos;
-			if (fileinfo->filepos) { // sometimes there are 0 size 'marker' items that also lie and set their position as 0... just skip these as it throws off the algorithm
-
-				diff = lastsize - diff;
-
-				// we need to backtrack and push all 0 length items to the position of the next nonzero length item so size calculations work
-				if (j != 65535) {
-					for (; j < i; j++) {
-						lumpinfoinit[j].position = fileinfo->filepos;
-					}
-					j = 65535;
-				}
-				lastpos = fileinfo->filepos;
-				lastsize = fileinfo->size;
-			}
-			else {
-				// filepos is 0 case, usually markers....
-				if (j == 65535)
-					j = i;
-
-				diff = 0;
-				lump_p->position = lastpos + lastsize;
-			}
-			lumpinfoinit[i - 1].sizediff = diff;
-
-		}
-		else {
-			lastsize = fileinfo->size;
-		}
+		
+		
 		FAR_memset(lump_p->name, 0, 8);
 		copystr8(lump_p->name, fileinfo->name);
 
 	}
-	lumpinfoinit[i - 1].sizediff = 0;
 
 	
 	FAR_memset(SCRATCH_FILE_LOAD_LOCATION, 0, 65535);

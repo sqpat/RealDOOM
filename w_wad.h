@@ -45,19 +45,17 @@ typedef struct {
 // WADFILE I/O related stuff.
 //
 
-// lumps are 13 bytes each?
 
 
-// 13 bytes each. LUMP_PER_EMS_PAGE is 1260
+// (OLD) 13 bytes each. LUMP_PER_EMS_PAGE is 1260
+// (NOW) 16 bytes each. LUMP_PER_EMS_PAGE is 1024
 #define LUMP_PER_EMS_PAGE 16384 / sizeof(lumpinfo_t)
 
 typedef struct {
 	int8_t	name[8];
-	// (probably could cap at 16 bit and use high bit as sizediff)
-    int32_t		position; //todo make 48 bit
-	// dont know if this might have to change to int16_t at some point, but basically this is the diff between declared lump size and diff of adjacent positions. I think the wad is (annoyingly) made with some overlapping items. saves us 3 bytes per lump still.
-	int8_t	sizediff; 
-	//int32_t		size;  // calculate size from next position minus your own plus diff.
+    int32_t		position; 
+	// int8_t	sizediff;  // calculate size from next position minus your own plus diff.
+	int32_t		size;  
 } lumpinfo_t;
 
 
