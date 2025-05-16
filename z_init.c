@@ -407,7 +407,13 @@ found:
 	}
 	 
 
-	Z_QuickMapLumpInfo5000();
+	
+	{
+		for (i = 0; i < (numlumps / LUMP_PER_EMS_PAGE); i++){
+			Z_QuickMapWADPageFrame(i);
+			FAR_memcpy((byte __far *) lumpinfoD800, (byte __far *) lumpinfoinit + (i * 16384u), 16384u); // copy the wad lump stuff over. gross
+		}
+	}
 
 	FAR_memcpy((byte __far *) 0x54000000, (byte __far *) lumpinfoinit, 49152u); // copy the wad lump stuff over. gross
 	FAR_memset((byte __far *) lumpinfoinit, 0, 49152u);

@@ -404,12 +404,17 @@ void __near R_InitSpriteDefs() {
 		// scan the lumps,
 		//  filling in the frames for whatever is found
 		for (l = start + 1; l < end; l++) {
-			if (*(int32_t  __far*)lumpinfo9000[l].name == intname) {
-				frame = lumpinfo9000[l].name[4] - 'A';
-				rotation = lumpinfo9000[l].name[5] - '0';
+
+			// big todo improve
+			int16_t lump = l & (LUMP_PER_EMS_PAGE - 1);
+			Z_QuickMapWADPageFrame(l >> 10);
+
+			if (*(int32_t  __far*)lumpinfoD800[lump].name == intname) {
+				frame = lumpinfoD800[lump].name[4] - 'A';
+				rotation = lumpinfoD800[lump].name[5] - '0';
 
 				if (modifiedgame) {
-					copystr8(localname, lumpinfo9000[l].name);
+					copystr8(localname, lumpinfoD800[lump].name);
 					patched = W_GetNumForName(localname);
 				} else {
 					patched = l;
@@ -417,9 +422,9 @@ void __near R_InitSpriteDefs() {
 
 				R_InstallSpriteLump(patched, frame, rotation, false);
 
-				if (lumpinfo9000[l].name[6]) {
-					frame = lumpinfo9000[l].name[6] - 'A';
-					rotation = lumpinfo9000[l].name[7] - '0';
+				if (lumpinfoD800[lump].name[6]) {
+					frame = lumpinfoD800[lump].name[6] - 'A';
+					rotation = lumpinfoD800[lump].name[7] - '0';
 					R_InstallSpriteLump(l, frame, rotation, true);
 				}
 			}
@@ -500,7 +505,6 @@ void __near R_InitSprites(){
 void __near P_Init(void) {
 
 	Z_QuickMapRender();
-	Z_QuickMapLumpInfo();
 	Z_QuickMapRender_9000To6000();//for R_TextureNumForName
 	P_InitSwitchList();
 	P_InitPicAnims();

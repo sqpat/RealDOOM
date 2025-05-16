@@ -49,7 +49,8 @@ typedef struct {
 
 // (OLD) 13 bytes each. LUMP_PER_EMS_PAGE is 1260
 // (NOW) 16 bytes each. LUMP_PER_EMS_PAGE is 1024
-#define LUMP_PER_EMS_PAGE 16384 / sizeof(lumpinfo_t)
+//#define LUMP_PER_EMS_PAGE 16384 / sizeof(lumpinfo_t)
+#define LUMP_PER_EMS_PAGE 1024
 
 typedef struct {
 	int8_t	name[8];

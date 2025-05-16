@@ -160,6 +160,8 @@ int16_t W_CheckNumForName (int8_t* name) {
 	int16_t         v2;
 	int16_t         v3;
 	int16_t         v4;
+	int8_t			currentpage;
+	int16_t			currentcounter;
 	int16_t         counter = numlumps;
 	int16_t         returnval = -1;
 	lumpinfo_t __far* lump_p;
@@ -179,9 +181,14 @@ int16_t W_CheckNumForName (int8_t* name) {
     v4 = name8.x[3];
 
 
-	Z_QuickMapLumpInfo();
+	currentpage = numlumps >> 10;
+	currentcounter = numlumps & (LUMP_PER_EMS_PAGE-1);
+	
+	Z_QuickMapWADPageFrame(currentpage);
+
+
 	// scan backwards so patch lump files take precedence
-    lump_p = lumpinfo9000 + numlumps;
+    lump_p = &lumpinfoD800[currentcounter];
 
     while (true) {
 
@@ -192,15 +199,24 @@ int16_t W_CheckNumForName (int8_t* name) {
 				returnval = counter;
 				break;
         }
-		if (lump_p == lumpinfo9000) {
-			break;
+		if (currentcounter == 0) {
+			if (currentpage){
+				currentpage--;
+				Z_QuickMapWADPageFrame(currentpage);
+				currentcounter = LUMP_PER_EMS_PAGE-1;
+				// todo mkfp
+				lump_p = (lumpinfo_t __far*)0xD8004000;
+			} else {
+				break;
+			}
+		} else {
+			currentcounter--;
 		}
 		counter--;
 		lump_p--;
 
     }
  
-	Z_UnmapLumpInfo();
     // TFB. Not found.
     return returnval;
 }
@@ -228,7 +244,9 @@ int16_t W_GetNumForName(int8_t* name) {
 // Returns the buffer size needed to load the given lump.
 //
 
-int32_t W_LumpLength5000(int16_t lump) {
+
+
+int32_t __far W_LumpLength (int16_t lump) {
 	int8_t i;
 	// todo make this not a for loop.
 	for (i = 0; i < currentloadedfileindex-1; i++){
@@ -236,63 +254,15 @@ int32_t W_LumpLength5000(int16_t lump) {
 			return filetolumpsize[i];
 		}
 	}
-	return lumpinfo5000[lump].size;
-}
 
 
-int32_t W_LumpLength9000(int16_t lump) {
-	int8_t i;
-	// todo make this not a for loop.
-	for (i = 0; i < currentloadedfileindex-1; i++){
-		if (lump == filetolumpindex[i]){
-			return filetolumpsize[i];
-		}
-	}
-	return lumpinfo9000[lump].size;
-}
-
-int32_t W_LumpLengthD800(int16_t lump) {
-	int8_t i;	
-
-	// todo make this not a for loop.
-	for (i = 0; i < currentloadedfileindex-1; i++){
-		if (lump == filetolumpindex[i]){
-			return filetolumpsize[i];
-		}
-	}
-
-	i = 0;
-
-	while (lump >= LUMP_PER_EMS_PAGE){
-		lump -= LUMP_PER_EMS_PAGE;
-		i++;		
-	}
+	// todo asm optim this...
+	i = lump >> 10;
+	lump &= (LUMP_PER_EMS_PAGE-1);
 
 	Z_QuickMapWADPageFrame(i);
 
 	return lumpinfoD800[lump].size;
-}
-
-int32_t __far W_LumpLength (int16_t lump) {
-	int32_t size;
-#ifdef CHECK_FOR_ERRORS
-	if (lump >= numlumps)
-        I_Error ("W_LumpLength: %i >= numlumps",lump);
-#endif
-
-	if (FORCE_5000_LUMP_LOAD){
-		Z_QuickMapLumpInfo5000();
-		size = W_LumpLength5000(lump);
-		Z_UnmapLumpInfo5000();
-		return size;
-
-	} else {
-	 
-		Z_QuickMapLumpInfo();
-		size = W_LumpLength9000(lump);
-		Z_UnmapLumpInfo();
-		return size;
-	}
 }
 
 
@@ -314,24 +284,21 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 	int8_t  fileindex = 0;
 	int8_t  i;
 
-	// use 5000 page if we are trying to write to 9000 page
-	boolean is5000Page = ((int32_t) dest >= 0x90000000) && ((int32_t)dest < 0xA0000000);
-	is5000Page |= FORCE_5000_LUMP_LOAD;
 
-	if (is5000Page) {
-		Z_QuickMapLumpInfo5000();
-		l = lumpinfo5000+lump;
-	} else { 
-		Z_QuickMapLumpInfo();
-		l = lumpinfo9000+lump;
-	}
+
+
+	i = lump >> 10;
+	
+	Z_QuickMapWADPageFrame(i);
+	l = &(lumpinfoD800[lump & (LUMP_PER_EMS_PAGE-1)]);
+
 
 
 #ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps)
         I_Error ("W_ReadLump: %i >= numlumps",lump);
 #endif
-	lumpsize = is5000Page ? W_LumpLength5000(lump) : W_LumpLength9000(lump);
+	lumpsize = l->size;
 
 	
 	if (lump == 1) {//colormaps hack.
@@ -353,15 +320,6 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
     fseek(wadfiles[fileindex], startoffset, SEEK_SET);
 
 	FAR_fread(dest, size ? size : (lumpsize - start), 1, wadfiles[fileindex]);
- 
-
- 
-
-	if (is5000Page) {
-		Z_UnmapLumpInfo5000();
-	} else {
-		Z_UnmapLumpInfo();
-	}
 
 	#ifdef ENABLE_DISK_FLASH
     	I_EndRead ();

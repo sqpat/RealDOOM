@@ -1157,10 +1157,6 @@ extern uint16_t pageswapargs[total_pages];
 
 
 
-extern int8_t current5000State;
-extern int8_t last5000State;
-extern int8_t current9000State;
-extern int8_t last9000State;
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -1172,8 +1168,6 @@ extern int32_t spritepageswitchcount;
 extern int16_t benchtexturetype;
 extern int32_t flatpageswitchcount;
 extern int32_t scratchpageswitchcount;
-extern int32_t lumpinfo5000switchcount;
-extern int32_t lumpinfo9000switchcount;
 extern int16_t spritecacheevictcount;
 extern int16_t flatcacheevictcount;
 extern int16_t patchcacheevictcount;

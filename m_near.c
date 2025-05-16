@@ -1631,9 +1631,7 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(SCREEN2_LOGICAL_PAGE + 2), PAGE_7800_OFFSET,
 	_EPR(SCREEN2_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET, // fwipe_ycolumns_segment here, fwipe_mul160lookup_segment too
 	//FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,	
-	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE	), PAGE_5400_OFFSET,
-	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), PAGE_5800_OFFSET,
-	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), PAGE_5C00_OFFSET,
+
 
 	_EPR(EMS_VISPLANE_EXTRA_PAGE), 		   PAGE_8400_OFFSET,
 	_NPR(PAGE_9400_OFFSET), PAGE_9400_OFFSET,
@@ -1649,10 +1647,7 @@ uint16_t pageswapargs[total_pages] = {
 
 
 
-int8_t current5000State = PAGE_5000_UNMAPPED;
-int8_t last5000State = PAGE_5000_UNMAPPED;
-int8_t current9000State = PAGE_9000_UNMAPPED;
-int8_t last9000State = PAGE_9000_UNMAPPED;
+
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -1664,8 +1659,6 @@ int32_t spritepageswitchcount = 0;
 int16_t benchtexturetype = 0;
 int32_t flatpageswitchcount = 0;
 int32_t scratchpageswitchcount = 0;
-int32_t lumpinfo5000switchcount = 0;
-int32_t lumpinfo9000switchcount = 0;
 int16_t spritecacheevictcount = 0;
 int16_t flatcacheevictcount = 0;
 int16_t patchcacheevictcount = 0;

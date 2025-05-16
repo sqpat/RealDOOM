@@ -138,7 +138,6 @@ void R_InitSpriteLumps(void) {
 		spritepostdatasizes[i] = postdatasize;
 		spritetotaldatasizes[i] = pixelsize + startoffset;
 		Z_QuickMapRender();
-		Z_QuickMapLumpInfo();
 		Z_QuickMapRender_9000To6000();//for R_TextureNumForName
 
 
@@ -705,7 +704,6 @@ void R_InitTextures2(){
 
 	// Reset this since 0x7000 scratch page is active
 	Z_QuickMapRender();
-	Z_QuickMapLumpInfo();
 	Z_QuickMapRender_9000To6000(); //for R_TextureNumForName
 
  	
@@ -830,8 +828,6 @@ void __near R_Init(void) {
 	Z_QuickMapRender();
 	// load colormaps while this memory region active.
 	W_CacheLumpNumDirect(1, colormaps);
-
-	Z_QuickMapLumpInfo();
 	Z_QuickMapRender_9000To6000(); //for R_TextureNumForName
 
 	R_InitData();
