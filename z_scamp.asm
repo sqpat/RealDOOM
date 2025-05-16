@@ -262,7 +262,6 @@ mov  byte ptr ds:[_currentpageframes+1], dl
 mov  ah, al
 mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + 1	; page D400
 out  SCAMP_PAGE_SELECT_REGISTER, al
-mov  ax, dx
 
 mov  al, ah
 xor  ah, ah

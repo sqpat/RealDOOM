@@ -242,4 +242,33 @@ ret
 ENDP
 
 
+PROC Z_QuickMapSFXPageFrame_ FAR
+PUBLIC Z_QuickMapSFXPageFrame_
+
+cmp  al, byte ptr ds:[_currentpageframes+1]
+je   exit_sfx_pageframe
+
+push dx
+mov  byte ptr ds:[_currentpageframes+1], dl
+
+mov  dx, SCAT_PAGE_SELECT_REGISTER
+mov  ah, al
+mov  al, 1	; page D400
+out  dx, al
+mov  dx, SCAT_PAGE_SET_REGISTER
+
+dec  ax
+xchg  al, ah		; al is , ah becomes 0
+
+; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
+; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
+add  ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
+out  dx, ax
+pop  dx
+
+exit_sfx_pageframe:
+ret
+ENDP
+
+
 END
