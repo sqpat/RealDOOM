@@ -493,13 +493,13 @@ void __far Z_SetOverlay(int8_t wipeId);
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
 
 // EMS page frame stuff
-void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber);
+void __far Z_QuickMapMusicPageFrame(uint8_t pagenumber);
 void __far Z_QuickMapSFXPageFrame(uint8_t pagenumber);
 void __far Z_QuickMapWADPageFrame(int16_t pagenumber);
 
 void __far Z_SavePageFrameState();
 void __far Z_RestorePageFrameState();
-// #define Z_QuickMapSFXPageFrame(page)  Z_QuickMapPageFrame(1, page + NUM_MUSIC_PAGES)
+// #define Z_QuickMapSFXPageFrame(page)  Z_QuickMapMusicPageFrame(1, page + NUM_MUSIC_PAGES)
 
 // EMS 4.0 stuff
 

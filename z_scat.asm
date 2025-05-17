@@ -218,23 +218,25 @@ ENDP
 PROC Z_QuickMapPageFrame_ FAR
 PUBLIC Z_QuickMapPageFrame_
 
+; todo compare
+
 push dx
-push bx
-
-mov  bx, ax
-xor  bh, bh
-mov  ds:[_currentpageframes+bx], dl
+mov  ds:[_currentpageframes], al
 
 
-mov  bx, dx
+
+
+mov  ah, al
+xor  al, al	; page 0
+
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
+xchg al, ah
 mov  dx, SCAT_PAGE_SET_REGISTER
-xchg ax, bx
+
 add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
 out dx, ax
 
-pop bx
 pop dx
 
 ret
@@ -249,7 +251,7 @@ cmp  al, byte ptr ds:[_currentpageframes+1]
 je   exit_sfx_pageframe
 
 push dx
-mov  byte ptr ds:[_currentpageframes+1], dl
+mov  byte ptr ds:[_currentpageframes+1], al
 
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 mov  ah, al

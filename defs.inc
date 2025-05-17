@@ -335,7 +335,7 @@ _currentsong_playing_offset =        _NULL_OFFSET + 0061Ah
 _currentsong_ticks_to_process =      _NULL_OFFSET + 0061Ch
 _loops_enabled =    			     _NULL_OFFSET + 0061Eh
 _mus_playing =    			      	 _NULL_OFFSET + 0061Fh
-_Z_QuickMapPageFrame_addr = 		 _NULL_OFFSET + 00620h
+_Z_QuickMapMusicPageFrame_addr = 	 _NULL_OFFSET + 00620h
 
 _sightzstart =				         _NULL_OFFSET + 00624h
 _topslope =				         	 _NULL_OFFSET + 00628h

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/16 17:40:54
+Created on:       25/05/16 18:24:33
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -49,8 +49,8 @@ m_menu_TEXT            CODE           AUTO           02cc:44b0       00001410
 sounds_TEXT            CODE           AUTO           02cc:58c0       00000000
 D_ALGO_TEXT            CODE           AUTO           02cc:58c0       00000045
 dmx_TEXT               CODE           AUTO           02cc:5910       000001a2
-D_INT_TEXT             CODE           AUTO           02cc:5ab2       00000176
-MEMORY_TEXT            CODE           AUTO           02cc:5c28       00000000
+D_INT_TEXT             CODE           AUTO           02cc:5ab2       00000172
+MEMORY_TEXT            CODE           AUTO           02cc:5c24       00000000
 MATH_TEXT              CODE           AUTO           02cc:5c30       000006af
 MAIN_TEXT              CODE           AUTO           02cc:62e0       00000ebe
 g_setup_TEXT           CODE           AUTO           02cc:71a0       000002cc
@@ -88,7 +88,7 @@ r_things_TEXT          CODE           AUTO           18ff:4380       00000000
 w_wad_TEXT             CODE           AUTO           18ff:4380       0000030c
 VIDEO_TEXT             CODE           AUTO           18ff:468c       000004db
 v_video_TEXT           CODE           AUTO           18ff:4b70       00000218
-z_zone_TEXT            CODE           AUTO           18ff:4d90       00000509
+z_zone_TEXT            CODE           AUTO           18ff:4d90       00000507
 d_math_TEXT            CODE           AUTO           18ff:52a0       00000000
 p_setup_TEXT           CODE           AUTO           1e29:0000       00001227
 _TEXT                  CODE           AUTO           1e29:1230       0000245e
@@ -771,19 +771,19 @@ Module: dmx.obj(C:\REALDOOM\dmx.c)
 2192:0d2a+     _lastpcspeakernotevalue
 Module: d_int.obj(d_int.ASM)
 02cc:5ac2      MUS_ServiceRoutine_
-02cc:5bf7      locallib_int86_67_
-02cc:5bf7      locallib_int86_67_1arg_return_
-02cc:5c28*     D_INTERRUPT_ENDMARKER_
-02cc:5bf7      locallib_int86_67_3arg_return_
-02cc:5bfa      locallib_int86_10_4args_
+02cc:5bf3      locallib_int86_67_
+02cc:5bf3      locallib_int86_67_1arg_return_
+02cc:5c24*     D_INTERRUPT_ENDMARKER_
+02cc:5bf3      locallib_int86_67_3arg_return_
+02cc:5bf6      locallib_int86_10_4args_
 02cc:5ab2*     D_INTERRUPT_STARTMARKER_
-02cc:5bf7      locallib_int86_67_1arg_
-02cc:5bf7      locallib_int86_67_2arg_
-02cc:5c00      S_NormalizeSfxVolume_
-02cc:5bf7      locallib_int86_67_esdi_
-02cc:5bfd      locallib_int86_33_
-02cc:5bf7      locallib_int86_67_multiple_
-02cc:5bfa      locallib_int86_10_
+02cc:5bf3      locallib_int86_67_1arg_
+02cc:5bf3      locallib_int86_67_2arg_
+02cc:5bfc      S_NormalizeSfxVolume_
+02cc:5bf3      locallib_int86_67_esdi_
+02cc:5bf9      locallib_int86_33_
+02cc:5bf3      locallib_int86_67_multiple_
+02cc:5bf6      locallib_int86_10_
 Module: math.obj(math.ASM)
 02cc:5f10      FastDiv32u16u_
 02cc:6098      FastDiv3232FFFF_
@@ -1244,50 +1244,50 @@ Module: v_video.obj(C:\REALDOOM\v_video.c)
 18ff:4ba2      V_CopyRect_
 18ff:4bf6      V_DrawFullscreenPatch_
 Module: z_zone.obj(C:\REALDOOM\z_zone.c)
-18ff:4d90      Z_QuickMapPageFrame_
-18ff:4db6      Z_QuickMapSFXPageFrame_
-18ff:4dda      Z_QuickMapWADPageFrame_
-18ff:4e0a*     Z_SavePageFrameState_
-18ff:4e1a*     Z_RestorePageFrameState_
-18ff:4e2a+     Z_QuickMap_
-18ff:4e68      Z_QuickMapPhysicsCode_
-18ff:4e74      Z_QuickMapPhysics_
-18ff:4e86      Z_QuickMapDemo_
-18ff:4e98      Z_QuickMapRender7000_
-18ff:4ea4      Z_QuickMapRender_
-18ff:4eb6      Z_QuickMapRender_4000To9000_9000Only_
-18ff:4ec2      Z_QuickMapRender_4000To9000_
-18ff:4edc*     Z_QuickMapRender_9000To7000_
-18ff:4ee8      Z_QuickMapRender_9000To6000_
-18ff:4ef4      Z_QuickMapRender4000_
-18ff:4f00      Z_QuickMapRender5000_
-18ff:4f0c*     Z_QuickMapRender9000_
-18ff:4f18      Z_QuickMapRenderTexture_
-18ff:4f24      Z_QuickMapStatus_
-18ff:4f48      Z_QuickMapStatusNoScreen4_
-18ff:4f62      Z_QuickMapScratch_5000_
-18ff:4f6e      Z_QuickMapScratch_8000_
-18ff:4f7a      Z_QuickMapScratch_7000_
-18ff:4f86      Z_QuickMapScratch_4000_
-18ff:4f92      Z_QuickMapScreen0_
-18ff:4f9e*     Z_QuickMapRenderPlanes9000only_
-18ff:4fb4      Z_QuickMapRenderPlanes_
-18ff:4fd2*     Z_QuickMapRenderPlanesBack_
-18ff:4fde      Z_QuickMapFlatPage_
-18ff:4ff4      Z_QuickMapUndoFlatCache_
-18ff:501c      Z_QuickMapMaskedExtraData_
-18ff:5028      Z_QuickMapSpritePage_
-18ff:5034*     Z_QuickMapPhysics5000_
-18ff:5040*     Z_QuickMapScreen1_
-18ff:504c      Z_QuickMapPalette_
-18ff:505e      Z_QuickMapMenu_
-18ff:5070      Z_QuickMapIntermission_
-18ff:5082      Z_QuickMapWipe_
-18ff:50b4      Z_QuickMapByTaskNum_
-18ff:512e      Z_QuickMapVisplanePage_
-18ff:5192      Z_QuickMapVisplaneRevert_
-18ff:51b0      Z_QuickMapUnmapAll_
-18ff:51f6      Z_SetOverlay_
+18ff:4d90      Z_QuickMapMusicPageFrame_
+18ff:4db4      Z_QuickMapSFXPageFrame_
+18ff:4dd8      Z_QuickMapWADPageFrame_
+18ff:4e08*     Z_SavePageFrameState_
+18ff:4e18*     Z_RestorePageFrameState_
+18ff:4e28+     Z_QuickMap_
+18ff:4e66      Z_QuickMapPhysicsCode_
+18ff:4e72      Z_QuickMapPhysics_
+18ff:4e84      Z_QuickMapDemo_
+18ff:4e96      Z_QuickMapRender7000_
+18ff:4ea2      Z_QuickMapRender_
+18ff:4eb4      Z_QuickMapRender_4000To9000_9000Only_
+18ff:4ec0      Z_QuickMapRender_4000To9000_
+18ff:4eda*     Z_QuickMapRender_9000To7000_
+18ff:4ee6      Z_QuickMapRender_9000To6000_
+18ff:4ef2      Z_QuickMapRender4000_
+18ff:4efe      Z_QuickMapRender5000_
+18ff:4f0a*     Z_QuickMapRender9000_
+18ff:4f16      Z_QuickMapRenderTexture_
+18ff:4f22      Z_QuickMapStatus_
+18ff:4f46      Z_QuickMapStatusNoScreen4_
+18ff:4f60      Z_QuickMapScratch_5000_
+18ff:4f6c      Z_QuickMapScratch_8000_
+18ff:4f78      Z_QuickMapScratch_7000_
+18ff:4f84      Z_QuickMapScratch_4000_
+18ff:4f90      Z_QuickMapScreen0_
+18ff:4f9c*     Z_QuickMapRenderPlanes9000only_
+18ff:4fb2      Z_QuickMapRenderPlanes_
+18ff:4fd0*     Z_QuickMapRenderPlanesBack_
+18ff:4fdc      Z_QuickMapFlatPage_
+18ff:4ff2      Z_QuickMapUndoFlatCache_
+18ff:501a      Z_QuickMapMaskedExtraData_
+18ff:5026      Z_QuickMapSpritePage_
+18ff:5032*     Z_QuickMapPhysics5000_
+18ff:503e*     Z_QuickMapScreen1_
+18ff:504a      Z_QuickMapPalette_
+18ff:505c      Z_QuickMapMenu_
+18ff:506e      Z_QuickMapIntermission_
+18ff:5080      Z_QuickMapWipe_
+18ff:50b2      Z_QuickMapByTaskNum_
+18ff:512c      Z_QuickMapVisplanePage_
+18ff:5190      Z_QuickMapVisplaneRevert_
+18ff:51ae      Z_QuickMapUnmapAll_
+18ff:51f4      Z_SetOverlay_
 Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 1e29:0000      P_SetupLevel_
 1e29:0156+     S_Start_
@@ -1566,4 +1566,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00024820 (149536.)
 Entry point address: 1e29:1c16
-Link time: 00:00.75
+Link time: 00:00.74

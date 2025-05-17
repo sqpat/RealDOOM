@@ -252,11 +252,11 @@ int32_t __far W_LumpLength (int16_t lump) {
 		}
 	}
 
+	Z_QuickMapWADPageFrame(lump);
 
 	// todo asm optim this...
 	lump &= (LUMP_PER_EMS_PAGE-1);
 
-	Z_QuickMapWADPageFrame(lump);
 
 	return lumpinfoD800[lump].size;
 }

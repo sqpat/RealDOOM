@@ -173,8 +173,7 @@ loop_song:
 ; move back to page 0
 mov   byte ptr ds:[_currentMusPage], 0
 xor   ax, ax
-cwd     ; dx is 0
-call  dword ptr ds:[_Z_QuickMapPageFrame_addr]
+call  dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
 ; set si to this initial value
 mov   si, word ptr ds:[_currentsong_start_offset]
 
@@ -183,10 +182,10 @@ jmp   done_looping_song
 
 page_in_new_mus_page:
 inc       byte ptr ds:[_currentMusPage]
-xor       ax, ax
-mov       dl, byte ptr ds:[_currentMusPage]
+;xor       ax, ax
+mov       al, byte ptr ds:[_currentMusPage]
 ; in theory bad things might happen if currentmuspage went beyond 4?
-call      dword ptr ds:[_Z_QuickMapPageFrame_addr]
+call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
 sub       si, MUS_SIZE_PER_PAGE
 jmp       done_paging_in_new_mus_page
 play_note_routine:

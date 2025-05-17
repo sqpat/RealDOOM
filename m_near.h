@@ -401,7 +401,7 @@
 #define currentsong_ticks_to_process      (*((int16_t __near*)               (_NULL_OFFSET + 0x061C)))
 #define loops_enabled    			      (*((int8_t __near*)                (_NULL_OFFSET + 0x061E)))
 #define mus_playing    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x061F)))
-#define Z_QuickMapPageFrame_addr          (*((uint32_t __near*)              (_NULL_OFFSET + 0x0620)))
+#define Z_QuickMapMusicPageFrame_addr     (*((uint32_t __near*)              (_NULL_OFFSET + 0x0620)))
 
 #define sightzstart					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x0624)))
 #define topslope					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x0628)))

@@ -211,7 +211,7 @@ ret
 ENDP
 
 COMMENT @
-void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
+void __far Z_QuickMapMusicPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 	// page frame index 0 to 3
 	// count 
 	regs.h.ah = 0x44;
@@ -231,15 +231,15 @@ PUBLIC Z_QuickMapPageFrame_
 
 ; todo compare?
 
-push bx
-mov  bx, ax
-xor  bh, bh
-mov  ds:[_currentpageframes+bx], dl
-pop  bx
 
-add  al, SCAMP_PAGE_FRAME_BASE_INDEX	; add by 4 to get d000 (page frame) index. TODO unhardcode
+cmp  al, byte ptr ds:[_currentpageframes]
+je   exit_page_frame
+
+mov  ds:[_currentpageframes], al
+mov  ah, al
+mov  al, SCAMP_PAGE_FRAME_BASE_INDEX
 out  SCAMP_PAGE_SELECT_REGISTER, al
-mov  ax, dx
+mov  al, ah
 ; todo need xor ah/dh??
 xor  ah, ah
 ; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
@@ -257,7 +257,7 @@ PUBLIC Z_QuickMapSFXPageFrame_
 cmp  al, byte ptr ds:[_currentpageframes+1]
 je   exit_sfx_pageframe
 
-mov  byte ptr ds:[_currentpageframes+1], dl
+mov  byte ptr ds:[_currentpageframes+1], al
 
 mov  ah, al
 mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + 1	; page D400

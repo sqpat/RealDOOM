@@ -186,8 +186,7 @@ mov       byte ptr ds:[_currentMusPage], 0 ; reset 'current mus page'
 
 ; set page 0
 xor       ax, ax
-mov       dx, ax
-call      dword ptr ds:[_Z_QuickMapPageFrame_addr]
+call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
 
 
 ; cx:bx load location
@@ -229,9 +228,8 @@ mov       di, 1
 load_next_mus_page:
 
 ; set page di
-xor       ax, ax    ; page logical page i into ems page frame's physical page 0
-mov       dx, di
-call      dword ptr ds:[_Z_QuickMapPageFrame_addr]
+mov       ax, di
+call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
 
 ; 16256 is 07Fh shifted 7... this could with 8 bit mul and shfits faster but who cares.
 mov       ax, MUS_SIZE_PER_PAGE
@@ -255,8 +253,7 @@ jnz       load_next_mus_page
 
 ; set page 0 again
 xor       ax, ax
-mov       dx, ax
-call      dword ptr ds:[_Z_QuickMapPageFrame_addr]
+call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
 
 
 

@@ -46,20 +46,20 @@
 
 // todo rename to be something music related?
 // todo make this for page 0 only, remove pageframeindex
-void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
+void __far Z_QuickMapMusicPageFrame(uint8_t pagenumber){
 	// page frame index 0 to 3
 	// count 
-	if (currentpageframes[pageframeindex] == pagenumber){
+	if (currentpageframes[MUS_PAGE_FRAME_INDEX] == pagenumber){
 		return;
 	}
-	currentpageframes[pageframeindex] = pagenumber;
+	currentpageframes[MUS_PAGE_FRAME_INDEX] = pagenumber;
 
 	// regs.h.ah = 0x44;
 	// regs.h.al = pageframeindex;
 	// regs.w.bx = pagenumber + MUS_DATA_PAGES;
 	// regs.w.dx = emshandle; // handle
 				// ax					//dx		//bx
-	locallib_int86_67(0x4400+pageframeindex, emshandle, pagenumber + MUS_DATA_PAGES);
+	locallib_int86_67(0x4400+MUS_PAGE_FRAME_INDEX, emshandle, pagenumber + MUS_DATA_PAGES);
 }
 
 // extern int16_t errorbreak;
@@ -100,9 +100,14 @@ void __far Z_QuickMapWADPageFrame(int16_t lump){
 	if (currentpageframes[WAD_PAGE_FRAME_INDEX] == pagenumber.bu.bytehigh){
 		return;
 	}
-
+	// if (lump != 1023 && lump != 1264)
+	// 	DEBUG_PRINT("\n%i %i", pagenumber.bu.bytehigh >> 2, lump);
+	// if (lump == 32767){
+	// 	DEBUG_PRINT("What");
+	// 	return;
+	// }
+	
 	currentpageframes[WAD_PAGE_FRAME_INDEX] = pagenumber.bu.bytehigh;
-
 	locallib_int86_67(0x4400+WAD_PAGE_FRAME_INDEX, emshandle, (pagenumber.bu.bytehigh >> 2) + FIRST_LUMPINFO_LOGICAL_PAGE);
 
 }
