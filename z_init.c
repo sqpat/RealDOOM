@@ -410,7 +410,7 @@ found:
 	
 	{
 		for (i = 0; i < (numlumps / LUMP_PER_EMS_PAGE); i++){
-			Z_QuickMapWADPageFrame(i);
+			Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
 			FAR_memcpy((byte __far *) lumpinfoD800, (byte __far *) lumpinfoinit + (i * 16384u), 16384u); // copy the wad lump stuff over. gross
 		}
 	}

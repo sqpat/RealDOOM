@@ -45,6 +45,7 @@
 
 
 // todo rename to be something music related?
+// todo make this for page 0 only, remove pageframeindex
 void __far Z_QuickMapPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 	// page frame index 0 to 3
 	// count 
@@ -85,25 +86,24 @@ void __far Z_QuickMapSFXPageFrame(uint8_t pagenumber){
 
 }
 
-// todo rename to be something music related?
-void __far Z_QuickMapWADPageFrame(uint8_t pagenumber){
+//  
+#define LUMP_MASK 0xFC00 
+
+// we do the shifting and compare only on a page change because its a little expensive,
+// rather than doing it outside of func and passing it in
+void __far Z_QuickMapWADPageFrame(int16_t lump){
 	// page frame index 0 to 3
 	// count 
+	int16_t_union pagenumber;
+	pagenumber.hu = lump & LUMP_MASK;
 
-	if (pagenumber > NUM_WAD_PAGES){
-		I_Error("bad page number %i", pagenumber);
-	}
-	if (currentpageframes[WAD_PAGE_FRAME_INDEX] == pagenumber){
+	if (currentpageframes[WAD_PAGE_FRAME_INDEX] == pagenumber.bu.bytehigh){
 		return;
 	}
 
-	currentpageframes[WAD_PAGE_FRAME_INDEX] = pagenumber;
+	currentpageframes[WAD_PAGE_FRAME_INDEX] = pagenumber.bu.bytehigh;
 
-	// regs.w.ax = 0x4400 + SFX_PAGE_FRAME_INDEX;
-	// regs.w.bx = pagenumber + SFX_DATA_PAGES;
-	// regs.w.dx = emshandle; // handle
-	// intx86(EMS_INT, &regs, &regs);
-	locallib_int86_67(0x4400+WAD_PAGE_FRAME_INDEX, emshandle, pagenumber + FIRST_LUMPINFO_LOGICAL_PAGE);
+	locallib_int86_67(0x4400+WAD_PAGE_FRAME_INDEX, emshandle, (pagenumber.bu.bytehigh >> 2) + FIRST_LUMPINFO_LOGICAL_PAGE);
 
 }
 

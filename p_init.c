@@ -407,7 +407,7 @@ void __near R_InitSpriteDefs() {
 
 			// big todo improve
 			int16_t lump = l & (LUMP_PER_EMS_PAGE - 1);
-			Z_QuickMapWADPageFrame(l >> 10);
+			Z_QuickMapWADPageFrame(l);
 
 			if (*(int32_t  __far*)lumpinfoD800[lump].name == intname) {
 				frame = lumpinfoD800[lump].name[4] - 'A';

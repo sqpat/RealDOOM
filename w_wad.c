@@ -160,7 +160,6 @@ int16_t W_CheckNumForName (int8_t* name) {
 	int16_t         v2;
 	int16_t         v3;
 	int16_t         v4;
-	int8_t			currentpage;
 	int16_t			currentcounter;
 	int16_t         counter = numlumps;
 	int16_t         returnval = -1;
@@ -181,10 +180,9 @@ int16_t W_CheckNumForName (int8_t* name) {
     v4 = name8.x[3];
 
 
-	currentpage = numlumps >> 10;
 	currentcounter = numlumps & (LUMP_PER_EMS_PAGE-1);
 	
-	Z_QuickMapWADPageFrame(currentpage);
+	Z_QuickMapWADPageFrame(numlumps);
 
 
 	// scan backwards so patch lump files take precedence
@@ -200,9 +198,8 @@ int16_t W_CheckNumForName (int8_t* name) {
 				break;
         }
 		if (currentcounter == 0) {
-			if (currentpage){
-				currentpage--;
-				Z_QuickMapWADPageFrame(currentpage);
+			if (counter){
+				Z_QuickMapWADPageFrame(counter-1);
 				currentcounter = LUMP_PER_EMS_PAGE-1;
 				// todo mkfp
 				lump_p = (lumpinfo_t __far*)0xD8004000;
@@ -257,10 +254,9 @@ int32_t __far W_LumpLength (int16_t lump) {
 
 
 	// todo asm optim this...
-	i = lump >> 10;
 	lump &= (LUMP_PER_EMS_PAGE-1);
 
-	Z_QuickMapWADPageFrame(i);
+	Z_QuickMapWADPageFrame(lump);
 
 	return lumpinfoD800[lump].size;
 }
@@ -287,9 +283,9 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 
 
 
-	i = lump >> 10;
+
 	
-	Z_QuickMapWADPageFrame(i);
+	Z_QuickMapWADPageFrame(lump);
 	l = &(lumpinfoD800[lump & (LUMP_PER_EMS_PAGE-1)]);
 
 
