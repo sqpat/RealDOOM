@@ -38,23 +38,23 @@ dw    0
 
 
 _CSDATA_castorder:
-db    CC_ZOMBIE-castorderoffset,    MT_POSSESSED
-db    CC_SHOTGUN-castorderoffset,   MT_SHOTGUY
-db    CC_HEAVY-castorderoffset,     MT_CHAINGUY
-db    CC_IMP-castorderoffset,       MT_TROOP
-db    CC_DEMON-castorderoffset,     MT_SERGEANT
-db    CC_LOST-castorderoffset,      MT_SKULL
-db    CC_CACO-castorderoffset,      MT_HEAD
-db    CC_HELL-castorderoffset,      MT_KNIGHT
-db    CC_BARON-castorderoffset,     MT_BRUISER
-db    CC_ARACH-castorderoffset,     MT_BABY
-db    CC_PAIN-castorderoffset,      MT_PAIN
-db    CC_REVEN-castorderoffset,     MT_UNDEAD
-db    CC_MANCU-castorderoffset,     MT_FATSO
-db    CC_ARCH-castorderoffset,      MT_VILE
-db    CC_SPIDER-castorderoffset,    MT_SPIDER
-db    CC_CYBER-castorderoffset,     MT_CYBORG
-db    CC_HERO-castorderoffset,      MT_PLAYER
+db    CC_ZOMBIE-CASTORDEROFFSET,    MT_POSSESSED
+db    CC_SHOTGUN-CASTORDEROFFSET,   MT_SHOTGUY
+db    CC_HEAVY-CASTORDEROFFSET,     MT_CHAINGUY
+db    CC_IMP-CASTORDEROFFSET,       MT_TROOP
+db    CC_DEMON-CASTORDEROFFSET,     MT_SERGEANT
+db    CC_LOST-CASTORDEROFFSET,      MT_SKULL
+db    CC_CACO-CASTORDEROFFSET,      MT_HEAD
+db    CC_HELL-CASTORDEROFFSET,      MT_KNIGHT
+db    CC_BARON-CASTORDEROFFSET,     MT_BRUISER
+db    CC_ARACH-CASTORDEROFFSET,     MT_BABY
+db    CC_PAIN-CASTORDEROFFSET,      MT_PAIN
+db    CC_REVEN-CASTORDEROFFSET,     MT_UNDEAD
+db    CC_MANCU-CASTORDEROFFSET,     MT_FATSO
+db    CC_ARCH-CASTORDEROFFSET,      MT_VILE
+db    CC_SPIDER-CASTORDEROFFSET,    MT_SPIDER
+db    CC_CYBER-CASTORDEROFFSET,     MT_CYBORG
+db    CC_HERO-CASTORDEROFFSET,      MT_PLAYER
 
 
 
@@ -476,6 +476,9 @@ ENDP
 PROC F_CastDrawer_ NEAR
 PUBLIC F_CastDrawer_
 
+; bp - 4 is unused
+; bp - 2 is spritenum
+; bp - 1 is spriteframenum
 
 push  bx
 push  cx
@@ -483,12 +486,10 @@ push  dx
 push  bp
 mov   bp, sp
 sub   sp, 068h
-les   bx, dword ptr ds:[_caststate]
-mov   al, byte ptr es:[bx]
-mov   byte ptr [bp - 4], al
-mov   al, byte ptr es:[bx + 1]
+les   bx, dword ptr ds:[_caststate]     ; state pointer
+mov   ax, word ptr es:[bx]              ; spritenum_t	sprite, spriteframenum_t	frame
+mov   word ptr [bp - 2], ax
 xor   dx, dx
-mov   byte ptr [bp - 2], al
 mov   ax, OFFSET _filename_argument
 
 
@@ -509,7 +510,8 @@ mov   bx, ax
 add   bx, ax
 mov   al, byte ptr cs:[bx + _CSDATA_castorder - OFFSET F_START_]
 mov   cx, ds
-xor   ah, ah
+;xor   ah, ah   ; between 0-17, cbw is fine
+cbw
 lea   bx, [bp - 068h] ; text param (100 length)
 add   ax, CASTORDEROFFSET
 
@@ -519,7 +521,7 @@ dw _getStringByIndex_addr
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _Z_QuickMapStatusNoScreen4_addr
+dw _Z_QuickMapStatusNoScreen4_addr 
 
 
 lea   ax, [bp - 068h]  ; ; text param (100 length)
@@ -529,14 +531,14 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _Z_QuickMapRender7000_addr
 
-mov   al, byte ptr [bp - 4]
+mov   al, byte ptr [bp - 2]
 xor   ah, ah
 mov   bx, ax
 SHIFT_MACRO shl bx 2
-sub   bx, ax
+sub   bx, ax                    ; mul 3...
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
-mov   al, byte ptr [bp - 2]
+mov   al, byte ptr [bp - 1]
 and   al, FF_FRAMEMASK
 mov   ah, 019h           ; todo sizeof spriteframe_t
 mul   ah
@@ -547,7 +549,7 @@ mov   dl, byte ptr es:[bx + 010h]
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _Z_QuickMapScratch_5000_addr
+dw _Z_QuickMapScratch_5000_addr ; map scratch...
 
 mov   ax, word ptr ds:[_firstspritelump]
 xor   bx, bx
@@ -556,7 +558,7 @@ mov   cx, SCRATCH_SEGMENT_5000
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _W_CacheLumpNumDirect_addr
+dw _W_CacheLumpNumDirect_addr   ; get graphic in memory
 
 test  dl, dl
 je    not_flipped
@@ -1318,14 +1320,15 @@ jmp   cast_not_attacking
 select_next_anim:
 ;		if (caststate == &states[S_PLAY_ATK1]){
 
-cmp   bx, (S_PLAY_ATK1 * 6)   ; 6 is sizeof state
+cmp   bx, (S_PLAY_ATK1 * 6)   ; 6 is sizeof state todo sizeof state constant
 jne   do_next_state
 jmp   stopattack
 
+
 do_next_state:
-mov   ax, word ptr es:[bx + 4]
+mov   ax, word ptr es:[bx + 4]  ; nextstate
 mov   dx, ax
-SHIFT_MACRO shl ax 2
+SHIFT_MACRO shl dx 2
 sub   dx, ax
 add   dx, dx
 inc   byte ptr ds:[_castframes]
@@ -1596,7 +1599,7 @@ cbw
 mov   bx, ax
 add   bx, ax
 mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
-mov   ah, 0Bh  ; sizeof mobjinfo?
+mov   ah, 0Bh  ; sizeof mobjinfo? todo constant
 mul   ah
 mov   bx, ax
 xor   ax, ax
