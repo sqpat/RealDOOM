@@ -285,4 +285,56 @@ ret
 
 endp
 
+
+; fixed_t __near P_AproxDistance ( fixed_t	dx, fixed_t	dy ) {
+
+PROC P_AproxDistance_ NEAR
+PUBLIC P_AproxDistance_ 
+
+push si
+push di
+mov  di, bx
+mov  si, cx
+or   dx, dx
+jge  label_1
+neg  ax
+adc  dx, 0
+neg  dx
+label_1:
+mov  cx, ax
+mov  bx, dx
+mov  ax, di
+mov  dx, si
+mov  si, cx
+or   dx, dx
+jge  label_2
+neg  ax
+adc  dx, 0
+neg  dx
+label_2:
+add  si, ax
+mov  di, bx
+adc  di, dx
+cmp  bx, dx
+jl   label_3
+jne  label_4
+cmp  cx, ax
+jae  label_4
+label_3:
+mov  ax, cx
+mov  dx, bx
+label_4:
+sar  dx, 1
+rcr  ax, 1
+sub  si, ax
+mov  bx, di
+sbb  bx, dx
+mov  ax, si
+mov  dx, bx
+pop  di
+pop  si
+ret  
+
+ENDP
+
 END
