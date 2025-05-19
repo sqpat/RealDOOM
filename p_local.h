@@ -203,7 +203,16 @@ typedef struct {
 
 typedef boolean __near (*traverser_t ) (intercept_t __far*in);
 
+
+
+#pragma aux P_AproxDistanceParams \
+			__modify [ax bx cx dx] \
+			__parm [dx ax] [cx bx] \
+                    __value [dx ax];
+
+#pragma aux (P_AproxDistanceParams) P_AproxDistance;
 fixed_t __near P_AproxDistance (fixed_t dx, fixed_t dy);
+
 boolean 	__near P_PointOnLineSide (fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
 void 	__near P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t* dl);
 

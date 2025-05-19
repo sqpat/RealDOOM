@@ -41,7 +41,7 @@
 // Gives an estimation of distance (not exact)
 //
 
-fixed_t __near P_AproxDistance ( fixed_t	dx, fixed_t	dy );
+// fixed_t __near P_AproxDistance ( fixed_t	dx, fixed_t	dy );
 // fixed_t __near P_AproxDistance ( fixed_t	dx, fixed_t	dy ) {
 //     dx = labs(dx);
 //     dy = labs(dy);
