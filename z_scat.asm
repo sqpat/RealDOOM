@@ -23,10 +23,11 @@ INCLUDE defs.inc
 
 .DATA
 
-
+SCAT_PAGE_D000 = 018h
 SCAT_PAGE_SELECT_REGISTER = 020Ah
 SCAT_PAGE_SET_REGISTER = 0208h
 EMS_MEMORY_PAGE_OFFSET = 080h
+EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT = 08080h
 EXTRN _currentpageframes:BYTE
 
 .CODE
@@ -215,31 +216,36 @@ ret
 
 ENDP
 
-PROC Z_QuickMapPageFrame_ FAR
-PUBLIC Z_QuickMapPageFrame_
+; pageframeindex al
+; pagenumber dl 
 
-; todo compare
+PROC Z_QuickMapMusicPageFrame_ FAR
+PUBLIC Z_QuickMapMusicPageFrame_
+
+
+;cmp  al, byte ptr ds:[_currentpageframes]
+;je   exit_page_frame
 
 push dx
 mov  ds:[_currentpageframes], al
 
-
-
-
 mov  ah, al
-xor  al, al	; page 0
-
+mov  al, SCAT_PAGE_D000	; page D000
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
-xchg al, ah
-mov  dx, SCAT_PAGE_SET_REGISTER
 
-add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
-out dx, ax
+mov  al, 0
+
+mov  dx, SCAT_PAGE_SET_REGISTER
+xchg al, ah	 ; ah becomes 0
+add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + MUS_DATA_PAGES)
+out  dx, ax
 
 pop dx
 
-ret
+exit_page_frame:
+
+retf
 
 ENDP
 
@@ -247,30 +253,68 @@ ENDP
 PROC Z_QuickMapSFXPageFrame_ FAR
 PUBLIC Z_QuickMapSFXPageFrame_
 
-cmp  al, byte ptr ds:[_currentpageframes+1]
+cmp  al, byte ptr ds:[_currentpageframes + 1]
 je   exit_sfx_pageframe
 
 push dx
-mov  byte ptr ds:[_currentpageframes+1], al
+mov  byte ptr ds:[_currentpageframes + 1], al
 
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 mov  ah, al
-mov  al, 1	; page D400
+mov  al, SCAT_PAGE_D000 + 1	; page D400
 out  dx, al
+
 mov  dx, SCAT_PAGE_SET_REGISTER
+mov  al, 0
+xchg al, ah
 
-dec  ax
-xchg  al, ah		; al is , ah becomes 0
-
-; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
+; adding EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT is a manual _EPR process normally handled by c preprocessor...
 ; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
-add  ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
+add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + SFX_DATA_PAGES)
 out  dx, ax
+
 pop  dx
 
 exit_sfx_pageframe:
-ret
+retf
 ENDP
+
+LUMP_MASK = 0FCh  ; todo move to constants
+
+PROC   Z_QuickMapWADPageFrame_ FAR
+PUBLIC Z_QuickMapWADPageFrame_
+
+
+and  ah, LUMP_MASK
+
+cmp  ah, byte ptr ds:[_currentpageframes + 2]
+je   exit_wad_pageframe
+
+push dx
+
+mov  byte ptr ds:[_currentpageframes + 2], ah
+
+mov  dx, SCAT_PAGE_SELECT_REGISTER
+mov  al, SCAT_PAGE_D000 + 2	; page D800
+out  dx, al
+
+mov  dx, SCAT_PAGE_SET_REGISTER
+mov  al, ah
+xor  ah, ah
+
+SHIFT_MACRO SHR AX 2
+
+add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + FIRST_LUMPINFO_LOGICAL_PAGE)
+out  dx, ax
+
+pop  dx
+
+exit_wad_pageframe:
+;pop  ax
+retf
+
+ENDP
+
 
 
 END

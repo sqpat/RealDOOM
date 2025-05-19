@@ -19,6 +19,7 @@
 
 #include <ctype.h>
 #include <fcntl.h>
+#include <dos.h>
 
 #include "doomtype.h"
 #include "doomstat.h"
@@ -202,7 +203,7 @@ int16_t W_CheckNumForName (int8_t* name) {
 				Z_QuickMapWADPageFrame(counter-1);
 				currentcounter = LUMP_PER_EMS_PAGE-1;
 				// todo mkfp
-				lump_p = (lumpinfo_t __far*)0xD8004000;
+				lump_p = (lumpinfo_t __far*)MK_FP(WAD_PAGE_FRAME_SEGMENT, 0x4000);
 			} else {
 				break;
 			}
@@ -246,6 +247,11 @@ int16_t W_GetNumForName(int8_t* name) {
 int32_t __far W_LumpLength (int16_t lump) {
 	int8_t i;
 	// todo make this not a for loop.
+
+	// if (lump < 0){
+	// 	I_Error("-1 lump in lump length!");
+	// 	return 0;
+	// }
 	for (i = 0; i < currentloadedfileindex-1; i++){
 		if (lump == filetolumpindex[i]){
 			return filetolumpsize[i];
@@ -280,7 +286,11 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 	int8_t  fileindex = 0;
 	int8_t  i;
 
-
+	// do this on outside? 
+	// if (lump < 0){
+	// 	I_Error("-1 lump in read lump!");
+	// 	return;
+	// }
 
 
 

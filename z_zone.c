@@ -112,20 +112,9 @@ void __far Z_QuickMapWADPageFrame(int16_t lump){
 
 }
 
-void __far Z_SavePageFrameState(){
 
-	// regs.h.ah = 0x47;
-	// regs.w.dx = emshandle; // handle
-	// intx86(EMS_INT, &regs, &regs);
-	locallib_int86_67_2arg(0x4700, emshandle);
-}
 
-void __far Z_RestorePageFrameState(){
 
-	// regs.h.ah = 0x48;
-	// regs.w.dx = emshandle; // handle
-	locallib_int86_67_2arg(0x4700, emshandle);
-}
 
 #define MAX_COUNT_ITER 8
 
@@ -196,6 +185,24 @@ void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 
 }
 #endif
+
+
+/*
+void __far Z_SavePageFrameState(){
+
+	// regs.h.ah = 0x47;
+	// regs.w.dx = emshandle; // handle
+	// intx86(EMS_INT, &regs, &regs);
+	locallib_int86_67_2arg(0x4700, emshandle);
+}
+
+void __far Z_RestorePageFrameState(){
+
+	// regs.h.ah = 0x48;
+	// regs.w.dx = emshandle; // handle
+	locallib_int86_67_2arg(0x4700, emshandle);
+}
+*/
 
 void __far Z_QuickMapPhysicsCode(){
 	Z_QuickMap2AI(pageswapargs_physics_code_offset_size, INDEXED_PAGE_9400_OFFSET);

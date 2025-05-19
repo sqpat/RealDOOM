@@ -4,7 +4,7 @@ option quiet
 option map
 # tested as low as 3000 successfully. 2000 crashes sometimes, sorta deep into demos??
 #option stack=2536
-option stack=4096
+option stack=3072
 debug all
 libpath %WATCOM%\lib286
 libpath %WATCOM%\lib286\dos

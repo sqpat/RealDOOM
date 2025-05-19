@@ -4,7 +4,7 @@ option quiet
 option map
 
 #option stack=2536
-option stack=4096
+option stack=3072
 debug all
 libpath %WATCOM%\lib286
 libpath %WATCOM%\lib286\dos

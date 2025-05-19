@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/17 19:23:28
+Created on:       25/05/18 19:02:08
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          02cf:0000            0000a800
+DGROUP                          02cf:0000            0000a400
 
 
 
@@ -41,7 +41,7 @@ YI                     DATA           DGROUP         0b85:0002       00000012
 YIE                    DATA           DGROUP         0b86:0004       00000000
 DATA                   DATA           DGROUP         0b86:0004       00000000
 _BSS                   BSS            DGROUP         0b87:0000       00000c73
-STACK                  STACK          DGROUP         0c4f:0000       00001000
+STACK                  STACK          DGROUP         0c4f:0000       00000c00
 
 
                         +----------------+
@@ -687,7 +687,7 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         |   Linker Statistics   |
                         +-----------------------+
 
-Stack size:  1000 (4096.)
-Memory size:  d4f0 (54512.)
+Stack size:  0c00 (3072.)
+Memory size:  d0f0 (53488.)
 Entry point address: 0000:0426
 Link time: 00:00.10

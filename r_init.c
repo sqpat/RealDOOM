@@ -500,7 +500,9 @@ void R_GenerateLookup(uint16_t texnum) {
 }
 
 #define TEX_LOAD_ADDRESS (byte __far*) (0x70000000)
-#define TEX_LOAD_ADDRESS_2 (byte __far*) (0x70008000)
+#define TEX_LOAD_ADDRESS_SEGMENT (segment_t) ((uint32_t)TEX_LOAD_ADDRESS >> 16)
+#define TEX_LOAD_ADDRESS_2 (byte __far*) (0x78000000)
+#define TEX_LOAD_ADDRESS_2_SEGMENT (segment_t) ((uint32_t)TEX_LOAD_ADDRESS_2 >> 16)
 
 //
 // R_InitTextures
@@ -516,54 +518,39 @@ void R_InitTextures(void) {
 	int16_t                 i;
 	int16_t                 j;
 
-	// memory addresses, must stay int_32...
-	int32_t __far*                maptex;
-	int32_t __far*                maptex2;
-	int32_t __far*                maptex1;
-	int32_t __far*                directory;
+	segment_t                     maptexsegment = TEX_LOAD_ADDRESS_SEGMENT;
+	int32_t __far*        directory;
 
 	int8_t                name[9];
- 	int8_t __far*               name_p;
+ 	int8_t __far*         name_p;
 
-	int16_t                 nummappatches;
-	int16_t                 offset;
 	int16_t                 numtextures1;
-	int16_t                 numtextures2;
 
 
-	int16_t                 temp1;
-	int16_t                 temp2;
-	int16_t                 temp3;
+	int16_t                 temp;
 
 	// needed for texture pegging
 	//uint8_t*            textureheight;
- 	int16_t				texturewidth;
-	uint8_t				textureheightval;
-	int16_t                patchlookup[470]; // 350 for doom shareware/doom1. 459 for doom2
-	int16_t					lastpatch;
-	int16_t					lastflat;
-	int16_t					lastspritelump;
+ 	int16_t					texturewidth;
+	uint8_t					textureheightval;
+	int16_t                 patchlookup[470]; // 350 for doom shareware/doom1. 459 for doom2
 
 	firstpatch = W_GetNumForName("P_START") + 1;
-	lastpatch = W_GetNumForName("P_END") - 1;
-	numpatches = lastpatch - firstpatch + 1;
+	numpatches = (W_GetNumForName("P_END") - 1) - firstpatch + 1;
 
 	firstflat = W_GetNumForName("F_START") + 1;
-	lastflat = W_GetNumForName("F_END") - 1;
-	numflats = lastflat - firstflat + 1;
+	numflats = (W_GetNumForName("F_END") - 1) - firstflat + 1;
 
 	firstspritelump = W_GetNumForName("S_START") + 1;
-	lastspritelump = W_GetNumForName("S_END") - 1;
-	numspritelumps = lastspritelump - firstspritelump + 1;
+	numspritelumps = (W_GetNumForName("S_END") - 1) - firstspritelump + 1;
 
 
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
  	W_CacheLumpNameDirect("PNAMES", (byte __far*)TEX_LOAD_ADDRESS);
-	nummappatches = (*((int32_t  __far*)TEX_LOAD_ADDRESS));
+	temp = (*((int32_t  __far*)TEX_LOAD_ADDRESS));
 	name_p = (int8_t __far*)(TEX_LOAD_ADDRESS + 4);
-	for (i = 0; i < nummappatches; i++)
-	{
+	for (i = 0; i < temp; i++) {
 		copystr8(name, name_p + (i << 3 ));
 		patchlookup[i] = W_CheckNumForName(name);
 	}
@@ -571,39 +558,36 @@ void R_InitTextures(void) {
 	// Load the map texture definitions from textures.lmp.
 	// The data is contained in one or two lumps,
 	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
-	maptex = maptex1 = (int32_t __far*)TEX_LOAD_ADDRESS;
-	W_CacheLumpNameDirect("TEXTURE1", (byte __far*)maptex);
+	W_CacheLumpNameDirect("TEXTURE1", (byte __far*)TEX_LOAD_ADDRESS);
 
-	numtextures1 = (*maptex);
-	directory = maptex + 1;
+	numtextures = numtextures1 = * ((int16_t __far*)TEX_LOAD_ADDRESS);
+	directory = MK_FP(TEX_LOAD_ADDRESS_SEGMENT, 4); // maptex + 1
 
-	if (W_CheckNumForName("TEXTURE2") != -1)
-	{
-		maptex2 = ((int32_t __far*)TEX_LOAD_ADDRESS_2);
-		W_CacheLumpNameDirect("TEXTURE2", (byte __far*)maptex2);
-		numtextures2 = (*maptex2);
+	if (W_CheckNumForName("TEXTURE2") != -1) {
+		W_CacheLumpNameDirect("TEXTURE2", (byte __far*)TEX_LOAD_ADDRESS_2);
+		numtextures +=  * ((int16_t __far*)TEX_LOAD_ADDRESS_2);
+	
 	}
-	else
-	{
-		maptex2 = NULL;
-		numtextures2 = 0;
-	}
-	numtextures = numtextures1 + numtextures2;
 
 
 
 	//  Really complex printing shit...
-	temp1 = W_GetNumForName("S_START");  // P_???????
-	temp2 = W_GetNumForName("S_END") - 1;
-	temp3 = ((temp2 - temp1 + 63) / 64) + ((numtextures + 63) / 64);
+	// P_???????
+	temp = (W_GetNumForName("S_END") - 1) - W_GetNumForName("S_START");
+	temp = ((temp + 63) / 64) + ((numtextures + 63) / 64);
 	DEBUG_PRINT("[");
-	for (i = 0; i < temp3; i++)
+	for (i = 0; i < temp; i++) {
 		DEBUG_PRINT(" ");
+	}
 	DEBUG_PRINT("         ]");
-	for (i = 0; i < temp3; i++)
+	for (i = 0; i < temp; i++) {
 		DEBUG_PRINT("\x8");
+	}
 	DEBUG_PRINT("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");
-	
+	// print stuff done
+
+
+	// iterate thru textures.
 	for (i = 0; i < numtextures; i++, directory++) {
 		int16_t collength;
 		if (!(i & 63))
@@ -611,20 +595,19 @@ void R_InitTextures(void) {
 
 		if (i == numtextures1) {
 			// Start looking in second texture file.
-			maptex = maptex2;
-			directory = maptex + 1;
+			maptexsegment = TEX_LOAD_ADDRESS_2_SEGMENT;
+			directory = MK_FP(TEX_LOAD_ADDRESS_2_SEGMENT, 4); // maptex + 1
 		}
 
-		offset = (*directory);
+		// offset = (*directory);
 
-		//mtexture = (maptexture_t  __far*)((byte  __far*)(maptex + offset));
-		mtexture = (maptexture_t  __far*)((byte  __far*)maptex + offset);
+		mtexture = (maptexture_t  __far*)MK_FP(maptexsegment, *directory);
+
 
 		if ((i + 1) < numtextures) {
 			// texturedefs sizes are variable and dependent on texture size/texture patch count.
 			texturedefs_offset_6000[i + 1] = texturedefs_offset_6000[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
 		}
-
 
 		texture = (texture_t __far*)&(texturedefs_bytes_6000[texturedefs_offset_6000[i]]);
 		texture->width = (mtexture->width) - 1;

@@ -226,10 +226,8 @@ void __far Z_QuickMapMusicPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 ; pageframeindex al
 ; pagenumber dl 
 
-PROC Z_QuickMapPageFrame_ FAR
-PUBLIC Z_QuickMapPageFrame_
-
-; todo compare?
+PROC Z_QuickMapMusicPageFrame_ FAR
+PUBLIC Z_QuickMapMusicPageFrame_
 
 
 cmp  al, byte ptr ds:[_currentpageframes]
@@ -247,17 +245,18 @@ xor  ah, ah
 add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
 out  SCAMP_PAGE_SET_REGISTER, ax
 exit_page_frame:
-ret
+retf
+
 ENDP
 
 
 PROC Z_QuickMapSFXPageFrame_ FAR
 PUBLIC Z_QuickMapSFXPageFrame_
 
-cmp  al, byte ptr ds:[_currentpageframes+1]
+cmp  al, byte ptr ds:[_currentpageframes + 1]
 je   exit_sfx_pageframe
 
-mov  byte ptr ds:[_currentpageframes+1], al
+mov  byte ptr ds:[_currentpageframes + 1], al
 
 mov  ah, al
 mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + 1	; page D400
@@ -270,7 +269,39 @@ xor  ah, ah
 add  ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
 out  SCAMP_PAGE_SET_REGISTER, ax
 exit_sfx_pageframe:
-ret
+retf
+ENDP
+
+LUMP_MASK = 0FCh 
+
+PROC Z_QuickMapWADPageFrame_ FAR
+PUBLIC Z_QuickMapWADPageFrame_
+
+push ax
+and  ah, LUMP_MASK
+
+cmp  ah, byte ptr ds:[_currentpageframes + 2]
+je   exit_wad_pageframe
+
+mov  byte ptr ds:[_currentpageframes + 2], ah
+
+mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + 1	; page D400
+out  SCAMP_PAGE_SELECT_REGISTER, al
+
+mov  al, ah
+xor  ah, ah
+
+SHIFT_MACRO SHR AX 2
+
+; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
+; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
+add  ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
+out  SCAMP_PAGE_SET_REGISTER, ax
+exit_wad_pageframe:
+
+pop  ax
+retf
+
 ENDP
 
 

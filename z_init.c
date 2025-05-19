@@ -102,12 +102,21 @@ byte __far *__near Z_InitEMS() {
 void __near Z_GetEMSPageMap() {
 	int16_t i;
 
+	// force cache clear
+	currentpageframes[0] = 0xFF;
+	currentpageframes[1] = 0xFF;
+	currentpageframes[2] = 0xFF;
+	currentpageframes[3] = 0xFF;
 
+	for (i = 0; i <= ((numlumps-1) / LUMP_PER_EMS_PAGE); i++){
+		Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
+		FAR_memcpy((byte __far *) lumpinfoD800, (byte __far *) lumpinfoinit + (i * 16384u), 16384u); // copy the wad lump stuff over. gross
+	}
 
-	Z_QuickMapLumpInfo5000();
-
-	FAR_memcpy((byte __far *)0x54000000, (byte __far *)lumpinfoinit, 49152u); // copy the wad lump stuff over. gross
-	FAR_memset((byte __far *)lumpinfoinit, 0, 49152u);
+	Z_QuickMapMusicPageFrame(0);
+	Z_QuickMapSFXPageFrame(0);
+	Z_QuickMapWADPageFrame(0);
+	// todo music driver?
 
 	Z_QuickMapPhysics(); // map default page map
 }
@@ -122,11 +131,21 @@ byte __far *__near Z_InitEMS() {
 void __near Z_GetEMSPageMap() {
 	int16_t i;
 
+	// force cache clear
+	currentpageframes[0] = 0xFF;
+	currentpageframes[1] = 0xFF;
+	currentpageframes[2] = 0xFF;
+	currentpageframes[3] = 0xFF;
 
-	Z_QuickMapLumpInfo5000();
+	for (i = 0; i <= ((numlumps-1) / LUMP_PER_EMS_PAGE); i++){
+		Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
+		FAR_memcpy((byte __far *) lumpinfoD800, (byte __far *) lumpinfoinit + (i * 16384u), 16384u); // copy the wad lump stuff over. gross
+	}
 
-	FAR_memcpy((byte __far *)0x54000000, (byte __far *)lumpinfoinit, 49152u); // copy the wad lump stuff over. gross
-	FAR_memset((byte __far *)lumpinfoinit, 0, 49152u);
+	Z_QuickMapMusicPageFrame(0);
+	Z_QuickMapSFXPageFrame(0);
+	Z_QuickMapWADPageFrame(0);
+	// todo music driver?
 
 	Z_QuickMapPhysics(); // map default page map
 }
@@ -159,11 +178,22 @@ byte __far *__near Z_InitEMS() {
 void __near Z_GetEMSPageMap() {
 	int16_t i;
 
+	// force cache clear
+	currentpageframes[0] = 0xFF;
+	currentpageframes[1] = 0xFF;
+	currentpageframes[2] = 0xFF;
+	currentpageframes[3] = 0xFF;
 
-	Z_QuickMapLumpInfo5000();
+	for (i = 0; i <= ((numlumps-1) / LUMP_PER_EMS_PAGE); i++){
+		Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
+		FAR_memcpy((byte __far *) lumpinfoD800, (byte __far *) lumpinfoinit + (i * 16384u), 16384u); // copy the wad lump stuff over. gross
+	}
 
-	FAR_memcpy((byte __far *)0x54000000, (byte __far *)lumpinfoinit, 49152u); // copy the wad lump stuff over. gross
-	FAR_memset((byte __far *)lumpinfoinit, 0, 49152u);
+	Z_QuickMapMusicPageFrame(0);
+	Z_QuickMapSFXPageFrame(0);
+	Z_QuickMapWADPageFrame(0);
+	// todo music driver?
+
 
 	Z_QuickMapPhysics(); // map default page map
 }
@@ -408,15 +438,10 @@ found:
 	 
 
 	
-	{
-		for (i = 0; i <= (numlumps / LUMP_PER_EMS_PAGE); i++){
-			Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
-			FAR_memcpy((byte __far *) lumpinfoD800, (byte __far *) lumpinfoinit + (i * 16384u), 16384u); // copy the wad lump stuff over. gross
-		}
+	for (i = 0; i <= ((numlumps-1) / LUMP_PER_EMS_PAGE); i++){
+		Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
+		FAR_memcpy((byte __far *) lumpinfoD800, (byte __far *) lumpinfoinit + (i * 16384u), 16384u); // copy the wad lump stuff over. gross
 	}
-
-	FAR_memcpy((byte __far *) 0x54000000, (byte __far *) lumpinfoinit, 49152u); // copy the wad lump stuff over. gross
-	FAR_memset((byte __far *) lumpinfoinit, 0, 49152u);
 
 	Z_QuickMapPhysics(); // map default page map
 }
