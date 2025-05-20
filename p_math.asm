@@ -496,13 +496,9 @@ PUBLIC P_BoxOnLineSide_
 ;   dx: linedx
 ;   bx: linedy
 ;   cx: v1x
-;   bp + 8  v1y ?
+;   bp + 4  v1y ?
 
-;   bp - 2 is p1
-;   bp - 4 is linedx ?
 
-push  si
-push  di
 push  bp
 mov   bp, sp
 
@@ -511,7 +507,7 @@ cmp   ax, ST_VERTICAL_HIGH
 jae   non_zero_slopetype
 
 ; ST_HORIZONTAL_HIGH case
-mov   cx, word ptr [bp + 8]	; v1y
+mov   cx, word ptr [bp + 4]	; v1y
 cmp   cx, word ptr ds:[_tmbbox + (BOXTOP * 4) + 2]
 jng   set_p1_to_1_2
 
@@ -541,10 +537,8 @@ jl    xor_p1_p2
 
 done_with_switchblock_boxonlineside_ah:  ; ah has p1
 cmp   al, ah
-jne   jump_to_return_minusone_boxonlineside
+jne   return_minusone_boxonlineside
 LEAVE_MACRO
-pop   di
-pop   si
 ret   2
 
 
@@ -587,9 +581,12 @@ jmp   done_with_switchblock_boxonlineside_ah
 set_p2_to_1:
 mov   al, 1
 jmp   check_linedy
+return_minusone_boxonlineside:
+mov   al, -1
+LEAVE_MACRO
+ret   2
 
-jump_to_return_minusone_boxonlineside:
-jmp   return_minusone_boxonlineside
+
 set_p1_to_1:
 mov   ah, 1
 jmp   check_p2
@@ -598,10 +595,16 @@ jmp   check_p2
 not_vertical_high:
 
 ; shared code for both cases
-push  dx		; bp - 2
+
+push  dx		; bp - 2, needed later
+
+push  si		; need to restore later
+push  di		; need to restore later
+
 mov   di, bx	; di has linedy
 mov   si, cx	; si has v1x
-push  word ptr [bp + 8]	; P_PointOnLineSide_ params
+
+push  word ptr [bp + 4]	; P_PointOnLineSide_ params
 push  cx
 push  bx
 push  dx
@@ -618,7 +621,7 @@ les   ax, dword ptr ds:[_tmbbox + BOXLEFT * 4]
 mov   dx, es
 call  P_PointOnLineSide_
 
-push  word ptr [bp + 8]	; P_PointOnLineSide_ params
+push  word ptr [bp + 4]	; P_PointOnLineSide_ params
 push  si
 push  di
 push  word ptr [bp - 2]
@@ -634,12 +637,13 @@ call  P_PointOnLineSide_
 
 done_with_switchblock_boxonlineside:
 mov   dx, di			; get p1
-cmp   al, dl ; cmp p1/p2
-jne   jump_to_return_minusone_boxonlineside
-LEAVE_MACRO
 pop   di
 pop   si
+cmp   al, dl ; cmp p1/p2
+jne   return_minusone_boxonlineside
+LEAVE_MACRO
 ret   2
+
 
 negative_high_slopetype:
 ; ST_NEGATIVE_HIGH
@@ -657,7 +661,8 @@ mov   dx, es
 
 
 call  P_PointOnLineSide_
-push  word ptr [bp + 8] 	; P_PointOnLineSide_ params
+
+push  word ptr [bp + 4] 	; P_PointOnLineSide_ params
 push  si
 push  di
 push  word ptr [bp - 2]
@@ -671,14 +676,15 @@ mov   dx, es
 
 call  P_PointOnLineSide_
 
-jmp   done_with_switchblock_boxonlineside
-
-return_minusone_boxonlineside:
-mov   al, -1
-LEAVE_MACRO
+mov   dx, di			; get p1
 pop   di
 pop   si
+cmp   al, dl ; cmp p1/p2
+jne   return_minusone_boxonlineside
+LEAVE_MACRO
 ret   2
+
+
 
 ENDP
 
