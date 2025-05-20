@@ -785,28 +785,29 @@ ret
 line_dy_nonzero:
 
 
-mov   di, ax
-mov   si, bx
-mov   ax, dx
-mov   dx, cx  ; todo clean up this juggle
+;    dx.w = (x - line->x.w);
+;    dy.w = (y - line->y.w);
 
-mov   dx, word ptr ds:[_trace + 0Eh]
-mov   bx, di
-mov   di, cx
-sub   bx, word ptr ds:[_trace]
-sbb   ax, word ptr ds:[_trace + 2]
-sub   si, word ptr ds:[_trace + 4]
-sbb   di, word ptr ds:[_trace + 6]
+xchg  ax, si	; si holds ax low
+mov   ax, word ptr ds:[_trace + 0Eh]
+
+sub   si, word ptr ds:[_trace]		; dx is dx:si
+sbb   dx, word ptr ds:[_trace + 2]
+sub   bx, word ptr ds:[_trace + 4]  ; dy is cx:bx
+sbb   cx, word ptr ds:[_trace + 6]
 
 ;    if ( (line->dy.h.intbits ^ line->dx.h.intbits ^ dx.h.intbits ^ dy.h.intbits)&0x8000 )
 
-xor   dx, word ptr ds:[_trace + 0Ah]
-xor   dx, ax
-xor   dx, di
-test  dh, 080h
-je    sign_check_failed
-xor   ax, word ptr ds:[_trace + 0Eh]
+xor   ax, word ptr ds:[_trace + 0Ah]
+xor   ax, dx
+xor   ax, cx
 test  ah, 080h
+je    sign_check_failed
+
+;		if ((line->dy.h.intbits ^ dx.h.intbits) & 0x8000)
+
+xor   dx, word ptr ds:[_trace + 0Eh]
+test  dh, 080h
 je    return_0_pointondivlineside
 jump_to_return_1_pointondivlineside:
 jmp   return_1_pointondivlineside
@@ -818,23 +819,42 @@ pop   si
 ret   
 
 sign_check_failed:
-mov   cx, ax
 
-mov   ax, word ptr ds:[_trace + 0Ch]
-mov   dx, word ptr ds:[_trace + 0Eh]
+; dx is dx:si
+; dy is cx:bx
+mov   di, dx  ; di:si are now dx
+
+
+;	//todo is there a faster way to use just the 3 bytes?
+;    // note these are internally being shifted by fixedmul2424
+;    right = FixedMul2424 ( dy.w , line->dx.w );
+;	left = FixedMul2424 ( line->dy.w, dx.w );
+
+
+
+les   ax, dword ptr ds:[_trace + 08h]  ; line->dx
+mov   dx, es
 
 call  FixedMul2424_
-mov   bx, word ptr ds:[_trace + 8]
-mov   cx, word ptr ds:[_trace + 0Ah]
-xchg  ax, di   ; backup ax in di
-xchg  ax, dx   ; dx gets old di
-xchg  ax, si   ; ax gets si. si gets old dx
+
+; dx:ax is right
+
+les   bx, dword ptr ds:[_trace + 0Ch]
+mov   cx, es
+
+xchg  dx, di   ; backup dx in di  get old value
+xchg  ax, si   ; backup ax in si, get old value
 
 call  FixedMul2424_
-cmp   dx, si
+
+;dx:ax are left
+;di:si are right
+	;	return (right >= left);
+
+cmp   di, dx
 jg    jump_to_return_1_pointondivlineside
 jne   return_0_pointondivlineside_4
-cmp   ax, di
+cmp   si, ax
 jae   jump_to_return_1_pointondivlineside
 return_0_pointondivlineside_4:
 xor   al, al
