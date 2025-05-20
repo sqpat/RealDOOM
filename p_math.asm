@@ -702,12 +702,11 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-mov   di, ax
-mov   si, bx
-mov   ax, dx
-mov   dx, cx  ; todo clean up this juggle
-mov   bx, word ptr ds:[_trace + 0Ah]
-or    bx, word ptr ds:[_trace + 8]
+
+; maybe mov di, _trace?
+
+mov   si, word ptr ds:[_trace + 0Ah]
+or    si, word ptr ds:[_trace + 8]
 jne   line_dx_nonzero
 
 ;	if (x <= line->x.w)
@@ -715,18 +714,17 @@ jne   line_dx_nonzero
 ;	return line->dy.w < 0;
 
 
-cmp   ax, word ptr ds:[_trace + 2]
+cmp   dx, word ptr ds:[_trace + 2]
 jl    x_lte_linex
 jne   x_gt_linex
-cmp   di, word ptr ds:[_trace]
+cmp   ax, word ptr ds:[_trace]
 ja    x_gt_linex
 x_lte_linex:
-mov   ax, word ptr ds:[_trace + 0Eh]
-test  ax, ax
+cmp   word ptr ds:[_trace + 0Eh], 0
 jg    return_1_pointondivlineside
 jne   return_0_pointondivlineside_2
 cmp   word ptr ds:[_trace + 0Ch], 0
-jbe   return_0_pointondivlineside_2
+je    return_0_pointondivlineside_2
 return_1_pointondivlineside:
 mov   al, 1
 LEAVE_MACRO
@@ -740,8 +738,7 @@ pop   di
 pop   si
 ret   
 x_gt_linex:
-mov   ax, word ptr ds:[_trace + 0Eh]
-test  ax, ax
+cmp   word ptr ds:[_trace + 0Eh], 0
 jl    return_1_pointondivlineside
 xor   al, al
 LEAVE_MACRO
@@ -751,23 +748,21 @@ ret
 
 
 line_dx_nonzero:
-mov   bx, word ptr ds:[_trace + 0Eh]
-or    bx, word ptr ds:[_trace + 0Ch]
+mov   si, word ptr ds:[_trace + 0Eh]
+or    si, word ptr ds:[_trace + 0Ch]
 jne   line_dy_nonzero
 
 ;	if (y <= line->y.w)
 ;	    return line->dx.w < 0;
 ;	return line->dx.w > 0;
 
-mov   ax, word ptr ds:[_trace + 6]
-cmp   cx, ax
+cmp   cx, word ptr ds:[_trace + 6]
 jl    y_lte_liney
 jne   y_gt_liney
 cmp   si, word ptr ds:[_trace + 4]
 ja    y_gt_liney
 y_lte_liney:
-mov   ax, word ptr ds:[_trace + 0Ah]
-test  ax, ax
+cmp   word ptr ds:[_trace + 0Ah], 0
 jl    return_1_pointondivlineside
 xor   al, al
 LEAVE_MACRO
@@ -775,8 +770,7 @@ pop   di
 pop   si
 ret   
 y_gt_liney:
-mov   ax, word ptr ds:[_trace + 0Ah]
-test  ax, ax
+cmp   word ptr ds:[_trace + 0Ah], 0
 jg    return_1_pointondivlineside
 jne   return_0_pointondivlineside_3
 cmp   word ptr ds:[_trace + 8], 0
@@ -789,6 +783,13 @@ pop   si
 ret   
 
 line_dy_nonzero:
+
+
+mov   di, ax
+mov   si, bx
+mov   ax, dx
+mov   dx, cx  ; todo clean up this juggle
+
 mov   dx, word ptr ds:[_trace + 0Eh]
 mov   bx, di
 mov   di, cx
