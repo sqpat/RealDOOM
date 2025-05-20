@@ -18,11 +18,15 @@
 
 
 EXTRN FixedMul1632_:FAR
+EXTRN FixedMul2424_:FAR
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 .DATA
+
+EXTRN _trace:WORD
+
 .CODE
 
 
@@ -677,121 +681,142 @@ ret
 
 ENDP
 
-COMMENT @
+; boolean __near P_PointOnDivlineSide ( fixed_t	x, fixed_t	y ) {
+
+; dx:ax : x
+; cx:bx : y
 
 PROC P_PointOnDivlineSide_ NEAR
 PUBLIC P_PointOnDivlineSide_ 
 
-0x0000000000000000:  56                push  si
-0x0000000000000001:  57                push  di
-0x0000000000000002:  55                push  bp
-0x0000000000000003:  89 E5             mov   bp, sp
-0x0000000000000005:  83 EC 04          sub   sp, 4
-0x0000000000000008:  89 C7             mov   di, ax
-0x000000000000000a:  89 DE             mov   si, bx
-0x000000000000000c:  89 D0             mov   ax, dx
-0x000000000000000e:  89 CA             mov   dx, cx
-0x0000000000000010:  8B 1E 22 1A       mov   bx, word ptr [0x1a22]
-0x0000000000000014:  0B 1E 20 1A       or    bx, word ptr [0x1a20]
-0x0000000000000018:  75 33             jne   0x4d
-0x000000000000001a:  3B 06 1A 1A       cmp   ax, word ptr [0x1a1a]
-0x000000000000001e:  7C 08             jl    0x28
-0x0000000000000020:  75 20             jne   0x42
-0x0000000000000022:  3B 3E 18 1A       cmp   di, word ptr [0x1a18]
-0x0000000000000026:  77 1A             ja    0x42
-0x0000000000000028:  A1 26 1A          mov   ax, word ptr [0x1a26]
-0x000000000000002b:  85 C0             test  ax, ax
-0x000000000000002d:  7F 09             jg    0x38
-0x000000000000002f:  75 0D             jne   0x3e
-0x0000000000000031:  83 3E 24 1A 00    cmp   word ptr [0x1a24], 0
-0x0000000000000036:  76 06             jbe   0x3e
-0x0000000000000038:  B0 01             mov   al, 1
-0x000000000000003a:  C9                LEAVE_MACRO
-0x000000000000003b:  5F                pop   di
-0x000000000000003c:  5E                pop   si
-0x000000000000003d:  C3                ret   
-0x000000000000003e:  30 C0             xor   al, al
-0x0000000000000040:  EB F8             jmp   0x3a
-0x0000000000000042:  A1 26 1A          mov   ax, word ptr [0x1a26]
-0x0000000000000045:  85 C0             test  ax, ax
-0x0000000000000047:  7C EF             jl    0x38
-0x0000000000000049:  30 C0             xor   al, al
-0x000000000000004b:  EB ED             jmp   0x3a
-0x000000000000004d:  8B 1E 26 1A       mov   bx, word ptr [0x1a26]
-0x0000000000000051:  0B 1E 24 1A       or    bx, word ptr [0x1a24]
-0x0000000000000055:  75 32             jne   0x89
-0x0000000000000057:  A1 1E 1A          mov   ax, word ptr [0x1a1e]
-0x000000000000005a:  39 C1             cmp   cx, ax
-0x000000000000005c:  7C 08             jl    0x66
-0x000000000000005e:  75 13             jne   0x73
-0x0000000000000060:  3B 36 1C 1A       cmp   si, word ptr [0x1a1c]
-0x0000000000000064:  77 0D             ja    0x73
-0x0000000000000066:  A1 22 1A          mov   ax, word ptr [0x1a22]
-0x0000000000000069:  85 C0             test  ax, ax
-0x000000000000006b:  7C CB             jl    0x38
-0x000000000000006d:  30 C0             xor   al, al
-0x000000000000006f:  C9                LEAVE_MACRO
-0x0000000000000070:  5F                pop   di
-0x0000000000000071:  5E                pop   si
-0x0000000000000072:  C3                ret   
-0x0000000000000073:  A1 22 1A          mov   ax, word ptr [0x1a22]
-0x0000000000000076:  85 C0             test  ax, ax
-0x0000000000000078:  7F BE             jg    0x38
-0x000000000000007a:  75 07             jne   0x83
-0x000000000000007c:  83 3E 20 1A 00    cmp   word ptr [0x1a20], 0
-0x0000000000000081:  77 B5             ja    0x38
-0x0000000000000083:  30 C0             xor   al, al
-0x0000000000000085:  C9                LEAVE_MACRO
-0x0000000000000086:  5F                pop   di
-0x0000000000000087:  5E                pop   si
-0x0000000000000088:  C3                ret   
-0x0000000000000089:  8B 16 26 1A       mov   dx, word ptr [0x1a26]
-0x000000000000008d:  89 FB             mov   bx, di
-0x000000000000008f:  89 CF             mov   di, cx
-0x0000000000000091:  2B 1E 18 1A       sub   bx, word ptr [0x1a18]
-0x0000000000000095:  1B 06 1A 1A       sbb   ax, word ptr [0x1a1a]
-0x0000000000000099:  2B 36 1C 1A       sub   si, word ptr [0x1a1c]
-0x000000000000009d:  1B 3E 1E 1A       sbb   di, word ptr [0x1a1e]
-0x00000000000000a1:  33 16 22 1A       xor   dx, word ptr [0x1a22]
-0x00000000000000a5:  31 C2             xor   dx, ax
-0x00000000000000a7:  31 FA             xor   dx, di
-0x00000000000000a9:  89 76 FE          mov   word ptr [bp - 2], si
-0x00000000000000ac:  F6 C6 80          test  dh, 0x80
-0x00000000000000af:  74 12             je    0xc3
-0x00000000000000b1:  33 06 26 1A       xor   ax, word ptr [0x1a26]
-0x00000000000000b5:  F6 C4 80          test  ah, 0x80
-0x00000000000000b8:  74 03             je    0xbd
-0x00000000000000ba:  E9 7B FF          jmp   0x38
-0x00000000000000bd:  30 C0             xor   al, al
-0x00000000000000bf:  C9                LEAVE_MACRO
-0x00000000000000c0:  5F                pop   di
-0x00000000000000c1:  5E                pop   si
-0x00000000000000c2:  C3                ret   
-0x00000000000000c3:  8B 16 24 1A       mov   dx, word ptr [0x1a24]
-0x00000000000000c7:  8B 36 26 1A       mov   si, word ptr [0x1a26]
-0x00000000000000cb:  89 C1             mov   cx, ax
-0x00000000000000cd:  89 D0             mov   ax, dx
-0x00000000000000cf:  89 F2             mov   dx, si
-0x00000000000000d1:  9A 6A 5C 81 0A    lcall 0xa81:0x5c6a
-0x00000000000000d6:  8B 1E 20 1A       mov   bx, word ptr [0x1a20]
-0x00000000000000da:  8B 0E 22 1A       mov   cx, word ptr [0x1a22]
-0x00000000000000de:  89 46 FC          mov   word ptr [bp - 4], ax
-0x00000000000000e1:  89 D6             mov   si, dx
-0x00000000000000e3:  8B 46 FE          mov   ax, word ptr [bp - 2]
-0x00000000000000e6:  89 FA             mov   dx, di
-0x00000000000000e8:  9A 6A 5C 81 0A    lcall 0xa81:0x5c6a
-0x00000000000000ed:  39 F2             cmp   dx, si
-0x00000000000000ef:  7F C9             jg    0xba
-0x00000000000000f1:  75 05             jne   0xf8
-0x00000000000000f3:  3B 46 FC          cmp   ax, word ptr [bp - 4]
-0x00000000000000f6:  73 C2             jae   0xba
-0x00000000000000f8:  30 C0             xor   al, al
-0x00000000000000fa:  C9                LEAVE_MACRO
-0x00000000000000fb:  5F                pop   di
-0x00000000000000fc:  5E                pop   si
-0x00000000000000fd:  C3                ret  
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 4
+mov   di, ax
+mov   si, bx
+mov   ax, dx
+mov   dx, cx
+mov   bx, word ptr ds:[_trace + 0Ah]
+or    bx, word ptr ds:[_trace + 8]
+jne   label_1
+cmp   ax, word ptr ds:[_trace + 2]
+jl    label_2
+jne   label_3
+cmp   di, word ptr ds:[_trace]
+ja    label_3
+label_2:
+mov   ax, word ptr ds:[_trace + 0Eh]
+test  ax, ax
+jg    return_1_pointondivlineside
+jne   return_0_pointondivlineside_2
+cmp   word ptr ds:[_trace + 0Ch], 0
+jbe   return_0_pointondivlineside_2
+return_1_pointondivlineside:
+mov   al, 1
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+return_0_pointondivlineside_2:
+xor   al, al
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+label_3:
+mov   ax, word ptr ds:[_trace + 0Eh]
+test  ax, ax
+jl    return_1_pointondivlineside
+xor   al, al
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+label_1:
+mov   bx, word ptr ds:[_trace + 0Eh]
+or    bx, word ptr ds:[_trace + 0Ch]
+jne   label_4
+mov   ax, word ptr ds:[_trace + 6]
+cmp   cx, ax
+jl    label_5
+jne   label_6
+cmp   si, word ptr ds:[_trace + 4]
+ja    label_6
+label_5:
+mov   ax, word ptr ds:[_trace + 0Ah]
+test  ax, ax
+jl    return_1_pointondivlineside
+xor   al, al
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+label_6:
+mov   ax, word ptr ds:[_trace + 0Ah]
+test  ax, ax
+jg    return_1_pointondivlineside
+jne   return_0_pointondivlineside_3
+cmp   word ptr ds:[_trace + 8], 0
+ja    return_1_pointondivlineside
+return_0_pointondivlineside_3:
+xor   al, al
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+label_4:
+mov   dx, word ptr ds:[_trace + 0Eh]
+mov   bx, di
+mov   di, cx
+sub   bx, word ptr ds:[_trace]
+sbb   ax, word ptr ds:[_trace + 2]
+sub   si, word ptr ds:[_trace + 4]
+sbb   di, word ptr ds:[_trace + 6]
+xor   dx, word ptr ds:[_trace + 0Ah]
+xor   dx, ax
+xor   dx, di
+mov   word ptr [bp - 2], si
+test  dh, 080h
+je    label_7
+xor   ax, word ptr ds:[_trace + 0Eh]
+test  ah, 080h
+je    return_0_pointondivlineside
+jump_to_return_1_pointondivlineside:
+jmp   return_1_pointondivlineside
+return_0_pointondivlineside:
+xor   al, al
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+label_7:
+mov   dx, word ptr ds:[_trace + 0Ch]
+mov   si, word ptr ds:[_trace + 0Eh]
+mov   cx, ax
+mov   ax, dx
+mov   dx, si
+call  FixedMul2424_
+mov   bx, word ptr ds:[_trace + 8]
+mov   cx, word ptr ds:[_trace + 0Ah]
+mov   word ptr [bp - 4], ax
+mov   si, dx
+mov   ax, word ptr [bp - 2]
+mov   dx, di
+call  FixedMul2424_
+cmp   dx, si
+jg    jump_to_return_1_pointondivlineside
+jne   return_0_pointondivlineside_4
+cmp   ax, word ptr [bp - 4]
+jae   jump_to_return_1_pointondivlineside
+return_0_pointondivlineside_4:
+xor   al, al
+LEAVE_MACRO
+pop   di
+pop   si
+ret  
 
 ENDP
 
-@
 END

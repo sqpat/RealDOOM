@@ -196,6 +196,11 @@ int8_t __near P_BoxOnLineSide (  slopetype_t	lineslopetype, int16_t linedx, int1
 // P_PointOnDivlineSide
 // Returns 0 or 1.
 //
+
+boolean __near P_PointOnDivlineSide ( fixed_t	x, fixed_t	y );
+
+/*
+
 boolean __near P_PointOnDivlineSide ( fixed_t	x, fixed_t	y ) {
     fixed_t_union	dx;
     fixed_t_union	dy;
@@ -239,6 +244,7 @@ boolean __near P_PointOnDivlineSide ( fixed_t	x, fixed_t	y ) {
 
 	
 }
+*/
 
 // we know x/y low 16 bits is 0, small number of optimizaitons possible
 // edit: decided not worth it, one comparison is slightly faster but it requires a new dupe function
