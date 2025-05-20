@@ -686,6 +686,15 @@ ENDP
 ; dx:ax : x
 ; cx:bx : y
 
+;typedef struct {
+;
+;	fixed_t_union	x;  0, 2
+;	fixed_t_union	y;  4, 6
+;   fixed_t_union	dx; 8, A
+;	fixed_t_union	dy; C, E
+;    
+;} divline_t;
+
 PROC P_PointOnDivlineSide_ NEAR
 PUBLIC P_PointOnDivlineSide_ 
 
@@ -693,20 +702,25 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 4
 mov   di, ax
 mov   si, bx
 mov   ax, dx
-mov   dx, cx
+mov   dx, cx  ; todo clean up this juggle
 mov   bx, word ptr ds:[_trace + 0Ah]
 or    bx, word ptr ds:[_trace + 8]
-jne   label_1
+jne   line_dx_nonzero
+
+;	if (x <= line->x.w)
+;	    return line->dy.w > 0;
+;	return line->dy.w < 0;
+
+
 cmp   ax, word ptr ds:[_trace + 2]
-jl    label_2
-jne   label_3
+jl    x_lte_linex
+jne   x_gt_linex
 cmp   di, word ptr ds:[_trace]
-ja    label_3
-label_2:
+ja    x_gt_linex
+x_lte_linex:
 mov   ax, word ptr ds:[_trace + 0Eh]
 test  ax, ax
 jg    return_1_pointondivlineside
@@ -725,7 +739,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label_3:
+x_gt_linex:
 mov   ax, word ptr ds:[_trace + 0Eh]
 test  ax, ax
 jl    return_1_pointondivlineside
@@ -734,17 +748,24 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label_1:
+
+
+line_dx_nonzero:
 mov   bx, word ptr ds:[_trace + 0Eh]
 or    bx, word ptr ds:[_trace + 0Ch]
-jne   label_4
+jne   line_dy_nonzero
+
+;	if (y <= line->y.w)
+;	    return line->dx.w < 0;
+;	return line->dx.w > 0;
+
 mov   ax, word ptr ds:[_trace + 6]
 cmp   cx, ax
-jl    label_5
-jne   label_6
+jl    y_lte_liney
+jne   y_gt_liney
 cmp   si, word ptr ds:[_trace + 4]
-ja    label_6
-label_5:
+ja    y_gt_liney
+y_lte_liney:
 mov   ax, word ptr ds:[_trace + 0Ah]
 test  ax, ax
 jl    return_1_pointondivlineside
@@ -753,7 +774,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label_6:
+y_gt_liney:
 mov   ax, word ptr ds:[_trace + 0Ah]
 test  ax, ax
 jg    return_1_pointondivlineside
@@ -766,7 +787,8 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label_4:
+
+line_dy_nonzero:
 mov   dx, word ptr ds:[_trace + 0Eh]
 mov   bx, di
 mov   di, cx
@@ -774,12 +796,14 @@ sub   bx, word ptr ds:[_trace]
 sbb   ax, word ptr ds:[_trace + 2]
 sub   si, word ptr ds:[_trace + 4]
 sbb   di, word ptr ds:[_trace + 6]
+
+;    if ( (line->dy.h.intbits ^ line->dx.h.intbits ^ dx.h.intbits ^ dy.h.intbits)&0x8000 )
+
 xor   dx, word ptr ds:[_trace + 0Ah]
 xor   dx, ax
 xor   dx, di
-mov   word ptr [bp - 2], si
 test  dh, 080h
-je    label_7
+je    sign_check_failed
 xor   ax, word ptr ds:[_trace + 0Eh]
 test  ah, 080h
 je    return_0_pointondivlineside
@@ -791,24 +815,25 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label_7:
-mov   dx, word ptr ds:[_trace + 0Ch]
-mov   si, word ptr ds:[_trace + 0Eh]
+
+sign_check_failed:
 mov   cx, ax
-mov   ax, dx
-mov   dx, si
+
+mov   ax, word ptr ds:[_trace + 0Ch]
+mov   dx, word ptr ds:[_trace + 0Eh]
+
 call  FixedMul2424_
 mov   bx, word ptr ds:[_trace + 8]
 mov   cx, word ptr ds:[_trace + 0Ah]
-mov   word ptr [bp - 4], ax
-mov   si, dx
-mov   ax, word ptr [bp - 2]
-mov   dx, di
+xchg  ax, di   ; backup ax in di
+xchg  ax, dx   ; dx gets old di
+xchg  ax, si   ; ax gets si. si gets old dx
+
 call  FixedMul2424_
 cmp   dx, si
 jg    jump_to_return_1_pointondivlineside
 jne   return_0_pointondivlineside_4
-cmp   ax, word ptr [bp - 4]
+cmp   ax, di
 jae   jump_to_return_1_pointondivlineside
 return_0_pointondivlineside_4:
 xor   al, al
