@@ -698,25 +698,22 @@ ENDP
 PROC P_PointOnDivlineSide_ NEAR
 PUBLIC P_PointOnDivlineSide_ 
 
-push  si
-push  di
-push  bp
-mov   bp, sp
 
 ; maybe mov di, _trace?
+mov   es, ax  ; backup
 
-mov   si, word ptr ds:[_trace + 0Ah]
-or    si, word ptr ds:[_trace + 8]
+mov   ax, word ptr ds:[_trace + 0Ah]
+or    ax, word ptr ds:[_trace + 8]
 jne   line_dx_nonzero
 
 ;	if (x <= line->x.w)
 ;	    return line->dy.w > 0;
 ;	return line->dy.w < 0;
 
-
 cmp   dx, word ptr ds:[_trace + 2]
 jl    x_lte_linex
 jne   x_gt_linex
+mov   ax, es	; restore ax
 cmp   ax, word ptr ds:[_trace]
 ja    x_gt_linex
 x_lte_linex:
@@ -727,29 +724,20 @@ cmp   word ptr ds:[_trace + 0Ch], 0
 je    return_0_pointondivlineside_2
 return_1_pointondivlineside:
 mov   al, 1
-LEAVE_MACRO
-pop   di
-pop   si
 ret   
 return_0_pointondivlineside_2:
 xor   al, al
-LEAVE_MACRO
-pop   di
-pop   si
 ret   
 x_gt_linex:
 cmp   word ptr ds:[_trace + 0Eh], 0
 jl    return_1_pointondivlineside
 xor   al, al
-LEAVE_MACRO
-pop   di
-pop   si
 ret   
 
 
 line_dx_nonzero:
-mov   si, word ptr ds:[_trace + 0Eh]
-or    si, word ptr ds:[_trace + 0Ch]
+mov   ax, word ptr ds:[_trace + 0Eh]
+or    ax, word ptr ds:[_trace + 0Ch]
 jne   line_dy_nonzero
 
 ;	if (y <= line->y.w)
@@ -759,15 +747,12 @@ jne   line_dy_nonzero
 cmp   cx, word ptr ds:[_trace + 6]
 jl    y_lte_liney
 jne   y_gt_liney
-cmp   si, word ptr ds:[_trace + 4]
+cmp   bx, word ptr ds:[_trace + 4]  
 ja    y_gt_liney
 y_lte_liney:
 cmp   word ptr ds:[_trace + 0Ah], 0
 jl    return_1_pointondivlineside
 xor   al, al
-LEAVE_MACRO
-pop   di
-pop   si
 ret   
 y_gt_liney:
 cmp   word ptr ds:[_trace + 0Ah], 0
@@ -777,9 +762,6 @@ cmp   word ptr ds:[_trace + 8], 0
 ja    return_1_pointondivlineside
 return_0_pointondivlineside_3:
 xor   al, al
-LEAVE_MACRO
-pop   di
-pop   si
 ret   
 
 line_dy_nonzero:
@@ -788,13 +770,15 @@ line_dy_nonzero:
 ;    dx.w = (x - line->x.w);
 ;    dy.w = (y - line->y.w);
 
-xchg  ax, si	; si holds ax low
-mov   ax, word ptr ds:[_trace + 0Eh]
+mov   ax, es	; restore x low
 
-sub   si, word ptr ds:[_trace]		; dx is dx:si
+sub   ax, word ptr ds:[_trace]		; dx is dx:si
 sbb   dx, word ptr ds:[_trace + 2]
 sub   bx, word ptr ds:[_trace + 4]  ; dy is cx:bx
 sbb   cx, word ptr ds:[_trace + 6]
+
+mov   es, ax     ; store ax low
+mov   ax, word ptr ds:[_trace + 0Eh]
 
 ;    if ( (line->dy.h.intbits ^ line->dx.h.intbits ^ dx.h.intbits ^ dy.h.intbits)&0x8000 )
 
@@ -813,15 +797,17 @@ jump_to_return_1_pointondivlineside:
 jmp   return_1_pointondivlineside
 return_0_pointondivlineside:
 xor   al, al
-LEAVE_MACRO
-pop   di
-pop   si
 ret   
 
 sign_check_failed:
 
+push  si
+push  di
+
+
 ; dx is dx:si
 ; dy is cx:bx
+mov   si, es  
 mov   di, dx  ; di:si are now dx
 
 
@@ -852,16 +838,22 @@ call  FixedMul2424_
 	;	return (right >= left);
 
 cmp   di, dx
-jg    jump_to_return_1_pointondivlineside
+jg    return_1_pointondivlineside_popdisi
 jne   return_0_pointondivlineside_4
 cmp   si, ax
-jae   jump_to_return_1_pointondivlineside
+jae   return_1_pointondivlineside_popdisi
 return_0_pointondivlineside_4:
 xor   al, al
-LEAVE_MACRO
+
 pop   di
 pop   si
 ret  
+return_1_pointondivlineside_popdisi:
+mov   al, 1
+pop   di
+pop   si
+ret   
+
 
 ENDP
 
