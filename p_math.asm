@@ -19,6 +19,8 @@
 
 EXTRN FixedMul1632_:FAR
 EXTRN FixedMul2424_:FAR
+EXTRN FixedMul2432_:FAR
+EXTRN FixedDiv_:FAR
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
@@ -856,5 +858,363 @@ ret
 
 
 ENDP
+
+;fixed_t __near P_InterceptVector ( divline_t __near*	v1 ) ;
+
+PROC P_InterceptVector_ NEAR
+PUBLIC P_InterceptVector_ 
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 6
+mov   si, ax
+mov   bx, word ptr ds:[_trace+8]
+mov   cx, word ptr ds:[_trace+0Ah]
+mov   ax, word ptr [si + 0Ch]
+mov   dx, word ptr [si + 0Eh]
+call  FixedMul2432_
+mov   bx, word ptr ds:[_trace+0Ch]
+mov   cx, word ptr ds:[_trace+0Eh]
+mov   di, ax
+mov   word ptr [bp - 4], dx
+mov   ax, word ptr [si + 8]
+mov   dx, word ptr [si + 0Ah]
+call  FixedMul2432_
+sub   di, ax
+mov   ax, word ptr [bp - 4]
+sbb   ax, dx
+mov   word ptr [bp - 2], ax
+or    ax, di
+jne   label_1
+xor   dx, dx
+LEAVE_MACRO
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label_1:
+mov   bx, word ptr [si + 0Ch]
+mov   cx, word ptr [si + 0Eh]
+mov   ax, word ptr [si]
+mov   dx, word ptr [si + 2]
+sub   ax, word ptr ds:[_trace]
+sbb   dx, word ptr ds:[_trace+2]
+call  FixedMul2432_
+mov   word ptr [bp - 6], ax
+mov   word ptr [bp - 4], dx
+mov   bx, word ptr [si + 8]
+mov   cx, word ptr [si + 0Ah]
+mov   ax, word ptr ds:[_trace+4]
+mov   dx, word ptr ds:[_trace+6]
+sub   ax, word ptr [si + 4]
+sbb   dx, word ptr [si + 6]
+call  FixedMul2432_
+mov   cx, word ptr [bp - 2]
+mov   bx, di
+add   ax, word ptr [bp - 6]
+adc   dx, word ptr [bp - 4]
+call FixedDiv_
+LEAVE_MACRO
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret
+
+ENDP
+
+COMMENT @
+
+;void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
+
+
+PROC P_LineOpening_ NEAR
+PUBLIC P_LineOpening_ 
+
+0x0000000000000000:  51             push cx
+0x0000000000000001:  56             push si
+0x0000000000000002:  57             push di
+0x0000000000000003:  3D FF FF       cmp  ax, 0xffff
+0x0000000000000006:  74 40          je   0x48
+0x0000000000000008:  B9 00 E0       mov  cx, 0xe000
+0x000000000000000b:  C1 E2 04       shl  dx, 4
+0x000000000000000e:  C1 E3 04       shl  bx, 4
+0x0000000000000011:  89 D6          mov  si, dx
+0x0000000000000013:  8E C1          mov  es, cx
+0x0000000000000015:  89 F7          mov  di, si
+0x0000000000000017:  26 8B 45 02    mov  ax, word ptr es:[di + 2]
+0x000000000000001b:  89 DF          mov  di, bx
+0x000000000000001d:  89 CA          mov  dx, cx
+0x000000000000001f:  26 3B 45 02    cmp  ax, word ptr es:[di + 2]
+0x0000000000000023:  7C 27          jl   0x4c
+0x0000000000000025:  26 8B 45 02    mov  ax, word ptr es:[di + 2]
+0x0000000000000029:  A3 54 1E       mov  word ptr [0x1e54], ax
+0x000000000000002c:  8E C1          mov  es, cx
+0x000000000000002e:  26 8B 04       mov  ax, word ptr es:[si]
+0x0000000000000031:  8E C2          mov  es, dx
+0x0000000000000033:  26 3B 07       cmp  ax, word ptr es:[bx]
+0x0000000000000036:  7E 18          jle  0x50
+0x0000000000000038:  8E C1          mov  es, cx
+0x000000000000003a:  26 8B 04       mov  ax, word ptr es:[si]
+0x000000000000003d:  A3 56 1E       mov  word ptr [0x1e56], ax
+0x0000000000000040:  8E C2          mov  es, dx
+0x0000000000000042:  26 8B 07       mov  ax, word ptr es:[bx]
+0x0000000000000045:  A3 58 1E       mov  word ptr [0x1e58], ax
+0x0000000000000048:  5F             pop  di
+0x0000000000000049:  5E             pop  si
+0x000000000000004a:  59             pop  cx
+0x000000000000004b:  C3             ret  
+0x000000000000004c:  89 F7          mov  di, si
+0x000000000000004e:  EB D5          jmp  0x25
+0x0000000000000050:  26 8B 07       mov  ax, word ptr es:[bx]
+0x0000000000000053:  A3 56 1E       mov  word ptr [0x1e56], ax
+0x0000000000000056:  8E C1          mov  es, cx
+0x0000000000000058:  26 8B 04       mov  ax, word ptr es:[si]
+0x000000000000005b:  A3 58 1E       mov  word ptr [0x1e58], ax
+0x000000000000005e:  5F             pop  di
+0x000000000000005f:  5E             pop  si
+0x0000000000000060:  59             pop  cx
+0x0000000000000061:  C3             ret  
+
+ENDP
+
+
+
+;void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos);
+
+PROC P_UnsetThingPosition_ NEAR
+PUBLIC P_UnsetThingPosition_ 
+
+0x0000000000000000:  52             push  dx
+0x0000000000000001:  56             push  si
+0x0000000000000002:  57             push  di
+0x0000000000000003:  55             push  bp
+0x0000000000000004:  89 E5          mov   bp, sp
+0x0000000000000006:  83 EC 0A       sub   sp, 0xa
+0x0000000000000009:  89 C6          mov   si, ax
+0x000000000000000b:  89 4E FE       mov   word ptr [bp - 2], cx
+0x000000000000000e:  8B 04          mov   ax, word ptr [si]
+0x0000000000000010:  89 46 FC       mov   word ptr [bp - 4], ax
+0x0000000000000013:  8E C1          mov   es, cx
+0x0000000000000015:  8B 44 02       mov   ax, word ptr [si + 2]
+0x0000000000000018:  89 46 FA       mov   word ptr [bp - 6], ax
+0x000000000000001b:  26 8B 47 14    mov   ax, word ptr es:[bx + 0x14]
+0x000000000000001f:  31 D2          xor   dx, dx
+0x0000000000000021:  89 46 F8       mov   word ptr [bp - 8], ax
+0x0000000000000024:  8B 44 04       mov   ax, word ptr [si + 4]
+0x0000000000000027:  B9 2C 00       mov   cx, 0x2c
+0x000000000000002a:  89 46 F6       mov   word ptr [bp - 0xa], ax
+0x000000000000002d:  8D 84 FC BF    lea   ax, [si - 0x4004]
+0x0000000000000031:  F7 F1          div   cx
+0x0000000000000033:  26 8B 7F 0C    mov   di, word ptr es:[bx + 0xc]
+0x0000000000000037:  89 C1          mov   cx, ax
+0x0000000000000039:  F6 46 F8 08    test  byte ptr [bp - 8], 8
+0x000000000000003d:  75 28          jne   0x67
+0x000000000000003f:  85 FF          test  di, di
+0x0000000000000041:  74 0E          je    0x51
+0x0000000000000043:  6B F7 2C       imul  si, di, 0x2c
+0x0000000000000046:  8B 46 FC       mov   ax, word ptr [bp - 4]
+0x0000000000000049:  89 84 04 40    mov   word ptr [si + 0x4004], ax
+0x000000000000004d:  81 C6 04 40    add   si, 0x4004
+0x0000000000000051:  8B 46 FC       mov   ax, word ptr [bp - 4]
+0x0000000000000054:  85 C0          test  ax, ax
+0x0000000000000056:  75 03          jne   0x5b
+0x0000000000000058:  E9 7B 00       jmp   0xd6
+0x000000000000005b:  6B F0 18       imul  si, ax, 0x18
+0x000000000000005e:  B8 F5 6A       mov   ax, 0x6af5
+0x0000000000000061:  8E C0          mov   es, ax
+0x0000000000000063:  26 89 7C 0C    mov   word ptr es:[si + 0xc], di
+0x0000000000000067:  F6 46 F8 10    test  byte ptr [bp - 8], 0x10
+0x000000000000006b:  75 64          jne   0xd1
+0x000000000000006d:  8E 46 FE       mov   es, word ptr [bp - 2]
+0x0000000000000070:  26 8B 47 02    mov   ax, word ptr es:[bx + 2]
+0x0000000000000074:  26 8B 7F 06    mov   di, word ptr es:[bx + 6]
+0x0000000000000078:  BB E0 05       mov   bx, 0x5e0
+0x000000000000007b:  2B 07          sub   ax, word ptr [bx]
+0x000000000000007d:  BE E2 05       mov   si, 0x5e2
+0x0000000000000080:  89 C3          mov   bx, ax
+0x0000000000000082:  89 F8          mov   ax, di
+0x0000000000000084:  2B 04          sub   ax, word ptr [si]
+0x0000000000000086:  C1 FB 07       sar   bx, 7
+0x0000000000000089:  C1 F8 07       sar   ax, 7
+0x000000000000008c:  85 DB          test  bx, bx
+0x000000000000008e:  7C 41          jl    0xd1
+0x0000000000000090:  BE DC 05       mov   si, 0x5dc
+0x0000000000000093:  3B 1C          cmp   bx, word ptr [si]
+0x0000000000000095:  7D 3A          jge   0xd1
+0x0000000000000097:  85 C0          test  ax, ax
+0x0000000000000099:  7C 36          jl    0xd1
+0x000000000000009b:  BE DE 05       mov   si, 0x5de
+0x000000000000009e:  3B 04          cmp   ax, word ptr [si]
+0x00000000000000a0:  7D 2F          jge   0xd1
+0x00000000000000a2:  BE DC 05       mov   si, 0x5dc
+0x00000000000000a5:  F7 2C          imul  word ptr [si]
+0x00000000000000a7:  89 C6          mov   si, ax
+0x00000000000000a9:  01 DE          add   si, bx
+0x00000000000000ab:  B8 00 64       mov   ax, 0x6400
+0x00000000000000ae:  89 F3          mov   bx, si
+0x00000000000000b0:  8E C0          mov   es, ax
+0x00000000000000b2:  01 F3          add   bx, si
+0x00000000000000b4:  26 8B 07       mov   ax, word ptr es:[bx]
+0x00000000000000b7:  85 C0          test  ax, ax
+0x00000000000000b9:  74 12          je    0xcd
+0x00000000000000bb:  6B D8 2C       imul  bx, ax, 0x2c
+0x00000000000000be:  81 C3 04 40    add   bx, 0x4004
+0x00000000000000c2:  3B 4F 02       cmp   cx, word ptr [bx + 2]
+0x00000000000000c5:  75 24          jne   0xeb
+0x00000000000000c7:  8B 4E FA       mov   cx, word ptr [bp - 6]
+0x00000000000000ca:  89 4F 02       mov   word ptr [bx + 2], cx
+0x00000000000000cd:  85 C0          test  ax, ax
+0x00000000000000cf:  74 2A          je    0xfb
+0x00000000000000d1:  C9             leave 
+0x00000000000000d2:  5F             pop   di
+0x00000000000000d3:  5E             pop   si
+0x00000000000000d4:  5A             pop   dx
+0x00000000000000d5:  C3             ret   
+0x00000000000000d6:  8B 76 F6       mov   si, word ptr [bp - 0xa]
+0x00000000000000d9:  B8 00 E0       mov   ax, 0xe000
+0x00000000000000dc:  C1 E6 04       shl   si, 4
+0x00000000000000df:  8E C0          mov   es, ax
+0x00000000000000e1:  26 89 7C 08    mov   word ptr es:[si + 8], di
+0x00000000000000e5:  83 C6 08       add   si, 8
+0x00000000000000e8:  E9 7C FF       jmp   0x67
+0x00000000000000eb:  8B 47 02       mov   ax, word ptr [bx + 2]
+0x00000000000000ee:  85 C0          test  ax, ax
+0x00000000000000f0:  75 C9          jne   0xbb
+0x00000000000000f2:  85 C0          test  ax, ax
+0x00000000000000f4:  74 05          je    0xfb
+0x00000000000000f6:  C9             leave 
+0x00000000000000f7:  5F             pop   di
+0x00000000000000f8:  5E             pop   si
+0x00000000000000f9:  5A             pop   dx
+0x00000000000000fa:  C3             ret   
+0x00000000000000fb:  B8 00 64       mov   ax, 0x6400
+0x00000000000000fe:  01 F6          add   si, si
+0x0000000000000100:  8E C0          mov   es, ax
+0x0000000000000102:  8B 46 FA       mov   ax, word ptr [bp - 6]
+0x0000000000000105:  26 89 04       mov   word ptr es:[si], ax
+0x0000000000000108:  C9             leave 
+0x0000000000000109:  5F             pop   di
+0x000000000000010a:  5E             pop   si
+0x000000000000010b:  5A             pop   dx
+0x000000000000010c:  C3             ret   
+
+ENDP
+
+
+;void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum);
+
+PROC P_SetThingPosition_ FAR
+PUBLIC P_SetThingPosition_ 
+
+0x0000000000000000:  56                push  si
+0x0000000000000001:  57                push  di
+0x0000000000000002:  55                push  bp
+0x0000000000000003:  89 E5             mov   bp, sp
+0x0000000000000005:  83 EC 04          sub   sp, 4
+0x0000000000000008:  89 C7             mov   di, ax
+0x000000000000000a:  89 DE             mov   si, bx
+0x000000000000000c:  89 4E FE          mov   word ptr [bp - 2], cx
+0x000000000000000f:  89 D1             mov   cx, dx
+0x0000000000000011:  BB 2C 00          mov   bx, 0x2c
+0x0000000000000014:  2D 04 40          sub   ax, 0x4004
+0x0000000000000017:  31 D2             xor   dx, dx
+0x0000000000000019:  F7 F3             div   bx
+0x000000000000001b:  89 46 FC          mov   word ptr [bp - 4], ax
+0x000000000000001e:  83 F9 FF          cmp   cx, -1
+0x0000000000000021:  75 03             jne   0x26
+0x0000000000000023:  E9 A9 00          jmp   0xcf
+0x0000000000000026:  89 4D 04          mov   word ptr [di + 4], cx
+0x0000000000000029:  8E 46 FE          mov   es, word ptr [bp - 2]
+0x000000000000002c:  26 F6 44 14 08    test  byte ptr es:[si + 0x14], 8
+0x0000000000000031:  75 44             jne   0x77
+0x0000000000000033:  8B 5D 04          mov   bx, word ptr [di + 4]
+0x0000000000000036:  B8 00 E0          mov   ax, 0xe000
+0x0000000000000039:  C1 E3 04          shl   bx, 4
+0x000000000000003c:  8E C0             mov   es, ax
+0x000000000000003e:  8B 56 FC          mov   dx, word ptr [bp - 4]
+0x0000000000000041:  26 8B 47 08       mov   ax, word ptr es:[bx + 8]
+0x0000000000000045:  26 89 57 08       mov   word ptr es:[bx + 8], dx
+0x0000000000000049:  6B FA 2C          imul  di, dx, 0x2c
+0x000000000000004c:  83 C3 08          add   bx, 8
+0x000000000000004f:  6B DA 18          imul  bx, dx, 0x18
+0x0000000000000052:  81 C7 04 40       add   di, 0x4004
+0x0000000000000056:  C7 46 FE F5 6A    mov   word ptr [bp - 2], 0x6af5
+0x000000000000005b:  C7 05 00 00       mov   word ptr [di], 0
+0x000000000000005f:  8E 46 FE          mov   es, word ptr [bp - 2]
+0x0000000000000062:  89 DE             mov   si, bx
+0x0000000000000064:  26 89 47 0C       mov   word ptr es:[bx + 0xc], ax
+0x0000000000000068:  85 C0             test  ax, ax
+0x000000000000006a:  74 0B             je    0x77
+0x000000000000006c:  6B D8 2C          imul  bx, ax, 0x2c
+0x000000000000006f:  89 97 04 40       mov   word ptr [bx + 0x4004], dx
+0x0000000000000073:  81 C3 04 40       add   bx, 0x4004
+0x0000000000000077:  8E 46 FE          mov   es, word ptr [bp - 2]
+0x000000000000007a:  26 F6 44 14 10    test  byte ptr es:[si + 0x14], 0x10
+0x000000000000007f:  75 4A             jne   0xcb
+0x0000000000000081:  BB E0 05          mov   bx, 0x5e0
+0x0000000000000084:  26 8B 44 02       mov   ax, word ptr es:[si + 2]
+0x0000000000000088:  2B 07             sub   ax, word ptr [bx]
+0x000000000000008a:  89 C3             mov   bx, ax
+0x000000000000008c:  26 8B 44 06       mov   ax, word ptr es:[si + 6]
+0x0000000000000090:  BE E2 05          mov   si, 0x5e2
+0x0000000000000093:  2B 04             sub   ax, word ptr [si]
+0x0000000000000095:  C1 FB 07          sar   bx, 7
+0x0000000000000098:  C1 F8 07          sar   ax, 7
+0x000000000000009b:  85 DB             test  bx, bx
+0x000000000000009d:  7C 58             jl    0xf7
+0x000000000000009f:  BE DC 05          mov   si, 0x5dc
+0x00000000000000a2:  3B 1C             cmp   bx, word ptr [si]
+0x00000000000000a4:  7D 51             jge   0xf7
+0x00000000000000a6:  85 C0             test  ax, ax
+0x00000000000000a8:  7C 4D             jl    0xf7
+0x00000000000000aa:  BE DE 05          mov   si, 0x5de
+0x00000000000000ad:  3B 04             cmp   ax, word ptr [si]
+0x00000000000000af:  7D 46             jge   0xf7
+0x00000000000000b1:  BE DC 05          mov   si, 0x5dc
+0x00000000000000b4:  F7 2C             imul  word ptr [si]
+0x00000000000000b6:  01 C3             add   bx, ax
+0x00000000000000b8:  B8 00 64          mov   ax, 0x6400
+0x00000000000000bb:  01 DB             add   bx, bx
+0x00000000000000bd:  8E C0             mov   es, ax
+0x00000000000000bf:  26 8B 07          mov   ax, word ptr es:[bx]
+0x00000000000000c2:  89 45 02          mov   word ptr [di + 2], ax
+0x00000000000000c5:  8B 46 FC          mov   ax, word ptr [bp - 4]
+0x00000000000000c8:  26 89 07          mov   word ptr es:[bx], ax
+0x00000000000000cb:  C9                leave 
+0x00000000000000cc:  5F                pop   di
+0x00000000000000cd:  5E                pop   si
+0x00000000000000ce:  CB                retf  
+0x00000000000000cf:  8E 46 FE          mov   es, word ptr [bp - 2]
+0x00000000000000d2:  26 8B 5C 04       mov   bx, word ptr es:[si + 4]
+0x00000000000000d6:  26 8B 4C 06       mov   cx, word ptr es:[si + 6]
+0x00000000000000da:  26 8B 04          mov   ax, word ptr es:[si]
+0x00000000000000dd:  26 8B 54 02       mov   dx, word ptr es:[si + 2]
+0x00000000000000e1:  E8 F2 DA          call  0xdbd6
+0x00000000000000e4:  89 C3             mov   bx, ax
+0x00000000000000e6:  B8 29 EA          mov   ax, 0xea29
+0x00000000000000e9:  C1 E3 02          shl   bx, 2
+0x00000000000000ec:  8E C0             mov   es, ax
+0x00000000000000ee:  26 8B 07          mov   ax, word ptr es:[bx]
+0x00000000000000f1:  89 45 04          mov   word ptr [di + 4], ax
+0x00000000000000f4:  E9 32 FF          jmp   0x29
+0x00000000000000f7:  C7 45 02 00 00    mov   word ptr [di + 2], 0
+0x00000000000000fc:  C9                leave 
+0x00000000000000fd:  5F                pop   di
+0x00000000000000fe:  5E                pop   si
+0x00000000000000ff:  CB                retf  
+
+ENDP
+
+@
+
+
+; boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   func )(line_physics_t __far*, int16_t) );
+
 
 END
