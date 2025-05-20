@@ -870,7 +870,6 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 6
 
 ;    den = FixedMul2432 (v1->dy.w,v2->dx.w) - 
 ;		FixedMul2432(v1->dx.w ,v2->dy.w);
@@ -888,19 +887,22 @@ call  FixedMul2432_
 
 les   bx, dword ptr ds:[_trace+0Ch]
 mov   cx, es
-mov   di, ax
-mov   word ptr [bp - 4], dx
-mov   ax, word ptr [si + 8]
-mov   dx, word ptr [si + 0Ah]
+push  ax	   ; bp-2
+mov   di, dx
+
+les   ax, dword ptr [si + 8]
+mov   dx, es
 call  FixedMul2432_
 
-sub   di, ax
-mov   ax, word ptr [bp - 4]
-sbb   ax, dx		; den = ax:di 
+sub   word ptr [bp - 2], ax
+sbb   di, dx		; den = ax:di 
+push  di        ; bp - 4
+or    di, word ptr [bp - 2]	; test for 0
 
-mov   word ptr [bp - 2], ax
-or    ax, di
+; den is [bp-4]:[bp-2]
+
 jne   den_not_zero
+xchg  ax, di   ; di was 0
 cwd
 LEAVE_MACRO
 pop   di
@@ -923,8 +925,8 @@ sbb   dx, word ptr ds:[_trace+2]
 call  FixedMul2432_
 
 mov   bx, si  ; bx gets  v1
-mov   si, ax  ;  [bp-4]:si = first half
-mov   word ptr [bp - 4], dx
+xchg  si, ax  ;  di:si = first half
+mov   di, dx
 
 les   ax, dword ptr ds:[_trace+4]
 mov   dx, es
@@ -940,10 +942,10 @@ call  FixedMul2432_
 ;    frac = FixedDiv (num , den);
 ;    return frac
 
-mov   cx, word ptr [bp - 2]
-mov   bx, di
+pop   cx	; retrieve den
+pop   bx  
 add   ax, si
-adc   dx, word ptr [bp - 4]
+adc   dx, di
 
 call FixedDiv_
 LEAVE_MACRO
@@ -963,11 +965,18 @@ COMMENT @
 PROC P_LineOpening_ NEAR
 PUBLIC P_LineOpening_ 
 
+
+;    if (lineside1 == -1) {
+;		// single sided line
+; 		return;
+;	}
+
+
+0x0000000000000003:  3D FF FF       cmp  ax, 0xffff
+0x0000000000000006:  74 40          je   0x4b
 0x0000000000000000:  51             push cx
 0x0000000000000001:  56             push si
 0x0000000000000002:  57             push di
-0x0000000000000003:  3D FF FF       cmp  ax, 0xffff
-0x0000000000000006:  74 40          je   0x48
 0x0000000000000008:  B9 00 E0       mov  cx, 0xe000
 0x000000000000000b:  C1 E2 04       shl  dx, 4
 0x000000000000000e:  C1 E3 04       shl  bx, 4
@@ -992,6 +1001,7 @@ PUBLIC P_LineOpening_
 0x0000000000000040:  8E C2          mov  es, dx
 0x0000000000000042:  26 8B 07       mov  ax, word ptr es:[bx]
 0x0000000000000045:  A3 58 1E       mov  word ptr [0x1e58], ax
+
 0x0000000000000048:  5F             pop  di
 0x0000000000000049:  5E             pop  si
 0x000000000000004a:  59             pop  cx
