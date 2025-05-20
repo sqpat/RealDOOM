@@ -483,6 +483,7 @@ PUBLIC P_BoxOnLineSide_
 
 
 ; todo switch on high bits instead of whole word?
+; todo put v1y in si instead of stack!
 
 ;int8_t __near P_BoxOnLineSide (  
 	; slopetype_t	lineslopetype 
@@ -497,135 +498,143 @@ PUBLIC P_BoxOnLineSide_
 ;   cx: v1x
 ;   bp + 8  v1y ?
 
+;   bp - 2 is p1
+;   bp - 4 is p2
+;   bp - 8 is linedx ?
+
 push  si
 push  di
 push  bp
 mov   bp, sp
 sub   sp, 6
 push  dx
-mov   di, bx
-mov   si, cx
-xor   dx, dx
+mov   di, bx	; di has linedy
+mov   si, cx	; si has v1x
+xor   dx, dx	; dx is 0
 cmp   ax, ST_VERTICAL_HIGH
-jae   label_1
-test  ax, ax
-jne   label_2
-mov   bx, _tmbbox + BOXTOP * 4  ; sizeof fixed_t_union
+jae   non_zero_slopetype
+
+; ST_HORIZONTAL_HIGH case
 mov   ax, word ptr [bp + 8]
-mov   cx, word ptr [bx + 2]
+mov   cx, word ptr ds:[_tmbbox + (BOXTOP * 4) + 2]
 cmp   cx, ax
-jg    label_5
-jne   jump_to_label_3
-cmp   word ptr [bx], 0
-jbe   jump_to_label_3
-label_5:
-mov   bl, 1
-label_4:
+jg    set_p1_to_1_2
+
+jne   set_p1_to_0
+cmp   word ptr ds:[_tmbbox + (BOXTOP * 4)], 0	; check lo bits..
+jne   set_p1_to_1_2
+
+set_p1_to_0:
+xor   bl, bl
+
+check_p2_2:
 mov   byte ptr [bp - 2], bl
-mov   bx, _tmbbox + BOXBOTTOM * 4  ; sizeof fixed_t_union
-cmp   ax, word ptr [bx + 2]
-jl    label_6
-jne   jump_to_label_7
-cmp   dx, word ptr [bx]
-jae   jump_to_label_7
-label_6:
-mov   al, 1
-label_17:
-mov   byte ptr [bp - 4], al
+cmp   ax, word ptr ds:[_tmbbox + (BOXBOTTOM * 4) + 2]
+jl    set_p2_to_1_2
+
+jne   set_p2_to_0
+cmp   word ptr ds:[_tmbbox + (BOXBOTTOM * 4)], 0	; check lo bits..
+jne   set_p2_to_1_2
+
+set_p2_to_0:
+xor   al, al
+
+check_linedx:
+mov   byte ptr [bp - 4], al		; store p2
 cmp   word ptr [bp - 8], 0
-jl    label_8
-label_2:
-mov   al, byte ptr [bp - 2]
-cmp   al, byte ptr [bp - 4]
+jl    xor_p1_p2
+
+done_with_switchblock_boxonlineside:
+mov   al, byte ptr [bp - 2]	; get p1
+cmp   al, byte ptr [bp - 4] ; cmp p2
 jne   jump_to_return_minusone_boxonlineside
 LEAVE_MACRO
 pop   di
 pop   si
 ret   2
-jump_to_label_3:
-jmp   label_3
-label_1:
-ja    label_10
-mov   bx, _tmbbox + BOXRIGHT * 4  ; sizeof fixed_t_union
-mov   ax, cx
-cmp   cx, word ptr [bx + 2]
-jg    jump_to_label_11
-xor   bl, bl
-label_15:
-mov   byte ptr [bp - 2], bl
-mov   bx, _tmbbox + BOXLEFT * 4  ; sizeof fixed_t_union
-cmp   ax, word ptr [bx + 2]
-jg    label_13
-jne   jump_to_label_12
-cmp   dx, word ptr [bx]
-jbe   jump_to_label_12
-label_13:
+set_p1_to_1_2:
+mov   bl, 1
+jmp   check_p2_2
+
+set_p2_to_1_2:
 mov   al, 1
-label_14:
-mov   byte ptr [bp - 4], al
-test  di, di
-jge   label_2
-label_8:
+jmp   check_linedx
+
+
+non_zero_slopetype:
+ja    not_vertical_high
+; ST_VERTICAL_HIGH
+
+;	  	temp.h.intbits = v1x;
+;		p1 = tmbbox[BOXRIGHT].w < temp.w;
+;		p2 = tmbbox[BOXLEFT].w < temp.w;
+
+
+mov   ax, cx
+cmp   cx, word ptr ds:[_tmbbox + (BOXRIGHT * 4) + 2]
+jg    set_p1_to_1
+xor   bl, bl
+check_p2:
+mov   byte ptr [bp - 2], bl
+
+cmp   ax, word ptr ds:[_tmbbox + (BOXLEFT * 4) + 2]
+jg    set_p2_to_1
+xor   al, al
+check_linedy:
+mov   byte ptr [bp - 4], al	; store p2
+test  di, di		; test linedy
+jge   done_with_switchblock_boxonlineside
+xor_p1_p2:
 xor   al, 1
 xor   byte ptr [bp - 2], 1
 mov   byte ptr [bp - 4], al
-jmp   label_2
-jump_to_label_7:
-jmp   label_7
+jmp   done_with_switchblock_boxonlineside
+set_p2_to_1:
+mov   al, 1
+jmp   check_linedy
+
 jump_to_return_minusone_boxonlineside:
 jmp   return_minusone_boxonlineside
-jump_to_label_11:
-jmp   label_11
-jump_to_label_12:
-jmp   label_12
-label_10:
+set_p1_to_1:
+mov   bl, 1
+jmp   check_p2
+
+
+not_vertical_high:
 cmp   ax, ST_NEGATIVE_HIGH
-je    label_16
-cmp   ax, ST_POSITIVE_HIGH
-jne   label_2
+je    negative_high_slopetype
+; ST_POSITIVE_HIGH
+
 push  word ptr [bp + 8]
 push  cx
 push  bx
-mov   bx, _tmbbox + BOXTOP * 4  ; sizeof fixed_t_union
-mov   ax, word ptr [bx]
-mov   cx, word ptr [bx + 2]
-mov   bx, _tmbbox + BOXLEFT * 4  ; sizeof fixed_t_union
-mov   dx, word ptr [bx]
+les   ax, dword ptr ds:[_tmbbox + BOXTOP * 4]  ; sizeof fixed_t_union
+mov   cx, es
+les   dx, dword ptr ds:[_tmbbox + BOXLEFT * 4]
 push  word ptr [bp - 8]
 mov   word ptr [bp - 6], dx
-mov   dx, word ptr [bx + 2]
+mov   dx, es
 mov   bx, ax
 mov   ax, word ptr [bp - 6]
 call  P_PointOnLineSide_
 push  word ptr [bp + 8]
-mov   bx, _tmbbox + BOXBOTTOM * 4  ; sizeof fixed_t_union
 mov   byte ptr [bp - 2], al
 push  si
-mov   ax, word ptr [bx]
-mov   cx, word ptr [bx + 2]
+les   ax, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
+mov   cx, es
 push  di
-mov   bx, _tmbbox + BOXRIGHT * 4  ; sizeof fixed_t_union
+
 push  word ptr [bp - 8]
-mov   si, word ptr [bx]
-mov   dx, word ptr [bx + 2]
+les   si, dword ptr ds:[_tmbbox + BOXRIGHT * 4]
+mov   dx, es
 mov   bx, ax
 mov   ax, si
 call  P_PointOnLineSide_
 mov   byte ptr [bp - 4], al
-jmp   label_2
-label_3:
-xor   bl, bl
-jmp   label_4
-label_7:
-xor   al, al
-jmp   label_17
-label_11:
-mov   bl, 1
-jmp   label_15
-label_12:
-xor   al, al
-jmp   label_14
-label_16:
+jmp   done_with_switchblock_boxonlineside
+
+negative_high_slopetype:
+; ST_NEGATIVE_HIGH
 push  word ptr [bp + 8]
 push  cx
 push  bx
@@ -659,7 +668,7 @@ mov   ax, dx
 mov   dx, si
 call  P_PointOnLineSide_
 mov   byte ptr [bp - 4], al
-jmp   label_2
+jmp   done_with_switchblock_boxonlineside
 return_minusone_boxonlineside:
 mov   al, -1
 LEAVE_MACRO
