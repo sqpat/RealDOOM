@@ -985,53 +985,67 @@ PUBLIC P_LineOpening_
 
 cmp  ax, 0FFFFh
 je   return_lineopening
-push cx
 push si
-push di
-mov  cx, SECTORS_SEGMENT
+mov  si, SECTORS_SEGMENT
+mov  es, si
 SHIFT_MACRO shl  dx 4
 SHIFT_MACRO shl  bx 4
+
+;	front = &sectors[linefrontsecnum];
+;	back = &sectors[linebacksecnum];
+
+;if (front->ceilingheight < back->ceilingheight) {
+;	lineopening.opentop = front->ceilingheight;
+;} else {
+;	lineopening.opentop = back->ceilingheight;
+;}
+
+
 mov  si, dx
-mov  es, cx
-mov  di, si
-mov  ax, word ptr es:[di + 2]
-mov  di, bx
-mov  dx, cx
-cmp  ax, word ptr es:[di + 2]
-jl   label_2
-label_1:
-mov  ax, word ptr es:[di + 2]
-mov  word ptr ds:[_lineopening], ax
-mov  es, cx
+
+; es:si = front
+; es:bx = back
+
+mov  ax, word ptr es:[si + 2]
+mov  dx, word ptr es:[bx + 2]
+cmp  ax, dx
+
+jl   front_ceiling_below_back_ceiling
+
+xchg ax, dx   ; swap what to write
+
+front_ceiling_below_back_ceiling:
+mov  word ptr ds:[_lineopening+0], ax  ; set opentop
+
+
+opentop_set:
+
+;	if (front->floorheight > back->floorheight) {
+;		lineopening.openbottom = front->floorheight;
+;		lineopening.lowfloor = back->floorheight;
+;	} else {
+;		lineopening.openbottom = back->floorheight;
+;		lineopening.lowfloor = front->floorheight;
+;	}
+
 mov  ax, word ptr es:[si]
-mov  es, dx
-cmp  ax, word ptr es:[bx]
-jle  label_3
-mov  es, cx
-mov  ax, word ptr es:[si]
-mov  word ptr ds:[_lineopening+2], ax
-mov  es, dx
-mov  ax, word ptr es:[bx]
+mov  dx, word ptr es:[bx]
+
+
+cmp  ax, dx
+jle  front_floor_above_back_floor
+xchg ax, dx ; swap param to write..
+
+front_floor_above_back_floor:
+mov  word ptr ds:[_lineopening+2], dx
 mov  word ptr ds:[_lineopening+4], ax
 
-pop  di
 pop  si
-pop  cx
+
 return_lineopening:
 ret  
-label_2:
-mov  di, si
-jmp  label_1
-label_3:
-mov  ax, word ptr es:[bx]
-mov  word ptr ds:[_lineopening+2], ax
-mov  es, cx
-mov  ax, word ptr es:[si]
-mov  word ptr ds:[_lineopening+4], ax
-pop  di
-pop  si
-pop  cx
-ret  
+
+
 
 ENDP
 
