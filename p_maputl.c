@@ -330,7 +330,7 @@ fixed_t __near P_InterceptVector ( divline_t __near*	v1 ) {
 }
 */
 
-
+/*
 
 void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum) {
 	sector_t __far*	front;
@@ -360,6 +360,8 @@ void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t l
  
 
 }
+
+*/
 
 //
 // THING POSITION SETTING

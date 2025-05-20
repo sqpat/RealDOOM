@@ -28,6 +28,7 @@ INSTRUCTION_SET_MACRO
 .DATA
 
 EXTRN _trace:WORD
+EXTRN _lineopening:WORD
 
 .CODE
 
@@ -957,10 +958,20 @@ ret
 
 ENDP
 
-COMMENT @
 
 ;void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
+
+; ax lineside 1
+; dx linefrontsecnum
+; bx linebacksecnum
+
+; typedef struct lineopening_s {
+;	short_height_t		opentop;
+;	short_height_t 		openbottom;
+;	short_height_t		lowfloor;
+;	//short_height_t		openrange; // not worth storing thousands of bytes of a subtraction result
+;} lineopening_t;
 
 PROC P_LineOpening_ NEAR
 PUBLIC P_LineOpening_ 
@@ -972,54 +983,59 @@ PUBLIC P_LineOpening_
 ;	}
 
 
-0x0000000000000003:  3D FF FF       cmp  ax, 0xffff
-0x0000000000000006:  74 40          je   0x4b
-0x0000000000000000:  51             push cx
-0x0000000000000001:  56             push si
-0x0000000000000002:  57             push di
-0x0000000000000008:  B9 00 E0       mov  cx, 0xe000
-0x000000000000000b:  C1 E2 04       shl  dx, 4
-0x000000000000000e:  C1 E3 04       shl  bx, 4
-0x0000000000000011:  89 D6          mov  si, dx
-0x0000000000000013:  8E C1          mov  es, cx
-0x0000000000000015:  89 F7          mov  di, si
-0x0000000000000017:  26 8B 45 02    mov  ax, word ptr es:[di + 2]
-0x000000000000001b:  89 DF          mov  di, bx
-0x000000000000001d:  89 CA          mov  dx, cx
-0x000000000000001f:  26 3B 45 02    cmp  ax, word ptr es:[di + 2]
-0x0000000000000023:  7C 27          jl   0x4c
-0x0000000000000025:  26 8B 45 02    mov  ax, word ptr es:[di + 2]
-0x0000000000000029:  A3 54 1E       mov  word ptr [0x1e54], ax
-0x000000000000002c:  8E C1          mov  es, cx
-0x000000000000002e:  26 8B 04       mov  ax, word ptr es:[si]
-0x0000000000000031:  8E C2          mov  es, dx
-0x0000000000000033:  26 3B 07       cmp  ax, word ptr es:[bx]
-0x0000000000000036:  7E 18          jle  0x50
-0x0000000000000038:  8E C1          mov  es, cx
-0x000000000000003a:  26 8B 04       mov  ax, word ptr es:[si]
-0x000000000000003d:  A3 56 1E       mov  word ptr [0x1e56], ax
-0x0000000000000040:  8E C2          mov  es, dx
-0x0000000000000042:  26 8B 07       mov  ax, word ptr es:[bx]
-0x0000000000000045:  A3 58 1E       mov  word ptr [0x1e58], ax
+cmp  ax, 0FFFFh
+je   return_lineopening
+push cx
+push si
+push di
+mov  cx, SECTORS_SEGMENT
+SHIFT_MACRO shl  dx 4
+SHIFT_MACRO shl  bx 4
+mov  si, dx
+mov  es, cx
+mov  di, si
+mov  ax, word ptr es:[di + 2]
+mov  di, bx
+mov  dx, cx
+cmp  ax, word ptr es:[di + 2]
+jl   label_2
+label_1:
+mov  ax, word ptr es:[di + 2]
+mov  word ptr ds:[_lineopening], ax
+mov  es, cx
+mov  ax, word ptr es:[si]
+mov  es, dx
+cmp  ax, word ptr es:[bx]
+jle  label_3
+mov  es, cx
+mov  ax, word ptr es:[si]
+mov  word ptr ds:[_lineopening+2], ax
+mov  es, dx
+mov  ax, word ptr es:[bx]
+mov  word ptr ds:[_lineopening+4], ax
 
-0x0000000000000048:  5F             pop  di
-0x0000000000000049:  5E             pop  si
-0x000000000000004a:  59             pop  cx
-0x000000000000004b:  C3             ret  
-0x000000000000004c:  89 F7          mov  di, si
-0x000000000000004e:  EB D5          jmp  0x25
-0x0000000000000050:  26 8B 07       mov  ax, word ptr es:[bx]
-0x0000000000000053:  A3 56 1E       mov  word ptr [0x1e56], ax
-0x0000000000000056:  8E C1          mov  es, cx
-0x0000000000000058:  26 8B 04       mov  ax, word ptr es:[si]
-0x000000000000005b:  A3 58 1E       mov  word ptr [0x1e58], ax
-0x000000000000005e:  5F             pop  di
-0x000000000000005f:  5E             pop  si
-0x0000000000000060:  59             pop  cx
-0x0000000000000061:  C3             ret  
+pop  di
+pop  si
+pop  cx
+return_lineopening:
+ret  
+label_2:
+mov  di, si
+jmp  label_1
+label_3:
+mov  ax, word ptr es:[bx]
+mov  word ptr ds:[_lineopening+2], ax
+mov  es, cx
+mov  ax, word ptr es:[si]
+mov  word ptr ds:[_lineopening+4], ax
+pop  di
+pop  si
+pop  cx
+ret  
 
 ENDP
 
+COMMENT @
 
 
 ;void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos);
