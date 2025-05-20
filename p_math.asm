@@ -351,10 +351,10 @@ ENDP
 
 ; DX:AX   x
 ; CX:BX   y
-; bp + 8  linedx
-; bp + 0Ah  linedy
-; bp + 0Ch  v1x
-; bp + 0Eh  v1y
+; bp + 4  linedx
+; bp + 6  linedy
+; bp + 8  v1x
+; bp + 0Ah  v1y
 
 PROC P_PointOnLineSide_ NEAR
 PUBLIC P_PointOnLineSide_ 
@@ -363,12 +363,11 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 4
 
 mov   di, ax			; di gets x low 	dx:di x
 mov   si, bx			; si gets y low
 mov   bx, word ptr [bp + 0Ch]  ; bx gets linedx
-mov   ax, cx			; ax gets y hibits    ax:si y
+;mov   ax, cx			; ax gets y hibits    ax:si y
 cmp   word ptr [bp + 8], 0	; compare linedx
 
 ;    if (!linedx) {
@@ -377,13 +376,13 @@ jne   linedx_nonzero
 cmp   dx, bx			; compare hi bits
 jl    x_smaller_than_v1x
 jne   x_greater_than_v1x
-test  di, di
+test  ax, ax
 jbe   x_smaller_than_v1x
 x_greater_than_v1x:
 cmp   word ptr [bp + 0Ah], 0
 jl    return_1_pointonlineside
 return_0_pointonlineside:
-xor   al, cl	; linedy < 0
+xor   ax, ax	; zero
 exit_pointonlineside:
 LEAVE_MACRO
 pop   di
@@ -437,18 +436,20 @@ linedy_nonzero:
 ;	temp.h.intbits = v1y;
 ;   dy = (y - temp.w);
 
-mov   cx, dx				
-sub   cx, bx					; cx:di = "dx"
+sub   dx, bx					; dx:di = "dx"
 
-sub   ax, word ptr [bp + 0Eh]	; ax:si = "dy"
+sub   cx, word ptr [bp + 0Eh]	; cx:si = "dy"
 
 
 ;    left = FixedMul1632 ( linedy , dx );
 ;    right = FixedMul1632 ( linedx , dy);
 
-mov   bx, di					; cx:bx = 
-mov   di, ax					; store dy
-mov   ax, word ptr [bp + 0Ah]
+
+mov   bx, di					; cx:bx = dx
+mov   di, cx					; store dy hi
+mov   cx, dx	
+
+mov   ax, word ptr [bp + 0Ah]	; ax = lindedy
 
 call  FixedMul1632_				; AX  *  CX:BX
 
@@ -458,7 +459,8 @@ mov   bx, si
 mov   cx, di
 mov   di, ax
 mov   si, dx
-mov   ax, word ptr [bp + 8]
+mov   ax, word ptr [bp + 8]		; get linedx
+
 call  FixedMul1632_				; AX  *  CX:BX
 cmp   dx, si
 jl    exit_pointonlineside_return_0
