@@ -496,11 +496,9 @@ PUBLIC P_BoxOnLineSide_
 ;   dx: linedx
 ;   bx: linedy
 ;   cx: v1x
-;   bp + 4  v1y ?
+;   si: v1y
 
 
-push  bp
-mov   bp, sp
 
 
 cmp   ax, ST_VERTICAL_HIGH
@@ -512,9 +510,9 @@ jae   non_zero_slopetype
 ;		p1 = tmbbox[BOXTOP].w > temp.w;
 ;		p2 = tmbbox[BOXBOTTOM].w > temp.w;
 
+; in this case we have to check the low bits for nonzero
 
-mov   cx, word ptr [bp + 4]	; v1y
-cmp   cx, word ptr ds:[_tmbbox + (BOXTOP * 4) + 2]
+cmp   si, word ptr ds:[_tmbbox + (BOXTOP * 4) + 2]
 jng   set_p1_to_1_2
 
 jne   set_p1_to_0
@@ -526,7 +524,7 @@ xor   ah, ah
 
 check_p2_2:
 
-cmp   cx, word ptr ds:[_tmbbox + (BOXBOTTOM * 4) + 2]
+cmp   si, word ptr ds:[_tmbbox + (BOXBOTTOM * 4) + 2]
 jl    set_p2_to_1_2
 
 jne   set_p2_to_0
@@ -544,8 +542,7 @@ jl    xor_p1_p2
 done_with_switchblock_boxonlineside_ah:  ; ah has p1
 cmp   al, ah
 jne   return_minusone_boxonlineside
-LEAVE_MACRO
-ret   2
+ret
 
 
 
@@ -591,13 +588,11 @@ xor   ax, 00101h
 done_with_switchblock_boxonlineside_ah_2:
 cmp   al, ah		; -1, 0, or 1 result...
 jne   return_minusone_boxonlineside
-LEAVE_MACRO
-ret   2
+ret   
 
 return_minusone_boxonlineside:
 mov   al, -1
-LEAVE_MACRO
-ret   2
+ret   
 
 
 
@@ -607,7 +602,7 @@ not_vertical_high:
 
 
 
-push  word ptr [bp + 4]	; P_PointOnLineSide_ params call 1
+push  si	; P_PointOnLineSide_ params call 1
 push  cx
 push  bx
 push  dx
@@ -627,7 +622,7 @@ call  P_PointOnLineSide_
 
 sub   sp, 8  ; reuse same params for next call
 
-mov   byte ptr cs:[SELFMODIFY_compare_p1_p2_1+1], al ; store p1
+xchg  ax, si   ; store p1
 
 les   bx, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
 mov   cx, es
@@ -638,11 +633,10 @@ call  P_PointOnLineSide_
 
 done_with_switchblock_boxonlineside:
 
-SELFMODIFY_compare_p1_p2_1:
-cmp   al, 0FFh ; cmp p1/p2
+mov   dx, si
+cmp   al, dl ; cmp p1/p2
 jne   return_minusone_boxonlineside
-LEAVE_MACRO
-ret   2
+ret   
 
 
 negative_high_slopetype:
@@ -664,7 +658,7 @@ call  P_PointOnLineSide_
 
 sub   sp, 8  ; reuse same params for next call
 
-mov   byte ptr cs:[SELFMODIFY_compare_p1_p2_2+1], al ; store p1
+xchg  ax, si   ; store p1
 
 les   bx, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
 mov   cx, es
@@ -673,11 +667,11 @@ mov   dx, es
 
 call  P_PointOnLineSide_
 
-SELFMODIFY_compare_p1_p2_2:
-cmp   al, 0FFh ; cmp p1/p2
+mov   dx, si
+cmp   al, dl ; cmp p1/p2
 jne   return_minusone_boxonlineside
-LEAVE_MACRO
-ret   2
+
+ret   
 
 
 

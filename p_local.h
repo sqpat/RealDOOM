@@ -216,6 +216,14 @@ fixed_t __near P_AproxDistance (fixed_t dx, fixed_t dy);
 boolean 	__near P_PointOnLineSide (fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
 void 	__near P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t* dl);
 
+
+#pragma aux P_BoxOnLineSideParams \
+			__modify [ax bx cx dx si] \
+			__parm [ax] [dx] [bx] [cx] [si];
+
+#pragma aux (P_BoxOnLineSideParams) P_BoxOnLineSide;
+
+
 int8_t 	__near P_BoxOnLineSide (slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
 
 
