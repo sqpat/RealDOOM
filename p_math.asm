@@ -499,14 +499,13 @@ PUBLIC P_BoxOnLineSide_
 ;   bp + 8  v1y ?
 
 ;   bp - 2 is p1
-;   bp - 4 is p2
-;   bp - 8 is linedx ?
+;   bp - 4 is linedx ?
 
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 6
+sub   sp, 2
 push  dx
 mov   di, bx	; di has linedy
 mov   si, cx	; si has v1x
@@ -540,13 +539,12 @@ set_p2_to_0:
 xor   al, al
 
 check_linedx:
-mov   byte ptr [bp - 4], al		; store p2
-cmp   word ptr [bp - 8], 0
+
+cmp   word ptr [bp - 4], 0
 jl    xor_p1_p2
 
 done_with_switchblock_boxonlineside:
-mov   al, byte ptr [bp - 2]	; get p1
-cmp   al, byte ptr [bp - 4] ; cmp p2
+cmp   al, byte ptr [bp - 2] ; cmp p1/p2
 jne   jump_to_return_minusone_boxonlineside
 LEAVE_MACRO
 pop   di
@@ -581,13 +579,13 @@ cmp   ax, word ptr ds:[_tmbbox + (BOXLEFT * 4) + 2]
 jg    set_p2_to_1
 xor   al, al
 check_linedy:
-mov   byte ptr [bp - 4], al	; store p2
+
 test  di, di		; test linedy
 jge   done_with_switchblock_boxonlineside
 xor_p1_p2:
 xor   al, 1
 xor   byte ptr [bp - 2], 1
-mov   byte ptr [bp - 4], al
+
 jmp   done_with_switchblock_boxonlineside
 set_p2_to_1:
 mov   al, 1
@@ -611,11 +609,10 @@ push  bx
 les   ax, dword ptr ds:[_tmbbox + BOXTOP * 4]  ; sizeof fixed_t_union
 mov   cx, es
 les   dx, dword ptr ds:[_tmbbox + BOXLEFT * 4]
-push  word ptr [bp - 8]
-mov   word ptr [bp - 6], dx
-mov   dx, es
+push  word ptr [bp - 4]
 mov   bx, ax
-mov   ax, word ptr [bp - 6]
+mov   ax, dx
+mov   dx, es
 call  P_PointOnLineSide_
 push  word ptr [bp + 8]
 mov   byte ptr [bp - 2], al
@@ -624,13 +621,13 @@ les   ax, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
 mov   cx, es
 push  di
 
-push  word ptr [bp - 8]
+push  word ptr [bp - 4]
 les   si, dword ptr ds:[_tmbbox + BOXRIGHT * 4]
 mov   dx, es
 mov   bx, ax
 mov   ax, si
 call  P_PointOnLineSide_
-mov   byte ptr [bp - 4], al
+
 jmp   done_with_switchblock_boxonlineside
 
 negative_high_slopetype:
@@ -638,36 +635,29 @@ negative_high_slopetype:
 push  word ptr [bp + 8]
 push  cx
 push  bx
-mov   bx, _tmbbox + BOXTOP * 4  ; sizeof fixed_t_union
-push  word ptr [bp - 8]
-mov   ax, word ptr [bx]
-mov   dx, word ptr [bx + 2]
-mov   bx, _tmbbox + BOXRIGHT * 4  ; sizeof fixed_t_union
-mov   word ptr [bp - 6], dx
-mov   dx, word ptr [bx]
-mov   bx, word ptr [bx + 2]
-mov   cx, word ptr [bp - 6]
-mov   word ptr [bp - 6], bx
-mov   bx, ax
-mov   ax, dx
-mov   dx, word ptr [bp - 6]
+
+push  word ptr [bp - 4]
+les   bx, dword ptr ds:[_tmbbox + BOXTOP * 4]
+mov   cx, es
+les   ax, dword ptr ds:[_tmbbox + BOXRIGHT * 4]
+mov   dx, es
+
+
+
 call  P_PointOnLineSide_
 push  word ptr [bp + 8]
-mov   bx, _tmbbox + BOXBOTTOM * 4  ; sizeof fixed_t_union
 mov   byte ptr [bp - 2], al
 push  si
-mov   ax, word ptr [bx]
-mov   cx, word ptr [bx + 2]
 push  di
-mov   bx, _tmbbox + BOXLEFT * 4  ; sizeof fixed_t_union
-push  word ptr [bp - 8]
-mov   dx, word ptr [bx]
-mov   si, word ptr [bx + 2]
-mov   bx, ax
-mov   ax, dx
-mov   dx, si
+
+push  word ptr [bp - 4]
+les   bx, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
+mov   cx, es
+les   ax, dword ptr ds:[_tmbbox + BOXLEFT * 4]
+mov   dx, es
+
 call  P_PointOnLineSide_
-mov   byte ptr [bp - 4], al
+
 jmp   done_with_switchblock_boxonlineside
 return_minusone_boxonlineside:
 mov   al, -1
