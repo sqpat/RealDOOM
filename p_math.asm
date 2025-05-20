@@ -514,7 +514,7 @@ cmp   ax, ST_VERTICAL_HIGH
 jae   non_zero_slopetype
 
 ; ST_HORIZONTAL_HIGH case
-mov   ax, word ptr [bp + 8]
+mov   ax, word ptr [bp + 8]	; v1y
 mov   cx, word ptr ds:[_tmbbox + (BOXTOP * 4) + 2]
 cmp   cx, ax
 jg    set_p1_to_1_2
@@ -527,7 +527,7 @@ set_p1_to_0:
 xor   bl, bl
 
 check_p2_2:
-mov   byte ptr [bp - 2], bl
+
 cmp   ax, word ptr ds:[_tmbbox + (BOXBOTTOM * 4) + 2]
 jl    set_p2_to_1_2
 
@@ -543,13 +543,16 @@ check_linedx:
 cmp   word ptr [bp - 4], 0
 jl    xor_p1_p2
 
-done_with_switchblock_boxonlineside:
-cmp   al, byte ptr [bp - 2] ; cmp p1/p2
+done_with_switchblock_boxonlineside_bl:  ; bl has p1
+cmp   al, bl
 jne   jump_to_return_minusone_boxonlineside
 LEAVE_MACRO
 pop   di
 pop   si
 ret   2
+
+
+
 set_p1_to_1_2:
 mov   bl, 1
 jmp   check_p2_2
@@ -573,7 +576,6 @@ cmp   cx, word ptr ds:[_tmbbox + (BOXRIGHT * 4) + 2]
 jg    set_p1_to_1
 xor   bl, bl
 check_p2:
-mov   byte ptr [bp - 2], bl
 
 cmp   ax, word ptr ds:[_tmbbox + (BOXLEFT * 4) + 2]
 jg    set_p2_to_1
@@ -581,12 +583,12 @@ xor   al, al
 check_linedy:
 
 test  di, di		; test linedy
-jge   done_with_switchblock_boxonlineside
+jge   done_with_switchblock_boxonlineside_bl
 xor_p1_p2:
 xor   al, 1
-xor   byte ptr [bp - 2], 1
+xor   bl, 1
 
-jmp   done_with_switchblock_boxonlineside
+jmp   done_with_switchblock_boxonlineside_bl
 set_p2_to_1:
 mov   al, 1
 jmp   check_linedy
@@ -606,29 +608,33 @@ je    negative_high_slopetype
 push  word ptr [bp + 8]
 push  cx
 push  bx
-les   ax, dword ptr ds:[_tmbbox + BOXTOP * 4]  ; sizeof fixed_t_union
-mov   cx, es
-les   dx, dword ptr ds:[_tmbbox + BOXLEFT * 4]
 push  word ptr [bp - 4]
-mov   bx, ax
-mov   ax, dx
+les   bx, dword ptr ds:[_tmbbox + BOXTOP * 4]  ; sizeof fixed_t_union
+mov   cx, es
+les   ax, dword ptr ds:[_tmbbox + BOXLEFT * 4]
 mov   dx, es
 call  P_PointOnLineSide_
-push  word ptr [bp + 8]
 mov   byte ptr [bp - 2], al
+push  word ptr [bp + 8]
 push  si
-les   ax, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
-mov   cx, es
 push  di
 
 push  word ptr [bp - 4]
-les   si, dword ptr ds:[_tmbbox + BOXRIGHT * 4]
+
+les   bx, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
+mov   cx, es
+les   ax, dword ptr ds:[_tmbbox + BOXRIGHT * 4]
 mov   dx, es
-mov   bx, ax
-mov   ax, si
+
 call  P_PointOnLineSide_
 
-jmp   done_with_switchblock_boxonlineside
+done_with_switchblock_boxonlineside:
+cmp   al, byte ptr [bp - 2] ; cmp p1/p2
+jne   jump_to_return_minusone_boxonlineside
+LEAVE_MACRO
+pop   di
+pop   si
+ret   2
 
 negative_high_slopetype:
 ; ST_NEGATIVE_HIGH
