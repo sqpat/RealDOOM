@@ -507,6 +507,12 @@ cmp   ax, ST_VERTICAL_HIGH
 jae   non_zero_slopetype
 
 ; ST_HORIZONTAL_HIGH case
+
+;	  	temp.h.intbits = v1y;
+;		p1 = tmbbox[BOXTOP].w > temp.w;
+;		p2 = tmbbox[BOXBOTTOM].w > temp.w;
+
+
 mov   cx, word ptr [bp + 4]	; v1y
 cmp   cx, word ptr ds:[_tmbbox + (BOXTOP * 4) + 2]
 jng   set_p1_to_1_2
@@ -560,36 +566,40 @@ ja    not_vertical_high
 ;		p1 = tmbbox[BOXRIGHT].w < temp.w;
 ;		p2 = tmbbox[BOXLEFT].w < temp.w;
 
+xor   ax, ax
+; carry bit 1, cx (temp.w) is greater
+; carry bit 0, cx (temp.w) is <=
 
+; need to xor high bit for signed compare reasons
 
-cmp   cx, word ptr ds:[_tmbbox + (BOXRIGHT * 4) + 2]
-jg    set_p1_to_1
-xor   ah, ah
-check_p2:
+mov   dl, 080h
+xor   ch, dl
+mov   bx, word ptr ds:[_tmbbox + (BOXRIGHT * 4) + 2]
+xor   bh, dl
+cmp   bx, cx
+rcl   ah, 1      	; get carry bit
 
-cmp   cx, word ptr ds:[_tmbbox + (BOXLEFT * 4) + 2]
-jg    set_p2_to_1
-xor   al, al
-check_linedy:
+mov   bx, word ptr ds:[_tmbbox + (BOXLEFT * 4) + 2]
+xor   bh, dl
+cmp   bx, cx
+rcl   al, 1			; get carry bit
 
-test  di, di		; test linedy
-jge   done_with_switchblock_boxonlineside_ah
+test  bx, bx		; test linedy
+jge   done_with_switchblock_boxonlineside_ah_2
 xor_p1_p2:
 xor   ax, 00101h
+done_with_switchblock_boxonlineside_ah_2:
+cmp   al, ah		; -1, 0, or 1 result...
+jne   return_minusone_boxonlineside
+LEAVE_MACRO
+ret   2
 
-jmp   done_with_switchblock_boxonlineside_ah
-set_p2_to_1:
-mov   al, 1
-jmp   check_linedy
 return_minusone_boxonlineside:
 mov   al, -1
 LEAVE_MACRO
 ret   2
 
 
-set_p1_to_1:
-mov   ah, 1
-jmp   check_p2
 
 
 not_vertical_high:
