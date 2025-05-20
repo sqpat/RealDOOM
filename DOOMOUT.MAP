@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/20 11:37:39
+Created on:       25/05/20 11:58:48
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -66,8 +66,8 @@ p_floor_TEXT           CODE           AUTO           0a8f:4ee0       000007f6
 p_inter_TEXT           CODE           AUTO           0a8f:56e0       00000ca9
 p_lights_TEXT          CODE           AUTO           0a8f:6390       000003ed
 p_map_TEXT             CODE           AUTO           0a8f:6780       00002278
-p_maputl_TEXT          CODE           AUTO           0a8f:8a00       00000b93
-P_MATH_TEXT            CODE           AUTO           0a8f:9594       000001ab
+p_maputl_TEXT          CODE           AUTO           0a8f:8a00       00000a35
+P_MATH_TEXT            CODE           AUTO           0a8f:9436       00000308
 p_plats_TEXT           CODE           AUTO           0a8f:9740       00000419
 p_pspr_TEXT            CODE           AUTO           0a8f:9b60       00000bd7
 p_spec_TEXT            CODE           AUTO           0a8f:a740       000011dc
@@ -1054,22 +1054,22 @@ Module: p_map.obj(C:\REALDOOM\p_map.c)
 0a8f:88c6+     PIT_ChangeSector_
 0a8f:89b6      P_ChangeSector_
 Module: p_maputl.obj(C:\REALDOOM\p_maputl.c)
-0a8f:8a00      P_BoxOnLineSide_
-0a8f:8b5e+     P_PointOnDivlineSide_
-0a8f:8c5c+     P_InterceptVector_
-0a8f:8cf6      P_LineOpening_
-0a8f:8d58      P_UnsetThingPosition_
-0a8f:8e66      P_SetThingPosition_
-0a8f:8f66      P_BlockLinesIterator_
-0a8f:8fee      P_BlockThingsIterator_
-0a8f:9046+     PIT_AddLineIntercepts_
-0a8f:91c0+     PIT_AddThingIntercepts_
-0a8f:92b2+     P_TraverseIntercepts_
-0a8f:933a      P_PathTraverse_
+0a8f:8a00+     P_PointOnDivlineSide_
+0a8f:8afe+     P_InterceptVector_
+0a8f:8b98      P_LineOpening_
+0a8f:8bfa      P_UnsetThingPosition_
+0a8f:8d08      P_SetThingPosition_
+0a8f:8e08      P_BlockLinesIterator_
+0a8f:8e90      P_BlockThingsIterator_
+0a8f:8ee8+     PIT_AddLineIntercepts_
+0a8f:9062+     PIT_AddThingIntercepts_
+0a8f:9154+     P_TraverseIntercepts_
+0a8f:91dc      P_PathTraverse_
 Module: p_math.obj(p_math.ASM)
-0a8f:96a9      P_PointOnLineSide_
-0a8f:966c      P_AproxDistance_
-0a8f:9594      R_PointOnSide_
+0a8f:954b      P_PointOnLineSide_
+0a8f:950e      P_AproxDistance_
+0a8f:95e1      P_BoxOnLineSide_
+0a8f:9436      R_PointOnSide_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0a8f:9748      T_PlatRaise_
 0a8f:986c      EV_DoPlat_
@@ -1563,4 +1563,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00024a10 (150032.)
 Entry point address: 1e48:1c16
-Link time: 00:00.30
+Link time: 00:00.74

@@ -357,7 +357,7 @@ ENDP
 ; bp + 0Ah  v1y
 
 ; todo consider si:di params for linedx/linedy?
-
+ 
 PROC P_PointOnLineSide_ NEAR
 PUBLIC P_PointOnLineSide_ 
 
@@ -474,161 +474,202 @@ ret   8
 
 ENDP
 
-COMMENT @
 
 PROC P_BoxOnLineSide_ NEAR
 PUBLIC P_BoxOnLineSide_ 
 
-0x0000000000000000:  56             push  si
-0x0000000000000001:  57             push  di
-0x0000000000000002:  55             push  bp
-0x0000000000000003:  89 E5          mov   bp, sp
-0x0000000000000005:  83 EC 06       sub   sp, 6
-0x0000000000000008:  52             push  dx
-0x0000000000000009:  89 DF          mov   di, bx
-0x000000000000000b:  89 CE          mov   si, cx
-0x000000000000000d:  31 D2          xor   dx, dx
-0x000000000000000f:  3D 00 40       cmp   ax, 0x4000
-0x0000000000000012:  73 47          jae   0x5b
-0x0000000000000014:  85 C0          test  ax, ax
-0x0000000000000016:  75 32          jne   0x4a
-0x0000000000000018:  BB F0 04       mov   bx, 0x4f0
-0x000000000000001b:  8B 46 08       mov   ax, word ptr [bp + 8]
-0x000000000000001e:  8B 4F 02       mov   cx, word ptr [bx + 2]
-0x0000000000000021:  39 C1          cmp   cx, ax
-0x0000000000000023:  7F 07          jg    0x2c
-0x0000000000000025:  75 31          jne   0x58
-0x0000000000000027:  83 3F 00       cmp   word ptr [bx], 0
-0x000000000000002a:  76 2C          jbe   0x58
-0x000000000000002c:  B3 01          mov   bl, 1
-0x000000000000002e:  88 5E FE       mov   byte ptr [bp - 2], bl
-0x0000000000000031:  BB F4 04       mov   bx, 0x4f4
-0x0000000000000034:  3B 47 02       cmp   ax, word ptr [bx + 2]
-0x0000000000000037:  7C 06          jl    0x3f
-0x0000000000000039:  75 53          jne   0x8e
-0x000000000000003b:  3B 17          cmp   dx, word ptr [bx]
-0x000000000000003d:  73 4F          jae   0x8e
-0x000000000000003f:  B0 01          mov   al, 1
-0x0000000000000041:  88 46 FC       mov   byte ptr [bp - 4], al
-0x0000000000000044:  83 7E F8 00    cmp   word ptr [bp - 8], 0
-0x0000000000000048:  7C 39          jl    0x83
-0x000000000000004a:  8A 46 FE       mov   al, byte ptr [bp - 2]
-0x000000000000004d:  3A 46 FC       cmp   al, byte ptr [bp - 4]
-0x0000000000000050:  75 3E          jne   0x90
-0x0000000000000052:  C9             leave 
-0x0000000000000053:  5F             pop   di
-0x0000000000000054:  5E             pop   si
-0x0000000000000055:  C2 02 00       ret   2
-0x0000000000000058:  E9 91 00       jmp   0xec
-0x000000000000005b:  77 3A          ja    0x97
-0x000000000000005d:  BB FC 04       mov   bx, 0x4fc
-0x0000000000000060:  89 C8          mov   ax, cx
-0x0000000000000062:  3B 4F 02       cmp   cx, word ptr [bx + 2]
-0x0000000000000065:  7F 2C          jg    0x93
-0x0000000000000067:  30 DB          xor   bl, bl
-0x0000000000000069:  88 5E FE       mov   byte ptr [bp - 2], bl
-0x000000000000006c:  BB F8 04       mov   bx, 0x4f8
-0x000000000000006f:  3B 47 02       cmp   ax, word ptr [bx + 2]
-0x0000000000000072:  7F 06          jg    0x7a
-0x0000000000000074:  75 1F          jne   0x95
-0x0000000000000076:  3B 17          cmp   dx, word ptr [bx]
-0x0000000000000078:  76 1B          jbe   0x95
-0x000000000000007a:  B0 01          mov   al, 1
-0x000000000000007c:  88 46 FC       mov   byte ptr [bp - 4], al
-0x000000000000007f:  85 FF          test  di, di
-0x0000000000000081:  7D C7          jge   0x4a
-0x0000000000000083:  34 01          xor   al, 1
-0x0000000000000085:  80 76 FE 01    xor   byte ptr [bp - 2], 1
-0x0000000000000089:  88 46 FC       mov   byte ptr [bp - 4], al
-0x000000000000008c:  EB BC          jmp   0x4a
-0x000000000000008e:  EB 61          jmp   0xf1
-0x0000000000000090:  E9 C2 00       jmp   0x155
-0x0000000000000093:  EB 61          jmp   0xf6
-0x0000000000000095:  EB 64          jmp   0xfb
-0x0000000000000097:  3D 00 C0       cmp   ax, 0xc000
-0x000000000000009a:  74 64          je    0x100
-0x000000000000009c:  3D 00 80       cmp   ax, 0x8000
-0x000000000000009f:  75 A9          jne   0x4a
-0x00000000000000a1:  FF 76 08       push  word ptr [bp + 8]
-0x00000000000000a4:  51             push  cx
-0x00000000000000a5:  53             push  bx
-0x00000000000000a6:  BB F0 04       mov   bx, 0x4f0
-0x00000000000000a9:  8B 07          mov   ax, word ptr [bx]
-0x00000000000000ab:  8B 4F 02       mov   cx, word ptr [bx + 2]
-0x00000000000000ae:  BB F8 04       mov   bx, 0x4f8
-0x00000000000000b1:  8B 17          mov   dx, word ptr [bx]
-0x00000000000000b3:  FF 76 F8       push  word ptr [bp - 8]
-0x00000000000000b6:  89 56 FA       mov   word ptr [bp - 6], dx
-0x00000000000000b9:  8B 57 02       mov   dx, word ptr [bx + 2]
-0x00000000000000bc:  89 C3          mov   bx, ax
-0x00000000000000be:  8B 46 FA       mov   ax, word ptr [bp - 6]
-0x00000000000000c1:  E8 92 FE       call  P_PointOnLineSide_
-0x00000000000000c4:  FF 76 08       push  word ptr [bp + 8]
-0x00000000000000c7:  BB F4 04       mov   bx, 0x4f4
-0x00000000000000ca:  88 46 FE       mov   byte ptr [bp - 2], al
-0x00000000000000cd:  56             push  si
-0x00000000000000ce:  8B 07          mov   ax, word ptr [bx]
-0x00000000000000d0:  8B 4F 02       mov   cx, word ptr [bx + 2]
-0x00000000000000d3:  57             push  di
-0x00000000000000d4:  BB FC 04       mov   bx, 0x4fc
-0x00000000000000d7:  FF 76 F8       push  word ptr [bp - 8]
-0x00000000000000da:  8B 37          mov   si, word ptr [bx]
-0x00000000000000dc:  8B 57 02       mov   dx, word ptr [bx + 2]
-0x00000000000000df:  89 C3          mov   bx, ax
-0x00000000000000e1:  89 F0          mov   ax, si
-0x00000000000000e3:  E8 70 FE       call  P_PointOnLineSide_
-0x00000000000000e6:  88 46 FC       mov   byte ptr [bp - 4], al
-0x00000000000000e9:  E9 5E FF       jmp   0x4a
-0x00000000000000ec:  30 DB          xor   bl, bl
-0x00000000000000ee:  E9 3D FF       jmp   0x2e
-0x00000000000000f1:  30 C0          xor   al, al
-0x00000000000000f3:  E9 4B FF       jmp   0x41
-0x00000000000000f6:  B3 01          mov   bl, 1
-0x00000000000000f8:  E9 6E FF       jmp   0x69
-0x00000000000000fb:  30 C0          xor   al, al
-0x00000000000000fd:  E9 7C FF       jmp   0x7c
-0x0000000000000100:  FF 76 08       push  word ptr [bp + 8]
-0x0000000000000103:  51             push  cx
-0x0000000000000104:  53             push  bx
-0x0000000000000105:  BB F0 04       mov   bx, 0x4f0
-0x0000000000000108:  FF 76 F8       push  word ptr [bp - 8]
-0x000000000000010b:  8B 07          mov   ax, word ptr [bx]
-0x000000000000010d:  8B 57 02       mov   dx, word ptr [bx + 2]
-0x0000000000000110:  BB FC 04       mov   bx, 0x4fc
-0x0000000000000113:  89 56 FA       mov   word ptr [bp - 6], dx
-0x0000000000000116:  8B 17          mov   dx, word ptr [bx]
-0x0000000000000118:  8B 5F 02       mov   bx, word ptr [bx + 2]
-0x000000000000011b:  8B 4E FA       mov   cx, word ptr [bp - 6]
-0x000000000000011e:  89 5E FA       mov   word ptr [bp - 6], bx
-0x0000000000000121:  89 C3          mov   bx, ax
-0x0000000000000123:  89 D0          mov   ax, dx
-0x0000000000000125:  8B 56 FA       mov   dx, word ptr [bp - 6]
-0x0000000000000128:  E8 2B FE       call  P_PointOnLineSide_
-0x000000000000012b:  FF 76 08       push  word ptr [bp + 8]
-0x000000000000012e:  BB F4 04       mov   bx, 0x4f4
-0x0000000000000131:  88 46 FE       mov   byte ptr [bp - 2], al
-0x0000000000000134:  56             push  si
-0x0000000000000135:  8B 07          mov   ax, word ptr [bx]
-0x0000000000000137:  8B 4F 02       mov   cx, word ptr [bx + 2]
-0x000000000000013a:  57             push  di
-0x000000000000013b:  BB F8 04       mov   bx, 0x4f8
-0x000000000000013e:  FF 76 F8       push  word ptr [bp - 8]
-0x0000000000000141:  8B 17          mov   dx, word ptr [bx]
-0x0000000000000143:  8B 77 02       mov   si, word ptr [bx + 2]
-0x0000000000000146:  89 C3          mov   bx, ax
-0x0000000000000148:  89 D0          mov   ax, dx
-0x000000000000014a:  89 F2          mov   dx, si
-0x000000000000014c:  E8 07 FE       call  P_PointOnLineSide_
-0x000000000000014f:  88 46 FC       mov   byte ptr [bp - 4], al
-0x0000000000000152:  E9 F5 FE       jmp   0x4a
-0x0000000000000155:  B0 FF          mov   al, 0xff
-0x0000000000000157:  C9             leave 
-0x0000000000000158:  5F             pop   di
-0x0000000000000159:  5E             pop   si
-0x000000000000015a:  C2 02 00       ret   2
-0x000000000000015d:  FC             cld   
+;// Considers the line to be infinite
+;// Returns side 0 or 1, -1 if box crosses the line.
+
+
+; todo switch on high bits instead of whole word?
+
+;int8_t __near P_BoxOnLineSide (  
+	; slopetype_t	lineslopetype 
+	; int16_t linedx, 
+	; int16_t linedy, 
+	; int16_t v1x, 
+	; int16_t v1y ) 
+
+;	ax: lineslopetype
+;   dx: linedx
+;   bx: linedy
+;   cx: v1x
+;   bp + 8  v1y ?
+
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 6
+push  dx
+mov   di, bx
+mov   si, cx
+xor   dx, dx
+cmp   ax, ST_VERTICAL_HIGH
+jae   label_1
+test  ax, ax
+jne   label_2
+mov   bx, _tmbbox + BOXTOP * 4  ; sizeof fixed_t_union
+mov   ax, word ptr [bp + 8]
+mov   cx, word ptr [bx + 2]
+cmp   cx, ax
+jg    label_5
+jne   jump_to_label_3
+cmp   word ptr [bx], 0
+jbe   jump_to_label_3
+label_5:
+mov   bl, 1
+label_4:
+mov   byte ptr [bp - 2], bl
+mov   bx, _tmbbox + BOXBOTTOM * 4  ; sizeof fixed_t_union
+cmp   ax, word ptr [bx + 2]
+jl    label_6
+jne   jump_to_label_7
+cmp   dx, word ptr [bx]
+jae   jump_to_label_7
+label_6:
+mov   al, 1
+label_17:
+mov   byte ptr [bp - 4], al
+cmp   word ptr [bp - 8], 0
+jl    label_8
+label_2:
+mov   al, byte ptr [bp - 2]
+cmp   al, byte ptr [bp - 4]
+jne   jump_to_return_minusone_boxonlineside
+LEAVE_MACRO
+pop   di
+pop   si
+ret   2
+jump_to_label_3:
+jmp   label_3
+label_1:
+ja    label_10
+mov   bx, _tmbbox + BOXRIGHT * 4  ; sizeof fixed_t_union
+mov   ax, cx
+cmp   cx, word ptr [bx + 2]
+jg    jump_to_label_11
+xor   bl, bl
+label_15:
+mov   byte ptr [bp - 2], bl
+mov   bx, _tmbbox + BOXLEFT * 4  ; sizeof fixed_t_union
+cmp   ax, word ptr [bx + 2]
+jg    label_13
+jne   jump_to_label_12
+cmp   dx, word ptr [bx]
+jbe   jump_to_label_12
+label_13:
+mov   al, 1
+label_14:
+mov   byte ptr [bp - 4], al
+test  di, di
+jge   label_2
+label_8:
+xor   al, 1
+xor   byte ptr [bp - 2], 1
+mov   byte ptr [bp - 4], al
+jmp   label_2
+jump_to_label_7:
+jmp   label_7
+jump_to_return_minusone_boxonlineside:
+jmp   return_minusone_boxonlineside
+jump_to_label_11:
+jmp   label_11
+jump_to_label_12:
+jmp   label_12
+label_10:
+cmp   ax, ST_NEGATIVE_HIGH
+je    label_16
+cmp   ax, ST_POSITIVE_HIGH
+jne   label_2
+push  word ptr [bp + 8]
+push  cx
+push  bx
+mov   bx, _tmbbox + BOXTOP * 4  ; sizeof fixed_t_union
+mov   ax, word ptr [bx]
+mov   cx, word ptr [bx + 2]
+mov   bx, _tmbbox + BOXLEFT * 4  ; sizeof fixed_t_union
+mov   dx, word ptr [bx]
+push  word ptr [bp - 8]
+mov   word ptr [bp - 6], dx
+mov   dx, word ptr [bx + 2]
+mov   bx, ax
+mov   ax, word ptr [bp - 6]
+call  P_PointOnLineSide_
+push  word ptr [bp + 8]
+mov   bx, _tmbbox + BOXBOTTOM * 4  ; sizeof fixed_t_union
+mov   byte ptr [bp - 2], al
+push  si
+mov   ax, word ptr [bx]
+mov   cx, word ptr [bx + 2]
+push  di
+mov   bx, _tmbbox + BOXRIGHT * 4  ; sizeof fixed_t_union
+push  word ptr [bp - 8]
+mov   si, word ptr [bx]
+mov   dx, word ptr [bx + 2]
+mov   bx, ax
+mov   ax, si
+call  P_PointOnLineSide_
+mov   byte ptr [bp - 4], al
+jmp   label_2
+label_3:
+xor   bl, bl
+jmp   label_4
+label_7:
+xor   al, al
+jmp   label_17
+label_11:
+mov   bl, 1
+jmp   label_15
+label_12:
+xor   al, al
+jmp   label_14
+label_16:
+push  word ptr [bp + 8]
+push  cx
+push  bx
+mov   bx, _tmbbox + BOXTOP * 4  ; sizeof fixed_t_union
+push  word ptr [bp - 8]
+mov   ax, word ptr [bx]
+mov   dx, word ptr [bx + 2]
+mov   bx, _tmbbox + BOXRIGHT * 4  ; sizeof fixed_t_union
+mov   word ptr [bp - 6], dx
+mov   dx, word ptr [bx]
+mov   bx, word ptr [bx + 2]
+mov   cx, word ptr [bp - 6]
+mov   word ptr [bp - 6], bx
+mov   bx, ax
+mov   ax, dx
+mov   dx, word ptr [bp - 6]
+call  P_PointOnLineSide_
+push  word ptr [bp + 8]
+mov   bx, _tmbbox + BOXBOTTOM * 4  ; sizeof fixed_t_union
+mov   byte ptr [bp - 2], al
+push  si
+mov   ax, word ptr [bx]
+mov   cx, word ptr [bx + 2]
+push  di
+mov   bx, _tmbbox + BOXLEFT * 4  ; sizeof fixed_t_union
+push  word ptr [bp - 8]
+mov   dx, word ptr [bx]
+mov   si, word ptr [bx + 2]
+mov   bx, ax
+mov   ax, dx
+mov   dx, si
+call  P_PointOnLineSide_
+mov   byte ptr [bp - 4], al
+jmp   label_2
+return_minusone_boxonlineside:
+mov   al, -1
+LEAVE_MACRO
+pop   di
+pop   si
+ret   2
 
 ENDP
+
+COMMENT @
 
 PROC P_PointOnDivlineSide_ NEAR
 PUBLIC P_PointOnDivlineSide_ 
@@ -657,7 +698,7 @@ PUBLIC P_PointOnDivlineSide_
 0x0000000000000031:  83 3E 24 1A 00    cmp   word ptr [0x1a24], 0
 0x0000000000000036:  76 06             jbe   0x3e
 0x0000000000000038:  B0 01             mov   al, 1
-0x000000000000003a:  C9                leave 
+0x000000000000003a:  C9                LEAVE_MACRO
 0x000000000000003b:  5F                pop   di
 0x000000000000003c:  5E                pop   si
 0x000000000000003d:  C3                ret   
@@ -681,7 +722,7 @@ PUBLIC P_PointOnDivlineSide_
 0x0000000000000069:  85 C0             test  ax, ax
 0x000000000000006b:  7C CB             jl    0x38
 0x000000000000006d:  30 C0             xor   al, al
-0x000000000000006f:  C9                leave 
+0x000000000000006f:  C9                LEAVE_MACRO
 0x0000000000000070:  5F                pop   di
 0x0000000000000071:  5E                pop   si
 0x0000000000000072:  C3                ret   
@@ -692,7 +733,7 @@ PUBLIC P_PointOnDivlineSide_
 0x000000000000007c:  83 3E 20 1A 00    cmp   word ptr [0x1a20], 0
 0x0000000000000081:  77 B5             ja    0x38
 0x0000000000000083:  30 C0             xor   al, al
-0x0000000000000085:  C9                leave 
+0x0000000000000085:  C9                LEAVE_MACRO
 0x0000000000000086:  5F                pop   di
 0x0000000000000087:  5E                pop   si
 0x0000000000000088:  C3                ret   
@@ -714,7 +755,7 @@ PUBLIC P_PointOnDivlineSide_
 0x00000000000000b8:  74 03             je    0xbd
 0x00000000000000ba:  E9 7B FF          jmp   0x38
 0x00000000000000bd:  30 C0             xor   al, al
-0x00000000000000bf:  C9                leave 
+0x00000000000000bf:  C9                LEAVE_MACRO
 0x00000000000000c0:  5F                pop   di
 0x00000000000000c1:  5E                pop   si
 0x00000000000000c2:  C3                ret   
@@ -737,7 +778,7 @@ PUBLIC P_PointOnDivlineSide_
 0x00000000000000f3:  3B 46 FC          cmp   ax, word ptr [bp - 4]
 0x00000000000000f6:  73 C2             jae   0xba
 0x00000000000000f8:  30 C0             xor   al, al
-0x00000000000000fa:  C9                leave 
+0x00000000000000fa:  C9                LEAVE_MACRO
 0x00000000000000fb:  5F                pop   di
 0x00000000000000fc:  5E                pop   si
 0x00000000000000fd:  C3                ret  

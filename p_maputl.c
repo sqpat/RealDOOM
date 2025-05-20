@@ -143,7 +143,7 @@ P_PointOnLineSide16
 // Considers the line to be infinite
 // Returns side 0 or 1, -1 if box crosses the line.
 //
-
+/*
 int8_t __near P_BoxOnLineSide (  slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y ) {
 
 
@@ -188,7 +188,7 @@ int8_t __near P_BoxOnLineSide (  slopetype_t	lineslopetype, int16_t linedx, int1
 		return p1;
     return -1;
 }
-
+*/
 
 
 
