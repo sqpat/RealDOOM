@@ -601,23 +601,17 @@ ret   2
 
 
 
-
 not_vertical_high:
 
 ; shared code for both cases
 
-push  dx		; bp - 2, needed later
 
-push  si		; need to restore later
-push  di		; need to restore later
 
-mov   di, bx	; di has linedy
-mov   si, cx	; si has v1x
-
-push  word ptr [bp + 4]	; P_PointOnLineSide_ params
+push  word ptr [bp + 4]	; P_PointOnLineSide_ params call 1
 push  cx
 push  bx
 push  dx
+
 
 cmp   ax, ST_NEGATIVE_HIGH
 je    negative_high_slopetype
@@ -631,12 +625,9 @@ les   ax, dword ptr ds:[_tmbbox + BOXLEFT * 4]
 mov   dx, es
 call  P_PointOnLineSide_
 
-push  word ptr [bp + 4]	; P_PointOnLineSide_ params
-push  si
-push  di
-push  word ptr [bp - 2]
+sub   sp, 8  ; reuse same params for next call
 
-mov   di, ax			; store p1
+mov   byte ptr cs:[SELFMODIFY_compare_p1_p2_1+1], al ; store p1
 
 les   bx, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
 mov   cx, es
@@ -646,10 +637,9 @@ mov   dx, es
 call  P_PointOnLineSide_
 
 done_with_switchblock_boxonlineside:
-mov   dx, di			; get p1
-pop   di
-pop   si
-cmp   al, dl ; cmp p1/p2
+
+SELFMODIFY_compare_p1_p2_1:
+cmp   al, 0FFh ; cmp p1/p2
 jne   return_minusone_boxonlineside
 LEAVE_MACRO
 ret   2
@@ -672,12 +662,9 @@ mov   dx, es
 
 call  P_PointOnLineSide_
 
-push  word ptr [bp + 4] 	; P_PointOnLineSide_ params
-push  si
-push  di
-push  word ptr [bp - 2]
+sub   sp, 8  ; reuse same params for next call
 
-mov   di, ax  ; store p1
+mov   byte ptr cs:[SELFMODIFY_compare_p1_p2_2+1], al ; store p1
 
 les   bx, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
 mov   cx, es
@@ -686,10 +673,8 @@ mov   dx, es
 
 call  P_PointOnLineSide_
 
-mov   dx, di			; get p1
-pop   di
-pop   si
-cmp   al, dl ; cmp p1/p2
+SELFMODIFY_compare_p1_p2_2:
+cmp   al, 0FFh ; cmp p1/p2
 jne   return_minusone_boxonlineside
 LEAVE_MACRO
 ret   2
