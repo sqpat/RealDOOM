@@ -342,90 +342,77 @@ ret
 ENDP
 
 ; boolean __near P_PointOnLineSide ( 
-	;fixed_t	x, 
-	;fixed_t	y, 
+	; fixed_t	x, 
+	; fixed_t	y, 
 	; int16_t linedx, 
 	; int16_t linedy,
 	; int16_t v1x,
 	; int16_t v1y);
 
-; DX:AX   x
-; CX:BX   y
-; bp + 4  linedx
-; bp + 6  linedy
-; bp + 8  v1x
+; DX:AX     x
+; CX:BX     y
+; bp + 4    linedx
+; bp + 6    linedy
+; bp + 8    v1x
 ; bp + 0Ah  v1y
+
+; todo consider si:di params for linedx/linedy?
 
 PROC P_PointOnLineSide_ NEAR
 PUBLIC P_PointOnLineSide_ 
 
-push  si
-push  di
-push  bp
+push  bp		; bp + 2?
 mov   bp, sp
 
-mov   di, ax			; di gets x low 	dx:di x
-mov   si, bx			; si gets y low
-mov   bx, word ptr [bp + 0Ch]  ; bx gets linedx
-;mov   ax, cx			; ax gets y hibits    ax:si y
-cmp   word ptr [bp + 8], 0	; compare linedx
+cmp   word ptr [bp + 4], 0	; compare linedx
 
 ;    if (!linedx) {
 jne   linedx_nonzero
 ;		if (x <= temp.w) {
-cmp   dx, bx			; compare hi bits
+cmp   dx, word ptr [bp + 8]			; compare hi bits to linedx
 jl    x_smaller_than_v1x
 jne   x_greater_than_v1x
 test  ax, ax
 jbe   x_smaller_than_v1x
 x_greater_than_v1x:
-cmp   word ptr [bp + 0Ah], 0
+cmp   word ptr [bp + 6], 0
 jl    return_1_pointonlineside
 return_0_pointonlineside:
 xor   ax, ax	; zero
 exit_pointonlineside:
 LEAVE_MACRO
-pop   di
-pop   si
 ret   8
 
 x_smaller_than_v1x:
-cmp   word ptr [bp + 0Ah], 0	; compare linedy
+cmp   word ptr [bp + 6], 0	; compare linedy
 jle   return_0_pointonlineside
 
 return_1_pointonlineside:
 mov   al, 1
 LEAVE_MACRO
-pop   di
-pop   si
 ret   8
 
 linedx_nonzero:
 
-cmp   word ptr [bp + 0Ah], 0	; compare linedy
+cmp   word ptr [bp + 6], 0	; compare linedy
 jne   linedy_nonzero
-cmp   cx, word ptr [bp + 0Eh]	; v1y
+cmp   cx, word ptr [bp + 0Ah]	; v1y
 jl    y_smaller_than_v1y
 jne   y_greater_than_v1y
-test  si, si
+test  bx, bx
 jbe   y_smaller_than_v1y
 y_greater_than_v1y:
-cmp   word ptr [bp + 8], 0		; compare linedx
+cmp   word ptr [bp + 4], 0		; compare linedx
 jle   return_0_pointonlineside
 mov   al, 1
 LEAVE_MACRO
-pop   di
-pop   si
 ret   8
 
 y_smaller_than_v1y:
-cmp   word ptr [bp + 8], 0
+cmp   word ptr [bp + 4], 0
 jge   return_0_pointonlineside
-return_1_pointonlineside_2:
 mov   al, 1
 LEAVE_MACRO
-pop   di
-pop   si
 ret   8
 
 linedy_nonzero:
@@ -436,20 +423,25 @@ linedy_nonzero:
 ;	temp.h.intbits = v1y;
 ;   dy = (y - temp.w);
 
-sub   dx, bx					; dx:di = "dx"
+push  di
+push  si
 
-sub   cx, word ptr [bp + 0Eh]	; cx:si = "dy"
+
+sub   dx, word ptr [bp + 8]	; dx:ax = "dx"
+
+sub   cx, word ptr [bp + 0Ah]	; cx:bx = "dy"
 
 
 ;    left = FixedMul1632 ( linedy , dx );
 ;    right = FixedMul1632 ( linedx , dy);
 
 
-mov   bx, di					; cx:bx = dx
-mov   di, cx					; store dy hi
+mov   si, bx					; store dy low
+mov   di, cx					; store dy hi	di:si = dy
+mov   bx, ax					; cx:bx = dx
 mov   cx, dx	
 
-mov   ax, word ptr [bp + 0Ah]	; ax = lindedy
+mov   ax, word ptr [bp + 6]	; ax = lindedy
 
 call  FixedMul1632_				; AX  *  CX:BX
 
@@ -459,19 +451,25 @@ mov   bx, si
 mov   cx, di
 mov   di, ax
 mov   si, dx
-mov   ax, word ptr [bp + 8]		; get linedx
+mov   ax, word ptr [bp + 4]		; get linedx
 
 call  FixedMul1632_				; AX  *  CX:BX
 cmp   dx, si
+pop   si						; only do this once here..
 jl    exit_pointonlineside_return_0
-jne   return_1_pointonlineside_2
+jne   return_1_pointonlineside_3
 cmp   ax, di
-jae   return_1_pointonlineside_2
+jae   return_1_pointonlineside_3
 exit_pointonlineside_return_0:
 xor   al, al
-LEAVE_MACRO
 pop   di
-pop   si
+LEAVE_MACRO
+ret   8
+
+return_1_pointonlineside_3:		; this one pops di
+mov   al, 1
+pop   di
+LEAVE_MACRO
 ret   8
 
 ENDP
@@ -564,7 +562,7 @@ PUBLIC P_BoxOnLineSide_
 0x00000000000000b9:  8B 57 02       mov   dx, word ptr [bx + 2]
 0x00000000000000bc:  89 C3          mov   bx, ax
 0x00000000000000be:  8B 46 FA       mov   ax, word ptr [bp - 6]
-0x00000000000000c1:  E8 92 FE       call  0xff56
+0x00000000000000c1:  E8 92 FE       call  P_PointOnLineSide_
 0x00000000000000c4:  FF 76 08       push  word ptr [bp + 8]
 0x00000000000000c7:  BB F4 04       mov   bx, 0x4f4
 0x00000000000000ca:  88 46 FE       mov   byte ptr [bp - 2], al
@@ -578,7 +576,7 @@ PUBLIC P_BoxOnLineSide_
 0x00000000000000dc:  8B 57 02       mov   dx, word ptr [bx + 2]
 0x00000000000000df:  89 C3          mov   bx, ax
 0x00000000000000e1:  89 F0          mov   ax, si
-0x00000000000000e3:  E8 70 FE       call  0xff56
+0x00000000000000e3:  E8 70 FE       call  P_PointOnLineSide_
 0x00000000000000e6:  88 46 FC       mov   byte ptr [bp - 4], al
 0x00000000000000e9:  E9 5E FF       jmp   0x4a
 0x00000000000000ec:  30 DB          xor   bl, bl
@@ -605,7 +603,7 @@ PUBLIC P_BoxOnLineSide_
 0x0000000000000121:  89 C3          mov   bx, ax
 0x0000000000000123:  89 D0          mov   ax, dx
 0x0000000000000125:  8B 56 FA       mov   dx, word ptr [bp - 6]
-0x0000000000000128:  E8 2B FE       call  0xff56
+0x0000000000000128:  E8 2B FE       call  P_PointOnLineSide_
 0x000000000000012b:  FF 76 08       push  word ptr [bp + 8]
 0x000000000000012e:  BB F4 04       mov   bx, 0x4f4
 0x0000000000000131:  88 46 FE       mov   byte ptr [bp - 2], al
@@ -620,7 +618,7 @@ PUBLIC P_BoxOnLineSide_
 0x0000000000000146:  89 C3          mov   bx, ax
 0x0000000000000148:  89 D0          mov   ax, dx
 0x000000000000014a:  89 F2          mov   dx, si
-0x000000000000014c:  E8 07 FE       call  0xff56
+0x000000000000014c:  E8 07 FE       call  P_PointOnLineSide_
 0x000000000000014f:  88 46 FC       mov   byte ptr [bp - 4], al
 0x0000000000000152:  E9 F5 FE       jmp   0x4a
 0x0000000000000155:  B0 FF          mov   al, 0xff
