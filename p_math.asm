@@ -341,14 +341,20 @@ ret
 
 ENDP
 
-; boolean __near P_PointOnLineSide ( fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy,int16_t v1x,int16_t v1y);
+; boolean __near P_PointOnLineSide ( 
+	;fixed_t	x, 
+	;fixed_t	y, 
+	; int16_t linedx, 
+	; int16_t linedy,
+	; int16_t v1x,
+	; int16_t v1y);
 
 ; DX:AX   x
 ; CX:BX   y
-; bp - 2  linedx
-; bp - 4  linedy
-; bp - 6  v1x
-; bp - 8  v1y
+; bp + 8  linedx
+; bp + 0Ah  linedy
+; bp + 0Ch  v1x
+; bp + 0Eh  v1y
 
 PROC P_PointOnLineSide_ NEAR
 PUBLIC P_PointOnLineSide_ 
@@ -358,81 +364,107 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 4
-mov   di, ax
-mov   si, bx
-mov   bx, word ptr [bp + 0Ch]
-mov   ax, cx
-cmp   word ptr [bp + 8], 0
-jne   label_1
-cmp   dx, bx
-jl    label_2
-jne   label_3
+
+mov   di, ax			; di gets x low 	dx:di x
+mov   si, bx			; si gets y low
+mov   bx, word ptr [bp + 0Ch]  ; bx gets linedx
+mov   ax, cx			; ax gets y hibits    ax:si y
+cmp   word ptr [bp + 8], 0	; compare linedx
+
+;    if (!linedx) {
+jne   linedx_nonzero
+;		if (x <= temp.w) {
+cmp   dx, bx			; compare hi bits
+jl    x_smaller_than_v1x
+jne   x_greater_than_v1x
 test  di, di
-jbe   label_2
-label_3:
+jbe   x_smaller_than_v1x
+x_greater_than_v1x:
 cmp   word ptr [bp + 0Ah], 0
-jl    label_4
-label_5:
-xor   al, cl
+jl    return_1_pointonlineside
+return_0_pointonlineside:
+xor   al, cl	; linedy < 0
 exit_pointonlineside:
 LEAVE_MACRO
 pop   di
 pop   si
 ret   8
-label_2:
-cmp   word ptr [bp + 0Ah], 0
-jle   label_5
-label_4:
+
+x_smaller_than_v1x:
+cmp   word ptr [bp + 0Ah], 0	; compare linedy
+jle   return_0_pointonlineside
+
+return_1_pointonlineside:
 mov   al, 1
-jmp   exit_pointonlineside
-label_1:
-cmp   word ptr [bp + 0Ah], 0
-jne   label_6
-cmp   cx, word ptr [bp + 0Eh]
-jl    label_7
-jne   label_9
+LEAVE_MACRO
+pop   di
+pop   si
+ret   8
+
+linedx_nonzero:
+
+cmp   word ptr [bp + 0Ah], 0	; compare linedy
+jne   linedy_nonzero
+cmp   cx, word ptr [bp + 0Eh]	; v1y
+jl    y_smaller_than_v1y
+jne   y_greater_than_v1y
 test  si, si
-jbe   label_7
-label_9:
-cmp   word ptr [bp + 8], 0
-jle   label_5
+jbe   y_smaller_than_v1y
+y_greater_than_v1y:
+cmp   word ptr [bp + 8], 0		; compare linedx
+jle   return_0_pointonlineside
 mov   al, 1
-leave 
+LEAVE_MACRO
 pop   di
 pop   si
 ret   8
-label_7:
+
+y_smaller_than_v1y:
 cmp   word ptr [bp + 8], 0
-jge   label_5
-label_8:
+jge   return_0_pointonlineside
+return_1_pointonlineside_2:
 mov   al, 1
-leave 
+LEAVE_MACRO
 pop   di
 pop   si
 ret   8
-label_6:
-mov   cx, dx
-sub   di, 0
-sbb   cx, bx
-mov   bx, word ptr [bp + 0Eh]
-sub   si, 0
-sbb   ax, bx
-mov   word ptr [bp - 2], ax
-mov   bx, di
+
+linedy_nonzero:
+
+
+;	temp.h.intbits = v1x;
+;   dx = (x - temp.w);
+;	temp.h.intbits = v1y;
+;   dy = (y - temp.w);
+
+mov   cx, dx				
+sub   cx, bx					; cx:di = "dx"
+
+sub   ax, word ptr [bp + 0Eh]	; ax:si = "dy"
+
+
+;    left = FixedMul1632 ( linedy , dx );
+;    right = FixedMul1632 ( linedx , dy);
+
+mov   bx, di					; cx:bx = 
+mov   di, ax					; store dy
 mov   ax, word ptr [bp + 0Ah]
-mov   word ptr [bp - 4], si
-call  FixedMul1632_
-mov   bx, word ptr [bp - 4]
-mov   cx, word ptr [bp - 2]
+
+call  FixedMul1632_				; AX  *  CX:BX
+
+;dx:ax = left
+
+mov   bx, si
+mov   cx, di
 mov   di, ax
-mov   ax, word ptr [bp + 8]
 mov   si, dx
-call  FixedMul1632_
+mov   ax, word ptr [bp + 8]
+call  FixedMul1632_				; AX  *  CX:BX
 cmp   dx, si
 jl    exit_pointonlineside_return_0
-jne   label_8
+jne   return_1_pointonlineside_2
 cmp   ax, di
-jae   label_8
+jae   return_1_pointonlineside_2
 exit_pointonlineside_return_0:
 xor   al, al
 LEAVE_MACRO
