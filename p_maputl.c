@@ -56,6 +56,8 @@
 // P_PointOnLineSide
 // Returns 0 or 1
 //
+boolean __near P_PointOnLineSide ( fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy,int16_t v1x,int16_t v1y);
+/*
 boolean __near P_PointOnLineSide ( fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy,int16_t v1x,int16_t v1y){
     fixed_t	dx;
     fixed_t	dy;
@@ -93,6 +95,7 @@ boolean __near P_PointOnLineSide ( fixed_t	x, fixed_t	y, int16_t linedx, int16_t
 
     return 1;	
 }
+*/
 
 /*
 boolean
@@ -140,7 +143,6 @@ P_PointOnLineSide16
 // Considers the line to be infinite
 // Returns side 0 or 1, -1 if box crosses the line.
 //
-
 
 int8_t __near P_BoxOnLineSide (  slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y ) {
 
