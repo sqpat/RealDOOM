@@ -871,53 +871,80 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 6
-mov   si, ax
-mov   bx, word ptr ds:[_trace+8]
-mov   cx, word ptr ds:[_trace+0Ah]
-mov   ax, word ptr [si + 0Ch]
-mov   dx, word ptr [si + 0Eh]
+
+;    den = FixedMul2432 (v1->dy.w,v2->dx.w) - 
+;		FixedMul2432(v1->dx.w ,v2->dy.w);
+
+; bp - 4  den hi (di den lo)
+
+
+xchg  si, ax	; v1 divline ptr to si
+
+les   bx, dword ptr ds:[_trace+8]
+mov   cx, es
+les   ax, dword ptr [si + 0Ch]
+mov   dx, es
 call  FixedMul2432_
-mov   bx, word ptr ds:[_trace+0Ch]
-mov   cx, word ptr ds:[_trace+0Eh]
+
+les   bx, dword ptr ds:[_trace+0Ch]
+mov   cx, es
 mov   di, ax
 mov   word ptr [bp - 4], dx
 mov   ax, word ptr [si + 8]
 mov   dx, word ptr [si + 0Ah]
 call  FixedMul2432_
+
 sub   di, ax
 mov   ax, word ptr [bp - 4]
-sbb   ax, dx
+sbb   ax, dx		; den = ax:di 
+
 mov   word ptr [bp - 2], ax
 or    ax, di
-jne   label_1
-xor   dx, dx
+jne   den_not_zero
+cwd
 LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
 pop   bx
 ret   
-label_1:
-mov   bx, word ptr [si + 0Ch]
-mov   cx, word ptr [si + 0Eh]
-mov   ax, word ptr [si]
-mov   dx, word ptr [si + 2]
+
+den_not_zero:
+
+;num = FixedMul2432 ( (v1->x.w - v2->x.w) ,v1->dy.w) + 
+;		FixedMul2432 ( (v2->y.w - v1->y.w), v1->dx.w);
+
+les   bx, dword ptr [si + 0Ch]
+mov   cx, es
+les   ax, dword ptr [si]
+mov   dx, es
 sub   ax, word ptr ds:[_trace]
 sbb   dx, word ptr ds:[_trace+2]
 call  FixedMul2432_
-mov   word ptr [bp - 6], ax
+
+mov   bx, si  ; bx gets  v1
+mov   si, ax  ;  [bp-4]:si = first half
 mov   word ptr [bp - 4], dx
-mov   bx, word ptr [si + 8]
-mov   cx, word ptr [si + 0Ah]
-mov   ax, word ptr ds:[_trace+4]
-mov   dx, word ptr ds:[_trace+6]
-sub   ax, word ptr [si + 4]
-sbb   dx, word ptr [si + 6]
+
+les   ax, dword ptr ds:[_trace+4]
+mov   dx, es
+
+sub   ax, word ptr [bx + 4]
+sbb   dx, word ptr [bx + 6]
+
+les   bx, dword ptr [bx + 8]
+mov   cx, es
+
 call  FixedMul2432_
+
+;    frac = FixedDiv (num , den);
+;    return frac
+
 mov   cx, word ptr [bp - 2]
 mov   bx, di
-add   ax, word ptr [bp - 6]
+add   ax, si
 adc   dx, word ptr [bp - 4]
+
 call FixedDiv_
 LEAVE_MACRO
 pop   di
