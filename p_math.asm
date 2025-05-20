@@ -505,30 +505,26 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 2
-push  dx
-mov   di, bx	; di has linedy
-mov   si, cx	; si has v1x
-xor   dx, dx	; dx is 0
+
+
 cmp   ax, ST_VERTICAL_HIGH
 jae   non_zero_slopetype
 
 ; ST_HORIZONTAL_HIGH case
-mov   ax, word ptr [bp + 8]	; v1y
-mov   cx, word ptr ds:[_tmbbox + (BOXTOP * 4) + 2]
-cmp   cx, ax
-jg    set_p1_to_1_2
+mov   cx, word ptr [bp + 8]	; v1y
+cmp   cx, word ptr ds:[_tmbbox + (BOXTOP * 4) + 2]
+jng   set_p1_to_1_2
 
 jne   set_p1_to_0
 cmp   word ptr ds:[_tmbbox + (BOXTOP * 4)], 0	; check lo bits..
 jne   set_p1_to_1_2
 
 set_p1_to_0:
-xor   bl, bl
+xor   ah, ah
 
 check_p2_2:
 
-cmp   ax, word ptr ds:[_tmbbox + (BOXBOTTOM * 4) + 2]
+cmp   cx, word ptr ds:[_tmbbox + (BOXBOTTOM * 4) + 2]
 jl    set_p2_to_1_2
 
 jne   set_p2_to_0
@@ -540,11 +536,11 @@ xor   al, al
 
 check_linedx:
 
-cmp   word ptr [bp - 4], 0
+cmp   dx, 0
 jl    xor_p1_p2
 
-done_with_switchblock_boxonlineside_bl:  ; bl has p1
-cmp   al, bl
+done_with_switchblock_boxonlineside_ah:  ; ah has p1
+cmp   al, ah
 jne   jump_to_return_minusone_boxonlineside
 LEAVE_MACRO
 pop   di
@@ -554,7 +550,7 @@ ret   2
 
 
 set_p1_to_1_2:
-mov   bl, 1
+mov   ah, 1
 jmp   check_p2_2
 
 set_p2_to_1_2:
@@ -571,24 +567,23 @@ ja    not_vertical_high
 ;		p2 = tmbbox[BOXLEFT].w < temp.w;
 
 
-mov   ax, cx
+
 cmp   cx, word ptr ds:[_tmbbox + (BOXRIGHT * 4) + 2]
 jg    set_p1_to_1
-xor   bl, bl
+xor   ah, ah
 check_p2:
 
-cmp   ax, word ptr ds:[_tmbbox + (BOXLEFT * 4) + 2]
+cmp   cx, word ptr ds:[_tmbbox + (BOXLEFT * 4) + 2]
 jg    set_p2_to_1
 xor   al, al
 check_linedy:
 
 test  di, di		; test linedy
-jge   done_with_switchblock_boxonlineside_bl
+jge   done_with_switchblock_boxonlineside_ah
 xor_p1_p2:
-xor   al, 1
-xor   bl, 1
+xor   ax, 00101h
 
-jmp   done_with_switchblock_boxonlineside_bl
+jmp   done_with_switchblock_boxonlineside_ah
 set_p2_to_1:
 mov   al, 1
 jmp   check_linedy
@@ -596,30 +591,39 @@ jmp   check_linedy
 jump_to_return_minusone_boxonlineside:
 jmp   return_minusone_boxonlineside
 set_p1_to_1:
-mov   bl, 1
+mov   ah, 1
 jmp   check_p2
 
 
 not_vertical_high:
+
+; shared code for both cases
+push  dx		; bp - 2
+mov   di, bx	; di has linedy
+mov   si, cx	; si has v1x
+push  word ptr [bp + 8]	; P_PointOnLineSide_ params
+push  cx
+push  bx
+push  dx
+
 cmp   ax, ST_NEGATIVE_HIGH
 je    negative_high_slopetype
 ; ST_POSITIVE_HIGH
 
-push  word ptr [bp + 8]
-push  cx
-push  bx
-push  word ptr [bp - 4]
+
+
 les   bx, dword ptr ds:[_tmbbox + BOXTOP * 4]  ; sizeof fixed_t_union
 mov   cx, es
 les   ax, dword ptr ds:[_tmbbox + BOXLEFT * 4]
 mov   dx, es
 call  P_PointOnLineSide_
-mov   byte ptr [bp - 2], al
-push  word ptr [bp + 8]
+
+push  word ptr [bp + 8]	; P_PointOnLineSide_ params
 push  si
 push  di
+push  word ptr [bp - 2]
 
-push  word ptr [bp - 4]
+mov   di, ax			; store p1
 
 les   bx, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
 mov   cx, es
@@ -629,7 +633,8 @@ mov   dx, es
 call  P_PointOnLineSide_
 
 done_with_switchblock_boxonlineside:
-cmp   al, byte ptr [bp - 2] ; cmp p1/p2
+mov   dx, di			; get p1
+cmp   al, dl ; cmp p1/p2
 jne   jump_to_return_minusone_boxonlineside
 LEAVE_MACRO
 pop   di
@@ -638,11 +643,12 @@ ret   2
 
 negative_high_slopetype:
 ; ST_NEGATIVE_HIGH
-push  word ptr [bp + 8]
-push  cx
-push  bx
 
-push  word ptr [bp - 4]
+
+
+
+
+
 les   bx, dword ptr ds:[_tmbbox + BOXTOP * 4]
 mov   cx, es
 les   ax, dword ptr ds:[_tmbbox + BOXRIGHT * 4]
@@ -651,12 +657,13 @@ mov   dx, es
 
 
 call  P_PointOnLineSide_
-push  word ptr [bp + 8]
-mov   byte ptr [bp - 2], al
+push  word ptr [bp + 8] 	; P_PointOnLineSide_ params
 push  si
 push  di
+push  word ptr [bp - 2]
 
-push  word ptr [bp - 4]
+mov   di, ax  ; store p1
+
 les   bx, dword ptr ds:[_tmbbox + BOXBOTTOM * 4]
 mov   cx, es
 les   ax, dword ptr ds:[_tmbbox + BOXLEFT * 4]
@@ -665,6 +672,7 @@ mov   dx, es
 call  P_PointOnLineSide_
 
 jmp   done_with_switchblock_boxonlineside
+
 return_minusone_boxonlineside:
 mov   al, -1
 LEAVE_MACRO
