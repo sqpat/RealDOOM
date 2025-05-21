@@ -1216,6 +1216,19 @@ mov   bx, word ptr es:[bx + 2]  ; x high word
 sub   bx, word ptr ds:[_bmaporgx]
 jl    exit_unset_position_and_pop_once
 
+; shift ax 7
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	rcl ax, 1
+	and ah, 1
+ENDIF
+
+cmp   ax, word ptr ds:[_bmapheight]
+jge   exit_unset_position_and_pop_once
 
 
 ; shift bx 7
@@ -1228,25 +1241,15 @@ ELSE
 	and bh, 1
 ENDIF
 
-; shift ax 7
-
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-    sar   ax, MAPBLOCKSHIFT
-ELSE
-	sal al, 1
-	mov al, ah
-	rcl ax, 1
-	and ah, 1
-ENDIF
-
-
-
-
 cmp   bx, word ptr ds:[_bmapwidth]
 jge   exit_unset_position_and_pop_once
 
-cmp   ax, word ptr ds:[_bmapheight]
-jge   exit_unset_position_and_pop_once
+
+
+
+
+
+
 
 ;			int16_t bindex = blocky * bmapwidth + blockx;
 ;			nextRef = blocklinks[bindex];
@@ -1361,10 +1364,12 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 4
+
 mov   di, ax
 mov   si, bx
-mov   word ptr [bp - 2], cx
+
+; cx is fixed MOBJPOSLIST_6800_SEGMENT
+
 mov   cx, dx
 
 ;	THINKERREF thingRef = GETTHINKERREF(thing);
@@ -1373,7 +1378,11 @@ mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 xor   dx, dx
 div   bx
-mov   word ptr [bp - 4], ax
+push  ax	;bp - 2 is thingref
+
+mov   bx, MOBJPOSLIST_6800_SEGMENT
+mov   es, bx
+
 
 ;	if (knownsecnum != -1) {
 
@@ -1384,17 +1393,20 @@ jne   secnum_ready
 ;		int16_t subsectorsecnum = subsectors[subsecnum].secnum;
 ;		thing->secnum = subsectorsecnum;
 
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr es:[si + 4]
-mov   cx, word ptr es:[si + 6]
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
+les   ax, dword ptr es:[si]
+mov   dx, es
+mov   es, bx   ; was the segment above..
+les   bx, dword ptr es:[si + 4]
+mov   cx, es
+sub   si, 8
 call  R_PointInSubsector_
-mov   bx, ax
+SHIFT_MACRO shl   ax 2
+xchg  ax, bx
 mov   ax, SUBSECTORS_SEGMENT
 mov   es, ax
-SHIFT_MACRO shl   bx 2
 mov   cx, word ptr es:[bx]
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
 
 secnum_ready:
 
@@ -1402,7 +1414,6 @@ secnum_ready:
 
 mov   word ptr [di + 4], cx
 
-mov   es, word ptr [bp - 2]
 
 ;	if (!(thing_pos->flags1 & MF_NOSECTOR)) {
 
@@ -1417,25 +1428,25 @@ mov   bx, word ptr [di + 4]
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 SHIFT_MACRO shl   bx  4
-mov   ax, word ptr [bp - 4]
+mov   ax, word ptr [bp - 2]
 mov   dx, ax
 xchg  ax, word ptr es:[bx + 8]
 
 ;		thing = (mobj_t __near*)&thinkerlist[thingRef].data;
 ;		thing_pos = &mobjposlist_6800[thingRef];
-;		thing->sprevRef = NULL_THINKERREF;
-;		thing_pos->snextRef = oldsectorthinglist;
 
 
 imul  di, dx, SIZEOF_THINKER_T
-
-imul  bx, dx, SIZEOF_MOBJ_POS_T
 add   di, (_thinkerlist + 4)
-mov   word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
+mov   si, MOBJPOSLIST_6800_SEGMENT
+mov   es, si
+
+imul  si, dx, SIZEOF_MOBJ_POS_T
+
+;		thing->sprevRef = NULL_THINKERREF;
 mov   word ptr [di], 0
-mov   es, word ptr [bp - 2]
-mov   si, bx
-mov   word ptr es:[bx + 0Ch], ax
+;		thing_pos->snextRef = oldsectorthinglist;
+mov   word ptr es:[si + 0Ch], ax
 ;		if (thing_pos->snextRef) {
 test  ax, ax
 
@@ -1447,13 +1458,11 @@ je    done_setting_sector_stuff
 
 imul  bx, ax, SIZEOF_THINKER_T
 mov   word ptr ds:[bx + (_thinkerlist + 4)], dx
-add   bx, (_thinkerlist + 4)
 
 done_setting_sector_stuff:
 
 ;    if (! (thingflags1 & MF_NOBLOCKMAP) ) {
 
-mov   es, word ptr [bp - 2]
 test  byte ptr es:[si + 014h], MF_NOBLOCKMAP
 jne   exit_set_position
 
@@ -1463,11 +1472,31 @@ jne   exit_set_position
 ;		temp = thing_pos->y;
 ;		blocky = (temp.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
 
-mov   bx, word ptr es:[si + 2]
-sub   bx, word ptr ds:[_bmaporgx]
 
 mov   ax, word ptr es:[si + 6]
 sub   ax, word ptr ds:[_bmaporgy]
+jl    set_null_bnextref_and_exit
+
+mov   bx, word ptr es:[si + 2]
+sub   bx, word ptr ds:[_bmaporgx]
+jl    set_null_bnextref_and_exit
+
+; shift ax 7
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	rcl ax, 1
+	and ah, 1
+ENDIF
+; si is free now..
+
+;		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
+
+
+cmp   ax, word ptr ds:[_bmapheight]
+jge   set_null_bnextref_and_exit
 
 ; shift bx 7
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
@@ -1479,43 +1508,36 @@ ELSE
 	and bh, 1
 ENDIF
 
-; shift ax 7
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-    sar   ax, MAPBLOCKSHIFT
-ELSE
-	sal al, 1
-	mov al, ah
-	rcl ax, 1
-	and ah, 1
-ENDIF
-
-
-;		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
-
-test  bx, bx
-jl    set_null_bnextref_and_exit
-cmp   bx, word ptr ds:[_bmapwidth]
+mov   si, word ptr ds:[_bmapwidth]
+cmp   bx, si
 jge   set_null_bnextref_and_exit
-test  ax, ax
-jl    set_null_bnextref_and_exit
-cmp   ax, word ptr ds:[_bmapheight]
-jge   set_null_bnextref_and_exit
+
+
 
 ;			int16_t bindex = blocky * bmapwidth + blockx;
+
+
+imul  si  ; bmapwidth
+add   bx, ax
+sal   bx, 1
+
+mov   ax, BLOCKLINKS_SEGMENT
+mov   es, ax
+
+
+
 ;			linkRef = blocklinks[bindex];
 ;			thing->bnextRef = linkRef;		 
 ;			blocklinks[bindex] = thingRef;
+;pop   ax  ; bp - 2          ; get thingref
+;xchg  ax, word ptr es:[bx]  ; set thingref. get linkref
+;mov   word ptr [di + 2], ax ; set linkref
 
-
-imul  word ptr ds:[_bmapwidth]
-add   bx, ax
-sal   bx, 1
-mov   ax, BLOCKLINKS_SEGMENT
-mov   es, ax
 mov   ax, word ptr es:[bx]
 mov   word ptr [di + 2], ax
-mov   ax, word ptr [bp - 4]
+mov   ax, word ptr [bp - 2]
 mov   word ptr es:[bx], ax
+
 exit_set_position:
 LEAVE_MACRO
 pop   di
