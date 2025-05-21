@@ -484,6 +484,9 @@ void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_
 // based on it's x y.
 // Sets thing->subsector properly
 //
+
+/*
+
 void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum) {
 
 
@@ -531,15 +534,11 @@ void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos
 	}
 
 
-	/*
-    if ( ! (thing->flags1 & MF_NOSECTOR) ) {
-		// invisible things don't go into the sector links
-
-		thing->snextRef = sectors[subsectorsecnum].thinglistRef;
-		sectors[subsectorsecnum].thinglistRef = thingRef;
-		 
-
-    }*/
+    // if ( ! (thing->flags1 & MF_NOSECTOR) ) {
+	// 	// invisible things don't go into the sector links
+	// 	thing->snextRef = sectors[subsectorsecnum].thinglistRef;
+	// 	sectors[subsectorsecnum].thinglistRef = thingRef;
+    // }
 
 
 
@@ -565,6 +564,7 @@ void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos
     }
 }
 
+*/
 
 
 //

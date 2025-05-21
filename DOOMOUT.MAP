@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/21 13:12:15
+Created on:       25/05/21 13:19:18
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -66,8 +66,8 @@ p_floor_TEXT           CODE           AUTO           0a8f:4ee0       000007f6
 p_inter_TEXT           CODE           AUTO           0a8f:56e0       00000ca9
 p_lights_TEXT          CODE           AUTO           0a8f:6390       000003ed
 p_map_TEXT             CODE           AUTO           0a8f:6780       00002278
-p_maputl_TEXT          CODE           AUTO           0a8f:8a00       0000072d
-P_MATH_TEXT            CODE           AUTO           0a8f:912e       000004ba
+p_maputl_TEXT          CODE           AUTO           0a8f:8a00       0000062d
+P_MATH_TEXT            CODE           AUTO           0a8f:902e       000005bc
 p_plats_TEXT           CODE           AUTO           0a8f:95f0       00000419
 p_pspr_TEXT            CODE           AUTO           0a8f:9a10       00000bd7
 p_spec_TEXT            CODE           AUTO           0a8f:a5f0       000011dc
@@ -1054,22 +1054,22 @@ Module: p_map.obj(C:\REALDOOM\p_map.c)
 0a8f:88c6+     PIT_ChangeSector_
 0a8f:89b6      P_ChangeSector_
 Module: p_maputl.obj(C:\REALDOOM\p_maputl.c)
-0a8f:8a00      P_SetThingPosition_
-0a8f:8b00      P_BlockLinesIterator_
-0a8f:8b88      P_BlockThingsIterator_
-0a8f:8be0+     PIT_AddLineIntercepts_
-0a8f:8d5a+     PIT_AddThingIntercepts_
-0a8f:8e4c+     P_TraverseIntercepts_
-0a8f:8ed4      P_PathTraverse_
+0a8f:8a00      P_BlockLinesIterator_
+0a8f:8a88      P_BlockThingsIterator_
+0a8f:8ae0+     PIT_AddLineIntercepts_
+0a8f:8c5a+     PIT_AddThingIntercepts_
+0a8f:8d4c+     P_TraverseIntercepts_
+0a8f:8dd4      P_PathTraverse_
 Module: p_math.obj(p_math.ASM)
-0a8f:946c      P_InterceptVector_
-0a8f:9243      P_PointOnLineSide_
-0a8f:94ec      P_LineOpening_
-0a8f:9520      P_UnsetThingPosition_
-0a8f:9206      P_AproxDistance_
-0a8f:9398      P_PointOnDivlineSide_
-0a8f:92d9      P_BoxOnLineSide_
-0a8f:912e      R_PointOnSide_
+0a8f:94e8      P_SetThingPosition_
+0a8f:936c      P_InterceptVector_
+0a8f:9143      P_PointOnLineSide_
+0a8f:93ec      P_LineOpening_
+0a8f:9420      P_UnsetThingPosition_
+0a8f:9106      P_AproxDistance_
+0a8f:9298      P_PointOnDivlineSide_
+0a8f:91d9      P_BoxOnLineSide_
+0a8f:902e      R_PointOnSide_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0a8f:95f8      T_PlatRaise_
 0a8f:971c      EV_DoPlat_

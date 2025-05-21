@@ -1142,7 +1142,7 @@ mov   es, ax
 jmp   done_clearing_blockmap
 
 exit_unset_position_and_pop_once:
-pop   ax
+pop   ax	; undo bp - 2
 pop   di
 pop   si
 pop   dx
@@ -1236,6 +1236,8 @@ mov   ax, word ptr es:[bx]
 ;				nextRef = innerthing->bnextRef;
 ;			}
 
+; iterate to end of blockmap list.
+; stop if we find ourselves.
 
 test  ax, ax
 je    exit_unset_position_and_pop_once
@@ -1297,7 +1299,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 ;void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum);
@@ -1305,105 +1306,113 @@ COMMENT @
 PROC P_SetThingPosition_ FAR
 PUBLIC P_SetThingPosition_ 
 
-0x0000000000000000:  56                push  si
-0x0000000000000001:  57                push  di
-0x0000000000000002:  55                push  bp
-0x0000000000000003:  89 E5             mov   bp, sp
-0x0000000000000005:  83 EC 04          sub   sp, 4
-0x0000000000000008:  89 C7             mov   di, ax
-0x000000000000000a:  89 DE             mov   si, bx
-0x000000000000000c:  89 4E FE          mov   word ptr [bp - 2], cx
-0x000000000000000f:  89 D1             mov   cx, dx
-0x0000000000000011:  BB 2C 00          mov   bx, SIZEOF_THINKER_T
-0x0000000000000014:  2D 04 40          sub   ax, (_thinkerlist + 4)
-0x0000000000000017:  31 D2             xor   dx, dx
-0x0000000000000019:  F7 F3             div   bx
-0x000000000000001b:  89 46 FC          mov   word ptr [bp - 4], ax
-0x000000000000001e:  83 F9 FF          cmp   cx, -1
-0x0000000000000021:  75 03             jne   0x26
-0x0000000000000023:  E9 A9 00          jmp   0xcf
-0x0000000000000026:  89 4D 04          mov   word ptr [di + 4], cx
-0x0000000000000029:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x000000000000002c:  26 F6 44 14 08    test  byte ptr es:[si + 014h], 8
-0x0000000000000031:  75 44             jne   0x77
-0x0000000000000033:  8B 5D 04          mov   bx, word ptr [di + 4]
-0x0000000000000036:  B8 00 E0          mov   ax, SECTORS_SEGMENT
-0x0000000000000039:  C1 E3 04          shl   bx, 4
-0x000000000000003c:  8E C0             mov   es, ax
-0x000000000000003e:  8B 56 FC          mov   dx, word ptr [bp - 4]
-0x0000000000000041:  26 8B 47 08       mov   ax, word ptr es:[bx + 8]
-0x0000000000000045:  26 89 57 08       mov   word ptr es:[bx + 8], dx
-0x0000000000000049:  6B FA 2C          imul  di, dx, SIZEOF_THINKER_T
-0x000000000000004c:  83 C3 08          add   bx, 8
-0x000000000000004f:  6B DA 18          imul  bx, dx, 0x18
-0x0000000000000052:  81 C7 04 40       add   di, (_thinkerlist + 4)
-0x0000000000000056:  C7 46 FE F5 6A    mov   word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
-0x000000000000005b:  C7 05 00 00       mov   word ptr [di], 0
-0x000000000000005f:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x0000000000000062:  89 DE             mov   si, bx
-0x0000000000000064:  26 89 47 0C       mov   word ptr es:[bx + 0xc], ax
-0x0000000000000068:  85 C0             test  ax, ax
-0x000000000000006a:  74 0B             je    0x77
-0x000000000000006c:  6B D8 2C          imul  bx, ax, SIZEOF_THINKER_T
-0x000000000000006f:  89 97 04 40       mov   word ptr ds:[bx + (_thinkerlist + 4)], dx
-0x0000000000000073:  81 C3 04 40       add   bx, (_thinkerlist + 4)
-0x0000000000000077:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x000000000000007a:  26 F6 44 14 10    test  byte ptr es:[si + 014h], 010h
-0x000000000000007f:  75 4A             jne   0xcb
-0x0000000000000081:  BB E0 05          mov   bx, _bmaporgx
-0x0000000000000084:  26 8B 44 02       mov   ax, word ptr es:[si + 2]
-0x0000000000000088:  2B 07             sub   ax, word ptr [bx]
-0x000000000000008a:  89 C3             mov   bx, ax
-0x000000000000008c:  26 8B 44 06       mov   ax, word ptr es:[si + 6]
-0x0000000000000090:  BE E2 05          mov   si, _bmaporgy
-0x0000000000000093:  2B 04             sub   ax, word ptr [si]
-0x0000000000000095:  C1 FB 07          sar   bx, MAPBLOCKSHIFT
-0x0000000000000098:  C1 F8 07          sar   ax, MAPBLOCKSHIFT
-0x000000000000009b:  85 DB             test  bx, bx
-0x000000000000009d:  7C 58             jl    0xf7
-0x000000000000009f:  BE DC 05          mov   si, _bmapwidth
-0x00000000000000a2:  3B 1C             cmp   bx, word ptr [si]
-0x00000000000000a4:  7D 51             jge   0xf7
-0x00000000000000a6:  85 C0             test  ax, ax
-0x00000000000000a8:  7C 4D             jl    0xf7
-0x00000000000000aa:  BE DE 05          mov   si, _bmapheight
-0x00000000000000ad:  3B 04             cmp   ax, word ptr [si]
-0x00000000000000af:  7D 46             jge   0xf7
-0x00000000000000b1:  BE DC 05          mov   si, _bmapwidth
-0x00000000000000b4:  F7 2C             imul  word ptr [si]
-0x00000000000000b6:  01 C3             add   bx, ax
-0x00000000000000b8:  B8 00 64          mov   ax, BLOCKLINKS_SEGMENT
-0x00000000000000bb:  01 DB             add   bx, bx
-0x00000000000000bd:  8E C0             mov   es, ax
-0x00000000000000bf:  26 8B 07          mov   ax, word ptr es:[bx]
-0x00000000000000c2:  89 45 02          mov   word ptr [di + 2], ax
-0x00000000000000c5:  8B 46 FC          mov   ax, word ptr [bp - 4]
-0x00000000000000c8:  26 89 07          mov   word ptr es:[bx], ax
-0x00000000000000cb:  C9                LEAVE_MACRO
-0x00000000000000cc:  5F                pop   di
-0x00000000000000cd:  5E                pop   si
-0x00000000000000ce:  CB                retf  
-0x00000000000000cf:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x00000000000000d2:  26 8B 5C 04       mov   bx, word ptr es:[si + 4]
-0x00000000000000d6:  26 8B 4C 06       mov   cx, word ptr es:[si + 6]
-0x00000000000000da:  26 8B 04          mov   ax, word ptr es:[si]
-0x00000000000000dd:  26 8B 54 02       mov   dx, word ptr es:[si + 2]
-0x00000000000000e1:  E8 F2 DA          call  R_PointInSubsector_
-0x00000000000000e4:  89 C3             mov   bx, ax
-0x00000000000000e6:  B8 29 EA          mov   ax, SUBSECTORS_SEGMENT
-0x00000000000000e9:  C1 E3 02          shl   bx, 2
-0x00000000000000ec:  8E C0             mov   es, ax
-0x00000000000000ee:  26 8B 07          mov   ax, word ptr es:[bx]
-0x00000000000000f1:  89 45 04          mov   word ptr [di + 4], ax
-0x00000000000000f4:  E9 32 FF          jmp   0x29
-0x00000000000000f7:  C7 45 02 00 00    mov   word ptr [di + 2], 0
-0x00000000000000fc:  C9                LEAVE_MACRO
-0x00000000000000fd:  5F                pop   di
-0x00000000000000fe:  5E                pop   si
-0x00000000000000ff:  CB                retf  
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 4
+mov   di, ax
+mov   si, bx
+mov   word ptr [bp - 2], cx
+mov   cx, dx
+mov   bx, SIZEOF_THINKER_T
+sub   ax, (_thinkerlist + 4)
+xor   dx, dx
+div   bx
+mov   word ptr [bp - 4], ax
+cmp   cx, -1
+jne   label_1
+jmp   label_2
+label_1:
+mov   word ptr [di + 4], cx
+label_5:
+mov   es, word ptr [bp - 2]
+test  byte ptr es:[si + 014h], 8
+jne   label_3
+mov   bx, word ptr [di + 4]
+mov   ax, SECTORS_SEGMENT
+shl   bx, 4
+mov   es, ax
+mov   dx, word ptr [bp - 4]
+mov   ax, word ptr es:[bx + 8]
+mov   word ptr es:[bx + 8], dx
+imul  di, dx, SIZEOF_THINKER_T
+add   bx, 8
+imul  bx, dx, SIZEOF_MOBJ_POS_T
+add   di, (_thinkerlist + 4)
+mov   word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
+mov   word ptr [di], 0
+mov   es, word ptr [bp - 2]
+mov   si, bx
+mov   word ptr es:[bx + 0Ch], ax
+test  ax, ax
+
+je    label_3
+imul  bx, ax, SIZEOF_THINKER_T
+mov   word ptr ds:[bx + (_thinkerlist + 4)], dx
+add   bx, (_thinkerlist + 4)
+label_3:
+mov   es, word ptr [bp - 2]
+test  byte ptr es:[si + 014h], 010h
+jne   exit_set_position
+mov   bx, _bmaporgx
+mov   ax, word ptr es:[si + 2]
+sub   ax, word ptr [bx]
+mov   bx, ax
+mov   ax, word ptr es:[si + 6]
+mov   si, _bmaporgy
+sub   ax, word ptr [si]
+sar   bx, MAPBLOCKSHIFT
+sar   ax, MAPBLOCKSHIFT
+test  bx, bx
+jl    label_4
+mov   si, _bmapwidth
+cmp   bx, word ptr [si]
+jge   label_4
+test  ax, ax
+jl    label_4
+mov   si, _bmapheight
+cmp   ax, word ptr [si]
+jge   label_4
+mov   si, _bmapwidth
+imul  word ptr [si]
+add   bx, ax
+mov   ax, BLOCKLINKS_SEGMENT
+add   bx, bx
+mov   es, ax
+mov   ax, word ptr es:[bx]
+mov   word ptr [di + 2], ax
+mov   ax, word ptr [bp - 4]
+mov   word ptr es:[bx], ax
+exit_set_position:
+LEAVE_MACRO
+pop   di
+pop   si
+retf  
+label_2:
+mov   es, word ptr [bp - 2]
+mov   bx, word ptr es:[si + 4]
+mov   cx, word ptr es:[si + 6]
+mov   ax, word ptr es:[si]
+mov   dx, word ptr es:[si + 2]
+call  R_PointInSubsector_
+mov   bx, ax
+mov   ax, SUBSECTORS_SEGMENT
+shl   bx, 2
+mov   es, ax
+mov   ax, word ptr es:[bx]
+mov   word ptr [di + 4], ax
+jmp   label_5
+label_4:
+mov   word ptr [di + 2], 0
+LEAVE_MACRO
+pop   di
+pop   si
+retf  
 
 ENDP
 
+COMMENT @
 @
 
 
