@@ -2041,6 +2041,10 @@ BOXTOP = 00h
 BOXBOTTOM = 01h
 BOXLEFT = 02h
 BOXRIGHT = 03h
+SIZEOF_THINKER_T = 02Ch
+SIZEOF_MOBJ_T = 028h
+SIZEOF_STATE_T = 06h
+MAPBLOCKSHIFT = 07h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h

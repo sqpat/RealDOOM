@@ -395,7 +395,6 @@ db "P_UnarchiveSpecials:Unknown tclass %i in savegame", 0
 SIZEOF_THINKER_T = 44
 SIZEOF_MOBJ_VANILLA_T = 09Ah
 SIZEOF_MOBJ_T = 028h
-SIZEOF_MOBJPOS_T = 018h
 SIZEOF_THINKER_VANILLA_T = 12
 SIZEOF_MAPTHING_T = 10
 
@@ -536,7 +535,7 @@ mov       cx, SIZEOF_THINKER_T
 div       cx
 mov       cx, ax                          ; cx = thinkerref
 
-mov       dx, SIZEOF_MOBJPOS_T
+mov       dx, SIZEOF_MOBJ_POS_T
 mul       dx
 mov       di, ax                          ; di has mobjpos_t offset
 xchg      ax, dx                          ; dx also holds on to mobjpos_t base 
@@ -1539,7 +1538,6 @@ ENDP
 SIZEOF_THINKER_T = 02Ch
 SIZEOF_MOBJ_VANILLA_T = 09Ah
 SIZEOF_MOBJ_T = 028h
-SIZEOF_MOBJPOS_T = 018h
 SIZEOF_THINKER_VANILLA_T = 12
 SIZEOF_MAPTHING_T = 10
 SIZEOF_STATE_T = 6
@@ -1595,7 +1593,7 @@ retf
 
 do_save_next_thinker:
 ; dx is index..
-mov       ax, SIZEOF_MOBJPOS_T
+mov       ax, SIZEOF_MOBJ_POS_T
 push      dx
 mul       dx         ; dx is thinker index.
 pop       dx

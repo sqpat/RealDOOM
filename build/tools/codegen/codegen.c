@@ -7,8 +7,8 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2042
-#define LOCALS_COUNT 18
+#define CONSTANTS_COUNT 2046
+#define LOCALS_COUNT 18 
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
 	"FIXED_DS_SEGMENT",
@@ -2109,7 +2109,12 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"BOXTOP",
     "BOXBOTTOM",
     "BOXLEFT",
-    "BOXRIGHT"
+    "BOXRIGHT",
+	"SIZEOF_THINKER_T",
+	"SIZEOF_MOBJ_T",
+	"SIZEOF_STATE_T",
+	"MAPBLOCKSHIFT"
+
 
 
 
@@ -4222,8 +4227,11 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	BOXTOP,
     BOXBOTTOM,
     BOXLEFT,
-    BOXRIGHT
-
+    BOXRIGHT,
+	sizeof(thinker_t),
+	sizeof(mobj_t),
+	sizeof(state_t),
+	MAPBLOCKSHIFT
 
 
 

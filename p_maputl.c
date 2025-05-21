@@ -374,6 +374,9 @@ void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t l
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
+
+/*
+
 void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos){
     int16_t		blockx;
     int16_t		blocky;
@@ -407,28 +410,28 @@ void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_
 		}
 	}
 
-	/*
-	if ( ! (thingflags1 & MF_NOSECTOR) ) {
-	// inert things don't need to be in blockmap?
-	// unlink from subsector
+	
+	// if ( ! (thingflags1 & MF_NOSECTOR) ) {
+	// // inert things don't need to be in blockmap?
+	// // unlink from subsector
 
-		nextRef = sectors[thingsecnum].thinglistRef;
-		// if nextref check here?
-		while (nextRef) {
-			mobj_t __near* innerthing = &thinkerlist[nextRef].data;
-			if (innerthing->snextRef == thisRef) {
-				innerthing->snextRef = thingsnextRef;
-				break;
-			}
-			nextRef = innerthing->snextRef;
-		}
+	// 	nextRef = sectors[thingsecnum].thinglistRef;
+	// 	// if nextref check here?
+	// 	while (nextRef) {
+	// 		mobj_t __near* innerthing = &thinkerlist[nextRef].data;
+	// 		if (innerthing->snextRef == thisRef) {
+	// 			innerthing->snextRef = thingsnextRef;
+	// 			break;
+	// 		}
+	// 		nextRef = innerthing->snextRef;
+	// 	}
 
-		// if it was not found in the block previously then...
-		if (nextRef == NULL_THINKERREF) {
-			sectors[thingsecnum].thinglistRef = thingsnextRef;
-		}
-    }
-	*/
+	// 	// if it was not found in the block previously then...
+	// 	if (nextRef == NULL_THINKERREF) {
+	// 		sectors[thingsecnum].thinglistRef = thingsnextRef;
+	// 	}
+    // }
+	
 	
 
 
@@ -445,12 +448,12 @@ void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_
 		blockx = (thingx.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
 		blocky = (thingy.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
 		
-		/*		temp.h = (thingx.h.intbits - bmaporgx);
-		blockx = temp.b.bytehigh << 1;
-		blockx += temp.h & 0x0080 ? 1 : 0;*/
-		/*			temp.h = (thingy.h.intbits - bmaporgy);
-		blocky = temp.b.bytehigh << 1;
-		blocky += temp.b.bytelow & 0x80 ? 1 : 0;*/
+		// 		temp.h = (thingx.h.intbits - bmaporgx);
+		// blockx = temp.b.bytehigh << 1;
+		// blockx += temp.h & 0x0080 ? 1 : 0;
+		// 			temp.h = (thingy.h.intbits - bmaporgy);
+		// blocky = temp.b.bytehigh << 1;
+		// blocky += temp.b.bytelow & 0x80 ? 1 : 0;
 
 		if (blockx >= 0 && blockx < bmapwidth && blocky >= 0 && blocky < bmapheight){
 
@@ -473,7 +476,7 @@ void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_
 		}
     }
 }
-
+*/
 
 //
 // P_SetThingPosition
