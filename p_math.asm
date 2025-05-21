@@ -1110,8 +1110,25 @@ jne   mobj_inert_not_in_blockmap
 test  di, di
 je    no_next_ref
 
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
 xchg  ax, si ; store si in ax
 imul  si, di, SIZEOF_THINKER_T
+
+ELSE
+
+push  dx
+
+xor   dx, dx
+mov   ax, SIZEOF_THINKER_T
+mul   di
+xchg  ax, si ; store si in ax, si gets value..
+
+pop   dx
+
+
+ENDIF
 
 mov   word ptr ds:[si + (_thinkerlist + 4)], dx
 xchg  ax, si  ; restore si
@@ -1156,7 +1173,24 @@ has_prev_ref:
 ; dx is thingsprevRef
 ; di is thingsnextRef
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
 imul  si, dx, SIZEOF_MOBJ_POS_T
+
+ELSE
+
+; 017h
+
+sal   dx, 1
+sal   dx, 1
+sal   dx, 1
+mov   si, dx
+sal   dx, 1
+add   si, dx
+
+
+ENDIF
+
 mov   word ptr es:[si + 0Ch], di
 mobj_inert_not_in_blockmap:
 done_clearing_blockmap:
@@ -1259,7 +1293,20 @@ do_next_check_nextref_loop_iter:
 ; di is bnextRef
 
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
 imul  si, ax, SIZEOF_THINKER_T
+
+ELSE
+
+xor  dx, dx
+xchg ax, si
+mov  ax, SIZEOF_THINKER_T
+mul  si
+xchg ax, si
+
+ENDIF
+
 add   si, (_thinkerlist + 4) + 2
 cmp   cx, word ptr [si]
 jne   ref_not_a_match
@@ -1303,6 +1350,10 @@ ENDP
 
 ;void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum);
 
+; ax   	thing
+; cx:bx thing_pos
+; dx    knownsecnum
+
 PROC P_SetThingPosition_ FAR
 PUBLIC P_SetThingPosition_ 
 
@@ -1315,29 +1366,69 @@ mov   di, ax
 mov   si, bx
 mov   word ptr [bp - 2], cx
 mov   cx, dx
+
+;	THINKERREF thingRef = GETTHINKERREF(thing);
+
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 xor   dx, dx
 div   bx
 mov   word ptr [bp - 4], ax
+
+;	if (knownsecnum != -1) {
+
 cmp   cx, -1
-jne   label_1
-jmp   label_2
-label_1:
-mov   word ptr [di + 4], cx
-label_5:
+jne   secnum_ready
+
+;		int16_t	subsecnum = R_PointInSubsector(thing_pos->x, thing_pos->y);;
+;		int16_t subsectorsecnum = subsectors[subsecnum].secnum;
+;		thing->secnum = subsectorsecnum;
+
 mov   es, word ptr [bp - 2]
-test  byte ptr es:[si + 014h], 8
-jne   label_3
+mov   bx, word ptr es:[si + 4]
+mov   cx, word ptr es:[si + 6]
+mov   ax, word ptr es:[si]
+mov   dx, word ptr es:[si + 2]
+call  R_PointInSubsector_
+mov   bx, ax
+mov   ax, SUBSECTORS_SEGMENT
+mov   es, ax
+SHIFT_MACRO shl   bx 2
+mov   cx, word ptr es:[bx]
+
+secnum_ready:
+
+;		thing->secnum = knownsecnum;
+
+mov   word ptr [di + 4], cx
+
+mov   es, word ptr [bp - 2]
+
+;	if (!(thing_pos->flags1 & MF_NOSECTOR)) {
+
+test  byte ptr es:[si + 014h], MF_NOSECTOR
+jne   done_setting_sector_stuff
+
+
+;		oldsectorthinglist = sectors[thing->secnum].thinglistRef;
+;		sectors[thing->secnum].thinglistRef = thingRef;
+
 mov   bx, word ptr [di + 4]
 mov   ax, SECTORS_SEGMENT
-shl   bx, 4
 mov   es, ax
-mov   dx, word ptr [bp - 4]
-mov   ax, word ptr es:[bx + 8]
-mov   word ptr es:[bx + 8], dx
+SHIFT_MACRO shl   bx  4
+mov   ax, word ptr [bp - 4]
+mov   dx, ax
+xchg  ax, word ptr es:[bx + 8]
+
+;		thing = (mobj_t __near*)&thinkerlist[thingRef].data;
+;		thing_pos = &mobjposlist_6800[thingRef];
+;		thing->sprevRef = NULL_THINKERREF;
+;		thing_pos->snextRef = oldsectorthinglist;
+
+
 imul  di, dx, SIZEOF_THINKER_T
-add   bx, 8
+
 imul  bx, dx, SIZEOF_MOBJ_POS_T
 add   di, (_thinkerlist + 4)
 mov   word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
@@ -1345,40 +1436,81 @@ mov   word ptr [di], 0
 mov   es, word ptr [bp - 2]
 mov   si, bx
 mov   word ptr es:[bx + 0Ch], ax
+;		if (thing_pos->snextRef) {
 test  ax, ax
 
-je    label_3
+
+je    done_setting_sector_stuff
+
+;			thingList = (mobj_t __near*)&thinkerlist[thing_pos->snextRef].data;
+;			thingList->sprevRef = thingRef;
+
 imul  bx, ax, SIZEOF_THINKER_T
 mov   word ptr ds:[bx + (_thinkerlist + 4)], dx
 add   bx, (_thinkerlist + 4)
-label_3:
+
+done_setting_sector_stuff:
+
+;    if (! (thingflags1 & MF_NOBLOCKMAP) ) {
+
 mov   es, word ptr [bp - 2]
-test  byte ptr es:[si + 014h], 010h
+test  byte ptr es:[si + 014h], MF_NOBLOCKMAP
 jne   exit_set_position
-mov   bx, _bmaporgx
-mov   ax, word ptr es:[si + 2]
-sub   ax, word ptr [bx]
-mov   bx, ax
+
+
+;		temp = thing_pos->x;
+;		blockx = (temp.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
+;		temp = thing_pos->y;
+;		blocky = (temp.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
+
+mov   bx, word ptr es:[si + 2]
+sub   bx, word ptr ds:[_bmaporgx]
+
 mov   ax, word ptr es:[si + 6]
-mov   si, _bmaporgy
-sub   ax, word ptr [si]
-sar   bx, MAPBLOCKSHIFT
-sar   ax, MAPBLOCKSHIFT
+sub   ax, word ptr ds:[_bmaporgy]
+
+; shift bx 7
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   bx, MAPBLOCKSHIFT
+ELSE
+	sal bl, 1
+	mov bl, bh
+	rcl bx, 1
+	and bh, 1
+ENDIF
+
+; shift ax 7
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	rcl ax, 1
+	and ah, 1
+ENDIF
+
+
+;		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
+
 test  bx, bx
-jl    label_4
-mov   si, _bmapwidth
-cmp   bx, word ptr [si]
-jge   label_4
+jl    set_null_bnextref_and_exit
+cmp   bx, word ptr ds:[_bmapwidth]
+jge   set_null_bnextref_and_exit
 test  ax, ax
-jl    label_4
-mov   si, _bmapheight
-cmp   ax, word ptr [si]
-jge   label_4
-mov   si, _bmapwidth
-imul  word ptr [si]
+jl    set_null_bnextref_and_exit
+cmp   ax, word ptr ds:[_bmapheight]
+jge   set_null_bnextref_and_exit
+
+;			int16_t bindex = blocky * bmapwidth + blockx;
+;			linkRef = blocklinks[bindex];
+;			thing->bnextRef = linkRef;		 
+;			blocklinks[bindex] = thingRef;
+
+
+imul  word ptr ds:[_bmapwidth]
 add   bx, ax
+sal   bx, 1
 mov   ax, BLOCKLINKS_SEGMENT
-add   bx, bx
 mov   es, ax
 mov   ax, word ptr es:[bx]
 mov   word ptr [di + 2], ax
@@ -1389,21 +1521,11 @@ LEAVE_MACRO
 pop   di
 pop   si
 retf  
-label_2:
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr es:[si + 4]
-mov   cx, word ptr es:[si + 6]
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
-call  R_PointInSubsector_
-mov   bx, ax
-mov   ax, SUBSECTORS_SEGMENT
-shl   bx, 2
-mov   es, ax
-mov   ax, word ptr es:[bx]
-mov   word ptr [di + 4], ax
-jmp   label_5
-label_4:
+
+set_null_bnextref_and_exit:
+
+;			thing->bnextRef = NULL_THINKERREF;
+
 mov   word ptr [di + 2], 0
 LEAVE_MACRO
 pop   di
