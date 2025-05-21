@@ -985,9 +985,8 @@ PUBLIC P_LineOpening_
 
 cmp  ax, 0FFFFh
 je   return_lineopening
-push si
-mov  si, SECTORS_SEGMENT
-mov  es, si
+mov  ax, SECTORS_SEGMENT
+mov  ds, ax
 SHIFT_MACRO shl  dx 4
 SHIFT_MACRO shl  bx 4
 
@@ -1001,24 +1000,23 @@ SHIFT_MACRO shl  bx 4
 ;}
 
 
-mov  si, dx
 
-; es:si = front
-; es:bx = back
-
-mov  ax, word ptr es:[si + 2]
-mov  dx, word ptr es:[bx + 2]
-cmp  ax, dx
-
-jl   front_ceiling_below_back_ceiling
-
-xchg ax, dx   ; swap what to write
-
-front_ceiling_below_back_ceiling:
-mov  word ptr ds:[_lineopening+0], ax  ; set opentop
+; ds:dx = front
+; ds:bx = back
 
 
-opentop_set:
+les  ax, dword ptr ds:[bx] ; back + 0
+mov  bx, dx	; [front]
+mov  dx, es ; back + 2
+
+
+les  bx, dword ptr ds:[bx] ; front + 0
+; es has front + 2
+
+; ax has back + 0
+; dx has back + 2
+; bx has front + 0
+; es has front + 2
 
 ;	if (front->floorheight > back->floorheight) {
 ;		lineopening.openbottom = front->floorheight;
@@ -1028,19 +1026,26 @@ opentop_set:
 ;		lineopening.lowfloor = front->floorheight;
 ;	}
 
-mov  ax, word ptr es:[si]
-mov  dx, word ptr es:[bx]
 
-
-cmp  ax, dx
+cmp  bx, ax
 jle  front_floor_above_back_floor
-xchg ax, dx ; swap param to write..
+xchg ax, bx ; swap param to write..
 
 front_floor_above_back_floor:
-mov  word ptr ds:[_lineopening+2], dx
-mov  word ptr ds:[_lineopening+4], ax
+mov  word ptr ss:[_lineopening+2], ax
+mov  ax, ss
+mov  ds, ax
+mov  word ptr ds:[_lineopening+4], bx
 
-pop  si
+
+mov  ax, es  ; front+2
+cmp  ax, dx
+jl   front_ceiling_below_back_ceiling
+xchg ax, dx   ; swap what to write
+
+front_ceiling_below_back_ceiling:
+mov  word ptr ds:[_lineopening+0], ax  ; set opentop
+
 
 return_lineopening:
 ret  
