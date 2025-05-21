@@ -248,7 +248,7 @@ __near P_PathTraverse
   uint8_t		flags,
   boolean	__near(*  trav) (intercept_t  __far*));
 
-void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* mobj_pos);
+void __near P_UnsetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset);
 void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* mobj_pos, int16_t knownsecnum);
 
 

@@ -1057,7 +1057,7 @@ ENDP
 
 
 
-;void __near P_UnsetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos);
+;void __near P_UnsetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset);
 
 PROC P_UnsetThingPosition_ NEAR
 PUBLIC P_UnsetThingPosition_ 
@@ -1065,18 +1065,19 @@ PUBLIC P_UnsetThingPosition_
 ; #define GETTHINKERREF(a) ((((uint16_t)((byte __near*)a - (byte __near*)thinkerlist))-4)/SIZEOF_THINKER_T)
 
 ; ax = thing
-; cx:bx = thingpos...
-; cx is constant.      todo make it pass in 8 bits
+; dx = thingpos offset
 
 ; bp - 2   bnextRef
 
-push  dx
+push  bx
+push  cx
 push  si
 push  di
 mov   si, ax
 
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
+mov   bx, dx  ; move offset over. es:bx is mobjpos
 
 lodsw     ; si + 0	; sprevRef
 xchg  ax, dx    ; dx stores sprevRef
@@ -1162,7 +1163,8 @@ exit_unset_position_and_pop_once:
 pop   ax	; undo bp - 2
 pop   di
 pop   si
-pop   dx
+pop   cx
+pop   bx
 ret   
 
 
@@ -1327,7 +1329,8 @@ je    not_found_in_blocklink
 exit_unset_position:
 pop   di
 pop   si
-pop   dx
+pop   cx
+pop   bx
 ret   
 
 ref_not_a_match:
@@ -1343,7 +1346,8 @@ mov   word ptr es:[bx], di
 
 pop   di
 pop   si
-pop   dx
+pop   cx
+pop   bx
 ret   
 
 

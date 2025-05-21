@@ -266,7 +266,7 @@ boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,
     
     // the move is ok,
     // so link the thing into its new position
-	P_UnsetThingPosition (thing, thing_pos);
+	P_UnsetThingPosition (thing, FP_OFF(thing_pos));
 
     thing->floorz = tmfloorz;
     thing->ceilingz = tmceilingz;	
@@ -709,7 +709,7 @@ boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fix
 
     // the move is ok,
     // so link the thing into its new position
-	P_UnsetThingPosition (thing, thing_pos);
+	P_UnsetThingPosition (thing, FP_OFF(thing_pos));
 
     oldx = thing_pos->x;
     oldy = thing_pos->y;

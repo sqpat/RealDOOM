@@ -841,7 +841,7 @@ THINKERREF __near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type
 void __far P_RemoveMobj (mobj_t __near* mobj) {
 	THINKERREF mobjRef = GETTHINKERREF(mobj);
     // unlink from sector and block lists
-    P_UnsetThingPosition (mobj, &mobjposlist_6800[mobjRef]);
+    P_UnsetThingPosition (mobj, mobjRef * sizeof(mobj_pos_t));
     
     // stop any playing sound
     S_StopSoundMobjRef (mobj);
