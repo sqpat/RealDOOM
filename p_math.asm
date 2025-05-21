@@ -1068,32 +1068,35 @@ PUBLIC P_UnsetThingPosition_
 ; cx:bx = thingpos...
 ; cx is constant.      todo make it pass in 8 bits
 
-; bp - 2   thingpos segment   ; todo remove
-; bp - 4   sprevRef
-; bp - 6   bnextRef
-; bp - 8   flags
-; bp - 0Ah secnum
+; bp - 2   sprevRef
+; bp - 4   bnextRef
+; bp - 6   flags
+; bp - 8 secnum
 
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ah
 mov   si, ax
-mov   word ptr [bp - 2], cx
-mov   ax, word ptr [si]					; sprevRef
-mov   word ptr [bp - 4], ax
-mov   es, cx
-mov   ax, word ptr [si + 2]				; bnextRef
-mov   word ptr [bp - 6], ax
+
+lodsw     ; si + 0	; sprevRef
+push  ax  ; bp - 2
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
+lodsw     ; si + 2 bnextRef
+push  ax  ; bp - 4
+
 mov   ax, word ptr es:[bx + 014h]	; get thing_pos->flags1;
-xor   dx, dx
-mov   word ptr [bp - 8], ax			; store thingflags todo keep in reg not used much
-mov   ax, word ptr [si + 4]
+push  ax  ; bp - 6			; store thingflags todo keep in reg not used much
+
+lodsw     ; si + 4  ; secnum
+push  ax  ; bp - 8
 mov   cx, SIZEOF_THINKER_T
-mov   word ptr [bp - 0Ah], ax
-lea   ax, ds:[si - (_thinkerlist + 4)]
+
+
+xor   dx, dx
+lea   ax, ds:[si - (_thinkerlist + 4) - 6]
 div   cx					; calculate thisref. todo move this way later. usually not used.
 mov   di, word ptr es:[bx + 0Ch]	; snextRef
 mov   cx, ax					
@@ -1101,7 +1104,7 @@ mov   cx, ax
 
 ;	if (!(thingflags1 & MF_NOSECTOR)) {
 
-test  byte ptr [bp - 8], MF_NOSECTOR
+test  byte ptr [bp - 6], MF_NOSECTOR
 jne   mobj_intert_not_in_blockmap
 
 ;		if (thingsnextRef) {
@@ -1113,9 +1116,9 @@ jne   mobj_intert_not_in_blockmap
 test  di, di
 je    no_next_ref
 imul  si, di, SIZEOF_THINKER_T
-mov   ax, word ptr [bp - 4]
+mov   ax, word ptr [bp - 2]
 mov   word ptr ds:[si + (_thinkerlist + 4)], ax
-add   si, (_thinkerlist + 4)
+
 no_next_ref:
 
 ;		if (thingsprevRef) {
@@ -1123,23 +1126,25 @@ no_next_ref:
 ;			changeThing_pos->snextRef = thingsnextRef;
 ;		}
 
-mov   ax, word ptr [bp - 4]
+mov   ax, word ptr [bp - 2]
 test  ax, ax
 jne   has_prev_ref
 
 ;			sectors[thingsecnum].thinglistRef = thingsnextRef;
 
-mov   si, word ptr [bp - 0Ah]
+mov   si, word ptr [bp - 8]
 mov   ax, SECTORS_SEGMENT
 shl   si, 4
 mov   es, ax
 mov   word ptr es:[si + 8], di
-add   si, 8
 jmp   done_clearing_blockmap
 
 has_prev_ref:
 ;			changeThing_pos = &mobjposlist_6800[thingsprevRef];
 ;			changeThing_pos->snextRef = thingsnextRef;
+
+; ax is thingsprevRef
+; di is thingsnextRef
 
 imul  si, ax, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
@@ -1151,21 +1156,21 @@ done_clearing_blockmap:
 ;    if (! (thingflags1 & MF_NOBLOCKMAP) ) {
 
 
-test  byte ptr [bp - 8], MF_NOBLOCKMAP
+test  byte ptr [bp - 6], MF_NOBLOCKMAP
 jne   exit_unset_position
 
 ;		blockx = (thingx.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
 ;		blocky = (thingy.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
 
-mov   es, word ptr [bp - 2]
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
 mov   ax, word ptr es:[bx + 2]
 mov   di, word ptr es:[bx + 6]
-mov   bx, _bmaporgx
-sub   ax, word ptr [bx]
-mov   si, _bmaporgy
+
+sub   ax, word ptr ds:[_bmaporgx]
 mov   bx, ax
 mov   ax, di
-sub   ax, word ptr [si]
+sub   ax, word ptr ds:[_bmaporgy]
 sar   bx, MAPBLOCKSHIFT
 sar   ax, MAPBLOCKSHIFT
 
@@ -1174,21 +1179,20 @@ sar   ax, MAPBLOCKSHIFT
 
 test  bx, bx
 jl    exit_unset_position
-mov   si, _bmapwidth
-cmp   bx, word ptr [si]
+
+cmp   bx, word ptr ds:[_bmapwidth]
 jge   exit_unset_position
 test  ax, ax
 jl    exit_unset_position
-mov   si, _bmapheight
-cmp   ax, word ptr [si]
+
+cmp   ax, word ptr ds:[_bmapheight]
 jge   exit_unset_position
 
 ;			int16_t bindex = blocky * bmapwidth + blockx;
 ;			nextRef = blocklinks[bindex];
 
 
-mov   si, _bmapwidth
-imul  word ptr [si]
+imul  word ptr ds:[_bmapwidth]
 mov   si, ax
 add   si, bx
 mov   ax, BLOCKLINKS_SEGMENT
@@ -1219,7 +1223,7 @@ add   bx, (_thinkerlist + 4)
 cmp   cx, word ptr [bx + 2]
 jne   ref_not_a_match
 ; write bnextref and break look
-mov   cx, word ptr [bp - 6]
+mov   cx, word ptr [bp - 4]
 mov   word ptr [bx + 2], cx
 check_nextref_loop_done:
 
@@ -1246,7 +1250,7 @@ not_found_in_blocklink:
 mov   ax, BLOCKLINKS_SEGMENT
 add   si, si
 mov   es, ax
-mov   ax, word ptr [bp - 6]
+mov   ax, word ptr [bp - 4]
 mov   word ptr es:[si], ax
 LEAVE_MACRO
 pop   di
