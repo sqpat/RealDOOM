@@ -1070,8 +1070,7 @@ PUBLIC P_UnsetThingPosition_
 
 ; bp - 2   sprevRef
 ; bp - 4   bnextRef
-; bp - 6   flags
-; bp - 8 secnum
+; bp - 6   secnum
 
 push  dx
 push  si
@@ -1087,25 +1086,24 @@ mov   es, ax
 lodsw     ; si + 2 bnextRef
 push  ax  ; bp - 4
 
-mov   ax, word ptr es:[bx + 014h]	; get thing_pos->flags1;
-push  ax  ; bp - 6			; store thingflags todo keep in reg not used much
-
 lodsw     ; si + 4  ; secnum
-push  ax  ; bp - 8
-mov   cx, SIZEOF_THINKER_T
+push  ax  ; bp - 6
+
+; calculate thisref numerator. only div to calculate in the end if necessary
+lea   cx, ds:[si - (_thinkerlist + 4) - 6]
 
 
-xor   dx, dx
-lea   ax, ds:[si - (_thinkerlist + 4) - 6]
-div   cx					; calculate thisref. todo move this way later. usually not used.
+
+
+
+
 mov   di, word ptr es:[bx + 0Ch]	; snextRef
-mov   cx, ax					
 
 
 ;	if (!(thingflags1 & MF_NOSECTOR)) {
 
-test  byte ptr [bp - 6], MF_NOSECTOR
-jne   mobj_intert_not_in_blockmap
+test  byte ptr es:[bx + 014h], MF_NOSECTOR  ; flags1
+jne   mobj_inert_not_in_blockmap
 
 ;		if (thingsnextRef) {
 ;			changeThing = (mobj_t __near*)&thinkerlist[thingsnextRef].data;
@@ -1132,11 +1130,15 @@ jne   has_prev_ref
 
 ;			sectors[thingsecnum].thinglistRef = thingsnextRef;
 
-mov   si, word ptr [bp - 8]
+pop   si   ; get secnum
 mov   ax, SECTORS_SEGMENT
 shl   si, 4
 mov   es, ax
 mov   word ptr es:[si + 8], di
+
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
+
 jmp   done_clearing_blockmap
 
 has_prev_ref:
@@ -1147,43 +1149,59 @@ has_prev_ref:
 ; di is thingsnextRef
 
 imul  si, ax, SIZEOF_MOBJ_POS_T
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   es, ax
 mov   word ptr es:[si + 0Ch], di
-mobj_intert_not_in_blockmap:
+mobj_inert_not_in_blockmap:
 done_clearing_blockmap:
 
 ;    if (! (thingflags1 & MF_NOBLOCKMAP) ) {
 
 
-test  byte ptr [bp - 6], MF_NOBLOCKMAP
+test  byte ptr es:[bx + 014h], MF_NOBLOCKMAP  ; flags1
 jne   exit_unset_position
 
 ;		blockx = (thingx.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
 ;		blocky = (thingy.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
-
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   es, ax
-mov   ax, word ptr es:[bx + 2]
-mov   di, word ptr es:[bx + 6]
-
-sub   ax, word ptr ds:[_bmaporgx]
-mov   bx, ax
-mov   ax, di
-sub   ax, word ptr ds:[_bmaporgy]
-sar   bx, MAPBLOCKSHIFT
-sar   ax, MAPBLOCKSHIFT
-
 ;		if (blockx >= 0 && blockx < bmapwidth && blocky >= 0 && blocky < bmapheight){
 
 
-test  bx, bx
+; do zero checks first. then we can do a faster unsigned shift. in 286 case
+
+mov   ax, word ptr es:[bx + 6]  ; y high word
+sub   ax, word ptr ds:[_bmaporgy]
 jl    exit_unset_position
+
+mov   bx, word ptr es:[bx + 2]  ; x high word
+sub   bx, word ptr ds:[_bmaporgx]
+jl    exit_unset_position
+
+
+
+; shift bx 7
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   bx, MAPBLOCKSHIFT
+ELSE
+	sal bl, 1
+	mov bl, bh
+	rcl bx, 1
+	and bh, 1
+ENDIF
+
+; shift ax 7
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	rcl ax, 1
+	and ah, 1
+ENDIF
+
+
+
 
 cmp   bx, word ptr ds:[_bmapwidth]
 jge   exit_unset_position
-test  ax, ax
-jl    exit_unset_position
 
 cmp   ax, word ptr ds:[_bmapheight]
 jge   exit_unset_position
@@ -1191,14 +1209,14 @@ jge   exit_unset_position
 ;			int16_t bindex = blocky * bmapwidth + blockx;
 ;			nextRef = blocklinks[bindex];
 
+; ax is blocky
+; bx is blockX
 
-imul  word ptr ds:[_bmapwidth]
-mov   si, ax
-add   si, bx
+imul  word ptr ds:[_bmapwidth]  ; bmapwidth * blocky
+add   bx, ax   ; add blockx
 mov   ax, BLOCKLINKS_SEGMENT
-mov   bx, si
 mov   es, ax
-add   bx, si
+sal   bx, 1   ; word lookup...
 mov   ax, word ptr es:[bx]
 
 ;			while (nextRef) {
@@ -1214,17 +1232,28 @@ mov   ax, word ptr es:[bx]
 test  ax, ax
 je    exit_unset_position
 
+; only do the div to calculate thisref at the end if very necessary
+xor   dx, dx
+xchg  ax, cx
+mov   di, SIZEOF_THINKER_T
+div   di					; calculate thisref. todo move this way later. usually not used.
+xchg  cx, ax			    ; cx gets thisref. ax restored.
+
+
 do_next_check_nextref_loop_iter:
 ; ax is nextref
-; bx becomes thinkerlist[nextref]
-; cx is thisRef
-imul  bx, ax, SIZEOF_THINKER_T
-add   bx, (_thinkerlist + 4)
-cmp   cx, word ptr [bx + 2]
+; si becomes thinkerlist[nextref]
+; cx is thisRef numerator (from way above..)
+; bx is blockmap ref
+
+
+imul  si, ax, SIZEOF_THINKER_T
+add   si, (_thinkerlist + 4) + 2
+cmp   cx, word ptr [si]
 jne   ref_not_a_match
 ; write bnextref and break look
 mov   cx, word ptr [bp - 4]
-mov   word ptr [bx + 2], cx
+mov   word ptr [si], cx
 check_nextref_loop_done:
 
 ;	if (nextRef == NULL_THINKERREF) {
@@ -1242,16 +1271,14 @@ ret
 
 ref_not_a_match:
 ; nextRef = innerthing->bnextRef;
-mov   ax, word ptr [bx + 2]
+mov   ax, word ptr [si]
 test  ax, ax
 jne   do_next_check_nextref_loop_iter
 
 not_found_in_blocklink:
-mov   ax, BLOCKLINKS_SEGMENT
-add   si, si
-mov   es, ax
+; es already blocklinks_segment
 mov   ax, word ptr [bp - 4]
-mov   word ptr es:[si], ax
+mov   word ptr es:[bx], ax
 LEAVE_MACRO
 pop   di
 pop   si
