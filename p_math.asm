@@ -1064,6 +1064,15 @@ PUBLIC P_UnsetThingPosition_
 
 ; #define GETTHINKERREF(a) ((((uint16_t)((byte __near*)a - (byte __near*)thinkerlist))-4)/SIZEOF_THINKER_T)
 
+; ax = thing
+; cx:bx = thingpos...
+; cx is constant.      todo make it pass in 8 bits
+
+; bp - 2   thingpos segment   ; todo remove
+; bp - 4   sprevRef
+; bp - 6   bnextRef
+; bp - 8   flags
+; bp - 0Ah secnum
 
 push  dx
 push  si
@@ -1073,42 +1082,81 @@ mov   bp, sp
 sub   sp, 0Ah
 mov   si, ax
 mov   word ptr [bp - 2], cx
-mov   ax, word ptr [si]
+mov   ax, word ptr [si]					; sprevRef
 mov   word ptr [bp - 4], ax
 mov   es, cx
-mov   ax, word ptr [si + 2]
+mov   ax, word ptr [si + 2]				; bnextRef
 mov   word ptr [bp - 6], ax
-mov   ax, word ptr es:[bx + 014h]
+mov   ax, word ptr es:[bx + 014h]	; get thing_pos->flags1;
 xor   dx, dx
-mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 8], ax			; store thingflags todo keep in reg not used much
 mov   ax, word ptr [si + 4]
 mov   cx, SIZEOF_THINKER_T
 mov   word ptr [bp - 0Ah], ax
 lea   ax, ds:[si - (_thinkerlist + 4)]
-div   cx
-mov   di, word ptr es:[bx + 0Ch]
-mov   cx, ax
+div   cx					; calculate thisref. todo move this way later. usually not used.
+mov   di, word ptr es:[bx + 0Ch]	; snextRef
+mov   cx, ax					
+
+
+;	if (!(thingflags1 & MF_NOSECTOR)) {
+
 test  byte ptr [bp - 8], MF_NOSECTOR
-jne   label_1
+jne   mobj_intert_not_in_blockmap
+
+;		if (thingsnextRef) {
+;			changeThing = (mobj_t __near*)&thinkerlist[thingsnextRef].data;
+;			changeThing->sprevRef = thingsprevRef;
+;		}
+
+
 test  di, di
-je    label_2
+je    no_next_ref
 imul  si, di, SIZEOF_THINKER_T
 mov   ax, word ptr [bp - 4]
 mov   word ptr ds:[si + (_thinkerlist + 4)], ax
 add   si, (_thinkerlist + 4)
-label_2:
+no_next_ref:
+
+;		if (thingsprevRef) {
+;			changeThing_pos = &mobjposlist_6800[thingsprevRef];
+;			changeThing_pos->snextRef = thingsnextRef;
+;		}
+
 mov   ax, word ptr [bp - 4]
 test  ax, ax
-jne   label_6
-jmp   label_7
-label_6:
+jne   has_prev_ref
+
+;			sectors[thingsecnum].thinglistRef = thingsnextRef;
+
+mov   si, word ptr [bp - 0Ah]
+mov   ax, SECTORS_SEGMENT
+shl   si, 4
+mov   es, ax
+mov   word ptr es:[si + 8], di
+add   si, 8
+jmp   done_clearing_blockmap
+
+has_prev_ref:
+;			changeThing_pos = &mobjposlist_6800[thingsprevRef];
+;			changeThing_pos->snextRef = thingsnextRef;
+
 imul  si, ax, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
 mov   word ptr es:[si + 0Ch], di
-label_1:
+mobj_intert_not_in_blockmap:
+done_clearing_blockmap:
+
+;    if (! (thingflags1 & MF_NOBLOCKMAP) ) {
+
+
 test  byte ptr [bp - 8], MF_NOBLOCKMAP
 jne   exit_unset_position
+
+;		blockx = (thingx.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
+;		blocky = (thingy.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
+
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[bx + 2]
 mov   di, word ptr es:[bx + 6]
@@ -1120,6 +1168,10 @@ mov   ax, di
 sub   ax, word ptr [si]
 sar   bx, MAPBLOCKSHIFT
 sar   ax, MAPBLOCKSHIFT
+
+;		if (blockx >= 0 && blockx < bmapwidth && blocky >= 0 && blocky < bmapheight){
+
+
 test  bx, bx
 jl    exit_unset_position
 mov   si, _bmapwidth
@@ -1130,6 +1182,11 @@ jl    exit_unset_position
 mov   si, _bmapheight
 cmp   ax, word ptr [si]
 jge   exit_unset_position
+
+;			int16_t bindex = blocky * bmapwidth + blockx;
+;			nextRef = blocklinks[bindex];
+
+
 mov   si, _bmapwidth
 imul  word ptr [si]
 mov   si, ax
@@ -1139,44 +1196,53 @@ mov   bx, si
 mov   es, ax
 add   bx, si
 mov   ax, word ptr es:[bx]
+
+;			while (nextRef) {
+;				mobj_t __near* innerthing = &thinkerlist[nextRef].data;
+;				if (innerthing->bnextRef == thisRef) {
+;					innerthing->bnextRef = thingbnextRef;
+;					break;
+;				}
+;				nextRef = innerthing->bnextRef;
+;			}
+
+
 test  ax, ax
-je    label_5
-label_3:
+je    exit_unset_position
+
+do_next_check_nextref_loop_iter:
+; ax is nextref
+; bx becomes thinkerlist[nextref]
+; cx is thisRef
 imul  bx, ax, SIZEOF_THINKER_T
 add   bx, (_thinkerlist + 4)
 cmp   cx, word ptr [bx + 2]
-jne   label_8
+jne   ref_not_a_match
+; write bnextref and break look
 mov   cx, word ptr [bp - 6]
 mov   word ptr [bx + 2], cx
-label_5:
+check_nextref_loop_done:
+
+;	if (nextRef == NULL_THINKERREF) {
+;		blocklinks[bindex] = thingbnextRef;
+;	}
+
 test  ax, ax
-je    label_4
+je    not_found_in_blocklink
 exit_unset_position:
 LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
 ret   
-label_7:
-mov   si, word ptr [bp - 0Ah]
-mov   ax, SECTORS_SEGMENT
-shl   si, 4
-mov   es, ax
-mov   word ptr es:[si + 8], di
-add   si, 8
-jmp   label_1
-label_8:
+
+ref_not_a_match:
+; nextRef = innerthing->bnextRef;
 mov   ax, word ptr [bx + 2]
 test  ax, ax
-jne   label_3
-test  ax, ax
-je    label_4
-LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-ret   
-label_4:
+jne   do_next_check_nextref_loop_iter
+
+not_found_in_blocklink:
 mov   ax, BLOCKLINKS_SEGMENT
 add   si, si
 mov   es, ax
