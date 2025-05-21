@@ -273,7 +273,7 @@ boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,
 	thing_pos->x = x;
 	thing_pos->y = y;
 
-    P_SetThingPosition (thing, thing_pos, oldsecnum);
+    P_SetThingPosition (thing, FP_OFF(thing_pos), oldsecnum);
 	
     return true;
 }
@@ -720,7 +720,7 @@ boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fix
 
 
 	// we calculated the sector above in checkposition, now it's cached.
-	P_SetThingPosition (thing, thing_pos, lastcalculatedsector);
+	P_SetThingPosition (thing, FP_OFF(thing_pos), lastcalculatedsector);
 
 
 	newx = thing_pos->x;

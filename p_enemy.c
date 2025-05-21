@@ -1559,7 +1559,7 @@ void __near A_Fire (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 	actor_pos->y.w = dest_pos->y.w + FixedMulTrigNoShift(FINE_SINE_ARGUMENT,   an, 24*FRACUNIT);
 
 	actor_pos->z.w = dest_pos->z.w;
-    P_SetThingPosition (actor, actor_pos, -1);
+    P_SetThingPosition (actor, FP_OFF(actor_pos), -1);
 }
 
 

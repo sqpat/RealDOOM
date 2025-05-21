@@ -1355,26 +1355,26 @@ ENDP
 
 
 
-;void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum);
+;void __far P_SetThingPosition (mobj_t __near* thing, uint16_t thing_pos_offset, int16_t knownsecnum);
 
 ; ax   	thing
-; cx:bx thing_pos
-; dx    knownsecnum
+; dx    thing_pos_offset
+; bx    knownsecnum
 
 PROC P_SetThingPosition_ FAR
 PUBLIC P_SetThingPosition_ 
 
+push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp   ; todo remove once inner function call in asm
 
-mov   di, ax
-mov   si, bx
+mov   cx, bx  ; knownsecnum
 
-; cx is fixed MOBJPOSLIST_6800_SEGMENT
+mov   di, ax  ; thing
+mov   si, dx  ; thing_pos offset
 
-mov   cx, dx
 
 ;	THINKERREF thingRef = GETTHINKERREF(thing);
 
@@ -1545,6 +1545,7 @@ exit_set_position:
 LEAVE_MACRO
 pop   di
 pop   si
+pop   cx
 retf  
 
 set_null_bnextref_and_exit:
@@ -1555,6 +1556,7 @@ mov   word ptr [di + 2], 0
 LEAVE_MACRO
 pop   di
 pop   si
+pop   cx
 retf  
 
 ENDP

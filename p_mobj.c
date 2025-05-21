@@ -16,6 +16,7 @@
 //	Moving object handling. Spawn functions.
 //
 
+#include <dos.h>
 #include "i_system.h"
 #include "z_zone.h"
 #include "m_misc.h"
@@ -810,7 +811,7 @@ THINKERREF __near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type
     mobj->tics = states[info->spawnstate].tics;
 
     // set subsector and/or block links
-    P_SetThingPosition (mobj, mobj_pos, knownsecnum);
+    P_SetThingPosition (mobj, FP_OFF(mobj_pos), knownsecnum);
  
 
 	mobjsecnum = mobj->secnum;

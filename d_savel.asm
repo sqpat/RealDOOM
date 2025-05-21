@@ -665,9 +665,9 @@ xchg      ax, di ; restore di to mobj
 mov       ax, bx            ; mobj pointer
 mov       di, ax            ; store mobj pointer in di
 
-mov       bx, cx                           ; mobjposlist offset
-mov       cx, MOBJPOSLIST_6800_SEGMENT     ; mobjposlist segment
-mov       dx, 0FFFFh                       ; -1
+mov       dx, cx                           ; mobjposlist offset
+
+mov       bx, 0FFFFh                       ; -1 knownsecnum
 
 push      ss
 pop       ds                            ; restore ds
