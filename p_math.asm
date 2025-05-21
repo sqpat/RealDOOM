@@ -1068,29 +1068,25 @@ PUBLIC P_UnsetThingPosition_
 ; cx:bx = thingpos...
 ; cx is constant.      todo make it pass in 8 bits
 
-; bp - 2   sprevRef
-; bp - 4   bnextRef
-; bp - 6   secnum
+; bp - 2   bnextRef
 
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
 mov   si, ax
 
-lodsw     ; si + 0	; sprevRef
-push  ax  ; bp - 2
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
-lodsw     ; si + 2 bnextRef
-push  ax  ; bp - 4
 
-lodsw     ; si + 4  ; secnum
-push  ax  ; bp - 6
+lodsw     ; si + 0	; sprevRef
+xchg  ax, dx    ; dx stores sprevRef
+
+lodsw     ; si + 2 bnextRef
+push  ax  ; bp - 2
+
 
 ; calculate thisref numerator. only div to calculate in the end if necessary
-lea   cx, ds:[si - (_thinkerlist + 4) - 6]
+lea   cx, ds:[si - (_thinkerlist + 4) - 4]
 
 
 
@@ -1113,9 +1109,12 @@ jne   mobj_inert_not_in_blockmap
 
 test  di, di
 je    no_next_ref
+
+xchg  ax, si ; store si in ax
 imul  si, di, SIZEOF_THINKER_T
-mov   ax, word ptr [bp - 2]
-mov   word ptr ds:[si + (_thinkerlist + 4)], ax
+
+mov   word ptr ds:[si + (_thinkerlist + 4)], dx
+xchg  ax, si  ; restore si
 
 no_next_ref:
 
@@ -1124,15 +1123,16 @@ no_next_ref:
 ;			changeThing_pos->snextRef = thingsnextRef;
 ;		}
 
-mov   ax, word ptr [bp - 2]
-test  ax, ax
+test  dx, dx
 jne   has_prev_ref
 
 ;			sectors[thingsecnum].thinglistRef = thingsnextRef;
 
-pop   si   ; get secnum
+lodsw         ; si + 4  get secnum
+SHIFT_MACRO  shl ax 4
+xchg  ax, si  ; si gets secnum 
+
 mov   ax, SECTORS_SEGMENT
-shl   si, 4
 mov   es, ax
 mov   word ptr es:[si + 8], di
 
@@ -1141,14 +1141,22 @@ mov   es, ax
 
 jmp   done_clearing_blockmap
 
+exit_unset_position_and_pop_once:
+pop   ax
+pop   di
+pop   si
+pop   dx
+ret   
+
+
 has_prev_ref:
 ;			changeThing_pos = &mobjposlist_6800[thingsprevRef];
 ;			changeThing_pos->snextRef = thingsnextRef;
 
-; ax is thingsprevRef
+; dx is thingsprevRef
 ; di is thingsnextRef
 
-imul  si, ax, SIZEOF_MOBJ_POS_T
+imul  si, dx, SIZEOF_MOBJ_POS_T
 mov   word ptr es:[si + 0Ch], di
 mobj_inert_not_in_blockmap:
 done_clearing_blockmap:
@@ -1157,7 +1165,7 @@ done_clearing_blockmap:
 
 
 test  byte ptr es:[bx + 014h], MF_NOBLOCKMAP  ; flags1
-jne   exit_unset_position
+jne   exit_unset_position_and_pop_once
 
 ;		blockx = (thingx.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
 ;		blocky = (thingy.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
@@ -1168,11 +1176,11 @@ jne   exit_unset_position
 
 mov   ax, word ptr es:[bx + 6]  ; y high word
 sub   ax, word ptr ds:[_bmaporgy]
-jl    exit_unset_position
+jl    exit_unset_position_and_pop_once
 
 mov   bx, word ptr es:[bx + 2]  ; x high word
 sub   bx, word ptr ds:[_bmaporgx]
-jl    exit_unset_position
+jl    exit_unset_position_and_pop_once
 
 
 
@@ -1201,10 +1209,10 @@ ENDIF
 
 
 cmp   bx, word ptr ds:[_bmapwidth]
-jge   exit_unset_position
+jge   exit_unset_position_and_pop_once
 
 cmp   ax, word ptr ds:[_bmapheight]
-jge   exit_unset_position
+jge   exit_unset_position_and_pop_once
 
 ;			int16_t bindex = blocky * bmapwidth + blockx;
 ;			nextRef = blocklinks[bindex];
@@ -1230,7 +1238,7 @@ mov   ax, word ptr es:[bx]
 
 
 test  ax, ax
-je    exit_unset_position
+je    exit_unset_position_and_pop_once
 
 ; only do the div to calculate thisref at the end if very necessary
 xor   dx, dx
@@ -1239,12 +1247,14 @@ mov   di, SIZEOF_THINKER_T
 div   di					; calculate thisref. todo move this way later. usually not used.
 xchg  cx, ax			    ; cx gets thisref. ax restored.
 
+pop   di	; di gets bnextRef
 
 do_next_check_nextref_loop_iter:
 ; ax is nextref
 ; si becomes thinkerlist[nextref]
 ; cx is thisRef numerator (from way above..)
 ; bx is blockmap ref
+; di is bnextRef
 
 
 imul  si, ax, SIZEOF_THINKER_T
@@ -1252,8 +1262,8 @@ add   si, (_thinkerlist + 4) + 2
 cmp   cx, word ptr [si]
 jne   ref_not_a_match
 ; write bnextref and break look
-mov   cx, word ptr [bp - 4]
-mov   word ptr [si], cx
+
+mov   word ptr [si], di
 check_nextref_loop_done:
 
 ;	if (nextRef == NULL_THINKERREF) {
@@ -1263,7 +1273,6 @@ check_nextref_loop_done:
 test  ax, ax
 je    not_found_in_blocklink
 exit_unset_position:
-LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
@@ -1277,13 +1286,14 @@ jne   do_next_check_nextref_loop_iter
 
 not_found_in_blocklink:
 ; es already blocklinks_segment
-mov   ax, word ptr [bp - 4]
-mov   word ptr es:[bx], ax
-LEAVE_MACRO
+
+mov   word ptr es:[bx], di
+
 pop   di
 pop   si
 pop   dx
 ret   
+
 
 ENDP
 
