@@ -504,7 +504,6 @@ void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos
 
 	if (knownsecnum != -1) {
 		thing->secnum = knownsecnum;
-
 	}
 	else {
 		int16_t	subsecnum = R_PointInSubsector(thing_pos->x, thing_pos->y);;
@@ -519,10 +518,8 @@ void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos
 		oldsectorthinglist = sectors[thing->secnum].thinglistRef;
 		sectors[thing->secnum].thinglistRef = thingRef;
 
-
 		thing = (mobj_t __near*)&thinkerlist[thingRef].data;
 		thing_pos = &mobjposlist_6800[thingRef];
-
 		thing->sprevRef = NULL_THINKERREF;
 		thing_pos->snextRef = oldsectorthinglist;
 

@@ -1363,7 +1363,7 @@ PUBLIC P_SetThingPosition_
 push  si
 push  di
 push  bp
-mov   bp, sp
+mov   bp, sp   ; todo remove once inner function call in asm
 
 mov   di, ax
 mov   si, bx
@@ -1414,6 +1414,8 @@ secnum_ready:
 
 mov   word ptr [di + 4], cx
 
+;pop   cx  ; cx gets thingRef
+mov    cx, word ptr [bp - 2]
 
 ;	if (!(thing_pos->flags1 & MF_NOSECTOR)) {
 
@@ -1428,7 +1430,8 @@ mov   bx, word ptr [di + 4]
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 SHIFT_MACRO shl   bx  4
-mov   ax, word ptr [bp - 2]
+
+mov   ax, cx
 mov   dx, ax
 xchg  ax, word ptr es:[bx + 8]
 
@@ -1472,14 +1475,16 @@ jne   exit_set_position
 ;		temp = thing_pos->y;
 ;		blocky = (temp.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
 
+;		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
+
 
 mov   ax, word ptr es:[si + 6]
 sub   ax, word ptr ds:[_bmaporgy]
-jl    set_null_bnextref_and_exit
+jl    set_null_bnextref_and_exit ; quick check branches early
 
 mov   bx, word ptr es:[si + 2]
 sub   bx, word ptr ds:[_bmaporgx]
-jl    set_null_bnextref_and_exit
+jl    set_null_bnextref_and_exit ; quick check branches early
 
 ; shift ax 7
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
@@ -1492,11 +1497,9 @@ ELSE
 ENDIF
 ; si is free now..
 
-;		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
-
 
 cmp   ax, word ptr ds:[_bmapheight]
-jge   set_null_bnextref_and_exit
+jge   set_null_bnextref_and_exit ; quick check branches early
 
 ; shift bx 7
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
@@ -1510,7 +1513,7 @@ ENDIF
 
 mov   si, word ptr ds:[_bmapwidth]
 cmp   bx, si
-jge   set_null_bnextref_and_exit
+jge   set_null_bnextref_and_exit ; quick check branches early
 
 
 
@@ -1525,18 +1528,14 @@ mov   ax, BLOCKLINKS_SEGMENT
 mov   es, ax
 
 
-
 ;			linkRef = blocklinks[bindex];
 ;			thing->bnextRef = linkRef;		 
 ;			blocklinks[bindex] = thingRef;
-;pop   ax  ; bp - 2          ; get thingref
-;xchg  ax, word ptr es:[bx]  ; set thingref. get linkref
-;mov   word ptr [di + 2], ax ; set linkref
+; cx is already thingRef;
 
-mov   ax, word ptr es:[bx]
-mov   word ptr [di + 2], ax
-mov   ax, word ptr [bp - 2]
-mov   word ptr es:[bx], ax
+xchg  cx, word ptr es:[bx]  ; set thingref. get linkref
+mov   word ptr [di + 2], cx ; set linkref
+
 
 exit_set_position:
 LEAVE_MACRO
