@@ -35,11 +35,12 @@ EXTRN _lineopening:WORD
 
 
 ;R_PointOnSide_
+; called in a loop. destructive to ds
 
 PROC R_PointOnSide_ NEAR
 PUBLIC R_PointOnSide_ 
 
-push  di
+; todo optimize to keep params on the stack from the otuside.
 push  bp
 mov   bp, sp
 push  bx
@@ -69,10 +70,9 @@ mov   es, ax
 
 
 ; todo lds?
-mov   ds, word ptr es:[si + 00h]   ; child 0
-mov   di, word ptr es:[si + 02h]   ; child 1
+mov   ds, word ptr es:[si + 00h]   ; child 0 in ds
+push      word ptr es:[si + 02h]   ; child 1 on stack 
 
-push  di ; child 1 to go into es later...
 
 shl   si, 1     ; 8 indexed
 mov   ax, NODES_SEGMENT
@@ -101,8 +101,8 @@ pop   es ; shove child 1 in es..
 ; di = ly
 ; dx = x highbits
 ; cx = y highbits
-; bp -4h = x lowbits
-; bp -2h = y lowbits
+; bp - 4 = x lowbits
+; bp - 2 = y lowbits
 ; ds = child 0
 ; es = child 1
 
@@ -130,10 +130,8 @@ jl    return_true
 
 return_false:
 mov   ax, ds
-mov   di, ss ;  restore ds
-mov   ds, di
+
 LEAVE_MACRO
-pop   di
 ret   
 
 ;            return node->dy > 0;
@@ -146,10 +144,8 @@ return_true:
 
 
 mov   ax, es
-mov   di, ss ;  restore ds
-mov   ds, di
+
 LEAVE_MACRO
-pop   di
 ret   
 
 node_dx_nonequal:
@@ -177,11 +173,9 @@ jg    return_true
 ; return false
 mov   ax, ds
 
-mov   di, ss ;  restore ds
-mov   ds, di
+
 
 LEAVE_MACRO
-pop   di
 ret    
 ret_node_dx_less_than_0:
 
@@ -193,11 +187,9 @@ jl    return_true
 ; return false
 mov   ax, ds
 
-mov   di, ss ;  restore ds
-mov   ds, di
+
 
 LEAVE_MACRO
-pop   di
 ret   
 
 node_dy_nonzero:
@@ -253,23 +245,16 @@ je    check_lowbits
 
 return_false_2:
 mov   ax, ds
-mov   di, ss ;  restore ds
-mov   ds, di
-pop   bp
-pop   di
+LEAVE_MACRO
 ret   
 
 check_lowbits:
 cmp   ax, si
 jb    return_false_2
 return_true_2:
+
 mov   ax, es
-
-mov   di, ss ;  restore ds
-mov   ds, di
-
 LEAVE_MACRO
-pop   di
 ret   
 do_sign_bit_return:
 
@@ -280,17 +265,11 @@ xor   si, dx
 jl    return_true_2
 
 mov   ax, ds
-
-
-mov   di, ss ;  restore ds
-mov   ds, di
-
 LEAVE_MACRO
-pop   di
 ret   
 
 
-endp
+ENDP
 
 
 ; fixed_t __near P_AproxDistance ( fixed_t	dx, fixed_t	dy ) {
@@ -1566,6 +1545,7 @@ ENDP
 PROC R_PointInSubsector_ NEAR
 PUBLIC R_PointInSubsector_ 
 
+; todo put x/y on stack instead of vars?
 mov   word ptr cs:[SELFMODIFY_rpis_set_ax+1], ax
 mov   word ptr cs:[SELFMODIFY_rpis_set_dx+1], dx
 mov   word ptr cs:[SELFMODIFY_rpis_set_cx+1], cx
@@ -1573,7 +1553,12 @@ mov   word ptr cs:[SELFMODIFY_rpis_set_bx+1], bx
 mov   ax, word ptr ds:[_numnodes]
 test  ax, ax
 je    exit_r_pointinsubsector  ; return 0
+
+; set up loop.
 dec   ax						; nodenum = numnodes - 1
+;js    exit_r_pointinsubsector   ; return if it was 0 (dec cant check carry but nodes are never bigger than 32k so js is enough)
+
+push  di  ; inner functions in loop uses di..
 push  si
 
 ; todo this might get blown up by a bigger prefetch queue. if so then move this behind the function?
@@ -1596,7 +1581,11 @@ skip_loop:
 ;	return nodenum & ~NF_SUBSECTOR;
 and   ah, (NOT_NF_SUBSECTOR SHR 8)
 
+mov   bx, ss ;  restore ds
+mov   ds, bx
+
 pop   si
+pop   di
 exit_r_pointinsubsector:
 ret  
 
