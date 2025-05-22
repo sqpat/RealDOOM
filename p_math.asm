@@ -1590,12 +1590,9 @@ PUBLIC P_BlockLinesIterator_
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
 
 mov   cx, ax
-push  bx	; bp - 2
-;mov   word ptr [bp - 2], bx
+mov   di, bx	
 mov   ax, dx
 
 
@@ -1621,44 +1618,57 @@ add   bx, ax
 mov   ax, BLOCKMAPLUMP_SEGMENT
 add   bx, bx
 mov   es, ax
-mov   di, _validcount_global
+
 mov   cx, word ptr es:[bx + 8]
-add   bx, 8
+
 sal   cx, 1
-label_2:
+
+;    for ( index = offset ; blockmaplump[index] != -1 ; index++) {
+
+loop_check_block_line:
 mov   ax, BLOCKMAPLUMP_SEGMENT
 mov   bx, cx
 mov   es, ax
-mov   ax, word ptr es:[bx]
-cmp   ax, 0FFFFh
+mov   bx, word ptr es:[bx]
+cmp   bx, 0FFFFh
 je    exit_blocklinesiterator_return_1
-mov   bx, ax
-mov   si, ax
-mov   ax, LINES_PHYSICS_SEGMENT
+
+mov   si, bx
 SHIFT_MACRO shl   si 4
+mov   ax, LINES_PHYSICS_SEGMENT
 mov   es, ax
 mov   ax, word ptr es:[si + 8]
-cmp   ax, word ptr ds:[di]
-jne   label_1
-label_3:
+; todo store validcount in a reg
+cmp   ax, word ptr ds:[_validcount_global]
+
+; if (ld_physics->validcount == validcount_global) {
+
+jne   check_block_line
+check_next_block_line:
 add   cx, 2
-jmp   label_2
+jmp   loop_check_block_line
 exit_blocklinesiterator_return_1:
 mov   al, 1
-LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
 ret   
-label_1:
-mov   ax, word ptr ds:[di]
+check_block_line:
+
+;		ld_physics->validcount = validcount_global;			
+;		if (!func(ld_physics, list)) {
+;			return false;
+;		}
+
+
+mov   ax, word ptr ds:[_validcount_global]
 mov   dx, es
 mov   word ptr es:[si + 8], ax
 mov   ax, si
-call  word ptr [bp - 2]
+call  di
 test  al, al
-jne   label_3
-LEAVE_MACRO 
+jne   check_next_block_line
+; al = 0, return false
 pop   di
 pop   si
 pop   cx
