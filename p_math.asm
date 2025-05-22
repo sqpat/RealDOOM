@@ -76,9 +76,8 @@ mov   ds, ax  ; DS for nodes lookup
 
 les   bx, dword ptr ds:[si + 0]   ; lx  
 mov   di, es   					  ; ly
-
-lds   ax, dword ptr ds:[si + 4]   ; ldx
-mov   si, ds                      ; ldy
+les   ax, dword ptr ds:[si + 4]   ; ldx
+mov   si, es                      ; ldy
 
 
 pop   es ; shove child 1 in es..
@@ -1536,7 +1535,6 @@ je    exit_r_pointinsubsector  ; return 0
 
 ; set up loop.
 dec   ax						; nodenum = numnodes - 1
-;js    exit_r_pointinsubsector   ; return if it was 0 (dec cant check carry but nodes are never bigger than 32k so js is enough)
 
 push  di  ; inner functions in loop uses di..
 push  si
@@ -1583,84 +1581,97 @@ ret
 
 ENDP
 
-COMMENT @
 
 ; boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   func )(line_physics_t __far*, int16_t) );
 
-PROC P_BlockLinesIterator_ FAR
+PROC P_BlockLinesIterator_ NEAR
 PUBLIC P_BlockLinesIterator_ 
 
-0x0000000000000000:  51             push  cx
-0x0000000000000001:  56             push  si
-0x0000000000000002:  57             push  di
-0x0000000000000003:  55             push  bp
-0x0000000000000004:  89 E5          mov   bp, sp
-0x0000000000000006:  83 EC 02       sub   sp, 2
-0x0000000000000009:  89 C1          mov   cx, ax
-0x000000000000000b:  89 5E FE       mov   word ptr [bp - 2], bx
-0x000000000000000e:  89 D0          mov   ax, dx
-0x0000000000000010:  85 C9          test  cx, cx
-0x0000000000000012:  7C 56          jl    0x6a
-0x0000000000000014:  85 D2          test  dx, dx
-0x0000000000000016:  7C 52          jl    0x6a
-0x0000000000000018:  BB DC 05       mov   bx, 0x5dc
-0x000000000000001b:  3B 0F          cmp   cx, word ptr [bx]
-0x000000000000001d:  7D 4B          jge   0x6a
-0x000000000000001f:  BB DE 05       mov   bx, 0x5de
-0x0000000000000022:  3B 17          cmp   dx, word ptr [bx]
-0x0000000000000024:  7D 44          jge   0x6a
-0x0000000000000026:  BB DC 05       mov   bx, 0x5dc
-0x0000000000000029:  F7 2F          imul  word ptr [bx]
-0x000000000000002b:  89 CB          mov   bx, cx
-0x000000000000002d:  01 C3          add   bx, ax
-0x000000000000002f:  B8 E4 76       mov   ax, 0x76e4
-0x0000000000000032:  01 DB          add   bx, bx
-0x0000000000000034:  8E C0          mov   es, ax
-0x0000000000000036:  BF 24 01       mov   di, 0x124
-0x0000000000000039:  26 8B 4F 08    mov   cx, word ptr es:[bx + 8]
-0x000000000000003d:  83 C3 08       add   bx, 8
-0x0000000000000040:  01 C9          add   cx, cx
-0x0000000000000042:  B8 E4 76       mov   ax, 0x76e4
-0x0000000000000045:  89 CB          mov   bx, cx
-0x0000000000000047:  8E C0          mov   es, ax
-0x0000000000000049:  26 8B 07       mov   ax, word ptr es:[bx]
-0x000000000000004c:  3D FF FF       cmp   ax, 0xffff
-0x000000000000004f:  74 19          je    0x6a
-0x0000000000000051:  89 C3          mov   bx, ax
-0x0000000000000053:  89 C6          mov   si, ax
-0x0000000000000055:  B8 00 70       mov   ax, 0x7000
-0x0000000000000058:  C1 E6 04       shl   si, 4
-0x000000000000005b:  8E C0          mov   es, ax
-0x000000000000005d:  26 8B 44 08    mov   ax, word ptr es:[si + 8]
-0x0000000000000061:  3B 05          cmp   ax, word ptr [di]
-0x0000000000000063:  75 0C          jne   0x71
-0x0000000000000065:  83 C1 02       add   cx, 2
-0x0000000000000068:  EB D8          jmp   0x42
-0x000000000000006a:  B0 01          mov   al, 1
-0x000000000000006c:  C9             leave 
-0x000000000000006d:  5F             pop   di
-0x000000000000006e:  5E             pop   si
-0x000000000000006f:  59             pop   cx
-0x0000000000000070:  C3             ret   
-0x0000000000000071:  8B 05          mov   ax, word ptr [di]
-0x0000000000000073:  8C C2          mov   dx, es
-0x0000000000000075:  26 89 44 08    mov   word ptr es:[si + 8], ax
-0x0000000000000079:  89 F0          mov   ax, si
-0x000000000000007b:  FF 56 FE       call  word ptr [bp - 2]
-0x000000000000007e:  84 C0          test  al, al
-0x0000000000000080:  75 E3          jne   0x65
-0x0000000000000082:  C9             leave 
-0x0000000000000083:  5F             pop   di
-0x0000000000000084:  5E             pop   si
-0x0000000000000085:  59             pop   cx
-0x0000000000000086:  C3             ret   
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+
+mov   cx, ax
+push  bx	; bp - 2
+;mov   word ptr [bp - 2], bx
+mov   ax, dx
+
+
+;if (x<0
+;|| y<0
+;|| x>=bmapwidth
+;|| y>=bmapheight)
+;{
+;return true;
+;}
+
+test  cx, cx
+jl    exit_blocklinesiterator_return_1
+test  dx, dx
+jl    exit_blocklinesiterator_return_1
+cmp   cx, word ptr ds:[_bmapwidth]
+jge   exit_blocklinesiterator_return_1
+cmp   dx, word ptr ds:[_bmapheight]
+jge   exit_blocklinesiterator_return_1
+imul  word ptr ds:[_bmapwidth]
+mov   bx, cx
+add   bx, ax
+mov   ax, BLOCKMAPLUMP_SEGMENT
+add   bx, bx
+mov   es, ax
+mov   di, _validcount_global
+mov   cx, word ptr es:[bx + 8]
+add   bx, 8
+sal   cx, 1
+label_2:
+mov   ax, BLOCKMAPLUMP_SEGMENT
+mov   bx, cx
+mov   es, ax
+mov   ax, word ptr es:[bx]
+cmp   ax, 0FFFFh
+je    exit_blocklinesiterator_return_1
+mov   bx, ax
+mov   si, ax
+mov   ax, LINES_PHYSICS_SEGMENT
+SHIFT_MACRO shl   si 4
+mov   es, ax
+mov   ax, word ptr es:[si + 8]
+cmp   ax, word ptr ds:[di]
+jne   label_1
+label_3:
+add   cx, 2
+jmp   label_2
+exit_blocklinesiterator_return_1:
+mov   al, 1
+LEAVE_MACRO
+pop   di
+pop   si
+pop   cx
+ret   
+label_1:
+mov   ax, word ptr ds:[di]
+mov   dx, es
+mov   word ptr es:[si + 8], ax
+mov   ax, si
+call  word ptr [bp - 2]
+test  al, al
+jne   label_3
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   
 
 ENDP
+
+COMMENT @
 
 ;boolean __near P_BlockThingsIterator ( int16_t x, int16_t y, 
 ;boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) ){
 
-PROC P_BlockThingsIterator_ FAR
+PROC P_BlockThingsIterator_ NEAR
 PUBLIC P_BlockThingsIterator_
 
 0x0000000000000000:  51             push cx
@@ -1709,7 +1720,7 @@ ENDP
 
 ;boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum) {
 
-PROC PIT_AddLineIntercepts_ FAR
+PROC PIT_AddLineIntercepts_ NEAR
 PUBLIC PIT_AddLineIntercepts_ 
 
 0x0000000000000000:  51                push  cx
@@ -1857,7 +1868,7 @@ ENDP
 
 ;boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thing, mobj_pos_t __far* thing_pos) ;
 
-PROC PIT_AddThingIntercepts_ FAR
+PROC PIT_AddThingIntercepts_ NEAR
 PUBLIC PIT_AddThingIntercepts_ 
 
 0x0000000000000000:  56                push  si

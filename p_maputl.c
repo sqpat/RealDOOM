@@ -581,6 +581,7 @@ void __far P_SetThingPosition (mobj_t __near* thing, mobj_pos_t __far* thing_pos
 // to P_BlockLinesIterator, then make one or more calls
 // to it.
 //
+/*
 boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   func )(line_physics_t __far*, int16_t) ){
     int16_t			offset;
 	int16_t			index;
@@ -617,7 +618,7 @@ boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   f
     return true;	// everything was checked
 }
 
-
+*/
 //
 // P_BlockThingsIterator
 //
