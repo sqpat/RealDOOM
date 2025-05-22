@@ -61,28 +61,26 @@ PUBLIC R_PointOnSide_
 
 
 
-; todo lds? or lodsw
+lodsw 							   ; child 0
+push      word ptr ds:[si]         ; child 1 on stack 
+mov   ds, ax					   ; child 0 in dx
 
+shl   si, 1     ; 8 indexed NOTE: si is now +4 from the lodsw and shift
 
-mov   ds, word ptr es:[si + 00h]   ; child 0 in ds
-push      word ptr es:[si + 02h]   ; child 1 on stack 
-
-shl   si, 1     ; 8 indexed
 mov   ax, NODES_SEGMENT
 mov   es, ax  ; ES for nodes lookup
 
 
 ;  get lx, ly, ldx, ldy
 
-les   bx, dword ptr es:[si + 0]   ; lx
+; todo use ds here
+
+les   bx, dword ptr es:[si - 4]   ; lx  
 mov   di, es   					  ; ly
 mov   es, ax
 
-les   ax, dword ptr es:[si + 4]   ; ldx
+les   ax, dword ptr es:[si + 0]   ; ldx
 mov   si, es                      ; ldy
-
-
-
 pop   es ; shove child 1 in es..
 
 
@@ -1557,7 +1555,7 @@ SHIFT_MACRO shl ax 2
 xchg  si, ax				; si gets nodenum
 
 mov   ax, NODE_CHILDREN_SEGMENT
-mov   es, ax
+mov   ds, ax
 
 SELFMODIFY_rpis_set_dx:
 mov   dx, 01000h
