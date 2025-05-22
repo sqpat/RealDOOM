@@ -41,10 +41,6 @@ PROC R_PointOnSide_ NEAR
 PUBLIC R_PointOnSide_ 
 
 ; todo optimize to keep params on the stack from the otuside.
-push  bp
-mov   bp, sp
-push  bx
-push  ax
 
 ; DX:AX = x
 ; CX:BX = y
@@ -62,17 +58,14 @@ push  ax
 
 ; todo eventually return child value instead of node
 
-SHIFT_MACRO shl si 2
-
-mov   ax, NODE_CHILDREN_SEGMENT
-mov   es, ax
 
 
 
-; todo lds?
+; todo lds? or lodsw
+
+
 mov   ds, word ptr es:[si + 00h]   ; child 0 in ds
 push      word ptr es:[si + 02h]   ; child 1 on stack 
-
 
 shl   si, 1     ; 8 indexed
 mov   ax, NODES_SEGMENT
@@ -130,8 +123,6 @@ jl    return_true
 
 return_false:
 mov   ax, ds
-
-LEAVE_MACRO
 ret   
 
 ;            return node->dy > 0;
@@ -144,8 +135,6 @@ return_true:
 
 
 mov   ax, es
-
-LEAVE_MACRO
 ret   
 
 node_dx_nonequal:
@@ -172,10 +161,6 @@ jg    return_true
 
 ; return false
 mov   ax, ds
-
-
-
-LEAVE_MACRO
 ret    
 ret_node_dx_less_than_0:
 
@@ -186,10 +171,6 @@ jl    return_true
 
 ; return false
 mov   ax, ds
-
-
-
-LEAVE_MACRO
 ret   
 
 node_dy_nonzero:
@@ -221,40 +202,43 @@ jne   do_sign_bit_return
 xchg si, ax
 
 ; gross - we must do a lot of work in this case. 
+
+;    left.w = FixedMul1632 ( node->dy , dx.w );
+;    right.w = FixedMul1632 (node->dx, dy.w );
+
+
+mov   word ptr cs:[SELFMODIFY_returnchild1+1], es
+
 mov   di, cx  ; store cx.. 
-pop bx
+mov   bx, word ptr [bp - 4] ; grab lobits
 mov   cx, dx
-push  es ; note - fixedmul clobbers ES. need to store that.
 
 
 call FixedMul1632_
 
 ; set up params..
 xchg  si, ax
-pop   es
-pop   bx
+mov   bx, word ptr [bp - 2]  ; grab lobits
 mov   cx, di
 
 mov   di, dx
-push  es ; note - fixedmul clobbers ES. need to store that.
 call FixedMul1632_
-pop  es
 cmp   dx, di
 jg    return_true_2
 je    check_lowbits
 
 return_false_2:
 mov   ax, ds
-LEAVE_MACRO
 ret   
 
 check_lowbits:
 cmp   ax, si
 jb    return_false_2
 return_true_2:
+SELFMODIFY_returnchild1:
+mov   ax, 01000h
+;mov   ax, es
 
-mov   ax, es
-LEAVE_MACRO
 ret   
 do_sign_bit_return:
 
@@ -262,10 +246,9 @@ do_sign_bit_return:
 ;		return  ((ldy ^ dx.h.intbits) & 0x8000);  // returns 1
 
 xor   si, dx
-jl    return_true_2
+jl    return_true
 
 mov   ax, ds
-LEAVE_MACRO
 ret   
 
 
@@ -1545,11 +1528,11 @@ ENDP
 PROC R_PointInSubsector_ NEAR
 PUBLIC R_PointInSubsector_ 
 
-; todo put x/y on stack instead of vars?
-mov   word ptr cs:[SELFMODIFY_rpis_set_ax+1], ax
+
 mov   word ptr cs:[SELFMODIFY_rpis_set_dx+1], dx
 mov   word ptr cs:[SELFMODIFY_rpis_set_cx+1], cx
-mov   word ptr cs:[SELFMODIFY_rpis_set_bx+1], bx
+
+xchg  ax, dx  ; store dx
 mov   ax, word ptr ds:[_numnodes]
 test  ax, ax
 je    exit_r_pointinsubsector  ; return 0
@@ -1560,18 +1543,27 @@ dec   ax						; nodenum = numnodes - 1
 
 push  di  ; inner functions in loop uses di..
 push  si
+push  bp  ; create stack frame here instead of inner func
+mov   bp, sp
+
+push  bx   ; bx, will be bp - 2
+push  dx   ; old ax. will be bp - 4
+
 
 ; todo this might get blown up by a bigger prefetch queue. if so then move this behind the function?
 continue_looping_point_on_side:
+
+SHIFT_MACRO shl ax 2
 xchg  si, ax				; si gets nodenum
-SELFMODIFY_rpis_set_ax:
-mov   ax, 01000h
+
+mov   ax, NODE_CHILDREN_SEGMENT
+mov   es, ax
+
 SELFMODIFY_rpis_set_dx:
 mov   dx, 01000h
 SELFMODIFY_rpis_set_cx:
 mov   cx, 01000h
-SELFMODIFY_rpis_set_bx:
-mov   bx, 01000h
+
 call  R_PointOnSide_   ; todo inline? only used here....
 ; ax has new nodenum...
 test  ah, (NF_SUBSECTOR SHR 8)
@@ -1581,11 +1573,13 @@ skip_loop:
 ;	return nodenum & ~NF_SUBSECTOR;
 and   ah, (NOT_NF_SUBSECTOR SHR 8)
 
+; clean up loop stuff
+LEAVE_MACRO
 mov   bx, ss ;  restore ds
 mov   ds, bx
-
 pop   si
 pop   di
+
 exit_r_pointinsubsector:
 ret  
 
