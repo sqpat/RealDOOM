@@ -622,6 +622,8 @@ boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   f
 //
 // P_BlockThingsIterator
 //
+/*
+
 boolean __near P_BlockThingsIterator ( int16_t x, int16_t y, 
 boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) ){
 	THINKERREF mobjRef;
@@ -648,7 +650,7 @@ boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) ){
 
 	return true;
 }
-
+*/
 
 
 //

@@ -1682,7 +1682,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 ;boolean __near P_BlockThingsIterator ( int16_t x, int16_t y, 
 ;boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) ){
@@ -1690,49 +1689,51 @@ COMMENT @
 PROC P_BlockThingsIterator_ NEAR
 PUBLIC P_BlockThingsIterator_
 
-0x0000000000000000:  51             push cx
-0x0000000000000001:  56             push si
-0x0000000000000002:  57             push di
-0x0000000000000003:  89 C6          mov  si, ax
-0x0000000000000005:  89 DF          mov  di, bx
-0x0000000000000007:  89 D0          mov  ax, dx
-0x0000000000000009:  85 F6          test si, si
-0x000000000000000b:  7C 45          jl   0x52
-0x000000000000000d:  85 D2          test dx, dx
-0x000000000000000f:  7C 41          jl   0x52
-0x0000000000000011:  BB DC 05       mov  bx, 0x5dc
-0x0000000000000014:  3B 37          cmp  si, word ptr [bx]
-0x0000000000000016:  7D 3A          jge  0x52
-0x0000000000000018:  BB DE 05       mov  bx, 0x5de
-0x000000000000001b:  3B 17          cmp  dx, word ptr [bx]
-0x000000000000001d:  7D 33          jge  0x52
-0x000000000000001f:  BB DC 05       mov  bx, 0x5dc
-0x0000000000000022:  F7 2F          imul word ptr [bx]
-0x0000000000000024:  89 C3          mov  bx, ax
-0x0000000000000026:  B8 00 64       mov  ax, 0x6400
-0x0000000000000029:  01 F3          add  bx, si
-0x000000000000002b:  8E C0          mov  es, ax
-0x000000000000002d:  01 DB          add  bx, bx
-0x000000000000002f:  26 8B 07       mov  ax, word ptr es:[bx]
-0x0000000000000032:  85 C0          test ax, ax
-0x0000000000000034:  74 1C          je   0x52
-0x0000000000000036:  6B F0 2C       imul si, ax, 0x2c
-0x0000000000000039:  6B D8 18       imul bx, ax, 0x18
-0x000000000000003c:  81 C6 04 40    add  si, 0x4004
-0x0000000000000040:  B9 F5 6A       mov  cx, 0x6af5
-0x0000000000000043:  89 F2          mov  dx, si
-0x0000000000000045:  FF D7          call di
-0x0000000000000047:  84 C0          test al, al
-0x0000000000000049:  74 09          je   0x54
-0x000000000000004b:  8B 44 02       mov  ax, word ptr [si + 2]
-0x000000000000004e:  85 C0          test ax, ax
-0x0000000000000050:  75 E4          jne  0x36
-0x0000000000000052:  B0 01          mov  al, 1
-0x0000000000000054:  5F             pop  di
-0x0000000000000055:  5E             pop  si
-0x0000000000000056:  59             pop  cx
-
+push cx
+push si
+push di
+mov  si, ax
+mov  di, bx
+mov  ax, dx
+test si, si
+jl   exit_blockthingsiterator_return1
+test dx, dx
+jl   exit_blockthingsiterator_return1
+cmp  si, word ptr ds:[_bmapwidth]
+jge  exit_blockthingsiterator_return1
+cmp  dx, word ptr ds:[_bmapheight]
+jge  exit_blockthingsiterator_return1
+imul word ptr ds:[_bmapwidth]
+mov  bx, ax
+mov  ax, BLOCKLINKS_SEGMENT
+add  bx, si
+mov  es, ax
+add  bx, bx
+mov  ax, word ptr es:[bx]
+test ax, ax
+je   exit_blockthingsiterator_return1
+loop_check_next_block_thing:
+imul si, ax, SIZEOF_THINKER_T
+imul bx, ax, SIZEOF_MOBJ_POS_T
+add  si, (_thinkerlist + 4)
+mov  cx, MOBJPOSLIST_6800_SEGMENT
+mov  dx, si
+call di
+test al, al
+je   exit_blockthingsiterator
+mov  ax, word ptr [si + 2]
+test ax, ax
+jne  loop_check_next_block_thing
+exit_blockthingsiterator_return1:
+mov  al, 1
+exit_blockthingsiterator:
+pop  di
+pop  si
+pop  cx
+ret
 ENDP
+
+COMMENT @
 
 ;boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum) {
 
