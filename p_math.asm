@@ -1591,9 +1591,7 @@ push  cx
 push  si
 push  di
 
-mov   cx, ax
-mov   di, bx	
-mov   ax, dx
+mov   cx, bx		; store function ptr in cx.
 
 
 ;if (x<0
@@ -1604,48 +1602,58 @@ mov   ax, dx
 ;return true;
 ;}
 
-test  cx, cx
+test  ax, ax
 jl    exit_blocklinesiterator_return_1
 test  dx, dx
 jl    exit_blocklinesiterator_return_1
-cmp   cx, word ptr ds:[_bmapwidth]
+cmp   ax, word ptr ds:[_bmapwidth]
 jge   exit_blocklinesiterator_return_1
 cmp   dx, word ptr ds:[_bmapheight]
 jge   exit_blocklinesiterator_return_1
-imul  word ptr ds:[_bmapwidth]
-mov   bx, cx
-add   bx, ax
+
+;    offset = y*bmapwidth+x;
+;	offset = *(blockmaplump_plus4 + offset);
+
+
+xchg  ax, bx  ; bx gets x
+
+; set stuff up up ahead...
+mov   ax, ds:[_validcount_global]
+mov   word ptr cs:[SELFMODIFY_validcountglobal_1 + 1], ax
+
+xchg  ax, dx  ; ax gets y 
+imul  word ptr ds:[_bmapwidth]  ; y * width
+add   bx, ax					; plus x
+sal   bx, 1
+
 mov   ax, BLOCKMAPLUMP_SEGMENT
-add   bx, bx
 mov   es, ax
 
-mov   cx, word ptr es:[bx + 8]
-
-sal   cx, 1
+mov   di, word ptr es:[bx + 8]	; blockmaplump plus 4
+sal   di, 1   ; word offset
 
 ;    for ( index = offset ; blockmaplump[index] != -1 ; index++) {
 
 loop_check_block_line:
 mov   ax, BLOCKMAPLUMP_SEGMENT
-mov   bx, cx
 mov   es, ax
-mov   bx, word ptr es:[bx]
+mov   bx, word ptr es:[di]
 cmp   bx, 0FFFFh
 je    exit_blocklinesiterator_return_1
 
 mov   si, bx
 SHIFT_MACRO shl   si 4
-mov   ax, LINES_PHYSICS_SEGMENT
-mov   es, ax
-mov   ax, word ptr es:[si + 8]
-; todo store validcount in a reg
-cmp   ax, word ptr ds:[_validcount_global]
+mov   dx, LINES_PHYSICS_SEGMENT
+mov   es, dx
+SELFMODIFY_validcountglobal_1:
+mov   ax, 01000h
+cmp   ax, word ptr es:[si + 8]
 
 ; if (ld_physics->validcount == validcount_global) {
 
 jne   check_block_line
 check_next_block_line:
-add   cx, 2
+add   di, 2
 jmp   loop_check_block_line
 exit_blocklinesiterator_return_1:
 mov   al, 1
@@ -1661,11 +1669,9 @@ check_block_line:
 ;		}
 
 
-mov   ax, word ptr ds:[_validcount_global]
-mov   dx, es
-mov   word ptr es:[si + 8], ax
+mov   word ptr es:[si + 8], ax  ; set validcount
 mov   ax, si
-call  di
+call  cx
 test  al, al
 jne   check_next_block_line
 ; al = 0, return false
