@@ -667,6 +667,9 @@ boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) ){
 // are on opposite sides of the trace.
 // Returns true if earlyout and a solid line hit.
 //
+
+boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum);
+/*
 boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum) {
      int16_t			s1;
     int16_t			s2;
@@ -734,7 +737,7 @@ boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t
 
     return true;	// continue
 }
-
+*/
 
 
 //
