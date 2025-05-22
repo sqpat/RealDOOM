@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/21 17:15:41
+Created on:       25/05/21 17:23:45
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -67,7 +67,7 @@ p_inter_TEXT           CODE           AUTO           0a8f:56d0       00000ca9
 p_lights_TEXT          CODE           AUTO           0a8f:6380       000003ed
 p_map_TEXT             CODE           AUTO           0a8f:6770       00002230
 p_maputl_TEXT          CODE           AUTO           0a8f:89a0       0000062d
-P_MATH_TEXT            CODE           AUTO           0a8f:8fce       000005aa
+P_MATH_TEXT            CODE           AUTO           0a8f:8fce       000005a7
 p_plats_TEXT           CODE           AUTO           0a8f:9580       00000419
 p_pspr_TEXT            CODE           AUTO           0a8f:99a0       00000bd7
 p_spec_TEXT            CODE           AUTO           0a8f:a580       000011dc
@@ -1060,15 +1060,15 @@ Module: p_maputl.obj(C:\REALDOOM\p_maputl.c)
 0a8f:8cec+     P_TraverseIntercepts_
 0a8f:8d74      P_PathTraverse_
 Module: p_math.obj(p_math.ASM)
-0a8f:9458      P_SetThingPosition_
-0a8f:953b      R_PointInSubsector_
-0a8f:92d6      P_InterceptVector_
-0a8f:90ad      P_PointOnLineSide_
-0a8f:9356      P_LineOpening_
-0a8f:938a      P_UnsetThingPosition_
-0a8f:9070      P_AproxDistance_
-0a8f:9202      P_PointOnDivlineSide_
-0a8f:9143      P_BoxOnLineSide_
+0a8f:9455      P_SetThingPosition_
+0a8f:9538      R_PointInSubsector_
+0a8f:92d3      P_InterceptVector_
+0a8f:90aa      P_PointOnLineSide_
+0a8f:9353      P_LineOpening_
+0a8f:9387      P_UnsetThingPosition_
+0a8f:906d      P_AproxDistance_
+0a8f:91ff      P_PointOnDivlineSide_
+0a8f:9140      P_BoxOnLineSide_
 0a8f:8fce*     R_PointOnSide_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0a8f:9588      T_PlatRaise_

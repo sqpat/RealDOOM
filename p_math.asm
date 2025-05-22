@@ -61,27 +61,28 @@ PUBLIC R_PointOnSide_
 
 
 
-lodsw 							   ; child 0
-push      word ptr ds:[si]         ; child 1 on stack 
-mov   ds, ax					   ; child 0 in dx
+push      word ptr ds:[si] 		     ; child 0
+push      word ptr ds:[si+2]         ; child 1 on stack 
 
-shl   si, 1     ; 8 indexed NOTE: si is now +4 from the lodsw and shift
+shl   si, 1     ; 8 indexed NOTE: 
 
 mov   ax, NODES_SEGMENT
-mov   es, ax  ; ES for nodes lookup
+mov   ds, ax  ; DS for nodes lookup
 
 
 ;  get lx, ly, ldx, ldy
 
 ; todo use ds here
 
-les   bx, dword ptr es:[si - 4]   ; lx  
+les   bx, dword ptr ds:[si + 0]   ; lx  
 mov   di, es   					  ; ly
-mov   es, ax
 
-les   ax, dword ptr es:[si + 0]   ; ldx
-mov   si, es                      ; ldy
+lds   ax, dword ptr ds:[si + 4]   ; ldx
+mov   si, ds                      ; ldy
+
+
 pop   es ; shove child 1 in es..
+pop   ds ; shove child 0 in ds..
 
 
 
@@ -130,8 +131,6 @@ cmp  si, 0
 jle  return_false
 
 return_true:
-
-
 mov   ax, es
 ret   
 
