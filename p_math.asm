@@ -1692,37 +1692,68 @@ PUBLIC P_BlockThingsIterator_
 push cx
 push si
 push di
-mov  si, ax
-mov  di, bx
-mov  ax, dx
-test si, si
+mov  di, bx  ; func
+;mov  si, ax
+;mov  ax, dx
+
+;    if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
+;		return true;
+;	}
+
+
+test ax, ax
 jl   exit_blockthingsiterator_return1
 test dx, dx
 jl   exit_blockthingsiterator_return1
-cmp  si, word ptr ds:[_bmapwidth]
+cmp  ax, word ptr ds:[_bmapwidth]
 jge  exit_blockthingsiterator_return1
 cmp  dx, word ptr ds:[_bmapheight]
 jge  exit_blockthingsiterator_return1
+
+;	for (mobjRef = blocklinks[y*bmapwidth + x]; mobjRef; mobjRef = mobj->bnextRef) {
+
+xchg ax, bx  ; bx gets x
+xchg ax, dx  ; ax gets y
 imul word ptr ds:[_bmapwidth]
-mov  bx, ax
+add  bx, ax
+sal  bx, 1
 mov  ax, BLOCKLINKS_SEGMENT
-add  bx, si
 mov  es, ax
-add  bx, bx
-mov  ax, word ptr es:[bx]
-test ax, ax
+
+mov  si, word ptr es:[bx]
+test si, si
 je   exit_blockthingsiterator_return1
+mov  cx, MOBJPOSLIST_6800_SEGMENT  ; set once. todo remove the parm?
+
 loop_check_next_block_thing:
-imul si, ax, SIZEOF_THINKER_T
-imul bx, ax, SIZEOF_MOBJ_POS_T
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
+imul bx, si, SIZEOF_MOBJ_POS_T
+mov  ax, si
+imul si, si, SIZEOF_THINKER_T
+
+ELSE
+
+xor  dx, dx
+mov  ax, SIZEOF_MOBJ_POS_T
+mul  si
+mov  bx, ax
+;xor  dx, dx
+mov  ax, SIZEOF_THINKER_T
+mul  si
+xchg ax, si	; si gets ptr, ax gets index
+
+ENDIF
+
 add  si, (_thinkerlist + 4)
 mov  cx, MOBJPOSLIST_6800_SEGMENT
 mov  dx, si
 call di
 test al, al
 je   exit_blockthingsiterator
-mov  ax, word ptr [si + 2]
-test ax, ax
+mov  si, word ptr [si + 2]
+test si, si
 jne  loop_check_next_block_thing
 exit_blockthingsiterator_return1:
 mov  al, 1
