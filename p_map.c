@@ -136,7 +136,7 @@ fixed_t __near R_GetAttackRangeMult(int16_t range, fixed_t frac){
 	}
 	return 0;  // shouldnt ever happen?
 }
-
+/*
 //
 // R_PointInSubsector
 //
@@ -150,12 +150,12 @@ int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 	nodenum = numnodes - 1;
 	while (! (nodenum & NF_SUBSECTOR) ) {
 		// only used here... inline?
-		nodenum = R_PointOnSide (x, y, nodenum);
+		nodenum = R_PointOnSide (x, y, nodenum); 
 
     }
 
 	return nodenum & ~NF_SUBSECTOR;
-}
+}*/
 
 
 
