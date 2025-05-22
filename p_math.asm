@@ -1566,39 +1566,38 @@ ENDP
 PROC R_PointInSubsector_ NEAR
 PUBLIC R_PointInSubsector_ 
 
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
-push  ax
-push  dx
-mov   di, bx
-mov   word ptr [bp - 4], cx
+mov   word ptr cs:[SELFMODIFY_rpis_set_ax+1], ax
+mov   word ptr cs:[SELFMODIFY_rpis_set_dx+1], dx
+mov   word ptr cs:[SELFMODIFY_rpis_set_cx+1], cx
+mov   word ptr cs:[SELFMODIFY_rpis_set_bx+1], bx
 mov   ax, word ptr ds:[_numnodes]
 test  ax, ax
-je    exit_r_pointinsubsector
-dec   ax						; numnodes - 1
-mov   word ptr [bp - 2], ax
-test  ah, (NF_SUBSECTOR SHR 8)
-jne   skip_loop
+je    exit_r_pointinsubsector  ; return 0
+dec   ax						; nodenum = numnodes - 1
+push  si
+
+; todo this might get blown up by a bigger prefetch queue. if so then move this behind the function?
 continue_looping_point_on_side:
-mov   si, word ptr [bp - 2]
-mov   cx, word ptr [bp - 4]
-mov   ax, word ptr [bp - 6]
-mov   dx, word ptr [bp - 8]
-mov   bx, di
+xchg  si, ax				; si gets nodenum
+SELFMODIFY_rpis_set_ax:
+mov   ax, 01000h
+SELFMODIFY_rpis_set_dx:
+mov   dx, 01000h
+SELFMODIFY_rpis_set_cx:
+mov   cx, 01000h
+SELFMODIFY_rpis_set_bx:
+mov   bx, 01000h
 call  R_PointOnSide_   ; todo inline? only used here....
-mov   word ptr [bp - 2], ax
+; ax has new nodenum...
 test  ah, (NF_SUBSECTOR SHR 8)
 je    continue_looping_point_on_side
 skip_loop:
-mov   ax, word ptr [bp - 2]
+
+;	return nodenum & ~NF_SUBSECTOR;
 and   ah, (NOT_NF_SUBSECTOR SHR 8)
-exit_r_pointinsubsector:
-LEAVE_MACRO
-pop   di
+
 pop   si
+exit_r_pointinsubsector:
 ret  
 
 
