@@ -586,9 +586,11 @@ les   bx, dword ptr ds:[_tmbbox + BOXTOP * 4]  ; sizeof fixed_t_union
 mov   cx, es
 les   ax, dword ptr ds:[_tmbbox + BOXLEFT * 4]
 mov   dx, es
+cli   ; todo see "big todo"
 call  P_PointOnLineSide_
 
 sub   sp, 8  ; reuse same params for next call
+sti   ; todo see "big todo"
 
 xchg  ax, si   ; store p1
 
@@ -622,9 +624,11 @@ mov   dx, es
 
 
 
+cli   ; todo see "big todo"
 call  P_PointOnLineSide_
 
 sub   sp, 8  ; reuse same params for next call
+sti   ; todo see "big todo"
 
 xchg  ax, si   ; store p1
 
@@ -1798,11 +1802,32 @@ xor   ax, ax
 mov   di, word ptr es:[bx]
 mov   word ptr [bp - 0Ch], ax
 mov   word ptr [bp - 0Ah], ax
+
+;	if ( trace.dx.h.intbits > 16 || trace.dy.h.intbits > 16 || 
+; trace.dx.h.intbits < -16 || trace.dy.h.intbits < -16) {
+
 cmp   word ptr ds:[_trace+0Ah], 16
-jg    label_1
+jg    do_point_on_divlineside
 cmp   word ptr ds:[_trace+0Eh], 16
-jle   label_2
-label_1:
+jg    do_point_on_divlineside
+cmp   word ptr ds:[_trace+0Ah], -16
+jl    do_point_on_divlineside
+cmp   word ptr ds:[_trace+0Eh], -16
+jnl   do_high_precision
+
+do_point_on_divlineside:
+
+;		// we actually know the vertex fields to be 16 bit, but trace has 32 bit fields
+
+;		int16_t linev2Offset = ld_physics->v2Offset & VERTEX_OFFSET_MASK;
+;		tempx.h.intbits = v1x;
+;		tempy.h.intbits = v1y;
+;		s1 = P_PointOnDivlineSide16(tempx.w, tempy.w);
+;		tempx.h.intbits = vertexes[linev2Offset].x;
+;		tempy.h.intbits = vertexes[linev2Offset].y;
+;		s2 = P_PointOnDivlineSide16(tempx.w, tempy.w);
+
+
 mov   es, word ptr [bp - 2]
 mov   bx, word ptr [bp - 0Ah]
 mov   ax, word ptr es:[si + 2]
@@ -1824,10 +1849,10 @@ mov   dx, word ptr es:[bx - 2]
 mov   cx, word ptr es:[bx]
 mov   bx, word ptr [bp - 0Ah]
 call  P_PointOnDivlineSide_
-label_4:
+compare_s1s2:
 cbw  
-cmp   ax, word ptr [bp - 012h]
-jne   label_3
+cmp   al, byte ptr [bp - 012h]
+jne   s1_s2_not_equal
 exit_addlineintercepts_return_1:
 mov   al, 1
 LEAVE_MACRO
@@ -1835,91 +1860,128 @@ pop   di
 pop   si
 pop   cx
 ret   
-label_2:
-cmp   word ptr ds:[_trace+0Ah], -16
-jl    label_1
-cmp   word ptr ds:[_trace+0Eh], -16
-jl    label_1
+
+do_high_precision:
+
+;		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, v1x, v1y);
+;		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, v1x, v1y);
+
 push  di
-mov   bx, word ptr ds:[_trace+4]
 push  word ptr [bp - 4]
-mov   cx, word ptr ds:[_trace+6]
 push  word ptr [bp - 8]
-mov   ax, word ptr ds:[_trace+0]
 push  word ptr [bp - 6]
-mov   dx, word ptr ds:[_trace+2]
+les   ax, dword ptr ds:[_trace+0]
+mov   dx, es
+les   bx, dword ptr ds:[_trace+4]
+mov   cx, es
+cli   ; todo see "big todo"
 call  P_PointOnLineSide_
-mov   bx, word ptr ds:[_trace+4]
-mov   cx, word ptr ds:[_trace+6]
-mov   dx, word ptr ds:[_trace+2]
-push  di
+
+sub   sp, 8
+
+sti   ; todo see "big todo"
+
 cbw  
-push  word ptr [bp - 4]
-mov   word ptr [bp - 012h], ax
-mov   word ptr [bp - 010h], dx
-push  word ptr [bp - 8]
-mov   ax, word ptr ds:[_trace+0]
+
+   ; BIG TODO this sub sp, 8 is potentially killed by interrupts. 
+   ; once every call to this func is in asm we can do this without 'ret 8' on the inside.
+
+
+;push  di
+;push  word ptr [bp - 4]  
+;push  word ptr [bp - 8]
+;push  word ptr [bp - 6]
+
+mov   word ptr [bp - 012h], ax  ; store s1
+
+
+les   ax, dword ptr ds:[_trace+0]
+mov   dx, es
+les   bx, dword ptr ds:[_trace+4]
+mov   cx, es
+
+add   ax, word ptr ds:[_trace+8]
+adc   dx, word ptr ds:[_trace+0Ah]
 add   bx, word ptr ds:[_trace+0Ch]
 adc   cx, word ptr ds:[_trace+0Eh]
-add   ax, word ptr ds:[_trace+8]
-mov   dx, word ptr ds:[_trace+0Ah]
-adc   word ptr [bp - 010h], dx
-push  word ptr [bp - 6]
-mov   dx, word ptr [bp - 010h]
 call  P_PointOnLineSide_
-jmp   label_4
-label_3:
+jmp   compare_s1s2
+s1_s2_not_equal:
+
+; hit the line
+
+
+;	temp.h.fracbits = 0;
+;	temp.h.intbits = v1x;
+;	dl.x = temp;
+;	temp.h.intbits = v1y;
+;	dl.y = temp;
+
+;	temp.h.intbits = linedx;
+;	dl.dx.w = temp.w;
+;	temp.h.intbits = linedy;
+;	dl.dy.w = temp.w;
+
 xor   ax, ax ; todo si and stosw?
 mov   word ptr ds:[_dl+0], ax
-mov   ax, word ptr [bp - 4]
-mov   word ptr ds:[_dl+2], ax
-xor   ax, ax
 mov   word ptr ds:[_dl+4], ax
 mov   word ptr ds:[_dl+8], ax
+mov   word ptr ds:[_dl+0Ch], ax
+
+mov   ax, word ptr [bp - 4]
+mov   word ptr ds:[_dl+2], ax
 mov   ax, word ptr [bp - 6]
 mov   word ptr ds:[_dl+0Ah], ax
-xor   ax, ax
-mov   word ptr ds:[_dl+0Ch], ax
 mov   ax, word ptr [bp - 8]
 mov   word ptr ds:[_dl+0Eh], ax
-mov   ax, OFFSET _dl   ;todo rename..
 mov   word ptr ds:[_dl+6], di
+
+;    frac = P_InterceptVector (&dl);
+mov   ax, OFFSET _dl   ;todo rename..
 call  P_InterceptVector_
-mov   bx, ax
-mov   cx, dx
+
 test  dx, dx
-jge   label_5 ; todo reverse logic
-jmp   exit_addlineintercepts_return_1 
-label_5:
+jnge  exit_addlineintercepts_return_1
+
 cmp   byte ptr ds:[_earlyout], 0
-je    label_6
+je    skip_early_out
 cmp   dx, 1
-jl    label_7
-label_6:
-les   si, dword ptr ds:[_intercept_p]
-add   si, 7 ; todo lol what
-mov   byte ptr es:[si - 3], 1
-mov   word ptr es:[si - 7], bx
-mov   ax, word ptr [bp - 0Eh]
-mov   word ptr es:[si - 5], cx
-mov   word ptr ds:[_intercept_p], si
-mov   word ptr es:[si - 2], ax
-mov   al, 1
-LEAVE_MACRO
-pop   di
-pop   si
-pop   cx
-ret   
-label_7:
+jge   skip_early_out
 mov   es, word ptr [bp - 2]
 cmp   word ptr es:[si + 0Ch], -1
-jne   label_6
+jne   skip_early_out
 xor   al, al
 LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
 ret   
+
+
+skip_early_out:
+
+ 
+;    intercept_p->frac = frac;
+;    intercept_p->isaline = true;
+;    intercept_p->d.linenum = linenum;
+;    intercept_p++;
+
+les   di, dword ptr ds:[_intercept_p]
+stosw
+xchg  ax, dx
+stosw
+mov   al, 1
+stosb
+mov   ax, word ptr [bp - 0Eh]
+stosw
+mov   word ptr ds:[_intercept_p], di
+mov   al, 1
+LEAVE_MACRO
+pop   di
+pop   si
+pop   cx
+ret   
+
 
 
 ENDP
