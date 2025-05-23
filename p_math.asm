@@ -2206,76 +2206,92 @@ ENDP
 
 
 ; void __near P_TraverseIntercepts( traverser_t	func);
-
+; NOTE: This is now jumped to instead of called. 
 PROC P_TraverseIntercepts_ NEAR
 PUBLIC P_TraverseIntercepts_ 
 
-; ax is traverser func
+; [bp + 12] is traverser func
 
-push  bx
-push  cx
-push  dx
-push  si
-push  bp
-mov   bp, sp
-sub   sp, 4
-push  ax		; bp - 6
+
+;	count = intercept_p - intercepts;
+
 mov   ax, word ptr ds:[_intercept_p]
-mov   bx, 7  ; sizeof intercept p
+mov   bl, 7  ; sizeof intercept p
 cwd   
-idiv  bx
-xor   si, si
-mov   word ptr [bp - 4], si
+div   bl
+xor   ah, ah
 mov   cx, ax
-label_1:
+xor   si, si
+
+mov   dx, INTERCEPTS_SEGMENT ; todo get rid of it?
+mov   es, dx
+
+loop_next_intercept:
 dec   cx
 cmp   cx, -1
 je    exit_traverse_intercepts
+; todo reverse order?
+
+
+;		dist.w = MAXLONG;
+
 mov   dx, 0FFFFh  ; MAXLONG
 mov   ax, 07FFFh
-mov   word ptr [bp - 2], INTERCEPTS_SEGMENT
+
 xor   bx, bx
 cmp   word ptr ds:[_intercept_p], 0
-jbe   label_3
-mov   es, word ptr [bp - 2]
-label_5:
+jbe   done_scanning_intercepts
+
+;		for (scan = intercepts ; scan<intercept_p ; scan++) {
+
+scan_next_intercept:
 cmp   ax, word ptr es:[bx + 2]
-jg    label_4
+jg    record_scan
 jne   iterate_next_intercept
 cmp   dx, word ptr es:[bx]
 jbe   iterate_next_intercept
-label_4:
-mov   si, bx
-mov   word ptr [bp - 4], es
+record_scan:
+mov   si, bx			; si holds best
 mov   dx, word ptr es:[bx]
 mov   ax, word ptr es:[bx + 2]
 iterate_next_intercept:
 add   bx, 7
 cmp   bx, word ptr ds:[_intercept_p]
-jb    label_5
-label_3:
+jb    scan_next_intercept
+done_scanning_intercepts:
+
 cmp   ax, 1
 jg    exit_traverse_intercepts
-jne   label_2
+jne   do_func_call
 test  dx, dx
-jbe   label_2
+jbe   do_func_call
 exit_traverse_intercepts:
+; same as the outer function...
 LEAVE_MACRO
+pop   di
 pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_2:
-mov   dx, word ptr [bp - 4]
+ret   0Ch
+
+
+do_func_call:
+
+;		if (!func(in)) {
+
+mov   dx, INTERCEPTS_SEGMENT ; todo get rid of it?
 mov   ax, si
-call  word ptr [bp - 6]
+push  es
+
+call  word ptr [bp + 012h]  ; from outer function frame
 test  al, al
 je    exit_traverse_intercepts
-mov   es, word ptr [bp - 4]
+
+pop   es
+
+;		in->frac = MAXLONG;
+
 mov   word ptr es:[si], 0FFFFh   ; MAX_LONG
 mov   word ptr es:[si + 2], 07FFFh
-jmp   label_1
+jmp   loop_next_intercept
 
 ENDP
 
@@ -2311,6 +2327,8 @@ ENDP
 ; bp - 018h x1 hibits
 ; bp - 01Ah y1 lobits
 ; bp - 01Ch y1 hibits
+
+
 
 PROC P_PathTraverse_ NEAR
 PUBLIC P_PathTraverse_ 
@@ -2732,10 +2750,11 @@ decrement_loop_counter_and_continue:
 dec   byte ptr [bp - 6]
 jnz    loop_traverse_loop
 traverse_loop_done:
-mov   ax, word ptr [bp + 012h]
+
 
 ; could just inline...
-call  P_TraverseIntercepts_
+jmp  P_TraverseIntercepts_
+
 exit_path_traverse:
 LEAVE_MACRO
 pop   di
