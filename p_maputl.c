@@ -808,6 +808,8 @@ boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thin
 // 
 
 // todo: only called once, pull out the func argument or inline?
+
+/*
 void __near P_TraverseIntercepts( traverser_t	func) {
     int16_t			count;
     fixed_t_union		dist;
@@ -845,6 +847,7 @@ void __near P_TraverseIntercepts( traverser_t	func) {
 
 }
 
+*/
 
 #define MAPBLOCK1000_BITMASK (MAPBLOCKSIZE * 1000L) -1)
 #define MAPBLOCK1000_LOWBITMASK 0xF3FF
@@ -888,6 +891,8 @@ void __near P_PathTraverse ( fixed_t_union x1, fixed_t_union y1, fixed_t_union x
     validcount_global++;
     intercept_p = intercepts;
  
+	// in asm this got completely optimized out?
+	// revisit! buggy?
 	if (x1.h.fracbits & MAPBLOCK1000_LOWBITMASK == 0) {
 		// only low bit matters, so xor is faster than subtract and just as accurate..
 		// maybe during ASM optim do shift and check carry

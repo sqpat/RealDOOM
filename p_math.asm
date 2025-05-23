@@ -22,7 +22,6 @@ EXTRN FixedMul1632_:FAR
 EXTRN FixedMul2424_:FAR
 EXTRN FixedMul2432_:FAR
 EXTRN FixedDiv_:FAR
-EXTRN P_TraverseIntercepts_:NEAR
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
@@ -2204,7 +2203,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 ; void __near P_TraverseIntercepts( traverser_t	func);
@@ -2212,67 +2210,75 @@ COMMENT @
 PROC P_TraverseIntercepts_ NEAR
 PUBLIC P_TraverseIntercepts_ 
 
-0x0000000000000000:  53                   push  bx
-0x0000000000000001:  51                   push  cx
-0x0000000000000002:  52                   push  dx
-0x0000000000000003:  56                   push  si
-0x0000000000000004:  55                   push  bp
-0x0000000000000005:  89 E5                mov   bp, sp
-0x0000000000000007:  83 EC 04             sub   sp, 4
-0x000000000000000a:  50                   push  ax
-0x000000000000000b:  A1 90 1C             mov   ax, word ptr ds:[_intercept_p]
-0x000000000000000e:  BB 07 00             mov   bx, 7  ; sizeof intercept p
-0x0000000000000011:  99                   cwd   
-0x0000000000000012:  F7 FB                idiv  bx
-0x0000000000000014:  31 F6                xor   si, si
-0x0000000000000016:  89 76 FC             mov   word ptr [bp - 4], si
-0x0000000000000019:  89 C1                mov   cx, ax
-0x000000000000001b:  49                   dec   cx
-0x000000000000001c:  83 F9 FF             cmp   cx, -1
-0x000000000000001f:  74 44                je    0x65
-0x0000000000000021:  BA FF FF             mov   dx, 0xffff
-0x0000000000000024:  B8 FF 7F             mov   ax, 0x7fff
-0x0000000000000027:  C7 46 FE 6C 4C       mov   word ptr [bp - 2], 0x4c6c
-0x000000000000002c:  31 DB                xor   bx, bx
-0x000000000000002e:  83 3E 90 1C 00       cmp   word ptr ds:[_intercept_p], 0
-0x0000000000000033:  76 25                jbe   0x5a
-0x0000000000000035:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x0000000000000038:  26 3B 47 02          cmp   ax, word ptr es:[bx + 2]
-0x000000000000003c:  7F 07                jg    0x45
-0x000000000000003e:  75 11                jne   0x51
-0x0000000000000040:  26 3B 17             cmp   dx, word ptr es:[bx]
-0x0000000000000043:  76 0C                jbe   0x51
-0x0000000000000045:  89 DE                mov   si, bx
-0x0000000000000047:  8C 46 FC             mov   word ptr [bp - 4], es
-0x000000000000004a:  26 8B 17             mov   dx, word ptr es:[bx]
-0x000000000000004d:  26 8B 47 02          mov   ax, word ptr es:[bx + 2]
-0x0000000000000051:  83 C3 07             add   bx, 7
-0x0000000000000054:  3B 1E 90 1C          cmp   bx, word ptr ds:[_intercept_p]
-0x0000000000000058:  72 DE                jb    0x38
-0x000000000000005a:  3D 01 00             cmp   ax, 1
-0x000000000000005d:  7F 06                jg    0x65
-0x000000000000005f:  75 0A                jne   0x6b
-0x0000000000000061:  85 D2                test  dx, dx
-0x0000000000000063:  76 06                jbe   0x6b
-0x0000000000000065:  C9                   leave 
-0x0000000000000066:  5E                   pop   si
-0x0000000000000067:  5A                   pop   dx
-0x0000000000000068:  59                   pop   cx
-0x0000000000000069:  5B                   pop   bx
-0x000000000000006a:  C3                   ret   
-0x000000000000006b:  8B 56 FC             mov   dx, word ptr [bp - 4]
-0x000000000000006e:  89 F0                mov   ax, si
-0x0000000000000070:  FF 56 FA             call  word ptr [bp - 6]
-0x0000000000000073:  84 C0                test  al, al
-0x0000000000000075:  74 EE                je    0x65
-0x0000000000000077:  8E 46 FC             mov   es, word ptr [bp - 4]
-0x000000000000007a:  26 C7 04 FF FF       mov   word ptr es:[si], 0xffff
-0x000000000000007f:  26 C7 44 02 FF 7F    mov   word ptr es:[si + 2], 0x7fff
-0x0000000000000085:  EB 94                jmp   0x1b
+; ax is traverser func
+
+push  bx
+push  cx
+push  dx
+push  si
+push  bp
+mov   bp, sp
+sub   sp, 4
+push  ax		; bp - 6
+mov   ax, word ptr ds:[_intercept_p]
+mov   bx, 7  ; sizeof intercept p
+cwd   
+idiv  bx
+xor   si, si
+mov   word ptr [bp - 4], si
+mov   cx, ax
+label_1:
+dec   cx
+cmp   cx, -1
+je    exit_traverse_intercepts
+mov   dx, 0FFFFh  ; MAXLONG
+mov   ax, 07FFFh
+mov   word ptr [bp - 2], INTERCEPTS_SEGMENT
+xor   bx, bx
+cmp   word ptr ds:[_intercept_p], 0
+jbe   label_3
+mov   es, word ptr [bp - 2]
+label_5:
+cmp   ax, word ptr es:[bx + 2]
+jg    label_4
+jne   iterate_next_intercept
+cmp   dx, word ptr es:[bx]
+jbe   iterate_next_intercept
+label_4:
+mov   si, bx
+mov   word ptr [bp - 4], es
+mov   dx, word ptr es:[bx]
+mov   ax, word ptr es:[bx + 2]
+iterate_next_intercept:
+add   bx, 7
+cmp   bx, word ptr ds:[_intercept_p]
+jb    label_5
+label_3:
+cmp   ax, 1
+jg    exit_traverse_intercepts
+jne   label_2
+test  dx, dx
+jbe   label_2
+exit_traverse_intercepts:
+LEAVE_MACRO
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_2:
+mov   dx, word ptr [bp - 4]
+mov   ax, si
+call  word ptr [bp - 6]
+test  al, al
+je    exit_traverse_intercepts
+mov   es, word ptr [bp - 4]
+mov   word ptr es:[si], 0FFFFh   ; MAX_LONG
+mov   word ptr es:[si + 2], 07FFFh
+jmp   label_1
 
 ENDP
 
-@
 
 ;void __near P_PathTraverse ( fixed_t_union x1, fixed_t_union y1, fixed_t_union x2, fixed_t_union y2, uint8_t flags, boolean __near(*   trav) (intercept_t  __far*));
 
@@ -2643,6 +2649,23 @@ done_with_yt_check:
 ; NOTE: here we will do selfmodifying code to reduce stack/memory 
 ; usage and go with a bunch of immediates.
 
+mov   dx, 0C089h   ; 2 byte nop
+mov   al, byte ptr [bp + 010h]
+test  al, PT_ADDLINES
+
+je    write_addlines_jump
+mov   dx, ((SELFMODIFY_addlines_jump_TARGET - SELFMODIFY_addlines_jump_AFTER) SHL 8) + 0EBh
+write_addlines_jump:
+mov   word ptr cs:[SELFMODIFY_addlines_jump], dx
+
+mov   dx, 0c089h   ; 2 byte nop
+test  al, PT_ADDTHINGS
+je    write_addthings_jump
+mov   dx, ((SELFMODIFY_addthings_jump_TARGET - SELFMODIFY_addthings_jump_AFTER) SHL 8) + 0EBh
+write_addthings_jump:
+mov   word ptr cs:[SELFMODIFY_addthings_jump], dx
+
+
 
 
 les   ax, dword ptr [bp - 010h]
@@ -2665,12 +2688,12 @@ loop_traverse_loop:
 ; todo selfmodify
 ;		if (flags & PT_ADDLINES) {
 SELFMODIFY_addlines_jump:
-test  byte ptr [bp + 010h], PT_ADDLINES
-jne   do_addlines_check
-SELFMODIFY_addthings_jump:
+jmp   SHORT do_addlines_check
+SELFMODIFY_addlines_jump_AFTER:
 addlines_fallthru:
-test  byte ptr [bp + 010h], PT_ADDTHINGS
-jne   do_addthings_check
+SELFMODIFY_addthings_jump:
+jmp   SHORT do_addthings_check
+SELFMODIFY_addthings_jump_AFTER:
 addthings_fallthru:
 ;		if (mapx == xt2 && mapy == yt2) {
 
@@ -2710,6 +2733,8 @@ dec   byte ptr [bp - 6]
 jnz    loop_traverse_loop
 traverse_loop_done:
 mov   ax, word ptr [bp + 012h]
+
+; could just inline...
 call  P_TraverseIntercepts_
 exit_path_traverse:
 LEAVE_MACRO
@@ -2717,6 +2742,7 @@ pop   di
 pop   si
 ret   0Ch
 
+SELFMODIFY_addlines_jump_TARGET:
 do_addlines_check:
 
 ;			if (!P_BlockLinesIterator (mapx, mapy,PIT_AddLineIntercepts))
@@ -2730,6 +2756,7 @@ test  al, al
 je   exit_path_traverse
 
 jmp   addlines_fallthru
+SELFMODIFY_addthings_jump_TARGET:
 do_addthings_check:
 ;			if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
 ;				return;	// early out
