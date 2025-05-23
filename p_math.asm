@@ -2000,6 +2000,10 @@ ENDP
 PROC PIT_AddThingIntercepts_ NEAR
 PUBLIC PIT_AddThingIntercepts_ 
 
+; ax  thingref
+; dx  thing ptr
+; cx:bx thing pos
+
 push  si
 push  di
 push  bp
@@ -2008,12 +2012,12 @@ sub   sp, 0Eh
 push  ax
 push  dx
 mov   es, cx
-mov   ax, word ptr ds:[_trace+0Ah]
-xor   ax, word ptr ds:[_trace+0Eh]
-test  ax, ax
-jle   label_1
-mov   dl, 1
-label_5:
+;	tracepositive = (trace.dx.h.intbits ^ trace.dy.h.intbits) > 0;
+; probably enough to do high bytes?
+mov   dl, byte ptr ds:[_trace+0Bh]
+xor   dl, byte ptr ds:[_trace+0Fh]
+
+
 mov   ax, word ptr es:[bx]
 mov   di, word ptr es:[bx + 2]
 mov   si, word ptr es:[bx + 6]
@@ -2029,43 +2033,59 @@ xor   ah, ah
 sub   bx, ax
 add   di, ax
 mov   word ptr [bp - 4], bx
+
+;	if (tracepositive) {
+;		y1.h.intbits += thing->radius;
+;		y2.h.intbits -= thing->radius;
+;	} else {
+
 test  dl, dl
-je    label_3
-mov   dx, si
-add   dx, ax
+jle   tracepositive_false
+mov   cx, si
+add   cx, ax
 sub   si, ax
-label_6:
-mov   word ptr [bp - 2], dx
+do_divlinesides:
+mov   word ptr [bp - 2], cx
+
+; todo reorder stack for two LES
 mov   bx, word ptr [bp - 6]
-mov   cx, word ptr [bp - 2]
+
 mov   ax, word ptr [bp - 0Ah]
 mov   dx, word ptr [bp - 4]
-call  P_PointOnLineSide_
+call  P_PointOnDivlineSide_
+
 mov   bx, word ptr [bp - 0Eh]
-cbw  
 mov   cx, si
 mov   dx, di
-mov   word ptr [bp - 0Ch], ax
+mov   byte ptr [bp - 0Ch], al
 mov   ax, word ptr [bp - 8]
-call  P_PointOnLineSide_
-cbw  
-cmp   ax, word ptr [bp - 0Ch]
-jne   label_4
+call  P_PointOnDivlineSide_
+cmp   al, byte ptr [bp - 0Ch]
+jne   s1_s2_not_equal_2
 exit_addthingintercepts_return_1:
 mov   al, 1
 LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label_1:
-xor   dl, dl
-jmp   label_5
-label_3:
-mov   dx, si
-sub   dx, ax
+
+tracepositive_false:
+;		y1.h.intbits -= thing->radius;
+;		y2.h.intbits += thing->radius;
+mov   cx, si
+sub   cx, ax
 add   si, ax
-jmp   label_6
-label_4:
+jmp   do_divlinesides
+
+s1_s2_not_equal_2:
+
+;    dl.x = x1;
+;    dl.y = y1;
+;    dl.dx.w = x2.w-x1.w;
+;    dl.dy.w = y2.w-y1.w;
+
+; todo eliminate _dl and put this divline on the stack.
+
 mov   ax, word ptr [bp - 0Ah]
 mov   word ptr ds:[_dl+0], ax
 mov   ax, word ptr [bp - 4]
@@ -2085,17 +2105,26 @@ mov   word ptr ds:[_dl+0Ch], ax
 sbb   si, word ptr [bp - 2]
 mov   ax, OFFSET _dl
 mov   word ptr ds:[_dl+0Eh], si
+;    frac = P_InterceptVector (&dl);
+
 call  P_InterceptVector_
 test  dx, dx
+
+;	if (frac < 0) {
+;		return true;		// behind source
+;	}
+
 jl    exit_addthingintercepts_return_1
-les   bx, dword ptr ds:[_intercept_p]
-add   bx, 7
-mov   byte ptr es:[bx - 3], 0
-mov   word ptr es:[bx - 7], ax
-mov   word ptr es:[bx - 5], dx
+les   di, dword ptr ds:[_intercept_p]
+stosw
+xchg  ax, dx
+stosw
+xor   al, al
+stosb
 mov   ax, word ptr [bp - 010h]
-mov   word ptr ds:[_intercept_p], bx
-mov   word ptr es:[bx - 2], ax
+stosw
+mov   word ptr ds:[_intercept_p], di
+
 mov   al, 1
 LEAVE_MACRO
 pop   di
