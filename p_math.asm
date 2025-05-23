@@ -1193,13 +1193,15 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 ELSE
 	sal al, 1
 	mov al, ah
+	cbw
 	rcl ax, 1
-	and ah, 1
 ENDIF
 
 cmp   ax, word ptr ds:[_bmapheight]
 jge   exit_unset_position_and_pop_once
 
+; NOTE: this would not properly handle negatives in bh.
+; however we caught negatives above.
 
 ; shift bx 7
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
@@ -1464,14 +1466,17 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_386
 ELSE
 	sal al, 1
 	mov al, ah
+	cbw
 	rcl ax, 1
-	and ah, 1
 ENDIF
 ; si is free now..
 
 
 cmp   ax, word ptr ds:[_bmapheight]
 jge   set_null_bnextref_and_exit ; quick check branches early
+
+; NOTE: this would not properly handle negatives in bh.
+; however we caught negatives above.
 
 ; shift bx 7
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
@@ -2288,10 +2293,9 @@ mov   byte ptr ds:[_earlyout], al	  ; todo selfmodify?
 xor   ax, ax
 mov   word ptr ds:[_intercept_p], ax
 mov   ax, word ptr [bp - 028h]
-mov   si, OFFSET _validcount_global
 mov   word ptr ds:[_trace + 0], ax
 mov   ax, word ptr [bp + 8]
-inc   word ptr [si]
+inc   word ptr ds:[_validcount_global]
 sub   ax, word ptr [bp - 028h]
 mov   word ptr ds:[_trace + 8], ax
 mov   ax, word ptr [bp + 0Ah]
@@ -2302,47 +2306,96 @@ sub   ax, bx
 mov   word ptr ds:[_trace + 0Ch], ax
 mov   ax, word ptr [bp + 0Eh]
 sbb   ax, cx
-mov   si, OFFSET _bmaporgx
 mov   word ptr ds:[_trace + 0Eh], ax
-mov   ax, word ptr [si]
-mov   si, OFFSET _bmaporgy
+mov   ax, word ptr ds:[_bmaporgx]
 sub   word ptr [bp - 02Ah], ax
-mov   ax, word ptr [si]
+mov   ax, word ptr ds:[_bmaporgy]
 sub   word ptr [bp - 02Eh], ax
 mov   ax, word ptr [bp - 02Ah]
-sar   ax, 7
+
+; shift ax 7
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+ENDIF
 mov   word ptr [bp - 018h], ax
 mov   ax, word ptr [bp - 02Eh]
-sar   ax, 7
-mov   si, OFFSET _bmaporgx
+
+; shift ax 7
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+ENDIF
+
 mov   word ptr [bp - 020h], ax
-mov   ax, word ptr [si]
-mov   si, OFFSET _bmaporgy
+mov   ax, word ptr ds:[_bmaporgx]
 sub   word ptr [bp + 0Ah], ax
-mov   ax, word ptr [si]
+mov   ax, word ptr ds:[_bmaporgy]
 sub   word ptr [bp + 0Eh], ax
 mov   ax, word ptr [bp + 0Ah]
-sar   ax, 7
+
+; shift ax 7
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+ENDIF
+
 mov   word ptr [bp - 010h], ax
 mov   ax, word ptr [bp + 0Eh]
-sar   ax, 7
-mov   word ptr [bp - 0Eh], ax
-mov   ax, word ptr [bp - 028h]
-mov   word ptr [bp - 026h], ax
-mov   ax, word ptr [bp - 02Ah]
-mov   word ptr [bp - 024h], ax
+
+; shift ax 7
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+ENDIF
+
 mov   word ptr ds:[_trace + 6], cx
-mov   cx, 7
-label_14:
-sar   word ptr [bp - 024h], 1
-rcr   word ptr [bp - 026h], 1
-loop  label_14
-mov   ax, word ptr [bp - 026h]
-mov   word ptr ds:[_intercept_p+2], INTERCEPTS_SEGMENT
-mov   word ptr [bp - 01Eh], ax
-mov   ax, word ptr [bp - 024h]
-mov   si, word ptr [bp - 02Eh]
+mov   word ptr [bp - 0Eh], ax
+les   ax, dword ptr [bp - 02Ah]
+mov   cx, es
+
+
+
+
+;	x1mapblockshifted.w = (x1.w >> MAPBLOCKSHIFT);
+;	y1mapblockshifted.w = (y1.w >> MAPBLOCKSHIFT);
+
+; shift ax:cx right 7
+
+sal   cl, 1  ; store overflow fit
+mov   cl, ch ; shift 8
+mov   ch, al ; shift 8
+mov   al, ah ; shift 8
+cbw          ; replace ah with sign bits
+rcl   cx, 1  ; undo a shift - LSB becomes old bit
+rcl   ax, 1
+
+
+
+mov   word ptr [bp - 024h], ax
+mov   word ptr [bp - 026h], cx
+
 mov   word ptr [bp - 01Ch], ax
+mov   word ptr [bp - 01Eh], cx
+
+mov   word ptr ds:[_intercept_p+2], INTERCEPTS_SEGMENT
+mov   si, word ptr [bp - 02Eh]
 mov   ax, bx
 mov   word ptr ds:[_trace + 2], dx
 mov   cx, 7
@@ -2350,6 +2403,7 @@ label_13:
 sar   si, 1
 rcr   ax, 1
 loop  label_13
+
 mov   word ptr ds:[_trace + 4], bx
 mov   word ptr [bp - 01Ah], ax
 mov   di, ax
