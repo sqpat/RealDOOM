@@ -2297,15 +2297,15 @@ ENDP
 ; bp - 0Ch  xintercept lobits
 ; bp - 0Eh  yt2
 ; bp - 010h xt2
-; bp - 012h ystep hibits
-; bp - 014h ystep lobits
-; bp - 016h xstep lobits
+; bp - 012h unused
+; bp - 014h unused
+; bp - 016h unused
 ; bp - 018h xt1
 ; bp - 01Ah y1mapblockshifted lobits (si is hibits?)
 ; bp - 01Ch x1mapblockshifted intbits?
 ; bp - 01Eh x1mapblockshifted lobits
 ; bp - 020h yt1
-; bp - 022h xstep hibits
+; bp - 022h unused
 ; bp - 024h unused
 ; bp - 026h unused
 
@@ -2521,8 +2521,9 @@ sbb   dx, word ptr [bp - 02Eh]
 mov   ax, si
 call  FixedDiv_
 
-mov   word ptr [bp - 014h], ax
-mov   word ptr [bp - 012h], dx
+
+mov   word ptr cs:[SELFMODIFY_add_yintercept_lo+2], ax
+mov   word ptr cs:[SELFMODIFY_add_yintercept_hi+5], dx
 
 xchg  bx, ax  ; cx, bx store ystep.
 mov   cx, dx
@@ -2590,8 +2591,9 @@ sbb   si, word ptr [bp - 02Ah]
 mov   ax, dx
 mov   dx, si
 call  FixedDiv_
-mov   word ptr [bp - 016h], ax
-mov   word ptr [bp - 022h], dx
+
+mov   word ptr cs:[SELFMODIFY_add_xintercept_lo+3], ax
+mov   word ptr cs:[SELFMODIFY_add_xintercept_hi+5], dx
 
 
 ; cx:bx gets xstep
@@ -2641,9 +2643,17 @@ done_with_yt_check:
 ;    mapx = xt1;
  ;   mapy = yt1;
 
+; NOTE: here we will do selfmodifying code to reduce stack/memory 
+; usage and go with a bunch of immediates.
+
+les   ax, dword ptr [bp - 0Ah]
+mov   word ptr cs:[SELFMODIFY_yintercept_intbits+2], es  ; bp - 8
+mov   word ptr cs:[SELFMODIFY_xintercept_intbits+2], ax
+
 mov   cx, word ptr [bp - 018h]  ; xt1
 mov   si, word ptr [bp - 020h]  ; yt1
 mov   byte ptr [bp - 4], 64     ; count
+
 
 ;	for (count = 0 ; count < 64 ; count++) {
 
@@ -2667,15 +2677,20 @@ xt2yt2_not_equal:
 
 ;		if ( (yintercept.h.intbits) == mapy) {
 
-
-cmp   si, word ptr [bp - 8]   ; todo selfmodify this
+SELFMODIFY_yintercept_intbits:
+cmp   si, 01000h
 jne   intercept_not_mapy
-add   di, word ptr [bp - 014h]
-mov   ax, word ptr [bp - 012h]
-adc   word ptr [bp - 8], ax
-mov   al, byte ptr [bp - 6]
+
+;			yintercept.w += ystep;
+;			mapx += mapxstep;
+
+SELFMODIFY_add_yintercept_lo:
+add   di, 01000h
+SELFMODIFY_add_yintercept_hi:
+adc   word ptr cs:[SELFMODIFY_yintercept_intbits+2], 01000h
+mov   al, byte ptr [bp - 6]  ; todo selfmodify
 cbw  
-add   cx, ax
+add   cx, ax  ; todo selfmodify  the add
 decrement_loop_counter_and_continue:
 dec   byte ptr [bp - 4]
 jnz    loop_traverse_loop
@@ -2715,13 +2730,19 @@ jmp   addthings_fallthru
 intercept_not_mapy:
 ;		} else if ( (xintercept.h.intbits) == mapx) {
 
-cmp   cx, word ptr [bp - 0Ah]
+SELFMODIFY_xintercept_intbits:
+cmp   cx, 01000h
 jne   decrement_loop_counter_and_continue
 
-mov   ax, word ptr [bp - 016h]
-add   word ptr [bp - 0Ch], ax
-mov   ax, word ptr [bp - 022h]
-adc   word ptr [bp - 0Ah], ax
+;			xintercept.w += xstep;
+;			mapy += mapystep;
+
+SELFMODIFY_add_xintercept_lo:
+add   word ptr [bp - 0Ch], 01000h
+SELFMODIFY_add_xintercept_hi:
+adc   word ptr cs:[SELFMODIFY_xintercept_intbits+2], 01000h
+
+; todo selfmodify into inc/dec/nop
 mov   al, byte ptr [bp - 2]
 cbw  
 add   si, ax
