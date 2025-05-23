@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2046
+#define CONSTANTS_COUNT 2047
 #define LOCALS_COUNT 18 
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -2113,7 +2113,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SIZEOF_THINKER_T",
 	"SIZEOF_MOBJ_T",
 	"SIZEOF_STATE_T",
-	"MAPBLOCKSHIFT"
+	"MAPBLOCKSHIFT",
+	"PT_EARLYOUT"
 
 
 
@@ -4231,7 +4232,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	sizeof(thinker_t),
 	sizeof(mobj_t),
 	sizeof(state_t),
-	MAPBLOCKSHIFT
+	MAPBLOCKSHIFT,
+	PT_EARLYOUT
 
 
 

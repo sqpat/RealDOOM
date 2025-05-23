@@ -2275,6 +2275,24 @@ ENDP
 
 ;void __near P_PathTraverse ( fixed_t_union x1, fixed_t_union y1, fixed_t_union x2, fixed_t_union y2, uint8_t flags, boolean __near(*   trav) (intercept_t  __far*));
 
+; DX:AX x1
+; CX:BX y1
+
+; bp + 2    old si
+; bp + 4    old di
+; bp + 6    old bp
+; bp + 8    x1 hibits
+; bp + 0Ah  x2 hibits
+; bp + 0Ch  y2 lobits
+; bp + 0Eh  y2 hibits
+; bp + 010h flags
+; bp + 012h trav  (function ptr)
+
+; bp - 028h x1 lobits
+; bp - 02Ah x1 hibits
+; bp - 02Ch y1 lobits
+; bp - 02Eh y1 hibits
+
 PROC P_PathTraverse_ NEAR
 PUBLIC P_PathTraverse_ 
 
@@ -2287,30 +2305,53 @@ push  ax
 push  dx
 push  bx
 push  cx
+
+; todo put trace on stack? then we can just push this stuff once... maybe
+mov   word ptr ds:[_trace + 0], ax
+mov   word ptr ds:[_trace + 2], dx
+mov   word ptr ds:[_trace + 4], bx
+mov   word ptr ds:[_trace + 6], cx
+
+
 mov   al, byte ptr [bp + 010h]
-and   al, 4
+and   al, PT_EARLYOUT
 mov   byte ptr ds:[_earlyout], al	  ; todo selfmodify?
 xor   ax, ax
+
+;    trace.x = x1;
+;    trace.y = y1;
+;    trace.dx.w = x2.w - x1.w;
+;    trace.dy.w = y2.w - y1.w;
+
 mov   word ptr ds:[_intercept_p], ax
-mov   ax, word ptr [bp - 028h]
-mov   word ptr ds:[_trace + 0], ax
-mov   ax, word ptr [bp + 8]
 inc   word ptr ds:[_validcount_global]
+
+les   ax, dword ptr [bp + 8]
 sub   ax, word ptr [bp - 028h]
 mov   word ptr ds:[_trace + 8], ax
-mov   ax, word ptr [bp + 0Ah]
+mov   ax, es
 sbb   ax, dx
 mov   word ptr ds:[_trace + 0Ah], ax
-mov   ax, word ptr [bp + 0Ch]
+
+les   ax, dword ptr [bp + 0Ch]
 sub   ax, bx
 mov   word ptr ds:[_trace + 0Ch], ax
-mov   ax, word ptr [bp + 0Eh]
+mov   ax, es
 sbb   ax, cx
 mov   word ptr ds:[_trace + 0Eh], ax
-mov   ax, word ptr ds:[_bmaporgx]
+
+;    x1.h.intbits -= bmaporgx;
+;    y1.h.intbits -= bmaporgy;
+
+;    x2.h.intbits -= bmaporgx;
+;    y2.h.intbits -= bmaporgy;
+
+les   ax, dword ptr ds:[_bmaporgx]
 sub   word ptr [bp - 02Ah], ax
-mov   ax, word ptr ds:[_bmaporgy]
+sub   word ptr [bp + 0Ah], ax
+mov   ax, es  ; _bmaporgy
 sub   word ptr [bp - 02Eh], ax
+sub   word ptr [bp + 0Eh], ax
 mov   ax, word ptr [bp - 02Ah]
 
 ; shift ax 7
@@ -2336,10 +2377,8 @@ ELSE
 ENDIF
 
 mov   word ptr [bp - 020h], ax
-mov   ax, word ptr ds:[_bmaporgx]
-sub   word ptr [bp + 0Ah], ax
-mov   ax, word ptr ds:[_bmaporgy]
-sub   word ptr [bp + 0Eh], ax
+
+
 mov   ax, word ptr [bp + 0Ah]
 
 ; shift ax 7
@@ -2365,7 +2404,7 @@ ELSE
 	rcl ax, 1
 ENDIF
 
-mov   word ptr ds:[_trace + 6], cx
+
 mov   word ptr [bp - 0Eh], ax
 les   ax, dword ptr [bp - 02Ah]
 mov   cx, es
@@ -2374,7 +2413,6 @@ mov   cx, es
 
 
 ;	x1mapblockshifted.w = (x1.w >> MAPBLOCKSHIFT);
-;	y1mapblockshifted.w = (y1.w >> MAPBLOCKSHIFT);
 
 ; shift ax:cx right 7
 
@@ -2394,25 +2432,86 @@ mov   word ptr [bp - 026h], cx
 mov   word ptr [bp - 01Ch], ax
 mov   word ptr [bp - 01Eh], cx
 
-mov   word ptr ds:[_intercept_p+2], INTERCEPTS_SEGMENT
-mov   si, word ptr [bp - 02Eh]
-mov   ax, bx
-mov   word ptr ds:[_trace + 2], dx
-mov   cx, 7
-label_13:
-sar   si, 1
-rcr   ax, 1
-loop  label_13
+;	y1mapblockshifted.w = (y1.w >> MAPBLOCKSHIFT);
 
-mov   word ptr ds:[_trace + 4], bx
-mov   word ptr [bp - 01Ah], ax
-mov   di, ax
+; todo move to static addr. hardcode intercepts segment.
+
+mov   word ptr ds:[_intercept_p+2], INTERCEPTS_SEGMENT
+mov   ax, word ptr [bp - 02Eh]
+
+mov   si, bx  ; back up bx in si
+
+
+; shift ax:bx right 7
+
+sal   bl, 1  ; store overflow fit
+mov   bl, bh ; shift 8
+mov   bh, al ; shift 8
+mov   al, ah ; shift 8
+cbw          ; replace ah with sign bits
+rcl   bx, 1  ; undo a shift - LSB becomes old bit
+rcl   ax, 1
+
+
+mov   word ptr [bp - 01Ah], bx  ; store lobits
+mov   di, bx
+mov   word ptr [bp - 8], ax     ; store hibits
+
+;todo remove once forward logic is cleaned up
+ xchg  ax, si   ; si gets hibits
+ xchg  ax, bx   ; bx gets old bx. 
+
+
 mov   ax, word ptr [bp - 010h]
-mov   word ptr [bp - 8], si
+
+
+;	if (xt2 == xt1) {
+
+; todo pull this logic earlier... 
 cmp   ax, word ptr [bp - 018h]
-je    label_15
-jmp   label_12
-label_15:
+
+je    xt2_equals_xt1
+
+; xt2 != xt1
+mov   ax, word ptr [bp + 8h]
+sub   ax, word ptr [bp - 028h]
+mov   dx, word ptr [bp + 0Ah]
+sbb   dx, word ptr [bp - 02Ah]
+mov   si, word ptr [bp + 0Ch]
+or    dx, dx
+jge   label_22
+neg   ax
+adc   dx, 0
+neg   dx
+label_22:
+mov   cx, dx
+sub   si, bx
+mov   bx, ax
+mov   dx, word ptr [bp + 0Eh]
+sbb   dx, word ptr [bp - 02Eh]
+mov   ax, si
+call  FixedDiv_
+mov   word ptr [bp - 014h], ax
+mov   word ptr [bp - 012h], dx
+mov   dx, word ptr [bp - 010h]
+mov   ax, word ptr [bp - 026h]
+cmp   dx, word ptr [bp - 018h]
+jle   label_24
+xor   ax, 0FFFFh
+mov   byte ptr [bp - 6], 1
+inc   ax
+label_16:
+mov   bx, word ptr [bp - 014h]
+mov   cx, word ptr [bp - 012h]
+call  FixedMul16u32_
+add   di, ax
+adc   word ptr [bp - 8], dx
+jmp   label_17
+label_24:
+mov   byte ptr [bp - 6], -1
+jmp   label_16
+
+xt2_equals_xt1:
 mov   byte ptr [bp - 6], 0
 inc   byte ptr [bp - 7]
 label_17:
@@ -2469,44 +2568,7 @@ jump_to_label_8:
 jmp   label_8
 lump_to_label_9:
 jmp   label_9
-label_12:
-mov   ax, word ptr [bp + 8h]
-sub   ax, word ptr [bp - 028h]
-mov   dx, word ptr [bp + 0Ah]
-sbb   dx, word ptr [bp - 02Ah]
-mov   si, word ptr [bp + 0Ch]
-or    dx, dx
-jge   label_22
-neg   ax
-adc   dx, 0
-neg   dx
-label_22:
-mov   cx, dx
-sub   si, bx
-mov   bx, ax
-mov   dx, word ptr [bp + 0Eh]
-sbb   dx, word ptr [bp - 02Eh]
-mov   ax, si
-call  FixedDiv_
-mov   word ptr [bp - 014h], ax
-mov   word ptr [bp - 012h], dx
-mov   dx, word ptr [bp - 010h]
-mov   ax, word ptr [bp - 026h]
-cmp   dx, word ptr [bp - 018h]
-jle   label_24
-xor   ax, 0FFFFh
-mov   byte ptr [bp - 6], 1
-inc   ax
-label_16:
-mov   bx, word ptr [bp - 014h]
-mov   cx, word ptr [bp - 012h]
-call  FixedMul16u32_
-add   di, ax
-adc   word ptr [bp - 8], dx
-jmp   label_17
-label_24:
-mov   byte ptr [bp - 6], -1
-jmp   label_16
+
 label_23:
 mov   ax, word ptr [bp + 0Ch]
 sub   ax, word ptr [bp - 02Ch]
