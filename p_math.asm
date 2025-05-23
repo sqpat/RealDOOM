@@ -1777,6 +1777,19 @@ ENDP
 PROC PIT_AddLineIntercepts_ NEAR
 PUBLIC PIT_AddLineIntercepts_ 
 
+; bp - 2 line_physics segment (constant)
+; bp - 4 vertex x
+; bp - 6 line dx
+; bp - 8 line dy
+; bp - 0Ah unused
+; bp - 0Ch unused
+; bp - 0Eh linenum
+; bp - 010h unused
+; bp - 012h s1
+; bp - 014h unused
+
+; di     vertex y 
+
 push  cx
 push  si
 push  di
@@ -1785,23 +1798,21 @@ mov   bp, sp
 sub   sp, 014h
 mov   si, ax
 mov   word ptr [bp - 2], dx
-mov   word ptr [bp - 0Eh], bx
 mov   es, dx
-mov   ax, word ptr es:[si + 4]
+mov   word ptr [bp - 0Eh], bx
+mov   ax, word ptr es:[si + 4]	; line dx
 mov   word ptr [bp - 6], ax
-mov   ax, word ptr es:[si + 6]
+mov   ax, word ptr es:[si + 6]  ; line dy
 mov   bx, word ptr es:[si]
 mov   word ptr [bp - 8], ax
 mov   ax, VERTEXES_SEGMENT
 SHIFT_MACRO shl   bx 2
 mov   es, ax
 mov   ax, word ptr es:[bx]
-add   bx, 2
 mov   word ptr [bp - 4], ax
-xor   ax, ax
-mov   di, word ptr es:[bx]
-mov   word ptr [bp - 0Ch], ax
-mov   word ptr [bp - 0Ah], ax
+
+mov   di, word ptr es:[bx+2]    ; why...
+
 
 ;	if ( trace.dx.h.intbits > 16 || trace.dy.h.intbits > 16 || 
 ; trace.dx.h.intbits < -16 || trace.dy.h.intbits < -16) {
@@ -1829,25 +1840,24 @@ do_point_on_divlineside:
 
 
 mov   es, word ptr [bp - 2]
-mov   bx, word ptr [bp - 0Ah]
 mov   ax, word ptr es:[si + 2]
-mov   dx, word ptr [bp - 4]
 and   ah, (VERTEX_OFFSET_MASK SHR 8)
+push  ax
+mov   dx, word ptr [bp - 4]
 mov   cx, di
-mov   word ptr [bp - 014h], ax
-mov   ax, word ptr [bp - 0Ch]
+xor   ax, ax
+mov   bx, ax
 call  P_PointOnDivlineSide_
 cbw
-mov   bx, word ptr [bp - 014h]
-mov   word ptr [bp - 012h], ax
+pop   bx
+mov   word ptr [bp - 012h], ax ; store s1
 SHIFT_MACRO shl   bx 2
 mov   ax, VERTEXES_SEGMENT
-add   bx, 2
 mov   es, ax
-mov   ax, word ptr [bp - 0Ch]
-mov   dx, word ptr es:[bx - 2]
-mov   cx, word ptr es:[bx]
-mov   bx, word ptr [bp - 0Ah]
+les   dx, dword ptr es:[bx]
+mov   cx, es
+xor   ax, ax
+mov   bx, ax
 call  P_PointOnDivlineSide_
 compare_s1s2:
 cbw  
