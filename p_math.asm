@@ -2290,8 +2290,8 @@ ENDP
 ; bp + 012h trav  (function ptr)
 
 
-; bp - 2    mapystep
-; bp - 6    mapxstep
+; bp - 2    unused
+; bp - 6    unused
 ; bp - 8    yintercept hibits  (di is lobits)
 ; bp - 0Ah  xintercept hibits
 ; bp - 0Ch  xintercept lobits
@@ -2301,7 +2301,7 @@ ENDP
 ; bp - 014h unused
 ; bp - 016h unused
 ; bp - 018h xt1
-; bp - 01Ah y1mapblockshifted lobits (si is hibits?)
+; bp - 01Ah unused
 ; bp - 01Ch x1mapblockshifted intbits?
 ; bp - 01Eh x1mapblockshifted lobits
 ; bp - 020h yt1
@@ -2412,7 +2412,7 @@ rcl   ax, 1
 
 
 mov   word ptr [bp - 01Eh], dx
-mov   word ptr [bp - 01Ch], ax
+
 ;	xintercept = x1mapblockshifted;
 mov   word ptr [bp - 0Ch], dx
 mov   word ptr [bp - 0Ah], ax
@@ -2426,7 +2426,7 @@ mov   word ptr [bp - 018h], ax
 ;	y1mapblockshifted.w = (y1.w >> MAPBLOCKSHIFT);
 ;    yt1 = y1.h.intbits >> MAPBLOCKSHIFT;
 
-xchg  ax, cx  ; y1 hibits in ax
+mov   ax, cx  ; y1 hibits in ax
 mov   dx, bx  ; y1 lobits in dx
 
 
@@ -2501,7 +2501,7 @@ je    xt2_equals_xt1
 
 ;		ystep = FixedDiv(y2.w - y1.w, labs(x2.w - x1.w));
 
-; todo: some x2/x1 fields should still be in registers
+; todo: some y1/x1 fields should still be in registers?
 mov   ax, word ptr [bp + 8h]
 sub   ax, word ptr [bp - 028h]
 mov   dx, word ptr [bp + 0Ah]
@@ -2538,7 +2538,7 @@ mov   dx, word ptr [bp - 010h] ; todo maybe put these together..
 cmp   dx, word ptr [bp - 018h]
 jle   xt2_not_greater_than_xt1
 neg   ax
-mov   byte ptr [bp - 6], 1
+mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction], 041h   ; inc cx
 add_to_yintercept:
 
 ;		yintercept.w += FixedMul16u32(partial, ystep);
@@ -2551,7 +2551,7 @@ adc   word ptr [bp - 8], dx
 jmp   done_with_xt_check
 xt2_not_greater_than_xt1:
 ;	mapxstep = -1;
-mov   byte ptr [bp - 6], -1
+mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction], 049h   ; dec cx
 jmp   add_to_yintercept
 
 xt2_equals_xt1:
@@ -2559,7 +2559,7 @@ xt2_equals_xt1:
 ;		mapxstep = 0;
 ;		yintercept.h.intbits += 256;
 
-mov   byte ptr [bp - 6], 0
+mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction], 090h   ; nop
 inc   byte ptr [bp - 7]
 
 done_with_xt_check:
@@ -2572,24 +2572,25 @@ je    yt2_equals_yt1
 
 ;		xstep = FixedDiv(x2.w - x1.w, labs(y2.w - y1.w));
 
-mov   ax, word ptr [bp + 0Ch]
+les   ax, dword ptr [bp + 0Ch]
+mov   dx, es
 sub   ax, word ptr [bp - 02Ch]
-mov   dx, word ptr [bp + 0Eh]
 sbb   dx, word ptr [bp - 02Eh]
-or    dx, dx
+
 jge   skip_labs_3
 neg   ax
 adc   dx, 0
 neg   dx
 skip_labs_3:
 mov   cx, dx
-mov   dx, word ptr [bp + 8]
-mov   bx, ax
-sub   dx, word ptr [bp - 028h]
-mov   si, word ptr [bp + 0Ah]
-sbb   si, word ptr [bp - 02Ah]
-mov   ax, dx
-mov   dx, si
+xchg  ax, bx   ; cx:bx gets labs result
+
+; x2 - x1
+les   ax, dword ptr [bp + 8]
+mov   dx, es
+sub   ax, word ptr [bp - 028h]
+sbb   dx, word ptr [bp - 02Ah]
+
 call  FixedDiv_
 
 mov   word ptr cs:[SELFMODIFY_add_xintercept_lo+3], ax
@@ -2613,9 +2614,8 @@ jle   yt2_not_greater_than_yt1
 ;			partial ^= 0xFFFF;
 ;			partial++;
 
-xor   ax, 0FFFFh
-mov   byte ptr [bp - 2], 1
-inc   ax
+neg   ax
+mov   byte ptr cs:[SELFMODIFY_mapystep_instruction], 046h   ; inc si
 add_to_xintercept:
 
 
@@ -2627,7 +2627,7 @@ adc   word ptr [bp - 0Ah], dx
 jmp   done_with_yt_check
 yt2_not_greater_than_yt1:
 ;			mapystep = -1;
-mov   byte ptr [bp - 2], -1
+mov   byte ptr cs:[SELFMODIFY_mapystep_instruction], 04Eh   ; dec si
 jmp   add_to_xintercept
 
 yt2_equals_yt1:
@@ -2635,7 +2635,7 @@ yt2_equals_yt1:
 ;		xintercept.h.intbits += 256;
 ;		mapystep = 0;
 
-mov   byte ptr [bp - 2], 0
+mov   byte ptr cs:[SELFMODIFY_mapystep_instruction], 090h   ; nop
 inc   byte ptr [bp - 9]
 
 done_with_yt_check:
@@ -2688,9 +2688,15 @@ SELFMODIFY_add_yintercept_lo:
 add   di, 01000h
 SELFMODIFY_add_yintercept_hi:
 adc   word ptr cs:[SELFMODIFY_yintercept_intbits+2], 01000h
-mov   al, byte ptr [bp - 6]  ; todo selfmodify
-cbw  
-add   cx, ax  ; todo selfmodify  the add
+
+; this becomes either
+; inc cx 0x41
+; dec cx 0x49
+; nop    0x90
+
+SELFMODIFY_mapxstep_instruction:
+inc   cx
+
 decrement_loop_counter_and_continue:
 dec   byte ptr [bp - 4]
 jnz    loop_traverse_loop
@@ -2742,10 +2748,12 @@ add   word ptr [bp - 0Ch], 01000h
 SELFMODIFY_add_xintercept_hi:
 adc   word ptr cs:[SELFMODIFY_xintercept_intbits+2], 01000h
 
-; todo selfmodify into inc/dec/nop
-mov   al, byte ptr [bp - 2]
-cbw  
-add   si, ax
+; this becomes either
+; inc si 0x46
+; dec si 0x4E
+; nop    0x90
+SELFMODIFY_mapystep_instruction:
+inc   si
 jmp   decrement_loop_counter_and_continue
 
 ENDP
