@@ -2004,51 +2004,69 @@ PUBLIC PIT_AddThingIntercepts_
 ; dx  thing ptr
 ; cx:bx thing pos
 
-; bp - 2    y1 intbits
-; bp - 4    x1 intbits
-; bp - 6    y1 fracbits
-; bp - 8    x2 fracbits  (di has hibits..)
-; bp - 0Ah  x1 fracbits
-; bp - 0Ch  y2 fracbits
-; bp - 0Eh  
-; bp - 010h thing ptr
 
-; 
+; divline on stack is:
+
+;    dl.x = x1;
+;    dl.y = y1;
+;    dl.dx.w = x2.w-x1.w;
+;    dl.dy.w = y2.w-y1.w;
+
+
+
+; bp - 2     2*radius or negative 2 * radius
+; bp - 4     0
+; bp - 6     2 * radius
+; bp - 8     0
+; bp - 0Ah   y1 hibits
+; bp - 0Ch   y1 lobits
+; bp - 0Eh   x1 hibits
+; bp - 010h  x1 lobits
+; bp - 012h  thingref
 
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ch
-push  ax
-mov   es, cx
+sub   sp, 010h
+mov   di, sp
+mov   si, bx  ; si gets thingpos ptr
+push  ax  ; - 012h store thingref
 
 ;	x1 = x2 = thing_pos->x;
 ;	y1 = y2 = thing_pos->y;
 ;	x1.h.intbits -= thing->radius;
 ;	x2.h.intbits += thing->radius;
 
-mov   ax, word ptr es:[bx]
-mov   di, word ptr es:[bx + 2]
-mov   si, word ptr es:[bx + 6]
-mov   word ptr [bp - 8], ax
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[bx + 4]
-mov   bx, dx
-mov   word ptr [bp - 0Ch], ax
-mov   word ptr [bp - 6], ax
-mov   al, byte ptr [bx + 01Eh]   ; radius
-mov   bx, di
-xor   ah, ah
-sub   bx, ax
-add   di, ax		; x2 intbits
-mov   word ptr [bp - 4], bx
+
+mov   bx, dx  ; get thingptr for radius
+mov   bl, byte ptr ds:[bx + 01Eh]   ; radius byte
+xor   bh, bh   ; zero radius high
+
+mov   ds, cx ; ds:si setup (si above)
+mov   ax, ss ; es:di setup (di above)
+mov   es, ax
+
+movsw   ; x lobits  bp - 010h
+lodsw   ; x hibits  
+mov   dx, ax  ; store x hibits
+add   dx, bx  ; x2 hibits, add radius
+sub   ax, bx  ; x1 hibits, sub radius
+stosw	; x1 hibits      bp - 0Eh  
+movsw   ; y1 lobits      bp - 0Ch
+lodsw   ; y1 hibits  
+
+mov   si, ax  ; store y hibits
+
+mov   cx, ss
+mov   ds, cx ; restore ds..
+
+
 
 ;	tracepositive = (trace.dx.h.intbits ^ trace.dy.h.intbits) > 0;
 ; probably enough to do high bytes?
-mov   dl, byte ptr ds:[_trace+0Bh]
-xor   dl, byte ptr ds:[_trace+0Fh]
-
+mov   cx, word ptr ds:[_trace+0Ah]
+xor   cx, word ptr ds:[_trace+0Eh]
 
 ;	if (tracepositive) {
 ;		y1.h.intbits += thing->radius;
@@ -2056,27 +2074,50 @@ xor   dl, byte ptr ds:[_trace+0Fh]
 ;	} else {
 
 jle   tracepositive_false
-mov   cx, si
-add   cx, ax
-sub   si, ax
+add   ax, bx   ; y1 hibits
+sub   si, bx   ; y2 hibits
+stosw          ; y1 hibits bp - 0Ah
+xchg  ax, cx   ; backup y1hi in cx
+xor   ax, ax
+stosw          ; bp - 08h
+xchg  ax, bx
+sal   ax, 1	   ; 2x radius
+stosw          ; bp - 06h
+neg   ax       ; in this case, negative 2x radius
+
+
 do_divlinesides:
-mov   word ptr [bp - 2], cx
+
+xchg  ax, bx
+stosw     ; bp - 04h (zero)
+xchg  ax, bx
+stosw     ; bp - 02h (2xradius or negative)
+
+; ax has double or double negative radius
+; bx has 0
+; cx has y1 hibits
+; dx has x2 hibits
+; di has garbage (bp)
+; si has y2 hibits
+
+mov di, dx  ; store x2 hibits
+
+les ax, dword ptr [bp - 010h] ; x lobits
+mov dx, es
+mov bx, word ptr  [bp - 0Ch]  ; y lobits
 
 ; todo reorder stack for two LES
-mov   bx, word ptr [bp - 6]
 
-mov   ax, word ptr [bp - 0Ah]
-mov   dx, word ptr [bp - 4]
 
 ;	s1 = P_PointOnDivlineSide (x1.w, y1.w);
 
 call  P_PointOnDivlineSide_
 
-mov   bx, word ptr [bp - 0Ch]
-mov   cx, si
-mov   dx, di
 mov   byte ptr cs:[SELFMODIFY_compares1s2_2+1], al
-mov   ax, word ptr [bp - 8]
+mov   cx, si ; retrieve y2hibits
+mov   dx, di ; retrieve x2hibits
+mov   ax, word ptr [bp - 010h]  ; x lobits
+mov   bx, word ptr [bp - 0Ch]   ; y lobits
 
 ;    s2 = P_PointOnDivlineSide (x2.w, y2.w);
 
@@ -2094,9 +2135,15 @@ ret
 tracepositive_false:
 ;		y1.h.intbits -= thing->radius;
 ;		y2.h.intbits += thing->radius;
-mov   cx, si
-sub   cx, ax
-add   si, ax
+sub   ax, bx   ; y1 hibits
+add   si, bx   ; y2 hibits
+stosw     ; y1 hibits bp - 0Ah
+xchg  ax, cx  ; backup y1hi in cx
+xor   ax, ax
+stosw     ; bp - 08h
+xchg  ax, bx
+sal   ax, 1		; 2x radius
+stosw     ; bp - 06h
 jmp   do_divlinesides
 
 s1_s2_not_equal_2:
@@ -2106,31 +2153,14 @@ s1_s2_not_equal_2:
 ;    dl.dx.w = x2.w-x1.w;
 ;    dl.dy.w = y2.w-y1.w;
 
-; todo eliminate _dl and put this divline on the stack.
 
-mov   ax, word ptr [bp - 0Ah]
-mov   word ptr ds:[_dl+0], ax
-mov   ax, word ptr [bp - 4]
-mov   word ptr ds:[_dl+2], ax
-mov   ax, word ptr [bp - 6]
-mov   word ptr ds:[_dl+4], ax
-mov   ax, word ptr [bp - 2]
-mov   word ptr ds:[_dl+6], ax
-mov   ax, word ptr [bp - 8]
-sub   ax, word ptr [bp - 0Ah]
-mov   word ptr ds:[_dl+8], ax
-sbb   di, word ptr [bp - 4]
-mov   ax, word ptr [bp - 0Ch]
-mov   word ptr ds:[_dl+0Ah], di
-sub   ax, word ptr [bp - 6]
-mov   word ptr ds:[_dl+0Ch], ax
-sbb   si, word ptr [bp - 2]
-mov   ax, OFFSET _dl
-mov   word ptr ds:[_dl+0Eh], si
+; divline is on the stack instead of in a variable. 
+; calculations done up above
+lea   ax, [bp - 010h] ; divline already on the stack.
 ;    frac = P_InterceptVector (&dl);
 
 call  P_InterceptVector_
-test  dx, dx
+test  dx, dx ; test sign
 
 ;	if (frac < 0) {
 ;		return true;		// behind source
@@ -2143,7 +2173,7 @@ xchg  ax, dx
 stosw
 xor   al, al
 stosb
-pop   ax ; word ptr [bp - 0Eh]
+pop   ax ; word ptr [bp - 012h]
 stosw
 mov   word ptr ds:[_intercept_p], di
 
