@@ -2288,17 +2288,26 @@ ENDP
 ; bp + 0Eh  y2 hibits
 ; bp + 010h flags
 ; bp + 012h trav  (function ptr)
+
+
+; bp - 2    mapystep
 ; bp - 6    mapxstep
-		
 ; bp - 8    yintercept hibits  (di is lobits)
-
-
-
+; bp - 0Ah  xintercept hibits
+; bp - 0Ch  xintercept lobits
 ; bp - 0Eh  yt2
 ; bp - 010h xt2
+; bp - 012h ystep hibits
+; bp - 014h ystep lobits
+; bp - 016h xstep lobits
 ; bp - 018h xt1
 ; bp - 01Ah y1mapblockshifted lobits (si is hibits?)
+; bp - 01Ch x1mapblockshifted intbits?
+; bp - 01Eh x1mapblockshifted lobits
 ; bp - 020h yt1
+; bp - 022h xstep hibits
+; bp - 024h unused
+; bp - 026h unused
 
 ; bp - 028h x1 lobits
 ; bp - 02Ah x1 hibits
@@ -2401,12 +2410,13 @@ rcl   dx, 1  ; undo a shift - LSB becomes old bit
 rcl   ax, 1
 
 
-mov   word ptr [bp - 024h], ax
-mov   word ptr [bp - 026h], dx
 
-mov   word ptr [bp - 01Ch], ax
 mov   word ptr [bp - 01Eh], dx
-
+mov   word ptr [bp - 01Ch], ax
+;	xintercept = x1mapblockshifted;
+mov   word ptr [bp - 0Ch], dx
+mov   word ptr [bp - 0Ah], ax
+; xt1
 mov   word ptr [bp - 018h], ax
 
 
@@ -2415,8 +2425,6 @@ mov   word ptr [bp - 018h], ax
 
 ;	y1mapblockshifted.w = (y1.w >> MAPBLOCKSHIFT);
 ;    yt1 = y1.h.intbits >> MAPBLOCKSHIFT;
-
-
 
 xchg  ax, cx  ; y1 hibits in ax
 mov   dx, bx  ; y1 lobits in dx
@@ -2490,17 +2498,21 @@ cmp   dx, word ptr [bp - 018h]   ; dx holds xt2
 je    xt2_equals_xt1
 
 ; xt2 != xt1
+
+;		ystep = FixedDiv(y2.w - y1.w, labs(x2.w - x1.w));
+
+; todo: some x2/x1 fields should still be in registers
 mov   ax, word ptr [bp + 8h]
 sub   ax, word ptr [bp - 028h]
 mov   dx, word ptr [bp + 0Ah]
 sbb   dx, word ptr [bp - 02Ah]
 mov   si, word ptr [bp + 0Ch]
 or    dx, dx
-jge   label_22
+jge   skip_labs_4
 neg   ax
 adc   dx, 0
 neg   dx
-label_22:
+skip_labs_4:
 mov   cx, dx
 sub   si, bx
 mov   bx, ax
@@ -2508,49 +2520,122 @@ mov   dx, word ptr [bp + 0Eh]
 sbb   dx, word ptr [bp - 02Eh]
 mov   ax, si
 call  FixedDiv_
+
 mov   word ptr [bp - 014h], ax
 mov   word ptr [bp - 012h], dx
+;		partial = x1mapblockshifted.h.fracbits;
+
 mov   dx, word ptr [bp - 010h]
-mov   ax, word ptr [bp - 026h]
+mov   ax, word ptr [bp - 01Eh]
+
+;		if (xt2 > xt1) {
+
 cmp   dx, word ptr [bp - 018h]
-jle   label_24
+jle   xt2_not_greater_than_xt1
 xor   ax, 0FFFFh
 mov   byte ptr [bp - 6], 1
 inc   ax
-label_16:
-mov   bx, word ptr [bp - 014h]
-mov   cx, word ptr [bp - 012h]
+add_to_yintercept:
+
+;		yintercept.w += FixedMul16u32(partial, ystep);
+
+les   bx, dword ptr [bp - 014h]
+mov   cx, es
+
 call  FixedMul16u32_
 add   di, ax
 adc   word ptr [bp - 8], dx
-jmp   label_17
-label_24:
+jmp   done_with_xt_check
+xt2_not_greater_than_xt1:
+;	mapxstep = -1;
 mov   byte ptr [bp - 6], -1
-jmp   label_16
+jmp   add_to_yintercept
 
 xt2_equals_xt1:
+
+;		mapxstep = 0;
+;		yintercept.h.intbits += 256;
+
 mov   byte ptr [bp - 6], 0
 inc   byte ptr [bp - 7]
-label_17:
-mov   ax, word ptr [bp - 01Eh]
-mov   word ptr [bp - 0Ch], ax
-mov   ax, word ptr [bp - 01Ch]
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr [bp - 0Eh]
+
+done_with_xt_check:
+
+;	if (yt2 == yt1) {
+
+mov   ax, word ptr [bp - 0Eh] ; yt2
 cmp   ax, word ptr [bp - 020h]
-jne   jump_to_label_23
+je    yt2_equals_yt1
+
+;		xstep = FixedDiv(x2.w - x1.w, labs(y2.w - y1.w));
+
+mov   ax, word ptr [bp + 0Ch]
+sub   ax, word ptr [bp - 02Ch]
+mov   dx, word ptr [bp + 0Eh]
+sbb   dx, word ptr [bp - 02Eh]
+or    dx, dx
+jge   skip_labs_3
+neg   ax
+adc   dx, 0
+neg   dx
+skip_labs_3:
+mov   cx, dx
+mov   dx, word ptr [bp + 8]
+mov   bx, ax
+sub   dx, word ptr [bp - 028h]
+mov   si, word ptr [bp + 0Ah]
+sbb   si, word ptr [bp - 02Ah]
+mov   ax, dx
+mov   dx, si
+call  FixedDiv_
+mov   word ptr [bp - 016h], ax
+mov   word ptr [bp - 022h], dx
+
+;		partial = y1mapblockshifted.h.fracbits;
+
+mov   dx, word ptr [bp - 0Eh]
+mov   ax, word ptr [bp - 01Ah]
+
+;	if (yt2 > yt1) {
+cmp   dx, word ptr [bp - 020h]
+jle   yt2_not_greater_than_yt1
+
+;			mapystep = 1;
+;			partial ^= 0xFFFF;
+;			partial++;
+
+xor   ax, 0FFFFh
+mov   byte ptr [bp - 2], 1
+inc   ax
+add_to_xintercept:
+mov   bx, word ptr [bp - 016h]
+mov   cx, word ptr [bp - 022h]
+call  FixedMul16u32_
+add   word ptr [bp - 0Ch], ax
+adc   word ptr [bp - 0Ah], dx
+jmp   done_with_yt_check
+yt2_not_greater_than_yt1:
+;			mapystep = -1;
+mov   byte ptr [bp - 2], -1
+jmp   add_to_xintercept
+
+yt2_equals_yt1:
+
+;		xintercept.h.intbits += 256;
+;		mapystep = 0;
+
 mov   byte ptr [bp - 2], 0
 inc   byte ptr [bp - 9]
-label_20:
+done_with_yt_check:
 mov   cx, word ptr [bp - 018h]
 mov   si, word ptr [bp - 020h]
 mov   byte ptr [bp - 4], 0
 label_5:
 test  byte ptr [bp + 010h], 1
-jne   jump_to_label_7
+jne   label_7
 label_6:
 test  byte ptr [bp + 010h], 2
-jne   jump_to_label_8
+jne   label_8
 label_2:
 cmp   cx, word ptr [bp - 010h]
 jne   label_11
@@ -2558,7 +2643,7 @@ cmp   si, word ptr [bp - 0Eh]
 je    label_10
 label_11:
 cmp   si, word ptr [bp - 8]
-jne   lump_to_label_9
+jne   label_9
 add   di, word ptr [bp - 014h]
 mov   ax, word ptr [bp - 012h]
 adc   word ptr [bp - 8], ax
@@ -2577,54 +2662,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   0Ch
-jump_to_label_23:
-jmp   label_23
-jump_to_label_7:
-jmp   label_7
-jump_to_label_8:
-jmp   label_8
-lump_to_label_9:
-jmp   label_9
 
-label_23:
-mov   ax, word ptr [bp + 0Ch]
-sub   ax, word ptr [bp - 02Ch]
-mov   dx, word ptr [bp + 0Eh]
-sbb   dx, word ptr [bp - 02Eh]
-or    dx, dx
-jge   label_18
-neg   ax
-adc   dx, 0
-neg   dx
-label_18:
-mov   cx, dx
-mov   dx, word ptr [bp + 8]
-mov   bx, ax
-sub   dx, word ptr [bp - 028h]
-mov   si, word ptr [bp + 0Ah]
-sbb   si, word ptr [bp - 02Ah]
-mov   ax, dx
-mov   dx, si
-call  FixedDiv_
-mov   word ptr [bp - 016h], ax
-mov   word ptr [bp - 022h], dx
-mov   dx, word ptr [bp - 0Eh]
-mov   ax, word ptr [bp - 01Ah]
-cmp   dx, word ptr [bp - 020h]
-jle   label_19
-xor   ax, 0FFFFh
-mov   byte ptr [bp - 2], 1
-inc   ax
-label_21:
-mov   bx, word ptr [bp - 016h]
-mov   cx, word ptr [bp - 022h]
-call  FixedMul16u32_
-add   word ptr [bp - 0Ch], ax
-adc   word ptr [bp - 0Ah], dx
-jmp   label_20
-label_19:
-mov   byte ptr [bp - 2], -1
-jmp   label_21
 label_7:
 mov   bx, OFFSET PIT_AddLineIntercepts_
 mov   dx, si

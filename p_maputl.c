@@ -923,10 +923,9 @@ void __near P_PathTraverse ( fixed_t_union x1, fixed_t_union y1, fixed_t_union x
     yt2 = y2.h.intbits >> MAPBLOCKSHIFT;
  
 
-	x1mapblockshifted.w = (x1.w >> MAPBLOCKSHIFT);
-	y1mapblockshifted.w = (y1.w >> MAPBLOCKSHIFT);
+	xintercept = x1mapblockshifted.w = (x1.w >> MAPBLOCKSHIFT);
+	yintercept = y1mapblockshifted.w = (y1.w >> MAPBLOCKSHIFT);
 	
-	yintercept = y1mapblockshifted;
 
 	if (xt2 == xt1) {
 		mapxstep = 0;
@@ -946,7 +945,7 @@ void __near P_PathTraverse ( fixed_t_union x1, fixed_t_union y1, fixed_t_union x
 	}
 
 
-	xintercept = x1mapblockshifted;
+	
 	if (yt2 == yt1) {
 		xintercept.h.intbits += 256;
 		mapystep = 0;
