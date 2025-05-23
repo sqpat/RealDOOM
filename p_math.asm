@@ -32,7 +32,6 @@ INSTRUCTION_SET_MACRO
 EXTRN _trace:WORD
 EXTRN _lineopening:WORD
 EXTRN _intercept_p:WORD
-EXTRN _earlyout:BYTE
 
 .CODE
 
@@ -1970,8 +1969,9 @@ call  P_InterceptVector_   ; todo worth having a 16 bit version considering all 
 test  dx, dx
 jnge  exit_addlineintercepts_return_1
 
-cmp   byte ptr ds:[_earlyout], 0
-je    skip_early_out
+SELFMODIFY_skip_early_out:
+jmp   SHORT skip_early_out   ; jump when earlyout 0
+SELFMODIFY_skip_early_out_AFTER:
 cmp   dx, 1
 jge   skip_early_out
 mov   es, word ptr [bp - 2]
@@ -1983,6 +1983,7 @@ pop   si
 pop   cx
 ret   
 
+SELFMODIFY_skip_early_out_TARGET:
 
 skip_early_out:
 
@@ -2287,6 +2288,17 @@ ENDP
 ; bp + 0Eh  y2 hibits
 ; bp + 010h flags
 ; bp + 012h trav  (function ptr)
+; bp - 6    mapxstep
+		
+; bp - 8    yintercept hibits  (di is lobits)
+
+
+
+; bp - 0Eh  yt2
+; bp - 010h xt2
+; bp - 018h xt1
+; bp - 01Ah y1mapblockshifted lobits (si is hibits?)
+; bp - 020h yt1
 
 ; bp - 028h x1 lobits
 ; bp - 02Ah x1 hibits
@@ -2301,10 +2313,7 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 026h
-push  ax
-push  dx
-push  bx
-push  cx
+
 
 ; todo put trace on stack? then we can just push this stuff once... maybe
 mov   word ptr ds:[_trace + 0], ax
@@ -2313,21 +2322,10 @@ mov   word ptr ds:[_trace + 4], bx
 mov   word ptr ds:[_trace + 6], cx
 
 
-mov   al, byte ptr [bp + 010h]
-and   al, PT_EARLYOUT
-mov   byte ptr ds:[_earlyout], al	  ; todo selfmodify?
-xor   ax, ax
-
-;    trace.x = x1;
-;    trace.y = y1;
-;    trace.dx.w = x2.w - x1.w;
-;    trace.dy.w = y2.w - y1.w;
-
-mov   word ptr ds:[_intercept_p], ax
-inc   word ptr ds:[_validcount_global]
+xchg ax, di  ; di stores x1 low bits
 
 les   ax, dword ptr [bp + 8]
-sub   ax, word ptr [bp - 028h]
+sub   ax, di
 mov   word ptr ds:[_trace + 8], ax
 mov   ax, es
 sbb   ax, dx
@@ -2339,7 +2337,6 @@ mov   word ptr ds:[_trace + 0Ch], ax
 mov   ax, es
 sbb   ax, cx
 mov   word ptr ds:[_trace + 0Eh], ax
-
 ;    x1.h.intbits -= bmaporgx;
 ;    y1.h.intbits -= bmaporgy;
 
@@ -2347,36 +2344,105 @@ mov   word ptr ds:[_trace + 0Eh], ax
 ;    y2.h.intbits -= bmaporgy;
 
 les   ax, dword ptr ds:[_bmaporgx]
-sub   word ptr [bp - 02Ah], ax
+sub   dx, ax
 sub   word ptr [bp + 0Ah], ax
 mov   ax, es  ; _bmaporgy
-sub   word ptr [bp - 02Eh], ax
+sub   cx, ax
 sub   word ptr [bp + 0Eh], ax
 mov   ax, word ptr [bp - 02Ah]
 
-; shift ax 7
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-    sar   ax, MAPBLOCKSHIFT
-ELSE
-	sal al, 1
-	mov al, ah
-	cbw
-	rcl ax, 1
-ENDIF
+; push these values on stack
+push  di
+push  dx
+push  bx
+push  cx
+
+
+
+test  byte ptr [bp + 010h], PT_EARLYOUT
+
+; jump when 0
+jne   write_noop_to_earlyout
+; zero. write jump
+mov   ax, ((SELFMODIFY_skip_early_out_TARGET - SELFMODIFY_skip_early_out_AFTER) SHL 8) + 0EBh
+jmp   do_earlyout_write
+write_noop_to_earlyout:
+mov   ax, 0c089h 	; noop
+do_earlyout_write:
+mov   word ptr cs:[SELFMODIFY_skip_early_out], ax
+
+xor   ax, ax
+
+;    trace.x = x1;
+;    trace.y = y1;
+;    trace.dx.w = x2.w - x1.w;
+;    trace.dy.w = y2.w - y1.w;
+
+mov   word ptr ds:[_intercept_p], ax
+; todo move to static addr. hardcode intercepts segment.
+mov   word ptr ds:[_intercept_p+2], INTERCEPTS_SEGMENT
+inc   word ptr ds:[_validcount_global]
+
+; just dx?
+;    xt1 = x1.h.intbits>> MAPBLOCKSHIFT;
+
+;	x1mapblockshifted.w = (x1.w >> MAPBLOCKSHIFT);
+
+; shift ax:dx right 7
+xchg  ax, dx ; x1 hibits in ax
+mov   dx, di ; x1 lobits
+
+sal   dl, 1  ; store overflow fit
+mov   dl, dh ; shift 8
+mov   dh, al ; shift 8
+mov   al, ah ; shift 8
+cbw          ; replace ah with sign bits
+rcl   dx, 1  ; undo a shift - LSB becomes old bit
+rcl   ax, 1
+
+
+mov   word ptr [bp - 024h], ax
+mov   word ptr [bp - 026h], dx
+
+mov   word ptr [bp - 01Ch], ax
+mov   word ptr [bp - 01Eh], dx
+
 mov   word ptr [bp - 018h], ax
-mov   ax, word ptr [bp - 02Eh]
 
-; shift ax 7
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
-    sar   ax, MAPBLOCKSHIFT
-ELSE
-	sal al, 1
-	mov al, ah
-	cbw
-	rcl ax, 1
-ENDIF
 
-mov   word ptr [bp - 020h], ax
+
+
+
+;	y1mapblockshifted.w = (y1.w >> MAPBLOCKSHIFT);
+;    yt1 = y1.h.intbits >> MAPBLOCKSHIFT;
+
+
+
+xchg  ax, cx  ; y1 hibits in ax
+mov   dx, bx  ; y1 lobits in dx
+
+
+sal   dl, 1  ; store overflow fit
+mov   dl, dh ; shift 8
+mov   dh, al ; shift 8
+mov   al, ah ; shift 8
+cbw          ; replace ah with sign bits
+rcl   dx, 1  ; undo a shift - LSB becomes old bit
+rcl   ax, 1
+
+mov   word ptr [bp - 020h], ax   ; store yt1
+
+mov   word ptr [bp - 01Ah], dx  ; store lobits
+mov   di, dx
+mov   word ptr [bp - 8], ax     ; store hibits
+
+;todo remove once forward logic is cleaned up
+ xchg  ax, si   ; si gets hibits
+ 
+
+;    xt2 = x2.h.intbits >> MAPBLOCKSHIFT;
+;    yt2 = y2.h.intbits >> MAPBLOCKSHIFT;
+
 
 
 mov   ax, word ptr [bp + 0Ah]
@@ -2392,6 +2458,8 @@ ELSE
 ENDIF
 
 mov   word ptr [bp - 010h], ax
+xchg  ax, dx  ; dx stores xt2
+
 mov   ax, word ptr [bp + 0Eh]
 
 ; shift ax 7
@@ -2406,69 +2474,18 @@ ENDIF
 
 
 mov   word ptr [bp - 0Eh], ax
-les   ax, dword ptr [bp - 02Ah]
-mov   cx, es
+; ax has yt2
+; dx has xt2
 
 
 
 
-;	x1mapblockshifted.w = (x1.w >> MAPBLOCKSHIFT);
-
-; shift ax:cx right 7
-
-sal   cl, 1  ; store overflow fit
-mov   cl, ch ; shift 8
-mov   ch, al ; shift 8
-mov   al, ah ; shift 8
-cbw          ; replace ah with sign bits
-rcl   cx, 1  ; undo a shift - LSB becomes old bit
-rcl   ax, 1
-
-
-
-mov   word ptr [bp - 024h], ax
-mov   word ptr [bp - 026h], cx
-
-mov   word ptr [bp - 01Ch], ax
-mov   word ptr [bp - 01Eh], cx
-
-;	y1mapblockshifted.w = (y1.w >> MAPBLOCKSHIFT);
-
-; todo move to static addr. hardcode intercepts segment.
-
-mov   word ptr ds:[_intercept_p+2], INTERCEPTS_SEGMENT
-mov   ax, word ptr [bp - 02Eh]
-
-mov   si, bx  ; back up bx in si
-
-
-; shift ax:bx right 7
-
-sal   bl, 1  ; store overflow fit
-mov   bl, bh ; shift 8
-mov   bh, al ; shift 8
-mov   al, ah ; shift 8
-cbw          ; replace ah with sign bits
-rcl   bx, 1  ; undo a shift - LSB becomes old bit
-rcl   ax, 1
-
-
-mov   word ptr [bp - 01Ah], bx  ; store lobits
-mov   di, bx
-mov   word ptr [bp - 8], ax     ; store hibits
-
-;todo remove once forward logic is cleaned up
- xchg  ax, si   ; si gets hibits
- xchg  ax, bx   ; bx gets old bx. 
-
-
-mov   ax, word ptr [bp - 010h]
 
 
 ;	if (xt2 == xt1) {
 
 ; todo pull this logic earlier... 
-cmp   ax, word ptr [bp - 018h]
+cmp   dx, word ptr [bp - 018h]   ; dx holds xt2
 
 je    xt2_equals_xt1
 
