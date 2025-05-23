@@ -858,6 +858,7 @@ void __near P_TraverseIntercepts( traverser_t	func) {
 // Returns true if the traverser function returns true
 // for all lines.
 //
+/*
 void __near P_PathTraverse ( fixed_t_union x1, fixed_t_union y1, fixed_t_union x2, fixed_t_union y2, uint8_t flags, boolean __near(*   trav) (intercept_t  __far*)) {
     int16_t	xt1;
     int16_t	yt1;
@@ -1003,6 +1004,6 @@ void __near P_PathTraverse ( fixed_t_union x1, fixed_t_union y1, fixed_t_union x
 
 
 }
-
+*/
 
 

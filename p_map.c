@@ -191,12 +191,20 @@ boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_
 }
 
 
-boolean DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) , int8_t returnOnFalse){
+boolean __near DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) , int8_t returnOnFalse){
 	int16_t by;
-	if (xl < 0) xl = 0;
-	if (yl < 0) yl = 0;
-	if (xh >= bmapwidth) xh = bmapwidth - 1;
-	if (yh >= bmapheight) yh = bmapheight - 1;
+	if (xl < 0) {
+		xl = 0;
+	}
+	if (yl < 0) {
+		yl = 0;
+	}
+	if (xh >= bmapwidth) {
+		xh = bmapwidth - 1;
+	}
+	if (yh >= bmapheight) {
+		yh = bmapheight - 1;
+	}
 
 	for (; xl <= xh; xl++) {
 		for (by = yl; by <= yh; by++) {
