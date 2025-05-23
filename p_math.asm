@@ -2523,24 +2523,26 @@ call  FixedDiv_
 
 mov   word ptr [bp - 014h], ax
 mov   word ptr [bp - 012h], dx
+
+xchg  bx, ax  ; cx, bx store ystep.
+mov   cx, dx
 ;		partial = x1mapblockshifted.h.fracbits;
 
-mov   dx, word ptr [bp - 010h]
-mov   ax, word ptr [bp - 01Eh]
+mov   ax, word ptr [bp - 01Eh] ; get x1mapblockshifted..
+
+mov   dx, word ptr [bp - 010h] ; todo maybe put these together..
 
 ;		if (xt2 > xt1) {
 
 cmp   dx, word ptr [bp - 018h]
 jle   xt2_not_greater_than_xt1
-xor   ax, 0FFFFh
+neg   ax
 mov   byte ptr [bp - 6], 1
-inc   ax
 add_to_yintercept:
 
 ;		yintercept.w += FixedMul16u32(partial, ystep);
 
-les   bx, dword ptr [bp - 014h]
-mov   cx, es
+; cx:bx = ystep
 
 call  FixedMul16u32_
 add   di, ax
@@ -2591,10 +2593,15 @@ call  FixedDiv_
 mov   word ptr [bp - 016h], ax
 mov   word ptr [bp - 022h], dx
 
+
+; cx:bx gets xstep
+xchg  ax, bx
+mov   cx, dx
+
 ;		partial = y1mapblockshifted.h.fracbits;
+mov   ax, word ptr [bp - 01Ah]
 
 mov   dx, word ptr [bp - 0Eh]
-mov   ax, word ptr [bp - 01Ah]
 
 ;	if (yt2 > yt1) {
 cmp   dx, word ptr [bp - 020h]
@@ -2608,8 +2615,10 @@ xor   ax, 0FFFFh
 mov   byte ptr [bp - 2], 1
 inc   ax
 add_to_xintercept:
-mov   bx, word ptr [bp - 016h]
-mov   cx, word ptr [bp - 022h]
+
+
+;		xintercept.w += FixedMul16u32(partial, xstep);
+
 call  FixedMul16u32_
 add   word ptr [bp - 0Ch], ax
 adc   word ptr [bp - 0Ah], dx
@@ -2626,35 +2635,51 @@ yt2_equals_yt1:
 
 mov   byte ptr [bp - 2], 0
 inc   byte ptr [bp - 9]
+
 done_with_yt_check:
-mov   cx, word ptr [bp - 018h]
-mov   si, word ptr [bp - 020h]
-mov   byte ptr [bp - 4], 0
-label_5:
+
+;    mapx = xt1;
+ ;   mapy = yt1;
+
+mov   cx, word ptr [bp - 018h]  ; xt1
+mov   si, word ptr [bp - 020h]  ; yt1
+mov   byte ptr [bp - 4], 64     ; count
+
+;	for (count = 0 ; count < 64 ; count++) {
+
+loop_traverse_loop:
+; todo selfmodify
+;		if (flags & PT_ADDLINES) {
 test  byte ptr [bp + 010h], 1
-jne   label_7
-label_6:
+jne   do_addlines_check
+addlines_fallthru:
 test  byte ptr [bp + 010h], 2
-jne   label_8
-label_2:
+jne   do_addthings_check
+addthings_fallthru:
+;		if (mapx == xt2 && mapy == yt2) {
+
+; todo selfmodify these into constants
 cmp   cx, word ptr [bp - 010h]
-jne   label_11
+jne   xt2yt2_not_equal
 cmp   si, word ptr [bp - 0Eh]
-je    label_10
-label_11:
-cmp   si, word ptr [bp - 8]
-jne   label_9
+je    traverse_loop_done
+xt2yt2_not_equal:
+
+;		if ( (yintercept.h.intbits) == mapy) {
+
+
+cmp   si, word ptr [bp - 8]   ; todo selfmodify this
+jne   intercept_not_mapy
 add   di, word ptr [bp - 014h]
 mov   ax, word ptr [bp - 012h]
 adc   word ptr [bp - 8], ax
 mov   al, byte ptr [bp - 6]
 cbw  
 add   cx, ax
-label_1:
-inc   byte ptr [bp - 4]
-cmp   byte ptr [bp - 4], 64   ; loop check
-jl    label_5
-label_10:
+decrement_loop_counter_and_continue:
+dec   byte ptr [bp - 4]
+jnz    loop_traverse_loop
+traverse_loop_done:
 mov   ax, word ptr [bp + 012h]
 call  P_TraverseIntercepts_
 exit_path_traverse:
@@ -2663,30 +2688,36 @@ pop   di
 pop   si
 ret   0Ch
 
-label_7:
+do_addlines_check:
+
+;			if (!P_BlockLinesIterator (mapx, mapy,PIT_AddLineIntercepts))
+;				return;	// early out
+
 mov   bx, OFFSET PIT_AddLineIntercepts_
 mov   dx, si
 mov   ax, cx
 call  P_BlockLinesIterator_
 test  al, al
-jne   jump_to_label_6
-label_4:
-jmp   exit_path_traverse
-jump_to_label_6:
-jmp   label_6
-label_8:
+je   exit_path_traverse
+
+jmp   addlines_fallthru
+do_addthings_check:
+;			if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
+;				return;	// early out
+
 mov   bx, OFFSET PIT_AddThingIntercepts_
 mov   dx, si
 mov   ax, cx
 call  P_BlockThingsIterator_
 test  al, al
-je    label_4
-jmp   label_2
-label_9:
+je    exit_path_traverse
+jmp   addthings_fallthru
+intercept_not_mapy:
+;		} else if ( (xintercept.h.intbits) == mapx) {
+
 cmp   cx, word ptr [bp - 0Ah]
-je    label_3
-jmp   label_1
-label_3:
+jne   decrement_loop_counter_and_continue
+
 mov   ax, word ptr [bp - 016h]
 add   word ptr [bp - 0Ch], ax
 mov   ax, word ptr [bp - 022h]
@@ -2694,7 +2725,7 @@ adc   word ptr [bp - 0Ah], ax
 mov   al, byte ptr [bp - 2]
 cbw  
 add   si, ax
-jmp   label_1
+jmp   decrement_loop_counter_and_continue
 
 ENDP
 
