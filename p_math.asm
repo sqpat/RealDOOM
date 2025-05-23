@@ -828,7 +828,10 @@ ENDP
 ;fixed_t __near P_InterceptVector ( divline_t __near*	v1 ) ;
 
 PROC P_InterceptVector_ NEAR
-PUBLIC P_InterceptVector_ 
+PUBLIC P_InterceptVector_   
+
+; todo sometimes this is called with all fracbits as 0. 
+; Could be worth a 16 bit version. would be smaller
 
 push  bx
 push  cx
@@ -1778,15 +1781,10 @@ PROC PIT_AddLineIntercepts_ NEAR
 PUBLIC PIT_AddLineIntercepts_ 
 
 ; bp - 2 line_physics segment (constant)
-; bp - 4 vertex x
+; bp - 4 linenum
 ; bp - 6 line dx
 ; bp - 8 line dy
-; bp - 0Ah unused
-; bp - 0Ch unused
-; bp - 0Eh linenum
-; bp - 010h unused
-; bp - 012h s1
-; bp - 014h unused
+; bp - 0Ah vertex x
 
 ; di     vertex y 
 
@@ -1795,21 +1793,23 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 014h
+
 mov   si, ax
-mov   word ptr [bp - 2], dx
+push  dx   ; bp - 2
 mov   es, dx
-mov   word ptr [bp - 0Eh], bx
+push  bx   ; bp - 4
+
 mov   ax, word ptr es:[si + 4]	; line dx
-mov   word ptr [bp - 6], ax
+push  ax   ; bp - 6
 mov   ax, word ptr es:[si + 6]  ; line dy
+push  ax   ; bp - 8
+
 mov   bx, word ptr es:[si]
-mov   word ptr [bp - 8], ax
 mov   ax, VERTEXES_SEGMENT
 SHIFT_MACRO shl   bx 2
 mov   es, ax
 mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 4], ax
+push  ax    ; bp - 0Ah
 
 mov   di, word ptr es:[bx+2]    ; why...
 
@@ -1843,15 +1843,15 @@ mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[si + 2]
 and   ah, (VERTEX_OFFSET_MASK SHR 8)
 push  ax
-mov   dx, word ptr [bp - 4]
+mov   dx, word ptr [bp - 0Ah]
 mov   cx, di
 xor   ax, ax
 mov   bx, ax
 call  P_PointOnDivlineSide_
 cbw
 pop   bx
-mov   word ptr [bp - 012h], ax ; store s1
 SHIFT_MACRO shl   bx 2
+mov   byte ptr cs:[SELFMODIFY_compares1s2+1], al  ; store s1
 mov   ax, VERTEXES_SEGMENT
 mov   es, ax
 les   dx, dword ptr es:[bx]
@@ -1859,9 +1859,9 @@ mov   cx, es
 xor   ax, ax
 mov   bx, ax
 call  P_PointOnDivlineSide_
+SELFMODIFY_compares1s2:
 compare_s1s2:
-cbw  
-cmp   al, byte ptr [bp - 012h]
+cmp   al, 00h
 jne   s1_s2_not_equal
 exit_addlineintercepts_return_1:
 mov   al, 1
@@ -1877,7 +1877,7 @@ do_high_precision:
 ;		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, v1x, v1y);
 
 push  di
-push  word ptr [bp - 4]
+push  word ptr [bp - 0Ah]
 push  word ptr [bp - 8]
 push  word ptr [bp - 6]
 les   ax, dword ptr ds:[_trace+0]
@@ -1898,11 +1898,12 @@ cbw
 
 
 ;push  di
-;push  word ptr [bp - 4]  
+;push  word ptr [bp - 0Ah]  
 ;push  word ptr [bp - 8]
 ;push  word ptr [bp - 6]
 
-mov   word ptr [bp - 012h], ax  ; store s1
+; store s1
+mov   byte ptr cs:[SELFMODIFY_compares1s2+1], al
 
 
 les   ax, dword ptr ds:[_trace+0]
@@ -1938,17 +1939,14 @@ mov   word ptr ds:[_dl+4], ax
 mov   word ptr ds:[_dl+8], ax
 mov   word ptr ds:[_dl+0Ch], ax
 
-mov   ax, word ptr [bp - 4]
-mov   word ptr ds:[_dl+2], ax
-mov   ax, word ptr [bp - 6]
-mov   word ptr ds:[_dl+0Ah], ax
-mov   ax, word ptr [bp - 8]
-mov   word ptr ds:[_dl+0Eh], ax
-mov   word ptr ds:[_dl+6], di
+pop   word ptr ds:[_dl+2]	; bp - 0Ah
+pop   word ptr ds:[_dl+0Eh] ; bp - 8
+pop   word ptr ds:[_dl+0Ah] ; bp - 6
+mov   word ptr ds:[_dl+6], di ; vertex y
 
 ;    frac = P_InterceptVector (&dl);
 mov   ax, OFFSET _dl   ;todo rename..
-call  P_InterceptVector_
+call  P_InterceptVector_   ; todo worth having a 16 bit version considering all the fracbits are 0...?
 
 test  dx, dx
 jnge  exit_addlineintercepts_return_1
@@ -1982,7 +1980,7 @@ xchg  ax, dx
 stosw
 mov   al, 1
 stosb
-mov   ax, word ptr [bp - 0Eh]
+pop   ax ; bp - 4
 stosw
 mov   word ptr ds:[_intercept_p], di
 mov   al, 1
