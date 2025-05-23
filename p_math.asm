@@ -1782,9 +1782,20 @@ PUBLIC PIT_AddLineIntercepts_
 
 ; bp - 2 line_physics segment (constant)
 ; bp - 4 linenum
-; bp - 6 line dx
-; bp - 8 line dy
-; bp - 0Ah vertex x
+
+; bp - 014h divline
+
+;	temp.h.fracbits = 0;
+;	temp.h.intbits = v1x;
+;	dl.x = temp;
+;	temp.h.intbits = v1y;
+;	dl.y = temp;
+
+;	temp.h.intbits = linedx;
+;	dl.dx.w = temp.w;
+;	temp.h.intbits = linedy;
+;	dl.dy.w = temp.w;
+
 
 ; di     vertex y 
 
@@ -1799,19 +1810,27 @@ push  dx   ; bp - 2
 mov   es, dx
 push  bx   ; bp - 4
 
-mov   ax, word ptr es:[si + 4]	; line dx
-push  ax   ; bp - 6
-mov   ax, word ptr es:[si + 6]  ; line dy
-push  ax   ; bp - 8
+
+; todo move this after if/else?
+xor   ax, ax
+push  word ptr es:[si + 6]  ; bp - 6   line dy
+push  ax					; bp - 8   0
+push  word ptr es:[si + 4]  ; bp - 0Ah line dx
+push  ax					; bp - 0Ch 0
 
 mov   bx, word ptr es:[si]
-mov   ax, VERTEXES_SEGMENT
 SHIFT_MACRO shl   bx 2
-mov   es, ax
-mov   ax, word ptr es:[bx]
-push  ax    ; bp - 0Ah
 
-mov   di, word ptr es:[bx+2]    ; why...
+mov   di, VERTEXES_SEGMENT
+mov   es, di
+
+mov   di, word ptr es:[bx + 2]
+push  di					; bp - 0Eh  vertex y
+push  ax    				; bp - 010h
+push  word ptr es:[bx]      ; bp - 012h vertex x
+push  ax    				; bp - 014h
+
+
 
 
 ;	if ( trace.dx.h.intbits > 16 || trace.dy.h.intbits > 16 || 
@@ -1843,12 +1862,11 @@ mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[si + 2]
 and   ah, (VERTEX_OFFSET_MASK SHR 8)
 push  ax
-mov   dx, word ptr [bp - 0Ah]
+mov   dx, word ptr [bp - 012h]
 mov   cx, di
 xor   ax, ax
 mov   bx, ax
 call  P_PointOnDivlineSide_
-cbw
 pop   bx
 SHIFT_MACRO shl   bx 2
 mov   byte ptr cs:[SELFMODIFY_compares1s2+1], al  ; store s1
@@ -1877,9 +1895,9 @@ do_high_precision:
 ;		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, v1x, v1y);
 
 push  di
-push  word ptr [bp - 0Ah]
-push  word ptr [bp - 8]
+push  word ptr [bp - 012h]
 push  word ptr [bp - 6]
+push  word ptr [bp - 0Ah]
 les   ax, dword ptr ds:[_trace+0]
 mov   dx, es
 les   bx, dword ptr ds:[_trace+4]
@@ -1898,9 +1916,9 @@ cbw
 
 
 ;push  di
-;push  word ptr [bp - 0Ah]  
-;push  word ptr [bp - 8]
+;push  word ptr [bp - 012h]
 ;push  word ptr [bp - 6]
+;push  word ptr [bp - 0Ah]
 
 ; store s1
 mov   byte ptr cs:[SELFMODIFY_compares1s2+1], al
@@ -1933,19 +1951,13 @@ s1_s2_not_equal:
 ;	temp.h.intbits = linedy;
 ;	dl.dy.w = temp.w;
 
-xor   ax, ax ; todo si and stosw?
-mov   word ptr ds:[_dl+0], ax
-mov   word ptr ds:[_dl+4], ax
-mov   word ptr ds:[_dl+8], ax
-mov   word ptr ds:[_dl+0Ch], ax
+; about one fourth of calls make it here to the expensive part of the call.
+; maybe all that stack stuff shouldnt be done above? is it too expensive?
 
-pop   word ptr ds:[_dl+2]	; bp - 0Ah
-pop   word ptr ds:[_dl+0Eh] ; bp - 8
-pop   word ptr ds:[_dl+0Ah] ; bp - 6
-mov   word ptr ds:[_dl+6], di ; vertex y
+;lea   ax, [bp - 014h]
+mov    ax, sp
 
 ;    frac = P_InterceptVector (&dl);
-mov   ax, OFFSET _dl   ;todo rename..
 call  P_InterceptVector_   ; todo worth having a 16 bit version considering all the fracbits are 0...?
 
 test  dx, dx
@@ -1980,7 +1992,7 @@ xchg  ax, dx
 stosw
 mov   al, 1
 stosb
-pop   ax ; bp - 4
+mov   ax, word ptr [bp - 4]
 stosw
 mov   word ptr ds:[_intercept_p], di
 mov   al, 1
