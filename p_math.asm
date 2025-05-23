@@ -29,7 +29,6 @@ INSTRUCTION_SET_MACRO
 
 EXTRN _trace:WORD
 EXTRN _lineopening:WORD
-EXTRN _dl:WORD
 EXTRN _intercept_p:WORD
 EXTRN _earlyout:BYTE
 
@@ -1797,15 +1796,13 @@ PUBLIC PIT_AddLineIntercepts_
 ;	dl.dy.w = temp.w;
 
 
-; di     vertex y 
 
 push  cx
 push  si
-push  di
 push  bp
 mov   bp, sp
 
-mov   si, ax
+xchg  ax, si
 push  dx   ; bp - 2
 mov   es, dx
 push  bx   ; bp - 4
@@ -1818,16 +1815,18 @@ push  ax					; bp - 8   0
 push  word ptr es:[si + 4]  ; bp - 0Ah line dx
 push  ax					; bp - 0Ch 0
 
-mov   bx, word ptr es:[si]
+les   bx, dword ptr es:[si]
+mov   cx, es ; store si + 2 in cx for now
 SHIFT_MACRO shl   bx 2
 
-mov   di, VERTEXES_SEGMENT
-mov   es, di
+mov   dx, VERTEXES_SEGMENT
+mov   es, dx
 
-mov   di, word ptr es:[bx + 2]
-push  di					; bp - 0Eh  vertex y
+les   dx, dword ptr es:[bx]
+
+push  es					; bp - 0Eh  vertex y
 push  ax    				; bp - 010h
-push  word ptr es:[bx]      ; bp - 012h vertex x
+push  dx                    ; bp - 012h vertex x
 push  ax    				; bp - 014h
 
 
@@ -1836,16 +1835,21 @@ push  ax    				; bp - 014h
 ;	if ( trace.dx.h.intbits > 16 || trace.dy.h.intbits > 16 || 
 ; trace.dx.h.intbits < -16 || trace.dy.h.intbits < -16) {
 
-cmp   word ptr ds:[_trace+0Ah], 16
-jg    do_point_on_divlineside
-cmp   word ptr ds:[_trace+0Eh], 16
-jg    do_point_on_divlineside
-cmp   word ptr ds:[_trace+0Ah], -16
-jl    do_point_on_divlineside
-cmp   word ptr ds:[_trace+0Eh], -16
-jnl   do_high_precision
+mov   al, 16  ; ah already 0
+
+cmp   ax, word ptr ds:[_trace+0Ah]
+jng   do_point_on_divlineside
+cmp   ax, word ptr ds:[_trace+0Eh]
+jng   do_point_on_divlineside
+neg   ax
+cmp   ax, word ptr ds:[_trace+0Ah]
+jnl   do_point_on_divlineside
+cmp   ax, word ptr ds:[_trace+0Eh]
+jl   do_high_precision
 
 do_point_on_divlineside:
+
+; this happens about 3:1 compared to hi prec
 
 ;		// we actually know the vertex fields to be 16 bit, but trace has 32 bit fields
 
@@ -1858,12 +1862,10 @@ do_point_on_divlineside:
 ;		s2 = P_PointOnDivlineSide16(tempx.w, tempy.w);
 
 
-mov   es, word ptr [bp - 2]
-mov   ax, word ptr es:[si + 2]
-and   ah, (VERTEX_OFFSET_MASK SHR 8)
-push  ax
-mov   dx, word ptr [bp - 012h]
-mov   cx, di
+and   ch, (VERTEX_OFFSET_MASK SHR 8)
+push  cx
+; dx already v1x
+mov   cx, es ;v1y
 xor   ax, ax
 mov   bx, ax
 call  P_PointOnDivlineSide_
@@ -1884,7 +1886,6 @@ jne   s1_s2_not_equal
 exit_addlineintercepts_return_1:
 mov   al, 1
 LEAVE_MACRO
-pop   di
 pop   si
 pop   cx
 ret   
@@ -1894,8 +1895,10 @@ do_high_precision:
 ;		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, v1x, v1y);
 ;		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, v1x, v1y);
 
-push  di
-push  word ptr [bp - 012h]
+
+
+push  es ;v1y
+push  dx ;v1x
 push  word ptr [bp - 6]
 push  word ptr [bp - 0Ah]
 les   ax, dword ptr ds:[_trace+0]
@@ -1915,10 +1918,7 @@ cbw
    ; once every call to this func is in asm we can do this without 'ret 8' on the inside.
 
 
-;push  di
-;push  word ptr [bp - 012h]
-;push  word ptr [bp - 6]
-;push  word ptr [bp - 0Ah]
+
 
 ; store s1
 mov   byte ptr cs:[SELFMODIFY_compares1s2+1], al
@@ -1972,7 +1972,6 @@ cmp   word ptr es:[si + 0Ch], -1
 jne   skip_early_out
 xor   al, al
 LEAVE_MACRO
-pop   di
 pop   si
 pop   cx
 ret   
@@ -1985,7 +1984,7 @@ skip_early_out:
 ;    intercept_p->isaline = true;
 ;    intercept_p->d.linenum = linenum;
 ;    intercept_p++;
-
+push  di
 les   di, dword ptr ds:[_intercept_p]
 stosw
 xchg  ax, dx
@@ -1996,8 +1995,8 @@ mov   ax, word ptr [bp - 4]
 stosw
 mov   word ptr ds:[_intercept_p], di
 mov   al, 1
-LEAVE_MACRO
 pop   di
+LEAVE_MACRO
 pop   si
 pop   cx
 ret   
