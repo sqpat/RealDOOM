@@ -1994,110 +1994,118 @@ ret
 
 ENDP
 
-COMMENT @
 
 ;boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thing, mobj_pos_t __far* thing_pos) ;
 
 PROC PIT_AddThingIntercepts_ NEAR
 PUBLIC PIT_AddThingIntercepts_ 
 
-0x0000000000000000:  56                push  si
-0x0000000000000001:  57                push  di
-0x0000000000000002:  55                push  bp
-0x0000000000000003:  89 E5             mov   bp, sp
-0x0000000000000005:  83 EC 0E          sub   sp, 0xe
-0x0000000000000008:  50                push  ax
-0x0000000000000009:  52                push  dx
-0x000000000000000a:  8E C1             mov   es, cx
-0x000000000000000c:  A1 22 1A          mov   ax, word ptr [0x1a22]
-0x000000000000000f:  33 06 26 1A       xor   ax, word ptr [0x1a26]
-0x0000000000000013:  85 C0             test  ax, ax
-0x0000000000000015:  7E 67             jle   0x7e
-0x0000000000000017:  B2 01             mov   dl, 1
-0x0000000000000019:  26 8B 07          mov   ax, word ptr es:[bx]
-0x000000000000001c:  26 8B 7F 02       mov   di, word ptr es:[bx + 2]
-0x0000000000000020:  26 8B 77 06       mov   si, word ptr es:[bx + 6]
-0x0000000000000024:  89 46 F8          mov   word ptr [bp - 8], ax
-0x0000000000000027:  89 46 F6          mov   word ptr [bp - 0xa], ax
-0x000000000000002a:  26 8B 47 04       mov   ax, word ptr es:[bx + 4]
-0x000000000000002e:  8B 5E EE          mov   bx, word ptr [bp - 0x12]
-0x0000000000000031:  89 46 F2          mov   word ptr [bp - 0xe], ax
-0x0000000000000034:  89 46 FA          mov   word ptr [bp - 6], ax
-0x0000000000000037:  8A 47 1E          mov   al, byte ptr [bx + 0x1e]
-0x000000000000003a:  89 FB             mov   bx, di
-0x000000000000003c:  30 E4             xor   ah, ah
-0x000000000000003e:  29 C3             sub   bx, ax
-0x0000000000000040:  01 C7             add   di, ax
-0x0000000000000042:  89 5E FC          mov   word ptr [bp - 4], bx
-0x0000000000000045:  84 D2             test  dl, dl
-0x0000000000000047:  74 39             je    0x82
-0x0000000000000049:  89 F2             mov   dx, si
-0x000000000000004b:  01 C2             add   dx, ax
-0x000000000000004d:  29 C6             sub   si, ax
-0x000000000000004f:  89 56 FE          mov   word ptr [bp - 2], dx
-0x0000000000000052:  8B 5E FA          mov   bx, word ptr [bp - 6]
-0x0000000000000055:  8B 4E FE          mov   cx, word ptr [bp - 2]
-0x0000000000000058:  8B 46 F6          mov   ax, word ptr [bp - 0xa]
-0x000000000000005b:  8B 56 FC          mov   dx, word ptr [bp - 4]
-0x000000000000005e:  E8 DD 05          call  P_PointOnLineSide_
-0x0000000000000061:  8B 5E F2          mov   bx, word ptr [bp - 0xe]
-0x0000000000000064:  98                cbw  
-0x0000000000000065:  89 F1             mov   cx, si
-0x0000000000000067:  89 FA             mov   dx, di
-0x0000000000000069:  89 46 F4          mov   word ptr [bp - 0xc], ax
-0x000000000000006c:  8B 46 F8          mov   ax, word ptr [bp - 8]
-0x000000000000006f:  E8 CC 05          call  P_PointOnLineSide_
-0x0000000000000072:  98                cbw  
-0x0000000000000073:  3B 46 F4          cmp   ax, word ptr [bp - 0xc]
-0x0000000000000076:  75 12             jne   0x8a
-0x0000000000000078:  B0 01             mov   al, 1
-0x000000000000007a:  C9                leave 
-0x000000000000007b:  5F                pop   di
-0x000000000000007c:  5E                pop   si
-0x000000000000007d:  C3                ret   
-0x000000000000007e:  30 D2             xor   dl, dl
-0x0000000000000080:  EB 97             jmp   0x19
-0x0000000000000082:  89 F2             mov   dx, si
-0x0000000000000084:  29 C2             sub   dx, ax
-0x0000000000000086:  01 C6             add   si, ax
-0x0000000000000088:  EB C5             jmp   0x4f
-0x000000000000008a:  8B 46 F6          mov   ax, word ptr [bp - 0xa]
-0x000000000000008d:  A3 08 1A          mov   word ptr [0x1a08], ax
-0x0000000000000090:  8B 46 FC          mov   ax, word ptr [bp - 4]
-0x0000000000000093:  A3 0A 1A          mov   word ptr [0x1a0a], ax
-0x0000000000000096:  8B 46 FA          mov   ax, word ptr [bp - 6]
-0x0000000000000099:  A3 0C 1A          mov   word ptr [0x1a0c], ax
-0x000000000000009c:  8B 46 FE          mov   ax, word ptr [bp - 2]
-0x000000000000009f:  A3 0E 1A          mov   word ptr [0x1a0e], ax
-0x00000000000000a2:  8B 46 F8          mov   ax, word ptr [bp - 8]
-0x00000000000000a5:  2B 46 F6          sub   ax, word ptr [bp - 0xa]
-0x00000000000000a8:  A3 10 1A          mov   word ptr [0x1a10], ax
-0x00000000000000ab:  1B 7E FC          sbb   di, word ptr [bp - 4]
-0x00000000000000ae:  8B 46 F2          mov   ax, word ptr [bp - 0xe]
-0x00000000000000b1:  89 3E 12 1A       mov   word ptr [0x1a12], di
-0x00000000000000b5:  2B 46 FA          sub   ax, word ptr [bp - 6]
-0x00000000000000b8:  A3 14 1A          mov   word ptr [0x1a14], ax
-0x00000000000000bb:  1B 76 FE          sbb   si, word ptr [bp - 2]
-0x00000000000000be:  B8 08 1A          mov   ax, 0x1a08
-0x00000000000000c1:  89 36 16 1A       mov   word ptr [0x1a16], si
-0x00000000000000c5:  E8 4A 06          call  0x712
-0x00000000000000c8:  85 D2             test  dx, dx
-0x00000000000000ca:  7C AC             jl    0x78
-0x00000000000000cc:  C4 1E A0 1C       les   bx, ptr [0x1ca0]
-0x00000000000000d0:  83 C3 07          add   bx, 7
-0x00000000000000d3:  26 C6 47 FD 00    mov   byte ptr es:[bx - 3], 0
-0x00000000000000d8:  26 89 47 F9       mov   word ptr es:[bx - 7], ax
-0x00000000000000dc:  26 89 57 FB       mov   word ptr es:[bx - 5], dx
-0x00000000000000e0:  8B 46 F0          mov   ax, word ptr [bp - 0x10]
-0x00000000000000e3:  89 1E A0 1C       mov   word ptr [0x1ca0], bx
-0x00000000000000e7:  26 89 47 FE       mov   word ptr es:[bx - 2], ax
-0x00000000000000eb:  B0 01             mov   al, 1
-0x00000000000000ed:  C9                leave 
-0x00000000000000ee:  5F                pop   di
-0x00000000000000ef:  5E                pop   si
-0x00000000000000f0:  C3                ret   
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 0Eh
+push  ax
+push  dx
+mov   es, cx
+mov   ax, word ptr ds:[_trace+0Ah]
+xor   ax, word ptr ds:[_trace+0Eh]
+test  ax, ax
+jle   label_1
+mov   dl, 1
+label_5:
+mov   ax, word ptr es:[bx]
+mov   di, word ptr es:[bx + 2]
+mov   si, word ptr es:[bx + 6]
+mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 0Ah], ax
+mov   ax, word ptr es:[bx + 4]
+mov   bx, word ptr [bp - 012h]
+mov   word ptr [bp - 0Eh], ax
+mov   word ptr [bp - 6], ax
+mov   al, byte ptr [bx + 01Eh]
+mov   bx, di
+xor   ah, ah
+sub   bx, ax
+add   di, ax
+mov   word ptr [bp - 4], bx
+test  dl, dl
+je    label_3
+mov   dx, si
+add   dx, ax
+sub   si, ax
+label_6:
+mov   word ptr [bp - 2], dx
+mov   bx, word ptr [bp - 6]
+mov   cx, word ptr [bp - 2]
+mov   ax, word ptr [bp - 0Ah]
+mov   dx, word ptr [bp - 4]
+call  P_PointOnLineSide_
+mov   bx, word ptr [bp - 0Eh]
+cbw  
+mov   cx, si
+mov   dx, di
+mov   word ptr [bp - 0Ch], ax
+mov   ax, word ptr [bp - 8]
+call  P_PointOnLineSide_
+cbw  
+cmp   ax, word ptr [bp - 0Ch]
+jne   label_4
+exit_addthingintercepts_return_1:
+mov   al, 1
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+label_1:
+xor   dl, dl
+jmp   label_5
+label_3:
+mov   dx, si
+sub   dx, ax
+add   si, ax
+jmp   label_6
+label_4:
+mov   ax, word ptr [bp - 0Ah]
+mov   word ptr ds:[_dl+0], ax
+mov   ax, word ptr [bp - 4]
+mov   word ptr ds:[_dl+2], ax
+mov   ax, word ptr [bp - 6]
+mov   word ptr ds:[_dl+4], ax
+mov   ax, word ptr [bp - 2]
+mov   word ptr ds:[_dl+6], ax
+mov   ax, word ptr [bp - 8]
+sub   ax, word ptr [bp - 0Ah]
+mov   word ptr ds:[_dl+8], ax
+sbb   di, word ptr [bp - 4]
+mov   ax, word ptr [bp - 0Eh]
+mov   word ptr ds:[_dl+0Ah], di
+sub   ax, word ptr [bp - 6]
+mov   word ptr ds:[_dl+0Ch], ax
+sbb   si, word ptr [bp - 2]
+mov   ax, OFFSET _dl
+mov   word ptr ds:[_dl+0Eh], si
+call  P_InterceptVector_
+test  dx, dx
+jl    exit_addthingintercepts_return_1
+les   bx, dword ptr ds:[_intercept_p]
+add   bx, 7
+mov   byte ptr es:[bx - 3], 0
+mov   word ptr es:[bx - 7], ax
+mov   word ptr es:[bx - 5], dx
+mov   ax, word ptr [bp - 010h]
+mov   word ptr ds:[_intercept_p], bx
+mov   word ptr es:[bx - 2], ax
+mov   al, 1
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
 
 ENDP
+
+COMMENT @
+
 
 ; void __near P_TraverseIntercepts( traverser_t	func);
 

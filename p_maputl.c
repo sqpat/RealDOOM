@@ -743,6 +743,8 @@ boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t
 //
 // PIT_AddThingIntercepts
 //
+boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thing, mobj_pos_t __far* thing_pos);
+/*
 boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thing, mobj_pos_t __far* thing_pos) {
     fixed_t_union		x1;
 	fixed_t_union		y1;
@@ -797,7 +799,7 @@ boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thin
 
     return true;		// keep going
 }
-
+*/
 
 //
 // P_TraverseIntercepts
