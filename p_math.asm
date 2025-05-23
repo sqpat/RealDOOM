@@ -113,7 +113,7 @@ jne   return_node_dy_less_than_0
 
 ; compare low bits
 
-cmp   word ptr [bp - 04h], 0
+cmp   word ptr [bp - 4], 0
 jbe   return_node_dy_greater_than_0
 
  
@@ -151,7 +151,7 @@ cmp   cx, di
 jl    ret_node_dx_less_than_0
 jne   ret_ldx_greater_than_0
 ;  compare low bits
-cmp   word ptr [bp - 02h], 0
+cmp   word ptr [bp - 2], 0
 jbe   ret_node_dx_less_than_0
 ret_ldx_greater_than_0:
 ;        return node->dx > 0
@@ -2108,9 +2108,9 @@ neg   ax       ; in this case, negative 2x radius
 do_divlinesides:
 
 xchg  ax, bx
-stosw     ; bp - 04h (zero)
+stosw     ; bp - 4 (zero)
 xchg  ax, bx
-stosw     ; bp - 02h (2xradius or negative)
+stosw     ; bp - 2 (2xradius or negative)
 
 ; ax has double or double negative radius
 ; bx has 0
@@ -2290,29 +2290,21 @@ ENDP
 ; bp + 012h trav  (function ptr)
 
 
-; bp - 2    unused
-; bp - 6    unused
+; bp - 2    yt1
+; bp - 4    xt1
+; bp - 6    loop count
 ; bp - 8    yintercept hibits  (di is lobits)
 ; bp - 0Ah  xintercept hibits
 ; bp - 0Ch  xintercept lobits
 ; bp - 0Eh  yt2
 ; bp - 010h xt2
-; bp - 012h unused
-; bp - 014h unused
-; bp - 016h unused
-; bp - 018h xt1
-; bp - 01Ah unused
-; bp - 01Ch x1mapblockshifted intbits?
-; bp - 01Eh x1mapblockshifted lobits
-; bp - 020h yt1
-; bp - 022h unused
-; bp - 024h unused
-; bp - 026h unused
+; bp - 012h y1mapblockshifted lo bits
+; bp - 014h x1mapblockshifted lo bits
 
-; bp - 028h x1 lobits
-; bp - 02Ah x1 hibits
-; bp - 02Ch y1 lobits
-; bp - 02Eh y1 hibits
+; bp - 016h x1 lobits
+; bp - 018h x1 hibits
+; bp - 01Ah y1 lobits
+; bp - 01Ch y1 hibits
 
 PROC P_PathTraverse_ NEAR
 PUBLIC P_PathTraverse_ 
@@ -2321,7 +2313,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 026h
+sub   sp, 014h
 
 
 ; todo put trace on stack? then we can just push this stuff once... maybe
@@ -2346,6 +2338,7 @@ mov   word ptr ds:[_trace + 0Ch], ax
 mov   ax, es
 sbb   ax, cx
 mov   word ptr ds:[_trace + 0Eh], ax
+
 ;    x1.h.intbits -= bmaporgx;
 ;    y1.h.intbits -= bmaporgy;
 
@@ -2358,7 +2351,6 @@ sub   word ptr [bp + 0Ah], ax
 mov   ax, es  ; _bmaporgy
 sub   cx, ax
 sub   word ptr [bp + 0Eh], ax
-mov   ax, word ptr [bp - 02Ah]
 
 ; push these values on stack
 push  di
@@ -2411,13 +2403,13 @@ rcl   ax, 1
 
 
 
-mov   word ptr [bp - 01Eh], dx
+mov   word ptr [bp - 014h], dx
 
 ;	xintercept = x1mapblockshifted;
 mov   word ptr [bp - 0Ch], dx
 mov   word ptr [bp - 0Ah], ax
 ; xt1
-mov   word ptr [bp - 018h], ax
+mov   word ptr [bp - 4], ax
 
 
 
@@ -2438,15 +2430,13 @@ cbw          ; replace ah with sign bits
 rcl   dx, 1  ; undo a shift - LSB becomes old bit
 rcl   ax, 1
 
-mov   word ptr [bp - 020h], ax   ; store yt1
+mov   word ptr [bp - 2], ax   ; store yt1
 
-mov   word ptr [bp - 01Ah], dx  ; store lobits
+mov   word ptr [bp - 012h], dx  ; store lobits
 mov   di, dx
 mov   word ptr [bp - 8], ax     ; store hibits
 
-;todo remove once forward logic is cleaned up
- xchg  ax, si   ; si gets hibits
- 
+; todo store something in si?
 
 ;    xt2 = x2.h.intbits >> MAPBLOCKSHIFT;
 ;    yt2 = y2.h.intbits >> MAPBLOCKSHIFT;
@@ -2493,7 +2483,7 @@ mov   word ptr [bp - 0Eh], ax
 ;	if (xt2 == xt1) {
 
 ; todo pull this logic earlier... 
-cmp   dx, word ptr [bp - 018h]   ; dx holds xt2
+cmp   dx, word ptr [bp - 4]   ; dx holds xt2
 
 je    xt2_equals_xt1
 
@@ -2502,23 +2492,30 @@ je    xt2_equals_xt1
 ;		ystep = FixedDiv(y2.w - y1.w, labs(x2.w - x1.w));
 
 ; todo: some y1/x1 fields should still be in registers?
-mov   ax, word ptr [bp + 8h]
-sub   ax, word ptr [bp - 028h]
-mov   dx, word ptr [bp + 0Ah]
-sbb   dx, word ptr [bp - 02Ah]
-mov   si, word ptr [bp + 0Ch]
+les   ax, dword ptr [bp + 8]
+mov   dx, es
+sub   ax, word ptr [bp - 016h]
+sbb   dx, word ptr [bp - 018h]
+
 or    dx, dx
 jge   skip_labs_4
 neg   ax
 adc   dx, 0
 neg   dx
 skip_labs_4:
-mov   cx, dx
+; dx:ax has result for labs that needs to go into cx:bx
+; but cx:bx has y1, which needs to be subbed from y2
+
+les   si, dword ptr [bp + 0Ch]  ; y2 dword
 sub   si, bx
-mov   bx, ax
-mov   dx, word ptr [bp + 0Eh]
-sbb   dx, word ptr [bp - 02Eh]
-mov   ax, si
+xchg  ax, bx   ; bx gets labs result lo
+xchg  ax, si   ; ax gets y2 - y1 lo
+
+mov   si, es   ; y2 hi
+sbb   si, cx   ; y2 - y1 hi
+mov   cx, dx   ; cx gets labs result hi 
+mov   dx, si   ; dx gets y2 - y1 hi
+
 call  FixedDiv_
 
 
@@ -2529,13 +2526,13 @@ xchg  bx, ax  ; cx, bx store ystep.
 mov   cx, dx
 ;		partial = x1mapblockshifted.h.fracbits;
 
-mov   ax, word ptr [bp - 01Eh] ; get x1mapblockshifted..
+mov   ax, word ptr [bp - 014h] ; get x1mapblockshifted..
 
 mov   dx, word ptr [bp - 010h] ; todo maybe put these together..
 
 ;		if (xt2 > xt1) {
 
-cmp   dx, word ptr [bp - 018h]
+cmp   dx, word ptr [bp - 4]
 jle   xt2_not_greater_than_xt1
 neg   ax
 mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction], 041h   ; inc cx
@@ -2567,15 +2564,15 @@ done_with_xt_check:
 ;	if (yt2 == yt1) {
 
 mov   ax, word ptr [bp - 0Eh] ; yt2
-cmp   ax, word ptr [bp - 020h]
+cmp   ax, word ptr [bp - 2]
 je    yt2_equals_yt1
 
 ;		xstep = FixedDiv(x2.w - x1.w, labs(y2.w - y1.w));
 
 les   ax, dword ptr [bp + 0Ch]
 mov   dx, es
-sub   ax, word ptr [bp - 02Ch]
-sbb   dx, word ptr [bp - 02Eh]
+sub   ax, word ptr [bp - 01Ah]
+sbb   dx, word ptr [bp - 01Ch]
 
 jge   skip_labs_3
 neg   ax
@@ -2588,8 +2585,8 @@ xchg  ax, bx   ; cx:bx gets labs result
 ; x2 - x1
 les   ax, dword ptr [bp + 8]
 mov   dx, es
-sub   ax, word ptr [bp - 028h]
-sbb   dx, word ptr [bp - 02Ah]
+sub   ax, word ptr [bp - 016h]
+sbb   dx, word ptr [bp - 018h]
 
 call  FixedDiv_
 
@@ -2602,12 +2599,12 @@ xchg  ax, bx
 mov   cx, dx
 
 ;		partial = y1mapblockshifted.h.fracbits;
-mov   ax, word ptr [bp - 01Ah]
+mov   ax, word ptr [bp - 012h]
 
 mov   dx, word ptr [bp - 0Eh]
 
 ;	if (yt2 > yt1) {
-cmp   dx, word ptr [bp - 020h]
+cmp   dx, word ptr [bp - 2]
 jle   yt2_not_greater_than_yt1
 
 ;			mapystep = 1;
@@ -2646,13 +2643,20 @@ done_with_yt_check:
 ; NOTE: here we will do selfmodifying code to reduce stack/memory 
 ; usage and go with a bunch of immediates.
 
+
+
+les   ax, dword ptr [bp - 010h]
+mov   word ptr cs:[SELFMODIFY_yt2_check+2], es  ; bp - 0Eh
+mov   word ptr cs:[SELFMODIFY_xt2_check+2], ax
+
+
 les   ax, dword ptr [bp - 0Ah]
 mov   word ptr cs:[SELFMODIFY_yintercept_intbits+2], es  ; bp - 8
 mov   word ptr cs:[SELFMODIFY_xintercept_intbits+2], ax
 
-mov   cx, word ptr [bp - 018h]  ; xt1
-mov   si, word ptr [bp - 020h]  ; yt1
-mov   byte ptr [bp - 4], 64     ; count
+les   cx, dword ptr [bp - 4]  ; xt1
+mov   si, es
+mov   byte ptr [bp - 6], 64     ; count
 
 
 ;	for (count = 0 ; count < 64 ; count++) {
@@ -2660,18 +2664,22 @@ mov   byte ptr [bp - 4], 64     ; count
 loop_traverse_loop:
 ; todo selfmodify
 ;		if (flags & PT_ADDLINES) {
-test  byte ptr [bp + 010h], 1
+SELFMODIFY_addlines_jump:
+test  byte ptr [bp + 010h], PT_ADDLINES
 jne   do_addlines_check
+SELFMODIFY_addthings_jump:
 addlines_fallthru:
-test  byte ptr [bp + 010h], 2
+test  byte ptr [bp + 010h], PT_ADDTHINGS
 jne   do_addthings_check
 addthings_fallthru:
 ;		if (mapx == xt2 && mapy == yt2) {
 
-; todo selfmodify these into constants
-cmp   cx, word ptr [bp - 010h]
+
+SELFMODIFY_xt2_check:
+cmp   cx, 01000h
 jne   xt2yt2_not_equal
-cmp   si, word ptr [bp - 0Eh]
+SELFMODIFY_yt2_check:
+cmp   si, 01000h
 je    traverse_loop_done
 xt2yt2_not_equal:
 
@@ -2698,7 +2706,7 @@ SELFMODIFY_mapxstep_instruction:
 inc   cx
 
 decrement_loop_counter_and_continue:
-dec   byte ptr [bp - 4]
+dec   byte ptr [bp - 6]
 jnz    loop_traverse_loop
 traverse_loop_done:
 mov   ax, word ptr [bp + 012h]

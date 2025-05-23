@@ -2046,6 +2046,8 @@ SIZEOF_MOBJ_T = 028h
 SIZEOF_STATE_T = 06h
 MAPBLOCKSHIFT = 07h
 PT_EARLYOUT = 04h
+PT_ADDTHINGS = 02h
+PT_ADDLINES = 01h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h
