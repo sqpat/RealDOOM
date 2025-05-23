@@ -2004,19 +2004,29 @@ PUBLIC PIT_AddThingIntercepts_
 ; dx  thing ptr
 ; cx:bx thing pos
 
+; bp - 2    y1 intbits
+; bp - 4    x1 intbits
+; bp - 6    y1 fracbits
+; bp - 8    x2 fracbits  (di has hibits..)
+; bp - 0Ah  x1 fracbits
+; bp - 0Ch  y2 fracbits
+; bp - 0Eh  
+; bp - 010h thing ptr
+
+; 
+
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Eh
+sub   sp, 0Ch
 push  ax
-push  dx
 mov   es, cx
-;	tracepositive = (trace.dx.h.intbits ^ trace.dy.h.intbits) > 0;
-; probably enough to do high bytes?
-mov   dl, byte ptr ds:[_trace+0Bh]
-xor   dl, byte ptr ds:[_trace+0Fh]
 
+;	x1 = x2 = thing_pos->x;
+;	y1 = y2 = thing_pos->y;
+;	x1.h.intbits -= thing->radius;
+;	x2.h.intbits += thing->radius;
 
 mov   ax, word ptr es:[bx]
 mov   di, word ptr es:[bx + 2]
@@ -2024,22 +2034,27 @@ mov   si, word ptr es:[bx + 6]
 mov   word ptr [bp - 8], ax
 mov   word ptr [bp - 0Ah], ax
 mov   ax, word ptr es:[bx + 4]
-mov   bx, word ptr [bp - 012h]
-mov   word ptr [bp - 0Eh], ax
+mov   bx, dx
+mov   word ptr [bp - 0Ch], ax
 mov   word ptr [bp - 6], ax
-mov   al, byte ptr [bx + 01Eh]
+mov   al, byte ptr [bx + 01Eh]   ; radius
 mov   bx, di
 xor   ah, ah
 sub   bx, ax
-add   di, ax
+add   di, ax		; x2 intbits
 mov   word ptr [bp - 4], bx
+
+;	tracepositive = (trace.dx.h.intbits ^ trace.dy.h.intbits) > 0;
+; probably enough to do high bytes?
+mov   dl, byte ptr ds:[_trace+0Bh]
+xor   dl, byte ptr ds:[_trace+0Fh]
+
 
 ;	if (tracepositive) {
 ;		y1.h.intbits += thing->radius;
 ;		y2.h.intbits -= thing->radius;
 ;	} else {
 
-test  dl, dl
 jle   tracepositive_false
 mov   cx, si
 add   cx, ax
@@ -2052,15 +2067,22 @@ mov   bx, word ptr [bp - 6]
 
 mov   ax, word ptr [bp - 0Ah]
 mov   dx, word ptr [bp - 4]
+
+;	s1 = P_PointOnDivlineSide (x1.w, y1.w);
+
 call  P_PointOnDivlineSide_
 
-mov   bx, word ptr [bp - 0Eh]
+mov   bx, word ptr [bp - 0Ch]
 mov   cx, si
 mov   dx, di
-mov   byte ptr [bp - 0Ch], al
+mov   byte ptr cs:[SELFMODIFY_compares1s2_2+1], al
 mov   ax, word ptr [bp - 8]
+
+;    s2 = P_PointOnDivlineSide (x2.w, y2.w);
+
 call  P_PointOnDivlineSide_
-cmp   al, byte ptr [bp - 0Ch]
+SELFMODIFY_compares1s2_2:
+cmp   al, 01h 
 jne   s1_s2_not_equal_2
 exit_addthingintercepts_return_1:
 mov   al, 1
@@ -2098,7 +2120,7 @@ mov   ax, word ptr [bp - 8]
 sub   ax, word ptr [bp - 0Ah]
 mov   word ptr ds:[_dl+8], ax
 sbb   di, word ptr [bp - 4]
-mov   ax, word ptr [bp - 0Eh]
+mov   ax, word ptr [bp - 0Ch]
 mov   word ptr ds:[_dl+0Ah], di
 sub   ax, word ptr [bp - 6]
 mov   word ptr ds:[_dl+0Ch], ax
@@ -2121,7 +2143,7 @@ xchg  ax, dx
 stosw
 xor   al, al
 stosb
-mov   ax, word ptr [bp - 010h]
+pop   ax ; word ptr [bp - 0Eh]
 stosw
 mov   word ptr ds:[_intercept_p], di
 
