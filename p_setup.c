@@ -587,6 +587,7 @@ void __near P_LoadThings(int16_t lump) {
 		// skip player1
 		if (mt.type == 1) {
 			playerMobjRef = i;
+			playerMobj = playerMobjMakerExpression;
 		}
 
 		// Do not spawn cool, new monsters if !commercial

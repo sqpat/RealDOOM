@@ -198,8 +198,7 @@ typedef struct {
  
 
 #define playerMobj_pos	((&mobjposlist_6800[playerMobjRef]))
-#define playerMobj		((mobj_t __near *) (((byte __far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
-
+#define playerMobjMakerExpression		((mobj_t __near *) (((byte __far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
 
 typedef boolean __near (*traverser_t ) (intercept_t __far*in);
 

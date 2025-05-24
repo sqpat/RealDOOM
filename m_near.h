@@ -724,17 +724,19 @@ extern uint8_t	usegamma;
 
  
 
-extern skill_t         gameskill; 
-extern boolean         respawnmonsters;
-extern boolean         paused; 
-extern boolean         sendpause;              // send a pause event next tic 
-extern boolean         sendsave;               // send a save event next tic 
-extern boolean         usergame;               // ok to save / end game 
-extern boolean         timingdemo;             // if true, exit with report on completion 
-extern boolean         noblit;                 // for comparative timing purposes 
-extern ticcount_t             starttime;              // for comparative timing purposes       
-extern player_t        player;
-extern THINKERREF      playerMobjRef;
+extern skill_t            gameskill; 
+extern boolean            respawnmonsters;
+extern boolean            paused; 
+extern boolean            sendpause;              // send a pause event next tic 
+extern boolean            sendsave;               // send a save event next tic 
+extern boolean         	  usergame;               // ok to save / end game 
+extern boolean         	  timingdemo;             // if true, exit with report on completion 
+extern boolean         	  noblit;                 // for comparative timing purposes 
+extern ticcount_t         starttime;              // for comparative timing purposes       
+extern player_t        	  player;
+extern THINKERREF      	  playerMobjRef;
+extern mobj_t __near *    playerMobj;
+
 
 extern ticcount_t          gametic;
 extern int16_t             totalkills; 

@@ -34,6 +34,7 @@ EXTRN _trace:WORD
 EXTRN _lineopening:WORD
 EXTRN _intercept_p:WORD
 EXTRN _playerMobjRef:WORD
+EXTRN _playerMobj:WORD
 .CODE
 
 
@@ -2836,9 +2837,8 @@ pop   cx
 pop   bx
 ret   
 label_2:
-imul  ax, word ptr ds:[_playerMobjRef], SIZEOF_THINKER_T
+mov   ax, word ptr ds:[_playerMobj]
 mov   dx, SFX_NOWAY
-add   ax, (_thinkerlist + 4)
 
 call  S_StartSound_
 nop   
@@ -2874,10 +2874,9 @@ jne   label_3
 mov   word ptr [bp - 4], 1
 label_3:
 mov   cx, word ptr ds:[_playerMobjRef]
-imul  ax, cx, SIZEOF_THINKER_T
+mov   ax, word ptr ds:[_playerMobj]
 les   bx, dword ptr [bp - 4]
 mov   dx, word ptr es:[si + 5]
-add   ax, (_thinkerlist + 4)
 call  P_UseSpecialLine_
 xor   al, al
 LEAVE_MACRO
