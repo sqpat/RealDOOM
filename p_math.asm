@@ -3095,123 +3095,191 @@ ENDP
 PROC P_TryMove_ NEAR
 PUBLIC P_TryMove_ 
 
+; bp - 2
+; bp - 4      thing_pos hi
+; bp - 6      thing_pos lo
+; bp - 8      thing
+
+; bp - 0Ah   
+; bp - 0Ch    oldx hi
+; bp - 0Eh    oldx lo
+; bp - 010h   oldy lo
+; bp - 012h   
+; bp - 014h   
+; bp - 016h   oldy hi
+; bp - 018h   
+; bp - 01Ah   
+; bp - 01Ch   
+; bp - 01Eh   
+; bp - 020h   -1 ?
+
+
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
 sub   sp, 01Eh
-mov   si, word ptr [bp + 0Ah]
 mov   word ptr [bp - 8], ax
 mov   word ptr [bp - 6], bx
 mov   word ptr [bp - 4], cx
-mov   bx, OFFSET _floatok
+mov   si, word ptr [bp + 0Ah]
+
+;	if (!P_CheckPosition(thing, x, y, -1)) {
+;		return false;		// solid wall or thing
+;	}
+
 push  -1  ; todo 8086
-mov   cx, word ptr [bp + 0Ch]
 push  word ptr [bp + 010h]
-mov   byte ptr [bx], 0
 push  word ptr [bp + 0Eh]
+mov   cx, word ptr [bp + 0Ch]
+mov   byte ptr ds:[_floatok], 0
 mov   bx, si
 call  P_CheckPosition_
 test  al, al
-jne   label_1
-jmp   label_2
-label_1:
-les   bx, dword ptr [bp - 6]
-test  byte ptr es:[bx + 015h], (MF_NOCLIP SHR 8)
+je    exit_trymove_return
+
+
+;    if ( !(thing_pos->flags1 & MF_NOCLIP) ) {
+
+mov   bx, word ptr  [bp - 8]
+les   di, dword ptr [bp - 6]
+mov   dl, byte ptr es:[di + 015h]  ; flags
+test  dl, (MF_NOCLIP SHR 8)
+;jne   move_ok_do_unset_position
 je    label_6
-jmp   label_7
+jmp   move_ok_do_unset_position
 label_6:
+
+;		if (temp.h.intbits < thing->height.h.intbits) { // 16 bit logic handles the fractional fine
+;			return false;	// doesn't fit
+;		}
+
 mov   ax, word ptr ds:[_tmceilingz]
 sub   ax, word ptr ds:[_tmfloorz]
-mov   bx, word ptr [bp - 8]
-sar   ax, 3
+SHIFT_MACRO sar   ax 3
 cmp   ax, word ptr [bx + 0Ch]
-jge   label_9
-jmp   exit_trymove_return0
-label_9:
-mov   bx, OFFSET _floatok
-mov   byte ptr [bx], 1
-mov   bx, word ptr ds:[_tmceilingz]
-mov   di, word ptr [bp - 6]
-xor   bh, bh
+jnge  exit_trymove_return0
+
+;		floatok = true;
+
+inc   byte ptr ds:[_floatok]
+
+
 mov   ax, word ptr ds:[_tmceilingz]
-and   bl, 7
-sar   ax, 3
-shl   bx, 0Dh
-test  byte ptr es:[di + 015h], (MF_TELEPORT SHR 8)
+xor   cx, cx
+sar   ax, 1
+rcr   cx, 1
+sar   ax, 1
+rcr   cx, 1
+sar   ax, 1
+rcr   cx, 1
+
+
+test  dl, (MF_TELEPORT SHR 8)
 jne   label_5
-sub   bx, word ptr es:[di + 8]
+sub   cx, word ptr es:[di + 8]
 sbb   ax, word ptr es:[di + 0Ah]
-mov   di, word ptr [bp - 8]
-cmp   ax, word ptr [di + 0Ch]
+
+cmp   ax, word ptr [bx + 0Ch]
 jl    exit_trymove_return0
 jne   label_5
-cmp   bx, word ptr [di + 0Ah]
+cmp   cx, word ptr [bx + 0Ah]
 jb    exit_trymove_return0
 label_5:
-mov   di, word ptr [bp - 6]
-mov   bx, word ptr ds:[_tmfloorz]
+
+
 mov   ax, word ptr ds:[_tmfloorz]
-xor   bh, bh
-mov   es, word ptr [bp - 4]
-and   bl, 7
-sar   ax, 3
-shl   bx, 0Dh
-test  byte ptr es:[di + 015h], (MF_TELEPORT SHR 8)
+xor   cx, cx
+sar   ax, 1
+rcr   cx, 1
+sar   ax, 1
+rcr   cx, 1
+sar   ax, 1
+rcr   cx, 1
+
+test  dl, (MF_TELEPORT SHR 8)
 jne   label_8
-sub   bx, word ptr es:[di + 8]
+sub   cx, word ptr es:[di + 8]
 sbb   ax, word ptr es:[di + 0Ah]
 cmp   ax, 24
 jg    exit_trymove_return0
 jne   label_8
-test  bx, bx
+test  cx, cx
 jbe   label_8
 exit_trymove_return0:
 xor   al, al
-label_2:
+exit_trymove_return:
 LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
 ret   8
+
+
 label_8:
-les   bx, dword ptr [bp - 6]
-test  byte ptr es:[bx + 015h], ((MF_DROPOFF + MF_FLOAT) SHR 8)
-jne   label_7
+
+test  dl, ((MF_DROPOFF + MF_FLOAT) SHR 8)
+jne   move_ok_do_unset_position
 mov   ax, word ptr ds:[_tmfloorz]
 sub   ax, word ptr ds:[_tmdropoffz]
 cmp   ax, 0C0h  ; (24<<SHORTFLOORBITS)
 jg    exit_trymove_return0
-label_7:
-mov   dx, word ptr [bp - 6]
-mov   ax, word ptr [bp - 8]
-mov   bx, word ptr [bp - 6]
+
+move_ok_do_unset_position:
+
+; bx is word bp - 8
+; di is      bp - 6
+mov   ax, bx
+mov   dx, di
 call  P_UnsetThingPosition_
-mov   es, word ptr [bp - 4]
-mov   ax, word ptr es:[bx]
+
+; TODO push these?
+
+;   oldx = thing_pos->x;
+;   oldy = thing_pos->y;
+
+
+mov   es, word ptr [bp - 4] ; todo store si
+mov   ax, word ptr es:[di]      ; thingpos x low
 mov   word ptr [bp - 0Eh], ax
-mov   ax, word ptr es:[bx + 2]
+mov   ax, word ptr es:[di + 2]  ; thingpos x hi
 mov   word ptr [bp - 0Ch], ax
-mov   ax, word ptr es:[bx + 4]
+mov   ax, word ptr es:[di + 4]  ; thingpos y low
 mov   word ptr [bp - 010h], ax
-mov   ax, word ptr es:[bx + 6]
-mov   bx, word ptr [bp - 8]
+mov   ax, word ptr es:[di + 6]  ; thingpos y hi
 mov   word ptr [bp - 016h], ax
+
+
+
+;   thing->floorz = tmfloorz;
+;   thing->ceilingz = tmceilingz;	
+;	thing_pos->x = x;
+;	thing_pos->y = y;
+
 mov   ax, word ptr ds:[_tmfloorz]
 mov   word ptr [bx + 6], ax
 mov   ax, word ptr ds:[_tmceilingz]
+
+
+
 mov   word ptr [bx + 8], ax
-mov   bx, word ptr [bp - 6]
 mov   ax, word ptr [bp + 0Ch]
-mov   word ptr es:[bx], si
-mov   word ptr es:[bx + 2], ax
+mov   word ptr es:[di], si
+mov   word ptr es:[di + 2], ax
 mov   ax, word ptr [bp + 0Eh]
-mov   word ptr es:[bx + 4], ax
+mov   word ptr es:[di + 4], ax
 mov   ax, word ptr [bp + 010h]
-mov   dx, word ptr [bp - 6]
-mov   word ptr es:[bx + 6], ax
-mov   ax, word ptr [bp - 8]
+mov   word ptr es:[di + 6], ax
+
+;	// we calculated the sector above in checkposition, now it's cached.
+;	P_SetThingPosition (thing, FP_OFF(thing_pos), lastcalculatedsector);
+
+; bx is word bp - 8
+; di is      bp - 6
+
+mov   dx, di  ; bp - 6
+mov   ax, bx  ; bp - 8
 mov   bx, word ptr ds:[_lastcalculatedsector]
 
 call  P_SetThingPosition_
