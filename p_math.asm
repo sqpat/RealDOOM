@@ -2799,22 +2799,33 @@ ENDP
 PROC PTR_UseTraverse_ NEAR
 PUBLIC PTR_UseTraverse_ 
 
+; dx is fixed as intercepts segment. get rid of it?
+
 push  bx
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 4
+push  dx
+
 mov   si, ax
-mov   word ptr [bp - 2], dx
 mov   es, dx
 mov   bx, word ptr es:[si + 5]
+mov   di, bx
+
+;	if (!line_physics->special) {
+
 mov   dx, LINES_PHYSICS_SEGMENT
 shl   bx, 4
 mov   es, dx
 cmp   byte ptr es:[bx + 0Fh], 0
-jne   label_1
+jne   no_line_special
+
+;		line_t __far* line = &lines[in->d.linenum];
+;		P_LineOpening(line->sidenum[1], line_physics->frontsecnum, line_physics->backsecnum);
+
+
 mov   es, word ptr [bp - 2]
 mov   ax, LINES_SEGMENT
 mov   si, word ptr es:[si + 5]
@@ -2828,7 +2839,8 @@ mov   ax, word ptr es:[si + 2]
 call  P_LineOpening_
 mov   ax, word ptr ds:[_lineopening]
 cmp   ax, word ptr ds:[_lineopening+2]
-jl    label_2
+jl    use_thru_wall
+; cant use thru wall
 mov   al, 1
 exit_usetraverse:
 LEAVE_MACRO
@@ -2837,43 +2849,50 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_2:
+use_thru_wall:
+
 mov   ax, word ptr ds:[_playerMobj]
 mov   dx, SFX_NOWAY
-
 call  S_StartSound_
-nop   
 xor   al, al
 jmp   exit_usetraverse
-label_1:
-mov   cx, word ptr es:[bx]
-shl   cx, 2
+no_line_special:
+
+; di has linenum
+
+mov   si, word ptr es:[bx]
+SHIFT_MACRO shl   si 2
+
 mov   ax, VERTEXES_SEGMENT
-mov   di, cx
 mov   es, ax
-add   di, 2
-push  word ptr es:[di]
-mov   di, cx
-push  word ptr es:[di]
+push  word ptr es:[si+2]
+push  word ptr es:[si]
 mov   es, dx
 push  word ptr es:[bx + 6]
 push  word ptr es:[bx + 4]
 les   bx, dword ptr ds:[_playerMobj_pos]
 
-mov   dx, word ptr es:[bx + 2]
+;    side = 0;
+
+xor   si, si		; side = 0
 mov   ax, word ptr es:[bx]
+mov   dx, word ptr es:[bx + 2]
 les   bx, dword ptr es:[bx + 4]
 mov   cx, es
-mov   word ptr [bp - 4], 0
+
+;	if (P_PointOnLineSide(playerMobj_pos->x.w, playerMobj_pos->y.w, line_physics->dx, line_physics->dy, vertexes[line_physics->v1Offset].x, vertexes[line_physics->v1Offset].y) == 1) {
+;		side = 1;
+;	}
+
 call  P_PointOnLineSide_
 cmp   al, 1
-jne   label_3
-mov   word ptr [bp - 4], 1
-label_3:
+jne   use_side_0
+inc   si		; si = 1
+use_side_0:
 mov   cx, word ptr ds:[_playerMobjRef]
 mov   ax, word ptr ds:[_playerMobj]
-les   bx, dword ptr [bp - 4]
-mov   dx, word ptr es:[si + 5]
+mov   bx, si
+mov   dx, di	; linenum
 call  P_UseSpecialLine_
 xor   al, al
 LEAVE_MACRO
