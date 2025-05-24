@@ -2921,18 +2921,9 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-push  dx
 xchg  ax, si   ; intercept to si
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-	push  LINES_SEGMENT 
 
-ELSE
-	mov   ax, LINES_SEGMENT 
-	push  ax
-
-ENDIF
-sub   sp, 2
 
 mov   es, dx   ; intercept segment
 
@@ -2980,45 +2971,65 @@ ret
 
 
 not_twosided:
-mov   cx, word ptr es:[bx + 0Ch]
-mov   dx, word ptr es:[bx + 0Ah]
-mov   es, word ptr [bp - 4]
-mov   bx, cx
+
+;	P_LineOpening (li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
+
+les   dx, dword ptr es:[bx + 0Ah]
+mov   bx, es
+mov   ax, LINES_SEGMENT
+mov   es, ax
 mov   ax, word ptr es:[di + 2]
+
 call  P_LineOpening_
-mov   dx, word ptr ds:[_playerMobj]
+
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, (lineopening.opentop - lineopening.openbottom));
+
+mov   bx, word ptr ds:[_playerMobj]
 mov   ax, word ptr ds:[_lineopening+0]
 sub   ax, word ptr ds:[_lineopening+2]
-mov   bx, dx
-sar   ax, 3
+
+SHIFT_MACRO sar   ax 3
 cmp   ax, word ptr [bx + 0Ch]
 jl    is_blocking
-mov   di, word ptr ds:[_playerMobj_pos]
+
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
+;    if (temp.w - playerMobj_pos->z.w > 24*FRACUNIT )
+;		goto isblocking;		// too big a step up
+
+
 mov   ax, word ptr ds:[_lineopening+0]
 xor   ah, ah
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+
 and   al, 7
 mov   dx, word ptr ds:[_lineopening+0]
 SHIFT_MACRO shl   ax 0Dh
-mov   es, cx
-add   di, 8
+les   di, dword ptr ds:[_playerMobj_pos]
 SHIFT_MACRO sar   dx 3
-sub   ax, word ptr es:[di]
-mov   word ptr [bp - 6], ax
-mov   ax, dx
-sbb   ax, word ptr es:[di + 2]
-cmp   ax, word ptr [bx + 0Ch]
-jge   label_4
+
+;    if (temp.h.intbits < playerMobj->height.h.intbits) // 16 bit okay
+
+sub   ax, word ptr es:[di + 8]		; subtract height
+sbb   dx, word ptr es:[di + 0Ah]	; subtract height
+cmp   dx, word ptr [bx + 0Ch]
+jge   continue_blocking_check
 is_blocking:
-mov   es, word ptr [bp - 2]
+
+ ;   if (in->frac < bestslidefrac.w) {
+;		bestslidefrac.w = in->frac;
+;		bestslidelinenum = in->d.linenum;
+;    }
+
+
+mov   ax, INTERCEPTS_SEGMENT
+mov   es, ax
 mov   ax, word ptr es:[si + 2]
 mov   dx, word ptr es:[si]
 cmp   ax, word ptr ds:[_bestslidefrac+2]
-jl    label_3
+jl    record_bestslide
 jne   exit_slidetraverse_return_0
 cmp   dx, word ptr ds:[_bestslidefrac+0]
 jae   exit_slidetraverse_return_0
-label_3:
+record_bestslide:
 mov   word ptr ds:[_bestslidefrac+2], ax
 mov   ax, word ptr es:[si + 5]
 mov   word ptr ds:[_bestslidefrac+0], dx
@@ -3031,20 +3042,26 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_4:
-jne   label_6
-mov   ax, word ptr [bp - 6]
+continue_blocking_check:
+
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
+;    if (temp.w - playerMobj_pos->z.w > 24*FRACUNIT )
+;		goto isblocking;		// too big a step up
+
+
+jne   continue_blocking_check_2
 cmp   ax, word ptr [bx + 0Ah]
 jb    is_blocking
-label_6:
+continue_blocking_check_2:
 mov   bx, word ptr [_lineopening+2]
 and   bx, 7
 mov   ax, word ptr [_lineopening+2]
 SHIFT_MACRO shl   bx 0Dh
 SHIFT_MACRO sar   ax 3
-sub   bx, word ptr es:[di]
-sbb   ax, word ptr es:[di + 2]
-cmp   ax, 018h
+
+sub   bx, word ptr es:[di + 8]
+sbb   ax, word ptr es:[di + 0Ah]
+cmp   ax, 24    ; too big a step up
 jg    is_blocking
 jne   exit_slidetraverse_return_2
 test  bx, bx
