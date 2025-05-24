@@ -236,7 +236,6 @@ boolean __near P_BlockThingsIterator (int16_t x, int16_t y, boolean __near ( *  
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
-#define PT_EARLYOUT		4
 
 
 void

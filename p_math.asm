@@ -1968,23 +1968,6 @@ call  P_InterceptVector_   ; todo worth having a 16 bit version considering all 
 test  dx, dx
 jnge  exit_addlineintercepts_return_1
 
-SELFMODIFY_skip_early_out:
-jmp   SHORT skip_early_out   ; jump when earlyout 0
-SELFMODIFY_skip_early_out_AFTER:
-cmp   dx, 1
-jge   skip_early_out
-mov   es, word ptr [bp - 2]
-cmp   word ptr es:[si + 0Ch], -1
-jne   skip_early_out
-xor   al, al
-LEAVE_MACRO
-pop   si
-pop   cx
-ret   
-
-SELFMODIFY_skip_early_out_TARGET:
-
-skip_early_out:
 
  
 ;    intercept_p->frac = frac;
@@ -2384,17 +2367,7 @@ push  cx
 
 
 
-test  byte ptr [bp + 010h], PT_EARLYOUT
 
-; jump when 0
-jne   write_noop_to_earlyout
-; zero. write jump
-mov   ax, ((SELFMODIFY_skip_early_out_TARGET - SELFMODIFY_skip_early_out_AFTER) SHL 8) + 0EBh
-jmp   do_earlyout_write
-write_noop_to_earlyout:
-mov   ax, 0c089h 	; noop
-do_earlyout_write:
-mov   word ptr cs:[SELFMODIFY_skip_early_out], ax
 
 xor   ax, ax
 

@@ -725,9 +725,10 @@ boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t
 		return true;	// behind source
 	}
     // try to early out the check
-    if (earlyout && frac < FRACUNIT && ld_physics->backsecnum == SECNUM_NULL) {
-		return false;	// stop checking
-    }
+	// NOTE earlyout always 0
+    // if (earlyout && frac < FRACUNIT && ld_physics->backsecnum == SECNUM_NULL) {
+	// 	return false;	// stop checking
+    // }
     
  
     intercept_p->frac = frac;
@@ -886,7 +887,7 @@ void __near P_PathTraverse ( fixed_t_union x1, fixed_t_union y1, fixed_t_union x
 	fixed_t_union		x1mapblockshifted;
 	fixed_t_union		y1mapblockshifted;
 
-    earlyout = flags & PT_EARLYOUT;
+    // earlyout = flags & PT_EARLYOUT;
 	
     validcount_global++;
     intercept_p = intercepts;

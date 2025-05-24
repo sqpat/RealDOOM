@@ -1263,7 +1263,6 @@ boolean		nofit;
 intercept_t __far*	intercept_p;
 
 divline_t 	trace;
-boolean 	earlyout;
 lineopening_t lineopening;
 
 

@@ -154,15 +154,13 @@ boolean __near P_UseSpecialLine ( mobj_t __near*	thing, int16_t linenum,int16_t	
  
     // Err...
     // Use the back sides of VERY SPECIAL lines...
-    if (side)
-    {
-	switch(linespecial)
-	{
+    if (side) {
+		switch(linespecial) {
 
-	  default:
-	    return false;
-	    break;
-	}
+			default:
+				return false;
+				break;
+		}
     }
 
 
@@ -171,8 +169,9 @@ boolean __near P_UseSpecialLine ( mobj_t __near*	thing, int16_t linenum,int16_t	
     // Switches that other things can activate.
     if (thingRef != playerMobjRef) {
 		// never open secret doors
-		if (lineflags & ML_SECRET)
+		if (lineflags & ML_SECRET){
 			return false;
+		}
 	
 		switch(linespecial) {
 		  case 1: 	// MANUAL DOOR RAISE

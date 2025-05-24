@@ -1072,7 +1072,6 @@ extern boolean		nofit;
 extern intercept_t __far*	intercept_p;
 
 extern divline_t 	trace;
-extern boolean 	earlyout;
 extern lineopening_t lineopening;
 extern divline_t		dl;
 
