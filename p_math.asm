@@ -35,6 +35,7 @@ EXTRN _lineopening:WORD
 EXTRN _intercept_p:WORD
 EXTRN _playerMobjRef:WORD
 EXTRN _playerMobj:WORD
+EXTRN _playerMobj_pos:WORD
 .CODE
 
 
@@ -2857,16 +2858,12 @@ push  word ptr es:[di]
 mov   es, dx
 push  word ptr es:[bx + 6]
 push  word ptr es:[bx + 4]
-imul  bx, word ptr ds:[_playerMobjRef], SIZEOF_MOBJ_POS_T
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   es, ax
-lea   di, [bx + 4]
-mov   ax, word ptr es:[di]
-mov   cx, word ptr es:[di + 2]
+les   bx, dword ptr ds:[_playerMobj_pos]
+
 mov   dx, word ptr es:[bx + 2]
-mov   di, word ptr es:[bx]
-mov   bx, ax
-mov   ax, di
+mov   ax, word ptr es:[bx]
+les   bx, dword ptr es:[bx + 4]
+mov   cx, es
 mov   word ptr [bp - 4], 0
 call  P_PointOnLineSide_
 cmp   al, 1

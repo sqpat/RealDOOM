@@ -770,7 +770,8 @@ void __near G_DoLoadGame (void)  {
     P_UnArchiveThinkers (); 
 
     P_UnArchiveSpecials (); 
-	playerMobj = playerMobjMakerExpression;
+	playerMobj    = playerMobjMakerExpression;
+    playerMobj_pos = playerMobj_posMakerExpression;
 #ifdef CHECK_FOR_ERRORS
 
     if (*save_p != 0x1d) 

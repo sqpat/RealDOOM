@@ -154,7 +154,8 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	z.w = ONFLOORZ;
 	
 	playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
-	playerMobj = playerMobjMakerExpression;
+	playerMobj     = playerMobjMakerExpression;
+    playerMobj_pos = playerMobj_posMakerExpression;
 
 	//playerMobj = setStateReturn;
 	///playerMobj_pos = setStateReturn_pos;

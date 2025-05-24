@@ -736,6 +736,7 @@ extern ticcount_t         starttime;              // for comparative timing purp
 extern player_t        	  player;
 extern THINKERREF      	  playerMobjRef;
 extern mobj_t __near *    playerMobj;
+extern mobj_pos_t __far * playerMobj_pos;
 
 
 extern ticcount_t          gametic;

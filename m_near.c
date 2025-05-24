@@ -488,29 +488,30 @@ uint8_t                 borderdrawcount;
 ticcount_t maketic;
 ticcount_t gametime;
 
-uint8_t			numChannels;	
-uint8_t	usegamma;
+uint8_t				numChannels;	
+uint8_t				usegamma;
 
 
  
-skill_t         gameskill; 
-boolean         respawnmonsters;
+skill_t         	gameskill; 
+boolean         	respawnmonsters;
  
-boolean         paused; 
-boolean         sendpause;              // send a pause event next tic 
-boolean         sendsave;               // send a save event next tic 
-boolean         usergame;               // ok to save / end game 
+boolean         	paused; 
+boolean         	sendpause;              // send a pause event next tic 
+boolean         	sendsave;               // send a save event next tic 
+boolean         	usergame;               // ok to save / end game 
  
-boolean         timingdemo;             // if true, exit with report on completion 
-//boolean         nodrawers;              // for comparative timing purposes 
-boolean         noblit;                 // for comparative timing purposes 
-ticcount_t      starttime;              // for comparative timing purposes       
+boolean         	timingdemo;             // if true, exit with report on completion 
+//boolean         	nodrawers;              // for comparative timing purposes 
+boolean         	noblit;                 // for comparative timing purposes 
+ticcount_t      	starttime;              // for comparative timing purposes       
  
  
-player_t        player;
+player_t        	player;
 
-THINKERREF      playerMobjRef;
-mobj_t __near * playerMobj;
+THINKERREF      	playerMobjRef;
+mobj_t __near * 	playerMobj;
+mobj_pos_t __far *  playerMobj_pos;
 
  
 ticcount_t          gametic;
