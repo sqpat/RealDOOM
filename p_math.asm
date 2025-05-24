@@ -2810,6 +2810,7 @@ push  di
 push  bp
 mov   bp, sp
 
+;	line_physics_t __far* line_physics = &lines_physics[in->d.linenum];
 
 xchg  ax, si  ; ax gets intercept..
 mov   es, dx
@@ -2838,6 +2839,9 @@ mov   ax, LINES_SEGMENT
 mov   es, ax
 mov   ax, word ptr es:[si + 2] ; sidenum[1] ; si preshifted 2
 call  P_LineOpening_
+
+; 		if (lineopening.opentop < lineopening.openbottom) {
+
 mov   ax, word ptr ds:[_lineopening]
 cmp   ax, word ptr ds:[_lineopening+2]
 jl    use_thru_wall
@@ -2917,50 +2921,95 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 6
-mov   si, ax
-mov   word ptr [bp - 2], dx
-mov   es, dx
+push  dx
+xchg  ax, si   ; intercept to si
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	push  LINES_SEGMENT 
+
+ELSE
+	mov   ax, LINES_SEGMENT 
+	push  ax
+
+ENDIF
+sub   sp, 2
+
+mov   es, dx   ; intercept segment
+
+mov   bx, word ptr es:[si + 5] ; get linenum
 mov   ax, LINEFLAGSLIST_SEGMENT
-mov   bx, word ptr es:[si + 5]
 mov   es, ax
-mov   word ptr [bp - 4], LINES_SEGMENT
-mov   al, byte ptr es:[bx]
-mov   es, dx
+mov   al, byte ptr es:[bx]	; get lineflags in al
+
 mov   dx, LINES_PHYSICS_SEGMENT
-mov   di, word ptr es:[si + 5]
-mov   bx, word ptr es:[si + 5]
-shl   di, 2
-shl   bx, 4
-test  al, 4
-je    label_1
-jmp   label_2
-label_1:
+mov   di, bx
+SHIFT_MACRO shl   di 2
+SHIFT_MACRO shl   bx 4
+
+;    if ( ! (lineflags & ML_TWOSIDED) ) {
 mov   es, dx
-mov   cx, word ptr es:[bx]
-shl   cx, 2
+
+test  al, ML_TWOSIDED
+jne   not_twosided
+mov   di, word ptr es:[bx]
+SHIFT_MACRO shl   di 2
 mov   ax, VERTEXES_SEGMENT
-mov   di, cx
 mov   es, ax
-add   di, 2
-push  word ptr es:[di]
-mov   di, cx
+
+push  word ptr es:[di+2]
 push  word ptr es:[di]
 mov   es, dx
 push  word ptr es:[bx + 6]
 push  word ptr es:[bx + 4]
 les   bx, dword ptr ds:[_playerMobj_pos]
-lea   di, [bx + 4]
-mov   ax, word ptr es:[di]
-mov   cx, word ptr es:[di + 2]
-mov   dx, word ptr es:[bx + 2]
-mov   word ptr [bp - 6], ax
 mov   ax, word ptr es:[bx]
-mov   bx, word ptr [bp - 6]
+mov   dx, word ptr es:[bx + 2]
+les   bx, dword ptr es:[bx + 4]
+mov   cx, es
 call  P_PointOnLineSide_
 test  al, al
-jne   exit_slidetraverse_return_1
-label_5:
+je   is_blocking
+exit_slidetraverse_return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+
+
+not_twosided:
+mov   cx, word ptr es:[bx + 0Ch]
+mov   dx, word ptr es:[bx + 0Ah]
+mov   es, word ptr [bp - 4]
+mov   bx, cx
+mov   ax, word ptr es:[di + 2]
+call  P_LineOpening_
+mov   dx, word ptr ds:[_playerMobj]
+mov   ax, word ptr ds:[_lineopening+0]
+sub   ax, word ptr ds:[_lineopening+2]
+mov   bx, dx
+sar   ax, 3
+cmp   ax, word ptr [bx + 0Ch]
+jl    is_blocking
+mov   di, word ptr ds:[_playerMobj_pos]
+mov   ax, word ptr ds:[_lineopening+0]
+xor   ah, ah
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+and   al, 7
+mov   dx, word ptr ds:[_lineopening+0]
+SHIFT_MACRO shl   ax 0Dh
+mov   es, cx
+add   di, 8
+SHIFT_MACRO sar   dx 3
+sub   ax, word ptr es:[di]
+mov   word ptr [bp - 6], ax
+mov   ax, dx
+sbb   ax, word ptr es:[di + 2]
+cmp   ax, word ptr [bx + 0Ch]
+jge   label_4
+is_blocking:
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[si + 2]
 mov   dx, word ptr es:[si]
@@ -2982,65 +3031,24 @@ pop   si
 pop   cx
 pop   bx
 ret   
-exit_slidetraverse_return_1:
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-label_2:
-mov   es, dx
-mov   cx, word ptr es:[bx + 0Ch]
-mov   dx, word ptr es:[bx + 0Ah]
-mov   es, word ptr [bp - 4]
-mov   bx, cx
-mov   ax, word ptr es:[di + 2]
-call  P_LineOpening_
-mov   dx, word ptr ds:[_playerMobj]
-mov   ax, word ptr ds:[_lineopening+0]
-sub   ax, word ptr ds:[_lineopening+2]
-mov   bx, dx
-sar   ax, 3
-cmp   ax, word ptr [bx + 0Ch]
-jl    label_5
-mov   di, word ptr ds:[_playerMobj_pos]
-mov   ax, word ptr ds:[_lineopening+0]
-xor   ah, ah
-mov   cx, MOBJPOSLIST_6800_SEGMENT
-and   al, 7
-mov   dx, word ptr ds:[_lineopening+0]
-shl   ax, 0Dh
-mov   es, cx
-add   di, 8
-sar   dx, 3
-sub   ax, word ptr es:[di]
-mov   word ptr [bp - 6], ax
-mov   ax, dx
-sbb   ax, word ptr es:[di + 2]
-cmp   ax, word ptr [bx + 0Ch]
-jge   label_4
-jump_to_label_5:
-jmp   label_5
 label_4:
 jne   label_6
 mov   ax, word ptr [bp - 6]
 cmp   ax, word ptr [bx + 0Ah]
-jb    jump_to_label_5
+jb    is_blocking
 label_6:
 mov   bx, word ptr [_lineopening+2]
 and   bx, 7
 mov   ax, word ptr [_lineopening+2]
-shl   bx, 0Dh
-sar   ax, 3
+SHIFT_MACRO shl   bx 0Dh
+SHIFT_MACRO sar   ax 3
 sub   bx, word ptr es:[di]
 sbb   ax, word ptr es:[di + 2]
 cmp   ax, 018h
-jg    jump_to_label_5
+jg    is_blocking
 jne   exit_slidetraverse_return_2
 test  bx, bx
-ja    jump_to_label_5
+ja    is_blocking
 exit_slidetraverse_return_2:
 mov   al, 1
 LEAVE_MACRO
