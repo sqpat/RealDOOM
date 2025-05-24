@@ -871,9 +871,13 @@ void __near P_HitSlideLine (int16_t linenum){
 }
 
 
+boolean __near PTR_SlideTraverse (intercept_t __far* in);
+
+
 //
 // PTR_SlideTraverse
 //
+/*
 boolean __near PTR_SlideTraverse (intercept_t __far* in) { 
 	uint8_t lineflags = lineflagslist[in->d.linenum];
 	line_t __far* li = &lines[in->d.linenum];
@@ -923,7 +927,7 @@ boolean __near PTR_SlideTraverse (intercept_t __far* in) {
     return false;	// stop
 }
 
-
+*/
 //
 // P_SlideMove
 // The momx / momy move is bad, so try to slide

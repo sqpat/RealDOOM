@@ -36,6 +36,8 @@ EXTRN _intercept_p:WORD
 EXTRN _playerMobjRef:WORD
 EXTRN _playerMobj:WORD
 EXTRN _playerMobj_pos:WORD
+EXTRN _bestslidefrac:WORD
+EXTRN _bestslidelinenum:WORD
 .CODE
 
 
@@ -2904,148 +2906,154 @@ ret
 
 ENDP
 
-COMMENT  @
 
-boolean __near PTR_SlideTraverse (intercept_t __far* in) {
+;boolean __near PTR_SlideTraverse (intercept_t __far* in) {
 
 PROC PTR_SlideTraverse_ NEAR
 PUBLIC PTR_SlideTraverse_ 
 
-0x0000000000000000:  53                push  bx
-0x0000000000000001:  51                push  cx
-0x0000000000000002:  56                push  si
-0x0000000000000003:  57                push  di
-0x0000000000000004:  55                push  bp
-0x0000000000000005:  89 E5             mov   bp, sp
-0x0000000000000007:  83 EC 06          sub   sp, 6
-0x000000000000000a:  89 C6             mov   si, ax
-0x000000000000000c:  89 56 FE          mov   word ptr [bp - 2], dx
-0x000000000000000f:  8E C2             mov   es, dx
-0x0000000000000011:  B8 BA E9          mov   ax, 0xe9ba
-0x0000000000000014:  26 8B 5C 05       mov   bx, word ptr es:[si + 5]
-0x0000000000000018:  8E C0             mov   es, ax
-0x000000000000001a:  C7 46 FC 01 E8    mov   word ptr [bp - 4], 0xe801
-0x000000000000001f:  26 8A 07          mov   al, byte ptr es:[bx]
-0x0000000000000022:  8E C2             mov   es, dx
-0x0000000000000024:  BA 00 70          mov   dx, 0x7000
-0x0000000000000027:  26 8B 7C 05       mov   di, word ptr es:[si + 5]
-0x000000000000002b:  26 8B 5C 05       mov   bx, word ptr es:[si + 5]
-0x000000000000002f:  C1 E7 02          shl   di, 2
-0x0000000000000032:  C1 E3 04          shl   bx, 4
-0x0000000000000035:  A8 04             test  al, 4
-0x0000000000000037:  74 03             je    0x3c
-0x0000000000000039:  E9 82 00          jmp   0xbe
-0x000000000000003c:  8E C2             mov   es, dx
-0x000000000000003e:  26 8B 0F          mov   cx, word ptr es:[bx]
-0x0000000000000041:  C1 E1 02          shl   cx, 2
-0x0000000000000044:  B8 5C E1          mov   ax, 0xe15c
-0x0000000000000047:  89 CF             mov   di, cx
-0x0000000000000049:  8E C0             mov   es, ax
-0x000000000000004b:  83 C7 02          add   di, 2
-0x000000000000004e:  26 FF 35          push  word ptr es:[di]
-0x0000000000000051:  89 CF             mov   di, cx
-0x0000000000000053:  26 FF 35          push  word ptr es:[di]
-0x0000000000000056:  8E C2             mov   es, dx
-0x0000000000000058:  26 FF 77 06       push  word ptr es:[bx + 6]
-0x000000000000005c:  26 FF 77 04       push  word ptr es:[bx + 4]
-0x0000000000000060:  6B 1E 48 1F 18    imul  bx, word ptr [0x1f48], 0x18
-0x0000000000000065:  B8 F5 6A          mov   ax, 0x6af5
-0x0000000000000068:  8E C0             mov   es, ax
-0x000000000000006a:  8D 7F 04          lea   di, [bx + 4]
-0x000000000000006d:  26 8B 05          mov   ax, word ptr es:[di]
-0x0000000000000070:  26 8B 4D 02       mov   cx, word ptr es:[di + 2]
-0x0000000000000074:  26 8B 57 02       mov   dx, word ptr es:[bx + 2]
-0x0000000000000078:  89 46 FA          mov   word ptr [bp - 6], ax
-0x000000000000007b:  26 8B 07          mov   ax, word ptr es:[bx]
-0x000000000000007e:  8B 5E FA          mov   bx, word ptr [bp - 6]
-0x0000000000000081:  E8 1C 15          call  0x15a0
-0x0000000000000084:  84 C0             test  al, al
-0x0000000000000086:  75 2E             jne   0xb6
-0x0000000000000088:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x000000000000008b:  26 8B 44 02       mov   ax, word ptr es:[si + 2]
-0x000000000000008f:  26 8B 14          mov   dx, word ptr es:[si]
-0x0000000000000092:  3B 06 B6 1C       cmp   ax, word ptr [0x1cb6]
-0x0000000000000096:  7C 08             jl    0xa0
-0x0000000000000098:  75 14             jne   0xae
-0x000000000000009a:  3B 16 B4 1C       cmp   dx, word ptr [0x1cb4]
-0x000000000000009e:  73 0E             jae   0xae
-0x00000000000000a0:  A3 B6 1C          mov   word ptr [0x1cb6], ax
-0x00000000000000a3:  26 8B 44 05       mov   ax, word ptr es:[si + 5]
-0x00000000000000a7:  89 16 B4 1C       mov   word ptr [0x1cb4], dx
-0x00000000000000ab:  A3 F4 1E          mov   word ptr [0x1ef4], ax
-0x00000000000000ae:  30 C0             xor   al, al
-0x00000000000000b0:  C9                leave 
-0x00000000000000b1:  5F                pop   di
-0x00000000000000b2:  5E                pop   si
-0x00000000000000b3:  59                pop   cx
-0x00000000000000b4:  5B                pop   bx
-0x00000000000000b5:  C3                ret   
-0x00000000000000b6:  B0 01             mov   al, 1
-0x00000000000000b8:  C9                leave 
-0x00000000000000b9:  5F                pop   di
-0x00000000000000ba:  5E                pop   si
-0x00000000000000bb:  59                pop   cx
-0x00000000000000bc:  5B                pop   bx
-0x00000000000000bd:  C3                ret   
-0x00000000000000be:  8E C2             mov   es, dx
-0x00000000000000c0:  26 8B 4F 0C       mov   cx, word ptr es:[bx + 0xc]
-0x00000000000000c4:  26 8B 57 0A       mov   dx, word ptr es:[bx + 0xa]
-0x00000000000000c8:  8E 46 FC          mov   es, word ptr [bp - 4]
-0x00000000000000cb:  89 CB             mov   bx, cx
-0x00000000000000cd:  26 8B 45 02       mov   ax, word ptr es:[di + 2]
-0x00000000000000d1:  E8 79 17          call  0x184d
-0x00000000000000d4:  6B 16 48 1F 2C    imul  dx, word ptr [0x1f48], 0x2c
-0x00000000000000d9:  83 C2 04          add   dx, 4
-0x00000000000000dc:  A1 44 1E          mov   ax, word ptr [0x1e44]
-0x00000000000000df:  80 C6 40          add   dh, 0x40
-0x00000000000000e2:  2B 06 46 1E       sub   ax, word ptr [0x1e46]
-0x00000000000000e6:  89 D3             mov   bx, dx
-0x00000000000000e8:  C1 F8 03          sar   ax, 3
-0x00000000000000eb:  3B 47 0C          cmp   ax, word ptr [bx + 0xc]
-0x00000000000000ee:  7C 98             jl    0x88
-0x00000000000000f0:  6B 3E 48 1F 18    imul  di, word ptr [0x1f48], 0x18
-0x00000000000000f5:  A1 44 1E          mov   ax, word ptr [0x1e44]
-0x00000000000000f8:  30 E4             xor   ah, ah
-0x00000000000000fa:  B9 F5 6A          mov   cx, 0x6af5
-0x00000000000000fd:  24 07             and   al, 7
-0x00000000000000ff:  8B 16 44 1E       mov   dx, word ptr [0x1e44]
-0x0000000000000103:  C1 E0 0D          shl   ax, 0xd
-0x0000000000000106:  8E C1             mov   es, cx
-0x0000000000000108:  83 C7 08          add   di, 8
-0x000000000000010b:  C1 FA 03          sar   dx, 3
-0x000000000000010e:  26 2B 05          sub   ax, word ptr es:[di]
-0x0000000000000111:  89 46 FA          mov   word ptr [bp - 6], ax
-0x0000000000000114:  89 D0             mov   ax, dx
-0x0000000000000116:  26 1B 45 02       sbb   ax, word ptr es:[di + 2]
-0x000000000000011a:  3B 47 0C          cmp   ax, word ptr [bx + 0xc]
-0x000000000000011d:  7D 03             jge   0x122
-0x000000000000011f:  E9 66 FF          jmp   0x88
-0x0000000000000122:  75 08             jne   0x12c
-0x0000000000000124:  8B 46 FA          mov   ax, word ptr [bp - 6]
-0x0000000000000127:  3B 47 0A          cmp   ax, word ptr [bx + 0xa]
-0x000000000000012a:  72 F3             jb    0x11f
-0x000000000000012c:  8B 1E 46 1E       mov   bx, word ptr [0x1e46]
-0x0000000000000130:  83 E3 07          and   bx, 7
-0x0000000000000133:  A1 46 1E          mov   ax, word ptr [0x1e46]
-0x0000000000000136:  C1 E3 0D          shl   bx, 0xd
-0x0000000000000139:  C1 F8 03          sar   ax, 3
-0x000000000000013c:  26 2B 1D          sub   bx, word ptr es:[di]
-0x000000000000013f:  26 1B 45 02       sbb   ax, word ptr es:[di + 2]
-0x0000000000000143:  3D 18 00          cmp   ax, 0x18
-0x0000000000000146:  7F D7             jg    0x11f
-0x0000000000000148:  75 04             jne   0x14e
-0x000000000000014a:  85 DB             test  bx, bx
-0x000000000000014c:  77 D1             ja    0x11f
-0x000000000000014e:  B0 01             mov   al, 1
-0x0000000000000150:  C9                leave 
-0x0000000000000151:  5F                pop   di
-0x0000000000000152:  5E                pop   si
-0x0000000000000153:  59                pop   cx
-0x0000000000000154:  5B                pop   bx
-0x0000000000000155:  C3                ret   
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 6
+mov   si, ax
+mov   word ptr [bp - 2], dx
+mov   es, dx
+mov   ax, LINEFLAGSLIST_SEGMENT
+mov   bx, word ptr es:[si + 5]
+mov   es, ax
+mov   word ptr [bp - 4], LINES_SEGMENT
+mov   al, byte ptr es:[bx]
+mov   es, dx
+mov   dx, LINES_PHYSICS_SEGMENT
+mov   di, word ptr es:[si + 5]
+mov   bx, word ptr es:[si + 5]
+shl   di, 2
+shl   bx, 4
+test  al, 4
+je    label_1
+jmp   label_2
+label_1:
+mov   es, dx
+mov   cx, word ptr es:[bx]
+shl   cx, 2
+mov   ax, VERTEXES_SEGMENT
+mov   di, cx
+mov   es, ax
+add   di, 2
+push  word ptr es:[di]
+mov   di, cx
+push  word ptr es:[di]
+mov   es, dx
+push  word ptr es:[bx + 6]
+push  word ptr es:[bx + 4]
+les   bx, dword ptr ds:[_playerMobj_pos]
+lea   di, [bx + 4]
+mov   ax, word ptr es:[di]
+mov   cx, word ptr es:[di + 2]
+mov   dx, word ptr es:[bx + 2]
+mov   word ptr [bp - 6], ax
+mov   ax, word ptr es:[bx]
+mov   bx, word ptr [bp - 6]
+call  P_PointOnLineSide_
+test  al, al
+jne   exit_slidetraverse_return_1
+label_5:
+mov   es, word ptr [bp - 2]
+mov   ax, word ptr es:[si + 2]
+mov   dx, word ptr es:[si]
+cmp   ax, word ptr ds:[_bestslidefrac+2]
+jl    label_3
+jne   exit_slidetraverse_return_0
+cmp   dx, word ptr ds:[_bestslidefrac+0]
+jae   exit_slidetraverse_return_0
+label_3:
+mov   word ptr ds:[_bestslidefrac+2], ax
+mov   ax, word ptr es:[si + 5]
+mov   word ptr ds:[_bestslidefrac+0], dx
+mov   word ptr ds:[_bestslidelinenum], ax
+exit_slidetraverse_return_0:
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+exit_slidetraverse_return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label_2:
+mov   es, dx
+mov   cx, word ptr es:[bx + 0Ch]
+mov   dx, word ptr es:[bx + 0Ah]
+mov   es, word ptr [bp - 4]
+mov   bx, cx
+mov   ax, word ptr es:[di + 2]
+call  P_LineOpening_
+mov   dx, word ptr ds:[_playerMobj]
+mov   ax, word ptr ds:[_lineopening+0]
+sub   ax, word ptr ds:[_lineopening+2]
+mov   bx, dx
+sar   ax, 3
+cmp   ax, word ptr [bx + 0Ch]
+jl    label_5
+mov   di, word ptr ds:[_playerMobj_pos]
+mov   ax, word ptr ds:[_lineopening+0]
+xor   ah, ah
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+and   al, 7
+mov   dx, word ptr ds:[_lineopening+0]
+shl   ax, 0Dh
+mov   es, cx
+add   di, 8
+sar   dx, 3
+sub   ax, word ptr es:[di]
+mov   word ptr [bp - 6], ax
+mov   ax, dx
+sbb   ax, word ptr es:[di + 2]
+cmp   ax, word ptr [bx + 0Ch]
+jge   label_4
+jump_to_label_5:
+jmp   label_5
+label_4:
+jne   label_6
+mov   ax, word ptr [bp - 6]
+cmp   ax, word ptr [bx + 0Ah]
+jb    jump_to_label_5
+label_6:
+mov   bx, word ptr [_lineopening+2]
+and   bx, 7
+mov   ax, word ptr [_lineopening+2]
+shl   bx, 0Dh
+sar   ax, 3
+sub   bx, word ptr es:[di]
+sbb   ax, word ptr es:[di + 2]
+cmp   ax, 018h
+jg    jump_to_label_5
+jne   exit_slidetraverse_return_2
+test  bx, bx
+ja    jump_to_label_5
+exit_slidetraverse_return_2:
+mov   al, 1
+LEAVE_MACRO
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
 
 ENDP
 
+COMMENT  @
 
 boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union	x, fixed_t_union	y );
 
