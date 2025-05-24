@@ -671,6 +671,7 @@ boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_u
 // Attempt to move to a new position,
 // crossing special lines unless MF_TELEPORT is set.
 //
+/*
 boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union	x, fixed_t_union	y ) {
     fixed_t_union	oldx;
     fixed_t_union	oldy;
@@ -767,6 +768,7 @@ boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fix
 	
     return true;
 }
+*/
 
 
 //
