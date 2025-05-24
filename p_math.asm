@@ -2809,35 +2809,34 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-push  dx
 
-mov   si, ax
+
+xchg  ax, si  ; ax gets intercept..
 mov   es, dx
-mov   bx, word ptr es:[si + 5]
-mov   di, bx
+mov   bx, word ptr es:[si + 5]   ; in->d.linenum
+mov   di, bx	; linenum
+
 
 ;	if (!line_physics->special) {
 
-mov   dx, LINES_PHYSICS_SEGMENT
-shl   bx, 4
-mov   es, dx
+
+mov   cx, LINES_PHYSICS_SEGMENT
+mov   es, cx
+SHIFT_MACRO shl   bx 2
+mov   si, bx
+SHIFT_MACRO shl   bx 2
 cmp   byte ptr es:[bx + 0Fh], 0
 jne   no_line_special
 
 ;		line_t __far* line = &lines[in->d.linenum];
 ;		P_LineOpening(line->sidenum[1], line_physics->frontsecnum, line_physics->backsecnum);
 
-
-mov   es, word ptr [bp - 2]
+; get frontsecnum and backsecnum
+les   dx, dword ptr es:[bx + 0Ah]  ; es:bx lines_physics
+mov   bx, es
 mov   ax, LINES_SEGMENT
-mov   si, word ptr es:[si + 5]
-mov   es, dx
-shl   si, 2
-mov   cx, word ptr es:[bx + 0Ch]
-mov   dx, word ptr es:[bx + 0Ah]
 mov   es, ax
-mov   bx, cx
-mov   ax, word ptr es:[si + 2]
+mov   ax, word ptr es:[si + 2] ; sidenum[1] ; si preshifted 2
 call  P_LineOpening_
 mov   ax, word ptr ds:[_lineopening]
 cmp   ax, word ptr ds:[_lineopening+2]
@@ -2869,7 +2868,7 @@ mov   ax, VERTEXES_SEGMENT
 mov   es, ax
 push  word ptr es:[si+2]
 push  word ptr es:[si]
-mov   es, dx
+mov   es, cx  ; lines_physics
 push  word ptr es:[bx + 6]
 push  word ptr es:[bx + 4]
 les   bx, dword ptr ds:[_playerMobj_pos]
