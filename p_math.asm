@@ -2919,8 +2919,6 @@ push  bx
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
 xchg  ax, si   ; intercept to si
 
 
@@ -2962,7 +2960,6 @@ test  al, al
 je   is_blocking
 exit_slidetraverse_return_1:
 mov   al, 1
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
@@ -2997,14 +2994,16 @@ jl    is_blocking
 ;		goto isblocking;		// too big a step up
 
 
-mov   ax, word ptr ds:[_lineopening+0]
-xor   ah, ah
+xor       ax, ax
+mov       dx, word ptr [_lineopening+0]
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
+sar       dx, 1
+rcr       ax, 1
 
-and   al, 7
-mov   dx, word ptr ds:[_lineopening+0]
-SHIFT_MACRO shl   ax 0Dh
 les   di, dword ptr ds:[_playerMobj_pos]
-SHIFT_MACRO sar   dx 3
 
 ;    if (temp.h.intbits < playerMobj->height.h.intbits) // 16 bit okay
 
@@ -3022,8 +3021,9 @@ is_blocking:
 
 mov   ax, INTERCEPTS_SEGMENT
 mov   es, ax
-mov   ax, word ptr es:[si + 2]
-mov   dx, word ptr es:[si]
+mov   cx, word ptr  es:[si + 5]
+les   dx, dword ptr es:[si + 0]
+mov   ax, es
 cmp   ax, word ptr ds:[_bestslidefrac+2]
 jl    record_bestslide
 jne   exit_slidetraverse_return_0
@@ -3031,12 +3031,10 @@ cmp   dx, word ptr ds:[_bestslidefrac+0]
 jae   exit_slidetraverse_return_0
 record_bestslide:
 mov   word ptr ds:[_bestslidefrac+2], ax
-mov   ax, word ptr es:[si + 5]
 mov   word ptr ds:[_bestslidefrac+0], dx
-mov   word ptr ds:[_bestslidelinenum], ax
+mov   word ptr ds:[_bestslidelinenum], cx
 exit_slidetraverse_return_0:
 xor   al, al
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
@@ -3053,22 +3051,29 @@ jne   continue_blocking_check_2
 cmp   ax, word ptr [bx + 0Ah]
 jb    is_blocking
 continue_blocking_check_2:
-mov   bx, word ptr [_lineopening+2]
-and   bx, 7
-mov   ax, word ptr [_lineopening+2]
-SHIFT_MACRO shl   bx 0Dh
-SHIFT_MACRO sar   ax 3
 
-sub   bx, word ptr es:[di + 8]
+
+xor       cx, cx
+mov       ax, word ptr [_lineopening+2]
+sar       ax, 1
+rcr       cx, 1
+sar       ax, 1
+rcr       cx, 1
+sar       ax, 1
+rcr       cx, 1
+
+
+
+sub   cx, word ptr es:[di + 8]
 sbb   ax, word ptr es:[di + 0Ah]
 cmp   ax, 24    ; too big a step up
 jg    is_blocking
 jne   exit_slidetraverse_return_2
-test  bx, bx
-ja    is_blocking
+test  cx, cx
+ja    is_blocking		; jcxnz
 exit_slidetraverse_return_2:
 mov   al, 1
-LEAVE_MACRO
+
 pop   di
 pop   si
 pop   cx
