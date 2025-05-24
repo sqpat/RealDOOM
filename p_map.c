@@ -874,7 +874,7 @@ void __near P_HitSlideLine (int16_t linenum){
 //
 // PTR_SlideTraverse
 //
-boolean __near PTR_SlideTraverse (intercept_t __far* in) {
+boolean __near PTR_SlideTraverse (intercept_t __far* in) { 
 	uint8_t lineflags = lineflagslist[in->d.linenum];
 	line_t __far* li = &lines[in->d.linenum];
 	fixed_t_union temp;
@@ -1451,7 +1451,8 @@ void __near P_LineAttack (mobj_t __near* t1, fineangle_t	angle, int16_t	distance
 //
 // USE LINES
 //
-
+boolean	__near PTR_UseTraverse (intercept_t __far* in) ;
+/*
 boolean	__near PTR_UseTraverse (intercept_t __far* in) {
     int16_t		side;
 
@@ -1484,6 +1485,7 @@ boolean	__near PTR_UseTraverse (intercept_t __far* in) {
     // can't use for than one special line in a row
     return false;
 }
+*/
 
 
 //
