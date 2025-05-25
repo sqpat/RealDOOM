@@ -691,7 +691,7 @@ boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fix
     if ( !(thing_pos->flags1 & MF_NOCLIP) ) {
 		temp2 = (tmceilingz - tmfloorz);
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
-//		if (temp.w < thing->height.w) { 
+
 		if (temp.h.intbits < thing->height.h.intbits) { // 16 bit logic handles the fractional fine
 			return false;	// doesn't fit
 		}
@@ -849,7 +849,7 @@ void __near P_HitSlideLine (int16_t linenum){
 		return;
     }
 	
-    side = P_PointOnLineSide (playerMobj_pos->x.w, playerMobj_pos->y.w, ld_physics->dx, ld_physics->dy, vertexes[ld_physics->v1Offset].x, vertexes[ld_physics->v1Offset].y);
+    side = P_PointOnLineSide (playerMobj_pos->x.w, playerMobj_pos->y.w, vertexes[ld_physics->v1Offset].x, vertexes[ld_physics->v1Offset].y, ld_physics->dx, ld_physics->dy);
     lineangle.wu = R_PointToAngle2_16 (ld_physics->dx, ld_physics->dy);
 
     if (side == 1)

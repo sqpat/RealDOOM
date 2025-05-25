@@ -324,17 +324,17 @@ ENDP
 ; boolean __near P_PointOnLineSide ( 
 	; fixed_t	x, 
 	; fixed_t	y, 
-	; int16_t linedx, 
-	; int16_t linedy,
 	; int16_t v1x,
-	; int16_t v1y);
+	; int16_t v1y,
+	; int16_t linedx, 
+	; int16_t linedy);
 
 ; DX:AX     x
 ; CX:BX     y
-; bp + 4    linedx
-; bp + 6    linedy
-; bp + 8    v1x
-; bp + 0Ah  v1y
+; bp + 4    v1x
+; bp + 6    v1y
+; bp + 8    linedx
+; bp + 0Ah  linedy
 
 ; todo consider si:di params for linedx/linedy?
  
@@ -349,18 +349,18 @@ PUBLIC P_PointOnLineSide_
 push  bp		; bp + 2?
 mov   bp, sp
 
-cmp   word ptr [bp + 4], 0	; compare linedx
+cmp   word ptr [bp + 8], 0	; compare linedx
 
 ;    if (!linedx) {
 jne   linedx_nonzero
 ;		if (x <= temp.w) {
-cmp   dx, word ptr [bp + 8]			; compare hi bits to linedx
+cmp   dx, word ptr [bp + 4]			; compare hi bits to linedx
 jl    x_smaller_than_v1x
 jne   x_greater_than_v1x
 test  ax, ax
 jbe   x_smaller_than_v1x
 x_greater_than_v1x:
-cmp   word ptr [bp + 6], 0
+cmp   word ptr [bp + 0Ah], 0
 jl    return_1_pointonlineside
 return_0_pointonlineside:
 xor   ax, ax	; zero
@@ -369,7 +369,7 @@ LEAVE_MACRO
 ret
 
 x_smaller_than_v1x:
-cmp   word ptr [bp + 6], 0	; compare linedy
+cmp   word ptr [bp + 0Ah], 0	; compare linedy
 jle   return_0_pointonlineside
 
 return_1_pointonlineside:
@@ -379,22 +379,22 @@ ret
 
 linedx_nonzero:
 
-cmp   word ptr [bp + 6], 0	; compare linedy
+cmp   word ptr [bp + 0Ah], 0	; compare linedy
 jne   linedy_nonzero
-cmp   cx, word ptr [bp + 0Ah]	; v1y
+cmp   cx, word ptr [bp + 6]	; v1y
 jl    y_smaller_than_v1y
 jne   y_greater_than_v1y
 test  bx, bx
 jbe   y_smaller_than_v1y
 y_greater_than_v1y:
-cmp   word ptr [bp + 4], 0		; compare linedx
+cmp   word ptr [bp + 8], 0		; compare linedx
 jle   return_0_pointonlineside
 mov   al, 1
 LEAVE_MACRO
 ret
 
 y_smaller_than_v1y:
-cmp   word ptr [bp + 4], 0
+cmp   word ptr [bp + 8], 0
 jge   return_0_pointonlineside
 mov   al, 1
 LEAVE_MACRO
@@ -411,10 +411,8 @@ linedy_nonzero:
 push  di
 push  si
 
-
-sub   dx, word ptr [bp + 8]	; dx:ax = "dx"
-
-sub   cx, word ptr [bp + 0Ah]	; cx:bx = "dy"
+sub   dx, word ptr [bp + 4]	; dx:ax = "dx"
+sub   cx, word ptr [bp + 6]	; cx:bx = "dy"
 
 
 ;    left = FixedMul1632 ( linedy , dx );
@@ -426,7 +424,7 @@ mov   di, cx					; store dy hi	di:si = dy
 mov   bx, ax					; cx:bx = dx
 mov   cx, dx	
 
-mov   ax, word ptr [bp + 6]	; ax = lindedy
+mov   ax, word ptr [bp + 0Ah]	; ax = lindedy
 
 call  FixedMul1632_				; AX  *  CX:BX
 
@@ -436,7 +434,7 @@ mov   bx, si
 mov   cx, di
 mov   di, ax
 mov   si, dx
-mov   ax, word ptr [bp + 4]		; get linedx
+mov   ax, word ptr [bp + 8]		; get linedx
 
 call  FixedMul1632_				; AX  *  CX:BX
 cmp   dx, si
@@ -587,10 +585,10 @@ not_vertical_high:
 
 
 
-push  si	; P_PointOnLineSide_ params call 1
-push  cx
 push  bx
 push  dx
+push  si	; P_PointOnLineSide_ params call 1
+push  cx
 
 
 cmp   ax, ST_NEGATIVE_HIGH
@@ -1921,10 +1919,10 @@ do_high_precision:
 
 
 
-push  es ;v1y
-push  dx ;v1x
 push  word ptr [bp - 6]
 push  word ptr [bp - 0Ah]
+push  es ;v1y
+push  dx ;v1x
 les   ax, dword ptr ds:[_trace+0]
 mov   dx, es
 les   bx, dword ptr ds:[_trace+4]
@@ -2872,18 +2870,20 @@ xor   al, al
 jmp   exit_usetraverse
 no_line_special:
 
-; di has linenum
 
-mov   si, word ptr es:[bx]
-SHIFT_MACRO shl   si 2
+
+; es:nbx lines_special
+push  word ptr es:[bx + 6]
+push  word ptr es:[bx + 4]
+
+mov   bx, word ptr es:[bx]  ; get vertex
+SHIFT_MACRO shl   bx 2
 
 mov   ax, VERTEXES_SEGMENT
 mov   es, ax
-push  word ptr es:[si+2]
-push  word ptr es:[si]
-mov   es, cx  ; lines_physics
-push  word ptr es:[bx + 6]
-push  word ptr es:[bx + 4]
+push  word ptr es:[bx+2]
+push  word ptr es:[bx]
+
 les   bx, dword ptr ds:[_playerMobj_pos]
 
 ;    side = 0;
@@ -2950,16 +2950,19 @@ mov   es, dx
 
 test  al, ML_TWOSIDED
 jne   not_twosided
-mov   di, word ptr es:[bx]
-SHIFT_MACRO shl   di 2
+
+push  word ptr es:[bx + 6]
+push  word ptr es:[bx + 4]
+
+mov   bx, word ptr es:[bx]
+SHIFT_MACRO shl   bx 2
+
 mov   ax, VERTEXES_SEGMENT
 mov   es, ax
 
-push  word ptr es:[di+2]
-push  word ptr es:[di]
-mov   es, dx
-push  word ptr es:[bx + 6]
-push  word ptr es:[bx + 4]
+push  word ptr es:[bx+2]
+push  word ptr es:[bx]
+
 les   bx, dword ptr ds:[_playerMobj_pos]
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
@@ -3117,8 +3120,8 @@ PUBLIC P_TryMove_
 ; bp - 016h   oldy hi
 ; bp - 018h   
 ; bp - 01Ah   side
-; bp - 01Ch   
-; bp - 01Eh   
+; bp - 01Ch   unused
+; bp - 01Eh   unused
 
 ; bp + 0Ah   ; x lo
 ; bp + 0Ch   ; x hi
@@ -3343,29 +3346,26 @@ mov   bx, word ptr ds:[bx + _spechit]
 mov   dx, LINES_PHYSICS_SEGMENT
 mov   es, dx
 SHIFT_MACRO shl   bx 4
-mov   di, word ptr es:[bx + 4]
-mov   si, word ptr es:[bx]
-mov   ax, word ptr es:[bx + 6]
-SHIFT_MACRO shl   si 2
-mov   cx, VERTEXES_SEGMENT
-mov   es, cx
-mov   word ptr [bp - 01Ch], ax
-mov   cx, word ptr es:[si]
-add   si, 2
-mov   word ptr [bp - 01Eh], cx
-mov   si, word ptr es:[si]
-mov   es, dx
+
+mov   al, byte ptr es:[bx + 0Fh]
+mov   byte ptr [bp - 2], al    ; ld->special   
+
+push  word ptr es:[bx + 6] 
+push  word ptr es:[bx + 4] 
+
+mov   bx, word ptr es:[bx] ; vertexes
+SHIFT_MACRO shl   bx 2
+mov   ax, VERTEXES_SEGMENT
+mov   es, ax
+
+push  word ptr es:[bx+2]
+push  word ptr es:[bx]
+
 
 
 ;			side = P_PointOnLineSide (newx.w, newy.w, lddx, lddy, v1x, v1y);
 
-push  si
-push  cx
-push  word ptr [bp - 01Ch]
-push  di
 
-mov   al, byte ptr es:[bx + 0Fh]
-mov   byte ptr [bp - 2], al    ; ld->special   
 
 ;todo selfmodify register params 
 
