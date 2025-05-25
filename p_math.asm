@@ -3437,6 +3437,114 @@ jmp   loop_next_num_spec
 
 ENDP
 
+; boolean __near DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) , int8_t returnOnFalse);
+
+PROC DoBlockmapLoop_ NEAR
+PUBLIC DoBlockmapLoop_
+
+; xl   ax
+; yl   dx
+; xh   bx
+; xl   cx
+; func si
+; returnonfalse di
+
+; bp - 2
+; bp - 4   
+; bp - 6   xl
+; bp - 8   yl
+; bp - 0Ah xl
+
+
+push  bp
+mov   bp, sp
+sub   sp, 4
+
+
+
+push  ax
+push  dx
+push  cx
+
+;	if (xl < 0) {
+;		xl = 0;
+;	}
+;	if (yl < 0) {
+;		yl = 0;
+;	}
+;	if (xh >= bmapwidth) {
+;		xh = bmapwidth - 1;
+;	}
+;	if (yh >= bmapheight) {
+;		yh = bmapheight - 1;
+;	}
+
+mov   cx, di
+mov   word ptr [bp - 4], bx
+mov   byte ptr [bp - 2], cl
+test  ax, ax
+jl    label_1
+label_12:
+cmp   word ptr [bp - 8], 0
+jl    label_2
+label_13:
+mov   bx, OFFSET _bmapwidth
+mov   cx, word ptr [bp - 0Ah]
+mov   ax, word ptr [bx]
+cmp   cx, ax
+jl    label_3
+mov   bx, ax
+dec   bx
+mov   word ptr [bp - 0Ah], bx
+label_3:
+mov   bx, OFFSET _bmapheight
+mov   cx, word ptr [bp - 4]
+mov   ax, word ptr [bx]
+cmp   cx, ax
+jge   label_4
+label_11:
+mov   bx, word ptr [bp - 6]
+cmp   bx, word ptr [bp - 0Ah]
+jg    exit_doblockmaploop_return_1
+mov   cx, word ptr [bp - 8]
+cmp   cx, word ptr [bp - 4]
+jg    label_9
+label_14:
+mov   ax, word ptr [bp - 6]
+mov   bx, si
+mov   dx, cx
+call  P_BlockThingsIterator_
+test  al, al
+jne   label_10
+label_7:
+cmp   byte ptr [bp - 2], 0
+jne   exit_doblockmaploop
+label_10:
+inc   cx
+cmp   cx, word ptr [bp - 4]
+jle   label_14
+label_9:
+inc   word ptr [bp - 6]
+jmp   label_11
+label_1:
+mov   word ptr [bp - 6], 0
+jmp   label_12
+label_2:
+mov   word ptr [bp - 8], 0
+jmp   label_13
+label_4:
+mov   bx, ax
+dec   bx
+mov   word ptr [bp - 4], bx
+jmp   label_11
+exit_doblockmaploop_return_1:
+mov   al, 1
+exit_doblockmaploop:
+LEAVE_MACRO
+ret   
+ENDP
+
+
 COMMENT  @
 
 void __near P_SlideMove (){

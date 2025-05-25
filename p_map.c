@@ -198,6 +198,7 @@ boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_
 #pragma aux (DoBlockmapLoop_params)  DoBlockmapLoop;
 boolean __near DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) , int8_t returnOnFalse);
 
+/*
 boolean __near DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) , int8_t returnOnFalse){
 	int16_t by;
 	if (xl < 0) {
@@ -224,6 +225,7 @@ boolean __near DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, bo
 
     return true;
 }
+*/
 
 //
 // P_TeleportMove
