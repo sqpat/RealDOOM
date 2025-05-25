@@ -2566,13 +2566,11 @@ mov       bx, word ptr ds:[_ds_p]
 cmp       bx, (MAXDRAWSEGS * SIZEOF_DRAWSEG_T)
 je        out_of_drawsegs
 
-mov       ax, SEG_LINEDEFS_SEGMENT
+mov       ax, LINEFLAGSLIST_SEGMENT ; we will also index seg_linedefs off this.
 mov       es, ax
 SELFMODIFY_get_curseg_1:
 mov       bx, 01000h
-mov       ax, LINEFLAGSLIST_SEGMENT
-mov       si, word ptr es:[bx]
-mov       es, ax
+mov       si, word ptr es:[bx + (16 * (SEG_LINEDEFS_SEGMENT - LINEFLAGSLIST_SEGMENT))]
 mov       al, byte ptr es:[si]
 xor       ah, ah
 push      ax      ; bp - 014h
