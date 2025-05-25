@@ -3120,7 +3120,7 @@ PUBLIC P_TryMove_
 ; bp - 016h   oldy hi
 ; bp - 018h   
 ; bp - 01Ah   side
-; bp - 01Ch   unused
+; bp - 01Ch   linespecial
 ; bp - 01Eh   unused
 
 ; bp + 0Ah   ; x lo
@@ -3135,16 +3135,23 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 01Eh
-mov   word ptr [bp - 8], ax
-mov   word ptr [bp - 6], bx
-mov   word ptr [bp - 4], cx
+push  cx ; bp - 2
+push  bx ; bp - 4
+push  ax ; bp - 6
+sub   sp, 018h
+
 
 ;	if (!P_CheckPosition(thing, x, y, -1)) {
 ;		return false;		// solid wall or thing
 ;	}
 
-push  -1  ; todo 8086
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	push  -1  ; todo 8086
+ELSE
+	mov  bx, -1
+	push bx
+ENDIF
+
 push  word ptr [bp + 010h]
 push  word ptr [bp + 0Eh]
 mov   byte ptr ds:[_floatok], 0
@@ -3157,8 +3164,8 @@ je    exit_trymove_return
 
 ;    if ( !(thing_pos->flags1 & MF_NOCLIP) ) {
 
-mov   bx, word ptr  [bp - 8]
-les   di, dword ptr [bp - 6]
+mov   bx, word ptr  [bp - 6]  ; thing
+les   di, dword ptr [bp - 4]  ; thispos
 mov   dl, byte ptr es:[di + 015h]  ; flags
 test  dl, (MF_NOCLIP SHR 8)
 ;jne   move_ok_do_unset_position
@@ -3243,8 +3250,8 @@ jg    exit_trymove_return0
 
 move_ok_do_unset_position:
 
-; bx is word bp - 8
-; di is      bp - 6
+; bx is word bp - 6
+; di is      bp - 4
 mov   ax, bx
 mov   dx, di
 call  P_UnsetThingPosition_
@@ -3255,7 +3262,7 @@ call  P_UnsetThingPosition_
 ;   oldy = thing_pos->y;
 
 
-mov   es, word ptr [bp - 4] ; todo store si  
+mov   es, word ptr [bp - 2] ; todo store si  
 
 mov   ax, word ptr es:[di]      ; thingpos x low
 mov   word ptr [bp - 0Eh], ax
@@ -3292,11 +3299,11 @@ mov   word ptr es:[di + 6], ax
 ;	// we calculated the sector above in checkposition, now it's cached.
 ;	P_SetThingPosition (thing, FP_OFF(thing_pos), lastcalculatedsector);
 
-; bx is word bp - 8
-; di is      bp - 6
+; bx is word bp - 6
+; di is      bp - 4
 
-mov   dx, di  ; bp - 6
-mov   ax, bx  ; bp - 8
+mov   dx, di  ; bp - 4
+mov   ax, bx  ; bp - 6
 mov   bx, word ptr ds:[_lastcalculatedsector]
 
 call  P_SetThingPosition_
@@ -3305,7 +3312,7 @@ call  P_SetThingPosition_
 ;	newx = thing_pos->x;
 ;	newy = thing_pos->y;
 
-les   bx, dword ptr [bp - 6]
+les   bx, dword ptr [bp - 4]
 mov   ax, word ptr es:[bx]
 mov   word ptr [bp - 014h], ax
 mov   ax, word ptr es:[bx + 2]
@@ -3348,7 +3355,7 @@ mov   es, dx
 SHIFT_MACRO shl   bx 4
 
 mov   al, byte ptr es:[bx + 0Fh]
-mov   byte ptr [bp - 2], al    ; ld->special   
+mov   byte ptr [bp - 01Ch], al    ; ld->special   
 
 push  word ptr es:[bx + 6] 
 push  word ptr es:[bx + 4] 
@@ -3398,18 +3405,18 @@ cmp   al, byte ptr [bp - 01Ah]  ; return
 je   loop_next_num_spec		; todo je
 
 ;				if (ldspecial) {
-cmp   word ptr [bp - 2], 0
+cmp   word ptr [bp - 01Ch], 0
 je    loop_next_num_spec		; todo direct
 
 ;	P_CrossSpecialLine(spechit[numspechit], oldside, thing, thing_pos);
 
+push  word ptr [bp - 2]
 push  word ptr [bp - 4]
-push  word ptr [bp - 6]
 mov   bx, word ptr ds:[_numspechit]
 sal   bx, 1
 mov   dx, ax
 mov   ax, word ptr ds:[bx + _spechit]
-mov   bx, word ptr [bp - 8]
+mov   bx, word ptr [bp - 6]
 call  P_CrossSpecialLine_
 jmp   loop_next_num_spec
 
