@@ -3092,6 +3092,9 @@ ENDP
 
 ; boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union	x, fixed_t_union	y );
 
+; ax thing ptr
+; cx:bx thingpos
+
 PROC P_TryMove_ NEAR
 PUBLIC P_TryMove_ 
 
@@ -3108,10 +3111,15 @@ PUBLIC P_TryMove_
 ; bp - 014h   
 ; bp - 016h   oldy hi
 ; bp - 018h   
-; bp - 01Ah   
+; bp - 01Ah   side
 ; bp - 01Ch   
 ; bp - 01Eh   
-; bp - 020h   -1 ?
+
+; bp + 0Ah   ; x lo
+; bp + 0Ch   ; x hi
+; bp + 0Eh   ; y lo
+; bp + 010h  ; y hi
+
 
 
 push  dx
@@ -3123,7 +3131,6 @@ sub   sp, 01Eh
 mov   word ptr [bp - 8], ax
 mov   word ptr [bp - 6], bx
 mov   word ptr [bp - 4], cx
-mov   si, word ptr [bp + 0Ah]
 
 ;	if (!P_CheckPosition(thing, x, y, -1)) {
 ;		return false;		// solid wall or thing
@@ -3132,9 +3139,9 @@ mov   si, word ptr [bp + 0Ah]
 push  -1  ; todo 8086
 push  word ptr [bp + 010h]
 push  word ptr [bp + 0Eh]
-mov   cx, word ptr [bp + 0Ch]
 mov   byte ptr ds:[_floatok], 0
-mov   bx, si
+les   bx, dword ptr [bp + 0Ah]
+mov   cx, es
 call  P_CheckPosition_
 test  al, al
 je    exit_trymove_return
@@ -3240,7 +3247,8 @@ call  P_UnsetThingPosition_
 ;   oldy = thing_pos->y;
 
 
-mov   es, word ptr [bp - 4] ; todo store si
+mov   es, word ptr [bp - 4] ; todo store si  
+
 mov   ax, word ptr es:[di]      ; thingpos x low
 mov   word ptr [bp - 0Eh], ax
 mov   ax, word ptr es:[di + 2]  ; thingpos x hi
@@ -3264,8 +3272,9 @@ mov   ax, word ptr ds:[_tmceilingz]
 
 
 mov   word ptr [bx + 8], ax
+mov   ax, word ptr [bp + 0Ah]
+mov   word ptr es:[di], ax
 mov   ax, word ptr [bp + 0Ch]
-mov   word ptr es:[di], si
 mov   word ptr es:[di + 2], ax
 mov   ax, word ptr [bp + 0Eh]
 mov   word ptr es:[di + 4], ax
@@ -3284,6 +3293,10 @@ mov   bx, word ptr ds:[_lastcalculatedsector]
 
 call  P_SetThingPosition_
 
+; todo push this?
+;	newx = thing_pos->x;
+;	newy = thing_pos->y;
+
 les   bx, dword ptr [bp - 6]
 mov   ax, word ptr es:[bx]
 mov   word ptr [bp - 014h], ax
@@ -3294,25 +3307,34 @@ mov   word ptr [bp - 018h], ax
 mov   ax, word ptr es:[bx + 6]
 mov   word ptr [bp - 012h], ax
 test  byte ptr es:[bx + 015h], ((MF_TELEPORT+MF_NOCLIP) SHR 8)
-je    label_3
+; todo jump direct
+je    loop_next_num_spec
 jump_to_exit_trymove_return1:
 jmp   exit_trymove_return1
-label_3:
+loop_next_num_spec:
 dec   word ptr ds:[_numspechit]
-mov   ax, word ptr ds:[_numspechit]
-cmp   ax, -1
-je    jump_to_exit_trymove_return1
-mov   bx, ax
-add   bx, ax
+; todo jump direct
+js    jump_to_exit_trymove_return1   ; jump if negative 1
+
+;			ld_physics = &lines_physics[spechit[numspechit]];
+;			lddx = ld_physics->dx;
+;			lddy = ld_physics->dy;
+;			ldv1Offset = ld_physics->v1Offset;
+;			v1x = vertexes[ldv1Offset].x;
+;			v1y = vertexes[ldv1Offset].y;
+;			ldspecial = ld_physics->special;
+
+mov   bx, word ptr ds:[_numspechit]
+sal   bx, 1
 mov   bx, word ptr ds:[bx + _spechit]
 mov   dx, LINES_PHYSICS_SEGMENT
-shl   bx, 4
 mov   es, dx
-mov   cx, VERTEXES_SEGMENT
+SHIFT_MACRO shl   bx 4
 mov   di, word ptr es:[bx + 4]
 mov   si, word ptr es:[bx]
 mov   ax, word ptr es:[bx + 6]
-shl   si, 2
+SHIFT_MACRO shl   si 2
+mov   cx, VERTEXES_SEGMENT
 mov   es, cx
 mov   word ptr [bp - 01Ch], ax
 mov   cx, word ptr es:[si]
@@ -3320,37 +3342,46 @@ add   si, 2
 mov   word ptr [bp - 01Eh], cx
 mov   si, word ptr es:[si]
 mov   es, dx
+
+
+;			side = P_PointOnLineSide (newx.w, newy.w, lddx, lddy, v1x, v1y);
+
 push  si
-mov   dx, word ptr [bp - 0Ah]
 push  cx
-mov   al, byte ptr es:[bx + 0Fh]
 push  word ptr [bp - 01Ch]
-mov   bx, word ptr [bp - 018h]
-mov   cx, word ptr [bp - 012h]
-mov   byte ptr [bp - 2], al
 push  di
+
+mov   al, byte ptr es:[bx + 0Fh]
+mov   byte ptr [bp - 2], al    ; ld->special   
+
+mov   dx, word ptr [bp - 0Ah]
+mov   bx, word ptr [bp - 018h]   ; todo put these near each other...
+mov   cx, word ptr [bp - 012h]
 mov   ax, word ptr [bp - 014h]
 call  P_PointOnLineSide_
+
+;			oldside = P_PointOnLineSide (oldx.w, oldy.w, lddx, lddy, v1x, v1y);
+
+mov   byte ptr [bp - 01Ah], al	; store side
+
 mov   bx, word ptr [bp - 010h]
 mov   cx, word ptr [bp - 016h]
-push  si
 mov   dx, word ptr [bp - 0Ch]
+
+push  si
 push  word ptr [bp - 01Eh]
-cbw  
 push  word ptr [bp - 01Ch]
-mov   word ptr [bp - 01Ah], ax
 push  di
+
 mov   ax, word ptr [bp - 0Eh]
 call  P_PointOnLineSide_
-cbw  
-mov   byte ptr [bp - 1], 0
-cmp   ax, word ptr [bp - 01Ah]
-jne   label_4
+cmp   al, byte ptr [bp - 01Ah]  ; return 
+jne   label_4		; todo je
 jump_to_label3:
-jmp   label_3
+jmp   loop_next_num_spec
 label_4:
 cmp   word ptr [bp - 2], 0
-je    jump_to_label3
+je    jump_to_label3		; todo direct
 push  word ptr [bp - 4]
 mov   bx, word ptr ds:[_numspechit]
 mov   dx, ax
@@ -3360,7 +3391,7 @@ mov   cx, word ptr ds:[bx + _spechit]
 mov   bx, word ptr [bp - 8]
 mov   ax, cx
 call  P_CrossSpecialLine_
-jmp   label_3
+jmp   loop_next_num_spec
 exit_trymove_return1:
 mov   al, 1
 LEAVE_MACRO
