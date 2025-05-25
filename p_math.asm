@@ -3449,29 +3449,9 @@ PUBLIC DoBlockmapLoop_
 ; func si
 ; returnonfalse di
 
-; bp - 2
-; bp - 4   
-; bp - 6   xl
-; bp - 8   yl
-; bp - 0Ah xl
-
-
-push  bp
-mov   bp, sp
-sub   sp, 4
 
 
 
-push  ax
-push  dx
-push  cx
-
-;	if (xl < 0) {
-;		xl = 0;
-;	}
-;	if (yl < 0) {
-;		yl = 0;
-;	}
 ;	if (xh >= bmapwidth) {
 ;		xh = bmapwidth - 1;
 ;	}
@@ -3479,69 +3459,114 @@ push  cx
 ;		yh = bmapheight - 1;
 ;	}
 
-mov   cx, di
-mov   word ptr [bp - 4], bx
-mov   byte ptr [bp - 2], cl
+mov   word ptr cs:[SELFMODIFY_setblockmaploop_function+1], si
+
+cmp   bx, word ptr ds:[_bmapwidth]
+jnge  dont_cap_xh
+mov   bx, word ptr ds:[_bmapwidth]
+dec   bx
+dont_cap_xh:
+
+cmp   cx, word ptr ds:[_bmapheight]
+jnge  dont_cap_yh
+mov   cx, word ptr ds:[_bmapheight]
+dec   cx
+dont_cap_yh:
+
+; set loop contstants
+mov   word ptr cs:[SELFMODIFY_compare_to_xh+1], bx
+mov   word ptr cs:[SELFMODIFY_compare_to_yh+2], cx
+
+; bx/cx now free..
+
+; todo just dec di?
+
+;cmp   di, 0
+;je    disable_return_on_false_check
+;mov   di, 0
+;jmp  done_with_return_on_false
+;disable_return_on_false_check:
+;mov   di, 1
+;done_with_return_on_false:
+
+
+
+;	if (xl < 0) {
+;		xl = 0;
+;	}
+;	if (yl < 0) {
+;		yl = 0;
+ 
+
+
+test  dx, dx
+jnl   dont_set_yl_0
+xor   dx, dx		; cwd probably fine
+dont_set_yl_0:
+
+mov   word ptr cs:[SELFMODIFY_reset_by_to_yl+1], dx
+; si gets DX by default from this self-modified move above
+
+dec   di   ; if di was 1 then its now 0 and the later check is enabled.
+
+
+
 test  ax, ax
-jl    label_1
-label_12:
-cmp   word ptr [bp - 8], 0
-jl    label_2
-label_13:
-mov   bx, OFFSET _bmapwidth
-mov   cx, word ptr [bp - 0Ah]
-mov   ax, word ptr [bx]
-cmp   cx, ax
-jl    label_3
-mov   bx, ax
-dec   bx
-mov   word ptr [bp - 0Ah], bx
-label_3:
-mov   bx, OFFSET _bmapheight
-mov   cx, word ptr [bp - 4]
-mov   ax, word ptr [bx]
-cmp   cx, ax
-jge   label_4
-label_11:
-mov   bx, word ptr [bp - 6]
-cmp   bx, word ptr [bp - 0Ah]
+jnl   dont_set_xl_0
+xor   ax, ax
+dont_set_xl_0:
+
+;for (; xl <= xh; xl++) {
+;		for (by = yl; by <= yh; by++) {
+;			if (!P_BlockThingsIterator(xl, by, func)) {
+;				if (returnOnFalse)
+;					return false;
+;			}
+;		}
+;	}
+
+
+do_first_blockmaploop_comp:
+SELFMODIFY_compare_to_xh:
+cmp   ax, 01000h
 jg    exit_doblockmaploop_return_1
-mov   cx, word ptr [bp - 8]
-cmp   cx, word ptr [bp - 4]
-jg    label_9
-label_14:
-mov   ax, word ptr [bp - 6]
-mov   bx, si
-mov   dx, cx
+
+mov   cx, ax  ; backup ax in cx for inner loop duration
+
+SELFMODIFY_reset_by_to_yl:
+mov   si, 01000h
+do_second_blockmaploop_comp:
+SELFMODIFY_compare_to_yh:
+cmp   si, 01000h
+jg    finish_blockmap_inner_loop_iter
+
+continue_inner_inner_loop:
+
+SELFMODIFY_setblockmaploop_function:
+; ax already xl
+mov   bx, 01000h   ; set bx as func
+mov   dx, si       ; set dx as by
 call  P_BlockThingsIterator_
-test  al, al
-jne   label_10
-label_7:
-cmp   byte ptr [bp - 2], 0
-jne   exit_doblockmaploop
-label_10:
-inc   cx
-cmp   cx, word ptr [bp - 4]
-jle   label_14
-label_9:
-inc   word ptr [bp - 6]
-jmp   label_11
-label_1:
-mov   word ptr [bp - 6], 0
-jmp   label_12
-label_2:
-mov   word ptr [bp - 8], 0
-jmp   label_13
-label_4:
-mov   bx, ax
-dec   bx
-mov   word ptr [bp - 4], bx
-jmp   label_11
+
+cbw
+or    ax, di
+je    exit_doblockmaploop_return_0
+
+mov   ax, cx  ; retrieve ax
+
+inc   si
+jmp   do_second_blockmaploop_comp
+
+finish_blockmap_inner_loop_iter:
+inc   ax
+jmp   do_first_blockmaploop_comp
+
 exit_doblockmaploop_return_1:
-mov   al, 1
-exit_doblockmaploop:
-LEAVE_MACRO
+mov  al, 1
 ret   
+exit_doblockmaploop_return_0:
+xor  al, al
+ret
 ENDP
 
 
