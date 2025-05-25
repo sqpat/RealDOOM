@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/24 13:18:14
+Created on:       25/05/24 14:24:35
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -67,7 +67,7 @@ p_inter_TEXT           CODE           AUTO           0a86:5690       00000c7f
 p_lights_TEXT          CODE           AUTO           0a86:6310       000003ed
 p_map_TEXT             CODE           AUTO           0a86:6700       00001cf7
 p_maputl_TEXT          CODE           AUTO           0a86:8400       00000000
-P_MATH_TEXT            CODE           AUTO           0a86:8400       00000de2
+P_MATH_TEXT            CODE           AUTO           0a86:8400       00000de4
 p_plats_TEXT           CODE           AUTO           0a86:91f0       00000419
 p_pspr_TEXT            CODE           AUTO           0a86:9610       00000ae5
 p_spec_TEXT            CODE           AUTO           0a86:a100       000011c8

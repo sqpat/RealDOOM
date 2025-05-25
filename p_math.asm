@@ -3414,6 +3414,7 @@ call  P_PointOnLineSide_
 add   sp, 8  ; no stack frame, just directly do this. needed because this is a loop..
 
 ; todo test cbw and test a word
+
 cmp   al, byte ptr [bp - 3]  ; return 
 je   loop_next_num_spec		; todo je
 
@@ -3427,6 +3428,7 @@ push  word ptr [bp - 2]     ; thing segment. could just do immediate?
 push  di    				; thing pos
 mov   bx, word ptr ds:[_numspechit]
 sal   bx, 1
+cbw	  ; fill out ah from before
 mov   dx, ax
 mov   ax, word ptr ds:[bx + _spechit]
 mov   bx, si
