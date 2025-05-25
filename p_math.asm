@@ -338,6 +338,11 @@ ENDP
 
 ; todo consider si:di params for linedx/linedy?
  
+; CALLING NOTE: this does not ret 8. it is often called twice in a row
+; with the same stack params, so in order to not have to push twice, we
+; just ret. this means the caller may sometimes have to manually add 8 to sp,
+; especially if the caller lacks its own stack frame
+
 PROC P_PointOnLineSide_ NEAR
 PUBLIC P_PointOnLineSide_ 
 
@@ -361,7 +366,7 @@ return_0_pointonlineside:
 xor   ax, ax	; zero
 exit_pointonlineside:
 LEAVE_MACRO
-ret   8
+ret
 
 x_smaller_than_v1x:
 cmp   word ptr [bp + 6], 0	; compare linedy
@@ -370,7 +375,7 @@ jle   return_0_pointonlineside
 return_1_pointonlineside:
 mov   al, 1
 LEAVE_MACRO
-ret   8
+ret
 
 linedx_nonzero:
 
@@ -386,14 +391,14 @@ cmp   word ptr [bp + 4], 0		; compare linedx
 jle   return_0_pointonlineside
 mov   al, 1
 LEAVE_MACRO
-ret   8
+ret
 
 y_smaller_than_v1y:
 cmp   word ptr [bp + 4], 0
 jge   return_0_pointonlineside
 mov   al, 1
 LEAVE_MACRO
-ret   8
+ret
 
 linedy_nonzero:
 
@@ -444,13 +449,13 @@ exit_pointonlineside_return_0:
 xor   al, al
 pop   di
 LEAVE_MACRO
-ret   8
+ret
 
 return_1_pointonlineside_3:		; this one pops di
 mov   al, 1
 pop   di
 LEAVE_MACRO
-ret   8
+ret
 
 ENDP
 
@@ -598,11 +603,9 @@ les   bx, dword ptr ds:[_tmbbox + BOXTOP * 4]  ; sizeof fixed_t_union
 mov   cx, es
 les   ax, dword ptr ds:[_tmbbox + BOXLEFT * 4]
 mov   dx, es
-cli   ; todo see "big todo"
-call  P_PointOnLineSide_
 
-sub   sp, 8  ; reuse same params for next call
-sti   ; todo see "big todo"
+call  P_PointOnLineSide_ ; this does not remove arguments from the stack so we can call again with same stack params
+
 
 xchg  ax, si   ; store p1
 
@@ -613,11 +616,15 @@ mov   dx, es
 
 call  P_PointOnLineSide_
 
+add   sp, 8  ; no stack frame, just directly do this
+
 done_with_switchblock_boxonlineside:
 
 mov   dx, si
 cmp   al, dl ; cmp p1/p2
 jne   return_minusone_boxonlineside
+
+
 ret   
 
 
@@ -636,11 +643,8 @@ mov   dx, es
 
 
 
-cli   ; todo see "big todo"
-call  P_PointOnLineSide_
+call  P_PointOnLineSide_ ; this does not remove arguments from the stack so we can call again with same stack params
 
-sub   sp, 8  ; reuse same params for next call
-sti   ; todo see "big todo"
 
 xchg  ax, si   ; store p1
 
@@ -649,7 +653,9 @@ mov   cx, es
 les   ax, dword ptr ds:[_tmbbox + BOXLEFT * 4]
 mov   dx, es
 
-call  P_PointOnLineSide_
+call  P_PointOnLineSide_ 
+
+add   sp, 8  ; no stack frame, just directly do this
 
 mov   dx, si
 cmp   al, dl ; cmp p1/p2
@@ -1923,17 +1929,11 @@ les   ax, dword ptr ds:[_trace+0]
 mov   dx, es
 les   bx, dword ptr ds:[_trace+4]
 mov   cx, es
-cli   ; todo see "big todo"
-call  P_PointOnLineSide_
 
-sub   sp, 8
+call  P_PointOnLineSide_ ; this does not remove arguments from the stack so we can call again with same stack params
 
-sti   ; todo see "big todo"
 
-cbw  
 
-   ; BIG TODO this sub sp, 8 is potentially killed by interrupts. 
-   ; once every call to this func is in asm we can do this without 'ret 8' on the inside.
 
 
 
@@ -1951,7 +1951,9 @@ add   ax, word ptr ds:[_trace+8]
 adc   dx, word ptr ds:[_trace+0Ah]
 add   bx, word ptr ds:[_trace+0Ch]
 adc   cx, word ptr ds:[_trace+0Eh]
-call  P_PointOnLineSide_
+call  P_PointOnLineSide_   ; note this does not remove the pushed stuff from the stack.
+add   sp, 8  ; no stack frame, just directly do this. necessary because we use sp below..
+
 jmp   compare_s1s2
 s1_s2_not_equal:
 
@@ -2897,6 +2899,7 @@ mov   cx, es
 ;	}
 
 call  P_PointOnLineSide_
+
 cmp   al, 1
 jne   use_side_0
 inc   si		; si = 1
@@ -2963,6 +2966,8 @@ mov   dx, word ptr es:[bx + 2]
 les   bx, dword ptr es:[bx + 4]
 mov   cx, es
 call  P_PointOnLineSide_
+add   sp, 8  ; no stack frame, just directly do this
+
 test  al, al
 je   is_blocking
 exit_slidetraverse_return_1:
@@ -3306,15 +3311,23 @@ mov   ax, word ptr es:[bx + 4]
 mov   word ptr [bp - 018h], ax
 mov   ax, word ptr es:[bx + 6]
 mov   word ptr [bp - 012h], ax
+
+;    if (! (thing_pos->flags1&(MF_TELEPORT|MF_NOCLIP)) ) {
+
 test  byte ptr es:[bx + 015h], ((MF_TELEPORT+MF_NOCLIP) SHR 8)
-; todo jump direct
 je    loop_next_num_spec
-jump_to_exit_trymove_return1:
-jmp   exit_trymove_return1
+exit_trymove_return1:
+mov   al, 1
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+ret   8
+
 loop_next_num_spec:
 dec   word ptr ds:[_numspechit]
 ; todo jump direct
-js    jump_to_exit_trymove_return1   ; jump if negative 1
+js    exit_trymove_return1   ; jump if negative 1
 
 ;			ld_physics = &lines_physics[spechit[numspechit]];
 ;			lddx = ld_physics->dx;
@@ -3354,51 +3367,51 @@ push  di
 mov   al, byte ptr es:[bx + 0Fh]
 mov   byte ptr [bp - 2], al    ; ld->special   
 
+;todo selfmodify register params 
+
 mov   dx, word ptr [bp - 0Ah]
 mov   bx, word ptr [bp - 018h]   ; todo put these near each other...
 mov   cx, word ptr [bp - 012h]
 mov   ax, word ptr [bp - 014h]
-call  P_PointOnLineSide_
+
+
+call  P_PointOnLineSide_ ; this does not remove arguments from the stack so we can call again with same stack params
+
 
 ;			oldside = P_PointOnLineSide (oldx.w, oldy.w, lddx, lddy, v1x, v1y);
 
 mov   byte ptr [bp - 01Ah], al	; store side
 
+;todo selfmodify register params 
+
 mov   bx, word ptr [bp - 010h]
 mov   cx, word ptr [bp - 016h]
 mov   dx, word ptr [bp - 0Ch]
 
-push  si
-push  word ptr [bp - 01Eh]
-push  word ptr [bp - 01Ch]
-push  di
+
 
 mov   ax, word ptr [bp - 0Eh]
 call  P_PointOnLineSide_
+add   sp, 8  ; no stack frame, just directly do this. needed because this is a loop..
+
 cmp   al, byte ptr [bp - 01Ah]  ; return 
-jne   label_4		; todo je
-jump_to_label3:
-jmp   loop_next_num_spec
-label_4:
+je   loop_next_num_spec		; todo je
+
+;				if (ldspecial) {
 cmp   word ptr [bp - 2], 0
-je    jump_to_label3		; todo direct
+je    loop_next_num_spec		; todo direct
+
+;	P_CrossSpecialLine(spechit[numspechit], oldside, thing, thing_pos);
+
 push  word ptr [bp - 4]
-mov   bx, word ptr ds:[_numspechit]
-mov   dx, ax
-add   bx, bx
 push  word ptr [bp - 6]
-mov   cx, word ptr ds:[bx + _spechit]
+mov   bx, word ptr ds:[_numspechit]
+sal   bx, 1
+mov   dx, ax
+mov   ax, word ptr ds:[bx + _spechit]
 mov   bx, word ptr [bp - 8]
-mov   ax, cx
 call  P_CrossSpecialLine_
 jmp   loop_next_num_spec
-exit_trymove_return1:
-mov   al, 1
-LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-ret   8
 
 ENDP
 
