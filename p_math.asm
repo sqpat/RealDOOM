@@ -3106,22 +3106,10 @@ ENDP
 PROC P_TryMove_ NEAR
 PUBLIC P_TryMove_ 
 
-; bp - 2
-; bp - 4      thing_pos hi
-; bp - 6      thing_pos lo
-; bp - 8      thing
+; bp - 2	  thing_pos hi (segment)
+; bp - 3      side
+; bp - 4      linespecial
 
-; bp - 0Ah   
-; bp - 0Ch    oldx hi
-; bp - 0Eh    oldx lo
-; bp - 010h   oldy lo
-; bp - 012h   
-; bp - 014h   
-; bp - 016h   oldy hi
-; bp - 018h   
-; bp - 01Ah   side
-; bp - 01Ch   linespecial
-; bp - 01Eh   unused
 
 ; bp + 0Ah   ; x lo
 ; bp + 0Ch   ; x hi
@@ -3133,12 +3121,17 @@ PUBLIC P_TryMove_
 push  dx
 push  si
 push  di
+
 push  bp
 mov   bp, sp
+
 push  cx ; bp - 2
-push  bx ; bp - 4
-push  ax ; bp - 6
-sub   sp, 018h
+
+
+
+mov   si, ax;  ; si gets thing ptr. dont xchg, ax is needed below
+mov   di, bx   ; di gets thingpos offset
+sub   sp, 2
 
 
 ;	if (!P_CheckPosition(thing, x, y, -1)) {
@@ -3154,6 +3147,7 @@ ENDIF
 
 push  word ptr [bp + 010h]
 push  word ptr [bp + 0Eh]
+
 mov   byte ptr ds:[_floatok], 0
 les   bx, dword ptr [bp + 0Ah]
 mov   cx, es
@@ -3164,8 +3158,8 @@ je    exit_trymove_return
 
 ;    if ( !(thing_pos->flags1 & MF_NOCLIP) ) {
 
-mov   bx, word ptr  [bp - 6]  ; thing
-les   di, dword ptr [bp - 4]  ; thispos
+
+mov   es, word ptr [bp - 2]  ; thispos
 mov   dl, byte ptr es:[di + 015h]  ; flags
 test  dl, (MF_NOCLIP SHR 8)
 ;jne   move_ok_do_unset_position
@@ -3180,7 +3174,7 @@ label_6:
 mov   ax, word ptr ds:[_tmceilingz]
 sub   ax, word ptr ds:[_tmfloorz]
 SHIFT_MACRO sar   ax 3
-cmp   ax, word ptr [bx + 0Ch]
+cmp   ax, word ptr [si + 0Ch]
 jnge  exit_trymove_return0
 
 ;		floatok = true;
@@ -3203,10 +3197,10 @@ jne   label_5
 sub   cx, word ptr es:[di + 8]
 sbb   ax, word ptr es:[di + 0Ah]
 
-cmp   ax, word ptr [bx + 0Ch]
+cmp   ax, word ptr [si + 0Ch]
 jl    exit_trymove_return0
 jne   label_5
-cmp   cx, word ptr [bx + 0Ah]
+cmp   cx, word ptr [si + 0Ah]
 jb    exit_trymove_return0
 label_5:
 
@@ -3250,9 +3244,9 @@ jg    exit_trymove_return0
 
 move_ok_do_unset_position:
 
-; bx is word bp - 6
-; di is      bp - 4
-mov   ax, bx
+; si is thing ptr
+; di is thing segment
+mov   ax, si
 mov   dx, di
 call  P_UnsetThingPosition_
 
@@ -3261,70 +3255,84 @@ call  P_UnsetThingPosition_
 ;   oldx = thing_pos->x;
 ;   oldy = thing_pos->y;
 
-
-mov   es, word ptr [bp - 2] ; todo store si  
-
-mov   ax, word ptr es:[di]      ; thingpos x low
-mov   word ptr [bp - 0Eh], ax
-mov   ax, word ptr es:[di + 2]  ; thingpos x hi
-mov   word ptr [bp - 0Ch], ax
-mov   ax, word ptr es:[di + 4]  ; thingpos y low
-mov   word ptr [bp - 010h], ax
-mov   ax, word ptr es:[di + 6]  ; thingpos y hi
-mov   word ptr [bp - 016h], ax
-
-
-
 ;   thing->floorz = tmfloorz;
 ;   thing->ceilingz = tmceilingz;	
+
+mov   ax, word ptr ds:[_tmfloorz]
+mov   word ptr [si + 6], ax
+mov   ax, word ptr ds:[_tmceilingz]
+mov   word ptr [si + 8], ax
+
+; selfmodify oldx/oldx as immediates in loop
+
+mov   es, word ptr [bp - 2] 
+mov   ax, es
+mov   ds, ax  
+
+xchg  si, di
+lodsw 
+mov   word ptr cs:[SELFMODIFY_set_oldx_lo + 1], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_set_oldx_hi + 1], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_set_oldy_lo + 1], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_set_oldy_hi + 1], ax
+
+sub   si, 8
+xchg  si, di
+
+
 ;	thing_pos->x = x;
 ;	thing_pos->y = y;
 
-mov   ax, word ptr ds:[_tmfloorz]
-mov   word ptr [bx + 6], ax
-mov   ax, word ptr ds:[_tmceilingz]
 
+lds   ax, dword ptr [bp + 0Ah]
+stosw
+mov   ax, ds
+stosw
+lds   ax, dword ptr [bp + 0Eh]
+stosw
+mov   ax, ds
+stosw
 
+sub   di, 8
 
-mov   word ptr [bx + 8], ax
-mov   ax, word ptr [bp + 0Ah]
-mov   word ptr es:[di], ax
-mov   ax, word ptr [bp + 0Ch]
-mov   word ptr es:[di + 2], ax
-mov   ax, word ptr [bp + 0Eh]
-mov   word ptr es:[di + 4], ax
-mov   ax, word ptr [bp + 010h]
-mov   word ptr es:[di + 6], ax
+mov   ax, ss
+mov   ds, ax   ; restore ds
 
 ;	// we calculated the sector above in checkposition, now it's cached.
 ;	P_SetThingPosition (thing, FP_OFF(thing_pos), lastcalculatedsector);
 
-; bx is word bp - 6
-; di is      bp - 4
 
-mov   dx, di  ; bp - 4
-mov   ax, bx  ; bp - 6
+mov   dx, di  ; thingpos
+mov   ax, si  ; thing ptr
 mov   bx, word ptr ds:[_lastcalculatedsector]
 
 call  P_SetThingPosition_
 
-; todo push this?
-;	newx = thing_pos->x;
-;	newy = thing_pos->y;
+; selfmodify newx/newy as immediates in loop
 
-les   bx, dword ptr [bp - 4]
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 014h], ax
-mov   ax, word ptr es:[bx + 2]
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[bx + 4]
-mov   word ptr [bp - 018h], ax
-mov   ax, word ptr es:[bx + 6]
-mov   word ptr [bp - 012h], ax
+mov   ds, word ptr [bp - 2]  ; thingpos
+
+mov   bx, si  ; backup si
+mov   si, di
+lodsw 
+mov   word ptr cs:[SELFMODIFY_set_newx_lo + 1], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_set_newx_hi + 1], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_set_newy_lo + 1], ax
+lodsw
+mov   word ptr cs:[SELFMODIFY_set_newy_hi + 1], ax
+
 
 ;    if (! (thing_pos->flags1&(MF_TELEPORT|MF_NOCLIP)) ) {
 
-test  byte ptr es:[bx + 015h], ((MF_TELEPORT+MF_NOCLIP) SHR 8)
+test  byte ptr ds:[di + 015h], ((MF_TELEPORT+MF_NOCLIP) SHR 8)
+mov   ax, ss
+mov   ds, ax   ; restore ds
+mov   si, bx
 je    loop_next_num_spec
 exit_trymove_return1:
 mov   al, 1
@@ -3355,7 +3363,7 @@ mov   es, dx
 SHIFT_MACRO shl   bx 4
 
 mov   al, byte ptr es:[bx + 0Fh]
-mov   byte ptr [bp - 01Ch], al    ; ld->special   
+mov   byte ptr [bp - 4], al    ; ld->special   
 
 push  word ptr es:[bx + 6] 
 push  word ptr es:[bx + 4] 
@@ -3374,12 +3382,15 @@ push  word ptr es:[bx]
 
 
 
-;todo selfmodify register params 
 
-mov   dx, word ptr [bp - 0Ah]
-mov   bx, word ptr [bp - 018h]   ; todo put these near each other...
-mov   cx, word ptr [bp - 012h]
-mov   ax, word ptr [bp - 014h]
+SELFMODIFY_set_newy_hi:
+mov   cx, 01000h
+SELFMODIFY_set_newy_lo:
+mov   bx, 01000h
+SELFMODIFY_set_newx_hi:
+mov   dx, 01000h
+SELFMODIFY_set_newx_lo:
+mov   ax, 01000h
 
 
 call  P_PointOnLineSide_ ; this does not remove arguments from the stack so we can call again with same stack params
@@ -3387,36 +3398,38 @@ call  P_PointOnLineSide_ ; this does not remove arguments from the stack so we c
 
 ;			oldside = P_PointOnLineSide (oldx.w, oldy.w, lddx, lddy, v1x, v1y);
 
-mov   byte ptr [bp - 01Ah], al	; store side
-
-;todo selfmodify register params 
-
-mov   bx, word ptr [bp - 010h]
-mov   cx, word ptr [bp - 016h]
-mov   dx, word ptr [bp - 0Ch]
+mov   byte ptr [bp - 3], al	; store side
 
 
+SELFMODIFY_set_oldy_hi:
+mov   cx, 01000h
+SELFMODIFY_set_oldy_lo:
+mov   bx, 01000h
+SELFMODIFY_set_oldx_hi:
+mov   dx, 01000h
+SELFMODIFY_set_oldx_lo:
+mov   ax, 01000h
 
-mov   ax, word ptr [bp - 0Eh]
 call  P_PointOnLineSide_
 add   sp, 8  ; no stack frame, just directly do this. needed because this is a loop..
 
-cmp   al, byte ptr [bp - 01Ah]  ; return 
+; todo test cbw and test a word
+cmp   al, byte ptr [bp - 3]  ; return 
 je   loop_next_num_spec		; todo je
 
 ;				if (ldspecial) {
-cmp   word ptr [bp - 01Ch], 0
+cmp   word ptr [bp - 4], 0
 je    loop_next_num_spec		; todo direct
 
 ;	P_CrossSpecialLine(spechit[numspechit], oldside, thing, thing_pos);
 
-push  word ptr [bp - 2]
-push  word ptr [bp - 4]
+push  word ptr [bp - 2]     ; thing segment. could just do immediate?
+push  di    				; thing pos
 mov   bx, word ptr ds:[_numspechit]
 sal   bx, 1
 mov   dx, ax
 mov   ax, word ptr ds:[bx + _spechit]
-mov   bx, word ptr [bp - 6]
+mov   bx, si
 call  P_CrossSpecialLine_
 jmp   loop_next_num_spec
 
