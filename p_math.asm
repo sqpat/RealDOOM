@@ -3587,7 +3587,6 @@ xor   ah, ah
 mov   word ptr ds:[_tmxmove+0], ax
 mov   word ptr ds:[_tmxmove+2], ax
 exit_hitslideline:
-LEAVE_MACRO
 POPA_NO_AX_MACRO
 ret   
 zero_tmy_and_exit:
@@ -3599,8 +3598,7 @@ PROC P_HitSlideLine_ NEAR
 PUBLIC P_HitSlideLine_ 
 
 PUSHA_NO_AX_MACRO
-push  bp
-mov   bp, sp
+
 
 SHIFT_MACRO shl   ax 4
 xchg  ax, si  ; si gets linenum linephysics lookup
@@ -3651,6 +3649,8 @@ mov   dx, word ptr es:[bx+2]
 les   bx, dword ptr es:[bx + 4]
 mov   cx, es
 call  P_PointOnLineSide_
+
+add   sp, 8  ; no stack frame, just directly do this
 
 xchg  ax, bx	; bx gets side
 mov   es, di   ; lines_physics
@@ -3740,7 +3740,6 @@ mov   ax, FINESINE_SEGMENT
 call  FixedMulTrigNoShift_
 mov   word ptr ds:[_tmymove+0], ax
 mov   word ptr ds:[_tmymove+2], dx
-LEAVE_MACRO 
 POPA_NO_AX_MACRO
 ret   
 ENDP
