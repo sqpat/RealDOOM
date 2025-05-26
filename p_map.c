@@ -192,7 +192,7 @@ boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_
 
 
 #pragma aux DoBlockmapLoop_params \
-        __parm [ax] [dx] [cx] [bx] [si] [di] \
+        __parm [ax] [dx] [bx] [cx] [si] [di] \
         __value [al];
 
 #pragma aux (DoBlockmapLoop_params)  DoBlockmapLoop;

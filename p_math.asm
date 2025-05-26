@@ -3479,15 +3479,6 @@ mov   word ptr cs:[SELFMODIFY_compare_to_yh+2], cx
 
 ; bx/cx now free..
 
-; todo just dec di?
-
-;cmp   di, 0
-;je    disable_return_on_false_check
-;mov   di, 0
-;jmp  done_with_return_on_false
-;disable_return_on_false_check:
-;mov   di, 1
-;done_with_return_on_false:
 
 
 
@@ -3507,14 +3498,24 @@ dont_set_yl_0:
 mov   word ptr cs:[SELFMODIFY_reset_by_to_yl+1], dx
 ; si gets DX by default from this self-modified move above
 
-dec   di   ; if di was 1 then its now 0 and the later check is enabled.
-
 
 
 test  ax, ax
 jnl   dont_set_xl_0
 xor   ax, ax
 dont_set_xl_0:
+
+
+cmp   ax, bx
+jg	  exit_doblockmaploop_return_0
+cmp   dx, cx
+jg	  exit_doblockmaploop_return_0
+
+mov   cx, di  ; cx (cl) gets the boolean
+jcxz  dont_set_cx_1
+mov   cx, 1
+dont_set_cx_1:
+dec   cx
 
 ;for (; xl <= xh; xl++) {
 ;		for (by = yl; by <= yh; by++) {
@@ -3526,21 +3527,13 @@ dont_set_xl_0:
 ;	}
 
 
-do_first_blockmaploop_comp:
-SELFMODIFY_compare_to_xh:
-cmp   ax, 01000h
-jg    exit_doblockmaploop_return_1
+do_first_blockmaploop:
 
-mov   cx, ax  ; backup ax in cx for inner loop duration
+mov   di, ax  ; backup ax in di for inner loop duration
 
 SELFMODIFY_reset_by_to_yl:
 mov   si, 01000h
-do_second_blockmaploop_comp:
-SELFMODIFY_compare_to_yh:
-cmp   si, 01000h
-jg    finish_blockmap_inner_loop_iter
-
-continue_inner_inner_loop:
+do_second_blockmaploop:
 
 SELFMODIFY_setblockmaploop_function:
 ; ax already xl
@@ -3548,25 +3541,33 @@ mov   bx, 01000h   ; set bx as func
 mov   dx, si       ; set dx as by
 call  P_BlockThingsIterator_
 
-cbw
-or    ax, di
-je    exit_doblockmaploop_return_0
+or    al, cl ; if al and cl are zero (returnOnFalse true after dec DI) and AX is 0 then jump and exit
+je    exit_doblockmaploop_return_0_thru
 
-mov   ax, cx  ; retrieve ax
+mov   ax, di  ; retrieve ax
 
 inc   si
-jmp   do_second_blockmaploop_comp
+
+SELFMODIFY_compare_to_yh:
+cmp   si, 01000h
+jle   do_second_blockmaploop
 
 finish_blockmap_inner_loop_iter:
 inc   ax
-jmp   do_first_blockmaploop_comp
+
+SELFMODIFY_compare_to_xh:
+cmp   ax, 01000h
+jle   do_first_blockmaploop
+
 
 exit_doblockmaploop_return_1:
 mov  al, 1
+exit_doblockmaploop_return_0_thru:
 ret   
 exit_doblockmaploop_return_0:
 xor  al, al
-ret
+ret   
+
 ENDP
 
 

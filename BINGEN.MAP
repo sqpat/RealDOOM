@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/24 16:31:30
+Created on:       25/05/24 23:53:14
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -77,7 +77,7 @@ p_inter_TEXT           CODE           AUTO           0e21:84e0       00000c7f
 p_lights_TEXT          CODE           AUTO           0e21:9160       000003ed
 p_map_TEXT             CODE           AUTO           0e21:9550       00001c7f
 p_maputl_TEXT          CODE           AUTO           0e21:b1d0       00000000
-P_MATH_TEXT            CODE           AUTO           0e21:b1d0       00000e48
+P_MATH_TEXT            CODE           AUTO           0e21:b1d0       00000e4c
 p_plats_TEXT           CODE           AUTO           0e21:c020       00000419
 p_pspr_TEXT            CODE           AUTO           0e21:c440       00000ae5
 p_spec_TEXT            CODE           AUTO           0e21:cf30       000011c8
@@ -1161,19 +1161,19 @@ Module: p_map.obj(C:\REALDOOM\p_map.c)
 0e21:9550+     R_GetAttackRangeMult_
 0e21:95b0+     PIT_StompThing_
 0e21:9642      P_TeleportMove_
-0e21:97b4+     PIT_CheckLine_
-0e21:9938+     PIT_CheckThing_
-0e21:9bb4      P_CheckPosition_
-0e21:9df2+     P_ThingHeightClip_
-0e21:9ecc+     P_HitSlideLine_
-0e21:a00e      P_SlideMove_
-0e21:a328+     PTR_AimTraverse_
-0e21:a5b4+     PTR_ShootTraverse_
-0e21:aa64      P_AimLineAttack_
-0e21:ac90      P_LineAttack_
-0e21:aea2      P_UseLines_
-0e21:af3a+     PIT_RadiusAttack_
-0e21:b01e      P_RadiusAttack_
+0e21:97aa+     PIT_CheckLine_
+0e21:992e+     PIT_CheckThing_
+0e21:9baa      P_CheckPosition_
+0e21:9dde+     P_ThingHeightClip_
+0e21:9eb8+     P_HitSlideLine_
+0e21:9ffa      P_SlideMove_
+0e21:a314+     PTR_AimTraverse_
+0e21:a5a0+     PTR_ShootTraverse_
+0e21:aa50      P_AimLineAttack_
+0e21:ac7c      P_LineAttack_
+0e21:ae8e      P_UseLines_
+0e21:af26+     PIT_RadiusAttack_
+0e21:b00a      P_RadiusAttack_
 0e21:b098+     PIT_ChangeSector_
 0e21:b188      P_ChangeSector_
 Module: p_math.obj(p_math.ASM)

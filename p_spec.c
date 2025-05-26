@@ -87,10 +87,11 @@ int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t _
 		line_physics = &lines_physics[linenums[i]];
 
 
-		if (line_physics->frontsecnum == sec)
+		if (line_physics->frontsecnum == sec){
 			secnums[i-skipped] = line_physics->backsecnum;
-		else if (!onlybacksecnums)
+		} else if (!onlybacksecnums) {
 			secnums[i-skipped] = line_physics->frontsecnum;
+		}
 
 	}
 	return linecount - skipped;
@@ -111,9 +112,9 @@ short_height_t __near P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
 	memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
-	if (isHigh)
+	if (isHigh){
 		floor =  -500 << SHORTFLOORBITS; // - 4000 = 0xE0C0 ?
-
+	}
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
     for (i=0 ;i < linecount ; i++) {
 		offset = secnumlist[i];
@@ -162,15 +163,17 @@ short_height_t __near P_FindNextHighestFloor( int16_t	secnum,short_height_t		cur
 
     }
     // Find lowest height in list
-    if (!h)
+    if (!h){
 		return currentheight;
-		
+	}
     min = heightlist[0];
     
     // Range checking? 
-    for (i = 1;i < h;i++)
-		if (heightlist[i] < min)
+    for (i = 1;i < h;i++){
+		if (heightlist[i] < min){
 			min = heightlist[i];
+		}
+	}
 			
     return min;
 }
