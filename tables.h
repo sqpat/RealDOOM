@@ -69,7 +69,6 @@
 #define FINE_ANG270		0x1800
 #define FINE_ANG360		0x2000
 
-#define FINE_ANG90_NOSHIFT	    0x2000		    
 
 #define FINE_ANG45_NOSHIFT		0x1000
 #define FINE_ANG90_NOSHIFT	    0x2000		    

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/25 09:41:10
+Created on:       25/05/25 11:26:00
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -67,7 +67,7 @@ p_inter_TEXT           CODE           AUTO           0a86:5690       00000c7f
 p_lights_TEXT          CODE           AUTO           0a86:6310       000003ed
 p_map_TEXT             CODE           AUTO           0a86:6700       00001c7f
 p_maputl_TEXT          CODE           AUTO           0a86:8380       00000000
-P_MATH_TEXT            CODE           AUTO           0a86:8380       00000e3e
+P_MATH_TEXT            CODE           AUTO           0a86:8380       00000e36
 p_plats_TEXT           CODE           AUTO           0a86:91c0       00000419
 p_pspr_TEXT            CODE           AUTO           0a86:95e0       00000ae5
 p_spec_TEXT            CODE           AUTO           0a86:a0d0       000011c8
@@ -1056,7 +1056,7 @@ Module: p_math.obj(p_math.ASM)
 0a86:8917      P_BlockLinesIterator_
 0a86:8ab4*     PIT_AddThingIntercepts_
 0a86:845c      P_PointOnLineSide_
-0a86:9164      DoBlockmapLoop_
+0a86:915c      DoBlockmapLoop_
 0a86:86f9      P_LineOpening_
 0a86:89da*     PIT_AddLineIntercepts_
 0a86:872d      P_UnsetThingPosition_
