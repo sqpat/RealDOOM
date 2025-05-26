@@ -828,6 +828,7 @@ boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_
 }
 
 
+void __near P_HitSlideLine (int16_t linenum);
 
 
 //
@@ -835,6 +836,7 @@ boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_
 // Adjusts the xmove / ymove
 // so that the next move will slide along the wall.
 //
+/*
 void __near P_HitSlideLine (int16_t linenum){
     int16_t			side;
 
@@ -881,7 +883,7 @@ void __near P_HitSlideLine (int16_t linenum){
     tmymove.w = FixedMulTrigNoShift(FINE_SINE_ARGUMENT, lineangle.hu.intbits, newlen);
 }
 
-
+*/
 boolean __near PTR_SlideTraverse (intercept_t __far* in);
 
 
