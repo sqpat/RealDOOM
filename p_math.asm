@@ -3763,7 +3763,7 @@ PUBLIC PIT_CheckLine_
 ; bp - 8    linetop
 ; bp - 0Ah  lineleft
 ; bp - 0Ch  lineright
-; bp - 0Eh  v1x?
+; bp - 0Eh  UNUSED
 ; bp - 010h v2x?
 
 ; bp - 012h lineside1
@@ -3771,7 +3771,6 @@ PUBLIC PIT_CheckLine_
 ; bp - 014h lineslopetype
 ; bp - 016h frontsecnum
 ; bp - 018h backsecnum
-; bp - 01Ah LINES_SEGMENT
 
 push  cx
 push  si
@@ -3781,16 +3780,15 @@ mov   bp, sp
 mov   di, ax
 push  dx  ; bp - 2
 push  bx  ; bp - 4
-sub   sp, 016h  ; bp - 01Ah
+sub   sp, 014h  ; bp - 018h
 
 mov   es, dx
-mov   cx, bx
-SHIFT_MACRO shl   cx 2		; lines lookup
+SHIFT_MACRO shl   bx 2		; lines lookup
 
 mov   ax, word ptr es:[di + 2]
 mov   dx, word ptr es:[di + 4]    ; dx
 xor   al, al
-mov   bx, word ptr es:[di + 6]    ; dy
+mov   cx, word ptr es:[di + 6]    ; dy
 and   ah, (LINE_VERTEX_SLOPETYPE SHR 8)
 mov   word ptr [bp - 014h], ax
 
@@ -3801,13 +3799,12 @@ mov   es, ax
 
 les   ax, dword ptr es:[si]
 mov   word ptr [bp - 6], ax
-mov   word ptr [bp - 0Eh], ax
 mov   word ptr [bp - 0Ch], ax
 mov   word ptr [bp - 0Ah], ax
 
-mov   ax, es
-mov   word ptr [bp - 8], ax
-mov   word ptr [bp - 010h], ax
+mov   si, es
+mov   word ptr [bp - 8], si
+mov   word ptr [bp - 010h], si
 
 
 ;	int16_t linefrontsecnum = ld_physics->frontsecnum;
@@ -3816,20 +3813,22 @@ mov   word ptr [bp - 010h], ax
 mov   es, word ptr [bp - 2]
 
 ; todo push?
-les   si, dword ptr es:[di + 0Ah]
-mov   word ptr [bp - 016h], si  ; frontsecnum
+les   ax, dword ptr es:[di + 0Ah]
+mov   word ptr [bp - 016h], ax  ; frontsecnum
 mov   word ptr [bp - 018h], es  ; backsecnum
-mov   si, cx					; line index shifted 2
-mov   cx, LINES_SEGMENT
-mov   es, cx
+mov   ax, LINES_SEGMENT
+mov   es, ax
 
 ;	int16_t lineside1 = ld->sidenum[1];
 
-mov   cx, word ptr es:[si + 2]	; lineside1
-mov   word ptr [bp - 012h], cx
+mov   bx, word ptr es:[bx + 2]	; lineside1
+mov   word ptr [bp - 012h], bx
 
+; si is linebot
+; ax is free
+; bx is free
 ; dx is linedx
-; bx is linedy
+; cx is linedy
 
 ;	if (linedx > 0) {
 ;		lineright += linedx;
@@ -3837,15 +3836,13 @@ mov   word ptr [bp - 012h], cx
 ;		lineleft += linedx;
 ;	}
 
-mov   si, word ptr [bp - 6] ; v1x?
-add   si, dx
 test  dx, dx
 jg    add_to_lineright
 jnl   done_adding_linedx
-mov   word ptr [bp - 0Ah], si
+add   word ptr [bp - 0Ah], dx
 jmp   done_adding_linedx
 add_to_lineright:
-mov   word ptr [bp - 0Ch], si
+add   word ptr [bp - 0Ch], dx
 done_adding_linedx:
 
 ;	if (linedy > 0) {
@@ -3855,15 +3852,15 @@ done_adding_linedx:
 ;	}
 
 
-; ax is linebot
+; si is linebot
 
-test  bx, bx
+test  cx, cx
 jg    add_to_linetop
 jnl   done_adding_linedy
-add   ax, bx
+add   si, cx
 jmp   done_adding_linedy
 add_to_linetop:
-add   word ptr [bp - 8], bx
+add   word ptr [bp - 8], cx
 done_adding_linedy:
 
 ;	if (tmbbox[BOXLEFT].h.intbits >= lineright || tmbbox[BOXBOTTOM].h.intbits >= linetop
@@ -3874,36 +3871,32 @@ done_adding_linedy:
 ; 		return true;
 ;	}
 
-mov   si, OFFSET _tmbbox + (4 * BOXLEFT) + 2  ; intbits
-mov   cx, word ptr [si]
-cmp   cx, word ptr [bp - 0Ch]
+mov   ax, word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2]
+cmp   ax, word ptr [bp - 0Ch] ;lineright
 jl    label_6
 jump_to_exit_checkline_return_1:
 jmp   exit_checkline_return_1
 label_6:
-mov   si, OFFSET _tmbbox + (4 * BOXBOTTOM) + 2
-mov   cx, word ptr [si]
-cmp   cx, word ptr [bp - 8]
+mov   ax, word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2]
+cmp   ax, word ptr [bp - 8] ; linetop
 jge   jump_to_exit_checkline_return_1
-mov   si, OFFSET _tmbbox + (4 * BOXRIGHT) + 2
-mov   cx, word ptr [si]
-cmp   cx, word ptr [bp - 0Ah]
+mov   ax, word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2]
+cmp   ax, word ptr [bp - 0Ah] ; lineleft
 jl    jump_to_exit_checkline_return_1
-jne   label_10
-mov   si, OFFSET _tmbbox + (4 * BOXRIGHT) 
-cmp   word ptr [si], 0
+jne   done_checking_left_lowbits
+cmp   word ptr ds:[_tmbbox + (4 * BOXRIGHT) ], 0
 je    jump_to_exit_checkline_return_1
-label_10:
-mov   si, OFFSET _tmbbox + (4 * BOXTOP) + 2
-cmp   ax, word ptr [si]
+done_checking_left_lowbits:
+cmp   si, word ptr ds:[_tmbbox + (4 * BOXTOP) + 2]
 jg    jump_to_exit_checkline_return_1
-jne   label_14
-mov   si, OFFSET _tmbbox + (4 * BOXTOP)
-cmp   word ptr [si], 0
+jne   not_in_box
+cmp   word ptr ds:[_tmbbox + (4 * BOXTOP)], 0
 je    jump_to_exit_checkline_return_1
-label_14:
+
+not_in_box:
+mov   bx, cx  ; linedy i guess?
 mov   si, word ptr [bp - 010h]
-mov   cx, word ptr [bp - 0Eh]
+mov   cx, word ptr [bp - 6]
 mov   ax, word ptr [bp - 014h]
 call  P_BoxOnLineSide_
 cmp   al, -1
@@ -3929,9 +3922,9 @@ je    label_12
 test  al, 2
 jne   exit_checkline_return_0
 label_12:
-mov   bx, word ptr [bp - 018h]
-mov   dx, word ptr [bp - 016h]
-mov   ax, word ptr [bp - 012h]
+mov   bx, word ptr [bp - 018h] ; backsecnum
+mov   dx, word ptr [bp - 016h] ; frontsecnum
+mov   ax, word ptr [bp - 012h] ; lineside1
 call  P_LineOpening_
 mov   ax, word ptr ds:[_lineopening+0]
 cmp   ax, word ptr ds:[_tmceilingz]
