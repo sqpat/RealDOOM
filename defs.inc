@@ -424,6 +424,36 @@ ENDIF
 
 ENDM
 
+PUSHA_NO_AX_MACRO MACRO
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	pusha
+ELSE	
+	push  bx
+	push  cx
+	push  dx
+	push  bp
+	push  si
+	push  di
+ENDIF
+
+ENDM
+
+POPA_NO_AX_MACRO MACRO
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	popa
+ELSE	
+	pop   di
+	pop   si
+    pop   bp
+	pop   dx
+	pop   cx
+	pop   bx
+ENDIF
+
+ENDM
+
 
 SHIFT_MACRO MACRO instruction, register, count
 

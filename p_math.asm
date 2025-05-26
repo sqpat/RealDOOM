@@ -3588,11 +3588,7 @@ mov   word ptr ds:[_tmxmove+0], ax
 mov   word ptr ds:[_tmxmove+2], ax
 exit_hitslideline:
 LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
 ret   
 zero_tmy_and_exit:
 mov   word ptr ds:[_tmymove+0], ax
@@ -3601,11 +3597,7 @@ jmp   exit_hitslideline
 PROC P_HitSlideLine_ NEAR
 PUBLIC P_HitSlideLine_ 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 0Ah
@@ -3705,11 +3697,7 @@ call  FixedMulTrigNoShift_
 mov   word ptr ds:[_tmymove+0], ax
 mov   word ptr ds:[_tmymove+2], dx
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
 ret   
 ENDP
 
