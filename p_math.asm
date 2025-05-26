@@ -3759,18 +3759,17 @@ PUBLIC PIT_CheckLine_
 
 ; bp - 2    ld_physics segment
 ; bp - 4    linenum
-; bp - 6    v1x?
-; bp - 8    linetop
-; bp - 0Ah  lineleft
-; bp - 0Ch  lineright
-; bp - 0Eh  UNUSED
+; bp - 6    lineslopetype 
+; bp - 8    v1x?
+; bp - 0Ah  linetop
+; bp - 0Ch  lineleft
+; bp - 0Eh  lineright
 ; bp - 010h v2x?
 
 ; bp - 012h lineside1
 
-; bp - 014h lineslopetype
-; bp - 016h frontsecnum
-; bp - 018h backsecnum
+; bp - 014h frontsecnum
+; bp - 016h backsecnum
 
 push  cx
 push  si
@@ -3780,31 +3779,42 @@ mov   bp, sp
 mov   di, ax
 push  dx  ; bp - 2
 push  bx  ; bp - 4
-sub   sp, 014h  ; bp - 018h
 
 mov   es, dx
 SHIFT_MACRO shl   bx 2		; lines lookup
 
-mov   ax, word ptr es:[di + 2]
-mov   dx, word ptr es:[di + 4]    ; dx
-xor   al, al
-mov   cx, word ptr es:[di + 6]    ; dy
-and   ah, (LINE_VERTEX_SLOPETYPE SHR 8)
-mov   word ptr [bp - 014h], ax
-
 mov   si, word ptr es:[di]   ; vertex
+mov   ax, word ptr es:[di + 2]
+xor   al, al					; todo just get byte?
+and   ah, (LINE_VERTEX_SLOPETYPE SHR 8)
+
+push  ax ; bp - 6  ; unused!
+
+les   dx, dword ptr es:[di + 4]    ; dx
+mov   cx, es                       ; dy
+
 SHIFT_MACRO shl   si 2
 mov   ax, VERTEXES_SEGMENT
 mov   es, ax
 
-les   ax, dword ptr es:[si]
-mov   word ptr [bp - 6], ax
-mov   word ptr [bp - 0Ch], ax
-mov   word ptr [bp - 0Ah], ax
+les   si, dword ptr es:[si]
 
-mov   si, es
-mov   word ptr [bp - 8], si
-mov   word ptr [bp - 010h], si
+push  si ; bp - 8
+push  es ; bp - 0Ah
+push  si ; bp - 0Ch
+push  si ; bp - 0Eh
+push  es ; bp - 010h 
+
+mov   si, es ; store v1y as linebot
+
+
+
+mov   ax, LINES_SEGMENT
+mov   es, ax
+;	int16_t lineside1 = ld->sidenum[1];
+
+mov   bx, word ptr es:[bx + 2]	; lineside1
+push  bx ; bp - 012h
 
 
 ;	int16_t linefrontsecnum = ld_physics->frontsecnum;
@@ -3812,17 +3822,10 @@ mov   word ptr [bp - 010h], si
 
 mov   es, word ptr [bp - 2]
 
-; todo push?
-les   ax, dword ptr es:[di + 0Ah]
-mov   word ptr [bp - 016h], ax  ; frontsecnum
-mov   word ptr [bp - 018h], es  ; backsecnum
-mov   ax, LINES_SEGMENT
-mov   es, ax
 
-;	int16_t lineside1 = ld->sidenum[1];
 
-mov   bx, word ptr es:[bx + 2]	; lineside1
-mov   word ptr [bp - 012h], bx
+push  word ptr es:[di + 0Ah]  ; frontsecnum bp - 014h
+push  word ptr es:[di + 0Ch]  ; backsecnum  bp - 016h
 
 ; si is linebot
 ; ax is free
@@ -3839,10 +3842,10 @@ mov   word ptr [bp - 012h], bx
 test  dx, dx
 jg    add_to_lineright
 jnl   done_adding_linedx
-add   word ptr [bp - 0Ah], dx
+add   word ptr [bp - 0Ch], dx
 jmp   done_adding_linedx
 add_to_lineright:
-add   word ptr [bp - 0Ch], dx
+add   word ptr [bp - 0Eh], dx
 done_adding_linedx:
 
 ;	if (linedy > 0) {
@@ -3860,7 +3863,7 @@ jnl   done_adding_linedy
 add   si, cx
 jmp   done_adding_linedy
 add_to_linetop:
-add   word ptr [bp - 8], cx
+add   word ptr [bp - 0Ah], cx
 done_adding_linedy:
 
 ;	if (tmbbox[BOXLEFT].h.intbits >= lineright || tmbbox[BOXBOTTOM].h.intbits >= linetop
@@ -3872,96 +3875,51 @@ done_adding_linedy:
 ;	}
 
 mov   ax, word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2]
-cmp   ax, word ptr [bp - 0Ch] ;lineright
-jl    label_6
-jump_to_exit_checkline_return_1:
-jmp   exit_checkline_return_1
-label_6:
-mov   ax, word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2]
-cmp   ax, word ptr [bp - 8] ; linetop
-jge   jump_to_exit_checkline_return_1
-mov   ax, word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2]
-cmp   ax, word ptr [bp - 0Ah] ; lineleft
-jl    jump_to_exit_checkline_return_1
-jne   done_checking_left_lowbits
-cmp   word ptr ds:[_tmbbox + (4 * BOXRIGHT) ], 0
-je    jump_to_exit_checkline_return_1
-done_checking_left_lowbits:
-cmp   si, word ptr ds:[_tmbbox + (4 * BOXTOP) + 2]
-jg    jump_to_exit_checkline_return_1
-jne   not_in_box
-cmp   word ptr ds:[_tmbbox + (4 * BOXTOP)], 0
-je    jump_to_exit_checkline_return_1
-
-not_in_box:
-mov   bx, cx  ; linedy i guess?
-mov   si, word ptr [bp - 010h]
-mov   cx, word ptr [bp - 6]
-mov   ax, word ptr [bp - 014h]
-call  P_BoxOnLineSide_
-cmp   al, -1
-jne   jump_to_exit_checkline_return_1
-mov   es, word ptr [bp - 2]
-cmp   word ptr es:[di + 0Ch], -1
-jne   label_16
-jump_to_exit_checkline_return_0:
-jmp   exit_checkline_return_0
-label_16:
-mov   ax, LINEFLAGSLIST_SEGMENT
-mov   bx, word ptr [bp - 4]
-mov   es, ax
-mov   al, byte ptr es:[bx]
-les   bx, dword ptr ds:[_tmthing_pos]
-test  byte ptr es:[bx + 016h], ML_BLOCKING
-jne   label_12
-test  al, 1
-jne   jump_to_exit_checkline_return_0
-mov   bx, word ptr ds:[_tmthing]
-cmp   byte ptr [bx + 01Ah], 0
-je    label_12
-test  al, 2
-jne   exit_checkline_return_0
-label_12:
-mov   bx, word ptr [bp - 018h] ; backsecnum
-mov   dx, word ptr [bp - 016h] ; frontsecnum
-mov   ax, word ptr [bp - 012h] ; lineside1
-call  P_LineOpening_
-mov   ax, word ptr ds:[_lineopening+0]
-cmp   ax, word ptr ds:[_tmceilingz]
-jge   label_15
-mov   bx, word ptr [bp - 4]
-mov   word ptr ds:[_tmceilingz], ax
-mov   word ptr ds:[_ceilinglinenum], bx
-label_15:
-mov   ax, word ptr ds:[_lineopening+2]
-cmp   ax, word ptr ds:[_tmfloorz]
-jle   label_13
-mov   word ptr ds:[_tmfloorz], ax
-
-label_13:
-mov   ax, word ptr ds:[_lineopening+4]
-cmp   ax, word ptr ds:[_tmdropoffz]
-jge   label_5
-mov   word ptr ds:[_tmdropoffz], ax
-label_5:
-
-;    if (ld_physics->special) {
-
-mov   es, word ptr [bp - 2]
-cmp   byte ptr es:[di + 0Fh], 0
-je    exit_checkline_return_1
-mov   bx, word ptr ds:[_numspechit]
-mov   si, word ptr [bp - 4]
-add   bx, bx
-inc   word ptr ds:[_numspechit]
-mov   word ptr ds:[bx + _spechit], si
-exit_checkline_return_1:
+cmp   ax, word ptr [bp - 0Eh] ;lineright
+jl    check_linetop
+exit_checkline_return_1_2:
 mov   al, 1
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
 ret   
+
+check_linetop:
+mov   ax, word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2]
+cmp   ax, word ptr [bp - 0Ah] ; linetop
+jge   exit_checkline_return_1_2
+mov   ax, word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2]
+cmp   ax, word ptr [bp - 0Ch] ; lineleft
+jl    exit_checkline_return_1_2
+jne   done_checking_left_lowbits
+cmp   word ptr ds:[_tmbbox + (4 * BOXRIGHT) ], 0
+je    exit_checkline_return_1_2
+done_checking_left_lowbits:
+cmp   si, word ptr ds:[_tmbbox + (4 * BOXTOP) + 2]
+jg    exit_checkline_return_1_2
+jne   not_in_box
+cmp   word ptr ds:[_tmbbox + (4 * BOXTOP)], 0
+je    exit_checkline_return_1_2 ;1ah bytes
+
+not_in_box:
+;    dx already linedx
+mov   bx, cx  ; linedy i guess?
+mov   si, word ptr [bp - 010h]
+mov   cx, word ptr [bp - 8]
+mov   ax, word ptr [bp - 6]  ; slopetype
+call  P_BoxOnLineSide_
+cmp   al, -1
+jne   exit_checkline_return_1_2 ; 8 bytes
+
+;	if (ld_physics->backsecnum == SECNUM_NULL) {
+;		return false;		// one sided line
+;	}
+
+
+mov   es, word ptr [bp - 2]
+cmp   word ptr es:[di + 0Ch], SECNUM_NULL
+jne   sector_not_null  ; 7 bytes
 
 exit_checkline_return_0:
 xor   al, al
@@ -3970,6 +3928,99 @@ pop   di
 pop   si
 pop   cx
 ret   
+sector_not_null:
+
+;    if (!(tmthing_pos->flags2 & MF_MISSILE) ) {
+
+mov   ax, LINEFLAGSLIST_SEGMENT
+mov   es, ax
+mov   bx, word ptr [bp - 4]
+mov   al, byte ptr es:[bx]
+les   bx, dword ptr ds:[_tmthing_pos]
+test  byte ptr es:[bx + 016h], MF_MISSILE
+jne   skip_blocking
+
+;		if (flags & ML_BLOCKING) {
+;			return false;	// explicitly blocking everything
+;		}
+
+test  al, ML_BLOCKING
+jne   exit_checkline_return_0
+
+;		if (tmthing->type != MT_PLAYER && flags & ML_BLOCKMONSTERS) {
+;			return false;	// block monsters only
+;		}
+
+mov   bx, word ptr ds:[_tmthing]
+cmp   byte ptr ds:[bx + 01Ah], MT_PLAYER
+je    skip_blocking
+test  al, ML_BLOCKMONSTERS
+jne   exit_checkline_return_0
+skip_blocking:
+
+mov   bx, word ptr [bp - 016h] ; backsecnum
+mov   dx, word ptr [bp - 014h] ; frontsecnum
+mov   ax, word ptr [bp - 012h] ; lineside1
+call  P_LineOpening_
+
+;    // adjust floor / ceiling heights
+;    if (lineopening.opentop < tmceilingz) {
+;		tmceilingz = lineopening.opentop;
+;		ceilinglinenum = linenum;
+;    } 
+
+mov   ax, word ptr ds:[_lineopening+0]
+cmp   ax, word ptr ds:[_tmceilingz]
+
+jge   dont_adjust_ceil
+mov   bx, word ptr [bp - 4]
+mov   word ptr ds:[_tmceilingz], ax
+mov   word ptr ds:[_ceilinglinenum], bx
+dont_adjust_ceil:
+
+;	if (lineopening.openbottom > tmfloorz) {
+;		tmfloorz = lineopening.openbottom;
+;	}
+
+mov   ax, word ptr ds:[_lineopening+2]
+cmp   ax, word ptr ds:[_tmfloorz]
+jle   dont_adjust_floor
+mov   word ptr ds:[_tmfloorz], ax
+dont_adjust_floor:
+
+;	if (lineopening.lowfloor < tmdropoffz) {
+;		tmdropoffz = lineopening.lowfloor;
+;	}
+
+mov   ax, word ptr ds:[_lineopening+4]
+cmp   ax, word ptr ds:[_tmdropoffz]
+jge   dont_adjust_dropoff
+mov   word ptr ds:[_tmdropoffz], ax
+dont_adjust_dropoff:
+
+;    if (ld_physics->special) {
+
+mov   es, word ptr [bp - 2]
+cmp   byte ptr es:[di + 0Fh], 0
+je    exit_checkline_return_1
+; adjust specials
+
+;		spechit[numspechit] = linenum;
+;		numspechit++;
+mov   bx, word ptr ds:[_numspechit]
+sal   bx, 1
+mov   ax, word ptr [bp - 4]
+inc   word ptr ds:[_numspechit]
+mov   word ptr ds:[bx + _spechit], ax
+exit_checkline_return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   
+
+
 
 ENDP
 
