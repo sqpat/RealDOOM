@@ -3600,57 +3600,82 @@ PUBLIC P_HitSlideLine_
 PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 0Ah
-mov   word ptr [bp - 6], LINES_PHYSICS_SEGMENT
-mov   si, ax
-mov   es, word ptr [bp - 6]
+sub   sp, 04h
+SHIFT_MACRO shl   ax 4
+xchg  ax, si  ; si gets linenum linephysics lookup
+mov   di, LINES_PHYSICS_SEGMENT
+mov   es, di
+
+
+
+;    if ((ld_physics->v2Offset&LINE_VERTEX_SLOPETYPE) == ST_HORIZONTAL_HIGH) {
+;		tmymove.w = 0;
+;		return;
+;    }
+    
 xor   ax, ax
-SHIFT_MACRO shl   si 4
-mov   word ptr [bp - 0Ah], ax
-mov   word ptr [bp - 8], ax
 test  byte ptr es:[si + 3], (LINE_VERTEX_SLOPETYPE SHR 8)
 je    zero_tmy_and_exit
 mov   ax, word ptr es:[si + 2]
 xor   al, al
 and   ah, (LINE_VERTEX_SLOPETYPE SHR 8)
+
+;    if ((ld_physics->v2Offset&LINE_VERTEX_SLOPETYPE) == ST_VERTICAL_HIGH) {
+;		tmxmove.w = 0;
+;		return;
+;    }
+
+
 cmp   ax, ST_VERTICAL_HIGH
 je    zero_tmx_and_exit
-mov   ax, VERTEXES_SEGMENT
-mov   di, word ptr es:[si]
+
+
+
+;    side = P_PointOnLineSide (playerMobj_pos->x.w, playerMobj_pos->y.w, vertexes[ld_physics->v1Offset].x, vertexes[ld_physics->v1Offset].y, ld_physics->dx, ld_physics->dy);
+
 push  word ptr es:[si + 6]
-SHIFT_MACRO shl   di 2
 push  word ptr es:[si + 4]
+
+mov   bx, word ptr es:[si] ; get vertex
+SHIFT_MACRO shl   bx 2
+
+mov   ax, VERTEXES_SEGMENT
 mov   es, ax
-lea   bx, [di + 2]
+
+push  word ptr es:[bx+2] ; push vertices
 push  word ptr es:[bx]
-push  word ptr es:[di]
-les   di, dword ptr ds:[_playerMobj_pos]
-mov   bx, word ptr es:[di + 4]
-mov   cx, word ptr es:[di + 6]
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
+les   bx, dword ptr ds:[_playerMobj_pos]
+mov   ax, word ptr es:[bx]
+mov   dx, word ptr es:[bx+2]
+les   bx, dword ptr es:[bx + 4]
+mov   cx, es
 call  P_PointOnLineSide_
-cbw  
-mov   es, word ptr [bp - 6]
-mov   bx, ax
-mov   dx, word ptr es:[si + 6]
-mov   ax, word ptr es:[si + 4]
+
+xchg  ax, bx	; bx gets side
+mov   es, di   ; lines_physics
+les   ax, dword ptr es:[si + 4]
+mov   dx, es
 call  R_PointToAngle2_16_
+
+;    if (side == 1)
+;		lineangle.hu.intbits += ANG180_HIGHBITS;
+
+
 mov   si, ax
-mov   word ptr [bp - 4], dx
-cmp   bx, 1
-jne   label_3
-add   byte ptr [bp - 3], (ANG180_HIGHBITS SHR 8)
-label_3:
+cmp   bl, 1
+jne   dont_add_hibits
+add   dh, (ANG180_HIGHBITS SHR 8)
+dont_add_hibits:
+mov   word ptr [bp - 4], dx  ; todo di is free 
 push  word ptr ds:[_tmymove+2]
-mov   bx, word ptr [bp - 0Ah]
 push  word ptr ds:[_tmymove+0]
-mov   cx, word ptr [bp - 8]
 push  word ptr ds:[_tmxmove+2]
-mov   ax, bx
 push  word ptr ds:[_tmxmove+0]
-mov   dx, cx
-call  R_PointToAngle2_
+xor   ax, ax
+cwd
+mov   bx, ax
+mov   cx, ax
+call  R_PointToAngle2_  ; todo this is a weird function call. 
 sub   ax, si
 sbb   dx, word ptr [bp - 4]
 mov   word ptr [bp - 2], dx
