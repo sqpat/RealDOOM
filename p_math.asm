@@ -3594,13 +3594,14 @@ zero_tmy_and_exit:
 mov   word ptr ds:[_tmymove+0], ax
 mov   word ptr ds:[_tmymove+2], ax
 jmp   exit_hitslideline
+
 PROC P_HitSlideLine_ NEAR
 PUBLIC P_HitSlideLine_ 
 
 PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 04h
+
 SHIFT_MACRO shl   ax 4
 xchg  ax, si  ; si gets linenum linephysics lookup
 mov   di, LINES_PHYSICS_SEGMENT
@@ -3666,7 +3667,8 @@ cmp   bl, 1
 jne   dont_add_hibits
 add   dh, (ANG180_HIGHBITS SHR 8)
 dont_add_hibits:
-mov   word ptr [bp - 4], dx  ; todo di is free 
+
+mov   di, dx
 push  word ptr ds:[_tmymove+2]
 push  word ptr ds:[_tmymove+0]
 push  word ptr ds:[_tmxmove+2]
@@ -3677,46 +3679,63 @@ mov   bx, ax
 mov   cx, ax
 call  R_PointToAngle2_  ; todo this is a weird function call. 
 sub   ax, si
-sbb   dx, word ptr [bp - 4]
-mov   word ptr [bp - 2], dx
+sbb   dx, di
 cmp   dx, ANG180_HIGHBITS
-ja    label_4
-jne   label_5
+ja    add_hibits
+jne   dont_add_hibits_2
 test  ax, ax
-jbe   label_5
-label_4:
-add   byte ptr [bp - 1], (ANG180_HIGHBITS SHR 8)
-label_5:
-mov   ax, word ptr [bp - 4]
-shr   ax, 1
-and   al, 0FCh
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr [bp - 2]
-mov   bx, word ptr ds:[_tmymove+0]
-shr   ax, 1
-mov   cx, word ptr ds:[_tmymove+2]
-and   al, 0FCh
-mov   dx, word ptr ds:[_tmxmove+2]
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr ds:[_tmxmove+0]
+jbe   dont_add_hibits_2
+add_hibits:
+add   dh, (ANG180_HIGHBITS SHR 8)
+
+dont_add_hibits_2:
+
+;    lineangle.hu.intbits = (lineangle.hu.intbits >> 1) & 0xFFFC;
+;    deltaangle.hu.intbits = (deltaangle.hu.intbits >> 1) & 0xFFFC;
+
+shr   di, 1
+and   di, 0FFFCh ; line hubits
+
+shr   dx, 1
+and   dl, 0FCh   ; delta hubits
+mov   si, dx     ; in si
+
+;    movelen = P_AproxDistance (tmxmove.w, tmymove.w);
+
+les   bx, dword ptr ds:[_tmymove+0]
+mov   cx, es
+les   ax, dword ptr ds:[_tmxmove+0]
+mov   dx, es
 call  P_AproxDistance_
+
+;    newlen = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, deltaangle.hu.intbits, movelen);
+
+
 mov   bx, ax
 mov   cx, dx
-mov   dx, word ptr [bp - 2]
+
+mov   dx, si     ; si is now free
 mov   ax, FINECOSINE_SEGMENT
 call  FixedMulTrigNoShift_
-mov   di, ax
-mov   si, dx
-mov   bx, ax
-mov   cx, dx
-mov   dx, word ptr [bp - 4]
+
+
+;    tmxmove.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, lineangle.hu.intbits, newlen);
+;    tmymove.w = FixedMulTrigNoShift(FINE_SINE_ARGUMENT, lineangle.hu.intbits, newlen);
+
+
+xchg  ax, si  	; back up dx:ax as di:si
+xchg  dx, di	; dx also gets di (lineangle)
+push  dx        ; need this once more
+
+mov   bx, si
+mov   cx, di
 mov   ax, FINECOSINE_SEGMENT
 call  FixedMulTrigNoShift_
 mov   word ptr ds:[_tmxmove+0], ax
 mov   word ptr ds:[_tmxmove+2], dx
-mov   bx, di
-mov   cx, si
-mov   dx, word ptr [bp - 4]
+mov   bx, si
+mov   cx, di
+pop   dx
 mov   ax, FINESINE_SEGMENT
 call  FixedMulTrigNoShift_
 mov   word ptr ds:[_tmymove+0], ax
