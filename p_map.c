@@ -305,6 +305,10 @@ boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
+
+boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum);
+
+/*
 boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum) {
 	line_t __far* ld = &lines[linenum];
 	slopetype_t lineslopetype = ld_physics->v2Offset & LINE_VERTEX_SLOPETYPE;
@@ -402,6 +406,7 @@ boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 
     return true;
 }
+*/
 
 //
 // PIT_CheckThing
