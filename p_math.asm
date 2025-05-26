@@ -1835,17 +1835,16 @@ push  bp
 mov   bp, sp
 
 xchg  ax, si
-push  dx   ; bp - 2
 mov   es, dx
-push  bx   ; bp - 4
+push  bx   ; bp - 2
 
 
 ; todo move this after if/else?
 xor   ax, ax
-push  word ptr es:[si + 6]  ; bp - 6   line dy
-push  ax					; bp - 8   0
-push  word ptr es:[si + 4]  ; bp - 0Ah line dx
-push  ax					; bp - 0Ch 0
+push  word ptr es:[si + 6]  ; bp - 4   line dy
+push  ax					; bp - 6   0
+push  word ptr es:[si + 4]  ; bp - 8   line dx
+push  ax					; bp - 0Ah 0
 
 les   bx, dword ptr es:[si]
 mov   cx, es ; store si + 2 in cx for now
@@ -1856,10 +1855,10 @@ mov   es, dx
 
 les   dx, dword ptr es:[bx]
 
-push  es					; bp - 0Eh  vertex y
-push  ax    				; bp - 010h
-push  dx                    ; bp - 012h vertex x
-push  ax    				; bp - 014h
+push  es					; bp - 0Ch  vertex y
+push  ax    				; bp - 00Eh
+push  dx                    ; bp - 010h vertex x
+push  ax    				; bp - 012h
 
 
 
@@ -1929,8 +1928,8 @@ do_high_precision:
 
 
 
-push  word ptr [bp - 6]
-push  word ptr [bp - 0Ah]
+push  word ptr [bp - 4]
+push  word ptr [bp - 8]
 push  es ;v1y
 push  dx ;v1x
 les   ax, dword ptr ds:[_trace+0]
@@ -1982,7 +1981,7 @@ s1_s2_not_equal:
 ; about one fourth of calls make it here to the expensive part of the call.
 ; maybe all that stack stuff shouldnt be done above? is it too expensive?
 
-;lea   ax, [bp - 014h]
+;lea   ax, [bp - 012h]
 mov    ax, sp
 
 ;    frac = P_InterceptVector (&dl);
@@ -2004,7 +2003,7 @@ xchg  ax, dx
 stosw
 mov   al, 1
 stosb
-mov   ax, word ptr [bp - 4]
+mov   ax, word ptr [bp - 2]
 stosw
 mov   word ptr ds:[_intercept_p], di
 mov   al, 1
@@ -3755,62 +3754,126 @@ ML_BLOCKING = 1
 PROC PIT_CheckLine_ NEAR
 PUBLIC PIT_CheckLine_
 
+; dx:ax ld_physics
+; bx: linenum  (SAME LINE, so shift 4?)
+
+; bp - 2    ld_physics segment
+; bp - 4    linenum
+; bp - 6    v1x?
+; bp - 8    linetop
+; bp - 0Ah  lineleft
+; bp - 0Ch  lineright
+; bp - 0Eh  v1x?
+; bp - 010h v2x?
+
+; bp - 012h lineside1
+
+; bp - 014h lineslopetype
+; bp - 016h frontsecnum
+; bp - 018h backsecnum
+; bp - 01Ah LINES_SEGMENT
 
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 01Ah
 mov   di, ax
-mov   word ptr [bp - 2], dx
-mov   word ptr [bp - 4], bx
+push  dx  ; bp - 2
+push  bx  ; bp - 4
+sub   sp, 016h  ; bp - 01Ah
+
 mov   es, dx
 mov   cx, bx
+SHIFT_MACRO shl   cx 2		; lines lookup
+
 mov   ax, word ptr es:[di + 2]
-mov   dx, word ptr es:[di + 4]
+mov   dx, word ptr es:[di + 4]    ; dx
 xor   al, al
-mov   bx, word ptr es:[di + 6]
+mov   bx, word ptr es:[di + 6]    ; dy
 and   ah, (LINE_VERTEX_SLOPETYPE SHR 8)
-mov   si, word ptr es:[di]
 mov   word ptr [bp - 014h], ax
-mov   ax, VERTEXES_SEGMENT
+
+mov   si, word ptr es:[di]   ; vertex
 SHIFT_MACRO shl   si 2
+mov   ax, VERTEXES_SEGMENT
 mov   es, ax
-mov   word ptr [bp - 01Ah], LINES_SEGMENT  ; todo use add to offset?
-mov   ax, word ptr es:[si]
-SHIFT_MACRO shl   cx 2
+
+les   ax, dword ptr es:[si]
 mov   word ptr [bp - 6], ax
-mov   ax, word ptr es:[si + 2]
-mov   si, word ptr [bp - 6]
-mov   es, word ptr [bp - 2]
-mov   word ptr [bp - 0Eh], si
-mov   word ptr [bp - 0Ch], si
-mov   word ptr [bp - 0Ah], si
-mov   si, word ptr es:[di + 0Ah]
-mov   word ptr [bp - 010h], ax
-mov   word ptr [bp - 016h], si
-mov   si, word ptr es:[di + 0Ch]
-mov   es, word ptr [bp - 01Ah]
-mov   word ptr [bp - 018h], si
-mov   si, cx
+mov   word ptr [bp - 0Eh], ax
+mov   word ptr [bp - 0Ch], ax
+mov   word ptr [bp - 0Ah], ax
+
+mov   ax, es
 mov   word ptr [bp - 8], ax
-mov   cx, word ptr es:[si + 2]
-mov   si, word ptr [bp - 6]
+mov   word ptr [bp - 010h], ax
+
+
+;	int16_t linefrontsecnum = ld_physics->frontsecnum;
+;	int16_t linebacksecnum = ld_physics->backsecnum;
+
+mov   es, word ptr [bp - 2]
+
+; todo push?
+les   si, dword ptr es:[di + 0Ah]
+mov   word ptr [bp - 016h], si  ; frontsecnum
+mov   word ptr [bp - 018h], es  ; backsecnum
+mov   si, cx					; line index shifted 2
+mov   cx, LINES_SEGMENT
+mov   es, cx
+
+;	int16_t lineside1 = ld->sidenum[1];
+
+mov   cx, word ptr es:[si + 2]	; lineside1
 mov   word ptr [bp - 012h], cx
+
+; dx is linedx
+; bx is linedy
+
+;	if (linedx > 0) {
+;		lineright += linedx;
+;	} else if (linedx < 0){
+;		lineleft += linedx;
+;	}
+
+mov   si, word ptr [bp - 6] ; v1x?
 add   si, dx
 test  dx, dx
-jg    label_1
-jmp   label_2
-label_1:
+jg    add_to_lineright
+jnl   done_adding_linedx
+mov   word ptr [bp - 0Ah], si
+jmp   done_adding_linedx
+add_to_lineright:
 mov   word ptr [bp - 0Ch], si
-label_11:
+done_adding_linedx:
+
+;	if (linedy > 0) {
+;		linetop += linedy;
+;	} else if (linedy < 0) {
+;		linebot += linedy;
+;	}
+
+
+; ax is linebot
+
 test  bx, bx
-jg    label_3
-jmp   label_4
-label_3:
+jg    add_to_linetop
+jnl   done_adding_linedy
+add   ax, bx
+jmp   done_adding_linedy
+add_to_linetop:
 add   word ptr [bp - 8], bx
-label_9:
+done_adding_linedy:
+
+;	if (tmbbox[BOXLEFT].h.intbits >= lineright || tmbbox[BOXBOTTOM].h.intbits >= linetop
+;		|| ((tmbbox[BOXRIGHT].h.intbits < lineleft) || ((tmbbox[BOXRIGHT].h.intbits == lineleft   && tmbbox[BOXRIGHT].h.fracbits == 0)))
+;		|| ((tmbbox[BOXTOP].h.intbits < linebot) || ((tmbbox[BOXTOP].h.intbits   == linebot) &&  tmbbox[BOXTOP].h.fracbits == 0))
+;		) {
+;		
+; 		return true;
+;	}
+
 mov   si, OFFSET _tmbbox + (4 * BOXLEFT) + 2  ; intbits
 mov   cx, word ptr [si]
 cmp   cx, word ptr [bp - 0Ch]
@@ -3906,18 +3969,7 @@ pop   di
 pop   si
 pop   cx
 ret   
-label_2:
-jl    label_7
-jmp   label_11
-label_7:
-mov   word ptr [bp - 0Ah], si
-jmp   label_11
-label_4:
-jl    label_8
-jmp   label_9
-label_8:
-add   ax, bx
-jmp   label_9
+
 exit_checkline_return_0:
 xor   al, al
 LEAVE_MACRO 

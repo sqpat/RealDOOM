@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2083
+#define CONSTANTS_COUNT 2089
 #define LOCALS_COUNT 18 
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -169,8 +169,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "COLORMAPS_SEGMENT_MASKEDMAPPING",
     "SEG_SIDES_OFFSET_IN_SEGLINES",
 
-    "ML_TWOSIDED",
-    "ML_DONTPEGBOTTOM",
     "MAXLIGHTSCALE",
     "DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT",
     "FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT",
@@ -2150,8 +2148,15 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"ST_TURNCOUNT",
 	"ST_OUCHCOUNT",
 	"ST_RAMPAGEDELAY",
-	"ST_MUCHPAIN"
-
+	"ST_MUCHPAIN",
+	"ML_BLOCKING",
+	"ML_BLOCKMONSTERS",
+	"ML_TWOSIDED",
+	"ML_DONTPEGTOP",
+	"ML_DONTPEGBOTTOM",
+	"ML_SECRET",
+	"ML_SOUNDBLOCK",
+	"ML_DONTDRAW"
 
 
 
@@ -2316,8 +2321,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     colormaps_maskedmapping_seg_diff,
     colormaps_segment_maskedmapping,
     seg_sides_offset_in_seglines,
-    ML_TWOSIDED,
-    ML_DONTPEGBOTTOM,
     MAXLIGHTSCALE,
     dc_yl_lookup_maskedmapping_segment,
     floorclip_paragraph_aligned_segment,
@@ -4306,7 +4309,14 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	ST_OUCHCOUNT,
 	ST_RAMPAGEDELAY,
 	ST_MUCHPAIN
-
+	ML_BLOCKING,
+	ML_BLOCKMONSTERS,
+	ML_TWOSIDED,
+	ML_DONTPEGTOP,
+	ML_DONTPEGBOTTOM,
+	ML_SECRET,
+	ML_SOUNDBLOCK,
+	ML_DONTDRAW
 
 
 
