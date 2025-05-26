@@ -1717,6 +1717,8 @@ ENDP
 ;boolean __near P_BlockThingsIterator ( int16_t x, int16_t y, 
 ;boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) ){
 
+; todo di as func?
+
 PROC P_BlockThingsIterator_ NEAR
 PUBLIC P_BlockThingsIterator_
 
@@ -3439,6 +3441,8 @@ ENDP
 
 ; boolean __near DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) , int8_t returnOnFalse);
 
+; NOTE: tried selfmodifies here, but i think it is possible
+; to recursively call this via the func passed in.
 PROC DoBlockmapLoop_ NEAR
 PUBLIC DoBlockmapLoop_
 
@@ -3451,15 +3455,12 @@ PUBLIC DoBlockmapLoop_
 
 
 
-
 ;	if (xh >= bmapwidth) {
 ;		xh = bmapwidth - 1;
 ;	}
 ;	if (yh >= bmapheight) {
 ;		yh = bmapheight - 1;
 ;	}
-
-mov   word ptr cs:[SELFMODIFY_setblockmaploop_function+1], si
 
 cmp   bx, word ptr ds:[_bmapwidth]
 jnge  dont_cap_xh
@@ -3472,10 +3473,6 @@ jnge  dont_cap_yh
 mov   cx, word ptr ds:[_bmapheight]
 dec   cx
 dont_cap_yh:
-
-; set loop contstants
-mov   word ptr cs:[SELFMODIFY_compare_to_xh+1], bx
-mov   word ptr cs:[SELFMODIFY_compare_to_yh+2], cx
 
 ; bx/cx now free..
 
@@ -3495,7 +3492,6 @@ jnl   dont_set_yl_0
 xor   dx, dx		; cwd probably fine
 dont_set_yl_0:
 
-mov   word ptr cs:[SELFMODIFY_reset_by_to_yl+1], dx
 ; si gets DX by default from this self-modified move above
 
 
@@ -3511,11 +3507,19 @@ jg	  exit_doblockmaploop_return_0
 cmp   dx, cx
 jg	  exit_doblockmaploop_return_0
 
+; loop setup...
+
+push  bp
+mov   bp, sp
+
+push   dx  ; bp - 2
+push   si  ; bp - 4
+push   bx  ; bp - 6
+push   cx  ; bp - 8
+
+
 mov   cx, di  ; cx (cl) gets the boolean
-jcxz  dont_set_cx_1
-mov   cx, 1
-dont_set_cx_1:
-dec   cx
+dec   cx  ; if it was 1, now its 0.
 
 ;for (; xl <= xh; xl++) {
 ;		for (by = yl; by <= yh; by++) {
@@ -3531,13 +3535,11 @@ do_first_blockmaploop:
 
 mov   di, ax  ; backup ax in di for inner loop duration
 
-SELFMODIFY_reset_by_to_yl:
-mov   si, 01000h
+mov   si, [bp - 2]  ; by = yl
 do_second_blockmaploop:
 
-SELFMODIFY_setblockmaploop_function:
 ; ax already xl
-mov   bx, 01000h   ; set bx as func
+mov   bx, [bp - 4]
 mov   dx, si       ; set dx as by
 call  P_BlockThingsIterator_
 
@@ -3548,24 +3550,23 @@ mov   ax, di  ; retrieve ax
 
 inc   si
 
-SELFMODIFY_compare_to_yh:
-cmp   si, 01000h
+cmp   si, [bp - 8]
 jle   do_second_blockmaploop
 
 finish_blockmap_inner_loop_iter:
 inc   ax
 
-SELFMODIFY_compare_to_xh:
-cmp   ax, 01000h
+cmp    ax, [bp - 6]
 jle   do_first_blockmaploop
 
 
 exit_doblockmaploop_return_1:
 mov  al, 1
 exit_doblockmaploop_return_0_thru:
+LEAVE_MACRO
 ret   
 exit_doblockmaploop_return_0:
-xor  al, al
+xor  al, al  ; no stack frame cleanup!
 ret   
 
 ENDP
