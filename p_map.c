@@ -491,17 +491,17 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_p
 			tmthingTargettype = tmthingTarget->type;
 			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
 				// Don't hit same species as originator.
- 			if (thing == tmthingTarget) {
-					return true;
-				}
+				if (thing == tmthingTarget) {
+						return true;
+					}
 
-				if (thingtype != MT_PLAYER) {
-				// Explode, but do no damage.
-				// Let players missile other players.
+					if (thingtype != MT_PLAYER) {
+					// Explode, but do no damage.
+					// Let players missile other players.
 
-					return false;
+						return false;
+					}
 				}
-			}
 		}
 		if (! (thingflags1 & MF_SHOOTABLE) ) {
 			// didn't do any damage
@@ -562,6 +562,8 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_p
 //  numspeciallines
 //
 
+boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum );
+/*
 boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum ){
     int16_t			xl;
     int16_t			xh;
@@ -681,7 +683,7 @@ boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_u
 
 	return true;
 }
-
+*/
 
 //
 // P_TryMove

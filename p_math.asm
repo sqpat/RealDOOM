@@ -31,7 +31,6 @@ EXTRN P_Random_:NEAR
 EXTRN P_DamageMobj_:NEAR
 EXTRN P_SetMobjState_:NEAR
 EXTRN P_TouchSpecialThing_:NEAR
-EXTRN P_CheckPosition_:NEAR
 EXTRN P_CrossSpecialLine_:NEAR
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
@@ -4426,7 +4425,6 @@ ret
 
 ENDP
 
-COMMENT  @
 
 ; boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum );
 
@@ -4507,7 +4505,7 @@ SHIFT_MACRO shl   bx 4
 mov   es, ax
 mov   ax, word ptr es:[bx]
 add   bx, 2
-mov   word ptr ds:[_tmceilingz], ax
+mov   word ptr ds:[_tmdropoffz], ax
 mov   word ptr ds:[_tmfloorz], ax
 mov   ax, word ptr es:[bx]
 mov   bx, OFFSET _validcount_global
@@ -4519,7 +4517,7 @@ test  byte ptr ds:[_tmflags1+1], 010h
 je    label_24
 jmp   exit_checkthing_return_1_2
 label_24:
-mov   si, OFFSET _tmbbox + (4 * BOXRIGHT)
+mov   si, OFFSET _tmbbox + (4 * BOXLEFT) + 2
 mov   bx, OFFSET _bmaporgx
 mov   cx, word ptr [si]
 sub   cx, word ptr [bx]
@@ -4588,7 +4586,7 @@ mov   word ptr [bp - 4], si
 mov   si, OFFSET PIT_CheckThing_
 call  DoBlockmapLoop_
 test  al, al
-je    jump_to_exit_checkthing:
+je    jump_to_exit_checkthing
 cmp   word ptr [bp - 2], 0
 jl    jump_to_label_4
 label_17:
@@ -4603,7 +4601,7 @@ mov   ax, word ptr [bx]
 dec   ax
 mov   word ptr [bp - 8], ax
 label_21:
-mov   bx, OFFSEET _bmapheight
+mov   bx, OFFSET _bmapheight
 mov   ax, word ptr [bp - 4]
 cmp   ax, word ptr [bx]
 jge   jump_to_label_15
@@ -4682,6 +4680,8 @@ mov   word ptr [bp - 4], ax
 jmp   label_19
 
 ENDP
+
+COMMENT  @
 
 ; void __near P_SlideMove (){
 
