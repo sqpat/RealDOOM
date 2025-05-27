@@ -4043,7 +4043,7 @@ pop   si
 ret   
 
 ; bp - 2      thingtype
-; bp - 4      
+; bp - 4      solid
 ; bp - 6      tmthingpos offset
 ; bp - 8      thingz hi
 ; bp - 0Ah    tmthingz lo
@@ -4199,19 +4199,30 @@ not_skullfly_collision:
 test  byte ptr es:[di + 016h], MF_MISSILE  ;todo
 jne    do_missile_collision
 
+;    if (thingflags1 & MF_SPECIAL) {
+
 test  cl, MF_SPECIAL
 je    exit_checkthing_return_notsolid
+
+;		solid = thingflags1 &MF_SOLID;
+
 and   cl, MF_SOLID
 mov   byte ptr [bp - 4], cl
-test  byte ptr ds:[_tmflags1+1], 8
-je    label_26
-mov   cx, word ptr [bp - 01Ch]
+
+;		if (tmflags1&MF_PICKUP) {
+
+test  byte ptr ds:[_tmflags1+1], (MF_PICKUP SHR 8)
+je    dont_touch_anything
+
+;			P_TouchSpecialThing (thing, tmthing, thing_pos, tmthing_pos);
+
 push  es
-mov   dx, word ptr [bp - 0Eh]
 push  di
-mov   ax, si
+mov   cx, word ptr [bp - 01Ch]
+mov   dx, word ptr [bp - 0Eh]
+xchg  ax, si   ; get si in ax
 call  P_TouchSpecialThing_
-label_26:
+dont_touch_anything:
 cmp   byte ptr [bp - 4], 0
 jne   exit_checkthing_return_0_2
 jump_to_exit_checkthing_return_1_2:
@@ -4233,8 +4244,6 @@ ret
 
 
 
-jump_to_label_18:
-jmp   label_18
 jump_to_exit_checkthing_return_0:
 jmp   exit_checkthing_return_0
 jump_to_label_23:
@@ -4266,7 +4275,7 @@ add   bx, (_thinkerlist + 4)
 je    label_13
 mov   al, byte ptr [bx + 01Ah]
 cmp   al, byte ptr [bp - 2]
-jne   jump_to_label_18
+jne   label_18
 label_14:
 cmp   si, bx
 jne   label_19
@@ -4291,15 +4300,9 @@ do_skull_fly_into_thing:
 ;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 
 call  P_Random_
-xor   ah, ah
-mov   bx, ax
-mov   cx, ax
-sar   bx, 0Fh   ; todo
-xor   cx, bx
-sub   cx, bx
-and   cx, 7
-xor   cx, bx
-sub   cx, bx
+and   ax, 7
+inc   ax
+xchg  ax, cx
 mov   bx, word ptr ds:[_tmthing]
 mov   al, byte ptr [bx + 01Ah]
 
@@ -4308,41 +4311,36 @@ dw    GETDAMAGEADDR, INFOFUNCLOADSEGMENT
 
 ;		P_DamageMobj (thing, tmthing, tmthing, damage);
 
-mov   dl, al
-mov   ax, cx
-xor   dh, dh
-inc   ax
-imul  dx
+mul   cl
 mov   dx, word ptr ds:[_tmthing]
-mov   cx, ax
+xchg  ax, cx  ; cx gets mul result
 mov   bx, dx
 mov   ax, si
 call  P_DamageMobj_
 
 ;		tmthing_pos->flags2 &= ~MF_SKULLFLY;
-;		tmthing->momx.w = tmthing->momy.w = tmthing->momz.w = 0;
 
 les   bx, dword ptr ds:[_tmthing_pos]
 and   byte ptr es:[bx + 017h], ((NOT MF_SKULLFLY) SHR 8)  ; 0FEh
 mov   bx, word ptr ds:[_tmthing]
-mov   word ptr [bx + 016h], 0
-mov   ax, word ptr [bx + 016h]
+;		tmthing->momx.w = tmthing->momy.w = tmthing->momz.w = 0;
+xor   ax, ax
+mov   word ptr [bx + 018h], ax
+mov   word ptr [bx + 016h], ax
+mov   word ptr [bx + 014h], ax
 mov   word ptr [bx + 012h], ax
-mov   ax, word ptr [bx + 012h]
+mov   word ptr [bx + 010h], ax
 mov   word ptr [bx + 0Eh], ax
+
 mov   al, byte ptr [bx + 01Ah]
-xor   ah, ah
-imul  ax, ax, 0Bh   ;todo whats size 11
+mov   dl, SIZEOF_MOBJINFO_T
+mul   dl
 
 ;		P_SetMobjState (tmthing, mobjinfo[tmthing->type].spawnstate);
 
-mov   word ptr [bx + 018h], 0
-mov   dx, word ptr [bx + 018h]
-mov   word ptr [bx + 014h], dx
-mov   word ptr [bx + 010h], dx
-mov   si, ax
-mov   ax, bx
-mov   dx, word ptr ds:[si + _mobjinfo]
+
+xchg  ax, bx   ; ax gets tmthing from above, bx gets mobjinfo ptr
+mov   dx, word ptr ds:[bx + _mobjinfo]
 call  P_SetMobjState_
 exit_checkthing_return_0:
 xor   al, al

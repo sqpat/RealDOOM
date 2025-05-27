@@ -273,6 +273,7 @@ boolean __far P_GivePower (  int16_t /*powertype_t*/	power ) {
 //
 // P_TouchSpecialThing
 //
+// todo make it four offsets
 void __near P_TouchSpecialThing ( mobj_t __near*	special, mobj_t __near*	toucher, mobj_pos_t  __far*special_pos, mobj_pos_t  __far*toucher_pos ) {
     int8_t		i;
     fixed_t	delta;
