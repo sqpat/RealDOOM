@@ -4034,6 +4034,33 @@ ENDP
 
 ; boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos);
 
+; todo no stack frame or push pop di/si on this one
+exit_checkthing_return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+
+; bp - 2      thingtype
+; bp - 4      
+; bp - 6      tmthingpos offset
+; bp - 8      thingz hi
+; bp - 0Ah    tmthingz lo
+; bp - 0Ch    thingz lo
+; bp - 0Eh    tmthing
+; bp - 010h   thingy hi
+; bp - 012h   thingheight lo
+; bp - 014h   tmthingheight hi
+; bp - 016h   tmthingheight lo
+; bp - 018h   thingy lo
+; bp - 01Ah   thingheight hi
+; bp - 01Ch   MOBJPOSLIST_6800_SEGMENT
+; bp - 01Eh   thingradius hi
+; bp - 020h   tmthingtargetRef
+; bp - 022h   thingx hi
+; bp - 024h   thingx lo
+
 PROC PIT_CheckThing_ NEAR
 PUBLIC PIT_CheckThing_
 
@@ -4041,24 +4068,33 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 028h
+sub   sp, 024h
 mov   si, dx
 mov   word ptr [bp - 01Ch], cx
-mov   word ptr [bp - 028h], GETDAMAGEADDR
-mov   word ptr [bp - 026h], INFOFUNCLOADSEGMENT
+
+;	if (thing == tmthing) {
+;		return true;
+;	}
+
 cmp   dx, word ptr ds:[_tmthing]
 je    exit_checkthing_return_1
+
+;	thingflags1 = thing_pos->flags1;
+;	if (!(thingflags1 & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
+;			return true;
+;	}
 mov   es, cx
 mov   cx, word ptr es:[bx + 014h]
-test  cl, 7
-jne   label_1
-exit_checkthing_return_1:
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
-label_1:
+test  cl, (MF_SOLID OR MF_SPECIAL OR MF_SHOOTABLE)
+je    exit_checkthing_return_1
+
+; todo investigate not doing this..
+;	thingtype = thing->type;
+;	thingx = thing_pos->x;
+;	thingy = thing_pos->y;
+;	thingz = thing_pos->z;
+;	thingheight = thing->height;
+
 mov   al, byte ptr [si + 01Ah]
 mov   byte ptr [bp - 2], al
 mov   ax, word ptr es:[bx]
@@ -4078,6 +4114,11 @@ mov   word ptr [bp - 012h], ax
 mov   ax, word ptr [si + 0Ch]
 mov   di, word ptr ds:[_tmthing]
 mov   word ptr [bp - 01Ah], ax
+
+;	thingradius.h.intbits = thing->radius;
+;	thingradius.h.fracbits = 0;
+;	thingradius.h.intbits += tmthing->radius;
+
 mov   al, byte ptr [si + 01Eh]
 mov   dl, byte ptr [di + 01Eh]
 xor   ah, ah
@@ -4085,6 +4126,13 @@ mov   byte ptr [bp - 01Eh], dl
 mov   byte ptr [bp - 01Dh], ah
 mov   di, word ptr [bp - 01Eh]
 add   di, ax
+
+;    if ( labs(thingx.w - tmx.w) >= blockdist.w || labs(thingy.w - tmy.w) >= blockdist.w ) {
+;		// didn't hit it
+;			return true;
+;    }
+
+
 mov   ax, word ptr [bp - 024h]
 sub   ax, word ptr ds:[_tmx+0]
 mov   dx, word ptr [bp - 022h]
@@ -4095,9 +4143,9 @@ neg   ax
 adc   dx, 0
 neg   dx
 dont_neg_thing_x:
+
 cmp   dx, di
-jg    exit_checkthing_return_1
-je    exit_checkthing_return_1
+jge   exit_checkthing_return_1_3
 mov   ax, word ptr [bp - 018h]
 sub   ax, word ptr ds:[_tmy+0]
 mov   dx, word ptr [bp - 010h]
@@ -4109,11 +4157,12 @@ adc   dx, 0
 neg   dx
 dont_neg_thing_y:
 cmp   dx, di
-jle   label_20
-jump_to_exit_checkthing_return_1:
-jmp   exit_checkthing_return_1
-label_20:
-je    jump_to_exit_checkthing_return_1
+jge  exit_checkthing_return_1_3
+
+;	tmthingheight = tmthing->height;
+;	tmthingz = tmthing_pos->z;
+;	tmthingtargetRef = tmthing->targetRef;
+
 mov   di, word ptr ds:[_tmthing]
 mov   ax, word ptr [di + 0Ah]
 mov   word ptr [bp - 0Eh], di
@@ -4124,36 +4173,94 @@ mov   word ptr [bp - 014h], ax
 mov   ax, word ptr es:[di + 8]
 mov   word ptr [bp - 6], di
 mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[di + 0Ah]
+mov   ax, word ptr es:[di + 0Ah]  ; store tmthingz hi
 mov   di, word ptr [bp - 0Eh]
 mov   dx, word ptr [di + 022h]
 mov   di, word ptr [bp - 6]
 mov   word ptr [bp - 020h], dx
 test  byte ptr es:[di + 017h], 1  ;todo
-je    label_24
+je    not_skullfly_collision
+
+;    if (tmthing_pos->flags2 & MF_SKULLFLY) {
+
 jmp   do_skull_fly_into_thing
-label_24:
-test  byte ptr es:[di + 016h], 1  ;todo
-je    jump_to_label_17
+exit_checkthing_return_1_3:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+
+
+not_skullfly_collision:
+
+;    if (tmthing_pos->flags2 & MF_MISSILE) {
+
+test  byte ptr es:[di + 016h], MF_MISSILE  ;todo
+jne    do_missile_collision
+
+test  cl, MF_SPECIAL
+je    exit_checkthing_return_notsolid
+and   cl, MF_SOLID
+mov   byte ptr [bp - 4], cl
+test  byte ptr ds:[_tmflags1+1], 8
+je    label_26
+mov   cx, word ptr [bp - 01Ch]
+push  es
+mov   dx, word ptr [bp - 0Eh]
+push  di
+mov   ax, si
+call  P_TouchSpecialThing_
+label_26:
+cmp   byte ptr [bp - 4], 0
+jne   exit_checkthing_return_0_2
+jump_to_exit_checkthing_return_1_2:
+jmp   exit_checkthing_return_1
+exit_checkthing_return_0_2:
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+exit_checkthing_return_notsolid:
+test  cl, MF_SOLID
+je    jump_to_exit_checkthing_return_1_2
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+
+
+
+jump_to_label_18:
+jmp   label_18
+jump_to_exit_checkthing_return_0:
+jmp   exit_checkthing_return_0
+jump_to_label_23:
+jmp   label_23
+do_missile_collision:
 mov   bx, word ptr [bp - 0Ch]
 add   bx, word ptr [bp - 012h]
 mov   dx, word ptr [bp - 8]
 adc   dx, word ptr [bp - 01Ah]
 cmp   ax, dx
-jg    jump_to_exit_checkthing_return_1
+jg    exit_checkthing_return_1_3
 jne   label_21
 cmp   bx, word ptr [bp - 0Ah]
-jb    jump_to_exit_checkthing_return_1
+jb    exit_checkthing_return_1_3
 label_21:
 mov   dx, word ptr [bp - 0Ah]
 add   dx, word ptr [bp - 016h]
 adc   ax, word ptr [bp - 014h]
 cmp   ax, word ptr [bp - 8]
-jl    jump_to_exit_checkthing_return_1
+jl    exit_checkthing_return_1_3
 jne   label_22
 cmp   dx, word ptr [bp - 0Ch]
-jb    jump_to_exit_checkthing_return_1
+jb    exit_checkthing_return_1_3
 label_22:
+
+
 imul  bx, word ptr [bp - 020h], SIZEOF_THINKER_T
 add   bx, (_thinkerlist + 4)
 je    label_13
@@ -4177,17 +4284,12 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-jump_to_label_17:
-jmp   label_17
-jump_to_label_18:
-jmp   label_18
-jump_to_exit_checkthing_return_0:
-jmp   exit_checkthing_return_0
-jump_to_label_23:
-jmp   label_23
 
 ;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 do_skull_fly_into_thing:
+
+;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
+
 call  P_Random_
 xor   ah, ah
 mov   bx, ax
@@ -4200,7 +4302,9 @@ xor   cx, bx
 sub   cx, bx
 mov   bx, word ptr ds:[_tmthing]
 mov   al, byte ptr [bx + 01Ah]
-call  dword ptr [bp - 028h]   ; getDamage
+
+db    09Ah
+dw    GETDAMAGEADDR, INFOFUNCLOADSEGMENT
 
 ;		P_DamageMobj (thing, tmthing, tmthing, damage);
 
@@ -4274,7 +4378,10 @@ mov   di, word ptr ds:[_tmthing]
 and   cl, 7
 mov   al, byte ptr [di + 01Ah]
 xor   cx, dx
-call  dword ptr [bp - 028h]   ; todo getdamage
+
+db    09Ah
+dw    GETDAMAGEADDR, INFOFUNCLOADSEGMENT
+
 sub   cx, dx
 mov   dl, al
 mov   ax, cx
@@ -4290,38 +4397,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label_17:
-test  cl, 1
-je    label_25
-and   cl, 2
-mov   byte ptr [bp - 4], cl
-test  byte ptr ds:[_tmflags1+1], 8
-je    label_26
-mov   cx, word ptr [bp - 01Ch]
-push  es
-mov   dx, word ptr [bp - 0Eh]
-push  di
-mov   ax, si
-call  P_TouchSpecialThing_
-label_26:
-cmp   byte ptr [bp - 4], 0
-jne   exit_checkthing_return_0_2
-jump_to_exit_checkthing_return_1_2:
-jmp   exit_checkthing_return_1
-exit_checkthing_return_0_2:
-xor   al, al
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
-label_25:
-test  cl, 2
-je    jump_to_exit_checkthing_return_1_2
-xor   al, al
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
+
 
 ENDP
 
