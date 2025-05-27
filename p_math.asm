@@ -4494,90 +4494,87 @@ mov   word ptr [bx + 2], ax
 mov   ax, word ptr [bp + 0Eh]
 mov   word ptr [bx], si
 cmp   ax, 0FFFFh
-jne   label_6
-jmp   label_2
-label_6:
+jne   use_cached_secnum
+mov   ax, word ptr [bp - 0Ah]
+mov   bx, cx
+mov   dx, di
+mov   cx, word ptr [bp + 0Ch]
+call  R_PointInSubsector_
+mov   bx, ax
+mov   ax, SUBSECTORS_SEGMENT
+SHIFT_MACRO shl   bx 2
+mov   es, ax
+mov   ax, word ptr es:[bx]
+
+
+use_cached_secnum:
 mov   word ptr ds:[_lastcalculatedsector], ax
-mov   word ptr ds:[_ceilinglinenum], 0FFFFh
+mov   word ptr ds:[_ceilinglinenum], -1
 mov   bx, word ptr ds:[_lastcalculatedsector]
 mov   ax, SECTORS_SEGMENT
 SHIFT_MACRO shl   bx 4
 mov   es, ax
 mov   ax, word ptr es:[bx]
-add   bx, 2
 mov   word ptr ds:[_tmdropoffz], ax
 mov   word ptr ds:[_tmfloorz], ax
-mov   ax, word ptr es:[bx]
-mov   bx, OFFSET _validcount_global
+mov   ax, word ptr es:[bx+2]
 mov   word ptr ds:[_tmceilingz], ax
 xor   ax, ax
-inc   word ptr [bx]
+inc   word ptr ds:[_validcount_global]
 mov   word ptr ds:[_numspechit], ax
 test  byte ptr ds:[_tmflags1+1], 010h
 je    label_24
-jmp   exit_checkthing_return_1_2
+jmp   exit_checkposition_return_1_2
 label_24:
-mov   si, OFFSET _tmbbox + (4 * BOXLEFT) + 2
-mov   bx, OFFSET _bmaporgx
-mov   cx, word ptr [si]
-sub   cx, word ptr [bx]
+mov   cx, word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2]
+sub   cx, word ptr ds:[_bmaporgx]
 sub   cx, 020h
 mov   ax, cx
 xor   ah, ch
 and   al, 060h
-cmp   ax, 060h
-je    label_25
-jmp   label_26
-label_25:
 mov   dx, 1
+cmp   ax, 060h
+je    label_12
+dec   dx ; 0
 label_12:
-mov   bx, OFFSET _tmbbox + (4 * BOXRIGHT) + 2
-mov   si, OFFSET _bmaporgx
 mov   ax, cx
-mov   cx, word ptr [bx]
+mov   cx, word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2]
 sar   ax, 7
-sub   cx, word ptr [si]
+sub   cx, word ptr ds:[_bmaporgx]
 add   dx, ax
 add   cx, 020h ; todo
 mov   word ptr [bp - 2], dx
-test  cl, 060h  ; todo
-jne   label_22
-jmp   label_23
-label_22:
 xor   dx, dx
+test  cl, 060h  ; todo
+jne   label_13
+dec   dx  ; -1
 label_13:
-mov   si, OFFSET _tmbbox + (4 * BOXBOTTOM) + 2
-mov   di, OFFSET _bmaporgy
 mov   bx, cx
-mov   cx, word ptr [si]
+mov   cx, word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2]
 sar   bx, 7
-sub   cx, word ptr [di]
+sub   cx, word ptr ds:[_bmaporgy]
 add   dx, bx
 sub   cx, 020h
 mov   word ptr [bp - 8], dx
 mov   dx, cx
 xor   dh, ch
 and   dl, 060h
-cmp   dx, 060h
-je    label_10
-jmp   label_11
-label_10:
 mov   si, 1
+cmp   dx, 060h
+je    label_14
+dec   si ; 0
 label_14:
 mov   dx, cx
 sar   dx, 7
 add   si, dx
-mov   di, OFFSET _tmbbox + (4 * BOXTOP) + 2
 mov   word ptr [bp - 6], si
-mov   si, OFFSET _bmaporgy
-mov   cx, word ptr [di]
-sub   cx, word ptr [si]
+mov   cx, word ptr ds:[_tmbbox + (4 * BOXTOP) + 2]
+sub   cx, word ptr ds:[_bmaporgy]
 add   cx, 020h
-test  cl, 060h
-jne   label_9
-jmp   label_8
-label_9:
 xor   si, si
+test  cl, 060h
+jne   label_16
+dec   si ; -1
 label_16:
 sar   cx, 7
 add   si, cx
@@ -4586,12 +4583,14 @@ mov   word ptr [bp - 4], si
 mov   si, OFFSET PIT_CheckThing_
 call  DoBlockmapLoop_
 test  al, al
-je    jump_to_exit_checkthing
+je    exit_checkposition
 cmp   word ptr [bp - 2], 0
-jl    jump_to_label_4
+jnl   label_17
+mov   word ptr [bp - 2], 0
 label_17:
 cmp   word ptr [bp - 6], 0
-jl    jump_to_label_5
+jnl   label_18
+mov   word ptr [bp - 6], 0
 label_18:
 mov   bx, OFFSET _bmapwidth
 mov   ax, word ptr [bp - 8]
@@ -4604,80 +4603,44 @@ label_21:
 mov   bx, OFFSET _bmapheight
 mov   ax, word ptr [bp - 4]
 cmp   ax, word ptr [bx]
-jge   jump_to_label_15
+jnge  label_19
+mov   ax, word ptr [bx]
+dec   ax
+mov   word ptr [bp - 4], ax
+
 label_19:
-mov   si, OFFSET PIT_CheckLine_
+; si free
 label_3:
 mov   ax, word ptr [bp - 2]
 cmp   ax, word ptr [bp - 8]
-jg    exit_checkthing_return_1_2
+jg    exit_checkposition_return_1_2
 mov   cx, word ptr [bp - 6]
 cmp   cx, word ptr [bp - 4]
 jg    label_7
 label_20:
 mov   ax, word ptr [bp - 2]
-mov   bx, si
+mov   bx, OFFSET PIT_CheckLine_
 mov   dx, cx
 call  P_BlockLinesIterator_
 test  al, al
-je    exit_checkthing
+je    exit_checkposition  ; return 0
 inc   cx
 cmp   cx, word ptr [bp - 4]
 jle   label_20
 label_7:
 inc   word ptr [bp - 2]
 jmp   label_3
-jump_to_exit_checkthing:
-jmp   exit_checkthing
-jump_to_label_4:
-jmp   label_4
-label_2:
-mov   ax, word ptr [bp - 0Ah]
-mov   bx, cx
-mov   dx, di
-mov   cx, word ptr [bp + 0Ch]
-call  R_PointInSubsector_
-mov   bx, ax
-mov   ax, SUBSECTORS_SEGMENT
-SHIFT_MACRO shl   bx 2
-mov   es, ax
-mov   ax, word ptr es:[bx]
-jmp   label_6
-jump_to_label_5:
-jmp   label_5
-exit_checkthing_return_1_2:
+
+exit_checkposition_return_1_2:
 mov   al, 1
-exit_checkthing:
+exit_checkposition:
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
 ret   6
-label_26:
-xor   dx, dx
-jmp   label_12
-label_23:
-mov   dx, 0FFFFh
-jmp   label_13
-label_11:
-xor   si, si
-jmp   label_14
-jump_to_label_15:
-jmp   label_15
-label_8:
-mov   si, 0FFFFh
-jmp   label_16
-label_4:
-mov   word ptr [bp - 2], 0
-jmp   label_17
-label_5:
-mov   word ptr [bp - 6], 0
-jmp   label_18
-label_15:
-mov   ax, word ptr [bx]
-dec   ax
-mov   word ptr [bp - 4], ax
-jmp   label_19
+
+
 
 ENDP
 

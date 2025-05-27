@@ -562,6 +562,8 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_p
 //  numspeciallines
 //
 
+// put oldsecnum second...
+
 boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum );
 /*
 boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum ){
