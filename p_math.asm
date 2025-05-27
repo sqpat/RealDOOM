@@ -792,7 +792,6 @@ je    sign_check_failed
 xor   dx, word ptr ds:[_trace + 0Eh]
 test  dh, 080h
 je    return_0_pointondivlineside
-jump_to_return_1_pointondivlineside:
 jmp   return_1_pointondivlineside
 return_0_pointondivlineside:
 xor   al, al
@@ -4041,7 +4040,7 @@ ret
 
 ; bp - 2      thingtype
 ; bp - 4      solid
-; bp - 6      UNUSED
+; bp - 6      thing (bx param)
 ; bp - 8      thingz hi
 ; bp - 0Ah    tmthingz lo
 ; bp - 0Ch    thingz lo
@@ -4248,8 +4247,6 @@ ret
 
 
 
-jump_to_exit_checkthing_return_0:
-jmp   exit_checkthing_return_0
 do_missile_collision:
 
 ;		// see if it went over / under
@@ -4268,7 +4265,7 @@ cmp   bx, word ptr [bp - 0Ah]
 jb    exit_checkthing_return_1_3
 did_not_go_over:
 
-; todo reuse tmthingz?
+;  reuse tmthingz in ax
 
 ;		if (tmthingz.w + tmthingheight.w < thingz.w) {
 ;			return true;		// underneath
@@ -4286,28 +4283,47 @@ did_not_go_under:
 
 ; tmthingtarget
 
-; TODO TODO this looks buggy! check if tmthingtargetref is NULL_THINKERREF
-;		tmthingTarget = (mobj_t __near*)&thinkerlist[tmthingtargetRef].data;
 
 ;		if (tmthingTarget) {
 
-imul  bx, word ptr [bp - 020h], SIZEOF_THINKER_T
+mov   ax, word ptr [bp - 020h]
+test  ax, ax  ; NULL_THINKERREF check
+je    good_missile_target  
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	imul  bx, ax, SIZEOF_THINKER_T
 add   bx, (_thinkerlist + 4)
-je    no_missile_target
+ELSE
+	mov   bx, SIZEOF_THINKER_T
+	mul   bx
+	add   ax, (_thinkerlist + 4)
+	xchg  ax, bx
+ENDIF
+
 mov   al, byte ptr [bx + 01Ah]
-cmp   al, byte ptr [bp - 2]
-jne   label_18
-continue_missile_check:
+mov   ah, byte ptr [bp - 2]    ; get thingtype in ah
+cmp   al, ah
+je    dont_damage_target
+
+; do_bruiser_knight_check
+;			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
+
+cmp   ax, MT_KNIGHT + (MT_BRUISER SHL 8)
+je    dont_damage_target
+cmp   ax, MT_BRUISER + (MT_KNIGHT SHL 8)
+jne   good_missile_target
+
+dont_damage_target:
 cmp   si, bx
 je    exit_checkthing_return_1_3
 
-cmp   byte ptr [bp - 2], 0
-jne   jump_to_exit_checkthing_return_0
-no_missile_target:
+cmp   ah, MT_PLAYER
+jne   exit_checkthing_return_0
+good_missile_target:
 test  cl, MF_SHOOTABLE
-jne   label_23
+jne   do_missile_damage
 test  cl, MF_SOLID
-jne   jump_to_exit_checkthing_return_0
+jne   exit_checkthing_return_0
 mov   al, 1
 LEAVE_MACRO 
 pop   di
@@ -4331,10 +4347,10 @@ dw    GETDAMAGEADDR, INFOFUNCLOADSEGMENT
 
 ;		P_DamageMobj (thing, tmthing, tmthing, damage);
 
-mul   cl
-mov   dx, word ptr ds:[_tmthing]
-xchg  ax, cx  ; cx gets mul result
-mov   bx, dx
+mul   cl ; this will fill up the queue so use mov not xchg
+
+mov   dx, bx   ; tmthing
+mov   cx, ax   ; cx gets mul result
 mov   ax, si
 call  P_DamageMobj_
 
@@ -4373,51 +4389,31 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label_18:
 
-;			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
 
-cmp   al, MT_KNIGHT
-jne   not_knight_or_bruiser_interaction
-cmp   byte ptr [bp - 2], MT_BRUISER
-jne   not_knight_or_bruiser_interaction
-jump_to_label_14:
-jmp   continue_missile_check
-not_knight_or_bruiser_interaction:
-cmp   al, MT_BRUISER
-je    continue_knightbruiser_check_in_reverse
-jmp   no_missile_target
-continue_knightbruiser_check_in_reverse:
-cmp   byte ptr [bp - 2], MT_KNIGHT
-je    jump_to_label_14
-jmp   no_missile_target
+do_missile_damage:
 
-label_23:
+; bx is tmthingtarget
+;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
+
 call  P_Random_
-xor   ah, ah
-mov   dx, ax
-mov   cx, ax
-sar   dx, 0Fh;  todo
-xor   cx, dx
-sub   cx, dx
-xor   ch, ch
+and   ax, 7
+inc   ax
+xchg  ax, cx  ; store random in cl. keep ah 0
 mov   di, word ptr ds:[_tmthing]
-and   cl, 7
 mov   al, byte ptr [di + 01Ah]
-xor   cx, dx
+
 
 db    09Ah
 dw    GETDAMAGEADDR, INFOFUNCLOADSEGMENT
 
-sub   cx, dx
-mov   dl, al
-mov   ax, cx
-xor   dh, dh
-inc   ax
-imul  dx
-mov   dx, word ptr ds:[_tmthing]
-mov   cx, ax
-mov   ax, si
+mul   cl ; this will fill up the queue so use mov not xchg
+
+;		P_DamageMobj (thing, tmthing, tmthingTarget, damage);
+
+mov   cx, ax   ; cx gets mul result
+mov   dx, di   ; tmthing
+mov   ax, si   ; ax gets thing ptr   
 call  P_DamageMobj_
 xor   al, al
 LEAVE_MACRO 

@@ -2089,6 +2089,7 @@ ML_DONTPEGBOTTOM = 010h
 ML_SECRET = 020h
 ML_SOUNDBLOCK = 040h
 ML_DONTDRAW = 080h
+NULL_THINKERREF = 00h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h
