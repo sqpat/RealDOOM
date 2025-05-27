@@ -18,7 +18,6 @@ file st_init.obj
 file r_init.obj
 file w_init.obj
 file i_init.obj
-file z_umb.obj
 file z_init.obj
 file p_init.obj
 
@@ -36,7 +35,6 @@ file st_stuff.obj
 file hu_stuff.obj
 file hu_lib.obj
 file m_menu.obj
-file sounds.obj
 file d_algo.obj
 file dmx.obj
 file d_int.obj
@@ -63,7 +61,6 @@ file p_floor.obj
 file p_inter.obj
 file p_lights.obj
 file p_map.obj
-file p_maputl.obj
 file p_math.obj
 file p_plats.obj
 file p_pspr.obj

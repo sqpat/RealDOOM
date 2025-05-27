@@ -411,6 +411,9 @@ boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 //
 // PIT_CheckThing
 //
+boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos);
+
+/*
 boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos){
     fixed_t_union blockdist;
     boolean		solid;
@@ -528,7 +531,7 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_p
 
     return !(thingflags1 & MF_SOLID);
 }
-
+*/
 
 //
 // MOVEMENT CLIPPING

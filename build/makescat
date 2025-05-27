@@ -65,7 +65,6 @@ GLOBOBJS = &
  p_inter.obj &
  p_lights.obj &
  p_map.obj &
- p_maputl.obj &
  p_math.obj &
  p_plats.obj &
  p_pspr.obj &
@@ -89,7 +88,6 @@ GLOBOBJS = &
  w_wad.obj &
  v_video.obj &
  z_init.obj &
- z_umb.obj &
  z_zone.obj &
  z_scat.obj &
  st_init.obj &
@@ -100,7 +98,6 @@ GLOBOBJS = &
  hu_lib.obj &
  s_sound.obj &
  s_sbsfx.obj &
- sounds.obj &
  info.obj &
  d_math.obj &
  dmx.obj &

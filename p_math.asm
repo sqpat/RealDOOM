@@ -27,6 +27,10 @@ EXTRN P_UseSpecialLine_:PROC
 EXTRN FixedMulTrigNoShift_:PROC
 EXTRN R_PointToAngle2_16_:PROC
 EXTRN R_PointToAngle2_:PROC
+EXTRN P_Random_:NEAR
+EXTRN P_DamageMobj_:NEAR
+EXTRN P_SetMobjState_:NEAR
+EXTRN P_TouchSpecialThing_:NEAR
 EXTRN P_CheckPosition_:NEAR
 EXTRN P_CrossSpecialLine_:NEAR
 INCLUDE CONSTANT.INC
@@ -35,6 +39,8 @@ INSTRUCTION_SET_MACRO
 
 .DATA
 
+EXTRN _tmy:DWORD
+EXTRN _tmx:DWORD
 EXTRN _tmymove:DWORD
 EXTRN _tmxmove:DWORD
 EXTRN _tmceilingz:WORD
@@ -42,6 +48,7 @@ EXTRN _tmfloorz:WORD
 EXTRN _tmthing:WORD
 EXTRN _tmthing_pos:WORD
 EXTRN _tmdropoffz:WORD
+EXTRN _tmflags1:WORD
 EXTRN _ceilinglinenum:WORD
 EXTRN _trace:WORD
 EXTRN _lineopening:WORD
@@ -4024,262 +4031,301 @@ ret
 
 ENDP
 
-COMMENT  @
 
 ; boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos);
 
 PROC PIT_CheckThing_ NEAR
 PUBLIC PIT_CheckThing_
 
-0x0000000000000000:  56                push  si
-0x0000000000000001:  57                push  di
-0x0000000000000002:  55                push  bp
-0x0000000000000003:  89 E5             mov   bp, sp
-0x0000000000000005:  83 EC 28          sub   sp, 028h
-0x0000000000000008:  89 D6             mov   si, dx
-0x000000000000000a:  89 4E E4          mov   word ptr [bp - 01Ch], cx
-0x000000000000000d:  C7 46 D8 DA 02    mov   word ptr [bp - 028h], 0x2da
-0x0000000000000012:  C7 46 DA D9 92    mov   word ptr [bp - 026h], 0x92d9
-0x0000000000000017:  3B 16 00 1F       cmp   dx, word ptr ds:[_tmthing]
-0x000000000000001b:  74 0B             je    028h
-0x000000000000001d:  8E C1             mov   es, cx
-0x000000000000001f:  26 8B 4F 14       mov   cx, word ptr es:[bx + 014h]
-0x0000000000000023:  F6 C1 07          test  cl, 7
-0x0000000000000026:  75 06             jne   0x2e
-0x0000000000000028:  B0 01             mov   al, 1
-0x000000000000002a:  C9                LEAVE_MACRO 
-0x000000000000002b:  5F                pop   di
-0x000000000000002c:  5E                pop   si
-0x000000000000002d:  C3                ret   
-0x000000000000002e:  8A 44 1A          mov   al, byte ptr [si + 01Ah]
-0x0000000000000031:  88 46 FE          mov   byte ptr [bp - 2], al
-0x0000000000000034:  26 8B 07          mov   ax, word ptr es:[bx]
-0x0000000000000037:  89 46 DC          mov   word ptr [bp - 024h], ax
-0x000000000000003a:  26 8B 47 02       mov   ax, word ptr es:[bx + 2]
-0x000000000000003e:  89 46 DE          mov   word ptr [bp - 022h], ax
-0x0000000000000041:  26 8B 47 04       mov   ax, word ptr es:[bx + 4]
-0x0000000000000045:  89 46 E8          mov   word ptr [bp - 018h], ax
-0x0000000000000048:  26 8B 47 06       mov   ax, word ptr es:[bx + 6]
-0x000000000000004c:  89 46 F0          mov   word ptr [bp - 010h], ax
-0x000000000000004f:  26 8B 47 08       mov   ax, word ptr es:[bx + 8]
-0x0000000000000053:  89 46 F4          mov   word ptr [bp - 0Ch], ax
-0x0000000000000056:  26 8B 47 0A       mov   ax, word ptr es:[bx + 0Ah]
-0x000000000000005a:  89 46 F8          mov   word ptr [bp - 8], ax
-0x000000000000005d:  8B 44 0A          mov   ax, word ptr [si + 0Ah]
-0x0000000000000060:  89 46 EE          mov   word ptr [bp - 012h], ax
-0x0000000000000063:  8B 44 0C          mov   ax, word ptr [si + 0Ch]
-0x0000000000000066:  8B 3E 00 1F       mov   di, word ptr ds:[_tmthing]
-0x000000000000006a:  89 46 E6          mov   word ptr [bp - 01Ah], ax
-0x000000000000006d:  8A 44 1E          mov   al, byte ptr [si + 01Eh]
-0x0000000000000070:  8A 55 1E          mov   dl, byte ptr [di + 01Eh]
-0x0000000000000073:  30 E4             xor   ah, ah
-0x0000000000000075:  88 56 E2          mov   byte ptr [bp - 01Eh], dl
-0x0000000000000078:  88 66 E3          mov   byte ptr [bp - 0x1d], ah
-0x000000000000007b:  8B 7E E2          mov   di, word ptr [bp - 01Eh]
-0x000000000000007e:  01 C7             add   di, ax
-0x0000000000000080:  8B 46 DC          mov   ax, word ptr [bp - 024h]
-0x0000000000000083:  2B 06 B0 1C       sub   ax, word ptr [0x1cb0]
-0x0000000000000087:  8B 56 DE          mov   dx, word ptr [bp - 022h]
-0x000000000000008a:  1B 16 B2 1C       sbb   dx, word ptr [0x1cb2]
-0x000000000000008e:  0B D2             or    dx, dx
-0x0000000000000090:  7D 07             jge   0x99
-0x0000000000000092:  F7 D8             neg   ax
-0x0000000000000094:  83 D2 00          adc   dx, 0
-0x0000000000000097:  F7 DA             neg   dx
-0x0000000000000099:  39 FA             cmp   dx, di
-0x000000000000009b:  7F 8B             jg    028h
-0x000000000000009d:  74 89             je    028h
-0x000000000000009f:  8B 46 E8          mov   ax, word ptr [bp - 018h]
-0x00000000000000a2:  2B 06 AC 1C       sub   ax, word ptr [0x1cac]
-0x00000000000000a6:  8B 56 F0          mov   dx, word ptr [bp - 010h]
-0x00000000000000a9:  1B 16 AE 1C       sbb   dx, word ptr [0x1cae]
-0x00000000000000ad:  0B D2             or    dx, dx
-0x00000000000000af:  7D 07             jge   0xb8
-0x00000000000000b1:  F7 D8             neg   ax
-0x00000000000000b3:  83 D2 00          adc   dx, 0
-0x00000000000000b6:  F7 DA             neg   dx
-0x00000000000000b8:  39 FA             cmp   dx, di
-0x00000000000000ba:  7E 03             jle   0xbf
-0x00000000000000bc:  E9 69 FF          jmp   028h
-0x00000000000000bf:  74 FB             je    0xbc
-0x00000000000000c1:  8B 3E 00 1F       mov   di, word ptr ds:[_tmthing]
-0x00000000000000c5:  8B 45 0A          mov   ax, word ptr [di + 0Ah]
-0x00000000000000c8:  89 7E F2          mov   word ptr [bp - 0Eh], di
-0x00000000000000cb:  89 46 EA          mov   word ptr [bp - 016h], ax
-0x00000000000000ce:  8B 45 0C          mov   ax, word ptr [di + 0Ch]
-0x00000000000000d1:  C4 3E B4 1C       les   di, dword ptr ds:[_tmthing_pos]
-0x00000000000000d5:  89 46 EC          mov   word ptr [bp - 014h], ax
-0x00000000000000d8:  26 8B 45 08       mov   ax, word ptr es:[di + 8]
-0x00000000000000dc:  89 7E FA          mov   word ptr [bp - 6], di
-0x00000000000000df:  89 46 F6          mov   word ptr [bp - 0Ah], ax
-0x00000000000000e2:  26 8B 45 0A       mov   ax, word ptr es:[di + 0Ah]
-0x00000000000000e6:  8B 7E F2          mov   di, word ptr [bp - 0Eh]
-0x00000000000000e9:  8B 55 22          mov   dx, word ptr [di + 022h]
-0x00000000000000ec:  8B 7E FA          mov   di, word ptr [bp - 6]
-0x00000000000000ef:  89 56 E0          mov   word ptr [bp - 020h], dx
-0x00000000000000f2:  26 F6 45 17 01    test  byte ptr es:[di + 0x17], 1
-0x00000000000000f7:  74 03             je    0xfc
-0x00000000000000f9:  E9 6D 00          jmp   0x169
-0x00000000000000fc:  26 F6 45 16 01    test  byte ptr es:[di + 016h], 1
-0x0000000000000101:  74 5B             je    0x15e
-0x0000000000000103:  8B 5E F4          mov   bx, word ptr [bp - 0Ch]
-0x0000000000000106:  03 5E EE          add   bx, word ptr [bp - 012h]
-0x0000000000000109:  8B 56 F8          mov   dx, word ptr [bp - 8]
-0x000000000000010c:  13 56 E6          adc   dx, word ptr [bp - 01Ah]
-0x000000000000010f:  39 D0             cmp   ax, dx
-0x0000000000000111:  7F A9             jg    0xbc
-0x0000000000000113:  75 05             jne   0x11a
-0x0000000000000115:  3B 5E F6          cmp   bx, word ptr [bp - 0Ah]
-0x0000000000000118:  72 A2             jb    0xbc
-0x000000000000011a:  8B 56 F6          mov   dx, word ptr [bp - 0Ah]
-0x000000000000011d:  03 56 EA          add   dx, word ptr [bp - 016h]
-0x0000000000000120:  13 46 EC          adc   ax, word ptr [bp - 014h]
-0x0000000000000123:  3B 46 F8          cmp   ax, word ptr [bp - 8]
-0x0000000000000126:  7C 94             jl    0xbc
-0x0000000000000128:  75 05             jne   0x12f
-0x000000000000012a:  3B 56 F4          cmp   dx, word ptr [bp - 0Ch]
-0x000000000000012d:  72 8D             jb    0xbc
-0x000000000000012f:  6B 5E E0 2C       imul  bx, word ptr [bp - 020h], 0x2c
-0x0000000000000133:  81 C3 04 40       add   bx, 0x4004
-0x0000000000000137:  74 15             je    0x14e
-0x0000000000000139:  8A 47 1A          mov   al, byte ptr [bx + 01Ah]
-0x000000000000013c:  3A 46 FE          cmp   al, byte ptr [bp - 2]
-0x000000000000013f:  75 20             jne   0x161
-0x0000000000000141:  39 DE             cmp   si, bx
-0x0000000000000143:  75 03             jne   0x148
-0x0000000000000145:  E9 E0 FE          jmp   028h
-0x0000000000000148:  80 7E FE 00       cmp   byte ptr [bp - 2], 0
-0x000000000000014c:  75 16             jne   0x164
-0x000000000000014e:  F6 C1 04          test  cl, 4
-0x0000000000000151:  75 13             jne   0x166
-0x0000000000000153:  F6 C1 02          test  cl, 2
-0x0000000000000156:  75 0C             jne   0x164
-0x0000000000000158:  B0 01             mov   al, 1
-0x000000000000015a:  C9                LEAVE_MACRO 
-0x000000000000015b:  5F                pop   di
-0x000000000000015c:  5E                pop   si
-0x000000000000015d:  C3                ret   
-0x000000000000015e:  E9 E2 00          jmp   0x243
-0x0000000000000161:  E9 85 00          jmp   0x1e9
-0x0000000000000164:  EB 7D             jmp   0x1e3
-0x0000000000000166:  E9 9D 00          jmp   0x206
-0x0000000000000169:  E8 46 51          call  0x52b2
-0x000000000000016c:  30 E4             xor   ah, ah
-0x000000000000016e:  89 C3             mov   bx, ax
-0x0000000000000170:  89 C1             mov   cx, ax
-0x0000000000000172:  C1 FB 0F          sar   bx, 0xf
-0x0000000000000175:  31 D9             xor   cx, bx
-0x0000000000000177:  29 D9             sub   cx, bx
-0x0000000000000179:  83 E1 07          and   cx, 7
-0x000000000000017c:  31 D9             xor   cx, bx
-0x000000000000017e:  29 D9             sub   cx, bx
-0x0000000000000180:  8B 1E 00 1F       mov   bx, word ptr ds:[_tmthing]
-0x0000000000000184:  8A 47 1A          mov   al, byte ptr [bx + 01Ah]
-0x0000000000000187:  FF 5E D8          lcall [bp - 028h]
-0x000000000000018a:  88 C2             mov   dl, al
-0x000000000000018c:  89 C8             mov   ax, cx
-0x000000000000018e:  30 F6             xor   dh, dh
-0x0000000000000190:  40                inc   ax
-0x0000000000000191:  F7 EA             imul  dx
-0x0000000000000193:  8B 16 00 1F       mov   dx, word ptr ds:[_tmthing]
-0x0000000000000197:  89 C1             mov   cx, ax
-0x0000000000000199:  89 D3             mov   bx, dx
-0x000000000000019b:  89 F0             mov   ax, si
-0x000000000000019d:  E8 1A F3          call  0xf4ba
-0x00000000000001a0:  C4 1E B4 1C       les   bx, dword ptr ds:[_tmthing_pos]
-0x00000000000001a4:  26 80 67 17 FE    and   byte ptr es:[bx + 0x17], 0xfe
-0x00000000000001a9:  8B 1E 00 1F       mov   bx, word ptr ds:[_tmthing]
-0x00000000000001ad:  C7 47 16 00 00    mov   word ptr [bx + 016h], 0
-0x00000000000001b2:  8B 47 16          mov   ax, word ptr [bx + 016h]
-0x00000000000001b5:  89 47 12          mov   word ptr [bx + 012h], ax
-0x00000000000001b8:  8B 47 12          mov   ax, word ptr [bx + 012h]
-0x00000000000001bb:  89 47 0E          mov   word ptr [bx + 0Eh], ax
-0x00000000000001be:  8A 47 1A          mov   al, byte ptr [bx + 01Ah]
-0x00000000000001c1:  30 E4             xor   ah, ah
-0x00000000000001c3:  6B C0 0B          imul  ax, ax, 0xb
-0x00000000000001c6:  C7 47 18 00 00    mov   word ptr [bx + 018h], 0
-0x00000000000001cb:  8B 57 18          mov   dx, word ptr [bx + 018h]
-0x00000000000001ce:  89 57 14          mov   word ptr [bx + 014h], dx
-0x00000000000001d1:  89 57 10          mov   word ptr [bx + 010h], dx
-0x00000000000001d4:  89 C6             mov   si, ax
-0x00000000000001d6:  89 D8             mov   ax, bx
-0x00000000000001d8:  8B 94 60 D0       mov   dx, word ptr [si - 0x2fa0]
-0x00000000000001dc:  81 C6 60 D0       add   si, 0xd060
-0x00000000000001e0:  E8 C3 65          call  0x67a6
-0x00000000000001e3:  30 C0             xor   al, al
-0x00000000000001e5:  C9                LEAVE_MACRO 
-0x00000000000001e6:  5F                pop   di
-0x00000000000001e7:  5E                pop   si
-0x00000000000001e8:  C3                ret   
-0x00000000000001e9:  3C 11             cmp   al, 0x11
-0x00000000000001eb:  75 09             jne   0x1f6
-0x00000000000001ed:  80 7E FE 0F       cmp   byte ptr [bp - 2], 0xf
-0x00000000000001f1:  75 03             jne   0x1f6
-0x00000000000001f3:  E9 4B FF          jmp   0x141
-0x00000000000001f6:  3C 0F             cmp   al, 0xf
-0x00000000000001f8:  74 03             je    0x1fd
-0x00000000000001fa:  E9 51 FF          jmp   0x14e
-0x00000000000001fd:  80 7E FE 11       cmp   byte ptr [bp - 2], 0x11
-0x0000000000000201:  74 F0             je    0x1f3
-0x0000000000000203:  E9 48 FF          jmp   0x14e
-0x0000000000000206:  E8 A9 50          call  0x52b2
-0x0000000000000209:  30 E4             xor   ah, ah
-0x000000000000020b:  89 C2             mov   dx, ax
-0x000000000000020d:  89 C1             mov   cx, ax
-0x000000000000020f:  C1 FA 0F          sar   dx, 0xf
-0x0000000000000212:  31 D1             xor   cx, dx
-0x0000000000000214:  29 D1             sub   cx, dx
-0x0000000000000216:  30 ED             xor   ch, ch
-0x0000000000000218:  8B 3E 00 1F       mov   di, word ptr ds:[_tmthing]
-0x000000000000021c:  80 E1 07          and   cl, 7
-0x000000000000021f:  8A 45 1A          mov   al, byte ptr [di + 01Ah]
-0x0000000000000222:  31 D1             xor   cx, dx
-0x0000000000000224:  FF 5E D8          lcall [bp - 028h]
-0x0000000000000227:  29 D1             sub   cx, dx
-0x0000000000000229:  88 C2             mov   dl, al
-0x000000000000022b:  89 C8             mov   ax, cx
-0x000000000000022d:  30 F6             xor   dh, dh
-0x000000000000022f:  40                inc   ax
-0x0000000000000230:  F7 EA             imul  dx
-0x0000000000000232:  8B 16 00 1F       mov   dx, word ptr ds:[_tmthing]
-0x0000000000000236:  89 C1             mov   cx, ax
-0x0000000000000238:  89 F0             mov   ax, si
-0x000000000000023a:  E8 7D F2          call  0xf4ba
-0x000000000000023d:  30 C0             xor   al, al
-0x000000000000023f:  C9                LEAVE_MACRO 
-0x0000000000000240:  5F                pop   di
-0x0000000000000241:  5E                pop   si
-0x0000000000000242:  C3                ret   
-0x0000000000000243:  F6 C1 01          test  cl, 1
-0x0000000000000246:  74 29             je    0x271
-0x0000000000000248:  80 E1 02          and   cl, 2
-0x000000000000024b:  88 4E FC          mov   byte ptr [bp - 4], cl
-0x000000000000024e:  F6 06 0B 1F 08    test  byte ptr ds:[_tmflags1+1], 8
-0x0000000000000253:  74 0D             je    0x262
-0x0000000000000255:  8B 4E E4          mov   cx, word ptr [bp - 01Ch]
-0x0000000000000258:  06                push  es
-0x0000000000000259:  8B 56 F2          mov   dx, word ptr [bp - 0Eh]
-0x000000000000025c:  57                push  di
-0x000000000000025d:  89 F0             mov   ax, si
-0x000000000000025f:  E8 BC EB          call  0xee1e
-0x0000000000000262:  80 7E FC 00       cmp   byte ptr [bp - 4], 0
-0x0000000000000266:  75 03             jne   0x26b
-0x0000000000000268:  E9 BD FD          jmp   028h
-0x000000000000026b:  30 C0             xor   al, al
-0x000000000000026d:  C9                LEAVE_MACRO 
-0x000000000000026e:  5F                pop   di
-0x000000000000026f:  5E                pop   si
-0x0000000000000270:  C3                ret   
-0x0000000000000271:  F6 C1 02          test  cl, 2
-0x0000000000000274:  74 F2             je    0x268
-0x0000000000000276:  30 C0             xor   al, al
-0x0000000000000278:  C9                LEAVE_MACRO 
-0x0000000000000279:  5F                pop   di
-0x000000000000027a:  5E                pop   si
-0x000000000000027b:  C3                ret   
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 028h
+mov   si, dx
+mov   word ptr [bp - 01Ch], cx
+mov   word ptr [bp - 028h], GETDAMAGEADDR
+mov   word ptr [bp - 026h], INFOFUNCLOADSEGMENT
+cmp   dx, word ptr ds:[_tmthing]
+je    exit_checkthing_return_1
+mov   es, cx
+mov   cx, word ptr es:[bx + 014h]
+test  cl, 7
+jne   label_1
+exit_checkthing_return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+label_1:
+mov   al, byte ptr [si + 01Ah]
+mov   byte ptr [bp - 2], al
+mov   ax, word ptr es:[bx]
+mov   word ptr [bp - 024h], ax
+mov   ax, word ptr es:[bx + 2]
+mov   word ptr [bp - 022h], ax
+mov   ax, word ptr es:[bx + 4]
+mov   word ptr [bp - 018h], ax
+mov   ax, word ptr es:[bx + 6]
+mov   word ptr [bp - 010h], ax
+mov   ax, word ptr es:[bx + 8]
+mov   word ptr [bp - 0Ch], ax
+mov   ax, word ptr es:[bx + 0Ah]
+mov   word ptr [bp - 8], ax
+mov   ax, word ptr [si + 0Ah]
+mov   word ptr [bp - 012h], ax
+mov   ax, word ptr [si + 0Ch]
+mov   di, word ptr ds:[_tmthing]
+mov   word ptr [bp - 01Ah], ax
+mov   al, byte ptr [si + 01Eh]
+mov   dl, byte ptr [di + 01Eh]
+xor   ah, ah
+mov   byte ptr [bp - 01Eh], dl
+mov   byte ptr [bp - 01Dh], ah
+mov   di, word ptr [bp - 01Eh]
+add   di, ax
+mov   ax, word ptr [bp - 024h]
+sub   ax, word ptr ds:[_tmx+0]
+mov   dx, word ptr [bp - 022h]
+sbb   dx, word ptr ds:[_tmx+2]
+or    dx, dx
+jge   dont_neg_thing_x
+neg   ax
+adc   dx, 0
+neg   dx
+dont_neg_thing_x:
+cmp   dx, di
+jg    exit_checkthing_return_1
+je    exit_checkthing_return_1
+mov   ax, word ptr [bp - 018h]
+sub   ax, word ptr ds:[_tmy+0]
+mov   dx, word ptr [bp - 010h]
+sbb   dx, word ptr ds:[_tmy+2]
+or    dx, dx
+jge   dont_neg_thing_y
+neg   ax
+adc   dx, 0
+neg   dx
+dont_neg_thing_y:
+cmp   dx, di
+jle   label_20
+jump_to_exit_checkthing_return_1:
+jmp   exit_checkthing_return_1
+label_20:
+je    jump_to_exit_checkthing_return_1
+mov   di, word ptr ds:[_tmthing]
+mov   ax, word ptr [di + 0Ah]
+mov   word ptr [bp - 0Eh], di
+mov   word ptr [bp - 016h], ax
+mov   ax, word ptr [di + 0Ch]
+les   di, dword ptr ds:[_tmthing_pos]
+mov   word ptr [bp - 014h], ax
+mov   ax, word ptr es:[di + 8]
+mov   word ptr [bp - 6], di
+mov   word ptr [bp - 0Ah], ax
+mov   ax, word ptr es:[di + 0Ah]
+mov   di, word ptr [bp - 0Eh]
+mov   dx, word ptr [di + 022h]
+mov   di, word ptr [bp - 6]
+mov   word ptr [bp - 020h], dx
+test  byte ptr es:[di + 017h], 1  ;todo
+je    label_24
+jmp   do_skull_fly_into_thing
+label_24:
+test  byte ptr es:[di + 016h], 1  ;todo
+je    jump_to_label_17
+mov   bx, word ptr [bp - 0Ch]
+add   bx, word ptr [bp - 012h]
+mov   dx, word ptr [bp - 8]
+adc   dx, word ptr [bp - 01Ah]
+cmp   ax, dx
+jg    jump_to_exit_checkthing_return_1
+jne   label_21
+cmp   bx, word ptr [bp - 0Ah]
+jb    jump_to_exit_checkthing_return_1
+label_21:
+mov   dx, word ptr [bp - 0Ah]
+add   dx, word ptr [bp - 016h]
+adc   ax, word ptr [bp - 014h]
+cmp   ax, word ptr [bp - 8]
+jl    jump_to_exit_checkthing_return_1
+jne   label_22
+cmp   dx, word ptr [bp - 0Ch]
+jb    jump_to_exit_checkthing_return_1
+label_22:
+imul  bx, word ptr [bp - 020h], SIZEOF_THINKER_T
+add   bx, (_thinkerlist + 4)
+je    label_13
+mov   al, byte ptr [bx + 01Ah]
+cmp   al, byte ptr [bp - 2]
+jne   jump_to_label_18
+label_14:
+cmp   si, bx
+jne   label_19
+jmp   exit_checkthing_return_1
+label_19:
+cmp   byte ptr [bp - 2], 0
+jne   jump_to_exit_checkthing_return_0
+label_13:
+test  cl, 4
+jne   jump_to_label_23
+test  cl, 2
+jne   jump_to_exit_checkthing_return_0
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+jump_to_label_17:
+jmp   label_17
+jump_to_label_18:
+jmp   label_18
+jump_to_exit_checkthing_return_0:
+jmp   exit_checkthing_return_0
+jump_to_label_23:
+jmp   label_23
+
+;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
+do_skull_fly_into_thing:
+call  P_Random_
+xor   ah, ah
+mov   bx, ax
+mov   cx, ax
+sar   bx, 0Fh   ; todo
+xor   cx, bx
+sub   cx, bx
+and   cx, 7
+xor   cx, bx
+sub   cx, bx
+mov   bx, word ptr ds:[_tmthing]
+mov   al, byte ptr [bx + 01Ah]
+call  dword ptr [bp - 028h]   ; getDamage
+
+;		P_DamageMobj (thing, tmthing, tmthing, damage);
+
+mov   dl, al
+mov   ax, cx
+xor   dh, dh
+inc   ax
+imul  dx
+mov   dx, word ptr ds:[_tmthing]
+mov   cx, ax
+mov   bx, dx
+mov   ax, si
+call  P_DamageMobj_
+
+;		tmthing_pos->flags2 &= ~MF_SKULLFLY;
+;		tmthing->momx.w = tmthing->momy.w = tmthing->momz.w = 0;
+
+les   bx, dword ptr ds:[_tmthing_pos]
+and   byte ptr es:[bx + 017h], ((NOT MF_SKULLFLY) SHR 8)  ; 0FEh
+mov   bx, word ptr ds:[_tmthing]
+mov   word ptr [bx + 016h], 0
+mov   ax, word ptr [bx + 016h]
+mov   word ptr [bx + 012h], ax
+mov   ax, word ptr [bx + 012h]
+mov   word ptr [bx + 0Eh], ax
+mov   al, byte ptr [bx + 01Ah]
+xor   ah, ah
+imul  ax, ax, 0Bh   ;todo whats size 11
+
+;		P_SetMobjState (tmthing, mobjinfo[tmthing->type].spawnstate);
+
+mov   word ptr [bx + 018h], 0
+mov   dx, word ptr [bx + 018h]
+mov   word ptr [bx + 014h], dx
+mov   word ptr [bx + 010h], dx
+mov   si, ax
+mov   ax, bx
+mov   dx, word ptr ds:[si + _mobjinfo]
+call  P_SetMobjState_
+exit_checkthing_return_0:
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+label_18:
+cmp   al, 011h   ;todo
+jne   label_16
+cmp   byte ptr [bp - 2], 0Fh   ; todo
+jne   label_16
+label_12:
+jmp   label_14
+label_16:
+cmp   al, 0Fh   ;todo
+je    label_15
+jmp   label_13
+label_15:
+cmp   byte ptr [bp - 2], 011h  ; todo
+je    label_12
+jmp   label_13
+label_23:
+call  P_Random_
+xor   ah, ah
+mov   dx, ax
+mov   cx, ax
+sar   dx, 0Fh;  todo
+xor   cx, dx
+sub   cx, dx
+xor   ch, ch
+mov   di, word ptr ds:[_tmthing]
+and   cl, 7
+mov   al, byte ptr [di + 01Ah]
+xor   cx, dx
+call  dword ptr [bp - 028h]   ; todo getdamage
+sub   cx, dx
+mov   dl, al
+mov   ax, cx
+xor   dh, dh
+inc   ax
+imul  dx
+mov   dx, word ptr ds:[_tmthing]
+mov   cx, ax
+mov   ax, si
+call  P_DamageMobj_
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+label_17:
+test  cl, 1
+je    label_25
+and   cl, 2
+mov   byte ptr [bp - 4], cl
+test  byte ptr ds:[_tmflags1+1], 8
+je    label_26
+mov   cx, word ptr [bp - 01Ch]
+push  es
+mov   dx, word ptr [bp - 0Eh]
+push  di
+mov   ax, si
+call  P_TouchSpecialThing_
+label_26:
+cmp   byte ptr [bp - 4], 0
+jne   exit_checkthing_return_0_2
+jump_to_exit_checkthing_return_1_2:
+jmp   exit_checkthing_return_1
+exit_checkthing_return_0_2:
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+label_25:
+test  cl, 2
+je    jump_to_exit_checkthing_return_1_2
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
 
 ENDP
 
+COMMENT  @
 
 ; boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum );
 
@@ -4296,13 +4342,13 @@ PUBLIC P_CheckPosition_
 0x000000000000000b:  89 5E F6             mov   word ptr [bp - 0Ah], bx
 0x000000000000000e:  89 CF                mov   di, cx
 0x0000000000000010:  8B 4E 0A             mov   cx, word ptr [bp + 0Ah]
-0x0000000000000013:  BB 2C 00             mov   bx, 0x2c
+0x0000000000000013:  BB 2C 00             mov   bx, 02Ch
 0x0000000000000016:  A3 00 1F             mov   word ptr ds:[_tmthing], ax
 0x0000000000000019:  31 D2                xor   dx, dx
-0x000000000000001b:  2D 04 40             sub   ax, 0x4004
+0x000000000000001b:  2D 04 40             sub   ax, (_thinkerlist + 4)
 0x000000000000001e:  F7 F3                div   bx
 0x0000000000000020:  6B D8 18             imul  bx, ax, 018h
-0x0000000000000023:  B8 F5 6A             mov   ax, 0x6af5
+0x0000000000000023:  B8 F5 6A             mov   ax, MOBJPOSLIST_6800_SEGMENT
 0x0000000000000026:  89 1E B4 1C          mov   word ptr ds:[_tmthing_pos], bx
 0x000000000000002a:  A3 B6 1C             mov   word ptr [0x1cb6], ax
 0x000000000000002d:  8E C0                mov   es, ax
@@ -4311,10 +4357,10 @@ PUBLIC P_CheckPosition_
 0x0000000000000036:  A3 0A 1F             mov   word ptr ds:[_tmflags1], ax
 0x0000000000000039:  8B 46 F6             mov   ax, word ptr [bp - 0Ah]
 0x000000000000003c:  89 0F                mov   word ptr [bx], cx
-0x000000000000003e:  A3 B0 1C             mov   word ptr [0x1cb0], ax
+0x000000000000003e:  A3 B0 1C             mov   word ptr ds:[_tmx+0], ax
 0x0000000000000041:  8B 46 0C             mov   ax, word ptr [bp + 0Ch]
 0x0000000000000044:  89 47 02             mov   word ptr [bx + 2], ax
-0x0000000000000047:  A3 AE 1C             mov   word ptr [0x1cae], ax
+0x0000000000000047:  A3 AE 1C             mov   word ptr ds:[_tmy+2], ax
 0x000000000000004a:  8A 44 1E             mov   al, byte ptr [si + 01Eh]
 0x000000000000004d:  BB F2 04             mov   bx, 0x4f2
 0x0000000000000050:  30 E4                xor   ah, ah
@@ -4334,7 +4380,7 @@ PUBLIC P_CheckPosition_
 0x0000000000000074:  8B 46 F6             mov   ax, word ptr [bp - 0Ah]
 0x0000000000000077:  89 07                mov   word ptr [bx], ax
 0x0000000000000079:  89 7F 02             mov   word ptr [bx + 2], di
-0x000000000000007c:  89 3E B2 1C          mov   word ptr [0x1cb2], di
+0x000000000000007c:  89 3E B2 1C          mov   word ptr ds:[_tmx+2], di
 0x0000000000000080:  8A 44 1E             mov   al, byte ptr [si + 01Eh]
 0x0000000000000083:  BB FE 04             mov   bx, 0x4fe
 0x0000000000000086:  30 E4                xor   ah, ah
@@ -4344,13 +4390,14 @@ PUBLIC P_CheckPosition_
 0x0000000000000090:  83 EE 00             sub   si, 0
 0x0000000000000093:  89 F8                mov   ax, di
 0x0000000000000095:  19 D0                sbb   ax, dx
-0x0000000000000097:  89 0E AC 1C          mov   word ptr [0x1cac], cx
+0x0000000000000097:  89 0E AC 1C          mov   word ptr ds:[_tmy+0], cx
 0x000000000000009b:  89 47 02             mov   word ptr [bx + 2], ax
 0x000000000000009e:  8B 46 0E             mov   ax, word ptr [bp + 0Eh]
 0x00000000000000a1:  89 37                mov   word ptr [bx], si
 0x00000000000000a3:  3D FF FF             cmp   ax, 0xffff
-0x00000000000000a6:  75 03                jne   0xab
-0x00000000000000a8:  E9 2F 01             jmp   0x1da
+0x00000000000000a6:  75 03                jne   label_6
+0x00000000000000a8:  E9 2F 01             jmp   label_2
+label_6:
 0x00000000000000ab:  A3 F2 1E             mov   word ptr [0x1ef2], ax
 0x00000000000000ae:  C7 06 FE 1E FF FF    mov   word ptr [0x1efe], 0xffff
 0x00000000000000b4:  8B 1E F2 1E          mov   bx, word ptr [0x1ef2]
@@ -4408,8 +4455,9 @@ PUBLIC P_CheckPosition_
 0x000000000000013e:  30 EE                xor   dh, ch
 0x0000000000000140:  80 E2 60             and   dl, 0x60
 0x0000000000000143:  83 FA 60             cmp   dx, 0x60
-0x0000000000000146:  74 03                je    0x14b
-0x0000000000000148:  E9 C2 00             jmp   0x20d
+0x0000000000000146:  74 03                je    label_10
+0x0000000000000148:  E9 C2 00             jmp   label_11
+label_10:
 0x000000000000014b:  BE 01 00             mov   si, 1
 0x000000000000014e:  89 CA                mov   dx, cx
 0x0000000000000150:  C1 FA 07             sar   dx, 7
@@ -4421,8 +4469,9 @@ PUBLIC P_CheckPosition_
 0x0000000000000160:  2B 0C                sub   cx, word ptr [si]
 0x0000000000000162:  83 C1 20             add   cx, 020h
 0x0000000000000165:  F6 C1 60             test  cl, 0x60
-0x0000000000000168:  75 03                jne   0x16d
-0x000000000000016a:  E9 A7 00             jmp   0x214
+0x0000000000000168:  75 03                jne   label_9
+0x000000000000016a:  E9 A7 00             jmp   label_8
+label_9:
 0x000000000000016d:  31 F6                xor   si, si
 0x000000000000016f:  C1 F9 07             sar   cx, 7
 0x0000000000000172:  01 CE                add   si, cx
@@ -4431,7 +4480,7 @@ PUBLIC P_CheckPosition_
 0x000000000000017a:  BE DE 6A             mov   si, 0x6ade
 0x000000000000017d:  E8 8A 22             call  0x240a
 0x0000000000000180:  84 C0                test  al, al
-0x0000000000000182:  74 52                je    0x1d6
+0x0000000000000182:  74 52                je    jump_to_exit_checkthing:
 0x0000000000000184:  83 7E FE 00          cmp   word ptr [bp - 2], 0
 0x0000000000000188:  7C 4E                jl    0x1d8
 0x000000000000018a:  83 7E FA 00          cmp   word ptr [bp - 6], 0
@@ -4448,25 +4497,29 @@ PUBLIC P_CheckPosition_
 0x00000000000001a6:  3B 07                cmp   ax, word ptr [bx]
 0x00000000000001a8:  7D 68                jge   0x212
 0x00000000000001aa:  BE 5A 69             mov   si, 0x695a
+label_3:
 0x00000000000001ad:  8B 46 FE             mov   ax, word ptr [bp - 2]
 0x00000000000001b0:  3B 46 F8             cmp   ax, word ptr [bp - 8]
-0x00000000000001b3:  7F 44                jg    0x1f9
+0x00000000000001b3:  7F 44                jg    exit_checkthing_return_1_2
 0x00000000000001b5:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x00000000000001b8:  3B 4E FC             cmp   cx, word ptr [bp - 4]
-0x00000000000001bb:  7F 14                jg    0x1d1
+0x00000000000001bb:  7F 14                jg    label_7
 0x00000000000001bd:  8B 46 FE             mov   ax, word ptr [bp - 2]
 0x00000000000001c0:  89 F3                mov   bx, si
 0x00000000000001c2:  89 CA                mov   dx, cx
 0x00000000000001c4:  E8 F6 19             call  0x1bbd
 0x00000000000001c7:  84 C0                test  al, al
-0x00000000000001c9:  74 30                je    0x1fb
+0x00000000000001c9:  74 30                je    exit_checkthing
 0x00000000000001cb:  41                   inc   cx
 0x00000000000001cc:  3B 4E FC             cmp   cx, word ptr [bp - 4]
 0x00000000000001cf:  7E EC                jle   0x1bd
+label_7:
 0x00000000000001d1:  FF 46 FE             inc   word ptr [bp - 2]
-0x00000000000001d4:  EB D7                jmp   0x1ad
-0x00000000000001d6:  EB 23                jmp   0x1fb
-0x00000000000001d8:  EB 40                jmp   0x21a
+0x00000000000001d4:  EB D7                jmp   label_3
+jump_to_exit_checkthing:
+0x00000000000001d6:  EB 23                jmp   exit_checkthing
+0x00000000000001d8:  EB 40                jmp   label_4
+label_2:
 0x00000000000001da:  8B 46 F6             mov   ax, word ptr [bp - 0Ah]
 0x00000000000001dd:  89 CB                mov   bx, cx
 0x00000000000001df:  89 FA                mov   dx, di
@@ -4477,9 +4530,11 @@ PUBLIC P_CheckPosition_
 0x00000000000001ec:  C1 E3 02             SHIFT_MACRO shl   bx 2
 0x00000000000001ef:  8E C0                mov   es, ax
 0x00000000000001f1:  26 8B 07             mov   ax, word ptr es:[bx]
-0x00000000000001f4:  E9 B4 FE             jmp   0xab
-0x00000000000001f7:  EB 29                jmp   0x222
+0x00000000000001f4:  E9 B4 FE             jmp   label_6
+0x00000000000001f7:  EB 29                jmp   label_5
+exit_checkthing_return_1_2:
 0x00000000000001f9:  B0 01                mov   al, 1
+exit_checkthing:
 0x00000000000001fb:  C9                   LEAVE_MACRO 
 0x00000000000001fc:  5F                   pop   di
 0x00000000000001fd:  5E                   pop   si
@@ -4489,13 +4544,17 @@ PUBLIC P_CheckPosition_
 0x0000000000000204:  E9 FD FE             jmp   0x104
 0x0000000000000207:  BA FF FF             mov   dx, 0xffff
 0x000000000000020a:  E9 18 FF             jmp   0x125
+label_11:
 0x000000000000020d:  31 F6                xor   si, si
 0x000000000000020f:  E9 3C FF             jmp   0x14e
 0x0000000000000212:  EB 16                jmp   0x22a
+label_8:
 0x0000000000000214:  BE FF FF             mov   si, 0xffff
 0x0000000000000217:  E9 55 FF             jmp   0x16f
+label_4:
 0x000000000000021a:  C7 46 FE 00 00       mov   word ptr [bp - 2], 0
 0x000000000000021f:  E9 68 FF             jmp   0x18a
+label_5:
 0x0000000000000222:  C7 46 FA 00 00       mov   word ptr [bp - 6], 0
 0x0000000000000227:  E9 66 FF             jmp   0x190
 0x000000000000022a:  8B 07                mov   ax, word ptr [bx]
