@@ -4041,7 +4041,7 @@ ret
 
 ; bp - 2      thingtype
 ; bp - 4      solid
-; bp - 6      tmthingpos offset
+; bp - 6      UNUSED
 ; bp - 8      thingz hi
 ; bp - 0Ah    tmthingz lo
 ; bp - 0Ch    thingz lo
@@ -4074,7 +4074,7 @@ je    exit_checkthing_return_1
 ;			return true;
 ;	}
 mov   es, cx
-;mov   cx, word ptr es:[bx + 014h]
+
 test  byte ptr es:[bx + 014h], (MF_SOLID OR MF_SPECIAL OR MF_SHOOTABLE)
 je    exit_checkthing_return_1
 
@@ -4086,6 +4086,7 @@ mov   bp, sp
 sub   sp, 024h
 mov   si, dx
 mov   word ptr [bp - 01Ch], cx
+mov   word ptr [bp - 6], bx
 
 mov   cx, word ptr es:[bx + 014h]
 
@@ -4166,40 +4167,34 @@ jge  exit_checkthing_return_1_3
 ;	tmthingtargetRef = tmthing->targetRef;
 
 mov   di, word ptr ds:[_tmthing]
-mov   ax, word ptr [di + 0Ah]
 mov   word ptr [bp - 0Eh], di
+mov   ax, word ptr [di + 0Ah]
 mov   word ptr [bp - 016h], ax
 mov   ax, word ptr [di + 0Ch]
-les   di, dword ptr ds:[_tmthing_pos]
 mov   word ptr [bp - 014h], ax
-mov   ax, word ptr es:[di + 8]
-mov   word ptr [bp - 6], di
+
+les   bx, dword ptr ds:[_tmthing_pos]
+
+mov   ax, word ptr es:[bx + 8]
 mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[di + 0Ah]  ; store tmthingz hi
-mov   di, word ptr [bp - 0Eh]
+mov   ax, word ptr es:[bx + 0Ah]  ; store tmthingz hi in ax
 mov   dx, word ptr [di + 022h]
-mov   di, word ptr [bp - 6]
+
 mov   word ptr [bp - 020h], dx
-test  byte ptr es:[di + 017h], 1  ;todo
+test  byte ptr es:[bx + 017h], 1  ;todo
 je    not_skullfly_collision
 
 ;    if (tmthing_pos->flags2 & MF_SKULLFLY) {
 
 jmp   do_skull_fly_into_thing
-exit_checkthing_return_1_3:
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
 
 
 not_skullfly_collision:
 
 ;    if (tmthing_pos->flags2 & MF_MISSILE) {
 
-test  byte ptr es:[di + 016h], MF_MISSILE  ;todo
-jne    do_missile_collision
+test  byte ptr es:[bx + 016h], MF_MISSILE  ;todo
+jne   do_missile_collision
 
 ;    if (thingflags1 & MF_SPECIAL) {
 
@@ -4219,7 +4214,8 @@ je    dont_touch_anything
 ;			P_TouchSpecialThing (thing, tmthing, thing_pos, tmthing_pos);
 
 push  es
-push  di
+push  bx
+mov   bx, word ptr [bp - 6]
 mov   cx, word ptr [bp - 01Ch]
 mov   dx, word ptr [bp - 0Eh]
 xchg  ax, si   ; get si in ax
@@ -4227,8 +4223,14 @@ call  P_TouchSpecialThing_
 dont_touch_anything:
 cmp   byte ptr [bp - 4], 0
 jne   exit_checkthing_return_0_2
-jump_to_exit_checkthing_return_1_2:
-jmp   exit_checkthing_return_1_3
+
+exit_checkthing_return_1_3:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+
 exit_checkthing_return_0_2:
 xor   al, al
 LEAVE_MACRO 
@@ -4237,7 +4239,7 @@ pop   si
 ret   
 exit_checkthing_return_notsolid:
 test  cl, MF_SOLID
-je    jump_to_exit_checkthing_return_1_2
+je    exit_checkthing_return_1_3
 xor   al, al
 LEAVE_MACRO 
 pop   di
@@ -4259,7 +4261,7 @@ mov   bx, word ptr [bp - 0Ch]
 add   bx, word ptr [bp - 012h]
 mov   dx, word ptr [bp - 8]
 adc   dx, word ptr [bp - 01Ah]
-cmp   ax, dx
+cmp   ax, dx					; ax has tmthingz hi?
 jg    exit_checkthing_return_1_3
 jne   did_not_go_over
 cmp   bx, word ptr [bp - 0Ah]
@@ -4284,23 +4286,24 @@ did_not_go_under:
 
 ; tmthingtarget
 
-; this looks buggy! check if tmthingtargetref is NULL_THINKERREF
+; TODO TODO this looks buggy! check if tmthingtargetref is NULL_THINKERREF
 ;		tmthingTarget = (mobj_t __near*)&thinkerlist[tmthingtargetRef].data;
+
+;		if (tmthingTarget) {
 
 imul  bx, word ptr [bp - 020h], SIZEOF_THINKER_T
 add   bx, (_thinkerlist + 4)
-je    label_13
+je    no_missile_target
 mov   al, byte ptr [bx + 01Ah]
 cmp   al, byte ptr [bp - 2]
 jne   label_18
-label_14:
+continue_missile_check:
 cmp   si, bx
-jne   label_19
-jmp   exit_checkthing_return_1_3
-label_19:
+je    exit_checkthing_return_1_3
+
 cmp   byte ptr [bp - 2], 0
 jne   jump_to_exit_checkthing_return_0
-label_13:
+no_missile_target:
 test  cl, MF_SHOOTABLE
 jne   label_23
 test  cl, MF_SOLID
@@ -4379,15 +4382,15 @@ jne   not_knight_or_bruiser_interaction
 cmp   byte ptr [bp - 2], MT_BRUISER
 jne   not_knight_or_bruiser_interaction
 jump_to_label_14:
-jmp   label_14
+jmp   continue_missile_check
 not_knight_or_bruiser_interaction:
 cmp   al, MT_BRUISER
 je    continue_knightbruiser_check_in_reverse
-jmp   label_13
+jmp   no_missile_target
 continue_knightbruiser_check_in_reverse:
 cmp   byte ptr [bp - 2], MT_KNIGHT
 je    jump_to_label_14
-jmp   label_13
+jmp   no_missile_target
 
 label_23:
 call  P_Random_
