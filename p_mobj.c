@@ -633,7 +633,7 @@ void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) 
 	
 
 	// somthing is occupying it's position?
-	if (!P_CheckPosition(mobj, x, y, -1)) {
+	if (!P_CheckPosition(mobj, -1, x, y)) {
 		return;	// no respwan
 	}
 	mobjsecnum = mobj->secnum;

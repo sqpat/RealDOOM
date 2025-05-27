@@ -257,7 +257,7 @@ void __far P_SetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset, i
 // If "floatok" true, move would be ok
 // if within "tmfloorz - tmceilingz".
 
-boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
+boolean __near P_CheckPosition (mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y);
 boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
 boolean __near P_TeleportMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
 void	__near P_SlideMove ();

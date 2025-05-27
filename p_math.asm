@@ -3152,12 +3152,6 @@ sub   sp, 2
 ;		return false;		// solid wall or thing
 ;	}
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-	push  -1  ; todo 8086
-ELSE
-	mov  bx, -1
-	push bx
-ENDIF
 
 push  word ptr [bp + 010h]
 push  word ptr [bp + 0Eh]
@@ -3165,6 +3159,7 @@ push  word ptr [bp + 0Eh]
 mov   byte ptr ds:[_floatok], 0
 les   bx, dword ptr [bp + 0Ah]
 mov   cx, es
+mov   dx, -1
 call  P_CheckPosition_
 test  al, al
 je    exit_trymove_return
@@ -4426,32 +4421,36 @@ ret
 ENDP
 
 
-; boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum );
+; boolean __near P_CheckPosition (mobj_t __near* thing, int16_t oldsecnum, fixed_t_union	x, fixed_t_union	y );
 
 PROC P_CheckPosition_ NEAR
 PUBLIC P_CheckPosition_
 
-push  dx
-push  si
-push  di
-push  bp
+;   y hi ; + 0Ah
+;   y lo ; + 8
+;     ip ; + 6      
+push  si ; + 4
+push  di ; + 2
+push  bp ; + 0
 mov   bp, sp
 sub   sp, 0Ch
-mov   si, ax
+push  dx  ; bp - 0Eh
+mov   si, ax ; thing ptr
 mov   word ptr [bp - 0Ah], bx
 mov   di, cx
-mov   cx, word ptr [bp + 0Ah]
-mov   bx, 02Ch
+mov   cx, word ptr [bp + 8]
+mov   bx, SIZEOF_THINKER_T
 mov   word ptr ds:[_tmthing], ax
-xor   dx, dx
 sub   ax, (_thinkerlist + 4)
+cwd
 div   bx
-imul  bx, ax, 018h
+imul  bx, ax, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   word ptr ds:[_tmthing_pos+0], bx
 mov   word ptr ds:[_tmthing_pos+2], ax  ;todo remove once fixed?
 mov   es, ax
 mov   ax, word ptr es:[bx + 014h]
+; todo use tmbbox base here
 mov   bx, OFFSET _tmbbox + (4 * BOXTOP)
 mov   word ptr ds:[_tmflags1], ax
 mov   ax, word ptr [bp - 0Ah]
@@ -4468,7 +4467,7 @@ mov   al, byte ptr [si + 01Eh]
 mov   dx, ax
 mov   ax, cx
 sub   ax, 0
-mov   bx, word ptr [bp + 0Ch]
+mov   bx, word ptr [bp + 0Ah]
 sbb   bx, dx
 mov   word ptr [bp - 0Ch], bx
 mov   bx, OFFSET _tmbbox + (4 * BOXBOTTOM)
@@ -4491,14 +4490,14 @@ mov   ax, di
 sbb   ax, dx
 mov   word ptr ds:[_tmy+0], cx
 mov   word ptr [bx + 2], ax
-mov   ax, word ptr [bp + 0Eh]
+mov   ax, word ptr [bp - 0Eh]
 mov   word ptr [bx], si
 cmp   ax, 0FFFFh
 jne   use_cached_secnum
 mov   ax, word ptr [bp - 0Ah]
 mov   bx, cx
 mov   dx, di
-mov   cx, word ptr [bp + 0Ch]
+mov   cx, word ptr [bp + 0Ah]
 call  R_PointInSubsector_
 mov   bx, ax
 mov   ax, SUBSECTORS_SEGMENT
@@ -4637,8 +4636,7 @@ exit_checkposition:
 LEAVE_MACRO 
 pop   di
 pop   si
-pop   dx
-ret   6
+ret   4
 
 
 
@@ -4650,6 +4648,8 @@ COMMENT  @
 
 PROC P_SlideMove_ NEAR
 PUBLIC P_SlideMove_ 
+
+; todo pusha
 
 0x0000000000000000:  53                   push  bx
 0x0000000000000001:  51                   push  cx

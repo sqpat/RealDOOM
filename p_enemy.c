@@ -1367,7 +1367,7 @@ boolean __near PIT_VileCheck (THINKERREF thingRef, mobj_t __near*	thing, mobj_po
 	corpsehitRef = thingRef;
     thing->momx.w = thing->momy.w = 0;
 	thing->height.w <<= 2;
-    check = P_CheckPosition (thing, thing_pos->x, thing_pos->y, thing->secnum);
+    check = P_CheckPosition (thing, thing->secnum, thing_pos->x, thing_pos->y);
 	thing->height.w >>= 2;
 
 	if (!check) {

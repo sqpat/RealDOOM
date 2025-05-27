@@ -564,7 +564,6 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_p
 
 // put oldsecnum second...
 
-boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum );
 /*
 boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum ){
     int16_t			xl;
@@ -706,7 +705,7 @@ boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fix
 
 	floatok = false;
 
-	if (!P_CheckPosition(thing, x, y, -1)) {
+	if (!P_CheckPosition(thing, -1 x, y)) {
 		return false;		// solid wall or thing
 	}
     if ( !(thing_pos->flags1 & MF_NOCLIP) ) {
@@ -811,7 +810,7 @@ boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_
     onfloor = (thing_pos->z.w == temp.w);
 
 
-    P_CheckPosition (thing, thing_pos->x, thing_pos->y, thing->secnum);
+    P_CheckPosition (thing, thing->secnum, thing_pos->x, thing_pos->y);
     // what about stranding a monster partially off an edge?
 
     thing->floorz = tmfloorz;
