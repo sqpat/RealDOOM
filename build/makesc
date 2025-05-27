@@ -80,9 +80,6 @@ GLOBOBJS = &
  r_data.obj &
  r_draw.obj &
  r_main.obj &
- r_plane.obj &
- r_segs.obj &
- r_things.obj &
  w_init.obj &
  w_wad.obj &
  v_video.obj &
@@ -98,7 +95,6 @@ GLOBOBJS = &
  s_sound.obj &
  s_sbsfx.obj &
  info.obj &
- d_math.obj &
  dmx.obj &
  d_int.obj &
  memory.obj &

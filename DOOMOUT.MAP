@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/26 09:33:44
+Created on:       25/05/26 09:52:07
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -30,7 +30,6 @@ st_init_TEXT           CODE           AUTO           0000:0c60       000003c3
 r_init_TEXT            CODE           AUTO           0000:1030       00000c32
 w_init_TEXT            CODE           AUTO           0000:1c70       00000277
 i_init_TEXT            CODE           AUTO           0000:1ef0       000000a5
-z_umb_TEXT             CODE           AUTO           0000:1fa0       00000000
 z_init_TEXT            CODE           AUTO           0000:1fa0       00000837
 p_init_TEXT            CODE           AUTO           0000:27e0       00000479
 i_main_TEXT            CODE           AUTO           02c6:0000       0000001e
@@ -46,7 +45,6 @@ st_stuff_TEXT          CODE           AUTO           02c6:3520       00000b53
 hu_stuff_TEXT          CODE           AUTO           02c6:4080       000001d2
 hu_lib_TEXT            CODE           AUTO           02c6:4260       000001b3
 m_menu_TEXT            CODE           AUTO           02c6:4420       00001410
-sounds_TEXT            CODE           AUTO           02c6:5830       00000000
 D_ALGO_TEXT            CODE           AUTO           02c6:5830       00000045
 dmx_TEXT               CODE           AUTO           02c6:5880       000001a2
 D_INT_TEXT             CODE           AUTO           02c6:5a22       00000175
@@ -81,14 +79,10 @@ R_MATH_TEXT            CODE           AUTO           1878:1bca       000001e3
 R_MAINHI_TEXT          CODE           AUTO           1878:1dae       00002472
 r_draw_TEXT            CODE           AUTO           1878:4220       000000fb
 r_main_TEXT            CODE           AUTO           1878:4320       000001dd
-r_plane_TEXT           CODE           AUTO           1878:4500       00000000
-r_segs_TEXT            CODE           AUTO           1878:4500       00000000
-r_things_TEXT          CODE           AUTO           1878:4500       00000000
 w_wad_TEXT             CODE           AUTO           1878:4500       0000030c
 VIDEO_TEXT             CODE           AUTO           1878:480c       000004e6
 v_video_TEXT           CODE           AUTO           1878:4d00       00000218
 z_zone_TEXT            CODE           AUTO           1878:4f20       000004e7
-d_math_TEXT            CODE           AUTO           1878:5410       00000000
 p_setup_TEXT           CODE           AUTO           1db9:0000       00001247
 _TEXT                  CODE           AUTO           1db9:1250       0000245e
 FAR_DATA               FAR_DATA       AUTO           2123:000e       00000000

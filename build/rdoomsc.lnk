@@ -77,19 +77,13 @@ file r_bsp.obj
 file r_data.obj
 file r_math.obj
 file r_mainhi.obj
-#file r_span.obj
 file r_draw.obj
 file r_main.obj
-file r_plane.obj
-file r_segs.obj
-file r_things.obj
 file w_wad.obj
 file video.obj
 file v_video.obj
 file z_zone.obj
 file z_scamp.obj
-#file info.obj
-file d_math.obj
 
 
 NEWSEGMENT

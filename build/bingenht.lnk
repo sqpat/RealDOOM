@@ -96,16 +96,12 @@ file r_span.obj
 file r_sky.obj
 file r_draw.obj
 file r_main.obj
-file r_plane.obj
-file r_segs.obj
 file r_masked.obj
-file r_things.obj
 file w_wad.obj
 file video.obj
 file v_video.obj
 file z_ht18.obj
 file z_zone.obj
-file d_math.obj
 
 
 NEWSEGMENT
