@@ -4039,23 +4039,25 @@ mov   al, 1
 ret   
 
 ; bp - 2      thingtype
-; bp - 4      solid
-; bp - 6      thing (bx param)
-; bp - 8      thingz hi
+; bp - 4      thing (bx param)
+; bp - 6      
+; bp - 8      
 ; bp - 0Ah    tmthingz lo
-; bp - 0Ch    thingz lo
-; bp - 0Eh    tmthing
-; bp - 010h   thingy hi
-; bp - 012h   thingheight lo
-; bp - 014h   tmthingheight hi
-; bp - 016h   tmthingheight lo
-; bp - 018h   thingy lo
-; bp - 01Ah   thingheight hi
-; bp - 01Ch   MOBJPOSLIST_6800_SEGMENT
-; bp - 01Eh   thingradius hi
-; bp - 020h   tmthingtargetRef
+; bp - 0Ch    
+; bp - 0Eh    unused
+; bp - 010h   
+; bp - 012h   tmthingheight hi
+; bp - 014h   tmthingheight lo
+; bp - 016h   thingheight hi
+; bp - 018h   thingheight lo
+; bp - 01Ah   thingz hi
+; bp - 01Ch   thingz lo
+; bp - 01Eh   thingy hi
+; bp - 020h   thingy lo
 ; bp - 022h   thingx hi
 ; bp - 024h   thingx lo
+; bp - 026h   tmthingtargetRef
+; bp - 028h   solid (pushed later)
 
 PROC PIT_CheckThing_ NEAR
 PUBLIC PIT_CheckThing_
@@ -4082,10 +4084,8 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 024h
 mov   si, dx
-mov   word ptr [bp - 01Ch], cx
-mov   word ptr [bp - 6], bx
+
 
 mov   cx, word ptr es:[bx + 014h]
 
@@ -4097,25 +4097,27 @@ mov   cx, word ptr es:[bx + 014h]
 ;	thingz = thing_pos->z;
 ;	thingheight = thing->height;
 
-mov   al, byte ptr [si + 01Ah]
-mov   byte ptr [bp - 2], al
+push  word ptr [si + 01Ah]  ; hi byte garbage
+push  bx
+sub   sp, 022h
+
 mov   ax, word ptr es:[bx]
 mov   word ptr [bp - 024h], ax
 mov   ax, word ptr es:[bx + 2]
 mov   word ptr [bp - 022h], ax
 mov   ax, word ptr es:[bx + 4]
-mov   word ptr [bp - 018h], ax
+mov   word ptr [bp - 020h], ax
 mov   ax, word ptr es:[bx + 6]
-mov   word ptr [bp - 010h], ax
+mov   word ptr [bp - 01Eh], ax
 mov   ax, word ptr es:[bx + 8]
-mov   word ptr [bp - 0Ch], ax
+mov   word ptr [bp - 01Ch], ax
 mov   ax, word ptr es:[bx + 0Ah]
-mov   word ptr [bp - 8], ax
+mov   word ptr [bp - 01Ah], ax
 mov   ax, word ptr [si + 0Ah]
-mov   word ptr [bp - 012h], ax
+mov   word ptr [bp - 018h], ax
 mov   ax, word ptr [si + 0Ch]
 mov   di, word ptr ds:[_tmthing]
-mov   word ptr [bp - 01Ah], ax
+mov   word ptr [bp - 016h], ax
 
 ;	thingradius.h.intbits = thing->radius;
 ;	thingradius.h.fracbits = 0;
@@ -4124,11 +4126,11 @@ mov   word ptr [bp - 01Ah], ax
 mov   al, byte ptr [si + 01Eh]
 mov   dl, byte ptr [di + 01Eh]
 xor   ah, ah
-mov   byte ptr [bp - 01Eh], dl
-mov   byte ptr [bp - 01Dh], ah
-mov   di, word ptr [bp - 01Eh]
-add   di, ax
+xor   dh, dh
+add   ax, dx
+xchg  ax, di
 
+; di =  sum of radii
 ;    if ( labs(thingx.w - tmx.w) >= blockdist.w || labs(thingy.w - tmy.w) >= blockdist.w ) {
 ;		// didn't hit it
 ;			return true;
@@ -4148,9 +4150,9 @@ dont_neg_thing_x:
 
 cmp   dx, di
 jge   exit_checkthing_return_1_3
-mov   ax, word ptr [bp - 018h]
+mov   ax, word ptr [bp - 020h]
 sub   ax, word ptr ds:[_tmy+0]
-mov   dx, word ptr [bp - 010h]
+mov   dx, word ptr [bp - 01Eh]
 sbb   dx, word ptr ds:[_tmy+2]
 or    dx, dx
 jge   dont_neg_thing_y
@@ -4166,11 +4168,10 @@ jge  exit_checkthing_return_1_3
 ;	tmthingtargetRef = tmthing->targetRef;
 
 mov   di, word ptr ds:[_tmthing]
-mov   word ptr [bp - 0Eh], di
 mov   ax, word ptr [di + 0Ah]
-mov   word ptr [bp - 016h], ax
-mov   ax, word ptr [di + 0Ch]
 mov   word ptr [bp - 014h], ax
+mov   ax, word ptr [di + 0Ch]
+mov   word ptr [bp - 012h], ax
 
 les   bx, dword ptr ds:[_tmthing_pos]
 
@@ -4179,7 +4180,7 @@ mov   word ptr [bp - 0Ah], ax
 mov   ax, word ptr es:[bx + 0Ah]  ; store tmthingz hi in ax
 mov   dx, word ptr [di + 022h]
 
-mov   word ptr [bp - 020h], dx
+mov   word ptr [bp - 026h], dx
 test  byte ptr es:[bx + 017h], 1  ;todo
 je    not_skullfly_collision
 
@@ -4203,7 +4204,7 @@ je    exit_checkthing_return_notsolid
 ;		solid = thingflags1 &MF_SOLID;
 
 and   cl, MF_SOLID
-mov   byte ptr [bp - 4], cl
+push  cx
 
 ;		if (tmflags1&MF_PICKUP) {
 
@@ -4214,13 +4215,13 @@ je    dont_touch_anything
 
 push  es
 push  bx
-mov   bx, word ptr [bp - 6]
-mov   cx, word ptr [bp - 01Ch]
-mov   dx, word ptr [bp - 0Eh]
+mov   bx, word ptr [bp - 4]
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   dx, word ptr ds:[_tmthing]
 xchg  ax, si   ; get si in ax
 call  P_TouchSpecialThing_
 dont_touch_anything:
-cmp   byte ptr [bp - 4], 0
+cmp   byte ptr [bp - 028h], 0
 jne   exit_checkthing_return_0_2
 
 exit_checkthing_return_1_3:
@@ -4254,10 +4255,10 @@ do_missile_collision:
 ;			return true;		// overhead
 ;		}
 
-mov   bx, word ptr [bp - 0Ch]
-add   bx, word ptr [bp - 012h]
-mov   dx, word ptr [bp - 8]
-adc   dx, word ptr [bp - 01Ah]
+mov   bx, word ptr [bp - 01Ch]
+add   bx, word ptr [bp - 018h]
+mov   dx, word ptr [bp - 01Ah]
+adc   dx, word ptr [bp - 016h]
 cmp   ax, dx					; ax has tmthingz hi?
 jg    exit_checkthing_return_1_3
 jne   did_not_go_over
@@ -4272,12 +4273,12 @@ did_not_go_over:
 ;		}
 
 mov   dx, word ptr [bp - 0Ah]
-add   dx, word ptr [bp - 016h]
-adc   ax, word ptr [bp - 014h]
-cmp   ax, word ptr [bp - 8]
+add   dx, word ptr [bp - 014h]
+adc   ax, word ptr [bp - 012h]
+cmp   ax, word ptr [bp - 01Ah]
 jl    exit_checkthing_return_1_3
 jne   did_not_go_under
-cmp   dx, word ptr [bp - 0Ch]
+cmp   dx, word ptr [bp - 01Ch]
 jb    exit_checkthing_return_1_3
 did_not_go_under:
 
@@ -4286,7 +4287,7 @@ did_not_go_under:
 
 ;		if (tmthingTarget) {
 
-mov   ax, word ptr [bp - 020h]
+mov   ax, word ptr [bp - 026h]
 test  ax, ax  ; NULL_THINKERREF check
 je    good_missile_target  
 
