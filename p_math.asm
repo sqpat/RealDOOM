@@ -4038,16 +4038,16 @@ exit_checkthing_return_1:
 mov   al, 1
 ret   
 
-; bp - 2      thingtype
-; bp - 4      thing (bx param)
-; bp - 6      thingheight hi
-; bp - 8      thingheight lo
-; bp - 0Ah    thingz hi
-; bp - 0Ch    thingz lo
-; bp - 0Eh    thingy hi
-; bp - 010h   thingy lo
-; bp - 012h   thingx hi
-; bp - 014h   thingx lo
+; bp - 2      thing (bx param)
+; bp - 4      thingheight hi
+; bp - 6      thingheight lo
+; bp - 8      thingz hi
+; bp - 0Ah    thingz lo
+; bp - 0Ch    thingy hi
+; bp - 00Eh   thingy lo
+; bp - 010h   thingx hi
+; bp - 012h   thingx lo
+; bp - 014h   thingtype
 ; bp - 016h   tmthingheight hi
 ; bp - 018h   tmthingheight lo
 ; bp - 01Ah   tmthingz lo
@@ -4092,14 +4092,11 @@ mov   bp, sp
 ;	thingz = thing_pos->z;
 ;	thingheight = thing->height;
 
-mov   si, dx
 
-; todo move later
-push  word ptr [si + 01Ah] ; bp - 2 ; hi byte garbage.
-push  bx  				   ; bp - 4
+push  bx  				   ; bp - 2
 sub   sp, 010h  ; create stack room for rep movsw
 
-lea   di, [bp - 014h]
+lea   di, [bp - 012h]
 mov   ax, ss
 mov   es, ax
 
@@ -4120,6 +4117,8 @@ movsw			; copy height
 movsw
 
 sub   si, 0Eh   ; reset si...
+
+push  word ptr [si + 01Ah] ; bp - 014h ; hi byte garbage.
 
 mov   di, word ptr ds:[_tmthing]
 
@@ -4142,11 +4141,11 @@ xchg  ax, di
 ;    }
 
 
-mov   ax, word ptr [bp - 014h]
+les   ax, dword ptr [bp - 012h]
+mov   dx, es
 sub   ax, word ptr ds:[_tmx+0]
-mov   dx, word ptr [bp - 012h]
 sbb   dx, word ptr ds:[_tmx+2]
-or    dx, dx ; todo remove
+
 jge   dont_neg_thing_x
 neg   ax
 adc   dx, 0
@@ -4155,11 +4154,11 @@ dont_neg_thing_x:
 
 cmp   dx, di
 jge   exit_checkthing_return_1_3
-mov   ax, word ptr [bp - 010h]
+les   ax, dword ptr [bp - 0Eh]
+mov   dx, es
 sub   ax, word ptr ds:[_tmy+0]
-mov   dx, word ptr [bp - 0Eh]
 sbb   dx, word ptr ds:[_tmy+2]
-or    dx, dx
+
 jge   dont_neg_thing_y
 neg   ax
 adc   dx, 0
@@ -4217,7 +4216,7 @@ je    dont_touch_anything
 
 push  es
 push  bx
-mov   bx, word ptr [bp - 4]
+mov   bx, word ptr [bp - 2]
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   dx, word ptr ds:[_tmthing]
 xchg  ax, si   ; get si in ax
@@ -4257,10 +4256,10 @@ do_missile_collision:
 ;			return true;		// overhead
 ;		}
 
-mov   bx, word ptr [bp - 0Ch]
-add   bx, word ptr [bp - 8]
-mov   dx, word ptr [bp - 0Ah]
-adc   dx, word ptr [bp - 6]
+les   bx, dword ptr [bp - 0Ah]
+mov   dx, es
+add   bx, word ptr [bp - 6]
+adc   dx, word ptr [bp - 4]
 cmp   ax, dx					; ax has tmthingz hi?
 jg    exit_checkthing_return_1_3
 jne   did_not_go_over
@@ -4277,10 +4276,10 @@ did_not_go_over:
 mov   dx, word ptr [bp - 01Ah]
 add   dx, word ptr [bp - 018h]
 adc   ax, word ptr [bp - 016h]
-cmp   ax, word ptr [bp - 0Ah]
+cmp   ax, word ptr [bp - 8]
 jl    exit_checkthing_return_1_3
 jne   did_not_go_under
-cmp   dx, word ptr [bp - 0Ch]
+cmp   dx, word ptr [bp - 0Ah]
 jb    exit_checkthing_return_1_3
 did_not_go_under:
 
@@ -4304,7 +4303,7 @@ ELSE
 ENDIF
 
 mov   al, byte ptr [bx + 01Ah]
-mov   ah, byte ptr [bp - 2]    ; get thingtype in ah
+mov   ah, byte ptr [bp - 014h]    ; get thingtype in ah
 cmp   al, ah
 je    dont_damage_target
 
