@@ -1862,7 +1862,7 @@ mov   es, dx
 les   dx, dword ptr es:[bx]
 
 push  es					; bp - 0Ch  vertex y
-push  ax    				; bp - 00Eh
+push  ax    				; bp - 0Eh
 push  dx                    ; bp - 010h vertex x
 push  ax    				; bp - 012h
 
@@ -4039,14 +4039,17 @@ mov   al, 1
 ret   
 
 ; bp - 2      thing (bx param)
-; bp - 4      thingheight hi
-; bp - 6      thingheight lo
-; bp - 8      thingz hi
-; bp - 0Ah    thingz lo
-; bp - 0Ch    thingy hi
-; bp - 00Eh   thingy lo
-; bp - 010h   thingx hi
-; bp - 012h   thingx lo
+
+; bp - 4      thingz hi
+; bp - 6      thingz lo
+; bp - 8      thingy hi
+; bp - 0Ah    thingy lo
+; bp - 0Ch    thingx hi
+; bp - 0Eh    thingx lo     ; do rep movsw for this area
+
+; bp - 010h   thingheight hi
+; bp - 012h   thingheight lo
+
 ; bp - 014h   thingtype
 ; bp - 016h   tmthingheight hi
 ; bp - 018h   tmthingheight lo
@@ -4094,9 +4097,9 @@ mov   bp, sp
 
 
 push  bx  				   ; bp - 2
-sub   sp, 010h  ; create stack room for rep movsw
+sub   sp, 0Ch  ; create stack room for rep movsw
 
-lea   di, [bp - 012h]
+lea   di, [bp - 0Eh]
 mov   ax, ss
 mov   es, ax
 
@@ -4109,15 +4112,12 @@ rep   movsw ; copy x y z dwords
 mov   cx, word ptr ds:[bx + 014h]
 
 mov   si, dx
-add   si, 0Ah
+
 mov   ax, ss
 mov   ds, ax
 
-movsw			; copy height
-movsw
-
-sub   si, 0Eh   ; reset si...
-
+push  word ptr [si + 0Ch]  ; bp - 010h
+push  word ptr [si + 0Ah]  ; bp - 012h
 push  word ptr [si + 01Ah] ; bp - 014h ; hi byte garbage.
 
 mov   di, word ptr ds:[_tmthing]
@@ -4141,7 +4141,7 @@ xchg  ax, di
 ;    }
 
 
-les   ax, dword ptr [bp - 012h]
+les   ax, dword ptr [bp - 0Eh]
 mov   dx, es
 sub   ax, word ptr ds:[_tmx+0]
 sbb   dx, word ptr ds:[_tmx+2]
@@ -4154,7 +4154,7 @@ dont_neg_thing_x:
 
 cmp   dx, di
 jge   exit_checkthing_return_1_3
-les   ax, dword ptr [bp - 0Eh]
+les   ax, dword ptr [bp - 0Ah]
 mov   dx, es
 sub   ax, word ptr ds:[_tmy+0]
 sbb   dx, word ptr ds:[_tmy+2]
@@ -4256,10 +4256,10 @@ do_missile_collision:
 ;			return true;		// overhead
 ;		}
 
-les   bx, dword ptr [bp - 0Ah]
+les   bx, dword ptr [bp - 6]
 mov   dx, es
-add   bx, word ptr [bp - 6]
-adc   dx, word ptr [bp - 4]
+add   bx, word ptr [bp - 012h]
+adc   dx, word ptr [bp - 010h]
 cmp   ax, dx					; ax has tmthingz hi?
 jg    exit_checkthing_return_1_3
 jne   did_not_go_over
@@ -4276,10 +4276,10 @@ did_not_go_over:
 mov   dx, word ptr [bp - 01Ah]
 add   dx, word ptr [bp - 018h]
 adc   ax, word ptr [bp - 016h]
-cmp   ax, word ptr [bp - 8]
+cmp   ax, word ptr [bp - 4]
 jl    exit_checkthing_return_1_3
 jne   did_not_go_under
-cmp   dx, word ptr [bp - 0Ah]
+cmp   dx, word ptr [bp - 6]
 jb    exit_checkthing_return_1_3
 did_not_go_under:
 
@@ -4433,235 +4433,253 @@ COMMENT  @
 PROC P_CheckPosition_ NEAR
 PUBLIC P_CheckPosition_
 
-0x0000000000000000:  52                   push  dx
-0x0000000000000001:  56                   push  si
-0x0000000000000002:  57                   push  di
-0x0000000000000003:  55                   push  bp
-0x0000000000000004:  89 E5                mov   bp, sp
-0x0000000000000006:  83 EC 0C             sub   sp, 0Ch
-0x0000000000000009:  89 C6                mov   si, ax
-0x000000000000000b:  89 5E F6             mov   word ptr [bp - 0Ah], bx
-0x000000000000000e:  89 CF                mov   di, cx
-0x0000000000000010:  8B 4E 0A             mov   cx, word ptr [bp + 0Ah]
-0x0000000000000013:  BB 2C 00             mov   bx, 02Ch
-0x0000000000000016:  A3 00 1F             mov   word ptr ds:[_tmthing], ax
-0x0000000000000019:  31 D2                xor   dx, dx
-0x000000000000001b:  2D 04 40             sub   ax, (_thinkerlist + 4)
-0x000000000000001e:  F7 F3                div   bx
-0x0000000000000020:  6B D8 18             imul  bx, ax, 018h
-0x0000000000000023:  B8 F5 6A             mov   ax, MOBJPOSLIST_6800_SEGMENT
-0x0000000000000026:  89 1E B4 1C          mov   word ptr ds:[_tmthing_pos], bx
-0x000000000000002a:  A3 B6 1C             mov   word ptr [0x1cb6], ax
-0x000000000000002d:  8E C0                mov   es, ax
-0x000000000000002f:  26 8B 47 14          mov   ax, word ptr es:[bx + 014h]
-0x0000000000000033:  BB F0 04             mov   bx, 0x4f0
-0x0000000000000036:  A3 0A 1F             mov   word ptr ds:[_tmflags1], ax
-0x0000000000000039:  8B 46 F6             mov   ax, word ptr [bp - 0Ah]
-0x000000000000003c:  89 0F                mov   word ptr [bx], cx
-0x000000000000003e:  A3 B0 1C             mov   word ptr ds:[_tmx+0], ax
-0x0000000000000041:  8B 46 0C             mov   ax, word ptr [bp + 0Ch]
-0x0000000000000044:  89 47 02             mov   word ptr [bx + 2], ax
-0x0000000000000047:  A3 AE 1C             mov   word ptr ds:[_tmy+2], ax
-0x000000000000004a:  8A 44 1E             mov   al, byte ptr [si + 01Eh]
-0x000000000000004d:  BB F2 04             mov   bx, 0x4f2
-0x0000000000000050:  30 E4                xor   ah, ah
-0x0000000000000052:  01 07                add   word ptr [bx], ax
-0x0000000000000054:  8A 44 1E             mov   al, byte ptr [si + 01Eh]
-0x0000000000000057:  89 C2                mov   dx, ax
-0x0000000000000059:  89 C8                mov   ax, cx
-0x000000000000005b:  2D 00 00             sub   ax, 0
-0x000000000000005e:  8B 5E 0C             mov   bx, word ptr [bp + 0Ch]
-0x0000000000000061:  19 D3                sbb   bx, dx
-0x0000000000000063:  89 5E F4             mov   word ptr [bp - 0Ch], bx
-0x0000000000000066:  BB F4 04             mov   bx, 0x4f4
-0x0000000000000069:  89 07                mov   word ptr [bx], ax
-0x000000000000006b:  8B 46 F4             mov   ax, word ptr [bp - 0Ch]
-0x000000000000006e:  89 47 02             mov   word ptr [bx + 2], ax
-0x0000000000000071:  BB FC 04             mov   bx, 0x4fc
-0x0000000000000074:  8B 46 F6             mov   ax, word ptr [bp - 0Ah]
-0x0000000000000077:  89 07                mov   word ptr [bx], ax
-0x0000000000000079:  89 7F 02             mov   word ptr [bx + 2], di
-0x000000000000007c:  89 3E B2 1C          mov   word ptr ds:[_tmx+2], di
-0x0000000000000080:  8A 44 1E             mov   al, byte ptr [si + 01Eh]
-0x0000000000000083:  BB FE 04             mov   bx, 0x4fe
-0x0000000000000086:  30 E4                xor   ah, ah
-0x0000000000000088:  8B 76 F6             mov   si, word ptr [bp - 0Ah]
-0x000000000000008b:  01 07                add   word ptr [bx], ax
-0x000000000000008d:  BB F8 04             mov   bx, 0x4f8
-0x0000000000000090:  83 EE 00             sub   si, 0
-0x0000000000000093:  89 F8                mov   ax, di
-0x0000000000000095:  19 D0                sbb   ax, dx
-0x0000000000000097:  89 0E AC 1C          mov   word ptr ds:[_tmy+0], cx
-0x000000000000009b:  89 47 02             mov   word ptr [bx + 2], ax
-0x000000000000009e:  8B 46 0E             mov   ax, word ptr [bp + 0Eh]
-0x00000000000000a1:  89 37                mov   word ptr [bx], si
-0x00000000000000a3:  3D FF FF             cmp   ax, 0xffff
-0x00000000000000a6:  75 03                jne   label_6
-0x00000000000000a8:  E9 2F 01             jmp   label_2
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 0Ch
+mov   si, ax
+mov   word ptr [bp - 0Ah], bx
+mov   di, cx
+mov   cx, word ptr [bp + 0Ah]
+mov   bx, 02Ch
+mov   word ptr ds:[_tmthing], ax
+xor   dx, dx
+sub   ax, (_thinkerlist + 4)
+div   bx
+imul  bx, ax, 018h
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   word ptr ds:[_tmthing_pos+0], bx
+mov   word ptr ds:[_tmthing_pos+2], ax  ;todo remove once fixed?
+mov   es, ax
+mov   ax, word ptr es:[bx + 014h]
+mov   bx, OFFSET _tmbbox + (4 * BOXTOP)
+mov   word ptr ds:[_tmflags1], ax
+mov   ax, word ptr [bp - 0Ah]
+mov   word ptr [bx], cx
+mov   word ptr ds:[_tmx+0], ax
+mov   ax, word ptr [bp + 0Ch]
+mov   word ptr [bx + 2], ax
+mov   word ptr ds:[_tmy+2], ax
+mov   al, byte ptr [si + 01Eh]
+mov   bx, OFFSET _tmbbox + (4 * BOXTOP) + 2
+xor   ah, ah
+add   word ptr [bx], ax
+mov   al, byte ptr [si + 01Eh]
+mov   dx, ax
+mov   ax, cx
+sub   ax, 0
+mov   bx, word ptr [bp + 0Ch]
+sbb   bx, dx
+mov   word ptr [bp - 0Ch], bx
+mov   bx, OFFSET _tmbbox + (4 * BOXBOTTOM)
+mov   word ptr [bx], ax
+mov   ax, word ptr [bp - 0Ch]
+mov   word ptr [bx + 2], ax
+mov   bx, OFFSET _tmbbox + (4 * BOXRIGHT)
+mov   ax, word ptr [bp - 0Ah]
+mov   word ptr [bx], ax
+mov   word ptr [bx + 2], di
+mov   word ptr ds:[_tmx+2], di
+mov   al, byte ptr [si + 01Eh]
+mov   bx, OFFSET _tmbbox + (4 * BOXRIGHT) + 2
+xor   ah, ah
+mov   si, word ptr [bp - 0Ah]
+add   word ptr [bx], ax
+mov   bx, OFFSET _tmbbox + (4 * BOXLEFT)
+sub   si, 0
+mov   ax, di
+sbb   ax, dx
+mov   word ptr ds:[_tmy+0], cx
+mov   word ptr [bx + 2], ax
+mov   ax, word ptr [bp + 0Eh]
+mov   word ptr [bx], si
+cmp   ax, 0FFFFh
+jne   label_6
+jmp   label_2
 label_6:
-0x00000000000000ab:  A3 F2 1E             mov   word ptr [0x1ef2], ax
-0x00000000000000ae:  C7 06 FE 1E FF FF    mov   word ptr [0x1efe], 0xffff
-0x00000000000000b4:  8B 1E F2 1E          mov   bx, word ptr [0x1ef2]
-0x00000000000000b8:  B8 00 E0             mov   ax, 0xe000
-0x00000000000000bb:  C1 E3 04             SHIFT_MACRO shl   bx 4
-0x00000000000000be:  8E C0                mov   es, ax
-0x00000000000000c0:  26 8B 07             mov   ax, word ptr es:[bx]
-0x00000000000000c3:  83 C3 02             add   bx, 2
-0x00000000000000c6:  A3 04 1F             mov   word ptr ds:[_tmceilingz], ax
-0x00000000000000c9:  A3 02 1F             mov   word ptr ds:[_tmfloorz], ax
-0x00000000000000cc:  26 8B 07             mov   ax, word ptr es:[bx]
-0x00000000000000cf:  BB 24 01             mov   bx, 0x124
-0x00000000000000d2:  A3 06 1F             mov   word ptr ds:[_tmceilingz], ax
-0x00000000000000d5:  31 C0                xor   ax, ax
-0x00000000000000d7:  FF 07                inc   word ptr [bx]
-0x00000000000000d9:  A3 08 1F             mov   word ptr ds:[_numspechit], ax
-0x00000000000000dc:  F6 06 0B 1F 10       test  byte ptr ds:[_tmflags1+1], 010h
-0x00000000000000e1:  74 03                je    0xe6
-0x00000000000000e3:  E9 13 01             jmp   0x1f9
-0x00000000000000e6:  BE FA 04             mov   si, 0x4fa
-0x00000000000000e9:  BB E0 05             mov   bx, 0x5e0
-0x00000000000000ec:  8B 0C                mov   cx, word ptr [si]
-0x00000000000000ee:  2B 0F                sub   cx, word ptr [bx]
-0x00000000000000f0:  83 E9 20             sub   cx, 020h
-0x00000000000000f3:  89 C8                mov   ax, cx
-0x00000000000000f5:  30 EC                xor   ah, ch
-0x00000000000000f7:  24 60                and   al, 0x60
-0x00000000000000f9:  3D 60 00             cmp   ax, 0x60
-0x00000000000000fc:  74 03                je    0x101
-0x00000000000000fe:  E9 01 01             jmp   0x202
-0x0000000000000101:  BA 01 00             mov   dx, 1
-0x0000000000000104:  BB FE 04             mov   bx, 0x4fe
-0x0000000000000107:  BE E0 05             mov   si, 0x5e0
-0x000000000000010a:  89 C8                mov   ax, cx
-0x000000000000010c:  8B 0F                mov   cx, word ptr [bx]
-0x000000000000010e:  C1 F8 07             sar   ax, 7
-0x0000000000000111:  2B 0C                sub   cx, word ptr [si]
-0x0000000000000113:  01 C2                add   dx, ax
-0x0000000000000115:  83 C1 20             add   cx, 020h
-0x0000000000000118:  89 56 FE             mov   word ptr [bp - 2], dx
-0x000000000000011b:  F6 C1 60             test  cl, 0x60
-0x000000000000011e:  75 03                jne   0x123
-0x0000000000000120:  E9 E4 00             jmp   0x207
-0x0000000000000123:  31 D2                xor   dx, dx
-0x0000000000000125:  BE F6 04             mov   si, 0x4f6
-0x0000000000000128:  BF E2 05             mov   di, 0x5e2
-0x000000000000012b:  89 CB                mov   bx, cx
-0x000000000000012d:  8B 0C                mov   cx, word ptr [si]
-0x000000000000012f:  C1 FB 07             sar   bx, 7
-0x0000000000000132:  2B 0D                sub   cx, word ptr [di]
-0x0000000000000134:  01 DA                add   dx, bx
-0x0000000000000136:  83 E9 20             sub   cx, 020h
-0x0000000000000139:  89 56 F8             mov   word ptr [bp - 8], dx
-0x000000000000013c:  89 CA                mov   dx, cx
-0x000000000000013e:  30 EE                xor   dh, ch
-0x0000000000000140:  80 E2 60             and   dl, 0x60
-0x0000000000000143:  83 FA 60             cmp   dx, 0x60
-0x0000000000000146:  74 03                je    label_10
-0x0000000000000148:  E9 C2 00             jmp   label_11
+mov   word ptr ds:[_lastcalculatedsector], ax
+mov   word ptr ds:[_ceilinglinenum], 0FFFFh
+mov   bx, word ptr ds:[_lastcalculatedsector]
+mov   ax, SECTORS_SEGMENT
+SHIFT_MACRO shl   bx 4
+mov   es, ax
+mov   ax, word ptr es:[bx]
+add   bx, 2
+mov   word ptr ds:[_tmceilingz], ax
+mov   word ptr ds:[_tmfloorz], ax
+mov   ax, word ptr es:[bx]
+mov   bx, OFFSET _validcount_global
+mov   word ptr ds:[_tmceilingz], ax
+xor   ax, ax
+inc   word ptr [bx]
+mov   word ptr ds:[_numspechit], ax
+test  byte ptr ds:[_tmflags1+1], 010h
+je    label_24
+jmp   exit_checkthing_return_1_2
+label_24:
+mov   si, OFFSET _tmbbox + (4 * BOXRIGHT)
+mov   bx, OFFSET _bmaporgx
+mov   cx, word ptr [si]
+sub   cx, word ptr [bx]
+sub   cx, 020h
+mov   ax, cx
+xor   ah, ch
+and   al, 060h
+cmp   ax, 060h
+je    label_25
+jmp   label_26
+label_25:
+mov   dx, 1
+label_12:
+mov   bx, OFFSET _tmbbox + (4 * BOXRIGHT) + 2
+mov   si, OFFSET _bmaporgx
+mov   ax, cx
+mov   cx, word ptr [bx]
+sar   ax, 7
+sub   cx, word ptr [si]
+add   dx, ax
+add   cx, 020h ; todo
+mov   word ptr [bp - 2], dx
+test  cl, 060h  ; todo
+jne   label_22
+jmp   label_23
+label_22:
+xor   dx, dx
+label_13:
+mov   si, OFFSET _tmbbox + (4 * BOXBOTTOM) + 2
+mov   di, OFFSET _bmaporgy
+mov   bx, cx
+mov   cx, word ptr [si]
+sar   bx, 7
+sub   cx, word ptr [di]
+add   dx, bx
+sub   cx, 020h
+mov   word ptr [bp - 8], dx
+mov   dx, cx
+xor   dh, ch
+and   dl, 060h
+cmp   dx, 060h
+je    label_10
+jmp   label_11
 label_10:
-0x000000000000014b:  BE 01 00             mov   si, 1
-0x000000000000014e:  89 CA                mov   dx, cx
-0x0000000000000150:  C1 FA 07             sar   dx, 7
-0x0000000000000153:  01 D6                add   si, dx
-0x0000000000000155:  BF F2 04             mov   di, 0x4f2
-0x0000000000000158:  89 76 FA             mov   word ptr [bp - 6], si
-0x000000000000015b:  BE E2 05             mov   si, 0x5e2
-0x000000000000015e:  8B 0D                mov   cx, word ptr [di]
-0x0000000000000160:  2B 0C                sub   cx, word ptr [si]
-0x0000000000000162:  83 C1 20             add   cx, 020h
-0x0000000000000165:  F6 C1 60             test  cl, 0x60
-0x0000000000000168:  75 03                jne   label_9
-0x000000000000016a:  E9 A7 00             jmp   label_8
+mov   si, 1
+label_14:
+mov   dx, cx
+sar   dx, 7
+add   si, dx
+mov   di, OFFSET _tmbbox + (4 * BOXTOP) + 2
+mov   word ptr [bp - 6], si
+mov   si, OFFSET _bmaporgy
+mov   cx, word ptr [di]
+sub   cx, word ptr [si]
+add   cx, 020h
+test  cl, 060h
+jne   label_9
+jmp   label_8
 label_9:
-0x000000000000016d:  31 F6                xor   si, si
-0x000000000000016f:  C1 F9 07             sar   cx, 7
-0x0000000000000172:  01 CE                add   si, cx
-0x0000000000000174:  BF 01 00             mov   di, 1
-0x0000000000000177:  89 76 FC             mov   word ptr [bp - 4], si
-0x000000000000017a:  BE DE 6A             mov   si, 0x6ade
-0x000000000000017d:  E8 8A 22             call  0x240a
-0x0000000000000180:  84 C0                test  al, al
-0x0000000000000182:  74 52                je    jump_to_exit_checkthing:
-0x0000000000000184:  83 7E FE 00          cmp   word ptr [bp - 2], 0
-0x0000000000000188:  7C 4E                jl    0x1d8
-0x000000000000018a:  83 7E FA 00          cmp   word ptr [bp - 6], 0
-0x000000000000018e:  7C 67                jl    0x1f7
-0x0000000000000190:  BB DC 05             mov   bx, 0x5dc
-0x0000000000000193:  8B 46 F8             mov   ax, word ptr [bp - 8]
-0x0000000000000196:  3B 07                cmp   ax, word ptr [bx]
-0x0000000000000198:  7C 06                jl    0x1a0
-0x000000000000019a:  8B 07                mov   ax, word ptr [bx]
-0x000000000000019c:  48                   dec   ax
-0x000000000000019d:  89 46 F8             mov   word ptr [bp - 8], ax
-0x00000000000001a0:  BB DE 05             mov   bx, 0x5de
-0x00000000000001a3:  8B 46 FC             mov   ax, word ptr [bp - 4]
-0x00000000000001a6:  3B 07                cmp   ax, word ptr [bx]
-0x00000000000001a8:  7D 68                jge   0x212
-0x00000000000001aa:  BE 5A 69             mov   si, 0x695a
+xor   si, si
+label_16:
+sar   cx, 7
+add   si, cx
+mov   di, 1
+mov   word ptr [bp - 4], si
+mov   si, OFFSET PIT_CheckThing_
+call  DoBlockmapLoop_
+test  al, al
+je    jump_to_exit_checkthing:
+cmp   word ptr [bp - 2], 0
+jl    jump_to_label_4
+label_17:
+cmp   word ptr [bp - 6], 0
+jl    jump_to_label_5
+label_18:
+mov   bx, OFFSET _bmapwidth
+mov   ax, word ptr [bp - 8]
+cmp   ax, word ptr [bx]
+jl    label_21
+mov   ax, word ptr [bx]
+dec   ax
+mov   word ptr [bp - 8], ax
+label_21:
+mov   bx, OFFSEET _bmapheight
+mov   ax, word ptr [bp - 4]
+cmp   ax, word ptr [bx]
+jge   jump_to_label_15
+label_19:
+mov   si, OFFSET PIT_CheckLine_
 label_3:
-0x00000000000001ad:  8B 46 FE             mov   ax, word ptr [bp - 2]
-0x00000000000001b0:  3B 46 F8             cmp   ax, word ptr [bp - 8]
-0x00000000000001b3:  7F 44                jg    exit_checkthing_return_1_2
-0x00000000000001b5:  8B 4E FA             mov   cx, word ptr [bp - 6]
-0x00000000000001b8:  3B 4E FC             cmp   cx, word ptr [bp - 4]
-0x00000000000001bb:  7F 14                jg    label_7
-0x00000000000001bd:  8B 46 FE             mov   ax, word ptr [bp - 2]
-0x00000000000001c0:  89 F3                mov   bx, si
-0x00000000000001c2:  89 CA                mov   dx, cx
-0x00000000000001c4:  E8 F6 19             call  0x1bbd
-0x00000000000001c7:  84 C0                test  al, al
-0x00000000000001c9:  74 30                je    exit_checkthing
-0x00000000000001cb:  41                   inc   cx
-0x00000000000001cc:  3B 4E FC             cmp   cx, word ptr [bp - 4]
-0x00000000000001cf:  7E EC                jle   0x1bd
+mov   ax, word ptr [bp - 2]
+cmp   ax, word ptr [bp - 8]
+jg    exit_checkthing_return_1_2
+mov   cx, word ptr [bp - 6]
+cmp   cx, word ptr [bp - 4]
+jg    label_7
+label_20:
+mov   ax, word ptr [bp - 2]
+mov   bx, si
+mov   dx, cx
+call  P_BlockLinesIterator_
+test  al, al
+je    exit_checkthing
+inc   cx
+cmp   cx, word ptr [bp - 4]
+jle   label_20
 label_7:
-0x00000000000001d1:  FF 46 FE             inc   word ptr [bp - 2]
-0x00000000000001d4:  EB D7                jmp   label_3
+inc   word ptr [bp - 2]
+jmp   label_3
 jump_to_exit_checkthing:
-0x00000000000001d6:  EB 23                jmp   exit_checkthing
-0x00000000000001d8:  EB 40                jmp   label_4
+jmp   exit_checkthing
+jump_to_label_4:
+jmp   label_4
 label_2:
-0x00000000000001da:  8B 46 F6             mov   ax, word ptr [bp - 0Ah]
-0x00000000000001dd:  89 CB                mov   bx, cx
-0x00000000000001df:  89 FA                mov   dx, di
-0x00000000000001e1:  8B 4E 0C             mov   cx, word ptr [bp + 0Ch]
-0x00000000000001e4:  E8 99 19             call  0x1b80
-0x00000000000001e7:  89 C3                mov   bx, ax
-0x00000000000001e9:  B8 29 EA             mov   ax, 0xea29
-0x00000000000001ec:  C1 E3 02             SHIFT_MACRO shl   bx 2
-0x00000000000001ef:  8E C0                mov   es, ax
-0x00000000000001f1:  26 8B 07             mov   ax, word ptr es:[bx]
-0x00000000000001f4:  E9 B4 FE             jmp   label_6
-0x00000000000001f7:  EB 29                jmp   label_5
+mov   ax, word ptr [bp - 0Ah]
+mov   bx, cx
+mov   dx, di
+mov   cx, word ptr [bp + 0Ch]
+call  R_PointInSubsector_
+mov   bx, ax
+mov   ax, SUBSECTORS_SEGMENT
+SHIFT_MACRO shl   bx 2
+mov   es, ax
+mov   ax, word ptr es:[bx]
+jmp   label_6
+jump_to_label_5:
+jmp   label_5
 exit_checkthing_return_1_2:
-0x00000000000001f9:  B0 01                mov   al, 1
+mov   al, 1
 exit_checkthing:
-0x00000000000001fb:  C9                   LEAVE_MACRO 
-0x00000000000001fc:  5F                   pop   di
-0x00000000000001fd:  5E                   pop   si
-0x00000000000001fe:  5A                   pop   dx
-0x00000000000001ff:  C2 06 00             ret   6
-0x0000000000000202:  31 D2                xor   dx, dx
-0x0000000000000204:  E9 FD FE             jmp   0x104
-0x0000000000000207:  BA FF FF             mov   dx, 0xffff
-0x000000000000020a:  E9 18 FF             jmp   0x125
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+ret   6
+label_26:
+xor   dx, dx
+jmp   label_12
+label_23:
+mov   dx, 0FFFFh
+jmp   label_13
 label_11:
-0x000000000000020d:  31 F6                xor   si, si
-0x000000000000020f:  E9 3C FF             jmp   0x14e
-0x0000000000000212:  EB 16                jmp   0x22a
+xor   si, si
+jmp   label_14
+jump_to_label_15:
+jmp   label_15
 label_8:
-0x0000000000000214:  BE FF FF             mov   si, 0xffff
-0x0000000000000217:  E9 55 FF             jmp   0x16f
+mov   si, 0FFFFh
+jmp   label_16
 label_4:
-0x000000000000021a:  C7 46 FE 00 00       mov   word ptr [bp - 2], 0
-0x000000000000021f:  E9 68 FF             jmp   0x18a
+mov   word ptr [bp - 2], 0
+jmp   label_17
 label_5:
-0x0000000000000222:  C7 46 FA 00 00       mov   word ptr [bp - 6], 0
-0x0000000000000227:  E9 66 FF             jmp   0x190
-0x000000000000022a:  8B 07                mov   ax, word ptr [bx]
-0x000000000000022c:  48                   dec   ax
-0x000000000000022d:  89 46 FC             mov   word ptr [bp - 4], ax
-0x0000000000000230:  E9 77 FF             jmp   0x1aa
+mov   word ptr [bp - 6], 0
+jmp   label_18
+label_15:
+mov   ax, word ptr [bx]
+dec   ax
+mov   word ptr [bp - 4], ax
+jmp   label_19
 
 ENDP
 
