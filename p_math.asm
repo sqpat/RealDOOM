@@ -4037,9 +4037,6 @@ ENDP
 ; todo no stack frame or push pop di/si on this one
 exit_checkthing_return_1:
 mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
 ret   
 
 ; bp - 2      thingtype
@@ -4064,13 +4061,6 @@ ret
 PROC PIT_CheckThing_ NEAR
 PUBLIC PIT_CheckThing_
 
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 024h
-mov   si, dx
-mov   word ptr [bp - 01Ch], cx
 
 ;	if (thing == tmthing) {
 ;		return true;
@@ -4084,9 +4074,21 @@ je    exit_checkthing_return_1
 ;			return true;
 ;	}
 mov   es, cx
-mov   cx, word ptr es:[bx + 014h]
-test  cl, (MF_SOLID OR MF_SPECIAL OR MF_SHOOTABLE)
+;mov   cx, word ptr es:[bx + 014h]
+test  byte ptr es:[bx + 014h], (MF_SOLID OR MF_SPECIAL OR MF_SHOOTABLE)
 je    exit_checkthing_return_1
+
+; NOW do stack frame.
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 024h
+mov   si, dx
+mov   word ptr [bp - 01Ch], cx
+
+mov   cx, word ptr es:[bx + 014h]
+
 
 ; todo investigate not doing this..
 ;	thingtype = thing->type;
@@ -4226,7 +4228,7 @@ dont_touch_anything:
 cmp   byte ptr [bp - 4], 0
 jne   exit_checkthing_return_0_2
 jump_to_exit_checkthing_return_1_2:
-jmp   exit_checkthing_return_1
+jmp   exit_checkthing_return_1_3
 exit_checkthing_return_0_2:
 xor   al, al
 LEAVE_MACRO 
@@ -4246,29 +4248,44 @@ ret
 
 jump_to_exit_checkthing_return_0:
 jmp   exit_checkthing_return_0
-jump_to_label_23:
-jmp   label_23
 do_missile_collision:
+
+;		// see if it went over / under
+;		if (tmthingz.w > thingz.w + thingheight.w) {
+;			return true;		// overhead
+;		}
+
 mov   bx, word ptr [bp - 0Ch]
 add   bx, word ptr [bp - 012h]
 mov   dx, word ptr [bp - 8]
 adc   dx, word ptr [bp - 01Ah]
 cmp   ax, dx
 jg    exit_checkthing_return_1_3
-jne   label_21
+jne   did_not_go_over
 cmp   bx, word ptr [bp - 0Ah]
 jb    exit_checkthing_return_1_3
-label_21:
+did_not_go_over:
+
+; todo reuse tmthingz?
+
+;		if (tmthingz.w + tmthingheight.w < thingz.w) {
+;			return true;		// underneath
+;		}
+
 mov   dx, word ptr [bp - 0Ah]
 add   dx, word ptr [bp - 016h]
 adc   ax, word ptr [bp - 014h]
 cmp   ax, word ptr [bp - 8]
 jl    exit_checkthing_return_1_3
-jne   label_22
+jne   did_not_go_under
 cmp   dx, word ptr [bp - 0Ch]
 jb    exit_checkthing_return_1_3
-label_22:
+did_not_go_under:
 
+; tmthingtarget
+
+; this looks buggy! check if tmthingtargetref is NULL_THINKERREF
+;		tmthingTarget = (mobj_t __near*)&thinkerlist[tmthingtargetRef].data;
 
 imul  bx, word ptr [bp - 020h], SIZEOF_THINKER_T
 add   bx, (_thinkerlist + 4)
@@ -4279,14 +4296,14 @@ jne   label_18
 label_14:
 cmp   si, bx
 jne   label_19
-jmp   exit_checkthing_return_1
+jmp   exit_checkthing_return_1_3
 label_19:
 cmp   byte ptr [bp - 2], 0
 jne   jump_to_exit_checkthing_return_0
 label_13:
-test  cl, 4
-jne   jump_to_label_23
-test  cl, 2
+test  cl, MF_SHOOTABLE
+jne   label_23
+test  cl, MF_SOLID
 jne   jump_to_exit_checkthing_return_0
 mov   al, 1
 LEAVE_MACRO 
@@ -4302,7 +4319,7 @@ do_skull_fly_into_thing:
 call  P_Random_
 and   ax, 7
 inc   ax
-xchg  ax, cx
+xchg  ax, cx  ; store random in cl
 mov   bx, word ptr ds:[_tmthing]
 mov   al, byte ptr [bx + 01Ah]
 
@@ -4323,16 +4340,21 @@ call  P_DamageMobj_
 les   bx, dword ptr ds:[_tmthing_pos]
 and   byte ptr es:[bx + 017h], ((NOT MF_SKULLFLY) SHR 8)  ; 0FEh
 mov   bx, word ptr ds:[_tmthing]
+lea   di, [bx + 0Eh]
 ;		tmthing->momx.w = tmthing->momy.w = tmthing->momz.w = 0;
+mov   cx, 6
+mov   ax, ds
+mov   es, ax
 xor   ax, ax
-mov   word ptr [bx + 018h], ax
-mov   word ptr [bx + 016h], ax
-mov   word ptr [bx + 014h], ax
-mov   word ptr [bx + 012h], ax
-mov   word ptr [bx + 010h], ax
-mov   word ptr [bx + 0Eh], ax
+rep   stosw
+;mov   word ptr [bx + 018h], ax
+;mov   word ptr [bx + 016h], ax
+;mov   word ptr [bx + 014h], ax
+;mov   word ptr [bx + 012h], ax
+;mov   word ptr [bx + 010h], ax
+;mov   word ptr [bx + 0Eh], ax
 
-mov   al, byte ptr [bx + 01Ah]
+mov   al, byte ptr [di]  ; bx + 01Ah
 mov   dl, SIZEOF_MOBJINFO_T
 mul   dl
 
@@ -4349,20 +4371,24 @@ pop   di
 pop   si
 ret   
 label_18:
-cmp   al, 011h   ;todo
-jne   label_16
-cmp   byte ptr [bp - 2], 0Fh   ; todo
-jne   label_16
-label_12:
+
+;			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
+
+cmp   al, MT_KNIGHT
+jne   not_knight_or_bruiser_interaction
+cmp   byte ptr [bp - 2], MT_BRUISER
+jne   not_knight_or_bruiser_interaction
+jump_to_label_14:
 jmp   label_14
-label_16:
-cmp   al, 0Fh   ;todo
-je    label_15
+not_knight_or_bruiser_interaction:
+cmp   al, MT_BRUISER
+je    continue_knightbruiser_check_in_reverse
 jmp   label_13
-label_15:
-cmp   byte ptr [bp - 2], 011h  ; todo
-je    label_12
+continue_knightbruiser_check_in_reverse:
+cmp   byte ptr [bp - 2], MT_KNIGHT
+je    jump_to_label_14
 jmp   label_13
+
 label_23:
 call  P_Random_
 xor   ah, ah
