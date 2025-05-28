@@ -4756,7 +4756,19 @@ ENDP
 PROC P_SlideMove_ NEAR
 PUBLIC P_SlideMove_ 
 
-; todo pusha
+; bp - 2    leadx lo   (di hi)
+; bp - 4    trailx hi
+; bp - 6    traily hi
+; bp - 8    traily lo
+; bp - 0Ah  unused
+; bp - 0Ch  
+; bp - 0Eh  
+
+; bp - 010h trailx lo
+; bp - 012h
+; bp - 014h leady lo (si high)
+; bp - 016h
+
 
 PUSHA_NO_AX_MACRO
 push  bp
@@ -4764,13 +4776,22 @@ mov   bp, sp
 sub   sp, 016h
 mov   word ptr [bp - 0Ch], 3
 slidemove_retry:
-mov   byte ptr [bp - 9], 0
+
+;	temp.h.fracbits = 0;
+;	temp.h.intbits = playerMobj->radius;
+;	leadx = playerMobj_pos->x;
+;	trailx = playerMobj_pos->x;
+;	leady = playerMobj_pos->y;
+;	traily = playerMobj_pos->y;
+
+
+
 mov   bx, word ptr ds:[_playerMobj]
 les   si, dword ptr ds:[_playerMobj_pos]
-mov   al, byte ptr [bx + 01Eh]
-xor   dx, dx
-mov   byte ptr [bp - 0Ah], al
-mov   ax, word ptr [bp - 0Ah]
+xor   ax, ax
+mov   dx, ax
+mov   al, byte ptr [bx + 01Eh]  ; radius
+
 mov   cx, word ptr es:[si]
 mov   di, word ptr es:[si + 2]
 mov   word ptr [bp - 2], cx
@@ -4781,52 +4802,77 @@ mov   word ptr [bp - 014h], cx
 mov   si, word ptr es:[si + 6]
 mov   word ptr [bp - 8], cx
 mov   word ptr [bp - 6], si
+
+;	if (playerMobj->momx.w > 0) {
+;		leadx.h.intbits += temp.h.intbits;
+;		trailx.w -= temp.w;
+;    } else {
+;		leadx.w -= temp.w;
+;		trailx.h.intbits += temp.h.intbits;
+;    }
+
 cmp   word ptr [bx + 010h], 0
-jg    label_1
-jne   label_3
+jg    momx_greater_than_zero
+jne   momx_lte_0
 cmp   word ptr [bx + 0Eh], 0
-jnbe  label_1
-label_3:
+jnbe  momx_greater_than_zero
+momx_lte_0:
 sub   word ptr [bp - 2], dx
 sbb   di, ax
 add   word ptr [bp - 4], ax
-jmp   label_13
+jmp   done_with_momx_check
 
-label_1:
-mov   bx, word ptr [bp - 2]
+momx_greater_than_zero:
 add   di, ax
-sub   bx, dx
-mov   word ptr [bp - 010h], bx
+sub   word ptr [bp - 010h], dx
 sbb   word ptr [bp - 4], ax
 
-label_13:
+done_with_momx_check:
+
+;    if (playerMobj->momy.w > 0) {
+;		leady.h.intbits += temp.h.intbits;
+;		traily.w -= temp.w;
+;    } else {
+;		leady.w -= temp.w;
+;		traily.h.intbits += temp.h.intbits;
+;    } 
+
 mov   bx, word ptr ds:[_playerMobj]
 cmp   word ptr [bx + 014h], 0
-jg    label_4
-jne    label_6
+jg    momy_greater_than_zero
+jne    momy_lte_0
 cmp   word ptr [bx + 012h], 0
-jnbe  label_4
+jnbe  momy_greater_than_zero
 
-label_6:
+momy_lte_0:
 sub   word ptr [bp - 014h], dx
 sbb   si, ax
 add   word ptr [bp - 6], ax
-jmp   label_14
+jmp   done_with_momy_check
 
-label_4:
+momy_greater_than_zero:
 add   si, ax
 sub   word ptr [bp - 8], dx
 sbb   word ptr [bp - 6], ax
 
-label_14:
+done_with_momy_check:
+
+;	bestslidefrac.w = FRACUNIT + 1;
+
 mov   ax, 1
+mov   word ptr ds:[_bestslidefrac], ax
+mov   word ptr ds:[_bestslidefrac+2], ax
+
+;	temp.w = leadx.w + playerMobj->momx.w;
+;	temp2.w = leady.w + playerMobj->momy.w;
+;	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
+
+
 mov   dx, word ptr [bp - 2]
 mov   cx, word ptr [bp - 014h]
 push  OFFSET PTR_SlideTraverse_
 mov   bx, word ptr ds:[_playerMobj]
 push  PT_ADDLINES
-mov   word ptr ds:[_bestslidefrac], ax
-mov   word ptr ds:[_bestslidefrac+2], ax
 add   dx, word ptr [bx + 0Eh]
 mov   ax, word ptr [bx + 010h]
 adc   ax, di
