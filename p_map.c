@@ -636,11 +636,13 @@ boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_u
 	//xl = ((int16_t)blocktemp.b.bytelow << 1) + (blocktemp.b.bytehigh & 0x80 ? 1 : 0); // messy math to avoid shift 7
 	xl = blocktemp.h >> MAPBLOCKSHIFT;
 	xl2 += xl;
+
 	blocktemp.h = (tmbbox[BOXRIGHT].h.intbits - bmaporgx + MAXRADIUSNONFRAC);
 	xh2 = blocktemp.h & 0x0060 ? 0 : -1; // if niether 64 nor 32 bit are set then we added from one 128 aligned block up. sub 1 later
 //	xh = ((int16_t)blocktemp.b.bytelow << 1) + (blocktemp.b.bytehigh & 0x80 ? 1 : 0);
 	xh = blocktemp.h >> MAPBLOCKSHIFT;
 	xh2 += xh;
+
 	blocktemp.h = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC);
 	yl2 = (blocktemp.h & 0x0060) == 0x0060 ? 1 : 0;
 	//yl = ((int16_t)blocktemp.b.bytelow << 1) + (blocktemp.b.bytehigh & 0x80 ? 1 : 0);
@@ -961,6 +963,8 @@ boolean __near PTR_SlideTraverse (intercept_t __far* in) {
 //
 // This is a kludgy mess.
 //
+
+/*
 void __near P_SlideMove (){
     fixed_t_union		leadx;
 	fixed_t_union		leady;
@@ -1086,7 +1090,7 @@ void __near P_SlideMove (){
     }
 }
 
-
+*/
 
 
 //
