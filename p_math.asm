@@ -4524,74 +4524,148 @@ xor   ax, ax
 inc   word ptr ds:[_validcount_global]
 mov   word ptr ds:[_numspechit], ax
 test  byte ptr ds:[_tmflags1+1], (MF_NOCLIP SHR 8 )
-je    label_24
-jmp   exit_checkposition_return_1_2
-label_24:
-
-; todo redo this
-
-;    xl = (tmbbox[BOXLEFT] - bmaporgx - MAXRADIUS) >> MAPBLOCKSHIFT;
-;    xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS) >> MAPBLOCKSHIFT;
-;    yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS) >> MAPBLOCKSHIFT;
-;    yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS) >> MAPBLOCKSHIFT;
+je    set_up_blockmap_loop
+exit_checkposition_return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   4
+set_up_blockmap_loop:
 
 
-mov   cx, word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2]
-sub   cx, word ptr ds:[_bmaporgx]
-sub   cx, MAXRADIUSNONFRAC
-mov   ax, cx
-xor   ah, ch
-and   al, 060h
-mov   dx, 1
-cmp   ax, 060h
-je    label_12
-dec   dx ; 0
-label_12:
-mov   ax, cx
-mov   cx, word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2]
-sar   ax, 7
-sub   cx, word ptr ds:[_bmaporgx]
-add   dx, ax
-add   cx, MAXRADIUSNONFRAC
-mov   word ptr [bp - 2], dx
-xor   dx, dx
-test  cl, 060h  ; todo
-jne   label_13
-dec   dx  ; -1
-label_13:
-mov   bx, cx
-mov   cx, word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2]
-sar   bx, 7
-sub   cx, word ptr ds:[_bmaporgy]
-add   dx, bx
-sub   cx, MAXRADIUSNONFRAC
-mov   word ptr [bp - 8], dx
-mov   dx, cx
-xor   dh, ch
-and   dl, 060h
-mov   si, 1
-cmp   dx, 060h
-je    label_14
-dec   si ; 0
-label_14:
-mov   dx, cx
-sar   dx, 7
-add   si, dx
-mov   word ptr [bp - 6], si
-mov   cx, word ptr ds:[_tmbbox + (4 * BOXTOP) + 2]
-sub   cx, word ptr ds:[_bmaporgy]
-add   cx, MAXRADIUSNONFRAC
-xor   si, si
-test  cl, 060h
-jne   label_16
-dec   si ; -1
-label_16:
-sar   cx, 7
-add   si, cx
-mov   di, 1
-mov   word ptr [bp - 4], si
+;	blocktemp.h = (tmbbox[BOXLEFT].h.intbits - bmaporgx - MAXRADIUSNONFRAC);
+;	xl2 = (blocktemp.h & 0x0060) == 0x0060 ? 1 : 0; // if 64 and 32 bit are set then we subtracted from one 128 aligned block down. add 1 later
+;	xl = blocktemp.h >> MAPBLOCKSHIFT;
+;	xl2 += xl;
+
+mov   di, MAXRADIUSNONFRAC
+mov   ch, 040h  ; (0100h - 0C0h)  the point is to catch 01100000 bit pattern. shift left 1 then add 64 and catch carry flags
+
+mov   si, word ptr ds:[_bmaporgx]
+mov   ax, word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2]
+sub   ax, si
+sub   ax, di
+
+;// if 64 and 32 bit are set then we subtracted from one 128 aligned block down. add 1 later
+
+
+; shift ax 7 and give cl 1 shifted left
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    mov   cl, al
+    sar   ax, MAPBLOCKSHIFT
+    sal   cl, 1
+
+ELSE
+	sal al, 1
+    mov cl, al
+	mov al, ah
+	cbw
+	rcl ax, 1
+ENDIF
+
+add   cl, ch ; (192 + 64 = 256, hits carry flag)
+mov   es, ax  ; es stores xl
+adc   ax, 0
+mov   word ptr [bp - 2], ax
+
+
+;	blocktemp.h = (tmbbox[BOXRIGHT].h.intbits - bmaporgx + MAXRADIUSNONFRAC);
+;	xh2 = blocktemp.h & 0x0060 ? 0 : -1; // if niether 64 nor 32 bit are set then we added from one 128 aligned block up. sub 1 later
+;	xh = blocktemp.h >> MAPBLOCKSHIFT;
+;	xh2 += xh;
+
+mov   ax, word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2]
+sub   ax, si
+add   ax, di
+
+mov   cl, al
+
+; shift ax 7
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+ENDIF
+
+and   cl, 060h
+add   cl, 0FFh
+mov   bx, ax   ; bx stores xh
+adc   ax, 0FFFFh
+mov   word ptr [bp - 8], ax
+
+
+;	blocktemp.h = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC);
+;	yl2 = (blocktemp.h & 0x0060) == 0x0060 ? 1 : 0;
+;	yl = blocktemp.h >> MAPBLOCKSHIFT;
+;	yl2 += yl;
+
+mov   si, word ptr ds:[_bmaporgy]
+
+mov   ax, word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2]
+sub   ax, si
+sub   ax, di
+
+; shift ax 7 and give cl 1 shifted left
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    mov   cl, al
+    sar   ax, MAPBLOCKSHIFT
+    sal   cl, 1
+
+ELSE
+	sal al, 1
+    mov cl, al
+	mov al, ah
+	cbw
+	rcl ax, 1
+ENDIF
+
+add   cl, ch ; (192 + 64 = 256, hits carry flag)
+mov   dx, ax   ; dx stores yl
+adc   ax, 0
+mov   word ptr [bp - 6], ax
+
+;	blocktemp.h = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC);
+;	yh2 = blocktemp.h & 0x0060 ? 0 : -1;
+;	yh = blocktemp.h >> MAPBLOCKSHIFT;
+;	yh2 += yh;
+
+mov   ax, word ptr ds:[_tmbbox + (4 * BOXTOP) + 2]
+sub   ax, si
+add   ax, di
+
+mov   cl, al
+
+; shift ax 7
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+ENDIF
+
+and   cl, 060h
+add   cl, 0FFh
+mov   cx, ax  ; cx gets yh
+adc   ax, 0FFFFh
+mov   word ptr [bp - 4], ax
+
+;	if (!DoBlockmapLoop(xl, yl, xh, yh, PIT_CheckThing, true)){
+
+mov   di, 1     ; true
+mov   ax, es	; di gets 1
 mov   si, OFFSET PIT_CheckThing_
 call  DoBlockmapLoop_
+
 test  al, al
 je    exit_checkposition
 cmp   word ptr [bp - 2], 0
