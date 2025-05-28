@@ -4762,13 +4762,8 @@ PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 016h
-mov   word ptr [bp - 0Ch], 0
-label_18:
-inc   word ptr [bp - 0Ch]
-cmp   word ptr [bp - 0Ch], 3
-jne   label_16
-jmp   label_8
-label_16:
+mov   word ptr [bp - 0Ch], 3
+slidemove_retry:
 mov   byte ptr [bp - 9], 0
 mov   bx, word ptr ds:[_playerMobj]
 les   si, dword ptr ds:[_playerMobj_pos]
@@ -4788,32 +4783,41 @@ mov   word ptr [bp - 8], cx
 mov   word ptr [bp - 6], si
 cmp   word ptr [bx + 010h], 0
 jg    label_1
-je    label_2
-jump_to_label_3:
-jmp   label_3
-label_2:
+jne   label_3
 cmp   word ptr [bx + 0Eh], 0
-jbe   jump_to_label_3
+jnbe  label_1
+label_3:
+sub   word ptr [bp - 2], dx
+sbb   di, ax
+add   word ptr [bp - 4], ax
+jmp   label_13
+
 label_1:
 mov   bx, word ptr [bp - 2]
 add   di, ax
 sub   bx, dx
 mov   word ptr [bp - 010h], bx
 sbb   word ptr [bp - 4], ax
+
 label_13:
 mov   bx, word ptr ds:[_playerMobj]
 cmp   word ptr [bx + 014h], 0
 jg    label_4
-je    label_5
-jump_to_label_6:
-jmp   label_6
-label_5:
+jne    label_6
 cmp   word ptr [bx + 012h], 0
-jbe   jump_to_label_6
+jnbe  label_4
+
+label_6:
+sub   word ptr [bp - 014h], dx
+sbb   si, ax
+add   word ptr [bp - 6], ax
+jmp   label_14
+
 label_4:
 add   si, ax
 sub   word ptr [bp - 8], dx
 sbb   word ptr [bp - 6], ax
+
 label_14:
 mov   ax, 1
 mov   dx, word ptr [bp - 2]
@@ -4886,7 +4890,7 @@ cmp   word ptr ds:[_bestslidefrac+2], 1
 jne   label_7
 cmp   word ptr ds:[_bestslidefrac], 1
 jne   label_7
-jmp   label_8
+jmp   stairstep
 label_7:
 add   word ptr ds:[_bestslidefrac], 0F800h
 adc   word ptr ds:[_bestslidefrac+2], -1
@@ -4944,22 +4948,17 @@ mov   cx, es
 call  P_TryMove_
 test  al, al
 jne   exit_slidemove
-jmp   label_18
+
+dec   word ptr [bp - 0Ch]
+jz    stairstep
+jmp   slidemove_retry
+
 exit_slidemove:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 ret   
-label_3:
-sub   word ptr [bp - 2], dx
-sbb   di, ax
-add   word ptr [bp - 4], ax
-jmp   label_13
-label_6:
-sub   word ptr [bp - 014h], dx
-sbb   si, ax
-add   word ptr [bp - 6], ax
-jmp   label_14
-label_8:
+
+stairstep:
 les   bx, dword ptr ds:[_playerMobj_pos]
 mov   si, word ptr ds:[_playerMobj]
 mov   ax, word ptr es:[bx + 4]
@@ -4969,9 +4968,9 @@ adc   dx, word ptr [si + 014h]
 push  dx
 push  ax
 push  word ptr es:[bx + 2]
-mov   cx, es
 push  word ptr es:[bx]
-mov   ax, si
+mov   cx, es
+xchg  ax, si
 call  P_TryMove_
 test  al, al
 jne   exit_slidemove
@@ -5026,7 +5025,7 @@ mov   ax, word ptr ds:[_playerMobj]
 call  P_TryMove_
 test  al, al
 jne   jump_to_label_9
-jmp   label_8
+jmp   stairstep   ; 3D bytes off..
 jump_to_label_9:
 jmp   label_9
 label_12:
