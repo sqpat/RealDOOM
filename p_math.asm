@@ -4426,6 +4426,13 @@ ENDP
 PROC P_CheckPosition_ NEAR
 PUBLIC P_CheckPosition_
 
+; - bp - 2   xl2
+; - bp - 4   yh2
+; - bp - 6   yl2
+; - bp - 8   xh2
+; - bp - 0Ah x lowbits (bx)   (di is hibits)
+; - bp - 0Eh x oldsecnum (dx)
+
 ;   y hi ; + 0Ah
 ;   y lo ; + 8
 ;     ip ; + 6      
@@ -4450,19 +4457,17 @@ mov   word ptr ds:[_tmthing_pos+0], bx
 mov   word ptr ds:[_tmthing_pos+2], ax  ;todo remove once fixed?
 mov   es, ax
 mov   ax, word ptr es:[bx + 014h]
-; todo use tmbbox base here
-mov   bx, OFFSET _tmbbox + (4 * BOXTOP)
+
 mov   word ptr ds:[_tmflags1], ax
 mov   ax, word ptr [bp - 0Ah]
-mov   word ptr [bx], cx
+mov   word ptr ds:[_tmbbox + (4 * BOXTOP)], cx
 mov   word ptr ds:[_tmx+0], ax
-mov   ax, word ptr [bp + 0Ch]
-mov   word ptr [bx + 2], ax
+mov   ax, word ptr [bp + 0Ah]
+mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
 mov   word ptr ds:[_tmy+2], ax
 mov   al, byte ptr [si + 01Eh]
-mov   bx, OFFSET _tmbbox + (4 * BOXTOP) + 2
 xor   ah, ah
-add   word ptr [bx], ax
+add   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
 mov   al, byte ptr [si + 01Eh]
 mov   dx, ax
 mov   ax, cx
@@ -4470,29 +4475,26 @@ sub   ax, 0
 mov   bx, word ptr [bp + 0Ah]
 sbb   bx, dx
 mov   word ptr [bp - 0Ch], bx
-mov   bx, OFFSET _tmbbox + (4 * BOXBOTTOM)
-mov   word ptr [bx], ax
+
+mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)], ax
 mov   ax, word ptr [bp - 0Ch]
-mov   word ptr [bx + 2], ax
-mov   bx, OFFSET _tmbbox + (4 * BOXRIGHT)
+mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)+ 2], ax
 mov   ax, word ptr [bp - 0Ah]
-mov   word ptr [bx], ax
-mov   word ptr [bx + 2], di
+mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT)], ax
+mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], di
 mov   word ptr ds:[_tmx+2], di
 mov   al, byte ptr [si + 01Eh]
-mov   bx, OFFSET _tmbbox + (4 * BOXRIGHT) + 2
 xor   ah, ah
 mov   si, word ptr [bp - 0Ah]
-add   word ptr [bx], ax
-mov   bx, OFFSET _tmbbox + (4 * BOXLEFT)
+add   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], ax
 sub   si, 0
 mov   ax, di
 sbb   ax, dx
 mov   word ptr ds:[_tmy+0], cx
-mov   word ptr [bx + 2], ax
+mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2], ax
 mov   ax, word ptr [bp - 0Eh]
-mov   word ptr [bx], si
-cmp   ax, 0FFFFh
+mov   word ptr ds:[_tmbbox + (4 * BOXLEFT)], si
+cmp   ax, -1
 jne   use_cached_secnum
 mov   ax, word ptr [bp - 0Ah]
 mov   bx, cx
@@ -4521,13 +4523,22 @@ mov   word ptr ds:[_tmceilingz], ax
 xor   ax, ax
 inc   word ptr ds:[_validcount_global]
 mov   word ptr ds:[_numspechit], ax
-test  byte ptr ds:[_tmflags1+1], 010h
+test  byte ptr ds:[_tmflags1+1], (MF_NOCLIP SHR 8 )
 je    label_24
 jmp   exit_checkposition_return_1_2
 label_24:
+
+; todo redo this
+
+;    xl = (tmbbox[BOXLEFT] - bmaporgx - MAXRADIUS) >> MAPBLOCKSHIFT;
+;    xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS) >> MAPBLOCKSHIFT;
+;    yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS) >> MAPBLOCKSHIFT;
+;    yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS) >> MAPBLOCKSHIFT;
+
+
 mov   cx, word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2]
 sub   cx, word ptr ds:[_bmaporgx]
-sub   cx, 020h
+sub   cx, MAXRADIUSNONFRAC
 mov   ax, cx
 xor   ah, ch
 and   al, 060h
@@ -4541,7 +4552,7 @@ mov   cx, word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2]
 sar   ax, 7
 sub   cx, word ptr ds:[_bmaporgx]
 add   dx, ax
-add   cx, 020h ; todo
+add   cx, MAXRADIUSNONFRAC
 mov   word ptr [bp - 2], dx
 xor   dx, dx
 test  cl, 060h  ; todo
@@ -4553,7 +4564,7 @@ mov   cx, word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2]
 sar   bx, 7
 sub   cx, word ptr ds:[_bmaporgy]
 add   dx, bx
-sub   cx, 020h
+sub   cx, MAXRADIUSNONFRAC
 mov   word ptr [bp - 8], dx
 mov   dx, cx
 xor   dh, ch
@@ -4569,7 +4580,7 @@ add   si, dx
 mov   word ptr [bp - 6], si
 mov   cx, word ptr ds:[_tmbbox + (4 * BOXTOP) + 2]
 sub   cx, word ptr ds:[_bmaporgy]
-add   cx, 020h
+add   cx, MAXRADIUSNONFRAC
 xor   si, si
 test  cl, 060h
 jne   label_16
@@ -4591,19 +4602,15 @@ cmp   word ptr [bp - 6], 0
 jnl   label_18
 mov   word ptr [bp - 6], 0
 label_18:
-mov   bx, OFFSET _bmapwidth
-mov   ax, word ptr [bp - 8]
-cmp   ax, word ptr [bx]
-jl    label_21
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[_bmapwidth]
+cmp   ax, word ptr [bp - 8]
+jnl   label_21
 dec   ax
 mov   word ptr [bp - 8], ax
 label_21:
-mov   bx, OFFSET _bmapheight
-mov   ax, word ptr [bp - 4]
-cmp   ax, word ptr [bx]
-jnge  label_19
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[_bmapheight]
+cmp   ax, word ptr [bp - 4]
+jge  label_19
 dec   ax
 mov   word ptr [bp - 4], ax
 
