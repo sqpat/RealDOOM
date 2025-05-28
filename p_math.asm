@@ -4448,7 +4448,6 @@ push  dx  ; bp - 2
 push  bx  ; bp - 4
 mov   si, ax ; thing ptr
 mov   di, cx
-mov   cx, word ptr [bp + 8]
 mov   bx, SIZEOF_THINKER_T
 mov   word ptr ds:[_tmthing], ax
 sub   ax, (_thinkerlist + 4)
@@ -4462,39 +4461,44 @@ mov   es, ax
 mov   ax, word ptr es:[bx + 014h]
 
 mov   word ptr ds:[_tmflags1], ax
+
+
+mov   ax, word ptr [bp + 8]
+mov   word ptr ds:[_tmbbox + (4 * BOXTOP)], ax
+mov   word ptr ds:[_tmy+0], ax
+mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)], ax
+xchg  ax, cx
+
 mov   ax, word ptr [bp - 4]
-mov   word ptr ds:[_tmbbox + (4 * BOXTOP)], cx
 mov   word ptr ds:[_tmx+0], ax
-mov   ax, word ptr [bp + 0Ah]
-mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
-mov   word ptr ds:[_tmy+2], ax
+mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT)], ax
+mov   word ptr ds:[_tmbbox + (4 * BOXLEFT)], ax
+
+
+
 mov   al, byte ptr [si + 01Eh]
 xor   ah, ah
-add   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
+mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
 mov   al, byte ptr [si + 01Eh]
-mov   dx, ax
-mov   ax, cx
-sub   ax, 0
-mov   bx, word ptr [bp + 0Ah]
-sbb   bx, dx
+xchg  ax, dx
 
-mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)], ax
-mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)+ 2], bx
-mov   ax, word ptr [bp - 4]
-mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT)], ax
+mov   ax, word ptr [bp + 0Ah]
+add   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
+mov   word ptr ds:[_tmy+2], ax
+
+sub   ax, dx
+mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)+ 2], ax
+
 mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], di
 mov   word ptr ds:[_tmx+2], di
+
 mov   al, byte ptr [si + 01Eh]
 xor   ah, ah
-mov   si, word ptr [bp - 4]
 add   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], ax
-sub   si, 0
 mov   ax, di
-sbb   ax, dx
-mov   word ptr ds:[_tmy+0], cx
+sub   ax, dx
 mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2], ax
 mov   ax, word ptr [bp - 2]
-mov   word ptr ds:[_tmbbox + (4 * BOXLEFT)], si
 cmp   ax, -1
 jne   use_cached_secnum
 mov   ax, word ptr [bp - 4]
