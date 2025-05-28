@@ -4449,7 +4449,7 @@ mov   cx, word ptr [bp + 8]
 mov   bx, SIZEOF_THINKER_T
 mov   word ptr ds:[_tmthing], ax
 sub   ax, (_thinkerlist + 4)
-cwd
+xor   dx, dx  ; cwd seems bad??? are we passing in -1?
 div   bx
 imul  bx, ax, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
