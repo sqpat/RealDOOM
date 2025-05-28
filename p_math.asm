@@ -4668,48 +4668,70 @@ call  DoBlockmapLoop_
 
 test  al, al
 je    exit_checkposition
+
+;	if (xl2 < 0) xl2 = 0;
+;	if (yl2 < 0) yl2 = 0;
+
+
 cmp   word ptr [bp - 2], 0
-jnl   label_17
+jnl   dont_zero_xl2
 mov   word ptr [bp - 2], 0
-label_17:
+dont_zero_xl2:
 cmp   word ptr [bp - 6], 0
-jnl   label_18
+jnl   dont_zero_yl2
 mov   word ptr [bp - 6], 0
-label_18:
+dont_zero_yl2:
+
+;	if (xh2 >= bmapwidth) {
+;		xh2 = bmapwidth - 1;
+;	}
+;	if (yh2 >= bmapheight) {
+;		yh2 = bmapheight - 1;
+;	}
+
 mov   ax, word ptr ds:[_bmapwidth]
 cmp   ax, word ptr [bp - 8]
-jnl   label_21
+jnl   dont_cap_xh2
 dec   ax
 mov   word ptr [bp - 8], ax
-label_21:
+dont_cap_xh2:
 mov   ax, word ptr ds:[_bmapheight]
 cmp   ax, word ptr [bp - 4]
-jge  label_19
+jge  dont_cap_yh2
 dec   ax
 mov   word ptr [bp - 4], ax
+dont_cap_yh2:
 
-label_19:
-; si free
-label_3:
-mov   ax, word ptr [bp - 2]
-cmp   ax, word ptr [bp - 8]
+;	for (; xl2 <= xh2; xl2++) {
+;		for (by = yl2; by <= yh2; by++) {
+;			if (!P_BlockLinesIterator(xl2, by, PIT_CheckLine)) {
+;				return false;
+;			}
+;		}
+;	}
+
+les   di, dword ptr [bp - 4]
+mov   si, es
+
+check_position_do_next_x_loop:
+cmp   si, word ptr [bp - 8]  ; cl2 < xh2
 jg    exit_checkposition_return_1_2
-mov   cx, word ptr [bp - 6]
-cmp   cx, word ptr [bp - 4]
-jg    label_7
-label_20:
-mov   ax, word ptr [bp - 2]
+mov   cx, word ptr [bp - 6]   ; by = yl2
+cmp   cx, di   				  ; cmp yh2
+jg    check_position_increment_x_loop
+check_position_do_next_y_loop:
+mov   ax, si
 mov   bx, OFFSET PIT_CheckLine_
 mov   dx, cx
 call  P_BlockLinesIterator_
 test  al, al
 je    exit_checkposition  ; return 0
 inc   cx
-cmp   cx, word ptr [bp - 4]
-jle   label_20
-label_7:
-inc   word ptr [bp - 2]
-jmp   label_3
+cmp   cx, di
+jle   check_position_do_next_y_loop
+check_position_increment_x_loop:
+inc   si
+jmp   check_position_do_next_x_loop
 
 exit_checkposition_return_1_2:
 mov   al, 1
