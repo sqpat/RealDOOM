@@ -4422,17 +4422,19 @@ ret
 ENDP
 
 
+; todo push stuff
+
 ; boolean __near P_CheckPosition (mobj_t __near* thing, int16_t oldsecnum, fixed_t_union	x, fixed_t_union	y );
 
 PROC P_CheckPosition_ NEAR
 PUBLIC P_CheckPosition_
 
-; - bp - 2   xl2
-; - bp - 4   yh2
-; - bp - 6   yl2
+; - bp - 2   oldsecnum (dx)
+; - bp - 4   x lowbits (bx)   (di is hibits)
+; - bp - 6   xl2
 ; - bp - 8   xh2
-; - bp - 0Ah x lowbits (bx)   (di is hibits)
-; - bp - 0Eh x oldsecnum (dx)
+; - bp - 0Ah yl2
+; - bp - 0Ch yh2
 
 ;   y hi ; + 0Ah
 ;   y lo ; + 8
@@ -4441,10 +4443,10 @@ push  si ; + 4
 push  di ; + 2
 push  bp ; + 0
 mov   bp, sp
-sub   sp, 0Ch
-push  dx  ; bp - 0Eh
+
+push  dx  ; bp - 2
+push  bx  ; bp - 4
 mov   si, ax ; thing ptr
-mov   word ptr [bp - 0Ah], bx
 mov   di, cx
 mov   cx, word ptr [bp + 8]
 mov   bx, SIZEOF_THINKER_T
@@ -4460,7 +4462,7 @@ mov   es, ax
 mov   ax, word ptr es:[bx + 014h]
 
 mov   word ptr ds:[_tmflags1], ax
-mov   ax, word ptr [bp - 0Ah]
+mov   ax, word ptr [bp - 4]
 mov   word ptr ds:[_tmbbox + (4 * BOXTOP)], cx
 mov   word ptr ds:[_tmx+0], ax
 mov   ax, word ptr [bp + 0Ah]
@@ -4475,29 +4477,27 @@ mov   ax, cx
 sub   ax, 0
 mov   bx, word ptr [bp + 0Ah]
 sbb   bx, dx
-mov   word ptr [bp - 0Ch], bx
 
 mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)], ax
-mov   ax, word ptr [bp - 0Ch]
-mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)+ 2], ax
-mov   ax, word ptr [bp - 0Ah]
+mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)+ 2], bx
+mov   ax, word ptr [bp - 4]
 mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT)], ax
 mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], di
 mov   word ptr ds:[_tmx+2], di
 mov   al, byte ptr [si + 01Eh]
 xor   ah, ah
-mov   si, word ptr [bp - 0Ah]
+mov   si, word ptr [bp - 4]
 add   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], ax
 sub   si, 0
 mov   ax, di
 sbb   ax, dx
 mov   word ptr ds:[_tmy+0], cx
 mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2], ax
-mov   ax, word ptr [bp - 0Eh]
+mov   ax, word ptr [bp - 2]
 mov   word ptr ds:[_tmbbox + (4 * BOXLEFT)], si
 cmp   ax, -1
 jne   use_cached_secnum
-mov   ax, word ptr [bp - 0Ah]
+mov   ax, word ptr [bp - 4]
 mov   bx, cx
 mov   dx, di
 mov   cx, word ptr [bp + 0Ah]
@@ -4569,7 +4569,7 @@ ENDIF
 add   cl, ch ; (192 + 64 = 256, hits carry flag)
 mov   es, ax  ; es stores xl
 adc   ax, 0
-mov   word ptr [bp - 2], ax
+push  ax  ; bp - 6
 
 
 ;	blocktemp.h = (tmbbox[BOXRIGHT].h.intbits - bmaporgx + MAXRADIUSNONFRAC);
@@ -4598,7 +4598,7 @@ and   cl, 060h
 add   cl, 0FFh
 mov   bx, ax   ; bx stores xh
 adc   ax, 0FFFFh
-mov   word ptr [bp - 8], ax
+push  ax   ; bp - 8
 
 
 ;	blocktemp.h = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC);
@@ -4630,7 +4630,7 @@ ENDIF
 add   cl, ch ; (192 + 64 = 256, hits carry flag)
 mov   dx, ax   ; dx stores yl
 adc   ax, 0
-mov   word ptr [bp - 6], ax
+push  ax  ; bp - 0Ah
 
 ;	blocktemp.h = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC);
 ;	yh2 = blocktemp.h & 0x0060 ? 0 : -1;
@@ -4658,7 +4658,7 @@ and   cl, 060h
 add   cl, 0FFh
 mov   cx, ax  ; cx gets yh
 adc   ax, 0FFFFh
-mov   word ptr [bp - 4], ax
+push  ax   ; bp - 0Ch
 
 ;	if (!DoBlockmapLoop(xl, yl, xh, yh, PIT_CheckThing, true)){
 
@@ -4674,13 +4674,13 @@ je    exit_checkposition
 ;	if (yl2 < 0) yl2 = 0;
 
 
-cmp   word ptr [bp - 2], 0
-jnl   dont_zero_xl2
-mov   word ptr [bp - 2], 0
-dont_zero_xl2:
 cmp   word ptr [bp - 6], 0
-jnl   dont_zero_yl2
+jnl   dont_zero_xl2
 mov   word ptr [bp - 6], 0
+dont_zero_xl2:
+cmp   word ptr [bp - 0Ah], 0
+jnl   dont_zero_yl2
+mov   word ptr [bp - 0Ah], 0
 dont_zero_yl2:
 
 ;	if (xh2 >= bmapwidth) {
@@ -4697,10 +4697,10 @@ dec   ax
 mov   word ptr [bp - 8], ax
 dont_cap_xh2:
 mov   ax, word ptr ds:[_bmapheight]
-cmp   ax, word ptr [bp - 4]
+cmp   ax, word ptr [bp - 0Ch]
 jge  dont_cap_yh2
 dec   ax
-mov   word ptr [bp - 4], ax
+mov   word ptr [bp - 0Ch], ax
 dont_cap_yh2:
 
 ;	for (; xl2 <= xh2; xl2++) {
@@ -4711,13 +4711,13 @@ dont_cap_yh2:
 ;		}
 ;	}
 
-les   di, dword ptr [bp - 4]
-mov   si, es
+pop   di  				     ; bp - 0Ch
+mov   si, word ptr [bp - 6]  ; xl2
 
 check_position_do_next_x_loop:
-cmp   si, word ptr [bp - 8]  ; cl2 < xh2
+cmp   si, word ptr [bp - 8]  ; xl2 < xh2
 jg    exit_checkposition_return_1_2
-mov   cx, word ptr [bp - 6]   ; by = yl2
+mov   cx, word ptr [bp - 0Ah]   ; by = yl2
 cmp   cx, di   				  ; cmp yh2
 jg    check_position_increment_x_loop
 check_position_do_next_y_loop:
@@ -4754,11 +4754,7 @@ PUBLIC P_SlideMove_
 
 ; todo pusha
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 016h
@@ -4947,11 +4943,7 @@ jne   exit_slidemove
 jmp   label_18
 exit_slidemove:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
 ret   
 label_3:
 sub   word ptr [bp - 2], dx
@@ -4995,11 +4987,7 @@ push  word ptr [bp - 012h]
 mov   ax, si
 call  P_TryMove_
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
 ret   
 label_10:
 mov   si, word ptr ds:[_bestslidefrac]
