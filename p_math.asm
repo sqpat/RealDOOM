@@ -4756,17 +4756,16 @@ ENDP
 PROC P_SlideMove_ NEAR
 PUBLIC P_SlideMove_ 
 
-; bp - 2    retry counter
-; bp - 4    unused
-; bp - 6    traily hi
-; bp - 8    traily lo
-; bp - 0Ah  leadx hi
-; bp - 0Ch  leadx lo
-; bp - 0Eh  trailx hi
+; bp - 2     retry counter
+; bp - 4     leady hi
+; bp - 6     leady lo
+; bp - 8     traily hi
+; bp - 0Ah   traily lo
+; bp - 0Ch   leadx hi
+; bp - 0Eh   leadx lo
 
-; bp - 010h trailx lo
-; bp - 012h leady hi
-; bp - 014h leady lo
+; bp - 010h  trailx hi
+; bp - 012h  trailx lo
 
 
 
@@ -4778,13 +4777,12 @@ PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-	push  2  ; loopcount
+	push  2  ; bp - 2 loopcount  
 ELSE
 	mov   ax, 2
 	push  ax
 ENDIF
 
-sub   sp, 012h
 slidemove_retry:
 
 ;	temp.h.fracbits = 0;
@@ -4802,18 +4800,19 @@ xor   ax, ax
 
 mov   al, byte ptr [si + 01Eh]  ; radius
 
+; todo swap orders... do this second for stack ordering etc.
 mov   cx, word ptr es:[bx]
 mov   di, word ptr es:[bx + 2]
-mov   word ptr [bp - 0Ch], cx
-mov   word ptr [bp - 010h], cx
-mov   dx, di  ; write di to 0Ah later..
+mov   dx, di  ; 
 
 
-les   cx, dword ptr es:[bx + 4]
-mov   word ptr [bp - 014h], cx
-mov   word ptr [bp - 012h], es
-mov   word ptr [bp - 8], cx
-mov   bx, es  ; bp - 6 eventual, hold here for now
+les   bx, dword ptr es:[bx + 4]
+push  es ; bp - 4
+push  bx ; bp - 6
+push  es ; bp - 8
+push  bx ; bp - 0Ah
+
+
 
 ;	if (playerMobj->momx.w > 0) {
 ;		leadx.h.intbits += temp.h.intbits;
@@ -4839,7 +4838,13 @@ sub   dx, ax
 
 done_with_momx_check:
 
-mov   word ptr [bp - 0Eh], dx   ; set
+push  di  ; bp - 0Ch
+push  cx  ; bp - 0Eh
+push  dx  ; bp - 010h
+push  cx  ; bp - 012h
+
+
+
 
 ;    if (playerMobj->momy.w > 0) {
 ;		leady.h.intbits += temp.h.intbits;
@@ -4856,16 +4861,15 @@ cmp   word ptr [si + 012h], 0
 jnbe  momy_greater_than_zero
 
 momy_lte_0:
-sub   word ptr [bp - 012h], ax
-add   bx, ax
+sub   word ptr [bp - 4], ax
+add   word ptr [bp - 8], ax
 jmp   done_with_momy_check
 
 momy_greater_than_zero:
-add   word ptr [bp - 012h], ax
-sub   bx, ax
+add   word ptr [bp - 4], ax
+sub   word ptr [bp - 8], ax
 
 done_with_momy_check:
-mov   word ptr [bp - 6], bx
 
 
 ;	bestslidefrac.w = FRACUNIT + 1;
@@ -4881,8 +4885,8 @@ mov   word ptr ds:[_bestslidefrac+2], ax
 
 les   bx, dword ptr [si + 0Eh] ; momx
 mov   cx, es
-add   bx, word ptr [bp - 0Ch]    ;leadx lo (di is hi)
-adc   cx, di  				   ;leadx hi
+add   bx, word ptr [bp - 0Eh]    ; leadx lo (di is hi)
+adc   cx, di  				     ; leadx hi
 
 
 ; ready args
@@ -4891,7 +4895,7 @@ adc   cx, di  				   ;leadx hi
 ;	P_PathTraverse(leadx, traily, temp, temp4, PT_ADDLINES, PTR_SlideTraverse);
 
 ;	temp4.w = traily.w + playerMobj->momy.w;
-les   ax, dword ptr [bp - 8]
+les   ax, dword ptr [bp - 0Ah]
 mov   dx, es
 add   ax, word ptr [si + 012h]
 adc   dx, word ptr [si + 014h]
@@ -4908,8 +4912,8 @@ push  bx
 
 les   ax, dword ptr [si + 012h] ; momy
 mov   dx, es
-add   ax, word ptr [bp - 014h]
-adc   dx, word ptr [bp - 012h]
+add   ax, word ptr [bp - 6]
+adc   dx, word ptr [bp - 4]
 
 ; call 2
 ;	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
@@ -4921,18 +4925,18 @@ push  ax
 
 ;	temp3.w = trailx.w + playerMobj->momx.w;
 
-mov   word ptr [bp - 0Ah], di
 
 les   si, dword ptr [si + 0Eh]
 mov   di, es
-add   si, word ptr [bp - 010h]
-adc   di, word ptr [bp - 0Eh]
+add   si, word ptr [bp - 012h]
+adc   di, word ptr [bp - 010h]
 push  di ; temp 3 hi
 push  si ; temp 3 lo
 
 ; call 1
 
 ;	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
+
 
 push  OFFSET PTR_SlideTraverse_  ; bp - 01Ah
 push  PT_ADDLINES				 ; bp - 01Ch
@@ -4946,25 +4950,25 @@ push  bx ; bp - 024h
 
 ;P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-les   bx, dword ptr [bp - 014h] ; leady
+les   bx, dword ptr [bp - 6]    ; leady lo
 mov   cx, es 					; leady hi
-les   ax, dword ptr [bp - 0Ch]  ; leadx
-mov   dx, es					; leadx
+les   ax, dword ptr [bp - 0Eh]  ; leadx lo
+mov   dx, es					; leadx hi
 call  P_PathTraverse_
 
 ;P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-les   bx, dword ptr [bp - 014h] ; leady  lo
-mov   cx, es 				    ; leady  hi
-mov   ax, word ptr [bp - 010h]  ; trailx lo
-mov   dx, word ptr [bp - 0Eh]   ; trailx hi
+les   bx, dword ptr [bp - 6]     ; leady  lo
+mov   cx, es 				     ; leady  hi
+les   ax, dword ptr [bp - 012h]  ; trailx lo
+mov   dx, es  				     ; trailx hi
 call  P_PathTraverse_
 
 ;P_PathTraverse(leadx, traily, temp, temp4, PT_ADDLINES, PTR_SlideTraverse);
 
-les   bx, dword ptr [bp - 8]	 ; traily lo
+les   bx, dword ptr [bp - 0Ah]	 ; traily lo
 mov   cx, es					 ; traily hi
-les   ax, dword ptr [bp - 0Ch]   ; leadx  lo
+les   ax, dword ptr [bp - 0Eh]   ; leadx  lo
 mov   dx, es					 ; leadx  hi
 call  P_PathTraverse_
 
@@ -4998,7 +5002,7 @@ les   bx, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[bx]
 mov   si, word ptr ds:[_bestslidefrac]
 add   cx, ax
-mov   word ptr [bp - 012h], cx
+mov   word ptr [bp - 4], cx
 mov   cx, word ptr ds:[_bestslidefrac+2]
 mov   di, word ptr es:[bx + 2]
 mov   bx, word ptr ds:[_playerMobj]
@@ -5014,7 +5018,7 @@ push  dx
 push  ax
 push  di
 mov   cx, es
-push  word ptr [bp - 012h]
+push  word ptr [bp - 4]
 mov   ax, word ptr ds:[_playerMobj]
 call  P_TryMove_
 test  al, al
@@ -5088,8 +5092,8 @@ adc   ax, word ptr ds:[_tmymove+2]
 push  ax
 push  dx
 push  cx
-mov   ax, si
 push  di
+mov   ax, si
 mov   cx, es
 call  P_TryMove_
 test  al, al
@@ -5097,6 +5101,7 @@ jne   exit_slidemove
 
 dec   word ptr [bp - 2]
 jz    stairstep
+add   sp, 010h  	 ; undo stack
 jmp   slidemove_retry
 
 exit_slidemove:
@@ -5124,15 +5129,15 @@ les   bx, dword ptr ds:[_playerMobj_pos]
 mov   si, word ptr ds:[_playerMobj]
 mov   ax, word ptr es:[bx]
 push  word ptr es:[bx + 6]
-mov   word ptr [bp - 012h], ax
+mov   word ptr [bp - 4], ax
 mov   dx, word ptr [si + 0Eh]
 push  word ptr es:[bx + 4]
 mov   ax, word ptr es:[bx + 2]
-add   word ptr [bp - 012h], dx
+add   word ptr [bp - 4], dx
 adc   ax, word ptr [si + 010h]
 push  ax
 mov   cx, es
-push  word ptr [bp - 012h]
+push  word ptr [bp - 4]
 mov   ax, si
 call  P_TryMove_
 LEAVE_MACRO 
