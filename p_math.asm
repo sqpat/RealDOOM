@@ -4774,7 +4774,7 @@ PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 016h
-mov   word ptr [bp - 0Ch], 3
+mov   word ptr [bp - 0Ch], 2
 slidemove_retry:
 
 ;	temp.h.fracbits = 0;
