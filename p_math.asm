@@ -4761,13 +4761,16 @@ PUBLIC P_SlideMove_
 ; bp - 6    traily hi
 ; bp - 8    traily lo
 ; bp - 0Ah  unused
-; bp - 0Ch  
-; bp - 0Eh  
+; bp - 0Ch  retry counter
+; bp - 0Eh  temp2 lo
 
 ; bp - 010h trailx lo
 ; bp - 012h
 ; bp - 014h leady lo (si high)
-; bp - 016h
+; bp - 016h temp2 hi
+
+; todo reorg params
+; push all temp stuff on stack right away
 
 
 PUSHA_NO_AX_MACRO
@@ -4863,97 +4866,181 @@ mov   ax, 1
 mov   word ptr ds:[_bestslidefrac], ax
 mov   word ptr ds:[_bestslidefrac+2], ax
 
-;	temp.w = leadx.w + playerMobj->momx.w;
-;	temp2.w = leady.w + playerMobj->momy.w;
-;	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
 
-mov   dx, word ptr [bp - 2]
-mov   cx, word ptr [bp - 014h]
-push  OFFSET PTR_SlideTraverse_
 mov   bx, word ptr ds:[_playerMobj]
+
+
+;	temp.w = leadx.w + playerMobj->momx.w;
+
+
+les   ax, dword ptr [bx + 0Eh] ; momx
+mov   dx, es
+add   ax, word ptr [bp - 2]    ;leadx lo (di is hi)
+adc   dx, di  				   ;leadx hi
+
+
+;	temp2.w = leady.w + playerMobj->momy.w;
+
+les   bx, dword ptr [bx + 012h] ; momy
+mov   cx, es
+add   bx, word ptr [bp - 014h]
+adc   cx, si
+
+;	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
+;ready args
+push  OFFSET PTR_SlideTraverse_
 push  PT_ADDLINES
-add   dx, word ptr [bx + 0Eh]
-mov   ax, word ptr [bx + 010h]
-adc   ax, di
-add   cx, word ptr [bx + 012h]
-mov   bx, word ptr [bx + 014h]
-adc   bx, si
-mov   word ptr [bp - 016h], cx
+
+push  cx	; temp2
 push  bx
-mov   word ptr [bp - 0Eh], bx
-push  cx
-mov   bx, word ptr [bp - 014h]
+push  dx	; temp
 push  ax
+
+mov   word ptr [bp - 0Eh], bx
+mov   word ptr [bp - 016h], cx
+
+mov   bx, word ptr [bp - 014h] ; leady
 mov   cx, si
-mov   ax, word ptr [bp - 2]
-push  dx
+
+mov   ax, word ptr [bp - 2]  ; leadx
 mov   dx, di
 call  P_PathTraverse_
+
 mov   ax, word ptr [bp - 014h]
 mov   bx, word ptr ds:[_playerMobj]
-push  OFFSET PTR_SlideTraverse_
 add   ax, word ptr [bx + 012h]
 mov   word ptr [bp - 016h], ax
 mov   ax, word ptr [bx + 014h]
 adc   ax, si
-push  PT_ADDLINES
 mov   word ptr [bp - 0Eh], ax
 mov   cx, si
-push  word ptr [bp - 0Eh]
+
 mov   ax, word ptr [bp - 010h]
-push  word ptr [bp - 016h]
 add   ax, word ptr [bx + 0Eh]
 mov   dx, word ptr [bp - 4]
 adc   dx, word ptr [bx + 010h]
 mov   bx, word ptr [bp - 014h]
+
+push  OFFSET PTR_SlideTraverse_
+push  PT_ADDLINES
+push  word ptr [bp - 0Eh]
+push  word ptr [bp - 016h]
 push  dx
-mov   dx, word ptr [bp - 4]
 push  ax
+
+mov   dx, word ptr [bp - 4]
 mov   ax, word ptr [bp - 010h]
 call  P_PathTraverse_
+
 mov   dx, word ptr [bp - 2]
 mov   cx, word ptr [bp - 8]
-push  OFFSET PTR_SlideTraverse_
 mov   bx, word ptr ds:[_playerMobj]
-push  PT_ADDLINES
 add   dx, word ptr [bx + 0Eh]
 mov   ax, word ptr [bx + 010h]
 adc   ax, di
 add   cx, word ptr [bx + 012h]
 mov   si, word ptr [bp - 6]
 adc   si, word ptr [bx + 014h]
-push  si
 mov   bx, word ptr [bp - 8]
+
+
+push  OFFSET PTR_SlideTraverse_
+push  PT_ADDLINES
+push  si
 push  cx
-mov   cx, word ptr [bp - 6]
 push  ax
-mov   ax, word ptr [bp - 2]
 push  dx
+
+mov   cx, word ptr [bp - 6]
+mov   ax, word ptr [bp - 2]
 mov   dx, di
 call  P_PathTraverse_
+
+
 cmp   word ptr ds:[_bestslidefrac+2], 1
-jne   label_7
+jne   not_stairstep
 cmp   word ptr ds:[_bestslidefrac], 1
-jne   label_7
+jne   not_stairstep
 jmp   stairstep
-label_7:
+not_stairstep:
+
+;    // fudge a bit to make sure it doesn't hit
+;    bestslidefrac.w -= 0x800;	
+
 add   word ptr ds:[_bestslidefrac], 0F800h
 adc   word ptr ds:[_bestslidefrac+2], -1
 mov   ax, word ptr ds:[_bestslidefrac+2]
+
+;    if (bestslidefrac.w > 0) {
+
 test  ax, ax
-jle   label_17
-jump_to_label_10:
-jmp   label_10
-label_17:
-jne   label_9
+jle   continiue_check_bestslidefrac_lessthanzero
+bestslidefrac_greaterthanzero:
+mov   si, word ptr ds:[_bestslidefrac]
+mov   bx, word ptr ds:[_playerMobj]
+mov   cx, ax
+mov   ax, word ptr [bx + 0Eh]
+mov   dx, word ptr [bx + 010h]
+mov   bx, si
+call  FixedMul_
+les   bx, dword ptr ds:[_playerMobj_pos]
+mov   cx, word ptr es:[bx]
+mov   si, word ptr ds:[_bestslidefrac]
+add   cx, ax
+mov   word ptr [bp - 012h], cx
+mov   cx, word ptr ds:[_bestslidefrac+2]
+mov   di, word ptr es:[bx + 2]
+mov   bx, word ptr ds:[_playerMobj]
+adc   di, dx
+mov   ax, word ptr [bx + 012h]
+mov   dx, word ptr [bx + 014h]
+mov   bx, si
+call  FixedMul_
+les   bx, dword ptr ds:[_playerMobj_pos]
+add   ax, word ptr es:[bx + 4]
+adc   dx, word ptr es:[bx + 6]
+push  dx
+push  ax
+push  di
+mov   cx, es
+push  word ptr [bp - 012h]
+mov   ax, word ptr ds:[_playerMobj]
+call  P_TryMove_
+test  al, al
+jne   bestslidefrac_lessthanzero
+jmp   stairstep   ; 3D bytes off..
+continiue_check_bestslidefrac_lessthanzero:
+jne   bestslidefrac_lessthanzero
 cmp   word ptr ds:[_bestslidefrac], 0
-ja    jump_to_label_10
-label_9:
+ja    bestslidefrac_greaterthanzero
+bestslidefrac_lessthanzero:
+
+;	if (bestslidefrac.hu.fracbits == 0xF800) {
+
 cmp   word ptr ds:[_bestslidefrac], 0F800h
-je    label_11
-jmp   label_12
-label_11:
+je    bestslidefrac_f800  ; 061h bytes left
+
+add   word ptr ds:[_bestslidefrac], 07FFh
+mov   bx, word ptr ds:[_playerMobj]
+xor   word ptr ds:[_bestslidefrac], 0FFFFh
+mov   ax, word ptr [bx + 0Eh]
+mov   cx, word ptr [bx + 010h]
+mov   dx, word ptr ds:[_bestslidefrac]
+mov   bx, ax
+mov   ax, dx
+call  FixedMul16u32_
+mov   bx, word ptr ds:[_playerMobj]
+mov   word ptr ds:[_tmxmove+0], ax
+mov   word ptr ds:[_tmxmove+2], dx
+mov   dx, word ptr ds:[_bestslidefrac]
+mov   ax, word ptr [bx + 012h]
+mov   cx, word ptr [bx + 014h]
+mov   bx, ax
+mov   ax, dx
+call  FixedMul16u32_
+jmp   do_hitslideline
+bestslidefrac_f800:
 mov   bx, word ptr ds:[_playerMobj]
 mov   ax, word ptr [bx + 0Eh]
 mov   dx, word ptr [bx + 010h]
@@ -4961,7 +5048,10 @@ mov   word ptr ds:[_tmxmove+0], ax
 mov   word ptr ds:[_tmxmove+2], dx
 mov   ax, word ptr [bx + 012h]
 mov   dx, word ptr [bx + 014h]
-label_15:
+do_hitslideline:
+
+;    P_HitSlideLine (bestslidelinenum);	// clip the moves
+
 mov   word ptr ds:[_tmymove+0], ax
 mov   word ptr ds:[_tmymove+2], dx
 mov   ax, word ptr ds:[_bestslidelinenum]
@@ -5038,62 +5128,8 @@ call  P_TryMove_
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 ret   
-label_10:
-mov   si, word ptr ds:[_bestslidefrac]
-mov   bx, word ptr ds:[_playerMobj]
-mov   cx, ax
-mov   ax, word ptr [bx + 0Eh]
-mov   dx, word ptr [bx + 010h]
-mov   bx, si
-call  FixedMul_
-les   bx, dword ptr ds:[_playerMobj_pos]
-mov   cx, word ptr es:[bx]
-mov   si, word ptr ds:[_bestslidefrac]
-add   cx, ax
-mov   word ptr [bp - 012h], cx
-mov   cx, word ptr ds:[_bestslidefrac+2]
-mov   di, word ptr es:[bx + 2]
-mov   bx, word ptr ds:[_playerMobj]
-adc   di, dx
-mov   ax, word ptr [bx + 012h]
-mov   dx, word ptr [bx + 014h]
-mov   bx, si
-call  FixedMul_
-les   bx, dword ptr ds:[_playerMobj_pos]
-add   ax, word ptr es:[bx + 4]
-adc   dx, word ptr es:[bx + 6]
-push  dx
-push  ax
-push  di
-mov   cx, es
-push  word ptr [bp - 012h]
-mov   ax, word ptr ds:[_playerMobj]
-call  P_TryMove_
-test  al, al
-jne   jump_to_label_9
-jmp   stairstep   ; 3D bytes off..
-jump_to_label_9:
-jmp   label_9
-label_12:
-add   word ptr ds:[_bestslidefrac], 07FFh
-mov   bx, word ptr ds:[_playerMobj]
-xor   word ptr ds:[_bestslidefrac], 0FFFFh
-mov   ax, word ptr [bx + 0Eh]
-mov   cx, word ptr [bx + 010h]
-mov   dx, word ptr ds:[_bestslidefrac]
-mov   bx, ax
-mov   ax, dx
-call  FixedMul16u32_
-mov   bx, word ptr ds:[_playerMobj]
-mov   word ptr ds:[_tmxmove+0], ax
-mov   word ptr ds:[_tmxmove+2], dx
-mov   dx, word ptr ds:[_bestslidefrac]
-mov   ax, word ptr [bx + 012h]
-mov   cx, word ptr [bx + 014h]
-mov   bx, ax
-mov   ax, dx
-call  FixedMul16u32_
-jmp   label_15
+
+
 
 ENDP
 

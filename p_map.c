@@ -636,13 +636,11 @@ boolean __near P_CheckPosition (mobj_t __near* thing, fixed_t_union	x, fixed_t_u
 	//xl = ((int16_t)blocktemp.b.bytelow << 1) + (blocktemp.b.bytehigh & 0x80 ? 1 : 0); // messy math to avoid shift 7
 	xl = blocktemp.h >> MAPBLOCKSHIFT;
 	xl2 += xl;
-
 	blocktemp.h = (tmbbox[BOXRIGHT].h.intbits - bmaporgx + MAXRADIUSNONFRAC);
 	xh2 = blocktemp.h & 0x0060 ? 0 : -1; // if niether 64 nor 32 bit are set then we added from one 128 aligned block up. sub 1 later
 //	xh = ((int16_t)blocktemp.b.bytelow << 1) + (blocktemp.b.bytehigh & 0x80 ? 1 : 0);
 	xh = blocktemp.h >> MAPBLOCKSHIFT;
 	xh2 += xh;
-
 	blocktemp.h = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC);
 	yl2 = (blocktemp.h & 0x0060) == 0x0060 ? 1 : 0;
 	//yl = ((int16_t)blocktemp.b.bytelow << 1) + (blocktemp.b.bytehigh & 0x80 ? 1 : 0);
@@ -1015,15 +1013,15 @@ void __near P_SlideMove (){
  
 	temp.w = leadx.w + playerMobj->momx.w;
 	temp2.w = leady.w + playerMobj->momy.w;
+	temp3.w = trailx.w + playerMobj->momx.w;
+	temp4.w = traily.w + playerMobj->momy.w;
 	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
 	
 	//todo do these mo fields change? if not then pull out momx/momy into locals to avoid extra loads
-	temp2.w = leady.w + playerMobj->momy.w;
-	temp3.w = trailx.w + playerMobj->momx.w;
+	//temp2.w = leady.w + playerMobj->momy.w;
 	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-	temp.w = leadx.w + playerMobj->momx.w;
-	temp4.w = traily.w + playerMobj->momy.w;
+	//temp.w = leadx.w + playerMobj->momx.w;
 
 	P_PathTraverse(leadx, traily, temp, temp4, PT_ADDLINES, PTR_SlideTraverse);
 
