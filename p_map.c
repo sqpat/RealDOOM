@@ -117,7 +117,9 @@ int16_t __near R_PointOnSide ( fixed_t_union x, fixed_t_union y, int16_t nodenum
 	return a;
 }
 */
+fixed_t __near R_GetAttackRangeMult(int16_t range, fixed_t frac);
 
+/*
 fixed_t __near R_GetAttackRangeMult(int16_t range, fixed_t frac){
 
 	switch (range){
@@ -136,6 +138,7 @@ fixed_t __near R_GetAttackRangeMult(int16_t range, fixed_t frac){
 	}
 	return 0;  // shouldnt ever happen?
 }
+*/
 /*
 //
 // R_PointInSubsector
