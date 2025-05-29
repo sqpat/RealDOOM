@@ -4756,18 +4756,18 @@ ENDP
 PROC P_SlideMove_ NEAR
 PUBLIC P_SlideMove_ 
 
-; bp - 2    leadx lo
-; bp - 4    trailx hi
+; bp - 2    retry counter
+; bp - 4    unused
 ; bp - 6    traily hi
 ; bp - 8    traily lo
 ; bp - 0Ah  leadx hi
-; bp - 0Ch  retry counter
-; bp - 0Eh  unused
+; bp - 0Ch  leadx lo
+; bp - 0Eh  trailx hi
 
 ; bp - 010h trailx lo
-; bp - 012h
-; bp - 014h leady hi
-; bp - 016h leady lo
+; bp - 012h leady hi
+; bp - 014h leady lo
+
 
 
 ; todo reorg params
@@ -4777,8 +4777,14 @@ PUBLIC P_SlideMove_
 PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 016h
-mov   word ptr [bp - 0Ch], 2  ; loopcount
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	push  2  ; loopcount
+ELSE
+	mov   ax, 2
+	push  ax
+ENDIF
+
+sub   sp, 012h
 slidemove_retry:
 
 ;	temp.h.fracbits = 0;
@@ -4793,19 +4799,19 @@ slidemove_retry:
 mov   si, word ptr ds:[_playerMobj]
 les   bx, dword ptr ds:[_playerMobj_pos]
 xor   ax, ax
-; dx is free...
+
 mov   al, byte ptr [si + 01Eh]  ; radius
 
 mov   cx, word ptr es:[bx]
 mov   di, word ptr es:[bx + 2]
-mov   word ptr [bp - 2], cx
+mov   word ptr [bp - 0Ch], cx
 mov   word ptr [bp - 010h], cx
 mov   dx, di  ; write di to 0Ah later..
 
 
 les   cx, dword ptr es:[bx + 4]
-mov   word ptr [bp - 016h], cx
-mov   word ptr [bp - 014h], es
+mov   word ptr [bp - 014h], cx
+mov   word ptr [bp - 012h], es
 mov   word ptr [bp - 8], cx
 mov   bx, es  ; bp - 6 eventual, hold here for now
 
@@ -4833,7 +4839,7 @@ sub   dx, ax
 
 done_with_momx_check:
 
-mov   word ptr [bp - 4], dx   ; set
+mov   word ptr [bp - 0Eh], dx   ; set
 
 ;    if (playerMobj->momy.w > 0) {
 ;		leady.h.intbits += temp.h.intbits;
@@ -4850,12 +4856,12 @@ cmp   word ptr [si + 012h], 0
 jnbe  momy_greater_than_zero
 
 momy_lte_0:
-sub   word ptr [bp - 014h], ax
+sub   word ptr [bp - 012h], ax
 add   bx, ax
 jmp   done_with_momy_check
 
 momy_greater_than_zero:
-add   word ptr [bp - 014h], ax
+add   word ptr [bp - 012h], ax
 sub   bx, ax
 
 done_with_momy_check:
@@ -4875,7 +4881,7 @@ mov   word ptr ds:[_bestslidefrac+2], ax
 
 les   bx, dword ptr [si + 0Eh] ; momx
 mov   cx, es
-add   bx, word ptr [bp - 2]    ;leadx lo (di is hi)
+add   bx, word ptr [bp - 0Ch]    ;leadx lo (di is hi)
 adc   cx, di  				   ;leadx hi
 
 
@@ -4902,8 +4908,8 @@ push  bx
 
 les   ax, dword ptr [si + 012h] ; momy
 mov   dx, es
-add   ax, word ptr [bp - 016h]
-adc   dx, word ptr [bp - 014h]
+add   ax, word ptr [bp - 014h]
+adc   dx, word ptr [bp - 012h]
 
 ; call 2
 ;	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
@@ -4920,7 +4926,7 @@ mov   word ptr [bp - 0Ah], di
 les   si, dword ptr [si + 0Eh]
 mov   di, es
 add   si, word ptr [bp - 010h]
-adc   di, word ptr [bp - 4]
+adc   di, word ptr [bp - 0Eh]
 push  di ; temp 3 hi
 push  si ; temp 3 lo
 
@@ -4940,26 +4946,26 @@ push  bx ; bp - 024h
 
 ;P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-les   bx, dword ptr [bp - 016h] ; leady
+les   bx, dword ptr [bp - 014h] ; leady
 mov   cx, es 					; leady hi
-mov   ax, word ptr [bp - 2]     ; leadx
-mov   dx, word ptr [bp - 0Ah]	; leadx
+les   ax, dword ptr [bp - 0Ch]  ; leadx
+mov   dx, es					; leadx
 call  P_PathTraverse_
 
 ;P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-les   bx, dword ptr [bp - 016h] ; leady
-mov   cx, es 				    ; leady hi
+les   bx, dword ptr [bp - 014h] ; leady  lo
+mov   cx, es 				    ; leady  hi
 mov   ax, word ptr [bp - 010h]  ; trailx lo
-mov   dx, word ptr [bp - 4]     ; trailx hi
+mov   dx, word ptr [bp - 0Eh]   ; trailx hi
 call  P_PathTraverse_
 
 ;P_PathTraverse(leadx, traily, temp, temp4, PT_ADDLINES, PTR_SlideTraverse);
 
-les   bx, dword ptr [bp - 8]
-mov   cx, es
-mov   ax, word ptr [bp - 2]     ; leadx
-mov   dx, word ptr [bp - 0Ah]	; leadx
+les   bx, dword ptr [bp - 8]	 ; traily lo
+mov   cx, es					 ; traily hi
+les   ax, dword ptr [bp - 0Ch]   ; leadx  lo
+mov   dx, es					 ; leadx  hi
 call  P_PathTraverse_
 
 cmp   word ptr ds:[_bestslidefrac+2], 1
@@ -5089,7 +5095,7 @@ call  P_TryMove_
 test  al, al
 jne   exit_slidemove
 
-dec   word ptr [bp - 0Ch]
+dec   word ptr [bp - 2]
 jz    stairstep
 jmp   slidemove_retry
 
