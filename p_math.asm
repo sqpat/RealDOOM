@@ -5055,70 +5055,90 @@ ja    bestslidefrac_greaterthanzero
 bestslidefrac_lessthanzero:
 
 ;	if (bestslidefrac.hu.fracbits == 0xF800) {
+mov   si, word ptr ds:[_playerMobj]
 
 cmp   word ptr ds:[_bestslidefrac], 0F800h
 je    bestslidefrac_f800  ; 061h bytes left
 
+;		// same as 1 - (this+0x800) 
+;		bestslidefrac.hu.fracbits += 0x7FF; 
+;		bestslidefrac.hu.fracbits ^= 0xFFFF;
+
+
+
 add   word ptr ds:[_bestslidefrac], 07FFh
-mov   bx, word ptr ds:[_playerMobj]
 xor   word ptr ds:[_bestslidefrac], 0FFFFh
-mov   ax, word ptr [bx + 0Eh]
-mov   cx, word ptr [bx + 010h]
-mov   dx, word ptr ds:[_bestslidefrac]
-mov   bx, ax
-mov   ax, dx
+
+;		tmxmove.w = FixedMul16u32(bestslidefrac.hu.fracbits, playerMobj->momx.w);
+;		tmymove.w = FixedMul16u32(bestslidefrac.hu.fracbits, playerMobj->momy.w);
+
+
+les   bx, dword ptr [si + 0Eh]
+mov   cx, es
+
+mov   di, word ptr ds:[_bestslidefrac]
+mov   ax, di
 call  FixedMul16u32_
-mov   bx, word ptr ds:[_playerMobj]
+
 mov   word ptr ds:[_tmxmove+0], ax
 mov   word ptr ds:[_tmxmove+2], dx
-mov   dx, word ptr ds:[_bestslidefrac]
-mov   ax, word ptr [bx + 012h]
-mov   cx, word ptr [bx + 014h]
-mov   bx, ax
-mov   ax, dx
+
+les   bx, dword ptr [si + 012h]
+mov   cx, es
+xchg  ax, di  ; bestslidefrac
+
 call  FixedMul16u32_
 jmp   do_hitslideline
 bestslidefrac_f800:
-mov   bx, word ptr ds:[_playerMobj]
-mov   ax, word ptr [bx + 0Eh]
-mov   dx, word ptr [bx + 010h]
+
+;		tmxmove = playerMobj->momx;
+;		tmymove = playerMobj->momy;
+
+
+les   ax, dword ptr [si + 0Eh]
+mov   dx, es
 mov   word ptr ds:[_tmxmove+0], ax
 mov   word ptr ds:[_tmxmove+2], dx
-mov   ax, word ptr [bx + 012h]
-mov   dx, word ptr [bx + 014h]
+les   ax, dword ptr [si + 012h]
+mov   dx, es
 do_hitslideline:
 
 ;    P_HitSlideLine (bestslidelinenum);	// clip the moves
 
 mov   word ptr ds:[_tmymove+0], ax
 mov   word ptr ds:[_tmymove+2], dx
+
+;    P_HitSlideLine (bestslidelinenum);	// clip the moves
+
 mov   ax, word ptr ds:[_bestslidelinenum]
 call  P_HitSlideLine_
-mov   si, word ptr ds:[_playerMobj]
-mov   ax, word ptr ds:[_tmxmove+0]
-mov   dx, word ptr ds:[_tmxmove+2]
+
+
+les   ax, dword ptr ds:[_tmxmove+0]
 mov   word ptr [si + 0Eh], ax
-mov   word ptr [si + 010h], dx
-mov   ax, word ptr ds:[_tmymove+0]
-mov   dx, word ptr ds:[_tmymove+2]
+mov   word ptr [si + 010h], es
+les   ax, dword ptr ds:[_tmymove+0]
 mov   word ptr [si + 012h], ax
-mov   bx, word ptr ds:[_playerMobj_pos]
-mov   word ptr [si + 014h], dx
-mov   es, word ptr ds:[_playerMobj_pos+2]
-mov   di, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 2]
-mov   dx, word ptr es:[bx + 4]
-mov   ax, word ptr es:[bx + 6]
-add   di, word ptr ds:[_tmxmove+0]
-adc   cx, word ptr ds:[_tmxmove+2]
-add   dx, word ptr ds:[_tmymove+0]
-adc   ax, word ptr ds:[_tmymove+2]
-push  ax
-push  dx
-push  cx
-push  di
-mov   ax, si
+mov   word ptr [si + 014h], es
+les   bx, dword ptr ds:[_playerMobj_pos]
 mov   cx, es
+
+mov   ax, word ptr es:[bx + 4]
+mov   dx, word ptr es:[bx + 6]
+add   ax, word ptr ds:[_tmymove+0]
+adc   dx, word ptr ds:[_tmymove+2]
+push  dx
+push  ax
+
+les   ax, dword ptr es:[bx]
+mov   dx, es
+add   ax, word ptr ds:[_tmxmove+0]
+adc   dx, word ptr ds:[_tmxmove+2]
+
+
+push  dx
+push  ax
+xchg  ax, si
 call  P_TryMove_
 test  al, al
 jne   exit_slidemove
@@ -5142,9 +5162,10 @@ add   ax, word ptr [si + 012h]
 adc   dx, word ptr [si + 014h]
 push  dx
 push  ax
-push  word ptr es:[bx + 2]
-push  word ptr es:[bx]
 mov   cx, es
+les   ax, dword ptr es:[bx]
+push  es
+push  ax
 xchg  ax, si
 call  P_TryMove_
 test  al, al
