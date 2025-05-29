@@ -4789,25 +4789,25 @@ slidemove_retry:
 ;	traily = playerMobj_pos->y;
 
 
-;todo swap and keep forever in si
-mov   bx, word ptr ds:[_playerMobj]
-les   si, dword ptr ds:[_playerMobj_pos]
-xor   ax, ax
-mov   dx, ax
-mov   al, byte ptr [bx + 01Eh]  ; radius
 
-mov   cx, word ptr es:[si]
-mov   di, word ptr es:[si + 2]
+mov   si, word ptr ds:[_playerMobj]
+les   bx, dword ptr ds:[_playerMobj_pos]
+xor   ax, ax
+; dx is free...
+mov   al, byte ptr [si + 01Eh]  ; radius
+
+mov   cx, word ptr es:[bx]
+mov   di, word ptr es:[bx + 2]
 mov   word ptr [bp - 2], cx
 mov   word ptr [bp - 010h], cx
-mov   word ptr [bp - 4], di  ; write di to 0Ah later..
+mov   dx, di  ; write di to 0Ah later..
 
 
-les   cx, dword ptr es:[si + 4]
+les   cx, dword ptr es:[bx + 4]
 mov   word ptr [bp - 016h], cx
 mov   word ptr [bp - 014h], es
 mov   word ptr [bp - 8], cx
-mov   word ptr [bp - 6], es
+mov   bx, es  ; bp - 6 eventual, hold here for now
 
 ;	if (playerMobj->momx.w > 0) {
 ;		leadx.h.intbits += temp.h.intbits;
@@ -4817,23 +4817,23 @@ mov   word ptr [bp - 6], es
 ;		trailx.h.intbits += temp.h.intbits;
 ;    }
 
-cmp   word ptr [bx + 010h], 0
+cmp   word ptr [si + 010h], 0
 jg    momx_greater_than_zero
 jne   momx_lte_0
-cmp   word ptr [bx + 0Eh], 0
+cmp   word ptr [si + 0Eh], 0
 jnbe  momx_greater_than_zero
 momx_lte_0:
-sub   word ptr [bp - 2], dx
-sbb   di, ax
-add   word ptr [bp - 4], ax
+sub   di, ax
+add   dx, ax
 jmp   done_with_momx_check
 
 momx_greater_than_zero:
 add   di, ax
-sub   word ptr [bp - 010h], dx
-sbb   word ptr [bp - 4], ax
+sub   dx, ax
 
 done_with_momx_check:
+
+mov   word ptr [bp - 4], dx   ; set
 
 ;    if (playerMobj->momy.w > 0) {
 ;		leady.h.intbits += temp.h.intbits;
@@ -4843,25 +4843,24 @@ done_with_momx_check:
 ;		traily.h.intbits += temp.h.intbits;
 ;    } 
 
-mov   bx, word ptr ds:[_playerMobj]
-cmp   word ptr [bx + 014h], 0
+cmp   word ptr [si + 014h], 0
 jg    momy_greater_than_zero
-jne    momy_lte_0
-cmp   word ptr [bx + 012h], 0
+jne   momy_lte_0
+cmp   word ptr [si + 012h], 0
 jnbe  momy_greater_than_zero
 
 momy_lte_0:
-sub   word ptr [bp - 016h], dx
-sbb   word ptr [bp - 014h], ax
-add   word ptr [bp - 6], ax
+sub   word ptr [bp - 014h], ax
+add   bx, ax
 jmp   done_with_momy_check
 
 momy_greater_than_zero:
 add   word ptr [bp - 014h], ax
-sub   word ptr [bp - 8], dx
-sbb   word ptr [bp - 6], ax
+sub   bx, ax
 
 done_with_momy_check:
+mov   word ptr [bp - 6], bx
+
 
 ;	bestslidefrac.w = FRACUNIT + 1;
 
@@ -4870,8 +4869,6 @@ mov   word ptr ds:[_bestslidefrac], ax
 mov   word ptr ds:[_bestslidefrac+2], ax
 
 
-
-mov   si, word ptr ds:[_playerMobj]
 
 ;	temp.w = leadx.w + playerMobj->momx.w;
 
