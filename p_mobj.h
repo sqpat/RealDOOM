@@ -202,65 +202,66 @@ typedef enum {
 typedef struct mobj_s {
 
     // More list: links in sector (if needed)
-	THINKERREF	sprevRef;
+	THINKERREF	sprevRef;                                                   // 0x00
 
     //spritenum_t		sprite;	// used to find patch_t and flip value
 	//spriteframenum_t frame;	// might be ORed with FF_FULLBRIGHT
 
     // Interaction info, by BLOCKMAP.
     // Links in blocks (if needed).
-	THINKERREF	bnextRef;
+	THINKERREF	bnextRef;                                                   // 0x02
     
 	// added secnum, because subsecnum is mostly used to look this up, so it seems like a worthwhile cache.
-	int16_t secnum;
+	int16_t secnum;                                                         // 0x04
 
     // The closest interval over all contacted Sectors.
-    short_height_t		floorz;
-    short_height_t		ceilingz;
+    short_height_t		floorz;                                             // 0x06
+    short_height_t		ceilingz;                                           // 0x08
 
     // For movement checking.
-    fixed_t_union		height;	
+    fixed_t_union		height;	                                            // 0x0A
 
     // Momentums, used to update position.
-	fixed_t_union		momx;
-	fixed_t_union		momy;
-    fixed_t_union		momz;
+	fixed_t_union		momx;                                               // 0x0E
+	fixed_t_union		momy;                                               // 0x12
+    fixed_t_union		momz;                                               // 0x16
 
-    mobjtype_t		type;
+    mobjtype_t		type;                                                   // 0x1A
     
-    uint8_t			tics;	// state tic counter
-    int16_t			health;
+    uint8_t			tics;	// state tic counter                            // 0x1B
+    int16_t			health;                                                 // 0x1C
 
     // Also for movement checking.
-    uint8_t		radius;
+    uint8_t		radius;                                                     // 0x1E
 
     // Movement direction, movement generation (zig-zagging).
-    uint8_t			movedir;	// 0-7  // uses 4 bits
-    int16_t			movecount;	// when 0, select a new dir
+    uint8_t			movedir;	// 0-7  // uses 4 bits                      // 0x1F
+    int16_t			movecount;	// when 0, select a new dir                 // 0x20
 
     // Thing being chased/attacked (or NULL),
     // also the originator for missiles.
-    THINKERREF	targetRef;
+    THINKERREF	targetRef;                                                  // 0x22
 
     // Reaction time: if non 0, don't attack yet.
     // Used by player to freeze a bit after teleporting.
 	
 	// uses 5 bits, up to 18. 
-	uint8_t			reactiontime;
+	uint8_t			reactiontime;                                           // 0x24
 
     // If >0, the target will be chased
     // no matter what (even if shot)
-    uint8_t			threshold;
+    uint8_t			threshold;                                              // 0x25
 
     // For nightmare respawn.
     //mapthing_t		spawnpoint;	
 
     // Thing being chased/attacked for tracers.
-	THINKERREF	tracerRef;
+	THINKERREF	tracerRef;                                                  // 0x26
+                                                                            // 0x28
     
 } mobj_t;
 
-
+ 
 
 // Kind of gross. This is a minimal set of fields needed in render task code
 // which allows us to not have to allocate the whole 9000 block to thinkers, 
