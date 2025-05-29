@@ -1861,10 +1861,10 @@ mov   es, dx
 
 les   dx, dword ptr es:[bx]
 
-push  es					; bp - 0Ch  vertex y
-push  ax    				; bp - 0Eh
-push  dx                    ; bp - 010h vertex x
-push  ax    				; bp - 012h
+push  es					; bp - 4  vertex y
+push  ax    				; bp - 6
+push  dx                    ; bp - 8 vertex x
+push  ax    				; bp - 0Ah
 
 
 
@@ -4756,21 +4756,17 @@ ENDP
 PROC P_SlideMove_ NEAR
 PUBLIC P_SlideMove_ 
 
-; bp - 2     retry counter
-; bp - 4     leady hi
-; bp - 6     leady lo
-; bp - 8     traily hi
-; bp - 0Ah   traily lo
-; bp - 0Ch   leadx hi
-; bp - 0Eh   leadx lo
+; bp - 2    retry counter
+; bp - 4    leadx hi
+; bp - 6    leadx lo
 
-; bp - 010h  trailx hi
-; bp - 012h  trailx lo
+; bp - 8    trailx hi
+; bp - 0Ah  trailx lo
+; bp - 0Ch  leady hi
+; bp - 0Eh  leady lo
+; bp - 010h traily hi
+; bp - 012h traily lo
 
-
-
-; todo reorg params
-; push all temp stuff on stack right away
 
 
 PUSHA_NO_AX_MACRO
@@ -4800,17 +4796,12 @@ xor   ax, ax
 
 mov   al, byte ptr [si + 01Eh]  ; radius
 
-; todo swap orders... do this second for stack ordering etc.
+
 mov   cx, word ptr es:[bx]
 mov   di, word ptr es:[bx + 2]
 mov   dx, di  ; 
 
 
-les   bx, dword ptr es:[bx + 4]
-push  es ; bp - 4
-push  bx ; bp - 6
-push  es ; bp - 8
-push  bx ; bp - 0Ah
 
 
 
@@ -4838,10 +4829,15 @@ sub   dx, ax
 
 done_with_momx_check:
 
-push  di  ; bp - 0Ch
-push  cx  ; bp - 0Eh
-push  dx  ; bp - 010h
-push  cx  ; bp - 012h
+push  di  ; bp - 4
+push  cx  ; bp - 6
+push  dx  ; bp - 8
+push  cx  ; bp - 0Ah
+
+
+les   bx, dword ptr es:[bx + 4]
+mov   dx, es
+mov   cx, dx
 
 
 
@@ -4861,15 +4857,20 @@ cmp   word ptr [si + 012h], 0
 jnbe  momy_greater_than_zero
 
 momy_lte_0:
-sub   word ptr [bp - 4], ax
-add   word ptr [bp - 8], ax
+sub   cx, ax
+add   dx, ax
 jmp   done_with_momy_check
 
 momy_greater_than_zero:
-add   word ptr [bp - 4], ax
-sub   word ptr [bp - 8], ax
+add   cx, ax
+sub   dx, ax
 
 done_with_momy_check:
+
+push  cx ; bp - 0Ch
+push  bx ; bp - 0Eh
+push  dx ; bp - 010h
+push  bx ; bp - 012h
 
 
 ;	bestslidefrac.w = FRACUNIT + 1;
@@ -4878,6 +4879,9 @@ mov   ax, 1
 mov   word ptr ds:[_bestslidefrac], ax
 mov   word ptr ds:[_bestslidefrac+2], ax
 
+xchg  ax, bx;  
+; dx:ax are bp - 012h / traily
+
 
 
 ;	temp.w = leadx.w + playerMobj->momx.w;
@@ -4885,8 +4889,8 @@ mov   word ptr ds:[_bestslidefrac+2], ax
 
 les   bx, dword ptr [si + 0Eh] ; momx
 mov   cx, es
-add   bx, word ptr [bp - 0Eh]    ; leadx lo (di is hi)
-adc   cx, di  				     ; leadx hi
+add   bx, word ptr [bp - 6]    ; leadx lo (di is hi)
+adc   cx, di  				   ; leadx hi
 
 
 ; ready args
@@ -4895,8 +4899,7 @@ adc   cx, di  				     ; leadx hi
 ;	P_PathTraverse(leadx, traily, temp, temp4, PT_ADDLINES, PTR_SlideTraverse);
 
 ;	temp4.w = traily.w + playerMobj->momy.w;
-les   ax, dword ptr [bp - 0Ah]
-mov   dx, es
+;    dx/ax already equal traily
 add   ax, word ptr [si + 012h]
 adc   dx, word ptr [si + 014h]
 
@@ -4912,8 +4915,8 @@ push  bx
 
 les   ax, dword ptr [si + 012h] ; momy
 mov   dx, es
-add   ax, word ptr [bp - 6]
-adc   dx, word ptr [bp - 4]
+add   ax, word ptr [bp - 0Eh]
+adc   dx, word ptr [bp - 0Ch]
 
 ; call 2
 ;	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
@@ -4928,8 +4931,8 @@ push  ax
 
 les   si, dword ptr [si + 0Eh]
 mov   di, es
-add   si, word ptr [bp - 012h]
-adc   di, word ptr [bp - 010h]
+add   si, word ptr [bp - 0Ah]
+adc   di, word ptr [bp - 8]
 push  di ; temp 3 hi
 push  si ; temp 3 lo
 
@@ -4938,37 +4941,37 @@ push  si ; temp 3 lo
 ;	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
 
-push  OFFSET PTR_SlideTraverse_  ; bp - 01Ah
-push  PT_ADDLINES				 ; bp - 01Ch
-push  dx ; bp - 01Eh ; temp 2
-push  ax ; bp - 020h 
-push  cx ; bp - 022h ; temp
-push  bx ; bp - 024h
+push  OFFSET PTR_SlideTraverse_
+push  PT_ADDLINES
+push  dx ; temp 2
+push  ax 
+push  cx ; temp
+push  bx 
 
 
 
 
 ;P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-les   bx, dword ptr [bp - 6]    ; leady lo
+les   bx, dword ptr [bp - 0Eh]  ; leady lo
 mov   cx, es 					; leady hi
-les   ax, dword ptr [bp - 0Eh]  ; leadx lo
+les   ax, dword ptr [bp - 6]    ; leadx lo
 mov   dx, es					; leadx hi
 call  P_PathTraverse_
 
 ;P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-les   bx, dword ptr [bp - 6]     ; leady  lo
+les   bx, dword ptr [bp - 0Eh]   ; leady  lo
 mov   cx, es 				     ; leady  hi
-les   ax, dword ptr [bp - 012h]  ; trailx lo
+les   ax, dword ptr [bp - 0Ah]   ; trailx lo
 mov   dx, es  				     ; trailx hi
 call  P_PathTraverse_
 
 ;P_PathTraverse(leadx, traily, temp, temp4, PT_ADDLINES, PTR_SlideTraverse);
 
-les   bx, dword ptr [bp - 0Ah]	 ; traily lo
+les   bx, dword ptr [bp - 012h]	 ; traily lo
 mov   cx, es					 ; traily hi
-les   ax, dword ptr [bp - 0Eh]   ; leadx  lo
+les   ax, dword ptr [bp - 6]     ; leadx  lo
 mov   dx, es					 ; leadx  hi
 call  P_PathTraverse_
 
@@ -4991,36 +4994,57 @@ mov   ax, word ptr ds:[_bestslidefrac+2]
 test  ax, ax
 jle   continiue_check_bestslidefrac_lessthanzero
 bestslidefrac_greaterthanzero:
-mov   si, word ptr ds:[_bestslidefrac]
-mov   bx, word ptr ds:[_playerMobj]
-mov   cx, ax
-mov   ax, word ptr [bx + 0Eh]
-mov   dx, word ptr [bx + 010h]
-mov   bx, si
+
+
+;newx.w = FixedMul (playerMobj->momx.w, bestslidefrac.w);
+
+xchg  ax, cx  						   ; ax has +2 todo cleanup
+mov   bx, word ptr ds:[_bestslidefrac] ; bx gets+0
+
+mov   di, word ptr ds:[_playerMobj]
+les   ax, dword ptr [di + 0Eh]
+mov   dx, es
+
 call  FixedMul_
-les   bx, dword ptr ds:[_playerMobj_pos]
-mov   cx, word ptr es:[bx]
-mov   si, word ptr ds:[_bestslidefrac]
-add   cx, ax
-mov   word ptr [bp - 4], cx
-mov   cx, word ptr ds:[_bestslidefrac+2]
-mov   di, word ptr es:[bx + 2]
-mov   bx, word ptr ds:[_playerMobj]
-adc   di, dx
-mov   ax, word ptr [bx + 012h]
-mov   dx, word ptr [bx + 014h]
-mov   bx, si
+
+;newx.w += playerMobj_pos->x.w;
+
+les   si, dword ptr ds:[_playerMobj_pos]
+les   si, dword ptr es:[si]   ; es:si has this...
+mov   bx, es
+
+add   si, ax  ; bx:si is newx.w
+adc   bx, dx
+
+;newy.w = FixedMul (playerMobj->momy.w, bestslidefrac.w);
+
+les   ax, dword ptr [di + 012h]
+mov   dx, es
+
+mov   di, bx  ; di:si is newx
+
+les   bx, dword ptr ds:[_bestslidefrac]
+mov   cx, es
+
 call  FixedMul_
+
+; newy.w += playerMobj_pos->y.w;
+
 les   bx, dword ptr ds:[_playerMobj_pos]
+mov   cx, es
 add   ax, word ptr es:[bx + 4]
 adc   dx, word ptr es:[bx + 6]
-push  dx
+
+;   if (!P_TryMove (playerMobj, playerMobj_pos, newx, newy)) {
+
+
+push  dx ; newy
 push  ax
-push  di
-mov   cx, es
-push  word ptr [bp - 4]
+push  di ; newx
+push  si
 mov   ax, word ptr ds:[_playerMobj]
 call  P_TryMove_
+
 test  al, al
 jne   bestslidefrac_lessthanzero
 jmp   stairstep   ; 3D bytes off..
@@ -5127,18 +5151,19 @@ test  al, al
 jne   exit_slidemove
 les   bx, dword ptr ds:[_playerMobj_pos]
 mov   si, word ptr ds:[_playerMobj]
-mov   ax, word ptr es:[bx]
 push  word ptr es:[bx + 6]
-mov   word ptr [bp - 4], ax
-mov   dx, word ptr [si + 0Eh]
 push  word ptr es:[bx + 4]
-mov   ax, word ptr es:[bx + 2]
-add   word ptr [bp - 4], dx
-adc   ax, word ptr [si + 010h]
-push  ax
 mov   cx, es
-push  word ptr [bp - 4]
-mov   ax, si
+
+les   ax, dword ptr es:[bx]
+mov   dx, es
+add   ax, word ptr [si + 0Eh]
+adc   dx, word ptr [si + 010h]
+push  dx
+push  ax
+
+xchg  ax, si
+
 call  P_TryMove_
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
