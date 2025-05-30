@@ -5420,15 +5420,22 @@ ENDP
 PROC PTR_ShootTraverse_ NEAR
 PUBLIC PTR_ShootTraverse_
 
+; bp - 2 INTERCEPTS_SEGMENT
+; bp - 4 
+; bp - 6 LINES_PHYSICS_SEGMENT
+; bp - 8 line_phys offset
+
+; bp - 020h  unused
+
 push  bx
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 030h
+push  dx 		; bp - 2  INTERCEPTS_SEGMENT
+sub   sp, 02Eh
 mov   si, ax
-mov   word ptr [bp - 2], dx
 mov   es, dx
 cmp   byte ptr es:[si + 4], 0
 jne   label_1
@@ -5440,13 +5447,13 @@ mov   es, ax
 mov   cl, byte ptr es:[bx]
 mov   es, dx
 mov   bx, word ptr es:[si + 5]
-mov   word ptr [bp - 020h], LINES_SEGMENT
-shl   bx, 2
-mov   ax, LINES_PHYSICS_SEGMENT
+
+SHIFT_MACRO shl   bx 2
 mov   word ptr [bp - 024h], bx
 mov   bx, word ptr es:[si + 5]
+SHIFT_MACRO shl   bx 4
+mov   ax, LINES_PHYSICS_SEGMENT
 mov   word ptr [bp - 6], ax
-shl   bx, 4
 mov   es, ax
 mov   word ptr [bp - 8], bx
 cmp   byte ptr es:[bx + 0Fh], 0
@@ -5463,29 +5470,40 @@ label_3:
 test  cl, ML_TWOSIDED
 je    hitline
 jmp   not_hitline
+
 hitline:
+mov   es, word ptr [bp - 2]
+mov   bx, word ptr es:[si]
+
 mov   ax, word ptr ds:[_attackrange16]
 cmp   ax, CHAINSAWRANGE
 jb    hitline_check_for_melee
-jmp   label_7
+ja    hitline_check_for_missile
+add   bx, 0F001h
+jmp   hitline_done_with_rangeswitchblock
+hitline_check_for_missile:
+cmp   ax, MISSILERANGE
+jne   hitline_check_for_halfmissile
+add   bx, 0FF80h
+jmp   hitline_done_with_rangeswitchblock
+hitline_check_for_halfmissile:
+hitline_range_halfmissile:
+dec   bh  ; add 0FF00h
+jmp   hitline_done_with_rangeswitchblock
+
 hitline_check_for_melee:
-cmp   ax, MELEERANGE
-jne   hitline_bad_range_todo_remove
-mov   es, word ptr [bp - 2]
-mov   di, word ptr es:[si]
-add   di, 0F000h
+add   bh, 0F0h
 hitline_done_with_rangeswitchblock:
 mov   ax, word ptr es:[si + 2]
 adc   ax, 0FFFFh
 mov   word ptr [bp - 4], ax
-hitline_bad_range_todo_remove:
 
 ;    x = trace.x.w + FixedMul (trace.dx.w, frac);
 
 mov   cx, word ptr [bp - 4]
 mov   ax, word ptr ds:[_trace+8]
 mov   dx, word ptr ds:[_trace+0Ah]
-mov   bx, di
+mov   di, bx   ; backup...
 call  FixedMul_
 mov   bx, word ptr ds:[_trace+0]
 mov   cx, word ptr [bp - 4]
@@ -5512,28 +5530,30 @@ mov   word ptr [bp - 01Ah], ax
 mov   ax, word ptr ds:[_attackrange16]
 call  P_GetAttackRangeMult_
 
-mov   si, word ptr ds:[_aimslope+0]
-mov   di, word ptr ds:[_aimslope+2]
-mov   bx, ax
+xchg  ax, bx
 mov   cx, dx
-mov   ax, si
-mov   dx, di
+les   ax, dword ptr ds:[_aimslope+0]
+mov   dx, es
 call  FixedMul_
-mov   bx, word ptr ds:[_shootz+0]
-mov   si, word ptr [bp - 8]
+
+
+les   bx, dword ptr ds:[_shootz+0]
 add   bx, ax
-mov   ax, word ptr ds:[_shootz+2]
-mov   es, word ptr [bp - 6]
+mov   ax, es
 adc   ax, dx
+; bx:ax has result
+
+mov   si, LINES_PHYSICS_SEGMENT
+mov   es, si
+mov   si, word ptr [bp - 8]			; linephys ptr
 mov   si, word ptr es:[si + 0Ah]
+SHIFT_MACRO shl   si 4
+
 mov   dx, SECTORS_SEGMENT
-shl   si, 4
 mov   es, dx
-lea   di, [si + 5]
-mov   cx, OFFSET _skyflatnum
-mov   dl, byte ptr es:[di]
-mov   di, cx
-cmp   dl, byte ptr [di]
+mov   dl, byte ptr es:[si+5]
+
+cmp   dl, byte ptr ds:[_skyflatnum]
 jne   label_26
 mov   cx, word ptr es:[si + 2]
 mov   dx, word ptr es:[si + 2]
@@ -5541,7 +5561,7 @@ xor   ch, ch
 add   si, 2
 and   cl, 7
 sar   dx, 3
-shl   cx, 0Dh
+SHIFT_MACRO shl   cx 0Dh
 cmp   ax, dx
 jg    exit_shoottraverse_return_0
 jne   label_31
@@ -5554,12 +5574,11 @@ je    label_26
 mov   di, si
 mov   di, word ptr es:[di + 0Ch]
 mov   dx, SECTORS_SEGMENT
-shl   di, 4
+SHIFT_MACRO shl   di 4
 mov   es, dx
-mov   si, OFFSET _skyflatnum
 mov   dl, byte ptr es:[di + 5]
 add   di, 5
-cmp   dl, byte ptr [si]
+cmp   dl, byte ptr ds:[_skyflatnum]
 jne   label_26
 exit_shoottraverse_return_0:
 xor   al, al
@@ -5588,7 +5607,8 @@ not_hitline:
 les   bx, dword ptr [bp - 8]
 mov   ax, word ptr es:[bx + 0Ch]
 mov   dx, word ptr es:[bx + 0Ah]
-mov   es, word ptr [bp - 020h]
+mov   bx, LINES_SEGMENT
+mov   es, bx
 mov   bx, word ptr [bp - 024h]
 mov   cx, word ptr es:[bx + 2]
 mov   bx, ax
@@ -5601,14 +5621,14 @@ mov   cx, word ptr es:[si + 2]
 call  P_GetAttackRangeMult_
 les   bx, dword ptr [bp - 8]
 mov   bx, word ptr es:[bx + 0Ah]
-shl   bx, 4
+SHIFT_MACRO shl   bx 4
 mov   word ptr [bp - 02Ch], SECTORS_SEGMENT
 mov   word ptr [bp - 02Eh], bx
 mov   bx, word ptr [bp - 8]
 mov   word ptr [bp - 030h], SECTORS_SEGMENT
 mov   bx, word ptr es:[bx + 0Ch]
 mov   word ptr [bp - 01Eh], ax
-shl   bx, 4
+SHIFT_MACRO shl   bx 4
 mov   es, word ptr [bp - 02Ch]
 mov   word ptr [bp - 02Ch], bx
 mov   bx, word ptr [bp - 02Eh]
@@ -5624,10 +5644,10 @@ mov   word ptr [bp - 030h], SECTORS_SEGMENT
 mov   word ptr [bp - 02Ch], SECTORS_SEGMENT
 mov   dx, word ptr es:[bx + 0Ah]
 mov   cx, word ptr es:[bx + 0Ch]
-shl   dx, 4
+SHIFT_MACRO shl   dx 4
 mov   es, word ptr [bp - 030h]
 add   dx, 2
-shl   cx, 4
+SHIFT_MACRO shl   cx 4
 mov   bx, dx
 add   cx, 2
 mov   ax, word ptr es:[bx]
@@ -5647,7 +5667,7 @@ label_30:
 mov   cx, word ptr ds:[_lineopening+2]
 and   cx, 7
 mov   bx, word ptr ds:[_lineopening+2]
-shl   cx, 0Dh
+SHIFT_MACRO shl   cx 0Dh
 sar   bx, 3
 sub   cx, word ptr ds:[_shootz+0]
 sbb   bx, word ptr ds:[_shootz+2]
@@ -5674,7 +5694,7 @@ xor   ah, ah
 mov   cx, word ptr [bp - 01Ch]
 and   al, 7
 mov   dx, word ptr ds:[_lineopening+0]
-shl   ax, 0Dh
+SHIFT_MACRO shl   ax 0Dh
 sar   dx, 3
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
@@ -5691,28 +5711,6 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_7:
-ja    label_8
-mov   es, word ptr [bp - 2]
-mov   di, word ptr es:[si]
-add   di, 0F001h
-jmp   hitline_done_with_rangeswitchblock
-label_8:
-cmp   ax, MISSILERANGE
-jne   hitline_check_for_missile
-mov   es, word ptr [bp - 2]
-mov   di, word ptr es:[si]
-add   di, 0FF80h
-jmp   hitline_done_with_rangeswitchblock
-hitline_check_for_missile:
-cmp   ax, HALFMISSILERANGE
-je    hitline_range_halfmissile
-jmp   hitline_bad_range_todo_remove
-hitline_range_halfmissile:
-mov   es, word ptr [bp - 2]
-mov   di, word ptr es:[si]
-add   di, 0FF00h
-jmp   hitline_done_with_rangeswitchblock
 label_2:
 mov   ax, word ptr es:[si + 5]
 imul  dx, ax, SIZEOF_THINKER_T
@@ -5786,27 +5784,39 @@ sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
 cmp   dx, word ptr ds:[_aimslope+2]
 jg    exit_shoottraverse_return_1_2
-jne   label_15
+jne   hit_thing
 cmp   ax, word ptr ds:[_aimslope+0]
 ja    exit_shoottraverse_return_1_2
-label_15:
-mov   ax, word ptr ds:[_attackrange16]
-cmp   ax, CHAINSAWRANGE
-jb    label_16
-jmp   label_17
-label_16:
-cmp   ax, MELEERANGE
-jne   label_18
+hit_thing:
 mov   es, word ptr [bp - 2]
 mov   di, word ptr es:[si]
+
+
+mov   ax, word ptr ds:[_attackrange16]
+cmp   ax, CHAINSAWRANGE
+jb    hitthing_checkformelee
+ja    hitthing_checkformissile
+add   di, 0D801h
+jmp   hitthing_done_with_rangeswitchblock
+hitthing_checkformissile:
+cmp   ax, MISSILERANGE
+jne   hitthing_checkforhalfmissile
+add   di, 0FEC0h
+jmp   hitthing_done_with_rangeswitchblock
+hitthing_checkforhalfmissile:
+label_24:
+add   di, 0FD80h
+jmp   hitthing_done_with_rangeswitchblock
+
+hitthing_checkformelee:
 add   di, 0D800h
-label_23:
+hitthing_done_with_rangeswitchblock:
 
 
 mov   ax, word ptr es:[si + 2]
 adc   ax, 0FFFFh
 mov   word ptr [bp - 4], ax
-label_18:
+
 ;    x = trace.x.w + FixedMul (trace.dx.w, frac);
 mov   cx, word ptr [bp - 4]
 mov   ax, word ptr ds:[_trace+8]
@@ -5851,12 +5861,14 @@ mov   dx, si
 mov   bx, ax
 mov   ax, word ptr [bp - 02Ch]
 call  FixedMul_
+
 mov   bx, word ptr [bp - 022h]
 add   ax, word ptr ds:[_shootz+0]
 adc   dx, word ptr ds:[_shootz+2]
 mov   es, word ptr [bp - 0Ah]
 test  byte ptr es:[bx + 016h], 8
 je    label_19
+
 mov   bx, word ptr [bp - 012h]
 push  dx
 mov   cx, di
@@ -5882,28 +5894,6 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_17:
-ja    label_21
-mov   es, word ptr [bp - 2]
-mov   di, word ptr es:[si]
-add   di, 0D801h
-jmp   label_23
-label_21:
-cmp   ax, MISSILERANGE
-jne   label_22
-mov   es, word ptr [bp - 2]
-mov   di, word ptr es:[si]
-add   di, 0FEC0h
-jmp   label_23
-label_22:
-cmp   ax, HALFMISSILERANGE
-je    label_24
-jmp   label_18
-label_24:
-mov   es, word ptr [bp - 2]
-mov   di, word ptr es:[si]
-add   di, 0FD80h
-jmp   label_23
 label_19:
 mov   bx, word ptr [bp - 012h]
 push  word ptr ds:[_la_damage]
@@ -5955,8 +5945,8 @@ PUBLIC PTR_AimTraverse_
 0x000000000000003c:  26 8B 5C 05       mov   bx, word ptr es:[si + 5]
 0x0000000000000040:  26 8B 7C 05       mov   di, word ptr es:[si + 5]
 0x0000000000000044:  8E 46 FC          mov   es, word ptr [bp - 4]
-0x0000000000000047:  C1 E7 04          shl   di, 4
-0x000000000000004a:  C1 E3 02          shl   bx, 2
+0x0000000000000047:  C1 E7 04          SHIFT_MACRO shl   di 4
+0x000000000000004a:  C1 E3 02          SHIFT_MACRO shl   bx 2
 0x000000000000004d:  26 8B 4D 0C       mov   cx, word ptr es:[di + 0Ch]
 0x0000000000000051:  26 8B 55 0A       mov   dx, word ptr es:[di + 0Ah]
 0x0000000000000055:  8E C0             mov   es, ax
@@ -5978,10 +5968,10 @@ PUBLIC PTR_AimTraverse_
 0x0000000000000089:  89 C6             mov   si, ax
 0x000000000000008b:  26 8B 4D 0A       mov   cx, word ptr es:[di + 0Ah]
 0x000000000000008f:  26 8B 5D 0C       mov   bx, word ptr es:[di + 0Ch]
-0x0000000000000093:  C1 E1 04          shl   cx, 4
+0x0000000000000093:  C1 E1 04          SHIFT_MACRO shl   cx 4
 0x0000000000000096:  8E 46 E6          mov   es, word ptr [bp - 01Ah]
 0x0000000000000099:  89 CF             mov   di, cx
-0x000000000000009b:  C1 E3 04          shl   bx, 4
+0x000000000000009b:  C1 E3 04          SHIFT_MACRO shl   bx 4
 0x000000000000009e:  26 8B 0D          mov   cx, word ptr es:[di]
 0x00000000000000a1:  8E 46 E4          mov   es, word ptr [bp - 01Ch]
 0x00000000000000a4:  89 56 EA          mov   word ptr [bp - 016h], dx
@@ -5992,7 +5982,7 @@ PUBLIC PTR_AimTraverse_
 0x00000000000000b2:  8B 3E 4A 1E       mov   di, word ptr ds:[_lineopening+2]
 0x00000000000000b6:  80 E3 07          and   bl, 7
 0x00000000000000b9:  89 D1             mov   cx, dx
-0x00000000000000bb:  C1 E3 0D          shl   bx, 0xd
+0x00000000000000bb:  C1 E3 0D          SHIFT_MACRO shl   bx 0Dh
 0x00000000000000be:  C1 FF 03          sar   di, 3
 0x00000000000000c1:  2B 1E A8 1C       sub   bx, word ptr ds:[_shootz+0]
 0x00000000000000c5:  89 5E E6          mov   word ptr [bp - 01Ah], bx
@@ -6015,8 +6005,8 @@ PUBLIC PTR_AimTraverse_
 0x00000000000000f4:  8B 7E F4          mov   di, word ptr [bp - 0Ch]
 0x00000000000000f7:  26 8B 5F 0A       mov   bx, word ptr es:[bx + 0Ah]
 0x00000000000000fb:  26 8B 7D 0C       mov   di, word ptr es:[di + 0Ch]
-0x00000000000000ff:  C1 E3 04          shl   bx, 4
-0x0000000000000102:  C1 E7 04          shl   di, 4
+0x00000000000000ff:  C1 E3 04          SHIFT_MACRO shl   bx 4
+0x0000000000000102:  C1 E7 04          SHIFT_MACRO shl   di 4
 0x0000000000000105:  8E C1             mov   es, cx
 0x0000000000000107:  83 C7 02          add   di, 2
 0x000000000000010a:  26 8B 47 02       mov   ax, word ptr es:[bx + 2]
@@ -6029,7 +6019,7 @@ PUBLIC PTR_AimTraverse_
 0x000000000000011e:  8B 16 48 1E       mov   dx, word ptr ds:[_lineopening+0]
 0x0000000000000122:  24 07             and   al, 7
 0x0000000000000124:  89 F3             mov   bx, si
-0x0000000000000126:  C1 E0 0D          shl   ax, 0xd
+0x0000000000000126:  C1 E0 0D          SHIFT_MACRO shl   ax 0Dh
 0x0000000000000129:  C1 FA 03          sar   dx, 3
 0x000000000000012c:  2B 06 A8 1C       sub   ax, word ptr ds:[_shootz+0]
 0x0000000000000130:  1B 16 AA 1C       sbb   dx, word ptr ds:[_shootz+2]
