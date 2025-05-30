@@ -1151,7 +1151,7 @@ Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0e21:9492      T_Glow_
 0e21:94f0      P_SpawnGlowingLight_
 Module: p_map.obj(C:\REALDOOM\p_map.c)
-0e21:9550+     R_GetAttackRangeMult_
+0e21:9550+     P_GetAttackRangeMult_
 0e21:95b0+     PIT_StompThing_
 0e21:9642      P_TeleportMove_
 0e21:97aa+     P_ThingHeightClip_

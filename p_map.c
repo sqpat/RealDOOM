@@ -117,10 +117,10 @@ int16_t __near R_PointOnSide ( fixed_t_union x, fixed_t_union y, int16_t nodenum
 	return a;
 }
 */
-fixed_t __near R_GetAttackRangeMult(int16_t range, fixed_t frac);
+fixed_t __near P_GetAttackRangeMult(int16_t range, fixed_t frac);
 
 /*
-fixed_t __near R_GetAttackRangeMult(int16_t range, fixed_t frac){
+fixed_t __near P_GetAttackRangeMult(int16_t range, fixed_t frac){
 
 	switch (range){
 		case MISSILERANGE:
@@ -804,6 +804,9 @@ boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fix
 // the z will be set to the lowest value
 // and false will be returned.
 //
+
+/*
+
 boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_pos){
     boolean		onfloor;
 	fixed_t_union temp;
@@ -840,7 +843,7 @@ boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_
 
     return true;
 }
-
+*/
 
 void __near P_HitSlideLine (int16_t linenum);
 
@@ -1125,7 +1128,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 			return false;		// stop
 		}
 	
-		dist = R_GetAttackRangeMult(attackrange16, in->frac);
+		dist = P_GetAttackRangeMult(attackrange16, in->frac);
 
 		temp.h.fracbits = 0;
 		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
@@ -1160,7 +1163,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 		return true;			// corpse or something
 	}
     // check angles to see if the thing can be aimed at
-	dist = R_GetAttackRangeMult(attackrange16, in->frac);
+	dist = P_GetAttackRangeMult(attackrange16, in->frac);
 
     thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
@@ -1222,7 +1225,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
 		// crosses a two sided line
 		P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
 
-		dist = R_GetAttackRangeMult(attackrange16, in->frac);
+		dist = P_GetAttackRangeMult(attackrange16, in->frac);
 
 		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
@@ -1270,7 +1273,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
 
 		x = trace.x.w + FixedMul (trace.dx.w, frac);
 		y = trace.y.w + FixedMul (trace.dy.w, frac);
-		z = shootz.w  + FixedMul (aimslope, R_GetAttackRangeMult(attackrange16, frac));
+		z = shootz.w  + FixedMul (aimslope, P_GetAttackRangeMult(attackrange16, frac));
 
 			if (sectors[li_physics->frontsecnum].ceilingpic == skyflatnum) {
 				// don't shoot the sky!
@@ -1305,7 +1308,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
 	}
 
     // check angles to see if the thing can be aimed at
-	dist = R_GetAttackRangeMult(attackrange16, in->frac);
+	dist = P_GetAttackRangeMult(attackrange16, in->frac);
     thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
 
@@ -1342,7 +1345,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
 
     x = trace.x.w + FixedMul (trace.dx.w, frac);
     y = trace.y.w + FixedMul (trace.dy.w, frac);
-    z = shootz.w + FixedMul (aimslope, R_GetAttackRangeMult(attackrange16, in->frac));
+    z = shootz.w + FixedMul (aimslope, P_GetAttackRangeMult(attackrange16, in->frac));
 
 
     // Spawn bullet puffs or blod spots,

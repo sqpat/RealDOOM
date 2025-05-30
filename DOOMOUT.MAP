@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/28 17:20:47
+Created on:       25/05/29 10:02:24
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -63,8 +63,8 @@ p_enemy_TEXT           CODE           AUTO           0a86:2860       00002625
 p_floor_TEXT           CODE           AUTO           0a86:4e90       000007f6
 p_inter_TEXT           CODE           AUTO           0a86:5690       00000c7f
 p_lights_TEXT          CODE           AUTO           0a86:6310       000003ed
-p_map_TEXT             CODE           AUTO           0a86:6700       00001193
-P_MATH_TEXT            CODE           AUTO           0a86:7894       00001681
+p_map_TEXT             CODE           AUTO           0a86:6700       000010b7
+P_MATH_TEXT            CODE           AUTO           0a86:77b8       0000175f
 p_plats_TEXT           CODE           AUTO           0a86:8f20       00000419
 p_pspr_TEXT            CODE           AUTO           0a86:9340       00000ae5
 p_spec_TEXT            CODE           AUTO           0a86:9e30       000011c8
@@ -1025,43 +1025,43 @@ Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 Module: p_map.obj(C:\REALDOOM\p_map.c)
 0a86:6700+     PIT_StompThing_
 0a86:6792      P_TeleportMove_
-0a86:68fa+     P_ThingHeightClip_
-0a86:69d8+     PTR_AimTraverse_
-0a86:6c64+     PTR_ShootTraverse_
-0a86:7114      P_AimLineAttack_
-0a86:7340      P_LineAttack_
-0a86:7552      P_UseLines_
-0a86:75ea+     PIT_RadiusAttack_
-0a86:76ce      P_RadiusAttack_
-0a86:775c+     PIT_ChangeSector_
-0a86:784c      P_ChangeSector_
+0a86:68fa+     PTR_AimTraverse_
+0a86:6b86+     PTR_ShootTraverse_
+0a86:7036      P_AimLineAttack_
+0a86:7262      P_LineAttack_
+0a86:7474      P_UseLines_
+0a86:750c+     PIT_RadiusAttack_
+0a86:75f0      P_RadiusAttack_
+0a86:767e+     PIT_ChangeSector_
+0a86:7770      P_ChangeSector_
 Module: p_math.obj(p_math.ASM)
-0a86:8912*     PIT_CheckThing_
-0a86:86dc*     P_HitSlideLine_
-0a86:7d0d      P_SetThingPosition_
-0a86:8066*     P_TraverseIntercepts_
-0a86:7dee      R_PointInSubsector_
-0a86:7b8d*     P_InterceptVector_
-0a86:8ad1      P_CheckPosition_
-0a86:7e2b*     P_BlockLinesIterator_
-0a86:7fc7*     PIT_AddThingIntercepts_
-0a86:7970*     P_PointOnLineSide_
-0a86:8ecd      R_GetAttackRangeMult_
-0a86:8670      DoBlockmapLoop_
-0a86:7c0d      P_LineOpening_
-0a86:7eee*     PIT_AddLineIntercepts_
-0a86:7c41      P_UnsetThingPosition_
-0a86:80d9      P_PathTraverse_
-0a86:7933      P_AproxDistance_
-0a86:83a9*     PTR_SlideTraverse_
-0a86:7ab9*     P_PointOnDivlineSide_
-0a86:79fa*     P_BoxOnLineSide_
-0a86:87ce*     PIT_CheckLine_
-0a86:8303      PTR_UseTraverse_
-0a86:7894*     R_PointOnSide_
-0a86:8c8b      P_SlideMove_
-0a86:7e9b      P_BlockThingsIterator_
-0a86:84b6      P_TryMove_
+0a86:8836*     PIT_CheckThing_
+0a86:8600*     P_HitSlideLine_
+0a86:7c31      P_SetThingPosition_
+0a86:7f8a*     P_TraverseIntercepts_
+0a86:7d12      R_PointInSubsector_
+0a86:7ab1*     P_InterceptVector_
+0a86:89f5      P_CheckPosition_
+0a86:7d4f*     P_BlockLinesIterator_
+0a86:7eeb*     PIT_AddThingIntercepts_
+0a86:7894*     P_PointOnLineSide_
+0a86:8df1      P_GetAttackRangeMult_
+0a86:8594      DoBlockmapLoop_
+0a86:7b31      P_LineOpening_
+0a86:7e12*     PIT_AddLineIntercepts_
+0a86:7b65      P_UnsetThingPosition_
+0a86:7ffd      P_PathTraverse_
+0a86:7857      P_AproxDistance_
+0a86:82cd*     PTR_SlideTraverse_
+0a86:8e39      P_ThingHeightClip_
+0a86:79dd*     P_PointOnDivlineSide_
+0a86:791e*     P_BoxOnLineSide_
+0a86:86f2*     PIT_CheckLine_
+0a86:8227      PTR_UseTraverse_
+0a86:77b8*     R_PointOnSide_
+0a86:8baf      P_SlideMove_
+0a86:7dbf      P_BlockThingsIterator_
+0a86:83da      P_TryMove_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0a86:8f28      T_PlatRaise_
 0a86:904c      EV_DoPlat_
@@ -1555,4 +1555,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00023f20 (147232.)
 Entry point address: 1d98:1c36
-Link time: 00:00.20
+Link time: 00:00.75
