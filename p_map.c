@@ -1193,6 +1193,9 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 //
 // PTR_ShootTraverse
 //
+boolean __near PTR_ShootTraverse (intercept_t __far* in);
+
+/*
 boolean __near PTR_ShootTraverse (intercept_t __far* in){
     fixed_t		x;
     fixed_t		y;
@@ -1265,7 +1268,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
 				case MELEERANGE:
 					frac = in->frac - 4096;
 					break;
-				case MELEERANGE + 1:
+				case CHAINSAWRANGE:
 					frac = in->frac - 4095;
 					break;
 			}
@@ -1339,7 +1342,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
 		case MELEERANGE:
 			frac = in->frac - 10240;
 			break;
-		case MELEERANGE + 1:
+		case CHAINSAWRANGE:
 			frac = in->frac - 10239;
 			break;
 	}
@@ -1363,7 +1366,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
     return false;
 	
 }
-
+*/
 //
 // P_AimLineAttack
 //

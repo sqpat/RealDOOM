@@ -33,6 +33,9 @@ EXTRN P_DamageMobj_:NEAR
 EXTRN P_SetMobjState_:NEAR
 EXTRN P_TouchSpecialThing_:NEAR
 EXTRN P_CrossSpecialLine_:NEAR
+EXTRN P_ShootSpecialLine_:NEAR
+EXTRN P_SpawnPuff_:NEAR
+EXTRN P_SpawnBlood_:NEAR
 EXTRN FixedMulBig1632_:FAR
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
@@ -61,6 +64,12 @@ EXTRN _bestslidefrac:WORD
 EXTRN _bestslidelinenum:WORD
 EXTRN _numspechit:WORD
 EXTRN _lastcalculatedsector:WORD
+EXTRN _la_damage:WORD
+EXTRN _aimslope:DWORD
+EXTRN _shootthing:WORD
+EXTRN _shootz:DWORD
+EXTRN _attackrange16:WORD
+
 .CODE
 
 
@@ -5404,7 +5413,6 @@ ret
 
 ENDP
 
-COMMENT  @
 
 
 ; boolean __near PTR_ShootTraverse (intercept_t __far* in){
@@ -5412,440 +5420,504 @@ COMMENT  @
 PROC PTR_ShootTraverse_ NEAR
 PUBLIC PTR_ShootTraverse_
 
-0x0000000000000000:  53                push  bx
-0x0000000000000001:  51                push  cx
-0x0000000000000002:  56                push  si
-0x0000000000000003:  57                push  di
-0x0000000000000004:  55                push  bp
-0x0000000000000005:  89 E5             mov   bp, sp
-0x0000000000000007:  83 EC 30          sub   sp, 0x30
-0x000000000000000a:  89 C6             mov   si, ax
-0x000000000000000c:  89 56 FE          mov   word ptr [bp - 2], dx
-0x000000000000000f:  8E C2             mov   es, dx
-0x0000000000000011:  26 80 7C 04 00    cmp   byte ptr es:[si + 4], 0
-0x0000000000000016:  75 03             jne   0x1b
-0x0000000000000018:  E9 BB 02          jmp   0x2d6
-0x000000000000001b:  B8 BA E9          mov   ax, 0xe9ba
-0x000000000000001e:  26 8B 5C 05       mov   bx, word ptr es:[si + 5]
-0x0000000000000022:  8E C0             mov   es, ax
-0x0000000000000024:  26 8A 0F          mov   cl, byte ptr es:[bx]
-0x0000000000000027:  8E C2             mov   es, dx
-0x0000000000000029:  26 8B 5C 05       mov   bx, word ptr es:[si + 5]
-0x000000000000002d:  C7 46 E0 01 E8    mov   word ptr [bp - 0x20], 0xe801
-0x0000000000000032:  C1 E3 02          shl   bx, 2
-0x0000000000000035:  B8 00 70          mov   ax, 0x7000
-0x0000000000000038:  89 5E DC          mov   word ptr [bp - 0x24], bx
-0x000000000000003b:  26 8B 5C 05       mov   bx, word ptr es:[si + 5]
-0x000000000000003f:  89 46 FA          mov   word ptr [bp - 6], ax
-0x0000000000000042:  C1 E3 04          shl   bx, 4
-0x0000000000000045:  8E C0             mov   es, ax
-0x0000000000000047:  89 5E F8          mov   word ptr [bp - 8], bx
-0x000000000000004a:  26 80 7F 0F 00    cmp   byte ptr es:[bx + 0xf], 0
-0x000000000000004f:  74 0C             je    0x5d
-0x0000000000000051:  8E C2             mov   es, dx
-0x0000000000000053:  A1 F8 1E          mov   ax, word ptr [0x1ef8]
-0x0000000000000056:  26 8B 54 05       mov   dx, word ptr es:[si + 5]
-0x000000000000005a:  E8 15 3C          call  0x3c72
-0x000000000000005d:  F6 C1 04          test  cl, 4
-0x0000000000000060:  74 03             je    0x65
-0x0000000000000062:  E9 1B 01          jmp   0x180
-0x0000000000000065:  A1 F0 1E          mov   ax, word ptr [0x1ef0]
-0x0000000000000068:  3D 41 00          cmp   ax, 0x41
-0x000000000000006b:  72 03             jb    0x70
-0x000000000000006d:  E9 31 02          jmp   0x2a1
-0x0000000000000070:  3D 40 00          cmp   ax, 0x40
-0x0000000000000073:  75 14             jne   0x89
-0x0000000000000075:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x0000000000000078:  26 8B 3C          mov   di, word ptr es:[si]
-0x000000000000007b:  81 C7 00 F0       add   di, 0xf000
-0x000000000000007f:  26 8B 44 02       mov   ax, word ptr es:[si + 2]
-0x0000000000000083:  15 FF FF          adc   ax, 0xffff
-0x0000000000000086:  89 46 FC          mov   word ptr [bp - 4], ax
-0x0000000000000089:  8B 4E FC          mov   cx, word ptr [bp - 4]
-0x000000000000008c:  A1 10 1A          mov   ax, word ptr [0x1a10]
-0x000000000000008f:  8B 16 12 1A       mov   dx, word ptr [0x1a12]
-0x0000000000000093:  89 FB             mov   bx, di
-0x0000000000000095:  9A 98 5B 81 0A    lcall 0xa81:0x5b98
-0x000000000000009a:  8B 1E 08 1A       mov   bx, word ptr [0x1a08]
-0x000000000000009e:  8B 4E FC          mov   cx, word ptr [bp - 4]
-0x00000000000000a1:  01 C3             add   bx, ax
-0x00000000000000a3:  89 5E D8          mov   word ptr [bp - 0x28], bx
-0x00000000000000a6:  89 FB             mov   bx, di
-0x00000000000000a8:  A1 0A 1A          mov   ax, word ptr [0x1a0a]
-0x00000000000000ab:  11 D0             adc   ax, dx
-0x00000000000000ad:  8B 16 16 1A       mov   dx, word ptr [0x1a16]
-0x00000000000000b1:  89 46 DA          mov   word ptr [bp - 0x26], ax
-0x00000000000000b4:  A1 14 1A          mov   ax, word ptr [0x1a14]
-0x00000000000000b7:  9A 98 5B 81 0A    lcall 0xa81:0x5b98
-0x00000000000000bc:  8B 1E 0C 1A       mov   bx, word ptr [0x1a0c]
-0x00000000000000c0:  8B 4E FC          mov   cx, word ptr [bp - 4]
-0x00000000000000c3:  01 C3             add   bx, ax
-0x00000000000000c5:  89 5E D6          mov   word ptr [bp - 0x2a], bx
-0x00000000000000c8:  A1 0E 1A          mov   ax, word ptr [0x1a0e]
-0x00000000000000cb:  11 D0             adc   ax, dx
-0x00000000000000cd:  89 FB             mov   bx, di
-0x00000000000000cf:  89 46 E6          mov   word ptr [bp - 0x1a], ax
-0x00000000000000d2:  A1 F0 1E          mov   ax, word ptr [0x1ef0]
-0x00000000000000d5:  E8 64 F9          call  0xfa3c
-0x00000000000000d8:  8B 36 A4 1C       mov   si, word ptr [0x1ca4]
-0x00000000000000dc:  8B 3E A6 1C       mov   di, word ptr [0x1ca6]
-0x00000000000000e0:  89 C3             mov   bx, ax
-0x00000000000000e2:  89 D1             mov   cx, dx
-0x00000000000000e4:  89 F0             mov   ax, si
-0x00000000000000e6:  89 FA             mov   dx, di
-0x00000000000000e8:  9A 98 5B 81 0A    lcall 0xa81:0x5b98
-0x00000000000000ed:  8B 1E A8 1C       mov   bx, word ptr [0x1ca8]
-0x00000000000000f1:  8B 76 F8          mov   si, word ptr [bp - 8]
-0x00000000000000f4:  01 C3             add   bx, ax
-0x00000000000000f6:  A1 AA 1C          mov   ax, word ptr [0x1caa]
-0x00000000000000f9:  8E 46 FA          mov   es, word ptr [bp - 6]
-0x00000000000000fc:  11 D0             adc   ax, dx
-0x00000000000000fe:  26 8B 74 0A       mov   si, word ptr es:[si + 0xa]
-0x0000000000000102:  BA 00 E0          mov   dx, 0xe000
-0x0000000000000105:  C1 E6 04          shl   si, 4
-0x0000000000000108:  8E C2             mov   es, dx
-0x000000000000010a:  8D 7C 05          lea   di, [si + 5]
-0x000000000000010d:  B9 98 01          mov   cx, 0x198
-0x0000000000000110:  26 8A 15          mov   dl, byte ptr es:[di]
-0x0000000000000113:  89 CF             mov   di, cx
-0x0000000000000115:  3A 15             cmp   dl, byte ptr [di]
-0x0000000000000117:  75 4E             jne   0x167
-0x0000000000000119:  26 8B 4C 02       mov   cx, word ptr es:[si + 2]
-0x000000000000011d:  26 8B 54 02       mov   dx, word ptr es:[si + 2]
-0x0000000000000121:  30 ED             xor   ch, ch
-0x0000000000000123:  83 C6 02          add   si, 2
-0x0000000000000126:  80 E1 07          and   cl, 7
-0x0000000000000129:  C1 FA 03          sar   dx, 3
-0x000000000000012c:  C1 E1 0D          shl   cx, 0xd
-0x000000000000012f:  39 D0             cmp   ax, dx
-0x0000000000000131:  7F 2C             jg    0x15f
-0x0000000000000133:  75 04             jne   0x139
-0x0000000000000135:  39 CB             cmp   bx, cx
-0x0000000000000137:  77 26             ja    0x15f
-0x0000000000000139:  C4 76 F8          les   si, ptr [bp - 8]
-0x000000000000013c:  26 83 7C 0C FF    cmp   word ptr es:[si + 0xc], -1
-0x0000000000000141:  74 24             je    0x167
-0x0000000000000143:  89 F7             mov   di, si
-0x0000000000000145:  26 8B 7D 0C       mov   di, word ptr es:[di + 0xc]
-0x0000000000000149:  BA 00 E0          mov   dx, 0xe000
-0x000000000000014c:  C1 E7 04          shl   di, 4
-0x000000000000014f:  8E C2             mov   es, dx
-0x0000000000000151:  BE 98 01          mov   si, 0x198
-0x0000000000000154:  26 8A 55 05       mov   dl, byte ptr es:[di + 5]
-0x0000000000000158:  83 C7 05          add   di, 5
-0x000000000000015b:  3A 14             cmp   dl, byte ptr [si]
-0x000000000000015d:  75 08             jne   0x167
-0x000000000000015f:  30 C0             xor   al, al
-0x0000000000000161:  C9                LEAVE_MACRO 
-0x0000000000000162:  5F                pop   di
-0x0000000000000163:  5E                pop   si
-0x0000000000000164:  59                pop   cx
-0x0000000000000165:  5B                pop   bx
-0x0000000000000166:  C3                ret   
-0x0000000000000167:  8B 4E E6          mov   cx, word ptr [bp - 0x1a]
-0x000000000000016a:  8B 56 DA          mov   dx, word ptr [bp - 0x26]
-0x000000000000016d:  50                push  ax
-0x000000000000016e:  8B 46 D8          mov   ax, word ptr [bp - 0x28]
-0x0000000000000171:  53                push  bx
-0x0000000000000172:  8B 5E D6          mov   bx, word ptr [bp - 0x2a]
-0x0000000000000175:  E8 7A 5B          call  0x5cf2
-0x0000000000000178:  30 C0             xor   al, al
-0x000000000000017a:  C9                LEAVE_MACRO 
-0x000000000000017b:  5F                pop   di
-0x000000000000017c:  5E                pop   si
-0x000000000000017d:  59                pop   cx
-0x000000000000017e:  5B                pop   bx
-0x000000000000017f:  C3                ret   
-0x0000000000000180:  C4 5E F8          les   bx, ptr [bp - 8]
-0x0000000000000183:  26 8B 47 0C       mov   ax, word ptr es:[bx + 0xc]
-0x0000000000000187:  26 8B 57 0A       mov   dx, word ptr es:[bx + 0xa]
-0x000000000000018b:  8E 46 E0          mov   es, word ptr [bp - 0x20]
-0x000000000000018e:  8B 5E DC          mov   bx, word ptr [bp - 0x24]
-0x0000000000000191:  26 8B 4F 02       mov   cx, word ptr es:[bx + 2]
-0x0000000000000195:  89 C3             mov   bx, ax
-0x0000000000000197:  89 C8             mov   ax, cx
-0x0000000000000199:  E8 0D 0E          call  0xfa9
-0x000000000000019c:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x000000000000019f:  A1 F0 1E          mov   ax, word ptr [0x1ef0]
-0x00000000000001a2:  26 8B 1C          mov   bx, word ptr es:[si]
-0x00000000000001a5:  26 8B 4C 02       mov   cx, word ptr es:[si + 2]
-0x00000000000001a9:  E8 90 F8          call  0xfa3c
-0x00000000000001ac:  C4 5E F8          les   bx, ptr [bp - 8]
-0x00000000000001af:  26 8B 5F 0A       mov   bx, word ptr es:[bx + 0xa]
-0x00000000000001b3:  C1 E3 04          shl   bx, 4
-0x00000000000001b6:  C7 46 D4 00 E0    mov   word ptr [bp - 0x2c], 0xe000
-0x00000000000001bb:  89 5E D2          mov   word ptr [bp - 0x2e], bx
-0x00000000000001be:  8B 5E F8          mov   bx, word ptr [bp - 8]
-0x00000000000001c1:  C7 46 D0 00 E0    mov   word ptr [bp - 0x30], 0xe000
-0x00000000000001c6:  26 8B 5F 0C       mov   bx, word ptr es:[bx + 0xc]
-0x00000000000001ca:  89 46 E2          mov   word ptr [bp - 0x1e], ax
-0x00000000000001cd:  C1 E3 04          shl   bx, 4
-0x00000000000001d0:  8E 46 D4          mov   es, word ptr [bp - 0x2c]
-0x00000000000001d3:  89 5E D4          mov   word ptr [bp - 0x2c], bx
-0x00000000000001d6:  8B 5E D2          mov   bx, word ptr [bp - 0x2e]
-0x00000000000001d9:  89 56 E4          mov   word ptr [bp - 0x1c], dx
-0x00000000000001dc:  26 8B 0F          mov   cx, word ptr es:[bx]
-0x00000000000001df:  8E 46 D0          mov   es, word ptr [bp - 0x30]
-0x00000000000001e2:  8B 5E D4          mov   bx, word ptr [bp - 0x2c]
-0x00000000000001e5:  26 3B 0F          cmp   cx, word ptr es:[bx]
-0x00000000000001e8:  75 3B             jne   0x225
-0x00000000000001ea:  C4 5E F8          les   bx, ptr [bp - 8]
-0x00000000000001ed:  C7 46 D0 00 E0    mov   word ptr [bp - 0x30], 0xe000
-0x00000000000001f2:  C7 46 D4 00 E0    mov   word ptr [bp - 0x2c], 0xe000
-0x00000000000001f7:  26 8B 57 0A       mov   dx, word ptr es:[bx + 0xa]
-0x00000000000001fb:  26 8B 4F 0C       mov   cx, word ptr es:[bx + 0xc]
-0x00000000000001ff:  C1 E2 04          shl   dx, 4
-0x0000000000000202:  8E 46 D0          mov   es, word ptr [bp - 0x30]
-0x0000000000000205:  83 C2 02          add   dx, 2
-0x0000000000000208:  C1 E1 04          shl   cx, 4
-0x000000000000020b:  89 D3             mov   bx, dx
-0x000000000000020d:  83 C1 02          add   cx, 2
-0x0000000000000210:  26 8B 07          mov   ax, word ptr es:[bx]
-0x0000000000000213:  8E 46 D4          mov   es, word ptr [bp - 0x2c]
-0x0000000000000216:  89 CB             mov   bx, cx
-0x0000000000000218:  26 3B 07          cmp   ax, word ptr es:[bx]
-0x000000000000021b:  75 4A             jne   0x267
-0x000000000000021d:  B0 01             mov   al, 1
-0x000000000000021f:  C9                LEAVE_MACRO 
-0x0000000000000220:  5F                pop   di
-0x0000000000000221:  5E                pop   si
-0x0000000000000222:  59                pop   cx
-0x0000000000000223:  5B                pop   bx
-0x0000000000000224:  C3                ret   
-0x0000000000000225:  8B 0E 4A 1E       mov   cx, word ptr [0x1e4a]
-0x0000000000000229:  83 E1 07          and   cx, 7
-0x000000000000022c:  8B 1E 4A 1E       mov   bx, word ptr [0x1e4a]
-0x0000000000000230:  C1 E1 0D          shl   cx, 0xd
-0x0000000000000233:  C1 FB 03          sar   bx, 3
-0x0000000000000236:  2B 0E A8 1C       sub   cx, word ptr [0x1ca8]
-0x000000000000023a:  1B 1E AA 1C       sbb   bx, word ptr [0x1caa]
-0x000000000000023e:  89 4E D2          mov   word ptr [bp - 0x2e], cx
-0x0000000000000241:  89 5E D0          mov   word ptr [bp - 0x30], bx
-0x0000000000000244:  89 D1             mov   cx, dx
-0x0000000000000246:  8B 56 D0          mov   dx, word ptr [bp - 0x30]
-0x0000000000000249:  89 C3             mov   bx, ax
-0x000000000000024b:  8B 46 D2          mov   ax, word ptr [bp - 0x2e]
-0x000000000000024e:  9A E5 5E 81 0A    lcall 0xa81:0x5ee5
-0x0000000000000253:  3B 16 A6 1C       cmp   dx, word ptr [0x1ca6]
-0x0000000000000257:  7E 03             jle   0x25c
-0x0000000000000259:  E9 09 FE          jmp   0x65
-0x000000000000025c:  75 8C             jne   0x1ea
-0x000000000000025e:  3B 06 A4 1C       cmp   ax, word ptr [0x1ca4]
-0x0000000000000262:  76 86             jbe   0x1ea
-0x0000000000000264:  E9 FE FD          jmp   0x65
-0x0000000000000267:  A1 48 1E          mov   ax, word ptr [0x1e48]
-0x000000000000026a:  8B 5E E2          mov   bx, word ptr [bp - 0x1e]
-0x000000000000026d:  30 E4             xor   ah, ah
-0x000000000000026f:  8B 4E E4          mov   cx, word ptr [bp - 0x1c]
-0x0000000000000272:  24 07             and   al, 7
-0x0000000000000274:  8B 16 48 1E       mov   dx, word ptr [0x1e48]
-0x0000000000000278:  C1 E0 0D          shl   ax, 0xd
-0x000000000000027b:  C1 FA 03          sar   dx, 3
-0x000000000000027e:  2B 06 A8 1C       sub   ax, word ptr [0x1ca8]
-0x0000000000000282:  1B 16 AA 1C       sbb   dx, word ptr [0x1caa]
-0x0000000000000286:  9A E5 5E 81 0A    lcall 0xa81:0x5ee5
-0x000000000000028b:  3B 16 A6 1C       cmp   dx, word ptr [0x1ca6]
-0x000000000000028f:  7C C8             jl    0x259
-0x0000000000000291:  75 8A             jne   0x21d
-0x0000000000000293:  3B 06 A4 1C       cmp   ax, word ptr [0x1ca4]
-0x0000000000000297:  72 C0             jb    0x259
-0x0000000000000299:  B0 01             mov   al, 1
-0x000000000000029b:  C9                LEAVE_MACRO 
-0x000000000000029c:  5F                pop   di
-0x000000000000029d:  5E                pop   si
-0x000000000000029e:  59                pop   cx
-0x000000000000029f:  5B                pop   bx
-0x00000000000002a0:  C3                ret   
-0x00000000000002a1:  77 0D             ja    0x2b0
-0x00000000000002a3:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x00000000000002a6:  26 8B 3C          mov   di, word ptr es:[si]
-0x00000000000002a9:  81 C7 01 F0       add   di, 0xf001
-0x00000000000002ad:  E9 CF FD          jmp   0x7f
-0x00000000000002b0:  3D 00 08          cmp   ax, 0x800
-0x00000000000002b3:  75 0C             jne   0x2c1
-0x00000000000002b5:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x00000000000002b8:  26 8B 3C          mov   di, word ptr es:[si]
-0x00000000000002bb:  83 C7 80          add   di, -0x80
-0x00000000000002be:  E9 BE FD          jmp   0x7f
-0x00000000000002c1:  3D 00 04          cmp   ax, 0x400
-0x00000000000002c4:  74 03             je    0x2c9
-0x00000000000002c6:  E9 C0 FD          jmp   0x89
-0x00000000000002c9:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x00000000000002cc:  26 8B 3C          mov   di, word ptr es:[si]
-0x00000000000002cf:  81 C7 00 FF       add   di, 0xff00
-0x00000000000002d3:  E9 A9 FD          jmp   0x7f
-0x00000000000002d6:  26 8B 44 05       mov   ax, word ptr es:[si + 5]
-0x00000000000002da:  6B D0 2C          imul  dx, ax, 0x2c
-0x00000000000002dd:  81 C2 04 40       add   dx, 0x4004
-0x00000000000002e1:  89 56 F2          mov   word ptr [bp - 0xe], dx
-0x00000000000002e4:  3B 16 F8 1E       cmp   dx, word ptr [0x1ef8]
-0x00000000000002e8:  74 18             je    0x302
-0x00000000000002ea:  6B D8 18          imul  bx, ax, 0x18
-0x00000000000002ed:  B8 F5 6A          mov   ax, 0x6af5
-0x00000000000002f0:  89 5E F4          mov   word ptr [bp - 0xc], bx
-0x00000000000002f3:  89 5E DE          mov   word ptr [bp - 0x22], bx
-0x00000000000002f6:  8E C0             mov   es, ax
-0x00000000000002f8:  89 46 F6          mov   word ptr [bp - 0xa], ax
-0x00000000000002fb:  26 F6 47 14 04    test  byte ptr es:[bx + 0x14], 4
-0x0000000000000300:  75 08             jne   0x30a
-0x0000000000000302:  B0 01             mov   al, 1
-0x0000000000000304:  C9                LEAVE_MACRO 
-0x0000000000000305:  5F                pop   di
-0x0000000000000306:  5E                pop   si
-0x0000000000000307:  59                pop   cx
-0x0000000000000308:  5B                pop   bx
-0x0000000000000309:  C3                ret   
-0x000000000000030a:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x000000000000030d:  A1 F0 1E          mov   ax, word ptr [0x1ef0]
-0x0000000000000310:  26 8B 1C          mov   bx, word ptr es:[si]
-0x0000000000000313:  26 8B 4C 02       mov   cx, word ptr es:[si + 2]
-0x0000000000000317:  E8 22 F7          call  0xfa3c
-0x000000000000031a:  C4 5E F4          les   bx, ptr [bp - 0xc]
-0x000000000000031d:  89 46 E8          mov   word ptr [bp - 0x18], ax
-0x0000000000000320:  89 56 EA          mov   word ptr [bp - 0x16], dx
-0x0000000000000323:  26 8B 57 08       mov   dx, word ptr es:[bx + 8]
-0x0000000000000327:  26 8B 47 0A       mov   ax, word ptr es:[bx + 0xa]
-0x000000000000032b:  8B 5E F2          mov   bx, word ptr [bp - 0xe]
-0x000000000000032e:  03 57 0A          add   dx, word ptr [bx + 0xa]
-0x0000000000000331:  13 47 0C          adc   ax, word ptr [bx + 0xc]
-0x0000000000000334:  8B 4E EA          mov   cx, word ptr [bp - 0x16]
-0x0000000000000337:  89 C3             mov   bx, ax
-0x0000000000000339:  89 D0             mov   ax, dx
-0x000000000000033b:  89 DA             mov   dx, bx
-0x000000000000033d:  8B 5E E8          mov   bx, word ptr [bp - 0x18]
-0x0000000000000340:  2B 06 A8 1C       sub   ax, word ptr [0x1ca8]
-0x0000000000000344:  1B 16 AA 1C       sbb   dx, word ptr [0x1caa]
-0x0000000000000348:  9A E5 5E 81 0A    lcall 0xa81:0x5ee5
-0x000000000000034d:  3B 16 A6 1C       cmp   dx, word ptr [0x1ca6]
-0x0000000000000351:  7C 08             jl    0x35b
-0x0000000000000353:  75 0E             jne   0x363
-0x0000000000000355:  3B 06 A4 1C       cmp   ax, word ptr [0x1ca4]
-0x0000000000000359:  73 08             jae   0x363
-0x000000000000035b:  B0 01             mov   al, 1
-0x000000000000035d:  C9                LEAVE_MACRO 
-0x000000000000035e:  5F                pop   di
-0x000000000000035f:  5E                pop   si
-0x0000000000000360:  59                pop   cx
-0x0000000000000361:  5B                pop   bx
-0x0000000000000362:  C3                ret   
-0x0000000000000363:  C4 5E F4          les   bx, ptr [bp - 0xc]
-0x0000000000000366:  8B 4E EA          mov   cx, word ptr [bp - 0x16]
-0x0000000000000369:  26 8B 47 08       mov   ax, word ptr es:[bx + 8]
-0x000000000000036d:  26 8B 57 0A       mov   dx, word ptr es:[bx + 0xa]
-0x0000000000000371:  8B 5E E8          mov   bx, word ptr [bp - 0x18]
-0x0000000000000374:  2B 06 A8 1C       sub   ax, word ptr [0x1ca8]
-0x0000000000000378:  1B 16 AA 1C       sbb   dx, word ptr [0x1caa]
-0x000000000000037c:  9A E5 5E 81 0A    lcall 0xa81:0x5ee5
-0x0000000000000381:  3B 16 A6 1C       cmp   dx, word ptr [0x1ca6]
-0x0000000000000385:  7F D4             jg    0x35b
-0x0000000000000387:  75 06             jne   0x38f
-0x0000000000000389:  3B 06 A4 1C       cmp   ax, word ptr [0x1ca4]
-0x000000000000038d:  77 CC             ja    0x35b
-0x000000000000038f:  A1 F0 1E          mov   ax, word ptr [0x1ef0]
-0x0000000000000392:  3D 41 00          cmp   ax, 0x41
-0x0000000000000395:  72 03             jb    0x39a
-0x0000000000000397:  E9 C9 00          jmp   0x463
-0x000000000000039a:  3D 40 00          cmp   ax, 0x40
-0x000000000000039d:  75 14             jne   0x3b3
-0x000000000000039f:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x00000000000003a2:  26 8B 3C          mov   di, word ptr es:[si]
-0x00000000000003a5:  81 C7 00 D8       add   di, 0xd800
-0x00000000000003a9:  26 8B 44 02       mov   ax, word ptr es:[si + 2]
-0x00000000000003ad:  15 FF FF          adc   ax, 0xffff
-0x00000000000003b0:  89 46 FC          mov   word ptr [bp - 4], ax
-0x00000000000003b3:  8B 4E FC          mov   cx, word ptr [bp - 4]
-0x00000000000003b6:  A1 10 1A          mov   ax, word ptr [0x1a10]
-0x00000000000003b9:  8B 16 12 1A       mov   dx, word ptr [0x1a12]
-0x00000000000003bd:  89 FB             mov   bx, di
-0x00000000000003bf:  9A 98 5B 81 0A    lcall 0xa81:0x5b98
-0x00000000000003c4:  8B 1E 08 1A       mov   bx, word ptr [0x1a08]
-0x00000000000003c8:  8B 4E FC          mov   cx, word ptr [bp - 4]
-0x00000000000003cb:  01 C3             add   bx, ax
-0x00000000000003cd:  89 5E F0          mov   word ptr [bp - 0x10], bx
-0x00000000000003d0:  89 FB             mov   bx, di
-0x00000000000003d2:  A1 0A 1A          mov   ax, word ptr [0x1a0a]
-0x00000000000003d5:  11 D0             adc   ax, dx
-0x00000000000003d7:  8B 16 16 1A       mov   dx, word ptr [0x1a16]
-0x00000000000003db:  89 46 EC          mov   word ptr [bp - 0x14], ax
-0x00000000000003de:  A1 14 1A          mov   ax, word ptr [0x1a14]
-0x00000000000003e1:  9A 98 5B 81 0A    lcall 0xa81:0x5b98
-0x00000000000003e6:  8B 1E 0C 1A       mov   bx, word ptr [0x1a0c]
-0x00000000000003ea:  01 C3             add   bx, ax
-0x00000000000003ec:  89 5E EE          mov   word ptr [bp - 0x12], bx
-0x00000000000003ef:  8B 3E 0E 1A       mov   di, word ptr [0x1a0e]
-0x00000000000003f3:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x00000000000003f6:  A1 F0 1E          mov   ax, word ptr [0x1ef0]
-0x00000000000003f9:  26 8B 1C          mov   bx, word ptr es:[si]
-0x00000000000003fc:  26 8B 4C 02       mov   cx, word ptr es:[si + 2]
-0x0000000000000400:  11 D7             adc   di, dx
-0x0000000000000402:  E8 37 F6          call  0xfa3c
-0x0000000000000405:  8B 1E A4 1C       mov   bx, word ptr [0x1ca4]
-0x0000000000000409:  8B 36 A6 1C       mov   si, word ptr [0x1ca6]
-0x000000000000040d:  89 D1             mov   cx, dx
-0x000000000000040f:  89 5E D4          mov   word ptr [bp - 0x2c], bx
-0x0000000000000412:  89 F2             mov   dx, si
-0x0000000000000414:  89 C3             mov   bx, ax
-0x0000000000000416:  8B 46 D4          mov   ax, word ptr [bp - 0x2c]
-0x0000000000000419:  9A 98 5B 81 0A    lcall 0xa81:0x5b98
-0x000000000000041e:  8B 5E DE          mov   bx, word ptr [bp - 0x22]
-0x0000000000000421:  03 06 A8 1C       add   ax, word ptr [0x1ca8]
-0x0000000000000425:  13 16 AA 1C       adc   dx, word ptr [0x1caa]
-0x0000000000000429:  8E 46 F6          mov   es, word ptr [bp - 0xa]
-0x000000000000042c:  26 F6 47 16 08    test  byte ptr es:[bx + 0x16], 8
-0x0000000000000431:  74 66             je    0x499
-0x0000000000000433:  8B 5E EE          mov   bx, word ptr [bp - 0x12]
-0x0000000000000436:  52                push  dx
-0x0000000000000437:  89 F9             mov   cx, di
-0x0000000000000439:  8B 56 EC          mov   dx, word ptr [bp - 0x14]
-0x000000000000043c:  50                push  ax
-0x000000000000043d:  8B 46 F0          mov   ax, word ptr [bp - 0x10]
-0x0000000000000440:  E8 AF 58          call  0x5cf2
-0x0000000000000443:  A1 F4 1E          mov   ax, word ptr [0x1ef4]
-0x0000000000000446:  85 C0             test  ax, ax
-0x0000000000000448:  75 03             jne   0x44d
-0x000000000000044a:  E9 12 FD          jmp   0x15f
-0x000000000000044d:  8B 16 F8 1E       mov   dx, word ptr [0x1ef8]
-0x0000000000000451:  89 C1             mov   cx, ax
-0x0000000000000453:  8B 46 F2          mov   ax, word ptr [bp - 0xe]
-0x0000000000000456:  89 D3             mov   bx, dx
-0x0000000000000458:  E8 79 EE          call  0xf2d4
-0x000000000000045b:  30 C0             xor   al, al
-0x000000000000045d:  C9                LEAVE_MACRO 
-0x000000000000045e:  5F                pop   di
-0x000000000000045f:  5E                pop   si
-0x0000000000000460:  59                pop   cx
-0x0000000000000461:  5B                pop   bx
-0x0000000000000462:  C3                ret   
-0x0000000000000463:  77 0D             ja    0x472
-0x0000000000000465:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x0000000000000468:  26 8B 3C          mov   di, word ptr es:[si]
-0x000000000000046b:  81 C7 01 D8       add   di, 0xd801
-0x000000000000046f:  E9 37 FF          jmp   0x3a9
-0x0000000000000472:  3D 00 08          cmp   ax, 0x800
-0x0000000000000475:  75 0D             jne   0x484
-0x0000000000000477:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x000000000000047a:  26 8B 3C          mov   di, word ptr es:[si]
-0x000000000000047d:  81 C7 C0 FE       add   di, 0xfec0
-0x0000000000000481:  E9 25 FF          jmp   0x3a9
-0x0000000000000484:  3D 00 04          cmp   ax, 0x400
-0x0000000000000487:  74 03             je    0x48c
-0x0000000000000489:  E9 27 FF          jmp   0x3b3
-0x000000000000048c:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x000000000000048f:  26 8B 3C          mov   di, word ptr es:[si]
-0x0000000000000492:  81 C7 80 FD       add   di, 0xfd80
-0x0000000000000496:  E9 10 FF          jmp   0x3a9
-0x0000000000000499:  8B 5E EE          mov   bx, word ptr [bp - 0x12]
-0x000000000000049c:  FF 36 F4 1E       push  word ptr [0x1ef4]
-0x00000000000004a0:  89 F9             mov   cx, di
-0x00000000000004a2:  52                push  dx
-0x00000000000004a3:  8B 56 EC          mov   dx, word ptr [bp - 0x14]
-0x00000000000004a6:  50                push  ax
-0x00000000000004a7:  8B 46 F0          mov   ax, word ptr [bp - 0x10]
-0x00000000000004aa:  E8 05 59          call  0x5db2
-0x00000000000004ad:  EB 94             jmp   0x443
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 030h
+mov   si, ax
+mov   word ptr [bp - 2], dx
+mov   es, dx
+cmp   byte ptr es:[si + 4], 0
+jne   label_1
+jmp   label_2
+label_1:
+mov   ax, LINEFLAGSLIST_SEGMENT
+mov   bx, word ptr es:[si + 5]
+mov   es, ax
+mov   cl, byte ptr es:[bx]
+mov   es, dx
+mov   bx, word ptr es:[si + 5]
+mov   word ptr [bp - 020h], LINES_SEGMENT
+shl   bx, 2
+mov   ax, LINES_PHYSICS_SEGMENT
+mov   word ptr [bp - 024h], bx
+mov   bx, word ptr es:[si + 5]
+mov   word ptr [bp - 6], ax
+shl   bx, 4
+mov   es, ax
+mov   word ptr [bp - 8], bx
+cmp   byte ptr es:[bx + 0Fh], 0
+je    label_3
+
+;		if (li_physics->special)
+;			P_ShootSpecialLine (shootthing, in->d.linenum);
+
+mov   es, dx
+mov   ax, word ptr ds:[_shootthing]
+mov   dx, word ptr es:[si + 5]
+call  P_ShootSpecialLine_
+label_3:
+test  cl, ML_TWOSIDED
+je    hitline
+jmp   not_hitline
+hitline:
+mov   ax, word ptr ds:[_attackrange16]
+cmp   ax, CHAINSAWRANGE
+jb    hitline_check_for_melee
+jmp   label_7
+hitline_check_for_melee:
+cmp   ax, MELEERANGE
+jne   hitline_bad_range_todo_remove
+mov   es, word ptr [bp - 2]
+mov   di, word ptr es:[si]
+add   di, 0F000h
+hitline_done_with_rangeswitchblock:
+mov   ax, word ptr es:[si + 2]
+adc   ax, 0FFFFh
+mov   word ptr [bp - 4], ax
+hitline_bad_range_todo_remove:
+
+;    x = trace.x.w + FixedMul (trace.dx.w, frac);
+
+mov   cx, word ptr [bp - 4]
+mov   ax, word ptr ds:[_trace+8]
+mov   dx, word ptr ds:[_trace+0Ah]
+mov   bx, di
+call  FixedMul_
+mov   bx, word ptr ds:[_trace+0]
+mov   cx, word ptr [bp - 4]
+add   bx, ax
+mov   word ptr [bp - 028h], bx
+mov   bx, di
+
+;    y = trace.y.w + FixedMul (trace.dy.w, frac);
+
+mov   ax, word ptr ds:[_trace+2]
+adc   ax, dx
+mov   dx, word ptr ds:[_trace+0Eh]
+mov   word ptr [bp - 026h], ax
+mov   ax, word ptr ds:[_trace+0Ch]
+call  FixedMul_
+mov   bx, word ptr ds:[_trace+4]
+mov   cx, word ptr [bp - 4]
+add   bx, ax
+mov   word ptr [bp - 02Ah], bx
+mov   ax, word ptr ds:[_trace+6]
+adc   ax, dx
+mov   bx, di
+mov   word ptr [bp - 01Ah], ax
+mov   ax, word ptr ds:[_attackrange16]
+call  P_GetAttackRangeMult_
+
+mov   si, word ptr ds:[_aimslope+0]
+mov   di, word ptr ds:[_aimslope+2]
+mov   bx, ax
+mov   cx, dx
+mov   ax, si
+mov   dx, di
+call  FixedMul_
+mov   bx, word ptr ds:[_shootz+0]
+mov   si, word ptr [bp - 8]
+add   bx, ax
+mov   ax, word ptr ds:[_shootz+2]
+mov   es, word ptr [bp - 6]
+adc   ax, dx
+mov   si, word ptr es:[si + 0Ah]
+mov   dx, SECTORS_SEGMENT
+shl   si, 4
+mov   es, dx
+lea   di, [si + 5]
+mov   cx, OFFSET _skyflatnum
+mov   dl, byte ptr es:[di]
+mov   di, cx
+cmp   dl, byte ptr [di]
+jne   label_26
+mov   cx, word ptr es:[si + 2]
+mov   dx, word ptr es:[si + 2]
+xor   ch, ch
+add   si, 2
+and   cl, 7
+sar   dx, 3
+shl   cx, 0Dh
+cmp   ax, dx
+jg    exit_shoottraverse_return_0
+jne   label_31
+cmp   bx, cx
+ja    exit_shoottraverse_return_0
+label_31:
+les   si, dword ptr [bp - 8]
+cmp   word ptr es:[si + 0Ch], -1
+je    label_26
+mov   di, si
+mov   di, word ptr es:[di + 0Ch]
+mov   dx, SECTORS_SEGMENT
+shl   di, 4
+mov   es, dx
+mov   si, OFFSET _skyflatnum
+mov   dl, byte ptr es:[di + 5]
+add   di, 5
+cmp   dl, byte ptr [si]
+jne   label_26
+exit_shoottraverse_return_0:
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label_26:
+mov   cx, word ptr [bp - 01Ah]
+mov   dx, word ptr [bp - 026h]
+push  ax
+mov   ax, word ptr [bp - 028h]
+push  bx
+mov   bx, word ptr [bp - 02Ah]
+call  P_SpawnPuff_
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+not_hitline:
+les   bx, dword ptr [bp - 8]
+mov   ax, word ptr es:[bx + 0Ch]
+mov   dx, word ptr es:[bx + 0Ah]
+mov   es, word ptr [bp - 020h]
+mov   bx, word ptr [bp - 024h]
+mov   cx, word ptr es:[bx + 2]
+mov   bx, ax
+mov   ax, cx
+call  P_LineOpening_
+mov   es, word ptr [bp - 2]
+mov   ax, word ptr ds:[_attackrange16]
+mov   bx, word ptr es:[si]
+mov   cx, word ptr es:[si + 2]
+call  P_GetAttackRangeMult_
+les   bx, dword ptr [bp - 8]
+mov   bx, word ptr es:[bx + 0Ah]
+shl   bx, 4
+mov   word ptr [bp - 02Ch], SECTORS_SEGMENT
+mov   word ptr [bp - 02Eh], bx
+mov   bx, word ptr [bp - 8]
+mov   word ptr [bp - 030h], SECTORS_SEGMENT
+mov   bx, word ptr es:[bx + 0Ch]
+mov   word ptr [bp - 01Eh], ax
+shl   bx, 4
+mov   es, word ptr [bp - 02Ch]
+mov   word ptr [bp - 02Ch], bx
+mov   bx, word ptr [bp - 02Eh]
+mov   word ptr [bp - 01Ch], dx
+mov   cx, word ptr es:[bx]
+mov   es, word ptr [bp - 030h]
+mov   bx, word ptr [bp - 02Ch]
+cmp   cx, word ptr es:[bx]
+jne   label_30
+label_28:
+les   bx, dword ptr [bp - 8]
+mov   word ptr [bp - 030h], SECTORS_SEGMENT
+mov   word ptr [bp - 02Ch], SECTORS_SEGMENT
+mov   dx, word ptr es:[bx + 0Ah]
+mov   cx, word ptr es:[bx + 0Ch]
+shl   dx, 4
+mov   es, word ptr [bp - 030h]
+add   dx, 2
+shl   cx, 4
+mov   bx, dx
+add   cx, 2
+mov   ax, word ptr es:[bx]
+mov   es, word ptr [bp - 02Ch]
+mov   bx, cx
+cmp   ax, word ptr es:[bx]
+jne   label_29
+exit_shoottraverse_return_1_3:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label_30:
+mov   cx, word ptr ds:[_lineopening+2]
+and   cx, 7
+mov   bx, word ptr ds:[_lineopening+2]
+shl   cx, 0Dh
+sar   bx, 3
+sub   cx, word ptr ds:[_shootz+0]
+sbb   bx, word ptr ds:[_shootz+2]
+mov   word ptr [bp - 02Eh], cx
+mov   word ptr [bp - 030h], bx
+mov   cx, dx
+mov   dx, word ptr [bp - 030h]
+mov   bx, ax
+mov   ax, word ptr [bp - 02Eh]
+call  FixedDiv_
+cmp   dx, word ptr ds:[_aimslope+2]
+jle   label_27
+jump_to_hitline:
+jmp   hitline
+label_27:
+jne   label_28
+cmp   ax, word ptr ds:[_aimslope+0]
+jbe   label_28
+jmp   hitline
+label_29:
+mov   ax, word ptr ds:[_lineopening+0]
+mov   bx, word ptr [bp - 01Eh]
+xor   ah, ah
+mov   cx, word ptr [bp - 01Ch]
+and   al, 7
+mov   dx, word ptr ds:[_lineopening+0]
+shl   ax, 0Dh
+sar   dx, 3
+sub   ax, word ptr ds:[_shootz+0]
+sbb   dx, word ptr ds:[_shootz+2]
+call  FixedDiv_
+cmp   dx, word ptr ds:[_aimslope+2]
+jl    jump_to_hitline
+jne   exit_shoottraverse_return_1_3
+cmp   ax, word ptr ds:[_aimslope+0]
+jb    jump_to_hitline
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label_7:
+ja    label_8
+mov   es, word ptr [bp - 2]
+mov   di, word ptr es:[si]
+add   di, 0F001h
+jmp   hitline_done_with_rangeswitchblock
+label_8:
+cmp   ax, MISSILERANGE
+jne   hitline_check_for_missile
+mov   es, word ptr [bp - 2]
+mov   di, word ptr es:[si]
+add   di, 0FF80h
+jmp   hitline_done_with_rangeswitchblock
+hitline_check_for_missile:
+cmp   ax, HALFMISSILERANGE
+je    hitline_range_halfmissile
+jmp   hitline_bad_range_todo_remove
+hitline_range_halfmissile:
+mov   es, word ptr [bp - 2]
+mov   di, word ptr es:[si]
+add   di, 0FF00h
+jmp   hitline_done_with_rangeswitchblock
+label_2:
+mov   ax, word ptr es:[si + 5]
+imul  dx, ax, SIZEOF_THINKER_T
+add   dx, (_thinkerlist + 4)
+mov   word ptr [bp - 0Eh], dx
+cmp   dx, word ptr ds:[_shootthing]
+je    exit_shoottraverse_return_1
+imul  bx, ax, SIZEOF_MOBJ_POS_T
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   word ptr [bp - 0Ch], bx
+mov   word ptr [bp - 022h], bx
+mov   es, ax
+mov   word ptr [bp - 0Ah], ax
+test  byte ptr es:[bx + 014h], 4
+jne   label_13
+exit_shoottraverse_return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label_13:
+mov   es, word ptr [bp - 2]
+mov   ax, word ptr ds:[_attackrange16]
+mov   bx, word ptr es:[si]
+mov   cx, word ptr es:[si + 2]
+call  P_GetAttackRangeMult_
+
+;    thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
+
+
+les   bx, dword ptr [bp - 0Ch]
+mov   word ptr [bp - 018h], ax
+mov   word ptr [bp - 016h], dx
+mov   dx, word ptr es:[bx + 8]
+mov   ax, word ptr es:[bx + 0Ah]
+mov   bx, word ptr [bp - 0Eh]
+add   dx, word ptr [bx + 0Ah]
+adc   ax, word ptr [bx + 0Ch]
+mov   cx, word ptr [bp - 016h]
+mov   bx, ax
+mov   ax, dx
+mov   dx, bx
+mov   bx, word ptr [bp - 018h]
+sub   ax, word ptr ds:[_shootz+0]
+sbb   dx, word ptr ds:[_shootz+2]
+call  FixedDiv_
+cmp   dx, word ptr ds:[_aimslope+2]
+jl    exit_shoottraverse_return_1
+jne   label_14
+cmp   ax, word ptr ds:[_aimslope+0]
+jae   label_14
+exit_shoottraverse_return_1_2:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label_14:
+les   bx, dword ptr [bp - 0Ch]
+mov   cx, word ptr [bp - 016h]
+mov   ax, word ptr es:[bx + 8]
+mov   dx, word ptr es:[bx + 0Ah]
+mov   bx, word ptr [bp - 018h]
+sub   ax, word ptr ds:[_shootz+0]
+sbb   dx, word ptr ds:[_shootz+2]
+call  FixedDiv_
+cmp   dx, word ptr ds:[_aimslope+2]
+jg    exit_shoottraverse_return_1_2
+jne   label_15
+cmp   ax, word ptr ds:[_aimslope+0]
+ja    exit_shoottraverse_return_1_2
+label_15:
+mov   ax, word ptr ds:[_attackrange16]
+cmp   ax, CHAINSAWRANGE
+jb    label_16
+jmp   label_17
+label_16:
+cmp   ax, MELEERANGE
+jne   label_18
+mov   es, word ptr [bp - 2]
+mov   di, word ptr es:[si]
+add   di, 0D800h
+label_23:
+
+
+mov   ax, word ptr es:[si + 2]
+adc   ax, 0FFFFh
+mov   word ptr [bp - 4], ax
+label_18:
+;    x = trace.x.w + FixedMul (trace.dx.w, frac);
+mov   cx, word ptr [bp - 4]
+mov   ax, word ptr ds:[_trace+8]
+mov   dx, word ptr ds:[_trace+0Ah]
+mov   bx, di
+call  FixedMul_
+
+
+
+mov   bx, word ptr ds:[_trace+0]
+mov   cx, word ptr [bp - 4]
+add   bx, ax
+mov   word ptr [bp - 010h], bx
+mov   bx, di
+
+;    y = trace.y.w + FixedMul (trace.dy.w, frac);
+mov   ax, word ptr ds:[_trace+2]
+adc   ax, dx
+mov   word ptr [bp - 014h], ax
+mov   dx, word ptr ds:[_trace+0Eh]
+mov   ax, word ptr ds:[_trace+0Ch]
+call  FixedMul_
+
+
+;    z = shootz.w + FixedMul (aimslope, P_GetAttackRangeMult(attackrange16, in->frac));
+
+mov   bx, word ptr ds:[_trace+4]
+add   bx, ax
+mov   word ptr [bp - 012h], bx
+mov   di, word ptr ds:[_trace+6]
+mov   es, word ptr [bp - 2]
+mov   ax, word ptr ds:[_attackrange16]
+mov   bx, word ptr es:[si]
+mov   cx, word ptr es:[si + 2]
+adc   di, dx
+call  P_GetAttackRangeMult_
+mov   bx, word ptr ds:[_aimslope+0]
+mov   si, word ptr ds:[_aimslope+2]
+mov   cx, dx
+mov   word ptr [bp - 02Ch], bx
+mov   dx, si
+mov   bx, ax
+mov   ax, word ptr [bp - 02Ch]
+call  FixedMul_
+mov   bx, word ptr [bp - 022h]
+add   ax, word ptr ds:[_shootz+0]
+adc   dx, word ptr ds:[_shootz+2]
+mov   es, word ptr [bp - 0Ah]
+test  byte ptr es:[bx + 016h], 8
+je    label_19
+mov   bx, word ptr [bp - 012h]
+push  dx
+mov   cx, di
+mov   dx, word ptr [bp - 014h]
+push  ax
+mov   ax, word ptr [bp - 010h]
+call  P_SpawnPuff_
+label_25:
+mov   ax, word ptr ds:[_la_damage]
+test  ax, ax
+jne   label_20
+jmp   exit_shoottraverse_return_0
+label_20:
+mov   dx, word ptr ds:[_shootthing]
+mov   cx, ax
+mov   ax, word ptr [bp - 0Eh]
+mov   bx, dx
+call  P_DamageMobj_
+xor   al, al
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
+label_17:
+ja    label_21
+mov   es, word ptr [bp - 2]
+mov   di, word ptr es:[si]
+add   di, 0D801h
+jmp   label_23
+label_21:
+cmp   ax, MISSILERANGE
+jne   label_22
+mov   es, word ptr [bp - 2]
+mov   di, word ptr es:[si]
+add   di, 0FEC0h
+jmp   label_23
+label_22:
+cmp   ax, HALFMISSILERANGE
+je    label_24
+jmp   label_18
+label_24:
+mov   es, word ptr [bp - 2]
+mov   di, word ptr es:[si]
+add   di, 0FD80h
+jmp   label_23
+label_19:
+mov   bx, word ptr [bp - 012h]
+push  word ptr ds:[_la_damage]
+mov   cx, di
+push  dx
+mov   dx, word ptr [bp - 014h]
+push  ax
+mov   ax, word ptr [bp - 010h]
+call  P_SpawnBlood_
+jmp   label_25
 
 ENDP
 
+COMMENT  @
 
 ;boolean __near PTR_AimTraverse (intercept_t __far* in);
 
@@ -5864,7 +5936,7 @@ PUBLIC PTR_AimTraverse_
 0x000000000000000f:  8E C2             mov   es, dx
 0x0000000000000011:  26 80 7C 04 00    cmp   byte ptr es:[si + 4], 0
 0x0000000000000016:  74 17             je    0x2f
-0x0000000000000018:  B8 BA E9          mov   ax, 0xe9ba
+0x0000000000000018:  B8 BA E9          mov   ax, LINEFLAGSLIST_SEGMENT
 0x000000000000001b:  26 8B 5C 05       mov   bx, word ptr es:[si + 5]
 0x000000000000001f:  8E C0             mov   es, ax
 0x0000000000000021:  26 F6 07 04       test  byte ptr es:[bx], 4
@@ -5877,58 +5949,58 @@ PUBLIC PTR_AimTraverse_
 0x000000000000002d:  5B                pop   bx
 0x000000000000002e:  C3                ret   
 0x000000000000002f:  E9 3B 01          jmp   0x16d
-0x0000000000000032:  B8 01 E8          mov   ax, 0xe801
+0x0000000000000032:  B8 01 E8          mov   ax, LINES_SEGMENT
 0x0000000000000035:  8E C2             mov   es, dx
-0x0000000000000037:  C7 46 FC 00 70    mov   word ptr [bp - 4], 0x7000
+0x0000000000000037:  C7 46 FC 00 70    mov   word ptr [bp - 4], LINES_PHYSICS_SEGMENT
 0x000000000000003c:  26 8B 5C 05       mov   bx, word ptr es:[si + 5]
 0x0000000000000040:  26 8B 7C 05       mov   di, word ptr es:[si + 5]
 0x0000000000000044:  8E 46 FC          mov   es, word ptr [bp - 4]
 0x0000000000000047:  C1 E7 04          shl   di, 4
 0x000000000000004a:  C1 E3 02          shl   bx, 2
-0x000000000000004d:  26 8B 4D 0C       mov   cx, word ptr es:[di + 0xc]
-0x0000000000000051:  26 8B 55 0A       mov   dx, word ptr es:[di + 0xa]
+0x000000000000004d:  26 8B 4D 0C       mov   cx, word ptr es:[di + 0Ch]
+0x0000000000000051:  26 8B 55 0A       mov   dx, word ptr es:[di + 0Ah]
 0x0000000000000055:  8E C0             mov   es, ax
 0x0000000000000057:  26 8B 47 02       mov   ax, word ptr es:[bx + 2]
 0x000000000000005b:  89 CB             mov   bx, cx
 0x000000000000005d:  E8 D5 11          call  0x1235
-0x0000000000000060:  A1 4A 1E          mov   ax, word ptr [0x1e4a]
-0x0000000000000063:  89 7E F4          mov   word ptr [bp - 0xc], di
-0x0000000000000066:  3B 06 48 1E       cmp   ax, word ptr [0x1e48]
+0x0000000000000060:  A1 4A 1E          mov   ax, word ptr ds:[_lineopening+2]
+0x0000000000000063:  89 7E F4          mov   word ptr [bp - 0Ch], di
+0x0000000000000066:  3B 06 48 1E       cmp   ax, word ptr ds:[_lineopening+0]
 0x000000000000006a:  7D BB             jge   0x27
 0x000000000000006c:  8E 46 FE          mov   es, word ptr [bp - 2]
-0x000000000000006f:  C7 46 E6 00 E0    mov   word ptr [bp - 0x1a], 0xe000
-0x0000000000000074:  A1 F0 1E          mov   ax, word ptr [0x1ef0]
+0x000000000000006f:  C7 46 E6 00 E0    mov   word ptr [bp - 01Ah], SECTORS_SEGMENT
+0x0000000000000074:  A1 F0 1E          mov   ax, word ptr ds:[_attackrange16]
 0x0000000000000077:  26 8B 1C          mov   bx, word ptr es:[si]
 0x000000000000007a:  26 8B 4C 02       mov   cx, word ptr es:[si + 2]
-0x000000000000007e:  C7 46 E4 00 E0    mov   word ptr [bp - 0x1c], 0xe000
+0x000000000000007e:  C7 46 E4 00 E0    mov   word ptr [bp - 01Ch], SECTORS_SEGMENT
 0x0000000000000083:  E8 42 FC          call  0xfcc8
 0x0000000000000086:  8E 46 FC          mov   es, word ptr [bp - 4]
 0x0000000000000089:  89 C6             mov   si, ax
-0x000000000000008b:  26 8B 4D 0A       mov   cx, word ptr es:[di + 0xa]
-0x000000000000008f:  26 8B 5D 0C       mov   bx, word ptr es:[di + 0xc]
+0x000000000000008b:  26 8B 4D 0A       mov   cx, word ptr es:[di + 0Ah]
+0x000000000000008f:  26 8B 5D 0C       mov   bx, word ptr es:[di + 0Ch]
 0x0000000000000093:  C1 E1 04          shl   cx, 4
-0x0000000000000096:  8E 46 E6          mov   es, word ptr [bp - 0x1a]
+0x0000000000000096:  8E 46 E6          mov   es, word ptr [bp - 01Ah]
 0x0000000000000099:  89 CF             mov   di, cx
 0x000000000000009b:  C1 E3 04          shl   bx, 4
 0x000000000000009e:  26 8B 0D          mov   cx, word ptr es:[di]
-0x00000000000000a1:  8E 46 E4          mov   es, word ptr [bp - 0x1c]
-0x00000000000000a4:  89 56 EA          mov   word ptr [bp - 0x16], dx
+0x00000000000000a1:  8E 46 E4          mov   es, word ptr [bp - 01Ch]
+0x00000000000000a4:  89 56 EA          mov   word ptr [bp - 016h], dx
 0x00000000000000a7:  26 3B 0F          cmp   cx, word ptr es:[bx]
 0x00000000000000aa:  74 3F             je    0xeb
-0x00000000000000ac:  8B 1E 4A 1E       mov   bx, word ptr [0x1e4a]
+0x00000000000000ac:  8B 1E 4A 1E       mov   bx, word ptr ds:[_lineopening+2]
 0x00000000000000b0:  30 FF             xor   bh, bh
-0x00000000000000b2:  8B 3E 4A 1E       mov   di, word ptr [0x1e4a]
+0x00000000000000b2:  8B 3E 4A 1E       mov   di, word ptr ds:[_lineopening+2]
 0x00000000000000b6:  80 E3 07          and   bl, 7
 0x00000000000000b9:  89 D1             mov   cx, dx
 0x00000000000000bb:  C1 E3 0D          shl   bx, 0xd
 0x00000000000000be:  C1 FF 03          sar   di, 3
-0x00000000000000c1:  2B 1E A8 1C       sub   bx, word ptr [0x1ca8]
-0x00000000000000c5:  89 5E E6          mov   word ptr [bp - 0x1a], bx
-0x00000000000000c8:  1B 3E AA 1C       sbb   di, word ptr [0x1caa]
+0x00000000000000c1:  2B 1E A8 1C       sub   bx, word ptr ds:[_shootz+0]
+0x00000000000000c5:  89 5E E6          mov   word ptr [bp - 01Ah], bx
+0x00000000000000c8:  1B 3E AA 1C       sbb   di, word ptr ds:[_shootz+2]
 0x00000000000000cc:  89 C3             mov   bx, ax
 0x00000000000000ce:  89 FA             mov   dx, di
-0x00000000000000d0:  8B 46 E6          mov   ax, word ptr [bp - 0x1a]
-0x00000000000000d3:  9A E5 5E 81 0A    lcall 0xa81:0x5ee5
+0x00000000000000d0:  8B 46 E6          mov   ax, word ptr [bp - 01Ah]
+0x00000000000000d3:  9A E5 5E 81 0A    call  FixedDiv_
 0x00000000000000d8:  BB 5C 06          mov   bx, 0x65c
 0x00000000000000db:  3B 57 02          cmp   dx, word ptr [bx + 2]
 0x00000000000000de:  7F 06             jg    0xe6
@@ -5938,11 +6010,11 @@ PUBLIC PTR_AimTraverse_
 0x00000000000000e6:  89 07             mov   word ptr [bx], ax
 0x00000000000000e8:  89 57 02          mov   word ptr [bx + 2], dx
 0x00000000000000eb:  8E 46 FC          mov   es, word ptr [bp - 4]
-0x00000000000000ee:  8B 5E F4          mov   bx, word ptr [bp - 0xc]
-0x00000000000000f1:  B9 00 E0          mov   cx, 0xe000
-0x00000000000000f4:  8B 7E F4          mov   di, word ptr [bp - 0xc]
-0x00000000000000f7:  26 8B 5F 0A       mov   bx, word ptr es:[bx + 0xa]
-0x00000000000000fb:  26 8B 7D 0C       mov   di, word ptr es:[di + 0xc]
+0x00000000000000ee:  8B 5E F4          mov   bx, word ptr [bp - 0Ch]
+0x00000000000000f1:  B9 00 E0          mov   cx, SECTORS_SEGMENT
+0x00000000000000f4:  8B 7E F4          mov   di, word ptr [bp - 0Ch]
+0x00000000000000f7:  26 8B 5F 0A       mov   bx, word ptr es:[bx + 0Ah]
+0x00000000000000fb:  26 8B 7D 0C       mov   di, word ptr es:[di + 0Ch]
 0x00000000000000ff:  C1 E3 04          shl   bx, 4
 0x0000000000000102:  C1 E7 04          shl   di, 4
 0x0000000000000105:  8E C1             mov   es, cx
@@ -5951,17 +6023,17 @@ PUBLIC PTR_AimTraverse_
 0x000000000000010e:  83 C3 02          add   bx, 2
 0x0000000000000111:  26 3B 05          cmp   ax, word ptr es:[di]
 0x0000000000000114:  74 36             je    0x14c
-0x0000000000000116:  A1 48 1E          mov   ax, word ptr [0x1e48]
-0x0000000000000119:  8B 4E EA          mov   cx, word ptr [bp - 0x16]
+0x0000000000000116:  A1 48 1E          mov   ax, word ptr ds:[_lineopening+0]
+0x0000000000000119:  8B 4E EA          mov   cx, word ptr [bp - 016h]
 0x000000000000011c:  30 E4             xor   ah, ah
-0x000000000000011e:  8B 16 48 1E       mov   dx, word ptr [0x1e48]
+0x000000000000011e:  8B 16 48 1E       mov   dx, word ptr ds:[_lineopening+0]
 0x0000000000000122:  24 07             and   al, 7
 0x0000000000000124:  89 F3             mov   bx, si
 0x0000000000000126:  C1 E0 0D          shl   ax, 0xd
 0x0000000000000129:  C1 FA 03          sar   dx, 3
-0x000000000000012c:  2B 06 A8 1C       sub   ax, word ptr [0x1ca8]
-0x0000000000000130:  1B 16 AA 1C       sbb   dx, word ptr [0x1caa]
-0x0000000000000134:  9A E5 5E 81 0A    lcall 0xa81:0x5ee5
+0x000000000000012c:  2B 06 A8 1C       sub   ax, word ptr ds:[_shootz+0]
+0x0000000000000130:  1B 16 AA 1C       sbb   dx, word ptr ds:[_shootz+2]
+0x0000000000000134:  9A E5 5E 81 0A    call  FixedDiv_
 0x0000000000000139:  BB 58 06          mov   bx, 0x658
 0x000000000000013c:  3B 57 02          cmp   dx, word ptr [bx + 2]
 0x000000000000013f:  7C 06             jl    0x147
@@ -5977,9 +6049,10 @@ PUBLIC PTR_AimTraverse_
 0x0000000000000157:  3B 47 02          cmp   ax, word ptr [bx + 2]
 0x000000000000015a:  7D 03             jge   0x15f
 0x000000000000015c:  E9 C8 FE          jmp   0x27
-0x000000000000015f:  75 04             jne   0x165
+0x000000000000015f:  75 04             jne   exit_aimtraverse_return_1
 0x0000000000000161:  3B 17             cmp   dx, word ptr [bx]
 0x0000000000000163:  76 F7             jbe   0x15c
+exit_aimtraverse_return_1:
 0x0000000000000165:  B0 01             mov   al, 1
 0x0000000000000167:  C9                LEAVE_MACRO 
 0x0000000000000168:  5F                pop   di
@@ -5987,16 +6060,16 @@ PUBLIC PTR_AimTraverse_
 0x000000000000016a:  59                pop   cx
 0x000000000000016b:  5B                pop   bx
 0x000000000000016c:  C3                ret   
-0x000000000000016d:  26 6B 44 05 2C    imul  ax, word ptr es:[si + 5], 0x2c
-0x0000000000000172:  05 04 40          add   ax, 0x4004
+0x000000000000016d:  26 6B 44 05 2C    imul  ax, word ptr es:[si + 5], SIZEOF_THINKER_T
+0x0000000000000172:  05 04 40          add   ax, (_thinkerlist + 4)
 0x0000000000000175:  89 46 F8          mov   word ptr [bp - 8], ax
-0x0000000000000178:  3B 06 F8 1E       cmp   ax, word ptr [0x1ef8]
+0x0000000000000178:  3B 06 F8 1E       cmp   ax, word ptr ds:[_shootthing]
 0x000000000000017c:  74 17             je    0x195
-0x000000000000017e:  26 6B 7C 05 18    imul  di, word ptr es:[si + 5], 0x18
-0x0000000000000183:  B8 F5 6A          mov   ax, 0x6af5
+0x000000000000017e:  26 6B 7C 05 18    imul  di, word ptr es:[si + 5], SIZEOF_MOBJ_POS_T
+0x0000000000000183:  B8 F5 6A          mov   ax, MOBJPOSLIST_6800_SEGMENT
 0x0000000000000186:  89 46 FA          mov   word ptr [bp - 6], ax
 0x0000000000000189:  8E C0             mov   es, ax
-0x000000000000018b:  89 7E E8          mov   word ptr [bp - 0x18], di
+0x000000000000018b:  89 7E E8          mov   word ptr [bp - 018h], di
 0x000000000000018e:  26 F6 45 14 04    test  byte ptr es:[di + 0x14], 4
 0x0000000000000193:  75 08             jne   0x19d
 0x0000000000000195:  B0 01             mov   al, 1
@@ -6007,32 +6080,32 @@ PUBLIC PTR_AimTraverse_
 0x000000000000019b:  5B                pop   bx
 0x000000000000019c:  C3                ret   
 0x000000000000019d:  8E C2             mov   es, dx
-0x000000000000019f:  A1 F0 1E          mov   ax, word ptr [0x1ef0]
+0x000000000000019f:  A1 F0 1E          mov   ax, word ptr ds:[_attackrange16]
 0x00000000000001a2:  26 8B 1C          mov   bx, word ptr es:[si]
 0x00000000000001a5:  26 8B 4C 02       mov   cx, word ptr es:[si + 2]
 0x00000000000001a9:  E8 1C FB          call  0xfcc8
-0x00000000000001ac:  C4 5E F8          les   bx, ptr [bp - 8]
-0x00000000000001af:  89 56 EE          mov   word ptr [bp - 0x12], dx
-0x00000000000001b2:  89 46 EC          mov   word ptr [bp - 0x14], ax
-0x00000000000001b5:  8B 4E EE          mov   cx, word ptr [bp - 0x12]
+0x00000000000001ac:  C4 5E F8          les   bx, dword ptr [bp - 8]
+0x00000000000001af:  89 56 EE          mov   word ptr [bp - 012h], dx
+0x00000000000001b2:  89 46 EC          mov   word ptr [bp - 014h], ax
+0x00000000000001b5:  8B 4E EE          mov   cx, word ptr [bp - 012h]
 0x00000000000001b8:  26 8B 45 08       mov   ax, word ptr es:[di + 8]
-0x00000000000001bc:  26 8B 55 0A       mov   dx, word ptr es:[di + 0xa]
-0x00000000000001c0:  03 47 0A          add   ax, word ptr [bx + 0xa]
-0x00000000000001c3:  13 57 0C          adc   dx, word ptr [bx + 0xc]
-0x00000000000001c6:  8B 5E EC          mov   bx, word ptr [bp - 0x14]
-0x00000000000001c9:  2B 06 A8 1C       sub   ax, word ptr [0x1ca8]
-0x00000000000001cd:  1B 16 AA 1C       sbb   dx, word ptr [0x1caa]
-0x00000000000001d1:  9A E5 5E 81 0A    lcall 0xa81:0x5ee5
+0x00000000000001bc:  26 8B 55 0A       mov   dx, word ptr es:[di + 0Ah]
+0x00000000000001c0:  03 47 0A          add   ax, word ptr [bx + 0Ah]
+0x00000000000001c3:  13 57 0C          adc   dx, word ptr [bx + 0Ch]
+0x00000000000001c6:  8B 5E EC          mov   bx, word ptr [bp - 014h]
+0x00000000000001c9:  2B 06 A8 1C       sub   ax, word ptr ds:[_shootz+0]
+0x00000000000001cd:  1B 16 AA 1C       sbb   dx, word ptr ds:[_shootz+2]
+0x00000000000001d1:  9A E5 5E 81 0A    call  FixedDiv_
 0x00000000000001d6:  BB 5C 06          mov   bx, 0x65c
-0x00000000000001d9:  89 46 F6          mov   word ptr [bp - 0xa], ax
+0x00000000000001d9:  89 46 F6          mov   word ptr [bp - 0Ah], ax
 0x00000000000001dc:  89 D6             mov   si, dx
-0x00000000000001de:  89 46 F0          mov   word ptr [bp - 0x10], ax
+0x00000000000001de:  89 46 F0          mov   word ptr [bp - 010h], ax
 0x00000000000001e1:  8B 47 02          mov   ax, word ptr [bx + 2]
-0x00000000000001e4:  89 56 F2          mov   word ptr [bp - 0xe], dx
+0x00000000000001e4:  89 56 F2          mov   word ptr [bp - 0Eh], dx
 0x00000000000001e7:  39 C2             cmp   dx, ax
 0x00000000000001e9:  7C 09             jl    0x1f4
 0x00000000000001eb:  75 0F             jne   0x1fc
-0x00000000000001ed:  8B 46 F6          mov   ax, word ptr [bp - 0xa]
+0x00000000000001ed:  8B 46 F6          mov   ax, word ptr [bp - 0Ah]
 0x00000000000001f0:  3B 07             cmp   ax, word ptr [bx]
 0x00000000000001f2:  73 08             jae   0x1fc
 0x00000000000001f4:  B0 01             mov   al, 1
@@ -6043,13 +6116,13 @@ PUBLIC PTR_AimTraverse_
 0x00000000000001fa:  5B                pop   bx
 0x00000000000001fb:  C3                ret   
 0x00000000000001fc:  8E 46 FA          mov   es, word ptr [bp - 6]
-0x00000000000001ff:  8B 5E EC          mov   bx, word ptr [bp - 0x14]
-0x0000000000000202:  8B 4E EE          mov   cx, word ptr [bp - 0x12]
+0x00000000000001ff:  8B 5E EC          mov   bx, word ptr [bp - 014h]
+0x0000000000000202:  8B 4E EE          mov   cx, word ptr [bp - 012h]
 0x0000000000000205:  26 8B 45 08       mov   ax, word ptr es:[di + 8]
-0x0000000000000209:  26 8B 55 0A       mov   dx, word ptr es:[di + 0xa]
-0x000000000000020d:  2B 06 A8 1C       sub   ax, word ptr [0x1ca8]
-0x0000000000000211:  1B 16 AA 1C       sbb   dx, word ptr [0x1caa]
-0x0000000000000215:  9A E5 5E 81 0A    lcall 0xa81:0x5ee5
+0x0000000000000209:  26 8B 55 0A       mov   dx, word ptr es:[di + 0Ah]
+0x000000000000020d:  2B 06 A8 1C       sub   ax, word ptr ds:[_shootz+0]
+0x0000000000000211:  1B 16 AA 1C       sbb   dx, word ptr ds:[_shootz+2]
+0x0000000000000215:  9A E5 5E 81 0A    call  FixedDiv_
 0x000000000000021a:  BB 58 06          mov   bx, 0x658
 0x000000000000021d:  89 C1             mov   cx, ax
 0x000000000000021f:  89 C7             mov   di, ax
@@ -6059,16 +6132,16 @@ PUBLIC PTR_AimTraverse_
 0x0000000000000228:  75 04             jne   0x22e
 0x000000000000022a:  3B 0F             cmp   cx, word ptr [bx]
 0x000000000000022c:  77 C6             ja    0x1f4
-0x000000000000022e:  8B 56 F6          mov   dx, word ptr [bp - 0xa]
+0x000000000000022e:  8B 56 F6          mov   dx, word ptr [bp - 0Ah]
 0x0000000000000231:  3B 77 02          cmp   si, word ptr [bx + 2]
 0x0000000000000234:  7F 06             jg    0x23c
 0x0000000000000236:  75 0F             jne   0x247
 0x0000000000000238:  3B 17             cmp   dx, word ptr [bx]
 0x000000000000023a:  76 0B             jbe   0x247
 0x000000000000023c:  8B 17             mov   dx, word ptr [bx]
-0x000000000000023e:  89 56 F0          mov   word ptr [bp - 0x10], dx
+0x000000000000023e:  89 56 F0          mov   word ptr [bp - 010h], dx
 0x0000000000000241:  8B 57 02          mov   dx, word ptr [bx + 2]
-0x0000000000000244:  89 56 F2          mov   word ptr [bp - 0xe], dx
+0x0000000000000244:  89 56 F2          mov   word ptr [bp - 0Eh], dx
 0x0000000000000247:  BB 5C 06          mov   bx, 0x65c
 0x000000000000024a:  3B 47 02          cmp   ax, word ptr [bx + 2]
 0x000000000000024d:  7C 06             jl    0x255
@@ -6079,17 +6152,17 @@ PUBLIC PTR_AimTraverse_
 0x0000000000000257:  8B 47 02          mov   ax, word ptr [bx + 2]
 0x000000000000025a:  8B 5E F8          mov   bx, word ptr [bp - 8]
 0x000000000000025d:  89 1E F6 1E       mov   word ptr [0x1ef6], bx
-0x0000000000000261:  03 7E F0          add   di, word ptr [bp - 0x10]
-0x0000000000000264:  8B 56 F2          mov   dx, word ptr [bp - 0xe]
+0x0000000000000261:  03 7E F0          add   di, word ptr [bp - 010h]
+0x0000000000000264:  8B 56 F2          mov   dx, word ptr [bp - 0Eh]
 0x0000000000000267:  11 C2             adc   dx, ax
 0x0000000000000269:  89 F8             mov   ax, di
-0x000000000000026b:  8B 5E E8          mov   bx, word ptr [bp - 0x18]
+0x000000000000026b:  8B 5E E8          mov   bx, word ptr [bp - 018h]
 0x000000000000026e:  D1 FA             sar   dx, 1
 0x0000000000000270:  D1 D8             rcr   ax, 1
 0x0000000000000272:  89 1E A0 1C       mov   word ptr [0x1ca0], bx
-0x0000000000000276:  A3 A4 1C          mov   word ptr [0x1ca4], ax
+0x0000000000000276:  A3 A4 1C          mov   word ptr ds:[_aimslope+0], ax
 0x0000000000000279:  8B 46 FA          mov   ax, word ptr [bp - 6]
-0x000000000000027c:  89 16 A6 1C       mov   word ptr [0x1ca6], dx
+0x000000000000027c:  89 16 A6 1C       mov   word ptr ds:[_aimslope+2], dx
 0x0000000000000280:  A3 A2 1C          mov   word ptr [0x1ca2], ax
 0x0000000000000283:  30 C0             xor   al, al
 0x0000000000000285:  C9                LEAVE_MACRO 

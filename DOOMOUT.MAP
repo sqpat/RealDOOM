@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/29 11:21:40
+Created on:       25/05/29 12:54:12
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -63,8 +63,8 @@ p_enemy_TEXT           CODE           AUTO           0a86:2860       00002625
 p_floor_TEXT           CODE           AUTO           0a86:4e90       000007f6
 p_inter_TEXT           CODE           AUTO           0a86:5690       00000c7f
 p_lights_TEXT          CODE           AUTO           0a86:6310       000003ed
-p_map_TEXT             CODE           AUTO           0a86:6700       000010b5
-P_MATH_TEXT            CODE           AUTO           0a86:77b6       00001740
+p_map_TEXT             CODE           AUTO           0a86:6700       00000c05
+P_MATH_TEXT            CODE           AUTO           0a86:7306       00001bef
 p_plats_TEXT           CODE           AUTO           0a86:8f00       00000419
 p_pspr_TEXT            CODE           AUTO           0a86:9320       00000ae5
 p_spec_TEXT            CODE           AUTO           0a86:9e10       000011c8
@@ -1026,42 +1026,42 @@ Module: p_map.obj(C:\REALDOOM\p_map.c)
 0a86:6700+     PIT_StompThing_
 0a86:6792      P_TeleportMove_
 0a86:68fa+     PTR_AimTraverse_
-0a86:6b86+     PTR_ShootTraverse_
-0a86:7036      P_AimLineAttack_
-0a86:7262      P_LineAttack_
-0a86:7474      P_UseLines_
-0a86:750c+     PIT_RadiusAttack_
-0a86:75f0      P_RadiusAttack_
-0a86:767e+     PIT_ChangeSector_
-0a86:776e      P_ChangeSector_
+0a86:6b86      P_AimLineAttack_
+0a86:6db2      P_LineAttack_
+0a86:6fc4      P_UseLines_
+0a86:705c+     PIT_RadiusAttack_
+0a86:7140      P_RadiusAttack_
+0a86:71ce+     PIT_ChangeSector_
+0a86:72be      P_ChangeSector_
 Module: p_math.obj(p_math.ASM)
-0a86:8834*     PIT_CheckThing_
-0a86:85fe*     P_HitSlideLine_
-0a86:7c2f      P_SetThingPosition_
-0a86:7f88*     P_TraverseIntercepts_
-0a86:7d10      R_PointInSubsector_
-0a86:7aaf*     P_InterceptVector_
-0a86:89f3      P_CheckPosition_
-0a86:7d4d*     P_BlockLinesIterator_
-0a86:7ee9*     PIT_AddThingIntercepts_
-0a86:7892*     P_PointOnLineSide_
-0a86:8def      P_GetAttackRangeMult_
-0a86:8592      DoBlockmapLoop_
-0a86:7b2f      P_LineOpening_
-0a86:7e10*     PIT_AddLineIntercepts_
-0a86:7b63      P_UnsetThingPosition_
-0a86:7ffb      P_PathTraverse_
-0a86:7855      P_AproxDistance_
-0a86:82cb*     PTR_SlideTraverse_
-0a86:8e37      P_ThingHeightClip_
-0a86:79db*     P_PointOnDivlineSide_
-0a86:791c*     P_BoxOnLineSide_
-0a86:86f0*     PIT_CheckLine_
-0a86:8225      PTR_UseTraverse_
-0a86:77b6*     R_PointOnSide_
-0a86:8bad      P_SlideMove_
-0a86:7dbd      P_BlockThingsIterator_
-0a86:83d8      P_TryMove_
+0a86:8384*     PIT_CheckThing_
+0a86:814e*     P_HitSlideLine_
+0a86:777f      P_SetThingPosition_
+0a86:7ad8*     P_TraverseIntercepts_
+0a86:7860      R_PointInSubsector_
+0a86:75ff*     P_InterceptVector_
+0a86:8543      P_CheckPosition_
+0a86:789d*     P_BlockLinesIterator_
+0a86:7a39*     PIT_AddThingIntercepts_
+0a86:73e2*     P_PointOnLineSide_
+0a86:893f      P_GetAttackRangeMult_
+0a86:80e2      DoBlockmapLoop_
+0a86:767f      P_LineOpening_
+0a86:7960*     PIT_AddLineIntercepts_
+0a86:76b3      P_UnsetThingPosition_
+0a86:7b4b      P_PathTraverse_
+0a86:8a46      PTR_ShootTraverse_
+0a86:73a5      P_AproxDistance_
+0a86:7e1b*     PTR_SlideTraverse_
+0a86:8987      P_ThingHeightClip_
+0a86:752b*     P_PointOnDivlineSide_
+0a86:746c*     P_BoxOnLineSide_
+0a86:8240*     PIT_CheckLine_
+0a86:7d75      PTR_UseTraverse_
+0a86:7306*     R_PointOnSide_
+0a86:86fd      P_SlideMove_
+0a86:790d      P_BlockThingsIterator_
+0a86:7f28      P_TryMove_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0a86:8f08      T_PlatRaise_
 0a86:902c      EV_DoPlat_
@@ -1555,4 +1555,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00023f00 (147200.)
 Entry point address: 1d96:1c36
-Link time: 00:00.74
+Link time: 00:00.75
