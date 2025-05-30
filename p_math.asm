@@ -5656,8 +5656,8 @@ mov   cx, word ptr es:[bx]
 mov   es, word ptr [bp - 030h]
 mov   bx, word ptr [bp - 02Ch]
 cmp   cx, word ptr es:[bx]
-jne   label_30
-label_28:
+jne   floorheights_not_equal
+done_with_floorheights_check:
 les   bx, dword ptr [bp - 8]
 mov   word ptr [bp - 030h], SECTORS_SEGMENT
 mov   word ptr [bp - 02Ch], SECTORS_SEGMENT
@@ -5673,45 +5673,53 @@ mov   ax, word ptr es:[bx]
 mov   es, word ptr [bp - 02Ch]
 mov   bx, cx
 cmp   ax, word ptr es:[bx]
-jne   label_29
+jne   ceilingheights_not_equal
 exit_shoottraverse_return_1_3:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 mov   al, 1
 ret   
-label_30:
-mov   cx, word ptr ds:[_lineopening+2]
-and   cx, 7
-mov   bx, word ptr ds:[_lineopening+2]
-SHIFT_MACRO shl   cx 0Dh
-sar   bx, 3
-sub   cx, word ptr ds:[_shootz+0]
-sbb   bx, word ptr ds:[_shootz+2]
-mov   word ptr [bp - 02Eh], cx
-mov   word ptr [bp - 030h], bx
+floorheights_not_equal:
+
 mov   cx, dx
-mov   dx, word ptr [bp - 030h]
-mov   bx, ax
-mov   ax, word ptr [bp - 02Eh]
+xchg  ax, bx
+
+mov   dx, word ptr ds:[_lineopening+2]
+xor   ax, ax
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+
+sub   ax, word ptr ds:[_shootz+0]
+sbb   dx, word ptr ds:[_shootz+2]
+
 call  FixedDiv_
 cmp   dx, word ptr ds:[_aimslope+2]
 jle   label_27
 jump_to_hitline:
 jmp   hitline
 label_27:
-jne   label_28
+jne   done_with_floorheights_check
 cmp   ax, word ptr ds:[_aimslope+0]
-jbe   label_28
+jbe   done_with_floorheights_check
 jmp   hitline
-label_29:
-mov   ax, word ptr ds:[_lineopening+0]
-mov   bx, word ptr [bp - 01Eh]
-xor   ah, ah
-mov   cx, word ptr [bp - 01Ch]
-and   al, 7
+ceilingheights_not_equal:
+
+les   bx, dword ptr [bp - 01Eh]
+mov   cx, es
+
 mov   dx, word ptr ds:[_lineopening+0]
-SHIFT_MACRO shl   ax 0Dh
-sar   dx, 3
+xor   ax, ax
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
