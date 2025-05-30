@@ -5617,20 +5617,26 @@ POPA_NO_AX_MACRO
 xor   al, al
 ret   
 not_hitline:
-les   bx, dword ptr [bp - 8]
-mov   ax, word ptr es:[bx + 0Ch]
-mov   dx, word ptr es:[bx + 0Ah]
-mov   bx, LINES_SEGMENT
-mov   es, bx
+
+;	P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
+
+mov   ax, LINES_SEGMENT
+mov   es, ax
 mov   bx, word ptr [bp - 024h]
-mov   cx, word ptr es:[bx + 2]
-mov   bx, ax
-mov   ax, cx
+mov   ax, word ptr es:[bx + 2]		; sidenum[1]
+
+les   bx, dword ptr [bp - 8]
+les   dx, dword ptr es:[bx + 0Ah]	; secnums
+mov   bx, es
+
 call  P_LineOpening_
+
+;    dist = P_GetAttackRangeMult(attackrange16, in->frac);
+
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr ds:[_attackrange16]
-mov   bx, word ptr es:[si]
-mov   cx, word ptr es:[si + 2]
+les   bx, dword ptr es:[si]
+mov   cx, es
 call  P_GetAttackRangeMult_
 les   bx, dword ptr [bp - 8]
 mov   bx, word ptr es:[bx + 0Ah]
