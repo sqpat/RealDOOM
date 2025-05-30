@@ -5494,19 +5494,18 @@ jmp   hitline_done_with_rangeswitchblock
 hitline_check_for_melee:
 add   bh, 0F0h
 hitline_done_with_rangeswitchblock:
-mov   ax, word ptr es:[si + 2]
-adc   ax, 0FFFFh
-mov   word ptr [bp - 4], ax
+mov   si, word ptr es:[si + 2]
+adc   si, 0FFFFh
 
 ;    x = trace.x.w + FixedMul (trace.dx.w, frac);
 
-mov   cx, word ptr [bp - 4]
+mov   cx, si
 mov   ax, word ptr ds:[_trace+8]
 mov   dx, word ptr ds:[_trace+0Ah]
 mov   di, bx   ; backup...
 call  FixedMul_
 mov   bx, word ptr ds:[_trace+0]
-mov   cx, word ptr [bp - 4]
+mov   cx, si
 add   bx, ax
 mov   word ptr [bp - 028h], bx
 mov   bx, di
@@ -5520,11 +5519,11 @@ mov   word ptr [bp - 026h], ax
 mov   ax, word ptr ds:[_trace+0Ch]
 call  FixedMul_
 mov   bx, word ptr ds:[_trace+4]
-mov   cx, word ptr [bp - 4]
 add   bx, ax
 mov   word ptr [bp - 02Ah], bx
 mov   ax, word ptr ds:[_trace+6]
 adc   ax, dx
+mov   cx, si
 mov   bx, di
 mov   word ptr [bp - 01Ah], ax
 mov   ax, word ptr ds:[_attackrange16]
@@ -5543,9 +5542,7 @@ mov   ax, es
 adc   ax, dx
 ; bx:ax has result
 
-mov   si, LINES_PHYSICS_SEGMENT
-mov   es, si
-mov   si, word ptr [bp - 8]			; linephys ptr
+les   si, dword ptr [bp - 8]			; linephys ptr
 mov   si, word ptr es:[si + 0Ah]
 SHIFT_MACRO shl   si 4
 
@@ -5789,94 +5786,94 @@ cmp   ax, word ptr ds:[_aimslope+0]
 ja    exit_shoottraverse_return_1_2
 hit_thing:
 mov   es, word ptr [bp - 2]
-mov   di, word ptr es:[si]
+mov   bx, word ptr es:[si]
 
 
 mov   ax, word ptr ds:[_attackrange16]
 cmp   ax, CHAINSAWRANGE
 jb    hitthing_checkformelee
 ja    hitthing_checkformissile
-add   di, 0D801h
+add   bx, 0D801h
 jmp   hitthing_done_with_rangeswitchblock
 hitthing_checkformissile:
 cmp   ax, MISSILERANGE
 jne   hitthing_checkforhalfmissile
-add   di, 0FEC0h
+add   bx, 0FEC0h
 jmp   hitthing_done_with_rangeswitchblock
 hitthing_checkforhalfmissile:
 label_24:
-add   di, 0FD80h
+add   bx, 0FD80h
 jmp   hitthing_done_with_rangeswitchblock
 
 hitthing_checkformelee:
-add   di, 0D800h
+add   bh, 0D8h
 hitthing_done_with_rangeswitchblock:
 
 
-mov   ax, word ptr es:[si + 2]
-adc   ax, 0FFFFh
-mov   word ptr [bp - 4], ax
+mov   si, word ptr es:[si + 2]
+adc   si, 0FFFFh
 
 ;    x = trace.x.w + FixedMul (trace.dx.w, frac);
-mov   cx, word ptr [bp - 4]
-mov   ax, word ptr ds:[_trace+8]
-mov   dx, word ptr ds:[_trace+0Ah]
-mov   bx, di
+les   ax, dword ptr ds:[_trace+8]
+mov   dx, es
+mov   cx, si
+mov   di, bx   ; backup
 call  FixedMul_
 
 
 
-mov   bx, word ptr ds:[_trace+0]
-mov   cx, word ptr [bp - 4]
-add   bx, ax
-mov   word ptr [bp - 010h], bx
+add   ax, word ptr ds:[_trace+0]
+adc   dx, word ptr ds:[_trace+2]
+mov   word ptr [bp - 010h], ax
+mov   word ptr [bp - 014h], dx
+
+mov   cx, si
 mov   bx, di
 
 ;    y = trace.y.w + FixedMul (trace.dy.w, frac);
-mov   ax, word ptr ds:[_trace+2]
-adc   ax, dx
-mov   word ptr [bp - 014h], ax
-mov   dx, word ptr ds:[_trace+0Eh]
-mov   ax, word ptr ds:[_trace+0Ch]
+les   ax, dword ptr ds:[_trace+0Ch]
+mov   dx, es
 call  FixedMul_
 
 
 ;    z = shootz.w + FixedMul (aimslope, P_GetAttackRangeMult(attackrange16, in->frac));
 
-mov   bx, word ptr ds:[_trace+4]
-add   bx, ax
-mov   word ptr [bp - 012h], bx
-mov   di, word ptr ds:[_trace+6]
+add   ax, word ptr ds:[_trace+4]
+adc   dx, word ptr ds:[_trace+6]
+mov   word ptr [bp - 012h], ax
+mov   di, dx
+
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr ds:[_attackrange16]
-mov   bx, word ptr es:[si]
-mov   cx, word ptr es:[si + 2]
-adc   di, dx
+les   bx, dword ptr es:[si]
+mov   cx, es
+
 call  P_GetAttackRangeMult_
-mov   bx, word ptr ds:[_aimslope+0]
-mov   si, word ptr ds:[_aimslope+2]
+
+xchg  ax, bx
 mov   cx, dx
-mov   word ptr [bp - 02Ch], bx
-mov   dx, si
-mov   bx, ax
-mov   ax, word ptr [bp - 02Ch]
+les   ax, dword ptr ds:[_aimslope+0]
+mov   dx, es
+
 call  FixedMul_
 
-mov   bx, word ptr [bp - 022h]
 add   ax, word ptr ds:[_shootz+0]
 adc   dx, word ptr ds:[_shootz+2]
+mov   bx, word ptr [bp - 022h]
 mov   es, word ptr [bp - 0Ah]
-test  byte ptr es:[bx + 016h], 8
-je    label_19
-
-mov   bx, word ptr [bp - 012h]
-push  dx
-mov   cx, di
-mov   dx, word ptr [bp - 014h]
+test  byte ptr es:[bx + 016h], MF_NOBLOOD
+; these args go into both functions...
+push  dx	
 push  ax
+mov   cx, di
+mov   bx, word ptr [bp - 012h]
+mov   dx, word ptr [bp - 014h]
 mov   ax, word ptr [bp - 010h]
+
+je    do_spawn_blood
+
 call  P_SpawnPuff_
-label_25:
+done_spawning_blood:
 mov   ax, word ptr ds:[_la_damage]
 test  ax, ax
 jne   label_20
@@ -5894,16 +5891,10 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_19:
-mov   bx, word ptr [bp - 012h]
+do_spawn_blood:
 push  word ptr ds:[_la_damage]
-mov   cx, di
-push  dx
-mov   dx, word ptr [bp - 014h]
-push  ax
-mov   ax, word ptr [bp - 010h]
 call  P_SpawnBlood_
-jmp   label_25
+jmp   done_spawning_blood
 
 ENDP
 
