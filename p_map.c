@@ -1102,6 +1102,11 @@ void __near P_SlideMove (){
 // PTR_AimTraverse
 // Sets linetaget and aimslope when a target is aimed at.
 //
+
+boolean __near PTR_AimTraverse (intercept_t __far* in);
+
+
+/*
 boolean __near PTR_AimTraverse (intercept_t __far* in) {
 	line_t __far*		li;
 	line_physics_t __far*		li_physics;
@@ -1188,7 +1193,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 	linetarget_pos = th_pos;
     return false;			// don't go any farther
 }
-
+*/
 
 //
 // PTR_ShootTraverse
