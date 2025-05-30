@@ -5426,20 +5426,20 @@ PUBLIC PTR_ShootTraverse_
 ; bp - 8     line_phys offset
 ; bp - 0Ah   MOBJPOSLIST_6800_SEGMENT
 ; bp - 0Ch   thingpos offset?
-; bp - 0Eh   
-; bp - 010h  x lo
-; bp - 012h  x hi
+; bp - 0Eh   thinker near ptr
+; bp - 010h  x hi
+; bp - 012h  x lo
 ; bp - 016h	 dist
 ; bp - 018h  dist
-; bp - 01Ah  
-; bp - 01Ch  
-; bp - 01Eh  
-; bp - 020h  unused
-; bp - 022h  
-; bp - 024h  
-; bp - 026h  
-; bp - 028h  
-; bp - 02Ah  
+; bp - 01Ah  unused
+; bp - 01Ch  dist hi ? dupe
+; bp - 01Eh  dist lo ? dupe
+; bp - 020h  linenum shift 2  
+; bp - 022h  unused
+; bp - 024h  x hi  ? dupe
+; bp - 026h  x lo  ? dupe
+; bp - 028h  y hi
+; bp - 02Ah  y lo
 ; bp - 02Ch  backsec  offset
 ; bp - 02Eh  frontsec offset
 ; bp - 030h  unused
@@ -5467,7 +5467,7 @@ mov   cl, byte ptr es:[bx]			; lineflags
 mov   dx, bx
 
 SHIFT_MACRO shl   bx 2
-mov   word ptr [bp - 024h], bx		; linenum shift 2
+mov   word ptr [bp - 020h], bx		; linenum shift 2
 SHIFT_MACRO shl   bx 2
 mov   ax, LINES_PHYSICS_SEGMENT
 mov   word ptr [bp - 6], ax
@@ -5522,28 +5522,27 @@ mov   ax, word ptr ds:[_trace+8]
 mov   dx, word ptr ds:[_trace+0Ah]
 mov   di, bx   ; backup...
 call  FixedMul_
-mov   bx, word ptr ds:[_trace+0]
+
+add   ax, word ptr ds:[_trace+0]
+adc   dx, word ptr ds:[_trace+2]
+mov   word ptr [bp - 026h], ax
+mov   word ptr [bp - 024h], dx
+
 mov   cx, si
-add   bx, ax
-mov   word ptr [bp - 028h], bx
 mov   bx, di
 
 ;    y = trace.y.w + FixedMul (trace.dy.w, frac);
 
-mov   ax, word ptr ds:[_trace+2]
-adc   ax, dx
-mov   dx, word ptr ds:[_trace+0Eh]
-mov   word ptr [bp - 026h], ax
-mov   ax, word ptr ds:[_trace+0Ch]
+les   ax, dword ptr ds:[_trace+0Ch]
+mov   dx, es
 call  FixedMul_
-mov   bx, word ptr ds:[_trace+4]
-add   bx, ax
-mov   word ptr [bp - 02Ah], bx
-mov   ax, word ptr ds:[_trace+6]
-adc   ax, dx
+add   ax, word ptr ds:[_trace+4]
+adc   dx, word ptr ds:[_trace+6]
+mov   word ptr [bp - 02Ah], ax
+mov   word ptr [bp - 028h], dx
+
 mov   cx, si
 mov   bx, di
-mov   word ptr [bp - 01Ah], ax
 mov   ax, word ptr ds:[_attackrange16]
 call  P_GetAttackRangeMult_
 
@@ -5583,20 +5582,20 @@ rcr   cx, 1
 
 cmp   ax, dx
 jg    exit_shoottraverse_return_0
-jne   label_31
+; if (z > temp.w) {
+jne   didnt_shoot_sky
 cmp   bx, cx
 ja    exit_shoottraverse_return_0
-label_31:
+didnt_shoot_sky:
 les   si, dword ptr [bp - 8]
 cmp   word ptr es:[si + 0Ch], -1
 je    do_puff
-mov   di, si
-mov   di, word ptr es:[di + 0Ch]
-mov   dx, SECTORS_SEGMENT
+mov   di, word ptr es:[si + 0Ch]   ; todo was this stored
 SHIFT_MACRO shl   di 4
+mov   dx, SECTORS_SEGMENT
 mov   es, dx
 mov   dl, byte ptr es:[di + 5]
-add   di, 5
+
 cmp   dl, byte ptr ds:[_skyflatnum]
 jne   do_puff
 exit_shoottraverse_return_0:
@@ -5607,10 +5606,11 @@ ret
 do_puff:
 push  ax	; hi word
 push  bx	; low word
-mov   cx, word ptr [bp - 01Ah]
-les   ax, dword ptr [bp - 028h]
+les   ax, dword ptr [bp - 026h]
 mov   dx, es
-mov   bx, word ptr [bp - 02Ah]
+
+les   bx, dword ptr [bp - 02Ah]
+mov   cx, es
 call  P_SpawnPuff_
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
@@ -5622,7 +5622,7 @@ not_hitline:
 
 mov   ax, LINES_SEGMENT
 mov   es, ax
-mov   bx, word ptr [bp - 024h]
+mov   bx, word ptr [bp - 020h]
 mov   ax, word ptr es:[bx + 2]		; sidenum[1]
 
 les   bx, dword ptr [bp - 8]
@@ -5638,41 +5638,40 @@ mov   ax, word ptr ds:[_attackrange16]
 les   bx, dword ptr es:[si]
 mov   cx, es
 call  P_GetAttackRangeMult_
-les   bx, dword ptr [bp - 8]
-mov   bx, word ptr es:[bx + 0Ah]
-SHIFT_MACRO shl   bx 4
-mov   word ptr [bp - 02Ch], SECTORS_SEGMENT
-mov   word ptr [bp - 02Eh], bx
-mov   bx, word ptr [bp - 8]
-mov   word ptr [bp - 030h], SECTORS_SEGMENT
-mov   bx, word ptr es:[bx + 0Ch]
+
+
+;  if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
+
+les   bx, dword ptr [bp - 8] 	 ; li_physics
+les   bx, dword ptr es:[bx + 0Ah] ; frontsec
+SHIFT_MACRO shl   bx 4 			
+
 mov   word ptr [bp - 01Eh], ax
-SHIFT_MACRO shl   bx 4
-mov   es, word ptr [bp - 02Ch]
-mov   word ptr [bp - 02Ch], bx
-mov   bx, word ptr [bp - 02Eh]
-mov   word ptr [bp - 01Ch], dx
-mov   cx, word ptr es:[bx]
-mov   es, word ptr [bp - 030h]
-mov   bx, word ptr [bp - 02Ch]
-cmp   cx, word ptr es:[bx]
+mov   word ptr [bp - 01Ch], dx ; store dist
+
+mov   di, es 				 	 ; backsec
+SHIFT_MACRO shl   di 4
+
+mov   word ptr [bp - 02Eh], bx	 ; store front/bacsec lookups
+mov   word ptr [bp - 02Ch], di
+
+mov   cx, SECTORS_SEGMENT
+mov   es, cx
+mov   cx, word ptr es:[bx]		  ; frontsec floorheight
+cmp   cx, word ptr es:[di]		  ; backsec floorheight
 jne   floorheights_not_equal
+
 done_with_floorheights_check:
-les   bx, dword ptr [bp - 8]
-mov   word ptr [bp - 030h], SECTORS_SEGMENT
-mov   word ptr [bp - 02Ch], SECTORS_SEGMENT
-mov   dx, word ptr es:[bx + 0Ah]
-mov   cx, word ptr es:[bx + 0Ch]
-SHIFT_MACRO shl   dx 4
-mov   es, word ptr [bp - 030h]
-add   dx, 2
-SHIFT_MACRO shl   cx 4
-mov   bx, dx
-add   cx, 2
-mov   ax, word ptr es:[bx]
-mov   es, word ptr [bp - 02Ch]
-mov   bx, cx
-cmp   ax, word ptr es:[bx]
+
+les   bx, dword ptr [bp - 02Eh]
+mov   di, es
+
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+
+mov   ax, word ptr es:[bx+2]
+cmp   ax, word ptr es:[di+2]
+
 jne   ceilingheights_not_equal
 exit_shoottraverse_return_1_3:
 LEAVE_MACRO 
@@ -5698,10 +5697,12 @@ sbb   dx, word ptr ds:[_shootz+2]
 
 call  FixedDiv_
 cmp   dx, word ptr ds:[_aimslope+2]
-jle   label_27
+
+; if (slope > aimslope)
+jle   slope_below_aimslope
 jump_to_hitline:
 jmp   hitline
-label_27:
+slope_below_aimslope:
 jne   done_with_floorheights_check
 cmp   ax, word ptr ds:[_aimslope+0]
 jbe   done_with_floorheights_check
@@ -5743,21 +5744,21 @@ je    exit_shoottraverse_return_1
 imul  bx, bx, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   word ptr [bp - 0Ch], bx
-mov   word ptr [bp - 022h], bx
+
 mov   es, ax
 mov   word ptr [bp - 0Ah], ax
-test  byte ptr es:[bx + 014h], 4
-jne   label_13
+test  byte ptr es:[bx + 014h], MF_SHOOTABLE
+jne   did_not_hit_thing
 exit_shoottraverse_return_1:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 mov   al, 1
 ret   
-label_13:
+did_not_hit_thing:
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr ds:[_attackrange16]
-mov   bx, word ptr es:[si]
-mov   cx, word ptr es:[si + 2]
+les   bx, dword ptr es:[si]
+mov   cx, es
 call  P_GetAttackRangeMult_
 
 ;    thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
@@ -5807,11 +5808,10 @@ jg    exit_shoottraverse_return_1_2
 jne   hit_thing
 cmp   ax, word ptr ds:[_aimslope+0]
 ja    exit_shoottraverse_return_1_2
+
 hit_thing:
 mov   es, word ptr [bp - 2]
 mov   bx, word ptr es:[si]
-
-
 mov   ax, word ptr ds:[_attackrange16]
 cmp   ax, CHAINSAWRANGE
 jb    hitthing_checkformelee
@@ -5824,7 +5824,7 @@ jne   hitthing_checkforhalfmissile
 add   bx, 0FEC0h
 jmp   hitthing_done_with_rangeswitchblock
 hitthing_checkforhalfmissile:
-label_24:
+
 add   bx, 0FD80h
 jmp   hitthing_done_with_rangeswitchblock
 
@@ -5847,8 +5847,8 @@ call  FixedMul_
 
 add   ax, word ptr ds:[_trace+0]
 adc   dx, word ptr ds:[_trace+2]
-mov   word ptr [bp - 010h], ax
-mov   word ptr [bp - 012h], dx	; store x
+mov   word ptr [bp - 012h], ax
+mov   word ptr [bp - 010h], dx	; store x
 
 mov   cx, si
 mov   bx, di
@@ -5882,15 +5882,14 @@ call  FixedMul_
 
 add   ax, word ptr ds:[_shootz+0]
 adc   dx, word ptr ds:[_shootz+2]
-mov   bx, word ptr [bp - 022h]
-mov   es, word ptr [bp - 0Ah]
+les   bx, dword ptr [bp - 0Ch]
 test  byte ptr es:[bx + 016h], MF_NOBLOOD
 ; these args go into both functions...
 push  dx	
 push  ax
 mov   cx, di
 mov   bx, si
-les   ax, dword ptr [bp - 010h]
+les   ax, dword ptr [bp - 012h]
 mov   dx, es
 
 je    do_spawn_blood
@@ -5899,9 +5898,9 @@ call  P_SpawnPuff_
 done_spawning_blood:
 mov   cx, word ptr ds:[_la_damage]
 test  cx, cx
-jne   label_20
+jne   do_damage
 jmp   exit_shoottraverse_return_0
-label_20:
+do_damage:
 mov   dx, word ptr ds:[_shootthing]
 mov   bx, dx
 mov   ax, word ptr [bp - 0Eh]
