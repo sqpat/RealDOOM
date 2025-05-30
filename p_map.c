@@ -805,6 +805,7 @@ boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fix
 // and false will be returned.
 //
 
+boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_pos);
 /*
 
 boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_pos){
@@ -1649,6 +1650,7 @@ void __near P_RadiusAttack (mobj_t __near* spot, mobj_pos_t __far* spot_pos, mob
 boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) {
 
 
+	// todo only used here. optimize out
     if (P_ThingHeightClip (thing, thing_pos)) {
 		// keep checking
 		return true;

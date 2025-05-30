@@ -5273,44 +5273,74 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 6
-mov   si, ax
-mov   di, bx
+
+;	temp.h.fracbits = 0;
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
+;    onfloor = (thing_pos->z.w == temp.w);
+
+
+mov   si, ax	; si gets thing ptr
+mov   di, bx    ; es:di gets thingpos
 mov   word ptr [bp - 4], cx
-mov   dx, word ptr [si + 6]
-mov   ax, word ptr [si + 6]
-xor   dh, dh
-sar   ax, 3
-and   dl, 7
 mov   es, cx
-shl   dx, 0Dh
+
+mov   ax, word ptr [si + 6]
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+
+
+
+;    onfloor = (thing_pos->z.w == temp.w);
+mov   byte ptr [bp - 2], 0
+
 cmp   ax, word ptr es:[di + 0Ah]
-jne   label_1
+jne   done_setting_onfloor
 cmp   dx, word ptr es:[di + 8]
-jne   label_1
-mov   byte ptr [bp - 2], 1
-label_3:
-mov   es, word ptr [bp - 4]
+jne   done_setting_onfloor
+inc   byte ptr [bp - 2]		; onfloor = 1
+
+
+done_setting_onfloor:
+
+;    P_CheckPosition (thing, thing->secnum, thing_pos->x, thing_pos->y);
+
 mov   ax, si
-push  word ptr es:[di + 6]
-mov   bx, word ptr es:[di]
-mov   cx, word ptr es:[di + 2]
-push  word ptr es:[di + 4]
 mov   dx, word ptr [si + 4]
+push  word ptr es:[di + 6]
+push  word ptr es:[di + 4]
+les   bx, dword ptr es:[di]
+mov   cx, es
 call  P_CheckPosition_
+
 mov   ax, word ptr ds:[_tmfloorz]
 mov   word ptr [si + 6], ax
-mov   ax, word ptr ds:[_tmceilingz]
-mov   word ptr [si + 8], ax
+mov   dx, word ptr ds:[_tmceilingz]
+mov   word ptr [si + 8], dx
+
+;if (onfloor) {
+
 cmp   byte ptr [bp - 2], 0
-je    label_2
-mov   ax, word ptr [si + 6]
-mov   dx, word ptr [si + 6]
+je    not_on_floor
+
+;todo reuse from above!
+;		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
+;		thing_pos->z.w = temp.w;
+
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+
 mov   es, word ptr [bp - 4]
-xor   dh, dh
-sar   ax, 3
-and   dl, 7
 mov   word ptr es:[di + 0Ah], ax
-shl   dx, 0Dh
 mov   word ptr es:[di + 8], dx
 label_5:
 mov   ax, word ptr [si + 8]
@@ -5324,18 +5354,29 @@ pop   di
 pop   si
 pop   dx
 ret   
-label_1:
-mov   byte ptr [bp - 2], 0
-jmp   label_3
-label_2:
-mov   dx, word ptr [si + 8]
-sar   ax, 3
-xor   dh, dh
+
+not_on_floor:
+
+; dx already has ceilingz
+;	// don't adjust a floating monster unless forced to
+;		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->ceilingz);
+;		if (thing_pos->z.w+ thing->height.w > temp.w)
+;			thing_pos->z.w = temp.w - thing->height.w;
+
+
+xor   ax, ax
+xchg  ax, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+
 mov   es, word ptr [bp - 4]
-and   dl, 7
+
 mov   bx, word ptr es:[di + 8]
 mov   cx, word ptr [si + 0Ah]
-shl   dx, 0Dh
 mov   word ptr [bp - 6], bx
 mov   bx, word ptr es:[di + 0Ah]
 add   word ptr [bp - 6], cx
