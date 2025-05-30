@@ -188,7 +188,7 @@ typedef struct {
 typedef struct {
 
     fixed_t	frac;		// along trace line
-    boolean	isaline;
+    boolean	isaline;    // todo put this after...
     union {
 		THINKERREF	thingRef;
 	int16_t linenum;

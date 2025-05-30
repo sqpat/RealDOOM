@@ -5426,7 +5426,7 @@ PUBLIC PTR_ShootTraverse_
 ; bp - 8     line_phys offset
 ; bp - 0Ah   MOBJPOSLIST_6800_SEGMENT
 ; bp - 0Ch   thingpos offset?
-
+; bp - 0Eh   
 ; bp - 010h  x lo
 ; bp - 012h  x hi
 ; bp - 016h	 dist
@@ -5434,50 +5434,60 @@ PUBLIC PTR_ShootTraverse_
 ; bp - 01Ah  
 ; bp - 01Ch  
 ; bp - 01Eh  
-
 ; bp - 020h  unused
+; bp - 022h  
+; bp - 024h  
+; bp - 026h  
+; bp - 028h  
+; bp - 02Ah  
+; bp - 02Ch  backsec  offset
+; bp - 02Eh  frontsec offset
+; bp - 030h  unused
+
 ; todo pusha?
 
 PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 push  dx 		; bp - 2  INTERCEPTS_SEGMENT
-sub   sp, 02Eh
-mov   si, ax
+sub   sp, 02Ch
+xchg  ax, si    ; si gets intercept offset
+
+;    if (in->isaline) {
+
 mov   es, dx
+mov   bx, word ptr es:[si + 5] ; bx gets linenum/thingnum
 cmp   byte ptr es:[si + 4], 0
-jne   label_1
-jmp   label_2
-label_1:
-mov   ax, LINEFLAGSLIST_SEGMENT
-mov   bx, word ptr es:[si + 5]
+jne   is_a_line
+jmp   is_not_a_line
+is_a_line:
+mov   ax, LINEFLAGSLIST_SEGMENT		; linenum
 mov   es, ax
-mov   cl, byte ptr es:[bx]
-mov   es, dx
-mov   bx, word ptr es:[si + 5]
+mov   cl, byte ptr es:[bx]			; lineflags
+mov   dx, bx
 
 SHIFT_MACRO shl   bx 2
-mov   word ptr [bp - 024h], bx
-mov   bx, word ptr es:[si + 5]
-SHIFT_MACRO shl   bx 4
+mov   word ptr [bp - 024h], bx		; linenum shift 2
+SHIFT_MACRO shl   bx 2
 mov   ax, LINES_PHYSICS_SEGMENT
 mov   word ptr [bp - 6], ax
 mov   es, ax
-mov   word ptr [bp - 8], bx
-cmp   byte ptr es:[bx + 0Fh], 0
-je    label_3
-
+mov   word ptr [bp - 8], bx			; linenum shift 4
 ;		if (li_physics->special)
+cmp   byte ptr es:[bx + 0Fh], 0
+je    no_special
+
 ;			P_ShootSpecialLine (shootthing, in->d.linenum);
 
-mov   es, dx
+
 mov   ax, word ptr ds:[_shootthing]
-mov   dx, word ptr es:[si + 5]
+; dx is linenum
 call  P_ShootSpecialLine_
-label_3:
+
+no_special:
 test  cl, ML_TWOSIDED
 je    hitline
-jmp   not_hitline
+jmp   not_hitline		; todo revisit...
 
 hitline:
 mov   es, word ptr [bp - 2]
@@ -5548,7 +5558,7 @@ les   bx, dword ptr ds:[_shootz+0]
 add   bx, ax
 mov   ax, es
 adc   ax, dx
-; bx:ax has result
+; ax:bx has result
 
 les   si, dword ptr [bp - 8]			; linephys ptr
 mov   si, word ptr es:[si + 0Ah]
@@ -5560,13 +5570,17 @@ mov   dl, byte ptr es:[si+5]
 
 cmp   dl, byte ptr ds:[_skyflatnum]
 jne   do_puff
-mov   cx, word ptr es:[si + 2]
+
 mov   dx, word ptr es:[si + 2]
-xor   ch, ch
-add   si, 2
-and   cl, 7
-sar   dx, 3
-SHIFT_MACRO shl   cx 0Dh
+xor   cx, cx
+sar   dx, 1
+rcr   cx, 1
+sar   dx, 1
+rcr   cx, 1
+sar   dx, 1
+rcr   cx, 1
+
+
 cmp   ax, dx
 jg    exit_shoottraverse_return_0
 jne   label_31
@@ -5591,8 +5605,8 @@ POPA_NO_AX_MACRO
 xor   al, al
 ret   
 do_puff:
-push  ax
-push  bx
+push  ax	; hi word
+push  bx	; low word
 mov   cx, word ptr [bp - 01Ah]
 les   ax, dword ptr [bp - 028h]
 mov   dx, es
@@ -5704,14 +5718,15 @@ LEAVE_MACRO
 POPA_NO_AX_MACRO
 mov   al, 1
 ret   
-label_2:
-mov   ax, word ptr es:[si + 5]
-imul  dx, ax, SIZEOF_THINKER_T
+
+is_not_a_line:
+; bx has thingnum
+imul  dx, bx, SIZEOF_THINKER_T
 add   dx, (_thinkerlist + 4)
 mov   word ptr [bp - 0Eh], dx
 cmp   dx, word ptr ds:[_shootthing]
 je    exit_shoottraverse_return_1
-imul  bx, ax, SIZEOF_MOBJ_POS_T
+imul  bx, bx, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   word ptr [bp - 0Ch], bx
 mov   word ptr [bp - 022h], bx
