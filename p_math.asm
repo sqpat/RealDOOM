@@ -6686,8 +6686,47 @@ mov   cx, es
 ; di is lookup
 
 cmp   si, CHAINSAWRANGE
-jb    aim_line_is_melee  ; 1F bytes off
-jmp   aim_line_not_melee
+jna   aim_line_is_melee
+
+; shift 10
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
+and   ax, 0FC00h
+
+; shift 10
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl
+and   bx, 0FC00h
+
+cmp   si, MISSILERANGE
+jne   aim_line_done_with_switchblock_shift
+
+; shift 1 more
+sal   ax, 1
+rcl   dx, 1
+
+
+; shift 1 more
+sal   bx, 1
+rcl   cx, 1
+
+jmp   aim_line_done_with_switchblock_shift
+
+
+
+
+jmp   aim_line_done_with_switchblock_shift
+
 aim_line_is_melee:
 
 ; shift 6
@@ -6709,6 +6748,27 @@ mov   ch, cl
 mov   cl, bh
 mov   bh, bl
 and   bl, 0C0h
+
+cmp   si, CHAINSAWRANGE
+jne   aim_line_done_with_switchblock_shift
+
+; chainsaw
+
+mov   si, FINESINE_SEGMENT
+mov   es, si
+; es:di
+
+; already shifted 6
+
+add   ax, word ptr es:[di + 02000h]
+adc   dx, word ptr es:[di + 02002h]
+
+add   bx, word ptr es:[di]
+adc   cx, word ptr es:[di + 2]
+
+
+jmp   aim_line_done_with_switchblock_shift
+
 
 aim_line_done_with_switchblock_shift:
 
@@ -6792,96 +6852,7 @@ pop   si
 pop   cx
 ret   
 
-aim_line_not_melee:
-ja    aim_line_not_chainsaw
-; chainsaw
 
-mov   si, FINESINE_SEGMENT
-mov   es, si
-; es:di
-
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-mov   dh, dl
-mov   dl, ah
-mov   ah, al
-and   al, 0C0h
-
-add   ax, word ptr es:[di + 02000h]
-adc   dx, word ptr es:[di + 02002h]
-
-
-; shift 6
-sar   cx, 1
-rcr   bx, 1
-sar   cx, 1
-rcr   bx, 1
-mov   ch, cl
-mov   cl, bh
-mov   bh, bl
-and   bl, 0C0h
-
-add   bx, word ptr es:[di]
-adc   cx, word ptr es:[di + 2]
-
-
-jmp   aim_line_done_with_switchblock_shift
-
-aim_line_not_chainsaw:
-cmp   si, MISSILERANGE
-jne   aim_line_is_halfmissile
-
-; shift 11
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-mov   dh, dl
-mov   dl, ah
-mov   ah, al
-and   ax, 0F800h
-
-; shift 11
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-mov   ch, cl
-mov   cl, bh
-mov   bh, bl
-and   bx, 0F800h
-
-jmp   aim_line_done_with_switchblock_shift
-aim_line_is_halfmissile:
-
-; shift 10
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-mov   dh, dl
-mov   dl, ah
-mov   ah, al
-and   ax, 0FC00h
-
-; shift 10
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-mov   ch, cl
-mov   cl, bh
-mov   bh, bl
-and   bx, 0FC00h
-
-
-jmp   aim_line_done_with_switchblock_shift
 
 
 ENDP
@@ -7066,7 +7037,6 @@ les   ax, dword ptr [bp - 8]
 mov   dx, es
 les   bx, dword ptr [bp - 4]
 mov   cx, es
-
 
 
 call  P_PathTraverse_
