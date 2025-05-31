@@ -6607,61 +6607,70 @@ ret   0Ah
 ENDP
 
 
+;fixed_t __near P_AimLineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance);
 
 PROC P_AimLineAttack_ NEAR
 PUBLIC P_AimLineAttack_
 
 
-; bp - 2     MOBJPOSLIST_6800_SEGMENT
-; bp - 4     x hi
-; bp - 6     y hi
+; bp - 2     y hi
+; bp - 4     y lo
+; bp - 6     x hi
 ; bp - 8     x lo
-; bp - 0Ah   y lo
-; bp - 0Ch   x2 hi
-; bp - 0Eh   x2 lo
-; bp - 010h  y2 hi
-; bp - 012h  y2 lo
-; bp - 014h  mobjpos offset
-; bp - 016h  thing ptr (ax arg)
+; bp - 0Ah   thing ptr (ax arg)
+; bp - 0Ch   MOBJPOSLIST_6800_SEGMENT
+; bp - 0Eh   mobjpos offset
 
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 014h
-push  ax		; bp - 016h
+sub   sp, 8
+push  ax		; bp - 010h
 
 ;    shootthing = t1;
 mov   word ptr ds:[_shootthing], ax
+
+;	attackrange16 = distance16;
+mov   word ptr ds:[_attackrange16], bx
+
 ;	mobj_pos_t __far* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
 
-mov   di, dx
+mov   cx, dx		; distance
 mov   si, bx
+
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 xor   dx, dx
 div   bx
 imul  bx, ax, SIZEOF_MOBJ_POS_T
 
+xchg  bx, si
+
 ;	 x = t1_pos->x;
 ; 	 y = t1_pos->y;
 
-mov   word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
-mov   es, word ptr [bp - 2]
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr es:[bx + 2]
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr es:[bx + 4]
-mov   word ptr [bp - 014h], bx
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[bx + 6]
-mov   word ptr [bp - 6], ax
+mov   ax, ds
+mov   es, ax
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ds, ax
+push  ax  ; bp - 0Ch
+
+lea   di, [bp - 8]
+movsw
+movsw
+movsw
+movsw
+
+xchg  bx, si  ; restore si
+push  bx      ; bp - 0Eh write original bx plus eight
+
+mov   di, cx
 shl   di, 2
 
-;	attackrange16 = distance16;
-mov   word ptr ds:[_attackrange16], si
+mov   ax, ss
+mov   ds, ax	; restore ds
 
 mov   cx, FINESINE_SEGMENT
 mov   es, cx
@@ -6677,7 +6686,7 @@ mov   cx, es
 ; di is lookup
 
 cmp   si, CHAINSAWRANGE
-jb    aim_line_is_melee  ; 3C bytes..
+jb    aim_line_is_melee  ; 1F bytes off
 jmp   aim_line_not_melee
 aim_line_is_melee:
 
@@ -6706,12 +6715,12 @@ aim_line_done_with_switchblock_shift:
 ; x2.w = x.w +  ...
 
 add   ax, word ptr [bp - 8]
-adc   dx, word ptr [bp - 4]
+adc   dx, word ptr [bp - 6]
 
 ; y2.w = y.w +  ...
 
-add   bx, word ptr [bp - 0Ah]
-adc   cx, word ptr [bp - 6]
+add   bx, word ptr [bp - 4]
+adc   cx, word ptr [bp - 2]
 
 aim_line_done_with_switchblock:
 
@@ -6723,18 +6732,16 @@ push bx
 push dx
 push ax
 
-; todo les
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr [bp - 014h]
+les   bx, dword ptr [bp - 0Eh]
 
 
 ;	shootz.w = t1_pos->z.w;
 ;	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
 
-les   ax, dword ptr es:[bx + 8]
+les   ax, dword ptr es:[bx]   ; bx + 8 already from movsw earlier
 mov   dx, es
 
-mov   bx, word ptr [bp - 016h]
+mov   bx, word ptr [bp - 0Ah]
 mov   word ptr ds:[_shootz+0], ax
 
 mov   ax, word ptr [bx + 0Ch]
@@ -6761,10 +6768,10 @@ mov   word ptr ds:[_topslope + 2], 0	; high word of above
 dec   ax
 mov   word ptr ds:[_bottomslope + 2], 0FFFFh  ; high word of above
 
-mov   dx, word ptr [bp - 4]
-mov   ax, word ptr [bp - 8]
-mov   cx, word ptr [bp - 6]
-mov   bx, word ptr [bp - 0Ah]
+les   ax, dword ptr [bp - 8]
+mov   dx, es
+les   bx, dword ptr [bp - 4]
+mov   cx, es
 
 call  P_PathTraverse_
 mov   ax, word ptr ds:[_linetarget]
@@ -6777,6 +6784,7 @@ pop   di
 pop   si
 pop   cx
 ret   
+
 exit_aim_lineattack_return_0:
 cwd
 LEAVE_MACRO 
