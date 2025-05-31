@@ -234,6 +234,8 @@ boolean __near DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, bo
 //
 // P_TeleportMove
 //
+boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,fixed_t_union	x,fixed_t_union	y, int16_t oldsecnum);
+/*
 boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,fixed_t_union	x,fixed_t_union	y, int16_t oldsecnum){
     int16_t			xl;
     int16_t			xh;
@@ -299,7 +301,7 @@ boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,
     return true;
 }
 
-
+*/
 //
 // MOVEMENT ITERATOR FUNCTIONS
 //
