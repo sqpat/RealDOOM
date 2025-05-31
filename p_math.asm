@@ -5903,6 +5903,7 @@ mov   dx, word ptr ds:[_shootthing]
 mov   bx, dx
 mov   ax, word ptr [bp - 0Eh]
 call  P_DamageMobj_
+exit_aimtraverse_return_0:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 xor   al, al
@@ -5914,14 +5915,6 @@ jmp   done_spawning_blood
 
 ENDP
 
-exit_aimtraverse_return_0:
-xor   al, al
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
 jump_to_aimtraverse_is_not_a_line:
 jmp   aimtraverse_is_not_a_line
 
@@ -5931,10 +5924,7 @@ PROC PTR_AimTraverse_ NEAR
 PUBLIC PTR_AimTraverse_
 
 
-push  bx
-push  cx
-push  si
-push  di
+PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 push  dx       ; store segment for later
@@ -6097,12 +6087,9 @@ jne   exit_aimtraverse_return_1
 cmp   dx, word ptr ds:[_bottomslope + 0]
 jbe   jump_to_exit_aimtraverse_return_0
 exit_aimtraverse_return_1:
-mov   al, 1
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
+mov   al, 1
 ret   
 
 aimtraverse_is_not_a_line:
@@ -6169,12 +6156,10 @@ jne   done_checking_thingtopslope
 cmp   ax, word ptr ds:[_bottomslope]
 jae   done_checking_thingtopslope
 exit_aimtraverse_return_1_3:
-mov   al, 1
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
+mov   al, 1
+
 ret   
 
 done_checking_thingtopslope:
@@ -6258,13 +6243,10 @@ pop   word ptr ds:[_linetarget] 	  ; thing ptr
 pop   word ptr ds:[_linetarget_pos+0] ; thing pos ptr
 mov   word ptr ds:[_linetarget_pos+2], MOBJPOSLIST_6800_SEGMENT
 
-xor   al, al
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
+POPA_NO_AX_MACRO
+xor   al, al
+ret
 
 ENDP
 
