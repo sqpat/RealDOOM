@@ -7059,20 +7059,20 @@ PUBLIC P_UseLines_
 PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 8
+
+;    angle = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 
 les   bx, dword ptr ds:[_playerMobj_pos]
 mov   ax, word ptr es:[bx + 010h]
-mov   dx, word ptr es:[bx]
-mov   di, word ptr es:[bx + 4]
-mov   si, word ptr es:[bx + 6]
-mov   word ptr [bp - 8], dx
-mov   dx, word ptr es:[bx + 2]
-shr   ax, 3
-mov   word ptr [bp - 4], dx
 
-shl   ax, 2
-xchg  ax, bx
+push  word ptr es:[bx]		; x lo bp - 2
+push  word ptr es:[bx + 2]  ; x hi bp - 4
+les   di, dword ptr es:[bx + 4]
+mov   si, es
+shr   ax, 1
+and   al, 0FCh  ; same as shr 3, shl 2
+xchg  ax, bx    ; bx has sine/cosine fineangle lookup
+
 
 mov   cx, FINESINE_SEGMENT
 mov   es, cx
@@ -7095,7 +7095,7 @@ mov   dl, ah
 mov   ah, al
 and   al, 0C0h
 
-add   ax, word ptr [bp - 8]
+add   ax, word ptr [bp - 2]
 adc   dx, word ptr [bp - 4]
 
 
@@ -7109,9 +7109,10 @@ mov   cl, bh
 mov   bh, cl
 and   bl, 0C0h
 
-add   bx, dx
+add   bx, di
 adc   cx, si
 
+; args to pathtraverse...
 push  OFFSET PTR_UseTraverse_
 push  1
 push  cx
@@ -7119,11 +7120,11 @@ push  bx
 push  dx
 push  ax
 
-mov   bx, word ptr [bp - 2]
+mov   bx, di
 
 mov   cx, si
-mov   dx, word ptr [bp - 4]
-mov   ax, word ptr [bp - 8]
+les   dx, dword ptr [bp - 4]
+mov   ax, es
 
 call  P_PathTraverse_
 LEAVE_MACRO 
