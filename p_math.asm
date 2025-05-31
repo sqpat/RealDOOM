@@ -6425,44 +6425,50 @@ mov   word ptr ds:[_tmy+2], ax
 ;	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
 ;	tmbbox[BOXLEFT].w = x.w - temp.w;
 
-xor   cx, cx
-mov   cl, byte ptr [si + 01Eh] 
-; cx has radius
+xor   bx, bx
+mov   bl, byte ptr [si + 01Eh] 
+; bx has radius
 
 
 les   ax, dword ptr [bp + 0Eh]
 mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 0], ax
+mov   cx, es
+add   cx, bx
+mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], cx
+
+;   cx has top
+
 mov   dx, es
-add   dx, cx
-mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], dx
-mov   dx, es
-sub   dx, cx
+sub   dx, bx
 mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 0], ax
 mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2], dx
 
 
-mov   si, dx   ; si has bottom. (top is si + cx + cx)
+; dx has bottom
 
 les   ax, dword ptr [bp + 0Ah]
 
 mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 0], ax
-mov   dx, es
-add   dx, cx
-mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], dx
+mov   di, es
+add   di, bx
+mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], di
 
-mov   dx, es
-sub   dx, cx
+; di has right
+
+mov   si, es
+sub   si, bx
 
 mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 0], ax
-mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2], dx
+mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2], si
 
-mov   di, dx   ; di has left. (right is di + cx + cx)
+
+; si has left
 
 
 mov   bx, word ptr [bp + 012h]
+SHIFT_MACRO shl   bx 4
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
-SHIFT_MACRO shl   bx 4
 
 les   ax, dword ptr es:[bx]			; sector floorheight
 mov   word ptr ds:[_tmdropoffz], ax
@@ -6481,28 +6487,77 @@ mov   word ptr ds:[_ceilinglinenum], ax  ; -1
 ;    yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
 ;    yh = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
 
+xchg  ax, si
+mov   bx, di
 les   si, dword ptr ds:[_bmaporgx]
-mov   di, es ; bmaporgy
 
-mov   ax, word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2]
+
+; cx has top
+; dx has bottom
+; si has left
+; di has right
+
 sub   ax, si
 sub   ax, MAXRADIUSNONFRAC
-sar   ax, 7
 
-mov   bx, word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2]
 sub   bx, si
 add   bx, MAXRADIUSNONFRAC
-sar   bx, 7
 
-mov   dx, word ptr ds:[_tmbbox +  + (4 * BOXBOTTOM) + 2]
-sub   dx, di
+mov   si, es ; bmaporgy
+sub   dx, si
 sub   dx, MAXRADIUSNONFRAC
-sar   dx, 7
 
-mov   cx, word ptr ds:[_tmbbox + (4 * BOXTOP) + 2]
-sub   cx, di
+sub   cx, si
 add   cx, MAXRADIUSNONFRAC
-sar   cx, 7
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+	sar   bx, MAPBLOCKSHIFT
+	sar   dx, MAPBLOCKSHIFT
+	sar   cx, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+
+	xchg ax, bx  ; bx stores ax.
+
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+
+	xchg ax, bx
+	xchg ax, cx 
+
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+
+	xchg ax, cx 
+	xchg ax, dx 
+
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+
+	; bx has ax
+	; cx has bx
+	; dx has cx
+	; ax has dx
+
+	xchg ax, dx
+
+ENDIF
+
+
+; cx needs top    (cx)
+; dx needs bottom (dx)
+; bx needs right  (di)
+; ax needs left   (si)
 
 ;	if (!DoBlockmapLoop(xl, yl, xh, yh, PIT_StompThing, true)){
 ;		return false;
@@ -6517,21 +6572,27 @@ mov   dx, word ptr [bp - 6]
 mov   ax, word ptr [bp - 2]
 mov   bx, ax
 call  P_UnsetThingPosition_
-mov   ax, word ptr ds:[_tmfloorz]
-mov   word ptr [bx + 6], ax
+
+;    thing->floorz = tmfloorz;
+;    thing->ceilingz = tmceilingz;	
+
+les   di, dword ptr [bp - 6]
+lea   si, [bp + 0Ah]
+
+;	thing_pos->x = x;
+;	thing_pos->y = y;
+
+movsw
+movsw
+movsw
+movsw
+
+mov   ax, word ptr ds:[_tmfloorz]	; todo LES once floor/ceiling adjacent 
+stosw
 mov   ax, word ptr ds:[_tmceilingz]
-mov   word ptr [bx + 8], ax
-les   bx, dword ptr [bp - 6]
-mov   ax, word ptr [bp + 0Ah]
-mov   word ptr es:[bx], ax
-mov   ax, word ptr [bp + 0Ch]
-mov   word ptr es:[bx + 2], ax
-mov   ax, word ptr [bp + 0Eh]
-mov   word ptr es:[bx + 4], ax
-mov   ax, word ptr [bp + 010h]
+stosw
 mov   dx, word ptr [bp - 6]
-mov   word ptr es:[bx + 6], ax
-mov   bx, word ptr [bp + 012h]
+mov   bx, word ptr [si]  ; bp + 012h
 mov   ax, word ptr [bp - 2]
 
 call  P_SetThingPosition_
