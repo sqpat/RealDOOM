@@ -5428,22 +5428,22 @@ PUBLIC PTR_ShootTraverse_
 ; bp - 8     line_phys offset			/ thingpos offset?
 ; bp - 0Ah   x hi			    		/ x hi
 ; bp - 0Ch   x lo						/ x lo
-; bp - 0Eh   y hi
-; bp - 010h  y lo
-; bp - 012h  dist hi
-; bp - 016h	 dist lo
-; bp - 018h  unused
-; bp - 01Ah  unused
-; bp - 01Ch  dist hi ? dupe
-; bp - 01Eh  dist lo ? dupe
+; bp - 0Eh   y hi						/ dist hi
+; bp - 010h  y lo						/ dist lo
+; bp - 012h  backsec  offset
+; bp - 016h	 frontsec offset
+; bp - 018h  dist hi
+; bp - 01Ah  dist lo
+; bp - 01Ch  
+; bp - 01Eh  
 ; bp - 020h  unused
 ; bp - 022h  unused
 ; bp - 024h  
 ; bp - 026h  
 ; bp - 028h  
 ; bp - 02Ah  
-; bp - 02Ch  backsec  offset
-; bp - 02Eh  frontsec offset
+; bp - 02Ch  
+; bp - 02Eh  
 
 ; todo pusha?
 
@@ -5473,7 +5473,6 @@ mov   ax, LINES_PHYSICS_SEGMENT
 push  ax		    ; bp - 6
 mov   es, ax
 push  bx			; bp - 8 linenum shift 4
-sub   sp, 026h
 
 ;		if (li_physics->special)
 cmp   byte ptr es:[bx + 0Fh], 0
@@ -5653,9 +5652,8 @@ les   bx, dword ptr [bp - 8] 	 ; li_physics
 les   bx, dword ptr es:[bx + 0Ah] ; frontsec
 SHIFT_MACRO shl   bx 4 			
 
-mov   word ptr [bp - 01Eh], ax
-mov   word ptr [bp - 01Ch], dx ; store dist
-
+push  dx	; push dist
+push  ax
 mov   di, es 				 	 ; backsec
 SHIFT_MACRO shl   di 4
 
@@ -5713,8 +5711,8 @@ je    exit_shoottraverse_return_1
 
 ceilingheights_not_equal:
 
-les   bx, dword ptr [bp - 01Eh]
-mov   cx, es
+pop   bx  ; recover dist
+pop   cx 
 
 mov   dx, word ptr ds:[_lineopening+0]
 xor   ax, ax
@@ -5750,10 +5748,10 @@ mov   ax, MOBJPOSLIST_6800_SEGMENT
 
 mov   es, ax
 
-push   dx
-push   ax
-push   bx
-sub   sp, 024h
+push   dx	; bp - 4 thinker near ptr  
+push   ax   ; bp - 6 mobjposlist seg
+push   bx   ; bp - 8 thinker pos off
+
 test  byte ptr es:[bx + 014h], MF_SHOOTABLE
 jne   did_not_hit_thing
 exit_shoottraverse_return_1:
@@ -5891,7 +5889,7 @@ les   bx, dword ptr [bp - 8]
 test  byte ptr es:[bx + 016h], MF_NOBLOOD
 ; these args go into both functions...
 push  dx	
-push  ax
+push  ax      ; todo fix
 mov   cx, di
 mov   bx, si
 pop   ax
