@@ -6576,6 +6576,10 @@ call  P_UnsetThingPosition_
 ;    thing->floorz = tmfloorz;
 ;    thing->ceilingz = tmceilingz;	
 
+mov   ax, word ptr ds:[_tmfloorz]	; todo LES once floor/ceiling adjacent 
+mov   word ptr [bx + 6], ax
+mov   ax, word ptr ds:[_tmceilingz]
+mov   word ptr [bx + 8], ax
 les   di, dword ptr [bp - 6]
 lea   si, [bp + 0Ah]
 
@@ -6587,10 +6591,6 @@ movsw
 movsw
 movsw
 
-mov   ax, word ptr ds:[_tmfloorz]	; todo LES once floor/ceiling adjacent 
-stosw
-mov   ax, word ptr ds:[_tmceilingz]
-stosw
 mov   dx, word ptr [bp - 6]
 mov   bx, word ptr [si]  ; bp + 012h
 mov   ax, word ptr [bp - 2]
