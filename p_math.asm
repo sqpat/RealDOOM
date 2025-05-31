@@ -5928,8 +5928,9 @@ PUBLIC PTR_AimTraverse_
 ; bp - 4 unused
 ; bp - 6 
 
-; bp - 01Ah SECTORS_SEGMENT
-; bp - 01Ch SECTORS_SEGMENT
+; bp - 016h attack range high
+; bp - 01Ah backsector offset
+; bp - 01Ch frontsector offset
 
 push  bx
 push  cx
@@ -5959,6 +5960,11 @@ ret
 jump_to_aimtraverse_is_not_a_line:
 jmp   aimtraverse_is_not_a_line
 aimtraverse_is_a_line:
+
+;		li = &lines[in->d.linenum];
+;		li_physics = &lines_physics[in->d.linenum];
+;		P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
+
 mov   es, dx	; intercept_segment
 SHIFT_MACRO shl   bx 2
 mov   di, bx
@@ -5974,90 +5980,121 @@ mov   es, cx
 les   dx, dword ptr es:[di + 0Ah]
 mov   bx, es
 call  P_LineOpening_
+
+;		if (lineopening.openbottom >= lineopening.opentop) {
+;			return false;		// stop
+;		}
+
 mov   ax, word ptr ds:[_lineopening+2]
 cmp   ax, word ptr ds:[_lineopening+0]
 jge   exit_aimtraverse_return_0
+
+;		dist = P_GetAttackRangeMult(attackrange16, in->frac);
+
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr ds:[_attackrange16]
 les   bx, dword ptr es:[si]
 mov   cx, es
-mov   word ptr [bp - 01Ah], SECTORS_SEGMENT
-mov   word ptr [bp - 01Ch], SECTORS_SEGMENT
+
 call  P_GetAttackRangeMult_
+
+;		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
+
 mov   cx, LINES_PHYSICS_SEGMENT
 mov   es, cx
 mov   si, ax
-mov   cx, word ptr es:[di + 0Ah]
-mov   bx, word ptr es:[di + 0Ch]
-SHIFT_MACRO shl   cx 4
-mov   es, word ptr [bp - 01Ah]
-mov   di, cx
+les   di, dword ptr es:[di + 0Ah] ; frontsector
+mov   bx, es					  ; backsector
+SHIFT_MACRO shl   di 4
+mov   cx, SECTORS_SEGMENT
+mov   es, cx
 SHIFT_MACRO shl   bx 4
+
+mov   word ptr [bp - 01Ch], bx
+mov   word ptr [bp - 01Ah], di
+
 mov   cx, word ptr es:[di]
-mov   es, word ptr [bp - 01Ch]
 mov   word ptr [bp - 016h], dx
 cmp   cx, word ptr es:[bx]
-je    label_3
-mov   bx, word ptr ds:[_lineopening+2]
-xor   bh, bh
-mov   di, word ptr ds:[_lineopening+2]
-and   bl, 7
+je    aimtraverse_floorheights_equal
+
+; 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
+;			slope = FixedDiv (temp.w - shootz.w , dist);
 mov   cx, dx
-SHIFT_MACRO shl   bx 0Dh
-sar   di, 3
-sub   bx, word ptr ds:[_shootz+0]
-mov   word ptr [bp - 01Ah], bx
-sbb   di, word ptr ds:[_shootz+2]
-mov   bx, ax
-mov   dx, di
-mov   ax, word ptr [bp - 01Ah]
-call  FixedDiv_
-mov   bx, OFFSET _bottomslope
-cmp   dx, word ptr [bx + 2]
-jg    label_4
-jne   label_3
-cmp   ax, word ptr [bx]
-jbe   label_3
-label_4:
-mov   word ptr [bx], ax
-mov   word ptr [bx + 2], dx
-label_3:
-mov   cx, LINES_PHYSICS_SEGMENT
-mov   es, cx
-mov   bx, word ptr [bp - 0Ch]
-mov   cx, SECTORS_SEGMENT
-mov   di, word ptr [bp - 0Ch]
-mov   bx, word ptr es:[bx + 0Ah]
-mov   di, word ptr es:[di + 0Ch]
-SHIFT_MACRO shl   bx 4
-SHIFT_MACRO shl   di 4
-mov   es, cx
-add   di, 2
-mov   ax, word ptr es:[bx + 2]
-add   bx, 2
-cmp   ax, word ptr es:[di]
-je    label_5
-mov   ax, word ptr ds:[_lineopening+0]
-mov   cx, word ptr [bp - 016h]
-xor   ah, ah
-mov   dx, word ptr ds:[_lineopening+0]
-and   al, 7
-mov   bx, si
-SHIFT_MACRO shl   ax 0Dh
-sar   dx, 3
+xchg  ax, bx
+
+mov   dx, word ptr ds:[_lineopening+2]
+xor   ax, ax
+sar   dx, 1
+rcl   ax, 1
+sar   dx, 1
+rcl   ax, 1
+sar   dx, 1
+rcl   ax, 1
+
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
+
 call  FixedDiv_
-mov   bx, OFFSET _topslope
-cmp   dx, word ptr [bx + 2]
-jl    label_6
-jne   label_5
-cmp   ax, word ptr [bx]
-jae   label_5
-label_6:
-mov   word ptr [bx], ax
-mov   word ptr [bx + 2], dx
-label_5:
+
+;			if (slope > bottomslope)
+;				bottomslope = slope;
+
+cmp   dx, word ptr ds:[_bottomslope + 2]
+jg    aimtraverse_slope_greater_than_bottomslope
+jne   aimtraverse_floorheights_equal
+cmp   ax, word ptr ds:[_bottomslope]
+jbe   aimtraverse_floorheights_equal
+aimtraverse_slope_greater_than_bottomslope:
+mov   word ptr ds:[_bottomslope], ax
+mov   word ptr ds:[_bottomslope + 2], dx
+
+
+aimtraverse_floorheights_equal:
+les   bx, dword ptr [bp - 01Ch]
+
+
+
+mov   di, es
+mov   cx, SECTORS_SEGMENT
+mov   es, cx
+mov   ax, word ptr es:[bx + 2]
+cmp   ax, word ptr es:[di + 2]
+je    aimtraverse_ceilingheights_equal
+
+; 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
+;			slope = FixedDiv (temp.w - shootz.w , dist);
+
+mov   dx, word ptr ds:[_lineopening+0]
+xor   ax, ax
+sar   dx, 1
+rcl   ax, 1
+sar   dx, 1
+rcl   ax, 1
+sar   dx, 1
+rcl   ax, 1
+
+sub   ax, word ptr ds:[_shootz+0]
+sbb   dx, word ptr ds:[_shootz+2]
+
+mov   cx, word ptr [bp - 016h] ; dist hi
+mov   bx, si				   ; dist lo todo les?
+
+call  FixedDiv_
+
+;			if (slope < topslope)
+;				topslope = slope;
+
+
+cmp   dx, word ptr ds:[_topslope + 2]
+jl    aimtraverse_slope_less_than_topslope
+jne   aimtraverse_ceilingheights_equal
+cmp   ax, word ptr ds:[_topslope + 0]
+jae   aimtraverse_ceilingheights_equal
+aimtraverse_slope_less_than_topslope:
+mov   word ptr ds:[_topslope + 0], ax
+mov   word ptr ds:[_topslope + 2], dx
+aimtraverse_ceilingheights_equal:
 mov   si, OFFSET _topslope
 mov   bx, OFFSET _bottomslope
 mov   ax, word ptr [si + 2]
