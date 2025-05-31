@@ -6627,7 +6627,7 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 8
-push  ax		; bp - 010h
+push  ax		; bp - 0Ah
 
 ;    shootthing = t1;
 mov   word ptr ds:[_shootthing], ax
@@ -6892,18 +6892,21 @@ PUBLIC P_LineAttack_
 
 ; fixed_t __near P_AimLineAttack ( mobj_t __near*	t1, fineangle_t	angle,int16_t	distance16 );
 
-; bp - 014h unused
-; bp - 016h thing
-; bp - 018h MOBJPOSLIST_6800_SEGMENT
-; bp - 01Ah mobjposlist offset
+; bp - 2    y hi
+; bp - 4    y lo
+; bp - 6    x hi
+; bp - 8	x lo
+; bp - 0Ah  thing
+; bp - 0Ch  MOBJPOSLIST_6800_SEGMENT
+; bp - 0Eh  mobjposlist offset
 
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 014h
-push  ax 				; bp - 016h  thing
+sub   sp, 8
+push  ax 				; bp - 0Ah  thing
 mov   di, dx			; di gets angle
 mov   si, bx			; si gets distance..
 mov   cx, ax
@@ -6915,31 +6918,29 @@ div   bx
 imul  bx, ax, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
-push  ax				; bp - 018h
-push  bx				; bp - 01Ah
+push  ax				; bp - 0Ch
+push  bx				; bp - 0Eh
 
 mov   ax, word ptr [bp + 0Eh]
 mov   word ptr ds:[_la_damage], ax
 
 mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[bx + 2]
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr es:[bx + 4]
 mov   word ptr [bp - 8], ax
-mov   ax, word ptr es:[bx + 6]
-
-mov   bx, cx
+mov   ax, word ptr es:[bx + 2]
 mov   word ptr [bp - 6], ax
-mov   bx, di
-shl   bx, 2
+mov   ax, word ptr es:[bx + 4]
+mov   word ptr [bp - 4], ax
+mov   ax, word ptr es:[bx + 6]
+mov   word ptr [bp - 2], ax
+
+shl   di, 2
 
 mov   cx, FINESINE_SEGMENT
 mov   es, cx
-les   ax, dword ptr es:[bx + 02000h]
+les   ax, dword ptr es:[di + 02000h]
 mov   dx, es
 mov   es, cx
-les   bx, dword ptr es:[bx]
+les   bx, dword ptr es:[di]
 mov   cx, es
 
 ; cx:bx   sine
@@ -6975,13 +6976,13 @@ lineattack_done_with_switchblock:
 
 ; x2.w = x.w +  ...
 
-add   ax, word ptr [bp - 0Ah]
-adc   dx, word ptr [bp - 4]
+add   ax, word ptr [bp - 8]
+adc   dx, word ptr [bp - 6]
 
 ; y2.w = y.w +  ...
 
-add   bx, word ptr [bp - 8]
-adc   cx, word ptr [bp - 6]
+add   bx, word ptr [bp - 4]
+adc   cx, word ptr [bp - 2]
 
 push  OFFSET PTR_ShootTraverse_
 push  (PT_ADDLINES OR PT_ADDTHINGS)
@@ -6992,10 +6993,10 @@ push ax
 
 
 
-les   bx, dword ptr [bp - 01Ah]
+les   bx, dword ptr [bp - 0Eh]
 les   ax, dword ptr es:[bx + 8]
 mov   dx, es
-mov   bx, word ptr [bp - 016h]
+mov   bx, word ptr [bp - 0Ah]
 
 mov   word ptr ds:[_shootz+0], ax
 mov   ax, word ptr [bx + 0Ch]
@@ -7010,10 +7011,10 @@ les   ax, dword ptr [bp + 0Ah]
 mov   word ptr ds:[_aimslope+0], ax
 mov   word ptr ds:[_aimslope+2], es
 
-mov   bx, word ptr [bp - 8]
-mov   dx, word ptr [bp - 4]
-mov   cx, word ptr [bp - 6]
-mov   ax, word ptr [bp - 0Ah]
+mov   ax, word ptr [bp - 8]
+mov   dx, word ptr [bp - 6]
+mov   bx, word ptr [bp - 4]
+mov   cx, word ptr [bp - 2]
 
 mov   word ptr ds:[_attackrange16], si
 
