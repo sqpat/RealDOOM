@@ -43,9 +43,6 @@
 // TELEPORT MOVE
 // 
 
-//
-// PIT_StompThing
-//
 /*
 int16_t __near R_PointOnSide2 ( fixed_t_union x, fixed_t_union y, int16_t nodenum){
 	node_t __far* node = &nodes[nodenum];
@@ -161,7 +158,11 @@ int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 }*/
 
 
-
+//
+// PIT_StompThing
+//
+boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos);
+/*
 boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) {
     fixed_t_union	blockdist;
 
@@ -192,7 +193,7 @@ boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_
 	
     return true;
 }
-
+*/
 
 #pragma aux DoBlockmapLoop_params \
         __parm [ax] [dx] [bx] [cx] [si] [di] \
