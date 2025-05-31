@@ -5924,12 +5924,12 @@ PUBLIC PTR_AimTraverse_
 ; bp - 4 unused
 ; bp - 6 unused
 ; bp - 8 thinker near ptr
-; bp - 0Ah thingtopslope
+; bp - 0Ah thingtopslope lo
 ; bp - 0Ch 
-; bp - 0Eh 
+; bp - 0Eh thingtopslope hi
 
 
-; bp - 010h thingtopslope
+; bp - 010h thingtopslope lo
 
 ; bp - 012h unused
 ; bp - 014h unused
@@ -6170,7 +6170,7 @@ push  cx  ; need these twice. grab later...
 
 les   ax, dword ptr es:[di + 8]
 mov   dx, es
-mov   si, word ptr [bp - 8]
+mov   si, word ptr [bp - 8]   ; thinker ptr
 
 add   ax, word ptr [si + 0Ah]
 adc   dx, word ptr [si + 0Ch]
@@ -6178,8 +6178,8 @@ sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
 
-mov   word ptr [bp - 0Ah], ax   ; store thingtopslope
 mov   word ptr [bp - 010h], ax
+mov   word ptr [bp - 0Eh], dx
 
 
 ;	if (thingtopslope < bottomslope) {
@@ -6188,12 +6188,9 @@ mov   word ptr [bp - 010h], ax
 
 
 mov   si, dx
-mov   ax, word ptr ds:[_bottomslope + 2]
-mov   word ptr [bp - 0Eh], dx
-cmp   dx, ax
+cmp   dx, word ptr ds:[_bottomslope + 2]
 jl    exit_aimtraverse_return_1
 jne   done_checking_thingtopslope
-mov   ax, word ptr [bp - 0Ah]
 cmp   ax, word ptr ds:[_bottomslope]
 jae   done_checking_thingtopslope
 exit_aimtraverse_return_1_3:
@@ -6206,6 +6203,9 @@ pop   bx
 ret   
 
 done_checking_thingtopslope:
+
+
+;    thingbottomslope = FixedDiv (th_pos->z.w - shootz.w, dist);
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
@@ -6220,49 +6220,59 @@ mov   dx, es
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
-mov   cx, ax   ; todo clean up this storage
-mov   di, ax
-mov   ax, dx
+
+;	if (thingbottomslope > topslope) {
+;		return true;			// shot under the thing
+;	}
+
+
 cmp   dx, word ptr ds:[_topslope + 2]
 jg    exit_aimtraverse_return_1_3
-jne   label_10
-cmp   cx, word ptr ds:[_topslope + 0]
+jne   thing_can_be_hit
+cmp   ax, word ptr ds:[_topslope + 0]
 ja    exit_aimtraverse_return_1_3
-label_10:
-mov   dx, word ptr [bp - 0Ah]
-cmp   si, word ptr ds:[_topslope + 2]
-jg    label_11
-jne   label_12
-cmp   dx, word ptr ds:[_topslope + 0]
-jbe   label_12
-label_11:
-mov   dx, word ptr ds:[_topslope + 0]
-mov   word ptr [bp - 010h], dx
-mov   dx, word ptr ds:[_topslope + 2]
-mov   word ptr [bp - 0Eh], dx
-label_12:
+thing_can_be_hit:
 
-cmp   ax, word ptr ds:[_bottomslope + 2]
-jl    label_13
-jne   label_14
-cmp   di, word ptr ds:[_bottomslope + 0]
-jae   label_14
-label_13:
-mov   di, word ptr ds:[_bottomslope + 0]
-mov   ax, word ptr ds:[_bottomslope + 2]
-label_14:
+;    // this thing can be hit!
+;    if (thingtopslope > topslope)
+;		thingtopslope = topslope;
+
+mov   cx, word ptr [bp - 010h]
+cmp   si, word ptr ds:[_topslope + 2]
+jg    do_cap_topslope
+jne   dont_cap_topslope
+cmp   cx, word ptr ds:[_topslope + 0]
+jbe   dont_cap_topslope
+do_cap_topslope:
+les   cx, dword ptr ds:[_topslope + 0]
+mov   word ptr [bp - 010h], cx
+mov   word ptr [bp - 0Eh], es
+dont_cap_topslope:
+
+cmp   dx, word ptr ds:[_bottomslope + 2]
+jl    do_cap_botslope
+jne   dont_cap_botslope
+cmp   ax, word ptr ds:[_bottomslope + 0]
+jae   dont_cap_botslope
+
+do_cap_botslope:
+les   ax, dword ptr ds:[_bottomslope + 0]
+mov   dx, es
+dont_cap_botslope:
+
+; dx:ax is botslope
 
 ;	aimslope = (thingtopslope+thingbottomslope)>>1;
 ;	linetarget = th;
 ;	linetarget_pos = th_pos;
  ;   return false;			// don't go any farther
 
-add   di, word ptr [bp - 010h]
-adc   ax, word ptr [bp - 0Eh]
-sar   ax, 1
-rcr   di, 1
-mov   word ptr ds:[_aimslope+0], di
-mov   word ptr ds:[_aimslope+2], ax
+add   ax, word ptr [bp - 010h]
+adc   dx, word ptr [bp - 0Eh]
+sar   dx, 1
+rcr   ax, 1
+mov   word ptr ds:[_aimslope+0], ax
+mov   word ptr ds:[_aimslope+2], dx
 mov   ax, word ptr [bp - 8]
 mov   word ptr ds:[_linetarget], ax
 
