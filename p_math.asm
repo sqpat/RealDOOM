@@ -7056,69 +7056,78 @@ ENDP
 PROC P_UseLines_ NEAR
 PUBLIC P_UseLines_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 8
+
 les   bx, dword ptr ds:[_playerMobj_pos]
 mov   ax, word ptr es:[bx + 010h]
 mov   dx, word ptr es:[bx]
+mov   di, word ptr es:[bx + 4]
 mov   si, word ptr es:[bx + 6]
 mov   word ptr [bp - 8], dx
 mov   dx, word ptr es:[bx + 2]
 shr   ax, 3
 mov   word ptr [bp - 4], dx
-mov   dx, word ptr es:[bx + 4]
-mov   bx, ax
-mov   ax, FINESINE_SEGMENT
-shl   bx, 2
-mov   es, ax
-lea   di, [bx + 02000h]
-mov   word ptr [bp - 2], dx
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
-mov   di, word ptr [bp - 8]
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FFC0h
-xor   dx, ax
-add   di, ax
-mov   ax, word ptr [bp - 4]
-adc   ax, dx
-mov   word ptr [bp - 6], ax
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx]
+
+shl   ax, 2
+xchg  ax, bx
+
+mov   cx, FINESINE_SEGMENT
+mov   es, cx
+les   ax, dword ptr es:[bx + 2000] ; load cos into dx:ax
+mov   dx, es
+
+mov   es, cx ; restore es
+
+les   bx, dword ptr es:[bx] ; load sin into cx:bx
+mov   cx, es
+
+
+; shift 6
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
+and   al, 0C0h
+
+add   ax, word ptr [bp - 8]
+adc   dx, word ptr [bp - 4]
+
+
+; shift 6
+sar   cx, 1
+rcr   bx, 1
+sar   cx, 1
+rcr   bx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, cl
+and   bl, 0C0h
+
+add   bx, dx
+adc   cx, si
+
 push  OFFSET PTR_UseTraverse_
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FFC0h
-xor   dx, ax
 push  1
-add   ax, word ptr [bp - 2]
-adc   dx, si
+push  cx
+push  bx
 push  dx
-mov   bx, word ptr [bp - 2]
 push  ax
+
+mov   bx, word ptr [bp - 2]
+
 mov   cx, si
-push  word ptr [bp - 6]
 mov   dx, word ptr [bp - 4]
-push  di
 mov   ax, word ptr [bp - 8]
+
 call  P_PathTraverse_
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
 ret   
 
 ENDP
