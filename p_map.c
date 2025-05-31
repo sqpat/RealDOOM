@@ -1449,6 +1449,9 @@ fixed_t __near P_AimLineAttack ( mobj_t __near*	t1, fineangle_t	angle,int16_t	di
 // If damage == 0, it is just a test trace
 // that will leave linetarget set.
 //
+void __near P_LineAttack (mobj_t __near* t1, fineangle_t	angle, int16_t	distance16, fixed_t	slope, int16_t	damage ) ;
+
+/*
 void __near P_LineAttack (mobj_t __near* t1, fineangle_t	angle, int16_t	distance16, fixed_t	slope, int16_t	damage ) {
     fixed_t_union	x2;
 	fixed_t_union	y2;
@@ -1498,6 +1501,7 @@ void __near P_LineAttack (mobj_t __near* t1, fineangle_t	angle, int16_t	distance
 }
  
 
+*/
 
 //
 // USE LINES

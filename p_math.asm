@@ -6886,211 +6886,220 @@ jmp   aim_line_done_with_switchblock_shift
 
 ENDP
 
-COMMENT  @
 
 
 PROC P_LineAttack_ NEAR
 PUBLIC P_LineAttack_
 
-0x0000000000000426:  51                   push  cx
-0x0000000000000427:  56                   push  si
-0x0000000000000428:  57                   push  di
-0x0000000000000429:  55                   push  bp
-0x000000000000042a:  89 E5                mov   bp, sp
-0x000000000000042c:  83 EC 14             sub   sp, 014h
-0x000000000000042f:  50                   push  ax
-0x0000000000000430:  89 D7                mov   di, dx
-0x0000000000000432:  89 DE                mov   si, bx
-0x0000000000000434:  BB 2C 00             mov   bx, SIZEOF_THINKER_T
-0x0000000000000437:  2D 04 40             sub   ax, (_thinkerlist + 4)
-0x000000000000043a:  31 D2                xor   dx, dx
-0x000000000000043c:  F7 F3                div   bx
-0x000000000000043e:  6B D8 18             imul  bx, ax, SIZEOF_MOBJ_POS_T
-0x0000000000000441:  B8 F5 6A             mov   ax, MOBJPOSLIST_6800_SEGMENT
-0x0000000000000444:  8E C0                mov   es, ax
-0x0000000000000446:  89 46 FE             mov   word ptr [bp - 2], ax
-0x0000000000000449:  26 8B 07             mov   ax, word ptr es:[bx]
-0x000000000000044c:  89 46 F6             mov   word ptr [bp - 0xa], ax
-0x000000000000044f:  26 8B 47 02          mov   ax, word ptr es:[bx + 2]
-0x0000000000000453:  89 46 FC             mov   word ptr [bp - 4], ax
-0x0000000000000456:  26 8B 47 04          mov   ax, word ptr es:[bx + 4]
-0x000000000000045a:  89 5E EC             mov   word ptr [bp - 0x14], bx
-0x000000000000045d:  89 46 F8             mov   word ptr [bp - 8], ax
-0x0000000000000460:  26 8B 47 06          mov   ax, word ptr es:[bx + 6]
-0x0000000000000464:  8B 5E EA             mov   bx, word ptr [bp - 0x16]
-0x0000000000000467:  89 46 FA             mov   word ptr [bp - 6], ax
-0x000000000000046a:  8B 46 0E             mov   ax, word ptr [bp + 0Eh]
-0x000000000000046d:  89 1E F8 1E          mov   word ptr ds:[_shootthing], bx
-0x0000000000000471:  89 FB                mov   bx, di
-0x0000000000000473:  A3 F4 1E             mov   word ptr ds:[_la_damage], ax
-0x0000000000000476:  C1 E3 02             shl   bx, 2
-0x0000000000000479:  83 FE 41             cmp   si, 0x41
-0x000000000000047c:  72 03                jb    0x481
-0x000000000000047e:  E9 B1 00             jmp   0x532
-0x0000000000000481:  83 FE 40             cmp   si, 0x40
-0x0000000000000484:  75 53                jne   0x4d9
-0x0000000000000486:  B8 16 31             mov   ax, FINESINE_SEGMENT
-0x0000000000000489:  8D BF 00 20          lea   di, [bx + 0x2000]
-0x000000000000048d:  8E C0                mov   es, ax
-0x000000000000048f:  26 8B 05             mov   ax, word ptr es:[di]
-0x0000000000000492:  26 8B 55 02          mov   dx, word ptr es:[di + 2]
-0x0000000000000496:  8B 7E F6             mov   di, word ptr [bp - 0xa]
-0x0000000000000499:  B1 06                mov   cl, 6
-0x000000000000049b:  D3 E2                shl   dx, cl
-0x000000000000049d:  D3 C0                rol   ax, cl
-0x000000000000049f:  31 C2                xor   dx, ax
-0x00000000000004a1:  81 E0 C0 FF          and   ax, 0xffc0
-0x00000000000004a5:  31 C2                xor   dx, ax
-0x00000000000004a7:  01 C7                add   di, ax
-0x00000000000004a9:  8B 46 FC             mov   ax, word ptr [bp - 4]
-0x00000000000004ac:  11 D0                adc   ax, dx
-0x00000000000004ae:  89 46 F4             mov   word ptr [bp - 0xc], ax
-0x00000000000004b1:  26 8B 57 02          mov   dx, word ptr es:[bx + 2]
-0x00000000000004b5:  26 8B 07             mov   ax, word ptr es:[bx]
-0x00000000000004b8:  8B 5E F8             mov   bx, word ptr [bp - 8]
-0x00000000000004bb:  B1 06                mov   cl, 6
-0x00000000000004bd:  D3 E2                shl   dx, cl
-0x00000000000004bf:  D3 C0                rol   ax, cl
-0x00000000000004c1:  31 C2                xor   dx, ax
-0x00000000000004c3:  81 E0 C0 FF          and   ax, 0xffc0
-0x00000000000004c7:  31 C2                xor   dx, ax
-0x00000000000004c9:  89 7E F2             mov   word ptr [bp - 0xe], di
-0x00000000000004cc:  01 C3                add   bx, ax
-0x00000000000004ce:  8B 46 FA             mov   ax, word ptr [bp - 6]
-0x00000000000004d1:  11 D0                adc   ax, dx
-0x00000000000004d3:  89 5E EE             mov   word ptr [bp - 0x12], bx
-0x00000000000004d6:  89 46 F0             mov   word ptr [bp - 0x10], ax
-0x00000000000004d9:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x00000000000004dc:  8B 5E EC             mov   bx, word ptr [bp - 0x14]
-0x00000000000004df:  68 BA 87             push  0x87ba
-0x00000000000004e2:  8B 4E FA             mov   cx, word ptr [bp - 6]
-0x00000000000004e5:  6A 03                push  3
-0x00000000000004e7:  26 8B 57 08          mov   dx, word ptr es:[bx + 8]
-0x00000000000004eb:  26 8B 47 0A          mov   ax, word ptr es:[bx + 0Ah]
-0x00000000000004ef:  8B 5E EA             mov   bx, word ptr [bp - 0x16]
-0x00000000000004f2:  FF 76 F0             push  word ptr [bp - 0x10]
-0x00000000000004f5:  89 16 A8 1C          mov   word ptr ds:[_shootz+0], dx
-0x00000000000004f9:  8B 57 0C             mov   dx, word ptr [bx + 0Ch]
-0x00000000000004fc:  D1 FA                sar   dx, 1
-0x00000000000004fe:  FF 76 EE             push  word ptr [bp - 0x12]
-0x0000000000000501:  83 C2 08             add   dx, 8
-0x0000000000000504:  FF 76 F4             push  word ptr [bp - 0xc]
-0x0000000000000507:  01 D0                add   ax, dx
-0x0000000000000509:  8B 5E F8             mov   bx, word ptr [bp - 8]
-0x000000000000050c:  A3 AA 1C             mov   word ptr ds:[_shootz+2], ax
-0x000000000000050f:  8B 46 0A             mov   ax, word ptr [bp + 0Ah]
-0x0000000000000512:  FF 76 F2             push  word ptr [bp - 0xe]
-0x0000000000000515:  A3 A4 1C             mov   word ptr ds:[_aimslope+0], ax
-0x0000000000000518:  8B 46 0C             mov   ax, word ptr [bp + 0Ch]
-0x000000000000051b:  8B 56 FC             mov   dx, word ptr [bp - 4]
-0x000000000000051e:  A3 A6 1C             mov   word ptr ds:[_aimslope+2], ax
-0x0000000000000521:  8B 46 F6             mov   ax, word ptr [bp - 0xa]
-0x0000000000000524:  89 36 F0 1E          mov   word ptr ds:[_attackrange16], si
-0x0000000000000528:  E8 94 0C             call  0x11bf
-0x000000000000052b:  C9                   LEAVE_MACRO 
-0x000000000000052c:  5F                   pop   di
-0x000000000000052d:  5E                   pop   si
-0x000000000000052e:  59                   pop   cx
-0x000000000000052f:  C2 06 00             ret   6
-0x0000000000000532:  76 52                jbe   0x586
-0x0000000000000534:  81 FE 00 08          cmp   si, MISSILERANGE
-0x0000000000000538:  74 4E                je    0x588
-0x000000000000053a:  81 FE 00 04          cmp   si, HALFMISSILERANGE
-0x000000000000053e:  75 99                jne   0x4d9
-0x0000000000000540:  B8 16 31             mov   ax, FINESINE_SEGMENT
-0x0000000000000543:  8D BF 00 20          lea   di, [bx + 0x2000]
-0x0000000000000547:  8E C0                mov   es, ax
-0x0000000000000549:  26 8B 05             mov   ax, word ptr es:[di]
-0x000000000000054c:  26 8B 55 02          mov   dx, word ptr es:[di + 2]
-0x0000000000000550:  8B 7E F6             mov   di, word ptr [bp - 0xa]
-0x0000000000000553:  B1 0A                mov   cl, 0xa
-0x0000000000000555:  D3 E2                shl   dx, cl
-0x0000000000000557:  D3 C0                rol   ax, cl
-0x0000000000000559:  31 C2                xor   dx, ax
-0x000000000000055b:  81 E0 00 FC          and   ax, 0xfc00
-0x000000000000055f:  31 C2                xor   dx, ax
-0x0000000000000561:  01 C7                add   di, ax
-0x0000000000000563:  8B 46 FC             mov   ax, word ptr [bp - 4]
-0x0000000000000566:  11 D0                adc   ax, dx
-0x0000000000000568:  89 46 F4             mov   word ptr [bp - 0xc], ax
-0x000000000000056b:  26 8B 57 02          mov   dx, word ptr es:[bx + 2]
-0x000000000000056f:  26 8B 07             mov   ax, word ptr es:[bx]
-0x0000000000000572:  8B 5E F8             mov   bx, word ptr [bp - 8]
-0x0000000000000575:  B1 0A                mov   cl, 0xa
-0x0000000000000577:  D3 E2                shl   dx, cl
-0x0000000000000579:  D3 C0                rol   ax, cl
-0x000000000000057b:  31 C2                xor   dx, ax
-0x000000000000057d:  81 E0 00 FC          and   ax, 0xfc00
-0x0000000000000581:  31 C2                xor   dx, ax
-0x0000000000000583:  E9 43 FF             jmp   0x4c9
-0x0000000000000586:  EB 46                jmp   0x5ce
-0x0000000000000588:  B8 16 31             mov   ax, FINESINE_SEGMENT
-0x000000000000058b:  8D BF 00 20          lea   di, [bx + 0x2000]
-0x000000000000058f:  8E C0                mov   es, ax
-0x0000000000000591:  26 8B 05             mov   ax, word ptr es:[di]
-0x0000000000000594:  26 8B 55 02          mov   dx, word ptr es:[di + 2]
-0x0000000000000598:  8B 7E F6             mov   di, word ptr [bp - 0xa]
-0x000000000000059b:  B1 0B                mov   cl, 0xb
-0x000000000000059d:  D3 E2                shl   dx, cl
-0x000000000000059f:  D3 C0                rol   ax, cl
-0x00000000000005a1:  31 C2                xor   dx, ax
-0x00000000000005a3:  81 E0 00 F8          and   ax, 0xf800
-0x00000000000005a7:  31 C2                xor   dx, ax
-0x00000000000005a9:  01 C7                add   di, ax
-0x00000000000005ab:  8B 46 FC             mov   ax, word ptr [bp - 4]
-0x00000000000005ae:  11 D0                adc   ax, dx
-0x00000000000005b0:  89 46 F4             mov   word ptr [bp - 0xc], ax
-0x00000000000005b3:  26 8B 57 02          mov   dx, word ptr es:[bx + 2]
-0x00000000000005b7:  26 8B 07             mov   ax, word ptr es:[bx]
-0x00000000000005ba:  8B 5E F8             mov   bx, word ptr [bp - 8]
-0x00000000000005bd:  B1 0B                mov   cl, 0xb
-0x00000000000005bf:  D3 E2                shl   dx, cl
-0x00000000000005c1:  D3 C0                rol   ax, cl
-0x00000000000005c3:  31 C2                xor   dx, ax
-0x00000000000005c5:  81 E0 00 F8          and   ax, 0xf800
-0x00000000000005c9:  31 C2                xor   dx, ax
-0x00000000000005cb:  E9 FB FE             jmp   0x4c9
-0x00000000000005ce:  B8 16 31             mov   ax, FINESINE_SEGMENT
-0x00000000000005d1:  8D BF 00 20          lea   di, [bx + 0x2000]
-0x00000000000005d5:  8E C0                mov   es, ax
-0x00000000000005d7:  26 8B 05             mov   ax, word ptr es:[di]
-0x00000000000005da:  26 8B 55 02          mov   dx, word ptr es:[di + 2]
-0x00000000000005de:  B1 06                mov   cl, 6
-0x00000000000005e0:  D3 E2                shl   dx, cl
-0x00000000000005e2:  D3 C0                rol   ax, cl
-0x00000000000005e4:  31 C2                xor   dx, ax
-0x00000000000005e6:  81 E0 C0 FF          and   ax, 0xffc0
-0x00000000000005ea:  31 C2                xor   dx, ax
-0x00000000000005ec:  26 03 05             add   ax, word ptr es:[di]
-0x00000000000005ef:  26 13 55 02          adc   dx, word ptr es:[di + 2]
-0x00000000000005f3:  8B 7E F6             mov   di, word ptr [bp - 0xa]
-0x00000000000005f6:  01 C7                add   di, ax
-0x00000000000005f8:  8B 46 FC             mov   ax, word ptr [bp - 4]
-0x00000000000005fb:  11 D0                adc   ax, dx
-0x00000000000005fd:  89 7E F2             mov   word ptr [bp - 0xe], di
-0x0000000000000600:  89 46 F4             mov   word ptr [bp - 0xc], ax
-0x0000000000000603:  26 8B 57 02          mov   dx, word ptr es:[bx + 2]
-0x0000000000000607:  26 8B 07             mov   ax, word ptr es:[bx]
-0x000000000000060a:  89 DF                mov   di, bx
-0x000000000000060c:  B1 06                mov   cl, 6
-0x000000000000060e:  D3 E2                shl   dx, cl
-0x0000000000000610:  D3 C0                rol   ax, cl
-0x0000000000000612:  31 C2                xor   dx, ax
-0x0000000000000614:  81 E0 C0 FF          and   ax, 0xffc0
-0x0000000000000618:  31 C2                xor   dx, ax
-0x000000000000061a:  26 8B 1F             mov   bx, word ptr es:[bx]
-0x000000000000061d:  01 C3                add   bx, ax
-0x000000000000061f:  26 8B 45 02          mov   ax, word ptr es:[di + 2]
-0x0000000000000623:  11 D0                adc   ax, dx
-0x0000000000000625:  8B 56 F8             mov   dx, word ptr [bp - 8]
-0x0000000000000628:  01 DA                add   dx, bx
-0x000000000000062a:  89 56 EE             mov   word ptr [bp - 0x12], dx
-0x000000000000062d:  8B 56 FA             mov   dx, word ptr [bp - 6]
-0x0000000000000630:  11 C2                adc   dx, ax
-0x0000000000000632:  89 56 F0             mov   word ptr [bp - 0x10], dx
-0x0000000000000635:  E9 A1 FE             jmp   0x4d9
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 014h
+push  ax
+mov   di, dx
+mov   si, bx
+mov   bx, SIZEOF_THINKER_T
+sub   ax, (_thinkerlist + 4)
+xor   dx, dx
+div   bx
+imul  bx, ax, SIZEOF_MOBJ_POS_T
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
+mov   word ptr [bp - 2], ax
+mov   ax, word ptr es:[bx]
+mov   word ptr [bp - 0Ah], ax
+mov   ax, word ptr es:[bx + 2]
+mov   word ptr [bp - 4], ax
+mov   ax, word ptr es:[bx + 4]
+mov   word ptr [bp - 014h], bx
+mov   word ptr [bp - 8], ax
+mov   ax, word ptr es:[bx + 6]
+mov   bx, word ptr [bp - 016h]
+mov   word ptr [bp - 6], ax
+mov   ax, word ptr [bp + 0Eh]
+mov   word ptr ds:[_shootthing], bx
+mov   bx, di
+mov   word ptr ds:[_la_damage], ax
+shl   bx, 2
+cmp   si, CHAINSAWRANGE
+jb    label_1
+jmp   label_2
+label_1:
+cmp   si, MELEERANGE
+jne   label_3
+mov   ax, FINESINE_SEGMENT
+lea   di, [bx + 02000h]
+mov   es, ax
+mov   ax, word ptr es:[di]
+mov   dx, word ptr es:[di + 2]
+mov   di, word ptr [bp - 0Ah]
+mov   cl, 6
+shl   dx, cl
+rol   ax, cl
+xor   dx, ax
+and   ax, 0FFC0h
+xor   dx, ax
+add   di, ax
+mov   ax, word ptr [bp - 4]
+adc   ax, dx
+mov   word ptr [bp - 0Ch], ax
+mov   dx, word ptr es:[bx + 2]
+mov   ax, word ptr es:[bx]
+mov   bx, word ptr [bp - 8]
+mov   cl, 6
+shl   dx, cl
+rol   ax, cl
+xor   dx, ax
+and   ax, 0FFC0h
+xor   dx, ax
+label_6:
+mov   word ptr [bp - 0Eh], di
+add   bx, ax
+mov   ax, word ptr [bp - 6]
+adc   ax, dx
+mov   word ptr [bp - 012h], bx
+mov   word ptr [bp - 010h], ax
+label_3:
+mov   es, word ptr [bp - 2]
+mov   bx, word ptr [bp - 014h]
+push  OFFSET PTR_ShootTraverse_
+mov   cx, word ptr [bp - 6]
+push  (PT_ADDLINES OR PT_ADDTHINGS)
+mov   dx, word ptr es:[bx + 8]
+mov   ax, word ptr es:[bx + 0Ah]
+mov   bx, word ptr [bp - 016h]
+push  word ptr [bp - 010h]
+mov   word ptr ds:[_shootz+0], dx
+mov   dx, word ptr [bx + 0Ch]
+sar   dx, 1
+push  word ptr [bp - 012h]
+add   dx, 8
+push  word ptr [bp - 0Ch]
+add   ax, dx
+mov   bx, word ptr [bp - 8]
+mov   word ptr ds:[_shootz+2], ax
+mov   ax, word ptr [bp + 0Ah]
+push  word ptr [bp - 0Eh]
+mov   word ptr ds:[_aimslope+0], ax
+mov   ax, word ptr [bp + 0Ch]
+mov   dx, word ptr [bp - 4]
+mov   word ptr ds:[_aimslope+2], ax
+mov   ax, word ptr [bp - 0Ah]
+mov   word ptr ds:[_attackrange16], si
+call  P_PathTraverse_
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   6
+label_2:
+jbe   jump_to_label_4
+cmp   si, MISSILERANGE
+je    label_5
+cmp   si, HALFMISSILERANGE
+jne   label_3
+mov   ax, FINESINE_SEGMENT
+lea   di, [bx + 02000h]
+mov   es, ax
+mov   ax, word ptr es:[di]
+mov   dx, word ptr es:[di + 2]
+mov   di, word ptr [bp - 0Ah]
+mov   cl, 0Ah
+shl   dx, cl
+rol   ax, cl
+xor   dx, ax
+and   ax, 0FC00h
+xor   dx, ax
+add   di, ax
+mov   ax, word ptr [bp - 4]
+adc   ax, dx
+mov   word ptr [bp - 0Ch], ax
+mov   dx, word ptr es:[bx + 2]
+mov   ax, word ptr es:[bx]
+mov   bx, word ptr [bp - 8]
+mov   cl, 0Ah
+shl   dx, cl
+rol   ax, cl
+xor   dx, ax
+and   ax, 0FC00h
+xor   dx, ax
+jmp   label_6
+jump_to_label_4:
+jmp   label_4
+label_5:
+mov   ax, FINESINE_SEGMENT
+lea   di, [bx + 02000h]
+mov   es, ax
+mov   ax, word ptr es:[di]
+mov   dx, word ptr es:[di + 2]
+mov   di, word ptr [bp - 0Ah]
+mov   cl, 0Bh
+shl   dx, cl
+rol   ax, cl
+xor   dx, ax
+and   ax, 0F800h
+xor   dx, ax
+add   di, ax
+mov   ax, word ptr [bp - 4]
+adc   ax, dx
+mov   word ptr [bp - 0Ch], ax
+mov   dx, word ptr es:[bx + 2]
+mov   ax, word ptr es:[bx]
+mov   bx, word ptr [bp - 8]
+mov   cl, 0Bh
+shl   dx, cl
+rol   ax, cl
+xor   dx, ax
+and   ax, 0F800h
+xor   dx, ax
+jmp   label_6
+label_4:
+mov   ax, FINESINE_SEGMENT
+lea   di, [bx + 02000h]
+mov   es, ax
+mov   ax, word ptr es:[di]
+mov   dx, word ptr es:[di + 2]
+mov   cl, 6
+shl   dx, cl
+rol   ax, cl
+xor   dx, ax
+and   ax, 0FFC0h
+xor   dx, ax
+add   ax, word ptr es:[di]
+adc   dx, word ptr es:[di + 2]
+mov   di, word ptr [bp - 0Ah]
+add   di, ax
+mov   ax, word ptr [bp - 4]
+adc   ax, dx
+mov   word ptr [bp - 0Eh], di
+mov   word ptr [bp - 0Ch], ax
+mov   dx, word ptr es:[bx + 2]
+mov   ax, word ptr es:[bx]
+mov   di, bx
+mov   cl, 6
+shl   dx, cl
+rol   ax, cl
+xor   dx, ax
+and   ax, 0FFC0h
+xor   dx, ax
+mov   bx, word ptr es:[bx]
+add   bx, ax
+mov   ax, word ptr es:[di + 2]
+adc   ax, dx
+mov   dx, word ptr [bp - 8]
+add   dx, bx
+mov   word ptr [bp - 012h], dx
+mov   dx, word ptr [bp - 6]
+adc   dx, ax
+mov   word ptr [bp - 010h], dx
+jmp   label_3
 
 ENDP
+
+
+COMMENT  @
 
 PROC P_UseLines_ NEAR
 PUBLIC P_UseLines_
@@ -7116,7 +7125,7 @@ PUBLIC P_UseLines_
 0x0000000000000665:  B8 16 31             mov   ax, FINESINE_SEGMENT
 0x0000000000000668:  C1 E3 02             shl   bx, 2
 0x000000000000066b:  8E C0                mov   es, ax
-0x000000000000066d:  8D BF 00 20          lea   di, [bx + 0x2000]
+0x000000000000066d:  8D BF 00 20          lea   di, [bx + 02000h]
 0x0000000000000671:  89 56 FE             mov   word ptr [bp - 2], dx
 0x0000000000000674:  26 8B 05             mov   ax, word ptr es:[di]
 0x0000000000000677:  26 8B 55 02          mov   dx, word ptr es:[di + 2]
@@ -7304,7 +7313,7 @@ PUBLIC P_RadiusAttack_
 0x000000000000080a:  29 D0                sub   ax, dx
 0x000000000000080c:  2B 04                sub   ax, word ptr [si]
 0x000000000000080e:  BE CC 00             mov   si, 0xcc
-0x0000000000000811:  8B 7E F6             mov   di, word ptr [bp - 0xa]
+0x0000000000000811:  8B 7E F6             mov   di, word ptr [bp - 0Ah]
 0x0000000000000814:  89 3C                mov   word ptr [si], di
 0x0000000000000816:  BE D0 00             mov   si, 0xd0
 0x0000000000000819:  C1 F8 07             sar   ax, 7

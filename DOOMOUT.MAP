@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/30 16:04:46
+Created on:       25/05/30 16:12:59
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -63,8 +63,8 @@ p_enemy_TEXT           CODE           AUTO           0a86:2860       00002625
 p_floor_TEXT           CODE           AUTO           0a86:4e90       000007f6
 p_inter_TEXT           CODE           AUTO           0a86:5690       00000c7f
 p_lights_TEXT          CODE           AUTO           0a86:6310       000003ed
-p_map_TEXT             CODE           AUTO           0a86:6700       00000553
-P_MATH_TEXT            CODE           AUTO           0a86:6c54       00001f87
+p_map_TEXT             CODE           AUTO           0a86:6700       00000341
+P_MATH_TEXT            CODE           AUTO           0a86:6a42       00002191
 p_plats_TEXT           CODE           AUTO           0a86:8be0       00000419
 p_pspr_TEXT            CODE           AUTO           0a86:9000       00000ae5
 p_spec_TEXT            CODE           AUTO           0a86:9af0       000011c8
@@ -1023,45 +1023,45 @@ Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0a86:6642      T_Glow_
 0a86:66a0      P_SpawnGlowingLight_
 Module: p_map.obj(C:\REALDOOM\p_map.c)
-0a86:6700      P_LineAttack_
-0a86:6912      P_UseLines_
-0a86:69aa+     PIT_RadiusAttack_
-0a86:6a8e      P_RadiusAttack_
-0a86:6b1c+     PIT_ChangeSector_
-0a86:6c0c      P_ChangeSector_
+0a86:6700      P_UseLines_
+0a86:6798+     PIT_RadiusAttack_
+0a86:687c      P_RadiusAttack_
+0a86:690a+     PIT_ChangeSector_
+0a86:69fa      P_ChangeSector_
 Module: p_math.obj(p_math.ASM)
-0a86:7cd2*     PIT_CheckThing_
-0a86:7a9c*     P_HitSlideLine_
-0a86:70cd      P_SetThingPosition_
-0a86:7426*     P_TraverseIntercepts_
-0a86:71ae      R_PointInSubsector_
-0a86:6f4d*     P_InterceptVector_
-0a86:7e91      P_CheckPosition_
-0a86:8a4e      P_AimLineAttack_
-0a86:71eb*     P_BlockLinesIterator_
-0a86:7387*     PIT_AddThingIntercepts_
-0a86:88b6*     PIT_StompThing_
-0a86:6d30*     P_PointOnLineSide_
-0a86:828d*     P_GetAttackRangeMult_
-0a86:7a30      DoBlockmapLoop_
-0a86:6fcd      P_LineOpening_
-0a86:72ae*     PIT_AddLineIntercepts_
-0a86:7001      P_UnsetThingPosition_
-0a86:7499      P_PathTraverse_
-0a86:8394      PTR_ShootTraverse_
-0a86:6cf3      P_AproxDistance_
-0a86:7769*     PTR_SlideTraverse_
-0a86:82d5      P_ThingHeightClip_
-0a86:6e79*     P_PointOnDivlineSide_
-0a86:6dba*     P_BoxOnLineSide_
-0a86:7b8e*     PIT_CheckLine_
-0a86:76c3      PTR_UseTraverse_
-0a86:6c54*     R_PointOnSide_
-0a86:893a      P_TeleportMove_
-0a86:804b      P_SlideMove_
-0a86:725b      P_BlockThingsIterator_
-0a86:7876      P_TryMove_
-0a86:86d0*     PTR_AimTraverse_
+0a86:7ac0*     PIT_CheckThing_
+0a86:788a*     P_HitSlideLine_
+0a86:6ebb      P_SetThingPosition_
+0a86:7214*     P_TraverseIntercepts_
+0a86:6f9c      R_PointInSubsector_
+0a86:6d3b*     P_InterceptVector_
+0a86:7c7f      P_CheckPosition_
+0a86:883c      P_AimLineAttack_
+0a86:6fd9*     P_BlockLinesIterator_
+0a86:7175*     PIT_AddThingIntercepts_
+0a86:89c9      P_LineAttack_
+0a86:86a4*     PIT_StompThing_
+0a86:6b1e*     P_PointOnLineSide_
+0a86:807b*     P_GetAttackRangeMult_
+0a86:781e      DoBlockmapLoop_
+0a86:6dbb      P_LineOpening_
+0a86:709c*     PIT_AddLineIntercepts_
+0a86:6def      P_UnsetThingPosition_
+0a86:7287      P_PathTraverse_
+0a86:8182*     PTR_ShootTraverse_
+0a86:6ae1      P_AproxDistance_
+0a86:7557*     PTR_SlideTraverse_
+0a86:80c3      P_ThingHeightClip_
+0a86:6c67*     P_PointOnDivlineSide_
+0a86:6ba8*     P_BoxOnLineSide_
+0a86:797c*     PIT_CheckLine_
+0a86:74b1      PTR_UseTraverse_
+0a86:6a42*     R_PointOnSide_
+0a86:8728      P_TeleportMove_
+0a86:7e39      P_SlideMove_
+0a86:7049      P_BlockThingsIterator_
+0a86:7664      P_TryMove_
+0a86:84be*     PTR_AimTraverse_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0a86:8be8      T_PlatRaise_
 0a86:8d0c      EV_DoPlat_
