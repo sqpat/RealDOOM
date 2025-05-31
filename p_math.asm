@@ -6612,13 +6612,30 @@ PROC P_AimLineAttack_ NEAR
 PUBLIC P_AimLineAttack_
 
 
+; bp - 2     MOBJPOSLIST_6800_SEGMENT
+; bp - 4     x hi
+; bp - 6     y lo
+; bp - 8     x lo
+; bp - 0Ah   y hi
+; bp - 0Ch   
+; bp - 0Eh   
+; bp - 010h  
+; bp - 012h  
+; bp - 014h  mobjpos offset
+; bp - 016h  thing ptr (ax arg)
+
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
 sub   sp, 014h
-push  ax
+push  ax		; bp - 016h
+
+;    shootthing = t1;
+mov   word ptr ds:[_shootthing], ax
+;	mobj_pos_t __far* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
+
 mov   di, dx
 mov   si, bx
 mov   bx, SIZEOF_THINKER_T
@@ -6626,9 +6643,11 @@ sub   ax, (_thinkerlist + 4)
 xor   dx, dx
 div   bx
 imul  bx, ax, SIZEOF_MOBJ_POS_T
-mov   ax, word ptr [bp - 016h]
+
+;	 x = t1_pos->x;
+; 	 y = t1_pos->y;
+
 mov   word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
-mov   word ptr ds:[_shootthing], ax
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[bx]
 mov   word ptr [bp - 8], ax
@@ -6641,18 +6660,20 @@ mov   ax, word ptr es:[bx + 6]
 mov   bx, di
 mov   word ptr [bp - 6], ax
 shl   bx, 2
-cmp   si, CHAINSAWRANGE
-jb    label_1
-jmp   label_3
-label_1:
-cmp   si, MELEERANGE
-jne   label_5
-mov   ax, FINESINE_SEGMENT
-lea   di, [bx + 02000h]
-mov   es, ax
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
+
+mov   cx, FINESINE_SEGMENT
+mov   es, cx
+les   ax, dword ptr es:[bx+02000h] ; cosine
+mov   dx, es
+mov   es, cx
 mov   di, word ptr [bp - 8]
+
+
+cmp   si, CHAINSAWRANGE
+jb    aim_line_is_melee  ; 41 bytes..
+jmp   aim_line_not_melee
+aim_line_is_melee:
+
 mov   cl, 6
 shl   dx, cl
 rol   ax, cl
@@ -6680,7 +6701,8 @@ mov   ax, word ptr [bp - 6]
 adc   ax, dx
 mov   word ptr [bp - 012h], bx
 mov   word ptr [bp - 010h], ax
-label_5:
+
+
 mov   es, word ptr [bp - 2]
 mov   bx, word ptr [bp - 014h]
 push  OFFSET PTR_AimTraverse_
@@ -6717,7 +6739,7 @@ mov   word ptr ds:[_attackrange16], si
 call  P_PathTraverse_
 mov   ax, word ptr ds:[_linetarget]
 test  ax, ax
-je    jump_to_exit_aim_lineattack_return_0
+je    exit_aim_lineattack_return_0
 mov   ax, word ptr ds:[_aimslope+0]
 mov   dx, word ptr ds:[_aimslope+2]
 LEAVE_MACRO 
@@ -6725,13 +6747,8 @@ pop   di
 pop   si
 pop   cx
 ret   
-label_3:
-ja    label_4
-mov   ax, FINESINE_SEGMENT
-lea   di, [bx + 02000h] ; cosine offset
-mov   es, ax
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
+aim_line_not_melee:
+ja    aim_line_not_chainsaw
 mov   cl, 6
 shl   dx, cl
 rol   ax, cl
@@ -6759,17 +6776,16 @@ add   ax, word ptr es:[bx]
 mov   bx, word ptr [bp - 0Ah]
 adc   dx, word ptr es:[di + 2]
 jmp   label_2
-jump_to_exit_aim_lineattack_return_0:
-jmp   exit_aim_lineattack_return_0
-label_4:
+exit_aim_lineattack_return_0:
+xor   dx, dx
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   
+aim_line_not_chainsaw:
 cmp   si, MISSILERANGE
-jne   label_6
-mov   ax, FINESINE_SEGMENT
-lea   di, [bx + 02000h]
-mov   es, ax
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
-mov   di, word ptr [bp - 8]
+jne   aim_line_is_halfmissile
 mov   cl, 0Bh
 shl   dx, cl
 rol   ax, cl
@@ -6790,17 +6806,7 @@ xor   dx, ax
 and   ax, 0F800h
 xor   dx, ax
 jmp   label_7
-label_6:
-cmp   si, HALFMISSILERANGE
-je    label_8
-jmp   label_5
-label_8:
-mov   ax, FINESINE_SEGMENT
-lea   di, [bx + 02000h]
-mov   es, ax
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
-mov   di, word ptr [bp - 8]
+aim_line_is_halfmissile:
 mov   cl, 0Ah
 shl   dx, cl
 rol   ax, cl
@@ -6821,13 +6827,7 @@ xor   dx, ax
 and   ax, 0FC00h
 xor   dx, ax
 jmp   label_7
-exit_aim_lineattack_return_0:
-xor   dx, dx
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-ret   
+
 
 ENDP
 
