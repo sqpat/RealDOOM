@@ -5924,23 +5924,30 @@ ENDP
 PROC PTR_AimTraverse_ NEAR
 PUBLIC PTR_AimTraverse_
 
+; bp - 2 INTERCEPTS_SEGMENT
+; bp - 4 unused
+; bp - 6 
+
+; bp - 01Ah SECTORS_SEGMENT
+; bp - 01Ch SECTORS_SEGMENT
+
 push  bx
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 01Ch
+push  dx       ; bp - 2
+sub   sp, 01Ah
 mov   si, ax
-mov   word ptr [bp - 2], dx
 mov   es, dx
 cmp   byte ptr es:[si + 4], 0
-je    jump_to_label_1
-mov   ax, LINEFLAGSLIST_SEGMENT
 mov   bx, word ptr es:[si + 5]
+je    jump_to_aimtraverse_is_not_a_line
+mov   ax, LINEFLAGSLIST_SEGMENT
 mov   es, ax
-test  byte ptr es:[bx], 4
-jne   label_2
+test  byte ptr es:[bx], ML_TWOSIDED
+jne   aimtraverse_is_a_line
 exit_aimtraverse_return_0:
 xor   al, al
 LEAVE_MACRO 
@@ -5949,35 +5956,36 @@ pop   si
 pop   cx
 pop   bx
 ret   
-jump_to_label_1:
-jmp   label_1
-label_2:
-mov   ax, LINES_SEGMENT
-mov   es, dx
-mov   word ptr [bp - 4], LINES_PHYSICS_SEGMENT
-mov   bx, word ptr es:[si + 5]
-mov   di, word ptr es:[si + 5]
-mov   es, word ptr [bp - 4]
-SHIFT_MACRO shl   di 4
+jump_to_aimtraverse_is_not_a_line:
+jmp   aimtraverse_is_not_a_line
+aimtraverse_is_a_line:
+mov   es, dx	; intercept_segment
 SHIFT_MACRO shl   bx 2
-mov   cx, word ptr es:[di + 0Ch]
-mov   dx, word ptr es:[di + 0Ah]
+mov   di, bx
+SHIFT_MACRO shl   di 2
+
+mov   word ptr [bp - 0Ch], di
+mov   ax, LINES_SEGMENT
 mov   es, ax
 mov   ax, word ptr es:[bx + 2]
-mov   bx, cx
+
+mov   cx, LINES_PHYSICS_SEGMENT
+mov   es, cx
+les   dx, dword ptr es:[di + 0Ah]
+mov   bx, es
 call  P_LineOpening_
 mov   ax, word ptr ds:[_lineopening+2]
-mov   word ptr [bp - 0Ch], di
 cmp   ax, word ptr ds:[_lineopening+0]
 jge   exit_aimtraverse_return_0
 mov   es, word ptr [bp - 2]
-mov   word ptr [bp - 01Ah], SECTORS_SEGMENT
 mov   ax, word ptr ds:[_attackrange16]
-mov   bx, word ptr es:[si]
-mov   cx, word ptr es:[si + 2]
+les   bx, dword ptr es:[si]
+mov   cx, es
+mov   word ptr [bp - 01Ah], SECTORS_SEGMENT
 mov   word ptr [bp - 01Ch], SECTORS_SEGMENT
 call  P_GetAttackRangeMult_
-mov   es, word ptr [bp - 4]
+mov   cx, LINES_PHYSICS_SEGMENT
+mov   es, cx
 mov   si, ax
 mov   cx, word ptr es:[di + 0Ah]
 mov   bx, word ptr es:[di + 0Ch]
@@ -6014,7 +6022,8 @@ label_4:
 mov   word ptr [bx], ax
 mov   word ptr [bx + 2], dx
 label_3:
-mov   es, word ptr [bp - 4]
+mov   cx, LINES_PHYSICS_SEGMENT
+mov   es, cx
 mov   bx, word ptr [bp - 0Ch]
 mov   cx, SECTORS_SEGMENT
 mov   di, word ptr [bp - 0Ch]
@@ -6069,13 +6078,13 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_1:
-imul  ax, word ptr es:[si + 5], SIZEOF_THINKER_T
+aimtraverse_is_not_a_line:
+imul  ax, bx, SIZEOF_THINKER_T
 add   ax, (_thinkerlist + 4)
 mov   word ptr [bp - 8], ax
 cmp   ax, word ptr ds:[_shootthing]
 je    exit_aimtraverse_return_1_2
-imul  di, word ptr es:[si + 5], SIZEOF_MOBJ_POS_T
+imul  di, bx, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   word ptr [bp - 6], ax
 mov   es, ax
