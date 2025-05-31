@@ -5924,6 +5924,16 @@ PUBLIC PTR_AimTraverse_
 ; bp - 4 unused
 ; bp - 6 unused
 ; bp - 8 thinker near ptr
+; bp - 0Ah thingtopslope
+; bp - 0Ch 
+; bp - 0Eh 
+
+
+; bp - 010h thingtopslope
+
+; bp - 012h unused
+; bp - 014h unused
+
 ; bp - 016h attack range high
 ; bp - 018h mobjpos ptr
 
@@ -6137,37 +6147,55 @@ mov   es, ax
 mov   word ptr [bp - 018h], di
 test  byte ptr es:[di + 014h], MF_SHOOTABLE
 je    exit_aimtraverse_return_1
+
+
+;	dist = P_GetAttackRangeMult(attackrange16, in->frac);
+
 mov   es, dx
 mov   ax, word ptr ds:[_attackrange16]
-mov   bx, word ptr es:[si]
-mov   cx, word ptr es:[si + 2]
+les   bx, dword ptr es:[si]
+mov   cx, es
 call  P_GetAttackRangeMult_
-les   bx, dword ptr [bp - 8]
-mov   word ptr [bp - 012h], dx
-mov   word ptr [bp - 014h], ax
+
+;    thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
+
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
-mov   cx, word ptr [bp - 012h]
-mov   ax, word ptr es:[di + 8]
-mov   dx, word ptr es:[di + 0Ah]
-add   ax, word ptr [bx + 0Ah]
-adc   dx, word ptr [bx + 0Ch]
-mov   bx, word ptr [bp - 014h]
+
+mov   cx, dx
+xchg  ax, bx
+
+push  bx
+push  cx  ; need these twice. grab later...
+
+les   ax, dword ptr es:[di + 8]
+mov   dx, es
+mov   si, word ptr [bp - 8]
+
+add   ax, word ptr [si + 0Ah]
+adc   dx, word ptr [si + 0Ch]
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
-mov   bx, OFFSET _bottomslope
-mov   word ptr [bp - 0Ah], ax
-mov   si, dx
+
+mov   word ptr [bp - 0Ah], ax   ; store thingtopslope
 mov   word ptr [bp - 010h], ax
-mov   ax, word ptr [bx + 2]
+
+
+;	if (thingtopslope < bottomslope) {
+;		return true;			// shot over the thing
+;	}
+
+
+mov   si, dx
+mov   ax, word ptr ds:[_bottomslope + 2]
 mov   word ptr [bp - 0Eh], dx
 cmp   dx, ax
-jl    exit_aimtraverse_return_1_3
-jne   label_9
+jl    exit_aimtraverse_return_1
+jne   done_checking_thingtopslope
 mov   ax, word ptr [bp - 0Ah]
-cmp   ax, word ptr [bx]
-jae   label_9
+cmp   ax, word ptr ds:[_bottomslope]
+jae   done_checking_thingtopslope
 exit_aimtraverse_return_1_3:
 mov   al, 1
 LEAVE_MACRO 
@@ -6177,14 +6205,18 @@ pop   cx
 pop   bx
 ret   
 
-label_9:
+done_checking_thingtopslope:
+
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
 
+pop   cx
+pop   bx  ; get dist again
+
 les   ax, dword ptr es:[di + 8]
 mov   dx, es
-les   bx, dword ptr [bp - 014h]
-mov   cx, es
+
+
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
