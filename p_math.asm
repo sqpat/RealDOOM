@@ -5740,9 +5740,9 @@ is_not_a_line:
 ; bx has thingnum
 imul  dx, bx, SIZEOF_THINKER_T
 add   dx, (_thinkerlist + 4)
-mov   word ptr [bp - 0Eh], dx
 cmp   dx, word ptr ds:[_shootthing]
 je    exit_shoottraverse_return_1
+mov   word ptr [bp - 0Eh], dx
 imul  bx, bx, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   word ptr [bp - 0Ch], bx
@@ -5790,12 +5790,8 @@ cmp   dx, word ptr ds:[_aimslope+2]
 jl    exit_shoottraverse_return_1
 jne   did_not_shoot_over
 cmp   ax, word ptr ds:[_aimslope+0]
-jae   did_not_shoot_over
-exit_shoottraverse_return_1_2:
-LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   al, 1
-ret   
+jnae   exit_shoottraverse_return_1
+
 did_not_shoot_over:
 les   bx, dword ptr [bp - 0Ch]
 les   ax, dword ptr es:[bx + 8]
@@ -5806,10 +5802,10 @@ sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
 cmp   dx, word ptr ds:[_aimslope+2]
-jg    exit_shoottraverse_return_1_2
+jg    exit_shoottraverse_return_1
 jne   hit_thing
 cmp   ax, word ptr ds:[_aimslope+0]
-ja    exit_shoottraverse_return_1_2
+ja    exit_shoottraverse_return_1
 
 hit_thing:
 mov   es, word ptr [bp - 2]
@@ -5926,9 +5922,11 @@ PUBLIC PTR_AimTraverse_
 
 ; bp - 2 INTERCEPTS_SEGMENT
 ; bp - 4 unused
-; bp - 6 
-
+; bp - 6 unused
+; bp - 8 thinker near ptr
 ; bp - 016h attack range high
+; bp - 018h mobjpos ptr
+
 ; bp - 01Ah backsector offset
 ; bp - 01Ch frontsector offset
 
@@ -6095,17 +6093,20 @@ aimtraverse_slope_less_than_topslope:
 mov   word ptr ds:[_topslope + 0], ax
 mov   word ptr ds:[_topslope + 2], dx
 aimtraverse_ceilingheights_equal:
-mov   si, OFFSET _topslope
-mov   bx, OFFSET _bottomslope
-mov   ax, word ptr [si + 2]
-mov   dx, word ptr [si]
-cmp   ax, word ptr [bx + 2]
-jge   label_7
+
+;		if (topslope <= bottomslope) {
+;			return false;		// stop
+;		}
+
+les   dx, dword ptr ds:[_topslope + 0]
+mov   ax, es
+cmp   ax, word ptr ds:[_bottomslope + 2]
+jge   continue_slope_comparison
 jump_to_exit_aimtraverse_return_0:
 jmp   exit_aimtraverse_return_0
-label_7:
+continue_slope_comparison:
 jne   exit_aimtraverse_return_1
-cmp   dx, word ptr [bx]
+cmp   dx, word ptr ds:[_bottomslope + 0]
 jbe   jump_to_exit_aimtraverse_return_0
 exit_aimtraverse_return_1:
 mov   al, 1
@@ -6115,28 +6116,27 @@ pop   si
 pop   cx
 pop   bx
 ret   
+
 aimtraverse_is_not_a_line:
+
+
+;    // shoot a thing
+;	th = (mobj_t __near*)&thinkerlist[in->d.thingRef].data;
+;	if (th == shootthing) {
+;		return true;			// can't shoot self
+;	}
+
 imul  ax, bx, SIZEOF_THINKER_T
 add   ax, (_thinkerlist + 4)
 mov   word ptr [bp - 8], ax
 cmp   ax, word ptr ds:[_shootthing]
-je    exit_aimtraverse_return_1_2
+je    exit_aimtraverse_return_1
 imul  di, bx, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   word ptr [bp - 6], ax
 mov   es, ax
 mov   word ptr [bp - 018h], di
-test  byte ptr es:[di + 014h], 4
-jne   label_8
-exit_aimtraverse_return_1_2:
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-label_8:
+test  byte ptr es:[di + 014h], MF_SHOOTABLE
+je    exit_aimtraverse_return_1
 mov   es, dx
 mov   ax, word ptr ds:[_attackrange16]
 mov   bx, word ptr es:[si]
@@ -6145,6 +6145,8 @@ call  P_GetAttackRangeMult_
 les   bx, dword ptr [bp - 8]
 mov   word ptr [bp - 012h], dx
 mov   word ptr [bp - 014h], ax
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   es, cx
 mov   cx, word ptr [bp - 012h]
 mov   ax, word ptr es:[di + 8]
 mov   dx, word ptr es:[di + 0Ah]
@@ -6174,61 +6176,68 @@ pop   si
 pop   cx
 pop   bx
 ret   
+
 label_9:
-mov   es, word ptr [bp - 6]
-mov   bx, word ptr [bp - 014h]
-mov   cx, word ptr [bp - 012h]
-mov   ax, word ptr es:[di + 8]
-mov   dx, word ptr es:[di + 0Ah]
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   es, cx
+
+les   ax, dword ptr es:[di + 8]
+mov   dx, es
+les   bx, dword ptr [bp - 014h]
+mov   cx, es
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
-mov   bx, OFFSET _topslope
-mov   cx, ax
+mov   cx, ax   ; todo clean up this storage
 mov   di, ax
 mov   ax, dx
-cmp   dx, word ptr [bx + 2]
+cmp   dx, word ptr ds:[_topslope + 2]
 jg    exit_aimtraverse_return_1_3
 jne   label_10
-cmp   cx, word ptr [bx]
+cmp   cx, word ptr ds:[_topslope + 0]
 ja    exit_aimtraverse_return_1_3
 label_10:
 mov   dx, word ptr [bp - 0Ah]
-cmp   si, word ptr [bx + 2]
+cmp   si, word ptr ds:[_topslope + 2]
 jg    label_11
 jne   label_12
-cmp   dx, word ptr [bx]
+cmp   dx, word ptr ds:[_topslope + 0]
 jbe   label_12
 label_11:
-mov   dx, word ptr [bx]
+mov   dx, word ptr ds:[_topslope + 0]
 mov   word ptr [bp - 010h], dx
-mov   dx, word ptr [bx + 2]
+mov   dx, word ptr ds:[_topslope + 2]
 mov   word ptr [bp - 0Eh], dx
 label_12:
-mov   bx, OFFSET _bottomslope
-cmp   ax, word ptr [bx + 2]
+
+cmp   ax, word ptr ds:[_bottomslope + 2]
 jl    label_13
 jne   label_14
-cmp   di, word ptr [bx]
+cmp   di, word ptr ds:[_bottomslope + 0]
 jae   label_14
 label_13:
-mov   di, word ptr [bx]
-mov   ax, word ptr [bx + 2]
+mov   di, word ptr ds:[_bottomslope + 0]
+mov   ax, word ptr ds:[_bottomslope + 2]
 label_14:
-mov   bx, word ptr [bp - 8]
-mov   word ptr ds:[_linetarget], bx
+
+;	aimslope = (thingtopslope+thingbottomslope)>>1;
+;	linetarget = th;
+;	linetarget_pos = th_pos;
+ ;   return false;			// don't go any farther
+
 add   di, word ptr [bp - 010h]
-mov   dx, word ptr [bp - 0Eh]
-adc   dx, ax
-mov   ax, di
-mov   bx, word ptr [bp - 018h]
-sar   dx, 1
-rcr   ax, 1
-mov   word ptr ds:[_linetarget_pos+0], bx
-mov   word ptr ds:[_aimslope+0], ax
-mov   ax, word ptr [bp - 6]
-mov   word ptr ds:[_aimslope+2], dx
-mov   word ptr ds:[_linetarget_pos+2], ax
+adc   ax, word ptr [bp - 0Eh]
+sar   ax, 1
+rcr   di, 1
+mov   word ptr ds:[_aimslope+0], di
+mov   word ptr ds:[_aimslope+2], ax
+mov   ax, word ptr [bp - 8]
+mov   word ptr ds:[_linetarget], ax
+
+mov   ax, word ptr [bp - 018h]
+mov   word ptr ds:[_linetarget_pos+0], ax
+mov   word ptr ds:[_linetarget_pos+2], MOBJPOSLIST_6800_SEGMENT
+
 xor   al, al
 LEAVE_MACRO 
 pop   di
