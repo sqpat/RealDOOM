@@ -6614,13 +6614,13 @@ PUBLIC P_AimLineAttack_
 
 ; bp - 2     MOBJPOSLIST_6800_SEGMENT
 ; bp - 4     x hi
-; bp - 6     y lo
+; bp - 6     y hi
 ; bp - 8     x lo
-; bp - 0Ah   y hi
-; bp - 0Ch   
-; bp - 0Eh   
-; bp - 010h  
-; bp - 012h  
+; bp - 0Ah   y lo
+; bp - 0Ch   x2 hi
+; bp - 0Eh   x2 lo
+; bp - 010h  y2 hi
+; bp - 012h  y2 lo
 ; bp - 014h  mobjpos offset
 ; bp - 016h  thing ptr (ax arg)
 
@@ -6657,85 +6657,115 @@ mov   ax, word ptr es:[bx + 4]
 mov   word ptr [bp - 014h], bx
 mov   word ptr [bp - 0Ah], ax
 mov   ax, word ptr es:[bx + 6]
-mov   bx, di
 mov   word ptr [bp - 6], ax
-shl   bx, 2
+shl   di, 2
+
+;	attackrange16 = distance16;
+mov   word ptr ds:[_attackrange16], si
 
 mov   cx, FINESINE_SEGMENT
 mov   es, cx
-les   ax, dword ptr es:[bx+02000h] ; cosine
+les   ax, dword ptr es:[di+02000h] ; cosine
 mov   dx, es
 mov   es, cx
-mov   di, word ptr [bp - 8]
+les   bx, dword ptr es:[di]
+mov   cx, es
 
+
+; dx:ax is cosine
+; cx:bx is sine
+; di is lookup
 
 cmp   si, CHAINSAWRANGE
-jb    aim_line_is_melee  ; 41 bytes..
+jb    aim_line_is_melee  ; 3C bytes..
 jmp   aim_line_not_melee
 aim_line_is_melee:
 
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FFC0h
-xor   dx, ax
-add   di, ax
-mov   ax, word ptr [bp - 4]
-adc   ax, dx
-mov   word ptr [bp - 0Ch], ax
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx]
-mov   bx, word ptr [bp - 0Ah]
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FFC0h
-xor   dx, ax
-label_7:
-mov   word ptr [bp - 0Eh], di
-label_2:
-add   bx, ax
-mov   ax, word ptr [bp - 6]
-adc   ax, dx
-mov   word ptr [bp - 012h], bx
-mov   word ptr [bp - 010h], ax
+; shift 6
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
+and   al, 0C0h
 
+; shift 6
+sar   cx, 1
+rcr   bx, 1
+sar   cx, 1
+rcr   bx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl
+and   bl, 0C0h
 
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr [bp - 014h]
+aim_line_done_with_switchblock_shift:
+
+; x2.w = x.w +  ...
+
+add   ax, word ptr [bp - 8]
+adc   dx, word ptr [bp - 4]
+
+; y2.w = y.w +  ...
+
+add   bx, word ptr [bp - 0Ah]
+adc   cx, word ptr [bp - 6]
+
+aim_line_done_with_switchblock:
+
+; ready params for the call
 push  OFFSET PTR_AimTraverse_
 push  (PT_ADDLINES OR PT_ADDTHINGS)
-push  word ptr [bp - 010h]
-push  word ptr [bp - 012h]
-push  word ptr [bp - 0Ch]
-push  word ptr [bp - 0Eh]
-mov   cx, word ptr [bp - 6]
-mov   dx, word ptr es:[bx + 8]
-mov   ax, word ptr es:[bx + 0Ah]
+push cx
+push bx
+push dx
+push ax
+
+; todo les
+mov   es, word ptr [bp - 2]
+mov   bx, word ptr [bp - 014h]
+
+
+;	shootz.w = t1_pos->z.w;
+;	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
+
+les   ax, dword ptr es:[bx + 8]
+mov   dx, es
+
 mov   bx, word ptr [bp - 016h]
-mov   word ptr ds:[_shootz+0], dx
-mov   word ptr ds:[_shootz+2], ax
-mov   dx, word ptr [bx + 0Ch]
-mov   bx, OFFSET _topslope
-sar   dx, 1
-mov   word ptr [bx], 0A000h  ;(100*FRACUNIT/160)
-add   dx, 8
-mov   word ptr [bx + 2], 0
-mov   bx, OFFSET _bottomslope
+mov   word ptr ds:[_shootz+0], ax
+
+mov   ax, word ptr [bx + 0Ch]
+sar   ax, 1
+add   ax, 8
 add   ax, dx
-mov   dx, word ptr [bp - 4]
-mov   word ptr [bx], 06000h  ; (-100*FRACUNIT/160)
 mov   word ptr ds:[_shootz+2], ax
-mov   word ptr [bx + 2], 0FFFFh
+
+;    // can't shoot outside view angles
+;    topslope = 100*FRACUNIT/160;	
+;    bottomslope = -100*FRACUNIT/160;
+
+mov   word ptr ds:[_topslope], 0A000h  ;(100*FRACUNIT/160)
+mov   word ptr ds:[_bottomslope], 06000h  ; (-100*FRACUNIT/160)
+
+;    linetarget = NULL;
+;	linetarget_pos = NULL;
+
 xor   ax, ax
-mov   bx, word ptr [bp - 0Ah]
 mov   word ptr ds:[_linetarget], ax
 mov   word ptr ds:[_linetarget_pos+0], ax
 mov   word ptr ds:[_linetarget_pos+2], ax
+mov   word ptr ds:[_topslope + 2], 0	; high word of above
+dec   ax
+mov   word ptr ds:[_bottomslope + 2], 0FFFFh  ; high word of above
+
+mov   dx, word ptr [bp - 4]
 mov   ax, word ptr [bp - 8]
-mov   word ptr ds:[_attackrange16], si
+mov   cx, word ptr [bp - 6]
+mov   bx, word ptr [bp - 0Ah]
+
 call  P_PathTraverse_
 mov   ax, word ptr ds:[_linetarget]
 test  ax, ax
@@ -6747,86 +6777,103 @@ pop   di
 pop   si
 pop   cx
 ret   
-aim_line_not_melee:
-ja    aim_line_not_chainsaw
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FFC0h
-xor   dx, ax
-add   ax, word ptr es:[di]
-adc   dx, word ptr es:[di + 2]
-mov   di, word ptr [bp - 8]
-add   di, ax
-mov   ax, word ptr [bp - 4]
-adc   ax, dx
-mov   word ptr [bp - 0Ch], ax
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 0Eh], di
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FFC0h
-xor   dx, ax
-mov   di, bx
-add   ax, word ptr es:[bx]
-mov   bx, word ptr [bp - 0Ah]
-adc   dx, word ptr es:[di + 2]
-jmp   label_2
 exit_aim_lineattack_return_0:
-xor   dx, dx
+cwd
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
 ret   
+aim_line_not_melee:
+ja    aim_line_not_chainsaw
+; chainsaw
+
+mov   si, FINESINE_SEGMENT
+mov   es, si
+; es:di
+
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
+and   al, 0C0h
+
+add   ax, word ptr es:[di + 02000h]
+adc   dx, word ptr es:[di + 02002h]
+
+
+; shift 6
+sar   cx, 1
+rcr   bx, 1
+sar   cx, 1
+rcr   bx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl
+and   bl, 0C0h
+
+add   bx, word ptr es:[di]
+adc   cx, word ptr es:[di + 2]
+
+
+jmp   aim_line_done_with_switchblock
+
 aim_line_not_chainsaw:
 cmp   si, MISSILERANGE
 jne   aim_line_is_halfmissile
-mov   cl, 0Bh
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
+
+; shift 11
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
 and   ax, 0F800h
-xor   dx, ax
-add   di, ax
-mov   ax, word ptr [bp - 4]
-adc   ax, dx
-mov   word ptr [bp - 0Ch], ax
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx]
-mov   bx, word ptr [bp - 0Ah]
-mov   cl, 0Bh
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0F800h
-xor   dx, ax
-jmp   label_7
+
+; shift 11
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl
+and   bx, 0F800h
+
+jmp   aim_line_done_with_switchblock_shift
 aim_line_is_halfmissile:
-mov   cl, 0Ah
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
+
+; shift 10
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
 and   ax, 0FC00h
-xor   dx, ax
-add   di, ax
-mov   ax, word ptr [bp - 4]
-adc   ax, dx
-mov   word ptr [bp - 0Ch], ax
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx]
-mov   bx, word ptr [bp - 0Ah]
-mov   cl, 0Ah;
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FC00h
-xor   dx, ax
-jmp   label_7
+
+; shift 10
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl
+and   bx, 0FC00h
+
+
+jmp   aim_line_done_with_switchblock_shift
 
 
 ENDP
