@@ -6722,7 +6722,6 @@ adc   dx, word ptr [bp - 6]
 add   bx, word ptr [bp - 4]
 adc   cx, word ptr [bp - 2]
 
-aim_line_done_with_switchblock:
 
 ; ready params for the call
 push  OFFSET PTR_AimTraverse_
@@ -6827,7 +6826,7 @@ add   bx, word ptr es:[di]
 adc   cx, word ptr es:[di + 2]
 
 
-jmp   aim_line_done_with_switchblock
+jmp   aim_line_done_with_switchblock_shift
 
 aim_line_not_chainsaw:
 cmp   si, MISSILERANGE
@@ -6891,15 +6890,24 @@ ENDP
 PROC P_LineAttack_ NEAR
 PUBLIC P_LineAttack_
 
+; fixed_t __near P_AimLineAttack ( mobj_t __near*	t1, fineangle_t	angle,int16_t	distance16 );
+
+; bp - 014h unused
+; bp - 016h thing
+; bp - 018h MOBJPOSLIST_6800_SEGMENT
+; bp - 01Ah mobjposlist offset
+
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
 sub   sp, 014h
-push  ax
-mov   di, dx
-mov   si, bx
+push  ax 				; bp - 016h  thing
+mov   di, dx			; di gets angle
+mov   si, bx			; si gets distance..
+mov   cx, ax
+mov   word ptr ds:[_shootthing], ax
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 xor   dx, dx
@@ -6907,81 +6915,100 @@ div   bx
 imul  bx, ax, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
-mov   word ptr [bp - 2], ax
+push  ax				; bp - 018h
+push  bx				; bp - 01Ah
+
+mov   ax, word ptr [bp + 0Eh]
+mov   word ptr ds:[_la_damage], ax
+
 mov   ax, word ptr es:[bx]
 mov   word ptr [bp - 0Ah], ax
 mov   ax, word ptr es:[bx + 2]
 mov   word ptr [bp - 4], ax
 mov   ax, word ptr es:[bx + 4]
-mov   word ptr [bp - 014h], bx
 mov   word ptr [bp - 8], ax
 mov   ax, word ptr es:[bx + 6]
-mov   bx, word ptr [bp - 016h]
+
+mov   bx, cx
 mov   word ptr [bp - 6], ax
-mov   ax, word ptr [bp + 0Eh]
-mov   word ptr ds:[_shootthing], bx
 mov   bx, di
-mov   word ptr ds:[_la_damage], ax
 shl   bx, 2
+
+mov   cx, FINESINE_SEGMENT
+mov   es, cx
+les   ax, dword ptr es:[bx + 02000h]
+mov   dx, es
+mov   es, cx
+les   bx, dword ptr es:[bx]
+mov   cx, es
+
+; cx:bx   sine
+; dx:ax   cosine
+
 cmp   si, CHAINSAWRANGE
-jb    label_1
-jmp   label_2
-label_1:
-cmp   si, MELEERANGE
-jne   label_3
-mov   ax, FINESINE_SEGMENT
-lea   di, [bx + 02000h]
-mov   es, ax
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
-mov   di, word ptr [bp - 0Ah]
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FFC0h
-xor   dx, ax
-add   di, ax
-mov   ax, word ptr [bp - 4]
-adc   ax, dx
-mov   word ptr [bp - 0Ch], ax
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx]
-mov   bx, word ptr [bp - 8]
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FFC0h
-xor   dx, ax
-label_6:
-mov   word ptr [bp - 0Eh], di
-add   bx, ax
-mov   ax, word ptr [bp - 6]
-adc   ax, dx
-mov   word ptr [bp - 012h], bx
-mov   word ptr [bp - 010h], ax
-label_3:
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr [bp - 014h]
+jb    lineattack_is_melee
+jmp   lineattack_not_melee
+lineattack_is_melee:
+
+; shift 6
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
+and   al, 0C0h
+
+; shift 6
+sar   cx, 1
+rcr   bx, 1
+sar   cx, 1
+rcr   bx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl
+and   bl, 0C0h
+
+
+lineattack_done_with_switchblock:
+
+; x2.w = x.w +  ...
+
+add   ax, word ptr [bp - 0Ah]
+adc   dx, word ptr [bp - 4]
+
+; y2.w = y.w +  ...
+
+add   bx, word ptr [bp - 8]
+adc   cx, word ptr [bp - 6]
+
 push  OFFSET PTR_ShootTraverse_
-mov   cx, word ptr [bp - 6]
 push  (PT_ADDLINES OR PT_ADDTHINGS)
+push cx
+push bx
+push dx
+push ax
+
+
+
+les   bx, dword ptr [bp - 01Ah]
+mov   cx, word ptr [bp - 6]
 mov   dx, word ptr es:[bx + 8]
 mov   ax, word ptr es:[bx + 0Ah]
 mov   bx, word ptr [bp - 016h]
-push  word ptr [bp - 010h]
+
 mov   word ptr ds:[_shootz+0], dx
 mov   dx, word ptr [bx + 0Ch]
 sar   dx, 1
-push  word ptr [bp - 012h]
+
 add   dx, 8
-push  word ptr [bp - 0Ch]
+
 add   ax, dx
 mov   bx, word ptr [bp - 8]
 mov   word ptr ds:[_shootz+2], ax
 mov   ax, word ptr [bp + 0Ah]
-push  word ptr [bp - 0Eh]
+
 mov   word ptr ds:[_aimslope+0], ax
 mov   ax, word ptr [bp + 0Ch]
 mov   dx, word ptr [bp - 4]
@@ -6994,107 +7021,96 @@ pop   di
 pop   si
 pop   cx
 ret   6
-label_2:
-jbe   jump_to_label_4
+lineattack_not_melee:
+je    lineattack_is_chainsaw
 cmp   si, MISSILERANGE
-je    label_5
-cmp   si, HALFMISSILERANGE
-jne   label_3
-mov   ax, FINESINE_SEGMENT
-lea   di, [bx + 02000h]
-mov   es, ax
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
-mov   di, word ptr [bp - 0Ah]
-mov   cl, 0Ah
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
+je    lineattack_is_missile
+; half missile
+
+; shift 10
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
 and   ax, 0FC00h
-xor   dx, ax
-add   di, ax
-mov   ax, word ptr [bp - 4]
-adc   ax, dx
-mov   word ptr [bp - 0Ch], ax
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx]
-mov   bx, word ptr [bp - 8]
-mov   cl, 0Ah
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FC00h
-xor   dx, ax
-jmp   label_6
-jump_to_label_4:
-jmp   label_4
-label_5:
-mov   ax, FINESINE_SEGMENT
-lea   di, [bx + 02000h]
-mov   es, ax
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
-mov   di, word ptr [bp - 0Ah]
-mov   cl, 0Bh
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
+
+; shift 10
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl
+and   bx, 0FC00h
+
+jmp   lineattack_done_with_switchblock
+lineattack_is_chainsaw:
+
+mov   si, FINESINE_SEGMENT
+mov   es, si
+; es:di
+
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
+and   al, 0C0h
+
+add   ax, word ptr es:[di + 02000h]
+adc   dx, word ptr es:[di + 02002h]
+
+
+; shift 6
+sar   cx, 1
+rcr   bx, 1
+sar   cx, 1
+rcr   bx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl
+and   bl, 0C0h
+
+add   bx, word ptr es:[di]
+adc   cx, word ptr es:[di + 2]
+
+jmp   lineattack_done_with_switchblock
+
+lineattack_is_missile:
+
+; shift 11
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
 and   ax, 0F800h
-xor   dx, ax
-add   di, ax
-mov   ax, word ptr [bp - 4]
-adc   ax, dx
-mov   word ptr [bp - 0Ch], ax
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx]
-mov   bx, word ptr [bp - 8]
-mov   cl, 0Bh
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0F800h
-xor   dx, ax
-jmp   label_6
-label_4:
-mov   ax, FINESINE_SEGMENT
-lea   di, [bx + 02000h]
-mov   es, ax
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FFC0h
-xor   dx, ax
-add   ax, word ptr es:[di]
-adc   dx, word ptr es:[di + 2]
-mov   di, word ptr [bp - 0Ah]
-add   di, ax
-mov   ax, word ptr [bp - 4]
-adc   ax, dx
-mov   word ptr [bp - 0Eh], di
-mov   word ptr [bp - 0Ch], ax
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx]
-mov   di, bx
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FFC0h
-xor   dx, ax
-mov   bx, word ptr es:[bx]
-add   bx, ax
-mov   ax, word ptr es:[di + 2]
-adc   ax, dx
-mov   dx, word ptr [bp - 8]
-add   dx, bx
-mov   word ptr [bp - 012h], dx
-mov   dx, word ptr [bp - 6]
-adc   dx, ax
-mov   word ptr [bp - 010h], dx
-jmp   label_3
+
+; shift 11
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl
+and   bx, 0F800h
+
+
+jmp   lineattack_done_with_switchblock
+
 
 ENDP
 
