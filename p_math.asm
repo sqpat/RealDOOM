@@ -6425,53 +6425,55 @@ mov   word ptr ds:[_tmy+2], ax
 ;	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
 ;	tmbbox[BOXLEFT].w = x.w - temp.w;
 
-mov   ax, word ptr [bp + 0Eh]
+xor   cx, cx
+mov   cl, byte ptr [si + 01Eh] 
+; cx has radius
+
+
+les   ax, dword ptr [bp + 0Eh]
 mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 0], ax
-mov   ax, word ptr [bp + 010h]
-mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
-
-mov   al, byte ptr [si + 01Eh]
-
-xor   ah, ah
-add   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
-
-mov   cx, word ptr [bp + 0Eh]
-mov   al, byte ptr [si + 01Eh]
-
-sub   cx, 0
-mov   dx, word ptr [bp + 010h]
-sbb   dx, ax
-mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 0], cx
+mov   dx, es
+add   dx, cx
+mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], dx
+mov   dx, es
+sub   dx, cx
+mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 0], ax
 mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2], dx
-mov   dx, word ptr [bp + 0Ah]
-mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 0], dx
-mov   dx, word ptr [bp + 0Ch]
+
+
+mov   si, dx   ; si has bottom. (top is si + cx + cx)
+
+les   ax, dword ptr [bp + 0Ah]
+
+mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 0], ax
+mov   dx, es
+add   dx, cx
 mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], dx
 
-mov   dl, byte ptr [si + 01Eh]
-xor   dh, dh
-add   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], dx
-mov   dx, word ptr [bp + 0Ah]
-sub   dx, 0
-mov   bx, word ptr [bp + 0Ch]
-sbb   bx, ax
-mov   ax, bx
-mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 0], dx
-mov   word ptr ds:[_ceilinglinenum], -1
-mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2], ax
+mov   dx, es
+sub   dx, cx
+
+mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 0], ax
+mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2], dx
+
+mov   di, dx   ; di has left. (right is di + cx + cx)
+
+
 mov   bx, word ptr [bp + 012h]
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 SHIFT_MACRO shl   bx 4
 
-mov   ax, word ptr es:[bx]			; sector floorheight
+les   ax, dword ptr es:[bx]			; sector floorheight
 mov   word ptr ds:[_tmdropoffz], ax
-mov   word ptr ds:[_tmfloorz+0], ax
-mov   ax, word ptr es:[bx+2]		; sector ceilingheight
-mov   word ptr ds:[_tmceilingz], ax
+mov   word ptr ds:[_tmfloorz],   ax
+mov   word ptr ds:[_tmceilingz], es ; sector ceilingheight
+
 xor   ax, ax
 inc   word ptr ds:[_validcount_global]
 mov   word ptr ds:[_numspechit], ax
+dec   ax
+mov   word ptr ds:[_ceilinglinenum], ax  ; -1
 
 ;    // stomp on any things contacted
 ;    xl = (tmbbox[BOXLEFT].h.intbits - bmaporgx - MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
@@ -6515,7 +6517,7 @@ mov   dx, word ptr [bp - 6]
 mov   ax, word ptr [bp - 2]
 mov   bx, ax
 call  P_UnsetThingPosition_
-mov   ax, word ptr ds:[_tmfloorz+0]
+mov   ax, word ptr ds:[_tmfloorz]
 mov   word ptr [bx + 6], ax
 mov   ax, word ptr ds:[_tmceilingz]
 mov   word ptr [bx + 8], ax
