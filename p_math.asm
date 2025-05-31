@@ -6288,65 +6288,85 @@ push  si
 push  di
 mov   si, dx
 mov   es, cx
-test  byte ptr es:[bx + 014h], 4
-jne   label_2
-exit_stompthing_return_1:
-mov   al, 1
-pop   di
-pop   si
-ret   
-label_2:
+
+;    if (!(thing_pos->flags1 & MF_SHOOTABLE) ){
+;		return true;
+;	}
+
+test  byte ptr es:[bx + 014h], MF_SHOOTABLE
+je    exit_stompthing_return_1
+
+;   blockdist.h.intbits = thing->radius + tmthing->radius;
+;	blockdist.h.fracbits = 0;
+
+xor   cx, cx
 mov   di, word ptr ds:[_tmthing]
-mov   cl, byte ptr [si + 01Eh]
-mov   al, byte ptr [di + 01Eh]
-xor   ch, ch
-xor   ah, ah
-add   cx, ax
+mov   cl, byte ptr [di + 01Eh]
+add   cl, byte ptr [si + 01Eh]
+adc   ch, ch
+
+;    if ( labs(thing_pos->x.w - tmx.w) >= blockdist.w
+;	 || labs(thing_pos->y.w - tmy.w) >= blockdist.w ) {
+;	// didn't hit it
+;		return true;
+;    }
+
+
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
 sub   ax, word ptr ds:[_tmx+0]
 sbb   dx, word ptr ds:[_tmx+2]
 or    dx, dx
-jge   label_1
+jge   already_positive
 neg   ax
 adc   dx, 0
 neg   dx
-label_1:
+already_positive:
+
 cmp   dx, cx
-jg    exit_stompthing_return_1
-je    exit_stompthing_return_1
-mov   ax, word ptr es:[bx + 4]
-mov   dx, word ptr es:[bx + 6]
+jge   exit_stompthing_return_1
+les   ax, dword ptr es:[bx + 4]
+mov   dx, es
 sub   ax, word ptr ds:[_tmy+0]
 sbb   dx, word ptr ds:[_tmy+2]
 or    dx, dx
-jge   label_3
+jge   already_positive_2
 neg   ax
 adc   dx, 0
 neg   dx
-label_3:
+already_positive_2:
 cmp   dx, cx
-jg    exit_stompthing_return_1
-je    exit_stompthing_return_1
+jge   exit_stompthing_return_1
 mov   ax, word ptr ds:[_tmthing]
 cmp   si, ax
 je    exit_stompthing_return_1
 mov   bx, ax
-cmp   byte ptr [bx + 01Ah], 0
-je    label_4
-mov   bx, OFFSET _gamemap
-cmp   byte ptr [bx], 30
-je    label_4
+
+;    // monsters don't stomp things except on boss level
+;    if ( !tmthing->type == MT_PLAYER && gamemap != 30){
+;		return false;	
+;	}
+
+cmp   byte ptr [bx + 01Ah], MT_PLAYER
+je    do_stomp
+
+
+cmp   byte ptr ds:[_gamemap], 30
+je    do_stomp
 xor   al, al
 pop   di
 pop   si
 ret   
-label_4:
+do_stomp:
+
+;    P_DamageMobj (thing, tmthing, tmthing, 10000);
+
 mov   cx, 10000
 mov   dx, word ptr ds:[_tmthing]
 mov   ax, si
 mov   bx, dx
 call  P_DamageMobj_
+exit_stompthing_return_1:
 mov   al, 1
 pop   di
 pop   si
