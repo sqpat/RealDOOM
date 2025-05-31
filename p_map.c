@@ -1378,6 +1378,9 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in){
 //
 // P_AimLineAttack
 //
+fixed_t __near P_AimLineAttack ( mobj_t __near*	t1, fineangle_t	angle,int16_t	distance16 );
+
+/*
 fixed_t __near P_AimLineAttack ( mobj_t __near*	t1, fineangle_t	angle,int16_t	distance16 ) {
     fixed_t_union	x2;
 	fixed_t_union	y2;
@@ -1439,7 +1442,7 @@ fixed_t __near P_AimLineAttack ( mobj_t __near*	t1, fineangle_t	angle,int16_t	di
 
     return 0;
 }
- 
+ */
 
 //
 // P_LineAttack
