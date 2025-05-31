@@ -6385,14 +6385,28 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-push  ax
-push  bx
-push  cx
+push  ax  ; bp - 2
+push  cx  ; bp - 4
+push  bx  ; bp - 6
+
+; bp + 0Ah  x lo
+; bp + 0Ch  x hi
+; bp + 0Eh  y lo
+; bp + 010h  y hi
+; bp + 012h  oldsecnum
+
+
 mov   word ptr ds:[_tmthing], ax
+xchg  ax, si  ; si get thing ptr
 mov   word ptr ds:[_tmthing_pos+0], bx
+mov   word ptr ds:[_tmthing_pos+2], cx  ; todo remove once hardcoded
 mov   es, cx
+
+; todo when _tmx _tmy etc are guaranteed adjacent do movsw
+
 mov   ax, word ptr es:[bx + 014h]
 mov   word ptr ds:[_tmflags1], ax
+
 mov   ax, word ptr [bp + 0Ah]
 mov   word ptr ds:[_tmx+0], ax
 mov   ax, word ptr [bp + 0Ch]
@@ -6400,98 +6414,112 @@ mov   word ptr ds:[_tmx+2], ax
 mov   ax, word ptr [bp + 0Eh]
 mov   word ptr ds:[_tmy+0], ax
 mov   ax, word ptr [bp + 010h]
-mov   bx, OFFSET _tmbbox
 mov   word ptr ds:[_tmy+2], ax
+
+
+;	tmbbox[BOXTOP] = y; 
+;	tmbbox[BOXTOP].h.intbits += tmthing->radius;
+;	temp.h.intbits = tmthing->radius;
+;	tmbbox[BOXBOTTOM].w = y.w - temp.w;
+;	tmbbox[BOXRIGHT] = x; 
+;	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
+;	tmbbox[BOXLEFT].w = x.w - temp.w;
+
 mov   ax, word ptr [bp + 0Eh]
-mov   word ptr [bx], ax
+mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 0], ax
 mov   ax, word ptr [bp + 010h]
-mov   word ptr [bx + 2], ax
-mov   bx, word ptr [bp - 2]
-mov   al, byte ptr [bx + 01Eh]
-mov   bx, OFFSET _tmbbox + 2
+mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
+
+mov   al, byte ptr [si + 01Eh]
+
 xor   ah, ah
-mov   word ptr ds:[_tmthing_pos+2], cx
-add   word ptr [bx], ax
-mov   bx, word ptr [bp - 2]
+add   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
+
 mov   cx, word ptr [bp + 0Eh]
-mov   al, byte ptr [bx + 01Eh]
-mov   bx, OFFSET _tmbbox + 4
+mov   al, byte ptr [si + 01Eh]
+
 sub   cx, 0
 mov   dx, word ptr [bp + 010h]
 sbb   dx, ax
-mov   word ptr [bx], cx
-mov   word ptr [bx + 2], dx
-mov   bx, OFFSET _tmbbox + 0Ch
+mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 0], cx
+mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2], dx
 mov   dx, word ptr [bp + 0Ah]
-mov   word ptr [bx], dx
+mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 0], dx
 mov   dx, word ptr [bp + 0Ch]
-mov   word ptr [bx + 2], dx
-mov   bx, word ptr [bp - 2]
-mov   dl, byte ptr [bx + 01Eh]
-mov   bx, OFFSET _tmbbox + 0Eh
+mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], dx
+
+mov   dl, byte ptr [si + 01Eh]
 xor   dh, dh
-add   word ptr [bx], dx
+add   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], dx
 mov   dx, word ptr [bp + 0Ah]
 sub   dx, 0
 mov   bx, word ptr [bp + 0Ch]
 sbb   bx, ax
 mov   ax, bx
-mov   bx, OFFSET _tmbbox + 8
-mov   si, OFFSET _tmbbox + 0Ah
-mov   word ptr [bx], dx
+mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 0], dx
 mov   word ptr ds:[_ceilinglinenum], -1
-mov   word ptr [bx + 2], ax
+mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2], ax
 mov   bx, word ptr [bp + 012h]
 mov   ax, SECTORS_SEGMENT
-shl   bx, 4
 mov   es, ax
-mov   di, OFFSET _bmaporgx
-mov   ax, word ptr es:[bx]
-add   bx, 2
+SHIFT_MACRO shl   bx 4
+
+mov   ax, word ptr es:[bx]			; sector floorheight
 mov   word ptr ds:[_tmdropoffz], ax
 mov   word ptr ds:[_tmfloorz+0], ax
-mov   ax, word ptr es:[bx]
-mov   bx, OFFSET _validcount_global
+mov   ax, word ptr es:[bx+2]		; sector ceilingheight
 mov   word ptr ds:[_tmceilingz], ax
 xor   ax, ax
-inc   word ptr [bx]
+inc   word ptr ds:[_validcount_global]
 mov   word ptr ds:[_numspechit], ax
-mov   ax, word ptr [si]
-sub   ax, word ptr [di]
-mov   si, OFFSET _tmbbox + 0Eh
+
+;    // stomp on any things contacted
+;    xl = (tmbbox[BOXLEFT].h.intbits - bmaporgx - MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
+;    xh = (tmbbox[BOXRIGHT].h.intbits - bmaporgx + MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
+;    yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
+;    yh = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
+
+les   si, dword ptr ds:[_bmaporgx]
+mov   di, es ; bmaporgy
+
+mov   ax, word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2]
+sub   ax, si
 sub   ax, MAXRADIUSNONFRAC
-mov   bx, word ptr [si]
-mov   si, OFFSET _tmbbox + 6
 sar   ax, 7
-sub   bx, word ptr [di]
-mov   di, OFFSET _bmaporgx + 2
+
+mov   bx, word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2]
+sub   bx, si
 add   bx, MAXRADIUSNONFRAC
-mov   dx, word ptr [si]
-mov   si, OFFSET _bmaporgx + 2
 sar   bx, 7
-sub   dx, word ptr [di]
-mov   di, OFFSET _tmbbox + 2
+
+mov   dx, word ptr ds:[_tmbbox +  + (4 * BOXBOTTOM) + 2]
+sub   dx, di
 sub   dx, MAXRADIUSNONFRAC
-mov   cx, word ptr [di]
 sar   dx, 7
-sub   cx, word ptr [si]
-mov   di, 1
+
+mov   cx, word ptr ds:[_tmbbox + (4 * BOXTOP) + 2]
+sub   cx, di
 add   cx, MAXRADIUSNONFRAC
-mov   si, OFFSET PIT_StompThing_
 sar   cx, 7
+
+;	if (!DoBlockmapLoop(xl, yl, xh, yh, PIT_StompThing, true)){
+;		return false;
+;	}	
+
+mov   di, 1
+mov   si, OFFSET PIT_StompThing_
 call  DoBlockmapLoop_
 test  al, al
 je    exit_teleport_move_return_0
-mov   dx, word ptr [bp - 4]
+mov   dx, word ptr [bp - 6]
 mov   ax, word ptr [bp - 2]
-mov   bx, word ptr [bp - 2]
+mov   bx, ax
 call  P_UnsetThingPosition_
 mov   ax, word ptr ds:[_tmfloorz+0]
 mov   word ptr [bx + 6], ax
 mov   ax, word ptr ds:[_tmceilingz]
 mov   word ptr [bx + 8], ax
-mov   es, word ptr [bp - 6]
-mov   bx, word ptr [bp - 4]
+les   bx, dword ptr [bp - 6]
 mov   ax, word ptr [bp + 0Ah]
 mov   word ptr es:[bx], ax
 mov   ax, word ptr [bp + 0Ch]
@@ -6499,7 +6527,7 @@ mov   word ptr es:[bx + 2], ax
 mov   ax, word ptr [bp + 0Eh]
 mov   word ptr es:[bx + 4], ax
 mov   ax, word ptr [bp + 010h]
-mov   dx, word ptr [bp - 4]
+mov   dx, word ptr [bp - 6]
 mov   word ptr es:[bx + 6], ax
 mov   bx, word ptr [bp + 012h]
 mov   ax, word ptr [bp - 2]
@@ -7121,13 +7149,13 @@ PUBLIC P_RadiusAttack_
 0x00000000000007c8:  89 C6                mov   si, ax
 0x00000000000007ca:  01 D6                add   si, dx
 0x00000000000007cc:  89 76 FE             mov   word ptr [bp - 2], si
-0x00000000000007cf:  BE E2 05             mov   si, OFFSET _bmaporgx + 2
+0x00000000000007cf:  BE E2 05             mov   si, OFFSET _bmaporgy
 0x00000000000007d2:  8B 7E FE             mov   di, word ptr [bp - 2]
 0x00000000000007d5:  2B 3C                sub   di, word ptr [si]
 0x00000000000007d7:  89 FE                mov   si, di
 0x00000000000007d9:  C1 FE 07             sar   si, 7
 0x00000000000007dc:  89 76 FC             mov   word ptr [bp - 4], si
-0x00000000000007df:  BE E2 05             mov   si, OFFSET _bmaporgx + 2
+0x00000000000007df:  BE E2 05             mov   si, OFFSET _bmaporgy
 0x00000000000007e2:  29 D0                sub   ax, dx
 0x00000000000007e4:  2B 04                sub   ax, word ptr [si]
 0x00000000000007e6:  C1 F8 07             sar   ax, 7
