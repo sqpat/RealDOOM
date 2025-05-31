@@ -5426,22 +5426,22 @@ PUBLIC PTR_ShootTraverse_
 ; bp - 4     linenum shift 2            / thinker near ptr
 ; bp - 6 	 LINES_PHYSICS_SEGMENT      / MOBJPOSLIST_6800_SEGMENT
 ; bp - 8     line_phys offset			/ thingpos offset?
-; bp - 0Ah   
-; bp - 0Ch   
-; bp - 0Eh   
-; bp - 010h  x hi
-; bp - 012h  x lo
-; bp - 016h	 dist
-; bp - 018h  dist
+; bp - 0Ah   x hi			    		/ x hi
+; bp - 0Ch   x lo						/ x lo
+; bp - 0Eh   y hi
+; bp - 010h  y lo
+; bp - 012h  dist hi
+; bp - 016h	 dist lo
+; bp - 018h  unused
 ; bp - 01Ah  unused
 ; bp - 01Ch  dist hi ? dupe
 ; bp - 01Eh  dist lo ? dupe
 ; bp - 020h  unused
 ; bp - 022h  unused
-; bp - 024h  x hi  ? dupe
-; bp - 026h  x lo  ? dupe
-; bp - 028h  y hi
-; bp - 02Ah  y lo
+; bp - 024h  
+; bp - 026h  
+; bp - 028h  
+; bp - 02Ah  
 ; bp - 02Ch  backsec  offset
 ; bp - 02Eh  frontsec offset
 
@@ -5527,8 +5527,8 @@ call  FixedMul_
 
 add   ax, word ptr ds:[_trace+0]
 adc   dx, word ptr ds:[_trace+2]
-mov   word ptr [bp - 026h], ax
-mov   word ptr [bp - 024h], dx
+push  dx ; x hi
+push  ax ; x lo
 
 mov   cx, si
 mov   bx, di
@@ -5540,8 +5540,8 @@ mov   dx, es
 call  FixedMul_
 add   ax, word ptr ds:[_trace+4]
 adc   dx, word ptr ds:[_trace+6]
-mov   word ptr [bp - 02Ah], ax
-mov   word ptr [bp - 028h], dx
+push  dx ; y hi
+push  ax ; y lo
 
 mov   cx, si
 mov   bx, di
@@ -5555,24 +5555,24 @@ mov   dx, es
 call  FixedMul_
 
 
-les   bx, dword ptr ds:[_shootz+0]
-add   bx, ax
-mov   ax, es
-adc   ax, dx
-; ax:bx has result
+les   di, dword ptr ds:[_shootz+0]
+add   di, ax
+mov   si, es
+adc   si, dx
+; si:di has result
 
-les   si, dword ptr [bp - 8]			; linephys ptr
-mov   si, word ptr es:[si + 0Ah]
-SHIFT_MACRO shl   si 4
+les   bx, dword ptr [bp - 8]			; linephys ptr
+mov   bx, word ptr es:[bx + 0Ah]
+SHIFT_MACRO shl   bx 4
 
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
-mov   dl, byte ptr es:[si+5]
+mov   dl, byte ptr es:[bx+5]
 
 cmp   dl, byte ptr ds:[_skyflatnum]
 jne   do_puff
 
-mov   dx, word ptr es:[si + 2]
+mov   dx, word ptr es:[bx + 2]
 xor   cx, cx
 sar   dx, 1
 rcr   cx, 1
@@ -5582,21 +5582,22 @@ sar   dx, 1
 rcr   cx, 1
 
 
-cmp   ax, dx
+cmp   si, dx
 jg    exit_shoottraverse_return_0
 ; if (z > temp.w) {
 jne   didnt_shoot_sky
-cmp   bx, cx
+cmp   di, cx
 ja    exit_shoottraverse_return_0
 didnt_shoot_sky:
-les   si, dword ptr [bp - 8]
-cmp   word ptr es:[si + 0Ch], -1
+les   bx, dword ptr [bp - 8]
+cmp   word ptr es:[bx + 0Ch], SECNUM_NULL
 je    do_puff
-mov   di, word ptr es:[si + 0Ch]   ; todo was this stored
-SHIFT_MACRO shl   di 4
+
+mov   bx, word ptr es:[bx + 0Ch]   ; todo was this stored
+SHIFT_MACRO shl   bx 4
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
-mov   dl, byte ptr es:[di + 5]
+mov   dl, byte ptr es:[bx + 5]
 
 cmp   dl, byte ptr ds:[_skyflatnum]
 jne   do_puff
@@ -5606,18 +5607,22 @@ POPA_NO_AX_MACRO
 xor   al, al
 ret   
 do_puff:
-push  ax	; hi word
-push  bx	; low word
-les   ax, dword ptr [bp - 026h]
-mov   dx, es
 
-les   bx, dword ptr [bp - 02Ah]
-mov   cx, es
+pop   bx    ; y lo
+pop   cx    ; y hi
+pop   ax    ; x lo
+pop   dx    ; x hi
+
+push  si	; hi word (spawnpuff arg)
+push  di	; low word (spawnpuff arg)
+
 call  P_SpawnPuff_
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 xor   al, al
 ret   
+
+; 2nd half of function
 not_hitline:
 
 ;	P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
@@ -5654,32 +5659,15 @@ mov   word ptr [bp - 01Ch], dx ; store dist
 mov   di, es 				 	 ; backsec
 SHIFT_MACRO shl   di 4
 
-mov   word ptr [bp - 02Eh], bx	 ; store front/bacsec lookups
-mov   word ptr [bp - 02Ch], di
+push  di
+push  bx	 ; store front/backsec lookups
 
 mov   cx, SECTORS_SEGMENT
 mov   es, cx
 mov   cx, word ptr es:[bx]		  ; frontsec floorheight
 cmp   cx, word ptr es:[di]		  ; backsec floorheight
-jne   floorheights_not_equal
+je    done_with_floorheights_check
 
-done_with_floorheights_check:
-
-les   bx, dword ptr [bp - 02Eh]
-mov   di, es
-
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
-
-mov   ax, word ptr es:[bx+2]
-cmp   ax, word ptr es:[di+2]
-
-jne   ceilingheights_not_equal
-exit_shoottraverse_return_1_3:
-LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   al, 1
-ret   
 floorheights_not_equal:
 
 mov   cx, dx
@@ -5709,6 +5697,20 @@ jne   done_with_floorheights_check
 cmp   ax, word ptr ds:[_aimslope+0]
 jbe   done_with_floorheights_check
 jmp   hitline
+
+done_with_floorheights_check:
+
+pop   bx ; get the shifted by 4 sectors again
+pop   di
+
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+
+mov   ax, word ptr es:[bx+2]
+cmp   ax, word ptr es:[di+2]
+
+je    exit_shoottraverse_return_1
+
 ceilingheights_not_equal:
 
 les   bx, dword ptr [bp - 01Eh]
@@ -5728,7 +5730,7 @@ sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
 cmp   dx, word ptr ds:[_aimslope+2]
 jl    jump_to_hitline
-jne   exit_shoottraverse_return_1_3
+jne   exit_shoottraverse_return_1
 cmp   ax, word ptr ds:[_aimslope+0]
 jb    jump_to_hitline
 LEAVE_MACRO 
@@ -5768,8 +5770,9 @@ call  P_GetAttackRangeMult_
 
 ;    thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
-mov   word ptr [bp - 018h], ax
-mov   word ptr [bp - 016h], dx ; store dist
+push  dx
+push  ax ; store dist
+
 xchg  ax, bx  				   ; and set as fixeddiv arg
 mov   cx, dx
 
@@ -5799,8 +5802,8 @@ did_not_shoot_over:
 les   bx, dword ptr [bp - 8]
 les   ax, dword ptr es:[bx + 8]
 mov   dx, es
-les   bx, dword ptr [bp - 018h]
-mov   cx, es
+pop   bx ; recover dist
+pop   cx
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
@@ -5848,8 +5851,9 @@ call  FixedMul_
 
 add   ax, word ptr ds:[_trace+0]
 adc   dx, word ptr ds:[_trace+2]
-mov   word ptr [bp - 012h], ax
-mov   word ptr [bp - 010h], dx	; store x
+
+push  dx ; need again later...
+push  ax
 
 mov   cx, si
 mov   bx, di
@@ -5890,8 +5894,8 @@ push  dx
 push  ax
 mov   cx, di
 mov   bx, si
-les   ax, dword ptr [bp - 012h]
-mov   dx, es
+pop   ax
+pop   dx
 
 je    do_spawn_blood
 
