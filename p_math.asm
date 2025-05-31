@@ -6776,8 +6776,8 @@ call  P_PathTraverse_
 mov   ax, word ptr ds:[_linetarget]
 test  ax, ax
 je    exit_aim_lineattack_return_0
-mov   ax, word ptr ds:[_aimslope+0]
-mov   dx, word ptr ds:[_aimslope+2]
+les   ax, dword ptr ds:[_aimslope+0]
+mov   dx, es
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -6993,34 +6993,38 @@ push ax
 
 
 les   bx, dword ptr [bp - 01Ah]
-mov   cx, word ptr [bp - 6]
-mov   dx, word ptr es:[bx + 8]
-mov   ax, word ptr es:[bx + 0Ah]
+les   ax, dword ptr es:[bx + 8]
+mov   dx, es
 mov   bx, word ptr [bp - 016h]
 
-mov   word ptr ds:[_shootz+0], dx
-mov   dx, word ptr [bx + 0Ch]
-sar   dx, 1
+mov   word ptr ds:[_shootz+0], ax
+mov   ax, word ptr [bx + 0Ch]
+sar   ax, 1
 
-add   dx, 8
-
+add   ax, 8
 add   ax, dx
-mov   bx, word ptr [bp - 8]
 mov   word ptr ds:[_shootz+2], ax
-mov   ax, word ptr [bp + 0Ah]
 
+
+les   ax, dword ptr [bp + 0Ah]
 mov   word ptr ds:[_aimslope+0], ax
-mov   ax, word ptr [bp + 0Ch]
+mov   word ptr ds:[_aimslope+2], es
+
+mov   bx, word ptr [bp - 8]
 mov   dx, word ptr [bp - 4]
-mov   word ptr ds:[_aimslope+2], ax
+mov   cx, word ptr [bp - 6]
 mov   ax, word ptr [bp - 0Ah]
+
 mov   word ptr ds:[_attackrange16], si
+
+
 call  P_PathTraverse_
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
 ret   6
+
 lineattack_not_melee:
 je    lineattack_is_chainsaw
 cmp   si, MISSILERANGE
