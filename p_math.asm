@@ -5914,44 +5914,6 @@ jmp   done_spawning_blood
 
 ENDP
 
-
-;boolean __near PTR_AimTraverse (intercept_t __far* in);
-
-PROC PTR_AimTraverse_ NEAR
-PUBLIC PTR_AimTraverse_
-
-; bp - 2 INTERCEPTS_SEGMENT
-; bp - 4 unused
-; bp - 6 unused
-; bp - 8 unused
-; bp - 0Ah unused
-; bp - 0Ch unused
-; bp - 0Eh unused
-; bp - 010h unused
-; bp - 012h unused
-; bp - 014h unused
-; bp - 016h attack range high
-; bp - 018h mobjpos ptr
-; bp - 01Ah backsector offset
-; bp - 01Ch frontsector offset
-
-push  bx
-push  cx
-push  si
-push  di
-push  bp
-mov   bp, sp
-push  dx       ; bp - 2
-sub   sp, 01Ah
-mov   si, ax
-mov   es, dx
-cmp   byte ptr es:[si + 4], 0
-mov   bx, word ptr es:[si + 5]
-je    jump_to_aimtraverse_is_not_a_line
-mov   ax, LINEFLAGSLIST_SEGMENT
-mov   es, ax
-test  byte ptr es:[bx], ML_TWOSIDED
-jne   aimtraverse_is_a_line
 exit_aimtraverse_return_0:
 xor   al, al
 LEAVE_MACRO 
@@ -5962,6 +5924,30 @@ pop   bx
 ret   
 jump_to_aimtraverse_is_not_a_line:
 jmp   aimtraverse_is_not_a_line
+
+;boolean __near PTR_AimTraverse (intercept_t __far* in);
+
+PROC PTR_AimTraverse_ NEAR
+PUBLIC PTR_AimTraverse_
+
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+push  dx       ; store segment for later
+
+mov   si, ax
+mov   es, dx
+cmp   byte ptr es:[si + 4], 0
+mov   bx, word ptr es:[si + 5]
+je    jump_to_aimtraverse_is_not_a_line
+mov   ax, LINEFLAGSLIST_SEGMENT
+mov   es, ax
+test  byte ptr es:[bx], ML_TWOSIDED
+je   exit_aimtraverse_return_0
 aimtraverse_is_a_line:
 
 ;		li = &lines[in->d.linenum];
@@ -5993,7 +5979,7 @@ jge   exit_aimtraverse_return_0
 
 ;		dist = P_GetAttackRangeMult(attackrange16, in->frac);
 
-mov   es, word ptr [bp - 2]
+pop   es ; 
 mov   ax, word ptr ds:[_attackrange16]
 les   bx, dword ptr es:[si]
 mov   cx, es
@@ -6004,20 +5990,18 @@ call  P_GetAttackRangeMult_
 
 mov   cx, LINES_PHYSICS_SEGMENT
 mov   es, cx
-mov   si, ax
+push  ax  
+push  dx  ; store dist
 les   di, dword ptr es:[di + 0Ah] ; frontsector
-mov   bx, es					  ; backsector
+mov   si, es					  ; backsector
 SHIFT_MACRO shl   di 4
 mov   cx, SECTORS_SEGMENT
 mov   es, cx
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO shl   si 4
 
-mov   word ptr [bp - 01Ch], bx
-mov   word ptr [bp - 01Ah], di
 
 mov   cx, word ptr es:[di]
-mov   word ptr [bp - 016h], dx
-cmp   cx, word ptr es:[bx]
+cmp   cx, word ptr es:[si]
 je    aimtraverse_floorheights_equal
 
 ; 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
@@ -6053,14 +6037,13 @@ mov   word ptr ds:[_bottomslope + 2], dx
 
 
 aimtraverse_floorheights_equal:
-les   bx, dword ptr [bp - 01Ch]
 
 
 
-mov   di, es
+
 mov   cx, SECTORS_SEGMENT
 mov   es, cx
-mov   ax, word ptr es:[bx + 2]
+mov   ax, word ptr es:[si + 2]
 cmp   ax, word ptr es:[di + 2]
 je    aimtraverse_ceilingheights_equal
 
@@ -6076,11 +6059,12 @@ rcl   ax, 1
 sar   dx, 1
 rcl   ax, 1
 
+pop   cx ; dist hi
+pop   bx ; dist lo
+
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 
-mov   cx, word ptr [bp - 016h] ; dist hi
-mov   bx, si				   ; dist lo todo les?
 
 call  FixedDiv_
 
