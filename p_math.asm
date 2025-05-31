@@ -5923,20 +5923,15 @@ PUBLIC PTR_AimTraverse_
 ; bp - 2 INTERCEPTS_SEGMENT
 ; bp - 4 unused
 ; bp - 6 unused
-; bp - 8 thinker near ptr
-; bp - 0Ah thingtopslope lo
-; bp - 0Ch 
-; bp - 0Eh thingtopslope hi
-
-
-; bp - 010h thingtopslope lo
-
+; bp - 8 unused
+; bp - 0Ah unused
+; bp - 0Ch unused
+; bp - 0Eh unused
+; bp - 010h unused
 ; bp - 012h unused
 ; bp - 014h unused
-
 ; bp - 016h attack range high
 ; bp - 018h mobjpos ptr
-
 ; bp - 01Ah backsector offset
 ; bp - 01Ch frontsector offset
 
@@ -5978,7 +5973,6 @@ SHIFT_MACRO shl   bx 2
 mov   di, bx
 SHIFT_MACRO shl   di 2
 
-mov   word ptr [bp - 0Ch], di
 mov   ax, LINES_SEGMENT
 mov   es, ax
 mov   ax, word ptr es:[bx + 2]
@@ -6138,13 +6132,12 @@ aimtraverse_is_not_a_line:
 
 imul  ax, bx, SIZEOF_THINKER_T
 add   ax, (_thinkerlist + 4)
-mov   word ptr [bp - 8], ax
 cmp   ax, word ptr ds:[_shootthing]
 je    exit_aimtraverse_return_1
+push  ax  ; thing ptr
 imul  di, bx, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
-mov   word ptr [bp - 018h], di
 test  byte ptr es:[di + 014h], MF_SHOOTABLE
 je    exit_aimtraverse_return_1
 
@@ -6165,12 +6158,13 @@ mov   es, cx
 mov   cx, dx
 xchg  ax, bx
 
+pop   si    ; thinker ptr
+
 push  bx
 push  cx  ; need these twice. grab later...
 
 les   ax, dword ptr es:[di + 8]
 mov   dx, es
-mov   si, word ptr [bp - 8]   ; thinker ptr
 
 add   ax, word ptr [si + 0Ah]
 adc   dx, word ptr [si + 0Ch]
@@ -6178,8 +6172,6 @@ sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 call  FixedDiv_
 
-mov   word ptr [bp - 010h], ax
-mov   word ptr [bp - 0Eh], dx
 
 
 ;	if (thingtopslope < bottomslope) {
@@ -6187,7 +6179,6 @@ mov   word ptr [bp - 0Eh], dx
 ;	}
 
 
-mov   si, dx
 cmp   dx, word ptr ds:[_bottomslope + 2]
 jl    exit_aimtraverse_return_1
 jne   done_checking_thingtopslope
@@ -6205,6 +6196,7 @@ ret
 done_checking_thingtopslope:
 
 
+
 ;    thingbottomslope = FixedDiv (th_pos->z.w - shootz.w, dist);
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
@@ -6213,7 +6205,14 @@ mov   es, cx
 pop   cx
 pop   bx  ; get dist again
 
-les   ax, dword ptr es:[di + 8]
+push  si
+mov   si, dx  ; si:di get thingtopslope (eventually..)
+
+
+push  di  ; store mobjpos ptr for possible write later
+
+les   di, dword ptr es:[di + 8]
+xchg  ax, di     ; now si:di are thingslope. 
 mov   dx, es
 
 
@@ -6225,28 +6224,25 @@ call  FixedDiv_
 ;		return true;			// shot under the thing
 ;	}
 
-
 cmp   dx, word ptr ds:[_topslope + 2]
-jg    exit_aimtraverse_return_1_3
+jg    exit_aimtraverse_return_1_3  ; 0Dh bytes out
 jne   thing_can_be_hit
 cmp   ax, word ptr ds:[_topslope + 0]
-ja    exit_aimtraverse_return_1_3
+ja    exit_aimtraverse_return_1_3  ; 15h bytes out
 thing_can_be_hit:
 
 ;    // this thing can be hit!
 ;    if (thingtopslope > topslope)
 ;		thingtopslope = topslope;
 
-mov   cx, word ptr [bp - 010h]
 cmp   si, word ptr ds:[_topslope + 2]
 jg    do_cap_topslope
 jne   dont_cap_topslope
-cmp   cx, word ptr ds:[_topslope + 0]
+cmp   di, word ptr ds:[_topslope + 0]
 jbe   dont_cap_topslope
 do_cap_topslope:
-les   cx, dword ptr ds:[_topslope + 0]
-mov   word ptr [bp - 010h], cx
-mov   word ptr [bp - 0Eh], es
+les   di, dword ptr ds:[_topslope + 0]
+mov   si, es
 dont_cap_topslope:
 
 cmp   dx, word ptr ds:[_bottomslope + 2]
@@ -6267,17 +6263,15 @@ dont_cap_botslope:
 ;	linetarget_pos = th_pos;
  ;   return false;			// don't go any farther
 
-add   ax, word ptr [bp - 010h]
-adc   dx, word ptr [bp - 0Eh]
+add   ax, di
+adc   dx, si
 sar   dx, 1
 rcr   ax, 1
 mov   word ptr ds:[_aimslope+0], ax
 mov   word ptr ds:[_aimslope+2], dx
-mov   ax, word ptr [bp - 8]
-mov   word ptr ds:[_linetarget], ax
 
-mov   ax, word ptr [bp - 018h]
-mov   word ptr ds:[_linetarget_pos+0], ax
+pop   word ptr ds:[_linetarget] 	  ; thing ptr
+pop   word ptr ds:[_linetarget_pos+0] ; thing pos ptr
 mov   word ptr ds:[_linetarget_pos+2], MOBJPOSLIST_6800_SEGMENT
 
 xor   al, al
