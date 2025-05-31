@@ -159,8 +159,16 @@ void 	__far P_RemoveMobj (mobj_t __near* mobj);
 boolean	__near P_SetMobjState(mobj_t __near* mobj, statenum_t state);
 void __near P_MobjThinker(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef);
 
+// todo re-enable
+
+//#pragma aux P_SpawnPuffParams __parm [dx ax] [cx bx] [si di] __modify [ax bx cx dx si di];
+//#pragma aux (P_SpawnPuffParams) P_SpawnPuff;
 void	__near P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
+
+// #pragma aux P_SpawnBloodParams __parm [dx ax] [cx bx] [si di] __modify [ax bx cx dx si di];
+// #pragma aux (P_SpawnBloodParams) P_SpawnBlood;
 void 	__near P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
+
 THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type);
 void	__near P_SpawnPlayerMissile (mobjtype_t type);
 

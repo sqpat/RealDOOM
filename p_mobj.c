@@ -867,7 +867,9 @@ void __far P_RemoveMobj (mobj_t __near* mobj) {
 //
 // P_SpawnPuff
 //
-
+// todo reenable
+// #pragma aux P_SpawnPuffParams __parm [dx ax] [cx bx] [si di]  __modify [ax bx cx dx si di];                    
+// #pragma aux (P_SpawnPuffParams) P_SpawnPuff;
 void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
 	mobj_t __near*	th;
 	THINKERREF thRef;
@@ -880,12 +882,13 @@ void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
     th->momz.h.intbits = 1;
     th->tics -= P_Random()&3;
 
-    if (th->tics < 1 || th->tics > 240)
+    if (th->tics < 1 || th->tics > 240){
 		th->tics = 1;
-	
+	}
     // don't make punches spark on the wall
-    if (attackrange16 == MELEERANGE)
+    if (attackrange16 == MELEERANGE){
 		P_SetMobjState (th, S_PUFF3);
+	}
 }
 
 

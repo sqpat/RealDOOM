@@ -5529,8 +5529,8 @@ adc   dx, word ptr ds:[_trace+2]
 push  dx ; x hi
 push  ax ; x lo
 
-mov   cx, si
-mov   bx, di
+mov   cx, si ; frac hi
+mov   bx, di ; frac lo
 
 ;    y = trace.y.w + FixedMul (trace.dy.w, frac);
 
@@ -5539,11 +5539,14 @@ mov   dx, es
 call  FixedMul_
 add   ax, word ptr ds:[_trace+4]
 adc   dx, word ptr ds:[_trace+6]
+
 push  dx ; y hi
 push  ax ; y lo
 
-mov   cx, si
-mov   bx, di
+;		z = shootz.w  + FixedMul (aimslope, P_GetAttackRangeMult(attackrange16, frac));
+
+mov   cx, si ; frac hi
+mov   bx, di ; frac lo
 mov   ax, word ptr ds:[_attackrange16]
 call  P_GetAttackRangeMult_
 
@@ -5555,21 +5558,29 @@ call  FixedMul_
 
 
 les   di, dword ptr ds:[_shootz+0]
-add   di, ax
 mov   si, es
+add   di, ax
 adc   si, dx
-; si:di has result
+; si:di has z
+
+;if (sectors[li_physics->frontsecnum].ceilingpic == skyflatnum) {
+
 
 les   bx, dword ptr [bp - 8]			; linephys ptr
-mov   bx, word ptr es:[bx + 0Ah]
+mov   bx, word ptr es:[bx + 0Ah]		; frontsecnum
 SHIFT_MACRO shl   bx 4
 
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
-mov   dl, byte ptr es:[bx+5]
+mov   dl, byte ptr es:[bx+5]			; ceilingpic
 
-cmp   dl, byte ptr ds:[_skyflatnum]
+cmp   dl, byte ptr ds:[_skyflatnum]	   ; todo selfmodify at level start and dont use dl lookup?
 jne   do_puff
+
+;		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[li_physics->frontsecnum].ceilingheight);
+;		if (z > temp.w) {
+;			return false;
+;		}
 
 mov   dx, word ptr es:[bx + 2]
 xor   cx, cx
@@ -5599,12 +5610,8 @@ mov   es, dx
 mov   dl, byte ptr es:[bx + 5]
 
 cmp   dl, byte ptr ds:[_skyflatnum]
-jne   do_puff
-exit_shoottraverse_return_0:
-LEAVE_MACRO 
-POPA_NO_AX_MACRO
-xor   al, al
-ret   
+je    exit_shoottraverse_return_0
+
 do_puff:
 
 pop   bx    ; y lo
@@ -5612,10 +5619,12 @@ pop   cx    ; y hi
 pop   ax    ; x lo
 pop   dx    ; x hi
 
-push  si	; hi word (spawnpuff arg)
-push  di	; low word (spawnpuff arg)
+; si:di are hi/lo z for spawnpuff
+push  si
+push  di
 
 call  P_SpawnPuff_
+exit_shoottraverse_return_0:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 xor   al, al
@@ -5835,26 +5844,26 @@ add   bh, 0D8h
 hitthing_done_with_rangeswitchblock:
 
 
-mov   si, word ptr es:[si + 2]
-adc   si, 0FFFFh
+mov   cx, word ptr es:[si + 2]
+adc   cx, 0FFFFh
 
 ;    x = trace.x.w + FixedMul (trace.dx.w, frac);
 les   ax, dword ptr ds:[_trace+8]
 mov   dx, es
-mov   cx, si
+push  cx       ; backup frac hi
 mov   di, bx   ; backup
 call  FixedMul_
-
 
 
 add   ax, word ptr ds:[_trace+0]
 adc   dx, word ptr ds:[_trace+2]
 
-push  dx ; need again later...
+pop   cx       ; restore frac hi
+mov   bx, di
+
+push  dx ; store x. need again later...
 push  ax
 
-mov   cx, si
-mov   bx, di
 
 ;    y = trace.y.w + FixedMul (trace.dy.w, frac);
 les   ax, dword ptr ds:[_trace+0Ch]
@@ -5862,16 +5871,17 @@ mov   dx, es
 call  FixedMul_
 
 
-;    z = shootz.w + FixedMul (aimslope, P_GetAttackRangeMult(attackrange16, in->frac));
 
 add   ax, word ptr ds:[_trace+4]
 adc   dx, word ptr ds:[_trace+6]
+;    z = shootz.w + FixedMul (aimslope, P_GetAttackRangeMult(attackrange16, in->frac));
 
 mov   es, word ptr [bp - 2]
 les   bx, dword ptr es:[si]
 mov   cx, es
-mov   si, ax	; store di:si
-mov   di, dx
+xchg  ax, di	; store y in  si:di
+mov   si, dx
+
 mov   ax, word ptr ds:[_attackrange16]
 
 call  P_GetAttackRangeMult_
@@ -5885,20 +5895,30 @@ call  FixedMul_
 
 add   ax, word ptr ds:[_shootz+0]
 adc   dx, word ptr ds:[_shootz+2]
-les   bx, dword ptr [bp - 8]
-test  byte ptr es:[bx + 016h], MF_NOBLOOD
+
+; prep for spawnpuff/blood func call
 ; these args go into both functions...
-push  dx	
-push  ax      ; todo fix
-mov   cx, di
-mov   bx, si
-pop   ax
-pop   dx
+; dx:ax = x
+; cx:bx = y
+; si:di = z
+
+mov   cx, si  ; y hi
+mov   bx, di  ; y lo
+xchg  ax, di  ; z lo  into di
+
+les   si, dword ptr [bp - 8]
+test  byte ptr es:[si + 016h], MF_NOBLOOD
+mov   si, dx  ; z hi
+pop   ax   ; x lo
+pop   dx   ; x hi
+
+push  si
+push  di
 
 je    do_spawn_blood
 
 call  P_SpawnPuff_
-done_spawning_blood:
+done_spawning_blood_or_puff:
 mov   cx, word ptr ds:[_la_damage]
 test  cx, cx
 jne   do_damage
@@ -5916,7 +5936,7 @@ ret
 do_spawn_blood:
 push  word ptr ds:[_la_damage]
 call  P_SpawnBlood_
-jmp   done_spawning_blood
+jmp   done_spawning_blood_or_puff
 
 ENDP
 
@@ -5925,6 +5945,8 @@ jmp   aimtraverse_is_not_a_line
 
 ;boolean __near PTR_AimTraverse (intercept_t __far* in);
 
+
+; this function could probably use bp internally for something?
 PROC PTR_AimTraverse_ NEAR
 PUBLIC PTR_AimTraverse_
 
@@ -6180,13 +6202,13 @@ pop   cx
 pop   bx  ; get dist again
 
 push  si
-mov   si, dx  ; si:di get thingtopslope (eventually..)
 
 
 push  di  ; store mobjpos ptr for possible write later
 
 les   di, dword ptr es:[di + 8]
-xchg  ax, di     ; now si:di are thingslope. 
+mov   si, dx  ; si:di get thingtopslope (eventually..)
+xchg  ax, di  ; now si:di are thingslope. 
 mov   dx, es
 
 
