@@ -7052,77 +7052,78 @@ ret   6
 ENDP
 
 
-COMMENT  @
 
 PROC P_UseLines_ NEAR
 PUBLIC P_UseLines_
 
-0x0000000000000638:  53                   push  bx
-0x0000000000000639:  51                   push  cx
-0x000000000000063a:  52                   push  dx
-0x000000000000063b:  56                   push  si
-0x000000000000063c:  57                   push  di
-0x000000000000063d:  55                   push  bp
-0x000000000000063e:  89 E5                mov   bp, sp
-0x0000000000000640:  83 EC 08             sub   sp, 8
-0x0000000000000643:  C4 1E 0C 1E          les   bx, ptr ds:[_playerMobj_pos]
-0x0000000000000647:  26 8B 47 10          mov   ax, word ptr es:[bx + 010h]
-0x000000000000064b:  26 8B 17             mov   dx, word ptr es:[bx]
-0x000000000000064e:  26 8B 77 06          mov   si, word ptr es:[bx + 6]
-0x0000000000000652:  89 56 F8             mov   word ptr [bp - 8], dx
-0x0000000000000655:  26 8B 57 02          mov   dx, word ptr es:[bx + 2]
-0x0000000000000659:  C1 E8 03             shr   ax, 3
-0x000000000000065c:  89 56 FC             mov   word ptr [bp - 4], dx
-0x000000000000065f:  26 8B 57 04          mov   dx, word ptr es:[bx + 4]
-0x0000000000000663:  89 C3                mov   bx, ax
-0x0000000000000665:  B8 16 31             mov   ax, FINESINE_SEGMENT
-0x0000000000000668:  C1 E3 02             shl   bx, 2
-0x000000000000066b:  8E C0                mov   es, ax
-0x000000000000066d:  8D BF 00 20          lea   di, [bx + 02000h]
-0x0000000000000671:  89 56 FE             mov   word ptr [bp - 2], dx
-0x0000000000000674:  26 8B 05             mov   ax, word ptr es:[di]
-0x0000000000000677:  26 8B 55 02          mov   dx, word ptr es:[di + 2]
-0x000000000000067b:  8B 7E F8             mov   di, word ptr [bp - 8]
-0x000000000000067e:  B1 06                mov   cl, 6
-0x0000000000000680:  D3 E2                shl   dx, cl
-0x0000000000000682:  D3 C0                rol   ax, cl
-0x0000000000000684:  31 C2                xor   dx, ax
-0x0000000000000686:  81 E0 C0 FF          and   ax, 0xffc0
-0x000000000000068a:  31 C2                xor   dx, ax
-0x000000000000068c:  01 C7                add   di, ax
-0x000000000000068e:  8B 46 FC             mov   ax, word ptr [bp - 4]
-0x0000000000000691:  11 D0                adc   ax, dx
-0x0000000000000693:  89 46 FA             mov   word ptr [bp - 6], ax
-0x0000000000000696:  26 8B 57 02          mov   dx, word ptr es:[bx + 2]
-0x000000000000069a:  26 8B 07             mov   ax, word ptr es:[bx]
-0x000000000000069d:  68 E9 7A             push  0x7ae9
-0x00000000000006a0:  B1 06                mov   cl, 6
-0x00000000000006a2:  D3 E2                shl   dx, cl
-0x00000000000006a4:  D3 C0                rol   ax, cl
-0x00000000000006a6:  31 C2                xor   dx, ax
-0x00000000000006a8:  81 E0 C0 FF          and   ax, 0xffc0
-0x00000000000006ac:  31 C2                xor   dx, ax
-0x00000000000006ae:  6A 01                push  1
-0x00000000000006b0:  03 46 FE             add   ax, word ptr [bp - 2]
-0x00000000000006b3:  11 F2                adc   dx, si
-0x00000000000006b5:  52                   push  dx
-0x00000000000006b6:  8B 5E FE             mov   bx, word ptr [bp - 2]
-0x00000000000006b9:  50                   push  ax
-0x00000000000006ba:  89 F1                mov   cx, si
-0x00000000000006bc:  FF 76 FA             push  word ptr [bp - 6]
-0x00000000000006bf:  8B 56 FC             mov   dx, word ptr [bp - 4]
-0x00000000000006c2:  57                   push  di
-0x00000000000006c3:  8B 46 F8             mov   ax, word ptr [bp - 8]
-0x00000000000006c6:  E8 F6 0A             call  0x11bf
-0x00000000000006c9:  C9                   LEAVE_MACRO 
-0x00000000000006ca:  5F                   pop   di
-0x00000000000006cb:  5E                   pop   si
-0x00000000000006cc:  5A                   pop   dx
-0x00000000000006cd:  59                   pop   cx
-0x00000000000006ce:  5B                   pop   bx
-0x00000000000006cf:  C3                   ret   
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 8
+les   bx, dword ptr ds:[_playerMobj_pos]
+mov   ax, word ptr es:[bx + 010h]
+mov   dx, word ptr es:[bx]
+mov   si, word ptr es:[bx + 6]
+mov   word ptr [bp - 8], dx
+mov   dx, word ptr es:[bx + 2]
+shr   ax, 3
+mov   word ptr [bp - 4], dx
+mov   dx, word ptr es:[bx + 4]
+mov   bx, ax
+mov   ax, FINESINE_SEGMENT
+shl   bx, 2
+mov   es, ax
+lea   di, [bx + 02000h]
+mov   word ptr [bp - 2], dx
+mov   ax, word ptr es:[di]
+mov   dx, word ptr es:[di + 2]
+mov   di, word ptr [bp - 8]
+mov   cl, 6
+shl   dx, cl
+rol   ax, cl
+xor   dx, ax
+and   ax, 0FFC0h
+xor   dx, ax
+add   di, ax
+mov   ax, word ptr [bp - 4]
+adc   ax, dx
+mov   word ptr [bp - 6], ax
+mov   dx, word ptr es:[bx + 2]
+mov   ax, word ptr es:[bx]
+push  OFFSET PTR_UseTraverse_
+mov   cl, 6
+shl   dx, cl
+rol   ax, cl
+xor   dx, ax
+and   ax, 0FFC0h
+xor   dx, ax
+push  1
+add   ax, word ptr [bp - 2]
+adc   dx, si
+push  dx
+mov   bx, word ptr [bp - 2]
+push  ax
+mov   cx, si
+push  word ptr [bp - 6]
+mov   dx, word ptr [bp - 4]
+push  di
+mov   ax, word ptr [bp - 8]
+call  P_PathTraverse_
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
 
 ENDP
+
+COMMENT  @
 
 PROC PIT_RadiusAttack_ NEAR
 PUBLIC PIT_RadiusAttack_
