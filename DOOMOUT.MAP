@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/30 00:35:27
+Created on:       25/05/30 00:50:49
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -64,7 +64,7 @@ p_floor_TEXT           CODE           AUTO           0a86:4e90       000007f6
 p_inter_TEXT           CODE           AUTO           0a86:5690       00000c7f
 p_lights_TEXT          CODE           AUTO           0a86:6310       000003ed
 p_map_TEXT             CODE           AUTO           0a86:6700       00000979
-P_MATH_TEXT            CODE           AUTO           0a86:707a       00001ca5
+P_MATH_TEXT            CODE           AUTO           0a86:707a       00001c9c
 p_plats_TEXT           CODE           AUTO           0a86:8d20       00000419
 p_pspr_TEXT            CODE           AUTO           0a86:9140       00000ae5
 p_spec_TEXT            CODE           AUTO           0a86:9c30       000011c8
@@ -1061,7 +1061,7 @@ Module: p_math.obj(p_math.ASM)
 0a86:8471      P_SlideMove_
 0a86:7681      P_BlockThingsIterator_
 0a86:7c9c      P_TryMove_
-0a86:8b39      PTR_AimTraverse_
+0a86:8b30      PTR_AimTraverse_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0a86:8d28      T_PlatRaise_
 0a86:8e4c      EV_DoPlat_
@@ -1555,4 +1555,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00023d20 (146720.)
 Entry point address: 1d78:1c36
-Link time: 00:00.75
+Link time: 00:00.30

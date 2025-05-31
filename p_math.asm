@@ -5423,12 +5423,12 @@ PROC PTR_ShootTraverse_ NEAR
 PUBLIC PTR_ShootTraverse_
 
 ; bp - 2     INTERCEPTS_SEGMENT
-; bp - 4     unused 
-; bp - 6 	 LINES_PHYSICS_SEGMENT
-; bp - 8     line_phys offset
-; bp - 0Ah   MOBJPOSLIST_6800_SEGMENT
-; bp - 0Ch   thingpos offset?
-; bp - 0Eh   thinker near ptr
+; bp - 4     linenum shift 2            / thinker near ptr
+; bp - 6 	 LINES_PHYSICS_SEGMENT      / MOBJPOSLIST_6800_SEGMENT
+; bp - 8     line_phys offset			/ thingpos offset?
+; bp - 0Ah   
+; bp - 0Ch   
+; bp - 0Eh   
 ; bp - 010h  x hi
 ; bp - 012h  x lo
 ; bp - 016h	 dist
@@ -5436,7 +5436,7 @@ PUBLIC PTR_ShootTraverse_
 ; bp - 01Ah  unused
 ; bp - 01Ch  dist hi ? dupe
 ; bp - 01Eh  dist lo ? dupe
-; bp - 020h  linenum shift 2  
+; bp - 020h  unused
 ; bp - 022h  unused
 ; bp - 024h  x hi  ? dupe
 ; bp - 026h  x lo  ? dupe
@@ -5444,7 +5444,6 @@ PUBLIC PTR_ShootTraverse_
 ; bp - 02Ah  y lo
 ; bp - 02Ch  backsec  offset
 ; bp - 02Eh  frontsec offset
-; bp - 030h  unused
 
 ; todo pusha?
 
@@ -5452,7 +5451,6 @@ PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 push  dx 		; bp - 2  INTERCEPTS_SEGMENT
-sub   sp, 02Ch
 xchg  ax, si    ; si gets intercept offset
 
 ;    if (in->isaline) {
@@ -5469,12 +5467,14 @@ mov   cl, byte ptr es:[bx]			; lineflags
 mov   dx, bx
 
 SHIFT_MACRO shl   bx 2
-mov   word ptr [bp - 020h], bx		; linenum shift 2
+push  bx		    ; linenum shift 2  bp - 4
 SHIFT_MACRO shl   bx 2
 mov   ax, LINES_PHYSICS_SEGMENT
-mov   word ptr [bp - 6], ax
+push  ax		    ; bp - 6
 mov   es, ax
-mov   word ptr [bp - 8], bx			; linenum shift 4
+push  bx			; bp - 8 linenum shift 4
+sub   sp, 026h
+
 ;		if (li_physics->special)
 cmp   byte ptr es:[bx + 0Fh], 0
 je    no_special
@@ -5624,7 +5624,7 @@ not_hitline:
 
 mov   ax, LINES_SEGMENT
 mov   es, ax
-mov   bx, word ptr [bp - 020h]
+mov   bx, word ptr [bp - 4]
 mov   ax, word ptr es:[bx + 2]		; sidenum[1]
 
 les   bx, dword ptr [bp - 8]
@@ -5738,17 +5738,20 @@ ret
 
 is_not_a_line:
 ; bx has thingnum
+
 imul  dx, bx, SIZEOF_THINKER_T
 add   dx, (_thinkerlist + 4)
 cmp   dx, word ptr ds:[_shootthing]
 je    exit_shoottraverse_return_1
-mov   word ptr [bp - 0Eh], dx
 imul  bx, bx, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   word ptr [bp - 0Ch], bx
 
 mov   es, ax
-mov   word ptr [bp - 0Ah], ax
+
+push   dx
+push   ax
+push   bx
+sub   sp, 024h
 test  byte ptr es:[bx + 014h], MF_SHOOTABLE
 jne   did_not_hit_thing
 exit_shoottraverse_return_1:
@@ -5770,10 +5773,10 @@ mov   word ptr [bp - 016h], dx ; store dist
 xchg  ax, bx  				   ; and set as fixeddiv arg
 mov   cx, dx
 
-les   di, dword ptr [bp - 0Ch]
+les   di, dword ptr [bp - 8]
 les   ax, dword ptr es:[di + 8]
 mov   dx, es
-mov   di, word ptr [bp - 0Eh]
+mov   di, word ptr [bp - 4]
 add   ax, word ptr [di + 0Ah]
 adc   dx, word ptr [di + 0Ch]
 
@@ -5793,7 +5796,7 @@ cmp   ax, word ptr ds:[_aimslope+0]
 jnae   exit_shoottraverse_return_1
 
 did_not_shoot_over:
-les   bx, dword ptr [bp - 0Ch]
+les   bx, dword ptr [bp - 8]
 les   ax, dword ptr es:[bx + 8]
 mov   dx, es
 les   bx, dword ptr [bp - 018h]
@@ -5880,7 +5883,7 @@ call  FixedMul_
 
 add   ax, word ptr ds:[_shootz+0]
 adc   dx, word ptr ds:[_shootz+2]
-les   bx, dword ptr [bp - 0Ch]
+les   bx, dword ptr [bp - 8]
 test  byte ptr es:[bx + 016h], MF_NOBLOOD
 ; these args go into both functions...
 push  dx	
@@ -5901,7 +5904,7 @@ jmp   exit_shoottraverse_return_0
 do_damage:
 mov   dx, word ptr ds:[_shootthing]
 mov   bx, dx
-mov   ax, word ptr [bp - 0Eh]
+mov   ax, word ptr [bp - 4]
 call  P_DamageMobj_
 exit_aimtraverse_return_0:
 LEAVE_MACRO 
