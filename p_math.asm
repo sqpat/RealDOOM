@@ -6791,6 +6791,7 @@ pop   di
 pop   si
 pop   cx
 ret   
+
 aim_line_not_melee:
 ja    aim_line_not_chainsaw
 ; chainsaw
@@ -6908,6 +6909,7 @@ mov   bp, sp
 sub   sp, 8
 push  ax 				; bp - 0Ah  thing
 mov   di, dx			; di gets angle
+mov   word ptr ds:[_attackrange16], bx
 mov   si, bx			; si gets distance..
 mov   cx, ax
 mov   word ptr ds:[_shootthing], ax
@@ -6947,8 +6949,42 @@ mov   cx, es
 ; dx:ax   cosine
 
 cmp   si, CHAINSAWRANGE
-jb    lineattack_is_melee
-jmp   lineattack_not_melee
+jna    lineattack_is_melee
+
+lineattack_not_melee:
+
+; shift 10
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+mov   dh, dl
+mov   dl, ah
+mov   ah, al
+and   ax, 0FC00h
+
+; shift 10
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl
+and   bx, 0FC00h
+
+cmp   si, MISSILERANGE
+jne   lineattack_done_with_switchblock
+
+; shift 1 more (11 total)
+sal   ax, 1
+rcl   dx, 1
+
+; shift 1 more (11 total)
+sal   bx, 1
+rcl   cx, 1
+jmp   lineattack_done_with_switchblock
+
 lineattack_is_melee:
 
 ; shift 6
@@ -6971,6 +7007,21 @@ mov   cl, bh
 mov   bh, bl
 and   bl, 0C0h
 
+cmp   si, CHAINSAWRANGE
+jne    lineattack_done_with_switchblock
+
+lineattack_is_chainsaw:
+
+mov   si, FINESINE_SEGMENT
+mov   es, si
+; es:di
+
+; already have shift 6. add the extra sine/cosine
+
+add   ax, word ptr es:[di + 02000h]
+adc   dx, word ptr es:[di + 02002h]
+add   bx, word ptr es:[di]
+adc   cx, word ptr es:[di + 2]
 
 lineattack_done_with_switchblock:
 
@@ -6984,13 +7035,13 @@ adc   dx, word ptr [bp - 6]
 add   bx, word ptr [bp - 4]
 adc   cx, word ptr [bp - 2]
 
+
 push  OFFSET PTR_ShootTraverse_
 push  (PT_ADDLINES OR PT_ADDTHINGS)
 push cx
 push bx
 push dx
 push ax
-
 
 
 les   bx, dword ptr [bp - 0Eh]
@@ -7011,12 +7062,11 @@ les   ax, dword ptr [bp + 0Ah]
 mov   word ptr ds:[_aimslope+0], ax
 mov   word ptr ds:[_aimslope+2], es
 
-mov   ax, word ptr [bp - 8]
-mov   dx, word ptr [bp - 6]
-mov   bx, word ptr [bp - 4]
-mov   cx, word ptr [bp - 2]
+les   ax, dword ptr [bp - 8]
+mov   dx, es
+les   bx, dword ptr [bp - 4]
+mov   cx, es
 
-mov   word ptr ds:[_attackrange16], si
 
 
 call  P_PathTraverse_
@@ -7026,95 +7076,7 @@ pop   si
 pop   cx
 ret   6
 
-lineattack_not_melee:
-je    lineattack_is_chainsaw
-cmp   si, MISSILERANGE
-je    lineattack_is_missile
-; half missile
 
-; shift 10
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-mov   dh, dl
-mov   dl, ah
-mov   ah, al
-and   ax, 0FC00h
-
-; shift 10
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-mov   ch, cl
-mov   cl, bh
-mov   bh, bl
-and   bx, 0FC00h
-
-jmp   lineattack_done_with_switchblock
-lineattack_is_chainsaw:
-
-mov   si, FINESINE_SEGMENT
-mov   es, si
-; es:di
-
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-mov   dh, dl
-mov   dl, ah
-mov   ah, al
-and   al, 0C0h
-
-add   ax, word ptr es:[di + 02000h]
-adc   dx, word ptr es:[di + 02002h]
-
-
-; shift 6
-sar   cx, 1
-rcr   bx, 1
-sar   cx, 1
-rcr   bx, 1
-mov   ch, cl
-mov   cl, bh
-mov   bh, bl
-and   bl, 0C0h
-
-add   bx, word ptr es:[di]
-adc   cx, word ptr es:[di + 2]
-
-jmp   lineattack_done_with_switchblock
-
-lineattack_is_missile:
-
-; shift 11
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-mov   dh, dl
-mov   dl, ah
-mov   ah, al
-and   ax, 0F800h
-
-; shift 11
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-mov   ch, cl
-mov   cl, bh
-mov   bh, bl
-and   bx, 0F800h
-
-
-jmp   lineattack_done_with_switchblock
 
 
 ENDP
