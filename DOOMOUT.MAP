@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/31 13:46:49
+Created on:       25/05/31 14:02:20
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -63,8 +63,8 @@ p_enemy_TEXT           CODE           AUTO           0a86:2860       0000262b
 p_floor_TEXT           CODE           AUTO           0a86:4e90       000007f6
 p_inter_TEXT           CODE           AUTO           0a86:5690       00000c7f
 p_lights_TEXT          CODE           AUTO           0a86:6310       000003ed
-p_map_TEXT             CODE           AUTO           0a86:6700       00000047
-P_MATH_TEXT            CODE           AUTO           0a86:6748       000022c9
+p_map_TEXT             CODE           AUTO           0a86:6700       00000000
+P_MATH_TEXT            CODE           AUTO           0a86:6700       00002312
 p_plats_TEXT           CODE           AUTO           0a86:8a20       00000419
 p_pspr_TEXT            CODE           AUTO           0a86:8e40       00000ae5
 p_spec_TEXT            CODE           AUTO           0a86:9930       000011c8
@@ -1022,45 +1022,44 @@ Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0a86:6570      EV_LightChange_
 0a86:6642      T_Glow_
 0a86:66a0      P_SpawnGlowingLight_
-Module: p_map.obj(C:\REALDOOM\p_map.c)
-0a86:6700      P_ChangeSector_
 Module: p_math.obj(p_math.ASM)
-0a86:77c6*     PIT_CheckThing_
-0a86:7590*     P_HitSlideLine_
-0a86:6bc1      P_SetThingPosition_
-0a86:6f1a*     P_TraverseIntercepts_
-0a86:8788*     PIT_RadiusAttack_
-0a86:6ca2      R_PointInSubsector_
-0a86:6a41*     P_InterceptVector_
-0a86:7985      P_CheckPosition_
-0a86:8483      P_AimLineAttack_
-0a86:6cdf*     P_BlockLinesIterator_
-0a86:6e7b*     PIT_AddThingIntercepts_
-0a86:85d7      P_LineAttack_
-0a86:8815      P_RadiusAttack_
-0a86:82eb*     PIT_StompThing_
-0a86:6824*     P_PointOnLineSide_
-0a86:7d81*     P_GetAttackRangeMult_
-0a86:7524      DoBlockmapLoop_
-0a86:6ac1      P_LineOpening_
-0a86:6da2*     PIT_AddLineIntercepts_
-0a86:6af5      P_UnsetThingPosition_
-0a86:6f8d*     P_PathTraverse_
-0a86:7dc9*     PTR_ShootTraverse_
-0a86:67e7      P_AproxDistance_
-0a86:725d*     PTR_SlideTraverse_
-0a86:696d*     P_PointOnDivlineSide_
-0a86:68ae*     P_BoxOnLineSide_
-0a86:7682*     PIT_CheckLine_
-0a86:870b      P_UseLines_
-0a86:71b7*     PTR_UseTraverse_
-0a86:6748*     R_PointOnSide_
-0a86:887d      PIT_ChangeSector_
-0a86:836f      P_TeleportMove_
-0a86:7b3f      P_SlideMove_
-0a86:6d4f      P_BlockThingsIterator_
-0a86:736a      P_TryMove_
-0a86:8105*     PTR_AimTraverse_
+0a86:777e*     PIT_CheckThing_
+0a86:7548*     P_HitSlideLine_
+0a86:6b79      P_SetThingPosition_
+0a86:6ed2*     P_TraverseIntercepts_
+0a86:8742*     PIT_RadiusAttack_
+0a86:6c5a      R_PointInSubsector_
+0a86:69f9*     P_InterceptVector_
+0a86:793d      P_CheckPosition_
+0a86:843b      P_AimLineAttack_
+0a86:6c97*     P_BlockLinesIterator_
+0a86:6e33*     PIT_AddThingIntercepts_
+0a86:8590      P_LineAttack_
+0a86:87cf      P_RadiusAttack_
+0a86:82a3*     PIT_StompThing_
+0a86:67dc*     P_PointOnLineSide_
+0a86:7d39*     P_GetAttackRangeMult_
+0a86:74dc*     DoBlockmapLoop_
+0a86:6a79      P_LineOpening_
+0a86:6d5a*     PIT_AddLineIntercepts_
+0a86:6aad      P_UnsetThingPosition_
+0a86:6f45*     P_PathTraverse_
+0a86:7d81*     PTR_ShootTraverse_
+0a86:679f      P_AproxDistance_
+0a86:7215*     PTR_SlideTraverse_
+0a86:6925*     P_PointOnDivlineSide_
+0a86:6866*     P_BoxOnLineSide_
+0a86:763a*     PIT_CheckLine_
+0a86:86c5      P_UseLines_
+0a86:716f*     PTR_UseTraverse_
+0a86:6700*     R_PointOnSide_
+0a86:8837*     PIT_ChangeSector_
+0a86:8327      P_TeleportMove_
+0a86:7af7      P_SlideMove_
+0a86:6d07      P_BlockThingsIterator_
+0a86:7322      P_TryMove_
+0a86:89cb      P_ChangeSector_
+0a86:80bd*     PTR_AimTraverse_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0a86:8a28      T_PlatRaise_
 0a86:8b4c      EV_DoPlat_
@@ -1554,4 +1553,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00023a20 (145952.)
 Entry point address: 1d48:1c36
-Link time: 00:00.75
+Link time: 00:00.19

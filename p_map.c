@@ -1731,6 +1731,8 @@ boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj
 //
 // P_ChangeSector
 //
+boolean __near P_ChangeSector ( sector_t __far*	sector, boolean	crunch ) ;
+/*
 boolean __near P_ChangeSector ( sector_t __far*	sector, boolean	crunch ) {
 	sector_physics_t __near* sector_physics = &sectors_physics[sector - sectors];
 
@@ -1746,4 +1748,5 @@ boolean __near P_ChangeSector ( sector_t __far*	sector, boolean	crunch ) {
 	
     return nofit;
 }
+*/
 

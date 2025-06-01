@@ -6533,7 +6533,7 @@ xchg  bx, si  ; restore si
 push  bx      ; bp - 0Eh write original bx plus eight
 
 mov   di, cx
-shl   di, 2
+SHIFT_MACRO shl   di 2
 
 mov   ax, ss
 mov   ds, ax	; restore ds
@@ -6780,7 +6780,7 @@ mov   word ptr [bp - 4], ax
 mov   ax, word ptr es:[bx + 6]
 mov   word ptr [bp - 2], ax
 
-shl   di, 2
+SHIFT_MACRO shl   di 2
 
 mov   cx, FINESINE_SEGMENT
 mov   es, cx
@@ -7522,46 +7522,43 @@ ret
 
 ENDP
 
-COMMENT  @
 
 PROC P_ChangeSector_ NEAR
 PUBLIC P_ChangeSector_
 
-0x0000000000000932:  51                   push  cx
-0x0000000000000933:  56                   push  si
-0x0000000000000934:  57                   push  di
-0x0000000000000935:  55                   push  bp
-0x0000000000000936:  89 E5                mov   bp, sp
-0x0000000000000938:  83 EC 04             sub   sp, 4
-0x000000000000093b:  88 5E FE             mov   byte ptr [bp - 2], bl
-0x000000000000093e:  89 C3                mov   bx, ax
-0x0000000000000940:  C1 FB 04             sar   bx, 4
-0x0000000000000943:  C1 E3 04             shl   bx, 4
-0x0000000000000946:  81 C3 30 EA          add   bx, 0xea30
-0x000000000000094a:  8B 47 04             mov   ax, word ptr [bx + 4]
-0x000000000000094d:  8B 57 06             mov   dx, word ptr [bx + 6]
-0x0000000000000950:  8B 0F                mov   cx, word ptr [bx]
-0x0000000000000952:  8B 5F 02             mov   bx, word ptr [bx + 2]
-0x0000000000000955:  BE 42 6F             mov   si, OFFSET PIT_ChangeSector_
-0x0000000000000958:  89 5E FC             mov   word ptr [bp - 4], bx
-0x000000000000095b:  8A 5E FE             mov   bl, byte ptr [bp - 2]
-0x000000000000095e:  31 FF                xor   di, di
-0x0000000000000960:  88 1E 45 22          mov   byte ptr ds:[_crushchange], bl
-0x0000000000000964:  89 D3                mov   bx, dx
-0x0000000000000966:  8B 56 FC             mov   dx, word ptr [bp - 4]
-0x0000000000000969:  C6 06 46 22 00       mov   byte ptr ds:[_nofit], 0
-0x000000000000096e:  E8 E5 0D             call  DoBlockmapLoop_
-0x0000000000000971:  A0 46 22             mov   al, byte ptr ds:[_nofit]
-0x0000000000000974:  C9                   LEAVE_MACRO 
-0x0000000000000975:  5F                   pop   di
-0x0000000000000976:  5E                   pop   si
-0x0000000000000977:  59                   pop   cx
-0x0000000000000978:  C3                   ret  
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 4
+mov   byte ptr [bp - 2], bl
+mov   bx, ax
+SHIFT_MACRO sar   bx  4
+SHIFT_MACRO shl   bx  4
+add   bx, OFFSET _sectors_physics
+mov   ax, word ptr [bx + 2 * BOXLEFT]    ; 4
+mov   dx, word ptr [bx + 2 * BOXRIGHT]   ; 6
+mov   cx, word ptr [bx + 2 * BOXTOP]     ; 0
+mov   bx, word ptr [bx + 2 * BOXBOTTOM]  ; 2
+mov   si, OFFSET PIT_ChangeSector_
+mov   word ptr [bp - 4], bx
+mov   bl, byte ptr [bp - 2]
+xor   di, di
+mov   byte ptr ds:[_crushchange], bl
+mov   bx, dx
+mov   dx, word ptr [bp - 4]
+mov   byte ptr ds:[_nofit], 0
+call  DoBlockmapLoop_
+mov   al, byte ptr ds:[_nofit]
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret  
 
 ENDP
 
-
-@
 
 
 
