@@ -7423,17 +7423,15 @@ push  di
 push  bp
 mov   bp, sp
 push  cx
-
 mov   si, dx
 mov   di, bx
 mov   ax, dx
-
 call  P_ThingHeightClip_
 test  al, al
 jne   exit_changesector_return_1
 cmp   word ptr [si + 01Ch], 0
 jle   crush_to_gibs
-mov   es, cx
+mov   es, word ptr [bp - 2]
 test  byte ptr es:[di + 016h], MF_DROPPED
 jne   crunch_items
 test  byte ptr es:[di + 014h], MF_SHOOTABLE
@@ -7445,7 +7443,6 @@ test  byte ptr ds:[_leveltime], 3
 je    not_leveltime_mod_3
 exit_changesector_return_1:
 mov   al, 1
-exit_changesector_return:
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -7455,7 +7452,7 @@ mov   dx, S_GIBS
 mov   ax, si
 call  P_SetMobjState_
 mov   si, word ptr ds:[_setStateReturn]
-mov   es, cx
+pop   es
 and   byte ptr es:[di + 014h], ( NOT MF_SOLID)
 xor   ax, ax
 mov   word ptr [si + 0Ah], ax
@@ -7477,7 +7474,6 @@ mov   ax, si
 xor   bx, bx
 mov   dx, bx
 call  P_DamageMobj_
-
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[di + 8]
 mov   dx, word ptr es:[di + 0Ah]
@@ -7485,13 +7481,12 @@ add   ax, word ptr [si + 0Ah]
 adc   dx, word ptr [si + 0Ch]
 sar   dx, 1
 rcr   ax, 1
-mov   bx, word ptr es:[di + 4]
-
 push  word ptr [si + 4]
 push  MT_BLOOD
 push  dx
 push  ax
 
+mov   bx, word ptr es:[di + 4]
 mov   cx, word ptr es:[di + 6]
 les   ax, dword ptr es:[di]
 mov   dx, es
@@ -7499,11 +7494,10 @@ call  P_SpawnMobj_
 call  P_Random_
 mov   dl, al
 call  P_Random_
-xor   dh, dh
 xor   ah, ah
-sub   dx, ax
-mov   ax, dx
-shl   ax, 12
+mov   dh, ah
+sub   ax, dx
+shl   ax, 12	; todo shift 12
 cwd   
 mov   si, word ptr ds:[_setStateReturn]
 mov   word ptr [si + 0Eh], ax
@@ -7515,7 +7509,7 @@ xor   dh, dh
 xor   ah, ah
 sub   dx, ax
 mov   ax, dx
-shl   ax, 12
+shl   ax, 12	; todo shift 12
 cwd   
 mov   word ptr [si + 012h], ax
 mov   word ptr [si + 014h], dx
