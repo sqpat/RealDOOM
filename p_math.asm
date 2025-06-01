@@ -7489,23 +7489,29 @@ call  P_SpawnMobj_
 call  P_Random_
 mov   dl, al
 call  P_Random_
-xor   ah, ah
-mov   dh, ah
-sub   ax, dx
-shl   ax, 12	; todo shift 12
+
+;		mo->momx.w = (P_Random() - P_Random ())<<12;
+;		mo->momy.w = (P_Random() - P_Random ())<<12;
+
+sub   al, dl
+SHIFT_MACRO  shl ax 4
+mov   ah, al
+xor   al, al
 cwd   
+
 mov   si, word ptr ds:[_setStateReturn]
 mov   word ptr [si + 0Eh], ax
 mov   word ptr [si + 010h], dx
 call  P_Random_
 mov   dl, al
 call  P_Random_
-xor   dh, dh
-xor   ah, ah
-sub   dx, ax
-mov   ax, dx
-shl   ax, 12	; todo shift 12
-cwd   
+sub   al, dl
+SHIFT_MACRO  shl ax 4
+mov   ah, al
+xor   al, al
+cwd
+
+
 mov   word ptr [si + 012h], ax
 mov   word ptr [si + 014h], dx
 mov   al, 1
@@ -7536,7 +7542,7 @@ PUBLIC P_ChangeSector_
 0x000000000000094d:  8B 57 06             mov   dx, word ptr [bx + 6]
 0x0000000000000950:  8B 0F                mov   cx, word ptr [bx]
 0x0000000000000952:  8B 5F 02             mov   bx, word ptr [bx + 2]
-0x0000000000000955:  BE 42 6F             mov   si, 0x6f42
+0x0000000000000955:  BE 42 6F             mov   si, OFFSET PIT_ChangeSector_
 0x0000000000000958:  89 5E FC             mov   word ptr [bp - 4], bx
 0x000000000000095b:  8A 5E FE             mov   bl, byte ptr [bp - 2]
 0x000000000000095e:  31 FF                xor   di, di
@@ -7544,7 +7550,7 @@ PUBLIC P_ChangeSector_
 0x0000000000000964:  89 D3                mov   bx, dx
 0x0000000000000966:  8B 56 FC             mov   dx, word ptr [bp - 4]
 0x0000000000000969:  C6 06 46 22 00       mov   byte ptr ds:[_nofit], 0
-0x000000000000096e:  E8 E5 0D             call  0x1756
+0x000000000000096e:  E8 E5 0D             call  DoBlockmapLoop_
 0x0000000000000971:  A0 46 22             mov   al, byte ptr ds:[_nofit]
 0x0000000000000974:  C9                   LEAVE_MACRO 
 0x0000000000000975:  5F                   pop   di
