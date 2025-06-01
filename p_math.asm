@@ -7135,6 +7135,7 @@ ret
 ENDP
 
 
+;always returns 1
 PROC PIT_RadiusAttack_ NEAR
 PUBLIC PIT_RadiusAttack_
 
@@ -7142,101 +7143,126 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 8
 mov   si, dx
-mov   word ptr [bp - 2], cx
 mov   es, cx
-test  byte ptr es:[bx + 014h], 4
+test  byte ptr es:[bx + 014h], MF_SHOOTABLE
 je    exit_radiusattack_return_1
 mov   al, byte ptr [si + 01Ah]
 cmp   al, MT_CYBORG
 je    exit_radiusattack_return_1
 cmp   al, MT_SPIDER
-jne   label_1
+jne   not_boss_unit
 exit_radiusattack_return_1:
 mov   al, 1
 LEAVE_MACRO 
 pop   di
 pop   si
 ret   
-label_1:
-mov   dx, word ptr es:[bx + 2]
-mov   ax, word ptr ds:[_bombspot_pos + 2]
-mov   cx, word ptr ds:[_bombspot_pos + 0]
-mov   word ptr [bp - 8], ax
-mov   di, cx
-mov   ax, word ptr es:[bx]
-mov   es, word ptr [bp - 8]
+not_boss_unit:
+
+;    dx = labs(thing_pos->x.w - bombspot_pos->x.w);
+
+les   ax, dword ptr es:[bx]
+mov   dx, es
+
+les   di, dword ptr ds:[_bombspot_pos + 0]
+
 sub   ax, word ptr es:[di]
 sbb   dx, word ptr es:[di + 2]
 or    dx, dx
-jge   label_2
+jge   bombspot_x_already_positive
 neg   ax
 adc   dx, 0
 neg   dx
-label_2:
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr ds:[_bombspot_pos + 0]
-mov   cx, dx
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr ds:[_bombspot_pos + 2]
-mov   es, word ptr [bp - 2]
-mov   di, word ptr [bp - 8]
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr es:[bx + 4]
-mov   dx, word ptr es:[bx + 6]
-mov   es, word ptr [bp - 8]
-sub   ax, word ptr es:[di + 4]
-sbb   dx, word ptr es:[di + 6]
-or    dx, dx
-jge   label_3
-neg   ax
-adc   dx, 0
-neg   dx
-label_3:
-cmp   cx, dx
-jg    label_4
-jne   label_5
-cmp   ax, word ptr [bp - 6]
-jae   label_5
-label_4:
+bombspot_x_already_positive:
+
+;    dy = labs(thing_pos->y.w - bombspot_pos->y.w);
+
+;mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   es, cx
+
+push  bx  ; store thingpos for later
+les   bx, dword ptr es:[bx + 4]
+mov   cx, es
+
+les   di, dword ptr ds:[_bombspot_pos + 0]
+sub   bx, word ptr es:[di + 4]
+sbb   cx, word ptr es:[di + 6]
+
+or    cx, cx
+jge   bombspot_y_already_positive
+neg   bx
+adc   cx, 0
+neg   cx
+bombspot_y_already_positive:
+
+;    dist.w = dx>dy ? dx : dy;
+
+;dx is dx:ax
+;dy is cx:bx
+
+
+cmp   dx, cx
+jg    use_dx_bombspot
+jne   use_dy_bombspot
+cmp   ax, bx
+jae   use_dx_bombspot
+use_dy_bombspot:
 mov   dx, cx
-label_5:
+use_dx_bombspot:
+
+
+;    dist.h.intbits = (dist.h.intbits - thing->radius ) ;
+
+xor   ax, ax
 mov   al, byte ptr [si + 01Eh]
-xor   ah, ah
 sub   dx, ax
-mov   word ptr [bp - 4], dx
-test  dx, dx
-jl    label_6
-label_8:
-mov   ax, word ptr [bp - 4]
-cmp   ax, word ptr ds:[_bombdamage]
-jl    label_7
-jump_to_exit_radiusattack_return_1:
-jmp   exit_radiusattack_return_1
-label_7:
+
+;	if (dist.h.intbits < 0) {
+;		dist.h.intbits = 0;
+;	}
+
+jnl   dont_zero_dist
+xor   dx, dx
+dont_zero_dist:
+
+;	if (dist.h.intbits >= bombdamage) {
+;		return true;	// out of range
+;	}
+
+
+cmp   dx, word ptr ds:[_bombdamage]
+jnl    exit_radiusattack_return_1
+
+dist_less_than_bombdamage:
+
+;    if ( P_CheckSight (thing, bombspot, FP_OFF(thing_pos), FP_OFF(bombspot_pos)) ) {
+;		// must be in direct path
+;		P_DamageMobj (thing, bombspot, bombsource, bombdamage - dist.h.intbits);
+;    }
+
+;    bx already thingpos?
+pop   bx ; get thingpos
 
 mov   cx, word ptr ds:[_bombspot_pos + 0]
 mov   ax, si
 mov   dx, word ptr ds:[_bombspot]
 call  dword ptr ds:[_P_CheckSight]
+
 test  al, al
-je    jump_to_exit_radiusattack_return_1
-mov   ax, si
+
+je    exit_radiusattack_return_1
+xchg  ax, si
 mov   dx, word ptr [di]
 mov   cx, word ptr ds:[_bombdamage]
 sub   cx, word ptr [bp - 4]
-mov   bx, word ptr ds:[_bombsource] ; todo les
+mov   bx, word ptr ds:[_bombsource] ; todo les. reorder?
 call  P_DamageMobj_
 mov   al, 1
 LEAVE_MACRO 
 pop   di
 pop   si
 ret   
-label_6:
-xor   al, al
-mov   word ptr [bp - 4], ax
-jmp   label_8
 
 ENDP
 

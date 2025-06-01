@@ -1576,6 +1576,7 @@ void __near P_UseLines ()  {
 // "bombsource" is the creature
 // that caused the explosion at "bombspot".
 //
+boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos);
 /*
 boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos)  {
     fixed_t	dx;
