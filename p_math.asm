@@ -6731,24 +6731,32 @@ jmp   aim_line_done_with_switchblock_shift
 aim_line_is_melee:
 
 ; shift 6
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-mov   dh, dl
-mov   dl, ah
-mov   ah, al
-and   al, 0C0h
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
 
 ; shift 6
-sar   cx, 1
-rcr   bx, 1
-sar   cx, 1
-rcr   bx, 1
-mov   ch, cl
-mov   cl, bh
-mov   bh, bl
-and   bl, 0C0h
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
 
 cmp   si, CHAINSAWRANGE
 jne   aim_line_done_with_switchblock_shift
@@ -6960,24 +6968,32 @@ jmp   lineattack_done_with_switchblock
 lineattack_is_melee:
 
 ; shift 6
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-mov   dh, dl
-mov   dl, ah
-mov   ah, al
-and   al, 0C0h
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
 
 ; shift 6
-sar   cx, 1
-rcr   bx, 1
-sar   cx, 1
-rcr   bx, 1
-mov   ch, cl
-mov   cl, bh
-mov   bh, bl
-and   bl, 0C0h
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
 
 cmp   si, CHAINSAWRANGE
 jne    lineattack_done_with_switchblock
@@ -7087,28 +7103,35 @@ mov   cx, es
 
 
 ; shift 6
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-mov   dh, dl
-mov   dl, ah
-mov   ah, al
-and   al, 0C0h
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
 
 add   ax, word ptr [bp - 2]
 adc   dx, word ptr [bp - 4]
 
-
 ; shift 6
-sar   cx, 1
-rcr   bx, 1
-sar   cx, 1
-rcr   bx, 1
-mov   ch, cl
-mov   cl, bh
-mov   bh, bl
-and   bl, 0C0h
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
 
 add   bx, di
 adc   cx, si
