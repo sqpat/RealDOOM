@@ -7169,7 +7169,7 @@ les   di, dword ptr ds:[_bombspot_pos + 0]
 
 sub   ax, word ptr es:[di]
 sbb   dx, word ptr es:[di + 2]
-or    dx, dx
+
 jge   bombspot_x_already_positive
 neg   ax
 adc   dx, 0
@@ -7178,8 +7178,7 @@ bombspot_x_already_positive:
 
 ;    dy = labs(thing_pos->y.w - bombspot_pos->y.w);
 
-;mov   cx, MOBJPOSLIST_6800_SEGMENT
-mov   es, cx
+;es:bx still good
 
 push  bx  ; store thingpos for later
 les   bx, dword ptr es:[bx + 4]
@@ -7189,7 +7188,7 @@ les   di, dword ptr ds:[_bombspot_pos + 0]
 sub   bx, word ptr es:[di + 4]
 sbb   cx, word ptr es:[di + 6]
 
-or    cx, cx
+
 jge   bombspot_y_already_positive
 neg   bx
 adc   cx, 0
@@ -7232,7 +7231,7 @@ dont_zero_dist:
 
 
 cmp   dx, word ptr ds:[_bombdamage]
-jnl    exit_radiusattack_return_1
+jnl   exit_radiusattack_return_1
 
 dist_less_than_bombdamage:
 
@@ -7246,6 +7245,7 @@ pop   bx ; get thingpos
 
 mov   cx, word ptr ds:[_bombspot_pos + 0]
 mov   ax, si
+mov   di, dx  ; backup dist intbits
 mov   dx, word ptr ds:[_bombspot]
 call  dword ptr ds:[_P_CheckSight]
 
@@ -7253,10 +7253,11 @@ test  al, al
 
 je    exit_radiusattack_return_1
 xchg  ax, si
-mov   dx, word ptr [di]
+mov   dx, word ptr ds:[_bombspot]
 mov   cx, word ptr ds:[_bombdamage]
-sub   cx, word ptr [bp - 4]
+sub   cx, di
 mov   bx, word ptr ds:[_bombsource] ; todo les. reorder?
+
 call  P_DamageMobj_
 mov   al, 1
 LEAVE_MACRO 
