@@ -1622,7 +1622,7 @@ boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __near*	thing, mobj
 // P_RadiusAttack
 // Source is the creature that caused the explosion at spot.
 //
-void __near P_RadiusAttack (mobj_t __near* spot, mobj_pos_t __far* spot_pos, mobj_t __near* source, int16_t		damage) ;
+void __near P_RadiusAttack (mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage) ;
 /*
 void __near P_RadiusAttack (mobj_t __near* spot, mobj_pos_t __far* spot_pos, mobj_t __near* source, int16_t		damage) {
 	int16_t		xl;

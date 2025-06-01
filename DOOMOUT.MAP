@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/05/31 12:35:35
+Created on:       25/05/31 12:49:46
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -59,12 +59,12 @@ s_sound_TEXT           CODE           AUTO           0a86:0000       0000066f
 s_sbsfx_TEXT           CODE           AUTO           0a86:0670       000017ef
 p_ceilng_TEXT          CODE           AUTO           0a86:1e60       0000038e
 p_doors_TEXT           CODE           AUTO           0a86:21f0       00000664
-p_enemy_TEXT           CODE           AUTO           0a86:2860       00002625
+p_enemy_TEXT           CODE           AUTO           0a86:2860       0000262b
 p_floor_TEXT           CODE           AUTO           0a86:4e90       000007f6
 p_inter_TEXT           CODE           AUTO           0a86:5690       00000c7f
 p_lights_TEXT          CODE           AUTO           0a86:6310       000003ed
 p_map_TEXT             CODE           AUTO           0a86:6700       00000137
-P_MATH_TEXT            CODE           AUTO           0a86:6838       000021f5
+P_MATH_TEXT            CODE           AUTO           0a86:6838       000021f4
 p_plats_TEXT           CODE           AUTO           0a86:8a30       00000419
 p_pspr_TEXT            CODE           AUTO           0a86:8e50       00000ae5
 p_spec_TEXT            CODE           AUTO           0a86:9940       000011c8
@@ -970,31 +970,31 @@ Module: p_enemy.obj(C:\REALDOOM\p_enemy.c)
 0a86:40d0      A_VileTarget_
 0a86:4182+     GetVileMomz_
 0a86:41c6      A_VileAttack_
-0a86:42ce      A_FatRaise_
-0a86:42e2      A_FatAttack1_
-0a86:439a      A_FatAttack2_
-0a86:4448      A_FatAttack3_
-0a86:4520      A_SkullAttack_
-0a86:463e+     A_PainShootSkull_
-0a86:4796      A_PainAttack_
-0a86:47b8      A_PainDie_
-0a86:47f2      A_Scream_
-0a86:4886      A_XScream_
-0a86:4892      A_Pain_
-0a86:48be      A_Fall_
-0a86:48c6      A_Explode_
-0a86:48e4      A_BossDeath_
-0a86:4a6e      A_Hoof_
-0a86:4a82      A_Metal_
-0a86:4a96      A_BabyMetal_
-0a86:4aaa      A_BrainAwake_
-0a86:4b0a      A_BrainPain_
-0a86:4b18      A_BrainScream_
-0a86:4bc4      A_BrainExplode_
-0a86:4c40      A_BrainSpit_
-0a86:4d10      A_SpawnSound_
-0a86:4d24      A_SpawnFly_
-0a86:4e5e      A_PlayerScream_
+0a86:42d2      A_FatRaise_
+0a86:42e6      A_FatAttack1_
+0a86:439e      A_FatAttack2_
+0a86:444c      A_FatAttack3_
+0a86:4524      A_SkullAttack_
+0a86:4642+     A_PainShootSkull_
+0a86:479a      A_PainAttack_
+0a86:47bc      A_PainDie_
+0a86:47f6      A_Scream_
+0a86:488a      A_XScream_
+0a86:4896      A_Pain_
+0a86:48c2      A_Fall_
+0a86:48ca      A_Explode_
+0a86:48ea      A_BossDeath_
+0a86:4a74      A_Hoof_
+0a86:4a88      A_Metal_
+0a86:4a9c      A_BabyMetal_
+0a86:4ab0      A_BrainAwake_
+0a86:4b10      A_BrainPain_
+0a86:4b1e      A_BrainScream_
+0a86:4bca      A_BrainExplode_
+0a86:4c46      A_BrainSpit_
+0a86:4d16      A_SpawnSound_
+0a86:4d2a      A_SpawnFly_
+0a86:4e64      A_PlayerScream_
 Module: p_floor.obj(C:\REALDOOM\p_floor.c)
 0a86:4e90      T_MovePlane_
 0a86:509e      T_MoveFloor_

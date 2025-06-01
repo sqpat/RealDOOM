@@ -7299,51 +7299,108 @@ ENDP
 PROC P_RadiusAttack_ NEAR
 PUBLIC P_RadiusAttack_
 
+;void __near P_RadiusAttack (mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage) ;
+
+; ax spot
+; dx spot_pos
+; bx source
+; cx damage
+
 push  si
 push  di
-push  bp
-mov   bp, sp
+
+; write these first
+;	bombspot = spot;
+;	bombspot_pos = spot_pos;
+;	bombsource = source;
+;	bombdamage = damage;
 
 mov   word ptr ds:[_bombspot], ax
-mov   es, cx
-mov   cx, dx
-mov   dx, word ptr [bp + 8]
-mov   ax, word ptr es:[bx + 6]
-mov   si, ax
-add   si, dx
-sub   si, word ptr ds:[_bmaporgy]
-sar   si, 7
-push  si      ; bp - 2
-sub   ax, dx
-sub   ax, word ptr ds:[_bmaporgy]
-sar   ax, 7
-push  ax     ; bp - 4
+mov   word ptr ds:[_bombspot_pos + 0], dx
+mov   word ptr ds:[_bombsource], bx
+mov   word ptr ds:[_bombdamage], cx
+
+mov   si, cx  ; si gets damage
+
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   word ptr ds:[_bombspot_pos + 2], ax   ; todo hardcode
+
+
+mov   es, ax
+mov   bx, dx
+
+;	pos = spot_pos->y;
+;	pos = spot_pos->x;
+;	xh = (pos.h.intbits + damage - bmaporgx) >> MAPBLOCKSHIFT;
+;	xl = (pos.h.intbits - damage - bmaporgx) >> MAPBLOCKSHIFT;
+
+;	yh = (pos.h.intbits + damage - bmaporgy) >> MAPBLOCKSHIFT;
+;	yl = (pos.h.intbits - damage - bmaporgy) >> MAPBLOCKSHIFT;
+
 mov   ax, word ptr es:[bx + 2]
-mov   si, ax
-add   si, dx
-sub   si, word ptr ds:[_bmaporgx]
-sar   si, 7
-push  si     ; bp - 6
-sub   ax, dx
-sub   ax, word ptr ds:[_bmaporgx]
-sar   ax, 7
-mov   word ptr ds:[_bombspot_pos + 0], bx
-mov   word ptr ds:[_bombspot_pos + 2], es  ; todo hardcode?
+mov   dx, word ptr es:[bx + 6]
+
+les   bx, dword ptr ds:[_bmaporgx]
+sub   ax, bx  ; - bmaporgx
+
+mov   bx, es  ;   copy _bmaporgy
+sub   dx, bx  ; - bmaporgy
+
+mov   bx, ax
+mov   cx, dx
+sub   ax, si   ; - damage
+sub   dx, si   ; - damage
+add   bx, si   ; + damage
+add   cx, si   ; + damage
+
+; shift all right by 7
+
+; shift ax 7
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+    sar   ax, MAPBLOCKSHIFT
+    sar   bx, MAPBLOCKSHIFT
+    sar   cx, MAPBLOCKSHIFT
+    sar   dx, MAPBLOCKSHIFT
+ELSE
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+	
+	xchg ax, bx
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+	xchg ax, bx
+	
+	xchg ax, cx
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+	xchg ax, cx
+	
+	xchg ax, dx
+	sal al, 1
+	mov al, ah
+	cbw
+	rcl ax, 1
+	xchg ax, dx
+ENDIF
+
+
 
 ;	DoBlockmapLoop(xl, yl, xh, yh, PIT_RadiusAttack, false);	
 
 xor   di, di
 mov   si, OFFSET PIT_RadiusAttack_
-mov   word ptr ds:[_bombsource], cx
-mov   word ptr ds:[_bombdamage], dx
-mov   cx, word ptr [bp - 2]
-mov   bx, word ptr [bp - 6]
-mov   dx, word ptr [bp - 4]
+
 call  DoBlockmapLoop_
-LEAVE_MACRO 
+
 pop   di
 pop   si
-ret   2
+ret
 
 ENDP
 

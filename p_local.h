@@ -278,7 +278,7 @@ boolean __near P_ChangeSector (sector_t __far* sector, boolean crunch);
 
 fixed_t __near P_AimLineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance);
 void __near P_LineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage );
-void __near P_RadiusAttack (mobj_t __near*	spot,mobj_pos_t __far* spot_pos,mobj_t __near*	source, int16_t		damage );
+void __near P_RadiusAttack (mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage) ;
 
 
 

@@ -1672,7 +1672,7 @@ void __near A_VileAttack (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 	//todo isnt this just multiplied by 24?
 	fire_pos->x.w = actorTarget_pos->x.w - FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, an, 24*FRACUNIT);
 	fire_pos->y.w = actorTarget_pos->y.w - FixedMulTrigNoShift(FINE_SINE_ARGUMENT, an, 24*FRACUNIT);
-    P_RadiusAttack (fire, fire_pos, actor, 70 );
+    P_RadiusAttack (fire, FP_OFF(fire_pos), actor, 70 );
 }
 
 
@@ -1975,7 +1975,7 @@ void __near A_Fall (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 //
 void __near A_Explode (mobj_t __near* thingy, mobj_pos_t __far* thingy_pos){
 	
-    P_RadiusAttack ( thingy, thingy_pos, (mobj_t __near*)&thinkerlist[ thingy->targetRef].data, 128 );
+    P_RadiusAttack ( thingy, FP_OFF(thingy_pos), (mobj_t __near*)&thinkerlist[ thingy->targetRef].data, 128 );
 
 }
 
