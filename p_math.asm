@@ -2328,7 +2328,7 @@ ENDP
 ; bp + 2    old si
 ; bp + 4    old di
 ; bp + 6    old bp
-; bp + 8    x1 hibits
+; bp + 8    x2 lobits
 ; bp + 0Ah  x2 hibits
 ; bp + 0Ch  y2 lobits
 ; bp + 0Eh  y2 hibits
@@ -7064,12 +7064,12 @@ mov   bp, sp
 ;    angle = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 
 les   bx, dword ptr ds:[_playerMobj_pos]
-mov   ax, word ptr es:[bx + 010h]
+mov   ax, word ptr es:[bx + 010h]        ; angle intbits
 
 push  word ptr es:[bx]		; x lo bp - 2
 push  word ptr es:[bx + 2]  ; x hi bp - 4
 les   di, dword ptr es:[bx + 4]
-mov   si, es
+mov   si, es		;			si:di y
 shr   ax, 1
 and   al, 0FCh  ; same as shr 3, shl 2
 xchg  ax, bx    ; bx has sine/cosine fineangle lookup
@@ -7107,7 +7107,7 @@ sar   cx, 1
 rcr   bx, 1
 mov   ch, cl
 mov   cl, bh
-mov   bh, cl
+mov   bh, bl
 and   bl, 0C0h
 
 add   bx, di
@@ -7115,15 +7115,15 @@ adc   cx, si
 
 ; args to pathtraverse...
 push  OFFSET PTR_UseTraverse_
-push  1
+push  PT_ADDLINES
 push  cx
 push  bx
 push  dx
 push  ax
 
 mov   bx, di
-
 mov   cx, si
+
 les   dx, dword ptr [bp - 4]
 mov   ax, es
 
