@@ -1547,6 +1547,7 @@ boolean	__near PTR_UseTraverse (intercept_t __far* in) {
 // P_UseLines
 // Looks for special lines in front of the player to activate.
 //
+/*
 void __near P_UseLines ()  {
     fineangle_t angle;
     fixed_t_union	x1;
@@ -1566,7 +1567,7 @@ void __near P_UseLines ()  {
     P_PathTraverse ( x1, y1, x2, y2, PT_ADDLINES, PTR_UseTraverse );
 }
 
-
+*/
 
 
 //

@@ -7079,76 +7079,84 @@ mov   bp, sp
 
 ;    angle = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 
-les   bx, dword ptr ds:[_playerMobj_pos]
-mov   ax, word ptr es:[bx + 010h]        ; angle intbits
+les   di, dword ptr ds:[_playerMobj_pos]
+mov   ax, word ptr es:[di + 010h]        ; angle intbits
 
-push  word ptr es:[bx]		; x lo bp - 2
-push  word ptr es:[bx + 2]  ; x hi bp - 4
-les   di, dword ptr es:[bx + 4]
-mov   si, es		;			si:di y
+push  word ptr es:[di]		; x lo bp - 2
+push  word ptr es:[di + 2]  ; x hi bp - 4
+les   bx, dword ptr es:[di + 4]
+mov   cx, es		;			si:di y
 shr   ax, 1
 and   al, 0FCh  ; same as shr 3, shl 2
-xchg  ax, bx    ; bx has sine/cosine fineangle lookup
+xchg  ax, di    ; di has sine/cosine fineangle lookup
 
 
-mov   cx, FINESINE_SEGMENT
-mov   es, cx
-les   ax, dword ptr es:[bx + 2000] ; load cos into dx:ax
+mov   si, FINESINE_SEGMENT
+mov   es, si
+
+
+les   ax, dword ptr es:[di] ; load sin into dx:ax
 mov   dx, es
-
-mov   es, cx ; restore es
-
-les   bx, dword ptr es:[bx] ; load sin into cx:bx
-mov   cx, es
+mov   es, si ; restore es
+les   di, dword ptr es:[di + 02000h] ; load cos into si:di
+mov   si, es
 
 
-; shift 6
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-
-add   ax, word ptr [bp - 2]
-adc   dx, word ptr [bp - 4]
 
 ; shift 6
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
 
-add   bx, di
-adc   cx, si
+add   ax, bx
+adc   dx, cx
 
 ; args to pathtraverse...
 push  OFFSET PTR_UseTraverse_
 push  PT_ADDLINES
-push  cx
-push  bx
 push  dx
 push  ax
 
-mov   bx, di
-mov   cx, si
-
 les   dx, dword ptr [bp - 4]
 mov   ax, es
+
+
+; shift 6
+sal   di, 1
+rcl   si, 1
+sal   di, 1
+rcl   si, 1
+sal   di, 1
+rcl   si, 1
+sal   di, 1
+rcl   si, 1
+sal   di, 1
+rcl   si, 1
+sal   di, 1
+rcl   si, 1
+
+
+
+add   di, ax
+adc   si, dx
+
+; args to pathtraverse...
+push  si
+push  di
+
+
+
+; cx:bx already set
+; dx:ax already set
 
 call  P_PathTraverse_
 LEAVE_MACRO 
