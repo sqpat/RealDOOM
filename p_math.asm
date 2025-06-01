@@ -7294,71 +7294,72 @@ ret
 
 ENDP
 
-COMMENT  @
 
 
 PROC P_RadiusAttack_ NEAR
 PUBLIC P_RadiusAttack_
 
-0x00000000000007b4:  56                   push  si
-0x00000000000007b5:  57                   push  di
-0x00000000000007b6:  55                   push  bp
-0x00000000000007b7:  89 E5                mov   bp, sp
-0x00000000000007b9:  83 EC 08             sub   sp, 8
-0x00000000000007bc:  50                   push  ax
-0x00000000000007bd:  8E C1                mov   es, cx
-0x00000000000007bf:  89 D1                mov   cx, dx
-0x00000000000007c1:  8B 56 08             mov   dx, word ptr [bp + 8]
-0x00000000000007c4:  26 8B 47 06          mov   ax, word ptr es:[bx + 6]
-0x00000000000007c8:  89 C6                mov   si, ax
-0x00000000000007ca:  01 D6                add   si, dx
-0x00000000000007cc:  89 76 FE             mov   word ptr [bp - 2], si
-0x00000000000007cf:  BE E2 05             mov   si, OFFSET _bmaporgy
-0x00000000000007d2:  8B 7E FE             mov   di, word ptr [bp - 2]
-0x00000000000007d5:  2B 3C                sub   di, word ptr [si]
-0x00000000000007d7:  89 FE                mov   si, di
-0x00000000000007d9:  C1 FE 07             sar   si, 7
-0x00000000000007dc:  89 76 FC             mov   word ptr [bp - 4], si
-0x00000000000007df:  BE E2 05             mov   si, OFFSET _bmaporgy
-0x00000000000007e2:  29 D0                sub   ax, dx
-0x00000000000007e4:  2B 04                sub   ax, word ptr [si]
-0x00000000000007e6:  C1 F8 07             sar   ax, 7
-0x00000000000007e9:  89 46 FA             mov   word ptr [bp - 6], ax
-0x00000000000007ec:  26 8B 47 02          mov   ax, word ptr es:[bx + 2]
-0x00000000000007f0:  89 C6                mov   si, ax
-0x00000000000007f2:  01 D6                add   si, dx
-0x00000000000007f4:  89 76 FE             mov   word ptr [bp - 2], si
-0x00000000000007f7:  BE E0 05             mov   si, OFFSET _bmaporgx
-0x00000000000007fa:  8B 7E FE             mov   di, word ptr [bp - 2]
-0x00000000000007fd:  2B 3C                sub   di, word ptr [si]
-0x00000000000007ff:  89 FE                mov   si, di
-0x0000000000000801:  C1 FE 07             sar   si, 7
-0x0000000000000804:  89 76 F8             mov   word ptr [bp - 8], si
-0x0000000000000807:  BE E0 05             mov   si, OFFSET _bmaporgx
-0x000000000000080a:  29 D0                sub   ax, dx
-0x000000000000080c:  2B 04                sub   ax, word ptr [si]
-0x000000000000080e:  BE CC 00             mov   si, 0xcc
-0x0000000000000811:  8B 7E F6             mov   di, word ptr [bp - 0Ah]
-0x0000000000000814:  89 3C                mov   word ptr [si], di
-0x0000000000000819:  C1 F8 07             sar   ax, 7
-0x000000000000081c:  89 1C                mov   word ptr ds:[_bombspot_pos + 0], bx
-0x000000000000081e:  31 FF                xor   di, di
-0x0000000000000820:  8C 44 02             mov   word ptr ds:[_bombspot_pos + 2], es
-0x0000000000000823:  BB CA 00             mov   bx, 0xca
-0x0000000000000826:  BE D0 6D             mov   si, 0x6dd0
-0x0000000000000829:  89 0F                mov   word ptr [bx], cx
-0x000000000000082b:  BB CE 00             mov   bx, 0xce
-0x000000000000082e:  8B 4E FC             mov   cx, word ptr [bp - 4]
-0x0000000000000831:  89 17                mov   word ptr [bx], dx
-0x0000000000000833:  8B 5E F8             mov   bx, word ptr [bp - 8]
-0x0000000000000836:  8B 56 FA             mov   dx, word ptr [bp - 6]
-0x0000000000000839:  E8 1A 0F             call  0x1756
-0x000000000000083c:  C9                   LEAVE_MACRO 
-0x000000000000083d:  5F                   pop   di
-0x000000000000083e:  5E                   pop   si
-0x000000000000083f:  C2 02 00             ret   2
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 8
+push  ax
+mov   es, cx
+mov   cx, dx
+mov   dx, word ptr [bp + 8]
+mov   ax, word ptr es:[bx + 6]
+mov   si, ax
+add   si, dx
+mov   word ptr [bp - 2], si
+mov   si, OFFSET _bmaporgy
+mov   di, word ptr [bp - 2]
+sub   di, word ptr [si]
+mov   si, di
+sar   si, 7
+mov   word ptr [bp - 4], si
+mov   si, OFFSET _bmaporgy
+sub   ax, dx
+sub   ax, word ptr [si]
+sar   ax, 7
+mov   word ptr [bp - 6], ax
+mov   ax, word ptr es:[bx + 2]
+mov   si, ax
+add   si, dx
+mov   word ptr [bp - 2], si
+mov   si, OFFSET _bmaporgx
+mov   di, word ptr [bp - 2]
+sub   di, word ptr [si]
+mov   si, di
+sar   si, 7
+mov   word ptr [bp - 8], si
+mov   si, OFFSET _bmaporgx
+sub   ax, dx
+sub   ax, word ptr [si]
+mov   si, OFFSET _bombspot
+mov   di, word ptr [bp - 0Ah]
+mov   word ptr [si], di
+sar   ax, 7
+mov   word ptr ds:[_bombspot_pos + 0], bx
+xor   di, di
+mov   word ptr ds:[_bombspot_pos + 2], es
+mov   bx, OFFSET _bombsource
+mov   si, OFFSET PIT_RadiusAttack_
+mov   word ptr [bx], cx
+mov   bx, OFFSET _bombdamage
+mov   cx, word ptr [bp - 4]
+mov   word ptr [bx], dx
+mov   bx, word ptr [bp - 8]
+mov   dx, word ptr [bp - 6]
+call  DoBlockmapLoop_
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   2
 
 ENDP
+
+COMMENT  @
 
 PROC PIT_ChangeSector_ NEAR
 PUBLIC PIT_ChangeSector_
@@ -7372,7 +7373,7 @@ PUBLIC PIT_ChangeSector_
 0x000000000000084c:  89 DF                mov   di, bx
 0x000000000000084e:  89 4E FE             mov   word ptr [bp - 2], cx
 0x0000000000000851:  89 D0                mov   ax, dx
-0x0000000000000853:  E8 A5 17             call  0x1ffb
+0x0000000000000853:  E8 A5 17             call  P_ThingHeightClip_
 0x0000000000000856:  84 C0                test  al, al
 0x0000000000000858:  75 2A                jne   0x884
 0x000000000000085a:  83 7C 1C 00          cmp   word ptr [si + 01Ch], 0
@@ -7392,9 +7393,9 @@ PUBLIC PIT_ChangeSector_
 0x0000000000000887:  5F                   pop   di
 0x0000000000000888:  5E                   pop   si
 0x0000000000000889:  C3                   ret   
-0x000000000000088a:  BA 7F 03             mov   dx, 0x37f
+0x000000000000088a:  BA 7F 03             mov   dx, S_GIBS
 0x000000000000088d:  89 F0                mov   ax, si
-0x000000000000088f:  E8 12 5E             call  0x66a4
+0x000000000000088f:  E8 12 5E             call  P_SetMobjState
 0x0000000000000892:  8B 36 FC 1E          mov   si, word ptr ds:[_setStateReturn]
 0x0000000000000896:  8E 46 FE             mov   es, word ptr [bp - 2]
 0x0000000000000899:  26 80 65 14 FD       and   byte ptr es:[di + 014h], 0xfd
@@ -7404,15 +7405,14 @@ PUBLIC PIT_ChangeSector_
 0x00000000000008aa:  C6 44 1E 00          mov   byte ptr [si + 01Eh], 0
 0x00000000000008ae:  EB D6                jmp   0x886
 0x00000000000008b0:  89 D0                mov   ax, dx
-0x00000000000008b2:  0E                   push  cs
-0x00000000000008b3:  E8 86 57             call  0x603c
+0x00000000000008b3:  E8 86 57             call  P_RemoveMobj_
 0x00000000000008b6:  90                   nop   
 0x00000000000008b7:  EB CB                jmp   0x884
 0x00000000000008b9:  B9 0A 00             mov   cx, 0xa
 0x00000000000008bc:  89 F0                mov   ax, si
 0x00000000000008be:  31 DB                xor   bx, bx
 0x00000000000008c0:  31 D2                xor   dx, dx
-0x00000000000008c2:  E8 D3 EF             call  0xf898
+0x00000000000008c2:  E8 D3 EF             call  P_DamageMobj_
 0x00000000000008c5:  FF 74 04             push  word ptr [si + 4]
 0x00000000000008c8:  8E 46 FE             mov   es, word ptr [bp - 2]
 0x00000000000008cb:  26 8B 45 08          mov   ax, word ptr es:[di + 8]
@@ -7428,11 +7428,11 @@ PUBLIC PIT_ChangeSector_
 0x00000000000008e8:  50                   push  ax
 0x00000000000008e9:  26 8B 55 02          mov   dx, word ptr es:[di + 2]
 0x00000000000008ed:  26 8B 05             mov   ax, word ptr es:[di]
-0x00000000000008f0:  E8 8D 55             call  0x5e80
+0x00000000000008f0:  E8 8D 55             call  P_SpawnMobj_
 0x00000000000008f3:  8B 36 FC 1E          mov   si, word ptr ds:[_setStateReturn]
-0x00000000000008f7:  E8 B6 48             call  0x51b0
+0x00000000000008f7:  E8 B6 48             call  P_Random_
 0x00000000000008fa:  88 C2                mov   dl, al
-0x00000000000008fc:  E8 B1 48             call  0x51b0
+0x00000000000008fc:  E8 B1 48             call  P_Random_
 0x00000000000008ff:  30 F6                xor   dh, dh
 0x0000000000000901:  30 E4                xor   ah, ah
 0x0000000000000903:  29 C2                sub   dx, ax
@@ -7441,9 +7441,9 @@ PUBLIC PIT_ChangeSector_
 0x000000000000090a:  99                   cdq   
 0x000000000000090b:  89 44 0E             mov   word ptr [si + 0Eh], ax
 0x000000000000090e:  89 54 10             mov   word ptr [si + 010h], dx
-0x0000000000000911:  E8 9C 48             call  0x51b0
+0x0000000000000911:  E8 9C 48             call  P_Random_
 0x0000000000000914:  88 C2                mov   dl, al
-0x0000000000000916:  E8 97 48             call  0x51b0
+0x0000000000000916:  E8 97 48             call  P_Random_
 0x0000000000000919:  30 F6                xor   dh, dh
 0x000000000000091b:  30 E4                xor   ah, ah
 0x000000000000091d:  29 C2                sub   dx, ax
