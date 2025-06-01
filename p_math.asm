@@ -7303,54 +7303,42 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 8
-push  ax
+
+mov   word ptr ds:[_bombspot], ax
 mov   es, cx
 mov   cx, dx
 mov   dx, word ptr [bp + 8]
 mov   ax, word ptr es:[bx + 6]
 mov   si, ax
 add   si, dx
-mov   word ptr [bp - 2], si
-mov   si, OFFSET _bmaporgy
-mov   di, word ptr [bp - 2]
-sub   di, word ptr [si]
-mov   si, di
+sub   si, word ptr ds:[_bmaporgy]
 sar   si, 7
-mov   word ptr [bp - 4], si
-mov   si, OFFSET _bmaporgy
+push  si      ; bp - 2
 sub   ax, dx
-sub   ax, word ptr [si]
+sub   ax, word ptr ds:[_bmaporgy]
 sar   ax, 7
-mov   word ptr [bp - 6], ax
+push  ax     ; bp - 4
 mov   ax, word ptr es:[bx + 2]
 mov   si, ax
 add   si, dx
-mov   word ptr [bp - 2], si
-mov   si, OFFSET _bmaporgx
-mov   di, word ptr [bp - 2]
-sub   di, word ptr [si]
-mov   si, di
+sub   si, word ptr ds:[_bmaporgx]
 sar   si, 7
-mov   word ptr [bp - 8], si
-mov   si, OFFSET _bmaporgx
+push  si     ; bp - 6
 sub   ax, dx
-sub   ax, word ptr [si]
-mov   si, OFFSET _bombspot
-mov   di, word ptr [bp - 0Ah]
-mov   word ptr [si], di
+sub   ax, word ptr ds:[_bmaporgx]
 sar   ax, 7
 mov   word ptr ds:[_bombspot_pos + 0], bx
+mov   word ptr ds:[_bombspot_pos + 2], es  ; todo hardcode?
+
+;	DoBlockmapLoop(xl, yl, xh, yh, PIT_RadiusAttack, false);	
+
 xor   di, di
-mov   word ptr ds:[_bombspot_pos + 2], es
-mov   bx, OFFSET _bombsource
 mov   si, OFFSET PIT_RadiusAttack_
-mov   word ptr [bx], cx
-mov   bx, OFFSET _bombdamage
-mov   cx, word ptr [bp - 4]
-mov   word ptr [bx], dx
-mov   bx, word ptr [bp - 8]
-mov   dx, word ptr [bp - 6]
+mov   word ptr ds:[_bombsource], cx
+mov   word ptr ds:[_bombdamage], dx
+mov   cx, word ptr [bp - 2]
+mov   bx, word ptr [bp - 6]
+mov   dx, word ptr [bp - 4]
 call  DoBlockmapLoop_
 LEAVE_MACRO 
 pop   di
