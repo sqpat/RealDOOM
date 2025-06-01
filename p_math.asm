@@ -43,6 +43,7 @@ INSTRUCTION_SET_MACRO
 
 .DATA
 
+EXTRN _P_CheckSight:DWORD
 EXTRN _tmy:DWORD
 EXTRN _tmx:DWORD
 EXTRN _tmymove:DWORD
@@ -7133,108 +7134,114 @@ ret
 
 ENDP
 
-COMMENT  @
 
 PROC PIT_RadiusAttack_ NEAR
 PUBLIC PIT_RadiusAttack_
 
-0x00000000000006d0:  56                   push  si
-0x00000000000006d1:  57                   push  di
-0x00000000000006d2:  55                   push  bp
-0x00000000000006d3:  89 E5                mov   bp, sp
-0x00000000000006d5:  83 EC 08             sub   sp, 8
-0x00000000000006d8:  89 D6                mov   si, dx
-0x00000000000006da:  89 4E FE             mov   word ptr [bp - 2], cx
-0x00000000000006dd:  8E C1                mov   es, cx
-0x00000000000006df:  26 F6 47 14 04       test  byte ptr es:[bx + 014h], 4
-0x00000000000006e4:  74 0B                je    0x6f1
-0x00000000000006e6:  8A 44 1A             mov   al, byte ptr [si + 01Ah]
-0x00000000000006e9:  3C 15                cmp   al, 0x15
-0x00000000000006eb:  74 04                je    0x6f1
-0x00000000000006ed:  3C 13                cmp   al, 0x13
-0x00000000000006ef:  75 06                jne   0x6f7
-0x00000000000006f1:  B0 01                mov   al, 1
-0x00000000000006f3:  C9                   LEAVE_MACRO 
-0x00000000000006f4:  5F                   pop   di
-0x00000000000006f5:  5E                   pop   si
-0x00000000000006f6:  C3                   ret   
-0x00000000000006f7:  BF D0 00             mov   di, 0xd0
-0x00000000000006fa:  26 8B 57 02          mov   dx, word ptr es:[bx + 2]
-0x00000000000006fe:  8B 45 02             mov   ax, word ptr [di + 2]
-0x0000000000000701:  8B 0D                mov   cx, word ptr [di]
-0x0000000000000703:  89 46 F8             mov   word ptr [bp - 8], ax
-0x0000000000000706:  89 CF                mov   di, cx
-0x0000000000000708:  26 8B 07             mov   ax, word ptr es:[bx]
-0x000000000000070b:  8E 46 F8             mov   es, word ptr [bp - 8]
-0x000000000000070e:  26 2B 05             sub   ax, word ptr es:[di]
-0x0000000000000711:  26 1B 55 02          sbb   dx, word ptr es:[di + 2]
-0x0000000000000715:  0B D2                or    dx, dx
-0x0000000000000717:  7D 07                jge   0x720
-0x0000000000000719:  F7 D8                neg   ax
-0x000000000000071b:  83 D2 00             adc   dx, 0
-0x000000000000071e:  F7 DA                neg   dx
-0x0000000000000720:  BF D0 00             mov   di, 0xd0
-0x0000000000000723:  89 46 FA             mov   word ptr [bp - 6], ax
-0x0000000000000726:  8B 05                mov   ax, word ptr [di]
-0x0000000000000728:  89 D1                mov   cx, dx
-0x000000000000072a:  89 46 F8             mov   word ptr [bp - 8], ax
-0x000000000000072d:  8B 45 02             mov   ax, word ptr [di + 2]
-0x0000000000000730:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x0000000000000733:  8B 7E F8             mov   di, word ptr [bp - 8]
-0x0000000000000736:  89 46 F8             mov   word ptr [bp - 8], ax
-0x0000000000000739:  26 8B 47 04          mov   ax, word ptr es:[bx + 4]
-0x000000000000073d:  26 8B 57 06          mov   dx, word ptr es:[bx + 6]
-0x0000000000000741:  8E 46 F8             mov   es, word ptr [bp - 8]
-0x0000000000000744:  26 2B 45 04          sub   ax, word ptr es:[di + 4]
-0x0000000000000748:  26 1B 55 06          sbb   dx, word ptr es:[di + 6]
-0x000000000000074c:  0B D2                or    dx, dx
-0x000000000000074e:  7D 07                jge   0x757
-0x0000000000000750:  F7 D8                neg   ax
-0x0000000000000752:  83 D2 00             adc   dx, 0
-0x0000000000000755:  F7 DA                neg   dx
-0x0000000000000757:  39 D1                cmp   cx, dx
-0x0000000000000759:  7F 07                jg    0x762
-0x000000000000075b:  75 07                jne   0x764
-0x000000000000075d:  3B 46 FA             cmp   ax, word ptr [bp - 6]
-0x0000000000000760:  73 02                jae   0x764
-0x0000000000000762:  89 CA                mov   dx, cx
-0x0000000000000764:  8A 44 1E             mov   al, byte ptr [si + 01Eh]
-0x0000000000000767:  30 E4                xor   ah, ah
-0x0000000000000769:  29 C2                sub   dx, ax
-0x000000000000076b:  89 56 FC             mov   word ptr [bp - 4], dx
-0x000000000000076e:  85 D2                test  dx, dx
-0x0000000000000770:  7C 3B                jl    0x7ad
-0x0000000000000772:  BF CE 00             mov   di, 0xce
-0x0000000000000775:  8B 46 FC             mov   ax, word ptr [bp - 4]
-0x0000000000000778:  3B 05                cmp   ax, word ptr [di]
-0x000000000000077a:  7C 03                jl    0x77f
-0x000000000000077c:  E9 72 FF             jmp   0x6f1
-0x000000000000077f:  BF D0 00             mov   di, 0xd0
-0x0000000000000782:  8B 0D                mov   cx, word ptr [di]
-0x0000000000000784:  BF CC 00             mov   di, 0xcc
-0x0000000000000787:  89 F0                mov   ax, si
-0x0000000000000789:  8B 15                mov   dx, word ptr [di]
-0x000000000000078b:  FF 1E 00 08          lcall [0x800]
-0x000000000000078f:  84 C0                test  al, al
-0x0000000000000791:  74 E9                je    0x77c
-0x0000000000000793:  BB CE 00             mov   bx, 0xce
-0x0000000000000796:  89 F0                mov   ax, si
-0x0000000000000798:  8B 15                mov   dx, word ptr [di]
-0x000000000000079a:  8B 0F                mov   cx, word ptr [bx]
-0x000000000000079c:  BB CA 00             mov   bx, 0xca
-0x000000000000079f:  2B 4E FC             sub   cx, word ptr [bp - 4]
-0x00000000000007a2:  8B 1F                mov   bx, word ptr [bx]
-0x00000000000007a4:  E8 F1 F0             call  0xf898
-0x00000000000007a7:  B0 01                mov   al, 1
-0x00000000000007a9:  C9                   LEAVE_MACRO 
-0x00000000000007aa:  5F                   pop   di
-0x00000000000007ab:  5E                   pop   si
-0x00000000000007ac:  C3                   ret   
-0x00000000000007ad:  30 C0                xor   al, al
-0x00000000000007af:  89 46 FC             mov   word ptr [bp - 4], ax
-0x00000000000007b2:  EB BE                jmp   0x772
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 8
+mov   si, dx
+mov   word ptr [bp - 2], cx
+mov   es, cx
+test  byte ptr es:[bx + 014h], 4
+je    exit_radiusattack_return_1
+mov   al, byte ptr [si + 01Ah]
+cmp   al, MT_CYBORG
+je    exit_radiusattack_return_1
+cmp   al, MT_SPIDER
+jne   label_1
+exit_radiusattack_return_1:
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+label_1:
+mov   dx, word ptr es:[bx + 2]
+mov   ax, word ptr ds:[_bombspot_pos + 2]
+mov   cx, word ptr ds:[_bombspot_pos + 0]
+mov   word ptr [bp - 8], ax
+mov   di, cx
+mov   ax, word ptr es:[bx]
+mov   es, word ptr [bp - 8]
+sub   ax, word ptr es:[di]
+sbb   dx, word ptr es:[di + 2]
+or    dx, dx
+jge   label_2
+neg   ax
+adc   dx, 0
+neg   dx
+label_2:
+mov   word ptr [bp - 6], ax
+mov   ax, word ptr ds:[_bombspot_pos + 0]
+mov   cx, dx
+mov   word ptr [bp - 8], ax
+mov   ax, word ptr ds:[_bombspot_pos + 2]
+mov   es, word ptr [bp - 2]
+mov   di, word ptr [bp - 8]
+mov   word ptr [bp - 8], ax
+mov   ax, word ptr es:[bx + 4]
+mov   dx, word ptr es:[bx + 6]
+mov   es, word ptr [bp - 8]
+sub   ax, word ptr es:[di + 4]
+sbb   dx, word ptr es:[di + 6]
+or    dx, dx
+jge   label_3
+neg   ax
+adc   dx, 0
+neg   dx
+label_3:
+cmp   cx, dx
+jg    label_4
+jne   label_5
+cmp   ax, word ptr [bp - 6]
+jae   label_5
+label_4:
+mov   dx, cx
+label_5:
+mov   al, byte ptr [si + 01Eh]
+xor   ah, ah
+sub   dx, ax
+mov   word ptr [bp - 4], dx
+test  dx, dx
+jl    label_6
+label_8:
+mov   ax, word ptr [bp - 4]
+cmp   ax, word ptr ds:[_bombdamage]
+jl    label_7
+jump_to_exit_radiusattack_return_1:
+jmp   exit_radiusattack_return_1
+label_7:
+
+mov   cx, word ptr ds:[_bombspot_pos + 0]
+mov   ax, si
+mov   dx, word ptr ds:[_bombspot]
+call  dword ptr ds:[_P_CheckSight]
+test  al, al
+je    jump_to_exit_radiusattack_return_1
+mov   ax, si
+mov   dx, word ptr [di]
+mov   cx, word ptr ds:[_bombdamage]
+sub   cx, word ptr [bp - 4]
+mov   bx, word ptr ds:[_bombsource] ; todo les
+call  P_DamageMobj_
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+label_6:
+xor   al, al
+mov   word ptr [bp - 4], ax
+jmp   label_8
 
 ENDP
+
+COMMENT  @
+
 
 PROC P_RadiusAttack_ NEAR
 PUBLIC P_RadiusAttack_
@@ -7279,11 +7286,10 @@ PUBLIC P_RadiusAttack_
 0x000000000000080e:  BE CC 00             mov   si, 0xcc
 0x0000000000000811:  8B 7E F6             mov   di, word ptr [bp - 0Ah]
 0x0000000000000814:  89 3C                mov   word ptr [si], di
-0x0000000000000816:  BE D0 00             mov   si, 0xd0
 0x0000000000000819:  C1 F8 07             sar   ax, 7
-0x000000000000081c:  89 1C                mov   word ptr [si], bx
+0x000000000000081c:  89 1C                mov   word ptr ds:[_bombspot_pos + 0], bx
 0x000000000000081e:  31 FF                xor   di, di
-0x0000000000000820:  8C 44 02             mov   word ptr [si + 2], es
+0x0000000000000820:  8C 44 02             mov   word ptr ds:[_bombspot_pos + 2], es
 0x0000000000000823:  BB CA 00             mov   bx, 0xca
 0x0000000000000826:  BE D0 6D             mov   si, 0x6dd0
 0x0000000000000829:  89 0F                mov   word ptr [bx], cx
