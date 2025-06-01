@@ -7136,13 +7136,19 @@ ENDP
 
 
 ;always returns 1
+
+;boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos);
+
 PROC PIT_RadiusAttack_ NEAR
 PUBLIC PIT_RadiusAttack_
 
+; ax unused.
+; dx thing
+; bx mobpjos ptr (cx segment)
+
 push  si
 push  di
-push  bp
-mov   bp, sp
+
 mov   si, dx
 mov   es, cx
 test  byte ptr es:[bx + 014h], MF_SHOOTABLE
@@ -7151,13 +7157,7 @@ mov   al, byte ptr [si + 01Ah]
 cmp   al, MT_CYBORG
 je    exit_radiusattack_return_1
 cmp   al, MT_SPIDER
-jne   not_boss_unit
-exit_radiusattack_return_1:
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
+je    exit_radiusattack_return_1
 not_boss_unit:
 
 ;    dx = labs(thing_pos->x.w - bombspot_pos->x.w);
@@ -7180,34 +7180,32 @@ bombspot_x_already_positive:
 
 ;es:bx still good
 
-push  bx  ; store thingpos for later
-les   bx, dword ptr es:[bx + 4]
-mov   cx, es
 
+les   cx, dword ptr es:[bx + 4]
+mov   ax, es
+
+; ax:cx is dy
 les   di, dword ptr ds:[_bombspot_pos + 0]
-sub   bx, word ptr es:[di + 4]
-sbb   cx, word ptr es:[di + 6]
+sub   cx, word ptr es:[di + 4]
+sbb   ax, word ptr es:[di + 6]
 
 
 jge   bombspot_y_already_positive
-neg   bx
-adc   cx, 0
 neg   cx
+adc   ax, 0
+neg   ax
 bombspot_y_already_positive:
 
 ;    dist.w = dx>dy ? dx : dy;
 
-;dx is dx:ax
-;dy is cx:bx
+;dx intbits is dx
+;dy intbits is ax
 
 
-cmp   dx, cx
+cmp   dx, ax
 jg    use_dx_bombspot
-jne   use_dy_bombspot
-cmp   ax, bx
-jae   use_dx_bombspot
-use_dy_bombspot:
-mov   dx, cx
+; dont really need to test lower bits.
+xchg  ax, dx   ; dist = dy
 use_dx_bombspot:
 
 
@@ -7231,9 +7229,8 @@ dont_zero_dist:
 
 
 cmp   dx, word ptr ds:[_bombdamage]
-jnl   exit_radiusattack_return_1
+jge   exit_radiusattack_return_1
 
-dist_less_than_bombdamage:
 
 ;    if ( P_CheckSight (thing, bombspot, FP_OFF(thing_pos), FP_OFF(bombspot_pos)) ) {
 ;		// must be in direct path
@@ -7241,7 +7238,6 @@ dist_less_than_bombdamage:
 ;    }
 
 ;    bx already thingpos?
-pop   bx ; get thingpos
 
 mov   cx, word ptr ds:[_bombspot_pos + 0]
 mov   ax, si
@@ -7259,8 +7255,8 @@ sub   cx, di
 mov   bx, word ptr ds:[_bombsource] ; todo les. reorder?
 
 call  P_DamageMobj_
+exit_radiusattack_return_1:
 mov   al, 1
-LEAVE_MACRO 
 pop   di
 pop   si
 ret   
