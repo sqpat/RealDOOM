@@ -64,7 +64,6 @@ GLOBOBJS = &
  p_floor.obj &
  p_inter.obj &
  p_lights.obj &
- p_map.obj &
  p_math.obj &
  p_plats.obj &
  p_pspr.obj &

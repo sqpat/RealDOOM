@@ -7529,29 +7529,23 @@ PUBLIC P_ChangeSector_
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
-mov   byte ptr [bp - 2], bl
-mov   bx, ax
-SHIFT_MACRO sar   bx  4
-SHIFT_MACRO shl   bx  4
-add   bx, OFFSET _sectors_physics
-mov   ax, word ptr [bx + 2 * BOXLEFT]    ; 4
-mov   dx, word ptr [bx + 2 * BOXRIGHT]   ; 6
-mov   cx, word ptr [bx + 2 * BOXTOP]     ; 0
-mov   bx, word ptr [bx + 2 * BOXBOTTOM]  ; 2
-mov   si, OFFSET PIT_ChangeSector_
-mov   word ptr [bp - 4], bx
-mov   bl, byte ptr [bp - 2]
-xor   di, di
+
 mov   byte ptr ds:[_crushchange], bl
-mov   bx, dx
-mov   dx, word ptr [bp - 4]
-mov   byte ptr ds:[_nofit], 0
+mov   byte ptr ds:[_nofit], 0        ; todo one write
+
+add   ax, OFFSET _sectors_physics
+xchg  ax, bx  ; sector pointer
+
+mov   cx, word ptr  [bx + 2 * BOXTOP]     ; 0
+mov   dx, word ptr  [bx + 2 * BOXBOTTOM]  ; 2
+les   ax, dword ptr [bx + 2 * BOXLEFT]    ; 4
+mov   bx, es
+
+mov   si, OFFSET PIT_ChangeSector_
+xor   di, di
+
 call  DoBlockmapLoop_
 mov   al, byte ptr ds:[_nofit]
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
