@@ -5280,147 +5280,6 @@ ENDP
 
 
 
-; boolean __near P_ThingHeightClip (mobj_t __near* thing, mobj_pos_t __far* thing_pos){
-
-PROC P_ThingHeightClip_ NEAR
-PUBLIC P_ThingHeightClip_
-
-push  dx
-push  si
-push  di
-
-;	temp.h.fracbits = 0;
-;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
-;    onfloor = (thing_pos->z.w == temp.w);
-
-
-mov   si, ax	; si gets thing ptr
-mov   di, bx    ; es:di gets thingpos
-mov   es, cx
-
-mov   ax, word ptr [si + 6]
-xor   dx, dx
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-
-
-
-;    onfloor = (thing_pos->z.w == temp.w);
-
-cmp   ax, word ptr es:[di + 0Ah]
-mov   ax, 0
-jne   done_setting_onfloor
-cmp   dx, word ptr es:[di + 8]
-jne   done_setting_onfloor
-inc   ax
-done_setting_onfloor:
-push  ax
-
-;    P_CheckPosition (thing, thing->secnum, thing_pos->x, thing_pos->y);
-
-mov   ax, si
-mov   dx, word ptr [si + 4]
-push  word ptr es:[di + 6]
-push  word ptr es:[di + 4]
-; cx:bx still thingpos
-les   bx, dword ptr es:[di] ; load thing_pos->x
-mov   cx, es
-call  P_CheckPosition_
-
-mov   ax, word ptr ds:[_tmfloorz]
-mov   word ptr [si + 6], ax
-mov   dx, word ptr ds:[_tmceilingz]
-mov   word ptr [si + 8], dx
-
-mov   cx, MOBJPOSLIST_6800_SEGMENT
-mov   es, cx
-
-;if (onfloor) {
-
-pop   cx
-jcxz  not_on_floor
-
-;todo reuse from above!
-;		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
-;		thing_pos->z.w = temp.w;
-
-xor   dx, dx
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-mov   word ptr es:[di + 0Ah], ax
-mov   word ptr es:[di + 8], dx
-do_final_heightcheck:
-
-;	temp2 = (thing->ceilingz - thing->floorz);
-;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
-;	if (temp.h.intbits < thing->height.h.intbits){ // 16 bit math should be ok
-;		return false;
-;	}
-
-mov   ax, word ptr [si + 8]
-sub   ax, word ptr [si + 6]
-SHIFT_MACRO sar   ax 3
-cmp   ax, word ptr [si + 0Ch]
-jge   exit_thingheightclip_return_1
-; return false
-xor   al, al
-pop   di
-pop   si
-pop   dx
-ret   
-
-not_on_floor:
-
-; dx already has ceilingz
-;	// don't adjust a floating monster unless forced to
-;		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->ceilingz);
-
-
-xor   ax, ax
-xchg  ax, dx
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-
-;		if (thing_pos->z.w+ thing->height.w > temp.w)
-;			thing_pos->z.w = temp.w - thing->height.w;
-
-mov   cx, word ptr es:[di + 8]
-mov   bx, word ptr es:[di + 0Ah]
-add   cx, word ptr [si + 0Ah]
-adc   bx, word ptr [si + 0Ch]
-cmp   bx, ax
-jg    adjust_floating_monster
-jne   do_final_heightcheck
-
-cmp   dx, cx
-jae   do_final_heightcheck
-
-adjust_floating_monster:
-sub   dx, word ptr [si + 0Ah]
-sbb   ax, word ptr [si + 0Ch]
-mov   word ptr es:[di + 8], dx
-mov   word ptr es:[di + 0Ah], ax
-jmp   do_final_heightcheck
-exit_thingheightclip_return_1:
-mov   al, 1
-pop   di
-pop   si
-pop   dx
-ret   
-
-ENDP
 
 
 
@@ -7422,13 +7281,149 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-push  cx
+push  cx		; bp - 2
 mov   si, dx
 mov   di, bx
 mov   ax, dx
-call  P_ThingHeightClip_
-test  al, al
-jne   exit_changesector_return_1
+
+; inlined thingheightclip
+
+
+push  si
+push  di
+
+;	temp.h.fracbits = 0;
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
+;    onfloor = (thing_pos->z.w == temp.w);
+
+
+mov   si, ax	; si gets thing ptr
+mov   di, bx    ; es:di gets thingpos
+mov   es, cx
+
+mov   ax, word ptr [si + 6]
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+
+
+
+;    onfloor = (thing_pos->z.w == temp.w);
+
+cmp   ax, word ptr es:[di + 0Ah]
+mov   ax, 0
+jne   done_setting_onfloor
+cmp   dx, word ptr es:[di + 8]
+jne   done_setting_onfloor
+inc   ax
+done_setting_onfloor:
+push  ax
+
+;    P_CheckPosition (thing, thing->secnum, thing_pos->x, thing_pos->y);
+
+mov   ax, si
+mov   dx, word ptr [si + 4]
+push  word ptr es:[di + 6]
+push  word ptr es:[di + 4]
+; cx:bx still thingpos
+les   bx, dword ptr es:[di] ; load thing_pos->x
+mov   cx, es
+call  P_CheckPosition_
+
+mov   ax, word ptr ds:[_tmfloorz]
+mov   word ptr [si + 6], ax
+mov   dx, word ptr ds:[_tmceilingz]
+mov   word ptr [si + 8], dx
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   es, cx
+
+;if (onfloor) {
+
+pop   cx
+jcxz  not_on_floor
+
+;todo reuse from above!
+;		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
+;		thing_pos->z.w = temp.w;
+
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+mov   word ptr es:[di + 0Ah], ax
+mov   word ptr es:[di + 8], dx
+do_final_heightcheck:
+
+;	temp2 = (thing->ceilingz - thing->floorz);
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
+;	if (temp.h.intbits < thing->height.h.intbits){ // 16 bit math should be ok
+;		return false;
+;	}
+
+mov   ax, word ptr [si + 8]
+sub   ax, word ptr [si + 6]
+SHIFT_MACRO sar   ax 3
+cmp   ax, word ptr [si + 0Ch]
+jge   exit_thingheightclip_return_1
+; return false
+xor   al, al
+pop   di
+pop   si
+
+jmp   continue_changesector   
+
+not_on_floor:
+
+; dx already has ceilingz
+;	// don't adjust a floating monster unless forced to
+;		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->ceilingz);
+
+
+xor   ax, ax
+xchg  ax, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+
+;		if (thing_pos->z.w+ thing->height.w > temp.w)
+;			thing_pos->z.w = temp.w - thing->height.w;
+
+mov   cx, word ptr es:[di + 8]
+mov   bx, word ptr es:[di + 0Ah]
+add   cx, word ptr [si + 0Ah]
+adc   bx, word ptr [si + 0Ch]
+cmp   bx, ax
+jg    adjust_floating_monster
+jne   do_final_heightcheck
+
+cmp   dx, cx
+jae   do_final_heightcheck
+
+adjust_floating_monster:
+sub   dx, word ptr [si + 0Ah]
+sbb   ax, word ptr [si + 0Ch]
+mov   word ptr es:[di + 8], dx
+mov   word ptr es:[di + 0Ah], ax
+jmp   do_final_heightcheck
+exit_thingheightclip_return_1:
+
+pop   di
+pop   si
+jmp   exit_changesector_return_1
+
+continue_changesector:
+
 cmp   word ptr [si + 01Ch], 0
 jle   crush_to_gibs
 mov   es, word ptr [bp - 2]
