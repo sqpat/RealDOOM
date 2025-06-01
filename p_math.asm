@@ -36,6 +36,8 @@ EXTRN P_CrossSpecialLine_:NEAR
 EXTRN P_ShootSpecialLine_:NEAR
 EXTRN P_SpawnPuff_:NEAR
 EXTRN P_SpawnBlood_:NEAR
+EXTRN P_SpawnMobj_:NEAR
+EXTRN P_RemoveMobj_:NEAR
 EXTRN FixedMulBig1632_:FAR
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
@@ -72,6 +74,10 @@ EXTRN _shootz:DWORD
 EXTRN _attackrange16:WORD
 EXTRN _linetarget:WORD
 EXTRN _linetarget_pos:DWORD
+EXTRN _setStateReturn:WORD
+EXTRN _leveltime:DWORD
+EXTRN _nofit:BYTE
+EXTRN _crushchange:BYTE
 
 .CODE
 
@@ -7404,106 +7410,124 @@ ret
 
 ENDP
 
-COMMENT  @
 
+; always returns true?
 PROC PIT_ChangeSector_ NEAR
 PUBLIC PIT_ChangeSector_
 
-0x0000000000000842:  56                   push  si
-0x0000000000000843:  57                   push  di
-0x0000000000000844:  55                   push  bp
-0x0000000000000845:  89 E5                mov   bp, sp
-0x0000000000000847:  83 EC 02             sub   sp, 2
-0x000000000000084a:  89 D6                mov   si, dx
-0x000000000000084c:  89 DF                mov   di, bx
-0x000000000000084e:  89 4E FE             mov   word ptr [bp - 2], cx
-0x0000000000000851:  89 D0                mov   ax, dx
-0x0000000000000853:  E8 A5 17             call  P_ThingHeightClip_
-0x0000000000000856:  84 C0                test  al, al
-0x0000000000000858:  75 2A                jne   0x884
-0x000000000000085a:  83 7C 1C 00          cmp   word ptr [si + 01Ch], 0
-0x000000000000085e:  7E 2A                jle   0x88a
-0x0000000000000860:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x0000000000000863:  26 F6 45 16 02       test  byte ptr es:[di + 016h], 2
-0x0000000000000868:  75 46                jne   0x8b0
-0x000000000000086a:  26 F6 45 14 04       test  byte ptr es:[di + 014h], 4
-0x000000000000086f:  74 13                je    0x884
-0x0000000000000871:  C6 06 46 22 01       mov   byte ptr ds:[_nofit], 1
-0x0000000000000876:  80 3E 45 22 00       cmp   byte ptr ds:[_crushchange], 0
-0x000000000000087b:  74 07                je    0x884
-0x000000000000087d:  F6 06 28 1D 03       test  byte ptr ds:[_leveltime], 3
-0x0000000000000882:  74 35                je    0x8b9
-0x0000000000000884:  B0 01                mov   al, 1
-0x0000000000000886:  C9                   LEAVE_MACRO 
-0x0000000000000887:  5F                   pop   di
-0x0000000000000888:  5E                   pop   si
-0x0000000000000889:  C3                   ret   
-0x000000000000088a:  BA 7F 03             mov   dx, S_GIBS
-0x000000000000088d:  89 F0                mov   ax, si
-0x000000000000088f:  E8 12 5E             call  P_SetMobjState
-0x0000000000000892:  8B 36 FC 1E          mov   si, word ptr ds:[_setStateReturn]
-0x0000000000000896:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x0000000000000899:  26 80 65 14 FD       and   byte ptr es:[di + 014h], 0xfd
-0x000000000000089e:  C7 44 0A 00 00       mov   word ptr [si + 0Ah], 0
-0x00000000000008a3:  C7 44 0C 00 00       mov   word ptr [si + 0Ch], 0
-0x00000000000008a8:  B0 01                mov   al, 1
-0x00000000000008aa:  C6 44 1E 00          mov   byte ptr [si + 01Eh], 0
-0x00000000000008ae:  EB D6                jmp   0x886
-0x00000000000008b0:  89 D0                mov   ax, dx
-0x00000000000008b3:  E8 86 57             call  P_RemoveMobj_
-0x00000000000008b6:  90                   nop   
-0x00000000000008b7:  EB CB                jmp   0x884
-0x00000000000008b9:  B9 0A 00             mov   cx, 0xa
-0x00000000000008bc:  89 F0                mov   ax, si
-0x00000000000008be:  31 DB                xor   bx, bx
-0x00000000000008c0:  31 D2                xor   dx, dx
-0x00000000000008c2:  E8 D3 EF             call  P_DamageMobj_
-0x00000000000008c5:  FF 74 04             push  word ptr [si + 4]
-0x00000000000008c8:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x00000000000008cb:  26 8B 45 08          mov   ax, word ptr es:[di + 8]
-0x00000000000008cf:  26 8B 55 0A          mov   dx, word ptr es:[di + 0Ah]
-0x00000000000008d3:  03 44 0A             add   ax, word ptr [si + 0Ah]
-0x00000000000008d6:  13 54 0C             adc   dx, word ptr [si + 0Ch]
-0x00000000000008d9:  6A 26                push  0x26
-0x00000000000008db:  D1 FA                sar   dx, 1
-0x00000000000008dd:  D1 D8                rcr   ax, 1
-0x00000000000008df:  26 8B 5D 04          mov   bx, word ptr es:[di + 4]
-0x00000000000008e3:  52                   push  dx
-0x00000000000008e4:  26 8B 4D 06          mov   cx, word ptr es:[di + 6]
-0x00000000000008e8:  50                   push  ax
-0x00000000000008e9:  26 8B 55 02          mov   dx, word ptr es:[di + 2]
-0x00000000000008ed:  26 8B 05             mov   ax, word ptr es:[di]
-0x00000000000008f0:  E8 8D 55             call  P_SpawnMobj_
-0x00000000000008f3:  8B 36 FC 1E          mov   si, word ptr ds:[_setStateReturn]
-0x00000000000008f7:  E8 B6 48             call  P_Random_
-0x00000000000008fa:  88 C2                mov   dl, al
-0x00000000000008fc:  E8 B1 48             call  P_Random_
-0x00000000000008ff:  30 F6                xor   dh, dh
-0x0000000000000901:  30 E4                xor   ah, ah
-0x0000000000000903:  29 C2                sub   dx, ax
-0x0000000000000905:  89 D0                mov   ax, dx
-0x0000000000000907:  C1 E0 0C             shl   ax, 0xc
-0x000000000000090a:  99                   cdq   
-0x000000000000090b:  89 44 0E             mov   word ptr [si + 0Eh], ax
-0x000000000000090e:  89 54 10             mov   word ptr [si + 010h], dx
-0x0000000000000911:  E8 9C 48             call  P_Random_
-0x0000000000000914:  88 C2                mov   dl, al
-0x0000000000000916:  E8 97 48             call  P_Random_
-0x0000000000000919:  30 F6                xor   dh, dh
-0x000000000000091b:  30 E4                xor   ah, ah
-0x000000000000091d:  29 C2                sub   dx, ax
-0x000000000000091f:  89 D0                mov   ax, dx
-0x0000000000000921:  C1 E0 0C             shl   ax, 0xc
-0x0000000000000924:  99                   cdq   
-0x0000000000000925:  89 44 12             mov   word ptr [si + 012h], ax
-0x0000000000000928:  89 54 14             mov   word ptr [si + 014h], dx
-0x000000000000092b:  B0 01                mov   al, 1
-0x000000000000092d:  C9                   LEAVE_MACRO 
-0x000000000000092e:  5F                   pop   di
-0x000000000000092f:  5E                   pop   si
-0x0000000000000930:  C3                   ret   
+;boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) ;
+
+
+push  si
+push  di
+push  bp
+mov   bp, sp
+push  cx
+
+mov   si, dx
+mov   di, bx
+mov   ax, dx
+
+call  P_ThingHeightClip_
+test  al, al
+jne   exit_changesector_return_1
+cmp   word ptr [si + 01Ch], 0
+jle   crush_to_gibs
+mov   es, cx
+test  byte ptr es:[di + 016h], MF_DROPPED
+jne   crunch_items
+test  byte ptr es:[di + 014h], MF_SHOOTABLE
+je    exit_changesector_return_1
+mov   byte ptr ds:[_nofit], 1
+cmp   byte ptr ds:[_crushchange], 0
+je    exit_changesector_return_1
+test  byte ptr ds:[_leveltime], 3
+je    not_leveltime_mod_3
+exit_changesector_return_1:
+mov   al, 1
+exit_changesector_return:
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+crush_to_gibs:
+mov   dx, S_GIBS
+mov   ax, si
+call  P_SetMobjState_
+mov   si, word ptr ds:[_setStateReturn]
+mov   es, cx
+and   byte ptr es:[di + 014h], ( NOT MF_SOLID)
+xor   ax, ax
+mov   word ptr [si + 0Ah], ax
+mov   word ptr [si + 0Ch], ax
+mov   byte ptr [si + 01Eh], al
+jmp   exit_changesector_return_1
+crunch_items:
+mov   ax, dx
+call  P_RemoveMobj_
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
+
+not_leveltime_mod_3:
+mov   cx, 10
+mov   ax, si
+xor   bx, bx
+mov   dx, bx
+call  P_DamageMobj_
+
+mov   es, word ptr [bp - 2]
+mov   ax, word ptr es:[di + 8]
+mov   dx, word ptr es:[di + 0Ah]
+add   ax, word ptr [si + 0Ah]
+adc   dx, word ptr [si + 0Ch]
+sar   dx, 1
+rcr   ax, 1
+mov   bx, word ptr es:[di + 4]
+
+push  word ptr [si + 4]
+push  MT_BLOOD
+push  dx
+push  ax
+
+mov   cx, word ptr es:[di + 6]
+les   ax, dword ptr es:[di]
+mov   dx, es
+call  P_SpawnMobj_
+call  P_Random_
+mov   dl, al
+call  P_Random_
+xor   dh, dh
+xor   ah, ah
+sub   dx, ax
+mov   ax, dx
+shl   ax, 12
+cwd   
+mov   si, word ptr ds:[_setStateReturn]
+mov   word ptr [si + 0Eh], ax
+mov   word ptr [si + 010h], dx
+call  P_Random_
+mov   dl, al
+call  P_Random_
+xor   dh, dh
+xor   ah, ah
+sub   dx, ax
+mov   ax, dx
+shl   ax, 12
+cwd   
+mov   word ptr [si + 012h], ax
+mov   word ptr [si + 014h], dx
+mov   al, 1
+LEAVE_MACRO 
+pop   di
+pop   si
+ret   
 
 ENDP
+
+COMMENT  @
 
 PROC P_ChangeSector_ NEAR
 PUBLIC P_ChangeSector_

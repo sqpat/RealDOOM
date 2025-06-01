@@ -1670,6 +1670,8 @@ void __near P_RadiusAttack (mobj_t __near* spot, mobj_pos_t __far* spot_pos, mob
 //
 // PIT_ChangeSector
 //
+boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) ;
+/*
 boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) {
 
 
@@ -1723,7 +1725,7 @@ boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj
     // keep checking (crush other things)	
     return true;	
 }
-
+*/
 
 
 //
