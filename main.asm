@@ -1724,7 +1724,6 @@ ret
 not_starting_controlpanel:
 cmp   byte ptr ds:[_gamestate], GS_LEVEL
 jne   not_gamestate_level
-label_23:
 mov   ax, bx
 mov   dx, cx
 call  HU_Responder_
@@ -1743,7 +1742,7 @@ jne   exit_gresponder_return_1
 
 not_gamestate_level:
 cmp   byte ptr ds:[_gamestate], GS_FINALE
-jne    label_18
+jne   not_gamestate_finale
 mov   ax, 2
 call  Z_SetOverlay_
 mov   dx, cx
@@ -1752,33 +1751,30 @@ call  dword ptr [_F_Responder]
 test  al, al
 jne   exit_gresponder_return_1_2
 
-label_18:
+not_gamestate_finale:
+
+; check game type
 mov   es, cx
 mov   al, byte ptr es:[bx]
 cmp   al, EV_MOUSE
 je    handle_game_mouse_event
 cmp   al, EV_KEYUP
 jne   handle_game_keydown_event
-mov   ax, word ptr es:[bx + 3]
-test  ax, ax
-jl    label_22
-jne   exit_gresponder_return_0
-cmp   word ptr es:[bx + 1], 0100h
+mov   ax, word ptr es:[bx + 1]
+cmp   ax, 0100h
 jae   exit_gresponder_return_0
-label_22:
-mov   al, byte ptr es:[bx + 1]
-cbw
+
 call  G_SetGameKeyUp_
 jmp   exit_gresponder_return_0
 
 
 
 handle_game_keydown_event:
-cmp   word ptr es:[bx + 3], 0
-jne   label_14
-cmp   word ptr es:[bx + 1], 0FFh
-jne   label_14
-label_15:
+; i dont think we have to handle high word
+mov   ax, word ptr es:[bx + 1]
+cmp   ax, KEY_PAUSE
+jne   not_pause
+
 mov   byte ptr [_sendpause], 1
 exit_gresponder_return_1_2:
 mov   al, 1
@@ -1786,17 +1782,10 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_14:
-mov   ax, word ptr es:[bx + 3]
-test  ax, ax
-jl    do_setgamekeydown
-jne   exit_gresponder_return_1_2
-cmp   word ptr es:[bx + 1], 0100h
-jnb   exit_gresponder_return_1_2
 
-do_setgamekeydown:
-mov   al, byte ptr es:[bx + 1]
-cbw
+not_pause:
+cmp   ax, 0100h
+jnb   exit_gresponder_return_1_2
 call  G_SetGameKeyDown_
 jmp   exit_gresponder_return_1_2
 
@@ -1815,7 +1804,7 @@ mov   al, byte ptr [_mouseSensitivity]
 xor   ah, ah
 mov   dx, word ptr es:[bx + 5]
 add   ax, 5
-mov   bx, 0Ah
+mov   bx, 10
 imul  dx
 call  FastDiv3216u_
 mov   word ptr [_mousex], ax
