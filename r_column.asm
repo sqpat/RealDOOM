@@ -15,7 +15,6 @@
 ;
 ; DESCRIPTION:
 ;
-.MODEL  medium
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 .DATA

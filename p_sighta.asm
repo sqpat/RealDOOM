@@ -14,7 +14,6 @@
 ;
 ; DESCRIPTION:
 ;
-	.MODEL  medium
 
 
 ; todo: move fixedmul2432 into this file? along with map stuff.

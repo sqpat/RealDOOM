@@ -14,7 +14,9 @@
 ;
 ; DESCRIPTION:
 ;
-	.MODEL  medium
+INCLUDE CONSTANT.INC
+INCLUDE defs.inc
+INSTRUCTION_SET_MACRO
 
 
 EXTRN FixedMul16u32_:FAR
@@ -40,9 +42,6 @@ EXTRN P_SpawnBlood_:NEAR
 EXTRN P_SpawnMobj_:NEAR
 EXTRN P_RemoveMobj_:NEAR
 
-INCLUDE CONSTANT.INC
-INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
 
 .DATA
 
@@ -6732,33 +6731,40 @@ jmp   aim_line_done_with_switchblock_shift
 
 aim_line_is_melee:
 
-; shift 6
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+	SHLD  dx, ax, 6
+	SHLD  cx, bx, 6
+ELSE
 
-; shift 6
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
+	; shift 6
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+
+	; shift 6
+	sal   bx, 1
+	rcl   cx, 1
+	sal   bx, 1
+	rcl   cx, 1
+	sal   bx, 1
+	rcl   cx, 1
+	sal   bx, 1
+	rcl   cx, 1
+	sal   bx, 1
+	rcl   cx, 1
+	sal   bx, 1
+	rcl   cx, 1
+
+ENDIF
 
 cmp   si, CHAINSAWRANGE
 jne   aim_line_done_with_switchblock_shift
@@ -6992,33 +6998,40 @@ jmp   lineattack_done_with_switchblock
 
 lineattack_is_melee:
 
-; shift 6
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+	SHLD  dx, ax, 6
+	SHLD  cx, bx, 6
+ELSE
 
-; shift 6
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
-sal   bx, 1
-rcl   cx, 1
+	; shift 6
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+
+	; shift 6
+	sal   bx, 1
+	rcl   cx, 1
+	sal   bx, 1
+	rcl   cx, 1
+	sal   bx, 1
+	rcl   cx, 1
+	sal   bx, 1
+	rcl   cx, 1
+	sal   bx, 1
+	rcl   cx, 1
+	sal   bx, 1
+	rcl   cx, 1
+
+ENDIF
 
 cmp   si, CHAINSAWRANGE
 jne    lineattack_done_with_switchblock
@@ -7145,19 +7158,26 @@ mov   si, es
 
 
 
-; shift 6
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+	SHLD  dx, ax, 6
+
+ELSE
+
+	; shift 6
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+	sal   ax, 1
+	rcl   dx, 1
+ENDIF
+
 
 add   ax, bx
 adc   dx, cx
@@ -7173,19 +7193,25 @@ les   dx, dword ptr [bp - 4]
 mov   ax, es
 
 
-; shift 6
-sal   di, 1
-rcl   si, 1
-sal   di, 1
-rcl   si, 1
-sal   di, 1
-rcl   si, 1
-sal   di, 1
-rcl   si, 1
-sal   di, 1
-rcl   si, 1
-sal   di, 1
-rcl   si, 1
+IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+	SHLD  si, di, 6
+
+ELSE
+
+	; shift 6
+	sal   di, 1
+	rcl   si, 1
+	sal   di, 1
+	rcl   si, 1
+	sal   di, 1
+	rcl   si, 1
+	sal   di, 1
+	rcl   si, 1
+	sal   di, 1
+	rcl   si, 1
+	sal   di, 1
+	rcl   si, 1
+ENDIF
 
 
 

@@ -117,7 +117,7 @@ doomout.exe : $(GLOBOBJS) i_ibm.obj
  wcc $(CCOPTS) $[*
 
 .asm.obj :
- tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
+ tasm /mx /m4 /w2 /q /zi $(ASMOPTS) $[*
 
 clean : .SYMBOLIC
  del *.obj
