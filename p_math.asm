@@ -1131,25 +1131,26 @@ je    no_next_ref
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 
-xchg  ax, si ; store si in ax
-imul  si, di, SIZEOF_THINKER_T
+	xchg  ax, si ; store si in ax
+	imul  si, di, SIZEOF_THINKER_T
+	mov   word ptr ds:[si + (_thinkerlist + 4)], dx
+	xchg  ax, si  ; restore si
 
 ELSE
 
-push  dx
+	push  dx
 
-xor   dx, dx
-mov   ax, SIZEOF_THINKER_T
-mul   di
-xchg  ax, si ; store si in ax, si gets value..
+	mov   ax, SIZEOF_THINKER_T
+	mul   di
+	xchg  ax, si 
 
-pop   dx
+	pop   dx
+	mov   word ptr ds:[si + (_thinkerlist + 4)], dx
+	xchg  ax, si 
 
 
 ENDIF
 
-mov   word ptr ds:[si + (_thinkerlist + 4)], dx
-xchg  ax, si  ; restore si
 
 no_next_ref:
 
@@ -1194,18 +1195,18 @@ has_prev_ref:
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 
-imul  si, dx, SIZEOF_MOBJ_POS_T
+	imul  si, dx, SIZEOF_MOBJ_POS_T
 
 ELSE
 
-; 017h
+	; 018h
 
-sal   dx, 1
-sal   dx, 1
-sal   dx, 1
-mov   si, dx
-sal   dx, 1
-add   si, dx
+	sal   dx, 1 	; x2
+	sal   dx, 1     ; x4
+	sal   dx, 1     ; x8
+	mov   si, dx    ; x8  + x8
+	sal   dx, 1     ; x16 + x8
+	add   si, dx    ; x24
 
 
 ENDIF
@@ -1319,15 +1320,14 @@ do_next_check_nextref_loop_iter:
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 
-imul  si, ax, SIZEOF_THINKER_T
+	imul  si, ax, SIZEOF_THINKER_T
 
 ELSE
 
-xor  dx, dx
-xchg ax, si
-mov  ax, SIZEOF_THINKER_T
-mul  si
-xchg ax, si
+	xchg ax, si
+	mov  ax, SIZEOF_THINKER_T
+	mul  si
+	xchg ax, si  ; maintain ax
 
 ENDIF
 
@@ -1513,13 +1513,13 @@ je    done_setting_sector_stuff
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 	imul  bx, ax, SIZEOF_THINKER_T
 ELSE
-	push  ax
+	push  dx
 
 	mov   bx, SIZEOF_THINKER_T
 	mul   bx
 	xchg  ax, bx
 
-	pop   ax
+	pop   dx
 ENDIF
 
 mov   word ptr ds:[bx + (_thinkerlist + 4)], dx
@@ -1835,20 +1835,20 @@ loop_check_next_block_thing:
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 
-imul bx, si, SIZEOF_MOBJ_POS_T
-mov  ax, si
-imul si, si, SIZEOF_THINKER_T
+	imul bx, si, SIZEOF_MOBJ_POS_T
+	mov  ax, si
+	imul si, si, SIZEOF_THINKER_T
 
 ELSE
 
-xor  dx, dx
-mov  ax, SIZEOF_MOBJ_POS_T
-mul  si
-mov  bx, ax
-;xor  dx, dx
-mov  ax, SIZEOF_THINKER_T
-mul  si
-xchg ax, si	; si gets ptr, ax gets index
+
+	mov  ax, SIZEOF_MOBJ_POS_T
+	mul  si
+	mov  bx, ax
+
+	mov  ax, SIZEOF_THINKER_T
+	mul  si
+	xchg ax, si	; si gets ptr, ax gets index
 
 ENDIF
 
@@ -4356,7 +4356,7 @@ je    good_missile_target
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 	imul  bx, ax, SIZEOF_THINKER_T
-add   bx, (_thinkerlist + 4)
+	add   bx, (_thinkerlist + 4)
 ELSE
 	mov   bx, SIZEOF_THINKER_T
 	mul   bx
@@ -6104,6 +6104,7 @@ ELSE
     push  dx
 	mov   ax, SIZEOF_THINKER_T
 	mul   bx
+	pop   dx
 
 ENDIF
 
@@ -6117,6 +6118,7 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 	imul  di, bx, SIZEOF_MOBJ_POS_T
 
 ELSE
+    push  dx
 	mov   ax, SIZEOF_MOBJ_POS_T
 	mul   bx
 	xchg  ax, di
