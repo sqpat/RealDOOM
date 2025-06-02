@@ -1680,6 +1680,15 @@ jmp   print_last_digit
 
 ENDP
 
+call_startcontrolpanel:
+call  M_StartControlPanel_
+exit_gresponder_return_1:
+mov   al, 1
+pop   si
+pop   cx
+pop   bx
+ret   
+
 PROC G_Responder_  NEAR
 PUBLIC G_Responder_
 
@@ -1688,155 +1697,110 @@ push  cx
 push  si
 mov   bx, ax
 mov   cx, dx
-mov   si, OFFSET _gameaction
-cmp   byte ptr [si], 0
-jne   label_1
+cmp   byte ptr ds:[_gameaction], 0
+jne   not_starting_controlpanel
 cmp   byte ptr [_singledemo], 0
-jne   label_1
+jne   not_starting_controlpanel
 cmp   byte ptr [_demoplayback], 0
-je    label_2
-label_10:
+jne   check_key_for_controlpanel
+cmp   byte ptr ds:[_gamestate], GS_DEMOSCREEN
+jne   not_starting_controlpanel
+check_key_for_controlpanel:
 mov   es, cx
 mov   al, byte ptr es:[bx]
 test  al, al
-je    label_3
+je    call_startcontrolpanel
 cmp   al, 2
-jne   label_4
+jne   exit_gresponder_return_0
 mov   si, word ptr es:[bx + 3]
 or    si, word ptr es:[bx + 1]
-jne   label_3
-label_4:
+jne   call_startcontrolpanel
+exit_gresponder_return_0:
 xor   al, al
 pop   si
 pop   cx
 pop   bx
 ret   
-label_2:
-mov   si, OFFSET _gamestate
-cmp   byte ptr [si], 3
-je    label_10
-label_1:
-mov   si, OFFSET _gamestate
-cmp   byte ptr [si], 0
-je    label_23
-label_8:
-mov   si, OFFSET _gamestate
-cmp   byte ptr [si], 2
-je    label_9
-label_18:
-mov   es, cx
-mov   al, byte ptr es:[bx]
-cmp   al, 2
-je    label_20
-cmp   al, 1
-jne   label_21
-mov   ax, word ptr es:[bx + 3]
-test  ax, ax
-jl    label_22
-jne   label_4
-cmp   word ptr es:[bx + 1], 0100h
-jae   label_4
-label_22:
-mov   al, byte ptr es:[bx + 1]
-cbw
-call  G_SetGameKeyUp_
-jmp   label_4
-label_3:
-call  M_StartControlPanel_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-ret   
+not_starting_controlpanel:
+cmp   byte ptr ds:[_gamestate], GS_LEVEL
+jne   not_gamestate_level
 label_23:
 mov   ax, bx
 mov   dx, cx
 call  HU_Responder_
 test  al, al
-je    label_5
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-ret   
-label_5:
+jne   exit_gresponder_return_1
 mov   ax, bx
 mov   dx, cx
 call  ST_Responder_
 test  al, al
-je    label_6
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-ret   
-label_9:
-jmp   label_7
-label_6:
+jne   exit_gresponder_return_1
 mov   ax, bx
 mov   dx, cx
 call  AM_Responder_
 test  al, al
-je    label_8
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-ret   
-label_20:
-jmp   label_11
-label_21:
-jmp   label_12
-label_7:
+jne   exit_gresponder_return_1
+
+not_gamestate_level:
+cmp   byte ptr ds:[_gamestate], GS_FINALE
+jne    label_18
 mov   ax, 2
-call Z_SetOverlay_
+call  Z_SetOverlay_
 mov   dx, cx
 mov   ax, bx
-call dword ptr [_F_Responder]
+call  dword ptr [_F_Responder]
 test  al, al
-jne   label_19
-jmp   label_18
-label_19:
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-ret   
-label_12:
-test  al, al
-je    label_13
-jmp   label_4
-label_13:
+jne   exit_gresponder_return_1_2
+
+label_18:
+mov   es, cx
+mov   al, byte ptr es:[bx]
+cmp   al, EV_MOUSE
+je    handle_game_mouse_event
+cmp   al, EV_KEYUP
+jne   handle_game_keydown_event
+mov   ax, word ptr es:[bx + 3]
+test  ax, ax
+jl    label_22
+jne   exit_gresponder_return_0
+cmp   word ptr es:[bx + 1], 0100h
+jae   exit_gresponder_return_0
+label_22:
+mov   al, byte ptr es:[bx + 1]
+cbw
+call  G_SetGameKeyUp_
+jmp   exit_gresponder_return_0
+
+
+
+handle_game_keydown_event:
 cmp   word ptr es:[bx + 3], 0
 jne   label_14
 cmp   word ptr es:[bx + 1], 0FFh
-je    label_15
+jne   label_14
+label_15:
+mov   byte ptr [_sendpause], 1
+exit_gresponder_return_1_2:
+mov   al, 1
+pop   si
+pop   cx
+pop   bx
+ret   
 label_14:
 mov   ax, word ptr es:[bx + 3]
 test  ax, ax
-jl    label_16
-jne   label_17
+jl    do_setgamekeydown
+jne   exit_gresponder_return_1_2
 cmp   word ptr es:[bx + 1], 0100h
-jb    label_16
-label_17:
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-ret   
-label_15:
-mov   al, 1
-mov   byte ptr [_sendpause], al
-pop   si
-pop   cx
-pop   bx
-ret   
-label_16:
+jnb   exit_gresponder_return_1_2
+
+do_setgamekeydown:
 mov   al, byte ptr es:[bx + 1]
 cbw
 call  G_SetGameKeyDown_
-jmp   label_17
-label_11:
+jmp   exit_gresponder_return_1_2
+
+handle_game_mouse_event:
 mov   al, byte ptr es:[bx + 1]
 mov   si, word ptr [_mousebuttons]
 and   al, 1

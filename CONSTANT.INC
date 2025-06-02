@@ -2097,6 +2097,9 @@ CHAINSAWRANGE = 041h
 MISSILERANGE = 0800h
 HALFMISSILERANGE = 0400h
 BASETHRESHOLD = 064h
+EV_KEYDOWN = 00h
+EV_KEYUP = 01h
+EV_MOUSE = 02h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h
