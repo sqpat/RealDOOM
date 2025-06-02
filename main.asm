@@ -1743,7 +1743,7 @@ jne   exit_gresponder_return_1
 not_gamestate_level:
 cmp   byte ptr ds:[_gamestate], GS_FINALE
 jne   not_gamestate_finale
-mov   ax, 2
+mov   ax, OVERLAY_ID_FINALE
 call  Z_SetOverlay_
 mov   dx, cx
 mov   ax, bx

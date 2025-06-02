@@ -316,7 +316,7 @@ mov       word ptr [si + 0xd34], ax
 mov       ax, word ptr [si + 0xd32]
 mov       word ptr [si + 0xd36], 0FFFFh
 cmp       ax, 0FFFFh
-jne       label_1
+jne       cache_next_lump
 increment_sb_sfx_loop:
 inc       byte ptr [bp - 2]
 cmp       byte ptr [bp - 2], 0x6d
@@ -344,7 +344,7 @@ pop       dx
 pop       cx
 pop       bx
 retf      
-label_1:
+cache_next_lump:
 mov       cx, SCRATCH_SEGMENT_5000
 and       ah, (SOUND_LUMP_BITMASK SHR 8)
 xor       bx, bx
