@@ -37,12 +37,11 @@ file st_stuff.obj
 file hu_stuff.obj
 file hu_lib.obj
 file m_menu.obj
-file d_wipe.obj
+file f_wipe.obj
 
 file d_algo.obj
 file dmx.obj
 file d_int.obj
-file d_wi.obj
 file wi_stuff.obj
 file math.obj
 file main.obj
@@ -53,10 +52,10 @@ file st_setup.obj
 file hu_setup.obj
 
 NEWSEGMENT
-file d_finale.obj
+file f_finale.obj
 
 NEWSEGMENT
-file d_savel.obj
+file p_saveg.obj
 
 
 #todo put these in the future wad segment. maybe pull out p_tick.
@@ -73,7 +72,7 @@ file p_enemy.obj
 file p_floor.obj
 file p_inter.obj
 file p_lights.obj
-file p_math.obj
+file p_map.obj
 file p_plats.obj
 file p_pspr.obj
 file p_spec.obj
@@ -105,4 +104,4 @@ file z_zone.obj
 NEWSEGMENT
 file p_setup.obj
 file p_sight.obj
-file p_sighta.obj
+file p_sight.obj

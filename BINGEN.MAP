@@ -772,7 +772,7 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 0319:6162      M_Drawer_
 0319:6312*     M_SetupNextMenu_
 0319:6322      M_Ticker_
-Module: d_wipe.obj(d_wipe.ASM)
+Module: f_wipe.obj(d_wipe.ASM)
 0319:6340      I_ReadScreen_
 0319:6510*     wipe_initMelt_
 0319:6593      wipe_StartScreen_
@@ -807,7 +807,7 @@ Module: d_int.obj(d_int.ASM)
 0319:6969      locallib_int86_33_
 0319:6963      locallib_int86_67_multiple_
 0319:6966      locallib_int86_10_
-Module: d_wi.obj(d_wi.ASM)
+Module: wi_stuff.obj(d_wi.ASM)
 0319:79a8      WI_ENDMARKER_
 0319:72ab*     WI_initStats_
 0319:711b*     WI_drawPercent_
@@ -898,7 +898,7 @@ Module: st_setup.obj(C:\REALDOOM\st_setup.c)
 0319:9792      ST_Start_
 Module: hu_setup.obj(C:\REALDOOM\hu_setup.c)
 0319:9800      HU_Start_
-Module: d_finale.obj(d_finale.ASM)
+Module: f_finale.obj(d_finale.ASM)
 0ca5:0296*     F_CastDrawer_
 0ca5:0ac5      F_Responder_
 0ca5:0002      F_START_
@@ -914,7 +914,7 @@ Module: d_finale.obj(d_finale.ASM)
 0ca5:0458*     F_DrawPatchCol_
 0ca5:09b0*     F_CastResponder_
 0ca5:06ac*     F_StartCast_
-Module: d_savel.obj(d_savel.ASM)
+Module: p_saveg.obj(d_savel.ASM)
 0d59:02b7      P_UnArchiveThinkers_
 0d59:000c      P_LOADSTART_
 0d59:0435      P_UnArchiveSpecials_
@@ -1150,7 +1150,7 @@ Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0e0a:93c0      EV_LightChange_
 0e0a:9492      T_Glow_
 0e0a:94f0      P_SpawnGlowingLight_
-Module: p_math.obj(p_math.ASM)
+Module: p_map.obj(p_math.ASM)
 0e0a:a59c*     PIT_CheckThing_
 0e0a:a369*     P_HitSlideLine_
 0e0a:99bd      P_SetThingPosition_
@@ -1459,7 +1459,7 @@ Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 26be:0f5a      P_InitThinkers_
 26be:0f84+     Z_FreeConventionalAllocations_
 26be:1230*     PSetupEndFunc_
-Module: p_sighta.obj(p_sighta.ASM)
+Module: p_sight.obj(p_sighta.ASM)
 26be:17a8*     P_CrossBSPNode_
 26be:1250      P_CheckSight_
 26be:1327*     P_DivlineSide_
