@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/02 16:47:16
+Created on:       25/06/02 17:10:47
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -33,7 +33,7 @@ i_init_TEXT            CODE           AUTO           0000:1ef0       000000a5
 z_init_TEXT            CODE           AUTO           0000:1fa0       00000837
 p_init_TEXT            CODE           AUTO           0000:27e0       00000479
 i_main_TEXT            CODE           AUTO           02c6:0000       0000001e
-i_quit_TEXT            CODE           AUTO           02c6:0020       000001e5
+i_quit_TEXT            CODE           AUTO           02c6:0020       000001e9
 i_ibm_TEXT             CODE           AUTO           02c6:0210       000002ee
 i_sound_TEXT           CODE           AUTO           02c6:0500       00000246
 d_main_TEXT            CODE           AUTO           02c6:0750       00001038
@@ -550,14 +550,14 @@ Module: i_main.obj(C:\REALDOOM\i_main.c)
 02c6:0000      main_
 Module: i_quit.obj(C:\REALDOOM\i_quit.c)
 02c6:0020+     I_ShutdownSound_
-02c6:0052+     I_ShutdownGraphics_
-02c6:0074+     I_ShutdownTimer_
-02c6:00ac+     I_ShutdownKeyboard_
-02c6:00de+     I_ShutdownMouse_
-02c6:00ec+     Z_ShutdownEMS_
-02c6:011e      I_Shutdown_
-02c6:0160      M_CheckParm_
-02c6:01b8      I_Quit_
+02c6:0056+     I_ShutdownGraphics_
+02c6:0078+     I_ShutdownTimer_
+02c6:00b0+     I_ShutdownKeyboard_
+02c6:00e2+     I_ShutdownMouse_
+02c6:00f0+     Z_ShutdownEMS_
+02c6:0122      I_Shutdown_
+02c6:0164      M_CheckParm_
+02c6:01bc      I_Quit_
 Module: i_ibm.obj(C:\REALDOOM\i_ibm.c)
 02c6:0210      I_WaitVBL_
 02c6:023e      I_SetPalette_
@@ -1553,4 +1553,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00023640 (144960.)
 Entry point address: 1d0a:1c36
-Link time: 00:00.75
+Link time: 00:00.74

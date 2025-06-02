@@ -44,7 +44,10 @@ void __near I_ShutdownSound(void) {
     }
 	//finishlogging();
 	// sfx shutdown
-	SB_Shutdown();
+	if (snd_SfxDevice == snd_SB){
+		SB_Shutdown();		
+	}
+
 
 
 }
