@@ -4979,8 +4979,16 @@ adc   cx, di  				   ; leadx hi
 add   ax, word ptr [si + 012h]
 adc   dx, word ptr [si + 014h]
 
-push  OFFSET PTR_SlideTraverse_
-push  PT_ADDLINES
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	push  OFFSET PTR_SlideTraverse_
+	push  PT_ADDLINES
+ELSE
+	mov   di, OFFSET PTR_SlideTraverse_
+	push  di
+	mov   di, PT_ADDLINES
+	push  di
+ENDIF
+
 push  dx ; temp4
 push  ax
 push  cx ; temp
@@ -4997,8 +5005,16 @@ adc   dx, word ptr [bp - 0Ch]
 ; call 2
 ;	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-push  OFFSET PTR_SlideTraverse_
-push  PT_ADDLINES
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	push  OFFSET PTR_SlideTraverse_
+	push  PT_ADDLINES
+ELSE
+	mov   di, OFFSET PTR_SlideTraverse_
+	push  di
+	mov   di, PT_ADDLINES
+	push  di
+ENDIF
+
 push  dx ; temp 2
 push  ax
 
@@ -5017,8 +5033,17 @@ push  si ; temp 3 lo
 ;	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
 
-push  OFFSET PTR_SlideTraverse_
-push  PT_ADDLINES
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	push  OFFSET PTR_SlideTraverse_
+	push  PT_ADDLINES
+ELSE
+	mov   di, OFFSET PTR_SlideTraverse_
+	push  di
+	mov   di, PT_ADDLINES
+	push  di
+ENDIF
+
 push  dx ; temp 2
 push  ax 
 push  cx ; temp
@@ -5688,14 +5713,15 @@ je    exit_shoottraverse_return_1
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 	imul  bx, bx, SIZEOF_MOBJ_POS_T
 ELSE
+	push  dx
 	mov   ax, SIZEOF_MOBJ_POS_T
 	mul   bx
 	xchg  ax, bx
+	pop   dx
 
 ENDIF
 
 mov   ax, MOBJPOSLIST_6800_SEGMENT
-
 mov   es, ax
 
 push   dx	; bp - 4 thinker near ptr  
@@ -6072,11 +6098,11 @@ aimtraverse_is_not_a_line:
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 
-imul  ax, bx, SIZEOF_THINKER_T
+	imul  ax, bx, SIZEOF_THINKER_T
 
 ELSE
     push  dx
-	mov   ax, SIZEOF_MOBJ_POS_T
+	mov   ax, SIZEOF_THINKER_T
 	mul   bx
 
 ENDIF
@@ -6617,7 +6643,7 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 ELSE
 	mov   bx, SIZEOF_MOBJ_POS_T
 	mul   bx
-	mov   bx, ax
+	xchg  ax, bx
 
 ENDIF
 
@@ -6767,8 +6793,20 @@ adc   cx, word ptr [bp - 2]
 
 
 ; ready params for the call
-push  OFFSET PTR_AimTraverse_
-push  (PT_ADDLINES OR PT_ADDTHINGS)
+
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	push  OFFSET PTR_AimTraverse_
+	push  (PT_ADDLINES OR PT_ADDTHINGS)
+ELSE
+	mov   di, OFFSET PTR_AimTraverse_
+	push  di
+	mov   di, (PT_ADDLINES OR PT_ADDTHINGS)
+	push  di
+ENDIF
+
+
 push cx
 push bx
 push dx
@@ -6879,7 +6917,7 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 ELSE
 	mov   bx, SIZEOF_MOBJ_POS_T
 	mul   bx
-	mov   bx, ax
+	xchg  ax, bx
 
 ENDIF
 
@@ -7009,8 +7047,16 @@ add   bx, word ptr [bp - 4]
 adc   cx, word ptr [bp - 2]
 
 
-push  OFFSET PTR_ShootTraverse_
-push  (PT_ADDLINES OR PT_ADDTHINGS)
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	push  OFFSET PTR_ShootTraverse_
+	push  (PT_ADDLINES OR PT_ADDTHINGS)
+ELSE
+	mov   di, OFFSET PTR_ShootTraverse_
+	push  di
+	mov   di, (PT_ADDLINES OR PT_ADDTHINGS)
+	push  di
+ENDIF
+
 push cx
 push bx
 push dx
@@ -7079,6 +7125,15 @@ xchg  ax, di    ; di has sine/cosine fineangle lookup
 mov   si, FINESINE_SEGMENT
 mov   es, si
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	push  OFFSET PTR_UseTraverse_
+	push  PT_ADDLINES
+ELSE
+	mov   ax, OFFSET PTR_UseTraverse_
+	push  ax
+	mov   ax, PT_ADDLINES
+	push  ax
+ENDIF
 
 les   ax, dword ptr es:[di] ; load sin into dx:ax
 mov   dx, es
@@ -7106,8 +7161,9 @@ add   ax, bx
 adc   dx, cx
 
 ; args to pathtraverse...
-push  OFFSET PTR_UseTraverse_
-push  PT_ADDLINES
+
+
+
 push  dx
 push  ax
 
@@ -7597,7 +7653,14 @@ adc   dx, word ptr [si + 0Ch]
 sar   dx, 1
 rcr   ax, 1
 push  word ptr [si + 4]
-push  MT_BLOOD
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	push  MT_BLOOD
+ELSE
+	mov   bx, MT_BLOOD
+	push  bx
+ENDIF
+
 push  dx
 push  ax
 
