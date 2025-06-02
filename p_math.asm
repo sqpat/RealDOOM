@@ -23,12 +23,13 @@ EXTRN FixedMul2424_:FAR
 EXTRN FixedMul2432_:FAR
 EXTRN FixedMul_:FAR
 EXTRN FixedDiv_:FAR
-EXTRN S_StartSound_:FAR
-EXTRN P_UseSpecialLine_:PROC
+EXTRN FixedMulBig1632_:FAR
 EXTRN FixedMulTrigNoShift_:PROC
+EXTRN S_StartSound_:FAR
 EXTRN R_PointToAngle2_16_:PROC
 EXTRN R_PointToAngle2_:PROC
 EXTRN P_Random_:NEAR
+EXTRN P_UseSpecialLine_:PROC
 EXTRN P_DamageMobj_:NEAR
 EXTRN P_SetMobjState_:NEAR
 EXTRN P_TouchSpecialThing_:NEAR
@@ -38,7 +39,7 @@ EXTRN P_SpawnPuff_:NEAR
 EXTRN P_SpawnBlood_:NEAR
 EXTRN P_SpawnMobj_:NEAR
 EXTRN P_RemoveMobj_:NEAR
-EXTRN FixedMulBig1632_:FAR
+
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
@@ -1461,12 +1462,39 @@ xchg  ax, word ptr es:[bx + 8]
 ;		thing_pos = &mobjposlist_6800[thingRef];
 
 
-imul  di, dx, SIZEOF_THINKER_T
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	imul  di, dx, SIZEOF_THINKER_T
+ELSE
+	push  ax
+	push  dx
+
+	mov   ax, SIZEOF_THINKER_T
+	mul   dx
+	xchg  ax, di
+
+	pop   dx
+	pop   ax
+ENDIF
+
 add   di, (_thinkerlist + 4)
 mov   si, MOBJPOSLIST_6800_SEGMENT
 mov   es, si
 
-imul  si, dx, SIZEOF_MOBJ_POS_T
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	imul  si, dx, SIZEOF_MOBJ_POS_T
+ELSE
+	push  ax
+	push  dx
+
+	mov   ax, SIZEOF_MOBJ_POS_T
+	mul   dx
+	xchg  ax, si
+
+	pop   dx
+	pop   ax
+ENDIF
 
 ;		thing->sprevRef = NULL_THINKERREF;
 mov   word ptr [di], 0
@@ -1481,7 +1509,19 @@ je    done_setting_sector_stuff
 ;			thingList = (mobj_t __near*)&thinkerlist[thing_pos->snextRef].data;
 ;			thingList->sprevRef = thingRef;
 
-imul  bx, ax, SIZEOF_THINKER_T
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	imul  bx, ax, SIZEOF_THINKER_T
+ELSE
+	push  ax
+
+	mov   bx, SIZEOF_THINKER_T
+	mul   bx
+	xchg  ax, bx
+
+	pop   ax
+ENDIF
+
 mov   word ptr ds:[bx + (_thinkerlist + 4)], dx
 
 done_setting_sector_stuff:
@@ -3199,7 +3239,15 @@ jne   move_ok_do_unset_position
 
 mov   ax, word ptr ds:[_tmceilingz]
 sub   ax, word ptr ds:[_tmfloorz]
-SHIFT_MACRO sar   ax 3
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	SHIFT_MACRO sar   ax 3
+ELSE 
+    ; this is here because on 8086 an above rel jump is too far... urgh. revisit?
+	mov cl, 3
+	sar ax, cl
+ENDIF
+
 cmp   ax, word ptr [si + 0Ch]
 jnge  exit_trymove_return0
 
@@ -4472,7 +4520,16 @@ mov   word ptr ds:[_tmthing], ax
 sub   ax, (_thinkerlist + 4)
 xor   dx, dx  ; cwd seems bad??? are we passing in -1?
 div   bx
-imul  bx, ax, SIZEOF_MOBJ_POS_T
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	imul  bx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+	mov   bx, SIZEOF_MOBJ_POS_T
+	mul   bx
+	xchg  ax, bx
+ENDIF
+
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   word ptr ds:[_tmthing_pos+0], bx
 mov   word ptr ds:[_tmthing_pos+2], ax  ;todo remove once fixed?
@@ -5614,11 +5671,29 @@ ret
 is_not_a_line:
 ; bx has thingnum
 
-imul  dx, bx, SIZEOF_THINKER_T
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	imul  dx, bx, SIZEOF_THINKER_T
+ELSE
+	mov   ax, SIZEOF_THINKER_T
+	mul   bx
+	xchg  ax, dx
+
+ENDIF
+
 add   dx, (_thinkerlist + 4)
 cmp   dx, word ptr ds:[_shootthing]
 je    exit_shoottraverse_return_1
-imul  bx, bx, SIZEOF_MOBJ_POS_T
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	imul  bx, bx, SIZEOF_MOBJ_POS_T
+ELSE
+	mov   ax, SIZEOF_MOBJ_POS_T
+	mul   bx
+	xchg  ax, bx
+
+ENDIF
+
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 
 mov   es, ax
@@ -5994,12 +6069,36 @@ aimtraverse_is_not_a_line:
 ;		return true;			// can't shoot self
 ;	}
 
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
 imul  ax, bx, SIZEOF_THINKER_T
+
+ELSE
+    push  dx
+	mov   ax, SIZEOF_MOBJ_POS_T
+	mul   bx
+
+ENDIF
+
 add   ax, (_thinkerlist + 4)
 cmp   ax, word ptr ds:[_shootthing]
 je    exit_aimtraverse_return_1
 push  ax  ; thing ptr
-imul  di, bx, SIZEOF_MOBJ_POS_T
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
+	imul  di, bx, SIZEOF_MOBJ_POS_T
+
+ELSE
+	mov   ax, SIZEOF_MOBJ_POS_T
+	mul   bx
+	xchg  ax, di
+	pop   dx
+ENDIF
+
+
+
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
 test  byte ptr es:[di + 014h], MF_SHOOTABLE
@@ -6510,7 +6609,17 @@ mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 xor   dx, dx
 div   bx
-imul  bx, ax, SIZEOF_MOBJ_POS_T
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
+	imul  bx, ax, SIZEOF_MOBJ_POS_T
+
+ELSE
+	mov   bx, SIZEOF_MOBJ_POS_T
+	mul   bx
+	mov   bx, ax
+
+ENDIF
 
 xchg  bx, si
 
@@ -6762,7 +6871,18 @@ mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 xor   dx, dx
 div   bx
-imul  bx, ax, SIZEOF_MOBJ_POS_T
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
+	imul  bx, ax, SIZEOF_MOBJ_POS_T
+
+ELSE
+	mov   bx, SIZEOF_MOBJ_POS_T
+	mul   bx
+	mov   bx, ax
+
+ENDIF
+
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
 push  ax				; bp - 0Ch
