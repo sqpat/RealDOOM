@@ -41,7 +41,9 @@
 
 
 //todo merge this below as its only used there
-THINKERREF __near P_GetNextThinkerRef(void) {
+THINKERREF __near P_GetNextThinkerRef(void) ;
+/*
+THINKERREF __near P_GetNextThinkerRef(void) { 
 	
 	int16_t i;
     
@@ -66,6 +68,7 @@ THINKERREF __near P_GetNextThinkerRef(void) {
     
 
 }
+*/
 
 void __near* __far P_CreateThinker(uint16_t thinkfunc) {
 	int16_t index = P_GetNextThinkerRef();

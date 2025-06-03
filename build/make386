@@ -77,6 +77,7 @@ GLOBOBJS = &
 p_mobja.obj &
  p_telept.obj &
  p_tick.obj &
+p_ticka.obj &
  p_user.obj &
  r_init.obj &
  r_setup.obj &

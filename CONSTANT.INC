@@ -2247,6 +2247,7 @@ SPR_BRS1 = 087h
 SPR_TLMP = 088h
 SPR_TLP2 = 089h
 NUMSPRITES = 08Ah
+MAX_THINKERS = 0348h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h
