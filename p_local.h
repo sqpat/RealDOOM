@@ -161,12 +161,12 @@ void __near P_MobjThinker(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINK
 
 // todo re-enable
 
-//#pragma aux P_SpawnPuffParams __parm [dx ax] [cx bx] [si di] __modify [ax bx cx dx si di];
-//#pragma aux (P_SpawnPuffParams) P_SpawnPuff;
+#pragma aux P_SpawnPuffParams __parm [dx ax] [cx bx] [di si] __modify [ax bx cx dx si di];
+#pragma aux (P_SpawnPuffParams) P_SpawnPuff;
 void	__near P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 
-// #pragma aux P_SpawnBloodParams __parm [dx ax] [cx bx] [si di] __modify [ax bx cx dx si di];
-// #pragma aux (P_SpawnBloodParams) P_SpawnBlood;
+#pragma aux P_SpawnBloodParams __parm [dx ax] [cx bx] [si di] __modify [ax bx cx dx si di];
+#pragma aux (P_SpawnBloodParams) P_SpawnBlood;
 void 	__near P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
 
 THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type);

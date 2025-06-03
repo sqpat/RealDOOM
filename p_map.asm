@@ -5504,11 +5504,11 @@ mov   dx, es
 call  FixedMul_
 
 
-les   di, dword ptr ds:[_shootz+0]
-mov   si, es
-add   di, ax
-adc   si, dx
-; si:di has z
+les   si, dword ptr ds:[_shootz+0]
+mov   di, es
+add   si, ax
+adc   di, dx
+; di:si has z
 
 ;if (sectors[li_physics->frontsecnum].ceilingpic == skyflatnum) {
 
@@ -5539,11 +5539,11 @@ sar   dx, 1
 rcr   cx, 1
 
 
-cmp   si, dx
+cmp   di, dx
 jg    exit_shoottraverse_return_0
 ; if (z > temp.w) {
 jne   didnt_shoot_sky
-cmp   di, cx
+cmp   si, cx
 ja    exit_shoottraverse_return_0
 didnt_shoot_sky:
 les   bx, dword ptr [bp - 8]
@@ -5566,9 +5566,7 @@ pop   cx    ; y hi
 pop   ax    ; x lo
 pop   dx    ; x hi
 
-; si:di are hi/lo z for spawnpuff
-push  si
-push  di
+; di:si are hi/lo z for spawnpuff
 
 call  P_SpawnPuff_
 exit_shoottraverse_return_0:
@@ -5870,16 +5868,14 @@ adc   dx, word ptr ds:[_shootz+2]
 
 mov   cx, si  ; y hi
 mov   bx, di  ; y lo
-xchg  ax, di  ; z lo  into di
+xchg  ax, si  ; z lo  into di
 
-les   si, dword ptr [bp - 8]
-test  byte ptr es:[si + 016h], MF_NOBLOOD
-mov   si, dx  ; z hi
+les   di, dword ptr [bp - 8]
+test  byte ptr es:[di + 016h], MF_NOBLOOD
+mov   di, dx  ; z hi
 pop   ax   ; x lo
 pop   dx   ; x hi
 
-push  si
-push  di
 
 je    do_spawn_blood
 
