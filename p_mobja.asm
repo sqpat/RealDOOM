@@ -148,90 +148,91 @@ PROC P_SpawnBlood_ NEAR
 PUBLIC P_SpawnBlood_
 
 
-push  bp
-mov   bp, sp
+
 push  ax
 push  dx
 push  bx
-push  cx
-mov   ax, word ptr ds:[_prndindex]
-inc   ax
-xor   ah, ah
-mov   word ptr ds:[_prndindex], ax
-mov   bx, ax
+
 mov   ax, RNDTABLE_SEGMENT
 mov   es, ax
-mov   ax, bx
-inc   ax
-mov   cl, byte ptr es:[bx]
+
+mov   al, byte ptr ds:[_prndindex]
+add   byte ptr ds:[_prndindex], 3  ; for 3 calls this func..
 xor   ah, ah
-xor   ch, ch
 mov   bx, ax
-mov   word ptr ds:[_prndindex], ax
+inc   bx
 mov   al, byte ptr es:[bx]
-sub   cx, ax
-mov   ax, cx
-push  -1
-cwd   
-push  MT_BLOOD
-mov   cl, 10
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0FC00h
-xor   dx, ax
-mov   bx, word ptr [bp - 6]
+sub   al, byte ptr es:[bx+1]
+
+sbb   ah, 0
+cwd
+
+; shift ax left 10
+mov   dl, ah ; shift 8
+mov   ah, al ; shift 8
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+and   ax, 0FC00h  ; clean out bottom bits
+
+
 add   si, ax
 adc   di, dx
-mov   cx, word ptr [bp - 8]
+
+mov   al, byte ptr es:[bx+2]
+mov   byte ptr cs:[SELFMODIFY_blood_set_rnd_value_3+1], al  
+
+pop   bx
+pop   dx
+pop   ax
+
+push  -1        ; complicated for 8088...
+push  MT_BLOOD
 push  di
-mov   ax, word ptr [bp - 2]
 push  si
-mov   dx, word ptr [bp - 4]
+
 call  P_SpawnMobj_
-mov   ax, word ptr ds:[_prndindex]
-inc   ax
-xor   ah, ah
-mov   bx, word ptr ds:[_setStateReturn]
-mov   word ptr ds:[_prndindex], ax
-mov   di, ax
-mov   ax, RNDTABLE_SEGMENT
+
+;	 th = setStateReturn;
+;    th->momz.h.intbits = 2
+;    th->tics -= P_Random()&3;
+
+mov   bx, word ptr ds:[_setStateReturn];
 mov   word ptr [bx + 018h], 2
-mov   es, ax
-mov   al, byte ptr es:[di]
-lea   si, [bx + 01Bh]
+SELFMODIFY_blood_set_rnd_value_3:
+mov   al, 0FFh
 and   al, 3
-sub   byte ptr [si], al
+sub   byte ptr [bx + 01Bh], al
+
 mov   al, byte ptr [bx + 01Bh]
 cmp   al, 1
-jb    label_3
+jb    set_tics_to_1_blood
 cmp   al, 240
-jbe   label_4
-label_3:
+jbe   dont_set_tics_to_1_blood
+set_tics_to_1_blood:
 mov   byte ptr [bx + 01Bh], 1
-label_4:
-mov   ax, word ptr [bp + 4]
+dont_set_tics_to_1_blood:
+pop   si  ; return IP
+pop   ax  ; damage
 cmp   ax, 12
 jg    label_5
 cmp   ax, 9
-jge   label_6
+jge   draw_big_blood
 label_5:
-cmp   word ptr [bp + 4], 9
-jl    label_7
-LEAVE_MACRO
-ret   2
-label_6:
+cmp   ax, 9
+jl    draw_small_blood
+call  si
+draw_big_blood:
 mov   dx, S_BLOOD2
 mov   ax, bx
 call  P_SetMobjState_
-LEAVE_MACRO
-ret 2
-label_7:
+call  si
+draw_small_blood:
 mov   dx, S_BLOOD3
 mov   ax, bx
 call  P_SetMobjState_
-LEAVE_MACRO 
-ret   2
+call  si
 
 ENDP
 
