@@ -867,6 +867,8 @@ void __far P_RemoveMobj (mobj_t __near* mobj) {
 //
 // P_SpawnPuff
 //
+/*
+
 #pragma aux P_SpawnPuffParams __parm [dx ax] [cx bx] [di si]  __modify [ax bx cx dx si di];                    
 #pragma aux (P_SpawnPuffParams) P_SpawnPuff;
 void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
@@ -913,7 +915,7 @@ void __near P_SpawnBlood ( fixed_t x, fixed_t y, fixed_t z, int16_t damage ) {
     else if (damage < 9)
 		P_SetMobjState (th,S_BLOOD3);
 }
-
+*/
 
 
 //
