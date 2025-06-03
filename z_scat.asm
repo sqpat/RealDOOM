@@ -14,7 +14,8 @@
 ;
 ; DESCRIPTION:
 ;
-	.286
+	.MODEL medium
+	.286	
 
 
 INCLUDE defs.inc

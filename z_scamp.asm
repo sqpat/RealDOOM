@@ -14,6 +14,7 @@
 ;
 ; DESCRIPTION:
 ;
+	.MODEL medium
 	.286
 
 

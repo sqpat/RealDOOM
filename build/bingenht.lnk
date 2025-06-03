@@ -62,11 +62,7 @@ file p_saveg.obj
 #todo put these in the future wad segment. maybe pull out p_tick.
 NEWSEGMENT
 file s_sound.obj
-file s_sbsfx.obj
-file sm_opl2.obj
-file sm_opl3.obj
-file sm_sbmid.obj
-file sm_mpumd.obj
+
 file p_ceilng.obj
 file p_doors.obj
 file p_enemy.obj
@@ -84,6 +80,12 @@ file p_telept.obj
 file p_tick.obj
 file p_user.obj
 
+NEWSEGMENT
+file s_sbsfx.obj
+file sm_opl2.obj
+file sm_opl3.obj
+file sm_sbmid.obj
+file sm_mpumd.obj
 
 NEWSEGMENT
 file r_bsp.obj
@@ -105,5 +107,4 @@ file z_zone.obj
 
 NEWSEGMENT
 file p_setup.obj
-file p_sight.obj
 file p_sight.obj
