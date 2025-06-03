@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/03 12:34:32
+Created on:       25/06/03 12:54:25
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -63,7 +63,7 @@ p_enemy_TEXT           CODE           AUTO           0a72:2860       0000265f
 p_floor_TEXT           CODE           AUTO           0a72:4ec0       000007f6
 p_inter_TEXT           CODE           AUTO           0a72:56c0       00000c7f
 p_lights_TEXT          CODE           AUTO           0a72:6340       000003ed
-P_MAP_TEXT             CODE           AUTO           0a72:672e       0000229a
+P_MAP_TEXT             CODE           AUTO           0a72:672e       00002298
 p_plats_TEXT           CODE           AUTO           0a72:89d0       00000419
 p_pspr_TEXT            CODE           AUTO           0a72:8df0       00000ae5
 p_spec_TEXT            CODE           AUTO           0a72:98e0       000011c8
@@ -1028,16 +1028,16 @@ Module: p_map.obj(p_map.ASM)
 0a72:754a*     P_HitSlideLine_
 0a72:6b9d      P_SetThingPosition_
 0a72:6ee9*     P_TraverseIntercepts_
-0a72:872f*     PIT_RadiusAttack_
+0a72:872d*     PIT_RadiusAttack_
 0a72:6c73      R_PointInSubsector_
 0a72:6a27*     P_InterceptVector_
 0a72:793e      P_CheckPosition_
-0a72:84a2      P_AimLineAttack_
+0a72:84a0      P_AimLineAttack_
 0a72:6caf*     P_BlockLinesIterator_
 0a72:6e4a*     PIT_AddThingIntercepts_
-0a72:85ce      P_LineAttack_
-0a72:87bc      P_RadiusAttack_
-0a72:8320*     PIT_StompThing_
+0a72:85cc      P_LineAttack_
+0a72:87ba      P_RadiusAttack_
+0a72:831e*     PIT_StompThing_
 0a72:680a*     P_PointOnLineSide_
 0a72:7d2e*     P_GetAttackRangeMult_
 0a72:74de*     DoBlockmapLoop_
@@ -1051,16 +1051,16 @@ Module: p_map.obj(p_map.ASM)
 0a72:6953*     P_PointOnDivlineSide_
 0a72:6894*     P_BoxOnLineSide_
 0a72:763c*     PIT_CheckLine_
-0a72:86da      P_UseLines_
+0a72:86d8      P_UseLines_
 0a72:717e*     PTR_UseTraverse_
 0a72:672e*     R_PointOnSide_
-0a72:880e*     PIT_ChangeSector_
-0a72:83a4      P_TeleportMove_
+0a72:880c*     PIT_ChangeSector_
+0a72:83a2      P_TeleportMove_
 0a72:7aeb      P_SlideMove_
 0a72:6d20      P_BlockThingsIterator_
 0a72:7329      P_TryMove_
-0a72:899f      P_ChangeSector_
-0a72:8138*     PTR_AimTraverse_
+0a72:899d      P_ChangeSector_
+0a72:8135*     PTR_AimTraverse_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0a72:89d8      T_PlatRaise_
 0a72:8afc      EV_DoPlat_

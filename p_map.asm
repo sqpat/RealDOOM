@@ -5879,12 +5879,12 @@ pop   dx   ; x hi
 
 je    do_spawn_blood
 
+do_spawn_puff:
 call  P_SpawnPuff_
 done_spawning_blood_or_puff:
 mov   cx, word ptr ds:[_la_damage]
 test  cx, cx
-jne   do_damage
-jmp   exit_shoottraverse_return_0
+je    exit_aimtraverse_return_0
 do_damage:
 mov   dx, word ptr ds:[_shootthing]
 mov   bx, dx
@@ -5937,10 +5937,27 @@ pop   bx
 pop   dx
 pop   ax
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
 push  -1        ; complicated for 8088...
 push  MT_BLOOD
 push  di
 push  si
+
+
+ELSE
+
+mov   es, si
+mov   si, -1
+push  si
+mov   si, MT_BLOOD
+push  si
+push  di
+push  es
+
+
+ENDIF
+
 
 call  P_SpawnMobj_
 
@@ -5984,6 +6001,8 @@ call  P_SetMobjState_
 jmp   done_spawning_blood_or_puff
 
 
+
+
 ENDP
 
 jump_to_aimtraverse_is_not_a_line:
@@ -6010,7 +6029,14 @@ je    jump_to_aimtraverse_is_not_a_line
 mov   ax, LINEFLAGSLIST_SEGMENT
 mov   es, ax
 test  byte ptr es:[bx], ML_TWOSIDED
-je   exit_aimtraverse_return_0
+jne   aimtraverse_is_a_line
+
+exit_aimtraverse_return_0_2:
+LEAVE_MACRO 
+POPA_NO_AX_MACRO
+xor   al, al
+ret   
+
 aimtraverse_is_a_line:
 
 ;		li = &lines[in->d.linenum];
@@ -6038,7 +6064,7 @@ call  P_LineOpening_
 
 mov   ax, word ptr ds:[_lineopening+2]
 cmp   ax, word ptr ds:[_lineopening+0]
-jge   exit_aimtraverse_return_0
+jge   exit_aimtraverse_return_0_2
 
 ;		dist = P_GetAttackRangeMult(attackrange16, in->frac);
 

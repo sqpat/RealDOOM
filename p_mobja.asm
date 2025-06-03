@@ -97,10 +97,27 @@ pop   bx
 pop   dx
 pop   ax
 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
 push  -1        ; complicated for 8088...
 push  MT_PUFF
 push  di
 push  si
+
+
+ELSE
+
+mov   es, si
+mov   si, -1
+push  si
+mov   si, MT_PUFF
+push  si
+push  di
+push  es
+
+
+ENDIF
+
 
 call  P_SpawnMobj_
 
