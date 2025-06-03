@@ -97,7 +97,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 PROC P_CreateThinker_ NEAR
 PUBLIC P_CreateThinker_
@@ -109,16 +108,24 @@ push      dx
 push      si
 mov       dx, ax
 mov       bx, OFFSET _thinkerlist
-call      P_GetNextThinkerRef_
-mov       cx, word ptr [bx]
+call      P_GetNextThinkerRef_  ; returns in ax
+
+mov       cx, word ptr ds:[_thinkerlist]
 imul      bx, ax, SIZEOF_THINKER_T
 add       dx, cx
 imul      si, cx, SIZEOF_THINKER_T
+
+;	thinkerlist[index].next = 0;
+;	thinkerlist[index].prevFunctype = temp + thinkfunc;
+;	thinkerlist[temp].next = index;
+
 mov       word ptr ds:[bx + _thinkerlist + 2], 0
 mov       word ptr ds:[bx + _thinkerlist], dx
 mov       word ptr ds:[si + _thinkerlist + 2], ax
-mov       si, OFFSET _thinkerlist
-mov       word ptr [si], ax
+
+;	thinkerlist[0].prevFunctype = index;
+
+mov       word ptr ds:[_thinkerlist], ax
 lea       ax, [bx + _thinkerlist + 4]
 pop       si
 pop       dx
@@ -127,6 +134,9 @@ pop       bx
 retf      
 
 ENDP
+
+COMMENT @
+
 
 PROC P_UpdateThinkerFunc_ NEAR
 PUBLIC P_UpdateThinkerFunc_

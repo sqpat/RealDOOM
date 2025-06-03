@@ -70,6 +70,9 @@ THINKERREF __near P_GetNextThinkerRef(void) {
 }
 */
 
+void __near* __far P_CreateThinker(uint16_t thinkfunc);
+
+/*
 void __near* __far P_CreateThinker(uint16_t thinkfunc) {
 	int16_t index = P_GetNextThinkerRef();
 	THINKERREF temp = thinkerlist[0].prevFunctype;// &0x7FF;
@@ -82,6 +85,7 @@ void __near* __far P_CreateThinker(uint16_t thinkfunc) {
 	return &thinkerlist[index].data;
 
 }
+*/
 
 void __near P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc) {
 	thinkerlist[thinker].prevFunctype = (thinkerlist[thinker].prevFunctype & TF_PREVBITS) + argfunc;
