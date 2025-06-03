@@ -67,15 +67,19 @@ mov       ax, dx
 inc       ax
 cmp       ax, dx
 je        error_no_thinker_found
+
+imul      bx, ax, SIZEOF_THINKER_T ; get initial thinker offset
+add       bx, OFFSET _thinkerlist
 loop_check_next_thinker:
 cmp       ax, MAX_THINKERS
 jne       use_current_thinker_index
 xor       ax, ax
+mov       bx, OFFSET _thinkerlist
 use_current_thinker_index: 
-imul      bx, ax, SIZEOF_THINKER_T
-cmp       word ptr ds:[bx + _thinkerlist], MAX_THINKERS
+cmp       word ptr ds:[bx], MAX_THINKERS
 je        found_thinker
 inc       ax
+add       bx, SIZEOF_THINKER_T
 cmp       ax, dx
 jne       loop_check_next_thinker
 error_no_thinker_found:
