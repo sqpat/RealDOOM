@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/03 12:28:38
+Created on:       25/06/03 12:34:32
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -63,13 +63,13 @@ p_enemy_TEXT           CODE           AUTO           0a72:2860       0000265f
 p_floor_TEXT           CODE           AUTO           0a72:4ec0       000007f6
 p_inter_TEXT           CODE           AUTO           0a72:56c0       00000c7f
 p_lights_TEXT          CODE           AUTO           0a72:6340       000003ed
-P_MAP_TEXT             CODE           AUTO           0a72:672e       0000220e
-p_plats_TEXT           CODE           AUTO           0a72:8940       00000419
-p_pspr_TEXT            CODE           AUTO           0a72:8d60       00000ae5
-p_spec_TEXT            CODE           AUTO           0a72:9850       000011c8
-p_switch_TEXT          CODE           AUTO           0a72:aa20       00000ae1
-p_mobj_TEXT            CODE           AUTO           0a72:b510       00001625
-P_MOBJA_TEXT           CODE           AUTO           0a72:cb36       00000104
+P_MAP_TEXT             CODE           AUTO           0a72:672e       0000229a
+p_plats_TEXT           CODE           AUTO           0a72:89d0       00000419
+p_pspr_TEXT            CODE           AUTO           0a72:8df0       00000ae5
+p_spec_TEXT            CODE           AUTO           0a72:98e0       000011c8
+p_switch_TEXT          CODE           AUTO           0a72:aab0       00000ae1
+p_mobj_TEXT            CODE           AUTO           0a72:b5a0       00001625
+P_MOBJA_TEXT           CODE           AUTO           0a72:cbc6       00000077
 p_telept_TEXT          CODE           AUTO           0a72:cc40       0000021c
 p_tick_TEXT            CODE           AUTO           0a72:ce60       00000202
 p_user_TEXT            CODE           AUTO           0a72:d070       0000062f
@@ -1028,16 +1028,16 @@ Module: p_map.obj(p_map.ASM)
 0a72:754a*     P_HitSlideLine_
 0a72:6b9d      P_SetThingPosition_
 0a72:6ee9*     P_TraverseIntercepts_
-0a72:86a3*     PIT_RadiusAttack_
+0a72:872f*     PIT_RadiusAttack_
 0a72:6c73      R_PointInSubsector_
 0a72:6a27*     P_InterceptVector_
 0a72:793e      P_CheckPosition_
-0a72:8416      P_AimLineAttack_
+0a72:84a2      P_AimLineAttack_
 0a72:6caf*     P_BlockLinesIterator_
 0a72:6e4a*     PIT_AddThingIntercepts_
-0a72:8542      P_LineAttack_
-0a72:8730      P_RadiusAttack_
-0a72:8294*     PIT_StompThing_
+0a72:85ce      P_LineAttack_
+0a72:87bc      P_RadiusAttack_
+0a72:8320*     PIT_StompThing_
 0a72:680a*     P_PointOnLineSide_
 0a72:7d2e*     P_GetAttackRangeMult_
 0a72:74de*     DoBlockmapLoop_
@@ -1051,91 +1051,90 @@ Module: p_map.obj(p_map.ASM)
 0a72:6953*     P_PointOnDivlineSide_
 0a72:6894*     P_BoxOnLineSide_
 0a72:763c*     PIT_CheckLine_
-0a72:864e      P_UseLines_
+0a72:86da      P_UseLines_
 0a72:717e*     PTR_UseTraverse_
 0a72:672e*     R_PointOnSide_
-0a72:8782*     PIT_ChangeSector_
-0a72:8318      P_TeleportMove_
+0a72:880e*     PIT_ChangeSector_
+0a72:83a4      P_TeleportMove_
 0a72:7aeb      P_SlideMove_
 0a72:6d20      P_BlockThingsIterator_
 0a72:7329      P_TryMove_
-0a72:8913      P_ChangeSector_
-0a72:80b0*     PTR_AimTraverse_
+0a72:899f      P_ChangeSector_
+0a72:8138*     PTR_AimTraverse_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
-0a72:8948      T_PlatRaise_
-0a72:8a6c      EV_DoPlat_
-0a72:8c6e      EV_PlatFunc_
-0a72:8cec      P_AddActivePlat_
-0a72:8d14+     P_RemoveActivePlat_
+0a72:89d8      T_PlatRaise_
+0a72:8afc      EV_DoPlat_
+0a72:8cfe      EV_PlatFunc_
+0a72:8d7c      P_AddActivePlat_
+0a72:8da4+     P_RemoveActivePlat_
 Module: p_pspr.obj(C:\REALDOOM\p_pspr.c)
-0a72:8d60      P_BringUpWeapon_
-0a72:8e84      P_DropWeapon_
-0a72:8e9a+     A_WeaponReady_
-0a72:8f7a+     A_ReFire_
-0a72:8f94+     P_FireWeapon_
-0a72:8fa8+     P_CheckAmmo_
-0a72:8fa8*     A_CheckReload_
-0a72:9008+     A_Lower_
-0a72:904e+     A_Raise_
-0a72:908c+     A_GunFlash_
-0a72:90ac+     A_Punch_
-0a72:9160+     A_Saw_
-0a72:9280+     A_FireMissile_
-0a72:929e+     A_FireBFG_
-0a72:92be+     A_FirePlasma_
-0a72:92fe+     P_BulletSlope_
-0a72:9366+     P_GunShot_
-0a72:93c0+     A_FirePistol_
-0a72:9416+     A_FireShotgun_
-0a72:9468+     A_FireShotgun2_
-0a72:9518+     A_FireCGun_
-0a72:9594*     A_Light0_
-0a72:959a*     A_Light1_
-0a72:95a0*     A_Light2_
-0a72:95a6*     A_OpenShotgun2_
-0a72:95b4*     A_LoadShotgun2_
-0a72:95c2*     A_CloseShotgun2_
-0a72:95da      A_BFGSpray_
-0a72:968c*     A_BFGsound_
-0a72:969a      P_MovePsprites_
-0a72:9724+     P_SetPsprite_
+0a72:8df0      P_BringUpWeapon_
+0a72:8f14      P_DropWeapon_
+0a72:8f2a+     A_WeaponReady_
+0a72:900a+     A_ReFire_
+0a72:9024+     P_FireWeapon_
+0a72:9038+     P_CheckAmmo_
+0a72:9038*     A_CheckReload_
+0a72:9098+     A_Lower_
+0a72:90de+     A_Raise_
+0a72:911c+     A_GunFlash_
+0a72:913c+     A_Punch_
+0a72:91f0+     A_Saw_
+0a72:9310+     A_FireMissile_
+0a72:932e+     A_FireBFG_
+0a72:934e+     A_FirePlasma_
+0a72:938e+     P_BulletSlope_
+0a72:93f6+     P_GunShot_
+0a72:9450+     A_FirePistol_
+0a72:94a6+     A_FireShotgun_
+0a72:94f8+     A_FireShotgun2_
+0a72:95a8+     A_FireCGun_
+0a72:9624*     A_Light0_
+0a72:962a*     A_Light1_
+0a72:9630*     A_Light2_
+0a72:9636*     A_OpenShotgun2_
+0a72:9644*     A_LoadShotgun2_
+0a72:9652*     A_CloseShotgun2_
+0a72:966a      A_BFGSpray_
+0a72:971c*     A_BFGsound_
+0a72:972a      P_MovePsprites_
+0a72:97b4+     P_SetPsprite_
 Module: p_spec.obj(C:\REALDOOM\p_spec.c)
-0a72:9850      twoSided_
-0a72:987c+     getNextSectorList_
-0a72:98e8      P_FindHighestOrLowestFloorSurrounding_
-0a72:9998      P_FindNextHighestFloor_
-0a72:9a6a      P_FindLowestOrHighestCeilingSurrounding_
-0a72:9b30      P_FindSectorsFromLineTag_
-0a72:9b9e      P_FindMinSurroundingLight_
-0a72:9d50      P_CrossSpecialLine_
-0a72:a346      P_ShootSpecialLine_
-0a72:a432      P_PlayerInSpecialSector_
-0a72:a538      P_UpdateSpecials_
-0a72:a6a0      EV_DoDonut_
-0a72:a8bc      P_SpawnSpecials_
+0a72:98e0      twoSided_
+0a72:990c+     getNextSectorList_
+0a72:9978      P_FindHighestOrLowestFloorSurrounding_
+0a72:9a28      P_FindNextHighestFloor_
+0a72:9afa      P_FindLowestOrHighestCeilingSurrounding_
+0a72:9bc0      P_FindSectorsFromLineTag_
+0a72:9c2e      P_FindMinSurroundingLight_
+0a72:9de0      P_CrossSpecialLine_
+0a72:a3d6      P_ShootSpecialLine_
+0a72:a4c2      P_PlayerInSpecialSector_
+0a72:a5c8      P_UpdateSpecials_
+0a72:a730      EV_DoDonut_
+0a72:a94c      P_SpawnSpecials_
 Module: p_switch.obj(C:\REALDOOM\p_switch.c)
-0a72:aa20+     P_StartButton_
-0a72:aa80      P_ChangeSwitchTexture_
-0a72:acf4      P_UseSpecialLine_
+0a72:aab0+     P_StartButton_
+0a72:ab10      P_ChangeSwitchTexture_
+0a72:ad84      P_UseSpecialLine_
 Module: p_mobj.obj(C:\REALDOOM\p_mobj.c)
-0a72:b510      P_Random_
-0a72:b52c+     P_SetupPsprites_
-0a72:b548+     P_SpawnPlayer_
-0a72:b608      P_SpawnMapThing_
-0a72:b7b6+     P_ExplodeMissile_
-0a72:b862+     P_XYMovement_
-0a72:bc40+     P_ZMovement_
-0a72:bf4c+     P_NightmareRespawn_
-0a72:c0da      P_MobjThinker_
-0a72:c1e0      P_SpawnMobj_
-0a72:c39c      P_RemoveMobj_
-0a72:c3c6+     P_CheckMissileSpawn_
-0a72:c46a      P_SpawnMissile_
-0a72:c684      P_SpawnPlayerMissile_
-0a72:c86a      P_SetMobjState_
+0a72:b5a0      P_Random_
+0a72:b5bc+     P_SetupPsprites_
+0a72:b5d8+     P_SpawnPlayer_
+0a72:b698      P_SpawnMapThing_
+0a72:b846+     P_ExplodeMissile_
+0a72:b8f2+     P_XYMovement_
+0a72:bcd0+     P_ZMovement_
+0a72:bfdc+     P_NightmareRespawn_
+0a72:c16a      P_MobjThinker_
+0a72:c270      P_SpawnMobj_
+0a72:c42c      P_RemoveMobj_
+0a72:c456+     P_CheckMissileSpawn_
+0a72:c4fa      P_SpawnMissile_
+0a72:c714      P_SpawnPlayerMissile_
+0a72:c8fa      P_SetMobjState_
 Module: p_mobja.obj(p_mobja.ASM)
-0a72:cb36      P_SpawnPuff_
-0a72:cbad      P_SpawnBlood_
+0a72:cbc6      P_SpawnPuff_
 Module: p_telept.obj(C:\REALDOOM\p_telept.c)
 0a72:cc40      EV_Teleport_
 Module: p_tick.obj(C:\REALDOOM\p_tick.c)

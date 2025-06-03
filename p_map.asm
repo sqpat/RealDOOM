@@ -38,7 +38,6 @@ EXTRN P_TouchSpecialThing_:NEAR
 EXTRN P_CrossSpecialLine_:NEAR
 EXTRN P_ShootSpecialLine_:NEAR
 EXTRN P_SpawnPuff_:NEAR
-EXTRN P_SpawnBlood_:NEAR
 EXTRN P_SpawnMobj_:NEAR
 EXTRN P_RemoveMobj_:NEAR
 
@@ -78,6 +77,7 @@ EXTRN _setStateReturn:WORD
 EXTRN _leveltime:DWORD
 EXTRN _nofit:BYTE
 EXTRN _crushchange:BYTE
+EXTRN _prndindex:BYTE
 
 .CODE
 
@@ -5896,9 +5896,93 @@ POPA_NO_AX_MACRO
 xor   al, al
 ret   
 do_spawn_blood:
-push  word ptr ds:[_la_damage]
-call  P_SpawnBlood_
+
+; only use of spawnblood. inlined
+
+push  ax
+push  dx
+push  bx
+
+mov   ax, RNDTABLE_SEGMENT
+mov   es, ax
+
+mov   al, byte ptr ds:[_prndindex]
+add   byte ptr ds:[_prndindex], 3  ; for 3 calls this func..
+xor   ah, ah
+mov   bx, ax
+inc   bx
+mov   al, byte ptr es:[bx]
+sub   al, byte ptr es:[bx+1]
+
+sbb   ah, 0
+cwd
+
+; shift ax left 10
+mov   dl, ah ; shift 8
+mov   ah, al ; shift 8
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+and   ax, 0FC00h  ; clean out bottom bits
+
+
+add   si, ax
+adc   di, dx
+
+mov   al, byte ptr es:[bx+2]
+mov   byte ptr cs:[SELFMODIFY_blood_set_rnd_value_3+1], al  
+
+pop   bx
+pop   dx
+pop   ax
+
+push  -1        ; complicated for 8088...
+push  MT_BLOOD
+push  di
+push  si
+
+call  P_SpawnMobj_
+
+;	 th = setStateReturn;
+;    th->momz.h.intbits = 2
+;    th->tics -= P_Random()&3;
+
+mov   bx, word ptr ds:[_setStateReturn];
+mov   word ptr [bx + 018h], 2
+SELFMODIFY_blood_set_rnd_value_3:
+mov   al, 0FFh
+and   al, 3
+sub   byte ptr [bx + 01Bh], al
+
+mov   al, byte ptr [bx + 01Bh]
+cmp   al, 1
+jb    set_tics_to_1_blood
+cmp   al, 240
+jbe   dont_set_tics_to_1_blood
+set_tics_to_1_blood:
+mov   byte ptr [bx + 01Bh], 1
+dont_set_tics_to_1_blood:
+mov   ax, word ptr ds:[_la_damage]
+cmp   ax, 12
+jg    label_5
+cmp   ax, 9
+jge   draw_big_blood
+label_5:
+cmp   ax, 9
+jl    draw_small_blood
 jmp   done_spawning_blood_or_puff
+draw_big_blood:
+mov   dx, S_BLOOD2
+mov   ax, bx
+call  P_SetMobjState_
+jmp   done_spawning_blood_or_puff
+draw_small_blood:
+mov   dx, S_BLOOD3
+mov   ax, bx
+call  P_SetMobjState_
+jmp   done_spawning_blood_or_puff
+
 
 ENDP
 
