@@ -87,18 +87,22 @@ void __near* __far P_CreateThinker(uint16_t thinkfunc) {
 }
 */
 
+/*
 void __near P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc) {
 	thinkerlist[thinker].prevFunctype = (thinkerlist[thinker].prevFunctype & TF_PREVBITS) + argfunc;
 }
+*/
 
 //
 // P_RemoveThinker
 // Deallocation is lazy -- it will not actually be freed
 // until its thinking turn comes up.
 // 
+/*
 void __near P_RemoveThinker (THINKERREF thinkerRef) {
 	thinkerlist[thinkerRef].prevFunctype = (thinkerlist[thinkerRef].prevFunctype & TF_PREVBITS) + TF_DELETEME_HIGHBITS;
 }
+*/
 //
 // P_RunThinkers
 //
@@ -236,7 +240,7 @@ void __far P_Ticker (void) {
 	//filelog();
 
  	P_RunThinkers ();
-
+ 
 	P_UpdateSpecials ();
 
 /*
