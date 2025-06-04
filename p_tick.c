@@ -230,6 +230,7 @@ void __near P_RunThinkers (void) {
 //
 // P_Ticker
 //
+/*
 void __far P_Ticker (void) {
     // run the tic
 	// pause if in menu and at least one tic has been run
@@ -244,25 +245,23 @@ void __far P_Ticker (void) {
  
 	P_UpdateSpecials ();
 
-/*
-	if (gametic > 15 && !setonce){
-		setonce = 1;
+	// if (gametic > 15 && !setonce){
+	// 	setonce = 1;
 
-		playerMobj_pos->x.w = 		0xfcc37e8d;
-		playerMobj_pos->y.w = 		0xf63a120b;
-		playerMobj_pos->z.w = 		0x00000000;
-		playerMobj_pos->angle.w = 	0x2f400000;
+	// 	playerMobj_pos->x.w = 		0xfcc37e8d;
+	// 	playerMobj_pos->y.w = 		0xf63a120b;
+	// 	playerMobj_pos->z.w = 		0x00000000;
+	// 	playerMobj_pos->angle.w = 	0x2f400000;
 
 //		playerMobj_pos->x.w = 		0xfc40b6e6;
 //		playerMobj_pos->y.w = 		0xf865f975;
 //		playerMobj_pos->z.w = 		0x00000000;
 //		playerMobj_pos->angle.w = 	0xee400000;
 
-	}
-/*
+	// }
 
-*/
 
 	// for par times
     leveltime.w++;	
 }
+*/

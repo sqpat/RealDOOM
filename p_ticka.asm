@@ -29,6 +29,8 @@ EXTRN T_VerticalDoor_:NEAR
 EXTRN T_MoveFloor_:NEAR
 EXTRN P_MobjThinker_:NEAR
 EXTRN OutOfThinkers_:NEAR
+EXTRN P_PlayerThink_:NEAR
+EXTRN P_UpdateSpecials_:NEAR
 
 
 .DATA
@@ -37,6 +39,11 @@ EXTRN _prndindex:BYTE
 EXTRN _setStateReturn:WORD
 EXTRN _attackrange16:WORD
 EXTRN _currentThinkerListHead:WORD
+EXTRN _paused:BYTE
+EXTRN _menuactive:BYTE
+EXTRN _demoplayback:BYTE
+EXTRN _player:WORD
+EXTRN _leveltime:DWORD
 
 .CODE
 
@@ -283,23 +290,23 @@ jmp       done_processing_thinker
 
 ENDP
 
-COMMENT @
 
-PROC P_Ticker_ NEAR
+PROC P_Ticker_ FAR
 PUBLIC P_Ticker_
 
-
-cmp       byte ptr ds:[_paused], 0
+xor       ax, ax
+cmp       al, byte ptr ds:[_paused]
 jne       exit_pticker_return
-cmp       byte ptr ds:[_menuactive], 0
+cmp       al, byte ptr ds:[_menuactive]
 je        do_ptick
-cmp       byte ptr ds:[_demoplayback], 0
+cmp       al, byte ptr ds:[_demoplayback]
 jne       do_ptick
-cmp       word ptr ds:[_player + 8 + 2], 0
+cmp       ax, word ptr ds:[_player + 8 + 2]
 jne       exit_pticker_return
-cmp       word ptr ds:[_player + 8 + 0], 1    ; player.viewzvalue
+inc       ax
+cmp       ax, word ptr ds:[_player + 8 + 0]    ; player.viewzvalue
 je        do_ptick
-exit_pticker_return
+exit_pticker_return:
 retf      
 ENDP
 do_ptick:
@@ -313,5 +320,4 @@ retf
 
 ENDP
 
-@
 END
