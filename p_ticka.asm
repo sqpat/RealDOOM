@@ -39,6 +39,7 @@ EXTRN P_CrossSpecialLine_:NEAR
 EXTRN P_ShootSpecialLine_:NEAR
 EXTRN P_SpawnMobj_:NEAR
 EXTRN P_RemoveMobj_:NEAR
+EXTRN OutOfThinkers_:NEAR
 
 
 .DATA
@@ -54,13 +55,17 @@ EXTRN _currentThinkerListHead:WORD
 
 ; THINKERREF __near P_GetNextThinkerRef(void) 
 
-;P_GetNextThinkerRef_
+PROC P_CreateThinker_ NEAR
+PUBLIC P_CreateThinker_
 
-PROC P_GetNextThinkerRef_ NEAR
-PUBLIC P_GetNextThinkerRef_
-; todo inline in only used spot?
 
 push      bx
+push      si
+mov       si, ax
+
+; INLINED, only use
+;  call      P_GetNextThinkerRef_  ; returns in ax
+
 push      dx
 mov       dx, word ptr ds:[_currentThinkerListHead]
 mov       ax, dx
@@ -83,39 +88,16 @@ add       bx, SIZEOF_THINKER_T
 cmp       ax, dx
 jne       loop_check_next_thinker
 error_no_thinker_found:
-mov       ax, -1
-mov       word ptr ds:[_currentThinkerListHead], dx
-pop       dx
-pop       bx
-ret       
+call      OutOfThinkers_
+
 found_thinker:
-mov       dx, ax
-mov       word ptr ds:[_currentThinkerListHead], dx
+mov       word ptr ds:[_currentThinkerListHead], ax
 pop       dx
-pop       bx
-ret       
-
-ENDP
-
-
-PROC P_CreateThinker_ NEAR
-PUBLIC P_CreateThinker_
-
-
-push      bx
-push      si
-mov       si, ax
-
-call      P_GetNextThinkerRef_  ; returns in ax
 
 add       si, word ptr ds:[_thinkerlist]
 
-
-imul      bx, ax, SIZEOF_THINKER_T
-add       bx, OFFSET _thinkerlist + 4
-
-mov       word ptr ds:[bx  - 4], si
-mov       word ptr ds:[bx - 2], 0
+mov       word ptr ds:[bx], si
+mov       word ptr ds:[bx+2], 0
 
 imul      si, word ptr ds:[_thinkerlist], SIZEOF_THINKER_T
 
@@ -130,6 +112,7 @@ mov       word ptr ds:[si + _thinkerlist + 2], ax
 mov       word ptr ds:[_thinkerlist], ax
 
 xchg      ax, bx
+add       ax, 4
 pop       si
 pop       bx
 retf      

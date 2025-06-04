@@ -1174,3 +1174,7 @@ boolean __near P_SetMobjState (mobj_t __near* mobj, statenum_t state) {
 
 	return true;
 }
+
+void __near OutOfThinkers (){
+	I_Error("Out of thinkers!");
+}
