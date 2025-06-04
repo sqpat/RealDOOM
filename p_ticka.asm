@@ -200,8 +200,34 @@ dw OFFSET T_Glow_
 
 
 
-PROC P_RunThinkers_ NEAR
-PUBLIC P_RunThinkers_
+
+
+
+PROC P_Ticker_ FAR
+PUBLIC P_Ticker_
+
+xor       ax, ax
+cmp       al, byte ptr ds:[_paused]
+jne       exit_pticker_return
+cmp       al, byte ptr ds:[_menuactive]
+je        do_ptick
+cmp       al, byte ptr ds:[_demoplayback]
+jne       do_ptick
+cmp       ax, word ptr ds:[_player + 8 + 2]
+jne       exit_pticker_return
+inc       ax
+cmp       ax, word ptr ds:[_player + 8 + 0]    ; player.viewzvalue
+je        do_ptick
+exit_pticker_return:
+retf      
+ENDP
+do_ptick:
+
+call      P_PlayerThink_ 
+;call      P_RunThinkers_
+
+; BEGIN INLINED P_RunThinkers_
+
 
 PUSHA_NO_AX_MACRO ; revist once we call outer func...
 mov       si, word ptr ds:[_thinkerlist + 2]
@@ -230,7 +256,16 @@ test      si, si
 jne       do_next_thinker
 exit_run_thinkers:
 POPA_NO_AX_MACRO
-ret   
+
+; continue P_Ticker
+
+call      P_UpdateSpecials_
+add       word ptr ds:[_leveltime], 1
+adc       word ptr ds:[_leveltime], 0
+retf  
+
+
+
 continue_checking_tf_types:
 ;test      al, al                   ; not sure if necessary
 ;je        done_processing_thinker  ; could probable be jl
@@ -288,35 +323,9 @@ lea       di, ds:[bx + _thinkerlist + 4]
 jmp       done_processing_thinker
 
 
-ENDP
+; END INLINED P_RunThinkers_
 
 
-PROC P_Ticker_ FAR
-PUBLIC P_Ticker_
-
-xor       ax, ax
-cmp       al, byte ptr ds:[_paused]
-jne       exit_pticker_return
-cmp       al, byte ptr ds:[_menuactive]
-je        do_ptick
-cmp       al, byte ptr ds:[_demoplayback]
-jne       do_ptick
-cmp       ax, word ptr ds:[_player + 8 + 2]
-jne       exit_pticker_return
-inc       ax
-cmp       ax, word ptr ds:[_player + 8 + 0]    ; player.viewzvalue
-je        do_ptick
-exit_pticker_return:
-retf      
-ENDP
-do_ptick:
-
-call      P_PlayerThink_  ; todo inline
-call      P_RunThinkers_
-call      P_UpdateSpecials_
-add       word ptr ds:[_leveltime], 1
-adc       word ptr ds:[_leveltime], 0
-retf  
 
 ENDP
 
