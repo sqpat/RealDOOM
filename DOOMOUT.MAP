@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/04 13:35:34
+Created on:       25/06/04 18:25:38
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -63,7 +63,7 @@ p_enemy_TEXT           CODE           AUTO           0a80:2860       0000265f
 p_floor_TEXT           CODE           AUTO           0a80:4ec0       000007f6
 p_inter_TEXT           CODE           AUTO           0a80:56c0       00000c7f
 p_lights_TEXT          CODE           AUTO           0a80:6340       000003ed
-P_MAP_TEXT             CODE           AUTO           0a80:672e       0000237a
+P_MAP_TEXT             CODE           AUTO           0a80:672e       00002377
 p_plats_TEXT           CODE           AUTO           0a80:8ab0       00000419
 p_pspr_TEXT            CODE           AUTO           0a80:8ed0       00000ae5
 p_spec_TEXT            CODE           AUTO           0a80:99c0       000011c8
@@ -1023,43 +1023,43 @@ Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0a80:6672      T_Glow_
 0a80:66d0      P_SpawnGlowingLight_
 Module: p_map.obj(p_map.ASM)
-0a80:77ac*     PIT_CheckThing_
-0a80:7576*     P_HitSlideLine_
+0a80:77a9*     PIT_CheckThing_
+0a80:7573*     P_HitSlideLine_
 0a80:6ba7      P_SetThingPosition_
-0a80:6f00*     P_TraverseIntercepts_
-0a80:6c88      R_PointInSubsector_
+0a80:6efd*     P_TraverseIntercepts_
+0a80:6c85      R_PointInSubsector_
 0a80:6a27*     P_InterceptVector_
-0a80:87f6*     PIT_RadiusAttack_
-0a80:796b      P_CheckPosition_
-0a80:84ef      P_AimLineAttack_
-0a80:6cc5*     P_BlockLinesIterator_
-0a80:6e61*     PIT_AddThingIntercepts_
-0a80:8644      P_LineAttack_
-0a80:8883      P_RadiusAttack_
-0a80:8357*     PIT_StompThing_
+0a80:87f3*     PIT_RadiusAttack_
+0a80:7968      P_CheckPosition_
+0a80:84ec      P_AimLineAttack_
+0a80:6cc2*     P_BlockLinesIterator_
+0a80:6e5e*     PIT_AddThingIntercepts_
+0a80:8641      P_LineAttack_
+0a80:8880      P_RadiusAttack_
+0a80:8354*     PIT_StompThing_
 0a80:680a*     P_PointOnLineSide_
-0a80:7d67*     P_GetAttackRangeMult_
-0a80:750a*     DoBlockmapLoop_
+0a80:7d64*     P_GetAttackRangeMult_
+0a80:7507*     DoBlockmapLoop_
 0a80:6aa7      P_LineOpening_
-0a80:6d88*     PIT_AddLineIntercepts_
+0a80:6d85*     PIT_AddLineIntercepts_
 0a80:6adb      P_UnsetThingPosition_
-0a80:6f73*     P_PathTraverse_
-0a80:7daf*     PTR_ShootTraverse_
+0a80:6f70*     P_PathTraverse_
+0a80:7dac*     PTR_ShootTraverse_
 0a80:67cd      P_AproxDistance_
-0a80:7243*     PTR_SlideTraverse_
+0a80:7240*     PTR_SlideTraverse_
 0a80:6953*     P_PointOnDivlineSide_
 0a80:6894*     P_BoxOnLineSide_
-0a80:7668*     PIT_CheckLine_
-0a80:8779      P_UseLines_
-0a80:719d*     PTR_UseTraverse_
+0a80:7665*     PIT_CheckLine_
+0a80:8776      P_UseLines_
+0a80:719a*     PTR_UseTraverse_
 0a80:672e*     R_PointOnSide_
-0a80:88eb*     PIT_ChangeSector_
-0a80:83db      P_TeleportMove_
-0a80:7b25      P_SlideMove_
-0a80:6d35      P_BlockThingsIterator_
-0a80:7350      P_TryMove_
-0a80:8a7f      P_ChangeSector_
-0a80:816c*     PTR_AimTraverse_
+0a80:88e8*     PIT_ChangeSector_
+0a80:83d8      P_TeleportMove_
+0a80:7b22      P_SlideMove_
+0a80:6d32      P_BlockThingsIterator_
+0a80:734d      P_TryMove_
+0a80:8a7c      P_ChangeSector_
+0a80:8169*     PTR_AimTraverse_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0a80:8ab8      T_PlatRaise_
 0a80:8bdc      EV_DoPlat_

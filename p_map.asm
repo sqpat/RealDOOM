@@ -1421,7 +1421,7 @@ mov   dx, es
 mov   es, bx   ; was the segment above..
 les   bx, dword ptr es:[si + 4]
 mov   cx, es
-sub   si, 8
+;sub   si, 8
 call  R_PointInSubsector_
 SHIFT_MACRO shl   ax 2
 xchg  ax, bx
