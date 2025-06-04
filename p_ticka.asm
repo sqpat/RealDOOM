@@ -197,14 +197,11 @@ PROC P_RunThinkers_ NEAR
 PUBLIC P_RunThinkers_
 
 PUSHA_NO_AX_MACRO ; revist once we call outer func...
-push      bp
-mov       bp, sp
 mov       si, word ptr ds:[_thinkerlist + 2]
 ;test      si, si
 ;je        exit_run_thinkers  ; 0 thinkers ought to be impossible?
 do_next_thinker:
 imul      bx, si, SIZEOF_THINKER_T  ; todo test shift vs mul...
-imul      dx, si, SIZEOF_MOBJ_POS_T ; todo move later. only if necessary
 
 ; consider inc bx?
 mov       al, byte ptr ds:[bx + _thinkerlist+1]  ; just get high bit
@@ -213,19 +210,18 @@ and       al, (TF_FUNCBITS SHR 8)
 cmp       al, (TF_MOBJTHINKER_HIGHBITS SHR 8)
 jne       continue_checking_tf_types
 do_mobjthinker:
-xchg      ax, di
-mov       bx, dx  ; todo copy to di
-mov       di, dx  ; todo copy to di
+mov       ax, di
+imul      bx, si, SIZEOF_MOBJ_POS_T 
+
 mov       cx, MOBJPOSLIST_6800_SEGMENT ; todo remove maybe?
 mov       dx, si
 call      P_MobjThinker_
 done_processing_thinker:
-imul      si, si, SIZEOF_THINKER_T  ; todo remove? store in di.
-mov       si, word ptr ds:[si + _thinkerlist + 2]
+
+mov       si, word ptr ds:[di - 2]  ; (was bx + _thinkerlist + 4)
 test      si, si
 jne       do_next_thinker
 exit_run_thinkers:
-LEAVE_MACRO
 POPA_NO_AX_MACRO
 ret   
 continue_checking_tf_types:
@@ -234,12 +230,15 @@ continue_checking_tf_types:
 
 cmp       al, (TF_DELETEME_HIGHBITS SHR 8)
 je        do_delete_me
+
+; all other thinkers use call table and same interface.
 cbw
 SHIFT_MACRO   SAR AX 2     ; highbits function are stores as 0x0800 = 1. took high byte, want word lookup. 0x08 >> 2
-xchg      ax, di
+xchg      bx, ax
+mov       ax, di
 mov       dx, si
 
-call      word ptr cs:[_functable + di - 4];
+call      word ptr cs:[_functable + bx - 4];
 jmp done_processing_thinker
 
 
@@ -271,13 +270,14 @@ mov       es, cx
 mov       cx, SIZEOF_MOBJ_T / 2
 rep       stosw
 
+imul      di, si, SIZEOF_MOBJ_POS_T 
 mov       cx, MOBJPOSLIST_6800_SEGMENT
 mov       es, cx
-mov       di, dx
 mov       cx, SIZEOF_MOBJ_POS_T /2
 rep       stosw
 
 mov       word ptr ds:[bx + _thinkerlist], MAX_THINKERS
+lea       di, ds:[bx + _thinkerlist + 4]
 jmp       done_processing_thinker
 
 
@@ -304,7 +304,7 @@ retf
 ENDP
 do_ptick:
 
-call      P_PlayerThink_
+call      P_PlayerThink_  ; todo inline
 call      P_RunThinkers_
 call      P_UpdateSpecials_
 add       word ptr ds:[_leveltime], 1
