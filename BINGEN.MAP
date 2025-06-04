@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/04 13:13:15
+Created on:       25/06/04 13:35:33
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -819,8 +819,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0319:7073*     WI_drawNum_
 0319:722e*     WI_drawNoState_
 0319:71ed*     WI_initNoState_
-0319:6d6d*     WI_GetPatchESBX_
 0319:7234*     WI_drawShowNextLoc_
+0319:6d6d*     WI_GetPatchESBX_
 0319:6d5b*     WI_GetPatch_
 0319:7202*     WI_updateShowNextLoc_
 0319:75c2*     WI_loadData_
@@ -853,8 +853,8 @@ Module: math.obj(math.ASM)
 0319:7b90*     FixedMul16u32u_
 0319:7d8b      FastDiv3216u_
 0319:7fa8      FixedDivWholeA_
-0319:79eb*     FixedMulBig16u32_
 0319:7abf      FixedMulTrig_
+0319:79eb*     FixedMulBig16u32_
 0319:7a3e      FixedMul2432_
 0319:7a7f      FixedMul1632_
 0319:79f4      FixedMul2424_
@@ -867,8 +867,8 @@ Module: main.obj(main.ASM)
 0319:8ebc      G_Responder_
 0319:8306*     dumpstacktrace_
 0319:84fc      G_CopyCmd_
-0319:864e      G_GetGameKey_
 0319:8634*     G_SetGameKeyDown_
+0319:864e      G_GetGameKey_
 0319:8641*     G_SetGameKeyUp_
 0319:8bfd      M_LoadDefaults_
 0319:82d2      I_KeyboardISR_

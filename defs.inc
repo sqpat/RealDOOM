@@ -15,7 +15,6 @@
 ;
 
 INCLUDE constant.inc
-INCLUDE asmtypes.inc
 
 
 SCREENWIDTH			=   320
@@ -496,3 +495,6 @@ ENDIF
 
 
 ENDM
+
+
+INCLUDE asmtypes.inc

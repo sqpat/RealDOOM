@@ -69,6 +69,11 @@ DIVLINE_T STRUC
     dl_dy   dd ?
 DIVLINE_T ENDS
 
+INTERCEPT_T STRUC 
+    intercept_isaline    db ?
+    intercept_data       dw ?
+INTERCEPT_T ENDS
+
 
 MOBJ_T STRUC 
     m_sprevRef     dw ?
@@ -102,7 +107,14 @@ MOBJ_T STRUC
 
 MOBJ_T ENDS
 
- 
+
+THINKER_T STRUC 
+
+    t_prevFunctype  dw ?
+    t_next          dw ?
+    t_data          MOBJ_T ?
+    
+THINKER_T ENDS
 
 
 MOBJ_POS_T STRUC 
@@ -292,6 +304,83 @@ DRAWSEG_T STRUC
 
 
 DRAWSEG_T ENDS
+
+
+
+
+PATCH_T STRUC 
+    patch_width           dw ?
+    patch_height          dw ?    
+    patch_leftoffset      dw ?    
+    patch_topoffset       dw ?    
+    patch_columnofs       dd 8
+
+PATCH_T ENDS
+
+VISSPRITE_T STRUC 
+    vs_next                db ?
+    vs_colormap            db ?
+    vs_x1                  dw ?
+    vs_x2                  dw ?
+    vs_gx                  dd ?
+    vs_gy                  dd ?
+    vs_gz                  dd ?
+    vs_gzt                 dd ?
+
+    vs_startfrac           dd ?
+    vs_scale               dd ?
+    vs_xiscale             dd ?
+
+    vs_texturemid          dd ?
+    vs_patch               dw ?
+
+
+VISSPRITE_T ENDS
+
+
+
+SPRITEFRAME_T STRUC 
+    spriteframe_lump                dw 8
+    spriteframe_flip                db 8
+    spriteframe_rotate              db ?
+
+SPRITEFRAME_T ENDS
+
+
+SPRITEDEF_T STRUC 
+    spritedef_spriteframesOffset  dw ?
+    spritedef_numframes           db ?
+
+SPRITEDEF_T ENDS
+
+
+VISPLANEHEADER_T STRUC 
+    visplaneheader_height     dd ?
+    visplaneheader_minx       dw ?
+    visplaneheader_maxx       dw ?
+
+VISPLANEHEADER_T ENDS
+
+VISPLANEPICLIGHT_T STRUC 
+    visplanepiclight_picnum     db ?
+    visplanepiclight_lightlevel db ?
+
+VISPLANEPICLIGHT_T ENDS
+
+VISPLANE_T STRUC 
+    vp_pad0     db ?
+    vp_pad1     db ?
+    vp_top      db SCREENWIDTH DUP(?)
+
+    vp_pad2     db ?
+    vp_pad3     db ?
+    vp_bottom   db SCREENWIDTH DUP(?)
+
+    vp_pad4     db ?
+    vp_pad5     db ?
+
+
+VISPLANE_T ENDS
 
 
 
