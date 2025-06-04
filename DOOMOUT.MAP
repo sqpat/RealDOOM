@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/04 11:02:46
+Created on:       25/06/04 11:07:58
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -71,8 +71,7 @@ p_switch_TEXT          CODE           AUTO           0a80:ab90       00000ae1
 p_mobj_TEXT            CODE           AUTO           0a80:b680       00001633
 P_MOBJA_TEXT           CODE           AUTO           0a80:ccb4       00000077
 p_telept_TEXT          CODE           AUTO           0a80:cd30       0000021c
-p_tick_TEXT            CODE           AUTO           0a80:cf50       00000000
-P_TICKA_TEXT           CODE           AUTO           0a80:cf50       00000147
+P_TICK_TEXT            CODE           AUTO           0a80:cf4c       00000147
 p_user_TEXT            CODE           AUTO           0a80:d0a0       0000062f
 r_bsp_TEXT             CODE           AUTO           17ed:0000       00000024
 r_data_TEXT            CODE           AUTO           17ed:0030       00001b9a
@@ -1138,11 +1137,11 @@ Module: p_mobja.obj(p_mobja.ASM)
 0a80:ccb4      P_SpawnPuff_
 Module: p_telept.obj(C:\REALDOOM\p_telept.c)
 0a80:cd30      EV_Teleport_
-Module: p_ticka.obj(p_ticka.ASM)
-0a80:cfa4      P_UpdateThinkerFunc_
-0a80:cfb7      P_RemoveThinker_
-0a80:cfdb      P_Ticker_
-0a80:cf50      P_CreateThinker_
+Module: p_tick.obj(p_tick.ASM)
+0a80:cfa0      P_UpdateThinkerFunc_
+0a80:cfb3      P_RemoveThinker_
+0a80:cfd7      P_Ticker_
+0a80:cf4c      P_CreateThinker_
 Module: p_user.obj(C:\REALDOOM\p_user.c)
 0a80:d0a0+     P_Thrust_
 0a80:d0fe+     P_CalcHeight_
@@ -1553,4 +1552,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00023890 (145552.)
 Entry point address: 1d2e:1c36
-Link time: 00:00.19
+Link time: 00:00.20
