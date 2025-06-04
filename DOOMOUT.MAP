@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/04 11:07:58
+Created on:       25/06/04 11:44:06
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -116,8 +116,8 @@ Address        Symbol
 Module: m_near.obj(C:\REALDOOM\m_near.c)
 2099:1750      _sb_voicelist
 2099:1790      _musdriverstartposition
-2099:17a0      _codestartposition
-2099:17b8      _channels
+2099:17a0      _channels
+2099:17d0      _codestartposition
 2099:17e8      _savename
 2099:17f8      _texturecache_nodes
 2099:1858      _spritecache_nodes
@@ -201,11 +201,11 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 2099:1ed6      _keyboxes
 2099:1edc      _pcspeaker_endoffset
 2099:1ede      _pcspeaker_currentoffset
-2099:1ee0      _emshandle
-2099:1ee2      _pagenum9000
-2099:1ee4      _segloopheightvalcache
-2099:1ee6      _spritewidths_segment
-2099:1ee8      _numlinespecials
+2099:1ee0      _pagenum9000
+2099:1ee2      _segloopheightvalcache
+2099:1ee4      _spritewidths_segment
+2099:1ee6      _numlinespecials
+2099:1ee8      _emshandle
 2099:1eea      _lastanim
 2099:1eec      _numlumps
 2099:1eee      _newend
@@ -1552,4 +1552,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00023890 (145552.)
 Entry point address: 1d2e:1c36
-Link time: 00:00.20
+Link time: 00:00.75

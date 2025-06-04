@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/04 11:07:57
+Created on:       25/06/04 11:38:16
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -129,8 +129,8 @@ Address        Symbol
 Module: m_near.obj(C:\REALDOOM\m_near.c)
 2bad:1bf0      _sb_voicelist
 2bad:1c30      _musdriverstartposition
-2bad:1c40      _codestartposition
-2bad:1c58      _channels
+2bad:1c40      _channels
+2bad:1c70      _codestartposition
 2bad:1c88      _savename
 2bad:1c98      _texturecache_nodes
 2bad:1cf8      _spritecache_nodes
@@ -214,11 +214,11 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 2bad:2376      _keyboxes
 2bad:237c      _pcspeaker_endoffset
 2bad:237e      _pcspeaker_currentoffset
-2bad:2380      _emshandle
-2bad:2382      _pagenum9000
-2bad:2384      _segloopheightvalcache
-2bad:2386      _spritewidths_segment
-2bad:2388      _numlinespecials
+2bad:2380      _pagenum9000
+2bad:2382      _segloopheightvalcache
+2bad:2384      _spritewidths_segment
+2bad:2386      _numlinespecials
+2bad:2388      _emshandle
 2bad:238a      _lastanim
 2bad:238c      _numlumps
 2bad:238e      _newend
@@ -1764,4 +1764,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002f370 (193392.)
 Entry point address: 26e9:24de
-Link time: 00:00.30
+Link time: 00:00.29

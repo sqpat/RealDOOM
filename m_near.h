@@ -1076,7 +1076,6 @@ extern intercept_t __far*	intercept_p;
 
 extern divline_t 	trace;
 extern lineopening_t lineopening;
-extern divline_t		dl;
 
 typedef struct {
 

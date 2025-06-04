@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/04 11:07:27
+Created on:       25/06/04 11:37:46
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -57,8 +57,8 @@ Address        Symbol
 Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:9810*     _sb_voicelist
 02cf:9850*     _musdriverstartposition
-02cf:9860*     _codestartposition
-02cf:9878*     _channels
+02cf:9860*     _channels
+02cf:9890*     _codestartposition
 02cf:98a8*     _savename
 02cf:98b8*     _texturecache_nodes
 02cf:9918*     _spritecache_nodes
@@ -142,11 +142,11 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cf:9f96*     _keyboxes
 02cf:9f9c*     _pcspeaker_endoffset
 02cf:9f9e*     _pcspeaker_currentoffset
-02cf:9fa0*     _emshandle
-02cf:9fa2*     _pagenum9000
-02cf:9fa4*     _segloopheightvalcache
-02cf:9fa6*     _spritewidths_segment
-02cf:9fa8*     _numlinespecials
+02cf:9fa0*     _pagenum9000
+02cf:9fa2*     _segloopheightvalcache
+02cf:9fa4*     _spritewidths_segment
+02cf:9fa6*     _numlinespecials
+02cf:9fa8*     _emshandle
 02cf:9faa*     _lastanim
 02cf:9fac*     _numlumps
 02cf:9fae*     _newend

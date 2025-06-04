@@ -57,7 +57,7 @@ EXTRN _tmthing_pos:WORD
 EXTRN _tmdropoffz:WORD
 EXTRN _tmflags1:WORD
 EXTRN _ceilinglinenum:WORD
-EXTRN _trace:WORD
+EXTRN _trace:DIVLINE_T
 EXTRN _lineopening:WORD
 EXTRN _intercept_p:WORD
 EXTRN _playerMobjRef:WORD
@@ -721,25 +721,25 @@ PUBLIC P_PointOnDivlineSide_
 ; maybe mov di, _trace?
 mov   es, ax  ; backup
 
-mov   ax, word ptr ds:[_trace + 0Ah]
-or    ax, word ptr ds:[_trace + 8]
+mov   ax, DIVLINE_T ptr ds:[_trace.dl_dx+2]
+or    ax, DIVLINE_T ptr ds:[_trace.dl_dx]
 jne   line_dx_nonzero
 
 ;	if (x <= line->x.w)
 ;	    return line->dy.w > 0;
 ;	return line->dy.w < 0;
 
-cmp   dx, word ptr ds:[_trace + 2]
+cmp   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
 jl    x_lte_linex
 jne   x_gt_linex
 mov   ax, es	; restore ax
-cmp   ax, word ptr ds:[_trace]
+cmp   ax, DIVLINE_T ptr ds:[_trace.dl_x]
 ja    x_gt_linex
 x_lte_linex:
-cmp   word ptr ds:[_trace + 0Eh], 0
+cmp   word ptr ds:[_trace.dl_dy+2], 0
 jg    return_1_pointondivlineside
 jne   return_0_pointondivlineside_2
-cmp   word ptr ds:[_trace + 0Ch], 0
+cmp   word ptr ds:[_trace.dl_dy], 0
 je    return_0_pointondivlineside_2
 return_1_pointondivlineside:
 mov   al, 1
@@ -748,36 +748,36 @@ return_0_pointondivlineside_2:
 xor   al, al
 ret   
 x_gt_linex:
-cmp   word ptr ds:[_trace + 0Eh], 0
+cmp   word ptr ds:[_trace.dl_dy+2], 0
 jl    return_1_pointondivlineside
 xor   al, al
 ret   
 
 
 line_dx_nonzero:
-mov   ax, word ptr ds:[_trace + 0Eh]
-or    ax, word ptr ds:[_trace + 0Ch]
+mov   ax, DIVLINE_T ptr ds:[_trace.dl_dy+2]
+or    ax, DIVLINE_T ptr ds:[_trace.dl_dy]
 jne   line_dy_nonzero
 
 ;	if (y <= line->y.w)
 ;	    return line->dx.w < 0;
 ;	return line->dx.w > 0;
 
-cmp   cx, word ptr ds:[_trace + 6]
+cmp   cx, DIVLINE_T ptr ds:[_trace.dl_y+2]
 jl    y_lte_liney
 jne   y_gt_liney
-cmp   bx, word ptr ds:[_trace + 4]  
+cmp   bx, DIVLINE_T ptr ds:[_trace.dl_y  ]
 ja    y_gt_liney
 y_lte_liney:
-cmp   word ptr ds:[_trace + 0Ah], 0
+cmp   word ptr ds:[_trace.dl_dx+2], 0
 jl    return_1_pointondivlineside
 xor   al, al
 ret   
 y_gt_liney:
-cmp   word ptr ds:[_trace + 0Ah], 0
+cmp   word ptr ds:[_trace.dl_dx+2], 0
 jg    return_1_pointondivlineside
 jne   return_0_pointondivlineside_3
-cmp   word ptr ds:[_trace + 8], 0
+cmp   word ptr ds:[_trace.dl_dx], 0
 ja    return_1_pointondivlineside
 return_0_pointondivlineside_3:
 xor   al, al
@@ -791,17 +791,17 @@ line_dy_nonzero:
 
 mov   ax, es	; restore x low
 
-sub   ax, word ptr ds:[_trace]		; dx is dx:si
-sbb   dx, word ptr ds:[_trace + 2]
-sub   bx, word ptr ds:[_trace + 4]  ; dy is cx:bx
-sbb   cx, word ptr ds:[_trace + 6]
+sub   ax, DIVLINE_T ptr ds:[_trace.dl_x]		; dx is dx:si
+sbb   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
+sub   bx, DIVLINE_T ptr ds:[_trace.dl_y]         ; dy is cx:bx
+sbb   cx, DIVLINE_T ptr ds:[_trace.dl_y+2]
 
 mov   es, ax     ; store ax low
-mov   ax, word ptr ds:[_trace + 0Eh]
+mov   ax, DIVLINE_T ptr ds:[_trace.dl_dy+2]
 
 ;    if ( (line->dy.h.intbits ^ line->dx.h.intbits ^ dx.h.intbits ^ dy.h.intbits)&0x8000 )
 
-xor   ax, word ptr ds:[_trace + 0Ah]
+xor   ax, DIVLINE_T ptr ds:[_trace.dl_dx+2]
 xor   ax, dx
 xor   ax, cx
 test  ah, 080h
@@ -809,7 +809,7 @@ je    sign_check_failed
 
 ;		if ((line->dy.h.intbits ^ dx.h.intbits) & 0x8000)
 
-xor   dx, word ptr ds:[_trace + 0Eh]
+xor   dx, DIVLINE_T ptr ds:[_trace.dl_dy+2]
 test  dh, 080h
 je    return_0_pointondivlineside
 jmp   return_1_pointondivlineside
@@ -836,14 +836,14 @@ mov   di, dx  ; di:si are now dx
 
 
 
-les   ax, dword ptr ds:[_trace + 08h]  ; line->dx
+les   ax, DIVLINE_T ptr ds:[_trace + 08h]  ; line->dx
 mov   dx, es
 
 call  FixedMul2424_
 
 ; dx:ax is right
 
-les   bx, dword ptr ds:[_trace + 0Ch]
+les   bx, DIVLINE_T ptr ds:[_trace.dl_dy]
 mov   cx, es
 
 xchg  dx, di   ; backup dx in di  get old value
@@ -898,13 +898,13 @@ mov   bp, sp
 
 xchg  si, ax	; v1 divline ptr to si
 
-les   bx, dword ptr ds:[_trace+8]
+les   bx, DIVLINE_T ptr ds:[_trace.dl_dx]
 mov   cx, es
 les   ax, dword ptr [si + 0Ch]
 mov   dx, es
 call  FixedMul2432_
 
-les   bx, dword ptr ds:[_trace+0Ch]
+les   bx, DIVLINE_T ptr ds:[_trace.dl_dy]
 mov   cx, es
 push  ax	   ; bp-2
 mov   di, dx
@@ -939,15 +939,15 @@ les   bx, dword ptr [si + 0Ch]
 mov   cx, es
 les   ax, dword ptr [si]
 mov   dx, es
-sub   ax, word ptr ds:[_trace]
-sbb   dx, word ptr ds:[_trace+2]
+sub   ax, DIVLINE_T ptr ds:[_trace.dl_x]
+sbb   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
 call  FixedMul2432_
 
 mov   bx, si  ; bx gets  v1
 xchg  si, ax  ;  di:si = first half
 mov   di, dx
 
-les   ax, dword ptr ds:[_trace+4]
+les   ax, DIVLINE_T ptr ds:[_trace.dl_y]
 mov   dx, es
 
 sub   ax, word ptr [bx + 4]
@@ -1933,14 +1933,14 @@ push  ax    				; bp - 0Ah
 
 mov   al, 16  ; ah already 0
 
-cmp   ax, word ptr ds:[_trace+0Ah]
+cmp   ax, DIVLINE_T ptr ds:[_trace.dl_dx+2]
 jng   do_point_on_divlineside
-cmp   ax, word ptr ds:[_trace+0Eh]
+cmp   ax, DIVLINE_T ptr ds:[_trace.dl_dy+2]
 jng   do_point_on_divlineside
 neg   ax
-cmp   ax, word ptr ds:[_trace+0Ah]
+cmp   ax, DIVLINE_T ptr ds:[_trace.dl_dx+2]
 jnl   do_point_on_divlineside
-cmp   ax, word ptr ds:[_trace+0Eh]
+cmp   ax, DIVLINE_T ptr ds:[_trace.dl_dy+2]
 jl   do_high_precision
 
 do_point_on_divlineside:
@@ -1997,9 +1997,9 @@ push  word ptr [bp - 4]
 push  word ptr [bp - 8]
 push  es ;v1y
 push  dx ;v1x
-les   ax, dword ptr ds:[_trace+0]
+les   ax, DIVLINE_T ptr ds:[_trace.dl_x]
 mov   dx, es
-les   bx, dword ptr ds:[_trace+4]
+les   bx, DIVLINE_T ptr ds:[_trace.dl_y]
 mov   cx, es
 
 call  P_PointOnLineSide_ ; this does not remove arguments from the stack so we can call again with same stack params
@@ -2014,15 +2014,15 @@ call  P_PointOnLineSide_ ; this does not remove arguments from the stack so we c
 mov   byte ptr cs:[SELFMODIFY_compares1s2+1], al
 
 
-les   ax, dword ptr ds:[_trace+0]
+les   ax, DIVLINE_T ptr ds:[_trace.dl_x]
 mov   dx, es
-les   bx, dword ptr ds:[_trace+4]
+les   bx, DIVLINE_T ptr ds:[_trace.dl_y]
 mov   cx, es
 
-add   ax, word ptr ds:[_trace+8]
-adc   dx, word ptr ds:[_trace+0Ah]
-add   bx, word ptr ds:[_trace+0Ch]
-adc   cx, word ptr ds:[_trace+0Eh]
+add   ax, DIVLINE_T ptr ds:[_trace.dl_dx]
+adc   dx, DIVLINE_T ptr ds:[_trace.dl_dx+2]
+add   bx, DIVLINE_T ptr ds:[_trace.dl_dy]
+adc   cx, DIVLINE_T ptr ds:[_trace.dl_dy+2]
 call  P_PointOnLineSide_   ; note this does not remove the pushed stuff from the stack.
 add   sp, 8  ; no stack frame, just directly do this. necessary because we use sp below..
 
@@ -2153,8 +2153,8 @@ mov   ds, cx ; restore ds..
 
 ;	tracepositive = (trace.dx.h.intbits ^ trace.dy.h.intbits) > 0;
 ; probably enough to do high bytes?
-mov   cx, word ptr ds:[_trace+0Ah]
-xor   cx, word ptr ds:[_trace+0Eh]
+mov   cx, DIVLINE_T ptr ds:[_trace.dl_dx+2]
+xor   cx, DIVLINE_T ptr ds:[_trace.dl_dy+2]
 
 ;	if (tracepositive) {
 ;		y1.h.intbits += thing->radius;
@@ -2415,27 +2415,27 @@ sub   sp, 014h
 
 
 ; todo put trace on stack? then we can just push this stuff once... maybe
-mov   word ptr ds:[_trace + 0], ax
-mov   word ptr ds:[_trace + 2], dx
-mov   word ptr ds:[_trace + 4], bx
-mov   word ptr ds:[_trace + 6], cx
+mov   word ptr ds:[_trace.dl_x], ax
+mov   word ptr ds:[_trace.dl_x+2], dx
+mov   word ptr ds:[_trace.dl_y], bx
+mov   word ptr ds:[_trace.dl_y+2], cx
 
 
 xchg ax, di  ; di stores x1 low bits
 
 les   ax, dword ptr [bp + 8]
 sub   ax, di
-mov   word ptr ds:[_trace + 8], ax
+mov   word ptr ds:[_trace.dl_dx], ax
 mov   ax, es
 sbb   ax, dx
-mov   word ptr ds:[_trace + 0Ah], ax
+mov   word ptr ds:[_trace.dl_dx+2], ax
 
 les   ax, dword ptr [bp + 0Ch]
 sub   ax, bx
-mov   word ptr ds:[_trace + 0Ch], ax
+mov   word	 ptr ds:[_trace.dl_dy], ax
 mov   ax, es
 sbb   ax, cx
-mov   word ptr ds:[_trace + 0Eh], ax
+mov   word ptr ds:[_trace.dl_dy+2], ax
 
 ;    x1.h.intbits -= bmaporgx;
 ;    y1.h.intbits -= bmaporgy;
@@ -5467,13 +5467,13 @@ adc   si, 0FFFFh
 ;    x = trace.x.w + FixedMul (trace.dx.w, frac);
 
 mov   cx, si
-mov   ax, word ptr ds:[_trace+8]
-mov   dx, word ptr ds:[_trace+0Ah]
+mov   ax, DIVLINE_T ptr ds:[_trace.dl_dx]
+mov   dx, DIVLINE_T ptr ds:[_trace.dl_dx+2]
 mov   di, bx   ; backup...
 call  FixedMul_
 
-add   ax, word ptr ds:[_trace+0]
-adc   dx, word ptr ds:[_trace+2]
+add   ax, DIVLINE_T ptr ds:[_trace.dl_x]
+adc   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
 push  dx ; x hi
 push  ax ; x lo
 
@@ -5482,11 +5482,11 @@ mov   bx, di ; frac lo
 
 ;    y = trace.y.w + FixedMul (trace.dy.w, frac);
 
-les   ax, dword ptr ds:[_trace+0Ch]
+les   ax, DIVLINE_T ptr ds:[_trace.dl_dy]
 mov   dx, es
 call  FixedMul_
-add   ax, word ptr ds:[_trace+4]
-adc   dx, word ptr ds:[_trace+6]
+add   ax, DIVLINE_T ptr ds:[_trace.dl_y]
+adc   dx, DIVLINE_T ptr ds:[_trace.dl_y+2]
 
 push  dx ; y hi
 push  ax ; y lo
@@ -5813,15 +5813,15 @@ mov   cx, word ptr es:[si + 2]
 adc   cx, 0FFFFh
 
 ;    x = trace.x.w + FixedMul (trace.dx.w, frac);
-les   ax, dword ptr ds:[_trace+8]
+les   ax, DIVLINE_T ptr ds:[_trace.dl_dx]
 mov   dx, es
 push  cx       ; backup frac hi
 mov   di, bx   ; backup
 call  FixedMul_
 
 
-add   ax, word ptr ds:[_trace+0]
-adc   dx, word ptr ds:[_trace+2]
+add   ax, DIVLINE_T ptr ds:[_trace.dl_x]
+adc   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
 
 pop   cx       ; restore frac hi
 mov   bx, di
@@ -5831,14 +5831,14 @@ push  ax
 
 
 ;    y = trace.y.w + FixedMul (trace.dy.w, frac);
-les   ax, dword ptr ds:[_trace+0Ch]
+les   ax, DIVLINE_T ptr ds:[_trace.dl_dy]
 mov   dx, es
 call  FixedMul_
 
 
 
-add   ax, word ptr ds:[_trace+4]
-adc   dx, word ptr ds:[_trace+6]
+add   ax, DIVLINE_T ptr ds:[_trace.dl_y]
+adc   dx, DIVLINE_T ptr ds:[_trace.dl_y+2]
 ;    z = shootz.w + FixedMul (aimslope, P_GetAttackRangeMult(attackrange16, in->frac));
 
 mov   es, word ptr [bp - 2]

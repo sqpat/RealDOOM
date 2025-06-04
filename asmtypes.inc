@@ -61,3 +61,10 @@ PLAYER_T STRUC
     player_backpack           db ?
 
 PLAYER_T ENDS
+
+DIVLINE_T STRUC 
+    dl_x    dd ?
+    dl_y    dd ?
+    dl_dx   dd ?
+    dl_dy   dd ?
+DIVLINE_T ENDS
