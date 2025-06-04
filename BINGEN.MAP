@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/04 11:38:16
+Created on:       25/06/04 13:13:15
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -1048,9 +1048,9 @@ Module: p_map.obj(p_map.ASM)
 0e1b:5d86*     P_HitSlideLine_
 0e1b:53b7      P_SetThingPosition_
 0e1b:5710*     P_TraverseIntercepts_
-0e1b:7006*     PIT_RadiusAttack_
 0e1b:5498      R_PointInSubsector_
 0e1b:5237*     P_InterceptVector_
+0e1b:7006*     PIT_RadiusAttack_
 0e1b:617b      P_CheckPosition_
 0e1b:6cff      P_AimLineAttack_
 0e1b:54d5*     P_BlockLinesIterator_

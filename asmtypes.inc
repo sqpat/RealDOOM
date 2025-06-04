@@ -71,34 +71,34 @@ DIVLINE_T ENDS
 
 
 MOBJ_T STRUC 
-    sprevRef     dw ?
-    bnextRef     dw ?
-    secnum       dw ?
+    m_sprevRef     dw ?
+    m_bnextRef     dw ?
+    m_secnum       dw ?
 
-    floorz       dw ?
-    ceilingz     dw ?
+    m_floorz       dw ?
+    m_ceilingz     dw ?
 
-    height       dd ?
+    m_height       dd ?
 
-    momx         dd ?
-    momy         dd ?
-    momz         dd ?
+    m_momx         dd ?
+    m_momy         dd ?
+    m_momz         dd ?
 
-    mobjtype     db ?
-    tics         db ?
+    m_mobjtype     db ?
+    m_tics         db ?
 
-    health       dw ?
+    m_health       dw ?
 
-    radius       db ?
-    movedir      db ?
+    m_radius       db ?
+    m_movedir      db ?
 
-    movecount    dw ?
-    targetRef    dw ?
+    m_movecount    dw ?
+    m_targetRef    dw ?
 
-    reactiontime db ?
-    threshold    db ?
+    m_reactiontime db ?
+    m_threshold    db ?
 
-    tracerRef    dw ?
+    m_tracerRef    dw ?
 
 MOBJ_T ENDS
 
@@ -106,14 +106,14 @@ MOBJ_T ENDS
 
 
 MOBJ_POS_T STRUC 
-    x        dd ?
-    y        dd ?
-    z        dd ?
-    snextRef dw ?
-    angle    dd ?
-    statenum dw ?
-    flags1   dw ?
-    flags2   dw ?
+    mp_x        dd ?
+    mp_y        dd ?
+    mp_z        dd ?
+    mp_snextRef dw ?
+    mp_angle    dd ?
+    mp_statenum dw ?
+    mp_flags1   dw ?
+    mp_flags2   dw ?
 
 MOBJ_POS_T ENDS
 
@@ -121,15 +121,15 @@ MOBJ_POS_T ENDS
 
 
 LINE_PHYSICS_T STRUC 
-    v1Offset    dw ?
-    v2Offset    dw ?
+    lp_v1Offset    dw ?
+    lp_v2Offset    dw ?
     lp_dx       dw ?
     lp_dy       dw ?
-    validcount  dw ?
-    frontsecnum dw ?
-    backsecnum  dw ?
-    tag         db ?
-    special     db ?
+    lp_validcount  dw ?
+    lp_frontsecnum dw ?
+    lp_backsecnum  dw ?
+    lp_tag         db ?
+    lp_special     db ?
 
 LINE_PHYSICS_T ENDS
 
@@ -257,11 +257,6 @@ POST_T STRUC
     post_length             db ?
 POST_T ENDS
 
-
-    uint16_t    pixelofsoffset;
-    uint16_t    postofsoffset;
-    uint16_t    texturesize;
-    uint16_t    reserved;
 
 
 MASKED_HEADER_T STRUC 
