@@ -68,3 +68,51 @@ DIVLINE_T STRUC
     dl_dx   dd ?
     dl_dy   dd ?
 DIVLINE_T ENDS
+
+
+MOBJ_T STRUC 
+    sprevRef     dw ?
+    bnextRef     dw ?
+    secnum       dw ?
+
+    floorz       dw ?
+    ceilingz     dw ?
+
+    height       dd ?
+
+    momx         dd ?
+    momy         dd ?
+    momz         dd ?
+
+    mobjtype     db ?
+    tics         db ?
+
+    health       dw ?
+
+    radius       db ?
+    movedir      db ?
+
+    movecount    dw ?
+    targetRef    dw ?
+
+    reactiontime db ?
+    threshold    db ?
+
+    tracerRef    dw ?
+
+MOBJ_T ENDS
+
+ 
+
+
+MOBJ_POS_T STRUC 
+    x        dd ?
+    y        dd ?
+    z        dd ?
+    angle    dd ?
+    statenum dw ?
+    flags1   dw ?
+    flags2   dw ?
+
+MOBJ_POS_T ENDS
+

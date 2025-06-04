@@ -3337,9 +3337,9 @@ call  P_UnsetThingPosition_
 ;   thing->ceilingz = tmceilingz;	
 
 mov   ax, word ptr ds:[_tmfloorz]
-mov   word ptr [si + 6], ax
+mov   word ptr [si.floorz], ax
 mov   ax, word ptr ds:[_tmceilingz]
-mov   word ptr [si + 8], ax
+mov   word ptr [si.ceilingz], ax
 
 ; selfmodify oldx/oldx as immediates in loop
 
