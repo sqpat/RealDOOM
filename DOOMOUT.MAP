@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/04 12:34:17
+Created on:       25/06/04 13:00:46
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -1027,9 +1027,9 @@ Module: p_map.obj(p_map.ASM)
 0a80:7576*     P_HitSlideLine_
 0a80:6ba7      P_SetThingPosition_
 0a80:6f00*     P_TraverseIntercepts_
-0a80:87f6*     PIT_RadiusAttack_
 0a80:6c88      R_PointInSubsector_
 0a80:6a27*     P_InterceptVector_
+0a80:87f6*     PIT_RadiusAttack_
 0a80:796b      P_CheckPosition_
 0a80:84ef      P_AimLineAttack_
 0a80:6cc5*     P_BlockLinesIterator_
@@ -1552,4 +1552,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00023890 (145552.)
 Entry point address: 1d2e:1c36
-Link time: 00:00.75
+Link time: 00:00.20

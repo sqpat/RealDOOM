@@ -132,3 +132,171 @@ LINE_PHYSICS_T STRUC
     special     db ?
 
 LINE_PHYSICS_T ENDS
+
+
+VERTEX_T STRUC 
+    v_x        dw ?
+    v_y        dw ?
+VERTEX_T ENDS
+
+
+
+SECTOR_T STRUC 
+    sec_floorheight          dw ?
+    sec_ceilingheight        dw ?
+    sec_floorpic             db ?
+    sec_ceilingpic           db ?
+    sec_validcount           dw ?
+    sec_thinglistRef         dw ?
+    sec_linecount            dw ?
+    sec_linesoffset          dw ?
+    sec_lightlevel           db ?
+    sec_unused_padding       db ?
+
+SECTOR_T ENDS
+
+
+
+
+SECTOR_PHYSICS_T STRUC 
+    secp_blockbox             dw 4
+    secp_specialdataRef       dw ?
+    secp_linecount            dw ?
+    secp_linesoffset          dw ?
+    secp_special              db ?
+    secp_tag                  db ?
+SECTOR_PHYSICS_T ENDS
+
+
+
+SECTOR_SOUNDORG_T STRUC 
+    secso_soundorgX       dw ?
+    secso_soundorgY       dw ?
+SECTOR_SOUNDORG_T ENDS
+
+
+
+SIDE_T STRUC 
+    s_toptexture       dw ?
+    s_bottomtexture    dw ?
+    s_midtexture       dw ?
+    s_textureoffset    dw ?
+SIDE_T ENDS
+
+
+
+SIDE_RENDER_T  STRUC 
+    sr_rowoffset        dw ?
+    sr_secnum           dw ?
+SIDE_RENDER_T ENDS
+
+
+
+LINE_T STRUC 
+    l_sidenum       dw 2
+LINE_T ENDS
+
+
+
+LINE_OPENING_T STRUC 
+    lo_opentop       dw ?
+    lo_openbottom    dw ?
+    lo_lowfloor      dw ?
+LINE_OPENING_T ENDS
+
+
+
+
+SUBSECTOR_T STRUC 
+    ss_secnum           dw ?
+    ss_firstline        dw ?
+SUBSECTOR_T ENDS
+
+
+
+SEG_PHYSICS_T STRUC 
+    sp_frontsecnum           dw ?
+    sp_backsecnum            dw ?
+SEG_PHYSICS_T ENDS
+
+
+
+SEG_RENDER_T STRUC 
+    sr_v1Offset           dw ?
+    sr_v2Offset           dw ?
+    sr_offset             dw ?
+    sr_sidedefOffset      dw ?
+SEG_RENDER_T ENDS
+
+
+
+
+NODE_T STRUC 
+    n_x           dw ?
+    n_y           dw ?
+    n_dx          dw ?
+    n_dy          dw ?
+NODE_T ENDS
+
+
+NODE_CHILDREN_T STRUC 
+    nc_children           dw 2
+NODE_CHILDREN_T ENDS
+
+
+
+NODE_RENDER_T STRUC 
+    nr_bbox           dw 8
+NODE_RENDER_T ENDS
+
+
+
+
+POST_T STRUC 
+    post_topdelta           db ?
+    post_length             db ?
+POST_T ENDS
+
+
+    uint16_t    pixelofsoffset;
+    uint16_t    postofsoffset;
+    uint16_t    texturesize;
+    uint16_t    reserved;
+
+
+MASKED_HEADER_T STRUC 
+    mh_pixelofsoffset     dw ?
+    mh_postofsoffset      dw ?
+    mh_texturesize        dw ?
+    mh_reserved           dw ?
+MASKED_HEADER_T ENDS
+
+
+DRAWSEG_T STRUC 
+    drawseg_cursegvalue           dw ?
+    drawseg_x1                    dw ?
+    drawseg_x2                    dw ?
+
+    drawseg_scale1                dd ?
+    drawseg_scale2                dd ?
+    drawseg_scalestep             dd ?
+
+    drawseg_bsilheight            dw ?
+    drawseg_tsilheight            dw ?
+    
+    drawseg_sprtopclip_offset     dw ?
+    drawseg_sprbottomclip_offset  dw ?
+    
+    drawseg_maskedtexturecol_val  dw ?
+
+    drawseg_silhouette            db ?
+    
+    drawseg_unused_padding_a      db ?
+    drawseg_unused_padding_b      db ?
+    drawseg_unused_padding_c      db ?
+
+
+DRAWSEG_T ENDS
+
+
+
