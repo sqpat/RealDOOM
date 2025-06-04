@@ -196,23 +196,16 @@ dw OFFSET T_Glow_
 PROC P_RunThinkers_ NEAR
 PUBLIC P_RunThinkers_
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_MACRO ; revist once we call outer func...
 push      bp
 mov       bp, sp
-sub       sp, 4
-mov       si, OFFSET _thinkerlist + 2
-mov       si, word ptr [si]
-test      si, si
-je        exit_run_thinkers
+mov       si, word ptr ds:[_thinkerlist + 2]
+;test      si, si
+;je        exit_run_thinkers  ; 0 thinkers ought to be impossible?
 do_next_thinker:
 imul      bx, si, SIZEOF_THINKER_T  ; todo test shift vs mul...
 imul      dx, si, SIZEOF_MOBJ_POS_T ; todo move later. only if necessary
-mov       word ptr [bp - 2], bx
-mov       word ptr [bp - 4], dx
+
 ; consider inc bx?
 mov       al, byte ptr ds:[bx + _thinkerlist+1]  ; just get high bit
 lea       di, ds:[bx + _thinkerlist + 4]
@@ -220,23 +213,20 @@ and       al, (TF_FUNCBITS SHR 8)
 cmp       al, (TF_MOBJTHINKER_HIGHBITS SHR 8)
 jne       continue_checking_tf_types
 do_mobjthinker:
-mov       bx, dx ;word ptr [bp - 4]
+xchg      ax, di
+mov       bx, dx  ; todo copy to di
+mov       di, dx  ; todo copy to di
 mov       cx, MOBJPOSLIST_6800_SEGMENT ; todo remove maybe?
 mov       dx, si
-mov       ax, di
 call      P_MobjThinker_
 done_processing_thinker:
-imul      si, si, SIZEOF_THINKER_T
+imul      si, si, SIZEOF_THINKER_T  ; todo remove? store in di.
 mov       si, word ptr ds:[si + _thinkerlist + 2]
 test      si, si
 jne       do_next_thinker
 exit_run_thinkers:
 LEAVE_MACRO
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_MACRO
 ret   
 continue_checking_tf_types:
 ;test      al, al                   ; not sure if necessary
@@ -260,31 +250,33 @@ do_delete_me:
 ; THINKERREF prevRef = thinkerlist[currentthinker].prevFunctype & TF_PREVBITS;
 ; THINKERREF nextRef = thinkerlist[currentthinker].next;
 
-les       ax, dword ptr ds:[bx + _thinkerlist]
-mov       dx, es
+les       ax, dword ptr ds:[bx + _thinkerlist]  ; prevref
+mov       cx, es                                ; nectref
 
-imul      bx, dx, SIZEOF_THINKER_T
-mov       byte ptr ds:[bx + _thinkerlist], 0
+imul      di, cx, SIZEOF_THINKER_T
+mov       byte ptr ds:[di + _thinkerlist], 0
 and       ah, (TF_PREVBITS SHR 8)
 ; thinkerlist[nextRef].prevFunctype &= TF_FUNCBITS;
-and       byte ptr ds:[bx + _thinkerlist+1], (TF_FUNCBITS SHR 8)
+and       byte ptr ds:[di + _thinkerlist+1], (TF_FUNCBITS SHR 8)
 ; thinkerlist[nextRef].prevFunctype += prevRef;
-add       word ptr ds:[bx + _thinkerlist], ax
-imul      bx, ax, SIZEOF_THINKER_T
-mov       cx, SIZEOF_MOBJ_T / 2
+add       word ptr ds:[di + _thinkerlist], ax
+
+imul      di, ax, SIZEOF_THINKER_T
 xor       ax, ax
-mov       word ptr [bx + _thinkerlist + 2], dx
+mov       word ptr [di + _thinkerlist + 2], cx
 
-push      ds
-pop       es
+lea       di, ds:[bx + _thinkerlist + 4]
+mov       cx, ds
+mov       es, cx
+mov       cx, SIZEOF_MOBJ_T / 2
 rep       stosw
+
+mov       cx, MOBJPOSLIST_6800_SEGMENT
+mov       es, cx
+mov       di, dx
 mov       cx, SIZEOF_MOBJ_POS_T /2
-mov       dx, MOBJPOSLIST_6800_SEGMENT
-mov       es, dx
-mov       di, word ptr [bp - 4]
 rep       stosw
 
-mov       bx, word ptr [bp - 2]
 mov       word ptr ds:[bx + _thinkerlist], MAX_THINKERS
 jmp       done_processing_thinker
 
