@@ -1111,12 +1111,12 @@ lea   cx, ds:[si - (_thinkerlist + 4) - 4]
 
 
 
-mov   di, word ptr es:[bx + 0Ch]	; snextRef
+mov   di, MOBJ_POS_T ptr es:[bx + MOBJ_POS_T.snextRef]	; snextRef
 
 
 ;	if (!(thingflags1 & MF_NOSECTOR)) {
 
-test  byte ptr es:[bx + 014h], MF_NOSECTOR  ; flags1
+test  byte ptr es:[bx + MOBJ_POS_T.flags1], MF_NOSECTOR  ; flags1
 jne   mobj_inert_not_in_blockmap
 
 ;		if (thingsnextRef) {
@@ -1218,7 +1218,7 @@ done_clearing_blockmap:
 ;    if (! (thingflags1 & MF_NOBLOCKMAP) ) {
 
 
-test  byte ptr es:[bx + 014h], MF_NOBLOCKMAP  ; flags1
+test  byte ptr es:[bx + MOBJ_POS_T.flags1], MF_NOBLOCKMAP  ; flags1
 jne   exit_unset_position_and_pop_once
 
 ;		blockx = (thingx.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
@@ -1228,11 +1228,11 @@ jne   exit_unset_position_and_pop_once
 
 ; do zero checks first. then we can do a faster unsigned shift. in 286 case
 
-mov   ax, word ptr es:[bx + 6]  ; y high word
+mov   ax, MOBJ_POS_T ptr es:[bx + MOBJ_POS_T.y + 2]  ; y high word
 sub   ax, word ptr ds:[_bmaporgy]
 jl    exit_unset_position_and_pop_once
 
-mov   bx, word ptr es:[bx + 2]  ; x high word
+mov   bx, MOBJ_POS_T ptr es:[bx  + MOBJ_POS_T.x + 2]  ; x high word
 sub   bx, word ptr ds:[_bmaporgx]
 jl    exit_unset_position_and_pop_once
 
@@ -1435,7 +1435,7 @@ secnum_ready:
 
 ;		thing->secnum = knownsecnum;
 
-mov   word ptr [di + 4], cx
+mov   word ptr [di + MOBJ_T.secnum], cx
 
 ;pop   cx  ; cx gets thingRef
 mov    cx, word ptr [bp - 2]
@@ -1449,7 +1449,7 @@ jne   done_setting_sector_stuff
 ;		oldsectorthinglist = sectors[thing->secnum].thinglistRef;
 ;		sectors[thing->secnum].thinglistRef = thingRef;
 
-mov   bx, word ptr [di + 4]
+mov   bx, MOBJ_T ptr [di + MOBJ_T.secnum]
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 SHIFT_MACRO shl   bx  4
@@ -1497,9 +1497,9 @@ ELSE
 ENDIF
 
 ;		thing->sprevRef = NULL_THINKERREF;
-mov   word ptr [di], 0
+mov   word ptr [di + MOBJ_T.sprevRef], 0
 ;		thing_pos->snextRef = oldsectorthinglist;
-mov   word ptr es:[si + 0Ch], ax
+mov   word ptr es:[si + MOBJ_POS_T.snextRef], ax
 ;		if (thing_pos->snextRef) {
 test  ax, ax
 
@@ -1528,7 +1528,7 @@ done_setting_sector_stuff:
 
 ;    if (! (thingflags1 & MF_NOBLOCKMAP) ) {
 
-test  byte ptr es:[si + 014h], MF_NOBLOCKMAP
+test  byte ptr es:[si + MOBJ_POS_T.flags1], MF_NOBLOCKMAP
 jne   exit_set_position
 
 
@@ -1599,7 +1599,7 @@ mov   es, ax
 ; cx is already thingRef;
 
 xchg  cx, word ptr es:[bx]  ; set thingref. get linkref
-mov   word ptr [di + 2], cx ; set linkref
+mov   word ptr [di + MOBJ_T.bnextRef], cx ; set linkref
 
 
 exit_set_position:
@@ -1613,7 +1613,7 @@ set_null_bnextref_and_exit:
 
 ;			thing->bnextRef = NULL_THINKERREF;
 
-mov   word ptr [di + 2], 0
+mov   word ptr [di + MOBJ_T.bnextRef], 0
 LEAVE_MACRO
 pop   di
 pop   si
@@ -1751,7 +1751,7 @@ mov   dx, LINES_PHYSICS_SEGMENT
 mov   es, dx
 SELFMODIFY_validcountglobal_1:
 mov   ax, 01000h
-cmp   ax, word ptr es:[si + 8]
+cmp   ax, LINE_PHYSICS_T ptr es:[si + LINE_PHYSICS_T.validcount]
 
 ; if (ld_physics->validcount == validcount_global) {
 
@@ -1773,7 +1773,7 @@ check_block_line:
 ;		}
 
 
-mov   word ptr es:[si + 8], ax  ; set validcount
+mov   word ptr es:[si + LINE_PHYSICS_T.validcount], ax  ; set validcount
 mov   ax, si
 call  cx
 test  al, al
@@ -2914,7 +2914,7 @@ jne   no_line_special
 ;		P_LineOpening(line->sidenum[1], line_physics->frontsecnum, line_physics->backsecnum);
 
 ; get frontsecnum and backsecnum
-les   dx, dword ptr es:[bx + 0Ah]  ; es:bx lines_physics
+les   dx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.frontsecnum]  ; es:bx lines_physics
 mov   bx, es
 mov   ax, LINES_SEGMENT
 mov   es, ax
@@ -3025,10 +3025,10 @@ mov   es, dx
 test  al, ML_TWOSIDED
 jne   not_twosided
 
-push  word ptr es:[bx + 6]
-push  word ptr es:[bx + 4]
+push  word ptr es:[bx + LINE_PHYSICS_T.lp_dy]
+push  word ptr es:[bx + LINE_PHYSICS_T.lp_dx]
 
-mov   bx, word ptr es:[bx]
+mov   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.v1Offset]
 SHIFT_MACRO shl   bx 2
 
 mov   ax, VERTEXES_SEGMENT
@@ -3440,13 +3440,13 @@ mov   dx, LINES_PHYSICS_SEGMENT
 mov   es, dx
 SHIFT_MACRO shl   bx 4
 
-mov   al, byte ptr es:[bx + 0Fh]
+mov   al, byte ptr es:[bx + LINE_PHYSICS_T.special]
 mov   byte ptr [bp - 4], al    ; ld->special   
 
-push  word ptr es:[bx + 6] 
-push  word ptr es:[bx + 4] 
+push  word ptr es:[bx + LINE_PHYSICS_T.lp_dy] 
+push  word ptr es:[bx + LINE_PHYSICS_T.lp_dx] 
 
-mov   bx, word ptr es:[bx] ; vertexes
+mov   bx, word ptr es:[bx + LINE_PHYSICS_T.v1Offset] ; vertexes
 SHIFT_MACRO shl   bx 2
 mov   ax, VERTEXES_SEGMENT
 mov   es, ax
@@ -3683,9 +3683,9 @@ mov   es, di
 ;    }
     
 xor   ax, ax
-test  byte ptr es:[si + 3], (LINE_VERTEX_SLOPETYPE SHR 8)
+test  byte ptr es:[si + LINE_PHYSICS_T.v2Offset+1], (LINE_VERTEX_SLOPETYPE SHR 8)
 je    zero_tmy_and_exit
-mov   ax, word ptr es:[si + 2]
+mov   ax, word ptr es:[si + LINE_PHYSICS_T.v2Offset]
 xor   al, al
 and   ah, (LINE_VERTEX_SLOPETYPE SHR 8)
 
@@ -5423,7 +5423,7 @@ mov   es, ax
 push  bx			; bp - 8 linenum shift 4
 
 ;		if (li_physics->special)
-cmp   byte ptr es:[bx + 0Fh], 0
+cmp   byte ptr es:[bx + LINE_PHYSICS_T.special], 0
 je    no_special
 
 ;			P_ShootSpecialLine (shootthing, in->d.linenum);
@@ -5515,7 +5515,7 @@ adc   di, dx
 
 
 les   bx, dword ptr [bp - 8]			; linephys ptr
-mov   bx, word ptr es:[bx + 0Ah]		; frontsecnum
+mov   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.frontsecnum]		; frontsecnum
 SHIFT_MACRO shl   bx 4
 
 mov   dx, SECTORS_SEGMENT
@@ -5548,10 +5548,10 @@ cmp   si, cx
 ja    exit_shoottraverse_return_0
 didnt_shoot_sky:
 les   bx, dword ptr [bp - 8]
-cmp   word ptr es:[bx + 0Ch], SECNUM_NULL
+cmp   word ptr es:[bx + LINE_PHYSICS_T.backsecnum], SECNUM_NULL
 je    do_puff
 
-mov   bx, word ptr es:[bx + 0Ch]   ; todo was this stored
+mov   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.backsecnum]   ; todo was this stored
 SHIFT_MACRO shl   bx 4
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
@@ -5587,7 +5587,7 @@ mov   bx, word ptr [bp - 4]
 mov   ax, word ptr es:[bx + 2]		; sidenum[1]
 
 les   bx, dword ptr [bp - 8]
-les   dx, dword ptr es:[bx + 0Ah]	; secnums
+les   dx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.frontsecnum]	; secnums
 mov   bx, es
 
 call  P_LineOpening_
@@ -5604,7 +5604,7 @@ call  P_GetAttackRangeMult_
 ;  if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
 
 les   bx, dword ptr [bp - 8] 	 ; li_physics
-les   bx, dword ptr es:[bx + 0Ah] ; frontsec
+les   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.frontsecnum] ; frontsec
 SHIFT_MACRO shl   bx 4 			
 
 push  dx	; push dist
@@ -6055,7 +6055,7 @@ mov   ax, word ptr es:[bx + 2]
 
 mov   cx, LINES_PHYSICS_SEGMENT
 mov   es, cx
-les   dx, dword ptr es:[di + 0Ah]
+les   dx, LINE_PHYSICS_T ptr es:[di + LINE_PHYSICS_T.frontsecnum]
 mov   bx, es
 call  P_LineOpening_
 
@@ -6082,7 +6082,7 @@ mov   cx, LINES_PHYSICS_SEGMENT
 mov   es, cx
 push  ax  
 push  dx  ; store dist
-les   di, dword ptr es:[di + 0Ah] ; frontsector
+les   di, LINE_PHYSICS_T ptr es:[di + LINE_PHYSICS_T.frontsecnum] ; frontsector
 mov   si, es					  ; backsector
 SHIFT_MACRO shl   di 4
 mov   cx, SECTORS_SEGMENT

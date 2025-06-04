@@ -109,6 +109,7 @@ MOBJ_POS_T STRUC
     x        dd ?
     y        dd ?
     z        dd ?
+    snextRef dw ?
     angle    dd ?
     statenum dw ?
     flags1   dw ?
@@ -116,3 +117,18 @@ MOBJ_POS_T STRUC
 
 MOBJ_POS_T ENDS
 
+
+
+
+LINE_PHYSICS_T STRUC 
+    v1Offset    dw ?
+    v2Offset    dw ?
+    lp_dx       dw ?
+    lp_dy       dw ?
+    validcount  dw ?
+    frontsecnum dw ?
+    backsecnum  dw ?
+    tag         db ?
+    special     db ?
+
+LINE_PHYSICS_T ENDS
