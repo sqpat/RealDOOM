@@ -24,7 +24,6 @@ EXTRN T_PlatRaise_:NEAR
 EXTRN T_Glow_:NEAR
 EXTRN T_LightFlash_:NEAR
 EXTRN T_StrobeFlash_:NEAR
-EXTRN T_PlatRaise_:NEAR
 EXTRN T_MoveCeiling_:NEAR
 EXTRN T_VerticalDoor_:NEAR
 EXTRN T_MoveFloor_:NEAR
@@ -171,6 +170,28 @@ ret
 ENDP
 
 
+;TF_MOBJTHINKER_HIGHBITS = 0800h
+;TF_PLATRAISE_HIGHBITS = 01000h
+;TF_MOVECEILING_HIGHBITS = 01800h
+;TF_VERTICALDOOR_HIGHBITS = 02000h
+;TF_MOVEFLOOR_HIGHBITS = 02800h
+;TF_FIREFLICKER_HIGHBITS = 03000h
+;TF_LIGHTFLASH_HIGHBITS = 03800h
+;TF_STROBEFLASH_HIGHBITS = 04000h
+;TF_GLOW_HIGHBITS = 04800h
+;TF_DELETEME_HIGHBITS = 05000h
+
+_functable:
+dw OFFSET T_PlatRaise_
+dw OFFSET T_MoveCeiling_
+dw OFFSET T_VerticalDoor_
+dw OFFSET T_MoveFloor_
+dw OFFSET T_FireFlicker_
+dw OFFSET T_LightFlash_
+dw OFFSET T_StrobeFlash_
+dw OFFSET T_Glow_
+
+
 
 PROC P_RunThinkers_ NEAR
 PUBLIC P_RunThinkers_
@@ -188,26 +209,19 @@ mov       si, word ptr [si]
 test      si, si
 je        exit_run_thinkers
 do_next_thinker:
-imul      bx, si, SIZEOF_THINKER_T
-imul      dx, si, SIZEOF_MOBJ_POS_T
-mov       ax, word ptr ds:[bx + _thinkerlist]
+imul      bx, si, SIZEOF_THINKER_T  ; todo test shift vs mul...
+imul      dx, si, SIZEOF_MOBJ_POS_T ; todo move later. only if necessary
 mov       word ptr [bp - 2], bx
-lea       di, ds:[bx + _thinkerlist + 4]
-and       ax, TF_FUNCBITS
 mov       word ptr [bp - 4], dx
-cmp       ax, TF_DELETEME_HIGHBITS
-je        do_delete_me
-test      ax, ax
-je        done_processing_thinker
-cmp       ax, TF_MOVEFLOOR_HIGHBITS
-jae       jump_to_do_movefloor
-cmp       ax, TF_PLATRAISE_HIGHBITS
-jae       jump_to_do_platraise
-cmp       ax, TF_MOBJTHINKER_HIGHBITS
-jne       done_processing_thinker
+; consider inc bx?
+mov       al, byte ptr ds:[bx + _thinkerlist+1]  ; just get high bit
+lea       di, ds:[bx + _thinkerlist + 4]
+and       al, (TF_FUNCBITS SHR 8)
+cmp       al, (TF_MOBJTHINKER_HIGHBITS SHR 8)
+jne       continue_checking_tf_types
 do_mobjthinker:
-mov       bx, word ptr [bp - 4]
-mov       cx, MOBJPOSLIST_6800_SEGMENT
+mov       bx, dx ;word ptr [bp - 4]
+mov       cx, MOBJPOSLIST_6800_SEGMENT ; todo remove maybe?
 mov       dx, si
 mov       ax, di
 call      P_MobjThinker_
@@ -223,102 +237,57 @@ pop       si
 pop       dx
 pop       cx
 pop       bx
-ret       
-jump_to_do_movefloor:
-jmp       do_movefloor
-jump_to_do_platraise:
-jmp       do_platraise
+ret   
+continue_checking_tf_types:
+;test      al, al                   ; not sure if necessary
+;je        done_processing_thinker  ; could probable be jl
+
+cmp       al, (TF_DELETEME_HIGHBITS SHR 8)
+je        do_delete_me
+cbw
+SHIFT_MACRO   SAR AX 2     ; highbits function are stores as 0x0800 = 1. took high byte, want word lookup. 0x08 >> 2
+xchg      ax, di
+mov       dx, si
+
+call      word ptr cs:[_functable + di - 4];
+jmp done_processing_thinker
+
+
+
 do_delete_me:
-mov       dx, word ptr ds:[bx + _thinkerlist + 2]
-mov       ax, word ptr ds:[bx + _thinkerlist + 0]
+
+;			// time to remove it
+; THINKERREF prevRef = thinkerlist[currentthinker].prevFunctype & TF_PREVBITS;
+; THINKERREF nextRef = thinkerlist[currentthinker].next;
+
+les       ax, dword ptr ds:[bx + _thinkerlist]
+mov       dx, es
+
 imul      bx, dx, SIZEOF_THINKER_T
 mov       byte ptr ds:[bx + _thinkerlist], 0
-and       ah, 7
+and       ah, (TF_PREVBITS SHR 8)
+; thinkerlist[nextRef].prevFunctype &= TF_FUNCBITS;
 and       byte ptr ds:[bx + _thinkerlist+1], (TF_FUNCBITS SHR 8)
+; thinkerlist[nextRef].prevFunctype += prevRef;
 add       word ptr ds:[bx + _thinkerlist], ax
 imul      bx, ax, SIZEOF_THINKER_T
-mov       cx, SIZEOF_MOBJ_T
-xor       al, al
+mov       cx, SIZEOF_MOBJ_T / 2
+xor       ax, ax
 mov       word ptr [bx + _thinkerlist + 2], dx
-push      di
+
 push      ds
 pop       es
-mov       ah, al
-shr       cx, 1
 rep       stosw
-pop       di
-mov       cx, SIZEOF_MOBJ_POS_T
+mov       cx, SIZEOF_MOBJ_POS_T /2
 mov       dx, MOBJPOSLIST_6800_SEGMENT
-mov       di, word ptr [bp - 4]
 mov       es, dx
-mov       bx, word ptr [bp - 2]
-push      di
-mov       ah, al
-shr       cx, 1
+mov       di, word ptr [bp - 4]
 rep       stosw
-pop       di
+
+mov       bx, word ptr [bp - 2]
 mov       word ptr ds:[bx + _thinkerlist], MAX_THINKERS
 jmp       done_processing_thinker
-do_movefloor:
-jbe       actually_do_movefloor
-cmp       ax, TF_LIGHTFLASH_HIGHBITS
-jae       above_equal_lightflash
-cmp       ax, TF_FIREFLICKER_HIGHBITS
-jne       done_processing_thinker
-do_fireflicker:
-mov       dx, si
-mov       ax, di
-call      T_FireFlicker_
-jmp       done_processing_thinker
-above_equal_lightflash:
-jbe       actually_do_lightflash
-cmp       ax, TF_GLOW_HIGHBITS
-je        do_glow
-cmp       ax, TF_STROBEFLASH_HIGHBITS
-je        do_strobeflash
-jump_to_done_processing_thinker:
-jmp       done_processing_thinker
-do_strobeflash:
-mov       dx, si
-mov       ax, di
-call      T_StrobeFlash_
-jmp       done_processing_thinker
-do_platraise:
-jbe       actually_do_platraise
-cmp       ax, TF_VERTICALDOOR_HIGHBITS
-je        do_verticaldoor
-cmp       ax, TF_MOVECEILING_HIGHBITS
-jne       jump_to_done_processing_thinker
-do_moveceiling:
-mov       dx, si
-mov       ax, di
-call      T_MoveCeiling_
-jmp       done_processing_thinker
-actually_do_platraise:
-mov       dx, si
-mov       ax, di
-call      T_PlatRaise_
-jmp       done_processing_thinker
-do_verticaldoor:
-mov       dx, si
-mov       ax, di
-call      T_VerticalDoor_
-jmp       done_processing_thinker
-actually_do_movefloor:
-mov       dx, si
-mov       ax, di
-call      T_MoveFloor_
-jmp       done_processing_thinker
-actually_do_lightflash:
-mov       dx, si
-mov       ax, di
-call      T_LightFlash_
-jmp       done_processing_thinker
-do_glow:
-mov       dx, si
-mov       ax, di
-call      T_Glow_
-jmp       done_processing_thinker
+
 
 ENDP
 
