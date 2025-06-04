@@ -106,6 +106,9 @@ void __near P_RemoveThinker (THINKERREF thinkerRef) {
 //
 // P_RunThinkers
 //
+
+void __near P_RunThinkers (void);
+/*
 void __near P_RunThinkers (void) {
 	THINKERREF	currentthinker;
 	uint16_t	currentthinkerFunc;
@@ -198,17 +201,15 @@ void __near P_RunThinkers (void) {
 #endif
 
 // i will need this later to help me debug inevitible doom 2 content memleaks
-/*
-				if (gametic == 619 && i == 0) {
-					//SAVEDUNIT = (mobj_t __near*)Z_LoadThinkerBytesFromEMS(players.moRef);
-					//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy);
-					// 454 122 157
+				// if (gametic == 619 && i == 0) {
+				// 	//SAVEDUNIT = (mobj_t __near*)Z_LoadThinkerBytesFromEMS(players.moRef);
+				// 	//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy);
+				// 	// 454 122 157
 
 
-				}
+				// }
 				 
 
-				*/
  
 
 				i++;
@@ -223,7 +224,7 @@ void __near P_RunThinkers (void) {
 	}
 #endif
 }
-
+*/
 
 
 //

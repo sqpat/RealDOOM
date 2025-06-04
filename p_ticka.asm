@@ -19,26 +19,16 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN FixedMul16u32_:FAR
-EXTRN FixedMul1632_:FAR
-EXTRN FixedMul2424_:FAR
-EXTRN FixedMul2432_:FAR
-EXTRN FixedMul_:FAR
-EXTRN FixedDiv_:FAR
-EXTRN FixedMulBig1632_:FAR
-EXTRN FixedMulTrigNoShift_:PROC
-EXTRN S_StartSound_:FAR
-EXTRN R_PointToAngle2_16_:PROC
-EXTRN R_PointToAngle2_:PROC
-EXTRN P_Random_:NEAR
-EXTRN P_UseSpecialLine_:PROC
-EXTRN P_DamageMobj_:NEAR
-EXTRN P_SetMobjState_:NEAR
-EXTRN P_TouchSpecialThing_:NEAR
-EXTRN P_CrossSpecialLine_:NEAR
-EXTRN P_ShootSpecialLine_:NEAR
-EXTRN P_SpawnMobj_:NEAR
-EXTRN P_RemoveMobj_:NEAR
+EXTRN T_FireFlicker_:NEAR
+EXTRN T_PlatRaise_:NEAR
+EXTRN T_Glow_:NEAR
+EXTRN T_LightFlash_:NEAR
+EXTRN T_StrobeFlash_:NEAR
+EXTRN T_PlatRaise_:NEAR
+EXTRN T_MoveCeiling_:NEAR
+EXTRN T_VerticalDoor_:NEAR
+EXTRN T_MoveFloor_:NEAR
+EXTRN P_MobjThinker_:NEAR
 EXTRN OutOfThinkers_:NEAR
 
 
@@ -180,7 +170,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC P_RunThinkers_ NEAR
@@ -256,9 +245,7 @@ push      ds
 pop       es
 mov       ah, al
 shr       cx, 1
-rep stosw word ptr es:[di], ax
-adc       cx, cx
-rep stosb byte ptr es:[di], al
+rep       stosw
 pop       di
 mov       cx, SIZEOF_MOBJ_POS_T
 mov       dx, MOBJPOSLIST_6800_SEGMENT
@@ -268,9 +255,7 @@ mov       bx, word ptr [bp - 2]
 push      di
 mov       ah, al
 shr       cx, 1
-rep stosw word ptr es:[di], ax
-adc       cx, cx
-rep stosb byte ptr es:[di], al
+rep       stosw
 pop       di
 mov       word ptr ds:[bx + _thinkerlist], MAX_THINKERS
 jmp       done_processing_thinker
@@ -324,7 +309,7 @@ mov       dx, si
 mov       ax, di
 call      T_MoveFloor_
 jmp       done_processing_thinker
-above_equal_lightflash:
+actually_do_lightflash:
 mov       dx, si
 mov       ax, di
 call      T_LightFlash_
@@ -335,6 +320,9 @@ mov       ax, di
 call      T_Glow_
 jmp       done_processing_thinker
 
+ENDP
+
+COMMENT @
 
 PROC P_Ticker_ NEAR
 PUBLIC P_Ticker_
