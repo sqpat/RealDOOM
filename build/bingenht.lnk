@@ -88,8 +88,8 @@ file sm_sbmid.obj
 file sm_mpumd.obj
 
 NEWSEGMENT
-file r_bsp.obj
 file r_data.obj
+file r_dataa.obj
 file r_math.obj
 file r_mainhi.obj
 file r_column.obj

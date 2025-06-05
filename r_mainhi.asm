@@ -703,10 +703,23 @@ pop   si
 ;pop   bx
 ret   
 
-endp
+ENDP
+
+
+PROC R_ClearClipSegs_ NEAR
+PUBLIC R_ClearClipSegs_
+
+mov  word ptr ds:[_solidsegs+0], 08001h
+mov  word ptr ds:[_solidsegs+2], 0FFFFh
+mov  ax, word ptr ds:[_viewwidth]
+mov  word ptr ds:[_solidsegs+4], ax
+mov  word ptr ds:[_solidsegs+6], 07FFFh
+mov  word ptr ds:[_newend], OFFSET _solidsegs + 2 * SIZEOF_CLIPRANGE_T
+ret  
 
 
 
+ENDP
 
 
 ;R_ClearPlanes

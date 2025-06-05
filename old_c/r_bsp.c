@@ -189,6 +189,8 @@ void __near R_ClipPassWallSegment ( int16_t first, int16_t last ) {
 //
 // R_ClearClipSegs
 //
+
+/*
 void __near R_ClearClipSegs (void) {
     solidsegs[0].first = -0x7fff;
     solidsegs[0].last = -1;
@@ -196,7 +198,7 @@ void __near R_ClearClipSegs (void) {
     solidsegs[1].last = 0x7fff;
     newend = solidsegs+2;
 }
-
+*/
 /*
 
 //
