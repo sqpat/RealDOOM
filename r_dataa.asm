@@ -287,94 +287,125 @@ ENDP
 PROC R_MarkL2SpriteCacheMRU_ NEAR
 PUBLIC R_MarkL2SpriteCacheMRU_
 
+;	if (index == spritecache_l2_head) {
+;		return;
+;	}
+
+cmp  al, byte ptr ds:[_spritecache_l2_head]
+jne  dont_early_out
+ret
+
+dont_early_out:
 push bx
 push cx
 push dx
 push si
 mov  cl, byte ptr ds:[_spritecache_l2_head]
 mov  dl, al
-cmp  al, cl
-je   jump_to_label_13
-cbw 
 mov  bx, ax
-shl  bx, 2
+
+;	pagecount = spritecache_nodes[index].pagecount;
+;	if (pagecount){
+
+SHIFT_MACRO shl  bx 2
 mov  al, byte ptr ds:[bx + _spritecache_nodes+2]
 test al, al
-je   label_14
-label_16:
-mov  al, dl
-cbw 
-mov  bx, ax
-shl  bx, 2
-mov  al, byte ptr ds:[bx + _spritecache_nodes+2]
-cmp  al, byte ptr ds:[bx + _spritecache_nodes+2]
-je   label_15
+je   sprite_pagecount_zero
+
+;	 	while (spritecache_nodes[index].numpages != spritecache_nodes[index].pagecount){
+;			index = spritecache_nodes[index].next;
+;		}
+
+sprite_check_next_cache_node:
+mov  bl, dl   ; bh always zero here...
+SHIFT_MACRO shl  bx 2
+mov  ax, word ptr ds:[bx + _spritecache_nodes+2]
+cmp  al, ah
+je   sprite_found_first_index
 mov  dl, byte ptr ds:[bx + _spritecache_nodes+1]
-jmp  label_16
-label_15:
-cmp  dl, cl
-je   jump_to_label_13
-label_14:
-mov  al, dl
-cbw 
-mov  bx, ax
-shl  bx, 2
+jmp  sprite_check_next_cache_node
+
+sprite_found_first_index:
+
+;		if (index == spritecache_l2_head) {
+;			return;
+;		}
+
+cmp  dl, cl             ; dh is free, use dh instead here?
+je   jump_to_mark_sprite_lru_exit
+sprite_pagecount_zero:
+
+;mov  al, dl
+;cbw 
+;mov  bx, ax
+;shl  bx, 2
+
+; bx should already be set...
+
+;	if (spritecache_nodes[index].numpages){
+
 cmp  byte ptr ds:[bx + _spritecache_nodes+3], 0
-je   jump_to_label_17
-mov  dh, dl
-label_19:
-mov  al, dh
-cbw 
-mov  bx, ax
-shl  bx, 2
+je   jump_to_selected_sprite_page_single_page
+
+; multi page case...
+
+;		lastindex = index;
+;		while (spritecache_nodes[lastindex].pagecount != 1){
+;			lastindex = spritecache_nodes[lastindex].prev;
+;		}
+
+
+mov  dh, dl         ; dh = last index
+sprite_check_next_cache_node_pagecount:
+
+mov  bl, dh         ; bh always 0 here...
+SHIFT_MACRO  shl  bx 2
 cmp  byte ptr ds:[bx + _spritecache_nodes+2], 1
-je   label_18
+je   found_sprite_multipage_last_page
 mov  dh, byte ptr ds:[bx + _spritecache_nodes+0]
-jmp  label_19
-jump_to_label_13:
-jmp  label_13
-label_18:
+jmp  sprite_check_next_cache_node_pagecount
+
+jump_to_mark_sprite_lru_exit:
+jmp  mark_sprite_lru_exit
+found_sprite_multipage_last_page:
+
+; dl = index
+; dh = lastindex
+
+;		lastindex_prev = spritecache_nodes[lastindex].prev;
+;		index_next = spritecache_nodes[index].next;
+
+
 mov  al, dl
 cbw 
 mov  si, ax
-shl  si, 2
-mov  bh, byte ptr ds:[bx + _spritecache_nodes+0]
-mov  bl, byte ptr ds:[si + _spritecache_nodes+1]
+SHIFT_MACRO   shl  si 2
+mov  bh, byte ptr ds:[bx + _spritecache_nodes+0]    ; lastindex_prev
+mov  bl, byte ptr ds:[si + _spritecache_nodes+1]    ; index_next
+
+;		if (spritecache_l2_tail == lastindex){
+
 cmp  dh, byte ptr ds:[_spritecache_l2_tail]
-jne  label_20
+jne  spritecache_l2_tail_not_equal_to_lastindex
+
+;			spritecache_l2_tail = index_next;
+;			spritecache_nodes[index_next].prev = -1;
+
 mov  al, bl
 cbw 
 mov  byte ptr ds:[_spritecache_l2_tail], bl
 mov  bx, ax
-shl  bx, 2
+SHIFT_MACRO   shl  bx 2
 mov  byte ptr ds:[bx + _spritecache_nodes+0], -1
-label_21:
-mov  al, dh
-cbw 
-mov  bx, ax
-mov  al, cl
-shl  bx, 2
-cbw 
-mov  byte ptr ds:[bx + _spritecache_nodes+0], cl
-mov  bx, ax
-mov  al, dl
-shl  bx, 2
-cbw 
-mov  byte ptr ds:[bx + _spritecache_nodes+1], dh
-mov  bx, ax
-shl  bx, 2
-mov  cl, dl
-mov  byte ptr ds:[bx + _spritecache_nodes+1], -1
-label_13:
-mov  byte ptr ds:[_spritecache_l2_head], cl
-pop  si
-pop  dx
-pop  cx
-pop  bx
-ret  
-jump_to_label_17:
-jmp  label_17
-label_20:
+jmp  sprite_done_with_multi_tail_update
+jump_to_selected_sprite_page_single_page:
+jmp  selected_sprite_page_single_page
+
+spritecache_l2_tail_not_equal_to_lastindex:
+
+;			spritecache_nodes[lastindex_prev].next = index_next;
+;			spritecache_nodes[index_next].prev = lastindex_prev;
+
 mov  al, bh
 cbw 
 mov  si, ax
@@ -385,8 +416,41 @@ mov  byte ptr ds:[si + _spritecache_nodes+1], bl
 mov  si, ax
 shl  si, 2
 mov  byte ptr ds:[si + _spritecache_nodes+0], bh
-jmp  label_21
-label_17:
+
+sprite_done_with_multi_tail_update:
+
+;		spritecache_nodes[lastindex].prev = spritecache_l2_head;
+;		spritecache_nodes[spritecache_l2_head].next = lastindex;
+
+mov  al, dh
+cbw 
+mov  bx, ax
+SHIFT_MACRO    shl  bx 2
+mov  al, cl
+cbw 
+mov  byte ptr ds:[bx + _spritecache_nodes+0], cl
+mov  bx, ax
+mov  al, dl
+SHIFT_MACRO    shl  bx 2
+cbw 
+mov  byte ptr ds:[bx + _spritecache_nodes+1], dh
+mov  bx, ax
+SHIFT_MACRO    shl  bx 2
+
+;		spritecache_nodes[index].next = -1;
+;		spritecache_l2_head = index;
+
+
+mov  byte ptr ds:[_spritecache_l2_head], dl  ; write this back
+mov  byte ptr ds:[bx + _spritecache_nodes+1], -1
+mark_sprite_lru_exit:
+pop  si
+pop  dx
+pop  cx
+pop  bx
+ret  
+
+selected_sprite_page_single_page:
 mov  dh, byte ptr ds:[bx + _spritecache_nodes+1]
 mov  ch, byte ptr ds:[bx + _spritecache_nodes+0]
 cmp  dl, byte ptr ds:[_spritecache_l2_tail]
