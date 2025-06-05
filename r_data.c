@@ -61,7 +61,7 @@
 
  
 //todo: these can be inlined or made a faster algorithm later.
-
+/*
 
 void __near R_MarkL1SpriteCacheMRU(int8_t index){
 
@@ -84,6 +84,7 @@ void __near R_MarkL1SpriteCacheMRU(int8_t index){
 		return;
 	}
 }
+*/
 
 void __near R_MarkL1SpriteCacheMRU3(int8_t index){
 

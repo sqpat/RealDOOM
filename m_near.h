@@ -523,7 +523,7 @@ extern uint8_t              activenumpages[NUM_TEXTURE_L1_CACHE_PAGES];
 extern int16_t              textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES];
 extern int16_t              activespritepages[NUM_SPRITE_L1_CACHE_PAGES];
 extern uint8_t              activespritenumpages[NUM_SPRITE_L1_CACHE_PAGES];
-extern int16_t              spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
+extern int8_t               spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
 extern int8_t               spritecache_l2_head;
 extern int8_t               spritecache_l2_tail;
 extern int8_t               flatcache_l2_head;

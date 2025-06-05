@@ -27,15 +27,8 @@ EXTRN P_UpdateSpecials_:NEAR
 
 .DATA
 
-EXTRN _prndindex:BYTE
-EXTRN _setStateReturn:WORD
-EXTRN _attackrange16:WORD
-EXTRN _currentThinkerListHead:WORD
-EXTRN _paused:BYTE
-EXTRN _menuactive:BYTE
-EXTRN _demoplayback:BYTE
-EXTRN _player:WORD
-EXTRN _leveltime:DWORD
+EXTRN _spriteL1LRU:BYTE
+
 
 .CODE
 
@@ -44,61 +37,44 @@ EXTRN _leveltime:DWORD
 
  
 
-COMMENT @
 
 
 PROC R_MarkL1SpriteCacheMRU_ NEAR
 PUBLIC R_MarkL1SpriteCacheMRU_
 
 
-0x0000000000000030:  52                   push dx
-0x0000000000000031:  98                   cwde 
-0x0000000000000032:  3B 06 28 1C          cmp  ax, word ptr ds:[_sprite1LRU+0]
-0x0000000000000036:  74 12                je   0x4a
-0x0000000000000038:  3B 06 2A 1C          cmp  ax, word ptr ds:[_sprite1LRU+2]
-0x000000000000003c:  74 0E                je   0x4c
-0x000000000000003e:  3B 06 2C 1C          cmp  ax, word ptr ds:[_sprite1LRU+4]
-0x0000000000000042:  74 15                je   0x59
-0x0000000000000044:  3B 06 2E 1C          cmp  ax, word ptr ds:[_sprite1LRU+6]
-0x0000000000000048:  74 24                je   0x6e
-0x000000000000004a:  5A                   pop  dx
-0x000000000000004b:  C3                   ret  
-0x000000000000004c:  8B 16 28 1C          mov  dx, word ptr ds:[_sprite1LRU+0]
-0x0000000000000050:  89 16 2A 1C          mov  word ptr ds:[_sprite1LRU+2], dx
-0x0000000000000054:  A3 28 1C             mov  word ptr ds:[_sprite1LRU+0], ax
-0x0000000000000057:  5A                   pop  dx
-0x0000000000000058:  C3                   ret  
-0x0000000000000059:  8B 16 2A 1C          mov  dx, word ptr ds:[_sprite1LRU+2]
-0x000000000000005d:  89 16 2C 1C          mov  word ptr ds:[_sprite1LRU+4], dx
-0x0000000000000061:  8B 16 28 1C          mov  dx, word ptr ds:[_sprite1LRU+0]
-0x0000000000000065:  89 16 2A 1C          mov  word ptr ds:[_sprite1LRU+2], dx
-0x0000000000000069:  A3 28 1C             mov  word ptr ds:[_sprite1LRU+0], ax
-0x000000000000006c:  5A                   pop  dx
-0x000000000000006d:  C3                   ret  
-0x000000000000006e:  8B 16 2C 1C          mov  dx, word ptr ds:[_sprite1LRU+4]
-0x0000000000000072:  89 16 2E 1C          mov  word ptr ds:[_sprite1LRU+6], dx
-0x0000000000000076:  8B 16 2A 1C          mov  dx, word ptr ds:[_sprite1LRU+2]
-0x000000000000007a:  89 16 2C 1C          mov  word ptr ds:[_sprite1LRU+4], dx
-0x000000000000007e:  8B 16 28 1C          mov  dx, word ptr ds:[_sprite1LRU+0]
-0x0000000000000082:  89 16 2A 1C          mov  word ptr ds:[_sprite1LRU+2], dx
-0x0000000000000086:  A3 28 1C             mov  word ptr ds:[_sprite1LRU+0], ax
-0x0000000000000089:  5A                   pop  dx
-0x000000000000008a:  C3                   ret  
+mov  ah, byte ptr ds:[_spriteL1LRU+0]
+cmp  al, ah
+je   exit_markl1spritecachemru
+mov  byte ptr ds:[_spriteL1LRU+0], al
+xchg byte ptr ds:[_spriteL1LRU+1], ah
+cmp  al, ah
+je   exit_markl1spritecachemru
+xchg byte ptr ds:[_spriteL1LRU+2], ah
+cmp  al, ah
+je   exit_markl1spritecachemru
+xchg byte ptr ds:[_spriteL1LRU+3], ah
+exit_markl1spritecachemru:
+ret  
+
 
 ENDP
+
+COMMENT @
+
 
 PROC R_MarkL1SpriteCacheMRU3_ NEAR
 PUBLIC R_MarkL1SpriteCacheMRU3_
 
 0x000000000000008c:  52                   push dx
-0x000000000000008d:  8B 16 2C 1C          mov  dx, word ptr ds:[_sprite1LRU+4]
-0x0000000000000091:  89 16 2E 1C          mov  word ptr ds:[_sprite1LRU+6], dx
-0x0000000000000095:  8B 16 2A 1C          mov  dx, word ptr ds:[_sprite1LRU+2]
-0x0000000000000099:  89 16 2C 1C          mov  word ptr ds:[_sprite1LRU+4], dx
-0x000000000000009d:  8B 16 28 1C          mov  dx, word ptr ds:[_sprite1LRU+0]
-0x00000000000000a1:  98                   cwde 
-0x00000000000000a2:  89 16 2A 1C          mov  word ptr ds:[_sprite1LRU+2], dx
-0x00000000000000a6:  A3 28 1C             mov  word ptr ds:[_sprite1LRU+0], ax
+0x000000000000008d:  8B 16 2C 1C          mov  dx, word ptr ds:[_spriteL1LRU+4]
+0x0000000000000091:  89 16 2E 1C          mov  word ptr ds:[_spriteL1LRU+6], dx
+0x0000000000000095:  8B 16 2A 1C          mov  dx, word ptr ds:[_spriteL1LRU+2]
+0x0000000000000099:  89 16 2C 1C          mov  word ptr ds:[_spriteL1LRU+4], dx
+0x000000000000009d:  8B 16 28 1C          mov  dx, word ptr ds:[_spriteL1LRU+0]
+0x00000000000000a1:  98                   cbw 
+0x00000000000000a2:  89 16 2A 1C          mov  word ptr ds:[_spriteL1LRU+2], dx
+0x00000000000000a6:  A3 28 1C             mov  word ptr ds:[_spriteL1LRU+0], ax
 0x00000000000000a9:  5A                   pop  dx
 0x00000000000000aa:  C3                   ret  
 
@@ -109,7 +85,7 @@ PUBLIC R_MarkL1TextureCacheMRU_
 
 
 0x00000000000000ac:  52                   push dx
-0x00000000000000ad:  98                   cwde 
+0x00000000000000ad:  98                   cbw 
 0x00000000000000ae:  3B 06 38 1C          cmp  ax, word ptr ds:[_textureL1LRU+0]
 0x00000000000000b2:  74 2A                je   0xde
 0x00000000000000b4:  3B 06 3A 1C          cmp  ax, word ptr ds:[_textureL1LRU+2]
@@ -228,7 +204,7 @@ PUBLIC R_MarkL1TextureCacheMRU7_
 0x0000000000000211:  8B 16 3A 1C          mov  dx, word ptr ds:[_textureL1LRU+2]
 0x0000000000000215:  89 16 3C 1C          mov  word ptr ds:[_textureL1LRU+4], dx
 0x0000000000000219:  8B 16 38 1C          mov  dx, word ptr ds:[_textureL1LRU+0]
-0x000000000000021d:  98                   cwde 
+0x000000000000021d:  98                   cbw 
 0x000000000000021e:  89 16 3A 1C          mov  word ptr ds:[_textureL1LRU+2], dx
 0x0000000000000222:  A3 38 1C             mov  word ptr ds:[_textureL1LRU+0], ax
 0x0000000000000225:  5A                   pop  dx
@@ -247,14 +223,14 @@ PUBLIC R_MarkL2CompositeTextureCacheMRU_
 0x0000000000000230:  88 C2                mov  dl, al
 0x0000000000000232:  38 C8                cmp  al, cl
 0x0000000000000234:  74 50                je   0x286
-0x0000000000000236:  98                   cwde 
+0x0000000000000236:  98                   cbw 
 0x0000000000000237:  89 C3                mov  bx, ax
 0x0000000000000239:  C1 E3 02             shl  bx, 2
 0x000000000000023c:  8A 87 0A 18          mov  al, byte ptr ds:[bx + _texturecache_nodes+2]
 0x0000000000000240:  84 C0                test al, al
 0x0000000000000242:  74 1C                je   0x260
 0x0000000000000244:  88 D0                mov  al, dl
-0x0000000000000246:  98                   cwde 
+0x0000000000000246:  98                   cbw 
 0x0000000000000247:  89 C3                mov  bx, ax
 0x0000000000000249:  C1 E3 02             shl  bx, 2
 0x000000000000024c:  8A 87 0B 18          mov  al, byte ptr ds:[bx + _texturecache_nodes+3]
@@ -265,14 +241,14 @@ PUBLIC R_MarkL2CompositeTextureCacheMRU_
 0x000000000000025c:  38 CA                cmp  dl, cl
 0x000000000000025e:  74 26                je   0x286
 0x0000000000000260:  88 D0                mov  al, dl
-0x0000000000000262:  98                   cwde 
+0x0000000000000262:  98                   cbw 
 0x0000000000000263:  89 C3                mov  bx, ax
 0x0000000000000265:  C1 E3 02             shl  bx, 2
 0x0000000000000268:  80 BF 0B 18 00       cmp  byte ptr ds:[bx + _texturecache_nodes+3], 0
 0x000000000000026d:  74 70                je   0x2df
 0x000000000000026f:  88 D6                mov  dh, dl
 0x0000000000000271:  88 F0                mov  al, dh
-0x0000000000000273:  98                   cwde 
+0x0000000000000273:  98                   cbw 
 0x0000000000000274:  89 C3                mov  bx, ax
 0x0000000000000276:  C1 E3 02             shl  bx, 2
 0x0000000000000279:  80 BF 0A 18 01       cmp  byte ptr ds:[bx + _texturecache_nodes+2], 1
@@ -281,7 +257,7 @@ PUBLIC R_MarkL2CompositeTextureCacheMRU_
 0x0000000000000284:  EB EB                jmp  0x271
 0x0000000000000286:  EB 4E                jmp  0x2d6
 0x0000000000000288:  88 D0                mov  al, dl
-0x000000000000028a:  98                   cwde 
+0x000000000000028a:  98                   cbw 
 0x000000000000028b:  89 C6                mov  si, ax
 0x000000000000028d:  C1 E6 02             shl  si, 2
 0x0000000000000290:  8A BF 08 18          mov  bh, byte ptr ds:[bx + _texturecache_nodes+0]
@@ -289,22 +265,22 @@ PUBLIC R_MarkL2CompositeTextureCacheMRU_
 0x0000000000000298:  3A 36 AB 06          cmp  dh, byte ptr ds:[_texturecache_l2_tail]
 0x000000000000029c:  75 43                jne  0x2e1
 0x000000000000029e:  88 D8                mov  al, bl
-0x00000000000002a0:  98                   cwde 
+0x00000000000002a0:  98                   cbw 
 0x00000000000002a1:  88 1E AB 06          mov  byte ptr ds:[_texturecache_l2_tail], bl
 0x00000000000002a5:  89 C3                mov  bx, ax
 0x00000000000002a7:  C1 E3 02             shl  bx, 2
 0x00000000000002aa:  C6 87 08 18 FF       mov  byte ptr ds:[bx + _texturecache_nodes+0], 0xff
 0x00000000000002af:  88 F0                mov  al, dh
-0x00000000000002b1:  98                   cwde 
+0x00000000000002b1:  98                   cbw 
 0x00000000000002b2:  89 C3                mov  bx, ax
 0x00000000000002b4:  88 C8                mov  al, cl
 0x00000000000002b6:  C1 E3 02             shl  bx, 2
-0x00000000000002b9:  98                   cwde 
+0x00000000000002b9:  98                   cbw 
 0x00000000000002ba:  88 8F 08 18          mov  byte ptr ds:[bx + _texturecache_nodes+0], cl
 0x00000000000002be:  89 C3                mov  bx, ax
 0x00000000000002c0:  88 D0                mov  al, dl
 0x00000000000002c2:  C1 E3 02             shl  bx, 2
-0x00000000000002c5:  98                   cwde 
+0x00000000000002c5:  98                   cbw 
 0x00000000000002c6:  88 B7 09 18          mov  byte ptr ds:[bx + _texturecache_nodes+1], dh
 0x00000000000002ca:  89 C3                mov  bx, ax
 0x00000000000002cc:  C1 E3 02             shl  bx, 2
@@ -318,11 +294,11 @@ PUBLIC R_MarkL2CompositeTextureCacheMRU_
 0x00000000000002de:  C3                   ret  
 0x00000000000002df:  EB 1A                jmp  0x2fb
 0x00000000000002e1:  88 F8                mov  al, bh
-0x00000000000002e3:  98                   cwde 
+0x00000000000002e3:  98                   cbw 
 0x00000000000002e4:  89 C6                mov  si, ax
 0x00000000000002e6:  88 D8                mov  al, bl
 0x00000000000002e8:  C1 E6 02             shl  si, 2
-0x00000000000002eb:  98                   cwde 
+0x00000000000002eb:  98                   cbw 
 0x00000000000002ec:  88 9C 09 18          mov  byte ptr ds:[si + _texturecache_nodes+1], bl
 0x00000000000002f0:  89 C6                mov  si, ax
 0x00000000000002f2:  C1 E6 02             shl  si, 2
@@ -334,17 +310,17 @@ PUBLIC R_MarkL2CompositeTextureCacheMRU_
 0x0000000000000307:  75 38                jne  0x341
 0x0000000000000309:  88 36 AB 06          mov  byte ptr ds:[_texturecache_l2_tail], dh
 0x000000000000030d:  88 F0                mov  al, dh
-0x000000000000030f:  98                   cwde 
+0x000000000000030f:  98                   cbw 
 0x0000000000000310:  89 C3                mov  bx, ax
 0x0000000000000312:  88 D0                mov  al, dl
 0x0000000000000314:  C1 E3 02             shl  bx, 2
-0x0000000000000317:  98                   cwde 
+0x0000000000000317:  98                   cbw 
 0x0000000000000318:  88 AF 08 18          mov  byte ptr ds:[bx + _texturecache_nodes+0], ch
 0x000000000000031c:  89 C3                mov  bx, ax
 0x000000000000031e:  C1 E3 02             shl  bx, 2
 0x0000000000000321:  88 C8                mov  al, cl
 0x0000000000000323:  C6 87 09 18 FF       mov  byte ptr ds:[bx + _texturecache_nodes+1], 0xff
-0x0000000000000328:  98                   cwde 
+0x0000000000000328:  98                   cbw 
 0x0000000000000329:  88 8F 08 18          mov  byte ptr ds:[bx + _texturecache_nodes+0], cl
 0x000000000000032d:  89 C3                mov  bx, ax
 0x000000000000032f:  C1 E3 02             shl  bx, 2
@@ -357,7 +333,7 @@ PUBLIC R_MarkL2CompositeTextureCacheMRU_
 0x000000000000033f:  5B                   pop  bx
 0x0000000000000340:  C3                   ret  
 0x0000000000000341:  88 E8                mov  al, ch
-0x0000000000000343:  98                   cwde 
+0x0000000000000343:  98                   cbw 
 0x0000000000000344:  89 C3                mov  bx, ax
 0x0000000000000346:  C1 E3 02             shl  bx, 2
 0x0000000000000349:  88 B7 09 18          mov  byte ptr ds:[bx + _texturecache_nodes+1], dh
@@ -377,14 +353,14 @@ PUBLIC R_MarkL2SpriteCacheMRU_
 0x0000000000000358:  88 C2                mov  dl, al
 0x000000000000035a:  38 C8                cmp  al, cl
 0x000000000000035c:  74 50                je   0x3ae
-0x000000000000035e:  98                   cwde 
+0x000000000000035e:  98                   cbw 
 0x000000000000035f:  89 C3                mov  bx, ax
 0x0000000000000361:  C1 E3 02             shl  bx, 2
 0x0000000000000364:  8A 87 6A 18          mov  al, byte ptr ds:[bx + _spritecache_nodes+2]
 0x0000000000000368:  84 C0                test al, al
 0x000000000000036a:  74 1C                je   0x388
 0x000000000000036c:  88 D0                mov  al, dl
-0x000000000000036e:  98                   cwde 
+0x000000000000036e:  98                   cbw 
 0x000000000000036f:  89 C3                mov  bx, ax
 0x0000000000000371:  C1 E3 02             shl  bx, 2
 0x0000000000000374:  8A 87 6B 18          mov  al, byte ptr ds:[bx + _spritecache_nodes+2]
@@ -395,14 +371,14 @@ PUBLIC R_MarkL2SpriteCacheMRU_
 0x0000000000000384:  38 CA                cmp  dl, cl
 0x0000000000000386:  74 26                je   0x3ae
 0x0000000000000388:  88 D0                mov  al, dl
-0x000000000000038a:  98                   cwde 
+0x000000000000038a:  98                   cbw 
 0x000000000000038b:  89 C3                mov  bx, ax
 0x000000000000038d:  C1 E3 02             shl  bx, 2
 0x0000000000000390:  80 BF 6B 18 00       cmp  byte ptr ds:[bx + _spritecache_nodes+3], 0
 0x0000000000000395:  74 70                je   0x407
 0x0000000000000397:  88 D6                mov  dh, dl
 0x0000000000000399:  88 F0                mov  al, dh
-0x000000000000039b:  98                   cwde 
+0x000000000000039b:  98                   cbw 
 0x000000000000039c:  89 C3                mov  bx, ax
 0x000000000000039e:  C1 E3 02             shl  bx, 2
 0x00000000000003a1:  80 BF 6A 18 01       cmp  byte ptr ds:[bx + _spritecache_nodes+2], 1
@@ -411,7 +387,7 @@ PUBLIC R_MarkL2SpriteCacheMRU_
 0x00000000000003ac:  EB EB                jmp  0x399
 0x00000000000003ae:  EB 4E                jmp  0x3fe
 0x00000000000003b0:  88 D0                mov  al, dl
-0x00000000000003b2:  98                   cwde 
+0x00000000000003b2:  98                   cbw 
 0x00000000000003b3:  89 C6                mov  si, ax
 0x00000000000003b5:  C1 E6 02             shl  si, 2
 0x00000000000003b8:  8A BF 68 18          mov  bh, byte ptr ds[bx + _spritecache_nodes+0]
@@ -419,22 +395,22 @@ PUBLIC R_MarkL2SpriteCacheMRU_
 0x00000000000003c0:  3A 36 A7 06          cmp  dh, byte ptr ds:[_spritecache_l2_tail]
 0x00000000000003c4:  75 43                jne  0x409
 0x00000000000003c6:  88 D8                mov  al, bl
-0x00000000000003c8:  98                   cwde 
+0x00000000000003c8:  98                   cbw 
 0x00000000000003c9:  88 1E A7 06          mov  byte ptr ds:[_spritecache_l2_tail], bl
 0x00000000000003cd:  89 C3                mov  bx, ax
 0x00000000000003cf:  C1 E3 02             shl  bx, 2
 0x00000000000003d2:  C6 87 68 18 FF       mov  byte ptr ds:[bx + _spritecache_nodes+0], 0xff
 0x00000000000003d7:  88 F0                mov  al, dh
-0x00000000000003d9:  98                   cwde 
+0x00000000000003d9:  98                   cbw 
 0x00000000000003da:  89 C3                mov  bx, ax
 0x00000000000003dc:  88 C8                mov  al, cl
 0x00000000000003de:  C1 E3 02             shl  bx, 2
-0x00000000000003e1:  98                   cwde 
+0x00000000000003e1:  98                   cbw 
 0x00000000000003e2:  88 8F 68 18          mov  byte ptr ds:[bx + _spritecache_nodes+0], cl
 0x00000000000003e6:  89 C3                mov  bx, ax
 0x00000000000003e8:  88 D0                mov  al, dl
 0x00000000000003ea:  C1 E3 02             shl  bx, 2
-0x00000000000003ed:  98                   cwde 
+0x00000000000003ed:  98                   cbw 
 0x00000000000003ee:  88 B7 69 18          mov  byte ptr ds:[bx + _spritecache_nodes+1], dh
 0x00000000000003f2:  89 C3                mov  bx, ax
 0x00000000000003f4:  C1 E3 02             shl  bx, 2
@@ -448,11 +424,11 @@ PUBLIC R_MarkL2SpriteCacheMRU_
 0x0000000000000406:  C3                   ret  
 0x0000000000000407:  EB 1A                jmp  0x423
 0x0000000000000409:  88 F8                mov  al, bh
-0x000000000000040b:  98                   cwde 
+0x000000000000040b:  98                   cbw 
 0x000000000000040c:  89 C6                mov  si, ax
 0x000000000000040e:  88 D8                mov  al, bl
 0x0000000000000410:  C1 E6 02             shl  si, 2
-0x0000000000000413:  98                   cwde 
+0x0000000000000413:  98                   cbw 
 0x0000000000000414:  88 9C 69 18          mov  byte ptr ds:[si + _spritecache_nodes+1], bl
 0x0000000000000418:  89 C6                mov  si, ax
 0x000000000000041a:  C1 E6 02             shl  si, 2
@@ -464,17 +440,17 @@ PUBLIC R_MarkL2SpriteCacheMRU_
 0x000000000000042f:  75 38                jne  0x469
 0x0000000000000431:  88 36 A7 06          mov  byte ptr ds:[_spritecache_l2_tail], dh
 0x0000000000000435:  88 F0                mov  al, dh
-0x0000000000000437:  98                   cwde 
+0x0000000000000437:  98                   cbw 
 0x0000000000000438:  89 C3                mov  bx, ax
 0x000000000000043a:  88 D0                mov  al, dl
 0x000000000000043c:  C1 E3 02             shl  bx, 2
-0x000000000000043f:  98                   cwde 
+0x000000000000043f:  98                   cbw 
 0x0000000000000440:  88 AF 68 18          mov  byte ptr ds:[bx + _spritecache_nodes+0], ch
 0x0000000000000444:  89 C3                mov  bx, ax
 0x0000000000000446:  C1 E3 02             shl  bx, 2
 0x0000000000000449:  88 C8                mov  al, cl
 0x000000000000044b:  C6 87 69 18 FF       mov  byte ptr ds:[bx + _spritecache_nodes+1], 0xff
-0x0000000000000450:  98                   cwde 
+0x0000000000000450:  98                   cbw 
 0x0000000000000451:  88 8F 68 18          mov  byte ptr ds:[bx + _spritecache_nodes+0], cl
 0x0000000000000455:  89 C3                mov  bx, ax
 0x0000000000000457:  C1 E3 02             shl  bx, 2
@@ -487,7 +463,7 @@ PUBLIC R_MarkL2SpriteCacheMRU_
 0x0000000000000467:  5B                   pop  bx
 0x0000000000000468:  C3                   ret  
 0x0000000000000469:  88 E8                mov  al, ch
-0x000000000000046b:  98                   cwde 
+0x000000000000046b:  98                   cbw 
 0x000000000000046c:  89 C3                mov  bx, ax
 0x000000000000046e:  C1 E3 02             shl  bx, 2
 0x0000000000000471:  88 B7 69 18          mov  byte ptr ds:[bx + _spritecache_nodes+1], dh

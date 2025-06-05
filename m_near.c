@@ -239,7 +239,7 @@ int16_t textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES];
 
 int16_t activespritepages[NUM_SPRITE_L1_CACHE_PAGES]; // always gets reset to defaults at start of frame
 uint8_t activespritenumpages[NUM_SPRITE_L1_CACHE_PAGES]; // always gets reset to defaults at start of frame
-int16_t spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
+int8_t  spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
 
 int8_t spritecache_l2_head = -1;
 int8_t spritecache_l2_tail = -1;
