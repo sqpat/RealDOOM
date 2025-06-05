@@ -28,6 +28,7 @@ EXTRN P_UpdateSpecials_:NEAR
 .DATA
 
 EXTRN _spriteL1LRU:BYTE
+EXTRN _textureL1LRU:BYTE
 
 
 .CODE
@@ -74,140 +75,59 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC R_MarkL1TextureCacheMRU_ NEAR
 PUBLIC R_MarkL1TextureCacheMRU_
 
 
-0x00000000000000ac:  52                   push dx
-0x00000000000000ad:  98                   cbw 
-0x00000000000000ae:  3B 06 38 1C          cmp  ax, word ptr ds:[_textureL1LRU+0]
-0x00000000000000b2:  74 2A                je   0xde
-0x00000000000000b4:  3B 06 3A 1C          cmp  ax, word ptr ds:[_textureL1LRU+2]
-0x00000000000000b8:  74 26                je   0xe0
-0x00000000000000ba:  3B 06 3C 1C          cmp  ax, word ptr ds:[_textureL1LRU+4]
-0x00000000000000be:  74 2D                je   0xed
-0x00000000000000c0:  3B 06 3E 1C          cmp  ax, word ptr ds:[_textureL1LRU+6]
-0x00000000000000c4:  74 3C                je   0x102
-0x00000000000000c6:  3B 06 40 1C          cmp  ax, word ptr ds:[_textureL1LRU+8]
-0x00000000000000ca:  74 53                je   0x11f
-0x00000000000000cc:  3B 06 42 1C          cmp  ax, word ptr ds:[_textureL1LRU+0Ah]
-0x00000000000000d0:  74 76                je   0x148
-0x00000000000000d2:  3B 06 44 1C          cmp  ax, word ptr ds:[_textureL1LRU+0Ch]
-0x00000000000000d6:  74 6C                je   0x144
-0x00000000000000d8:  3B 06 46 1C          cmp  ax, word ptr ds:[_textureL1LRU+0Eh]
-0x00000000000000dc:  74 68                je   0x146
-0x00000000000000de:  5A                   pop  dx
-0x00000000000000df:  C3                   ret  
-0x00000000000000e0:  8B 16 38 1C          mov  dx, word ptr ds:[_textureL1LRU+0]
-0x00000000000000e4:  89 16 3A 1C          mov  word ptr ds:[_textureL1LRU+2], dx
-0x00000000000000e8:  A3 38 1C             mov  word ptr ds:[_textureL1LRU+0], ax
-0x00000000000000eb:  5A                   pop  dx
-0x00000000000000ec:  C3                   ret  
-0x00000000000000ed:  8B 16 3A 1C          mov  dx, word ptr ds:[_textureL1LRU+2]
-0x00000000000000f1:  89 16 3C 1C          mov  word ptr ds:[_textureL1LRU+4], dx
-0x00000000000000f5:  8B 16 38 1C          mov  dx, word ptr ds:[_textureL1LRU+0]
-0x00000000000000f9:  89 16 3A 1C          mov  word ptr ds:[_textureL1LRU+2], dx
-0x00000000000000fd:  A3 38 1C             mov  word ptr ds:[_textureL1LRU+0], ax
-0x0000000000000100:  5A                   pop  dx
-0x0000000000000101:  C3                   ret  
-0x0000000000000102:  8B 16 3C 1C          mov  dx, word ptr ds:[_textureL1LRU+4]
-0x0000000000000106:  89 16 3E 1C          mov  word ptr ds:[_textureL1LRU+6], dx
-0x000000000000010a:  8B 16 3A 1C          mov  dx, word ptr ds:[_textureL1LRU+2]
-0x000000000000010e:  89 16 3C 1C          mov  word ptr ds:[_textureL1LRU+4], dx
-0x0000000000000112:  8B 16 38 1C          mov  dx, word ptr ds:[_textureL1LRU+0]
-0x0000000000000116:  89 16 3A 1C          mov  word ptr ds:[_textureL1LRU+2], dx
-0x000000000000011a:  A3 38 1C             mov  word ptr ds:[_textureL1LRU+0], ax
-0x000000000000011d:  5A                   pop  dx
-0x000000000000011e:  C3                   ret  
-0x000000000000011f:  8B 16 3E 1C          mov  dx, word ptr ds:[_textureL1LRU+6]
-0x0000000000000123:  89 16 40 1C          mov  word ptr ds:[_textureL1LRU+8], dx
-0x0000000000000127:  8B 16 3C 1C          mov  dx, word ptr ds:[_textureL1LRU+4]
-0x000000000000012b:  89 16 3E 1C          mov  word ptr ds:[_textureL1LRU+6], dx
-0x000000000000012f:  8B 16 3A 1C          mov  dx, word ptr ds:[_textureL1LRU+2]
-0x0000000000000133:  89 16 3C 1C          mov  word ptr ds:[_textureL1LRU+4], dx
-0x0000000000000137:  8B 16 38 1C          mov  dx, word ptr ds:[_textureL1LRU+0]
-0x000000000000013b:  89 16 3A 1C          mov  word ptr ds:[_textureL1LRU+2], dx
-0x000000000000013f:  A3 38 1C             mov  word ptr ds:[_textureL1LRU+0], ax
-0x0000000000000142:  5A                   pop  dx
-0x0000000000000143:  C3                   ret  
-0x0000000000000144:  EB 2F                jmp  0x175
-0x0000000000000146:  EB 62                jmp  0x1aa
-0x0000000000000148:  8B 16 40 1C          mov  dx, word ptr ds:[_textureL1LRU+8]
-0x000000000000014c:  89 16 42 1C          mov  word ptr ds:[_textureL1LRU+0Ah], dx
-0x0000000000000150:  8B 16 3E 1C          mov  dx, word ptr ds:[_textureL1LRU+6]
-0x0000000000000154:  89 16 40 1C          mov  word ptr ds:[_textureL1LRU+8], dx
-0x0000000000000158:  8B 16 3C 1C          mov  dx, word ptr ds:[_textureL1LRU+4]
-0x000000000000015c:  89 16 3E 1C          mov  word ptr ds:[_textureL1LRU+6], dx
-0x0000000000000160:  8B 16 3A 1C          mov  dx, word ptr ds:[_textureL1LRU+2]
-0x0000000000000164:  89 16 3C 1C          mov  word ptr ds:[_textureL1LRU+4], dx
-0x0000000000000168:  8B 16 38 1C          mov  dx, word ptr ds:[_textureL1LRU+0]
-0x000000000000016c:  89 16 3A 1C          mov  word ptr ds:[_textureL1LRU+2], dx
-0x0000000000000170:  A3 38 1C             mov  word ptr ds:[_textureL1LRU+0], ax
-0x0000000000000173:  5A                   pop  dx
-0x0000000000000174:  C3                   ret  
-0x0000000000000175:  8B 16 42 1C          mov  dx, word ptr ds:[_textureL1LRU+0Ah]
-0x0000000000000179:  89 16 44 1C          mov  word ptr ds:[_textureL1LRU+0Ch], dx
-0x000000000000017d:  8B 16 40 1C          mov  dx, word ptr ds:[_textureL1LRU+8]
-0x0000000000000181:  89 16 42 1C          mov  word ptr ds:[_textureL1LRU+0Ah], dx
-0x0000000000000185:  8B 16 3E 1C          mov  dx, word ptr ds:[_textureL1LRU+6]
-0x0000000000000189:  89 16 40 1C          mov  word ptr ds:[_textureL1LRU+8], dx
-0x000000000000018d:  8B 16 3C 1C          mov  dx, word ptr ds:[_textureL1LRU+4]
-0x0000000000000191:  89 16 3E 1C          mov  word ptr ds:[_textureL1LRU+6], dx
-0x0000000000000195:  8B 16 3A 1C          mov  dx, word ptr ds:[_textureL1LRU+2]
-0x0000000000000199:  89 16 3C 1C          mov  word ptr ds:[_textureL1LRU+4], dx
-0x000000000000019d:  8B 16 38 1C          mov  dx, word ptr ds:[_textureL1LRU+0]
-0x00000000000001a1:  89 16 3A 1C          mov  word ptr ds:[_textureL1LRU+2], dx
-0x00000000000001a5:  A3 38 1C             mov  word ptr ds:[_textureL1LRU+0], ax
-0x00000000000001a8:  5A                   pop  dx
-0x00000000000001a9:  C3                   ret  
-0x00000000000001aa:  8B 16 44 1C          mov  dx, word ptr ds:[_textureL1LRU+0Ch]
-0x00000000000001ae:  89 16 46 1C          mov  word ptr ds:[_textureL1LRU+0Eh], dx
-0x00000000000001b2:  8B 16 42 1C          mov  dx, word ptr ds:[_textureL1LRU+0Ah]
-0x00000000000001b6:  89 16 44 1C          mov  word ptr ds:[_textureL1LRU+0Ch], dx
-0x00000000000001ba:  8B 16 40 1C          mov  dx, word ptr ds:[_textureL1LRU+8]
-0x00000000000001be:  89 16 42 1C          mov  word ptr ds:[_textureL1LRU+0Ah], dx
-0x00000000000001c2:  8B 16 3E 1C          mov  dx, word ptr ds:[_textureL1LRU+6]
-0x00000000000001c6:  89 16 40 1C          mov  word ptr ds:[_textureL1LRU+8], dx
-0x00000000000001ca:  8B 16 3C 1C          mov  dx, word ptr ds:[_textureL1LRU+4]
-0x00000000000001ce:  89 16 3E 1C          mov  word ptr ds:[_textureL1LRU+6], dx
-0x00000000000001d2:  8B 16 3A 1C          mov  dx, word ptr ds:[_textureL1LRU+2]
-0x00000000000001d6:  89 16 3C 1C          mov  word ptr ds:[_textureL1LRU+4], dx
-0x00000000000001da:  8B 16 38 1C          mov  dx, word ptr ds:[_textureL1LRU+0]
-0x00000000000001de:  89 16 3A 1C          mov  word ptr ds:[_textureL1LRU+2], dx
-0x00000000000001e2:  A3 38 1C             mov  word ptr ds:[_textureL1LRU+0], ax
-0x00000000000001e5:  5A                   pop  dx
-0x00000000000001e6:  C3                   ret  
+mov  ah, byte ptr ds:[_textureL1LRU+0]
+cmp  al, ah
+je   exit_markl1texturecachemru
+mov  byte ptr ds:[_textureL1LRU+0], al
+xchg byte ptr ds:[_textureL1LRU+1], ah
+cmp  al, ah
+je   exit_markl1texturecachemru
+xchg byte ptr ds:[_textureL1LRU+2], ah
+cmp  al, ah
+je   exit_markl1texturecachemru
+xchg byte ptr ds:[_textureL1LRU+3], ah
+cmp  al, ah
+je   exit_markl1texturecachemru
+xchg byte ptr ds:[_textureL1LRU+4], ah
+cmp  al, ah
+je   exit_markl1texturecachemru
+xchg byte ptr ds:[_textureL1LRU+5], ah
+cmp  al, ah
+je   exit_markl1texturecachemru
+xchg byte ptr ds:[_textureL1LRU+6], ah
+cmp  al, ah
+je   exit_markl1texturecachemru
+xchg byte ptr ds:[_textureL1LRU+7], ah
+
+exit_markl1texturecachemru:
+ret  
 
 ENDP
 
-PROC R_MarkL1TextureCacheMRU7_ NEAR
-PUBLIC R_MarkL1TextureCacheMRU7_
 
 
-0x00000000000001e8:  52                   push dx
-0x00000000000001e9:  8B 16 44 1C          mov  dx, word ptr ds:[_textureL1LRU+0Ch]
-0x00000000000001ed:  89 16 46 1C          mov  word ptr ds:[_textureL1LRU+0Eh], dx
-0x00000000000001f1:  8B 16 42 1C          mov  dx, word ptr ds:[_textureL1LRU+0Ah]
-0x00000000000001f5:  89 16 44 1C          mov  word ptr ds:[_textureL1LRU+0Ch], dx
-0x00000000000001f9:  8B 16 40 1C          mov  dx, word ptr ds:[_textureL1LRU+8]
-0x00000000000001fd:  89 16 42 1C          mov  word ptr ds:[_textureL1LRU+0Ah], dx
-0x0000000000000201:  8B 16 3E 1C          mov  dx, word ptr ds:[_textureL1LRU+6]
-0x0000000000000205:  89 16 40 1C          mov  word ptr ds:[_textureL1LRU+8], dx
-0x0000000000000209:  8B 16 3C 1C          mov  dx, word ptr ds:[_textureL1LRU+4]
-0x000000000000020d:  89 16 3E 1C          mov  word ptr ds:[_textureL1LRU+6], dx
-0x0000000000000211:  8B 16 3A 1C          mov  dx, word ptr ds:[_textureL1LRU+2]
-0x0000000000000215:  89 16 3C 1C          mov  word ptr ds:[_textureL1LRU+4], dx
-0x0000000000000219:  8B 16 38 1C          mov  dx, word ptr ds:[_textureL1LRU+0]
-0x000000000000021d:  98                   cbw 
-0x000000000000021e:  89 16 3A 1C          mov  word ptr ds:[_textureL1LRU+2], dx
-0x0000000000000222:  A3 38 1C             mov  word ptr ds:[_textureL1LRU+0], ax
-0x0000000000000225:  5A                   pop  dx
-0x0000000000000226:  C3                   ret  
+PROC R_MarkL1TextureCacheMRU72_ NEAR
+PUBLIC R_MarkL1TextureCacheMRU72_
+
+
+push word ptr ds:[_textureL1LRU+5]     ; grab [5] and [6]
+pop  word ptr ds:[_textureL1LRU+6]     ; put in [6] and [7]
+push word ptr ds:[_textureL1LRU+3]     ; grab [3] and [4]
+pop  word ptr ds:[_textureL1LRU+4]     ; put in [4] and [5]
+push word ptr ds:[_textureL1LRU+1]     ; grab [1] and [2]
+pop  word ptr ds:[_textureL1LRU+2]     ; put in [2] and [3]
+xchg al, byte ptr ds:[_textureL1LRU+0] ; swap index for [0]
+mov  byte ptr ds:[_textureL1LRU+1], al ; put [0] in [1]
 
 ENDP
+
+COMMENT @
 
 PROC R_MarkL2CompositeTextureCacheMRU_ NEAR
 PUBLIC R_MarkL2CompositeTextureCacheMRU_

@@ -100,6 +100,10 @@ void __near R_MarkL1SpriteCacheMRU3(int8_t index){
 */
 
 //todo make this work as a jump table in asm like a switch block fall thru thing.
+
+void __near R_MarkL1TextureCacheMRU(int8_t index);
+
+/*
 void __near R_MarkL1TextureCacheMRU(int8_t index){
 	
 	if (textureL1LRU[0] == index){
@@ -152,6 +156,11 @@ void __near R_MarkL1TextureCacheMRU(int8_t index){
 	}
 
 }
+*/
+
+void __near R_MarkL1TextureCacheMRU7(int8_t index);
+
+
 
 void __near R_MarkL1TextureCacheMRU7(int8_t index){
 	//todo: make this function live in the above in the asm.
