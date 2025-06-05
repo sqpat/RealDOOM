@@ -112,18 +112,23 @@ ENDP
 
 
 
-PROC R_MarkL1TextureCacheMRU72_ NEAR
-PUBLIC R_MarkL1TextureCacheMRU72_
+PROC R_MarkL1TextureCacheMRU7_ NEAR
+PUBLIC R_MarkL1TextureCacheMRU7_
 
 
 push word ptr ds:[_textureL1LRU+5]     ; grab [5] and [6]
 pop  word ptr ds:[_textureL1LRU+6]     ; put in [6] and [7]
+
 push word ptr ds:[_textureL1LRU+3]     ; grab [3] and [4]
 pop  word ptr ds:[_textureL1LRU+4]     ; put in [4] and [5]
+
 push word ptr ds:[_textureL1LRU+1]     ; grab [1] and [2]
 pop  word ptr ds:[_textureL1LRU+2]     ; put in [2] and [3]
+
 xchg al, byte ptr ds:[_textureL1LRU+0] ; swap index for [0]
 mov  byte ptr ds:[_textureL1LRU+1], al ; put [0] in [1]
+
+ret
 
 ENDP
 

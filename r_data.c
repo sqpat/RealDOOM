@@ -160,7 +160,7 @@ void __near R_MarkL1TextureCacheMRU(int8_t index){
 
 void __near R_MarkL1TextureCacheMRU7(int8_t index);
 
-
+/*
 
 void __near R_MarkL1TextureCacheMRU7(int8_t index){
 	//todo: make this function live in the above in the asm.
@@ -175,6 +175,7 @@ void __near R_MarkL1TextureCacheMRU7(int8_t index){
 	return;
 
 }
+*/
 
 
 
