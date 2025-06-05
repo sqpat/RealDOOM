@@ -1128,6 +1128,10 @@ void __near checkpatchcache(int8_t id){
 */
 
 
+void __near R_MarkL2CompositeTextureCacheMRU(int8_t index) ;
+
+/*
+
 void __near R_MarkL2CompositeTextureCacheMRU(int8_t index) {
 
  
@@ -1241,8 +1245,12 @@ void __near R_MarkL2CompositeTextureCacheMRU(int8_t index) {
 
 
 }
+*/
 
 
+void __near R_MarkL2SpriteCacheMRU(int8_t index) ;
+
+/*
 
 void __near R_MarkL2SpriteCacheMRU(int8_t index) {
 
@@ -1347,6 +1355,7 @@ void __near R_MarkL2SpriteCacheMRU(int8_t index) {
 
 }
 
+*/
 
 // note: numpages is 1-4, not 0-3 here.
 // this function needs to always leave the cache in a workable state...

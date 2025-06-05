@@ -29,6 +29,12 @@ EXTRN P_UpdateSpecials_:NEAR
 
 EXTRN _spriteL1LRU:BYTE
 EXTRN _textureL1LRU:BYTE
+EXTRN _spritecache_nodes:BYTE
+EXTRN _spritecache_l2_head:BYTE
+EXTRN _spritecache_l2_tail:BYTE
+EXTRN _texturecache_nodes:BYTE
+EXTRN _texturecache_l2_head:BYTE
+EXTRN _texturecache_l2_tail:BYTE
 
 
 .CODE
@@ -132,267 +138,295 @@ ret
 
 ENDP
 
-COMMENT @
 
 PROC R_MarkL2CompositeTextureCacheMRU_ NEAR
 PUBLIC R_MarkL2CompositeTextureCacheMRU_
 
-0x0000000000000228:  53                   push bx
-0x0000000000000229:  51                   push cx
-0x000000000000022a:  52                   push dx
-0x000000000000022b:  56                   push si
-0x000000000000022c:  8A 0E AA 06          mov  cl, byte ptr ds:[_texturecache_l2_head]
-0x0000000000000230:  88 C2                mov  dl, al
-0x0000000000000232:  38 C8                cmp  al, cl
-0x0000000000000234:  74 50                je   0x286
-0x0000000000000236:  98                   cbw 
-0x0000000000000237:  89 C3                mov  bx, ax
-0x0000000000000239:  C1 E3 02             shl  bx, 2
-0x000000000000023c:  8A 87 0A 18          mov  al, byte ptr ds:[bx + _texturecache_nodes+2]
-0x0000000000000240:  84 C0                test al, al
-0x0000000000000242:  74 1C                je   0x260
-0x0000000000000244:  88 D0                mov  al, dl
-0x0000000000000246:  98                   cbw 
-0x0000000000000247:  89 C3                mov  bx, ax
-0x0000000000000249:  C1 E3 02             shl  bx, 2
-0x000000000000024c:  8A 87 0B 18          mov  al, byte ptr ds:[bx + _texturecache_nodes+3]
-0x0000000000000250:  3A 87 0A 18          cmp  al, byte ptr ds:[bx + _texturecache_nodes+2]
-0x0000000000000254:  74 06                je   0x25c
-0x0000000000000256:  8A 97 09 18          mov  dl, byte ptr ss[bx + _texturecache_nodes+1]
-0x000000000000025a:  EB E8                jmp  0x244
-0x000000000000025c:  38 CA                cmp  dl, cl
-0x000000000000025e:  74 26                je   0x286
-0x0000000000000260:  88 D0                mov  al, dl
-0x0000000000000262:  98                   cbw 
-0x0000000000000263:  89 C3                mov  bx, ax
-0x0000000000000265:  C1 E3 02             shl  bx, 2
-0x0000000000000268:  80 BF 0B 18 00       cmp  byte ptr ds:[bx + _texturecache_nodes+3], 0
-0x000000000000026d:  74 70                je   0x2df
-0x000000000000026f:  88 D6                mov  dh, dl
-0x0000000000000271:  88 F0                mov  al, dh
-0x0000000000000273:  98                   cbw 
-0x0000000000000274:  89 C3                mov  bx, ax
-0x0000000000000276:  C1 E3 02             shl  bx, 2
-0x0000000000000279:  80 BF 0A 18 01       cmp  byte ptr ds:[bx + _texturecache_nodes+2], 1
-0x000000000000027e:  74 08                je   0x288
-0x0000000000000280:  8A B7 08 18          mov  dh, byte ptr ds:[bx + _texturecache_nodes+0]
-0x0000000000000284:  EB EB                jmp  0x271
-0x0000000000000286:  EB 4E                jmp  0x2d6
-0x0000000000000288:  88 D0                mov  al, dl
-0x000000000000028a:  98                   cbw 
-0x000000000000028b:  89 C6                mov  si, ax
-0x000000000000028d:  C1 E6 02             shl  si, 2
-0x0000000000000290:  8A BF 08 18          mov  bh, byte ptr ds:[bx + _texturecache_nodes+0]
-0x0000000000000294:  8A 9C 09 18          mov  bl, byte ptr ds:[si + _texturecache_nodes+1]
-0x0000000000000298:  3A 36 AB 06          cmp  dh, byte ptr ds:[_texturecache_l2_tail]
-0x000000000000029c:  75 43                jne  0x2e1
-0x000000000000029e:  88 D8                mov  al, bl
-0x00000000000002a0:  98                   cbw 
-0x00000000000002a1:  88 1E AB 06          mov  byte ptr ds:[_texturecache_l2_tail], bl
-0x00000000000002a5:  89 C3                mov  bx, ax
-0x00000000000002a7:  C1 E3 02             shl  bx, 2
-0x00000000000002aa:  C6 87 08 18 FF       mov  byte ptr ds:[bx + _texturecache_nodes+0], 0xff
-0x00000000000002af:  88 F0                mov  al, dh
-0x00000000000002b1:  98                   cbw 
-0x00000000000002b2:  89 C3                mov  bx, ax
-0x00000000000002b4:  88 C8                mov  al, cl
-0x00000000000002b6:  C1 E3 02             shl  bx, 2
-0x00000000000002b9:  98                   cbw 
-0x00000000000002ba:  88 8F 08 18          mov  byte ptr ds:[bx + _texturecache_nodes+0], cl
-0x00000000000002be:  89 C3                mov  bx, ax
-0x00000000000002c0:  88 D0                mov  al, dl
-0x00000000000002c2:  C1 E3 02             shl  bx, 2
-0x00000000000002c5:  98                   cbw 
-0x00000000000002c6:  88 B7 09 18          mov  byte ptr ds:[bx + _texturecache_nodes+1], dh
-0x00000000000002ca:  89 C3                mov  bx, ax
-0x00000000000002cc:  C1 E3 02             shl  bx, 2
-0x00000000000002cf:  88 D1                mov  cl, dl
-0x00000000000002d1:  C6 87 09 18 FF       mov  byte ptr ds:[bx + _texturecache_nodes+1], 0xff
-0x00000000000002d6:  88 0E AA 06          mov  byte ptr ds:[_texturecache_l2_head], cl
-0x00000000000002da:  5E                   pop  si
-0x00000000000002db:  5A                   pop  dx
-0x00000000000002dc:  59                   pop  cx
-0x00000000000002dd:  5B                   pop  bx
-0x00000000000002de:  C3                   ret  
-0x00000000000002df:  EB 1A                jmp  0x2fb
-0x00000000000002e1:  88 F8                mov  al, bh
-0x00000000000002e3:  98                   cbw 
-0x00000000000002e4:  89 C6                mov  si, ax
-0x00000000000002e6:  88 D8                mov  al, bl
-0x00000000000002e8:  C1 E6 02             shl  si, 2
-0x00000000000002eb:  98                   cbw 
-0x00000000000002ec:  88 9C 09 18          mov  byte ptr ds:[si + _texturecache_nodes+1], bl
-0x00000000000002f0:  89 C6                mov  si, ax
-0x00000000000002f2:  C1 E6 02             shl  si, 2
-0x00000000000002f5:  88 BC 08 18          mov  byte ptr ds:[si + _texturecache_nodes+0], bh
-0x00000000000002f9:  EB B4                jmp  0x2af
-0x00000000000002fb:  8A B7 09 18          mov  dh, byte ptr ds:[bx + _texturecache_nodes+1]
-0x00000000000002ff:  8A AF 08 18          mov  ch, byte ptr ds:[bx + _texturecache_nodes+0]
-0x0000000000000303:  3A 16 AB 06          cmp  dl, byte ptr ds:[_texturecache_l2_tail]
-0x0000000000000307:  75 38                jne  0x341
-0x0000000000000309:  88 36 AB 06          mov  byte ptr ds:[_texturecache_l2_tail], dh
-0x000000000000030d:  88 F0                mov  al, dh
-0x000000000000030f:  98                   cbw 
-0x0000000000000310:  89 C3                mov  bx, ax
-0x0000000000000312:  88 D0                mov  al, dl
-0x0000000000000314:  C1 E3 02             shl  bx, 2
-0x0000000000000317:  98                   cbw 
-0x0000000000000318:  88 AF 08 18          mov  byte ptr ds:[bx + _texturecache_nodes+0], ch
-0x000000000000031c:  89 C3                mov  bx, ax
-0x000000000000031e:  C1 E3 02             shl  bx, 2
-0x0000000000000321:  88 C8                mov  al, cl
-0x0000000000000323:  C6 87 09 18 FF       mov  byte ptr ds:[bx + _texturecache_nodes+1], 0xff
-0x0000000000000328:  98                   cbw 
-0x0000000000000329:  88 8F 08 18          mov  byte ptr ds:[bx + _texturecache_nodes+0], cl
-0x000000000000032d:  89 C3                mov  bx, ax
-0x000000000000032f:  C1 E3 02             shl  bx, 2
-0x0000000000000332:  88 D1                mov  cl, dl
-0x0000000000000334:  88 97 09 18          mov  byte ptr ds:[bx + _texturecache_nodes+1], dl
-0x0000000000000338:  88 0E AA 06          mov  byte ptr ds:[_texturecache_l2_head], cl
-0x000000000000033c:  5E                   pop  si
-0x000000000000033d:  5A                   pop  dx
-0x000000000000033e:  59                   pop  cx
-0x000000000000033f:  5B                   pop  bx
-0x0000000000000340:  C3                   ret  
-0x0000000000000341:  88 E8                mov  al, ch
-0x0000000000000343:  98                   cbw 
-0x0000000000000344:  89 C3                mov  bx, ax
-0x0000000000000346:  C1 E3 02             shl  bx, 2
-0x0000000000000349:  88 B7 09 18          mov  byte ptr ds:[bx + _texturecache_nodes+1], dh
-0x000000000000034d:  EB BE                jmp  0x30d
+push bx
+push cx
+push dx
+push si
+mov  cl, byte ptr ds:[_texturecache_l2_head]
+mov  dl, al
+cmp  al, cl
+je   jump_to_label_1
+cbw 
+mov  bx, ax
+shl  bx, 2
+mov  al, byte ptr ds:[bx + _texturecache_nodes+2]
+test al, al
+je   label_2
+label_4:
+mov  al, dl
+cbw 
+mov  bx, ax
+shl  bx, 2
+mov  al, byte ptr ds:[bx + _texturecache_nodes+3]
+cmp  al, byte ptr ds:[bx + _texturecache_nodes+2]
+je   label_3
+mov  dl, byte ptr ds:[bx + _texturecache_nodes+1]
+jmp  label_4
+label_3:
+cmp  dl, cl
+je   jump_to_label_1
+label_2:
+mov  al, dl
+cbw 
+mov  bx, ax
+shl  bx, 2
+cmp  byte ptr ds:[bx + _texturecache_nodes+3], 0
+je   jump_to_label_5
+mov  dh, dl
+label_11:
+mov  al, dh
+cbw 
+mov  bx, ax
+shl  bx, 2
+cmp  byte ptr ds:[bx + _texturecache_nodes+2], 1
+je   label_12
+mov  dh, byte ptr ds:[bx + _texturecache_nodes+0]
+jmp  label_11
+jump_to_label_1:
+jmp  label_1
+label_12:
+mov  al, dl
+cbw 
+mov  si, ax
+shl  si, 2
+mov  bh, byte ptr ds:[bx + _texturecache_nodes+0]
+mov  bl, byte ptr ds:[si + _texturecache_nodes+1]
+cmp  dh, byte ptr ds:[_texturecache_l2_tail]
+jne  label_8
+mov  al, bl
+cbw 
+mov  byte ptr ds:[_texturecache_l2_tail], bl
+mov  bx, ax
+shl  bx, 2
+mov  byte ptr ds:[bx + _texturecache_nodes+0], -1
+label_7:
+mov  al, dh
+cbw 
+mov  bx, ax
+mov  al, cl
+shl  bx, 2
+cbw 
+mov  byte ptr ds:[bx + _texturecache_nodes+0], cl
+mov  bx, ax
+mov  al, dl
+shl  bx, 2
+cbw 
+mov  byte ptr ds:[bx + _texturecache_nodes+1], dh
+mov  bx, ax
+shl  bx, 2
+mov  cl, dl
+mov  byte ptr ds:[bx + _texturecache_nodes+1], -1
+label_1:
+mov  byte ptr ds:[_texturecache_l2_head], cl
+pop  si
+pop  dx
+pop  cx
+pop  bx
+ret  
+jump_to_label_5:
+jmp  label_6
+label_8:
+mov  al, bh
+cbw 
+mov  si, ax
+mov  al, bl
+shl  si, 2
+cbw 
+mov  byte ptr ds:[si + _texturecache_nodes+1], bl
+mov  si, ax
+shl  si, 2
+mov  byte ptr ds:[si + _texturecache_nodes+0], bh
+jmp  label_7
+label_6:
+mov  dh, byte ptr ds:[bx + _texturecache_nodes+1]
+mov  ch, byte ptr ds:[bx + _texturecache_nodes+0]
+cmp  dl, byte ptr ds:[_texturecache_l2_tail]
+jne  label_10
+mov  byte ptr ds:[_texturecache_l2_tail], dh
+label_9:
+mov  al, dh
+cbw 
+mov  bx, ax
+mov  al, dl
+shl  bx, 2
+cbw 
+mov  byte ptr ds:[bx + _texturecache_nodes+0], ch
+mov  bx, ax
+shl  bx, 2
+mov  al, cl
+mov  byte ptr ds:[bx + _texturecache_nodes+1], -1
+cbw 
+mov  byte ptr ds:[bx + _texturecache_nodes+0], cl
+mov  bx, ax
+shl  bx, 2
+mov  cl, dl
+mov  byte ptr ds:[bx + _texturecache_nodes+1], dl
+mov  byte ptr ds:[_texturecache_l2_head], cl
+pop  si
+pop  dx
+pop  cx
+pop  bx
+ret  
+label_10:
+mov  al, ch
+cbw 
+mov  bx, ax
+shl  bx, 2
+mov  byte ptr ds:[bx + _texturecache_nodes+1], dh
+jmp  label_9
 
 
 ENDP
+
+
 
 PROC R_MarkL2SpriteCacheMRU_ NEAR
 PUBLIC R_MarkL2SpriteCacheMRU_
 
-0x0000000000000350:  53                   push bx
-0x0000000000000351:  51                   push cx
-0x0000000000000352:  52                   push dx
-0x0000000000000353:  56                   push si
-0x0000000000000354:  8A 0E A6 06          mov  cl, byte ptr ds:[_spritecache_l2_head]
-0x0000000000000358:  88 C2                mov  dl, al
-0x000000000000035a:  38 C8                cmp  al, cl
-0x000000000000035c:  74 50                je   0x3ae
-0x000000000000035e:  98                   cbw 
-0x000000000000035f:  89 C3                mov  bx, ax
-0x0000000000000361:  C1 E3 02             shl  bx, 2
-0x0000000000000364:  8A 87 6A 18          mov  al, byte ptr ds:[bx + _spritecache_nodes+2]
-0x0000000000000368:  84 C0                test al, al
-0x000000000000036a:  74 1C                je   0x388
-0x000000000000036c:  88 D0                mov  al, dl
-0x000000000000036e:  98                   cbw 
-0x000000000000036f:  89 C3                mov  bx, ax
-0x0000000000000371:  C1 E3 02             shl  bx, 2
-0x0000000000000374:  8A 87 6B 18          mov  al, byte ptr ds:[bx + _spritecache_nodes+2]
-0x0000000000000378:  3A 87 6A 18          cmp  al, byte ptr ds:[bx + _spritecache_nodes+2]
-0x000000000000037c:  74 06                je   0x384
-0x000000000000037e:  8A 97 69 18          mov  dl, byte ptr ds:[bx + _spritecache_nodes+1]
-0x0000000000000382:  EB E8                jmp  0x36c
-0x0000000000000384:  38 CA                cmp  dl, cl
-0x0000000000000386:  74 26                je   0x3ae
-0x0000000000000388:  88 D0                mov  al, dl
-0x000000000000038a:  98                   cbw 
-0x000000000000038b:  89 C3                mov  bx, ax
-0x000000000000038d:  C1 E3 02             shl  bx, 2
-0x0000000000000390:  80 BF 6B 18 00       cmp  byte ptr ds:[bx + _spritecache_nodes+3], 0
-0x0000000000000395:  74 70                je   0x407
-0x0000000000000397:  88 D6                mov  dh, dl
-0x0000000000000399:  88 F0                mov  al, dh
-0x000000000000039b:  98                   cbw 
-0x000000000000039c:  89 C3                mov  bx, ax
-0x000000000000039e:  C1 E3 02             shl  bx, 2
-0x00000000000003a1:  80 BF 6A 18 01       cmp  byte ptr ds:[bx + _spritecache_nodes+2], 1
-0x00000000000003a6:  74 08                je   0x3b0
-0x00000000000003a8:  8A B7 68 18          mov  dh, byte ptr ds:[bx + _spritecache_nodes+0]
-0x00000000000003ac:  EB EB                jmp  0x399
-0x00000000000003ae:  EB 4E                jmp  0x3fe
-0x00000000000003b0:  88 D0                mov  al, dl
-0x00000000000003b2:  98                   cbw 
-0x00000000000003b3:  89 C6                mov  si, ax
-0x00000000000003b5:  C1 E6 02             shl  si, 2
-0x00000000000003b8:  8A BF 68 18          mov  bh, byte ptr ds[bx + _spritecache_nodes+0]
-0x00000000000003bc:  8A 9C 69 18          mov  bl, byte ptr ds:[si + _spritecache_nodes+1]
-0x00000000000003c0:  3A 36 A7 06          cmp  dh, byte ptr ds:[_spritecache_l2_tail]
-0x00000000000003c4:  75 43                jne  0x409
-0x00000000000003c6:  88 D8                mov  al, bl
-0x00000000000003c8:  98                   cbw 
-0x00000000000003c9:  88 1E A7 06          mov  byte ptr ds:[_spritecache_l2_tail], bl
-0x00000000000003cd:  89 C3                mov  bx, ax
-0x00000000000003cf:  C1 E3 02             shl  bx, 2
-0x00000000000003d2:  C6 87 68 18 FF       mov  byte ptr ds:[bx + _spritecache_nodes+0], 0xff
-0x00000000000003d7:  88 F0                mov  al, dh
-0x00000000000003d9:  98                   cbw 
-0x00000000000003da:  89 C3                mov  bx, ax
-0x00000000000003dc:  88 C8                mov  al, cl
-0x00000000000003de:  C1 E3 02             shl  bx, 2
-0x00000000000003e1:  98                   cbw 
-0x00000000000003e2:  88 8F 68 18          mov  byte ptr ds:[bx + _spritecache_nodes+0], cl
-0x00000000000003e6:  89 C3                mov  bx, ax
-0x00000000000003e8:  88 D0                mov  al, dl
-0x00000000000003ea:  C1 E3 02             shl  bx, 2
-0x00000000000003ed:  98                   cbw 
-0x00000000000003ee:  88 B7 69 18          mov  byte ptr ds:[bx + _spritecache_nodes+1], dh
-0x00000000000003f2:  89 C3                mov  bx, ax
-0x00000000000003f4:  C1 E3 02             shl  bx, 2
-0x00000000000003f7:  88 D1                mov  cl, dl
-0x00000000000003f9:  C6 87 69 18 FF       mov  byte ptr ds:[bx + _spritecache_nodes+1], 0xff
-0x00000000000003fe:  88 0E A6 06          mov  byte ptr ds:[_spritecache_l2_head], cl
-0x0000000000000402:  5E                   pop  si
-0x0000000000000403:  5A                   pop  dx
-0x0000000000000404:  59                   pop  cx
-0x0000000000000405:  5B                   pop  bx
-0x0000000000000406:  C3                   ret  
-0x0000000000000407:  EB 1A                jmp  0x423
-0x0000000000000409:  88 F8                mov  al, bh
-0x000000000000040b:  98                   cbw 
-0x000000000000040c:  89 C6                mov  si, ax
-0x000000000000040e:  88 D8                mov  al, bl
-0x0000000000000410:  C1 E6 02             shl  si, 2
-0x0000000000000413:  98                   cbw 
-0x0000000000000414:  88 9C 69 18          mov  byte ptr ds:[si + _spritecache_nodes+1], bl
-0x0000000000000418:  89 C6                mov  si, ax
-0x000000000000041a:  C1 E6 02             shl  si, 2
-0x000000000000041d:  88 BC 68 18          mov  byte ptr ds:[si + _spritecache_nodes+0], bh
-0x0000000000000421:  EB B4                jmp  0x3d7
-0x0000000000000423:  8A B7 69 18          mov  dh, byte ptr ds:[bx + _spritecache_nodes+1]
-0x0000000000000427:  8A AF 68 18          mov  ch, byte ptr ds:[bx + _spritecache_nodes+0]
-0x000000000000042b:  3A 16 A7 06          cmp  dl, byte ptr ds:[_spritecache_l2_tail]
-0x000000000000042f:  75 38                jne  0x469
-0x0000000000000431:  88 36 A7 06          mov  byte ptr ds:[_spritecache_l2_tail], dh
-0x0000000000000435:  88 F0                mov  al, dh
-0x0000000000000437:  98                   cbw 
-0x0000000000000438:  89 C3                mov  bx, ax
-0x000000000000043a:  88 D0                mov  al, dl
-0x000000000000043c:  C1 E3 02             shl  bx, 2
-0x000000000000043f:  98                   cbw 
-0x0000000000000440:  88 AF 68 18          mov  byte ptr ds:[bx + _spritecache_nodes+0], ch
-0x0000000000000444:  89 C3                mov  bx, ax
-0x0000000000000446:  C1 E3 02             shl  bx, 2
-0x0000000000000449:  88 C8                mov  al, cl
-0x000000000000044b:  C6 87 69 18 FF       mov  byte ptr ds:[bx + _spritecache_nodes+1], 0xff
-0x0000000000000450:  98                   cbw 
-0x0000000000000451:  88 8F 68 18          mov  byte ptr ds:[bx + _spritecache_nodes+0], cl
-0x0000000000000455:  89 C3                mov  bx, ax
-0x0000000000000457:  C1 E3 02             shl  bx, 2
-0x000000000000045a:  88 D1                mov  cl, dl
-0x000000000000045c:  88 97 69 18          mov  byte ptr ds:[bx + _spritecache_nodes+1], dl
-0x0000000000000460:  88 0E A6 06          mov  byte ptr ds:[_spritecache_l2_head], cl
-0x0000000000000464:  5E                   pop  si
-0x0000000000000465:  5A                   pop  dx
-0x0000000000000466:  59                   pop  cx
-0x0000000000000467:  5B                   pop  bx
-0x0000000000000468:  C3                   ret  
-0x0000000000000469:  88 E8                mov  al, ch
-0x000000000000046b:  98                   cbw 
-0x000000000000046c:  89 C3                mov  bx, ax
-0x000000000000046e:  C1 E3 02             shl  bx, 2
-0x0000000000000471:  88 B7 69 18          mov  byte ptr ds:[bx + _spritecache_nodes+1], dh
-0x0000000000000475:  EB BE                jmp  0x435
+push bx
+push cx
+push dx
+push si
+mov  cl, byte ptr ds:[_spritecache_l2_head]
+mov  dl, al
+cmp  al, cl
+je   jump_to_label_13
+cbw 
+mov  bx, ax
+shl  bx, 2
+mov  al, byte ptr ds:[bx + _spritecache_nodes+2]
+test al, al
+je   label_14
+label_16:
+mov  al, dl
+cbw 
+mov  bx, ax
+shl  bx, 2
+mov  al, byte ptr ds:[bx + _spritecache_nodes+2]
+cmp  al, byte ptr ds:[bx + _spritecache_nodes+2]
+je   label_15
+mov  dl, byte ptr ds:[bx + _spritecache_nodes+1]
+jmp  label_16
+label_15:
+cmp  dl, cl
+je   jump_to_label_13
+label_14:
+mov  al, dl
+cbw 
+mov  bx, ax
+shl  bx, 2
+cmp  byte ptr ds:[bx + _spritecache_nodes+3], 0
+je   jump_to_label_17
+mov  dh, dl
+label_19:
+mov  al, dh
+cbw 
+mov  bx, ax
+shl  bx, 2
+cmp  byte ptr ds:[bx + _spritecache_nodes+2], 1
+je   label_18
+mov  dh, byte ptr ds:[bx + _spritecache_nodes+0]
+jmp  label_19
+jump_to_label_13:
+jmp  label_13
+label_18:
+mov  al, dl
+cbw 
+mov  si, ax
+shl  si, 2
+mov  bh, byte ptr ds:[bx + _spritecache_nodes+0]
+mov  bl, byte ptr ds:[si + _spritecache_nodes+1]
+cmp  dh, byte ptr ds:[_spritecache_l2_tail]
+jne  label_20
+mov  al, bl
+cbw 
+mov  byte ptr ds:[_spritecache_l2_tail], bl
+mov  bx, ax
+shl  bx, 2
+mov  byte ptr ds:[bx + _spritecache_nodes+0], -1
+label_21:
+mov  al, dh
+cbw 
+mov  bx, ax
+mov  al, cl
+shl  bx, 2
+cbw 
+mov  byte ptr ds:[bx + _spritecache_nodes+0], cl
+mov  bx, ax
+mov  al, dl
+shl  bx, 2
+cbw 
+mov  byte ptr ds:[bx + _spritecache_nodes+1], dh
+mov  bx, ax
+shl  bx, 2
+mov  cl, dl
+mov  byte ptr ds:[bx + _spritecache_nodes+1], -1
+label_13:
+mov  byte ptr ds:[_spritecache_l2_head], cl
+pop  si
+pop  dx
+pop  cx
+pop  bx
+ret  
+jump_to_label_17:
+jmp  label_17
+label_20:
+mov  al, bh
+cbw 
+mov  si, ax
+mov  al, bl
+shl  si, 2
+cbw 
+mov  byte ptr ds:[si + _spritecache_nodes+1], bl
+mov  si, ax
+shl  si, 2
+mov  byte ptr ds:[si + _spritecache_nodes+0], bh
+jmp  label_21
+label_17:
+mov  dh, byte ptr ds:[bx + _spritecache_nodes+1]
+mov  ch, byte ptr ds:[bx + _spritecache_nodes+0]
+cmp  dl, byte ptr ds:[_spritecache_l2_tail]
+jne  label_22
+mov  byte ptr ds:[_spritecache_l2_tail], dh
+label_23:
+mov  al, dh
+cbw 
+mov  bx, ax
+mov  al, dl
+shl  bx, 2
+cbw 
+mov  byte ptr ds:[bx + _spritecache_nodes+0], ch
+mov  bx, ax
+shl  bx, 2
+mov  al, cl
+mov  byte ptr ds:[bx + _spritecache_nodes+1], -1
+cbw 
+mov  byte ptr ds:[bx + _spritecache_nodes+0], cl
+mov  bx, ax
+shl  bx, 2
+mov  cl, dl
+mov  byte ptr ds:[bx + _spritecache_nodes+1], dl
+mov  byte ptr ds:[_spritecache_l2_head], cl
+pop  si
+pop  dx
+pop  cx
+pop  bx
+ret  
+label_22:
+mov  al, ch
+cbw 
+mov  bx, ax
+shl  bx, 2
+mov  byte ptr ds:[bx + _spritecache_nodes+1], dh
+jmp  label_23
 
 ENDP
 
+COMMENT @
 
 
 
