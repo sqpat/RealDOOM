@@ -6365,9 +6365,9 @@ rcr   ax, 1
 mov   word ptr ds:[_aimslope+0], ax
 mov   word ptr ds:[_aimslope+2], dx
 
-pop   word ptr ds:[_linetarget] 	  ; thing ptr
 pop   word ptr ds:[_linetarget_pos+0] ; thing pos ptr
-mov   word ptr ds:[_linetarget_pos+2], MOBJPOSLIST_6800_SEGMENT
+pop   word ptr ds:[_linetarget] 	  ; thing ptr
+mov   word ptr ds:[_linetarget_pos+2], MOBJPOSLIST_6800_SEGMENT  ; todo remove once hardcoded
 
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
