@@ -61,6 +61,7 @@
 
  
 //todo: these can be inlined or made a faster algorithm later.
+void __near R_MarkL1SpriteCacheMRU(int8_t index);
 /*
 
 void __near R_MarkL1SpriteCacheMRU(int8_t index){
@@ -85,7 +86,9 @@ void __near R_MarkL1SpriteCacheMRU(int8_t index){
 	}
 }
 */
+void __near R_MarkL1SpriteCacheMRU3(int8_t index);
 
+/*
 void __near R_MarkL1SpriteCacheMRU3(int8_t index){
 
 	spriteL1LRU[3] = spriteL1LRU[2];
@@ -94,6 +97,7 @@ void __near R_MarkL1SpriteCacheMRU3(int8_t index){
 	spriteL1LRU[0] = index;
 	return;
 }
+*/
 
 //todo make this work as a jump table in asm like a switch block fall thru thing.
 void __near R_MarkL1TextureCacheMRU(int8_t index){

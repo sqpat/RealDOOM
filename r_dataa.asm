@@ -60,25 +60,22 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC R_MarkL1SpriteCacheMRU3_ NEAR
 PUBLIC R_MarkL1SpriteCacheMRU3_
 
-0x000000000000008c:  52                   push dx
-0x000000000000008d:  8B 16 2C 1C          mov  dx, word ptr ds:[_spriteL1LRU+4]
-0x0000000000000091:  89 16 2E 1C          mov  word ptr ds:[_spriteL1LRU+6], dx
-0x0000000000000095:  8B 16 2A 1C          mov  dx, word ptr ds:[_spriteL1LRU+2]
-0x0000000000000099:  89 16 2C 1C          mov  word ptr ds:[_spriteL1LRU+4], dx
-0x000000000000009d:  8B 16 28 1C          mov  dx, word ptr ds:[_spriteL1LRU+0]
-0x00000000000000a1:  98                   cbw 
-0x00000000000000a2:  89 16 2A 1C          mov  word ptr ds:[_spriteL1LRU+2], dx
-0x00000000000000a6:  A3 28 1C             mov  word ptr ds:[_spriteL1LRU+0], ax
-0x00000000000000a9:  5A                   pop  dx
-0x00000000000000aa:  C3                   ret  
+push word ptr ds:[_spriteL1LRU+1]     ; grab [1] and [2]
+pop  word ptr ds:[_spriteL1LRU+2]     ; put in [2] and [3]
+xchg al, byte ptr ds:[_spriteL1LRU+0] ; swap index for [0]
+mov  byte ptr ds:[_spriteL1LRU+1], al ; put [0] in [1]
+
+ret  
 
 ENDP
+
+COMMENT @
+
 
 PROC R_MarkL1TextureCacheMRU_ NEAR
 PUBLIC R_MarkL1TextureCacheMRU_
