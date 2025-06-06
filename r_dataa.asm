@@ -299,6 +299,8 @@ dont_early_out:
 push bx
 push cx
 push dx
+push si
+mov  si, OFFSET _spritecache_nodes
 mov  cl, byte ptr ds:[_spritecache_l2_head]
 mov  dl, al
 mov  bx, ax
@@ -307,7 +309,7 @@ mov  bx, ax
 ;	if (pagecount){
 
 SHIFT_MACRO shl  bx 2
-mov  al, byte ptr ds:[bx + _spritecache_nodes+2]
+mov  al, byte ptr ds:[bx + si + 2]
 test al, al
 je   sprite_pagecount_zero
 
@@ -318,10 +320,10 @@ je   sprite_pagecount_zero
 sprite_check_next_cache_node:
 mov  bl, dl   ; bh always zero here...
 SHIFT_MACRO shl  bx 2
-mov  ax, word ptr ds:[bx + _spritecache_nodes+2]
+mov  ax, word ptr ds:[bx + si + 2]
 cmp  al, ah
 je   sprite_found_first_index
-mov  dl, byte ptr ds:[bx + _spritecache_nodes+1]
+mov  dl, byte ptr ds:[bx + si + 1]
 jmp  sprite_check_next_cache_node
 
 sprite_found_first_index:
@@ -343,7 +345,7 @@ sprite_pagecount_zero:
 
 ;	if (spritecache_nodes[index].numpages){
 
-cmp  byte ptr ds:[bx + _spritecache_nodes+3], 0
+cmp  byte ptr ds:[bx + si + 3], 0
 je   selected_sprite_page_single_page
 
 ; multi page case...
@@ -359,9 +361,9 @@ sprite_check_next_cache_node_pagecount:
 
 mov  bl, dh         ; bh always 0 here...
 SHIFT_MACRO  shl  bx 2
-cmp  byte ptr ds:[bx + _spritecache_nodes+2], 1
+cmp  byte ptr ds:[bx + si + 2], 1
 je   found_sprite_multipage_last_page
-mov  dh, byte ptr ds:[bx + _spritecache_nodes+0]
+mov  dh, byte ptr ds:[bx + si + 0]
 jmp  sprite_check_next_cache_node_pagecount
 
 found_sprite_multipage_last_page:
@@ -373,11 +375,11 @@ found_sprite_multipage_last_page:
 ;		index_next = spritecache_nodes[index].next;
 
 
-mov  ch, byte ptr ds:[bx + _spritecache_nodes+0]    ; lastindex_prev
+mov  ch, byte ptr ds:[bx + si + 0]    ; lastindex_prev
 mov  bl, dl
 SHIFT_MACRO   shl  bx 2
 
-mov  cl, byte ptr ds:[bx + _spritecache_nodes+1]    ; index_next
+mov  cl, byte ptr ds:[bx + si + 1]    ; index_next
 
 ;		if (spritecache_l2_tail == lastindex){
 
@@ -390,7 +392,7 @@ jne  spritecache_l2_tail_not_equal_to_lastindex
 mov  byte ptr ds:[_spritecache_l2_tail], cl
 mov  bl, cl
 SHIFT_MACRO   shl  bx 2
-mov  byte ptr ds:[bx + _spritecache_nodes+0], -1
+mov  byte ptr ds:[bx + si + 0], -1
 jmp  sprite_done_with_multi_tail_update
 
 spritecache_l2_tail_not_equal_to_lastindex:
@@ -400,11 +402,11 @@ spritecache_l2_tail_not_equal_to_lastindex:
 
 mov  bl, ch
 SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + _spritecache_nodes+1], cl
+mov  byte ptr ds:[bx + si + 1], cl
 
 mov  bl, cl
 SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + _spritecache_nodes+0], ch
+mov  byte ptr ds:[bx + si + 0], ch
 
 sprite_done_with_multi_tail_update:
 
@@ -414,10 +416,10 @@ sprite_done_with_multi_tail_update:
 mov  bl, dh
 SHIFT_MACRO    shl  bx 2
 mov  al, byte ptr ds:[_spritecache_l2_head]
-mov  byte ptr ds:[bx + _spritecache_nodes+0], al  ; spritecache_l2_head
+mov  byte ptr ds:[bx + si + 0], al  ; spritecache_l2_head
 mov  bl, al
 SHIFT_MACRO    shl  bx 2
-mov  byte ptr ds:[bx + _spritecache_nodes+1], dh  ; lastindex
+mov  byte ptr ds:[bx + si + 1], dh  ; lastindex
 
 mov  bl, dl
 SHIFT_MACRO    shl  bx 2
@@ -427,8 +429,9 @@ SHIFT_MACRO    shl  bx 2
 
 
 mov  byte ptr ds:[_spritecache_l2_head], dl
-mov  byte ptr ds:[bx + _spritecache_nodes+1], -1
+mov  byte ptr ds:[bx + si + 1], -1
 mark_sprite_lru_exit:
+pop  si
 pop  dx
 pop  cx
 pop  bx
@@ -440,8 +443,8 @@ selected_sprite_page_single_page:
 ;		prev = spritecache_nodes[index].prev;
 ;		next = spritecache_nodes[index].next;
 
-mov  dh, byte ptr ds:[bx + _spritecache_nodes+1]
-mov  ch, byte ptr ds:[bx + _spritecache_nodes+0] ; todo get whole word and swap regs
+mov  dh, byte ptr ds:[bx + si + 1]
+mov  ch, byte ptr ds:[bx + si + 0] ; todo get whole word and swap regs
 
 ;		if (index == spritecache_l2_tail) {
 ;			spritecache_l2_tail = next;
@@ -458,7 +461,7 @@ jmp  done_with_spritecache_tail_handling
 spritecache_tail_not_equal_to_index:
 mov  bl, ch
 SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + _spritecache_nodes+1], dh
+mov  byte ptr ds:[bx + si + 1], dh
 
 done_with_spritecache_tail_handling:
 
@@ -466,7 +469,7 @@ done_with_spritecache_tail_handling:
 
 mov  bl, dh
 SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + _spritecache_nodes+0], ch
+mov  byte ptr ds:[bx + si + 0], ch
 
 ;	spritecache_nodes[index].prev = spritecache_l2_head;
 ;	spritecache_nodes[index].next = -1;
@@ -474,18 +477,19 @@ mov  byte ptr ds:[bx + _spritecache_nodes+0], ch
 mov  bl, dl
 SHIFT_MACRO shl  bx 2
 mov  ch, -1
-mov  word ptr ds:[bx + _spritecache_nodes+0], cx
+mov  word ptr ds:[bx + si + 0], cx
 
 ; spritecache_nodes[spritecache_l2_head].next = index;
 
 mov  bl, cl
 SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + _spritecache_nodes+1], dl
+mov  byte ptr ds:[bx + si + 1], dl
 
 ;	spritecache_l2_head = index;
 
 mov  byte ptr ds:[_spritecache_l2_head], dl
 
+pop  si
 pop  dx
 pop  cx
 pop  bx
