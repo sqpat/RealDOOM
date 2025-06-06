@@ -867,15 +867,13 @@ push      di
 push      bp
 mov       bp, sp
 push      cx     ; bp - 2
-push      ax     ; bp - 4  
-push      dx     ; bp - 6
-push      bx     ; bp - 8
-mov       es, dx
+mov       es, bx
+mov       ds, dx
 mov       bx, ax  ; bx has patchcol offset
 
 ;	while (patchcol->topdelta != 0xff) { 
 
-cmp       byte ptr es:[bx], 0FFh
+cmp       byte ptr ds:[bx], 0FFh
 je        exit_drawcolumn_in_cache
 do_next_column_patch:
 
@@ -883,7 +881,7 @@ do_next_column_patch:
 
 
 
-mov       ax, word ptr es:[bx]  ; bl topdelta
+mov       ax, word ptr ds:[bx]  ; bl topdelta
 
 xor       dx, dx
 xchg      dl, ah                ; length to dl, 0 to ah
@@ -938,23 +936,25 @@ done_with_count_adjustment:
 
 test      ax, ax
 jbe       skip_copy_column_pixels
-mov       es, word ptr [bp - 8]
-push      ds
+
+
 
 xchg      ax, cx
-mov       ds, word ptr [bp - 6]
+
 shr       cx, 1
 rep movsw 
 adc       cx, cx
 rep movsb 
-pop       ds
+
 
 skip_copy_column_pixels:
-mov       es, word ptr [bp - 6]
 
-cmp       byte ptr es:[bx], 0FFh
+
+cmp       byte ptr ds:[bx], 0FFh
 jne       do_next_column_patch
 exit_drawcolumn_in_cache:
+mov       ax, ss
+mov       ds, ax 
 LEAVE_MACRO     
 pop       di
 pop       si
