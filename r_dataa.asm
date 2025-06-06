@@ -384,9 +384,9 @@ PUBLIC R_EvictL2CacheEMSPage_
 ; bp - 6    secondarymaxitersize
 ; bp - 8    unused
 ; bp - 0Ah  unused
-; bp - 0Ch  nodelist
+; bp - 0Ch  unused 
 ; bp - 0Eh  currentpage
-; bp - 010  usedcacherefpage
+; bp - 010h usedcacherefpage
 ; bp - 012h unused
 ; bp - 014h unused
 ; bp - 016h nodetail
@@ -395,7 +395,7 @@ PUBLIC R_EvictL2CacheEMSPage_
 ; bp - 01Ch second offset used for si
 ; bp - 01Eh unused
 ; bp - 020h used for ds second
-; bp - 022h used for 
+; bp - 022h same as bp - 6
 ; bp - 024h unused 
 ; bp - 026h used for ds first, used for es first
 ; bp - 028h unused
@@ -413,27 +413,53 @@ push      bp
 mov       bp, sp
 sub       sp, 030h
 mov       dh, al
-mov       word ptr [bp - 6], 0
+
+
 cmp       dl, CACHETYPE_COMPOSITE
 jne       not_composite
-mov       word ptr [bp - 016h], OFFSET _texturecache_l2_tail
+mov       bx, OFFSET _texturecache_l2_tail
 mov       word ptr [bp - 018h], OFFSET _texturecache_l2_head
-mov       word ptr [bp - 0Ch], OFFSET _texturecache_nodes
-mov       di, MAX_PATCHES ; ??
+mov       di, OFFSET _texturecache_nodes
+
 mov       word ptr [bp - 026h], COMPOSITETEXTUREPAGE_SEGMENT
 mov       word ptr [bp - 020h], PATCHOFFSET_SEGMENT
-mov       word ptr [bp - 022h], PATCHOFFSET_OFFSET
-
 mov       word ptr [bp - 6], MAX_PATCHES
-
 mov       word ptr [bp - 010h], OFFSET _usedtexturepagemem
-mov       word ptr [bp - 01Ch], di
+mov       word ptr [bp - 01Ch], MAX_PATCHES
+
+jmp       done_with_switchblock
+not_composite:
+cmp       dl, CACHETYPE_PATCH
+jne       is_sprite
+
+is_patch:
+mov       bx, OFFSET _texturecache_l2_tail
+mov       word ptr [bp - 018h], OFFSET _texturecache_l2_head
+mov       di, OFFSET _texturecache_nodes
+mov       word ptr [bp - 026h], PATCHPAGE_SEGMENT
+mov       word ptr [bp - 020h], COMPOSITETEXTUREOFFSET_SEGMENT
+
+mov       word ptr [bp - 6], MAX_TEXTURES
+mov       word ptr [bp - 010h], OFFSET _usedtexturepagemem
+mov       word ptr [bp - 01Ch], MAX_PATCHES
+
+jmp       done_with_switchblock
+
+is_sprite:
+mov       bx, OFFSET _spritecache_l2_tail
+mov       word ptr [bp - 018h], OFFSET _spritecache_l2_head
+mov       di, OFFSET _spritecache_nodes
+mov       word ptr [bp - 6], 0  ; todo part of the eventual selfmodify
+mov       word ptr [bp - 026h], SPRITEPAGE_SEGMENT
+mov       word ptr [bp - 010h], OFFSET _usedspritepagemem
+mov       word ptr [bp - 01Ch], MAX_SPRITE_LUMPS
+
 
 done_with_switchblock:
 
 ;	currentpage = *nodetail;
 
-mov       bx, word ptr [bp - 016h]
+mov       word ptr [bp - 016h], bx
 mov       al, byte ptr [bx]
 cbw      
 xor       dl, dl
@@ -444,57 +470,27 @@ xor       dl, dl
 ;	}
 
 
+; dh has numpages
+; dl has j
+dec       dh  ; numpages - 1
+
 go_back_next_page:
-mov       word ptr [bp - 0Eh], ax
-mov       al, dh
-cbw      
-mov       bx, ax
-mov       al, dl
-dec       bx
-cbw      
-cmp       ax, bx
+cmp       dl, dh
 jge       found_enough_pages
-mov       bx, word ptr [bp - 0Eh]
+mov       bx, ax
 shl       bx, 2
-add       bx, word ptr [bp - 0Ch]
-mov       al, byte ptr [bx + 1]
-cbw      
+mov       al, byte ptr [bx + di + 1]  ; get next
 inc       dl
 jmp       go_back_next_page
-not_composite:
-cmp       dl, CACHETYPE_PATCH
-jne       is_sprite
 
-is_patch:
-mov       word ptr [bp - 016h], OFFSET _texturecache_l2_tail
-mov       word ptr [bp - 018h], OFFSET _texturecache_l2_head
-mov       word ptr [bp - 0Ch], OFFSET _texturecache_nodes
-mov       di, MAX_PATCHES
-mov       word ptr [bp - 026h], PATCHPAGE_SEGMENT
-mov       word ptr [bp - 020h], COMPOSITETEXTUREOFFSET_SEGMENT
-mov       word ptr [bp - 022h], COMPOSITETEXTUREOFFSET_OFFSET
-
-mov       word ptr [bp - 6], MAX_TEXTURES
-mov       word ptr [bp - 010h], OFFSET _usedtexturepagemem
-mov       word ptr [bp - 01Ch], di
-
-jmp       done_with_switchblock
-is_sprite:
-mov       word ptr [bp - 016h], OFFSET _spritecache_l2_tail
-mov       word ptr [bp - 018h], OFFSET _spritecache_l2_head
-mov       word ptr [bp - 0Ch], OFFSET _spritecache_nodes
-mov       di, MAX_SPRITE_LUMPS
-mov       word ptr [bp - 026h], SPRITEPAGE_SEGMENT
-mov       word ptr [bp - 010h], OFFSET _usedspritepagemem
-mov       word ptr [bp - 01Ch], di
-
-jmp       done_with_switchblock
 
 found_enough_pages:
 
+mov       word ptr [bp - 0Eh], ax   ; store currentpage
+
 ;	evictedpage = currentpage;
 
-mov       cx, word ptr [bp - 0Eh]
+mov       cx, ax
 
 ;	while (nodelist[evictedpage].numpages != nodelist[evictedpage].pagecount){
 ;		evictedpage = nodelist[evictedpage].next;
@@ -504,11 +500,10 @@ mov       cx, word ptr [bp - 0Eh]
 find_first_evictable_page:
 mov       bx, cx
 shl       bx, 2
-add       bx, word ptr [bp - 0Ch]
-mov       ax, word ptr [bx + 2]
+mov       ax, word ptr [bx + di + 2]
 cmp       al, ah
 je        found_first_evictable_page
-mov       al, byte ptr [bx + 1]
+mov       al, byte ptr [bx + di + 1]
 cbw      
 mov       cx, ax
 jmp       find_first_evictable_page
@@ -520,9 +515,9 @@ found_first_evictable_page:
 
 
 ;	while (evictedpage != -1){
-
+mov       dx, 000FFh  
 check_next_evicted_page:
-cmp       cl, -1
+cmp       cl, dl
 je        cleared_all_cache_data
 
 
@@ -532,19 +527,18 @@ do_next_evicted_page:
 ; loop setup
 mov       bx, cx
 SHIFT_MACRO shl       bx 2
-add       bx, word ptr [bp - 0Ch]
+
 xor       ax, ax
-cwd
+
 
 ;		nodelist[evictedpage].pagecount = 0;
 ;		nodelist[evictedpage].numpages = 0;
 
-mov       word ptr [bx + 2], ax    ; set both at once
-mov       ds, word ptr [bp - 026h] ; todo lds les
-mov       bx, 0
+mov       word ptr [bx + di + 2], ax    ; set both at once
+mov       ds, word ptr [bp - 026h] ; todo lds les?
+mov       bx, ax                   ; zero
 
-mov       es, word ptr [bp - 026h]
-mov       si, word ptr [bp - 01Ch]
+mov       si, word ptr [bp - 01Ch] ; both an index and a loop limit
 
 ;    for (k = 0; k < maxitersize; k++){
 ;			if ((cacherefpage[k] >> 2) == evictedpage){
@@ -554,15 +548,13 @@ mov       si, word ptr [bp - 01Ch]
 ;		}
 
 continue_first_cache_erase_loop:
-mov       al, byte ptr ds:[bx]
+mov       al, byte ptr ds:[bx]  ; todo maybe lodsb
 shr       ax, 2
 cmp       al, cl
 je        erase_this_page
 done_erasing_page:
 inc       bx
-inc       dx
-inc       si
-cmp       dx, di ; todo selfmodify
+cmp       bx, si 
 jl        continue_first_cache_erase_loop
 
 done_with_first_cache_erase_loop:
@@ -575,122 +567,120 @@ done_with_first_cache_erase_loop:
 ;        }
 ;    }
 
-cmp       word ptr [bp - 6], 0  ; todo jmp or not selfmodify? 
+mov       si, word ptr [bp - 6] 
+cmp       si, 0 
 jle       skip_secondary_loop
 
-xor       dx, dx    ; todo use bx as counter and then bx + si/di
 mov       ds, word ptr [bp - 020h]  ; todo lds les
-mov       bx, 0
-
-mov       es, word ptr [bp - 020h]
-mov       si, word ptr [bp - 022h]
+xor       bx, bx                     ; offset and loop ctr
 
 continue_second_cache_erase_loop:
-mov       al, byte ptr ds:[bx]
+mov       al, byte ptr ds:[bx]   ; todo maybe lodsb
 
 SHIFT_MACRO sar       ax 2
 cmp       al, cl
 je        erase_second_page
 done_erasing_second_page:
 inc       bx
-inc       dx
-inc       si
-cmp       dx, word ptr [bp - 6]  ; todo selfmodify
+cmp       bx, si 
 jl        continue_second_cache_erase_loop
 
 skip_secondary_loop:
 
 ;		usedcacherefpage[evictedpage] = 0;
-;		evictedpage = nodelist[evictedpage].prev;
 
 
 push      ss
 pop       ds  ; todo change later. just use ss twice instead?
 
 
-mov       bx, word ptr [bp - 010h]
-add       bx, cx
-mov       byte ptr [bx], 0
+mov       si, word ptr [bp - 010h] ; usedcacherefpage
 mov       bx, cx
+mov       byte ptr [bx + si], dh    ; 0
+
+;		evictedpage = nodelist[evictedpage].prev;
+
 SHIFT_MACRO shl       bx 2
-add       bx, word ptr [bp - 0Ch]
-mov       cl, byte ptr [bx]     ; get prev
-cmp       cl, -1
+mov       cl, byte ptr [bx + di]     ; get prev
+cmp       cl, dl                   ; dl is -1
 jne       do_next_evicted_page
 jmp       cleared_all_cache_data   ; todo remove...
 
-erase_this_page:
-mov       byte ptr ds:[bx], 0FFh
-mov       byte ptr es:[si], 0FFh
-jmp       done_erasing_page
-erase_second_page:
-mov       byte ptr ds:[bx], 0FFh
-mov       byte ptr es:[si], 0FFh
-jmp       done_erasing_second_page
 
 cleared_all_cache_data:
 
 ;	// connect old tail and old head.
 ;	nodelist[*nodetail].prev = *nodehead;
+
+
+mov       si, word ptr [bp - 016h]
+lodsb
+cbw      
+mov       cx, ax            ; cx stores nodetail
+
+SHIFT_MACRO shl       ax 2
+xchg      ax, bx            ; bx has nodelist nodetail lookup
+
+mov       si, word ptr [bp - 018h]
+mov       al, byte ptr [si]
+mov       byte ptr [bx + di], al
+mov       bl, al
+
+
 ;	nodelist[*nodehead].next = *nodetail;
 
+SHIFT_MACRO shl       bx 2
 
-mov       bx, word ptr [bp - 016h]
-mov       al, byte ptr [bx]
-cbw      
-mov       bx, word ptr [bp - 0Ch]
-SHIFT_MACRO shl       ax 2
-mov       si, word ptr [bp - 018h]
-add       bx, ax
-mov       al, byte ptr [si]
-mov       byte ptr [bx], al
-cbw      
-mov       bx, word ptr [bp - 0Ch]
-SHIFT_MACRO shl       ax 2
-mov       si, word ptr [bp - 016h]
-add       bx, ax
-mov       al, byte ptr [si]
-mov       byte ptr [bx + 1], al
+
+mov       byte ptr [bx + di + 1], cl  ; write nodetail to next
 
 ;	previous_next = nodelist[currentpage].next;
 
+;	*nodehead = currentpage;
 
 mov       bx, word ptr [bp - 0Eh]
+mov       byte ptr [si], bl
 SHIFT_MACRO shl       bx 2
-mov       si, word ptr [bp - 018h]
-add       bx, word ptr [bp - 0Ch]
-mov       al, byte ptr [bp - 0Eh]
-mov       dl, byte ptr [bx + 1]
-mov       byte ptr [si], al
+mov       al, byte ptr [bx + di + 1]    ; previous_next
+cbw
 
 
-;	*nodehead = currentpage;
 ;	nodelist[currentpage].next = -1;
 
-mov       al, dl
-mov       byte ptr [bx + 1], 0FFh
-cbw      
+mov       byte ptr [bx + di + 1], dl   ; still 0FFh
+
+;	*nodetail = previous_next;
+
+
+mov       bx, word ptr [bp - 016h]
+mov       byte ptr [bx], al
+
 
 ;	// new tail
 ;	nodelist[previous_next].prev = -1;
-;	*nodetail = previous_next;
-
-mov       bx, word ptr [bp - 0Ch]
-SHIFT_MACRO shl       ax 2
-add       bx, ax
-mov       byte ptr [bx], 0FFh
-mov       bx, word ptr [bp - 016h]
-mov       byte ptr [bx], dl
+mov       bx, ax
+SHIFT_MACRO shl       bx 2
+mov       byte ptr [bx + di], dl    ; still 0FFh
 
 ;	return *nodehead;
 
-mov       al, byte ptr [si]
+lodsb       
+
 LEAVE_MACRO     
 pop       di
 pop       si
 pop       cx
 pop       bx
 ret       
+erase_this_page:
+mov       byte ptr ds:[bx], dl      ; 0FFh
+mov       byte ptr ds:[bx+si], dl   ; 0FFh
+jmp       done_erasing_page
+
+erase_second_page:
+mov       byte ptr ds:[bx], dl      ; 0FFh
+mov       byte ptr ds:[bx+si], dl   ; 0FFh
+jmp       done_erasing_second_page
 
 
 
