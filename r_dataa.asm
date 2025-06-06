@@ -378,30 +378,14 @@ ENDP
 PROC R_EvictL2CacheEMSPage_ NEAR
 PUBLIC R_EvictL2CacheEMSPage_
 
-
-; bp - 2    unused
-; bp - 4    unused
-; bp - 6    secondarymaxitersize
-; bp - 8    unused
-; bp - 0Ah  unused
-; bp - 0Ch  unused 
-; bp - 0Eh  currentpage
-; bp - 010h usedcacherefpage
-; bp - 012h unused
-; bp - 014h unused
-; bp - 016h nodetail
-; bp - 018h nodehead
-; bp - 01Ah unused
-; bp - 01Ch second offset used for si
-; bp - 01Eh unused
-; bp - 020h used for ds second
-; bp - 022h same as bp - 6
-; bp - 024h unused 
-; bp - 026h used for ds first, used for es first
-; bp - 028h unused
-; bp - 02Ah unused
-; bp - 02Eh unused
-; bp - 030h unused
+; bp - 2    secondarymaxitersize
+; bp - 4    nodehead
+; bp - 6    used for ds first, used for es first
+; bp - 8    second offset used for si
+; bp - 0Ah  used for ds second
+; bp - 0Ch  usedcacherefpage 
+; bp - 0Eh  nodetail
+; bp - 010h currentpage
 
 
 
@@ -411,21 +395,20 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 030h
 mov       dh, al
 
 
 cmp       dl, CACHETYPE_COMPOSITE
 jne       not_composite
+push      MAX_PATCHES                       ; bp - 2
+push      OFFSET _texturecache_l2_head      ; bp - 4
+push      COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 6
+push      MAX_PATCHES                       ; bp - 8
+push      PATCHOFFSET_SEGMENT               ; bp - 0Ah
+push      OFFSET _usedtexturepagemem        ; bp - 0Ch
 mov       bx, OFFSET _texturecache_l2_tail
-mov       word ptr [bp - 018h], OFFSET _texturecache_l2_head
 mov       di, OFFSET _texturecache_nodes
 
-mov       word ptr [bp - 026h], COMPOSITETEXTUREPAGE_SEGMENT
-mov       word ptr [bp - 020h], PATCHOFFSET_SEGMENT
-mov       word ptr [bp - 6], MAX_PATCHES
-mov       word ptr [bp - 010h], OFFSET _usedtexturepagemem
-mov       word ptr [bp - 01Ch], MAX_PATCHES
 
 jmp       done_with_switchblock
 not_composite:
@@ -433,33 +416,34 @@ cmp       dl, CACHETYPE_PATCH
 jne       is_sprite
 
 is_patch:
+push      MAX_TEXTURES                      ; bp - 2
+push      OFFSET _texturecache_l2_head      ; bp - 4
+push      PATCHPAGE_SEGMENT                 ; bp - 6   
+push      MAX_PATCHES                       ; bp - 8
+push      COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 0Ah
+push      OFFSET _usedtexturepagemem        ; bp - 0Ch
 mov       bx, OFFSET _texturecache_l2_tail
-mov       word ptr [bp - 018h], OFFSET _texturecache_l2_head
 mov       di, OFFSET _texturecache_nodes
-mov       word ptr [bp - 026h], PATCHPAGE_SEGMENT
-mov       word ptr [bp - 020h], COMPOSITETEXTUREOFFSET_SEGMENT
 
-mov       word ptr [bp - 6], MAX_TEXTURES
-mov       word ptr [bp - 010h], OFFSET _usedtexturepagemem
-mov       word ptr [bp - 01Ch], MAX_PATCHES
 
 jmp       done_with_switchblock
 
 is_sprite:
+push      0                           ; bp - 2
+push      OFFSET _spritecache_l2_head ; bp - 4
+push      SPRITEPAGE_SEGMENT          ; bp - 6
+push      MAX_SPRITE_LUMPS            ; bp - 6
+sub       sp, 4
+push      OFFSET _usedspritepagemem   ; bp - 0Ch;
 mov       bx, OFFSET _spritecache_l2_tail
-mov       word ptr [bp - 018h], OFFSET _spritecache_l2_head
 mov       di, OFFSET _spritecache_nodes
-mov       word ptr [bp - 6], 0  ; todo part of the eventual selfmodify
-mov       word ptr [bp - 026h], SPRITEPAGE_SEGMENT
-mov       word ptr [bp - 010h], OFFSET _usedspritepagemem
-mov       word ptr [bp - 01Ch], MAX_SPRITE_LUMPS
 
 
 done_with_switchblock:
 
 ;	currentpage = *nodetail;
 
-mov       word ptr [bp - 016h], bx
+push      bx        ; bp - 0Eh
 mov       al, byte ptr [bx]
 cbw      
 xor       dl, dl
@@ -486,7 +470,7 @@ jmp       go_back_next_page
 
 found_enough_pages:
 
-mov       word ptr [bp - 0Eh], ax   ; store currentpage
+push ax   ; bp - 010h store currentpage
 
 ;	evictedpage = currentpage;
 
@@ -499,7 +483,7 @@ mov       cx, ax
 
 find_first_evictable_page:
 mov       bx, cx
-shl       bx, 2
+SHIFT_MACRO shl       bx, 2
 mov       ax, word ptr [bx + di + 2]
 cmp       al, ah
 je        found_first_evictable_page
@@ -515,7 +499,8 @@ found_first_evictable_page:
 
 
 ;	while (evictedpage != -1){
-mov       dx, 000FFh  
+mov       dx, 000FFh      ; dh gets 0, dl gets ff
+
 check_next_evicted_page:
 cmp       cl, dl
 je        cleared_all_cache_data
@@ -535,10 +520,9 @@ xor       ax, ax
 ;		nodelist[evictedpage].numpages = 0;
 
 mov       word ptr [bx + di + 2], ax    ; set both at once
-mov       ds, word ptr [bp - 026h] ; todo lds les?
 mov       bx, ax                   ; zero
 
-mov       si, word ptr [bp - 01Ch] ; both an index and a loop limit
+lds       si, dword ptr [bp - 8] ; both an index and a loop limit
 
 ;    for (k = 0; k < maxitersize; k++){
 ;			if ((cacherefpage[k] >> 2) == evictedpage){
@@ -567,11 +551,11 @@ done_with_first_cache_erase_loop:
 ;        }
 ;    }
 
-mov       si, word ptr [bp - 6] 
+mov       si, word ptr [bp - 2] 
 cmp       si, 0 
 jle       skip_secondary_loop
 
-mov       ds, word ptr [bp - 020h]  ; todo lds les
+mov       ds, word ptr [bp - 0Ah]  ; todo change?
 xor       bx, bx                     ; offset and loop ctr
 
 continue_second_cache_erase_loop:
@@ -594,7 +578,7 @@ push      ss
 pop       ds  ; todo change later. just use ss twice instead?
 
 
-mov       si, word ptr [bp - 010h] ; usedcacherefpage
+mov       si, word ptr [bp - 0Ch] ; usedcacherefpage
 mov       bx, cx
 mov       byte ptr [bx + si], dh    ; 0
 
@@ -613,7 +597,7 @@ cleared_all_cache_data:
 ;	nodelist[*nodetail].prev = *nodehead;
 
 
-mov       si, word ptr [bp - 016h]
+mov       si, word ptr [bp - 0Eh]
 lodsb
 cbw      
 mov       cx, ax            ; cx stores nodetail
@@ -621,7 +605,7 @@ mov       cx, ax            ; cx stores nodetail
 SHIFT_MACRO shl       ax 2
 xchg      ax, bx            ; bx has nodelist nodetail lookup
 
-mov       si, word ptr [bp - 018h]
+mov       si, word ptr [bp - 4]
 mov       al, byte ptr [si]
 mov       byte ptr [bx + di], al
 mov       bl, al
@@ -638,7 +622,7 @@ mov       byte ptr [bx + di + 1], cl  ; write nodetail to next
 
 ;	*nodehead = currentpage;
 
-mov       bx, word ptr [bp - 0Eh]
+mov       bx, word ptr [bp - 010h]
 mov       byte ptr [si], bl
 SHIFT_MACRO shl       bx 2
 mov       al, byte ptr [bx + di + 1]    ; previous_next
@@ -652,7 +636,7 @@ mov       byte ptr [bx + di + 1], dl   ; still 0FFh
 ;	*nodetail = previous_next;
 
 
-mov       bx, word ptr [bp - 016h]
+mov       bx, word ptr [bp - 0Eh]
 mov       byte ptr [bx], al
 
 
