@@ -1619,6 +1619,9 @@ int8_t __far R_EvictFlatCacheEMSPage(){
 //
 // todo merge below when doing asm later
 //int16_t
+
+void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight);
+/*
 void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight) {
 	while (patchcol->topdelta != 0xff) { 
 
@@ -1645,7 +1648,7 @@ void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdest
 	}
 	//return totalsize;
 }
-
+*/
 
 void __near R_GetNextTextureBlock(int16_t tex_index, uint16_t size, int8_t cachetype) {
 

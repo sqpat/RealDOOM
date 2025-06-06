@@ -852,74 +852,118 @@ jmp       continue_erasing_flats
 
 ENDP
 
-COMMENT @
 
-
+;void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight) {
+; todo remove segment
+; todo merge into generate composite
 PROC R_DrawColumnInCache_ NEAR
 PUBLIC R_DrawColumnInCache_
 
-0x0000000000000310:  56                push      si
-0x0000000000000311:  57                push      di
-0x0000000000000312:  55                push      bp
-0x0000000000000313:  89 E5             mov       bp, sp
-0x0000000000000315:  83 EC 02          sub       sp, 2
-0x0000000000000318:  50                push      ax
-0x0000000000000319:  52                push      dx
-0x000000000000031a:  53                push      bx
-0x000000000000031b:  8E C2             mov       es, dx
-0x000000000000031d:  89 C3             mov       bx, ax
-0x000000000000031f:  89 4E FE          mov       word ptr [bp - 2], cx
-0x0000000000000322:  26 80 3F FF       cmp       byte ptr es:[bx], 0xff
-0x0000000000000326:  74 5F             je        0x387
-0x0000000000000328:  8B 4E FA          mov       cx, word ptr [bp - 6]
-0x000000000000032b:  8B 5E FC          mov       bx, word ptr [bp - 4]
-0x000000000000032e:  8E C1             mov       es, cx
-0x0000000000000330:  26 8A 57 01       mov       dl, byte ptr es:[bx + 1]
-0x0000000000000334:  26 8A 1F          mov       bl, byte ptr es:[bx]
-0x0000000000000337:  8B 7E FE          mov       di, word ptr [bp - 2]
-0x000000000000033a:  30 FF             xor       bh, bh
-0x000000000000033c:  30 F6             xor       dh, dh
-0x000000000000033e:  01 DF             add       di, bx
-0x0000000000000340:  8B 5E FC          mov       bx, word ptr [bp - 4]
-0x0000000000000343:  8B 76 FC          mov       si, word ptr [bp - 4]
-0x0000000000000346:  01 D3             add       bx, dx
-0x0000000000000348:  83 C6 03          add       si, 3
-0x000000000000034b:  83 C3 04          add       bx, 4
-0x000000000000034e:  89 D0             mov       ax, dx
-0x0000000000000350:  89 5E FC          mov       word ptr [bp - 4], bx
-0x0000000000000353:  85 FF             test      di, di
-0x0000000000000355:  7C 36             jl        0x38d
-0x0000000000000357:  89 FA             mov       dx, di
-0x0000000000000359:  01 C2             add       dx, ax
-0x000000000000035b:  3B 56 08          cmp       dx, word ptr [bp + 8]
-0x000000000000035e:  76 05             jbe       0x365
-0x0000000000000360:  8B 46 08          mov       ax, word ptr [bp + 8]
-0x0000000000000363:  29 F8             sub       ax, di
-0x0000000000000365:  85 C0             test      ax, ax
-0x0000000000000367:  76 12             jbe       0x37b
-0x0000000000000369:  8E 46 F8          mov       es, word ptr [bp - 8]
-0x000000000000036c:  1E                push      ds
-0x000000000000036d:  57                push      di
-0x000000000000036e:  91                xchg      ax, cx
-0x000000000000036f:  8E D8             mov       ds, ax
-0x0000000000000371:  D1 E9             shr       cx, 1
-0x0000000000000373:  F3 A5             rep movsw word ptr es:[di], word ptr [si]
-0x0000000000000375:  13 C9             adc       cx, cx
-0x0000000000000377:  F3 A4             rep movsb byte ptr es:[di], byte ptr [si]
-0x0000000000000379:  5F                pop       di
-0x000000000000037a:  1F                pop       ds
-0x000000000000037b:  8E 46 FA          mov       es, word ptr [bp - 6]
-0x000000000000037e:  8B 5E FC          mov       bx, word ptr [bp - 4]
-0x0000000000000381:  26 80 3F FF       cmp       byte ptr es:[bx], 0xff
-0x0000000000000385:  75 A1             jne       0x328
-0x0000000000000387:  C9                LEAVE_MACRO     
-0x0000000000000388:  5F                pop       di
-0x0000000000000389:  5E                pop       si
-0x000000000000038a:  C2 02 00          ret       2
-0x000000000000038d:  01 F8             add       ax, di
-0x000000000000038f:  31 FF             xor       di, di
-0x0000000000000391:  EB C4             jmp       0x357
-0x0000000000000393:  FC                cld       
+push      si
+push      di
+push      bp
+mov       bp, sp
+push cx          ; bp - 2
+push      ax     ; bp - 4  
+push      dx     ; bp - 6
+push      bx     ; bp - 8
+mov       es, dx
+mov       bx, ax
+
+;	while (patchcol->topdelta != 0xff) { 
+
+cmp       byte ptr es:[bx], 0FFh
+je        exit_drawcolumn_in_cache
+do_next_column_patch:
+
+;		byte __far * source = (byte __far *)patchcol + 3;
+;		uint16_t     count = patchcol->length;
+;		int16_t     position = patchoriginy + patchcol->topdelta;
+
+
+mov       cx, word ptr [bp - 6]
+mov       bx, word ptr [bp - 4]
+mov       es, cx
+mov       dl, byte ptr es:[bx + 1]
+mov       bl, byte ptr es:[bx]
+mov       di, word ptr [bp - 2]
+xor       bh, bh
+xor       dh, dh
+add       di, bx
+mov       bx, word ptr [bp - 4]
+mov       si, word ptr [bp - 4]
+add       bx, dx
+add       si, 3
+
+;		patchcol = (column_t __far*)((byte  __far*)patchcol + count + 4);
+
+add       bx, 4
+mov       ax, dx
+mov       word ptr [bp - 4], bx
+
+;		if (position < 0) {
+;			count += position;
+;			position = 0;
+;		}
+
+test      di, di
+jl        position_under_zero
+done_with_position_check:
+
+;		if (position + count > textureheight){
+;			count = textureheight - position;
+;		}
+
+
+mov       dx, di
+add       dx, ax
+cmp       dx, word ptr [bp + 8]
+jbe       done_with_count_adjustment
+mov       ax, word ptr [bp + 8]
+sub       ax, di
+done_with_count_adjustment:
+
+;		if (count > 0){
+;			FAR_memcpy(MK_FP(currentdestsegment, position), source, count);
+;		}
+
+test      ax, ax
+jbe       skip_copy_column_pixels
+mov       es, word ptr [bp - 8]
+push      ds
+push      di
+xchg      ax, cx
+mov       ds, ax
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+pop       di
+pop       ds
+
+skip_copy_column_pixels:
+mov       es, word ptr [bp - 6]
+mov       bx, word ptr [bp - 4]
+cmp       byte ptr es:[bx], 0FFh
+jne       do_next_column_patch
+exit_drawcolumn_in_cache:
+LEAVE_MACRO     
+pop       di
+pop       si
+ret       2
+position_under_zero:
+add       ax, di
+xor       di, di
+jmp       done_with_position_check
+
+ENDP
+
+COMMENT @
+
+
+PROC R_GetNextTextureBlock_ NEAR
+PUBLIC R_GetNextTextureBlock_
+
 0x0000000000000394:  51                push      cx
 0x0000000000000395:  56                push      si
 0x0000000000000396:  57                push      di
@@ -1108,8 +1152,8 @@ PUBLIC R_DrawColumnInCache_
 
 ENDP
 
-PROC R_GetNextTextureBlock_ NEAR
-PUBLIC R_GetNextTextureBlock_
+PROC R_GetNextSpriteBlock_ NEAR
+PUBLIC R_GetNextSpriteBlock_
 
 
 0x000000000000055e:  53                push      bx
