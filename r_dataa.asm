@@ -146,14 +146,15 @@ push bx
 push cx
 push dx
 push si
+mov  si, OFFSET _texturecache_nodes
 mov  cl, byte ptr ds:[_texturecache_l2_head]
 mov  dl, al
 cmp  al, cl
-je   jump_to_label_1
+je   jump_to_exit_markl2compositetexturecache
 cbw 
 mov  bx, ax
 SHIFT_MACRO shl  bx 2
-mov  al, byte ptr ds:[bx + _texturecache_nodes+2]
+mov  al, byte ptr ds:[bx + si + 2]
 test al, al
 je   label_2
 label_4:
@@ -161,89 +162,84 @@ mov  al, dl
 cbw 
 mov  bx, ax
 SHIFT_MACRO shl  bx 2
-mov  al, byte ptr ds:[bx + _texturecache_nodes+3]
-cmp  al, byte ptr ds:[bx + _texturecache_nodes+2]
+mov  al, byte ptr ds:[bx + si + 3]
+cmp  al, byte ptr ds:[bx + si + 2]
 je   label_3
-mov  dl, byte ptr ds:[bx + _texturecache_nodes+1]
+mov  dl, byte ptr ds:[bx + si + 1]
 jmp  label_4
 label_3:
 cmp  dl, cl
-je   jump_to_label_1
+je   jump_to_exit_markl2compositetexturecache
 label_2:
 mov  al, dl
 cbw 
 mov  bx, ax
 SHIFT_MACRO shl  bx 2
-cmp  byte ptr ds:[bx + _texturecache_nodes+3], 0
-je   jump_to_label_5
+cmp  byte ptr ds:[bx + si + 3], 0
+je   label_5
 mov  dh, dl
 label_11:
 mov  al, dh
 cbw 
 mov  bx, ax
 SHIFT_MACRO shl  bx 2
-cmp  byte ptr ds:[bx + _texturecache_nodes+2], 1
+cmp  byte ptr ds:[bx + si + 2], 1
 je   label_12
-mov  dh, byte ptr ds:[bx + _texturecache_nodes+0]
+mov  dh, byte ptr ds:[bx + si + 0]
 jmp  label_11
-jump_to_label_1:
-jmp  label_1
+jump_to_exit_markl2compositetexturecache:
+jmp  exit_markl2compositetexturecache
 label_12:
 mov  al, dl
 cbw 
-mov  si, ax
-shl  si, 2
-mov  bh, byte ptr ds:[bx + _texturecache_nodes+0]
-mov  bl, byte ptr ds:[si + _texturecache_nodes+1]
+mov  ch, byte ptr ds:[bx + si + 0]
+mov  bx, ax
+shl  bx, 2
+
+mov  cl, byte ptr ds:[bx + si + 1]
 cmp  dh, byte ptr ds:[_texturecache_l2_tail]
 jne  label_8
-mov  al, bl
-cbw 
-mov  byte ptr ds:[_texturecache_l2_tail], bl
-mov  bx, ax
+mov  byte ptr ds:[_texturecache_l2_tail], cl
+mov  bl, cl
 SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + _texturecache_nodes+0], -1
+mov  byte ptr ds:[bx + si + 0], -1
+jmp  label_7
+
+label_8:
+mov  bl, ch
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + si + 1], cl
+
+mov  bl, cl
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + si + 0], ch
+
 label_7:
-mov  al, dh
-cbw 
-mov  bx, ax
-mov  al, cl
+
+mov  al, byte ptr ds:[_texturecache_l2_head]
+mov  bl, dh
 SHIFT_MACRO shl  bx 2
-cbw 
-mov  byte ptr ds:[bx + _texturecache_nodes+0], cl
-mov  bx, ax
-mov  al, dl
+
+mov  byte ptr ds:[bx + si + 0], al
+
+mov  bl, al     ; _texturecache_l2_head
 SHIFT_MACRO shl  bx 2
-cbw 
-mov  byte ptr ds:[bx + _texturecache_nodes+1], dh
-mov  bx, ax
+mov  byte ptr ds:[bx + si + 1], dh
+
+mov  bl, dl
 SHIFT_MACRO shl  bx 2
-mov  cl, dl
-mov  byte ptr ds:[bx + _texturecache_nodes+1], -1
-label_1:
-mov  byte ptr ds:[_texturecache_l2_head], cl
+mov  byte ptr ds:[bx + si + 1], -1
+mov  byte ptr ds:[_texturecache_l2_head], dl
+exit_markl2compositetexturecache:
 pop  si
 pop  dx
 pop  cx
 pop  bx
 ret  
-jump_to_label_5:
-jmp  label_6
-label_8:
-mov  al, bh
-cbw 
-mov  si, ax
-mov  al, bl
-shl  si, 2
-cbw 
-mov  byte ptr ds:[si + _texturecache_nodes+1], bl
-mov  si, ax
-shl  si, 2
-mov  byte ptr ds:[si + _texturecache_nodes+0], bh
-jmp  label_7
-label_6:
-mov  dh, byte ptr ds:[bx + _texturecache_nodes+1]
-mov  ch, byte ptr ds:[bx + _texturecache_nodes+0]
+
+label_5:
+mov  dh, byte ptr ds:[bx + si + 1]
+mov  ch, byte ptr ds:[bx + si + 0]
 cmp  dl, byte ptr ds:[_texturecache_l2_tail]
 jne  label_10
 mov  byte ptr ds:[_texturecache_l2_tail], dh
@@ -254,17 +250,17 @@ mov  bx, ax
 mov  al, dl
 SHIFT_MACRO shl  bx 2
 cbw 
-mov  byte ptr ds:[bx + _texturecache_nodes+0], ch
+mov  byte ptr ds:[bx + si + 0], ch
 mov  bx, ax
 SHIFT_MACRO shl  bx 2
 mov  al, cl
-mov  byte ptr ds:[bx + _texturecache_nodes+1], -1
+mov  byte ptr ds:[bx + si + 1], -1
 cbw 
-mov  byte ptr ds:[bx + _texturecache_nodes+0], cl
+mov  byte ptr ds:[bx + si + 0], cl
 mov  bx, ax
 SHIFT_MACRO shl  bx 2
 mov  cl, dl
-mov  byte ptr ds:[bx + _texturecache_nodes+1], dl
+mov  byte ptr ds:[bx + si + 1], dl
 mov  byte ptr ds:[_texturecache_l2_head], cl
 pop  si
 pop  dx
@@ -276,7 +272,7 @@ mov  al, ch
 cbw 
 mov  bx, ax
 SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + _texturecache_nodes+1], dh
+mov  byte ptr ds:[bx + si + 1], dh
 jmp  label_9
 
 
