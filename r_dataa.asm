@@ -379,13 +379,29 @@ PROC R_EvictL2CacheEMSPage_ NEAR
 PUBLIC R_EvictL2CacheEMSPage_
 
 
-; bp - 6    ?  maxitersize
+; bp - 2    unused
+; bp - 4    unused
+; bp - 6    secondarymaxitersize
+; bp - 8    unused
+; bp - 0Ah  unused
 ; bp - 0Ch  nodelist
 ; bp - 0Eh  currentpage
 ; bp - 010  usedcacherefpage
-; bp - 016  nodetail
-; bp - 018  nodehead
-
+; bp - 012h unused
+; bp - 014h unused
+; bp - 016h nodetail
+; bp - 018h nodehead
+; bp - 01Ah unused
+; bp - 01Ch second offset used for si
+; bp - 01Eh unused
+; bp - 020h used for ds second
+; bp - 022h used for 
+; bp - 024h unused 
+; bp - 026h used for ds first, used for es first
+; bp - 028h unused
+; bp - 02Ah unused
+; bp - 02Eh unused
+; bp - 030h unused
 
 
 
@@ -404,19 +420,14 @@ mov       word ptr [bp - 016h], OFFSET _texturecache_l2_tail
 mov       word ptr [bp - 018h], OFFSET _texturecache_l2_head
 mov       word ptr [bp - 0Ch], OFFSET _texturecache_nodes
 mov       di, MAX_PATCHES ; ??
-mov       word ptr [bp - 01Ah], 0
-mov       si, COMPOSITETEXTUREPAGE_SEGMENT
+mov       word ptr [bp - 026h], COMPOSITETEXTUREPAGE_SEGMENT
 mov       word ptr [bp - 020h], PATCHOFFSET_SEGMENT
 mov       word ptr [bp - 022h], PATCHOFFSET_OFFSET
-mov       word ptr [bp - 01Eh], PATCHPAGE_SEGMENT
+
 mov       word ptr [bp - 6], MAX_PATCHES
 
 mov       word ptr [bp - 010h], OFFSET _usedtexturepagemem
-mov       ax, si
 mov       word ptr [bp - 01Ch], di
-xor       ax, si
-mov       es, si
-mov       word ptr [bp - 024h], ax
 
 done_with_switchblock:
 
@@ -459,29 +470,24 @@ mov       word ptr [bp - 016h], OFFSET _texturecache_l2_tail
 mov       word ptr [bp - 018h], OFFSET _texturecache_l2_head
 mov       word ptr [bp - 0Ch], OFFSET _texturecache_nodes
 mov       di, MAX_PATCHES
-mov       word ptr [bp - 01Ah], 0
-mov       si, PATCHPAGE_SEGMENT
+mov       word ptr [bp - 026h], PATCHPAGE_SEGMENT
 mov       word ptr [bp - 020h], COMPOSITETEXTUREOFFSET_SEGMENT
 mov       word ptr [bp - 022h], COMPOSITETEXTUREOFFSET_OFFSET
-mov       word ptr [bp - 01Eh], COMPOSITETEXTUREPAGE_SEGMENT
+
 mov       word ptr [bp - 6], MAX_TEXTURES
 mov       word ptr [bp - 010h], OFFSET _usedtexturepagemem
-mov       ax, si
 mov       word ptr [bp - 01Ch], di
-xor       ax, si
-mov       es, si
-mov       word ptr [bp - 024h], ax
+
 jmp       done_with_switchblock
 is_sprite:
 mov       word ptr [bp - 016h], OFFSET _spritecache_l2_tail
 mov       word ptr [bp - 018h], OFFSET _spritecache_l2_head
 mov       word ptr [bp - 0Ch], OFFSET _spritecache_nodes
 mov       di, MAX_SPRITE_LUMPS
-mov       word ptr [bp - 01Ah], 0
-mov       si, SPRITEPAGE_SEGMENT
+mov       word ptr [bp - 026h], SPRITEPAGE_SEGMENT
 mov       word ptr [bp - 010h], OFFSET _usedspritepagemem
 mov       word ptr [bp - 01Ch], di
-mov       es, si
+
 jmp       done_with_switchblock
 
 found_enough_pages:
@@ -499,8 +505,8 @@ find_first_evictable_page:
 mov       bx, cx
 shl       bx, 2
 add       bx, word ptr [bp - 0Ch]
-mov       al, byte ptr [bx + 3]
-cmp       al, byte ptr [bx + 2]
+mov       ax, word ptr [bx + 2]
+cmp       al, ah
 je        found_first_evictable_page
 mov       al, byte ptr [bx + 1]
 cbw      
@@ -511,20 +517,6 @@ found_first_evictable_page:
 
 
 
-mov       ax, word ptr [bp - 024h]
-mov       word ptr [bp - 012h], ax
-mov       ax, word ptr [bp - 020h]
-mov       word ptr [bp - 02Eh], ax
-mov       ax, word ptr [bp - 022h]
-mov       word ptr [bp - 030h], ax
-mov       ax, word ptr [bp - 01Eh]
-mov       word ptr [bp - 014h], ax
-mov       ax, word ptr [bp - 01Ah]
-mov       word ptr [bp - 026h], si
-mov       word ptr [bp - 02Ch], ax
-mov       ax, word ptr [bp - 01Ch]
-mov       word ptr [bp - 028h], es
-mov       word ptr [bp - 02Ah], ax
 
 
 ;	while (evictedpage != -1){
@@ -549,10 +541,10 @@ cwd
 
 mov       word ptr [bx + 2], ax    ; set both at once
 mov       ds, word ptr [bp - 026h] ; todo lds les
-mov       bx, word ptr [bp - 02Ch]
+mov       bx, 0
 
-mov       es, word ptr [bp - 028h]
-mov       si, word ptr [bp - 02Ah]
+mov       es, word ptr [bp - 026h]
+mov       si, word ptr [bp - 01Ch]
 
 ;    for (k = 0; k < maxitersize; k++){
 ;			if ((cacherefpage[k] >> 2) == evictedpage){
@@ -587,11 +579,11 @@ cmp       word ptr [bp - 6], 0  ; todo jmp or not selfmodify?
 jle       skip_secondary_loop
 
 xor       dx, dx    ; todo use bx as counter and then bx + si/di
-mov       ds, word ptr [bp - 02Eh]  ; todo lds les
-mov       bx, word ptr [bp - 012h]
+mov       ds, word ptr [bp - 020h]  ; todo lds les
+mov       bx, 0
 
-mov       es, word ptr [bp - 014h]
-mov       si, word ptr [bp - 030h]
+mov       es, word ptr [bp - 020h]
+mov       si, word ptr [bp - 022h]
 
 continue_second_cache_erase_loop:
 mov       al, byte ptr ds:[bx]
