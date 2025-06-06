@@ -866,12 +866,12 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-push cx          ; bp - 2
+push      cx     ; bp - 2
 push      ax     ; bp - 4  
 push      dx     ; bp - 6
 push      bx     ; bp - 8
 mov       es, dx
-mov       bx, ax
+mov       bx, ax  ; bx has patchcol offset
 
 ;	while (patchcol->topdelta != 0xff) { 
 
@@ -879,30 +879,36 @@ cmp       byte ptr es:[bx], 0FFh
 je        exit_drawcolumn_in_cache
 do_next_column_patch:
 
-;		byte __far * source = (byte __far *)patchcol + 3;
 ;		uint16_t     count = patchcol->length;
+
+
+
+mov       ax, word ptr es:[bx]  ; bl topdelta
+
+xor       dx, dx
+xchg      dl, ah                ; length to dl, 0 to ah
+
+; dx is count
+; ax is topdelta for now
+
 ;		int16_t     position = patchoriginy + patchcol->topdelta;
 
+xchg      ax, di
+add       di, word ptr [bp - 2]  ; patchoriginy + topdelta
 
-mov       cx, word ptr [bp - 6]
-mov       bx, word ptr [bp - 4]
-mov       es, cx
-mov       dl, byte ptr es:[bx + 1]
-mov       bl, byte ptr es:[bx]
-mov       di, word ptr [bp - 2]
-xor       bh, bh
-xor       dh, dh
-add       di, bx
-mov       bx, word ptr [bp - 4]
-mov       si, word ptr [bp - 4]
-add       bx, dx
-add       si, 3
+
+;		byte __far * source = (byte __far *)patchcol + 3;
+lea       si, [bx + 3] ; for memcpy
 
 ;		patchcol = (column_t __far*)((byte  __far*)patchcol + count + 4);
 
+add       bx, dx
 add       bx, 4
+
 mov       ax, dx
-mov       word ptr [bp - 4], bx
+
+; count is ax
+; position is di
 
 ;		if (position < 0) {
 ;			count += position;
@@ -934,19 +940,18 @@ test      ax, ax
 jbe       skip_copy_column_pixels
 mov       es, word ptr [bp - 8]
 push      ds
-push      di
+
 xchg      ax, cx
-mov       ds, ax
+mov       ds, word ptr [bp - 6]
 shr       cx, 1
 rep movsw 
 adc       cx, cx
 rep movsb 
-pop       di
 pop       ds
 
 skip_copy_column_pixels:
 mov       es, word ptr [bp - 6]
-mov       bx, word ptr [bp - 4]
+
 cmp       byte ptr es:[bx], 0FFh
 jne       do_next_column_patch
 exit_drawcolumn_in_cache:
