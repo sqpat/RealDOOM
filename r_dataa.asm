@@ -727,6 +727,9 @@ mov       byte ptr [si + bx + 1], ah
 
 flat_tail_check_done:
 
+;	// guaranteed to have a next. if we didnt have one, it'd be head but we already returned from that case.
+;	nodelist[next].prev = prev;
+
 mov       al, ah
 cbw      
 
@@ -776,43 +779,67 @@ push      di
 mov       dh, byte ptr ds:[_flatcache_l2_tail]
 mov       al, dh
 cbw      
+
+;	evictedpage = flatcache_l2_tail;
+
 mov       bx, ax
 add       bx, ax
 mov       si, ax
 mov       al, byte ptr ds:[bx + _flatcache_nodes + 1]
 mov       byte ptr ds:[_flatcache_l2_tail], al
+
+;	flatcache_l2_tail = flatcache_nodes[evictedpage].next;	// tail is nextmost
+;	flatcache_nodes[flatcache_l2_tail].prev = -1;
+
+
 cbw      
 mov       di, ax
 add       di, ax
 mov       al, byte ptr ds:[_flatcache_l2_head]
 cbw      
 mov       byte ptr [di + _flatcache_nodes + 0], 0FFh
+
+;	flatcache_nodes[flatcache_l2_head].next = evictedpage;
+;	flatcache_nodes[evictedpage].next = -1;
+
+
 mov       di, ax
 add       di, ax
 mov       byte ptr ds:[di + _flatcache_nodes + 1], dh
 mov       al, byte ptr ds:[_flatcache_l2_head]
 mov       byte ptr ds:[bx + _flatcache_nodes + 1], 0FFh
+
+;	flatcache_nodes[evictedpage].prev = flatcache_l2_head;
+;	flatcache_l2_head = evictedpage;
+
+
 mov       byte ptr ds:[bx + _flatcache_nodes + 0], al
 mov       byte ptr ds:[_flatcache_l2_head], dh
+
+;	// all the other flats in this are cleared.
+;	allocatedflatsperpage[evictedpage] = 1;
+
 mov       byte ptr ds:[si + _allocatedflatsperpage], 1
-xor       dl, dl
-label_4:
+mov       dl, MAX_FLATS
 mov       ax, FLATINDEX_SEGMENT
-mov       bl, dl
 mov       es, ax
-xor       bh, bh
+xor       bx, bx
+
+
+;   for (i = 0; i < MAX_FLATS; i++){
+;	   if ((flatindex[i] >> 2) == evictedpage){
+;         flatindex[i] = 0xFF;
+;   	}
+;  	}
+check_next_flat:
 mov       al, byte ptr es:[bx]
-xor       ah, ah
-mov       cx, ax
-mov       al, dh
-sar       cx, 2
-cbw      
-cmp       cx, ax
-je        label_3
-label_5:
-inc       dl
-cmp       dl, MAX_FLATS
-jb        label_4
+SHIFT_MACRO shr       al 2
+cmp       al, dh
+je        erase_flat
+continue_erasing_flats:
+inc       bl
+cmp       bl, dl
+jb        check_next_flat
 mov       al, dh
 pop       di
 pop       si
@@ -820,9 +847,9 @@ pop       dx
 pop       cx
 pop       bx
 retf      
-label_3:
+erase_flat:
 mov       byte ptr es:[bx], 0FFh
-jmp       label_5
+jmp       continue_erasing_flats
 
 ENDP
 
