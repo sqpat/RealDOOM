@@ -675,66 +675,91 @@ ENDP
 PROC R_MarkL2FlatCacheMRU_ FAR
 PUBLIC R_MarkL2FlatCacheMRU_
 
+;	if (index == flatcache_l2_head) {
+;		return;
+;	}
 
+cmp       al, byte ptr ds:[_flatcache_l2_head]
+jne       continue_flatcachemru
+retf
+continue_flatcachemru:
 push      bx
-push      cx
 push      dx
 push      si
-push      bp
-mov       bp, sp
-sub       sp, 2
+
+
+;	cache_node_t far* nodelist  = flatcache_nodes;
+
 mov       dl, al
-mov       cx, OFFSET _flatcache_nodes
-mov       bx, ds
-cmp       al, byte ptr ds:[_flatcache_l2_head]
-je        exit_flatcachemru
+mov       bx, OFFSET _flatcache_nodes
+
+
+;	prev = nodelist[index].prev;
+;	next = nodelist[index].next;
+
+
 cbw      
-mov       si, cx
+
 add       ax, ax
-add       si, ax
-mov       al, byte ptr [si]
-mov       dh, byte ptr [si + 1]
-mov       byte ptr [bp - 2], al
+mov       si, ax
+mov       ax, word ptr [si + bx]
+
+mov       dh, al ; back up
+
+;	if (index == flatcache_l2_tail) {
+;		flatcache_l2_tail = next;	
+;	} else {
+;		nodelist[prev].next = next;
+;	}
+
 cmp       dl, byte ptr ds:[_flatcache_l2_tail]
-je        label_1
+jne       index_not_tail
+
+mov       byte ptr ds:[_flatcache_l2_tail], ah
+jmp       flat_tail_check_done
+
+index_not_tail:
+
+mov       si, ax
+and       si, 000FFh      ; blegh
+sal       si, 1
+mov       byte ptr [si + bx + 1], ah
+
+flat_tail_check_done:
+
+mov       al, ah
 cbw      
-mov       si, cx
-add       ax, ax
-add       si, ax
-mov       byte ptr [si + 1], dh
-label_2:
-mov       al, dh
-cbw      
-mov       si, cx
-add       ax, ax
-mov       es, bx
-add       si, ax
-mov       al, byte ptr [bp - 2]
-mov       byte ptr es:[si], al
+
+mov       si, ax
+sal       si, 1
+
+mov       byte ptr ds:[si + bx], dh
 mov       al, dl
-cbw      
-mov       si, cx
-add       ax, ax
-add       si, ax
+
+mov       si, ax
+sal       si, 1
+
+;	nodelist[index].prev = flatcache_l2_head;
+;	nodelist[index].next = -1;
+
 mov       al, byte ptr ds:[_flatcache_l2_head]
-mov       byte ptr es:[si], al
-cbw      
-mov       bx, cx
-add       ax, ax
-mov       byte ptr es:[si + 1], 0FFh
-add       bx, ax
+mov       byte ptr ds:[si + bx], al
+mov       byte ptr ds:[si + bx + 1], 0FFh
+
+mov       si, ax
+sal       si, 1
+
+;	nodelist[flatcache_l2_head].next = index;
+
+mov       byte ptr ds:[si + bx + 1], dl
+
+;	flatcache_l2_head = index;
 mov       byte ptr ds:[_flatcache_l2_head], dl
-mov       byte ptr es:[bx + 1], dl
 exit_flatcachemru:
-LEAVE_MACRO     
 pop       si
 pop       dx
-pop       cx
 pop       bx
 retf      
-label_1:
-mov       byte ptr ds:[_flatcache_l2_tail], dh
-jmp       label_2
 
 
 ENDP
