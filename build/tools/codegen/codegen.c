@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2250
+#define CONSTANTS_COUNT 2264
 #define LOCALS_COUNT 18 
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -125,10 +125,16 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "TEXTUREWIDTHMASKS_SEGMENT",
     "ZLIGHT_SEGMENT",
     "XTOVIEWANGLE_SEGMENT",
+    "SPRITEPAGE_SEGMENT",
+
     "SPRITEOFFSETS_SEGMENT",
+    "SPRITEOFFSETS_OFFSET",
     "PATCHPAGE_SEGMENT",
     "PATCHOFFSET_SEGMENT",
-
+    "PATCHOFFSET_OFFSET",
+	"COMPOSITETEXTUREPAGE_SEGMENT",
+	"COMPOSITETEXTUREOFFSET_SEGMENT",
+	"COMPOSITETEXTUREOFFSET_OFFSET",
 
     "NODES_RENDER_SEGMENT",
     "SEGS_RENDER_SEGMENT",
@@ -2317,8 +2323,15 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SPR_TLMP",
 	"SPR_TLP2",
 	"NUMSPRITES",
-	"MAX_THINKERS"
-
+	"MAX_THINKERS",
+	"MAX_TEXTURES",
+	"MAX_PATCHES",
+	"MAX_FLATS",
+	"MAX_SPRITE_LUMPS",
+	"CACHETYPE_SPRITE",
+	"CACHETYPE_FLAT",
+	"CACHETYPE_PATCH",
+	"CACHETYPE_COMPOSITE"
 
 
 
@@ -2439,10 +2452,17 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     texturewidthmasks_segment,
     zlight_segment,
     xtoviewangle_segment,
+	spritepage_segment,
+
     spriteoffsets_segment,
+    size_spritepage,
     patchpage_segment,
     patchoffset_segment,
+	size_patchpage,
 
+    compositetexturepage_segment,
+    compositetextureoffset_segment,
+	size_compositetexturepage,
 
 
     nodes_render_segment,
@@ -4639,10 +4659,15 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	SPR_TLMP,
 	SPR_TLP2,
 	NUMSPRITES,
-	MAX_THINKERS
-
-
-
+	MAX_THINKERS,
+	MAX_TEXTURES,
+	MAX_PATCHES,
+	MAX_FLATS,
+	MAX_SPRITE_LUMPS,
+	CACHETYPE_SPRITE,
+	CACHETYPE_FLAT,
+	CACHETYPE_PATCH,
+	CACHETYPE_COMPOSITE
 
 };
 

@@ -1424,6 +1424,7 @@ spritedefs_bytes    7410:0000
 #define texturecollength_segment          ((segment_t) ((int32_t)texturecollength >> 16))
 #define texturecompositesizes_segment     ((segment_t) ((int32_t)texturecompositesizes >> 16))
 #define compositetexturepage_segment      ((segment_t) ((int32_t)compositetexturepage >> 16))
+#define compositetextureoffset_segment      ((segment_t) ((int32_t)compositetextureoffset >> 16))
 
 
 #define segs_render             ((seg_render_t  __near*)      0x4000)
