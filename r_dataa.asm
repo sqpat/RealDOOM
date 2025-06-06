@@ -381,6 +381,7 @@ PUBLIC R_EvictL2CacheEMSPage_
 
 ; bp - 6    ?  maxitersize
 ; bp - 0Ch  nodelist
+; bp - 0Eh  currentpage
 ; bp - 010  usedcacherefpage
 ; bp - 016  nodetail
 ; bp - 018  nodehead
@@ -409,19 +410,30 @@ mov       word ptr [bp - 020h], PATCHOFFSET_SEGMENT
 mov       word ptr [bp - 022h], PATCHOFFSET_OFFSET
 mov       word ptr [bp - 01Eh], PATCHPAGE_SEGMENT
 mov       word ptr [bp - 6], MAX_PATCHES
-done_with_switchblock_patch:
+
 mov       word ptr [bp - 010h], OFFSET _usedtexturepagemem
 mov       ax, si
 mov       word ptr [bp - 01Ch], di
 xor       ax, si
 mov       es, si
 mov       word ptr [bp - 024h], ax
-not_sprite:
+
+done_with_switchblock:
+
+;	currentpage = *nodetail;
+
 mov       bx, word ptr [bp - 016h]
 mov       al, byte ptr [bx]
 cbw      
 xor       dl, dl
-label_1:
+
+;	// go back enough pages to allocate them all.
+;	for (j = 0; j < numpages-1; j++){
+;		currentpage = nodelist[currentpage].next;
+;	}
+
+
+go_back_next_page:
 mov       word ptr [bp - 0Eh], ax
 mov       al, dh
 cbw      
@@ -430,17 +442,18 @@ mov       al, dl
 dec       bx
 cbw      
 cmp       ax, bx
-jge       label_2
+jge       found_enough_pages
 mov       bx, word ptr [bp - 0Eh]
 shl       bx, 2
 add       bx, word ptr [bp - 0Ch]
 mov       al, byte ptr [bx + 1]
 cbw      
 inc       dl
-jmp       label_1
+jmp       go_back_next_page
 not_composite:
 cmp       dl, CACHETYPE_PATCH
-jne       not_patch
+jne       is_sprite
+
 is_patch:
 mov       word ptr [bp - 016h], OFFSET _texturecache_l2_tail
 mov       word ptr [bp - 018h], OFFSET _texturecache_l2_head
@@ -452,10 +465,13 @@ mov       word ptr [bp - 020h], COMPOSITETEXTUREOFFSET_SEGMENT
 mov       word ptr [bp - 022h], COMPOSITETEXTUREOFFSET_OFFSET
 mov       word ptr [bp - 01Eh], COMPOSITETEXTUREPAGE_SEGMENT
 mov       word ptr [bp - 6], MAX_TEXTURES
-jmp       done_with_switchblock_patch
-not_patch:
-test      dl, dl
-jne       not_sprite
+mov       word ptr [bp - 010h], OFFSET _usedtexturepagemem
+mov       ax, si
+mov       word ptr [bp - 01Ch], di
+xor       ax, si
+mov       es, si
+mov       word ptr [bp - 024h], ax
+jmp       done_with_switchblock
 is_sprite:
 mov       word ptr [bp - 016h], OFFSET _spritecache_l2_tail
 mov       word ptr [bp - 018h], OFFSET _spritecache_l2_head
@@ -466,21 +482,37 @@ mov       si, SPRITEPAGE_SEGMENT
 mov       word ptr [bp - 010h], OFFSET _usedspritepagemem
 mov       word ptr [bp - 01Ch], di
 mov       es, si
-jmp       not_sprite
-label_2:
+jmp       done_with_switchblock
+
+found_enough_pages:
+
+;	evictedpage = currentpage;
+
 mov       cx, word ptr [bp - 0Eh]
-label_10:
+
+;	while (nodelist[evictedpage].numpages != nodelist[evictedpage].pagecount){
+;		evictedpage = nodelist[evictedpage].next;
+;	}
+
+
+find_first_evictable_page:
 mov       bx, cx
 shl       bx, 2
 add       bx, word ptr [bp - 0Ch]
 mov       al, byte ptr [bx + 3]
 cmp       al, byte ptr [bx + 2]
-je        label_9
+je        found_first_evictable_page
 mov       al, byte ptr [bx + 1]
 cbw      
 mov       cx, ax
-jmp       label_10
-label_9:
+jmp       find_first_evictable_page
+
+found_first_evictable_page:
+
+
+;		nodelist[evictedpage].pagecount = 0;
+;		nodelist[evictedpage].numpages = 0;
+
 mov       ax, word ptr [bp - 024h]
 mov       word ptr [bp - 012h], ax
 mov       ax, word ptr [bp - 020h]
@@ -495,13 +527,26 @@ mov       word ptr [bp - 02Ch], ax
 mov       ax, word ptr [bp - 01Ch]
 mov       word ptr [bp - 028h], es
 mov       word ptr [bp - 02Ah], ax
+
+
+;	while (evictedpage != -1){
+
 label_7:
 cmp       cx, -1
 jne       label_11
-jmp       label_12
+jmp       cleared_all_cache_data
 label_11:
+
+
+;    for (k = 0; k < maxitersize; k++){
+;			if ((cacherefpage[k] >> 2) == evictedpage){
+;				cacherefpage[k] = 0xFF;
+;				cacherefoffset[k] = 0xFF;
+;			}
+;		}
+
 mov       bx, cx
-shl       bx, 2
+SHIFT_MACRO shl       bx 2
 add       bx, word ptr [bp - 0Ch]
 mov       byte ptr [bx + 2], 0
 xor       dx, dx
@@ -558,50 +603,75 @@ mov       bx, word ptr [bp - 010h]
 add       bx, cx
 mov       byte ptr [bx], 0
 mov       bx, cx
-shl       bx, 2
+SHIFT_MACRO shl       bx 2
 add       bx, word ptr [bp - 0Ch]
 mov       al, byte ptr [bx]
 cbw      
 mov       cx, ax
 jmp       label_7
+
 label_14:
 mov       byte ptr es:[bx], 0FFh
 mov       es, word ptr [bp - 8]
 mov       byte ptr es:[si], 0FFh
 jmp       label_8
-label_12:
+
+cleared_all_cache_data:
+
+;	// connect old tail and old head.
+;	nodelist[*nodetail].prev = *nodehead;
+;	nodelist[*nodehead].next = *nodetail;
+
+
 mov       bx, word ptr [bp - 016h]
 mov       al, byte ptr [bx]
 cbw      
 mov       bx, word ptr [bp - 0Ch]
-shl       ax, 2
+SHIFT_MACRO shl       ax 2
 mov       si, word ptr [bp - 018h]
 add       bx, ax
 mov       al, byte ptr [si]
 mov       byte ptr [bx], al
 cbw      
 mov       bx, word ptr [bp - 0Ch]
-shl       ax, 2
+SHIFT_MACRO shl       ax 2
 mov       si, word ptr [bp - 016h]
 add       bx, ax
 mov       al, byte ptr [si]
 mov       byte ptr [bx + 1], al
+
+;	previous_next = nodelist[currentpage].next;
+
+
 mov       bx, word ptr [bp - 0Eh]
-shl       bx, 2
+SHIFT_MACRO shl       bx 2
 mov       si, word ptr [bp - 018h]
 add       bx, word ptr [bp - 0Ch]
 mov       al, byte ptr [bp - 0Eh]
 mov       dl, byte ptr [bx + 1]
 mov       byte ptr [si], al
+
+
+;	*nodehead = currentpage;
+;	nodelist[currentpage].next = -1;
+
 mov       al, dl
 mov       byte ptr [bx + 1], 0FFh
 cbw      
+
+;	// new tail
+;	nodelist[previous_next].prev = -1;
+;	*nodetail = previous_next;
+
 mov       bx, word ptr [bp - 0Ch]
-shl       ax, 2
+SHIFT_MACRO shl       ax 2
 add       bx, ax
 mov       byte ptr [bx], 0FFh
 mov       bx, word ptr [bp - 016h]
 mov       byte ptr [bx], dl
+
+;	return *nodehead;
+
 mov       al, byte ptr [si]
 LEAVE_MACRO     
 pop       di
