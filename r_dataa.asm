@@ -519,10 +519,10 @@ xor       ax, ax
 ;		nodelist[evictedpage].pagecount = 0;
 ;		nodelist[evictedpage].numpages = 0;
 
-mov       word ptr [bx + di + 2], ax    ; set both at once
-mov       bx, ax                   ; zero
+mov       word ptr ss:[bx + di + 2], ax    ; set both at once
+mov       si, ax                   ; zero
 
-lds       si, dword ptr [bp - 6] ; both an index and a loop limit
+lds       bx, dword ptr [bp - 6] ; both an index and a loop limit
 
 ;    for (k = 0; k < maxitersize; k++){
 ;			if ((cacherefpage[k] >> 2) == evictedpage){
@@ -530,16 +530,16 @@ lds       si, dword ptr [bp - 6] ; both an index and a loop limit
 ;				cacherefoffset[k] = 0xFF;
 ;			}
 ;		}
+dec       bx   ; lodsw makes this off by one so we offset here...
 
 continue_first_cache_erase_loop:
-mov       al, byte ptr ds:[bx]  ; todo maybe lodsb
+lodsb     ; increments si...
 shr       ax, 2
 cmp       al, cl
 je        erase_this_page
 done_erasing_page:
-inc       bx
-cmp       bx, si 
-jl        continue_first_cache_erase_loop
+cmp       si, bx
+jle       continue_first_cache_erase_loop   ; jle, not jl because bx is decced
 
 done_with_first_cache_erase_loop:
 
@@ -551,50 +551,49 @@ done_with_first_cache_erase_loop:
 ;        }
 ;    }
 
-lds       si, dword ptr [bp - 0Ah] 
-cmp       si, 0 
+lds       bx, dword ptr [bp - 0Ah] 
+cmp       bx, 0 
 jle       skip_secondary_loop
 
 
-xor       bx, bx                     ; offset and loop ctr
-
+xor       si, si                     ; offset and loop ctr
+dec       bx
 continue_second_cache_erase_loop:
-mov       al, byte ptr ds:[bx]   ; todo maybe lodsb
+lodsb
 
 SHIFT_MACRO sar       ax 2
 cmp       al, cl
 je        erase_second_page
 done_erasing_second_page:
-inc       bx
-cmp       bx, si 
-jl        continue_second_cache_erase_loop
+cmp       si, bx
+jle       continue_second_cache_erase_loop
 
 skip_secondary_loop:
 
 ;		usedcacherefpage[evictedpage] = 0;
 
 
-push      ss
-pop       ds  ; todo change later. just use ss twice instead?
 
 
 mov       si, word ptr [bp - 0Ch] ; usedcacherefpage
 mov       bx, cx
-mov       byte ptr [bx + si], dh    ; 0
+mov       byte ptr ss:[bx + si], dh    ; 0
 
 ;		evictedpage = nodelist[evictedpage].prev;
 
 SHIFT_MACRO shl       bx 2
-mov       cl, byte ptr [bx + di]     ; get prev
+mov       cl, byte ptr ss:[bx + di]     ; get prev
 cmp       cl, dl                   ; dl is -1
 jne       do_next_evicted_page
-jmp       cleared_all_cache_data   ; todo remove...
 
 
 cleared_all_cache_data:
 
 ;	// connect old tail and old head.
 ;	nodelist[*nodetail].prev = *nodehead;
+
+mov      ax, ss
+mov      ds, ax
 
 
 mov       si, word ptr [bp - 0Eh]
@@ -657,13 +656,13 @@ pop       cx
 pop       bx
 ret       
 erase_this_page:
-mov       byte ptr ds:[bx], dl      ; 0FFh
-mov       byte ptr ds:[bx+si], dl   ; 0FFh
+mov       byte ptr ds:[si-1], dl      ; 0FFh
+mov       byte ptr ds:[si+bx], dl   ; 0FFh
 jmp       done_erasing_page
 
 erase_second_page:
-mov       byte ptr ds:[bx], dl      ; 0FFh
-mov       byte ptr ds:[bx+si], dl   ; 0FFh
+mov       byte ptr ds:[si-1], dl      ; 0FFh
+mov       byte ptr ds:[si+bx], dl   ; 0FFh
 jmp       done_erasing_second_page
 
 
