@@ -1363,6 +1363,9 @@ void __near R_MarkL2SpriteCacheMRU(int8_t index) {
 // multi-page allocation, then those now unused pages should be appropriately
 // put at the back of the queue so they will be the next loaded into.
 // the evicted pages are also moved to the front. numpages/pagecount are filled in by the code after this
+
+int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype);
+/*
 int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 
 	//todo revisit these vars.
@@ -1520,6 +1523,7 @@ int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype){
 
 	return *nodehead;
 }
+*/
 
 
 // MRU is the head. LRU is the tail.
