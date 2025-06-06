@@ -142,6 +142,11 @@ ENDP
 PROC R_MarkL2CompositeTextureCacheMRU_ NEAR
 PUBLIC R_MarkL2CompositeTextureCacheMRU_
 
+cmp  al, byte ptr ds:[_texturecache_l2_head]
+jne  dont_early_out_composite
+ret
+
+dont_early_out_composite:
 push bx
 push cx
 push dx
@@ -149,57 +154,90 @@ push si
 mov  si, OFFSET _texturecache_nodes
 mov  cl, byte ptr ds:[_texturecache_l2_head]
 mov  dl, al
-cmp  al, cl
-je   jump_to_exit_markl2compositetexturecache
-cbw 
-mov  bx, ax
+cbw
+mov  bx, ax  ; zero out bx the first time
 SHIFT_MACRO shl  bx 2
+
+;	pagecount = texturecache_nodes[index].pagecount;
+
 mov  al, byte ptr ds:[bx + si + 2]
+
+;	if (pagecount){
+
 test al, al
-je   label_2
-label_4:
-mov  al, dl
-cbw 
-mov  bx, ax
+je   composite_pagecount_zero
+
+;	 	while (texturecache_nodes[index].numpages != texturecache_nodes[index].pagecount){
+;			index = texturecache_nodes[index].next;
+;		}
+
+
+
+composite_check_next_cache_node:
+mov  bl, dl   ; bh always zero here...
 SHIFT_MACRO shl  bx 2
-mov  al, byte ptr ds:[bx + si + 3]
-cmp  al, byte ptr ds:[bx + si + 2]
-je   label_3
+mov  ax, word ptr ds:[bx + si + 2]
+cmp  al, ah
+je   composite_found_first_index
 mov  dl, byte ptr ds:[bx + si + 1]
-jmp  label_4
-label_3:
+jmp  composite_check_next_cache_node
+
+composite_found_first_index:
+
+
+;		if (index == texturecache_l2_head) {
+;			return;
+;		}
+
 cmp  dl, cl
 je   jump_to_exit_markl2compositetexturecache
-label_2:
-mov  al, dl
-cbw 
-mov  bx, ax
+
+
+composite_pagecount_zero:
+
+
+;	if (texturecache_nodes[index].numpages){
+
+mov  bl, dl
 SHIFT_MACRO shl  bx 2
 cmp  byte ptr ds:[bx + si + 3], 0
-je   label_5
+je   composite_numpages_zero
+
+;		lastindex = index;
+
 mov  dh, dl
-label_11:
-mov  al, dh
-cbw 
-mov  bx, ax
-SHIFT_MACRO shl  bx 2
+
+;		while (texturecache_nodes[lastindex].pagecount != 1){
+;			lastindex = texturecache_nodes[lastindex].prev;
+;		}
+
+
+composite_check_next_cache_node_pagecount:
+
+mov  bl, dh         ; bh always 0 here...
+SHIFT_MACRO  shl  bx 2
 cmp  byte ptr ds:[bx + si + 2], 1
-je   label_12
+je   found_composite_multipage_last_page
 mov  dh, byte ptr ds:[bx + si + 0]
-jmp  label_11
+jmp  composite_check_next_cache_node_pagecount
+
+
+
+
 jump_to_exit_markl2compositetexturecache:
 jmp  exit_markl2compositetexturecache
-label_12:
-mov  al, dl
-cbw 
-mov  ch, byte ptr ds:[bx + si + 0]
-mov  bx, ax
-shl  bx, 2
+found_composite_multipage_last_page:
 
+mov  ch, byte ptr ds:[bx + si + 0]
+
+mov  bl, dl
+SHIFT_MACRO shl  bx 2
 mov  cl, byte ptr ds:[bx + si + 1]
+
 cmp  dh, byte ptr ds:[_texturecache_l2_tail]
 jne  label_8
 mov  byte ptr ds:[_texturecache_l2_tail], cl
+
 mov  bl, cl
 SHIFT_MACRO shl  bx 2
 mov  byte ptr ds:[bx + si + 0], -1
@@ -237,7 +275,7 @@ pop  cx
 pop  bx
 ret  
 
-label_5:
+composite_numpages_zero:
 mov  dh, byte ptr ds:[bx + si + 1]
 mov  ch, byte ptr ds:[bx + si + 0]
 cmp  dl, byte ptr ds:[_texturecache_l2_tail]
