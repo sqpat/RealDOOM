@@ -403,11 +403,11 @@ mov       dh, al
 
 cmp       dl, CACHETYPE_COMPOSITE
 jne       not_composite
-push      MAX_PATCHES                       ; bp - 0Ah
 push      OFFSET _texturecache_l2_head      ; bp - 2
 push      COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 4
 push      MAX_PATCHES                       ; bp - 6
 push      PATCHOFFSET_SEGMENT               ; bp - 8
+push      MAX_PATCHES                       ; bp - 0Ah
 push      OFFSET _usedtexturepagemem        ; bp - 0Ch
 mov       bx, OFFSET _texturecache_l2_tail
 mov       di, OFFSET _texturecache_nodes
@@ -419,11 +419,11 @@ cmp       dl, CACHETYPE_PATCH
 jne       is_sprite
 
 is_patch:
-push      MAX_TEXTURES                      ; bp - 0Ah
 push      OFFSET _texturecache_l2_head      ; bp - 2
 push      PATCHPAGE_SEGMENT                 ; bp - 4   
 push      MAX_PATCHES                       ; bp - 6
 push      COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 8
+push      MAX_TEXTURES                      ; bp - 0Ah
 push      OFFSET _usedtexturepagemem        ; bp - 0Ch
 mov       bx, OFFSET _texturecache_l2_tail
 mov       di, OFFSET _texturecache_nodes
