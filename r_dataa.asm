@@ -465,7 +465,7 @@ go_back_next_page:
 cmp       dl, dh
 jge       found_enough_pages
 mov       bx, ax
-shl       bx, 2
+SHIFT_MACRO shl       bx, 2
 mov       al, byte ptr [bx + di + 1]  ; get next
 inc       dl
 jmp       go_back_next_page
@@ -537,7 +537,7 @@ dec       bx   ; lodsw makes this off by one so we offset here...
 
 continue_first_cache_erase_loop:
 lodsb     ; increments si...
-shr       ax, 2
+SHIFT_MACRO shr       ax, 2
 cmp       al, cl
 je        erase_this_page
 done_erasing_page:
@@ -659,13 +659,13 @@ pop       cx
 pop       bx
 ret       
 erase_this_page:
-mov       byte ptr ds:[si-1], dl      ; 0FFh
-mov       byte ptr ds:[si+bx], dl   ; 0FFh
+mov       byte ptr ds:[si-1], dl     ; 0FFh
+mov       byte ptr ds:[si+bx], dl    ; 0FFh
 jmp       done_erasing_page
 
 erase_second_page:
 mov       byte ptr ds:[si-1], dl      ; 0FFh
-mov       byte ptr ds:[si+bx], dl   ; 0FFh
+mov       byte ptr ds:[si+bx], dl     ; 0FFh
 jmp       done_erasing_second_page
 
 
@@ -772,58 +772,59 @@ PUBLIC R_EvictFlatCacheEMSPage_
 
 
 push      bx
-push      cx
 push      dx
 push      si
-push      di
-mov       dh, byte ptr ds:[_flatcache_l2_tail]
-mov       al, dh
+mov       al, byte ptr ds:[_flatcache_l2_tail]
+mov       dh, al
 cbw      
 
 ;	evictedpage = flatcache_l2_tail;
-
-mov       bx, ax
-add       bx, ax
-mov       si, ax
-mov       al, byte ptr ds:[bx + _flatcache_nodes + 1]
-mov       byte ptr ds:[_flatcache_l2_tail], al
-
-;	flatcache_l2_tail = flatcache_nodes[evictedpage].next;	// tail is nextmost
-;	flatcache_nodes[flatcache_l2_tail].prev = -1;
-
-
-cbw      
-mov       di, ax
-add       di, ax
-mov       al, byte ptr ds:[_flatcache_l2_head]
-cbw      
-mov       byte ptr [di + _flatcache_nodes + 0], 0FFh
-
-;	flatcache_nodes[flatcache_l2_head].next = evictedpage;
-;	flatcache_nodes[evictedpage].next = -1;
-
-
-mov       di, ax
-add       di, ax
-mov       byte ptr ds:[di + _flatcache_nodes + 1], dh
-mov       al, byte ptr ds:[_flatcache_l2_head]
-mov       byte ptr ds:[bx + _flatcache_nodes + 1], 0FFh
-
-;	flatcache_nodes[evictedpage].prev = flatcache_l2_head;
-;	flatcache_l2_head = evictedpage;
-
-
-mov       byte ptr ds:[bx + _flatcache_nodes + 0], al
-mov       byte ptr ds:[_flatcache_l2_head], dh
+mov       bx, OFFSET _flatcache_nodes
+mov       si, ax        ; si gets evictedpage.
 
 ;	// all the other flats in this are cleared.
 ;	allocatedflatsperpage[evictedpage] = 1;
-
 mov       byte ptr ds:[si + _allocatedflatsperpage], 1
-mov       dl, MAX_FLATS
-mov       ax, FLATINDEX_SEGMENT
-mov       es, ax
-xor       bx, bx
+sal       si, 1  ; now word lookup.
+
+;	flatcache_l2_tail = flatcache_nodes[evictedpage].next;	// tail is nextmost
+
+mov       dl, byte ptr ds:[si + bx + 1]         ; dl has flatcache_l2_tail
+mov       byte ptr ds:[_flatcache_l2_tail], dl
+
+;	flatcache_nodes[evictedpage].next = -1;
+mov       byte ptr ds:[si + bx + 1], 0FFh
+
+;	flatcache_nodes[evictedpage].prev = flatcache_l2_head;
+
+mov       al, byte ptr ds:[_flatcache_l2_head]
+mov       byte ptr ds:[si + bx + 0], al
+
+;	flatcache_nodes[flatcache_l2_head].next = evictedpage;
+mov       si, ax
+sal       si, 1
+mov       byte ptr ds:[si + bx + 1], dh
+
+;	flatcache_nodes[flatcache_l2_tail].prev = -1;
+
+mov       al, dl
+mov       si, ax
+sal       si, 1
+mov       byte ptr [si + bx + 0], 0FFh
+
+
+;	flatcache_l2_head = evictedpage;
+
+
+mov       byte ptr ds:[_flatcache_l2_head], dh
+
+
+mov       bx, FLATINDEX_SEGMENT
+mov       es, bx
+mov       ah, dh
+xor       si, si
+mov       bx, -1
+mov       dx, MAX_FLATS
 
 
 ;   for (i = 0; i < MAX_FLATS; i++){
@@ -832,23 +833,21 @@ xor       bx, bx
 ;   	}
 ;  	}
 check_next_flat:
-mov       al, byte ptr es:[bx]
+lodsb       ; si is always one in front because of lodsb...
+
 SHIFT_MACRO shr       al 2
-cmp       al, dh
+cmp       al, ah
 je        erase_flat
 continue_erasing_flats:
-inc       bl
-cmp       bl, dl
-jb        check_next_flat
-mov       al, dh
-pop       di
+cmp       si, bx
+jbe       check_next_flat
+mov       al, ah
 pop       si
 pop       dx
-pop       cx
 pop       bx
 retf      
 erase_flat:
-mov       byte ptr es:[bx], 0FFh
+mov       byte ptr es:[si+bx], bl   ; bx is -1. this both writes FF and subtracts the 1 from si
 jmp       continue_erasing_flats
 
 ENDP

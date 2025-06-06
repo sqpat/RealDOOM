@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/06 14:02:07
+Created on:       25/06/06 15:52:41
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -74,9 +74,9 @@ p_telept_TEXT          CODE           AUTO           0a80:cd30       0000021c
 P_TICK_TEXT            CODE           AUTO           0a80:cf4c       00000147
 p_user_TEXT            CODE           AUTO           0a80:d0a0       0000062f
 r_data_TEXT            CODE           AUTO           17ed:0000       00001440
-R_DATAA_TEXT           CODE           AUTO           17ed:1440       00000377
-R_MATH_TEXT            CODE           AUTO           17ed:17b8       000001e3
-R_MAINHI_TEXT          CODE           AUTO           17ed:199c       00002491
+R_DATAA_TEXT           CODE           AUTO           17ed:1440       0000036d
+R_MATH_TEXT            CODE           AUTO           17ed:17ae       000001e3
+R_MAINHI_TEXT          CODE           AUTO           17ed:1992       00002491
 r_draw_TEXT            CODE           AUTO           17ed:3e30       000000fb
 r_main_TEXT            CODE           AUTO           17ed:3f30       000001dd
 w_wad_TEXT             CODE           AUTO           17ed:4110       0000030c
@@ -1164,42 +1164,42 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 17ed:12b2+     R_LoadSpriteColumns_
 Module: r_dataa.obj(r_dataa.ASM)
 17ed:15c6      R_EvictL2CacheEMSPage_
-17ed:16f5      R_MarkL2FlatCacheMRU_
+17ed:16f7      R_MarkL2FlatCacheMRU_
 17ed:14d0      R_MarkL2CompositeTextureCacheMRU_
 17ed:14e5      R_MarkL2SpriteCacheMRU_
 17ed:1460      R_MarkL1SpriteCacheMRU3_
 17ed:1470      R_MarkL1TextureCacheMRU_
 17ed:1440      R_MarkL1SpriteCacheMRU_
 17ed:14b0      R_MarkL1TextureCacheMRU7_
-17ed:174b      R_EvictFlatCacheEMSPage_
+17ed:174d      R_EvictFlatCacheEMSPage_
 Module: r_math.obj(r_math.ASM)
-17ed:182a      R_PointToAngle_
+17ed:1820      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-17ed:1d54*     R_AddLine_
-17ed:243f*     R_StoreWallRange_
-17ed:351e*     R_ClipSolidWallSegment_
-17ed:35cb*     R_ClipPassWallSegment_
-17ed:385f*     R_CheckBBox_
-17ed:1f02*     R_Subsector_
-17ed:1a2b*     FixedMulBSPLocal_
-17ed:1b1e*     R_PointToDist_
-17ed:1c29*     R_HandleEMSVisplanePagination_
-17ed:1a64*     FixedDivBSPLocal_
-17ed:37b1      R_PrepareMaskedPSprites_
-17ed:3af3      R_WriteBackViewConstants_
-17ed:3c9b      R_WriteBackFrameConstants_
-17ed:1bb4      R_ClearPlanes_
-17ed:23d7*     R_AddSprites_
-17ed:1b95      R_ClearClipSegs_
-17ed:1cd8*     R_FindPlane_
-17ed:2ff9*     R_DrawColumnPrep_
-17ed:361e*     R_DrawPSprite_
-17ed:1fec*     R_CheckPlane_
-17ed:20b7*     R_ProjectSprite_
-17ed:1ad3*     FixedMulTrigNoShiftBSPLocal_
-17ed:3a0a      R_RenderBSPNode_
-17ed:199c*     R_ScaleFromGlobalAngle_
-17ed:3830*     R_PointToAngle16_
+17ed:1d4a*     R_AddLine_
+17ed:2435*     R_StoreWallRange_
+17ed:3514*     R_ClipSolidWallSegment_
+17ed:35c1*     R_ClipPassWallSegment_
+17ed:3855*     R_CheckBBox_
+17ed:1ef8*     R_Subsector_
+17ed:1a21*     FixedMulBSPLocal_
+17ed:1b14*     R_PointToDist_
+17ed:1c1f*     R_HandleEMSVisplanePagination_
+17ed:1a5a*     FixedDivBSPLocal_
+17ed:37a7      R_PrepareMaskedPSprites_
+17ed:3ae9      R_WriteBackViewConstants_
+17ed:3c91      R_WriteBackFrameConstants_
+17ed:1baa      R_ClearPlanes_
+17ed:23cd*     R_AddSprites_
+17ed:1b8b      R_ClearClipSegs_
+17ed:1cce*     R_FindPlane_
+17ed:2fef*     R_DrawColumnPrep_
+17ed:3614*     R_DrawPSprite_
+17ed:1fe2*     R_CheckPlane_
+17ed:20ad*     R_ProjectSprite_
+17ed:1ac9*     FixedMulTrigNoShiftBSPLocal_
+17ed:3a00      R_RenderBSPNode_
+17ed:1992*     R_ScaleFromGlobalAngle_
+17ed:3826*     R_PointToAngle16_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17ed:3e30      R_VideoErase_
 17ed:3eb4      R_DrawViewBorder_
@@ -1552,4 +1552,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00023490 (144528.)
 Entry point address: 1cef:1c36
-Link time: 00:00.74
+Link time: 00:00.75
