@@ -35,6 +35,9 @@ EXTRN _spritecache_l2_tail:BYTE
 EXTRN _texturecache_nodes:BYTE
 EXTRN _texturecache_l2_head:BYTE
 EXTRN _texturecache_l2_tail:BYTE
+EXTRN _flatcache_nodes:BYTE
+EXTRN _flatcache_l2_head:BYTE
+EXTRN _flatcache_l2_tail:BYTE
 
 EXTRN _usedtexturepagemem:BYTE
 EXTRN _usedspritepagemem:BYTE
@@ -668,133 +671,141 @@ jmp       done_erasing_second_page
 
 
 ENDP
+
+PROC R_MarkL2FlatCacheMRU_ FAR
+PUBLIC R_MarkL2FlatCacheMRU_
+
+
+push      bx
+push      cx
+push      dx
+push      si
+push      bp
+mov       bp, sp
+sub       sp, 2
+mov       dl, al
+mov       cx, OFFSET _flatcache_nodes
+mov       bx, ds
+cmp       al, byte ptr ds:[_flatcache_l2_head]
+je        exit_flatcachemru
+cbw      
+mov       si, cx
+add       ax, ax
+add       si, ax
+mov       al, byte ptr [si]
+mov       dh, byte ptr [si + 1]
+mov       byte ptr [bp - 2], al
+cmp       dl, byte ptr ds:[_flatcache_l2_tail]
+je        label_1
+cbw      
+mov       si, cx
+add       ax, ax
+add       si, ax
+mov       byte ptr [si + 1], dh
+label_2:
+mov       al, dh
+cbw      
+mov       si, cx
+add       ax, ax
+mov       es, bx
+add       si, ax
+mov       al, byte ptr [bp - 2]
+mov       byte ptr es:[si], al
+mov       al, dl
+cbw      
+mov       si, cx
+add       ax, ax
+add       si, ax
+mov       al, byte ptr ds:[_flatcache_l2_head]
+mov       byte ptr es:[si], al
+cbw      
+mov       bx, cx
+add       ax, ax
+mov       byte ptr es:[si + 1], 0FFh
+add       bx, ax
+mov       byte ptr ds:[_flatcache_l2_head], dl
+mov       byte ptr es:[bx + 1], dl
+exit_flatcachemru:
+LEAVE_MACRO     
+pop       si
+pop       dx
+pop       cx
+pop       bx
+retf      
+label_1:
+mov       byte ptr ds:[_flatcache_l2_tail], dh
+jmp       label_2
+
+
+ENDP
+
+PROC R_EvictFlatCacheEMSPage_ FAR
+PUBLIC R_EvictFlatCacheEMSPage_
+
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+mov       dh, byte ptr ds:[_flatcache_l2_tail]
+mov       al, dh
+cbw      
+mov       bx, ax
+add       bx, ax
+mov       si, ax
+mov       al, byte ptr ds:[bx + _flatcache_nodes + 1]
+mov       byte ptr ds:[_flatcache_l2_tail], al
+cbw      
+mov       di, ax
+add       di, ax
+mov       al, byte ptr ds:[_flatcache_l2_head]
+cbw      
+mov       byte ptr [di + _flatcache_nodes + 0], 0FFh
+mov       di, ax
+add       di, ax
+mov       byte ptr ds:[di + _flatcache_nodes + 1], dh
+mov       al, byte ptr ds:[_flatcache_l2_head]
+mov       byte ptr ds:[bx + _flatcache_nodes + 1], 0FFh
+mov       byte ptr ds:[bx + _flatcache_nodes + 0], al
+mov       byte ptr ds:[_flatcache_l2_head], dh
+mov       byte ptr ds:[si + _allocatedflatsperpage], 1
+xor       dl, dl
+label_4:
+mov       ax, FLATINDEX_SEGMENT
+mov       bl, dl
+mov       es, ax
+xor       bh, bh
+mov       al, byte ptr es:[bx]
+xor       ah, ah
+mov       cx, ax
+mov       al, dh
+sar       cx, 2
+cbw      
+cmp       cx, ax
+je        label_3
+label_5:
+inc       dl
+cmp       dl, MAX_FLATS
+jb        label_4
+mov       al, dh
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+retf      
+label_3:
+mov       byte ptr es:[bx], 0FFh
+jmp       label_5
+
+ENDP
+
 COMMENT @
 
-PROC R_EvictL2CacheEMSPage_ NEAR
-PUBLIC R_EvictL2CacheEMSPage_
 
-
-0x0000000000000224:  53                push      bx
-0x0000000000000225:  51                push      cx
-0x0000000000000226:  52                push      dx
-0x0000000000000227:  56                push      si
-0x0000000000000228:  55                push      bp
-0x0000000000000229:  89 E5             mov       bp, sp
-0x000000000000022b:  83 EC 02          sub       sp, 2
-0x000000000000022e:  88 C2             mov       dl, al
-0x0000000000000230:  B9 54 1C          mov       cx, 0x1c54
-0x0000000000000233:  8C DB             mov       bx, ds
-0x0000000000000235:  3A 06 A8 06       cmp       al, byte ptr [0x6a8]
-0x0000000000000239:  74 53             je        0x28e
-0x000000000000023b:  98                cbw      
-0x000000000000023c:  89 CE             mov       si, cx
-0x000000000000023e:  01 C0             add       ax, ax
-0x0000000000000240:  01 C6             add       si, ax
-0x0000000000000242:  8A 04             mov       al, byte ptr [si]
-0x0000000000000244:  8A 74 01          mov       dh, byte ptr [si + 1]
-0x0000000000000247:  88 46 FE          mov       byte ptr [bp - 2], al
-0x000000000000024a:  3A 16 A9 06       cmp       dl, byte ptr [0x6a9]
-0x000000000000024e:  74 44             je        0x294
-0x0000000000000250:  98                cbw      
-0x0000000000000251:  89 CE             mov       si, cx
-0x0000000000000253:  01 C0             add       ax, ax
-0x0000000000000255:  01 C6             add       si, ax
-0x0000000000000257:  88 74 01          mov       byte ptr [si + 1], dh
-0x000000000000025a:  88 F0             mov       al, dh
-0x000000000000025c:  98                cbw      
-0x000000000000025d:  89 CE             mov       si, cx
-0x000000000000025f:  01 C0             add       ax, ax
-0x0000000000000261:  8E C3             mov       es, bx
-0x0000000000000263:  01 C6             add       si, ax
-0x0000000000000265:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x0000000000000268:  26 88 04          mov       byte ptr es:[si], al
-0x000000000000026b:  88 D0             mov       al, dl
-0x000000000000026d:  98                cbw      
-0x000000000000026e:  89 CE             mov       si, cx
-0x0000000000000270:  01 C0             add       ax, ax
-0x0000000000000272:  01 C6             add       si, ax
-0x0000000000000274:  A0 A8 06          mov       al, byte ptr [0x6a8]
-0x0000000000000277:  26 88 04          mov       byte ptr es:[si], al
-0x000000000000027a:  98                cbw      
-0x000000000000027b:  89 CB             mov       bx, cx
-0x000000000000027d:  01 C0             add       ax, ax
-0x000000000000027f:  26 C6 44 01 FF    mov       byte ptr es:[si + 1], 0xff
-0x0000000000000284:  01 C3             add       bx, ax
-0x0000000000000286:  88 16 A8 06       mov       byte ptr [0x6a8], dl
-0x000000000000028a:  26 88 57 01       mov       byte ptr es:[bx + 1], dl
-0x000000000000028e:  C9                LEAVE_MACRO     
-0x000000000000028f:  5E                pop       si
-0x0000000000000290:  5A                pop       dx
-0x0000000000000291:  59                pop       cx
-0x0000000000000292:  5B                pop       bx
-0x0000000000000293:  CB                retf      
-0x0000000000000294:  88 36 A9 06       mov       byte ptr [0x6a9], dh
-0x0000000000000298:  EB C0             jmp       0x25a
-
-
-ENDP
-
-PROC R_EvictL2CacheEMSPage_ NEAR
-PUBLIC R_EvictL2CacheEMSPage_
-
-
-0x000000000000029a:  53                push      bx
-0x000000000000029b:  51                push      cx
-0x000000000000029c:  52                push      dx
-0x000000000000029d:  56                push      si
-0x000000000000029e:  57                push      di
-0x000000000000029f:  8A 36 A9 06       mov       dh, byte ptr [0x6a9]
-0x00000000000002a3:  88 F0             mov       al, dh
-0x00000000000002a5:  98                cbw      
-0x00000000000002a6:  89 C3             mov       bx, ax
-0x00000000000002a8:  01 C3             add       bx, ax
-0x00000000000002aa:  89 C6             mov       si, ax
-0x00000000000002ac:  8A 87 55 1C       mov       al, byte ptr [bx + 0x1c55]
-0x00000000000002b0:  A2 A9 06          mov       byte ptr [0x6a9], al
-0x00000000000002b3:  98                cbw      
-0x00000000000002b4:  89 C7             mov       di, ax
-0x00000000000002b6:  01 C7             add       di, ax
-0x00000000000002b8:  A0 A8 06          mov       al, byte ptr [0x6a8]
-0x00000000000002bb:  98                cbw      
-0x00000000000002bc:  C6 85 54 1C FF    mov       byte ptr [di + 0x1c54], 0xff
-0x00000000000002c1:  89 C7             mov       di, ax
-0x00000000000002c3:  01 C7             add       di, ax
-0x00000000000002c5:  88 B5 55 1C       mov       byte ptr [di + 0x1c55], dh
-0x00000000000002c9:  A0 A8 06          mov       al, byte ptr [0x6a8]
-0x00000000000002cc:  C6 87 55 1C FF    mov       byte ptr [bx + 0x1c55], 0xff
-0x00000000000002d1:  88 87 54 1C       mov       byte ptr [bx + 0x1c54], al
-0x00000000000002d5:  88 36 A8 06       mov       byte ptr [0x6a8], dh
-0x00000000000002d9:  C6 84 A0 01 01    mov       byte ptr [si + 0x1a0], 1
-0x00000000000002de:  30 D2             xor       dl, dl
-0x00000000000002e0:  B8 79 4E          mov       ax, 0x4e79
-0x00000000000002e3:  88 D3             mov       bl, dl
-0x00000000000002e5:  8E C0             mov       es, ax
-0x00000000000002e7:  30 FF             xor       bh, bh
-0x00000000000002e9:  26 8A 07          mov       al, byte ptr es:[bx]
-0x00000000000002ec:  30 E4             xor       ah, ah
-0x00000000000002ee:  89 C1             mov       cx, ax
-0x00000000000002f0:  88 F0             mov       al, dh
-0x00000000000002f2:  C1 F9 02          sar       cx, 2
-0x00000000000002f5:  98                cbw      
-0x00000000000002f6:  39 C1             cmp       cx, ax
-0x00000000000002f8:  74 0F             je        0x309
-0x00000000000002fa:  FE C2             inc       dl
-0x00000000000002fc:  80 FA 97          cmp       dl, 0x97
-0x00000000000002ff:  72 DF             jb        0x2e0
-0x0000000000000301:  88 F0             mov       al, dh
-0x0000000000000303:  5F                pop       di
-0x0000000000000304:  5E                pop       si
-0x0000000000000305:  5A                pop       dx
-0x0000000000000306:  59                pop       cx
-0x0000000000000307:  5B                pop       bx
-0x0000000000000308:  CB                retf      
-0x0000000000000309:  26 C6 07 FF       mov       byte ptr es:[bx], 0xff
-0x000000000000030d:  EB EB             jmp       0x2fa
-
-ENDP
-
-PROC R_EvictL2CacheEMSPage_ NEAR
-PUBLIC R_EvictL2CacheEMSPage_
+PROC R_DrawColumnInCache_ NEAR
+PUBLIC R_DrawColumnInCache_
 
 0x0000000000000310:  56                push      si
 0x0000000000000311:  57                push      di
@@ -1046,8 +1057,8 @@ PUBLIC R_EvictL2CacheEMSPage_
 
 ENDP
 
-PROC R_EvictL2CacheEMSPage_ NEAR
-PUBLIC R_EvictL2CacheEMSPage_
+PROC R_GetNextTextureBlock_ NEAR
+PUBLIC R_GetNextTextureBlock_
 
 
 0x000000000000055e:  53                push      bx

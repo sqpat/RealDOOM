@@ -5983,10 +5983,10 @@ mov   byte ptr [bx + 01Bh], 1
 dont_set_tics_to_1_blood:
 mov   ax, word ptr ds:[_la_damage]
 cmp   ax, 12
-jg    label_5
+jg    continue_draw_check
 cmp   ax, 9
 jge   draw_big_blood
-label_5:
+continue_draw_check:
 cmp   ax, 9
 jl    draw_small_blood
 jmp   done_spawning_blood_or_puff
