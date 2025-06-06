@@ -569,7 +569,7 @@ cmp       al, cl
 je        erase_second_page
 done_erasing_second_page:
 cmp       si, bx
-jle       continue_second_cache_erase_loop
+jle       continue_second_cache_erase_loop    ; jle, not jl because bx is decced
 
 skip_secondary_loop:
 
@@ -820,7 +820,7 @@ mov       byte ptr ds:[_flatcache_l2_head], dh
 
 
 mov       bx, FLATINDEX_SEGMENT
-mov       es, bx
+mov       ds, bx
 mov       ah, dh
 xor       si, si
 mov       bx, -1
@@ -839,15 +839,18 @@ SHIFT_MACRO shr       al 2
 cmp       al, ah
 je        erase_flat
 continue_erasing_flats:
-cmp       si, bx
-jbe       check_next_flat
+cmp       si, dx
+jb        check_next_flat
 mov       al, ah
+mov       bx, ss
+mov       ds, bx
 pop       si
 pop       dx
 pop       bx
-retf      
+retf   
+
 erase_flat:
-mov       byte ptr es:[si+bx], bl   ; bx is -1. this both writes FF and subtracts the 1 from si
+mov       byte ptr ds:[si+bx], bl   ; bx is -1. this both writes FF and subtracts the 1 from si
 jmp       continue_erasing_flats
 
 ENDP
