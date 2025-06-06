@@ -510,8 +510,6 @@ jmp       find_first_evictable_page
 found_first_evictable_page:
 
 
-;		nodelist[evictedpage].pagecount = 0;
-;		nodelist[evictedpage].numpages = 0;
 
 mov       ax, word ptr [bp - 024h]
 mov       word ptr [bp - 012h], ax
@@ -531,12 +529,30 @@ mov       word ptr [bp - 02Ah], ax
 
 ;	while (evictedpage != -1){
 
-label_7:
-cmp       cx, -1
-jne       label_11
-jmp       cleared_all_cache_data
-label_11:
+check_next_evicted_page:
+cmp       cl, -1
+je        cleared_all_cache_data
 
+
+do_next_evicted_page:
+
+
+; loop setup
+mov       bx, cx
+SHIFT_MACRO shl       bx 2
+add       bx, word ptr [bp - 0Ch]
+xor       ax, ax
+cwd
+
+;		nodelist[evictedpage].pagecount = 0;
+;		nodelist[evictedpage].numpages = 0;
+
+mov       word ptr [bx + 2], ax    ; set both at once
+mov       ds, word ptr [bp - 026h] ; todo lds les
+mov       bx, word ptr [bp - 02Ch]
+
+mov       es, word ptr [bp - 028h]
+mov       si, word ptr [bp - 02Ah]
 
 ;    for (k = 0; k < maxitersize; k++){
 ;			if ((cacherefpage[k] >> 2) == evictedpage){
@@ -545,76 +561,80 @@ label_11:
 ;			}
 ;		}
 
-mov       bx, cx
-SHIFT_MACRO shl       bx 2
-add       bx, word ptr [bp - 0Ch]
-mov       byte ptr [bx + 2], 0
-xor       dx, dx
-mov       byte ptr [bx + 3], 0
-test      di, di
-jle       label_13
-mov       ax, word ptr [bp - 026h]
-mov       bx, word ptr [bp - 02Ch]
-mov       word ptr [bp - 2], ax
-mov       ax, word ptr [bp - 028h]
-mov       si, word ptr [bp - 02Ah]
-mov       word ptr [bp - 8], ax
-label_3:
-mov       es, word ptr [bp - 2]
-mov       al, byte ptr es:[bx]
-xor       ah, ah
-sar       ax, 2
-cmp       ax, cx
-je        label_14
-label_8:
+continue_first_cache_erase_loop:
+mov       al, byte ptr ds:[bx]
+shr       ax, 2
+cmp       al, cl
+je        erase_this_page
+done_erasing_page:
 inc       bx
 inc       dx
 inc       si
-cmp       dx, di
-jl        label_3
-label_13:
-xor       dx, dx
-cmp       word ptr [bp - 6], 0
-jle       label_4
-mov       ax, word ptr [bp - 02Eh]
+cmp       dx, di ; todo selfmodify
+jl        continue_first_cache_erase_loop
+
+done_with_first_cache_erase_loop:
+
+
+;	for (k = 0; k < secondarymaxitersize; k++){
+;        if ((secondarycacherefpage[k]) >> 2 == evictedpage){
+;            secondarycacherefpage[k] = 0xFF;
+;            secondarycacherefoffset[k] = 0xFF;
+;        }
+;    }
+
+cmp       word ptr [bp - 6], 0  ; todo jmp or not selfmodify? 
+jle       skip_secondary_loop
+
+xor       dx, dx    ; todo use bx as counter and then bx + si/di
+mov       ds, word ptr [bp - 02Eh]  ; todo lds les
 mov       bx, word ptr [bp - 012h]
-mov       word ptr [bp - 4], ax
-mov       ax, word ptr [bp - 014h]
+
+mov       es, word ptr [bp - 014h]
 mov       si, word ptr [bp - 030h]
-mov       word ptr [bp - 0Ah], ax
-label_5:
-mov       es, word ptr [bp - 4]
-mov       al, byte ptr es:[bx]
-xor       ah, ah
-sar       ax, 2
-cmp       ax, cx
-jne       label_6
-mov       byte ptr es:[bx], 0FFh
-mov       es, word ptr [bp - 0Ah]
-mov       byte ptr es:[si], 0FFh
-label_6:
+
+continue_second_cache_erase_loop:
+mov       al, byte ptr ds:[bx]
+
+SHIFT_MACRO sar       ax 2
+cmp       al, cl
+je        erase_second_page
+done_erasing_second_page:
 inc       bx
 inc       dx
 inc       si
-cmp       dx, word ptr [bp - 6]
-jl        label_5
-label_4:
+cmp       dx, word ptr [bp - 6]  ; todo selfmodify
+jl        continue_second_cache_erase_loop
+
+skip_secondary_loop:
+
+;		usedcacherefpage[evictedpage] = 0;
+;		evictedpage = nodelist[evictedpage].prev;
+
+
+push      ss
+pop       ds  ; todo change later. just use ss twice instead?
+
+
 mov       bx, word ptr [bp - 010h]
 add       bx, cx
 mov       byte ptr [bx], 0
 mov       bx, cx
 SHIFT_MACRO shl       bx 2
 add       bx, word ptr [bp - 0Ch]
-mov       al, byte ptr [bx]
-cbw      
-mov       cx, ax
-jmp       label_7
+mov       cl, byte ptr [bx]     ; get prev
+cmp       cl, -1
+jne       do_next_evicted_page
+jmp       cleared_all_cache_data   ; todo remove...
 
-label_14:
-mov       byte ptr es:[bx], 0FFh
-mov       es, word ptr [bp - 8]
+erase_this_page:
+mov       byte ptr ds:[bx], 0FFh
 mov       byte ptr es:[si], 0FFh
-jmp       label_8
+jmp       done_erasing_page
+erase_second_page:
+mov       byte ptr ds:[bx], 0FFh
+mov       byte ptr es:[si], 0FFh
+jmp       done_erasing_second_page
 
 cleared_all_cache_data:
 
