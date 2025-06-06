@@ -152,7 +152,7 @@ cmp  al, cl
 je   jump_to_label_1
 cbw 
 mov  bx, ax
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 mov  al, byte ptr ds:[bx + _texturecache_nodes+2]
 test al, al
 je   label_2
@@ -160,7 +160,7 @@ label_4:
 mov  al, dl
 cbw 
 mov  bx, ax
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 mov  al, byte ptr ds:[bx + _texturecache_nodes+3]
 cmp  al, byte ptr ds:[bx + _texturecache_nodes+2]
 je   label_3
@@ -173,7 +173,7 @@ label_2:
 mov  al, dl
 cbw 
 mov  bx, ax
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 cmp  byte ptr ds:[bx + _texturecache_nodes+3], 0
 je   jump_to_label_5
 mov  dh, dl
@@ -181,7 +181,7 @@ label_11:
 mov  al, dh
 cbw 
 mov  bx, ax
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 cmp  byte ptr ds:[bx + _texturecache_nodes+2], 1
 je   label_12
 mov  dh, byte ptr ds:[bx + _texturecache_nodes+0]
@@ -201,23 +201,23 @@ mov  al, bl
 cbw 
 mov  byte ptr ds:[_texturecache_l2_tail], bl
 mov  bx, ax
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 mov  byte ptr ds:[bx + _texturecache_nodes+0], -1
 label_7:
 mov  al, dh
 cbw 
 mov  bx, ax
 mov  al, cl
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 cbw 
 mov  byte ptr ds:[bx + _texturecache_nodes+0], cl
 mov  bx, ax
 mov  al, dl
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 cbw 
 mov  byte ptr ds:[bx + _texturecache_nodes+1], dh
 mov  bx, ax
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 mov  cl, dl
 mov  byte ptr ds:[bx + _texturecache_nodes+1], -1
 label_1:
@@ -252,17 +252,17 @@ mov  al, dh
 cbw 
 mov  bx, ax
 mov  al, dl
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 cbw 
 mov  byte ptr ds:[bx + _texturecache_nodes+0], ch
 mov  bx, ax
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 mov  al, cl
 mov  byte ptr ds:[bx + _texturecache_nodes+1], -1
 cbw 
 mov  byte ptr ds:[bx + _texturecache_nodes+0], cl
 mov  bx, ax
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 mov  cl, dl
 mov  byte ptr ds:[bx + _texturecache_nodes+1], dl
 mov  byte ptr ds:[_texturecache_l2_head], cl
@@ -275,7 +275,7 @@ label_10:
 mov  al, ch
 cbw 
 mov  bx, ax
-shl  bx, 2
+SHIFT_MACRO shl  bx 2
 mov  byte ptr ds:[bx + _texturecache_nodes+1], dh
 jmp  label_9
 
@@ -331,7 +331,7 @@ sprite_found_first_index:
 ;		}
 
 cmp  dl, cl             ; dh is free, use dh instead here?
-je   jump_to_mark_sprite_lru_exit
+je   mark_sprite_lru_exit
 sprite_pagecount_zero:
 
 ;mov  al, dl
@@ -364,8 +364,6 @@ je   found_sprite_multipage_last_page
 mov  dh, byte ptr ds:[bx + _spritecache_nodes+0]
 jmp  sprite_check_next_cache_node_pagecount
 
-jump_to_mark_sprite_lru_exit:
-jmp  mark_sprite_lru_exit
 found_sprite_multipage_last_page:
 
 ; dl = index
@@ -455,36 +453,44 @@ mov  ch, byte ptr ds:[bx + _spritecache_nodes+0] ; todo get whole word and swap 
 cmp  dl, byte ptr ds:[_spritecache_l2_tail]
 jne  spritecache_tail_not_equal_to_index
 mov  byte ptr ds:[_spritecache_l2_tail], dh
-label_23:
-mov  al, dh
-cbw 
-mov  bx, ax
-mov  al, dl
-shl  bx, 2
-cbw 
+jmp  done_with_spritecache_tail_handling
+
+spritecache_tail_not_equal_to_index:
+mov  bl, ch
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + _spritecache_nodes+1], dh
+
+done_with_spritecache_tail_handling:
+
+; spritecache_nodes[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+
+mov  bl, dh
+SHIFT_MACRO shl  bx 2
 mov  byte ptr ds:[bx + _spritecache_nodes+0], ch
-mov  bx, ax
-shl  bx, 2
-mov  al, cl
-mov  byte ptr ds:[bx + _spritecache_nodes+1], -1
-cbw 
-mov  byte ptr ds:[bx + _spritecache_nodes+0], cl
-mov  bx, ax
-shl  bx, 2
-mov  cl, dl
+
+;	spritecache_nodes[index].prev = spritecache_l2_head;
+;	spritecache_nodes[index].next = -1;
+
+mov  bl, dl
+SHIFT_MACRO shl  bx 2
+mov  ch, -1
+mov  word ptr ds:[bx + _spritecache_nodes+0], cx
+
+; spritecache_nodes[spritecache_l2_head].next = index;
+
+mov  bl, cl
+SHIFT_MACRO shl  bx 2
 mov  byte ptr ds:[bx + _spritecache_nodes+1], dl
-mov  byte ptr ds:[_spritecache_l2_head], cl
+
+;	spritecache_l2_head = index;
+
+mov  byte ptr ds:[_spritecache_l2_head], dl
+
 pop  dx
 pop  cx
 pop  bx
 ret  
-spritecache_tail_not_equal_to_index:
-mov  al, ch
-cbw 
-mov  bx, ax
-shl  bx, 2
-mov  byte ptr ds:[bx + _spritecache_nodes+1], dh
-jmp  label_23
+
 
 ENDP
 
