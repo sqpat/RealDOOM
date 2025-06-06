@@ -138,185 +138,24 @@ ret
 
 ENDP
 
-
 PROC R_MarkL2CompositeTextureCacheMRU_ NEAR
 PUBLIC R_MarkL2CompositeTextureCacheMRU_
+
 
 cmp  al, byte ptr ds:[_texturecache_l2_head]
 jne  dont_early_out_composite
 ret
 
 dont_early_out_composite:
-push bx
-push cx
-push dx
-push si
+PUSHA_NO_AX_MACRO
 mov  si, OFFSET _texturecache_nodes
-mov  cl, byte ptr ds:[_texturecache_l2_head]
-mov  dl, al
-cbw
-mov  bx, ax  ; zero out bx the first time
-SHIFT_MACRO shl  bx 2
+mov  di, OFFSET _texturecache_l2_tail
+mov  es, di
+mov  di, OFFSET _texturecache_l2_head
 
-;	pagecount = texturecache_nodes[index].pagecount;
-
-mov  al, byte ptr ds:[bx + si + 2]
-
-;	if (pagecount){
-
-test al, al
-je   composite_pagecount_zero
-
-;	 	while (texturecache_nodes[index].numpages != texturecache_nodes[index].pagecount){
-;			index = texturecache_nodes[index].next;
-;		}
-
-
-
-composite_check_next_cache_node:
-mov  bl, dl   ; bh always zero here...
-SHIFT_MACRO shl  bx 2
-mov  ax, word ptr ds:[bx + si + 2]
-cmp  al, ah
-je   composite_found_first_index
-mov  dl, byte ptr ds:[bx + si + 1]
-jmp  composite_check_next_cache_node
-
-composite_found_first_index:
-
-
-;		if (index == texturecache_l2_head) {
-;			return;
-;		}
-
-cmp  dl, cl
-je   jump_to_exit_markl2compositetexturecache
-
-
-composite_pagecount_zero:
-
-
-;	if (texturecache_nodes[index].numpages){
-
-mov  bl, dl
-SHIFT_MACRO shl  bx 2
-cmp  byte ptr ds:[bx + si + 3], 0
-je   composite_numpages_zero
-
-;		lastindex = index;
-
-mov  dh, dl
-
-;		while (texturecache_nodes[lastindex].pagecount != 1){
-;			lastindex = texturecache_nodes[lastindex].prev;
-;		}
-
-
-composite_check_next_cache_node_pagecount:
-
-mov  bl, dh         ; bh always 0 here...
-SHIFT_MACRO  shl  bx 2
-cmp  byte ptr ds:[bx + si + 2], 1
-je   found_composite_multipage_last_page
-mov  dh, byte ptr ds:[bx + si + 0]
-jmp  composite_check_next_cache_node_pagecount
-
-
-
-
-jump_to_exit_markl2compositetexturecache:
-jmp  exit_markl2compositetexturecache
-found_composite_multipage_last_page:
-
-mov  ch, byte ptr ds:[bx + si + 0]
-
-mov  bl, dl
-SHIFT_MACRO shl  bx 2
-mov  cl, byte ptr ds:[bx + si + 1]
-
-cmp  dh, byte ptr ds:[_texturecache_l2_tail]
-jne  label_8
-mov  byte ptr ds:[_texturecache_l2_tail], cl
-
-mov  bl, cl
-SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 0], -1
-jmp  label_7
-
-label_8:
-mov  bl, ch
-SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 1], cl
-
-mov  bl, cl
-SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 0], ch
-
-label_7:
-
-mov  al, byte ptr ds:[_texturecache_l2_head]
-mov  bl, dh
-SHIFT_MACRO shl  bx 2
-
-mov  byte ptr ds:[bx + si + 0], al
-
-mov  bl, al     ; _texturecache_l2_head
-SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 1], dh
-
-mov  bl, dl
-SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 1], -1
-mov  byte ptr ds:[_texturecache_l2_head], dl
-exit_markl2compositetexturecache:
-pop  si
-pop  dx
-pop  cx
-pop  bx
-ret  
-
-composite_numpages_zero:
-mov  dh, byte ptr ds:[bx + si + 1]
-mov  ch, byte ptr ds:[bx + si + 0]
-cmp  dl, byte ptr ds:[_texturecache_l2_tail]
-jne  label_10
-mov  byte ptr ds:[_texturecache_l2_tail], dh
-label_9:
-mov  al, dh
-cbw 
-mov  bx, ax
-mov  al, dl
-SHIFT_MACRO shl  bx 2
-cbw 
-mov  byte ptr ds:[bx + si + 0], ch
-mov  bx, ax
-SHIFT_MACRO shl  bx 2
-mov  al, cl
-mov  byte ptr ds:[bx + si + 1], -1
-cbw 
-mov  byte ptr ds:[bx + si + 0], cl
-mov  bx, ax
-SHIFT_MACRO shl  bx 2
-mov  cl, dl
-mov  byte ptr ds:[bx + si + 1], dl
-mov  byte ptr ds:[_texturecache_l2_head], cl
-pop  si
-pop  dx
-pop  cx
-pop  bx
-ret  
-label_10:
-mov  al, ch
-cbw 
-mov  bx, ax
-SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 1], dh
-jmp  label_9
-
+jmp  do_markl2func
 
 ENDP
-
-
 
 PROC R_MarkL2SpriteCacheMRU_ NEAR
 PUBLIC R_MarkL2SpriteCacheMRU_
@@ -329,13 +168,18 @@ cmp  al, byte ptr ds:[_spritecache_l2_head]
 jne  dont_early_out
 ret
 
+
+
 dont_early_out:
-push bx
-push cx
-push dx
-push si
+PUSHA_NO_AX_MACRO
 mov  si, OFFSET _spritecache_nodes
-mov  cl, byte ptr ds:[_spritecache_l2_head]
+mov  di, OFFSET _spritecache_l2_tail
+mov  es, di
+mov  di, OFFSET _spritecache_l2_head
+
+do_markl2func:
+
+mov  cl, byte ptr ds:[di]
 mov  dl, al
 mov  bx, ax
 
@@ -370,10 +214,6 @@ cmp  dl, cl             ; dh is free, use dh instead here?
 je   mark_sprite_lru_exit
 sprite_pagecount_zero:
 
-;mov  al, dl
-;cbw 
-;mov  bx, ax
-;shl  bx, 2
 
 ; bx should already be set...
 
@@ -416,14 +256,15 @@ SHIFT_MACRO   shl  bx 2
 mov  cl, byte ptr ds:[bx + si + 1]    ; index_next
 
 ;		if (spritecache_l2_tail == lastindex){
-
-cmp  dh, byte ptr ds:[_spritecache_l2_tail]
+mov  bx, es  ; tail
+cmp  dh, byte ptr ds:[bx]
 jne  spritecache_l2_tail_not_equal_to_lastindex
 
 ;			spritecache_l2_tail = index_next;
 ;			spritecache_nodes[index_next].prev = -1;
 
-mov  byte ptr ds:[_spritecache_l2_tail], cl
+mov  byte ptr ds:[bx], cl
+xor  bx, bx
 mov  bl, cl
 SHIFT_MACRO   shl  bx 2
 mov  byte ptr ds:[bx + si + 0], -1
@@ -434,6 +275,7 @@ spritecache_l2_tail_not_equal_to_lastindex:
 ;			spritecache_nodes[lastindex_prev].next = index_next;
 ;			spritecache_nodes[index_next].prev = lastindex_prev;
 
+xor  bx, bx
 mov  bl, ch
 SHIFT_MACRO shl  bx 2
 mov  byte ptr ds:[bx + si + 1], cl
@@ -449,7 +291,7 @@ sprite_done_with_multi_tail_update:
 
 mov  bl, dh
 SHIFT_MACRO    shl  bx 2
-mov  al, byte ptr ds:[_spritecache_l2_head]
+mov  al, byte ptr ds:[di]
 mov  byte ptr ds:[bx + si + 0], al  ; spritecache_l2_head
 mov  bl, al
 SHIFT_MACRO    shl  bx 2
@@ -462,13 +304,10 @@ SHIFT_MACRO    shl  bx 2
 ;		spritecache_l2_head = index;
 
 
-mov  byte ptr ds:[_spritecache_l2_head], dl
+mov  byte ptr ds:[di], dl
 mov  byte ptr ds:[bx + si + 1], -1
 mark_sprite_lru_exit:
-pop  si
-pop  dx
-pop  cx
-pop  bx
+POPA_NO_AX_MACRO
 ret  
 
 selected_sprite_page_single_page:
@@ -487,12 +326,15 @@ mov  ch, byte ptr ds:[bx + si + 0] ; todo get whole word and swap regs
 ;		}
 
 
-cmp  dl, byte ptr ds:[_spritecache_l2_tail]
+mov  bx, es  ; tail
+cmp  dl, byte ptr ds:[bx]
 jne  spritecache_tail_not_equal_to_index
-mov  byte ptr ds:[_spritecache_l2_tail], dh
+mov  byte ptr ds:[bx], dh
+xor  bx, bx
 jmp  done_with_spritecache_tail_handling
 
 spritecache_tail_not_equal_to_index:
+xor  bx, bx
 mov  bl, ch
 SHIFT_MACRO shl  bx 2
 mov  byte ptr ds:[bx + si + 1], dh
@@ -521,12 +363,9 @@ mov  byte ptr ds:[bx + si + 1], dl
 
 ;	spritecache_l2_head = index;
 
-mov  byte ptr ds:[_spritecache_l2_head], dl
+mov  byte ptr ds:[di], dl
 
-pop  si
-pop  dx
-pop  cx
-pop  bx
+POPA_NO_AX_MACRO
 ret  
 
 
