@@ -378,11 +378,11 @@ ENDP
 PROC R_EvictL2CacheEMSPage_ NEAR
 PUBLIC R_EvictL2CacheEMSPage_
 
-; bp - 2    secondarymaxitersize
-; bp - 4    nodehead
-; bp - 6    used for ds first, used for es first
-; bp - 8    second offset used for si
-; bp - 0Ah  used for ds second
+; bp - 2    nodehead
+; bp - 4    used for ds first, used for es first
+; bp - 6    second offset used for si
+; bp - 8    used for ds second
+; bp - 0Ah  secondarymaxitersize
 ; bp - 0Ch  usedcacherefpage 
 ; bp - 0Eh  nodetail
 ; bp - 010h currentpage
@@ -400,11 +400,11 @@ mov       dh, al
 
 cmp       dl, CACHETYPE_COMPOSITE
 jne       not_composite
-push      MAX_PATCHES                       ; bp - 2
-push      OFFSET _texturecache_l2_head      ; bp - 4
-push      COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 6
-push      MAX_PATCHES                       ; bp - 8
-push      PATCHOFFSET_SEGMENT               ; bp - 0Ah
+push      MAX_PATCHES                       ; bp - 0Ah
+push      OFFSET _texturecache_l2_head      ; bp - 2
+push      COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 4
+push      MAX_PATCHES                       ; bp - 6
+push      PATCHOFFSET_SEGMENT               ; bp - 8
 push      OFFSET _usedtexturepagemem        ; bp - 0Ch
 mov       bx, OFFSET _texturecache_l2_tail
 mov       di, OFFSET _texturecache_nodes
@@ -416,11 +416,11 @@ cmp       dl, CACHETYPE_PATCH
 jne       is_sprite
 
 is_patch:
-push      MAX_TEXTURES                      ; bp - 2
-push      OFFSET _texturecache_l2_head      ; bp - 4
-push      PATCHPAGE_SEGMENT                 ; bp - 6   
-push      MAX_PATCHES                       ; bp - 8
-push      COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 0Ah
+push      MAX_TEXTURES                      ; bp - 0Ah
+push      OFFSET _texturecache_l2_head      ; bp - 2
+push      PATCHPAGE_SEGMENT                 ; bp - 4   
+push      MAX_PATCHES                       ; bp - 6
+push      COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 8
 push      OFFSET _usedtexturepagemem        ; bp - 0Ch
 mov       bx, OFFSET _texturecache_l2_tail
 mov       di, OFFSET _texturecache_nodes
@@ -429,11 +429,11 @@ mov       di, OFFSET _texturecache_nodes
 jmp       done_with_switchblock
 
 is_sprite:
-push      0                           ; bp - 2
-push      OFFSET _spritecache_l2_head ; bp - 4
-push      SPRITEPAGE_SEGMENT          ; bp - 6
+push      OFFSET _spritecache_l2_head ; bp - 2
+push      SPRITEPAGE_SEGMENT          ; bp - 4
 push      MAX_SPRITE_LUMPS            ; bp - 6
-sub       sp, 4
+push      0                           ; bp - 8
+push      0                           ; bp - 0Ah
 push      OFFSET _usedspritepagemem   ; bp - 0Ch;
 mov       bx, OFFSET _spritecache_l2_tail
 mov       di, OFFSET _spritecache_nodes
@@ -522,7 +522,7 @@ xor       ax, ax
 mov       word ptr [bx + di + 2], ax    ; set both at once
 mov       bx, ax                   ; zero
 
-lds       si, dword ptr [bp - 8] ; both an index and a loop limit
+lds       si, dword ptr [bp - 6] ; both an index and a loop limit
 
 ;    for (k = 0; k < maxitersize; k++){
 ;			if ((cacherefpage[k] >> 2) == evictedpage){
@@ -551,11 +551,11 @@ done_with_first_cache_erase_loop:
 ;        }
 ;    }
 
-mov       si, word ptr [bp - 2] 
+lds       si, dword ptr [bp - 0Ah] 
 cmp       si, 0 
 jle       skip_secondary_loop
 
-mov       ds, word ptr [bp - 0Ah]  ; todo change?
+
 xor       bx, bx                     ; offset and loop ctr
 
 continue_second_cache_erase_loop:
@@ -605,7 +605,7 @@ mov       cx, ax            ; cx stores nodetail
 SHIFT_MACRO shl       ax 2
 xchg      ax, bx            ; bx has nodelist nodetail lookup
 
-mov       si, word ptr [bp - 4]
+mov       si, word ptr [bp - 2]
 mov       al, byte ptr [si]
 mov       byte ptr [bx + di], al
 mov       bl, al

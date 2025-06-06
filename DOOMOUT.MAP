@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/06 12:46:37
+Created on:       25/06/06 13:00:21
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -74,9 +74,9 @@ p_telept_TEXT          CODE           AUTO           0a80:cd30       0000021c
 P_TICK_TEXT            CODE           AUTO           0a80:cf4c       00000147
 p_user_TEXT            CODE           AUTO           0a80:d0a0       0000062f
 r_data_TEXT            CODE           AUTO           17ed:0000       0000152c
-R_DATAA_TEXT           CODE           AUTO           17ed:152c       000002b6
-R_MATH_TEXT            CODE           AUTO           17ed:17e2       000001e3
-R_MAINHI_TEXT          CODE           AUTO           17ed:19c6       00002491
+R_DATAA_TEXT           CODE           AUTO           17ed:152c       000002b2
+R_MATH_TEXT            CODE           AUTO           17ed:17de       000001e3
+R_MAINHI_TEXT          CODE           AUTO           17ed:19c2       00002491
 r_draw_TEXT            CODE           AUTO           17ed:3e60       000000fb
 r_main_TEXT            CODE           AUTO           17ed:3f60       000001dd
 w_wad_TEXT             CODE           AUTO           17ed:4140       0000030c
@@ -1173,33 +1173,33 @@ Module: r_dataa.obj(r_dataa.ASM)
 17ed:152c      R_MarkL1SpriteCacheMRU_
 17ed:159c      R_MarkL1TextureCacheMRU7_
 Module: r_math.obj(r_math.ASM)
-17ed:1854      R_PointToAngle_
+17ed:1850      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-17ed:1d7e*     R_AddLine_
-17ed:2469*     R_StoreWallRange_
-17ed:3548*     R_ClipSolidWallSegment_
-17ed:35f5*     R_ClipPassWallSegment_
-17ed:3889*     R_CheckBBox_
-17ed:1f2c*     R_Subsector_
-17ed:1a55*     FixedMulBSPLocal_
-17ed:1b48*     R_PointToDist_
-17ed:1c53*     R_HandleEMSVisplanePagination_
-17ed:1a8e*     FixedDivBSPLocal_
-17ed:37db      R_PrepareMaskedPSprites_
-17ed:3b1d      R_WriteBackViewConstants_
-17ed:3cc5      R_WriteBackFrameConstants_
-17ed:1bde      R_ClearPlanes_
-17ed:2401*     R_AddSprites_
-17ed:1bbf      R_ClearClipSegs_
-17ed:1d02*     R_FindPlane_
-17ed:3023*     R_DrawColumnPrep_
-17ed:3648*     R_DrawPSprite_
-17ed:2016*     R_CheckPlane_
-17ed:20e1*     R_ProjectSprite_
-17ed:1afd*     FixedMulTrigNoShiftBSPLocal_
-17ed:3a34      R_RenderBSPNode_
-17ed:19c6*     R_ScaleFromGlobalAngle_
-17ed:385a*     R_PointToAngle16_
+17ed:1d7a*     R_AddLine_
+17ed:2465*     R_StoreWallRange_
+17ed:3544*     R_ClipSolidWallSegment_
+17ed:35f1*     R_ClipPassWallSegment_
+17ed:3885*     R_CheckBBox_
+17ed:1f28*     R_Subsector_
+17ed:1a51*     FixedMulBSPLocal_
+17ed:1b44*     R_PointToDist_
+17ed:1c4f*     R_HandleEMSVisplanePagination_
+17ed:1a8a*     FixedDivBSPLocal_
+17ed:37d7      R_PrepareMaskedPSprites_
+17ed:3b19      R_WriteBackViewConstants_
+17ed:3cc1      R_WriteBackFrameConstants_
+17ed:1bda      R_ClearPlanes_
+17ed:23fd*     R_AddSprites_
+17ed:1bbb      R_ClearClipSegs_
+17ed:1cfe*     R_FindPlane_
+17ed:301f*     R_DrawColumnPrep_
+17ed:3644*     R_DrawPSprite_
+17ed:2012*     R_CheckPlane_
+17ed:20dd*     R_ProjectSprite_
+17ed:1af9*     FixedMulTrigNoShiftBSPLocal_
+17ed:3a30      R_RenderBSPNode_
+17ed:19c2*     R_ScaleFromGlobalAngle_
+17ed:3856*     R_PointToAngle16_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17ed:3e60      R_VideoErase_
 17ed:3ee4      R_DrawViewBorder_
@@ -1552,4 +1552,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  000234c0 (144576.)
 Entry point address: 1cf2:1c36
-Link time: 00:00.75
+Link time: 00:00.29
