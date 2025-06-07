@@ -971,195 +971,99 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 4
 mov       si, ax
-mov       byte ptr [bp - 4], bl
+push      bx  ; only bl technically
 mov       ax, dx
 shr       ax, 8
-mov       byte ptr [bp - 2], al
+push      ax  ; only al technically
+
+;	if (size & 0xFF) {
+;		blocksize++;
+;	}
+
 test      dl, 0FFh
-je        label_1
+je        dont_increment_blocksize
 inc       al
-mov       byte ptr [bp - 2], al
-label_1:
-mov       al, byte ptr [bp - 2]
+mov       byte ptr [bp - 4], al
+dont_increment_blocksize:
+;	numpages = blocksize >> 6; // num EMS pages needed
+
 xor       ah, ah
-sar       ax, 6
+SHIFT_MACRO rol       al 2
+and       al, 3
+
+;	if (blocksize & 0x3F) {
+;		numpages++;
+;	}
+
 mov       ch, al
-test      byte ptr [bp - 2], 03Fh
-je        label_2
+test      byte ptr [bp - 4], 03Fh
+je        dont_increment_numpages
 inc       ch
-label_2:
+dont_increment_numpages:
+
+;	if (numpages == 1) {
+
+xor       bx, bx
+;mov       di, OFFSET texturecache_nodes
 cmp       ch, 1
-jne       label_3
+jne       multipage_textureblock
+;		uint8_t freethreshold = 64 - blocksize;
 mov       dh, 040h   ;todo
-sub       dh, byte ptr [bp - 2]
+sub       dh, byte ptr [bp - 4]
 xor       dl, dl
-label_7:
-mov       al, dl
-cbw      
-mov       bx, ax
+
+;		for (i = 0; i < NUM_TEXTURE_PAGES; i++) {
+;			if (freethreshold >= usedtexturepagemem[i]) {
+;				goto foundonepage;
+;			}
+;		}
+
+check_next_texture_page_for_space:
+mov       bl, dl
 cmp       dh, byte ptr ds:[bx + _usedtexturepagemem]
-jb        label_4
-label_8:
-mov       dh, dl
-shl       dh, 2
-mov       al, dl
-cbw      
-mov       bx, ax
-mov       al, byte ptr [bx + _usedtexturepagemem]
-mov       ah, byte ptr [bp - 2]
-add       ah, al
-mov       byte ptr ds:[bx + _usedtexturepagemem], ah
-label_6:
-cmp       byte ptr [bp - 4], 2
-jne       jump_to_label_5
-mov       bx, PATCHOFFSET_SEGMENT
-add       si, PATCHOFFSET_OFFSET
-mov       es, bx
-mov       byte ptr es:[si - PATCHOFFSET_OFFSET], dh
-mov       byte ptr es:[si], al
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-ret       
-label_4:
+jnb       foundonepage
+
+;		i = R_EvictL2CacheEMSPage(1, cachetype);
+
 inc       dl
 cmp       dl, NUM_TEXTURE_PAGES
-jl        label_7
-mov       al, byte ptr [bp - 4]
+jl        check_next_texture_page_for_space
+mov       al, byte ptr [bp - 2]
 cbw      
 mov       dx, ax
 mov       ax, 1
 call      R_EvictL2CacheEMSPage_
 mov       dl, al
-jmp       label_8
-jump_to_label_5:
-jmp       label_5
-label_3:
-mov       cl, ch
-mov       dh, byte ptr ds:[_texturecache_l2_head]
-dec       cl
-cmp       dh, 0FFh
-jne       label_9
-jmp       label_10
-label_9:
-mov       al, dh
-cbw      
-mov       bx, ax
-cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
-je        label_18
-label_13:
-jmp       label_11
-label_18:
-shl       bx, 2
-mov       al, byte ptr ds:[bx + _texturecache_nodes]
-cmp       al, 0FFh
-je        label_13
-cbw      
-mov       bx, ax
-cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
-jne       label_13
-shl       bx, 2
-mov       dl, byte ptr ds:[bx + _texturecache_nodes]
-cmp       cl, 2
-jb        label_12
-jmp       label_14
-label_12:
-mov       al, dl
-cbw      
-mov       bx, ax
-shl       bx, 2
-mov       dl, byte ptr ds:[bx + _texturecache_nodes]
-cmp       cl, 3
-jae       label_17
-label_16:
-mov       al, dh
-cbw      
-mov       bx, ax
-mov       byte ptr ds:[bx + _usedtexturepagemem], 040h
-shl       bx, 2
-mov       byte ptr ds:[bx + _texturecache_nodes + 3], ch
-mov       dl, dh
-mov       byte ptr ds:[bx + _texturecache_nodes + 2], ch
-cmp       ch, 3
-jl        label_19
-mov       dl, byte ptr ds:[bx + _texturecache_nodes]
-mov       al, dl
-cbw      
-mov       bx, ax
-mov       di, ax
-mov       al, ch
-shl       di, 2
-dec       al
-mov       byte ptr ds:[di + _texturecache_nodes + 3], ch
-mov       byte ptr ds:[bx + _usedtexturepagemem], 040h
-mov       byte ptr ds:[di + _texturecache_nodes + 2], al
-label_19:
-mov       al, dl
-cbw      
-mov       bx, ax
-shl       bx, 2
-mov       al, byte ptr ds:[bx + _texturecache_nodes]
-cbw      
-mov       di, ax
-shl       di, 2
-mov       bx, ax
-mov       byte ptr ds:[di + _texturecache_nodes + 2], 1
-mov       al, byte ptr [bp - 2]
-mov       byte ptr ds:[di + _texturecache_nodes + 3], ch
-test      al, 03Fh
-je        label_15
-and       al, 03Fh
-mov       byte ptr ds:[bx + _usedtexturepagemem], al
-shl       dh, 2
-xor       al, al
-add       dh, cl
-jmp       label_6
-label_17:
-cmp       dl, 0FFh
-je        label_11
-mov       al, dl
-cbw      
-mov       bx, ax
-cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
-je        label_16
-jmp       label_11
-label_14:
-cmp       dl, 0FFh
-je        label_11
-mov       al, dl
-cbw      
-mov       bx, ax
-cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
-jne       label_11
-jmp       label_12
-label_11:
-mov       al, dh
-cbw      
-mov       bx, ax
-shl       bx, 2
-mov       dh, byte ptr ds:[bx + _texturecache_nodes]
-cmp       dh, 0FFh
-je        label_10
-jmp       label_9
-label_10:
-mov       al, byte ptr [bp - 4]
-cbw      
-mov       dx, ax
-mov       al, ch
-cbw      
-call      R_EvictL2CacheEMSPage_
-mov       dh, al
-jmp       label_16
-label_15:
-mov       byte ptr ds:[bx + _usedtexturepagemem], 040h
-shl       dh, 2
-xor       al, al
-add       dh, cl
-jmp       label_6
-label_5:
+
+foundonepage:
+
+;		texpage = i << 2;
+;		texoffset = usedtexturepagemem[i];
+;		usedtexturepagemem[i] += blocksize;
+
+mov       dh, dl
+SHIFT_MACRO shl       dh 2
+mov       bl, dl
+mov       al, byte ptr [bx + _usedtexturepagemem]
+mov       ah, byte ptr [bp - 4]
+add       ah, al
+mov       byte ptr ds:[bx + _usedtexturepagemem], ah
+
+done_finding_open_page:
+
+cmp       byte ptr [bp - 2], CACHETYPE_PATCH
+jne       set_patch_pages
+mov       bx, PATCHOFFSET_SEGMENT
+mov       es, bx
+mov       byte ptr es:[si], dh
+mov       byte ptr es:[si + PATCHOFFSET_OFFSET], al
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+ret       
+set_patch_pages:
 mov       bx, COMPOSITETEXTUREOFFSET_SEGMENT
 add       si, COMPOSITETEXTUREOFFSET_OFFSET
 mov       es, bx
@@ -1170,6 +1074,180 @@ pop       di
 pop       si
 pop       cx
 ret       
+
+
+multipage_textureblock:
+
+;		uint8_t numpagesminus1 = numpages - 1;
+
+mov       cl, ch
+mov       dh, byte ptr ds:[_texturecache_l2_head]
+dec       cl
+
+;		for (i = texturecache_l2_head;
+;				i != -1; 
+;				i = texturecache_nodes[i].prev
+;				) {
+;			if (!usedtexturepagemem[i]) {
+;				// need to check following pages for emptiness, or else after evictions weird stuff can happen
+;				int8_t nextpage = texturecache_nodes[i].prev;
+;				if ((nextpage != -1 &&!usedtexturepagemem[nextpage])) {
+;					nextpage = texturecache_nodes[nextpage].prev;
+
+;				}
+;			}
+;		}
+
+cmp       dh, 0FFh  ; dh is texturecache_l2_head
+jne       do_texture_multipage_loop
+jmp       done_with_textureblock_multipage_loop   ; 072h bytes off..
+do_texture_multipage_loop:
+mov       bl, dh
+cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
+je        page_has_space  ; 4fh bytes off
+jump_to_do_next_texture_multipage_loop_iter:
+jmp       do_next_texture_multipage_loop_iter
+page_has_space:
+SHIFT_MACRO shl       bx 2
+mov       al, byte ptr ds:[bx + _texturecache_nodes]
+cmp       al, 0FFh
+je        jump_to_do_next_texture_multipage_loop_iter
+; has next page
+mov       bl, al
+cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
+jne       jump_to_do_next_texture_multipage_loop_iter
+SHIFT_MACRO shl       bl 2
+mov       dl, byte ptr ds:[bx + _texturecache_nodes]
+
+;					if (numpagesminus1 < 2 || (nextpage != -1 && (!usedtexturepagemem[nextpage]))) {
+
+
+cmp       cl, 2
+jb        less_than_2_pages_or_next_page_good
+jmp       not_less_than_2_pages_check_next_page_good
+less_than_2_pages_or_next_page_good:
+
+;						nextpage = texturecache_nodes[nextpage].prev;
+
+mov       bl, dl
+SHIFT_MACRO shl       bl 2
+mov       dl, byte ptr ds:[bx + _texturecache_nodes]
+
+;						if (numpagesminus1 < 3 || (nextpage != -1 &&(!usedtexturepagemem[nextpage]))) {
+;							goto foundmultipage;
+;						}
+
+cmp       cl, 3
+jae       check_for_next_multipage_loop_iter
+less_than_3_pages_or_next_page_good:
+
+;		foundmultipage:
+;        usedtexturepagemem[i] = 64;
+
+mov       bl, dh
+mov       byte ptr ds:[bx + _usedtexturepagemem], 040h
+
+;		texturecache_nodes[i].numpages = numpages;
+;		texturecache_nodes[i].pagecount = numpages;
+
+SHIFT_MACRO shl       bl 2
+mov       byte ptr ds:[bx + _texturecache_nodes + 3], ch
+mov       dl, dh
+mov       byte ptr ds:[bx + _texturecache_nodes + 2], ch
+;		if (numpages >= 3) {
+cmp       ch, 3
+jl        numpages_not_3_or_more
+mov       dl, byte ptr ds:[bx + _texturecache_nodes]
+mov       bl, dl
+mov       al, ch
+dec       al
+mov       byte ptr ds:[bx + _usedtexturepagemem], 040h
+SHIFT_MACRO shl       bl 2
+mov       byte ptr ds:[bx + _texturecache_nodes + 3], ch
+mov       byte ptr ds:[bx + _texturecache_nodes + 2], al
+numpages_not_3_or_more:
+mov       bl, dl
+SHIFT_MACRO shl       bl 2
+mov       al, byte ptr ds:[bx + _texturecache_nodes]
+mov       bl, al
+SHIFT_MACRO shl       bl 2
+
+;		texturecache_nodes[j].numpages = numpages;
+;		texturecache_nodes[j].pagecount = 1;
+
+mov       byte ptr ds:[bx + _texturecache_nodes + 2], 1
+mov       byte ptr ds:[bx + _texturecache_nodes + 3], ch
+mov       bl, al
+
+mov       al, byte ptr [bp - 4]
+
+;	if (blocksize & 0x3F) {
+
+test      al, 03Fh
+je        set_used_all_memory_for_page
+;			usedtexturepagemem[j] = blocksize & 0x3F;
+and       al, 03Fh
+mov       byte ptr ds:[bx + _usedtexturepagemem], al
+
+;		texpage = (i << 2) + (numpagesminus1);
+;		texoffset = 0; // if multipage then its always aligned to start of its block
+
+SHIFT_MACRO shl       dh 2
+xor       al, al
+add       dh, cl
+jmp       done_finding_open_page
+
+check_for_next_multipage_loop_iter:
+
+; (nextpage != -1 &&(!usedtexturepagemem[nextpage])
+cmp       dl, 0FFh
+je        do_next_texture_multipage_loop_iter
+mov       bl, dl
+cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
+je        less_than_3_pages_or_next_page_good
+jmp       do_next_texture_multipage_loop_iter
+not_less_than_2_pages_check_next_page_good:
+cmp       dl, 0FFh
+je        do_next_texture_multipage_loop_iter
+mov       bl, dl
+cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
+jne       do_next_texture_multipage_loop_iter
+jmp       less_than_2_pages_or_next_page_good
+do_next_texture_multipage_loop_iter:
+mov       bl, dh
+SHIFT_MACRO shl       bl 2
+mov       dh, byte ptr ds:[bx + _texturecache_nodes]
+cmp       dh, 0FFh
+je        done_with_textureblock_multipage_loop
+jmp       do_texture_multipage_loop
+
+done_with_textureblock_multipage_loop:
+
+;		i = R_EvictL2CacheEMSPage(numpages, cachetype);
+
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       dx, ax
+mov       al, ch
+cbw      
+call      R_EvictL2CacheEMSPage_
+mov       dh, al
+jmp       less_than_3_pages_or_next_page_good
+set_used_all_memory_for_page:
+
+;			usedtexturepagemem[j] = 64;
+
+
+;		texpage = (i << 2) + (numpagesminus1);
+;		texoffset = 0; // if multipage then its always aligned to start of its block
+
+
+mov       byte ptr ds:[bx + _usedtexturepagemem], 040h
+SHIFT_MACRO shl       dh 2
+xor       al, al
+add       dh, cl
+jmp       done_finding_open_page
+
 
 
 ENDP

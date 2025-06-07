@@ -280,6 +280,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 //#define NUM_TEXTURE_PAGES                           24
 #define NUM_FLAT_CACHE_PAGES                        0x6
 #define NUM_SPRITE_CACHE_PAGES                      0x14
+// dont do more than 63 pages. used as an index in a 4 byte thing. asm assumes one byte index
 #define NUM_TEXTURE_PAGES                           0x18
 #define NUM_MUSIC_PAGES                             0x4
 #define NUM_SFX_PAGES                               0x8
