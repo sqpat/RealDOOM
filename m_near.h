@@ -316,7 +316,7 @@
 #define R_GetMaskedColumnSegment_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
 #define colfunc_call_lookup             (((uint32_t  __near*)                (_NULL_OFFSET + 0x02D0)))
-#define getspritetexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
+#define R_GetSpriteTexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358)))
 // 364-367 free??
 

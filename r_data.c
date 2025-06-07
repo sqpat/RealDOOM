@@ -2077,12 +2077,12 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 }
 
 
-//gettexturepage takes an l2 cache page, pages it into L1 if its not already.
+//R_GetTexturePage takes an l2 cache page, pages it into L1 if its not already.
 //then returns the L1 page number
-uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype);
+uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype);
 
 /*
-uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
+uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 	uint8_t realtexpage = texpage >> 2;
 	//uint8_t pagenum = pageoffset + realtexpage;
 	uint8_t numpages = (texpage& 0x03);
@@ -2258,9 +2258,9 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 }
 */
-//getspritepage takes an l2 cache page, pages it into L1 if its not already.
+//R_GetSpritePage takes an l2 cache page, pages it into L1 if its not already.
 //then returns the L1 page number
-uint8_t __near getspritepage(uint8_t texpage) {
+uint8_t __near R_GetSpritePage(uint8_t texpage) {
 	uint8_t realtexpage = texpage >> 2;
 	//uint8_t pagenum = FIRST_SPRITE_CACHE_LOGICAL_PAGE + realtexpage;
 	uint8_t numpages = (texpage & 0x03);
@@ -2418,7 +2418,7 @@ uint8_t __near getspritepage(uint8_t texpage) {
 
 
 // get 0x5000 offset for texture
-segment_t __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
+segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) {
 
 	int16_t index = lump - firstpatch;
 	uint8_t texpage = patchpage[index];
@@ -2440,20 +2440,20 @@ segment_t __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
 		texoffset = patchoffset[index];
 
 		// texture in now L2 cache (EMS), so just return thru L1 cache
-		tex_segment = 0x5000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
+		tex_segment = 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
 		R_LoadPatchColumns(lump, tex_segment, ismasked);
 		return tex_segment;
 	} 
 	
 	// texture in L2 cache (EMS), so just return thru L1 cache
-	return 0x5000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
+	return 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
 
 
 
 }
 
 
-segment_t getcompositetexture(int16_t tex_index) {
+segment_t R_GetCompositeTexture(int16_t tex_index) {
 	
 	uint8_t texpage = compositetexturepage[tex_index];
 	uint8_t texoffset = compositetextureoffset[tex_index];
@@ -2467,13 +2467,13 @@ segment_t getcompositetexture(int16_t tex_index) {
 		R_GetNextTextureBlock(tex_index, texturecompositesizes[tex_index], CACHETYPE_COMPOSITE);
 		texpage = compositetexturepage[tex_index];
 		texoffset = compositetextureoffset[tex_index];
-		//gettexturepage ensures the page is active
-		tex_segment = 0x5000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+		//R_GetTexturePage ensures the page is active
+		tex_segment = 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
 		R_GenerateComposite(tex_index, tex_segment);
 		return tex_segment;
 	}
 
-	return 0x5000u + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+	return 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
 
 
 
@@ -2481,7 +2481,7 @@ segment_t getcompositetexture(int16_t tex_index) {
 }
 
 
-segment_t __far getspritetexture(int16_t index) {
+segment_t __far R_GetSpriteTexture(int16_t index) {
 
 	int16_t lump = index + firstspritelump;
 	uint8_t texpage = spritepage[index];
@@ -2496,14 +2496,14 @@ segment_t __far getspritetexture(int16_t index) {
 		R_GetNextSpriteBlock(lump);
 		texpage = spritepage[index];
 		texoffset = spriteoffset[index];
-		//getspritepage ensures the page is active
-		tex_segment = 0x9000u + pagesegments[getspritepage(texpage)] + (texoffset << 4);
+		//R_GetSpritePage ensures the page is active
+		tex_segment = 0x9000u + pagesegments[R_GetSpritePage(texpage)] + (texoffset << 4);
 		R_LoadSpriteColumns(lump, tex_segment);
 		return tex_segment;
 	}
 
 		
-	return 0x9000u + pagesegments[getspritepage(texpage)] + (texoffset << 4);
+	return 0x9000u + pagesegments[R_GetSpritePage(texpage)] + (texoffset << 4);
 
  
 
@@ -2670,7 +2670,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		cached_nextlookup = segloopnextlookup[segloopcachetype]; 
 
 		// will zero out certain cache vars on a L1 page eviction - must reset them after.
-		cachedsegmentlumps[0] = getpatchtexture(lump, 0xFF);  
+		cachedsegmentlumps[0] = R_GetPatchTexture(lump, 0xFF);  
 		
 		cachedlumps[0] = lump;
 		segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
@@ -2729,7 +2729,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 				cachedcollength2 = cachedcollength;
 				cachedtex = tex;
 				
-				cachedsegmenttex = getcompositetexture(cachedtex);
+				cachedsegmenttex = R_GetCompositeTexture(cachedtex);
 				cachedcollength = collength;
 
 				// restore these if composite texture is unloaded...
@@ -2932,7 +2932,7 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		cached_nextlookup = maskednextlookup; 
 
 		// will zero out certain cache vars on a L1 page eviction - must reset them after.
-		cachedsegmentlumps[0] = getpatchtexture(lump, lookup);  // might zero out cachedlump vars;
+		cachedsegmentlumps[0] = R_GetPatchTexture(lump, lookup);  // might zero out cachedlump vars;
 		cachedlumps[0] = lump;
 		// reset these since possibly clobbered by cache reset...
 		maskednextlookup     = cached_nextlookup; 
@@ -2989,7 +2989,7 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 				cachedcollength2 = cachedcollength;
 				cachedtex = tex;
 				
-				cachedsegmenttex = getcompositetexture(cachedtex);
+				cachedsegmenttex = R_GetCompositeTexture(cachedtex);
 				cachedcollength = collength;
 
 				// restore these if composite texture is unloaded...

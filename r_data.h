@@ -58,7 +58,7 @@ void __far R_MarkL2FlatCacheMRU(int8_t index);
 
 //segment_t __near R_GetColumnSegment ( int16_t tex, int16_t col, int8_t segloopcachetype );
 segment_t __far R_GetMaskedColumnSegment ( int16_t tex, int16_t col );
-segment_t __far getspritetexture(int16_t index);
+segment_t __far R_GetSpriteTexture(int16_t index);
 
 #define BAD_TEXTURE 65535
 

@@ -899,10 +899,10 @@ mov   dx, word ptr ds:[_lastvisspritepatch]
 mov   word ptr ds:[_lastvisspritepatch2], dx
 mov   dx, word ptr ds:[_lastvisspritesegment]
 mov   word ptr ds:[_lastvisspritesegment2], dx
-;call  getspritetexture_
+;call  R_GetSpriteTexture_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _getspritetexture_addr
+dw _R_GetSpriteTexture_addr
 
 mov   word ptr ds:[_lastvisspritesegment], ax
 mov   es, ax

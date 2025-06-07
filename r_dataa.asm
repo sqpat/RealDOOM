@@ -1324,8 +1324,8 @@ ENDP
 
 
 
-PROC gettexturepage_ NEAR
-PUBLIC gettexturepage_
+PROC R_GetTexturePage_ NEAR
+PUBLIC R_GetTexturePage_
 
 
 push  cx
@@ -1590,8 +1590,8 @@ ENDP
 COMMENT @
 
 
-PROC getspritepage_ NEAR
-PUBLIC getspritepage_
+PROC R_GetSpritePage_ NEAR
+PUBLIC R_GetSpritePage_
 
 
 0x0000000000000224:  53                   push  bx
@@ -1820,8 +1820,8 @@ SET_PAGESWAP_ARGS si PAGESWAPARGS_SPRITECACHE_OFFSET di
 ENDP
 
 
-PROC getpatchtexture_ NEAR
-PUBLIC getpatchtexture_
+PROC R_GetPatchTexture_ NEAR
+PUBLIC R_GetPatchTexture_
 
 0x000000000000040e:  53                   push  bx
 0x000000000000040f:  51                   push  cx
@@ -1917,8 +1917,8 @@ PUBLIC getpatchtexture_
 ENDP
 
 
-PROC getcompositetexture_ NEAR
-PUBLIC getcompositetexture_
+PROC R_GetCompositeTexture_ NEAR
+PUBLIC R_GetCompositeTexture_
 
 0x00000000000004e2:  53                   push  bx
 0x00000000000004e3:  51                   push  cx
@@ -1996,8 +1996,8 @@ PUBLIC getcompositetexture_
 ENDP
 
 
-PROC getspritetexture_ NEAR
-PUBLIC getspritetexture_
+PROC R_GetSpriteTexture_ NEAR
+PUBLIC R_GetSpriteTexture_
 
 0x000000000000057e:  53                   push  bx
 0x000000000000057f:  51                   push  cx

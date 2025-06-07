@@ -2271,9 +2271,9 @@ END GROUP
                 0x0000000000000a18                R_GetNextSpriteBlock
                 0x0000000000000b0e                R_GenerateComposite
                 0x0000000000000c4c                gettexturepage
-                0x0000000000000ee1                getpatchtexture
-                0x0000000000000f8a                getcompositetexture
-                0x000000000000102f                getspritetexture
+                0x0000000000000ee1                R_GetPatchTexture
+                0x0000000000000f8a                R_GetCompositeTexture
+                0x000000000000102f                R_GetSpriteTexture
                 0x00000000000010d8                R_GetColumn
  .fartext.f.ffree.c.07731$
                 0x0000000000001119        0x6 /usr/lib/x86_64-linux-gnu/gcc/ia16-elf/6.3.0/../../../../../ia16-elf/lib/medium/regparmcall/libi86.a(ffree.o)

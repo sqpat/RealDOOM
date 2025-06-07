@@ -304,7 +304,7 @@ void __near R_DrawVisSprite2 ( vissprite_t __near* vis ) {
         } else {
             lastvisspritepatch2 = lastvisspritepatch;
             lastvisspritesegment2 = lastvisspritesegment;
-        	patch_segment = lastvisspritesegment = getspritetexture(vis->patch);            
+        	patch_segment = lastvisspritesegment = R_GetSpriteTexture(vis->patch);            
             lastvisspritepatch = vis->patch;
         }
     }
