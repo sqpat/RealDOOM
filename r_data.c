@@ -1766,6 +1766,8 @@ void __near R_GetNextTextureBlock(int16_t tex_index, uint16_t size, int8_t cache
 */
 
 
+void __near R_GetNextSpriteBlock(int16_t lump);
+/*
 void __near R_GetNextSpriteBlock(int16_t lump) {
 	uint16_t size = spritetotaldatasizes[lump-firstspritelump];
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
@@ -1843,29 +1845,29 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 		spritecache_nodes[i].pagecount = numpages;
 		// not sure if this ever happens... especially for sprite. biggest sprites are barely 2 page. todo remove
 
-		/*
-		if (numpages >= 3) {
-			I_Error("3 page sprite! fix this"); // todo remove
-			// 2nd to last page of the allocation
-			j = spritecache_nodes[i].prev;
-			spritecache_nodes[j].numpages = numpages;
-			// 2 if numpages is 3. 
-			// 3 if numpages is 4
-			spritecache_nodes[j].pagecount = numpages-1;
-			usedspritepagemem[j] = 64;
-		}
-		*/
+		
+		// if (numpages >= 3) {
+		// 	I_Error("3 page sprite! fix this"); // todo remove
+		// 	// 2nd to last page of the allocation
+		// 	j = spritecache_nodes[i].prev;
+		// 	spritecache_nodes[j].numpages = numpages;
+		// 	// 2 if numpages is 3. 
+		// 	// 3 if numpages is 4
+		// 	spritecache_nodes[j].pagecount = numpages-1;
+		// 	usedspritepagemem[j] = 64;
+		// }
+		
 
 		// i actually think this never happens? get rid of the code?
-		/*
-		if (numpages == 4) {
-			// always page 2 of the 4 page allocation
-			j = texturecache_nodes[j].prev;
-			texturecache_nodes[j].numpages = numpages;
-			texturecache_nodes[j].pagecount = 2;
-			usedspritepagemem[j] = 64;
-		}
-		*/
+		
+		// if (numpages == 4) {
+		// 	// always page 2 of the 4 page allocation
+		// 	j = texturecache_nodes[j].prev;
+		// 	texturecache_nodes[j].numpages = numpages;
+		// 	texturecache_nodes[j].pagecount = 2;
+		// 	usedspritepagemem[j] = 64;
+		// }
+		
 		// first page of the allocation
 		j = spritecache_nodes[i].prev;
 		spritecache_nodes[j].numpages = numpages;
@@ -1890,6 +1892,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 	spriteoffset[lump - firstspritelump] = texoffset;
 
 }
+*/
 //
 // R_GenerateComposite
 // Using the texture definition,

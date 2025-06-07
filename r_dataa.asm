@@ -963,20 +963,62 @@ ENDP
 
 
 
+PROC R_GetNextSpriteBlock_ NEAR
+PUBLIC R_GetNextSpriteBlock_
+
+; todo: get size
+
+;	uint16_t size = spritetotaldatasizes[lump-firstspritelump];
+
+
+
+PUSHA_NO_AX_MACRO
+push      bp
+mov       bp, sp
+
+push      CACHETYPE_SPRITE ; todo 8086
+sub       ax, word ptr ds:[_firstspritelump]
+mov       dx, SPRITETOTALDATASIZES_SEGMENT
+mov       es, dx
+mov       bx, ax
+sal       bx, 1
+mov       dx, word ptr es:[bx] ; dx = size
+mov       bl, dh
+push      bx  ; bp - 4  only bl technically
+push      NUM_SPRITE_CACHE_PAGES
+push      ax  ; bp - 6  store for later
+mov       di, OFFSET _spritecache_nodes
+mov       si, OFFSET _usedspritepagemem
+
+jmp       get_next_block_variables_ready
+
+ENDP
+
+
 PROC R_GetNextTextureBlock_ NEAR
 PUBLIC R_GetNextTextureBlock_
 
-push      cx
-push      si
-push      di
+; bp - 2  cachetype
+; bp - 4  blocksize
+; bp - 6  NUM_[thing]_PAGES for iter
+; bp - 8  tex_index
+
+PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
-mov       si, ax
-push      bx  ; only bl technically
+
+push      bx  ; only bl technically   ; cachetype
 mov       bl, dh
 push      bx  ; only bl technically
+push      NUM_TEXTURE_PAGES
 push      ax  ; bp - 6  store for later
+mov       di, OFFSET _texturecache_nodes
+mov       si, OFFSET _usedtexturepagemem
+
+get_next_block_variables_ready:
 xchg      ax, bx
+
+
 ;	if (size & 0xFF) {
 ;		blocksize++;
 ;	}
@@ -1005,8 +1047,6 @@ dont_increment_numpages:
 ;	if (numpages == 1) {
 
 xor       bx, bx
-mov       di, OFFSET _texturecache_nodes
-mov       si, OFFSET _usedtexturepagemem
 cmp       ch, 1
 jne       multipage_textureblock
 ;		uint8_t freethreshold = 64 - blocksize;
@@ -1028,7 +1068,7 @@ jnb       foundonepage
 ;		i = R_EvictL2CacheEMSPage(1, cachetype);
 
 inc       dl
-cmp       dl, NUM_TEXTURE_PAGES
+cmp       dl, [bp - 6]
 jl        check_next_texture_page_for_space
 mov       al, byte ptr [bp - 2]
 cbw      
@@ -1054,26 +1094,32 @@ mov       byte ptr ds:[bx + si], ah
 done_finding_open_page:
 pop       si ; was bp - 6
 cmp       byte ptr [bp - 2], CACHETYPE_PATCH
-jne       set_patch_pages
+jne       set_non_patch_pages
+set_patch_pages:
 mov       bx, PATCHOFFSET_SEGMENT
 mov       es, bx
 mov       byte ptr es:[si], dh
 mov       byte ptr es:[si + PATCHOFFSET_OFFSET], al
 LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
+POPA_NO_AX_MACRO
 ret       
-set_patch_pages:
+set_non_patch_pages:
+jb        set_sprite_pages
+set_tex_pages:
 mov       bx, COMPOSITETEXTUREOFFSET_SEGMENT
-add       si, COMPOSITETEXTUREOFFSET_OFFSET
 mov       es, bx
-mov       byte ptr es:[si - COMPOSITETEXTUREOFFSET_OFFSET], dh
-mov       byte ptr es:[si], al
+mov       byte ptr es:[si], dh
+mov       byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET], al
 LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
+POPA_NO_AX_MACRO
+ret       
+set_sprite_pages:
+mov       bx, SPRITEPAGE_SEGMENT
+mov       es, bx
+mov       byte ptr es:[si], dh
+mov       byte ptr es:[si + SPRITEOFFSETS_OFFSET], al
+LEAVE_MACRO     
+POPA_NO_AX_MACRO
 ret       
 
 
@@ -1264,172 +1310,7 @@ ENDP
 COMMENT @
 
 
-PROC R_GetNextSpriteBlock_ NEAR
-PUBLIC R_GetNextSpriteBlock_
 
-
-0x000000000000055e:  53                push      bx
-0x000000000000055f:  51                push      cx
-0x0000000000000560:  52                push      dx
-0x0000000000000561:  56                push      si
-0x0000000000000562:  57                push      di
-0x0000000000000563:  55                push      bp
-0x0000000000000564:  89 E5             mov       bp, sp
-0x0000000000000566:  83 EC 02          sub       sp, 2
-0x0000000000000569:  89 C6             mov       si, ax
-0x000000000000056b:  BB E6 00          mov       bx, 0xe6
-0x000000000000056e:  2B 07             sub       ax, word ptr [bx]
-0x0000000000000570:  89 C3             mov       bx, ax
-0x0000000000000572:  01 C3             add       bx, ax
-0x0000000000000574:  B8 AA 88          mov       ax, 0x88aa
-0x0000000000000577:  8E C0             mov       es, ax
-0x0000000000000579:  26 8B 07          mov       ax, word ptr es:[bx]
-0x000000000000057c:  89 C2             mov       dx, ax
-0x000000000000057e:  C1 EA 08          shr       dx, 8
-0x0000000000000581:  88 56 FE          mov       byte ptr [bp - 2], dl
-0x0000000000000584:  A8 FF             test      al, 0xff
-0x0000000000000586:  74 05             je        0x58d
-0x0000000000000588:  FE C2             inc       dl
-0x000000000000058a:  88 56 FE          mov       byte ptr [bp - 2], dl
-0x000000000000058d:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x0000000000000590:  30 E4             xor       ah, ah
-0x0000000000000592:  C1 F8 06          sar       ax, 6
-0x0000000000000595:  88 C5             mov       ch, al
-0x0000000000000597:  F6 46 FE 3F       test      byte ptr [bp - 2], 03Fh
-0x000000000000059b:  74 02             je        0x59f
-0x000000000000059d:  FE C5             inc       ch
-0x000000000000059f:  80 FD 01          cmp       ch, 1
-0x00000000000005a2:  75 5E             jne       0x602
-0x00000000000005a4:  B6 40             mov       dh, 040h
-0x00000000000005a6:  2A 76 FE          sub       dh, byte ptr [bp - 2]
-0x00000000000005a9:  30 D2             xor       dl, dl
-0x00000000000005ab:  88 D0             mov       al, dl
-0x00000000000005ad:  98                cbw      
-0x00000000000005ae:  89 C3             mov       bx, ax
-0x00000000000005b0:  3A B7 70 1C       cmp       dh, byte ptr [bx + 0x1c70]
-0x00000000000005b4:  73 11             jae       0x5c7
-0x00000000000005b6:  FE C2             inc       dl
-0x00000000000005b8:  80 FA 14          cmp       dl, 0x14
-0x00000000000005bb:  7C EE             jl        0x5ab
-0x00000000000005bd:  B8 01 00          mov       ax, 1
-0x00000000000005c0:  31 D2             xor       dx, dx
-0x00000000000005c2:  E8 3B FA          call      0
-0x00000000000005c5:  88 C2             mov       dl, al
-0x00000000000005c7:  88 D6             mov       dh, dl
-0x00000000000005c9:  C0 E6 02          shl       dh, 2
-0x00000000000005cc:  88 D0             mov       al, dl
-0x00000000000005ce:  98                cbw      
-0x00000000000005cf:  89 C3             mov       bx, ax
-0x00000000000005d1:  8A 87 70 1C       mov       al, byte ptr [bx + 0x1c70]
-0x00000000000005d5:  8A 66 FE          mov       ah, byte ptr [bp - 2]
-0x00000000000005d8:  00 C4             add       ah, al
-0x00000000000005da:  88 A7 70 1C       mov       byte ptr [bx + 0x1c70], ah
-0x00000000000005de:  BB E6 00          mov       bx, 0xe6
-0x00000000000005e1:  89 F1             mov       cx, si
-0x00000000000005e3:  2B 0F             sub       cx, word ptr [bx]
-0x00000000000005e5:  89 CB             mov       bx, cx
-0x00000000000005e7:  B9 83 4E          mov       cx, 0x4e83
-0x00000000000005ea:  8E C1             mov       es, cx
-0x00000000000005ec:  26 88 37          mov       byte ptr es:[bx], dh
-0x00000000000005ef:  BB E6 00          mov       bx, 0xe6
-0x00000000000005f2:  2B 37             sub       si, word ptr [bx]
-0x00000000000005f4:  8D 9C 65 05       lea       bx, [si + 0x565]
-0x00000000000005f8:  26 88 07          mov       byte ptr es:[bx], al
-0x00000000000005fb:  C9                LEAVE_MACRO     
-0x00000000000005fc:  5F                pop       di
-0x00000000000005fd:  5E                pop       si
-0x00000000000005fe:  5A                pop       dx
-0x00000000000005ff:  59                pop       cx
-0x0000000000000600:  5B                pop       bx
-0x0000000000000601:  C3                ret       
-0x0000000000000602:  88 E9             mov       cl, ch
-0x0000000000000604:  8A 36 A6 06       mov       dh, byte ptr [0x6a6]
-0x0000000000000608:  FE C9             dec       cl
-0x000000000000060a:  80 FE FF          cmp       dh, 0xff
-0x000000000000060d:  75 03             jne       0x612
-0x000000000000060f:  E9 A7 00          jmp       0x6b9
-0x0000000000000612:  88 F0             mov       al, dh
-0x0000000000000614:  98                cbw      
-0x0000000000000615:  89 C3             mov       bx, ax
-0x0000000000000617:  80 BF 70 1C 00    cmp       byte ptr [bx + 0x1c70], 0
-0x000000000000061c:  74 03             je        0x621
-0x000000000000061e:  E9 84 00          jmp       0x6a5
-0x0000000000000621:  C1 E3 02          shl       bx, 2
-0x0000000000000624:  8A 87 68 18       mov       al, byte ptr [bx + 0x1868]
-0x0000000000000628:  3C FF             cmp       al, 0xff
-0x000000000000062a:  74 F2             je        0x61e
-0x000000000000062c:  98                cbw      
-0x000000000000062d:  89 C3             mov       bx, ax
-0x000000000000062f:  80 BF 70 1C 00    cmp       byte ptr [bx + 0x1c70], 0
-0x0000000000000634:  75 E8             jne       0x61e
-0x0000000000000636:  C1 E3 02          shl       bx, 2
-0x0000000000000639:  8A 97 68 18       mov       dl, byte ptr [bx + 0x1868]
-0x000000000000063d:  80 F9 02          cmp       cl, 2
-0x0000000000000640:  73 52             jae       0x694
-0x0000000000000642:  88 D0             mov       al, dl
-0x0000000000000644:  98                cbw      
-0x0000000000000645:  89 C3             mov       bx, ax
-0x0000000000000647:  C1 E3 02          shl       bx, 2
-0x000000000000064a:  8A 97 68 18       mov       dl, byte ptr [bx + 0x1868]
-0x000000000000064e:  80 F9 03          cmp       cl, 3
-0x0000000000000651:  73 72             jae       0x6c5
-0x0000000000000653:  88 F0             mov       al, dh
-0x0000000000000655:  98                cbw      
-0x0000000000000656:  89 C3             mov       bx, ax
-0x0000000000000658:  C6 87 70 1C 40    mov       byte ptr [bx + 0x1c70], 040h
-0x000000000000065d:  C1 E3 02          shl       bx, 2
-0x0000000000000660:  8A 87 68 18       mov       al, byte ptr [bx + 0x1868]
-0x0000000000000664:  98                cbw      
-0x0000000000000665:  88 AF 6B 18       mov       byte ptr [bx + 0x186b], ch
-0x0000000000000669:  89 C7             mov       di, ax
-0x000000000000066b:  88 AF 6A 18       mov       byte ptr [bx + 0x186a], ch
-0x000000000000066f:  C1 E7 02          shl       di, 2
-0x0000000000000672:  89 C3             mov       bx, ax
-0x0000000000000674:  C6 85 6A 18 01    mov       byte ptr [di + 0x186a], 1
-0x0000000000000679:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x000000000000067c:  88 AD 6B 18       mov       byte ptr [di + 0x186b], ch
-0x0000000000000680:  A8 3F             test      al, 03Fh
-0x0000000000000682:  74 55             je        0x6d9
-0x0000000000000684:  24 3F             and       al, 03Fh
-0x0000000000000686:  88 87 70 1C       mov       byte ptr [bx + 0x1c70], al
-0x000000000000068a:  C0 E6 02          shl       dh, 2
-0x000000000000068d:  30 C0             xor       al, al
-0x000000000000068f:  00 CE             add       dh, cl
-0x0000000000000691:  E9 4A FF          jmp       0x5de
-0x0000000000000694:  80 FA FF          cmp       dl, 0xff
-0x0000000000000697:  74 0C             je        0x6a5
-0x0000000000000699:  88 D0             mov       al, dl
-0x000000000000069b:  98                cbw      
-0x000000000000069c:  89 C3             mov       bx, ax
-0x000000000000069e:  80 BF 70 1C 00    cmp       byte ptr [bx + 0x1c70], 0
-0x00000000000006a3:  74 9D             je        0x642
-0x00000000000006a5:  88 F0             mov       al, dh
-0x00000000000006a7:  98                cbw      
-0x00000000000006a8:  89 C3             mov       bx, ax
-0x00000000000006aa:  C1 E3 02          shl       bx, 2
-0x00000000000006ad:  8A B7 68 18       mov       dh, byte ptr [bx + 0x1868]
-0x00000000000006b1:  80 FE FF          cmp       dh, 0xff
-0x00000000000006b4:  74 03             je        0x6b9
-0x00000000000006b6:  E9 59 FF          jmp       0x612
-0x00000000000006b9:  88 E8             mov       al, ch
-0x00000000000006bb:  31 D2             xor       dx, dx
-0x00000000000006bd:  98                cbw      
-0x00000000000006be:  E8 3F F9          call      0
-0x00000000000006c1:  88 C6             mov       dh, al
-0x00000000000006c3:  EB 8E             jmp       0x653
-0x00000000000006c5:  80 FA FF          cmp       dl, 0xff
-0x00000000000006c8:  74 DB             je        0x6a5
-0x00000000000006ca:  88 D0             mov       al, dl
-0x00000000000006cc:  98                cbw      
-0x00000000000006cd:  89 C3             mov       bx, ax
-0x00000000000006cf:  80 BF 70 1C 00    cmp       byte ptr [bx + 0x1c70], 0
-0x00000000000006d4:  75 CF             jne       0x6a5
-0x00000000000006d6:  E9 7A FF          jmp       0x653
-0x00000000000006d9:  C6 87 70 1C 40    mov       byte ptr [bx + 0x1c70], 040h
-0x00000000000006de:  C0 E6 02          shl       dh, 2
-0x00000000000006e1:  30 C0             xor       al, al
-0x00000000000006e3:  00 CE             add       dh, cl
-0x00000000000006e5:  E9 F6 FE          jmp       0x5de
 
 ENDP
 
