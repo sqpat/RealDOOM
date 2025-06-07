@@ -883,10 +883,10 @@ do_next_column_patch:
 
 mov       ax, word ptr ds:[bx]  ; bl topdelta
 
-xor       dx, dx
-xchg      dl, ah                ; length to dl, 0 to ah
+xor       cx, cx
+xchg      cl, ah                ; length to dl, 0 to ah
 
-; dx is count
+; cx is count
 ; ax is topdelta for now
 
 ;		int16_t     position = patchoriginy + patchcol->topdelta;
@@ -900,12 +900,11 @@ lea       si, [bx + 3] ; for memcpy
 
 ;		patchcol = (column_t __far*)((byte  __far*)patchcol + count + 4);
 
-add       bx, dx
+add       bx, cx
 add       bx, 4
 
-mov       ax, dx
 
-; count is ax
+; count is cx
 ; position is di
 
 ;		if (position < 0) {
@@ -923,23 +922,17 @@ done_with_position_check:
 
 
 mov       dx, di
-add       dx, ax
+add       dx, cx
 cmp       dx, word ptr [bp + 8]
 jbe       done_with_count_adjustment
-mov       ax, word ptr [bp + 8]
-sub       ax, di
+mov       cx, word ptr [bp + 8]
+sub       cx, di
 done_with_count_adjustment:
 
-;		if (count > 0){
 ;			FAR_memcpy(MK_FP(currentdestsegment, position), source, count);
-;		}
-
-test      ax, ax
-jbe       skip_copy_column_pixels
 
 
 
-xchg      ax, cx
 
 shr       cx, 1
 rep movsw 
@@ -947,7 +940,6 @@ adc       cx, cx
 rep movsb 
 
 
-skip_copy_column_pixels:
 
 
 cmp       byte ptr ds:[bx], 0FFh
@@ -960,7 +952,7 @@ pop       di
 pop       si
 ret       2
 position_under_zero:
-add       ax, di
+add       cx, di
 xor       di, di
 jmp       done_with_position_check
 
