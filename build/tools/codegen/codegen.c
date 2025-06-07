@@ -8,7 +8,7 @@
 #include "s_sbsfx.h"
 
 #define CONSTANTS_COUNT 2264
-#define LOCALS_COUNT 18 
+#define LOCALS_COUNT 21
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
 	"FIXED_DS_SEGMENT",
@@ -4671,6 +4671,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 
 };
 
+// to be honest i dont remember why this is separate
+
 char* LOCALS[LOCALS_COUNT] = {
     "_segs_render",
     "_seg_normalangles",
@@ -4691,7 +4693,11 @@ char* LOCALS[LOCALS_COUNT] = {
     "_sectors_physics",
     "NUM_FLAT_CACHE_PAGES",
     "NUM_SPRITE_CACHE_PAGES",
-    "NUM_TEXTURE_PAGES"
+    "NUM_TEXTURE_PAGES",
+	"NUM_TEXTURE_L1_CACHE_PAGES",
+	"NUM_SPRITE_L1_CACHE_PAGES",
+	"NUM_FLAT_L1_CACHE_PAGES"
+
 
 
 
@@ -4721,11 +4727,175 @@ void __near* VALUES[LOCALS_COUNT] = {
     sectors_physics,
     NUM_FLAT_CACHE_PAGES,
     NUM_SPRITE_CACHE_PAGES,
-    NUM_TEXTURE_PAGES
+    NUM_TEXTURE_PAGES,
+	NUM_TEXTURE_L1_CACHE_PAGES,
+	NUM_SPRITE_L1_CACHE_PAGES,
+	NUM_FLAT_L1_CACHE_PAGES
     
 
 
 };
+
+#define EMS_PAGE_STUFF_COUNT 69
+
+char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
+
+	"NUM_PHYS_PARAMS",
+	"NUM_REND_PARAMS",
+	"NUM_STAT_PARAMS",
+	"NUM_DEMO_PARAMS",
+	"NUM_TEXTINFO_PARAMS",
+	"NUM_SCRATCH5000_PARAMS",
+	"NUM_SCRATCH8000_PARAMS",
+	"NUM_SCRATCH7000_PARAMS",
+	"NUM_SCRATCH4000_PARAMS",
+	"NUM_RENDERPLANE_PARAMS",
+	"NUM_FLATCACHE_PARAMS",
+	"NUM_SPRITECACHE_PARAMS",
+	"NUM_FLATCACHE_UNDO_PARAMS",
+	"NUM_MASKEDDATA_PARAMS",
+	"NUM_RENDERTO6000_PARAMS",
+	"NUM_PALETTE_PARAMS",
+	"NUM_7000TO6000_PARAMS",
+	"NUM_MENU_PARAMS",
+	"NUM_INTERMISSION_PARAMS",
+	"NUM_WIPE_PARAMS",
+	"NUM_VISPLANEPAGE_PARAMS",
+	"NUM_PHYSICS_CODE_PARAMS",
+	"PAGESWAPARGS_PHYS_OFFSET_SIZE",
+	"PAGESWAPARGS_SCREEN0_OFFSET_SIZE",
+	"PAGESWAPARGS_REND_OFFSET_SIZE",
+	"PAGESWAPARGS_REND_TEXTURE_SIZE",
+	"PAGESWAPARGS_REND_9000_SIZE",
+	"PAGESWAPARGS_REND_OTHER9000_SIZE",
+	"PAGESWAPARGS_STAT_OFFSET_SIZE",
+	"PAGESWAPARGS_DEMO_OFFSET_SIZE",
+	"PAGESWAPARGS_SCRATCH5000_OFFSET_SIZE",
+	"PAGESWAPARGS_SCRATCH8000_OFFSET_SIZE",
+	"PAGESWAPARGS_SCRATCH7000_OFFSET_SIZE",
+	"PAGESWAPARGS_SCRATCH4000_OFFSET_SIZE",
+	"PAGESWAPARGS_RENDERPLANE_OFFSET_SIZE",
+	"PAGESWAPARGS_FLATCACHE_OFFSET_SIZE",
+	"PAGESWAPARGS_SPRITECACHE_OFFSET_SIZE",
+	"PAGESWAPARGS_FLATCACHE_UNDO_OFFSET_SIZE",
+	"PAGESWAPARGS_MASKEDDATA_OFFSET_SIZE",
+	"PAGESWAPARGS_RENDER_TO_6000_SIZE",
+	"PAGESWAPARGS_PALETTE_OFFSET_SIZE",
+	"PAGESWAPARGS_MENU_OFFSET_SIZE",
+	"PAGESWAPARGS_INTERMISSION_OFFSET_SIZE",
+	"PAGESWAPARGS_WIPE_OFFSET_SIZE",
+	"PAGESWAPARGS_VISPLANEPAGE_OFFSET_SIZE",
+	"PAGESWAPARGS_PHYSICS_CODE_OFFSET_SIZE",
+	"TOTAL_PAGES_SIZE",
+
+	"PAGESWAPARGS_REND_OFFSET",
+	"PAGESWAPARGS_STAT_OFFSET",
+	"PAGESWAPARGS_DEMO_OFFSET",
+	"PAGESWAPARGS_SCRATCH5000_OFFSET",
+	"PAGESWAPARGS_SCRATCH8000_OFFSET",
+	"PAGESWAPARGS_SCRATCH7000_OFFSET",
+	"PAGESWAPARGS_SCRATCH4000_OFFSET",
+	"PAGESWAPARGS_RENDERPLANE_OFFSET",
+	"PAGESWAPARGS_FLATCACHE_OFFSET",
+	"PAGESWAPARGS_SPRITECACHE_OFFSET",
+	"PAGESWAPARGS_FLATCACHE_UNDO_OFFSET",
+	"PAGESWAPARGS_MASKEDDATA_OFFSET",
+	"PAGESWAPARGS_RENDER_TO_6000_OFFSET",
+	"PAGESWAPARGS_PALETTE_OFFSET",
+	"PAGESWAPARGS_MENU_OFFSET",
+	"PAGESWAPARGS_INTERMISSION_OFFSET",
+	"PAGESWAPARGS_WIPE_OFFSET",
+	"PAGESWAPARGS_VISPLANEPAGE_OFFSET",
+	"PAGESWAPARGS_PHYSICS_CODE_OFFSET",
+	"TOTAL_PAGES",
+	"PAGESWAPARGS_REND_TEXTURE_OFFSET",
+	"PAGESWAPARGS_REND_OTHER9000_OFFSET"
+
+};
+
+
+
+void __near* EMS_PAGE_VALUES[EMS_PAGE_STUFF_COUNT] = {
+
+
+	num_phys_params,
+	num_rend_params,
+	num_stat_params,
+	num_demo_params,
+	num_textinfo_params,
+	num_scratch5000_params,
+	num_scratch8000_params,
+	num_scratch7000_params,
+	num_scratch4000_params,
+	num_renderplane_params,
+	num_flatcache_params,
+	num_spritecache_params,
+	num_flatcache_undo_params,
+	num_maskeddata_params,
+	num_renderto6000_params,
+	num_palette_params,
+	num_7000to6000_params,
+	num_menu_params,
+	num_intermission_params,
+	num_wipe_params,
+	num_visplanepage_params,
+	num_physics_code_params,
+	pageswapargs_phys_offset_size,
+	pageswapargs_screen0_offset_size,
+	pageswapargs_rend_offset_size,
+	pageswapargs_rend_texture_size,
+	pageswapargs_rend_9000_size,
+	pageswapargs_rend_other9000_size,
+	pageswapargs_stat_offset_size,
+	pageswapargs_demo_offset_size,
+	pageswapargs_scratch5000_offset_size,
+	pageswapargs_scratch8000_offset_size,
+	pageswapargs_scratch7000_offset_size,
+	pageswapargs_scratch4000_offset_size,
+	pageswapargs_renderplane_offset_size,
+	pageswapargs_flatcache_offset_size,
+	pageswapargs_spritecache_offset_size,
+	pageswapargs_flatcache_undo_offset_size,
+	pageswapargs_maskeddata_offset_size,
+	pageswapargs_render_to_6000_size,
+	pageswapargs_palette_offset_size,
+	pageswapargs_menu_offset_size,
+	pageswapargs_intermission_offset_size,
+	pageswapargs_wipe_offset_size,
+	pageswapargs_visplanepage_offset_size,
+	pageswapargs_physics_code_offset_size,
+	total_pages_size,
+
+
+	pageswapargs_rend_offset,
+	pageswapargs_stat_offset,
+	pageswapargs_demo_offset,
+	pageswapargs_scratch5000_offset,
+	pageswapargs_scratch8000_offset,
+	pageswapargs_scratch7000_offset,
+	pageswapargs_scratch4000_offset,
+	pageswapargs_renderplane_offset,
+	pageswapargs_flatcache_offset,
+	pageswapargs_spritecache_offset,
+	pageswapargs_flatcache_undo_offset,
+	pageswapargs_maskeddata_offset,
+	pageswapargs_render_to_6000_offset,
+	pageswapargs_palette_offset,
+	pageswapargs_menu_offset,
+	pageswapargs_intermission_offset,
+	pageswapargs_wipe_offset,
+	pageswapargs_visplanepage_offset,
+	pageswapargs_physics_code_offset,
+	total_pages,
+	pageswapargs_rend_texture_offset,
+	pageswapargs_rend_other9000_offset
+
+    
+
+
+};
+
+
 
 int16_t main ( int16_t argc,int8_t** argv )  { 
     
@@ -4747,6 +4917,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     for (i = 0; i < LOCALS_COUNT; i++){
         varname = LOCALS[i];
         fprintf(fp, "%s = 0%Xh\n", varname, VALUES[i]);
+    }
+
+
+    for (i = 0; i < EMS_PAGE_STUFF_COUNT; i++){
+        varname = EMS_PAGE_STRINGS[i];
+        fprintf(fp, "%s = 0%Xh\n", varname, EMS_PAGE_VALUES[i]);
     }
 
 

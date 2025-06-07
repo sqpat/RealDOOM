@@ -120,14 +120,12 @@
 // includes turn high bit on
 #define EMS_MEMORY_PAGE_OFFSET 0x8080
 #define _NPR(a)           0x03FF
-#define _NPR_UNINDEXED(a) 0x03FF
 #define _EPR(a)           a + EMS_MEMORY_PAGE_OFFSET
 #define CHIPSET_PAGE_9000 0x14
 #define EMS_AUTOINCREMENT_FLAG 0x80
 #elif defined(__HT18_BUILD)
 #define EMS_MEMORY_PAGE_OFFSET 0x0280
 #define _NPR(a)           0x0000
-#define _NPR_UNINDEXED(a) 0x0000
 #define _EPR(a)           a + EMS_MEMORY_PAGE_OFFSET
 #define CHIPSET_PAGE_9000 0x14
 #define EMS_AUTOINCREMENT_FLAG 0x80
@@ -135,7 +133,6 @@
 #else
 #define EMS_MEMORY_PAGE_OFFSET 0x0000
 #define _NPR(a) 0xFFFF
-#define _NPR_UNINDEXED(a) 0xFFFF
 
 // EMS page register. 0-n per EMS spec, but in the case of hardcoded
 // chipset code - we preadd the EMS memory boundary into this value so we dont have to add in asm

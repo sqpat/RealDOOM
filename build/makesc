@@ -38,7 +38,7 @@
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
 CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__SCAMP_BUILD=1 -d__CHIPSET_BUILD=1
-ASMOPTS = /d_USED000=0 /dCOMPILE_INSTRUCTIONSET=2
+#ASMOPTS = /d_USED000=0 /dCOMPILE_INSTRUCTIONSET=2 /dCOMPILE_CHIPSET=1
 
 GLOBOBJS = &
  m_near.obj &
@@ -70,7 +70,7 @@ GLOBOBJS = &
  p_spec.obj &
  p_switch.obj &
  p_mobj.obj &
-p_mobja.obj &
+ p_mobja.obj &
  p_telept.obj &
  p_tick.obj &
  p_user.obj &
@@ -113,7 +113,7 @@ doomout.exe : $(GLOBOBJS) i_ibm.obj
  wcc $(CCOPTS) $[*
 
 .asm.obj :
- tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
+ tasm /mx /m2 /w2 /q /zi @B_SCAMPC.TA $[*
 
 clean : .SYMBOLIC
  del *.obj

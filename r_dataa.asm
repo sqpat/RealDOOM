@@ -1311,8 +1311,728 @@ COMMENT @
 
 
 
+PROC gettexturepage_ NEAR
+PUBLIC gettexturepage_
+
+
+0x0000000000000000:  51                   push  cx
+0x0000000000000001:  56                   push  si
+0x0000000000000002:  57                   push  di
+0x0000000000000003:  55                   push  bp
+0x0000000000000004:  89 E5                mov   bp, sp
+0x0000000000000006:  83 EC 0C             sub   sp, 0Ch
+0x0000000000000009:  88 56 FC             mov   byte ptr [bp - 4], dl
+0x000000000000000c:  88 C2                mov   dl, al
+0x000000000000000e:  30 F6                xor   dh, dh
+0x0000000000000010:  C1 FA 02             sar   dx, 2
+0x0000000000000013:  88 56 FA             mov   byte ptr [bp - 6], dl
+0x0000000000000016:  88 C2                mov   dl, al
+0x0000000000000018:  80 E2 03             and   dl, 3
+0x000000000000001b:  75 70                jne   jump_to_label_1
+label_3:
+0x000000000000001d:  88 D0                mov   al, dl
+0x000000000000001f:  30 E4                xor   ah, ah
+0x0000000000000021:  89 C3                mov   bx, ax
+0x0000000000000023:  01 C3                add   bx, ax
+0x0000000000000025:  8A 46 FA             mov   al, byte ptr [bp - 6]
+0x0000000000000028:  3B 87 38 1C          cmp   ax, word ptr ds:[bx + _activetexturepages]
+0x000000000000002c:  74 4B                je    label_2
+0x000000000000002e:  FE C2                inc   dl
+0x0000000000000030:  80 FA 08             cmp   dl, 8
+0x0000000000000033:  72 E8                jb    label_3
+0x0000000000000035:  8A 0E 37 1C          mov   cl, byte ptr ds:[_textureL1LRU + NUM_TEXTURE_L1_CACHE_PAGES - 1]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
+0x0000000000000039:  88 C8                mov   al, cl
+0x000000000000003b:  88 CB                mov   bl, cl
+0x000000000000003d:  98                   cbw  
+0x000000000000003e:  30 FF                xor   bh, bh
+0x0000000000000040:  E8 5B 0E             call  R_MarkL1TextureCacheMRU7_
+0x0000000000000043:  80 BF 20 1C 00       cmp   byte ptr ds:[bx + _activenumpages], 0
+0x0000000000000048:  74 45                je    label_5
+0x000000000000004a:  B0 01                mov   al, 1
+label_4:
+0x000000000000004c:  88 CB                mov   bl, cl
+0x000000000000004e:  30 FF                xor   bh, bh
+0x0000000000000050:  3A 87 20 1C          cmp   al, byte ptr ds:[bx + _activenumpages]
+0x0000000000000054:  77 39                ja    label_5
+0x0000000000000056:  88 C2                mov   dl, al
+0x0000000000000058:  30 F6                xor   dh, dh
+0x000000000000005a:  01 D3                add   bx, dx
+0x000000000000005c:  89 DE                mov   si, bx
+0x000000000000005e:  01 DE                add   si, bx
+0x0000000000000060:  C7 84 38 1C FF FF    mov   word ptr ds:[si + _activetexturepages], 0FFFFh
+0x0000000000000066:  89 DE                mov   si, bx
+0x0000000000000068:  FE C0                inc   al
+0x000000000000006a:  C1 E6 02             shl   si, 2
+0x000000000000006d:  88 B7 20 1C          mov   byte ptr ds:[bx + _activenumpages], dh
+0x0000000000000071:  C7 84 7A 0A FF FF    mov   word ptr [si + 0xa7a], 0FFFFh
+0x0000000000000077:  EB D3                jmp   label_4
+label_2:
+0x0000000000000079:  88 D0                mov   al, dl
+0x000000000000007b:  98                   cbw  
+0x000000000000007c:  E8 DF 0D             call  R_MarkL1TextureCacheMRU_
+0x000000000000007f:  8A 46 FA             mov   al, byte ptr [bp - 6]
+0x0000000000000082:  98                   cbw  
+0x0000000000000083:  E8 38 0E             call  R_MarkL2CompositeTextureCacheMRU_
+0x0000000000000086:  88 D0                mov   al, dl
+0x0000000000000088:  C9                   LEAVE_MACRO 
+0x0000000000000089:  5F                   pop   di
+0x000000000000008a:  5E                   pop   si
+0x000000000000008b:  59                   pop   cx
+0x000000000000008c:  C3                   ret   
+jump_to_label_1:
+0x000000000000008d:  EB 48                jmp   label_1
+label_5:
+0x000000000000008f:  88 CB                mov   bl, cl
+0x0000000000000091:  8A 46 FA             mov   al, byte ptr [bp - 6]
+0x0000000000000094:  30 FF                xor   bh, bh
+0x0000000000000096:  30 E4                xor   ah, ah
+0x0000000000000098:  89 DE                mov   si, bx
+0x000000000000009a:  89 C2                mov   dx, ax
+0x000000000000009c:  01 DE                add   si, bx
+0x000000000000009e:  88 BF 20 1C          mov   byte ptr ds:[bx + _activenumpages], bh
+0x00000000000000a2:  89 84 38 1C          mov   word ptr ds:[si + _activetexturepages], ax
+0x00000000000000a6:  8A 46 FC             mov   al, byte ptr [bp - 4]
+0x00000000000000a9:  C1 E3 02             shl   bx, 2
+0x00000000000000ac:  01 D0                add   ax, dx
+
+;		pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT] = 
+;			_EPR(pageoffset + realtexpage);
+
+; mov word ptr ds:[ _pageswapargs + $register + $offset], $value
+SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET ax
+0x00000000000000ae:  89 87 7A 0A          mov   word ptr ds:[bx + _pageswapargs + (pageswapargs_rend_texture_offset * SIZEOF) ], ax    ; a0a to a7a
+0x00000000000000b2:  88 D0                mov   al, dl
+0x00000000000000b4:  98                   cbw  
+0x00000000000000b5:  E8 06 0E             call  R_MarkL2CompositeTextureCacheMRU_
+0x00000000000000b8:  E8 AD 47             call  Z_QuickMapRenderTexture_
+0x00000000000000bb:  B8 FF FF             mov   ax, -1
+0x00000000000000be:  A3 AC 06             mov   word ptr ds:[_cachedtex], ax
+0x00000000000000c1:  A3 B2 06             mov   word ptr ds:[_cachedtex2], ax
+0x00000000000000c4:  A3 18 1C             mov   word ptr ds:[_cachedlumps+0], ax
+0x00000000000000c7:  A3 1A 1C             mov   word ptr ds:[_cachedlumps+2], ax
+0x00000000000000ca:  A3 1C 1C             mov   word ptr ds:[_cachedlumps+4], ax
+0x00000000000000cd:  A3 1E 1C             mov   word ptr ds:[_cachedlumps+6], ax
+0x00000000000000d0:  88 C8                mov   al, cl
+0x00000000000000d2:  C9                   LEAVE_MACRO 
+0x00000000000000d3:  5F                   pop   di
+0x00000000000000d4:  5E                   pop   si
+0x00000000000000d5:  59                   pop   cx
+0x00000000000000d6:  C3                   ret   
+label_1:
+0x00000000000000d7:  30 F6                xor   dh, dh
+label_10:
+0x00000000000000d9:  88 D0                mov   al, dl
+0x00000000000000db:  BB 08 00             mov   bx, 8
+0x00000000000000de:  30 E4                xor   ah, ah
+0x00000000000000e0:  29 C3                sub   bx, ax
+0x00000000000000e2:  88 F0                mov   al, dh
+0x00000000000000e4:  39 D8                cmp   ax, bx
+0x00000000000000e6:  7C 1D                jl    label_6
+0x00000000000000e8:  B6 07                mov   dh, 7
+label_8:
+0x00000000000000ea:  88 F3                mov   bl, dh
+0x00000000000000ec:  30 FF                xor   bh, bh
+0x00000000000000ee:  8A 87 30 1C          mov   al, byte ptr ds:[bx + _textureL1LRU]
+0x00000000000000f2:  30 E4                xor   ah, ah
+0x00000000000000f4:  B9 07 00             mov   cx, 7
+0x00000000000000f7:  89 C6                mov   si, ax
+0x00000000000000f9:  88 D0                mov   al, dl
+0x00000000000000fb:  29 C1                sub   cx, ax
+0x00000000000000fd:  39 CE                cmp   si, cx
+0x00000000000000ff:  7E 43                jle   label_7
+0x0000000000000101:  FE CE                dec   dh
+0x0000000000000103:  EB E5                jmp   label_8
+label_6:
+0x0000000000000105:  89 C3                mov   bx, ax
+0x0000000000000107:  01 C3                add   bx, ax
+0x0000000000000109:  8A 46 FA             mov   al, byte ptr [bp - 6]
+0x000000000000010c:  3B 87 38 1C          cmp   ax, word ptr ds:[bx + _activetexturepages]
+0x0000000000000110:  74 04                je    label_9
+0x0000000000000112:  FE C6                inc   dh
+0x0000000000000114:  EB C3                jmp   label_10
+label_9:
+0x0000000000000116:  30 C0                xor   al, al
+0x0000000000000118:  89 46 F4             mov   word ptr [bp - 0Ch], ax
+0x000000000000011b:  8A 5E F4             mov   bl, byte ptr [bp - 0Ch]
+0x000000000000011e:  00 F3                add   bl, dh
+label_12:
+0x0000000000000120:  88 D0                mov   al, dl
+0x0000000000000122:  30 E4                xor   ah, ah
+0x0000000000000124:  3B 46 F4             cmp   ax, word ptr [bp - 0Ch]
+0x0000000000000127:  7C 0D                jl    label_11
+0x0000000000000129:  88 D8                mov   al, bl
+0x000000000000012b:  98                   cbw  
+0x000000000000012c:  FF 46 F4             inc   word ptr [bp - 0Ch]
+0x000000000000012f:  E8 2C 0D             call  R_MarkL1TextureCacheMRU_
+0x0000000000000132:  FE C3                inc   bl
+0x0000000000000134:  EB EA                jmp   label_12
+label_11:
+0x0000000000000136:  8A 46 FA             mov   al, byte ptr [bp - 6]
+0x0000000000000139:  98                   cbw  
+0x000000000000013a:  E8 81 0D             call  R_MarkL2CompositeTextureCacheMRU_
+0x000000000000013d:  88 F0                mov   al, dh
+0x000000000000013f:  C9                   LEAVE_MACRO 
+0x0000000000000140:  5F                   pop   di
+0x0000000000000141:  5E                   pop   si
+0x0000000000000142:  59                   pop   cx
+0x0000000000000143:  C3                   ret   
+label_7:
+0x0000000000000144:  8A 87 30 1C          mov   al, byte ptr ds:[bx + _textureL1LRU]
+0x0000000000000148:  88 C3                mov   bl, al
+0x000000000000014a:  88 46 FE             mov   byte ptr [bp - 2], al
+0x000000000000014d:  3A 97 20 1C          cmp   dl, byte ptr ds:[bx + _activenumpages]
+0x0000000000000151:  73 31                jae   label_13
+0x0000000000000153:  88 D0                mov   al, dl
+label_14:
+0x0000000000000155:  8A 5E FE             mov   bl, byte ptr [bp - 2]
+0x0000000000000158:  30 FF                xor   bh, bh
+0x000000000000015a:  89 DE                mov   si, bx
+0x000000000000015c:  3A 87 20 1C          cmp   al, byte ptr ds:[bx + _activenumpages]
+0x0000000000000160:  77 22                ja    label_13
+0x0000000000000162:  88 C3                mov   bl, al
+0x0000000000000164:  01 F3                add   bx, si
+0x0000000000000166:  89 DE                mov   si, bx
+0x0000000000000168:  01 DE                add   si, bx
+0x000000000000016a:  C7 84 38 1C FF FF    mov   word ptr ds:[si + _activetexturepages], 0FFFFh
+0x0000000000000170:  89 DE                mov   si, bx
+0x0000000000000172:  FE C0                inc   al
+0x0000000000000174:  C1 E6 02             shl   si, 2
+0x0000000000000177:  C6 87 20 1C 00       mov   byte ptr ds:[bx + _activenumpages], 0
+0x000000000000017c:  C7 84 7A 0A FF FF    mov   word ptr [si + 0xa7a], 0FFFFh
+0x0000000000000182:  EB D1                jmp   label_14
+label_13:
+0x0000000000000184:  30 F6                xor   dh, dh
+0x0000000000000186:  8A 5E FA             mov   bl, byte ptr [bp - 6]
+0x0000000000000189:  8A 4E FE             mov   cl, byte ptr [bp - 2]
+0x000000000000018c:  88 56 F8             mov   byte ptr [bp - 8], dl
+label_15:
+0x000000000000018f:  88 C8                mov   al, cl
+0x0000000000000191:  C6 46 F7 00          mov   byte ptr [bp - 9], 0
+0x0000000000000195:  98                   cbw  
+0x0000000000000196:  8A 6E FC             mov   ch, byte ptr [bp - 4]
+0x0000000000000199:  E8 C2 0C             call  R_MarkL1TextureCacheMRU_
+0x000000000000019c:  88 D8                mov   al, bl
+0x000000000000019e:  8A 5E FE             mov   bl, byte ptr [bp - 2]
+0x00000000000001a1:  88 6E F6             mov   byte ptr [bp - 0Ah], ch
+0x00000000000001a4:  30 FF                xor   bh, bh
+0x00000000000001a6:  8A 6E F8             mov   ch, byte ptr [bp - 8]
+0x00000000000001a9:  89 DE                mov   si, bx
+0x00000000000001ab:  88 F3                mov   bl, dh
+0x00000000000001ad:  98                   cbw  
+0x00000000000001ae:  01 F3                add   bx, si
+0x00000000000001b0:  FE 4E F8             dec   byte ptr [bp - 8]
+0x00000000000001b3:  89 DE                mov   si, bx
+0x00000000000001b5:  89 C7                mov   di, ax
+0x00000000000001b7:  01 DE                add   si, bx
+0x00000000000001b9:  FE C6                inc   dh
+0x00000000000001bb:  89 84 38 1C          mov   word ptr ds:[si + _activetexturepages], ax
+0x00000000000001bf:  8B 76 F6             mov   si, word ptr [bp - 0Ah]
+0x00000000000001c2:  88 AF 20 1C          mov   byte ptr ds:[bx + _activenumpages], ch
+0x00000000000001c6:  01 F7                add   di, si
+0x00000000000001c8:  FE C1                inc   cl
+0x00000000000001ca:  89 DE                mov   si, bx
+0x00000000000001cc:  89 C3                mov   bx, ax
+0x00000000000001ce:  C1 E6 02             shl   si, 2
+0x00000000000001d1:  C1 E3 02             shl   bx, 2
+0x00000000000001d4:  89 BC 7A 0A          mov   word ptr [si + 0xa7a], di
+0x00000000000001d8:  8A 9F 08 18          mov   bl, byte ptr ds:[bx + _texturecache_nodes]
+0x00000000000001dc:  38 D6                cmp   dh, dl
+0x00000000000001de:  76 AF                jbe   label_15
+0x00000000000001e0:  8A 46 FA             mov   al, byte ptr [bp - 6]
+0x00000000000001e3:  98                   cbw  
+0x00000000000001e4:  BB B8 02             mov   bx, OFFSET _maskednextlookup
+0x00000000000001e7:  E8 D4 0C             call  R_MarkL2CompositeTextureCacheMRU_
+0x00000000000001ea:  E8 7B 46             call  Z_QuickMapRenderTexture_
+0x00000000000001ed:  B8 FF FF             mov   ax, 0FFFFh
+0x00000000000001f0:  C7 07 BF FE          mov   word ptr [bx], NULL_TEX_COL
+0x00000000000001f4:  BB BC 02             mov   bx, OFFSET _maskedtexrepeat
+0x00000000000001f7:  A3 AC 06             mov   word ptr ds:[_cachedtex], ax
+0x00000000000001fa:  A3 B2 06             mov   word ptr ds:[_cachedtex2], ax
+0x00000000000001fd:  A3 18 1C             mov   word ptr ds:[_cachedlumps+0], ax
+0x0000000000000200:  A3 1A 1C             mov   word ptr ds:[_cachedlumps+2], ax
+0x0000000000000203:  A3 1C 1C             mov   word ptr ds:[_cachedlumps+4], ax
+0x0000000000000206:  A3 1E 1C             mov   word ptr ds:[_cachedlumps+6], ax
+0x0000000000000209:  A3 3A 0C             mov   word ptr ds:[_segloopnextlookup+0], ax
+0x000000000000020c:  A3 3C 0C             mov   word ptr ds:[_segloopnextlookup+2], ax
+0x000000000000020f:  30 C0                xor   al, al
+0x0000000000000211:  C7 07 00 00          mov   word ptr [bx], 0
+0x0000000000000215:  A2 37 0C             mov   byte ptr ds:[_seglooptexrepeat+0], al ;todo word
+0x0000000000000218:  A2 38 0C             mov   byte ptr ds:[_seglooptexrepeat+1], al
+0x000000000000021b:  8A 46 FE             mov   al, byte ptr [bp - 2]
+0x000000000000021e:  C9                   LEAVE_MACRO 
+0x000000000000021f:  5F                   pop   di
+0x0000000000000220:  5E                   pop   si
+0x0000000000000221:  59                   pop   cx
+0x0000000000000222:  C3                   ret   
 
 ENDP
+
+
+PROC getspritepage_ NEAR
+PUBLIC getspritepage_
+
+
+0x0000000000000224:  53                   push  bx
+0x0000000000000225:  51                   push  cx
+0x0000000000000226:  52                   push  dx
+0x0000000000000227:  56                   push  si
+0x0000000000000228:  57                   push  di
+0x0000000000000229:  55                   push  bp
+0x000000000000022a:  89 E5                mov   bp, sp
+0x000000000000022c:  83 EC 06             sub   sp, 6
+0x000000000000022f:  88 C2                mov   dl, al
+0x0000000000000231:  30 F6                xor   dh, dh
+0x0000000000000233:  C1 FA 02             sar   dx, 2
+0x0000000000000236:  88 56 FC             mov   byte ptr [bp - 4], dl
+0x0000000000000239:  88 C2                mov   dl, al
+0x000000000000023b:  80 E2 03             and   dl, 3
+0x000000000000023e:  75 5C                jne   0x29c
+0x0000000000000240:  88 D0                mov   al, dl
+0x0000000000000242:  30 E4                xor   ah, ah
+0x0000000000000244:  89 C3                mov   bx, ax
+0x0000000000000246:  01 C3                add   bx, ax
+0x0000000000000248:  8A 46 FC             mov   al, byte ptr [bp - 4]
+0x000000000000024b:  3B 87 28 1C          cmp   ax, word ptr [bx + 0x1c28]
+0x000000000000024f:  74 4D                je    0x29e
+0x0000000000000251:  FE C2                inc   dl
+0x0000000000000253:  80 FA 04             cmp   dl, 4
+0x0000000000000256:  72 E8                jb    0x240
+0x0000000000000258:  8A 0E 47 1E          mov   cl, byte ptr [0x1e47]
+0x000000000000025c:  88 C8                mov   al, cl
+0x000000000000025e:  88 CB                mov   bl, cl
+0x0000000000000260:  98                   cbw  
+0x0000000000000261:  30 FF                xor   bh, bh
+0x0000000000000263:  E8 E8 0B             call  0xe4e
+0x0000000000000266:  80 BF 48 1E 00       cmp   byte ptr [bx + 0x1e48], 0
+0x000000000000026b:  74 47                je    0x2b4
+0x000000000000026d:  B0 01                mov   al, 1
+0x000000000000026f:  88 CB                mov   bl, cl
+0x0000000000000271:  30 FF                xor   bh, bh
+0x0000000000000273:  3A 87 48 1E          cmp   al, byte ptr [bx + 0x1e48]
+0x0000000000000277:  77 3B                ja    0x2b4
+0x0000000000000279:  88 C2                mov   dl, al
+0x000000000000027b:  30 F6                xor   dh, dh
+0x000000000000027d:  01 D3                add   bx, dx
+0x000000000000027f:  89 DE                mov   si, bx
+0x0000000000000281:  01 DE                add   si, bx
+0x0000000000000283:  C7 84 28 1C FF FF    mov   word ptr [si + 0x1c28], 0FFFFh
+0x0000000000000289:  89 DE                mov   si, bx
+0x000000000000028b:  FE C0                inc   al
+0x000000000000028d:  C1 E6 02             shl   si, 2
+0x0000000000000290:  88 B7 48 1E          mov   byte ptr [bx + 0x1e48], dh
+0x0000000000000294:  C7 84 62 0B FF FF    mov   word ptr [si + 0xb62], 0FFFFh
+0x000000000000029a:  EB D3                jmp   0x26f
+0x000000000000029c:  EB 53                jmp   0x2f1
+0x000000000000029e:  88 D0                mov   al, dl
+0x00000000000002a0:  98                   cbw  
+0x00000000000002a1:  E8 8A 0B             call  0xe2e
+0x00000000000002a4:  8A 46 FC             mov   al, byte ptr [bp - 4]
+0x00000000000002a7:  98                   cbw  
+0x00000000000002a8:  E8 28 0C             call  0xed3
+0x00000000000002ab:  88 D0                mov   al, dl
+0x00000000000002ad:  C9                   LEAVE_MACRO 
+0x00000000000002ae:  5F                   pop   di
+0x00000000000002af:  5E                   pop   si
+0x00000000000002b0:  5A                   pop   dx
+0x00000000000002b1:  59                   pop   cx
+0x00000000000002b2:  5B                   pop   bx
+0x00000000000002b3:  C3                   ret   
+0x00000000000002b4:  88 CB                mov   bl, cl
+0x00000000000002b6:  8A 46 FC             mov   al, byte ptr [bp - 4]
+0x00000000000002b9:  30 FF                xor   bh, bh
+0x00000000000002bb:  30 E4                xor   ah, ah
+0x00000000000002bd:  89 DE                mov   si, bx
+0x00000000000002bf:  88 BF 48 1E          mov   byte ptr [bx + 0x1e48], bh
+0x00000000000002c3:  01 DE                add   si, bx
+0x00000000000002c5:  C1 E3 02             shl   bx, 2
+0x00000000000002c8:  89 84 28 1C          mov   word ptr [si + 0x1c28], ax
+0x00000000000002cc:  05 46 00             add   ax, 0x46
+0x00000000000002cf:  89 87 62 0B          mov   word ptr [bx + 0xb62], ax
+0x00000000000002d3:  0E                   push  cs
+0x00000000000002d4:  3E E8 A0 46          call  0x4978
+0x00000000000002d8:  8A 46 FC             mov   al, byte ptr [bp - 4]
+0x00000000000002db:  98                   cbw  
+0x00000000000002dc:  BB C8 02             mov   bx, 0x2c8
+0x00000000000002df:  E8 F1 0B             call  0xed3
+0x00000000000002e2:  C7 07 FF FF          mov   word ptr [bx], 0FFFFh
+0x00000000000002e6:  BB CA 02             mov   bx, 0x2ca
+0x00000000000002e9:  88 C8                mov   al, cl
+0x00000000000002eb:  C7 07 FF FF          mov   word ptr [bx], 0FFFFh
+0x00000000000002ef:  EB BC                jmp   0x2ad
+0x00000000000002f1:  30 DB                xor   bl, bl
+0x00000000000002f3:  88 D0                mov   al, dl
+0x00000000000002f5:  B9 04 00             mov   cx, 4
+0x00000000000002f8:  30 E4                xor   ah, ah
+0x00000000000002fa:  29 C1                sub   cx, ax
+0x00000000000002fc:  88 D8                mov   al, bl
+0x00000000000002fe:  39 C8                cmp   ax, cx
+0x0000000000000300:  7C 1D                jl    0x31f
+0x0000000000000302:  B6 03                mov   dh, 3
+0x0000000000000304:  88 F3                mov   bl, dh
+0x0000000000000306:  30 FF                xor   bh, bh
+0x0000000000000308:  8A 87 44 1E          mov   al, byte ptr [bx + 0x1e44]
+0x000000000000030c:  30 E4                xor   ah, ah
+0x000000000000030e:  BE 03 00             mov   si, 3
+0x0000000000000311:  89 C1                mov   cx, ax
+0x0000000000000313:  88 D0                mov   al, dl
+0x0000000000000315:  29 C6                sub   si, ax
+0x0000000000000317:  39 F1                cmp   cx, si
+0x0000000000000319:  7E 45                jle   0x360
+0x000000000000031b:  FE CE                dec   dh
+0x000000000000031d:  EB E5                jmp   0x304
+0x000000000000031f:  89 C6                mov   si, ax
+0x0000000000000321:  01 C6                add   si, ax
+0x0000000000000323:  8A 46 FC             mov   al, byte ptr [bp - 4]
+0x0000000000000326:  3B 84 28 1C          cmp   ax, word ptr [si + 0x1c28]
+0x000000000000032a:  74 04                je    0x330
+0x000000000000032c:  FE C3                inc   bl
+0x000000000000032e:  EB C3                jmp   0x2f3
+0x0000000000000330:  30 C0                xor   al, al
+0x0000000000000332:  89 46 FA             mov   word ptr [bp - 6], ax
+0x0000000000000335:  8A 76 FA             mov   dh, byte ptr [bp - 6]
+0x0000000000000338:  00 DE                add   dh, bl
+0x000000000000033a:  88 D0                mov   al, dl
+0x000000000000033c:  30 E4                xor   ah, ah
+0x000000000000033e:  3B 46 FA             cmp   ax, word ptr [bp - 6]
+0x0000000000000341:  7C 0D                jl    0x350
+0x0000000000000343:  88 F0                mov   al, dh
+0x0000000000000345:  98                   cbw  
+0x0000000000000346:  FF 46 FA             inc   word ptr [bp - 6]
+0x0000000000000349:  E8 E2 0A             call  0xe2e
+0x000000000000034c:  FE C6                inc   dh
+0x000000000000034e:  EB EA                jmp   0x33a
+0x0000000000000350:  8A 46 FC             mov   al, byte ptr [bp - 4]
+0x0000000000000353:  98                   cbw  
+0x0000000000000354:  E8 7C 0B             call  0xed3
+0x0000000000000357:  88 D8                mov   al, bl
+0x0000000000000359:  C9                   LEAVE_MACRO 
+0x000000000000035a:  5F                   pop   di
+0x000000000000035b:  5E                   pop   si
+0x000000000000035c:  5A                   pop   dx
+0x000000000000035d:  59                   pop   cx
+0x000000000000035e:  5B                   pop   bx
+0x000000000000035f:  C3                   ret   
+0x0000000000000360:  88 C8                mov   al, cl
+0x0000000000000362:  88 C3                mov   bl, al
+0x0000000000000364:  88 46 FE             mov   byte ptr [bp - 2], al
+0x0000000000000367:  3A 97 48 1E          cmp   dl, byte ptr [bx + 0x1e48]
+0x000000000000036b:  73 31                jae   0x39e
+0x000000000000036d:  88 D0                mov   al, dl
+0x000000000000036f:  8A 5E FE             mov   bl, byte ptr [bp - 2]
+0x0000000000000372:  30 FF                xor   bh, bh
+0x0000000000000374:  89 DE                mov   si, bx
+0x0000000000000376:  3A 87 48 1E          cmp   al, byte ptr [bx + 0x1e48]
+0x000000000000037a:  77 22                ja    0x39e
+0x000000000000037c:  88 C3                mov   bl, al
+0x000000000000037e:  01 F3                add   bx, si
+0x0000000000000380:  89 DE                mov   si, bx
+0x0000000000000382:  01 DE                add   si, bx
+0x0000000000000384:  C7 84 28 1C FF FF    mov   word ptr [si + 0x1c28], 0FFFFh
+0x000000000000038a:  89 DE                mov   si, bx
+0x000000000000038c:  FE C0                inc   al
+0x000000000000038e:  C1 E6 02             shl   si, 2
+0x0000000000000391:  C6 87 48 1E 00       mov   byte ptr [bx + 0x1e48], 0
+0x0000000000000396:  C7 84 62 0B FF FF    mov   word ptr [si + 0xb62], 0FFFFh
+0x000000000000039c:  EB D1                jmp   0x36f
+0x000000000000039e:  30 F6                xor   dh, dh
+0x00000000000003a0:  8A 5E FC             mov   bl, byte ptr [bp - 4]
+0x00000000000003a3:  88 D5                mov   ch, dl
+0x00000000000003a5:  8A 4E FE             mov   cl, byte ptr [bp - 2]
+0x00000000000003a8:  88 C8                mov   al, cl
+0x00000000000003aa:  98                   cbw  
+0x00000000000003ab:  E8 80 0A             call  0xe2e
+0x00000000000003ae:  88 D8                mov   al, bl
+0x00000000000003b0:  8A 5E FE             mov   bl, byte ptr [bp - 2]
+0x00000000000003b3:  98                   cbw  
+0x00000000000003b4:  30 FF                xor   bh, bh
+0x00000000000003b6:  89 C7                mov   di, ax
+0x00000000000003b8:  89 DE                mov   si, bx
+0x00000000000003ba:  88 F3                mov   bl, dh
+0x00000000000003bc:  83 C7 46             add   di, 0x46
+0x00000000000003bf:  01 F3                add   bx, si
+0x00000000000003c1:  FE C6                inc   dh
+0x00000000000003c3:  89 DE                mov   si, bx
+0x00000000000003c5:  88 AF 48 1E          mov   byte ptr [bx + 0x1e48], ch
+0x00000000000003c9:  FE CD                dec   ch
+0x00000000000003cb:  01 DE                add   si, bx
+0x00000000000003cd:  FE C1                inc   cl
+0x00000000000003cf:  89 84 28 1C          mov   word ptr [si + 0x1c28], ax
+0x00000000000003d3:  89 DE                mov   si, bx
+0x00000000000003d5:  89 C3                mov   bx, ax
+0x00000000000003d7:  C1 E6 02             shl   si, 2
+0x00000000000003da:  C1 E3 02             shl   bx, 2
+0x00000000000003dd:  89 BC 62 0B          mov   word ptr [si + 0xb62], di
+0x00000000000003e1:  8A 9F 68 18          mov   bl, byte ptr [bx + 0x1868]
+0x00000000000003e5:  38 D6                cmp   dh, dl
+0x00000000000003e7:  76 BF                jbe   0x3a8
+0x00000000000003e9:  BB C8 02             mov   bx, 0x2c8
+0x00000000000003ec:  C7 07 FF FF          mov   word ptr [bx], 0FFFFh
+0x00000000000003f0:  BB CA 02             mov   bx, 0x2ca
+0x00000000000003f3:  C7 07 FF FF          mov   word ptr [bx], 0FFFFh
+0x00000000000003f7:  0E                   push  cs
+0x00000000000003f8:  3E E8 7C 45          call  0x4978
+0x00000000000003fc:  8A 46 FC             mov   al, byte ptr [bp - 4]
+0x00000000000003ff:  98                   cbw  
+0x0000000000000400:  E8 D0 0A             call  0xed3
+0x0000000000000403:  8A 46 FE             mov   al, byte ptr [bp - 2]
+0x0000000000000406:  C9                   LEAVE_MACRO 
+0x0000000000000407:  5F                   pop   di
+0x0000000000000408:  5E                   pop   si
+0x0000000000000409:  5A                   pop   dx
+0x000000000000040a:  59                   pop   cx
+0x000000000000040b:  5B                   pop   bx
+0x000000000000040c:  C3                   ret   
+
+ENDP
+
+
+PROC getpatchtexture_ NEAR
+PUBLIC getpatchtexture_
+
+0x000000000000040e:  53                   push  bx
+0x000000000000040f:  51                   push  cx
+0x0000000000000410:  56                   push  si
+0x0000000000000411:  55                   push  bp
+0x0000000000000412:  89 E5                mov   bp, sp
+0x0000000000000414:  83 EC 06             sub   sp, 6
+0x0000000000000417:  89 C1                mov   cx, ax
+0x0000000000000419:  89 C6                mov   si, ax
+0x000000000000041b:  B8 BD 83             mov   ax, 0x83bd
+0x000000000000041e:  2B 36 7E 1F          sub   si, word ptr [0x1f7e]
+0x0000000000000422:  8E C0                mov   es, ax
+0x0000000000000424:  8D 9C DC 01          lea   bx, [si + 0x1dc]
+0x0000000000000428:  26 8A 24             mov   ah, byte ptr es:[si]
+0x000000000000042b:  26 8A 07             mov   al, byte ptr es:[bx]
+0x000000000000042e:  88 46 FC             mov   byte ptr [bp - 4], al
+0x0000000000000431:  80 FA FF             cmp   dl, 0xff
+0x0000000000000434:  74 6F                je    0x4a5
+0x0000000000000436:  B0 01                mov   al, 1
+0x0000000000000438:  88 46 FA             mov   byte ptr [bp - 6], al
+0x000000000000043b:  80 FC FF             cmp   ah, 0xff
+0x000000000000043e:  75 69                jne   0x4a9
+0x0000000000000440:  84 C0                test  al, al
+0x0000000000000442:  74 67                je    0x4ab
+0x0000000000000444:  30 F6                xor   dh, dh
+0x0000000000000446:  89 D3                mov   bx, dx
+0x0000000000000448:  C1 E3 03             shl   bx, 3
+0x000000000000044b:  8B 97 54 02          mov   dx, word ptr [bx + 0x254]
+0x000000000000044f:  89 C8                mov   ax, cx
+0x0000000000000451:  BB 02 00             mov   bx, 2
+0x0000000000000454:  2B 06 7E 1F          sub   ax, word ptr [0x1f7e]
+0x0000000000000458:  E8 B6 0D             call  0x1211
+0x000000000000045b:  B8 BD 83             mov   ax, 0x83bd
+0x000000000000045e:  8E C0                mov   es, ax
+0x0000000000000460:  26 8A 04             mov   al, byte ptr es:[si]
+0x0000000000000463:  BB 02 00             mov   bx, 2
+0x0000000000000466:  26 8A A4 DC 01       mov   ah, byte ptr es:[si + 0x1dc]
+0x000000000000046b:  BA 2C 00             mov   dx, 0x2c
+0x000000000000046e:  88 66 FE             mov   byte ptr [bp - 2], ah
+0x0000000000000471:  30 E4                xor   ah, ah
+0x0000000000000473:  E8 8A FB             call  0
+0x0000000000000476:  30 E4                xor   ah, ah
+0x0000000000000478:  89 C3                mov   bx, ax
+0x000000000000047a:  01 C3                add   bx, ax
+0x000000000000047c:  81 C6 DC 01          add   si, 0x1dc
+0x0000000000000480:  8B B7 8E 07          mov   si, word ptr [bx + 0x78e]
+0x0000000000000484:  8A 46 FE             mov   al, byte ptr [bp - 2]
+0x0000000000000487:  81 C6 00 50          add   si, 0x5000
+0x000000000000048b:  C1 E0 04             shl   ax, 4
+0x000000000000048e:  01 C6                add   si, ax
+0x0000000000000490:  8A 46 FA             mov   al, byte ptr [bp - 6]
+0x0000000000000493:  98                   cbw  
+0x0000000000000494:  89 F2                mov   dx, si
+0x0000000000000496:  89 C3                mov   bx, ax
+0x0000000000000498:  89 C8                mov   ax, cx
+0x000000000000049a:  0E                   push  cs
+0x000000000000049b:  E8 10 07             call  0xbae
+0x000000000000049e:  89 F0                mov   ax, si
+0x00000000000004a0:  C9                   LEAVE_MACRO 
+0x00000000000004a1:  5E                   pop   si
+0x00000000000004a2:  59                   pop   cx
+0x00000000000004a3:  5B                   pop   bx
+0x00000000000004a4:  C3                   ret   
+0x00000000000004a5:  30 C0                xor   al, al
+0x00000000000004a7:  EB 8F                jmp   0x438
+0x00000000000004a9:  EB 10                jmp   0x4bb
+0x00000000000004ab:  89 F0                mov   ax, si
+0x00000000000004ad:  01 F0                add   ax, si
+0x00000000000004af:  89 C3                mov   bx, ax
+0x00000000000004b1:  8B 97 70 F6          mov   dx, word ptr [bx - 0x990]
+0x00000000000004b5:  81 C3 70 F6          add   bx, 0xf670
+0x00000000000004b9:  EB 94                jmp   0x44f
+0x00000000000004bb:  BB 02 00             mov   bx, 2
+0x00000000000004be:  88 E0                mov   al, ah
+0x00000000000004c0:  BA 2C 00             mov   dx, 0x2c
+0x00000000000004c3:  30 E4                xor   ah, ah
+0x00000000000004c5:  E8 38 FB             call  0
+0x00000000000004c8:  30 E4                xor   ah, ah
+0x00000000000004ca:  89 C3                mov   bx, ax
+0x00000000000004cc:  01 C3                add   bx, ax
+0x00000000000004ce:  8B 97 8E 07          mov   dx, word ptr [bx + 0x78e]
+0x00000000000004d2:  8A 46 FC             mov   al, byte ptr [bp - 4]
+0x00000000000004d5:  80 C6 50             add   dh, 0x50
+0x00000000000004d8:  C1 E0 04             shl   ax, 4
+0x00000000000004db:  01 D0                add   ax, dx
+0x00000000000004dd:  C9                   LEAVE_MACRO 
+0x00000000000004de:  5E                   pop   si
+0x00000000000004df:  59                   pop   cx
+0x00000000000004e0:  5B                   pop   bx
+0x00000000000004e1:  C3                   ret   
+
+
+ENDP
+
+
+PROC getcompositetexture_ NEAR
+PUBLIC getcompositetexture_
+
+0x00000000000004e2:  53                   push  bx
+0x00000000000004e3:  51                   push  cx
+0x00000000000004e4:  52                   push  dx
+0x00000000000004e5:  56                   push  si
+0x00000000000004e6:  57                   push  di
+0x00000000000004e7:  55                   push  bp
+0x00000000000004e8:  89 E5                mov   bp, sp
+0x00000000000004ea:  83 EC 04             sub   sp, 4
+0x00000000000004ed:  89 C6                mov   si, ax
+0x00000000000004ef:  B8 81 4F             mov   ax, 0x4f81
+0x00000000000004f2:  8D BC AC 01          lea   di, [si + 0x1ac]
+0x00000000000004f6:  8E C0                mov   es, ax
+0x00000000000004f8:  89 46 FE             mov   word ptr [bp - 2], ax
+0x00000000000004fb:  8C 46 FC             mov   word ptr [bp - 4], es
+0x00000000000004fe:  26 8A 04             mov   al, byte ptr es:[si]
+0x0000000000000501:  26 8A 0D             mov   cl, byte ptr es:[di]
+0x0000000000000504:  3C FF                cmp   al, 0xff
+0x0000000000000506:  75 4F                jne   0x557
+0x0000000000000508:  B8 4B 4F             mov   ax, 0x4f4b
+0x000000000000050b:  89 F3                mov   bx, si
+0x000000000000050d:  8E C0                mov   es, ax
+0x000000000000050f:  01 DB                add   bx, bx
+0x0000000000000511:  89 F0                mov   ax, si
+0x0000000000000513:  26 8B 17             mov   dx, word ptr es:[bx]
+0x0000000000000516:  BB 03 00             mov   bx, 3
+0x0000000000000519:  E8 F5 0C             call  0x1211
+0x000000000000051c:  8E 46 FE             mov   es, word ptr [bp - 2]
+0x000000000000051f:  BB 03 00             mov   bx, 3
+0x0000000000000522:  BA 2C 00             mov   dx, 0x2c
+0x0000000000000525:  26 8A 04             mov   al, byte ptr es:[si]
+0x0000000000000528:  8E 46 FC             mov   es, word ptr [bp - 4]
+0x000000000000052b:  30 E4                xor   ah, ah
+0x000000000000052d:  26 8A 0D             mov   cl, byte ptr es:[di]
+0x0000000000000530:  E8 CD FA             call  0
+0x0000000000000533:  30 E4                xor   ah, ah
+0x0000000000000535:  89 C3                mov   bx, ax
+0x0000000000000537:  01 C3                add   bx, ax
+0x0000000000000539:  8B 9F 8E 07          mov   bx, word ptr [bx + 0x78e]
+0x000000000000053d:  88 C8                mov   al, cl
+0x000000000000053f:  80 C7 50             add   bh, 0x50
+0x0000000000000542:  C1 E0 04             shl   ax, 4
+0x0000000000000545:  01 C3                add   bx, ax
+0x0000000000000547:  89 DA                mov   dx, bx
+0x0000000000000549:  89 F0                mov   ax, si
+0x000000000000054b:  E8 74 F8             call  0xfdc2
+0x000000000000054e:  89 D8                mov   ax, bx
+0x0000000000000550:  C9                   LEAVE_MACRO 
+0x0000000000000551:  5F                   pop   di
+0x0000000000000552:  5E                   pop   si
+0x0000000000000553:  5A                   pop   dx
+0x0000000000000554:  59                   pop   cx
+0x0000000000000555:  5B                   pop   bx
+0x0000000000000556:  CB                   retf  
+0x0000000000000557:  BB 03 00             mov   bx, 3
+0x000000000000055a:  BA 2C 00             mov   dx, 0x2c
+0x000000000000055d:  30 E4                xor   ah, ah
+0x000000000000055f:  E8 9E FA             call  0
+0x0000000000000562:  30 E4                xor   ah, ah
+0x0000000000000564:  89 C3                mov   bx, ax
+0x0000000000000566:  01 C3                add   bx, ax
+0x0000000000000568:  8B 97 8E 07          mov   dx, word ptr [bx + 0x78e]
+0x000000000000056c:  88 C8                mov   al, cl
+0x000000000000056e:  80 C6 50             add   dh, 0x50
+0x0000000000000571:  C1 E0 04             shl   ax, 4
+0x0000000000000574:  01 D0                add   ax, dx
+0x0000000000000576:  C9                   LEAVE_MACRO 
+0x0000000000000577:  5F                   pop   di
+0x0000000000000578:  5E                   pop   si
+0x0000000000000579:  5A                   pop   dx
+0x000000000000057a:  59                   pop   cx
+0x000000000000057b:  5B                   pop   bx
+0x000000000000057c:  CB                   retf  
+
+ENDP
+
+
+PROC getspritetexture_ NEAR
+PUBLIC getspritetexture_
+
+0x000000000000057e:  53                   push  bx
+0x000000000000057f:  51                   push  cx
+0x0000000000000580:  52                   push  dx
+0x0000000000000581:  56                   push  si
+0x0000000000000582:  57                   push  di
+0x0000000000000583:  89 C3                mov   bx, ax
+0x0000000000000585:  BF 83 4E             mov   di, 0x4e83
+0x0000000000000588:  BE E6 00             mov   si, 0xe6
+0x000000000000058b:  8B 0C                mov   cx, word ptr [si]
+0x000000000000058d:  8E C7                mov   es, di
+0x000000000000058f:  8D B7 65 05          lea   si, [bx + 0x565]
+0x0000000000000593:  01 C1                add   cx, ax
+0x0000000000000595:  26 8A 07             mov   al, byte ptr es:[bx]
+0x0000000000000598:  26 8A 14             mov   dl, byte ptr es:[si]
+0x000000000000059b:  3C FF                cmp   al, 0xff
+0x000000000000059d:  75 36                jne   0x5d5
+0x000000000000059f:  89 C8                mov   ax, cx
+0x00000000000005a1:  E8 49 0C             call  0x11ed
+0x00000000000005a4:  8E C7                mov   es, di
+0x00000000000005a6:  26 8A 07             mov   al, byte ptr es:[bx]
+0x00000000000005a9:  30 E4                xor   ah, ah
+0x00000000000005ab:  26 8A 14             mov   dl, byte ptr es:[si]
+0x00000000000005ae:  E8 73 FC             call  0x224
+0x00000000000005b1:  30 E4                xor   ah, ah
+0x00000000000005b3:  89 C3                mov   bx, ax
+0x00000000000005b5:  01 C3                add   bx, ax
+0x00000000000005b7:  8B 9F 8E 07          mov   bx, word ptr [bx + 0x78e]
+0x00000000000005bb:  88 D0                mov   al, dl
+0x00000000000005bd:  80 C7 90             add   bh, 0x90
+0x00000000000005c0:  C1 E0 04             shl   ax, 4
+0x00000000000005c3:  01 C3                add   bx, ax
+0x00000000000005c5:  89 DA                mov   dx, bx
+0x00000000000005c7:  89 C8                mov   ax, cx
+0x00000000000005c9:  0E                   push  cs
+0x00000000000005ca:  E8 D3 06             call  0xca0
+0x00000000000005cd:  89 D8                mov   ax, bx
+0x00000000000005cf:  5F                   pop   di
+0x00000000000005d0:  5E                   pop   si
+0x00000000000005d1:  5A                   pop   dx
+0x00000000000005d2:  59                   pop   cx
+0x00000000000005d3:  5B                   pop   bx
+0x00000000000005d4:  CB                   retf  
+0x00000000000005d5:  30 E4                xor   ah, ah
+0x00000000000005d7:  E8 4A FC             call  0x224
+0x00000000000005da:  30 E4                xor   ah, ah
+0x00000000000005dc:  89 C3                mov   bx, ax
+0x00000000000005de:  01 C3                add   bx, ax
+0x00000000000005e0:  8B 9F 8E 07          mov   bx, word ptr [bx + 0x78e]
+0x00000000000005e4:  88 D0                mov   al, dl
+0x00000000000005e6:  80 C7 90             add   bh, 0x90
+0x00000000000005e9:  C1 E0 04             shl   ax, 4
+0x00000000000005ec:  01 D8                add   ax, bx
+0x00000000000005ee:  5F                   pop   di
+0x00000000000005ef:  5E                   pop   si
+0x00000000000005f0:  5A                   pop   dx
+0x00000000000005f1:  59                   pop   cx
+0x00000000000005f2:  5B                   pop   bx
+0x00000000000005f3:  CB                   retf  
+
+ENDP
+
+
+
+PROC R_GetNextTextureBlock_ NEAR
+PUBLIC R_GetNextTextureBlock_
+
+ENDP
+
 
 
 @

@@ -73,14 +73,14 @@ GOTO END
 
 :MAKE_SCAT
     wmake -f build\makescat clean 
-    wmake -f build\makebg EXTERNCOPT="-d__SCAT_BUILD=1 -d__CHIPSET_BUILD=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="2"
+    wmake -f build\makebg @B_SCAT.TA
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
     wmake -f build\makescat clean 
-    wmake -f build\makebg EXTERNCOPT="-d__SCAT_BUILD=1 -d__CHIPSET_BUILD=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="2"
+    wmake -f build\makebg @B_SCAT.TA
     bingen.exe
     wmake -f build\makescat
 GOTO END
@@ -89,14 +89,14 @@ GOTO END
 
 :MAKE_SCAMP
     wmake -f build\makesc clean 
-    wmake -f build\makebg EXTERNCOPT="-d__SCAMP_BUILD=1 -d__CHIPSET_BUILD=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="1"
+    wmake -f build\makebg @B_SCAMP.TA
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
     wmake -f build\makesc clean 
-    wmake -f build\makebg EXTERNCOPT="-d__SCAMP_BUILD=1 -d__CHIPSET_BUILD=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="1"
+    wmake -f build\makebg @B_SCAMP.TA
     bingen.exe
     wmake -f build\makesc
 GOTO END
@@ -105,14 +105,14 @@ GOTO END
 
 :MAKE_HT18
     wmake -f build\makeht clean 
-    wmake -f build\makebg EXTERNCOPT="-d__HT18_BUILD=1 -d__CHIPSET_BUILD=1 -d__USED000=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="3"
+    wmake -f build\makebg @B_HT18.TA
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
     wmake -f build\makecg 
     codegen.exe
     wmake -f build\makeht clean 
-    wmake -f build\makebg EXTERNCOPT="-d__HT18_BUILD=1 -d__CHIPSET_BUILD=1 -d__USED000=1" EXTERNASMOPT="/dCOMPILE_INSTRUCTIONSET=2" 286_CHIPSET="3"
+    wmake -f build\makebg @B_HT18.TA
     bingen.exe
     wmake -f build\makeht
 GOTO END

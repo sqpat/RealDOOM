@@ -97,7 +97,6 @@ p_mobja.obj &
  hu_lib.obj &
  s_sound.obj &
  s_sbsfx.obj &
-  &
  dmx.obj &
  d_int.obj &
  memory.obj &
