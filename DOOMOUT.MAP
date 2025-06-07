@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/07 11:09:31
+Created on:       25/06/07 11:22:01
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -74,9 +74,9 @@ p_telept_TEXT          CODE           AUTO           0a80:cd30       0000021c
 P_TICK_TEXT            CODE           AUTO           0a80:cf4c       00000147
 p_user_TEXT            CODE           AUTO           0a80:d0a0       0000062f
 r_data_TEXT            CODE           AUTO           17ed:0000       000011f6
-R_DATAA_TEXT           CODE           AUTO           17ed:11f6       0000052a
-R_MATH_TEXT            CODE           AUTO           17ed:1720       000001e3
-R_MAINHI_TEXT          CODE           AUTO           17ed:1904       00002491
+R_DATAA_TEXT           CODE           AUTO           17ed:11f6       00000525
+R_MATH_TEXT            CODE           AUTO           17ed:171c       000001e3
+R_MAINHI_TEXT          CODE           AUTO           17ed:1900       00002491
 r_draw_TEXT            CODE           AUTO           17ed:3da0       000000fb
 r_main_TEXT            CODE           AUTO           17ed:3ea0       000001dd
 w_wad_TEXT             CODE           AUTO           17ed:4080       0000030c
@@ -1173,33 +1173,33 @@ Module: r_dataa.obj(r_dataa.ASM)
 17ed:1566      R_DrawColumnInCache_
 17ed:1503      R_EvictFlatCacheEMSPage_
 Module: r_math.obj(r_math.ASM)
-17ed:1792      R_PointToAngle_
+17ed:178e      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-17ed:1cbc*     R_AddLine_
-17ed:23a7*     R_StoreWallRange_
-17ed:3486*     R_ClipSolidWallSegment_
-17ed:3533*     R_ClipPassWallSegment_
-17ed:37c7*     R_CheckBBox_
-17ed:1e6a*     R_Subsector_
-17ed:1993*     FixedMulBSPLocal_
-17ed:1a86*     R_PointToDist_
-17ed:1b91*     R_HandleEMSVisplanePagination_
-17ed:19cc*     FixedDivBSPLocal_
-17ed:3719      R_PrepareMaskedPSprites_
-17ed:3a5b      R_WriteBackViewConstants_
-17ed:3c03      R_WriteBackFrameConstants_
-17ed:1b1c      R_ClearPlanes_
-17ed:233f*     R_AddSprites_
-17ed:1afd      R_ClearClipSegs_
-17ed:1c40*     R_FindPlane_
-17ed:2f61*     R_DrawColumnPrep_
-17ed:3586*     R_DrawPSprite_
-17ed:1f54*     R_CheckPlane_
-17ed:201f*     R_ProjectSprite_
-17ed:1a3b*     FixedMulTrigNoShiftBSPLocal_
-17ed:3972      R_RenderBSPNode_
-17ed:1904*     R_ScaleFromGlobalAngle_
-17ed:3798*     R_PointToAngle16_
+17ed:1cb8*     R_AddLine_
+17ed:23a3*     R_StoreWallRange_
+17ed:3482*     R_ClipSolidWallSegment_
+17ed:352f*     R_ClipPassWallSegment_
+17ed:37c3*     R_CheckBBox_
+17ed:1e66*     R_Subsector_
+17ed:198f*     FixedMulBSPLocal_
+17ed:1a82*     R_PointToDist_
+17ed:1b8d*     R_HandleEMSVisplanePagination_
+17ed:19c8*     FixedDivBSPLocal_
+17ed:3715      R_PrepareMaskedPSprites_
+17ed:3a57      R_WriteBackViewConstants_
+17ed:3bff      R_WriteBackFrameConstants_
+17ed:1b18      R_ClearPlanes_
+17ed:233b*     R_AddSprites_
+17ed:1af9      R_ClearClipSegs_
+17ed:1c3c*     R_FindPlane_
+17ed:2f5d*     R_DrawColumnPrep_
+17ed:3582*     R_DrawPSprite_
+17ed:1f50*     R_CheckPlane_
+17ed:201b*     R_ProjectSprite_
+17ed:1a37*     FixedMulTrigNoShiftBSPLocal_
+17ed:396e      R_RenderBSPNode_
+17ed:1900*     R_ScaleFromGlobalAngle_
+17ed:3794*     R_PointToAngle16_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17ed:3da0      R_VideoErase_
 17ed:3e24      R_DrawViewBorder_

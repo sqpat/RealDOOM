@@ -1033,7 +1033,7 @@ jl        check_next_texture_page_for_space
 mov       al, byte ptr [bp - 2]
 cbw      
 mov       dx, ax
-mov       ax, 1
+mov       al, 1
 call      R_EvictL2CacheEMSPage_
 mov       dl, al
 
@@ -1082,13 +1082,14 @@ multipage_textureblock:
 ;		uint8_t numpagesminus1 = numpages - 1;
 
 mov       dh, byte ptr ds:[_texturecache_l2_head]
-
-; al is free
-; ah is generally free
-; bh is zero
+mov       ah, 0FFh
+mov       cl, 040h
+; al is free, in use a lot
+; ah is 0FFh
+; bh is 000h
 ; bl is active offset
 ; ch is numpages
-; cl is free
+; cl is 040h
 ; dh is head
 ; dl is nextpage
 
@@ -1107,7 +1108,7 @@ mov       dh, byte ptr ds:[_texturecache_l2_head]
 ;			}
 ;		}
 
-cmp       dh, 0FFh  ; dh is texturecache_l2_head
+cmp       dh, ah  ; dh is texturecache_l2_head
 je        done_with_textureblock_multipage_loop
 
 do_texture_multipage_loop:
@@ -1118,7 +1119,7 @@ jne       do_next_texture_multipage_loop_iter
 page_has_space:
 SHIFT_MACRO shl       bl 2
 mov       al, byte ptr ds:[bx + di]
-cmp       al, 0FFh
+cmp       al, ah
 je        do_next_texture_multipage_loop_iter
 ; has next page
 mov       bl, al
@@ -1133,7 +1134,7 @@ mov       dl, byte ptr ds:[bx + di]
 cmp       ch, 3   ; use numpages instead of numpagesminus1
 jb        less_than_2_pages_or_next_page_good
 not_less_than_2_pages_check_next_page_good:
-cmp       dl, 0FFh
+cmp       dl, ah
 je        do_next_texture_multipage_loop_iter
 mov       bl, dl
 cmp       byte ptr ds:[bx + si], bh
@@ -1158,7 +1159,7 @@ jb        found_multipage
 check_for_next_multipage_loop_iter:
 
 ; (nextpage != -1 &&(!usedtexturepagemem[nextpage])
-cmp       dl, 0FFh
+cmp       dl, ah
 je        do_next_texture_multipage_loop_iter
 mov       bl, dl
 cmp       byte ptr ds:[bx + si], bh
@@ -1168,7 +1169,7 @@ do_next_texture_multipage_loop_iter:
 mov       bl, dh
 SHIFT_MACRO shl       bl 2
 mov       dh, byte ptr ds:[bx + di]
-cmp       dh, 0FFh
+cmp       dh, ah
 jne       do_texture_multipage_loop
 
 done_with_textureblock_multipage_loop:
@@ -1188,7 +1189,7 @@ found_multipage:
 ;        usedtexturepagemem[i] = 64;
 
 mov       bl, dh
-mov       byte ptr ds:[bx + si], 040h
+mov       byte ptr ds:[bx + si], cl
 
 ;		texturecache_nodes[i].numpages = numpages;
 ;		texturecache_nodes[i].pagecount = numpages;
@@ -1204,7 +1205,7 @@ mov       dl, byte ptr ds:[bx + di]
 mov       bl, dl
 mov       al, ch
 dec       al
-mov       byte ptr ds:[bx + si], 040h
+mov       byte ptr ds:[bx + si], cl
 SHIFT_MACRO shl       bl 2
 mov       byte ptr ds:[bx + di + 3], ch
 mov       byte ptr ds:[bx + di + 2], al
@@ -1238,7 +1239,7 @@ set_used_all_memory_for_page:
 ;		texoffset = 0; // if multipage then its always aligned to start of its block
 
 
-mov       byte ptr ds:[bx + si], 040h
+mov       byte ptr ds:[bx + si], cl
 SHIFT_MACRO shl       dh 2
 xor       al, al
 add       dh, ch  ; use numpages instead of numpagesminus1
