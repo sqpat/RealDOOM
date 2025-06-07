@@ -23,6 +23,7 @@ EXTRN P_MobjThinker_:NEAR
 EXTRN OutOfThinkers_:NEAR
 EXTRN P_PlayerThink_:NEAR
 EXTRN P_UpdateSpecials_:NEAR
+EXTRN Z_QuickMapRenderTexture_:NEAR
 
 
 .DATA
@@ -42,6 +43,15 @@ EXTRN _flatcache_l2_tail:BYTE
 EXTRN _usedtexturepagemem:BYTE
 EXTRN _usedspritepagemem:BYTE
 EXTRN _pageswapargs:WORD
+EXTRN _cachedtex:WORD
+EXTRN _cachedtex2:WORD
+EXTRN _cachedlumps:WORD
+EXTRN _activenumpages:WORD
+EXTRN _activetexturepages:WORD
+EXTRN _activespritenumpages:WORD
+EXTRN _activespritepages:WORD
+EXTRN _segloopnextlookup:WORD
+EXTRN _seglooptexrepeat:WORD
 .CODE
 
 
@@ -1305,14 +1315,12 @@ add       dh, ch    ; use numpages instead of numpagesminus1. need the dec
 dec       dh
 jmp       done_finding_open_page
 
-SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET ax
 
 
 ENDP
 
 
 
-COMMENT @
 
 
 
@@ -1320,265 +1328,266 @@ PROC gettexturepage_ NEAR
 PUBLIC gettexturepage_
 
 
-0x0000000000000000:  51                   push  cx
-0x0000000000000001:  56                   push  si
-0x0000000000000002:  57                   push  di
-0x0000000000000003:  55                   push  bp
-0x0000000000000004:  89 E5                mov   bp, sp
-0x0000000000000006:  83 EC 0C             sub   sp, 0Ch
-0x0000000000000009:  88 56 FC             mov   byte ptr [bp - 4], dl
-0x000000000000000c:  88 C2                mov   dl, al
-0x000000000000000e:  30 F6                xor   dh, dh
-0x0000000000000010:  C1 FA 02             sar   dx, 2
-0x0000000000000013:  88 56 FA             mov   byte ptr [bp - 6], dl
-0x0000000000000016:  88 C2                mov   dl, al
-0x0000000000000018:  80 E2 03             and   dl, 3
-0x000000000000001b:  75 70                jne   jump_to_label_1
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 0Ch
+mov   byte ptr [bp - 4], dl
+mov   dl, al
+xor   dh, dh
+sar   dx, 2
+mov   byte ptr [bp - 6], dl
+mov   dl, al
+and   dl, 3
+jne   jump_to_label_1
 label_3:
-0x000000000000001d:  88 D0                mov   al, dl
-0x000000000000001f:  30 E4                xor   ah, ah
-0x0000000000000021:  89 C3                mov   bx, ax
-0x0000000000000023:  01 C3                add   bx, ax
-0x0000000000000025:  8A 46 FA             mov   al, byte ptr [bp - 6]
-0x0000000000000028:  3B 87 38 1C          cmp   ax, word ptr ds:[bx + _activetexturepages]
-0x000000000000002c:  74 4B                je    label_2
-0x000000000000002e:  FE C2                inc   dl
-0x0000000000000030:  80 FA 08             cmp   dl, 8
-0x0000000000000033:  72 E8                jb    label_3
-0x0000000000000035:  8A 0E 37 1C          mov   cl, byte ptr ds:[_textureL1LRU + NUM_TEXTURE_L1_CACHE_PAGES - 1]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
-0x0000000000000039:  88 C8                mov   al, cl
-0x000000000000003b:  88 CB                mov   bl, cl
-0x000000000000003d:  98                   cbw  
-0x000000000000003e:  30 FF                xor   bh, bh
-0x0000000000000040:  E8 5B 0E             call  R_MarkL1TextureCacheMRU7_
-0x0000000000000043:  80 BF 20 1C 00       cmp   byte ptr ds:[bx + _activenumpages], 0
-0x0000000000000048:  74 45                je    label_5
-0x000000000000004a:  B0 01                mov   al, 1
+mov   al, dl
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bp - 6]
+cmp   ax, word ptr ds:[bx + _activetexturepages]
+je    label_2
+inc   dl
+cmp   dl, 8
+jb    label_3
+mov   cl, byte ptr ds:[_textureL1LRU + NUM_TEXTURE_L1_CACHE_PAGES - 1]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
+mov   al, cl
+mov   bl, cl
+cbw  
+xor   bh, bh
+call  R_MarkL1TextureCacheMRU7_
+cmp   byte ptr ds:[bx + _activenumpages], 0
+je    label_5
+mov   al, 1
 label_4:
-0x000000000000004c:  88 CB                mov   bl, cl
-0x000000000000004e:  30 FF                xor   bh, bh
-0x0000000000000050:  3A 87 20 1C          cmp   al, byte ptr ds:[bx + _activenumpages]
-0x0000000000000054:  77 39                ja    label_5
-0x0000000000000056:  88 C2                mov   dl, al
-0x0000000000000058:  30 F6                xor   dh, dh
-0x000000000000005a:  01 D3                add   bx, dx
-0x000000000000005c:  89 DE                mov   si, bx
-0x000000000000005e:  01 DE                add   si, bx
-0x0000000000000060:  C7 84 38 1C FF FF    mov   word ptr ds:[si + _activetexturepages], 0FFFFh
-0x0000000000000066:  89 DE                mov   si, bx
-0x0000000000000068:  FE C0                inc   al
-0x000000000000006a:  C1 E6 02             shl   si, 2
-0x000000000000006d:  88 B7 20 1C          mov   byte ptr ds:[bx + _activenumpages], dh
+mov   bl, cl
+xor   bh, bh
+cmp   al, byte ptr ds:[bx + _activenumpages]
+ja    label_5
+mov   dl, al
+xor   dh, dh
+add   bx, dx
+mov   si, bx
+add   si, bx
+mov   word ptr ds:[si + _activetexturepages], 0FFFFh
+mov   si, bx
+inc   al
+shl   si, 2
+mov   byte ptr ds:[bx + _activenumpages], dh
 
-SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET 0FFFFh
+SET_PAGESWAP_ARGS si PAGESWAPARGS_REND_TEXTURE_OFFSET 0FFFFh
 
-0x0000000000000071:  C7 84 7A 0A FF FF    mov   word ptr [si + 0xa7a], 0FFFFh
-0x0000000000000077:  EB D3                jmp   label_4
+;mov   word ptr [si + 0xa7a], 0FFFFh
+jmp   label_4
 label_2:
-0x0000000000000079:  88 D0                mov   al, dl
-0x000000000000007b:  98                   cbw  
-0x000000000000007c:  E8 DF 0D             call  R_MarkL1TextureCacheMRU_
-0x000000000000007f:  8A 46 FA             mov   al, byte ptr [bp - 6]
-0x0000000000000082:  98                   cbw  
-0x0000000000000083:  E8 38 0E             call  R_MarkL2CompositeTextureCacheMRU_
-0x0000000000000086:  88 D0                mov   al, dl
-0x0000000000000088:  C9                   LEAVE_MACRO 
-0x0000000000000089:  5F                   pop   di
-0x000000000000008a:  5E                   pop   si
-0x000000000000008b:  59                   pop   cx
-0x000000000000008c:  C3                   ret   
+mov   al, dl
+cbw  
+call  R_MarkL1TextureCacheMRU_
+mov   al, byte ptr [bp - 6]
+cbw  
+call  R_MarkL2CompositeTextureCacheMRU_
+mov   al, dl
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   
 jump_to_label_1:
-0x000000000000008d:  EB 48                jmp   label_1
+jmp   label_1
 label_5:
-0x000000000000008f:  88 CB                mov   bl, cl
-0x0000000000000091:  8A 46 FA             mov   al, byte ptr [bp - 6]
-0x0000000000000094:  30 FF                xor   bh, bh
-0x0000000000000096:  30 E4                xor   ah, ah
-0x0000000000000098:  89 DE                mov   si, bx
-0x000000000000009a:  89 C2                mov   dx, ax
-0x000000000000009c:  01 DE                add   si, bx
-0x000000000000009e:  88 BF 20 1C          mov   byte ptr ds:[bx + _activenumpages], bh
-0x00000000000000a2:  89 84 38 1C          mov   word ptr ds:[si + _activetexturepages], ax
-0x00000000000000a6:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x00000000000000a9:  C1 E3 02             shl   bx, 2
-0x00000000000000ac:  01 D0                add   ax, dx
+mov   bl, cl
+mov   al, byte ptr [bp - 6]
+xor   bh, bh
+xor   ah, ah
+mov   si, bx
+mov   dx, ax
+add   si, bx
+mov   byte ptr ds:[bx + _activenumpages], bh
+mov   word ptr ds:[si + _activetexturepages], ax
+mov   al, byte ptr [bp - 4]
+shl   bx, 2
+add   ax, dx
 
 
 ; mov word ptr ds:[ _pageswapargs + $register + $offset], $value
 SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET ax
 
-;0x00000000000000ae:  89 87 7A 0A          mov   word ptr ds:[bx + _pageswapargs + (pageswapargs_rend_texture_offset * SIZEOF) ], ax    ; a0a to a7a
-0x00000000000000b2:  88 D0                mov   al, dl
-0x00000000000000b4:  98                   cbw  
-0x00000000000000b5:  E8 06 0E             call  R_MarkL2CompositeTextureCacheMRU_
-0x00000000000000b8:  E8 AD 47             call  Z_QuickMapRenderTexture_
-0x00000000000000bb:  B8 FF FF             mov   ax, -1
-0x00000000000000be:  A3 AC 06             mov   word ptr ds:[_cachedtex], ax
-0x00000000000000c1:  A3 B2 06             mov   word ptr ds:[_cachedtex2], ax
-0x00000000000000c4:  A3 18 1C             mov   word ptr ds:[_cachedlumps+0], ax
-0x00000000000000c7:  A3 1A 1C             mov   word ptr ds:[_cachedlumps+2], ax
-0x00000000000000ca:  A3 1C 1C             mov   word ptr ds:[_cachedlumps+4], ax
-0x00000000000000cd:  A3 1E 1C             mov   word ptr ds:[_cachedlumps+6], ax
-0x00000000000000d0:  88 C8                mov   al, cl
-0x00000000000000d2:  C9                   LEAVE_MACRO 
-0x00000000000000d3:  5F                   pop   di
-0x00000000000000d4:  5E                   pop   si
-0x00000000000000d5:  59                   pop   cx
-0x00000000000000d6:  C3                   ret   
+;mov   word ptr ds:[bx + _pageswapargs + (pageswapargs_rend_texture_offset * SIZEOF) ], ax    ; a0a to a7a
+mov   al, dl
+cbw  
+call  R_MarkL2CompositeTextureCacheMRU_
+call  Z_QuickMapRenderTexture_
+mov   ax, -1
+mov   word ptr ds:[_cachedtex], ax
+mov   word ptr ds:[_cachedtex2], ax
+mov   word ptr ds:[_cachedlumps+0], ax
+mov   word ptr ds:[_cachedlumps+2], ax
+mov   word ptr ds:[_cachedlumps+4], ax
+mov   word ptr ds:[_cachedlumps+6], ax
+mov   al, cl
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   
 label_1:
-0x00000000000000d7:  30 F6                xor   dh, dh
+xor   dh, dh
 label_10:
-0x00000000000000d9:  88 D0                mov   al, dl
-0x00000000000000db:  BB 08 00             mov   bx, 8
-0x00000000000000de:  30 E4                xor   ah, ah
-0x00000000000000e0:  29 C3                sub   bx, ax
-0x00000000000000e2:  88 F0                mov   al, dh
-0x00000000000000e4:  39 D8                cmp   ax, bx
-0x00000000000000e6:  7C 1D                jl    label_6
-0x00000000000000e8:  B6 07                mov   dh, 7
+mov   al, dl
+mov   bx, 8
+xor   ah, ah
+sub   bx, ax
+mov   al, dh
+cmp   ax, bx
+jl    label_6
+mov   dh, 7
 label_8:
-0x00000000000000ea:  88 F3                mov   bl, dh
-0x00000000000000ec:  30 FF                xor   bh, bh
-0x00000000000000ee:  8A 87 30 1C          mov   al, byte ptr ds:[bx + _textureL1LRU]
-0x00000000000000f2:  30 E4                xor   ah, ah
-0x00000000000000f4:  B9 07 00             mov   cx, 7
-0x00000000000000f7:  89 C6                mov   si, ax
-0x00000000000000f9:  88 D0                mov   al, dl
-0x00000000000000fb:  29 C1                sub   cx, ax
-0x00000000000000fd:  39 CE                cmp   si, cx
-0x00000000000000ff:  7E 43                jle   label_7
-0x0000000000000101:  FE CE                dec   dh
-0x0000000000000103:  EB E5                jmp   label_8
+mov   bl, dh
+xor   bh, bh
+mov   al, byte ptr ds:[bx + _textureL1LRU]
+xor   ah, ah
+mov   cx, 7
+mov   si, ax
+mov   al, dl
+sub   cx, ax
+cmp   si, cx
+jle   label_7
+dec   dh
+jmp   label_8
 label_6:
-0x0000000000000105:  89 C3                mov   bx, ax
-0x0000000000000107:  01 C3                add   bx, ax
-0x0000000000000109:  8A 46 FA             mov   al, byte ptr [bp - 6]
-0x000000000000010c:  3B 87 38 1C          cmp   ax, word ptr ds:[bx + _activetexturepages]
-0x0000000000000110:  74 04                je    label_9
-0x0000000000000112:  FE C6                inc   dh
-0x0000000000000114:  EB C3                jmp   label_10
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bp - 6]
+cmp   ax, word ptr ds:[bx + _activetexturepages]
+je    label_9
+inc   dh
+jmp   label_10
 label_9:
-0x0000000000000116:  30 C0                xor   al, al
-0x0000000000000118:  89 46 F4             mov   word ptr [bp - 0Ch], ax
-0x000000000000011b:  8A 5E F4             mov   bl, byte ptr [bp - 0Ch]
-0x000000000000011e:  00 F3                add   bl, dh
+xor   al, al
+mov   word ptr [bp - 0Ch], ax
+mov   bl, byte ptr [bp - 0Ch]
+add   bl, dh
 label_12:
-0x0000000000000120:  88 D0                mov   al, dl
-0x0000000000000122:  30 E4                xor   ah, ah
-0x0000000000000124:  3B 46 F4             cmp   ax, word ptr [bp - 0Ch]
-0x0000000000000127:  7C 0D                jl    label_11
-0x0000000000000129:  88 D8                mov   al, bl
-0x000000000000012b:  98                   cbw  
-0x000000000000012c:  FF 46 F4             inc   word ptr [bp - 0Ch]
-0x000000000000012f:  E8 2C 0D             call  R_MarkL1TextureCacheMRU_
-0x0000000000000132:  FE C3                inc   bl
-0x0000000000000134:  EB EA                jmp   label_12
+mov   al, dl
+xor   ah, ah
+cmp   ax, word ptr [bp - 0Ch]
+jl    label_11
+mov   al, bl
+cbw  
+inc   word ptr [bp - 0Ch]
+call  R_MarkL1TextureCacheMRU_
+inc   bl
+jmp   label_12
 label_11:
-0x0000000000000136:  8A 46 FA             mov   al, byte ptr [bp - 6]
-0x0000000000000139:  98                   cbw  
-0x000000000000013a:  E8 81 0D             call  R_MarkL2CompositeTextureCacheMRU_
-0x000000000000013d:  88 F0                mov   al, dh
-0x000000000000013f:  C9                   LEAVE_MACRO 
-0x0000000000000140:  5F                   pop   di
-0x0000000000000141:  5E                   pop   si
-0x0000000000000142:  59                   pop   cx
-0x0000000000000143:  C3                   ret   
+mov   al, byte ptr [bp - 6]
+cbw  
+call  R_MarkL2CompositeTextureCacheMRU_
+mov   al, dh
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   
 label_7:
-0x0000000000000144:  8A 87 30 1C          mov   al, byte ptr ds:[bx + _textureL1LRU]
-0x0000000000000148:  88 C3                mov   bl, al
-0x000000000000014a:  88 46 FE             mov   byte ptr [bp - 2], al
-0x000000000000014d:  3A 97 20 1C          cmp   dl, byte ptr ds:[bx + _activenumpages]
-0x0000000000000151:  73 31                jae   label_13
-0x0000000000000153:  88 D0                mov   al, dl
+mov   al, byte ptr ds:[bx + _textureL1LRU]
+mov   bl, al
+mov   byte ptr [bp - 2], al
+cmp   dl, byte ptr ds:[bx + _activenumpages]
+jae   label_13
+mov   al, dl
 label_14:
-0x0000000000000155:  8A 5E FE             mov   bl, byte ptr [bp - 2]
-0x0000000000000158:  30 FF                xor   bh, bh
-0x000000000000015a:  89 DE                mov   si, bx
-0x000000000000015c:  3A 87 20 1C          cmp   al, byte ptr ds:[bx + _activenumpages]
-0x0000000000000160:  77 22                ja    label_13
-0x0000000000000162:  88 C3                mov   bl, al
-0x0000000000000164:  01 F3                add   bx, si
-0x0000000000000166:  89 DE                mov   si, bx
-0x0000000000000168:  01 DE                add   si, bx
-0x000000000000016a:  C7 84 38 1C FF FF    mov   word ptr ds:[si + _activetexturepages], 0FFFFh
-0x0000000000000170:  89 DE                mov   si, bx
-0x0000000000000172:  FE C0                inc   al
-0x0000000000000174:  C1 E6 02             shl   si, 2
-0x0000000000000177:  C6 87 20 1C 00       mov   byte ptr ds:[bx + _activenumpages], 0
+mov   bl, byte ptr [bp - 2]
+xor   bh, bh
+mov   si, bx
+cmp   al, byte ptr ds:[bx + _activenumpages]
+ja    label_13
+mov   bl, al
+add   bx, si
+mov   si, bx
+add   si, bx
+mov   word ptr ds:[si + _activetexturepages], 0FFFFh
+mov   si, bx
+inc   al
+shl   si, 2
+mov   byte ptr ds:[bx + _activenumpages], 0
 
 SET_PAGESWAP_ARGS si PAGESWAPARGS_REND_TEXTURE_OFFSET 0FFFFh
-
-0x000000000000017c:  C7 84 7A 0A FF FF    mov   word ptr [si + 0xa7a], 0FFFFh
-0x0000000000000182:  EB D1                jmp   label_14
+;mov   word ptr [si + 0xa7a], 0FFFFh
+jmp   label_14
 label_13:
-0x0000000000000184:  30 F6                xor   dh, dh
-0x0000000000000186:  8A 5E FA             mov   bl, byte ptr [bp - 6]
-0x0000000000000189:  8A 4E FE             mov   cl, byte ptr [bp - 2]
-0x000000000000018c:  88 56 F8             mov   byte ptr [bp - 8], dl
+xor   dh, dh
+mov   bl, byte ptr [bp - 6]
+mov   cl, byte ptr [bp - 2]
+mov   byte ptr [bp - 8], dl
 label_15:
-0x000000000000018f:  88 C8                mov   al, cl
-0x0000000000000191:  C6 46 F7 00          mov   byte ptr [bp - 9], 0
-0x0000000000000195:  98                   cbw  
-0x0000000000000196:  8A 6E FC             mov   ch, byte ptr [bp - 4]
-0x0000000000000199:  E8 C2 0C             call  R_MarkL1TextureCacheMRU_
-0x000000000000019c:  88 D8                mov   al, bl
-0x000000000000019e:  8A 5E FE             mov   bl, byte ptr [bp - 2]
-0x00000000000001a1:  88 6E F6             mov   byte ptr [bp - 0Ah], ch
-0x00000000000001a4:  30 FF                xor   bh, bh
-0x00000000000001a6:  8A 6E F8             mov   ch, byte ptr [bp - 8]
-0x00000000000001a9:  89 DE                mov   si, bx
-0x00000000000001ab:  88 F3                mov   bl, dh
-0x00000000000001ad:  98                   cbw  
-0x00000000000001ae:  01 F3                add   bx, si
-0x00000000000001b0:  FE 4E F8             dec   byte ptr [bp - 8]
-0x00000000000001b3:  89 DE                mov   si, bx
-0x00000000000001b5:  89 C7                mov   di, ax
-0x00000000000001b7:  01 DE                add   si, bx
-0x00000000000001b9:  FE C6                inc   dh
-0x00000000000001bb:  89 84 38 1C          mov   word ptr ds:[si + _activetexturepages], ax
-0x00000000000001bf:  8B 76 F6             mov   si, word ptr [bp - 0Ah]
-0x00000000000001c2:  88 AF 20 1C          mov   byte ptr ds:[bx + _activenumpages], ch
-0x00000000000001c6:  01 F7                add   di, si
-0x00000000000001c8:  FE C1                inc   cl
-0x00000000000001ca:  89 DE                mov   si, bx
-0x00000000000001cc:  89 C3                mov   bx, ax
-0x00000000000001ce:  C1 E6 02             shl   si, 2
-0x00000000000001d1:  C1 E3 02             shl   bx, 2
+mov   al, cl
+mov   byte ptr [bp - 9], 0
+cbw  
+mov   ch, byte ptr [bp - 4]
+call  R_MarkL1TextureCacheMRU_
+mov   al, bl
+mov   bl, byte ptr [bp - 2]
+mov   byte ptr [bp - 0Ah], ch
+xor   bh, bh
+mov   ch, byte ptr [bp - 8]
+mov   si, bx
+mov   bl, dh
+cbw  
+add   bx, si
+dec   byte ptr [bp - 8]
+mov   si, bx
+mov   di, ax
+add   si, bx
+inc   dh
+mov   word ptr ds:[si + _activetexturepages], ax
+mov   si, word ptr [bp - 0Ah]
+mov   byte ptr ds:[bx + _activenumpages], ch
+add   di, si
+inc   cl
+mov   si, bx
+mov   bx, ax
+shl   si, 2
+shl   bx, 2
 
 SET_PAGESWAP_ARGS si PAGESWAPARGS_REND_TEXTURE_OFFSET di
 
-0x00000000000001d4:  89 BC 7A 0A          mov   word ptr [si + 0xa7a], di
-0x00000000000001d8:  8A 9F 08 18          mov   bl, byte ptr ds:[bx + _texturecache_nodes]
-0x00000000000001dc:  38 D6                cmp   dh, dl
-0x00000000000001de:  76 AF                jbe   label_15
-0x00000000000001e0:  8A 46 FA             mov   al, byte ptr [bp - 6]
-0x00000000000001e3:  98                   cbw  
-0x00000000000001e4:  BB B8 02             mov   bx, OFFSET _maskednextlookup
-0x00000000000001e7:  E8 D4 0C             call  R_MarkL2CompositeTextureCacheMRU_
-0x00000000000001ea:  E8 7B 46             call  Z_QuickMapRenderTexture_
-0x00000000000001ed:  B8 FF FF             mov   ax, 0FFFFh
-0x00000000000001f0:  C7 07 BF FE          mov   word ptr [bx], NULL_TEX_COL
-0x00000000000001f4:  BB BC 02             mov   bx, OFFSET _maskedtexrepeat
-0x00000000000001f7:  A3 AC 06             mov   word ptr ds:[_cachedtex], ax
-0x00000000000001fa:  A3 B2 06             mov   word ptr ds:[_cachedtex2], ax
-0x00000000000001fd:  A3 18 1C             mov   word ptr ds:[_cachedlumps+0], ax
-0x0000000000000200:  A3 1A 1C             mov   word ptr ds:[_cachedlumps+2], ax
-0x0000000000000203:  A3 1C 1C             mov   word ptr ds:[_cachedlumps+4], ax
-0x0000000000000206:  A3 1E 1C             mov   word ptr ds:[_cachedlumps+6], ax
-0x0000000000000209:  A3 3A 0C             mov   word ptr ds:[_segloopnextlookup+0], ax
-0x000000000000020c:  A3 3C 0C             mov   word ptr ds:[_segloopnextlookup+2], ax
-0x000000000000020f:  30 C0                xor   al, al
-0x0000000000000211:  C7 07 00 00          mov   word ptr [bx], 0
-0x0000000000000215:  A2 37 0C             mov   byte ptr ds:[_seglooptexrepeat+0], al ;todo word
-0x0000000000000218:  A2 38 0C             mov   byte ptr ds:[_seglooptexrepeat+1], al
-0x000000000000021b:  8A 46 FE             mov   al, byte ptr [bp - 2]
-0x000000000000021e:  C9                   LEAVE_MACRO 
-0x000000000000021f:  5F                   pop   di
-0x0000000000000220:  5E                   pop   si
-0x0000000000000221:  59                   pop   cx
-0x0000000000000222:  C3                   ret   
+;mov   word ptr [si + 0xa7a], di
+mov   bl, byte ptr ds:[bx + _texturecache_nodes]
+cmp   dh, dl
+jbe   label_15
+mov   al, byte ptr [bp - 6]
+cbw  
+mov   bx, OFFSET _maskednextlookup
+call  R_MarkL2CompositeTextureCacheMRU_
+call  Z_QuickMapRenderTexture_
+mov   ax, 0FFFFh
+mov   word ptr [bx], NULL_TEX_COL
+mov   bx, OFFSET _maskedtexrepeat
+mov   word ptr ds:[_cachedtex], ax
+mov   word ptr ds:[_cachedtex2], ax
+mov   word ptr ds:[_cachedlumps+0], ax
+mov   word ptr ds:[_cachedlumps+2], ax
+mov   word ptr ds:[_cachedlumps+4], ax
+mov   word ptr ds:[_cachedlumps+6], ax
+mov   word ptr ds:[_segloopnextlookup+0], ax
+mov   word ptr ds:[_segloopnextlookup+2], ax
+xor   al, al
+mov   word ptr [bx], 0
+mov   byte ptr ds:[_seglooptexrepeat+0], al ;todo word
+mov   byte ptr ds:[_seglooptexrepeat+1], al
+mov   al, byte ptr [bp - 2]
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   
 
 ENDP
+
+COMMENT @
 
 
 PROC getspritepage_ NEAR

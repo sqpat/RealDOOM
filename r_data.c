@@ -2079,6 +2079,9 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
 //gettexturepage takes an l2 cache page, pages it into L1 if its not already.
 //then returns the L1 page number
+uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype);
+
+/*
 uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 	uint8_t realtexpage = texpage >> 2;
 	//uint8_t pagenum = pageoffset + realtexpage;
@@ -2254,7 +2257,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 	}
 
 }
-
+*/
 //getspritepage takes an l2 cache page, pages it into L1 if its not already.
 //then returns the L1 page number
 uint8_t __near getspritepage(uint8_t texpage) {
