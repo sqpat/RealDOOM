@@ -729,25 +729,11 @@ void check_is_ultimate(){
 }
 
 
-
-
-
 //void checkDS(int16_t a);
 void __far wipe_WipeLoop();
 void __far I_ReadScreen();
 uint16_t   __far  R_CheckTextureNumForName(int8_t *name);
-void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos) ;
-
-void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z );
-void __near P_SpawnBlood ( fixed_t x, fixed_t y, fixed_t z, int16_t damage ) ;
-THINKERREF __near P_GetNextThinkerRef(void);
-void P_Thrust (fineangle_t angle, fixed_t move ) ;
-void __near R_ClearClipSegs (void) ;
-int8_t __near R_EvictL2CacheEMSPage(int8_t numpages, int8_t cachetype);
-void __near R_MarkL2CompositeTextureCacheMRU(int8_t index) ;
-void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) ;
-uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype);
-segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcachetype) ;
+int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) ;
 
 void __far D_DoomMain2(void) {
 	int16_t             p;
@@ -759,15 +745,15 @@ void __far D_DoomMain2(void) {
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x3660
 
-	
+	/*
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(gettexturepage, (byte __far *)R_GetColumnSegment - (byte __far *)gettexturepage, 1, fp);
+	FAR_fwrite(P_CheckSight, (byte __far *)P_DivlineSide - (byte __far *)P_CheckSight, 1, fp);
 	fclose(fp);
 	exit(0);
 	
 
-/*
+
 
 	fixed_t_union x, y;
 

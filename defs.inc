@@ -508,9 +508,6 @@ IFDEF COMPILE_CHIPSET
 
 	PAGE_SWAP_ARG_MULT = 1
 
-	SET_PAGESWAP_ARGS MACRO register offset value
-		mov word ptr ds:[ _pageswapargs + $register + $offset], $value
-	ENDM
 
 	IF COMPILE_CHIPSET EQ CHIPSET_SCAT
 		EMS_MEMORY_PAGE_OFFSET  = 08080h
@@ -543,6 +540,8 @@ IFDEF COMPILE_CHIPSET
 
 ELSE
     PAGE_SWAP_ARG_MULT = 2
+
+
 	EMS_MEMORY_PAGE_OFFSET  = 00280h
 	EPR_MACRO MACRO amount
 		&amount
@@ -553,6 +552,10 @@ ELSE
 	ENDM
 
 ENDIF
+
+SET_PAGESWAP_ARGS MACRO var, constant_offset, value
+	mov word ptr ds:[ _pageswapargs + &var + (&constant_offset * PAGE_SWAP_ARG_MULT)], &value
+ENDM
 
 
 

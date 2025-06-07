@@ -41,6 +41,7 @@ EXTRN _flatcache_l2_tail:BYTE
 
 EXTRN _usedtexturepagemem:BYTE
 EXTRN _usedspritepagemem:BYTE
+EXTRN _pageswapargs:WORD
 .CODE
 
 
@@ -1304,8 +1305,12 @@ add       dh, ch    ; use numpages instead of numpagesminus1. need the dec
 dec       dh
 jmp       done_finding_open_page
 
+SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET ax
+
 
 ENDP
+
+
 
 COMMENT @
 
@@ -1364,6 +1369,9 @@ label_4:
 0x0000000000000068:  FE C0                inc   al
 0x000000000000006a:  C1 E6 02             shl   si, 2
 0x000000000000006d:  88 B7 20 1C          mov   byte ptr ds:[bx + _activenumpages], dh
+
+SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET 0FFFFh
+
 0x0000000000000071:  C7 84 7A 0A FF FF    mov   word ptr [si + 0xa7a], 0FFFFh
 0x0000000000000077:  EB D3                jmp   label_4
 label_2:
@@ -1395,12 +1403,11 @@ label_5:
 0x00000000000000a9:  C1 E3 02             shl   bx, 2
 0x00000000000000ac:  01 D0                add   ax, dx
 
-;		pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT] = 
-;			_EPR(pageoffset + realtexpage);
 
 ; mov word ptr ds:[ _pageswapargs + $register + $offset], $value
 SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET ax
-0x00000000000000ae:  89 87 7A 0A          mov   word ptr ds:[bx + _pageswapargs + (pageswapargs_rend_texture_offset * SIZEOF) ], ax    ; a0a to a7a
+
+;0x00000000000000ae:  89 87 7A 0A          mov   word ptr ds:[bx + _pageswapargs + (pageswapargs_rend_texture_offset * SIZEOF) ], ax    ; a0a to a7a
 0x00000000000000b2:  88 D0                mov   al, dl
 0x00000000000000b4:  98                   cbw  
 0x00000000000000b5:  E8 06 0E             call  R_MarkL2CompositeTextureCacheMRU_
@@ -1498,6 +1505,9 @@ label_14:
 0x0000000000000172:  FE C0                inc   al
 0x0000000000000174:  C1 E6 02             shl   si, 2
 0x0000000000000177:  C6 87 20 1C 00       mov   byte ptr ds:[bx + _activenumpages], 0
+
+SET_PAGESWAP_ARGS si PAGESWAPARGS_REND_TEXTURE_OFFSET 0FFFFh
+
 0x000000000000017c:  C7 84 7A 0A FF FF    mov   word ptr [si + 0xa7a], 0FFFFh
 0x0000000000000182:  EB D1                jmp   label_14
 label_13:
@@ -1534,6 +1544,9 @@ label_15:
 0x00000000000001cc:  89 C3                mov   bx, ax
 0x00000000000001ce:  C1 E6 02             shl   si, 2
 0x00000000000001d1:  C1 E3 02             shl   bx, 2
+
+SET_PAGESWAP_ARGS si PAGESWAPARGS_REND_TEXTURE_OFFSET di
+
 0x00000000000001d4:  89 BC 7A 0A          mov   word ptr [si + 0xa7a], di
 0x00000000000001d8:  8A 9F 08 18          mov   bl, byte ptr ds:[bx + _texturecache_nodes]
 0x00000000000001dc:  38 D6                cmp   dh, dl
@@ -1592,7 +1605,7 @@ PUBLIC getspritepage_
 0x0000000000000244:  89 C3                mov   bx, ax
 0x0000000000000246:  01 C3                add   bx, ax
 0x0000000000000248:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x000000000000024b:  3B 87 28 1C          cmp   ax, word ptr [bx + 0x1c28]
+0x000000000000024b:  3B 87 28 1C          cmp   ax, word ptr ds:[bx + _activespritepages]
 0x000000000000024f:  74 4D                je    0x29e
 0x0000000000000251:  FE C2                inc   dl
 0x0000000000000253:  80 FA 04             cmp   dl, 4
@@ -1603,23 +1616,26 @@ PUBLIC getspritepage_
 0x0000000000000260:  98                   cbw  
 0x0000000000000261:  30 FF                xor   bh, bh
 0x0000000000000263:  E8 E8 0B             call  0xe4e
-0x0000000000000266:  80 BF 48 1E 00       cmp   byte ptr [bx + 0x1e48], 0
+0x0000000000000266:  80 BF 48 1E 00       cmp   byte ptr ds:[bx + _activespritenumpages], 0
 0x000000000000026b:  74 47                je    0x2b4
 0x000000000000026d:  B0 01                mov   al, 1
 0x000000000000026f:  88 CB                mov   bl, cl
 0x0000000000000271:  30 FF                xor   bh, bh
-0x0000000000000273:  3A 87 48 1E          cmp   al, byte ptr [bx + 0x1e48]
+0x0000000000000273:  3A 87 48 1E          cmp   al, byte ptr ds:[bx + _activespritenumpages]
 0x0000000000000277:  77 3B                ja    0x2b4
 0x0000000000000279:  88 C2                mov   dl, al
 0x000000000000027b:  30 F6                xor   dh, dh
 0x000000000000027d:  01 D3                add   bx, dx
 0x000000000000027f:  89 DE                mov   si, bx
 0x0000000000000281:  01 DE                add   si, bx
-0x0000000000000283:  C7 84 28 1C FF FF    mov   word ptr [si + 0x1c28], 0FFFFh
+0x0000000000000283:  C7 84 28 1C FF FF    mov   word ptr ds:[si + _activespritepages], 0FFFFh
 0x0000000000000289:  89 DE                mov   si, bx
 0x000000000000028b:  FE C0                inc   al
 0x000000000000028d:  C1 E6 02             shl   si, 2
-0x0000000000000290:  88 B7 48 1E          mov   byte ptr [bx + 0x1e48], dh
+0x0000000000000290:  88 B7 48 1E          mov   byte ptr ds:[bx + _activespritenumpages], dh
+
+SET_PAGESWAP_ARGS si PAGESWAPARGS_SPRITECACHE_OFFSET 0FFFFh
+
 0x0000000000000294:  C7 84 62 0B FF FF    mov   word ptr [si + 0xb62], 0FFFFh
 0x000000000000029a:  EB D3                jmp   0x26f
 0x000000000000029c:  EB 53                jmp   0x2f1
@@ -1642,11 +1658,14 @@ PUBLIC getspritepage_
 0x00000000000002b9:  30 FF                xor   bh, bh
 0x00000000000002bb:  30 E4                xor   ah, ah
 0x00000000000002bd:  89 DE                mov   si, bx
-0x00000000000002bf:  88 BF 48 1E          mov   byte ptr [bx + 0x1e48], bh
+0x00000000000002bf:  88 BF 48 1E          mov   byte ptr ds:[bx + _activespritenumpages], bh
 0x00000000000002c3:  01 DE                add   si, bx
 0x00000000000002c5:  C1 E3 02             shl   bx, 2
-0x00000000000002c8:  89 84 28 1C          mov   word ptr [si + 0x1c28], ax
+0x00000000000002c8:  89 84 28 1C          mov   word ptr ds:[si + _activespritepages], ax
 0x00000000000002cc:  05 46 00             add   ax, 0x46
+
+SET_PAGESWAP_ARGS bx PAGESWAPARGS_SPRITECACHE_OFFSET ax
+
 0x00000000000002cf:  89 87 62 0B          mov   word ptr [bx + 0xb62], ax
 0x00000000000002d3:  0E                   push  cs
 0x00000000000002d4:  3E E8 A0 46          call  0x4978
@@ -1683,7 +1702,7 @@ PUBLIC getspritepage_
 0x000000000000031f:  89 C6                mov   si, ax
 0x0000000000000321:  01 C6                add   si, ax
 0x0000000000000323:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x0000000000000326:  3B 84 28 1C          cmp   ax, word ptr [si + 0x1c28]
+0x0000000000000326:  3B 84 28 1C          cmp   ax, word ptr ds:[si + _activespritepages]
 0x000000000000032a:  74 04                je    0x330
 0x000000000000032c:  FE C3                inc   bl
 0x000000000000032e:  EB C3                jmp   0x2f3
@@ -1715,23 +1734,26 @@ PUBLIC getspritepage_
 0x0000000000000360:  88 C8                mov   al, cl
 0x0000000000000362:  88 C3                mov   bl, al
 0x0000000000000364:  88 46 FE             mov   byte ptr [bp - 2], al
-0x0000000000000367:  3A 97 48 1E          cmp   dl, byte ptr [bx + 0x1e48]
+0x0000000000000367:  3A 97 48 1E          cmp   dl, byte ptr ds:[bx + _activespritenumpages]
 0x000000000000036b:  73 31                jae   0x39e
 0x000000000000036d:  88 D0                mov   al, dl
 0x000000000000036f:  8A 5E FE             mov   bl, byte ptr [bp - 2]
 0x0000000000000372:  30 FF                xor   bh, bh
 0x0000000000000374:  89 DE                mov   si, bx
-0x0000000000000376:  3A 87 48 1E          cmp   al, byte ptr [bx + 0x1e48]
+0x0000000000000376:  3A 87 48 1E          cmp   al, byte ptr ds:[bx + _activespritenumpages]
 0x000000000000037a:  77 22                ja    0x39e
 0x000000000000037c:  88 C3                mov   bl, al
 0x000000000000037e:  01 F3                add   bx, si
 0x0000000000000380:  89 DE                mov   si, bx
 0x0000000000000382:  01 DE                add   si, bx
-0x0000000000000384:  C7 84 28 1C FF FF    mov   word ptr [si + 0x1c28], 0FFFFh
+0x0000000000000384:  C7 84 28 1C FF FF    mov   word ptr ds:[si + _activespritepages], 0FFFFh
 0x000000000000038a:  89 DE                mov   si, bx
 0x000000000000038c:  FE C0                inc   al
 0x000000000000038e:  C1 E6 02             shl   si, 2
-0x0000000000000391:  C6 87 48 1E 00       mov   byte ptr [bx + 0x1e48], 0
+0x0000000000000391:  C6 87 48 1E 00       mov   byte ptr ds:[bx + _activespritenumpages], 0
+
+SET_PAGESWAP_ARGS si PAGESWAPARGS_SPRITECACHE_OFFSET 0FFFFh
+
 0x0000000000000396:  C7 84 62 0B FF FF    mov   word ptr [si + 0xb62], 0FFFFh
 0x000000000000039c:  EB D1                jmp   0x36f
 0x000000000000039e:  30 F6                xor   dh, dh
@@ -1752,17 +1774,20 @@ PUBLIC getspritepage_
 0x00000000000003bf:  01 F3                add   bx, si
 0x00000000000003c1:  FE C6                inc   dh
 0x00000000000003c3:  89 DE                mov   si, bx
-0x00000000000003c5:  88 AF 48 1E          mov   byte ptr [bx + 0x1e48], ch
+0x00000000000003c5:  88 AF 48 1E          mov   byte ptr ds:[bx + _activespritenumpages], ch
 0x00000000000003c9:  FE CD                dec   ch
 0x00000000000003cb:  01 DE                add   si, bx
 0x00000000000003cd:  FE C1                inc   cl
-0x00000000000003cf:  89 84 28 1C          mov   word ptr [si + 0x1c28], ax
+0x00000000000003cf:  89 84 28 1C          mov   word ptr ds:[si + _activespritepages], ax
 0x00000000000003d3:  89 DE                mov   si, bx
 0x00000000000003d5:  89 C3                mov   bx, ax
 0x00000000000003d7:  C1 E6 02             shl   si, 2
 0x00000000000003da:  C1 E3 02             shl   bx, 2
+
+SET_PAGESWAP_ARGS si PAGESWAPARGS_SPRITECACHE_OFFSET di
+
 0x00000000000003dd:  89 BC 62 0B          mov   word ptr [si + 0xb62], di
-0x00000000000003e1:  8A 9F 68 18          mov   bl, byte ptr [bx + 0x1868]
+0x00000000000003e1:  8A 9F 68 18          mov   bl, byte ptr ds:[bx + _spritecache_nodes]
 0x00000000000003e5:  38 D6                cmp   dh, dl
 0x00000000000003e7:  76 BF                jbe   0x3a8
 0x00000000000003e9:  BB C8 02             mov   bx, 0x2c8
