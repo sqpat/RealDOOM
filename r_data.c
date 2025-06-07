@@ -1620,7 +1620,7 @@ int8_t __far R_EvictFlatCacheEMSPage(){
 // todo merge below when doing asm later
 //int16_t
 
-void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight);
+void __near R_DrawColumnInCache (uint16_t patchcoloffset, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight);
 /*
 void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight) {
 	while (patchcol->topdelta != 0xff) { 
@@ -1905,7 +1905,6 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 	int16_t             x1;
 	int16_t             x2;
 	int16_t             i;
-	column_t __far*           sourcepatch;
 	int16_t_union __far*         collump;
 	uint8_t				textureheight;
 	uint8_t				usetextureheight;
@@ -2028,11 +2027,10 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 			}
 			
 			// get the patch for this lump at this location.
-			sourcepatch = MK_FP(0x7000, wadpatch7000->columnofs[x - x1]);
-
+			
 			//todo hardcode the 0x7000?
 			// inlined R_DrawColumninCache
-			R_DrawColumnInCache(sourcepatch,
+			R_DrawColumnInCache(wadpatch7000->columnofs[x - x1],
 				currentdestsegment,
 				patchoriginy,
 				textureheight);

@@ -856,7 +856,9 @@ jmp       continue_erasing_flats
 ENDP
 
 
-;void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight) {
+COLUMN_IN_CACHE_WAD_LUMP_SEGMENT = 07000h
+
+;void __near R_DrawColumnInCache (uint16_t patchcol_offset, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight) {
 ; todo remove segment
 ; todo merge into generate composite
 PROC R_DrawColumnInCache_ NEAR
@@ -865,11 +867,14 @@ PUBLIC R_DrawColumnInCache_
 push      si
 push      di
 push      bp
-mov       bp, sp
-push      cx     ; bp - 2
-mov       es, bx
+
+mov       es, dx
+mov       dx, COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
 mov       ds, dx
-mov       bx, ax  ; bx has patchcol offset
+
+xchg      ax, bx  ; bx has patchcol offset
+xchg      ax, dx  ; dx stores patchoriginy
+mov       bp, cx  ; bp stores textureheight
 
 ;	while (patchcol->topdelta != 0xff) { 
 
@@ -879,12 +884,10 @@ do_next_column_patch:
 
 ;		uint16_t     count = patchcol->length;
 
-
-
-mov       ax, word ptr ds:[bx]  ; bl topdelta
+mov       ax, word ptr ds:[bx]  ; al topdelta
 
 xor       cx, cx
-xchg      cl, ah                ; length to dl, 0 to ah
+xchg      cl, ah                ; length to cl, 0 to ah
 
 ; cx is count
 ; ax is topdelta for now
@@ -892,7 +895,7 @@ xchg      cl, ah                ; length to dl, 0 to ah
 ;		int16_t     position = patchoriginy + patchcol->topdelta;
 
 xchg      ax, di
-add       di, word ptr [bp - 2]  ; patchoriginy + topdelta
+add       di, dx  ; patchoriginy + topdelta
 
 
 ;		byte __far * source = (byte __far *)patchcol + 3;
@@ -921,11 +924,11 @@ done_with_position_check:
 ;		}
 
 
-mov       dx, di
-add       dx, cx
-cmp       dx, word ptr [bp + 8]
+mov       ax, di
+add       ax, cx
+cmp       ax, bp
 jbe       done_with_count_adjustment
-mov       cx, word ptr [bp + 8]
+mov       cx, bp
 sub       cx, di
 done_with_count_adjustment:
 
@@ -947,10 +950,11 @@ jne       do_next_column_patch
 exit_drawcolumn_in_cache:
 mov       ax, ss
 mov       ds, ax 
-LEAVE_MACRO     
+
+pop       bp
 pop       di
 pop       si
-ret       2
+ret
 position_under_zero:
 add       cx, di
 xor       di, di
