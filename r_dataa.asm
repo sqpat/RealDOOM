@@ -1331,7 +1331,7 @@ PUBLIC R_GetTexturePage_
 ; dl pageoffset
 ; bl cachetype
 
-; bp - 2 ???
+; bp - 2 startpage?
 ; bp - 4 pageoffset
 ; bp - 6 texpage
 
@@ -1482,53 +1482,86 @@ ret
 
 get_multipage:
 xor   dh, dh
-label_10:
+
+; for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES-numpages; i++) {
+
+grab_next_page_loop_multi:
 mov   al, dl
-mov   bx, 8
+mov   bx, NUM_TEXTURE_L1_CACHE_PAGES
 xor   ah, ah
 sub   bx, ax
 mov   al, dh
 cmp   ax, bx
-jl    label_6
-mov   dh, 7
-label_8:
-mov   bl, dh
-xor   bh, bh
-mov   al, byte ptr ds:[bx + _textureL1LRU]
-xor   ah, ah
-mov   cx, 7
-mov   si, ax
-mov   al, dl
-sub   cx, ax
-cmp   si, cx
-jle   label_7
-dec   dh
-jmp   label_8
-label_6:
+jnl   evict_and_find_startpage_multi
+
+;    if (activetexturepages[i] != realtexpage){
+;        continue;
+;    }
+
 mov   bx, ax
 add   bx, ax
 mov   al, byte ptr [bp - 6]
 cmp   ax, word ptr ds:[bx + _activetexturepages]
-je    label_9
-inc   dh
-jmp   label_10
-label_9:
+jne   grab_next_page_loop_multi_continue
+
 xor   al, al
 mov   word ptr [bp - 0Ch], ax
 mov   bl, byte ptr [bp - 0Ch]
 add   bl, dh
-label_12:
+
+;    // all pages for this texture are in the cache, unevicted.
+;    for (j = 0; j <= numpages; j++) {
+;        R_MarkL1TextureCacheMRU(i+j);
+;    }
+
+mark_all_pages_mru_loop:
 mov   al, dl
 xor   ah, ah
 cmp   ax, word ptr [bp - 0Ch]
-jl    label_11
+jl    mark_l2_mru_and_return
 mov   al, bl
 cbw  
 inc   word ptr [bp - 0Ch]
 call  R_MarkL1TextureCacheMRU_
 inc   bl
-jmp   label_12
-label_11:
+jmp   mark_all_pages_mru_loop
+
+grab_next_page_loop_multi_continue:
+
+inc   dh
+jmp   grab_next_page_loop_multi
+
+;		// figure out startpage based on LRU
+;		startpage = NUM_TEXTURE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
+
+evict_and_find_startpage_multi:
+
+mov   dh, NUM_TEXTURE_L1_CACHE_PAGES-1
+find_start_page_loop_multi:
+
+;		while (textureL1LRU[startpage] > ((NUM_TEXTURE_L1_CACHE_PAGES-1)-numpages)){
+;			startpage--;
+;		}
+
+mov   bl, dh
+xor   bh, bh
+mov   al, byte ptr ds:[bx + _textureL1LRU]
+xor   ah, ah
+mov   cx, NUM_TEXTURE_L1_CACHE_PAGES-1
+mov   si, ax
+mov   al, dl
+sub   cx, ax
+cmp   si, cx
+jle   found_startpage_multi
+dec   dh
+jmp   find_start_page_loop_multi
+
+
+mark_l2_mru_and_return:
+
+;    R_MarkL2CompositeTextureCacheMRU(realtexpage);
+;    return i;
+
 mov   al, byte ptr [bp - 6]
 cbw  
 call  R_MarkL2CompositeTextureCacheMRU_
@@ -1538,19 +1571,36 @@ pop   di
 pop   si
 pop   cx
 ret   
-label_7:
+
+
+found_startpage_multi:
+;		startpage = textureL1LRU[startpage];
+
 mov   al, byte ptr ds:[bx + _textureL1LRU]
 mov   bl, al
 mov   byte ptr [bp - 2], al
+
+;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
+;		if (activenumpages[startpage] > numpages) {
+;			for (i = numpages; i <= activenumpages[startpage]; i++) {
+;				activetexturepages[startpage + i] = -1;
+;				// unmapping the page, so we dont need pagenum
+;				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT] 
+;					= _NPR(PAGE_5000_OFFSET+startpage+i); // unpaged
+;				activenumpages[startpage + i] = 0;
+;			}
+;		}
+
+
 cmp   dl, byte ptr ds:[bx + _activenumpages]
-jae   label_13
+jae   done_invalidating_pages_multi
 mov   al, dl
-label_14:
+loop_next_invalidate_page_multi:
 mov   bl, byte ptr [bp - 2]
 xor   bh, bh
 mov   si, bx
 cmp   al, byte ptr ds:[bx + _activenumpages]
-ja    label_13
+ja    done_invalidating_pages_multi
 mov   bl, al
 add   bx, si
 mov   si, bx
@@ -1562,19 +1612,32 @@ shl   si, 2
 mov   byte ptr ds:[bx + _activenumpages], 0
 
 SET_PAGESWAP_ARGS si PAGESWAPARGS_REND_TEXTURE_OFFSET 0FFFFh
-;mov   word ptr [si + 0xa7a], 0FFFFh
-jmp   label_14
-label_13:
+
+jmp   loop_next_invalidate_page_multi
+
+
+done_invalidating_pages_multi:
+
+;	int8_t currentpage = realtexpage; // pagenum - pageoffset
+;	for (i = 0; i <= numpages; i++) {
+
 xor   dh, dh
 mov   bl, byte ptr [bp - 6]
 mov   cl, byte ptr [bp - 2]
 mov   byte ptr [bp - 8], dl
-label_15:
+
+loop_mark_next_page_mru_multi:
+
+;	R_MarkL1TextureCacheMRU(startpage+i);
+
 mov   al, cl
 mov   byte ptr [bp - 9], 0
 cbw  
 mov   ch, byte ptr [bp - 4]
 call  R_MarkL1TextureCacheMRU_
+
+;	activetexturepages[startpage + i]  = currentpage;
+
 mov   al, bl
 mov   bl, byte ptr [bp - 2]
 mov   byte ptr [bp - 0Ah], ch
@@ -1589,6 +1652,10 @@ mov   si, bx
 mov   di, ax
 add   si, bx
 inc   dh
+
+
+;	pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
+
 mov   word ptr ds:[si + _activetexturepages], ax
 mov   si, word ptr [bp - 0Ah]
 mov   byte ptr ds:[bx + _activenumpages], ch
@@ -1601,30 +1668,53 @@ shl   bx, 2
 
 SET_PAGESWAP_ARGS si PAGESWAPARGS_REND_TEXTURE_OFFSET di
 
-;mov   word ptr [si + 0xa7a], di
+;    activenumpages[startpage + i] = numpages-i;
+;    currentpage = texturecache_nodes[currentpage].prev;
+
 mov   bl, byte ptr ds:[bx + _texturecache_nodes]
 cmp   dh, dl
-jbe   label_15
+jbe   loop_mark_next_page_mru_multi
+
+
+;    R_MarkL2CompositeTextureCacheMRU(realtexpage);
+;    Z_QuickMapRenderTexture();
+
+		
+
 mov   al, byte ptr [bp - 6]
 cbw  
-mov   bx, OFFSET _maskednextlookup
 call  R_MarkL2CompositeTextureCacheMRU_
 call  Z_QuickMapRenderTexture_
+
+;	//todo: only -1 if its in the knocked out page? pretty infrequent though.
+;    cachedtex = -1;
+;    cachedtex2 = -1;
+
 mov   ax, 0FFFFh
-mov   word ptr [bx], NULL_TEX_COL
-mov   bx, OFFSET _maskedtexrepeat
+mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
 mov   word ptr ds:[_cachedtex], ax
 mov   word ptr ds:[_cachedtex2], ax
+
+;    cachedlumps[0] = -1;
+;    cachedlumps[1] = -1;
+;    cachedlumps[2] = -1;
+;    cachedlumps[3] = -1;
+   
+;    segloopnextlookup[0] = -1;
+;    segloopnextlookup[1] = -1;
+;    seglooptexrepeat[0] = 0;
+;    seglooptexrepeat[1] = 0;
+
 mov   word ptr ds:[_cachedlumps+0], ax
 mov   word ptr ds:[_cachedlumps+2], ax
 mov   word ptr ds:[_cachedlumps+4], ax
 mov   word ptr ds:[_cachedlumps+6], ax
 mov   word ptr ds:[_segloopnextlookup+0], ax
 mov   word ptr ds:[_segloopnextlookup+2], ax
-xor   al, al
-mov   word ptr [bx], 0
-mov   byte ptr ds:[_seglooptexrepeat+0], al ;todo word
-mov   byte ptr ds:[_seglooptexrepeat+1], al
+inc   ax    ; ax is 0
+mov   word ptr ds:[_maskedtexrepeat], ax
+mov   word ptr ds:[_seglooptexrepeat+0], ax ; word gets both..
+;mov   byte ptr ds:[_seglooptexrepeat+1], al
 mov   al, byte ptr [bp - 2]
 LEAVE_MACRO 
 pop   di
