@@ -859,7 +859,6 @@ ENDP
 COLUMN_IN_CACHE_WAD_LUMP_SEGMENT = 07000h
 
 ;void __near R_DrawColumnInCache (uint16_t patchcol_offset, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight) {
-; todo remove segment
 ; todo merge into generate composite
 PROC R_DrawColumnInCache_ NEAR
 PUBLIC R_DrawColumnInCache_
@@ -962,199 +961,221 @@ jmp       done_with_position_check
 
 ENDP
 
-COMMENT @
 
 
 PROC R_GetNextTextureBlock_ NEAR
 PUBLIC R_GetNextTextureBlock_
 
-0x0000000000000394:  51                push      cx
-0x0000000000000395:  56                push      si
-0x0000000000000396:  57                push      di
-0x0000000000000397:  55                push      bp
-0x0000000000000398:  89 E5             mov       bp, sp
-0x000000000000039a:  83 EC 04          sub       sp, 4
-0x000000000000039d:  89 C6             mov       si, ax
-0x000000000000039f:  88 5E FC          mov       byte ptr [bp - 4], bl
-0x00000000000003a2:  89 D0             mov       ax, dx
-0x00000000000003a4:  C1 E8 08          shr       ax, 8
-0x00000000000003a7:  88 46 FE          mov       byte ptr [bp - 2], al
-0x00000000000003aa:  F6 C2 FF          test      dl, 0xff
-0x00000000000003ad:  74 05             je        0x3b4
-0x00000000000003af:  FE C0             inc       al
-0x00000000000003b1:  88 46 FE          mov       byte ptr [bp - 2], al
-0x00000000000003b4:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x00000000000003b7:  30 E4             xor       ah, ah
-0x00000000000003b9:  C1 F8 06          sar       ax, 6
-0x00000000000003bc:  88 C5             mov       ch, al
-0x00000000000003be:  F6 46 FE 3F       test      byte ptr [bp - 2], 0x3f
-0x00000000000003c2:  74 02             je        0x3c6
-0x00000000000003c4:  FE C5             inc       ch
-0x00000000000003c6:  80 FD 01          cmp       ch, 1
-0x00000000000003c9:  75 5F             jne       0x42a
-0x00000000000003cb:  B6 40             mov       dh, 0x40
-0x00000000000003cd:  2A 76 FE          sub       dh, byte ptr [bp - 2]
-0x00000000000003d0:  30 D2             xor       dl, dl
-0x00000000000003d2:  88 D0             mov       al, dl
-0x00000000000003d4:  98                cbw      
-0x00000000000003d5:  89 C3             mov       bx, ax
-0x00000000000003d7:  3A B7 78 19       cmp       dh, byte ptr [bx + _usedtexturepagemem]
-0x00000000000003db:  72 33             jb        0x410
-0x00000000000003dd:  88 D6             mov       dh, dl
-0x00000000000003df:  C0 E6 02          shl       dh, 2
-0x00000000000003e2:  88 D0             mov       al, dl
-0x00000000000003e4:  98                cbw      
-0x00000000000003e5:  89 C3             mov       bx, ax
-0x00000000000003e7:  8A 87 78 19       mov       al, byte ptr [bx + _usedtexturepagemem]
-0x00000000000003eb:  8A 66 FE          mov       ah, byte ptr [bp - 2]
-0x00000000000003ee:  00 C4             add       ah, al
-0x00000000000003f0:  88 A7 78 19       mov       byte ptr [bx + _usedtexturepagemem], ah
-0x00000000000003f4:  80 7E FC 02       cmp       byte ptr [bp - 4], 2
-0x00000000000003f8:  75 2D             jne       0x427
-0x00000000000003fa:  BB BD 83          mov       bx, PATCHOFFSET_SEGMENT
-0x00000000000003fd:  81 C6 DC 01       add       si, PATCHOFFSET_OFFSET
-0x0000000000000401:  8E C3             mov       es, bx
-0x0000000000000403:  26 88 B4 24 FE    mov       byte ptr es:[si - PATCHOFFSET_OFFSET], dh
-0x0000000000000408:  26 88 04          mov       byte ptr es:[si], al
-0x000000000000040b:  C9                LEAVE_MACRO     
-0x000000000000040c:  5F                pop       di
-0x000000000000040d:  5E                pop       si
-0x000000000000040e:  59                pop       cx
-0x000000000000040f:  C3                ret       
-0x0000000000000410:  FE C2             inc       dl
-0x0000000000000412:  80 FA 18          cmp       dl, 0x18
-0x0000000000000415:  7C BB             jl        0x3d2
-0x0000000000000417:  8A 46 FC          mov       al, byte ptr [bp - 4]
-0x000000000000041a:  98                cbw      
-0x000000000000041b:  89 C2             mov       dx, ax
-0x000000000000041d:  B8 01 00          mov       ax, 1
-0x0000000000000420:  E8 DD FB          call      0
-0x0000000000000423:  88 C2             mov       dl, al
-0x0000000000000425:  EB B6             jmp       0x3dd
-0x0000000000000427:  E9 1E 01          jmp       0x548
-0x000000000000042a:  88 E9             mov       cl, ch
-0x000000000000042c:  8A 36 AA 06       mov       dh, byte ptr ds:[_texturecache_l2_head]
-0x0000000000000430:  FE C9             dec       cl
-0x0000000000000432:  80 FE FF          cmp       dh, 0xff
-0x0000000000000435:  75 03             jne       0x43a
-0x0000000000000437:  E9 EE 00          jmp       0x528
-0x000000000000043a:  88 F0             mov       al, dh
-0x000000000000043c:  98                cbw      
-0x000000000000043d:  89 C3             mov       bx, ax
-0x000000000000043f:  80 BF 78 19 00    cmp       byte ptr [bx + _usedtexturepagemem], 0
-0x0000000000000444:  74 03             je        0x449
-0x0000000000000446:  E9 CB 00          jmp       0x514
-0x0000000000000449:  C1 E3 02          shl       bx, 2
-0x000000000000044c:  8A 87 08 18       mov       al, byte ptr [bx + 0x1808]
-0x0000000000000450:  3C FF             cmp       al, 0xff
-0x0000000000000452:  74 F2             je        0x446
-0x0000000000000454:  98                cbw      
-0x0000000000000455:  89 C3             mov       bx, ax
-0x0000000000000457:  80 BF 78 19 00    cmp       byte ptr [bx + _usedtexturepagemem], 0
-0x000000000000045c:  75 E8             jne       0x446
-0x000000000000045e:  C1 E3 02          shl       bx, 2
-0x0000000000000461:  8A 97 08 18       mov       dl, byte ptr [bx + 0x1808]
-0x0000000000000465:  80 F9 02          cmp       cl, 2
-0x0000000000000468:  72 03             jb        0x46d
-0x000000000000046a:  E9 93 00          jmp       0x500
-0x000000000000046d:  88 D0             mov       al, dl
-0x000000000000046f:  98                cbw      
-0x0000000000000470:  89 C3             mov       bx, ax
-0x0000000000000472:  C1 E3 02          shl       bx, 2
-0x0000000000000475:  8A 97 08 18       mov       dl, byte ptr [bx + 0x1808]
-0x0000000000000479:  80 F9 03          cmp       cl, 3
-0x000000000000047c:  73 6F             jae       0x4ed
-0x000000000000047e:  88 F0             mov       al, dh
-0x0000000000000480:  98                cbw      
-0x0000000000000481:  89 C3             mov       bx, ax
-0x0000000000000483:  C6 87 78 19 40    mov       byte ptr [bx + _usedtexturepagemem], 0x40
-0x0000000000000488:  C1 E3 02          shl       bx, 2
-0x000000000000048b:  88 AF 0B 18       mov       byte ptr [bx + 0x180b], ch
-0x000000000000048f:  88 F2             mov       dl, dh
-0x0000000000000491:  88 AF 0A 18       mov       byte ptr [bx + 0x180a], ch
-0x0000000000000495:  80 FD 03          cmp       ch, 3
-0x0000000000000498:  7C 1F             jl        0x4b9
-0x000000000000049a:  8A 97 08 18       mov       dl, byte ptr [bx + 0x1808]
-0x000000000000049e:  88 D0             mov       al, dl
-0x00000000000004a0:  98                cbw      
-0x00000000000004a1:  89 C3             mov       bx, ax
-0x00000000000004a3:  89 C7             mov       di, ax
-0x00000000000004a5:  88 E8             mov       al, ch
-0x00000000000004a7:  C1 E7 02          shl       di, 2
-0x00000000000004aa:  FE C8             dec       al
-0x00000000000004ac:  88 AD 0B 18       mov       byte ptr [di + 0x180b], ch
-0x00000000000004b0:  C6 87 78 19 40    mov       byte ptr [bx + _usedtexturepagemem], 0x40
-0x00000000000004b5:  88 85 0A 18       mov       byte ptr [di + 0x180a], al
-0x00000000000004b9:  88 D0             mov       al, dl
-0x00000000000004bb:  98                cbw      
-0x00000000000004bc:  89 C3             mov       bx, ax
-0x00000000000004be:  C1 E3 02          shl       bx, 2
-0x00000000000004c1:  8A 87 08 18       mov       al, byte ptr [bx + 0x1808]
-0x00000000000004c5:  98                cbw      
-0x00000000000004c6:  89 C7             mov       di, ax
-0x00000000000004c8:  C1 E7 02          shl       di, 2
-0x00000000000004cb:  89 C3             mov       bx, ax
-0x00000000000004cd:  C6 85 0A 18 01    mov       byte ptr [di + 0x180a], 1
-0x00000000000004d2:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x00000000000004d5:  88 AD 0B 18       mov       byte ptr [di + 0x180b], ch
-0x00000000000004d9:  A8 3F             test      al, 0x3f
-0x00000000000004db:  74 5C             je        0x539
-0x00000000000004dd:  24 3F             and       al, 0x3f
-0x00000000000004df:  88 87 78 19       mov       byte ptr [bx + _usedtexturepagemem], al
-0x00000000000004e3:  C0 E6 02          shl       dh, 2
-0x00000000000004e6:  30 C0             xor       al, al
-0x00000000000004e8:  00 CE             add       dh, cl
-0x00000000000004ea:  E9 07 FF          jmp       0x3f4
-0x00000000000004ed:  80 FA FF          cmp       dl, 0xff
-0x00000000000004f0:  74 22             je        0x514
-0x00000000000004f2:  88 D0             mov       al, dl
-0x00000000000004f4:  98                cbw      
-0x00000000000004f5:  89 C3             mov       bx, ax
-0x00000000000004f7:  80 BF 78 19 00    cmp       byte ptr [bx + _usedtexturepagemem], 0
-0x00000000000004fc:  74 80             je        0x47e
-0x00000000000004fe:  EB 14             jmp       0x514
-0x0000000000000500:  80 FA FF          cmp       dl, 0xff
-0x0000000000000503:  74 0F             je        0x514
-0x0000000000000505:  88 D0             mov       al, dl
-0x0000000000000507:  98                cbw      
-0x0000000000000508:  89 C3             mov       bx, ax
-0x000000000000050a:  80 BF 78 19 00    cmp       byte ptr [bx + _usedtexturepagemem], 0
-0x000000000000050f:  75 03             jne       0x514
-0x0000000000000511:  E9 59 FF          jmp       0x46d
-0x0000000000000514:  88 F0             mov       al, dh
-0x0000000000000516:  98                cbw      
-0x0000000000000517:  89 C3             mov       bx, ax
-0x0000000000000519:  C1 E3 02          shl       bx, 2
-0x000000000000051c:  8A B7 08 18       mov       dh, byte ptr [bx + 0x1808]
-0x0000000000000520:  80 FE FF          cmp       dh, 0xff
-0x0000000000000523:  74 03             je        0x528
-0x0000000000000525:  E9 12 FF          jmp       0x43a
-0x0000000000000528:  8A 46 FC          mov       al, byte ptr [bp - 4]
-0x000000000000052b:  98                cbw      
-0x000000000000052c:  89 C2             mov       dx, ax
-0x000000000000052e:  88 E8             mov       al, ch
-0x0000000000000530:  98                cbw      
-0x0000000000000531:  E8 CC FA          call      0
-0x0000000000000534:  88 C6             mov       dh, al
-0x0000000000000536:  E9 45 FF          jmp       0x47e
-0x0000000000000539:  C6 87 78 19 40    mov       byte ptr [bx + _usedtexturepagemem], 0x40
-0x000000000000053e:  C0 E6 02          shl       dh, 2
-0x0000000000000541:  30 C0             xor       al, al
-0x0000000000000543:  00 CE             add       dh, cl
-0x0000000000000545:  E9 AC FE          jmp       0x3f4
-0x0000000000000548:  BB 81 4F          mov       bx, COMPOSITETEXTUREOFFSET_SEGMENT
-0x000000000000054b:  81 C6 AC 01       add       si, COMPOSITETEXTUREOFFSET_OFFSET
-0x000000000000054f:  8E C3             mov       es, bx
-0x0000000000000551:  26 88 B4 54 FE    mov       byte ptr es:[si - 0x1ac], dh
-0x0000000000000556:  26 88 04          mov       byte ptr es:[si], al
-0x0000000000000559:  C9                LEAVE_MACRO     
-0x000000000000055a:  5F                pop       di
-0x000000000000055b:  5E                pop       si
-0x000000000000055c:  59                pop       cx
-0x000000000000055d:  C3                ret       
+push      cx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 4
+mov       si, ax
+mov       byte ptr [bp - 4], bl
+mov       ax, dx
+shr       ax, 8
+mov       byte ptr [bp - 2], al
+test      dl, 0FFh
+je        label_1
+inc       al
+mov       byte ptr [bp - 2], al
+label_1:
+mov       al, byte ptr [bp - 2]
+xor       ah, ah
+sar       ax, 6
+mov       ch, al
+test      byte ptr [bp - 2], 03Fh
+je        label_2
+inc       ch
+label_2:
+cmp       ch, 1
+jne       label_3
+mov       dh, 040h   ;todo
+sub       dh, byte ptr [bp - 2]
+xor       dl, dl
+label_7:
+mov       al, dl
+cbw      
+mov       bx, ax
+cmp       dh, byte ptr ds:[bx + _usedtexturepagemem]
+jb        label_4
+label_8:
+mov       dh, dl
+shl       dh, 2
+mov       al, dl
+cbw      
+mov       bx, ax
+mov       al, byte ptr [bx + _usedtexturepagemem]
+mov       ah, byte ptr [bp - 2]
+add       ah, al
+mov       byte ptr ds:[bx + _usedtexturepagemem], ah
+label_6:
+cmp       byte ptr [bp - 4], 2
+jne       jump_to_label_5
+mov       bx, PATCHOFFSET_SEGMENT
+add       si, PATCHOFFSET_OFFSET
+mov       es, bx
+mov       byte ptr es:[si - PATCHOFFSET_OFFSET], dh
+mov       byte ptr es:[si], al
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+ret       
+label_4:
+inc       dl
+cmp       dl, NUM_TEXTURE_PAGES
+jl        label_7
+mov       al, byte ptr [bp - 4]
+cbw      
+mov       dx, ax
+mov       ax, 1
+call      R_EvictL2CacheEMSPage_
+mov       dl, al
+jmp       label_8
+jump_to_label_5:
+jmp       label_5
+label_3:
+mov       cl, ch
+mov       dh, byte ptr ds:[_texturecache_l2_head]
+dec       cl
+cmp       dh, 0FFh
+jne       label_9
+jmp       label_10
+label_9:
+mov       al, dh
+cbw      
+mov       bx, ax
+cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
+je        label_18
+label_13:
+jmp       label_11
+label_18:
+shl       bx, 2
+mov       al, byte ptr ds:[bx + _texturecache_nodes]
+cmp       al, 0FFh
+je        label_13
+cbw      
+mov       bx, ax
+cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
+jne       label_13
+shl       bx, 2
+mov       dl, byte ptr ds:[bx + _texturecache_nodes]
+cmp       cl, 2
+jb        label_12
+jmp       label_14
+label_12:
+mov       al, dl
+cbw      
+mov       bx, ax
+shl       bx, 2
+mov       dl, byte ptr ds:[bx + _texturecache_nodes]
+cmp       cl, 3
+jae       label_17
+label_16:
+mov       al, dh
+cbw      
+mov       bx, ax
+mov       byte ptr ds:[bx + _usedtexturepagemem], 040h
+shl       bx, 2
+mov       byte ptr ds:[bx + _texturecache_nodes + 3], ch
+mov       dl, dh
+mov       byte ptr ds:[bx + _texturecache_nodes + 2], ch
+cmp       ch, 3
+jl        label_19
+mov       dl, byte ptr ds:[bx + _texturecache_nodes]
+mov       al, dl
+cbw      
+mov       bx, ax
+mov       di, ax
+mov       al, ch
+shl       di, 2
+dec       al
+mov       byte ptr ds:[di + _texturecache_nodes + 3], ch
+mov       byte ptr ds:[bx + _usedtexturepagemem], 040h
+mov       byte ptr ds:[di + _texturecache_nodes + 2], al
+label_19:
+mov       al, dl
+cbw      
+mov       bx, ax
+shl       bx, 2
+mov       al, byte ptr ds:[bx + _texturecache_nodes]
+cbw      
+mov       di, ax
+shl       di, 2
+mov       bx, ax
+mov       byte ptr ds:[di + _texturecache_nodes + 2], 1
+mov       al, byte ptr [bp - 2]
+mov       byte ptr ds:[di + _texturecache_nodes + 3], ch
+test      al, 03Fh
+je        label_15
+and       al, 03Fh
+mov       byte ptr ds:[bx + _usedtexturepagemem], al
+shl       dh, 2
+xor       al, al
+add       dh, cl
+jmp       label_6
+label_17:
+cmp       dl, 0FFh
+je        label_11
+mov       al, dl
+cbw      
+mov       bx, ax
+cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
+je        label_16
+jmp       label_11
+label_14:
+cmp       dl, 0FFh
+je        label_11
+mov       al, dl
+cbw      
+mov       bx, ax
+cmp       byte ptr ds:[bx + _usedtexturepagemem], 0
+jne       label_11
+jmp       label_12
+label_11:
+mov       al, dh
+cbw      
+mov       bx, ax
+shl       bx, 2
+mov       dh, byte ptr ds:[bx + _texturecache_nodes]
+cmp       dh, 0FFh
+je        label_10
+jmp       label_9
+label_10:
+mov       al, byte ptr [bp - 4]
+cbw      
+mov       dx, ax
+mov       al, ch
+cbw      
+call      R_EvictL2CacheEMSPage_
+mov       dh, al
+jmp       label_16
+label_15:
+mov       byte ptr ds:[bx + _usedtexturepagemem], 040h
+shl       dh, 2
+xor       al, al
+add       dh, cl
+jmp       label_6
+label_5:
+mov       bx, COMPOSITETEXTUREOFFSET_SEGMENT
+add       si, COMPOSITETEXTUREOFFSET_OFFSET
+mov       es, bx
+mov       byte ptr es:[si - COMPOSITETEXTUREOFFSET_OFFSET], dh
+mov       byte ptr es:[si], al
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+ret       
 
 
 ENDP
+
+COMMENT @
+
 
 PROC R_GetNextSpriteBlock_ NEAR
 PUBLIC R_GetNextSpriteBlock_
@@ -1187,12 +1208,12 @@ PUBLIC R_GetNextSpriteBlock_
 0x0000000000000590:  30 E4             xor       ah, ah
 0x0000000000000592:  C1 F8 06          sar       ax, 6
 0x0000000000000595:  88 C5             mov       ch, al
-0x0000000000000597:  F6 46 FE 3F       test      byte ptr [bp - 2], 0x3f
+0x0000000000000597:  F6 46 FE 3F       test      byte ptr [bp - 2], 03Fh
 0x000000000000059b:  74 02             je        0x59f
 0x000000000000059d:  FE C5             inc       ch
 0x000000000000059f:  80 FD 01          cmp       ch, 1
 0x00000000000005a2:  75 5E             jne       0x602
-0x00000000000005a4:  B6 40             mov       dh, 0x40
+0x00000000000005a4:  B6 40             mov       dh, 040h
 0x00000000000005a6:  2A 76 FE          sub       dh, byte ptr [bp - 2]
 0x00000000000005a9:  30 D2             xor       dl, dl
 0x00000000000005ab:  88 D0             mov       al, dl
@@ -1268,7 +1289,7 @@ PUBLIC R_GetNextSpriteBlock_
 0x0000000000000653:  88 F0             mov       al, dh
 0x0000000000000655:  98                cbw      
 0x0000000000000656:  89 C3             mov       bx, ax
-0x0000000000000658:  C6 87 70 1C 40    mov       byte ptr [bx + 0x1c70], 0x40
+0x0000000000000658:  C6 87 70 1C 40    mov       byte ptr [bx + 0x1c70], 040h
 0x000000000000065d:  C1 E3 02          shl       bx, 2
 0x0000000000000660:  8A 87 68 18       mov       al, byte ptr [bx + 0x1868]
 0x0000000000000664:  98                cbw      
@@ -1280,9 +1301,9 @@ PUBLIC R_GetNextSpriteBlock_
 0x0000000000000674:  C6 85 6A 18 01    mov       byte ptr [di + 0x186a], 1
 0x0000000000000679:  8A 46 FE          mov       al, byte ptr [bp - 2]
 0x000000000000067c:  88 AD 6B 18       mov       byte ptr [di + 0x186b], ch
-0x0000000000000680:  A8 3F             test      al, 0x3f
+0x0000000000000680:  A8 3F             test      al, 03Fh
 0x0000000000000682:  74 55             je        0x6d9
-0x0000000000000684:  24 3F             and       al, 0x3f
+0x0000000000000684:  24 3F             and       al, 03Fh
 0x0000000000000686:  88 87 70 1C       mov       byte ptr [bx + 0x1c70], al
 0x000000000000068a:  C0 E6 02          shl       dh, 2
 0x000000000000068d:  30 C0             xor       al, al
@@ -1317,7 +1338,7 @@ PUBLIC R_GetNextSpriteBlock_
 0x00000000000006cf:  80 BF 70 1C 00    cmp       byte ptr [bx + 0x1c70], 0
 0x00000000000006d4:  75 CF             jne       0x6a5
 0x00000000000006d6:  E9 7A FF          jmp       0x653
-0x00000000000006d9:  C6 87 70 1C 40    mov       byte ptr [bx + 0x1c70], 0x40
+0x00000000000006d9:  C6 87 70 1C 40    mov       byte ptr [bx + 0x1c70], 040h
 0x00000000000006de:  C0 E6 02          shl       dh, 2
 0x00000000000006e1:  30 C0             xor       al, al
 0x00000000000006e3:  00 CE             add       dh, cl

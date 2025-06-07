@@ -1650,6 +1650,8 @@ void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdest
 }
 */
 
+void __near R_GetNextTextureBlock(int16_t tex_index, uint16_t size, int8_t cachetype) ;
+/*
 void __near R_GetNextTextureBlock(int16_t tex_index, uint16_t size, int8_t cachetype) {
 
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
@@ -1761,7 +1763,7 @@ void __near R_GetNextTextureBlock(int16_t tex_index, uint16_t size, int8_t cache
 	}
 
 }
-
+*/
 
 
 void __near R_GetNextSpriteBlock(int16_t lump) {
