@@ -2079,7 +2079,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
 //R_GetTexturePage takes an l2 cache page, pages it into L1 if its not already.
 //then returns the L1 page number
-uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype);
+uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset);
 
 /*
 uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
@@ -2217,13 +2217,13 @@ uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cach
 				R_MarkL1TextureCacheMRU(startpage+i);
 
 				activetexturepages[startpage + i]  = currentpage;
+				activenumpages[startpage + i] = numpages-i;
 
 				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = 
 					_EPR(currentpage+pageoffset);
 
 
 
-				activenumpages[startpage + i] = numpages-i;
 				currentpage = texturecache_nodes[currentpage].prev;
 			}
 		}
@@ -2260,6 +2260,9 @@ uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cach
 */
 //R_GetSpritePage takes an l2 cache page, pages it into L1 if its not already.
 //then returns the L1 page number
+
+//uint8_t __near R_GetSpritePage(uint8_t texpage) ;
+
 uint8_t __near R_GetSpritePage(uint8_t texpage) {
 	uint8_t realtexpage = texpage >> 2;
 	//uint8_t pagenum = FIRST_SPRITE_CACHE_LOGICAL_PAGE + realtexpage;
@@ -2440,13 +2443,13 @@ segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) {
 		texoffset = patchoffset[index];
 
 		// texture in now L2 cache (EMS), so just return thru L1 cache
-		tex_segment = 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
+		tex_segment = 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 4);
 		R_LoadPatchColumns(lump, tex_segment, ismasked);
 		return tex_segment;
 	} 
 	
 	// texture in L2 cache (EMS), so just return thru L1 cache
-	return 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
+	return 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 4);
 
 
 
@@ -2468,12 +2471,12 @@ segment_t R_GetCompositeTexture(int16_t tex_index) {
 		texpage = compositetexturepage[tex_index];
 		texoffset = compositetextureoffset[tex_index];
 		//R_GetTexturePage ensures the page is active
-		tex_segment = 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+		tex_segment = 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 4);
 		R_GenerateComposite(tex_index, tex_segment);
 		return tex_segment;
 	}
 
-	return 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+	return 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 4);
 
 
 

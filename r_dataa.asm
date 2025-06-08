@@ -1340,11 +1340,10 @@ call  R_MarkL2CompositeTextureCacheMRU_
 
 ;    return i;
 
-xchg  ax, bx            ; i 
+mov   es, bx            ; i 
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
+POPA_NO_AX_MACRO
+mov   ax, es
 ret   
 
 found_start_page_single:
@@ -1381,11 +1380,10 @@ mov   word ptr ds:[_cachedlumps+0], ax
 mov   word ptr ds:[_cachedlumps+2], ax
 mov   word ptr ds:[_cachedlumps+4], ax
 mov   word ptr ds:[_cachedlumps+6], ax
-xchg  ax, cx ; cl/cx is start page
+mov   es, cx ; cl/cx is start page
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
+POPA_NO_AX_MACRO
+mov   ax, es
 ret   
 
 PROC R_GetTexturePage_ NEAR
@@ -1399,9 +1397,7 @@ PUBLIC R_GetTexturePage_
 ; bp - 4 realtexpage
 ; bp - 6 startpage in multi-area
 
-push  cx
-push  si
-push  di
+PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 xor   dh, dh
@@ -1559,10 +1555,10 @@ jns   mark_all_pages_mru_loop
 pop   ax;   word ptr [bp - 4]
 call  R_MarkL2CompositeTextureCacheMRU_
 mov   al, dh
+mov   es, ax
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
+POPA_NO_AX_MACRO
+mov   ax, es
 ret   
  
 
@@ -1744,11 +1740,10 @@ inc   ax    ; ax is 0
 mov   word ptr ds:[_maskedtexrepeat], ax
 mov   word ptr ds:[_seglooptexrepeat+0], ax ; word gets both..
 ;mov   byte ptr ds:[_seglooptexrepeat+1], al
-mov   al, byte ptr [bp - 6]
+mov   es, word ptr [bp - 6]
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
+POPA_NO_AX_MACRO
+mov   ax, es
 ret   
 
 ENDP
