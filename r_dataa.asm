@@ -24,6 +24,7 @@ EXTRN OutOfThinkers_:NEAR
 EXTRN P_PlayerThink_:NEAR
 EXTRN P_UpdateSpecials_:NEAR
 EXTRN Z_QuickMapRenderTexture_:NEAR
+EXTRN Z_QuickMapSpritePage_:NEAR
 
 
 .DATA
@@ -1320,6 +1321,43 @@ jmp       done_finding_open_page
 
 ENDP
 
+
+
+spritepage_data:
+
+; todo modify on outisde
+PROC R_GetSpritePage2_ NEAR
+PUBLIC R_GetSpritePage2_
+
+PUSHA_NO_AX_MACRO
+push  bp
+mov   bp, sp
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    push  OFFSET R_MarkL1SpriteCacheMRU_
+    push  OFFSET R_MarkL2SpriteCacheMRU_
+    push  OFFSET Z_QuickMapSpritePage_
+    push  OFFSET R_MarkL1SpriteCacheMRU3_
+ELSE
+    mov   si, OFFSET R_MarkL1SpriteCacheMRU_
+    push  si
+    mov   si, OFFSET R_MarkL2SpriteCacheMRU_
+    push  si
+    mov   si, OFFSET Z_QuickMapSpritePage_
+    push  si
+    mov   si, OFFSET R_MarkL1SpriteCacheMRU3_
+    push  si
+
+ENDIF
+mov   dx, 0 ; pageoffset 0
+mov   si, OFFSET _activespritepages
+mov   di, OFFSET _activespritenumpages
+mov   cx, NUM_SPRITE_L1_CACHE_PAGES
+jmp continue_get_page
+
+ENDP
+
+
 ; part of R_GetTexturePage_
 
 found_active_single_page:
@@ -1331,89 +1369,77 @@ found_active_single_page:
 shr   bx, 1
 xchg  ax, dx            ; dx gets realtexpage
 mov   ax, bx            ; ax gets i
-call  R_MarkL1TextureCacheMRU_
+call  word ptr [bp - 2]
 
 ;    R_MarkL2CompositeTextureCacheMRU(realtexpage);
 
 xchg  ax, dx            ; realtexpage
-call  R_MarkL2CompositeTextureCacheMRU_
+call  word ptr [bp - 4]
 
 ;    return i;
 
-mov   es, bx            ; i 
+mov   es, bx
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 mov   ax, es
 ret   
 
-found_start_page_single:
 
-;		activetexturepages[startpage] = realtexpage; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
-;  cl/cx is startpage
-;  bl/bx is startpage 
-
-pop   dx  ; bp - 4, get realtexpage
-; dx has realtexpage
-; bx already ok
-
-mov   byte ptr ds:[bx + di], bh
-shl   bx, 1
-mov   word ptr ds:[bx + si], dx
-pop   ax  ; mov   ax, word ptr [bp - 2]
-shl   bx, 1    ; TODO optional thing
-add   ax, dx
-
-; BIG TODO FOR THESE: shift or not based on build?
-; mov word ptr ds:[ _pageswapargs + $register + $offset], $value
-SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET ax
-
-; dx should be realtexpage???
-xchg  ax, dx
-
-call  R_MarkL2CompositeTextureCacheMRU_
-call  Z_QuickMapRenderTexture_
-mov   ax, -1
-; todo put these next to each other and stosw?
-mov   word ptr ds:[_cachedtex], ax
-mov   word ptr ds:[_cachedtex2], ax
-mov   word ptr ds:[_cachedlumps+0], ax
-mov   word ptr ds:[_cachedlumps+2], ax
-mov   word ptr ds:[_cachedlumps+4], ax
-mov   word ptr ds:[_cachedlumps+6], ax
-mov   es, cx ; cl/cx is start page
-LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   ax, es
-ret   
 
 PROC R_GetTexturePage_ NEAR
 PUBLIC R_GetTexturePage_
-;uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
+;uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset){
 ; al texpage
 ; dl pageoffset
-; bl cachetype
 
-; bp - 2 pageoffset
-; bp - 4 realtexpage
-; bp - 6 startpage in multi-area
+
+; bp - 2 markcachel1mru
+; bp - 4 markl2cache
+; bp - 6 z_quickmap
+; bp - 8 markcachel1mru(max)
+; bp - 0Ah NUM_TEXTURE_L1_CACHE_PAGES or NUM_SPRITE_L1_CACHE_PAGES
+; bp - 0Ch pageoffset
+; bp - 0Eh realtexpage
+; bp - 10h startpage in multi-area
 
 PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    push  OFFSET R_MarkL1TextureCacheMRU_
+    push  OFFSET R_MarkL2CompositeTextureCacheMRU_
+    push  OFFSET Z_QuickMapRenderTexture_
+    push  OFFSET R_MarkL1TextureCacheMRU7_
+ELSE
+    mov   si, OFFSET R_MarkL1TextureCacheMRU_
+    push  si
+    mov   si, OFFSET R_MarkL2CompositeTextureCacheMRU_
+    push  si
+    mov   si, OFFSET Z_QuickMapRenderTexture_
+    push  si
+    mov   si, OFFSET R_MarkL1TextureCacheMRU7_
+    push  si
+
+ENDIF
+
+mov   si, OFFSET _activetexturepages
+mov   di, OFFSET _activenumpages
+mov   cx, NUM_TEXTURE_L1_CACHE_PAGES
+continue_get_page:
+
+push  cx        ; bp - 0Ah
 xor   dh, dh
-push  dx        ; bp - 2   dh 0 
+push  dx        ; bp - 0Ch   dh 0 
 xor   ah, ah    ; feels gross, clean up. need in multipage
 ;	uint8_t realtexpage = texpage >> 2;
 mov   dx, ax
 SHIFT_MACRO sar   dx 2
-push  dx        ; bp - 4   dh 0
+push  dx        ; bp - 0Eh   dh 0
 
 ;	uint8_t numpages = (texpage& 0x03);
 
-mov   si, OFFSET _activetexturepages
-mov   di, OFFSET _activenumpages
 
-mov   dx, ax
+xchg  ax, dx   ; ax has realtexpage
 and   dl, 3
 ;	if (!numpages) {
 jne   get_multipage
@@ -1427,18 +1453,20 @@ jne   get_multipage
 ;			}
 ;		}
 ;     dl known zero..
-xor   ax, ax
-mov   bx, ax
-mov   dx, (NUM_TEXTURE_L1_CACHE_PAGES * 2) ; todo loop constant
-mov   al, byte ptr [bp - 4]
+
+xor   bx, bx
+mov   dx, cx ; loop compare, shifted once since we double inc bx
+shl   dx, 1
+
 ; dl is i??
 ; al is realtexpage
+; bx is i
 
 loop_next_active_page_single:
 cmp   ax, word ptr ds:[bx + si]
 je    found_active_single_page
 inc   bx
-inc   bx
+inc   bx  ; todo remove once si is byte not word..
 cmp   bx, dx
 jb    loop_next_active_page_single
 
@@ -1450,10 +1478,12 @@ jb    loop_next_active_page_single
 xor   ax, ax
 cwd
 dec   dx ; dx = -1, ah is 0
-mov   al, byte ptr ds:[_textureL1LRU + NUM_TEXTURE_L1_CACHE_PAGES - 1]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
+mov   bx, cx
+dec   bx        ; NUM_TEXTURE_L1_CACHE_PAGES - 1
+mov   al, byte ptr ds:[_textureL1LRU + bx]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
 mov   bx, ax
 mov   cx, ax
-call  R_MarkL1TextureCacheMRU7_
+call  word ptr [bp - 8]
 
 ;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 ;		if (activenumpages[startpage]) {
@@ -1497,9 +1527,9 @@ get_multipage:
 ; ah already zero
 
 mov   bx, ax ; zero bh
-mov   cx, NUM_TEXTURE_L1_CACHE_PAGES
+; cx already the number
 sub   cx, dx
-mov   al, byte ptr [bp - 4]
+;  al/ax already realtexpage
 
 ; dl is numpages
 ; cl is NUM_TEXTURE_L1_CACHE_PAGES-numpages
@@ -1542,7 +1572,7 @@ mov   bl, dh
 mark_all_pages_mru_loop:
 mov   ax, bx
 
-call  R_MarkL1TextureCacheMRU_
+call  word ptr [bp - 2]
 inc   bl
 dec   dl
 jns   mark_all_pages_mru_loop
@@ -1552,8 +1582,8 @@ jns   mark_all_pages_mru_loop
 ;    R_MarkL2CompositeTextureCacheMRU(realtexpage);
 ;    return i;
 
-pop   ax;   word ptr [bp - 4]
-call  R_MarkL2CompositeTextureCacheMRU_
+pop   ax;   word ptr [bp - 0Eh]
+call  word ptr [bp - 4]  ; R_MarkL2CompositeTextureCacheMRU_
 mov   al, dh
 mov   es, ax
 LEAVE_MACRO 
@@ -1568,7 +1598,8 @@ ret
 
 evict_and_find_startpage_multi:
 xor   ax, ax ; set ah to 0. todo necessary?
-mov   bx, NUM_TEXTURE_L1_CACHE_PAGES-1
+mov   bx, word ptr [bp - 0Ah]
+dec   bx
 mov   cx, bx
 sub   cl, dl
 ; dl is numpages
@@ -1587,6 +1618,49 @@ jle   found_startpage_multi
 dec   bx
 jmp   find_start_page_loop_multi
 
+found_start_page_single:
+
+;		activetexturepages[startpage] = realtexpage; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
+;  cl/cx is startpage
+;  bl/bx is startpage 
+
+pop   dx  ; bp - 0Eh, get realtexpage
+; dx has realtexpage
+; bx already ok
+
+mov   byte ptr ds:[bx + di], bh  ; zero
+shl   bx, 1
+mov   word ptr ds:[bx + si], dx
+pop   ax  ; mov   ax, word ptr [bp - 0Ch]
+shl   bx, 1    ; TODO optional thing
+add   ax, dx
+
+; BIG TODO FOR THESE: shift or not based on build?
+; mov word ptr ds:[ _pageswapargs + $register + $offset], $value
+SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET ax
+
+; dx should be realtexpage???
+xchg  ax, dx
+
+call  word ptr [bp - 4]  ; R_MarkL2CompositeTextureCacheMRU_
+call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
+mov   ax, 0FFFFh
+; todo put these next to each other and stosw?
+mov   word ptr ds:[_cachedtex], ax
+mov   word ptr ds:[_cachedtex2], ax
+push  ds
+pop   es
+mov   di, OFFSET _cachedlumps
+stosw
+stosw
+stosw
+stosw
+
+mov   es, cx ; cl/cx is start page
+LEAVE_MACRO 
+POPA_NO_AX_MACRO
+mov   ax, es
+ret
 
 found_startpage_multi:
 ;		startpage = textureL1LRU[startpage];
@@ -1594,7 +1668,7 @@ found_startpage_multi:
 ;mov   al, byte ptr ds:[bx + _textureL1LRU]
 ; al already set to startpage
 mov   bl, al
-push  ax  ; bp - 6
+push  ax  ; bp - 10h
 mov   dh, al ; dh gets startpage..
 mov   cx, -1
 
@@ -1655,7 +1729,7 @@ mov   ch, dl
 ; dh has i
 ;	for (i = 0; i <= numpages; i++) {
 ; es gets currentpage
-mov   es, word ptr [bp - 4]
+mov   es, word ptr [bp - 0Eh]
 
 loop_mark_next_page_mru_multi:
 
@@ -1663,7 +1737,7 @@ loop_mark_next_page_mru_multi:
 
 mov   al, cl
 
-call  R_MarkL1TextureCacheMRU_
+call  [bp - 2]
 
 ;	activetexturepages[startpage + i]  = currentpage;
 ;   activenumpages[startpage + i] = numpages-i;
@@ -1674,7 +1748,7 @@ mov   bl, cl
 mov   byte ptr ds:[bx + di], ch
 sal   bx, 1             ; word lookup
 mov   word ptr ds:[bx + si], ax  
-add   ax, word ptr [bp - 2]  ; pageoffset
+add   ax, word ptr [bp - 0Ch]  ; pageoffset
 
 ;	pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
 
@@ -1707,13 +1781,17 @@ jbe   loop_mark_next_page_mru_multi
 
 		
 
-mov   ax, word ptr [bp - 4]
-call  R_MarkL2CompositeTextureCacheMRU_
-call  Z_QuickMapRenderTexture_
+mov   ax, word ptr [bp - 0Eh]
+call  word ptr [bp - 4]  ; R_MarkL2CompositeTextureCacheMRU_
+call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
 
 ;	//todo: only -1 if its in the knocked out page? pretty infrequent though.
 ;    cachedtex = -1;
 ;    cachedtex2 = -1;
+
+mov   di, OFFSET _cachedlumps
+mov   ax, ds
+mov   es, ax
 
 mov   ax, 0FFFFh
 mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
@@ -1730,17 +1808,17 @@ mov   word ptr ds:[_cachedtex2], ax
 ;    seglooptexrepeat[0] = 0;
 ;    seglooptexrepeat[1] = 0;
 
-mov   word ptr ds:[_cachedlumps+0], ax
-mov   word ptr ds:[_cachedlumps+2], ax
-mov   word ptr ds:[_cachedlumps+4], ax
-mov   word ptr ds:[_cachedlumps+6], ax
-mov   word ptr ds:[_segloopnextlookup+0], ax
+stosw
+stosw
+stosw
+stosw
+mov   word ptr ds:[_segloopnextlookup+0], ax ; todo put this all adjacent..
 mov   word ptr ds:[_segloopnextlookup+2], ax
 inc   ax    ; ax is 0
 mov   word ptr ds:[_maskedtexrepeat], ax
 mov   word ptr ds:[_seglooptexrepeat+0], ax ; word gets both..
-;mov   byte ptr ds:[_seglooptexrepeat+1], al
-mov   es, word ptr [bp - 6]
+
+pop   es ;  [bp - 010h]
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 mov   ax, es
