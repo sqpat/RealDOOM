@@ -1319,10 +1319,73 @@ jmp       done_finding_open_page
 
 ENDP
 
+; part of R_GetTexturePage_
 
+found_active_single_page:
 
+;    R_MarkL1TextureCacheMRU(i);
+; bl holds i * 2 (word offset)
+; al holds realtexpage
 
+shr   bx, 1
+xchg  ax, dx            ; dx gets realtexpage
+mov   ax, bx            ; ax gets i
+call  R_MarkL1TextureCacheMRU_
 
+;    R_MarkL2CompositeTextureCacheMRU(realtexpage);
+
+xchg  ax, dx            ; realtexpage
+call  R_MarkL2CompositeTextureCacheMRU_
+
+;    return i;
+
+xchg  ax, bx            ; i 
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   
+
+found_start_page_single:
+
+;		activetexturepages[startpage] = realtexpage; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
+;  cl/cx is startpage
+;  bl/bx is startpage 
+
+pop   dx  ; bp - 4, get realtexpage
+; dx has realtexpage
+; bx already ok
+
+mov   byte ptr ds:[bx + di], bh
+shl   bx, 1
+mov   word ptr ds:[bx + si], dx
+pop   ax  ; mov   ax, word ptr [bp - 2]
+shl   bx, 1    ; TODO optional thing
+add   ax, dx
+
+; BIG TODO FOR THESE: shift or not based on build?
+; mov word ptr ds:[ _pageswapargs + $register + $offset], $value
+SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET ax
+
+; dx should be realtexpage???
+xchg  ax, dx
+
+call  R_MarkL2CompositeTextureCacheMRU_
+call  Z_QuickMapRenderTexture_
+mov   ax, -1
+; todo put these next to each other and stosw?
+mov   word ptr ds:[_cachedtex], ax
+mov   word ptr ds:[_cachedtex2], ax
+mov   word ptr ds:[_cachedlumps+0], ax
+mov   word ptr ds:[_cachedlumps+2], ax
+mov   word ptr ds:[_cachedlumps+4], ax
+mov   word ptr ds:[_cachedlumps+6], ax
+xchg  ax, cx ; cl/cx is start page
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   
 
 PROC R_GetTexturePage_ NEAR
 PUBLIC R_GetTexturePage_
@@ -1331,28 +1394,31 @@ PUBLIC R_GetTexturePage_
 ; dl pageoffset
 ; bl cachetype
 
-; bp - 2 startpage?
-; bp - 4 pageoffset
-; bp - 6 texpage
+; bp - 2 pageoffset
+; bp - 4 realtexpage
+; bp - 6 startpage in multi-area
 
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ch
-mov   byte ptr [bp - 4], dl
-mov   dl, al
 xor   dh, dh
+push  dx        ; bp - 2   dh 0 
+mov   dl, al
+;	uint8_t realtexpage = texpage >> 2;
 sar   dx, 2
-mov   byte ptr [bp - 6], dl
+push  dx        ; bp - 4   dh 0
 
 ;	uint8_t numpages = (texpage& 0x03);
+
+mov   si, OFFSET _activetexturepages
+mov   di, OFFSET _activenumpages
 
 mov   dl, al
 and   dl, 3
 ;	if (!numpages) {
-jne   jump_to_get_multipage
+jne   get_multipage
 
 ;		// one page, most common case - lets write faster code here...
 ;		for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES; i++) {
@@ -1362,18 +1428,20 @@ jne   jump_to_get_multipage
 ;				return i;
 ;			}
 ;		}
-
+;     dl known zero..
+xor   ax, ax
+mov   bx, ax
+mov   dx, (NUM_TEXTURE_L1_CACHE_PAGES * 2) ; todo loop constant
+mov   al, byte ptr [bp - 4]
+; dl is i??
+; al is realtexpage
 
 loop_next_active_page_single:
-mov   al, dl
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-mov   al, byte ptr [bp - 6]
-cmp   ax, word ptr ds:[bx + _activetexturepages]
+cmp   ax, word ptr ds:[bx + si]
 je    found_active_single_page
-inc   dl
-cmp   dl, NUM_TEXTURE_L1_CACHE_PAGES
+inc   bx
+inc   bx
+cmp   bx, dx
 jb    loop_next_active_page_single
 
 ; cache miss...
@@ -1381,11 +1449,12 @@ jb    loop_next_active_page_single
 ;		startpage = textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1];
 ;		R_MarkL1TextureCacheMRU7(startpage);
 
-mov   cl, byte ptr ds:[_textureL1LRU + NUM_TEXTURE_L1_CACHE_PAGES - 1]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
-mov   al, cl
-mov   bl, cl
-cbw  
-xor   bh, bh
+xor   ax, ax
+cwd
+dec   dx ; dx = -1, ah is 0
+mov   al, byte ptr ds:[_textureL1LRU + NUM_TEXTURE_L1_CACHE_PAGES - 1]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
+mov   bx, ax
+mov   cx, ax
 call  R_MarkL1TextureCacheMRU7_
 
 ;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
@@ -1399,86 +1468,31 @@ call  R_MarkL1TextureCacheMRU7_
 ;			}
 ;		}
 
-cmp   byte ptr ds:[bx + _activenumpages], 0
+cmp   byte ptr ds:[bx + di], 0
 je    found_start_page_single
-mov   al, 1
+
+mov   ax, 1 ; al/ax is i
+; cl/cx is start page.
+; bx is start page or startpage + i offset
+; dx is ??
+; 
 deallocate_next_startpage_single:
-mov   bl, cl
-xor   bh, bh
-cmp   al, byte ptr ds:[bx + _activenumpages]
+
+cmp   al, byte ptr ds:[bx + di]
 ja    found_start_page_single
-mov   dl, al
-xor   dh, dh
-add   bx, dx
-mov   si, bx
-add   si, bx
-mov   word ptr ds:[si + _activetexturepages], 0FFFFh
-mov   si, bx
+
+add   bx, ax
+mov   byte ptr ds:[bx + di], dh
+sal   bx, 1
+mov   word ptr ds:[bx + si], dx   ; dx is -1
+
 inc   al
-shl   si, 2
-mov   byte ptr ds:[bx + _activenumpages], dh
+shl   bx, 1   ; todo optional put in block
 
 ; BIG TODO FOR THESE: shift or not based on build?
-SET_PAGESWAP_ARGS si PAGESWAPARGS_REND_TEXTURE_OFFSET 0FFFFh
-
+SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET dx  ; dx is -1
+mov   bx, cx
 jmp   deallocate_next_startpage_single
-found_active_single_page:
-mov   al, dl
-cbw  
-call  R_MarkL1TextureCacheMRU_
-mov   al, byte ptr [bp - 6]
-cbw  
-call  R_MarkL2CompositeTextureCacheMRU_
-mov   al, dl
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-ret   
-
-jump_to_get_multipage:
-jmp   get_multipage
-
-
-found_start_page_single:
-
-;		activetexturepages[startpage] = realtexpage; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
-
-mov   bl, cl
-mov   al, byte ptr [bp - 6]
-xor   bh, bh
-xor   ah, ah
-mov   si, bx
-mov   dx, ax
-add   si, bx
-mov   byte ptr ds:[bx + _activenumpages], bh
-mov   word ptr ds:[si + _activetexturepages], ax
-mov   al, byte ptr [bp - 4]
-shl   bx, 2
-add   ax, dx
-
-; BIG TODO FOR THESE: shift or not based on build?
-; mov word ptr ds:[ _pageswapargs + $register + $offset], $value
-SET_PAGESWAP_ARGS bx PAGESWAPARGS_REND_TEXTURE_OFFSET ax
-
-mov   al, dl
-cbw  
-call  R_MarkL2CompositeTextureCacheMRU_
-call  Z_QuickMapRenderTexture_
-mov   ax, -1
-; todo put these next to each other and stosw?
-mov   word ptr ds:[_cachedtex], ax
-mov   word ptr ds:[_cachedtex2], ax
-mov   word ptr ds:[_cachedlumps+0], ax
-mov   word ptr ds:[_cachedlumps+2], ax
-mov   word ptr ds:[_cachedlumps+4], ax
-mov   word ptr ds:[_cachedlumps+6], ax
-mov   al, cl
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-ret   
 
 get_multipage:
 xor   dh, dh
@@ -1500,31 +1514,41 @@ jnl   evict_and_find_startpage_multi
 
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr [bp - 6]
-cmp   ax, word ptr ds:[bx + _activetexturepages]
+mov   al, byte ptr [bp - 4]
+cmp   ax, word ptr ds:[bx + si]
 jne   grab_next_page_loop_multi_continue
 
-xor   al, al
-mov   word ptr [bp - 0Ch], ax
-mov   bl, byte ptr [bp - 0Ch]
-add   bl, dh
+mov   bl, dh
 
 ;    // all pages for this texture are in the cache, unevicted.
 ;    for (j = 0; j <= numpages; j++) {
 ;        R_MarkL1TextureCacheMRU(i+j);
 ;    }
-
+; bl is i+j
+; dh is numpages but we dec it
 mark_all_pages_mru_loop:
-mov   al, dl
-xor   ah, ah
-cmp   ax, word ptr [bp - 0Ch]
-jl    mark_l2_mru_and_return
 mov   al, bl
 cbw  
-inc   word ptr [bp - 0Ch]
 call  R_MarkL1TextureCacheMRU_
 inc   bl
-jmp   mark_all_pages_mru_loop
+dec   dl
+jns   mark_all_pages_mru_loop
+ 
+mark_l2_mru_and_return:
+
+;    R_MarkL2CompositeTextureCacheMRU(realtexpage);
+;    return i;
+
+mov   al, byte ptr [bp - 4]
+cbw  
+call  R_MarkL2CompositeTextureCacheMRU_
+mov   al, dh
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+ret   
+ 
 
 grab_next_page_loop_multi_continue:
 
@@ -1557,28 +1581,12 @@ dec   dh
 jmp   find_start_page_loop_multi
 
 
-mark_l2_mru_and_return:
-
-;    R_MarkL2CompositeTextureCacheMRU(realtexpage);
-;    return i;
-
-mov   al, byte ptr [bp - 6]
-cbw  
-call  R_MarkL2CompositeTextureCacheMRU_
-mov   al, dh
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-ret   
-
-
 found_startpage_multi:
 ;		startpage = textureL1LRU[startpage];
 
 mov   al, byte ptr ds:[bx + _textureL1LRU]
 mov   bl, al
-mov   byte ptr [bp - 2], al
+push  ax  ; bp - 6
 
 ;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 ;		if (activenumpages[startpage] > numpages) {
@@ -1592,24 +1600,24 @@ mov   byte ptr [bp - 2], al
 ;		}
 
 
-cmp   dl, byte ptr ds:[bx + _activenumpages]
+cmp   dl, byte ptr ds:[bx + di]
 jae   done_invalidating_pages_multi
 mov   al, dl
 loop_next_invalidate_page_multi:
-mov   bl, byte ptr [bp - 2]
+mov   bl, byte ptr [bp - 6]
 xor   bh, bh
 mov   si, bx
-cmp   al, byte ptr ds:[bx + _activenumpages]
+cmp   al, byte ptr ds:[bx + di]
 ja    done_invalidating_pages_multi
 mov   bl, al
 add   bx, si
 mov   si, bx
 add   si, bx
-mov   word ptr ds:[si + _activetexturepages], 0FFFFh
+mov   word ptr ds:[si + _activetexturepages], 0FFFFh   ; todo si
 mov   si, bx
 inc   al
 shl   si, 2
-mov   byte ptr ds:[bx + _activenumpages], 0
+mov   byte ptr ds:[bx + di], 0
 
 SET_PAGESWAP_ARGS si PAGESWAPARGS_REND_TEXTURE_OFFSET 0FFFFh
 
@@ -1622,45 +1630,46 @@ done_invalidating_pages_multi:
 ;	for (i = 0; i <= numpages; i++) {
 
 xor   dh, dh
-mov   bl, byte ptr [bp - 6]
-mov   cl, byte ptr [bp - 2]
-mov   byte ptr [bp - 8], dl
+mov   bl, byte ptr [bp - 4]
+mov   cl, byte ptr [bp - 6]
+mov   ch, dl
+
+; ch is numpages - i
 
 loop_mark_next_page_mru_multi:
 
 ;	R_MarkL1TextureCacheMRU(startpage+i);
 
 mov   al, cl
-mov   byte ptr [bp - 9], 0
+
 cbw  
-mov   ch, byte ptr [bp - 4]
 call  R_MarkL1TextureCacheMRU_
 
 ;	activetexturepages[startpage + i]  = currentpage;
 
 mov   al, bl
-mov   bl, byte ptr [bp - 2]
-mov   byte ptr [bp - 0Ah], ch
+mov   bl, byte ptr [bp - 6]
 xor   bh, bh
-mov   ch, byte ptr [bp - 8]
+mov   di, word ptr [bp - 2]
+
 mov   si, bx
 mov   bl, dh
 cbw  
 add   bx, si
-dec   byte ptr [bp - 8]
 mov   si, bx
-mov   di, ax
+add   di, ax
 add   si, bx
 inc   dh
 
 
 ;	pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
 
-mov   word ptr ds:[si + _activetexturepages], ax
-mov   si, word ptr [bp - 0Ah]
-mov   byte ptr ds:[bx + _activenumpages], ch
-add   di, si
-inc   cl
+mov   word ptr ds:[si + _activetexturepages], ax  ; todo si
+
+mov   byte ptr ds:[bx + _activenumpages], ch   ; todo di
+
+dec   ch    ; dec numpages - i
+inc   cl    ; inc i
 mov   si, bx
 mov   bx, ax
 shl   si, 2
@@ -1681,7 +1690,7 @@ jbe   loop_mark_next_page_mru_multi
 
 		
 
-mov   al, byte ptr [bp - 6]
+mov   al, byte ptr [bp - 4]
 cbw  
 call  R_MarkL2CompositeTextureCacheMRU_
 call  Z_QuickMapRenderTexture_
@@ -1715,7 +1724,7 @@ inc   ax    ; ax is 0
 mov   word ptr ds:[_maskedtexrepeat], ax
 mov   word ptr ds:[_seglooptexrepeat+0], ax ; word gets both..
 ;mov   byte ptr ds:[_seglooptexrepeat+1], al
-mov   al, byte ptr [bp - 2]
+mov   al, byte ptr [bp - 6]
 LEAVE_MACRO 
 pop   di
 pop   si
