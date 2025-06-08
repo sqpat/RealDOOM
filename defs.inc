@@ -553,8 +553,16 @@ ELSE
 
 ENDIF
 
-SET_PAGESWAP_ARGS MACRO var, constant_offset, value
-	mov word ptr ds:[ _pageswapargs + &var + (&constant_offset * PAGE_SWAP_ARG_MULT)], &value
+; called with reg in var
+; reg may need to be shifted one
+; "constant_offset" is on stack. will be added. pre-shifted at build time
+
+SHIFT_PAGESWAP_ARGS MACRO var
+	IF PAGE_SWAP_ARG_MULT EQ 1
+	ELSE
+		sal &var, 1
+	ENDIF
+	
 ENDM
 
 
