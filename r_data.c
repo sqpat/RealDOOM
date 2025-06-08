@@ -2222,8 +2222,6 @@ uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cach
 				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = 
 					_EPR(currentpage+pageoffset);
 
-
-
 				currentpage = texturecache_nodes[currentpage].prev;
 			}
 		}
@@ -2240,7 +2238,7 @@ uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cach
 		cachedlumps[2] = -1;
 		cachedlumps[3] = -1;
 
-		
+		// BIG TODO investigate should these be zeroed etc too??
 		segloopnextlookup[0] = -1;
 		segloopnextlookup[1] = -1;
 		seglooptexrepeat[0] = 0;
@@ -2261,8 +2259,8 @@ uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cach
 //R_GetSpritePage takes an l2 cache page, pages it into L1 if its not already.
 //then returns the L1 page number
 
-//uint8_t __near R_GetSpritePage(uint8_t texpage) ;
-
+uint8_t __near R_GetSpritePage(uint8_t texpage) ;
+/**/
 uint8_t __near R_GetSpritePage(uint8_t texpage) {
 	uint8_t realtexpage = texpage >> 2;
 	//uint8_t pagenum = FIRST_SPRITE_CACHE_LOGICAL_PAGE + realtexpage;
@@ -2275,12 +2273,10 @@ uint8_t __near R_GetSpritePage(uint8_t texpage) {
 
 		for (i = 0; i < NUM_SPRITE_L1_CACHE_PAGES; i++) {
 
-
 			if (activespritepages[i] == realtexpage) {
+
 				R_MarkL1SpriteCacheMRU(i);
-				//checkspritecache(34);
 				R_MarkL2SpriteCacheMRU(realtexpage);
-				//checkspritecache(35);
 
 				return i;
 			}
@@ -2315,10 +2311,8 @@ uint8_t __near R_GetSpritePage(uint8_t texpage) {
 		pageswapargs[pageswapargs_spritecache_offset +  (startpage)*PAGE_SWAP_ARG_MULT] = 
 			_EPR(realtexpage+FIRST_SPRITE_CACHE_LOGICAL_PAGE);	
 		
-		Z_QuickMapSpritePage();
-		//checkspritecache(36);
 		R_MarkL2SpriteCacheMRU(realtexpage);
-		//checkspritecache(37);
+		Z_QuickMapSpritePage();
 
 		lastvisspritepatch = -1;
 		lastvisspritepatch2 = -1;
@@ -2347,9 +2341,7 @@ uint8_t __near R_GetSpritePage(uint8_t texpage) {
 				R_MarkL1SpriteCacheMRU(i+j);
 
 			}
-			//checkspritecache(38);
 			R_MarkL2SpriteCacheMRU(realtexpage);
-			//checkspritecache(39);
 
 			return i;
 		}
@@ -2386,32 +2378,29 @@ uint8_t __near R_GetSpritePage(uint8_t texpage) {
 
 		{
 			int8_t currentpage = realtexpage; // pagenum - pageoffset
-
 			for (i = 0; i <= numpages; i++) {
 
 				R_MarkL1SpriteCacheMRU(startpage+i);
 
 				activespritepages[startpage + i] = currentpage;
+				activespritenumpages[startpage + i] = numpages - i;
 				
 				// successive logical page indices must come via node list iteration...
 				pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)*PAGE_SWAP_ARG_MULT)] = 
 					_EPR(currentpage+FIRST_SPRITE_CACHE_LOGICAL_PAGE);
 
-				activespritenumpages[startpage + i] = numpages - i;
 				currentpage = spritecache_nodes[currentpage].prev;
 			}
 		}
 
+		R_MarkL2SpriteCacheMRU(realtexpage);
+		Z_QuickMapSpritePage();
+
 		lastvisspritepatch = -1;
 		lastvisspritepatch2 = -1;
 
-		Z_QuickMapSpritePage();
 
 		// paged in
-		//checkspritecache(40);
-		R_MarkL2SpriteCacheMRU(realtexpage);
-		//checkspritecache(41);
-
 		return startpage;
 
 	}
