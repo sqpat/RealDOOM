@@ -1959,7 +1959,7 @@ pop   bx     ; bp - 4
 mov   dx, si
 pop   ax     ; bp - 2
 call  R_LoadPatchColumns_
-mov   ax, si
+xchg  ax, si
 pop   bx
 pop   si
 ret   
@@ -1984,68 +1984,72 @@ ENDP
 PROC R_GetCompositeTexture_ NEAR
 PUBLIC R_GetCompositeTexture_
 
-PUSHA_NO_AX_MACRO
-push  bp
-mov   bp, sp
-sub   sp, 4
+; segment_t R_GetCompositeTexture(int16_t tex_index) ;
+
+; todo clean up reg use, should be much fewer push/pop
+
+push  dx
+push  si
+
+
+mov   si, COMPOSITETEXTUREPAGE_SEGMENT
+mov   es, si
 mov   si, ax
-mov   ax, COMPOSITETEXTUREPAGE_SEGMENT
-lea   di, [si + COMPOSITETEXTUREOFFSET_OFFSET]
-mov   es, ax
-mov   word ptr [bp - 2], ax
-mov   word ptr [bp - 4], es
 mov   al, byte ptr es:[si]
-mov   cl, byte ptr es:[di]
 cmp   al, 0FFh
-jne   label_1
-mov   ax, TEXTURECOMPOSITESIZES_SEGMENT
-mov   bx, si
-mov   es, ax
-add   bx, bx
-mov   ax, si
-mov   dx, word ptr es:[bx]
-mov   bx, 3
-call  R_GetNextTextureBlock_
-mov   es, word ptr [bp - 2]
-mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
-mov   al, byte ptr es:[si]
-mov   es, word ptr [bp - 4]
-xor   ah, ah
-mov   cl, byte ptr es:[di]
+je    composite_not_in_cache
+mov   dl, byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET]
+xor   dh, dh
+mov   si, dx
+
+mov   dl, FIRST_TEXTURE_LOGICAL_PAGE
+
 call  R_GetTexturePage_
+SHIFT_MACRO shl   si 4
 xor   ah, ah
 mov   bx, ax
-add   bx, ax
+sal   bx, 1
+
+mov   ax, si
+add   ax, word ptr ds:[bx + _pagesegments]
+add   ah, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
+
+pop   si
+pop   dx
+ret 
+
+composite_not_in_cache:
+push  bx
+push  es
+mov   dx, TEXTURECOMPOSITESIZES_SEGMENT
+mov   es, dx
+mov   bx, si
+mov   ax, si
+mov   dx, word ptr es:[si + bx]
+mov   bx, CACHETYPE_COMPOSITE
+call  R_GetNextTextureBlock_
+pop   es
+mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
+mov   al, byte ptr es:[si]
+mov   bl, byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET]
+call  R_GetTexturePage_
+xor   ah, ah
+xchg  ax, bx   ; bx stores page. ax gets offset
+xor   ah, ah
+SHIFT_MACRO shl   ax 4
+sal   bx, 1
 mov   bx, word ptr ds:[bx + _pagesegments]
-mov   al, cl
+
 add   bh, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
-shl   ax, 4
 add   bx, ax
 mov   dx, bx
 mov   ax, si
 call  R_GenerateComposite_
-mov   es, bx
-LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   ax, es
-retf  
-label_1:
-mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
-xor   ah, ah
-call  R_GetTexturePage_
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-mov   dx, word ptr ds:[bx + _pagesegments]
-mov   al, cl
-add   dh, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
-shl   ax, 4
-add   ax, dx
-mov   es, ax
-LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   ax, es
-retf  
+xchg  ax, bx
+pop   bx
+pop   si
+pop   dx
+ret  
 
 ENDP
 

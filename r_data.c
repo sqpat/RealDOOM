@@ -2287,9 +2287,9 @@ segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) {
 }*/
 
 
-segment_t R_GetCompositeTexture(int16_t tex_index) ;
+segment_t __near R_GetCompositeTexture(int16_t tex_index) ;
 /*
-segment_t R_GetCompositeTexture(int16_t tex_index) {
+segment_t __near R_GetCompositeTexture(int16_t tex_index) {
 	
 	uint8_t texpage = compositetexturepage[tex_index];
 	uint8_t texoffset = compositetextureoffset[tex_index];
