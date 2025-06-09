@@ -2942,6 +2942,11 @@ ENDP
 
 SCRATCH_ADDRESS_4000_SEGMENT = 04000h
 
+do_masked_jump:
+mov       ax, 0c089h   ; 2 byte nop
+mov       di, ((SELFMODIFY_loadpatchcolumn_masked_check2_TARGET - SELFMODIFY_loadpatchcolumn_masked_check2_AFTER) SHL 8) + 0EBh
+jmp       ready_selfmodify_loadpatch
+
 PROC R_LoadPatchColumns_ NEAR
 PUBLIC R_LoadPatchColumns_
 
@@ -2950,9 +2955,18 @@ push      cx
 push      si
 push      di
 push      bp
-mov       bp, sp
-push      bx  ; bp - 2  ismasked
+
 mov       si, ax
+
+test      bl, bl
+jne       do_masked_jump
+mov       ax, ((SELFMODIFY_loadpatchcolumn_masked_check1_TARGET - SELFMODIFY_loadpatchcolumn_masked_check1_AFTER) SHL 8) + 0EBh
+mov       di, 0c089h   ; 2 byte nop
+ready_selfmodify_loadpatch:
+
+mov       word ptr cs:[SELFMODIFY_loadpatchcolumn_masked_check1], ax;
+mov       word ptr cs:[SELFMODIFY_loadpatchcolumn_masked_check2], di;
+
 push      dx       ; store future es
 call      Z_QuickMapScratch_4000_
 mov       cx, SCRATCH_ADDRESS_4000_SEGMENT
@@ -2965,11 +2979,12 @@ call      W_CacheLumpNumDirect_
 pop       ds      ; get 4000 segment
 pop       es      ; get dest segment
 
-push      di                ; loop counter    ; bp - 4
-push      word ptr ds:[di]  ; patchwidth      ; bp - 6
+mov       bp, word ptr ds:[di]  ; patchwidth
+dec       bp; dec loop needs to start one off to trigger jns/js
 
 mov       ax, di ; zero
 cwd              ; zero
+
 
 ; di is destoffset
 ; ds:[bx] is patch data (in scratch segment)
@@ -3000,8 +3015,10 @@ rep movsb
 mov       cx, ax  ; restore length in cx
 inc       si
 
-cmp       byte ptr [bp - 2], 0
-je        skip_segment_alignment_1
+;cmp       byte ptr [bp - 2], 0
+SELFMODIFY_loadpatchcolumn_masked_check1:
+jmp       SHORT       skip_segment_alignment_1
+SELFMODIFY_loadpatchcolumn_masked_check1_AFTER:
 ; ah is 0
 ; adjust col offset
 
@@ -3009,31 +3026,34 @@ sub       di, dx
 dec       di
 and       di, dx
 
+SELFMODIFY_loadpatchcolumn_masked_check1_TARGET:
 skip_segment_alignment_1:
 lodsb
 cmp       al, dh
 jne       do_next_post_in_column
 done_with_column:
-cmp       byte ptr [bp - 2], 0
-jne       skip_segment_alignment_2
+;cmp       byte ptr [bp - 2], 0
+SELFMODIFY_loadpatchcolumn_masked_check2:
+jmp       SHORT       skip_segment_alignment_2
+SELFMODIFY_loadpatchcolumn_masked_check2_AFTER:
 ; adjust col offset
 
 sub       di, dx
 dec       di
 and       di, dx
 
+SELFMODIFY_loadpatchcolumn_masked_check2_TARGET:
 skip_segment_alignment_2:
-inc       word ptr [bp - 4]
-mov       ax, word ptr [bp - 4]
 add       bx, 4
-cmp       ax, word ptr [bp - 6]  ; todo selfmodify
-jnge      do_next_column
+dec       bp
+jns       do_next_column
 ; restore ds
 done_drawing_texture:
-push      ss
-pop       ds
+mov       ax, ss
+mov       ds, ax
+pop       bp
 call      Z_QuickMapRender4000_
-LEAVE_MACRO     
+
 pop       di
 pop       si
 pop       cx
