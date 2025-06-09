@@ -2951,82 +2951,79 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 012h
+push      bx  ; bp - 2  ismasked
 mov       si, ax
-push      dx   ; bp - 12;
-mov       byte ptr [bp - 2], bl
+push      dx       ; store future es
 call      Z_QuickMapScratch_4000_
 mov       cx, SCRATCH_ADDRESS_4000_SEGMENT
+push      cx
 mov       ax, si
-xor       bx, bx
-mov       word ptr [bp - 0Ch], SCRATCH_ADDRESS_4000_SEGMENT
+xor       bx, bx  ; zero seg offset
+mov       di, bx  ; zero
 call      W_CacheLumpNumDirect_
-xor       di, di
-mov       ds, word ptr [bp - 0Ch]
-xor       dx, dx
-mov       ax, word ptr ds:[di]
-mov       word ptr [bp - 6], di ; loop counter
-mov       word ptr [bp - 8], ax
-test      ax, ax
-jng       label_5
-mov       word ptr [bp - 0Ah], di
-mov       es, word ptr [bp - 014h]
 
-label_7:
+pop       ds      ; get 4000 segment
+pop       es      ; get dest segment
+
+push      di                ; loop counter    ; bp - 4
+push      word ptr ds:[di]  ; patchwidth      ; bp - 6
+
+mov       ax, di ; zero
+cwd              ; zero
+
+; di is destoffset
+; ds:[bx] is column (in scratch segment)
+; es is dest segment
+
+do_next_column:
 
 
-mov       bx, word ptr [bp - 0Ah]
+mov       bx, dx
 mov       bx, word ptr ds:[bx + 8]
 cmp       byte ptr ds:[bx], 0FFh
-je        label_3
+je        done_with_column
 do_next_post_in_column:
-; es always same as bp - 0Eh at this pt...
-lea       si, [bx + 3]
-mov       di, dx
-mov       al, byte ptr ds:[bx + 1]
-xor       ah, ah  ; todo cbw?
 
+lea       si, [bx + 3] ; todo remove bx/si 
+
+mov       al, byte ptr ds:[bx + 1]
+; ah known zero, thus ch known zero
 mov       cx, ax
-add       dx, cx
 shr       cx, 1
 rep movsw 
 adc       cx, cx
 rep movsb 
-mov       cx, ax  ; restore length in cx
-cmp       byte ptr [bp - 2], 0
-je        skip_segment_alignment_1
 
-; adjust col offset
-mov       ah, cl
-and       ah, 0Fh 
-mov       al, 16
-sub       al, ah
-and       ax, 0Fh
-add       dx, ax
-skip_segment_alignment_1:
+mov       cx, ax  ; restore length in cx
 add       bx, cx
 add       bx, 4
+
+cmp       byte ptr [bp - 2], 0
+je        skip_segment_alignment_1
+; ah is 0
+; adjust col offset
+
+add       di, 15
+and       di, 0FFF0h
+skip_segment_alignment_1:
 cmp       byte ptr ds:[bx], 0FFh
 jne       do_next_post_in_column
-label_3:
+done_with_column:
 cmp       byte ptr [bp - 2], 0
 jne       skip_segment_alignment_2
 ; adjust col offset
-mov       ah, dl
-and       ah, 0Fh 
-mov       al, 16
-sub       al, ah
-and       ax, 0Fh
-add       dx, ax
+
+add       di, 15
+and       di, 0FFF0h
 
 skip_segment_alignment_2:
-inc       word ptr [bp - 6]
-mov       ax, word ptr [bp - 6]
-add       word ptr [bp - 0Ah], 4
-cmp       ax, word ptr [bp - 8]
-jnge       label_7
+inc       word ptr [bp - 4]
+mov       ax, word ptr [bp - 4]
+add       dx, 4
+cmp       ax, word ptr [bp - 6]  ; todo selfmodify
+jnge      do_next_column
 ; restore ds
-label_5:
+done_drawing_texture:
 push      ss
 pop       ds
 call      Z_QuickMapRender4000_
