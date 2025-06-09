@@ -26,6 +26,7 @@ EXTRN P_UpdateSpecials_:NEAR
 EXTRN Z_QuickMapRenderTexture_:NEAR
 EXTRN Z_QuickMapSpritePage_:NEAR
 EXTRN R_LoadPatchColumns_:NEAR
+EXTRN R_GenerateComposite_:NEAR
 
 
 .DATA
@@ -1879,6 +1880,7 @@ jmp   do_tex_eviction
 ENDP
 
 PATCH_TEXTURE_SEGMENT = 05000h
+COMPOSITE_TEXTURE_SEGMENT = 05000h
 
 PROC R_GetPatchTexture_ NEAR
 PUBLIC R_GetPatchTexture_
@@ -1976,88 +1978,78 @@ jmp   done_doing_lookup
 ENDP
 
 
-COMMENT @
 
 
 
 PROC R_GetCompositeTexture_ NEAR
 PUBLIC R_GetCompositeTexture_
 
-0x00000000000004e2:  53                   push  bx
-0x00000000000004e3:  51                   push  cx
-0x00000000000004e4:  52                   push  dx
-0x00000000000004e5:  56                   push  si
-0x00000000000004e6:  57                   push  di
-0x00000000000004e7:  55                   push  bp
-0x00000000000004e8:  89 E5                mov   bp, sp
-0x00000000000004ea:  83 EC 04             sub   sp, 4
-0x00000000000004ed:  89 C6                mov   si, ax
-0x00000000000004ef:  B8 81 4F             mov   ax, 0x4f81
-0x00000000000004f2:  8D BC AC 01          lea   di, [si + 0x1ac]
-0x00000000000004f6:  8E C0                mov   es, ax
-0x00000000000004f8:  89 46 FE             mov   word ptr [bp - 2], ax
-0x00000000000004fb:  8C 46 FC             mov   word ptr [bp - 4], es
-0x00000000000004fe:  26 8A 04             mov   al, byte ptr es:[si]
-0x0000000000000501:  26 8A 0D             mov   cl, byte ptr es:[di]
-0x0000000000000504:  3C FF                cmp   al, 0xff
-0x0000000000000506:  75 4F                jne   0x557
-0x0000000000000508:  B8 4B 4F             mov   ax, 0x4f4b
-0x000000000000050b:  89 F3                mov   bx, si
-0x000000000000050d:  8E C0                mov   es, ax
-0x000000000000050f:  01 DB                add   bx, bx
-0x0000000000000511:  89 F0                mov   ax, si
-0x0000000000000513:  26 8B 17             mov   dx, word ptr es:[bx]
-0x0000000000000516:  BB 03 00             mov   bx, 3
-0x0000000000000519:  E8 F5 0C             call  0x1211
-0x000000000000051c:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x000000000000051f:  BB 03 00             mov   bx, 3
-0x0000000000000522:  BA 2C 00             mov   dx, 0x2c
-0x0000000000000525:  26 8A 04             mov   al, byte ptr es:[si]
-0x0000000000000528:  8E 46 FC             mov   es, word ptr [bp - 4]
-0x000000000000052b:  30 E4                xor   ah, ah
-0x000000000000052d:  26 8A 0D             mov   cl, byte ptr es:[di]
-0x0000000000000530:  E8 CD FA             call  0
-0x0000000000000533:  30 E4                xor   ah, ah
-0x0000000000000535:  89 C3                mov   bx, ax
-0x0000000000000537:  01 C3                add   bx, ax
-0x0000000000000539:  8B 9F 8E 07          mov   bx, word ptr ds:[bx + _pagesegments]
-0x000000000000053d:  88 C8                mov   al, cl
-0x000000000000053f:  80 C7 50             add   bh, 0x50
-0x0000000000000542:  C1 E0 04             shl   ax, 4
-0x0000000000000545:  01 C3                add   bx, ax
-0x0000000000000547:  89 DA                mov   dx, bx
-0x0000000000000549:  89 F0                mov   ax, si
-0x000000000000054b:  E8 74 F8             call  0xfdc2
-0x000000000000054e:  89 D8                mov   ax, bx
-0x0000000000000550:  C9                   LEAVE_MACRO 
-0x0000000000000551:  5F                   pop   di
-0x0000000000000552:  5E                   pop   si
-0x0000000000000553:  5A                   pop   dx
-0x0000000000000554:  59                   pop   cx
-0x0000000000000555:  5B                   pop   bx
-0x0000000000000556:  CB                   retf  
-0x0000000000000557:  BB 03 00             mov   bx, 3
-0x000000000000055a:  BA 2C 00             mov   dx, 0x2c
-0x000000000000055d:  30 E4                xor   ah, ah
-0x000000000000055f:  E8 9E FA             call  0
-0x0000000000000562:  30 E4                xor   ah, ah
-0x0000000000000564:  89 C3                mov   bx, ax
-0x0000000000000566:  01 C3                add   bx, ax
-0x0000000000000568:  8B 97 8E 07          mov   dx, word ptr ds:[bx + _pagesegments]
-0x000000000000056c:  88 C8                mov   al, cl
-0x000000000000056e:  80 C6 50             add   dh, 0x50
-0x0000000000000571:  C1 E0 04             shl   ax, 4
-0x0000000000000574:  01 D0                add   ax, dx
-0x0000000000000576:  C9                   LEAVE_MACRO 
-0x0000000000000577:  5F                   pop   di
-0x0000000000000578:  5E                   pop   si
-0x0000000000000579:  5A                   pop   dx
-0x000000000000057a:  59                   pop   cx
-0x000000000000057b:  5B                   pop   bx
-0x000000000000057c:  CB                   retf  
+PUSHA_NO_AX_MACRO
+push  bp
+mov   bp, sp
+sub   sp, 4
+mov   si, ax
+mov   ax, COMPOSITETEXTUREPAGE_SEGMENT
+lea   di, [si + COMPOSITETEXTUREOFFSET_OFFSET]
+mov   es, ax
+mov   word ptr [bp - 2], ax
+mov   word ptr [bp - 4], es
+mov   al, byte ptr es:[si]
+mov   cl, byte ptr es:[di]
+cmp   al, 0FFh
+jne   label_1
+mov   ax, TEXTURECOMPOSITESIZES_SEGMENT
+mov   bx, si
+mov   es, ax
+add   bx, bx
+mov   ax, si
+mov   dx, word ptr es:[bx]
+mov   bx, 3
+call  R_GetNextTextureBlock_
+mov   es, word ptr [bp - 2]
+mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
+mov   al, byte ptr es:[si]
+mov   es, word ptr [bp - 4]
+xor   ah, ah
+mov   cl, byte ptr es:[di]
+call  R_GetTexturePage_
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   bx, word ptr ds:[bx + _pagesegments]
+mov   al, cl
+add   bh, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
+shl   ax, 4
+add   bx, ax
+mov   dx, bx
+mov   ax, si
+call  R_GenerateComposite_
+mov   es, bx
+LEAVE_MACRO 
+POPA_NO_AX_MACRO
+mov   ax, es
+retf  
+label_1:
+mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
+xor   ah, ah
+call  R_GetTexturePage_
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   dx, word ptr ds:[bx + _pagesegments]
+mov   al, cl
+add   dh, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
+shl   ax, 4
+add   ax, dx
+mov   es, ax
+LEAVE_MACRO 
+POPA_NO_AX_MACRO
+mov   ax, es
+retf  
 
 ENDP
 
+COMMENT @
 
 PROC R_GetSpriteTexture_ NEAR
 PUBLIC R_GetSpriteTexture_

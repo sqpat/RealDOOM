@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2264
+#define CONSTANTS_COUNT 2265
 #define LOCALS_COUNT 21
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -135,6 +135,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"COMPOSITETEXTUREPAGE_SEGMENT",
 	"COMPOSITETEXTUREOFFSET_SEGMENT",
 	"COMPOSITETEXTUREOFFSET_OFFSET",
+	
+	"TEXTURECOMPOSITESIZES_SEGMENT",
 
     "NODES_RENDER_SEGMENT",
     "SEGS_RENDER_SEGMENT",
@@ -2463,6 +2465,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     compositetexturepage_segment,
     compositetextureoffset_segment,
 	size_compositetexturepage,
+	texturecompositesizes_segment,
 
 
     nodes_render_segment,
@@ -4667,7 +4670,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	CACHETYPE_SPRITE,
 	CACHETYPE_FLAT,
 	CACHETYPE_PATCH,
-	CACHETYPE_COMPOSITE
+	CACHETYPE_COMPOSITE,
+
 
 };
 
