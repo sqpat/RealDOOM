@@ -2084,56 +2084,29 @@ uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset);
 /*
 uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 	uint8_t realtexpage = texpage >> 2;
-	//uint8_t pagenum = pageoffset + realtexpage;
 	uint8_t numpages = (texpage& 0x03);
 	uint8_t startpage;
 	uint8_t i;
-
- 
-
-
 	if (!numpages) {
-		// one page, most common case - lets write faster code here...
-
 		for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES; i++) {
-
 			if (activetexturepages[i] == realtexpage ) {
-
 				R_MarkL1TextureCacheMRU(i);
 				R_MarkL2CompositeTextureCacheMRU(realtexpage);
 				return i;
 			}
-
 		}
-		// cache miss, find highest LRU cache index
- 
-		// figure out startpage based on LRU
-
 		startpage = textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1];
-
 		R_MarkL1TextureCacheMRU7(startpage);
-
-		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage]) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
-				activetexturepages[startpage+i]  = -1; // unpaged
-				//this is unmapping the page, so we don't need to use pagenum/nodelist
-				pageswapargs[pageswapargs_rend_texture_offset+( startpage+i)*PAGE_SWAP_ARG_MULT] = 
-					_NPR(PAGE_5000_OFFSET+startpage+i);
-
+				activetexturepages[startpage+i]  = -1;
+				pageswapargs[pageswapargs_rend_texture_offset+( startpage+i)*PAGE_SWAP_ARG_MULT] = _NPR(PAGE_5000_OFFSET+startpage+i);
 				activenumpages[startpage+i] = 0;
 			}
 		}
 		activenumpages[startpage] = 0;
-
-
-		activetexturepages[startpage] = realtexpage; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
-		
-		pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT] = 
-			_EPR(pageoffset + realtexpage);
-
-
-
+		activetexturepages[startpage] = realtexpage;
+		pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT] = _EPR(pageoffset + realtexpage);
 		R_MarkL2CompositeTextureCacheMRU(realtexpage);
 		Z_QuickMapRenderTexture();
 		cachedtex = -1;
@@ -2142,272 +2115,137 @@ uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cach
 		cachedlumps[1] = -1;
 		cachedlumps[2] = -1;
 		cachedlumps[3] = -1;
-
-	
-
 		return startpage;
-
 	} else {
 		int16_t j = 0;
-		// needed for multipage iteration...
-
-		
-
-
-
 		for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES-numpages; i++) {
-
-			// Note: if we do always properly unset multi-page allocations,
-			// then a multi-page check should be unnecessary.
-
 			if (activetexturepages[i] != realtexpage){
 				continue;
 			}
-			
-
-
-			// all pages for this texture are in the cache, unevicted.
-
-			
 			for (j = 0; j <= numpages; j++) {
 				R_MarkL1TextureCacheMRU(i+j);
 			}
 			R_MarkL2CompositeTextureCacheMRU(realtexpage);
 			return i;
 		}
-
-		// texture not in cache. need to page it in
-
-		
-
-
-		// figure out startpage based on LRU
-		startpage = NUM_TEXTURE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
+		startpage = NUM_TEXTURE_L1_CACHE_PAGES-1;
 		while (textureL1LRU[startpage] > ((NUM_TEXTURE_L1_CACHE_PAGES-1)-numpages)){
 			startpage--;
 		}
 		startpage = textureL1LRU[startpage];
-
-
-
-		// prep args for quickmap;
-
-		// startpage is the ems page withing the 0x5000 block
-		// pagenum is the EMS page offset within EMS texture pages
-
-
-
-		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage] > numpages) {
 			for (i = numpages; i <= activenumpages[startpage]; i++) {
 				activetexturepages[startpage + i] = -1;
-
-				// unmapping the page, so we dont need pagenum
-				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT] 
-					= _NPR(PAGE_5000_OFFSET+startpage+i); // unpaged
+				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT] = _NPR(PAGE_5000_OFFSET+startpage+i);
 				activenumpages[startpage + i] = 0;
 			}
 		}
-
-
 		{
-			int8_t currentpage = realtexpage; // pagenum - pageoffset
+			int8_t currentpage = realtexpage;
 			for (i = 0; i <= numpages; i++) {
-
 				R_MarkL1TextureCacheMRU(startpage+i);
-
 				activetexturepages[startpage + i]  = currentpage;
 				activenumpages[startpage + i] = numpages-i;
-
-				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = 
-					_EPR(currentpage+pageoffset);
-
+				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
 				currentpage = texturecache_nodes[currentpage].prev;
 			}
 		}
-
 		R_MarkL2CompositeTextureCacheMRU(realtexpage);
 		Z_QuickMapRenderTexture();
-		
-		//todo: only -1 if its in the knocked out page? pretty infrequent though.
 		cachedtex = -1;
 		cachedtex2 = -1;
-		
 		cachedlumps[0] = -1;
 		cachedlumps[1] = -1;
 		cachedlumps[2] = -1;
 		cachedlumps[3] = -1;
-
-		// BIG TODO investigate should these be zeroed etc too??
 		segloopnextlookup[0] = -1;
 		segloopnextlookup[1] = -1;
 		seglooptexrepeat[0] = 0;
 		seglooptexrepeat[1] = 0;
-		
 		maskednextlookup = NULL_TEX_COL;
 		maskedtexrepeat = 0;
-
-
-		// paged in
-
 		return startpage;
-
 	}
-
 }
 */
 //R_GetSpritePage takes an l2 cache page, pages it into L1 if its not already.
 //then returns the L1 page number
 
 uint8_t __near R_GetSpritePage(uint8_t texpage) ;
-/**/
+/*
 uint8_t __near R_GetSpritePage(uint8_t texpage) {
 	uint8_t realtexpage = texpage >> 2;
-	//uint8_t pagenum = FIRST_SPRITE_CACHE_LOGICAL_PAGE + realtexpage;
 	uint8_t numpages = (texpage & 0x03);
 	uint8_t startpage = 0;
 	uint8_t i;
-
 	if (!numpages) {
-		// one page, most common case - lets write faster code here...
-
 		for (i = 0; i < NUM_SPRITE_L1_CACHE_PAGES; i++) {
-
 			if (activespritepages[i] == realtexpage) {
-
 				R_MarkL1SpriteCacheMRU(i);
 				R_MarkL2SpriteCacheMRU(realtexpage);
-
 				return i;
 			}
-
 		}
-		// cache miss, find highest LRU cache index
-
-		// start page is least recently used (since single page)
-
 		startpage = spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES-1];
-
 		R_MarkL1SpriteCacheMRU3(startpage);
-
-
-		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activespritenumpages[startpage]) {
 			for (i = 1; i <= activespritenumpages[startpage]; i++) {
 				activespritepages[startpage + i] = -1;
-				//this is being unset, doesn't need to use pagenum
-				pageswapargs[pageswapargs_spritecache_offset + (startpage + i)*PAGE_SWAP_ARG_MULT] = 
-					_NPR(PAGE_9000_OFFSET+(startpage+i)); // unpaged				
-
+				pageswapargs[pageswapargs_spritecache_offset + (startpage + i)*PAGE_SWAP_ARG_MULT] =  _NPR(PAGE_9000_OFFSET+(startpage+i)); // unpaged				
 				activespritenumpages[startpage + i] = 0;
 			}
 		}
 		activespritenumpages[startpage] = 0;
-
-
-
-		activespritepages[startpage] = realtexpage; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
-
-		pageswapargs[pageswapargs_spritecache_offset +  (startpage)*PAGE_SWAP_ARG_MULT] = 
-			_EPR(realtexpage+FIRST_SPRITE_CACHE_LOGICAL_PAGE);	
-		
+		activespritepages[startpage] = realtexpage;
+		pageswapargs[pageswapargs_spritecache_offset +  (startpage)*PAGE_SWAP_ARG_MULT] = _EPR(realtexpage+FIRST_SPRITE_CACHE_LOGICAL_PAGE);	
 		R_MarkL2SpriteCacheMRU(realtexpage);
 		Z_QuickMapSpritePage();
-
 		lastvisspritepatch = -1;
 		lastvisspritepatch2 = -1;
-		
-
 		return startpage;
-
-	}
-	else {
+	} else {
 		int16_t j = 0;
-
-
 		for (i = 0; i < NUM_SPRITE_L1_CACHE_PAGES - numpages; i++) {
-
-
-			// Note: if we do always properly unset multi-page allocations,
-			// then a multi-page check should be unnecessary.
-
 			if (activespritepages[i] != realtexpage){
 				continue;
 			}
-
-			// all pages were good
-
 			for (j = 0; j <= numpages; j++) {
 				R_MarkL1SpriteCacheMRU(i+j);
-
 			}
 			R_MarkL2SpriteCacheMRU(realtexpage);
-
 			return i;
 		}
-
-		// need to page it in
-
-
-		// start page is least recently used that fits in numpages.
-		startpage = NUM_SPRITE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
+		startpage = NUM_SPRITE_L1_CACHE_PAGES-1;
 		while (spriteL1LRU[startpage] > ((NUM_SPRITE_L1_CACHE_PAGES-1)-numpages)){
 			startpage--;
 		}
 		startpage = spriteL1LRU[startpage];
-
-
-		// prep args for quickmap;
-
-		// startpage is the ems page withing the 0x5000 block
-		// pagenum is the EMS page offset within EMS texture pages
-
-
-
-		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activespritenumpages[startpage] > numpages) {
 			for (i = numpages; i <= activespritenumpages[startpage]; i++) {
 				activespritepages[startpage + i] = -1;
-				// unmapping the page, so we dont need pagenum
-				pageswapargs[pageswapargs_spritecache_offset + ( (startpage + i)*PAGE_SWAP_ARG_MULT)] = 
-					_NPR(PAGE_9000_OFFSET+(startpage+i));
+				pageswapargs[pageswapargs_spritecache_offset + ( (startpage + i)*PAGE_SWAP_ARG_MULT)] = _NPR(PAGE_9000_OFFSET+(startpage+i));
 				activespritenumpages[startpage + i] = 0;
 			}
 		}
-
-
 		{
-			int8_t currentpage = realtexpage; // pagenum - pageoffset
+			int8_t currentpage = realtexpage;
 			for (i = 0; i <= numpages; i++) {
-
 				R_MarkL1SpriteCacheMRU(startpage+i);
-
 				activespritepages[startpage + i] = currentpage;
 				activespritenumpages[startpage + i] = numpages - i;
-				
-				// successive logical page indices must come via node list iteration...
-				pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)*PAGE_SWAP_ARG_MULT)] = 
-					_EPR(currentpage+FIRST_SPRITE_CACHE_LOGICAL_PAGE);
-
+				pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)*PAGE_SWAP_ARG_MULT)] = _EPR(currentpage+FIRST_SPRITE_CACHE_LOGICAL_PAGE);
 				currentpage = spritecache_nodes[currentpage].prev;
 			}
 		}
-
 		R_MarkL2SpriteCacheMRU(realtexpage);
 		Z_QuickMapSpritePage();
-
 		lastvisspritepatch = -1;
 		lastvisspritepatch2 = -1;
-
-
-		// paged in
 		return startpage;
-
 	}
-
 }
 
-
+*/
 
 // get 0x5000 offset for texture
 segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) {

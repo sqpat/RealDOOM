@@ -1876,7 +1876,6 @@ jmp   do_tex_eviction
 ENDP
 
 
-COMMENT @
 
 
 PROC R_GetSpritePage_ NEAR
@@ -1934,9 +1933,7 @@ inc   al
 shl   si, 2
 mov   byte ptr ds:[bx + _activespritenumpages], dh
 
-SET_PAGESWAP_ARGS si PAGESWAPARGS_SPRITECACHE_OFFSET 0FFFFh
-
-mov   word ptr [si + 0xb62], 0FFFFh
+mov   word ptr [si + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], 0FFFFh
 jmp   label_5
 label_1:
 jmp   label_6
@@ -1968,9 +1965,7 @@ shl   bx, 2
 mov   word ptr ds:[si + _activespritepages], ax
 add   ax, FIRST_SPRITE_CACHE_LOGICAL_PAGE
 
-SET_PAGESWAP_ARGS bx PAGESWAPARGS_SPRITECACHE_OFFSET ax
-
-mov   word ptr [bx + 0xb62], ax
+mov   word ptr [bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], ax
 push  cs
 call  Z_QuickMapSpritePage_
 mov   al, byte ptr [bp - 4]
@@ -2065,9 +2060,8 @@ inc   al
 shl   si, 2
 mov   byte ptr ds:[bx + _activespritenumpages], 0
 
-SET_PAGESWAP_ARGS si PAGESWAPARGS_SPRITECACHE_OFFSET 0FFFFh
 
-mov   word ptr [si + 0xb62], 0FFFFh
+mov   word ptr [si + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], 0FFFFh
 jmp   label_17
 label_16:
 xor   dh, dh
@@ -2099,9 +2093,7 @@ mov   bx, ax
 shl   si, 2
 shl   bx, 2
 
-SET_PAGESWAP_ARGS si PAGESWAPARGS_SPRITECACHE_OFFSET di
-
-mov   word ptr [si + 0xb62], di
+mov   word ptr [si + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], di
 mov   bl, byte ptr ds:[bx + _spritecache_nodes]
 cmp   dh, dl
 jbe   label_8
@@ -2125,6 +2117,7 @@ ret
 
 ENDP
 
+COMMENT @
 
 PROC R_GetPatchTexture_ NEAR
 PUBLIC R_GetPatchTexture_
