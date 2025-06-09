@@ -2972,21 +2972,24 @@ mov       ax, di ; zero
 cwd              ; zero
 
 ; di is destoffset
-; ds:[bx] is column (in scratch segment)
+; ds:[bx] is patch data (in scratch segment)
+; ds:[si] is column data
+
 ; es is dest segment
+mov       bx, 8
+mov       dx, 0FFF0h
 
 do_next_column:
 
 
-mov       bx, dx
-mov       bx, word ptr ds:[bx + 8]
-cmp       byte ptr ds:[bx], 0FFh
+mov       si, word ptr ds:[bx]
+lodsb     ; get topdelta
+cmp       al, dh
 je        done_with_column
 do_next_post_in_column:
 
-lea       si, [bx + 3] ; todo remove bx/si 
-
-mov       al, byte ptr ds:[bx + 1]
+lodsb      ; get length
+inc       si   ; si + 3
 ; ah known zero, thus ch known zero
 mov       cx, ax
 shr       cx, 1
@@ -2995,31 +2998,34 @@ adc       cx, cx
 rep movsb 
 
 mov       cx, ax  ; restore length in cx
-add       bx, cx
-add       bx, 4
+inc       si
 
 cmp       byte ptr [bp - 2], 0
 je        skip_segment_alignment_1
 ; ah is 0
 ; adjust col offset
 
-add       di, 15
-and       di, 0FFF0h
+sub       di, dx
+dec       di
+and       di, dx
+
 skip_segment_alignment_1:
-cmp       byte ptr ds:[bx], 0FFh
+lodsb
+cmp       al, dh
 jne       do_next_post_in_column
 done_with_column:
 cmp       byte ptr [bp - 2], 0
 jne       skip_segment_alignment_2
 ; adjust col offset
 
-add       di, 15
-and       di, 0FFF0h
+sub       di, dx
+dec       di
+and       di, dx
 
 skip_segment_alignment_2:
 inc       word ptr [bp - 4]
 mov       ax, word ptr [bp - 4]
-add       dx, 4
+add       bx, 4
 cmp       ax, word ptr [bp - 6]  ; todo selfmodify
 jnge      do_next_column
 ; restore ds
