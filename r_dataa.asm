@@ -2059,65 +2059,62 @@ ENDP
 PROC R_GetSpriteTexture_ FAR
 PUBLIC R_GetSpriteTexture_
 
-push  bx
-push  cx
 push  dx
 push  si
-push  di
-mov   bx, ax
-mov   di, SPRITEPAGE_SEGMENT
-mov   cx, word ptr ds:[_firstspritelump]
-mov   es, di
-lea   si, [bx + SPRITEOFFSETS_OFFSET]
-add   cx, ax
-mov   al, byte ptr es:[bx]
-mov   dl, byte ptr es:[si]
-cmp   al, 0FFh
-je   sprite_not_in_cache
+mov   si, SPRITEPAGE_SEGMENT
+mov   es, si
 
-label_1:
-xor   ah, ah
+xchg  ax, si    ; si gets index
+
+mov   al, byte ptr es:[si]
+cmp   al, 0FFh
+je    sprite_not_in_cache
+
+mov   dl, byte ptr es:[si + SPRITEOFFSETS_OFFSET]
+
 call  R_GetSpritePage_
 xor   ah, ah
-mov   bx, ax
-add   bx, ax
-mov   bx, word ptr ds:[bx + _pagesegments]
+mov   si, ax
 mov   al, dl
-add   bh, (SPRITE_COLUMN_SEGMENT SHR 8)
-shl   ax, 4
-add   ax, bx
-pop   di
+SHIFT_MACRO shl   ax 4
+sal   si, 1
+mov   dx, word ptr ds:[si + _pagesegments]
+add   dh, (SPRITE_COLUMN_SEGMENT SHR 8)
+add   ax, dx
 pop   si
 pop   dx
-pop   cx
-pop   bx
 retf  
 
 sprite_not_in_cache:
-mov   ax, cx
+
+mov   ax, word ptr ds:[_firstspritelump]
+add   ax, si
+push  ax    ; bp - 2, index
+push  es    ; bp - 4, segment
 call  R_GetNextSpriteBlock_
-mov   es, di
-mov   al, byte ptr es:[bx]
-xor   ah, ah
-mov   dl, byte ptr es:[si]
+
+pop   es    ; bp - 4, segment
+mov   al, byte ptr es:[si]
+
+mov   dl, byte ptr es:[si + SPRITEOFFSETS_OFFSET]
+
 call  R_GetSpritePage_
 xor   ah, ah
-mov   bx, ax
-add   bx, ax
-mov   bx, word ptr ds:[bx + _pagesegments]
+mov   si, ax
 mov   al, dl
-add   bh, (SPRITE_COLUMN_SEGMENT SHR 8)
-shl   ax, 4
-add   bx, ax
-mov   dx, bx
-mov   ax, cx
+SHIFT_MACRO shl   ax 4
+sal   si, 1
+mov   dx, word ptr ds:[si + _pagesegments]
+add   dh, (SPRITE_COLUMN_SEGMENT SHR 8) 
+add   dx, ax
+mov   si, dx ; back this up
+pop   ax     ; bp - 2, index
+
 call  R_LoadSpriteColumns_
-mov   ax, bx
-pop   di
+
+mov   ax, si
 pop   si
 pop   dx
-pop   cx
-pop   bx
 retf  
 
 
