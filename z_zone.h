@@ -526,7 +526,7 @@ void __far Z_PopScratchFrame();
 void __far Z_QuickMapFlatPage(int16_t page, int16_t offset);
 void __far Z_QuickMapUndoFlatCache();
 void __far Z_QuickMapMaskedExtraData();
-void __far Z_QuickMapSpritePage();
+void __near Z_QuickMapSpritePage();
 
     //void __far Z_QuickMapTextureInfoPage();
 void __far Z_QuickMapPalette();

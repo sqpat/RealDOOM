@@ -512,7 +512,7 @@ void __far Z_QuickMapMaskedExtraData() {
 
 }
 
-void __far Z_QuickMapSpritePage() {
+void __near Z_QuickMapSpritePage() {
 
 	Z_QuickMap4AI(pageswapargs_spritecache_offset_size, INDEXED_PAGE_9000_OFFSET);
 #ifdef DETAILED_BENCH_STATS
