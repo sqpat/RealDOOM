@@ -2962,40 +2962,37 @@ xor       bx, bx
 mov       word ptr [bp - 0Ch], SCRATCH_ADDRESS_4000_SEGMENT
 call      W_CacheLumpNumDirect_
 xor       di, di
-mov       es, word ptr [bp - 0Ch]
+mov       ds, word ptr [bp - 0Ch]
 xor       dx, dx
-mov       ax, word ptr es:[di]
+mov       ax, word ptr ds:[di]
 mov       word ptr [bp - 6], di ; loop counter
 mov       word ptr [bp - 8], ax
 test      ax, ax
 jng       label_5
 mov       word ptr [bp - 0Ah], di
+mov       es, word ptr [bp - 014h]
+
 label_7:
-mov       ax, SCRATCH_ADDRESS_4000_SEGMENT
-mov       es, ax
+
+
 mov       bx, word ptr [bp - 0Ah]
-mov       bx, word ptr es:[bx + 8]
-cmp       byte ptr es:[bx], 0FFh
+mov       bx, word ptr ds:[bx + 8]
+cmp       byte ptr ds:[bx], 0FFh
 je        label_3
-label_2:
+do_next_post_in_column:
 ; es always same as bp - 0Eh at this pt...
 lea       si, [bx + 3]
 mov       di, dx
-mov       al, byte ptr es:[bx + 1]
+mov       al, byte ptr ds:[bx + 1]
 xor       ah, ah  ; todo cbw?
-mov       es, word ptr [bp - 014h]
-push      ax  ; store length
-push      ds
+
 mov       cx, ax
 add       dx, cx
-mov       ax, SCRATCH_ADDRESS_4000_SEGMENT
-mov       ds, ax
 shr       cx, 1
 rep movsw 
 adc       cx, cx
 rep movsb 
-pop       ds
-pop       cx  ; store length in cx
+mov       cx, ax  ; restore length in cx
 cmp       byte ptr [bp - 2], 0
 je        skip_segment_alignment_1
 
@@ -3008,11 +3005,9 @@ and       ax, 0Fh
 add       dx, ax
 skip_segment_alignment_1:
 add       bx, cx
-mov       ax, SCRATCH_ADDRESS_4000_SEGMENT
-mov       es, ax
 add       bx, 4
-cmp       byte ptr es:[bx], 0FFh
-jne       label_2
+cmp       byte ptr ds:[bx], 0FFh
+jne       do_next_post_in_column
 label_3:
 cmp       byte ptr [bp - 2], 0
 jne       skip_segment_alignment_2
@@ -3030,7 +3025,10 @@ mov       ax, word ptr [bp - 6]
 add       word ptr [bp - 0Ah], 4
 cmp       ax, word ptr [bp - 8]
 jnge       label_7
+; restore ds
 label_5:
+push      ss
+pop       ds
 call      Z_QuickMapRender4000_
 LEAVE_MACRO     
 pop       di
