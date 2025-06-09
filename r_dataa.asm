@@ -1881,28 +1881,52 @@ ENDP
 PROC R_GetPatchTexture_ NEAR
 PUBLIC R_GetPatchTexture_
 
-push  bx
+;segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
+
+; bp - 2 = texoffset
+
 push  cx
 push  si
-push  bp
-mov   bp, sp
-sub   sp, 6
+
+
+;	int16_t index = lump - firstpatch;
+;	uint8_t texpage = patchpage[index];
+;	uint8_t texoffset = patchoffset[index];
+
+
 mov   cx, ax
 mov   si, ax
 mov   ax, PATCHPAGE_SEGMENT
-sub   si, word ptr ds:[_firstpatch]
 mov   es, ax
-lea   bx, [si + PATCHOFFSET_OFFSET]
-mov   al, byte ptr es:[si]
-mov   ah, byte ptr es:[bx]
-mov   byte ptr [bp - 6], ah
+sub   si, word ptr ds:[_firstpatch]  ; si is index
+mov   al, byte ptr es:[si]                      ; texpage 
 cmp   al, 0FFh
-jne   label_1
+je    patch_not_in_l1_cache
+
+patch_in_l1_cache:
+mov   dl, byte ptr es:[si + PATCHOFFSET_OFFSET] ; texoffset
+xor   dh, dh
+mov   si, dx   ; back up texpage
+mov   dl, FIRST_TEXTURE_LOGICAL_PAGE
+call  R_GetTexturePage_
+SHIFT_MACRO shl   si 4  ; shift texpage 4. 
+xor   ah, ah
+xchg  ax, si
+sal   si, 1
+add   ax, word ptr [si + _pagesegments]
+add   ah, 050h   ; todo
+pop   si
+pop   cx
+ret   
+
+patch_not_in_l1_cache:
+; we use bx in here..
+push  bx
 cmp   dl, al
 je    label_2
 mov   al, 1
 label_4:
-mov   byte ptr [bp - 2], al
+push  ax
 test  al, al
 je    label_3
 xor   dh, dh
@@ -1916,37 +1940,34 @@ mov   ax, si
 call  R_GetNextTextureBlock_
 mov   ax, PATCHPAGE_SEGMENT
 mov   es, ax
-mov   al, byte ptr es:[si]
-mov   ah, byte ptr es:[si + PATCHOFFSET_OFFSET]
-mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
-mov   byte ptr [bp - 4], ah
 xor   ah, ah
+mov   al, byte ptr es:[si + PATCHOFFSET_OFFSET]
+push  ax     ; bp - 4
+mov   al, byte ptr es:[si]
+mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
 call  R_GetTexturePage_
 xor   ah, ah
 mov   bx, ax
 add   bx, ax
 mov   si, word ptr [bx + _pagesegments]
-mov   al, byte ptr [bp - 4]
+pop   ax     ; bp - 4
 add   si, 05000h
 shl   ax, 4
 add   si, ax
-mov   al, byte ptr [bp - 2]
+pop   ax     ; bp - 2;
 cbw  
 mov   dx, si
 mov   bx, ax
 mov   ax, cx
 call  R_LoadPatchColumns_
 mov   ax, si
-LEAVE_MACRO
+pop   bx
 pop   si
 pop   cx
-pop   bx
 ret   
 label_2:
 xor   al, al
 jmp   label_4
-label_1:
-jmp   label_5
 label_3:
 mov   ax, si
 add   ax, si
@@ -1954,161 +1975,13 @@ mov   bx, ax
 mov   dx, word ptr ds:[bx + _patch_sizes]
 add   bx, OFFSET _patch_sizes
 jmp   label_6
-label_5:
-mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
-xor   ah, ah
-call  R_GetTexturePage_
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-mov   dx, word ptr [bx + _pagesegments]
-mov   al, byte ptr [bp - 6]
-add   dh, 050h   ; todo
-shl   ax, 4
-add   ax, dx
-LEAVE_MACRO
-pop   si
-pop   cx
-pop   bx
-ret   
+
 
 ENDP
 
 
 COMMENT @
 
-
-; masked_headers[maskedlookup].texturesize
-get_masked_size:
-xor   dh, dh
-mov   bx, dx
-SHIFT_MACRO shl   bx 3
-mov   dx, word ptr ds:[bx + _masked_headers + 4] ; texturesize field is + 4
-jmp   done_getting_size
- set_masked_zero:
-xor   al, al
-jmp   done_setting_masked
-
-PROC R_GetPatchTexture2_ NEAR
-PUBLIC R_GetPatchTexture2_
-
-;segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
-; bp - 2 texoffset
-; bp - 4 texpage
-; bp - 6 ismasked
-
-push  bx
-push  cx
-push  si
-
-push  bp
-mov   bp, sp
-sub   sp, 6
-mov   cx, ax    ; cx = lump
-mov   si, ax    ; si = index
-mov   ax, PATCHPAGE_SEGMENT
-
-;	int16_t index = lump - firstpatch;
-sub   si, word ptr ds:[_firstpatch]
-
-;	uint8_t texpage = patchpage[index];
-;	uint8_t texoffset = patchoffset[index];
-
-mov   es, ax
-
-mov   ah, byte ptr es:[si]  ; texpage
-mov   al, byte ptr es:[si+ PATCHOFFSET_OFFSET]  ; texoffset
-mov   byte ptr [bp - 4], al
-
-;	boolean ismasked = maskedlookup != 0xFF;
-
-cmp   dl, 0FFh
-je    set_masked_zero
-mov   al, 1
-done_setting_masked:
-
-; al = ismasked
-;	if (texpage == 0xFF) { 
-
-mov   byte ptr [bp - 6], al
-cmp   ah, 0FFh
-je    patch_tex_not_in_cache
-
-in_cache_return_location:
-mov   al, ah
-mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
-xor   ah, ah
-
-call  R_GetTexturePage_
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-mov   dx, word ptr ds:[bx + _pagesegments]
-mov   al, byte ptr [bp - 4]
-add   dh, 050  ; todo
-SHIFT_MACRO shl   ax 4
-add   ax, dx
-LEAVE_MACRO 
-pop   si
-pop   cx
-pop   bx
-ret   
-
-patch_tex_not_in_cache:
-
-
-; uint16_t size = ismasked ? masked_headers[maskedlookup].texturesize : patch_sizes[index];
-
-test  al, al
-jne   get_masked_size
-get_patch_size:
-mov   bx, si    ; word lookup
-mov   dx, word ptr ds:[bx + si + _patch_sizes]
-
-done_getting_size:
-
-;		R_GetNextTextureBlock(lump - firstpatch, size, CACHETYPE_PATCH);
-
-mov   ax, si
-mov   bx, CACHETYPE_PATCH
-call  R_GetNextTextureBlock_
-
-;		texpage = patchpage[index];
-;		texoffset = patchoffset[index];
-
-mov   ax, PATCHPAGE_SEGMENT
-mov   es, ax
-mov   al, byte ptr es:[si]
-mov   ah, byte ptr es:[si + PATCHOFFSET_OFFSET]
-mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
-mov   byte ptr [bp - 2], ah
-xor   ah, ah
-call  R_GetTexturePage_
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-mov   dx, word ptr ds:[bx + _pagesegments]
-mov   al, byte ptr [bp - 2]
-add   dh, 050h   ; todo
-shl   ax, 4
-add   di, ax
-mov   al, byte ptr [bp - 6]
-cbw  
-mov   si, dx  ; store
-mov   bx, ax
-mov   ax, cx
-call  R_LoadPatchColumns_
-mov   ax, si
-LEAVE_MACRO 
-pop   si
-pop   cx
-pop   bx
-ret   
-
-
-
-
-ENDP
 
 
 PROC R_GetCompositeTexture_ NEAR
