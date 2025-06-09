@@ -2864,6 +2864,9 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 } 
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
+
+void __near R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean ismasked);
+/*
 void __near R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_4000;
 	int16_t col;
@@ -2904,7 +2907,7 @@ void __near R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boo
 	Z_QuickMapRender4000(); // put render info back
 
 }
-
+*/
 
 
 // we store this in the format;
