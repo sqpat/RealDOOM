@@ -25,6 +25,7 @@ EXTRN P_PlayerThink_:NEAR
 EXTRN P_UpdateSpecials_:NEAR
 EXTRN Z_QuickMapRenderTexture_:NEAR
 EXTRN Z_QuickMapSpritePage_:NEAR
+EXTRN R_LoadPatchColumns_:NEAR
 
 
 .DATA
@@ -53,6 +54,8 @@ EXTRN _activespritenumpages:WORD
 EXTRN _activespritepages:WORD
 EXTRN _segloopnextlookup:WORD
 EXTRN _seglooptexrepeat:WORD
+EXTRN _firstpatch:WORD
+EXTRN _pagesegments:WORD
 .CODE
 
 
@@ -1875,102 +1878,234 @@ jmp   do_tex_eviction
 
 ENDP
 
-
- 
-COMMENT @
-
 PROC R_GetPatchTexture_ NEAR
 PUBLIC R_GetPatchTexture_
 
-0x000000000000040e:  53                   push  bx
-0x000000000000040f:  51                   push  cx
-0x0000000000000410:  56                   push  si
-0x0000000000000411:  55                   push  bp
-0x0000000000000412:  89 E5                mov   bp, sp
-0x0000000000000414:  83 EC 06             sub   sp, 6
-0x0000000000000417:  89 C1                mov   cx, ax
-0x0000000000000419:  89 C6                mov   si, ax
-0x000000000000041b:  B8 BD 83             mov   ax, 0x83bd
-0x000000000000041e:  2B 36 7E 1F          sub   si, word ptr [0x1f7e]
-0x0000000000000422:  8E C0                mov   es, ax
-0x0000000000000424:  8D 9C DC 01          lea   bx, [si + 0x1dc]
-0x0000000000000428:  26 8A 24             mov   ah, byte ptr es:[si]
-0x000000000000042b:  26 8A 07             mov   al, byte ptr es:[bx]
-0x000000000000042e:  88 46 FC             mov   byte ptr [bp - 4], al
-0x0000000000000431:  80 FA FF             cmp   dl, 0xff
-0x0000000000000434:  74 6F                je    0x4a5
-0x0000000000000436:  B0 01                mov   al, 1
-0x0000000000000438:  88 46 FA             mov   byte ptr [bp - 6], al
-0x000000000000043b:  80 FC FF             cmp   ah, 0xff
-0x000000000000043e:  75 69                jne   0x4a9
-0x0000000000000440:  84 C0                test  al, al
-0x0000000000000442:  74 67                je    0x4ab
-0x0000000000000444:  30 F6                xor   dh, dh
-0x0000000000000446:  89 D3                mov   bx, dx
-0x0000000000000448:  C1 E3 03             shl   bx, 3
-0x000000000000044b:  8B 97 54 02          mov   dx, word ptr [bx + 0x254]
-0x000000000000044f:  89 C8                mov   ax, cx
-0x0000000000000451:  BB 02 00             mov   bx, 2
-0x0000000000000454:  2B 06 7E 1F          sub   ax, word ptr [0x1f7e]
-0x0000000000000458:  E8 B6 0D             call  0x1211
-0x000000000000045b:  B8 BD 83             mov   ax, 0x83bd
-0x000000000000045e:  8E C0                mov   es, ax
-0x0000000000000460:  26 8A 04             mov   al, byte ptr es:[si]
-0x0000000000000463:  BB 02 00             mov   bx, 2
-0x0000000000000466:  26 8A A4 DC 01       mov   ah, byte ptr es:[si + 0x1dc]
-0x000000000000046b:  BA 2C 00             mov   dx, 0x2c
-0x000000000000046e:  88 66 FE             mov   byte ptr [bp - 2], ah
-0x0000000000000471:  30 E4                xor   ah, ah
-0x0000000000000473:  E8 8A FB             call  0
-0x0000000000000476:  30 E4                xor   ah, ah
-0x0000000000000478:  89 C3                mov   bx, ax
-0x000000000000047a:  01 C3                add   bx, ax
-0x000000000000047c:  81 C6 DC 01          add   si, 0x1dc
-0x0000000000000480:  8B B7 8E 07          mov   si, word ptr [bx + 0x78e]
-0x0000000000000484:  8A 46 FE             mov   al, byte ptr [bp - 2]
-0x0000000000000487:  81 C6 00 50          add   si, 0x5000
-0x000000000000048b:  C1 E0 04             shl   ax, 4
-0x000000000000048e:  01 C6                add   si, ax
-0x0000000000000490:  8A 46 FA             mov   al, byte ptr [bp - 6]
-0x0000000000000493:  98                   cbw  
-0x0000000000000494:  89 F2                mov   dx, si
-0x0000000000000496:  89 C3                mov   bx, ax
-0x0000000000000498:  89 C8                mov   ax, cx
-0x000000000000049a:  0E                   push  cs
-0x000000000000049b:  E8 10 07             call  0xbae
-0x000000000000049e:  89 F0                mov   ax, si
-0x00000000000004a0:  C9                   LEAVE_MACRO 
-0x00000000000004a1:  5E                   pop   si
-0x00000000000004a2:  59                   pop   cx
-0x00000000000004a3:  5B                   pop   bx
-0x00000000000004a4:  C3                   ret   
-0x00000000000004a5:  30 C0                xor   al, al
-0x00000000000004a7:  EB 8F                jmp   0x438
-0x00000000000004a9:  EB 10                jmp   0x4bb
-0x00000000000004ab:  89 F0                mov   ax, si
-0x00000000000004ad:  01 F0                add   ax, si
-0x00000000000004af:  89 C3                mov   bx, ax
-0x00000000000004b1:  8B 97 70 F6          mov   dx, word ptr [bx - 0x990]
-0x00000000000004b5:  81 C3 70 F6          add   bx, 0xf670
-0x00000000000004b9:  EB 94                jmp   0x44f
-0x00000000000004bb:  BB 02 00             mov   bx, 2
-0x00000000000004be:  88 E0                mov   al, ah
-0x00000000000004c0:  BA 2C 00             mov   dx, 0x2c
-0x00000000000004c3:  30 E4                xor   ah, ah
-0x00000000000004c5:  E8 38 FB             call  0
-0x00000000000004c8:  30 E4                xor   ah, ah
-0x00000000000004ca:  89 C3                mov   bx, ax
-0x00000000000004cc:  01 C3                add   bx, ax
-0x00000000000004ce:  8B 97 8E 07          mov   dx, word ptr [bx + 0x78e]
-0x00000000000004d2:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x00000000000004d5:  80 C6 50             add   dh, 0x50
-0x00000000000004d8:  C1 E0 04             shl   ax, 4
-0x00000000000004db:  01 D0                add   ax, dx
-0x00000000000004dd:  C9                   LEAVE_MACRO 
-0x00000000000004de:  5E                   pop   si
-0x00000000000004df:  59                   pop   cx
-0x00000000000004e0:  5B                   pop   bx
-0x00000000000004e1:  C3                   ret   
+push  bx
+push  cx
+push  si
+push  bp
+mov   bp, sp
+sub   sp, 6
+mov   cx, ax
+mov   si, ax
+mov   ax, PATCHPAGE_SEGMENT
+sub   si, word ptr ds:[_firstpatch]
+mov   es, ax
+lea   bx, [si + PATCHOFFSET_OFFSET]
+mov   al, byte ptr es:[si]
+mov   ah, byte ptr es:[bx]
+mov   byte ptr [bp - 6], ah
+cmp   al, 0FFh
+jne   label_1
+cmp   dl, al
+je    label_2
+mov   al, 1
+label_4:
+mov   byte ptr [bp - 2], al
+test  al, al
+je    label_3
+xor   dh, dh
+mov   bx, dx
+shl   bx, 3
+mov   dx, word ptr ds:[bx + _masked_headers + 4] ; texturesize field is + 4
+
+label_6:
+mov   bx, 2
+mov   ax, si
+call  R_GetNextTextureBlock_
+mov   ax, PATCHPAGE_SEGMENT
+mov   es, ax
+mov   al, byte ptr es:[si]
+mov   ah, byte ptr es:[si + PATCHOFFSET_OFFSET]
+mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
+mov   byte ptr [bp - 4], ah
+xor   ah, ah
+call  R_GetTexturePage_
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   si, word ptr [bx + _pagesegments]
+mov   al, byte ptr [bp - 4]
+add   si, 05000h
+shl   ax, 4
+add   si, ax
+mov   al, byte ptr [bp - 2]
+cbw  
+mov   dx, si
+mov   bx, ax
+mov   ax, cx
+call  R_LoadPatchColumns_
+mov   ax, si
+LEAVE_MACRO
+pop   si
+pop   cx
+pop   bx
+ret   
+label_2:
+xor   al, al
+jmp   label_4
+label_1:
+jmp   label_5
+label_3:
+mov   ax, si
+add   ax, si
+mov   bx, ax
+mov   dx, word ptr ds:[bx + _patch_sizes]
+add   bx, OFFSET _patch_sizes
+jmp   label_6
+label_5:
+mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
+xor   ah, ah
+call  R_GetTexturePage_
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   dx, word ptr [bx + _pagesegments]
+mov   al, byte ptr [bp - 6]
+add   dh, 050h   ; todo
+shl   ax, 4
+add   ax, dx
+LEAVE_MACRO
+pop   si
+pop   cx
+pop   bx
+ret   
+
+ENDP
+
+
+COMMENT @
+
+
+; masked_headers[maskedlookup].texturesize
+get_masked_size:
+xor   dh, dh
+mov   bx, dx
+SHIFT_MACRO shl   bx 3
+mov   dx, word ptr ds:[bx + _masked_headers + 4] ; texturesize field is + 4
+jmp   done_getting_size
+ set_masked_zero:
+xor   al, al
+jmp   done_setting_masked
+
+PROC R_GetPatchTexture2_ NEAR
+PUBLIC R_GetPatchTexture2_
+
+;segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
+; bp - 2 texoffset
+; bp - 4 texpage
+; bp - 6 ismasked
+
+push  bx
+push  cx
+push  si
+
+push  bp
+mov   bp, sp
+sub   sp, 6
+mov   cx, ax    ; cx = lump
+mov   si, ax    ; si = index
+mov   ax, PATCHPAGE_SEGMENT
+
+;	int16_t index = lump - firstpatch;
+sub   si, word ptr ds:[_firstpatch]
+
+;	uint8_t texpage = patchpage[index];
+;	uint8_t texoffset = patchoffset[index];
+
+mov   es, ax
+
+mov   ah, byte ptr es:[si]  ; texpage
+mov   al, byte ptr es:[si+ PATCHOFFSET_OFFSET]  ; texoffset
+mov   byte ptr [bp - 4], al
+
+;	boolean ismasked = maskedlookup != 0xFF;
+
+cmp   dl, 0FFh
+je    set_masked_zero
+mov   al, 1
+done_setting_masked:
+
+; al = ismasked
+;	if (texpage == 0xFF) { 
+
+mov   byte ptr [bp - 6], al
+cmp   ah, 0FFh
+je    patch_tex_not_in_cache
+
+in_cache_return_location:
+mov   al, ah
+mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
+xor   ah, ah
+
+call  R_GetTexturePage_
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   dx, word ptr ds:[bx + _pagesegments]
+mov   al, byte ptr [bp - 4]
+add   dh, 050  ; todo
+SHIFT_MACRO shl   ax 4
+add   ax, dx
+LEAVE_MACRO 
+pop   si
+pop   cx
+pop   bx
+ret   
+
+patch_tex_not_in_cache:
+
+
+; uint16_t size = ismasked ? masked_headers[maskedlookup].texturesize : patch_sizes[index];
+
+test  al, al
+jne   get_masked_size
+get_patch_size:
+mov   bx, si    ; word lookup
+mov   dx, word ptr ds:[bx + si + _patch_sizes]
+
+done_getting_size:
+
+;		R_GetNextTextureBlock(lump - firstpatch, size, CACHETYPE_PATCH);
+
+mov   ax, si
+mov   bx, CACHETYPE_PATCH
+call  R_GetNextTextureBlock_
+
+;		texpage = patchpage[index];
+;		texoffset = patchoffset[index];
+
+mov   ax, PATCHPAGE_SEGMENT
+mov   es, ax
+mov   al, byte ptr es:[si]
+mov   ah, byte ptr es:[si + PATCHOFFSET_OFFSET]
+mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
+mov   byte ptr [bp - 2], ah
+xor   ah, ah
+call  R_GetTexturePage_
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   dx, word ptr ds:[bx + _pagesegments]
+mov   al, byte ptr [bp - 2]
+add   dh, 050h   ; todo
+shl   ax, 4
+add   di, ax
+mov   al, byte ptr [bp - 6]
+cbw  
+mov   si, dx  ; store
+mov   bx, ax
+mov   ax, cx
+call  R_LoadPatchColumns_
+mov   ax, si
+LEAVE_MACRO 
+pop   si
+pop   cx
+pop   bx
+ret   
+
+
 
 
 ENDP
@@ -2016,7 +2151,7 @@ PUBLIC R_GetCompositeTexture_
 0x0000000000000533:  30 E4                xor   ah, ah
 0x0000000000000535:  89 C3                mov   bx, ax
 0x0000000000000537:  01 C3                add   bx, ax
-0x0000000000000539:  8B 9F 8E 07          mov   bx, word ptr [bx + 0x78e]
+0x0000000000000539:  8B 9F 8E 07          mov   bx, word ptr ds:[bx + _pagesegments]
 0x000000000000053d:  88 C8                mov   al, cl
 0x000000000000053f:  80 C7 50             add   bh, 0x50
 0x0000000000000542:  C1 E0 04             shl   ax, 4
@@ -2039,7 +2174,7 @@ PUBLIC R_GetCompositeTexture_
 0x0000000000000562:  30 E4                xor   ah, ah
 0x0000000000000564:  89 C3                mov   bx, ax
 0x0000000000000566:  01 C3                add   bx, ax
-0x0000000000000568:  8B 97 8E 07          mov   dx, word ptr [bx + 0x78e]
+0x0000000000000568:  8B 97 8E 07          mov   dx, word ptr ds:[bx + _pagesegments]
 0x000000000000056c:  88 C8                mov   al, cl
 0x000000000000056e:  80 C6 50             add   dh, 0x50
 0x0000000000000571:  C1 E0 04             shl   ax, 4
@@ -2084,7 +2219,7 @@ PUBLIC R_GetSpriteTexture_
 0x00000000000005b1:  30 E4                xor   ah, ah
 0x00000000000005b3:  89 C3                mov   bx, ax
 0x00000000000005b5:  01 C3                add   bx, ax
-0x00000000000005b7:  8B 9F 8E 07          mov   bx, word ptr [bx + 0x78e]
+0x00000000000005b7:  8B 9F 8E 07          mov   bx, word ptr ds:[bx + _pagesegments]
 0x00000000000005bb:  88 D0                mov   al, dl
 0x00000000000005bd:  80 C7 90             add   bh, 0x90
 0x00000000000005c0:  C1 E0 04             shl   ax, 4
@@ -2105,7 +2240,7 @@ PUBLIC R_GetSpriteTexture_
 0x00000000000005da:  30 E4                xor   ah, ah
 0x00000000000005dc:  89 C3                mov   bx, ax
 0x00000000000005de:  01 C3                add   bx, ax
-0x00000000000005e0:  8B 9F 8E 07          mov   bx, word ptr [bx + 0x78e]
+0x00000000000005e0:  8B 9F 8E 07          mov   bx, word ptr ds:[bx + _pagesegments]
 0x00000000000005e4:  88 D0                mov   al, dl
 0x00000000000005e6:  80 C7 90             add   bh, 0x90
 0x00000000000005e9:  C1 E0 04             shl   ax, 4

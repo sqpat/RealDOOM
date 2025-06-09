@@ -2248,12 +2248,14 @@ uint8_t __near R_GetSpritePage(uint8_t texpage) {
 */
 
 // get 0x5000 offset for texture
+segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
+/*
 segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) {
 
 	int16_t index = lump - firstpatch;
 	uint8_t texpage = patchpage[index];
 	uint8_t texoffset = patchoffset[index];
-	boolean ismasked = maskedlookup != 0xFF;
+	
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_PATCH;
 #endif
@@ -2261,10 +2263,12 @@ segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) {
 	if (texpage == 0xFF) { 
 		//texture not in L2 cache
 		segment_t tex_segment;
+		boolean ismasked = maskedlookup != 0xFF;
 		uint16_t size = ismasked ? masked_headers[maskedlookup].texturesize : patch_sizes[index];
+		uint8_t texoffset;
 		
 		// load texture into L2 cache 
-		R_GetNextTextureBlock(lump - firstpatch, size, CACHETYPE_PATCH);
+		R_GetNextTextureBlock(index, size, CACHETYPE_PATCH);
 
 		texpage = patchpage[index];
 		texoffset = patchoffset[index];
@@ -2280,9 +2284,10 @@ segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) {
 
 
 
-}
+}*/
 
 
+segment_t R_GetCompositeTexture(int16_t tex_index) ;
 segment_t R_GetCompositeTexture(int16_t tex_index) {
 	
 	uint8_t texpage = compositetexturepage[tex_index];
@@ -2306,11 +2311,9 @@ segment_t R_GetCompositeTexture(int16_t tex_index) {
 	return 0x5000u + pagesegments[R_GetTexturePage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 4);
 
 
-
-
 }
 
-
+segment_t __far R_GetSpriteTexture(int16_t index) ;
 segment_t __far R_GetSpriteTexture(int16_t index) {
 
 	int16_t lump = index + firstspritelump;
@@ -2861,7 +2864,7 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 } 
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
-void R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
+void __near R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_4000;
 	int16_t col;
 	uint16_t destoffset = 0;
