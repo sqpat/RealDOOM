@@ -2951,104 +2951,87 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 014h
+sub       sp, 012h
 mov       si, ax
-mov       word ptr [bp - 014h], dx  ; todo push
+push      dx   ; bp - 12;
 mov       byte ptr [bp - 2], bl
-push      cs
 call      Z_QuickMapScratch_4000_
 mov       cx, SCRATCH_ADDRESS_4000_SEGMENT
 mov       ax, si
 xor       bx, bx
 mov       word ptr [bp - 0Ch], SCRATCH_ADDRESS_4000_SEGMENT
-push      cs
 call      W_CacheLumpNumDirect_
-nop       
 xor       di, di
 mov       es, word ptr [bp - 0Ch]
 xor       dx, dx
 mov       ax, word ptr es:[di]
-mov       word ptr [bp - 6], di
+mov       word ptr [bp - 6], di ; loop counter
 mov       word ptr [bp - 8], ax
 test      ax, ax
-jg        label_4
-jmp       label_5
-label_4:
-mov       word ptr [bp - 010h], SCRATCH_ADDRESS_4000_SEGMENT
+jng       label_5
 mov       word ptr [bp - 0Ah], di
 label_7:
-mov       es, word ptr [bp - 010h]
-mov       bx, word ptr [bp - 0Ah]
 mov       ax, SCRATCH_ADDRESS_4000_SEGMENT
-mov       bx, word ptr es:[bx + 8]
 mov       es, ax
-mov       word ptr [bp - 0Eh], ax
+mov       bx, word ptr [bp - 0Ah]
+mov       bx, word ptr es:[bx + 8]
 cmp       byte ptr es:[bx], 0FFh
 je        label_3
 label_2:
-mov       es, word ptr [bp - 0Eh]
-mov       byte ptr [bp - 011h], 0
-mov       cx, SCRATCH_ADDRESS_4000_SEGMENT
-mov       si, bx
+; es always same as bp - 0Eh at this pt...
+lea       si, [bx + 3]
 mov       di, dx
 mov       al, byte ptr es:[bx + 1]
+xor       ah, ah  ; todo cbw?
 mov       es, word ptr [bp - 014h]
-mov       byte ptr [bp - 012h], al
-mov       byte ptr [bp - 4], al
-mov       ax, word ptr [bp - 012h]
-add       si, 3
+push      ax  ; store length
 push      ds
-push      di
-xchg      ax, cx
+mov       cx, ax
+add       dx, cx
+mov       ax, SCRATCH_ADDRESS_4000_SEGMENT
 mov       ds, ax
 shr       cx, 1
 rep movsw 
 adc       cx, cx
 rep movsb 
-pop       di
 pop       ds
-add       dx, word ptr [bp - 012h]
+pop       cx  ; store length in cx
 cmp       byte ptr [bp - 2], 0
-je        label_8
-mov       al, byte ptr [bp - 4]
-and       al, 0Fh  ; todo
-mov       si, 010h ; todo
-xor       ah, ah
-sub       si, ax
-mov       ax, si
-and       ax, 0Fh ; todo
+je        skip_segment_alignment_1
+
+; adjust col offset
+mov       ah, cl
+and       ah, 0Fh 
+mov       al, 16
+sub       al, ah
+and       ax, 0Fh
 add       dx, ax
-label_8:
-mov       al, byte ptr [bp - 4]
-xor       ah, ah
-add       bx, ax
-mov       es, word ptr [bp - 0Eh]
+skip_segment_alignment_1:
+add       bx, cx
+mov       ax, SCRATCH_ADDRESS_4000_SEGMENT
+mov       es, ax
 add       bx, 4
 cmp       byte ptr es:[bx], 0FFh
 jne       label_2
 label_3:
 cmp       byte ptr [bp - 2], 0
-jne       label_1
-mov       ax, dx
-xor       ah, dh
-mov       bx, 010h ; todo
-and       al, 0Fh
-sub       bx, ax
-mov       ax, bx
-xor       ah, bh
-and       al, 0Fh
+jne       skip_segment_alignment_2
+; adjust col offset
+mov       ah, dl
+and       ah, 0Fh 
+mov       al, 16
+sub       al, ah
+and       ax, 0Fh
 add       dx, ax
-label_1:
+
+skip_segment_alignment_2:
 inc       word ptr [bp - 6]
 mov       ax, word ptr [bp - 6]
 add       word ptr [bp - 0Ah], 4
 cmp       ax, word ptr [bp - 8]
-jge       label_5
-jmp       label_7
+jnge       label_7
 label_5:
-push      cs
 call      Z_QuickMapRender4000_
-nop       
 LEAVE_MACRO     
 pop       di
 pop       si
