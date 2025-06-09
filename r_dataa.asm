@@ -155,15 +155,15 @@ ret
 ENDP
 
 ; assumes ah 0
-PROC R_MarkL2CompositeTextureCacheMRU_ NEAR
-PUBLIC R_MarkL2CompositeTextureCacheMRU_
+PROC R_MarkL2TextureCacheMRU_ NEAR
+PUBLIC R_MarkL2TextureCacheMRU_
 
 
 cmp  al, byte ptr ds:[_texturecache_l2_head]
-jne  dont_early_out_composite
+jne  dont_early_out_texture
 ret
 
-dont_early_out_composite:
+dont_early_out_texture:
 PUSHA_NO_AX_MACRO
 mov  si, OFFSET _texturecache_nodes
 mov  di, OFFSET _texturecache_l2_tail
@@ -1323,7 +1323,6 @@ ENDP
 
 
 
-spritepage_data:
 
 PROC R_GetSpritePage2_ NEAR
 PUBLIC R_GetSpritePage2_
@@ -1356,10 +1355,10 @@ ELSE
     mov   si, OFFSET _spriteL1LRU
     push  si
 ENDIF
-mov   dx, FIRST_SPRITE_CACHE_LOGICAL_PAGE ; pageoffset
 mov   si, OFFSET _activespritepages
 mov   di, OFFSET _activespritenumpages
 mov   cx, NUM_SPRITE_L1_CACHE_PAGES
+mov   dx, FIRST_SPRITE_CACHE_LOGICAL_PAGE ; pageoffset
 jmp continue_get_page
 
 ENDP
@@ -1373,19 +1372,19 @@ found_active_single_page:
 ; bl holds i * 2 (word offset)
 ; al holds realtexpage
 
-shr   bx, 1
+shr   bx, 1             ; undo word shift
 xchg  ax, dx            ; dx gets realtexpage
 mov   ax, bx            ; ax gets i
 call  word ptr [bp - 2]
 
-;    R_MarkL2CompositeTextureCacheMRU(realtexpage);
+;    R_MarkL2TextureCacheMRU(realtexpage);
 
-xchg  ax, dx            ; realtexpage
+xchg  ax, dx            ; realtexpage into ax. 
 call  word ptr [bp - 4]
 
 ;    return i;
 
-mov   es, bx
+mov   es, bx            ; return i
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 mov   ax, es
@@ -1416,9 +1415,10 @@ PUBLIC R_GetTexturePage_
 PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
+
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
     push  OFFSET R_MarkL1TextureCacheMRU_
-    push  OFFSET R_MarkL2CompositeTextureCacheMRU_
+    push  OFFSET R_MarkL2TextureCacheMRU_
     push  OFFSET Z_QuickMapRenderTexture_
     push  OFFSET R_MarkL1TextureCacheMRU7_
     push  (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)
@@ -1427,7 +1427,7 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 ELSE
     mov   si, OFFSET R_MarkL1TextureCacheMRU_
     push  si
-    mov   si, OFFSET R_MarkL2CompositeTextureCacheMRU_
+    mov   si, OFFSET R_MarkL2TextureCacheMRU_
     push  si
     mov   si, OFFSET Z_QuickMapRenderTexture_
     push  si
@@ -1448,33 +1448,35 @@ mov   cx, NUM_TEXTURE_L1_CACHE_PAGES
 xor   dh, dh
 continue_get_page:
 
-push  cx        ; bp - 010h
-push  dx        ; bp - 012h   dh 0 
+push  cx        ; bp - 010h         max   (loop counter etc). ch 0
+push  dx        ; bp - 012h   dh 0 pageoffset
 
 ;	uint8_t realtexpage = texpage >> 2;
 mov   dl, al
 SHIFT_MACRO sar   dx 2
-push  dx        ; bp - 014h   dh 0
+push  dx        ; bp - 014h   dh 0 realtexpage
 
 ;	uint8_t numpages = (texpage& 0x03);
 
 
 xchg  ax, dx   ; ax has realtexpage
-and   dx, 3    ; zero dx here
-;	if (!numpages) {
+and   dx, 3    ; zero dh here
+;	if (!numpages) {                ; todo push less stuff if we get the zero case?
 jne   get_multipage
+
+; single page
 
 ;		// one page, most common case - lets write faster code here...
 ;		for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES; i++) {
 ;			if (activetexturepages[i] == realtexpage ) {
 ;				R_MarkL1TextureCacheMRU(i);
-;				R_MarkL2CompositeTextureCacheMRU(realtexpage);
+;				R_MarkL2TextureCacheMRU(realtexpage);
 ;				return i;
 ;			}
 ;		}
-;     dl known zero..
+;     dl/dx known zero because we jumped otherwise.
 
-xor   bx, bx
+mov   bx, dx
 mov   dx, cx ; loop compare, shifted once since we double inc bx
 shl   dx, 1
 
@@ -1495,10 +1497,10 @@ jb    loop_next_active_page_single
 ;		startpage = textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1];
 ;		R_MarkL1TextureCacheMRU7(startpage);
 
-xor   ax, ax
+;   ah is 0. al is dirty but gets fixed...
 cwd
 dec   dx ; dx = -1, ah is 0
-mov   bx, cx
+mov   bx, cx    ; NUM_TEXTURE_L1_CACHE_PAGES
 dec   bx        ; NUM_TEXTURE_L1_CACHE_PAGES - 1
 add   bx, word ptr [bp - 0Eh] ; _textureL1LRU
 mov   al, byte ptr ds:[bx]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
@@ -1517,10 +1519,10 @@ call  word ptr [bp - 8]
 ;			}
 ;		}
 
-cmp   byte ptr ds:[bx + di], 0
+cmp   byte ptr ds:[bx + di], ah  ; ah is still 0 after MRU7/MRU3 func 0
 je    found_start_page_single
 
-mov   ax, 1 ; al/ax is i
+mov   al, 1 ; al/ax is i
 ; cl/cx is start page.
 ; bx is start page or startpage + i offset
 ; dx is ??
@@ -1530,43 +1532,43 @@ deallocate_next_startpage_single:
 cmp   al, byte ptr ds:[bx + di]
 ja    found_start_page_single
 
-add   bx, ax
-mov   byte ptr ds:[bx + di], dh
+add   bl, al
+mov   byte ptr ds:[bx + di], dh   ; dl/dh is -1
 sal   bx, 1
 mov   word ptr ds:[bx + si], dx   ; dx is -1
 
 inc   al
 
-SHIFT_PAGESWAP_ARGS bx
-add   bx, word ptr [bp - 0Ah]
+SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
 mov   word ptr ds:[bx], dx  ; dx is -1  TODO NPR or whatever
-mov   bx, cx
+mov   bx, cx    ; zero out bh
 jmp   deallocate_next_startpage_single
 
 get_multipage:
 
 ; ah already zero
 
-mov   bx, ax ; zero bh
+mov   bx, 0FFFEh ; -2, offset for the initial inc 2
 ; cx already the number
 sub   cx, dx
 ;  al/ax already realtexpage
 
 ; dl is numpages
-; cl is NUM_TEXTURE_L1_CACHE_PAGES-numpages
+; cl is NUM_TEXTURE_L1_CACHE_PAGES-numpages (shifted for word)
 ; ch is 0
-; dh will be i (starts as 0)
+; bl will be i (starts as -2, incrementing to 0 first loop)
 ; for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES-numpages; i++) {
 ; al is realtexpage
 
-
-dec   dh  ; offset once
+sal   cl, 1  ; word offset...
 
 grab_next_page_loop_multi_continue:
 
-inc   dh  ; 0 for 1st iteration after dec
+inc   bx  ; 0 for 1st iteration after dec
+inc   bx  ; 0 for 1st iteration after dec
 
-cmp   dh, cl ; loop compare
+cmp   bl, cl ; loop compare
 
 jnl   evict_and_find_startpage_multi
 
@@ -1574,19 +1576,17 @@ jnl   evict_and_find_startpage_multi
 ;        continue;
 ;    }
 
-mov   bl, dh
-sal   bx, 1
 cmp   ax, word ptr ds:[bx + si]
 jne   grab_next_page_loop_multi_continue
 
-mov   bl, dh
+sar   bl, 1  ; undo word 
 
 ;    // all pages for this texture are in the cache, unevicted.
 ;    for (j = 0; j <= numpages; j++) {
 ;        R_MarkL1TextureCacheMRU(i+j);
 ;    }
-
-; dh is i
+mov   dh, bl
+; bl is i
 ; bl/bx will be i+j   
 ; dl is numpages but we dec it till < 0
 
@@ -1600,11 +1600,11 @@ jns   mark_all_pages_mru_loop
  
 
 
-;    R_MarkL2CompositeTextureCacheMRU(realtexpage);
+;    R_MarkL2TextureCacheMRU(realtexpage);
 ;    return i;
 
 pop   ax;   word ptr [bp - 014h]
-call  word ptr [bp - 4]  ; R_MarkL2CompositeTextureCacheMRU_
+call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
 mov   al, dh
 mov   es, ax
 LEAVE_MACRO 
@@ -1652,21 +1652,23 @@ pop   dx  ; bp - 014h, get realtexpage
 ; bx already ok
 
 mov   byte ptr ds:[bx + di], bh  ; zero
-shl   bx, 1
+shl   bx, 1                      ; startpage word offset.
 mov   word ptr ds:[bx + si], dx
-pop   ax  ; mov   ax, word ptr [bp - 012h]
+pop   ax                         ; mov   ax, word ptr [bp - 012h]
 
-add   ax, dx
+; TODO apply EPR
+add   ax, dx                     ; _EPR(pageoffset + realtexpage);
 
+; pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT]
 
-SHIFT_PAGESWAP_ARGS bx
-add   bx, word ptr [bp - 0Ah]
-mov   word ptr ds:[bx], ax
+SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+mov   word ptr ds:[bx], ax        ; = _EPR(pageoffset + realtexpage);
 
 ; dx should be realtexpage???
 xchg  ax, dx
 
-call  word ptr [bp - 4]  ; R_MarkL2CompositeTextureCacheMRU_
+call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
 call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
 
 
@@ -1674,17 +1676,35 @@ mov   ax, 0FFFFh
 
 cmp   byte ptr [bp - 010h], NUM_SPRITE_L1_CACHE_PAGES
 je    do_sprite_eviction
-
+do_tex_eviction:
 ; todo put these next to each other and stosw?
-mov   word ptr ds:[_cachedtex], ax
-mov   word ptr ds:[_cachedtex2], ax
 mov   di, ds
 mov   es, di
 mov   di, OFFSET _cachedlumps
+; todo: investigate if the cache was really emptied?
+mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
+mov   word ptr ds:[_cachedtex], ax
+mov   word ptr ds:[_cachedtex2], ax
+
+;    cachedlumps[0] = -1;
+;    cachedlumps[1] = -1;
+;    cachedlumps[2] = -1;
+;    cachedlumps[3] = -1;
+   
+;    segloopnextlookup[0] = -1;
+;    segloopnextlookup[1] = -1;
+;    seglooptexrepeat[0] = 0;
+;    seglooptexrepeat[1] = 0;
+
 stosw
 stosw
 stosw
 stosw
+mov   word ptr ds:[_segloopnextlookup+0], ax ; todo put this all adjacent..
+mov   word ptr ds:[_segloopnextlookup+2], ax
+inc   ax    ; ax is 0
+mov   word ptr ds:[_maskedtexrepeat], ax
+mov   word ptr ds:[_seglooptexrepeat+0], ax ; word gets both..
 
 mov   es, cx ; cl/cx is start page
 LEAVE_MACRO 
@@ -1732,15 +1752,15 @@ ja    done_invalidating_pages_multi
 
 add   bx, ax                     ; startpage + i
 mov   byte ptr ds:[bx + di], ah  ; ah is 0
-sal   bx, 1
+sal   bx, 1                      ; startpage word offset.
 mov   word ptr ds:[bx + si], cx  ; -1
 inc   al
 
 
 
 ; todo cx is _NPR(PAGE_5000_OFFSET+startpage+i);
-SHIFT_PAGESWAP_ARGS bx
-add   bx, word ptr [bp - 0Ah]
+SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
 mov   word ptr ds:[bx], cx  ; cx is -1  TODO NPR or whatever
 
 xor   bh, bh
@@ -1792,7 +1812,10 @@ mov   bl, cl
 mov   byte ptr ds:[bx + di], ch
 sal   bx, 1             ; word lookup
 mov   word ptr ds:[bx + si], ax  
+
+; TODO apply EPR
 add   ax, word ptr [bp - 012h]  ; pageoffset
+
 
 ;	pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
 
@@ -1803,8 +1826,10 @@ add   ax, word ptr [bp - 012h]  ; pageoffset
 ; bh is very likely nonzero here. ES resets it later..
 
 ; currentpage+pageoffset
-SHIFT_PAGESWAP_ARGS bx
-add   bx, word ptr [bp - 0Ah]
+
+
+SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
 mov   word ptr ds:[bx], ax ; todo epr
 
 
@@ -1826,13 +1851,13 @@ jbe   loop_mark_next_page_mru_multi
 
 
 
-;    R_MarkL2CompositeTextureCacheMRU(realtexpage);
+;    R_MarkL2TextureCacheMRU(realtexpage);
 ;    Z_QuickMapRenderTexture();
 
 		
 
 mov   ax, word ptr [bp - 014h]
-call  word ptr [bp - 4]  ; R_MarkL2CompositeTextureCacheMRU_
+call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
 call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
 
 ;	//todo: only -1 if its in the knocked out page? pretty infrequent though.
@@ -1842,55 +1867,14 @@ call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
 
 mov   ax, 0FFFFh
 
+pop   cx ;  [bp - 016h]
 cmp   byte ptr [bp - 010h], NUM_SPRITE_L1_CACHE_PAGES
-je    do_sprite_eviction_2
+je    do_sprite_eviction
+jmp   do_tex_eviction
 
-mov   di, ds
-mov   es, di
-mov   di, OFFSET _cachedlumps
-
-mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
-mov   word ptr ds:[_cachedtex], ax
-mov   word ptr ds:[_cachedtex2], ax
-
-;    cachedlumps[0] = -1;
-;    cachedlumps[1] = -1;
-;    cachedlumps[2] = -1;
-;    cachedlumps[3] = -1;
-   
-;    segloopnextlookup[0] = -1;
-;    segloopnextlookup[1] = -1;
-;    seglooptexrepeat[0] = 0;
-;    seglooptexrepeat[1] = 0;
-
-stosw
-stosw
-stosw
-stosw
-mov   word ptr ds:[_segloopnextlookup+0], ax ; todo put this all adjacent..
-mov   word ptr ds:[_segloopnextlookup+2], ax
-inc   ax    ; ax is 0
-mov   word ptr ds:[_maskedtexrepeat], ax
-mov   word ptr ds:[_seglooptexrepeat+0], ax ; word gets both..
-
-pop   es ;  [bp - 016h]
-LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   ax, es
-ret   
 
 ENDP
 
-do_sprite_eviction_2:
-
-mov   word ptr ds:[_lastvisspritepatch],  ax
-mov   word ptr ds:[_lastvisspritepatch2], ax
-
-pop   es ;  [bp - 016h]
-LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   ax, es
-ret
 
 COMMENT @
 
@@ -1899,228 +1883,245 @@ PROC R_GetSpritePage_ NEAR
 PUBLIC R_GetSpritePage_
 
 
-0x0000000000000224:  53                   push  bx
-0x0000000000000225:  51                   push  cx
-0x0000000000000226:  52                   push  dx
-0x0000000000000227:  56                   push  si
-0x0000000000000228:  57                   push  di
-0x0000000000000229:  55                   push  bp
-0x000000000000022a:  89 E5                mov   bp, sp
-0x000000000000022c:  83 EC 06             sub   sp, 6
-0x000000000000022f:  88 C2                mov   dl, al
-0x0000000000000231:  30 F6                xor   dh, dh
-0x0000000000000233:  C1 FA 02             sar   dx, 2
-0x0000000000000236:  88 56 FC             mov   byte ptr [bp - 4], dl
-0x0000000000000239:  88 C2                mov   dl, al
-0x000000000000023b:  80 E2 03             and   dl, 3
-0x000000000000023e:  75 5C                jne   0x29c
-0x0000000000000240:  88 D0                mov   al, dl
-0x0000000000000242:  30 E4                xor   ah, ah
-0x0000000000000244:  89 C3                mov   bx, ax
-0x0000000000000246:  01 C3                add   bx, ax
-0x0000000000000248:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x000000000000024b:  3B 87 28 1C          cmp   ax, word ptr ds:[bx + _activespritepages]
-0x000000000000024f:  74 4D                je    0x29e
-0x0000000000000251:  FE C2                inc   dl
-0x0000000000000253:  80 FA 04             cmp   dl, 4
-0x0000000000000256:  72 E8                jb    0x240
-0x0000000000000258:  8A 0E 47 1E          mov   cl, byte ptr [0x1e47]
-0x000000000000025c:  88 C8                mov   al, cl
-0x000000000000025e:  88 CB                mov   bl, cl
-0x0000000000000260:  98                   cbw  
-0x0000000000000261:  30 FF                xor   bh, bh
-0x0000000000000263:  E8 E8 0B             call  0xe4e
-0x0000000000000266:  80 BF 48 1E 00       cmp   byte ptr ds:[bx + _activespritenumpages], 0
-0x000000000000026b:  74 47                je    0x2b4
-0x000000000000026d:  B0 01                mov   al, 1
-0x000000000000026f:  88 CB                mov   bl, cl
-0x0000000000000271:  30 FF                xor   bh, bh
-0x0000000000000273:  3A 87 48 1E          cmp   al, byte ptr ds:[bx + _activespritenumpages]
-0x0000000000000277:  77 3B                ja    0x2b4
-0x0000000000000279:  88 C2                mov   dl, al
-0x000000000000027b:  30 F6                xor   dh, dh
-0x000000000000027d:  01 D3                add   bx, dx
-0x000000000000027f:  89 DE                mov   si, bx
-0x0000000000000281:  01 DE                add   si, bx
-0x0000000000000283:  C7 84 28 1C FF FF    mov   word ptr ds:[si + _activespritepages], 0FFFFh
-0x0000000000000289:  89 DE                mov   si, bx
-0x000000000000028b:  FE C0                inc   al
-0x000000000000028d:  C1 E6 02             shl   si, 2
-0x0000000000000290:  88 B7 48 1E          mov   byte ptr ds:[bx + _activespritenumpages], dh
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 6
+mov   dl, al
+xor   dh, dh
+sar   dx, 2
+mov   byte ptr [bp - 4], dl
+mov   dl, al
+and   dl, 3
+jne   label_1
+label_3:
+mov   al, dl
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   al, byte ptr [bp - 4]
+cmp   ax, word ptr ds:[bx + _activespritepages]
+je    label_2
+inc   dl
+cmp   dl, 4
+jb    label_3
+mov   cl, byte ptr ds:[_spriteL1LRU + 3]
+mov   al, cl
+mov   bl, cl
+cbw  
+xor   bh, bh
+call  R_MarkL1SpriteCacheMRU3_
+cmp   byte ptr ds:[bx + _activespritenumpages], 0
+je    label_4
+mov   al, 1
+label_5:
+mov   bl, cl
+xor   bh, bh
+cmp   al, byte ptr ds:[bx + _activespritenumpages]
+ja    label_4
+mov   dl, al
+xor   dh, dh
+add   bx, dx
+mov   si, bx
+add   si, bx
+mov   word ptr ds:[si + _activespritepages], 0FFFFh
+mov   si, bx
+inc   al
+shl   si, 2
+mov   byte ptr ds:[bx + _activespritenumpages], dh
 
 SET_PAGESWAP_ARGS si PAGESWAPARGS_SPRITECACHE_OFFSET 0FFFFh
 
-0x0000000000000294:  C7 84 62 0B FF FF    mov   word ptr [si + 0xb62], 0FFFFh
-0x000000000000029a:  EB D3                jmp   0x26f
-0x000000000000029c:  EB 53                jmp   0x2f1
-0x000000000000029e:  88 D0                mov   al, dl
-0x00000000000002a0:  98                   cbw  
-0x00000000000002a1:  E8 8A 0B             call  0xe2e
-0x00000000000002a4:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x00000000000002a7:  98                   cbw  
-0x00000000000002a8:  E8 28 0C             call  0xed3
-0x00000000000002ab:  88 D0                mov   al, dl
-0x00000000000002ad:  C9                   LEAVE_MACRO 
-0x00000000000002ae:  5F                   pop   di
-0x00000000000002af:  5E                   pop   si
-0x00000000000002b0:  5A                   pop   dx
-0x00000000000002b1:  59                   pop   cx
-0x00000000000002b2:  5B                   pop   bx
-0x00000000000002b3:  C3                   ret   
-0x00000000000002b4:  88 CB                mov   bl, cl
-0x00000000000002b6:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x00000000000002b9:  30 FF                xor   bh, bh
-0x00000000000002bb:  30 E4                xor   ah, ah
-0x00000000000002bd:  89 DE                mov   si, bx
-0x00000000000002bf:  88 BF 48 1E          mov   byte ptr ds:[bx + _activespritenumpages], bh
-0x00000000000002c3:  01 DE                add   si, bx
-0x00000000000002c5:  C1 E3 02             shl   bx, 2
-0x00000000000002c8:  89 84 28 1C          mov   word ptr ds:[si + _activespritepages], ax
-0x00000000000002cc:  05 46 00             add   ax, 0x46
+mov   word ptr [si + 0xb62], 0FFFFh
+jmp   label_5
+label_1:
+jmp   label_6
+label_2:
+mov   al, dl
+cbw  
+call  R_MarkL1SpriteCacheMRU_
+mov   al, byte ptr [bp - 4]
+cbw  
+call  R_MarkL2SpriteCacheMRU_
+mov   al, dl
+label_7:
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_4:
+mov   bl, cl
+mov   al, byte ptr [bp - 4]
+xor   bh, bh
+xor   ah, ah
+mov   si, bx
+mov   byte ptr ds:[bx + _activespritenumpages], bh
+add   si, bx
+shl   bx, 2
+mov   word ptr ds:[si + _activespritepages], ax
+add   ax, FIRST_SPRITE_CACHE_LOGICAL_PAGE
 
 SET_PAGESWAP_ARGS bx PAGESWAPARGS_SPRITECACHE_OFFSET ax
 
-0x00000000000002cf:  89 87 62 0B          mov   word ptr [bx + 0xb62], ax
-0x00000000000002d3:  0E                   push  cs
-0x00000000000002d4:  3E E8 A0 46          call  0x4978
-0x00000000000002d8:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x00000000000002db:  98                   cbw  
-0x00000000000002dc:  BB C8 02             mov   bx, 0x2c8
-0x00000000000002df:  E8 F1 0B             call  0xed3
-0x00000000000002e2:  C7 07 FF FF          mov   word ptr [bx], 0FFFFh
-0x00000000000002e6:  BB CA 02             mov   bx, 0x2ca
-0x00000000000002e9:  88 C8                mov   al, cl
-0x00000000000002eb:  C7 07 FF FF          mov   word ptr [bx], 0FFFFh
-0x00000000000002ef:  EB BC                jmp   0x2ad
-0x00000000000002f1:  30 DB                xor   bl, bl
-0x00000000000002f3:  88 D0                mov   al, dl
-0x00000000000002f5:  B9 04 00             mov   cx, 4
-0x00000000000002f8:  30 E4                xor   ah, ah
-0x00000000000002fa:  29 C1                sub   cx, ax
-0x00000000000002fc:  88 D8                mov   al, bl
-0x00000000000002fe:  39 C8                cmp   ax, cx
-0x0000000000000300:  7C 1D                jl    0x31f
-0x0000000000000302:  B6 03                mov   dh, 3
-0x0000000000000304:  88 F3                mov   bl, dh
-0x0000000000000306:  30 FF                xor   bh, bh
-0x0000000000000308:  8A 87 44 1E          mov   al, byte ptr [bx + 0x1e44]
-0x000000000000030c:  30 E4                xor   ah, ah
-0x000000000000030e:  BE 03 00             mov   si, 3
-0x0000000000000311:  89 C1                mov   cx, ax
-0x0000000000000313:  88 D0                mov   al, dl
-0x0000000000000315:  29 C6                sub   si, ax
-0x0000000000000317:  39 F1                cmp   cx, si
-0x0000000000000319:  7E 45                jle   0x360
-0x000000000000031b:  FE CE                dec   dh
-0x000000000000031d:  EB E5                jmp   0x304
-0x000000000000031f:  89 C6                mov   si, ax
-0x0000000000000321:  01 C6                add   si, ax
-0x0000000000000323:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x0000000000000326:  3B 84 28 1C          cmp   ax, word ptr ds:[si + _activespritepages]
-0x000000000000032a:  74 04                je    0x330
-0x000000000000032c:  FE C3                inc   bl
-0x000000000000032e:  EB C3                jmp   0x2f3
-0x0000000000000330:  30 C0                xor   al, al
-0x0000000000000332:  89 46 FA             mov   word ptr [bp - 6], ax
-0x0000000000000335:  8A 76 FA             mov   dh, byte ptr [bp - 6]
-0x0000000000000338:  00 DE                add   dh, bl
-0x000000000000033a:  88 D0                mov   al, dl
-0x000000000000033c:  30 E4                xor   ah, ah
-0x000000000000033e:  3B 46 FA             cmp   ax, word ptr [bp - 6]
-0x0000000000000341:  7C 0D                jl    0x350
-0x0000000000000343:  88 F0                mov   al, dh
-0x0000000000000345:  98                   cbw  
-0x0000000000000346:  FF 46 FA             inc   word ptr [bp - 6]
-0x0000000000000349:  E8 E2 0A             call  0xe2e
-0x000000000000034c:  FE C6                inc   dh
-0x000000000000034e:  EB EA                jmp   0x33a
-0x0000000000000350:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x0000000000000353:  98                   cbw  
-0x0000000000000354:  E8 7C 0B             call  0xed3
-0x0000000000000357:  88 D8                mov   al, bl
-0x0000000000000359:  C9                   LEAVE_MACRO 
-0x000000000000035a:  5F                   pop   di
-0x000000000000035b:  5E                   pop   si
-0x000000000000035c:  5A                   pop   dx
-0x000000000000035d:  59                   pop   cx
-0x000000000000035e:  5B                   pop   bx
-0x000000000000035f:  C3                   ret   
-0x0000000000000360:  88 C8                mov   al, cl
-0x0000000000000362:  88 C3                mov   bl, al
-0x0000000000000364:  88 46 FE             mov   byte ptr [bp - 2], al
-0x0000000000000367:  3A 97 48 1E          cmp   dl, byte ptr ds:[bx + _activespritenumpages]
-0x000000000000036b:  73 31                jae   0x39e
-0x000000000000036d:  88 D0                mov   al, dl
-0x000000000000036f:  8A 5E FE             mov   bl, byte ptr [bp - 2]
-0x0000000000000372:  30 FF                xor   bh, bh
-0x0000000000000374:  89 DE                mov   si, bx
-0x0000000000000376:  3A 87 48 1E          cmp   al, byte ptr ds:[bx + _activespritenumpages]
-0x000000000000037a:  77 22                ja    0x39e
-0x000000000000037c:  88 C3                mov   bl, al
-0x000000000000037e:  01 F3                add   bx, si
-0x0000000000000380:  89 DE                mov   si, bx
-0x0000000000000382:  01 DE                add   si, bx
-0x0000000000000384:  C7 84 28 1C FF FF    mov   word ptr ds:[si + _activespritepages], 0FFFFh
-0x000000000000038a:  89 DE                mov   si, bx
-0x000000000000038c:  FE C0                inc   al
-0x000000000000038e:  C1 E6 02             shl   si, 2
-0x0000000000000391:  C6 87 48 1E 00       mov   byte ptr ds:[bx + _activespritenumpages], 0
+mov   word ptr [bx + 0xb62], ax
+push  cs
+call  Z_QuickMapSpritePage_
+mov   al, byte ptr [bp - 4]
+cbw  
+mov   bx, OFFSET _lastvisspritepatch
+call  R_MarkL2SpriteCacheMRU_
+mov   word ptr [bx], 0FFFFh
+mov   bx, OFFSET _lastvisspritepatch2
+mov   al, cl
+mov   word ptr [bx], 0FFFFh
+jmp   label_7
+label_6:
+xor   bl, bl
+label_12:
+mov   al, dl
+mov   cx, 4
+xor   ah, ah
+sub   cx, ax
+mov   al, bl
+cmp   ax, cx
+jl    label_15
+mov   dh, 3
+label_13:
+mov   bl, dh
+xor   bh, bh
+mov   al, byte ptr ds:[bx + _spriteL1LRU]
+xor   ah, ah
+mov   si, 3
+mov   cx, ax
+mov   al, dl
+sub   si, ax
+cmp   cx, si
+jle   label_14
+dec   dh
+jmp   label_13
+label_15:
+mov   si, ax
+add   si, ax
+mov   al, byte ptr [bp - 4]
+cmp   ax, word ptr ds:[si + _activespritepages]
+je    label_11
+inc   bl
+jmp   label_12
+label_11:
+xor   al, al
+mov   word ptr [bp - 6], ax
+mov   dh, byte ptr [bp - 6]
+add   dh, bl
+label_10:
+mov   al, dl
+xor   ah, ah
+cmp   ax, word ptr [bp - 6]
+jl    label_9
+mov   al, dh
+cbw  
+inc   word ptr [bp - 6]
+call  R_MarkL1SpriteCacheMRU_
+inc   dh
+jmp   label_10
+label_9:
+mov   al, byte ptr [bp - 4]
+cbw  
+call  R_MarkL2SpriteCacheMRU_
+mov   al, bl
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_14:
+mov   al, cl
+mov   bl, al
+mov   byte ptr [bp - 2], al
+cmp   dl, byte ptr ds:[bx + _activespritenumpages]
+jae   label_16
+mov   al, dl
+label_17:
+mov   bl, byte ptr [bp - 2]
+xor   bh, bh
+mov   si, bx
+cmp   al, byte ptr ds:[bx + _activespritenumpages]
+ja    label_16
+mov   bl, al
+add   bx, si
+mov   si, bx
+add   si, bx
+mov   word ptr ds:[si + _activespritepages], 0FFFFh
+mov   si, bx
+inc   al
+shl   si, 2
+mov   byte ptr ds:[bx + _activespritenumpages], 0
 
 SET_PAGESWAP_ARGS si PAGESWAPARGS_SPRITECACHE_OFFSET 0FFFFh
 
-0x0000000000000396:  C7 84 62 0B FF FF    mov   word ptr [si + 0xb62], 0FFFFh
-0x000000000000039c:  EB D1                jmp   0x36f
-0x000000000000039e:  30 F6                xor   dh, dh
-0x00000000000003a0:  8A 5E FC             mov   bl, byte ptr [bp - 4]
-0x00000000000003a3:  88 D5                mov   ch, dl
-0x00000000000003a5:  8A 4E FE             mov   cl, byte ptr [bp - 2]
-0x00000000000003a8:  88 C8                mov   al, cl
-0x00000000000003aa:  98                   cbw  
-0x00000000000003ab:  E8 80 0A             call  0xe2e
-0x00000000000003ae:  88 D8                mov   al, bl
-0x00000000000003b0:  8A 5E FE             mov   bl, byte ptr [bp - 2]
-0x00000000000003b3:  98                   cbw  
-0x00000000000003b4:  30 FF                xor   bh, bh
-0x00000000000003b6:  89 C7                mov   di, ax
-0x00000000000003b8:  89 DE                mov   si, bx
-0x00000000000003ba:  88 F3                mov   bl, dh
-0x00000000000003bc:  83 C7 46             add   di, 0x46
-0x00000000000003bf:  01 F3                add   bx, si
-0x00000000000003c1:  FE C6                inc   dh
-0x00000000000003c3:  89 DE                mov   si, bx
-0x00000000000003c5:  88 AF 48 1E          mov   byte ptr ds:[bx + _activespritenumpages], ch
-0x00000000000003c9:  FE CD                dec   ch
-0x00000000000003cb:  01 DE                add   si, bx
-0x00000000000003cd:  FE C1                inc   cl
-0x00000000000003cf:  89 84 28 1C          mov   word ptr ds:[si + _activespritepages], ax
-0x00000000000003d3:  89 DE                mov   si, bx
-0x00000000000003d5:  89 C3                mov   bx, ax
-0x00000000000003d7:  C1 E6 02             shl   si, 2
-0x00000000000003da:  C1 E3 02             shl   bx, 2
+mov   word ptr [si + 0xb62], 0FFFFh
+jmp   label_17
+label_16:
+xor   dh, dh
+mov   bl, byte ptr [bp - 4]
+mov   ch, dl
+mov   cl, byte ptr [bp - 2]
+label_8:
+mov   al, cl
+cbw  
+call  R_MarkL1SpriteCacheMRU_
+mov   al, bl
+mov   bl, byte ptr [bp - 2]
+cbw  
+xor   bh, bh
+mov   di, ax
+mov   si, bx
+mov   bl, dh
+add   di, FIRST_SPRITE_CACHE_LOGICAL_PAGE
+add   bx, si
+inc   dh
+mov   si, bx
+mov   byte ptr ds:[bx + _activespritenumpages], ch
+dec   ch
+add   si, bx
+inc   cl
+mov   word ptr ds:[si + _activespritepages], ax
+mov   si, bx
+mov   bx, ax
+shl   si, 2
+shl   bx, 2
 
 SET_PAGESWAP_ARGS si PAGESWAPARGS_SPRITECACHE_OFFSET di
 
-0x00000000000003dd:  89 BC 62 0B          mov   word ptr [si + 0xb62], di
-0x00000000000003e1:  8A 9F 68 18          mov   bl, byte ptr ds:[bx + _spritecache_nodes]
-0x00000000000003e5:  38 D6                cmp   dh, dl
-0x00000000000003e7:  76 BF                jbe   0x3a8
-0x00000000000003e9:  BB C8 02             mov   bx, 0x2c8
-0x00000000000003ec:  C7 07 FF FF          mov   word ptr [bx], 0FFFFh
-0x00000000000003f0:  BB CA 02             mov   bx, 0x2ca
-0x00000000000003f3:  C7 07 FF FF          mov   word ptr [bx], 0FFFFh
-0x00000000000003f7:  0E                   push  cs
-0x00000000000003f8:  3E E8 7C 45          call  0x4978
-0x00000000000003fc:  8A 46 FC             mov   al, byte ptr [bp - 4]
-0x00000000000003ff:  98                   cbw  
-0x0000000000000400:  E8 D0 0A             call  0xed3
-0x0000000000000403:  8A 46 FE             mov   al, byte ptr [bp - 2]
-0x0000000000000406:  C9                   LEAVE_MACRO 
-0x0000000000000407:  5F                   pop   di
-0x0000000000000408:  5E                   pop   si
-0x0000000000000409:  5A                   pop   dx
-0x000000000000040a:  59                   pop   cx
-0x000000000000040b:  5B                   pop   bx
-0x000000000000040c:  C3                   ret   
+mov   word ptr [si + 0xb62], di
+mov   bl, byte ptr ds:[bx + _spritecache_nodes]
+cmp   dh, dl
+jbe   label_8
+mov   bx, OFFSET _lastvisspritepatch
+mov   word ptr [bx], 0FFFFh
+mov   bx, OFFSET _lastvisspritepatch2
+mov   word ptr [bx], 0FFFFh
+push  cs
+call  Z_QuickMapSpritePage_
+mov   al, byte ptr [bp - 4]
+cbw  
+call  R_MarkL2SpriteCacheMRU_
+mov   al, byte ptr [bp - 2]
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
 
 ENDP
 
