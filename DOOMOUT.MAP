@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/09 13:38:49
+Created on:       25/06/09 13:46:51
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -73,8 +73,8 @@ P_MOBJA_TEXT           CODE           AUTO           0a80:ccb4       00000077
 p_telept_TEXT          CODE           AUTO           0a80:cd30       0000021c
 P_TICK_TEXT            CODE           AUTO           0a80:cf4c       00000147
 p_user_TEXT            CODE           AUTO           0a80:d0a0       0000062f
-r_data_TEXT            CODE           AUTO           17ed:0000       00000aec
-R_DATAA_TEXT           CODE           AUTO           17ed:0aec       0000081e
+r_data_TEXT            CODE           AUTO           17ed:0000       00000a76
+R_DATAA_TEXT           CODE           AUTO           17ed:0a76       00000894
 R_MATH_TEXT            CODE           AUTO           17ed:130a       000001e3
 R_MAINHI_TEXT          CODE           AUTO           17ed:14ee       00002491
 r_draw_TEXT            CODE           AUTO           17ed:3980       000000fb
@@ -1150,28 +1150,28 @@ Module: p_user.obj(C:\REALDOOM\p_user.c)
 0a80:d502      P_PlayerThink_
 Module: r_data.obj(C:\REALDOOM\r_data.c)
 17ed:0000      R_GenerateComposite_
-17ed:023e      R_GetSpriteTexture_
-17ed:02b4      R_GetColumnSegment_
-17ed:057a      R_GetMaskedColumnSegment_
-17ed:086c      R_LoadPatchColumns_
-17ed:095e+     R_LoadSpriteColumns_
+17ed:023e      R_GetColumnSegment_
+17ed:0504      R_GetMaskedColumnSegment_
+17ed:07f6      R_LoadPatchColumns_
+17ed:08e8      R_LoadSpriteColumns_
 Module: r_dataa.obj(r_dataa.ASM)
-17ed:0c72*     R_EvictL2CacheEMSPage_
-17ed:0da3      R_MarkL2FlatCacheMRU_
-17ed:0b91*     R_MarkL2SpriteCacheMRU_
-17ed:1077*     R_GetTexturePage_
-17ed:0ecf*     R_GetNextTextureBlock_
-17ed:0b0c*     R_MarkL1SpriteCacheMRU3_
-17ed:0b1c*     R_MarkL1TextureCacheMRU_
-17ed:0b7c*     R_MarkL2TextureCacheMRU_
-17ed:0aec*     R_MarkL1SpriteCacheMRU_
-17ed:0eab      R_GetNextSpriteBlock_
-17ed:103d      R_GetSpritePage_
-17ed:0b5c*     R_MarkL1TextureCacheMRU7_
-17ed:0e5c      R_DrawColumnInCache_
-17ed:0df9      R_EvictFlatCacheEMSPage_
-17ed:1200      R_GetPatchTexture_
-17ed:1295      R_GetCompositeTexture_
+17ed:0bfc*     R_EvictL2CacheEMSPage_
+17ed:0d2d      R_MarkL2FlatCacheMRU_
+17ed:1294      R_GetSpriteTexture_
+17ed:0b1b*     R_MarkL2SpriteCacheMRU_
+17ed:1001*     R_GetTexturePage_
+17ed:0e59*     R_GetNextTextureBlock_
+17ed:0a96*     R_MarkL1SpriteCacheMRU3_
+17ed:0aa6*     R_MarkL1TextureCacheMRU_
+17ed:0b06*     R_MarkL2TextureCacheMRU_
+17ed:0a76*     R_MarkL1SpriteCacheMRU_
+17ed:0e35*     R_GetNextSpriteBlock_
+17ed:0fc7*     R_GetSpritePage_
+17ed:0ae6*     R_MarkL1TextureCacheMRU7_
+17ed:0de6      R_DrawColumnInCache_
+17ed:0d83      R_EvictFlatCacheEMSPage_
+17ed:118a      R_GetPatchTexture_
+17ed:121f      R_GetCompositeTexture_
 Module: r_math.obj(r_math.ASM)
 17ed:137c      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
@@ -1552,4 +1552,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00022fe0 (143328.)
 Entry point address: 1ca4:1c36
-Link time: 00:00.20
+Link time: 00:00.30

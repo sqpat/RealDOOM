@@ -2315,6 +2315,7 @@ segment_t __near R_GetCompositeTexture(int16_t tex_index) {
 }*/
 
 segment_t __far R_GetSpriteTexture(int16_t index) ;
+/*
 segment_t __far R_GetSpriteTexture(int16_t index) {
 
 	int16_t lump = index + firstspritelump;
@@ -2339,11 +2340,9 @@ segment_t __far R_GetSpriteTexture(int16_t index) {
 		
 	return 0x9000u + pagesegments[R_GetSpritePage(texpage)] + (texoffset << 4);
 
- 
-
 
 } 
- 
+*/ 
 //
 // R_GetColumn
 //

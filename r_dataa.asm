@@ -27,6 +27,7 @@ EXTRN Z_QuickMapRenderTexture_:NEAR
 EXTRN Z_QuickMapSpritePage_:NEAR
 EXTRN R_LoadPatchColumns_:NEAR
 EXTRN R_GenerateComposite_:NEAR
+EXTRN R_LoadSpriteColumns_:FAR  ; todo
 
 
 .DATA
@@ -1881,6 +1882,7 @@ ENDP
 
 PATCH_TEXTURE_SEGMENT = 05000h
 COMPOSITE_TEXTURE_SEGMENT = 05000h
+SPRITE_COLUMN_SEGMENT = 09000h
 
 PROC R_GetPatchTexture_ NEAR
 PUBLIC R_GetPatchTexture_
@@ -2053,72 +2055,75 @@ ret
 
 ENDP
 
-COMMENT @
 
-PROC R_GetSpriteTexture_ NEAR
+PROC R_GetSpriteTexture_ FAR
 PUBLIC R_GetSpriteTexture_
 
-0x000000000000057e:  53                   push  bx
-0x000000000000057f:  51                   push  cx
-0x0000000000000580:  52                   push  dx
-0x0000000000000581:  56                   push  si
-0x0000000000000582:  57                   push  di
-0x0000000000000583:  89 C3                mov   bx, ax
-0x0000000000000585:  BF 83 4E             mov   di, 0x4e83
-0x0000000000000588:  BE E6 00             mov   si, 0xe6
-0x000000000000058b:  8B 0C                mov   cx, word ptr [si]
-0x000000000000058d:  8E C7                mov   es, di
-0x000000000000058f:  8D B7 65 05          lea   si, [bx + 0x565]
-0x0000000000000593:  01 C1                add   cx, ax
-0x0000000000000595:  26 8A 07             mov   al, byte ptr es:[bx]
-0x0000000000000598:  26 8A 14             mov   dl, byte ptr es:[si]
-0x000000000000059b:  3C FF                cmp   al, 0xff
-0x000000000000059d:  75 36                jne   0x5d5
-0x000000000000059f:  89 C8                mov   ax, cx
-0x00000000000005a1:  E8 49 0C             call  0x11ed
-0x00000000000005a4:  8E C7                mov   es, di
-0x00000000000005a6:  26 8A 07             mov   al, byte ptr es:[bx]
-0x00000000000005a9:  30 E4                xor   ah, ah
-0x00000000000005ab:  26 8A 14             mov   dl, byte ptr es:[si]
-0x00000000000005ae:  E8 73 FC             call  0x224
-0x00000000000005b1:  30 E4                xor   ah, ah
-0x00000000000005b3:  89 C3                mov   bx, ax
-0x00000000000005b5:  01 C3                add   bx, ax
-0x00000000000005b7:  8B 9F 8E 07          mov   bx, word ptr ds:[bx + _pagesegments]
-0x00000000000005bb:  88 D0                mov   al, dl
-0x00000000000005bd:  80 C7 90             add   bh, 0x90
-0x00000000000005c0:  C1 E0 04             shl   ax, 4
-0x00000000000005c3:  01 C3                add   bx, ax
-0x00000000000005c5:  89 DA                mov   dx, bx
-0x00000000000005c7:  89 C8                mov   ax, cx
-0x00000000000005c9:  0E                   push  cs
-0x00000000000005ca:  E8 D3 06             call  0xca0
-0x00000000000005cd:  89 D8                mov   ax, bx
-0x00000000000005cf:  5F                   pop   di
-0x00000000000005d0:  5E                   pop   si
-0x00000000000005d1:  5A                   pop   dx
-0x00000000000005d2:  59                   pop   cx
-0x00000000000005d3:  5B                   pop   bx
-0x00000000000005d4:  CB                   retf  
-0x00000000000005d5:  30 E4                xor   ah, ah
-0x00000000000005d7:  E8 4A FC             call  0x224
-0x00000000000005da:  30 E4                xor   ah, ah
-0x00000000000005dc:  89 C3                mov   bx, ax
-0x00000000000005de:  01 C3                add   bx, ax
-0x00000000000005e0:  8B 9F 8E 07          mov   bx, word ptr ds:[bx + _pagesegments]
-0x00000000000005e4:  88 D0                mov   al, dl
-0x00000000000005e6:  80 C7 90             add   bh, 0x90
-0x00000000000005e9:  C1 E0 04             shl   ax, 4
-0x00000000000005ec:  01 D8                add   ax, bx
-0x00000000000005ee:  5F                   pop   di
-0x00000000000005ef:  5E                   pop   si
-0x00000000000005f0:  5A                   pop   dx
-0x00000000000005f1:  59                   pop   cx
-0x00000000000005f2:  5B                   pop   bx
-0x00000000000005f3:  CB                   retf  
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+mov   bx, ax
+mov   di, SPRITEPAGE_SEGMENT
+mov   cx, word ptr ds:[_firstspritelump]
+mov   es, di
+lea   si, [bx + SPRITEOFFSETS_OFFSET]
+add   cx, ax
+mov   al, byte ptr es:[bx]
+mov   dl, byte ptr es:[si]
+cmp   al, 0FFh
+je   sprite_not_in_cache
+
+label_1:
+xor   ah, ah
+call  R_GetSpritePage_
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   bx, word ptr ds:[bx + _pagesegments]
+mov   al, dl
+add   bh, (SPRITE_COLUMN_SEGMENT SHR 8)
+shl   ax, 4
+add   ax, bx
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+
+sprite_not_in_cache:
+mov   ax, cx
+call  R_GetNextSpriteBlock_
+mov   es, di
+mov   al, byte ptr es:[bx]
+xor   ah, ah
+mov   dl, byte ptr es:[si]
+call  R_GetSpritePage_
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+mov   bx, word ptr ds:[bx + _pagesegments]
+mov   al, dl
+add   bh, (SPRITE_COLUMN_SEGMENT SHR 8)
+shl   ax, 4
+add   bx, ax
+mov   dx, bx
+mov   ax, cx
+call  R_LoadSpriteColumns_
+mov   ax, bx
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+
 
 ENDP
 
+COMMENT @
 
 
 PROC R_GetNextTextureBlock_ NEAR
