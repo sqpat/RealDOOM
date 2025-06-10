@@ -2363,11 +2363,11 @@ PUBLIC R_GetColumnSegment_
 0x0000000000000240:  57                push      di
 0x0000000000000241:  55                push      bp
 0x0000000000000242:  89 E5             mov       bp, sp
-0x0000000000000244:  83 EC 14          sub       sp, 0x14
+0x0000000000000244:  83 EC 14          sub       sp, 014h
 0x0000000000000247:  50                push      ax
 0x0000000000000248:  89 D1             mov       cx, dx
 0x000000000000024a:  88 5E FE          mov       byte ptr [bp - 2], bl
-0x000000000000024d:  B8 A2 82          mov       ax, 0x82a2
+0x000000000000024d:  B8 A2 82          mov       ax, TEXTUREWIDTHMASKS_SEGMENT
 0x0000000000000250:  8B 5E EA          mov       bx, word ptr [bp - 016h]
 0x0000000000000253:  8E C0             mov       es, ax
 0x0000000000000255:  30 F5             xor       ch, dh
@@ -3066,50 +3066,89 @@ ENDP
 
 
 
+;void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment);
+; ax = lump
+; dx = segment
 
 PROC R_LoadSpriteColumns_ FAR  ; todo near?
 PUBLIC R_LoadSpriteColumns_
 
+; bp - 2      
+; bp - 4      currentpostbyte?
+; bp - 6      
+; bp - 8      
+; bp - 0Ah    
+; bp - 0Ch    
+; bp - 0Eh    column offset
+; bp - 010h   
+; bp - 012h   patchwidth
+; bp - 014h   unused
+; bp - 016h   
+; bp - 018h   
+; bp - 01Ah   currentpostbyte?
+; bp - 01Ch   column segment (SCRATCH_ADDRESS_5000_SEGMENT)
+; bp - 01Eh   lump (ax arg)
 
-push      bx
-push      cx
-push      si
-push      di
+PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
 sub       sp, 01Ch
 push      ax
 
 call      Z_QuickMapScratch_5000_
+
+;	patch_t __far *wadpatch = (patch_t __far *)SCRATCH_ADDRESS_5000;
+;	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
+
+
 mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
 mov       ax, word ptr [bp - 01Eh]
 xor       bx, bx
-mov       word ptr [bp - 014h], SCRATCH_ADDRESS_5000_SEGMENT
+
+
+;	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+
 call      W_CacheLumpNumDirect_
 xor       di, di
-mov       es, word ptr [bp - 014h]
+
+; wadpatch  is 0x5000 seg
+; destpatch is dx
+;	patchwidth = wadpatch->width;
+;	destpatch->width = wadpatch->width;
+;	destpatch->height = wadpatch->height;
+;	destpatch->leftoffset = wadpatch->leftoffset;
+;	destpatch->topoffset = wadpatch->topoffset;
+
+mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
+
+mov       es, cx
 xor       si, si
 mov       ax, word ptr es:[di]
 mov       es, dx
-mov       word ptr es:[si], ax
-mov       es, word ptr [bp - 014h]
-mov       word ptr [bp - 012h], ax
+mov       word ptr es:[si], ax      ; destpatch->patchwidth
+mov       es, cx
+mov       word ptr [bp - 012h], ax  ; patchwidth
 mov       ax, word ptr es:[di + 2]
 mov       es, dx
 mov       word ptr es:[si + 2], ax
-mov       es, word ptr [bp - 014h]
+mov       es, cx
 mov       ax, word ptr es:[di + 4]
 mov       es, dx
 mov       word ptr es:[si + 4], ax
-mov       es, word ptr [bp - 014h]
+mov       es, cx
 mov       ax, word ptr es:[di + 6]
 mov       es, dx
 mov       word ptr es:[si + 6], ax
-mov       si, OFFSET _firstspritelump
+
+
+; 	destoffset = 8 + ( patchwidth << 2);
+;	currentpostbyte = destoffset;
+;	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
+
 mov       ax, word ptr [bp - 01Eh]
-mov       bx, word ptr [bp - 012h]
-sub       ax, word ptr [si]
-shl       bx, 2
+mov       bx, word ptr [bp - 012h]  ; patchwidth
+sub       ax, word ptr ds:[_firstspritelump]
+SHIFT_MACRO shl       bx 2
 mov       si, ax
 add       bx, 8
 add       si, ax
@@ -3120,6 +3159,13 @@ mov       word ptr [bp - 01Ah], bx
 add       bx, word ptr es:[si]
 mov       ax, bx
 xor       ah, bh
+
+;	destoffset += spritepostdatasizes[lump-firstspritelump];
+;	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
+;	currentpixelbyte = destoffset;
+;	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
+
+
 mov       si, 010h
 and       al, 0Fh
 sub       si, ax
@@ -3135,13 +3181,11 @@ mov       word ptr [bp - 018h], bx
 xor       al, al
 mov       word ptr [bp - 2], bx
 mov       word ptr [bp - 0Ch], ax
-cmp       word ptr [bp - 012h], 0
-jg        label_1
-jmp       label_2
-label_1:
+
+start_sprite_column_loop:
 mov       word ptr [bp - 01Ch], SCRATCH_ADDRESS_5000_SEGMENT
 mov       word ptr [bp - 0Eh], di
-label_5:
+do_next_sprite_column:
 mov       es, word ptr [bp - 01Ch]
 mov       si, word ptr [bp - 0Eh]
 mov       dx, SCRATCH_ADDRESS_5000_SEGMENT
@@ -3160,8 +3204,8 @@ mov       word ptr es:[di], ax
 mov       es, dx
 add       word ptr [bp - 0Ah], 2
 cmp       byte ptr es:[si], 0FFh
-je        label_4
-label_3:
+je        done_with_sprite_column
+do_next_sprite_post:
 mov       es, word ptr [bp - 010h]
 mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
 mov       di, word ptr [bp - 2]
@@ -3204,8 +3248,8 @@ add       word ptr [bp - 4], 2
 add       bx, 4
 add       word ptr [bp - 01Ah], 2
 cmp       byte ptr es:[bx], 0FFh
-jne       label_3
-label_4:
+jne       do_next_sprite_post
+done_with_sprite_column:
 mov       es, word ptr [bp - 6]
 mov       bx, word ptr [bp - 01Ah]
 add       word ptr [bp - 4], 2
@@ -3215,15 +3259,14 @@ add       word ptr [bp - 01Ah], 2
 mov       ax, word ptr [bp - 0Ch]
 mov       word ptr es:[bx], 0FFFFh
 cmp       ax, word ptr [bp - 012h]
-jge       label_2
-jmp       label_5
-label_2:
+jge       done_with_sprite_column_loop
+jmp       do_next_sprite_column
+
+
+done_with_sprite_column_loop:
 call      Z_QuickMapRender5000_
 LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
+POPA_NO_AX_MACRO
 retf      
 
 
