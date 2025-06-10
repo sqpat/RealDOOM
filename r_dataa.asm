@@ -3073,27 +3073,26 @@ ENDP
 PROC R_LoadSpriteColumns_ FAR  ; todo near?
 PUBLIC R_LoadSpriteColumns_
 
-; bp - 2      
+; bp - 2      destoffset offset
 ; bp - 4      currentpostbyte?
-; bp - 6      unused segment (dx arg)
+; bp - 6      unused
 ; bp - 8      unused
 ; bp - 0Ah    
-; bp - 0Ch    
+; bp - 0Ch    loop counter
 ; bp - 0Eh    column offset
 ; bp - 010h   column segment (SCRATCH_ADDRESS_5000_SEGMENT)
 ; bp - 012h   patchwidth
 ; bp - 014h   unused
 ; bp - 016h   unused
-; bp - 018h   
+; bp - 018h   unused
 ; bp - 01Ah   currentpostbyte?
 ; bp - 01Ch   column segment (SCRATCH_ADDRESS_5000_SEGMENT)
-; bp - 01Eh   lump (ax arg)
 
 PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
 sub       sp, 01Ch
-push      ax
+mov       si, ax
 
 call      Z_QuickMapScratch_5000_
 
@@ -3101,16 +3100,15 @@ call      Z_QuickMapScratch_5000_
 ;	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
 
 
-mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
-mov       ax, word ptr [bp - 01Eh]
+mov       di, SCRATCH_ADDRESS_5000_SEGMENT
+mov       cx, di
+mov       ax, si
 xor       bx, bx
 
 
 ;	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 
 call      W_CacheLumpNumDirect_
-xor       di, di
-mov       si, di
 ; wadpatch  is 0x5000 seg
 ; destpatch is dx
 ;	patchwidth = wadpatch->width;
@@ -3119,13 +3117,17 @@ mov       si, di
 ;	destpatch->leftoffset = wadpatch->leftoffset;
 ;	destpatch->topoffset = wadpatch->topoffset;
 
-mov       cx, word ptr ds:[_firstspritelump] ; get this before we clobber ds
-mov       ax, SCRATCH_ADDRESS_5000_SEGMENT
+sub       si, word ptr ds:[_firstspritelump] ; get this before we clobber ds
+mov       cx, si ; store in cx
 
-mov       ds, ax
+mov       ds, di
+
+xor       di, di
+mov       si, di
+
 mov       es, dx
 lodsw
-mov       word ptr [bp - 012h], ax  ; patchwidth
+mov       word ptr [bp - 012h], ax  ; patchwidth   todo write selfmodify ahead
 stosw
 movsw
 movsw
@@ -3137,38 +3139,29 @@ xor       di, di
 ;	currentpostbyte = destoffset;
 ;	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
 
-mov       ax, word ptr [bp - 01Eh]  ; todo store this in a reg somehow
-sub       ax, cx
+
 SHIFT_MACRO shl       bx 2
-mov       si, ax
+mov       si, cx
+shl       si, 1
 add       bx, 8
-add       si, ax
+;	destoffset += spritepostdatasizes[lump-firstspritelump];
 mov       ax, SPRITEPOSTDATASIZES_SEGMENT
 mov       word ptr [bp - 4], bx
 mov       es, ax
 mov       word ptr [bp - 01Ah], bx
 add       bx, word ptr es:[si]
-mov       ax, bx
-xor       ah, bh
 mov       es, dx  ; restore es
 
-;	destoffset += spritepostdatasizes[lump-firstspritelump];
 ;	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
 ;	currentpixelbyte = destoffset;
 ;	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
 
 
-mov       si, 010h
-and       al, 0Fh
-sub       si, ax
 mov       word ptr [bp - 0Ah], 8
-mov       ax, si
-xor       ah, ah
-and       al, 0Fh
 
-add       bx, ax
-mov       word ptr [bp - 018h], bx
-xor       al, al
+add       bx, 15
+and       bx, 0FFF0h
+xor       ax, ax
 mov       word ptr [bp - 2], bx
 mov       word ptr [bp - 0Ch], ax
 
@@ -3178,7 +3171,7 @@ mov       word ptr [bp - 0Eh], di  ; zero
 do_next_sprite_column:
 
 mov       si, word ptr [bp - 0Eh]
-mov       ax, word ptr [bp - 018h]
+mov       ax, word ptr [bp - 2]
 mov       di, word ptr [bp - 0Ah]
 add       word ptr [bp - 0Ah], 2
 shr       ax, 4
@@ -3198,11 +3191,11 @@ do_next_sprite_post:
 
 
 mov       di, word ptr [bp - 2]
-mov       dl, byte ptr ds:[bx + 1]
+mov       al, byte ptr ds:[bx + 1]  ; size
+xor       ah, ah ; todo necessary?
 mov       si, bx
-mov       cl, dl
+mov       cx, ax
 
-xor       ch, ch
 add       si, 3
 
 
@@ -3213,24 +3206,24 @@ adc       cx, cx
 rep movsb 
 
 
-mov       al, dl
-and       al, 0Fh
-mov       ah, 010h
-sub       ah, al
-mov       al, ah
-and       al, 0Fh
-add       al, dl
+add       al, 15
+and       al, 0F0h
 
-xor       ah, ah
-mov       si, word ptr [bp - 01Ah]
-add       word ptr [bp - 018h], ax
+
 add       word ptr [bp - 2], ax
-mov       ax, word ptr ds:[bx]
 
+mov       si, word ptr [bp - 01Ah]
+
+; would like to push pop but bp is in use.
+mov       ax, word ptr ds:[bx]
 mov       word ptr es:[si], ax
 
-mov       al, byte ptr ds:[bx + 1]
+; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
+
+mov       al, ah  ; bx + 1
 xor       ah, ah
+; ah already zero?
+
 add       bx, ax
 add       word ptr [bp - 4], 2
 add       bx, 4
@@ -3247,7 +3240,7 @@ add       word ptr [bp - 01Ah], 2
 mov       ax, word ptr [bp - 0Ch]
 mov       word ptr es:[bx], 0FFFFh
 cmp       ax, word ptr [bp - 012h]
-jge       done_with_sprite_column_loop ; 045h bytes still
+jge       done_with_sprite_column_loop ; 8 bytes still
 jmp       do_next_sprite_column
 
 
