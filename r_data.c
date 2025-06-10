@@ -2921,6 +2921,9 @@ void __near R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boo
 // array of all pixel post runs, paragraph aligned.
 // of course, the colofs and postofs have to be filled in at this time too.
 
+
+void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment);
+/*
 void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment){
 	patch_t __far * destpatch = MK_FP(destpatch_segment, 0);
 
@@ -2994,3 +2997,5 @@ void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment){
 	Z_QuickMapRender5000(); // put render info back
 
 }
+
+*/
