@@ -1322,6 +1322,19 @@ spritedefs_bytes    7410:0000
 
 #define drawsegs_BASE_segment_7000      ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
 #define masked_lookup_segment_7000      ((segment_t) ((int32_t)masked_lookup_7000 >> 16))
+
+
+#define texturecolumnlumps_bytes_7000_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes_7000 >> 16))
+#define texturedefs_bytes_7000_segment        ((segment_t) ((int32_t)texturedefs_bytes_7000 >> 16))
+#define spritetopoffsets_7000_segment         ((segment_t) ((int32_t)spritetopoffsets_7000 >> 16))
+#define texturedefs_offset_7000_segment       ((segment_t) ((int32_t)texturedefs_offset_7000 >> 16))
+#define masked_lookup_7000_segment            ((segment_t) ((int32_t)masked_lookup_7000 >> 16))
+#define patchwidths_7000_segment              ((segment_t) ((int32_t)patchwidths_7000 >> 16))
+#define patchheights_7000_segment             ((segment_t) ((int32_t)patchheights_7000 >> 16))
+#define drawsegs_BASE_7000_segment            ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
+#define finetangentinner_7000_segment         ((segment_t) ((int32_t)finetangentinner_7000 >> 16))
+#define render_9800_end_7000_segment          ((segment_t) ((int32_t)render_9800_end_7000 >> 16))
+
 // texturecolumnlumps_bytes   9000:0000
 // texturedefs_bytes          90B2:0000
 // spritetopoffsets           92A6:0000

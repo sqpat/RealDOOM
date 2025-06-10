@@ -2391,16 +2391,15 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		lump = texturecolumnlump[0].h;
 		segloopcachedbasecol[segloopcachetype]  = basecol;
 		seglooptexrepeat[segloopcachetype] 		= loopwidth; // might be 256 and we need the modulo..
+
+
 		//seglooptexmodulo[segloopcachetype]      = loopwidth - 1; 
 		// no non power of 2s in vanilla
-	
-	
 		// if ((loopwidth & loopwidth - 1) == 0) { // power of 2 check
 		// 	// most textures are power of 2 and its much faster to modulo by ANDing (size-1)
 		// } else {
 		// 	// we will do a manual modulo process in this case
 		// 	seglooptexmodulo[segloopcachetype]  = 0;
-
 		// 	while (texcol > loopwidth){
 		// 		texcol -= loopwidth;
 		// 	}

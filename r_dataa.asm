@@ -2367,96 +2367,185 @@ ENDP
 
 @
 
+
+
+;segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcachetype) 
+
 PROC R_GetColumnSegment_ NEAR
 PUBLIC R_GetColumnSegment_
 
 
+; bp - 2      segloopcachetype
+; bp - 4      loopwidth?
+; bp - 6      
+; bp - 8      texcol
+; bp - 0Ah    TEXTURECOLUMNLUMPS_BYTES_SEGMENT ?
+; bp - 0Ch    basecol ?
+; bp - 0Eh    
+; bp - 010h   subtractor
+; bp - 012h   
+; bp - 014h   
+; bp - 016h   ax/tex
 
 push      cx
 push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 014h
+push      bx        ; bh always zero
+sub       sp, 012h
 push      ax
+
+
+;	col &= texturewidthmasks[tex];
+;	basecol -= col;
+;	texcol = col;
+
+
 mov       cx, dx
-mov       byte ptr [bp - 2], bl
+xor       ch, ch  ; todo necessary?
+mov       di, ax
 mov       ax, TEXTUREWIDTHMASKS_SEGMENT
-mov       bx, word ptr [bp - 016h]
 mov       es, ax
-xor       ch, dh
-mov       al, byte ptr es:[bx]
+mov       al, byte ptr es:[di]
 and       cl, al
-mov       ax, bx
-add       ax, bx
+sal       di, 1
 mov       word ptr [bp - 0Ch], dx
-mov       bx, ax
-add       bx, _texturepatchlump_offset
+mov       bx, word ptr ds:[_texturepatchlump_offset + di]
+
+;	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
+;	loopwidth = texturecolumnlump[1].bu.bytehigh;
+
 mov       ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
-mov       bx, word ptr [bx]
 mov       es, ax
-add       bx, bx
+sal       bx, 1
 sub       word ptr [bp - 0Ch], cx
-mov       al, byte ptr es:[bx + 3]
-mov       byte ptr [bp - 8], cl
-mov       byte ptr [bp - 4], al
+mov       al, byte ptr es:[bx + 3]  ; [1].bu.bytehight
+mov       byte ptr [bp - 8], cl     ; texcol
+mov       byte ptr [bp - 4], al     ; loopwidth?
 test      al, al
-je        label_1
-jmp       label_2
-label_1:
-mov       dx, word ptr [bp - 0Ch]
-mov       word ptr [bp - 0Ah], es
+je        loopwidth_zero
+
+loopwidth_nonzero:
+
+;		lump = texturecolumnlump[0].h;
+;		segloopcachedbasecol[segloopcachetype]  = basecol;
+;		seglooptexrepeat[segloopcachetype] 		= loopwidth; // might be 256 and we need the modulo..
+
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       si, word ptr es:[bx]
+mov       di, ax
+mov       bx, ax
+add       di, ax
+mov       ax, word ptr [bp - 0Ch]
+mov       word ptr ds:[di + _segloopcachedbasecol], ax
+mov       al, byte ptr [bp - 4]
+mov       byte ptr ds:[bx + _seglooptexrepeat], al
+jmp       done_with_loopwidth
+
+loopwidth_zero:
+
+;		uint8_t startpixel;
+;		int16_t subtractor;
+;		int16_t textotal = 0;
+;		int16_t runningbasetotal = basecol;
+;		int16_t n = 0;
+
+
+mov       dx, word ptr [bp - 0Ch]   ; get basecol
+
 xor       di, di
 test      cx, cx
-jl        label_8
-mov       es, word ptr [bp - 0Ah]
-label_11:
-mov       al, byte ptr es:[bx + 2]
-xor       ah, ah
+jl        done_finding_col_lookup
+
+
+;		while (col >= 0) {
+;			//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
+;			// should we change this to be 256 - the number? we dont want a branch.
+;			// anyway, fix it in asm
+;			subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
+;			runningbasetotal += subtractor;
+;			lump = texturecolumnlump[n].h;
+;			col -= subtractor;
+;			if (lump >= 0){ // should be equiv to == -1?
+;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+;			} else {
+;				textotal += subtractor; // add the last's total.
+;			}
+;			n += 2;
+;		}
+
+loop_next_col_subtractor:
+mov       al, byte ptr es:[bx + 2]      ; subtractor
+xor       ah, ah                        ; todo cbw probably safe
 inc       ax
-mov       si, word ptr es:[bx]
-mov       word ptr [bp - 010h], ax
-add       dx, ax
-sub       cx, ax
+mov       si, word ptr es:[bx]          ; lump = texturecolumnlump[n].h;
+mov       word ptr [bp - 010h], ax      ; store subtractor
+add       dx, ax                        ; dx is runningbasetotal
+sub       cx, ax                        ; cx is col
 test      si, si
-jge       label_9
-jmp       label_10
-label_9:
-mov       al, byte ptr [bp - 010h]
-sub       byte ptr [bp - 8], al
-label_17:
-add       bx, 4
+jge       lump_greater_than_zero
+add       di, ax                        ; di is textotal
+jmp       done_with_lump_check
+lump_greater_than_zero:
+;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+sub       byte ptr [bp - 8], al         ; al still subtractor
+done_with_lump_check:
+add       bx, 4                     ; n+= 2
 test      cx, cx
-jge       label_11
-label_8:
-mov       es, word ptr [bp - 0Ah]
-mov       al, byte ptr es:[bx - 1]
+jge       loop_next_col_subtractor
+
+done_finding_col_lookup:
+
+;		startpixel = texturecolumnlump[n-1].bu.bytehigh;
+
+;		if (lump > 0){
 test      si, si
-jg        label_12
-jmp       label_13
-label_12:
-mov       di, word ptr [bp - 0Ch]
+jg        lump_greater_than_zero_add_startpixel
+
+;			segloopcachedbasecol[segloopcachetype] = runningbasetotal - textotal;
+mov       ax, dx
+sub       ax, di
+mov       di, ax
+jmp       segloopcachedbasecol_set
+
+lump_greater_than_zero_add_startpixel:
+;			segloopcachedbasecol[segloopcachetype] = basecol + startpixel;
+
+mov       ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT ; todo cacheable above?
+mov       es, ax
+mov       al, byte ptr es:[bx - 1]
 xor       ah, ah
+
+mov       di, word ptr [bp - 0Ch]
 add       di, ax
-label_16:
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       bx, ax
-add       bx, ax
+segloopcachedbasecol_set:
+
+; write the segloopcachedbasecol[segloopcachetype] calculated above!
+
+
+
+mov       bx, word ptr [bp - 2]  ; segloopcachetype
+sal       bx, 1
 mov       word ptr ds:[bx + _segloopcachedbasecol], di
+
+;		// prev RLE boundary. Hit this function again to load next texture if we hit this.
+;		segloopprevlookup[segloopcachetype]     = runningbasetotal - subtractor;
+;		// next RLE boundary. see above
+;		segloopnextlookup[segloopcachetype]     = runningbasetotal; 
+;		// this is not a single repeating texture 
+;		seglooptexrepeat[segloopcachetype] 		= 0;
+
 mov       ax, dx
 sub       ax, word ptr [bp - 010h]
-mov       word ptr [bp - 014h], ax
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       bx, ax
-mov       di, ax
 mov       byte ptr ds:[bx + _seglooptexrepeat], 0
-add       di, ax
-mov       ax, word ptr [bp - 014h]
-mov       word ptr ds:[di + _segloopnextlookup], dx
-mov       word ptr ds:[di + _segloopprevlookup], ax
-label_25:
+mov       word ptr ds:[bx + _segloopnextlookup], dx
+mov       word ptr ds:[bx + _segloopprevlookup], ax
+
+
+
+done_with_loopwidth:
 test      si, si
 jle       jump_to_label_7
 mov       bx, si
@@ -2503,26 +2592,8 @@ add       cx, ax
 jmp       label_5
 jump_to_label_7:
 jmp       label_7
-label_2:
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       si, word ptr es:[bx]
-mov       di, ax
-mov       bx, ax
-add       di, ax
-mov       ax, word ptr [bp - 0Ch]
-mov       word ptr ds:[di + _segloopcachedbasecol], ax
-mov       al, byte ptr [bp - 4]
-mov       byte ptr ds:[bx + _seglooptexrepeat], al
-jmp       label_25
-label_10:
-add       di, ax
-jmp       label_17
-label_13:
-mov       ax, dx
-sub       ax, di
-mov       di, ax
-jmp       label_16
+
+
 jump_to_label_15:
 jmp       label_15
 jump_to_label_4:
