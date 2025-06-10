@@ -3073,25 +3073,11 @@ ENDP
 PROC R_LoadSpriteColumns_ FAR  ; todo near?
 PUBLIC R_LoadSpriteColumns_
 
-; bp - 2      destoffset offset
-; bp - 4      currentpostbyte?
-; bp - 6      unused
-; bp - 8      unused
-; bp - 0Ah    
-; bp - 0Ch    loop counter
-; bp - 0Eh    column offset
-; bp - 010h   column segment (SCRATCH_ADDRESS_5000_SEGMENT)
-; bp - 012h   patchwidth
-; bp - 014h   unused
-; bp - 016h   unused
-; bp - 018h   unused
-; bp - 01Ah   currentpostbyte?
-; bp - 01Ch   column segment (SCRATCH_ADDRESS_5000_SEGMENT)
+
 
 PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
-sub       sp, 01Ch
 mov       si, ax
 
 call      Z_QuickMapScratch_5000_
@@ -3127,13 +3113,14 @@ mov       si, di
 
 mov       es, dx
 lodsw
-mov       word ptr [bp - 012h], ax  ; patchwidth   todo write selfmodify ahead
+mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1],  ax  ; patchwidth   todo write selfmodify ahead
 stosw
 movsw
 movsw
 movsw
 mov       bx, ax ; patchwidth
-xor       di, di
+mov       bp, di   ; bp gets 8
+
 
 ; 	destoffset = 8 + ( patchwidth << 2);
 ;	currentpostbyte = destoffset;
@@ -3146,43 +3133,40 @@ shl       si, 1
 add       bx, 8
 ;	destoffset += spritepostdatasizes[lump-firstspritelump];
 mov       ax, SPRITEPOSTDATASIZES_SEGMENT
-mov       word ptr [bp - 4], bx
 mov       es, ax
-mov       word ptr [bp - 01Ah], bx
-add       bx, word ptr es:[si]
+
+mov       di, bx
+add       di, word ptr es:[si]
 mov       es, dx  ; restore es
+mov       dx, bp  ; dx starts as 8 for loop too
 
 ;	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
 ;	currentpixelbyte = destoffset;
 ;	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
 
 
-mov       di, 8
-mov       word ptr [bp - 0Ah], di
-mov       word ptr [bp - 0Eh], di  ; 8
 
-add       bx, 15
-and       bx, 0FFF0h
-xor       ax, ax
-mov       di, bx
-mov       word ptr [bp - 0Ch], ax
+add       di, 15
+and       di, 0FFF0h
+
+
+
 
 start_sprite_column_loop:
 xor       cx, cx
 do_next_sprite_column:
+dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1]
 
-mov       si, word ptr [bp - 0Eh]
 mov       ax, di
 
 SHIFT_MACRO shr       ax 4
-mov       si, word ptr ds:[si]     ; new column base
+mov       si, dx
+mov       si, word ptr ds:[si]
 
-mov       bx, word ptr [bp - 0Ah]
 
-mov       word ptr es:[bx], ax
-mov       ax, word ptr [bp - 4]
-mov       word ptr es:[bx+2], ax
-add       word ptr [bp - 0Ah], 4
+mov       word ptr es:[bp], ax
+mov       word ptr es:[bp+2], bx
+add       bp, 4
 
 
 lodsw
@@ -3190,7 +3174,7 @@ cmp       al, 0FFh
 je        done_with_sprite_column
 do_next_sprite_post:
 
-mov       bx, word ptr [bp - 01Ah]
+
 mov       word ptr es:[bx], ax
 
 
@@ -3218,33 +3202,32 @@ and       di, 0FFF0h
 ; ah already zero?
 
 
-add       word ptr [bp - 4], 2
 inc       si
-add       word ptr [bp - 01Ah], 2
+add       bx, 2
 
 lodsw
 cmp       al, 0FFh
 jne       do_next_sprite_post
 done_with_sprite_column:
 
-mov       bx, word ptr [bp - 01Ah]
-add       word ptr [bp - 4], 2
-add       word ptr [bp - 0Eh], 4
-inc       word ptr [bp - 0Ch]
-add       word ptr [bp - 01Ah], 2
-mov       ax, word ptr [bp - 0Ch]
 mov       word ptr es:[bx], 0FFFFh
-cmp       ax, word ptr [bp - 012h]
-jnge      do_next_sprite_column ; 8 bytes still
+add       dx, 4
+add       bx, 2
+
+SELFMODIFY_loadspritecolumn_width_check:
+mov       ax, 01000h
+test      ax, ax
+jne       do_next_sprite_column
 
 
 done_with_sprite_column_loop:
 
 mov       ax, ss  ; restore ds
 mov       ds, ax
+pop       bp 
 
 call      Z_QuickMapRender5000_
-LEAVE_MACRO     
+
 POPA_NO_AX_MACRO
 retf      
 
