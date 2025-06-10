@@ -60,6 +60,19 @@ EXTRN _segloopnextlookup:WORD
 EXTRN _seglooptexrepeat:WORD
 EXTRN _firstpatch:WORD
 EXTRN _pagesegments:WORD
+
+
+EXTRN _cachedcollength:WORD
+EXTRN _cachedcollength2:WORD
+EXTRN _cachedsegmenttex:WORD
+EXTRN _cachedsegmenttex2:WORD
+EXTRN _segloopnextlookup:WORD
+EXTRN _segloopprevlookup:WORD
+EXTRN _segloopcachedsegment:WORD
+EXTRN _segloopcachedbasecol:WORD
+EXTRN _segloopheightvalcache:WORD
+EXTRN _cachedsegmentlumps:WORD
+
 .CODE
 
 
@@ -2206,9 +2219,9 @@ PUBLIC R_GenerateComposite_
 0x00000000000000be:  90                nop       
 0x00000000000000bf:  8E 46 E4          mov       es, word ptr [bp - 01Ch]
 0x00000000000000c2:  26 F6 44 03 80    test      byte ptr es:[si + 3], 0x80
-0x00000000000000c7:  75 03             jne       label_6
+0x00000000000000c7:  75 03             jne       label_60
 0x00000000000000c9:  E9 A1 00          jmp       0x16d
-label_6:
+label_60:
 0x00000000000000cc:  BB FF FF          mov       bx, 0xffff
 0x00000000000000cf:  8E 46 E4          mov       es, word ptr [bp - 01Ch]
 0x00000000000000d2:  26 8A 04          mov       al, byte ptr es:[si]
@@ -2325,7 +2338,7 @@ label_6:
 0x0000000000000202:  8B 5E D6          mov       bx, word ptr [bp - 02Ah]
 0x0000000000000205:  8E C2             mov       es, dx
 0x0000000000000207:  83 C3 08          add       bx, 8
-0x000000000000020a:  98                cwde      
+0x000000000000020a:  98                cbw      
 0x000000000000020b:  26 8B 17          mov       dx, word ptr es:[bx]
 0x000000000000020e:  30 ED             xor       ch, ch
 0x0000000000000210:  89 56 D4          mov       word ptr [bp - 02Ch], dx
@@ -2352,286 +2365,316 @@ label_6:
 
 ENDP
 
+@
 
 PROC R_GetColumnSegment_ NEAR
 PUBLIC R_GetColumnSegment_
 
 
 
-0x000000000000023e:  51                push      cx
-0x000000000000023f:  56                push      si
-0x0000000000000240:  57                push      di
-0x0000000000000241:  55                push      bp
-0x0000000000000242:  89 E5             mov       bp, sp
-0x0000000000000244:  83 EC 14          sub       sp, 014h
-0x0000000000000247:  50                push      ax
-0x0000000000000248:  89 D1             mov       cx, dx
-0x000000000000024a:  88 5E FE          mov       byte ptr [bp - 2], bl
-0x000000000000024d:  B8 A2 82          mov       ax, TEXTUREWIDTHMASKS_SEGMENT
-0x0000000000000250:  8B 5E EA          mov       bx, word ptr [bp - 016h]
-0x0000000000000253:  8E C0             mov       es, ax
-0x0000000000000255:  30 F5             xor       ch, dh
-0x0000000000000257:  26 8A 07          mov       al, byte ptr es:[bx]
-0x000000000000025a:  20 C1             and       cl, al
-0x000000000000025c:  89 D8             mov       ax, bx
-0x000000000000025e:  01 D8             add       ax, bx
-0x0000000000000260:  89 56 F4          mov       word ptr [bp - 0Ch], dx
-0x0000000000000263:  89 C3             mov       bx, ax
-0x0000000000000265:  81 C3 F0 EA       add       bx, _texturepatchlump_offset
-0x0000000000000269:  B8 00 90          mov       ax, 0x9000
-0x000000000000026c:  8B 1F             mov       bx, word ptr [bx]
-0x000000000000026e:  8E C0             mov       es, ax
-0x0000000000000270:  01 DB             add       bx, bx
-0x0000000000000272:  29 4E F4          sub       word ptr [bp - 0Ch], cx
-0x0000000000000275:  26 8A 47 03       mov       al, byte ptr es:[bx + 3]
-0x0000000000000279:  88 4E F8          mov       byte ptr [bp - 8], cl
-0x000000000000027c:  88 46 FC          mov       byte ptr [bp - 4], al
-0x000000000000027f:  84 C0             test      al, al
-0x0000000000000281:  74 03             je        0x286
-0x0000000000000283:  E9 DD 00          jmp       0x363
-0x0000000000000286:  8B 56 F4          mov       dx, word ptr [bp - 0Ch]
-0x0000000000000289:  8C 46 F6          mov       word ptr [bp - 0Ah], es
-0x000000000000028c:  31 FF             xor       di, di
-0x000000000000028e:  85 C9             test      cx, cx
-0x0000000000000290:  7C 28             jl        0x2ba
-0x0000000000000292:  8E 46 F6          mov       es, word ptr [bp - 0Ah]
-0x0000000000000295:  26 8A 47 02       mov       al, byte ptr es:[bx + 2]
-0x0000000000000299:  30 E4             xor       ah, ah
-0x000000000000029b:  40                inc       ax
-0x000000000000029c:  26 8B 37          mov       si, word ptr es:[bx]
-0x000000000000029f:  89 46 F0          mov       word ptr [bp - 010h], ax
-0x00000000000002a2:  01 C2             add       dx, ax
-0x00000000000002a4:  29 C1             sub       cx, ax
-0x00000000000002a6:  85 F6             test      si, si
-0x00000000000002a8:  7D 03             jge       0x2ad
-0x00000000000002aa:  E9 D4 00          jmp       0x381
-0x00000000000002ad:  8A 46 F0          mov       al, byte ptr [bp - 010h]
-0x00000000000002b0:  28 46 F8          sub       byte ptr [bp - 8], al
-0x00000000000002b3:  83 C3 04          add       bx, 4
-0x00000000000002b6:  85 C9             test      cx, cx
-0x00000000000002b8:  7D DB             jge       0x295
-0x00000000000002ba:  8E 46 F6          mov       es, word ptr [bp - 0Ah]
-0x00000000000002bd:  26 8A 47 FF       mov       al, byte ptr es:[bx - 1]
-0x00000000000002c1:  85 F6             test      si, si
-0x00000000000002c3:  7F 03             jg        0x2c8
-0x00000000000002c5:  E9 BE 00          jmp       0x386
-0x00000000000002c8:  8B 7E F4          mov       di, word ptr [bp - 0Ch]
-0x00000000000002cb:  30 E4             xor       ah, ah
-0x00000000000002cd:  01 C7             add       di, ax
-0x00000000000002cf:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x00000000000002d2:  98                cwde      
-0x00000000000002d3:  89 C3             mov       bx, ax
-0x00000000000002d5:  01 C3             add       bx, ax
-0x00000000000002d7:  89 BF 64 1C       mov       word ptr [bx + 0x1c64], di
-0x00000000000002db:  89 D0             mov       ax, dx
-0x00000000000002dd:  2B 46 F0          sub       ax, word ptr [bp - 010h]
-0x00000000000002e0:  89 46 EC          mov       word ptr [bp - 014h], ax
-0x00000000000002e3:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x00000000000002e6:  98                cwde      
-0x00000000000002e7:  89 C3             mov       bx, ax
-0x00000000000002e9:  89 C7             mov       di, ax
-0x00000000000002eb:  C6 87 37 0C 00    mov       byte ptr [bx + 0xc37], 0
-0x00000000000002f0:  01 C7             add       di, ax
-0x00000000000002f2:  8B 46 EC          mov       ax, word ptr [bp - 014h]
-0x00000000000002f5:  89 95 3A 0C       mov       word ptr [di + 0xc3a], dx
-0x00000000000002f9:  89 85 68 1C       mov       word ptr [di + 0x1c68], ax
-0x00000000000002fd:  85 F6             test      si, si
-0x00000000000002ff:  7E 5F             jle       0x360
-0x0000000000000301:  89 F3             mov       bx, si
-0x0000000000000303:  B8 BA 93          mov       ax, 0x93ba
-0x0000000000000306:  2B 1E 7E 1F       sub       bx, word ptr [0x1f7e]
-0x000000000000030a:  8E C0             mov       es, ax
-0x000000000000030c:  26 8A 07          mov       al, byte ptr es:[bx]
-0x000000000000030f:  88 46 FA          mov       byte ptr [bp - 6], al
-0x0000000000000312:  31 DB             xor       bx, bx
-0x0000000000000314:  80 66 FA 0F       and       byte ptr [bp - 6], 0Fh
-0x0000000000000318:  31 C0             xor       ax, ax
-0x000000000000031a:  3B 36 18 1C       cmp       si, word ptr [0x1c18]
-0x000000000000031e:  74 0F             je        0x32f
-0x0000000000000320:  40                inc       ax
-0x0000000000000321:  83 C3 02          add       bx, 2
-0x0000000000000324:  3D 04 00          cmp       ax, 4
-0x0000000000000327:  7D 66             jge       0x38f
-0x0000000000000329:  3B B7 18 1C       cmp       si, word ptr [bx + 0x1c18]
-0x000000000000032d:  75 F1             jne       0x320
-0x000000000000032f:  85 C0             test      ax, ax
-0x0000000000000331:  75 64             jne       0x397
-0x0000000000000333:  85 C9             test      cx, cx
-0x0000000000000335:  7D 5A             jge       0x391
-0x0000000000000337:  89 F3             mov       bx, si
-0x0000000000000339:  B8 7E 93          mov       ax, 0x937e
-0x000000000000033c:  2B 1E 7E 1F       sub       bx, word ptr [0x1f7e]
-0x0000000000000340:  8E C0             mov       es, ax
-0x0000000000000342:  01 DB             add       bx, bx
-0x0000000000000344:  BA A2 82          mov       dx, 0x82a2
-0x0000000000000347:  26 8B 07          mov       ax, word ptr es:[bx]
-0x000000000000034a:  8B 5E EA          mov       bx, word ptr [bp - 016h]
-0x000000000000034d:  8E C2             mov       es, dx
-0x000000000000034f:  26 8A 17          mov       dl, byte ptr es:[bx]
-0x0000000000000352:  30 F6             xor       dh, dh
-0x0000000000000354:  39 D0             cmp       ax, dx
-0x0000000000000356:  77 3C             ja        0x394
-0x0000000000000358:  85 C9             test      cx, cx
-0x000000000000035a:  7D 35             jge       0x391
-0x000000000000035c:  01 C1             add       cx, ax
-0x000000000000035e:  EB F8             jmp       0x358
-0x0000000000000360:  E9 ED 00          jmp       0x450
-0x0000000000000363:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x0000000000000366:  98                cwde      
-0x0000000000000367:  26 8B 37          mov       si, word ptr es:[bx]
-0x000000000000036a:  89 C7             mov       di, ax
-0x000000000000036c:  89 C3             mov       bx, ax
-0x000000000000036e:  01 C7             add       di, ax
-0x0000000000000370:  8B 46 F4          mov       ax, word ptr [bp - 0Ch]
-0x0000000000000373:  89 85 64 1C       mov       word ptr [di + 0x1c64], ax
-0x0000000000000377:  8A 46 FC          mov       al, byte ptr [bp - 4]
-0x000000000000037a:  88 87 37 0C       mov       byte ptr [bx + 0xc37], al
-0x000000000000037e:  E9 7C FF          jmp       0x2fd
-0x0000000000000381:  01 C7             add       di, ax
-0x0000000000000383:  E9 2D FF          jmp       0x2b3
-0x0000000000000386:  89 D0             mov       ax, dx
-0x0000000000000388:  29 F8             sub       ax, di
-0x000000000000038a:  89 C7             mov       di, ax
-0x000000000000038c:  E9 40 FF          jmp       0x2cf
-0x000000000000038f:  EB 3E             jmp       0x3cf
-0x0000000000000391:  E9 96 00          jmp       0x42a
-0x0000000000000394:  E9 8D 00          jmp       0x424
-0x0000000000000397:  8B 97 18 1C       mov       dx, word ptr [bx + 0x1c18]
-0x000000000000039b:  8B BF 10 1C       mov       di, word ptr [bx + 0x1c10]
-0x000000000000039f:  89 56 F2          mov       word ptr [bp - 0Eh], dx
-0x00000000000003a2:  89 C2             mov       dx, ax
-0x00000000000003a4:  7E 1C             jle       0x3c2
-0x00000000000003a6:  89 C3             mov       bx, ax
-0x00000000000003a8:  01 C3             add       bx, ax
-0x00000000000003aa:  83 EB 02          sub       bx, 2
-0x00000000000003ad:  8B 87 10 1C       mov       ax, word ptr [bx + 0x1c10]
-0x00000000000003b1:  89 87 12 1C       mov       word ptr [bx + 0x1c12], ax
-0x00000000000003b5:  8B 87 18 1C       mov       ax, word ptr [bx + 0x1c18]
-0x00000000000003b9:  4A                dec       dx
-0x00000000000003ba:  89 87 1A 1C       mov       word ptr [bx + 0x1c1a], ax
-0x00000000000003be:  85 D2             test      dx, dx
-0x00000000000003c0:  7F E8             jg        0x3aa
-0x00000000000003c2:  8B 46 F2          mov       ax, word ptr [bp - 0Eh]
-0x00000000000003c5:  89 3E 10 1C       mov       word ptr [0x1c10], di
-0x00000000000003c9:  A3 18 1C          mov       word ptr [0x1c18], ax
-0x00000000000003cc:  E9 64 FF          jmp       0x333
-0x00000000000003cf:  A1 14 1C          mov       ax, word ptr [0x1c14]
-0x00000000000003d2:  A3 16 1C          mov       word ptr [0x1c16], ax
-0x00000000000003d5:  A1 12 1C          mov       ax, word ptr [0x1c12]
-0x00000000000003d8:  A3 14 1C          mov       word ptr [0x1c14], ax
-0x00000000000003db:  A1 10 1C          mov       ax, word ptr [0x1c10]
-0x00000000000003de:  A3 12 1C          mov       word ptr [0x1c12], ax
-0x00000000000003e1:  A1 1C 1C          mov       ax, word ptr [0x1c1c]
-0x00000000000003e4:  A3 1E 1C          mov       word ptr [0x1c1e], ax
-0x00000000000003e7:  A1 1A 1C          mov       ax, word ptr [0x1c1a]
-0x00000000000003ea:  A3 1C 1C          mov       word ptr [0x1c1c], ax
-0x00000000000003ed:  A1 18 1C          mov       ax, word ptr [0x1c18]
-0x00000000000003f0:  A3 1A 1C          mov       word ptr [0x1c1a], ax
-0x00000000000003f3:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x00000000000003f6:  98                cwde      
-0x00000000000003f7:  89 C7             mov       di, ax
-0x00000000000003f9:  01 C7             add       di, ax
-0x00000000000003fb:  89 C3             mov       bx, ax
-0x00000000000003fd:  8B 85 3A 0C       mov       ax, word ptr [di + 0xc3a]
-0x0000000000000401:  BA FF 00          mov       dx, 0FFh
-0x0000000000000404:  89 46 EE          mov       word ptr [bp - 012h], ax
-0x0000000000000407:  89 F0             mov       ax, si
-0x0000000000000409:  E8 7E 0D          call      0x118a
-0x000000000000040c:  A3 10 1C          mov       word ptr [0x1c10], ax
-0x000000000000040f:  8B 46 EE          mov       ax, word ptr [bp - 012h]
-0x0000000000000412:  89 85 3A 0C       mov       word ptr [di + 0xc3a], ax
-0x0000000000000416:  8A 46 FC          mov       al, byte ptr [bp - 4]
-0x0000000000000419:  89 36 18 1C       mov       word ptr [0x1c18], si
-0x000000000000041d:  88 87 37 0C       mov       byte ptr [bx + 0xc37], al
-0x0000000000000421:  E9 0F FF          jmp       0x333
-0x0000000000000424:  89 D0             mov       ax, dx
-0x0000000000000426:  40                inc       ax
-0x0000000000000427:  E9 2E FF          jmp       0x358
-0x000000000000042a:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x000000000000042d:  98                cwde      
-0x000000000000042e:  89 C3             mov       bx, ax
-0x0000000000000430:  8A 46 FA          mov       al, byte ptr [bp - 6]
-0x0000000000000433:  88 87 E6 1E       mov       byte ptr [bx + 0x1ee6], al
-0x0000000000000437:  01 DB             add       bx, bx
-0x0000000000000439:  A1 10 1C          mov       ax, word ptr [0x1c10]
-0x000000000000043c:  89 87 60 1C       mov       word ptr [bx + 0x1c60], ax
-0x0000000000000440:  8A 66 FA          mov       ah, byte ptr [bp - 6]
-0x0000000000000443:  88 C8             mov       al, cl
-0x0000000000000445:  F6 E4             mul       ah
-0x0000000000000447:  03 06 10 1C       add       ax, word ptr [0x1c10]
-0x000000000000044b:  C9                LEAVE_MACRO     
-0x000000000000044c:  5F                pop       di
-0x000000000000044d:  5E                pop       si
-0x000000000000044e:  59                pop       cx
-0x000000000000044f:  C3                ret       
-0x0000000000000450:  B8 30 4F          mov       ax, 0x4f30
-0x0000000000000453:  8B 5E EA          mov       bx, word ptr [bp - 016h]
-0x0000000000000456:  8E C0             mov       es, ax
-0x0000000000000458:  A1 AC 06          mov       ax, word ptr [0x6ac]
-0x000000000000045b:  26 8A 17          mov       dl, byte ptr es:[bx]
-0x000000000000045e:  39 D8             cmp       ax, bx
-0x0000000000000460:  74 45             je        0x4a7
-0x0000000000000462:  A1 B2 06          mov       ax, word ptr [0x6b2]
-0x0000000000000465:  39 D8             cmp       ax, bx
-0x0000000000000467:  74 62             je        0x4cb
-0x0000000000000469:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x000000000000046c:  98                cwde      
-0x000000000000046d:  89 C6             mov       si, ax
-0x000000000000046f:  89 C3             mov       bx, ax
-0x0000000000000471:  01 C6             add       si, ax
-0x0000000000000473:  A1 AC 06          mov       ax, word ptr [0x6ac]
-0x0000000000000476:  A3 B2 06          mov       word ptr [0x6b2], ax
-0x0000000000000479:  A1 AE 06          mov       ax, word ptr [0x6ae]
-0x000000000000047c:  8B 7E EA          mov       di, word ptr [bp - 016h]
-0x000000000000047f:  A3 B0 06          mov       word ptr [0x6b0], ax
-0x0000000000000482:  A0 B4 06          mov       al, byte ptr [0x6b4]
-0x0000000000000485:  8B 8C 3A 0C       mov       cx, word ptr [si + 0xc3a]
-0x0000000000000489:  A2 B5 06          mov       byte ptr [0x6b5], al
-0x000000000000048c:  89 F8             mov       ax, di
-0x000000000000048e:  89 3E AC 06       mov       word ptr [0x6ac], di
-0x0000000000000492:  E8 8A 0D          call      0x121f
-0x0000000000000495:  A3 AE 06          mov       word ptr [0x6ae], ax
-0x0000000000000498:  88 16 B4 06       mov       byte ptr [0x6b4], dl
-0x000000000000049c:  8A 46 FC          mov       al, byte ptr [bp - 4]
-0x000000000000049f:  89 8C 3A 0C       mov       word ptr [si + 0xc3a], cx
-0x00000000000004a3:  88 87 37 0C       mov       byte ptr [bx + 0xc37], al
-0x00000000000004a7:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x00000000000004aa:  98                cwde      
-0x00000000000004ab:  89 C3             mov       bx, ax
-0x00000000000004ad:  88 97 E6 1E       mov       byte ptr [bx + 0x1ee6], dl
-0x00000000000004b1:  01 C3             add       bx, ax
-0x00000000000004b3:  A1 AE 06          mov       ax, word ptr [0x6ae]
-0x00000000000004b6:  89 87 60 1C       mov       word ptr [bx + 0x1c60], ax
-0x00000000000004ba:  A0 B4 06          mov       al, byte ptr [0x6b4]
-0x00000000000004bd:  8A 66 F8          mov       ah, byte ptr [bp - 8]
-0x00000000000004c0:  F6 E4             mul       ah
-0x00000000000004c2:  03 06 AE 06       add       ax, word ptr [0x6ae]
-0x00000000000004c6:  C9                LEAVE_MACRO     
-0x00000000000004c7:  5F                pop       di
-0x00000000000004c8:  5E                pop       si
-0x00000000000004c9:  59                pop       cx
-0x00000000000004ca:  C3                ret       
-0x00000000000004cb:  8B 1E AC 06       mov       bx, word ptr [0x6ac]
-0x00000000000004cf:  A1 B2 06          mov       ax, word ptr [0x6b2]
-0x00000000000004d2:  89 5E EA          mov       word ptr [bp - 016h], bx
-0x00000000000004d5:  A3 AC 06          mov       word ptr [0x6ac], ax
-0x00000000000004d8:  89 1E B2 06       mov       word ptr [0x6b2], bx
-0x00000000000004dc:  8B 1E AE 06       mov       bx, word ptr [0x6ae]
-0x00000000000004e0:  A1 B0 06          mov       ax, word ptr [0x6b0]
-0x00000000000004e3:  89 5E EA          mov       word ptr [bp - 016h], bx
-0x00000000000004e6:  89 1E B0 06       mov       word ptr [0x6b0], bx
-0x00000000000004ea:  8A 1E B4 06       mov       bl, byte ptr [0x6b4]
-0x00000000000004ee:  A3 AE 06          mov       word ptr [0x6ae], ax
-0x00000000000004f1:  30 FF             xor       bh, bh
-0x00000000000004f3:  A0 B5 06          mov       al, byte ptr [0x6b5]
-0x00000000000004f6:  89 5E EA          mov       word ptr [bp - 016h], bx
-0x00000000000004f9:  A2 B4 06          mov       byte ptr [0x6b4], al
-0x00000000000004fc:  8A 46 EA          mov       al, byte ptr [bp - 016h]
-0x00000000000004ff:  A2 B5 06          mov       byte ptr [0x6b5], al
-0x0000000000000502:  EB A3             jmp       0x4a7
+push      cx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 014h
+push      ax
+mov       cx, dx
+mov       byte ptr [bp - 2], bl
+mov       ax, TEXTUREWIDTHMASKS_SEGMENT
+mov       bx, word ptr [bp - 016h]
+mov       es, ax
+xor       ch, dh
+mov       al, byte ptr es:[bx]
+and       cl, al
+mov       ax, bx
+add       ax, bx
+mov       word ptr [bp - 0Ch], dx
+mov       bx, ax
+add       bx, _texturepatchlump_offset
+mov       ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
+mov       bx, word ptr [bx]
+mov       es, ax
+add       bx, bx
+sub       word ptr [bp - 0Ch], cx
+mov       al, byte ptr es:[bx + 3]
+mov       byte ptr [bp - 8], cl
+mov       byte ptr [bp - 4], al
+test      al, al
+je        label_1
+jmp       label_2
+label_1:
+mov       dx, word ptr [bp - 0Ch]
+mov       word ptr [bp - 0Ah], es
+xor       di, di
+test      cx, cx
+jl        label_8
+mov       es, word ptr [bp - 0Ah]
+label_11:
+mov       al, byte ptr es:[bx + 2]
+xor       ah, ah
+inc       ax
+mov       si, word ptr es:[bx]
+mov       word ptr [bp - 010h], ax
+add       dx, ax
+sub       cx, ax
+test      si, si
+jge       label_9
+jmp       label_10
+label_9:
+mov       al, byte ptr [bp - 010h]
+sub       byte ptr [bp - 8], al
+label_17:
+add       bx, 4
+test      cx, cx
+jge       label_11
+label_8:
+mov       es, word ptr [bp - 0Ah]
+mov       al, byte ptr es:[bx - 1]
+test      si, si
+jg        label_12
+jmp       label_13
+label_12:
+mov       di, word ptr [bp - 0Ch]
+xor       ah, ah
+add       di, ax
+label_16:
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       bx, ax
+add       bx, ax
+mov       word ptr ds:[bx + _segloopcachedbasecol], di
+mov       ax, dx
+sub       ax, word ptr [bp - 010h]
+mov       word ptr [bp - 014h], ax
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       bx, ax
+mov       di, ax
+mov       byte ptr ds:[bx + _seglooptexrepeat], 0
+add       di, ax
+mov       ax, word ptr [bp - 014h]
+mov       word ptr ds:[di + _segloopnextlookup], dx
+mov       word ptr ds:[di + _segloopprevlookup], ax
+label_25:
+test      si, si
+jle       jump_to_label_7
+mov       bx, si
+mov       ax, PATCHHEIGHTS_SEGMENT
+sub       bx, word ptr ds:[_firstpatch]  ; hardcode? selfmodifying?
+mov       es, ax
+mov       al, byte ptr es:[bx]
+mov       byte ptr [bp - 6], al
+xor       bx, bx
+and       byte ptr [bp - 6], 0Fh
+xor       ax, ax
+cmp       si, word ptr ds:[_cachedlumps]
+je        label_14
+label_18:
+inc       ax
+add       bx, 2
+cmp       ax, 4
+jge       jump_to_label_15
+cmp       si, word ptr ds:[bx + _cachedlumps]
+jne       label_18
+label_14:
+test      ax, ax
+jne       label_19
+label_22:
+test      cx, cx
+jge       jump_to_label_4
+mov       bx, si
+mov       ax, PATCHWIDTHS_SEGMENT
+sub       bx, word ptr ds:[_firstpatch]
+mov       es, ax
+add       bx, bx
+mov       dx, TEXTUREWIDTHMASKS_SEGMENT
+mov       ax, word ptr es:[bx]
+mov       bx, word ptr [bp - 016h]
+mov       es, dx
+mov       dl, byte ptr es:[bx]
+xor       dh, dh
+cmp       ax, dx
+ja        jump_to_label_3
+label_5:
+test      cx, cx
+jge       jump_to_label_4
+add       cx, ax
+jmp       label_5
+jump_to_label_7:
+jmp       label_7
+label_2:
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       si, word ptr es:[bx]
+mov       di, ax
+mov       bx, ax
+add       di, ax
+mov       ax, word ptr [bp - 0Ch]
+mov       word ptr ds:[di + _segloopcachedbasecol], ax
+mov       al, byte ptr [bp - 4]
+mov       byte ptr ds:[bx + _seglooptexrepeat], al
+jmp       label_25
+label_10:
+add       di, ax
+jmp       label_17
+label_13:
+mov       ax, dx
+sub       ax, di
+mov       di, ax
+jmp       label_16
+jump_to_label_15:
+jmp       label_15
+jump_to_label_4:
+jmp       label_4
+jump_to_label_3:
+jmp       label_3
+label_19:
+mov       dx, word ptr ds:[bx + _cachedlumps]
+mov       di, word ptr ds:[bx + _cachedsegmentlumps]
+mov       word ptr [bp - 0Eh], dx
+mov       dx, ax
+jle       label_24
+mov       bx, ax
+add       bx, ax
+label_23:
+sub       bx, 2
+mov       ax, word ptr ds:[bx + _cachedsegmentlumps]
+mov       word ptr ds:[bx + _cachedsegmentlumps+2], ax
+mov       ax, word ptr ds:[bx + _cachedlumps]
+dec       dx
+mov       word ptr ds:[bx + _cachedlumps+2], ax
+test      dx, dx
+jg        label_23
+label_24:
+mov       ax, word ptr [bp - 0Eh]
+mov       word ptr ds:[_cachedsegmentlumps], di
+mov       word ptr ds:[_cachedlumps], ax
+jmp       label_22
+label_15:
+mov       ax, word ptr ds:[_cachedsegmentlumps+4]
+mov       word ptr ds:[_cachedsegmentlumps+6], ax
+mov       ax, word ptr ds:[_cachedsegmentlumps+2]
+mov       word ptr ds:[_cachedsegmentlumps+4], ax
+mov       ax, word ptr ds:[_cachedsegmentlumps]
+mov       word ptr ds:[_cachedsegmentlumps+2], ax
+mov       ax, word ptr ds:[_cachedlumps+4]
+mov       word ptr ds:[_cachedlumps+6], ax
+mov       ax, word ptr ds:[_cachedlumps+2]
+mov       word ptr ds:[_cachedlumps+4], ax
+mov       ax, word ptr ds:[_cachedlumps]
+mov       word ptr ds:[_cachedlumps+2], ax
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       di, ax
+add       di, ax
+mov       bx, ax
+mov       ax, word ptr ds:[di + _segloopnextlookup]
+mov       dx, 0FFh
+mov       word ptr [bp - 012h], ax
+mov       ax, si
+call      R_GetPatchTexture_
+mov       word ptr ds:[_cachedsegmentlumps], ax
+mov       ax, word ptr [bp - 012h]
+mov       word ptr ds:[di + _segloopnextlookup], ax
+mov       al, byte ptr [bp - 4]
+mov       word ptr ds:[_cachedlumps], si
+mov       byte ptr ds:[bx + _seglooptexrepeat], al
+jmp       label_22
+label_3:
+mov       ax, dx
+inc       ax
+jmp       label_5
+label_4:
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       bx, ax
+mov       al, byte ptr [bp - 6]
+mov       byte ptr ds:[bx + _segloopheightvalcache], al
+add       bx, bx
+mov       ax, word ptr ds:[_cachedsegmentlumps]
+mov       word ptr ds:[bx + _segloopcachedsegment], ax
+mov       ah, byte ptr [bp - 6]
+mov       al, cl
+mul       ah
+add       ax, word ptr ds:[_cachedsegmentlumps]
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+ret       
+label_7:
+mov       ax, TEXTURECOLLENGTH_SEGMENT
+mov       bx, word ptr [bp - 016h]
+mov       es, ax
+mov       ax, word ptr ds:[_cachedtex]
+mov       dl, byte ptr es:[bx]
+cmp       ax, bx
+je        label_20
+mov       ax, word ptr ds:[_cachedtex2]
+cmp       ax, bx
+je        label_21
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       si, ax
+mov       bx, ax
+add       si, ax
+mov       ax, word ptr ds:[_cachedtex]
+mov       word ptr ds:[_cachedtex2], ax
+mov       ax, word ptr ds:[_cachedsegmenttex]
+mov       di, word ptr [bp - 016h]
+mov       word ptr ds:[_cachedsegmenttex2], ax
+mov       al, byte ptr ds:[_cachedcollength]
+mov       cx, word ptr ds:[si + _segloopnextlookup]
+mov       byte ptr ds:[_cachedcollength2], al
+mov       ax, di
+mov       word ptr ds:[_cachedtex], di
+call      R_GetCompositeTexture_
+mov       word ptr ds:[_cachedsegmenttex], ax
+mov       byte ptr ds:[_cachedcollength], dl
+mov       al, byte ptr [bp - 4]
+mov       word ptr ds:[si + _segloopnextlookup], cx
+mov       byte ptr ds:[bx + _seglooptexrepeat], al
+label_20:
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       bx, ax
+mov       byte ptr ds:[bx + _segloopheightvalcache], dl
+add       bx, ax
+mov       ax, word ptr ds:[_cachedsegmenttex]
+mov       word ptr ds:[bx + _segloopcachedsegment], ax
+mov       al, byte ptr ds:[_cachedcollength]
+mov       ah, byte ptr [bp - 8]
+mul       ah
+add       ax, word ptr ds:[_cachedsegmenttex]
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+ret       
+label_21:
+mov       bx, word ptr ds:[_cachedtex]
+mov       ax, word ptr ds:[_cachedtex2]
+mov       word ptr [bp - 016h], bx
+mov       word ptr ds:[_cachedtex], ax
+mov       word ptr ds:[_cachedtex2], bx
+mov       bx, word ptr ds:[_cachedsegmenttex]
+mov       ax, word ptr ds:[_cachedsegmenttex2]
+mov       word ptr [bp - 016h], bx
+mov       word ptr ds:[_cachedsegmenttex2], bx
+mov       bl, byte ptr ds:[_cachedcollength]
+mov       word ptr ds:[_cachedsegmenttex], ax
+xor       bh, bh
+mov       al, byte ptr ds:[_cachedcollength2]
+mov       word ptr [bp - 016h], bx
+mov       byte ptr ds:[_cachedcollength], al
+mov       al, byte ptr [bp - 016h]
+mov       byte ptr ds:[_cachedcollength2], al
+jmp       label_20
 
 ENDP
 
+COMMENT @
 
 PROC R_GetMaskedColumnSegment_ NEAR
 PUBLIC R_GetMaskedColumnSegment_
@@ -2648,7 +2691,7 @@ PUBLIC R_GetMaskedColumnSegment_
 0x000000000000050e:  50                push      ax
 0x000000000000050f:  89 D3             mov       bx, dx
 0x0000000000000511:  BE 48 02          mov       si, 0x248
-0x0000000000000514:  B8 A2 82          mov       ax, 0x82a2
+0x0000000000000514:  B8 A2 82          mov       ax, TEXTUREWIDTHMASKS_SEGMENT
 0x0000000000000517:  C7 04 FF FF       mov       word ptr [si], 0FFFFh
 0x000000000000051b:  8B 76 EE          mov       si, word ptr [bp - 012h]
 0x000000000000051e:  8E C0             mov       es, ax
@@ -2700,28 +2743,28 @@ PUBLIC R_GetMaskedColumnSegment_
 0x0000000000000591:  C6 46 F1 00       mov       byte ptr [bp - 0Fh], 0
 0x0000000000000595:  88 56 F0          mov       byte ptr [bp - 010h], dl
 0x0000000000000598:  8B 56 F6          mov       dx, word ptr [bp - 0Ah]
-0x000000000000059b:  BE BE 02          mov       si, 0x2be
+0x000000000000059b:  BE BE 02          mov       si, OFFSET _maskedcachedbasecol
 0x000000000000059e:  03 56 F0          add       dx, word ptr [bp - 010h]
 0x00000000000005a1:  89 14             mov       word ptr [si], dx
 0x00000000000005a3:  89 C2             mov       dx, ax
-0x00000000000005a5:  BE BA 02          mov       si, 0x2ba
+0x00000000000005a5:  BE BA 02          mov       si, OFFSET _maskedprevlookup
 0x00000000000005a8:  29 CA             sub       dx, cx
 0x00000000000005aa:  89 14             mov       word ptr [si], dx
-0x00000000000005ac:  BE B8 02          mov       si, 0x2b8
+0x00000000000005ac:  BE B8 02          mov       si, OFFSET _maskednextlookup
 0x00000000000005af:  89 04             mov       word ptr [si], ax
-0x00000000000005b1:  BE BC 02          mov       si, 0x2bc
+0x00000000000005b1:  BE BC 02          mov       si, OFFSET _maskedtexrepeat
 0x00000000000005b4:  C7 04 00 00       mov       word ptr [si], 0
 0x00000000000005b8:  85 FF             test      di, di
 0x00000000000005ba:  7F 03             jg        0x5bf
 0x00000000000005bc:  E9 89 01          jmp       0x748
-0x00000000000005bf:  B8 63 73          mov       ax, 0x7363
+0x00000000000005bf:  B8 63 73          mov       ax, MASKED_LOOKUP_SEGMENT_7000
 0x00000000000005c2:  8B 76 EE          mov       si, word ptr [bp - 012h]
 0x00000000000005c5:  8E C0             mov       es, ax
 0x00000000000005c7:  26 8A 04          mov       al, byte ptr es:[si]
 0x00000000000005ca:  88 46 FE          mov       byte ptr [bp - 2], al
 0x00000000000005cd:  89 FE             mov       si, di
 0x00000000000005cf:  B8 BA 73          mov       ax, 0x73ba
-0x00000000000005d2:  2B 36 7E 1F       sub       si, word ptr [0x1f7e]
+0x00000000000005d2:  2B 36 7E 1F       sub       si, word ptr ds:[_firstpatch]
 0x00000000000005d6:  8E C0             mov       es, ax
 0x00000000000005d8:  31 C9             xor       cx, cx
 0x00000000000005da:  26 8A 04          mov       al, byte ptr es:[si]
@@ -2731,21 +2774,21 @@ PUBLIC R_GetMaskedColumnSegment_
 0x00000000000005e5:  80 66 F8 0F       and       byte ptr [bp - 8], 0xf
 0x00000000000005e9:  88 04             mov       byte ptr [si], al
 0x00000000000005eb:  31 C0             xor       ax, ax
-0x00000000000005ed:  3B 3E 18 1C       cmp       di, word ptr [0x1c18]
+0x00000000000005ed:  3B 3E 18 1C       cmp       di, word ptr ds:[_cachedlumps]
 0x00000000000005f1:  74 11             je        0x604
 0x00000000000005f3:  40                inc       ax
 0x00000000000005f4:  83 C1 02          add       cx, 2
 0x00000000000005f7:  3D 04 00          cmp       ax, 4
 0x00000000000005fa:  7D 6C             jge       0x668
 0x00000000000005fc:  89 CE             mov       si, cx
-0x00000000000005fe:  3B BC 18 1C       cmp       di, word ptr [si + 0x1c18]
+0x00000000000005fe:  3B BC 18 1C       cmp       di, word ptr ds:[si + _cachedlumps]
 0x0000000000000602:  75 EF             jne       0x5f3
 0x0000000000000604:  85 C0             test      ax, ax
 0x0000000000000606:  75 73             jne       0x67b
 0x0000000000000608:  85 DB             test      bx, bx
 0x000000000000060a:  7C 69             jl        0x675
-0x000000000000060c:  BE C0 02          mov       si, 0x2c0
-0x000000000000060f:  A1 10 1C          mov       ax, word ptr [0x1c10]
+0x000000000000060c:  BE C0 02          mov       si, OFFSET _maskedcachedsegment
+0x000000000000060f:  A1 10 1C          mov       ax, word ptr ds:[_cachedsegmentlumps]
 0x0000000000000612:  89 04             mov       word ptr [si], ax
 0x0000000000000614:  8A 46 FE          mov       al, byte ptr [bp - 2]
 0x0000000000000617:  3C FF             cmp       al, 0FFh
@@ -2761,7 +2804,7 @@ PUBLIC R_GetMaskedColumnSegment_
 0x000000000000062f:  26 8B 17          mov       dx, word ptr es:[bx]
 0x0000000000000632:  BB 48 02          mov       bx, 0x248
 0x0000000000000635:  89 07             mov       word ptr [bx], ax
-0x0000000000000637:  BB C0 02          mov       bx, 0x2c0
+0x0000000000000637:  BB C0 02          mov       bx, OFFSET _maskedcachedsegment
 0x000000000000063a:  8B 07             mov       ax, word ptr [bx]
 0x000000000000063c:  81 C6 50 02       add       si, 0x250
 0x0000000000000640:  01 D0             add       ax, dx
@@ -2771,13 +2814,13 @@ PUBLIC R_GetMaskedColumnSegment_
 0x0000000000000645:  59                pop       cx
 0x0000000000000646:  5B                pop       bx
 0x0000000000000647:  CB                retf      
-0x0000000000000648:  BE BE 02          mov       si, 0x2be
+0x0000000000000648:  BE BE 02          mov       si, OFFSET _maskedcachedbasecol
 0x000000000000064b:  89 D7             mov       di, dx
 0x000000000000064d:  8B 46 F6          mov       ax, word ptr [bp - 0Ah]
 0x0000000000000650:  26 8B 3D          mov       di, word ptr es:[di]
 0x0000000000000653:  89 04             mov       word ptr [si], ax
 0x0000000000000655:  8A 46 FC          mov       al, byte ptr [bp - 4]
-0x0000000000000658:  BE BC 02          mov       si, 0x2bc
+0x0000000000000658:  BE BC 02          mov       si, OFFSET _maskedtexrepeat
 0x000000000000065b:  30 E4             xor       ah, ah
 0x000000000000065d:  89 04             mov       word ptr [si], ax
 0x000000000000065f:  E9 56 FF          jmp       0x5b8
@@ -2785,63 +2828,63 @@ PUBLIC R_GetMaskedColumnSegment_
 0x0000000000000665:  E9 15 FF          jmp       0x57d
 0x0000000000000668:  EB 4B             jmp       0x6b5
 0x000000000000066a:  89 C2             mov       dx, ax
-0x000000000000066c:  BE BE 02          mov       si, 0x2be
+0x000000000000066c:  BE BE 02          mov       si, OFFSET _maskedcachedbasecol
 0x000000000000066f:  2B 56 F2          sub       dx, word ptr [bp - 0Eh]
 0x0000000000000672:  E9 2C FF          jmp       0x5a1
 0x0000000000000675:  E9 86 00          jmp       0x6fe
 0x0000000000000678:  E9 B4 00          jmp       0x72f
 0x000000000000067b:  89 CE             mov       si, cx
-0x000000000000067d:  8B 94 10 1C       mov       dx, word ptr [si + 0x1c10]
+0x000000000000067d:  8B 94 10 1C       mov       dx, word ptr [si ds:+ _cachedsegmentlumps]
 0x0000000000000681:  89 C1             mov       cx, ax
 0x0000000000000683:  89 56 F4          mov       word ptr [bp - 0Ch], dx
-0x0000000000000686:  8B 94 18 1C       mov       dx, word ptr [si + 0x1c18]
+0x0000000000000686:  8B 94 18 1C       mov       dx, word ptr ds:[si + _cachedlumps]
 0x000000000000068a:  7E 1C             jle       0x6a8
 0x000000000000068c:  89 C6             mov       si, ax
 0x000000000000068e:  01 C6             add       si, ax
 0x0000000000000690:  83 EE 02          sub       si, 2
-0x0000000000000693:  8B 84 10 1C       mov       ax, word ptr [si + 0x1c10]
-0x0000000000000697:  89 84 12 1C       mov       word ptr [si + 0x1c12], ax
-0x000000000000069b:  8B 84 18 1C       mov       ax, word ptr [si + 0x1c18]
+0x0000000000000693:  8B 84 10 1C       mov       ax, word ptr ds:[si + _cachedsegmentlumps]
+0x0000000000000697:  89 84 12 1C       mov       word ptr ds:[si + _cachedsegmentlumps + 2], ax
+0x000000000000069b:  8B 84 18 1C       mov       ax, word ptr ds:[si + _cachedlumps]
 0x000000000000069f:  49                dec       cx
-0x00000000000006a0:  89 84 1A 1C       mov       word ptr [si + 0x1c1a], ax
+0x00000000000006a0:  89 84 1A 1C       mov       word ptr ds:[si + _cachedlumps+2], ax
 0x00000000000006a4:  85 C9             test      cx, cx
 0x00000000000006a6:  7F E8             jg        0x690
 0x00000000000006a8:  8B 46 F4          mov       ax, word ptr [bp - 0Ch]
-0x00000000000006ab:  89 16 18 1C       mov       word ptr [0x1c18], dx
-0x00000000000006af:  A3 10 1C          mov       word ptr [0x1c10], ax
+0x00000000000006ab:  89 16 18 1C       mov       word ptr ds:[_cachedlumps], dx
+0x00000000000006af:  A3 10 1C          mov       word ptr ds:[_cachedsegmentlumps], ax
 0x00000000000006b2:  E9 53 FF          jmp       0x608
-0x00000000000006b5:  A1 14 1C          mov       ax, word ptr [0x1c14]
-0x00000000000006b8:  A3 16 1C          mov       word ptr [0x1c16], ax
-0x00000000000006bb:  A1 12 1C          mov       ax, word ptr [0x1c12]
-0x00000000000006be:  A3 14 1C          mov       word ptr [0x1c14], ax
-0x00000000000006c1:  A1 10 1C          mov       ax, word ptr [0x1c10]
-0x00000000000006c4:  A3 12 1C          mov       word ptr [0x1c12], ax
-0x00000000000006c7:  A1 1C 1C          mov       ax, word ptr [0x1c1c]
-0x00000000000006ca:  BE B8 02          mov       si, 0x2b8
-0x00000000000006cd:  A3 1E 1C          mov       word ptr [0x1c1e], ax
-0x00000000000006d0:  A1 1A 1C          mov       ax, word ptr [0x1c1a]
+0x00000000000006b5:  A1 14 1C          mov       ax, word ptr ds:[_cachedsegmentlumps+4]
+0x00000000000006b8:  A3 16 1C          mov       word ptr ds:[_cachedsegmentlumps+6], ax
+0x00000000000006bb:  A1 12 1C          mov       ax, word ptr ds:[_cachedsegmentlumps+2]
+0x00000000000006be:  A3 14 1C          mov       word ptr ds:[_cachedsegmentlumps+4], ax
+0x00000000000006c1:  A1 10 1C          mov       ax, word ptr ds:[_cachedsegmentlumps]
+0x00000000000006c4:  A3 12 1C          mov       word ptr ds:[_cachedsegmentlumps+2], ax
+0x00000000000006c7:  A1 1C 1C          mov       ax, word ptr ds:[_cachedlumps+4]
+0x00000000000006ca:  BE B8 02          mov       si, OFFSET _maskednextlookup
+0x00000000000006cd:  A3 1E 1C          mov       word ptr ds:[_cachedlumps+6], ax
+0x00000000000006d0:  A1 1A 1C          mov       ax, word ptr ds:[_cachedlumps+2]
 0x00000000000006d3:  8A 56 FE          mov       dl, byte ptr [bp - 2]
-0x00000000000006d6:  A3 1C 1C          mov       word ptr [0x1c1c], ax
-0x00000000000006d9:  A1 18 1C          mov       ax, word ptr [0x1c18]
+0x00000000000006d6:  A3 1C 1C          mov       word ptr ds:[_cachedlumps+4], ax
+0x00000000000006d9:  A1 18 1C          mov       ax, word ptr ds:[_cachedlumps]
 0x00000000000006dc:  30 F6             xor       dh, dh
-0x00000000000006de:  A3 1A 1C          mov       word ptr [0x1c1a], ax
+0x00000000000006de:  A3 1A 1C          mov       word ptr ds:[_cachedlumps+2], ax
 0x00000000000006e1:  89 F8             mov       ax, di
 0x00000000000006e3:  8B 0C             mov       cx, word ptr [si]
 0x00000000000006e5:  E8 A2 0A          call      0x118a
-0x00000000000006e8:  A3 10 1C          mov       word ptr [0x1c10], ax
-0x00000000000006eb:  89 3E 18 1C       mov       word ptr [0x1c18], di
+0x00000000000006e8:  A3 10 1C          mov       word ptr ds:[_cachedsegmentlumps], ax
+0x00000000000006eb:  89 3E 18 1C       mov       word ptr ds:[_cachedlumps], di
 0x00000000000006ef:  8A 46 FC          mov       al, byte ptr [bp - 4]
 0x00000000000006f2:  89 0C             mov       word ptr [si], cx
-0x00000000000006f4:  BE BC 02          mov       si, 0x2bc
+0x00000000000006f4:  BE BC 02          mov       si, OFFSET _maskedtexrepeat
 0x00000000000006f7:  30 E4             xor       ah, ah
 0x00000000000006f9:  89 04             mov       word ptr [si], ax
 0x00000000000006fb:  E9 0A FF          jmp       0x608
 0x00000000000006fe:  89 FE             mov       si, di
 0x0000000000000700:  B8 7E 73          mov       ax, 0x737e
-0x0000000000000703:  2B 36 7E 1F       sub       si, word ptr [0x1f7e]
+0x0000000000000703:  2B 36 7E 1F       sub       si, word ptr ds:[_firstpatch]
 0x0000000000000707:  8E C0             mov       es, ax
 0x0000000000000709:  01 F6             add       si, si
-0x000000000000070b:  BA A2 82          mov       dx, 0x82a2
+0x000000000000070b:  BA A2 82          mov       dx, TEXTUREWIDTHMASKS_SEGMENT
 0x000000000000070e:  26 8B 04          mov       ax, word ptr es:[si]
 0x0000000000000711:  8B 76 EE          mov       si, word ptr [bp - 012h]
 0x0000000000000714:  8E C2             mov       es, dx
@@ -2862,7 +2905,7 @@ PUBLIC R_GetMaskedColumnSegment_
 0x0000000000000735:  88 04             mov       byte ptr [si], al
 0x0000000000000737:  88 C4             mov       ah, al
 0x0000000000000739:  88 D8             mov       al, bl
-0x000000000000073b:  BB C0 02          mov       bx, 0x2c0
+0x000000000000073b:  BB C0 02          mov       bx, OFFSET _maskedcachedsegment
 0x000000000000073e:  F6 E4             mul       ah
 0x0000000000000740:  03 07             add       ax, word ptr [bx]
 0x0000000000000742:  C9                LEAVE_MACRO     
@@ -2871,44 +2914,44 @@ PUBLIC R_GetMaskedColumnSegment_
 0x0000000000000745:  59                pop       cx
 0x0000000000000746:  5B                pop       bx
 0x0000000000000747:  CB                retf      
-0x0000000000000748:  B8 30 4F          mov       ax, 0x4f30
+0x0000000000000748:  B8 30 4F          mov       ax, TEXTURECOLLENGTH_SEGMENT
 0x000000000000074b:  8B 5E EE          mov       bx, word ptr [bp - 012h]
 0x000000000000074e:  8E C0             mov       es, ax
-0x0000000000000750:  A1 AC 06          mov       ax, word ptr [0x6ac]
+0x0000000000000750:  A1 AC 06          mov       ax, word ptr ds:[_cachedtex]
 0x0000000000000753:  26 8A 17          mov       dl, byte ptr es:[bx]
 0x0000000000000756:  39 D8             cmp       ax, bx
 0x0000000000000758:  74 40             je        0x79a
-0x000000000000075a:  A1 B2 06          mov       ax, word ptr [0x6b2]
+0x000000000000075a:  A1 B2 06          mov       ax, word ptr ds:[_cachedtex2]
 0x000000000000075d:  39 D8             cmp       ax, bx
 0x000000000000075f:  74 5B             je        0x7bc
-0x0000000000000761:  A1 AC 06          mov       ax, word ptr [0x6ac]
-0x0000000000000764:  BB B8 02          mov       bx, 0x2b8
-0x0000000000000767:  A3 B2 06          mov       word ptr [0x6b2], ax
-0x000000000000076a:  A1 AE 06          mov       ax, word ptr [0x6ae]
+0x0000000000000761:  A1 AC 06          mov       ax, word ptr ds:[_cachedtex]
+0x0000000000000764:  BB B8 02          mov       bx, OFFSET _maskednextlookup
+0x0000000000000767:  A3 B2 06          mov       word ptr ds:[_cachedtex2], ax
+0x000000000000076a:  A1 AE 06          mov       ax, word ptr ds:[_cachedsegmenttex]
 0x000000000000076d:  8B 0F             mov       cx, word ptr [bx]
-0x000000000000076f:  A3 B0 06          mov       word ptr [0x6b0], ax
-0x0000000000000772:  A0 B4 06          mov       al, byte ptr [0x6b4]
+0x000000000000076f:  A3 B0 06          mov       word ptr ds:[_cachedsegmenttex2], ax
+0x0000000000000772:  A0 B4 06          mov       al, byte ptr ds:[_cachedcollength]
 0x0000000000000775:  8B 5E EE          mov       bx, word ptr [bp - 012h]
-0x0000000000000778:  A2 B5 06          mov       byte ptr [0x6b5], al
+0x0000000000000778:  A2 B5 06          mov       byte ptr ds:[_cachedcollength2], al
 0x000000000000077b:  89 D8             mov       ax, bx
-0x000000000000077d:  89 1E AC 06       mov       word ptr [0x6ac], bx
-0x0000000000000781:  E8 9B 0A          call      0x121f
-0x0000000000000784:  BB B8 02          mov       bx, 0x2b8
-0x0000000000000787:  A3 AE 06          mov       word ptr [0x6ae], ax
+0x000000000000077d:  89 1E AC 06       mov       word ptr ds:[_cachedtex], bx
+0x0000000000000781:  E8 9B 0A          call      R_GetCompositeTexture_
+0x0000000000000784:  BB B8 02          mov       bx, OFFSET _maskednextlookup
+0x0000000000000787:  A3 AE 06          mov       word ptr ds:[_cachedsegmenttex], ax
 0x000000000000078a:  8A 46 FC          mov       al, byte ptr [bp - 4]
 0x000000000000078d:  89 0F             mov       word ptr [bx], cx
-0x000000000000078f:  BB BC 02          mov       bx, 0x2bc
+0x000000000000078f:  BB BC 02          mov       bx, OFFSET _maskedtexrepeat
 0x0000000000000792:  30 E4             xor       ah, ah
-0x0000000000000794:  88 16 B4 06       mov       byte ptr [0x6b4], dl
+0x0000000000000794:  88 16 B4 06       mov       byte ptr ds:[_cachedcollength], dl
 0x0000000000000798:  89 07             mov       word ptr [bx], ax
 0x000000000000079a:  BB BA 03          mov       bx, 0x3ba
 0x000000000000079d:  88 17             mov       byte ptr [bx], dl
 0x000000000000079f:  BB C2 02          mov       bx, 0x2c2
 0x00000000000007a2:  88 17             mov       byte ptr [bx], dl
-0x00000000000007a4:  BB C0 02          mov       bx, 0x2c0
-0x00000000000007a7:  A1 AE 06          mov       ax, word ptr [0x6ae]
+0x00000000000007a4:  BB C0 02          mov       bx, OFFSET _maskedcachedsegment
+0x00000000000007a7:  A1 AE 06          mov       ax, word ptr ds:[_cachedsegmenttex]
 0x00000000000007aa:  89 07             mov       word ptr [bx], ax
-0x00000000000007ac:  A0 B4 06          mov       al, byte ptr [0x6b4]
+0x00000000000007ac:  A0 B4 06          mov       al, byte ptr ds:[_cachedcollength]
 0x00000000000007af:  8A 66 FA          mov       ah, byte ptr [bp - 6]
 0x00000000000007b2:  F6 E4             mul       ah
 0x00000000000007b4:  03 07             add       ax, word ptr [bx]
@@ -2918,23 +2961,23 @@ PUBLIC R_GetMaskedColumnSegment_
 0x00000000000007b9:  59                pop       cx
 0x00000000000007ba:  5B                pop       bx
 0x00000000000007bb:  CB                retf      
-0x00000000000007bc:  8B 1E AC 06       mov       bx, word ptr [0x6ac]
-0x00000000000007c0:  A1 B2 06          mov       ax, word ptr [0x6b2]
+0x00000000000007bc:  8B 1E AC 06       mov       bx, word ptr ds:[_cachedtex]
+0x00000000000007c0:  A1 B2 06          mov       ax, word ptr ds:[_cachedtex2]
 0x00000000000007c3:  89 5E EE          mov       word ptr [bp - 012h], bx
-0x00000000000007c6:  A3 AC 06          mov       word ptr [0x6ac], ax
-0x00000000000007c9:  89 1E B2 06       mov       word ptr [0x6b2], bx
-0x00000000000007cd:  8B 1E AE 06       mov       bx, word ptr [0x6ae]
-0x00000000000007d1:  A1 B0 06          mov       ax, word ptr [0x6b0]
+0x00000000000007c6:  A3 AC 06          mov       word ptr ds:[_cachedtex], ax
+0x00000000000007c9:  89 1E B2 06       mov       word ptr ds:[_cachedtex2], bx
+0x00000000000007cd:  8B 1E AE 06       mov       bx, word ptr ds:[_cachedsegmenttex]
+0x00000000000007d1:  A1 B0 06          mov       ax, word ptr ds:[_cachedsegmenttex2]]
 0x00000000000007d4:  89 5E EE          mov       word ptr [bp - 012h], bx
-0x00000000000007d7:  89 1E B0 06       mov       word ptr [0x6b0], bx
-0x00000000000007db:  8A 1E B4 06       mov       bl, byte ptr [0x6b4]
-0x00000000000007df:  A3 AE 06          mov       word ptr [0x6ae], ax
+0x00000000000007d7:  89 1E B0 06       mov       word ptr ds:[_cachedsegmenttex2], bx
+0x00000000000007db:  8A 1E B4 06       mov       bl, byte ptr ds:[_cachedcollength]
+0x00000000000007df:  A3 AE 06          mov       word ptr ds:[_cachedsegmenttex], ax
 0x00000000000007e2:  30 FF             xor       bh, bh
-0x00000000000007e4:  A0 B5 06          mov       al, byte ptr [0x6b5]
+0x00000000000007e4:  A0 B5 06          mov       al, byte ptr ds:[_cachedcollength2]
 0x00000000000007e7:  89 5E EE          mov       word ptr [bp - 012h], bx
-0x00000000000007ea:  A2 B4 06          mov       byte ptr [0x6b4], al
+0x00000000000007ea:  A2 B4 06          mov       byte ptr ds:[_cachedcollength], al
 0x00000000000007ed:  8A 46 EE          mov       al, byte ptr [bp - 012h]
-0x00000000000007f0:  A2 B5 06          mov       byte ptr [0x6b5], al
+0x00000000000007f0:  A2 B5 06          mov       byte ptr ds:[_cachedcollength2], al
 0x00000000000007f3:  EB A5             jmp       0x79a
 
 ENDP

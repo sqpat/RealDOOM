@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2265
+#define CONSTANTS_COUNT 2276
 #define LOCALS_COUNT 21
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -51,8 +51,20 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "MASKED_LOOKUP_SEGMENT",
     "MASKED_LOOKUP_SEGMENT_7000",
     "PATCHWIDTHS_SEGMENT",
+    "PATCHHEIGHTS_SEGMENT",
     "DRAWSEGS_BASE_SEGMENT",
     "DRAWSEGS_BASE_SEGMENT_7000",
+
+	"TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT",
+	"TEXTUREDEFS_BYTES_7000_SEGMENT",
+	"SPRITETOPOFFSETS_7000_SEGMENT",
+	"TEXTUREDEFS_OFFSET_7000_SEGMENT",
+	"MASKED_LOOKUP_7000_SEGMENT",
+	"PATCHWIDTHS_7000_SEGMENT",
+	"PATCHHEIGHTS_7000_SEGMENT",
+	"FINETANGENTINNER_7000_SEGMENT",
+	"RENDER_9800_END_7000_SEGMENT",
+
 
     "STATES_SEGMENT",
     "EVENTS_SEGMENT",
@@ -137,6 +149,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"COMPOSITETEXTUREOFFSET_OFFSET",
 	
 	"TEXTURECOMPOSITESIZES_SEGMENT",
+	"TEXTURECOLLENGTH_SEGMENT",
 
     "NODES_RENDER_SEGMENT",
     "SEGS_RENDER_SEGMENT",
@@ -2382,8 +2395,20 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     masked_lookup_segment,
     masked_lookup_segment_7000,
     patchwidths_segment,
+	patchheights_segment,
     drawsegs_BASE_segment,
     drawsegs_BASE_segment_7000,
+
+	texturecolumnlumps_bytes_7000_segment,
+	texturedefs_bytes_7000_segment,
+	spritetopoffsets_7000_segment,
+	texturedefs_offset_7000_segment,
+	masked_lookup_7000_segment,
+	patchwidths_7000_segment,
+	patchheights_7000_segment,
+	finetangentinner_7000_segment,
+	render_9800_end_7000_segment,
+
 
     states_segment,
     events_segment,
@@ -2466,7 +2491,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     compositetextureoffset_segment,
 	size_compositetexturepage,
 	texturecompositesizes_segment,
-
+	texturecollength_segment,
 
     nodes_render_segment,
     segs_render_segment,

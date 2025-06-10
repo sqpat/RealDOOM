@@ -2364,6 +2364,8 @@ void setchecksum(){
 // if texturecolumnlump, mask, etc are not stack vars but near vars, 
 // their values can be reused
 // if tex is same as last call.
+segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcachetype);
+/*
 
 segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcachetype) {
 	int16_t         lump;
@@ -2391,18 +2393,20 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		seglooptexrepeat[segloopcachetype] 		= loopwidth; // might be 256 and we need the modulo..
 		//seglooptexmodulo[segloopcachetype]      = loopwidth - 1; 
 		// no non power of 2s in vanilla
-		/*
-		if ((loopwidth & loopwidth - 1) == 0) { // power of 2 check
-			// most textures are power of 2 and its much faster to modulo by ANDing (size-1)
-		} else {
-			// we will do a manual modulo process in this case
-			seglooptexmodulo[segloopcachetype]  = 0;
+	
+	
+		// if ((loopwidth & loopwidth - 1) == 0) { // power of 2 check
+		// 	// most textures are power of 2 and its much faster to modulo by ANDing (size-1)
+		// } else {
+		// 	// we will do a manual modulo process in this case
+		// 	seglooptexmodulo[segloopcachetype]  = 0;
 
-			while (texcol > loopwidth){
-				texcol -= loopwidth;
-			}
-		}
-		*/
+		// 	while (texcol > loopwidth){
+		// 		texcol -= loopwidth;
+		// 	}
+		// }
+
+
 		//n+=2;
 	} else {
 
@@ -2534,18 +2538,16 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		segloopcachedsegment[segloopcachetype]  = cachedsegmentlumps[0];
 		
 
-		/*
-		if (setval && tex == 50){
-			FILE* fp = fopen("tex.txt", "ab");
-			fprintf(fp, "\n a %i %i %i %i %i %i %i %i", 
-			segloopprevlookup[segloopcachetype], 
-			segloopnextlookup[segloopcachetype], 
-			segloopcachedbasecol[segloopcachetype], 
-			col, patchwidth, subtractor, 
-			basecol, realbasecol);
-			fclose(fp);
-		}
-		*/
+		// if (setval && tex == 50){
+		// 	FILE* fp = fopen("tex.txt", "ab");
+		// 	fprintf(fp, "\n a %i %i %i %i %i %i %i %i", 
+		// 	segloopprevlookup[segloopcachetype], 
+		// 	segloopnextlookup[segloopcachetype], 
+		// 	segloopcachedbasecol[segloopcachetype], 
+		// 	col, patchwidth, subtractor, 
+		// 	basecol, realbasecol);
+		// 	fclose(fp);
+		// }
 
 		return cachedsegmentlumps[0] + (FastMul8u8u(col , heightval) );
 
@@ -2600,6 +2602,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 	}
 
 } 
+*/
 /*
 void doprint(int16_t a, int16_t tex){
 	if (setval && tex == 11){
