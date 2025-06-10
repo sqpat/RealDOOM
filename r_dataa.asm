@@ -2432,12 +2432,10 @@ loopwidth_nonzero:
 ;		segloopcachedbasecol[segloopcachetype]  = basecol;
 ;		seglooptexrepeat[segloopcachetype] 		= loopwidth; // might be 256 and we need the modulo..
 
-mov       al, byte ptr [bp - 2]
-cbw      
 mov       si, word ptr es:[bx]
-mov       di, ax
-mov       bx, ax
-add       di, ax
+mov       di, word ptr [bp - 2]
+mov       bx, di
+sal       di, 1
 mov       ax, word ptr [bp - 0Ch]
 mov       word ptr ds:[di + _segloopcachedbasecol], ax
 mov       al, byte ptr [bp - 4]
@@ -2580,7 +2578,7 @@ label_18:
 inc       ax
 add       bx, 2
 cmp       ax, NUM_CACHE_LUMPS
-jge       jump_to_label_15
+jge       jump_to_move_all_cache_back
 cmp       si, word ptr ds:[bx + _cachedlumps]
 jne       label_18
 cachedlumphit:
@@ -2625,17 +2623,16 @@ test      cx, cx
 jge       col_not_under_zero
 and       cx, ax                ; modulo by power of 2 
 col_not_under_zero:
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       bx, ax
-mov       al, byte ptr [bp - 6]
-mov       byte ptr ds:[bx + _segloopheightvalcache], al
-add       bx, bx
+mov       bx, word ptr [bp - 2]
+
+mov       dl, byte ptr [bp - 6]
+mov       byte ptr ds:[bx + _segloopheightvalcache], dl
+sal       bx, 1
 mov       ax, word ptr ds:[_cachedsegmentlumps]
 mov       word ptr ds:[bx + _segloopcachedsegment], ax
 
 xchg      ax, cx
-mul       byte ptr [bp - 6]
+mul       dl
 add       ax, cx
 LEAVE_MACRO     
 pop       di
@@ -2644,8 +2641,8 @@ pop       cx
 ret    
 
 
-jump_to_label_15:
-jmp       label_15
+jump_to_move_all_cache_back:
+jmp       move_all_cache_back
 
 
 not_cache_0:
@@ -2657,30 +2654,27 @@ not_cache_0:
 
 mov       dx, word ptr ds:[bx + _cachedlumps]
 mov       di, word ptr ds:[bx + _cachedsegmentlumps]
-mov       word ptr [bp - 0Eh], dx
-mov       dx, ax
 
 ;    for (i = cachelumpindex; i > 0; i--){
 ;        cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
 ;        cachedlumps[i] = cachedlumps[i-1];
 ;    }
 
-jle       label_24
+; todo stretch this loop out.
+jle       done_moving_cachelumps
 mov       bx, ax
 sal       bx, 1
-label_23:
+loop_move_cachelump:
 sub       bx, 2
 mov       ax, word ptr ds:[bx + _cachedsegmentlumps]
 mov       word ptr ds:[bx + _cachedsegmentlumps+2], ax
 mov       ax, word ptr ds:[bx + _cachedlumps]
-dec       dx
 mov       word ptr ds:[bx + _cachedlumps+2], ax
-test      dx, dx
-jg        label_23
-label_24:
-mov       ax, word ptr [bp - 0Eh]
+jg        loop_move_cachelump
+done_moving_cachelumps:
+
 mov       word ptr ds:[_cachedsegmentlumps], di
-mov       word ptr ds:[_cachedlumps], ax
+mov       word ptr ds:[_cachedlumps], dx
 jmp       found_cached_lump
 
 ;		// not found, set cache.
@@ -2690,7 +2684,7 @@ jmp       found_cached_lump
 ;		cachedlumps[3] = cachedlumps[2];
 ;		cachedlumps[2] = cachedlumps[1];
 ;		cachedlumps[1] = cachedlumps[0];
-label_15:
+move_all_cache_back:
 mov       ax, ds
 mov       es, ax
 mov       ax, OFFSET _cachedsegmentlumps
@@ -2705,10 +2699,8 @@ movsw
 movsw
 movsw
 xchg      ax, si    ; restore lump
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       di, ax
-mov       bx, ax
+mov       di, word ptr [bp - 2]
+mov       bx, di
 mov       bx, word ptr ds:[bx + di + _segloopnextlookup]
 mov       dx, 0FFh
 mov       ax, si
@@ -2732,11 +2724,8 @@ je        label_20
 mov       ax, word ptr ds:[_cachedtex2]
 cmp       ax, bx
 je        label_21
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       si, ax
-mov       bx, ax
-add       si, ax
+mov       si, word ptr [bp - 2]
+mov       bx, si
 mov       ax, word ptr ds:[_cachedtex]
 mov       word ptr ds:[_cachedtex2], ax
 mov       ax, word ptr ds:[_cachedsegmenttex]
@@ -2754,11 +2743,9 @@ mov       al, byte ptr [bp - 4]
 mov       word ptr ds:[si + _segloopnextlookup], cx
 mov       byte ptr ds:[bx + _seglooptexrepeat], al
 label_20:
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       bx, ax
+mov       bx, word ptr [bp - 2]
 mov       byte ptr ds:[bx + _segloopheightvalcache], dl
-add       bx, ax
+sal       bx, 1
 mov       ax, word ptr ds:[_cachedsegmenttex]
 mov       word ptr ds:[bx + _segloopcachedsegment], ax
 mov       al, byte ptr ds:[_cachedcollength]
