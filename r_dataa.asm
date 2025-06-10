@@ -3164,40 +3164,39 @@ mov       word ptr [bp - 0Eh], di  ; 8
 add       bx, 15
 and       bx, 0FFF0h
 xor       ax, ax
-mov       word ptr [bp - 2], bx
+mov       di, bx
 mov       word ptr [bp - 0Ch], ax
 
 start_sprite_column_loop:
-
+xor       cx, cx
 do_next_sprite_column:
 
 mov       si, word ptr [bp - 0Eh]
-mov       ax, word ptr [bp - 2]
+mov       ax, di
 
 SHIFT_MACRO shr       ax 4
-mov       si, word ptr ds:[si]
+mov       si, word ptr ds:[si]     ; new column base
 
-mov       di, word ptr [bp - 0Ah]
+mov       bx, word ptr [bp - 0Ah]
 
-stosw
+mov       word ptr es:[bx], ax
 mov       ax, word ptr [bp - 4]
-stosw
-mov       word ptr [bp - 0Ah], di
+mov       word ptr es:[bx+2], ax
+add       word ptr [bp - 0Ah], 4
 
-mov       bx, si
 
-cmp       byte ptr ds:[si], 0FFh
+lodsw
+cmp       al, 0FFh
 je        done_with_sprite_column
 do_next_sprite_post:
 
+mov       bx, word ptr [bp - 01Ah]
+mov       word ptr es:[bx], ax
 
-mov       di, word ptr [bp - 2]
-mov       al, byte ptr ds:[bx + 1]  ; size
-xor       ah, ah ; todo necessary?
-mov       si, bx
-mov       cx, ax
 
-add       si, 3
+mov       cl, ah
+mov       ax, cx
+inc       si
 
 
 
@@ -3207,29 +3206,24 @@ adc       cx, cx
 rep movsb 
 
 
-add       al, 15
-and       al, 0F0h
 
+add       di, 15
+and       di, 0FFF0h
 
-add       word ptr [bp - 2], ax
-
-mov       si, word ptr [bp - 01Ah]
 
 ; would like to push pop but bp is in use.
-mov       ax, word ptr ds:[bx]
-mov       word ptr es:[si], ax
 
 ; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
 
-mov       al, ah  ; bx + 1
-xor       ah, ah
 ; ah already zero?
 
-add       bx, ax
+
 add       word ptr [bp - 4], 2
-add       bx, 4
+inc       si
 add       word ptr [bp - 01Ah], 2
-cmp       byte ptr ds:[bx], 0FFh
+
+lodsw
+cmp       al, 0FFh
 jne       do_next_sprite_post
 done_with_sprite_column:
 
@@ -3241,7 +3235,7 @@ add       word ptr [bp - 01Ah], 2
 mov       ax, word ptr [bp - 0Ch]
 mov       word ptr es:[bx], 0FFFFh
 cmp       ax, word ptr [bp - 012h]
-jnge       do_next_sprite_column ; 8 bytes still
+jnge      do_next_sprite_column ; 8 bytes still
 
 
 done_with_sprite_column_loop:
