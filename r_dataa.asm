@@ -3192,18 +3192,13 @@ rep movsb
 
 
 add       di, 15
-and       di, 0FFF0h
-
-
-; would like to push pop but bp is in use.
+and       di, 0FFF0h  ; round up to next segment destination
 
 ; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
 
-; ah already zero?
-
-
 inc       si
-add       bx, 2
+inc       bx
+inc       bx
 
 lodsw
 cmp       al, 0FFh
@@ -3212,7 +3207,9 @@ done_with_sprite_column:
 
 mov       word ptr es:[bx], 0FFFFh
 add       dx, 4
-add       bx, 2
+inc       bx
+inc       bx
+
 
 SELFMODIFY_loadspritecolumn_width_check:
 mov       ax, 01000h
