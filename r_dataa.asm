@@ -3075,12 +3075,12 @@ PUBLIC R_LoadSpriteColumns_
 
 ; bp - 2      
 ; bp - 4      currentpostbyte?
-; bp - 6      segment (dx arg)
+; bp - 6      unused segment (dx arg)
 ; bp - 8      unused
 ; bp - 0Ah    
 ; bp - 0Ch    
 ; bp - 0Eh    column offset
-; bp - 010h   
+; bp - 010h   column segment (SCRATCH_ADDRESS_5000_SEGMENT)
 ; bp - 012h   patchwidth
 ; bp - 014h   unused
 ; bp - 016h   unused
@@ -3150,6 +3150,7 @@ mov       word ptr [bp - 01Ah], bx
 add       bx, word ptr es:[si]
 mov       ax, bx
 xor       ah, bh
+mov       es, dx  ; restore es
 
 ;	destoffset += spritepostdatasizes[lump-firstspritelump];
 ;	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
@@ -3164,7 +3165,7 @@ mov       word ptr [bp - 0Ah], 8
 mov       ax, si
 xor       ah, ah
 and       al, 0Fh
-mov       word ptr [bp - 6], dx
+
 add       bx, ax
 mov       word ptr [bp - 018h], bx
 xor       al, al
@@ -3172,48 +3173,46 @@ mov       word ptr [bp - 2], bx
 mov       word ptr [bp - 0Ch], ax
 
 start_sprite_column_loop:
-mov       word ptr [bp - 01Ch], SCRATCH_ADDRESS_5000_SEGMENT
-mov       word ptr [bp - 0Eh], di
+
+mov       word ptr [bp - 0Eh], di  ; zero
 do_next_sprite_column:
-mov       es, word ptr [bp - 01Ch]
+
 mov       si, word ptr [bp - 0Eh]
-mov       dx, SCRATCH_ADDRESS_5000_SEGMENT
 mov       ax, word ptr [bp - 018h]
 mov       di, word ptr [bp - 0Ah]
 add       word ptr [bp - 0Ah], 2
 shr       ax, 4
-mov       si, word ptr es:[si + 8]
-mov       es, word ptr [bp - 6]
-mov       word ptr [bp - 010h], dx
+mov       si, word ptr ds:[si + 8]
+
+
 mov       word ptr es:[di], ax
 mov       ax, word ptr [bp - 4]
-mov       di, word ptr [bp - 0Ah]
+mov       di, word ptr [bp - 0Ah]  ; todo eventually bp?
 mov       bx, si
 mov       word ptr es:[di], ax
-mov       es, dx
+
 add       word ptr [bp - 0Ah], 2
-cmp       byte ptr es:[si], 0FFh
+cmp       byte ptr ds:[si], 0FFh
 je        done_with_sprite_column
 do_next_sprite_post:
-mov       es, word ptr [bp - 010h]
-mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
+
+
 mov       di, word ptr [bp - 2]
-mov       dl, byte ptr es:[bx + 1]
+mov       dl, byte ptr ds:[bx + 1]
 mov       si, bx
-mov       al, dl
-mov       es, word ptr [bp - 6]
-xor       ah, ah
+mov       cl, dl
+
+xor       ch, ch
 add       si, 3
-push      ds
-push      di
-xchg      ax, cx
-mov       ds, ax
+
+
+
 shr       cx, 1
 rep movsw 
 adc       cx, cx
 rep movsb 
-pop       di
-pop       ds
+
+
 mov       al, dl
 and       al, 0Fh
 mov       ah, 010h
@@ -3221,25 +3220,25 @@ sub       ah, al
 mov       al, ah
 and       al, 0Fh
 add       al, dl
-mov       es, word ptr [bp - 010h]
+
 xor       ah, ah
 mov       si, word ptr [bp - 01Ah]
 add       word ptr [bp - 018h], ax
 add       word ptr [bp - 2], ax
-mov       ax, word ptr es:[bx]
-mov       es, word ptr [bp - 6]
+mov       ax, word ptr ds:[bx]
+
 mov       word ptr es:[si], ax
-mov       es, word ptr [bp - 010h]
-mov       al, byte ptr es:[bx + 1]
+
+mov       al, byte ptr ds:[bx + 1]
 xor       ah, ah
 add       bx, ax
 add       word ptr [bp - 4], 2
 add       bx, 4
 add       word ptr [bp - 01Ah], 2
-cmp       byte ptr es:[bx], 0FFh
+cmp       byte ptr ds:[bx], 0FFh
 jne       do_next_sprite_post
 done_with_sprite_column:
-mov       es, word ptr [bp - 6]
+
 mov       bx, word ptr [bp - 01Ah]
 add       word ptr [bp - 4], 2
 add       word ptr [bp - 0Eh], 4
