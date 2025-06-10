@@ -3157,7 +3157,9 @@ mov       es, dx  ; restore es
 ;	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
 
 
-mov       word ptr [bp - 0Ah], 8
+mov       di, 8
+mov       word ptr [bp - 0Ah], di
+mov       word ptr [bp - 0Eh], di  ; 8
 
 add       bx, 15
 and       bx, 0FFF0h
@@ -3167,24 +3169,23 @@ mov       word ptr [bp - 0Ch], ax
 
 start_sprite_column_loop:
 
-mov       word ptr [bp - 0Eh], di  ; zero
 do_next_sprite_column:
 
 mov       si, word ptr [bp - 0Eh]
 mov       ax, word ptr [bp - 2]
+
+SHIFT_MACRO shr       ax 4
+mov       si, word ptr ds:[si]
+
 mov       di, word ptr [bp - 0Ah]
-add       word ptr [bp - 0Ah], 2
-shr       ax, 4
-mov       si, word ptr ds:[si + 8]
 
-
-mov       word ptr es:[di], ax
+stosw
 mov       ax, word ptr [bp - 4]
-mov       di, word ptr [bp - 0Ah]  ; todo eventually bp?
-mov       bx, si
-mov       word ptr es:[di], ax
+stosw
+mov       word ptr [bp - 0Ah], di
 
-add       word ptr [bp - 0Ah], 2
+mov       bx, si
+
 cmp       byte ptr ds:[si], 0FFh
 je        done_with_sprite_column
 do_next_sprite_post:
@@ -3240,8 +3241,7 @@ add       word ptr [bp - 01Ah], 2
 mov       ax, word ptr [bp - 0Ch]
 mov       word ptr es:[bx], 0FFFFh
 cmp       ax, word ptr [bp - 012h]
-jge       done_with_sprite_column_loop ; 8 bytes still
-jmp       do_next_sprite_column
+jnge       do_next_sprite_column ; 8 bytes still
 
 
 done_with_sprite_column_loop:
