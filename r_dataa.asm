@@ -3075,15 +3075,15 @@ PUBLIC R_LoadSpriteColumns_
 
 ; bp - 2      
 ; bp - 4      currentpostbyte?
-; bp - 6      
-; bp - 8      
+; bp - 6      segment (dx arg)
+; bp - 8      unused
 ; bp - 0Ah    
 ; bp - 0Ch    
 ; bp - 0Eh    column offset
 ; bp - 010h   
 ; bp - 012h   patchwidth
 ; bp - 014h   unused
-; bp - 016h   
+; bp - 016h   unused
 ; bp - 018h   
 ; bp - 01Ah   currentpostbyte?
 ; bp - 01Ch   column segment (SCRATCH_ADDRESS_5000_SEGMENT)
@@ -3110,7 +3110,7 @@ xor       bx, bx
 
 call      W_CacheLumpNumDirect_
 xor       di, di
-
+mov       si, di
 ; wadpatch  is 0x5000 seg
 ; destpatch is dx
 ;	patchwidth = wadpatch->width;
@@ -3119,35 +3119,26 @@ xor       di, di
 ;	destpatch->leftoffset = wadpatch->leftoffset;
 ;	destpatch->topoffset = wadpatch->topoffset;
 
-mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
+mov       cx, word ptr ds:[_firstspritelump] ; get this before we clobber ds
+mov       ax, SCRATCH_ADDRESS_5000_SEGMENT
 
-mov       es, cx
-xor       si, si
-mov       ax, word ptr es:[di]
+mov       ds, ax
 mov       es, dx
-mov       word ptr es:[si], ax      ; destpatch->patchwidth
-mov       es, cx
+lodsw
 mov       word ptr [bp - 012h], ax  ; patchwidth
-mov       ax, word ptr es:[di + 2]
-mov       es, dx
-mov       word ptr es:[si + 2], ax
-mov       es, cx
-mov       ax, word ptr es:[di + 4]
-mov       es, dx
-mov       word ptr es:[si + 4], ax
-mov       es, cx
-mov       ax, word ptr es:[di + 6]
-mov       es, dx
-mov       word ptr es:[si + 6], ax
-
+stosw
+movsw
+movsw
+movsw
+mov       bx, ax ; patchwidth
+xor       di, di
 
 ; 	destoffset = 8 + ( patchwidth << 2);
 ;	currentpostbyte = destoffset;
 ;	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
 
-mov       ax, word ptr [bp - 01Eh]
-mov       bx, word ptr [bp - 012h]  ; patchwidth
-sub       ax, word ptr ds:[_firstspritelump]
+mov       ax, word ptr [bp - 01Eh]  ; todo store this in a reg somehow
+sub       ax, cx
 SHIFT_MACRO shl       bx 2
 mov       si, ax
 add       bx, 8
@@ -3172,11 +3163,9 @@ sub       si, ax
 mov       word ptr [bp - 0Ah], 8
 mov       ax, si
 xor       ah, ah
-mov       word ptr [bp - 016h], dx
 and       al, 0Fh
 mov       word ptr [bp - 6], dx
 add       bx, ax
-mov       word ptr [bp - 8], dx
 mov       word ptr [bp - 018h], bx
 xor       al, al
 mov       word ptr [bp - 2], bx
@@ -3194,7 +3183,7 @@ mov       di, word ptr [bp - 0Ah]
 add       word ptr [bp - 0Ah], 2
 shr       ax, 4
 mov       si, word ptr es:[si + 8]
-mov       es, word ptr [bp - 016h]
+mov       es, word ptr [bp - 6]
 mov       word ptr [bp - 010h], dx
 mov       word ptr es:[di], ax
 mov       ax, word ptr [bp - 4]
@@ -3212,7 +3201,7 @@ mov       di, word ptr [bp - 2]
 mov       dl, byte ptr es:[bx + 1]
 mov       si, bx
 mov       al, dl
-mov       es, word ptr [bp - 8]
+mov       es, word ptr [bp - 6]
 xor       ah, ah
 add       si, 3
 push      ds
@@ -3259,11 +3248,15 @@ add       word ptr [bp - 01Ah], 2
 mov       ax, word ptr [bp - 0Ch]
 mov       word ptr es:[bx], 0FFFFh
 cmp       ax, word ptr [bp - 012h]
-jge       done_with_sprite_column_loop
+jge       done_with_sprite_column_loop ; 045h bytes still
 jmp       do_next_sprite_column
 
 
 done_with_sprite_column_loop:
+
+mov       ax, ss  ; restore ds
+mov       ds, ax
+
 call      Z_QuickMapRender5000_
 LEAVE_MACRO     
 POPA_NO_AX_MACRO
