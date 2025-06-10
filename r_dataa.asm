@@ -2383,8 +2383,8 @@ PUBLIC R_GetColumnSegment_
 ; bp - 0Ch    basecol ?
 ; bp - 0Eh    
 ; bp - 010h   subtractor
-; bp - 012h   
-; bp - 014h   
+; bp - 012h   unused
+; bp - 014h   unused
 ; bp - 016h   ax/tex
 
 push      cx
@@ -2509,6 +2509,8 @@ mov       ax, dx
 sub       ax, di
 mov       di, ax
 jmp       segloopcachedbasecol_set
+jump_to_label_7:
+jmp       label_7
 
 lump_greater_than_zero_add_startpixel:
 ;			segloopcachedbasecol[segloopcachetype] = basecol + startpixel;
@@ -2537,77 +2539,135 @@ mov       word ptr ds:[bx + _segloopcachedbasecol], di
 ;		// this is not a single repeating texture 
 ;		seglooptexrepeat[segloopcachetype] 		= 0;
 
-mov       ax, dx
-sub       ax, word ptr [bp - 010h]
-mov       byte ptr ds:[bx + _seglooptexrepeat], 0
 mov       word ptr ds:[bx + _segloopnextlookup], dx
-mov       word ptr ds:[bx + _segloopprevlookup], ax
+sub       dx, word ptr [bp - 010h]
+mov       byte ptr ds:[bx + _seglooptexrepeat], 0
+mov       word ptr ds:[bx + _segloopprevlookup], dx
 
 
+;	if (lump > 0){
 
 done_with_loopwidth:
 test      si, si
 jle       jump_to_label_7
+; nonzero lump
+
+;		int16_t  cachelumpindex;
+;		int16_t  cached_nextlookup;
+;		uint8_t heightval = patchheights[lump-firstpatch];
+;		heightval &= 0x0F;
+
 mov       bx, si
-mov       ax, PATCHHEIGHTS_SEGMENT
 sub       bx, word ptr ds:[_firstpatch]  ; hardcode? selfmodifying?
+mov       ax, PATCHHEIGHTS_SEGMENT
 mov       es, ax
+
 mov       al, byte ptr es:[bx]
-mov       byte ptr [bp - 6], al
-xor       bx, bx
-and       byte ptr [bp - 6], 0Fh
+and       ax, 0Fh
+mov       word ptr [bp - 6], ax
 xor       ax, ax
+mov       bx, ax
+
+;		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
+;			if (lump == cachedlumps[cachelumpindex]){
+
 cmp       si, word ptr ds:[_cachedlumps]
-je        label_14
+je        cachedlumphit
+
+
+
 label_18:
 inc       ax
 add       bx, 2
-cmp       ax, 4
+cmp       ax, NUM_CACHE_LUMPS
 jge       jump_to_label_15
 cmp       si, word ptr ds:[bx + _cachedlumps]
 jne       label_18
-label_14:
+cachedlumphit:
 test      ax, ax
-jne       label_19
-label_22:
+jne       not_cache_0
+found_cached_lump:
+
+;		if (col < 0){
+;			uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
+;			if (patchwidth > texturewidthmasks[tex]){
+;				patchwidth = texturewidthmasks[tex];
+;				patchwidth++;
+;			}
+;		}
+
 test      cx, cx
-jge       jump_to_label_4
+jge       col_not_under_zero
 mov       bx, si
-mov       ax, PATCHWIDTHS_SEGMENT
 sub       bx, word ptr ds:[_firstpatch]
+mov       ax, PATCHWIDTHS_SEGMENT
 mov       es, ax
-add       bx, bx
-mov       dx, TEXTUREWIDTHMASKS_SEGMENT
+sal       bx, 1
 mov       ax, word ptr es:[bx]
-mov       bx, word ptr [bp - 016h]
+mov       bx, word ptr [bp - 016h]      ; tex
+mov       dx, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, dx
 mov       dl, byte ptr es:[bx]
 xor       dh, dh
 cmp       ax, dx
-ja        jump_to_label_3
-label_5:
+;			if (patchwidth > texturewidthmasks[tex]){
+jna       negative_modulo_thing
+;				patchwidth = texturewidthmasks[tex];
+mov       ax, dx
+
+;			while (col < 0){
+;				col+= patchwidth;
+;			}
+; todo just and patchwidth -1
+
+negative_modulo_thing:
 test      cx, cx
-jge       jump_to_label_4
-add       cx, ax
-jmp       label_5
-jump_to_label_7:
-jmp       label_7
+jge       col_not_under_zero
+and       cx, ax                ; modulo by power of 2 
+col_not_under_zero:
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       bx, ax
+mov       al, byte ptr [bp - 6]
+mov       byte ptr ds:[bx + _segloopheightvalcache], al
+add       bx, bx
+mov       ax, word ptr ds:[_cachedsegmentlumps]
+mov       word ptr ds:[bx + _segloopcachedsegment], ax
+
+xchg      ax, cx
+mul       byte ptr [bp - 6]
+add       ax, cx
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+ret    
 
 
 jump_to_label_15:
 jmp       label_15
-jump_to_label_4:
-jmp       label_4
-jump_to_label_3:
-jmp       label_3
-label_19:
+
+
+not_cache_0:
+; todo clean this up a lot. something with si/di looping? or hard code with no loop?
+
+;    segment_t usedsegment = cachedsegmentlumps[cachelumpindex];
+;    int16_t cachedlump = cachedlumps[cachelumpindex];
+;    int16_t i;
+
 mov       dx, word ptr ds:[bx + _cachedlumps]
 mov       di, word ptr ds:[bx + _cachedsegmentlumps]
 mov       word ptr [bp - 0Eh], dx
 mov       dx, ax
+
+;    for (i = cachelumpindex; i > 0; i--){
+;        cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
+;        cachedlumps[i] = cachedlumps[i-1];
+;    }
+
 jle       label_24
 mov       bx, ax
-add       bx, ax
+sal       bx, 1
 label_23:
 sub       bx, 2
 mov       ax, word ptr ds:[bx + _cachedsegmentlumps]
@@ -2621,59 +2681,46 @@ label_24:
 mov       ax, word ptr [bp - 0Eh]
 mov       word ptr ds:[_cachedsegmentlumps], di
 mov       word ptr ds:[_cachedlumps], ax
-jmp       label_22
+jmp       found_cached_lump
+
+;		// not found, set cache.
+;		cachedsegmentlumps[3] = cachedsegmentlumps[2];
+;		cachedsegmentlumps[2] = cachedsegmentlumps[1];
+;		cachedsegmentlumps[1] = cachedsegmentlumps[0];
+;		cachedlumps[3] = cachedlumps[2];
+;		cachedlumps[2] = cachedlumps[1];
+;		cachedlumps[1] = cachedlumps[0];
 label_15:
-mov       ax, word ptr ds:[_cachedsegmentlumps+4]
-mov       word ptr ds:[_cachedsegmentlumps+6], ax
-mov       ax, word ptr ds:[_cachedsegmentlumps+2]
-mov       word ptr ds:[_cachedsegmentlumps+4], ax
-mov       ax, word ptr ds:[_cachedsegmentlumps]
-mov       word ptr ds:[_cachedsegmentlumps+2], ax
-mov       ax, word ptr ds:[_cachedlumps+4]
-mov       word ptr ds:[_cachedlumps+6], ax
-mov       ax, word ptr ds:[_cachedlumps+2]
-mov       word ptr ds:[_cachedlumps+4], ax
-mov       ax, word ptr ds:[_cachedlumps]
-mov       word ptr ds:[_cachedlumps+2], ax
+mov       ax, ds
+mov       es, ax
+mov       ax, OFFSET _cachedsegmentlumps
+mov       di, OFFSET _cachedsegmentlumps + 2
+xchg      ax, si
+movsw
+movsw
+movsw
+mov       si, OFFSET _cachedlumps
+mov       di, OFFSET _cachedlumps + 2   ; todo make these adjacent...
+movsw
+movsw
+movsw
+xchg      ax, si    ; restore lump
 mov       al, byte ptr [bp - 2]
 cbw      
 mov       di, ax
-add       di, ax
 mov       bx, ax
-mov       ax, word ptr ds:[di + _segloopnextlookup]
+mov       bx, word ptr ds:[bx + di + _segloopnextlookup]
 mov       dx, 0FFh
-mov       word ptr [bp - 012h], ax
 mov       ax, si
 call      R_GetPatchTexture_
 mov       word ptr ds:[_cachedsegmentlumps], ax
-mov       ax, word ptr [bp - 012h]
-mov       word ptr ds:[di + _segloopnextlookup], ax
+mov       word ptr ds:[di + _segloopnextlookup], bx
+sar       di, 1
 mov       al, byte ptr [bp - 4]
 mov       word ptr ds:[_cachedlumps], si
-mov       byte ptr ds:[bx + _seglooptexrepeat], al
-jmp       label_22
-label_3:
-mov       ax, dx
-inc       ax
-jmp       label_5
-label_4:
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       bx, ax
-mov       al, byte ptr [bp - 6]
-mov       byte ptr ds:[bx + _segloopheightvalcache], al
-add       bx, bx
-mov       ax, word ptr ds:[_cachedsegmentlumps]
-mov       word ptr ds:[bx + _segloopcachedsegment], ax
-mov       ah, byte ptr [bp - 6]
-mov       al, cl
-mul       ah
-add       ax, word ptr ds:[_cachedsegmentlumps]
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-ret       
+mov       byte ptr ds:[di + _seglooptexrepeat], al
+jmp       found_cached_lump
+   
 label_7:
 mov       ax, TEXTURECOLLENGTH_SEGMENT
 mov       bx, word ptr [bp - 016h]
@@ -2715,8 +2762,7 @@ add       bx, ax
 mov       ax, word ptr ds:[_cachedsegmenttex]
 mov       word ptr ds:[bx + _segloopcachedsegment], ax
 mov       al, byte ptr ds:[_cachedcollength]
-mov       ah, byte ptr [bp - 8]
-mul       ah
+mul       byte ptr [bp - 8]
 add       ax, word ptr ds:[_cachedsegmenttex]
 LEAVE_MACRO     
 pop       di
@@ -2849,7 +2895,7 @@ PUBLIC R_GetMaskedColumnSegment_
 0x00000000000005f1:  74 11             je        0x604
 0x00000000000005f3:  40                inc       ax
 0x00000000000005f4:  83 C1 02          add       cx, 2
-0x00000000000005f7:  3D 04 00          cmp       ax, 4
+0x00000000000005f7:  3D 04 00          cmp       ax, NUM_CACHE_LUMPS
 0x00000000000005fa:  7D 6C             jge       0x668
 0x00000000000005fc:  89 CE             mov       si, cx
 0x00000000000005fe:  3B BC 18 1C       cmp       di, word ptr ds:[si + _cachedlumps]
