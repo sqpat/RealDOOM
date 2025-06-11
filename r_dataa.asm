@@ -50,7 +50,6 @@ EXTRN _usedtexturepagemem:BYTE
 EXTRN _usedspritepagemem:BYTE
 EXTRN _pageswapargs:WORD
 EXTRN _cachedtex:WORD
-EXTRN _cachedtex2:WORD
 EXTRN _cachedlumps:WORD
 EXTRN _activenumpages:WORD
 EXTRN _activetexturepages:WORD
@@ -62,10 +61,8 @@ EXTRN _firstpatch:WORD
 EXTRN _pagesegments:WORD
 
 
-EXTRN _cachedcollength:WORD
-EXTRN _cachedcollength2:WORD
+EXTRN _cachedcollength:BYTE
 EXTRN _cachedsegmenttex:WORD
-EXTRN _cachedsegmenttex2:WORD
 EXTRN _segloopnextlookup:WORD
 EXTRN _segloopprevlookup:WORD
 EXTRN _segloopcachedsegment:WORD
@@ -1704,7 +1701,7 @@ mov   di, OFFSET _cachedlumps
 ; todo: investigate if the cache was really emptied?
 mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
 mov   word ptr ds:[_cachedtex], ax
-mov   word ptr ds:[_cachedtex2], ax
+mov   word ptr ds:[_cachedtex+2], ax
 
 ;    cachedlumps[0] = -1;
 ;    cachedlumps[1] = -1;
@@ -2024,11 +2021,10 @@ mov   dl, FIRST_TEXTURE_LOGICAL_PAGE
 call  R_GetTexturePage_
 SHIFT_MACRO shl   si 4
 xor   ah, ah
-mov   bx, ax
-sal   bx, 1
+xchg  ax, si
+sal   si, 1
 
-mov   ax, si
-add   ax, word ptr ds:[bx + _pagesegments]
+add   ax, word ptr ds:[si + _pagesegments]
 add   ah, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
 
 pop   si
@@ -2507,8 +2503,8 @@ mov       ax, dx
 sub       ax, di
 mov       di, ax
 jmp       segloopcachedbasecol_set
-jump_to_label_7:
-jmp       label_7
+jump_to_update_tex_caches_and_return:
+jmp       update_tex_caches_and_return
 
 lump_greater_than_zero_add_startpixel:
 ;			segloopcachedbasecol[segloopcachetype] = basecol + startpixel;
@@ -2547,7 +2543,7 @@ mov       word ptr ds:[bx + _segloopprevlookup], dx
 
 done_with_loopwidth:
 test      si, si
-jle       jump_to_label_7
+jle       jump_to_update_tex_caches_and_return
 ; nonzero lump
 
 ;		int16_t  cachelumpindex;
@@ -2713,68 +2709,114 @@ mov       word ptr ds:[_cachedlumps], si
 mov       byte ptr ds:[di + _seglooptexrepeat], al
 jmp       found_cached_lump
    
-label_7:
+update_tex_caches_and_return:
+; not a lump
+mov       si, word ptr [bp - 2]   ; si is this for now
+mov       bx, OFFSET _cachedsegmenttex
+mov       di, word ptr [bp - 016h]      ; di = tex
 mov       ax, TEXTURECOLLENGTH_SEGMENT
-mov       bx, word ptr [bp - 016h]
 mov       es, ax
 mov       ax, word ptr ds:[_cachedtex]
-mov       dl, byte ptr es:[bx]
-cmp       ax, bx
-je        label_20
-mov       ax, word ptr ds:[_cachedtex2]
-cmp       ax, bx
-je        label_21
-mov       si, word ptr [bp - 2]
-mov       bx, si
-mov       ax, word ptr ds:[_cachedtex]
-mov       word ptr ds:[_cachedtex2], ax
-mov       ax, word ptr ds:[_cachedsegmenttex]
-mov       di, word ptr [bp - 016h]
-mov       word ptr ds:[_cachedsegmenttex2], ax
-mov       al, byte ptr ds:[_cachedcollength]
-mov       cx, word ptr ds:[si + _segloopnextlookup]
-mov       byte ptr ds:[_cachedcollength2], al
-mov       ax, di
-mov       word ptr ds:[_cachedtex], di
-call      R_GetCompositeTexture_
-mov       word ptr ds:[_cachedsegmenttex], ax
-mov       byte ptr ds:[_cachedcollength], dl
-mov       al, byte ptr [bp - 4]
-mov       word ptr ds:[si + _segloopnextlookup], cx
-mov       byte ptr ds:[bx + _seglooptexrepeat], al
-label_20:
-mov       bx, word ptr [bp - 2]
-mov       byte ptr ds:[bx + _segloopheightvalcache], dl
-sal       bx, 1
-mov       ax, word ptr ds:[_cachedsegmenttex]
-mov       word ptr ds:[bx + _segloopcachedsegment], ax
+mov       cl, byte ptr es:[di]                  ; cl stores texturecollength
+cmp       ax, di
+jne       do_cache_tex_miss
+
+mov       ax, word ptr ds:[bx]
+
+done_setting_cached_tex:
+
+;	segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
+;	return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
+
+; bx is _cachedsegmenttex
+; ax is ds:[bx]
+mov       byte ptr ds:[si + _segloopheightvalcache], cl ; write now
+
+sal       si, 1
+mov       word ptr ds:[si + _segloopcachedsegment], ax
+mov       dx, ax
 mov       al, byte ptr ds:[_cachedcollength]
 mul       byte ptr [bp - 8]
-add       ax, word ptr ds:[_cachedsegmenttex]
+add       ax, dx
 LEAVE_MACRO     
 pop       di
 pop       si
 pop       cx
 ret       
-label_21:
-mov       bx, word ptr ds:[_cachedtex]
-mov       ax, word ptr ds:[_cachedtex2]
-mov       word ptr [bp - 016h], bx
+do_cache_tex_miss:
+; ax is cachedtex
+mov       dx, word ptr ds:[_cachedtex+2]
+cmp       dx, di
+jne       update_both_cache_texes
+
+swap_tex1_tex2:
+; ax  is cachedtex
+; dx  is cachedtex2
+
+;	// cycle cache so 2 = 1
+;    tex = cachedtex;
+;    cachedtex = cachedtex2;
+;    cachedtex2 = tex;
+
+mov       word ptr ds:[_cachedtex],  dx
+mov       word ptr ds:[_cachedtex+2], ax
+
+;    tex = cachedsegmenttex;
+;    cachedsegmenttex = cachedsegmenttex2;
+;    cachedsegmenttex2 = tex;
+
+mov       ax, word ptr ds:[_cachedcollength]
+xchg      al, ah        ; swap byte 1 and 2
+mov       word ptr ds:[_cachedcollength], ax
+
+;    tex = cachedcollength;
+;    cachedcollength = cachedcollength2;
+;    cachedcollength2 = tex;
+
+mov      ax, word ptr ds:[bx]
+xchg     ax, word ptr ds:[bx+2]
+mov      word ptr ds:[bx], ax
+
+jmp       done_setting_cached_tex
+
+update_both_cache_texes:
+
+
+;			if (cachedtex2 != tex){
+;				int16_t  cached_nextlookup = segloopnextlookup[segloopcachetype]; 
+;				cachedtex2 = cachedtex;
+;				cachedsegmenttex2 = cachedsegmenttex;
+;				cachedcollength2 = cachedcollength;
+;				cachedtex = tex;
+;				cachedsegmenttex = R_GetCompositeTexture(cachedtex);
+;				cachedcollength = collength;
+;				// restore these if composite texture is unloaded...
+;				segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
+;				seglooptexrepeat[segloopcachetype] 		= loopwidth;
+
+; ax already cached tex 1
+mov       word ptr ds:[_cachedtex+2], ax
+
+mov       ax, word ptr ds:[bx]
+mov       word ptr ds:[bx+2], ax
+sal       si, 1
+mov       dx, word ptr ds:[si + _segloopnextlookup]   ; cached_next_lookup. todo use ax?
+mov       al, byte ptr ds:[_cachedcollength]
+mov       byte ptr ds:[_cachedcollength+1], al
+mov       byte ptr ds:[_cachedcollength], cl
+xchg      ax, di                    ; was word ptr bp - 16/tex
 mov       word ptr ds:[_cachedtex], ax
-mov       word ptr ds:[_cachedtex2], bx
-mov       bx, word ptr ds:[_cachedsegmenttex]
-mov       ax, word ptr ds:[_cachedsegmenttex2]
-mov       word ptr [bp - 016h], bx
-mov       word ptr ds:[_cachedsegmenttex2], bx
-mov       bl, byte ptr ds:[_cachedcollength]
-mov       word ptr ds:[_cachedsegmenttex], ax
-xor       bh, bh
-mov       al, byte ptr ds:[_cachedcollength2]
-mov       word ptr [bp - 016h], bx
-mov       byte ptr ds:[_cachedcollength], al
-mov       al, byte ptr [bp - 016h]
-mov       byte ptr ds:[_cachedcollength2], al
-jmp       label_20
+call      R_GetCompositeTexture_
+mov       bx, OFFSET _cachedsegmenttex
+mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
+
+mov       word ptr ds:[si + _segloopnextlookup], dx
+shr       si, 1
+mov       dl, byte ptr [bp - 4]             ; loopwidth
+mov       byte ptr ds:[si + _seglooptexrepeat], dl
+jmp       done_setting_cached_tex
+
+
 
 ENDP
 
@@ -3025,18 +3067,18 @@ PUBLIC R_GetMaskedColumnSegment_
 0x0000000000000753:  26 8A 17          mov       dl, byte ptr es:[bx]
 0x0000000000000756:  39 D8             cmp       ax, bx
 0x0000000000000758:  74 40             je        0x79a
-0x000000000000075a:  A1 B2 06          mov       ax, word ptr ds:[_cachedtex2]
+0x000000000000075a:  A1 B2 06          mov       ax, word ptr ds:[_cachedtex+2]
 0x000000000000075d:  39 D8             cmp       ax, bx
 0x000000000000075f:  74 5B             je        0x7bc
 0x0000000000000761:  A1 AC 06          mov       ax, word ptr ds:[_cachedtex]
 0x0000000000000764:  BB B8 02          mov       bx, OFFSET _maskednextlookup
-0x0000000000000767:  A3 B2 06          mov       word ptr ds:[_cachedtex2], ax
+0x0000000000000767:  A3 B2 06          mov       word ptr ds:[_cachedtex+2], ax
 0x000000000000076a:  A1 AE 06          mov       ax, word ptr ds:[_cachedsegmenttex]
 0x000000000000076d:  8B 0F             mov       cx, word ptr [bx]
-0x000000000000076f:  A3 B0 06          mov       word ptr ds:[_cachedsegmenttex2], ax
+0x000000000000076f:  A3 B0 06          mov       word ptr ds:[_cachedsegmenttex+2], ax
 0x0000000000000772:  A0 B4 06          mov       al, byte ptr ds:[_cachedcollength]
 0x0000000000000775:  8B 5E EE          mov       bx, word ptr [bp - 012h]
-0x0000000000000778:  A2 B5 06          mov       byte ptr ds:[_cachedcollength2], al
+0x0000000000000778:  A2 B5 06          mov       byte ptr ds:[_cachedcollength+1], al
 0x000000000000077b:  89 D8             mov       ax, bx
 0x000000000000077d:  89 1E AC 06       mov       word ptr ds:[_cachedtex], bx
 0x0000000000000781:  E8 9B 0A          call      R_GetCompositeTexture_
@@ -3066,22 +3108,22 @@ PUBLIC R_GetMaskedColumnSegment_
 0x00000000000007ba:  5B                pop       bx
 0x00000000000007bb:  CB                retf      
 0x00000000000007bc:  8B 1E AC 06       mov       bx, word ptr ds:[_cachedtex]
-0x00000000000007c0:  A1 B2 06          mov       ax, word ptr ds:[_cachedtex2]
+0x00000000000007c0:  A1 B2 06          mov       ax, word ptr ds:[_cachedtex+2]
 0x00000000000007c3:  89 5E EE          mov       word ptr [bp - 012h], bx
 0x00000000000007c6:  A3 AC 06          mov       word ptr ds:[_cachedtex], ax
-0x00000000000007c9:  89 1E B2 06       mov       word ptr ds:[_cachedtex2], bx
+0x00000000000007c9:  89 1E B2 06       mov       word ptr ds:[_cachedtex+2], bx
 0x00000000000007cd:  8B 1E AE 06       mov       bx, word ptr ds:[_cachedsegmenttex]
-0x00000000000007d1:  A1 B0 06          mov       ax, word ptr ds:[_cachedsegmenttex2]]
+0x00000000000007d1:  A1 B0 06          mov       ax, word ptr ds:[_cachedsegmenttex+2]]
 0x00000000000007d4:  89 5E EE          mov       word ptr [bp - 012h], bx
-0x00000000000007d7:  89 1E B0 06       mov       word ptr ds:[_cachedsegmenttex2], bx
+0x00000000000007d7:  89 1E B0 06       mov       word ptr ds:[_cachedsegmenttex+2], bx
 0x00000000000007db:  8A 1E B4 06       mov       bl, byte ptr ds:[_cachedcollength]
 0x00000000000007df:  A3 AE 06          mov       word ptr ds:[_cachedsegmenttex], ax
 0x00000000000007e2:  30 FF             xor       bh, bh
-0x00000000000007e4:  A0 B5 06          mov       al, byte ptr ds:[_cachedcollength2]
+0x00000000000007e4:  A0 B5 06          mov       al, byte ptr ds:[_cachedcollength+1]
 0x00000000000007e7:  89 5E EE          mov       word ptr [bp - 012h], bx
 0x00000000000007ea:  A2 B4 06          mov       byte ptr ds:[_cachedcollength], al
 0x00000000000007ed:  8A 46 EE          mov       al, byte ptr [bp - 012h]
-0x00000000000007f0:  A2 B5 06          mov       byte ptr ds:[_cachedcollength2], al
+0x00000000000007f0:  A2 B5 06          mov       byte ptr ds:[_cachedcollength+1], al
 0x00000000000007f3:  EB A5             jmp       0x79a
 
 ENDP

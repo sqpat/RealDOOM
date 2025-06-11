@@ -164,8 +164,8 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
  // reset last used segment cache
 	lastvisspritepatch = -1;    
 	lastvisspritepatch2 = -1;    
-	cachedtex = -1;
-    cachedtex2 = -1;
+	cachedtex[0] = -1;
+    cachedtex[1] = -1;
 	{
 		int16_t a;
 		for (a = 0; a < NUM_CACHE_LUMPS; a++){

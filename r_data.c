@@ -2109,8 +2109,8 @@ uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cach
 		pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT] = _EPR(pageoffset + realtexpage);
 		R_MarkL2CompositeTextureCacheMRU(realtexpage);
 		Z_QuickMapRenderTexture();
-		cachedtex = -1;
-		cachedtex2 = -1;
+		cachedtex[0] = -1;
+		cachedtex[1] = -1;
 		cachedlumps[0] = -1;
 		cachedlumps[1] = -1;
 		cachedlumps[2] = -1;
@@ -2152,8 +2152,8 @@ uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset, int8_t cach
 		}
 		R_MarkL2CompositeTextureCacheMRU(realtexpage);
 		Z_QuickMapRenderTexture();
-		cachedtex = -1;
-		cachedtex2 = -1;
+		cachedtex[0] = -1;
+		cachedtex[1] = -1;
 		cachedlumps[0] = -1;
 		cachedlumps[1] = -1;
 		cachedlumps[2] = -1;
@@ -2555,16 +2555,16 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 		// todo in the asm make default branch to use cache
 
-		if (cachedtex != tex){
-			if (cachedtex2 != tex){
+		if (cachedtex[0] != tex){
+			if (cachedtex[1] != tex){
 				int16_t  cached_nextlookup = segloopnextlookup[segloopcachetype]; 
-				cachedtex2 = cachedtex;
-				cachedsegmenttex2 = cachedsegmenttex;
-				cachedcollength2 = cachedcollength;
-				cachedtex = tex;
+				cachedtex[1] = cachedtex;
+				cachedsegmenttex[1] = cachedsegmenttex;
+				cachedcollength[0] = cachedcollength[0];
+				cachedtex[0] = tex;
 				
-				cachedsegmenttex = R_GetCompositeTexture(cachedtex);
-				cachedcollength = collength;
+				cachedsegmenttex = R_GetCompositeTexture(cachedtex[0]);
+				cachedcollength[0] = collength;
 
 				// restore these if composite texture is unloaded...
 				segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
@@ -2573,17 +2573,17 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 
 			} else {
 				// cycle cache so 2 = 1
-				tex = cachedtex;
-				cachedtex = cachedtex2;
-				cachedtex2 = tex;
+				tex = cachedtex[0];
+				cachedtex[0] = cachedtex[1];
+				cachedtex[1] = tex;
 
 				tex = cachedsegmenttex;
-				cachedsegmenttex = cachedsegmenttex2;
-				cachedsegmenttex2 = tex;
+				cachedsegmenttex = cachedsegmenttex[1];
+				cachedsegmenttex[1] = tex;
 
-				tex = cachedcollength;
-				cachedcollength = cachedcollength2;
-				cachedcollength2 = tex;
+				tex = cachedcollength[0];
+				cachedcollength[0] = cachedcollength[0];
+				cachedcollength[0] = tex;
 
 			}
 
@@ -2596,7 +2596,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 		segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
 
 
-		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
+		return cachedsegmenttex + (FastMul8u8u(cachedcollength[0] , texcol));
 
 	}
 
@@ -2819,16 +2819,16 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 
 		// todo in the asm make default branch to use cache
 
-		if (cachedtex != tex){
-			if (cachedtex2 != tex){
+		if (cachedtex[0] != tex){
+			if (cachedtex[1] != tex){
 				int16_t  cached_nextlookup = maskednextlookup; 
-				cachedtex2 = cachedtex;
-				cachedsegmenttex2 = cachedsegmenttex;
-				cachedcollength2 = cachedcollength;
-				cachedtex = tex;
+				cachedtex[1] = cachedtex[0];
+				cachedsegmenttex[1] = cachedsegmenttex[0];
+				cachedcollength[0] = cachedcollength[0];
+				cachedtex[0] = tex;
 				
-				cachedsegmenttex = R_GetCompositeTexture(cachedtex);
-				cachedcollength = collength;
+				cachedsegmenttex[0] = R_GetCompositeTexture(cachedtex[0]);
+				cachedcollength[0] = collength;
 
 				// restore these if composite texture is unloaded...
 				maskednextlookup     = cached_nextlookup; 
@@ -2837,17 +2837,17 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 
 			} else {
 				// cycle cache so 2 = 1
-				tex = cachedtex;
-				cachedtex = cachedtex2;
-				cachedtex2 = tex;
+				tex = cachedtex[0];
+				cachedtex[0] = cachedtex[1];
+				cachedtex[1] = tex;
 
-				tex = cachedsegmenttex;
-				cachedsegmenttex = cachedsegmenttex2;
-				cachedsegmenttex2 = tex;
+				tex = cachedsegmenttex[0];
+				cachedsegmenttex[0] = cachedsegmenttex[1];
+				cachedsegmenttex[1] = tex;
 
-				tex = cachedcollength;
-				cachedcollength = cachedcollength2;
-				cachedcollength2 = tex;
+				tex = cachedcollength[0];
+				cachedcollength[0] = cachedcollength[0];
+				cachedcollength[0] = tex;
 
 			}
 
@@ -2859,10 +2859,10 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		cachedbyteheight = collength;
 
 		maskedheightvalcache  = collength;
-		maskedcachedsegment   = cachedsegmenttex;
+		maskedcachedsegment   = cachedsegmenttex[0];
 
 
-		return maskedcachedsegment + (FastMul8u8u(cachedcollength , texcol));
+		return maskedcachedsegment + (FastMul8u8u(cachedcollength[0] , texcol));
 
 	}
 

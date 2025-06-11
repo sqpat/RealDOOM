@@ -253,12 +253,9 @@ int8_t texturecache_l2_tail = -1;
 int16_t cachedlumps[NUM_CACHE_LUMPS];
 segment_t cachedsegmentlumps[NUM_CACHE_LUMPS];
 
-int16_t   cachedtex = -1;
-segment_t cachedsegmenttex = 0xFFFF;
-segment_t cachedsegmenttex2 = 0xFFFF;
-int16_t   cachedtex2 = -1;
-uint8_t   cachedcollength = 0;
-uint8_t   cachedcollength2 = 0;
+int16_t   cachedtex[2] = {-1, -1};
+segment_t cachedsegmenttex[2] = {0xFFFF, 0xFFFF};
+uint8_t   cachedcollength[2] = {0, 0};
 
 int8_t 	am_cheating = 0;
 int8_t 	am_grid = 0;

@@ -532,16 +532,9 @@ extern int8_t               texturecache_l2_head;
 extern int8_t               texturecache_l2_tail;
 extern int16_t              cachedlumps[NUM_CACHE_LUMPS];
 extern segment_t            cachedsegmentlumps[NUM_CACHE_LUMPS];
-//extern segment_t            cachedsegmentlump;
-extern segment_t            cachedsegmenttex;
-//extern int16_t              cachedlump;
-extern int16_t              cachedtex;
-//extern segment_t            cachedsegmentlump2;
-extern segment_t            cachedsegmenttex2;
-//extern int16_t              cachedlump2;
-extern int16_t              cachedtex2;
-extern uint8_t              cachedcollength;
-extern uint8_t              cachedcollength2;
+extern segment_t            cachedsegmenttex[2];
+extern int16_t              cachedtex[2];
+extern uint8_t              cachedcollength[2];
 
 //extern int16_t              ;
 
