@@ -2367,6 +2367,43 @@ ENDP
 
 ;segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcachetype) 
 
+update_both_cache_texes:
+
+
+;			if (cachedtex2 != tex){
+;				int16_t  cached_nextlookup = segloopnextlookup[segloopcachetype]; 
+;				cachedtex2 = cachedtex;
+;				cachedsegmenttex2 = cachedsegmenttex;
+;				cachedcollength2 = cachedcollength;
+;				cachedtex = tex;
+;				cachedsegmenttex = R_GetCompositeTexture(cachedtex);
+;				cachedcollength = collength;
+;				// restore these if composite texture is unloaded...
+;				segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
+;				seglooptexrepeat[segloopcachetype] 		= loopwidth;
+
+; ax already cached tex 1
+mov       word ptr ds:[_cachedtex+2], ax
+
+mov       ax, word ptr ds:[bx]
+mov       word ptr ds:[bx+2], ax
+sal       si, 1
+mov       dx, word ptr ds:[si + _segloopnextlookup]   ; cached_next_lookup. todo use ax?
+mov       al, byte ptr ds:[_cachedcollength]
+mov       byte ptr ds:[_cachedcollength+1], al
+mov       byte ptr ds:[_cachedcollength], cl
+xchg      ax, di                    ; was word ptr bp - 16/tex
+mov       word ptr ds:[_cachedtex], ax
+call      R_GetCompositeTexture_
+
+mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
+
+mov       word ptr ds:[si + _segloopnextlookup], dx
+shr       si, 1
+pop       dx ;  , byte ptr [bp - 0Ah]             ; loopwidth
+mov       byte ptr ds:[si + _seglooptexrepeat], dl
+jmp       done_setting_cached_tex
+
 lump_greater_than_zero_add_startpixel:
 ;			segloopcachedbasecol[segloopcachetype] = basecol + startpixel;
 
@@ -2401,7 +2438,41 @@ mov       word ptr ds:[di + _segloopprevlookup], dx
 
 ;	if (lump > 0){
 jmp       done_with_loopwidth
+do_cache_tex_miss:
+; ax is cachedtex
+mov       dx, word ptr ds:[_cachedtex+2]
+cmp       dx, di
+jne       update_both_cache_texes
 
+swap_tex1_tex2:
+; ax  is cachedtex
+; dx  is cachedtex2
+
+;	// cycle cache so 2 = 1
+;    tex = cachedtex;
+;    cachedtex = cachedtex2;
+;    cachedtex2 = tex;
+
+mov       word ptr ds:[_cachedtex],  dx
+mov       word ptr ds:[_cachedtex+2], ax
+
+;    tex = cachedsegmenttex;
+;    cachedsegmenttex = cachedsegmenttex2;
+;    cachedsegmenttex2 = tex;
+
+mov       ax, word ptr ds:[_cachedcollength]
+xchg      al, ah        ; swap byte 1 and 2
+mov       word ptr ds:[_cachedcollength], ax
+
+;    tex = cachedcollength;
+;    cachedcollength = cachedcollength2;
+;    cachedcollength2 = tex;
+
+mov      ax, word ptr ds:[bx]
+xchg     ax, word ptr ds:[bx+2]
+mov      word ptr ds:[bx], ax
+
+jmp       done_setting_cached_tex
 lump_greater_than_zero:
 ;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
 sub       byte ptr [bp - 8], al         ; al still subtractor
@@ -2466,6 +2537,41 @@ test      si, si
 jge       lump_greater_than_zero
 add       di, ax                        ; di is textotal
 jmp       done_with_lump_check
+jump_to_update_tex_caches_and_return:
+update_tex_caches_and_return:
+; not a lump
+mov       si, word ptr [bp - 2]   ; si is this for now
+mov       bx, OFFSET _cachedsegmenttex
+mov       di, word ptr [bp - 4]      ; di = tex
+mov       ax, TEXTURECOLLENGTH_SEGMENT
+mov       es, ax
+mov       ax, word ptr ds:[_cachedtex]
+mov       cl, byte ptr es:[di]                  ; cl stores texturecollength
+cmp       ax, di
+jne       do_cache_tex_miss
+
+mov       ax, word ptr ds:[bx]
+
+done_setting_cached_tex:
+
+;	segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
+;	return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
+
+; bx is _cachedsegmenttex
+; ax is ds:[bx]
+mov       byte ptr ds:[si + _segloopheightvalcache], cl ; write now
+
+sal       si, 1
+mov       word ptr ds:[si + _segloopcachedsegment], ax
+xchg      ax, dx
+mov       al, byte ptr ds:[_cachedcollength]
+mul       byte ptr [bp - 8]
+add       ax, dx
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+ret  
 
 PROC R_GetColumnSegment_ NEAR
 PUBLIC R_GetColumnSegment_
@@ -2476,11 +2582,6 @@ PUBLIC R_GetColumnSegment_
 ; bp - 6      basecol
 ; bp - 8      texcol
 ; bp - 0Ah    loopwidth
-; bp - 0Ch    unused
-; bp - 0Eh    unused
-; bp - 010h   unused
-; bp - 012h   unused
-; bp - 014h   unused
 
 
 push      cx
@@ -2556,7 +2657,7 @@ je        cachedlumphit
 loop_check_next_cached_lump:
 add       bx, 2
 cmp       bx, (2 * NUM_CACHE_LUMPS)
-jge       jump_to_move_all_cache_back
+jge       move_all_cache_back
 ;			if (lump == cachedlumps[cachelumpindex]){
 cmp       si, word ptr ds:[bx + _cachedlumps]
 jne       loop_check_next_cached_lump
@@ -2572,16 +2673,15 @@ found_cached_lump:
 ;				patchwidth++;
 ;			}
 ;		}
+sub       si, word ptr ds:[_firstpatch] ; si now is lump - firstpatch
 
 test      cx, cx
 jge       col_not_under_zero
-mov       bx, si    ; lump
-sub       bx, word ptr ds:[_firstpatch]
-mov       ax, PATCHWIDTHS_SEGMENT
-mov       es, ax
+mov       bx, PATCHWIDTHS_SEGMENT
+mov       es, bx
 xor       ax, ax
 cwd                                     ; zero dh
-mov       al, byte ptr es:[bx]
+mov       al, byte ptr es:[si]
 cmp       al, 1                         ; set carry if al is 0
 adc       ah, 1                         ; if width is zero that encoded 0x100. now ah is 1.
 mov       bx, TEXTUREWIDTHMASKS_SEGMENT
@@ -2605,7 +2705,6 @@ jnge      negative_modulo_thing
 col_not_under_zero:
 
 
-sub       si, word ptr ds:[_firstpatch]  ; hardcode? selfmodifying?
 mov       dx, PATCHHEIGHTS_SEGMENT
 mov       es, dx
 
@@ -2630,15 +2729,11 @@ ret
 
 
 
-jump_to_update_tex_caches_and_return:
-jmp       update_tex_caches_and_return
 
 
 
 
 
-jump_to_move_all_cache_back:
-jmp       move_all_cache_back
 
 
 not_cache_0:
@@ -2647,31 +2742,35 @@ not_cache_0:
 ;    segment_t usedsegment = cachedsegmentlumps[cachelumpindex];
 ;    int16_t cachedlump = cachedlumps[cachelumpindex];
 ;    int16_t i;
-
-mov       dx, word ptr ds:[bx + _cachedlumps]
-mov       di, word ptr ds:[bx + _cachedsegmentlumps]
+xchg      ax, si
+mov       di, OFFSET _cachedsegmentlumps
+mov       si, OFFSET _cachedlumps
+push      word ptr ds:[bx + si]
+push      word ptr ds:[bx + di]
 
 ;    for (i = cachelumpindex; i > 0; i--){
 ;        cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
 ;        cachedlumps[i] = cachedlumps[i-1];
 ;    }
 
-; todo stretch this loop out.
-jle       done_moving_cachelumps
-;mov       bx, ax
-;sal       bx, 1
+
+jle       done_moving_cachelumps  ; todo stretch this loop out? jmp to bx based lookup? probably not worth it
+
 loop_move_cachelump:
 sub       bx, 2
-mov       ax, word ptr ds:[bx + _cachedsegmentlumps]
-mov       word ptr ds:[bx + _cachedsegmentlumps+2], ax
-mov       ax, word ptr ds:[bx + _cachedlumps]
-mov       word ptr ds:[bx + _cachedlumps+2], ax
+push      word ptr ds:[bx + di]
+push      word ptr ds:[bx + si]
+pop       word ptr ds:[bx + di + 2]
+pop       word ptr ds:[bx + si + 2]
 jg        loop_move_cachelump
 done_moving_cachelumps:
 
-mov       word ptr ds:[_cachedsegmentlumps], di
-mov       word ptr ds:[_cachedlumps], dx
+pop       word ptr ds:[di]
+pop       word ptr ds:[si]
+xchg      ax, si ; restore lump
+
 jmp       found_cached_lump
+
 
 ;		// not found, set cache.
 ;		cachedsegmentlumps[3] = cachedsegmentlumps[2];
@@ -2683,23 +2782,23 @@ jmp       found_cached_lump
 move_all_cache_back:
 mov       ax, ds
 mov       es, ax
-mov       ax, OFFSET _cachedsegmentlumps
-mov       di, OFFSET _cachedsegmentlumps + 2
 xchg      ax, si
+mov       si, OFFSET _cachedsegmentlumps
+lea       di, [si + 2]
 movsw
 movsw
 movsw
-mov       si, OFFSET _cachedlumps
-mov       di, OFFSET _cachedlumps + 2   ; todo make these adjacent...
+mov       si, OFFSET _cachedlumps       ; todo make adjacent!
+lea       di, [si + 2]
 movsw
 movsw
 movsw
-xchg      ax, si    ; restore lump
+mov       si, ax    ; restore lump
 mov       di, word ptr [bp - 2]
-mov       bx, di
-mov       bx, word ptr ds:[bx + di + _segloopnextlookup]
+sal       di, 1
+mov       bx, word ptr ds:[di + _segloopnextlookup]
 mov       dx, 0FFh
-mov       ax, si
+; ax is lump
 call      R_GetPatchTexture_
 mov       word ptr ds:[_cachedsegmentlumps], ax
 mov       word ptr ds:[di + _segloopnextlookup], bx
@@ -2709,112 +2808,10 @@ mov       word ptr ds:[_cachedlumps], si
 mov       byte ptr ds:[di + _seglooptexrepeat], al
 jmp       found_cached_lump
    
-update_tex_caches_and_return:
-; not a lump
-mov       si, word ptr [bp - 2]   ; si is this for now
-mov       bx, OFFSET _cachedsegmenttex
-mov       di, word ptr [bp - 4]      ; di = tex
-mov       ax, TEXTURECOLLENGTH_SEGMENT
-mov       es, ax
-mov       ax, word ptr ds:[_cachedtex]
-mov       cl, byte ptr es:[di]                  ; cl stores texturecollength
-cmp       ax, di
-jne       do_cache_tex_miss
-
-mov       ax, word ptr ds:[bx]
-
-done_setting_cached_tex:
-
-;	segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
-;	return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
-
-; bx is _cachedsegmenttex
-; ax is ds:[bx]
-mov       byte ptr ds:[si + _segloopheightvalcache], cl ; write now
-
-sal       si, 1
-mov       word ptr ds:[si + _segloopcachedsegment], ax
-mov       dx, ax
-mov       al, byte ptr ds:[_cachedcollength]
-mul       byte ptr [bp - 8]
-add       ax, dx
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-ret       
-do_cache_tex_miss:
-; ax is cachedtex
-mov       dx, word ptr ds:[_cachedtex+2]
-cmp       dx, di
-jne       update_both_cache_texes
-
-swap_tex1_tex2:
-; ax  is cachedtex
-; dx  is cachedtex2
-
-;	// cycle cache so 2 = 1
-;    tex = cachedtex;
-;    cachedtex = cachedtex2;
-;    cachedtex2 = tex;
-
-mov       word ptr ds:[_cachedtex],  dx
-mov       word ptr ds:[_cachedtex+2], ax
-
-;    tex = cachedsegmenttex;
-;    cachedsegmenttex = cachedsegmenttex2;
-;    cachedsegmenttex2 = tex;
-
-mov       ax, word ptr ds:[_cachedcollength]
-xchg      al, ah        ; swap byte 1 and 2
-mov       word ptr ds:[_cachedcollength], ax
-
-;    tex = cachedcollength;
-;    cachedcollength = cachedcollength2;
-;    cachedcollength2 = tex;
-
-mov      ax, word ptr ds:[bx]
-xchg     ax, word ptr ds:[bx+2]
-mov      word ptr ds:[bx], ax
-
-jmp       done_setting_cached_tex
-
-update_both_cache_texes:
+     
 
 
-;			if (cachedtex2 != tex){
-;				int16_t  cached_nextlookup = segloopnextlookup[segloopcachetype]; 
-;				cachedtex2 = cachedtex;
-;				cachedsegmenttex2 = cachedsegmenttex;
-;				cachedcollength2 = cachedcollength;
-;				cachedtex = tex;
-;				cachedsegmenttex = R_GetCompositeTexture(cachedtex);
-;				cachedcollength = collength;
-;				// restore these if composite texture is unloaded...
-;				segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
-;				seglooptexrepeat[segloopcachetype] 		= loopwidth;
 
-; ax already cached tex 1
-mov       word ptr ds:[_cachedtex+2], ax
-
-mov       ax, word ptr ds:[bx]
-mov       word ptr ds:[bx+2], ax
-sal       si, 1
-mov       dx, word ptr ds:[si + _segloopnextlookup]   ; cached_next_lookup. todo use ax?
-mov       al, byte ptr ds:[_cachedcollength]
-mov       byte ptr ds:[_cachedcollength+1], al
-mov       byte ptr ds:[_cachedcollength], cl
-xchg      ax, di                    ; was word ptr bp - 16/tex
-mov       word ptr ds:[_cachedtex], ax
-call      R_GetCompositeTexture_
-
-mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
-
-mov       word ptr ds:[si + _segloopnextlookup], dx
-shr       si, 1
-mov       dl, byte ptr [bp - 0Ah]             ; loopwidth
-mov       byte ptr ds:[si + _seglooptexrepeat], dl
-jmp       done_setting_cached_tex
 
 
 
