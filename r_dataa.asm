@@ -2555,39 +2555,30 @@ jle       jump_to_label_7
 ;		uint8_t heightval = patchheights[lump-firstpatch];
 ;		heightval &= 0x0F;
 
-mov       bx, si
-sub       bx, word ptr ds:[_firstpatch]  ; hardcode? selfmodifying?
-mov       ax, PATCHHEIGHTS_SEGMENT
-mov       es, ax
 
-mov       al, byte ptr es:[bx]
-and       ax, 0Fh
-mov       word ptr [bp - 6], ax
-xor       ax, ax
-mov       bx, ax
+xor       bx, bx
 
 ;		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
-;			if (lump == cachedlumps[cachelumpindex]){
 
 cmp       si, word ptr ds:[_cachedlumps]
 je        cachedlumphit
 
 
 
-label_18:
-inc       ax
+loop_check_next_cached_lump:
 add       bx, 2
-cmp       ax, NUM_CACHE_LUMPS
+cmp       bx, (2 * NUM_CACHE_LUMPS)
 jge       jump_to_move_all_cache_back
+;			if (lump == cachedlumps[cachelumpindex]){
 cmp       si, word ptr ds:[bx + _cachedlumps]
-jne       label_18
+jne       loop_check_next_cached_lump
 cachedlumphit:
-test      ax, ax
+test      bx, bx
 jne       not_cache_0
 found_cached_lump:
 
 ;		if (col < 0){
-;			uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
+;			uint16_t patchwidth = patchwidths[lump-firstpatch];
 ;			if (patchwidth > texturewidthmasks[tex]){
 ;				patchwidth = texturewidthmasks[tex];
 ;				patchwidth++;
@@ -2596,22 +2587,24 @@ found_cached_lump:
 
 test      cx, cx
 jge       col_not_under_zero
-mov       bx, si
+mov       bx, si    ; lump
 sub       bx, word ptr ds:[_firstpatch]
 mov       ax, PATCHWIDTHS_SEGMENT
 mov       es, ax
-sal       bx, 1
-mov       ax, word ptr es:[bx]
+xor       ax, ax
+cwd                                     ; zero dh
+mov       al, byte ptr es:[bx]
+cmp       al, 1                         ; set carry if al is 0
+adc       ah, 1                         ; if width is zero that encoded 0x100. now ah is 1.
+mov       bx, TEXTUREWIDTHMASKS_SEGMENT
+mov       es, bx
 mov       bx, word ptr [bp - 016h]      ; tex
-mov       dx, TEXTUREWIDTHMASKS_SEGMENT
-mov       es, dx
 mov       dl, byte ptr es:[bx]
-xor       dh, dh
-cmp       ax, dx
+cmp       ax, dx    ; dh zeroed earlier
 ;			if (patchwidth > texturewidthmasks[tex]){
 jna       negative_modulo_thing
 ;				patchwidth = texturewidthmasks[tex];
-mov       ax, dx
+xchg       ax, dx
 
 ;			while (col < 0){
 ;				col+= patchwidth;
@@ -2619,13 +2612,20 @@ mov       ax, dx
 ; todo just and patchwidth -1
 
 negative_modulo_thing:
-test      cx, cx
-jge       col_not_under_zero
-and       cx, ax                ; modulo by power of 2 
+add       cx, ax        
+jnge      negative_modulo_thing
 col_not_under_zero:
+
+
+sub       si, word ptr ds:[_firstpatch]  ; hardcode? selfmodifying?
+mov       dx, PATCHHEIGHTS_SEGMENT
+mov       es, dx
+
+mov       dl, byte ptr es:[si]
+and       dl, 0Fh
+
 mov       bx, word ptr [bp - 2]
 
-mov       dl, byte ptr [bp - 6]
 mov       byte ptr ds:[bx + _segloopheightvalcache], dl
 sal       bx, 1
 mov       ax, word ptr ds:[_cachedsegmentlumps]
@@ -2662,8 +2662,8 @@ mov       di, word ptr ds:[bx + _cachedsegmentlumps]
 
 ; todo stretch this loop out.
 jle       done_moving_cachelumps
-mov       bx, ax
-sal       bx, 1
+;mov       bx, ax
+;sal       bx, 1
 loop_move_cachelump:
 sub       bx, 2
 mov       ax, word ptr ds:[bx + _cachedsegmentlumps]

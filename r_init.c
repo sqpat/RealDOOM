@@ -744,12 +744,15 @@ void R_InitPatches() {
 
 
 void __near R_InitPatches(){
-	int i = 0;
+	int i;
 	patch_t __far* wadpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
-	for (i = 0; i < numpatches; i++){
+	// todo  first patch is actually firstpatch + 1. 
+	for (i = 1; i < numpatches; i++){
 		int16_t patchindex = firstpatch+i;
 		int16_t patchheight;
 		W_CacheLumpNumDirect(patchindex, (byte __far*)wadpatch);
+		
+		// if 256, stored as 0
 		patchwidths_6000[i] = wadpatch->width;
 
 		// height is a value (number of bytes) between 16 and 144 in practice. it is 00010000 to 10010000 binary.

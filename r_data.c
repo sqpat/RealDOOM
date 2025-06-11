@@ -2783,6 +2783,9 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 
 		if (col < 0){
 			uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
+			if (patchwidth == 0){
+				patchwidth = 0x100;
+			}
 			if (patchwidth > texturewidthmasks[tex]){
 				patchwidth = texturewidthmasks[tex];
 				patchwidth++;
