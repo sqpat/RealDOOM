@@ -2692,7 +2692,8 @@ cmp       ax, dx    ; dh zeroed earlier
 ;			if (patchwidth > texturewidthmasks[tex]){
 jna       negative_modulo_thing
 ;				patchwidth = texturewidthmasks[tex];
-xchg       ax, dx
+xchg      ax, dx
+inc       ax
 
 ;			while (col < 0){
 ;				col+= patchwidth;
@@ -2817,6 +2818,23 @@ jmp       found_cached_lump
 
 ENDP
 
+label_2:
+mov       ax, word ptr [bp - 0Ah]
+sar       si, 1
+mov       di, word ptr es:[si]
+mov       word ptr ds:[_maskedcachedbasecol], ax
+mov       al, byte ptr [bp - 4]
+xor       ah, ah
+mov       word ptr ds:[_maskedtexrepeat], ax
+jmp       label_17
+label_5:
+add       word ptr [bp - 0Eh], cx
+jmp       label_18
+
+label_8:
+mov       dx, ax
+sub       dx, word ptr [bp - 0Eh]
+jmp       label_19
 
 PROC R_GetMaskedColumnSegment_ FAR
 PUBLIC R_GetMaskedColumnSegment_
@@ -2831,32 +2849,26 @@ push      bp
 mov       bp, sp
 sub       sp, 010h
 push      ax
-mov       bx, dx
-mov       si, OFFSET _maskedheaderpixeolfs
+xchg      ax, si
+mov       word ptr ds:[_maskedheaderpixeolfs], 0FFFFh
 mov       ax, TEXTUREWIDTHMASKS_SEGMENT
-mov       word ptr [si], 0FFFFh
-mov       si, word ptr [bp - 012h]
 mov       es, ax
-xor       bh, dh
-mov       al, byte ptr es:[si]
-and       bl, al
-mov       ax, si
-add       ax, si
+xor       dh, dh
+mov       bx, dx
+and       bl, byte ptr es:[si]
 mov       word ptr [bp - 0Ah], dx
-mov       si, ax
+sal       si, 1
+mov       si, word ptr ds:[si + _texturepatchlump_offset]
+sal       si, 1
+
 mov       ax, TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT
-mov       dx, word ptr ds:[si + _texturepatchlump_offset]
-add       si, _texturepatchlump_offset
-add       dx, dx
 mov       es, ax
-mov       si, dx
 sub       word ptr [bp - 0Ah], bx
 mov       al, byte ptr es:[si + 3]
 mov       byte ptr [bp - 6], bl
 mov       byte ptr [bp - 4], al
 test      al, al
-je        label_1
-jmp       label_2
+jne       label_2
 label_1:
 xor       ah, ah
 mov       dx, es
@@ -2873,8 +2885,8 @@ mov       di, word ptr es:[si]
 add       ax, cx
 sub       bx, cx
 test      di, di
-jge       label_4
-jmp       label_5
+jnge       label_5
+
 label_4:
 sub       byte ptr [bp - 6], cl
 label_18:
@@ -2885,114 +2897,25 @@ label_3:
 mov       es, dx
 mov       dl, byte ptr es:[si - 1]
 test      di, di
-jg        label_7
-jmp       label_8
-label_7:
+jng       label_8
+
 mov       byte ptr [bp - 0Fh], 0
 mov       byte ptr [bp - 010h], dl
 mov       dx, word ptr [bp - 0Ah]
-mov       si, OFFSET _maskedcachedbasecol
 add       dx, word ptr [bp - 010h]
 label_19:
-mov       word ptr [si], dx
+mov       word ptr ds:[_maskedcachedbasecol], dx
 mov       dx, ax
-mov       si, OFFSET _maskedprevlookup
 sub       dx, cx
-mov       word ptr [si], dx
-mov       si, OFFSET _maskednextlookup
-mov       word ptr [si], ax
-mov       si, OFFSET _maskedtexrepeat
-mov       word ptr [si], 0
+mov       word ptr ds:[_maskedprevlookup], dx
+mov       word ptr ds:[_maskednextlookup], ax
+mov       word ptr ds:[_maskedtexrepeat], 0
 label_17:
 test      di, di
 jg        label_9
 jmp       label_10
-label_9:
-mov       ax, MASKED_LOOKUP_SEGMENT_7000
-mov       si, word ptr [bp - 012h]
-mov       es, ax
-mov       al, byte ptr es:[si]
-mov       byte ptr [bp - 2], al
-mov       si, di
-mov       ax, DRAWSEGS_BASE_SEGMENT_7000
-sub       si, word ptr ds:[_firstpatch]
-mov       es, ax
-xor       cx, cx
-mov       al, byte ptr es:[si]
-mov       si, OFFSET _cachedbyteheight
-mov       byte ptr [bp - 8], al
-and       al, 0F0h  
-and       byte ptr [bp - 8], 0Fh
-mov       byte ptr [si], al
-xor       ax, ax
-cmp       di, word ptr ds:[_cachedlumps]
-je        label_11
-label_14:
-inc       ax
-add       cx, 2
-cmp       ax, NUM_CACHE_LUMPS
-jge       jump_to_label_12
-mov       si, cx
-cmp       di, word ptr ds:[si + _cachedlumps]
-jne       label_14
-label_11:
-test      ax, ax
-jne       label_13
-label_22:
-test      bx, bx
-jl        jump_to_label_15
-label_25:
-mov       si, OFFSET _maskedcachedsegment
-mov       ax, word ptr ds:[_cachedsegmentlumps]
-mov       word ptr [si], ax
-mov       al, byte ptr [bp - 2]
-cmp       al, 0FFh
-je        jump_to_label_16
-xor       ah, ah
-mov       si, ax
-mov       dx, MASKEDPIXELDATAOFS_SEGMENT
-shl       si, 3
-add       bx, bx
-mov       ax, word ptr ds:[si + _masked_headers]
-mov       es, dx
-add       bx, ax
-mov       dx, word ptr es:[bx]
-mov       bx, OFFSET _maskedheaderpixeolfs
-mov       word ptr [bx], ax
-mov       bx, OFFSET _maskedcachedsegment
-mov       ax, word ptr [bx]
-add       ax, dx
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-retf      
-label_2:
-mov       si, OFFSET _maskedcachedbasecol
-mov       di, dx
-mov       ax, word ptr [bp - 0Ah]
-mov       di, word ptr es:[di]
-mov       word ptr [si], ax
-mov       al, byte ptr [bp - 4]
-mov       si, OFFSET _maskedtexrepeat
-xor       ah, ah
-mov       word ptr [si], ax
-jmp       label_17
-label_5:
-add       word ptr [bp - 0Eh], cx
-jmp       label_18
 jump_to_label_12:
 jmp       label_12
-label_8:
-mov       dx, ax
-mov       si, OFFSET _maskedcachedbasecol
-sub       dx, word ptr [bp - 0Eh]
-jmp       label_19
-jump_to_label_15:
-jmp       label_15
-jump_to_label_16:
-jmp       label_16
 label_13:
 mov       si, cx
 mov       dx, word ptr ds:[si + _cachedsegmentlumps]
@@ -3016,6 +2939,104 @@ mov       ax, word ptr [bp - 0Ch]
 mov       word ptr ds:[_cachedlumps], dx
 mov       word ptr ds:[_cachedsegmentlumps], ax
 jmp       label_22
+label_9:
+mov       ax, MASKED_LOOKUP_SEGMENT_7000
+mov       si, word ptr [bp - 012h]
+mov       es, ax
+mov       al, byte ptr es:[si]
+mov       byte ptr [bp - 2], al
+mov       si, di
+mov       ax, DRAWSEGS_BASE_SEGMENT_7000
+sub       si, word ptr ds:[_firstpatch]
+mov       es, ax
+xor       cx, cx
+mov       al, byte ptr es:[si]
+mov       byte ptr [bp - 8], al
+and       al, 0F0h  
+and       byte ptr [bp - 8], 0Fh
+mov       byte ptr ds:[_cachedbyteheight], al
+xor       ax, ax
+cmp       di, word ptr ds:[_cachedlumps]
+je        label_11
+label_14:
+inc       ax
+add       cx, 2
+cmp       ax, NUM_CACHE_LUMPS
+jge       jump_to_label_12
+mov       si, cx
+cmp       di, word ptr ds:[si + _cachedlumps]
+jne       label_14
+label_11:
+test      ax, ax
+jne       label_13
+label_22:
+test      bx, bx
+jnl       label_25
+
+
+label_15:
+mov       si, di
+mov       ax, PATCHWIDTHS_7000_SEGMENT
+sub       si, word ptr ds:[_firstpatch]
+mov       es, ax
+xor       ax, ax
+mov       al, byte ptr es:[si]   ; todo here
+cwd
+cmp       al, 1     ; set carry if al is 0
+adc       ah, ah    ; if width is zero that encoded 0x100. now ah is 1.
+mov       si, TEXTUREWIDTHMASKS_SEGMENT
+mov       es, si
+mov       si, word ptr [bp - 012h]
+mov       dl, byte ptr es:[si]
+cmp       ax, dx
+jna       label_26
+xchg      ax, dx
+inc       ax
+label_26:
+add       bx, ax
+jle       label_26
+
+label_25:
+mov       ax, word ptr ds:[_cachedsegmentlumps]
+mov       word ptr ds:[_maskedcachedsegment], ax
+mov       al, byte ptr [bp - 2]
+cmp       al, 0FFh
+jne       label_16
+mov       al, byte ptr [bp - 8]
+mov       byte ptr ds:[_maskedheightvalcache], al
+mov       ah, al
+mov       al, bl
+mul       ah
+add       ax, word ptr ds:[_maskedcachedsegment]
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+pop       bx
+retf  
+label_16:
+
+xor       ah, ah
+mov       si, ax
+mov       dx, MASKEDPIXELDATAOFS_SEGMENT
+shl       si, 3
+add       bx, bx
+mov       ax, word ptr ds:[si + _masked_headers]
+mov       es, dx
+add       bx, ax
+mov       dx, word ptr es:[bx]
+mov       word ptr ds:[_maskedheaderpixeolfs], ax
+mov       ax, word ptr ds:[_maskedcachedsegment]
+add       ax, dx
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+pop       bx
+retf      
+
+
+
 label_12:
 mov       ax, word ptr ds:[_cachedsegmentlumps+4]
 mov       word ptr ds:[_cachedsegmentlumps+6], ax
@@ -3024,7 +3045,6 @@ mov       word ptr ds:[_cachedsegmentlumps+4], ax
 mov       ax, word ptr ds:[_cachedsegmentlumps]
 mov       word ptr ds:[_cachedsegmentlumps+2], ax
 mov       ax, word ptr ds:[_cachedlumps+4]
-mov       si, OFFSET _maskednextlookup
 mov       word ptr ds:[_cachedlumps+6], ax
 mov       ax, word ptr ds:[_cachedlumps+2]
 mov       dl, byte ptr [bp - 2]
@@ -3033,58 +3053,17 @@ mov       ax, word ptr ds:[_cachedlumps]
 xor       dh, dh
 mov       word ptr ds:[_cachedlumps+2], ax
 mov       ax, di
-mov       cx, word ptr [si]
+mov       cx, word ptr ds:[_maskednextlookup]
 call      R_GetCompositeTexture_
 mov       word ptr ds:[_cachedsegmentlumps], ax
 mov       word ptr ds:[_cachedlumps], di
 mov       al, byte ptr [bp - 4]
-mov       word ptr [si], cx
-mov       si, OFFSET _maskedtexrepeat
+mov       word ptr ds:[_maskednextlookup], cx
 xor       ah, ah
-mov       word ptr [si], ax
+mov       word ptr ds:[_maskedtexrepeat], ax
 jmp       label_22
-label_15:
-mov       si, di
-mov       ax, PATCHWIDTHS_7000_SEGMENT
-sub       si, word ptr ds:[_firstpatch]
-mov       es, ax
-mov       dx, TEXTUREWIDTHMASKS_SEGMENT
-xor       ax, ax
-mov       al, byte ptr es:[si]   ; todo here
-mov       es, dx
-cwd
-cmp       al, 1     ; set carry if al is 0
-adc       ah, ah    ; if width is zero that encoded 0x100. now ah is 1.
-mov       si, word ptr [bp - 012h]
-mov       dl, byte ptr es:[si]
-cmp       ax, dx
-ja        label_23
-label_26:
-test      bx, bx
-jl        label_24
-jmp       label_25
-label_24:
-add       bx, ax
-jmp       label_26
-label_23:
-mov       ax, dx
-inc       ax
-jmp       label_26
-label_16:
-mov       si, OFFSET _maskedheightvalcache
-mov       al, byte ptr [bp - 8]
-mov       byte ptr [si], al
-mov       ah, al
-mov       al, bl
-mov       bx, OFFSET _maskedcachedsegment
-mul       ah
-add       ax, word ptr [bx]
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-retf      
+
+ 
 label_10:
 mov       ax, TEXTURECOLLENGTH_SEGMENT
 mov       bx, word ptr [bp - 012h]
@@ -3097,10 +3076,9 @@ mov       ax, word ptr ds:[_cachedtex+2]
 cmp       ax, bx
 je        label_28
 mov       ax, word ptr ds:[_cachedtex]
-mov       bx, OFFSET _maskednextlookup
 mov       word ptr ds:[_cachedtex+2], ax
 mov       ax, word ptr ds:[_cachedsegmenttex]
-mov       cx, word ptr [bx]
+mov       cx, word ptr ds:[_maskednextlookup]
 mov       word ptr ds:[_cachedsegmenttex+2], ax
 mov       al, byte ptr ds:[_cachedcollength]
 mov       bx, word ptr [bp - 012h]
@@ -3108,22 +3086,18 @@ mov       byte ptr ds:[_cachedcollength+1], al
 mov       ax, bx
 mov       word ptr ds:[_cachedtex], bx
 call      R_GetCompositeTexture_
-mov       bx, OFFSET _maskednextlookup
 mov       word ptr ds:[_cachedsegmenttex], ax
 mov       al, byte ptr [bp - 4]
-mov       word ptr [bx], cx
-mov       bx, OFFSET _maskedtexrepeat
+mov       word ptr ds:[_maskednextlookup], cx
 xor       ah, ah
 mov       byte ptr ds:[_cachedcollength], dl
-mov       word ptr [bx], ax
+mov       word ptr ds:[_maskedtexrepeat], ax
 label_27:
 mov       bx, _cachedbyteheight
 mov       byte ptr [bx], dl
-mov       bx, OFFSET _maskedheightvalcache
-mov       byte ptr [bx], dl
-mov       bx, OFFSET _maskedcachedsegment
+mov       byte ptr ds:[_maskedheightvalcache], dl
 mov       ax, word ptr ds:[_cachedsegmenttex]
-mov       word ptr [bx], ax
+mov       word ptr ds:[_maskedcachedsegment], ax
 mov       al, byte ptr ds:[_cachedcollength]
 mov       ah, byte ptr [bp - 6]
 mul       ah
