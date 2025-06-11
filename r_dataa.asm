@@ -1553,7 +1553,7 @@ cmp   al, byte ptr ds:[bx + di]
 ja    found_start_page_single
 
 add   bl, al
-mov   byte ptr ds:[bx + di], dh   ; dl/dh is -1
+mov   byte ptr ds:[bx + di], 0
 sal   bx, 1
 mov   word ptr ds:[bx + si], dx   ; dx is -1
 
