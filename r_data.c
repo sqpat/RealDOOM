@@ -2614,6 +2614,8 @@ void doprint(int16_t a, int16_t tex){
 
 
 //todo can this be optimized for the masked case??
+segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) ;
+/*
 segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	int16_t         lump;
 	int16_t_union __far* texturecolumnlump;
@@ -2642,20 +2644,18 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 		maskedcachedbasecol  = basecol;
 		maskedtexrepeat	 	 = loopwidth;
 
-		/*
 		// vanilla does not use powers of 2
-		if ((loopwidth & loopwidth - 1) == 0) { // power of 2 check
-			// most textures are power of 2 and its much faster to modulo by ANDing (size-1)
-			maskedtexmodulo  = loopwidth - 1; 
-		} else {
-			// we will do a manual modulo process in this case
-			maskedtexmodulo  = 0;
+		// if ((loopwidth & loopwidth - 1) == 0) { // power of 2 check
+		// 	// most textures are power of 2 and its much faster to modulo by ANDing (size-1)
+		// 	maskedtexmodulo  = loopwidth - 1; 
+		// } else {
+		// 	// we will do a manual modulo process in this case
+		// 	maskedtexmodulo  = 0;
 
-			while (texcol > loopwidth){
-				texcol -= loopwidth;
-			}
+		// 	while (texcol > loopwidth){
+		// 		texcol -= loopwidth;
+		// 	}
 		}
-		*/
 
 		//n+=2;
 	} else {
@@ -2867,6 +2867,7 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 	}
 
 } 
+*/
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
 
