@@ -2683,7 +2683,7 @@ xor       ax, ax
 cwd                                     ; zero dh
 mov       al, byte ptr es:[si]
 cmp       al, 1                         ; set carry if al is 0
-adc       ah, 1                         ; if width is zero that encoded 0x100. now ah is 1.
+adc       ah, ah                        ; if width is zero that encoded 0x100. now ah is 1.
 mov       bx, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, bx
 mov       bx, word ptr [bp - 4]      ; tex

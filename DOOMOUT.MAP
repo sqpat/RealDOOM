@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/11 14:36:07
+Created on:       25/06/11 15:48:00
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -74,7 +74,7 @@ p_telept_TEXT          CODE           AUTO           0a7f:cd30       0000021c
 P_TICK_TEXT            CODE           AUTO           0a7f:cf4c       00000147
 p_user_TEXT            CODE           AUTO           0a7f:d0a0       0000062f
 r_data_TEXT            CODE           AUTO           17ec:0000       0000052a
-R_DATAA_TEXT           CODE           AUTO           17ec:052a       00000b9c
+R_DATAA_TEXT           CODE           AUTO           17ec:052a       00000b9b
 R_MATH_TEXT            CODE           AUTO           17ec:10c6       000001e3
 R_MAINHI_TEXT          CODE           AUTO           17ec:12aa       00002491
 r_draw_TEXT            CODE           AUTO           17ec:3740       000000fb
@@ -1152,11 +1152,11 @@ Module: r_dataa.obj(r_dataa.ASM)
 17ec:06b0*     R_EvictL2CacheEMSPage_
 17ec:07e1      R_MarkL2FlatCacheMRU_
 17ec:0d46      R_GetSpriteTexture_
-17ec:1018*     R_LoadSpriteColumns_
+17ec:1017*     R_LoadSpriteColumns_
 17ec:05cf*     R_MarkL2SpriteCacheMRU_
 17ec:0ab5*     R_GetTexturePage_
 17ec:090d*     R_GetNextTextureBlock_
-17ec:0f9f*     R_LoadPatchColumns_
+17ec:0f9e*     R_LoadPatchColumns_
 17ec:054a*     R_MarkL1SpriteCacheMRU3_
 17ec:055a*     R_MarkL1TextureCacheMRU_
 17ec:05ba*     R_MarkL2TextureCacheMRU_
