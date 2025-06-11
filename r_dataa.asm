@@ -2818,7 +2818,7 @@ jmp       found_cached_lump
 
 ENDP
 
-label_2:
+loopwidth_nonzero_masked:
 mov       ax, word ptr [bp - 0Ah]
 sar       si, 1
 mov       di, word ptr es:[si]
@@ -2826,7 +2826,7 @@ mov       word ptr ds:[_maskedcachedbasecol], ax
 mov       al, byte ptr [bp - 4]
 xor       ah, ah
 mov       word ptr ds:[_maskedtexrepeat], ax
-jmp       label_17
+jmp       done_with_loopwidth_masked
 label_5:
 add       word ptr [bp - 0Eh], cx
 jmp       label_18
@@ -2839,7 +2839,15 @@ jmp       label_19
 PROC R_GetMaskedColumnSegment_ FAR
 PUBLIC R_GetMaskedColumnSegment_
 
-
+;  bp - 2    ??
+;  bp - 4    ??   ; loopwidth
+;  bp - 6    ??   ; col (orig dx, modified)
+;  bp - 8    ??
+;  bp - 0Ah  ??   ; basecol
+;  bp - 0Ch  ??
+;  bp - 0Eh  ??   ; 
+;  bp - 010h ??
+;  bp - 012h ??   ; tex (orig ax)
 
 push      bx
 push      cx
@@ -2850,34 +2858,53 @@ mov       bp, sp
 sub       sp, 010h
 push      ax
 xchg      ax, si
+;	maskedheaderpixeolfs = 0xFFFF;
+
 mov       word ptr ds:[_maskedheaderpixeolfs], 0FFFFh
+
+	
+
+;	col &= texturewidthmasks[tex];
+;	basecol -= col;
+
 mov       ax, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, ax
 xor       dh, dh
 mov       bx, dx
 and       bl, byte ptr es:[si]
-mov       word ptr [bp - 0Ah], dx
+;	texcol = col;
 sal       si, 1
 mov       si, word ptr ds:[si + _texturepatchlump_offset]
 sal       si, 1
 
+;	texturecolumnlump = &(texturecolumnlumps_bytes_7000[texturepatchlump_offset[tex]]);
+;	loopwidth = texturecolumnlump[1].bu.bytehigh;
+
+
 mov       ax, TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT
 mov       es, ax
-sub       word ptr [bp - 0Ah], bx
+sub       dx, bx
+mov       word ptr [bp - 0Ah], dx
 mov       al, byte ptr es:[si + 3]
-mov       byte ptr [bp - 6], bl
+mov       word ptr [bp - 6], bx
 mov       byte ptr [bp - 4], al
 test      al, al
-jne       label_2
-label_1:
+jne       loopwidth_nonzero_masked
+loopwidth_zero_masked:
 xor       ah, ah
-mov       dx, es
+
 mov       word ptr [bp - 0Eh], ax
 mov       ax, word ptr [bp - 0Ah]
+
+;    while (col >= 0) {
+
 test      bx, bx
-jl        label_3
-mov       es, dx
-label_6:
+jl        done_with_subtractor_loop_masked
+
+do_next_subtractor_loop_masked:
+
+;			subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
+
 mov       cl, byte ptr es:[si + 2]
 xor       ch, ch
 inc       cx
@@ -2892,9 +2919,9 @@ sub       byte ptr [bp - 6], cl
 label_18:
 add       si, 4
 test      bx, bx
-jge       label_6
-label_3:
-mov       es, dx
+jge       do_next_subtractor_loop_masked
+done_with_subtractor_loop_masked:
+
 mov       dl, byte ptr es:[si - 1]
 test      di, di
 jng       label_8
@@ -2910,7 +2937,7 @@ sub       dx, cx
 mov       word ptr ds:[_maskedprevlookup], dx
 mov       word ptr ds:[_maskednextlookup], ax
 mov       word ptr ds:[_maskedtexrepeat], 0
-label_17:
+done_with_loopwidth_masked:
 test      di, di
 jg        label_9
 jmp       label_10
@@ -3099,8 +3126,7 @@ mov       byte ptr ds:[_maskedheightvalcache], dl
 mov       ax, word ptr ds:[_cachedsegmenttex]
 mov       word ptr ds:[_maskedcachedsegment], ax
 mov       al, byte ptr ds:[_cachedcollength]
-mov       ah, byte ptr [bp - 6]
-mul       ah
+mul       byte ptr [bp - 6]
 add       ax, word ptr [bx]
 LEAVE_MACRO     
 pop       di
