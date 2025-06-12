@@ -1343,6 +1343,7 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_186
     push  OFFSET R_MarkL1TextureCacheMRU7_
     push  (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)
     push  OFFSET _texturecache_nodes
+    push  OFFSET _textureL1LRU
     push  PAGE_5000_OFFSET + (SCAMP_PAGE_9000_OFFSET + 4)
 ELSE
     mov   si, OFFSET R_MarkL1TextureCacheMRU_
@@ -1826,9 +1827,9 @@ inc   cl    ; inc startpage + i
 mov   bx, es ; currentpage
 SHIFT_MACRO sal   bx 2
 add   bx, word ptr [bp - 0Ch]   ; _texturecache_nodes
-mov   al, byte ptr ds:[bx]
-xor   ah, ah
-mov   es, ax
+mov   bl, byte ptr ds:[bx]
+xor   bh, bh
+mov   es, bx
 dec   dl
 jns   loop_mark_next_page_mru_multi
 
