@@ -2993,3 +2993,11 @@ void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment){
 }
 
 */
+/*
+// used for logging from asm
+void __near logger(segment_t seg, int16_t a){
+	FILE* fp = fopen("segs.txt", "ab");
+	fprintf(fp, "%x, %i\n", seg, a);
+	fclose(fp);
+}
+*/

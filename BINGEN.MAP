@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/11 23:23:21
+Created on:       25/06/12 09:19:26
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -83,12 +83,12 @@ SM_SBMID_TEXT          CODE           AUTO           1a08:1f5e       0000071f
 SM_MPUMD_TEXT          CODE           AUTO           1a08:267e       000007ca
 s_sbsfx_TEXT           CODE           AUTO           1a08:2e50       000017ef
 r_data_TEXT            CODE           AUTO           1e6c:0000       00000000
-R_DATAA_TEXT           CODE           AUTO           1e6c:0000       00000ffa
-R_MATH_TEXT            CODE           AUTO           1e6c:0ffa       000001e3
-R_MAINHI_TEXT          CODE           AUTO           1e6c:11de       00002491
-R_COLUMN_TEXT          CODE           AUTO           1e6c:3670       00000e46
-R_SPAN_TEXT            CODE           AUTO           1e6c:44b6       00000db6
-R_SKY_TEXT             CODE           AUTO           1e6c:526c       000006c0
+R_DATAA_TEXT           CODE           AUTO           1e6c:0000       00000ff8
+R_MATH_TEXT            CODE           AUTO           1e6c:0ff8       000001e3
+R_MAINHI_TEXT          CODE           AUTO           1e6c:11dc       00002491
+R_COLUMN_TEXT          CODE           AUTO           1e6c:366e       00000e46
+R_SPAN_TEXT            CODE           AUTO           1e6c:44b4       00000db6
+R_SKY_TEXT             CODE           AUTO           1e6c:526a       000006c0
 r_draw_TEXT            CODE           AUTO           1e6c:5930       000000fb
 r_main_TEXT            CODE           AUTO           1e6c:5a30       000001dd
 R_MASKED_TEXT          CODE           AUTO           1e6c:5c0e       000010e4
@@ -1276,12 +1276,12 @@ Module: r_dataa.obj(r_dataa.ASM)
 1e6c:0186*     R_EvictL2CacheEMSPage_
 1e6c:02b7      R_MarkL2FlatCacheMRU_
 1e6c:081c      R_GetSpriteTexture_
-1e6c:0cc6      R_GetMaskedColumnSegment_
-1e6c:0f4c*     R_LoadSpriteColumns_
+1e6c:0cc4      R_GetMaskedColumnSegment_
+1e6c:0f4a*     R_LoadSpriteColumns_
 1e6c:00a5*     R_MarkL2SpriteCacheMRU_
 1e6c:058b*     R_GetTexturePage_
 1e6c:03e3*     R_GetNextTextureBlock_
-1e6c:0ed3*     R_LoadPatchColumns_
+1e6c:0ed1*     R_LoadPatchColumns_
 1e6c:0020*     R_MarkL1SpriteCacheMRU3_
 1e6c:0030*     R_MarkL1TextureCacheMRU_
 1e6c:0090*     R_MarkL2TextureCacheMRU_
@@ -1295,54 +1295,54 @@ Module: r_dataa.obj(r_dataa.ASM)
 1e6c:0b96      R_GetColumnSegment_
 1e6c:07aa*     R_GetCompositeTexture_
 Module: r_math.obj(r_math.ASM)
-1e6c:106c      R_PointToAngle_
+1e6c:106a      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-1e6c:1596*     R_AddLine_
-1e6c:1c81*     R_StoreWallRange_
-1e6c:2d60*     R_ClipSolidWallSegment_
-1e6c:2e0d*     R_ClipPassWallSegment_
-1e6c:30a1*     R_CheckBBox_
-1e6c:1744*     R_Subsector_
-1e6c:126d*     FixedMulBSPLocal_
-1e6c:1360*     R_PointToDist_
-1e6c:146b*     R_HandleEMSVisplanePagination_
-1e6c:12a6*     FixedDivBSPLocal_
-1e6c:2ff3      R_PrepareMaskedPSprites_
-1e6c:3335      R_WriteBackViewConstants_
-1e6c:34dd      R_WriteBackFrameConstants_
-1e6c:13f6      R_ClearPlanes_
-1e6c:1c19*     R_AddSprites_
-1e6c:13d7      R_ClearClipSegs_
-1e6c:151a*     R_FindPlane_
-1e6c:283b*     R_DrawColumnPrep_
-1e6c:2e60*     R_DrawPSprite_
-1e6c:182e*     R_CheckPlane_
-1e6c:18f9*     R_ProjectSprite_
-1e6c:1315*     FixedMulTrigNoShiftBSPLocal_
-1e6c:324c      R_RenderBSPNode_
-1e6c:11de*     R_ScaleFromGlobalAngle_
-1e6c:3072*     R_PointToAngle16_
+1e6c:1594*     R_AddLine_
+1e6c:1c7f*     R_StoreWallRange_
+1e6c:2d5e*     R_ClipSolidWallSegment_
+1e6c:2e0b*     R_ClipPassWallSegment_
+1e6c:309f*     R_CheckBBox_
+1e6c:1742*     R_Subsector_
+1e6c:126b*     FixedMulBSPLocal_
+1e6c:135e*     R_PointToDist_
+1e6c:1469*     R_HandleEMSVisplanePagination_
+1e6c:12a4*     FixedDivBSPLocal_
+1e6c:2ff1      R_PrepareMaskedPSprites_
+1e6c:3333      R_WriteBackViewConstants_
+1e6c:34db      R_WriteBackFrameConstants_
+1e6c:13f4      R_ClearPlanes_
+1e6c:1c17*     R_AddSprites_
+1e6c:13d5      R_ClearClipSegs_
+1e6c:1518*     R_FindPlane_
+1e6c:2839*     R_DrawColumnPrep_
+1e6c:2e5e*     R_DrawPSprite_
+1e6c:182c*     R_CheckPlane_
+1e6c:18f7*     R_ProjectSprite_
+1e6c:1313*     FixedMulTrigNoShiftBSPLocal_
+1e6c:324a      R_RenderBSPNode_
+1e6c:11dc*     R_ScaleFromGlobalAngle_
+1e6c:3070*     R_PointToAngle16_
 Module: r_column.obj(r_column.ASM)
-1e6c:3670      R_COLUMN_STARTMARKER_
-1e6c:3990      R_DrawColumn_
-1e6c:44b6      R_COLUMN_ENDMARKER_
+1e6c:366e      R_COLUMN_STARTMARKER_
+1e6c:398e      R_DrawColumn_
+1e6c:44b4      R_COLUMN_ENDMARKER_
 Module: r_span.obj(r_span.ASM)
-1e6c:4556      R_DrawSpan_
-1e6c:44b6      R_SPAN_STARTMARKER_
-1e6c:4c5d*     R_FixedMulLocal_
-1e6c:5174      R_WriteBackViewConstantsSpan_
-1e6c:4ba6*     R_DrawSpanPrep_
-1e6c:4e1d      R_DrawPlanes_
-1e6c:526c      R_SPAN_ENDMARKER_
-1e6c:4c99*     R_MapPlane_
-1e6c:4559*     R_DrawSpanActual_
-1e6c:4c0e*     R_FixedMulTrigLocal_
+1e6c:4554      R_DrawSpan_
+1e6c:44b4      R_SPAN_STARTMARKER_
+1e6c:4c5b*     R_FixedMulLocal_
+1e6c:5172      R_WriteBackViewConstantsSpan_
+1e6c:4ba4*     R_DrawSpanPrep_
+1e6c:4e1b      R_DrawPlanes_
+1e6c:526a      R_SPAN_ENDMARKER_
+1e6c:4c97*     R_MapPlane_
+1e6c:4557*     R_DrawSpanActual_
+1e6c:4c0c*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1e6c:526c      R_DrawSkyColumn_
-1e6c:5439*     R_DrawSkyColumnDynamic_
-1e6c:58bb      R_DrawSkyPlane_
-1e6c:592c      R_SKY_END_
-1e6c:584a      R_DrawSkyPlaneDynamic_
+1e6c:526a      R_DrawSkyColumn_
+1e6c:5437*     R_DrawSkyColumnDynamic_
+1e6c:58b9      R_DrawSkyPlane_
+1e6c:592a      R_SKY_END_
+1e6c:5848      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1e6c:5930      R_VideoErase_
 1e6c:59b4      R_DrawViewBorder_

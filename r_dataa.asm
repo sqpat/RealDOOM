@@ -32,6 +32,7 @@ EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN Z_QuickMapRender4000_:FAR
 EXTRN Z_QuickMapRender5000_:FAR
 EXTRN Z_QuickMapRender7000_:FAR
+;EXTRN logger_:NEAR  ; asm logging stuff
 
 .DATA
 
@@ -2832,9 +2833,11 @@ jmp       found_cached_lump
 ENDP
 
 loopwidth_nonzero_masked:
+; di is tex shifted left 1?
+; es:bx is texcollump
 mov       ax, dx    ; basecol
-sar       di, 1
-mov       si, word ptr es:[di]
+
+mov       si, word ptr es:[bx]
 mov       word ptr ds:[_maskedcachedbasecol], ax
 mov       ax, word ptr [bp - 6]
 mov       word ptr ds:[_maskedtexrepeat], ax
@@ -2878,11 +2881,13 @@ mov       word ptr ds:[_maskedheaderpixeolfs], 0FFFFh
 ;	col &= texturewidthmasks[tex];
 ;	basecol -= col;
 
+
+
 mov       ax, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, ax
 xor       dh, dh
 mov       cx, dx
-and       cl, byte ptr es:[di]
+and       cl, byte ptr es:[di] ; di is tex
 ;	texcol = col;
 sal       di, 1
 mov       bx, word ptr ds:[di + _texturepatchlump_offset]
@@ -3148,7 +3153,7 @@ jmp       found_cached_lump_masked
 
  
 no_lump_do_texture:
-; di is bp - 2
+; di is bp - 2 (tex)
 mov       ax, TEXTURECOLLENGTH_SEGMENT
 mov       es, ax
 mov       si, OFFSET _cachedsegmenttex
@@ -3233,6 +3238,39 @@ jmp       done_setting_cached_tex_masked
 
 
 ENDP
+
+COMMENT @ 
+; asm logging stuff
+PROC logtexture0_ NEAR
+PUBLIC logtexture0_
+
+PUSHA
+mov   dx, 0
+call  logger_
+POPA
+RET
+ENDP
+
+PROC logtexture1_ NEAR
+PUBLIC logtexture1_
+
+PUSHA
+mov   dx, 1
+call  logger_
+POPA
+RET
+ENDP
+
+PROC logtexture2_ NEAR
+PUBLIC logtexture2_
+
+PUSHA
+mov   dx, di
+call  logger_
+POPA
+RET
+ENDP
+@
 
 
 SCRATCH_ADDRESS_4000_SEGMENT = 04000h

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/11 23:23:22
+Created on:       25/06/12 09:19:28
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -74,9 +74,9 @@ p_telept_TEXT          CODE           AUTO           0a7f:cd30       0000021c
 P_TICK_TEXT            CODE           AUTO           0a7f:cf4c       00000147
 p_user_TEXT            CODE           AUTO           0a7f:d0a0       0000062f
 r_data_TEXT            CODE           AUTO           17ec:0000       00000000
-R_DATAA_TEXT           CODE           AUTO           17ec:0000       00000ffa
-R_MATH_TEXT            CODE           AUTO           17ec:0ffa       000001e3
-R_MAINHI_TEXT          CODE           AUTO           17ec:11de       00002491
+R_DATAA_TEXT           CODE           AUTO           17ec:0000       00000ff8
+R_MATH_TEXT            CODE           AUTO           17ec:0ff8       000001e3
+R_MAINHI_TEXT          CODE           AUTO           17ec:11dc       00002491
 r_draw_TEXT            CODE           AUTO           17ec:3670       000000fb
 r_main_TEXT            CODE           AUTO           17ec:3770       000001dd
 w_wad_TEXT             CODE           AUTO           17ec:3950       0000030c
@@ -1150,12 +1150,12 @@ Module: r_dataa.obj(r_dataa.ASM)
 17ec:0186*     R_EvictL2CacheEMSPage_
 17ec:02b7      R_MarkL2FlatCacheMRU_
 17ec:081c      R_GetSpriteTexture_
-17ec:0cc6      R_GetMaskedColumnSegment_
-17ec:0f4c*     R_LoadSpriteColumns_
+17ec:0cc4      R_GetMaskedColumnSegment_
+17ec:0f4a*     R_LoadSpriteColumns_
 17ec:00a5*     R_MarkL2SpriteCacheMRU_
 17ec:058b*     R_GetTexturePage_
 17ec:03e3*     R_GetNextTextureBlock_
-17ec:0ed3*     R_LoadPatchColumns_
+17ec:0ed1*     R_LoadPatchColumns_
 17ec:0020*     R_MarkL1SpriteCacheMRU3_
 17ec:0030*     R_MarkL1TextureCacheMRU_
 17ec:0090*     R_MarkL2TextureCacheMRU_
@@ -1169,33 +1169,33 @@ Module: r_dataa.obj(r_dataa.ASM)
 17ec:0b96      R_GetColumnSegment_
 17ec:07aa*     R_GetCompositeTexture_
 Module: r_math.obj(r_math.ASM)
-17ec:106c      R_PointToAngle_
+17ec:106a      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-17ec:1596*     R_AddLine_
-17ec:1c81*     R_StoreWallRange_
-17ec:2d60*     R_ClipSolidWallSegment_
-17ec:2e0d*     R_ClipPassWallSegment_
-17ec:30a1*     R_CheckBBox_
-17ec:1744*     R_Subsector_
-17ec:126d*     FixedMulBSPLocal_
-17ec:1360*     R_PointToDist_
-17ec:146b*     R_HandleEMSVisplanePagination_
-17ec:12a6*     FixedDivBSPLocal_
-17ec:2ff3      R_PrepareMaskedPSprites_
-17ec:3335      R_WriteBackViewConstants_
-17ec:34dd      R_WriteBackFrameConstants_
-17ec:13f6      R_ClearPlanes_
-17ec:1c19*     R_AddSprites_
-17ec:13d7      R_ClearClipSegs_
-17ec:151a*     R_FindPlane_
-17ec:283b*     R_DrawColumnPrep_
-17ec:2e60*     R_DrawPSprite_
-17ec:182e*     R_CheckPlane_
-17ec:18f9*     R_ProjectSprite_
-17ec:1315*     FixedMulTrigNoShiftBSPLocal_
-17ec:324c      R_RenderBSPNode_
-17ec:11de*     R_ScaleFromGlobalAngle_
-17ec:3072*     R_PointToAngle16_
+17ec:1594*     R_AddLine_
+17ec:1c7f*     R_StoreWallRange_
+17ec:2d5e*     R_ClipSolidWallSegment_
+17ec:2e0b*     R_ClipPassWallSegment_
+17ec:309f*     R_CheckBBox_
+17ec:1742*     R_Subsector_
+17ec:126b*     FixedMulBSPLocal_
+17ec:135e*     R_PointToDist_
+17ec:1469*     R_HandleEMSVisplanePagination_
+17ec:12a4*     FixedDivBSPLocal_
+17ec:2ff1      R_PrepareMaskedPSprites_
+17ec:3333      R_WriteBackViewConstants_
+17ec:34db      R_WriteBackFrameConstants_
+17ec:13f4      R_ClearPlanes_
+17ec:1c17*     R_AddSprites_
+17ec:13d5      R_ClearClipSegs_
+17ec:1518*     R_FindPlane_
+17ec:2839*     R_DrawColumnPrep_
+17ec:2e5e*     R_DrawPSprite_
+17ec:182c*     R_CheckPlane_
+17ec:18f7*     R_ProjectSprite_
+17ec:1313*     FixedMulTrigNoShiftBSPLocal_
+17ec:324a      R_RenderBSPNode_
+17ec:11dc*     R_ScaleFromGlobalAngle_
+17ec:3070*     R_PointToAngle16_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17ec:3670      R_VideoErase_
 17ec:36f4      R_DrawViewBorder_
@@ -1548,4 +1548,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00022cc0 (142528.)
 Entry point address: 1c72:1c36
-Link time: 00:00.74
+Link time: 00:00.75
