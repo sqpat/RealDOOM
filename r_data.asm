@@ -2132,79 +2132,130 @@ retf
 
 ENDP
 
+done_with_composite_loop:
+call      Z_QuickMapRender7000_
+LEAVE_MACRO     
+POPA_NO_AX_MACRO
+ret       
 
 
 PROC R_GenerateComposite_ NEAR
 PUBLIC R_GenerateComposite_
 
+; void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
-push      bx
-push      cx
-push      si
-push      di
+; bp - 2     texturepatchcount
+; bp - 4     ??? some byte
+; bp - 6     usetextureheight
+; bp - 8     ??? some byte
+; bp - 0Ah   unused
+; bp - 0Ch   ??? some byte
+; bp - 0Eh   
+; bp - 010h   
+; bp - 012h   
+; bp - 014h  TEXTURECOLUMNLUMPS_BYTES_SEGMENT
+; bp - 016h  collump offset?
+; bp - 018h  unused
+; bp - 01Ah  texture->patches
+; bp - 01Ch   
+; bp - 01Eh  unused
+; bp - 020h  unused
+; bp - 022h  unused
+; bp - 024h  
+; bp - 026h  
+; bp - 028h  
+; bp - 02Ah  
+; bp - 02Ch  unused 
+; bp - 02Eh  
+; bp - 030h  unused
+; bp - 032h  texnum * 2 (word lookup)
+; bp - 034h  block_segment
+; bp - 036h  TEXTUREDEFS_BYTES_SEGMENT
+; bp - 038h  i (loop counter)
+; bp - 03Ah  ??? lastusedpatch or patchpatch starts as -1
+; bp - 03Ch  texture width
+; bp - 03Eh  texture height
+
+PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
-sub       sp, 032h
-push      dx
+sub       sp, 030h
 mov       bx, ax
-add       bx, ax
+sal       bx, 1
+push      bx  ; bp - 032h
+mov       si, bx
+
+push      dx  ; bp - 034h
 mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
-mov       dx, TEXTUREDEFS_BYTES_SEGMENT
 mov       es, ax
-mov       word ptr [bp - 032h], bx
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr es:[bx]          ; 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
+mov       dx, TEXTUREDEFS_BYTES_SEGMENT
 mov       es, dx
-mov       al, byte ptr es:[bx + 8]
-xor       ah, ah
+push      dx ; bp - 036h
+; todo get both in one read..
+xor       ax, ax
+cwd       ; zero dx
+push      ax ; bp - 038h ; zero
+dec       dx
+push      dx ; bp - 03Ah ; -1 now
+
+
+mov       al, byte ptr es:[bx + 8]      ; texturewidth = texture->width + 1;
 inc       ax
-mov       word ptr [bp - 020h], ax
-mov       al, byte ptr es:[bx + 9]
+push      ax  ; bp - 03Ch 
+mov       al, byte ptr es:[bx + 9]      ; textureheight = texture->height + 1;
 inc       al
-mov       word ptr [bp - 018h], -1
-mov       byte ptr [bp - 0Ah], al
+push      ax  ; bp - 03Eh
+
+;	usetextureheight = textureheight + ((16 - (textureheight &0xF)) &0xF);
+
+mov       dx, ax  ; store bp - 03Eh
 and       al, 0Fh
-mov       word ptr [bp - 030h], 0
 mov       ah, 010h
-mov       word ptr [bp - 014h], TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 sub       ah, al
-mov       word ptr [bp - 01Eh], 0
 mov       al, ah
-mov       word ptr [bp - 022h], dx
-and       al, 0Fh
-mov       si, word ptr [bp - 032h]
-mov       ah, byte ptr [bp - 0Ah]
-add       si, _texturepatchlump_offset
-add       ah, al
-add       bx, 0Bh ; todo
-mov       byte ptr [bp - 6], ah
-mov       al, ah
+and       ax, 0Fh
+
+mov       word ptr [bp - 014h], TEXTURECOLUMNLUMPS_BYTES_SEGMENT
+
+
+
+add       al, dl   ; textureheight copy
+;	usetextureheight = usetextureheight >> 4;
+SHIFT_MACRO sar       ax 4
+mov       word ptr [bp - 6], ax
+
+add       bx, 0Bh    ; patches pointer todo?
 mov       word ptr [bp - 01Ah], bx
-xor       ah, ah
-mov       si, word ptr [si]
-sar       ax, 4
-add       si, si
-mov       byte ptr [bp - 6], al
-mov       al, byte ptr es:[bx - 1]
+
+;	// Composite the columns together.
+;	collump = &(texturecolumnlumps_bytes[texturepatchlump_offset[texnum]]);
+; si is bp - 032h
+mov       si, word ptr ds:[si + _texturepatchlump_offset]
+sal       si, 1
 mov       word ptr [bp - 016h], si
-mov       byte ptr [bp - 2], al
 call      Z_QuickMapScratch_7000_
-label_22:
-mov       al, byte ptr [bp - 2]
+
+mov       al, byte ptr es:[bx - 1] ; texturepatchcount = texture->patchcount;
 xor       ah, ah
-cmp       ax, word ptr [bp - 01Eh]
-jg        label_1
-jmp       label_2
-label_1:
+mov       word ptr [bp - 2], ax
+
+;	for (i = 0; i < texturepatchcount; i++) {
+loop_texture_patch:
+; ax is bp - 2
+cmp       ax, word ptr [bp - 038h]
+jng       done_with_composite_loop
+
 mov       si, word ptr [bp - 01Ah]
-mov       ax, word ptr [bp - 022h]
-mov       es, word ptr [bp - 022h]
+mov       ax, word ptr [bp - 036h]
+mov       es, word ptr [bp - 036h]
 mov       bx, si
 xor       di, di
 mov       dx, word ptr es:[bx + 2]
 mov       word ptr [bp - 01Ch], ax
 and       dh, (PATCHMASK SHR 8)
-mov       ax, word ptr [bp - 018h]
-mov       word ptr [bp - 018h], dx
+mov       ax, word ptr [bp - 03Ah]
+mov       word ptr [bp - 03Ah], dx
 cmp       ax, dx
 je        label_3
 mov       cx, SCRATCH_PAGE_SEGMENT_7000 
@@ -2239,9 +2290,9 @@ label_5:
 mov       word ptr [bp - 028h], ax
 label_13:
 mov       ax, word ptr [bp - 02Eh]
-cmp       ax, word ptr [bp - 020h]
+cmp       ax, word ptr [bp - 03Ch]
 jle       label_7
-mov       ax, word ptr [bp - 020h]
+mov       ax, word ptr [bp - 03Ch]
 mov       word ptr [bp - 02Eh], ax
 label_7:
 mov       bx, di
@@ -2344,19 +2395,17 @@ add       word ptr [bp - 02Ah], 4
 inc       word ptr [bp - 028h]
 jmp       label_19
 label_20:
-mov       cl, byte ptr [bp - 0Ah]
+mov       cl, byte ptr [bp - 03Eh]
 mov       al, byte ptr [bp - 4]
 mov       dx, SCRATCH_PAGE_SEGMENT_7000
 mov       bx, word ptr [bp - 02Ah]
 mov       es, dx
 add       bx, 8
 cbw      
-mov       dx, word ptr es:[bx]
+mov       bx, word ptr es:[bx] ; supposed to go into ax...
 xor       ch, ch
-mov       word ptr [bp - 02Ch], dx
-mov       bx, ax
+xchg      ax, bx  ; xchg both into where theyre supposed to go
 mov       dx, word ptr [bp - 0Eh]
-mov       ax, word ptr [bp - 02Ch]
 call      R_DrawColumnInCache_ 
 mov       al, byte ptr [bp - 6]
 xor       ah, ah
@@ -2364,16 +2413,10 @@ add       word ptr [bp - 0Eh], ax
 jmp       label_21
 label_16:
 add       word ptr [bp - 01Ah], 4
-inc       word ptr [bp - 01Eh]
-jmp       label_22
-label_2:
-call      Z_QuickMapRender7000_
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
+inc       word ptr [bp - 038h]
+mov       ax, word ptr [bp - 2]
+jmp       loop_texture_patch
+
 
 ENDP
 
