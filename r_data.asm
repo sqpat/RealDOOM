@@ -2047,12 +2047,12 @@ PUBLIC R_GenerateComposite_
 
 ; bp - 2  texnum * 2 (word lookup)
 ; bp - 4  block_segment
-; bp - 6  TEXTUREDEFS_BYTES_SEGMENT
-; bp - 8  i (loop counter)
-; bp - 0Ah  lastusedpatch/patchpatch starts as -1
-; bp - 0Ch  texture width
-; bp - 0Eh  texture height
-; bp - 010h  usetextureheight
+; bp - 6  i (loop counter)
+; bp - 8  lastusedpatch/patchpatch starts as -1
+; bp - 0Ah  texture width
+; bp - 0Ch  texture height
+; bp - 0Eh  usetextureheight
+; bp - 010h  TEXTUREDEFS_BYTES_SEGMENT
 ; bp - 012h  texture->patches
 ; bp - 014h  collump offset?
 ; bp - 016h  texturepatchcount
@@ -2075,26 +2075,26 @@ mov       es, ax
 mov       bx, word ptr es:[bx]          ; 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 mov       dx, TEXTUREDEFS_BYTES_SEGMENT
 mov       es, dx
-push      dx ; bp - 6
+
 ; todo get both in one read..
 xor       ax, ax
 cwd       ; zero dx
-push      ax ; bp - 8 ; zero
+push      ax ; bp - 6 ; zero
 dec       dx
-push      dx ; bp - 0Ah ; -1 now
+push      dx ; bp - 8 ; -1 now
 
 
 mov       al, byte ptr es:[bx + 8]      ; texturewidth = texture->width + 1;
 inc       ax
-push      ax  ; bp - 0Ch 
+push      ax  ; bp - 0Ah 
 mov       al, byte ptr es:[bx + 9]      ; textureheight = texture->height + 1;
 inc       al
 xor       ah, ah
-push      ax  ; bp - 0Eh
+push      ax  ; bp - 0Ch
 
 ;	usetextureheight = textureheight + ((16 - (textureheight &0xF)) &0xF);
 
-mov       dx, ax  ; store bp - 0Eh
+mov       dx, ax  ; store bp - 0Ch
 and       al, 0Fh
 mov       ah, 010h
 sub       ah, al
@@ -2108,7 +2108,10 @@ add       al, dl   ; textureheight copy
 ;	usetextureheight = usetextureheight >> 4;
 SHIFT_MACRO sar       ax 4
 ; ah already known zero
-push      ax ; bp - 010h
+
+
+push      ax ; bp - 0Eh
+push      es ; bp - 010h
 
 add       bx, 0Bh    ; patches pointer todo?
 push      bx ; bp - 012h
@@ -2129,24 +2132,23 @@ push      ax ; bp - 016h texturepatchcount
 loop_texture_patch:
 ; ax is bp - 016h
 ; todo move this check to the end with selfmodify.
-cmp       ax, word ptr [bp - 8]
+cmp       ax, word ptr [bp - 6]
 jng       done_with_composite_loop
 
-mov       es, word ptr [bp - 6]  ; todo les
-mov       si, word ptr [bp - 012h]
+les       si, dword ptr [bp - 012h]
 xor       bx, bx ; 
 mov       di, word ptr [bp - 014h] ; di is collump[currentRLEIndex]
 
 mov       dx, word ptr es:[si + 2]
 and       dh, (PATCHMASK SHR 8)
-mov       ax, word ptr [bp - 0Ah]
-mov       word ptr [bp - 0Ah], dx
+mov       ax, word ptr [bp - 8]
+mov       word ptr [bp - 8], dx
 cmp       ax, dx
 je        use_same_patch
 mov       cx, SCRATCH_PAGE_SEGMENT_7000 
 mov       ax, dx
 call      W_CacheLumpNumDirect_
-mov       es, word ptr [bp - 6]
+mov       es, word ptr [bp - 010h]
 use_same_patch:
 mov       ax, word ptr es:[si]
 mov       dl, ah
@@ -2195,9 +2197,9 @@ done_setting_x:
 ;    }
 
 
-cmp       bx, word ptr [bp - 0Ch]
+cmp       bx, word ptr [bp - 0Ah]
 jle       x2_smaller_than_texture_width
-mov       bx, word ptr [bp - 0Ch]
+mov       bx, word ptr [bp - 0Ah]
 x2_smaller_than_texture_width:
 mov       word ptr cs:[SELFMODIFY_x2_check+2], bx
 
@@ -2299,7 +2301,7 @@ dont_add_final_diffpixels:
 
 ; currentdestsegment += FastMul8u8u(usetextureheight, diffpixels);
 
-mov       al, byte ptr [bp - 010h]
+mov       al, byte ptr [bp - 0Eh]
 mul       dl
 add       word ptr [bp - 01Ch], ax
 
@@ -2332,7 +2334,7 @@ add       ax, 8  ; prestore offset
 
 push      ax  ; bp - 01Eh columnofs[x - x1] 
 
-mov       dx, word ptr [bp - 0Eh] ; dx gets this for the whole inner loop
+mov       dx, word ptr [bp - 0Ch] ; dx gets this for the whole inner loop
 
 mov       ax, COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
 mov       ds, ax
@@ -2477,7 +2479,7 @@ pop       di
 pop       si
 pop       cx
 
-mov       ax, word ptr [bp - 010h]
+mov       ax, word ptr [bp - 0Eh]
 add       word ptr [bp - 01Ch], ax   ; currentdestsegment += usetextureheight;
 increment_x_x2_loop:
 add       word ptr [bp - 01Eh], 4
@@ -2488,7 +2490,7 @@ do_next_composite_loop_iter:
 mov       ax, ss
 mov       ds, ax  ; restore ds
 add       word ptr [bp - 012h], 4
-inc       word ptr [bp - 8]
+inc       word ptr [bp - 6]
 mov       ax, word ptr [bp - 016h]
 add       sp, 8 ; back to 46?
 jmp       loop_texture_patch
@@ -2538,7 +2540,7 @@ mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
 
 mov       word ptr ds:[si + _segloopnextlookup], dx
 shr       si, 1
-pop       dx ;  , byte ptr [bp - 0Ah]             ; loopwidth
+pop       dx ;  , byte ptr [bp - 8]             ; loopwidth
 mov       byte ptr ds:[si + _seglooptexrepeat], dl
 jmp       done_setting_cached_tex
 
@@ -2550,7 +2552,7 @@ mov       es, di
 mov       bl, byte ptr es:[bx - 1]
 xor       bh, bh
 
-add       bx, word ptr [bp - 6]
+add       bx, word ptr [bp - 010h]
 segloopcachedbasecol_set:
 
 ; write the segloopcachedbasecol[segloopcachetype] calculated above!
@@ -2613,7 +2615,7 @@ mov      word ptr ds:[bx], ax
 jmp       done_setting_cached_tex
 lump_greater_than_zero:
 ;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
-sub       byte ptr [bp - 8], al         ; al still subtractor
+sub       byte ptr [bp - 6], al         ; al still subtractor
 done_with_lump_check:
 add       bx, 4                     ; n+= 2
 test      cx, cx
@@ -2702,7 +2704,7 @@ sal       si, 1
 mov       word ptr ds:[si + _segloopcachedsegment], ax
 xchg      ax, dx
 mov       al, byte ptr ds:[_cachedcollength]
-mul       byte ptr [bp - 8]
+mul       byte ptr [bp - 6]
 add       ax, dx
 LEAVE_MACRO     
 pop       di
