@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/12 12:39:39
+Created on:       25/06/12 12:41:24
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -73,9 +73,9 @@ P_MOBJA_TEXT           CODE           AUTO           0a7f:ccb4       00000077
 p_telept_TEXT          CODE           AUTO           0a7f:cd30       0000021c
 P_TICK_TEXT            CODE           AUTO           0a7f:cf4c       00000147
 p_user_TEXT            CODE           AUTO           0a7f:d0a0       0000062f
-R_DATA_TEXT            CODE           AUTO           17ec:0000       00000f50
-R_MATH_TEXT            CODE           AUTO           17ec:0f50       000001e3
-R_MAINHI_TEXT          CODE           AUTO           17ec:1134       00002491
+R_DATA_TEXT            CODE           AUTO           17ec:0000       00000f4d
+R_MATH_TEXT            CODE           AUTO           17ec:0f4e       000001e3
+R_MAINHI_TEXT          CODE           AUTO           17ec:1132       00002491
 r_draw_TEXT            CODE           AUTO           17ec:35d0       000000fb
 r_main_TEXT            CODE           AUTO           17ec:36d0       000001dd
 w_wad_TEXT             CODE           AUTO           17ec:38b0       0000030c
@@ -1149,12 +1149,12 @@ Module: r_data.obj(r_data.ASM)
 17ec:0186*     R_EvictL2CacheEMSPage_
 17ec:02b7      R_MarkL2FlatCacheMRU_
 17ec:07cd      R_GetSpriteTexture_
-17ec:0c1c      R_GetMaskedColumnSegment_
-17ec:0ea2*     R_LoadSpriteColumns_
+17ec:0c19      R_GetMaskedColumnSegment_
+17ec:0e9f*     R_LoadSpriteColumns_
 17ec:00a5*     R_MarkL2SpriteCacheMRU_
 17ec:053c*     R_GetTexturePage_
 17ec:0394*     R_GetNextTextureBlock_
-17ec:0e29*     R_LoadPatchColumns_
+17ec:0e26*     R_LoadPatchColumns_
 17ec:0020*     R_MarkL1SpriteCacheMRU3_
 17ec:0030*     R_MarkL1TextureCacheMRU_
 17ec:0090*     R_MarkL2TextureCacheMRU_
@@ -1164,36 +1164,36 @@ Module: r_data.obj(r_data.ASM)
 17ec:0070*     R_MarkL1TextureCacheMRU7_
 17ec:030d      R_EvictFlatCacheEMSPage_
 17ec:06c6*     R_GetPatchTexture_
-17ec:0aee      R_GetColumnSegment_
+17ec:0aeb      R_GetColumnSegment_
 17ec:075b*     R_GetCompositeTexture_
 Module: r_math.obj(r_math.ASM)
-17ec:0fc2      R_PointToAngle_
+17ec:0fc0      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-17ec:14ec*     R_AddLine_
-17ec:1bd7*     R_StoreWallRange_
-17ec:2cb6*     R_ClipSolidWallSegment_
-17ec:2d63*     R_ClipPassWallSegment_
-17ec:2ff7*     R_CheckBBox_
-17ec:169a*     R_Subsector_
-17ec:11c3*     FixedMulBSPLocal_
-17ec:12b6*     R_PointToDist_
-17ec:13c1*     R_HandleEMSVisplanePagination_
-17ec:11fc*     FixedDivBSPLocal_
-17ec:2f49      R_PrepareMaskedPSprites_
-17ec:328b      R_WriteBackViewConstants_
-17ec:3433      R_WriteBackFrameConstants_
-17ec:134c      R_ClearPlanes_
-17ec:1b6f*     R_AddSprites_
-17ec:132d      R_ClearClipSegs_
-17ec:1470*     R_FindPlane_
-17ec:2791*     R_DrawColumnPrep_
-17ec:2db6*     R_DrawPSprite_
-17ec:1784*     R_CheckPlane_
-17ec:184f*     R_ProjectSprite_
-17ec:126b*     FixedMulTrigNoShiftBSPLocal_
-17ec:31a2      R_RenderBSPNode_
-17ec:1134*     R_ScaleFromGlobalAngle_
-17ec:2fc8*     R_PointToAngle16_
+17ec:14ea*     R_AddLine_
+17ec:1bd5*     R_StoreWallRange_
+17ec:2cb4*     R_ClipSolidWallSegment_
+17ec:2d61*     R_ClipPassWallSegment_
+17ec:2ff5*     R_CheckBBox_
+17ec:1698*     R_Subsector_
+17ec:11c1*     FixedMulBSPLocal_
+17ec:12b4*     R_PointToDist_
+17ec:13bf*     R_HandleEMSVisplanePagination_
+17ec:11fa*     FixedDivBSPLocal_
+17ec:2f47      R_PrepareMaskedPSprites_
+17ec:3289      R_WriteBackViewConstants_
+17ec:3431      R_WriteBackFrameConstants_
+17ec:134a      R_ClearPlanes_
+17ec:1b6d*     R_AddSprites_
+17ec:132b      R_ClearClipSegs_
+17ec:146e*     R_FindPlane_
+17ec:278f*     R_DrawColumnPrep_
+17ec:2db4*     R_DrawPSprite_
+17ec:1782*     R_CheckPlane_
+17ec:184d*     R_ProjectSprite_
+17ec:1269*     FixedMulTrigNoShiftBSPLocal_
+17ec:31a0      R_RenderBSPNode_
+17ec:1132*     R_ScaleFromGlobalAngle_
+17ec:2fc6*     R_PointToAngle16_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17ec:35d0      R_VideoErase_
 17ec:3654      R_DrawViewBorder_

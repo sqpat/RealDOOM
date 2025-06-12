@@ -2045,81 +2045,56 @@ PUBLIC R_GenerateComposite_
 
 ; void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
-; bp - 2     unused
-; bp - 4     unused
-; bp - 6     unused     
-; bp - 8     unused
-; bp - 0Ah   unused
-; bp - 0Ch   unused
-; bp - 0Eh   unused
-; bp - 010h  unused
-; bp - 012h  unused
-; bp - 014h  unused
-; bp - 016h  unused
-; bp - 018h  unused
-; bp - 01Ah  unused
-; bp - 01Ch  unused
-; bp - 01Eh  unused
-; bp - 020h  unused
-; bp - 022h  unused
-; bp - 024h  unused
-; bp - 026h  unused
-; bp - 028h  unused  
-; bp - 02Ah  unused 
-; bp - 02Ch  unused 
-; bp - 02Eh  unused
-; bp - 030h  unused
-; bp - 032h  texnum * 2 (word lookup)
-; bp - 034h  block_segment
-; bp - 036h  TEXTUREDEFS_BYTES_SEGMENT
-; bp - 038h  i (loop counter)
-; bp - 03Ah  ??? lastusedpatch or patchpatch starts as -1
-; bp - 03Ch  texture width
-; bp - 03Eh  texture height
-; bp - 040h  usetextureheight
-; bp - 042h  texture->patches
-; bp - 044h  collump offset?
-; bp - 046h  texturepatchcount
-; bp - 048h  (innerloop) x
-; bp - 04Ah  (innerloop) currentlump
-; bp - 04Ch  (innerloop) currentdestsegment
-; bp - 04Eh  (innerloop) columnofs[x - x1] 
+; bp - 2  texnum * 2 (word lookup)
+; bp - 4  block_segment
+; bp - 6  TEXTUREDEFS_BYTES_SEGMENT
+; bp - 8  i (loop counter)
+; bp - 0Ah  lastusedpatch/patchpatch starts as -1
+; bp - 0Ch  texture width
+; bp - 0Eh  texture height
+; bp - 010h  usetextureheight
+; bp - 012h  texture->patches
+; bp - 014h  collump offset?
+; bp - 016h  texturepatchcount
+; bp - 018h  (innerloop) x
+; bp - 01Ah  (innerloop) currentlump
+; bp - 01Ch  (innerloop) currentdestsegment
+; bp - 01Eh  (innerloop) columnofs[x - x1] 
 
 PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
-sub       sp, 030h
 mov       bx, ax
 sal       bx, 1
-push      bx  ; bp - 032h
+push      bx  ; bp - 2
 mov       si, bx
 
-push      dx  ; bp - 034h
+push      dx  ; bp - 4
 mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
 mov       es, ax
 mov       bx, word ptr es:[bx]          ; 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 mov       dx, TEXTUREDEFS_BYTES_SEGMENT
 mov       es, dx
-push      dx ; bp - 036h
+push      dx ; bp - 6
 ; todo get both in one read..
 xor       ax, ax
 cwd       ; zero dx
-push      ax ; bp - 038h ; zero
+push      ax ; bp - 8 ; zero
 dec       dx
-push      dx ; bp - 03Ah ; -1 now
+push      dx ; bp - 0Ah ; -1 now
 
 
 mov       al, byte ptr es:[bx + 8]      ; texturewidth = texture->width + 1;
 inc       ax
-push      ax  ; bp - 03Ch 
+push      ax  ; bp - 0Ch 
 mov       al, byte ptr es:[bx + 9]      ; textureheight = texture->height + 1;
 inc       al
 xor       ah, ah
-push      ax  ; bp - 03Eh
+push      ax  ; bp - 0Eh
 
 ;	usetextureheight = textureheight + ((16 - (textureheight &0xF)) &0xF);
 
-mov       dx, ax  ; store bp - 03Eh
+mov       dx, ax  ; store bp - 0Eh
 and       al, 0Fh
 mov       ah, 010h
 sub       ah, al
@@ -2133,45 +2108,45 @@ add       al, dl   ; textureheight copy
 ;	usetextureheight = usetextureheight >> 4;
 SHIFT_MACRO sar       ax 4
 ; ah already known zero
-push      ax ; bp - 040h
+push      ax ; bp - 010h
 
 add       bx, 0Bh    ; patches pointer todo?
-push      bx ; bp - 042h
+push      bx ; bp - 012h
 
 ;	// Composite the columns together.
 ;	collump = &(texturecolumnlumps_bytes[texturepatchlump_offset[texnum]]);
-; si is bp - 032h
+; si is bp - 2
 mov       si, word ptr ds:[si + _texturepatchlump_offset]
 sal       si, 1
-push      si ; bp - 044h
+push      si ; bp - 014h
 call      Z_QuickMapScratch_7000_
 
 mov       al, byte ptr es:[bx - 1] ; texturepatchcount = texture->patchcount;
 xor       ah, ah
-push      ax ; bp - 046h texturepatchcount
+push      ax ; bp - 016h texturepatchcount
 
 ;	for (i = 0; i < texturepatchcount; i++) {
 loop_texture_patch:
-; ax is bp - 046h
+; ax is bp - 016h
 ; todo move this check to the end with selfmodify.
-cmp       ax, word ptr [bp - 038h]
+cmp       ax, word ptr [bp - 8]
 jng       done_with_composite_loop
 
-mov       es, word ptr [bp - 036h]  ; todo les
-mov       si, word ptr [bp - 042h]
+mov       es, word ptr [bp - 6]  ; todo les
+mov       si, word ptr [bp - 012h]
 xor       bx, bx ; 
-mov       di, word ptr [bp - 044h] ; di is collump[currentRLEIndex]
+mov       di, word ptr [bp - 014h] ; di is collump[currentRLEIndex]
 
 mov       dx, word ptr es:[si + 2]
 and       dh, (PATCHMASK SHR 8)
-mov       ax, word ptr [bp - 03Ah]
-mov       word ptr [bp - 03Ah], dx
+mov       ax, word ptr [bp - 0Ah]
+mov       word ptr [bp - 0Ah], dx
 cmp       ax, dx
 je        use_same_patch
 mov       cx, SCRATCH_PAGE_SEGMENT_7000 
 mov       ax, dx
 call      W_CacheLumpNumDirect_
-mov       es, word ptr [bp - 036h]
+mov       es, word ptr [bp - 6]
 use_same_patch:
 mov       ax, word ptr es:[si]
 mov       dl, ah
@@ -2209,10 +2184,10 @@ test      dx, dx
 jge       set_x_to_x1
 
 xor       cx, cx
-push      cx  ; bp - 048h
+push      cx  ; bp - 018h
 jmp       done_setting_x
 set_x_to_x1:
-push      dx  ; bp - 048h
+push      dx  ; bp - 018h
 done_setting_x:
 
 ;    if (x2 > texturewidth){
@@ -2220,9 +2195,9 @@ done_setting_x:
 ;    }
 
 
-cmp       bx, word ptr [bp - 03Ch]
+cmp       bx, word ptr [bp - 0Ch]
 jle       x2_smaller_than_texture_width
-mov       bx, word ptr [bp - 03Ch]
+mov       bx, word ptr [bp - 0Ch]
 x2_smaller_than_texture_width:
 mov       word ptr cs:[SELFMODIFY_x2_check+2], bx
 
@@ -2235,7 +2210,7 @@ mov       es, bx
 ;    nextcollumpRLE = collump[currentRLEIndex + 1].bu.bytelow + 1;
 
 
-push      word ptr es:[di]  ; bp - 04Ah  currentlump
+push      word ptr es:[di]  ; bp - 01Ah  currentlump
 
 mov       al, byte ptr es:[di + 2]
 xor       ah, ah
@@ -2243,7 +2218,7 @@ mov       si, ax   ; si is nextcollumpRLE
 
 ;		currentdestsegment = block_segment;
 
-push      word ptr [bp - 034h] ; ; bp - 04Ch  currentdestsegment from blocksegment
+push      word ptr [bp - 4] ; ; bp - 01Ch  currentdestsegment from blocksegment
 inc       si
 
 
@@ -2254,7 +2229,7 @@ inc       si
 ; si/di/dx all currently unusable?
 ; 
 
-cmp       word ptr [bp - 048h], 0
+cmp       word ptr [bp - 018h], 0
 je        x_is_zero_skip_inner_calc
 
 
@@ -2268,7 +2243,7 @@ je        x_is_zero_skip_inner_calc
 
 push      dx  ; store dx. we will use it as currentx and diffpixels
 push      di  ; to be used as innercurrentRLEIndex
-mov       bx, word ptr [bp - 044h]
+mov       bx, word ptr [bp - 014h]
 mov       ax, word ptr es:[bx]
 mov       di, ax  ; innercurrentlump todo push/pop solution.
 mov       al, byte ptr es:[bx + 2]  ; innernextcollumpRLE
@@ -2285,7 +2260,7 @@ inc       ax
 mov       cl, dh
 xor       ch, ch
 add       cx, ax
-cmp       cx, word ptr [bp - 048h]
+cmp       cx, word ptr [bp - 018h]
 jge       break_inner_loop
 
 ;    if (innercurrentlump == -1){
@@ -2317,16 +2292,16 @@ break_inner_loop:
 
 cmp       di, -1
 jne       dont_add_final_diffpixels
-mov       al, byte ptr [bp - 048h]
+mov       al, byte ptr [bp - 018h]
 sub       al, dh
 add       dl, al
 dont_add_final_diffpixels:
 
 ; currentdestsegment += FastMul8u8u(usetextureheight, diffpixels);
 
-mov       al, byte ptr [bp - 040h]
+mov       al, byte ptr [bp - 010h]
 mul       dl
-add       word ptr [bp - 04Ch], ax
+add       word ptr [bp - 01Ch], ax
 
 pop       di ; restore di
 pop       dx ; restore dx
@@ -2347,7 +2322,7 @@ x_is_zero_skip_inner_calc:
 ;			R_DrawColumnInCache(wadpatch7000->columnofs[x - x1],
 
 
-mov       ax, word ptr [bp - 048h]  ; x
+mov       ax, word ptr [bp - 018h]  ; x
 shl       dx, 2  ; x1 << 2
 shl       ax, 2  ; x << 2
 neg       dx
@@ -2355,14 +2330,14 @@ add       ax, dx                    ; (x - x1 ) << 2
 ; todo probably store in si/di...
 add       ax, 8  ; prestore offset
 
-push      ax  ; bp - 04Eh columnofs[x - x1] 
+push      ax  ; bp - 01Eh columnofs[x - x1] 
 
-mov       dx, word ptr [bp - 03Eh] ; dx gets this for the whole inner loop
+mov       dx, word ptr [bp - 0Eh] ; dx gets this for the whole inner loop
 
 mov       ax, COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
 mov       ds, ax
 ; todo can we pop this
-mov       cx, word ptr [bp - 048h] ; cx is x for this loop
+mov       cx, word ptr [bp - 018h] ; cx is x for this loop
 
 
 continue_x_x2_loop:
@@ -2390,7 +2365,7 @@ loop_x_nextcollumpRLE:
 cmp       si, cx
 jg        skip_loop_x_nextcollumpRLE
 mov       ax, word ptr es:[di + 4]
-mov       word ptr [bp - 04Ah], ax
+mov       word ptr [bp - 01Ah], ax
 mov       al, byte ptr es:[di + 6]
 xor       ah, ah
 inc       ax
@@ -2405,14 +2380,14 @@ skip_loop_x_nextcollumpRLE:
 ;        continue;
 ;    }
 
-cmp       word ptr [bp - 04Ah], 0
+cmp       word ptr [bp - 01Ah], 0
 jnl       increment_x_x2_loop
 
 
 
-mov       bx, word ptr [bp - 04Eh]
+mov       bx, word ptr [bp - 01Eh]
 mov       bx, word ptr ds:[bx]
-mov       es, word ptr [bp - 04Ch]  ; write straight to seg instead of dx
+mov       es, word ptr [bp - 01Ch]  ; write straight to seg instead of dx
 
 ;    R_DrawColumnInCache(wadpatch7000->columnofs[x - x1],
 ;        currentdestsegment,
@@ -2502,19 +2477,19 @@ pop       di
 pop       si
 pop       cx
 
-mov       ax, word ptr [bp - 040h]
-add       word ptr [bp - 04Ch], ax   ; currentdestsegment += usetextureheight;
+mov       ax, word ptr [bp - 010h]
+add       word ptr [bp - 01Ch], ax   ; currentdestsegment += usetextureheight;
 increment_x_x2_loop:
-add       word ptr [bp - 04Eh], 4
+add       word ptr [bp - 01Eh], 4
 inc       cx
 jmp       continue_x_x2_loop
 
 do_next_composite_loop_iter:
 mov       ax, ss
 mov       ds, ax  ; restore ds
-add       word ptr [bp - 042h], 4
-inc       word ptr [bp - 038h]
-mov       ax, word ptr [bp - 046h]
+add       word ptr [bp - 012h], 4
+inc       word ptr [bp - 8]
+mov       ax, word ptr [bp - 016h]
 add       sp, 8 ; back to 46?
 jmp       loop_texture_patch
 
