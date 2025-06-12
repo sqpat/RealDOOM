@@ -2830,15 +2830,15 @@ jmp       done_with_loopwidth_masked
 loop_below_zero_subtractor_masked:
 ;	textotal += subtractor; // add the last's total.
 
-add       word ptr [bp - 0Eh], cx
+add       di, ax
 jmp       done_with_loop_check_subtractor_maksed
 
 loop_below_zero_masked:
 
 ;	maskedcachedbasecol = runningbasetotal - textotal;
 
-mov       dx, ax
-sub       dx, word ptr [bp - 0Eh]
+mov       bx, dx
+sub       bx, di
 jmp       done_with_loop_check_masked
 
 PROC R_GetMaskedColumnSegment_ FAR
@@ -2875,12 +2875,12 @@ mov       word ptr ds:[_maskedheaderpixeolfs], 0FFFFh
 mov       ax, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, ax
 xor       dh, dh
-mov       bx, dx
-and       bl, byte ptr es:[di]
+mov       cx, dx
+and       cl, byte ptr es:[di]
 ;	texcol = col;
 sal       di, 1
-mov       di, word ptr ds:[di + _texturepatchlump_offset]
-sal       di, 1
+mov       bx, word ptr ds:[di + _texturepatchlump_offset]
+sal       bx, 1
 
 ;	texturecolumnlump = &(texturecolumnlumps_bytes_7000[texturepatchlump_offset[tex]]);
 ;	loopwidth = texturecolumnlump[1].bu.bytehigh;
@@ -2888,75 +2888,79 @@ sal       di, 1
 
 mov       ax, TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT
 mov       es, ax
-sub       dx, bx
+sub       dx, cx
 mov       word ptr [bp - 0Ah], dx
-mov       al, byte ptr es:[di + 3]
-mov       word ptr [bp - 6], bx
+mov       al, byte ptr es:[bx + 3]
+mov       word ptr [bp - 6], cx
 mov       byte ptr [bp - 4], al
 test      al, al
 jne       loopwidth_nonzero_masked
 loopwidth_zero_masked:
-xor       ax, ax
+xor       di, di   ; textotal
 
-; int16_t runningbasetotal = basecol;
 
-mov       word ptr [bp - 0Eh], ax
-mov       ax, word ptr [bp - 0Ah]
 
-; bx is col              (todo make it cx)
-; di is loop iter        (todo make it bx)
-; cx is subtractor       (todo make it ax)
-; ax is runningbasetotal (todo make it dx)
-; bp - 6 is textotal     (todo make it di)
-; si is lump             (good)
-; dx is ???
+
+; ax is subtractor      
+; bx is loop iter        
+; cx is col 
+; dx is runningbasetotal
+; bp - 6 is texcol
+; si is lump
+; di is textotal
+
 
 ;    while (col >= 0) {
 
-test      bx, bx
+test      cx, cx
 jl        done_with_subtractor_loop_masked
 
 do_next_subtractor_loop_masked:
 
 ;			subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
 
-mov       cl, byte ptr es:[di + 2]
-xor       ch, ch
-inc       cx
-mov       si, word ptr es:[di]
-add       ax, cx
-sub       bx, cx
+xor       ax, ax
+mov       al, byte ptr es:[bx + 2]
+xor       ah, ah
+inc       ax                     ; subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
+mov       si, word ptr es:[bx]   ; lump = texturecolumnlump[n].h;
+add       dx, ax                 ; runningbasetotal += subtractor;
+sub       cx, ax                 ; col -= subtractor;
 test      si, si
 jnge      loop_below_zero_subtractor_masked
 
-
-sub       byte ptr [bp - 6], cl
+;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+sub       byte ptr [bp - 6], al
 done_with_loop_check_subtractor_maksed:
-add       di, 4
-test      bx, bx
+add       bx, 4
+test      cx, cx
 jge       do_next_subtractor_loop_masked
 done_with_subtractor_loop_masked:
+
+mov       word ptr ds:[_maskednextlookup], dx 
 
 test      si, si
 jng       loop_below_zero_masked
 
 ; maskedcachedbasecol = basecol + startpixel;
-mov       dl, byte ptr es:[di - 1]
-xor       dh, dh
-add       dx, word ptr [bp - 0Ah]
+mov       bl, byte ptr es:[bx - 1]  ; startpixel
+xor       bh, bh
+add       bx, dx   ; basecol
 done_with_loop_check_masked:
-mov       word ptr ds:[_maskedcachedbasecol], dx
-mov       dx, ax
-sub       dx, cx
-mov       word ptr ds:[_maskedprevlookup], dx
-mov       word ptr ds:[_maskednextlookup], ax
+
+; cx is now col
+; bx is _maskedcachedbasecol
+; dx is runningbasetotal
+; ax is subtractor
+; di is textotal
+mov       word ptr ds:[_maskedcachedbasecol], bx
+sub       dx, ax
+mov       word ptr ds:[_maskedprevlookup], dx  ;	maskedprevlookup     = runningbasetotal - subtractor;
 mov       word ptr ds:[_maskedtexrepeat], 0
 done_with_loopwidth_masked:
 test      si, si
-jg        label_9
-jmp       label_10
-jump_to_label_12:
-jmp       label_12
+jg        lump_greater_than_zero_masked
+jmp       no_lump_do_texture
 label_13:
 mov       di, cx
 mov       dx, word ptr ds:[di + _cachedsegmentlumps]
@@ -2980,7 +2984,7 @@ mov       ax, word ptr [bp - 0Ch]
 mov       word ptr ds:[_cachedlumps], dx
 mov       word ptr ds:[_cachedsegmentlumps], ax
 jmp       label_22
-label_9:
+lump_greater_than_zero_masked:
 mov       ax, MASKED_LOOKUP_SEGMENT_7000
 mov       di, word ptr [bp - 012h]
 mov       es, ax
@@ -2990,7 +2994,7 @@ mov       di, si
 mov       ax, DRAWSEGS_BASE_SEGMENT_7000
 sub       di, word ptr ds:[_firstpatch]
 mov       es, ax
-xor       cx, cx
+xor       bx, bx
 mov       al, byte ptr es:[di]
 mov       byte ptr [bp - 8], al
 and       al, 0F0h  
@@ -2998,20 +3002,19 @@ and       byte ptr [bp - 8], 0Fh
 mov       byte ptr ds:[_cachedbyteheight], al
 xor       ax, ax
 cmp       si, word ptr ds:[_cachedlumps]
-je        label_11
-label_14:
+je        done_moving_cachelumps_masked
+loop_move_cachelump_masked:
 inc       ax
-add       cx, 2
+add       bx, 2
 cmp       ax, NUM_CACHE_LUMPS
-jge       jump_to_label_12
-mov       di, cx
-cmp       si, word ptr ds:[di + _cachedlumps]
-jne       label_14
-label_11:
+jge       label_12
+cmp       si, word ptr ds:[bx + _cachedlumps]
+jne       loop_move_cachelump_masked
+done_moving_cachelumps_masked:
 test      ax, ax
 jne       label_13
 label_22:
-test      bx, bx
+test      cx, cx
 jnl       label_25
 
 
@@ -3034,7 +3037,7 @@ jna       label_26
 xchg      ax, dx
 inc       ax
 label_26:
-add       bx, ax
+add       cx, ax
 jle       label_26
 
 label_25:
@@ -3045,9 +3048,7 @@ cmp       al, 0FFh
 jne       label_16
 mov       al, byte ptr [bp - 8]
 mov       byte ptr ds:[_maskedheightvalcache], al
-mov       ah, al
-mov       al, bl
-mul       ah
+mul       cl
 add       ax, word ptr ds:[_maskedcachedsegment]
 LEAVE_MACRO     
 pop       di
@@ -3060,15 +3061,16 @@ label_16:
 xor       ah, ah
 mov       di, ax
 mov       dx, MASKEDPIXELDATAOFS_SEGMENT
-shl       di, 3
-add       bx, bx
+SHIFT_MACRO shl       di 3
+sal       cx, 1
 mov       ax, word ptr ds:[di + _masked_headers]
 mov       es, dx
-add       bx, ax
-mov       dx, word ptr es:[bx]
+add       cx, ax
+mov       bx, cx
+
 mov       word ptr ds:[_maskedheaderpixeolfs], ax
 mov       ax, word ptr ds:[_maskedcachedsegment]
-add       ax, dx
+add       ax, word ptr es:[bx]
 LEAVE_MACRO     
 pop       di
 pop       si
@@ -3105,68 +3107,76 @@ mov       word ptr ds:[_maskedtexrepeat], ax
 jmp       label_22
 
  
-label_10:
+no_lump_do_texture:
 mov       ax, TEXTURECOLLENGTH_SEGMENT
-mov       bx, word ptr [bp - 012h]
 mov       es, ax
+mov       si, OFFSET _cachedsegmenttex
+mov       di, word ptr [bp - 012h]
 mov       ax, word ptr ds:[_cachedtex]
-mov       dl, byte ptr es:[bx]
-cmp       ax, bx
-je        label_27
-mov       ax, word ptr ds:[_cachedtex+2]
-cmp       ax, bx
-je        label_28
-mov       ax, word ptr ds:[_cachedtex]
-mov       word ptr ds:[_cachedtex+2], ax
-mov       ax, word ptr ds:[_cachedsegmenttex]
-mov       cx, word ptr ds:[_maskednextlookup]
-mov       word ptr ds:[_cachedsegmenttex+2], ax
-mov       al, byte ptr ds:[_cachedcollength]
-mov       bx, word ptr [bp - 012h]
-mov       byte ptr ds:[_cachedcollength+1], al
-mov       ax, bx
-mov       word ptr ds:[_cachedtex], bx
-call      R_GetCompositeTexture_
-mov       word ptr ds:[_cachedsegmenttex], ax
-mov       al, byte ptr [bp - 4]
-mov       word ptr ds:[_maskednextlookup], cx
-xor       ah, ah
-mov       byte ptr ds:[_cachedcollength], dl
-mov       word ptr ds:[_maskedtexrepeat], ax
-label_27:
-mov       bx, _cachedbyteheight
-mov       byte ptr [bx], dl
-mov       byte ptr ds:[_maskedheightvalcache], dl
-mov       ax, word ptr ds:[_cachedsegmenttex]
+mov       cl, byte ptr es:[di]
+cmp       ax, di
+jne        do_cache_tex_miss_masked
+do_cache_tex_hit_masked:
+
+done_setting_cached_tex_masked:
+mov       byte ptr ds:[_cachedbyteheight], cl
+mov       byte ptr ds:[_maskedheightvalcache], cl
+mov       ax, word ptr ds:[si]
 mov       word ptr ds:[_maskedcachedsegment], ax
+mov       dx, ax
 mov       al, byte ptr ds:[_cachedcollength]
 mul       byte ptr [bp - 6]
-add       ax, word ptr [bx]
+add       ax, ax
 LEAVE_MACRO     
 pop       di
 pop       si
 pop       cx
 pop       bx
 retf      
-label_28:
-mov       bx, word ptr ds:[_cachedtex]
-mov       ax, word ptr ds:[_cachedtex+2]
-mov       word ptr [bp - 012h], bx
-mov       word ptr ds:[_cachedtex], ax
-mov       word ptr ds:[_cachedtex+2], bx
-mov       bx, word ptr ds:[_cachedsegmenttex]
-mov       ax, word ptr ds:[_cachedsegmenttex+2]
-mov       word ptr [bp - 012h], bx
-mov       word ptr ds:[_cachedsegmenttex+2], bx
-mov       bl, byte ptr ds:[_cachedcollength]
-mov       word ptr ds:[_cachedsegmenttex], ax
-xor       bh, bh
-mov       al, byte ptr ds:[_cachedcollength+1]
-mov       word ptr [bp - 012h], bx
-mov       byte ptr ds:[_cachedcollength], al
-mov       al, byte ptr [bp - 012h]
+do_cache_tex_miss_masked:
+mov       dx, word ptr ds:[_cachedtex+2]
+cmp       ax, di
+jne       update_both_cache_texes_masked
+swap_tex1_tex2_masked:
+mov       word ptr ds:[_cachedtex], dx
+mov       word ptr ds:[_cachedtex+2], ax
+
+
+
+mov       ax, word ptr ds:[si]
+xchg      ax, word ptr ds:[si+2]
+mov       word ptr ds:[si], si
+
+
+mov       ax, word ptr ds:[_cachedcollength]
+xchg      al, ah
+mov       word ptr ds:[_cachedcollength], ax
+
+jmp       done_setting_cached_tex_masked
+
+update_both_cache_texes_masked:
+
+mov       word ptr ds:[_cachedtex+2], ax
+
+push      word ptr ds:[si]
+pop       word ptr ds:[si+2]
+
+mov       dx, word ptr ds:[_maskednextlookup]
+
+mov       al, byte ptr ds:[_cachedcollength]
 mov       byte ptr ds:[_cachedcollength+1], al
-jmp       label_27
+mov       ax, di
+mov       word ptr ds:[_cachedtex], ax
+
+call      R_GetCompositeTexture_
+mov       word ptr ds:[_cachedsegmenttex], ax
+mov       al, byte ptr [bp - 4]
+mov       word ptr ds:[_maskednextlookup], dx
+xor       ah, ah
+mov       byte ptr ds:[_cachedcollength], cl
+mov       word ptr ds:[_maskedtexrepeat], ax
+jmp       done_setting_cached_tex_masked
+
 
 ENDP
 

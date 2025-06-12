@@ -2686,10 +2686,10 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 			}
 			n += 2;
 		}
-		startpixel = texturecolumnlump[n-1].bu.bytehigh;
 		
 
 		if (lump > 0){
+			startpixel = texturecolumnlump[n-1].bu.bytehigh;
 			maskedcachedbasecol = basecol + startpixel;
 		} else {
 			// this has to be the difference between the current rendered column and the 
