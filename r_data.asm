@@ -898,12 +898,11 @@ push      si
 push      di
 push      bp
 
-mov       es, dx
-mov       dx, COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
-mov       ds, dx
+; es already set.
+; bx has patchcol_offset
+; dx has patchorigin_y
+; ds already COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
 
-xchg      ax, bx  ; bx has patchcol offset
-xchg      ax, dx  ; dx stores patchoriginy
 mov       bp, cx  ; bp stores textureheight
 
 ;	while (patchcol->topdelta != 0xff) { 
@@ -978,8 +977,7 @@ rep movsb
 cmp       byte ptr ds:[bx], 0FFh
 jne       do_next_column_patch
 exit_drawcolumn_in_cache:
-mov       ax, ss
-mov       ds, ax 
+
 
 pop       bp
 pop       di
@@ -2211,6 +2209,7 @@ inc       ax
 push      ax  ; bp - 03Ch 
 mov       al, byte ptr es:[bx + 9]      ; textureheight = texture->height + 1;
 inc       al
+xor       ah, ah
 push      ax  ; bp - 03Eh
 
 ;	usetextureheight = textureheight + ((16 - (textureheight &0xF)) &0xF);
@@ -2255,8 +2254,8 @@ jng       done_with_composite_loop
 
 mov       es, word ptr [bp - 036h]  ; todo les
 mov       si, word ptr [bp - 042h]
-xor       di, di ; di is currentRLEIndex. todo make this the ptr to collump instead!
-mov       bx, di ; bx 0 for following cachelump call
+xor       bx, bx ; 
+mov       di, word ptr [bp - 044h] ; di is collump[currentRLEIndex]
 
 mov       dx, word ptr es:[si + 2]
 and       dh, (PATCHMASK SHR 8)
@@ -2288,9 +2287,11 @@ mov       es, bx
 
 
 mov       bx, word ptr es:[0] ;wadpatch7000->width
-mov       byte ptr [bp - 4], dl
 add       bx, ax            ;		x2 = x1 + (wadpatch7000->width);
-mov       dx, ax            ;       x1
+xchg      ax, dx            ;       x1
+cbw
+mov       word ptr [bp - 4], ax
+
 
 
 ;		if (x1 < 0){
@@ -2299,13 +2300,13 @@ mov       dx, ax            ;       x1
 ;			x = x1;
 ;		}
 
-test      ax, ax
+test      dx, dx
 jge       set_x_to_x1
 
 mov       word ptr [bp - 028h], 0
 jmp       done_setting_x
 set_x_to_x1:
-mov       word ptr [bp - 028h], ax
+mov       word ptr [bp - 028h], dx
 done_setting_x:
 
 ;    if (x2 > texturewidth){
@@ -2321,19 +2322,16 @@ mov       word ptr [bp - 02Eh], bx  ; write back x2
 
 mov       bx, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov       es, bx
-mov       bx, di  ; currentRLEIndex
-sal       bx, 1
-add       bx, word ptr [bp - 044h]  ; collump offset
 
-; es:bx is collump
+; es:di is collump
 
 ;    currentlump = collump[currentRLEIndex].h;
 ;    nextcollumpRLE = collump[currentRLEIndex + 1].bu.bytelow + 1;
 
 
-mov       ax, word ptr es:[bx]
+mov       ax, word ptr es:[di]
 mov       word ptr [bp - 024h], ax
-mov       al, byte ptr es:[bx + 2]
+mov       al, byte ptr es:[di + 2]
 xor       ah, ah
 mov       si, ax   ; si is nextcollumpRLE
 
@@ -2443,62 +2441,90 @@ x_is_zero_skip_inner_calc:
 ;			R_DrawColumnInCache(wadpatch7000->columnofs[x - x1],
 
 
-mov       bx, dx                    ; x1?
+mov       cx, dx                    ; x1?
 mov       ax, word ptr [bp - 028h]  ; x
-shl       bx, 2  ; x1 << 2
+shl       cx, 2  ; x1 << 2
 shl       ax, 2  ; x << 2
-neg       bx
-add       ax, bx                    ; (x - x1 ) << 2
+neg       cx
+add       ax, cx                    ; (x - x1 ) << 2
 ; todo probably store in si/di...
 mov       word ptr [bp - 02Ah], ax
 
+mov       ax, COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
+mov       ds, ax
 
-label_19:
-mov       ax, word ptr [bp - 028h]
-cmp       ax, word ptr [bp - 02Eh]
-jge       label_16
-mov       bx, word ptr [bp - 044h]  ; collump
-mov       ax, di
-mov       dx, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
-mov       es, dx
-add       ax, di
-add       bx, ax
-label_18:
-cmp       si, word ptr [bp - 028h]
-jg        label_17
-mov       ax, word ptr es:[bx + 4]
+
+continue_x_x2_loop:
+mov       ax, word ptr [bp - 028h]  ; x
+cmp       ax, word ptr [bp - 02Eh]  ; x2
+
+; for (; x < x2; x++) {
+
+jge       do_next_composite_loop_iter
+
+mov       ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
+mov       es, ax
+
+
+;    while (x >= nextcollumpRLE) {
+;        currentRLEIndex += 2;
+;        currentlump = collump[currentRLEIndex].h;
+;        nextcollumpRLE += (collump[currentRLEIndex + 1].bu.bytelow + 1);
+;    }
+
+; es:di is collumn[currentRLEIndex]
+; si is nextcollumpRLE
+mov       cx, word ptr [bp - 028h]
+
+loop_x_nextcollumpRLE:
+cmp       si, cx
+jg        skip_loop_x_nextcollumpRLE
+mov       ax, word ptr es:[di + 4]
 mov       word ptr [bp - 024h], ax
-mov       al, byte ptr es:[bx + 6]
+mov       al, byte ptr es:[di + 6]
 xor       ah, ah
-add       bx, 4
 inc       ax
-add       di, 2
+add       di, 4
 add       si, ax
-jmp       label_18
-label_17:
+cmp       si, cx
+jng       loop_x_nextcollumpRLE
+
+skip_loop_x_nextcollumpRLE:
+
+;    if (currentlump >= 0) {
+;        continue;
+;    }
+
 cmp       word ptr [bp - 024h], 0
-jl        label_20
-label_21:
-add       word ptr [bp - 02Ah], 4
-inc       word ptr [bp - 028h]
-jmp       label_19
-label_20:
-mov       cl, byte ptr [bp - 03Eh]
-mov       al, byte ptr [bp - 4]
+jnl        increment_x_x2_loop
+
+
 mov       dx, SCRATCH_PAGE_SEGMENT_7000
-mov       bx, word ptr [bp - 02Ah]
 mov       es, dx
-add       bx, 8
-cbw      
-mov       bx, word ptr es:[bx] ; supposed to go into ax...
-xor       ch, ch
-xchg      ax, bx  ; xchg both into where theyre supposed to go
-mov       dx, word ptr [bp - 0Eh]
-call      R_DrawColumnInCache_ 
+mov       bx, word ptr [bp - 02Ah]
+mov       bx, word ptr es:[bx+8] ; supposed to go into ax...
+mov       cx, word ptr [bp - 03Eh]
+mov       dx, word ptr [bp - 4]
+mov       es, word ptr [bp - 0Eh]  ; write straight to seg instead of dx
+
+;    R_DrawColumnInCache(wadpatch7000->columnofs[x - x1],
+;        currentdestsegment,
+;        patchoriginy,
+;        textureheight);
+
+
+call      R_DrawColumnInCache_       ; todo inline segments
+
 mov       ax, word ptr [bp - 040h]
 add       word ptr [bp - 0Eh], ax
-jmp       label_21
-label_16:
+increment_x_x2_loop:
+add       word ptr [bp - 02Ah], 4
+inc       word ptr [bp - 028h]
+jmp       continue_x_x2_loop
+
+do_next_composite_loop_iter:
+mov       ax, ss
+mov       ds, ax  ; restore ds
 add       word ptr [bp - 042h], 4
 inc       word ptr [bp - 038h]
 mov       ax, word ptr [bp - 046h]
