@@ -2144,20 +2144,20 @@ PUBLIC R_GenerateComposite_
 
 ; void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
-; bp - 2     texturepatchcount
+; bp - 2     unused
 ; bp - 4     ??? some byte
-; bp - 6     usetextureheight
+; bp - 6     
 ; bp - 8     ??? some byte
 ; bp - 0Ah   unused
 ; bp - 0Ch   ??? some byte
 ; bp - 0Eh   
 ; bp - 010h   
-; bp - 012h   
-; bp - 014h  TEXTURECOLUMNLUMPS_BYTES_SEGMENT
-; bp - 016h  collump offset?
+; bp - 012h  unused
+; bp - 014h  unused
+; bp - 016h  unused
 ; bp - 018h  unused
-; bp - 01Ah  texture->patches
-; bp - 01Ch   
+; bp - 01Ah  unused
+; bp - 01Ch  unused
 ; bp - 01Eh  unused
 ; bp - 020h  unused
 ; bp - 022h  unused
@@ -2175,6 +2175,10 @@ PUBLIC R_GenerateComposite_
 ; bp - 03Ah  ??? lastusedpatch or patchpatch starts as -1
 ; bp - 03Ch  texture width
 ; bp - 03Eh  texture height
+; bp - 040h  usetextureheight
+; bp - 042h  texture->patches
+; bp - 044h  collump offset?
+; bp - 046h  texturepatchcount
 
 PUSHA_NO_AX_MACRO
 push      bp
@@ -2216,61 +2220,62 @@ sub       ah, al
 mov       al, ah
 and       ax, 0Fh
 
-mov       word ptr [bp - 014h], TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 
 
 
 add       al, dl   ; textureheight copy
 ;	usetextureheight = usetextureheight >> 4;
 SHIFT_MACRO sar       ax 4
-mov       word ptr [bp - 6], ax
+; ah already known zero
+push      ax ; bp - 040h
 
 add       bx, 0Bh    ; patches pointer todo?
-mov       word ptr [bp - 01Ah], bx
+push      bx ; bp - 042h
 
 ;	// Composite the columns together.
 ;	collump = &(texturecolumnlumps_bytes[texturepatchlump_offset[texnum]]);
 ; si is bp - 032h
 mov       si, word ptr ds:[si + _texturepatchlump_offset]
 sal       si, 1
-mov       word ptr [bp - 016h], si
+push      si ; bp - 044h
 call      Z_QuickMapScratch_7000_
 
 mov       al, byte ptr es:[bx - 1] ; texturepatchcount = texture->patchcount;
 xor       ah, ah
-mov       word ptr [bp - 2], ax
+push      ax ; bp - 046h texturepatchcount
 
 ;	for (i = 0; i < texturepatchcount; i++) {
 loop_texture_patch:
-; ax is bp - 2
+; ax is bp - 046h
+; todo move this check to the end with selfmodify.
 cmp       ax, word ptr [bp - 038h]
 jng       done_with_composite_loop
 
-mov       si, word ptr [bp - 01Ah]
-mov       ax, word ptr [bp - 036h]
-mov       es, word ptr [bp - 036h]
-mov       bx, si
+mov       es, word ptr [bp - 036h]  ; todo les
+mov       si, word ptr [bp - 042h]
 xor       di, di
-mov       dx, word ptr es:[bx + 2]
-mov       word ptr [bp - 01Ch], ax
+mov       bx, di
+
+mov       dx, word ptr es:[si + 2]
 and       dh, (PATCHMASK SHR 8)
 mov       ax, word ptr [bp - 03Ah]
 mov       word ptr [bp - 03Ah], dx
 cmp       ax, dx
-je        label_3
+je        use_same_patch
 mov       cx, SCRATCH_PAGE_SEGMENT_7000 
 mov       ax, dx
-xor       bx, si
 call      W_CacheLumpNumDirect_
-label_3:
-mov       es, word ptr [bp - 01Ch]
+mov       es, word ptr [bp - 036h]
+use_same_patch:
 test      byte ptr es:[si + 3], (ORIGINX_SIGN_FLAG SHR 8) 
-jne       label_60
+jne       label_60  ; 26 bytes
 jmp       label_4
 label_60:
 mov       bx, 0FFFFh
+
+; todo this loop use ds/es effectively
 label_12:
-mov       es, word ptr [bp - 01Ch]
+mov       es, word ptr [bp - 036h]
 mov       al, byte ptr es:[si]
 xor       ah, ah
 imul      bx
@@ -2295,10 +2300,11 @@ jle       label_7
 mov       ax, word ptr [bp - 03Ch]
 mov       word ptr [bp - 02Eh], ax
 label_7:
+mov       bx, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
+mov       es, bx
 mov       bx, di
-add       bx, di
-mov       es, word ptr [bp - 014h]
-add       bx, word ptr [bp - 016h]
+sal       bx, 1
+add       bx, word ptr [bp - 044h]
 mov       ax, word ptr es:[bx]
 mov       word ptr [bp - 024h], ax
 mov       al, byte ptr es:[bx + 2]
@@ -2309,7 +2315,7 @@ inc       si
 mov       word ptr [bp - 0Eh], ax
 cmp       word ptr [bp - 028h], 0
 je        label_8
-mov       bx, word ptr [bp - 016h]
+mov       bx, word ptr [bp - 044h]
 mov       ax, word ptr es:[bx]
 mov       word ptr [bp - 010h], ax
 mov       al, byte ptr es:[bx + 2]
@@ -2349,9 +2355,8 @@ mov       al, byte ptr [bp - 028h]
 sub       al, byte ptr [bp - 0Ch]
 add       byte ptr [bp - 8], al
 label_15:
-mov       ah, byte ptr [bp - 8]
-mov       al, byte ptr [bp - 6]
-mul       ah
+mov       al, byte ptr [bp - 040h]
+mul       byte ptr [bp - 8]
 add       word ptr [bp - 0Eh], ax
 label_8:
 mov       bx, dx
@@ -2360,20 +2365,18 @@ shl       bx, 2
 shl       ax, 2
 neg       bx
 add       ax, bx
-mov       bx, word ptr [bp - 016h]
+mov       bx, word ptr [bp - 044h]
 mov       word ptr [bp - 02Ah], ax
-mov       ax, word ptr [bp - 014h]
 mov       word ptr [bp - 026h], bx
-mov       word ptr [bp - 012h], ax
 label_19:
 mov       ax, word ptr [bp - 028h]
 cmp       ax, word ptr [bp - 02Eh]
 jge       label_16
 mov       bx, word ptr [bp - 026h]
 mov       ax, di
-mov       dx, word ptr [bp - 012h]
-add       ax, di
+mov       dx, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov       es, dx
+add       ax, di
 add       bx, ax
 label_18:
 cmp       si, word ptr [bp - 028h]
@@ -2407,14 +2410,13 @@ xor       ch, ch
 xchg      ax, bx  ; xchg both into where theyre supposed to go
 mov       dx, word ptr [bp - 0Eh]
 call      R_DrawColumnInCache_ 
-mov       al, byte ptr [bp - 6]
-xor       ah, ah
+mov       ax, word ptr [bp - 040h]
 add       word ptr [bp - 0Eh], ax
 jmp       label_21
 label_16:
-add       word ptr [bp - 01Ah], 4
+add       word ptr [bp - 042h], 4
 inc       word ptr [bp - 038h]
-mov       ax, word ptr [bp - 2]
+mov       ax, word ptr [bp - 046h]
 jmp       loop_texture_patch
 
 
