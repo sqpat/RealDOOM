@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/12 09:19:28
+Created on:       25/06/12 09:33:25
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -73,8 +73,7 @@ P_MOBJA_TEXT           CODE           AUTO           0a7f:ccb4       00000077
 p_telept_TEXT          CODE           AUTO           0a7f:cd30       0000021c
 P_TICK_TEXT            CODE           AUTO           0a7f:cf4c       00000147
 p_user_TEXT            CODE           AUTO           0a7f:d0a0       0000062f
-r_data_TEXT            CODE           AUTO           17ec:0000       00000000
-R_DATAA_TEXT           CODE           AUTO           17ec:0000       00000ff8
+R_DATA_TEXT            CODE           AUTO           17ec:0000       00000ff8
 R_MATH_TEXT            CODE           AUTO           17ec:0ff8       000001e3
 R_MAINHI_TEXT          CODE           AUTO           17ec:11dc       00002491
 r_draw_TEXT            CODE           AUTO           17ec:3670       000000fb
@@ -1145,7 +1144,7 @@ Module: p_user.obj(C:\REALDOOM\p_user.c)
 0a7f:d2d8+     P_MovePlayer_
 0a7f:d3a6+     P_DeathThink_
 0a7f:d502      P_PlayerThink_
-Module: r_dataa.obj(r_dataa.ASM)
+Module: r_data.obj(r_data.ASM)
 17ec:0880*     R_GenerateComposite_
 17ec:0186*     R_EvictL2CacheEMSPage_
 17ec:02b7      R_MarkL2FlatCacheMRU_
@@ -1548,4 +1547,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00022cc0 (142528.)
 Entry point address: 1c72:1c36
-Link time: 00:00.75
+Link time: 00:00.19

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/12 09:19:26
+Created on:       25/06/12 09:32:15
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -82,8 +82,7 @@ SM_OPL3_TEXT           CODE           AUTO           1a08:0f4a       00001014
 SM_SBMID_TEXT          CODE           AUTO           1a08:1f5e       0000071f
 SM_MPUMD_TEXT          CODE           AUTO           1a08:267e       000007ca
 s_sbsfx_TEXT           CODE           AUTO           1a08:2e50       000017ef
-r_data_TEXT            CODE           AUTO           1e6c:0000       00000000
-R_DATAA_TEXT           CODE           AUTO           1e6c:0000       00000ff8
+R_DATA_TEXT            CODE           AUTO           1e6c:0000       00000ff8
 R_MATH_TEXT            CODE           AUTO           1e6c:0ff8       000001e3
 R_MAINHI_TEXT          CODE           AUTO           1e6c:11dc       00002491
 R_COLUMN_TEXT          CODE           AUTO           1e6c:366e       00000e46
@@ -1271,7 +1270,7 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 2af1:19dd+     _IRQ_TO_INTERRUPT_MAP
 2af1:19ed+     _DMA_PortInfo
 2af1:276c+     _SB_Mixer_Status
-Module: r_dataa.obj(r_dataa.ASM)
+Module: r_data.obj(r_data.ASM)
 1e6c:0880*     R_GenerateComposite_
 1e6c:0186*     R_EvictL2CacheEMSPage_
 1e6c:02b7      R_MarkL2FlatCacheMRU_
@@ -1760,4 +1759,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e7a0 (190368.)
 Entry point address: 262d:24de
-Link time: 00:00.30
+Link time: 00:00.75

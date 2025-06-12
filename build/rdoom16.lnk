@@ -76,7 +76,6 @@ file p_user.obj
 
 NEWSEGMENT
 file r_data.obj
-file r_dataa.obj
 file r_math.obj
 file r_mainhi.obj
 file r_draw.obj
