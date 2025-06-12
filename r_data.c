@@ -1903,6 +1903,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 
 #define wadpatch7000  ((patch_t __far *)  MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0))
 
+/*
 void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 	texpatch_t __far*         patch;
 	//patch_t __far*            wadpatch;
@@ -1928,11 +1929,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 	segment_t currentdestsegment;
 
 
-/*
-	FILE*fp;
-	int8_t fname[15];
-	uint16_t totalsize = 0;
-	*/
+
 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 
 	texturewidth = texture->width + 1;
@@ -2042,30 +2039,22 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
 				// TODO this should be inlined but watcom sucks at big functions - do later in asm
 
-/*
-			while (patchcol->topdelta != 0xff) { 
-
-				byte __far * source = (byte __far *)patchcol + 3;
-				uint16_t     count = patchcol->length;
-				int16_t     position = patchoriginy + patchcol->topdelta;
-
-
-				patchcol = (column_t __far*)((byte  __far*)patchcol + count + 4);
-
-				if (position < 0)
-				{
-					count += position;
-					position = 0;
-				}
-
-				if (position + count > textureheight)
-					count = textureheight - position;
-				if (count > 0)
-					FAR_memcpy(MK_FP(currentdestsegment, position), source, count);
-
-
-			}
-			*/
+			// while (patchcol->topdelta != 0xff) { 
+			// 	byte __far * source = (byte __far *)patchcol + 3;
+			// 	uint16_t     count = patchcol->length;
+			// 	int16_t     position = patchoriginy + patchcol->topdelta;
+			// 	patchcol = (column_t __far*)((byte  __far*)patchcol + count + 4);
+			// 	if (position < 0)
+			// 	{
+			// 		count += position;
+			// 		position = 0;
+			// 	}
+			// 	if (position + count > textureheight)
+			// 		count = textureheight - position;
+			// 	if (count > 0)
+			// 		FAR_memcpy(MK_FP(currentdestsegment, position), source, count);
+			// }
+			
 
 			currentdestsegment += usetextureheight;
 
@@ -2075,7 +2064,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 	Z_QuickMapRender7000();
 
 }
-
+*/
 
 //R_GetTexturePage takes an l2 cache page, pages it into L1 if its not already.
 //then returns the L1 page number
@@ -2560,7 +2549,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 				int16_t  cached_nextlookup = segloopnextlookup[segloopcachetype]; 
 				cachedtex[1] = cachedtex;
 				cachedsegmenttex[1] = cachedsegmenttex;
-				cachedcollength[0] = cachedcollength[0];
+				cachedcollength[1] = cachedcollength[0];
 				cachedtex[0] = tex;
 				
 				cachedsegmenttex = R_GetCompositeTexture(cachedtex[0]);
@@ -2577,13 +2566,13 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcac
 				cachedtex[0] = cachedtex[1];
 				cachedtex[1] = tex;
 
-				tex = cachedsegmenttex;
-				cachedsegmenttex = cachedsegmenttex[1];
+				tex = cachedsegmenttex[0];
+				cachedsegmenttex[0] = cachedsegmenttex[1];
 				cachedsegmenttex[1] = tex;
 
 				tex = cachedcollength[0];
-				cachedcollength[0] = cachedcollength[0];
-				cachedcollength[0] = tex;
+				cachedcollength[0] = cachedcollength[1];
+				cachedcollength[1] = tex;
 
 			}
 
@@ -2823,7 +2812,7 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 				int16_t  cached_nextlookup = maskednextlookup; 
 				cachedtex[1] = cachedtex[0];
 				cachedsegmenttex[1] = cachedsegmenttex[0];
-				cachedcollength[0] = cachedcollength[0];
+				cachedcollength[1] = cachedcollength[0];
 				cachedtex[0] = tex;
 				
 				cachedsegmenttex[0] = R_GetCompositeTexture(cachedtex[0]);
@@ -2845,8 +2834,8 @@ segment_t __far R_GetMaskedColumnSegment (int16_t tex, int16_t col) {
 				cachedsegmenttex[1] = tex;
 
 				tex = cachedcollength[0];
-				cachedcollength[0] = cachedcollength[0];
-				cachedcollength[0] = tex;
+				cachedcollength[0] = cachedcollength[1];
+				cachedcollength[1] = tex;
 
 			}
 
