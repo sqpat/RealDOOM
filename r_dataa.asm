@@ -2844,7 +2844,7 @@ jmp       done_with_loop_check_masked
 PROC R_GetMaskedColumnSegment_ FAR
 PUBLIC R_GetMaskedColumnSegment_
 
-;  bp - 2    ??
+;  bp - 2    ??   ; lookup
 ;  bp - 4    ??   ; loopwidth
 ;  bp - 6    ??   ; texcol. maybe ok to remain here.
 ;  bp - 8    ??
@@ -2961,77 +2961,81 @@ done_with_loopwidth_masked:
 test      si, si
 jg        lump_greater_than_zero_masked
 jmp       no_lump_do_texture
-label_13:
-mov       di, cx
-mov       dx, word ptr ds:[di + _cachedsegmentlumps]
-mov       cx, ax
-mov       word ptr [bp - 0Ch], dx
-mov       dx, word ptr ds:[di + _cachedlumps]
-jle       label_20
-mov       di, ax
-add       di, ax
-label_21:
-sub       di, 2
-mov       ax, word ptr ds:[di + _cachedsegmentlumps]
-mov       word ptr ds:[di + _cachedsegmentlumps + 2], ax
-mov       ax, word ptr ds:[di + _cachedlumps]
-dec       cx
-mov       word ptr ds:[di + _cachedlumps+2], ax
-test      cx, cx
-jg        label_21
-label_20:
-mov       ax, word ptr [bp - 0Ch]
-mov       word ptr ds:[_cachedlumps], dx
-mov       word ptr ds:[_cachedsegmentlumps], ax
-jmp       label_22
+not_cache_0_masked:
+
+
+xchg      ax, si
+mov       di, OFFSET _cachedsegmentlumps
+mov       si, OFFSET _cachedlumps
+push      word ptr ds:[bx + si]
+push      word ptr ds:[bx + di]
+
+jle       done_moving_cachelumps_masked  ; todo stretch this loop out? jmp to bx based lookup? probably not worth it
+
+
+loop_move_cachelump_masked:
+sub       bx, 2
+push      word ptr ds:[bx + di]
+push      word ptr ds:[bx + si]
+pop       word ptr ds:[bx + di + 2]
+pop       word ptr ds:[bx + si + 2]
+jg        loop_move_cachelump_masked
+done_moving_cachelumps_masked:
+
+pop       word ptr ds:[di]
+pop       word ptr ds:[si]
+xchg      ax, si ; restore lump
+
+
+jmp       found_cached_lump_masked
 lump_greater_than_zero_masked:
 mov       ax, MASKED_LOOKUP_SEGMENT_7000
-mov       di, word ptr [bp - 012h]
+mov       bx, word ptr [bp - 012h]
 mov       es, ax
-mov       al, byte ptr es:[di]
+mov       al, byte ptr es:[bx]
 mov       byte ptr [bp - 2], al
-mov       di, si
+mov       bx, si
+sub       bx, word ptr ds:[_firstpatch]
 mov       ax, DRAWSEGS_BASE_SEGMENT_7000
-sub       di, word ptr ds:[_firstpatch]
 mov       es, ax
-xor       bx, bx
-mov       al, byte ptr es:[di]
+mov       al, byte ptr es:[bx]
+mov       ah, al
+and       ax, 0F00Fh  
+
 mov       byte ptr [bp - 8], al
-and       al, 0F0h  
-and       byte ptr [bp - 8], 0Fh
-mov       byte ptr ds:[_cachedbyteheight], al
-xor       ax, ax
+mov       byte ptr ds:[_cachedbyteheight], ah
+xor       bx, bx
 cmp       si, word ptr ds:[_cachedlumps]
-je        done_moving_cachelumps_masked
-loop_move_cachelump_masked:
-inc       ax
+je        cachedlumphit_masked
+loop_check_next_cached_lump_masked:
+
 add       bx, 2
-cmp       ax, NUM_CACHE_LUMPS
-jge       label_12
+cmp       bx, (NUM_CACHE_LUMPS * 2)
+jge       move_all_cache_back_masked
 cmp       si, word ptr ds:[bx + _cachedlumps]
-jne       loop_move_cachelump_masked
-done_moving_cachelumps_masked:
-test      ax, ax
-jne       label_13
-label_22:
+jne       loop_check_next_cached_lump_masked
+cachedlumphit_masked:
+test      bx, bx
+jne       not_cache_0_masked
+found_cached_lump_masked:
 test      cx, cx
 jnl       label_25
 
 
 label_15:
-mov       di, si
+mov       bx, si
 mov       ax, PATCHWIDTHS_7000_SEGMENT
-sub       di, word ptr ds:[_firstpatch]
+sub       bx, word ptr ds:[_firstpatch]
 mov       es, ax
 xor       ax, ax
-mov       al, byte ptr es:[di]   ; todo here
+mov       al, byte ptr es:[bx]   ; todo here
 cwd
 cmp       al, 1     ; set carry if al is 0
 adc       ah, ah    ; if width is zero that encoded 0x100. now ah is 1.
-mov       di, TEXTUREWIDTHMASKS_SEGMENT
-mov       es, di
-mov       di, word ptr [bp - 012h]
-mov       dl, byte ptr es:[di]
+mov       bx, TEXTUREWIDTHMASKS_SEGMENT
+mov       es, bx
+mov       bx, word ptr [bp - 012h]
+mov       dl, byte ptr es:[bx]
 cmp       ax, dx
 jna       label_26
 xchg      ax, dx
@@ -3080,31 +3084,34 @@ retf
 
 
 
-label_12:
-mov       ax, word ptr ds:[_cachedsegmentlumps+4]
-mov       word ptr ds:[_cachedsegmentlumps+6], ax
-mov       ax, word ptr ds:[_cachedsegmentlumps+2]
-mov       word ptr ds:[_cachedsegmentlumps+4], ax
-mov       ax, word ptr ds:[_cachedsegmentlumps]
-mov       word ptr ds:[_cachedsegmentlumps+2], ax
-mov       ax, word ptr ds:[_cachedlumps+4]
-mov       word ptr ds:[_cachedlumps+6], ax
-mov       ax, word ptr ds:[_cachedlumps+2]
-mov       dl, byte ptr [bp - 2]
-mov       word ptr ds:[_cachedlumps+4], ax
-mov       ax, word ptr ds:[_cachedlumps]
-xor       dh, dh
-mov       word ptr ds:[_cachedlumps+2], ax
-mov       ax, si
+move_all_cache_back_masked:
+
+mov       ax, ds
+mov       es, ax
+xchg      ax, si   ; store lump
+mov       si, OFFSET _cachedsegmentlumps
+lea       di, [si + 2]
+movsw
+movsw
+movsw
+mov       si, OFFSET _cachedlumps       ; todo make adjacent!
+lea       di, [si + 2]
+movsw
+movsw
+movsw
+mov       si, ax    ; restore lump
 mov       cx, word ptr ds:[_maskednextlookup]
-call      R_GetCompositeTexture_
+mov       dl, byte ptr [bp - 2]
+; ax is lump
+call      R_GetPatchTexture_
 mov       word ptr ds:[_cachedsegmentlumps], ax
 mov       word ptr ds:[_cachedlumps], si
-mov       al, byte ptr [bp - 4]
 mov       word ptr ds:[_maskednextlookup], cx
+mov       al, byte ptr [bp - 4]
 xor       ah, ah
 mov       word ptr ds:[_maskedtexrepeat], ax
-jmp       label_22
+
+jmp       found_cached_lump_masked
 
  
 no_lump_do_texture:
