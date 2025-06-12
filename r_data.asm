@@ -1401,7 +1401,6 @@ mov   bx, dx
 mov   dx, cx ; loop compare, shifted once since we double inc bx
 shl   dx, 1
 
-; dl is i??
 ; al is realtexpage
 ; bx is i
 
@@ -1446,8 +1445,8 @@ je    found_start_page_single
 mov   al, 1 ; al/ax is i
 ; cl/cx is start page.
 ; bx is start page or startpage + i offset
-; dx is ??
-; 
+; dl was numpages but we know its zero. so use dx for -1 for small code reasons
+
 deallocate_next_startpage_single:
 
 cmp   al, byte ptr ds:[bx + di]
@@ -1473,7 +1472,6 @@ IFDEF COMPILE_CHIPSET
         mov   dx, bx
         sal   bx, 1
         mov   word ptr ds:[bx + si], -1   ; dx is -1
-        add   dx, 
         add   dx, word ptr [bp - 010h]   ; page offset
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
         add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
@@ -1674,7 +1672,7 @@ found_startpage_multi:
 
 
 ; al already set to startpage
-mov   bx, ax    ; bh is 0
+mov   bx, ax    ; ah/bh is 0
 push  ax  ; bp - 018h
 mov   dh, al ; dh gets startpage..
 mov   cx, -1
@@ -1698,6 +1696,7 @@ mov   al, dl
 ; dl is numpages
 ; dh is startpage
 ; al is i
+; ah is 0
 ; bx is startpage lookup
 
 loop_next_invalidate_page_multi:
@@ -1728,7 +1727,6 @@ IFDEF COMPILE_CHIPSET
         mov   cx, bx
         sal   bx, 1                      ; startpage word offset.
         mov   word ptr ds:[bx + si], -1
-        add   cx, (SCAMP_PAGE_9000_OFFSET + 4)
         add   cx, word ptr [bp - 010h]   ; page offset
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
         add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
@@ -1772,17 +1770,27 @@ done_invalidating_pages_multi:
 ;	for (i = 0; i <= numpages; i++) {
 
 mov   cl, dh  ; startpage
-xor   dh, dh
 mov   ch, dl
 
-; ch is numpages - i
+; ch is numpages - i    (todo could be dl)
 ; cl has startpage + i
-; bl has currentpage, swaps with ax for preservation
-; dl still has numpages
-; dh has i
+
+; dl still has numpages, decremented for loop
+; dh has startpage
+
+
 ;	for (i = 0; i <= numpages; i++) {
 ; es gets currentpage
 mov   es, word ptr [bp - 016h]
+
+;    for (i = 0; i <= numpages; i++) {
+;        R_MarkL1TextureCacheMRU(startpage+i);
+;        activetexturepages[startpage + i]  = currentpage;
+;        activenumpages[startpage + i] = numpages-i;
+;        pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
+;        currentpage = texturecache_nodes[currentpage].prev;
+;    }
+
 
 loop_mark_next_page_mru_multi:
 
@@ -1790,19 +1798,16 @@ loop_mark_next_page_mru_multi:
 
 mov   al, cl
 
-call  [bp - 2]
+call  [bp - 2]  ; does not affect es
 
-;	activetexturepages[startpage + i]  = currentpage;
-;   activenumpages[startpage + i] = numpages-i;
 
 mov   ax, es ; currentpage in ax
 
 mov   bl, cl
-mov   byte ptr ds:[bx + di], ch
+mov   byte ptr ds:[bx + di], ch   ;   activenumpages[startpage + i] = numpages-i;
 sal   bx, 1             ; word lookup
-mov   word ptr ds:[bx + si], ax  
+mov   word ptr ds:[bx + si], ax   ;	activetexturepages[startpage + i]  = currentpage;
 
-; TODO apply EPR
 add   ax, word ptr [bp - 014h]  ; pageoffset
 EPR_MACRO ax
 
@@ -1815,19 +1820,17 @@ mov   word ptr ds:[bx], ax
 
 
 dec   ch    ; dec numpages - i
-inc   cl    ; inc i
-inc   dh
+inc   cl    ; inc startpage + i
 
 ;    currentpage = texturecache_nodes[currentpage].prev;
 mov   bx, es ; currentpage
-sal   bx, 1
-sal   bx, 1
+SHIFT_MACRO sal   bx 2
 add   bx, word ptr [bp - 0Ch]   ; _texturecache_nodes
-mov   bl, byte ptr ds:[bx]
-xor   bh, bh
-mov   es, bx
-cmp   dh, dl
-jbe   loop_mark_next_page_mru_multi
+mov   al, byte ptr ds:[bx]
+xor   ah, ah
+mov   es, ax
+dec   dl
+jns   loop_mark_next_page_mru_multi
 
 
 
@@ -1841,14 +1844,14 @@ mov   ax, word ptr [bp - 016h]
 call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
 call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
 
-;	//todo: only -1 if its in the knocked out page? pretty infrequent though.
+;	//todo: detected and only do -1 if its in the knocked out page? pretty infrequent though.
 ;    cachedtex = -1;
 ;    cachedtex2 = -1;
 
 
 mov   ax, 0FFFFh
 
-pop   cx ;  [bp - 018h]
+mov   cl, dh  ; numpages in cl
 cmp   byte ptr [bp - 012h], NUM_SPRITE_L1_CACHE_PAGES
 je    do_sprite_eviction
 jmp   do_tex_eviction

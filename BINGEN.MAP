@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/12 13:34:52
+Created on:       25/06/12 16:58:42
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -82,12 +82,12 @@ SM_OPL3_TEXT           CODE           AUTO           1a08:0f4a       00001014
 SM_SBMID_TEXT          CODE           AUTO           1a08:1f5e       0000071f
 SM_MPUMD_TEXT          CODE           AUTO           1a08:267e       000007ca
 s_sbsfx_TEXT           CODE           AUTO           1a08:2e50       000017ef
-R_DATA_TEXT            CODE           AUTO           1e6c:0000       00000f4b
-R_MATH_TEXT            CODE           AUTO           1e6c:0f4c       000001e3
-R_MAINHI_TEXT          CODE           AUTO           1e6c:1130       00002491
-R_COLUMN_TEXT          CODE           AUTO           1e6c:35c2       00000e46
-R_SPAN_TEXT            CODE           AUTO           1e6c:4408       00000db6
-R_SKY_TEXT             CODE           AUTO           1e6c:51be       000006c0
+R_DATA_TEXT            CODE           AUTO           1e6c:0000       00000f48
+R_MATH_TEXT            CODE           AUTO           1e6c:0f48       000001e3
+R_MAINHI_TEXT          CODE           AUTO           1e6c:112c       00002491
+R_COLUMN_TEXT          CODE           AUTO           1e6c:35be       00000e46
+R_SPAN_TEXT            CODE           AUTO           1e6c:4404       00000db6
+R_SKY_TEXT             CODE           AUTO           1e6c:51ba       000006c0
 r_draw_TEXT            CODE           AUTO           1e6c:5880       000000fb
 r_main_TEXT            CODE           AUTO           1e6c:5980       000001dd
 R_MASKED_TEXT          CODE           AUTO           1e6c:5b5e       000010e4
@@ -1271,16 +1271,16 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 2ae6:19ed+     _DMA_PortInfo
 2ae6:276c+     _SB_Mixer_Status
 Module: r_data.obj(r_data.ASM)
-1e6c:083a*     R_GenerateComposite_
+1e6c:0837*     R_GenerateComposite_
 1e6c:0186*     R_EvictL2CacheEMSPage_
 1e6c:02b7      R_MarkL2FlatCacheMRU_
-1e6c:07ce      R_GetSpriteTexture_
-1e6c:0c17      R_GetMaskedColumnSegment_
-1e6c:0e9d*     R_LoadSpriteColumns_
+1e6c:07cb      R_GetSpriteTexture_
+1e6c:0c14      R_GetMaskedColumnSegment_
+1e6c:0e9a*     R_LoadSpriteColumns_
 1e6c:00a5*     R_MarkL2SpriteCacheMRU_
 1e6c:053e*     R_GetTexturePage_
 1e6c:0394*     R_GetNextTextureBlock_
-1e6c:0e24*     R_LoadPatchColumns_
+1e6c:0e21*     R_LoadPatchColumns_
 1e6c:0020*     R_MarkL1SpriteCacheMRU3_
 1e6c:0030*     R_MarkL1TextureCacheMRU_
 1e6c:0090*     R_MarkL2TextureCacheMRU_
@@ -1289,58 +1289,58 @@ Module: r_data.obj(r_data.ASM)
 1e6c:0502*     R_GetSpritePage_
 1e6c:0070*     R_MarkL1TextureCacheMRU7_
 1e6c:030d      R_EvictFlatCacheEMSPage_
-1e6c:06c7*     R_GetPatchTexture_
-1e6c:0ae9      R_GetColumnSegment_
-1e6c:075c*     R_GetCompositeTexture_
+1e6c:06c4*     R_GetPatchTexture_
+1e6c:0ae6      R_GetColumnSegment_
+1e6c:0759*     R_GetCompositeTexture_
 Module: r_math.obj(r_math.ASM)
-1e6c:0fbe      R_PointToAngle_
+1e6c:0fba      R_PointToAngle_
 Module: r_mainhi.obj(r_mainhi.ASM)
-1e6c:14e8*     R_AddLine_
-1e6c:1bd3*     R_StoreWallRange_
-1e6c:2cb2*     R_ClipSolidWallSegment_
-1e6c:2d5f*     R_ClipPassWallSegment_
-1e6c:2ff3*     R_CheckBBox_
-1e6c:1696*     R_Subsector_
-1e6c:11bf*     FixedMulBSPLocal_
-1e6c:12b2*     R_PointToDist_
-1e6c:13bd*     R_HandleEMSVisplanePagination_
-1e6c:11f8*     FixedDivBSPLocal_
-1e6c:2f45      R_PrepareMaskedPSprites_
-1e6c:3287      R_WriteBackViewConstants_
-1e6c:342f      R_WriteBackFrameConstants_
-1e6c:1348      R_ClearPlanes_
-1e6c:1b6b*     R_AddSprites_
-1e6c:1329      R_ClearClipSegs_
-1e6c:146c*     R_FindPlane_
-1e6c:278d*     R_DrawColumnPrep_
-1e6c:2db2*     R_DrawPSprite_
-1e6c:1780*     R_CheckPlane_
-1e6c:184b*     R_ProjectSprite_
-1e6c:1267*     FixedMulTrigNoShiftBSPLocal_
-1e6c:319e      R_RenderBSPNode_
-1e6c:1130*     R_ScaleFromGlobalAngle_
-1e6c:2fc4*     R_PointToAngle16_
+1e6c:14e4*     R_AddLine_
+1e6c:1bcf*     R_StoreWallRange_
+1e6c:2cae*     R_ClipSolidWallSegment_
+1e6c:2d5b*     R_ClipPassWallSegment_
+1e6c:2fef*     R_CheckBBox_
+1e6c:1692*     R_Subsector_
+1e6c:11bb*     FixedMulBSPLocal_
+1e6c:12ae*     R_PointToDist_
+1e6c:13b9*     R_HandleEMSVisplanePagination_
+1e6c:11f4*     FixedDivBSPLocal_
+1e6c:2f41      R_PrepareMaskedPSprites_
+1e6c:3283      R_WriteBackViewConstants_
+1e6c:342b      R_WriteBackFrameConstants_
+1e6c:1344      R_ClearPlanes_
+1e6c:1b67*     R_AddSprites_
+1e6c:1325      R_ClearClipSegs_
+1e6c:1468*     R_FindPlane_
+1e6c:2789*     R_DrawColumnPrep_
+1e6c:2dae*     R_DrawPSprite_
+1e6c:177c*     R_CheckPlane_
+1e6c:1847*     R_ProjectSprite_
+1e6c:1263*     FixedMulTrigNoShiftBSPLocal_
+1e6c:319a      R_RenderBSPNode_
+1e6c:112c*     R_ScaleFromGlobalAngle_
+1e6c:2fc0*     R_PointToAngle16_
 Module: r_column.obj(r_column.ASM)
-1e6c:35c2      R_COLUMN_STARTMARKER_
-1e6c:38e2      R_DrawColumn_
-1e6c:4408      R_COLUMN_ENDMARKER_
+1e6c:35be      R_COLUMN_STARTMARKER_
+1e6c:38de      R_DrawColumn_
+1e6c:4404      R_COLUMN_ENDMARKER_
 Module: r_span.obj(r_span.ASM)
-1e6c:44a8      R_DrawSpan_
-1e6c:4408      R_SPAN_STARTMARKER_
-1e6c:4baf*     R_FixedMulLocal_
-1e6c:50c6      R_WriteBackViewConstantsSpan_
-1e6c:4af8*     R_DrawSpanPrep_
-1e6c:4d6f      R_DrawPlanes_
-1e6c:51be      R_SPAN_ENDMARKER_
-1e6c:4beb*     R_MapPlane_
-1e6c:44ab*     R_DrawSpanActual_
-1e6c:4b60*     R_FixedMulTrigLocal_
+1e6c:44a4      R_DrawSpan_
+1e6c:4404      R_SPAN_STARTMARKER_
+1e6c:4bab*     R_FixedMulLocal_
+1e6c:50c2      R_WriteBackViewConstantsSpan_
+1e6c:4af4*     R_DrawSpanPrep_
+1e6c:4d6b      R_DrawPlanes_
+1e6c:51ba      R_SPAN_ENDMARKER_
+1e6c:4be7*     R_MapPlane_
+1e6c:44a7*     R_DrawSpanActual_
+1e6c:4b5c*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1e6c:51be      R_DrawSkyColumn_
-1e6c:538b*     R_DrawSkyColumnDynamic_
-1e6c:580d      R_DrawSkyPlane_
-1e6c:587e      R_SKY_END_
-1e6c:579c      R_DrawSkyPlaneDynamic_
+1e6c:51ba      R_DrawSkyColumn_
+1e6c:5387*     R_DrawSkyColumnDynamic_
+1e6c:5809      R_DrawSkyPlane_
+1e6c:587a      R_SKY_END_
+1e6c:5798      R_DrawSkyPlaneDynamic_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1e6c:5880      R_VideoErase_
 1e6c:5904      R_DrawViewBorder_
@@ -1758,4 +1758,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e6f0 (190192.)
 Entry point address: 2622:24de
-Link time: 00:00.75
+Link time: 00:00.30
