@@ -2046,12 +2046,12 @@ PUBLIC R_GenerateComposite_
 ; void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
 ; bp - 2     unused
-; bp - 4     patchoriginy?
+; bp - 4     unused
 ; bp - 6     unused     
 ; bp - 8     unused
 ; bp - 0Ah   unused
 ; bp - 0Ch   unused
-; bp - 0Eh   currentdestsegment   
+; bp - 0Eh   unused
 ; bp - 010h  unused
 ; bp - 012h  unused
 ; bp - 014h  unused
@@ -2062,12 +2062,12 @@ PUBLIC R_GenerateComposite_
 ; bp - 01Eh  unused
 ; bp - 020h  unused
 ; bp - 022h  unused
-; bp - 024h  currentlump
+; bp - 024h  unused
 ; bp - 026h  unused
-; bp - 028h  x  
-; bp - 02Ah  columnofs[x - x1] 
+; bp - 028h  unused  
+; bp - 02Ah  unused 
 ; bp - 02Ch  unused 
-; bp - 02Eh  x2
+; bp - 02Eh  unused
 ; bp - 030h  unused
 ; bp - 032h  texnum * 2 (word lookup)
 ; bp - 034h  block_segment
@@ -2080,7 +2080,10 @@ PUBLIC R_GenerateComposite_
 ; bp - 042h  texture->patches
 ; bp - 044h  collump offset?
 ; bp - 046h  texturepatchcount
-; bp - 048h
+; bp - 048h  (innerloop) x
+; bp - 04Ah  (innerloop) currentlump
+; bp - 04Ch  (innerloop) currentdestsegment
+; bp - 04Eh  (innerloop) columnofs[x - x1] 
 
 PUSHA_NO_AX_MACRO
 push      bp
@@ -2192,7 +2195,7 @@ mov       bx, word ptr es:[0] ;wadpatch7000->width
 add       bx, ax            ;		x2 = x1 + (wadpatch7000->width);
 xchg      ax, dx            ;       x1
 cbw
-mov       word ptr [bp - 4], ax
+mov       word ptr cs:[SELFMODIFY_add_patchoriginy + 1], ax
 
 
 
@@ -2205,10 +2208,11 @@ mov       word ptr [bp - 4], ax
 test      dx, dx
 jge       set_x_to_x1
 
-mov       word ptr [bp - 028h], 0
+xor       cx, cx
+push      cx  ; bp - 048h
 jmp       done_setting_x
 set_x_to_x1:
-mov       word ptr [bp - 028h], dx
+push      dx  ; bp - 048h
 done_setting_x:
 
 ;    if (x2 > texturewidth){
@@ -2220,7 +2224,7 @@ cmp       bx, word ptr [bp - 03Ch]
 jle       x2_smaller_than_texture_width
 mov       bx, word ptr [bp - 03Ch]
 x2_smaller_than_texture_width:
-mov       word ptr [bp - 02Eh], bx  ; write back x2
+mov       word ptr cs:[SELFMODIFY_x2_check+2], bx
 
 mov       bx, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov       es, bx
@@ -2231,17 +2235,17 @@ mov       es, bx
 ;    nextcollumpRLE = collump[currentRLEIndex + 1].bu.bytelow + 1;
 
 
-mov       ax, word ptr es:[di]
-mov       word ptr [bp - 024h], ax
+push      word ptr es:[di]  ; bp - 04Ah  currentlump
+
 mov       al, byte ptr es:[di + 2]
 xor       ah, ah
 mov       si, ax   ; si is nextcollumpRLE
 
 ;		currentdestsegment = block_segment;
 
-mov       ax, word ptr [bp - 034h]  ; block segment
+push      word ptr [bp - 034h] ; ; bp - 04Ch  currentdestsegment from blocksegment
 inc       si
-mov       word ptr [bp - 0Eh], ax
+
 
 ; determine dest segment by iterating over x/patches
 ;    // skip if x is 0, otherwise evaluate till break
@@ -2250,7 +2254,7 @@ mov       word ptr [bp - 0Eh], ax
 ; si/di/dx all currently unusable?
 ; 
 
-cmp       word ptr [bp - 028h], 0
+cmp       word ptr [bp - 048h], 0
 je        x_is_zero_skip_inner_calc
 
 
@@ -2281,7 +2285,7 @@ inc       ax
 mov       cl, dh
 xor       ch, ch
 add       cx, ax
-cmp       cx, word ptr [bp - 028h]
+cmp       cx, word ptr [bp - 048h]
 jge       break_inner_loop
 
 ;    if (innercurrentlump == -1){
@@ -2313,7 +2317,7 @@ break_inner_loop:
 
 cmp       di, -1
 jne       dont_add_final_diffpixels
-mov       al, byte ptr [bp - 028h]
+mov       al, byte ptr [bp - 048h]
 sub       al, dh
 add       dl, al
 dont_add_final_diffpixels:
@@ -2322,7 +2326,7 @@ dont_add_final_diffpixels:
 
 mov       al, byte ptr [bp - 040h]
 mul       dl
-add       word ptr [bp - 0Eh], ax
+add       word ptr [bp - 04Ch], ax
 
 pop       di ; restore di
 pop       dx ; restore dx
@@ -2343,24 +2347,27 @@ x_is_zero_skip_inner_calc:
 ;			R_DrawColumnInCache(wadpatch7000->columnofs[x - x1],
 
 
-mov       cx, dx                    ; x1?
-mov       ax, word ptr [bp - 028h]  ; x
-shl       cx, 2  ; x1 << 2
+mov       ax, word ptr [bp - 048h]  ; x
+shl       dx, 2  ; x1 << 2
 shl       ax, 2  ; x << 2
-neg       cx
-add       ax, cx                    ; (x - x1 ) << 2
+neg       dx
+add       ax, dx                    ; (x - x1 ) << 2
 ; todo probably store in si/di...
 add       ax, 8  ; prestore offset
 
-mov       word ptr [bp - 02Ah], ax
+push      ax  ; bp - 04Eh columnofs[x - x1] 
+
+mov       dx, word ptr [bp - 03Eh] ; dx gets this for the whole inner loop
 
 mov       ax, COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
 mov       ds, ax
-mov       cx, word ptr [bp - 028h] ; cx is x for this loop
+; todo can we pop this
+mov       cx, word ptr [bp - 048h] ; cx is x for this loop
 
 
 continue_x_x2_loop:
-cmp       cx, word ptr [bp - 02Eh]  ; x2
+SELFMODIFY_x2_check:
+cmp       cx, 01000h  ; x2
 
 ; for (; x < x2; x++) {
 
@@ -2383,7 +2390,7 @@ loop_x_nextcollumpRLE:
 cmp       si, cx
 jg        skip_loop_x_nextcollumpRLE
 mov       ax, word ptr es:[di + 4]
-mov       word ptr [bp - 024h], ax
+mov       word ptr [bp - 04Ah], ax
 mov       al, byte ptr es:[di + 6]
 xor       ah, ah
 inc       ax
@@ -2398,15 +2405,14 @@ skip_loop_x_nextcollumpRLE:
 ;        continue;
 ;    }
 
-cmp       word ptr [bp - 024h], 0
+cmp       word ptr [bp - 04Ah], 0
 jnl       increment_x_x2_loop
 
 
 
-mov       bx, word ptr [bp - 02Ah]
+mov       bx, word ptr [bp - 04Eh]
 mov       bx, word ptr ds:[bx]
-mov       dx, word ptr [bp - 4]
-mov       es, word ptr [bp - 0Eh]  ; write straight to seg instead of dx
+mov       es, word ptr [bp - 04Ch]  ; write straight to seg instead of dx
 
 ;    R_DrawColumnInCache(wadpatch7000->columnofs[x - x1],
 ;        currentdestsegment,
@@ -2419,14 +2425,11 @@ mov       es, word ptr [bp - 0Eh]  ; write straight to seg instead of dx
 push      cx
 push      si
 push      di
-push      bp
 
 ; es already set.
 ; bx has patchcol_offset
-; dx has patchorigin_y
 ; ds already COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
 
-mov       bp, word ptr [bp - 03Eh] ; bp gets this directly. clobbers itself
 
 ;	while (patchcol->topdelta != 0xff) { 
 
@@ -2446,8 +2449,10 @@ xchg      cl, ah                ; length to cl, 0 to ah
 
 ;		int16_t     position = patchoriginy + patchcol->topdelta;
 
+SELFMODIFY_add_patchoriginy:
+add       ax, 01000h ; patchoriginy + topdelta
 xchg      ax, di
-add       di, dx  ; patchoriginy + topdelta
+
 
 
 ;		byte __far * source = (byte __far *)patchcol + 3;
@@ -2477,9 +2482,9 @@ done_with_position_check:
 
 mov       ax, di
 add       ax, cx
-cmp       ax, bp
+cmp       ax, dx
 jbe       done_with_count_adjustment
-mov       cx, bp
+mov       cx, dx
 sub       cx, di
 done_with_count_adjustment:
 ;			FAR_memcpy(MK_FP(currentdestsegment, position), source, count);
@@ -2493,15 +2498,14 @@ cmp       byte ptr ds:[bx], 0FFh
 jne       do_next_column_patch
 exit_drawcolumn_in_cache:
 
-pop       bp
 pop       di
 pop       si
 pop       cx
 
 mov       ax, word ptr [bp - 040h]
-add       word ptr [bp - 0Eh], ax   ; currentdestsegment += usetextureheight;
+add       word ptr [bp - 04Ch], ax   ; currentdestsegment += usetextureheight;
 increment_x_x2_loop:
-add       word ptr [bp - 02Ah], 4
+add       word ptr [bp - 04Eh], 4
 inc       cx
 jmp       continue_x_x2_loop
 
@@ -2511,6 +2515,7 @@ mov       ds, ax  ; restore ds
 add       word ptr [bp - 042h], 4
 inc       word ptr [bp - 038h]
 mov       ax, word ptr [bp - 046h]
+add       sp, 8 ; back to 46?
 jmp       loop_texture_patch
 
 position_under_zero:
