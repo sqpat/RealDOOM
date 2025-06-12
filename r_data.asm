@@ -2132,6 +2132,8 @@ retf
 
 ENDP
 
+WAD_PATCH_7000_SEGMENT = 07000h
+
 done_with_composite_loop:
 call      Z_QuickMapRender7000_
 LEAVE_MACRO     
@@ -2145,13 +2147,13 @@ PUBLIC R_GenerateComposite_
 ; void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
 ; bp - 2     unused
-; bp - 4     ??? some byte
+; bp - 4     patchoriginy?
 ; bp - 6     
-; bp - 8     ??? some byte
+; bp - 8     diffpixels
 ; bp - 0Ah   unused
-; bp - 0Ch   ??? some byte
-; bp - 0Eh   
-; bp - 010h   
+; bp - 0Ch   ??? currentx
+; bp - 0Eh   currentdestsegment   
+; bp - 010h  innercurrentlump   
 ; bp - 012h  unused
 ; bp - 014h  unused
 ; bp - 016h  unused
@@ -2161,12 +2163,12 @@ PUBLIC R_GenerateComposite_
 ; bp - 01Eh  unused
 ; bp - 020h  unused
 ; bp - 022h  unused
-; bp - 024h  
+; bp - 024h  currentlump
 ; bp - 026h  
-; bp - 028h  
+; bp - 028h  x  
 ; bp - 02Ah  
 ; bp - 02Ch  unused 
-; bp - 02Eh  
+; bp - 02Eh  x2
 ; bp - 030h  unused
 ; bp - 032h  texnum * 2 (word lookup)
 ; bp - 034h  block_segment
@@ -2253,8 +2255,8 @@ jng       done_with_composite_loop
 
 mov       es, word ptr [bp - 036h]  ; todo les
 mov       si, word ptr [bp - 042h]
-xor       di, di
-mov       bx, di
+xor       di, di ; di is currentRLEIndex. todo make this the ptr to collump instead!
+mov       bx, di ; bx 0 for following cachelump call
 
 mov       dx, word ptr es:[si + 2]
 and       dh, (PATCHMASK SHR 8)
@@ -2267,54 +2269,85 @@ mov       ax, dx
 call      W_CacheLumpNumDirect_
 mov       es, word ptr [bp - 036h]
 use_same_patch:
-test      byte ptr es:[si + 3], (ORIGINX_SIGN_FLAG SHR 8) 
-jne       label_60  ; 26 bytes
-jmp       label_4
-label_60:
-mov       bx, 0FFFFh
-
-; todo this loop use ds/es effectively
-label_12:
-mov       es, word ptr [bp - 036h]
-mov       al, byte ptr es:[si]
+mov       ax, word ptr es:[si]
+mov       dl, ah
 xor       ah, ah
-imul      bx
-mov       bx, SCRATCH_PAGE_SEGMENT_7000
-mov       dl, byte ptr es:[si + 1]
+;	patchoriginx = patch->originx *  (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
+
+test      byte ptr es:[si + 3], (ORIGINX_SIGN_FLAG SHR 8) 
+je       done_with_sign_mul
+neg       ax
+done_with_sign_mul:
+
+; dl is patchoriginy
+mov       bx, WAD_PATCH_7000_SEGMENT
 mov       es, bx
-xor       bx, bx
-mov       bx, word ptr es:[bx]
+
+;		x1 = patchoriginx;
+;		x2 = x1 + (wadpatch7000->width);
+
+
+mov       bx, word ptr es:[0] ;wadpatch7000->width
 mov       byte ptr [bp - 4], dl
-add       bx, ax
-mov       dx, ax
-mov       word ptr [bp - 02Eh], bx
+add       bx, ax            ;		x2 = x1 + (wadpatch7000->width);
+mov       dx, ax            ;       x1
+
+
+;		if (x1 < 0){
+;			x = 0;
+;		} else {
+;			x = x1;
+;		}
+
 test      ax, ax
-jge       label_5
-jmp       label_6
-label_5:
+jge       set_x_to_x1
+
+mov       word ptr [bp - 028h], 0
+jmp       done_setting_x
+set_x_to_x1:
 mov       word ptr [bp - 028h], ax
-label_13:
-mov       ax, word ptr [bp - 02Eh]
-cmp       ax, word ptr [bp - 03Ch]
-jle       label_7
-mov       ax, word ptr [bp - 03Ch]
-mov       word ptr [bp - 02Eh], ax
-label_7:
+done_setting_x:
+
+;    if (x2 > texturewidth){
+;        x2 = texturewidth;
+;    }
+
+
+cmp       bx, word ptr [bp - 03Ch]
+jle       x2_smaller_than_texture_width
+mov       bx, word ptr [bp - 03Ch]
+x2_smaller_than_texture_width:
+mov       word ptr [bp - 02Eh], bx  ; write back x2
+
 mov       bx, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov       es, bx
-mov       bx, di
+mov       bx, di  ; currentRLEIndex
 sal       bx, 1
-add       bx, word ptr [bp - 044h]
+add       bx, word ptr [bp - 044h]  ; collump offset
+
+; es:bx is collump
+
+;    currentlump = collump[currentRLEIndex].h;
+;    nextcollumpRLE = collump[currentRLEIndex + 1].bu.bytelow + 1;
+
+
 mov       ax, word ptr es:[bx]
 mov       word ptr [bp - 024h], ax
 mov       al, byte ptr es:[bx + 2]
 xor       ah, ah
-mov       si, ax
-mov       ax, word ptr [bp - 034h]
+mov       si, ax   ; si is nextcollumpRLE
+
+;		currentdestsegment = block_segment;
+
+mov       ax, word ptr [bp - 034h]  ; block segment
 inc       si
 mov       word ptr [bp - 0Eh], ax
+
+;    // skip if x is 0, otherwise evaluate till break
+;    if (x){
+
 cmp       word ptr [bp - 028h], 0
-je        label_8
+je        x_is_zero_skip_inner_calc
 mov       bx, word ptr [bp - 044h]
 mov       ax, word ptr es:[bx]
 mov       word ptr [bp - 010h], ax
@@ -2328,9 +2361,10 @@ mov       cl, byte ptr [bp - 0Ch]
 xor       ch, ch
 add       cx, ax
 cmp       cx, word ptr [bp - 028h]
-jge       label_9
+jge       break_inner_loop
 cmp       word ptr [bp - 010h], -1
-je        label_10
+jne       label_14
+add       byte ptr [bp - 8], al
 label_14:
 add       byte ptr [bp - 0Ch], al
 mov       ax, word ptr es:[bx + 4]
@@ -2339,26 +2373,27 @@ mov       al, byte ptr es:[bx + 6]
 xor       ah, ah
 add       bx, 4
 jmp       label_11
-label_4:
-mov       bx, 1
-jmp       label_12
-label_6:
-mov       word ptr [bp - 028h], 0
-jmp       label_13
-label_10:
-add       byte ptr [bp - 8], al
-jmp       label_14
-label_9:
+break_inner_loop:
+
+;    if (innercurrentlump == -1){
+;        diffpixels += ((x - currentx));
+;    }
+;    break;
+
 cmp       word ptr [bp - 010h], -1
 jne       label_15
 mov       al, byte ptr [bp - 028h]
 sub       al, byte ptr [bp - 0Ch]
 add       byte ptr [bp - 8], al
 label_15:
+
+; currentdestsegment += FastMul8u8u(usetextureheight, diffpixels);
+
 mov       al, byte ptr [bp - 040h]
 mul       byte ptr [bp - 8]
 add       word ptr [bp - 0Eh], ax
-label_8:
+
+x_is_zero_skip_inner_calc:
 mov       bx, dx
 mov       ax, word ptr [bp - 028h]
 shl       bx, 2
