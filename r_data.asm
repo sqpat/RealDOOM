@@ -2148,12 +2148,12 @@ PUBLIC R_GenerateComposite_
 
 ; bp - 2     unused
 ; bp - 4     patchoriginy?
-; bp - 6     
-; bp - 8     diffpixels
+; bp - 6     unused     
+; bp - 8     unused
 ; bp - 0Ah   unused
-; bp - 0Ch   ??? currentx
+; bp - 0Ch   unused
 ; bp - 0Eh   currentdestsegment   
-; bp - 010h  innercurrentlump   
+; bp - 010h  unused
 ; bp - 012h  unused
 ; bp - 014h  unused
 ; bp - 016h  unused
@@ -2164,9 +2164,9 @@ PUBLIC R_GenerateComposite_
 ; bp - 020h  unused
 ; bp - 022h  unused
 ; bp - 024h  currentlump
-; bp - 026h  
+; bp - 026h  unused
 ; bp - 028h  x  
-; bp - 02Ah  
+; bp - 02Ah  columnofs[x - x1] 
 ; bp - 02Ch  unused 
 ; bp - 02Eh  x2
 ; bp - 030h  unused
@@ -2343,36 +2343,67 @@ mov       ax, word ptr [bp - 034h]  ; block segment
 inc       si
 mov       word ptr [bp - 0Eh], ax
 
+; determine dest segment by iterating over x/patches
 ;    // skip if x is 0, otherwise evaluate till break
 ;    if (x){
 
+; si/di/dx all currently unusable?
+; 
+
 cmp       word ptr [bp - 028h], 0
 je        x_is_zero_skip_inner_calc
+
+
+; loop setup
+
+;    int16_t innercurrentRLEIndex = 0;
+;    int16_t innercurrentlump = collump[0].h;
+;    int16_t innernextcollumpRLE = collump[1].bu.bytelow + 1;
+;    uint8_t currentx = 0;
+;    uint8_t diffpixels = 0;
+
+push      dx  ; store dx. we will use it as currentx and diffpixels
+push      di  ; to be used as innercurrentRLEIndex
 mov       bx, word ptr [bp - 044h]
 mov       ax, word ptr es:[bx]
-mov       word ptr [bp - 010h], ax
-mov       al, byte ptr es:[bx + 2]
-mov       byte ptr [bp - 0Ch], 0
+mov       di, ax  ; innercurrentlump todo push/pop solution.
+mov       al, byte ptr es:[bx + 2]  ; innernextcollumpRLE
 xor       ah, ah
-mov       byte ptr [bp - 8], 0
-label_11:
+cwd       ; zero dx
+; dh is currentx
+; dl is diffpixels
+continue_inner_loop:
+
+
+;	if ((currentx + innernextcollumpRLE) < x){
+
 inc       ax
-mov       cl, byte ptr [bp - 0Ch]
+mov       cl, dh
 xor       ch, ch
 add       cx, ax
 cmp       cx, word ptr [bp - 028h]
 jge       break_inner_loop
-cmp       word ptr [bp - 010h], -1
-jne       label_14
-add       byte ptr [bp - 8], al
-label_14:
-add       byte ptr [bp - 0Ch], al
+
+;    if (innercurrentlump == -1){
+;        diffpixels += (innernextcollumpRLE);
+;    }
+;    currentx += innernextcollumpRLE;
+;    innercurrentRLEIndex += 2;
+;    innercurrentlump = collump[innercurrentRLEIndex].h;
+;    innernextcollumpRLE = collump[innercurrentRLEIndex + 1].bu.bytelow + 1;
+;    continue;
+
+cmp       di, -1
+jne       dont_add_to_diffpixels
+add       dl, al
+dont_add_to_diffpixels:
+add       dh, al
 mov       ax, word ptr es:[bx + 4]
-mov       word ptr [bp - 010h], ax
+mov       di, ax
 mov       al, byte ptr es:[bx + 6]
 xor       ah, ah
-add       bx, 4
-jmp       label_11
+add       bx, 4     ; innercurrentRLEIndex += 2
+jmp       continue_inner_loop ; continue
 break_inner_loop:
 
 ;    if (innercurrentlump == -1){
@@ -2380,34 +2411,53 @@ break_inner_loop:
 ;    }
 ;    break;
 
-cmp       word ptr [bp - 010h], -1
-jne       label_15
+cmp       di, -1
+jne       dont_add_final_diffpixels
 mov       al, byte ptr [bp - 028h]
-sub       al, byte ptr [bp - 0Ch]
-add       byte ptr [bp - 8], al
-label_15:
+sub       al, dh
+add       dl, al
+dont_add_final_diffpixels:
 
 ; currentdestsegment += FastMul8u8u(usetextureheight, diffpixels);
 
 mov       al, byte ptr [bp - 040h]
-mul       byte ptr [bp - 8]
+mul       dl
 add       word ptr [bp - 0Eh], ax
 
+pop       di ; restore di
+pop       dx ; restore dx
+
 x_is_zero_skip_inner_calc:
-mov       bx, dx
-mov       ax, word ptr [bp - 028h]
-shl       bx, 2
-shl       ax, 2
+
+;    for (; x < x2; x++) {
+;    while (x >= nextcollumpRLE) {
+;        currentRLEIndex += 2;
+;        currentlump = collump[currentRLEIndex].h;
+;        nextcollumpRLE += (collump[currentRLEIndex + 1].bu.bytelow + 1);
+;    }
+
+
+; dx is x1
+
+; precalculation for offset of x - x1 word offset.
+;			R_DrawColumnInCache(wadpatch7000->columnofs[x - x1],
+
+
+mov       bx, dx                    ; x1?
+mov       ax, word ptr [bp - 028h]  ; x
+shl       bx, 2  ; x1 << 2
+shl       ax, 2  ; x << 2
 neg       bx
-add       ax, bx
-mov       bx, word ptr [bp - 044h]
+add       ax, bx                    ; (x - x1 ) << 2
+; todo probably store in si/di...
 mov       word ptr [bp - 02Ah], ax
-mov       word ptr [bp - 026h], bx
+
+
 label_19:
 mov       ax, word ptr [bp - 028h]
 cmp       ax, word ptr [bp - 02Eh]
 jge       label_16
-mov       bx, word ptr [bp - 026h]
+mov       bx, word ptr [bp - 044h]  ; collump
 mov       ax, di
 mov       dx, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov       es, dx
