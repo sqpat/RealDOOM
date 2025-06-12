@@ -2604,7 +2604,7 @@ mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
 
 mov       word ptr ds:[si + _segloopnextlookup], dx
 shr       si, 1
-pop       dx ;  , byte ptr [bp - 8]             ; loopwidth
+pop       dx ;  , byte ptr [bp - 0Ah]             ; loopwidth
 mov       byte ptr ds:[si + _seglooptexrepeat], dl
 jmp       done_setting_cached_tex
 
@@ -2616,7 +2616,7 @@ mov       es, di
 mov       bl, byte ptr es:[bx - 1]
 xor       bh, bh
 
-add       bx, word ptr [bp - 010h]
+add       bx, word ptr [bp - 6]
 segloopcachedbasecol_set:
 
 ; write the segloopcachedbasecol[segloopcachetype] calculated above!
@@ -2679,7 +2679,7 @@ mov      word ptr ds:[bx], ax
 jmp       done_setting_cached_tex
 lump_greater_than_zero:
 ;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
-sub       byte ptr [bp - 6], al         ; al still subtractor
+sub       byte ptr [bp - 8], al         ; al still subtractor
 done_with_lump_check:
 add       bx, 4                     ; n+= 2
 test      cx, cx
@@ -2768,7 +2768,7 @@ sal       si, 1
 mov       word ptr ds:[si + _segloopcachedsegment], ax
 xchg      ax, dx
 mov       al, byte ptr ds:[_cachedcollength]
-mul       byte ptr [bp - 6]
+mul       byte ptr [bp - 8]
 add       ax, dx
 LEAVE_MACRO     
 pop       di
