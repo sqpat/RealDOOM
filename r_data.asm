@@ -889,106 +889,7 @@ ENDP
 
 COLUMN_IN_CACHE_WAD_LUMP_SEGMENT = 07000h
 
-;void __near R_DrawColumnInCache (uint16_t patchcol_offset, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight) {
-; todo merge into generate composite
-PROC R_DrawColumnInCache_ NEAR
-PUBLIC R_DrawColumnInCache_
 
-push      si
-push      di
-push      bp
-
-; es already set.
-; bx has patchcol_offset
-; dx has patchorigin_y
-; ds already COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
-
-mov       bp, cx  ; bp stores textureheight
-
-;	while (patchcol->topdelta != 0xff) { 
-
-cmp       byte ptr ds:[bx], 0FFh
-je        exit_drawcolumn_in_cache
-do_next_column_patch:
-
-;		uint16_t     count = patchcol->length;
-
-mov       ax, word ptr ds:[bx]  ; al topdelta
-
-xor       cx, cx
-xchg      cl, ah                ; length to cl, 0 to ah
-
-; cx is count
-; ax is topdelta for now
-
-;		int16_t     position = patchoriginy + patchcol->topdelta;
-
-xchg      ax, di
-add       di, dx  ; patchoriginy + topdelta
-
-
-;		byte __far * source = (byte __far *)patchcol + 3;
-lea       si, [bx + 3] ; for memcpy
-
-;		patchcol = (column_t __far*)((byte  __far*)patchcol + count + 4);
-
-add       bx, cx
-add       bx, 4
-
-
-; count is cx
-; position is di
-
-;		if (position < 0) {
-;			count += position;
-;			position = 0;
-;		}
-
-test      di, di
-jl        position_under_zero
-done_with_position_check:
-
-;		if (position + count > textureheight){
-;			count = textureheight - position;
-;		}
-
-
-mov       ax, di
-add       ax, cx
-cmp       ax, bp
-jbe       done_with_count_adjustment
-mov       cx, bp
-sub       cx, di
-done_with_count_adjustment:
-
-;			FAR_memcpy(MK_FP(currentdestsegment, position), source, count);
-
-
-
-
-shr       cx, 1
-rep movsw 
-adc       cx, cx
-rep movsb 
-
-
-
-
-cmp       byte ptr ds:[bx], 0FFh
-jne       do_next_column_patch
-exit_drawcolumn_in_cache:
-
-
-pop       bp
-pop       di
-pop       si
-ret
-position_under_zero:
-add       cx, di
-xor       di, di
-jmp       done_with_position_check
-
-ENDP
 
 
 
@@ -2179,6 +2080,7 @@ PUBLIC R_GenerateComposite_
 ; bp - 042h  texture->patches
 ; bp - 044h  collump offset?
 ; bp - 046h  texturepatchcount
+; bp - 048h
 
 PUSHA_NO_AX_MACRO
 push      bp
@@ -2448,15 +2350,17 @@ shl       ax, 2  ; x << 2
 neg       cx
 add       ax, cx                    ; (x - x1 ) << 2
 ; todo probably store in si/di...
+add       ax, 8  ; prestore offset
+
 mov       word ptr [bp - 02Ah], ax
 
 mov       ax, COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
 mov       ds, ax
+mov       cx, word ptr [bp - 028h] ; cx is x for this loop
 
 
 continue_x_x2_loop:
-mov       ax, word ptr [bp - 028h]  ; x
-cmp       ax, word ptr [bp - 02Eh]  ; x2
+cmp       cx, word ptr [bp - 02Eh]  ; x2
 
 ; for (; x < x2; x++) {
 
@@ -2474,7 +2378,6 @@ mov       es, ax
 
 ; es:di is collumn[currentRLEIndex]
 ; si is nextcollumpRLE
-mov       cx, word ptr [bp - 028h]
 
 loop_x_nextcollumpRLE:
 cmp       si, cx
@@ -2496,14 +2399,12 @@ skip_loop_x_nextcollumpRLE:
 ;    }
 
 cmp       word ptr [bp - 024h], 0
-jnl        increment_x_x2_loop
+jnl       increment_x_x2_loop
 
 
-mov       dx, SCRATCH_PAGE_SEGMENT_7000
-mov       es, dx
+
 mov       bx, word ptr [bp - 02Ah]
-mov       bx, word ptr es:[bx+8] ; supposed to go into ax...
-mov       cx, word ptr [bp - 03Eh]
+mov       bx, word ptr ds:[bx]
 mov       dx, word ptr [bp - 4]
 mov       es, word ptr [bp - 0Eh]  ; write straight to seg instead of dx
 
@@ -2512,14 +2413,96 @@ mov       es, word ptr [bp - 0Eh]  ; write straight to seg instead of dx
 ;        patchoriginy,
 ;        textureheight);
 
+; INLINED!
+; call      R_DrawColumnInCache_       ; todo inline segments
 
-call      R_DrawColumnInCache_       ; todo inline segments
+push      cx
+push      si
+push      di
+push      bp
+
+; es already set.
+; bx has patchcol_offset
+; dx has patchorigin_y
+; ds already COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
+
+mov       bp, word ptr [bp - 03Eh] ; bp gets this directly. clobbers itself
+
+;	while (patchcol->topdelta != 0xff) { 
+
+cmp       byte ptr ds:[bx], 0FFh
+je        exit_drawcolumn_in_cache
+do_next_column_patch:
+
+;		uint16_t     count = patchcol->length;
+
+mov       ax, word ptr ds:[bx]  ; al topdelta
+
+xor       cx, cx
+xchg      cl, ah                ; length to cl, 0 to ah
+
+; cx is count
+; ax is topdelta for now
+
+;		int16_t     position = patchoriginy + patchcol->topdelta;
+
+xchg      ax, di
+add       di, dx  ; patchoriginy + topdelta
+
+
+;		byte __far * source = (byte __far *)patchcol + 3;
+lea       si, [bx + 3] ; for memcpy
+
+;		patchcol = (column_t __far*)((byte  __far*)patchcol + count + 4);
+
+add       bx, cx
+add       bx, 4
+
+
+; count is cx
+; position is di
+
+;		if (position < 0) {
+;			count += position;
+;			position = 0;
+;		}
+
+test      di, di
+jl        position_under_zero
+done_with_position_check:
+
+;		if (position + count > textureheight){
+;			count = textureheight - position;
+;		}
+
+mov       ax, di
+add       ax, cx
+cmp       ax, bp
+jbe       done_with_count_adjustment
+mov       cx, bp
+sub       cx, di
+done_with_count_adjustment:
+;			FAR_memcpy(MK_FP(currentdestsegment, position), source, count);
+
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+
+cmp       byte ptr ds:[bx], 0FFh
+jne       do_next_column_patch
+exit_drawcolumn_in_cache:
+
+pop       bp
+pop       di
+pop       si
+pop       cx
 
 mov       ax, word ptr [bp - 040h]
-add       word ptr [bp - 0Eh], ax
+add       word ptr [bp - 0Eh], ax   ; currentdestsegment += usetextureheight;
 increment_x_x2_loop:
 add       word ptr [bp - 02Ah], 4
-inc       word ptr [bp - 028h]
+inc       cx
 jmp       continue_x_x2_loop
 
 do_next_composite_loop_iter:
@@ -2530,6 +2513,10 @@ inc       word ptr [bp - 038h]
 mov       ax, word ptr [bp - 046h]
 jmp       loop_texture_patch
 
+position_under_zero:
+add       cx, di
+xor       di, di
+jmp       done_with_position_check
 
 ENDP
 
