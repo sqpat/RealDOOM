@@ -3019,16 +3019,28 @@ test      bx, bx
 jne       not_cache_0_masked
 found_cached_lump_masked:
 test      cx, cx
-jnl       label_25
+
+;    uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
+;    if (patchwidth == 0){
+;        patchwidth = 0x100;
+;    }
+;    if (patchwidth > texturewidthmasks[tex]){
+;        patchwidth = texturewidthmasks[tex];
+;        patchwidth++;
+;    }
+;    while (col < 0){
+;        col+= patchwidth;
+;    }
+
+jnl       col_not_under_zero_masked
 
 
-label_15:
-mov       bx, si
+
 mov       ax, PATCHWIDTHS_7000_SEGMENT
-sub       bx, word ptr ds:[_firstpatch]
+sub       si, word ptr ds:[_firstpatch]
 mov       es, ax
 xor       ax, ax
-mov       al, byte ptr es:[bx]   ; todo here
+mov       al, byte ptr es:[si]   ; todo here
 cwd
 cmp       al, 1     ; set carry if al is 0
 adc       ah, ah    ; if width is zero that encoded 0x100. now ah is 1.
@@ -3037,19 +3049,29 @@ mov       es, bx
 mov       bx, word ptr [bp - 012h]
 mov       dl, byte ptr es:[bx]
 cmp       ax, dx
-jna       label_26
+jna       negative_modulo_thing_masked
 xchg      ax, dx
 inc       ax
-label_26:
+negative_modulo_thing_masked:
 add       cx, ax
-jle       label_26
+jle       negative_modulo_thing_masked
 
-label_25:
-mov       ax, word ptr ds:[_cachedsegmentlumps]
-mov       word ptr ds:[_maskedcachedsegment], ax
+col_not_under_zero_masked:
+
+;		maskedcachedsegment  = cachedsegmentlumps[0];
+
+push      word ptr ds:[_cachedsegmentlumps]
+pop       word ptr ds:[_maskedcachedsegment]
+
 mov       al, byte ptr [bp - 2]
 cmp       al, 0FFh
-jne       label_16
+jne       is_masked
+
+
+;    maskedheightvalcache  = heightval;
+;    return maskedcachedsegment + (FastMul8u8u(col , heightval) );
+
+
 mov       al, byte ptr [bp - 8]
 mov       byte ptr ds:[_maskedheightvalcache], al
 mul       cl
@@ -3060,19 +3082,24 @@ pop       si
 pop       cx
 pop       bx
 retf  
-label_16:
+is_masked:
+
+;    masked_header_t __near * maskedheader = &masked_headers[lookup];
+;    uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
+;    uint16_t ofs  = pixelofs[col]; // precached as segment value.
+;    maskedheaderpixeolfs = maskedheader->pixelofsoffset;
+;    return maskedcachedsegment + ofs;
 
 xor       ah, ah
-mov       di, ax
+mov       bx, ax
+SHIFT_MACRO shl       bx 3
 mov       dx, MASKEDPIXELDATAOFS_SEGMENT
-SHIFT_MACRO shl       di 3
-sal       cx, 1
-mov       ax, word ptr ds:[di + _masked_headers]
 mov       es, dx
-add       cx, ax
-mov       bx, cx
+mov       bx, word ptr ds:[bx + _masked_headers]
+mov       word ptr ds:[_maskedheaderpixeolfs], bx
+sal       cx, 1
+add       bx, cx
 
-mov       word ptr ds:[_maskedheaderpixeolfs], ax
 mov       ax, word ptr ds:[_maskedcachedsegment]
 add       ax, word ptr es:[bx]
 LEAVE_MACRO     
