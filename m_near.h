@@ -416,11 +416,27 @@
 
 
 // 0x670
-extern uint8_t              activespritepages[NUM_SPRITE_L1_CACHE_PAGES];
-extern uint8_t              activespritenumpages[NUM_SPRITE_L1_CACHE_PAGES];
-extern uint8_t              spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
-extern int8_t               spritecache_l2_head;
-extern int8_t               spritecache_l2_tail;
+
+#define activespritepages				  (((uint8_t __near*)                (_NULL_OFFSET + 0x0670)))
+#define activespritenumpages			  (((uint8_t __near*)                (_NULL_OFFSET + 0x0674)))
+#define spriteL1LRU						  (((uint8_t __near*)                (_NULL_OFFSET + 0x0678)))
+#define spritecache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x067C)))
+#define spritecache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x067D)))
+#define texturecache_l2_head			  (*((uint8_t __near*)               (_NULL_OFFSET + 0x067E)))
+#define texturecache_l2_tail			  (*((uint8_t __near*)               (_NULL_OFFSET + 0x067F)))
+#define activetexturepages				  (((uint8_t __near*)                (_NULL_OFFSET + 0x0680)))
+#define activenumpages					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0688)))
+#define textureL1LRU					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0690)))
+#define cachedsegmentlumps				  (((segment_t __near*)              (_NULL_OFFSET + 0x0698)))
+#define cachedlumps					 	  (((int16_t __near*)                (_NULL_OFFSET + 0x06A0)))
+#define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x06A8)))
+#define cachedtex				  		  (((int16_t __near*)                (_NULL_OFFSET + 0x06AC)))
+#define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06B0)))
+#define flatcache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06B2)))
+#define flatcache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06B3)))
+
+
+
 
 
 
@@ -524,18 +540,6 @@ extern int16_t              firstpatch;
 extern int16_t              numpatches;
 extern int16_t              numspritelumps;
 extern int16_t              numtextures;
-extern uint8_t              activetexturepages[NUM_TEXTURE_L1_CACHE_PAGES];
-extern uint8_t              activenumpages[NUM_TEXTURE_L1_CACHE_PAGES];
-extern uint8_t              textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES];
-extern int8_t               flatcache_l2_head;
-extern int8_t               flatcache_l2_tail;
-extern int8_t               texturecache_l2_head;
-extern int8_t               texturecache_l2_tail;
-extern int16_t              cachedlumps[NUM_CACHE_LUMPS];
-extern segment_t            cachedsegmentlumps[NUM_CACHE_LUMPS];
-extern segment_t            cachedsegmenttex[2];
-extern int16_t              cachedtex[2];
-extern uint8_t              cachedcollength[2];
  
 //extern int16_t              ;
 

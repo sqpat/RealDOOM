@@ -36,40 +36,25 @@ EXTRN Z_QuickMapRender7000_:FAR
 
 .DATA
 
-EXTRN _spriteL1LRU:BYTE
-EXTRN _textureL1LRU:BYTE
 EXTRN _spritecache_nodes:BYTE
-EXTRN _spritecache_l2_head:BYTE
-EXTRN _spritecache_l2_tail:BYTE
 EXTRN _texturecache_nodes:BYTE
-EXTRN _texturecache_l2_head:BYTE
-EXTRN _texturecache_l2_tail:BYTE
 EXTRN _flatcache_nodes:BYTE
-EXTRN _flatcache_l2_head:BYTE
-EXTRN _flatcache_l2_tail:BYTE
+
 
 EXTRN _usedtexturepagemem:BYTE
 EXTRN _usedspritepagemem:BYTE
 EXTRN _pageswapargs:WORD
-EXTRN _cachedtex:WORD
-EXTRN _cachedlumps:WORD
-EXTRN _activenumpages:WORD
-EXTRN _activetexturepages:BYTE
-EXTRN _activespritenumpages:WORD
-EXTRN _activespritepages:BYTE
+
 EXTRN _seglooptexrepeat:WORD
 EXTRN _firstpatch:WORD
 EXTRN _pagesegments:WORD
 
 
-EXTRN _cachedcollength:BYTE
-EXTRN _cachedsegmenttex:WORD
 EXTRN _segloopnextlookup:WORD
 EXTRN _segloopprevlookup:WORD
 EXTRN _segloopcachedsegment:WORD
 EXTRN _segloopcachedbasecol:WORD
 EXTRN _segloopheightvalcache:WORD
-EXTRN _cachedsegmentlumps:WORD
 
 .CODE
 
@@ -352,7 +337,7 @@ selected_sprite_page_single_page:
 ;		next = spritecache_nodes[index].next;
 
 mov  dh, byte ptr ds:[bx + si + 1]
-mov  ch, byte ptr ds:[bx + si + 0] ; todo get whole word and swap regs
+mov  ch, byte ptr ds:[bx + si + 0]
 
 ;		if (index == spritecache_l2_tail) {
 ;			spritecache_l2_tail = next;
@@ -896,17 +881,18 @@ COLUMN_IN_CACHE_WAD_LUMP_SEGMENT = 07000h
 PROC R_GetNextSpriteBlock_ NEAR
 PUBLIC R_GetNextSpriteBlock_
 
-; todo: get size
-
-;	uint16_t size = spritetotaldatasizes[lump-firstspritelump];
-
 
 
 PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
 
-push      CACHETYPE_SPRITE ; todo 8086
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    push      CACHETYPE_SPRITE 
+ELSE
+    mov   dx, CACHETYPE_SPRITE 
+    push  dx
+ENDIF
 sub       ax, word ptr ds:[_firstspritelump]
 mov       dx, SPRITETOTALDATASIZES_SEGMENT
 mov       es, dx
@@ -980,7 +966,7 @@ xor       bx, bx
 cmp       ch, 1
 jne       multipage_textureblock
 ;		uint8_t freethreshold = 64 - blocksize;
-mov       dh, 040h   ;todo
+mov       dh, 64
 sub       dh, byte ptr [bp - 4]
 xor       dl, dl
 
@@ -1625,11 +1611,9 @@ mov   ax, 0FFFFh
 cmp   byte ptr [bp - 012h], NUM_SPRITE_L1_CACHE_PAGES
 je    do_sprite_eviction
 do_tex_eviction:
-; todo put these next to each other and stosw?
 mov   di, ds
 mov   es, di
 mov   di, OFFSET _cachedlumps
-; todo: investigate if the cache was really emptied?
 mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
 mov   word ptr ds:[_cachedtex], ax
 mov   word ptr ds:[_cachedtex+2], ax
@@ -1643,6 +1627,7 @@ mov   word ptr ds:[_cachedtex+2], ax
 ;    segloopnextlookup[1] = -1;
 ;    seglooptexrepeat[0] = 0;
 ;    seglooptexrepeat[1] = 0;
+;		maskedtexrepeat = 0;
 
 stosw
 stosw
@@ -2938,7 +2923,6 @@ ret
 
 
 not_cache_0:
-; todo clean this up a lot. something with si/di looping? or hard code with no loop?
 
 ;    segment_t usedsegment = cachedsegmentlumps[cachelumpindex];
 ;    int16_t cachedlump = cachedlumps[cachelumpindex];
@@ -2955,7 +2939,7 @@ push      word ptr ds:[bx + di]
 ;    }
 
 
-jle       done_moving_cachelumps  ; todo stretch this loop out? jmp to bx based lookup? probably not worth it
+jle       done_moving_cachelumps
 
 loop_move_cachelump:
 sub       bx, 2
@@ -2986,10 +2970,11 @@ mov       es, ax
 xchg      ax, si
 mov       si, OFFSET _cachedsegmentlumps
 lea       di, [si + 2]
+; _cachedsegmentlumps and _cachedlumps are adjacent. we hit both with 7 word copies.
 movsw
 movsw
 movsw
-mov       si, OFFSET _cachedlumps       ; todo make adjacent!
+mov       si, di
 lea       di, [si + 2]
 movsw
 movsw
@@ -3167,7 +3152,7 @@ mov       si, OFFSET _cachedlumps
 push      word ptr ds:[bx + si]
 push      word ptr ds:[bx + di]
 
-jle       done_moving_cachelumps_masked  ; todo stretch this loop out? jmp to bx based lookup? probably not worth it
+jle       done_moving_cachelumps_masked
 
 
 loop_move_cachelump_masked:
@@ -3237,7 +3222,7 @@ mov       ax, PATCHWIDTHS_7000_SEGMENT
 sub       si, word ptr ds:[_firstpatch]
 mov       es, ax
 xor       ax, ax
-mov       al, byte ptr es:[si]   ; todo here
+mov       al, byte ptr es:[si]
 cwd
 cmp       al, 1     ; set carry if al is 0
 adc       ah, ah    ; if width is zero that encoded 0x100. now ah is 1.
@@ -3315,10 +3300,11 @@ xchg      ax, si   ; store lump
 mov       cx, di   ; store lookup
 mov       si, OFFSET _cachedsegmentlumps
 lea       di, [si + 2]
+; _cachedsegmentlumps and _cachedlumps are adjacent. we hit both with 7 word copies.
 movsw
 movsw
 movsw
-mov       si, OFFSET _cachedlumps       ; todo make adjacent!
+mov       si, di
 lea       di, [si + 2]
 movsw
 movsw
@@ -3332,7 +3318,7 @@ call      R_GetPatchTexture_
 mov       word ptr ds:[_cachedsegmentlumps], ax
 mov       word ptr ds:[_cachedlumps], si
 mov       word ptr ds:[_maskednextlookup], cx
-mov       ax, word ptr [bp - 6]
+mov       ax, word ptr [bp - 6]                 ; todo pushpop?
 mov       word ptr ds:[_maskedtexrepeat], ax
 
 jmp       found_cached_lump_masked
@@ -3631,7 +3617,7 @@ mov       si, di
 
 mov       es, dx
 lodsw
-mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1],  ax  ; patchwidth   todo write selfmodify ahead
+mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1],  ax  ; patchwidth
 stosw
 movsw
 movsw

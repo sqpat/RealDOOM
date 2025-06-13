@@ -345,6 +345,27 @@ _strace =					         _NULL_OFFSET + 00638h
 _sfx_free_bytes = 					 _NULL_OFFSET + 00648h
 
 
+_activespritepages =                 _NULL_OFFSET + 00670h
+_activespritenumpages =              _NULL_OFFSET + 00674h
+_spriteL1LRU =                 		 _NULL_OFFSET + 00678h
+_spritecache_l2_head =               _NULL_OFFSET + 0067Ch
+_spritecache_l2_tail =               _NULL_OFFSET + 0067Dh
+_texturecache_l2_head =              _NULL_OFFSET + 0067Eh
+_texturecache_l2_tail =              _NULL_OFFSET + 0067Fh
+_activetexturepages =                _NULL_OFFSET + 00680h
+_activenumpages =                 	 _NULL_OFFSET + 00688h
+_textureL1LRU =                 	 _NULL_OFFSET + 00690h
+_cachedsegmentlumps =                _NULL_OFFSET + 00698h
+_cachedlumps =                 	     _NULL_OFFSET + 006A0h
+; todo put segloop repeat here?
+_cachedsegmenttex =                  _NULL_OFFSET + 006A8h
+_cachedtex =                 		 _NULL_OFFSET + 006ACh
+_cachedcollength =                   _NULL_OFFSET + 006B0h
+_flatcache_l2_head =                 _NULL_OFFSET + 006B2h
+_flatcache_l2_tail =                 _NULL_OFFSET + 006B3h
+
+
+
 ;670h
 
 

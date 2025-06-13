@@ -232,30 +232,7 @@ int16_t             numtextures;
 
  
 
-uint8_t activetexturepages[NUM_TEXTURE_L1_CACHE_PAGES]; // always gets reset to defaults at start of frame
-uint8_t activenumpages[NUM_TEXTURE_L1_CACHE_PAGES];     // always gets reset to defaults at start of frame
-uint8_t textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES];
 
-
-uint8_t activespritepages[NUM_SPRITE_L1_CACHE_PAGES];    // always gets reset to defaults at start of frame
-uint8_t activespritenumpages[NUM_SPRITE_L1_CACHE_PAGES]; // always gets reset to defaults at start of frame
-uint8_t spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
-
-int8_t spritecache_l2_head = -1;
-int8_t spritecache_l2_tail = -1;
-
-int8_t flatcache_l2_head = 0;
-int8_t flatcache_l2_tail = NUM_FLAT_CACHE_PAGES-1;
-
-int8_t texturecache_l2_head = -1;
-int8_t texturecache_l2_tail = -1;
-
-int16_t cachedlumps[NUM_CACHE_LUMPS];
-segment_t cachedsegmentlumps[NUM_CACHE_LUMPS];
-
-int16_t   cachedtex[2] = {-1, -1};
-segment_t cachedsegmenttex[2] = {0xFFFF, 0xFFFF};
-uint8_t   cachedcollength[2] = {0, 0};
 
 int8_t 	am_cheating = 0;
 int8_t 	am_grid = 0;
