@@ -36,7 +36,6 @@ EXTRN R_GetColumnSegment_:NEAR
 
 EXTRN _spritewidths_segment:WORD
 
-EXTRN _seglooptexrepeat:BYTE
 
 EXTRN _solidsegs:WORD
 EXTRN _newend:WORD
@@ -4373,12 +4372,16 @@ exit_rendersegloop:
 ASSUME DS:DGROUP
 mov   ax, ss
 mov   ds, ax
+mov   es, ax
 mov   ax, 0FFFFh
-mov   word ptr ds:[_segloopnextlookup], ax         ; big todo: move these to cs after R_GetColumnSegment_ in asm
-mov   word ptr ds:[_segloopnextlookup+2], ax       ; then leave DS as CS this whole time.
+mov   di, OFFSET _segloopnextlookup
+; todo these are adjacent, use stos?
+stosw ; mov   word ptr ds:[_segloopnextlookup], ax         ; big todo: move these to cs after R_GetColumnSegment_ in asm
+stosw ; mov   word ptr ds:[_segloopnextlookup+2], ax       ; then leave DS as CS this whole time.
 inc   ax
 ; zero both 
-mov   word ptr ds:[_seglooptexrepeat], ax
+stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
+
 
 
 jmp   R_RenderSegLoop_exit   

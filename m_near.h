@@ -434,7 +434,7 @@
 #define cachedlumps					 	  (((int16_t __near*)                (_NULL_OFFSET + 0x06A0)))
 #define cachedtex				  		  (((int16_t __near*)                (_NULL_OFFSET + 0x06A8)))
 #define segloopnextlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06AC)))
-// #define seglooptexrepeat				  (((uint8_t __near*)                (_NULL_OFFSET + 0x06B0)))
+#define seglooptexrepeat				  (((uint8_t __near*)                (_NULL_OFFSET + 0x06B0)))
 #define maskedtexrepeat                   (*((int16_t __near*)               (_NULL_OFFSET + 0x06B2)))
 #define segloopprevlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06B4)))
 #define segloopcachedsegment			  (((segment_t __near*)              (_NULL_OFFSET + 0x06B8)))
@@ -1193,7 +1193,6 @@ extern int8_t currenttask;
 
 
 extern segment_t			    spritewidths_segment;  // gross hack? todo revisit...
-extern uint8_t  				seglooptexrepeat[2]; // 0 would be fine too...
 
 
 extern int8_t    savename[16];

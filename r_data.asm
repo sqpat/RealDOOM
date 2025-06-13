@@ -45,7 +45,6 @@ EXTRN _usedtexturepagemem:BYTE
 EXTRN _usedspritepagemem:BYTE
 EXTRN _pageswapargs:WORD
 
-EXTRN _seglooptexrepeat:WORD
 EXTRN _firstpatch:WORD
 EXTRN _pagesegments:WORD
 
@@ -1613,13 +1612,13 @@ call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
 mov   ax, 0FFFFh
 
 cmp   byte ptr [bp - 012h], NUM_SPRITE_L1_CACHE_PAGES
+mov   dx, cx
 je    do_sprite_eviction
 do_tex_eviction:
 mov   di, ds
 mov   es, di
 mov   di, OFFSET _cachedlumps
 mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
-
 ; todo free cx for here..
 
 ;_cachedlumps =                	     _NULL_OFFSET + 006A0h
@@ -1628,22 +1627,22 @@ mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
 ;_seglooptexrepeat =                 _NULL_OFFSET + 006B0h
 ;_maskedtexrepeat =            		 _NULL_OFFSET + 006B2h
 
-stosw ; cachedlumps[0] = -1
-stosw ; cachedlumps[1] = -1
-stosw ; cachedlumps[2] = -1
-stosw ; cachedlumps[3] = -1
-stosw ; cachedtex[0] = -1
-stosw ; cachedtex[1] = -1
-stosw ; segloopnextlookup[0] = -1;
-stosw ; segloopnextlookup[1] = -1;
+mov  cx, 8
+rep stosw
+;stosw ; cachedlumps[0] = -1  6D0
+;stosw ; cachedlumps[1] = -1  6D2
+;stosw ; cachedlumps[2] = -1  6D4
+;stosw ; cachedlumps[3] = -1  6D6
+;stosw ; cachedtex[0] = -1    6D8
+;stosw ; cachedtex[1] = -1    6DA
+;stosw ; segloopnextlookup[0] = -1; 6DC
+;stosw ; segloopnextlookup[1] = -1; 6DE
 inc   ax    ; ax is 0
-stosw ; seglooptexrepeat[0] = 0; seglooptexrepeat[1] = 0;
-stosw ; maskedtexrepeat = 0;
-; todo remove?
-mov   word ptr ds:[_seglooptexrepeat+0], ax ; word gets both..
+stosw ; seglooptexrepeat[0] = 0; seglooptexrepeat[1] = 0 ; 6E0
+stosw ; maskedtexrepeat = 0;                             ; 6E2
 
 
-mov   es, cx ; cl/cx is start page
+mov   es, dx ; dl/dx is start page
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 mov   ax, es
@@ -1741,7 +1740,7 @@ do_sprite_eviction:
 mov   word ptr ds:[_lastvisspritepatch], ax
 mov   word ptr ds:[_lastvisspritepatch2], ax
 
-mov   es, cx ; cl/cx is start page
+mov   es, dx ; cl/cx is start page
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 mov   ax, es
@@ -1834,7 +1833,7 @@ call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
 
 mov   ax, 0FFFFh
 
-mov   cl, dh  ; numpages in cl
+mov   dl, dh  ; numpages in cl
 cmp   byte ptr [bp - 012h], NUM_SPRITE_L1_CACHE_PAGES
 je    do_sprite_eviction
 jmp   do_tex_eviction
@@ -2114,6 +2113,7 @@ PUBLIC R_GenerateComposite_
 PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
+; ah should already be 0
 mov       bx, ax
 sal       bx, 1
 push      bx  ; bp - 2
@@ -2820,7 +2820,7 @@ loopwidth_nonzero:
 
 mov       si, word ptr es:[bx]    ; lump
 mov       di, word ptr [bp - 2]
-mov       byte ptr ds:[bx + _seglooptexrepeat], al      ; al still loopwidth
+mov       byte ptr ds:[di + _seglooptexrepeat], al      ; al still loopwidth
 sal       di, 1
 mov       word ptr ds:[di + _segloopcachedbasecol], dx  ; dx still basecol
 
@@ -3002,14 +3002,11 @@ mov       word ptr ds:[_cachedlumps], si
 mov       byte ptr ds:[di + _seglooptexrepeat], al
 jmp       found_cached_lump
    
-     
-
-
-
-
-
-
+    
 ENDP
+
+
+
 
 loopwidth_nonzero_masked:
 ; di is tex shifted left 1?
