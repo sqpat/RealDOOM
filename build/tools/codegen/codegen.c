@@ -63,7 +63,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"PATCHWIDTHS_7000_SEGMENT",
 	"PATCHHEIGHTS_7000_SEGMENT",
 	"FINETANGENTINNER_7000_SEGMENT",
-	"RENDER_9800_END_7000_SEGMENT",
+	"RENDER_9000_END_7000_SEGMENT",
 
 
     "STATES_SEGMENT",
@@ -180,7 +180,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "PHYSICS_7000_END_SEGMENT",
     "RENDER_8800_END_SEGMENT",
     "RENDER_8400_END_SEGMENT",
-    "RENDER_9800_END_SEGMENT",
+    "RENDER_9000_END_SEGMENT",
     "RENDER_9C00_END_SEGMENT",
     "R_DRAWPLANES_OFFSET",
     "DRAWSKYPLANE_AREA_SEGMENT",
@@ -2409,7 +2409,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	patchwidths_7000_segment,
 	patchheights_7000_segment,
 	finetangentinner_7000_segment,
-	render_9800_end_7000_segment,
+	render_9000_end_7000_segment,
 
 
     states_segment,
@@ -2524,7 +2524,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     physics_7000_end_segment,
     render_8800_end_segment,
     render_8400_end_segment,
-    render_9800_end_segment,
+    render_9000_end_segment,
     render_9C00_end_segment,
     R_DrawPlanesOffset,
     drawskyplane_area_segment,

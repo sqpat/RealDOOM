@@ -414,7 +414,13 @@
 // leave what, 40 bytes just in case?
 #define sfx_free_bytes					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0648)))
 
+
 // 0x670
+extern uint8_t              activespritepages[NUM_SPRITE_L1_CACHE_PAGES];
+extern uint8_t              activespritenumpages[NUM_SPRITE_L1_CACHE_PAGES];
+extern uint8_t              spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
+extern int8_t               spritecache_l2_head;
+extern int8_t               spritecache_l2_tail;
 
 
 
@@ -518,14 +524,9 @@ extern int16_t              firstpatch;
 extern int16_t              numpatches;
 extern int16_t              numspritelumps;
 extern int16_t              numtextures;
-extern int16_t              activetexturepages[NUM_TEXTURE_L1_CACHE_PAGES];
+extern uint8_t              activetexturepages[NUM_TEXTURE_L1_CACHE_PAGES];
 extern uint8_t              activenumpages[NUM_TEXTURE_L1_CACHE_PAGES];
 extern uint8_t              textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES];
-extern int16_t              activespritepages[NUM_SPRITE_L1_CACHE_PAGES];
-extern uint8_t              activespritenumpages[NUM_SPRITE_L1_CACHE_PAGES];
-extern uint8_t              spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES];
-extern int8_t               spritecache_l2_head;
-extern int8_t               spritecache_l2_tail;
 extern int8_t               flatcache_l2_head;
 extern int8_t               flatcache_l2_tail;
 extern int8_t               texturecache_l2_head;
@@ -535,7 +536,7 @@ extern segment_t            cachedsegmentlumps[NUM_CACHE_LUMPS];
 extern segment_t            cachedsegmenttex[2];
 extern int16_t              cachedtex[2];
 extern uint8_t              cachedcollength[2];
-
+ 
 //extern int16_t              ;
 
 extern int8_t               am_cheating;

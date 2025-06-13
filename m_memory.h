@@ -300,6 +300,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 
+
 // end at 0x9380
 
  // or 9380:0000
@@ -1281,7 +1282,7 @@ spritedefs_bytes    7410:0000
 #define drawsegs_BASE              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchheights,             size_patchheights))
 #define drawsegs_PLUSONE           ((drawseg_t __far*)         (drawsegs_BASE          + 1))
 #define finetangentinner           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE   ,         size_drawsegs_PLUS_EXTRA))
-#define render_9800_end            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner,         size_finetangentinner))
+#define render_9000_end            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner,         size_finetangentinner))
 
 
 #define texturecolumnlumps_bytes_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes >> 16))
@@ -1293,7 +1294,7 @@ spritedefs_bytes    7410:0000
 #define patchheights_segment             ((segment_t) ((int32_t)patchheights >> 16))
 #define drawsegs_BASE_segment            ((segment_t) ((int32_t)drawsegs_BASE >> 16))
 #define finetangentinner_segment         ((segment_t) ((int32_t)finetangentinner >> 16))
-#define render_9800_end_segment          ((segment_t) ((int32_t)render_9800_end >> 16))
+#define render_9000_end_segment          ((segment_t) ((int32_t)render_9000_end >> 16))
 
 
 #define texturecolumnlumps_bytes_7000   ((int16_t_union __far*)     (0x70000000 ))
@@ -1306,7 +1307,7 @@ spritedefs_bytes    7410:0000
 #define drawsegs_BASE_7000              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchheights_7000,             size_patchheights))
 #define drawsegs_PLUSONE_7000           ((drawseg_t __far*)         (drawsegs_BASE_7000          + 1))
 #define finetangentinner_7000           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE_7000   ,         size_drawsegs_PLUS_EXTRA))
-#define render_9800_end_7000            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner_7000,         size_finetangentinner))
+#define render_9000_end_7000            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner_7000,         size_finetangentinner))
 
 #define texturecolumnlumps_bytes_6000   ((int16_t_union __far*)     (0x60000000 ))
 #define texturedefs_bytes_6000          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes_6000, size_texturecolumnlumps_bytes))
@@ -1318,7 +1319,7 @@ spritedefs_bytes    7410:0000
 #define drawsegs_BASE_6000              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchheights_6000,             size_patchheights))
 #define drawsegs_PLUSONE_6000           ((drawseg_t __far*)         (drawsegs_BASE_6000          + 1))
 #define finetangentinner_6000           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE_6000   ,         size_drawsegs_PLUS_EXTRA))
-#define render_9800_end_6000            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner_6000,         size_finetangentinner))
+#define render_9000_end_6000            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner_6000,         size_finetangentinner))
 
 #define drawsegs_BASE_segment_7000      ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
 #define masked_lookup_segment_7000      ((segment_t) ((int32_t)masked_lookup_7000 >> 16))
@@ -1333,7 +1334,7 @@ spritedefs_bytes    7410:0000
 #define patchheights_7000_segment             ((segment_t) ((int32_t)patchheights_7000 >> 16))
 #define drawsegs_BASE_7000_segment            ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
 #define finetangentinner_7000_segment         ((segment_t) ((int32_t)finetangentinner_7000 >> 16))
-#define render_9800_end_7000_segment          ((segment_t) ((int32_t)render_9800_end_7000 >> 16))
+#define render_9000_end_7000_segment          ((segment_t) ((int32_t)render_9000_end_7000 >> 16))
 
 // texturecolumnlumps_bytes   9000:0000
 // texturedefs_bytes          90B2:0000
@@ -1348,7 +1349,7 @@ spritedefs_bytes    7410:0000
 // drawsegs_PLUSONE           93DE:0020
 // finetangentinner           95DC:0000
 
-// [empty]                    97DC:0000
+// [empty]                    97BE:0000
 
 
 //FREEBYTES
