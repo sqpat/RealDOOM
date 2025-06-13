@@ -1242,7 +1242,8 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_186
     push  (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)
     push  OFFSET _spritecache_nodes
     push  OFFSET _spriteL1LRU
-    push  PAGE_9000_OFFSET   ; scamp only... grr
+    ;push  PAGE_9000_OFFSET + (SCAMP_PAGE_9000_OFFSET + 4)
+    push  ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning
 ELSE
     mov   si, OFFSET R_MarkL1SpriteCacheMRU_
     push  si
@@ -1329,7 +1330,8 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_186
     push  (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)
     push  OFFSET _texturecache_nodes
     push  OFFSET _textureL1LRU
-    push  PAGE_5000_OFFSET + (SCAMP_PAGE_9000_OFFSET + 4)
+    ;push  PAGE_5000_OFFSET + (SCAMP_PAGE_9000_OFFSET + 4)
+    push  ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_5000_OFFSET))   ; shut up compiler warning
 ELSE
     mov   si, OFFSET R_MarkL1TextureCacheMRU_
     push  si
@@ -2569,26 +2571,28 @@ update_both_cache_texes:
 ;				seglooptexrepeat[segloopcachetype] 		= loopwidth;
 
 ; ax already cached tex 1
+; di already bp - 2 (segloopcachetype) shifted left once
 mov       word ptr ds:[_cachedtex+2], ax
 
 mov       ax, word ptr ds:[bx]
 mov       word ptr ds:[bx+2], ax
-sal       si, 1
-mov       dx, word ptr ds:[si + _segloopnextlookup]   ; cached_next_lookup. todo use ax?
+mov       dx, word ptr ds:[di + _segloopnextlookup]   ; cached_next_lookup.
 mov       al, byte ptr ds:[_cachedcollength]
 mov       byte ptr ds:[_cachedcollength+1], al
 mov       byte ptr ds:[_cachedcollength], cl
-xchg      ax, di                    ; was word ptr bp - 16/tex
+xchg      ax, si                    ; was word ptr bp - 4/tex
 mov       word ptr ds:[_cachedtex], ax
 call      R_GetCompositeTexture_
 
 mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
 
-mov       word ptr ds:[si + _segloopnextlookup], dx
-shr       si, 1
+mov       word ptr ds:[di + _segloopnextlookup], dx
+mov       word ptr ds:[di + _segloopcachedsegment], ax  ; write this here now while duped.. skip the write later
+shr       di, 1
 pop       dx ;  , byte ptr [bp - 0Ah]             ; loopwidth
-mov       byte ptr ds:[si + _seglooptexrepeat], dl
-jmp       done_setting_cached_tex
+mov       byte ptr ds:[di + _seglooptexrepeat], dl
+
+jmp       done_setting_cached_tex_skip_cachedsegwrite
 
 lump_greater_than_zero_add_startpixel:
 ;			segloopcachedbasecol[segloopcachetype] = basecol + startpixel;
@@ -2627,8 +2631,8 @@ jmp       done_with_loopwidth
 do_cache_tex_miss:
 ; ax is cachedtex
 mov       dx, word ptr ds:[_cachedtex+2]
-cmp       dx, di
-jne       update_both_cache_texes
+cmp       dx, si
+jne       update_both_cache_texes   ; takes in di as bp - 2 shifted
 
 swap_tex1_tex2:
 ; ax  is cachedtex
@@ -2725,29 +2729,29 @@ add       di, ax                        ; di is textotal
 jmp       done_with_lump_check
 update_tex_caches_and_return:
 ; not a lump
-mov       si, word ptr [bp - 2]   ; si is this for now
-mov       bx, OFFSET _cachedsegmenttex
-mov       di, word ptr [bp - 4]      ; di = tex
+; di is bp - 2 shifted onces
+mov       si, word ptr [bp - 4]        ; si = tex
+mov       bx, OFFSET _cachedsegmenttex ; used a lot in the branches.
 mov       ax, TEXTURECOLLENGTH_SEGMENT
 mov       es, ax
-mov       ax, word ptr ds:[_cachedtex]
-mov       cl, byte ptr es:[di]                  ; cl stores texturecollength
-cmp       ax, di
+mov       ax, word ptr ds:[_cachedtex]          ; probably dont LES. it makes the most common case slower.
+mov       cl, byte ptr es:[si]                  ; cl stores texturecollength
+cmp       ax, si
 jne       do_cache_tex_miss
 
 mov       ax, word ptr ds:[bx]
 
 done_setting_cached_tex:
-
+; di is index (shifted left one)
 ;	segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
 ;	return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
-; bx is _cachedsegmenttex
 ; ax is ds:[bx]
-mov       byte ptr ds:[si + _segloopheightvalcache], cl ; write now
+mov       word ptr ds:[di + _segloopcachedsegment], ax
+sar       di, 1
+done_setting_cached_tex_skip_cachedsegwrite:
+mov       byte ptr ds:[di + _segloopheightvalcache], cl ; write now
 
-sal       si, 1
-mov       word ptr ds:[si + _segloopcachedsegment], ax
 xchg      ax, dx
 mov       al, byte ptr ds:[_cachedcollength]
 mul       byte ptr [bp - 8]
@@ -2784,7 +2788,7 @@ push      ax
 
 
 mov       cx, dx
-xor       ch, ch  ; todo necessary?
+xor       ch, ch  ; todo necessary
 mov       di, ax
 mov       ax, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, ax
@@ -2814,10 +2818,9 @@ loopwidth_nonzero:
 
 mov       si, word ptr es:[bx]    ; lump
 mov       di, word ptr [bp - 2]
-mov       bx, di
+mov       byte ptr ds:[bx + _seglooptexrepeat], al      ; al still loopwidth
 sal       di, 1
 mov       word ptr ds:[di + _segloopcachedbasecol], dx  ; dx still basecol
-mov       byte ptr ds:[bx + _seglooptexrepeat], al      ; al still loopwidth
 
 done_with_loopwidth:
 test      si, si

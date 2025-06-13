@@ -4969,21 +4969,21 @@ pop   bx
 mov   dx, word ptr ds:[_segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
 
-COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
-; see above, but all textures in vanilla are po2 so this is not necessary for now.
-mov   dh, byte ptr ds:[_seglooptexmodulo]
-mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1], dh
+         COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
+         ; see above, but all textures in vanilla are po2 so this is not necessary for now.
+         mov   dh, byte ptr ds:[_seglooptexmodulo]
+         mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1], dh
 
-cmp   dh, 0
-je    seglooptexmodulo0_is_jmp
+         cmp   dh, 0
+         je    seglooptexmodulo0_is_jmp
 
-mov   dl, 0B2h   ;  (mov dl, xx)
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], dx
-jmp   check_seglooptexrepeat0
-seglooptexmodulo0_is_jmp:
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
-check_seglooptexrepeat0:
-@
+         mov   dl, 0B2h   ;  (mov dl, xx)
+         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], dx
+         jmp   check_seglooptexrepeat0
+         seglooptexmodulo0_is_jmp:
+         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
+         check_seglooptexrepeat0:
+         @
 
 ; todohigh get this dh and dl in same read?
 mov   dh, byte ptr ds:[_seglooptexrepeat]
@@ -5398,47 +5398,47 @@ jmp   finished_inner_loop_iter
 ;BEGIN INLINED R_GetSourceSegment1_ AGAIN
 ; this was only called in one place. this runs often, so inline it.
 
-COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
-non_po2_texture_mod1:
-; cx stores tex repeat
-SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET:
-SELFMODIFY_BSP_set_seglooptexmodulo1:
-mov   cx, 0
-mov   dx, word ptr [2 + _segloopcachedbasecol]
-cmp   ax, dx
-jge   done_subbing_modulo1
-sub   dx, cx
-continue_subbing_modulo1:
-cmp   ax, dx
-jge   record_subbed_modulo1
-sub   dx, cx
-jmp   continue_subbing_modulo1
-record_subbed_modulo1:
-; at least one write was done. write back.
-mov   word ptr [2 + _segloopcachedbasecol], dx
+         COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
+         non_po2_texture_mod1:
+         ; cx stores tex repeat
+         SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET:
+         SELFMODIFY_BSP_set_seglooptexmodulo1:
+         mov   cx, 0
+         mov   dx, word ptr [2 + _segloopcachedbasecol]
+         cmp   ax, dx
+         jge   done_subbing_modulo1
+         sub   dx, cx
+         continue_subbing_modulo1:
+         cmp   ax, dx
+         jge   record_subbed_modulo1
+         sub   dx, cx
+         jmp   continue_subbing_modulo1
+         record_subbed_modulo1:
+         ; at least one write was done. write back.
+         mov   word ptr [2 + _segloopcachedbasecol], dx
 
-done_subbing_modulo1:
+         done_subbing_modulo1:
 
-add   dx, cx
-cmp   ax, dx
-jl    done_adding_modulo1
-continue_adding_modulo1:
-add   dx, cx
-cmp   ax, dx
-jl    record_added_modulo1
-jmp   continue_adding_modulo1
-record_added_modulo1:
-sub   dx, cx
-mov   word ptr [2 + _segloopcachedbasecol], dx
-add   dx, cx
+         add   dx, cx
+         cmp   ax, dx
+         jl    done_adding_modulo1
+         continue_adding_modulo1:
+         add   dx, cx
+         cmp   ax, dx
+         jl    record_added_modulo1
+         jmp   continue_adding_modulo1
+         record_added_modulo1:
+         sub   dx, cx
+         mov   word ptr [2 + _segloopcachedbasecol], dx
+         add   dx, cx
 
-done_adding_modulo1:
-sub   dx, cx
-sub   al, dl
-mul   ah  byte ptr [1 + _segloopheightvalcache]
-jmp   add_base_segment_and_draw1
+         done_adding_modulo1:
+         sub   dx, cx
+         sub   al, dl
+         mul   ah  byte ptr [1 + _segloopheightvalcache]
+         jmp   add_base_segment_and_draw1
 
-@ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
+         @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
 
 SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET:
 non_repeating_texture1:
@@ -5461,20 +5461,20 @@ mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
 
 
 
-COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
-mov   dh, byte ptr [1 + _seglooptexmodulo]
-mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo1+1], dh
+         COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
+         mov   dh, byte ptr [1 + _seglooptexmodulo]
+         mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo1+1], dh
 
-cmp   dh, 0
-je    seglooptexmodulo1_is_jmp
+         cmp   dh, 0
+         je    seglooptexmodulo1_is_jmp
 
-mov   dl, 0B2h   ;  (mov dl, xx)
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], dx
-jmp   check_seglooptexrepeat1
-seglooptexmodulo1_is_jmp:
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
-check_seglooptexrepeat1:
-@
+         mov   dl, 0B2h   ;  (mov dl, xx)
+         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], dx
+         jmp   check_seglooptexrepeat1
+         seglooptexmodulo1_is_jmp:
+         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
+         check_seglooptexrepeat1:
+         @
 
 
 ; todo get this dh and dl in same read
@@ -5762,7 +5762,7 @@ mov       di, word ptr [bp - 048h]
 xor       si, si
 sar       di, 1
 rcr       si, 1
-sar       di, 1
+sar       di, 1  ; todo 386 shrd type stuff
 rcr       si, 1
 sar       di, 1
 rcr       si, 1

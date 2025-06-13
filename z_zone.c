@@ -325,10 +325,14 @@ void __far Z_QuickMapRender9000() {
 
 }
 
+#define TEXTURE_TYPE_PATCH 1
+#define TEXTURE_TYPE_COMPOSITE 2
+#define TEXTURE_TYPE_SPRITE 3
+
+
 
 // sometimes needed when rendering sprites..
 void __near Z_QuickMapRenderTexture() {
-	// todo make this 8..
 	Z_QuickMap8AI(pageswapargs_rend_texture_size, INDEXED_PAGE_5000_OFFSET);
 
 
