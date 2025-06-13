@@ -281,7 +281,8 @@
 
 #define maskednextlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x0288)))
 #define maskedprevlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x028A)))
-#define maskedtexrepeat                 (*((int16_t __near*)                 (_NULL_OFFSET + 0x028C)))
+// 28c/28d empty
+// #define maskedtexrepeat                 (*((int16_t __near*)                 (_NULL_OFFSET + 0x028C)))
 #define maskedcachedbasecol             (*((int16_t __near*)                 (_NULL_OFFSET + 0x028E)))
 #define maskedcachedsegment             (*((segment_t __near*)               (_NULL_OFFSET + 0x0290)))
 #define maskedheightvalcache            (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0292)))
@@ -417,6 +418,8 @@
 
 // 0x670
 
+// todo these arrays would all benefit from being < 256...
+
 #define activespritepages				  (((uint8_t __near*)                (_NULL_OFFSET + 0x0670)))
 #define activespritenumpages			  (((uint8_t __near*)                (_NULL_OFFSET + 0x0674)))
 #define spriteL1LRU						  (((uint8_t __near*)                (_NULL_OFFSET + 0x0678)))
@@ -429,14 +432,25 @@
 #define textureL1LRU					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0690)))
 #define cachedsegmentlumps				  (((segment_t __near*)              (_NULL_OFFSET + 0x0698)))
 #define cachedlumps					 	  (((int16_t __near*)                (_NULL_OFFSET + 0x06A0)))
-#define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x06A8)))
-#define cachedtex				  		  (((int16_t __near*)                (_NULL_OFFSET + 0x06AC)))
-#define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06B0)))
-#define flatcache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06B2)))
-#define flatcache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06B3)))
+#define cachedtex				  		  (((int16_t __near*)                (_NULL_OFFSET + 0x06A8)))
+#define segloopnextlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06AC)))
+// #define seglooptexrepeat				  (((uint8_t __near*)                (_NULL_OFFSET + 0x06B0)))
+#define maskedtexrepeat                   (*((int16_t __near*)               (_NULL_OFFSET + 0x06B2)))
+#define segloopprevlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06B4)))
+#define segloopcachedsegment			  (((segment_t __near*)              (_NULL_OFFSET + 0x06B8)))
+#define segloopcachedbasecol			  (((int16_t __near*)                (_NULL_OFFSET + 0x06BC)))
+#define segloopheightvalcache			  (((uint8_t __near*)                (_NULL_OFFSET + 0x06C0)))
 
+#define flatcache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06C2)))
+#define flatcache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06C3)))
+#define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x06C4)))
+#define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06C8)))
 
+//6CA
 
+extern cache_node_page_count_t  spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
+extern cache_node_page_count_t	texturecache_nodes[NUM_TEXTURE_PAGES];
+extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 
 
 
@@ -1177,19 +1191,10 @@ extern int32_t visplaneswitchcount;
 
 extern int8_t currenttask;
 
-extern cache_node_page_count_t  spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
-extern cache_node_page_count_t	texturecache_nodes[NUM_TEXTURE_PAGES];
-extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 
-extern segment_t			    spritewidths_segment;
-
-//extern uint8_t 					seglooptexmodulo[2]; // 0 would be fine too...
+extern segment_t			    spritewidths_segment;  // gross hack? todo revisit...
 extern uint8_t  				seglooptexrepeat[2]; // 0 would be fine too...
-extern int16_t 					segloopnextlookup[2];
-extern int16_t 					segloopprevlookup[2];
-extern segment_t 				segloopcachedsegment[2];
-extern int16_t 					segloopcachedbasecol[2];
-extern uint8_t 					segloopheightvalcache[2];
+
 
 extern int8_t    savename[16];
 extern int8_t versionstring[12];

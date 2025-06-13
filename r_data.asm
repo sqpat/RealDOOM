@@ -50,11 +50,6 @@ EXTRN _firstpatch:WORD
 EXTRN _pagesegments:WORD
 
 
-EXTRN _segloopnextlookup:WORD
-EXTRN _segloopprevlookup:WORD
-EXTRN _segloopcachedsegment:WORD
-EXTRN _segloopcachedbasecol:WORD
-EXTRN _segloopheightvalcache:WORD
 
 .CODE
 
@@ -100,7 +95,7 @@ ret
 
 ENDP
 
-
+; todo pass in si to be _textureL1LRU ptr. put that in < 0x80
 
 PROC R_MarkL1TextureCacheMRU_ NEAR
 PUBLIC R_MarkL1TextureCacheMRU_
@@ -172,6 +167,9 @@ mov  si, OFFSET _texturecache_nodes
 mov  di, OFFSET _texturecache_l2_tail
 mov  es, di
 mov  di, OFFSET _texturecache_l2_head
+;dec  di  ; OFFSET _texturecache_l2_head
+; todo just use di - 1 instead of es
+
 
 jmp  do_markl2func
 
@@ -196,7 +194,8 @@ mov  si, OFFSET _spritecache_nodes
 mov  di, OFFSET _spritecache_l2_tail
 mov  es, di
 mov  di, OFFSET _spritecache_l2_head
-
+;dec  di ; OFFSET _spritecache_l2_head
+; todo just use di - 1 instead of es
 do_markl2func:
 
 mov  cl, byte ptr ds:[di]
@@ -463,7 +462,7 @@ done_with_switchblock:
 ;	currentpage = *nodetail;
 
 push      bx        ; bp - 0Eh
-mov       al, byte ptr [bx]
+mov       al, byte ptr ds:[bx]
 cbw      
 xor       dl, dl
 
@@ -482,7 +481,7 @@ cmp       dl, dh
 jge       found_enough_pages
 mov       bx, ax
 SHIFT_MACRO shl       bx, 2
-mov       al, byte ptr [bx + di + 1]  ; get next
+mov       al, byte ptr ds:[bx + di + 1]  ; get next
 inc       dl
 jmp       go_back_next_page
 
@@ -506,7 +505,7 @@ SHIFT_MACRO shl       bx, 2
 mov       ax, word ptr ds:[bx + di + 2]
 cmp       al, ah
 je        found_first_evictable_page
-mov       al, byte ptr [bx + di + 1]
+mov       al, byte ptr ds:[bx + di + 1]
 cbw      
 mov       cx, ax
 jmp       find_first_evictable_page
@@ -611,6 +610,9 @@ cleared_all_cache_data:
 ;	// connect old tail and old head.
 ;	nodelist[*nodetail].prev = *nodehead;
 
+;todo bp - 0Eh is bp - 2 addr minus one. do a single mov and get both.
+
+
 mov      ax, ss
 mov      ds, ax
 
@@ -624,8 +626,8 @@ SHIFT_MACRO shl       ax 2
 xchg      ax, bx            ; bx has nodelist nodetail lookup
 
 mov       si, word ptr [bp - 2]
-mov       al, byte ptr [si]
-mov       byte ptr [bx + di], al
+mov       al, byte ptr ds:[si]
+mov       byte ptr ds:[bx + di], al
 mov       bl, al
 
 
@@ -634,35 +636,35 @@ mov       bl, al
 SHIFT_MACRO shl       bx 2
 
 
-mov       byte ptr [bx + di + 1], cl  ; write nodetail to next
+mov       byte ptr ds:[bx + di + 1], cl  ; write nodetail to next
 
 ;	previous_next = nodelist[currentpage].next;
 
 ;	*nodehead = currentpage;
 
 mov       bx, word ptr [bp - 010h]
-mov       byte ptr [si], bl
+mov       byte ptr ds:[si], bl
 SHIFT_MACRO shl       bx 2
-mov       al, byte ptr [bx + di + 1]    ; previous_next
+mov       al, byte ptr ds:[bx + di + 1]    ; previous_next
 cbw
 
 
 ;	nodelist[currentpage].next = -1;
 
-mov       byte ptr [bx + di + 1], dl   ; still 0FFh
+mov       byte ptr ds:[bx + di + 1], dl   ; still 0FFh
 
 ;	*nodetail = previous_next;
 
 
 mov       bx, word ptr [bp - 0Eh]
-mov       byte ptr [bx], al
+mov       byte ptr ds:[bx], al
 
 
 ;	// new tail
 ;	nodelist[previous_next].prev = -1;
 mov       bx, ax
 SHIFT_MACRO shl       bx 2
-mov       byte ptr [bx + di], dl    ; still 0FFh
+mov       byte ptr ds:[bx + di], dl    ; still 0FFh
 
 ;	return *nodehead;
 
@@ -739,7 +741,7 @@ index_not_tail:
 mov       si, ax
 and       si, 000FFh      ; blegh
 sal       si, 1
-mov       byte ptr [si + bx + 1], ah
+mov       byte ptr ds:[si + bx + 1], ah
 
 flat_tail_check_done:
 
@@ -826,7 +828,7 @@ mov       byte ptr ds:[si + bx + 1], dh
 mov       al, dl
 mov       si, ax
 sal       si, 1
-mov       byte ptr [si + bx + 0], 0FFh
+mov       byte ptr ds:[si + bx], 0FFh
 
 
 ;	flatcache_l2_head = evictedpage;
@@ -1002,7 +1004,7 @@ foundonepage:
 mov       dh, dl
 SHIFT_MACRO shl       dh 2
 mov       bl, dl
-mov       al, byte ptr [bx + si]
+mov       al, byte ptr ds:[bx + si]
 mov       ah, byte ptr [bp - 4]
 add       ah, al
 mov       byte ptr ds:[bx + si], ah
@@ -1411,7 +1413,7 @@ add   bx, word ptr [bp - 0Eh] ; _textureL1LRU
 mov   al, byte ptr ds:[bx]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
 mov   bx, ax
 mov   cx, ax
-call  word ptr [bp - 8]
+call  word ptr [bp - 8] ; todo jmp instead of call?
 
 ;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 ;		if (activenumpages[startpage]) {
@@ -1617,29 +1619,29 @@ mov   di, ds
 mov   es, di
 mov   di, OFFSET _cachedlumps
 mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
-mov   word ptr ds:[_cachedtex], ax
-mov   word ptr ds:[_cachedtex+2], ax
 
-;    cachedlumps[0] = -1;
-;    cachedlumps[1] = -1;
-;    cachedlumps[2] = -1;
-;    cachedlumps[3] = -1;
-   
-;    segloopnextlookup[0] = -1;
-;    segloopnextlookup[1] = -1;
-;    seglooptexrepeat[0] = 0;
-;    seglooptexrepeat[1] = 0;
-;		maskedtexrepeat = 0;
+; todo free cx for here..
 
-stosw
-stosw
-stosw
-stosw
-mov   word ptr ds:[_segloopnextlookup+0], ax ; todo put this all adjacent..
-mov   word ptr ds:[_segloopnextlookup+2], ax
+;_cachedlumps =                	     _NULL_OFFSET + 006A0h
+;_cachedtex =                		 _NULL_OFFSET + 006A8h
+;_segloopnextlookup =                _NULL_OFFSET + 006ACh
+;_seglooptexrepeat =                 _NULL_OFFSET + 006B0h
+;_maskedtexrepeat =            		 _NULL_OFFSET + 006B2h
+
+stosw ; cachedlumps[0] = -1
+stosw ; cachedlumps[1] = -1
+stosw ; cachedlumps[2] = -1
+stosw ; cachedlumps[3] = -1
+stosw ; cachedtex[0] = -1
+stosw ; cachedtex[1] = -1
+stosw ; segloopnextlookup[0] = -1;
+stosw ; segloopnextlookup[1] = -1;
 inc   ax    ; ax is 0
-mov   word ptr ds:[_maskedtexrepeat], ax
+stosw ; seglooptexrepeat[0] = 0; seglooptexrepeat[1] = 0;
+stosw ; maskedtexrepeat = 0;
+; todo remove?
 mov   word ptr ds:[_seglooptexrepeat+0], ax ; word gets both..
+
 
 mov   es, cx ; cl/cx is start page
 LEAVE_MACRO 
@@ -2974,6 +2976,9 @@ xchg      ax, si
 mov       si, OFFSET _cachedsegmentlumps
 lea       di, [si + 2]
 ; _cachedsegmentlumps and _cachedlumps are adjacent. we hit both with 7 word copies.
+;_cachedsegmentlumps =                   _NULL_OFFSET + 00698h
+;_cachedlumps =                 	     _NULL_OFFSET + 006A0h
+; doing 7 movsw breaks things
 movsw
 movsw
 movsw
@@ -3303,7 +3308,10 @@ xchg      ax, si   ; store lump
 mov       cx, di   ; store lookup
 mov       si, OFFSET _cachedsegmentlumps
 lea       di, [si + 2]
-; _cachedsegmentlumps and _cachedlumps are adjacent. we hit both with 7 word copies.
+; _cachedsegmentlumps and _cachedlumps are adjacent. we hit both with 2 sets of 3 word copies.
+; doing 7 movsw breaks things
+;_cachedsegmentlumps =                   _NULL_OFFSET + 00698h
+;_cachedlumps =                 	     _NULL_OFFSET + 006A0h
 movsw
 movsw
 movsw
@@ -3318,6 +3326,7 @@ mov       cx, word ptr ds:[_maskednextlookup]
 mov       dx, di    ; pass in lookup
 ; ax is lump
 call      R_GetPatchTexture_
+; todo use di with offsets to all these? same size.
 mov       word ptr ds:[_cachedsegmentlumps], ax
 mov       word ptr ds:[_cachedlumps], si
 mov       word ptr ds:[_maskednextlookup], cx

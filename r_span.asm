@@ -432,7 +432,7 @@ SELFMODIFY_SPAN_ds_x2:
 ;     cx has dsp_x2
  sub   cx, dx							; cx is countp
 
- mov   byte ptr [si + _spanfunc_inner_loop_count], cl  ; store it
+ mov   byte ptr ds:[si + _spanfunc_inner_loop_count], cl  ; store it
  test  cx, cx										   ; if negative then loop
  jl    spanfunc_arg_setup_iter_done
  
@@ -449,8 +449,8 @@ SELFMODIFY_SPAN_ds_x2:
  add   si, si										   ; double i for word lookup index
  SELFMODIFY_SPAN_destview_add:
  add   dx, 01000h						   ; dsp_x1 + base view offset
- mov   word ptr [si + _spanfunc_prt], ax			   ; store prt
- mov   word ptr [si + _spanfunc_destview_offset], dx   ; store view offset
+ mov   word ptr ds:[si + _spanfunc_prt], ax			   ; store prt
+ mov   word ptr ds:[si + _spanfunc_destview_offset], dx   ; store view offset
  
  spanfunc_arg_setup_iter_done:
  
@@ -1099,7 +1099,7 @@ do_sky_flat_draw:
 ; todo revisit params. maybe these can be loaded in R_DrawSkyPlaneCallHigh
 les   bx, dword ptr [bp - 8] ; get visplane offset
 mov   cx, es ; and segment
-les   ax, dword ptr [si + 4]
+les   ax, dword ptr ds:[si + 4]
 mov   dx, es
 ;call  [_R_DrawSkyPlaneCallHigh]
 SELFMODIFY_SPAN_draw_skyplane_call:
@@ -1154,8 +1154,8 @@ SHIFT_MACRO shl ax 3
 add   ax, offset _visplaneheaders
 ; todo lea si bx + _visplaneheaders
 mov   si, ax
-mov   ax, word ptr [si + 4]			; fetch visplane minx
-cmp   ax, word ptr [si + 6]			; fetch visplane maxx
+mov   ax, word ptr ds:[si + 4]			; fetch visplane minx
+cmp   ax, word ptr ds:[si + 6]			; fetch visplane maxx
 jnle   do_next_drawplanes_loop
 
 loop_visplane_page_check:
@@ -1168,7 +1168,7 @@ jnb   check_next_visplane_page
 mov   bx, word ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN_STARTMARKER_]
 
 add   bx, bx
-mov   cx, word ptr [bx +  _visplanepiclights]
+mov   cx, word ptr ds:[bx +  _visplanepiclights]
 SELFMODIFY_SPAN_skyflatnum:
 cmp   cl, 0
 je    do_sky_flat_draw
@@ -1395,7 +1395,7 @@ add   al, byte ptr [bp - 3]
 add   al, 070h
 
 mov   byte ptr ds:[_ds_source_segment+3], al            ; low byte always zero!
-les   ax, dword ptr [si]
+les   ax, dword ptr ds:[si]
 mov   dx, es
 SELFMODIFY_SPAN_viewz_lo_1:
 sub   ax, 01000h
@@ -1412,12 +1412,12 @@ neg   dx
 planeheight_already_positive:
 mov   word ptr [bp - 010h], ax
 mov   word ptr [bp - 0Eh], dx
-mov   ax, word ptr [si + 6]
+mov   ax, word ptr ds:[si + 6]
 mov   di, ax
 les   bx, dword ptr [bp - 8]
 
 mov   byte ptr es:[bx + di + 3], 0ffh
-mov   si, word ptr [si + 4]
+mov   si, word ptr ds:[si + 4]
 mov   byte ptr es:[bx + si + 1], 0ffh
 inc   ax
 

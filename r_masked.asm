@@ -788,19 +788,19 @@ done_with_mul_vissprite:
 sub   word ptr ds:[di], ax
 sbb   word ptr ds:[di + 2], dx
 
-mov   ax, word ptr [si + 026h]
+mov   ax, word ptr ds:[si + 026h]
 cmp   ax, word ptr ds:[_lastvisspritepatch]
 jne   sprite_not_first_cachedsegment
 mov   es, word ptr ds:[_lastvisspritesegment]
 spritesegment_ready:
 
 
-mov   di, word ptr [si + 016h]  ; frac = vis->startfrac
-mov   ax, word ptr [si + 018h]
+mov   di, word ptr ds:[si + 016h]  ; frac = vis->startfrac
+mov   ax, word ptr ds:[si + 018h]
 push  ax;  [bp - 2]
 push  di;  [bp - 4]
 
-mov   ax, word ptr [si + 2]
+mov   ax, word ptr ds:[si + 2]
 mov   dx, ax
 SELFMODIFY_MASKED_detailshiftandval_1:
 and   ax, 01000h
@@ -815,8 +815,8 @@ xchg  ax, dx
 
 ; xiscalestep_shift = vis->xiscale << detailshift2minus;
 ; es in use
-mov   bx, word ptr [si + 01Eh] ; DX:BX = vis->xiscale
-mov   dx, word ptr [si + 020h]
+mov   bx, word ptr ds:[si + 01Eh] ; DX:BX = vis->xiscale
+mov   dx, word ptr ds:[si + 020h]
 
 ; todo: proper shift jmp thing
 cmp byte ptr ds:[_detailshift2minus], 1
@@ -842,9 +842,9 @@ push bx;  [bp - 8]
 
 test  ax, ax
 je    base4diff_is_zero
-; es in use
-mov   dx, word ptr [si + 01Eh]
-mov   bx, word ptr [si + 020h]
+
+mov   dx, word ptr ds:[si + 01Eh] ; es in use. no LES
+mov   bx, word ptr ds:[si + 020h]
 
 decrementbase4loop:
 sub   word ptr [bp - 4], dx
@@ -861,7 +861,7 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset_shadow+1 - OFFSET R_MASKE
 mov   cx, es
 
 
-cmp   byte ptr [si + 1], COLORMAP_SHADOW
+cmp   byte ptr ds:[si + 1], COLORMAP_SHADOW
 je    jump_to_draw_shadow_sprite
 
 
@@ -906,7 +906,7 @@ dw _R_GetSpriteTexture_addr
 
 mov   word ptr ds:[_lastvisspritesegment], ax
 mov   es, ax
-mov   ax, word ptr [si + 026h]
+mov   ax, word ptr ds:[si + 026h]
 mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready
 jump_to_draw_shadow_sprite:
@@ -931,12 +931,12 @@ mov   dx, word ptr [bp - 2]
 SELFMODIFY_MASKED_set_ax_to_dc_x_base4:
 mov   ax, 0
 mov   word ptr ds:[_dc_x], ax
-cmp   ax, word ptr [si + 2]
+cmp   ax, word ptr ds:[si + 2]
 jl    increment_by_shift
 
 draw_sprite_normal_innerloop:
 mov   ax, word ptr ds:[_dc_x]
-cmp   ax, word ptr [si + 4]
+cmp   ax, word ptr ds:[si + 4]
 jg    end_draw_sprite_normal_innerloop
 mov   bx, dx
 
@@ -977,9 +977,9 @@ jmp   draw_sprite_normal_innerloop
 end_draw_sprite_normal_innerloop:
 inc   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4+1 - OFFSET R_MASKED_STARTMARKER_]
 inc   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset+1 - OFFSET R_MASKED_STARTMARKER_]
-mov   ax, word ptr [si + 01Eh]
+mov   ax, word ptr ds:[si + 01Eh]
 add   word ptr [bp - 4], ax
-mov   ax, word ptr [si + 020h]
+mov   ax, word ptr ds:[si + 020h]
 adc   word ptr [bp - 2], ax
 jmp   loop_vga_plane_draw_normal
 draw_shadow_sprite:
@@ -1002,12 +1002,12 @@ SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow:
 mov   ax, 0
 mov   word ptr ds:[_dc_x], ax
 
-cmp   ax, word ptr [si + 2]
+cmp   ax, word ptr ds:[si + 2]
 jle   increment_by_shift_shadow
 
 draw_sprite_shadow_innerloop:
 mov   ax, word ptr ds:[_dc_x]
-cmp   ax, word ptr [si + 4]
+cmp   ax, word ptr ds:[si + 4]
 jg    end_draw_sprite_shadow_innerloop
 mov   bx, dx
 
@@ -1032,9 +1032,9 @@ jmp   draw_sprite_shadow_innerloop
 end_draw_sprite_shadow_innerloop:
 inc   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_MASKED_STARTMARKER_]
 inc   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset_shadow+1 - OFFSET R_MASKED_STARTMARKER_]
-mov   ax, word ptr [si + 01Eh]
+mov   ax, word ptr ds:[si + 01Eh]
 add   word ptr [bp - 4], ax
-mov   ax, word ptr [si + 020h]
+mov   ax, word ptr ds:[si + 020h]
 adc   word ptr [bp - 2], ax
 jmp   loop_vga_plane_draw_shadow
 
@@ -1137,16 +1137,16 @@ mov   ax, ss
 mov   ds, ax
 
 mov   ax, SIDES_SEGMENT
-mov   si, word ptr [bx + 6]			; get sidedefOffset
+mov   si, word ptr ds:[bx + 6]			; get sidedefOffset
 mov   es, ax
 SHIFT_MACRO shl si 2
 mov   bx, si						; side_render_t is 4 bytes each
 shl   si, 1							; side_t is 8 bytes each
 add   bh, (_sides_render SHR 8 )		; sides render near addr is ds:[0xAE00]
 mov   si, word ptr es:[si + 4]		; lookup side->midtexture
-mov   ax, word ptr [bx] 
+mov   ax, word ptr ds:[bx] 
 mov   word ptr cs:[SELFMODIFY_MASKED_siderender_00+1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   ax, word ptr [bx+2] 
+mov   ax, word ptr ds:[bx+2] 
 mov   word ptr cs:[SELFMODIFY_MASKED_siderender_02+1 - OFFSET R_MASKED_STARTMARKER_], ax
 
 mov   ax, TEXTURETRANSLATION_SEGMENT
@@ -1223,8 +1223,8 @@ peg_bottom:
 ; write instruction forward
 mov   word ptr cs:[SELFMODIFY_MASKED_lineflags_ml_dontpegbottom - OFFSET R_MASKED_STARTMARKER_], ax
 
-mov   cx, word ptr [bx+2]			; get v2 offset
-mov   bx, word ptr [bx]				; get v1 offset
+mov   cx, word ptr ds:[bx+2]			; get v2 offset
+mov   bx, word ptr ds:[bx]				; get v1 offset
 mov   ax, VERTEXES_SEGMENT
 
 SHIFT_MACRO shl bx 2
@@ -1612,7 +1612,7 @@ continue_outer_loop:
 mov   dx, SC_DATA
 ; di contains xoffset..
 SELFMODIFY_MASKED_detailshiftplus1_4:
-mov   al, byte ptr [di + 20]
+mov   al, byte ptr ds:[di + 20]
 out   dx, al
 
 
@@ -2445,8 +2445,8 @@ mov   bp, sp
 sub   sp, 0502h	; for cliptop/clipbot
 push  ax        ; bp - 504h                 ; todo move this to lower bp for smaller accesses.
 mov   bx, ax
-mov   ax, word ptr [bx + 2]
-mov   cx, word ptr [bx + 4]  ; spr->x2
+mov   ax, word ptr ds:[bx + 2]
+mov   cx, word ptr ds:[bx + 4]  ; spr->x2
 cmp   ax, cx
 jg    no_clip  ; todo im not sure if this conditional is possible. spr x2 < spr x1?
 mov   di, ax
@@ -2495,8 +2495,8 @@ jnz   check_loop_conditions
 done_masking:
 ; check for unclipped columns
 mov   dx, bx  ; cache vissprite pointer
-mov   cx, word ptr [bx + 4] ;x2
-mov   si, word ptr [bx + 2] ;x1
+mov   cx, word ptr ds:[bx + 4] ;x2
+mov   si, word ptr ds:[bx + 2] ;x1
 sub   cx, si
 jl    draw_the_vissprite
 inc   cx
@@ -2546,7 +2546,7 @@ ret
 continue_checking_if_drawseg_obscures_sprite:
 ; compare (ds->x2 < spr->x1)
 mov   ax, word ptr es:[di + 4]
-cmp   ax, word ptr [bx + 2]
+cmp   ax, word ptr ds:[bx + 2]
 jl    iterate_next_drawseg_loop
 ;  (!ds->silhouette     && ds->maskedtexturecol_val == NULL_TEX_COL) ) {
 cmp   byte ptr es:[di + 01Ch], 0
@@ -2575,10 +2575,10 @@ scale1_smaller_than_scale2:
 ;lowscalecheckpass = ds->scale1 < spr->scale;
 ; ax:dx is ds->scale2
 
-cmp   cx, word ptr [bx + 01Ch]
+cmp   cx, word ptr ds:[bx + 01Ch]
 jl    set_r1_r2_and_render_masked_set_range
 jne   lowscalecheckpass_set_route2
-cmp   si, word ptr [bx + 01Ah]
+cmp   si, word ptr ds:[bx + 01Ah]
 jae   lowscalecheckpass_set_route2
 jmp   set_r1_r2_and_render_masked_set_range
 
@@ -2595,10 +2595,10 @@ scale1_highbits_larger_than_scale2:
 ; if scalecheckpass is 0, go calculate lowscalecheck pass. 
 ; if not, the following if/else fails and we skip out early
 
-cmp   ax, word ptr [bx + 01Ch]
+cmp   ax, word ptr ds:[bx + 01Ch]
 jl    set_r1_r2_and_render_masked_set_range
 jne   get_lowscalepass_1
-cmp   dx, word ptr [bx + 01Ah]
+cmp   dx, word ptr ds:[bx + 01Ah]
 jae   get_lowscalepass_1
 
 ;     scalecheckpass 1, fail early
@@ -2612,14 +2612,14 @@ je    jump_to_iterate_next_drawseg_loop_3
 ;  r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
 ;  set r1 to the greater of the two.
 mov   ax, word ptr es:[di + 2] ; ds->x1
-cmp   ax, word ptr [bx + 2]
+cmp   ax, word ptr ds:[bx + 2]
 jge   r1_stays_ds_x1
-mov   ax, word ptr [bx + 2]   ; spr->x1
+mov   ax, word ptr ds:[bx + 2]   ; spr->x1
 r1_stays_ds_x1:
 
 ; r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 ; set r2 as the minimum of the two.
-mov   cx, word ptr [bx + 4]    ; spr->x2
+mov   cx, word ptr ds:[bx + 4]    ; spr->x2
 cmp   cx, word ptr es:[di + 4]
 jle   r2_stays_ds_x2
 
@@ -2639,10 +2639,10 @@ get_lowscalepass_1:
 
 ;dx:bx = ds->scale2
 
-cmp   cx, word ptr [bx + 01Ch]
+cmp   cx, word ptr ds:[bx + 01Ch]
 jl    do_R_PointOnSegSide_check
 jne   failed_check_pass_set_r1_r2
-cmp   si, word ptr [bx + 01Ah]
+cmp   si, word ptr ds:[bx + 01Ah]
 jae   failed_check_pass_set_r1_r2
 
 jmp   do_R_PointOnSegSide_check
@@ -2655,19 +2655,19 @@ lowscalecheckpass_set_route2:
 ; ax:dx is still ds->scale1
 
 
-cmp   ax, word ptr [bx + 01Ch]
+cmp   ax, word ptr ds:[bx + 01Ch]
 jl    do_R_PointOnSegSide_check
 jne   failed_check_pass_set_r1_r2
-cmp   dx, word ptr [bx + 01Ah]
+cmp   dx, word ptr ds:[bx + 01Ah]
 jae   failed_check_pass_set_r1_r2
 
 do_R_PointOnSegSide_check:
 
 
 mov   si, word ptr es:[di]
-les   ax, dword ptr [bx + 6]
+les   ax, dword ptr ds:[bx + 6]
 mov   dx, es
-les   bx, dword ptr [bx + 0Ah]
+les   bx, dword ptr ds:[bx + 0Ah]
 mov   cx, es
 
 ; todo this is the only place calling this? make sense to inline?
@@ -2684,19 +2684,19 @@ failed_check_pass_set_r1_r2:
 
 
 mov   si, word ptr es:[di + 2]  ; spr->x1
-cmp   si, word ptr [bx + 2]     ; ds->x1 
+cmp   si, word ptr ds:[bx + 2]     ; ds->x1 
 jl    spr_x1_smaller_than_ds_x1
 
 jmp   r1_set
 
 spr_x1_smaller_than_ds_x1:
-mov   si, word ptr [bx + 2]
+mov   si, word ptr ds:[bx + 2]
 r1_set:
 
 ;		r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 
 mov   dx, word ptr es:[di + 4]	; spr->x2
-cmp   dx, word ptr [bx + 4]		; ds->x2
+cmp   dx, word ptr ds:[bx + 4]		; ds->x2
 jg    spr_x2_greater_than_dx_x2
 
 jmp   r2_set
@@ -2706,7 +2706,7 @@ jmp   iterate_next_drawseg_loop
 
 
 spr_x2_greater_than_dx_x2:
-mov   dx, word ptr [bx + 4]
+mov   dx, word ptr ds:[bx + 4]
 r2_set:
 
 ; si is r1 and dx is r2
@@ -2737,7 +2737,7 @@ sar   ax, 1
 rcr   dx, 1
 
 ;ax:dx = temp
-cmp   ax, word ptr [bx + 010h]
+cmp   ax, word ptr ds:[bx + 010h]
 
 ;		if (spr->gz.w >= temp.w) {
 ;			silhouette &= ~SIL_BOTTOM;
@@ -2745,7 +2745,7 @@ cmp   ax, word ptr [bx + 010h]
 
 jl    remove_bot_silhouette
 jg   do_not_remove_bot_silhouette
-cmp   dx, word ptr [bx + 0Eh]
+cmp   dx, word ptr ds:[bx + 0Eh]
 ja    do_not_remove_bot_silhouette
 remove_bot_silhouette:
 and   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_MASKED_STARTMARKER_], 0FEh  
@@ -2766,11 +2766,11 @@ rcr   dx, 1
 ;			silhouette &= ~SIL_TOP;
 ;		}
 
-cmp   ax, word ptr [bx + 014h]
+cmp   ax, word ptr ds:[bx + 014h]
 mov   ah,  0FFh		; for later and
 jg    remove_top_silhouette
 jl   do_not_remove_top_silhouette
-cmp   dx, word ptr [bx + 012h]
+cmp   dx, word ptr ds:[bx + 012h]
 
 jb    do_not_remove_top_silhouette
 remove_top_silhouette:
@@ -3208,7 +3208,7 @@ mov       al, VISSPRITE_SORTED_HEAD_INDEX
 
 mov       byte ptr [bp - 2], al
 mov       byte ptr ds:[_vsprsortedheadfirst], al
-mov       byte ptr [bx], VISSPRITE_UNSORTED_INDEX
+mov       byte ptr ds:[bx], VISSPRITE_UNSORTED_INDEX
 cmp       dx, 0  ; is this redundant?
 jle       exit_sort_vissprites
 
@@ -3236,14 +3236,14 @@ xchg      ax, bx
 
 mov       word ptr [bp - 06h], 0  ; field in unsorted
 mov       word ptr [bp - 08h], bx ; field in unsorted
-cmp       di, word ptr [bx + si + + 1Ah + 2]
+cmp       di, word ptr ds:[bx + si + + 1Ah + 2]
 jg        unsorted_next_is_best_next
 jne       prepare_find_best_index_subloop
-cmp       cx, word ptr [bx + si + 1Ah]
+cmp       cx, word ptr ds:[bx + si + 1Ah]
 jbe       prepare_find_best_index_subloop
 unsorted_next_is_best_next:
 mov       dh, al  ;  store bestindex ( i think)
-les       cx, dword ptr [bx + si + 1Ah]
+les       cx, dword ptr ds:[bx + si + 1Ah]
 mov       di, es
 add       bx, si
 mov       word ptr [bp - 4], bx   ; todo dont add vissprites to this?
@@ -3253,7 +3253,7 @@ prepare_find_best_index_subloop:
 mul       ah	  ; still 028h (SIZEOF_VISSPRITE_T )
 mov       bx, ax
 
-mov       al, byte ptr [bx+si]
+mov       al, byte ptr ds:[bx+si]
 cmp       al, VISSPRITE_UNSORTED_INDEX
 jne       loop_sort_subloop
 done_with_sort_subloop:
@@ -3268,7 +3268,7 @@ mul       dl
 mov       word ptr [bp - 0Ah], 0  ; some unsorted field
 mov       bx, ax
 mov       word ptr [bp - 0Ch], ax ; some unsorted field
-mov       al, byte ptr [bx + si]
+mov       al, byte ptr ds:[bx + si]
 
 cmp       al, dh
 jne       loop_find_best_index
@@ -3278,8 +3278,8 @@ jne       loop_find_best_index
 ; vissprites[ds].next = best->next;
  ;break;
 
-mov       al, byte ptr [di]
-mov       byte ptr [bx+si], al
+mov       al, byte ptr ds:[di]
+mov       byte ptr ds:[bx+si], al
 jmp       found_best_index
 exit_sort_vissprites:
 
@@ -3295,7 +3295,7 @@ ret
 done_with_find_best_index_loop:
 
 
-mov       al, byte ptr [di]
+mov       al, byte ptr ds:[di]
 mov       byte ptr [bp - 034h], al
 found_best_index:
 ;        if (vsprsortedheadfirst == VISSPRITE_SORTED_HEAD_INDEX){
@@ -3306,7 +3306,7 @@ mov       byte ptr ds:[_vsprsortedheadfirst], dh
 increment_visplane_sort_loop_variables:
 
 mov       byte ptr [bp - 2], dh
-mov       byte ptr [di], VISSPRITE_SORTED_HEAD_INDEX
+mov       byte ptr ds:[di], VISSPRITE_SORTED_HEAD_INDEX
 SELFMODIFY_MASKED_set_al_to_loop_counter:
 mov       al, 0FFh ; get loop counter
 SELFMODIFY_MASKED_loop_compare_instruction:
@@ -3322,7 +3322,7 @@ mov	      ah, SIZEOF_VISSPRITE_T
 mul       ah
 mov       bx, ax
 
-mov       byte ptr [bx + _vissprites], dh
+mov       byte ptr ds:[bx + _vissprites], dh
 jmp       increment_visplane_sort_loop_variables
 
 ENDP

@@ -36,14 +36,8 @@ EXTRN R_GetColumnSegment_:NEAR
 
 EXTRN _spritewidths_segment:WORD
 
-
-EXTRN _segloopnextlookup:WORD
-EXTRN _segloopprevlookup:WORD
 EXTRN _seglooptexrepeat:BYTE
-;EXTRN _seglooptexmodulo:BYTE
-EXTRN _segloopcachedbasecol:WORD
-EXTRN _segloopheightvalcache:BYTE
-EXTRN _segloopcachedsegment:WORD
+
 EXTRN _solidsegs:WORD
 EXTRN _newend:WORD
 EXTRN _clipangle:WORD
@@ -708,9 +702,11 @@ ENDP
 
 PROC R_ClearClipSegs_ NEAR
 PUBLIC R_ClearClipSegs_
+; todo lea
 
 mov  word ptr ds:[_solidsegs+0], 08001h
 mov  word ptr ds:[_solidsegs+2], 0FFFFh
+; todo push pop
 mov  ax, word ptr ds:[_viewwidth]
 mov  word ptr ds:[_solidsegs+4], ax
 mov  word ptr ds:[_solidsegs+6], 07FFFh
@@ -5404,7 +5400,7 @@ jmp   finished_inner_loop_iter
          SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET:
          SELFMODIFY_BSP_set_seglooptexmodulo1:
          mov   cx, 0
-         mov   dx, word ptr [2 + _segloopcachedbasecol]
+         mov   dx, word ptr ds:[2 + _segloopcachedbasecol]
          cmp   ax, dx
          jge   done_subbing_modulo1
          sub   dx, cx
@@ -5415,7 +5411,7 @@ jmp   finished_inner_loop_iter
          jmp   continue_subbing_modulo1
          record_subbed_modulo1:
          ; at least one write was done. write back.
-         mov   word ptr [2 + _segloopcachedbasecol], dx
+         mov   word ptr ds:[2 + _segloopcachedbasecol], dx
 
          done_subbing_modulo1:
 
@@ -5429,13 +5425,13 @@ jmp   finished_inner_loop_iter
          jmp   continue_adding_modulo1
          record_added_modulo1:
          sub   dx, cx
-         mov   word ptr [2 + _segloopcachedbasecol], dx
+         mov   word ptr ds:[2 + _segloopcachedbasecol], dx
          add   dx, cx
 
          done_adding_modulo1:
          sub   dx, cx
          sub   al, dl
-         mul   ah  byte ptr [1 + _segloopheightvalcache]
+         mul   ah  byte ptr ds:[1 + _segloopheightvalcache]
          jmp   add_base_segment_and_draw1
 
          @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
@@ -5445,7 +5441,7 @@ non_repeating_texture1:
 cmp   dx, word ptr ds:[2 + _segloopnextlookup]
 jge   out_of_texture_bounds1
 cmp   dx, word ptr ds:[2 + _segloopprevlookup]
-jge   in_texture_bounds1
+jge   in_texture_bounds1  ; todo change the default case.
 out_of_texture_bounds1:
 push  bx
 mov   bx, 1
@@ -5462,7 +5458,7 @@ mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
 
 
          COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
-         mov   dh, byte ptr [1 + _seglooptexmodulo]
+         mov   dh, byte ptr ds:[1 + _seglooptexmodulo]
          mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo1+1], dh
 
          cmp   dh, 0
@@ -5478,11 +5474,11 @@ mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
 
 
 ; todo get this dh and dl in same read
-mov   dh, byte ptr [1 + _seglooptexrepeat]
+mov   dh, byte ptr ds:[1 + _seglooptexrepeat]
 cmp   dh, 0
 je    seglooptexrepeat1_is_jmp
 ; modulo is seglooptexrepeat - 1
-mov   dl, byte ptr [1 + _segloopheightvalcache]
+mov   dl, byte ptr ds:[1 + _segloopheightvalcache]
 mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1],   0B8h   ; mov ax, xxxx
 mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1+1], dx
 
@@ -5493,8 +5489,8 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1], ((SELFMODIFY_BSP_set_s
 jmp   just_do_draw1
 in_texture_bounds1:
 xchg  ax, dx  ; put texturecol in ax
-sub   al, byte ptr [2 + _segloopcachedbasecol]
-mul   byte ptr [1 + _segloopheightvalcache]
+sub   al, byte ptr ds:[2 + _segloopcachedbasecol]
+mul   byte ptr ds:[1 + _segloopheightvalcache]
 jmp   add_base_segment_and_draw1
 
 ;END INLINED R_GetSourceSegment1_ AGAIN

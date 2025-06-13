@@ -221,7 +221,8 @@ _curseg_render =                     _NULL_OFFSET + 00282h
 _save_p =                            _NULL_OFFSET + 00284h
 _maskednextlookup =                  _NULL_OFFSET + 00288h
 _maskedprevlookup =                  _NULL_OFFSET + 0028Ah
-_maskedtexrepeat =                   _NULL_OFFSET + 0028Ch
+;28ch empty
+;_maskedtexrepeat =                   _NULL_OFFSET + 0028Ch
 _maskedcachedbasecol =               _NULL_OFFSET + 0028Eh
 _maskedcachedsegment =               _NULL_OFFSET + 00290h
 _maskedheightvalcache =              _NULL_OFFSET + 00292h
@@ -357,17 +358,24 @@ _activenumpages =                 	 _NULL_OFFSET + 00688h
 _textureL1LRU =                 	 _NULL_OFFSET + 00690h
 _cachedsegmentlumps =                _NULL_OFFSET + 00698h
 _cachedlumps =                 	     _NULL_OFFSET + 006A0h
-; todo put segloop repeat here?
-_cachedsegmenttex =                  _NULL_OFFSET + 006A8h
-_cachedtex =                 		 _NULL_OFFSET + 006ACh
-_cachedcollength =                   _NULL_OFFSET + 006B0h
-_flatcache_l2_head =                 _NULL_OFFSET + 006B2h
-_flatcache_l2_tail =                 _NULL_OFFSET + 006B3h
+_cachedtex =                 		 _NULL_OFFSET + 006A8h
+_segloopnextlookup =                 _NULL_OFFSET + 006ACh
+;_seglooptexrepeat =                  _NULL_OFFSET + 006B0h
+_maskedtexrepeat =            		 _NULL_OFFSET + 006B2h
+_segloopprevlookup =                 _NULL_OFFSET + 006B4h
+_segloopcachedsegment =              _NULL_OFFSET + 006B8h
+_segloopcachedbasecol =              _NULL_OFFSET + 006BCh
+_segloopheightvalcache =             _NULL_OFFSET + 006C0h
+
+_flatcache_l2_head =                 _NULL_OFFSET + 006C2h
+_flatcache_l2_tail =                 _NULL_OFFSET + 006C3h
+_cachedsegmenttex =                  _NULL_OFFSET + 006C4h
+_cachedcollength =                   _NULL_OFFSET + 006C8h
 
 
 
-;670h
 
+;06CAh
 
 
 
