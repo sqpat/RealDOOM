@@ -192,7 +192,7 @@ dw 0220h
 PROC  calcVolume_   NEAR
 
 
-shl       ax, 2
+SHIFT_MACRO shl       ax 2
 xor       dh, dh
 mul       dx
 mov       al, ah
@@ -373,7 +373,7 @@ mov       al, cl
 xor       ah, ah
 mov       bx, ax
 mov       al, byte ptr [bp - 2]
-shl       bx, 4
+SHIFT_MACRO shl       bx 4
 add       bx, ax
 mov       al, byte ptr cs:[bx + _mididriverdata - OFFSET SM_SBMID_STARTMARKER_]
 cmp       cl, CTRLVOLUME
@@ -489,7 +489,7 @@ mov       si, ax
 mov       cl, al
 mov       al, 1
 and       cl, 7
-sar       si, 3
+SHIFT_MACRO sar       si 3
 shl       al, cl
 mov       cl, ch
 
@@ -511,7 +511,7 @@ play_not_percussion:
 mov       al, bh
 cbw      
 mov       si, ax
-shl       si, 2
+SHIFT_MACRO shl       si 2
 les       dx, dword ptr ds:[_playingtime]
 mov       ax, es
 mov       word ptr cs:[si + _miditime - OFFSET SM_SBMID_STARTMARKER_], dx
@@ -554,7 +554,7 @@ mov       cl, dh
 mov       bx, ax
 and       cl, 7
 mov       al, 1
-sar       bx, 3
+SHIFT_MACRO sar       bx 3
 shl       al, cl
 not       al
 and       byte ptr cs:[bx+_mididriverdata_percussions - OFFSET SM_SBMID_STARTMARKER_], al
@@ -562,7 +562,7 @@ release_non_percussion:
 mov       al, dl
 cbw      
 mov       bx, ax
-shl       bx, 2
+SHIFT_MACRO shl       bx 2
 les       ax, dword ptr ds:[_playingtime]
 mov       cx, es
 mov       word ptr cs:[bx + _miditime - OFFSET SM_SBMID_STARTMARKER_], ax
@@ -606,7 +606,7 @@ and       cx, 080h       ; cx gets al low bit ? 080h : 000h
 mov       al, dl
 cbw      
 mov       bx, ax
-shl       bx, 2
+SHIFT_MACRO shl       bx 2
 les       ax, dword ptr ds:[_playingtime]
 mov       si, es
 mov       word ptr cs:[bx + _miditime - OFFSET SM_SBMID_STARTMARKER_], ax
@@ -648,7 +648,7 @@ record_controller_value:
 mov       byte ptr [bp - 2], dl
 mov       byte ptr [bp - 1], ah
 mov       si, word ptr [bp - 2]
-shl       si, 4
+SHIFT_MACRO shl       si 4
 add       si, ax
 mov       byte ptr cs:[si + _mididriverdata_controllers - OFFSET SM_SBMID_STARTMARKER_], bl
 
@@ -658,7 +658,7 @@ jl        exit_changecontrol
 mov       al, cl
 cbw      
 mov       si, ax
-shl       si, 2
+SHIFT_MACRO shl       si 2
 les       di, dword ptr ds:[_playingtime]
 mov       ax, es
 mov       word ptr cs:[si + _miditime - OFFSET SM_SBMID_STARTMARKER_], di
@@ -826,7 +826,7 @@ xor       dh, dh
 
 mov       bx, dx
 
-sar       bx, 3
+SHIFT_MACRO sar       bx 3
 mov       cl, ch
 and       cl, 7
 mov       al, byte ptr cs:[bx+_mididriverdata_percussions - OFFSET SM_SBMID_STARTMARKER_]

@@ -555,6 +555,17 @@ ENDIF
 ENDM
 
 
+MUL_SIZEOF_THINKER_T MACRO dest, source
+
+	mov  &dest, &source
+	SHIFT_MACRO SAL &dest 3
+	add  &dest, &source
+	add  &dest, &source
+	add  &dest, &source
+	SHIFT_MACRO SAL &dest 2
+
+ENDM
+
 SHIFT_MACRO MACRO instruction, register, count
 
 

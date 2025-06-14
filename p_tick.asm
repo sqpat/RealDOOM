@@ -67,7 +67,10 @@ inc       ax
 cmp       ax, dx
 je        error_no_thinker_found
 
-imul      bx, ax, SIZEOF_THINKER_T ; get initial thinker offset
+MUL_SIZEOF_THINKER_T bx ax
+
+
+
 add       bx, OFFSET _thinkerlist
 loop_check_next_thinker:
 cmp       ax, MAX_THINKERS
@@ -86,14 +89,21 @@ call      OutOfThinkers_
 
 found_thinker:
 mov       word ptr ds:[_currentThinkerListHead], ax
-pop       dx
 
 add       si, word ptr ds:[_thinkerlist]
 
 mov       word ptr ds:[bx], si
 mov       word ptr ds:[bx+2], 0
 
-imul      si, word ptr ds:[_thinkerlist], SIZEOF_THINKER_T
+
+;imul      si, word ptr ds:[_thinkerlist], SIZEOF_THINKER_T
+
+mov   dx, word ptr ds:[_thinkerlist]
+
+MUL_SIZEOF_THINKER_T si, dx
+
+pop       dx
+
 
 ;	thinkerlist[index].next = 0;
 ;	thinkerlist[index].prevFunctype = temp + thinkfunc;
@@ -120,19 +130,9 @@ PUBLIC P_UpdateThinkerFunc_
 
 push      bx
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-    imul      bx, ax, SIZEOF_THINKER_T
-    add       bx, _thinkerlist
+MUL_SIZEOF_THINKER_T bx ax
+add       bx, _thinkerlist
 
-ELSE
-    push      dx
-    mov       bx, SIZEOF_THINKER_T
-    mul       bx
-    add       ax, _thinkerlist
-    mov       bx, ax
-    pop       dx
-
-ENDIF
 
 mov       ax, word ptr ds:[bx]
 and       ah, (TF_PREVBITS SHR 8)
@@ -151,19 +151,9 @@ PUBLIC P_RemoveThinker_
 
 push      bx
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-    imul      bx, ax, SIZEOF_THINKER_T
-    add       bx, _thinkerlist
+MUL_SIZEOF_THINKER_T bx, ax
+add       bx, _thinkerlist
 
-ELSE
-    push      dx
-    mov       bx, SIZEOF_THINKER_T
-    mul       bx
-    add       ax, _thinkerlist
-    mov       bx, ax
-    pop       dx
-
-ENDIF
 mov       ax, word ptr ds:[bx]
 and       ah, (TF_PREVBITS SHR 8)
 add       ah, (TF_DELETEME_HIGHBITS SHR 8)
@@ -232,7 +222,10 @@ mov       si, word ptr ds:[_thinkerlist + 2]
 ;test      si, si
 ;je        exit_run_thinkers  ; 0 thinkers ought to be impossible?
 do_next_thinker:
-imul      bx, si, SIZEOF_THINKER_T  ; todo test shift vs mul...
+
+;    imul  bx, si, SIZEOF_THINKER_T  ; todo test shift vs mul...
+MUL_SIZEOF_THINKER_T bx, si
+
 
 ; consider inc bx?
 mov       al, byte ptr ds:[bx + _thinkerlist+1]  ; just get high bit
@@ -241,8 +234,16 @@ and       al, (TF_FUNCBITS SHR 8)
 cmp       al, (TF_MOBJTHINKER_HIGHBITS SHR 8)
 jne       continue_checking_tf_types
 do_mobjthinker:
+
+;imul      bx, si, SIZEOF_MOBJ_POS_T 
+
+mov   bx, si
+SHIFT_MACRO  sal   bx 3     ; 0x08
+mov   ax, bx
+sal   bx, 1                  ; 0x10
+add   bx, ax                 ; 0x18
+
 mov       ax, di
-imul      bx, si, SIZEOF_MOBJ_POS_T 
 
 mov       cx, MOBJPOSLIST_6800_SEGMENT ; todo remove maybe?
 mov       dx, si
@@ -265,8 +266,6 @@ retf
 
 
 continue_checking_tf_types:
-;test      al, al                   ; not sure if necessary
-;je        done_processing_thinker  ; could probable be jl
 
 cmp       al, (TF_DELETEME_HIGHBITS SHR 8)
 je        do_delete_me
@@ -292,7 +291,9 @@ do_delete_me:
 les       ax, dword ptr ds:[bx + _thinkerlist]  ; prevref
 mov       cx, es                                ; nectref
 
-imul      di, cx, SIZEOF_THINKER_T
+;imul      di, cx, SIZEOF_THINKER_T
+MUL_SIZEOF_THINKER_T di cx
+
 mov       byte ptr ds:[di + _thinkerlist], 0
 and       ah, (TF_PREVBITS SHR 8)
 ; thinkerlist[nextRef].prevFunctype &= TF_FUNCBITS;
@@ -300,7 +301,12 @@ and       byte ptr ds:[di + _thinkerlist+1], (TF_FUNCBITS SHR 8)
 ; thinkerlist[nextRef].prevFunctype += prevRef;
 add       word ptr ds:[di + _thinkerlist], ax
 
-imul      di, ax, SIZEOF_THINKER_T
+
+
+MUL_SIZEOF_THINKER_T di ax
+
+
+
 xor       ax, ax
 mov       word ptr [di + _thinkerlist + 2], cx
 
@@ -310,7 +316,14 @@ mov       es, cx
 mov       cx, SIZEOF_MOBJ_T / 2
 rep       stosw
 
-imul      di, si, SIZEOF_MOBJ_POS_T 
+; SIZEOF_MOBJ_POS_T
+
+mov   di, si
+SHIFT_MACRO  sal   di 3     ; 0x08
+mov   cx, di
+sal   di, 1                  ; 0x10
+add   di, cx                 ; 0x18
+
 mov       cx, MOBJPOSLIST_6800_SEGMENT
 mov       es, cx
 mov       cx, SIZEOF_MOBJ_POS_T /2

@@ -781,9 +781,9 @@ xor       bx, bx
 cmp       ch, 1
 jne       multipage_textureblock
 ;		uint8_t freethreshold = 64 - blocksize;
-mov       dh, 64
+mov       dx, 04000h
 sub       dh, byte ptr [bp - 4]
-xor       dl, dl
+; dl zeroed 
 
 ;		for (i = 0; i < NUM_TEXTURE_PAGES; i++) {
 ;			if (freethreshold >= usedtexturepagemem[i]) {
@@ -2187,8 +2187,8 @@ x_is_zero_skip_inner_calc:
 
 
 mov       ax, word ptr [bp - 018h]  ; x
-shl       dx, 2  ; x1 << 2
-shl       ax, 2  ; x << 2
+SHIFT_MACRO shl       dx 2  ; x1 << 2
+SHIFT_MACRO shl       ax 2  ; x << 2
 neg       dx
 add       ax, dx                    ; (x - x1 ) << 2
 ; todo probably store in si/di...
