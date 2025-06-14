@@ -195,13 +195,8 @@ __near P_RecursiveSound
 // it will alert other monsters to the player.
 //
 void __near P_NoiseAlert (){
-
-
     validcount_global++;
-	
     P_RecursiveSound (playerMobj->secnum, 0);
-
-	
 }
 
 
@@ -294,8 +289,9 @@ boolean __near P_CheckMissileRange (mobj_t __near* actor){
 	dist = disttemp.h.intbits;
 	dist -= 64;
 
-    if (!getMeleeState(actor->type))
+    if (!getMeleeState(actor->type)){
 		dist -= 128;	// no melee attack, so fire more
+	}
 
     if (actor->type == MT_VILE) {
 		if (dist > 14 * 64) {
@@ -318,14 +314,15 @@ boolean __near P_CheckMissileRange (mobj_t __near* actor){
 		dist >>= 1;
     }
     
-    if (dist > 200)
+    if (dist > 200){
 		dist = 200;
+	}
 		
-    if (actor->type == MT_CYBORG && dist > 160)
+    if (actor->type == MT_CYBORG && dist > 160){
 		dist = 160;
+	}
 		
 	if (P_Random() < dist) {
-
 		return false;
 	}
 
@@ -627,8 +624,10 @@ boolean __near P_LookForPlayers (mobj_t __near*	actor, boolean	allaround ) {
 	mobj_pos_t __far* actor_pos;
 	//todoaddr inline later
 
- 	if (player.health <= 0)
+ 	if (player.health <= 0){
 		return false;		// dead
+	}
+
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 
 	if (!P_CheckSight(actor, playerMobj, FP_OFF(actor_pos), FP_OFF(playerMobj_pos))) {

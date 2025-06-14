@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/14 17:36:59
+Created on:       25/06/14 18:19:38
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -1698,4 +1698,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e600 (189952.)
 Entry point address: 262d:24fe
-Link time: 00:00.84
+Link time: 00:00.39

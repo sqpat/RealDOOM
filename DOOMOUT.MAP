@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/14 17:37:00
+Created on:       25/06/14 18:26:43
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          1fd2:0000            00002ea0
+DGROUP                          1fd2:0000            00002ca0
 
 
 
@@ -99,7 +99,7 @@ YI                     DATA           DGROUP         2159:000a       00000012
 YIE                    DATA           DGROUP         215a:000c       00000000
 DATA                   DATA           DGROUP         215a:000c       00000000
 _BSS                   BSS            DGROUP         215b:0000       00000a0e
-STACK                  STACK          DGROUP         21fc:0000       00000c00
+STACK                  STACK          DGROUP         21fc:0000       00000a00
 
 
                         +----------------+
@@ -1483,7 +1483,7 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         |   Linker Statistics   |
                         +-----------------------+
 
-Stack size:  0c00 (3072.)
-Memory size:  00022bc0 (142272.)
+Stack size:  0a00 (2560.)
+Memory size:  000229c0 (141760.)
 Entry point address: 1c65:1c56
-Link time: 00:00.85
+Link time: 00:00.84

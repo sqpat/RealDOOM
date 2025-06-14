@@ -34,12 +34,13 @@ EXTRN P_Random_:NEAR
 EXTRN P_UseSpecialLine_:PROC
 EXTRN P_DamageMobj_:NEAR
 EXTRN P_SetMobjState_:NEAR
-EXTRN P_TouchSpecialThing_:NEAR
 EXTRN P_CrossSpecialLine_:NEAR
 EXTRN P_ShootSpecialLine_:NEAR
-EXTRN P_SpawnPuff_:NEAR
 EXTRN P_SpawnMobj_:NEAR
 EXTRN P_RemoveMobj_:NEAR
+
+EXTRN P_SpawnPuff_:NEAR
+EXTRN P_TouchSpecialThing_:NEAR
 
 
 .DATA
