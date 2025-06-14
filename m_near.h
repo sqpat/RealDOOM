@@ -455,11 +455,17 @@
 // 6CC?
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
-#define CURRENT_POSITION_1  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
+#define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
+#define spritecache_nodes				  (((cache_node_page_count_t __near*) (CURRENT_POSITION_1)))
+#define CURRENT_POSITION_2   			  (((uint16_t) spritecache_nodes) + (sizeof(cache_node_page_count_t) * NUM_SPRITE_CACHE_PAGES))
+#define texturecache_nodes				  (((cache_node_page_count_t __near*) (CURRENT_POSITION_2)))
+#define CURRENT_POSITION_3  			  (((uint16_t) texturecache_nodes) + (sizeof(cache_node_page_count_t) * NUM_TEXTURE_PAGES))
 
+#define usedspritepagemem				  (((uint8_t __near*) (CURRENT_POSITION_3)))
+#define CURRENT_POSITION_4  			  (((uint16_t) usedspritepagemem) + (sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES))
+#define usedtexturepagemem				  (((uint8_t __near*) (CURRENT_POSITION_4)))
+#define CURRENT_POSITION_5  			  (((uint16_t) usedtexturepagemem) + (sizeof(uint8_t) * NUM_TEXTURE_PAGES))
 
-extern cache_node_page_count_t  spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
-extern cache_node_page_count_t	texturecache_nodes[NUM_TEXTURE_PAGES];
 
 // extern int16_t 					segloopprevlookup[2];
 // extern int16_t 					segloopnextlookup[2];
@@ -1150,8 +1156,6 @@ typedef	struct {
 // newend is one past the last valid seg
 extern cliprange_t __near*	newend;
 extern cliprange_t	solidsegs[MAXSEGS];
-extern uint8_t usedtexturepagemem[NUM_TEXTURE_PAGES];
-extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
 extern uint16_t                     numlumps;
 extern FILE*               		    wadfiles[MAX_WADFILES];
 extern int16_t                	    filetolumpindex[MAX_WADFILES-1];

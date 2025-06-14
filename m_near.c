@@ -1264,8 +1264,6 @@ int16_t		numlinespecials;
 // newend is one past the last valid seg
 cliprange_t __near*			newend;
 cliprange_t					solidsegs[MAXSEGS];
-uint8_t 					usedtexturepagemem[NUM_TEXTURE_PAGES];
-uint8_t 					usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
 
 uint16_t                    numlumps;
 FILE*                		wadfiles[MAX_WADFILES];
@@ -1670,8 +1668,6 @@ uint8_t blocksizelookup[256]={
 };
 */
 
-cache_node_page_count_t 	spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
-cache_node_page_count_t		texturecache_nodes[NUM_TEXTURE_PAGES];
 segment_t   				spritewidths_segment;
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)

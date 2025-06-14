@@ -36,12 +36,6 @@ EXTRN Z_QuickMapRender7000_:FAR
 
 .DATA
 
-EXTRN _spritecache_nodes:BYTE
-EXTRN _texturecache_nodes:BYTE
-
-
-EXTRN _usedtexturepagemem:BYTE
-EXTRN _usedspritepagemem:BYTE
 EXTRN _pageswapargs:WORD
 
 

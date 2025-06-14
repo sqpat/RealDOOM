@@ -388,7 +388,19 @@ _cachedcollength =                   _NULL_OFFSET + 006BCh
 ; 6BE is unused
 _flatcache_nodes =				     _NULL_OFFSET + 006C0h
 
-;CURRENT_POSITION_1 =  (flatcache_nodes + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
+CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
+_spritecache_nodes =				  CURRENT_POSITION_1
+CURRENT_POSITION_2 =   			      (_spritecache_nodes  + (SIZEOF_CACHE_NODE_PAGE_COUNT_T * NUM_SPRITE_CACHE_PAGES))
+_texturecache_nodes =				  CURRENT_POSITION_2
+CURRENT_POSITION_3 =   			      (_texturecache_nodes + (SIZEOF_CACHE_NODE_PAGE_COUNT_T * NUM_TEXTURE_PAGES))
+_usedspritepagemem =				  CURRENT_POSITION_3
+CURRENT_POSITION_4 =   			      (_usedspritepagemem  + (1 * NUM_SPRITE_CACHE_PAGES))
+_usedtexturepagemem =				  CURRENT_POSITION_4
+CURRENT_POSITION_5 =   			   	  (_usedtexturepagemem + (1 * NUM_TEXTURE_PAGES))
+
+
+
+
 
 
 
