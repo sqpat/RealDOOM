@@ -44,8 +44,6 @@ EXTRN _usedtexturepagemem:BYTE
 EXTRN _usedspritepagemem:BYTE
 EXTRN _pageswapargs:WORD
 
-EXTRN _firstpatch:WORD
-EXTRN _pagesegments:WORD
 
 
 
@@ -54,7 +52,11 @@ EXTRN _pagesegments:WORD
 
 
 
- 
+_pagesegments:
+
+dw 00000h, 00400h, 00800h, 00C00h
+dw 01000h, 01400h, 01800h, 01C00h
+
 
 
 
@@ -1695,7 +1697,7 @@ SHIFT_MACRO shl   si 4  ; shift texpage 4.
 cbw
 xchg  ax, si
 sal   si, 1
-add   ax, word ptr ds:[si + _pagesegments]
+add   ax, word ptr cs:[si + _pagesegments]
 add   ah, (PATCH_TEXTURE_SEGMENT SHR 8)
 pop   si
 ret   
@@ -1729,7 +1731,7 @@ call  R_GetTexturePage_
 cbw
 mov   si, ax
 sal   si, 1
-mov   si, word ptr ds:[si + _pagesegments]
+mov   si, word ptr cs:[si + _pagesegments]
 pop   ax     ; bp - 6
 SHIFT_MACRO   shl ax 4
 add   si, PATCH_TEXTURE_SEGMENT
@@ -1789,7 +1791,7 @@ xor   ah, ah
 xchg  ax, si
 sal   si, 1
 
-add   ax, word ptr ds:[si + _pagesegments]
+add   ax, word ptr cs:[si + _pagesegments]
 add   ah, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
 
 pop   si
@@ -1816,7 +1818,7 @@ xchg  ax, bx   ; bx stores page. ax gets offset
 xor   ah, ah
 SHIFT_MACRO shl   ax 4
 sal   bx, 1
-mov   bx, word ptr ds:[bx + _pagesegments]
+mov   bx, word ptr cs:[bx + _pagesegments]
 
 add   bh, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
 add   bx, ax
@@ -1854,7 +1856,7 @@ mov   si, ax
 mov   al, dl
 SHIFT_MACRO shl   ax 4
 sal   si, 1
-mov   dx, word ptr ds:[si + _pagesegments]
+mov   dx, word ptr cs:[si + _pagesegments]
 add   dh, (SPRITE_COLUMN_SEGMENT SHR 8)
 add   ax, dx
 pop   si
@@ -1880,7 +1882,7 @@ mov   si, ax
 mov   al, dl
 SHIFT_MACRO shl   ax 4
 sal   si, 1
-mov   dx, word ptr ds:[si + _pagesegments]
+mov   dx, word ptr cs:[si + _pagesegments]
 add   dh, (SPRITE_COLUMN_SEGMENT SHR 8) 
 add   dx, ax
 mov   si, dx ; back this up

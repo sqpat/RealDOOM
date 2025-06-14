@@ -356,6 +356,7 @@ dw   0
 ; unused 6BE
 dw   0
 ; 6C0
+; todo rept
 dw  00, 00, 00, 00, 00, 00
 
 

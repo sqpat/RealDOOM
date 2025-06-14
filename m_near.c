@@ -223,7 +223,6 @@ uint16_t         pspritescale;
  
 int16_t             numflats;
 
-int16_t             firstpatch;
 int16_t             numpatches;
 
 int16_t             numspritelumps;
@@ -355,9 +354,6 @@ mline_t thintriangle_guy[] = {
 
 
 
-segment_t pagesegments[NUM_TEXTURE_L1_CACHE_PAGES] = { 0x0000u, 0x0400u, 0x0800u, 0x0c00u
-							,0x1000u, 0x1400u, 0x1800u, 0x1c00u
- };
 
 
 /* 

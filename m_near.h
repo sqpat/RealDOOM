@@ -166,7 +166,7 @@
 #define viletryy                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00D0)))
 #define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x00D4)))
 #define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D6))
-// d7 free
+#define snd_SfxDevice                   (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D7))
 #define ds_source_segment               (*((byte __far* __near*)             (_NULL_OFFSET + 0x00D8)))
 
 #define currentscreen                   (*(byte __far * __near *)            (_NULL_OFFSET + 0x00DC))
@@ -178,8 +178,7 @@
 
 
 #define validcount_global	            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F4))
-// f6 free
-#define snd_SfxDevice                   (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00F7))
+#define firstpatch                      (*(int16_t  __near *)                (_NULL_OFFSET + 0x00F6))
 #define numbraintargets                 (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F8))
 #define braintargeton                   (*(int16_t __near *)                 (_NULL_OFFSET + 0x00FA))
 #define brainspit_easy                  (*(boolean __near *)                 (_NULL_OFFSET + 0x00FC))
@@ -566,7 +565,6 @@ extern uint16_t			    skytexture;
 
 extern uint16_t             pspritescale;
 extern int16_t              numflats;
-extern int16_t              firstpatch;
 extern int16_t              numpatches;
 extern int16_t              numspritelumps;
 extern int16_t              numtextures;
@@ -615,7 +613,6 @@ extern mline_t              cheat_player_arrow[16];
 extern mline_t              triangle_guy[3];
 */
 extern mline_t              thintriangle_guy[3];
-extern segment_t            pagesegments[NUM_TEXTURE_L1_CACHE_PAGES];
 
 
 extern void                 (__far* R_DrawPlanesCall)();

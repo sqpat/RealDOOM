@@ -116,6 +116,7 @@ _viletryy =                         _NULL_OFFSET + 000D0h
 _viewangle_shiftright1 = 			_NULL_OFFSET + 000D4h
 _skipdirectdraws = 					_NULL_OFFSET + 000D6h
 
+_snd_SfxDevice = 					_NULL_OFFSET + 000D7h
 
 _ds_source_segment = 				_NULL_OFFSET + 000D8h
 
@@ -130,8 +131,8 @@ _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 000EAh
 
 _validcount_global =				_NULL_OFFSET + 000F4h
 
-; f6 unused
-_snd_SfxDevice = 					_NULL_OFFSET + 000F7h
+_firstpatch =                       _NULL_OFFSET + 000F6h
+
 _numbraintargets = 					_NULL_OFFSET + 000F8h
 _braintargeton = 					_NULL_OFFSET + 000FAh
 _brainspit_easy = 					_NULL_OFFSET + 000FCh
