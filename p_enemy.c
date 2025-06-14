@@ -1461,7 +1461,6 @@ void __near A_VileChase (mobj_t __near* actor, mobj_pos_t __far* actor_pos) {
 		yl = (viletryy.w - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
 		yh = (viletryy.w - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
 	
-		vileobj = actor;
 		for (bx=xl ; bx<=xh ; bx++)
 		{
 			for (by=yl ; by<=yh ; by++)

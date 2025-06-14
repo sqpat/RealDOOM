@@ -181,7 +181,7 @@ _finaleflat =                   	_NULL_OFFSET + 00146h
 _FixedMul2432_addr =                _NULL_OFFSET + 00148h
 _tmthing_pos =                      _NULL_OFFSET + 0014Ch
 
-; 150-160h free
+_trace =                            _NULL_OFFSET + 00150h
 
 ; 160h
 _currentflatpage =            		_NULL_OFFSET + 00160h
@@ -395,8 +395,32 @@ _segloopprevlookup =                 _NULL_OFFSET + 006B0h
 _segloopcachedbasecol =              _NULL_OFFSET + 006B4h
 _cachedsegmenttex =                  _NULL_OFFSET + 006B8h
 _cachedcollength =                   _NULL_OFFSET + 006BCh
-; 6BE is unused
-_flatcache_nodes =				     _NULL_OFFSET + 006C0h
+_ceilinglinenum =                    _NULL_OFFSET + 006BEh
+
+_lineopening =				         _NULL_OFFSET + 006C0h
+
+; 6c6
+_intercept_p =				         _NULL_OFFSET + 006C8h
+_aimslope = 				         _NULL_OFFSET + 006CCh
+_bestslidefrac =				     _NULL_OFFSET + 006D0h
+_bestslidelinenum =				     _NULL_OFFSET + 006D4h
+_numspechit =				         _NULL_OFFSET + 006D6h
+_lastcalculatedsector =				 _NULL_OFFSET + 006D8h
+
+_shootthing =				 		 _NULL_OFFSET + 006DAh
+_shootz =				 			 _NULL_OFFSET + 006DCh
+_la_damage = 		   			     _NULL_OFFSET + 006E0h
+
+_linetarget = 		   			     _NULL_OFFSET + 006E2h
+_linetarget_pos = 		   			 _NULL_OFFSET + 006E4h
+_attackrange16 = 		   			 _NULL_OFFSET + 006E8h
+_nofit = 		   			 		 _NULL_OFFSET + 006EAh
+_crushchange = 		   			 	 _NULL_OFFSET + 006EBh
+_leveltime =     		   			 _NULL_OFFSET + 006ECh
+
+; 6c6
+
+_flatcache_nodes =				     _NULL_OFFSET + 006F0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

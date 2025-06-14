@@ -45,7 +45,6 @@ EXTRN P_RemoveMobj_:NEAR
 
 EXTRN _prndindex:BYTE
 EXTRN _setStateReturn:WORD
-EXTRN _attackrange16:WORD
 
 
 .CODE

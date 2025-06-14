@@ -1148,7 +1148,7 @@ button_t        buttonlist[MAXBUTTONS];
 int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
 int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
 boolean		onground;
-fixed_t_union	leveltime;
+
 int16_t currentThinkerListHead;
 // cached 'last used' mobjs for functions that operate on a mobj and where the mobj is often used right after. 
 mobj_t __near* setStateReturn;
@@ -1177,58 +1177,14 @@ dirtype_t diags[] = {
 
 
 
-// keep track of the line that lowers the ceiling,
-// so missiles don't explode against sky hack walls
-int16_t		ceilinglinenum;
-
-// keep track of special lines as they are hit,
-// but don't process them until the move is proven valid
-
-int16_t		numspechit;
-
-int16_t lastcalculatedsector;
-
-
-
-
 //
 // SLIDE MOVE
 // Allows the player to slide along any angled walls.
 //
-fixed_t_union		bestslidefrac;
-//fixed_t_union		secondslidefrac;
-
-int16_t		bestslidelinenum;
-//int16_t		secondslidelinenum;
 
 
-//
-// P_LineAttack
-//
-mobj_t __near*		linetarget;	// who got hit (or NULL)
-mobj_pos_t __far*	linetarget_pos;	// who got hit (or NULL)
-mobj_t __near*		shootthing;
-
-// Height if not aiming up or down
-// ???: use slope for monsters?
-fixed_t_union		shootz;	
-
-int16_t		la_damage;
-int16_t		attackrange16;
-
-fixed_t		aimslope;
-
-//
-// P_CheckSight
-//
 
 
-boolean		crushchange;
-boolean		nofit;
-intercept_t __far*	intercept_p;
-
-divline_t 	trace;
-lineopening_t lineopening;
 
 
 

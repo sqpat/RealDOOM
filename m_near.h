@@ -185,8 +185,8 @@
 // if within "tmfloorz - tmceilingz".
 #define floatok                         (*(boolean __near *)                 (_NULL_OFFSET + 0x00FD))
 #define corpsehitRef                    (*(THINKERREF __near *)              (_NULL_OFFSET + 0x00FE))
-//todo test
-#define vileobj                         (*(mobj_t __near * __near *)         (_NULL_OFFSET + 0x0100))
+// unused apparently
+//#define vileobj                         (*(mobj_t __near * __near *)         (_NULL_OFFSET + 0x0100))
 
 #define EMS_PAGE                 	    (*((segment_t __near*)               (_NULL_OFFSET + 0x0102)))
 #define viewangle_shiftright3           (*((fineangle_t __near*)             (_NULL_OFFSET + 0x0104)))
@@ -211,6 +211,7 @@
 #define tmdropoffz                      (*((short_height_t __near*)          (_NULL_OFFSET + 0x0126)))
 
 #define MULT_4096                       (((uint16_t   __near*)               (_NULL_OFFSET + 0x0128)))
+// todo unused i think
 //#define FLAT_CACHE_PAGE                 (((uint16_t   __near*)               (_NULL_OFFSET + 0x0130)))
 #define visplanelookupsegments          (((segment_t   __near*)              (_NULL_OFFSET + 0x0138)))
 
@@ -227,7 +228,7 @@
 // 147 free
 #define FixedMul2432_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0148)))
 #define tmthing_pos                     (*((mobj_pos_t  __far __near*)       (_NULL_OFFSET + 0x014C)))
-// 150-160 unused
+#define trace                           (*((divline_t __near*)               (_NULL_OFFSET + 0x0150)))
 
 #define currentflatpage                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0160)))
 #define lastflatcacheindicesused        (((int8_t    __near*)                (_NULL_OFFSET + 0x0164)))
@@ -431,12 +432,11 @@
 
 // free bytes per EMS page. Allocated in 256k chunks, so defaults to 64.. 
 // leave what, 40 bytes just in case?
+// todo move this to mottom and make it growable...
 #define sfx_free_bytes					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0648)))
 
 
 // 0x670
-
-// todo these arrays would all benefit from being < 256...
 
 #define activespritepages				  (((uint8_t __near*)                (_NULL_OFFSET + 0x0670)))
 #define activespritenumpages			  (((uint8_t __near*)                (_NULL_OFFSET + 0x0674)))
@@ -451,19 +451,39 @@
 #define cachedsegmentlumps				  (((segment_t __near*)              (_NULL_OFFSET + 0x0698)))
 #define cachedlumps					 	  (((int16_t __near*)                (_NULL_OFFSET + 0x06A0)))
 #define cachedtex				  		  (((int16_t __near*)                (_NULL_OFFSET + 0x06A8)))
+// breaks when you put stuff here? overrun? todo investigate
 // #define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06AC)))
 #define flatcache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06AE)))
 #define flatcache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06AF)))
 #define segloopprevlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06B0)))
 #define segloopcachedbasecol			  (((int16_t __near*)                (_NULL_OFFSET + 0x06B4)))
 #define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x06B8)))
-
-//6BC
 #define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06BC)))
-//6BE-6BF free
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x06C0)))
-// 6CC?
+#define ceilinglinenum				      (*((int16_t __near*)               (_NULL_OFFSET + 0x06BE)))
 
+#define lineopening  				      (*((lineopening_t __near*)         (_NULL_OFFSET + 0x06C0)))
+// unused
+// #define ???				      (*((int16_t __near*)               (_NULL_OFFSET + 0x06C6)))
+#define intercept_p  				      (*((intercept_t __far* __near*)    (_NULL_OFFSET + 0x06C8)))
+#define aimslope     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06CC)))
+#define bestslidefrac     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06D0)))
+#define bestslidelinenum		          (*((int16_t __near*)               (_NULL_OFFSET + 0x06D4)))
+#define numspechit		   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x06D6)))
+#define lastcalculatedsector		      (*((int16_t __near*)               (_NULL_OFFSET + 0x06D8)))
+
+#define shootthing	     				  (*((mobj_t __near*  __near*)       (_NULL_OFFSET + 0x06DA)))
+#define shootz     				  		  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06DC)))
+
+#define la_damage		   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x06E0)))
+
+#define linetarget	     				  (*((mobj_t  __near* __near*)       (_NULL_OFFSET + 0x06E2)))
+#define linetarget_pos  			      (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x06E4)))
+#define attackrange16		   		      (*((int16_t __near*)               (_NULL_OFFSET + 0x06E8)))
+#define nofit		   		              (*((boolean __near*)               (_NULL_OFFSET + 0x06EA)))
+#define crushchange		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x06EB)))
+#define leveltime     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06EC)))
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x06F0)))
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
 #define spritecache_nodes				  (((cache_node_page_count_t __near*) (CURRENT_POSITION_1)))
@@ -1044,7 +1064,6 @@ extern int8_t	clipammo[NUMAMMO];
 extern boolean		onground;
 
 
-extern fixed_t_union	leveltime;
 extern int16_t currentThinkerListHead;
 extern mobj_t __near* setStateReturn;
 extern mobj_pos_t __far* setStateReturn_pos;
@@ -1070,41 +1089,9 @@ extern dirtype_t diags[4];
 
 
 
+ 
 
 
-
-// keep track of the line that lowers the ceiling,
-// so missiles don't explode against sky hack walls
-extern int16_t		ceilinglinenum;
-
-// keep track of special lines as they are hit,
-// but don't process them until the move is proven valid
-extern int16_t		numspechit;
-
-extern int16_t lastcalculatedsector;
-extern fixed_t_union		bestslidefrac;
-extern int16_t		bestslidelinenum;
-//
-extern mobj_t __near*		linetarget;	// who got hit (or NULL)
-extern mobj_pos_t __far*	linetarget_pos;	// who got hit (or NULL)
-extern mobj_t __near*		shootthing;
-
-// Height if not aiming up or down
-// ???: use slope for monsters?
-extern fixed_t_union		shootz;	
-
-extern int16_t		la_damage;
-extern int16_t		attackrange16;
-
-extern fixed_t		aimslope;
-
-
-extern boolean		crushchange;
-extern boolean		nofit;
-extern intercept_t __far*	intercept_p;
-
-extern divline_t 	trace;
-extern lineopening_t lineopening;
 
 typedef struct {
 

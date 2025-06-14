@@ -46,28 +46,10 @@ EXTRN P_RemoveMobj_:NEAR
 
 EXTRN _P_CheckSight:DWORD
 
-EXTRN _ceilinglinenum:WORD
-EXTRN _trace:DIVLINE_T
-EXTRN _lineopening:WORD
-EXTRN _intercept_p:WORD
 EXTRN _playerMobjRef:WORD
 EXTRN _playerMobj:WORD
 EXTRN _playerMobj_pos:WORD
-EXTRN _bestslidefrac:WORD
-EXTRN _bestslidelinenum:WORD
-EXTRN _numspechit:WORD
-EXTRN _lastcalculatedsector:WORD
-EXTRN _la_damage:WORD
-EXTRN _aimslope:DWORD
-EXTRN _shootthing:WORD
-EXTRN _shootz:DWORD
-EXTRN _attackrange16:WORD
-EXTRN _linetarget:WORD
-EXTRN _linetarget_pos:DWORD
 EXTRN _setStateReturn:WORD
-EXTRN _leveltime:DWORD
-EXTRN _nofit:BYTE
-EXTRN _crushchange:BYTE
 EXTRN _prndindex:BYTE
 
 .CODE
@@ -3074,7 +3056,7 @@ jl    is_blocking
 
 
 xor       ax, ax
-mov       dx, word ptr [_lineopening+0]
+mov       dx, word ptr ds:[_lineopening+0]
 sar       dx, 1
 rcr       ax, 1
 sar       dx, 1
@@ -3133,7 +3115,7 @@ continue_blocking_check_2:
 
 
 xor       cx, cx
-mov       ax, word ptr [_lineopening+2]
+mov       ax, word ptr ds:[_lineopening+2]
 sar       ax, 1
 rcr       cx, 1
 sar       ax, 1

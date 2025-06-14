@@ -37,13 +37,11 @@ EXTRN P_UpdateSpecials_:NEAR
 
 EXTRN _prndindex:BYTE
 EXTRN _setStateReturn:WORD
-EXTRN _attackrange16:WORD
 EXTRN _currentThinkerListHead:WORD
 EXTRN _paused:BYTE
 EXTRN _menuactive:BYTE
 EXTRN _demoplayback:BYTE
 EXTRN _player:WORD
-EXTRN _leveltime:DWORD
 
 .CODE
 
