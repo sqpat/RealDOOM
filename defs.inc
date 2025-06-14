@@ -63,7 +63,7 @@ _quality_port_lookup = 				_NULL_OFFSET + 00030h
 ; todo move to cs
 _jump_mult_table_3 = 				_NULL_OFFSET + 00048h
 
-
+ 
 _dc_x = 							_NULL_OFFSET + 00050h
 _lastopening =                   	_NULL_OFFSET + 00052h
 _planezlight = 						_NULL_OFFSET + 00054h
@@ -157,8 +157,13 @@ _cachedystep_segment_storage =    	_NULL_OFFSET + 0011Ah
 _pspriteiscale =                    _NULL_OFFSET + 0011Ch
 
 ; 120h
-;todo unused
-;_MULT_256 =                    		_NULL_OFFSET + 00120h
+
+_tmflags1 =                         _NULL_OFFSET + 00120h
+_tmfloorz =                         _NULL_OFFSET + 00122h
+_tmceilingz =                       _NULL_OFFSET + 00124h
+_tmdropoffz =                       _NULL_OFFSET + 00126h
+
+
 _MULT_4096 =                    	_NULL_OFFSET + 00128h
 ; todo unused
 _FLAT_CACHE_PAGE =                  _NULL_OFFSET + 00130h
@@ -174,8 +179,9 @@ _castnum =                       	_NULL_OFFSET + 00145h
 _finaleflat =                   	_NULL_OFFSET + 00146h
 ; 147 free
 _FixedMul2432_addr =                _NULL_OFFSET + 00148h
+_tmthing_pos =                      _NULL_OFFSET + 0014Ch
 
-; 14C-160h free
+; 150-160h free
 
 ; 160h
 _currentflatpage =            		_NULL_OFFSET + 00160h
@@ -190,8 +196,13 @@ _gamestate =                        _NULL_OFFSET + 0016Fh
 
 
 ; 170h
-; 6-16 bytes...
-_allocatedflatsperpage =           	_NULL_OFFSET + 00170h
+_tmx =                             _NULL_OFFSET + 00170h
+_tmy =                             _NULL_OFFSET + 00174h
+_tmxmove =                         _NULL_OFFSET + 00178h
+_tmymove =                         _NULL_OFFSET + 0017Ch
+
+
+
 
 ; 180h
 _Z_QuickMapVisplanePage_addr =      _NULL_OFFSET + 00180h
@@ -240,8 +251,7 @@ _curseg_render =                     _NULL_OFFSET + 00282h
 _save_p =                            _NULL_OFFSET + 00284h
 _maskednextlookup =                  _NULL_OFFSET + 00288h
 _maskedprevlookup =                  _NULL_OFFSET + 0028Ah
-;28ch empty
-;_maskedtexrepeat =                   _NULL_OFFSET + 0028Ch
+_tmthing =                           _NULL_OFFSET + 0028Ch
 _maskedcachedbasecol =               _NULL_OFFSET + 0028Eh
 _maskedcachedsegment =               _NULL_OFFSET + 00290h
 _maskedheightvalcache =              _NULL_OFFSET + 00292h
@@ -393,10 +403,13 @@ _spritecache_nodes =				  CURRENT_POSITION_1
 CURRENT_POSITION_2 =   			      (_spritecache_nodes  + (SIZEOF_CACHE_NODE_PAGE_COUNT_T * NUM_SPRITE_CACHE_PAGES))
 _texturecache_nodes =				  CURRENT_POSITION_2
 CURRENT_POSITION_3 =   			      (_texturecache_nodes + (SIZEOF_CACHE_NODE_PAGE_COUNT_T * NUM_TEXTURE_PAGES))
-_usedspritepagemem =				  CURRENT_POSITION_3
-CURRENT_POSITION_4 =   			      (_usedspritepagemem  + (1 * NUM_SPRITE_CACHE_PAGES))
-_usedtexturepagemem =				  CURRENT_POSITION_4
-CURRENT_POSITION_5 =   			   	  (_usedtexturepagemem + (1 * NUM_TEXTURE_PAGES))
+
+_allocatedflatsperpage =		      CURRENT_POSITION_3
+CURRENT_POSITION_4 =   			      (_allocatedflatsperpage  + (1 * NUM_FLAT_CACHE_PAGES))
+_usedspritepagemem =				  CURRENT_POSITION_4
+CURRENT_POSITION_5 =   			      (_usedspritepagemem  + (1 * NUM_SPRITE_CACHE_PAGES))
+_usedtexturepagemem =				  CURRENT_POSITION_5
+CURRENT_POSITION_6 =   			   	  (_usedtexturepagemem + (1 * NUM_TEXTURE_PAGES))
 
 
 

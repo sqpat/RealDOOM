@@ -1176,17 +1176,6 @@ dirtype_t diags[] = {
 
 
 
-mobj_t __near*		tmthing;
-mobj_pos_t __far*		tmthing_pos;
-int16_t		tmflags1;
-fixed_t_union		tmx;
-fixed_t_union		tmy;
-
-
-
-short_height_t		tmfloorz;
-short_height_t		tmceilingz;
-short_height_t		tmdropoffz;
 
 // keep track of the line that lowers the ceiling,
 // so missiles don't explode against sky hack walls
@@ -1212,8 +1201,6 @@ fixed_t_union		bestslidefrac;
 int16_t		bestslidelinenum;
 //int16_t		secondslidelinenum;
 
-fixed_t_union		tmxmove;
-fixed_t_union		tmymove;
 
 //
 // P_LineAttack

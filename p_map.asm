@@ -16,7 +16,6 @@
 ;
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
-INCLUDE CONSTANT.INC
 INSTRUCTION_SET_MACRO
 
 
@@ -46,16 +45,7 @@ EXTRN P_RemoveMobj_:NEAR
 .DATA
 
 EXTRN _P_CheckSight:DWORD
-EXTRN _tmy:DWORD
-EXTRN _tmx:DWORD
-EXTRN _tmymove:DWORD
-EXTRN _tmxmove:DWORD
-EXTRN _tmceilingz:WORD
-EXTRN _tmfloorz:WORD
-EXTRN _tmthing:WORD
-EXTRN _tmthing_pos:WORD
-EXTRN _tmdropoffz:WORD
-EXTRN _tmflags1:WORD
+
 EXTRN _ceilinglinenum:WORD
 EXTRN _trace:DIVLINE_T
 EXTRN _lineopening:WORD

@@ -174,7 +174,6 @@
 #define destscreen                      (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00E4)))
 #define tantoangle_segment              (*((segment_t  __near*)              (_NULL_OFFSET + 0x00E8)))
 #define spanfunc_jump_segment_storage   (*((segment_t __near*)               (_NULL_OFFSET + 0x00EA)))
-//ec-f4 free
 
 
 #define validcount_global	            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F4))
@@ -204,8 +203,13 @@
 #define cachedystep_segment_storage     (*((segment_t __near*)               (_NULL_OFFSET + 0x011A)))
 #define pspriteiscale                   (*((fixed_t   __near*)               (_NULL_OFFSET + 0x011C)))
 
-// 8 bytes free
 //#define MULT_256                        (((uint16_t   __near*)               (_NULL_OFFSET + 0x0120)))
+
+#define tmflags1                        (*((int16_t __near*)                 (_NULL_OFFSET + 0x0120)))
+#define tmfloorz                        (*((short_height_t __near*)          (_NULL_OFFSET + 0x0122)))
+#define tmceilingz                      (*((short_height_t __near*)          (_NULL_OFFSET + 0x0124)))
+#define tmdropoffz                      (*((short_height_t __near*)          (_NULL_OFFSET + 0x0126)))
+
 #define MULT_4096                       (((uint16_t   __near*)               (_NULL_OFFSET + 0x0128)))
 //#define FLAT_CACHE_PAGE                 (((uint16_t   __near*)               (_NULL_OFFSET + 0x0130)))
 #define visplanelookupsegments          (((segment_t   __near*)              (_NULL_OFFSET + 0x0138)))
@@ -222,7 +226,8 @@
 #define finaleflat                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x0146)))
 // 147 free
 #define FixedMul2432_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0148)))
-// 14C-160 unused
+#define tmthing_pos                     (*((mobj_pos_t  __far __near*)       (_NULL_OFFSET + 0x014C)))
+// 150-160 unused
 
 #define currentflatpage                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0160)))
 #define lastflatcacheindicesused        (((int8_t    __near*)                (_NULL_OFFSET + 0x0164)))
@@ -236,7 +241,13 @@
 
 
 // 6-16 bytes... space it out in case of size growth
-#define allocatedflatsperpage           (((int8_t    __near*)                (_NULL_OFFSET + 0x0170)))
+
+
+#define tmx                             (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0170)))
+#define tmy                             (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0174)))
+#define tmxmove                         (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0178)))
+#define tmymove                         (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x017C)))
+
 
 
 // these are far pointers to functions..
@@ -289,8 +300,7 @@
 
 #define maskednextlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x0288)))
 #define maskedprevlookup                (*((int16_t __near*)                 (_NULL_OFFSET + 0x028A)))
-// 28c/28d empty
-// #define maskedtexrepeat                 (*((int16_t __near*)                 (_NULL_OFFSET + 0x028C)))
+#define tmthing                         (*((mobj_t __near*)                  (_NULL_OFFSET + 0x028C)))
 #define maskedcachedbasecol             (*((int16_t __near*)                 (_NULL_OFFSET + 0x028E)))
 #define maskedcachedsegment             (*((segment_t __near*)               (_NULL_OFFSET + 0x0290)))
 #define maskedheightvalcache            (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0292)))
@@ -461,10 +471,12 @@
 #define texturecache_nodes				  (((cache_node_page_count_t __near*) (CURRENT_POSITION_2)))
 #define CURRENT_POSITION_3  			  (((uint16_t) texturecache_nodes) + (sizeof(cache_node_page_count_t) * NUM_TEXTURE_PAGES))
 
-#define usedspritepagemem				  (((uint8_t __near*) (CURRENT_POSITION_3)))
-#define CURRENT_POSITION_4  			  (((uint16_t) usedspritepagemem) + (sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES))
-#define usedtexturepagemem				  (((uint8_t __near*) (CURRENT_POSITION_4)))
-#define CURRENT_POSITION_5  			  (((uint16_t) usedtexturepagemem) + (sizeof(uint8_t) * NUM_TEXTURE_PAGES))
+#define allocatedflatsperpage             (((uint8_t __near*) (CURRENT_POSITION_3)))
+#define CURRENT_POSITION_4   			  (((uint16_t) allocatedflatsperpage) + (sizeof(uint8_t) * NUM_FLAT_CACHE_PAGES))
+#define usedspritepagemem				  (((uint8_t __near*) (CURRENT_POSITION_4)))
+#define CURRENT_POSITION_5  			  (((uint16_t) usedspritepagemem) + (sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES))
+#define usedtexturepagemem				  (((uint8_t __near*) (CURRENT_POSITION_5)))
+#define CURRENT_POSITION_6  			  (((uint16_t) usedtexturepagemem) + (sizeof(uint8_t) * NUM_TEXTURE_PAGES))
 
 
 // extern int16_t 					segloopprevlookup[2];
@@ -1059,19 +1071,7 @@ extern dirtype_t diags[4];
 
 
 
-extern mobj_t __near*		tmthing;
-extern mobj_pos_t __far*		tmthing_pos;
-extern int16_t		tmflags1;
-extern fixed_t_union		tmx;
-extern fixed_t_union		tmy;
 
-
-// If "floatok" true, move would be ok
-// if within "tmfloorz - tmceilingz".
-
-extern short_height_t		tmfloorz;
-extern short_height_t		tmceilingz;
-extern short_height_t		tmdropoffz;
 
 // keep track of the line that lowers the ceiling,
 // so missiles don't explode against sky hack walls
@@ -1084,8 +1084,6 @@ extern int16_t		numspechit;
 extern int16_t lastcalculatedsector;
 extern fixed_t_union		bestslidefrac;
 extern int16_t		bestslidelinenum;
-extern fixed_t_union		tmxmove;
-extern fixed_t_union		tmymove;
 //
 extern mobj_t __near*		linetarget;	// who got hit (or NULL)
 extern mobj_pos_t __far*	linetarget_pos;	// who got hit (or NULL)
