@@ -380,7 +380,13 @@ uint8_t quality_port_lookup[12] = {
 */
 
 
+// int16_t 					segloopprevlookup[2];
+// int16_t 					segloopnextlookup[2] = {-1, -1}; // 0 would be fine too...
+// uint8_t 					seglooptexrepeat[2] = {0, 0}; 
+// segment_t 					segloopcachedsegment[2];
+// int16_t 					segloopcachedbasecol[2];
 
+//uint8_t 					segloopheightvalcache[2];
 
 
 

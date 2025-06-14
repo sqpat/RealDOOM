@@ -82,12 +82,17 @@
 
 #define NEAR_SEGMENT 0x3C00
 #define _NULL_OFFSET 0x30
+ 
 
-#define currentscreen                   (*(byte __far * __near *)            (_NULL_OFFSET + 0x0000))
-#define destview                        (*(byte __far * __near *)            (_NULL_OFFSET + 0x0004))
-#define destscreen                      (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0008)))
-#define tantoangle                      (*((segment_t  __near*)              (_NULL_OFFSET + 0x000C)))
-#define spanfunc_jump_segment_storage   (*((segment_t __near*)               (_NULL_OFFSET + 0x000E)))
+#define segloopnextlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x0000)))
+#define seglooptexrepeat				  (((uint8_t __near*)                (_NULL_OFFSET + 0x0004)))
+#define maskedtexrepeat                   (*((int16_t __near*)               (_NULL_OFFSET + 0x0006)))
+#define segloopcachedsegment			  (((segment_t __near*)              (_NULL_OFFSET + 0x0008)))
+#define segloopheightvalcache			  (((uint8_t __near*)                (_NULL_OFFSET + 0x000C)))
+
+
+
+// 0E-0F free
 
 
 //spanfunc_prt[4]
@@ -102,16 +107,13 @@
 // 28 to 30 unused
 
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
-#define ds_source_segment               (*((byte __far* __near*)             (_NULL_OFFSET + 0x003C)))
-// 40, 41 free
-#define dc_colormap_index               (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0042)))
-#define snd_MusicDevice				    (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0043)))
-#define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0044)))
-#define dc_yh                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x0046)))
+// 3C to 47 free
 #define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x0048))
 
 
 #define dc_x                            (*((int16_t __near*)                 (_NULL_OFFSET + 0x0050)))
+
+// end of stuff that can be used effectively in bx+xx addressing
 #define lastopening                     (*((uint16_t    __near*)             (_NULL_OFFSET + 0x0052)))
 
 #define planezlight                     (*(uint8_t __far * __near *)         (_NULL_OFFSET + 0x0054))
@@ -143,10 +145,9 @@
 #define player_ptr                      (*((player_t __near* _near*)         (_NULL_OFFSET + 0x00AC)))
 #define pendingmusicenum                (*((musicenum_t _near*)              (_NULL_OFFSET + 0x00AE)))
 #define pendingmusicenumlooping         (*((boolean _near*)              	 (_NULL_OFFSET + 0x00AF)))
-
-	
-// b0-b4 free
-
+#define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B0)))
+#define dc_yh                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B2)))
+#define snd_MusicDevice				    (*((uint8_t __near*)                 (_NULL_OFFSET + 0x00B4)))
 #define is_ultimate                     (*(boolean __near *)                 (_NULL_OFFSET + 0x00B5))
 #define firstspritelump                 (*(int16_t  __near *)                (_NULL_OFFSET + 0x00B6))
 #define finaletext                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B8)))
@@ -165,9 +166,17 @@
 #define viletryy                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00D0)))
 #define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x00D4)))
 #define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D6))
+// d7 free
+#define ds_source_segment               (*((byte __far* __near*)             (_NULL_OFFSET + 0x00D8)))
+
+#define currentscreen                   (*(byte __far * __near *)            (_NULL_OFFSET + 0x00DC))
+#define destview                        (*(byte __far * __near *)            (_NULL_OFFSET + 0x00E0))
+#define destscreen                      (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00E4)))
+#define tantoangle_segment              (*((segment_t  __near*)              (_NULL_OFFSET + 0x00E8)))
+#define spanfunc_jump_segment_storage   (*((segment_t __near*)               (_NULL_OFFSET + 0x00EA)))
+//ec-f4 free
 
 
-// d7-f4 free
 #define validcount_global	            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F4))
 // f6 free
 #define snd_SfxDevice                   (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00F7))
@@ -433,26 +442,27 @@
 #define cachedsegmentlumps				  (((segment_t __near*)              (_NULL_OFFSET + 0x0698)))
 #define cachedlumps					 	  (((int16_t __near*)                (_NULL_OFFSET + 0x06A0)))
 #define cachedtex				  		  (((int16_t __near*)                (_NULL_OFFSET + 0x06A8)))
-#define segloopnextlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06AC)))
-#define seglooptexrepeat				  (((uint8_t __near*)                (_NULL_OFFSET + 0x06B0)))
-#define maskedtexrepeat                   (*((int16_t __near*)               (_NULL_OFFSET + 0x06B2)))
-#define segloopprevlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06B4)))
-#define segloopcachedsegment			  (((segment_t __near*)              (_NULL_OFFSET + 0x06B8)))
-#define segloopcachedbasecol			  (((int16_t __near*)                (_NULL_OFFSET + 0x06BC)))
-#define segloopheightvalcache			  (((uint8_t __near*)                (_NULL_OFFSET + 0x06C0)))
+// #define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06AC)))
+#define flatcache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06AE)))
+#define flatcache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06AF)))
+#define segloopprevlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06B0)))
+#define segloopcachedbasecol			  (((int16_t __near*)                (_NULL_OFFSET + 0x06B4)))
+#define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x06B8)))
 
-#define flatcache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06C2)))
-#define flatcache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06C3)))
-#define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x06C4)))
-#define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06C8)))
-
-//6CA
+//6BC
+#define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06BC)))
 
 extern cache_node_page_count_t  spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 extern cache_node_page_count_t	texturecache_nodes[NUM_TEXTURE_PAGES];
 extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 
+// extern int16_t 					segloopprevlookup[2];
+// extern int16_t 					segloopnextlookup[2];
 
+// extern uint8_t 					seglooptexrepeat[2]; 
+// extern segment_t 				segloopcachedsegment[2];
+// extern int16_t 					segloopcachedbasecol[2];
+// extern uint8_t 					segloopheightvalcache[2];
 
 // biggest MUS in doom1/2 is 64808... divided by 4 this 
 // gives us 128 free bytes of overlap per page and fits the 64808 barely.

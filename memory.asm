@@ -21,16 +21,19 @@ INSTRUCTION_SET_MACRO
 
 
 SEGMENT _FIXEDDATA  USE16 PARA PUBLIC 'DATA'
-db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-; spanfunc_segment_storage 0Eh
-dw SPANFUNC_JUMP_LOOKUP_SEGMENT
+; 000   _segloopnextlookup 00
+dw  -1, -1, 00, 00, 00, 00, 00, 00
+
+
+
+
 ; 010  
 dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; _quality_port_lookup 0x30
 db 1,  2,  4,  8,  3, 12,  3, 12, 15, 15, 15, 15
-; _ds_source_segment  0x3C 
-dw                                       DRAWSPAN_BX_OFFSET, 0000h
+dw                                       00, 00
+
 
 
 ;0x40    48: jump_mult_table_3 
@@ -53,9 +56,12 @@ dw 0, 0, 0, 0, 0, 0, 0, 0
 ; 0xC0
 dw 0,  OPENINGS_SEGMENT,  0,  OPENINGS_SEGMENT,  0,  0,  0,  0
 ; 0xD0
-dw 0, 0, 0, 0, 0, 0, 0, 0
-; 0xE0
-dw 0, 0, 0, 0, 0, 0, 0, 0
+; _ds_source_segment  0xD8 
+dw 00, 00, 00, 00, DRAWSPAN_BX_OFFSET, 00, 00, 00
+; 0xE0    spanfunc_segment_storage EAh
+dw 0, 0, 0, 0, 0, SPANFUNC_JUMP_LOOKUP_SEGMENT, 0, 0
+
+
 ; 0xF0   validcount (0xF4)= 1
 dw 0, 0, 1, 0, 0, 0, 0, 0
 ; 0x100:
@@ -341,14 +347,14 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 690
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 6A0
-dw  00, 00, 00, 00, -1, -1, -1, -1
+dw  00, 00, 00, 00, -1, -1, 0
+db 0, NUM_FLAT_CACHE_PAGES-1
 ; 6B0
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 6C0
-db  0, 0, 0, NUM_FLAT_CACHE_PAGES-1
-; 6C4
-dw      -1, -1, 00
-; 6CA
+dw  00, 00, 00, 00, -1, -1
+; 6BC 
+dw   0
+
+
 
 
 ENDS _FIXEDDATA

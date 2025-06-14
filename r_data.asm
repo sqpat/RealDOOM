@@ -1619,27 +1619,25 @@ mov   di, ds
 mov   es, di
 mov   di, OFFSET _cachedlumps
 mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
-; todo free cx for here..
+
 
 ;_cachedlumps =                	     _NULL_OFFSET + 006A0h
 ;_cachedtex =                		 _NULL_OFFSET + 006A8h
-;_segloopnextlookup =                _NULL_OFFSET + 006ACh
-;_seglooptexrepeat =                 _NULL_OFFSET + 006B0h
-;_maskedtexrepeat =            		 _NULL_OFFSET + 006B2h
+;_segloopnextlookup    = 	 		 _NULL_OFFSET + 00000h
+;_seglooptexrepeat    = 			 _NULL_OFFSET + 00004h
+;_maskedtexrepeat =                  _NULL_OFFSET + 00006h
 
-mov  cx, 8
+mov  cx, 6
 rep stosw
-;stosw ; cachedlumps[0] = -1  6D0
-;stosw ; cachedlumps[1] = -1  6D2
-;stosw ; cachedlumps[2] = -1  6D4
-;stosw ; cachedlumps[3] = -1  6D6
-;stosw ; cachedtex[0] = -1    6D8
-;stosw ; cachedtex[1] = -1    6DA
-;stosw ; segloopnextlookup[0] = -1; 6DC
-;stosw ; segloopnextlookup[1] = -1; 6DE
+
+mov   di, OFFSET  _segloopnextlookup
+stosw ; segloopnextlookup[0] = -1; 030
+stosw ; segloopnextlookup[1] = -1; 032
 inc   ax    ; ax is 0
-stosw ; seglooptexrepeat[0] = 0; seglooptexrepeat[1] = 0 ; 6E0
-stosw ; maskedtexrepeat = 0;                             ; 6E2
+stosw ; seglooptexrepeat[0] = 0; seglooptexrepeat[1] = 0 ; 034
+stosw ; maskedtexrepeat = 0;                             ; 036
+
+
 
 
 mov   es, dx ; dl/dx is start page
@@ -2612,7 +2610,7 @@ segloopcachedbasecol_set:
 
 
 mov       di, word ptr [bp - 2]  ; segloopcachetype
-mov       byte ptr ds:[di + _seglooptexrepeat], 0
+mov       byte ptr ds:[di + _seglooptexrepeat], 0    ; todo any known 0? maybe ah from subtractor
 sal       di, 1
 mov       word ptr ds:[di + _segloopcachedbasecol], bx
 
@@ -2835,7 +2833,7 @@ jle       update_tex_caches_and_return
 ;		heightval &= 0x0F;
 
 
-xor       bx, bx
+xor       bx, bx  ; todo mov cachedlumps
 
 ;		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
 
@@ -3378,7 +3376,7 @@ jne       update_both_cache_texes_masked
 swap_tex1_tex2_masked:
 mov       word ptr ds:[bx], dx
 mov       word ptr ds:[bx+2], ax
-
+; todo use collength offset from bx (bx+4?)
 mov       ax, word ptr ds:[_cachedcollength]
 xchg      al, ah
 mov       word ptr ds:[_cachedcollength], ax

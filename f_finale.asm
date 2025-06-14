@@ -28,6 +28,7 @@ ENDP
 
 ; vars and data..
 
+; todo swap orders then use immediate-less indexing to _CSDATA_castorder
 _CSDATA_hu_font_ptr:
 dw    0
 

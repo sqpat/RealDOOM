@@ -44,7 +44,7 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_6_out_of_bounds
 
-mov   es, word ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 mov   bx, ax
 les   ax, dword ptr es:[bx]
@@ -97,7 +97,7 @@ call FastDiv3232_shift_3_8_
 
 cmp   ax, 0800h
 jae   octant_7_out_of_bounds
-mov   es, word ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 mov   bx, ax
 les   ax, dword ptr es:[bx]
@@ -187,7 +187,7 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_0_out_of_bounds
 
-mov   es, word ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 mov   bx, ax
 les   ax, dword ptr es:[bx]
@@ -210,7 +210,7 @@ octant_1_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_1_out_of_bounds
-mov   es, word ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 mov   bx, ax
 mov   ax, 0ffffh
@@ -257,7 +257,7 @@ xchg ax, bx
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_3_out_of_bounds
-mov   es, word ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 mov   bx, ax
 mov   ax, 0ffffh
@@ -281,7 +281,7 @@ octant_2_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_2_out_of_bounds
-mov   es, word ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 mov   bx, ax
 les   ax, dword ptr es:[bx]
@@ -318,7 +318,7 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_4_out_of_bounds
 
-mov   es, word ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 mov   bx, ax
 les   ax, dword ptr es:[bx]
@@ -342,7 +342,7 @@ octant_5_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_5_out_of_bounds
-mov   es, word ptr ds:[_tantoangle]
+mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 mov   bx, ax
 mov   ax, 0ffffh

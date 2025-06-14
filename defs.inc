@@ -34,10 +34,20 @@ GC_READMAP      	=   4
 
 
 _NULL_OFFSET = 0030h
-_currentscreen    = 				_NULL_OFFSET + 00000h
-_destview    = 						_NULL_OFFSET + 00004h
-_tantoangle  = 						_NULL_OFFSET + 0000Ch
-_spanfunc_jump_segment_storage = 	_NULL_OFFSET + 0000Eh
+
+
+_segloopnextlookup    = 			_NULL_OFFSET + 00000h
+_seglooptexrepeat    = 				_NULL_OFFSET + 00004h
+_maskedtexrepeat =                  _NULL_OFFSET + 00006h
+_segloopcachedsegment  = 			_NULL_OFFSET + 00008h
+_segloopheightvalcache = 			_NULL_OFFSET + 0000Ch
+;// 0E-0F free
+;_currentscreen    = 				_NULL_OFFSET + 00000h
+;_destview    = 						_NULL_OFFSET + 00004h
+;_destscreen = (_NULL_OFFSET + 0008h)
+;_tantoangle_segment  = 						_NULL_OFFSET + 0000Ch
+;_spanfunc_jump_segment_storage = 	_NULL_OFFSET + 0000Eh
+
 
 ; 010 to 030 unused
 
@@ -48,14 +58,9 @@ _spanfunc_outp = 					_NULL_OFFSET + 00024h
 ; 28 -2F unused
 
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
-_ds_source_segment = 				_NULL_OFFSET + 0003Ch
 
 
-
-_dc_colormap_index = 				_NULL_OFFSET + 00042h
-_snd_MusicDevice =				    _NULL_OFFSET + 00043h
-_dc_yl = 							_NULL_OFFSET + 00044h
-_dc_yh = 							_NULL_OFFSET + 00046h
+; todo move to cs
 _jump_mult_table_3 = 				_NULL_OFFSET + 00048h
 
 
@@ -89,7 +94,11 @@ _player_ptr = 						_NULL_OFFSET + 000ACh
 _pendingmusicenum =                 _NULL_OFFSET + 000AEh
 _pendingmusicenumlooping =          _NULL_OFFSET + 000AFh
 
-; free
+
+_snd_MusicDevice =				    _NULL_OFFSET + 000B0h
+_dc_yl = 							_NULL_OFFSET + 000B2h
+_dc_yh = 							_NULL_OFFSET + 000B4h
+
 _is_ultimate = 						_NULL_OFFSET + 000B5h
 _firstspritelump = 					_NULL_OFFSET + 000B6h
 
@@ -108,7 +117,16 @@ _viewangle_shiftright1 = 			_NULL_OFFSET + 000D4h
 _skipdirectdraws = 					_NULL_OFFSET + 000D6h
 
 
-; d7 - f4 unused
+_ds_source_segment = 				_NULL_OFFSET + 000D8h
+
+_currentscreen    = 				_NULL_OFFSET + 000DCh
+_destview    = 						_NULL_OFFSET + 000E0h
+_destscreen    = 					_NULL_OFFSET + 000E4h
+_tantoangle_segment  = 				_NULL_OFFSET + 000E8h
+_spanfunc_jump_segment_storage = 	_NULL_OFFSET + 000EAh
+
+; ec-f4 free
+
 
 _validcount_global =				_NULL_OFFSET + 000F4h
 
@@ -359,18 +377,13 @@ _textureL1LRU =                 	 _NULL_OFFSET + 00690h
 _cachedsegmentlumps =                _NULL_OFFSET + 00698h
 _cachedlumps =                 	     _NULL_OFFSET + 006A0h
 _cachedtex =                 		 _NULL_OFFSET + 006A8h
-_segloopnextlookup =                 _NULL_OFFSET + 006ACh
-_seglooptexrepeat =                  _NULL_OFFSET + 006B0h
-_maskedtexrepeat =            		 _NULL_OFFSET + 006B2h
-_segloopprevlookup =                 _NULL_OFFSET + 006B4h
-_segloopcachedsegment =              _NULL_OFFSET + 006B8h
-_segloopcachedbasecol =              _NULL_OFFSET + 006BCh
-_segloopheightvalcache =             _NULL_OFFSET + 006C0h
-
-_flatcache_l2_head =                 _NULL_OFFSET + 006C2h
-_flatcache_l2_tail =                 _NULL_OFFSET + 006C3h
-_cachedsegmenttex =                  _NULL_OFFSET + 006C4h
-_cachedcollength =                   _NULL_OFFSET + 006C8h
+;_cachedcollength =                   _NULL_OFFSET + 006ACh
+_flatcache_l2_head =                 _NULL_OFFSET + 006ADh
+_flatcache_l2_tail =                 _NULL_OFFSET + 006AEh
+_segloopprevlookup =                 _NULL_OFFSET + 006B0h
+_segloopcachedbasecol =              _NULL_OFFSET + 006B4h
+_cachedsegmenttex =                  _NULL_OFFSET + 006B8h
+_cachedcollength =                   _NULL_OFFSET + 006BCh
 
 
 

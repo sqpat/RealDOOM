@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 ; todo move jump mult table to cs...
 .DATA
 
-_destscreen = (_NULL_OFFSET + 0008h)
+
 
 EXTRN _viewwindowx:WORD
 EXTRN _viewwindowy:WORD

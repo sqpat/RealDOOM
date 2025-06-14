@@ -1143,9 +1143,9 @@ void __near Z_ClearDeadCode() {
 
 	angle_t __far*  dest;
 	
-	tantoangle = FP_SEG(startaddr) + 1;
+	tantoangle_segment = FP_SEG(startaddr) + 1;
 	//I_Error("size: %i", size);
-	dest =  (angle_t __far* )MK_FP(tantoangle, 0);
+	dest =  (angle_t __far* )MK_FP(tantoangle_segment, 0);
 	
 	fp = fopen("DOOMDATA.BIN", "rb");
 	fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);

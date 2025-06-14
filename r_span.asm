@@ -267,7 +267,7 @@ mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
 
 ; yfrac16 already in cx
-; todo why is this -2?. should this be 'fixed'
+
 lds   bx, dword ptr ds:[_ds_source_segment] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 
 

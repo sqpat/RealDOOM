@@ -109,7 +109,7 @@ GLOBOBJS = $(GLOBOBJS) &
  p_spec.obj &
  p_switch.obj &
  p_mobj.obj &
-p_mobja.obj &
+ p_mobja.obj &
  p_telept.obj &
  p_tick.obj &
  p_user.obj &
@@ -137,7 +137,6 @@ p_mobja.obj &
  sm_sbmid.obj &
  sm_mpumd.obj &
  f_wipe.obj &
- f_finale.obj &
  dmx.obj &
  d_int.obj &
  memory.obj &

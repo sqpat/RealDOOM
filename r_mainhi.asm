@@ -46,6 +46,8 @@ EXTRN _player:WORD
 EXTRN _r_cachedplayerMobjsecnum:WORD
 
 
+
+
 .CODE
 
 
@@ -675,7 +677,7 @@ mov   dx, di ; move di to dx early to free up di for les + di + bx combo
 
 
 mov   bx, ax
-mov   es, word ptr ds:[_tantoangle] 
+mov   es, word ptr ds:[_tantoangle_segment] 
 mov   bx, word ptr es:[bx + 2] ; get just intbits..
 
 ;    dist = FixedDiv (dx, finesine[angle] );	
@@ -4375,13 +4377,11 @@ mov   ds, ax
 mov   es, ax
 mov   ax, 0FFFFh
 mov   di, OFFSET _segloopnextlookup
-; todo these are adjacent, use stos?
-stosw ; mov   word ptr ds:[_segloopnextlookup], ax         ; big todo: move these to cs after R_GetColumnSegment_ in asm
-stosw ; mov   word ptr ds:[_segloopnextlookup+2], ax       ; then leave DS as CS this whole time.
+stosw ; mov   word ptr ds:[_segloopnextlookup], ax
+stosw ; mov   word ptr ds:[_segloopnextlookup+2], ax
 inc   ax
 ; zero both 
 stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
-
 
 
 jmp   R_RenderSegLoop_exit   
