@@ -194,9 +194,9 @@ _allocatedflatsperpage =           	_NULL_OFFSET + 00170h
 
 ; 180h
 _Z_QuickMapVisplanePage_addr =      _NULL_OFFSET + 00180h
-_R_EvictFlatCacheEMSPage_addr =     _NULL_OFFSET + 00184h
+;_R_EvictFlatCacheEMSPage_addr =     _NULL_OFFSET + 00184h
 _Z_QuickMapFlatPage_addr =        	_NULL_OFFSET + 00188h
-_R_MarkL2FlatCacheMRU_addr =        _NULL_OFFSET + 0018Ch
+;_R_MarkL2FlatCacheMRU_addr =        _NULL_OFFSET + 0018Ch
 ; 190h
 _W_CacheLumpNumDirect_addr =        _NULL_OFFSET + 00190h
 
@@ -384,7 +384,10 @@ _segloopprevlookup =                 _NULL_OFFSET + 006B0h
 _segloopcachedbasecol =              _NULL_OFFSET + 006B4h
 _cachedsegmenttex =                  _NULL_OFFSET + 006B8h
 _cachedcollength =                   _NULL_OFFSET + 006BCh
+; 6BE is unused
+_flatcache_nodes =				     _NULL_OFFSET + 006C0h
 
+;CURRENT_POSITION_1 =  (flatcache_nodes + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 
 
 

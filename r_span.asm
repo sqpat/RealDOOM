@@ -43,11 +43,9 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 
 
 ; todo: eventually call these directly... 
-;EXTRN R_MarkL2FlatCacheMRU_:PROC
 ;EXTRN Z_QuickMapFlatPage_:PROC
 ;EXTRN W_CacheLumpNumDirect_:PROC
 ;EXTRN Z_QuickMapVisplanePage_:PROC
-;EXTRN R_EvictFlatCacheEMSPage_:PROC
 
 
 
@@ -1303,11 +1301,10 @@ mov   cl, 1
 jmp   SHORT update_l1_cache
 found_flat_page_to_evict:
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_EvictFlatCacheEMSPage_addr
 
 ;call  R_EvictFlatCacheEMSPage_   ; al stores result..
+jmp    do_evict_flatcache_ems_page
+done_with_evict_flatcache_ems_page:
 SHIFT_MACRO shl al 2
 
 jmp   found_flat
@@ -1369,13 +1366,12 @@ l1_cache_finished_updating:
 mov   al, byte ptr [bp - 4]
 SHIFT_MACRO sar al 2
 
-cbw  
+;cbw  
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_MarkL2FlatCacheMRU_addr
-;call  R_MarkL2FlatCacheMRU_
+cmp       al, byte ptr ds:[_flatcache_l2_head]
+jne       jump_to_flatcachemruL2
+done_with_mruL2:
 
 
 cmp   di, 0 ; di used to hold flatunlodaed
@@ -1426,6 +1422,10 @@ mov   word ptr cs:[SELFMODIFY_SPAN_comparestop+2 - OFFSET R_SPAN_STARTMARKER_], 
 cmp   si, ax
 jle   start_single_plane_draw_loop
 jmp   do_next_drawplanes_loop
+
+jump_to_flatcachemruL2:
+jmp continue_flatcachemru
+
 ; flat is unloaded. load it in
 flat_is_unloaded:
 
@@ -1652,6 +1652,188 @@ jmp   end_single_plane_draw_loop_iteration
 ENDP
 
 
+;PROC R_MarkL2FlatCacheMRU_ NEAR
+;PUBLIC R_MarkL2FlatCacheMRU_
+
+;	if (index == flatcache_l2_head) {
+;		return;
+;	}
+
+continue_flatcachemru:
+push      bx
+push      dx
+push      si
+
+
+
+
+;	cache_node_t far* nodelist  = flatcache_nodes;
+
+mov       dl, al
+mov       bx, OFFSET _flatcache_nodes
+
+
+;	prev = nodelist[index].prev;
+;	next = nodelist[index].next;
+
+
+cbw      
+
+add       ax, ax
+mov       si, ax
+mov       ax, word ptr ds:[si + bx]
+
+mov       dh, al ; back up
+
+;	if (index == flatcache_l2_tail) {
+;		flatcache_l2_tail = next;	
+;	} else {
+;		nodelist[prev].next = next;
+;	}
+
+cmp       dl, byte ptr ds:[_flatcache_l2_tail]
+jne       index_not_tail
+
+mov       byte ptr ds:[_flatcache_l2_tail], ah
+jmp       flat_tail_check_done
+
+index_not_tail:
+
+mov       si, ax
+and       si, 000FFh      ; blegh
+sal       si, 1
+mov       byte ptr ds:[si + bx + 1], ah
+
+flat_tail_check_done:
+
+;	// guaranteed to have a next. if we didnt have one, it'd be head but we already returned from that case.
+;	nodelist[next].prev = prev;
+
+mov       al, ah
+cbw      
+
+mov       si, ax
+sal       si, 1
+
+mov       byte ptr ds:[si + bx], dh
+mov       al, dl
+
+mov       si, ax
+sal       si, 1
+
+;	nodelist[index].prev = flatcache_l2_head;
+;	nodelist[index].next = -1;
+
+mov       al, byte ptr ds:[_flatcache_l2_head]
+mov       byte ptr ds:[si + bx], al
+mov       byte ptr ds:[si + bx + 1], 0FFh
+
+mov       si, ax
+sal       si, 1
+
+;	nodelist[flatcache_l2_head].next = index;
+
+mov       byte ptr ds:[si + bx + 1], dl
+
+;	flatcache_l2_head = index;
+mov       byte ptr ds:[_flatcache_l2_head], dl
+exit_flatcachemru:
+pop       si
+pop       dx
+pop       bx
+jmp       done_with_mruL2
+
+
+
+
+;PROC R_EvictFlatCacheEMSPage_ NEAR
+;PUBLIC R_EvictFlatCacheEMSPage_
+do_evict_flatcache_ems_page:
+
+push      bx
+push      dx
+push      si
+mov       al, byte ptr ds:[_flatcache_l2_tail]
+mov       dh, al
+cbw      
+
+;	evictedpage = flatcache_l2_tail;
+mov       bx, OFFSET _flatcache_nodes
+mov       si, ax        ; si gets evictedpage.
+
+;	// all the other flats in this are cleared.
+;	allocatedflatsperpage[evictedpage] = 1;
+mov       byte ptr ds:[si + _allocatedflatsperpage], 1
+sal       si, 1  ; now word lookup.
+
+;	flatcache_l2_tail = flatcache_nodes[evictedpage].next;	// tail is nextmost
+
+mov       dl, byte ptr ds:[si + bx + 1]         ; dl has flatcache_l2_tail
+mov       byte ptr ds:[_flatcache_l2_tail], dl
+
+;	flatcache_nodes[evictedpage].next = -1;
+mov       byte ptr ds:[si + bx + 1], 0FFh
+
+;	flatcache_nodes[evictedpage].prev = flatcache_l2_head;
+
+mov       al, byte ptr ds:[_flatcache_l2_head]
+mov       byte ptr ds:[si + bx + 0], al
+
+;	flatcache_nodes[flatcache_l2_head].next = evictedpage;
+mov       si, ax
+sal       si, 1
+mov       byte ptr ds:[si + bx + 1], dh
+
+;	flatcache_nodes[flatcache_l2_tail].prev = -1;
+
+mov       al, dl
+mov       si, ax
+sal       si, 1
+mov       byte ptr ds:[si + bx], 0FFh
+
+
+;	flatcache_l2_head = evictedpage;
+
+
+mov       byte ptr ds:[_flatcache_l2_head], dh
+
+
+mov       bx, FLATINDEX_SEGMENT
+mov       ds, bx
+mov       ah, dh
+xor       si, si
+mov       bx, -1
+mov       dx, MAX_FLATS
+
+
+;   for (i = 0; i < MAX_FLATS; i++){
+;	   if ((flatindex[i] >> 2) == evictedpage){
+;         flatindex[i] = 0xFF;
+;   	}
+;  	}
+check_next_flat:
+lodsb       ; si is always one in front because of lodsb...
+
+SHIFT_MACRO shr       al 2
+cmp       al, ah
+je        erase_flat
+continue_erasing_flats:
+cmp       si, dx
+jb        check_next_flat
+mov       al, ah
+mov       bx, ss
+mov       ds, bx
+pop       si
+pop       dx
+pop       bx
+jmp       done_with_evict_flatcache_ems_page
+;ret   
+
+erase_flat:
+mov       byte ptr ds:[si+bx], bl   ; bx is -1. this both writes FF and subtracts the 1 from si
+jmp       continue_erasing_flats
+
+
 ;
 ; The following functions are loaded into a different segment at runtime.
 ; However, at compile time they have access to the labels in this file.
@@ -1793,6 +1975,9 @@ ASSUME DS:DGROUP
 retf
 
 endp
+
+
+
 
 ; end marker for this asm file
 PROC R_SPAN_ENDMARKER_ FAR

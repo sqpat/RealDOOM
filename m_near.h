@@ -242,9 +242,9 @@
 
 // these are far pointers to functions..
 #define Z_QuickMapVisplanePage_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0180)))
-#define R_EvictFlatCacheEMSPage_addr    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0184)))
+//#define R_EvictFlatCacheEMSPage_addr    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0184)))
 #define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0188)))
-#define R_MarkL2FlatCacheMRU_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
+//#define R_MarkL2FlatCacheMRU_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
 #define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0190)))
 #define floorplaneindex                 (*((int16_t    __near*)              (_NULL_OFFSET + 0x0194)))
 
@@ -451,10 +451,16 @@
 
 //6BC
 #define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06BC)))
+//6BE-6BF free
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x06C0)))
+// 6CC?
+
+// based on size of NUM_FLAT_CACHE_PAGES, this will move back...
+#define CURRENT_POSITION_1  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
+
 
 extern cache_node_page_count_t  spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 extern cache_node_page_count_t	texturecache_nodes[NUM_TEXTURE_PAGES];
-extern cache_node_t 			flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 
 // extern int16_t 					segloopprevlookup[2];
 // extern int16_t 					segloopnextlookup[2];

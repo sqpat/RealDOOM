@@ -621,9 +621,9 @@ void __near Z_LoadBinaries() {
 	// set some function addresses for asm calls. 
 	// as these move to asm and EMS memory space themselves, these references can go away
 	Z_QuickMapVisplanePage_addr = 	(uint32_t)(Z_QuickMapVisplanePage);
-	R_EvictFlatCacheEMSPage_addr = 	(uint32_t)(R_EvictFlatCacheEMSPage);
+	
 	Z_QuickMapFlatPage_addr =   	(uint32_t)(Z_QuickMapFlatPage);
-	R_MarkL2FlatCacheMRU_addr = 	(uint32_t)(R_MarkL2FlatCacheMRU);
+	
 	W_CacheLumpNumDirect_addr = 	(uint32_t)(W_CacheLumpNumDirect);
 
 

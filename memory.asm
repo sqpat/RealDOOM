@@ -353,7 +353,10 @@ db 0, NUM_FLAT_CACHE_PAGES-1
 dw  00, 00, 00, 00, -1, -1
 ; 6BC 
 dw   0
-
+; unused 6BE
+dw   0
+; 6C0
+dw  00, 00, 00, 00, 00, 00
 
 
 

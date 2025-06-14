@@ -51,10 +51,8 @@ typedef struct {
 } cache_node_t;
 
 
-int8_t __far R_EvictFlatCacheEMSPage();
 int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype);
 void __near R_MarkL2CacheMRU(int8_t index, int8_t numpages, int8_t cachetype);
-void __far R_MarkL2FlatCacheMRU(int8_t index);
 
 //segment_t __near R_GetColumnSegment ( int16_t tex, int16_t col, int8_t segloopcachetype );
 segment_t __far R_GetMaskedColumnSegment ( int16_t tex, int16_t col );
@@ -70,9 +68,6 @@ void R_PrecacheLevel (void);
 void __near R_LoadPatchColumns(uint16_t lump, segment_t texlocationsegment, boolean ismasked);
 void R_LoadSpriteColumns(uint16_t lump, segment_t destpatchsegment);
  
-#define TEXTURE_TYPE_PATCH 1
-#define TEXTURE_TYPE_COMPOSITE 2
-#define TEXTURE_TYPE_SPRITE 3
 
  
 
