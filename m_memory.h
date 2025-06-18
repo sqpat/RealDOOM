@@ -1313,13 +1313,6 @@ spritedefs_bytes    7410:0000
 #define texturedefs_bytes_6000          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes_6000, size_texturecolumnlumps_bytes))
 #define spritetopoffsets_6000           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes_6000,        size_texturedefs_bytes))
 #define texturedefs_offset_6000         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets_6000,         size_spritetopoffsets))
-#define masked_lookup_6000              ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset_6000,       size_texturedefs_offset))
-#define patchwidths_6000                ((uint8_t  __far*)          MAKE_FULL_SEGMENT(masked_lookup_6000,            size_masked_lookup))
-#define patchheights_6000               ((uint8_t   __far*)         MAKE_FULL_SEGMENT(patchwidths_6000,              size_patchwidths))
-#define drawsegs_BASE_6000              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchheights_6000,             size_patchheights))
-#define drawsegs_PLUSONE_6000           ((drawseg_t __far*)         (drawsegs_BASE_6000          + 1))
-#define finetangentinner_6000           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE_6000   ,         size_drawsegs_PLUS_EXTRA))
-#define render_9000_end_6000            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner_6000,         size_finetangentinner))
 
 #define drawsegs_BASE_segment_7000      ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
 #define masked_lookup_segment_7000      ((segment_t) ((int32_t)masked_lookup_7000 >> 16))

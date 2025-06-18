@@ -105,9 +105,9 @@ void R_InitSpriteLumps(void) {
 
 		// top offset between -127 and 129 in practice. 128/-128 never actually happens so we hack in that case
 		if (patchtopoffset == 129){
-			spritetopoffsets_6000[i] = -128;
+			spritetopoffsets[i] = -128;
 		} else{
-			spritetopoffsets_6000[i] = patchtopoffset;
+			spritetopoffsets[i] = patchtopoffset;
 		}
 
 		// calculate sizes for this
@@ -138,7 +138,6 @@ void R_InitSpriteLumps(void) {
 		spritepostdatasizes[i] = postdatasize;
 		spritetotaldatasizes[i] = pixelsize + startoffset;
 		Z_QuickMapRender();
-		Z_QuickMapRender_9000To6000();//for R_TextureNumForName
 
 
 	}
@@ -228,7 +227,7 @@ void R_GenerateLookup(uint16_t texnum) {
 	// put colofs in here. copy to colofs if texture is masked
 
 	// piggyback these local arrays off scratch data...
-	int16_t_union __far*  collump = texturecolumnlumps_bytes_6000;
+	int16_t_union __far*  collump = texturecolumnlumps_bytes;
 	uint16_t currenttexturepixelbytecount = 0;
 	uint16_t currenttexturepostoffset = 0;
 	column_t __far * column;
@@ -244,7 +243,7 @@ void R_GenerateLookup(uint16_t texnum) {
 
 	// Composited texture not created yet.
 
-	texture = (texture_t __far*)&(texturedefs_bytes_6000[texturedefs_offset_6000[texnum]]);
+	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
 	usedtextureheight = textureheight + ((16 - (textureheight &0xF) ) & 0xF);
@@ -383,13 +382,13 @@ void R_GenerateLookup(uint16_t texnum) {
 
 	// we determined up above we have a masked texture....
 	// need to run thru colofs again?
-	masked_lookup_6000[texnum] = 0xFF;	// initialized value - no pointer to colofs
+	masked_lookup[texnum] = 0xFF;	// initialized value - no pointer to colofs
 	if (ismaskedtexture){
 		uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, currentpixeloffset);
 		uint16_t __far* postofs    =  MK_FP(maskedpostdataofs_segment, currentpostoffset);
 		uint16_t __far* postdata   =  MK_FP(maskedpostdata_segment, currentpostdataoffset);
 		
-		masked_lookup_6000[texnum] = maskedcount;	// index to lookup of struct...
+		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
 
 		masked_headers[maskedcount].texturesize = currenttexturepixelbytecount;
 		masked_headers[maskedcount].pixelofsoffset = currentpixeloffset;
@@ -606,10 +605,10 @@ void R_InitTextures(void) {
 
 		if ((i + 1) < numtextures) {
 			// texturedefs sizes are variable and dependent on texture size/texture patch count.
-			texturedefs_offset_6000[i + 1] = texturedefs_offset_6000[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
+			texturedefs_offset[i + 1] = texturedefs_offset[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
 		}
 
-		texture = (texture_t __far*)&(texturedefs_bytes_6000[texturedefs_offset_6000[i]]);
+		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[i]]);
 		texture->width = (mtexture->width) - 1;
 		texture->height = (mtexture->height) - 1;
 		texture->patchcount = (mtexture->patchcount);
@@ -666,7 +665,7 @@ void R_InitTextures2(){
 	// Precalculate whatever possible.  
 	// done using 7000 above ?
 
-	texturedefs_offset_6000[0] = 0;
+	texturedefs_offset[0] = 0;
 	//FAR_memset(SCRATCH_ADDRESS_7000, 0x00, 0xFFFFu);	// zero out scratch page
 
 
@@ -687,7 +686,6 @@ void R_InitTextures2(){
 
 	// Reset this since 0x7000 scratch page is active
 	Z_QuickMapRender();
-	Z_QuickMapRender_9000To6000(); //for R_TextureNumForName
 
  	
 	// 544, 1126, 1424
@@ -744,16 +742,13 @@ void R_InitPatches() {
 
 
 void __near R_InitPatches(){
-	int i;
+	int i = 0;
 	patch_t __far* wadpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
-	// todo  first patch is actually firstpatch + 1. 
-	for (i = 1; i < numpatches; i++){
+	for (i = 0; i < numpatches; i++){
 		int16_t patchindex = firstpatch+i;
 		int16_t patchheight;
 		W_CacheLumpNumDirect(patchindex, (byte __far*)wadpatch);
-		
-		// if 256, stored as 0
-		patchwidths_6000[i] = wadpatch->width;
+		patchwidths[i] = wadpatch->width;
 
 		// height is a value (number of bytes) between 16 and 144 in practice. it is 00010000 to 10010000 binary.
 		// so we only use the top 4 bits. We often shift this right 4 to get segment count from number of bytes.
@@ -763,7 +758,7 @@ void __near R_InitPatches(){
 		patchheight += (16 - ((patchheight &0xF)) &0xF);
 		patchheight |= (patchheight >> 4);
 		
-		patchheights_6000[i] = patchheight;
+		patchheights[i] = patchheight;
 
 	}
 		
@@ -814,7 +809,7 @@ void __near R_Init(void) {
 	Z_QuickMapRender();
 	// load colormaps while this memory region active.
 	W_CacheLumpNumDirect(1, colormaps);
-	Z_QuickMapRender_9000To6000(); //for R_TextureNumForName
+
 
 	R_InitData();
 	DEBUG_PRINT("..");
