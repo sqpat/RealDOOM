@@ -770,7 +770,7 @@ void __near R_InitData(void) {
 	uint8_t         i;
 
 	//R_InitPatches();
-
+	texturedefs_offset[0] = 0;
 	R_InitTextures();
 	R_InitTextures2();
 	DEBUG_PRINT("..");
