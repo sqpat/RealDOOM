@@ -321,6 +321,7 @@ db 0
 PROC I_KeyboardISR_  INTERRUPT
 PUBLIC I_KeyboardISR_
 
+ACKNOWLEDGE_INTERRUPT = 020h
 
 push   bx
 push   ax
@@ -330,15 +331,22 @@ mov    bl, byte ptr cs:[_kbdhead]
 and    bx, KBDQUESIZE - 1           ; wraparound keyboard queue
 mov    byte ptr cs:[bx + _keyboardque], al
 
-mov    ah, al   ; store for checking...
+;mov    ah, al   ; store for checking...
+
+in     al, 061h ; xt keyboard support shuffle.
+or     al, 080h
+out    061h, al
+and    al, 07Fh
+out    061h, al
+
 
 inc    byte ptr cs:[_kbdhead]
 mov    al, 020h
-out    KBDQUESIZE, al
+out    ACKNOWLEDGE_INTERRUPT, al
 
-cmp    ah, 0B5h     ; / keydown
-jne    skip_ctrl_c
-call   dumpstacktrace_
+;cmp    ah, 0B5h     ; / keydown
+;jne    skip_ctrl_c
+;call   dumpstacktrace_
 skip_ctrl_c:
 
 pop    ax
@@ -349,7 +357,7 @@ iret
 
 ENDP
 
-
+COMMENT @
 _used_dumpfile:
 
 db "dumpdump.bin", 0
@@ -410,6 +418,7 @@ ret
 
 ENDP
 
+@
 
 
 

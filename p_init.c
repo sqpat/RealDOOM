@@ -125,10 +125,11 @@ void __near P_InitSwitchList(void){
 
 	episode = 1;
 
-	if (registered)
+	if (registered){
 		episode = 2;
-	else if (commercial)
+	} else if (commercial){
 		episode = 3;
+	}
 
 	for (index = 0, i = 0; i < MAXSWITCHES; i++) {
 		if (!alphSwitchList[i].episode) {
@@ -492,9 +493,10 @@ void __near R_InitSprites(){
 	
 	int		i;
 
-	for (i = 0; i < SCREENWIDTH; i++) {
-		negonearray[i] = -1;
-	}
+	// for (i = 0; i < SCREENWIDTH; i++) {
+	// 	negonearray[i] = -1;
+	// }
+	FAR_memset(negonearray, -1, SCREENWIDTH);
 
 	R_InitSpriteDefs();
 }
