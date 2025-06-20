@@ -2306,6 +2306,8 @@ add       bx, 4
 ; count is cx
 ; position is di
 
+
+
 ;		if (position < 0) {
 ;			count += position;
 ;			position = 0;
@@ -2323,6 +2325,9 @@ mov       ax, di
 add       ax, cx
 cmp       ax, dx
 jbe       done_with_count_adjustment
+
+
+;  cx - di is underflowing. perhaps patchoriginy too high?
 mov       cx, dx
 sub       cx, di
 done_with_count_adjustment:
@@ -2370,7 +2375,9 @@ ENDP
 ;segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcachetype) 
 
 update_both_cache_texes:
-
+; bx is 6E8
+; _cachedtex is bx - 010h
+; _cachedcollength is bx - 0Ch
 
 ;			if (cachedtex2 != tex){
 ;				int16_t  cached_nextlookup = segloopnextlookup[segloopcachetype]; 
@@ -2386,16 +2393,16 @@ update_both_cache_texes:
 
 ; ax already cached tex 1
 ; di already bp - 2 (segloopcachetype) shifted left once
-mov       word ptr ds:[_cachedtex+2], ax
+mov       word ptr ds:[bx - 010h+2], ax
 
 mov       ax, word ptr ds:[bx]
 mov       word ptr ds:[bx+2], ax
 mov       dx, word ptr ds:[di + _segloopnextlookup]   ; cached_next_lookup.
-mov       al, byte ptr ds:[_cachedcollength]
-mov       byte ptr ds:[_cachedcollength+1], al
-mov       byte ptr ds:[_cachedcollength], cl
+mov       al, byte ptr ds:[bx - 0Ch]        ; _cachedcollength
+mov       byte ptr ds:[bx - 0Ch+1], al
+mov       byte ptr ds:[bx - 0Ch], cl
 xchg      ax, si                    ; was word ptr bp - 4/tex
-mov       word ptr ds:[_cachedtex], ax
+mov       word ptr ds:[bx - 010h], ax
 call      R_GetCompositeTexture_
 
 mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
@@ -2443,8 +2450,12 @@ mov       word ptr ds:[di + _segloopprevlookup], dx
 ;	if (lump > 0){
 jmp       done_with_loopwidth
 do_cache_tex_miss:
+; bx is _cachedsegmenttex (6E8)
+; _cachedtex is 6D8 (bp - 010h)
+; 
+
 ; ax is cachedtex
-mov       dx, word ptr ds:[_cachedtex+2]
+mov       dx, word ptr ds:[bx - 010h +2]  ; _cachedtex+2
 cmp       dx, si
 jne       update_both_cache_texes   ; takes in di as bp - 2 shifted
 
@@ -2457,16 +2468,16 @@ swap_tex1_tex2:
 ;    cachedtex = cachedtex2;
 ;    cachedtex2 = tex;
 
-mov       word ptr ds:[_cachedtex],  dx
-mov       word ptr ds:[_cachedtex+2], ax
+mov       word ptr ds:[bx - 010h ],  dx     ; _cachedtex
+mov       word ptr ds:[bx - 010h +2], ax    ; _cachedtex + 2
 
 ;    tex = cachedsegmenttex;
 ;    cachedsegmenttex = cachedsegmenttex2;
 ;    cachedsegmenttex2 = tex;
 
-mov       ax, word ptr ds:[_cachedcollength]
+mov       ax, word ptr ds:[bx - 0Ch]  ; _cachedcollength
 xchg      al, ah        ; swap byte 1 and 2
-mov       word ptr ds:[_cachedcollength], ax
+mov       word ptr ds:[bx - 0Ch], ax
 
 ;    tex = cachedcollength;
 ;    cachedcollength = cachedcollength2;
@@ -2567,7 +2578,7 @@ done_setting_cached_tex_skip_cachedsegwrite:
 mov       byte ptr ds:[di + _segloopheightvalcache], cl ; write now
 
 xchg      ax, dx
-mov       al, byte ptr ds:[_cachedcollength]
+mov       al, byte ptr ds:[bx - 0Ch] ; _cachedcollenght
 mul       byte ptr [bp - 8]
 add       ax, dx
 LEAVE_MACRO     
@@ -3167,6 +3178,7 @@ done_setting_cached_tex_masked:
 ;    maskedheightvalcache  = collength;
 ;    maskedcachedsegment   = cachedsegmenttex[0];
 
+; none of these close to bx, si, etc. move them?
 mov       byte ptr ds:[_cachedbyteheight], cl
 mov       byte ptr ds:[_maskedheightvalcache], cl
 mov       word ptr ds:[_maskedcachedsegment], ax
@@ -3174,7 +3186,7 @@ mov       word ptr ds:[_maskedcachedsegment], ax
 ; return maskedcachedsegment + (FastMul8u8u(cachedcollength[0] , texcol));
 
 xchg      ax, dx
-mov       al, byte ptr ds:[_cachedcollength]
+mov       al, byte ptr ds:[si - 0Ch] ; cachedcollength
 mul       byte ptr [bp - 6]
 add       ax, dx
 LEAVE_MACRO     
@@ -3184,6 +3196,9 @@ pop       cx
 pop       bx
 retf      
 do_cache_tex_miss_masked:
+; si is _cachedsegmenttex (6B8)
+; bx is _cachedtex (6D8)
+; _cachedcollength is 6DC (bx + 4) (si - 0Ch)
 mov       dx, word ptr ds:[bx+2]
 cmp       ax, di
 jne       update_both_cache_texes_masked
@@ -3191,9 +3206,9 @@ swap_tex1_tex2_masked:
 mov       word ptr ds:[bx], dx
 mov       word ptr ds:[bx+2], ax
 ; todo use collength offset from bx (bx+4?)
-mov       ax, word ptr ds:[_cachedcollength]
+mov       ax, word ptr ds:[bx + 4]   ;_cachedcollength
 xchg      al, ah
-mov       word ptr ds:[_cachedcollength], ax
+mov       word ptr ds:[bx + 4], ax ;_cachedcollength
 
 mov       ax, word ptr ds:[si]
 xchg      ax, word ptr ds:[si+2]
@@ -3210,8 +3225,8 @@ pop       word ptr ds:[si+2]
 
 mov       dx, word ptr ds:[_maskednextlookup] ;   cached_nextlookup = maskednextlookup; 
 
-mov       al, byte ptr ds:[_cachedcollength]
-mov       byte ptr ds:[_cachedcollength+1], al ;    cachedcollength[0] = cachedcollength[0];
+mov       al, byte ptr ds:[bx + 4]   ; _cachedcollength
+mov       byte ptr ds:[bx + 4 + 1], al ;    cachedcollength[0] = cachedcollength[0];
 
 mov       ax, di
 mov       word ptr ds:[bx], ax ;    cachedtex[0] = tex;    
@@ -3222,7 +3237,7 @@ call      R_GetCompositeTexture_
 ;    // restore these if composite texture is unloaded...
 
 mov       word ptr ds:[si], ax 
-mov       byte ptr ds:[_cachedcollength], cl  ;    cachedcollength[0] = collength;
+mov       byte ptr ds:[bx + 4], cl  ;    cachedcollength[0] = collength;
 
 mov       word ptr ds:[_maskednextlookup], dx ;    maskednextlookup     = cached_nextlookup; 
 mov       dx, word ptr [bp - 6]

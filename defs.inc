@@ -388,13 +388,13 @@ _textureL1LRU =                 	 _NULL_OFFSET + 00690h
 _cachedsegmentlumps =                _NULL_OFFSET + 00698h
 _cachedlumps =                 	     _NULL_OFFSET + 006A0h
 _cachedtex =                 		 _NULL_OFFSET + 006A8h
-;_cachedcollength =                   _NULL_OFFSET + 006ACh
-_flatcache_l2_head =                 _NULL_OFFSET + 006ADh
-_flatcache_l2_tail =                 _NULL_OFFSET + 006AEh
+_cachedcollength =                   _NULL_OFFSET + 006ACh
+_flatcache_l2_head =                 _NULL_OFFSET + 006AEh
+_flatcache_l2_tail =                 _NULL_OFFSET + 006AFh
 _segloopprevlookup =                 _NULL_OFFSET + 006B0h
 _segloopcachedbasecol =              _NULL_OFFSET + 006B4h
 _cachedsegmenttex =                  _NULL_OFFSET + 006B8h
-_cachedcollength =                   _NULL_OFFSET + 006BCh
+;_cachedcollength =                   _NULL_OFFSET + 006BCh
 _ceilinglinenum =                    _NULL_OFFSET + 006BEh
 
 _lineopening =				         _NULL_OFFSET + 006C0h

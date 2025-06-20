@@ -451,14 +451,14 @@
 #define cachedsegmentlumps				  (((segment_t __near*)              (_NULL_OFFSET + 0x0698)))
 #define cachedlumps					 	  (((int16_t __near*)                (_NULL_OFFSET + 0x06A0)))
 #define cachedtex				  		  (((int16_t __near*)                (_NULL_OFFSET + 0x06A8)))
-// breaks when you put stuff here? overrun? todo investigate
-// #define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06AC)))
+#define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06AC)))
 #define flatcache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06AE)))
 #define flatcache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06AF)))
 #define segloopprevlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06B0)))
 #define segloopcachedbasecol			  (((int16_t __near*)                (_NULL_OFFSET + 0x06B4)))
 #define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x06B8)))
-#define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06BC)))
+// unused
+// #define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06BC)))
 #define ceilinglinenum				      (*((int16_t __near*)               (_NULL_OFFSET + 0x06BE)))
 
 #define lineopening  				      (*((lineopening_t __near*)         (_NULL_OFFSET + 0x06C0)))
