@@ -399,8 +399,6 @@ PUBLIC R_EvictL2CacheEMSPage_
 ; bp - 0Eh  nodetail
 ; bp - 010h currentpage
 
-
-
 push      bx
 push      cx
 push      si
@@ -412,12 +410,29 @@ mov       dh, al
 
 cmp       dl, CACHETYPE_COMPOSITE
 jne       not_composite
-push      OFFSET _texturecache_l2_head      ; bp - 2
-push      COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 4
-push      MAX_PATCHES                       ; bp - 6
-push      PATCHOFFSET_SEGMENT               ; bp - 8
-push      MAX_PATCHES                       ; bp - 0Ah
-push      OFFSET _usedtexturepagemem        ; bp - 0Ch
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    push      OFFSET _texturecache_l2_head      ; bp - 2
+    push      COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 4
+    push      MAX_PATCHES                       ; bp - 6
+    push      PATCHOFFSET_SEGMENT               ; bp - 8
+    push      MAX_PATCHES                       ; bp - 0Ah
+    push      OFFSET _usedtexturepagemem        ; bp - 0Ch
+ELSE
+    mov       ax, OFFSET _texturecache_l2_head      ; bp - 2
+    push      ax
+    mov       ax, COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 4
+    push      ax
+    mov       ax, MAX_PATCHES                       ; bp - 6
+    push      ax
+    mov       ax, PATCHOFFSET_SEGMENT               ; bp - 8
+    push      ax
+    mov       ax, MAX_PATCHES                       ; bp - 0Ah
+    push      ax
+    mov       ax, OFFSET _usedtexturepagemem        ; bp - 0Ch
+    push      ax
+
+ENDIF
 mov       bx, OFFSET _texturecache_l2_tail
 mov       di, OFFSET _texturecache_nodes
 
@@ -428,12 +443,27 @@ cmp       dl, CACHETYPE_PATCH
 jne       is_sprite
 
 is_patch:
-push      OFFSET _texturecache_l2_head      ; bp - 2
-push      PATCHPAGE_SEGMENT                 ; bp - 4   
-push      MAX_PATCHES                       ; bp - 6
-push      COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 8
-push      MAX_TEXTURES                      ; bp - 0Ah
-push      OFFSET _usedtexturepagemem        ; bp - 0Ch
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    push      OFFSET _texturecache_l2_head      ; bp - 2
+    push      PATCHPAGE_SEGMENT                 ; bp - 4   
+    push      MAX_PATCHES                       ; bp - 6
+    push      COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 8
+    push      MAX_TEXTURES                      ; bp - 0Ah
+    push      OFFSET _usedtexturepagemem        ; bp - 0Ch
+ELSE
+    mov       ax, OFFSET _texturecache_l2_head      ; bp - 2
+    push      ax
+    mov       ax, PATCHPAGE_SEGMENT                 ; bp - 4   
+    push      ax
+    mov       ax, MAX_PATCHES                       ; bp - 6
+    push      ax
+    mov       ax, COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 8
+    push      ax
+    mov       ax, MAX_TEXTURES                      ; bp - 0Ah
+    push      ax
+    mov       ax, OFFSET _usedtexturepagemem        ; bp - 0Ch
+    push      ax
+ENDIF
 mov       bx, OFFSET _texturecache_l2_tail
 mov       di, OFFSET _texturecache_nodes
 
@@ -441,12 +471,28 @@ mov       di, OFFSET _texturecache_nodes
 jmp       done_with_switchblock
 
 is_sprite:
-push      OFFSET _spritecache_l2_head ; bp - 2
-push      SPRITEPAGE_SEGMENT          ; bp - 4
-push      MAX_SPRITE_LUMPS            ; bp - 6
-push      0                           ; bp - 8
-push      0                           ; bp - 0Ah
-push      OFFSET _usedspritepagemem   ; bp - 0Ch;
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    push      OFFSET _spritecache_l2_head ; bp - 2
+    push      SPRITEPAGE_SEGMENT          ; bp - 4
+    push      MAX_SPRITE_LUMPS            ; bp - 6
+    push      0                           ; bp - 8
+    push      0                           ; bp - 0Ah
+    push      OFFSET _usedspritepagemem   ; bp - 0Ch;
+ELSEIF
+    mov       ax, OFFSET _spritecache_l2_head ; bp - 2
+    push      ax
+    mov       ax, SPRITEPAGE_SEGMENT          ; bp - 4
+    push      ax
+    mov       ax, MAX_SPRITE_LUMPS            ; bp - 6
+    push      ax
+    mov       ax, 0                           ; bp - 8
+    push      ax
+    mov       ax, 0                           ; bp - 0Ah
+    push      ax
+    mov       ax, OFFSET _usedspritepagemem   ; bp - 0Ch;
+    push      ax
+
+ENDIF
 mov       bx, OFFSET _spritecache_l2_tail
 mov       di, OFFSET _spritecache_nodes
 
@@ -716,7 +762,14 @@ sal       bx, 1
 mov       dx, word ptr es:[bx] ; dx = size
 mov       bl, dh
 push      bx  ; bp - 4  only bl technically
-push      NUM_SPRITE_CACHE_PAGES
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    push      NUM_SPRITE_CACHE_PAGES 
+ELSE
+    mov   di, NUM_SPRITE_CACHE_PAGES 
+    push  di
+ENDIF
+
+
 push      ax  ; bp - 6  store for later
 mov       di, OFFSET _spritecache_nodes
 mov       si, OFFSET _usedspritepagemem
@@ -741,7 +794,13 @@ mov       bp, sp
 push      bx  ; only bl technically   ; cachetype
 mov       bl, dh
 push      bx  ; only bl technically
-push      NUM_TEXTURE_PAGES
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+    push      NUM_TEXTURE_PAGES
+ELSE
+    mov   di, NUM_TEXTURE_PAGES 
+    push  di
+ENDIF
+
 push      ax  ; bp - 6  store for later
 mov       di, OFFSET _texturecache_nodes
 mov       si, OFFSET _usedtexturepagemem
@@ -1074,6 +1133,7 @@ ELSE
     push  si
     mov   si, OFFSET _spriteL1LRU
     push  si
+
     push  si   ; unused
 ENDIF
 mov   si, OFFSET _activespritepages
@@ -1162,6 +1222,7 @@ ELSE
     push  si
     mov   si, OFFSET _textureL1LRU
     push  si
+
     push  si ; unused
 
 ENDIF
@@ -2715,7 +2776,7 @@ inc       ax
 
 negative_modulo_thing:
 add       cx, ax        
-jnge      negative_modulo_thing
+jl      negative_modulo_thing
 col_not_under_zero:
 
 
@@ -2773,8 +2834,8 @@ loop_move_cachelump:
 sub       bx, 2
 push      word ptr ds:[bx + di]
 push      word ptr ds:[bx + si]
-pop       word ptr ds:[bx + di + 2]
 pop       word ptr ds:[bx + si + 2]
+pop       word ptr ds:[bx + di + 2]
 jg        loop_move_cachelump
 done_moving_cachelumps:
 
@@ -2831,23 +2892,14 @@ ENDP
 
 
 
-loopwidth_nonzero_masked:
-; di is tex shifted left 1?
-; es:bx is texcollump
-mov       ax, dx    ; basecol
 
-mov       si, word ptr es:[bx]
-mov       word ptr ds:[_maskedcachedbasecol], ax
-mov       ax, word ptr [bp - 6]
-mov       word ptr ds:[_maskedtexrepeat], ax
-jmp       done_with_loopwidth_masked
 loop_below_zero_subtractor_masked:
 ;	textotal += subtractor; // add the last's total.
 
 add       di, ax
 jmp       done_with_loop_check_subtractor_maksed
 
-loop_below_zero_masked:
+lump_below_zero_masked:
 
 ;	maskedcachedbasecol = runningbasetotal - textotal;
 
@@ -2858,10 +2910,10 @@ jmp       done_with_loop_check_masked
 PROC R_GetMaskedColumnSegment_ FAR
 PUBLIC R_GetMaskedColumnSegment_
 
-;  bp - 2    ??   ; tex (orig ax)
-;  bp - 4    ??   ; texcol. maybe ok to remain here.
-;  bp - 6    ??   ; loopwidth
-
+;  bp - 2      ; tex (orig ax)
+;  bp - 4      ; texcol. maybe ok to remain here.
+;  bp - 6      ; loopwidth
+;  bp - 8      ; basecol
 
 push      bx
 push      cx
@@ -2869,59 +2921,96 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-push      ax
+push      ax        ; tex bp - 2
 xchg      ax, di
 ;	maskedheaderpixeolfs = 0xFFFF;
 
 mov       word ptr ds:[_maskedheaderpixeolfs], 0FFFFh
 
 	
-
 ;	col &= texturewidthmasks[tex];
-;	basecol -= col;
-
-
 
 mov       ax, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, ax
 xor       dh, dh
 mov       cx, dx
 and       cl, byte ptr es:[di] ; di is tex
+
+;	basecol -= col;
+sub       dx, cx
+
 ;	texcol = col;
+push      cx  ; bp - 4
+
 sal       di, 1
-mov       bx, word ptr ds:[di + _texturepatchlump_offset]
-sal       bx, 1
 
 ;	texturecolumnlump = &(texturecolumnlumps_bytes_7000[texturepatchlump_offset[tex]]);
+
+mov       bx, word ptr ds:[di + _texturepatchlump_offset]
+sal       bx, 1 ; bx is  texturecolumnlump ptr
+
 ;	loopwidth = texturecolumnlump[1].bu.bytehigh;
 
 
 mov       ax, TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT
 mov       es, ax
-sub       dx, cx
 mov       al, byte ptr es:[bx + 3]
 xor       ah, ah
-push      cx  ; bp - 4
-push      ax  ; bp - 6
+push      ax  ; bp - 6 ; loopwidth
+
+
 test      al, al
-jne       loopwidth_nonzero_masked
+je       loopwidth_zero_masked
+
+loopwidth_nonzero_masked:
+; di is tex shifted left 1?
+; es:bx is texcollump
+
+
+;	lump = texturecolumnlump[0].h;
+;    maskedcachedbasecol  = basecol;
+;    maskedtexrepeat	 	 = loopwidth;
+
+mov       si, word ptr es:[bx]
+mov       word ptr ds:[_maskedcachedbasecol], dx ; basecol
+mov       word ptr ds:[_maskedtexrepeat], ax  ; loopwidth
+jmp       done_with_loopwidth_masked
+
 loopwidth_zero_masked:
 xor       di, di   ; textotal
 
+;		uint8_t startpixel;
+;		int16_t subtractor;
+;		int16_t textotal = 0;
+;		int16_t runningbasetotal = basecol;
+;		int16_t n = 0;
 
 
+push      dx  ; bp - 8, basecol
 
 ; ax is subtractor      
 ; bx is loop iter        
 ; cx is col 
 ; dx is runningbasetotal
-; bp - 8 is texcol
+; bp - 4 is texcol
 ; si is lump
 ; di is textotal
 
 
 ;    while (col >= 0) {
+;        subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
+;        runningbasetotal += subtractor;
+;        lump = texturecolumnlump[n].h;
+;        col -= subtractor;
+;        if (lump >= 0){ // should be equiv to == -1?
+;            texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+;        } else {
+;            textotal += subtractor; // add the last's total.
+;        }
+;        n += 2;
+;    }
 
+;    while (col >= 0) {
 test      cx, cx
 jl        done_with_subtractor_loop_masked
 
@@ -2929,6 +3018,7 @@ do_next_subtractor_loop_masked:
 
 ;			subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
 
+;todo lodsw and swap bx/si
 xor       ax, ax
 mov       al, byte ptr es:[bx + 2]
 inc       ax                     ; subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
@@ -2939,132 +3029,185 @@ test      si, si
 jnge      loop_below_zero_subtractor_masked
 
 ;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
-sub       byte ptr [bp - 6], al
+sub       byte ptr [bp - 4], al
 done_with_loop_check_subtractor_maksed:
 add       bx, 4
 test      cx, cx
 jge       do_next_subtractor_loop_masked
 done_with_subtractor_loop_masked:
 
+;		maskednextlookup     = runningbasetotal; 
+
 mov       word ptr ds:[_maskednextlookup], dx 
 
 test      si, si
-jng       loop_below_zero_masked
+jng       lump_below_zero_masked
 
-; maskedcachedbasecol = basecol + startpixel;
+;    startpixel = texturecolumnlump[n-1].bu.bytehigh;
 mov       bl, byte ptr es:[bx - 1]  ; startpixel
 xor       bh, bh
-add       bx, dx   ; basecol
+;    maskedcachedbasecol = basecol + startpixel;
+add       bx, word ptr [bp - 8]   ; basecol
 done_with_loop_check_masked:
+; undo bp - 8/ basecol
+inc       sp
+inc       sp
 
 ; cx is now col
 ; bx is _maskedcachedbasecol
 ; dx is runningbasetotal
 ; ax is subtractor
 ; di is textotal
+; si is lump
+
+;		maskedprevlookup     = runningbasetotal - subtractor;
 mov       word ptr ds:[_maskedcachedbasecol], bx
 sub       dx, ax
 mov       word ptr ds:[_maskedprevlookup], dx  ;	maskedprevlookup     = runningbasetotal - subtractor;
 mov       word ptr ds:[_maskedtexrepeat], 0
 done_with_loopwidth_masked:
+
+;	if (lump > 0){
+
 mov       di, word ptr [bp - 2]
 test      si, si
 jg        lump_greater_than_zero_masked
 jmp       no_lump_do_texture
+
 not_cache_0_masked:
+;    segment_t usedsegment = cachedsegmentlumps[cachelumpindex];
+;    int16_t cachedlump = cachedlumps[cachelumpindex];
+;    int16_t i;
+
 
 
 xchg      ax, si
 mov       di, OFFSET _cachedsegmentlumps
 mov       si, OFFSET _cachedlumps
-push      word ptr ds:[bx + si]
 push      word ptr ds:[bx + di]
+push      word ptr ds:[bx + si]
 
-jle       done_moving_cachelumps_masked
 
-
+;    // reorder cache MRU				
+;    for (i = cachelumpindex; i > 0; i--){
+;        cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
+;        cachedlumps[i] = cachedlumps[i-1];
+;    }
 loop_move_cachelump_masked:
 sub       bx, 2
 push      word ptr ds:[bx + di]
 push      word ptr ds:[bx + si]
-pop       word ptr ds:[bx + di + 2]
 pop       word ptr ds:[bx + si + 2]
+pop       word ptr ds:[bx + di + 2]
 jg        loop_move_cachelump_masked
 done_moving_cachelumps_masked:
 
-pop       word ptr ds:[di]
+
+
+;    cachedsegmentlumps[0] = usedsegment;
+;    cachedlumps[0] = cachedlump;
+;    goto foundcachedlump;	
 pop       word ptr ds:[si]
+pop       word ptr ds:[di]
 xchg      ax, si ; restore lump
 
+jmp       found_cached_lump_masked_set_di
 
-jmp       found_cached_lump_masked
 lump_greater_than_zero_masked:
 ; di is bp - 2
-mov       dx, MASKED_LOOKUP_SEGMENT_7000
-mov       es, dx
-mov       dl, byte ptr es:[di]
-mov       ax, DRAWSEGS_BASE_SEGMENT_7000
-mov       es, ax
-mov       bx, si
-sub       bx, word ptr ds:[_firstpatch]
-mov       al, byte ptr es:[bx]
+
+;	uint8_t lookup = masked_lookup_7000[tex];
+;mov       ax, MASKED_LOOKUP_SEGMENT_7000
+;mov       es, ax
+mov       dl, byte ptr es:[di + ((MASKED_LOOKUP_SEGMENT_7000 - TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT) * 16)]
+;mov       ax, PATCHHEIGHTS_7000_SEGMENT
+;mov       es, ax
+
+;    uint8_t heightval = patchheights_7000[lump-firstpatch];
+mov       bx, si                        ; bx is lump-firstpatch lookup
+sub       bx, word ptr ds:[_firstpatch] ; hardcode?
+mov       al, byte ptr es:[bx + ((PATCHHEIGHTS_7000_SEGMENT - TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT) * 16)]
+
+
+;	cachedbyteheight = heightval & 0xF0;
+;	heightval &= 0x0F;
+
 mov       ah, al
-and       ax, 0F00Fh  
+and       ax, 0F00Fh        ; ah is cachedbyteheight, al is heightval
 mov       dh, al
-mov       di, dx  ; di has heightval high, lookup low
+; dx stores heightval high (dh), lookup low (dl)
 
 mov       byte ptr ds:[_cachedbyteheight], ah
 xor       bx, bx
+
+
+;	for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
+
+;	if (lump == cachedlumps[cachelumpindex]){
 cmp       si, word ptr ds:[_cachedlumps]
 je        cachedlumphit_masked
 loop_check_next_cached_lump_masked:
 
-add       bx, 2
+inc       bx
+inc       bx
 cmp       bx, (NUM_CACHE_LUMPS * 2)
 jge       cache_miss_move_all_cache_back_masked
 cmp       si, word ptr ds:[bx + _cachedlumps]
 jne       loop_check_next_cached_lump_masked
+
+;    if (cachelumpindex == 0){ // todo move this out? or unloop it?
 cachedlumphit_masked:
 test      bx, bx
 jne       not_cache_0_masked
-found_cached_lump_masked:
+
+found_cached_lump_masked_set_di:
+mov       di, dx  ; store the two values in di
+found_cached_lump_masked:   ; di was already dx
+; di has the 2 values now
+;	if (col < 0){
 test      cx, cx
 
-;    uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
-;    if (patchwidth == 0){
-;        patchwidth = 0x100;
-;    }
-;    if (patchwidth > texturewidthmasks[tex]){
-;        patchwidth = texturewidthmasks[tex];
-;        patchwidth++;
-;    }
-;    while (col < 0){
-;        col+= patchwidth;
-;    }
+
 
 jnl       col_not_under_zero_masked
 
 
 
+;    uint16_t patchwidth = patchwidths_7000[lump-firstpatch];
+;    if (patchwidth == 0){
+;        patchwidth = 0x100;
+;    }
+
 mov       ax, PATCHWIDTHS_7000_SEGMENT
-sub       si, word ptr ds:[_firstpatch]
 mov       es, ax
+sub       si, word ptr ds:[_firstpatch]
 xor       ax, ax
 mov       al, byte ptr es:[si]
-cwd
+cwd       ; zero out dh especially
 cmp       al, 1     ; set carry if al is 0
 adc       ah, ah    ; if width is zero that encoded 0x100. now ah is 1.
-mov       bx, TEXTUREWIDTHMASKS_SEGMENT
-mov       es, bx
+
+;    if (patchwidth > texturewidthmasks[tex]){
+;        patchwidth = texturewidthmasks[tex];
+;        patchwidth++;
+;    }
+
+
+;mov       bx, TEXTUREWIDTHMASKS_SEGMENT
+;mov       es, bx
 mov       bx, word ptr [bp - 2]
-mov       dl, byte ptr es:[bx]
+mov       dl, byte ptr es:[bx + ((TEXTUREWIDTHMASKS_SEGMENT - PATCHWIDTHS_7000_SEGMENT) * 16)]      ; dh 0 from above cwd
 cmp       ax, dx
 jna       negative_modulo_thing_masked
 xchg      ax, dx
 inc       ax
+
+;    while (col < 0){
+;        col+= patchwidth;
+;    }
 negative_modulo_thing_masked:
 add       cx, ax
-jle       negative_modulo_thing_masked
+jl        negative_modulo_thing_masked
 
 col_not_under_zero_masked:
 
@@ -3073,16 +3216,16 @@ col_not_under_zero_masked:
 push      word ptr ds:[_cachedsegmentlumps]
 pop       word ptr ds:[_maskedcachedsegment]
 
-xchg      ax, di  ;lookup low, heighval height
+xchg      ax, di  ;lookup low, heighval height  ; herehere
 cmp       al, 0FFh
 jne       is_masked
-
+; weird reverse walls like e1m1 sewage room
 
 ;    maskedheightvalcache  = heightval;
-;    return maskedcachedsegment + (FastMul8u8u(col , heightval) );
 
 mov       al, ah
 mov       byte ptr ds:[_maskedheightvalcache], al
+;    return maskedcachedsegment + (FastMul8u8u(col , heightval) );
 mul       cl
 add       ax, word ptr ds:[_maskedcachedsegment]
 LEAVE_MACRO     
@@ -3093,22 +3236,24 @@ pop       bx
 retf  
 is_masked:
 
-;    masked_header_t __near * maskedheader = &masked_headers[lookup];
-;    uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
-;    uint16_t ofs  = pixelofs[col]; // precached as segment value.
-;    maskedheaderpixeolfs = maskedheader->pixelofsoffset;
-;    return maskedcachedsegment + ofs;
-
+; al has lookup...
 xor       ah, ah
-mov       bx, ax
-SHIFT_MACRO shl       bx 3
-mov       dx, MASKEDPIXELDATAOFS_SEGMENT
-mov       es, dx
-mov       bx, word ptr ds:[bx + _masked_headers]
-mov       word ptr ds:[_maskedheaderpixeolfs], bx
-sal       cx, 1
+SHIFT_MACRO shl       ax 3
+xchg      ax, bx
+mov       ax, MASKEDPIXELDATAOFS_SEGMENT
+mov       es, ax
+
+mov       bx, word ptr ds:[bx + _masked_headers]    ;    maskedheader->pixelofsoffset;
+mov       word ptr ds:[_maskedheaderpixeolfs], bx   ;    maskedheaderpixeolfs = maskedheader->pixelofsoffset;
+
+;    uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
+; es:bx is paixelofs
+
+;    uint16_t ofs  = pixelofs[col]; // precached as segment value.
+sal       cx, 1  ; col word lookup
 add       bx, cx
 
+;    return maskedcachedsegment + ofs;
 mov       ax, word ptr ds:[_maskedcachedsegment]
 add       ax, word ptr es:[bx]
 LEAVE_MACRO     
@@ -3122,10 +3267,17 @@ retf
 
 cache_miss_move_all_cache_back_masked:
 
+;		cachedsegmentlumps[3] = cachedsegmentlumps[2];
+;		cachedsegmentlumps[2] = cachedsegmentlumps[1];
+;		cachedsegmentlumps[1] = cachedsegmentlumps[0];
+;		cachedlumps[3] = cachedlumps[2];
+;		cachedlumps[2] = cachedlumps[1];
+;		cachedlumps[1] = cachedlumps[0];
+
 mov       ax, ds
 mov       es, ax
 xchg      ax, si   ; store lump
-mov       cx, di   ; store lookup
+
 mov       si, OFFSET _cachedsegmentlumps
 lea       di, [si + 2]
 ; _cachedsegmentlumps and _cachedlumps are adjacent. we hit both with 2 sets of 3 word copies.
@@ -3136,34 +3288,43 @@ movsw
 movsw
 movsw
 mov       si, di
-lea       di, [si + 2]
+lea       di, [si + 2] ; todo or inc twice or add? bench?
 movsw
 movsw
 movsw
 mov       si, ax    ; restore lump
-mov       di, cx    ; restore lookup
-mov       cx, word ptr ds:[_maskednextlookup]
-mov       dx, di    ; pass in lookup
+mov       di, dx    ; store lookup
+;		cached_nextlookup = maskednextlookup; 
+push      word ptr ds:[_maskednextlookup]
+; dx is lookup
 ; ax is lump
 call      R_GetPatchTexture_
 ; todo use di with offsets to all these? same size.
+;		cachedsegmentlumps[0] = R_GetPatchTexture(lump, lookup);  // might zero out cachedlump vars;
 mov       word ptr ds:[_cachedsegmentlumps], ax
+;		cachedlumps[0] = lump;
 mov       word ptr ds:[_cachedlumps], si
-mov       word ptr ds:[_maskednextlookup], cx
-mov       ax, word ptr [bp - 6]                 ; todo pushpop?
-mov       word ptr ds:[_maskedtexrepeat], ax
+;		maskednextlookup     = cached_nextlookup; 
+pop       word ptr ds:[_maskednextlookup]
+;		maskedtexrepeat 	 = loopwidth;
+pop       word ptr ds:[_maskedtexrepeat]    ; bp - 6 off
+
+; di was set above before the function call...
 
 jmp       found_cached_lump_masked
+
 
  
 no_lump_do_texture:
 ; di is bp - 2 (tex)
-mov       ax, TEXTURECOLLENGTH_SEGMENT
+;		uint8_t collength = texturecollength[tex];
+mov       ax, TEXTURECOLLENGTH_SEGMENT ; todo can this end up in DS?
 mov       es, ax
 mov       si, OFFSET _cachedsegmenttex
 mov       bx, OFFSET _cachedtex
-mov       ax, word ptr ds:[bx]
-mov       cl, byte ptr es:[di]
+;		if (cachedtex[0] != tex){
+mov       ax, word ptr ds:[bx]  ; cachedtex[0]
+mov       cl, byte ptr es:[di]  ; collength
 cmp       ax, di
 jne       do_cache_tex_miss_masked
 do_cache_tex_hit_masked:
@@ -3172,13 +3333,13 @@ lodsw
 
 done_setting_cached_tex_masked:
 
-; ax is ds:[si] or cachedsegmenttex[0];
+; ax is cachedsegmenttex[0];
 
 ;    cachedbyteheight = collength;
 ;    maskedheightvalcache  = collength;
 ;    maskedcachedsegment   = cachedsegmenttex[0];
 
-; none of these close to bx, si, etc. move them?
+; todo none of these close to bx, si, etc. worth moving them for smaller addressing?
 mov       byte ptr ds:[_cachedbyteheight], cl
 mov       byte ptr ds:[_maskedheightvalcache], cl
 mov       word ptr ds:[_maskedcachedsegment], ax
@@ -3186,8 +3347,8 @@ mov       word ptr ds:[_maskedcachedsegment], ax
 ; return maskedcachedsegment + (FastMul8u8u(cachedcollength[0] , texcol));
 
 xchg      ax, dx
-mov       al, byte ptr ds:[si - 0Ch] ; cachedcollength
-mul       byte ptr [bp - 6]
+mov       al, byte ptr ds:[_cachedcollength] ; cachedcollength
+mul       byte ptr [bp - 4]
 add       ax, dx
 LEAVE_MACRO     
 pop       di
@@ -3196,39 +3357,40 @@ pop       cx
 pop       bx
 retf      
 do_cache_tex_miss_masked:
+
+;if (cachedtex[1] != tex){
 ; si is _cachedsegmenttex (6B8)
 ; bx is _cachedtex (6D8)
 ; _cachedcollength is 6DC (bx + 4) (si - 0Ch)
-mov       dx, word ptr ds:[bx+2]
+xchg      ax, word ptr ds:[bx+2]   ;    cachedtex[1] = cachedtex[0];
 cmp       ax, di
 jne       update_both_cache_texes_masked
 swap_tex1_tex2_masked:
-mov       word ptr ds:[bx], dx
-mov       word ptr ds:[bx+2], ax
-; todo use collength offset from bx (bx+4?)
-mov       ax, word ptr ds:[bx + 4]   ;_cachedcollength
-xchg      al, ah
-mov       word ptr ds:[bx + 4], ax ;_cachedcollength
+mov       word ptr ds:[bx], ax
 
-mov       ax, word ptr ds:[si]
-xchg      ax, word ptr ds:[si+2]
-mov       word ptr ds:[si], ax
+; todo use collength offset from bx (bx+4?)
+mov       ax, word ptr ds:[_cachedcollength]   ;_cachedcollength
+xchg      al, ah
+mov       word ptr ds:[_cachedcollength], ax ;_cachedcollength
+
+lodsw     ; mov       ax, word ptr ds:[si]
+xchg      ax, word ptr ds:[si]
+mov       word ptr ds:[si-2], ax
 
 jmp       done_setting_cached_tex_masked
 
 update_both_cache_texes_masked:
 
-mov       word ptr ds:[bx+2], ax  ;    cachedtex[1] = cachedtex[0];
 
 push      word ptr ds:[si]          ;    cachedsegmenttex[1] = cachedsegmenttex[0];
 pop       word ptr ds:[si+2]
 
-mov       dx, word ptr ds:[_maskednextlookup] ;   cached_nextlookup = maskednextlookup; 
+push      word ptr ds:[_maskednextlookup] ;   cached_nextlookup = maskednextlookup; 
 
-mov       al, byte ptr ds:[bx + 4]   ; _cachedcollength
-mov       byte ptr ds:[bx + 4 + 1], al ;    cachedcollength[0] = cachedcollength[0];
+mov       al, byte ptr ds:[_cachedcollength]   ; _cachedcollength
+mov       byte ptr ds:[_cachedcollength + 1], al ;    cachedcollength[0] = cachedcollength[0];
 
-mov       ax, di
+xchg      ax, di
 mov       word ptr ds:[bx], ax ;    cachedtex[0] = tex;    
 
 ;    cachedsegmenttex[0] = R_GetCompositeTexture(cachedtex[0]);
@@ -3237,11 +3399,10 @@ call      R_GetCompositeTexture_
 ;    // restore these if composite texture is unloaded...
 
 mov       word ptr ds:[si], ax 
-mov       byte ptr ds:[bx + 4], cl  ;    cachedcollength[0] = collength;
+mov       byte ptr ds:[_cachedcollength], cl  ;    cachedcollength[0] = collength;
 
-mov       word ptr ds:[_maskednextlookup], dx ;    maskednextlookup     = cached_nextlookup; 
-mov       dx, word ptr [bp - 6]
-mov       word ptr ds:[_maskedtexrepeat], dx ;    maskedtexrepeat 	 = loopwidth;
+pop       word ptr ds:[_maskednextlookup] ;    maskednextlookup     = cached_nextlookup; 
+pop       word ptr ds:[_maskedtexrepeat]      ;    maskedtexrepeat 	 = loopwidth (bp - 6_);
 jmp       done_setting_cached_tex_masked
 
 

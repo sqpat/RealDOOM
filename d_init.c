@@ -743,7 +743,7 @@ void __far D_DoomMain2(void) {
 	int8_t            title[128];
 #endif
 	int8_t            wadfile[20];
-	#define DGROUP_SIZE 0x3660
+	#define DGROUP_SIZE 0x2CA0
 
 	/*
 
