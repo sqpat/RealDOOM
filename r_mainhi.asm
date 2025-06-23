@@ -1418,19 +1418,18 @@ PUBLIC R_AddLine_
 
 ; bp - 2       curlineside
 ; bp - 4       curseglinedef
-; bp - 6       span   lo bits ?
-; bp - 8     angle1 lo bits ?
-; bp - 0Ah     curlinelinedef ?
-; bp - 0Ch     curlinesidedef ?
-; bp - 0Eh     _rw_scale hi
-; bp - 010h    _rw_scale lo
+; bp - 6     curlinesidedef ?
+; bp - 8       span   lo bits ?
+; bp - 0Ah     _rw_scale hi
+; bp - 0Ch    _rw_scale lo
+; bp - 0Eh       angle1 lo bits ?
 
 ;todo reorder stack and do push
 push  ax
 push  cx
 push  bp
 mov   bp, sp
-sub   sp, 010h
+
 mov   si, ax
 mov   dx, SEG_LINEDEFS_SEGMENT
 mov   es, dx
@@ -1440,17 +1439,10 @@ mov   dl, byte ptr es:[si + SEG_SIDES_OFFSET_IN_SEGLINES]
 mov   si, bx
 SHIFT_MACRO shl bx 2
 add   bh, (_segs_render SHR 8)
-mov   byte ptr [bp - 2], dl
-mov   dx, word ptr es:[si]
-mov   word ptr [bp - 4], dx  ; push directly?
-mov   si, word ptr [bx + 6]  ; push directly?
-SHIFT_MACRO shl dx 2 ; dont do this unless necessary later
-SHIFT_MACRO shl si 3 ; dont do this unless necessary later
+push  dx                    ; bp - 2
+push  word ptr es:[si]      ; bp - 4
+push  word ptr ds:[bx + 6]  ; bp - 6
 
-
-
-mov   word ptr [bp - 0Ah], dx
-mov   word ptr [bp - 0Ch], si
 les   si, dword ptr [bx]       ;v1
 mov   di, es                   ;v2
 mov   word ptr cs:[SELFMODIFY_get_curseg_2 + 1], ax
@@ -1490,15 +1482,15 @@ pop   cx
 pop   ax
 ret   
 dont_backface_cull:
-mov   word ptr [bp - 6], ax
+push  ax ; bp - 8
 
 ; store rw_angle1 on stack
-mov   word ptr [bp - 010h], bx
-mov   word ptr [bp - 0Eh], si
+push  si ; bp - 0Ah
+push  bx ; bp - 0Ch
 
 SELFMODIFY_BSP_viewangle_lo_1:
 sub   bx, 01000h
-mov   word ptr [bp - 8], bx
+push  bx  ; bp - 0Eh
 mov   bx, si
 SELFMODIFY_BSP_viewangle_hi_1:
 sbb   bx, 01000h
@@ -1517,8 +1509,8 @@ sub   ax, 01000h
 cmp   ax, cx
 ja    exit_addline
 jne   not_off_left_side
-mov   ax, word ptr [bp - 8]  ; todo carry from above
-cmp   ax, word ptr [bp - 6]
+mov   ax, word ptr [bp - 0Eh]  ; todo carry from above
+cmp   ax, word ptr [bp - 8]
 jae   exit_addline
 not_off_left_side:
 SELFMODIFY_BSP_clipangle_1:
@@ -1538,7 +1530,7 @@ sub   ax, 01000h
 cmp   ax, cx
 ja    exit_addline
 jne   not_off_left_side_2
-cmp   si, word ptr [bp - 6]
+cmp   si, word ptr [bp - 8]
 jae   exit_addline
 not_off_left_side_2:
 SELFMODIFY_BSP_clipangle_3:
@@ -1589,8 +1581,9 @@ xor   bh, bh
 add   bx, bx
 mov   si, LINES_SEGMENT
 mov   es, si
-add   bx, word ptr [bp - 0Ah]
-mov   bx, word ptr es:[bx]
+mov   si, word ptr [bp - 4]
+SHIFT_MACRO  shl si 2
+mov   bx, word ptr es:[bx + si]
 
 SHIFT_MACRO shl bx 2
 
@@ -1652,7 +1645,8 @@ jne   clippass
 ;    fall thru and return if midtexture doesnt match.
 mov   ax, SIDES_SEGMENT
 mov   es, ax
-mov   si, word ptr [bp - 0Ch]    ; presumably curlinesidedef.
+mov   si, word ptr [bp - 6]    ; presumably curlinesidedef.
+SHIFT_MACRO shl si 3
 cmp   word ptr es:[si + 4], 0
 je    exit_addline
 
@@ -2832,8 +2826,8 @@ PUBLIC R_StoreWallRange_
 ; bp - 048h  ; backsectorceilingheight
 
 
-; bp + 0Eh   ; rw_angle lo from R_AddLine
-; bp + 010h   ; rw_angle hi from R_AddLine
+; bp + 010h   ; rw_angle lo from R_AddLine
+; bp + 012h   ; rw_angle hi from R_AddLine
 
              
 push      bx ; +8
@@ -2963,7 +2957,7 @@ mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1], ax
 
 
 ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
-sub       ax, word ptr [bp + 010h]   ; rw_angle hi from R_AddLine
+sub       ax, word ptr [bp + 012h]   ; rw_angle hi from R_AddLine
 cwd       
 xor       ax, dx		; what's this about. is it an abs() thing?
 sub       ax, dx
@@ -3450,8 +3444,8 @@ xor       cx, cx
 SELFMODIFY_set_rw_normal_angle_shift3:
 
 mov       bx, 01000h
-sub       cx, word ptr [bp + 0Eh]   ; rw_angle lo from R_AddLine
-sbb       bx, word ptr [bp + 010h]   ; rw_angle hi from R_AddLine
+sub       cx, word ptr [bp + 010h]   ; rw_angle lo from R_AddLine
+sbb       bx, word ptr [bp + 012h]   ; rw_angle hi from R_AddLine
 
 ; ANG180_HIGHBITS is 08000h. can we get this for free without cmp with a sign thing?
 cmp       bx, ANG180_HIGHBITS
