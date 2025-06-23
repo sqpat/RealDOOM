@@ -65,29 +65,31 @@ PUBLIC R_PointToAngle2_
 ;	x2.w -= x1.w;
 ;	y2.w -= y1.w;
 
-; todo swap param order.
+; todo swap param order?
 
 push      si
-push      di
 push      bp
 mov       bp, sp
-mov       si, word ptr [bp + 0Ah]
-mov       di, word ptr [bp + 010h]
-sub       si, ax
-sbb       word ptr [bp + 0Ch], dx
-mov       ax, si
-mov       dx, word ptr [bp + 0Ch]
-sub       word ptr [bp + 0Eh], bx
-sbb       di, cx
-mov       bx, word ptr [bp + 0Eh]
-mov       cx, di
+les       si, dword ptr [bp + 8]
+xchg      ax, si
+sub       ax, si
+mov       si, es
+sbb       si, dx
+mov       dx, si
+les       si, dword ptr [bp + 0Ch]
+sub       si, bx
+mov       bx, si
+mov       si, es
+sbb       si, cx
+mov       cx, si
+
 call      R_PointToAngle_
 pop       bp
-pop       di
 pop       si
 retf      8
 
 ENDP
+
 
 
 ;R_PointToAngle2_16_
@@ -105,21 +107,14 @@ PUBLIC R_PointToAngle2_16_
 
 push      bx
 push      cx
-push      si
-mov       si, ax
 mov       cx, dx
-xor       bx, bx
+xchg      ax, dx
 xor       ax, ax
-mov       dx, si
+mov       bx, ax
 call      R_PointToAngle_
-pop       si
 pop       cx
 pop       bx
 retf      
-
-
-ENDP
-
 
 
 ;R_SetViewSize_
@@ -155,7 +150,6 @@ PUBLIC R_SetupFrame_
 ; todo constants.inc
 SHORTFLOORBITS = 3   
 
-; 218f
 
 ;    extralight = player.extralightvalue;
 push      cx
