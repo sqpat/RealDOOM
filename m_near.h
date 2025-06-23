@@ -255,7 +255,7 @@
 #define Z_QuickMapVisplanePage_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0180)))
 //#define R_EvictFlatCacheEMSPage_addr    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0184)))
 #define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0188)))
-//#define R_MarkL2FlatCacheMRU_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
+#define R_GetPatchTexture_addr   		(*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
 #define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0190)))
 #define floorplaneindex                 (*((int16_t    __near*)              (_NULL_OFFSET + 0x0194)))
 
@@ -333,14 +333,12 @@
 #define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C0)))
 #define FixedDiv_addr	                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C4)))
 #define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
-#define R_GetMaskedColumnSegment_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
+#define R_GetCompositeTexture_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
 #define colfunc_call_lookup             (((uint32_t  __near*)                (_NULL_OFFSET + 0x02D0)))
 #define R_GetSpriteTexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
-#define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358)))
-// 364-367 free??
-
-
+// 12 bytes each. two for 24.
+#define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358))) 
 #define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x0370)))
 
 #define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0388)))

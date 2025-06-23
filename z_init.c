@@ -461,6 +461,8 @@ void __far I_FinishUpdate(void);
 
 void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
+segment_t __far R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
+segment_t __far R_GetCompositeTexture(int16_t tex_index) ;
  
 void __near Z_LoadBinaries() {
 	FILE* fp2;
@@ -639,9 +641,9 @@ void __near Z_LoadBinaries() {
 	FixedMul_addr = 				(uint32_t)(FixedMul);
 	FixedMul2432_addr = 			(uint32_t)(FixedMul2432);
 	FixedDiv_addr =					(uint32_t)(FixedDiv);
-	//FixedMul1632_addr = 			(uint32_t)(FixedMul1632);
 	FastDiv3232_addr = 				(uint32_t)(FastDiv3232FFFF);
-	R_GetMaskedColumnSegment_addr = (uint32_t)(R_GetMaskedColumnSegment);
+	R_GetPatchTexture_addr = 		(uint32_t)(R_GetPatchTexture);
+	R_GetCompositeTexture_addr = 	(uint32_t)(R_GetCompositeTexture);
 	R_GetSpriteTexture_addr = 		(uint32_t)(R_GetSpriteTexture);
 
 	// todo think of a better solution for dynamic linking of func locations for overlaid code.

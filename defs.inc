@@ -208,7 +208,8 @@ _tmymove =                         _NULL_OFFSET + 0017Ch
 _Z_QuickMapVisplanePage_addr =      _NULL_OFFSET + 00180h
 ;_R_EvictFlatCacheEMSPage_addr =     _NULL_OFFSET + 00184h
 _Z_QuickMapFlatPage_addr =        	_NULL_OFFSET + 00188h
-;_R_MarkL2FlatCacheMRU_addr =        _NULL_OFFSET + 0018Ch
+_R_GetPatchTexture_addr =           _NULL_OFFSET + 0018Ch
+
 ; 190h
 _W_CacheLumpNumDirect_addr =        _NULL_OFFSET + 00190h
 
@@ -282,7 +283,7 @@ _fixedcolormap = 					_NULL_OFFSET + 002BFh
 _FixedMul_addr =               		 _NULL_OFFSET + 002C0h
 _FixedDiv_addr =                     _NULL_OFFSET + 002C4h
 _FastDiv3232_addr =                  _NULL_OFFSET + 002C8h
-_R_GetMaskedColumnSegment_addr =     _NULL_OFFSET + 002CCh
+_R_GetCompositeTexture_addr =        _NULL_OFFSET + 002CCh
 
  
 _colfunc_call_lookup =               _NULL_OFFSET + 002D0h

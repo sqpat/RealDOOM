@@ -643,7 +643,6 @@ FREEBYTES           7EE0:0000
 
 #define maskedpostdata             ((byte __far*)              (0x84000000 ))
 #define drawfuzzcol_area           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdata,             size_maskedpostdata))
-#define render_8400_end              ((byte __far*)            MAKE_FULL_SEGMENT(drawfuzzcol_area,           size_drawfuzzcol_area)) 
 // 87FBh
 
 #define spritepostdatasizes        ((uint16_t __far*)          MAKE_FULL_SEGMENT(drawfuzzcol_area,           size_drawfuzzcol_area)) 
@@ -665,7 +664,6 @@ FREEBYTES           7EE0:0000
 
 #define maskedpostdata_segment             ((segment_t) ((int32_t)maskedpostdata >> 16))
 #define drawfuzzcol_area_segment           ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
-#define render_8400_end_segment            ((segment_t) ((int32_t)render_8400_end >> 16))
 
  /*
 
@@ -677,12 +675,12 @@ FREEBYTES 3568 free
 // MOVE SOME OTHER RENDER CODE HERE?
 
 
- spritepostdatasizes              87FE:0000
- spritetotaldatasizes             88AB:0000
- maskedpostdataofs                8958:0000
- maskedpixeldataofs               8A30:0000
- maskedconstants_funcarea_segment 8B08:0000
- render_8800_end_segment          8B17:0000 
+ spritepostdatasizes              881D:0000
+ spritetotaldatasizes             88CA:0000
+ maskedpostdataofs                8977:0000
+ maskedpixeldataofs               8A4F:0000
+ maskedconstants_funcarea_segment 8B27:0000
+ render_8800_end_segment          8B36:0000 
 
 FREEBYTES 3728 free (!). move some here
  */

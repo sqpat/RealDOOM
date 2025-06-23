@@ -55,7 +55,7 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype);
 void __near R_MarkL2CacheMRU(int8_t index, int8_t numpages, int8_t cachetype);
 
 //segment_t __near R_GetColumnSegment ( int16_t tex, int16_t col, int8_t segloopcachetype );
-segment_t __far R_GetMaskedColumnSegment ( int16_t tex, int16_t col );
+// segment_t __far R_GetMaskedColumnSegment ( int16_t tex, int16_t col );
 segment_t __far R_GetSpriteTexture(int16_t index);
 
 #define BAD_TEXTURE 65535
