@@ -29,8 +29,6 @@ EXTRN Z_QuickMapVisplaneRevert_:PROC
 ;EXTRN FastMul16u32u_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN FastDiv3232_shift_3_8_:PROC
-EXTRN R_PointToAngle_:PROC
-EXTRN R_PointToAngle16Old_:PROC
 
 EXTRN R_GetColumnSegment_:NEAR
 
@@ -247,6 +245,333 @@ pop   cx
 pop   bx
 ret
 
+endp
+
+
+
+octant_6:
+test  cx, cx
+
+jne   octant_6_do_divide
+cmp   bx, 0200h
+jae   octant_6_do_divide
+octant_6_out_of_bounds:
+mov   dx, 0e000h
+xor   ax, ax
+
+ret  
+octant_6_do_divide:
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_6_out_of_bounds
+
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+les   ax, dword ptr es:[bx]
+mov   dx, es
+add   dx, 0c000h
+
+ret  
+
+y_is_negative:
+;			y.w = -y.w;
+
+neg   cx
+neg   bx
+sbb   cx, 0
+
+cmp   dx, cx
+jg    octant_7
+jne   octant_6
+cmp   ax, bx
+jbe   octant_6
+octant_7:
+test  dx, dx
+jne   octant_7_do_divide
+cmp   ax, 0200h
+jae   octant_7_do_divide
+octant_7_out_of_bounds:
+mov   dx, 0e000h
+xor   ax, ax
+
+ret  
+; result 16f01520
+; 7ffd1a dx:ax
+; 3077f6 cx:bx
+; 5400000 -> 0x2A000000
+; d400000  > 0xD4000    32B 811
+
+;mov dx, cx
+;mov ax, bx
+
+
+octant_7_do_divide:
+
+; swap params. y over x not x over y
+xchg dx, cx
+xchg ax, bx
+
+call FastDiv3232_shift_3_8_
+
+; 16f0  1520 instead of 32b
+
+cmp   ax, 0800h
+jae   octant_7_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+les   ax, dword ptr es:[bx]
+mov   dx, es
+neg   dx
+neg   ax
+sbb   dx, 0
+
+ret  
+
+;R_PointToAngle_
+
+PROC R_PointToAngle_ NEAR
+PUBLIC R_PointToAngle_
+
+; inputs:
+; DX:AX = x  (32 bit fixed pt 16:16)
+; CX:BX = y  (32 bit fixed pt 16:16)
+
+; places to improve -
+; 1.default branches taken. count branches taken and modify to optimize
+
+;	x.w -= viewx.w;
+;	y.w -= viewy.w;
+
+; idea: self modify code, change this to constants per frame.
+
+
+
+test  dx, dx
+jne   inputs_not_zero   ; todo rearrange this. rare case
+test  cx, cx
+jne   inputs_not_zero   ; todo rearrange this. rare case
+test  ax, ax
+jne   inputs_not_zero   ; todo rearrange this. rare case
+test  bx, bx
+jne   inputs_not_zero   ; todo rearrange this. rare case
+
+
+return_0:
+
+xor   ax, ax
+cwd
+
+ret  
+
+
+inputs_not_zero:
+
+test  dx, dx
+jl   x_is_negative
+
+x_is_positive:
+test  cx, cx
+
+jl   y_is_negative
+y_is_positive:
+
+cmp   dx, cx
+jg    octant_0
+
+jne   octant_1
+cmp   ax, bx
+jbe   octant_1
+
+
+octant_0:
+test  dx, dx
+
+;	if (x.w < 512)
+
+jne   octant_0_do_divide
+cmp   ax, 0200h
+jae   octant_0_do_divide
+octant_0_out_of_bounds:
+mov   dx, 02000h
+xor   ax, ax
+
+ret  
+
+
+octant_0_do_divide:
+;x_is_negative
+xchg dx, cx
+xchg ax, bx
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_0_out_of_bounds
+
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+les   ax, dword ptr es:[bx]
+mov   dx, es
+ret  
+
+
+octant_1:
+test  cx, cx
+
+jne   octant_1_do_divide
+cmp   bx, 0200h
+jae   octant_1_do_divide
+octant_1_out_of_bounds:
+mov   ax, 0ffffh
+mov   dx, 01fffh
+
+ret  
+octant_1_do_divide:
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_1_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+mov   ax, 0ffffh
+sub   ax, word ptr es:[bx]
+mov   dx, 03fffh
+sbb   dx, word ptr es:[bx + 2]
+
+ret  
+
+
+
+x_is_negative:
+
+;		x.w = -x.w;
+
+neg   dx
+neg   ax
+sbb   dx, 0
+
+test  cx, cx
+
+jg    y_is_positive_x_neg
+jne   y_is_negative_x_neg
+y_is_positive_x_neg:
+cmp   dx, cx
+jg    octant_3
+jne   octant_2
+cmp   ax, bx
+jbe   octant_2
+
+octant_3:
+test  dx, dx
+jne   octant_3_do_divide
+cmp   ax, 0200h
+jae   octant_3_do_divide
+octant_3_out_of_bounds:
+mov   ax, 0ffffh
+mov   dx, 05fffh
+
+ret  
+octant_3_do_divide:
+xchg dx, cx
+xchg ax, bx
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_3_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+mov   ax, 0ffffh
+sub   ax, word ptr es:[bx]
+mov   dx, 07fffh
+sbb   dx, word ptr es:[bx + 2]
+
+ret  
+octant_2:
+test  cx, cx
+
+jne   octant_2_do_divide
+cmp   ax, 0200h
+jae   octant_2_do_divide
+octant_2_out_of_bounds:
+mov   dx, 06000h
+xor   ax, ax
+ret  
+octant_2_do_divide:
+
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_2_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+les   ax, dword ptr es:[bx]
+mov   dx, es
+add   dx, 04000h
+
+ret  
+y_is_negative_x_neg:
+
+;			y.w = -y.w;
+
+neg   cx
+neg   bx
+sbb   cx, 0
+cmp   dx, cx
+jg    octant_4
+jne   octant_5
+cmp   ax, bx
+jbe   octant_5
+octant_4:
+test  dx, dx
+jne   octant_4_do_divide
+cmp   ax, 0200h
+jae   octant_4_do_divide
+octant_4_out_of_bounds:
+mov   dx, 0a000h
+xor   ax, ax
+
+ret  
+octant_4_do_divide:
+xchg dx, cx
+xchg ax, bx
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_4_out_of_bounds
+
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+les   ax, dword ptr es:[bx]
+mov   dx, es
+add   dx, 08000h
+
+ret  
+octant_5:
+test  cx, cx
+
+jne   octant_5_do_divide
+cmp   ax, 0200h
+jae   octant_5_do_divide
+octant_5_out_of_bounds:
+mov   ax, 0ffffh
+mov   dx, 09fffh
+
+ret  
+octant_5_do_divide:
+
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_5_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+mov   ax, 0ffffh
+sub   ax, word ptr es:[bx]
+mov   dx, 0bfffh
+sbb   dx, word ptr es:[bx + 2]
+
+ret  
 endp
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_386
@@ -1082,6 +1407,8 @@ ret
 
 ENDP
 
+
+
 ;R_AddLine_
 
 PROC R_AddLine_ NEAR
@@ -1098,7 +1425,7 @@ PUBLIC R_AddLine_
 ; bp - 0Eh     _rw_scale hi
 ; bp - 010h    _rw_scale lo
 
-
+;todo reorder stack and do push
 push  ax
 push  cx
 push  bp
@@ -1106,21 +1433,19 @@ mov   bp, sp
 sub   sp, 010h
 mov   si, ax
 mov   dx, SEG_LINEDEFS_SEGMENT
-add   si, SEG_SIDES_OFFSET_IN_SEGLINES
 mov   es, dx
 mov   bx, ax
 shl   bx, 1
-mov   dl, byte ptr es:[si]
+mov   dl, byte ptr es:[si + SEG_SIDES_OFFSET_IN_SEGLINES]
 mov   si, bx
 SHIFT_MACRO shl bx 2
 add   bh, (_segs_render SHR 8)
 mov   byte ptr [bp - 2], dl
 mov   dx, word ptr es:[si]
-mov   word ptr [bp - 4], dx
-mov   si, word ptr [bx + 6]
-SHIFT_MACRO shl dx 2
-
-SHIFT_MACRO shl si 3
+mov   word ptr [bp - 4], dx  ; push directly?
+mov   si, word ptr [bx + 6]  ; push directly?
+SHIFT_MACRO shl dx 2 ; dont do this unless necessary later
+SHIFT_MACRO shl si 3 ; dont do this unless necessary later
 
 
 
@@ -1128,38 +1453,44 @@ mov   word ptr [bp - 0Ah], dx
 mov   word ptr [bp - 0Ch], si
 les   si, dword ptr [bx]       ;v1
 mov   di, es                   ;v2
-mov   cx, VERTEXES_SEGMENT
-SHIFT_MACRO shl si 2
-mov   es, cx
 mov   word ptr cs:[SELFMODIFY_get_curseg_2 + 1], ax
 sal   ax, 1
 mov   word ptr cs:[SELFMODIFY_get_curseg_1 + 1], ax ; preshift
-les   ax, dword ptr es:[si]
-mov   dx, es
+mov   ax, VERTEXES_SEGMENT
+mov   es, ax
+SHIFT_MACRO shl si 2
 SHIFT_MACRO shl di 2
-mov   es, cx
-les   di, dword ptr es:[di]       ; v2.x
-mov   cx, es   ; v2.y
+les   dx, dword ptr es:[si]
+mov   cx, es
+mov   es, ax
+les   si, dword ptr es:[di]       ; v2.x
+mov   di, es   ; v2.y
 mov   word ptr cs:[SELFMODIFY_get_curseg_render_1 + 1], bx
 add   bx, 4
 mov   word ptr cs:[SELFMODIFY_get_curseg_render_2 + 2], bx ; todo can we store ahead the lookup instead of the ptr
 
-call  R_PointToAngle16Old_    ; todo debug why this doesnt work with the other one. stack corruption?
+call  R_PointToAngle16_    ; todo debug why this doesnt work with the other one. stack corruption?
+
+xchg  ax, di
+xchg  ax, cx
+xchg  si, dx      ; SI: BX stores angle1
+
+
+call  R_PointToAngle16_    ; todo debug why this doesnt work with the other one. stack corruption?
+
+xchg  ax, di
 mov   bx, ax
-mov   si, dx      ; SI: BX stores angle1
-mov   ax, di      ; move v2 into dx:ax
-mov   dx, cx      ; move v2 into dx:ax
-call  R_PointToAngle16Old_    ; todo debug why this doesnt work with the other one. stack corruption?
-mov   di, ax
-mov   ax, bx
 sub   ax, di
 mov   cx, si
 sbb   cx, dx
-mov   word ptr [bp - 6], ax
 cmp   cx, ANG180_HIGHBITS
-jb    dont_backface_culll
-jmp   exit_addline
-dont_backface_culll:
+jb    dont_backface_cull
+LEAVE_MACRO 
+pop   cx
+pop   ax
+ret   
+dont_backface_cull:
+mov   word ptr [bp - 6], ax
 
 ; store rw_angle1 on stack
 mov   word ptr [bp - 010h], bx
@@ -2501,8 +2832,8 @@ PUBLIC R_StoreWallRange_
 ; bp - 048h  ; backsectorceilingheight
 
 
-; bp + 012h   ; rw_angle lo from R_AddLine
-; bp + 014h   ; rw_angle hi from R_AddLine
+; bp + 0Eh   ; rw_angle lo from R_AddLine
+; bp + 010h   ; rw_angle hi from R_AddLine
 
              
 push      bx ; +8
@@ -2632,7 +2963,7 @@ mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1], ax
 
 
 ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
-sub       ax, word ptr [bp + 14h]   ; rw_angle hi from R_AddLine
+sub       ax, word ptr [bp + 010h]   ; rw_angle hi from R_AddLine
 cwd       
 xor       ax, dx		; what's this about. is it an abs() thing?
 sub       ax, dx
@@ -3119,8 +3450,8 @@ xor       cx, cx
 SELFMODIFY_set_rw_normal_angle_shift3:
 
 mov       bx, 01000h
-sub       cx, word ptr [bp + 12h]   ; rw_angle lo from R_AddLine
-sbb       bx, word ptr [bp + 14h]   ; rw_angle hi from R_AddLine
+sub       cx, word ptr [bp + 0Eh]   ; rw_angle lo from R_AddLine
+sbb       bx, word ptr [bp + 010h]   ; rw_angle hi from R_AddLine
 
 ; ANG180_HIGHBITS is 08000h. can we get this for free without cmp with a sign thing?
 cmp       bx, ANG180_HIGHBITS
@@ -5084,6 +5415,8 @@ SELFMODIFY_set_midtexturemid_lo:
 SELFMODIFY_set_toptexturemid_lo:
 mov   bp, 01000h
 
+ENDP
+
 ; fall thru in the case of top/bot column.
 PROC  R_DrawColumnPrep_ NEAR
 PUBLIC  R_DrawColumnPrep_ 
@@ -6714,12 +7047,13 @@ ENDP
 
 ;R_PointToAngle16_
 
+
+; params cx, dx. ax/bx get zeroed/clobbered.
 PROC R_PointToAngle16_ NEAR
 PUBLIC R_PointToAngle16_ 
 
-; todo reorder params?
 
-xor  ax, ax ; todo maybe just insert negative? does sbb work tho?
+xor  ax, ax
 mov  bx, ax
 SELFMODIFY_BSP_viewx_lo_5:
 sub  ax, 01000h
@@ -6861,8 +7195,9 @@ SELFMODIFY_BSP_viewangle_lo_3:
 sub   ax, 01000h
 SELFMODIFY_BSP_viewangle_hi_3:
 sbb   dx, 01000h
-;di:bx stores angle1
+;di:si stores angle1
 
+; todo swap di/si order and do this in fewer ops
 xchg  ax, si
 xchg  dx, di      ; cache dx/angle1 intbits. retrieve old cx
 mov   cx, dx
@@ -7033,7 +7368,7 @@ cmp   si, word ptr [bx]
 jl    also_return_1
 cmp   ax, word ptr [bx + 2]
 jg    also_return_1
-return_0:
+return_0_2:
 xor   al, al
 pop   di
 pop   si

@@ -784,7 +784,7 @@ void __near D_Display (void) {
 			R_RenderPlayerView();
 		}
 	}
-
+	// I_Error("done");
 #ifdef DETAILED_BENCH_STATS
 	renderplayerviewtics += ticcount - cachedrendertics;
 	cachedrendertics = ticcount;
