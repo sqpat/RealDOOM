@@ -1186,9 +1186,7 @@ void __near SB_WriteDSP(byte value) {
 
 uint8_t __near SB_ReadDSP() {
     int16_t port = sb_port + SB_DataAvailablePort;
-    uint16_t count;
-
-    count = 0xFFFF;
+    uint8_t count = 0xFF;
 
     while (count) {
         if (inp(port) & 0x80) {
