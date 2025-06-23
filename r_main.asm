@@ -14,7 +14,7 @@
 ;
 ; DESCRIPTION:
 ;
-	.MODEL  medium
+.MODEL  medium
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
@@ -137,10 +137,9 @@ PUBLIC R_SetViewSize_
 ; todo inline and move vars to fixeddata
 
 mov       byte ptr ds:[_setblocks], al
-mov       al, dl
-xor       ah, ah
+xor       dh, dh
 mov       byte ptr ds:[_setsizeneeded], 1
-mov       word ptr ds:[_pendingdetail], ax
+mov       word ptr ds:[_pendingdetail], dx
 retf      
 
 ENDP
@@ -158,66 +157,76 @@ SHORTFLOORBITS = 3
 
 ; 218f
 
-push      bx
+;    extralight = player.extralightvalue;
 push      cx
-push      dx
-push      si
-mov       bx, OFFSET _extralight
-mov       al, byte ptr ds:[_player + 05Eh]
-mov       byte ptr ds:[bx], al
-mov       bx, OFFSET _viewz
-mov       ax, word ptr ds:[_player + 8]
-mov       dx, word ptr ds:[_player + 0Ah]
-mov       word ptr ds:[bx], ax
-mov       word ptr ds:[bx + 2], dx
-mov       ax, word ptr ds:[bx]
-mov       bx, dx
-mov       cx, 16 - SHORTFLOORBITS
-label_1:
-sar       bx, 1
-rcr       ax, 1
-loop      label_1
-mov       bx, offset _viewz_shortheight
-mov       word ptr ds:[bx], ax
+mov       al, byte ptr ds:[_player + 05Eh]  ; player.extralightvalue
+mov       byte ptr ds:[_extralight], al
+
+;    viewz = player.viewzvalue;
+les       ax, dword ptr ds:[_player + 8] ; player.viewzvalue
+mov       word ptr ds:[_viewz], ax
+mov       word ptr ds:[_viewz + 2], es
+mov       cx, es
+;	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
+
+sal       ax, 1
+rcl       cx, 1
+sal       ax, 1
+rcl       cx, 1
+sal       ax, 1
+rcl       cx, 1
+
+
+mov       word ptr ds:[_viewz_shortheight], cx
+
+;    if (player.fixedcolormapvalue) {
+
 mov       al, byte ptr ds:[_player + 05Fh]
 test      al, al
-je        label_2
-mov       bx, OFFSET _fixedcolormap
-mov       si, OFFSET _fixedcolormap
-SHIFT_MACRO shl       al 2
-xor       dl, dl
-mov       byte ptr ds:[bx], al
+jne       set_fixed_colormap_nonzero
 
-label_4:
-mov       al, dl
-cbw      
-mov       bx, ax
-add       bx, OFFSET _scalelightfixed
-mov       al, byte ptr ds:[si]
-inc       dl
-mov       byte ptr ds:[bx], al
-cmp       dl, MAXLIGHTSCALE
-jl        label_4
-label_3:
-mov       si, OFFSET _validcount_global
-mov       ax, word ptr ds:[_viewwindowoffset]
-mov       bx, OFFSET _destscreen
-cwd       
-inc       word ptr ds:[si]
-add       ax, word ptr ds:[bx]
-adc       dx, word ptr ds:[bx + 2]
-mov       bx, OFFSET _destview
-mov       word ptr ds:[bx], ax
-mov       word ptr ds:[bx + 2], dx
-pop       si
-pop       dx
+set_fixed_colormap_zero:
+;		fixedcolormap = 0;
+mov       byte ptr ds:[_fixedcolormap], al   ; al is zero
+
+done_setting_colormap:
+
+;    validcount_global++;
+inc       word ptr ds:[_validcount_global]
+
+;	destview = (byte __far*)(destscreen.w + viewwindowoffset);
+les       ax, dword ptr ds:[_destscreen]
+add       ax, word ptr ds:[_viewwindowoffset]
+mov       word ptr ds:[_destview], ax
+mov       word ptr ds:[_destview + 2], es
 pop       cx
-pop       bx
+
 ret      
-label_2:
-mov       bx, OFFSET _fixedcolormap
-mov       byte ptr ds:[bx], al
-jmp       label_3
+
+set_fixed_colormap_nonzero:
+
+;		fixedcolormap =  player.fixedcolormapvalue << 2; 
+SHIFT_MACRO shl       al 2
+mov       byte ptr ds:[_fixedcolormap], al
+
+;		for (i=0 ; i<MAXLIGHTSCALE ; i++){
+;			scalelightfixed[i] = fixedcolormap;
+;		}
+
+mov       ah, al
+push      di
+
+mov       cx, ds
+mov       es, cx
+mov       cx, MAXLIGHTSCALE / 2
+mov       di, OFFSET _scalelightfixed
+rep       stosw
+;		for (i=0 ; i<MAXLIGHTSCALE ; i++){
+;			scalelightfixed[i] = fixedcolormap;
+;		}
+
+pop       di
+jmp       done_setting_colormap
 
 ENDP
 
