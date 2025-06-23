@@ -43,7 +43,7 @@ typedef enum {
  
 
 // Create any new ticcmds and broadcast to other players.
-void NetUpdate (void);
+void __far NetUpdate (void);
  
 
 //? how many ticks to run?

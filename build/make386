@@ -102,7 +102,6 @@ GLOBOBJS = &
  math386.obj &
  main.obj &
  d_algo.obj &
- r_math.obj &
  r_mainhi.obj &
  video.obj 
  

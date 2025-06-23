@@ -49,7 +49,7 @@ void __near D_DoAdvanceDemo(void);
 // sends out a packet
 //
 
-void NetUpdate(void) {
+void __far NetUpdate(void) {
 	uint32_t nowtime;
 	int16_t newtics;
 	int16_t i;
