@@ -1257,17 +1257,17 @@ mov       word ptr [bp - 016h], di
 mov       ds, di
 mov       es, word ptr [bp - 8]
 do_next_fullscreen_column:
-mov       di, word ptr [bp - 0Eh]  ; get column offset. todo use bx
+mov       si, word ptr [bp - 0Eh]  ; get column offset
 
 ; column = (column_t  __far*)((byte  __far*)extradata + ((patch->columnofs[col]) - offset));
 
-mov       di, word ptr ds:[di + 8]  ; columnofs
-sub       di, word ptr [bp - 010h]  ; - offset
-add       di, word ptr [bp - 01Ch]  ; + extradata offset
+mov       si, word ptr ds:[si + 8]  ; columnofs
+sub       si, word ptr [bp - 010h]  ; - offset
+add       si, word ptr [bp - 01Ch]  ; + extradata offset
 
 ;		pageoffset = (byte  __far*)column - extradata;
 
-mov       ax, di
+mov       ax, si
 sub       ax, word ptr [bp - 01Ch]  ; column - extradata
 
 
@@ -1277,7 +1277,7 @@ jg        load_next_lump_fragment
 lump_fragment_loaded:
 load_next_column_post:
 
-mov       al, byte ptr ds:[di] ;todo this should be si
+lodsw
 cmp       al, 0FFh
 
 ;    while (column->topdelta != 0xff) {
@@ -1288,17 +1288,17 @@ column_has_post:
 
 
 ;  dest = desttop + column->topdelta * SCREENWIDTH;
+mov       cl, ah   
 mov       ah, SCREENWIDTHOVER2
 mul       ah
 sal       ax, 1
-mov       bx, word ptr [bp - 0Ah]  ; desttop
-add       bx, ax
-
-mov       cl, byte ptr ds:[di + 1]  ;  count = column->length;
+mov       di, word ptr [bp - 0Ah]  ; desttop
+add       di, ax
 
 
 
-lea       si, [di + 3]              ;  source = (byte  __far*)column + 3;
+
+inc       si
 
 ;			if ((count -= 4) >= 0) {
 sub       cl, 4
@@ -1306,15 +1306,15 @@ jl        draw_less_than_4_pixels
 
 
 loop_4_pixels:
-; todo bx/di swap
-lodsw     
-mov       byte ptr es:[bx], al
-mov       byte ptr es:[bx + SCREENWIDTH], ah
 
 lodsw     
-mov       byte ptr es:[bx + 2*SCREENWIDTH], al
-mov       byte ptr es:[bx + 3*SCREENWIDTH], ah
-add       bx, 4*SCREENWIDTH
+stosb
+mov       byte ptr es:[di + SCREENWIDTH - 1], ah
+
+lodsw     
+mov       byte ptr es:[di + 2*SCREENWIDTH - 1], al
+mov       byte ptr es:[di + 3*SCREENWIDTH - 1], ah
+add       di, 4*SCREENWIDTH -1
 
 sub       cl, 4
 
@@ -1326,18 +1326,13 @@ add       cl, 4
 je        zero_pixels_left_to_draw
 loop_sub_4_pixel:
 
-lodsb
-
-mov       byte ptr es:[bx], al
-add       bx, SCREENWIDTH
+movsb
+add       di, SCREENWIDTH-1
 dec       cl
 jne       loop_sub_4_pixel
 zero_pixels_left_to_draw:
 
-
-;	column = (column_t  __far*)(source + 1);
-
-lea       di, [si + 1]
+inc       si
 jmp       load_next_column_post
 load_next_lump_fragment:
 
@@ -1369,11 +1364,11 @@ call      W_CacheLumpNumDirectFragment_
 
 mov       es, word ptr [bp - 8]
 mov       ds, word ptr [bp - 016h]
-mov       bx, word ptr [bp - 0Eh]   ; todo adjacent for LDS?
+mov       si, word ptr [bp - 0Eh]   ; todo adjacent for LDS?
 
-mov       di, word ptr ds:[bx + 8]  ; todo use column as bx...
-add       di, 08000h ; offset
-sub       di, word ptr [bp - 010h]
+mov       si, word ptr ds:[si + 8]
+add       si, 08000h ; offset
+sub       si, word ptr [bp - 010h]
 
 jmp       lump_fragment_loaded
 column_has_no_posts:
