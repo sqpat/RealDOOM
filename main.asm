@@ -1829,70 +1829,67 @@ ret
 
 ENDP
 
+;void __near I_SetPalette(int8_t paletteNumber) {
 
 PROC I_SetPalette_  NEAR
 PUBLIC I_SetPalette_
 
 PALETTEBYTES_SEGMENT = 09000h
 
-
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 6
-cbw  
-imul  bx, ax, 768
-mov   al, byte ptr ds:[_currenttask]
-mov   word ptr [bp - 6], PALETTEBYTES_SEGMENT
-mov   byte ptr [bp - 2], al
 cmp   byte ptr ds:[_novideo], 0
-je    label_1
-LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_1:
+jne   just_exit
+has_video:
+
+PUSHA_NO_AX_OR_BP_MACRO
+mov   ah, al
+add   ah, al  ; times 0x200..
+add   ah, al  ; times 0x300..
+xor   al, al
+mov   si, ax  ; si = al * 768
+
+;mov   di, word ptr ds:[_currenttask] ; get this before quickmap
+push  word ptr ds:[_currenttask] ; get this before quickmap
 mov   ax, 1
-mov   dx, PEL_WRITE_ADR
-mov   word ptr [bp - 4], GAMMATABLE_SEGMENT
 call  I_WaitVBL_
 call  Z_QuickMapPalette_
-xor   al, al
-xor   cx, cx
+
+mov   dx, PEL_WRITE_ADR
+xor   ax, ax
 out   dx, al
-mov   ah, byte ptr ds:[_usegamma]
+
+mov   bx, ax ; zero
+mov   bh, byte ptr ds:[_usegamma]
+
+;mov   dx, PALETTEBYTES_SEGMENT
+;mov   ds, dx
+mov   dx, GAMMATABLE_SEGMENT
+;mov   es, dx
+mov   ds, dx
+
+add   si, (PALETTEBYTES_SEGMENT - GAMMATABLE_SEGMENT) * 16
+
 mov   dx, PEL_DATA
-mov   di, ax
-label_2:
-mov   es, word ptr [bp - 6]
-mov   al, byte ptr es:[bx]
-mov   si, di
-xor   ah, ah
-mov   es, word ptr [bp - 4]
-add   si, ax
-mov   al, byte ptr es:[si]
-inc   bx
-sar   ax, 2
-inc   cx
+mov   cx, 768
+
+loop_palette_out:
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+SHIFT_MACRO sar   ax 2  ; gammatablelookup[*palette] >> 2
 out   dx, al
-cmp   cx, 768
-jl    label_2
-mov   al, byte ptr [bp - 2]
-cbw  
+
+loop  loop_palette_out
+
+mov   ax, ss
+mov   ds, ax
+
+;xchg  ax, di  ; get current task back
+pop   ax  ; task
+
 call  Z_QuickMapByTaskNum_
-LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+
+POPA_NO_AX_OR_BP_MACRO
+just_exit:
 ret   
 ENDP
 
@@ -1906,27 +1903,32 @@ push  bp
 mov   bp, sp
 sub   sp, 010h
 push  cx
-imul  dx, dx, SCREENWIDTH
 mov   cx, ax
+mov   al, SCREENWIDTHOVER2
+mul   dl
+sal   ax, 1
+xchg  ax, dx  ; dx gets dx * screenwidth
+mov   ax, cx ; retrieve ax
+
 add   ax, bx
-sar   cx, 3
-sar   ax, 3
+SHIFT_MACRO sar   cx 3
+SHIFT_MACRO sar   ax 3
 sub   ax, cx
 mov   bx, cx
 inc   ax
-shl   bx, 3
+SHIFT_MACRO shl   bx 3
 mov   word ptr [bp - 8], ax
 add   bx, dx
-shl   ax, 3
+SHIFT_MACRO shl   ax 3
 mov   dx, SCREENWIDTH
 sub   dx, ax
 mov   ax, bx
-shr   ax, 2
+SHIFT_MACRO shr   ax 2
 mov   word ptr [bp - 0Ch], 0
 mov   word ptr [bp - 010h], ax
 mov   ax, dx
 mov   word ptr [bp - 6], dx
-sar   ax, 2
+SHIFT_MACRO sar   ax 2
 mov   dx, SC_INDEX
 mov   word ptr [bp - 0Ah], ax
 mov   al, 2
@@ -1977,7 +1979,8 @@ mov   al, byte ptr es:[bx + 4]
 xor   ah, ah
 mov   cx, ax
 add   si, 2
-shl   cx, 8
+mov   ch, cl
+xor   cl, cl  ; shift left eight
 mov   al, byte ptr es:[bx]
 mov   es, di
 add   cx, ax
