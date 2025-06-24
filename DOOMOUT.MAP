@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/23 19:01:40
+Created on:       25/06/23 19:05:24
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -77,7 +77,7 @@ R_DATA_TEXT            CODE           AUTO           17f4:0000       00000c62
 R_MAIN_TEXT            CODE           AUTO           17f4:0c62       000001e2
 R_MAINHI_TEXT          CODE           AUTO           17f4:0e44       0000264f
 w_wad_TEXT             CODE           AUTO           17f4:34a0       0000030c
-VIDEO_TEXT             CODE           AUTO           17f4:37ac       000006f8
+V_VIDEO_TEXT           CODE           AUTO           17f4:37ac       000006f8
 z_zone_TEXT            CODE           AUTO           17f4:3eb0       000004e7
 p_setup_TEXT           CODE           AUTO           1c2e:0000       00001268
 _TEXT                  CODE           AUTO           1c2e:1270       0000245e
@@ -1129,8 +1129,8 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 17f4:0f45      R_PointToAngle_
 17f4:2661*     R_DrawColumnPrep_
 17f4:2c86*     R_DrawPSprite_
-17f4:1657*     R_CheckPlane_
 17f4:115e*     FixedMulTrigNoShiftBSPLocal_
+17f4:1657*     R_CheckPlane_
 17f4:1722*     R_ProjectSprite_
 17f4:3070      R_RenderBSPNode_
 17f4:0e44*     R_ScaleFromGlobalAngle_
@@ -1146,7 +1146,7 @@ Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 17f4:3774      W_CacheLumpNumDirect_
 17f4:3782      W_CacheLumpNumDirectWithOffset_
 17f4:3796      W_CacheLumpNumDirectFragment_
-Module: video.obj(video.ASM)
+Module: v_video.obj(v_video.ASM)
 17f4:3a64*     CopyString9_
 17f4:3d17      V_DrawFullscreenPatch_
 17f4:3adb      R_FillBackScreen_

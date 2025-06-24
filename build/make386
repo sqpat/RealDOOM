@@ -101,7 +101,7 @@ GLOBOBJS = &
  main.obj &
  d_algo.obj &
  r_mainhi.obj &
- video.obj 
+ v_video.obj 
  
 doomout.exe : $(GLOBOBJS) i_ibm.obj
  wlink @build/rdoom32.lnk

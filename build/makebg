@@ -147,7 +147,7 @@ GLOBOBJS = $(GLOBOBJS) &
  r_column.obj &
  r_sky.obj &
  r_span.obj &
- video.obj 
+ v_video.obj 
  
 bingen.exe : $(GLOBOBJS) 
 !ifeq compileinstructionset 3
