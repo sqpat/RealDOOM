@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/23 22:11:20
+Created on:       25/06/23 22:17:00
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -77,7 +77,7 @@ R_DATA_TEXT            CODE           AUTO           17f4:0000       00000c62
 R_MAIN_TEXT            CODE           AUTO           17f4:0c62       000001e2
 R_MAINHI_TEXT          CODE           AUTO           17f4:0e44       0000264f
 w_wad_TEXT             CODE           AUTO           17f4:34a0       0000030c
-V_VIDEO_TEXT           CODE           AUTO           17f4:37ac       0000061d
+V_VIDEO_TEXT           CODE           AUTO           17f4:37ac       00000616
 z_zone_TEXT            CODE           AUTO           17f4:3dd0       000004e7
 p_setup_TEXT           CODE           AUTO           1c20:0000       00001268
 _TEXT                  CODE           AUTO           1c20:1270       0000245e
@@ -1148,7 +1148,7 @@ Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 17f4:3796      W_CacheLumpNumDirectFragment_
 Module: v_video.obj(v_video.ASM)
 17f4:3a64*     CopyString9_
-17f4:3cf4      V_DrawFullscreenPatch_
+17f4:3cef      V_DrawFullscreenPatch_
 17f4:3adb      R_FillBackScreen_
 17f4:3cb4      V_CopyRect_
 17f4:396c      V_DrawPatchDirect_
@@ -1476,4 +1476,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00022570 (140656.)
 Entry point address: 1c20:1c56
-Link time: 00:00.20
+Link time: 00:00.75

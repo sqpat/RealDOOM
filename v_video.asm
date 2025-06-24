@@ -1163,9 +1163,6 @@ retf
 
 ENDP
 
-use_screen_0_for_fullscreendraw:
-mov       dx, SCREEN0_SEGMENT 
-jmp       done_choosing_screen_for_fullscreendraw
 
 
 ;void __far V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
@@ -1174,12 +1171,11 @@ PROC V_DrawFullscreenPatch_ FAR
 PUBLIC V_DrawFullscreenPatch_
 
 ; bp - 2     desttop segment
-; bp - 4     oldtask
-; bp - 6     extradata ?
-; bp - 8     offset lo
-; bp - 0Ah   desttop offset
-; bp - 0Ch   SCRATCH_SEGMENT_5000
-; bp - 0Eh   width
+; bp - 4     extradata ?
+; bp - 6     offset lo
+; bp - 8   desttop offset
+; bp - 0Ah   SCRATCH_SEGMENT_5000
+; bp - 0Ch   width
 
 
 
@@ -1189,28 +1185,26 @@ mov       bp, sp
 
 cmp       dl, 1
 je        use_screen_1_for_fullscreendraw
-jmp       use_screen_0_for_fullscreendraw
+mov       dx, SCREEN0_SEGMENT 
+jmp       done_choosing_screen_for_fullscreendraw
 use_screen_1_for_fullscreendraw:
 mov       dx, SCREEN1_SEGMENT
 done_choosing_screen_for_fullscreendraw:
 
 
 push      dx        ; bp - 2
-push      word ptr ds:[_currenttask] ; bp - 4;	int8_t oldtask = currenttask. hi byte may be messy. doesnt matter.
 xor       si, si
+push      si  ; bp - 4
 push      si  ; bp - 6
 push      si  ; bp - 8
-push      si  ; bp - 0Ah
 
 mov       di, SCRATCH_SEGMENT_5000
-push      di  ; bp - 0Ch
+push      di  ; bp - 0Ah
 
 
 
 ;	int16_t lump = W_GetNumForName(pagename);call      W_GetNumForName_
 call      W_GetNumForName_
-
-
 
 mov       word ptr cs:[SELFMODIFY_set_ax_to_lump+1], ax 
 mov       cx, di
@@ -1232,7 +1226,7 @@ cwd              ; dx 0
 les       bx, dword ptr es:[si]      ;	w = (patch->width);
 mov       cx, es                      ; patch->height arg
 
-push      bx  ; bp - 0Eh
+push      bx  ; bp - 0Ch
 
 ;	V_MarkRect(0, 0, w, (patch->height));
 call      V_MarkRect_
@@ -1258,9 +1252,9 @@ do_next_fullscreen_column:
 ;		pageoffset = (byte  __far*)column - extradata;
 
 mov       si, word ptr ds:[bx]  ; columnofs
-sub       si, word ptr [bp - 8]  ; - offset
+sub       si, word ptr [bp - 6]  ; - offset
 mov       ax, si
-add       si, word ptr [bp - 6]  ; + extradata offset
+add       si, word ptr [bp - 4]  ; + extradata offset
 
 
 
@@ -1277,7 +1271,7 @@ cmp       al, 0FFh
 
 ;    while (column->topdelta != 0xff) {
 
-je       column_has_no_posts ; 0Eh more bytes...
+je       column_has_no_posts
 
 column_has_post:
 
@@ -1287,11 +1281,12 @@ mov       cl, ah
 mov       ah, SCREENWIDTHOVER2
 mul       ah
 sal       ax, 1
-mov       di, word ptr [bp - 0Ah]  ; desttop
+mov       di, word ptr [bp - 8]  ; desttop
 add       di, ax
 
 inc       si
 
+; could loop 4 but who cares.
 ;			if ((count -= 2) >= 0) {
 dec       cx
 dec       cx
@@ -1299,7 +1294,6 @@ jl        draw_less_than_2_pixels
 
 
 loop_2_pixels:
-
 movsb
 add       di, dx
 movsb
@@ -1323,8 +1317,8 @@ jmp       load_next_column_post
 
 column_has_no_posts:
 add       bx, 4    ; next column?
-inc       word ptr [bp - 0Ah]       ; inc dest x pixel.
-dec       word ptr [bp - 0Eh]
+inc       word ptr [bp - 8]       ; inc dest x pixel.
+dec       word ptr [bp - 0Ch]
 jne       do_next_fullscreen_column  ;1fh bytes..
 
 exit_drawfullscreenpatch:
@@ -1332,10 +1326,8 @@ exit_drawfullscreenpatch:
 mov       ax, ss
 mov       ds, ax ; restore ds
 
-mov       al, byte ptr [bp - 4]
-cbw      
-
-call      Z_QuickMapByTaskNum_  ; todo get rid of this. call safely
+mov       al, byte ptr ds:[_currenttask]
+call      Z_QuickMapByTaskNum_  ; todo get rid of this? call safely
 LEAVE_MACRO
 POPA_NO_AX_MACRO
 retf      
@@ -1352,7 +1344,7 @@ mov       bx, 08000h ; offset
 mov       cx, SCRATCH_SEGMENT_5000  ; patch2
 
 ;    offset += pageoffset;
-add       word ptr [bp - 8], ax
+add       word ptr [bp - 6], ax
 
 mov       ax, ss
 mov       ds, ax
@@ -1361,8 +1353,8 @@ SELFMODIFY_set_ax_to_lump:
 mov       ax, 01000h
 
 ;    extradata = patch2;
-mov       word ptr [bp - 6], bx ; offset
-push      word ptr [bp - 8]
+mov       word ptr [bp - 4], bx ; offset
+push      word ptr [bp - 6]
 ;    W_CacheLumpNumDirectFragment(lump, patch2,  offset);
 
 call      W_CacheLumpNumDirectFragment_
@@ -1372,10 +1364,10 @@ mov       bx, dx ; restore column..
 ;    column = (column_t  __far*)((byte  __far*)extradata + patch->columnofs[col] - offset);
 
 mov       es, word ptr [bp - 2]
-mov       ds, word ptr [bp - 0Ch]
+mov       ds, word ptr [bp - 0Ah]
 mov       si, word ptr ds:[bx]
 add       si, 08000h ; offset
-sub       si, word ptr [bp - 8]
+sub       si, word ptr [bp - 6]
 
 jmp       lump_fragment_loaded
 
