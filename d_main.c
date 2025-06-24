@@ -614,6 +614,8 @@ void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h);
 // I_UpdateNoBlit
 //
 // far because fwipe calls it. todo port local to fwipe
+
+/*
 void __far I_UpdateNoBlit(void) {
 	int16_t realdr[4];
 	int16_t x, y, w, h;
@@ -680,6 +682,7 @@ void __far I_UpdateNoBlit(void) {
 	dirtybox[BOXTOP] = dirtybox[BOXRIGHT] = MINSHORT;
 	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
 }
+*/
 
 void __near I_FinishUpdate(void);
 

@@ -2083,4 +2083,126 @@ ret
 
 ENDP
 
+PROC I_UpdateNoBlit_  NEAR
+PUBLIC I_UpdateNoBlit_
+
+
+PUSHA_NO_AX_OR_BP_MACRO
+mov  bx, OFFSET _destscreen
+mov  ax, word ptr [bx]
+mov  dx, word ptr [bx + 2]
+mov  bx, OFFSET _currentscreen
+mov  word ptr [bx], ax
+mov  si, OFFSET _olddb
+mov  word ptr [bx + 2], dx
+mov  bx, OFFSET _dirtybox
+mov  ax, word ptr [si]
+mov  bx, word ptr [bx]
+cmp  bx, ax
+jge  label_1
+mov  bx, ax
+label_1:
+mov  si, OFFSET _olddb + 8
+mov  ax, word ptr [si]
+cmp  bx, ax
+jge  label_2
+mov  bx, ax
+label_2:
+mov  si, OFFSET _dirtybox + 6
+mov  cx, word ptr [si]
+mov  si, OFFSET _olddb + 6
+mov  ax, word ptr [si]
+cmp  cx, ax
+jge  label_3
+mov  cx, ax
+label_3:
+mov  si, OFFSET _olddb + 0Eh
+mov  ax, word ptr [si]
+cmp  cx, ax
+jge  label_4
+mov  cx, ax
+label_4:
+mov  si, OFFSET _dirtybox + 2
+mov  dx, word ptr [si]
+mov  si, OFFSET _olddb + 2
+mov  ax, word ptr [si]
+cmp  dx, ax
+jle  label_5
+mov  dx, ax
+label_5:
+mov  si, OFFSET _olddb + 0Ah
+mov  ax, word ptr [si]
+cmp  dx, ax
+jle  label_6
+mov  dx, ax
+label_6:
+mov  si, OFFSET _dirtybox + 4
+mov  ax, word ptr [si]
+mov  si, OFFSET _olddb + 4
+cmp  ax, word ptr [si]
+jle  label_7
+mov  ax, word ptr [si]
+label_7:
+mov  si, OFFSET _olddb + 0Ch
+cmp  ax, word ptr [si]
+jle  label_8
+mov  ax, word ptr [si]
+label_8:
+mov  si, OFFSET _olddb + 8
+mov  di, OFFSET _olddb + 0
+mov  si, word ptr [si]
+mov  word ptr [di], si
+mov  si, OFFSET _olddb + 0Ah
+mov  di, OFFSET _olddb + 2
+mov  si, word ptr [si]
+mov  word ptr [di], si
+mov  si, OFFSET _olddb + 0Ch
+mov  di, OFFSET _olddb + 4
+mov  si, word ptr [si]
+mov  word ptr [di], si
+mov  si, OFFSET _olddb + 0Eh
+mov  di, OFFSET _olddb + 6
+mov  si, word ptr [si]
+mov  word ptr [di], si
+mov  si, OFFSET _dirtybox + 0
+mov  di, OFFSET _olddb + 8
+mov  si, word ptr [si]
+mov  word ptr [di], si
+mov  si, OFFSET _dirtybox + 2
+mov  di, OFFSET _olddb + 0Ah
+mov  si, word ptr [si]
+mov  word ptr [di], si
+mov  si, OFFSET _dirtybox + 4
+mov  di, OFFSET _olddb + 0Ch
+mov  si, word ptr [si]
+mov  word ptr [di], si
+mov  si, OFFSET _dirtybox + 6
+mov  di, OFFSET _olddb + 0Eh
+mov  si, word ptr [si]
+mov  word ptr [di], si
+cmp  dx, bx
+jnle  label_10
+mov  si, cx
+sub  bx, dx
+sub  si, ax
+lea  cx, [bx + 1]
+inc  si
+mov  bx, si
+call I_UpdateBox_
+label_10:
+mov  bx, OFFSET _dirtybox + 6
+mov  word ptr [bx], MINSHORT
+mov  ax, word ptr [bx]
+mov  bx, OFFSET _dirtybox + 0
+mov  word ptr [bx], ax
+mov  bx, OFFSET _dirtybox + 4
+mov  word ptr [bx], MAXSHORT
+mov  ax, word ptr [bx]
+mov  bx, OFFSET _dirtybox + 2
+mov  word ptr [bx], ax
+POPA_NO_AX_OR_BP_MACRO
+retf 
+
+ENDP
+
 END
