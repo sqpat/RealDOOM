@@ -386,90 +386,76 @@ ENDP
 
 ;R_DrawViewBorder_
 
+; could probably be improved a small amount wrt screenwidth constants and viewheight
+; but dont care much
+
 PROC R_DrawViewBorder_ FAR
 PUBLIC R_DrawViewBorder_ 
 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
+PUSHA_NO_AX_OR_BP_MACRO
 mov   ax, word ptr ds:[_scaledviewwidth]
 cmp   ax, SCREENWIDTH
-jne   label_3
+jne   view_border_exists
 exit_drawviewborder:
-LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+
+POPA_NO_AX_OR_BP_MACRO
 retf  
-label_3:
-mov   bx, OFFSET _viewheight
-mov   cx, SCREENHEIGHT - SBARHEIGHT
-sub   cx, word ptr [bx]
-mov   bx, cx
+view_border_exists:
+mov   bx, SCREENHEIGHT - SBARHEIGHT
+sub   bx, word ptr ds:[_viewheight]
 shr   bx, 1
-mov   word ptr [bp - 2], bx
+
 
 mov   di, SCREENWIDTH
 sub   di, ax
-
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-
-    imul  si, bx, SCREENWIDTH
-ELSE
-    mov   ax, SCREENWIDTH
-    mul   bx
-    mov   si, ax
-ENDIF
+mov   al, SCREENWIDTHOVER2
+mul   bl
+sal   ax, 1
+mov   si, ax
 
 sar   di, 1
 mov   cx, si
 add   cx, di
 xor   ax, ax
 mov   dx, cx
-mov   bx, OFFSET _viewheight
+;    // copy top and one line of left side 
 
 call  R_VideoErase_
-mov   bx, word ptr [bx]
-mov   ax, bx
-add   ax, word ptr [bp - 2]
+mov   ax, word ptr ds:[_viewheight]
+add   ax, bx
 
+mov   ah, SCREENWIDTHOVER2
+mul   ah
+sal   ax, 1
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-
-    imul  ax, ax, SCREENWIDTH
-ELSE
-    mov   dx, SCREENWIDTH
-    mul   dx
-ENDIF
-
+mov   bx, SCREENWIDTH
 
 mov   dx, cx
-lea   bx, [si + SCREENWIDTH]
-mov   cx, 1
-mov   si, OFFSET _viewheight
+add   si, bx
+mov   cx, word ptr ds:[_viewheight]
+
 sub   ax, di
-sub   bx, di
+sub   si, di
+
+;    // copy one line of right side and bottom 
 
 call  R_VideoErase_
-add   di, di
-label_4:
-cmp   cx, word ptr [si]
-jae   exit_drawviewborder
+
+
+;    // copy sides using wraparound 
+
+sal   di, 1
+
+loop_erase_border:
 mov   dx, di
-mov   ax, bx
-
+mov   ax, si
 call  R_VideoErase_
-inc   cx
-add   bx, SCREENWIDTH
-jmp   label_4
+add   si, bx
+loop  loop_erase_border
+POPA_NO_AX_OR_BP_MACRO
+retf  
+
 
 
 ENDP
