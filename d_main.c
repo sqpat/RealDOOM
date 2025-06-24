@@ -613,6 +613,7 @@ void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h);
 //
 // I_UpdateNoBlit
 //
+// far because fwipe calls it. todo port local to fwipe
 void __far I_UpdateNoBlit(void) {
 	int16_t realdr[4];
 	int16_t x, y, w, h;
@@ -672,7 +673,7 @@ void __far I_UpdateNoBlit(void) {
         y = realdr[BOXBOTTOM];
         w = realdr[BOXRIGHT] - realdr[BOXLEFT] + 1;
         h = realdr[BOXTOP] - realdr[BOXBOTTOM] + 1;
-        I_UpdateBox(x, y, w, h);
+        I_UpdateBox(x, y, w, h); // todo inline, only use.
     }
 	// Clear box
 
@@ -784,7 +785,7 @@ void __near D_Display (void) {
 			R_RenderPlayerView();
 		}
 	}
-	// I_Error("done");
+
 #ifdef DETAILED_BENCH_STATS
 	renderplayerviewtics += ticcount - cachedrendertics;
 	cachedrendertics = ticcount;

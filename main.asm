@@ -2064,24 +2064,20 @@ PUBLIC I_FinishUpdate_
 ;	}
 
 
-push  bx
 push  dx
-mov   bx, OFFSET _destscreen
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[_destscreen]
 mov   dx, CRTC_INDEX
 mov   al, 0Ch
 out   dx, ax
-add   byte ptr [bx + 1], 040h
-cmp   word ptr [bx], 0C000h
-je    set_destscreen_0
+add   byte ptr ds:[_destscreen + 1], 040h
+;cmp   byte ptr ds:[_destscreen + 1], 0C0h
+jl    set_destscreen_0 ; SF != OF
 pop   dx
-pop   bx
-ret
+retf
 set_destscreen_0:
-mov   word ptr [bx], 0
+mov   byte ptr ds:[_destscreen+1], 0
 pop   dx
-pop   bx
-ret
+retf
 
 
 
