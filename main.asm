@@ -2088,118 +2088,168 @@ PUBLIC I_UpdateNoBlit_
 
 
 PUSHA_NO_AX_OR_BP_MACRO
-mov  bx, OFFSET _destscreen
-mov  ax, word ptr [bx]
-mov  dx, word ptr [bx + 2]
-mov  bx, OFFSET _currentscreen
-mov  word ptr [bx], ax
+les  ax, dword ptr ds:[_destscreen]
+mov  word ptr ds:[_currentscreen], ax
+mov  word ptr ds:[_currentscreen + 2], es
+
+
+
+; dx is realdr[BOXTOP]
+; cx is realdr[BOXRIGHT]
+; bx is realdr[BOXBOTTOM]
+; ax is realdr[BOXLEFT]
+
+;    // Update dirtybox size
+;    realdr[BOXTOP] = dirtybox[BOXTOP];
+;    if (realdr[BOXTOP] < olddb[0+BOXTOP]) {
+;        realdr[BOXTOP] = olddb[0+BOXTOP];
+;    }
+;    if (realdr[BOXTOP] < olddb[4+BOXTOP]) {
+;        realdr[BOXTOP] = olddb[4+BOXTOP];
+;    }
+
 mov  si, OFFSET _olddb
-mov  word ptr [bx + 2], dx
-mov  bx, OFFSET _dirtybox
-mov  ax, word ptr [si]
-mov  bx, word ptr [bx]
-cmp  bx, ax
+mov  di, OFFSET _dirtybox
+mov  ax, word ptr [si + (BOXTOP * 2)]
+mov  dx, word ptr [di + (BOXTOP * 2)]
+cmp  dx, ax
 jge  label_1
-mov  bx, ax
+mov  dx, ax
 label_1:
-mov  si, OFFSET _olddb + 8
-mov  ax, word ptr [si]
-cmp  bx, ax
+
+mov  ax, word ptr [si + ((4 + BOXTOP) * 2) ]
+cmp  dx, ax
 jge  label_2
-mov  bx, ax
+mov  dx, ax
 label_2:
-mov  si, OFFSET _dirtybox + 6
-mov  cx, word ptr [si]
-mov  si, OFFSET _olddb + 6
-mov  ax, word ptr [si]
+
+;    realdr[BOXRIGHT] = dirtybox[BOXRIGHT];
+;    if (realdr[BOXRIGHT] < olddb[0+BOXRIGHT]) {
+;        realdr[BOXRIGHT] = olddb[0+BOXRIGHT];
+;    }
+;    if (realdr[BOXRIGHT] < olddb[4+BOXRIGHT]) {
+;        realdr[BOXRIGHT] = olddb[4+BOXRIGHT];
+;    }
+
+;mov  si, OFFSET _dirtybox + 6
+mov  cx, word ptr [di + (BOXRIGHT * 2)]
+mov  ax, word ptr [si + (BOXRIGHT * 2)]
 cmp  cx, ax
 jge  label_3
 mov  cx, ax
 label_3:
-mov  si, OFFSET _olddb + 0Eh
-mov  ax, word ptr [si]
+mov  ax, word ptr [si + ((4 + BOXTOP) * 2)]
 cmp  cx, ax
 jge  label_4
 mov  cx, ax
 label_4:
-mov  si, OFFSET _dirtybox + 2
-mov  dx, word ptr [si]
-mov  si, OFFSET _olddb + 2
-mov  ax, word ptr [si]
-cmp  dx, ax
+
+;    realdr[BOXBOTTOM] = dirtybox[BOXBOTTOM];
+;    if (realdr[BOXBOTTOM] > olddb[0+BOXBOTTOM]) {
+;        realdr[BOXBOTTOM] = olddb[0+BOXBOTTOM];
+;    }
+;    if (realdr[BOXBOTTOM] > olddb[4+BOXBOTTOM]) {
+;        realdr[BOXBOTTOM] = olddb[4+BOXBOTTOM];
+;    }
+
+mov  bx, word ptr [di + (BOXBOTTOM * 2)]
+mov  ax, word ptr [si + (BOXBOTTOM * 2)]
+cmp  bx, ax
 jle  label_5
-mov  dx, ax
+mov  bx, ax
 label_5:
-mov  si, OFFSET _olddb + 0Ah
-mov  ax, word ptr [si]
-cmp  dx, ax
+mov  ax, word ptr [si + ((4 + BOXBOTTOM) * 2)]
+cmp  bx, ax
 jle  label_6
-mov  dx, ax
+mov  bx, ax
 label_6:
-mov  si, OFFSET _dirtybox + 4
-mov  ax, word ptr [si]
-mov  si, OFFSET _olddb + 4
-cmp  ax, word ptr [si]
+
+
+;    realdr[BOXLEFT] = dirtybox[BOXLEFT];
+;    if (realdr[BOXLEFT] > olddb[0+BOXLEFT]) {
+;        realdr[BOXLEFT] = olddb[0+BOXLEFT];
+;    }
+;    if (realdr[BOXLEFT] > olddb[4+BOXLEFT]) {
+;        realdr[BOXLEFT] = olddb[4+BOXLEFT];
+;    }
+
+mov  ax, word ptr [di + (BOXLEFT * 2)]
+mov  di, word ptr [si + (BOXLEFT * 2)]
+cmp  ax, di
 jle  label_7
-mov  ax, word ptr [si]
+mov  ax, di
 label_7:
-mov  si, OFFSET _olddb + 0Ch
-cmp  ax, word ptr [si]
+mov  di, word ptr [si + ((4+BOXLEFT) * 2)]
+cmp  ax, di
 jle  label_8
-mov  ax, word ptr [si]
+mov  ax, di
 label_8:
-mov  si, OFFSET _olddb + 8
-mov  di, OFFSET _olddb + 0
-mov  si, word ptr [si]
-mov  word ptr [di], si
-mov  si, OFFSET _olddb + 0Ah
-mov  di, OFFSET _olddb + 2
-mov  si, word ptr [si]
-mov  word ptr [di], si
-mov  si, OFFSET _olddb + 0Ch
-mov  di, OFFSET _olddb + 4
-mov  si, word ptr [si]
-mov  word ptr [di], si
-mov  si, OFFSET _olddb + 0Eh
-mov  di, OFFSET _olddb + 6
-mov  si, word ptr [si]
-mov  word ptr [di], si
-mov  si, OFFSET _dirtybox + 0
-mov  di, OFFSET _olddb + 8
-mov  si, word ptr [si]
-mov  word ptr [di], si
-mov  si, OFFSET _dirtybox + 2
-mov  di, OFFSET _olddb + 0Ah
-mov  si, word ptr [si]
-mov  word ptr [di], si
-mov  si, OFFSET _dirtybox + 4
-mov  di, OFFSET _olddb + 0Ch
-mov  si, word ptr [si]
-mov  word ptr [di], si
-mov  si, OFFSET _dirtybox + 6
-mov  di, OFFSET _olddb + 0Eh
-mov  si, word ptr [si]
-mov  word ptr [di], si
-cmp  dx, bx
-jnle  label_10
-mov  si, cx
-sub  bx, dx
-sub  si, ax
-lea  cx, [bx + 1]
-inc  si
-mov  bx, si
+
+
+
+
+;    // Leave current box for next update
+;    olddb[0] = olddb[4];
+;    olddb[1] = olddb[5];
+;    olddb[2] = olddb[6];
+;    olddb[3] = olddb[7];
+;    olddb[4] = dirtybox[0];
+;    olddb[5] = dirtybox[1];
+;    olddb[6] = dirtybox[2];
+;    olddb[7] = dirtybox[3];
+
+mov  di, ds
+mov  es, di
+mov  si, OFFSET _olddb + (4 * 2)
+mov  di, OFFSET _olddb
+movsw
+movsw
+movsw
+movsw
+mov  si, OFFSET _dirtybox
+movsw
+movsw
+movsw
+movsw
+
+
+; dx is realdr[BOXTOP]
+; cx is realdr[BOXRIGHT]
+; bx is realdr[BOXBOTTOM]
+; ax is realdr[BOXLEFT]
+
+;    // Update screen
+;    if (realdr[BOXBOTTOM] <= realdr[BOXTOP]) {
+;        x = realdr[BOXLEFT];
+;        y = realdr[BOXBOTTOM];
+;        w = realdr[BOXRIGHT] - realdr[BOXLEFT] + 1;
+;        h = realdr[BOXTOP] - realdr[BOXBOTTOM] + 1;
+;        I_UpdateBox(x, y, w, h); // todo inline, only use.
+;    }
+
+cmp  bx, dx
+jnle  dont_update_box
+xchg bx, dx   ; dx has y, bx has top
+xchg bx, cx   ; cx has top, bx has right
+sub  bx, ax
+sub  cx, dx
+inc  bx
+inc  cx
 call I_UpdateBox_
-label_10:
-mov  bx, OFFSET _dirtybox + 6
-mov  word ptr [bx], MINSHORT
-mov  ax, word ptr [bx]
-mov  bx, OFFSET _dirtybox + 0
-mov  word ptr [bx], ax
-mov  bx, OFFSET _dirtybox + 4
-mov  word ptr [bx], MAXSHORT
-mov  ax, word ptr [bx]
-mov  bx, OFFSET _dirtybox + 2
-mov  word ptr [bx], ax
+dont_update_box:
+
+;	// Clear box
+;	dirtybox[BOXTOP] = dirtybox[BOXRIGHT] = MINSHORT;
+;	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
+mov  ax, MINSHORT
+mov  di, OFFSET _dirtybox
+stosw
+dec   ax
+stosw
+stosw
+inc   ax
+stosw
+
 POPA_NO_AX_OR_BP_MACRO
 retf 
 
