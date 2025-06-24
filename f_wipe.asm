@@ -20,6 +20,10 @@ INSTRUCTION_SET_MACRO
 
 .CODE
 
+PROC    F_WIPE_STARTMARKER_ 
+PUBLIC  F_WIPE_STARTMARKER_
+ENDP
+
 PROC I_ReadScreen_ NEAR
 PUBLIC I_ReadScreen_
 
@@ -72,7 +76,39 @@ pop   dx
 pop   bx
 ret   
 
-endp
+ENDP
+
+PROC I_FinishUpdate_Fwipe_local_  NEAR
+PUBLIC I_FinishUpdate_Fwipe_local_
+
+
+;	outpw(CRTC_INDEX, (destscreen.h.fracbits & 0xff00L) + 0xc);
+;	//Next plane
+;    destscreen.h.fracbits += 0x4000;
+;	if ((uint16_t)destscreen.h.fracbits == 0xc000) {
+;		destscreen.h.fracbits = 0x0000;
+;	}
+
+
+push  dx
+mov   ax, word ptr ds:[_destscreen]
+mov   dx, CRTC_INDEX
+mov   al, 0Ch
+out   dx, ax
+add   byte ptr ds:[_destscreen + 1], 040h
+;cmp   byte ptr ds:[_destscreen + 1], 0C0h
+jl    set_destscreen_0 ; SF != OF
+pop   dx
+ret
+set_destscreen_0:
+mov   byte ptr ds:[_destscreen+1], 0
+pop   dx
+ret
+
+
+
+ENDP
+
 
 PROC wipe_doMelt_ 
 PUBLIC wipe_doMelt_
@@ -622,9 +658,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _M_Drawer_addr
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _I_FinishUpdate_addr
+call      I_FinishUpdate_Fwipe_local_
 
 test      dl, dl
 je        ticcount_loop
@@ -648,6 +682,12 @@ pop       cx
 pop       bx
 retf      
  
-endp
+ENDP
+
+PROC    F_WIPE_ENDMARKER_ 
+PUBLIC  F_WIPE_ENDMARKER_
+ENDP
+
+
 
 end

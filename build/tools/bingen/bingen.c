@@ -77,6 +77,9 @@ void __far S_INIT_ENDMARKER();
 void __far P_SIGHT_STARTMARKER();
 void __far P_SIGHT_ENDMARKER();
 
+void __far F_WIPE_STARTMARKER();
+void __far F_WIPE_ENDMARKER();
+
 
 void __far WI_Start();
 void __far WI_Ticker();
@@ -177,7 +180,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)P_SIGHT_STARTMARKER, codesize[6], 1, fp);
 
 
-    codesize[7] = FP_OFF(hackDSBack) - FP_OFF(I_ReadScreen);
+    codesize[7] = FP_OFF(F_WIPE_ENDMARKER) - FP_OFF(F_WIPE_STARTMARKER);
     // write filesize..
     fwrite(&codesize[7], 2, 1, fp);
     // write data

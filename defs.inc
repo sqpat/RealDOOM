@@ -21,15 +21,14 @@ SCREENWIDTH			=   320
 SCREENWIDTHOVER2	=   160
 SCREENHEIGHT		=	200
 
-PEL_WRITE_ADR		=	03c8h
-PEL_DATA			=	03c9h
-
+PEL_WRITE_ADR		=	03C8h
+PEL_DATA			=	03C9h
 SC_INDEX			=	03C4h
 SC_MAPMASK			=	2
-
 SC_DATA 			=   03C5h
 
 GC_INDEX        	=   03CEh
+CRTC_INDEX 			=   03D4h
 GC_READMAP      	=   4
 GC_MODE             =   5
 
@@ -230,7 +229,7 @@ _Z_QuickMapWipe_addr =               _NULL_OFFSET + 001F8h
 _Z_QuickMapScratch_5000_addr =       _NULL_OFFSET + 001FCh
 _M_Random_addr =                     _NULL_OFFSET + 00200h
 _I_UpdateNoBlit_addr =               _NULL_OFFSET + 00204h
-_I_FinishUpdate_addr =               _NULL_OFFSET + 00208h
+;_I_FinishUpdate_addr =               _NULL_OFFSET + 00208h
 _V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
 _M_Drawer_addr =                     _NULL_OFFSET + 00210h
 

@@ -681,7 +681,7 @@ void __far I_UpdateNoBlit(void) {
 	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
 }
 
-void __far I_FinishUpdate(void);
+void __near I_FinishUpdate(void);
 
 
 

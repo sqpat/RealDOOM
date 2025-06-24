@@ -457,7 +457,6 @@ found:
 void  __far P_InitThinkers (void);
 
 void __far I_UpdateNoBlit(void);
-void __far I_FinishUpdate(void);
 
 void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
@@ -634,7 +633,7 @@ void __near Z_LoadBinaries() {
 	Z_QuickMapScratch_5000_addr = 	(uint32_t)(Z_QuickMapScratch_5000);
 	M_Random_addr = 				(uint32_t)(M_Random);
 	I_UpdateNoBlit_addr = 			(uint32_t)(I_UpdateNoBlit);
-	I_FinishUpdate_addr = 			(uint32_t)(I_FinishUpdate);
+	// I_FinishUpdate_addr = 			(uint32_t)(I_FinishUpdate);
 	V_MarkRect_addr = 				(uint32_t)(V_MarkRect);
 	M_Drawer_addr = 				(uint32_t)(M_Drawer);
 

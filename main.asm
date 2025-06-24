@@ -2052,7 +2052,7 @@ ENDP
 
 CRTC_INDEX = 03D4h  ; todo contstants
 
-PROC I_FinishUpdate_  FAR
+PROC I_FinishUpdate_  NEAR
 PUBLIC I_FinishUpdate_
 
 
@@ -2073,11 +2073,11 @@ add   byte ptr ds:[_destscreen + 1], 040h
 ;cmp   byte ptr ds:[_destscreen + 1], 0C0h
 jl    set_destscreen_0 ; SF != OF
 pop   dx
-retf
+ret
 set_destscreen_0:
 mov   byte ptr ds:[_destscreen+1], 0
 pop   dx
-retf
+ret
 
 
 
