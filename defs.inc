@@ -31,6 +31,7 @@ SC_DATA 			=   03C5h
 
 GC_INDEX        	=   03CEh
 GC_READMAP      	=   4
+GC_MODE             =   5
 
 
 _NULL_OFFSET = 0030h
@@ -42,14 +43,6 @@ _maskedtexrepeat =                  _NULL_OFFSET + 00006h
 _segloopcachedsegment  = 			_NULL_OFFSET + 00008h
 _segloopheightvalcache = 			_NULL_OFFSET + 0000Ch
 ;// 0E-0F free
-;_currentscreen    = 				_NULL_OFFSET + 00000h
-;_destview    = 						_NULL_OFFSET + 00004h
-;_destscreen = (_NULL_OFFSET + 0008h)
-;_tantoangle_segment  = 						_NULL_OFFSET + 0000Ch
-;_spanfunc_jump_segment_storage = 	_NULL_OFFSET + 0000Eh
-
-
-; 010 to 030 unused
 
 _spanfunc_prt = 					_NULL_OFFSET + 00010h
 _spanfunc_destview_offset = 		_NULL_OFFSET + 00018h
@@ -540,6 +533,21 @@ ENDIF
 
 ENDM
 
+
+PUSHA_NO_AX_OR_BP_MACRO MACRO
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	pusha
+ELSE	
+	push  bx
+	push  cx
+	push  dx
+	push  si
+	push  di
+ENDIF
+
+ENDM
+
 POPA_NO_AX_MACRO MACRO
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
@@ -552,6 +560,21 @@ ELSE
 	pop   cx
 	pop   bx
 ENDIF
+
+ENDM
+
+POPA_NO_AX_OR_BP_MACRO MACRO
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+	popa
+ELSE	
+	pop   di
+	pop   si
+	pop   dx
+	pop   cx
+	pop   bx
+ENDIF
+
 
 ENDM
 

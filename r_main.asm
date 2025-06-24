@@ -148,7 +148,7 @@ PUBLIC R_RenderPlayerView_
 
 
 
-PUSHA_NO_AX_MACRO
+PUSHA_NO_AX_OR_BP_MACRO
 
 ;	r_cachedplayerMobjsecnum = playerMobj->secnum;
 mov       bx, word ptr ds:[_playerMobj]
@@ -270,7 +270,7 @@ call      dword ptr ds:[_R_DrawMaskedCall]
 call      Z_QuickMapPhysics_
 
 call      NetUpdate_
-POPA_NO_AX_MACRO
+POPA_NO_AX_OR_BP_MACRO
 retf      
 set_fixed_colormap_nonzero:
 
@@ -304,81 +304,81 @@ jmp       done_with_visplane_revert
 ENDP
 
 
-
+;void __far R_VideoErase (uint16_t ofs, int16_t count ) 
 ;R_VideoErase_
 
-PROC R_VideoErase_ NEAR
+PROC R_VideoErase_ FAR
 PUBLIC R_VideoErase_ 
 
 
 
-push  bx
-push  cx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   si, ax
-mov   bx, dx
-mov   al, 2
+PUSHA_NO_AX_OR_BP_MACRO
+SHIFT_MACRO shr   ax 2 ; ofs >> 2
+SHIFT_MACRO shr   dx 2 ; count = count / 4
+;dec   dx          ; offset/di/si by one starting
+;add   ax, dx      ; for backwards iteration starting from count
+;inc   dx
+xchg  ax, si
+mov   cx, dx
+
+;	outp(SC_INDEX, SC_MAPMASK);
 mov   dx, SC_INDEX
+mov   al, SC_MAPMASK
 out   dx, al
+
+;    outp(SC_INDEX + 1, 15);
+inc   dx
 mov   al, 00Fh
-mov   dx, SC_DATA
 out   dx, al
-mov   al, 5
+
+;    outp(GC_INDEX, GC_MODE);
 mov   dx, GC_INDEX
-mov   cx, si
+mov   al, GC_MODE
 out   dx, al
-mov   dx, GC_INDEX+1
-mov   si, OFFSET _destscreen
+
+;    outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
+inc   dx
 in    al, dx
-sub   ah, ah
 or    al, 1
-SHIFT_MACRO shr   cx 2
 out   dx, al
-mov   di, word ptr [si]
-xor   ax, ax
-add   di, cx
-mov   word ptr [bp - 2], di
-mov   di, word ptr [si + 2]
-adc   di, ax
-mov   ax, bx
-cwd
-SHIFT_MACRO shl   dx 2
-sbb   ax, dx
-SHIFT_MACRO sar   ax 2
-mov   si, word ptr [bp - 2]
-mov   bx, cx
-mov   cx, 0AC00h   ; todo
-add   si, ax
-add   bx, ax
-label_2:
-add   si, -1
-add   ax, 0FFFFh   
-add   bx, -1
-test  ax, ax
-jl    label_1
-mov   es, cx
-mov   dl, byte ptr es:[bx]
-mov   es, di
-mov   byte ptr es:[si], dl
-jmp   label_2
-label_1:
-mov   al, 5
+
+;    dest = (byte __far*)(destscreen.w + (ofs >> 2));
+;	source = (byte __far*)0xac000000 + (ofs >> 2);
+
+
+les   di, dword ptr ds:[_destscreen]
+add   di, si    ; es:di = destscreen + ofs>>2
+
+;    while (--countp >= 0) {
+;		dest[countp] = source[countp];
+;    }
+
+
+mov   ax, 0AC00h;
+mov   ds, ax        ; ds:si is AC00:ofs>>2
+; es set above
+
+; movsw does not seem to work
+;shr   cx, 1
+;rep movsw 
+;adc   cx, cx
+rep movsb 
+
+mov   ax, ss
+mov   ds, ax
+
+;	outp(GC_INDEX, GC_MODE);
 mov   dx, GC_INDEX
+mov   al, GC_MODE
 out   dx, al
-mov   dx, GC_INDEX+1
+
+;    outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
+inc   dx
 in    al, dx
-sub   ah, ah
 and   al, 0FEh
 out   dx, al
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+
+POPA_NO_AX_OR_BP_MACRO
 retf  
 
 ENDP
@@ -386,7 +386,7 @@ ENDP
 
 ;R_DrawViewBorder_
 
-PROC R_DrawViewBorder_ NEAR
+PROC R_DrawViewBorder_ FAR
 PUBLIC R_DrawViewBorder_ 
 
 
@@ -416,28 +416,48 @@ sub   cx, word ptr [bx]
 mov   bx, cx
 shr   bx, 1
 mov   word ptr [bp - 2], bx
-imul  si, bx, SCREENWIDTH
+
 mov   di, SCREENWIDTH
 sub   di, ax
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
+    imul  si, bx, SCREENWIDTH
+ELSE
+    mov   ax, SCREENWIDTH
+    mul   bx
+    mov   si, ax
+ENDIF
+
 sar   di, 1
 mov   cx, si
 add   cx, di
 xor   ax, ax
 mov   dx, cx
 mov   bx, OFFSET _viewheight
-push  cs
+
 call  R_VideoErase_
 mov   bx, word ptr [bx]
 mov   ax, bx
 add   ax, word ptr [bp - 2]
-imul  ax, ax, SCREENWIDTH
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+
+    imul  ax, ax, SCREENWIDTH
+ELSE
+    mov   dx, SCREENWIDTH
+    mul   dx
+ENDIF
+
+
 mov   dx, cx
 lea   bx, [si + SCREENWIDTH]
 mov   cx, 1
 mov   si, OFFSET _viewheight
 sub   ax, di
 sub   bx, di
-push  cs
+
 call  R_VideoErase_
 add   di, di
 label_4:
@@ -445,7 +465,7 @@ cmp   cx, word ptr [si]
 jae   exit_drawviewborder
 mov   dx, di
 mov   ax, bx
-push  cs
+
 call  R_VideoErase_
 inc   cx
 add   bx, SCREENWIDTH
