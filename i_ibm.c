@@ -118,10 +118,11 @@ void __near I_WaitVBL(int16_t vbls){
 // Palette source must use 8 bit RGB elements.
 //
 
+/*
 void __near I_SetPalette(int8_t paletteNumber) {
 	byte __far* gammatablelookup;
 	int16_t i;
-	int16_t_union biggamma;
+	int16_t_union biggamma; 
 
 	byte __far* palette = palettebytes + paletteNumber * 768u;
 	//byte __far* palette = MK_FP(0x9000,  FastMul1616(paletteNumber, 768));
@@ -212,7 +213,7 @@ void __far I_FinishUpdate(void) {
     #endif
  
 }
-
+*/
 
 
 

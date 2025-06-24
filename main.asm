@@ -37,6 +37,9 @@ EXTRN fclose_:PROC
 ;EXTRN DEBUG_PRINT_:PROC
 
 EXTRN locallib_strcmp_:PROC
+EXTRN I_WaitVBL_:NEAR
+EXTRN Z_QuickMapPalette_:PROC
+EXTRN Z_QuickMapByTaskNum_:PROC
 
 
 EXTRN _F_Responder:DWORD
@@ -73,6 +76,8 @@ EXTRN _sendpause:BYTE
 
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
+EXTRN _novideo:BYTE
+EXTRN _currenttask:BYTE
 
 
 EXTRN _mouseSensitivity
@@ -1822,6 +1827,201 @@ pop   cx
 pop   bx
 ret   
 
-endp
+ENDP
 
-end
+
+PROC I_SetPalette_  NEAR
+PUBLIC I_SetPalette_
+
+PALETTEBYTES_SEGMENT = 09000h
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 6
+cbw  
+imul  bx, ax, 768
+mov   al, byte ptr ds:[_currenttask]
+mov   word ptr [bp - 6], PALETTEBYTES_SEGMENT
+mov   byte ptr [bp - 2], al
+cmp   byte ptr ds:[_novideo], 0
+je    label_1
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_1:
+mov   ax, 1
+mov   dx, PEL_WRITE_ADR
+mov   word ptr [bp - 4], GAMMATABLE_SEGMENT
+call  I_WaitVBL_
+call  Z_QuickMapPalette_
+xor   al, al
+xor   cx, cx
+out   dx, al
+mov   ah, byte ptr ds:[_usegamma]
+mov   dx, PEL_DATA
+mov   di, ax
+label_2:
+mov   es, word ptr [bp - 6]
+mov   al, byte ptr es:[bx]
+mov   si, di
+xor   ah, ah
+mov   es, word ptr [bp - 4]
+add   si, ax
+mov   al, byte ptr es:[si]
+inc   bx
+sar   ax, 2
+inc   cx
+out   dx, al
+cmp   cx, 768
+jl    label_2
+mov   al, byte ptr [bp - 2]
+cbw  
+call  Z_QuickMapByTaskNum_
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+ENDP
+
+PROC I_UpdateBox_  NEAR
+PUBLIC I_UpdateBox_
+
+
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 010h
+push  cx
+imul  dx, dx, SCREENWIDTH
+mov   cx, ax
+add   ax, bx
+sar   cx, 3
+sar   ax, 3
+sub   ax, cx
+mov   bx, cx
+inc   ax
+shl   bx, 3
+mov   word ptr [bp - 8], ax
+add   bx, dx
+shl   ax, 3
+mov   dx, SCREENWIDTH
+sub   dx, ax
+mov   ax, bx
+shr   ax, 2
+mov   word ptr [bp - 0Ch], 0
+mov   word ptr [bp - 010h], ax
+mov   ax, dx
+mov   word ptr [bp - 6], dx
+sar   ax, 2
+mov   dx, SC_INDEX
+mov   word ptr [bp - 0Ah], ax
+mov   al, 2
+mov   word ptr [bp - 0Eh], bx
+out   dx, al
+label_7:
+mov   cl, byte ptr [bp - 0Ch]
+mov   ax, 1
+mov   dx, SC_DATA
+mov   word ptr [bp - 2], SCREEN0_SEGMENT
+mov   bx, word ptr [bp - 0Eh]
+shl   ax, cl
+mov   si, OFFSET _destscreen
+out   dx, al
+xor   dx, dx
+mov   ax, word ptr [si]
+mov   di, dx
+mov   word ptr [bp - 4], dx
+add   ax, word ptr [bp - 010h]
+adc   di, word ptr [si + 2]
+mov   si, ax
+cmp   word ptr [bp - 012h], 0
+jbe   label_3
+label_5:
+mov   dx, word ptr [bp - 8]
+label_6:
+dec   dx
+cmp   dx, -1
+jne   label_4
+inc   word ptr [bp - 4]
+add   bx, word ptr [bp - 6]
+mov   ax, word ptr [bp - 4]
+add   si, word ptr [bp - 0Ah]
+cmp   ax, word ptr [bp - 012h]
+jb    label_5
+label_3:
+inc   word ptr [bp - 0Ch]
+inc   word ptr [bp - 0Eh]
+cmp   word ptr [bp - 0Ch], 4
+jb    label_7
+LEAVE_MACRO
+pop   di
+pop   si
+ret   
+label_4:
+mov   es, word ptr [bp - 2]
+mov   al, byte ptr es:[bx + 4]
+xor   ah, ah
+mov   cx, ax
+add   si, 2
+shl   cx, 8
+mov   al, byte ptr es:[bx]
+mov   es, di
+add   cx, ax
+add   bx, 8
+mov   word ptr es:[si - 2], cx
+jmp   label_6
+
+ENDP
+
+CRTC_INDEX = 03D4h  ; todo contstants
+
+PROC I_FinishUpdate_  FAR
+PUBLIC I_FinishUpdate_
+
+
+;	outpw(CRTC_INDEX, (destscreen.h.fracbits & 0xff00L) + 0xc);
+;	//Next plane
+;    destscreen.h.fracbits += 0x4000;
+;	if ((uint16_t)destscreen.h.fracbits == 0xc000) {
+;		destscreen.h.fracbits = 0x0000;
+;	}
+
+
+push  bx
+push  dx
+mov   bx, OFFSET _destscreen
+mov   ax, word ptr [bx]
+mov   dx, CRTC_INDEX
+mov   al, 0Ch
+out   dx, ax
+add   byte ptr [bx + 1], 040h
+cmp   word ptr [bx], 0C000h
+je    set_destscreen_0
+pop   dx
+pop   bx
+ret
+set_destscreen_0:
+mov   word ptr [bx], 0
+pop   dx
+pop   bx
+ret
+
+
+
+ENDP
+
+END

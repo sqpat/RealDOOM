@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/23 22:17:00
+Created on:       25/06/23 23:28:35
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -34,23 +34,23 @@ z_init_TEXT            CODE           AUTO           0000:1f90       0000082b
 p_init_TEXT            CODE           AUTO           0000:27c0       0000049c
 i_main_TEXT            CODE           AUTO           02c6:0000       0000001e
 i_quit_TEXT            CODE           AUTO           02c6:0020       000001e9
-i_ibm_TEXT             CODE           AUTO           02c6:0210       000002ee
-i_sound_TEXT           CODE           AUTO           02c6:0500       00000246
-d_main_TEXT            CODE           AUTO           02c6:0750       00001038
-d_net_TEXT             CODE           AUTO           02c6:1790       00000105
-g_game_TEXT            CODE           AUTO           02c6:18a0       00000913
-m_misc_TEXT            CODE           AUTO           02c6:21c0       000000d5
-am_map_TEXT            CODE           AUTO           02c6:22a0       0000128d
-st_stuff_TEXT          CODE           AUTO           02c6:3530       00000b53
-hu_stuff_TEXT          CODE           AUTO           02c6:4090       000001d2
-hu_lib_TEXT            CODE           AUTO           02c6:4270       000001b3
-m_menu_TEXT            CODE           AUTO           02c6:4430       00001410
-D_ALGO_TEXT            CODE           AUTO           02c6:5840       00000045
-dmx_TEXT               CODE           AUTO           02c6:5890       000001a2
-D_INT_TEXT             CODE           AUTO           02c6:5a32       00000175
-MEMORY_TEXT            CODE           AUTO           02c6:5ba8       00000000
-MATH_TEXT              CODE           AUTO           02c6:5ba8       0000078b
-MAIN_TEXT              CODE           AUTO           02c6:6334       00000e29
+i_ibm_TEXT             CODE           AUTO           02c6:0210       00000190
+i_sound_TEXT           CODE           AUTO           02c6:03a0       00000246
+d_main_TEXT            CODE           AUTO           02c6:05f0       00001038
+d_net_TEXT             CODE           AUTO           02c6:1630       00000105
+g_game_TEXT            CODE           AUTO           02c6:1740       00000913
+m_misc_TEXT            CODE           AUTO           02c6:2060       000000d5
+am_map_TEXT            CODE           AUTO           02c6:2140       0000128d
+st_stuff_TEXT          CODE           AUTO           02c6:33d0       00000b53
+hu_stuff_TEXT          CODE           AUTO           02c6:3f30       000001d2
+hu_lib_TEXT            CODE           AUTO           02c6:4110       000001b3
+m_menu_TEXT            CODE           AUTO           02c6:42d0       00001410
+D_ALGO_TEXT            CODE           AUTO           02c6:56e0       00000045
+dmx_TEXT               CODE           AUTO           02c6:5730       000001a2
+D_INT_TEXT             CODE           AUTO           02c6:58d2       00000175
+MEMORY_TEXT            CODE           AUTO           02c6:5a48       00000000
+MATH_TEXT              CODE           AUTO           02c6:5a48       0000078b
+MAIN_TEXT              CODE           AUTO           02c6:61d4       00000f88
 g_setup_TEXT           CODE           AUTO           02c6:7160       000002cc
 r_setup_TEXT           CODE           AUTO           02c6:7430       00000445
 st_setup_TEXT          CODE           AUTO           02c6:7880       00000202
@@ -496,262 +496,262 @@ Module: i_quit.obj(C:\REALDOOM\i_quit.c)
 02c6:01bc      I_Quit_
 Module: i_ibm.obj(C:\REALDOOM\i_ibm.c)
 02c6:0210      I_WaitVBL_
-02c6:023e      I_SetPalette_
-02c6:02b6      I_UpdateBox_
-02c6:037c      I_FinishUpdate_
-02c6:0396*     I_EndRead_
-02c6:0396*     I_BeginRead_
-02c6:039e      I_ReadMouse_
-02c6:03de*     I_InitDiskFlash_
-02c6:03e0      I_ResetMouse_
-02c6:03e8      I_Error_
-02c6:0446      I_InitGraphics_
+02c6:023e      I_ReadMouse_
+02c6:027e*     I_InitDiskFlash_
+02c6:0280      I_ResetMouse_
+02c6:0288      I_Error_
+02c6:02e6*     I_EndRead_
+02c6:02e6*     I_BeginRead_
+02c6:02e8      I_InitGraphics_
 Module: i_sound.obj(C:\REALDOOM\i_sound.c)
-02c6:0500*     I_StartupTimer_
-02c6:0516      I_PauseSong_
-02c6:053e      I_ResumeSong_
-02c6:0566      I_StartSound_
-02c6:05ca      I_StopSound_
-02c6:05ea      I_SoundIsPlaying_
-02c6:05f0      I_UpdateSoundParams_
-02c6:060c      I_StartupSound_
+02c6:03a0*     I_StartupTimer_
+02c6:03b6      I_PauseSong_
+02c6:03de      I_ResumeSong_
+02c6:0406      I_StartSound_
+02c6:046a      I_StopSound_
+02c6:048a      I_SoundIsPlaying_
+02c6:0490      I_UpdateSoundParams_
+02c6:04ac      I_StartupSound_
 Module: d_main.obj(C:\REALDOOM\d_main.c)
-02c6:0750      D_PostEvent_
-02c6:077c      D_ProcessEvents_
-02c6:07c6      getStringByIndex_
-02c6:080c      copystr8_
-02c6:0846      locallib_strlen_
-02c6:0864      locallib_toupper_
-02c6:0870      locallib_strcpy_
-02c6:08a0      locallib_strncpy_
-02c6:08f6+     locallib_printhexdigit_
-02c6:090c      locallib_printhex_
-02c6:0a70+     locallib_printdecimal_
-02c6:0bde+     locallib_printstringfar_
-02c6:0c44*     locallib_printstringnear_
-02c6:0c4e      locallib_printf_
-02c6:0eb6      DEBUG_PRINT_
-02c6:0ecc      locallib_strupr_
-02c6:0efa      locallib_strlwr_
-02c6:0f28      combine_strings_
-02c6:0f9e      combine_strings_near_
-02c6:0fea      locallib_strcmp_
-02c6:103a      locallib_strncasecmp_
-02c6:1096      makesavegamename_
-02c6:10d2      D_StartTitle_
-02c6:10e6      I_UpdateNoBlit_
-02c6:11f2+     D_Display_
-02c6:148e+     G_BeginRecording_
-02c6:153c      D_PageTicker_
-02c6:154e+     D_PageDrawer_
-02c6:1576      D_DoAdvanceDemo_
-02c6:1690+     Z_ClearDeadCode_
-02c6:16d6      D_DoomMain_
-02c6:16de*     D_DoomLoop_
+02c6:05f0      D_PostEvent_
+02c6:061c      D_ProcessEvents_
+02c6:0666      getStringByIndex_
+02c6:06ac      copystr8_
+02c6:06e6      locallib_strlen_
+02c6:0704      locallib_toupper_
+02c6:0710      locallib_strcpy_
+02c6:0740      locallib_strncpy_
+02c6:0796+     locallib_printhexdigit_
+02c6:07ac      locallib_printhex_
+02c6:0910+     locallib_printdecimal_
+02c6:0a7e+     locallib_printstringfar_
+02c6:0ae4*     locallib_printstringnear_
+02c6:0aee      locallib_printf_
+02c6:0d56      DEBUG_PRINT_
+02c6:0d6c      locallib_strupr_
+02c6:0d9a      locallib_strlwr_
+02c6:0dc8      combine_strings_
+02c6:0e3e      combine_strings_near_
+02c6:0e8a      locallib_strcmp_
+02c6:0eda      locallib_strncasecmp_
+02c6:0f36      makesavegamename_
+02c6:0f72      D_StartTitle_
+02c6:0f86      I_UpdateNoBlit_
+02c6:1092+     D_Display_
+02c6:132e+     G_BeginRecording_
+02c6:13dc      D_PageTicker_
+02c6:13ee+     D_PageDrawer_
+02c6:1416      D_DoAdvanceDemo_
+02c6:1530+     Z_ClearDeadCode_
+02c6:1576      D_DoomMain_
+02c6:157e*     D_DoomLoop_
 Module: d_net.obj(C:\REALDOOM\d_net.c)
-02c6:1790      NetUpdate_
-02c6:17f2      TryRunTics_
+02c6:1630      NetUpdate_
+02c6:1692      TryRunTics_
 Module: g_game.obj(C:\REALDOOM\g_game.c)
-02c6:18a0      R_FlatNumForName_
-02c6:18ae+     G_DoWorldDone_
-02c6:18d0+     G_DoNewGame_
-02c6:1922      G_Ticker_
-02c6:1a5e+     G_PlayerFinishLevel_
-02c6:1aa6      G_PlayerReborn_
-02c6:1b1c      G_ExitLevel_
-02c6:1b2a      G_SecretExitLevel_
-02c6:1b62+     G_DoCompleted_
-02c6:1cca      G_LoadGame_
-02c6:1cf6+     G_DoLoadGame_
-02c6:1e0a      G_SaveGame_
-02c6:1e3c+     G_DoSaveGame_
-02c6:1fb0      G_DeferedInitNew_
-02c6:1fc2+     G_ReadDemoTiccmd_
-02c6:2012+     G_WriteDemoTiccmd_
-02c6:2076      G_DeferedPlayDemo_
-02c6:2082+     G_DoPlayDemo_
-02c6:210c      G_CheckDemoStatus_
+02c6:1740      R_FlatNumForName_
+02c6:174e+     G_DoWorldDone_
+02c6:1770+     G_DoNewGame_
+02c6:17c2      G_Ticker_
+02c6:18fe+     G_PlayerFinishLevel_
+02c6:1946      G_PlayerReborn_
+02c6:19bc      G_ExitLevel_
+02c6:19ca      G_SecretExitLevel_
+02c6:1a02+     G_DoCompleted_
+02c6:1b6a      G_LoadGame_
+02c6:1b96+     G_DoLoadGame_
+02c6:1caa      G_SaveGame_
+02c6:1cdc+     G_DoSaveGame_
+02c6:1e50      G_DeferedInitNew_
+02c6:1e62+     G_ReadDemoTiccmd_
+02c6:1eb2+     G_WriteDemoTiccmd_
+02c6:1f16      G_DeferedPlayDemo_
+02c6:1f22+     G_DoPlayDemo_
+02c6:1fac      G_CheckDemoStatus_
 Module: m_misc.obj(C:\REALDOOM\m_misc.c)
-02c6:21c0      M_Random_
-02c6:21d8      M_AddToBox16_
-02c6:2202      M_WriteFile_
-02c6:2244      M_ReadFile_
+02c6:2060      M_Random_
+02c6:2078      M_AddToBox16_
+02c6:20a2      M_WriteFile_
+02c6:20e4      M_ReadFile_
 Module: am_map.obj(C:\REALDOOM\am_map.c)
-02c6:22a0*     MTOF16_
-02c6:22b4*     CXMTOF16_
-02c6:22cc*     CYMTOF16_
-02c6:22ec+     AM_activateNewScale_
-02c6:2352+     AM_restoreScaleAndLoc_
-02c6:23d4+     AM_addMark_
-02c6:240a+     AM_findMinMaxBoundaries_
-02c6:24d8+     AM_changeWindowLoc_
-02c6:2566+     AM_initVariables_
-02c6:25fa*     AM_clearMarks_
-02c6:261a+     AM_LevelInit_
-02c6:2692      AM_Stop_
-02c6:26a4+     AM_Start_
-02c6:26ee+     AM_minOutWindowScale_
-02c6:2718+     AM_maxOutWindowScale_
-02c6:2742      AM_Responder_
-02c6:2aee+     AM_changeWindowScale_
-02c6:2b64+     AM_doFollowPlayer_
-02c6:2bc8      AM_Ticker_
-02c6:2bf2+     DOOUTCODE_
-02c6:2c16+     AM_clipMline_
-02c6:2e3e+     AM_drawMline_
-02c6:2f16+     AM_drawGrid_
-02c6:3094+     AM_drawWalls_
-02c6:325e+     AM_rotate_
-02c6:32ca+     AM_drawLineCharacter_
-02c6:3386+     AM_drawPlayers_
-02c6:33c2+     AM_drawThings_
-02c6:342c+     AM_drawMarks_
-02c6:34c2*     AM_drawCrosshair_
-02c6:34d2      AM_Drawer_
+02c6:2140*     MTOF16_
+02c6:2154*     CXMTOF16_
+02c6:216c*     CYMTOF16_
+02c6:218c+     AM_activateNewScale_
+02c6:21f2+     AM_restoreScaleAndLoc_
+02c6:2274+     AM_addMark_
+02c6:22aa+     AM_findMinMaxBoundaries_
+02c6:2378+     AM_changeWindowLoc_
+02c6:2406+     AM_initVariables_
+02c6:249a*     AM_clearMarks_
+02c6:24ba+     AM_LevelInit_
+02c6:2532      AM_Stop_
+02c6:2544+     AM_Start_
+02c6:258e+     AM_minOutWindowScale_
+02c6:25b8+     AM_maxOutWindowScale_
+02c6:25e2      AM_Responder_
+02c6:298e+     AM_changeWindowScale_
+02c6:2a04+     AM_doFollowPlayer_
+02c6:2a68      AM_Ticker_
+02c6:2a92+     DOOUTCODE_
+02c6:2ab6+     AM_clipMline_
+02c6:2cde+     AM_drawMline_
+02c6:2db6+     AM_drawGrid_
+02c6:2f34+     AM_drawWalls_
+02c6:30fe+     AM_rotate_
+02c6:316a+     AM_drawLineCharacter_
+02c6:3226+     AM_drawPlayers_
+02c6:3262+     AM_drawThings_
+02c6:32cc+     AM_drawMarks_
+02c6:3362*     AM_drawCrosshair_
+02c6:3372      AM_Drawer_
 Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
-02c6:3530+     ST_refreshBackground_
-02c6:3576      ST_Responder_
-02c6:39b0+     ST_calcPainOffset_
-02c6:39f2+     ST_updateFaceWidget_
-02c6:3c48+     ST_updateWidgets_
-02c6:3c8c      ST_Ticker_
-02c6:3c9e+     ST_doPaletteStuff_
-02c6:3d26*     STlib_updateflag_
-02c6:3d3a+     STlib_updateMultIcon_
-02c6:3dfc+     STlib_drawNum_
-02c6:3f0a+     STlib_updatePercent_
-02c6:3f44+     ST_drawWidgets_
-02c6:401e      ST_Drawer_
+02c6:33d0+     ST_refreshBackground_
+02c6:3416      ST_Responder_
+02c6:3850+     ST_calcPainOffset_
+02c6:3892+     ST_updateFaceWidget_
+02c6:3ae8+     ST_updateWidgets_
+02c6:3b2c      ST_Ticker_
+02c6:3b3e+     ST_doPaletteStuff_
+02c6:3bc6*     STlib_updateflag_
+02c6:3bda+     STlib_updateMultIcon_
+02c6:3c9c+     STlib_drawNum_
+02c6:3daa+     STlib_updatePercent_
+02c6:3de4+     ST_drawWidgets_
+02c6:3ebe      ST_Drawer_
 Module: hu_stuff.obj(C:\REALDOOM\hu_stuff.c)
-02c6:4090      HU_Drawer_
-02c6:4120      HU_Erase_
-02c6:4168      HU_Ticker_
-02c6:4208      HU_Responder_
+02c6:3f30      HU_Drawer_
+02c6:3fc0      HU_Erase_
+02c6:4008      HU_Ticker_
+02c6:40a8      HU_Responder_
 Module: hu_lib.obj(C:\REALDOOM\hu_lib.c)
-02c6:4270      HUlib_addStringToTextLine_
-02c6:42c0      HUlib_drawTextLine_
-02c6:433e      HUlib_eraseTextLine_
-02c6:43bc      HUlib_addMessageToSText_
+02c6:4110      HUlib_addStringToTextLine_
+02c6:4160      HUlib_drawTextLine_
+02c6:41de      HUlib_eraseTextLine_
+02c6:425c      HUlib_addMessageToSText_
 Module: m_menu.obj(C:\REALDOOM\m_menu.c)
-02c6:4430      M_GetMenuPatch_
-02c6:446e      M_DrawLoad_
-02c6:44d4+     M_DrawSaveLoadBorder_
-02c6:453e      M_LoadSelect_
-02c6:4568      M_LoadGame_
-02c6:4574+     M_ReadSaveStrings_
-02c6:45e2      M_DrawSave_
-02c6:467c+     M_DoSave_
-02c6:46a6      M_SaveSelect_
-02c6:4726      M_SaveGame_
-02c6:4774+     M_QuickSaveResponse_
-02c6:4790+     M_QuickSave_
-02c6:483e+     M_QuickLoadResponse_
-02c6:485a+     M_QuickLoad_
-02c6:48ec      M_DrawReadThis1_
-02c6:48fe      M_DrawReadThis2_
-02c6:4910      M_DrawReadThisRetail_
-02c6:4922      M_DrawSound_
-02c6:4970      M_Sound_
-02c6:497e      M_SfxVol_
-02c6:49b2      M_MusicVol_
-02c6:49e6      M_DrawMainMenu_
-02c6:4a02      M_DrawNewGame_
-02c6:4a34      M_NewGame_
-02c6:4a5e      M_DrawEpisode_
-02c6:4a7a+     M_VerifyNightmare_
-02c6:4a9e      M_ChooseSkill_
-02c6:4aec      M_Episode_
-02c6:4b40      M_DrawOptions_
-02c6:4be0      M_Options_
-02c6:4bee      M_ChangeMessages_
-02c6:4c12+     M_EndGameResponse_
-02c6:4c30      M_EndGame_
-02c6:4c70      M_ReadThis_
-02c6:4c9a      M_ReadThis2_
-02c6:4ca8      M_FinishReadThis_
-02c6:4cb6+     M_QuitResponse_
-02c6:4d14      M_QuitDOOM_
-02c6:4dac      M_ChangeSensitivity_
-02c6:4dd4      M_ChangeDetail_
-02c6:4e2a      M_SizeDisplay_
-02c6:4e70+     M_DrawThermo_
-02c6:4ef4+     M_StartMessage_
-02c6:4f32+     M_StringWidth_
-02c6:4f8e+     M_StringHeight_
-02c6:4fd4+     M_WriteText_
-02c6:5056      M_Responder_
-02c6:5648      M_StartControlPanel_
-02c6:5662      M_Drawer_
-02c6:5812*     M_SetupNextMenu_
-02c6:5822      M_Ticker_
+02c6:42d0      M_GetMenuPatch_
+02c6:430e      M_DrawLoad_
+02c6:4374+     M_DrawSaveLoadBorder_
+02c6:43de      M_LoadSelect_
+02c6:4408      M_LoadGame_
+02c6:4414+     M_ReadSaveStrings_
+02c6:4482      M_DrawSave_
+02c6:451c+     M_DoSave_
+02c6:4546      M_SaveSelect_
+02c6:45c6      M_SaveGame_
+02c6:4614+     M_QuickSaveResponse_
+02c6:4630+     M_QuickSave_
+02c6:46de+     M_QuickLoadResponse_
+02c6:46fa+     M_QuickLoad_
+02c6:478c      M_DrawReadThis1_
+02c6:479e      M_DrawReadThis2_
+02c6:47b0      M_DrawReadThisRetail_
+02c6:47c2      M_DrawSound_
+02c6:4810      M_Sound_
+02c6:481e      M_SfxVol_
+02c6:4852      M_MusicVol_
+02c6:4886      M_DrawMainMenu_
+02c6:48a2      M_DrawNewGame_
+02c6:48d4      M_NewGame_
+02c6:48fe      M_DrawEpisode_
+02c6:491a+     M_VerifyNightmare_
+02c6:493e      M_ChooseSkill_
+02c6:498c      M_Episode_
+02c6:49e0      M_DrawOptions_
+02c6:4a80      M_Options_
+02c6:4a8e      M_ChangeMessages_
+02c6:4ab2+     M_EndGameResponse_
+02c6:4ad0      M_EndGame_
+02c6:4b10      M_ReadThis_
+02c6:4b3a      M_ReadThis2_
+02c6:4b48      M_FinishReadThis_
+02c6:4b56+     M_QuitResponse_
+02c6:4bb4      M_QuitDOOM_
+02c6:4c4c      M_ChangeSensitivity_
+02c6:4c74      M_ChangeDetail_
+02c6:4cca      M_SizeDisplay_
+02c6:4d10+     M_DrawThermo_
+02c6:4d94+     M_StartMessage_
+02c6:4dd2+     M_StringWidth_
+02c6:4e2e+     M_StringHeight_
+02c6:4e74+     M_WriteText_
+02c6:4ef6      M_Responder_
+02c6:54e8      M_StartControlPanel_
+02c6:5502      M_Drawer_
+02c6:56b2*     M_SetupNextMenu_
+02c6:56c2      M_Ticker_
 Module: d_algo.obj(d_algo.ASM)
-02c6:5869      hackDSBack_
-02c6:5885*     D_ALGO_END_
-02c6:5840      resetDS_
-02c6:5848      hackDS_
+02c6:5709      hackDSBack_
+02c6:5725*     D_ALGO_END_
+02c6:56e0      resetDS_
+02c6:56e8      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
-02c6:5890*     TS_SetTimerToMaxTaskRate_
-02c6:58a4+     playpcspeakernote_
-02c6:58e8+     TS_ServiceScheduleIntEnabled_
-02c6:59cc+     TS_Startup_
-02c6:5a0c      TS_ScheduleMainTask_
-02c6:5a26      TS_Dispatch_
+02c6:5730*     TS_SetTimerToMaxTaskRate_
+02c6:5744+     playpcspeakernote_
+02c6:5788+     TS_ServiceScheduleIntEnabled_
+02c6:586c+     TS_Startup_
+02c6:58ac      TS_ScheduleMainTask_
+02c6:58c6      TS_Dispatch_
 1f8d:0e72+     _lastpcspeakernotevalue
 Module: d_int.obj(d_int.ASM)
-02c6:5a42      MUS_ServiceRoutine_
-02c6:5b76      locallib_int86_67_
-02c6:5b76      locallib_int86_67_1arg_return_
-02c6:5ba7*     D_INTERRUPT_ENDMARKER_
-02c6:5b76      locallib_int86_67_3arg_return_
-02c6:5b79      locallib_int86_10_4args_
-02c6:5a32*     D_INTERRUPT_STARTMARKER_
-02c6:5b76      locallib_int86_67_1arg_
-02c6:5b76      locallib_int86_67_2arg_
-02c6:5b7f      S_NormalizeSfxVolume_
-02c6:5b76      locallib_int86_67_esdi_
-02c6:5b7c      locallib_int86_33_
-02c6:5b76      locallib_int86_67_multiple_
-02c6:5b79      locallib_int86_10_
+02c6:58e2      MUS_ServiceRoutine_
+02c6:5a16      locallib_int86_67_
+02c6:5a16      locallib_int86_67_1arg_return_
+02c6:5a47*     D_INTERRUPT_ENDMARKER_
+02c6:5a16      locallib_int86_67_3arg_return_
+02c6:5a19      locallib_int86_10_4args_
+02c6:58d2*     D_INTERRUPT_STARTMARKER_
+02c6:5a16      locallib_int86_67_1arg_
+02c6:5a16      locallib_int86_67_2arg_
+02c6:5a1f      S_NormalizeSfxVolume_
+02c6:5a16      locallib_int86_67_esdi_
+02c6:5a1c      locallib_int86_33_
+02c6:5a16      locallib_int86_67_multiple_
+02c6:5a19      locallib_int86_10_
 Module: math.obj(math.ASM)
-02c6:5f63      FastDiv32u16u_
-02c6:60f5      FastDiv3232FFFF_
-02c6:5cb9      FixedMulTrigNoShift_
-02c6:5d95      FastMul16u32u_
-02c6:5ef5      FixedDiv_
-02c6:5d04*     FixedMulTrig16_
-02c6:5daa      div48_32_
-02c6:6009*     FastDiv3232_RPTA_
-02c6:6205*     div48_32_whole_
-02c6:5d1c      FastMulTrig16_
-02c6:5d43      FixedMulTrigSpeed_
-02c6:5d86*     FixedMul16u32u_
-02c6:5f81      FastDiv3216u_
-02c6:619e      FixedDivWholeA_
-02c6:5cb5      FixedMulTrig_
-02c6:5be1*     FixedMulBig16u32_
-02c6:5c34      FixedMul2432_
-02c6:5c75      FixedMul1632_
-02c6:5bea      FixedMul2424_
-02c6:5ba8      FixedMul_
-02c6:5fd8      FastDiv3232_shift_3_8_
-02c6:5d5d      FixedMulBig1632_
-02c6:5d71      FixedMul16u32_
-02c6:5d47      FixedMulTrigSpeedNoShift_
+02c6:5e03      FastDiv32u16u_
+02c6:5f95      FastDiv3232FFFF_
+02c6:5b59      FixedMulTrigNoShift_
+02c6:5c35      FastMul16u32u_
+02c6:5d95      FixedDiv_
+02c6:5ba4*     FixedMulTrig16_
+02c6:5c4a      div48_32_
+02c6:5ea9*     FastDiv3232_RPTA_
+02c6:60a5*     div48_32_whole_
+02c6:5bbc      FastMulTrig16_
+02c6:5be3      FixedMulTrigSpeed_
+02c6:5c26*     FixedMul16u32u_
+02c6:5e21      FastDiv3216u_
+02c6:603e      FixedDivWholeA_
+02c6:5b55      FixedMulTrig_
+02c6:5a81*     FixedMulBig16u32_
+02c6:5ad4      FixedMul2432_
+02c6:5b15      FixedMul1632_
+02c6:5a8a      FixedMul2424_
+02c6:5a48      FixedMul_
+02c6:5e78      FastDiv3232_shift_3_8_
+02c6:5bfd      FixedMulBig1632_
+02c6:5c11      FixedMul16u32_
+02c6:5be7      FixedMulTrigSpeedNoShift_
 Module: main.obj(main.ASM)
-02c6:7062      G_Responder_
-02c6:66a2      G_CopyCmd_
-02c6:67da*     G_SetGameKeyDown_
-02c6:67f4      G_GetGameKey_
-02c6:67e7*     G_SetGameKeyUp_
-02c6:6da3      M_LoadDefaults_
-02c6:64c8      I_KeyboardISR_
-02c6:67c9      G_ResetGameKeys_
-02c6:6b40*     CopyString13_
-02c6:6800      G_BuildTiccmd_
-02c6:640b      cht_CheckCheat_
-02c6:6f86      M_SaveDefaults_
-02c6:646d      cht_GetParam_
-02c6:64fa      I_StartTic_
+02c6:6f02      G_Responder_
+02c6:6542      G_CopyCmd_
+02c6:667a*     G_SetGameKeyDown_
+02c6:6694      G_GetGameKey_
+02c6:6ffd      I_SetPalette_
+02c6:7075      I_UpdateBox_
+02c6:6687*     G_SetGameKeyUp_
+02c6:6c43      M_LoadDefaults_
+02c6:6368      I_KeyboardISR_
+02c6:6669      G_ResetGameKeys_
+02c6:69e0*     CopyString13_
+02c6:66a0      G_BuildTiccmd_
+02c6:62ab      cht_CheckCheat_
+02c6:6e26      M_SaveDefaults_
+02c6:630d      cht_GetParam_
+02c6:713b      I_FinishUpdate_
+02c6:639a      I_StartTic_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 02c6:7160      R_CheckTextureNumForName_
 02c6:71c0      R_TextureNumForName_
@@ -1476,4 +1476,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00022570 (140656.)
 Entry point address: 1c20:1c56
-Link time: 00:00.75
+Link time: 00:00.20
