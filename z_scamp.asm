@@ -277,7 +277,6 @@ LUMP_MASK = 0FCh
 PROC Z_QuickMapWADPageFrame_ FAR
 PUBLIC Z_QuickMapWADPageFrame_
 
-push ax
 and  ah, LUMP_MASK
 
 cmp  ah, byte ptr ds:[_currentpageframes + 2]
@@ -285,7 +284,7 @@ je   exit_wad_pageframe
 
 mov  byte ptr ds:[_currentpageframes + 2], ah
 
-mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + 1	; page D400
+mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + 2	; page D400
 out  SCAMP_PAGE_SELECT_REGISTER, al
 
 mov  al, ah
@@ -299,7 +298,6 @@ add  ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
 out  SCAMP_PAGE_SET_REGISTER, ax
 exit_wad_pageframe:
 
-pop  ax
 retf
 
 ENDP
