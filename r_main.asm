@@ -44,6 +44,7 @@ EXTRN _playerMobj:WORD
 EXTRN _playerMobj_pos:WORD
 EXTRN _viewwindowoffset:WORD
 EXTRN _r_cachedplayerMobjsecnum:WORD
+EXTRN _scaledviewwidth:WORD
 EXTRN _R_DrawMaskedCall:DWORD
 EXTRN _R_DrawPlanesCall:DWORD
 EXTRN _R_WriteBackMaskedFrameConstantsCall:DWORD
@@ -138,8 +139,6 @@ mov       word ptr ds:[_pendingdetail], dx
 retf      
 
 ENDP
-
-
 
 
 ;R_RenderPlayerView_
@@ -304,6 +303,156 @@ jmp       done_with_visplane_revert
 
 ENDP
 
+
+
+;R_VideoErase_
+
+PROC R_VideoErase_ NEAR
+PUBLIC R_VideoErase_ 
+
+
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 2
+mov   si, ax
+mov   bx, dx
+mov   al, 2
+mov   dx, SC_INDEX
+out   dx, al
+mov   al, 00Fh
+mov   dx, SC_DATA
+out   dx, al
+mov   al, 5
+mov   dx, GC_INDEX
+mov   cx, si
+out   dx, al
+mov   dx, GC_INDEX+1
+mov   si, OFFSET _destscreen
+in    al, dx
+sub   ah, ah
+or    al, 1
+SHIFT_MACRO shr   cx 2
+out   dx, al
+mov   di, word ptr [si]
+xor   ax, ax
+add   di, cx
+mov   word ptr [bp - 2], di
+mov   di, word ptr [si + 2]
+adc   di, ax
+mov   ax, bx
+cwd
+SHIFT_MACRO shl   dx 2
+sbb   ax, dx
+SHIFT_MACRO sar   ax 2
+mov   si, word ptr [bp - 2]
+mov   bx, cx
+mov   cx, 0AC00h   ; todo
+add   si, ax
+add   bx, ax
+label_2:
+add   si, -1
+add   ax, 0FFFFh   
+add   bx, -1
+test  ax, ax
+jl    label_1
+mov   es, cx
+mov   dl, byte ptr es:[bx]
+mov   es, di
+mov   byte ptr es:[si], dl
+jmp   label_2
+label_1:
+mov   al, 5
+mov   dx, GC_INDEX
+out   dx, al
+mov   dx, GC_INDEX+1
+in    al, dx
+sub   ah, ah
+and   al, 0FEh
+out   dx, al
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   cx
+pop   bx
+retf  
+
+ENDP
+
+
+;R_DrawViewBorder_
+
+PROC R_DrawViewBorder_ NEAR
+PUBLIC R_DrawViewBorder_ 
+
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 2
+mov   ax, word ptr ds:[_scaledviewwidth]
+cmp   ax, SCREENWIDTH
+jne   label_3
+exit_drawviewborder:
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+label_3:
+mov   bx, OFFSET _viewheight
+mov   cx, SCREENHEIGHT - SBARHEIGHT
+sub   cx, word ptr [bx]
+mov   bx, cx
+shr   bx, 1
+mov   word ptr [bp - 2], bx
+imul  si, bx, SCREENWIDTH
+mov   di, SCREENWIDTH
+sub   di, ax
+sar   di, 1
+mov   cx, si
+add   cx, di
+xor   ax, ax
+mov   dx, cx
+mov   bx, OFFSET _viewheight
+push  cs
+call  R_VideoErase_
+mov   bx, word ptr [bx]
+mov   ax, bx
+add   ax, word ptr [bp - 2]
+imul  ax, ax, SCREENWIDTH
+mov   dx, cx
+lea   bx, [si + SCREENWIDTH]
+mov   cx, 1
+mov   si, OFFSET _viewheight
+sub   ax, di
+sub   bx, di
+push  cs
+call  R_VideoErase_
+add   di, di
+label_4:
+cmp   cx, word ptr [si]
+jae   exit_drawviewborder
+mov   dx, di
+mov   ax, bx
+push  cs
+call  R_VideoErase_
+inc   cx
+add   bx, SCREENWIDTH
+jmp   label_4
+
+
+ENDP
 
 
 END

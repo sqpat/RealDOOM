@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/23 16:47:56
+Created on:       25/06/23 17:07:32
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -74,9 +74,8 @@ p_telept_TEXT          CODE           AUTO           0a7c:cd60       0000021c
 P_TICK_TEXT            CODE           AUTO           0a7c:cf7c       000001c9
 p_user_TEXT            CODE           AUTO           0a7c:d150       0000062f
 R_DATA_TEXT            CODE           AUTO           17f4:0000       00000c62
-R_MAIN_TEXT            CODE           AUTO           17f4:0c62       00000146
-R_MAINHI_TEXT          CODE           AUTO           17f4:0da8       0000264f
-r_draw_TEXT            CODE           AUTO           17f4:3400       000000fb
+R_MAIN_TEXT            CODE           AUTO           17f4:0c62       00000244
+R_MAINHI_TEXT          CODE           AUTO           17f4:0ea6       0000264f
 w_wad_TEXT             CODE           AUTO           17f4:3500       0000030c
 VIDEO_TEXT             CODE           AUTO           17f4:380c       000004e6
 v_video_TEXT           CODE           AUTO           17f4:3d00       00000218
@@ -1104,40 +1103,39 @@ Module: r_data.obj(r_data.ASM)
 17f4:0a28      R_GetColumnSegment_
 17f4:06a0      R_GetCompositeTexture_
 Module: r_main.obj(r_main.ASM)
+17f4:0da8      R_VideoErase_
 17f4:0c87      R_PointToAngle2_16_
 17f4:0c96      R_SetViewSize_
 17f4:0c62      R_PointToAngle2_
+17f4:0e2f      R_DrawViewBorder_
 17f4:0ca5      R_RenderPlayerView_
 Module: r_mainhi.obj(r_mainhi.ASM)
-17f4:1343*     R_AddLine_
-17f4:1a0c*     R_StoreWallRange_
-17f4:2aea*     R_ClipSolidWallSegment_
-17f4:2b97*     R_ClipPassWallSegment_
-17f4:2e29*     R_CheckBBox_
-17f4:14d1*     R_Subsector_
-17f4:101a*     FixedMulBSPLocal_
-17f4:110d*     R_PointToDist_
-17f4:1218*     R_HandleEMSVisplanePagination_
-17f4:1053*     FixedDivBSPLocal_
-17f4:2d7d      R_PrepareMaskedPSprites_
-17f4:30bd      R_WriteBackViewConstants_
-17f4:3265      R_WriteBackFrameConstants_
-17f4:11a3      R_ClearPlanes_
-17f4:19a4*     R_AddSprites_
-17f4:1184      R_ClearClipSegs_
-17f4:12c7*     R_FindPlane_
-17f4:0ea9      R_PointToAngle_
-17f4:25c5*     R_DrawColumnPrep_
-17f4:2bea*     R_DrawPSprite_
-17f4:15bb*     R_CheckPlane_
-17f4:10c2*     FixedMulTrigNoShiftBSPLocal_
-17f4:1686*     R_ProjectSprite_
-17f4:2fd4      R_RenderBSPNode_
-17f4:0da8*     R_ScaleFromGlobalAngle_
-17f4:2dfc*     R_PointToAngle16_
-Module: r_draw.obj(C:\REALDOOM\r_draw.c)
-17f4:3400      R_VideoErase_
-17f4:3484      R_DrawViewBorder_
+17f4:1441*     R_AddLine_
+17f4:1b0a*     R_StoreWallRange_
+17f4:2be8*     R_ClipSolidWallSegment_
+17f4:2c95*     R_ClipPassWallSegment_
+17f4:2f27*     R_CheckBBox_
+17f4:15cf*     R_Subsector_
+17f4:1118*     FixedMulBSPLocal_
+17f4:120b*     R_PointToDist_
+17f4:1316*     R_HandleEMSVisplanePagination_
+17f4:1151*     FixedDivBSPLocal_
+17f4:2e7b      R_PrepareMaskedPSprites_
+17f4:31bb      R_WriteBackViewConstants_
+17f4:3363      R_WriteBackFrameConstants_
+17f4:12a1      R_ClearPlanes_
+17f4:1aa2*     R_AddSprites_
+17f4:1282      R_ClearClipSegs_
+17f4:13c5*     R_FindPlane_
+17f4:0fa7      R_PointToAngle_
+17f4:26c3*     R_DrawColumnPrep_
+17f4:2ce8*     R_DrawPSprite_
+17f4:16b9*     R_CheckPlane_
+17f4:11c0*     FixedMulTrigNoShiftBSPLocal_
+17f4:1784*     R_ProjectSprite_
+17f4:30d2      R_RenderBSPNode_
+17f4:0ea6*     R_ScaleFromGlobalAngle_
+17f4:2efa*     R_PointToAngle16_
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 17f4:3500      locallib_far_fread_
 17f4:358a      locallib_far_fwrite_
@@ -1480,4 +1478,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000226c0 (140992.)
 Entry point address: 1c35:1c56
-Link time: 00:00.75
+Link time: 00:00.30

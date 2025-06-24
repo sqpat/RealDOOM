@@ -77,7 +77,6 @@ NEWSEGMENT
 file r_data.obj
 file r_main.obj
 file r_mainhi.obj
-file r_draw.obj
 file w_wad.obj
 file video.obj
 file v_video.obj
