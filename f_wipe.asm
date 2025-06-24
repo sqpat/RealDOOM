@@ -387,7 +387,7 @@ mov       cx, SCREENHEIGHT
 ; di is y
 
 mov       ds, ax
-mov       ax, SCRATCH_PAGE_SEGMENT_5000
+mov       ax, SCRATCH_SEGMENT_5000
 mov       es, ax
 
 ; ax unused in loops...
@@ -418,7 +418,7 @@ loop      loopy
 
 mov       ax, ds
 mov       es, ax
-mov       ax, SCRATCH_PAGE_SEGMENT_5000
+mov       ax, SCRATCH_SEGMENT_5000
 mov       ds, ax
 xor       si, si
 mov       di, si

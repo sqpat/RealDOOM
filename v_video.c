@@ -76,7 +76,7 @@ void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height )  {
 #define SCREEN4_SEGMENT 0x9C00
 #define SCREEN0_SEGMENT 0x8000
 
-void  V_CopyRect ( uint16_t srcoffset, uint16_t destoffset, uint16_t width, uint16_t height) { 
+void __far V_CopyRect ( uint16_t srcoffset, uint16_t destoffset, uint16_t width, uint16_t height) { 
     byte __far*	src;
     byte __far*	dest;
 	if (skipdirectdraws) {
@@ -225,7 +225,7 @@ V_DrawPatchDirect
 // Requires loading data in one page frame at a time
 // It's okay if this is kind of slow... its only used in menus.
 
-void V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
+void __far V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
 	int16_t		count;
 	int16_t		col;
 	column_t __far*	column;

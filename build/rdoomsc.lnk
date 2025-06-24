@@ -79,7 +79,6 @@ file r_main.obj
 file r_mainhi.obj
 file w_wad.obj
 file video.obj
-file v_video.obj
 file z_zone.obj
 file z_scamp.obj
 

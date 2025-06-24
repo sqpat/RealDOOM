@@ -20,6 +20,7 @@ INSTRUCTION_SET_MACRO
 
 ; NOTE i think a lot of this function is an optimization candidate
 ; todo move jump mult table to cs...
+EXTRN M_AddToBox16_:PROC  
 .DATA
 
 
@@ -27,11 +28,16 @@ INSTRUCTION_SET_MACRO
 EXTRN _viewwindowx:WORD
 EXTRN _viewwindowy:WORD
 EXTRN _scaledviewwidth:WORD
+EXTRN _currenttask:BYTE
 
 .CODE
-EXTRN V_MarkRect_:PROC
 EXTRN W_CacheLumpNameDirect_:PROC  
 EXTRN Z_QuickMapScratch_5000_:PROC  
+EXTRN W_GetNumForName_:PROC  
+EXTRN W_CacheLumpNumDirectFragment_:PROC  
+EXTRN Z_QuickMapByTaskNum_:PROC
+
+
 
 PROC V_DrawPatch_ FAR
 PUBLIC V_DrawPatch_
@@ -333,7 +339,7 @@ doing_draws5000Screen0_:
 ; for 486 with larger prefetch queues we must write this BX as early as possible.
 mov   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction5000Screen0_ + 1], 8  ; store column
 
-mov   bx, SCRATCH_PAGE_SEGMENT_5000
+mov   bx, SCRATCH_SEGMENT_5000
 mov   ds, bx
 xor   bx, bx
 
@@ -822,13 +828,13 @@ call      Z_QuickMapScratch_5000_
 xchg      ax, bx
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
+mov       cx, SCRATCH_SEGMENT_5000
 call      W_CacheLumpNameDirect_		; todo once this is in asm dont re-set cx a billion times... push cx pop cx
 
 xor       bx, bx
 mov       ax, SCREEN0_SEGMENT
 mov       es, ax
-mov       ax, SCRATCH_PAGE_SEGMENT_5000
+mov       ax, SCRATCH_SEGMENT_5000
 mov       ds, ax
 
 xor       di, di
@@ -873,7 +879,7 @@ pop       ds
 mov       ax, OFFSET str_brdr_t
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
+mov       cx, SCRATCH_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 ; reused parameters for the next region of code
@@ -896,7 +902,7 @@ done_with_brdr_top_loop:
 mov       ax, OFFSET str_brdr_b
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
+mov       cx, SCRATCH_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 mov       dx, word ptr ds:[_viewheight]
@@ -915,7 +921,7 @@ done_with_brdr_bot_loop:
 mov       ax, OFFSET str_brdr_l
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
+mov       cx, SCRATCH_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 mov       si, word ptr ds:[_viewwindowx]
@@ -935,7 +941,7 @@ done_with_brdr_left_loop:
 mov       ax, OFFSET str_brdr_r
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
+mov       cx, SCRATCH_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 add       si, word ptr ds:[_scaledviewwidth]
@@ -957,7 +963,7 @@ done_with_brdr_right_loop:
 mov       ax, OFFSET str_brdr_tl
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
+mov       cx, SCRATCH_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 
@@ -974,7 +980,7 @@ call      V_DrawPatch5000Screen0_		; todo make a version based on segment 5000
 mov       ax, OFFSET str_brdr_tr
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
+mov       cx, SCRATCH_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 
@@ -988,7 +994,7 @@ call      V_DrawPatch5000Screen0_
 mov       ax, OFFSET str_brdr_bl
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
+mov       cx, SCRATCH_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 mov       dx, di
@@ -1001,7 +1007,7 @@ call      V_DrawPatch5000Screen0_
 mov       ax, OFFSET str_brdr_br
 call      CopyString9_
 xor       bx, bx
-mov       cx, SCRATCH_PAGE_SEGMENT_5000
+mov       cx, SCRATCH_SEGMENT_5000
 call      W_CacheLumpNameDirect_
 
 mov       dx, di
@@ -1062,6 +1068,262 @@ retf
 
 ENDP
 
+SCRATCH_ADDRESS_5000_SEGMENT = 05000h
 
+
+
+
+PROC V_MarkRect_ FAR
+PUBLIC V_MarkRect_
+
+
+
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 2
+mov       si, ax
+mov       di, dx
+mov       word ptr [bp - 2], bx
+mov       bx, dx
+mov       dx, ax
+mov       ax, OFFSET _dirtybox
+call      M_AddToBox16_
+mov       dx, word ptr [bp - 2]
+mov       bx, di
+mov       ax, OFFSET _dirtybox
+add       bx, cx
+add       dx, si
+dec       bx
+dec       dx
+call      M_AddToBox16_
+LEAVE_MACRO
+pop       di
+pop       si
+retf      
+
+ENDP
+
+
+
+PROC V_CopyRect_ FAR
+PUBLIC V_CopyRect_
+
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 4
+push      bx
+push      cx
+mov       bx, OFFSET _skipdirectdraws
+cmp       byte ptr [bx], 0
+jne       exit_v_copyrect
+mov       word ptr [bp - 2], SCREEN4_SEGMENT
+mov       word ptr [bp - 4], SCREEN0_SEGMENT
+mov       bx, ax
+test      cx, cx
+jbe       exit_v_copyrect
+mov       es, word ptr [bp - 4]
+label_1:
+mov       ax, word ptr [bp - 6]
+mov       cx, word ptr [bp - 2]
+mov       si, bx
+mov       di, dx
+dec       word ptr [bp - 8]
+push      ds
+push      di
+xchg      ax, cx
+mov       ds, ax
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+pop       di
+pop       ds
+add       bx, SCREENWIDTH
+add       dx, SCREENWIDTH
+cmp       word ptr [bp - 8], 0
+ja        label_1
+exit_v_copyrect:
+leave     
+pop       di
+pop       si
+retf      
+
+ENDP
+
+
+
+
+PROC V_DrawFullscreenPatch_ FAR
+PUBLIC V_DrawFullscreenPatch_
+
+push      bx
+push      cx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 01Ch
+mov       byte ptr [bp - 2], dl
+mov       di, SCRATCH_ADDRESS_5000_SEGMENT
+mov       dl, byte ptr ds:[_currenttask]
+
+call      W_GetNumForName_
+
+xor       si, si
+xor       bx, bx
+mov       word ptr [bp - 010h], si
+mov       word ptr [bp - 0Ch], si
+mov       byte ptr [bp - 4], dl
+mov       word ptr [bp - 01Ah], ax
+mov       cx, di
+mov       dx, ax
+
+call      Z_QuickMapScratch_5000_
+push      si
+mov       ax, dx
+push      si
+mov       word ptr [bp - 01Ch], si
+
+call      W_CacheLumpNumDirectFragment_
+mov       es, di
+xor       dx, dx
+mov       ax, word ptr es:[si]
+mov       cx, word ptr es:[si + 2]
+mov       word ptr [bp - 018h], ax
+mov       bx, ax
+xor       ax, ax
+mov       word ptr [bp - 014h], di
+
+call      V_MarkRect_
+cmp       byte ptr [bp - 2], 1
+je        label_3
+jmp       label_4
+label_3:
+mov       word ptr [bp - 8], SCREEN1_SEGMENT
+label_14:
+mov       word ptr [bp - 0Ah], si
+mov       word ptr [bp - 012h], 0
+cmp       word ptr [bp - 018h], 0
+jg        label_5
+jmp       exit_drawfullscreenpatch
+label_5:
+mov       word ptr [bp - 0Eh], si
+mov       word ptr [bp - 016h], di
+label_2:
+mov       es, word ptr [bp - 016h]
+mov       di, word ptr [bp - 0Eh]
+mov       di, word ptr es:[di + 8]
+sub       di, word ptr [bp - 010h]
+add       di, word ptr [bp - 01Ch]
+mov       ax, di
+sub       ax, word ptr [bp - 01Ch]
+mov       dx, word ptr [bp - 014h]
+cmp       ax, 16000   ; todo more uh scientific number
+jle       label_6
+jmp       label_7
+label_6:
+mov       es, dx
+mov       al, byte ptr es:[di]
+cmp       al, 0FFh
+jne       label_8
+jmp       label_9
+label_8:
+xor       ah, ah
+imul      ax, ax, SCREENWIDTH
+mov       bx, word ptr [bp - 8]
+mov       word ptr [bp - 6], bx
+mov       bx, word ptr [bp - 0Ah]
+add       bx, ax
+mov       al, byte ptr es:[di + 1]
+xor       ah, ah
+mov       cx, dx
+sub       ax, 4
+lea       si, [di + 3]
+test      ax, ax
+jl        label_10
+label_11:
+mov       es, cx
+mov       dl, byte ptr es:[si]
+mov       dh, byte ptr es:[si + 1]
+mov       es, word ptr [bp - 6]
+mov       byte ptr es:[bx], dl
+mov       byte ptr es:[bx + SCREENWIDTH], dh
+mov       es, cx
+add       bx, 2*SCREENWIDTH
+mov       dl, byte ptr es:[si + 2]
+add       bx, 2*SCREENWIDTH
+mov       dh, byte ptr es:[si + 3]
+mov       es, word ptr [bp - 6]
+add       si, 4
+mov       byte ptr es:[bx - 2*SCREENWIDTH], dl
+sub       ax, 4
+mov       byte ptr es:[bx - SCREENWIDTH], dh
+test      ax, ax
+jge       label_11
+label_10:
+add       ax, 4
+je        label_12
+label_13:
+mov       es, cx
+add       bx, SCREENWIDTH
+mov       dl, byte ptr es:[si]
+mov       es, word ptr [bp - 6]
+inc       si
+mov       byte ptr es:[bx - SCREENWIDTH], dl
+dec       ax
+jne       label_13
+label_12:
+mov       dx, cx
+lea       di, [si + 1]
+jmp       label_6
+label_4:
+mov       word ptr [bp - 8], SCREEN0_SEGMENT 
+jmp       label_14
+label_7:
+cwd
+mov       bx, 08000h ; offset
+add       word ptr [bp - 010h], ax
+adc       word ptr [bp - 0Ch], dx
+mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
+push      word ptr [bp - 0Ch]
+mov       ax, word ptr [bp - 01Ah]
+push      word ptr [bp - 010h]
+mov       word ptr [bp - 01Ch], 08000h ; offset
+
+call      W_CacheLumpNumDirectFragment_
+mov       es, word ptr [bp - 016h]
+mov       bx, word ptr [bp - 0Eh]
+mov       ax, SCRATCH_ADDRESS_5000_SEGMENT
+mov       di, word ptr es:[bx + 8]
+mov       word ptr [bp - 014h], ax
+add       di, 08000h ; offset
+mov       dx, ax
+sub       di, word ptr [bp - 010h]
+jmp       label_6
+label_9:
+inc       word ptr [bp - 012h]
+add       word ptr [bp - 0Eh], 4
+mov       ax, word ptr [bp - 012h]
+inc       word ptr [bp - 0Ah]
+cmp       ax, word ptr [bp - 018h]
+jge       exit_drawfullscreenpatch
+jmp       label_2
+exit_drawfullscreenpatch:
+mov       al, byte ptr [bp - 4]
+cbw      
+
+call      Z_QuickMapByTaskNum_  ; todo get rid of this. call safely
+LEAVE_MACRO
+pop       di
+pop       si
+pop       cx
+pop       bx
+retf      
+
+ENDP
 
 END
