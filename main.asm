@@ -1902,25 +1902,14 @@ ret;
 PROC I_UpdateBox_  NEAR
 PUBLIC I_UpdateBox_
 
-; bp - 2    SCREEN0_SEGMENT
-; bp - 4    screen 0 offset?
-; bp - 6    step
-; bp - 8    count
-; bp - 0Ah  unused
-; bp - 0Ch  i
-; bp - 0Eh  offset
-; bp - 010h unused
 
 jcxz  do_quick_out  ; todo necessary?
 
 
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 0Eh
 
-mov   word ptr cs:[SELFMODIFY_set_h_check+1], cx
+mov   word ptr cs:[SELFMODIFY_set_h_check+2], cx
 
 mov   cx, ax
 
@@ -1949,21 +1938,28 @@ and   bx, 0FFF8h ; shift right 3, shift left 3. just clear bottom 3 bits.
 add   bx, dx    ; bx is offset
 
 ;    poffset = offset >> 2;
-mov   word ptr [bp - 0Eh], bx
-SHIFT_MACRO shr   bx 2  ; ax is poffset
-mov   word ptr cs:[SELFMODIFY_add_poffset+1], bx
 
+
+mov   word ptr cs:[SELFMODIFY_set_offset+1], bx ; set
+SHIFT_MACRO shr   bx 2  ; poffset
+mov   word ptr cs:[SELFMODIFY_add_poffset+1], bx ; set
+
+
+les   di, dword ptr ds:[_destscreen]
+add   word ptr cs:[SELFMODIFY_set_original_destscreen_offset+1], di ; add in by default
 
 
 ;    step = SCREENWIDTH - (count << 3);
 
-mov   word ptr [bp - 8], ax
+mov   word ptr cs:[SELFMODIFY_set_count+1], ax
+
+
+
 SHIFT_MACRO shl   ax 3
 mov   dx, SCREENWIDTH
 sub   dx, ax            ; dx is step
 
 
-mov   word ptr [bp - 0Ch], 0  ; todo make cx
 
 ;    pstep = step >> 2;
 
@@ -1975,33 +1971,42 @@ mov   dx, SC_INDEX
 mov   al, SC_MAPMASK
 out   dx, al
 
+mov   ax, SCREEN0_SEGMENT
+mov   ds, ax
+xor   cx, cx ; loopcount
+
 loop_next_vga_plane:
 
 ;	outp(SC_INDEX + 1, 1 << i);
 
-mov   cl, byte ptr [bp - 0Ch]
-mov   ax, 1
+mov   al, 1
 mov   dx, SC_DATA
-mov   word ptr [bp - 2], SCREEN0_SEGMENT
-mov   bx, word ptr [bp - 0Eh]   ; todo bx permanent offset?
+; bx is offset
 shl   ax, cl
 out   dx, al
 
 ;        source = &screen0[offset + i];
+; source is ds:si
+SELFMODIFY_set_offset:
+mov   si, 01000h
+add   si, cx   ; screen0 offset = offset + i
 
-xor   dx, dx
-mov   ax, word ptr ds:[_destscreen]
-mov   di, dx
-mov   word ptr [bp - 4], dx
+
+;        dest = (byte __far*) (destscreen.w + poffset);
+; dest is es:di
+SELFMODIFY_set_original_destscreen_offset:
 SELFMODIFY_add_poffset:
-add   ax, 01000h
-adc   di, word ptr ds:[_destscreen + 2]  ; todo this should never trigger?
-mov   si, ax
+mov   di, 01000h ; just add it beforehand
+
+xor   bx, bx  ; j = 0 loop counter
+
+
 loop_next_pixel:
-mov   dx, word ptr [bp - 8]
-inner_inner_loop:
+SELFMODIFY_set_count:
+mov   dx, 01000h;
 dec   dx
-cmp   dx, -1
+
+inner_inner_loop:
 
 ;    while (k--) {
 ;        *(uint16_t __far *)dest = (uint16_t)(((*(source + 4)) << 8) + (*source));
@@ -2009,41 +2014,35 @@ cmp   dx, -1
 ;        source += 8;
 ;    }
 
-je    inner_inner_loop_done
+;mov   al, byte ptr ds:[si]
+lodsb
+mov   ah, byte ptr ds:[si + 3]
 
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[bx + 4]
-xor   ah, ah
-mov   cx, ax
-mov   ch, cl
-xor   cl, cl  ; shift left eight
-mov   al, byte ptr es:[bx]
-mov   es, di
-add   cx, ax
-add   bx, 8
-mov   word ptr es:[si], cx
-add   si, 2
-jmp   inner_inner_loop
+stosw 
+add   si, 7
+dec   dx
+jns    inner_inner_loop
 
 inner_inner_loop_done:
-inc   word ptr [bp - 4]
+inc   bx
 SELFMODIFY_add_step:
-add   bx, 01000h
-mov   ax, word ptr [bp - 4]
-SELFMODIFY_add_pstep:
 add   si, 01000h
+SELFMODIFY_add_pstep:
+add   di, 01000h
 
 ;        for (j = 0; j < h; j++) {
 
 SELFMODIFY_set_h_check:
-cmp   ax, 01000h
+cmp   bx, 01000h
 jb    loop_next_pixel
 inner_box_loop_done:
-inc   word ptr [bp - 0Ch]
-inc   word ptr [bp - 0Eh]
-cmp   word ptr [bp - 0Ch], 4
+inc   cx
+cmp   cx, 4
 jb    loop_next_vga_plane
-LEAVE_MACRO
+
+mov   ax, ss
+mov   ds, ax  ; restore ds
+
 pop   di
 pop   si
 ret   
