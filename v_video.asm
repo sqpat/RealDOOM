@@ -1069,39 +1069,37 @@ retf
 
 ENDP
 
-SCRATCH_ADDRESS_5000_SEGMENT = 05000h
 
 
-
-
+;void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height )  { 
 PROC V_MarkRect_ FAR
 PUBLIC V_MarkRect_
 
 
+;    M_AddToBox16 (dirtybox, x, y); 
+;    M_AddToBox16 (dirtybox, x+width-1, y+height-1); 
 
-push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 2
-mov       si, ax
-mov       di, dx
-mov       word ptr [bp - 2], bx
-mov       bx, dx
-mov       dx, ax
+
+add       cx, dx   
+dec       cx      ; y + height - 1
+add       bx, ax
+dec       bx      ; x + width - 1
+mov       di, bx
+
+xchg      ax, dx  ; dx gets x. ax gets y
+mov       bx, ax  ; bx gets y
+mov       ax, OFFSET _dirtybox
+
+call      M_AddToBox16_
+
+mov       dx, di
+mov       bx, cx
 mov       ax, OFFSET _dirtybox
 call      M_AddToBox16_
-mov       dx, word ptr [bp - 2]
-mov       bx, di
-mov       ax, OFFSET _dirtybox
-add       bx, cx
-add       dx, si
-dec       bx
-dec       dx
-call      M_AddToBox16_
-LEAVE_MACRO
+
 pop       di
-pop       si
+
 retf      
 
 ENDP
@@ -1169,7 +1167,7 @@ push      bp
 mov       bp, sp
 sub       sp, 01Ch
 mov       byte ptr [bp - 2], dl
-mov       di, SCRATCH_ADDRESS_5000_SEGMENT
+mov       di, SCRATCH_SEGMENT_5000
 mov       dl, byte ptr ds:[_currenttask]
 
 call      W_GetNumForName_
@@ -1289,7 +1287,7 @@ cwd
 mov       bx, 08000h ; offset
 add       word ptr [bp - 010h], ax
 adc       word ptr [bp - 0Ch], dx
-mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
+mov       cx, SCRATCH_SEGMENT_5000
 push      word ptr [bp - 0Ch]
 mov       ax, word ptr [bp - 01Ah]
 push      word ptr [bp - 010h]
@@ -1298,7 +1296,7 @@ mov       word ptr [bp - 01Ch], 08000h ; offset
 call      W_CacheLumpNumDirectFragment_
 mov       es, word ptr [bp - 016h]
 mov       bx, word ptr [bp - 0Eh]
-mov       ax, SCRATCH_ADDRESS_5000_SEGMENT
+mov       ax, SCRATCH_SEGMENT_5000
 mov       di, word ptr es:[bx + 8]
 mov       word ptr [bp - 014h], ax
 add       di, 08000h ; offset
