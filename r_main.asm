@@ -115,7 +115,7 @@ call      R_PointToAngle_
 pop       cx
 pop       bx
 retf      
-
+ENDP
 
 ;R_SetViewSize_
 
@@ -140,19 +140,55 @@ retf
 ENDP
 
 
-;R_SetupFrame_
-
-PROC R_SetupFrame_ NEAR
-PUBLIC R_SetupFrame_ 
 
 
+;R_RenderPlayerView_
 
-; todo constants.inc
-SHORTFLOORBITS = 3   
+PROC R_RenderPlayerView_ NEAR
+PUBLIC R_RenderPlayerView_ 
+
+
+
+PUSHA_NO_AX_MACRO
+
+;	r_cachedplayerMobjsecnum = playerMobj->secnum;
+mov       bx, word ptr ds:[_playerMobj]
+push      word ptr ds:[bx + 4]  ; playerMobj->secnum
+pop       word ptr ds:[_r_cachedplayerMobjsecnum]
+
+lds       si, dword ptr ds:[_playerMobj_pos]
+mov       dx, ss
+mov       es, dx
+mov       di, OFFSET _viewx
+
+mov       cx, 4
+rep       movsw ; viewx, viewy
+
+add       si, 6
+mov       di, OFFSET _viewangle
+movsw
+lodsw     ; ax has viewangle hi
+stosw
+
+; cx is 0. write to something that is 0?
+
+
+mov       ds, dx ; dx already had ds
+shr       ax, 1
+;	viewangle_shiftright1 = (viewangle.hu.intbits >> 1) & 0xFFFC;
+and       al, 0FCh
+mov       word ptr ds:[_viewangle_shiftright1], ax
+mov       ax, word ptr ds:[_viewangle + 2]
+SHIFT_MACRO shr       ax 3
+mov       word ptr ds:[_viewangle_shiftright3], ax
+
+call      Z_QuickMapRender_
+; call      R_SetupFrame_
+; INLINED setupframe
+
 
 
 ;    extralight = player.extralightvalue;
-push      cx
 mov       al, byte ptr ds:[_player + 05Eh]  ; player.extralightvalue
 mov       byte ptr ds:[_extralight], al
 
@@ -160,18 +196,18 @@ mov       byte ptr ds:[_extralight], al
 les       ax, dword ptr ds:[_player + 8] ; player.viewzvalue
 mov       word ptr ds:[_viewz], ax
 mov       word ptr ds:[_viewz + 2], es
-mov       cx, es
+mov       dx, es
 ;	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
 
 sal       ax, 1
-rcl       cx, 1
+rcl       dx, 1
 sal       ax, 1
-rcl       cx, 1
+rcl       dx, 1
 sal       ax, 1
-rcl       cx, 1
+rcl       dx, 1
 
 
-mov       word ptr ds:[_viewz_shortheight], cx
+mov       word ptr ds:[_viewz_shortheight], dx
 
 ;    if (player.fixedcolormapvalue) {
 
@@ -193,10 +229,50 @@ les       ax, dword ptr ds:[_destscreen]
 add       ax, word ptr ds:[_viewwindowoffset]
 mov       word ptr ds:[_destview], ax
 mov       word ptr ds:[_destview + 2], es
-pop       cx
 
-ret      
 
+
+call      R_WriteBackFrameConstants_
+call      R_ClearClipSegs_
+
+mov       word ptr ds:[_ds_p],     SIZEOF_DRAWSEG_T             ; drawsegs_PLUSONE
+mov       word ptr ds:[_ds_p + 2], DRAWSEGS_BASE_SEGMENT        ; nseed to be written because masked subs 02000h from it due to remapping...
+call      R_ClearPlanes_
+mov       word ptr ds:[_vissprite_p], cx  ; cx is 0
+
+;    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
+
+call      NetUpdate_
+
+mov       ax, word ptr ds:[_numnodes]
+dec       ax
+
+call      R_RenderBSPNode_
+call      NetUpdate_
+call      R_PrepareMaskedPSprites_
+call      Z_QuickMapRenderPlanes_
+
+mov       ax, CACHEDHEIGHT_SEGMENT
+mov       es, ax
+mov       di, cx  ; 0
+mov       ax, cx  ; 0
+mov       cx, 400
+
+rep stosw 
+
+cmp       byte ptr ds:[_visplanedirty], al   ; 0
+jne       visplane_dirty_do_revert
+done_with_visplane_revert:
+call      dword ptr ds:[_R_DrawPlanesCall]
+call      Z_QuickMapUndoFlatCache_
+call      dword ptr ds:[_R_WriteBackMaskedFrameConstantsCall]
+call      dword ptr ds:[_R_DrawMaskedCall]
+
+call      Z_QuickMapPhysics_
+
+call      NetUpdate_
+POPA_NO_AX_MACRO
+retf      
 set_fixed_colormap_nonzero:
 
 ;		fixedcolormap =  player.fixedcolormapvalue << 2; 
@@ -208,7 +284,7 @@ mov       byte ptr ds:[_fixedcolormap], al
 ;		}
 
 mov       ah, al
-push      di
+
 
 mov       cx, ds
 mov       es, cx
@@ -219,115 +295,12 @@ rep       stosw
 ;			scalelightfixed[i] = fixedcolormap;
 ;		}
 
-pop       di
 jmp       done_setting_colormap
 
-ENDP
-
-
-;R_RenderPlayerView_
-
-PROC R_RenderPlayerView_ NEAR
-PUBLIC R_RenderPlayerView_ 
-
-
-
-push      bx
-push      cx
-push      dx
-push      si
-push      di
-mov       bx, word ptr ds:[_playerMobj]
-mov       ax, word ptr ds:[bx + 4]
-mov       bx, word ptr ds:[_playerMobj_pos]
-mov       word ptr ds:[_r_cachedplayerMobjsecnum], ax
-mov       es, word ptr ds:[_playerMobj_pos+2]
-mov       si, OFFSET _viewx
-mov       dx, word ptr ds:es:[bx]
-mov       ax, word ptr ds:es:[bx + 2]
-mov       word ptr ds:[si], dx
-mov       word ptr ds:[si + 2], ax
-mov       si, OFFSET _viewy
-mov       ax, word ptr ds:es:[bx + 4]
-mov       dx, word ptr ds:es:[bx + 6]
-mov       word ptr ds:[si], ax
-mov       word ptr ds:[si + 2], dx
-mov       si, OFFSET _viewangle
-mov       ax, word ptr ds:es:[bx + 0Eh]
-mov       dx, word ptr ds:es:[bx + 010h]
-mov       word ptr ds:[si], ax
-mov       bx, OFFSET _viewangle + 2
-mov       word ptr ds:[si + 2], dx
-mov       ax, word ptr ds:[bx]
-shr       ax, 1
-mov       bx, OFFSET _viewangle_shiftright1
-;	viewangle_shiftright1 = (viewangle.hu.intbits >> 1) & 0xFFFC;
-and       al, 0FCh
-mov       word ptr ds:[bx], ax
-mov       bx, OFFSET _viewangle + 2
-mov       ax, word ptr ds:[bx]
-mov       bx, OFFSET _viewangle_shiftright3
-SHIFT_MACRO shr       ax 3
-mov       word ptr ds:[bx], ax
-
-call      Z_QuickMapRender_
-
-call      R_SetupFrame_
-mov       bx, OFFSET _ds_p
-call      R_WriteBackFrameConstants_
-call      R_ClearClipSegs_
-mov       word ptr ds:[bx], SIZEOF_DRAWSEG_T             ; drawsegs_PLUSONE
-mov       word ptr ds:[bx + 2], DRAWSEGS_BASE_SEGMENT
-mov       bx, OFFSET _vissprite_p
-call      R_ClearPlanes_
-mov       word ptr ds:[bx], 0
-mov       bx, OFFSET _numnodes
-
-;    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
-
-mov       cx, 400
-call      NetUpdate_
-mov       ax, word ptr ds:[bx]
-xor       di, di
-dec       ax
-mov       dx, CACHEDHEIGHT_SEGMENT
-
-call      R_RenderBSPNode_
-call      NetUpdate_
-call      R_PrepareMaskedPSprites_
-
-call      Z_QuickMapRenderPlanes_
-
-mov       es, dx
-xor       al, al
-mov       bx, OFFSET _visplanedirty
-push      di
-mov       ah, al
-rep stosw 
-pop       di
-cmp       byte ptr ds:[bx], 0
-jne       label_6
-label_5:
-call      dword ptr ds:[_R_DrawPlanesCall]
-
-call      Z_QuickMapUndoFlatCache_
-call      dword ptr ds:[_R_WriteBackMaskedFrameConstantsCall]
-call      dword ptr ds:[_R_DrawMaskedCall]
-
-call      Z_QuickMapPhysics_
-
-call      NetUpdate_
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-retf      
-
-label_6:
+visplane_dirty_do_revert:
 call      Z_QuickMapVisplaneRevert_
 
-jmp       label_5
+jmp       done_with_visplane_revert
 
 ENDP
 
