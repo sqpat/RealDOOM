@@ -1896,14 +1896,11 @@ ENDP
 
 ;void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h) {
 
-do_quick_out:
-ret;
 
 PROC I_UpdateBox_  NEAR
 PUBLIC I_UpdateBox_
 
 
-jcxz  do_quick_out  ; todo necessary?
 
 
 push  si
@@ -2071,6 +2068,7 @@ mov   al, 0Ch
 out   dx, ax
 add   byte ptr ds:[_destscreen + 1], 040h
 ;cmp   byte ptr ds:[_destscreen + 1], 0C0h
+;je    set_destscreen_0 ; SF != OF
 jl    set_destscreen_0 ; SF != OF
 pop   dx
 ret
@@ -2083,20 +2081,21 @@ ret
 
 ENDP
 
-PROC I_UpdateNoBlit_  NEAR
+PROC I_UpdateNoBlit_  FAR
 PUBLIC I_UpdateNoBlit_
 
 
 PUSHA_NO_AX_OR_BP_MACRO
+; todo word only. segment should be fixed..?
 les  ax, dword ptr ds:[_destscreen]
 mov  word ptr ds:[_currentscreen], ax
 mov  word ptr ds:[_currentscreen + 2], es
 
 
 
-; dx is realdr[BOXTOP]
-; cx is realdr[BOXRIGHT]
-; bx is realdr[BOXBOTTOM]
+; cx is realdr[BOXTOP]
+; bx is realdr[BOXRIGHT]
+; dx is realdr[BOXBOTTOM]
 ; ax is realdr[BOXLEFT]
 
 ;    // Update dirtybox size
@@ -2110,39 +2109,20 @@ mov  word ptr ds:[_currentscreen + 2], es
 
 mov  si, OFFSET _olddb
 mov  di, OFFSET _dirtybox
-mov  ax, word ptr [si + (BOXTOP * 2)]
-mov  dx, word ptr [di + (BOXTOP * 2)]
-cmp  dx, ax
-jge  label_1
-mov  dx, ax
-label_1:
 
-mov  ax, word ptr [si + ((4 + BOXTOP) * 2) ]
-cmp  dx, ax
-jge  label_2
-mov  dx, ax
-label_2:
+; cx gets boxtop
 
-;    realdr[BOXRIGHT] = dirtybox[BOXRIGHT];
-;    if (realdr[BOXRIGHT] < olddb[0+BOXRIGHT]) {
-;        realdr[BOXRIGHT] = olddb[0+BOXRIGHT];
-;    }
-;    if (realdr[BOXRIGHT] < olddb[4+BOXRIGHT]) {
-;        realdr[BOXRIGHT] = olddb[4+BOXRIGHT];
-;    }
-
-;mov  si, OFFSET _dirtybox + 6
-mov  cx, word ptr [di + (BOXRIGHT * 2)]
-mov  ax, word ptr [si + (BOXRIGHT * 2)]
+lodsw  ; ax = olddb[0+BOXTOP]
+mov  cx, word ptr ds:[di + (BOXTOP * 2)]        ; realdr[BOXTOP]
 cmp  cx, ax
-jge  label_3
-mov  cx, ax
-label_3:
-mov  ax, word ptr [si + ((4 + BOXTOP) * 2)]
+jge  dont_cap_top_1
+xchg cx, ax
+dont_cap_top_1:
+mov  ax, word ptr ds:[si + (3 * 2)]
 cmp  cx, ax
-jge  label_4
-mov  cx, ax
-label_4:
+jge  dont_cap_top_2
+xchg cx, ax
+dont_cap_top_2:
 
 ;    realdr[BOXBOTTOM] = dirtybox[BOXBOTTOM];
 ;    if (realdr[BOXBOTTOM] > olddb[0+BOXBOTTOM]) {
@@ -2152,17 +2132,19 @@ label_4:
 ;        realdr[BOXBOTTOM] = olddb[4+BOXBOTTOM];
 ;    }
 
-mov  bx, word ptr [di + (BOXBOTTOM * 2)]
-mov  ax, word ptr [si + (BOXBOTTOM * 2)]
-cmp  bx, ax
-jle  label_5
-mov  bx, ax
-label_5:
-mov  ax, word ptr [si + ((4 + BOXBOTTOM) * 2)]
-cmp  bx, ax
-jle  label_6
-mov  bx, ax
-label_6:
+;  dx gets boxbottom
+
+lodsw  ; ax = olddb[0+BOXBOTTOM]
+mov  dx, word ptr ds:[di + (BOXBOTTOM * 2)]  ; realdr[BOXBOTTOM]
+cmp  dx, ax         
+jle  dont_cap_bot_1
+xchg dx, ax
+dont_cap_bot_1:
+mov  ax, word ptr ds:[si + (3 * 2)]
+cmp  dx, ax
+jle  dont_cap_bot_2
+xchg dx, ax
+dont_cap_bot_2:
 
 
 ;    realdr[BOXLEFT] = dirtybox[BOXLEFT];
@@ -2173,20 +2155,44 @@ label_6:
 ;        realdr[BOXLEFT] = olddb[4+BOXLEFT];
 ;    }
 
-mov  ax, word ptr [di + (BOXLEFT * 2)]
-mov  di, word ptr [si + (BOXLEFT * 2)]
-cmp  ax, di
-jle  label_7
-mov  ax, di
-label_7:
-mov  di, word ptr [si + ((4+BOXLEFT) * 2)]
-cmp  ax, di
-jle  label_8
-mov  ax, di
-label_8:
+; bx stores boxleft for now
+
+lodsw  ; ax = olddb[0+BOXLEFT]
+mov  bx, word ptr ds:[di + (BOXLEFT * 2)]  ; ; realdr[BOXLEFT]
+cmp  bx, ax
+jle  dont_cap_left_1
+xchg bx, ax
+dont_cap_left_1:
+mov  ax, word ptr ds:[si + (3 * 2)]
+cmp  bx, ax
+jle  dont_cap_left_2
+xchg bx, ax
+dont_cap_left_2:
 
 
+;    realdr[BOXRIGHT] = dirtybox[BOXRIGHT];
+;    if (realdr[BOXRIGHT] < olddb[0+BOXRIGHT]) {
+;        realdr[BOXRIGHT] = olddb[0+BOXRIGHT];
+;    }
+;    if (realdr[BOXRIGHT] < olddb[4+BOXRIGHT]) {
+;        realdr[BOXRIGHT] = olddb[4+BOXRIGHT];
+;    }
+; di stores boxright for now
 
+lodsw  ; ax = olddb[0+BOXRIGHT]
+mov  di, word ptr ds:[di + (BOXRIGHT * 2)]
+cmp  di, ax
+jge  dont_cap_right_1
+xchg di, ax
+dont_cap_right_1:
+mov  ax, word ptr ds:[si + (3 * 2)]
+cmp  di, ax
+jge  dont_cap_right_2
+xchg di, ax
+dont_cap_right_2:
+
+xchg ax, di ; ax gets boxright
+xchg ax, bx ; ax gets boxleft. bx gets boxright.
 
 ;    // Leave current box for next update
 ;    olddb[0] = olddb[4];
@@ -2200,22 +2206,22 @@ label_8:
 
 mov  di, ds
 mov  es, di
-mov  si, OFFSET _olddb + (4 * 2)
+;mov  si, OFFSET _olddb + (4 * 2)  ; si is already set thru lodsw
 mov  di, OFFSET _olddb
 movsw
 movsw
 movsw
 movsw
-mov  si, OFFSET _dirtybox
+mov  si, OFFSET _dirtybox  ; worth making them adjacent and removing this?
 movsw
 movsw
 movsw
 movsw
 
 
-; dx is realdr[BOXTOP]
-; cx is realdr[BOXRIGHT]
-; bx is realdr[BOXBOTTOM]
+; cx is realdr[BOXTOP]
+; bx is realdr[BOXRIGHT]
+; dx is realdr[BOXBOTTOM]
 ; ax is realdr[BOXLEFT]
 
 ;    // Update screen
@@ -2227,15 +2233,17 @@ movsw
 ;        I_UpdateBox(x, y, w, h); // todo inline, only use.
 ;    }
 
-cmp  bx, dx
+cmp  dx, cx
 jnle  dont_update_box
-xchg bx, dx   ; dx has y, bx has top
-xchg bx, cx   ; cx has top, bx has right
+
 sub  bx, ax
 sub  cx, dx
 inc  bx
 inc  cx
-call I_UpdateBox_
+call I_UpdateBox_  ; cx guaranteed 1 or more
+mov  ax, ds
+mov  es, ax
+
 dont_update_box:
 
 ;	// Clear box
@@ -2243,12 +2251,12 @@ dont_update_box:
 ;	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
 mov  ax, MINSHORT
 mov  di, OFFSET _dirtybox
-stosw
+stosw       ; boxtop    = minshort
 dec   ax
-stosw
-stosw
+stosw       ; boxbottom = maxshort
+stosw       ; boxleft   = maxshort
 inc   ax
-stosw
+stosw       ; boxright  = minshort
 
 POPA_NO_AX_OR_BP_MACRO
 retf 
