@@ -109,6 +109,339 @@ ret
 
 ENDP
 
+PROC I_UpdateBox_Fwipe_local_  NEAR
+PUBLIC I_UpdateBox_Fwipe_local_
+
+
+
+
+push  si
+push  di
+
+mov   word ptr cs:[SELFMODIFY_set_h_check+2 - OFFSET F_WIPE_STARTMARKER_], cx
+
+mov   cx, ax
+
+; mul dx by screenwidth
+mov   al, SCREENWIDTHOVER2
+mul   dl
+sal   ax, 1
+xchg  ax, dx  ; dx gets dx * screenwidth
+mov   ax, cx ; retrieve ax
+
+;    sp_x1 = x >> 3;
+;    sp_x2 = (x + w) >> 3;
+
+add   ax, bx
+SHIFT_MACRO sar   ax 3
+mov   bx, cx   ; store this
+SHIFT_MACRO sar   cx 3
+
+;    count = sp_x2 - sp_x1 + 1;
+sub   ax, cx
+inc   ax        ; ax is count
+
+; mul done earlier to dx
+;    offset = (uint16_t)y * SCREENWIDTH + (sp_x1 << 3);
+and   bx, 0FFF8h ; shift right 3, shift left 3. just clear bottom 3 bits.
+add   bx, dx    ; bx is offset
+
+;    poffset = offset >> 2;
+
+
+mov   word ptr cs:[SELFMODIFY_set_offset+1 - OFFSET F_WIPE_STARTMARKER_], bx ; set
+SHIFT_MACRO shr   bx 2  ; poffset
+mov   word ptr cs:[SELFMODIFY_add_poffset+1 - OFFSET F_WIPE_STARTMARKER_], bx ; set
+
+
+les   di, dword ptr ds:[_destscreen]
+add   word ptr cs:[SELFMODIFY_set_original_destscreen_offset+1 - OFFSET F_WIPE_STARTMARKER_], di ; add in by default
+
+
+;    step = SCREENWIDTH - (count << 3);
+
+mov   word ptr cs:[SELFMODIFY_set_count+1 - OFFSET F_WIPE_STARTMARKER_], ax
+
+
+
+SHIFT_MACRO shl   ax 3
+mov   dx, SCREENWIDTH
+sub   dx, ax            ; dx is step
+
+
+
+;    pstep = step >> 2;
+
+mov   ax, dx
+mov   word ptr cs:[SELFMODIFY_add_step+2 - OFFSET F_WIPE_STARTMARKER_], ax
+SHIFT_MACRO sar   ax 2
+mov   word ptr cs:[SELFMODIFY_add_pstep+2 - OFFSET F_WIPE_STARTMARKER_], ax
+mov   dx, SC_INDEX
+mov   al, SC_MAPMASK
+out   dx, al
+
+mov   ax, SCREEN0_SEGMENT
+mov   ds, ax
+xor   cx, cx ; loopcount
+
+loop_next_vga_plane:
+
+;	outp(SC_INDEX + 1, 1 << i);
+
+mov   al, 1
+mov   dx, SC_DATA
+; bx is offset
+shl   ax, cl
+out   dx, al
+
+;        source = &screen0[offset + i];
+; source is ds:si
+SELFMODIFY_set_offset:
+mov   si, 01000h
+add   si, cx   ; screen0 offset = offset + i
+
+
+;        dest = (byte __far*) (destscreen.w + poffset);
+; dest is es:di
+SELFMODIFY_set_original_destscreen_offset:
+SELFMODIFY_add_poffset:
+mov   di, 01000h ; just add it beforehand
+
+xor   bx, bx  ; j = 0 loop counter
+
+
+loop_next_pixel:
+SELFMODIFY_set_count:
+mov   dx, 01000h;
+dec   dx
+
+inner_inner_loop:
+
+;    while (k--) {
+;        *(uint16_t __far *)dest = (uint16_t)(((*(source + 4)) << 8) + (*source));
+;        dest += 2;
+;        source += 8;
+;    }
+
+;mov   al, byte ptr ds:[si]
+lodsb
+mov   ah, byte ptr ds:[si + 3]
+
+stosw 
+add   si, 7
+dec   dx
+jns    inner_inner_loop
+
+inner_inner_loop_done:
+inc   bx
+SELFMODIFY_add_step:
+add   si, 01000h
+SELFMODIFY_add_pstep:
+add   di, 01000h
+
+;        for (j = 0; j < h; j++) {
+
+SELFMODIFY_set_h_check:
+cmp   bx, 01000h
+jb    loop_next_pixel
+inner_box_loop_done:
+inc   cx
+cmp   cx, 4
+jb    loop_next_vga_plane
+
+mov   ax, ss
+mov   ds, ax  ; restore ds
+
+pop   di
+pop   si
+ret   
+
+
+ENDP
+
+
+PROC I_UpdateNoBlit_Fwipe_local_  NEAR
+PUBLIC I_UpdateNoBlit_Fwipe_local_
+
+
+PUSHA_NO_AX_OR_BP_MACRO
+; todo word only. segment should be fixed..?
+les  ax, dword ptr ds:[_destscreen]
+mov  word ptr ds:[_currentscreen], ax
+mov  word ptr ds:[_currentscreen + 2], es
+
+
+
+; cx is realdr[BOXTOP]
+; bx is realdr[BOXRIGHT]
+; dx is realdr[BOXBOTTOM]
+; ax is realdr[BOXLEFT]
+
+;    // Update dirtybox size
+;    realdr[BOXTOP] = dirtybox[BOXTOP];
+;    if (realdr[BOXTOP] < olddb[0+BOXTOP]) {
+;        realdr[BOXTOP] = olddb[0+BOXTOP];
+;    }
+;    if (realdr[BOXTOP] < olddb[4+BOXTOP]) {
+;        realdr[BOXTOP] = olddb[4+BOXTOP];
+;    }
+
+mov  si, OFFSET _olddb
+mov  di, OFFSET _dirtybox
+
+; cx gets boxtop
+
+lodsw  ; ax = olddb[0+BOXTOP]
+mov  cx, word ptr ds:[di + (BOXTOP * 2)]        ; realdr[BOXTOP]
+cmp  cx, ax
+jge  dont_cap_top_1
+xchg cx, ax
+dont_cap_top_1:
+mov  ax, word ptr ds:[si + (3 * 2)]
+cmp  cx, ax
+jge  dont_cap_top_2
+xchg cx, ax
+dont_cap_top_2:
+
+;    realdr[BOXBOTTOM] = dirtybox[BOXBOTTOM];
+;    if (realdr[BOXBOTTOM] > olddb[0+BOXBOTTOM]) {
+;        realdr[BOXBOTTOM] = olddb[0+BOXBOTTOM];
+;    }
+;    if (realdr[BOXBOTTOM] > olddb[4+BOXBOTTOM]) {
+;        realdr[BOXBOTTOM] = olddb[4+BOXBOTTOM];
+;    }
+
+;  dx gets boxbottom
+
+lodsw  ; ax = olddb[0+BOXBOTTOM]
+mov  dx, word ptr ds:[di + (BOXBOTTOM * 2)]  ; realdr[BOXBOTTOM]
+cmp  dx, ax         
+jle  dont_cap_bot_1
+xchg dx, ax
+dont_cap_bot_1:
+mov  ax, word ptr ds:[si + (3 * 2)]
+cmp  dx, ax
+jle  dont_cap_bot_2
+xchg dx, ax
+dont_cap_bot_2:
+
+
+;    realdr[BOXLEFT] = dirtybox[BOXLEFT];
+;    if (realdr[BOXLEFT] > olddb[0+BOXLEFT]) {
+;        realdr[BOXLEFT] = olddb[0+BOXLEFT];
+;    }
+;    if (realdr[BOXLEFT] > olddb[4+BOXLEFT]) {
+;        realdr[BOXLEFT] = olddb[4+BOXLEFT];
+;    }
+
+; bx stores boxleft for now
+
+lodsw  ; ax = olddb[0+BOXLEFT]
+mov  bx, word ptr ds:[di + (BOXLEFT * 2)]  ; ; realdr[BOXLEFT]
+cmp  bx, ax
+jle  dont_cap_left_1
+xchg bx, ax
+dont_cap_left_1:
+mov  ax, word ptr ds:[si + (3 * 2)]
+cmp  bx, ax
+jle  dont_cap_left_2
+xchg bx, ax
+dont_cap_left_2:
+
+
+;    realdr[BOXRIGHT] = dirtybox[BOXRIGHT];
+;    if (realdr[BOXRIGHT] < olddb[0+BOXRIGHT]) {
+;        realdr[BOXRIGHT] = olddb[0+BOXRIGHT];
+;    }
+;    if (realdr[BOXRIGHT] < olddb[4+BOXRIGHT]) {
+;        realdr[BOXRIGHT] = olddb[4+BOXRIGHT];
+;    }
+; di stores boxright for now
+
+lodsw  ; ax = olddb[0+BOXRIGHT]
+mov  di, word ptr ds:[di + (BOXRIGHT * 2)]
+cmp  di, ax
+jge  dont_cap_right_1
+xchg di, ax
+dont_cap_right_1:
+mov  ax, word ptr ds:[si + (3 * 2)]
+cmp  di, ax
+jge  dont_cap_right_2
+xchg di, ax
+dont_cap_right_2:
+
+xchg ax, di ; ax gets boxright
+xchg ax, bx ; ax gets boxleft. bx gets boxright.
+
+;    // Leave current box for next update
+;    olddb[0] = olddb[4];
+;    olddb[1] = olddb[5];
+;    olddb[2] = olddb[6];
+;    olddb[3] = olddb[7];
+;    olddb[4] = dirtybox[0];
+;    olddb[5] = dirtybox[1];
+;    olddb[6] = dirtybox[2];
+;    olddb[7] = dirtybox[3];
+
+mov  di, ds
+mov  es, di
+;mov  si, OFFSET _olddb + (4 * 2)  ; si is already set thru lodsw
+mov  di, OFFSET _olddb
+movsw
+movsw
+movsw
+movsw
+mov  si, OFFSET _dirtybox  ; worth making them adjacent and removing this?
+movsw
+movsw
+movsw
+movsw
+
+
+; cx is realdr[BOXTOP]
+; bx is realdr[BOXRIGHT]
+; dx is realdr[BOXBOTTOM]
+; ax is realdr[BOXLEFT]
+
+;    // Update screen
+;    if (realdr[BOXBOTTOM] <= realdr[BOXTOP]) {
+;        x = realdr[BOXLEFT];
+;        y = realdr[BOXBOTTOM];
+;        w = realdr[BOXRIGHT] - realdr[BOXLEFT] + 1;
+;        h = realdr[BOXTOP] - realdr[BOXBOTTOM] + 1;
+;        I_UpdateBox(x, y, w, h); // todo inline, only use.
+;    }
+
+cmp  dx, cx
+jnle  dont_update_box
+
+sub  bx, ax
+sub  cx, dx
+inc  bx
+inc  cx
+call I_UpdateBox_Fwipe_local_  ; cx guaranteed 1 or more
+mov  ax, ds
+mov  es, ax
+
+dont_update_box:
+
+;	// Clear box
+;	dirtybox[BOXTOP] = dirtybox[BOXRIGHT] = MINSHORT;
+;	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
+mov  ax, MINSHORT
+mov  di, OFFSET _dirtybox
+stosw       ; boxtop    = minshort
+dec   ax
+stosw       ; boxbottom = maxshort
+stosw       ; boxleft   = maxshort
+inc   ax
+stosw       ; boxright  = minshort
+
+POPA_NO_AX_OR_BP_MACRO
+ret 
+
+ENDP
+
 
 PROC wipe_doMelt_ 
 PUBLIC wipe_doMelt_
@@ -648,9 +981,7 @@ mov       word ptr ds:[_dirtybox+6], SCREENWIDTH
 call      wipe_doMelt_
 mov       dx, ax    ; store "done" result from wipe_doMelt_
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _I_UpdateNoBlit_addr
+call      I_UpdateNoBlit_Fwipe_local_
 
 
 mov       ax, 1

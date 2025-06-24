@@ -608,15 +608,16 @@ void __far D_StartTitle(void){
 //  draw current display, possibly wiping it from the previous
 //
 
-void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h);
+// void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h);
 
 //
 // I_UpdateNoBlit
 //
 // far because fwipe calls it. todo port local to fwipe
+void __near I_UpdateNoBlit(void) ;
 
 /*
-void __far I_UpdateNoBlit(void) {
+void __near I_UpdateNoBlit(void) {
 	int16_t realdr[4];
 	int16_t x, y, w, h;
 	// Set current screen

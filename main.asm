@@ -2081,7 +2081,7 @@ ret
 
 ENDP
 
-PROC I_UpdateNoBlit_  FAR
+PROC I_UpdateNoBlit_  NEAR
 PUBLIC I_UpdateNoBlit_
 
 
@@ -2259,7 +2259,7 @@ inc   ax
 stosw       ; boxright  = minshort
 
 POPA_NO_AX_OR_BP_MACRO
-retf 
+ret 
 
 ENDP
 
