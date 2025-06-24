@@ -1105,50 +1105,60 @@ retf
 ENDP
 
 
+;void __far V_CopyRect ( uint16_t srcoffset, uint16_t destoffset, uint16_t width, uint16_t height) { 
 
 PROC V_CopyRect_ FAR
 PUBLIC V_CopyRect_
 
+
+;	if (skipdirectdraws) {
+;		return;
+;	}
+
+cmp       byte ptr ds:[_skipdirectdraws], 0
+jne       exit_v_copyrect
+
+
+test      cx, cx            ; todo necessary? ever called with 0 height?
+jbe       exit_v_copyrect
+
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 4
-push      bx
-push      cx
-mov       bx, OFFSET _skipdirectdraws
-cmp       byte ptr [bx], 0
-jne       exit_v_copyrect
-mov       word ptr [bp - 2], SCREEN4_SEGMENT
-mov       word ptr [bp - 4], SCREEN0_SEGMENT
-mov       bx, ax
-test      cx, cx
-jbe       exit_v_copyrect
-mov       es, word ptr [bp - 4]
-label_1:
-mov       ax, word ptr [bp - 6]
-mov       cx, word ptr [bp - 2]
-mov       si, bx
-mov       di, dx
-dec       word ptr [bp - 8]
-push      ds
-push      di
-xchg      ax, cx
+
+mov       si, ax ; set src offset
+mov       di, dx ; set dst offset
+
+mov       ax, SCREEN0_SEGMENT
+mov       es, ax
+mov       ax, SCREEN4_SEGMENT
 mov       ds, ax
+
+mov       ax, SCREENWIDTH
+sub       ax, bx        ; screenwidth minus width
+
+mov       dx, cx  ; outer loop counter
+dec       dx ; do one early...
+
+; bx holds width, refreshes cs
+
+copy_next_rect_line:
+mov       cx, bx
+
 shr       cx, 1
 rep movsw 
 adc       cx, cx
 rep movsb 
-pop       di
-pop       ds
-add       bx, SCREENWIDTH
-add       dx, SCREENWIDTH
-cmp       word ptr [bp - 8], 0
-ja        label_1
-exit_v_copyrect:
-leave     
+
+add       si, ax
+add       di, ax
+
+dec       dx
+jns       copy_next_rect_line
+mov       ax, ss
+mov       ds, ax 
 pop       di
 pop       si
+exit_v_copyrect:
 retf      
 
 ENDP
