@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/24 10:52:52
+Created on:       25/06/24 11:00:52
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -50,7 +50,7 @@ dmx_TEXT               CODE           AUTO           02c6:5730       000001a2
 D_INT_TEXT             CODE           AUTO           02c6:58d2       00000175
 MEMORY_TEXT            CODE           AUTO           02c6:5a48       00000000
 MATH_TEXT              CODE           AUTO           02c6:5a48       0000078b
-MAIN_TEXT              CODE           AUTO           02c6:61d4       00000f71
+MAIN_TEXT              CODE           AUTO           02c6:61d4       00000f75
 g_setup_TEXT           CODE           AUTO           02c6:7150       000002cc
 r_setup_TEXT           CODE           AUTO           02c6:7420       00000445
 st_setup_TEXT          CODE           AUTO           02c6:7870       00000202
@@ -740,7 +740,7 @@ Module: main.obj(main.ASM)
 02c6:667a*     G_SetGameKeyDown_
 02c6:6694      G_GetGameKey_
 02c6:6ffd      I_SetPalette_
-02c6:704e      I_UpdateBox_
+02c6:704f      I_UpdateBox_
 02c6:6687*     G_SetGameKeyUp_
 02c6:6c43      M_LoadDefaults_
 02c6:6368      I_KeyboardISR_
@@ -750,7 +750,7 @@ Module: main.obj(main.ASM)
 02c6:62ab      cht_CheckCheat_
 02c6:6e26      M_SaveDefaults_
 02c6:630d      cht_GetParam_
-02c6:7124      I_FinishUpdate_
+02c6:7128      I_FinishUpdate_
 02c6:639a      I_StartTic_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 02c6:7150      R_CheckTextureNumForName_
