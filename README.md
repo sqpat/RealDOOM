@@ -113,8 +113,8 @@ There are also a lot of hard caps on things like texture size and count, node co
   - Implemented Sound Blaster SFX
   - various bugfixes
 
-(Jun 14, 2025)      
-~~**v0.26** : ASM Optimizations~~
+(Jun 24, 2025)      
+~~**v0.27** : ASM Optimizations~~
   - EMS paginated WAD fields
   - 30kb or so of c converted to asm
   - binary size decreased, code a little faster
