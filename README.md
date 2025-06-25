@@ -113,19 +113,25 @@ There are also a lot of hard caps on things like texture size and count, node co
   - Implemented Sound Blaster SFX
   - various bugfixes
 
+(Jun 14, 2025)      
+~~**v0.26** : ASM Optimizations~~
+  - EMS paginated WAD fields
+  - 30kb or so of c converted to asm
+  - binary size decreased, code a little faster
 
 ### Future Roadmap:
 
 **Alpha Goals:**
- - Feature complete
- - All known bugs fixed
- - EMS paginated WAD fields
+ - E000 UMB requirement removed
  - improved span drawing fidelity
+ - improved sfx code
+ - All known bugs fixed
+ x Feature complete
+ x EMS paginated WAD fields
 
 
 **Beta Goals:**
  - Focus on improved compatibility with more machines
-   - E000 UMB requirement removed
  - "More" feature complete
    - AWE32, Gravis SFX - etc
  - Improved custom WAD support
@@ -134,13 +140,11 @@ There are also a lot of hard caps on things like texture size and count, node co
 **"1.0" Goals:**
  - Remove clib dependencies
  - Entirely ASM application
-
+ - 386 Render path optimization (for 386SX)
 **Post 1.0 Goals:**
  - EMS 3.2 compatible version
  - Remove MS-DOS dependencies, self boot version?
   
- 
- 
 
 
 ### Speed
