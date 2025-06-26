@@ -495,6 +495,8 @@
 #define CURRENT_POSITION_5  			  (((uint16_t) usedspritepagemem) + (sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES))
 #define usedtexturepagemem				  (((uint8_t __near*) (CURRENT_POSITION_5)))
 #define CURRENT_POSITION_6  			  (((uint16_t) usedtexturepagemem) + (sizeof(uint8_t) * NUM_TEXTURE_PAGES))
+#define pageswapargs				  	  (((uint16_t __near*) (CURRENT_POSITION_6)))
+//extern uint16_t pageswapargs[total_pages];
 
 
 // extern int16_t 					segloopprevlookup[2];
@@ -1155,14 +1157,12 @@ extern int8_t                       currentloadedfileindex;
 #if defined(__CHIPSET_BUILD)
 
 // these are prepared for calls to outsw with autoincrementing ems register on
-extern uint16_t pageswapargs[total_pages];
 
 #else
 
 extern int16_t emshandle;
 extern int16_t pagenum9000;
 
-extern uint16_t pageswapargs[total_pages];
 
 #endif
 
@@ -1436,3 +1436,5 @@ typedef struct {
 extern SB_VoiceInfo sb_voicelist[NUM_SFX_TO_MIX];
 
 #endif
+
+extern uint16_t lastpcspeakernotevalue;

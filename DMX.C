@@ -50,7 +50,6 @@ void MUS_ServiceRoutine(void);
 //todo move this where it needs to go.
 
 
-uint16_t lastpcspeakernotevalue = 0;
 
 void playpcspeakernote(uint16_t value){
 	

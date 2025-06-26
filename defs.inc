@@ -32,6 +32,16 @@ CRTC_INDEX 			=   03D4h
 GC_READMAP      	=   4
 GC_MODE             =   5
 
+_EPR MACRO arg, page
+	dw &arg
+	dw  &page
+ENDM
+
+_NPR MACRO arg, page
+	dw 0FFFFh
+	dw &page
+ENDM
+
 
 _NULL_OFFSET = 0030h
 
@@ -427,6 +437,13 @@ _usedspritepagemem =				  CURRENT_POSITION_4
 CURRENT_POSITION_5 =   			      (_usedspritepagemem  + (1 * NUM_SPRITE_CACHE_PAGES))
 _usedtexturepagemem =				  CURRENT_POSITION_5
 CURRENT_POSITION_6 =   			   	  (_usedtexturepagemem + (1 * NUM_TEXTURE_PAGES))
+
+
+
+
+_pageswapargs = CURRENT_POSITION_6
+
+CURRENT_POSITION_6 =   			   	  (_pageswapargs + (2 * TOTAL_PAGES_SIZE * PAGE_SWAP_ARG_MULT))
 
 
 

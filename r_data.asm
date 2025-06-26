@@ -36,7 +36,6 @@ EXTRN Z_QuickMapRender7000_:FAR
 
 .DATA
 
-EXTRN _pageswapargs:WORD
 
 
 
@@ -478,7 +477,7 @@ IF COMPILE_INSTRUCTIONSET GE COMPILE_186
     push      0                           ; bp - 8
     push      0                           ; bp - 0Ah
     push      OFFSET _usedspritepagemem   ; bp - 0Ch;
-ELSEIF
+ELSE
     mov       ax, OFFSET _spritecache_l2_head ; bp - 2
     push      ax
     mov       ax, SPRITEPAGE_SEGMENT          ; bp - 4
@@ -579,7 +578,7 @@ xor       ax, ax
 
 mov       word ptr ss:[bx + di + 2], ax    ; set both at once
 mov       si, ax                   ; zero
-
+; ds!
 lds       bx, dword ptr [bp - 6] ; both an index and a loop limit
 
 ;    for (k = 0; k < maxitersize; k++){
