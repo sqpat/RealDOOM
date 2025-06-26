@@ -32,15 +32,6 @@ CRTC_INDEX 			=   03D4h
 GC_READMAP      	=   4
 GC_MODE             =   5
 
-_EPR MACRO arg, page
-	dw &arg
-	dw  &page
-ENDM
-
-_NPR MACRO arg, page
-	dw 0FFFFh
-	dw &page
-ENDM
 
 
 _NULL_OFFSET = 0030h
@@ -676,13 +667,27 @@ IFDEF COMPILE_CHIPSET
 	ENDM
 
 	NPR_MACRO MACRO amount
-	IF COMPILE_CHIPSET EQ CHIPSET_SCAT
-		003FFh
-	ELSEIF COMPILE_CHIPSET EQ CHIPSET_SCAMP
-		&amount + SCAMP_PAGE_9000_OFFSET + 4
-	ELSEIF COMPILE_CHIPSET EQ CHIPSET_HT18
-		00000h
-	ENDIF
+
+
+	ENDM
+
+
+
+	_EPR MACRO arg, page
+		dw &arg + EMS_MEMORY_PAGE_OFFSET
+	ENDM
+
+	_NPR MACRO arg, page
+
+		IF COMPILE_CHIPSET EQ CHIPSET_SCAT
+			dw 003FFh
+		ELSEIF COMPILE_CHIPSET EQ CHIPSET_SCAMP
+			dw (&arg + SCAMP_PAGE_9000_OFFSET + 4) AND 0FFFFh   ; shut up overflow warning
+		ELSEIF COMPILE_CHIPSET EQ CHIPSET_HT18
+			dw 00000h
+		ENDIF
+
+
 	ENDM
 
 ELSE
@@ -694,8 +699,15 @@ ELSE
 
 	ENDM
 
-	NPR_MACRO MACRO amount
-		0FFFFh
+
+	_EPR MACRO arg, page
+		dw &arg
+		dw &page
+	ENDM
+
+	_NPR MACRO arg, page
+		dw 0FFFFh
+		dw &page
 	ENDM
 
 ENDIF
