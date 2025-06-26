@@ -710,7 +710,7 @@ void __near M_QuitDOOM(int16_t choice) {
     int8_t temp2[30];
     int8_t endstring[105];
     int16_t chosenendmsg = (gametic >> 2) % NUM_QUITMESSAGES;
-    getStringByIndex(DOSY, MK_FP(0x3C00, (int16_t)temp2));
+    getStringByIndex(DOSY, MK_FP(FIXED_DS_SEGMENT, (int16_t)temp2));
     if (chosenendmsg == 0){
         chosenendmsg = 2;
     } else {

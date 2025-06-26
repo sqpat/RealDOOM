@@ -27,7 +27,7 @@ PUBLIC resetDS_
 
 ;todo is ax necessary? if 286+ can push immediate.
 push ax
-mov ax, 03C00h
+mov ax, FIXED_DS_SEGMENT
 mov ds, ax
 pop ax
 
@@ -48,7 +48,7 @@ push di
 mov ds:[_stored_ds], ds
 xor di, di
 mov si, di
-mov cx, 03C00h
+mov cx, FIXED_DS_SEGMENT
 
 ;mov cx, ds
 ;add cx, 400h
@@ -69,7 +69,7 @@ mov cx, BASE_LOWER_MEMORY_SEGMENT
 mov es, cx
 
 ; zero up till 3C00h
-mov cx, 03C00h
+mov cx, FIXED_DS_SEGMENT
 sub cx, BASE_LOWER_MEMORY_SEGMENT
 SHIFT_MACRO shl cx 3
 

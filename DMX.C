@@ -194,7 +194,9 @@ void TS_Dispatch(){
 	
 	_disable();
 	HeadTask.active = true;
-	MUSTask.active = true;
+	if (playingdriver != NULL){
+		MUSTask.active = true;
+	}
 	_enable();
 }
 

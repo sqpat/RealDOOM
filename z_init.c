@@ -368,7 +368,7 @@ void __near Z_GetEMSPageMap() {
 	// intx86(EMS_INT, &regs, &regs);
 	
 	// ax, di, es
-	errorreg.hu= locallib_int86_67_esdi(0x5800, (uint16_t)pagedata, 0x3C00);
+	errorreg.hu= locallib_int86_67_esdi(0x5800, (uint16_t)pagedata, FIXED_DS_SEGMENT);
 
 	//pagedata = MK_FP(sregs.es, regs.w.di);
 	if (errorreg.bu.bytehigh != 0) {	

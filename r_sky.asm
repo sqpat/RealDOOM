@@ -345,7 +345,7 @@ sky_loop_done_dynamic:
 ; clean up
 
     mov    ax, ss
-;    mov    ax, 03C00h
+;    mov    ax, FIXED_DS_SEGMENT
 
     mov    ds, ax    ; restore ds...
 

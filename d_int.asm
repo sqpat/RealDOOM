@@ -58,7 +58,8 @@ dw unused_routine
 
 
 
-PROC MUS_ServiceRoutine_
+; todo make near? 
+PROC MUS_ServiceRoutine_ FAR
 PUBLIC MUS_ServiceRoutine_
 
 
@@ -332,8 +333,8 @@ mov  byte ptr ds:[si-1], ah
 cmp  si, dx
 jb   do_next_byte
 exit_loop:
-mov  ax, ss
-mov  ds, ax
+mov  ax, FIXED_DS_SEGMENT
+mov  ds, ax ; restore ds
 pop  cx
 pop  si
 retf 

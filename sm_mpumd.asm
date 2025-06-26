@@ -765,8 +765,8 @@ jl        loop_ready_controllers
 
 ; todo make this a 16 byte string in cs and rep movsw over and over
 
-push      ss
-pop       ds ; restore ds
+mov       ax, FIXED_DS_SEGMENT
+mov       ds, ax ; restore ds
 
 mov       bx, 127
 mov       ax, MIDI_CONTROL OR MIDI_PERC
