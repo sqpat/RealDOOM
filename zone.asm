@@ -25,7 +25,7 @@ EXTRN fopen_:PROC
 EXTRN fclose_:PROC
 EXTRN fseek_:PROC
 EXTRN locallib_far_fread_:PROC
-
+EXTRN Z_QuickMapVisplanePage_:FAR
 .DATA
 
 EXTRN _currentoverlay:BYTE
@@ -49,6 +49,7 @@ IFDEF COMPILE_CHIPSET
     EXTRN Z_QuickMap24AIC_:NEAR
 ELSE
     EXTRN _emshandle:WORD
+    EXTRN _pagenum9000:WORD
 ENDIF
 
 .CODE
@@ -526,8 +527,8 @@ mov   bx, dx
 shl   bx, 1
 
 SHIFT_PAGESWAP_ARGS bx
-;mov   word ptr [bx + 0x956], ax  ; TODO 
-mov   word ptr ds:[_pageswapargs + (pageswapargs_flatcache_offset * 2 * PAGE_SWAP_ARG_MULT) + bx], ax
+
+mov   word ptr ds:[_pageswapargs + (pageswapargs_flatcache_offset * PAGE_SWAP_ARG_MULT) + bx], ax
 ;	pageswapargs[pageswapargs_flatcache_offset + offset * PAGE_SWAP_ARG_MULT] = _EPR(page);
 
 Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
@@ -766,6 +767,7 @@ mov   byte ptr ds:[bx + _active_visplanes], 0
 jmp   label_1
 
 ENDP
+@
 
 PROC Z_QuickMapVisplaneRevert_ FAR
 PUBLIC Z_QuickMapVisplaneRevert_
@@ -784,38 +786,62 @@ retf
 ENDP
 
 
-PROC Z_QuickMapUnmapAll_ FAR
-PUBLIC Z_QuickMapUnmapAll_
 
-push  bx
-push  cx
-push  dx
-push  si
-mov   cx, word ptr [0x1eb4]
-xor   si, si
-xor   bx, bx
-mov   word ptr [bx + 0x80e], 0xffff
-mov   al, byte ptr [si + 0x484]
-cbw  
-add   bx, 4
-add   ax, cx
-inc   si
-mov   word ptr [bx + 0x80c], ax
-cmp   si, 0x18
-jl    0x419e
-mov   dx, 0x18
-mov   ax, 0x80e
-mov   word ptr [0x1eb4], cx
-call  0x3e2b
-mov   cx, word ptr [0x1eb4]
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
+
+IFDEF COMPILE_CHIPSET
+    PROC Z_QuickMapUnmapAll_ FAR
+    PUBLIC Z_QuickMapUnmapAll_
+
+    push  dx
+    push  bx
+    xor   ax, ax
+    mov   bx, bx
+    loop_next_page_to_unmap:
+    mov   word ptr ds:[bx + _pageswapargs], -1
+    inc   ax
+    inc   bx
+    inc   bx
+    cmp   ax, 24
+    jl    loop_next_page_to_unmap
+
+    Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+    pop   bx
+    pop   dx
+    retf  
+ELSE
+    PROC Z_QuickMapUnmapAll_ FAR
+    PUBLIC Z_QuickMapUnmapAll_
+
+    push  bx
+    push  cx
+    push  dx
+    push  si
+    mov   cx, word ptr ds:[_pagenum9000]
+    xor   si, si
+    xor   bx, bx
+
+    loop_next_page_to_unmap:
+    mov   word ptr ds:[bx + _pageswapargs], -1
+    mov   al, byte ptr ds:[si + _ems_backfill_page_order]
+    cbw  
+    add   ax, cx
+    inc   si
+    mov   word ptr [bx + _pageswapargs+2], ax
+    add   bx, 4  ; includes pageswap
+    cmp   si, 24
+    jl    loop_next_page_to_unmap
+
+    Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+    pop   si
+    pop   dx
+    pop   cx
+    pop   bx
+    retf  
+ENDIF
+
+
 
 ENDP
-@
 
 _doomcode_filename:
 db "DOOMCODE.BIN", 0

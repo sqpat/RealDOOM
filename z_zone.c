@@ -641,6 +641,7 @@ void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 
 
 }
+/*
 
 void __far Z_QuickMapVisplaneRevert(){
  
@@ -674,7 +675,6 @@ void __far Z_QuickMapUnmapAll() {
 
 
 }
-
 
 void __far Z_SetOverlay(int8_t wipeId){
 	int16_t codesize;
@@ -719,7 +719,7 @@ void __far Z_SetOverlay(int8_t wipeId){
 
 
 }
-
+*/
 
 
 /*
