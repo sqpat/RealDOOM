@@ -19,25 +19,33 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
  
-EXTRN P_MobjThinker_:NEAR
-EXTRN OutOfThinkers_:NEAR
-EXTRN P_PlayerThink_:NEAR
-EXTRN P_UpdateSpecials_:NEAR
 EXTRN Z_QuickMapRenderTexture_:NEAR
 EXTRN Z_QuickMapSpritePage_:NEAR
-EXTRN Z_QuickMapScratch_4000_:FAR ; todo
-EXTRN Z_QuickMapScratch_5000_:FAR
-EXTRN Z_QuickMapScratch_7000_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
-EXTRN Z_QuickMapRender4000_:FAR
-EXTRN Z_QuickMapRender5000_:FAR
-EXTRN Z_QuickMapRender7000_:FAR
 ;EXTRN logger_:NEAR  ; asm logging stuff
+
+EXTRN Z_QuickMapScratch_4000_:FAR ; todo
+EXTRN Z_QuickMapRender4000_:FAR
 
 .DATA
 
 
+IFDEF COMPILE_CHIPSET
+    EXTRN Z_QuickMap1AIC_:NEAR
+    EXTRN Z_QuickMap2AIC_:NEAR
+    EXTRN Z_QuickMap3AIC_:NEAR
+    EXTRN Z_QuickMap4AIC_:NEAR
+    EXTRN Z_QuickMap5AIC_:NEAR
+    EXTRN Z_QuickMap6AIC_:NEAR
 
+    EXTRN Z_QuickMap8AIC_:NEAR
+    EXTRN Z_QuickMap16AIC_:NEAR
+    EXTRN Z_QuickMap24AIC_:NEAR
+ELSE
+    EXTRN _emshandle:WORD
+    EXTRN _pagenum9000:WORD
+    Z_QuickMap_ = Z_QuickMap_RData_
+ENDIF
 
 
 .CODE
@@ -1956,7 +1964,9 @@ ENDP
 WAD_PATCH_7000_SEGMENT = 07000h
 
 done_with_composite_loop:
-call      Z_QuickMapRender7000_
+;call      Z_QuickMapRender7000_
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
+
 LEAVE_MACRO     
 POPA_NO_AX_MACRO
 ret       
@@ -2045,7 +2055,9 @@ push      bx ; bp - 012h
 mov       si, word ptr ds:[si + _texturepatchlump_offset]
 sal       si, 1
 push      si ; bp - 014h
-call      Z_QuickMapScratch_7000_
+
+;call      Z_QuickMapScratch_7000_
+Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
 
 mov       al, byte ptr es:[bx - 1] ; texturepatchcount = texture->patchcount;
 xor       ah, ah
@@ -2955,7 +2967,10 @@ mov       word ptr cs:[SELFMODIFY_loadpatchcolumn_masked_check1], ax;
 mov       word ptr cs:[SELFMODIFY_loadpatchcolumn_masked_check2], di;
 
 push      dx       ; store future es
-call      Z_QuickMapScratch_4000_
+;call      Z_QuickMapScratch_4000_
+Z_QUICKMAPAI4 pageswapargs_scratch4000_offset_size INDEXED_PAGE_4000_OFFSET
+
+
 mov       cx, SCRATCH_ADDRESS_4000_SEGMENT
 push      cx
 mov       ax, si
@@ -3039,7 +3054,8 @@ done_drawing_texture:
 mov       ax, ss
 mov       ds, ax
 pop       bp
-call      Z_QuickMapRender4000_
+;call      Z_QuickMapRender4000_
+Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 
 pop       di
 pop       si
@@ -3065,7 +3081,10 @@ push      bp
 mov       bp, sp
 mov       si, ax
 
-call      Z_QuickMapScratch_5000_
+mov       di, dx    ; preserve dx thru quickmap
+;call      Z_QuickMapScratch_5000_
+Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+mov       dx, di
 
 ;	patch_t __far *wadpatch = (patch_t __far *)SCRATCH_ADDRESS_5000;
 ;	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
@@ -3208,13 +3227,59 @@ mov       ax, ss  ; restore ds
 mov       ds, ax
 pop       bp 
 
-call      Z_QuickMapRender5000_
+;call      Z_QuickMapRender5000_
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
 
 POPA_NO_AX_MACRO
 retf      
 
 
 ENDP
+
+IFDEF COMPILE_CHIPSET
+ELSE
+
+
+    PROC Z_QuickMap_RData_ NEAR
+    PUBLIC Z_QuickMap_RData_
+
+    MAX_COUNT_ITER = 8
+
+    push  bx
+    push  cx
+    push  si
+    mov   si, ax
+    mov   bl, dl
+    test  dl, dl
+    jle   done_with_quickmap_loop_exit
+    compare_next_quickmap_loop: 
+    mov   dx, word ptr ds:[_emshandle]
+    mov   ax, 05000h
+    cmp   bl, MAX_COUNT_ITER
+    jle   set_max_args_to_less_than_8
+    mov   cx, MAX_COUNT_ITER
+    loop_next_quickmap_args:
+    sub   bl, MAX_COUNT_ITER
+    int   067h
+    add   si, MAX_COUNT_ITER * 2 * PAGE_SWAP_ARG_MULT
+    test  bl, bl
+    jg    compare_next_quickmap_loop
+    done_with_quickmap_loop_exit:
+    pop   si
+    pop   cx
+    pop   bx
+    ret   
+    set_max_args_to_less_than_8:
+    mov   cl, bl
+    xor   ch, ch
+    int   067h
+    pop   si
+    pop   cx
+    pop   bx
+    ret 
+
+    ENDP
+ENDIF
 
 
 END
