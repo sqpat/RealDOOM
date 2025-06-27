@@ -627,9 +627,9 @@ void __near Z_LoadBinaries() {
 	W_CacheLumpNumDirect_addr = 	(uint32_t)(W_CacheLumpNumDirect);
 
 
-	Z_QuickMapPhysics_addr = 		(uint32_t)(Z_QuickMapPhysics);
+	// Z_QuickMapPhysics_addr = 		(uint32_t)(Z_QuickMapPhysics);
 	// Z_QuickMapWipe_addr = 			(uint32_t)(Z_QuickMapWipe);
-	Z_QuickMapScratch_5000_addr = 	(uint32_t)(Z_QuickMapScratch_5000);
+	// Z_QuickMapScratch_5000_addr = 	(uint32_t)(Z_QuickMapScratch_5000);
 	M_Random_addr = 				(uint32_t)(M_Random);
 	// I_UpdateNoBlit_addr = 			(uint32_t)(I_UpdateNoBlit);
 	// I_FinishUpdate_addr = 			(uint32_t)(I_FinishUpdate);

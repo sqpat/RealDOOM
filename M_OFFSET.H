@@ -30,7 +30,7 @@
 #define P_ArchiveWorldOffset                  0x773
 #define P_ArchiveThinkersOffset               0x838
 #define P_ArchiveSpecialsOffset               0x9D0
-#define LoadSFXWadLumpsOffset                 0x0
+#define LoadSFXWadLumpsOffset                 0x3
 #define S_ActuallyChangeMusicOffset           0x3EE
 #define P_CheckSightOffset                    0x0
 
@@ -45,5 +45,5 @@
 #define FinaleCodeSize                 0xBCD
 #define SaveLoadCodeSize               0xB17
 #define SMLoadCodeSize                 0x49D
-#define SInitCodeSize                  0x531
+#define SInitCodeSize                  0x557
 #define MaximumMusDriverSize           0x1014

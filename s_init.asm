@@ -35,13 +35,14 @@ ENDP
 
 SINGULARITY_FLAG_HIGH =  (SOUND_SINGULARITY_FLAG SHR 8)
 
+not_soundblaster:
+jmp  done_with_sfx_prep
+
+
 PROC   LoadSFXWadLumps_
 PUBLIC LoadSFXWadLumps_
 
-    push bx
-    push cx
-    push si
-    push di
+    PUSHA_NO_AX_OR_BP_MACRO
 
 
     ; set char 2 for the lump name
@@ -146,7 +147,17 @@ PUBLIC LoadSFXWadLumps_
 
     ; setup page
 
-    call dword ptr ds:[_Z_QuickMapScratch_5000_addr]
+
+    ;call Z_QuickMapScratch_5000_
+
+    ;Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+
+    mov     dx, word ptr ds:[_emshandle]
+    mov     ax, 05000h
+    mov     cx, 4
+    mov     si, (pageswapargs_scratch5000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+    int     067h
+
 
     ; load sb sfx data here
     ; sb sfx load loop
@@ -232,7 +243,28 @@ PUBLIC LoadSFXWadLumps_
     jne  loop_load_sb_sfx
 
     ; restore 
-    call      dword ptr ds:[_Z_QuickMapPhysics_addr]
+    ;call      Z_QuickMapPhysics_
+
+    ;Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+
+    mov     dx, word ptr ds:[_emshandle]
+    mov     ax, 05000h
+    mov     cx, 8
+    mov     si, pageswapargs_phys_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+    int     067h
+
+    mov     ax, 05000h
+    add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
+    int     067h
+
+    mov     ax, 05000h
+    add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
+    int     067h
+
+
+
+    mov   byte ptr ds:[_currenttask], TASK_PHYSICS
+
 
     ; setup cache fields..
     mov       cx, NUM_SFX_PAGES
@@ -243,118 +275,15 @@ PUBLIC LoadSFXWadLumps_
     rep stosb
 
 
-    jmp  done_with_sfx_prep
+    ;jmp  done_with_sfx_prep
+    ; fall thru
 
-
-    not_soundblaster:
     done_with_sfx_prep:
-    pop  di
-    pop  si
-    pop  cx
-    pop  bx
+    POPA_NO_AX_OR_BP_MACRO
 
     retf
 
 ENDP
-
-COMMENT @
-
-push      bx
-push      cx
-push      dx
-push      si
-push      di
-push      bp
-mov       bp, sp
-sub       sp, 0Eh
-call      dword ptr [_Z_QuickMapScratch_5000_addr]
-mov       word ptr [bp - 4], SCRATCH_SEGMENT_5000
-mov       byte ptr [bp - 2], 1
-xor       di, di
-cld       
-
-; sfx load loop
-; DI is index
-; CX:BX is target address
-mov  di, 1
-mov  bx, SFX_DATA_SEGMENT
-mov  es, bx
-mov  bx, 2   ;lets start at offset 2
-mov  word ptr es:[0], bx   ; fixed first value
-
-start_loading_next_sfx:
-
-
-    push es ; store SFX_DATA_SEGMENT
-
-    mov  ax, di
-    call I_GetSfxLumpNum_
-    mov  si, ax  ; backup lump num
-    
-    db 0FFh  ; lcall[addr]
-    db 01Eh  ;
-    dw _W_LumpLength_addr
-
-    ; ax is lumpsize
-    xchg ax, si    ; ax gets lumpnum again. size to si.
-
-
-
-
-mov       dl, byte ptr [bp - 2]
-xor       dh, dh
-imul      si, dx, 6
-lea       ax, [bp - 0Eh]
-call      dword ptr [_W_GetNumForName_addr]
-and       ah, (SOUND_LUMP_BITMASK SHR 8)
-mov       word ptr [si + 0xd32], ax
-and       ah, (SOUND_LUMP_BITMASK SHR 8)
-call      dword ptr [_W_LumpLength_addr]
-sub       ax, 32
-mov       word ptr [si + 0xd34], ax
-mov       ax, word ptr [si + 0xd32]
-mov       word ptr [si + 0xd36], 0FFFFh
-cmp       ax, 0FFFFh
-jne       cache_next_lump
-increment_sb_sfx_loop:
-inc       byte ptr [bp - 2]
-cmp       byte ptr [bp - 2], 0x6d
-jb        start_loading_next_sfx
-; done loading..
-call      dword ptr [_Z_QuickMapPhysics_addr]
-
-
-;    // initialize SFX cache.
-;    memset(sfx_free_bytes, 64, NUM_SFX_PAGES); 
-
-mov       cx, NUM_SFX_PAGES / 2
-mov       ax, 04040h     ; 64
-mov       di, OFFSET _sfx_free_bytes
-push      ds
-pop       es
-rep stosw 
-adc       cx, cx
-rep stosb 
-
-LEAVE_MACRO
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-retf      
-cache_next_lump:
-mov       cx, SCRATCH_SEGMENT_5000
-and       ah, (SOUND_LUMP_BITMASK SHR 8)
-xor       bx, bx
-call      dword ptr [_W_CacheLumpNumDirect_addr]
-mov       es, word ptr [bp - 4]
-cmp       word ptr es:[di + 2], 0x5622
-jne       increment_sb_sfx_loop
-or        byte ptr [si + 0xd33], 0x40
-jmp       increment_sb_sfx_loop
-
-@
 
 
 _currentnameprefix:
