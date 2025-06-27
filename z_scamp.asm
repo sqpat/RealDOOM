@@ -80,23 +80,6 @@ pop si
 ret
 ENDP
 
-PROC Z_QuickMap12AIC_ NEAR
-PUBLIC Z_QuickMap12AIC_
-push si
-push cx
-push dx
-mov  si, ax
-mov  al, dl
-out  SCAMP_PAGE_SELECT_REGISTER, al
-mov  dx, SCAMP_PAGE_SET_REGISTER
-mov  cx, 12
-rep  outsw
-pop dx
-pop cx
-pop si
-ret
-ENDP
-
   
 
 PROC Z_QuickMap8AIC_ NEAR

@@ -24,8 +24,24 @@ EXTRN locallib_int86_67_:FAR
 .DATA
 
 EXTRN _currenttask:BYTE
-EXTRN _emshandle:WORD
 EXTRN _currentpageframes:BYTE
+
+
+IFDEF COMPILE_CHIPSET
+    EXTRN Z_QuickMap1AIC_:NEAR
+    EXTRN Z_QuickMap2AIC_:NEAR
+    EXTRN Z_QuickMap3AIC_:NEAR
+    EXTRN Z_QuickMap4AIC_:NEAR
+    EXTRN Z_QuickMap5AIC_:NEAR
+    EXTRN Z_QuickMap6AIC_:NEAR
+
+    EXTRN Z_QuickMap8AIC_:NEAR
+    EXTRN Z_QuickMap16AIC_:NEAR
+    EXTRN Z_QuickMap24AIC_:NEAR
+ELSE
+    EXTRN _emshandle:WORD
+ENDIF
+
 .CODE
 
 ; todo get rid of tasks
@@ -42,133 +58,137 @@ TASK_WIPE = 10
 TASK_INTERMISSION = 11
 TASK_STATUS_NO_SCREEN4 = 12
 
+IFDEF COMPILE_CHIPSET
+ELSE
+
+    PROC Z_QuickMapMusicPageFrame_ FAR
+    PUBLIC Z_QuickMapMusicPageFrame_
+
+    cmp   al, byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX]
+    jne   actually_changing_music_page_frame
+    retf  
+    actually_changing_music_page_frame:
+    push  bx
+    push  dx
+    mov   byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX], al
+
+    xor   ah, ah
+    mov   dx, word ptr ds:[_emshandle]  ; todo hardcode
+    mov   bx, ax
+
+    mov   ax, 04400h + MUS_PAGE_FRAME_INDEX
+    add   bx, MUS_DATA_PAGES
+    int   067h
+    ;call  locallib_int86_67_
+    pop   dx
+    pop   bx
+    retf  
 
 
-PROC Z_QuickMapMusicPageFrame_ FAR
-PUBLIC Z_QuickMapMusicPageFrame_
+    ENDP
 
-cmp   al, byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX]
-jne   actually_changing_music_page_frame
-retf  
-actually_changing_music_page_frame:
-push  bx
-push  dx
-mov   byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX], al
+    PROC Z_QuickMapSFXPageFrame_ FAR
+    PUBLIC Z_QuickMapSFXPageFrame_
 
-xor   ah, ah
-mov   dx, word ptr ds:[_emshandle]  ; todo hardcode
-mov   bx, ax
+    cmp   al, byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX]
+    jne   actually_changing_sfx_page_frame
+    retf  
+    actually_changing_sfx_page_frame:
+    push  bx
+    push  dx
+    mov   byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX], al
 
-mov   ax, 04400h + MUS_PAGE_FRAME_INDEX
-add   bx, MUS_DATA_PAGES
-int   067h
-;call  locallib_int86_67_
-pop   dx
-pop   bx
-retf  
+    xor   ah, ah
+    mov   dx, word ptr ds:[_emshandle]
+    mov   bx, ax
 
-
-ENDP
-
-PROC Z_QuickMapSFXPageFrame_ FAR
-PUBLIC Z_QuickMapSFXPageFrame_
-
-cmp   al, byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX]
-jne   actually_changing_sfx_page_frame
-retf  
-actually_changing_sfx_page_frame:
-push  bx
-push  dx
-mov   byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX], al
-
-xor   ah, ah
-mov   dx, word ptr ds:[_emshandle]
-mov   bx, ax
-
-mov   ax, 04400h + SFX_PAGE_FRAME_INDEX
-add   bx, SFX_DATA_PAGES
-int   067h
-;call  locallib_int86_67_
-pop   dx
-pop   bx
-retf  
+    mov   ax, 04400h + SFX_PAGE_FRAME_INDEX
+    add   bx, SFX_DATA_PAGES
+    int   067h
+    ;call  locallib_int86_67_
+    pop   dx
+    pop   bx
+    retf  
 
 
-ENDP
+    ENDP
 
-PROC Z_QuickMapWADPageFrame_ FAR
-PUBLIC Z_QuickMapWADPageFrame_
-
-
-xor   al, al
-and   ah, 0FCh
-cmp   ah, byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX]
-jne   actually_changing_wad_page_frame
-retf  
-
-actually_changing_wad_page_frame:
-push  bx
-push  dx
-mov   byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX], ah
-mov   al, ah
-xor   ah, ah
-mov   dx, word ptr ds:[_emshandle]
-mov   bx, ax
-SHIFT_MACRO sar   bx 2
-mov   ax, 04400h + WAD_PAGE_FRAME_INDEX
-add   bx, FIRST_LUMPINFO_LOGICAL_PAGE
-int   067h
-;call  locallib_int86_67_
-pop   dx
-pop   bx
-retf  
+    PROC Z_QuickMapWADPageFrame_ FAR
+    PUBLIC Z_QuickMapWADPageFrame_
 
 
-ENDP
+    xor   al, al
+    and   ah, 0FCh
+    cmp   ah, byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX]
+    jne   actually_changing_wad_page_frame
+    retf  
 
-PROC Z_QuickMap_ NEAR
-PUBLIC Z_QuickMap_
-
-MAX_COUNT_ITER = 8
-
-push  bx
-push  cx
-push  si
-push  di
-mov   di, ax
-mov   bl, dl
-test  dl, dl
-jle   done_with_quickmap_loop_exit
-compare_next_quickmap_loop: ; todo move this to end of loop
-cmp   bl, MAX_COUNT_ITER
-jle   set_max_args_to_less_than_8
-mov   dx, MAX_COUNT_ITER
-loop_next_quickmap_args:
-mov   al, dl
-mov   si, di
-sub   bl, MAX_COUNT_ITER
-cbw
-mov   dx, word ptr ds:[_emshandle]
-mov   cx, ax
-mov   ax, 05000h
-add   di, MAX_COUNT_ITER * 2 * PAGE_SWAP_ARG_MULT
-int 067h
-test  bl, bl
-jg    compare_next_quickmap_loop
-done_with_quickmap_loop_exit:
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-set_max_args_to_less_than_8:    ; todo dupe the loop contents
-mov   al, bl
-cbw 
-mov   dx, ax
-jmp   loop_next_quickmap_args
+    actually_changing_wad_page_frame:
+    push  bx
+    push  dx
+    mov   byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX], ah
+    mov   al, ah
+    xor   ah, ah
+    mov   dx, word ptr ds:[_emshandle]
+    mov   bx, ax
+    SHIFT_MACRO sar   bx 2
+    mov   ax, 04400h + WAD_PAGE_FRAME_INDEX
+    add   bx, FIRST_LUMPINFO_LOGICAL_PAGE
+    int   067h
+    ;call  locallib_int86_67_
+    pop   dx
+    pop   bx
+    retf  
 
 
-ENDP
+    ENDP
+
+
+    PROC Z_QuickMap_ NEAR
+    PUBLIC Z_QuickMap_
+
+    MAX_COUNT_ITER = 8
+
+    push  bx
+    push  cx
+    push  si
+    push  di
+    mov   di, ax
+    mov   bl, dl
+    test  dl, dl
+    jle   done_with_quickmap_loop_exit
+    compare_next_quickmap_loop: ; todo move this to end of loop
+    cmp   bl, MAX_COUNT_ITER
+    jle   set_max_args_to_less_than_8
+    mov   dx, MAX_COUNT_ITER
+    loop_next_quickmap_args:
+    mov   al, dl
+    mov   si, di
+    sub   bl, MAX_COUNT_ITER
+    cbw
+    mov   dx, word ptr ds:[_emshandle]
+    mov   cx, ax
+    mov   ax, 05000h
+    add   di, MAX_COUNT_ITER * 2 * PAGE_SWAP_ARG_MULT
+    int 067h
+    test  bl, bl
+    jg    compare_next_quickmap_loop
+    done_with_quickmap_loop_exit:
+    pop   di
+    pop   si
+    pop   cx
+    pop   bx
+    ret   
+    set_max_args_to_less_than_8:    ; todo dupe the loop contents
+    mov   al, bl
+    cbw 
+    mov   dx, ax
+    jmp   loop_next_quickmap_args
+
+
+    ENDP
+ENDIF
+
 
 PROC Z_QuickMapPhysicsCode_ FAR
 PUBLIC Z_QuickMapPhysicsCode_
@@ -181,7 +201,7 @@ push  dx
 ;mov   dx, 2
 ;mov   ax, 0xa32
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 2 pageswapargs_physics_code_offset_size INDEXED_PAGE_9400_OFFSET
+Z_QUICKMAPAI2 pageswapargs_physics_code_offset_size INDEXED_PAGE_9400_OFFSET
 pop   dx
 retf  
 
@@ -196,7 +216,7 @@ push  dx
 ;mov   dx, 0x18
 ;mov   ax, 0x80e
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 pop   dx
 retf  
@@ -212,7 +232,7 @@ push  dx
 ;mov   dx, 4
 ;mov   ax, 0x8f6
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 4 pageswapargs_demo_offset_size INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI4 pageswapargs_demo_offset_size INDEXED_PAGE_5000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_DEMO
 pop   dx
 retf  
@@ -228,7 +248,7 @@ push  dx
 ;mov   dx, 4
 ;mov   ax, 0x89e
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
 
 pop   dx
 retf  
@@ -244,7 +264,7 @@ push  dx
 ;mov   dx, 0x18
 ;mov   ax, 0x86e
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
+Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_RENDER
 pop   dx
 retf  
@@ -260,7 +280,7 @@ push  dx
 ;mov   dx, 4
 ;mov   ax, 0x8ce
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
 pop   dx
 retf  
 
@@ -276,12 +296,12 @@ push  dx
 ; should be 87e is 836
 ;mov   ax, 0x87e
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 16 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI16 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
 
 ;mov   dx, 4
 ;mov   ax, 0x8ce
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_RENDER
 pop   dx
@@ -298,7 +318,7 @@ push  dx
 ;mov   dx, 2
 ;mov   ax, 0x976
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 2 (pageswapargs_spritecache_offset_size+4) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI2 (pageswapargs_spritecache_offset_size+4) INDEXED_PAGE_7000_OFFSET
 pop   dx
 retf  
 
@@ -314,7 +334,7 @@ push  dx
 ;mov   dx, 2
 ;mov   ax, 0x992
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 2 pageswapargs_render_to_6000_size INDEXED_PAGE_6000_OFFSET
+Z_QUICKMAPAI2 pageswapargs_render_to_6000_size INDEXED_PAGE_6000_OFFSET
 pop   dx
 retf  
 
@@ -329,7 +349,7 @@ push  dx
 ;mov   dx, 4
 ;mov   ax, 0x86e
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
+Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 pop   dx
 retf  
 
@@ -344,7 +364,7 @@ push  dx
 ;mov   dx, 4
 ;mov   ax, 0x87e
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
 pop   dx
 retf  
 
@@ -359,7 +379,7 @@ push  dx
 ;mov   dx, 4
 ;mov   ax, 0x8be
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 4 pageswapargs_rend_9000_size INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI4 pageswapargs_rend_9000_size INDEXED_PAGE_9000_OFFSET
 pop   dx
 retf  
 
@@ -374,7 +394,7 @@ push  dx
 ;mov   dx, 8
 ;mov   ax, 0x87e
 ;call  Z_QuickMap_
-Z_QUICKMAPAI 8 pageswapargs_rend_texture_size INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI8 pageswapargs_rend_texture_size INDEXED_PAGE_5000_OFFSET
 pop   dx
 ret
 ENDP

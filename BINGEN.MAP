@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/26 17:34:11
+Created on:       25/06/26 21:37:34
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -92,7 +92,7 @@ R_MASKED_TEXT          CODE           AUTO           1e7e:580a       000012e4
 w_wad_TEXT             CODE           AUTO           1e7e:6af0       0000030c
 V_VIDEO_TEXT           CODE           AUTO           1e7e:6dfc       00000616
 z_zone_TEXT            CODE           AUTO           1e7e:7420       0000035b
-ZONE_TEXT              CODE           AUTO           1e7e:777c       0000015b
+ZONE_TEXT              CODE           AUTO           1e7e:777c       0000015c
 p_setup_TEXT           CODE           AUTO           260c:0000       00001268
 P_SIGHT_TEXT           CODE           AUTO           260c:1268       0000060b
 _TEXT                  CODE           AUTO           260c:1880       000033dc
@@ -1260,8 +1260,8 @@ Module: r_mainhi.obj(r_mainhi.ASM)
 1e7e:0f45      R_PointToAngle_
 1e7e:2661*     R_DrawColumnPrep_
 1e7e:2c86*     R_DrawPSprite_
-1e7e:1657*     R_CheckPlane_
 1e7e:115e*     FixedMulTrigNoShiftBSPLocal_
+1e7e:1657*     R_CheckPlane_
 1e7e:1722*     R_ProjectSprite_
 1e7e:3070      R_RenderBSPNode_
 1e7e:0e44*     R_ScaleFromGlobalAngle_
@@ -1353,23 +1353,23 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 1e7e:7692      Z_QuickMapUnmapAll_
 1e7e:76d8      Z_SetOverlay_
 Module: zone.obj(zone.ASM)
-1e7e:782a      Z_QuickMapPhysics_
+1e7e:782b      Z_QuickMapPhysics_
 1e7e:777c      Z_QuickMapMusicPageFrame_
-1e7e:781e      Z_QuickMapPhysicsCode_
-1e7e:7875      Z_QuickMapRender_4000To9000_
-1e7e:789b      Z_QuickMapRender_9000To6000_
-1e7e:788f*     Z_QuickMapRender_9000To7000_
+1e7e:781f      Z_QuickMapPhysicsCode_
+1e7e:7876      Z_QuickMapRender_4000To9000_
+1e7e:789c      Z_QuickMapRender_9000To6000_
+1e7e:7890*     Z_QuickMapRender_9000To7000_
 1e7e:77ba      Z_QuickMapWADPageFrame_
 1e7e:779b      Z_QuickMapSFXPageFrame_
-1e7e:78cb      Z_QuickMapRenderTexture_
-1e7e:7858      Z_QuickMapRender_
-1e7e:78a7      Z_QuickMapRender4000_
-1e7e:78b3      Z_QuickMapRender5000_
-1e7e:78bf      Z_QuickMapRender9000_
-1e7e:784c      Z_QuickMapRender7000_
-1e7e:783b      Z_QuickMapDemo_
-1e7e:77e4      Z_QuickMap_
-1e7e:7869      Z_QuickMapRender_4000To9000_9000Only_
+1e7e:78cc      Z_QuickMapRenderTexture_
+1e7e:7859      Z_QuickMapRender_
+1e7e:78a8      Z_QuickMapRender4000_
+1e7e:78b4      Z_QuickMapRender5000_
+1e7e:78c0      Z_QuickMapRender9000_
+1e7e:784d      Z_QuickMapRender7000_
+1e7e:783c      Z_QuickMapDemo_
+1e7e:77e5      Z_QuickMap_
+1e7e:786a      Z_QuickMapRender_4000To9000_9000Only_
 Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 260c:0000      P_SetupLevel_
 260c:015e+     S_Start_
@@ -1695,4 +1695,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e1c0 (188864.)
 Entry point address: 260c:24fe
-Link time: 00:00.30
+Link time: 00:00.75

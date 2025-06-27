@@ -690,6 +690,70 @@ IFDEF COMPILE_CHIPSET
 
 	ENDM
 
+
+	Z_QUICKMAPAI1 MACRO offset, page
+		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap1AIC_ 
+	ENDM
+
+	Z_QUICKMAPAI2 MACRO offset, page
+		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap2AIC_ 
+	ENDM
+
+	Z_QUICKMAPAI3 MACRO offset, page
+		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap3AIC_ 
+	ENDM
+
+	Z_QUICKMAPAI4 MACRO offset, page
+		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap4AIC_ 
+	ENDM
+
+	Z_QUICKMAPAI5 MACRO offset, page
+		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap5AIC_ 
+	ENDM
+
+	Z_QUICKMAPAI6 MACRO offset, page
+		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap6AIC_ 
+	ENDM
+
+	Z_QUICKMAPAI7 MACRO offset, page
+		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap7AIC_ 
+	ENDM
+
+	Z_QUICKMAPAI8 MACRO offset, page
+		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap8AIC_ 
+	ENDM
+
+	Z_QUICKMAPAI16 MACRO offset, page
+		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap16AIC_ 
+	ENDM
+
+	Z_QUICKMAPAI24 MACRO offset, page
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap24AIC_ 
+	ENDM
+
+
+
+
+
 ELSE
     PAGE_SWAP_ARG_MULT = 2
 	; unused
@@ -712,11 +776,67 @@ ELSE
 	ENDM
 
 
-	Z_QUICKMAPAI MACRO count, offset, page
-		mov     dx, &count
+	Z_QUICKMAPAI1 MACRO offset, page
+		mov     dx, 1
 		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
 		call    Z_QuickMap_ 
 	ENDM
+
+	Z_QUICKMAPAI2 MACRO offset, page
+		mov     dx, 2
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap_ 
+	ENDM
+
+	Z_QUICKMAPAI3 MACRO offset, page
+		mov     dx, 3
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap_ 
+	ENDM
+
+	Z_QUICKMAPAI4 MACRO offset, page
+		mov     dx, 4
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap_ 
+	ENDM
+
+	Z_QUICKMAPAI5 MACRO offset, page
+		mov     dx, 5
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap_ 
+	ENDM
+
+	Z_QUICKMAPAI6 MACRO offset, page
+		mov     dx, 6
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap_ 
+	ENDM
+
+	Z_QUICKMAPAI7 MACRO offset, page
+		mov     dx, 7
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap_ 
+	ENDM
+
+	Z_QUICKMAPAI8 MACRO offset, page
+		mov     dx, 8
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap_ 
+	ENDM
+
+	Z_QUICKMAPAI16 MACRO offset, page
+		mov     dx, 16
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap_ 
+	ENDM
+
+	Z_QUICKMAPAI24 MACRO offset, page
+		mov     dx, 24
+		mov     ax,  &offset * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+		call    Z_QuickMap_ 
+	ENDM
+
+	
 
 
 ENDIF
