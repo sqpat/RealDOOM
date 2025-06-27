@@ -23,6 +23,7 @@ INCLUDE defs.inc
 
 .DATA
 
+HT18_PAGE_D000 = 01Ch
 
 HT18_PAGE_SELECT_REGISTER = 01EEh
 HT18_PAGE_SET_REGISTER = 01ECh
@@ -241,5 +242,28 @@ pop dx
 ret
 
 ENDP
+
+; todo inline its one use
+PROC Z_QuickMapMusicPageFrame_ FAR
+PUBLIC Z_QuickMapMusicPageFrame_
+
+	push dx
+	mov  ds:[_currentpageframes], al
+
+	mov  ah, al
+	mov  al, HT18_PAGE_D000
+	mov  dx, HT18_PAGE_SELECT_REGISTER
+	out  dx, al
+
+	
+	
+	mov  dx, HT18_PAGE_SET_REGISTER
+	xchg al, ah	 ; ah becomes 0
+	mov  ax, MUS_DATA_PAGES
+	out  dx, ax
+	pop  dx
+	retf
+ENDP
+
 
 END

@@ -28,7 +28,6 @@ SCAMP_PAGE_SELECT_REGISTER = 0E8h
 SCAMP_PAGE_SET_REGISTER = 0EAh
 EMS_MEMORY_PAGE_OFFSET = 050h
 
-EXTRN _currentpageframes:BYTE
 
 .CODE
  
@@ -206,9 +205,11 @@ void __far Z_QuickMapMusicPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 @
 
 
+
 ; pageframeindex al
 ; pagenumber dl 
 
+; todo inline its one use
 PROC Z_QuickMapMusicPageFrame_ FAR
 PUBLIC Z_QuickMapMusicPageFrame_
 

@@ -28,7 +28,6 @@ SCAT_PAGE_SELECT_REGISTER = 020Ah
 SCAT_PAGE_SET_REGISTER = 0208h
 EMS_MEMORY_PAGE_OFFSET = 080h
 EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT = 08080h
-EXTRN _currentpageframes:BYTE
 
 .CODE
 
@@ -219,6 +218,7 @@ ENDP
 ; pageframeindex al
 ; pagenumber dl 
 
+; todo inline its one use
 PROC Z_QuickMapMusicPageFrame_ FAR
 PUBLIC Z_QuickMapMusicPageFrame_
 
@@ -246,6 +246,7 @@ pop dx
 exit_page_frame:
 
 retf
+
 
 ENDP
 

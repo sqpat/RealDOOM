@@ -671,7 +671,7 @@ void __near Z_LoadBinaries() {
 
 	Z_SetOverlay_addr =	 				(uint32_t)(Z_SetOverlay);
 	W_LumpLength_addr =	 				(uint32_t)(W_LumpLength);
-	Z_QuickMapMusicPageFrame_addr =     (uint32_t)(Z_QuickMapMusicPageFrame);
+	// Z_QuickMapMusicPageFrame_addr =     (uint32_t)(Z_QuickMapMusicPageFrame);
 
 
 

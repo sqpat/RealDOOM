@@ -23,7 +23,8 @@ INSTRUCTION_SET_MACRO
 .DATA
 
 
-
+HT18_PAGE_D000 = 01Ch
+SCAT_PAGE_D000 = 018h
 
 .CODE
 
@@ -167,10 +168,10 @@ PLAYINGDRIVER_LOCATION = 0DC00h
 
 
 do_change_music_call_1:
-call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
+call      Z_QuickMapMusicPageFrame_SMLoad_
 jmp       done_with_changemusic_call_1
 do_change_music_call_2:
-call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
+call      Z_QuickMapMusicPageFrame_SMLoad_
 jmp       done_with_changemusic_call_2
 
 PROC  I_LoadSong_
@@ -334,7 +335,7 @@ skip_instrument_invalid_genmidi_instrument:
 inc       dl
 jmp       loop_next_instrument_lookup
 do_change_music_call_3:
-call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
+call      Z_QuickMapMusicPageFrame_SMLoad_
 jmp       done_with_changemusic_call_3
 
 jump_to_return_success:
@@ -517,6 +518,91 @@ call  dword ptr es:[bx + DRIVERBLOCK_STOPMUSIC_OFFSET]
 jmp   exit_changesong
 
 ENDP
+
+PROC Z_QuickMapMusicPageFrame_SMLoad_ NEAR
+PUBLIC Z_QuickMapMusicPageFrame_SMLoad_
+
+IFDEF COMPILE_CHIPSET
+
+        ; pageframeindex al
+        ; pagenumber dl 
+
+	IF COMPILE_CHIPSET EQ CHIPSET_SCAT
+
+        push dx
+        mov  ds:[_currentpageframes], al
+
+        mov  ah, al
+        mov  al, SCAT_PAGE_D000	; page D000
+        mov  dx, SCAT_PAGE_SELECT_REGISTER
+        out  dx, al
+
+        mov  al, 0
+
+        mov  dx, SCAT_PAGE_SET_REGISTER
+        xchg al, ah	 ; ah becomes 0
+        add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + MUS_DATA_PAGES)
+        out  dx, ax
+
+        pop dx
+        ret
+	ELSEIF COMPILE_CHIPSET EQ CHIPSET_SCAMP
+
+        mov  ds:[_currentpageframes], al
+        mov  ah, al
+        mov  al, SCAMP_PAGE_FRAME_BASE_INDEX
+        out  SCAMP_PAGE_SELECT_REGISTER, al
+        mov  al, ah
+        ; todo need xor ah/dh??
+        xor  ah, ah
+        ; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
+        ; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
+        add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
+        out  SCAMP_PAGE_SET_REGISTER, ax
+        ret
+
+	ELSEIF COMPILE_CHIPSET EQ CHIPSET_HT18
+        push dx
+        mov  ds:[_currentpageframes], al
+
+        mov  ah, al
+        mov  al, HT18_PAGE_D000
+        mov  dx, HT18_PAGE_SELECT_REGISTER
+        out  dx, al
+
+        
+        
+        mov  dx, HT18_PAGE_SET_REGISTER
+        xchg al, ah	 ; ah becomes 0
+        mov  ax, MUS_DATA_PAGES
+        out  dx, ax
+        pop  dx
+        ret
+
+
+	ENDIF
+
+ELSE
+
+    push  bx
+    push  dx
+    mov   byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX], al
+
+    xor   ah, ah
+    mov   dx, word ptr ds:[_emshandle]  ; todo hardcode
+    mov   bx, ax
+
+    mov   ax, 04400h + MUS_PAGE_FRAME_INDEX
+    add   bx, MUS_DATA_PAGES
+    int   067h
+    pop   dx
+    pop   bx
+    ret
+ENDIF
+
+
+ENDP
+
 
 PROC  SM_LOAD_ENDMARKER_
 PUBLIC  SM_LOAD_ENDMARKER_
