@@ -27,7 +27,7 @@ EXTRN R_PointToAngle2_16_:FAR
 EXTRN R_PointToAngle2_:FAR
 
 ; todo make a local version
-EXTRN P_Random_:FAR
+
 EXTRN P_UseSpecialLine_:FAR
 EXTRN P_DamageMobj_:FAR
 EXTRN P_SetMobjState_:FAR
@@ -4389,7 +4389,7 @@ do_skull_fly_into_thing:
 
 ;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 
-call  P_Random_
+call  P_Random_MapLocal_
 and   ax, 7
 inc   ax
 xchg  ax, cx  ; store random in cl
@@ -4450,7 +4450,7 @@ do_missile_damage:
 ; bx is tmthingtarget
 ;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 
-call  P_Random_
+call  P_Random_MapLocal_
 and   ax, 7
 inc   ax
 xchg  ax, cx  ; store random in cl. keep ah 0
@@ -7849,9 +7849,9 @@ mov   cx, word ptr es:[di + 6]
 les   ax, dword ptr es:[di]
 mov   dx, es
 call  P_SpawnMobj_
-call  P_Random_
+call  P_Random_MapLocal_
 mov   dl, al
-call  P_Random_
+call  P_Random_MapLocal_
 
 ;		mo->momx.w = (P_Random() - P_Random ())<<12;
 ;		mo->momy.w = (P_Random() - P_Random ())<<12;
@@ -7865,9 +7865,9 @@ cwd
 mov   si, word ptr ds:[_setStateReturn]
 mov   word ptr [si + 0Eh], ax
 mov   word ptr [si + 010h], dx
-call  P_Random_
+call  P_Random_MapLocal_
 mov   dl, al
-call  P_Random_
+call  P_Random_MapLocal_
 sub   al, dl
 SHIFT_MACRO  shl ax 4
 mov   ah, al
@@ -8131,6 +8131,23 @@ ret
 
 ENDP
 
+;uint8_t   P_Random(void) 
+	;prndindex = (prndindex+1)&0xff;
+    ;return rndtable[prndindex];
+; consider inlining
+
+PROC P_Random_MapLocal_ NEAR
+push    bx
+inc 	byte ptr ds:[_prndindex]
+mov     ax, RNDTABLE_SEGMENT
+mov     es, ax
+mov     al, byte ptr ds:[_prndindex]
+xor     bx, bx
+xlat    byte ptr es:[bx]
+pop     bx
+ret
+
+ENDP
 
 
 
