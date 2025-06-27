@@ -20,16 +20,20 @@ INSTRUCTION_SET_MACRO
 
  
 EXTRN locallib_int86_67_:FAR
-
-.DATA
-
-EXTRN _currenttask:BYTE
-EXTRN _currentpageframes:BYTE
 EXTRN fread_:PROC
 EXTRN fopen_:PROC
 EXTRN fclose_:PROC
 EXTRN fseek_:PROC
 EXTRN locallib_far_fread_:PROC
+
+.DATA
+
+EXTRN _currentoverlay:BYTE
+EXTRN _currenttask:BYTE
+EXTRN _currentpageframes:BYTE
+EXTRN _codestartposition:DWORD
+EXTRN _hu_font:WORD
+EXTRN _playerMobjRef:WORD
 
 
 IFDEF COMPILE_CHIPSET
@@ -811,6 +815,7 @@ pop   bx
 retf  
 
 ENDP
+@
 
 _doomcode_filename:
 db "DOOMCODE.BIN", 0
@@ -855,10 +860,10 @@ mov   dx, _fopen_rb_argument
 shl   si, 2
 
 mov   ax, OFFSET _doomcode_filename
-call  CopyString13_
+call  CopyString13_Zonelocal_
 ; todo les
-mov   bx, word ptr ds:[si + codestartposition-4]
-mov   cx, word ptr ds:[si + codestartposition-2]
+mov   bx, word ptr ds:[si + _codestartposition-4]
+mov   cx, word ptr ds:[si + _codestartposition-2]
 call  fopen_
 xor   dx, dx
 mov   si, ax
@@ -910,7 +915,6 @@ pop   bx
 retf  
 ENDP
 
-@
 
 ; copy string from cs:ax to ds:_filename_argument
 ; return _filename_argument in ax
