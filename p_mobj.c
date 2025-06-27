@@ -103,7 +103,7 @@ mobj_t __near* SAVEDUNIT;
 
 
 // Which one is deterministic?
-uint8_t __near P_Random(void) {
+uint8_t __far P_Random(void) {
 	 
     prndindex = (prndindex+1)&0xff;
     return rndtable[prndindex];
@@ -765,7 +765,7 @@ void __near P_MobjThinker (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THIN
 //
 // P_SpawnMobj
 //
-THINKERREF __near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
+THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
 	mobj_t __near*	mobj;
 	mobj_pos_t __far*	mobj_pos;
     mobjinfo_t __near*	info;
@@ -1071,7 +1071,7 @@ void __near P_SpawnPlayerMissile ( mobjtype_t type ) {
 }
 
 
-boolean __near P_SetMobjState (mobj_t __near* mobj, statenum_t state) {
+boolean __far P_SetMobjState (mobj_t __near* mobj, statenum_t state) {
 	state_t __far*	st;
 	mobj_pos_t __far* mobj_pos;
 

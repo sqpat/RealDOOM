@@ -22,19 +22,21 @@ INSTRUCTION_SET_MACRO
 ; todo addr all these
 
 EXTRN FixedMulTrigNoShift_:PROC
-EXTRN R_PointToAngle2_16_:PROC
-EXTRN R_PointToAngle2_:PROC
 
-EXTRN P_Random_:NEAR
-EXTRN P_UseSpecialLine_:PROC
-EXTRN P_DamageMobj_:NEAR
-EXTRN P_SetMobjState_:NEAR
-EXTRN P_CrossSpecialLine_:NEAR
-EXTRN P_ShootSpecialLine_:NEAR
-EXTRN P_SpawnMobj_:NEAR
+EXTRN R_PointToAngle2_16_:FAR
+EXTRN R_PointToAngle2_:FAR
+
+; todo make a local version
+EXTRN P_Random_:FAR
+EXTRN P_UseSpecialLine_:FAR
+EXTRN P_DamageMobj_:FAR
+EXTRN P_SetMobjState_:FAR
+EXTRN P_CrossSpecialLine_:FAR
+EXTRN P_ShootSpecialLine_:FAR
+EXTRN P_SpawnMobj_:FAR
 
 EXTRN P_SpawnPuff_:NEAR
-EXTRN P_TouchSpecialThing_:NEAR
+EXTRN P_TouchSpecialThing_:FAR
 
 
 .DATA

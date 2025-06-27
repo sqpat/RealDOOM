@@ -19,15 +19,14 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN FixedMulTrigNoShift_:PROC
+
 EXTRN FixedMul2432_:FAR
 EXTRN FixedMul_:FAR
 EXTRN FixedDiv_:FAR
 EXTRN FixedMulBig1632_:FAR
-EXTRN FixedMulTrigNoShift_:PROC
-EXTRN P_SetMobjState_:NEAR
-EXTRN P_CrossSpecialLine_:NEAR
-EXTRN P_ShootSpecialLine_:NEAR
-EXTRN P_SpawnMobj_:NEAR
+EXTRN P_SetMobjState_:FAR
+EXTRN P_SpawnMobj_:FAR
 
 
 

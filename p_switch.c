@@ -141,7 +141,7 @@ void __near P_ChangeSwitchTexture ( int16_t linenum, int16_t lineside0, uint8_t 
 // Called when a thing uses a special line.
 // Only the front sides of lines are usable.
 //
-boolean __near P_UseSpecialLine ( mobj_t __near*	thing, int16_t linenum,int16_t		side,THINKERREF thingRef){               
+boolean __far P_UseSpecialLine ( mobj_t __near*	thing, int16_t linenum,int16_t		side,THINKERREF thingRef){               
 
 	line_t __far* line = &lines[linenum];
 	line_physics_t __far* line_physics = &lines_physics[linenum];

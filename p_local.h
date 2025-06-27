@@ -146,17 +146,11 @@ void	__near P_PlayerThink ();
 
 // Time interval for item respawning.
 
-THINKERREF
-__near P_SpawnMobj
-( fixed_t	x,
-  fixed_t	y,
-  fixed_t	z,
-  mobjtype_t	type, 
-	int16_t knownsecnum );
+THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type,  int16_t knownsecnum );
 
 void 	__far P_RemoveMobj (mobj_t __near* mobj);
 
-boolean	__near P_SetMobjState(mobj_t __near* mobj, statenum_t state);
+boolean	__far P_SetMobjState(mobj_t __near* mobj, statenum_t state);
 void __near P_MobjThinker(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef);
 
 // todo re-enable
@@ -282,8 +276,8 @@ void __near P_RadiusAttack (mobj_t __near* spot, uint16_t spot_pos, mobj_t __nea
 
 
 
-void __near P_TouchSpecialThing (mobj_t __near*	special,mobj_t __near*	toucher,mobj_pos_t  __far*special_pos,mobj_pos_t  __far*toucher_pos);
-void __near P_DamageMobj(mobj_t __near*	target,mobj_t __near*	inflictor,mobj_t __near*	source,int16_t		damage );
+void __far P_TouchSpecialThing (mobj_t __near*	special,mobj_t __near*	toucher,mobj_pos_t  __far*special_pos,mobj_pos_t  __far*toucher_pos);
+void __far P_DamageMobj(mobj_t __near*	target,mobj_t __near*	inflictor,mobj_t __near*	source,int16_t		damage );
 
 
 #pragma aux fiveparam \

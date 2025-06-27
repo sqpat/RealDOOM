@@ -274,7 +274,7 @@ boolean __far P_GivePower (  int16_t /*powertype_t*/	power ) {
 // P_TouchSpecialThing
 //
 // todo make it four offsets
-void __near P_TouchSpecialThing ( mobj_t __near*	special, mobj_t __near*	toucher, mobj_pos_t  __far*special_pos, mobj_pos_t  __far*toucher_pos ) {
+void __far P_TouchSpecialThing ( mobj_t __near*	special, mobj_t __near*	toucher, mobj_pos_t  __far*special_pos, mobj_pos_t  __far*toucher_pos ) {
     int8_t		i;
     fixed_t	delta;
     int16_t		sound;
@@ -776,7 +776,7 @@ fixed_t __near getMassThrust(int16_t damage, int8_t id){
 // Source can be NULL for slime, barrel explosions
 // and other environmental stuff.
 //
-void __near P_DamageMobj (mobj_t __near*	target, mobj_t __near*	inflictor, mobj_t __near*	source, int16_t 		damage ) {
+void __far P_DamageMobj (mobj_t __near*	target, mobj_t __near*	inflictor, mobj_t __near*	source, int16_t 		damage ) {
 	angle_t	ang;
     int16_t		saved;
     fixed_t	thrust;

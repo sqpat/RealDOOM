@@ -293,7 +293,7 @@ typedef struct mobj_pos_s {
 
 
 // As M_Random, but used only by the play simulation.
-uint8_t __near P_Random(void);
+uint8_t __far P_Random(void);
 
 
 #endif
