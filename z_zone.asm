@@ -158,39 +158,35 @@ ELSE
     push  bx
     push  cx
     push  si
-    push  di
-    mov   di, ax
+    mov   si, ax
     mov   bl, dl
     test  dl, dl
     jle   done_with_quickmap_loop_exit
     compare_next_quickmap_loop: ; todo move this to end of loop
+    mov   dx, word ptr ds:[_emshandle]
+    mov   ax, 05000h
     cmp   bl, MAX_COUNT_ITER
     jle   set_max_args_to_less_than_8
-    mov   dx, MAX_COUNT_ITER
+    mov   cx, MAX_COUNT_ITER
     loop_next_quickmap_args:
-    mov   al, dl
-    mov   si, di
     sub   bl, MAX_COUNT_ITER
-    cbw
-    mov   dx, word ptr ds:[_emshandle]
-    mov   cx, ax
-    mov   ax, 05000h
-    add   di, MAX_COUNT_ITER * 2 * PAGE_SWAP_ARG_MULT
-    int 067h
+    int   067h
+    add   si, MAX_COUNT_ITER * 2 * PAGE_SWAP_ARG_MULT
     test  bl, bl
     jg    compare_next_quickmap_loop
     done_with_quickmap_loop_exit:
-    pop   di
     pop   si
     pop   cx
     pop   bx
     ret   
     set_max_args_to_less_than_8:    ; todo dupe the loop contents
-    mov   al, bl
-    cbw 
-    mov   dx, ax
-    jmp   loop_next_quickmap_args
-
+    mov   cl, bl
+    xor   ch, ch
+    int   067h
+    pop   si
+    pop   cx
+    pop   bx
+    ret 
 
     ENDP
 ENDIF
@@ -785,7 +781,6 @@ IFDEF COMPILE_CHIPSET
     or      dx, EMS_AUTOINCREMENT_FLAG
     mov     ax,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
     call    Z_QuickMap1AIC_ 
-
 ELSE
 
     mov     dx, 1
@@ -900,7 +895,6 @@ dw    exit_set_overlay
 
 PROC Z_SetOverlay_ FAR
 PUBLIC Z_SetOverlay_
-; todo dont push etc unless necessary...
 cmp   al, byte ptr ds:[_currentoverlay]
 jne   do_overlay_change
 retf  
