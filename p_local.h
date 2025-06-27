@@ -210,7 +210,6 @@ typedef boolean __near (*traverser_t ) (intercept_t __far*in);
 #pragma aux (P_AproxDistanceParams) P_AproxDistance;
 fixed_t __far P_AproxDistance (fixed_t dx, fixed_t dy);
 
-void 	__near P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t* dl);
 
 
 
@@ -220,7 +219,7 @@ void 	__near P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, div
 void 	__far P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
 
-boolean __near P_BlockThingsIterator (int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*));
+boolean __far P_BlockThingsIterator (int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -238,20 +237,20 @@ void __far P_SetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset, i
 // If "floatok" true, move would be ok
 // if within "tmfloorz - tmceilingz".
 
-boolean __near P_CheckPosition (mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y);
+boolean __far P_CheckPosition (mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y);
 boolean __far P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
-boolean __near P_TeleportMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
-void	__near P_SlideMove ();
+boolean __far P_TeleportMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
+void	__far P_SlideMove ();
 
 
-void 	__near P_UseLines ();
-boolean __near P_ChangeSector (sector_t __far* sector, boolean crunch);
+void 	__far P_UseLines ();
+boolean __far P_ChangeSector (sector_t __far* sector, boolean crunch);
 
 
 
-fixed_t __near P_AimLineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance);
-void __near P_LineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage );
-void __near P_RadiusAttack (mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage) ;
+fixed_t __far P_AimLineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance);
+void __far P_LineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage );
+void __far P_RadiusAttack (mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage) ;
 
 
 

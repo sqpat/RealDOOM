@@ -32,7 +32,6 @@ EXTRN P_SetMobjState_:FAR
 EXTRN P_CrossSpecialLine_:FAR
 EXTRN P_ShootSpecialLine_:FAR
 EXTRN P_SpawnMobj_:FAR
-
 EXTRN P_SpawnPuff_:FAR
 EXTRN P_TouchSpecialThing_:FAR
 
@@ -1767,7 +1766,7 @@ ENDP
 
 ; todo di as func?
 
-PROC P_BlockThingsIterator_ NEAR
+PROC P_BlockThingsIterator_ FAR
 PUBLIC P_BlockThingsIterator_
 
 push cx
@@ -1842,7 +1841,7 @@ exit_blockthingsiterator:
 pop  di
 pop  si
 pop  cx
-ret
+retf
 ENDP
 
 
@@ -4466,7 +4465,7 @@ ENDP
 
 ; boolean __near P_CheckPosition (mobj_t __near* thing, int16_t oldsecnum, fixed_t_union	x, fixed_t_union	y );
 
-PROC P_CheckPosition_ NEAR
+PROC P_CheckPosition_ FAR
 PUBLIC P_CheckPosition_
 
 ; - bp - 2   oldsecnum (dx)
@@ -4475,6 +4474,7 @@ PUBLIC P_CheckPosition_
 ; - bp - 8   xh2
 ; - bp - 0Ah yl2
 ; - bp - 0Ch yh2
+; bp + xx = y
 
 ;   y hi ; + 0Ah
 ;   y lo ; + 8
@@ -4512,7 +4512,7 @@ mov   ax, word ptr es:[bx + 014h]
 mov   word ptr ds:[_tmflags1], ax
 
 
-mov   ax, word ptr [bp + 8]
+mov   ax, word ptr [bp + 0Ah]
 mov   word ptr ds:[_tmbbox + (4 * BOXTOP)], ax
 mov   word ptr ds:[_tmy+0], ax
 mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)], ax
@@ -4531,7 +4531,7 @@ mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
 mov   al, byte ptr [si + 01Eh]
 xchg  ax, dx
 
-mov   ax, word ptr [bp + 0Ah]
+mov   ax, word ptr [bp + 0Ch]
 add   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
 mov   word ptr ds:[_tmy+2], ax
 
@@ -4553,7 +4553,7 @@ jne   use_cached_secnum
 mov   ax, word ptr [bp - 4]
 mov   bx, cx
 mov   dx, di
-mov   cx, word ptr [bp + 0Ah]
+mov   cx, word ptr [bp + 0Ch]
 call  R_PointInSubsector_
 mov   bx, ax
 mov   ax, SUBSECTORS_SEGMENT
@@ -4584,7 +4584,7 @@ mov   al, 1
 LEAVE_MACRO 
 pop   di
 pop   si
-ret   4
+retf   4
 set_up_blockmap_loop:
 
 
@@ -4793,7 +4793,7 @@ exit_checkposition:
 LEAVE_MACRO 
 pop   di
 pop   si
-ret   4
+retf   4
 
 
 
@@ -4802,7 +4802,7 @@ ENDP
 
 ; void __near P_SlideMove (){
 
-PROC P_SlideMove_ NEAR
+PROC P_SlideMove_ FAR
 PUBLIC P_SlideMove_ 
 
 ; bp - 2    retry counter
@@ -5229,7 +5229,7 @@ jmp   slidemove_retry
 exit_slidemove:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-ret   
+retf   
 
 stairstep:
 les   bx, dword ptr ds:[_playerMobj_pos]
@@ -5266,7 +5266,7 @@ xchg  ax, si
 call  P_TryMove_
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-ret   
+retf   
 
 
 
@@ -6496,7 +6496,7 @@ ENDP
 
 ;boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,fixed_t_union	x,fixed_t_union	y, int16_t oldsecnum){
 
-PROC P_TeleportMove_ NEAR
+PROC P_TeleportMove_ FAR
 PUBLIC P_TeleportMove_
 
 push  dx
@@ -6508,11 +6508,11 @@ push  ax  ; bp - 2
 push  cx  ; bp - 4
 push  bx  ; bp - 6
 
-; bp + 0Ah  x lo
-; bp + 0Ch  x hi
-; bp + 0Eh  y lo
-; bp + 010h  y hi
-; bp + 012h  oldsecnum
+; bp + 0Ch  x lo
+; bp + 0Eh  x hi
+; bp + 010h  y lo
+; bp + 012h  y hi
+; bp + 014h  oldsecnum
 
 
 mov   word ptr ds:[_tmthing], ax
@@ -6526,13 +6526,13 @@ mov   es, cx
 mov   ax, word ptr es:[bx + 014h]
 mov   word ptr ds:[_tmflags1], ax
 
-mov   ax, word ptr [bp + 0Ah]
-mov   word ptr ds:[_tmx+0], ax
 mov   ax, word ptr [bp + 0Ch]
-mov   word ptr ds:[_tmx+2], ax
+mov   word ptr ds:[_tmx+0], ax
 mov   ax, word ptr [bp + 0Eh]
-mov   word ptr ds:[_tmy+0], ax
+mov   word ptr ds:[_tmx+2], ax
 mov   ax, word ptr [bp + 010h]
+mov   word ptr ds:[_tmy+0], ax
+mov   ax, word ptr [bp + 012h]
 mov   word ptr ds:[_tmy+2], ax
 
 
@@ -6549,7 +6549,7 @@ mov   bl, byte ptr [si + 01Eh]
 ; bx has radius
 
 
-les   ax, dword ptr [bp + 0Eh]
+les   ax, dword ptr [bp + 010h]
 mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 0], ax
 mov   cx, es
 add   cx, bx
@@ -6565,7 +6565,7 @@ mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2], dx
 
 ; dx has bottom
 
-les   ax, dword ptr [bp + 0Ah]
+les   ax, dword ptr [bp + 0Ch]
 
 mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 0], ax
 mov   di, es
@@ -6584,7 +6584,7 @@ mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2], si
 ; si has left
 
 
-mov   bx, word ptr [bp + 012h]
+mov   bx, word ptr [bp + 014h]
 SHIFT_MACRO shl   bx 4
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
@@ -6700,7 +6700,7 @@ mov   word ptr [bx + 6], ax
 mov   ax, word ptr ds:[_tmceilingz]
 mov   word ptr [bx + 8], ax
 les   di, dword ptr [bp - 6]
-lea   si, [bp + 0Ah]
+lea   si, [bp + 0Ch]
 
 ;	thing_pos->x = x;
 ;	thing_pos->y = y;
@@ -6711,7 +6711,7 @@ movsw
 movsw
 
 mov   dx, word ptr [bp - 6]
-mov   bx, word ptr [si]  ; bp + 012h
+mov   bx, word ptr [si]  ; bp + 014h
 mov   ax, word ptr [bp - 2]
 
 call  P_SetThingPosition_
@@ -6721,14 +6721,14 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret   0Ah
+retf   0Ah
 
 ENDP
 
 
 ;fixed_t __near P_AimLineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance);
 
-PROC P_AimLineAttack_ NEAR
+PROC P_AimLineAttack_ FAR
 PUBLIC P_AimLineAttack_
 
 
@@ -6998,7 +6998,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-ret   
+retf   
 
 exit_aim_lineattack_return_0:
 cwd
@@ -7006,7 +7006,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-ret   
+retf   
 
 
 
@@ -7015,10 +7015,10 @@ ENDP
 
 
 
-PROC P_LineAttack_ NEAR
+PROC P_LineAttack_ FAR
 PUBLIC P_LineAttack_
 
-; fixed_t __near P_AimLineAttack ( mobj_t __near*	t1, fineangle_t	angle,int16_t	distance16 );
+; void __near P_LineAttack (mobj_t __near* t1, fineangle_t	angle, int16_t	distance16, fixed_t	slope, int16_t	damage ) {
 
 ; bp - 2    y hi
 ; bp - 4    y lo
@@ -7061,7 +7061,7 @@ mov   es, ax
 push  ax				; bp - 0Ch
 push  bx				; bp - 0Eh
 
-mov   ax, word ptr [bp + 0Eh]
+mov   ax, word ptr [bp + 010h]
 mov   word ptr ds:[_la_damage], ax
 
 mov   ax, word ptr es:[bx]
@@ -7219,7 +7219,7 @@ add   ax, dx
 mov   word ptr ds:[_shootz+2], ax
 
 
-les   ax, dword ptr [bp + 0Ah]
+les   ax, dword ptr [bp + 0Ch]
 mov   word ptr ds:[_aimslope+0], ax
 mov   word ptr ds:[_aimslope+2], es
 
@@ -7234,7 +7234,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-ret   6
+retf   6
 
 
 
@@ -7243,7 +7243,7 @@ ENDP
 
 
 
-PROC P_UseLines_ NEAR
+PROC P_UseLines_ FAR
 PUBLIC P_UseLines_
 
 PUSHA_NO_AX_MACRO
@@ -7357,7 +7357,7 @@ push  di
 call  P_PathTraverse_
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-ret   
+retf   
 
 ENDP
 
@@ -7367,7 +7367,6 @@ ENDP
 ;boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos);
 
 PROC PIT_RadiusAttack_ NEAR
-PUBLIC PIT_RadiusAttack_
 
 ; ax unused.
 ; dx thing
@@ -7492,10 +7491,10 @@ ENDP
 
 
 
-PROC P_RadiusAttack_ NEAR
+PROC P_RadiusAttack_ FAR
 PUBLIC P_RadiusAttack_
 
-;void __near P_RadiusAttack (mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage) ;
+;void __far P_RadiusAttack (mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage) ;
 
 ; ax spot
 ; dx spot_pos
@@ -7596,14 +7595,13 @@ call  DoBlockmapLoop_
 
 pop   di
 pop   si
-ret
+retf
 
 ENDP
 
 
 ; always returns true?
 PROC PIT_ChangeSector_ NEAR
-PUBLIC PIT_ChangeSector_
 
 ;boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) ;
 
@@ -7865,7 +7863,7 @@ ret
 ENDP
 
 
-PROC P_ChangeSector_ NEAR
+PROC P_ChangeSector_ FAR
 PUBLIC P_ChangeSector_
 
 push  cx
@@ -7891,7 +7889,7 @@ mov   al, byte ptr ds:[_nofit]
 pop   di
 pop   si
 pop   cx
-ret  
+retf  
 
 ENDP
 
