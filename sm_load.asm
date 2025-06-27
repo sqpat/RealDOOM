@@ -335,6 +335,7 @@ skip_instrument_invalid_genmidi_instrument:
 inc       dl
 jmp       loop_next_instrument_lookup
 do_change_music_call_3:
+xor       ax, ax ; set music to 0
 call      Z_QuickMapMusicPageFrame_SMLoad_
 jmp       done_with_changemusic_call_3
 
