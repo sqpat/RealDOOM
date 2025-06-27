@@ -25,7 +25,6 @@ EXTRN fopen_:PROC
 EXTRN fclose_:PROC
 EXTRN fseek_:PROC
 EXTRN locallib_far_fread_:PROC
-EXTRN Z_QuickMapVisplanePage_:FAR
 .DATA
 
 EXTRN _currentoverlay:BYTE
@@ -707,10 +706,20 @@ retf
 
 ENDP
 
-COMMENT @
 
 PROC Z_QuickMapVisplanePage_ FAR
 PUBLIC Z_QuickMapVisplanePage_
+
+
+
+;	int16_t usedpageindex = pagenum9000 + PAGE_8400_OFFSET + physicalpage;
+;	int16_t usedpagevalue;
+;	int8_t i;
+;	if (virtualpage < 2){
+;		usedpagevalue = FIRST_VISPLANE_PAGE + virtualpage;
+;	} else {
+;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
+;	}
 
 push  bx
 push  cx
@@ -719,55 +728,92 @@ mov   cl, al
 mov   dh, dl
 mov   si, word ptr ds:[_pagenum9000]
 mov   al, dl
-sub   si, 3
+add   si, PAGE_8400_OFFSET ; sub 3
 cbw  
 add   si, ax
-cmp   cl, 2
-jge   label_3
 mov   al, cl
 cbw  
-add   ax, 5
-label_2:
-mov   bx, 0xa2e
-mov   dl, 4
-mov   word ptr [bx], ax
-mov   bx, 0xa30
+cmp   al, 2
+jge   visplane_page_above_2
+add   ax, FIRST_VISPLANE_PAGE
+used_pagevalue_ready:
+
+;		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
+
+; _EPR here
+IFDEF COMPILE_CHIPSET
+    add  ax, EMS_MEMORY_PAGE_OFFSET
+ELSE
+ENDIF
+mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * PAGE_SWAP_ARG_MULT)], ax
+
+
+;pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
+IFDEF COMPILE_CHIPSET
+ELSE
+    mov   word ptr ds:[_pageswapargs + ((pageswapargs_visplanepage_offset+1) * PAGE_SWAP_ARG_MULT)], si
+ENDIF
+
+;	physicalpage++;
 inc   dh
-mov   word ptr [bx], si
-label_5:
+mov   dl, 4
+
+;	for (i = 4; i > 0; i --){
+;		if (active_visplanes[i] == physicalpage){
+;			active_visplanes[i] = 0;
+;			break;
+;		}
+;	}
+
+loop_next_visplane_page:
 mov   al, dl
 cbw  
 mov   bx, ax
 cmp   dh, byte ptr ds:[bx + _active_visplanes]
-je    label_4:
+je    set_zero_and_break
 dec   dl
 test  dl, dl
-jg    label_5
-label_1:
+jg    loop_next_visplane_page
+
+done_with_visplane_loop:
 mov   al, cl
 cbw  
 mov   bx, ax
-mov   ax, 0xa2e
+
 mov   byte ptr ds:[bx + _active_visplanes], dh
-mov   dx, 1
-mov   bx, 0x19a
-call  0x3e2b
-mov   byte ptr [bx], 1
+
+; todo this call doesnt work
+
+IFDEF COMPILE_CHIPSET
+    mov     dx, si
+    or      dx, EMS_AUTOINCREMENT_FLAG
+    mov     ax,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+    call    Z_QuickMap1AIC_ 
+
+ELSE
+
+    mov     dx, 1
+    mov     ax,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+    call    Z_QuickMap_ 
+
+ENDIF
+
+
+mov   byte ptr ds:[_visplanedirty], 1
 pop   si
 pop   cx
 pop   bx
 retf  
-label_3:
-mov   al, cl
-cbw  
-add   ax, 0x1a
-jmp   label_2
-label_4:
+visplane_page_above_2:
+;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
+add   ax, (EMS_VISPLANE_EXTRA_PAGE - 2)
+jmp   used_pagevalue_ready
+
+set_zero_and_break:
 mov   byte ptr ds:[bx + _active_visplanes], 0
-jmp   label_1
+jmp   done_with_visplane_loop
 
 ENDP
-@
 
 PROC Z_QuickMapVisplaneRevert_ FAR
 PUBLIC Z_QuickMapVisplaneRevert_
