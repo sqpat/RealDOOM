@@ -81,6 +81,7 @@ file r_main.obj
 file r_mainhi.obj
 file w_wad.obj
 file v_video.obj
+file zone.obj
 file z_zone.obj
 
 NEWSEGMENT

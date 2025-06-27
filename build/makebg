@@ -121,6 +121,7 @@ GLOBOBJS = $(GLOBOBJS) &
  w_wad.obj &
  z_init.obj &
  z_zone.obj &
+ zone.obj &
  st_init.obj &
  st_setup.obj &
  st_stuff.obj &

@@ -43,6 +43,7 @@
 #elif defined(__HT18_BUILD)
 #else
 
+/*
 
 // todo rename to be something music related?
 // todo make this for page 0 only, remove pageframeindex
@@ -122,47 +123,9 @@ void __far Z_QuickMapWADPageFrame(int16_t lump){
 // its kind of infrequent that we go more than 8 at once, and thus not a big perf hit, 
 // so let's just do this for simplicity
 
-
 void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 
 	int8_t min;
-
-/*
-	if (setval){
-		if (count == 4 && offset[1] == 24 && offset[2] != 35){
-			if (offset[0] < 70 || offset[2] < 70 || offset[4] < 70 || offset[6] < 70){
-				I_Error("catch %i %i %i %i %i",
-				
-				offset[0],
-				offset[2],
-				offset[4],
-
-				);
-			}
-		}
-	}
-
-
-	if (setval){
-		int8_t i = 0;
-		FILE* fp = fopen("pages.txt", "ab");
-		fprintf(fp, "%li\t\t", gametic);
-
-		for (i = 0; i < count; i++){
-			
-			
-			int16_t pagenum = offset[(i*2)+0];
-			int16_t pageoff = offset[(i*2)+1];
-			fprintf(fp, "%i %i\t", pagenum, pageoff);
-			
-			//if (pagenum == FIRST_FLAT_CACHE_LOGICAL_PAGE){
-			//	I_Error("paged? %i %i %i %i", i, count, offset[(i*2)+1], setval);
-			//}
-		}
-		fprintf(fp, "\n");
-		fclose(fp);
-	}
-	*/
 
 	// test if some of these fields can be pulled out
 	while (count > 0){
@@ -184,8 +147,8 @@ void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 	}
 
 }
+*/
 #endif
-
 
 /*
 void __far Z_SavePageFrameState(){
@@ -204,6 +167,8 @@ void __far Z_RestorePageFrameState(){
 }
 */
 
+/*
+
 void __far Z_QuickMapPhysicsCode(){
 	Z_QuickMap2AI(pageswapargs_physics_code_offset_size, INDEXED_PAGE_9400_OFFSET);
 	
@@ -214,12 +179,6 @@ void __far Z_QuickMapPhysics() {
 
 	Z_QuickMap24AI(pageswapargs_phys_offset_size);
 
-	/*
-	errorreg = regs.h.ah;
-	if (errorreg != 0) {
-		I_Error("Call 0x5000 failed with value %i!\n", errorreg);
-	}
-	*/
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount ++;
 #endif
@@ -353,6 +312,8 @@ void __near Z_QuickMapRenderTexture() {
 
 
 }
+*/
+void __far Z_QuickMapRender9000();
 
 
 // sometimes needed when rendering sprites..
