@@ -24,8 +24,6 @@ EXTRN Z_QuickMapSpritePage_:NEAR
 EXTRN W_CacheLumpNumDirect_:FAR
 ;EXTRN logger_:NEAR  ; asm logging stuff
 
-EXTRN Z_QuickMapScratch_4000_:FAR ; todo
-EXTRN Z_QuickMapRender4000_:FAR
 
 .DATA
 
@@ -44,7 +42,7 @@ IFDEF COMPILE_CHIPSET
 ELSE
     EXTRN _emshandle:WORD
     EXTRN _pagenum9000:WORD
-    Z_QuickMap_ = Z_QuickMap_RData_
+
 ENDIF
 
 
@@ -1965,7 +1963,12 @@ WAD_PATCH_7000_SEGMENT = 07000h
 
 done_with_composite_loop:
 ;call      Z_QuickMapRender7000_
-Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_rend_offset_size+12) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
+
 
 LEAVE_MACRO     
 POPA_NO_AX_MACRO
@@ -2057,7 +2060,14 @@ sal       si, 1
 push      si ; bp - 014h
 
 ;call      Z_QuickMapScratch_7000_
-Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
+
+;Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
+
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_scratch7000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
 
 mov       al, byte ptr es:[bx - 1] ; texturepatchcount = texture->patchcount;
 xor       ah, ah
@@ -2967,13 +2977,22 @@ mov       word ptr cs:[SELFMODIFY_loadpatchcolumn_masked_check1], ax;
 mov       word ptr cs:[SELFMODIFY_loadpatchcolumn_masked_check2], di;
 
 push      dx       ; store future es
+
+mov       bx, si
+
 ;call      Z_QuickMapScratch_4000_
-Z_QUICKMAPAI4 pageswapargs_scratch4000_offset_size INDEXED_PAGE_4000_OFFSET
+;Z_QUICKMAPAI4 pageswapargs_scratch4000_offset_size INDEXED_PAGE_4000_OFFSET
+
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_scratch4000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
 
 
 mov       cx, SCRATCH_ADDRESS_4000_SEGMENT
 push      cx
-mov       ax, si
+mov       ax, bx
 xor       bx, bx  ; zero seg offset
 mov       di, bx  ; zero
 call      W_CacheLumpNumDirect_
@@ -3055,7 +3074,12 @@ mov       ax, ss
 mov       ds, ax
 pop       bp
 ;call      Z_QuickMapRender4000_
-Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
+;Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_rend_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
 
 pop       di
 pop       si
@@ -3079,11 +3103,19 @@ PUBLIC R_LoadSpriteColumns_
 PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
-mov       si, ax
+mov       bx, ax
 
 mov       di, dx    ; preserve dx thru quickmap
 ;call      Z_QuickMapScratch_5000_
-Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+;Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_scratch5000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
+
+
 mov       dx, di
 
 ;	patch_t __far *wadpatch = (patch_t __far *)SCRATCH_ADDRESS_5000;
@@ -3092,6 +3124,7 @@ mov       dx, di
 
 mov       di, SCRATCH_ADDRESS_5000_SEGMENT
 mov       cx, di
+mov       si, bx
 mov       ax, si
 xor       bx, bx
 
@@ -3228,7 +3261,14 @@ mov       ds, ax
 pop       bp 
 
 ;call      Z_QuickMapRender5000_
-Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
+;Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
+
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_rend_offset_size+4) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
+
 
 POPA_NO_AX_MACRO
 retf      
@@ -3236,50 +3276,6 @@ retf
 
 ENDP
 
-IFDEF COMPILE_CHIPSET
-ELSE
-
-
-    PROC Z_QuickMap_RData_ NEAR
-    PUBLIC Z_QuickMap_RData_
-
-    MAX_COUNT_ITER = 8
-
-    push  bx
-    push  cx
-    push  si
-    mov   si, ax
-    mov   bl, dl
-    test  dl, dl
-    jle   done_with_quickmap_loop_exit
-    compare_next_quickmap_loop: 
-    mov   dx, word ptr ds:[_emshandle]
-    mov   ax, 05000h
-    cmp   bl, MAX_COUNT_ITER
-    jle   set_max_args_to_less_than_8
-    mov   cx, MAX_COUNT_ITER
-    loop_next_quickmap_args:
-    sub   bl, MAX_COUNT_ITER
-    int   067h
-    add   si, MAX_COUNT_ITER * 2 * PAGE_SWAP_ARG_MULT
-    test  bl, bl
-    jg    compare_next_quickmap_loop
-    done_with_quickmap_loop_exit:
-    pop   si
-    pop   cx
-    pop   bx
-    ret   
-    set_max_args_to_less_than_8:
-    mov   cl, bl
-    xor   ch, ch
-    int   067h
-    pop   si
-    pop   cx
-    pop   bx
-    ret 
-
-    ENDP
-ENDIF
 
 
 END

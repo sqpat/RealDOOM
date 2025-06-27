@@ -1387,8 +1387,8 @@ db "DOOMCODE.BIN", 0
 set_overlay_jump_table:
 
 dw    exit_set_overlay
-dw    load_save_game_overlay_jump_target
 dw    finale_overlay_jump_target
+dw    load_save_game_overlay_jump_target
 dw    exit_set_overlay
 dw    exit_set_overlay
 
@@ -1445,13 +1445,12 @@ cmp   al, 4
 ja    exit_set_overlay
 xor   ah, ah
 mov   bx, ax
-add   bx, ax
+sal   bx, 1
 jmp   word ptr cs:[bx + set_overlay_jump_table]
 load_save_game_overlay_jump_target:
 mov   ax, CODE_OVERLAY_SEGMENT
-xor   bx, bx
 mov   es, ax
-mov   word ptr es:[bx], OFFSET _playerMobjRef
+mov   word ptr es:[0], OFFSET _playerMobjRef
 LEAVE_MACRO 
 pop   si
 pop   dx
@@ -1461,9 +1460,8 @@ retf
 
 finale_overlay_jump_target:
 mov   ax, CODE_OVERLAY_SEGMENT
-xor   bx, bx
 mov   es, ax
-mov   word ptr es:[bx], OFFSET _hu_font
+mov   word ptr es:[0], OFFSET _hu_font
 exit_set_overlay:
 LEAVE_MACRO 
 pop   si
