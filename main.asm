@@ -77,7 +77,6 @@ EXTRN _sendpause:BYTE
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
 EXTRN _novideo:BYTE
-EXTRN _currenttask:BYTE
 
 
 EXTRN _mouseSensitivity

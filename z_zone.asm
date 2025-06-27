@@ -27,7 +27,6 @@ EXTRN locallib_far_fread_:PROC
 .DATA
 
 EXTRN _currentoverlay:BYTE
-EXTRN _currenttask:BYTE
 EXTRN _currentpageframes:BYTE
 EXTRN _codestartposition:DWORD
 EXTRN _hu_font:WORD
@@ -46,26 +45,13 @@ IFDEF COMPILE_CHIPSET
     EXTRN Z_QuickMap16AIC_:NEAR
     EXTRN Z_QuickMap24AIC_:NEAR
 ELSE
-    EXTRN _emshandle:WORD
-    EXTRN _pagenum9000:WORD
 ENDIF
 
 .CODE
 
 ; todo get rid of tasks
 ; todo put in constants?
-TASK_PHYSICS = 0
-TASK_RENDER = 1
-TASK_STATUS = 2
-TASK_DEMO = 3
-TASK_PHYSICS9000 = 4
-TASK_RENDER_SPRITE = 5
-TASK_SCRATCH_STACK = 7
-TASK_PALETTE = 8
-TASK_MENU = 9
-TASK_WIPE = 10
-TASK_INTERMISSION = 11
-TASK_STATUS_NO_SCREEN4 = 12
+
 
 IFDEF COMPILE_CHIPSET
 ELSE
@@ -277,26 +263,6 @@ retf
 
 ENDP
 
-PROC Z_QuickMapRender7000_ FAR
-PUBLIC Z_QuickMapRender7000_
-
-push  dx
-push  cx
-push  si
-;Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_rend_offset_size+12) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
 
 PROC Z_QuickMapRender_ FAR
 PUBLIC Z_QuickMapRender_
@@ -557,37 +523,6 @@ retf
 
 ENDP
 
-PROC Z_QuickMapStatusNoScreen4_ FAR
-PUBLIC Z_QuickMapStatusNoScreen4_
-
-
-
-push  dx
-push  cx
-push  si
-
-;Z_QUICKMAPAI4 (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_stat_offset_size+1) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-;Z_QUICKMAPAI1 (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
-
-mov     ax, 05000h
-mov     cx, 1
-add     si, 4 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-mov   byte ptr ds:[_currenttask], TASK_STATUS_NO_SCREEN4
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
 
 PROC Z_QuickMapScratch_5000_ FAR
 PUBLIC Z_QuickMapScratch_5000_

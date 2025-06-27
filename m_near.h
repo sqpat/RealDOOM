@@ -253,7 +253,9 @@
 
 // these are far pointers to functions..
 #define Z_QuickMapVisplanePage_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0180)))
-//#define R_EvictFlatCacheEMSPage_addr    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0184)))
+#define emshandle                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x0184)))
+#define pagenum9000                     (*((int16_t    __near*)              (_NULL_OFFSET + 0x0186)))
+
 #define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0188)))
 #define R_GetPatchTexture_addr   		(*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
 #define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0190)))
@@ -373,9 +375,9 @@
 #define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0560)))
 #define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0564)))
 #define locallib_strlen_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0568)))
-#define Z_QuickMapStatusNoScreen4_addr    (*((uint32_t  __near*)             (_NULL_OFFSET + 0x056C)))
-#define Z_QuickMapRender7000_addr         (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0570)))
-#define Z_QuickMapScreen0_addr            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0574)))
+// #define Z_QuickMapStatusNoScreen4_addr    (*((uint32_t  __near*)             (_NULL_OFFSET + 0x056C)))
+// #define Z_QuickMapRender7000_addr         (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0570)))
+// #define Z_QuickMapScreen0_addr            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0574)))
 #define W_CacheLumpNameDirect_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0578)))
 #define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)             (_NULL_OFFSET + 0x057C)))
 #define W_GetNumForName_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0580)))
@@ -481,7 +483,7 @@
 #define crushchange		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x06EB)))
 #define leveltime     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06EC)))
 #define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x06F0))
-// 6f3 free
+#define currenttask                       (*(int8_t __near *)                (_NULL_OFFSET + 0x06F3))
 #define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x06F4)))
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -1155,19 +1157,6 @@ extern int8_t                       currentloadedfileindex;
 
 
 
-#if defined(__CHIPSET_BUILD)
-
-// these are prepared for calls to outsw with autoincrementing ems register on
-
-#else
-
-extern int16_t emshandle;
-extern int16_t pagenum9000;
-
-
-#endif
-
-  
 
 
 
@@ -1190,7 +1179,6 @@ extern int32_t visplaneswitchcount;
 
 #endif
 
-extern int8_t currenttask;
 
 
 extern segment_t			    spritewidths_segment;  // gross hack? todo revisit...

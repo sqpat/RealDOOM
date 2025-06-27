@@ -1215,17 +1215,6 @@ int32_t                		filetolumpsize[MAX_WADFILES-1];
 int8_t                     	currentloadedfileindex = 0;
 
 
-#if defined (__CHIPSET_BUILD)
-
-#else
-int16_t emshandle;
-int16_t pagenum9000;
-
-#endif
-
-
-
-
 
 
 
@@ -1253,7 +1242,6 @@ int32_t visplaneswitchcount = 0;
 
 #endif
 
-int8_t currenttask = -1;
 
 
 /*

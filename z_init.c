@@ -651,9 +651,9 @@ void __near Z_LoadBinaries() {
 	V_DrawFullscreenPatch_addr =		(uint32_t)(V_DrawFullscreenPatch);
 	getStringByIndex_addr =				(uint32_t)(getStringByIndex);
 	locallib_strlen_addr =			 	(uint32_t)(locallib_strlen);
-	Z_QuickMapStatusNoScreen4_addr =	(uint32_t)(Z_QuickMapStatusNoScreen4);
-	Z_QuickMapRender7000_addr =		 	(uint32_t)(Z_QuickMapRender7000);
-	Z_QuickMapScreen0_addr =			(uint32_t)(Z_QuickMapScreen0);
+	// Z_QuickMapStatusNoScreen4_addr =	(uint32_t)(Z_QuickMapStatusNoScreen4);
+	// Z_QuickMapRender7000_addr =		 	(uint32_t)(Z_QuickMapRender7000);
+	// Z_QuickMapScreen0_addr =			(uint32_t)(Z_QuickMapScreen0);
 	W_CacheLumpNameDirect_addr =		(uint32_t)(W_CacheLumpNameDirect);
 	W_CacheLumpNumDirectFragment_addr =	(uint32_t)(W_CacheLumpNumDirectFragment);
 	W_GetNumForName_addr =		 		(uint32_t)(W_GetNumForName);

@@ -482,6 +482,7 @@ PUBLIC F_CastDrawer_
 push  bx
 push  cx
 push  dx
+push  si
 push  bp
 mov   bp, sp
 sub   sp, 068h
@@ -518,17 +519,34 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _getStringByIndex_addr
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_QuickMapStatusNoScreen4_addr 
+;call _Z_QuickMapStatusNoScreen4_
+; inlined
+;Z_QUICKMAPAI4 (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_stat_offset_size+1) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
+;Z_QUICKMAPAI1 (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
+mov     ax, 05000h
+mov     cx, 1
+add     si, 4 * 2 * PAGE_SWAP_ARG_MULT
+int     067h
+mov   byte ptr ds:[_currenttask], TASK_STATUS_NO_SCREEN4
+
 
 
 lea   ax, [bp - 068h]  ; ; text param (100 length)
 call  F_CastPrint_
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_QuickMapRender7000_addr
+;call  Z_QuickMapRender7000_
+;Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_rend_offset_size+12) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
+
 
 mov   al, byte ptr [bp - 2]
 xor   ah, ah
@@ -543,12 +561,16 @@ mov   ah, 019h           ; todo sizeof spriteframe_t
 mul   ah
 mov   bx, word ptr es:[bx]
 add   bx, ax
+
+;call  Z_QuickMapScratch_5000_ ; map scratch...
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_scratch5000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
+
 mov   cx, word ptr es:[bx]
 mov   dl, byte ptr es:[bx + 010h]
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_QuickMapScratch_5000_addr ; map scratch...
 
 mov   ax, word ptr ds:[_firstspritelump]
 xor   bx, bx
@@ -583,6 +605,7 @@ db 01Eh  ;
 dw _V_DrawPatch_addr
 
 LEAVE_MACRO 
+pop   si
 pop   dx
 pop   cx
 pop   bx
@@ -608,14 +631,19 @@ sub       sp, 029Eh
 lea       bx, [bp - 029Eh]
 mov       word ptr [bp - 4], bx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_QuickMapScratch_5000_addr
+;call  Z_QuickMapScratch_5000_ ; map scratch...
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_scratch5000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_QuickMapScreen0_addr
-
+;call    Z_QuickMapScreen0_
+;mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+;mov     cx, 4
+mov     si, (pageswapargs_screen0_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
 
 mov       bx, word ptr ds:[_finaleflat]
 mov       ax, OFFSET _filename_argument
@@ -683,14 +711,19 @@ push      ss
 pop       ds
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_QuickMapStatusNoScreen4_addr
+;call _Z_QuickMapStatusNoScreen4_
+; inlined
+;Z_QUICKMAPAI4 (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_stat_offset_size+1) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
+
 mov       cx, SCREENHEIGHT
 mov       bx, SCREENWIDTH
-xor       dx, dx
 xor       ax, ax
-
+cwd
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -856,19 +889,26 @@ push  bp
 mov   bp, sp
 sub   sp, 018h
 xor   ax, ax
-mov   cx, SCREENHEIGHT
 mov   word ptr [bp - 4], ax
 mov   word ptr [bp - 6], ax
 xor   al, al
 mov   bx, SCREENWIDTH
 mov   byte ptr [bp - 2], al ; bp - 2 is pic2 boolean
 xor   ah, ah
-xor   dx, dx
 mov   word ptr [bp - 8], ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_QuickMapScratch_5000_addr
+
+;call  Z_QuickMapScratch_5000_ ; map scratch...
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_scratch5000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
+
+mov   cx, SCREENHEIGHT
+
 xor   ax, ax
+cwd
+
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_MarkRect_addr
@@ -1204,20 +1244,36 @@ PUBLIC F_CastTicker_
 
 push  bx
 push  dx
+push  si
+push  cx
 
 dec   byte ptr ds:[_casttics]
 cmp   byte ptr ds:[_casttics], 0
 jle   do_castticker
 exit_castticker:
 
+pop   cx
+pop   si
 pop   dx
 pop   bx
 ret   
 do_castticker:
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_QuickMapPhysics_addr
+
+;call  Z_QuickMapPhysics_ 
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 8
+mov     si, pageswapargs_phys_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
+
+mov     ax, 05000h
+add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
+int     067h
+
+mov     ax, 05000h
+add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
+int     067h
 
 
 les   bx, dword ptr ds:[_caststate]    
@@ -1294,7 +1350,8 @@ je    set_casttics_to_15
 jmp   exit_castticker
 set_casttics_to_15:
 mov   byte ptr ds:[_casttics], 15
- 
+pop   cx
+pop   si 
 pop   dx
 pop   bx
 ret   

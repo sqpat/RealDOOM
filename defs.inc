@@ -199,7 +199,10 @@ _tmymove =                         _NULL_OFFSET + 0017Ch
 
 ; 180h
 _Z_QuickMapVisplanePage_addr =      _NULL_OFFSET + 00180h
-;_R_EvictFlatCacheEMSPage_addr =     _NULL_OFFSET + 00184h
+_emshandle =     					_NULL_OFFSET + 00184h
+_pagenum9000 =     					_NULL_OFFSET + 00186h
+
+
 _Z_QuickMapFlatPage_addr =        	_NULL_OFFSET + 00188h
 _R_GetPatchTexture_addr =           _NULL_OFFSET + 0018Ch
 
@@ -310,9 +313,9 @@ _S_ChangeMusic_addr =              	 _NULL_OFFSET + 0055Ch
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00560h
 _getStringByIndex_addr =             _NULL_OFFSET + 00564h
 _locallib_strlen_addr =              _NULL_OFFSET + 00568h
-_Z_QuickMapStatusNoScreen4_addr =    _NULL_OFFSET + 0056Ch
-_Z_QuickMapRender7000_addr =         _NULL_OFFSET + 00570h
-_Z_QuickMapScreen0_addr =            _NULL_OFFSET + 00574h
+;_Z_QuickMapStatusNoScreen4_addr =    _NULL_OFFSET + 0056Ch
+;_Z_QuickMapRender7000_addr =         _NULL_OFFSET + 00570h
+;_Z_QuickMapScreen0_addr =            _NULL_OFFSET + 00574h
 _W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00578h
 _W_CacheLumpNumDirectFragment_addr = _NULL_OFFSET + 0057Ch
 _W_GetNumForName_addr =              _NULL_OFFSET + 00580h
@@ -410,7 +413,7 @@ _nofit = 		   			 		 _NULL_OFFSET + 006EAh
 _crushchange = 		   			 	 _NULL_OFFSET + 006EBh
 _leveltime =     		   			 _NULL_OFFSET + 006ECh
 _fopen_rb_argument =                 _NULL_OFFSET + 006F0h
-;6f3 free
+_currenttask =            		     _NULL_OFFSET + 006F3h
 
 _flatcache_nodes =				     _NULL_OFFSET + 006F4h
 

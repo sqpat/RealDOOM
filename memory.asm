@@ -360,7 +360,8 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 6F0
 db "r", "b", "0"
-db 0
+; 6F3 currenttask
+db -1
 ; 6F4
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00

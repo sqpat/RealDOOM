@@ -29,7 +29,6 @@ EXTRN M_AddToBox16_:PROC
 EXTRN _viewwindowx:WORD
 EXTRN _viewwindowy:WORD
 EXTRN _scaledviewwidth:WORD
-EXTRN _currenttask:BYTE
 
 .CODE
 EXTRN W_CacheLumpNameDirect_:PROC  

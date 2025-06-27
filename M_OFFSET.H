@@ -19,9 +19,9 @@
 #define wipe_StartScreenOffset                0x3A3
 #define wipe_WipeLoopOffset                   0x3B2
 #define F_StartFinaleOffset                   0x1B4
-#define F_ResponderOffset                     0xACF
-#define F_TickerOffset                        0xA2E
-#define F_DrawerOffset                        0xAFA
+#define F_ResponderOffset                     0xB46
+#define F_TickerOffset                        0xAA5
+#define F_DrawerOffset                        0xB71
 #define P_UnArchivePlayersOffset              0x2
 #define P_UnArchiveWorldOffset                0x17C
 #define P_UnArchiveThinkersOffset             0x2B6
@@ -42,7 +42,7 @@
 #define WI_StuffCodeSize               0x1019
 #define PSightCodeSize                 0x60B
 #define WipeCodeSize                   0x439
-#define FinaleCodeSize                 0xB56
+#define FinaleCodeSize                 0xBCD
 #define SaveLoadCodeSize               0xB17
 #define SMLoadCodeSize                 0x49D
 #define SInitCodeSize                  0x531
