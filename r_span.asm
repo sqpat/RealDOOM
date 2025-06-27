@@ -43,9 +43,7 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 
 
 ; todo: eventually call these directly... 
-;EXTRN Z_QuickMapFlatPage_:PROC
 ;EXTRN W_CacheLumpNumDirect_:PROC
-;EXTRN Z_QuickMapVisplanePage_:PROC
 
 
 
@@ -1239,10 +1237,8 @@ cbw
 mov   byte ptr [bp - 2], 2
 
 
-;call  Z_QuickMapVisplanePage_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_QuickMapVisplanePage_addr
+
+call  Z_QuickMapVisplanePage_SpanLocal_
 
 
 jmp   lookup_visplane_segment
@@ -1335,14 +1331,22 @@ mov   ax, dx
 mov   bl, cl
 xor   bh, bh   ; ugly... can i do cx above
 mov   byte ptr ds:[bx + _currentflatpage], al
-mov   dx, bx
 add   ax, FIRST_FLAT_CACHE_LOGICAL_PAGE
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_QuickMapFlatPage_addr
-
 ;call  Z_QuickMapFlatPage_
+
+shl   bx, 1
+SHIFT_PAGESWAP_ARGS bx
+mov   word ptr ds:[_pageswapargs + (pageswapargs_flatcache_offset * PAGE_SWAP_ARG_MULT) + bx], ax
+;	pageswapargs[pageswapargs_flatcache_offset + offset * PAGE_SWAP_ARG_MULT] = _EPR(page);
+;Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
+mov   dx, word ptr ds:[_emshandle]
+mov   ax, 05000h
+mov   cx, 4
+mov   si, (pageswapargs_flatcache_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int   067h
+
+
 jmp  SHORT l1_cache_finished_updating
 in_flat_page_0:
 mov   cl, 0
@@ -1652,6 +1656,7 @@ jmp   end_single_plane_draw_loop_iteration
 ENDP
 
 
+
 ;PROC R_MarkL2FlatCacheMRU_ NEAR
 ;PUBLIC R_MarkL2FlatCacheMRU_
 
@@ -1743,7 +1748,7 @@ pop       dx
 pop       bx
 jmp       done_with_mruL2
 
-
+ENDP
 
 
 ;PROC R_EvictFlatCacheEMSPage_ NEAR
@@ -1832,6 +1837,120 @@ jmp       done_with_evict_flatcache_ems_page
 erase_flat:
 mov       byte ptr ds:[si+bx], bl   ; bx is -1. this both writes FF and subtracts the 1 from si
 jmp       continue_erasing_flats
+
+ENDP
+
+PROC Z_QuickMapVisplanePage_SpanLocal_ NEAR
+PUBLIC Z_QuickMapVisplanePage_SpanLocal_
+
+
+
+;	int16_t usedpageindex = pagenum9000 + PAGE_8400_OFFSET + physicalpage;
+;	int16_t usedpagevalue;
+;	int8_t i;
+;	if (virtualpage < 2){
+;		usedpagevalue = FIRST_VISPLANE_PAGE + virtualpage;
+;	} else {
+;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
+;	}
+
+push  bx
+push  cx
+push  si
+mov   cl, al
+mov   dh, dl
+mov   si, word ptr ds:[_pagenum9000]
+mov   al, dl
+add   si, PAGE_8400_OFFSET ; sub 3
+cbw  
+add   si, ax
+mov   al, cl
+cbw  
+cmp   al, 2
+jge   visplane_page_above_2
+add   ax, FIRST_VISPLANE_PAGE
+used_pagevalue_ready:
+
+;		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
+
+; _EPR here
+IFDEF COMPILE_CHIPSET
+    add  ax, EMS_MEMORY_PAGE_OFFSET
+ELSE
+ENDIF
+mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * PAGE_SWAP_ARG_MULT)], ax
+
+
+;pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
+IFDEF COMPILE_CHIPSET
+ELSE
+    mov   word ptr ds:[_pageswapargs + ((pageswapargs_visplanepage_offset+1) * PAGE_SWAP_ARG_MULT)], si
+ENDIF
+
+;	physicalpage++;
+inc   dh
+mov   dl, 4
+
+;	for (i = 4; i > 0; i --){
+;		if (active_visplanes[i] == physicalpage){
+;			active_visplanes[i] = 0;
+;			break;
+;		}
+;	}
+
+loop_next_visplane_page:
+mov   al, dl
+cbw  
+mov   bx, ax
+cmp   dh, byte ptr ds:[bx + _active_visplanes]
+je    set_zero_and_break
+dec   dl
+test  dl, dl
+jg    loop_next_visplane_page
+
+done_with_visplane_loop:
+mov   al, cl
+cbw  
+mov   bx, ax
+
+mov   byte ptr ds:[bx + _active_visplanes], dh
+
+; todo this call doesnt work
+
+IFDEF COMPILE_CHIPSET
+    mov     dx, si
+    or      dx, EMS_AUTOINCREMENT_FLAG
+    mov     ax,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+    call    Z_QuickMap1AIC_ 
+ELSE
+
+
+    mov     dx, word ptr ds:[_emshandle]
+    mov     ax, 05000h
+    mov     cx, 1
+    mov     si, (pageswapargs_visplanepage_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+    int     067h
+
+
+ENDIF
+
+
+mov   byte ptr ds:[_visplanedirty], 1
+pop   si
+pop   cx
+pop   bx
+ret  
+visplane_page_above_2:
+;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
+add   ax, (EMS_VISPLANE_EXTRA_PAGE - 2)
+jmp   used_pagevalue_ready
+
+set_zero_and_break:
+mov   byte ptr ds:[bx + _active_visplanes], 0
+jmp   done_with_visplane_loop
+
+ENDP
+
 
 
 ;

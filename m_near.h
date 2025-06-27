@@ -252,11 +252,11 @@
 
 
 // these are far pointers to functions..
-#define Z_QuickMapVisplanePage_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0180)))
+// #define Z_QuickMapVisplanePage_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0180)))
 #define emshandle                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x0184)))
 #define pagenum9000                     (*((int16_t    __near*)              (_NULL_OFFSET + 0x0186)))
 
-#define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0188)))
+// #define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0188)))
 #define R_GetPatchTexture_addr   		(*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
 #define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0190)))
 #define floorplaneindex                 (*((int16_t    __near*)              (_NULL_OFFSET + 0x0194)))

@@ -198,12 +198,12 @@ _tmymove =                         _NULL_OFFSET + 0017Ch
 
 
 ; 180h
-_Z_QuickMapVisplanePage_addr =      _NULL_OFFSET + 00180h
+;_Z_QuickMapVisplanePage_addr =      _NULL_OFFSET + 00180h
 _emshandle =     					_NULL_OFFSET + 00184h
 _pagenum9000 =     					_NULL_OFFSET + 00186h
 
 
-_Z_QuickMapFlatPage_addr =        	_NULL_OFFSET + 00188h
+;_Z_QuickMapFlatPage_addr =        	_NULL_OFFSET + 00188h
 _R_GetPatchTexture_addr =           _NULL_OFFSET + 0018Ch
 
 ; 190h
