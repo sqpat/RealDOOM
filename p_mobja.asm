@@ -19,26 +19,16 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN FixedMul16u32_:FAR
-EXTRN FixedMul1632_:FAR
-EXTRN FixedMul2424_:FAR
 EXTRN FixedMul2432_:FAR
 EXTRN FixedMul_:FAR
 EXTRN FixedDiv_:FAR
 EXTRN FixedMulBig1632_:FAR
 EXTRN FixedMulTrigNoShift_:PROC
-EXTRN S_StartSound_:FAR
-EXTRN R_PointToAngle2_16_:PROC
-EXTRN R_PointToAngle2_:PROC
-EXTRN P_Random_:NEAR
-EXTRN P_UseSpecialLine_:PROC
-EXTRN P_DamageMobj_:NEAR
 EXTRN P_SetMobjState_:NEAR
-EXTRN P_TouchSpecialThing_:NEAR
 EXTRN P_CrossSpecialLine_:NEAR
 EXTRN P_ShootSpecialLine_:NEAR
 EXTRN P_SpawnMobj_:NEAR
-EXTRN P_RemoveMobj_:NEAR
+
 
 
 .DATA

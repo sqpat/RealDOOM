@@ -19,17 +19,12 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN FixedMul16u32_:FAR
-EXTRN FixedMul1632_:FAR
+; todo addr all these
 
-EXTRN FixedMul2432_:FAR
-EXTRN FixedMul_:FAR
-EXTRN FixedDiv_:FAR
-EXTRN FixedMulBig1632_:FAR
 EXTRN FixedMulTrigNoShift_:PROC
-EXTRN S_StartSound_:FAR
 EXTRN R_PointToAngle2_16_:PROC
 EXTRN R_PointToAngle2_:PROC
+
 EXTRN P_Random_:NEAR
 EXTRN P_UseSpecialLine_:PROC
 EXTRN P_DamageMobj_:NEAR
@@ -37,7 +32,6 @@ EXTRN P_SetMobjState_:NEAR
 EXTRN P_CrossSpecialLine_:NEAR
 EXTRN P_ShootSpecialLine_:NEAR
 EXTRN P_SpawnMobj_:NEAR
-EXTRN P_RemoveMobj_:NEAR
 
 EXTRN P_SpawnPuff_:NEAR
 EXTRN P_TouchSpecialThing_:NEAR
@@ -233,7 +227,7 @@ mov   bx, word ptr [bp - 4] ; grab lobits
 mov   cx, dx
 
 
-call FixedMul1632_
+call FixedMul1632_MapLocal_
 
 ; set up params..
 xchg  si, ax
@@ -241,7 +235,7 @@ mov   bx, word ptr [bp - 2]  ; grab lobits
 mov   cx, di
 
 mov   di, dx
-call FixedMul1632_
+call FixedMul1632_MapLocal_
 cmp   dx, di
 jg    return_true_2
 je    check_lowbits
@@ -434,7 +428,7 @@ mov   cx, dx
 
 mov   ax, word ptr [bp + 0Ah]	; ax = lindedy
 
-call  FixedMul1632_				; AX  *  CX:BX
+call  FixedMul1632_MapLocal_				; AX  *  CX:BX
 
 ;dx:ax = left
 
@@ -444,7 +438,7 @@ mov   di, ax
 mov   si, dx
 mov   ax, word ptr [bp + 8]		; get linedx
 
-call  FixedMul1632_				; AX  *  CX:BX
+call  FixedMul1632_MapLocal_				; AX  *  CX:BX
 cmp   dx, si
 pop   si						; only do this once here..
 jl    exit_pointonlineside_return_0
@@ -875,7 +869,10 @@ les   bx, DIVLINE_T ptr ds:[_trace.dl_dx]
 mov   cx, es
 les   ax, dword ptr [si + 0Ch]
 mov   dx, es
-call  FixedMul2432_
+;call  FixedMul2432_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
 
 les   bx, DIVLINE_T ptr ds:[_trace.dl_dy]
 mov   cx, es
@@ -884,7 +881,10 @@ mov   di, dx
 
 les   ax, dword ptr [si + 8]
 mov   dx, es
-call  FixedMul2432_
+;call  FixedMul2432_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
 
 sub   word ptr [bp - 2], ax
 sbb   di, dx		; den = ax:di 
@@ -914,7 +914,10 @@ les   ax, dword ptr [si]
 mov   dx, es
 sub   ax, DIVLINE_T ptr ds:[_trace.dl_x]
 sbb   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
-call  FixedMul2432_
+;call  FixedMul2432_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
 
 mov   bx, si  ; bx gets  v1
 xchg  si, ax  ;  di:si = first half
@@ -929,7 +932,10 @@ sbb   dx, word ptr [bx + 6]
 les   bx, dword ptr [bx + 8]
 mov   cx, es
 
-call  FixedMul2432_
+;call  FixedMul2432_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul2432_addr
 
 ;    frac = FixedDiv (num , den);
 ;    return frac
@@ -939,7 +945,9 @@ pop   bx
 add   ax, si
 adc   dx, di
 
-call FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 LEAVE_MACRO
 pop   di
 pop   si
@@ -2577,7 +2585,9 @@ sbb   si, cx   ; y2 - y1 hi
 mov   cx, dx   ; cx gets labs result hi 
 mov   dx, si   ; dx gets y2 - y1 hi
 
-call  FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 
 
 mov   word ptr cs:[SELFMODIFY_add_yintercept_lo+2], ax
@@ -2603,7 +2613,7 @@ add_to_yintercept:
 
 ; cx:bx = ystep
 
-call  FixedMul16u32_
+call  FixedMul16u32_MapLocal_
 add   di, ax
 adc   word ptr [bp - 8], dx
 jmp   done_with_xt_check
@@ -2649,7 +2659,9 @@ mov   dx, es
 sub   ax, word ptr [bp - 016h]
 sbb   dx, word ptr [bp - 018h]
 
-call  FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 
 mov   word ptr cs:[SELFMODIFY_add_xintercept_lo+3], ax
 mov   word ptr cs:[SELFMODIFY_add_xintercept_hi+5], dx
@@ -2679,7 +2691,7 @@ add_to_xintercept:
 
 ;		xintercept.w += FixedMul16u32(partial, xstep);
 
-call  FixedMul16u32_
+call  FixedMul16u32_MapLocal_
 add   word ptr [bp - 0Ch], ax
 adc   word ptr [bp - 0Ah], dx
 jmp   done_with_yt_check
@@ -2912,7 +2924,10 @@ use_thru_wall:
 
 mov   ax, word ptr ds:[_playerMobj]
 mov   dx, SFX_NOWAY
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 xor   al, al
 jmp   exit_usetraverse
 no_line_special:
@@ -5079,8 +5094,10 @@ mov   di, word ptr ds:[_playerMobj]
 les   ax, dword ptr [di + 0Eh]
 mov   dx, es
 
-call  FixedMul_
-
+;call FixedMul_ ; todo make a near one?
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
 ;newx.w += playerMobj_pos->x.w;
 
 les   si, dword ptr ds:[_playerMobj_pos]
@@ -5100,8 +5117,10 @@ mov   di, bx  ; di:si is newx
 les   bx, dword ptr ds:[_bestslidefrac]
 mov   cx, es
 
-call  FixedMul_
-
+;call FixedMul_ ; todo make a near one?
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
 ; newy.w += playerMobj_pos->y.w;
 
 les   bx, dword ptr ds:[_playerMobj_pos]
@@ -5152,7 +5171,7 @@ mov   cx, es
 
 mov   di, word ptr ds:[_bestslidefrac]
 mov   ax, di
-call  FixedMul16u32_
+call  FixedMul16u32_MapLocal_
 
 mov   word ptr ds:[_tmxmove+0], ax
 mov   word ptr ds:[_tmxmove+2], dx
@@ -5161,7 +5180,7 @@ les   bx, dword ptr [si + 012h]
 mov   cx, es
 xchg  ax, di  ; bestslidefrac
 
-call  FixedMul16u32_
+call  FixedMul16u32_MapLocal_
 jmp   do_hitslideline
 bestslidefrac_f800:
 
@@ -5323,7 +5342,23 @@ ret
 
 chainsaw_range:
 ; mov   ax, 041h
-call  FixedMulBig1632_
+
+; inlined FixedMulBig1632_
+
+CWD				; DX/S0
+AND   DX, BX	; S0*BX
+NEG   DX
+XCHG  CX, DX	; CX into DX, CX stores hi result
+
+MOV   ES, AX    ; store DX into ES
+
+MUL   DX        ; CX * DX
+ADD   CX, AX    ; low word result into high word return
+
+MOV  AX, ES    ; grab DX again
+MUL  BX        ; BX * DX
+ADD  DX, CX    ; add high bits back
+
 ret   
 return_0_range:
 ; shouldnt ever happen?
@@ -5443,8 +5478,10 @@ mov   cx, si
 mov   ax, DIVLINE_T ptr ds:[_trace.dl_dx]
 mov   dx, DIVLINE_T ptr ds:[_trace.dl_dx+2]
 mov   di, bx   ; backup...
-call  FixedMul_
-
+;call FixedMul_ ; todo make a near one?
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
 add   ax, DIVLINE_T ptr ds:[_trace.dl_x]
 adc   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
 push  dx ; x hi
@@ -5457,7 +5494,11 @@ mov   bx, di ; frac lo
 
 les   ax, DIVLINE_T ptr ds:[_trace.dl_dy]
 mov   dx, es
-call  FixedMul_
+;call FixedMul_ ; todo make a near one?
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
+
 add   ax, DIVLINE_T ptr ds:[_trace.dl_y]
 adc   dx, DIVLINE_T ptr ds:[_trace.dl_y+2]
 
@@ -5475,8 +5516,10 @@ xchg  ax, bx
 mov   cx, dx
 les   ax, dword ptr ds:[_aimslope+0]
 mov   dx, es
-call  FixedMul_
-
+;call FixedMul_ ; todo make a near one?
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
 
 les   si, dword ptr ds:[_shootz+0]
 mov   di, es
@@ -5611,7 +5654,9 @@ rcr   ax, 1
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 
-call  FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 cmp   dx, word ptr ds:[_aimslope+2]
 
 ; if (slope > aimslope)
@@ -5653,7 +5698,9 @@ rcr   ax, 1
 
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
-call  FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 cmp   dx, word ptr ds:[_aimslope+2]
 jl    jump_to_hitline
 jne   exit_shoottraverse_return_1
@@ -5730,7 +5777,9 @@ adc   dx, word ptr [di + 0Ch]
 
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
-call  FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 
 ;    if (thingtopslope < aimslope){
 ;		return true;		// shot over the thing
@@ -5751,7 +5800,9 @@ pop   bx ; recover dist
 pop   cx
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
-call  FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 cmp   dx, word ptr ds:[_aimslope+2]
 jg    exit_shoottraverse_return_1
 jne   hit_thing
@@ -5790,8 +5841,10 @@ les   ax, DIVLINE_T ptr ds:[_trace.dl_dx]
 mov   dx, es
 push  cx       ; backup frac hi
 mov   di, bx   ; backup
-call  FixedMul_
-
+;call FixedMul_ ; todo make a near one?
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
 
 add   ax, DIVLINE_T ptr ds:[_trace.dl_x]
 adc   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
@@ -5806,8 +5859,10 @@ push  ax
 ;    y = trace.y.w + FixedMul (trace.dy.w, frac);
 les   ax, DIVLINE_T ptr ds:[_trace.dl_dy]
 mov   dx, es
-call  FixedMul_
-
+;call FixedMul_ ; todo make a near one?
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
 
 
 add   ax, DIVLINE_T ptr ds:[_trace.dl_y]
@@ -5829,7 +5884,10 @@ mov   cx, dx
 les   ax, dword ptr ds:[_aimslope+0]
 mov   dx, es
 
-call  FixedMul_
+;call FixedMul_ ; todo make a near one?
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
 
 add   ax, word ptr ds:[_shootz+0]
 adc   dx, word ptr ds:[_shootz+2]
@@ -6084,7 +6142,9 @@ rcl   ax, 1
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 
-call  FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 
 ;			if (slope > bottomslope)
 ;				bottomslope = slope;
@@ -6129,7 +6189,9 @@ sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
 
 
-call  FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 
 ;			if (slope < topslope)
 ;				topslope = slope;
@@ -6240,7 +6302,9 @@ add   ax, word ptr [si + 0Ah]
 adc   dx, word ptr [si + 0Ch]
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
-call  FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 
 
 
@@ -6286,7 +6350,9 @@ mov   dx, es
 
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
-call  FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
 
 ;	if (thingbottomslope > topslope) {
 ;		return true;			// shot under the thing
@@ -7740,7 +7806,11 @@ mov   byte ptr [si + 01Eh], al
 jmp   exit_changesector_return_1
 crunch_items:
 mov   ax, dx
-call  P_RemoveMobj_
+;call  P_RemoveMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_RemoveMobj_addr
+
 mov   al, 1
 LEAVE_MACRO 
 pop   di
@@ -7943,6 +8013,114 @@ ADC  DX, SI
 
 mov  CX, SS   ; restore DS
 mov  DS, CX
+
+pop   si
+ret
+
+
+
+ENDP
+
+; first param is unsigned so DX and sign can be skipped
+PROC FixedMul16u32_MapLocal_ NEAR
+PUBLIC FixedMul16u32_MapLocal_
+
+; AX  *  CX:BX
+;  0  1   2  3
+
+; AX * CX:BX
+
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+
+
+;                               AXBXhi	 AXBXlo
+;                       AXCXhi  AXCXlo
+;               AXS1hi  AXS1lo
+;       
+
+
+
+; need to get the sign-extends for DX and CX
+
+
+XCHG BX, AX    ; AX stored in BX
+MUL  BX        ; AX * BX
+MOV  AX, CX    ; CX to AX
+MOV  CX, DX    ; CX stores low word
+CWD            ; S1 in DX
+AND  DX, BX    ; S1 * AX
+NEG  DX        ; 
+XCHG DX, BX    ; AX into DX, high word into BX
+MUL  DX        ; AX*CX
+ADD AX, CX     ; add low word
+ADC DX, BX     ; add high word
+
+ret
+ENDP
+
+
+
+PROC FixedMul1632_MapLocal_ NEAR
+PUBLIC FixedMul1632_MapLocal_
+
+
+
+push  si
+
+CWD				; DX/S0
+
+mov   es, ax    ; store ax in es
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+CWD 
+
+AND  DX, CX    ; DX*CX
+NEG  DX
+add  SI, DX    ; low word result into high word return
+
+CWD
+
+; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+; UNLESS BX is 0. then its also 0!
+
+; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+MOV  AX, BX    ; create BX copy
+SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
+ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
+
+AND  AX, DX    ; 0 or BX - 1
+ADD  SI, AX    ; add DX * BX high word. 
+
+
+AND  DX, BX    ; DX * BX low bits
+NEG  DX
+XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+
+mov  AX, ES    ; grab AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+ 
 
 pop   si
 ret
