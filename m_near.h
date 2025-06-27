@@ -280,7 +280,7 @@
 #define ticcount                        (*((volatile uint32_t  __near*)      (_NULL_OFFSET + 0x01F0)))
 
 #define Z_QuickMapPhysics_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F4)))
-#define Z_QuickMapWipe_addr             (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F8)))
+// #define Z_QuickMapWipe_addr             (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F8)))
 #define Z_QuickMapScratch_5000_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01FC)))
 #define M_Random_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0200)))
 //#define I_UpdateNoBlit_addr             (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))

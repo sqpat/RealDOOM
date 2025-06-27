@@ -949,6 +949,7 @@ retf
 
 ENDP
 
+; still used by menu
 PROC Z_QuickMapWipe_ FAR
 PUBLIC Z_QuickMapWipe_
 

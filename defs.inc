@@ -229,7 +229,7 @@ _dirtybox =              			_NULL_OFFSET + 001E8h
 _ticcount =			              	_NULL_OFFSET + 001F0h
 
 _Z_QuickMapPhysics_addr =            _NULL_OFFSET + 001F4h
-_Z_QuickMapWipe_addr =               _NULL_OFFSET + 001F8h
+;_Z_QuickMapWipe_addr =               _NULL_OFFSET + 001F8h
 _Z_QuickMapScratch_5000_addr =       _NULL_OFFSET + 001FCh
 _M_Random_addr =                     _NULL_OFFSET + 00200h
 ;_I_UpdateNoBlit_addr =               _NULL_OFFSET + 00204h

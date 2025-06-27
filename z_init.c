@@ -628,7 +628,7 @@ void __near Z_LoadBinaries() {
 
 
 	Z_QuickMapPhysics_addr = 		(uint32_t)(Z_QuickMapPhysics);
-	Z_QuickMapWipe_addr = 			(uint32_t)(Z_QuickMapWipe);
+	// Z_QuickMapWipe_addr = 			(uint32_t)(Z_QuickMapWipe);
 	Z_QuickMapScratch_5000_addr = 	(uint32_t)(Z_QuickMapScratch_5000);
 	M_Random_addr = 				(uint32_t)(M_Random);
 	// I_UpdateNoBlit_addr = 			(uint32_t)(I_UpdateNoBlit);

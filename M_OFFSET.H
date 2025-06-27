@@ -16,8 +16,8 @@
 #define WI_StartOffset                        0x1001
 #define WI_TickerOffset                       0xE0A
 #define WI_DrawerOffset                       0xE92
-#define wipe_StartScreenOffset                0x3A3
-#define wipe_WipeLoopOffset                   0x3B2
+#define wipe_StartScreenOffset                0x3AE
+#define wipe_WipeLoopOffset                   0x3FD
 #define F_StartFinaleOffset                   0x1B4
 #define F_ResponderOffset                     0xB46
 #define F_TickerOffset                        0xAA5
@@ -41,7 +41,7 @@
 #define R_DrawSkyColumnCodeSize        0x6C0
 #define WI_StuffCodeSize               0x1019
 #define PSightCodeSize                 0x60B
-#define WipeCodeSize                   0x439
+#define WipeCodeSize                   0x4BE
 #define FinaleCodeSize                 0xBCD
 #define SaveLoadCodeSize               0xB17
 #define SMLoadCodeSize                 0x49D
