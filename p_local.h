@@ -157,11 +157,7 @@ void __near P_MobjThinker(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINK
 
 #pragma aux P_SpawnPuffParams __parm [dx ax] [cx bx] [di si] __modify [ax bx cx dx si di];
 #pragma aux (P_SpawnPuffParams) P_SpawnPuff;
-void	__near P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
-
-#pragma aux P_SpawnBloodParams __parm [dx ax] [cx bx] [si di] __modify [ax bx cx dx si di];
-#pragma aux (P_SpawnBloodParams) P_SpawnBlood;
-void 	__near P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
+void	__far P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 
 THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type);
 void	__near P_SpawnPlayerMissile (mobjtype_t type);
@@ -212,43 +208,26 @@ typedef boolean __near (*traverser_t ) (intercept_t __far*in);
                     __value [dx ax];
 
 #pragma aux (P_AproxDistanceParams) P_AproxDistance;
-fixed_t __near P_AproxDistance (fixed_t dx, fixed_t dy);
+fixed_t __far P_AproxDistance (fixed_t dx, fixed_t dy);
 
-boolean 	__near P_PointOnLineSide (fixed_t	x, fixed_t	y, int16_t v1x, int16_t v1y, int16_t linedx, int16_t linedy);
 void 	__near P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t* dl);
 
 
-#pragma aux P_BoxOnLineSideParams \
-			__modify [ax bx cx dx si] \
-			__parm [ax] [dx] [bx] [cx] [si];
-
-#pragma aux (P_BoxOnLineSideParams) P_BoxOnLineSide;
-
-
-int8_t 	__near P_BoxOnLineSide (slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
 
 
 
-void 	__near P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
+
+void 	__far P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
 
-boolean __near P_BlockLinesIterator (int16_t x, int16_t y, boolean __near ( *  func)(line_physics_t __far* ld, int16_t ) );
 boolean __near P_BlockThingsIterator (int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
 
 
-void
-__near P_PathTraverse
-( fixed_t_union	x1,
-	fixed_t_union	y1,
-	fixed_t_union	x2,
-	fixed_t_union	y2,
-  uint8_t		flags,
-  boolean	__near(*  trav) (intercept_t  __far*));
 
-void __near P_UnsetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset);
+void __far P_UnsetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset);
 void __far P_SetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset, int16_t knownsecnum);
 
 
@@ -260,7 +239,7 @@ void __far P_SetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset, i
 // if within "tmfloorz - tmceilingz".
 
 boolean __near P_CheckPosition (mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y);
-boolean __near P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
+boolean __far P_TryMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
 boolean __near P_TeleportMove (mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
 void	__near P_SlideMove ();
 
@@ -279,15 +258,7 @@ void __near P_RadiusAttack (mobj_t __near* spot, uint16_t spot_pos, mobj_t __nea
 void __far P_TouchSpecialThing (mobj_t __near*	special,mobj_t __near*	toucher,mobj_pos_t  __far*special_pos,mobj_pos_t  __far*toucher_pos);
 void __far P_DamageMobj(mobj_t __near*	target,mobj_t __near*	inflictor,mobj_t __near*	source,int16_t		damage );
 
-
-#pragma aux fiveparam \
-                    __parm [dx ax] [cx bx] [si] \
-                    __modify [ax bx cx dx si];
-
-#pragma aux (fiveparam)  R_PointOnSide;
-int16_t __near R_PointOnSide ( fixed_t_union	x, fixed_t_union	y, int16_t nodenum );
-
-int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y );
+int16_t __far R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y );
 
 
 //

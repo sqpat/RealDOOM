@@ -19,7 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN FixedMulTrigNoShift_:PROC
+EXTRN FixedMulTrigNoShift_:FAR
 
 EXTRN FixedMul2432_:FAR
 EXTRN FixedMul_:FAR
@@ -43,7 +43,7 @@ EXTRN _setStateReturn:WORD
 
 ;P_SpawnPuff_
 
-PROC P_SpawnPuff_ NEAR
+PROC P_SpawnPuff_ FAR
 PUBLIC P_SpawnPuff_
 
 
@@ -135,12 +135,12 @@ mov   byte ptr [bx + 01Bh], 1
 dont_set_tics_to_1:
 cmp   word ptr ds:[_attackrange16], MELEERANGE
 je    spark_punch_on_wall
-ret   
+retf  
 spark_punch_on_wall:
 mov   dx, S_PUFF3
 mov   ax, bx
 call  P_SetMobjState_
-ret   
+retf   
 
 
 ENDP

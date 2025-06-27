@@ -26,8 +26,6 @@ EXTRN FixedMulTrigNoShift_:PROC
 EXTRN R_PointToAngle2_16_:FAR
 EXTRN R_PointToAngle2_:FAR
 
-; todo make a local version
-
 EXTRN P_UseSpecialLine_:FAR
 EXTRN P_DamageMobj_:FAR
 EXTRN P_SetMobjState_:FAR
@@ -35,7 +33,7 @@ EXTRN P_CrossSpecialLine_:FAR
 EXTRN P_ShootSpecialLine_:FAR
 EXTRN P_SpawnMobj_:FAR
 
-EXTRN P_SpawnPuff_:NEAR
+EXTRN P_SpawnPuff_:FAR
 EXTRN P_TouchSpecialThing_:FAR
 
 
@@ -57,7 +55,6 @@ EXTRN _prndindex:BYTE
 ; called in a loop. destructive to ds
 
 PROC R_PointOnSide_ NEAR
-PUBLIC R_PointOnSide_ 
 
 ; todo optimize to keep params on the stack from the otuside.
 
@@ -272,7 +269,7 @@ ENDP
 
 ; fixed_t __near P_AproxDistance ( fixed_t	dx, fixed_t	dy ) {
 
-PROC P_AproxDistance_ NEAR
+PROC P_AproxDistance_ FAR
 PUBLIC P_AproxDistance_ 
 
 or   dx, dx
@@ -305,7 +302,7 @@ rcr  bx, 1		; dy >> 1
 sub  ax, bx
 sbb  dx, cx
 
-ret  
+retf  
 
 dx_less_than_dy:
 
@@ -321,7 +318,7 @@ sbb  cx, dx
 
 mov  dx, cx
 xchg ax, bx		; swap to return register.
-ret
+retf
 
 ENDP
 
@@ -348,7 +345,6 @@ ENDP
 ; especially if the caller lacks its own stack frame
 
 PROC P_PointOnLineSide_ NEAR
-PUBLIC P_PointOnLineSide_ 
 
 push  bp		; bp + 2?
 mov   bp, sp
@@ -463,7 +459,6 @@ ENDP
 
 
 PROC P_BoxOnLineSide_ NEAR
-PUBLIC P_BoxOnLineSide_ 
 
 ;// Considers the line to be infinite
 ;// Returns side 0 or 1, -1 if box crosses the line.
@@ -684,7 +679,6 @@ ENDP
 ;} divline_t;
 
 PROC P_PointOnDivlineSide_ NEAR
-PUBLIC P_PointOnDivlineSide_ 
 
 
 ; maybe mov di, _trace?
@@ -847,7 +841,6 @@ ENDP
 ;fixed_t __near P_InterceptVector ( divline_t __near*	v1 ) ;
 
 PROC P_InterceptVector_ NEAR
-PUBLIC P_InterceptVector_   
 
 ; todo sometimes this is called with all fracbits as 0. 
 ; Could be worth a 16 bit version. would be smaller
@@ -960,7 +953,7 @@ ret
 ENDP
 
 
-;void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
+;void __far P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
 
 ; ax lineside 1
@@ -974,7 +967,7 @@ ENDP
 ;	//short_height_t		openrange; // not worth storing thousands of bytes of a subtraction result
 ;} lineopening_t;
 
-PROC P_LineOpening_ NEAR
+PROC P_LineOpening_ FAR
 PUBLIC P_LineOpening_ 
 
 
@@ -1049,7 +1042,7 @@ mov  word ptr ds:[_lineopening+0], ax  ; set opentop
 
 
 return_lineopening:
-ret  
+retf
 
 
 
@@ -1059,7 +1052,7 @@ ENDP
 
 ;void __near P_UnsetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset);
 
-PROC P_UnsetThingPosition_ NEAR
+PROC P_UnsetThingPosition_ FAR
 PUBLIC P_UnsetThingPosition_ 
 
 ; #define GETTHINKERREF(a) ((((uint16_t)((byte __near*)a - (byte __near*)thinkerlist))-4)/SIZEOF_THINKER_T)
@@ -1166,7 +1159,7 @@ pop   di
 pop   si
 pop   cx
 pop   bx
-ret   
+retf   
 
 
 has_prev_ref:
@@ -1333,7 +1326,7 @@ pop   di
 pop   si
 pop   cx
 pop   bx
-ret   
+retf   
 
 ref_not_a_match:
 ; nextRef = innerthing->bnextRef;
@@ -1350,7 +1343,7 @@ pop   di
 pop   si
 pop   cx
 pop   bx
-ret   
+retf   
 
 
 ENDP
@@ -1606,9 +1599,9 @@ retf
 ENDP
 
 
-; int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
+; int16_t __far R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 
-PROC R_PointInSubsector_ NEAR
+PROC R_PointInSubsector_ FAR
 PUBLIC R_PointInSubsector_ 
 
 
@@ -1663,16 +1656,15 @@ pop   si
 pop   di
 
 exit_r_pointinsubsector:
-ret  
+retf
 
 
 ENDP
 
 
-; boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   func )(line_physics_t __far*, int16_t) );
+; boolean __far P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   func )(line_physics_t __far*, int16_t) );
 
 PROC P_BlockLinesIterator_ NEAR
-PUBLIC P_BlockLinesIterator_ 
 
 push  cx
 push  si
@@ -1857,7 +1849,6 @@ ENDP
 ;boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum) {
 
 PROC PIT_AddLineIntercepts_ NEAR
-PUBLIC PIT_AddLineIntercepts_ 
 
 ; bp - 2 line_physics segment (constant)
 ; bp - 4 linenum
@@ -2069,7 +2060,6 @@ ENDP
 ;boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thing, mobj_pos_t __far* thing_pos) ;
 
 PROC PIT_AddThingIntercepts_ NEAR
-PUBLIC PIT_AddThingIntercepts_ 
 
 ; ax  thingref
 ; dx  thing ptr
@@ -2261,7 +2251,6 @@ ENDP
 ; void __near P_TraverseIntercepts( traverser_t	func);
 ; NOTE: This is now jumped to instead of called. 
 PROC P_TraverseIntercepts_ NEAR
-PUBLIC P_TraverseIntercepts_ 
 
 ; [bp + 12] is traverser func
 
@@ -2867,7 +2856,6 @@ ENDP
 ; boolean	__near PTR_UseTraverse (intercept_t __far* in) ;
 
 PROC PTR_UseTraverse_ NEAR
-PUBLIC PTR_UseTraverse_ 
 
 ; dx is fixed as intercepts segment. get rid of it?
 
@@ -2987,7 +2975,6 @@ ENDP
 ;boolean __near PTR_SlideTraverse (intercept_t __far* in) {
 
 PROC PTR_SlideTraverse_ NEAR
-PUBLIC PTR_SlideTraverse_ 
 
 push  bx
 push  cx
@@ -3167,7 +3154,7 @@ ENDP
 ; ax thing ptr
 ; cx:bx thingpos
 
-PROC P_TryMove_ NEAR
+PROC P_TryMove_ FAR
 PUBLIC P_TryMove_ 
 
 ; bp - 2	  thing_pos hi (segment)
@@ -3175,10 +3162,10 @@ PUBLIC P_TryMove_
 ; bp - 4      linespecial
 
 
-; bp + 0Ah   ; x lo
-; bp + 0Ch   ; x hi
-; bp + 0Eh   ; y lo
-; bp + 010h  ; y hi
+; bp + 0Ch   ; x lo
+; bp + 0Eh   ; x hi
+; bp + 010h   ; y lo
+; bp + 012h  ; y hi
 
 
 
@@ -3203,11 +3190,11 @@ sub   sp, 2
 ;	}
 
 
+push  word ptr [bp + 012h]
 push  word ptr [bp + 010h]
-push  word ptr [bp + 0Eh]
 
 mov   byte ptr ds:[_floatok], 0
-les   bx, dword ptr [bp + 0Ah]
+les   bx, dword ptr [bp + 0Ch]
 mov   cx, es
 mov   dx, -1
 call  P_CheckPosition_
@@ -3298,7 +3285,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret   8
+retf   8
 
 mobj_bot_ok:
 skip_checks_for_teleport:
@@ -3355,11 +3342,11 @@ xchg  si, di
 ;	thing_pos->y = y;
 
 
-lds   ax, dword ptr [bp + 0Ah]
+lds   ax, dword ptr [bp + 0Ch]
 stosw
 mov   ax, ds
 stosw
-lds   ax, dword ptr [bp + 0Eh]
+lds   ax, dword ptr [bp + 010h]
 stosw
 mov   ax, ds
 stosw
@@ -3408,7 +3395,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret   8
+retf   8
 
 loop_next_num_spec:
 dec   word ptr ds:[_numspechit]
@@ -3510,7 +3497,6 @@ ENDP
 ; NOTE: tried selfmodifies here, but i think it is possible
 ; to recursively call this via the func passed in.
 PROC DoBlockmapLoop_ NEAR
-PUBLIC DoBlockmapLoop_
 
 ; xl   ax
 ; yl   dx
@@ -3655,7 +3641,6 @@ mov   word ptr ds:[_tmymove+2], ax
 jmp   exit_hitslideline
 
 PROC P_HitSlideLine_ NEAR
-PUBLIC P_HitSlideLine_ 
 
 PUSHA_NO_AX_MACRO
 
@@ -3810,7 +3795,6 @@ ML_BLOCKING = 1
 ; boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum) {
 
 PROC PIT_CheckLine_ NEAR
-PUBLIC PIT_CheckLine_
 
 ; dx:ax ld_physics
 ; bx: linenum  (SAME LINE, so shift 4?)
@@ -4112,7 +4096,6 @@ ret
 
 
 PROC PIT_CheckThing_ NEAR
-PUBLIC PIT_CheckThing_
 
 
 ;	if (thing == tmthing) {
@@ -5293,7 +5276,6 @@ ENDP
 ; fixed_t __near P_GetAttackRangeMult(int16_t range, fixed_t frac){
 
 PROC P_GetAttackRangeMult_ NEAR
-PUBLIC P_GetAttackRangeMult_
 
 
 cmp   ax, CHAINSAWRANGE
@@ -5378,7 +5360,6 @@ ENDP
 ; boolean __near PTR_ShootTraverse (intercept_t __far* in){
 
 PROC PTR_ShootTraverse_ NEAR
-PUBLIC PTR_ShootTraverse_
 
 ; bp - 2     INTERCEPTS_SEGMENT
 ; bp - 4     linenum shift 2            / thinker near ptr
@@ -6047,7 +6028,6 @@ jmp   aimtraverse_is_not_a_line
 
 ; this function could probably use bp internally for something?
 PROC PTR_AimTraverse_ NEAR
-PUBLIC PTR_AimTraverse_
 
 
 PUSHA_NO_AX_MACRO
@@ -6422,7 +6402,6 @@ ENDP
 ;boolean __near PTR_AimTraverse (intercept_t __far* in);
 
 PROC PIT_StompThing_ NEAR
-PUBLIC PIT_StompThing_
 
 push  si
 push  di
