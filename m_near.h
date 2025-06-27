@@ -480,8 +480,9 @@
 #define nofit		   		              (*((boolean __near*)               (_NULL_OFFSET + 0x06EA)))
 #define crushchange		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x06EB)))
 #define leveltime     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06EC)))
-
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x06F0)))
+#define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x06F0))
+// 6f3 free
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x06F4)))
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
 #define spritecache_nodes				  (((cache_node_page_count_t __near*) (CURRENT_POSITION_1)))

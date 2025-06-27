@@ -304,8 +304,6 @@ _braintargets =                      _NULL_OFFSET + 00480h
 _tmbbox =                            _NULL_OFFSET + 004C0h
 _spanfunc_call_lookup =              _NULL_OFFSET + 004D0h
 
-
-
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00554h
 _locallib_toupper_addr =             _NULL_OFFSET + 00558h
 _S_ChangeMusic_addr =              	 _NULL_OFFSET + 0055Ch
@@ -411,10 +409,10 @@ _attackrange16 = 		   			 _NULL_OFFSET + 006E8h
 _nofit = 		   			 		 _NULL_OFFSET + 006EAh
 _crushchange = 		   			 	 _NULL_OFFSET + 006EBh
 _leveltime =     		   			 _NULL_OFFSET + 006ECh
+_fopen_rb_argument =                 _NULL_OFFSET + 006F0h
+;6f3 free
 
-; 6c6
-
-_flatcache_nodes =				     _NULL_OFFSET + 006F0h
+_flatcache_nodes =				     _NULL_OFFSET + 006F4h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

@@ -25,6 +25,11 @@ EXTRN locallib_int86_67_:FAR
 
 EXTRN _currenttask:BYTE
 EXTRN _currentpageframes:BYTE
+EXTRN fread_:PROC
+EXTRN fopen_:PROC
+EXTRN fclose_:PROC
+EXTRN fseek_:PROC
+EXTRN locallib_far_fread_:PROC
 
 
 IFDEF COMPILE_CHIPSET
@@ -45,6 +50,7 @@ ENDIF
 .CODE
 
 ; todo get rid of tasks
+; todo put in constants?
 TASK_PHYSICS = 0
 TASK_RENDER = 1
 TASK_STATUS = 2
@@ -194,7 +200,7 @@ PROC Z_QuickMapPhysicsCode_ FAR
 PUBLIC Z_QuickMapPhysicsCode_
 
 
-;	Z_QuickMap2AI(pageswapargs_physics_code_offset_size, INDEXED_PAGE_9400_OFFSET);
+;	Z_QUICKMAPAI2(pageswapargs_physics_code_offset_size, INDEXED_PAGE_9400_OFFSET);
 
 
 push  dx
@@ -213,9 +219,6 @@ PUBLIC Z_QuickMapPhysics_
 
 
 push  dx
-;mov   dx, 0x18
-;mov   ax, 0x80e
-;call  Z_QuickMap_
 Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 pop   dx
@@ -331,9 +334,6 @@ PUBLIC Z_QuickMapRender_9000To6000_
 
 
 push  dx
-;mov   dx, 2
-;mov   ax, 0x992
-;call  Z_QuickMap_
 Z_QUICKMAPAI2 pageswapargs_render_to_6000_size INDEXED_PAGE_6000_OFFSET
 pop   dx
 retf  
@@ -399,9 +399,573 @@ pop   dx
 ret
 ENDP
 
-;PROC Z_QuickMapStatus_ FAR
-;PUBLIC Z_QuickMapStatus_
+PROC Z_QuickMapStatus_ FAR
+PUBLIC Z_QuickMapStatus_
 
-;ENDP
+push  dx
+
+Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4 (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI1 (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
+
+mov   byte ptr ds:[_currenttask], TASK_STATUS
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapStatusNoScreen4_ FAR
+PUBLIC Z_QuickMapStatusNoScreen4_
+
+
+
+push  dx
+Z_QUICKMAPAI4 (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI1 (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
+
+mov   byte ptr ds:[_currenttask], TASK_STATUS_NO_SCREEN4
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapScratch_5000_ FAR
+PUBLIC Z_QuickMapScratch_5000_
+
+push  dx
+Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapScratch_8000_ FAR
+PUBLIC Z_QuickMapScratch_8000_
+
+push  dx
+Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapScratch_7000_ FAR
+PUBLIC Z_QuickMapScratch_7000_
+
+push  dx
+Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapScratch_4000_ FAR
+PUBLIC Z_QuickMapScratch_4000_
+
+push  dx
+Z_QUICKMAPAI4 pageswapargs_scratch4000_offset_size INDEXED_PAGE_4000_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapScreen0_ FAR
+PUBLIC Z_QuickMapScreen0_
+
+push  dx
+Z_QUICKMAPAI4 pageswapargs_screen0_offset_size INDEXED_PAGE_8000_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapRenderPlanes9000only_ FAR
+PUBLIC Z_QuickMapRenderPlanes9000only_
+
+push  dx
+call  Z_QuickMapRender9000_
+Z_QUICKMAPAI4 (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_9C00_OFFSET
+
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapRenderPlanes_ FAR
+PUBLIC Z_QuickMapRenderPlanes_
+
+push  dx
+Z_QUICKMAPAI3 pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI1 (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4 (pageswapargs_renderplane_offset_size+4) INDEXED_PAGE_7000_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapRenderPlanesBack_ FAR
+PUBLIC Z_QuickMapRenderPlanesBack_
+
+push  dx
+Z_QUICKMAPAI3 pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+
+PROC Z_QuickMapFlatPage_ FAR
+PUBLIC Z_QuickMapFlatPage_
+
+push  bx
+mov   bx, dx
+shl   bx, 1
+
+SHIFT_PAGESWAP_ARGS bx
+;mov   word ptr [bx + 0x956], ax  ; TODO 
+mov   word ptr ds:[_pageswapargs + (pageswapargs_flatcache_offset * 2 * PAGE_SWAP_ARG_MULT) + bx], ax
+;	pageswapargs[pageswapargs_flatcache_offset + offset * PAGE_SWAP_ARG_MULT] = _EPR(page);
+
+Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
+pop   bx
+retf  
+
+ENDP
+
+
+PROC Z_QuickMapUndoFlatCache_ FAR
+PUBLIC Z_QuickMapUndoFlatCache_
+
+push  dx
+Z_QUICKMAPAI8 pageswapargs_rend_texture_size           INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size     INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI4 (pageswapargs_spritecache_offset_size+4)   INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI3 pageswapargs_maskeddata_offset_size   	INDEXED_PAGE_8400_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapMaskedExtraData_ FAR
+PUBLIC Z_QuickMapMaskedExtraData_
+
+push  dx
+Z_QUICKMAPAI2 pageswapargs_maskeddata_offset_size INDEXED_PAGE_8400_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapSpritePage_ NEAR
+PUBLIC Z_QuickMapSpritePage_
+
+push  dx
+Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
+pop   dx
+ret   
+
+ENDP
+
+PROC Z_QuickMapPhysics5000_ FAR
+PUBLIC Z_QuickMapPhysics5000_
+
+push  dx
+Z_QUICKMAPAI4 (pageswapargs_phys_offset_size+4) INDEXED_PAGE_5000_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapScreen1_ FAR
+PUBLIC Z_QuickMapScreen1_
+
+push  dx
+Z_QUICKMAPAI4 (pageswapargs_intermission_offset_size+12) INDEXED_PAGE_9000_OFFSET
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapPalette_ FAR
+PUBLIC Z_QuickMapPalette_
+
+push  dx
+Z_QUICKMAPAI5 pageswapargs_palette_offset_size INDEXED_PAGE_8000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_PALETTE
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapMenu_ FAR
+PUBLIC Z_QuickMapMenu_
+
+push  dx
+Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_MENU
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapIntermission_ FAR
+PUBLIC Z_QuickMapIntermission_
+
+push  dx
+Z_QUICKMAPAI16 pageswapargs_intermission_offset_size INDEXED_PAGE_6000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_INTERMISSION
+pop   dx
+retf  
+
+ENDP
+
+PROC Z_QuickMapWipe_ FAR
+PUBLIC Z_QuickMapWipe_
+
+push  dx
+Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI8 (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_WIPE
+pop   dx
+retf  
+
+ENDP
+
+quickmap_by_taskjump_jump_table:
+dw task_num_0_jump
+dw task_num_1_jump
+dw task_num_2_jump
+dw task_num_3_jump
+dw task_num_4_jump
+dw task_num_5_jump
+dw task_num_6_jump
+dw task_num_7_jump
+dw task_num_8_jump
+dw task_num_9_jump
+dw task_num_10_jump
+dw task_num_11_jump
+
+
+
+PROC Z_QuickMapByTaskNum_ FAR
+PUBLIC Z_QuickMapByTaskNum_
+
+push  bx
+push  dx
+
+xor   ah, ah
+mov   bx, ax
+sal   bx, 1
+jmp   word ptr cs:[bx + quickmap_by_taskjump_jump_table]
+task_num_0_jump:
+
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_PHYSICS
+task_num_3_jump:
+task_num_4_jump:
+task_num_5_jump:
+task_num_6_jump:
+task_num_7_jump:
+task_num_8_jump:
+task_num_10_jump:
+pop   dx
+pop   bx
+retf  
+task_num_1_jump:
+Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_RENDER
+pop   dx
+pop   bx
+retf  
+task_num_2_jump:
+Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4 (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI1 (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
+
+mov   byte ptr ds:[_currenttask], TASK_STATUS
+pop   dx
+pop   bx
+retf  
+
+task_num_9_jump:
+Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_MENU
+pop   dx
+pop   bx
+retf  
+task_num_11_jump:
+Z_QUICKMAPAI16 pageswapargs_intermission_offset_size INDEXED_PAGE_6000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_INTERMISSION
+pop   dx
+pop   bx
+retf  
+
+ENDP
+
+COMMENT @
+
+PROC Z_QuickMapVisplanePage_ FAR
+PUBLIC Z_QuickMapVisplanePage_
+
+push  bx
+push  cx
+push  si
+mov   cl, al
+mov   dh, dl
+mov   si, word ptr ds:[_pagenum9000]
+mov   al, dl
+sub   si, 3
+cbw  
+add   si, ax
+cmp   cl, 2
+jge   label_3
+mov   al, cl
+cbw  
+add   ax, 5
+label_2:
+mov   bx, 0xa2e
+mov   dl, 4
+mov   word ptr [bx], ax
+mov   bx, 0xa30
+inc   dh
+mov   word ptr [bx], si
+label_5:
+mov   al, dl
+cbw  
+mov   bx, ax
+cmp   dh, byte ptr ds:[bx + _active_visplanes]
+je    label_4:
+dec   dl
+test  dl, dl
+jg    label_5
+label_1:
+mov   al, cl
+cbw  
+mov   bx, ax
+mov   ax, 0xa2e
+mov   byte ptr ds:[bx + _active_visplanes], dh
+mov   dx, 1
+mov   bx, 0x19a
+call  0x3e2b
+mov   byte ptr [bx], 1
+pop   si
+pop   cx
+pop   bx
+retf  
+label_3:
+mov   al, cl
+cbw  
+add   ax, 0x1a
+jmp   label_2
+label_4:
+mov   byte ptr ds:[bx + _active_visplanes], 0
+jmp   label_1
+
+ENDP
+
+PROC Z_QuickMapVisplaneRevert_ FAR
+PUBLIC Z_QuickMapVisplaneRevert_
+
+push  dx
+mov   dx, 1
+mov   ax, dx
+call  Z_QuickMapVisplanePage_
+mov   dx, 2
+mov   ax, dx
+call  Z_QuickMapVisplanePage_
+mov   byte ptr ds:[_visplanedirty], 0
+pop   dx
+retf  
+
+ENDP
+
+
+PROC Z_QuickMapUnmapAll_ FAR
+PUBLIC Z_QuickMapUnmapAll_
+
+push  bx
+push  cx
+push  dx
+push  si
+mov   cx, word ptr [0x1eb4]
+xor   si, si
+xor   bx, bx
+mov   word ptr [bx + 0x80e], 0xffff
+mov   al, byte ptr [si + 0x484]
+cbw  
+add   bx, 4
+add   ax, cx
+inc   si
+mov   word ptr [bx + 0x80c], ax
+cmp   si, 0x18
+jl    0x419e
+mov   dx, 0x18
+mov   ax, 0x80e
+mov   word ptr [0x1eb4], cx
+call  0x3e2b
+mov   cx, word ptr [0x1eb4]
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+
+ENDP
+
+_doomcode_filename:
+db "DOOMCODE.BIN", 0
+
+set_overlay_jump_table:
+
+dw    exit_set_overlay
+dw    load_save_game_overlay_jump_target
+dw    finale_overlay_jump_target
+dw    exit_set_overlay
+dw    exit_set_overlay
+
+
+
+PROC Z_SetOverlay_ FAR
+PUBLIC Z_SetOverlay_
+; todo dont push etc unless necessary...
+push  bx
+push  cx
+push  dx
+push  si
+push  bp
+mov   bp, sp
+sub   sp, 4
+mov   byte ptr [bp - 2], al
+mov   al, byte ptr ds:[_currentoverlay]
+cmp   al, byte ptr [bp - 2]
+jne   do_overlay_change
+exit_set_overlay:
+LEAVE_MACRO 
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+do_overlay_change:
+mov   al, byte ptr [bp - 2]
+mov   byte ptr ds:[_currentoverlay], al
+cbw
+mov   si, ax
+mov   dx, _fopen_rb_argument
+shl   si, 2
+
+mov   ax, OFFSET _doomcode_filename
+call  CopyString13_
+; todo les
+mov   bx, word ptr ds:[si + codestartposition-4]
+mov   cx, word ptr ds:[si + codestartposition-2]
+call  fopen_
+xor   dx, dx
+mov   si, ax
+call  fseek_
+mov   bx, 1
+mov   dx, 2
+lea   ax, [bp - 4]
+mov   cx, si
+call  fread_
+mov   cx, 1
+mov   bx, word ptr [bp - 4]
+mov   dx, CODE_OVERLAY_SEGMENT
+push  si
+xor   ax, ax
+
+call  locallib_far_fread_
+mov   ax, si
+call  fclose_
+mov   al, byte ptr [bp - 2]
+dec   al
+cmp   al, 4
+ja    exit_set_overlay
+xor   ah, ah
+mov   bx, ax
+add   bx, ax
+jmp   word ptr cs:[bx + set_overlay_jump_table]
+load_save_game_overlay_jump_target:
+mov   ax, CODE_OVERLAY_SEGMENT
+xor   bx, bx
+mov   es, ax
+mov   word ptr es:[bx], OFFSET _playerMobjRef
+LEAVE_MACRO 
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf 
+
+finale_overlay_jump_target:
+mov   ax, CODE_OVERLAY_SEGMENT
+xor   bx, bx
+mov   es, ax
+mov   word ptr es:[bx], OFFSET _hu_font
+LEAVE_MACRO 
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+ENDP
+
+@
+
+; copy string from cs:ax to ds:_filename_argument
+; return _filename_argument in ax
+
+PROC CopyString13_Zonelocal_ NEAR
+PUBLIC CopyString13_Zonelocal_
+
+push  si
+push  di
+push  cx
+
+mov   di, OFFSET _filename_argument
+
+push  ds
+pop   es    ; es = ds
+
+push  cs
+pop   ds    ; ds = cs
+
+mov   si, ax
+
+mov   ax, 0
+stosw       ; zero out
+stosw
+stosw
+stosw
+stosw
+stosw
+stosb
+
+mov  cx, 13
+sub  di, cx
+
+do_next_char:
+lodsb
+stosb
+test  al, al
+je    done_writing
+loop do_next_char
+
+
+done_writing:
+
+mov   ax, OFFSET _filename_argument   ; ax now points to the near string
+
+push  ss
+pop   ds    ; restore ds
+
+pop   cx
+pop   di
+pop   si
+
+ret
+
+ENDP
+
 
 END

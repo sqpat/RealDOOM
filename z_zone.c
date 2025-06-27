@@ -315,6 +315,7 @@ void __near Z_QuickMapRenderTexture() {
 */
 void __far Z_QuickMapRender9000();
 
+/*
 
 // sometimes needed when rendering sprites..
 void __far Z_QuickMapStatus() {
@@ -391,6 +392,7 @@ void __far Z_QuickMapScratch_4000() {
 #endif
 }
 
+
 void __far Z_QuickMapScreen0() {
 	Z_QuickMap4AI(pageswapargs_screen0_offset_size, INDEXED_PAGE_8000_OFFSET);
 }
@@ -429,7 +431,6 @@ void __far Z_QuickMapRenderPlanesBack(){
 }
 
 
-
 void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 	// offset 4 means reset defaults/current values.
 
@@ -444,6 +445,7 @@ void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 
 #endif
 }
+
 
 void __far Z_QuickMapUndoFlatCache() {
 	
@@ -582,6 +584,8 @@ void __far Z_QuickMapByTaskNum(int8_t tasknum) {
 		#endif
 	}
 }
+
+*/
 
 // virtual to physical page mapping. 
 // 0 means unmapped. 1 means 8400, 2 means 8800, 3 means 8C00;
