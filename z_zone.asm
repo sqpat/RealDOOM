@@ -27,7 +27,6 @@ EXTRN locallib_far_fread_:PROC
 .DATA
 
 EXTRN _currentoverlay:BYTE
-EXTRN _currentpageframes:BYTE
 EXTRN _codestartposition:DWORD
 EXTRN _hu_font:WORD
 EXTRN _playerMobjRef:WORD
@@ -59,10 +58,10 @@ ELSE
     PROC Z_QuickMapMusicPageFrame_ FAR
     PUBLIC Z_QuickMapMusicPageFrame_
 
-    cmp   al, byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX]
-    jne   actually_changing_music_page_frame
-    retf  
-    actually_changing_music_page_frame:
+;    cmp   al, byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX]
+;    jne   actually_changing_music_page_frame
+;    retf  
+;    actually_changing_music_page_frame:
     push  bx
     push  dx
     mov   byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX], al
@@ -1350,7 +1349,7 @@ mov   byte ptr ds:[_currentoverlay], al
 cbw
 mov   si, ax
 mov   dx, _fopen_rb_argument
-shl   si, 2
+SHIFT_MACRO shl   si 2
 
 mov   ax, OFFSET _doomcode_filename
 call  CopyString13_Zonelocal_

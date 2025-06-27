@@ -1489,7 +1489,6 @@ fixed_t_union deadAttackerY;
 
 
 boolean FORCE_5000_LUMP_LOAD = false;
-uint8_t currentpageframes[4];
 
 SB_VoiceInfo        sb_voicelist[NUM_SFX_TO_MIX];
 

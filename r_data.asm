@@ -1959,18 +1959,9 @@ ENDP
 
 WAD_PATCH_7000_SEGMENT = 07000h
 
-done_with_composite_loop:
-;call      Z_QuickMapRender7000_
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_rend_offset_size+12) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
 
 
-LEAVE_MACRO     
-POPA_NO_AX_MACRO
-ret       
+
 
 
 PROC R_GenerateComposite_ NEAR
@@ -2131,6 +2122,16 @@ jge       set_x_to_x1
 xor       cx, cx
 push      cx  ; bp - 018h
 jmp       done_setting_x
+done_with_composite_loop:
+;call      Z_QuickMapRender7000_
+mov     dx, word ptr ds:[_emshandle]
+mov     ax, 05000h
+mov     cx, 4
+mov     si, (pageswapargs_rend_offset_size+12) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+int     067h
+LEAVE_MACRO     
+POPA_NO_AX_MACRO
+ret       
 set_x_to_x1:
 push      dx  ; bp - 018h
 done_setting_x:

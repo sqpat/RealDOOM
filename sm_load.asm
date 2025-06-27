@@ -166,6 +166,13 @@ ENDP
 PLAYINGDRIVER_LOCATION = 0DC00h
 
 
+do_change_music_call_1:
+call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
+jmp       done_with_changemusic_call_1
+do_change_music_call_2:
+call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
+jmp       done_with_changemusic_call_2
+
 PROC  I_LoadSong_
 
 
@@ -185,9 +192,10 @@ mov       byte ptr ds:[_currentMusPage], 0 ; reset 'current mus page'
 
 ; set page 0
 xor       ax, ax
-call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
+cmp       al, byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX]
+jne       do_change_music_call_1
 
-
+done_with_changemusic_call_1:
 ; cx:bx load location
 ; push:push for offset
 xor       bx, bx
@@ -228,7 +236,13 @@ load_next_mus_page:
 
 ; set page di
 mov       ax, di
-call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
+
+cmp       al, byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX]
+jne       do_change_music_call_2
+
+done_with_changemusic_call_2:
+
+
 
 ; 16256 is 07Fh shifted 7... this could with 8 bit mul and shfits faster but who cares.
 mov       ax, MUS_SIZE_PER_PAGE
@@ -251,8 +265,10 @@ jnz       load_next_mus_page
 
 
 ; set page 0 again
-xor       ax, ax
-call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
+cmp       byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX], 0
+jne       do_change_music_call_3
+
+done_with_changemusic_call_3:
 
 
 
@@ -317,6 +333,9 @@ mov       byte ptr es:[si], dl
 skip_instrument_invalid_genmidi_instrument:
 inc       dl
 jmp       loop_next_instrument_lookup
+do_change_music_call_3:
+call      dword ptr ds:[_Z_QuickMapMusicPageFrame_addr]
+jmp       done_with_changemusic_call_3
 
 jump_to_return_success:
 jmp       return_success

@@ -252,7 +252,8 @@
 
 
 // these are far pointers to functions..
-// #define Z_QuickMapVisplanePage_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0180)))
+#define currentpageframes               (((uint8_t    __near*)               (_NULL_OFFSET + 0x0180)))
+
 #define emshandle                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x0184)))
 #define pagenum9000                     (*((int16_t    __near*)              (_NULL_OFFSET + 0x0186)))
 
@@ -1404,7 +1405,6 @@ extern fixed_t_union deadAttackerY;
 
 
 extern boolean FORCE_5000_LUMP_LOAD;
-extern uint8_t currentpageframes[4];
 
 
 // in order to keep this 8 bytes, not 9 -> we put plauing as a flag on sfx_id which maxes at under 127.
