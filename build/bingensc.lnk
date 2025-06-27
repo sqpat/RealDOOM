@@ -100,7 +100,6 @@ file w_wad.obj
 file v_video.obj
 file z_scamp.obj
 file z_zone.obj
-file zone.obj
 
 
 NEWSEGMENT

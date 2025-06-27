@@ -82,7 +82,6 @@ GLOBOBJS = &
  w_wad.obj &
  z_init.obj &
  z_zone.obj &
- zone.obj &
  z_ht18.obj &
  st_init.obj &
  st_setup.obj &

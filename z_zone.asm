@@ -19,7 +19,6 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
  
-EXTRN locallib_int86_67_:FAR
 EXTRN fread_:PROC
 EXTRN fopen_:PROC
 EXTRN fclose_:PROC
@@ -89,7 +88,6 @@ ELSE
     mov   ax, 04400h + MUS_PAGE_FRAME_INDEX
     add   bx, MUS_DATA_PAGES
     int   067h
-    ;call  locallib_int86_67_
     pop   dx
     pop   bx
     retf  
@@ -115,7 +113,6 @@ ELSE
     mov   ax, 04400h + SFX_PAGE_FRAME_INDEX
     add   bx, SFX_DATA_PAGES
     int   067h
-    ;call  locallib_int86_67_
     pop   dx
     pop   bx
     retf  
@@ -145,7 +142,6 @@ ELSE
     mov   ax, 04400h + WAD_PAGE_FRAME_INDEX
     add   bx, FIRST_LUMPINFO_LOGICAL_PAGE
     int   067h
-    ;call  locallib_int86_67_
     pop   dx
     pop   bx
     retf  
@@ -905,26 +901,20 @@ dw    exit_set_overlay
 PROC Z_SetOverlay_ FAR
 PUBLIC Z_SetOverlay_
 ; todo dont push etc unless necessary...
+cmp   al, byte ptr ds:[_currentoverlay]
+jne   do_overlay_change
+retf  
+do_overlay_change:
+
 push  bx
 push  cx
 push  dx
 push  si
 push  bp
 mov   bp, sp
-sub   sp, 4
-mov   byte ptr [bp - 2], al
-mov   al, byte ptr ds:[_currentoverlay]
-cmp   al, byte ptr [bp - 2]
-jne   do_overlay_change
-exit_set_overlay:
-LEAVE_MACRO 
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
-do_overlay_change:
-mov   al, byte ptr [bp - 2]
+push  ax
+sub   sp, 2
+
 mov   byte ptr ds:[_currentoverlay], al
 cbw
 mov   si, ax
@@ -979,12 +969,13 @@ mov   ax, CODE_OVERLAY_SEGMENT
 xor   bx, bx
 mov   es, ax
 mov   word ptr es:[bx], OFFSET _hu_font
+exit_set_overlay:
 LEAVE_MACRO 
 pop   si
 pop   dx
 pop   cx
 pop   bx
-retf  
+retf
 ENDP
 
 

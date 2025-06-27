@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/26 23:41:16
+Created on:       25/06/26 23:45:35
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -78,8 +78,7 @@ R_MAIN_TEXT            CODE           AUTO           17e7:0c62       000001e2
 R_MAINHI_TEXT          CODE           AUTO           17e7:0e44       0000264f
 w_wad_TEXT             CODE           AUTO           17e7:34a0       0000030c
 V_VIDEO_TEXT           CODE           AUTO           17e7:37ac       00000616
-ZONE_TEXT              CODE           AUTO           17e7:3dc2       000004ec
-z_zone_TEXT            CODE           AUTO           17e7:42b0       00000000
+Z_ZONE_TEXT            CODE           AUTO           17e7:3dc2       000004ec
 p_setup_TEXT           CODE           AUTO           1c12:0000       00001268
 _TEXT                  CODE           AUTO           1c12:1270       0000245e
 FAR_DATA               FAR_DATA       AUTO           1f7e:000e       00000000
@@ -1155,7 +1154,7 @@ Module: v_video.obj(v_video.ASM)
 17e7:37ac      V_DrawPatch_
 17e7:3c92      V_MarkRect_
 17e7:389f*     V_DrawPatch5000Screen0_
-Module: zone.obj(zone.ASM)
+Module: z_zone.obj(z_zone.ASM)
 17e7:3e71      Z_QuickMapPhysics_
 17e7:3dc2      Z_QuickMapMusicPageFrame_
 17e7:3f41      Z_QuickMapStatusNoScreen4_

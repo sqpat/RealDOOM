@@ -102,7 +102,6 @@ file w_wad.obj
 file v_video.obj
 file z_ht18.obj
 file z_zone.obj
-file zone.obj
 
 
 NEWSEGMENT
