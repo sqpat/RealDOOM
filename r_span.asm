@@ -1334,7 +1334,8 @@ mov   byte ptr ds:[bx + _currentflatpage], al
 add   ax, FIRST_FLAT_CACHE_LOGICAL_PAGE
 
 ;call  Z_QuickMapFlatPage_
-
+push  cx
+push  si
 shl   bx, 1
 SHIFT_PAGESWAP_ARGS bx
 mov   word ptr ds:[_pageswapargs + (pageswapargs_flatcache_offset * PAGE_SWAP_ARG_MULT) + bx], ax
@@ -1345,6 +1346,8 @@ mov   ax, 05000h
 mov   cx, 4
 mov   si, (pageswapargs_flatcache_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
 int   067h
+pop   si
+pop   cx
 
 
 jmp  SHORT l1_cache_finished_updating
@@ -1665,8 +1668,6 @@ ENDP
 ;	}
 
 continue_flatcachemru:
-push      bx
-push      dx
 push      si
 
 
@@ -1744,8 +1745,6 @@ mov       byte ptr ds:[si + bx + 1], dl
 mov       byte ptr ds:[_flatcache_l2_head], dl
 exit_flatcachemru:
 pop       si
-pop       dx
-pop       bx
 jmp       done_with_mruL2
 
 ENDP
