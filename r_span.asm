@@ -1340,12 +1340,8 @@ shl   bx, 1
 SHIFT_PAGESWAP_ARGS bx
 mov   word ptr ds:[_pageswapargs + (pageswapargs_flatcache_offset * PAGE_SWAP_ARG_MULT) + bx], ax
 ;	pageswapargs[pageswapargs_flatcache_offset + offset * PAGE_SWAP_ARG_MULT] = _EPR(page);
-;Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
-mov   dx, word ptr ds:[_emshandle]
-mov   ax, 05000h
-mov   cx, 4
-mov   si, (pageswapargs_flatcache_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int   067h
+Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
+
 pop   si
 pop   cx
 
@@ -1858,10 +1854,14 @@ push  cx
 push  si
 mov   cl, al
 mov   dh, dl
-mov   si, word ptr ds:[_pagenum9000]
 mov   al, dl
-add   si, PAGE_8400_OFFSET ; sub 3
 cbw  
+IFDEF COMP_CH
+mov   si, CHIPSET_PAGE_9000
+ELSE
+mov   si, word ptr ds:[_pagenum9000]
+ENDIF
+add   si, PAGE_8400_OFFSET ; sub 3
 add   si, ax
 mov   al, cl
 cbw  
@@ -1873,7 +1873,7 @@ used_pagevalue_ready:
 ;		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
 
 ; _EPR here
-IFDEF COMPILE_CHIPSET
+IFDEF COMP_CH
     add  ax, EMS_MEMORY_PAGE_OFFSET
 ELSE
 ENDIF
@@ -1881,7 +1881,7 @@ mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * PAGE_SWAP
 
 
 ;pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
-IFDEF COMPILE_CHIPSET
+IFDEF COMP_CH
 ELSE
     mov   word ptr ds:[_pageswapargs + ((pageswapargs_visplanepage_offset+1) * PAGE_SWAP_ARG_MULT)], si
 ENDIF
@@ -1914,21 +1914,50 @@ mov   bx, ax
 
 mov   byte ptr ds:[bx + _active_visplanes], dh
 
-; todo this call doesnt work
 
-IFDEF COMPILE_CHIPSET
-    mov     dx, si
-    or      dx, EMS_AUTOINCREMENT_FLAG
-    mov     ax,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-    call    Z_QuickMap1AIC_ 
+IFDEF COMP_CH
+	IF COMP_CH EQ CHIPSET_SCAT
+
+        mov  	dx, SCAT_PAGE_SELECT_REGISTER
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        out  	dx, al
+        mov     si,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        mov  	dx, SCAT_PAGE_SET_REGISTER
+        lodsw
+        out 	dx, ax
+
+	ELSEIF COMP_CH EQ CHIPSET_SCAMP
+
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        out     SCAMP_PAGE_SELECT_REGISTER, al
+        mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        lodsw
+        out 	SCAMP_PAGE_SET_REGISTER, ax
+
+
+	ELSEIF COMP_CH EQ CHIPSET_HT18
+
+        mov  	dx, HT18_PAGE_SELECT_REGISTER
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        out  	dx, al
+        mov     si,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        mov  	dx, HT18_PAGE_SET_REGISTER
+        lodsw
+        out 	dx, ax
+
+    ENDIF
+
 ELSE
 
 
-    mov     dx, word ptr ds:[_emshandle]
-    mov     ax, 05000h
-    mov     cx, 1
-    mov     si, (pageswapargs_visplanepage_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-    int     067h
+    Z_QUICKMAPAI1 pageswapargs_visplanepage_offset_size unused_param
+
 
 
 ENDIF

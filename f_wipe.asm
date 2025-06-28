@@ -833,13 +833,8 @@ mov       ax, ss
 mov       ds, ax
 
 ;call      Z_QuickMapScratch_5000_
-;Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_scratch5000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
 
 
 mov       ax, SCREEN2_SEGMENT
@@ -923,38 +918,17 @@ push    cx
 push    si
 
 ;call Z_QuickMapWipe_
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_wipe_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
 
-;Z_QUICKMAPAI8 (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-add     si, 4 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
+Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
+
+Z_QUICKMAPAI8_NO_DX (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
 
 mov   	ax, SCREEN2_SEGMENT
 call  	I_ReadScreen_
 
 ;call Z_QuickMapPhysics_
-;Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, pageswapargs_phys_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 
 
@@ -977,18 +951,9 @@ push      si
 push      di
 
 ;call Z_QuickMapWipe_
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_wipe_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
 
-;Z_QUICKMAPAI8 (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-add     si, 4 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
+Z_QUICKMAPAI8_NO_DX (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
 
 mov       ax, SCREEN3_SEGMENT
 mov       cx, SCREENHEIGHT
@@ -1048,21 +1013,7 @@ je        ticcount_loop
 mov       byte ptr ds:[_hudneedsupdate], 6
 
 ;call Z_QuickMapPhysics_
-;Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, pageswapargs_phys_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 mov     byte ptr ds:[_currenttask], TASK_PHYSICS
 
 pop       di

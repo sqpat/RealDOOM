@@ -49,14 +49,8 @@
 
 // may swap with EMS/0xD000 ?
 
-// toggle for d000 build
-//#define __USED000 1
 
-#ifdef __USED000
-#define uppermemoryblock    0xD0000000
-#else
 #define uppermemoryblock    0xE0000000
-#endif
 
 typedef struct sfxinfo_struct sfxinfo_t;
 

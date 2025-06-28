@@ -72,7 +72,7 @@ pop   bx
 pop   dx
 pop   ax
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 push  -1        ; complicated for 8088...
 push  MT_PUFF

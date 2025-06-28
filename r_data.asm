@@ -28,20 +28,7 @@ EXTRN W_CacheLumpNumDirect_:FAR
 .DATA
 
 
-IFDEF COMPILE_CHIPSET
-    EXTRN Z_QuickMap1AIC_:NEAR
-    EXTRN Z_QuickMap2AIC_:NEAR
-    EXTRN Z_QuickMap3AIC_:NEAR
-    EXTRN Z_QuickMap4AIC_:NEAR
-    EXTRN Z_QuickMap5AIC_:NEAR
-    EXTRN Z_QuickMap6AIC_:NEAR
 
-    EXTRN Z_QuickMap8AIC_:NEAR
-    EXTRN Z_QuickMap16AIC_:NEAR
-    EXTRN Z_QuickMap24AIC_:NEAR
-ELSE
-
-ENDIF
 
 
 .CODE
@@ -414,7 +401,7 @@ mov       dh, al
 cmp       dl, CACHETYPE_COMPOSITE
 jne       not_composite
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
     push      OFFSET _texturecache_l2_head      ; bp - 2
     push      COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 4
     push      MAX_PATCHES                       ; bp - 6
@@ -446,7 +433,7 @@ cmp       dl, CACHETYPE_PATCH
 jne       is_sprite
 
 is_patch:
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
     push      OFFSET _texturecache_l2_head      ; bp - 2
     push      PATCHPAGE_SEGMENT                 ; bp - 4   
     push      MAX_PATCHES                       ; bp - 6
@@ -474,7 +461,7 @@ mov       di, OFFSET _texturecache_nodes
 jmp       done_with_switchblock
 
 is_sprite:
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
     push      OFFSET _spritecache_l2_head ; bp - 2
     push      SPRITEPAGE_SEGMENT          ; bp - 4
     push      MAX_SPRITE_LUMPS            ; bp - 6
@@ -751,7 +738,7 @@ PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
     push      CACHETYPE_SPRITE 
 ELSE
     mov   dx, CACHETYPE_SPRITE 
@@ -765,7 +752,7 @@ sal       bx, 1
 mov       dx, word ptr es:[bx] ; dx = size
 mov       bl, dh
 push      bx  ; bp - 4  only bl technically
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
     push      NUM_SPRITE_CACHE_PAGES 
 ELSE
     mov   di, NUM_SPRITE_CACHE_PAGES 
@@ -797,7 +784,7 @@ mov       bp, sp
 push      bx  ; only bl technically   ; cachetype
 mov       bl, dh
 push      bx  ; only bl technically
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
     push      NUM_TEXTURE_PAGES
 ELSE
     mov   di, NUM_TEXTURE_PAGES 
@@ -1111,7 +1098,7 @@ PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
     push  OFFSET R_MarkL1SpriteCacheMRU_
     push  OFFSET R_MarkL2SpriteCacheMRU_
     push  OFFSET Z_QuickMapSpritePage_
@@ -1200,7 +1187,7 @@ PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
     push  OFFSET R_MarkL1TextureCacheMRU_
     push  OFFSET R_MarkL2TextureCacheMRU_
     push  OFFSET Z_QuickMapRenderTexture_
@@ -1325,14 +1312,14 @@ mov   byte ptr ds:[bx + di], 0
 ; _NPR(PAGE_5000_OFFSET+startpage+i);
 
 
-IFDEF COMPILE_CHIPSET
-    IF COMPILE_CHIPSET EQ CHIPSET_SCAT
+IFDEF COMP_CH
+    IF COMP_CH EQ CHIPSET_SCAT
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         sal   bx, 1
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
         add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
         mov   word ptr ds:[bx], 03FFh
-    ELSEIF COMPILE_CHIPSET EQ CHIPSET_SCAMP
+    ELSEIF COMP_CH EQ CHIPSET_SCAMP
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         mov   dx, bx
         sal   bx, 1
@@ -1341,7 +1328,7 @@ IFDEF COMPILE_CHIPSET
         add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
         mov   word ptr ds:[bx], dx
         mov   dx, -1
-    ELSEIF COMPILE_CHIPSET EQ CHIPSET_HT18
+    ELSEIF COMP_CH EQ CHIPSET_HT18
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         sal   bx, 1
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
@@ -1574,14 +1561,14 @@ mov   byte ptr ds:[bx + di], ah  ; ah is 0
 ; complicated because _NPR for scamp requires a calculation,
 ; for other chipsets its various constants.
 
-IFDEF COMPILE_CHIPSET
-    IF COMPILE_CHIPSET EQ CHIPSET_SCAT
+IFDEF COMP_CH
+    IF COMP_CH EQ CHIPSET_SCAT
         mov   byte ptr ds:[bx + si], cl  ; -1
         sal   bx, 1                      ; startpage word offset.
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
         add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
         mov   word ptr ds:[bx], 03FFh
-    ELSEIF COMPILE_CHIPSET EQ CHIPSET_SCAMP
+    ELSEIF COMP_CH EQ CHIPSET_SCAMP
         mov   byte ptr ds:[bx + si], cl  ; -1
         mov   cx, bx
         sal   bx, 1                      ; startpage word offset.
@@ -1590,7 +1577,7 @@ IFDEF COMPILE_CHIPSET
         add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
         mov   word ptr ds:[bx], cx
         mov   cx, -1
-    ELSEIF COMPILE_CHIPSET EQ CHIPSET_HT18
+    ELSEIF COMP_CH EQ CHIPSET_HT18
         mov   byte ptr ds:[bx + si], cl  ; -1
         sal   bx, 1                      ; startpage word offset.
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
@@ -2050,13 +2037,7 @@ push      si ; bp - 014h
 
 ;call      Z_QuickMapScratch_7000_
 
-;Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_scratch7000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
 
 mov       al, byte ptr es:[bx - 1] ; texturepatchcount = texture->patchcount;
 xor       ah, ah
@@ -2124,11 +2105,9 @@ push      cx  ; bp - 018h
 jmp       done_setting_x
 done_with_composite_loop:
 ;call      Z_QuickMapRender7000_
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_rend_offset_size+12) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
+
+
 LEAVE_MACRO     
 POPA_NO_AX_MACRO
 ret       
@@ -2980,13 +2959,7 @@ push      dx       ; store future es
 mov       bx, si
 
 ;call      Z_QuickMapScratch_4000_
-;Z_QUICKMAPAI4 pageswapargs_scratch4000_offset_size INDEXED_PAGE_4000_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_scratch4000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_scratch4000_offset_size INDEXED_PAGE_4000_OFFSET
 
 
 mov       cx, SCRATCH_ADDRESS_4000_SEGMENT
@@ -3073,12 +3046,8 @@ mov       ax, ss
 mov       ds, ax
 pop       bp
 ;call      Z_QuickMapRender4000_
-;Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_rend_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
+
 
 pop       di
 pop       si
@@ -3106,13 +3075,7 @@ mov       bx, ax
 
 mov       di, dx    ; preserve dx thru quickmap
 ;call      Z_QuickMapScratch_5000_
-;Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_scratch5000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
 
 
 mov       dx, di
@@ -3260,14 +3223,7 @@ mov       ds, ax
 pop       bp 
 
 ;call      Z_QuickMapRender5000_
-;Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_rend_offset_size+4) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
 
 POPA_NO_AX_MACRO
 retf      

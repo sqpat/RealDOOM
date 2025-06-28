@@ -611,7 +611,7 @@ void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 	}
 
 		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
-	#if defined(__CHIPSET_BUILD)
+	#if defined(__CH_BLD)
 	#else
 		pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
 	#endif
@@ -661,7 +661,7 @@ void __far Z_QuickMapUnmapAll() {
 	for (i = 0; i < 24; i++) {
 
 		pageswapargs[i * PAGE_SWAP_ARG_MULT] = _NPR(i + PAGE_4000_OFFSET);
-		#if defined(__CHIPSET_BUILD)
+		#if defined(__CH_BLD)
 		#else
 			pageswapargs[i * PAGE_SWAP_ARG_MULT + 1] = pagenum9000 + ems_backfill_page_order[i];
 		#endif

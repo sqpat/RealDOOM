@@ -38,7 +38,7 @@ CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp -0
  
 #doom8088 build opts for comparison
 #CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99
-ASMOPTS = /d_USED000=0 /dCOMPILE_INSTRUCTIONSET=0
+ASMOPTS =  /dCOMPISA=0
 
 GLOBOBJS = &
  m_near.obj &

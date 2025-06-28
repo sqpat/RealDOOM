@@ -847,7 +847,7 @@ call   LoadInt16_
 
 
 mov    ax, word ptr [di - 0Ch]  ; di is 0Dh, we want 1
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
     shl    ax, 4
 ELSE
     shl    ax, 1
@@ -940,7 +940,7 @@ call   LoadInt8_
 
 mov    ax, word ptr es:[di-0Fh]  ; di is 0F, we want 0
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
     shl    ax, 4
 ELSE
     shl    ax, 1

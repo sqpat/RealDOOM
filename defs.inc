@@ -199,8 +199,12 @@ _tmymove =                         _NULL_OFFSET + 0017Ch
 
 ; 180h
 _currentpageframes =     			_NULL_OFFSET + 00180h
+
+IFDEF COMP_CH
+ELSE
 _emshandle =     					_NULL_OFFSET + 00184h
 _pagenum9000 =     					_NULL_OFFSET + 00186h
+ENDIF
 _prndindex =     					_NULL_OFFSET + 00188h
 _setStateReturn =     				_NULL_OFFSET + 0018Ah
 
@@ -524,14 +528,14 @@ CHIPSET_HT18  = 3
 
 
 ; should be in build params but if not...
-IFNDEF COMPILE_INSTRUCTIONSET
-	COMPILE_INSTRUCTIONSET = COMPILE_8086
+IFNDEF COMPISA
+	COMPISA = COMPILE_8086
 ENDIF
  
 
 LEAVE_MACRO MACRO 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	leave
 ELSE
 	mov sp, bp
@@ -542,7 +546,7 @@ ENDM
 
 PUSHA_NO_AX_MACRO MACRO
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	pusha
 ELSE	
 	push  bx
@@ -558,7 +562,7 @@ ENDM
 
 PUSHA_NO_AX_OR_BP_MACRO MACRO
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	pusha
 ELSE	
 	push  bx
@@ -572,7 +576,7 @@ ENDM
 
 POPA_NO_AX_MACRO MACRO
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	popa
 ELSE	
 	pop   di
@@ -587,7 +591,7 @@ ENDM
 
 POPA_NO_AX_OR_BP_MACRO MACRO
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	popa
 ELSE	
 	pop   di
@@ -615,10 +619,10 @@ ENDM
 SHIFT_MACRO MACRO instruction, register, count
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 	&instruction &register, &count
 
-ELSEIF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ELSEIF COMPISA GE COMPILE_186
 	IF COUNT GE 4
 		&instruction &register, &count
 	ELSE
@@ -635,11 +639,11 @@ ENDIF
 ENDM
 
 INSTRUCTION_SET_MACRO_NO_MEDIUM MACRO 
-IF COMPILE_INSTRUCTIONSET EQ COMPILE_386
+IF COMPISA EQ COMPILE_386
 	.386
-ELSEIF COMPILE_INSTRUCTIONSET EQ COMPILE_286
+ELSEIF COMPISA EQ COMPILE_286
 	.286
-ELSEIF COMPILE_INSTRUCTIONSET EQ COMPILE_186
+ELSEIF COMPISA EQ COMPILE_186
 	.186
 ELSE
 	.8086
@@ -652,11 +656,11 @@ INSTRUCTION_SET_MACRO MACRO
 
 	.MODEL medium
 
-IF COMPILE_INSTRUCTIONSET EQ COMPILE_386
+IF COMPISA EQ COMPILE_386
 	.386
-ELSEIF COMPILE_INSTRUCTIONSET EQ COMPILE_286
+ELSEIF COMPISA EQ COMPILE_286
 	.286
-ELSEIF COMPILE_INSTRUCTIONSET EQ COMPILE_186
+ELSEIF COMPISA EQ COMPILE_186
 	.186
 ELSE
 	.8086
@@ -669,24 +673,355 @@ ENDM
 ;
 SCAMP_PAGE_9000_OFFSET  =   020h
 
-IFDEF COMPILE_CHIPSET
+IFDEF COMP_CH
 
 	PAGE_SWAP_ARG_MULT = 1
 
 
-	IF COMPILE_CHIPSET EQ CHIPSET_SCAT
+	IF COMP_CH EQ CHIPSET_SCAT
 		EMS_MEMORY_PAGE_OFFSET  = 08080h
 		EMS_AUTOINCREMENT_FLAG  =   080h
 		CHIPSET_PAGE_9000       =   014h
-	ELSEIF COMPILE_CHIPSET EQ CHIPSET_SCAMP
+
+		EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT = 08080h
+
+		; consider ; inc dx x2?
+
+		SCAT_PAGE_D000 = 018h
+		SCAT_PAGE_SELECT_REGISTER = 020Ah
+		SCAT_PAGE_SET_REGISTER = 0208h
+		EMS_MEMORY_PAGE_OFFSET = 080h
+		
+		Z_QUICKMAPAI1 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, SCAT_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, SCAT_PAGE_SET_REGISTER 
+			lodsw
+			out 	dx, ax
+		ENDM
+
+		Z_QUICKMAPAI2 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, SCAT_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, SCAT_PAGE_SET_REGISTER
+			lodsw
+			out 	dx, ax
+			lodsw
+			out 	dx, ax
+		ENDM
+
+		Z_QUICKMAPAI3 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, SCAT_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, SCAT_PAGE_SET_REGISTER
+			lodsw
+			out 	dx, ax
+			lodsw
+			out 	dx, ax
+			lodsw
+			out 	dx, ax
+		ENDM
+
+		Z_QUICKMAPAI4 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, SCAT_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, SCAT_PAGE_SET_REGISTER
+			mov  	cx, 4
+			rep  	outsw
+		ENDM
+
+		Z_QUICKMAPAI5 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, SCAT_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, SCAT_PAGE_SET_REGISTER
+			mov  	cx, 5
+			rep  	outsw
+		ENDM
+
+		Z_QUICKMAPAI6 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, SCAT_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, SCAT_PAGE_SET_REGISTER
+			mov  	cx, 6
+			rep  	outsw
+		ENDM
+
+		Z_QUICKMAPAI7 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, SCAT_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, SCAT_PAGE_SET_REGISTER
+			mov  	cx, 7
+			rep  	outsw
+		ENDM
+
+		Z_QUICKMAPAI8 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, SCAT_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, SCAT_PAGE_SET_REGISTER
+			mov  	cx, 8
+			rep  	outsw
+		ENDM
+
+		Z_QUICKMAPAI16 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, SCAT_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, SCAT_PAGE_SET_REGISTER
+			mov  	cx, 16
+			rep  	outsw
+		ENDM
+
+		Z_QUICKMAPAI24 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, SCAT_PAGE_SELECT_REGISTER
+			mov		al, 080h
+			out  	dx, al
+			mov  	dx, SCAT_PAGE_SET_REGISTER
+			mov  	cx, 24
+			rep  	outsw
+		ENDM
+
+
+
+	ELSEIF COMP_CH EQ CHIPSET_SCAMP
 		EMS_MEMORY_PAGE_OFFSET  = 00050h
 		SCAMP_PAGE_9000_OFFSET  =   020h
 		EMS_AUTOINCREMENT_FLAG  =   040h
 		CHIPSET_PAGE_9000       =   020h
-	ELSEIF COMPILE_CHIPSET EQ CHIPSET_HT18
+
+		SCAMP_PAGE_FRAME_BASE_INDEX = 4    ; todo ??? d000?
+		SCAMP_PAGE_SELECT_REGISTER = 0E8h
+		SCAMP_PAGE_SET_REGISTER = 0EAh
+
+
+		Z_QUICKMAPAI1 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out     SCAMP_PAGE_SELECT_REGISTER, al
+			lodsw
+			out 	SCAMP_PAGE_SET_REGISTER, ax
+		ENDM
+
+		Z_QUICKMAPAI2 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out     SCAMP_PAGE_SELECT_REGISTER, al
+			lodsw
+			out 	SCAMP_PAGE_SET_REGISTER, ax
+			lodsw
+			out 	SCAMP_PAGE_SET_REGISTER, ax
+		ENDM
+
+		Z_QUICKMAPAI3 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out     SCAMP_PAGE_SELECT_REGISTER, al
+			lodsw
+			out 	SCAMP_PAGE_SET_REGISTER, ax
+			lodsw
+			out 	SCAMP_PAGE_SET_REGISTER, ax
+			lodsw
+			out 	SCAMP_PAGE_SET_REGISTER, ax
+		ENDM
+
+		Z_QUICKMAPAI4 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out     SCAMP_PAGE_SELECT_REGISTER, al
+			mov	    dx, SCAMP_PAGE_SET_REGISTER
+			mov     cx, 4
+			rep     outsw			
+		ENDM
+
+		Z_QUICKMAPAI5 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out     SCAMP_PAGE_SELECT_REGISTER, al
+			mov	    dx, SCAMP_PAGE_SET_REGISTER
+			mov     cx, 5
+			rep     outsw			
+		ENDM
+
+		Z_QUICKMAPAI6 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out     SCAMP_PAGE_SELECT_REGISTER, al
+			mov	    dx, SCAMP_PAGE_SET_REGISTER
+			mov     cx, 6
+			rep     outsw			
+		ENDM
+
+		Z_QUICKMAPAI7 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out     SCAMP_PAGE_SELECT_REGISTER, al
+			mov	    dx, SCAMP_PAGE_SET_REGISTER
+			mov     cx, 7
+			rep     outsw			
+		ENDM
+
+		Z_QUICKMAPAI8 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out     SCAMP_PAGE_SELECT_REGISTER, al
+			mov	    dx, SCAMP_PAGE_SET_REGISTER
+			mov     cx, 8
+			rep     outsw			
+		ENDM
+
+		Z_QUICKMAPAI16 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out     SCAMP_PAGE_SELECT_REGISTER, al
+			mov	    dx, SCAMP_PAGE_SET_REGISTER
+			mov     cx, 16
+			rep     outsw			
+		ENDM
+
+		Z_QUICKMAPAI24 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	al, 04Ch     ; 040h for autoincrement enable. 0Ch for page 4000 index
+
+			out     SCAMP_PAGE_SELECT_REGISTER, al
+			mov	    dx, SCAMP_PAGE_SET_REGISTER
+			mov     cx, 24
+			rep     outsw			
+		ENDM
+
+	ELSEIF COMP_CH EQ CHIPSET_HT18
 		EMS_MEMORY_PAGE_OFFSET  = 00050h
 		EMS_AUTOINCREMENT_FLAG  =   080h
 		CHIPSET_PAGE_9000       =   014h
+
+		HT18_PAGE_D000 = 01Ch
+
+		HT18_PAGE_SELECT_REGISTER = 01EEh
+		HT18_PAGE_SET_REGISTER = 01ECh
+
+
+		Z_QUICKMAPAI1 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, HT18_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, HT18_PAGE_SET_REGISTER
+			lodsw
+			out 	dx, ax
+		ENDM
+
+		Z_QUICKMAPAI2 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, HT18_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, HT18_PAGE_SET_REGISTER
+			lodsw
+			out 	dx, ax
+			lodsw
+			out 	dx, ax
+		ENDM
+
+		Z_QUICKMAPAI3 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, HT18_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, HT18_PAGE_SET_REGISTER
+			lodsw
+			out 	dx, ax
+			lodsw
+			out 	dx, ax
+			lodsw
+			out 	dx, ax
+		ENDM
+
+		Z_QUICKMAPAI4 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, HT18_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, HT18_PAGE_SET_REGISTER
+			mov     cx, 4
+			rep     outsw
+		ENDM
+
+		Z_QUICKMAPAI5 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, HT18_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, HT18_PAGE_SET_REGISTER
+			mov     cx, 5
+			rep     outsw
+		ENDM
+
+		Z_QUICKMAPAI6 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, HT18_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, HT18_PAGE_SET_REGISTER
+			mov     cx, 6
+			rep     outsw
+		ENDM
+
+		Z_QUICKMAPAI7 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, HT18_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, HT18_PAGE_SET_REGISTER
+			mov     cx, 7
+			rep     outsw
+		ENDM
+
+		Z_QUICKMAPAI8 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, HT18_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, HT18_PAGE_SET_REGISTER
+			mov     cx, 8
+			rep     outsw
+		ENDM
+
+		Z_QUICKMAPAI16 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, HT18_PAGE_SELECT_REGISTER
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			out  	dx, al
+			mov  	dx, HT18_PAGE_SET_REGISTER
+			mov     cx, 16
+			rep     outsw
+		ENDM
+
+		Z_QUICKMAPAI24 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	dx, HT18_PAGE_SELECT_REGISTER
+			mov  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
+			out  	dx, al
+			mov  	dx, HT18_PAGE_SET_REGISTER
+			mov     cx, 24
+			rep     outsw
+		ENDM
+
 	ENDIF
 
 	EPR_MACRO MACRO var
@@ -706,79 +1041,47 @@ IFDEF COMPILE_CHIPSET
 
 	_NPR MACRO arg, page
 
-		IF COMPILE_CHIPSET EQ CHIPSET_SCAT
+		IF COMP_CH EQ CHIPSET_SCAT
 			dw 003FFh
-		ELSEIF COMPILE_CHIPSET EQ CHIPSET_SCAMP
+		ELSEIF COMP_CH EQ CHIPSET_SCAMP
 			dw (&arg + SCAMP_PAGE_9000_OFFSET + 4) AND 0FFFFh   ; shut up overflow warning
-		ELSEIF COMPILE_CHIPSET EQ CHIPSET_HT18
+		ELSEIF COMP_CH EQ CHIPSET_HT18
 			dw 00000h
 		ENDIF
 
 
 	ENDM
 
-
-	Z_QUICKMAPAI1 MACRO pageswapindex, page
-		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
-		mov     ax,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-		call    Z_QuickMap1AIC_ 
+	Z_QUICKMAPAI1_NO_DX MACRO  arg1, arg2
+		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
-
-	Z_QUICKMAPAI2 MACRO pageswapindex, page
-		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
-		mov     ax,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-		call    Z_QuickMap2AIC_ 
+	Z_QUICKMAPAI2_NO_DX MACRO  arg1, arg2
+		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
-
-	Z_QUICKMAPAI3 MACRO pageswapindex, page
-		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
-		mov     ax,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-		call    Z_QuickMap3AIC_ 
+	Z_QUICKMAPAI3_NO_DX MACRO  arg1, arg2
+		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
-
-	Z_QUICKMAPAI4 MACRO pageswapindex, page
-		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
-		mov     ax,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-		call    Z_QuickMap4AIC_ 
+	Z_QUICKMAPAI4_NO_DX MACRO  arg1, arg2
+		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
-
-	Z_QUICKMAPAI5 MACRO pageswapindex, page
-		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
-		mov     ax,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-		call    Z_QuickMap5AIC_ 
+	Z_QUICKMAPAI5_NO_DX MACRO  arg1, arg2
+		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
-
-	Z_QUICKMAPAI6 MACRO pageswapindex, page
-		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
-		mov     ax,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-		call    Z_QuickMap6AIC_ 
+	Z_QUICKMAPAI6_NO_DX MACRO  arg1, arg2
+		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
-
-	Z_QUICKMAPAI7 MACRO pageswapindex, page
-		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
-		mov     ax,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-		call    Z_QuickMap7AIC_ 
+	Z_QUICKMAPAI7_NO_DX MACRO  arg1, arg2
+		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
-
-	Z_QUICKMAPAI8 MACRO pageswapindex, page
-		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
-		mov     ax,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-		call    Z_QuickMap8AIC_ 
+	Z_QUICKMAPAI8_NO_DX MACRO  arg1, arg2
+		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
-
-	Z_QUICKMAPAI16 MACRO pageswapindex, page
-		mov     dx, page OR EMS_AUTOINCREMENT_FLAG
-		mov     ax,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-		call    Z_QuickMap16AIC_ 
+	Z_QUICKMAPAI16_NO_DX MACRO  arg1, arg2
+		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
-
-	Z_QUICKMAPAI24 MACRO pageswapindex, page
-		mov     ax,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-		call    Z_QuickMap24AIC_ 
+	Z_QUICKMAPAI24_NO_DX MACRO  arg1, arg2
+		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
-
-
-
 
 
 ELSE
@@ -891,6 +1194,7 @@ ELSE
 		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
 		int     067h
 
+		mov     ax, 05000h
 		add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
 		int     067h
 
@@ -914,11 +1218,115 @@ ELSE
 
 	ENDM
 
+	Z_QUICKMAPAI1_NO_DX MACRO pageswapindex, page
+
+		mov     ax, 05000h
+		mov     cx, 1
+		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+		int     067h
+
+	ENDM
+
+	Z_QUICKMAPAI2_NO_DX MACRO pageswapindex, page
+
+		mov     ax, 05000h
+		mov     cx, 2
+		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+		int     067h
+
+	ENDM
+
+	Z_QUICKMAPAI3_NO_DX MACRO pageswapindex, page
+
+		mov     ax, 05000h
+		mov     cx, 3
+		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+		int     067h
+
+	ENDM
+
+	Z_QUICKMAPAI4_NO_DX MACRO pageswapindex, page
+
+		mov     ax, 05000h
+		mov     cx, 4
+		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+		int     067h
+
+	ENDM
+
+	Z_QUICKMAPAI5_NO_DX MACRO pageswapindex, page
+
+		mov     dx, word ptr ds:[_emshandle]
+		mov     ax, 05000h
+		mov     cx, 5
+		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+		int     067h
+
+	ENDM
+
+	Z_QUICKMAPAI6_NO_DX MACRO pageswapindex, page
+
+		mov     ax, 05000h
+		mov     cx, 6
+		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+		int     067h
+
+	ENDM
+
+	Z_QUICKMAPAI7_NO_DX MACRO pageswapindex, page
+
+		mov     ax, 05000h
+		mov     cx, 7
+		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+		int     067h
+
+	ENDM
+
+	Z_QUICKMAPAI8_NO_DX MACRO pageswapindex, page
+
+		mov     ax, 05000h
+		mov     cx, 8
+		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+		int     067h
+
+	ENDM
+
+	Z_QUICKMAPAI16_NO_DX MACRO pageswapindex, page
+
+		mov     ax, 05000h
+		mov     cx, 8
+		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+		int     067h
+
+		mov     ax, 05000h
+		add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
+		int     067h
+
+	ENDM
+
+	Z_QUICKMAPAI24_NO_DX MACRO pageswapindex, page
+
+		mov     ax, 05000h
+		mov     cx, 8
+		mov     si, &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+		int     067h
+
+		mov     ax, 05000h
+		add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
+		int     067h
+
+		mov     ax, 05000h
+		add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
+		int     067h
+
+	ENDM
+
 	
 
 
 ENDIF
 
+NOWARN OVF
 
 ;pagenum9000 = CHIPSET_PAGE_9000
 
@@ -952,6 +1360,7 @@ INDEXED_PAGE_4400_OFFSET = (PAGE_4400_OFFSET+CHIPSET_PAGE_9000)
 INDEXED_PAGE_4800_OFFSET = (PAGE_4800_OFFSET+CHIPSET_PAGE_9000)
 INDEXED_PAGE_4C00_OFFSET = (PAGE_4C00_OFFSET+CHIPSET_PAGE_9000)
 
+WARN OVF
 
 ; called with reg in var
 ; reg may need to be shifted one

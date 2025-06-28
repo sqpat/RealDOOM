@@ -121,7 +121,7 @@ void __near Z_ShutdownEMS() {
 
 	int16_t_union result;
 
-	#if defined(__CHIPSET_BUILD)
+	#if defined(__CH_BLD)
 			// dont do anything
 		Z_QuickMapUnmapAll();
 	#else

@@ -95,7 +95,7 @@ xor   dh, dh
 
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 imul   si, dx , SCREENWIDTH
 
@@ -173,7 +173,7 @@ mov   cl, ah
 
 ; cant optimize this because of the negative case with imul apparently.
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 xor    ah, ah      ; al contains topdelta
 imul   di, ax, SCREENWIDTH
 mov    dx, SCREENWIDTH - 1 
@@ -351,7 +351,7 @@ xor   dh, dh
 ; si = y * screenwidth
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 imul   si, dx , SCREENWIDTH
 
@@ -429,7 +429,7 @@ xor   ah, ah      ; al contains topdelta
 ; of which code is in it if the if is active. Probably related to 
 ; selfmodifying code references.
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 imul   di, ax, SCREENWIDTH
 mov    dx, SCREENWIDTH - 1 
 

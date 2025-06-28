@@ -1093,7 +1093,7 @@ test  di, di
 je    no_next_ref
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 	xchg  ax, si ; store si in ax
 	imul  si, di, SIZEOF_THINKER_T
@@ -1157,7 +1157,7 @@ has_prev_ref:
 ; dx is thingsprevRef
 ; di is thingsnextRef
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 	imul  si, dx, SIZEOF_MOBJ_POS_T
 
@@ -1202,7 +1202,7 @@ jl    exit_unset_position_and_pop_once
 
 ; shift ax 7
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     sar   ax, MAPBLOCKSHIFT
 ELSE
 	sal al, 1
@@ -1218,7 +1218,7 @@ jge   exit_unset_position_and_pop_once
 ; however we caught negatives above.
 
 ; shift bx 7
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     sar   bx, MAPBLOCKSHIFT
 ELSE
 	sal bl, 1
@@ -1282,7 +1282,7 @@ do_next_check_nextref_loop_iter:
 ; di is bnextRef
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 	imul  si, ax, SIZEOF_THINKER_T
 
@@ -1427,7 +1427,7 @@ xchg  ax, word ptr es:[bx + 8]
 
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	imul  di, dx, SIZEOF_THINKER_T
 ELSE
 	push  ax
@@ -1446,7 +1446,7 @@ mov   si, MOBJPOSLIST_6800_SEGMENT
 mov   es, si
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	imul  si, dx, SIZEOF_MOBJ_POS_T
 ELSE
 	push  ax
@@ -1474,7 +1474,7 @@ je    done_setting_sector_stuff
 ;			thingList->sprevRef = thingRef;
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	imul  bx, ax, SIZEOF_THINKER_T
 ELSE
 	push  dx
@@ -1513,7 +1513,7 @@ sub   bx, word ptr ds:[_bmaporgx]
 jl    set_null_bnextref_and_exit ; quick check branches early
 
 ; shift ax 7
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     sar   ax, MAPBLOCKSHIFT
 ELSE
 	sal al, 1
@@ -1531,7 +1531,7 @@ jge   set_null_bnextref_and_exit ; quick check branches early
 ; however we caught negatives above.
 
 ; shift bx 7
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     sar   bx, MAPBLOCKSHIFT
 ELSE
 	sal bl, 1
@@ -1796,7 +1796,7 @@ je   exit_blockthingsiterator_return1
 
 loop_check_next_block_thing:
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 	imul bx, si, SIZEOF_MOBJ_POS_T
 	mov  ax, si
@@ -2493,7 +2493,7 @@ mov   word ptr [bp - 8], ax     ; store hibits
 mov   ax, word ptr [bp + 0Ah]
 
 ; shift ax 7
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     sar   ax, MAPBLOCKSHIFT
 ELSE
 	sal al, 1
@@ -2508,7 +2508,7 @@ xchg  ax, dx  ; dx stores xt2
 mov   ax, word ptr [bp + 0Eh]
 
 ; shift ax 7
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     sar   ax, MAPBLOCKSHIFT
 ELSE
 	sal al, 1
@@ -3209,7 +3209,7 @@ jne   move_ok_do_unset_position
 mov   ax, word ptr ds:[_tmceilingz]
 sub   ax, word ptr ds:[_tmfloorz]
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	SHIFT_MACRO sar   ax 3
 ELSE 
     ; this is here because on 8086 an above rel jump is too far... urgh. revisit?
@@ -4347,7 +4347,7 @@ mov   ax, word ptr [bp - 01Ch]
 test  ax, ax  ; NULL_THINKERREF check
 je    good_missile_target  
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	imul  bx, ax, SIZEOF_THINKER_T
 	add   bx, (_thinkerlist + 4)
 ELSE
@@ -4529,7 +4529,7 @@ xor   dx, dx  ; cwd seems bad??? are we passing in -1?
 div   bx
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	imul  bx, ax, SIZEOF_MOBJ_POS_T
 ELSE
 	mov   bx, SIZEOF_MOBJ_POS_T
@@ -4640,7 +4640,7 @@ sub   ax, di
 
 ; shift ax 7 and give cl 1 shifted left
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     mov   cl, al
     sar   ax, MAPBLOCKSHIFT
     sal   cl, 1
@@ -4672,7 +4672,7 @@ mov   cl, al
 
 ; shift ax 7
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     sar   ax, MAPBLOCKSHIFT
 ELSE
 	sal al, 1
@@ -4701,7 +4701,7 @@ sub   ax, di
 
 ; shift ax 7 and give cl 1 shifted left
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     mov   cl, al
     sar   ax, MAPBLOCKSHIFT
     sal   cl, 1
@@ -4732,7 +4732,7 @@ mov   cl, al
 
 ; shift ax 7
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     sar   ax, MAPBLOCKSHIFT
 ELSE
 	sal al, 1
@@ -4855,7 +4855,7 @@ PUBLIC P_SlideMove_
 PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	push  2  ; bp - 2 loopcount  
 ELSE
 	mov   ax, 2
@@ -4986,7 +4986,7 @@ adc   cx, di  				   ; leadx hi
 add   ax, word ptr [si + 012h]
 adc   dx, word ptr [si + 014h]
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	push  OFFSET PTR_SlideTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  PT_ADDLINES
 ELSE
@@ -5012,7 +5012,7 @@ adc   dx, word ptr [bp - 0Ch]
 ; call 2
 ;	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	push  OFFSET PTR_SlideTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  PT_ADDLINES
 ELSE
@@ -5041,7 +5041,7 @@ push  si ; temp 3 lo
 
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	push  OFFSET PTR_SlideTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  PT_ADDLINES
 ELSE
@@ -5738,7 +5738,7 @@ is_not_a_line:
 ; bx has thingnum
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	imul  dx, bx, SIZEOF_THINKER_T
 ELSE
 	mov   ax, SIZEOF_THINKER_T
@@ -5751,7 +5751,7 @@ add   dx, (_thinkerlist + 4)
 cmp   dx, word ptr ds:[_shootthing]
 je    exit_shoottraverse_return_1
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	imul  bx, bx, SIZEOF_MOBJ_POS_T
 ELSE
 	push  dx
@@ -6000,7 +6000,7 @@ pop   bx
 pop   dx
 pop   ax
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 push  -1        ; complicated for 8088...
 push  MT_BLOOD
@@ -6277,7 +6277,7 @@ aimtraverse_is_not_a_line:
 ;	}
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 	imul  ax, bx, SIZEOF_THINKER_T
 
@@ -6294,7 +6294,7 @@ cmp   ax, word ptr ds:[_shootthing]
 je    exit_aimtraverse_return_1
 push  ax  ; thing ptr
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 	imul  di, bx, SIZEOF_MOBJ_POS_T
 
@@ -6690,7 +6690,7 @@ sub   dx, MAXRADIUSNONFRAC
 sub   cx, si
 add   cx, MAXRADIUSNONFRAC
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     sar   ax, MAPBLOCKSHIFT
 	sar   bx, MAPBLOCKSHIFT
 	sar   dx, MAPBLOCKSHIFT
@@ -6825,7 +6825,7 @@ sub   ax, (_thinkerlist + 4)
 xor   dx, dx
 div   bx
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 	imul  bx, ax, SIZEOF_MOBJ_POS_T
 
@@ -6919,7 +6919,7 @@ jmp   aim_line_done_with_switchblock_shift
 
 aim_line_is_melee:
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 	SHLD  dx, ax, 6
 	SHLD  cx, bx, 6
 ELSE
@@ -6992,7 +6992,7 @@ adc   cx, word ptr [bp - 2]
 
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	push  OFFSET PTR_AimTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  (PT_ADDLINES OR PT_ADDTHINGS)
 ELSE
@@ -7106,7 +7106,7 @@ sub   ax, (_thinkerlist + 4)
 xor   dx, dx
 div   bx
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 
 	imul  bx, ax, SIZEOF_MOBJ_POS_T
 
@@ -7186,7 +7186,7 @@ jmp   lineattack_done_with_switchblock
 
 lineattack_is_melee:
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 	SHLD  dx, ax, 6
 	SHLD  cx, bx, 6
 ELSE
@@ -7250,7 +7250,7 @@ add   bx, word ptr [bp - 4]
 adc   cx, word ptr [bp - 2]
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	push  OFFSET PTR_ShootTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  (PT_ADDLINES OR PT_ADDTHINGS)
 ELSE
@@ -7328,7 +7328,7 @@ xchg  ax, di    ; di has sine/cosine fineangle lookup
 mov   si, FINESINE_SEGMENT
 mov   es, si
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	push  OFFSET PTR_UseTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  PT_ADDLINES
 ELSE
@@ -7346,7 +7346,7 @@ mov   si, es
 
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 	SHLD  dx, ax, 6
 
 ELSE
@@ -7381,7 +7381,7 @@ les   dx, dword ptr [bp - 4]
 mov   ax, es
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 	SHLD  si, di, 6
 
 ELSE
@@ -7615,7 +7615,7 @@ add   cx, si   ; + damage
 ; shift all right by 7
 
 ; shift ax 7
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
     sar   ax, MAPBLOCKSHIFT
     sar   bx, MAPBLOCKSHIFT
     sar   cx, MAPBLOCKSHIFT
@@ -7881,7 +7881,7 @@ sar   dx, 1
 rcr   ax, 1
 push  word ptr [si + 4]
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 	push  MT_BLOOD
 ELSE
 	mov   bx, MT_BLOOD

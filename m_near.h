@@ -249,8 +249,11 @@
 
 #define currentpageframes               (((uint8_t    __near*)               (_NULL_OFFSET + 0x0180)))
 
+#if defined(__CH_BLD)
+#else
 #define emshandle                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x0184)))
 #define pagenum9000                     (*((int16_t    __near*)              (_NULL_OFFSET + 0x0186)))
+#endif
 
 #define prndindex                       (*((uint8_t    __near*)              (_NULL_OFFSET + 0x0188)))
 // 189 free

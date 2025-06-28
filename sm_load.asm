@@ -523,12 +523,12 @@ ENDP
 PROC Z_QuickMapMusicPageFrame_SMLoad_ NEAR
 PUBLIC Z_QuickMapMusicPageFrame_SMLoad_
 
-IFDEF COMPILE_CHIPSET
+IFDEF COMP_CH
 
         ; pageframeindex al
         ; pagenumber dl 
 
-	IF COMPILE_CHIPSET EQ CHIPSET_SCAT
+	IF COMP_CH EQ CHIPSET_SCAT
 
         push dx
         mov  ds:[_currentpageframes], al
@@ -547,7 +547,7 @@ IFDEF COMPILE_CHIPSET
 
         pop dx
         ret
-	ELSEIF COMPILE_CHIPSET EQ CHIPSET_SCAMP
+	ELSEIF COMP_CH EQ CHIPSET_SCAMP
 
         mov  ds:[_currentpageframes], al
         mov  ah, al
@@ -562,7 +562,7 @@ IFDEF COMPILE_CHIPSET
         out  SCAMP_PAGE_SET_REGISTER, ax
         ret
 
-	ELSEIF COMPILE_CHIPSET EQ CHIPSET_HT18
+	ELSEIF COMP_CH EQ CHIPSET_HT18
         push dx
         mov  ds:[_currentpageframes], al
 

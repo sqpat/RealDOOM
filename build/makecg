@@ -33,7 +33,6 @@
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
 CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp -0 -dCODEGEN_SKIP_MENU
-#CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp  -d__USED000=1 -dCODEGEN_SKIP_MENU
  
 GLOBOBJS = &
  m_near.obj &

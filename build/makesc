@@ -37,8 +37,8 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__SCAMP_BUILD=1 -d__CHIPSET_BUILD=1
-#ASMOPTS = /d_USED000=0 /dCOMPILE_INSTRUCTIONSET=2 /dCOMPILE_CHIPSET=1
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__SCAMP_BUILD=1 -d__CH_BLD=1
+#ASMOPTS =  /dCOMPISA=2 /dCOMP_CH=1
 
 GLOBOBJS = &
  m_near.obj &

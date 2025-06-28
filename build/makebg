@@ -41,24 +41,24 @@
 compileinstructionset = $(USE_ISA)
 
 !ifeq compileinstructionset 1
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -1 -s $(EXTERNCOPT)
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -1 -s $(COPT)
 !else
 !ifeq compileinstructionset 2
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s $(EXTERNCOPT)
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s $(COPT)
 !else
 !ifeq compileinstructionset 3
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s $(EXTERNCOPT)
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s $(COPT)
 !else
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -0 -s $(EXTERNCOPT)
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -0 -s $(COPT)
 !endif
 !endif
 !endif
 
 
 
-ASMOPTS = /d_USED000=0 $(EXTERNASMOPT)
+ASMOPTS =  $(ASMOPT)
  
-build286chipset = $(286_CHIPSET)
+build286chipset = $(286C)
 
 !ifeq compileinstructionset 3
 GLOBOBJS = $(GLOBOBJS) math386.obj

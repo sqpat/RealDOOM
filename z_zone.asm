@@ -31,27 +31,12 @@ EXTRN _codestartposition:DWORD
 EXTRN _hu_font:WORD
 
 
-IFDEF COMPILE_CHIPSET
-    EXTRN Z_QuickMap1AIC_:NEAR
-    EXTRN Z_QuickMap2AIC_:NEAR
-    EXTRN Z_QuickMap3AIC_:NEAR
-    EXTRN Z_QuickMap4AIC_:NEAR
-    EXTRN Z_QuickMap5AIC_:NEAR
-    EXTRN Z_QuickMap6AIC_:NEAR
-
-    EXTRN Z_QuickMap8AIC_:NEAR
-    EXTRN Z_QuickMap16AIC_:NEAR
-    EXTRN Z_QuickMap24AIC_:NEAR
-ELSE
-ENDIF
-
 .CODE
 
 ; todo get rid of tasks
 ; todo put in constants?
 
-
-IFDEF COMPILE_CHIPSET
+IFDEF COMP_CH
 ELSE
 
     PROC Z_QuickMapMusicPageFrame_ FAR
@@ -183,25 +168,16 @@ ENDIF
 PROC Z_QuickMapPhysicsCode_ FAR
 PUBLIC Z_QuickMapPhysicsCode_
 
-
-;	Z_QUICKMAPAI2(pageswapargs_physics_code_offset_size, INDEXED_PAGE_9400_OFFSET);
-
-
 push  dx
 push  cx
 push  si
 
-;Z_QUICKMAPAI2 pageswapargs_physics_code_offset_size INDEXED_PAGE_9400_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 2
-mov     si, pageswapargs_physics_code_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI2 pageswapargs_physics_code_offset_size INDEXED_PAGE_9400_OFFSET
 
 pop   si
 pop   cx
 pop   dx
+
 retf  
 
 ENDP
@@ -213,25 +189,9 @@ push  dx
 push  cx
 push  si
 
-;Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, pageswapargs_phys_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-
-
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS
+
 pop   si
 pop   cx
 pop   dx
@@ -245,22 +205,16 @@ PUBLIC Z_QuickMapDemo_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_demo_offset_size INDEXED_PAGE_5000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, pageswapargs_demo_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
+Z_QUICKMAPAI4 pageswapargs_demo_offset_size INDEXED_PAGE_5000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_DEMO
+
 pop   si
 pop   cx
 pop   dx
 retf  
 
 ENDP
-
 
 PROC Z_QuickMapRender_ FAR
 PUBLIC Z_QuickMapRender_
@@ -269,21 +223,8 @@ PUBLIC Z_QuickMapRender_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, (pageswapargs_rend_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
+Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_RENDER
 
 pop   si
@@ -299,13 +240,8 @@ PUBLIC Z_QuickMapRender_4000To9000_9000Only_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, pageswapargs_rend_other9000_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
 
 pop   si
 pop   cx
@@ -317,29 +253,12 @@ ENDP
 PROC Z_QuickMapRender_4000To9000_ FAR
 PUBLIC Z_QuickMapRender_4000To9000_
 
-
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI16 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, (pageswapargs_rend_offset_size+4) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-
-;Z_QUICKMAPAI4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
-mov     ax, 05000h
-mov     cx, 4
-mov     si, pageswapargs_rend_other9000_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
+Z_QUICKMAPAI16 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI4_NO_DX pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_RENDER
 pop   si
@@ -352,20 +271,11 @@ ENDP
 PROC Z_QuickMapRender_9000To7000_ FAR
 PUBLIC Z_QuickMapRender_9000To7000_
 
-
-
-
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI2 (pageswapargs_spritecache_offset_size+4) INDEXED_PAGE_7000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 2
-mov     si, (pageswapargs_spritecache_offset_size+4) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
+Z_QUICKMAPAI2 (pageswapargs_spritecache_offset_size+4) INDEXED_PAGE_7000_OFFSET
 
 pop   si
 pop   cx
@@ -381,14 +291,8 @@ PUBLIC Z_QuickMapRender_9000To6000_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI2 pageswapargs_render_to_6000_size INDEXED_PAGE_6000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 2
-mov     si, (pageswapargs_render_to_6000_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
+Z_QUICKMAPAI2 pageswapargs_render_to_6000_size INDEXED_PAGE_6000_OFFSET
 
 pop   si
 pop   cx
@@ -404,12 +308,9 @@ PUBLIC Z_QuickMapRender4000_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, pageswapargs_rend_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+
+Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
+
 pop   si
 pop   cx
 pop   dx
@@ -424,12 +325,8 @@ PUBLIC Z_QuickMapRender5000_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_rend_offset_size+4) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
 
 pop   si
 pop   cx
@@ -445,12 +342,8 @@ PUBLIC Z_QuickMapRender9000_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_rend_9000_size INDEXED_PAGE_9000_OFFSET
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_rend_9000_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+
+Z_QUICKMAPAI4 pageswapargs_rend_9000_size INDEXED_PAGE_9000_OFFSET
 
 pop   si
 pop   cx
@@ -466,14 +359,8 @@ PUBLIC Z_QuickMapRenderTexture_
 push  dx
 push  cx
 push  si   
-;Z_QUICKMAPAI8 pageswapargs_rend_texture_size INDEXED_PAGE_5000_OFFSET
 
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, (pageswapargs_rend_texture_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI8 pageswapargs_rend_texture_size INDEXED_PAGE_5000_OFFSET
 
 pop   si
 pop   cx
@@ -489,29 +376,9 @@ push  dx
 push  cx
 push  si
 
-;Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 1
-mov     si, (pageswapargs_stat_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-
-;Z_QUICKMAPAI4 (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
-
-mov     ax, 05000h
-mov     cx, 4
-add     si, 1 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-
-;Z_QUICKMAPAI1 (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
-
-mov     ax, 05000h
-mov     cx, 1
-add     si, 4 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
+Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_STATUS
 pop   si
@@ -528,13 +395,8 @@ PUBLIC Z_QuickMapScratch_5000_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_scratch5000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
 
 pop   si
 pop   cx
@@ -550,15 +412,8 @@ PUBLIC Z_QuickMapScratch_8000_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
 
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_scratch8000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
+Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
 
 pop   si
 pop   cx
@@ -573,14 +428,8 @@ PUBLIC Z_QuickMapScratch_7000_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
 
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_scratch7000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
 
 pop   si
 pop   cx
@@ -595,14 +444,8 @@ PUBLIC Z_QuickMapScratch_4000_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_scratch4000_offset_size INDEXED_PAGE_4000_OFFSET
 
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_scratch4000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_scratch4000_offset_size INDEXED_PAGE_4000_OFFSET
 
 pop   si
 pop   cx
@@ -617,14 +460,8 @@ PUBLIC Z_QuickMapScreen0_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_screen0_offset_size INDEXED_PAGE_8000_OFFSET
 
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_screen0_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_screen0_offset_size INDEXED_PAGE_8000_OFFSET
 
 pop   si
 pop   cx
@@ -639,14 +476,10 @@ PUBLIC Z_QuickMapRenderPlanes9000only_
 push  dx
 push  cx
 push  si
-call  Z_QuickMapRender9000_
-;Z_QUICKMAPAI4 (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_9C00_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_renderplane_offset_size+3) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+;call  Z_QuickMapRender9000_
+Z_QUICKMAPAI4 pageswapargs_rend_9000_size INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_9C00_OFFSET
 
 pop   si
 pop   cx
@@ -660,32 +493,13 @@ PUBLIC Z_QuickMapRenderPlanes_
 
 push  dx
 push  cx
+push  si
 
 ; todo can be done all as one for non chipset
-push  si
-;Z_QUICKMAPAI3 pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 3
-mov     si, (pageswapargs_renderplane_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-;Z_QUICKMAPAI1 (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_9C00_OFFSET
-
-
-mov     ax, 05000h
-mov     cx, 1
-add     si, 3 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-;Z_QUICKMAPAI4 (pageswapargs_renderplane_offset_size+4) INDEXED_PAGE_7000_OFFSET
-
-mov     ax, 05000h
-mov     cx, 4
-add     si, 1 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
+Z_QUICKMAPAI3 pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI1_NO_DX (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_renderplane_offset_size+4) INDEXED_PAGE_7000_OFFSET
 
 pop   si
 pop   cx
@@ -700,13 +514,8 @@ PUBLIC Z_QuickMapRenderPlanesBack_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI3 pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 3
-mov     si, (pageswapargs_renderplane_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI3 pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
 
 pop   si
 pop   cx
@@ -729,13 +538,7 @@ SHIFT_PAGESWAP_ARGS si
 mov   word ptr ds:[_pageswapargs + (pageswapargs_flatcache_offset * PAGE_SWAP_ARG_MULT) + si], ax
 ;	pageswapargs[pageswapargs_flatcache_offset + offset * PAGE_SWAP_ARG_MULT] = _EPR(page);
 
-;Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_flatcache_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
 
 pop   si
 pop   cx
@@ -750,36 +553,12 @@ push  dx
 push  cx
 push  si
 
-;Z_QUICKMAPAI8 pageswapargs_rend_texture_size           INDEXED_PAGE_5000_OFFSET
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, pageswapargs_rend_texture_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI8 pageswapargs_rend_texture_size           INDEXED_PAGE_5000_OFFSET
 
 ; todo in  non chipset these can run 8 at once.
-;Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size     INDEXED_PAGE_9000_OFFSET
-
-mov     ax, 05000h
-mov     cx, 4
-mov     si, pageswapargs_spritecache_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-;Z_QUICKMAPAI4 (pageswapargs_spritecache_offset_size+4)   INDEXED_PAGE_7000_OFFSET
-
-mov     ax, 05000h
-;mov     cx, 4
-add     si, 4 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-
-;Z_QUICKMAPAI3 pageswapargs_maskeddata_offset_size   	INDEXED_PAGE_8400_OFFSET
-
-mov     ax, 05000h
-mov     cx, 3
-mov     si, pageswapargs_maskeddata_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI4_NO_DX pageswapargs_spritecache_offset_size     INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_spritecache_offset_size+4)   INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI3_NO_DX pageswapargs_maskeddata_offset_size   	INDEXED_PAGE_8400_OFFSET
 
 pop   si
 pop   cx
@@ -794,14 +573,8 @@ PUBLIC Z_QuickMapMaskedExtraData_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI2 pageswapargs_maskeddata_offset_size INDEXED_PAGE_8400_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 2
-mov     si, pageswapargs_maskeddata_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
+Z_QUICKMAPAI2 pageswapargs_maskeddata_offset_size INDEXED_PAGE_8400_OFFSET
 
 pop   si
 pop   cx
@@ -816,14 +589,8 @@ PUBLIC Z_QuickMapSpritePage_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, pageswapargs_spritecache_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
+Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
 
 pop   si
 pop   cx
@@ -838,14 +605,8 @@ PUBLIC Z_QuickMapPhysics5000_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 (pageswapargs_phys_offset_size+4) INDEXED_PAGE_5000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_phys_offset_size+4) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
+Z_QUICKMAPAI4 (pageswapargs_phys_offset_size+4) INDEXED_PAGE_5000_OFFSET
 
 pop   si
 pop   cx
@@ -860,14 +621,8 @@ PUBLIC Z_QuickMapScreen1_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 (pageswapargs_intermission_offset_size+12) INDEXED_PAGE_9000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_intermission_offset_size+12) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
+Z_QUICKMAPAI4 (pageswapargs_intermission_offset_size+12) INDEXED_PAGE_9000_OFFSET
 
 pop   si
 pop   cx
@@ -882,13 +637,8 @@ PUBLIC Z_QuickMapPalette_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI5 pageswapargs_palette_offset_size INDEXED_PAGE_8000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 5
-mov     si, (pageswapargs_palette_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI5 pageswapargs_palette_offset_size INDEXED_PAGE_8000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_PALETTE
 pop   si
@@ -904,13 +654,8 @@ PUBLIC Z_QuickMapMenu_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, (pageswapargs_menu_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_MENU
 pop   si
@@ -926,18 +671,8 @@ PUBLIC Z_QuickMapIntermission_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI16 pageswapargs_intermission_offset_size INDEXED_PAGE_6000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, (pageswapargs_intermission_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
+Z_QUICKMAPAI16 pageswapargs_intermission_offset_size INDEXED_PAGE_6000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_INTERMISSION
 pop   si
@@ -954,23 +689,9 @@ PUBLIC Z_QuickMapWipe_
 push  dx
 push  cx
 push  si
-;Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 4
-mov     si, (pageswapargs_wipe_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-;Z_QUICKMAPAI8 (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
-
-
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-add     si, 4 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
+Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI8_NO_DX (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_WIPE
 pop   si
@@ -1008,20 +729,7 @@ sal   bx, 1
 jmp   word ptr cs:[bx + quickmap_by_taskjump_jump_table]
 task_num_0_jump:
 
-;Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, pageswapargs_phys_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 task_num_3_jump:
@@ -1035,77 +743,37 @@ pop   dx
 pop   bx
 retf  
 task_num_1_jump:
-;Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, (pageswapargs_rend_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
 
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
 
 mov   byte ptr ds:[_currenttask], TASK_RENDER
 pop   dx
 pop   bx
 retf  
 task_num_2_jump:
-;Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 1
-mov     si, (pageswapargs_stat_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
 
-;Z_QUICKMAPAI4 (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
-
-mov     ax, 05000h
-mov     cx, 4
-add     si, 1 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
-
-;Z_QUICKMAPAI1 (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
-
-mov     ax, 05000h
-mov     cx, 1
-add     si, 4 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
 mov   byte ptr ds:[_currenttask], TASK_STATUS
 pop   dx
 pop   bx
 retf  
 
 task_num_9_jump:
-;Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
 
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, (pageswapargs_menu_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
+Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_MENU
 pop   dx
 pop   bx
 retf  
 task_num_11_jump:
-;Z_QUICKMAPAI16 pageswapargs_intermission_offset_size INDEXED_PAGE_6000_OFFSET
-mov     dx, word ptr ds:[_emshandle]
-mov     ax, 05000h
-mov     cx, 8
-mov     si, (pageswapargs_intermission_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-int     067h
 
-mov     ax, 05000h
-add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-int     067h
+Z_QUICKMAPAI16 pageswapargs_intermission_offset_size INDEXED_PAGE_6000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_INTERMISSION
 pop   dx
@@ -1117,8 +785,6 @@ ENDP
 
 PROC Z_QuickMapVisplanePage_ FAR
 PUBLIC Z_QuickMapVisplanePage_
-
-
 
 ;	int16_t usedpageindex = pagenum9000 + PAGE_8400_OFFSET + physicalpage;
 ;	int16_t usedpagevalue;
@@ -1134,10 +800,14 @@ push  cx
 push  si
 mov   cl, al
 mov   dh, dl
-mov   si, word ptr ds:[_pagenum9000]
 mov   al, dl
-add   si, PAGE_8400_OFFSET ; sub 3
 cbw  
+IFDEF COMP_CH
+mov   si, CHIPSET_PAGE_9000
+ELSE
+mov   si, word ptr ds:[_pagenum9000]
+ENDIF
+add   si, PAGE_8400_OFFSET ; sub 3
 add   si, ax
 mov   al, cl
 cbw  
@@ -1149,7 +819,7 @@ used_pagevalue_ready:
 ;		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
 
 ; _EPR here
-IFDEF COMPILE_CHIPSET
+IFDEF COMP_CH
     add  ax, EMS_MEMORY_PAGE_OFFSET
 ELSE
 ENDIF
@@ -1157,7 +827,7 @@ mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * PAGE_SWAP
 
 
 ;pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
-IFDEF COMPILE_CHIPSET
+IFDEF COMP_CH
 ELSE
     mov   word ptr ds:[_pageswapargs + ((pageswapargs_visplanepage_offset+1) * PAGE_SWAP_ARG_MULT)], si
 ENDIF
@@ -1190,22 +860,47 @@ mov   bx, ax
 
 mov   byte ptr ds:[bx + _active_visplanes], dh
 
-; todo this call doesnt work
 
-IFDEF COMPILE_CHIPSET
-    mov     dx, si
-    or      dx, EMS_AUTOINCREMENT_FLAG
-    mov     ax,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-    call    Z_QuickMap1AIC_ 
+IFDEF COMP_CH
+	IF COMP_CH EQ CHIPSET_SCAT
+
+        mov  	dx, SCAT_PAGE_SELECT_REGISTER
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        out  	dx, al
+        mov     si,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        mov  	dx, SCAT_PAGE_SET_REGISTER
+        lodsw
+        out 	dx, ax
+
+	ELSEIF COMP_CH EQ CHIPSET_SCAMP
+
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        out     SCAMP_PAGE_SELECT_REGISTER, al
+        mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        lodsw
+        out 	SCAMP_PAGE_SET_REGISTER, ax
+
+
+	ELSEIF COMP_CH EQ CHIPSET_HT18
+
+        mov  	dx, HT18_PAGE_SELECT_REGISTER
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        out  	dx, al
+        mov     si,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        mov  	dx, HT18_PAGE_SET_REGISTER
+        lodsw
+        out 	dx, ax
+
+    ENDIF
+
 ELSE
-
-
-    mov     dx, word ptr ds:[_emshandle]
-    mov     ax, 05000h
-    mov     cx, 1
-    mov     si, (pageswapargs_visplanepage_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-    int     067h
-
+    Z_QUICKMAPAI1 pageswapargs_visplanepage_offset_size unused_param
 
 ENDIF
 
@@ -1245,24 +940,27 @@ ENDP
 
 
 
-IFDEF COMPILE_CHIPSET
+IFDEF COMP_CH
     PROC Z_QuickMapUnmapAll_ FAR
     PUBLIC Z_QuickMapUnmapAll_
 
     push  dx
-    push  bx
+    push  si
+    push  cx
     xor   ax, ax
-    mov   bx, bx
+    mov   si, ax
     loop_next_page_to_unmap:
     mov   word ptr ds:[bx + _pageswapargs], -1
     inc   ax
-    inc   bx
-    inc   bx
+    inc   si
+    inc   si
     cmp   ax, 24
     jl    loop_next_page_to_unmap
 
     Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-    pop   bx
+    
+    pop   cx
+    pop   si
     pop   dx
     retf  
 ELSE
@@ -1288,21 +986,7 @@ ELSE
     cmp   si, 24
     jl    loop_next_page_to_unmap
 
-;    Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-
-    mov     dx, word ptr ds:[_emshandle]
-    mov     ax, 05000h
-    mov     cx, 8
-    mov     si, pageswapargs_phys_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-    int     067h
-
-    mov     ax, 05000h
-    add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-    int     067h
-
-    mov     ax, 05000h
-    add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-    int     067h
+    Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 
     pop   si
     pop   dx

@@ -574,7 +574,7 @@ sbb   dx, word ptr es:[bx + 2]
 ret  
 endp
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
 PROC FixedMulBSPLocal_ NEAR
 PUBLIC FixedMulBSPLocal_
@@ -2549,7 +2549,7 @@ les   bx, dword ptr [si + 01Eh]
 mov   cx, es
 ; inlined FastMul16u32u
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
 
    ; set up ecx
@@ -3575,7 +3575,7 @@ mov       cx, es
 
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
    ; set up ecx
    db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
@@ -3666,7 +3666,7 @@ mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
    ; set up ecx
    db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
@@ -3782,7 +3782,7 @@ mov       cx, es
 ;start inlined FixedMulBSPLocal_
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
    ; set up ecx
    db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
@@ -3878,7 +3878,7 @@ mov       dx, 01000h
 
 ;start inlined FixedMulBSPLocal_
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
    ; set up ecx
    db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
@@ -4032,7 +4032,7 @@ push      ax
 
 ;start inlined FixedMulBSPLocal_
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
    ; set up ecx
    db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
@@ -4118,7 +4118,7 @@ mov       dx, 01000h
 ;start inlined FixedMulBSPLocal_
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
    ; set up ecx
    db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
@@ -4239,7 +4239,7 @@ mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
    ; set up ecx
    db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
@@ -4320,7 +4320,7 @@ mov       dx, 01000h
 
 ;start inlined FixedMulBSPLocal_
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
 mov       cx, di	; cached values
 mov       bx, si	; cached values
@@ -5046,7 +5046,7 @@ jmp   light_set
 
 ; begin fast_div_32_16_FFFF
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
    ; unused portion of code for 386. 
 ELSE
 
@@ -5077,7 +5077,7 @@ mov  ax, -1
 ; continue fast_div_32_16_FFFF
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
    ; set up eax
    db 066h, 098h                    ; cwde (prepare EAX)
    ; set up edx
@@ -5323,7 +5323,7 @@ jmp   just_do_draw0
 
 ; continue fast_div_32_16_FFFF
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 ELSE
    q1_ready_3232:
 
@@ -6651,7 +6651,7 @@ and   cx, FF_FRAMEMASK
 
 
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+IF COMPISA GE COMPILE_186
 imul  bx, cx, SIZEOF_SPRITEFRAME_T
 mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
 push  word ptr es:[bx + di + 010h]    ; 0Ah
@@ -6875,7 +6875,7 @@ sub   ax, word ptr [bp - 0Eh]
 
 ; inlined FastMul16u32u_
 
-IF COMPILE_INSTRUCTIONSET GE COMPILE_386
+IF COMPISA GE COMPILE_386
 
 
    ; set up ecx

@@ -146,7 +146,7 @@ void __far Z_QuickMapUnmapAll();
 void __far Z_SetOverlay(int8_t wipeId);
 
  
-#if defined(__CHIPSET_BUILD)
+#if defined(__CH_BLD)
 
     #define pagenum9000 CHIPSET_PAGE_9000
 

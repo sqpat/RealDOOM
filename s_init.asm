@@ -150,15 +150,9 @@ PUBLIC LoadSFXWadLumps_
 
     ;call Z_QuickMapScratch_5000_
 
-    ;Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+    Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
 
-    mov     dx, word ptr ds:[_emshandle]
-    mov     ax, 05000h
-    mov     cx, 4
-    mov     si, (pageswapargs_scratch5000_offset_size) * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-    int     067h
-
-
+    
     ; load sb sfx data here
     ; sb sfx load loop
     ; DI is index
@@ -245,23 +239,7 @@ PUBLIC LoadSFXWadLumps_
     ; restore 
     ;call      Z_QuickMapPhysics_
 
-    ;Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-
-    mov     dx, word ptr ds:[_emshandle]
-    mov     ax, 05000h
-    mov     cx, 8
-    mov     si, pageswapargs_phys_offset_size * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
-    int     067h
-
-    mov     ax, 05000h
-    add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-    int     067h
-
-    mov     ax, 05000h
-    add     si, 8 * 2 * PAGE_SWAP_ARG_MULT
-    int     067h
-
-
+    Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 
     mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 

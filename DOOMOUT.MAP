@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/27 21:12:42
+Created on:       25/06/28 01:09:52
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -77,7 +77,7 @@ R_MAIN_TEXT            CODE           AUTO           15d8:0cb0       000001e2
 R_MAINHI_TEXT          CODE           AUTO           15d8:0e92       0000264f
 w_wad_TEXT             CODE           AUTO           15d8:34f0       0000030c
 V_VIDEO_TEXT           CODE           AUTO           15d8:37fc       00000616
-Z_ZONE_TEXT            CODE           AUTO           15d8:3e12       00000657
+Z_ZONE_TEXT            CODE           AUTO           15d8:3e12       0000065d
 p_setup_TEXT           CODE           AUTO           1a1f:0000       0000126e
 _TEXT                  CODE           AUTO           1a1f:1270       0000245e
 FAR_DATA               FAR_DATA       AUTO           1d8b:000e       00000000
@@ -712,8 +712,8 @@ Module: d_int.obj(d_int.ASM)
 02c8:595a*     locallib_int86_67_multiple_
 02c8:595d      locallib_int86_10_
 Module: math.obj(math.ASM)
-02c8:5e8f      FastDiv3232FFFF_
 02c8:5cfd      FastDiv32u16u_
+02c8:5e8f      FastDiv3232FFFF_
 02c8:5a53      FixedMulTrigNoShift_
 02c8:5b2f      FastMul16u32u_
 02c8:5c8f      FixedDiv_
@@ -750,8 +750,8 @@ Module: main.obj(main.ASM)
 02c8:68da*     CopyString13_
 02c8:659a      G_BuildTiccmd_
 02c8:61a5      cht_CheckCheat_
-02c8:6d20      M_SaveDefaults_
 02c8:6207      cht_GetParam_
+02c8:6d20      M_SaveDefaults_
 02c8:6ff0      I_FinishUpdate_
 02c8:6294      I_StartTic_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
@@ -1125,41 +1125,41 @@ Module: z_zone.obj(z_zone.ASM)
 15d8:4062*     Z_QuickMapRenderPlanes9000only_
 15d8:3e74      Z_QuickMapPhysicsCode_
 15d8:3f11      Z_QuickMapRender_4000To9000_
-15d8:4341      Z_QuickMapUnmapAll_
+15d8:4347      Z_QuickMapUnmapAll_
 15d8:3f55      Z_QuickMapRender_9000To6000_
 15d8:3f3f*     Z_QuickMapRender_9000To7000_
 15d8:3e49      Z_QuickMapWADPageFrame_
-15d8:41c1      Z_QuickMapWipe_
-15d8:407c      Z_QuickMapRenderPlanes_
+15d8:41cb      Z_QuickMapWipe_
+15d8:4083      Z_QuickMapRenderPlanes_
 15d8:3e2a      Z_QuickMapSFXPageFrame_
 15d8:3fc3      Z_QuickMapStatus_
 15d8:3fad      Z_QuickMapRenderTexture_
-15d8:4152*     Z_QuickMapScreen1_
+15d8:415c*     Z_QuickMapScreen1_
 15d8:404c*     Z_QuickMapScreen0_
 15d8:3ed0      Z_QuickMapRender_
 15d8:4036      Z_QuickMapScratch_4000_
 15d8:4020      Z_QuickMapScratch_7000_
-15d8:443d*     CopyString13_Zonelocal_
+15d8:4443*     CopyString13_Zonelocal_
 15d8:3ff4      Z_QuickMapScratch_5000_
-15d8:4183      Z_QuickMapMenu_
+15d8:418d      Z_QuickMapMenu_
 15d8:400a      Z_QuickMapScratch_8000_
-15d8:4126      Z_QuickMapSpritePage_
-15d8:40be*     Z_QuickMapFlatPage_
-15d8:4168      Z_QuickMapPalette_
+15d8:4130      Z_QuickMapSpritePage_
+15d8:40c5*     Z_QuickMapFlatPage_
+15d8:4172      Z_QuickMapPalette_
 15d8:3f6b      Z_QuickMapRender4000_
 15d8:3f81*     Z_QuickMapRender5000_
 15d8:3f97*     Z_QuickMapRender9000_
-15d8:4110      Z_QuickMapMaskedExtraData_
-15d8:43a2      Z_SetOverlay_
-15d8:40a8*     Z_QuickMapRenderPlanesBack_
-15d8:4203      Z_QuickMapByTaskNum_
-15d8:40dc      Z_QuickMapUndoFlatCache_
-15d8:413c*     Z_QuickMapPhysics5000_
+15d8:411a      Z_QuickMapMaskedExtraData_
+15d8:43a8      Z_SetOverlay_
+15d8:40af*     Z_QuickMapRenderPlanesBack_
+15d8:4209      Z_QuickMapByTaskNum_
+15d8:40e3      Z_QuickMapUndoFlatCache_
+15d8:4146*     Z_QuickMapPhysics5000_
 15d8:3eb5      Z_QuickMapDemo_
-15d8:4327      Z_QuickMapVisplaneRevert_
-15d8:419e      Z_QuickMapIntermission_
+15d8:432d      Z_QuickMapVisplaneRevert_
+15d8:41a8      Z_QuickMapIntermission_
 15d8:3efb      Z_QuickMapRender_4000To9000_9000Only_
-15d8:42c1      Z_QuickMapVisplanePage_
+15d8:42c7      Z_QuickMapVisplanePage_
 Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 1a1f:0000      P_SetupLevel_
 1a1f:0162+     S_Start_
@@ -1438,4 +1438,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00020580 (132480.)
 Entry point address: 1a1f:1c56
-Link time: 00:00.75
+Link time: 00:00.74
