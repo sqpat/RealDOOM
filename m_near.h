@@ -494,8 +494,7 @@
 
 #define playerMobj_pos   		     	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0700)))
 #define setStateReturn_pos	 	    	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0704)))
-// #define P_CheckSight				      (boolean (__far* )() = 		  ((boolean (__far *)(mobj_t __near* , mobj_t __near*, uint16_t, uint16_t)) (_NULL_OFFSET + 0x0708)))
-
+#define P_CheckSight				      (((boolean (__far *)(mobj_t __near* , mobj_t __near*, uint16_t, uint16_t)) (_NULL_OFFSET + 0x0708)))
 
 #define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0710)))
 
@@ -704,7 +703,7 @@ extern void                 (__far* P_ArchiveSpecials)();
 
 extern void                 (__far* S_ActuallyChangeMusic)();
 extern void 				(__far* LoadSFXWadLumps)();
-extern boolean 				(__far* P_CheckSight)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4);
+extern boolean 				(__far* P_CheckSightTemp)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4);
 
 
 

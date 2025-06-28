@@ -2274,6 +2274,7 @@ TASK_MENU = 09h
 TASK_WIPE = 0Ah
 TASK_INTERMISSION = 0Bh
 TASK_STATUS_NO_SCREEN4 = 0Ch
+P_CHECKSIGHTOFFSET = 00h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h

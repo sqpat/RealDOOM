@@ -425,6 +425,7 @@ _P_TouchSpecialThing_addr =          _NULL_OFFSET + 006FCh
 
 _playerMobj_pos =		         	 _NULL_OFFSET + 00700h
 _setStateReturn_pos =		         _NULL_OFFSET + 00704h
+_P_CheckSight =				         _NULL_OFFSET + 00708h
 
 
 

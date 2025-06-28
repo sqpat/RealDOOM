@@ -366,8 +366,11 @@ db -1
 dw          00, 00, 00, 00, 00, 00
 
 ; 700
-dw  00, MOBJPOSLIST_6800_SEGMENT, 00, MOBJPOSLIST_6800_SEGMENT, 00, 00, 00, 00
-; 710
+dw  00, MOBJPOSLIST_6800_SEGMENT, 00, MOBJPOSLIST_6800_SEGMENT
+; 708 P_CheckSight
+dw  P_CheckSightOffset, physics_highcode_segment
+dw  00, 0
+
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00
