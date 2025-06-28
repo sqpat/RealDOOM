@@ -33,6 +33,21 @@
 #define LoadSFXWadLumpsOffset                 0x3
 #define S_ActuallyChangeMusicOffset           0x404
 #define P_CheckSightOffset                    0x0
+#define P_AproxDistanceOffset                 0x6A7
+#define P_LineOpeningOffset                   0x974
+#define P_UnsetThingPositionOffset            0x9A8
+#define P_SetThingPositionOffset              0xA74
+#define R_PointInSubsectorOffset              0xB53
+#define P_BlockThingsIteratorOffset           0xC00
+#define P_TryMoveOffset                       0x1216
+#define P_CheckPositionOffset                 0x1836
+#define P_SlideMoveOffset                     0x19F1
+#define P_TeleportMoveOffset                  0x22AF
+#define P_AimLineAttackOffset                 0x23C4
+#define P_LineAttackOffset                    0x2519
+#define P_UseLinesOffset                      0x264E
+#define P_RadiusAttackOffset                  0x2759
+#define P_ChangeSectorOffset                  0x295A
 
 #define R_DrawColumnCodeSize           0xE46
 #define R_DrawSpanCodeSize             0xEE5
@@ -40,7 +55,7 @@
 #define R_MaskedConstantsCodeSize      0xEB
 #define R_DrawSkyColumnCodeSize        0x6C0
 #define WI_StuffCodeSize               0x1019
-#define PSightCodeSize                 0x60B
+#define PSightCodeSize                 0x2A35
 #define WipeCodeSize                   0x4BE
 #define FinaleCodeSize                 0xBCD
 #define SaveLoadCodeSize               0xB17

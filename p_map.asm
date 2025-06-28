@@ -19,14 +19,23 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-
-
+; hack but oh well
+P_SIGHT_STARTMARKER_ = 0 
 
 .DATA
 
 
 
 .CODE
+
+
+;; WOULD BE GREAT FOR THIS TO STAY IN P_MAP.ASM buuut 
+
+PROC    P_MAP_STARTMARKER_ 
+PUBLIC  P_MAP_STARTMARKER_
+ENDP
+
+
 
 
 
@@ -134,7 +143,7 @@ node_dx_nonequal:
 ;    if (!node->dy) {
 test  si, si
 
-jne   node_dy_nonzero
+jne   node_dy_nonzero_2
 
 ;        if (y.w <= (node_y shift 16))
 ;  compare high bits
@@ -164,7 +173,7 @@ jl    return_true
 mov   ax, ds
 ret   
 
-node_dy_nonzero:
+node_dy_nonzero_2:
 
 
 
@@ -198,7 +207,7 @@ xchg si, ax
 ;    right.w = FixedMul1632 (node->dx, dy.w );
 
 
-mov   word ptr cs:[SELFMODIFY_returnchild1+1], es
+mov   word ptr cs:[SELFMODIFY_returnchild1 - OFFSET P_SIGHT_STARTMARKER_+1], es
 
 mov   di, cx  ; store cx.. 
 mov   bx, word ptr [bp - 4] ; grab lobits
@@ -1584,8 +1593,8 @@ PROC R_PointInSubsector_ FAR
 PUBLIC R_PointInSubsector_ 
 
 
-mov   word ptr cs:[SELFMODIFY_rpis_set_dx+1], dx
-mov   word ptr cs:[SELFMODIFY_rpis_set_cx+1], cx
+mov   word ptr cs:[SELFMODIFY_rpis_set_dx - OFFSET P_SIGHT_STARTMARKER_+1], dx
+mov   word ptr cs:[SELFMODIFY_rpis_set_cx - OFFSET P_SIGHT_STARTMARKER_+1], cx
 
 xchg  ax, dx  ; store dx
 mov   ax, word ptr ds:[_numnodes]
@@ -1677,7 +1686,7 @@ xchg  ax, bx  ; bx gets x
 
 ; set stuff up up ahead...
 mov   ax, ds:[_validcount_global]
-mov   word ptr cs:[SELFMODIFY_validcountglobal_1 + 1], ax
+mov   word ptr cs:[SELFMODIFY_validcountglobal_1 - OFFSET P_SIGHT_STARTMARKER_ + 1], ax
 
 xchg  ax, dx  ; ax gets y 
 imul  word ptr ds:[_bmapwidth]  ; y * width
@@ -1920,7 +1929,7 @@ mov   bx, ax
 call  P_PointOnDivlineSide_
 pop   bx
 SHIFT_MACRO shl   bx 2
-mov   byte ptr cs:[SELFMODIFY_compares1s2+1], al  ; store s1
+mov   byte ptr cs:[SELFMODIFY_compares1s2 - OFFSET P_SIGHT_STARTMARKER_+1], al  ; store s1
 mov   ax, VERTEXES_SEGMENT
 mov   es, ax
 les   dx, dword ptr es:[bx]
@@ -1964,7 +1973,7 @@ call  P_PointOnLineSide_ ; this does not remove arguments from the stack so we c
 
 
 ; store s1
-mov   byte ptr cs:[SELFMODIFY_compares1s2+1], al
+mov   byte ptr cs:[SELFMODIFY_compares1s2 - OFFSET P_SIGHT_STARTMARKER_+1], al
 
 
 les   ax, DIVLINE_T ptr ds:[_trace.dl_x]
@@ -2153,7 +2162,7 @@ mov bx, word ptr  [bp - 0Ch]  ; y lobits
 
 call  P_PointOnDivlineSide_
 
-mov   byte ptr cs:[SELFMODIFY_compares1s2_2+1], al
+mov   byte ptr cs:[SELFMODIFY_compares1s2_2 - OFFSET P_SIGHT_STARTMARKER_+1], al
 mov   cx, si ; retrieve y2hibits
 mov   dx, di ; retrieve x2hibits
 mov   ax, word ptr [bp - 010h]  ; x lobits
@@ -2352,7 +2361,6 @@ ENDP
 
 
 PROC P_PathTraverse_ NEAR
-PUBLIC P_PathTraverse_ 
 
 ; todo!!   doublecheck this stuff from c. seems to not be compiled/optimized out.
 ;	if (x1.h.fracbits & MAPBLOCK1000_LOWBITMASK == 0) {
@@ -2560,8 +2568,8 @@ db 01Eh  ;
 dw _FixedDiv_addr
 
 
-mov   word ptr cs:[SELFMODIFY_add_yintercept_lo+2], ax
-mov   word ptr cs:[SELFMODIFY_add_yintercept_hi+5], dx
+mov   word ptr cs:[SELFMODIFY_add_yintercept_lo - OFFSET P_SIGHT_STARTMARKER_+2], ax
+mov   word ptr cs:[SELFMODIFY_add_yintercept_hi - OFFSET P_SIGHT_STARTMARKER_+5], dx
 
 xchg  bx, ax  ; cx, bx store ystep.
 mov   cx, dx
@@ -2576,7 +2584,7 @@ mov   dx, word ptr [bp - 010h] ; todo maybe put these together..
 cmp   dx, word ptr [bp - 4]
 jle   xt2_not_greater_than_xt1
 neg   ax
-mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction], 041h   ; inc cx
+mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction - OFFSET P_SIGHT_STARTMARKER_], 041h   ; inc cx
 add_to_yintercept:
 
 ;		yintercept.w += FixedMul16u32(partial, ystep);
@@ -2589,7 +2597,7 @@ adc   word ptr [bp - 8], dx
 jmp   done_with_xt_check
 xt2_not_greater_than_xt1:
 ;	mapxstep = -1;
-mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction], 049h   ; dec cx
+mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction - OFFSET P_SIGHT_STARTMARKER_], 049h   ; dec cx
 jmp   add_to_yintercept
 
 xt2_equals_xt1:
@@ -2597,7 +2605,7 @@ xt2_equals_xt1:
 ;		mapxstep = 0;
 ;		yintercept.h.intbits += 256;
 
-mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction], 090h   ; nop
+mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction - OFFSET P_SIGHT_STARTMARKER_], 090h   ; nop
 inc   byte ptr [bp - 7]
 
 done_with_xt_check:
@@ -2633,8 +2641,8 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedDiv_addr
 
-mov   word ptr cs:[SELFMODIFY_add_xintercept_lo+3], ax
-mov   word ptr cs:[SELFMODIFY_add_xintercept_hi+5], dx
+mov   word ptr cs:[SELFMODIFY_add_xintercept_lo - OFFSET P_SIGHT_STARTMARKER_+3], ax
+mov   word ptr cs:[SELFMODIFY_add_xintercept_hi - OFFSET P_SIGHT_STARTMARKER_+5], dx
 
 
 ; cx:bx gets xstep
@@ -2655,7 +2663,7 @@ jle   yt2_not_greater_than_yt1
 ;			partial++;
 
 neg   ax
-mov   byte ptr cs:[SELFMODIFY_mapystep_instruction], 046h   ; inc si
+mov   byte ptr cs:[SELFMODIFY_mapystep_instruction - OFFSET P_SIGHT_STARTMARKER_], 046h   ; inc si
 add_to_xintercept:
 
 
@@ -2667,7 +2675,7 @@ adc   word ptr [bp - 0Ah], dx
 jmp   done_with_yt_check
 yt2_not_greater_than_yt1:
 ;			mapystep = -1;
-mov   byte ptr cs:[SELFMODIFY_mapystep_instruction], 04Eh   ; dec si
+mov   byte ptr cs:[SELFMODIFY_mapystep_instruction - OFFSET P_SIGHT_STARTMARKER_], 04Eh   ; dec si
 jmp   add_to_xintercept
 
 yt2_equals_yt1:
@@ -2675,7 +2683,7 @@ yt2_equals_yt1:
 ;		xintercept.h.intbits += 256;
 ;		mapystep = 0;
 
-mov   byte ptr cs:[SELFMODIFY_mapystep_instruction], 090h   ; nop
+mov   byte ptr cs:[SELFMODIFY_mapystep_instruction - OFFSET P_SIGHT_STARTMARKER_], 090h   ; nop
 inc   byte ptr [bp - 9]
 
 done_with_yt_check:
@@ -2693,26 +2701,26 @@ test  al, PT_ADDLINES
 je    write_addlines_jump
 mov   dx, ((SELFMODIFY_addlines_jump_TARGET - SELFMODIFY_addlines_jump_AFTER) SHL 8) + 0EBh
 write_addlines_jump:
-mov   word ptr cs:[SELFMODIFY_addlines_jump], dx
+mov   word ptr cs:[SELFMODIFY_addlines_jump - OFFSET P_SIGHT_STARTMARKER_], dx
 
 mov   dx, 0c089h   ; 2 byte nop
 test  al, PT_ADDTHINGS
 je    write_addthings_jump
 mov   dx, ((SELFMODIFY_addthings_jump_TARGET - SELFMODIFY_addthings_jump_AFTER) SHL 8) + 0EBh
 write_addthings_jump:
-mov   word ptr cs:[SELFMODIFY_addthings_jump], dx
+mov   word ptr cs:[SELFMODIFY_addthings_jump - OFFSET P_SIGHT_STARTMARKER_], dx
 
 
 
 
 les   ax, dword ptr [bp - 010h]
-mov   word ptr cs:[SELFMODIFY_yt2_check+2], es  ; bp - 0Eh
-mov   word ptr cs:[SELFMODIFY_xt2_check+2], ax
+mov   word ptr cs:[SELFMODIFY_yt2_check - OFFSET P_SIGHT_STARTMARKER_+2], es  ; bp - 0Eh
+mov   word ptr cs:[SELFMODIFY_xt2_check - OFFSET P_SIGHT_STARTMARKER_+2], ax
 
 
 les   ax, dword ptr [bp - 0Ah]
-mov   word ptr cs:[SELFMODIFY_yintercept_intbits+2], es  ; bp - 8
-mov   word ptr cs:[SELFMODIFY_xintercept_intbits+2], ax
+mov   word ptr cs:[SELFMODIFY_yintercept_intbits - OFFSET P_SIGHT_STARTMARKER_+2], es  ; bp - 8
+mov   word ptr cs:[SELFMODIFY_xintercept_intbits - OFFSET P_SIGHT_STARTMARKER_+2], ax
 
 les   cx, dword ptr [bp - 4]  ; xt1
 mov   si, es
@@ -2755,7 +2763,7 @@ jne   intercept_not_mapy
 SELFMODIFY_add_yintercept_lo:
 add   di, 01000h
 SELFMODIFY_add_yintercept_hi:
-adc   word ptr cs:[SELFMODIFY_yintercept_intbits+2], 01000h
+adc   word ptr cs:[SELFMODIFY_yintercept_intbits - OFFSET P_SIGHT_STARTMARKER_+2], 01000h
 
 ; this becomes either
 ; inc cx 0x41
@@ -2786,7 +2794,7 @@ do_addlines_check:
 ;			if (!P_BlockLinesIterator (mapx, mapy,PIT_AddLineIntercepts))
 ;				return;	// early out
 
-mov   bx, OFFSET PIT_AddLineIntercepts_
+mov   bx, OFFSET PIT_AddLineIntercepts_ - OFFSET P_SIGHT_STARTMARKER_
 mov   dx, si
 mov   ax, cx
 call  P_BlockLinesIterator_
@@ -2799,7 +2807,7 @@ do_addthings_check:
 ;			if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
 ;				return;	// early out
 
-mov   bx, OFFSET PIT_AddThingIntercepts_
+mov   bx, OFFSET PIT_AddThingIntercepts_ - OFFSET P_SIGHT_STARTMARKER_
 mov   dx, si
 mov   ax, cx
 call  P_BlockThingsIterator_
@@ -2819,7 +2827,7 @@ jne   decrement_loop_counter_and_continue
 SELFMODIFY_add_xintercept_lo:
 add   word ptr [bp - 0Ch], 01000h
 SELFMODIFY_add_xintercept_hi:
-adc   word ptr cs:[SELFMODIFY_xintercept_intbits+2], 01000h
+adc   word ptr cs:[SELFMODIFY_xintercept_intbits - OFFSET P_SIGHT_STARTMARKER_+2], 01000h
 
 ; this becomes either
 ; inc si 0x46
@@ -3310,13 +3318,13 @@ mov   ds, ax
 
 xchg  si, di
 lodsw 
-mov   word ptr cs:[SELFMODIFY_set_oldx_lo + 1], ax
+mov   word ptr cs:[SELFMODIFY_set_oldx_lo - OFFSET P_SIGHT_STARTMARKER_ + 1], ax
 lodsw
-mov   word ptr cs:[SELFMODIFY_set_oldx_hi + 1], ax
+mov   word ptr cs:[SELFMODIFY_set_oldx_hi - OFFSET P_SIGHT_STARTMARKER_ + 1], ax
 lodsw
-mov   word ptr cs:[SELFMODIFY_set_oldy_lo + 1], ax
+mov   word ptr cs:[SELFMODIFY_set_oldy_lo - OFFSET P_SIGHT_STARTMARKER_ + 1], ax
 lodsw
-mov   word ptr cs:[SELFMODIFY_set_oldy_hi + 1], ax
+mov   word ptr cs:[SELFMODIFY_set_oldy_hi - OFFSET P_SIGHT_STARTMARKER_ + 1], ax
 
 sub   si, 8
 xchg  si, di
@@ -3357,13 +3365,13 @@ mov   ds, word ptr [bp - 2]  ; thingpos
 mov   bx, si  ; backup si
 mov   si, di
 lodsw 
-mov   word ptr cs:[SELFMODIFY_set_newx_lo + 1], ax
+mov   word ptr cs:[SELFMODIFY_set_newx_lo - OFFSET P_SIGHT_STARTMARKER_ + 1], ax
 lodsw
-mov   word ptr cs:[SELFMODIFY_set_newx_hi + 1], ax
+mov   word ptr cs:[SELFMODIFY_set_newx_hi - OFFSET P_SIGHT_STARTMARKER_ + 1], ax
 lodsw
-mov   word ptr cs:[SELFMODIFY_set_newy_lo + 1], ax
+mov   word ptr cs:[SELFMODIFY_set_newy_lo - OFFSET P_SIGHT_STARTMARKER_ + 1], ax
 lodsw
-mov   word ptr cs:[SELFMODIFY_set_newy_hi + 1], ax
+mov   word ptr cs:[SELFMODIFY_set_newy_hi - OFFSET P_SIGHT_STARTMARKER_ + 1], ax
 
 
 ;    if (! (thing_pos->flags1&(MF_TELEPORT|MF_NOCLIP)) ) {
@@ -4743,7 +4751,7 @@ push  ax   ; bp - 0Ch
 
 mov   di, 1     ; true
 mov   ax, es	; di gets 1
-mov   si, OFFSET PIT_CheckThing_
+mov   si, OFFSET PIT_CheckThing_ - OFFSET P_SIGHT_STARTMARKER_
 call  DoBlockmapLoop_
 
 test  al, al
@@ -4801,7 +4809,7 @@ cmp   cx, di   				  ; cmp yh2
 jg    check_position_increment_x_loop
 check_position_do_next_y_loop:
 mov   ax, si
-mov   bx, OFFSET PIT_CheckLine_
+mov   bx, OFFSET PIT_CheckLine_ - OFFSET P_SIGHT_STARTMARKER_
 mov   dx, cx
 call  P_BlockLinesIterator_
 test  al, al
@@ -4979,10 +4987,10 @@ add   ax, word ptr [si + 012h]
 adc   dx, word ptr [si + 014h]
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-	push  OFFSET PTR_SlideTraverse_
+	push  OFFSET PTR_SlideTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  PT_ADDLINES
 ELSE
-	mov   di, OFFSET PTR_SlideTraverse_
+	mov   di, OFFSET PTR_SlideTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  di
 	mov   di, PT_ADDLINES
 	push  di
@@ -5005,10 +5013,10 @@ adc   dx, word ptr [bp - 0Ch]
 ;	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-	push  OFFSET PTR_SlideTraverse_
+	push  OFFSET PTR_SlideTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  PT_ADDLINES
 ELSE
-	mov   di, OFFSET PTR_SlideTraverse_
+	mov   di, OFFSET PTR_SlideTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  di
 	mov   di, PT_ADDLINES
 	push  di
@@ -5034,10 +5042,10 @@ push  si ; temp 3 lo
 
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-	push  OFFSET PTR_SlideTraverse_
+	push  OFFSET PTR_SlideTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  PT_ADDLINES
 ELSE
-	mov   di, OFFSET PTR_SlideTraverse_
+	mov   di, OFFSET PTR_SlideTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  di
 	mov   di, PT_ADDLINES
 	push  di
@@ -5986,7 +5994,7 @@ add   si, ax
 adc   di, dx
 
 mov   al, byte ptr es:[bx+2]
-mov   byte ptr cs:[SELFMODIFY_blood_set_rnd_value_3+1], al  
+mov   byte ptr cs:[SELFMODIFY_blood_set_rnd_value_3 - OFFSET P_SIGHT_STARTMARKER_+1], al  
 
 pop   bx
 pop   dx
@@ -6736,7 +6744,7 @@ ENDIF
 ;	}	
 
 mov   di, 1
-mov   si, OFFSET PIT_StompThing_
+mov   si, OFFSET PIT_StompThing_ - OFFSET P_SIGHT_STARTMARKER_
 call  DoBlockmapLoop_
 test  al, al
 je    exit_teleport_move_return_0
@@ -6985,10 +6993,10 @@ adc   cx, word ptr [bp - 2]
 
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-	push  OFFSET PTR_AimTraverse_
+	push  OFFSET PTR_AimTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  (PT_ADDLINES OR PT_ADDTHINGS)
 ELSE
-	mov   di, OFFSET PTR_AimTraverse_
+	mov   di, OFFSET PTR_AimTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  di
 	mov   di, (PT_ADDLINES OR PT_ADDTHINGS)
 	push  di
@@ -7243,10 +7251,10 @@ adc   cx, word ptr [bp - 2]
 
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-	push  OFFSET PTR_ShootTraverse_
+	push  OFFSET PTR_ShootTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  (PT_ADDLINES OR PT_ADDTHINGS)
 ELSE
-	mov   di, OFFSET PTR_ShootTraverse_
+	mov   di, OFFSET PTR_ShootTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  di
 	mov   di, (PT_ADDLINES OR PT_ADDTHINGS)
 	push  di
@@ -7321,10 +7329,10 @@ mov   si, FINESINE_SEGMENT
 mov   es, si
 
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
-	push  OFFSET PTR_UseTraverse_
+	push  OFFSET PTR_UseTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  PT_ADDLINES
 ELSE
-	mov   ax, OFFSET PTR_UseTraverse_
+	mov   ax, OFFSET PTR_UseTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  ax
 	mov   ax, PT_ADDLINES
 	push  ax
@@ -7645,7 +7653,7 @@ ENDIF
 ;	DoBlockmapLoop(xl, yl, xh, yh, PIT_RadiusAttack, false);	
 
 xor   di, di
-mov   si, OFFSET PIT_RadiusAttack_
+mov   si, OFFSET PIT_RadiusAttack_ - OFFSET P_SIGHT_STARTMARKER_
 
 call  DoBlockmapLoop_
 
@@ -7946,7 +7954,7 @@ mov   dx, word ptr  [bx + 2 * BOXBOTTOM]  ; 2
 les   ax, dword ptr [bx + 2 * BOXLEFT]    ; 4
 mov   bx, es
 
-mov   si, OFFSET PIT_ChangeSector_
+mov   si, OFFSET PIT_ChangeSector_ - OFFSET P_SIGHT_STARTMARKER_
 xor   di, di
 
 call  DoBlockmapLoop_
@@ -7961,7 +7969,6 @@ ENDP
 
 
 PROC FixedMul2424_ NEAR
-PUBLIC FixedMul2424_
 
 ; we are being passed two numbers that should be shifted right 8 bits before multiplication
 ; this should lead to a couple fewer 16-bit multiplications if we do things right.
@@ -8067,7 +8074,6 @@ ENDP
 
 ; first param is unsigned so DX and sign can be skipped
 PROC FixedMul16u32_MapLocal_ NEAR
-PUBLIC FixedMul16u32_MapLocal_
 
 ; AX  *  CX:BX
 ;  0  1   2  3
@@ -8110,7 +8116,6 @@ ENDP
 
 
 PROC FixedMul1632_MapLocal_ NEAR
-PUBLIC FixedMul1632_MapLocal_
 
 
 
@@ -8189,6 +8194,12 @@ xlat    byte ptr es:[bx]
 pop     bx
 ret
 
+ENDP
+
+
+
+PROC    P_MAP_ENDMARKER_ 
+PUBLIC  P_MAP_ENDMARKER_
 ENDP
 
 

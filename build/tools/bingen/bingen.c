@@ -76,6 +76,28 @@ void __far S_INIT_STARTMARKER();
 void __far S_INIT_ENDMARKER();
 void __far P_SIGHT_STARTMARKER();
 void __far P_SIGHT_ENDMARKER();
+void __far P_MAP_STARTMARKER();
+void __far P_MAP_ENDMARKER();
+
+void __far P_AproxDistance();
+void __far P_LineOpening();
+void __far P_UnsetThingPosition();
+void __far P_SetThingPosition();
+void __far R_PointInSubsector();
+void __far P_BlockThingsIterator();
+void __far P_PathTraverse();
+void __far P_TryMove();
+void __far P_CheckPosition();
+void __far P_SlideMove();
+void __far P_TeleportMove();
+void __far P_AimLineAttack();
+void __far P_LineAttack();
+void __far P_UseLines();
+void __far P_RadiusAttack();
+void __far P_ChangeSector();
+
+
+
 
 void __far F_WIPE_STARTMARKER();
 void __far F_WIPE_ENDMARKER();
@@ -173,7 +195,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)WI_STARTMARKER, codesize[5], 1, fp);
 
 
-    codesize[6] = FP_OFF(P_SIGHT_ENDMARKER) - FP_OFF(P_SIGHT_STARTMARKER);
+    codesize[6] = FP_OFF(P_MAP_ENDMARKER) - FP_OFF(P_SIGHT_STARTMARKER);
     // write filesize..
     fwrite(&codesize[6], 2, 1, fp);
     // write data
@@ -296,7 +318,27 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     // musload offset
     fprintf(fp, "#define S_ActuallyChangeMusicOffset           0x%X\n", FP_OFF(S_ActuallyChangeMusic)          - FP_OFF(SM_LOAD_STARTMARKER));
+
+    // physics high code offsets
     fprintf(fp, "#define P_CheckSightOffset                    0x%X\n", FP_OFF(P_CheckSight)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_AproxDistanceOffset                 0x%X\n", FP_OFF(P_AproxDistance)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_LineOpeningOffset                   0x%X\n", FP_OFF(P_LineOpening)                  - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_UnsetThingPositionOffset            0x%X\n", FP_OFF(P_UnsetThingPosition)           - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SetThingPositionOffset              0x%X\n", FP_OFF(P_SetThingPosition)             - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define R_PointInSubsectorOffset              0x%X\n", FP_OFF(R_PointInSubsector)             - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_BlockThingsIteratorOffset           0x%X\n", FP_OFF(P_BlockThingsIterator)          - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_TryMoveOffset                       0x%X\n", FP_OFF(P_TryMove)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_CheckPositionOffset                 0x%X\n", FP_OFF(P_CheckPosition)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SlideMoveOffset                     0x%X\n", FP_OFF(P_SlideMove)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_TeleportMoveOffset                  0x%X\n", FP_OFF(P_TeleportMove)                 - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_AimLineAttackOffset                 0x%X\n", FP_OFF(P_AimLineAttack)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_LineAttackOffset                    0x%X\n", FP_OFF(P_LineAttack)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_UseLinesOffset                      0x%X\n", FP_OFF(P_UseLines)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_RadiusAttackOffset                  0x%X\n", FP_OFF(P_RadiusAttack)                 - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_ChangeSectorOffset                  0x%X\n", FP_OFF(P_ChangeSector)                 - FP_OFF(P_SIGHT_STARTMARKER));
+
+
+
 
 	fprintf(fp, "\n");
  

@@ -423,6 +423,37 @@ void (__far* LoadSFXWadLumps)() = 							        		  ((void    (__far *)())     
 
 boolean (__far* P_CheckSightTemp)() = 		  ((boolean (__far *)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4))     	(MK_FP(physics_highcode_segment, 		 P_CheckSightOffset)));
 
+
+
+#pragma aux P_AproxDistanceParams \
+			__modify [ax bx cx dx] \
+			__parm [dx ax] [cx bx] \
+                    __value [dx ax];
+
+#pragma aux (P_AproxDistanceParams) P_AproxDistance;
+
+
+
+fixed_t (__far* P_AproxDistance)() =          ((fixed_t (__far *)(fixed_t dx, fixed_t dy))     	                                                                           (MK_FP(physics_highcode_segment, 		 P_AproxDistanceOffset)));
+void (__far* P_LineOpening)() =               ((void (__far *)(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum))                                        (MK_FP(physics_highcode_segment, 		 P_LineOpeningOffset)));
+void (__far* P_UnsetThingPosition)() =        ((void (__far *)(mobj_t __near* thing, uint16_t mobj_pos_offset))     	                                                   (MK_FP(physics_highcode_segment, 		 P_UnsetThingPositionOffset)));
+void (__far* P_SetThingPosition)() =          ((void (__far *)(mobj_t __near* thing, uint16_t mobj_pos_offset, int16_t knownsecnum))                                       (MK_FP(physics_highcode_segment, 		 P_SetThingPositionOffset)));
+int16_t (__far* R_PointInSubsector)() =       ((int16_t (__far *)(fixed_t_union	x, fixed_t_union	y))     	                                                           (MK_FP(physics_highcode_segment, 		 R_PointInSubsectorOffset)));
+boolean (__far* P_BlockThingsIterator)() =    ((boolean (__far *)(int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*)))        (MK_FP(physics_highcode_segment, 		 P_BlockThingsIteratorOffset)));
+boolean (__far* P_TryMove)() =                ((boolean (__far *)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y))                    (MK_FP(physics_highcode_segment, 		 P_TryMoveOffset)));
+boolean (__far* P_CheckPosition)() =          ((boolean (__far *)(mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y))     	                       (MK_FP(physics_highcode_segment, 		 P_CheckPositionOffset)));
+void (__far* P_SlideMove)() =                 ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_SlideMoveOffset)));
+boolean (__far* P_TeleportMove)() =           ((boolean (__far *)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum)) (MK_FP(physics_highcode_segment, 		 P_TeleportMoveOffset)));
+fixed_t (__far* P_AimLineAttack)() =          ((fixed_t (__far *)(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance))     	                                       (MK_FP(physics_highcode_segment, 		 P_AimLineAttackOffset)));
+void (__far* P_LineAttack)() =                ((void (__far *)(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage ))     	   (MK_FP(physics_highcode_segment, 		 P_LineAttackOffset)));
+void (__far* P_UseLines)() =                  ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_UseLinesOffset)));
+void (__far* P_RadiusAttack)() =              ((void (__far *)(mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage))     	               (MK_FP(physics_highcode_segment, 		 P_RadiusAttackOffset)));
+boolean (__far* P_ChangeSector)() =           ((boolean (__far *)(sector_t __far* sector, boolean crunch))     	                                                           (MK_FP(physics_highcode_segment, 		 P_ChangeSectorOffset)));
+
+
+
+
+
 // todo p_map stuff goes here....
 
 
