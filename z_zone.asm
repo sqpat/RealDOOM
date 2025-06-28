@@ -29,7 +29,6 @@ EXTRN locallib_far_fread_:PROC
 EXTRN _currentoverlay:BYTE
 EXTRN _codestartposition:DWORD
 EXTRN _hu_font:WORD
-EXTRN _playerMobjRef:WORD
 
 
 IFDEF COMPILE_CHIPSET

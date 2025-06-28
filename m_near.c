@@ -486,9 +486,7 @@ ticcount_t      	starttime;              // for comparative timing purposes
  
 player_t        	player;
 
-THINKERREF      	playerMobjRef;
-mobj_t __near * 	playerMobj;
-mobj_pos_t __far *  playerMobj_pos;
+
 
  
 ticcount_t          gametic;
@@ -1152,7 +1150,7 @@ boolean		onground;
 
 int16_t currentThinkerListHead;
 // cached 'last used' mobjs for functions that operate on a mobj and where the mobj is often used right after. 
-mobj_pos_t __far* setStateReturn_pos;
+
 uint16_t oldentertics;
 
    

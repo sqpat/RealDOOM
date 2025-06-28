@@ -393,12 +393,12 @@ _flatcache_l2_tail =                 _NULL_OFFSET + 006AFh
 _segloopprevlookup =                 _NULL_OFFSET + 006B0h
 _segloopcachedbasecol =              _NULL_OFFSET + 006B4h
 _cachedsegmenttex =                  _NULL_OFFSET + 006B8h
-;_cachedcollength =                   _NULL_OFFSET + 006BCh
+_playerMobj =                   	 _NULL_OFFSET + 006BCh
 _ceilinglinenum =                    _NULL_OFFSET + 006BEh
 
 _lineopening =				         _NULL_OFFSET + 006C0h
 
-; 6c6
+_playerMobjRef =				     _NULL_OFFSET + 006C6h
 _intercept_p =				         _NULL_OFFSET + 006C8h
 _aimslope = 				         _NULL_OFFSET + 006CCh
 _bestslidefrac =				     _NULL_OFFSET + 006D0h
@@ -423,9 +423,12 @@ _P_SpawnMobj_addr =            		 _NULL_OFFSET + 006F4h
 _P_SpawnPuff_addr =            		 _NULL_OFFSET + 006F8h
 _P_TouchSpecialThing_addr =          _NULL_OFFSET + 006FCh
 
+_playerMobj_pos =		         	 _NULL_OFFSET + 00700h
+_setStateReturn_pos =		         _NULL_OFFSET + 00704h
 
 
-_flatcache_nodes =				     _NULL_OFFSET + 00700h
+
+_flatcache_nodes =				     _NULL_OFFSET + 00710h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

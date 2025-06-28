@@ -26,9 +26,6 @@ INSTRUCTION_SET_MACRO
 
 EXTRN _P_CheckSight:DWORD
 
-EXTRN _playerMobjRef:WORD
-EXTRN _playerMobj:WORD
-EXTRN _playerMobj_pos:WORD
 
 .CODE
 

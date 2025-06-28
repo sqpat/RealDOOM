@@ -40,8 +40,7 @@ EXTRN _player:PLAYER_T
 EXTRN _setblocks:BYTE
 EXTRN _setsizeneeded:BYTE
 EXTRN _pendingdetail:WORD
-EXTRN _playerMobj:WORD
-EXTRN _playerMobj_pos:WORD
+
 EXTRN _viewwindowoffset:WORD
 EXTRN _r_cachedplayerMobjsecnum:WORD
 EXTRN _scaledviewwidth:WORD

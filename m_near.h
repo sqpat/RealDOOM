@@ -240,10 +240,6 @@
 #define hudneedsupdate                  (*((uint8_t    __near*)              (_NULL_OFFSET + 0x016E)))
 #define gamestate                       (*((gamestate_t __near*)             (_NULL_OFFSET + 0x016F)))
 
-
-// 6-16 bytes... space it out in case of size growth
-
-
 #define tmx                             (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0170)))
 #define tmy                             (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0174)))
 #define tmxmove                         (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x0178)))
@@ -251,7 +247,6 @@
 
 
 
-// these are far pointers to functions..
 #define currentpageframes               (((uint8_t    __near*)               (_NULL_OFFSET + 0x0180)))
 
 #define emshandle                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x0184)))
@@ -463,12 +458,14 @@
 #define segloopprevlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06B0)))
 #define segloopcachedbasecol			  (((int16_t __near*)                (_NULL_OFFSET + 0x06B4)))
 #define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x06B8)))
-// unused 6bc
+
+#define playerMobj	     				  (*((mobj_t __near*  __near*)       (_NULL_OFFSET + 0x06BC)))
 
 #define ceilinglinenum				      (*((int16_t __near*)               (_NULL_OFFSET + 0x06BE)))
 
 #define lineopening  				      (*((lineopening_t __near*)         (_NULL_OFFSET + 0x06C0)))
-// unused 6c6
+#define playerMobjRef  				      (*((THINKERREF __near*)         (_NULL_OFFSET + 0x06C6)))
+
 
 #define intercept_p  				      (*((intercept_t __far* __near*)    (_NULL_OFFSET + 0x06C8)))
 #define aimslope     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06CC)))
@@ -495,7 +492,12 @@
 #define P_SpawnPuff_addr 			      (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F8)))
 #define P_TouchSpecialThing_addr     	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06FC)))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0700)))
+#define playerMobj_pos   		     	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0700)))
+#define setStateReturn_pos	 	    	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0704)))
+// #define P_CheckSight				      (boolean (__far* )() = 		  ((boolean (__far *)(mobj_t __near* , mobj_t __near*, uint16_t, uint16_t)) (_NULL_OFFSET + 0x0708)))
+
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0710)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -812,9 +814,6 @@ extern boolean         	  timingdemo;             // if true, exit with report o
 extern boolean         	  noblit;                 // for comparative timing purposes 
 extern ticcount_t         starttime;              // for comparative timing purposes       
 extern player_t        	  player;
-extern THINKERREF      	  playerMobjRef;
-extern mobj_t __near *    playerMobj;
-extern mobj_pos_t __far * playerMobj_pos;
 
 
 extern ticcount_t          gametic;
@@ -1079,7 +1078,6 @@ extern boolean		onground;
 
 
 extern int16_t currentThinkerListHead;
-extern mobj_pos_t __far* setStateReturn_pos;
 extern uint16_t oldentertics;
 
    
