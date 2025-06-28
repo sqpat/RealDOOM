@@ -105,7 +105,7 @@ mobj_t __near* SAVEDUNIT;
 // Which one is deterministic?
 uint8_t __near P_Random(void) {
 	 
-    prndindex = (prndindex+1)&0xff;
+    prndindex++;
     return rndtable[prndindex];
 }
 

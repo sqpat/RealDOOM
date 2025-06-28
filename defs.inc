@@ -201,9 +201,9 @@ _tmymove =                         _NULL_OFFSET + 0017Ch
 _currentpageframes =     			_NULL_OFFSET + 00180h
 _emshandle =     					_NULL_OFFSET + 00184h
 _pagenum9000 =     					_NULL_OFFSET + 00186h
+_prndindex =     					_NULL_OFFSET + 00188h
+_setStateReturn =     				_NULL_OFFSET + 0018Ah
 
-
-;_Z_QuickMapFlatPage_addr =        	_NULL_OFFSET + 00188h
 _R_GetPatchTexture_addr =           _NULL_OFFSET + 0018Ch
 
 ; 190h

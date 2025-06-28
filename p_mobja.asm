@@ -22,9 +22,6 @@ INSTRUCTION_SET_MACRO
 
 .DATA
 
-EXTRN _prndindex:BYTE
-EXTRN _setStateReturn:WORD
-
 
 .CODE
 

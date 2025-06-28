@@ -556,7 +556,7 @@ int8_t             savegameslot;
 
 int16_t		myargc;
 int8_t**		myargv;
-int16_t	prndindex = 0;
+
 uint8_t		usemouse;
 
 
@@ -1152,7 +1152,6 @@ boolean		onground;
 
 int16_t currentThinkerListHead;
 // cached 'last used' mobjs for functions that operate on a mobj and where the mobj is often used right after. 
-mobj_t __near* setStateReturn;
 mobj_pos_t __far* setStateReturn_pos;
 uint16_t oldentertics;
 

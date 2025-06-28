@@ -29,8 +29,6 @@ EXTRN _P_CheckSight:DWORD
 EXTRN _playerMobjRef:WORD
 EXTRN _playerMobj:WORD
 EXTRN _playerMobj_pos:WORD
-EXTRN _setStateReturn:WORD
-EXTRN _prndindex:BYTE
 
 .CODE
 

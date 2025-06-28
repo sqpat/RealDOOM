@@ -35,8 +35,6 @@ EXTRN P_UpdateSpecials_:NEAR
 
 .DATA
 
-EXTRN _prndindex:BYTE
-EXTRN _setStateReturn:WORD
 EXTRN _currentThinkerListHead:WORD
 EXTRN _paused:BYTE
 EXTRN _menuactive:BYTE

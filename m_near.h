@@ -257,7 +257,9 @@
 #define emshandle                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x0184)))
 #define pagenum9000                     (*((int16_t    __near*)              (_NULL_OFFSET + 0x0186)))
 
-// #define Z_QuickMapFlatPage_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0188)))
+#define prndindex                       (*((uint8_t    __near*)              (_NULL_OFFSET + 0x0188)))
+// 189 free
+#define setStateReturn                  (*((mobj_t __near*  __near*)         (_NULL_OFFSET + 0x018A)))
 #define R_GetPatchTexture_addr   		(*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
 #define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0190)))
 #define floorplaneindex                 (*((int16_t    __near*)              (_NULL_OFFSET + 0x0194)))
@@ -461,13 +463,13 @@
 #define segloopprevlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06B0)))
 #define segloopcachedbasecol			  (((int16_t __near*)                (_NULL_OFFSET + 0x06B4)))
 #define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x06B8)))
-// unused
-// #define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06BC)))
+// unused 6bc
+
 #define ceilinglinenum				      (*((int16_t __near*)               (_NULL_OFFSET + 0x06BE)))
 
 #define lineopening  				      (*((lineopening_t __near*)         (_NULL_OFFSET + 0x06C0)))
-// unused
-// #define ???				      (*((int16_t __near*)               (_NULL_OFFSET + 0x06C6)))
+// unused 6c6
+
 #define intercept_p  				      (*((intercept_t __far* __near*)    (_NULL_OFFSET + 0x06C8)))
 #define aimslope     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06CC)))
 #define bestslidefrac     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06D0)))
@@ -867,7 +869,6 @@ extern int8_t     d_map;
 
 extern int16_t		myargc;
 extern int8_t**		myargv;
-extern int16_t	prndindex;
 extern uint8_t		usemouse;
 
 
@@ -1078,7 +1079,6 @@ extern boolean		onground;
 
 
 extern int16_t currentThinkerListHead;
-extern mobj_t __near* setStateReturn;
 extern mobj_pos_t __far* setStateReturn_pos;
 extern uint16_t oldentertics;
 
