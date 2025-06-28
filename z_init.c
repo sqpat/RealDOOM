@@ -673,6 +673,17 @@ void __near Z_LoadBinaries() {
 	W_LumpLength_addr =	 				(uint32_t)(W_LumpLength);
 	// Z_QuickMapMusicPageFrame_addr =     (uint32_t)(Z_QuickMapMusicPageFrame);
 
+	FixedMulTrigNoShift_addr =			(uint32_t)(FixedMulTrigNoShift);
+	R_PointToAngle2_16_addr =			(uint32_t)(R_PointToAngle2_16);
+	R_PointToAngle2_addr =				(uint32_t)(R_PointToAngle2);
+	P_UseSpecialLine_addr =				(uint32_t)(P_UseSpecialLine);
+	P_DamageMobj_addr =					(uint32_t)(P_DamageMobj);
+	P_SetMobjState_addr =				(uint32_t)(P_SetMobjState);
+	P_CrossSpecialLine_addr =			(uint32_t)(P_CrossSpecialLine);
+	P_ShootSpecialLine_addr =			(uint32_t)(P_ShootSpecialLine);
+	P_SpawnMobj_addr =					(uint32_t)(P_SpawnMobj);
+	P_SpawnPuff_addr =					(uint32_t)(P_SpawnPuff);
+	P_TouchSpecialThing_addr =			(uint32_t)(P_TouchSpecialThing);
 
 
 

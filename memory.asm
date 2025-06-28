@@ -363,6 +363,9 @@ db "r", "b", "0"
 ; 6F3 currenttask
 db -1
 ; 6F4
+dw          00, 00, 00, 00, 00, 00
+
+; 700
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00
 ENDM

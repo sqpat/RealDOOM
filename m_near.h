@@ -280,12 +280,13 @@
 #define dirtybox                        (((int16_t    __near*)               (_NULL_OFFSET + 0x01E8)))
 #define ticcount                        (*((volatile uint32_t  __near*)      (_NULL_OFFSET + 0x01F0)))
 
-// #define Z_QuickMapPhysics_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F4)))
-// #define Z_QuickMapWipe_addr             (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F8)))
-// #define Z_QuickMapScratch_5000_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01FC)))
+
+#define P_UseSpecialLine_addr          	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F4)))
+#define P_DamageMobj_addr             	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F8)))
+#define P_SetMobjState_addr     		(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01FC)))
 #define M_Random_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0200)))
-//#define I_UpdateNoBlit_addr             (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
-// #define I_FinishUpdate_addr             (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
+#define P_CrossSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
+#define P_ShootSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
 #define V_MarkRect_addr                 (*((uint32_t  __near*)               (_NULL_OFFSET + 0x020C)))
 #define M_Drawer_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0210)))
 
@@ -376,9 +377,11 @@
 #define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0560)))
 #define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0564)))
 #define locallib_strlen_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0568)))
-// #define Z_QuickMapStatusNoScreen4_addr    (*((uint32_t  __near*)             (_NULL_OFFSET + 0x056C)))
-// #define Z_QuickMapRender7000_addr         (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0570)))
-// #define Z_QuickMapScreen0_addr            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0574)))
+#define FixedMulTrigNoShift_addr	      (*((uint32_t  __near*)             (_NULL_OFFSET + 0x056C)))
+#define R_PointToAngle2_16_addr           (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0570)))
+#define R_PointToAngle2_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0574)))
+
+
 #define W_CacheLumpNameDirect_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0578)))
 #define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)             (_NULL_OFFSET + 0x057C)))
 #define W_GetNumForName_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0580)))
@@ -433,7 +436,7 @@
 
 // free bytes per EMS page. Allocated in 256k chunks, so defaults to 64.. 
 // leave what, 40 bytes just in case?
-// todo move this to mottom and make it growable...
+// todo move this to bottom and make it growable...
 #define sfx_free_bytes					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0648)))
 
 
@@ -485,7 +488,13 @@
 #define leveltime     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06EC)))
 #define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x06F0))
 #define currenttask                       (*(int8_t __near *)                (_NULL_OFFSET + 0x06F3))
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x06F4)))
+
+#define P_SpawnMobj_addr     			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F4)))
+#define P_SpawnPuff_addr 			      (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F8)))
+#define P_TouchSpecialThing_addr     	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06FC)))
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0700)))
+
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
 #define spritecache_nodes				  (((cache_node_page_count_t __near*) (CURRENT_POSITION_1)))

@@ -228,12 +228,14 @@ _visplane_offset =              	_NULL_OFFSET + 001B6h
 _dirtybox =              			_NULL_OFFSET + 001E8h
 _ticcount =			              	_NULL_OFFSET + 001F0h
 
-;_Z_QuickMapPhysics_addr =            _NULL_OFFSET + 001F4h
-;_Z_QuickMapWipe_addr =               _NULL_OFFSET + 001F8h
-;_Z_QuickMapScratch_5000_addr =       _NULL_OFFSET + 001FCh
+
+
+_P_UseSpecialLine_addr =             _NULL_OFFSET + 001F4h
+_P_DamageMobj_addr =                 _NULL_OFFSET + 001F8h
+_P_SetMobjState_addr =       		 _NULL_OFFSET + 001FCh
 _M_Random_addr =                     _NULL_OFFSET + 00200h
-;_I_UpdateNoBlit_addr =               _NULL_OFFSET + 00204h
-;_I_FinishUpdate_addr =               _NULL_OFFSET + 00208h
+_P_CrossSpecialLine_addr =           _NULL_OFFSET + 00204h
+_P_ShootSpecialLine_addr =           _NULL_OFFSET + 00208h
 _V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
 _M_Drawer_addr =                     _NULL_OFFSET + 00210h
 
@@ -313,9 +315,11 @@ _S_ChangeMusic_addr =              	 _NULL_OFFSET + 0055Ch
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00560h
 _getStringByIndex_addr =             _NULL_OFFSET + 00564h
 _locallib_strlen_addr =              _NULL_OFFSET + 00568h
-;_Z_QuickMapStatusNoScreen4_addr =    _NULL_OFFSET + 0056Ch
-;_Z_QuickMapRender7000_addr =         _NULL_OFFSET + 00570h
-;_Z_QuickMapScreen0_addr =            _NULL_OFFSET + 00574h
+_FixedMulTrigNoShift_addr =          _NULL_OFFSET + 0056Ch
+_R_PointToAngle2_16_addr =           _NULL_OFFSET + 00570h
+_R_PointToAngle2_addr =              _NULL_OFFSET + 00574h
+
+
 _W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00578h
 _W_CacheLumpNumDirectFragment_addr = _NULL_OFFSET + 0057Ch
 _W_GetNumForName_addr =              _NULL_OFFSET + 00580h
@@ -415,7 +419,13 @@ _leveltime =     		   			 _NULL_OFFSET + 006ECh
 _fopen_rb_argument =                 _NULL_OFFSET + 006F0h
 _currenttask =            		     _NULL_OFFSET + 006F3h
 
-_flatcache_nodes =				     _NULL_OFFSET + 006F4h
+_P_SpawnMobj_addr =            		 _NULL_OFFSET + 006F4h
+_P_SpawnPuff_addr =            		 _NULL_OFFSET + 006F8h
+_P_TouchSpecialThing_addr =          _NULL_OFFSET + 006FCh
+
+
+
+_flatcache_nodes =				     _NULL_OFFSET + 00700h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

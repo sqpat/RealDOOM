@@ -19,21 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-; todo addr all these
 
-EXTRN FixedMulTrigNoShift_:PROC
-
-EXTRN R_PointToAngle2_16_:FAR
-EXTRN R_PointToAngle2_:FAR
-
-EXTRN P_UseSpecialLine_:FAR
-EXTRN P_DamageMobj_:FAR
-EXTRN P_SetMobjState_:FAR
-EXTRN P_CrossSpecialLine_:FAR
-EXTRN P_ShootSpecialLine_:FAR
-EXTRN P_SpawnMobj_:FAR
-EXTRN P_SpawnPuff_:FAR
-EXTRN P_TouchSpecialThing_:FAR
 
 
 .DATA
@@ -2959,7 +2945,12 @@ mov   cx, word ptr ds:[_playerMobjRef]
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, si
 mov   dx, di	; linenum
-call  P_UseSpecialLine_
+
+;call  P_UseSpecialLine_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_UseSpecialLine_addr
+
 xor   al, al
 LEAVE_MACRO
 pop   di
@@ -3486,7 +3477,11 @@ cbw	  ; fill out ah from before
 mov   dx, ax
 mov   ax, word ptr ds:[bx + _spechit]
 mov   bx, si
-call  P_CrossSpecialLine_
+;call  P_CrossSpecialLine_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_CrossSpecialLine_addr
+
 jmp   loop_next_num_spec
 
 ENDP
@@ -3700,7 +3695,12 @@ xchg  ax, bx	; bx gets side
 mov   es, di   ; lines_physics
 les   ax, dword ptr es:[si + 4]
 mov   dx, es
-call  R_PointToAngle2_16_
+
+;call  R_PointToAngle2_16_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_PointToAngle2_16_addr
+
 
 ;    if (side == 1)
 ;		lineangle.hu.intbits += ANG180_HIGHBITS;
@@ -3721,7 +3721,12 @@ xor   ax, ax
 cwd
 mov   bx, ax
 mov   cx, ax
-call  R_PointToAngle2_  ; todo this is a weird function call. 
+
+;call  R_PointToAngle2_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_PointToAngle2_addr
+
 sub   ax, si
 sbb   dx, di
 cmp   dx, ANG180_HIGHBITS
@@ -3760,7 +3765,10 @@ mov   cx, dx
 
 mov   dx, si     ; si is now free
 mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 
 
 ;    tmxmove.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, lineangle.hu.intbits, newlen);
@@ -3774,14 +3782,20 @@ push  dx        ; need this once more
 mov   bx, si
 mov   cx, di
 mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 mov   word ptr ds:[_tmxmove+0], ax
 mov   word ptr ds:[_tmxmove+2], dx
 mov   bx, si
 mov   cx, di
 pop   dx
 mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 mov   word ptr ds:[_tmymove+0], ax
 mov   word ptr ds:[_tmymove+2], dx
 POPA_NO_AX_MACRO
@@ -4254,7 +4268,12 @@ mov   bx, word ptr [bp - 2]
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   dx, word ptr ds:[_tmthing]
 xchg  ax, si   ; get si in ax
-call  P_TouchSpecialThing_
+
+;call  P_TouchSpecialThing_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_TouchSpecialThing_addr
+
 dont_touch_anything:
 cmp   byte ptr [bp - 01Eh], 0
 jne   exit_checkthing_return_0_2
@@ -4388,7 +4407,12 @@ mul   cl ; this will fill up the queue so use mov not xchg
 mov   dx, bx   ; tmthing
 mov   cx, ax   ; cx gets mul result
 mov   ax, si
-call  P_DamageMobj_
+
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
+
 
 ;		tmthing_pos->flags2 &= ~MF_SKULLFLY;
 
@@ -4418,7 +4442,12 @@ mul   dl
 
 xchg  ax, bx   ; ax gets tmthing from above, bx gets mobjinfo ptr
 mov   dx, word ptr ds:[bx + _mobjinfo]
-call  P_SetMobjState_
+
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
+
 exit_checkthing_return_0:
 xor   al, al
 LEAVE_MACRO 
@@ -4450,7 +4479,10 @@ mul   cl ; this will fill up the queue so use mov not xchg
 mov   cx, ax   ; cx gets mul result
 mov   dx, di   ; tmthing
 mov   ax, si   ; ax gets thing ptr   
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 xor   al, al
 LEAVE_MACRO 
 pop   di
@@ -5422,7 +5454,10 @@ je    no_special
 
 mov   ax, word ptr ds:[_shootthing]
 ; dx is linenum
-call  P_ShootSpecialLine_
+;call  P_ShootSpecialLine_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_ShootSpecialLine_addr
 
 no_special:
 test  cl, ML_TWOSIDED
@@ -5568,7 +5603,10 @@ pop   dx    ; x hi
 
 ; di:si are hi/lo z for spawnpuff
 
-call  P_SpawnPuff_
+;call  P_SpawnPuff_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnPuff_addr
 exit_shoottraverse_return_0:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
@@ -5895,7 +5933,12 @@ pop   dx   ; x hi
 je    do_spawn_blood
 
 do_spawn_puff:
-call  P_SpawnPuff_
+;call  P_SpawnPuff_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnPuff_addr
+
+
 done_spawning_blood_or_puff:
 mov   cx, word ptr ds:[_la_damage]
 test  cx, cx
@@ -5904,7 +5947,10 @@ do_damage:
 mov   dx, word ptr ds:[_shootthing]
 mov   bx, dx
 mov   ax, word ptr [bp - 4]
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 exit_aimtraverse_return_0:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
@@ -5974,7 +6020,11 @@ push  es
 ENDIF
 
 
-call  P_SpawnMobj_
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
+
 
 ;	 th = setStateReturn;
 ;    th->momz.h.intbits = 2
@@ -6007,12 +6057,18 @@ jmp   done_spawning_blood_or_puff
 draw_big_blood:
 mov   dx, S_BLOOD2
 mov   ax, bx
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 jmp   done_spawning_blood_or_puff
 draw_small_blood:
 mov   dx, S_BLOOD3
 mov   ax, bx
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 jmp   done_spawning_blood_or_puff
 
 
@@ -6484,7 +6540,10 @@ mov   cx, 10000
 mov   dx, word ptr ds:[_tmthing]
 mov   ax, si
 mov   bx, dx
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 exit_stompthing_return_1:
 mov   al, 1
 pop   di
@@ -7480,7 +7539,10 @@ mov   cx, word ptr ds:[_bombdamage]
 sub   cx, di
 mov   bx, word ptr ds:[_bombsource] ; todo les. reorder?
 
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 exit_radiusattack_return_1:
 mov   al, 1
 pop   di
@@ -7774,7 +7836,10 @@ ret
 crush_to_gibs:
 mov   dx, S_GIBS
 mov   ax, si
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 mov   si, word ptr ds:[_setStateReturn]
 pop   es
 and   byte ptr es:[di + 014h], ( NOT MF_SOLID)
@@ -7801,7 +7866,10 @@ mov   cx, 10
 mov   ax, si
 xor   bx, bx
 mov   dx, bx
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[di + 8]
 mov   dx, word ptr es:[di + 0Ah]
@@ -7825,7 +7893,10 @@ mov   bx, word ptr es:[di + 4]
 mov   cx, word ptr es:[di + 6]
 les   ax, dword ptr es:[di]
 mov   dx, es
-call  P_SpawnMobj_
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
 call  P_Random_MapLocal_
 mov   dl, al
 call  P_Random_MapLocal_

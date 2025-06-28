@@ -423,6 +423,7 @@ void (__far* LoadSFXWadLumps)() = 							        		  ((void    (__far *)())     
 
 boolean (__far* P_CheckSight)() = 		  ((boolean (__far *)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4))     	(MK_FP(physics_highcode_segment, 		 P_CheckSightOffset)));
 
+// todo p_map stuff goes here....
 
 
 
