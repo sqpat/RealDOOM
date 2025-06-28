@@ -19,16 +19,6 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN FixedMulTrigNoShift_:FAR
-
-EXTRN FixedMul2432_:FAR
-EXTRN FixedMul_:FAR
-EXTRN FixedDiv_:FAR
-EXTRN FixedMulBig1632_:FAR
-EXTRN P_SetMobjState_:FAR
-EXTRN P_SpawnMobj_:FAR
-
-
 
 .DATA
 
@@ -107,8 +97,10 @@ push  es
 ENDIF
 
 
-call  P_SpawnMobj_
-
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
 ;	 th = setStateReturn;
 ;    th->momz.h.intbits = 1;
 ;    th->tics -= P_Random()&3;
@@ -139,7 +131,10 @@ retf
 spark_punch_on_wall:
 mov   dx, S_PUFF3
 mov   ax, bx
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 retf   
 
 
