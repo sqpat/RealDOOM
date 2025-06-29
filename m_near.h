@@ -493,10 +493,13 @@
 #define pendingdetail 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x079C)))
 #define setsizeneeded                     (*((uint8_t    __near*)            (_NULL_OFFSET + 0x079E)))
 #define setblocks                   	  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x079F)))
-#define viewwindowx 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07A0)))
-#define viewwindowy 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07A2)))
+//99 bytes
+#define player 		 					  (*((player_t __near*)              (_NULL_OFFSET + 0x07A0)))
+//803 free
+#define viewwindowx 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0804)))
+#define viewwindowy 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0806)))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x07B0)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0810)))
 
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
@@ -819,7 +822,6 @@ extern boolean         	  usergame;               // ok to save / end game
 extern boolean         	  timingdemo;             // if true, exit with report on completion 
 extern boolean         	  noblit;                 // for comparative timing purposes 
 extern ticcount_t         starttime;              // for comparative timing purposes       
-extern player_t        	  player;
 
 
 extern ticcount_t          gametic;

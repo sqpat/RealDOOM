@@ -443,10 +443,14 @@ _viewwindowoffset = 				 _NULL_OFFSET + 0079Ah
 _pendingdetail = 				 	 _NULL_OFFSET + 0079Ch
 _setsizeneeded = 				 	 _NULL_OFFSET + 0079Eh
 _setblocks = 					 	 _NULL_OFFSET + 0079Fh
-_viewwindowx = 					 	 _NULL_OFFSET + 007A0h
-_viewwindowy = 					 	 _NULL_OFFSET + 007A2h
+_player = 						 	 _NULL_OFFSET + 007A0h
+;803 free
+_viewwindowx = 					 	 _NULL_OFFSET + 00804h
+_viewwindowy = 					 	 _NULL_OFFSET + 00806h
 
-_flatcache_nodes =				     _NULL_OFFSET + 007B0h
+
+
+_flatcache_nodes =				     _NULL_OFFSET + 00810h
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
 CURRENT_POSITION_2 =   			      (_spritecache_nodes  + (SIZEOF_CACHE_NODE_PAGE_COUNT_T * NUM_SPRITE_CACHE_PAGES))

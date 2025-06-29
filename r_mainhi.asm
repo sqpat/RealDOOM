@@ -28,8 +28,6 @@ EXTRN Z_QuickMapVisplaneRevert_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN FastDiv3232_shift_3_8_:PROC
 
-EXTRN _player:WORD
-
 
 .CODE
 

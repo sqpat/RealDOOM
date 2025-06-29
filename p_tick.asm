@@ -39,7 +39,6 @@ EXTRN _currentThinkerListHead:WORD
 EXTRN _paused:BYTE
 EXTRN _menuactive:BYTE
 EXTRN _demoplayback:BYTE
-EXTRN _player:WORD
 
 .CODE
 

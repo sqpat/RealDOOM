@@ -36,7 +36,6 @@ EXTRN R_ClearClipSegs_:NEAR
 
 .DATA
 
-EXTRN _player:PLAYER_T
 
 EXTRN _R_DrawMaskedCall:DWORD
 EXTRN _R_DrawPlanesCall:DWORD

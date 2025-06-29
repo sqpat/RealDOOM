@@ -503,7 +503,6 @@ boolean         	noblit;                 // for comparative timing purposes
 ticcount_t      	starttime;              // for comparative timing purposes       
  
  
-player_t        	player;
 
 
 
