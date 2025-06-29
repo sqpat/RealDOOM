@@ -498,8 +498,11 @@
 //803 free
 #define viewwindowx 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0804)))
 #define viewwindowy 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0806)))
+#define R_DrawPlanesCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0808)))
+#define R_DrawMaskedCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x080C)))
+#define R_WriteBackMaskedFrameConstantsCall  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0810)))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0810)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0820)))
 
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
@@ -662,16 +665,13 @@ extern mline_t              triangle_guy[3];
 extern mline_t              thintriangle_guy[3];
 
 
-extern void                 (__far* R_DrawPlanesCall)();
+
+
 extern void                 (__far* R_WriteBackViewConstantsSpanCall)();
-extern void                 (__far* R_DrawMaskedCall)();
-
-
 
 
 extern void                 (__far* wipe_StartScreenCall)();
 extern void                 (__far* wipe_WipeLoopCall)();
-extern void                 (__far* R_WriteBackMaskedFrameConstantsCall)();
 extern void                 (__far* R_WriteBackViewConstantsMaskedCall)();
 
 extern void                 (__far* F_StartFinale)();

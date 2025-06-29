@@ -207,6 +207,8 @@ void __far  R_WriteBackViewConstants();
 //
 void __near  R_ExecuteSetViewSize(void) {
 
+// void (__far* tempcall)()  =   				      	  ((void    (__far *)())  								R_WriteBackViewConstantsSpanCall);
+
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	setsizeneeded = false;
@@ -259,7 +261,7 @@ void __near  R_ExecuteSetViewSize(void) {
 	R_WriteBackViewConstants();
 
 	Z_QuickMapRenderPlanes();
-	R_WriteBackViewConstantsSpanCall();
+	R_WriteBackViewConstantsSpanCall(); // tempcall();//
 
 	// Set Masked Mapping
 	Z_QuickMapUndoFlatCache();

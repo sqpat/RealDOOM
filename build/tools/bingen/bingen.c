@@ -355,11 +355,18 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define SMLoadCodeSize                 0x%X\n", codesize[10]);
 	fprintf(fp, "#define SInitCodeSize                  0x%X\n", codesize[11]);
 	fprintf(fp, "#define MaximumMusDriverSize           0x%X\n", maxmuscodesize);
-
+    fclose(fp);
 
 
     printf("Generated m_offset.h file\n");
 
+    fp = fopen("m_offset.inc", "wb");
+	fprintf(fp, "R_DRAWPLANESOFFSET = 0%Xh\n", FP_OFF(R_DrawPlanes)                    - FP_OFF(R_SPAN_STARTMARKER));
+	fprintf(fp, "R_DRAWMASKEDOFFSET = 0%Xh\n", FP_OFF(R_DrawMasked)                    - FP_OFF(R_MASKED_STARTMARKER));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTSOFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
+
+    fclose(fp);
+    printf("Generated m_offset.inc file\n");
  
     return 0;
 } 

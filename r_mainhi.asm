@@ -23,8 +23,6 @@ INSTRUCTION_SET_MACRO
 
 EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
-EXTRN Z_QuickMapVisplanePage_:PROC
-EXTRN Z_QuickMapVisplaneRevert_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN FastDiv3232_shift_3_8_:PROC
 
@@ -1214,14 +1212,14 @@ mov   bl, 1
 mov   dl, bl
 
 
-call  Z_QuickMapVisplanePage_
+call  Z_QuickMapVisplanePage_BSPLocal_
 jmp   return_visplane
 use_phys_page_2:
 mov   bl, 2
 mov   dl, bl
 
 
-call  Z_QuickMapVisplanePage_
+call  Z_QuickMapVisplanePage_BSPLocal_
 jmp   return_visplane
 is_floor:
 cmp   byte ptr ds:[_ceilphyspage], 2
@@ -1229,13 +1227,172 @@ je    use_phys_page_1
 mov   bl, 2
 mov   dl, bl
 
-call  Z_QuickMapVisplanePage_
+call  Z_QuickMapVisplanePage_BSPLocal_
 jmp   return_visplane
 
 
 
 ENDP
 
+PROC Z_QuickMapVisplanePage_BSPLocal_ NEAR
+PUBLIC Z_QuickMapVisplanePage_BSPLocal_
+
+
+
+;	int16_t usedpageindex = pagenum9000 + PAGE_8400_OFFSET + physicalpage;
+;	int16_t usedpagevalue;
+;	int8_t i;
+;	if (virtualpage < 2){
+;		usedpagevalue = FIRST_VISPLANE_PAGE + virtualpage;
+;	} else {
+;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
+;	}
+
+push  bx
+push  cx
+push  si
+mov   cl, al
+mov   dh, dl
+mov   al, dl
+cbw  
+IFDEF COMP_CH
+mov   si, CHIPSET_PAGE_9000
+ELSE
+mov   si, word ptr ds:[_pagenum9000]
+ENDIF
+add   si, PAGE_8400_OFFSET ; sub 3
+add   si, ax
+mov   al, cl
+cbw  
+cmp   al, 2
+jge   visplane_page_above_2
+add   ax, FIRST_VISPLANE_PAGE
+used_pagevalue_ready:
+
+;		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
+
+; _EPR here
+IFDEF COMP_CH
+    add  ax, EMS_MEMORY_PAGE_OFFSET
+ELSE
+ENDIF
+mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * PAGE_SWAP_ARG_MULT)], ax
+
+
+;pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
+IFDEF COMP_CH
+ELSE
+    mov   word ptr ds:[_pageswapargs + ((pageswapargs_visplanepage_offset+1) * PAGE_SWAP_ARG_MULT)], si
+ENDIF
+
+;	physicalpage++;
+inc   dh
+mov   dl, 4
+
+;	for (i = 4; i > 0; i --){
+;		if (active_visplanes[i] == physicalpage){
+;			active_visplanes[i] = 0;
+;			break;
+;		}
+;	}
+
+loop_next_visplane_page:
+mov   al, dl
+cbw  
+mov   bx, ax
+cmp   dh, byte ptr ds:[bx + _active_visplanes]
+je    set_zero_and_break
+dec   dl
+test  dl, dl
+jg    loop_next_visplane_page
+
+done_with_visplane_loop:
+mov   al, cl
+cbw  
+mov   bx, ax
+
+mov   byte ptr ds:[bx + _active_visplanes], dh
+
+
+IFDEF COMP_CH
+	IF COMP_CH EQ CHIPSET_SCAT
+
+        mov  	dx, SCAT_PAGE_SELECT_REGISTER
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        out  	dx, al
+        mov     si,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        mov  	dx, SCAT_PAGE_SET_REGISTER
+        lodsw
+        out 	dx, ax
+
+	ELSEIF COMP_CH EQ CHIPSET_SCAMP
+
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        out     SCAMP_PAGE_SELECT_REGISTER, al
+        mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        lodsw
+        out 	SCAMP_PAGE_SET_REGISTER, ax
+
+
+	ELSEIF COMP_CH EQ CHIPSET_HT18
+
+        mov  	dx, HT18_PAGE_SELECT_REGISTER
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        out  	dx, al
+        mov     si,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        mov  	dx, HT18_PAGE_SET_REGISTER
+        lodsw
+        out 	dx, ax
+
+    ENDIF
+
+ELSE
+
+
+    Z_QUICKMAPAI1 pageswapargs_visplanepage_offset_size unused_param
+
+
+
+ENDIF
+
+
+mov   byte ptr ds:[_visplanedirty], 1
+pop   si
+pop   cx
+pop   bx
+ret  
+visplane_page_above_2:
+;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
+add   ax, (EMS_VISPLANE_EXTRA_PAGE - 2)
+jmp   used_pagevalue_ready
+
+set_zero_and_break:
+mov   byte ptr ds:[bx + _active_visplanes], 0
+jmp   done_with_visplane_loop
+
+ENDP
+
+PROC Z_QuickMapVisplaneRevert_BSPLocal_ NEAR
+PUBLIC Z_QuickMapVisplaneRevert_BSPLocal_
+
+push  dx
+mov   dx, 1
+mov   ax, dx
+call  Z_QuickMapVisplanePage_BSPLocal_
+mov   dx, 2
+mov   ax, dx
+call  Z_QuickMapVisplanePage_BSPLocal_
+mov   byte ptr ds:[_visplanedirty], 0
+pop   dx
+ret  
+
+ENDP
 
 
 ;R_FindPlane_
@@ -1740,7 +1897,7 @@ mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1], 0FFFFh
 
 jmp   floor_plane_set
 revert_visplane:
-call  Z_QuickMapVisplaneRevert_
+call  Z_QuickMapVisplaneRevert_BSPLocal_
 jmp   prepare_fields
 
 

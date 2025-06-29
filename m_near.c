@@ -375,14 +375,10 @@ uint8_t quality_port_lookup[12] = {
 
 
 
-void (__far* R_DrawPlanesCall)()  =   				      	                  ((void    (__far *)())  								(MK_FP(spanfunc_jump_lookup_segment, 	 R_DrawPlanesOffset)));
 void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  								(MK_FP(spanfunc_jump_lookup_segment, 	 R_WriteBackViewConstantsSpanOffset)));
-void (__far* R_DrawMaskedCall)() = 											  ((void    (__far *)())     							(MK_FP(drawfuzzcol_area_segment, 		 R_DrawMaskedOffset)));
-
 
 void (__far* wipe_StartScreenCall)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 wipe_StartScreenOffset)));
 void (__far* wipe_WipeLoopCall)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 wipe_WipeLoopOffset)));
-void (__far* R_WriteBackMaskedFrameConstantsCall)() = 						  ((void    (__far *)())     							(MK_FP(maskedconstants_funcarea_segment, R_WriteBackMaskedFrameConstantsOffset)));
 void (__far* R_WriteBackViewConstantsMaskedCall)() = 						  ((void    (__far *)())     							(MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMaskedOffset)));
 
 void (__far* F_StartFinale)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_StartFinaleOffset)));

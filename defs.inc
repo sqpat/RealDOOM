@@ -15,6 +15,7 @@
 ;
 
 INCLUDE constant.inc
+INCLUDE m_offset.inc
 
 
 SCREENWIDTH			=   320
@@ -447,10 +448,13 @@ _player = 						 	 _NULL_OFFSET + 007A0h
 ;803 free
 _viewwindowx = 					 	 _NULL_OFFSET + 00804h
 _viewwindowy = 					 	 _NULL_OFFSET + 00806h
+_R_DrawPlanesCall = 	    	 	 _NULL_OFFSET + 00808h
+_R_DrawMaskedCall = 			 	 _NULL_OFFSET + 0080Ch
+_R_WriteBackMaskedFrameConstantsCall =  _NULL_OFFSET + 00810h
 
 
 
-_flatcache_nodes =				     _NULL_OFFSET + 00810h
+_flatcache_nodes =				     _NULL_OFFSET + 00820h
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
 CURRENT_POSITION_2 =   			      (_spritecache_nodes  + (SIZEOF_CACHE_NODE_PAGE_COUNT_T * NUM_SPRITE_CACHE_PAGES))

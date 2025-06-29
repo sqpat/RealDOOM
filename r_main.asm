@@ -37,9 +37,6 @@ EXTRN R_ClearClipSegs_:NEAR
 .DATA
 
 
-EXTRN _R_DrawMaskedCall:DWORD
-EXTRN _R_DrawPlanesCall:DWORD
-EXTRN _R_WriteBackMaskedFrameConstantsCall:DWORD
 
 
 .CODE
