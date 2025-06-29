@@ -480,7 +480,7 @@ IF COMPISA GE COMPILE_386
     PUBLIC FixedMulTrig_
     sal dx, 1
     sal dx, 1   ; DWORD lookup index
-
+    ENDP
 
     PROC FixedMulTrigNoShift_
     PUBLIC FixedMulTrigNoShift_
@@ -549,7 +549,7 @@ ELSE
     sal dx, 1
     sal dx, 1   ; DWORD lookup index
 
-
+    ENDP
     PROC FixedMulTrigNoShift_
     PUBLIC FixedMulTrigNoShift_
     ; pass in the index already shifted to be a dword lookup..
@@ -1790,34 +1790,6 @@ ret
 ENDP
 
 @
-
-fast_div_32_16:
-
-mov bl, bh
-mov bh, cl
-
-sal ax, 1
-rcl dx ,1
-sal ax, 1
-rcl dx ,1
-sal ax, 1
-rcl dx ,1
-
-
-div bx        ; after this dx stores remainder, ax stores q1
-
-retf          ; dx will be garbage, but who cares , return 16 bits.
-
-return_2048:
-
-
-mov ax, 0800h
-retf
-
-
-
-
-
 
 
 
