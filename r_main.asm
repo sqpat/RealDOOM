@@ -453,7 +453,6 @@ ret
 ; DX:AX / CX:BX
 
 PROC FastDiv3232_RPTA_
-PUBLIC FastDiv3232_RPTA_
 
 ; we shift dx:ax by 11 into si... 
 
