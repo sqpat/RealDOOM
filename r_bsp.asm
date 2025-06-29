@@ -21,10 +21,8 @@ INSTRUCTION_SET_MACRO
 ; todo move these all out once BSP code moved out of binary
 
 
-EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDivWholeA_:PROC
-EXTRN FastDiv3232_shift_3_8_:PROC
 
 
 .CODE
@@ -80,7 +78,7 @@ mov   cx, 01000h
 
 ;    den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
  
-call FixedMulTrig_
+call FixedMulTrig_BSPLocal_
 
 
 ;    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
@@ -553,7 +551,483 @@ mov   dx, 0bfffh
 sbb   dx, word ptr es:[bx + 2]
 
 ret  
+ENDP
+
+
+
+IF COMPISA GE COMPILE_386
+
+    PROC FixedMulTrig_BSPLocal_
+    PUBLIC FixedMulTrig_BSPLocal_
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
+    ENDP
+
+    PROC FixedMulTrigNoShift_BSPLocal_
+    PUBLIC FixedMulTrigNoShift_BSPLocal_
+    ; pass in the index already shifted to be a dword lookup..
+
+
+    ; lookup the fine angle
+
+    mov es, ax
+    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
+
+    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
+
+
+    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
+    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
+    db  066h, 0F7h, 0EBh                 ; imul ebx
+    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
+
+
+    ret
+
+    ENDP
+
+
+ELSE
+
+    PROC FixedMulTrig_BSPLocal_
+    PUBLIC FixedMulTrig_BSPLocal_
+
+    
+
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
+    ENDP
+
+    PROC FixedMulTrigNoShift_BSPLocal_
+    PUBLIC FixedMulTrigNoShift_BSPLocal_
+    ; pass in the index already shifted to be a dword lookup..
+
+    push  si
+
+    ; lookup the fine angle
+
+
+    mov si, dx
+    mov ds, ax  ; put segment in ES
+    lodsw
+    mov es, ax
+    lodsw
+
+    mov   DX, AX    ; store sign bits in DX
+    AND   AX, BX	; S0*BX
+    NEG   AX
+    mov   SI, AX	; SI stores hi word return
+
+    mov   AX, DX    ; restore sign bits from DX
+
+    AND  AX, CX    ; DX*CX
+    NEG  AX
+    add  SI, AX    ; low word result into high word return
+
+    ; DX already has sign bits..
+
+    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+    ; UNLESS BX is 0. then its also 0!
+
+    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+    MOV  AX, BX    ; create BX copy
+    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
+    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
+
+    AND  AX, DX    ; 0 or BX - 1
+    ADD  SI, AX    ; add DX * BX high word. 
+
+
+    AND  DX, BX    ; DX * BX low bits
+    NEG  DX
+    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+
+    mov  AX, ES    ; grab AX from ES
+    mul  DX        ; BX*AX  
+    add  BX, DX    ; high word result into low word return
+    ADC  SI, 0
+
+    mov  AX, CX   ; AX holds CX
+
+    CWD           ; S1 in DX
+
+    mov  CX, ES   ; AX from ES
+    AND  DX, CX   ; S1*AX
+    NEG  DX
+    ADD  SI, DX   ; result into high word return
+
+    MUL  CX       ; AX*CX
+
+    ADD  AX, BX	  ; set up final return value
+    ADC  DX, SI
+    
+    MOV CX, SS
+    MOV DS, CX    ; put DS back from SS
+
+    pop   si
+    ret
+
+
+
+    ENDP
+ENDIF
+
+
+
+fast_div_32_16:
+
+mov bl, bh
+mov bh, cl
+
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+
+
+div bx        ; after this dx stores remainder, ax stores q1
+
+ret          ; dx will be garbage, but who cares , return 16 bits.
+
+return_2048:
+
+
+mov ax, 0800h
+ret
+
+
+PROC FastDiv3232_shift_3_8_ NEAR
+PUBLIC FastDiv3232_shift_3_8_
+
+; used by R_PointToAngle.
+; DX:AX << 3 / CX:BX >> 8
+; signed, but comes in positive. so high bit is never on
+; if result is > 2048, a branch is taken and result is not used, 
+; so this is designed around quickly detecting results greater than that
+
+
+
+test ch, ch
+je fast_div_32_16
+
+
+; we have not shifted yet...
+
+
+;TODO: checks are done outside this function, may be okay to remove this. test?
+; we want to know if  (DX:AX << 3)  / (CX:BX >> 8)  >= 2048 for a quick out
+; but that is just "is dx:ax greater than cx:bx"
+
+
+cmp dx, cx
+ja  return_2048
+jb full_32_32
+cmp ax, bx
+jae return_2048
+
+
+full_32_32:
+
+
+
+
+call FastDiv3232_RPTA_
+
+ret
+
 endp
+
+
+; todo optimize around fact ch is always 0...
+; we are moving a byte back and forth
+
+fast_div_32_16_RPTA:
+
+mov bl, bh
+mov bh, cl
+mov cl, ch
+xor ch, ch
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+
+
+xchg dx, cx   ; cx was 0, dx is FFFF
+div bx        ; after this dx stores remainder, ax stores q1
+xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+div bx
+mov dx, cx   ; q1:q0 is dx:ax
+ret 
+
+
+; NOTE: this is used for R_PointToAngle and has a fast out when the high byte is detected to be above the threshhold
+
+;FastDiv3232_RPTA_
+; DX:AX / CX:BX
+
+PROC FastDiv3232_RPTA_
+PUBLIC FastDiv3232_RPTA_
+
+; we shift dx:ax by 11 into si... 
+
+
+
+
+; if top 16 bits missing just do a 32 / 16
+
+test ch, ch
+je fast_div_32_16_RPTA
+
+main_3232RPTA_div:
+
+push  si
+push  di
+
+; shift left 11 in si:dx:ax
+
+
+;si: 
+;00000111 11111111
+;dx:
+;11111222 22222222
+;ax:
+;22222000 00000000
+
+mov si, dx
+mov dx, ax
+xor ax, ax
+
+; creating si:dx:ax
+
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+
+
+
+
+
+; now lets shift CX:BX to max...
+
+
+
+
+test ch, ch
+jne shift_bits_3232RPTA
+; shift a whole byte immediately
+
+mov ch, cl
+mov cl, bh
+mov bh, bl
+xor bl, bl
+
+
+xchg ax, si
+mov  ah, al
+mov  al, dh
+mov  dh, dl
+xchg ax, si
+mov  dl, ah
+xor  al, al
+
+
+shift_bits_3232RPTA:
+
+; less than a byte to shift
+; shift until MSB is 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA  
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+
+
+
+; store this
+done_shifting_3232RPTA:
+
+; we overshifted by one and caught it in the carry bit. lets shift back right one.
+
+RCR CX, 1
+RCR BX, 1
+
+
+; SI:DX:AX holds divisor...
+; CX:BX holds dividend...
+; numhi = SI:DX
+; numlo = AX:00...
+
+
+; save numlo word in sp.
+; avoid going to memory... lets do interrupt magic
+mov di, ax
+
+
+; set up first div. 
+; dx:ax becomes numhi
+mov   ax, dx
+mov   dx, si    
+
+; store these two long term...
+mov   si, bx
+
+
+
+; numhi is 00:SI in this case?
+
+;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+; DX:AX = numhi.wu
+
+
+div   cx
+
+; qhat is at most 2 greater than the real answer.
+; we are capping results at 2048 or 0x800 so quick return in that case.
+
+cmp  ax, 0802h
+ja   return_2048_2
+
+
+; rhat = dx
+; qhat = ax
+;    c1 = FastMul16u16u(qhat , den0);
+
+mov   bx, dx					; bx stores rhat
+mov   es, ax     ; store qhat
+
+
+
+
+mul   si   						; DX:AX = c1
+
+
+; c1 hi = dx, c2 lo = bx
+cmp   dx, bx
+
+ja    check_c1_c2_diff_3232RPTA
+jne   q1_ready_3232RPTA
+cmp   ax, di
+jbe   q1_ready_3232RPTA
+check_c1_c2_diff_3232RPTA:
+
+; (c1 - c2.wu > den.wu)
+
+sub   ax, di
+sbb   dx, bx
+cmp   dx, cx
+ja    qhat_subtract_2_3232RPTA
+je    compare_low_word_3232RPTA
+jmp   qhat_subtract_1_3232RPTA
+
+compare_low_word_3232RPTA:
+cmp   ax, si
+jbe   qhat_subtract_1_3232RPTA
+
+; ugly but rare occurrence i think?
+qhat_subtract_2_3232RPTA:
+mov ax, es
+dec ax
+dec ax
+
+pop   di
+pop   si
+ret  
+
+return_2048_2:
+; bigger than 2048.. just return it
+pop   di
+pop   si
+ret
+
+
+qhat_subtract_1_3232RPTA:
+mov ax, es
+dec ax
+
+pop   di
+pop   si
+ret  
+
+
+
+
+q1_ready_3232RPTA:
+
+mov  ax, es
+
+pop   di
+pop   si
+ret  
+
+
+ENDP
+
+
+
 
 IF COMPISA GE COMPILE_386
 
