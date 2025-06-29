@@ -81,9 +81,6 @@ file w_wad.obj
 file v_video.obj
 file z_zone.obj
 
-NEWSEGMENT
-file r_bsp.obj
-
 
 NEWSEGMENT
 file p_setup.obj

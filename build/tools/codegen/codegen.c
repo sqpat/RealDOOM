@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2278
+#define CONSTANTS_COUNT 2280
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -2347,8 +2347,9 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"TASK_STATUS_NO_SCREEN4",
 	"P_CHECKSIGHTOFFSET",
 	"SPRITEWIDTHS_ULT_SEGMENT",
-	"SPRITEWIDTHS_NORMAL_SEGMENT"
-
+	"SPRITEWIDTHS_NORMAL_SEGMENT",
+	"EMS_PAGE_SEGMENT",
+	"bsp_code_segment"
 
 
 
@@ -4694,8 +4695,9 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	TASK_STATUS_NO_SCREEN4,
 	P_CheckSightOffset,
 	spritewidths_ult_segment,
-	spritewidths_normal_segment
-
+	spritewidths_normal_segment,
+	EMS_PAGE_SEGMENT,
+	bsp_code_segment
 	
     
 

@@ -434,6 +434,8 @@ void (__far* P_UseLines)() =                  ((void (__far *)())     	         
 void (__far* P_RadiusAttack)() =              ((void (__far *)(mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage))     	               (MK_FP(physics_highcode_segment, 		 P_RadiusAttackOffset)));
 boolean (__far* P_ChangeSector)() =           ((boolean (__far *)(sector_t __far* sector, boolean crunch))     	                                                           (MK_FP(physics_highcode_segment, 		 P_ChangeSectorOffset)));
 
+void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_RenderPlayerViewOffset)));
+void (__far* R_WriteBackViewConstants)() =    ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_WriteBackViewConstantsOffset)));
 
 
 

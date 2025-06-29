@@ -562,6 +562,9 @@ void __near Z_LoadBinaries() {
 	fread(&codesize, 2, 1, fp2);
 	FAR_fread(drawskyplane_area, codesize, 1, fp2);
 
+	fread(&codesize, 2, 1, fp2);
+	FAR_fread(bsp_code_area, codesize, 1, fp2);
+
 
 	Z_QuickMapIntermission();
 	fread(&codesize, 2, 1, fp2);

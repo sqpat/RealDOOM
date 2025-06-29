@@ -713,6 +713,8 @@ extern void				    (__far* P_LineAttack)(mobj_t __near* t1,fineangle_t angle,int
 extern void 				(__far* P_UseLines)();
 extern void 				(__far* P_RadiusAttack)(mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t damage);
 extern boolean 				(__far* P_ChangeSector)(sector_t __far* sector, boolean crunch);
+extern void 				(__far* R_RenderPlayerView)();
+extern void 				(__far* R_WriteBackViewConstants)();
 
 
 

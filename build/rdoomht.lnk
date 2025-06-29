@@ -82,9 +82,6 @@ file z_ht18.obj
 
 
 NEWSEGMENT
-file r_bsp.obj
-
-NEWSEGMENT
 file p_setup.obj
 
 

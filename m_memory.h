@@ -45,9 +45,14 @@
 
 // ALLOCATION DEFINITIONS: UPPER MEMORY
 
+
+#define EMS_PAGE_SEGMENT  0xD000
+#define bsp_code_segment  EMS_PAGE_SEGMENT + 0x0C00
+#define bsp_code_area     ((byte __far*)(((uint32_t)bsp_code_segment) << 16))
+
 // 0xE000 Block
 
-// may swap with EMS/0xD000 ?
+
 
 
 #define uppermemoryblock    0xE0000000
@@ -290,7 +295,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define physics_highcode_segment 0x9400
 #define psight_codespace  ((byte __far*)      0x94000000)
-
 
 
 

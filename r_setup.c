@@ -200,7 +200,6 @@ void __near R_InitTextureMapping(void) {
 
 }
 
-void __far  R_WriteBackViewConstants();
 
 //
 // R_ExecuteSetViewSize

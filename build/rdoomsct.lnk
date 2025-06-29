@@ -79,9 +79,6 @@ file v_video.obj
 file z_zone.obj
 file z_scat.obj
 
-NEWSEGMENT
-file r_bsp.obj
-
 
 NEWSEGMENT
 file p_setup.obj

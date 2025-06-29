@@ -27,6 +27,11 @@ void __far R_SPAN_ENDMARKER();
 void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
 void __far R_COLUMN_STARTMARKER();
 void __far R_COLUMN_ENDMARKER();
+void __far R_BSP_STARTMARKER();
+void __far R_BSP_ENDMARKER();
+void __far R_WriteBackViewConstants();
+void __far R_RenderPlayerView();
+
 void __far R_DrawColumn (void);
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 void __far R_DrawColumnPrepMaskedMulti();
@@ -144,7 +149,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // Export .inc file with segment values, etc from the c coe
     FILE*  fp = fopen("doomcode.bin", "wb");
     //FILE*  fp2 = fopen("doomcod2.bin", "wb");
-	uint16_t codesize[12];
+	uint16_t codesize[13];
 	uint16_t muscodesize[4];
 	uint16_t maxmuscodesize = 0;
     int8_t i;
@@ -187,6 +192,14 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fwrite(&codesize[4], 2, 1, fp);
     // write data
     FAR_fwrite((byte __far *)R_DrawSkyColumn, codesize[4], 1, fp);
+
+    codesize[12] = FP_OFF(R_BSP_ENDMARKER) - FP_OFF(R_BSP_STARTMARKER);
+    // write filesize..
+    fwrite(&codesize[12], 2, 1, fp);
+    // write data
+    FAR_fwrite((byte __far *)R_BSP_STARTMARKER, codesize[12], 1, fp);
+
+
 
     codesize[5] = FP_OFF(WI_ENDMARKER) - FP_OFF(WI_STARTMARKER);
     // write filesize..
@@ -286,6 +299,10 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawSkyColumnOffset                 0x%X\n", FP_OFF(R_DrawSkyColumn)                - FP_OFF(R_DrawSkyColumn));
 	fprintf(fp, "#define R_DrawSkyPlaneOffset                  0x%X\n", FP_OFF(R_DrawSkyPlane)                 - FP_OFF(R_DrawSkyColumn));
 	fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset           0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)          - FP_OFF(R_DrawSkyColumn));
+
+    // BSP offsets
+	fprintf(fp, "#define R_WriteBackViewConstantsOffset        0x%X\n", FP_OFF(R_WriteBackViewConstants)       - FP_OFF(R_BSP_STARTMARKER));
+	fprintf(fp, "#define R_RenderPlayerViewOffset              0x%X\n", FP_OFF(R_RenderPlayerView)             - FP_OFF(R_BSP_STARTMARKER));
 	
     // intermission/ wi stuff offsets
     fprintf(fp, "#define WI_StartOffset                        0x%X\n", FP_OFF(WI_Start)                       - FP_OFF(WI_STARTMARKER));
@@ -347,6 +364,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawFuzzColumnCodeSize       0x%X\n", codesize[2]);
 	fprintf(fp, "#define R_MaskedConstantsCodeSize      0x%X\n", codesize[3]);
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize[4]);
+	fprintf(fp, "#define R_BSPCodeSize                  0x%X\n", codesize[12]);
 	fprintf(fp, "#define WI_StuffCodeSize               0x%X\n", codesize[5]);
 	fprintf(fp, "#define PSightCodeSize                 0x%X\n", codesize[6]);
 	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize[7]);
@@ -364,6 +382,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "R_DRAWPLANESOFFSET = 0%Xh\n", FP_OFF(R_DrawPlanes)                    - FP_OFF(R_SPAN_STARTMARKER));
 	fprintf(fp, "R_DRAWMASKEDOFFSET = 0%Xh\n", FP_OFF(R_DrawMasked)                    - FP_OFF(R_MASKED_STARTMARKER));
     fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTSOFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
+
+
 
     fclose(fp);
     printf("Generated m_offset.inc file\n");

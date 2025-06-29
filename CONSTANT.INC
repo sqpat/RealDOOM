@@ -2277,6 +2277,8 @@ TASK_STATUS_NO_SCREEN4 = 0Ch
 P_CHECKSIGHTOFFSET = 00h
 SPRITEWIDTHS_ULT_SEGMENT = 073BBh
 SPRITEWIDTHS_NORMAL_SEGMENT = 073B9h
+EMS_PAGE_SEGMENT = 0D000h
+bsp_code_segment = 0DC00h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 04000h

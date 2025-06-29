@@ -88,8 +88,6 @@ fixed_t __far R_ScaleFromGlobalAngle (fineangle_t visangle_shift3);
 // REFRESH - the actual rendering functions.
 //
 
-// Called by G_Drawer.
-void __far R_RenderPlayerView ();
 
 // Called by startup code.
 void __near R_Init (void);
