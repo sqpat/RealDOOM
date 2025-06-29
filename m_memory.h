@@ -669,14 +669,14 @@ FREEBYTES 3568 free
 // MOVE SOME OTHER RENDER CODE HERE?
 
 
- spritepostdatasizes              881D:0000
- spritetotaldatasizes             88CA:0000
- maskedpostdataofs                8977:0000
- maskedpixeldataofs               8A4F:0000
- maskedconstants_funcarea_segment 8B27:0000
- render_8800_end_segment          8B36:0000 
+ spritepostdatasizes              8880:0000
+ spritetotaldatasizes             89D2:0000
+ maskedpostdataofs                89DA:0000
+ maskedpixeldataofs               8AB2:0000
+ maskedconstants_funcarea_segment 8B8A:0000
+ render_8800_end_segment          8B99:0000 
 
-FREEBYTES 3728 free (!). move some here
+FREEBYTES 1648 free . move some here
  */
 
 

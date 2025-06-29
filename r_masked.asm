@@ -2504,47 +2504,17 @@ ENDP
 PROC R_EvictL2CacheEMSPage_Sprite_ NEAR
 PUBLIC R_EvictL2CacheEMSPage_Sprite_
 
-; bp - 2    nodehead
-; bp - 4    used for ds first, used for es first
-; bp - 6    second offset used for si
-; bp - 8    used for ds second
-; bp - 0Ah  secondarymaxitersize
-; bp - 0Ch  usedcacherefpage 
-; bp - 0Eh  nodetail
-; bp - 010h currentpage
+; bp - 2 currentpage
 
 push      bx
 push      cx
 push      si
 push      di
-push      bp
-mov       bp, sp
 mov       dh, al
 
-is_sprite:
-IF COMPISA GE COMPILE_186
-    push      OFFSET _spritecache_l2_head ; bp - 2
-    push      SPRITEPAGE_SEGMENT          ; bp - 4
-    push      MAX_SPRITE_LUMPS            ; bp - 6
-    push      0                           ; bp - 8
-    push      0                           ; bp - 0Ah
-    push      OFFSET _usedspritepagemem   ; bp - 0Ch;
-ELSE
-    mov       ax, OFFSET _spritecache_l2_head ; bp - 2
-    push      ax
-    mov       ax, SPRITEPAGE_SEGMENT          ; bp - 4
-    push      ax
-    mov       ax, MAX_SPRITE_LUMPS            ; bp - 6
-    push      ax
-    mov       ax, 0                           ; bp - 8
-    push      ax
-    mov       ax, 0                           ; bp - 0Ah
-    push      ax
-    mov       ax, OFFSET _usedspritepagemem   ; bp - 0Ch;
-    push      ax
 
-ENDIF
-mov       bx, OFFSET _spritecache_l2_tail
+
+
 mov       di, OFFSET _spritecache_nodes
 
 
@@ -2552,8 +2522,7 @@ done_with_switchblock:
 
 ;	currentpage = *nodetail;
 
-push      bx        ; bp - 0Eh
-mov       al, byte ptr ds:[bx]
+mov       al, byte ptr ds:[_spritecache_l2_tail]
 cbw      
 xor       dl, dl
 
@@ -2579,7 +2548,7 @@ jmp       go_back_next_page
 
 found_enough_pages:
 
-push ax   ; bp - 010h store currentpage
+push ax   ; bp - 2 store currentpage
 
 ;	evictedpage = currentpage;
 
@@ -2631,7 +2600,11 @@ xor       ax, ax
 mov       word ptr ss:[bx + di + 2], ax    ; set both at once
 mov       si, ax                   ; zero
 ; ds!
-lds       bx, dword ptr [bp - 6] ; both an index and a loop limit
+
+mov       bx, SPRITEPAGE_SEGMENT
+mov       ds, bx
+mov       bx, MAX_SPRITE_LUMPS
+
 
 ;    for (k = 0; k < maxitersize; k++){
 ;			if ((cacherefpage[k] >> 2) == evictedpage){
@@ -2652,41 +2625,16 @@ jle       continue_first_cache_erase_loop   ; jle, not jl because bx is decced
 
 done_with_first_cache_erase_loop:
 
-
-;	for (k = 0; k < secondarymaxitersize; k++){
-;        if ((secondarycacherefpage[k]) >> 2 == evictedpage){
-;            secondarycacherefpage[k] = 0xFF;
-;            secondarycacherefoffset[k] = 0xFF;
-;        }
-;    }
-
-lds       bx, dword ptr [bp - 0Ah] 
-cmp       bx, 0 
-jle       skip_secondary_loop
-
-
-xor       si, si                     ; offset and loop ctr
-dec       bx
-continue_second_cache_erase_loop:
-lodsb
-
-SHIFT_MACRO sar       ax 2
-cmp       al, cl
-je        erase_second_page
-done_erasing_second_page:
-cmp       si, bx
-jle       continue_second_cache_erase_loop    ; jle, not jl because bx is decced
-
-skip_secondary_loop:
+; sprites have no secondary cache loop
 
 ;		usedcacherefpage[evictedpage] = 0;
 
 
 
 
-mov       si, word ptr [bp - 0Ch] ; usedcacherefpage
+
 mov       bx, cx
-mov       byte ptr ss:[bx + si], dh    ; 0
+mov       byte ptr ss:[bx + _usedspritepagemem], dh    ; 0
 
 ;		evictedpage = nodelist[evictedpage].prev;
 
@@ -2700,56 +2648,36 @@ cleared_all_cache_data:
 
 ;	// connect old tail and old head.
 ;	nodelist[*nodetail].prev = *nodehead;
-
-;todo bp - 0Eh is bp - 2 addr minus one. do a single mov and get both.
-
-
 mov      ax, ss
 mov      ds, ax
-
-
-mov       si, word ptr [bp - 0Eh]
-lodsb
+mov       al, byte ptr ds:[_spritecache_l2_tail]
 cbw      
 mov       cx, ax            ; cx stores nodetail
 
 SHIFT_MACRO shl       ax 2
 xchg      ax, bx            ; bx has nodelist nodetail lookup
 
-mov       si, word ptr [bp - 2]
+mov       si, OFFSET _spritecache_l2_head
 mov       al, byte ptr ds:[si]
 mov       byte ptr ds:[bx + di], al
 mov       bl, al
 
-
 ;	nodelist[*nodehead].next = *nodetail;
-
 SHIFT_MACRO shl       bx 2
-
-
 mov       byte ptr ds:[bx + di + 1], cl  ; write nodetail to next
-
 ;	previous_next = nodelist[currentpage].next;
-
 ;	*nodehead = currentpage;
+;mov       bx, word ptr [bp - 2] ; retrieve currentpage
+pop       bx
 
-mov       bx, word ptr [bp - 010h]
 mov       byte ptr ds:[si], bl
 SHIFT_MACRO shl       bx 2
 mov       al, byte ptr ds:[bx + di + 1]    ; previous_next
 cbw
-
-
 ;	nodelist[currentpage].next = -1;
-
 mov       byte ptr ds:[bx + di + 1], dl   ; still 0FFh
-
 ;	*nodetail = previous_next;
-
-
-mov       bx, word ptr [bp - 0Eh]
-mov       byte ptr ds:[bx], al
-
+mov       byte ptr ds:[_spritecache_l2_tail], al
 
 ;	// new tail
 ;	nodelist[previous_next].prev = -1;
@@ -2761,7 +2689,6 @@ mov       byte ptr ds:[bx + di], dl    ; still 0FFh
 
 lodsb       
 
-LEAVE_MACRO     
 pop       di
 pop       si
 pop       cx
@@ -2772,10 +2699,6 @@ mov       byte ptr ds:[si-1], dl     ; 0FFh
 mov       byte ptr ds:[si+bx], dl    ; 0FFh
 jmp       done_erasing_page
 
-erase_second_page:
-mov       byte ptr ds:[si-1], dl      ; 0FFh
-mov       byte ptr ds:[si+bx], dl     ; 0FFh
-jmp       done_erasing_second_page
 
 
 
