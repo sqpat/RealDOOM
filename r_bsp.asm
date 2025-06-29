@@ -9831,14 +9831,11 @@ ENDP
 
 PROC R_EvictL2CacheEMSPage_ NEAR
 
-; bp - 2    nodehead
-; bp - 4    used for ds first, used for es first
-; bp - 6    second offset used for si
-; bp - 8    used for ds second
-; bp - 0Ah  secondarymaxitersize
-; bp - 0Ch  usedcacherefpage 
-; bp - 0Eh  nodetail
-; bp - 010h currentpage
+; bp - 2    used for ds first, used for es first
+; bp - 4    second offset used for si
+; bp - 6    used for ds second
+; bp - 8    secondarymaxitersize
+; bp - 0Ch currentpage
 
 push      bx
 push      cx
@@ -9853,24 +9850,18 @@ cmp       dl, CACHETYPE_COMPOSITE
 jne       not_composite
 
 IF COMPISA GE COMPILE_186
-    push      OFFSET _texturecache_l2_head      ; bp - 2
-    push      COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 4
-    push      MAX_PATCHES                       ; bp - 6
-    push      PATCHOFFSET_SEGMENT               ; bp - 8
-    push      MAX_PATCHES                       ; bp - 0Ah
-    push      OFFSET _usedtexturepagemem        ; bp - 0Ch
+    push      COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 2
+    push      MAX_TEXTURES                      ; bp - 4
+    push      PATCHOFFSET_SEGMENT               ; bp - 6
+    push      MAX_PATCHES                       ; bp - 8
 ELSE
-    mov       ax, OFFSET _texturecache_l2_head      ; bp - 2
+    mov       ax, COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 2
     push      ax
-    mov       ax, COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 4
+    mov       ax, MAX_PATCHES                       ; bp - 4
     push      ax
-    mov       ax, MAX_PATCHES                       ; bp - 6
+    mov       ax, PATCHOFFSET_SEGMENT               ; bp - 6
     push      ax
-    mov       ax, PATCHOFFSET_SEGMENT               ; bp - 8
-    push      ax
-    mov       ax, MAX_PATCHES                       ; bp - 0Ah
-    push      ax
-    mov       ax, OFFSET _usedtexturepagemem        ; bp - 0Ch
+    mov       ax, MAX_PATCHES                       ; bp - 8
     push      ax
 
 ENDIF
@@ -9884,39 +9875,31 @@ not_composite:
 
 is_patch:
 IF COMPISA GE COMPILE_186
-    push      OFFSET _texturecache_l2_head      ; bp - 2
-    push      PATCHPAGE_SEGMENT                 ; bp - 4   
-    push      MAX_PATCHES                       ; bp - 6
-    push      COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 8
-    push      MAX_TEXTURES                      ; bp - 0Ah
-    push      OFFSET _usedtexturepagemem        ; bp - 0Ch
+    push      PATCHPAGE_SEGMENT                 ; bp - 2
+    push      MAX_PATCHES                       ; bp - 4
+    push      COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 6
+    push      MAX_TEXTURES                      ; bp - 8
 ELSE
-    mov       ax, OFFSET _texturecache_l2_head      ; bp - 2
+    mov       ax, PATCHPAGE_SEGMENT                 ; bp - 2
     push      ax
-    mov       ax, PATCHPAGE_SEGMENT                 ; bp - 4   
+    mov       ax, MAX_PATCHES                       ; bp - 4
     push      ax
-    mov       ax, MAX_PATCHES                       ; bp - 6
+    mov       ax, COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 6
     push      ax
-    mov       ax, COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 8
+    mov       ax, MAX_TEXTURES                      ; bp - 8
     push      ax
-    mov       ax, MAX_TEXTURES                      ; bp - 0Ah
-    push      ax
-    mov       ax, OFFSET _usedtexturepagemem        ; bp - 0Ch
-    push      ax
+
 ENDIF
 mov       bx, OFFSET _texturecache_l2_tail
 mov       di, OFFSET _texturecache_nodes
 
 
-mov       bx, OFFSET _spritecache_l2_tail
-mov       di, OFFSET _spritecache_nodes
 
 
 done_with_switchblock:
 
 ;	currentpage = *nodetail;
 
-push      bx        ; bp - 0Eh
 mov       al, byte ptr ds:[bx]
 cbw      
 xor       dl, dl
@@ -9943,7 +9926,7 @@ jmp       go_back_next_page
 
 found_enough_pages:
 
-push ax   ; bp - 010h store currentpage
+push ax   ; bp - 0Ah store currentpage
 
 ;	evictedpage = currentpage;
 
@@ -9995,7 +9978,7 @@ xor       ax, ax
 mov       word ptr ss:[bx + di + 2], ax    ; set both at once
 mov       si, ax                   ; zero
 ; ds!
-lds       bx, dword ptr [bp - 6] ; both an index and a loop limit
+lds       bx, dword ptr [bp - 4] ; both an index and a loop limit
 
 ;    for (k = 0; k < maxitersize; k++){
 ;			if ((cacherefpage[k] >> 2) == evictedpage){
@@ -10024,7 +10007,7 @@ done_with_first_cache_erase_loop:
 ;        }
 ;    }
 
-lds       bx, dword ptr [bp - 0Ah] 
+lds       bx, dword ptr [bp - 8] 
 cmp       bx, 0 
 jle       skip_secondary_loop
 
@@ -10048,7 +10031,7 @@ skip_secondary_loop:
 
 
 
-mov       si, word ptr [bp - 0Ch] ; usedcacherefpage
+mov       si, OFFSET _usedtexturepagemem
 mov       bx, cx
 mov       byte ptr ss:[bx + si], dh    ; 0
 
@@ -10072,7 +10055,7 @@ mov      ax, ss
 mov      ds, ax
 
 
-mov       si, word ptr [bp - 0Eh]
+mov       si, OFFSET _texturecache_l2_tail
 lodsb
 cbw      
 mov       cx, ax            ; cx stores nodetail
@@ -10080,7 +10063,7 @@ mov       cx, ax            ; cx stores nodetail
 SHIFT_MACRO shl       ax 2
 xchg      ax, bx            ; bx has nodelist nodetail lookup
 
-mov       si, word ptr [bp - 2]
+mov       si, OFFSET _texturecache_l2_head
 mov       al, byte ptr ds:[si]
 mov       byte ptr ds:[bx + di], al
 mov       bl, al
@@ -10097,7 +10080,7 @@ mov       byte ptr ds:[bx + di + 1], cl  ; write nodetail to next
 
 ;	*nodehead = currentpage;
 
-mov       bx, word ptr [bp - 010h]
+mov       bx, word ptr [bp - 0Ah]
 mov       byte ptr ds:[si], bl
 SHIFT_MACRO shl       bx 2
 mov       al, byte ptr ds:[bx + di + 1]    ; previous_next
@@ -10111,7 +10094,7 @@ mov       byte ptr ds:[bx + di + 1], dl   ; still 0FFh
 ;	*nodetail = previous_next;
 
 
-mov       bx, word ptr [bp - 0Eh]
+mov       bx, OFFSET _texturecache_l2_tail
 mov       byte ptr ds:[bx], al
 
 
@@ -10268,20 +10251,12 @@ LEAVE_MACRO
 POPA_NO_AX_MACRO
 ret       
 set_non_patch_pages:
-jb        set_sprite_pages
+
 set_tex_pages:
 mov       bx, COMPOSITETEXTUREOFFSET_SEGMENT
 mov       es, bx
 mov       byte ptr es:[si], dh
 mov       byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET], al
-LEAVE_MACRO     
-POPA_NO_AX_MACRO
-ret       
-set_sprite_pages:
-mov       bx, SPRITEPAGE_SEGMENT
-mov       es, bx
-mov       byte ptr es:[si], dh
-mov       byte ptr es:[si + SPRITEOFFSETS_OFFSET], al
 LEAVE_MACRO     
 POPA_NO_AX_MACRO
 ret       
@@ -11001,7 +10976,6 @@ ENDP
 
 PATCH_TEXTURE_SEGMENT = 05000h
 COMPOSITE_TEXTURE_SEGMENT = 05000h
-SPRITE_COLUMN_SEGMENT = 09000h
 
 ; todo clone in both called segments
 PROC R_GetPatchTexture_ NEAR
