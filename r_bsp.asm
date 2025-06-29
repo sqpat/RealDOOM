@@ -11867,6 +11867,7 @@ mov       al, byte ptr ds:[_player + 05Fh]
 test      al, al
 je        set_fixed_colormap_zero
 jmp       set_fixed_colormap_nonzero
+
 set_fixed_colormap_zero:
 ;		fixedcolormap = 0;
 mov       byte ptr ds:[_fixedcolormap], al   ; al is zero
@@ -11951,6 +11952,12 @@ dw _NetUpdate_addr
 
 POPA_NO_AX_OR_BP_MACRO
 retf      
+
+visplane_dirty_do_revert:
+call      Z_QuickMapVisplaneRevert_BSPLocal_
+jmp       done_with_visplane_revert
+
+
 set_fixed_colormap_nonzero:
 
 ;		fixedcolormap =  player.fixedcolormapvalue << 2; 
@@ -11975,10 +11982,6 @@ rep       stosw
 
 jmp       done_setting_colormap
 
-visplane_dirty_do_revert:
-call      Z_QuickMapVisplaneRevert_BSPLocal_
-
-jmp       done_with_visplane_revert
 
 ENDP
 
