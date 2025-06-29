@@ -3249,37 +3249,17 @@ call  Z_QuickMapSpritePage_
 
 mov   ax, 0FFFFh
 
-cmp   byte ptr [bp - 2], NUM_SPRITE_L1_CACHE_PAGES
 mov   dx, cx
-je    do_sprite_eviction
-do_tex_eviction:
-mov   di, ds
-mov   es, di
-mov   di, OFFSET _cachedlumps
-mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
+do_sprite_eviction:
 
-;_cachedlumps =                	     _NULL_OFFSET + 006A0h
-;_cachedtex =                		 _NULL_OFFSET + 006A8h
-;_segloopnextlookup    = 	 		 _NULL_OFFSET + 00000h
-;_seglooptexrepeat    = 			 _NULL_OFFSET + 00004h
-;_maskedtexrepeat =                  _NULL_OFFSET + 00006h
+mov   word ptr ds:[_lastvisspritepatch], ax
+mov   word ptr ds:[_lastvisspritepatch2], ax
 
-mov  cx, 6
-rep stosw
-
-mov   di, OFFSET  _segloopnextlookup
-stosw ; segloopnextlookup[0] = -1; 030
-stosw ; segloopnextlookup[1] = -1; 032
-inc   ax    ; ax is 0
-stosw ; seglooptexrepeat[0] = 0; seglooptexrepeat[1] = 0 ; 034
-stosw ; maskedtexrepeat = 0;                             ; 036
-
-mov   es, dx ; dl/dx is start page
+mov   es, dx ; cl/cx is start page
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 mov   ax, es
 ret
-
 
 found_startpage_multi:
 ;		startpage = textureL1LRU[startpage];
@@ -3361,16 +3341,7 @@ inc   al
 xor   bh, bh
 jmp   loop_next_invalidate_page_multi
 
-do_sprite_eviction:
 
-mov   word ptr ds:[_lastvisspritepatch], ax
-mov   word ptr ds:[_lastvisspritepatch2], ax
-
-mov   es, dx ; cl/cx is start page
-LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   ax, es
-ret
 
 done_invalidating_pages_multi:
 
@@ -3450,9 +3421,7 @@ call  Z_QuickMapSpritePage_
 mov   ax, 0FFFFh
 
 mov   dl, dh  ; numpages in cl
-cmp   byte ptr [bp - 2], NUM_SPRITE_L1_CACHE_PAGES
-je    do_sprite_eviction
-jmp   do_tex_eviction
+jmp   do_sprite_eviction
 ENDP
 
 

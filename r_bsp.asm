@@ -225,7 +225,7 @@ pop   cx
 pop   bx
 ret
 
-endp
+ENDP
 
 
 
@@ -312,7 +312,6 @@ ret
 ;R_PointToAngle_
 
 PROC R_PointToAngle_ NEAR
-PUBLIC R_PointToAngle_
 
 ; inputs:
 ; DX:AX = x  (32 bit fixed pt 16:16)
@@ -1571,7 +1570,7 @@ call FastDiv3232_RPTA_
 
 ret
 
-endp
+ENDP
 
 
 ; todo optimize around fact ch is always 0...
@@ -1605,7 +1604,6 @@ ret
 ; DX:AX / CX:BX
 
 PROC FastDiv3232_RPTA_
-PUBLIC FastDiv3232_RPTA_
 
 ; we shift dx:ax by 11 into si... 
 

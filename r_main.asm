@@ -19,7 +19,6 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN R_PointToAngle_:NEAR
 
 .DATA
 
@@ -29,6 +28,685 @@ EXTRN R_PointToAngle_:NEAR
 .CODE
 
 
+
+octant_6:
+test  cx, cx
+
+jne   octant_6_do_divide
+cmp   bx, 0200h
+jae   octant_6_do_divide
+octant_6_out_of_bounds:
+mov   dx, 0e000h
+xor   ax, ax
+
+ret  
+octant_6_do_divide:
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_6_out_of_bounds
+
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+les   ax, dword ptr es:[bx]
+mov   dx, es
+add   dx, 0c000h
+
+ret  
+
+y_is_negative:
+;			y.w = -y.w;
+
+neg   cx
+neg   bx
+sbb   cx, 0
+
+cmp   dx, cx
+jg    octant_7
+jne   octant_6
+cmp   ax, bx
+jbe   octant_6
+octant_7:
+test  dx, dx
+jne   octant_7_do_divide
+cmp   ax, 0200h
+jae   octant_7_do_divide
+octant_7_out_of_bounds:
+mov   dx, 0e000h
+xor   ax, ax
+
+ret  
+; result 16f01520
+; 7ffd1a dx:ax
+; 3077f6 cx:bx
+; 5400000 -> 0x2A000000
+; d400000  > 0xD4000    32B 811
+
+;mov dx, cx
+;mov ax, bx
+
+
+octant_7_do_divide:
+
+; swap params. y over x not x over y
+xchg dx, cx
+xchg ax, bx
+
+call FastDiv3232_shift_3_8_
+
+; 16f0  1520 instead of 32b
+
+cmp   ax, 0800h
+jae   octant_7_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+les   ax, dword ptr es:[bx]
+mov   dx, es
+neg   dx
+neg   ax
+sbb   dx, 0
+
+ret  
+
+;R_PointToAngle_
+
+PROC R_PointToAngle_ NEAR
+
+; inputs:
+; DX:AX = x  (32 bit fixed pt 16:16)
+; CX:BX = y  (32 bit fixed pt 16:16)
+
+; places to improve -
+; 1.default branches taken. count branches taken and modify to optimize
+
+;	x.w -= viewx.w;
+;	y.w -= viewy.w;
+
+; idea: self modify code, change this to constants per frame.
+
+
+
+test  dx, dx
+jne   inputs_not_zero   ; todo rearrange this. rare case
+test  cx, cx
+jne   inputs_not_zero   ; todo rearrange this. rare case
+test  ax, ax
+jne   inputs_not_zero   ; todo rearrange this. rare case
+test  bx, bx
+jne   inputs_not_zero   ; todo rearrange this. rare case
+
+
+return_0:
+
+xor   ax, ax
+cwd
+
+ret  
+
+
+inputs_not_zero:
+
+test  dx, dx
+jl   x_is_negative
+
+x_is_positive:
+test  cx, cx
+
+jl   y_is_negative
+y_is_positive:
+
+cmp   dx, cx
+jg    octant_0
+
+jne   octant_1
+cmp   ax, bx
+jbe   octant_1
+
+
+octant_0:
+test  dx, dx
+
+;	if (x.w < 512)
+
+jne   octant_0_do_divide
+cmp   ax, 0200h
+jae   octant_0_do_divide
+octant_0_out_of_bounds:
+mov   dx, 02000h
+xor   ax, ax
+
+ret  
+
+
+octant_0_do_divide:
+;x_is_negative
+xchg dx, cx
+xchg ax, bx
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_0_out_of_bounds
+
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+les   ax, dword ptr es:[bx]
+mov   dx, es
+ret  
+
+
+octant_1:
+test  cx, cx
+
+jne   octant_1_do_divide
+cmp   bx, 0200h
+jae   octant_1_do_divide
+octant_1_out_of_bounds:
+mov   ax, 0ffffh
+mov   dx, 01fffh
+
+ret  
+octant_1_do_divide:
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_1_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+mov   ax, 0ffffh
+sub   ax, word ptr es:[bx]
+mov   dx, 03fffh
+sbb   dx, word ptr es:[bx + 2]
+
+ret  
+
+
+
+x_is_negative:
+
+;		x.w = -x.w;
+
+neg   dx
+neg   ax
+sbb   dx, 0
+
+test  cx, cx
+
+jg    y_is_positive_x_neg
+jne   y_is_negative_x_neg
+y_is_positive_x_neg:
+cmp   dx, cx
+jg    octant_3
+jne   octant_2
+cmp   ax, bx
+jbe   octant_2
+
+octant_3:
+test  dx, dx
+jne   octant_3_do_divide
+cmp   ax, 0200h
+jae   octant_3_do_divide
+octant_3_out_of_bounds:
+mov   ax, 0ffffh
+mov   dx, 05fffh
+
+ret  
+octant_3_do_divide:
+xchg dx, cx
+xchg ax, bx
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_3_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+mov   ax, 0ffffh
+sub   ax, word ptr es:[bx]
+mov   dx, 07fffh
+sbb   dx, word ptr es:[bx + 2]
+
+ret  
+octant_2:
+test  cx, cx
+
+jne   octant_2_do_divide
+cmp   ax, 0200h
+jae   octant_2_do_divide
+octant_2_out_of_bounds:
+mov   dx, 06000h
+xor   ax, ax
+ret  
+octant_2_do_divide:
+
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_2_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+les   ax, dword ptr es:[bx]
+mov   dx, es
+add   dx, 04000h
+
+ret  
+y_is_negative_x_neg:
+
+;			y.w = -y.w;
+
+neg   cx
+neg   bx
+sbb   cx, 0
+cmp   dx, cx
+jg    octant_4
+jne   octant_5
+cmp   ax, bx
+jbe   octant_5
+octant_4:
+test  dx, dx
+jne   octant_4_do_divide
+cmp   ax, 0200h
+jae   octant_4_do_divide
+octant_4_out_of_bounds:
+mov   dx, 0a000h
+xor   ax, ax
+
+ret  
+octant_4_do_divide:
+xchg dx, cx
+xchg ax, bx
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_4_out_of_bounds
+
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+les   ax, dword ptr es:[bx]
+mov   dx, es
+add   dx, 08000h
+
+ret  
+octant_5:
+test  cx, cx
+
+jne   octant_5_do_divide
+cmp   ax, 0200h
+jae   octant_5_do_divide
+octant_5_out_of_bounds:
+mov   ax, 0ffffh
+mov   dx, 09fffh
+
+ret  
+octant_5_do_divide:
+
+call FastDiv3232_shift_3_8_
+cmp   ax, 0800h
+jae   octant_5_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+mov   bx, ax
+mov   ax, 0ffffh
+sub   ax, word ptr es:[bx]
+mov   dx, 0bfffh
+sbb   dx, word ptr es:[bx + 2]
+
+ret  
+ENDP
+
+
+
+
+fast_div_32_16:
+
+mov bl, bh
+mov bh, cl
+
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+
+
+div bx        ; after this dx stores remainder, ax stores q1
+
+ret          ; dx will be garbage, but who cares , return 16 bits.
+
+return_2048:
+
+
+mov ax, 0800h
+ret
+
+
+PROC FastDiv3232_shift_3_8_ NEAR
+
+; used by R_PointToAngle.
+; DX:AX << 3 / CX:BX >> 8
+; signed, but comes in positive. so high bit is never on
+; if result is > 2048, a branch is taken and result is not used, 
+; so this is designed around quickly detecting results greater than that
+
+
+
+test ch, ch
+je fast_div_32_16
+
+
+; we have not shifted yet...
+
+
+;TODO: checks are done outside this function, may be okay to remove this. test?
+; we want to know if  (DX:AX << 3)  / (CX:BX >> 8)  >= 2048 for a quick out
+; but that is just "is dx:ax greater than cx:bx"
+
+
+cmp dx, cx
+ja  return_2048
+jb full_32_32
+cmp ax, bx
+jae return_2048
+
+
+full_32_32:
+
+
+
+
+call FastDiv3232_RPTA_
+
+ret
+
+ENDP
+
+
+
+; todo optimize around fact ch is always 0...
+; we are moving a byte back and forth
+
+fast_div_32_16_RPTA:
+
+mov bl, bh
+mov bh, cl
+mov cl, ch
+xor ch, ch
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+
+
+xchg dx, cx   ; cx was 0, dx is FFFF
+div bx        ; after this dx stores remainder, ax stores q1
+xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+div bx
+mov dx, cx   ; q1:q0 is dx:ax
+ret 
+
+
+; NOTE: this is used for R_PointToAngle and has a fast out when the high byte is detected to be above the threshhold
+
+;FastDiv3232_RPTA_
+; DX:AX / CX:BX
+
+PROC FastDiv3232_RPTA_
+PUBLIC FastDiv3232_RPTA_
+
+; we shift dx:ax by 11 into si... 
+
+
+
+
+; if top 16 bits missing just do a 32 / 16
+
+test ch, ch
+je fast_div_32_16_RPTA
+
+main_3232RPTA_div:
+
+push  si
+push  di
+
+; shift left 11 in si:dx:ax
+
+
+;si: 
+;00000111 11111111
+;dx:
+;11111222 22222222
+;ax:
+;22222000 00000000
+
+mov si, dx
+mov dx, ax
+xor ax, ax
+
+; creating si:dx:ax
+
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+
+
+
+
+
+; now lets shift CX:BX to max...
+
+
+
+
+test ch, ch
+jne shift_bits_3232RPTA
+; shift a whole byte immediately
+
+mov ch, cl
+mov cl, bh
+mov bh, bl
+xor bl, bl
+
+
+xchg ax, si
+mov  ah, al
+mov  al, dh
+mov  dh, dl
+xchg ax, si
+mov  dl, ah
+xor  al, al
+
+
+shift_bits_3232RPTA:
+
+; less than a byte to shift
+; shift until MSB is 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA  
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+
+
+
+; store this
+done_shifting_3232RPTA:
+
+; we overshifted by one and caught it in the carry bit. lets shift back right one.
+
+RCR CX, 1
+RCR BX, 1
+
+
+; SI:DX:AX holds divisor...
+; CX:BX holds dividend...
+; numhi = SI:DX
+; numlo = AX:00...
+
+
+; save numlo word in sp.
+; avoid going to memory... lets do interrupt magic
+mov di, ax
+
+
+; set up first div. 
+; dx:ax becomes numhi
+mov   ax, dx
+mov   dx, si    
+
+; store these two long term...
+mov   si, bx
+
+
+
+; numhi is 00:SI in this case?
+
+;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+; DX:AX = numhi.wu
+
+
+div   cx
+
+; qhat is at most 2 greater than the real answer.
+; we are capping results at 2048 or 0x800 so quick return in that case.
+
+cmp  ax, 0802h
+ja   return_2048_2
+
+
+; rhat = dx
+; qhat = ax
+;    c1 = FastMul16u16u(qhat , den0);
+
+mov   bx, dx					; bx stores rhat
+mov   es, ax     ; store qhat
+
+
+
+
+mul   si   						; DX:AX = c1
+
+
+; c1 hi = dx, c2 lo = bx
+cmp   dx, bx
+
+ja    check_c1_c2_diff_3232RPTA
+jne   q1_ready_3232RPTA
+cmp   ax, di
+jbe   q1_ready_3232RPTA
+check_c1_c2_diff_3232RPTA:
+
+; (c1 - c2.wu > den.wu)
+
+sub   ax, di
+sbb   dx, bx
+cmp   dx, cx
+ja    qhat_subtract_2_3232RPTA
+je    compare_low_word_3232RPTA
+jmp   qhat_subtract_1_3232RPTA
+
+compare_low_word_3232RPTA:
+cmp   ax, si
+jbe   qhat_subtract_1_3232RPTA
+
+; ugly but rare occurrence i think?
+qhat_subtract_2_3232RPTA:
+mov ax, es
+dec ax
+dec ax
+
+pop   di
+pop   si
+ret  
+
+return_2048_2:
+; bigger than 2048.. just return it
+pop   di
+pop   si
+ret
+
+
+qhat_subtract_1_3232RPTA:
+mov ax, es
+dec ax
+
+pop   di
+pop   si
+ret  
+
+
+
+
+q1_ready_3232RPTA:
+
+mov  ax, es
+
+pop   di
+pop   si
+ret  
+
+
+ENDP
 
 
 ;R_PointToAngle2_
