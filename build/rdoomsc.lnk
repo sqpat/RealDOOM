@@ -43,15 +43,14 @@ file memory.obj
 file math.obj
 file main.obj
 
-#these files put in overlay 
 file g_setup.obj
 file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
+file p_setup.obj
 
 
 
-#todo put these in the future wad segment. maybe pull out p_tick.
 NEWSEGMENT
 file s_sound.obj
 file s_sbsfx.obj
@@ -70,18 +69,11 @@ file p_mobja.obj
 file p_telept.obj
 file p_tick.obj
 file p_user.obj
-
-
-NEWSEGMENT
 file r_main.obj
 file w_wad.obj
 file v_video.obj
 file z_zone.obj
 file z_scamp.obj
-
-
-NEWSEGMENT
-file p_setup.obj
 
 
 
