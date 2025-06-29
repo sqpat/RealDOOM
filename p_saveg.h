@@ -132,7 +132,7 @@ typedef struct  {
     int32_t				target;
     int32_t				reactiontime;   
     int32_t				threshold;
-    int32_t				player;
+    int32_t				player_field;
     int32_t				lastlook;	
     mapthing_t			spawnpoint;	
     int32_t				tracer;	

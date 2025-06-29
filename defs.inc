@@ -451,7 +451,7 @@ _viewwindowy = 					 	 _NULL_OFFSET + 00806h
 _R_DrawPlanesCall = 	    	 	 _NULL_OFFSET + 00808h
 _R_DrawMaskedCall = 			 	 _NULL_OFFSET + 0080Ch
 _R_WriteBackMaskedFrameConstantsCall =  _NULL_OFFSET + 00810h
-
+_NetUpdate_addr =					 _NULL_OFFSET + 00814h
 
 
 _flatcache_nodes =				     _NULL_OFFSET + 00820h

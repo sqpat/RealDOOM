@@ -8077,7 +8077,7 @@ NOT_NF_SUBSECTOR  = 07FFFh
 
 ;R_RenderBSPNode_
 
-PROC R_RenderBSPNode_ FAR
+PROC R_RenderBSPNode_ NEAR
 PUBLIC R_RenderBSPNode_ 
 
 
@@ -8261,7 +8261,199 @@ pop   si
 pop   dx
 pop   cx
 pop   bx
-retf  
+ret
+
+ENDP
+
+
+;R_RenderPlayerView_
+
+PROC R_RenderPlayerView_ FAR
+PUBLIC R_RenderPlayerView_ 
+
+
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+;	r_cachedplayerMobjsecnum = playerMobj->secnum;
+mov       bx, word ptr ds:[_playerMobj]
+push      word ptr ds:[bx + 4]  ; playerMobj->secnum
+pop       word ptr ds:[_r_cachedplayerMobjsecnum]
+
+lds       si, dword ptr ds:[_playerMobj_pos]
+mov       dx, ss
+mov       es, dx
+mov       di, OFFSET _viewx
+
+mov       cx, 4
+rep       movsw ; viewx, viewy
+
+add       si, 6
+mov       di, OFFSET _viewangle
+movsw
+lodsw     ; ax has viewangle hi
+stosw
+
+; cx is 0. write to something that is 0?
+
+
+mov       ds, dx ; dx already had ds
+shr       ax, 1
+;	viewangle_shiftright1 = (viewangle.hu.intbits >> 1) & 0xFFFC;
+and       al, 0FCh
+mov       word ptr ds:[_viewangle_shiftright1], ax
+mov       ax, word ptr ds:[_viewangle + 2]
+SHIFT_MACRO shr       ax 3
+mov       word ptr ds:[_viewangle_shiftright3], ax
+
+;call      Z_QuickMapRender_
+Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_RENDER
+
+; call      R_SetupFrame_
+; INLINED setupframe
+
+
+
+;    extralight = player.extralightvalue;
+mov       al, byte ptr ds:[_player + 05Eh]  ; player.extralightvalue
+mov       byte ptr ds:[_extralight], al
+
+;    viewz = player.viewzvalue;
+les       ax, dword ptr ds:[_player + 8] ; player.viewzvalue
+mov       word ptr ds:[_viewz], ax
+mov       word ptr ds:[_viewz + 2], es
+mov       dx, es
+;	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
+
+sal       ax, 1
+rcl       dx, 1
+sal       ax, 1
+rcl       dx, 1
+sal       ax, 1
+rcl       dx, 1
+
+
+mov       word ptr ds:[_viewz_shortheight], dx
+
+;    if (player.fixedcolormapvalue) {
+
+mov       al, byte ptr ds:[_player + 05Fh]
+test      al, al
+je        set_fixed_colormap_zero
+jmp       set_fixed_colormap_nonzero
+set_fixed_colormap_zero:
+;		fixedcolormap = 0;
+mov       byte ptr ds:[_fixedcolormap], al   ; al is zero
+
+done_setting_colormap:
+
+;    validcount_global++;
+inc       word ptr ds:[_validcount_global]
+
+;	destview = (byte __far*)(destscreen.w + viewwindowoffset);
+les       ax, dword ptr ds:[_destscreen]
+add       ax, word ptr ds:[_viewwindowoffset]
+mov       word ptr ds:[_destview], ax
+mov       word ptr ds:[_destview + 2], es
+
+
+
+call      R_WriteBackFrameConstants_
+call      R_ClearClipSegs_
+
+mov       word ptr ds:[_ds_p],     SIZEOF_DRAWSEG_T             ; drawsegs_PLUSONE
+mov       word ptr ds:[_ds_p + 2], DRAWSEGS_BASE_SEGMENT        ; nseed to be written because masked subs 02000h from it due to remapping...
+call      R_ClearPlanes_
+xor       ax, ax
+mov       word ptr ds:[_vissprite_p], ax  ;
+
+;    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
+
+;call      NetUpdate_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _NetUpdate_addr
+
+
+mov       ax, word ptr ds:[_numnodes]
+dec       ax
+
+call      R_RenderBSPNode_
+;call      NetUpdate_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _NetUpdate_addr
+call      R_PrepareMaskedPSprites_
+
+;call      Z_QuickMapRenderPlanes_
+Z_QUICKMAPAI3 pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI1_NO_DX (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_renderplane_offset_size+4) INDEXED_PAGE_7000_OFFSET
+
+
+mov       ax, CACHEDHEIGHT_SEGMENT
+mov       es, ax
+xor       ax, ax
+mov       di, ax  ; 0
+mov       ax, ax  ; 0
+mov       cx, 400
+
+rep stosw 
+
+cmp       byte ptr ds:[_visplanedirty], al   ; 0
+jne       visplane_dirty_do_revert
+done_with_visplane_revert:
+call      dword ptr ds:[_R_DrawPlanesCall]
+;call      Z_QuickMapUndoFlatCache_
+Z_QUICKMAPAI8 pageswapargs_rend_texture_size           INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI4_NO_DX pageswapargs_spritecache_offset_size     INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_spritecache_offset_size+4)   INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI3_NO_DX pageswapargs_maskeddata_offset_size   	INDEXED_PAGE_8400_OFFSET
+
+
+call      dword ptr ds:[_R_WriteBackMaskedFrameConstantsCall]
+call      dword ptr ds:[_R_DrawMaskedCall]
+
+;call      Z_QuickMapPhysics_
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_PHYSICS
+
+;call      NetUpdate_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _NetUpdate_addr
+
+POPA_NO_AX_OR_BP_MACRO
+retf      
+set_fixed_colormap_nonzero:
+
+;		fixedcolormap =  player.fixedcolormapvalue << 2; 
+SHIFT_MACRO shl       al 2
+mov       byte ptr ds:[_fixedcolormap], al
+
+;		for (i=0 ; i<MAXLIGHTSCALE ; i++){
+;			scalelightfixed[i] = fixedcolormap;
+;		}
+
+mov       ah, al
+
+
+mov       cx, ds
+mov       es, cx
+mov       cx, MAXLIGHTSCALE / 2
+mov       di, OFFSET _scalelightfixed
+rep       stosw
+;		for (i=0 ; i<MAXLIGHTSCALE ; i++){
+;			scalelightfixed[i] = fixedcolormap;
+;		}
+
+jmp       done_setting_colormap
+
+visplane_dirty_do_revert:
+call      Z_QuickMapVisplaneRevert_BSPLocal_
+
+jmp       done_with_visplane_revert
 
 ENDP
 
