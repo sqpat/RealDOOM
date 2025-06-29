@@ -9615,24 +9615,6 @@ ENDP
 
 
 
-PROC R_MarkL1TextureCacheMRU7_ NEAR
-
-
-push word ptr ds:[_textureL1LRU+5]     ; grab [5] and [6]
-pop  word ptr ds:[_textureL1LRU+6]     ; put in [6] and [7]
-
-push word ptr ds:[_textureL1LRU+3]     ; grab [3] and [4]
-pop  word ptr ds:[_textureL1LRU+4]     ; put in [4] and [5]
-
-push word ptr ds:[_textureL1LRU+1]     ; grab [1] and [2]
-pop  word ptr ds:[_textureL1LRU+2]     ; put in [2] and [3]
-
-xchg al, byte ptr ds:[_textureL1LRU+0] ; swap index for [0]
-mov  byte ptr ds:[_textureL1LRU+1], al ; put [0] in [1]
-
-ret
-
-ENDP
 
 ; assumes ah 0
 PROC R_MarkL2TextureCacheMRU_ NEAR
@@ -10506,12 +10488,12 @@ found_active_single_page:
 
 xchg  ax, dx            ; dx gets realtexpage
 mov   ax, bx            ; ax gets i
-call  word ptr [bp - 2]
+call  R_MarkL1TextureCacheMRU_
 
 ;    R_MarkL2TextureCacheMRU(realtexpage);
 
 xchg  ax, dx            ; realtexpage into ax. 
-call  word ptr [bp - 4]
+call  R_MarkL2TextureCacheMRU_
 
 ;    return i;
 
@@ -10524,24 +10506,17 @@ ret
 
 
 PROC R_GetTexturePage_ NEAR
+
 ;uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset){
 ; al texpage
 ; dl pageoffset
 
 
-; bp - 2 markcachel1mru
-; bp - 4 markl2cache
-; bp - 6 z_quickmap
-; bp - 8 markcachel1mru(max)
-; bp - 0Ah pageswapargs offset
-; bp - 0Ch cachenodes
-; bp - 0Eh l1lru array offset
-; bp - 010h scamp npr page offset
 
-; bp - 012h NUM_TExXTURE_L1_CACHE_PAGES or NUM_SPRITE_L1_CACHE_PAGES
-; bp - 014h pageoffset
-; bp - 016h realtexpage
-; bp - 018h startpage in multi-area
+
+; bp - 2 pageoffset
+; bp - 4 realtexpage
+; bp - 6 startpage in multi-area
 
 ; todo todo remove
 
@@ -10549,35 +10524,7 @@ PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 
-IF COMPISA GE COMPILE_186
-    push  OFFSET R_MarkL1TextureCacheMRU_ - OFFSET R_BSP_STARTMARKER_
-    push  OFFSET R_MarkL2TextureCacheMRU_ - OFFSET R_BSP_STARTMARKER_
-    push  OFFSET Z_QuickMapRenderTexture_BSPLocal_ - OFFSET R_BSP_STARTMARKER_
-    push  OFFSET R_MarkL1TextureCacheMRU7_ - OFFSET R_BSP_STARTMARKER_
-    push  (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)
-    push  OFFSET _texturecache_nodes
-    push  OFFSET _textureL1LRU
-    ;push  PAGE_5000_OFFSET + (SCAMP_PAGE_9000_OFFSET + 4)
-    push  ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_5000_OFFSET))   ; shut up compiler warning
-ELSE
-    mov   si, OFFSET R_MarkL1TextureCacheMRU_ - OFFSET R_BSP_STARTMARKER_
-    push  si
-    mov   si, OFFSET R_MarkL2TextureCacheMRU_ - OFFSET R_BSP_STARTMARKER_
-    push  si
-    mov   si, OFFSET Z_QuickMapRenderTexture_BSPLocal_ - OFFSET R_BSP_STARTMARKER_
-    push  si
-    mov   si, OFFSET R_MarkL1TextureCacheMRU7_ - OFFSET R_BSP_STARTMARKER_
-    push  si
-    mov   si, (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)
-    push  si
-    mov   si, OFFSET _texturecache_nodes
-    push  si
-    mov   si, OFFSET _textureL1LRU
-    push  si
 
-    push  si ; unused
-
-ENDIF
 
 mov   si, OFFSET _activetexturepages
 mov   di, OFFSET _activenumpages
@@ -10585,13 +10532,12 @@ mov   cx, NUM_TEXTURE_L1_CACHE_PAGES
 xor   dh, dh
 continue_get_page:
 
-push  cx        ; bp - 012h         max   (loop counter etc). ch 0
-push  dx        ; bp - 014h   dh 0 pageoffset
+push  dx        ; bp - 2   dh 0 pageoffset
 
 ;	uint8_t realtexpage = texpage >> 2;
 mov   dl, al
 SHIFT_MACRO sar   dx 2
-push  dx        ; bp - 016h   dh 0 realtexpage
+push  dx        ; bp - 4   dh 0 realtexpage
 
 ;	uint8_t numpages = (texpage& 0x03);
 
@@ -10635,11 +10581,25 @@ cwd
 dec   dx ; dx = -1, ah is 0
 mov   bx, cx    ; NUM_TEXTURE_L1_CACHE_PAGES
 dec   bx        ; NUM_TEXTURE_L1_CACHE_PAGES - 1
-add   bx, word ptr [bp - 0Eh] ; _textureL1LRU
-mov   al, byte ptr ds:[bx]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
-mov   bx, ax
+mov   al, byte ptr ds:[bx + _textureL1LRU]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
 mov   cx, ax
-call  word ptr [bp - 8] ; todo jmp instead of call?
+;call  R_MarkL1TextureCacheMRU7_ ; todo inline?
+mov   bx, OFFSET _textureL1LRU+1
+
+push word ptr ds:[bx+4]     ; grab [5] and [6]
+pop  word ptr ds:[bx+5]     ; put in [6] and [7]
+
+push word ptr ds:[bx+2]     ; grab [3] and [4]
+pop  word ptr ds:[bx+3]     ; put in [4] and [5]
+
+push word ptr ds:[bx+0]     ; grab [1] and [2]
+pop  word ptr ds:[bx+1]     ; put in [2] and [3]
+
+xchg al, byte ptr ds:[bx-1] ; swap index for [0]
+mov  byte ptr ds:[bx], al ; put [0] in [1]
+
+mov   bx, cx
+
 
 ;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 ;		if (activenumpages[startpage]) {
@@ -10679,30 +10639,26 @@ IFDEF COMP_CH
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         sal   bx, 1
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], 03FFh
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)], 03FFh
     ELSEIF COMP_CH EQ CHIPSET_SCAMP
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         mov   dx, bx
         sal   bx, 1
-        add   dx, word ptr [bp - 010h]   ; page offset
+        add   dx, ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_5000_OFFSET)) 
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], dx
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)], dx
         mov   dx, -1
     ELSEIF COMP_CH EQ CHIPSET_HT18
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         sal   bx, 1
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], 0
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)], 0
     ENDIF
 ELSE
     mov   byte ptr ds:[bx + si], dl   ; dl is -1
     sal   bx, 1
     SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-    add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-    mov   word ptr ds:[bx], dx  ; dx is -1
+    mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)], dx  ; dx is -1
 
 ENDIF
 
@@ -10757,7 +10713,7 @@ mov   dh, bl
 mark_all_pages_mru_loop:
 mov   ax, bx
 
-call  word ptr [bp - 2]
+call  R_MarkL1TextureCacheMRU_
 inc   bl
 dec   dl
 jns   mark_all_pages_mru_loop
@@ -10767,8 +10723,8 @@ jns   mark_all_pages_mru_loop
 ;    R_MarkL2TextureCacheMRU(realtexpage);
 ;    return i;
 
-pop   ax;   word ptr [bp - 016h]
-call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
+pop   ax;   word ptr [bp - 4]
+call  R_MarkL2TextureCacheMRU_
 mov   al, dh
 mov   es, ax
 LEAVE_MACRO 
@@ -10783,7 +10739,7 @@ ret
 
 evict_and_find_startpage_multi:
 xor   ax, ax ; set ah to 0. 
-mov   bx, word ptr [bp - 012h]
+mov   bx, NUM_TEXTURE_L1_CACHE_PAGES
 dec   bx
 mov   cx, bx
 sub   cl, dl
@@ -10791,7 +10747,7 @@ sub   cl, dl
 ; bx is startpage
 ; cx is ((NUM_TEXTURE_L1_CACHE_PAGES-1)-numpages)
 
-add   bx, word ptr [bp - 0Eh] ; _textureL1LRU
+add   bx, OFFSET _textureL1LRU
 
 find_start_page_loop_multi:
 
@@ -10811,14 +10767,14 @@ found_start_page_single:
 ;  cl/cx is startpage
 ;  bl/bx is startpage 
 
-pop   dx  ; bp - 016h, get realtexpage
+pop   dx  ; bp - 4, get realtexpage
 ; dx has realtexpage
 ; bx already ok
 
 mov   byte ptr ds:[bx + di], bh  ; zero
 mov   byte ptr ds:[bx + si], dl
 shl   bx, 1                      ; startpage word offset.
-pop   ax                         ; mov   ax, word ptr [bp - 014h]
+pop   ax                         ; mov   ax, word ptr [bp - 2]
 
 add   ax, dx                     ; _EPR(pageoffset + realtexpage);
 EPR_MACRO ax
@@ -10826,21 +10782,18 @@ EPR_MACRO ax
 ; pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT]
 
 SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-mov   word ptr ds:[bx], ax        ; = _EPR(pageoffset + realtexpage);
+mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)], ax        ; = _EPR(pageoffset + realtexpage);
 
 ; dx should be realtexpage???
 xchg  ax, dx
 
-call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
-call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
+call  R_MarkL2TextureCacheMRU_
+call  Z_QuickMapRenderTexture_BSPLocal_
 
 
 mov   ax, 0FFFFh
 
-cmp   byte ptr [bp - 012h], NUM_SPRITE_L1_CACHE_PAGES
 mov   dx, cx
-je    do_sprite_eviction
 do_tex_eviction:
 mov   di, ds
 mov   es, di
@@ -10880,7 +10833,7 @@ found_startpage_multi:
 
 ; al already set to startpage
 mov   bx, ax    ; ah/bh is 0
-push  ax  ; bp - 018h
+push  ax  ; bp - 6
 mov   dh, al ; dh gets startpage..
 mov   cx, -1
 
@@ -10928,30 +10881,26 @@ IFDEF COMP_CH
         mov   byte ptr ds:[bx + si], cl  ; -1
         sal   bx, 1                      ; startpage word offset.
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], 03FFh
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)], 03FFh
     ELSEIF COMP_CH EQ CHIPSET_SCAMP
         mov   byte ptr ds:[bx + si], cl  ; -1
         mov   cx, bx
         sal   bx, 1                      ; startpage word offset.
-        add   cx, word ptr [bp - 010h]   ; page offset
+        add   cx, ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_5000_OFFSET))  ; page offset
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], cx
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)], cx
         mov   cx, -1
     ELSEIF COMP_CH EQ CHIPSET_HT18
         mov   byte ptr ds:[bx + si], cl  ; -1
         sal   bx, 1                      ; startpage word offset.
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], 0
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)], 0
     ENDIF
 ELSE
     mov   byte ptr ds:[bx + si], cl  ; -1
     sal   bx, 1                      ; startpage word offset.
     SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-    add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-    mov   word ptr ds:[bx], cx  ; cx is -1  TODO NPR or whatever
+    mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)], cx  ; cx is -1  TODO NPR or whatever
 
 ENDIF
 
@@ -10960,16 +10909,6 @@ inc   al
 xor   bh, bh
 jmp   loop_next_invalidate_page_multi
 
-do_sprite_eviction:
-
-mov   word ptr ds:[_lastvisspritepatch], ax
-mov   word ptr ds:[_lastvisspritepatch2], ax
-
-mov   es, dx ; cl/cx is start page
-LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   ax, es
-ret
 
 done_invalidating_pages_multi:
 
@@ -10988,7 +10927,7 @@ mov   ch, dl
 
 ;	for (i = 0; i <= numpages; i++) {
 ; es gets currentpage
-mov   es, word ptr [bp - 016h]
+mov   es, word ptr [bp - 4]
 
 ;    for (i = 0; i <= numpages; i++) {
 ;        R_MarkL1TextureCacheMRU(startpage+i);
@@ -11005,7 +10944,7 @@ loop_mark_next_page_mru_multi:
 
 mov   al, cl
 
-call  [bp - 2]  ; does not affect es
+call  R_MarkL1TextureCacheMRU_
 
 
 mov   ax, es ; currentpage in ax
@@ -11015,15 +10954,14 @@ mov   byte ptr ds:[bx + di], ch   ;   activenumpages[startpage + i] = numpages-i
 mov   byte ptr ds:[bx + si], al   ;	activetexturepages[startpage + i]  = currentpage;
 sal   bx, 1             ; word lookup
 
-add   ax, word ptr [bp - 014h]  ; pageoffset
+add   ax, word ptr [bp - 2]  ; pageoffset
 EPR_MACRO ax
 
 
 ;	pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
 
 SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-mov   word ptr ds:[bx], ax
+mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_REND_TEXTURE_OFFSET * PAGE_SWAP_ARG_MULT)], ax
 
 
 dec   ch    ; dec numpages - i
@@ -11032,8 +10970,7 @@ inc   cl    ; inc startpage + i
 ;    currentpage = texturecache_nodes[currentpage].prev;
 mov   bx, es ; currentpage
 SHIFT_MACRO sal   bx 2
-add   bx, word ptr [bp - 0Ch]   ; _texturecache_nodes
-mov   bl, byte ptr ds:[bx]
+mov   bl, byte ptr ds:[bx + _texturecache_nodes]
 xor   bh, bh
 mov   es, bx
 dec   dl
@@ -11047,9 +10984,9 @@ jns   loop_mark_next_page_mru_multi
 
 		
 
-mov   ax, word ptr [bp - 016h]
-call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
-call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_BSPLocal_
+mov   ax, word ptr [bp - 4]
+call  R_MarkL2TextureCacheMRU_
+call  Z_QuickMapRenderTexture_BSPLocal_
 
 ;	//todo: detected and only do -1 if its in the knocked out page? pretty infrequent though.
 ;    cachedtex = -1;
@@ -11059,8 +10996,6 @@ call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_BSPLocal_
 mov   ax, 0FFFFh
 
 mov   dl, dh  ; numpages in cl
-cmp   byte ptr [bp - 012h], NUM_SPRITE_L1_CACHE_PAGES
-je    do_sprite_eviction
 jmp   do_tex_eviction
 
 
