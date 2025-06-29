@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/28 18:23:26
+Created on:       25/06/28 18:49:16
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -74,10 +74,10 @@ P_TICK_TEXT            CODE           AUTO           0a5e:af2c       000001c9
 p_user_TEXT            CODE           AUTO           0a5e:b100       000006c8
 R_DATA_TEXT            CODE           AUTO           15da:0008       0000090c
 R_MAIN_TEXT            CODE           AUTO           15da:0914       000000df
-R_BSP_TEXT             CODE           AUTO           15da:09f4       00002e79
-w_wad_TEXT             CODE           AUTO           15da:3870       0000030c
-V_VIDEO_TEXT           CODE           AUTO           15da:3b7c       00000616
-Z_ZONE_TEXT            CODE           AUTO           15da:4192       00000647
+w_wad_TEXT             CODE           AUTO           15da:0a00       0000030c
+V_VIDEO_TEXT           CODE           AUTO           15da:0d0c       00000616
+Z_ZONE_TEXT            CODE           AUTO           15da:1322       00000647
+R_BSP_TEXT             CODE           AUTO           1771:0000       00002e69
 p_setup_TEXT           CODE           AUTO           1a58:0000       0000127a
 _TEXT                  CODE           AUTO           1a58:1280       0000245e
 FAR_DATA               FAR_DATA       AUTO           1dc5:000e       00000000
@@ -1042,104 +1042,106 @@ Module: r_main.obj(r_main.ASM)
 15da:0948      R_SetViewSize_
 15da:0914      R_PointToAngle2_
 15da:0996      R_DrawViewBorder_
-Module: r_bsp.obj(r_bsp.ASM)
-15da:30e6*     R_PointToAngle16_
-15da:1459*     R_AddLine_
-15da:1b1c*     R_StoreWallRange_
-15da:2bfa*     R_ClipSolidWallSegment_
-15da:2ca7*     R_ClipPassWallSegment_
-15da:3113*     R_CheckBBox_
-15da:15e7*     R_Subsector_
-15da:10b9*     FixedMulBSPLocal_
-15da:0fd7*     FastDiv3232_RPTA_
-15da:11ab*     R_PointToDist_
-15da:12b6*     R_HandleEMSVisplanePagination_
-15da:10f2*     FixedDivBSPLocal_
-15da:3067*     R_PrepareMaskedPSprites_
-15da:0c60*     div48_32_BSPLocal_
-15da:36db*     R_WriteBackFrameConstants_
-15da:3533      R_WriteBackViewConstants_
-15da:1241*     R_ClearPlanes_
-15da:1ab4*     R_AddSprites_
-15da:13c5*     Z_QuickMapVisplaneRevert_BSPLocal_
-15da:1222*     R_ClearClipSegs_
-15da:13dd*     R_FindPlane_
-15da:0dab*     FixedDivWholeA_BSPLocal_
-15da:0fa6*     FastDiv3232_shift_3_8_
-15da:0aef      R_PointToAngle_
-15da:26d5*     R_DrawColumnPrep_
-15da:2ed4*     R_DrawPSprite_
-15da:0f40*     FixedMulTrig_BSPLocal_
-15da:0e12*     div48_32_whole_BSPLocal_
-15da:0f44*     FixedMulTrigNoShift_BSPLocal_
-15da:1160*     FixedMulTrigNoShiftBSPLocal_
-15da:16cf*     R_CheckPlane_
-15da:33a7      R_RenderPlayerView_
-15da:179a*     R_ProjectSprite_
-15da:2dc9*     R_GetColumnSegment_
-15da:32be*     R_RenderBSPNode_
-15da:09f4*     R_ScaleFromGlobalAngle_
-15da:135f*     Z_QuickMapVisplanePage_BSPLocal_
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
-15da:3870      locallib_far_fread_
-15da:38fa      locallib_far_fwrite_
-15da:3984      W_CheckNumForName_
-15da:3984      W_GetNumForName_
-15da:3a34      W_LumpLength_
-15da:3a88+     W_ReadLump_
-15da:3b32      W_CacheLumpNameDirect_
-15da:3b44      W_CacheLumpNumDirect_
-15da:3b52      W_CacheLumpNumDirectWithOffset_
-15da:3b66      W_CacheLumpNumDirectFragment_
+15da:0a00      locallib_far_fread_
+15da:0a8a      locallib_far_fwrite_
+15da:0b14      W_CheckNumForName_
+15da:0b14      W_GetNumForName_
+15da:0bc4      W_LumpLength_
+15da:0c18+     W_ReadLump_
+15da:0cc2      W_CacheLumpNameDirect_
+15da:0cd4      W_CacheLumpNumDirect_
+15da:0ce2      W_CacheLumpNumDirectWithOffset_
+15da:0cf6      W_CacheLumpNumDirectFragment_
 Module: v_video.obj(v_video.ASM)
-15da:3e34*     CopyString9_
-15da:40bf      V_DrawFullscreenPatch_
-15da:3eab      R_FillBackScreen_
-15da:4084      V_CopyRect_
-15da:3d3c      V_DrawPatchDirect_
-15da:3b7c      V_DrawPatch_
-15da:4062      V_MarkRect_
-15da:3c6f*     V_DrawPatch5000Screen0_
+15da:0fc4*     CopyString9_
+15da:124f      V_DrawFullscreenPatch_
+15da:103b      R_FillBackScreen_
+15da:1214      V_CopyRect_
+15da:0ecc      V_DrawPatchDirect_
+15da:0d0c      V_DrawPatch_
+15da:11f2      V_MarkRect_
+15da:0dff*     V_DrawPatch5000Screen0_
 Module: z_zone.obj(z_zone.ASM)
-15da:420a      Z_QuickMapPhysics_
-15da:4192*     Z_QuickMapMusicPageFrame_
-15da:43e2*     Z_QuickMapRenderPlanes9000only_
-15da:41f4      Z_QuickMapPhysicsCode_
-15da:4291      Z_QuickMapRender_4000To9000_
-15da:46b1      Z_QuickMapUnmapAll_
-15da:42d5      Z_QuickMapRender_9000To6000_
-15da:42bf*     Z_QuickMapRender_9000To7000_
-15da:41c9      Z_QuickMapWADPageFrame_
-15da:4535      Z_QuickMapWipe_
-15da:4403      Z_QuickMapRenderPlanes_
-15da:41aa      Z_QuickMapSFXPageFrame_
-15da:4343      Z_QuickMapStatus_
-15da:432d      Z_QuickMapRenderTexture_
-15da:44c6*     Z_QuickMapScreen1_
-15da:43cc*     Z_QuickMapScreen0_
-15da:4250      Z_QuickMapRender_
-15da:43b6      Z_QuickMapScratch_4000_
-15da:43a0      Z_QuickMapScratch_7000_
-15da:47ad*     CopyString13_Zonelocal_
-15da:4374      Z_QuickMapScratch_5000_
-15da:44f7      Z_QuickMapMenu_
-15da:438a      Z_QuickMapScratch_8000_
-15da:4445*     Z_QuickMapFlatPage_
-15da:44dc      Z_QuickMapPalette_
-15da:42eb      Z_QuickMapRender4000_
-15da:4301*     Z_QuickMapRender5000_
-15da:4317*     Z_QuickMapRender9000_
-15da:449a      Z_QuickMapMaskedExtraData_
-15da:4712      Z_SetOverlay_
-15da:442f*     Z_QuickMapRenderPlanesBack_
-15da:4573      Z_QuickMapByTaskNum_
-15da:4463      Z_QuickMapUndoFlatCache_
-15da:44b0*     Z_QuickMapPhysics5000_
-15da:4235      Z_QuickMapDemo_
-15da:4697*     Z_QuickMapVisplaneRevert_
-15da:4512      Z_QuickMapIntermission_
-15da:427b      Z_QuickMapRender_4000To9000_9000Only_
-15da:4631      Z_QuickMapVisplanePage_
+15da:139a      Z_QuickMapPhysics_
+15da:1322*     Z_QuickMapMusicPageFrame_
+15da:1572*     Z_QuickMapRenderPlanes9000only_
+15da:1384      Z_QuickMapPhysicsCode_
+15da:1421      Z_QuickMapRender_4000To9000_
+15da:1841      Z_QuickMapUnmapAll_
+15da:1465      Z_QuickMapRender_9000To6000_
+15da:144f*     Z_QuickMapRender_9000To7000_
+15da:1359      Z_QuickMapWADPageFrame_
+15da:16c5      Z_QuickMapWipe_
+15da:1593      Z_QuickMapRenderPlanes_
+15da:133a      Z_QuickMapSFXPageFrame_
+15da:14d3      Z_QuickMapStatus_
+15da:14bd      Z_QuickMapRenderTexture_
+15da:1656*     Z_QuickMapScreen1_
+15da:155c*     Z_QuickMapScreen0_
+15da:13e0      Z_QuickMapRender_
+15da:1546      Z_QuickMapScratch_4000_
+15da:1530      Z_QuickMapScratch_7000_
+15da:193d*     CopyString13_Zonelocal_
+15da:1504      Z_QuickMapScratch_5000_
+15da:1687      Z_QuickMapMenu_
+15da:151a      Z_QuickMapScratch_8000_
+15da:15d5*     Z_QuickMapFlatPage_
+15da:166c      Z_QuickMapPalette_
+15da:147b      Z_QuickMapRender4000_
+15da:1491*     Z_QuickMapRender5000_
+15da:14a7*     Z_QuickMapRender9000_
+15da:162a      Z_QuickMapMaskedExtraData_
+15da:18a2      Z_SetOverlay_
+15da:15bf*     Z_QuickMapRenderPlanesBack_
+15da:1703      Z_QuickMapByTaskNum_
+15da:15f3      Z_QuickMapUndoFlatCache_
+15da:1640*     Z_QuickMapPhysics5000_
+15da:13c5      Z_QuickMapDemo_
+15da:1827*     Z_QuickMapVisplaneRevert_
+15da:16a2      Z_QuickMapIntermission_
+15da:140b      Z_QuickMapRender_4000To9000_9000Only_
+15da:17c1      Z_QuickMapVisplanePage_
+Module: r_bsp.obj(r_bsp.ASM)
+1771:26e2*     R_PointToAngle16_
+1771:0a5b*     R_AddLine_
+1771:111a*     R_StoreWallRange_
+1771:21f6*     R_ClipSolidWallSegment_
+1771:22a3*     R_ClipPassWallSegment_
+1771:270f*     R_CheckBBox_
+1771:0be9*     R_Subsector_
+1771:06c0*     FixedMulBSPLocal_
+1771:05de*     FastDiv3232_RPTA_
+1771:07b1*     R_PointToDist_
+1771:2e69*     R_BSP_ENDMARKER_
+1771:08b8*     R_HandleEMSVisplanePagination_
+1771:06f9*     FixedDivBSPLocal_
+1771:2663*     R_PrepareMaskedPSprites_
+1771:026a*     div48_32_BSPLocal_
+1771:2cd7*     R_WriteBackFrameConstants_
+1771:2b2f      R_WriteBackViewConstants_
+1771:0845*     R_ClearPlanes_
+1771:10b2*     R_AddSprites_
+1771:09c7*     Z_QuickMapVisplaneRevert_BSPLocal_
+1771:0826*     R_ClearClipSegs_
+1771:09df*     R_FindPlane_
+1771:03b5*     FixedDivWholeA_BSPLocal_
+1771:05ae*     FastDiv3232_shift_3_8_
+1771:00f9      R_PointToAngle_
+1771:1cd1*     R_DrawColumnPrep_
+1771:24d0*     R_DrawPSprite_
+1771:0548*     FixedMulTrig_BSPLocal_
+1771:041a*     div48_32_whole_BSPLocal_
+1771:054c*     FixedMulTrigNoShift_BSPLocal_
+1771:0766*     FixedMulTrigNoShiftBSPLocal_
+1771:0cd1*     R_CheckPlane_
+1771:29a3      R_RenderPlayerView_
+1771:0d9c*     R_ProjectSprite_
+1771:23c5*     R_GetColumnSegment_
+1771:28ba*     R_RenderBSPNode_
+1771:0000*     R_ScaleFromGlobalAngle_
+1771:0961*     Z_QuickMapVisplanePage_BSPLocal_
+1771:0000*     R_BSP_STARTMARKER_
 Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 1a58:0000      P_SetupLevel_
 1a58:016e+     S_Start_
@@ -1418,4 +1420,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00020930 (133424.)
 Entry point address: 1a58:1c66
-Link time: 00:00.30
+Link time: 00:00.19
