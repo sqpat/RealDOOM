@@ -20,7 +20,6 @@ INSTRUCTION_SET_MACRO
 
  
 EXTRN Z_QuickMapRenderTexture_:NEAR
-EXTRN Z_QuickMapSpritePage_:NEAR
 EXTRN W_CacheLumpNumDirect_:FAR
 ;EXTRN logger_:NEAR  ; asm logging stuff
 
@@ -44,40 +43,7 @@ dw 01000h, 01400h, 01800h, 01C00h
 
 
 
-PROC R_MarkL1SpriteCacheMRU_ NEAR
-PUBLIC R_MarkL1SpriteCacheMRU_
 
-
-mov  ah, byte ptr ds:[_spriteL1LRU+0]
-cmp  al, ah
-je   exit_markl1spritecachemru
-mov  byte ptr ds:[_spriteL1LRU+0], al
-xchg byte ptr ds:[_spriteL1LRU+1], ah
-cmp  al, ah
-je   exit_markl1spritecachemru
-xchg byte ptr ds:[_spriteL1LRU+2], ah
-cmp  al, ah
-je   exit_markl1spritecachemru
-xchg byte ptr ds:[_spriteL1LRU+3], ah
-exit_markl1spritecachemru:
-ret  
-
-
-ENDP
-
-
-
-PROC R_MarkL1SpriteCacheMRU3_ NEAR
-PUBLIC R_MarkL1SpriteCacheMRU3_
-
-push word ptr ds:[_spriteL1LRU+1]     ; grab [1] and [2]
-pop  word ptr ds:[_spriteL1LRU+2]     ; put in [2] and [3]
-xchg al, byte ptr ds:[_spriteL1LRU+0] ; swap index for [0]
-mov  byte ptr ds:[_spriteL1LRU+1], al ; put [0] in [1]
-
-ret  
-
-ENDP
 
 ; todo pass in si to be _textureL1LRU ptr. put that in < 0x80
 
@@ -155,31 +121,6 @@ mov  di, OFFSET _texturecache_l2_head
 ; todo just use di - 1 instead of es
 
 
-jmp  do_markl2func
-
-ENDP
-
-PROC R_MarkL2SpriteCacheMRU_ NEAR
-PUBLIC R_MarkL2SpriteCacheMRU_
-
-;	if (index == spritecache_l2_head) {
-;		return;
-;	}
-
-cmp  al, byte ptr ds:[_spritecache_l2_head]
-jne  dont_early_out
-ret
-
-
-
-dont_early_out:
-PUSHA_NO_AX_MACRO
-mov  si, OFFSET _spritecache_nodes
-mov  di, OFFSET _spritecache_l2_tail
-mov  es, di
-mov  di, OFFSET _spritecache_l2_head
-;dec  di ; OFFSET _spritecache_l2_head
-; todo just use di - 1 instead of es
 do_markl2func:
 
 mov  cl, byte ptr ds:[di]
@@ -729,46 +670,6 @@ COLUMN_IN_CACHE_WAD_LUMP_SEGMENT = 07000h
 
 
 
-PROC R_GetNextSpriteBlock_ NEAR
-PUBLIC R_GetNextSpriteBlock_
-
-
-
-PUSHA_NO_AX_MACRO
-push      bp
-mov       bp, sp
-
-IF COMPISA GE COMPILE_186
-    push      CACHETYPE_SPRITE 
-ELSE
-    mov   dx, CACHETYPE_SPRITE 
-    push  dx
-ENDIF
-sub       ax, word ptr ds:[_firstspritelump]
-mov       dx, SPRITETOTALDATASIZES_SEGMENT
-mov       es, dx
-mov       bx, ax
-sal       bx, 1
-mov       dx, word ptr es:[bx] ; dx = size
-mov       bl, dh
-push      bx  ; bp - 4  only bl technically
-IF COMPISA GE COMPILE_186
-    push      NUM_SPRITE_CACHE_PAGES 
-ELSE
-    mov   di, NUM_SPRITE_CACHE_PAGES 
-    push  di
-ENDIF
-
-
-push      ax  ; bp - 6  store for later
-mov       di, OFFSET _spritecache_nodes
-mov       si, OFFSET _usedspritepagemem
-
-jmp       get_next_block_variables_ready
-
-ENDP
-
-
 PROC R_GetNextTextureBlock_ NEAR
 PUBLIC R_GetNextTextureBlock_
 
@@ -1090,49 +991,6 @@ ENDP
 
 
 
-
-PROC R_GetSpritePage_ NEAR
-PUBLIC R_GetSpritePage_
-
-PUSHA_NO_AX_MACRO
-push  bp
-mov   bp, sp
-
-IF COMPISA GE COMPILE_186
-    push  OFFSET R_MarkL1SpriteCacheMRU_
-    push  OFFSET R_MarkL2SpriteCacheMRU_
-    push  OFFSET Z_QuickMapSpritePage_
-    push  OFFSET R_MarkL1SpriteCacheMRU3_
-    push  (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)
-    push  OFFSET _spritecache_nodes
-    push  OFFSET _spriteL1LRU
-    ;push  PAGE_9000_OFFSET + (SCAMP_PAGE_9000_OFFSET + 4)
-    push  ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning
-ELSE
-    mov   si, OFFSET R_MarkL1SpriteCacheMRU_
-    push  si
-    mov   si, OFFSET R_MarkL2SpriteCacheMRU_
-    push  si
-    mov   si, OFFSET Z_QuickMapSpritePage_
-    push  si
-    mov   si, OFFSET R_MarkL1SpriteCacheMRU3_
-    push  si
-    mov   si, (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)
-    push  si
-    mov   si, OFFSET _spritecache_nodes
-    push  si
-    mov   si, OFFSET _spriteL1LRU
-    push  si
-
-    push  si   ; unused
-ENDIF
-mov   si, OFFSET _activespritepages
-mov   di, OFFSET _activespritenumpages
-mov   cx, NUM_SPRITE_L1_CACHE_PAGES
-mov   dx, FIRST_SPRITE_CACHE_LOGICAL_PAGE ; pageoffset
-jmp continue_get_page
-
-ENDP
 
 
 ; part of R_GetTexturePage_
@@ -1880,69 +1738,6 @@ retf
 ENDP
 
 
-PROC R_GetSpriteTexture_ FAR
-PUBLIC R_GetSpriteTexture_
-
-push  dx
-push  si
-mov   si, SPRITEPAGE_SEGMENT
-mov   es, si
-
-xchg  ax, si    ; si gets index
-
-mov   al, byte ptr es:[si]
-cmp   al, 0FFh
-je    sprite_not_in_cache
-
-mov   dl, byte ptr es:[si + SPRITEOFFSETS_OFFSET]
-
-call  R_GetSpritePage_
-xor   ah, ah
-mov   si, ax
-mov   al, dl
-SHIFT_MACRO shl   ax 4
-sal   si, 1
-mov   dx, word ptr cs:[si + _pagesegments]
-add   dh, (SPRITE_COLUMN_SEGMENT SHR 8)
-add   ax, dx
-pop   si
-pop   dx
-retf  
-
-sprite_not_in_cache:
-
-mov   ax, word ptr ds:[_firstspritelump]
-add   ax, si
-push  ax    ; bp - 2, index
-push  es    ; bp - 4, segment
-call  R_GetNextSpriteBlock_
-
-pop   es    ; bp - 4, segment
-mov   al, byte ptr es:[si]
-
-mov   dl, byte ptr es:[si + SPRITEOFFSETS_OFFSET]
-
-call  R_GetSpritePage_
-xor   ah, ah
-mov   si, ax
-mov   al, dl
-SHIFT_MACRO shl   ax 4
-sal   si, 1
-mov   dx, word ptr cs:[si + _pagesegments]
-add   dh, (SPRITE_COLUMN_SEGMENT SHR 8) 
-add   dx, ax
-mov   si, dx ; back this up
-pop   ax     ; bp - 2, index
-
-call  R_LoadSpriteColumns_
-
-mov   ax, si
-pop   si
-pop   dx
-retf  
-
-
-ENDP
 
 WAD_PATCH_7000_SEGMENT = 07000h
 
@@ -3059,177 +2854,6 @@ ENDP
 
 
 
-;void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment);
-; ax = lump
-; dx = segment
-
-PROC R_LoadSpriteColumns_ FAR  ; todo near?
-PUBLIC R_LoadSpriteColumns_
-
-
-
-PUSHA_NO_AX_MACRO
-push      bp
-mov       bp, sp
-mov       bx, ax
-
-mov       di, dx    ; preserve dx thru quickmap
-;call      Z_QuickMapScratch_5000_
-Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
-
-
-mov       dx, di
-
-;	patch_t __far *wadpatch = (patch_t __far *)SCRATCH_ADDRESS_5000;
-;	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
-
-
-mov       di, SCRATCH_ADDRESS_5000_SEGMENT
-mov       cx, di
-mov       si, bx
-mov       ax, si
-xor       bx, bx
-
-
-;	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
-
-call      W_CacheLumpNumDirect_
-; wadpatch  is 0x5000 seg
-; destpatch is dx
-;	patchwidth = wadpatch->width;
-;	destpatch->width = wadpatch->width;
-;	destpatch->height = wadpatch->height;
-;	destpatch->leftoffset = wadpatch->leftoffset;
-;	destpatch->topoffset = wadpatch->topoffset;
-
-sub       si, word ptr ds:[_firstspritelump] ; get this before we clobber ds
-mov       cx, si ; store in cx
-
-mov       ds, di
-
-xor       di, di
-mov       si, di
-
-mov       es, dx
-lodsw
-mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1],  ax  ; patchwidth
-stosw
-movsw
-movsw
-movsw
-mov       bx, ax ; patchwidth
-mov       bp, di   ; bp gets 8
-
-
-; 	destoffset = 8 + ( patchwidth << 2);
-;	currentpostbyte = destoffset;
-;	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
-
-
-SHIFT_MACRO shl       bx 2
-mov       si, cx
-shl       si, 1
-add       bx, 8
-;	destoffset += spritepostdatasizes[lump-firstspritelump];
-mov       ax, SPRITEPOSTDATASIZES_SEGMENT
-mov       es, ax
-
-mov       di, bx
-add       di, word ptr es:[si]
-mov       es, dx  ; restore es
-mov       dx, bp  ; dx starts as 8 for loop too
-
-;	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
-;	currentpixelbyte = destoffset;
-;	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
-
-
-
-add       di, 15
-and       di, 0FFF0h
-
-
-
-
-start_sprite_column_loop:
-xor       cx, cx
-do_next_sprite_column:
-dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1]
-
-mov       ax, di
-
-SHIFT_MACRO shr       ax 4
-mov       si, dx
-mov       si, word ptr ds:[si]
-
-
-mov       word ptr es:[bp], ax
-mov       word ptr es:[bp+2], bx
-add       bp, 4
-
-
-lodsw
-cmp       al, 0FFh
-je        done_with_sprite_column
-do_next_sprite_post:
-
-
-mov       word ptr es:[bx], ax
-
-
-mov       cl, ah
-mov       ax, cx
-inc       si
-
-
-
-shr       cx, 1
-rep movsw 
-adc       cx, cx
-rep movsb 
-
-
-
-add       di, 15
-and       di, 0FFF0h  ; round up to next segment destination
-
-; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
-
-inc       si
-inc       bx
-inc       bx
-
-lodsw
-cmp       al, 0FFh
-jne       do_next_sprite_post
-done_with_sprite_column:
-
-mov       word ptr es:[bx], 0FFFFh
-add       dx, 4
-inc       bx
-inc       bx
-
-
-SELFMODIFY_loadspritecolumn_width_check:
-mov       ax, 01000h
-test      ax, ax
-jne       do_next_sprite_column
-
-
-done_with_sprite_column_loop:
-
-mov       ax, ss  ; restore ds
-mov       ds, ax
-pop       bp 
-
-;call      Z_QuickMapRender5000_
-Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
-
-POPA_NO_AX_MACRO
-retf      
-
-
-ENDP
 
 
 

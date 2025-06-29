@@ -645,7 +645,7 @@ FREEBYTES           7EE0:0000
 #define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdataofs,          size_maskedpostdataofs))
 #define maskedconstants_funcarea   ((byte __far*)              MAKE_FULL_SEGMENT(maskedpixeldataofs,         size_maskedpixeldataofs))
 #define render_8800_end            ((byte __far*)              MAKE_FULL_SEGMENT(maskedconstants_funcarea,   size_maskedconstants_funcarea))
-// 8B10
+// 8B9Bh
 
 
 #define spritepostdatasizes_segment        ((segment_t) ((int32_t)spritepostdatasizes >> 16))

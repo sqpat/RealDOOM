@@ -642,7 +642,7 @@ void __near Z_LoadBinaries() {
 	FastDiv3232_addr = 				(uint32_t)(FastDiv3232FFFF);
 	R_GetPatchTexture_addr = 		(uint32_t)(R_GetPatchTexture);
 	R_GetCompositeTexture_addr = 	(uint32_t)(R_GetCompositeTexture);
-	R_GetSpriteTexture_addr = 		(uint32_t)(R_GetSpriteTexture);
+	// R_GetSpriteTexture_addr = 		(uint32_t)(R_GetSpriteTexture);
 
 	// todo think of a better solution for dynamic linking of func locations for overlaid code.
 	V_DrawPatch_addr =			 		(uint32_t)(V_DrawPatch);

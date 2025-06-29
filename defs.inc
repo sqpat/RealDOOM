@@ -291,7 +291,7 @@ _R_GetCompositeTexture_addr =        _NULL_OFFSET + 002CCh
 _colfunc_call_lookup =               _NULL_OFFSET + 002D0h
 
 ; 354
-_R_GetSpriteTexture_addr =             _NULL_OFFSET + 00354h
+;_R_GetSpriteTexture_addr =          _NULL_OFFSET + 00354h
 _psprites =              			 _NULL_OFFSET + 00358h
 ; this is full... _psprites is two 0Ch sized structs... 
 _vga_read_port_lookup =              _NULL_OFFSET + 00370h

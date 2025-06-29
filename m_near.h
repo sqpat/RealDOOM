@@ -340,7 +340,7 @@
 #define R_GetCompositeTexture_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
 #define colfunc_call_lookup             (((uint32_t  __near*)                (_NULL_OFFSET + 0x02D0)))
-#define R_GetSpriteTexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
+// #define R_GetSpriteTexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
 // 12 bytes each. two for 24.
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358))) 
 #define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x0370)))

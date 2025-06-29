@@ -583,21 +583,7 @@ retf
 
 ENDP
 
-PROC Z_QuickMapSpritePage_ NEAR
-PUBLIC Z_QuickMapSpritePage_
 
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-ret   
-
-ENDP
 
 PROC Z_QuickMapPhysics5000_ FAR
 PUBLIC Z_QuickMapPhysics5000_

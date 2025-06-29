@@ -58,6 +58,12 @@ dw  00050h, 00050h, 00050h, 0FFB0h, 00050h
 _fuzzpos:
 dw 0
 
+
+_pagesegments:
+
+dw 00000h, 00400h, 00800h, 00C00h
+dw 01000h, 01400h, 01800h, 01C00h
+
 ;
 ; R_DrawFuzzColumn
 ;
@@ -899,10 +905,7 @@ mov   dx, word ptr ds:[_lastvisspritepatch]
 mov   word ptr ds:[_lastvisspritepatch2], dx
 mov   dx, word ptr ds:[_lastvisspritesegment]
 mov   word ptr ds:[_lastvisspritesegment2], dx
-;call  R_GetSpriteTexture_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_GetSpriteTexture_addr
+call  R_GetSpriteTexture_
 
 mov   word ptr ds:[_lastvisspritesegment], ax
 mov   es, ax
@@ -2090,8 +2093,1650 @@ call R_DrawSingleMaskedColumn_  ;todo inline here, jump from above case? both ju
 
 jmp   update_maskedtexturecol_finish_loop_iter
 
-endp
+ENDP
 
+; todo constants
+PATCH_TEXTURE_SEGMENT = 05000h
+COMPOSITE_TEXTURE_SEGMENT = 05000h
+SPRITE_COLUMN_SEGMENT = 09000h
+SCRATCH_ADDRESS_4000_SEGMENT = 04000h
+SCRATCH_ADDRESS_5000_SEGMENT = 05000h
+
+PROC R_GetSpriteTexture_ NEAR
+PUBLIC R_GetSpriteTexture_
+
+push  dx
+push  si
+mov   si, SPRITEPAGE_SEGMENT
+mov   es, si
+
+xchg  ax, si    ; si gets index
+
+mov   al, byte ptr es:[si]
+cmp   al, 0FFh
+je    sprite_not_in_cache
+
+mov   dl, byte ptr es:[si + SPRITEOFFSETS_OFFSET]
+
+call  R_GetSpritePage_
+xor   ah, ah
+mov   si, ax
+mov   al, dl
+SHIFT_MACRO shl   ax 4
+sal   si, 1
+mov   dx, word ptr cs:[si + _pagesegments - OFFSET R_MASKED_STARTMARKER_]
+add   dh, (SPRITE_COLUMN_SEGMENT SHR 8)
+add   ax, dx
+pop   si
+pop   dx
+ret
+
+sprite_not_in_cache:
+
+mov   ax, word ptr ds:[_firstspritelump]
+add   ax, si
+push  ax    ; bp - 2, index
+push  es    ; bp - 4, segment
+call  R_GetNextSpriteBlock_
+
+pop   es    ; bp - 4, segment
+mov   al, byte ptr es:[si]
+
+mov   dl, byte ptr es:[si + SPRITEOFFSETS_OFFSET]
+
+call  R_GetSpritePage_
+xor   ah, ah
+mov   si, ax
+mov   al, dl
+SHIFT_MACRO shl   ax 4
+sal   si, 1
+mov   dx, word ptr cs:[si + _pagesegments - OFFSET R_MASKED_STARTMARKER_]
+add   dh, (SPRITE_COLUMN_SEGMENT SHR 8) 
+add   dx, ax
+mov   si, dx ; back this up
+pop   ax     ; bp - 2, index
+
+call  R_LoadSpriteColumns_
+
+mov   ax, si
+pop   si
+pop   dx
+ret
+
+
+ENDP
+
+
+
+
+
+PROC R_GetNextSpriteBlock_ NEAR
+PUBLIC R_GetNextSpriteBlock_
+
+
+
+PUSHA_NO_AX_MACRO
+push      bp
+mov       bp, sp
+
+IF COMPISA GE COMPILE_186
+    push      CACHETYPE_SPRITE 
+ELSE
+    mov   dx, CACHETYPE_SPRITE 
+    push  dx
+ENDIF
+sub       ax, word ptr ds:[_firstspritelump]
+mov       dx, SPRITETOTALDATASIZES_SEGMENT
+mov       es, dx
+mov       bx, ax
+sal       bx, 1
+mov       dx, word ptr es:[bx] ; dx = size
+mov       bl, dh
+push      bx  ; bp - 4  only bl technically
+IF COMPISA GE COMPILE_186
+    push      NUM_SPRITE_CACHE_PAGES 
+ELSE
+    mov   di, NUM_SPRITE_CACHE_PAGES 
+    push  di
+ENDIF
+
+
+push      ax  ; bp - 6  store for later
+mov       di, OFFSET _spritecache_nodes
+mov       si, OFFSET _usedspritepagemem
+
+
+xchg      ax, bx
+
+
+;	if (size & 0xFF) {
+;		blocksize++;
+;	}
+
+test      dl, 0FFh
+je        dont_increment_blocksize
+inc       al
+mov       byte ptr [bp - 4], al
+dont_increment_blocksize:
+;	numpages = blocksize >> 6; // num EMS pages needed
+
+xor       ah, ah
+SHIFT_MACRO rol       al 2
+and       al, 3
+
+;	if (blocksize & 0x3F) {
+;		numpages++;
+;	}
+
+mov       ch, al
+test      byte ptr [bp - 4], 03Fh
+je        dont_increment_numpages
+inc       ch
+dont_increment_numpages:
+
+;	if (numpages == 1) {
+
+xor       bx, bx
+cmp       ch, 1
+jne       multipage_textureblock
+;		uint8_t freethreshold = 64 - blocksize;
+mov       dx, 04000h
+sub       dh, byte ptr [bp - 4]
+; dl zeroed 
+
+;		for (i = 0; i < NUM_TEXTURE_PAGES; i++) {
+;			if (freethreshold >= usedtexturepagemem[i]) {
+;				goto foundonepage;
+;			}
+;		}
+
+check_next_texture_page_for_space:
+mov       bl, dl
+cmp       dh, byte ptr ds:[bx + si]
+jnb       foundonepage
+
+;		i = R_EvictL2CacheEMSPage(1, cachetype);
+
+inc       dl
+cmp       dl, [bp - 6]
+jl        check_next_texture_page_for_space
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       dx, ax
+mov       al, 1
+call      R_EvictL2CacheEMSPage_Sprite_
+mov       dl, al
+
+foundonepage:
+
+;		texpage = i << 2;
+;		texoffset = usedtexturepagemem[i];
+;		usedtexturepagemem[i] += blocksize;
+
+mov       dh, dl
+SHIFT_MACRO shl       dh 2
+mov       bl, dl
+mov       al, byte ptr ds:[bx + si]
+mov       ah, byte ptr [bp - 4]
+add       ah, al
+mov       byte ptr ds:[bx + si], ah
+
+done_finding_open_page:
+pop       si ; was bp - 6
+cmp       byte ptr [bp - 2], CACHETYPE_PATCH
+jne       set_non_patch_pages
+set_patch_pages:
+mov       bx, PATCHOFFSET_SEGMENT
+mov       es, bx
+mov       byte ptr es:[si], dh
+mov       byte ptr es:[si + PATCHOFFSET_OFFSET], al
+LEAVE_MACRO     
+POPA_NO_AX_MACRO
+ret       
+set_non_patch_pages:
+jb        set_sprite_pages
+set_tex_pages:
+mov       bx, COMPOSITETEXTUREOFFSET_SEGMENT
+mov       es, bx
+mov       byte ptr es:[si], dh
+mov       byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET], al
+LEAVE_MACRO     
+POPA_NO_AX_MACRO
+ret       
+set_sprite_pages:
+mov       bx, SPRITEPAGE_SEGMENT
+mov       es, bx
+mov       byte ptr es:[si], dh
+mov       byte ptr es:[si + SPRITEOFFSETS_OFFSET], al
+LEAVE_MACRO     
+POPA_NO_AX_MACRO
+ret       
+
+
+multipage_textureblock:
+
+;		uint8_t numpagesminus1 = numpages - 1;
+
+mov       dh, byte ptr ds:[_texturecache_l2_head]
+mov       ah, 0FFh
+mov       cl, 040h
+; al is free, in use a lot
+; ah is 0FFh
+; bh is 000h
+; bl is active offset
+; ch is numpages
+; cl is 040h
+; dh is head
+; dl is nextpage
+
+
+;		for (i = texturecache_l2_head;
+;				i != -1; 
+;				i = texturecache_nodes[i].prev
+;				) {
+;			if (!usedtexturepagemem[i]) {
+;				// need to check following pages for emptiness, or else after evictions weird stuff can happen
+;				int8_t nextpage = texturecache_nodes[i].prev;
+;				if ((nextpage != -1 &&!usedtexturepagemem[nextpage])) {
+;					nextpage = texturecache_nodes[nextpage].prev;
+
+;				}
+;			}
+;		}
+
+cmp       dh, ah  ; dh is texturecache_l2_head
+je        done_with_textureblock_multipage_loop
+
+do_texture_multipage_loop:
+mov       bl, dh
+cmp       byte ptr ds:[bx + si], bh
+jne       do_next_texture_multipage_loop_iter
+
+page_has_space:
+SHIFT_MACRO shl       bl 2
+mov       al, byte ptr ds:[bx + di]
+cmp       al, ah
+je        do_next_texture_multipage_loop_iter
+; has next page
+mov       bl, al
+cmp       byte ptr ds:[bx + si], bh
+jne       do_next_texture_multipage_loop_iter
+SHIFT_MACRO shl       bl 2
+mov       dl, byte ptr ds:[bx + di]
+
+;					if (numpagesminus1 < 2 || (nextpage != -1 && (!usedtexturepagemem[nextpage]))) {
+
+
+cmp       ch, 3   ; use numpages instead of numpagesminus1
+jb        less_than_2_pages_or_next_page_good
+not_less_than_2_pages_check_next_page_good:
+cmp       dl, ah
+je        do_next_texture_multipage_loop_iter
+mov       bl, dl
+cmp       byte ptr ds:[bx + si], bh
+jne       do_next_texture_multipage_loop_iter
+
+less_than_2_pages_or_next_page_good:
+
+;						nextpage = texturecache_nodes[nextpage].prev;
+
+mov       bl, dl
+SHIFT_MACRO shl       bl 2
+mov       dl, byte ptr ds:[bx + di]
+
+;						if (numpagesminus1 < 3 || (nextpage != -1 &&(!usedtexturepagemem[nextpage]))) {
+;							goto foundmultipage;
+;						}
+
+cmp       ch, 4  ; use numpages instead of numpagesminus1
+jb        found_multipage
+
+
+check_for_next_multipage_loop_iter:
+
+; (nextpage != -1 &&(!usedtexturepagemem[nextpage])
+cmp       dl, ah
+je        do_next_texture_multipage_loop_iter
+mov       bl, dl
+cmp       byte ptr ds:[bx + si], bh
+jne       do_next_texture_multipage_loop_iter
+
+do_next_texture_multipage_loop_iter:
+mov       bl, dh
+SHIFT_MACRO shl       bl 2
+mov       dh, byte ptr ds:[bx + di]
+cmp       dh, ah
+jne       do_texture_multipage_loop
+
+done_with_textureblock_multipage_loop:
+
+;		i = R_EvictL2CacheEMSPage(numpages, cachetype);
+
+mov       al, byte ptr [bp - 2]
+cbw      
+mov       dx, ax
+mov       al, ch
+call      R_EvictL2CacheEMSPage_Sprite_
+mov       dh, al
+
+less_than_3_pages_or_next_page_good:
+found_multipage:
+;		foundmultipage:
+;        usedtexturepagemem[i] = 64;
+
+mov       bl, dh
+mov       byte ptr ds:[bx + si], cl
+
+;		texturecache_nodes[i].numpages = numpages;
+;		texturecache_nodes[i].pagecount = numpages;
+
+SHIFT_MACRO shl       bl 2
+mov       byte ptr ds:[bx + di + 3], ch
+mov       byte ptr ds:[bx + di + 2], ch
+mov       dl, dh
+;		if (numpages >= 3) {
+cmp       ch, 3
+jl        numpages_not_3_or_more
+mov       dl, byte ptr ds:[bx + di]
+mov       bl, dl
+mov       al, ch
+dec       al
+mov       byte ptr ds:[bx + si], cl
+SHIFT_MACRO shl       bl 2
+mov       byte ptr ds:[bx + di + 3], ch
+mov       byte ptr ds:[bx + di + 2], al
+numpages_not_3_or_more:
+mov       bl, dl
+SHIFT_MACRO shl       bl 2
+mov       al, byte ptr ds:[bx + di]
+mov       bl, al
+SHIFT_MACRO shl       bl 2
+
+;		texturecache_nodes[j].numpages = numpages;
+;		texturecache_nodes[j].pagecount = 1;
+
+mov       byte ptr ds:[bx + di + 2], 1
+mov       byte ptr ds:[bx + di + 3], ch
+mov       bl, al
+
+mov       al, byte ptr [bp - 4]
+
+;	if (blocksize & 0x3F) {
+
+test      al, 03Fh
+jne        dont_set_used_all_memory_for_page
+;			usedtexturepagemem[j] = blocksize & 0x3F;
+set_used_all_memory_for_page:
+
+;			usedtexturepagemem[j] = 64;
+
+
+;		texpage = (i << 2) + (numpagesminus1);
+;		texoffset = 0; // if multipage then its always aligned to start of its block
+
+
+mov       byte ptr ds:[bx + si], cl
+SHIFT_MACRO shl       dh 2
+xor       al, al
+add       dh, ch  ; use numpages instead of numpagesminus1
+dec       dh 
+jmp       done_finding_open_page
+dont_set_used_all_memory_for_page:
+and       al, 03Fh
+mov       byte ptr ds:[bx + si], al
+
+;		texpage = (i << 2) + (numpagesminus1);
+;		texoffset = 0; // if multipage then its always aligned to start of its block
+
+SHIFT_MACRO shl       dh 2
+xor       al, al
+add       dh, ch    ; use numpages instead of numpagesminus1. need the dec
+dec       dh
+jmp       done_finding_open_page
+
+
+
+ENDP
+
+
+
+
+PROC R_EvictL2CacheEMSPage_Sprite_ NEAR
+PUBLIC R_EvictL2CacheEMSPage_Sprite_
+
+; bp - 2    nodehead
+; bp - 4    used for ds first, used for es first
+; bp - 6    second offset used for si
+; bp - 8    used for ds second
+; bp - 0Ah  secondarymaxitersize
+; bp - 0Ch  usedcacherefpage 
+; bp - 0Eh  nodetail
+; bp - 010h currentpage
+
+push      bx
+push      cx
+push      si
+push      di
+push      bp
+mov       bp, sp
+mov       dh, al
+
+is_sprite:
+IF COMPISA GE COMPILE_186
+    push      OFFSET _spritecache_l2_head ; bp - 2
+    push      SPRITEPAGE_SEGMENT          ; bp - 4
+    push      MAX_SPRITE_LUMPS            ; bp - 6
+    push      0                           ; bp - 8
+    push      0                           ; bp - 0Ah
+    push      OFFSET _usedspritepagemem   ; bp - 0Ch;
+ELSE
+    mov       ax, OFFSET _spritecache_l2_head ; bp - 2
+    push      ax
+    mov       ax, SPRITEPAGE_SEGMENT          ; bp - 4
+    push      ax
+    mov       ax, MAX_SPRITE_LUMPS            ; bp - 6
+    push      ax
+    mov       ax, 0                           ; bp - 8
+    push      ax
+    mov       ax, 0                           ; bp - 0Ah
+    push      ax
+    mov       ax, OFFSET _usedspritepagemem   ; bp - 0Ch;
+    push      ax
+
+ENDIF
+mov       bx, OFFSET _spritecache_l2_tail
+mov       di, OFFSET _spritecache_nodes
+
+
+done_with_switchblock:
+
+;	currentpage = *nodetail;
+
+push      bx        ; bp - 0Eh
+mov       al, byte ptr ds:[bx]
+cbw      
+xor       dl, dl
+
+;	// go back enough pages to allocate them all.
+;	for (j = 0; j < numpages-1; j++){
+;		currentpage = nodelist[currentpage].next;
+;	}
+
+
+; dh has numpages
+; dl has j
+dec       dh  ; numpages - 1
+
+go_back_next_page:
+cmp       dl, dh
+jge       found_enough_pages
+mov       bx, ax
+SHIFT_MACRO shl       bx, 2
+mov       al, byte ptr ds:[bx + di + 1]  ; get next
+inc       dl
+jmp       go_back_next_page
+
+
+found_enough_pages:
+
+push ax   ; bp - 010h store currentpage
+
+;	evictedpage = currentpage;
+
+mov       cx, ax
+
+;	while (nodelist[evictedpage].numpages != nodelist[evictedpage].pagecount){
+;		evictedpage = nodelist[evictedpage].next;
+;	}
+
+
+find_first_evictable_page:
+mov       bx, cx
+SHIFT_MACRO shl       bx, 2
+mov       ax, word ptr ds:[bx + di + 2]
+cmp       al, ah
+je        found_first_evictable_page
+mov       al, byte ptr ds:[bx + di + 1]
+cbw      
+mov       cx, ax
+jmp       find_first_evictable_page
+
+found_first_evictable_page:
+
+
+
+
+
+;	while (evictedpage != -1){
+mov       dx, 000FFh      ; dh gets 0, dl gets ff
+
+check_next_evicted_page:
+cmp       cl, dl
+je        cleared_all_cache_data
+
+
+do_next_evicted_page:
+
+
+; loop setup
+mov       bx, cx
+SHIFT_MACRO shl       bx 2
+
+xor       ax, ax
+
+
+;		nodelist[evictedpage].pagecount = 0;
+;		nodelist[evictedpage].numpages = 0;
+
+mov       word ptr ss:[bx + di + 2], ax    ; set both at once
+mov       si, ax                   ; zero
+; ds!
+lds       bx, dword ptr [bp - 6] ; both an index and a loop limit
+
+;    for (k = 0; k < maxitersize; k++){
+;			if ((cacherefpage[k] >> 2) == evictedpage){
+;				cacherefpage[k] = 0xFF;
+;				cacherefoffset[k] = 0xFF;
+;			}
+;		}
+dec       bx   ; lodsw makes this off by one so we offset here...
+
+continue_first_cache_erase_loop:
+lodsb     ; increments si...
+SHIFT_MACRO shr       ax, 2
+cmp       al, cl
+je        erase_this_page
+done_erasing_page:
+cmp       si, bx
+jle       continue_first_cache_erase_loop   ; jle, not jl because bx is decced
+
+done_with_first_cache_erase_loop:
+
+
+;	for (k = 0; k < secondarymaxitersize; k++){
+;        if ((secondarycacherefpage[k]) >> 2 == evictedpage){
+;            secondarycacherefpage[k] = 0xFF;
+;            secondarycacherefoffset[k] = 0xFF;
+;        }
+;    }
+
+lds       bx, dword ptr [bp - 0Ah] 
+cmp       bx, 0 
+jle       skip_secondary_loop
+
+
+xor       si, si                     ; offset and loop ctr
+dec       bx
+continue_second_cache_erase_loop:
+lodsb
+
+SHIFT_MACRO sar       ax 2
+cmp       al, cl
+je        erase_second_page
+done_erasing_second_page:
+cmp       si, bx
+jle       continue_second_cache_erase_loop    ; jle, not jl because bx is decced
+
+skip_secondary_loop:
+
+;		usedcacherefpage[evictedpage] = 0;
+
+
+
+
+mov       si, word ptr [bp - 0Ch] ; usedcacherefpage
+mov       bx, cx
+mov       byte ptr ss:[bx + si], dh    ; 0
+
+;		evictedpage = nodelist[evictedpage].prev;
+
+SHIFT_MACRO shl       bx 2
+mov       cl, byte ptr ss:[bx + di]     ; get prev
+cmp       cl, dl                   ; dl is -1
+jne       do_next_evicted_page
+
+
+cleared_all_cache_data:
+
+;	// connect old tail and old head.
+;	nodelist[*nodetail].prev = *nodehead;
+
+;todo bp - 0Eh is bp - 2 addr minus one. do a single mov and get both.
+
+
+mov      ax, ss
+mov      ds, ax
+
+
+mov       si, word ptr [bp - 0Eh]
+lodsb
+cbw      
+mov       cx, ax            ; cx stores nodetail
+
+SHIFT_MACRO shl       ax 2
+xchg      ax, bx            ; bx has nodelist nodetail lookup
+
+mov       si, word ptr [bp - 2]
+mov       al, byte ptr ds:[si]
+mov       byte ptr ds:[bx + di], al
+mov       bl, al
+
+
+;	nodelist[*nodehead].next = *nodetail;
+
+SHIFT_MACRO shl       bx 2
+
+
+mov       byte ptr ds:[bx + di + 1], cl  ; write nodetail to next
+
+;	previous_next = nodelist[currentpage].next;
+
+;	*nodehead = currentpage;
+
+mov       bx, word ptr [bp - 010h]
+mov       byte ptr ds:[si], bl
+SHIFT_MACRO shl       bx 2
+mov       al, byte ptr ds:[bx + di + 1]    ; previous_next
+cbw
+
+
+;	nodelist[currentpage].next = -1;
+
+mov       byte ptr ds:[bx + di + 1], dl   ; still 0FFh
+
+;	*nodetail = previous_next;
+
+
+mov       bx, word ptr [bp - 0Eh]
+mov       byte ptr ds:[bx], al
+
+
+;	// new tail
+;	nodelist[previous_next].prev = -1;
+mov       bx, ax
+SHIFT_MACRO shl       bx 2
+mov       byte ptr ds:[bx + di], dl    ; still 0FFh
+
+;	return *nodehead;
+
+lodsb       
+
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+pop       bx
+ret       
+erase_this_page:
+mov       byte ptr ds:[si-1], dl     ; 0FFh
+mov       byte ptr ds:[si+bx], dl    ; 0FFh
+jmp       done_erasing_page
+
+erase_second_page:
+mov       byte ptr ds:[si-1], dl      ; 0FFh
+mov       byte ptr ds:[si+bx], dl     ; 0FFh
+jmp       done_erasing_second_page
+
+
+
+ENDP
+
+PROC R_MarkL1SpriteCacheMRU_ NEAR
+PUBLIC R_MarkL1SpriteCacheMRU_
+
+
+mov  ah, byte ptr ds:[_spriteL1LRU+0]
+cmp  al, ah
+je   exit_markl1spritecachemru
+mov  byte ptr ds:[_spriteL1LRU+0], al
+xchg byte ptr ds:[_spriteL1LRU+1], ah
+cmp  al, ah
+je   exit_markl1spritecachemru
+xchg byte ptr ds:[_spriteL1LRU+2], ah
+cmp  al, ah
+je   exit_markl1spritecachemru
+xchg byte ptr ds:[_spriteL1LRU+3], ah
+exit_markl1spritecachemru:
+ret  
+
+
+ENDP
+
+
+
+PROC R_MarkL1SpriteCacheMRU3_ NEAR
+PUBLIC R_MarkL1SpriteCacheMRU3_
+
+push word ptr ds:[_spriteL1LRU+1]     ; grab [1] and [2]
+pop  word ptr ds:[_spriteL1LRU+2]     ; put in [2] and [3]
+xchg al, byte ptr ds:[_spriteL1LRU+0] ; swap index for [0]
+mov  byte ptr ds:[_spriteL1LRU+1], al ; put [0] in [1]
+
+ret  
+
+ENDP
+
+PROC R_MarkL2SpriteCacheMRU_ NEAR
+PUBLIC R_MarkL2SpriteCacheMRU_
+
+;	if (index == spritecache_l2_head) {
+;		return;
+;	}
+
+cmp  al, byte ptr ds:[_spritecache_l2_head]
+jne  dont_early_out
+ret
+
+
+
+dont_early_out:
+PUSHA_NO_AX_MACRO
+mov  si, OFFSET _spritecache_nodes
+mov  di, OFFSET _spritecache_l2_tail
+mov  es, di
+mov  di, OFFSET _spritecache_l2_head
+;dec  di ; OFFSET _spritecache_l2_head
+; todo just use di - 1 instead of es
+do_markl2func:
+
+mov  cl, byte ptr ds:[di]
+mov  dl, al
+mov  bx, ax
+
+;	pagecount = spritecache_nodes[index].pagecount;
+;	if (pagecount){
+
+SHIFT_MACRO shl  bx 2
+mov  al, byte ptr ds:[bx + si + 2]
+test al, al
+je   sprite_pagecount_zero
+
+;	 	while (spritecache_nodes[index].numpages != spritecache_nodes[index].pagecount){
+;			index = spritecache_nodes[index].next;
+;		}
+
+sprite_check_next_cache_node:
+mov  bl, dl   ; bh always zero here...
+SHIFT_MACRO shl  bx 2
+mov  ax, word ptr ds:[bx + si + 2]
+cmp  al, ah
+je   sprite_found_first_index
+mov  dl, byte ptr ds:[bx + si + 1]
+jmp  sprite_check_next_cache_node
+
+sprite_found_first_index:
+
+;		if (index == spritecache_l2_head) {
+;			return;
+;		}
+
+cmp  dl, cl             ; dh is free, use dh instead here?
+je   mark_sprite_lru_exit
+sprite_pagecount_zero:
+
+
+; bx should already be set...
+
+;	if (spritecache_nodes[index].numpages){
+
+cmp  byte ptr ds:[bx + si + 3], 0
+je   selected_sprite_page_single_page
+
+; multi page case...
+
+;		lastindex = index;
+;		while (spritecache_nodes[lastindex].pagecount != 1){
+;			lastindex = spritecache_nodes[lastindex].prev;
+;		}
+
+
+mov  dh, dl         ; dh = last index
+sprite_check_next_cache_node_pagecount:
+
+mov  bl, dh         ; bh always 0 here...
+SHIFT_MACRO  shl  bx 2
+cmp  byte ptr ds:[bx + si + 2], 1
+je   found_sprite_multipage_last_page
+mov  dh, byte ptr ds:[bx + si + 0]
+jmp  sprite_check_next_cache_node_pagecount
+
+found_sprite_multipage_last_page:
+
+; dl = index
+; dh = lastindex
+
+;		lastindex_prev = spritecache_nodes[lastindex].prev;
+;		index_next = spritecache_nodes[index].next;
+
+
+mov  ch, byte ptr ds:[bx + si + 0]    ; lastindex_prev
+mov  bl, dl
+SHIFT_MACRO   shl  bx 2
+
+mov  cl, byte ptr ds:[bx + si + 1]    ; index_next
+
+;		if (spritecache_l2_tail == lastindex){
+mov  bx, es  ; tail
+cmp  dh, byte ptr ds:[bx]
+jne  spritecache_l2_tail_not_equal_to_lastindex
+
+;			spritecache_l2_tail = index_next;
+;			spritecache_nodes[index_next].prev = -1;
+
+mov  byte ptr ds:[bx], cl
+xor  bx, bx
+mov  bl, cl
+SHIFT_MACRO   shl  bx 2
+mov  byte ptr ds:[bx + si + 0], -1
+jmp  sprite_done_with_multi_tail_update
+
+spritecache_l2_tail_not_equal_to_lastindex:
+
+;			spritecache_nodes[lastindex_prev].next = index_next;
+;			spritecache_nodes[index_next].prev = lastindex_prev;
+
+xor  bx, bx
+mov  bl, ch
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + si + 1], cl
+
+mov  bl, cl
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + si + 0], ch
+
+sprite_done_with_multi_tail_update:
+
+;		spritecache_nodes[lastindex].prev = spritecache_l2_head;
+;		spritecache_nodes[spritecache_l2_head].next = lastindex;
+
+mov  bl, dh
+SHIFT_MACRO    shl  bx 2
+mov  al, byte ptr ds:[di]
+mov  byte ptr ds:[bx + si + 0], al  ; spritecache_l2_head
+mov  bl, al
+SHIFT_MACRO    shl  bx 2
+mov  byte ptr ds:[bx + si + 1], dh  ; lastindex
+
+mov  bl, dl
+SHIFT_MACRO    shl  bx 2
+
+;		spritecache_nodes[index].next = -1;
+;		spritecache_l2_head = index;
+
+
+mov  byte ptr ds:[di], dl
+mov  byte ptr ds:[bx + si + 1], -1
+mark_sprite_lru_exit:
+POPA_NO_AX_MACRO
+ret  
+
+selected_sprite_page_single_page:
+
+;		// handle the simple one page case.
+;		prev = spritecache_nodes[index].prev;
+;		next = spritecache_nodes[index].next;
+
+mov  dh, byte ptr ds:[bx + si + 1]
+mov  ch, byte ptr ds:[bx + si + 0]
+
+;		if (index == spritecache_l2_tail) {
+;			spritecache_l2_tail = next;
+;		} else {
+;			spritecache_nodes[prev].next = next; 
+;		}
+
+
+mov  bx, es  ; tail
+cmp  dl, byte ptr ds:[bx]
+jne  spritecache_tail_not_equal_to_index
+mov  byte ptr ds:[bx], dh
+xor  bx, bx
+jmp  done_with_spritecache_tail_handling
+
+spritecache_tail_not_equal_to_index:
+xor  bx, bx
+mov  bl, ch
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + si + 1], dh
+
+done_with_spritecache_tail_handling:
+
+; spritecache_nodes[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+
+mov  bl, dh
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + si + 0], ch
+
+;	spritecache_nodes[index].prev = spritecache_l2_head;
+;	spritecache_nodes[index].next = -1;
+
+mov  bl, dl
+SHIFT_MACRO shl  bx 2
+mov  ch, -1
+mov  word ptr ds:[bx + si + 0], cx
+
+; spritecache_nodes[spritecache_l2_head].next = index;
+
+mov  bl, cl
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + si + 1], dl
+
+;	spritecache_l2_head = index;
+
+mov  byte ptr ds:[di], dl
+
+POPA_NO_AX_MACRO
+ret  
+
+
+ENDP
+
+PROC Z_QuickMapSpritePage_ NEAR
+PUBLIC Z_QuickMapSpritePage_
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret   
+
+ENDP
+
+; part of R_GetTexturePage_
+
+found_active_single_page:
+
+;    R_MarkL1TextureCacheMRU(i);
+; bl holds i
+; al holds realtexpage
+
+xchg  ax, dx            ; dx gets realtexpage
+mov   ax, bx            ; ax gets i
+call  word ptr [bp - 2]
+
+;    R_MarkL2TextureCacheMRU(realtexpage);
+
+xchg  ax, dx            ; realtexpage into ax. 
+call  word ptr [bp - 4]
+
+;    return i;
+
+mov   es, bx            ; return i
+LEAVE_MACRO 
+POPA_NO_AX_MACRO
+mov   ax, es
+ret   
+
+
+PROC R_GetSpritePage_ NEAR
+PUBLIC R_GetSpritePage_
+
+PUSHA_NO_AX_MACRO
+push  bp
+mov   bp, sp
+
+; todo todo get rid of this...
+
+IF COMPISA GE COMPILE_186
+    push  OFFSET R_MarkL1SpriteCacheMRU_ - OFFSET R_MASKED_STARTMARKER_
+    push  OFFSET R_MarkL2SpriteCacheMRU_- OFFSET R_MASKED_STARTMARKER_
+    push  OFFSET Z_QuickMapSpritePage_- OFFSET R_MASKED_STARTMARKER_
+    push  OFFSET R_MarkL1SpriteCacheMRU3_- OFFSET R_MASKED_STARTMARKER_
+    push  (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)
+    push  OFFSET _spritecache_nodes
+    push  OFFSET _spriteL1LRU
+    ;push  PAGE_9000_OFFSET + (SCAMP_PAGE_9000_OFFSET + 4)
+    push  ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning
+ELSE
+    mov   si, OFFSET R_MarkL1SpriteCacheMRU_- OFFSET R_MASKED_STARTMARKER_
+    push  si
+    mov   si, OFFSET R_MarkL2SpriteCacheMRU_- OFFSET R_MASKED_STARTMARKER_
+    push  si
+    mov   si, OFFSET Z_QuickMapSpritePage_- OFFSET R_MASKED_STARTMARKER_
+    push  si
+    mov   si, OFFSET R_MarkL1SpriteCacheMRU3_- OFFSET R_MASKED_STARTMARKER_
+    push  si
+    mov   si, (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)
+    push  si
+    mov   si, OFFSET _spritecache_nodes
+    push  si
+    mov   si, OFFSET _spriteL1LRU
+    push  si
+
+    push  si   ; unused
+ENDIF
+mov   si, OFFSET _activespritepages
+mov   di, OFFSET _activespritenumpages
+mov   cx, NUM_SPRITE_L1_CACHE_PAGES
+mov   dx, FIRST_SPRITE_CACHE_LOGICAL_PAGE ; pageoffset
+
+continue_get_page:
+
+push  cx        ; bp - 012h         max   (loop counter etc). ch 0
+push  dx        ; bp - 014h   dh 0 pageoffset
+
+;	uint8_t realtexpage = texpage >> 2;
+mov   dl, al
+SHIFT_MACRO sar   dx 2
+push  dx        ; bp - 016h   dh 0 realtexpage
+
+;	uint8_t numpages = (texpage& 0x03);
+
+
+xchg  ax, dx   ; ax has realtexpage
+and   dx, 3    ; zero dh here
+;	if (!numpages) {                ; todo push less stuff if we get the zero case?
+jne   get_multipage
+
+; single page
+
+;		// one page, most common case - lets write faster code here...
+;		for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES; i++) {
+;			if (activetexturepages[i] == realtexpage ) {
+;				R_MarkL1TextureCacheMRU(i);
+;				R_MarkL2TextureCacheMRU(realtexpage);
+;				return i;
+;			}
+;		}
+
+;     dl/dx known zero because we jumped otherwise.
+mov   bx, dx ; zero
+
+; al is realtexpage
+; bx is i
+
+loop_next_active_page_single:
+cmp   al, byte ptr ds:[bx + si]
+je    found_active_single_page
+inc   bx
+cmp   bx, cx
+jb    loop_next_active_page_single
+
+; cache miss...
+
+;		startpage = textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1];
+;		R_MarkL1TextureCacheMRU7(startpage);
+
+;   ah is 0. al is dirty but gets fixed...
+cwd
+dec   dx ; dx = -1, ah is 0
+mov   bx, cx    ; NUM_TEXTURE_L1_CACHE_PAGES
+dec   bx        ; NUM_TEXTURE_L1_CACHE_PAGES - 1
+add   bx, word ptr [bp - 0Eh] ; _textureL1LRU
+mov   al, byte ptr ds:[bx]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
+mov   bx, ax
+mov   cx, ax
+call  word ptr [bp - 8] ; todo jmp instead of call?
+
+;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
+;		if (activenumpages[startpage]) {
+;			for (i = 1; i <= activenumpages[startpage]; i++) {
+;				activetexturepages[startpage+i]  = -1; // unpaged
+;				//this is unmapping the page, so we don't need to use pagenum/nodelist
+;				pageswapargs[pageswapargs_rend_texture_offset+( startpage+i)*PAGE_SWAP_ARG_MULT] = 
+;					_NPR(PAGE_5000_OFFSET+startpage+i);
+;				activenumpages[startpage+i] = 0;
+;			}
+;		}
+
+cmp   byte ptr ds:[bx + di], ah  ; ah is still 0 after MRU7/MRU3 func 0
+je    found_start_page_single
+
+mov   al, 1 ; al/ax is i
+; cl/cx is start page.
+; bx is start page or startpage + i offset
+; dl was numpages but we know its zero. so use dx for -1 for small code reasons
+
+deallocate_next_startpage_single:
+
+cmp   al, byte ptr ds:[bx + di]
+ja    found_start_page_single
+
+add   bl, al
+mov   byte ptr ds:[bx + di], 0
+
+
+; bx is currently startpage+i as a byte lookup
+
+; _NPR(PAGE_5000_OFFSET+startpage+i);
+
+
+IFDEF COMP_CH
+    IF COMP_CH EQ CHIPSET_SCAT
+        mov   byte ptr ds:[bx + si], dl   ; dl is -1
+        sal   bx, 1
+        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+        mov   word ptr ds:[bx], 03FFh
+    ELSEIF COMP_CH EQ CHIPSET_SCAMP
+        mov   byte ptr ds:[bx + si], dl   ; dl is -1
+        mov   dx, bx
+        sal   bx, 1
+        add   dx, word ptr [bp - 010h]   ; page offset
+        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+        mov   word ptr ds:[bx], dx
+        mov   dx, -1
+    ELSEIF COMP_CH EQ CHIPSET_HT18
+        mov   byte ptr ds:[bx + si], dl   ; dl is -1
+        sal   bx, 1
+        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+        mov   word ptr ds:[bx], 0
+    ENDIF
+ELSE
+    mov   byte ptr ds:[bx + si], dl   ; dl is -1
+    sal   bx, 1
+    SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+    add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+    mov   word ptr ds:[bx], dx  ; dx is -1
+
+ENDIF
+
+inc   al
+
+
+mov   bx, cx    ; zero out bh
+jmp   deallocate_next_startpage_single
+
+get_multipage:
+
+; ah already zero
+
+mov   bx, 0FFFFh ; -1, offset for the initial inc
+; cx already the number
+sub   cx, dx
+;  al/ax already realtexpage
+
+; dl is numpages
+; cl is NUM_TEXTURE_L1_CACHE_PAGES-numpages
+; ch is 0
+; bl will be i (starts as -2, incrementing to 0 first loop)
+; for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES-numpages; i++) {
+; al is realtexpage
+
+
+grab_next_page_loop_multi_continue:
+
+inc   bx  ; 0 for 1st iteration after dec
+
+cmp   bl, cl ; loop compare
+
+jnl   evict_and_find_startpage_multi
+
+;    if (activetexturepages[i] != realtexpage){
+;        continue;
+;    }
+
+cmp   al, byte ptr ds:[bx + si]
+jne   grab_next_page_loop_multi_continue
+
+
+;    // all pages for this texture are in the cache, unevicted.
+;    for (j = 0; j <= numpages; j++) {
+;        R_MarkL1TextureCacheMRU(i+j);
+;    }
+mov   dh, bl
+; bl is i
+; bl/bx will be i+j   
+; dl is numpages but we dec it till < 0
+
+mark_all_pages_mru_loop:
+mov   ax, bx
+
+call  word ptr [bp - 2]
+inc   bl
+dec   dl
+jns   mark_all_pages_mru_loop
+ 
+
+
+;    R_MarkL2TextureCacheMRU(realtexpage);
+;    return i;
+
+pop   ax;   word ptr [bp - 016h]
+call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
+mov   al, dh
+mov   es, ax
+LEAVE_MACRO 
+POPA_NO_AX_MACRO
+mov   ax, es
+ret   
+ 
+;		// figure out startpage based on LRU
+;		startpage = NUM_TEXTURE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
+
+evict_and_find_startpage_multi:
+xor   ax, ax ; set ah to 0. 
+mov   bx, word ptr [bp - 012h]
+dec   bx
+mov   cx, bx
+sub   cl, dl
+; dl is numpages
+; bx is startpage
+; cx is ((NUM_TEXTURE_L1_CACHE_PAGES-1)-numpages)
+
+add   bx, word ptr [bp - 0Eh] ; _textureL1LRU
+
+find_start_page_loop_multi:
+
+;		while (textureL1LRU[startpage] > ((NUM_TEXTURE_L1_CACHE_PAGES-1)-numpages)){
+;			startpage--;
+;		}
+
+mov   al, byte ptr ds:[bx]
+cmp   al, cl
+jle   found_startpage_multi
+dec   bx
+jmp   find_start_page_loop_multi
+
+found_start_page_single:
+
+;		activetexturepages[startpage] = realtexpage; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
+;  cl/cx is startpage
+;  bl/bx is startpage 
+
+pop   dx  ; bp - 016h, get realtexpage
+; dx has realtexpage
+; bx already ok
+
+mov   byte ptr ds:[bx + di], bh  ; zero
+mov   byte ptr ds:[bx + si], dl
+shl   bx, 1                      ; startpage word offset.
+pop   ax                         ; mov   ax, word ptr [bp - 014h]
+
+add   ax, dx                     ; _EPR(pageoffset + realtexpage);
+EPR_MACRO ax
+
+; pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT]
+
+SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+mov   word ptr ds:[bx], ax        ; = _EPR(pageoffset + realtexpage);
+
+; dx should be realtexpage???
+xchg  ax, dx
+
+call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
+call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
+
+mov   ax, 0FFFFh
+
+cmp   byte ptr [bp - 012h], NUM_SPRITE_L1_CACHE_PAGES
+mov   dx, cx
+je    do_sprite_eviction
+do_tex_eviction:
+mov   di, ds
+mov   es, di
+mov   di, OFFSET _cachedlumps
+mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
+
+;_cachedlumps =                	     _NULL_OFFSET + 006A0h
+;_cachedtex =                		 _NULL_OFFSET + 006A8h
+;_segloopnextlookup    = 	 		 _NULL_OFFSET + 00000h
+;_seglooptexrepeat    = 			 _NULL_OFFSET + 00004h
+;_maskedtexrepeat =                  _NULL_OFFSET + 00006h
+
+mov  cx, 6
+rep stosw
+
+mov   di, OFFSET  _segloopnextlookup
+stosw ; segloopnextlookup[0] = -1; 030
+stosw ; segloopnextlookup[1] = -1; 032
+inc   ax    ; ax is 0
+stosw ; seglooptexrepeat[0] = 0; seglooptexrepeat[1] = 0 ; 034
+stosw ; maskedtexrepeat = 0;                             ; 036
+
+mov   es, dx ; dl/dx is start page
+LEAVE_MACRO 
+POPA_NO_AX_MACRO
+mov   ax, es
+ret
+
+
+found_startpage_multi:
+;		startpage = textureL1LRU[startpage];
+
+; al already set to startpage
+mov   bx, ax    ; ah/bh is 0
+push  ax  ; bp - 018h
+mov   dh, al ; dh gets startpage..
+mov   cx, -1
+
+;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
+;		if (activenumpages[startpage] > numpages) {
+;			for (i = numpages; i <= activenumpages[startpage]; i++) {
+;				activetexturepages[startpage + i] = -1;
+;				// unmapping the page, so we dont need pagenum
+;				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT] 
+;					= _NPR(PAGE_5000_OFFSET+startpage+i); // unpaged
+;				activenumpages[startpage + i] = 0;
+;			}
+;		}
+
+
+cmp   dl, byte ptr ds:[bx + di]
+jae   done_invalidating_pages_multi
+mov   al, dl
+
+; dl is numpages
+; dh is startpage
+; al is i
+; ah is 0
+; bx is startpage lookup
+
+loop_next_invalidate_page_multi:
+mov   bl, dh   ; set bl to startpage
+
+cmp   al, byte ptr ds:[bx + di]
+ja    done_invalidating_pages_multi
+
+add   bx, ax                     ; startpage + i
+mov   byte ptr ds:[bx + di], ah  ; ah is 0
+
+
+; bx is currently startpage+i as a byte lookup
+; _NPR(PAGE_5000_OFFSET+startpage+i);
+
+; complicated because _NPR for scamp requires a calculation,
+; for other chipsets its various constants.
+
+IFDEF COMP_CH
+    IF COMP_CH EQ CHIPSET_SCAT
+        mov   byte ptr ds:[bx + si], cl  ; -1
+        sal   bx, 1                      ; startpage word offset.
+        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+        mov   word ptr ds:[bx], 03FFh
+    ELSEIF COMP_CH EQ CHIPSET_SCAMP
+        mov   byte ptr ds:[bx + si], cl  ; -1
+        mov   cx, bx
+        sal   bx, 1                      ; startpage word offset.
+        add   cx, word ptr [bp - 010h]   ; page offset
+        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+        mov   word ptr ds:[bx], cx
+        mov   cx, -1
+    ELSEIF COMP_CH EQ CHIPSET_HT18
+        mov   byte ptr ds:[bx + si], cl  ; -1
+        sal   bx, 1                      ; startpage word offset.
+        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+        mov   word ptr ds:[bx], 0
+    ENDIF
+ELSE
+    mov   byte ptr ds:[bx + si], cl  ; -1
+    sal   bx, 1                      ; startpage word offset.
+    SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+    add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+    mov   word ptr ds:[bx], cx  ; cx is -1  TODO NPR or whatever
+
+ENDIF
+
+inc   al
+
+xor   bh, bh
+jmp   loop_next_invalidate_page_multi
+
+do_sprite_eviction:
+
+mov   word ptr ds:[_lastvisspritepatch], ax
+mov   word ptr ds:[_lastvisspritepatch2], ax
+
+mov   es, dx ; cl/cx is start page
+LEAVE_MACRO 
+POPA_NO_AX_MACRO
+mov   ax, es
+ret
+
+done_invalidating_pages_multi:
+
+;	int8_t currentpage = realtexpage; // pagenum - pageoffset
+;	for (i = 0; i <= numpages; i++) {
+
+mov   cl, dh  ; startpage
+mov   ch, dl
+
+; ch is numpages - i    (todo could be dl)
+; cl has startpage + i
+
+; dl still has numpages, decremented for loop
+; dh has startpage
+
+
+;	for (i = 0; i <= numpages; i++) {
+; es gets currentpage
+mov   es, word ptr [bp - 016h]
+
+;    for (i = 0; i <= numpages; i++) {
+;        R_MarkL1TextureCacheMRU(startpage+i);
+;        activetexturepages[startpage + i]  = currentpage;
+;        activenumpages[startpage + i] = numpages-i;
+;        pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
+;        currentpage = texturecache_nodes[currentpage].prev;
+;    }
+
+
+loop_mark_next_page_mru_multi:
+
+;	R_MarkL1TextureCacheMRU(startpage+i);
+
+mov   al, cl
+
+call  [bp - 2]  ; does not affect es
+
+
+mov   ax, es ; currentpage in ax
+
+mov   bl, cl
+mov   byte ptr ds:[bx + di], ch   ;   activenumpages[startpage + i] = numpages-i;
+mov   byte ptr ds:[bx + si], al   ;	activetexturepages[startpage + i]  = currentpage;
+sal   bx, 1             ; word lookup
+
+add   ax, word ptr [bp - 014h]  ; pageoffset
+EPR_MACRO ax
+
+;	pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
+
+SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
+add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
+mov   word ptr ds:[bx], ax
+
+dec   ch    ; dec numpages - i
+inc   cl    ; inc startpage + i
+
+;    currentpage = texturecache_nodes[currentpage].prev;
+mov   bx, es ; currentpage
+SHIFT_MACRO sal   bx 2
+add   bx, word ptr [bp - 0Ch]   ; _texturecache_nodes
+mov   bl, byte ptr ds:[bx]
+xor   bh, bh
+mov   es, bx
+dec   dl
+jns   loop_mark_next_page_mru_multi
+
+;    R_MarkL2TextureCacheMRU(realtexpage);
+;    Z_QuickMapRenderTexture();
+
+mov   ax, word ptr [bp - 016h]
+call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
+call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
+
+;	//todo: detected and only do -1 if its in the knocked out page? pretty infrequent though.
+;    cachedtex = -1;
+;    cachedtex2 = -1;
+
+mov   ax, 0FFFFh
+
+mov   dl, dh  ; numpages in cl
+cmp   byte ptr [bp - 012h], NUM_SPRITE_L1_CACHE_PAGES
+je    do_sprite_eviction
+jmp   do_tex_eviction
+ENDP
+
+
+;void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment);
+; ax = lump
+; dx = segment
+
+PROC R_LoadSpriteColumns_ NEAR
+PUBLIC R_LoadSpriteColumns_
+
+PUSHA_NO_AX_MACRO
+push      bp
+mov       bp, sp
+mov       bx, ax
+
+mov       di, dx    ; preserve dx thru quickmap
+;call      Z_QuickMapScratch_5000_
+Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+
+mov       dx, di
+
+;	patch_t __far *wadpatch = (patch_t __far *)SCRATCH_ADDRESS_5000;
+;	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
+
+mov       di, SCRATCH_ADDRESS_5000_SEGMENT
+mov       cx, di
+mov       si, bx
+mov       ax, si
+xor       bx, bx
+;	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+
+;call      W_CacheLumpNumDirect_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNumDirect_addr
+
+; wadpatch  is 0x5000 seg
+; destpatch is dx
+;	patchwidth = wadpatch->width;
+;	destpatch->width = wadpatch->width;
+;	destpatch->height = wadpatch->height;
+;	destpatch->leftoffset = wadpatch->leftoffset;
+;	destpatch->topoffset = wadpatch->topoffset;
+
+sub       si, word ptr ds:[_firstspritelump] ; get this before we clobber ds
+mov       cx, si ; store in cx
+
+mov       ds, di
+xor       di, di
+mov       si, di
+
+mov       es, dx
+lodsw
+mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASKED_STARTMARKER_],  ax  ; patchwidth
+stosw
+movsw
+movsw
+movsw
+mov       bx, ax ; patchwidth
+mov       bp, di   ; bp gets 8
+
+
+; 	destoffset = 8 + ( patchwidth << 2);
+;	currentpostbyte = destoffset;
+;	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
+
+
+SHIFT_MACRO shl       bx 2
+mov       si, cx
+shl       si, 1
+add       bx, 8
+;	destoffset += spritepostdatasizes[lump-firstspritelump];
+mov       ax, SPRITEPOSTDATASIZES_SEGMENT
+mov       es, ax
+
+mov       di, bx
+add       di, word ptr es:[si]
+mov       es, dx  ; restore es
+mov       dx, bp  ; dx starts as 8 for loop too
+
+;	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
+;	currentpixelbyte = destoffset;
+;	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
+
+add       di, 15
+and       di, 0FFF0h
+
+start_sprite_column_loop:
+xor       cx, cx
+do_next_sprite_column:
+dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASKED_STARTMARKER_]
+
+mov       ax, di
+
+SHIFT_MACRO shr       ax 4
+mov       si, dx
+mov       si, word ptr ds:[si]
+
+
+mov       word ptr es:[bp], ax
+mov       word ptr es:[bp+2], bx
+add       bp, 4
+
+
+lodsw
+cmp       al, 0FFh
+je        done_with_sprite_column
+
+do_next_sprite_post:
+
+mov       word ptr es:[bx], ax
+mov       cl, ah
+mov       ax, cx
+inc       si
+
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+
+add       di, 15
+and       di, 0FFF0h  ; round up to next segment destination
+
+; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
+
+inc       si
+inc       bx
+inc       bx
+
+lodsw
+cmp       al, 0FFh
+jne       do_next_sprite_post
+done_with_sprite_column:
+
+mov       word ptr es:[bx], 0FFFFh
+add       dx, 4
+inc       bx
+inc       bx
+
+
+SELFMODIFY_loadspritecolumn_width_check:
+mov       ax, 01000h
+test      ax, ax
+jne       do_next_sprite_column
+
+
+done_with_sprite_column_loop:
+
+mov       ax, ss  ; restore ds
+mov       ds, ax
+pop       bp 
+
+;call      Z_QuickMapRender5000_
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
+
+POPA_NO_AX_MACRO
+ret      
+
+
+ENDP
 
 
 PROC FixedMul1632MaskedLocal_ NEAR
