@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/28 17:56:25
+Created on:       25/06/28 18:01:05
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -83,7 +83,7 @@ SM_MPUMD_TEXT          CODE           AUTO           184a:2696       000007db
 s_sbsfx_TEXT           CODE           AUTO           184a:2e80       000017f3
 R_DATA_TEXT            CODE           AUTO           1cb1:0004       0000090c
 R_MAIN_TEXT            CODE           AUTO           1cb1:0910       000000df
-R_MAINHI_TEXT          CODE           AUTO           1cb1:09f0       00002a2b
+R_BSP_TEXT             CODE           AUTO           1cb1:09f0       00002a2b
 R_COLUMN_TEXT          CODE           AUTO           1cb1:341c       00000e46
 R_SPAN_TEXT            CODE           AUTO           1cb1:4262       00000ee5
 R_SKY_TEXT             CODE           AUTO           1cb1:5148       000006c0
@@ -1177,7 +1177,7 @@ Module: r_main.obj(r_main.ASM)
 1cb1:0944      R_SetViewSize_
 1cb1:0910      R_PointToAngle2_
 1cb1:0992      R_DrawViewBorder_
-Module: r_mainhi.obj(r_mainhi.ASM)
+Module: r_bsp.obj(r_bsp.ASM)
 1cb1:1003*     R_AddLine_
 1cb1:16ca*     R_StoreWallRange_
 1cb1:27a8*     R_ClipSolidWallSegment_

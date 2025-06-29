@@ -141,7 +141,7 @@ GLOBOBJS = $(GLOBOBJS) &
  main.obj &
  p_saveg.obj &
  d_algo.obj &
- r_mainhi.obj &
+ r_bsp.obj &
  r_masked.obj &
  r_column.obj &
  r_sky.obj &

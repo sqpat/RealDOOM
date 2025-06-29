@@ -3282,7 +3282,7 @@ xchg      ax, dx
 
 mov       si, cs
 mov       ds, si
-ASSUME DS:R_MAINHI_TEXT
+ASSUME DS:R_BSP_TEXT
 ; rw_scalestep is ready. write it forward as selfmodifying code here
 
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
@@ -3409,7 +3409,7 @@ jmp       handle_two_sided_line
 
 handle_single_sided_line:
 
-ASSUME DS:R_MAINHI_TEXT
+ASSUME DS:R_BSP_TEXT
 
 SELFMODIFY_BSP_drawtype_1:
 SELFMODIFY_BSP_drawtype_1_AFTER = SELFMODIFY_BSP_drawtype_1 + 2
@@ -3906,7 +3906,7 @@ at_least_one_column_to_draw:
 
 ; todo better use DS as a scratch var for mults etc ahead.
 
-ASSUME DS:R_MAINHI_TEXT
+ASSUME DS:R_BSP_TEXT
 ; make ds equal to cs for self modifying codes
 mov       ax, cs
 mov       ds, ax
@@ -6098,7 +6098,7 @@ SELFMODIFY_BSP_drawtype_2_AFTER = SELFMODIFY_BSP_drawtype_2+2
 
 mov       ax, 0c089h 
 
-ASSUME DS:R_MAINHI_TEXT
+ASSUME DS:R_BSP_TEXT
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3], ax
@@ -8472,7 +8472,7 @@ mov      ax, cs
 mov      ds, ax
 
 
-ASSUME DS:R_MAINHI_TEXT
+ASSUME DS:R_BSP_TEXT
 
 
 mov      ax,  word ptr ss:[_detailshift]
@@ -8747,7 +8747,7 @@ mov      ds, ax
 mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      es, ax
 
-ASSUME DS:R_MAINHI_TEXT
+ASSUME DS:R_BSP_TEXT
 
 
 

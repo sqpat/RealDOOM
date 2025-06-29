@@ -90,7 +90,7 @@ file sm_mpumd.obj
 NEWSEGMENT
 file r_data.obj
 file r_main.obj
-file r_mainhi.obj
+file r_bsp.obj
 file r_column.obj
 file r_span.obj
 file r_sky.obj

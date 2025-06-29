@@ -94,7 +94,7 @@ GLOBOBJS = &
  math.obj &
  main.obj &
  d_algo.obj &
- r_mainhi.obj &
+ r_bsp.obj &
  v_video.obj
 
 
