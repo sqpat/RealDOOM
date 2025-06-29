@@ -29,9 +29,9 @@
 // Sound header & data
 //
 
+#include "doomdef.h"
 #include "m_memory.h"
 #include "m_near.h"
-#include "doomdef.h"
 #include "d_englsh.h"
 #include "sounds.h"
 #include "s_sound.h"

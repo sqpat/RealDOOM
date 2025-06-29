@@ -1,3 +1,4 @@
+#include "doomdef.h"
 #include <dos.h>
 #include <conio.h>
 #include <graph.h>
@@ -7,7 +8,6 @@
 #include <stdarg.h>
 #include "d_main.h"
 #include "doomstat.h"
-#include "doomdef.h"
 #include "r_local.h"
 #include "sounds.h"
 #include "i_system.h"

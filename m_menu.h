@@ -21,8 +21,8 @@
 
 
 
-#include "d_event.h"
 #include "doomdef.h"
+#include "d_event.h"
 
 //
 // MENUS

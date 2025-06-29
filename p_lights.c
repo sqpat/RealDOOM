@@ -18,10 +18,10 @@
 //
 
 
+#include "doomdef.h"
 #include "z_zone.h"
 #include "m_misc.h"
 
-#include "doomdef.h"
 #include "p_local.h"
 #include "doomstat.h"
 #include "i_system.h"

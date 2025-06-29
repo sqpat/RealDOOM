@@ -16,10 +16,10 @@
 // DESCRIPTION:  none
 //
 
+#include "doomdef.h" 
 #include <string.h>
 #include <stdlib.h>
 
-#include "doomdef.h" 
 #include "doomstat.h"
 
 #include "z_zone.h"

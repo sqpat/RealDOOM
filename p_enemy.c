@@ -18,13 +18,13 @@
 //	that are associated with states/frames. 
 //
 
+#include "doomdef.h"
 #include <stdlib.h>
 #include <i86.h>
 
 #include "m_misc.h"
 #include "i_system.h"
 
-#include "doomdef.h"
 #include "p_local.h"
 
 #include "s_sound.h"

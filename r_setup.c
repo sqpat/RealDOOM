@@ -20,11 +20,12 @@
 
 
 
+#include "doomdef.h"
+
 #include <stdlib.h>
 #include <math.h>
 
 
-#include "doomdef.h"
 #include "d_net.h"
 
 #include "m_misc.h"

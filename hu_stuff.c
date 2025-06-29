@@ -15,9 +15,9 @@
 // DESCRIPTION:  Heads-up displays
 //
 
+#include "doomdef.h"
 #include <ctype.h>
 
-#include "doomdef.h"
 
 #include "z_zone.h"
 

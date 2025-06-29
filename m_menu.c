@@ -16,13 +16,13 @@
 //      DOOM selection menu, options, episode etc.
 //      Sliders and icons. Kinda widget stuff.
 //
+#include "doomdef.h"
 
 #include <fcntl.h>
 #include <stdlib.h>
 #include <ctype.h>
 
 
-#include "doomdef.h"
 #include "dstrings.h"
 
 #include "d_main.h"

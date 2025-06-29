@@ -1,3 +1,5 @@
+#include "doomdef.h"
+
 #include <dos.h>
 #include <conio.h>
 #include <stdlib.h>
@@ -15,7 +17,6 @@
 #include <bios.h>
 #include <ctype.h>
 #include <malloc.h>
-#include "doomdef.h"
 #include "i_system.h"
 
 void __near SB_SetPlaybackRate(int16_t sample_rate);

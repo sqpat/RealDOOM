@@ -18,6 +18,7 @@
 //	See tables.c, too.
 //
 
+#include "doomdef.h"
 
 
 #include <stdlib.h>
@@ -26,7 +27,6 @@
 #include "w_wad.h"
 
 
-#include "doomdef.h"
 #include "d_net.h"
 
 #include "m_misc.h"

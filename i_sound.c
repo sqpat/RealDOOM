@@ -17,6 +17,7 @@
 //  System interface for sound.
 //
 
+#include "doomdef.h"
 #include <stdio.h>
 #include <dos.h>
 
@@ -30,7 +31,6 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
-#include "doomdef.h"
 #include "doomstat.h"
 #include "m_near.h"
 #include "sc_music.h"
@@ -572,7 +572,7 @@ void __far I_StartupSound(void) {
         uint16_t codesize;
         // todo put in main conventional somewhere
         FILE* fp = fopen("DOOMCODE.BIN", "rb"); 
-        playingdriver = MK_FP(0xDC00, 0000);
+        playingdriver = MK_FP(0xDC00, 0000);  // todo collision
         fseek(fp, musdriverstartposition[driverindex-1], SEEK_SET);
         fread(&codesize, 2, 1, fp);
         FAR_fread(playingdriver, codesize, 1, fp);

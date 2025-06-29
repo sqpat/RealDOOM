@@ -17,10 +17,10 @@
 //  all OS independend parts.
 //
 
+#include "doomdef.h"
 #include "m_menu.h"
 #include "i_system.h"
 #include "g_game.h"
-#include "doomdef.h"
 #include "doomstat.h"
 #include "m_near.h"
 

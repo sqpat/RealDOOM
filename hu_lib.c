@@ -15,9 +15,9 @@
 // DESCRIPTION:  heads-up text and input code
 //
 
+#include "doomdef.h"
 #include <ctype.h>
 
-#include "doomdef.h"
 
 #include "v_video.h"
 

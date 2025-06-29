@@ -16,6 +16,7 @@
 //
 
 
+#include "doomdef.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +30,6 @@
 #include "m_misc.h"
 #include "w_wad.h"
 
-#include "doomdef.h"
 #include "p_local.h"
 
 #include "doomstat.h"

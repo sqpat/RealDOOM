@@ -17,6 +17,8 @@
 //      set up initial state and misc. LUTs.
 //
 
+#include "doomdef.h"
+
 
 #include <math.h>
 #include "z_zone.h"
@@ -28,7 +30,6 @@
 #include "i_system.h"
 #include "w_wad.h"
 
-#include "doomdef.h"
 #include "p_local.h"
 #include "p_setup.h"
 

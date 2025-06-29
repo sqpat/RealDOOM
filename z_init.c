@@ -16,9 +16,9 @@
 //      Zone Memory Allocation. Neat.
 //
 
+#include "doomdef.h"
 #include "z_zone.h"
 #include "i_system.h"
-#include "doomdef.h"
 
 #include "m_menu.h"
 #include "w_wad.h"
@@ -463,7 +463,6 @@ segment_t __far R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
 segment_t __far R_GetCompositeTexture(int16_t tex_index) ;
  
 void __near Z_LoadBinaries() {
-	FILE* fp2;
 	int16_t i;
 	int16_t codesize;
 	FILE* fp = fopen("DOOMDATA.BIN", "rb"); 
@@ -473,9 +472,6 @@ void __near Z_LoadBinaries() {
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
 
 
-	fp2 = fopen("DOOMCODE.BIN", "rb"); 
-	fread(&codesize, 2, 1, fp2);
-	FAR_fread(colfunc_jump_lookup_6800, codesize, 1, fp2);
 
 
 	// all data now in this file instead of spread out a
@@ -526,18 +522,6 @@ void __near Z_LoadBinaries() {
 		states_render[i].frame  = states[i].frame;
 	}
 
-
-
-	// FOD3
-	Z_QuickMapPalette();
-	
-	
-
-	fread(&codesize, 2, 1, fp2);
-	FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp2);
-
-
-
 	//I_Error("\n%i %i %i %i", epsd1animinfo[2].period, epsd1animinfo[2].loc.x, anims[1][2].period, anims[1][2].loc.x);
  
 	Z_QuickMapRender();
@@ -545,60 +529,81 @@ void __near Z_LoadBinaries() {
 	//2048
 	FAR_fread(zlight, 1, 2048, fp);
 
+	fclose(fp);
+
+	Z_QuickMapPhysics();
+
+
+	fp = fopen("DOOMCODE.BIN", "rb"); 
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(colfunc_jump_lookup_6800, codesize, 1, fp);
+
+
+
+	// FOD3
+	Z_QuickMapPalette();
+	
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
+
+
+
+
+
 
 	Z_QuickMapMaskedExtraData();
 		// load R_DrawFuzzColumn into high memory near colormaps_high...
 
-	fread(&codesize, 2, 1, fp2);
-	FAR_fread(drawfuzzcol_area, codesize, 1, fp2);
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(drawfuzzcol_area, codesize, 1, fp);
 	
 
 	// load R_WriteBackViewConstantsMasked into another empty code space - they do not fit into the above area.
-	fread(&codesize, 2, 1, fp2);
-	FAR_fread(maskedconstants_funcarea, codesize, 1, fp2);
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(maskedconstants_funcarea, codesize, 1, fp);
 
 	Z_QuickMapRenderPlanes();
 
-	fread(&codesize, 2, 1, fp2);
-	FAR_fread(drawskyplane_area, codesize, 1, fp2);
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(drawskyplane_area, codesize, 1, fp);
 
-	fread(&codesize, 2, 1, fp2);
-	FAR_fread(bsp_code_area, codesize, 1, fp2);
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(bsp_code_area, codesize, 1, fp);
 
 
 	Z_QuickMapIntermission();
-	fread(&codesize, 2, 1, fp2);
-	FAR_fread(wianim_codespace, codesize, 1, fp2);
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(wianim_codespace, codesize, 1, fp);
  
 	Z_QuickMapPhysicsCode();
-	fread(&codesize, 2, 1, fp2);
-	FAR_fread(psight_codespace, codesize, 1, fp2);
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(psight_codespace, codesize, 1, fp);
 	Z_QuickMapPhysics();
 
 
 //todo should these be plus 2?
-	codestartposition[0] = ftell(fp2);
+	codestartposition[0] = ftell(fp);
 
-	fread(&codesize, 2, 1, fp2);
-	fseek(fp2, codesize, SEEK_CUR);
-	codestartposition[1] = ftell(fp2);
+	fread(&codesize, 2, 1, fp);
+	fseek(fp, codesize, SEEK_CUR);
+	codestartposition[1] = ftell(fp);
 
-	fread(&codesize, 2, 1, fp2);
-	fseek(fp2, codesize, SEEK_CUR);
-	codestartposition[2] = ftell(fp2);
+	fread(&codesize, 2, 1, fp);
+	fseek(fp, codesize, SEEK_CUR);
+	codestartposition[2] = ftell(fp);
 
-	fread(&codesize, 2, 1, fp2);
-	fseek(fp2, codesize, SEEK_CUR);
-	codestartposition[3] = ftell(fp2);
+	fread(&codesize, 2, 1, fp);
+	fseek(fp, codesize, SEEK_CUR);
+	codestartposition[3] = ftell(fp);
 
-	fread(&codesize, 2, 1, fp2);
-	fseek(fp2, codesize, SEEK_CUR);
-	codestartposition[4] = ftell(fp2);
+	fread(&codesize, 2, 1, fp);
+	fseek(fp, codesize, SEEK_CUR);
+	codestartposition[4] = ftell(fp);
 
 	for (i = 0; i < MUS_DRIVER_COUNT-1; i++){
-		fread(&codesize, 2, 1, fp2);
-		fseek(fp2, codesize, SEEK_CUR);
-		musdriverstartposition[i] = ftell(fp2);
+		fread(&codesize, 2, 1, fp);
+		fseek(fp, codesize, SEEK_CUR);
+		musdriverstartposition[i] = ftell(fp);
 
 	}
 
@@ -608,13 +613,12 @@ void __near Z_LoadBinaries() {
 	//FAR_fread(code_overlay_start, codesize, 1, fp2);
 
 
-	fclose(fp2);
-
-
-
-
-
 	fclose(fp);
+
+
+
+
+
 
 
 	DEBUG_PRINT("..");

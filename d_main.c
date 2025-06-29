@@ -19,13 +19,13 @@
 //  and call the startup functions.
 //
 
+#include "doomdef.h"
 #include <stdlib.h>
 #include <stdarg.h>
 #include <direct.h>
 #include <io.h>
 #include <fcntl.h>
 
-#include "doomdef.h"
 #include "doomstat.h"
 
 #include "dstrings.h"

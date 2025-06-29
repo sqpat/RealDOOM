@@ -21,6 +21,7 @@
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
 
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
