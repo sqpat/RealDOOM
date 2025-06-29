@@ -37,13 +37,7 @@ EXTRN R_ClearClipSegs_:NEAR
 .DATA
 
 EXTRN _player:PLAYER_T
-EXTRN _setblocks:BYTE
-EXTRN _setsizeneeded:BYTE
-EXTRN _pendingdetail:WORD
 
-EXTRN _viewwindowoffset:WORD
-EXTRN _r_cachedplayerMobjsecnum:WORD
-EXTRN _scaledviewwidth:WORD
 EXTRN _R_DrawMaskedCall:DWORD
 EXTRN _R_DrawPlanesCall:DWORD
 EXTRN _R_WriteBackMaskedFrameConstantsCall:DWORD

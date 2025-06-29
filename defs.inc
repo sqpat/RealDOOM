@@ -430,11 +430,23 @@ _P_TouchSpecialThing_addr =          _NULL_OFFSET + 006FCh
 _playerMobj_pos =		         	 _NULL_OFFSET + 00700h
 _setStateReturn_pos =		         _NULL_OFFSET + 00704h
 _P_CheckSight =				         _NULL_OFFSET + 00708h
+_clipangle =				         _NULL_OFFSET + 0070Ch
+_fieldofview =				         _NULL_OFFSET + 0070Eh
 
+_solidsegs = 			         	 _NULL_OFFSET + 00710h
+_newend = 				         	 _NULL_OFFSET + 00790h
+_pspritescale = 		         	 _NULL_OFFSET + 00792h
+_spritewidths_segment =              _NULL_OFFSET + 00794h
+_r_cachedplayerMobjsecnum = 		 _NULL_OFFSET + 00796h
+_scaledviewwidth = 					 _NULL_OFFSET + 00798h
+_viewwindowoffset = 				 _NULL_OFFSET + 0079Ah
+_pendingdetail = 				 	 _NULL_OFFSET + 0079Ch
+_setsizeneeded = 				 	 _NULL_OFFSET + 0079Eh
+_setblocks = 					 	 _NULL_OFFSET + 0079Fh
+_viewwindowx = 					 	 _NULL_OFFSET + 007A0h
+_viewwindowy = 					 	 _NULL_OFFSET + 007A2h
 
-
-_flatcache_nodes =				     _NULL_OFFSET + 00710h
-
+_flatcache_nodes =				     _NULL_OFFSET + 007B0h
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
 CURRENT_POSITION_2 =   			      (_spritecache_nodes  + (SIZEOF_CACHE_NODE_PAGE_COUNT_T * NUM_SPRITE_CACHE_PAGES))

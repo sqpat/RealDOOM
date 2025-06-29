@@ -664,11 +664,6 @@ FREEBYTES           7EE0:0000
 TODO UPDATE
 maskedpostdata              8400:0000
 drawmaskedfuncarea_sprite?  86FD:0000
-empty                       8721:0000 
-FREEBYTES 3568 free
-// MOVE SOME OTHER RENDER CODE HERE?
-
-
  spritepostdatasizes              8880:0000
  spritetotaldatasizes             89D2:0000
  maskedpostdataofs                89DA:0000
@@ -1222,7 +1217,7 @@ nodes_render        7000:0000
 spritewidths_ult    73BB:0000
 spritewidths_normal 73B9:0000
 spritedefs_bytes    7410:0000
-[empty]             7800:0000 
+[empty]             77FF2 (14 bytes left)
 
 0 bytes free
 */

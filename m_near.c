@@ -142,10 +142,6 @@ boolean                 menuactive;
 
 
 
-int16_t		scaledviewwidth;
-int16_t		viewwindowx;
-int16_t		viewwindowy; 
-int16_t		viewwindowoffset;
 
 // store sp/bp when doing cli/sti shenanigans
 
@@ -159,26 +155,19 @@ int16_t		viewwindowoffset;
 
 int8_t skytextureloaded = false;
 
-// Cached fields to avoid thinker access after page swap
-int16_t 	r_cachedplayerMobjsecnum;
 
 
 
 
 
-int16_t 			pendingdetail;
 //
 // precalculated math tables
 //
-uint16_t			clipangle = 0;		// note: fracbits always 0
-uint16_t			fieldofview =  0;	// note: fracbits always 0
 
  
  
 
 
-boolean		setsizeneeded;
-uint8_t		setblocks;
 uint16_t			skytexture;
 
 
@@ -200,7 +189,6 @@ uint16_t			skytexture;
 //  which increases counter clockwise (protractor).
 // There was a lot of stuff grabbed wrong, so I changed it...
 //
-uint16_t         pspritescale;
 
 
 // constant arrays
@@ -1234,8 +1222,6 @@ int16_t		numlinespecials;
 
 
 // newend is one past the last valid seg
-cliprange_t __near*			newend;
-cliprange_t					solidsegs[MAXSEGS];
 
 uint16_t                    numlumps;
 FILE*                		wadfiles[MAX_WADFILES];
@@ -1301,7 +1287,6 @@ uint8_t blocksizelookup[256]={
 };
 */
 
-segment_t   				spritewidths_segment;
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 boolean    					plutonia = false;

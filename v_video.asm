@@ -25,11 +25,6 @@ EXTRN M_AddToBox16_:PROC
 .DATA
 
 
-
-EXTRN _viewwindowx:WORD
-EXTRN _viewwindowy:WORD
-EXTRN _scaledviewwidth:WORD
-
 .CODE
 EXTRN W_CacheLumpNameDirect_:PROC  
 EXTRN Z_QuickMapScratch_5000_:PROC  

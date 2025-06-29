@@ -23,27 +23,12 @@ INSTRUCTION_SET_MACRO
 
 EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
-
 EXTRN Z_QuickMapVisplanePage_:PROC
 EXTRN Z_QuickMapVisplaneRevert_:PROC
-;EXTRN FastMul16u32u_:PROC
 EXTRN FixedDivWholeA_:PROC
 EXTRN FastDiv3232_shift_3_8_:PROC
 
-EXTRN R_GetColumnSegment_:NEAR
-
-EXTRN _spritewidths_segment:WORD
-
-
-EXTRN _solidsegs:WORD
-EXTRN _newend:WORD
-EXTRN _clipangle:WORD
-EXTRN _fieldofview:WORD
-EXTRN _pspritescale:WORD
 EXTRN _player:WORD
-EXTRN _r_cachedplayerMobjsecnum:WORD
-
-
 
 
 .CODE
@@ -1340,11 +1325,11 @@ ret
 ;		}
 
 check_for_visplane_match:
-cmp       di, word ptr [bx]     ; compare height low word
+cmp       di, word ptr ds:[bx]     ; compare height low word
 jne       loop_iter_step_variables
-cmp       dx, word ptr [bx + 2] ; compare height high word
+cmp       dx, word ptr ds:[bx + 2] ; compare height high word
 jne       loop_iter_step_variables
-cmp       cx, word ptr [si] ; compare picandlight
+cmp       cx, word ptr ds:[si] ; compare picandlight
 je        break_loop
 
 loop_iter_step_variables:
@@ -1365,10 +1350,10 @@ cbw       ; no longer need lastvisplane, zero out ah
 
 
 ; set up new visplaneheader
-mov       word ptr [bx], di
-mov       word ptr [bx + 2], dx
-mov       word ptr [bx + 4], SCREENWIDTH
-mov       word ptr [bx + 6], 0FFFFh
+mov       word ptr ds:[bx], di
+mov       word ptr ds:[bx + 2], dx
+mov       word ptr ds:[bx + 4], SCREENWIDTH
+mov       word ptr ds:[bx + 6], 0FFFFh
 
 ;si already has  word lookup for piclights
 
@@ -1443,7 +1428,7 @@ push  dx                    ; bp - 2
 push  word ptr es:[si]      ; bp - 4
 push  word ptr ds:[bx + 6]  ; bp - 6
 
-les   si, dword ptr [bx]       ;v1
+les   si, dword ptr ds:[bx]       ;v1
 mov   di, es                   ;v2
 mov   word ptr cs:[SELFMODIFY_get_curseg_2 + 1], ax
 sal   ax, 1
@@ -1894,13 +1879,13 @@ loaded_floor_or_ceiling:
 ; bx holds offset..
 
 mov       ax, si  ; fetch start
-cmp       ax, word ptr [di + 4]    ; compare to minx
+cmp       ax, word ptr ds:[di + 4]    ; compare to minx
 jge       start_greater_than_min
 mov       word ptr cs:[SELFMODIFY_setminx+3], ax
-mov       dx, word ptr [di + 4]    ; fetch minx into intrl
+mov       dx, word ptr ds:[di + 4]    ; fetch minx into intrl
 checked_start:
 ; now checkmax
-mov       ax, word ptr [di + 6]   ; fetch maxx, ax = intrh = plheader->max
+mov       ax, word ptr ds:[di + 6]   ; fetch maxx, ax = intrh = plheader->max
 cmp       cx, ax                  ; compare stop to maxx
 jle       stop_smaller_than_max
 mov       word ptr cs:[SELFMODIFY_setmax+3], cx
@@ -1938,9 +1923,9 @@ breakloop:
 cmp       dx, ax
 jle       make_new_visplane
 SELFMODIFY_setminx:
-mov       word ptr [di + 4], 0FFFFh
+mov       word ptr ds:[di + 4], 0FFFFh
 SELFMODIFY_setmax:
-mov       word ptr [di + 6], 0FFFFh
+mov       word ptr ds:[di + 6], 0FFFFh
 
 SELFMODIFY_setindex:
 mov       ax, 0ffffh
@@ -1956,7 +1941,7 @@ check_plane_is_floor:
 les       bx, dword ptr ds:[_floortop]
 jmp       loaded_floor_or_ceiling
 start_greater_than_min:
-mov       ax, word ptr [di + 4]
+mov       ax, word ptr ds:[di + 4]
 
 ;mov       dx, si                ; put start into intrl (dx was already si)
 mov       word ptr cs:[SELFMODIFY_setminx+3], ax
@@ -1982,17 +1967,17 @@ mov       dx, word ptr ds:[di + 2]
 ; generate index from di again. 
 sub       di, _visplaneheaders
 SHIFT_MACRO sar di 2
-mov       di, word ptr [di + _visplanepiclights]
+mov       di, word ptr ds:[di + _visplanepiclights]
 
-mov       word ptr [bx + _visplanepiclights], di
+mov       word ptr ds:[bx + _visplanepiclights], di
 SHIFT_MACRO sal bx 2
 ; now bx is 8 per
 
 ; set all plheader fields for lastvisplane...
-mov       word ptr [bx + _visplaneheaders], ax
-mov       word ptr [bx + _visplaneheaders+2], dx
-mov       word ptr [bx + _visplaneheaders+4], si ; looks weird
-mov       word ptr [bx + _visplaneheaders+6], cx  ; looks weird
+mov       word ptr ds:[bx + _visplaneheaders], ax
+mov       word ptr ds:[bx + _visplaneheaders+2], dx
+mov       word ptr ds:[bx + _visplaneheaders+4], si ; looks weird
+mov       word ptr ds:[bx + _visplaneheaders+6], cx  ; looks weird
 
 
 
@@ -2077,9 +2062,9 @@ mov   cx, 6
 mov   bx, ss
 mov   es, bx					; es is SS i.e. destination segment
 mov   ds, dx					; ds is movsw source segment
-mov   ax, word ptr [si+010h]		; 010h
+mov   ax, word ptr ds:[si+010h]		; 010h
 mov   word ptr cs:[SELFMODIFY_set_ax_to_angle_highword+1], ax
-mov   al, byte ptr [si+016h]	; 016h  flags2
+mov   al, byte ptr ds:[si+016h]	; 016h  flags2
 mov   byte ptr cs:[SELFMODIFY_set_al_to_flags2+1], al
 
 lea   di, [bp - 01Ah]			; di is the stack area to copy to..
@@ -2469,10 +2454,10 @@ cmp   ax, 0FF80h				; -128
 je   set_intbits_to_129
 intbits_ready:
 ;	vis->gzt.w = vis->gz.w + temp.w;
-mov   bx, word ptr [si + 0Eh]
-add   ax, word ptr [si + 010h]
-mov   word ptr [si + 012h], bx
-mov   word ptr [si + 014h], ax
+mov   bx, word ptr ds:[si + 0Eh]
+add   ax, word ptr ds:[si + 010h]
+mov   word ptr ds:[si + 012h], bx
+mov   word ptr ds:[si + 014h], ax
 
 ;    vis->texturemid = vis->gzt.w - viewz.w;
 
@@ -2480,8 +2465,8 @@ SELFMODIFY_BSP_viewz_lo_4:
 sub       bx, 01000h
 SELFMODIFY_BSP_viewz_hi_4:
 sbb       ax, 01000h
-mov   word ptr [si + 022h], bx
-mov   word ptr [si + 024h], ax
+mov   word ptr ds:[si + 022h], bx
+mov   word ptr ds:[si + 024h], ax
 SELFMODIFY_set_vis_x1:
 mov   ax, 01234h
 
@@ -2492,7 +2477,7 @@ jge   x1_positive
 xor   ax, ax
 
 x1_positive:
-mov   word ptr [si + 2], ax
+mov   word ptr ds:[si + 2], ax
 
 ;    vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
 
@@ -2508,7 +2493,7 @@ dec   ax
 x2_smaller_than_viewwidth:
 les   bx, dword ptr [bp - 01Eh]
 mov   cx, es
-mov   word ptr [si + 4], ax
+mov   word ptr ds:[si + 4], ax
 mov   ax, 1
 call FixedDivWholeA_
 mov   bx, ax
@@ -2522,18 +2507,18 @@ mov   ax, 129
 jmp intbits_ready
 
 flip_not_zero:
-mov   word ptr [si + 016h], -1
+mov   word ptr ds:[si + 016h], -1
 SELFMODIFY_set_ax_to_usedwidth:
 mov   ax, 01234h 
 dec   ax
-mov   word ptr [si + 018h], ax
+mov   word ptr ds:[si + 018h], ax
 
 neg   dx
 neg   bx
 sbb   dx, 0
 
-mov   word ptr [si + 01Eh], bx
-mov   word ptr [si + 020h], dx
+mov   word ptr ds:[si + 01Eh], bx
+mov   word ptr ds:[si + 020h], dx
 
 flip_stuff_done:
 
@@ -2541,11 +2526,11 @@ flip_stuff_done:
 ;    if (vis->x1 > x1)
 ;        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
 
-mov   ax, word ptr [si + 2]
+mov   ax, word ptr ds:[si + 2]
 SELFMODIFY_sub_x1:
 sub   ax, 01234h
 jle   vis_x1_greater_than_x1
-les   bx, dword ptr [si + 01Eh]
+les   bx, dword ptr ds:[si + 01Eh]
 mov   cx, es
 ; inlined FastMul16u32u
 
@@ -2574,12 +2559,12 @@ ELSE
    ADD  DX, CX    ; add 
 ENDIF
 
-add   word ptr [si + 016h], ax
-adc   word ptr [si + 018h], dx
+add   word ptr ds:[si + 016h], ax
+adc   word ptr ds:[si + 018h], dx
 
 vis_x1_greater_than_x1:
 mov   bx, word ptr [bp - 020h]
-mov   word ptr [si + 026h], bx
+mov   word ptr ds:[si + 026h], bx
 
 ;    if (thingflags2 & MF_SHADOW) {
 
@@ -2622,14 +2607,14 @@ index_below_maxlightscale:
 SELFMODIFY_set_spritelights_1:
 mov   bx, 01000h
 mov   al, byte ptr ds:[_scalelightfixed+bx+di]
-mov   byte ptr [si + 1], al
+mov   byte ptr ds:[si + 1], al
 LEAVE_MACRO
 pop   es
 pop   si
 ret   
 
 exit_set_fullbright_colormap:
-mov   byte ptr [si + 1], 0
+mov   byte ptr ds:[si + 1], 0
 LEAVE_MACRO
 pop   es
 pop   si
@@ -2638,7 +2623,7 @@ ret
 SELFMODIFY_BSP_fixedcolormap_2_TARGET:
 SELFMODIFY_BSP_fixedcolormap_1:
 exit_set_fixed_colormap:
-mov   byte ptr [si + 1], 0
+mov   byte ptr ds:[si + 1], 0
 LEAVE_MACRO
 pop   es
 pop   si
@@ -2646,13 +2631,13 @@ ret
 
 
 flip_zero:
-mov   word ptr [si + 016h], 0
-mov   word ptr [si + 018h], 0
-mov   word ptr [si + 01Eh], bx
-mov   word ptr [si + 020h], dx
+mov   word ptr ds:[si + 016h], 0
+mov   word ptr ds:[si + 018h], 0
+mov   word ptr ds:[si + 01Eh], bx
+mov   word ptr ds:[si + 020h], dx
 jmp   flip_stuff_done
 exit_set_shadow:
-mov   byte ptr [si + 1], COLORMAP_SHADOW
+mov   byte ptr ds:[si + 1], COLORMAP_SHADOW
 LEAVE_MACRO
 pop   es
 pop   si
@@ -2930,7 +2915,7 @@ or        byte ptr es:[si], al
 
 ; bx still curseg word lookup
 
-mov       ax, word ptr [bx+_seg_normalangles]
+mov       ax, word ptr ds:[bx+_seg_normalangles]
 
 mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
 xchg      ax, si
@@ -6399,7 +6384,7 @@ mov   cx, ax                  ; backup first in cx for most of the function.
 mov   di, dx
 dec   ax
 mov   si, OFFSET _solidsegs
-cmp   ax, word ptr [si+2]
+cmp   ax, word ptr ds:[si+2]
 
 ;  while (start->last < first-1)
 ;  	start++;
@@ -6407,45 +6392,45 @@ cmp   ax, word ptr [si+2]
 jle   found_start_solid
 increment_start:
 add   si, 4
-cmp   ax, word ptr [si + 2]
+cmp   ax, word ptr ds:[si + 2]
 jg    increment_start
 found_start_solid:
 mov   ax, cx
-cmp   ax, word ptr [si]
+cmp   ax, word ptr ds:[si]
 
 ;    if (first < start->first)
 
 jge   first_greater_than_startfirst ;		if (last < start->first-1) {
-mov   dx, word ptr [si]
+mov   dx, word ptr ds:[si]
 dec   dx
 cmp   di, dx
 jl    last_smaller_than_startfirst;
 call  R_StoreWallRange_             ;		R_StoreWallRange (first, start->first - 1);
 mov   ax, cx                        ;		start->first = first;	
-mov   word ptr [si], ax
+mov   word ptr ds:[si], ax
 first_greater_than_startfirst:
 ;	if (last <= start->last) {
 
-cmp   di, word ptr [si + 2]
+cmp   di, word ptr ds:[si + 2]
 jle   write_back_newend_and_return
 ;    next = start;
 mov   bx, si                        ; si is start, bx is next
 ;    while (last >= (next+1)->first-1) {
 check_between_posts:
-mov   dx, word ptr [bx + 4]
+mov   dx, word ptr ds:[bx + 4]
 dec   dx
 cmp   di, dx
 jl    do_final_fragment
-mov   ax, word ptr [bx + 2]
+mov   ax, word ptr ds:[bx + 2]
 inc   ax
 ;		// There is a fragment between two posts.
 ;		R_StoreWallRange (next->last + 1, (next+1)->first - 1);
 call  R_StoreWallRange_
-mov   ax, word ptr [bx + 6]
+mov   ax, word ptr ds:[bx + 6]
 add   bx, 4
 cmp   di, ax
 jg    check_between_posts
-mov   word ptr [si + 2], ax
+mov   word ptr ds:[si + 2], ax
 crunch:
 ;    if (next == start) {
 cmp   bx, si
@@ -6460,11 +6445,11 @@ lea   di, [si + 4]
 add   bx, 4
 cmp   ax, cx
 je    done_removing_posts
-les   ax, dword ptr [bx]
+les   ax, dword ptr ds:[bx]
 mov   dx, es
-mov   word ptr [di], ax
+mov   word ptr ds:[di], ax
 mov   si, di
-mov   word ptr [di + 2], dx
+mov   word ptr ds:[di + 2], dx
 jmp   check_to_remove_posts
 last_smaller_than_startfirst:
 mov   dx, di
@@ -6493,19 +6478,19 @@ cld
 
 ; ax = dest, dx = source, bx = count?
 
-mov   word ptr [bx + 2], dx
-mov   word ptr [bx], ax
+mov   word ptr ds:[bx + 2], dx
+mov   word ptr ds:[bx], ax
 write_back_newend_and_return:
 
 ret   
 
 do_final_fragment:
 ;    // There is a fragment after *next.
-mov   ax, word ptr [bx + 2]
+mov   ax, word ptr ds:[bx + 2]
 mov   dx, di
 inc   ax
 call  R_StoreWallRange_
-mov   word ptr [si + 2], di
+mov   word ptr ds:[si + 2], di
 jmp   crunch
 
 done_removing_posts:
@@ -6540,13 +6525,13 @@ cmp  ax, word ptr ds:[bx + 2]
 jle  found_start
 keep_searching_for_start:
 add  bx, 4
-cmp  ax, word ptr [bx + 2]
+cmp  ax, word ptr ds:[bx + 2]
 jg   keep_searching_for_start
 
 found_start:
 ;    if (first < start->first) {
 
-mov  ax, word ptr [bx]  ; ax = start->first
+mov  ax, word ptr ds:[bx]  ; ax = start->first
 cmp  si, ax
 jge  check_last
 
@@ -6568,20 +6553,20 @@ check_last:
 ;	}
 
 
-cmp  cx, word ptr [bx + 2]
+cmp  cx, word ptr ds:[bx + 2]
 jle  do_clippass_exit
 check_next_fragment:
-mov  dx, word ptr [bx + 4]
+mov  dx, word ptr ds:[bx + 4]
 dec  dx
 cmp  cx, dx
-mov  ax, word ptr [bx + 2]
+mov  ax, word ptr ds:[bx + 2]
 jl   fragment_after_next
 inc  ax
 add  bx, 4
 ;  There is a fragment between two posts.
 
 call R_StoreWallRange_
-cmp  cx, word ptr [bx + 2]
+cmp  cx, word ptr ds:[bx + 2]
 jg   check_next_fragment
 do_clippass_exit:
 ret  
@@ -6600,6 +6585,471 @@ ret
 
 
 ENDP
+
+
+
+;segment_t __near R_GetColumnSegment (int16_t tex, int16_t col, int8_t segloopcachetype) 
+
+update_both_cache_texes:
+; bx is 6E8
+; _cachedtex is bx - 010h
+; _cachedcollength is bx - 0Ch
+
+;			if (cachedtex2 != tex){
+;				int16_t  cached_nextlookup = segloopnextlookup[segloopcachetype]; 
+;				cachedtex2 = cachedtex;
+;				cachedsegmenttex2 = cachedsegmenttex;
+;				cachedcollength2 = cachedcollength;
+;				cachedtex = tex;
+;				cachedsegmenttex = R_GetCompositeTexture(cachedtex);
+;				cachedcollength = collength;
+;				// restore these if composite texture is unloaded...
+;				segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
+;				seglooptexrepeat[segloopcachetype] 		= loopwidth;
+
+; ax already cached tex 1
+; di already bp - 2 (segloopcachetype) shifted left once
+mov       word ptr ds:[bx - 010h+2], ax
+
+mov       ax, word ptr ds:[bx]
+mov       word ptr ds:[bx+2], ax
+mov       dx, word ptr ds:[di + _segloopnextlookup]   ; cached_next_lookup.
+mov       al, byte ptr ds:[bx - 0Ch]        ; _cachedcollength
+mov       byte ptr ds:[bx - 0Ch+1], al
+mov       byte ptr ds:[bx - 0Ch], cl
+xchg      ax, si                    ; was word ptr bp - 4/tex
+mov       word ptr ds:[bx - 010h], ax
+;call      R_GetCompositeTexture_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_GetCompositeTexture_addr
+
+mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
+
+mov       word ptr ds:[di + _segloopnextlookup], dx
+mov       word ptr ds:[di + _segloopcachedsegment], ax  ; write this here now while duped.. skip the write later
+shr       di, 1
+pop       dx ;  , byte ptr [bp - 0Ah]             ; loopwidth
+mov       byte ptr ds:[di + _seglooptexrepeat], dl
+
+jmp       done_setting_cached_tex_skip_cachedsegwrite
+
+lump_greater_than_zero_add_startpixel:
+;			segloopcachedbasecol[segloopcachetype] = basecol + startpixel;
+
+mov       di, TEXTURECOLUMNLUMPS_BYTES_SEGMENT ; todo cacheable above?
+mov       es, di
+mov       bl, byte ptr es:[bx - 1]
+xor       bh, bh
+
+add       bx, word ptr [bp - 6]
+segloopcachedbasecol_set:
+
+; write the segloopcachedbasecol[segloopcachetype] calculated above!
+
+
+
+mov       di, word ptr [bp - 2]  ; segloopcachetype
+mov       byte ptr ds:[di + _seglooptexrepeat], 0    ; todo any known 0? maybe ah from subtractor
+sal       di, 1
+mov       word ptr ds:[di + _segloopcachedbasecol], bx
+
+;		// prev RLE boundary. Hit this function again to load next texture if we hit this.
+;		segloopprevlookup[segloopcachetype]     = runningbasetotal - subtractor;
+;		// next RLE boundary. see above
+;		segloopnextlookup[segloopcachetype]     = runningbasetotal; 
+;		// this is not a single repeating texture 
+;		seglooptexrepeat[segloopcachetype] 		= 0;
+
+mov       word ptr ds:[di + _segloopnextlookup], dx
+sub       dx, ax  ; subtractor
+mov       word ptr ds:[di + _segloopprevlookup], dx
+
+
+;	if (lump > 0){
+jmp       done_with_loopwidth
+do_cache_tex_miss:
+; bx is _cachedsegmenttex (6E8)
+; _cachedtex is 6D8 (bp - 010h)
+; 
+
+; ax is cachedtex
+mov       dx, word ptr ds:[bx - 010h +2]  ; _cachedtex+2
+cmp       dx, si
+jne       update_both_cache_texes   ; takes in di as bp - 2 shifted
+
+swap_tex1_tex2:
+; ax  is cachedtex
+; dx  is cachedtex2
+
+;	// cycle cache so 2 = 1
+;    tex = cachedtex;
+;    cachedtex = cachedtex2;
+;    cachedtex2 = tex;
+
+mov       word ptr ds:[bx - 010h ],  dx     ; _cachedtex
+mov       word ptr ds:[bx - 010h +2], ax    ; _cachedtex + 2
+
+;    tex = cachedsegmenttex;
+;    cachedsegmenttex = cachedsegmenttex2;
+;    cachedsegmenttex2 = tex;
+
+mov       ax, word ptr ds:[bx - 0Ch]  ; _cachedcollength
+xchg      al, ah        ; swap byte 1 and 2
+mov       word ptr ds:[bx - 0Ch], ax
+
+;    tex = cachedcollength;
+;    cachedcollength = cachedcollength2;
+;    cachedcollength2 = tex;
+
+mov      ax, word ptr ds:[bx]
+xchg     ax, word ptr ds:[bx+2]
+mov      word ptr ds:[bx], ax
+
+jmp       done_setting_cached_tex
+lump_greater_than_zero:
+;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+sub       byte ptr [bp - 8], al         ; al still subtractor
+done_with_lump_check:
+add       bx, 4                     ; n+= 2
+test      cx, cx
+jge       loop_next_col_subtractor
+
+done_finding_col_lookup:
+
+;		startpixel = texturecolumnlump[n-1].bu.bytehigh;
+
+;		if (lump > 0){
+test      si, si
+jg        lump_greater_than_zero_add_startpixel
+
+;			segloopcachedbasecol[segloopcachetype] = runningbasetotal - textotal;
+mov       bx, dx
+sub       bx, di
+
+jmp       segloopcachedbasecol_set
+loopwidth_zero:
+
+;		uint8_t startpixel;
+;		int16_t subtractor;
+;		int16_t textotal = 0;
+;		int16_t runningbasetotal = basecol;
+;		int16_t n = 0;
+
+
+; dx still basecol
+xor       di, di
+test      cx, cx
+jl        done_finding_col_lookup
+
+
+;		while (col >= 0) {
+;			//todo: gross. clean this up in asm; there is a 256 byte case that gets stored as 0.
+;			// should we change this to be 256 - the number? we dont want a branch.
+;			// anyway, fix it in asm
+;			subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
+;			runningbasetotal += subtractor;
+;			lump = texturecolumnlump[n].h;
+;			col -= subtractor;
+;			if (lump >= 0){ // should be equiv to == -1?
+;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
+;			} else {
+;				textotal += subtractor; // add the last's total.
+;			}
+;			n += 2;
+;		}
+
+loop_next_col_subtractor:
+mov       al, byte ptr es:[bx + 2]      ; subtractor
+xor       ah, ah                        ; todo cbw probably safe
+inc       ax
+mov       si, word ptr es:[bx]          ; lump = texturecolumnlump[n].h;
+; ax is subtractor..
+add       dx, ax                        ; dx is runningbasetotal
+sub       cx, ax                        ; cx is col
+test      si, si
+jge       lump_greater_than_zero
+add       di, ax                        ; di is textotal
+jmp       done_with_lump_check
+update_tex_caches_and_return:
+; not a lump
+; di is bp - 2 shifted onces
+mov       si, word ptr [bp - 4]        ; si = tex
+mov       bx, OFFSET _cachedsegmenttex ; used a lot in the branches.
+mov       ax, TEXTURECOLLENGTH_SEGMENT
+mov       es, ax
+mov       ax, word ptr ds:[_cachedtex]          ; probably dont LES. it makes the most common case slower.
+mov       cl, byte ptr es:[si]                  ; cl stores texturecollength
+cmp       ax, si
+jne       do_cache_tex_miss
+
+mov       ax, word ptr ds:[bx]
+
+done_setting_cached_tex:
+; di is index (shifted left one)
+;	segloopcachedsegment[segloopcachetype]  = cachedsegmenttex;
+;	return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
+
+; ax is ds:[bx]
+mov       word ptr ds:[di + _segloopcachedsegment], ax
+sar       di, 1
+done_setting_cached_tex_skip_cachedsegwrite:
+mov       byte ptr ds:[di + _segloopheightvalcache], cl ; write now
+
+xchg      ax, dx
+mov       al, byte ptr ds:[bx - 0Ch] ; _cachedcollenght
+mul       byte ptr [bp - 8]
+add       ax, dx
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+ret  
+
+PROC R_GetColumnSegment_ NEAR
+PUBLIC R_GetColumnSegment_
+
+
+; bp - 2      segloopcachetype
+; bp - 4      ax/tex
+; bp - 6      basecol
+; bp - 8      texcol
+; bp - 0Ah    loopwidth
+
+
+push      cx
+push      si
+push      di
+push      bp
+mov       bp, sp
+push      bx        ; bh always zero
+push      ax
+
+
+;	col &= texturewidthmasks[tex];
+;	basecol -= col;
+;	texcol = col;
+
+
+mov       cx, dx
+xor       ch, ch  ; todo necessary
+mov       di, ax
+mov       ax, TEXTUREWIDTHMASKS_SEGMENT
+mov       es, ax
+and       cl, byte ptr es:[di]
+sal       di, 1
+mov       bx, word ptr ds:[_texturepatchlump_offset + di]
+
+;	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
+;	loopwidth = texturecolumnlump[1].bu.bytehigh;
+
+mov       ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
+mov       es, ax
+sal       bx, 1
+sub       dx, cx
+push      dx     ; bp - 6   basecol
+mov       al, byte ptr es:[bx + 3]  ; [1].bu.bytehight
+push      cx     ; bp - 8   texcol
+push      ax     ; bp - 0Ah loopwidth?
+test      al, al
+je        loopwidth_zero
+
+loopwidth_nonzero:
+
+;		lump = texturecolumnlump[0].h;
+;		segloopcachedbasecol[segloopcachetype]  = basecol;
+;		seglooptexrepeat[segloopcachetype] 		= loopwidth; // might be 256 and we need the modulo..
+
+mov       si, word ptr es:[bx]    ; lump
+mov       di, word ptr [bp - 2]
+mov       byte ptr ds:[di + _seglooptexrepeat], al      ; al still loopwidth
+sal       di, 1
+mov       word ptr ds:[di + _segloopcachedbasecol], dx  ; dx still basecol
+
+done_with_loopwidth:
+test      si, si
+jle       update_tex_caches_and_return
+; nonzero lump
+
+;		int16_t  cachelumpindex;
+;		int16_t  cached_nextlookup;
+;		uint8_t heightval = patchheights[lump-firstpatch];
+;		heightval &= 0x0F;
+
+
+xor       bx, bx  ; todo mov cachedlumps
+
+;		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
+
+cmp       si, word ptr ds:[_cachedlumps]
+je        cachedlumphit
+
+
+
+loop_check_next_cached_lump:
+add       bx, 2
+cmp       bx, (2 * NUM_CACHE_LUMPS)
+jge       cache_miss_move_all_cache_back
+;			if (lump == cachedlumps[cachelumpindex]){
+cmp       si, word ptr ds:[bx + _cachedlumps]
+jne       loop_check_next_cached_lump
+cachedlumphit:
+test      bx, bx
+jne       not_cache_0
+found_cached_lump:
+
+;		if (col < 0){
+;			uint16_t patchwidth = patchwidths[lump-firstpatch];
+;			if (patchwidth > texturewidthmasks[tex]){
+;				patchwidth = texturewidthmasks[tex];
+;				patchwidth++;
+;			}
+;		}
+sub       si, word ptr ds:[_firstpatch] ; si now is lump - firstpatch
+
+test      cx, cx
+jge       col_not_under_zero
+mov       bx, PATCHWIDTHS_SEGMENT
+mov       es, bx
+xor       ax, ax
+cwd                                     ; zero dh
+mov       al, byte ptr es:[si]
+cmp       al, 1                         ; set carry if al is 0
+adc       ah, ah                        ; if width is zero that encoded 0x100. now ah is 1.
+mov       bx, TEXTUREWIDTHMASKS_SEGMENT
+mov       es, bx
+mov       bx, word ptr [bp - 4]      ; tex
+mov       dl, byte ptr es:[bx]
+cmp       ax, dx    ; dh zeroed earlier
+;			if (patchwidth > texturewidthmasks[tex]){
+jna       negative_modulo_thing
+;				patchwidth = texturewidthmasks[tex];
+xchg      ax, dx
+inc       ax
+
+;			while (col < 0){
+;				col+= patchwidth;
+;			}
+; todo just and patchwidth -1
+
+negative_modulo_thing:
+add       cx, ax        
+jl      negative_modulo_thing
+col_not_under_zero:
+
+
+mov       dx, PATCHHEIGHTS_SEGMENT
+mov       es, dx
+
+mov       dl, byte ptr es:[si]
+and       dl, 0Fh
+
+mov       bx, word ptr [bp - 2]
+
+mov       byte ptr ds:[bx + _segloopheightvalcache], dl
+sal       bx, 1
+mov       ax, word ptr ds:[_cachedsegmentlumps]
+mov       word ptr ds:[bx + _segloopcachedsegment], ax
+
+xchg      ax, cx
+mul       dl
+add       ax, cx
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+ret    
+
+
+
+
+
+
+
+
+
+
+not_cache_0:
+
+;    segment_t usedsegment = cachedsegmentlumps[cachelumpindex];
+;    int16_t cachedlump = cachedlumps[cachelumpindex];
+;    int16_t i;
+xchg      ax, si
+mov       di, OFFSET _cachedsegmentlumps
+mov       si, OFFSET _cachedlumps
+push      word ptr ds:[bx + si]
+push      word ptr ds:[bx + di]
+
+;    for (i = cachelumpindex; i > 0; i--){
+;        cachedsegmentlumps[i] = cachedsegmentlumps[i-1];
+;        cachedlumps[i] = cachedlumps[i-1];
+;    }
+
+
+jle       done_moving_cachelumps
+
+loop_move_cachelump:
+sub       bx, 2
+push      word ptr ds:[bx + di]
+push      word ptr ds:[bx + si]
+pop       word ptr ds:[bx + si + 2]
+pop       word ptr ds:[bx + di + 2]
+jg        loop_move_cachelump
+done_moving_cachelumps:
+
+pop       word ptr ds:[di]
+pop       word ptr ds:[si]
+xchg      ax, si ; restore lump
+
+jmp       found_cached_lump
+
+
+;		// not found, set cache.
+;		cachedsegmentlumps[3] = cachedsegmentlumps[2];
+;		cachedsegmentlumps[2] = cachedsegmentlumps[1];
+;		cachedsegmentlumps[1] = cachedsegmentlumps[0];
+;		cachedlumps[3] = cachedlumps[2];
+;		cachedlumps[2] = cachedlumps[1];
+;		cachedlumps[1] = cachedlumps[0];
+cache_miss_move_all_cache_back:
+mov       ax, ds
+mov       es, ax
+xchg      ax, si
+mov       si, OFFSET _cachedsegmentlumps
+lea       di, [si + 2]
+; _cachedsegmentlumps and _cachedlumps are adjacent. we hit both with 7 word copies.
+;_cachedsegmentlumps =                   _NULL_OFFSET + 00698h
+;_cachedlumps =                 	     _NULL_OFFSET + 006A0h
+; doing 7 movsw breaks things
+movsw
+movsw
+movsw
+mov       si, di
+lea       di, [si + 2]
+movsw
+movsw
+movsw
+mov       si, ax    ; restore lump
+mov       di, word ptr [bp - 2]
+sal       di, 1
+mov       bx, word ptr ds:[di + _segloopnextlookup]
+mov       dx, 0FFh
+; ax is lump
+;call      R_GetPatchTexture_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_GetPatchTexture_addr
+mov       word ptr ds:[_cachedsegmentlumps], ax
+mov       word ptr ds:[di + _segloopnextlookup], bx
+sar       di, 1
+mov       al, byte ptr [bp - 0Ah]
+mov       word ptr ds:[_cachedlumps], si
+mov       byte ptr ds:[di + _seglooptexrepeat], al
+jmp       found_cached_lump
+   
+    
+ENDP
+
 
 FRACUNIT_OVER_2 = 08000h
 BASEYCENTER  = 100
@@ -6636,8 +7086,8 @@ mov   di, ax
 sal   ax, 1
 add   di, ax  ; shifted 3
 
-push  word ptr [bx + 4]         ; bp - 4  tx fracbits
-push  word ptr [bx + 6]         ; bp - 6  tx intbits
+push  word ptr ds:[bx + 4]         ; bp - 4  tx fracbits
+push  word ptr ds:[bx + 6]         ; bp - 6  tx intbits
 push  bx                        ; bp - 8
 
 
@@ -6778,16 +7228,16 @@ mov   di, 129   ; hack to fit data in 8 bits
 
 tempbits_not_minus128:
 mov   bx, word ptr [bp - 8]
-les   ax, dword ptr [bx + 8]
+les   ax, dword ptr ds:[bx + 8]
 mov   cx, es
 mov   bx, FRACUNIT_OVER_2
 sbb   cx, di
 sub   bx, ax
 mov   ax, BASEYCENTER
 sbb   ax, cx
-mov   word ptr [si + 024h], ax
+mov   word ptr ds:[si + 024h], ax
 mov   ax, word ptr [bp - 0Eh]
-mov   word ptr [si + 022h], bx
+mov   word ptr ds:[si + 022h], bx
 test  ax, ax
 
 ;    vis->x1 = x1 < 0 ? 0 : x1;
@@ -6798,7 +7248,7 @@ jge   x1_positive_2
 xor   ax, ax
 
 x1_positive_2:
-mov   word ptr [si + 2], ax
+mov   word ptr ds:[si + 2], ax
 
 SELFMODIFY_BSP_viewwidth_4:
 mov   ax, 01000h
@@ -6811,7 +7261,7 @@ jmp   vis_x2_set
 x2_smaller_than_viewwidth_2:
 dec   ax
 vis_x2_set:
-mov   word ptr [si + 4], ax
+mov   word ptr ds:[si + 4], ax
 SELFMODIFY_BSP_pspritescale_3:
 mov   ax, 01000h
 SELFMODIFY_BSP_pspritescale_3_AFTER = SELFMODIFY_BSP_pspritescale_3 + 2
@@ -6833,8 +7283,8 @@ rcl   dx, 1
 shl   ax, 1
 rcl   dx, 1
 
-mov   word ptr [si + 01Ah], ax
-mov   word ptr [si + 01Ch], dx
+mov   word ptr ds:[si + 01Ah], ax
+mov   word ptr ds:[si + 01Ch], dx
 
 SELFMODIFY_BSP_pspriteiscale_lo_1:
 mov   bx, 01000h
@@ -6846,8 +7296,8 @@ jne   flip_on
 
 flip_off:
 
-mov   word ptr [si + 016h], 0
-mov   word ptr [si + 018h], 0
+mov   word ptr ds:[si + 016h], 0
+mov   word ptr ds:[si + 018h], 0
 jmp   vis_startfrac_set
 
 flip_on:
@@ -6861,14 +7311,14 @@ sbb   cx, 0
 
 mov   ax, word ptr [bp - 010h]
 dec   ax
-mov   word ptr [si + 016h], -1
-mov   word ptr [si + 018h], ax
+mov   word ptr ds:[si + 016h], -1
+mov   word ptr ds:[si + 018h], ax
 
 vis_startfrac_set:
-mov   word ptr [si + 01Eh], bx
-mov   word ptr [si + 020h], cx
+mov   word ptr ds:[si + 01Eh], bx
+mov   word ptr ds:[si + 020h], cx
 
-mov   ax, word ptr [si + 2]
+mov   ax, word ptr ds:[si + 2]
 cmp   ax, word ptr [bp - 0Eh]
 jle   vis_x1_greater_than_x1_2
 sub   ax, word ptr [bp - 0Eh]
@@ -6900,11 +7350,11 @@ ELSE
    ADD  DX, CX    ; add 
 ENDIF
 
-add   word ptr [si + 016h], ax
-adc   word ptr [si + 018h], dx
+add   word ptr ds:[si + 016h], ax
+adc   word ptr ds:[si + 018h], dx
 vis_x1_greater_than_x1_2:
 mov   bx, word ptr [bp - 0Ch]
-mov   word ptr [si + 026h], bx
+mov   word ptr ds:[si + 026h], bx
 
 ;    if (player.powers[pw_invisibility] > 4*32
 
@@ -6921,7 +7371,7 @@ je    set_vis_colormap
 SELFMODIFY_BSP_fixedcolormap_4_TARGET:
 use_fixedcolormap:
 SELFMODIFY_BSP_fixedcolormap_5:
-mov   byte ptr [si + 1], 00h
+mov   byte ptr ds:[si + 1], 00h
 
 LEAVE_MACRO
 ret   
@@ -6930,7 +7380,7 @@ ret
 
 mark_shadow_draw:
 ; do shadow draw
-mov   byte ptr [si + 1], COLORMAP_SHADOW
+mov   byte ptr ds:[si + 1], COLORMAP_SHADOW
 LEAVE_MACRO
 ret   
 
@@ -7355,12 +7805,12 @@ cmp   ax, word ptr ds:[bx + 2]
 jle   found_solidsegs
 loop_find_solidsegs:
 add   bx, 4
-cmp   ax, word ptr [bx + 2]
+cmp   ax, word ptr ds:[bx + 2]
 jg    loop_find_solidsegs
 found_solidsegs:
-cmp   si, word ptr [bx]
+cmp   si, word ptr ds:[bx]
 jl    also_return_1
-cmp   ax, word ptr [bx + 2]
+cmp   ax, word ptr ds:[bx + 2]
 jg    also_return_1
 return_0_2:
 xor   al, al

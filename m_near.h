@@ -104,7 +104,7 @@
 //spanfunc_outp[4]
 #define spanfunc_outp                   ((uint8_t __near *)                  (_NULL_OFFSET + 0x0024))
 
-// 28 to 30 unused
+// 28 to 39 unused
 
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
 // 3C to 47 free
@@ -211,8 +211,7 @@
 #define tmdropoffz                      (*((short_height_t __near*)          (_NULL_OFFSET + 0x0126)))
 
 #define MULT_4096                       (((uint16_t   __near*)               (_NULL_OFFSET + 0x0128)))
-// todo unused i think
-//#define FLAT_CACHE_PAGE                 (((uint16_t   __near*)               (_NULL_OFFSET + 0x0130)))
+#define FLAT_CACHE_PAGE                 (((uint16_t   __near*)               (_NULL_OFFSET + 0x0130)))
 #define visplanelookupsegments          (((segment_t   __near*)              (_NULL_OFFSET + 0x0138)))
 
 #define firstflat                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x013E)))
@@ -225,7 +224,6 @@
 #define casttics                        (*((int8_t __near*)                  (_NULL_OFFSET + 0x0144)))
 #define castnum                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0145)))
 #define finaleflat                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x0146)))
-// 147 free
 #define FixedMul2432_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0148)))
 #define tmthing_pos                     (*((mobj_pos_t  __far __near*)       (_NULL_OFFSET + 0x014C)))
 #define trace                           (*((divline_t __near*)               (_NULL_OFFSET + 0x0150)))
@@ -355,22 +353,13 @@
 #define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0390)))
 #define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x03B0)))
 
-
-
-
+// todo is this really 32 bytes above..
 #define colfunc_masked_call_lookup      (((uint32_t  __near*)                (_NULL_OFFSET + 0x03D0)))
-
 #define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x0454)))
 #define movedirangles                   (((uint16_t  __near*)                (_NULL_OFFSET + 0x0470)))
 #define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x0480)))
-
-
 #define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x04C0)))
-
-
-
 #define spanfunc_call_table             (((uint32_t  __near*)                (_NULL_OFFSET + 0x04D0)))
-
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0554)))
 #define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0558)))
 #define S_ChangeMusic_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x055C)))
@@ -380,8 +369,6 @@
 #define FixedMulTrigNoShift_addr	      (*((uint32_t  __near*)             (_NULL_OFFSET + 0x056C)))
 #define R_PointToAngle2_16_addr           (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0570)))
 #define R_PointToAngle2_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0574)))
-
-
 #define W_CacheLumpNameDirect_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0578)))
 #define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)             (_NULL_OFFSET + 0x057C)))
 #define W_GetNumForName_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0580)))
@@ -389,11 +376,9 @@
 #define S_StartMusic_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0588)))
 // 13 bytes (12345678.123) fileame format incl . and null term
 #define filename_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x058C))
-
 #define rndindex                          (*(uint8_t __near *)               (_NULL_OFFSET + 0x0599))
 #define fopen_r_argument                  ((int8_t __near *)                 (_NULL_OFFSET + 0x059A))
 #define fopen_w_argument                  ((int8_t __near *)                 (_NULL_OFFSET + 0x059C))
-
 #define numsectors                        (*(int16_t __near *)               (_NULL_OFFSET + 0x059E))
 #define numlines                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05A0))
 #define numvertexes                       (*(int16_t __near *)               (_NULL_OFFSET + 0x05A2))
@@ -405,7 +390,6 @@
 #define bmapheight                        (*(int16_t __near *)               (_NULL_OFFSET + 0x05AE))
 #define bmaporgx                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05B0))
 #define bmaporgy                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05B2))
-
 #define I_Error_addr                      (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B4)))
 #define P_InitThinkers_addr               (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B8)))
 #define P_CreateThinker_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05BC)))
@@ -413,9 +397,7 @@
 #define P_RemoveMobj_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
 #define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
 #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
-
 #define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x05D0))
-
 //0x60C
 #define Z_SetOverlay_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x060C)))
 #define W_LumpLength_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x0610)))
@@ -499,7 +481,23 @@
 #define setStateReturn_pos	 	    	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0704)))
 #define P_CheckSight				      (((boolean (__far *)(mobj_t __near* , mobj_t __near*, uint16_t, uint16_t)) (_NULL_OFFSET + 0x0708)))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0710)))
+#define clipangle       			      (*((uint16_t __near*)              (_NULL_OFFSET + 0x070C)))
+#define fieldofview       			      (*((uint16_t __near*)              (_NULL_OFFSET + 0x070E)))
+#define solidsegs                 		  ((cliprange_t __near *)            (_NULL_OFFSET + 0x0710))
+#define newend	     		    		  (*((cliprange_t  __near* __near*)  (_NULL_OFFSET + 0x0790)))
+#define pspritescale       		  	      (*((uint16_t __near*)              (_NULL_OFFSET + 0x0792)))
+#define spritewidths_segment       		  (*((segment_t __near*)             (_NULL_OFFSET + 0x0794)))
+#define r_cachedplayerMobjsecnum 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0796)))
+#define scaledviewwidth 		 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0798)))
+#define viewwindowoffset 		 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x079A)))
+#define pendingdetail 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x079C)))
+#define setsizeneeded                     (*((uint8_t    __near*)            (_NULL_OFFSET + 0x079E)))
+#define setblocks                   	  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x079F)))
+#define viewwindowx 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07A0)))
+#define viewwindowy 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07A2)))
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x07B0)))
+
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -605,22 +603,11 @@ extern int8_t               quickSaveSlot;
 extern boolean              inhelpscreens;
 extern boolean              menuactive;
 
-extern int16_t		        scaledviewwidth;
-extern int16_t		        viewwindowx;
-extern int16_t		        viewwindowy; 
-extern int16_t		        viewwindowoffset;
 
 extern int8_t               skytextureloaded;
-extern int16_t              r_cachedplayerMobjsecnum;
 
-extern int16_t 			    pendingdetail;
-extern uint16_t			    clipangle;
-extern uint16_t			    fieldofview;
-extern boolean		        setsizeneeded;
-extern uint8_t		        setblocks;
 extern uint16_t			    skytexture;
 
-extern uint16_t             pspritescale;
 extern int16_t              numflats;
 extern int16_t              numpatches;
 extern int16_t              numspritelumps;
@@ -1169,8 +1156,6 @@ typedef	struct {
 
 
 // newend is one past the last valid seg
-extern cliprange_t __near*	newend;
-extern cliprange_t	solidsegs[MAXSEGS];
 extern uint16_t                     numlumps;
 extern FILE*               		    wadfiles[MAX_WADFILES];
 extern int16_t                	    filetolumpindex[MAX_WADFILES-1];
@@ -1208,7 +1193,6 @@ extern int32_t visplaneswitchcount;
 
 
 
-extern segment_t			    spritewidths_segment;  // gross hack? todo revisit...
 
 
 extern int8_t    savename[16];

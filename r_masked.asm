@@ -1828,7 +1828,7 @@ got_colormap:
 
 mov   bx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
-call  FastDiv3232_
+call  FastDiv3232FFFF_
 
 mov   dh, dl
 mov   dl, ah
@@ -3650,7 +3650,7 @@ ELSE
     xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
     div bx
     mov dx, cx   ; q1:q0 is dx:ax
-    retf 
+    ret
 
 
     ; NOTE: this may not work right for negative params or DX:AX  besides 0xFFFFFFFF
@@ -3851,7 +3851,7 @@ ELSE
     ret
 
 
-    endp
+    ENDP
 
 ENDIF
 
