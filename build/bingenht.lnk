@@ -93,7 +93,6 @@ NEWSEGMENT
 file r_bsp.obj
 
 NEWSEGMENT
-file r_data.obj
 file r_main.obj
 file r_column.obj
 file r_span.obj

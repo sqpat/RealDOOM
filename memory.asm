@@ -96,7 +96,7 @@ dw  00, 00, 00, 00
 ; 0x170 
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0x180
-dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, R_GetPatchTextureOffset, bsp_code_segment
 ; 0x190
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0x1A0  _frontsector backsector 1a4 1a8, set their segments
@@ -143,7 +143,7 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 2B0
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 2C0
-dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, R_GetCompositeTextureOffset, bsp_code_segment
 
 
 ;#colfunc_call_table 2D0 (300 with null offset added )

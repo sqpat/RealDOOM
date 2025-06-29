@@ -15,6 +15,8 @@
 #define R_DrawSkyPlaneDynamicOffset           0x5DE
 #define R_WriteBackViewConstantsOffset        0x33D1
 #define R_RenderPlayerViewOffset              0x3245
+#define R_GetCompositeTextureOffset           0x2F33
+#define R_GetPatchTextureOffset               0x2E9C
 #define WI_StartOffset                        0x1001
 #define WI_TickerOffset                       0xE0A
 #define WI_DrawerOffset                       0xE92

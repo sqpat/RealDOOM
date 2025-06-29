@@ -78,7 +78,6 @@ GLOBOBJS = &
  p_user.obj &
  r_init.obj &
  r_setup.obj &
- r_data.obj &
  r_main.obj &
  w_init.obj &
  w_wad.obj &

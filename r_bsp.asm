@@ -10048,7 +10048,6 @@ cleared_all_cache_data:
 ;	// connect old tail and old head.
 ;	nodelist[*nodetail].prev = *nodehead;
 
-;todo bp - 0Eh is bp - 2 addr minus one. do a single mov and get both.
 
 
 mov      ax, ss
@@ -10979,7 +10978,7 @@ COMPOSITE_TEXTURE_SEGMENT = 05000h
 
 ; todo clone in both called segments
 PROC R_GetPatchTexture_ NEAR
-
+PUBLIC R_GetPatchTexture_
 ;segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
 
 ; bp - 2 = texoffset
@@ -11076,6 +11075,7 @@ ENDP
 
 
 PROC R_GetCompositeTexture_ NEAR
+PUBLIC R_GetCompositeTexture_ 
 
 ; segment_t R_GetCompositeTexture(int16_t tex_index) ;
 

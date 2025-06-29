@@ -72,7 +72,6 @@ file p_user.obj
 
 
 NEWSEGMENT
-file r_data.obj
 file r_main.obj
 file w_wad.obj
 file v_video.obj
