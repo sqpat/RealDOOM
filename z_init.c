@@ -639,7 +639,7 @@ void __near Z_LoadBinaries() {
 	FixedMul_addr = 				(uint32_t)(FixedMul);
 	FixedMul2432_addr = 			(uint32_t)(FixedMul2432);
 	FixedDiv_addr =					(uint32_t)(FixedDiv);
-	FastDiv3232_addr = 				(uint32_t)(FastDiv3232FFFF);
+	// FastDiv3232_addr = 				(uint32_t)(FastDiv3232FFFF);
 	R_GetPatchTexture_addr = 		(uint32_t)(R_GetPatchTexture);
 	R_GetCompositeTexture_addr = 	(uint32_t)(R_GetCompositeTexture);
 	// R_GetSpriteTexture_addr = 		(uint32_t)(R_GetSpriteTexture);

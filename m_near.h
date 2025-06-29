@@ -336,7 +336,7 @@
 // more far pointers to functions... once they are in ASM-fixed locations, they should be callable normally
 #define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C0)))
 #define FixedDiv_addr	                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C4)))
-#define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
+// #define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
 #define R_GetCompositeTexture_addr   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
 #define colfunc_call_lookup             (((uint32_t  __near*)                (_NULL_OFFSET + 0x02D0)))

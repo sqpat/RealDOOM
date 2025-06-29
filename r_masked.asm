@@ -1828,10 +1828,7 @@ got_colormap:
 
 mov   bx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
-;call  FastDiv3232_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastDiv3232_addr
+call  FastDiv3232_
 
 mov   dh, dl
 mov   dl, ah
@@ -2667,8 +2664,7 @@ SHIFT_MACRO shl       bx 2
 mov       byte ptr ds:[bx + di + 1], cl  ; write nodetail to next
 ;	previous_next = nodelist[currentpage].next;
 ;	*nodehead = currentpage;
-;mov       bx, word ptr [bp - 2] ; retrieve currentpage
-pop       bx
+pop       bx ; retrieve currentpage
 
 mov       byte ptr ds:[si], bl
 SHIFT_MACRO shl       bx 2
@@ -2727,15 +2723,6 @@ ENDP
 
 
 
-PROC R_MarkL1SpriteCacheMRU3_ NEAR
-PUBLIC R_MarkL1SpriteCacheMRU3_
-
-push word ptr ds:[_spriteL1LRU+1]     ; grab [1] and [2]
-pop  word ptr ds:[_spriteL1LRU+2]     ; put in [2] and [3]
-xchg al, byte ptr ds:[_spriteL1LRU+0] ; swap index for [0]
-mov  byte ptr ds:[_spriteL1LRU+1], al ; put [0] in [1]
-
-ret  
 
 ENDP
 
@@ -2980,12 +2967,12 @@ found_active_single_page:
 
 xchg  ax, dx            ; dx gets realtexpage
 mov   ax, bx            ; ax gets i
-call  word ptr [bp - 2]
+call  R_MarkL1SpriteCacheMRU_
 
 ;    R_MarkL2TextureCacheMRU(realtexpage);
 
 xchg  ax, dx            ; realtexpage into ax. 
-call  word ptr [bp - 4]
+call  R_MarkL2SpriteCacheMRU_
 
 ;    return i;
 
@@ -3003,36 +2990,7 @@ PUSHA_NO_AX_MACRO
 push  bp
 mov   bp, sp
 
-; todo todo get rid of this...
 
-IF COMPISA GE COMPILE_186
-    push  OFFSET R_MarkL1SpriteCacheMRU_ - OFFSET R_MASKED_STARTMARKER_
-    push  OFFSET R_MarkL2SpriteCacheMRU_- OFFSET R_MASKED_STARTMARKER_
-    push  OFFSET Z_QuickMapSpritePage_- OFFSET R_MASKED_STARTMARKER_
-    push  OFFSET R_MarkL1SpriteCacheMRU3_- OFFSET R_MASKED_STARTMARKER_
-    push  (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)
-    push  OFFSET _spritecache_nodes
-    push  OFFSET _spriteL1LRU
-    ;push  PAGE_9000_OFFSET + (SCAMP_PAGE_9000_OFFSET + 4)
-    push  ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning
-ELSE
-    mov   si, OFFSET R_MarkL1SpriteCacheMRU_- OFFSET R_MASKED_STARTMARKER_
-    push  si
-    mov   si, OFFSET R_MarkL2SpriteCacheMRU_- OFFSET R_MASKED_STARTMARKER_
-    push  si
-    mov   si, OFFSET Z_QuickMapSpritePage_- OFFSET R_MASKED_STARTMARKER_
-    push  si
-    mov   si, OFFSET R_MarkL1SpriteCacheMRU3_- OFFSET R_MASKED_STARTMARKER_
-    push  si
-    mov   si, (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)
-    push  si
-    mov   si, OFFSET _spritecache_nodes
-    push  si
-    mov   si, OFFSET _spriteL1LRU
-    push  si
-
-    push  si   ; unused
-ENDIF
 mov   si, OFFSET _activespritepages
 mov   di, OFFSET _activespritenumpages
 mov   cx, NUM_SPRITE_L1_CACHE_PAGES
@@ -3040,13 +2998,13 @@ mov   dx, FIRST_SPRITE_CACHE_LOGICAL_PAGE ; pageoffset
 
 continue_get_page:
 
-push  cx        ; bp - 012h         max   (loop counter etc). ch 0
-push  dx        ; bp - 014h   dh 0 pageoffset
+push  cx        ; bp - 2         max   (loop counter etc). ch 0
+push  dx        ; bp - 4   dh 0 pageoffset
 
 ;	uint8_t realtexpage = texpage >> 2;
 mov   dl, al
 SHIFT_MACRO sar   dx 2
-push  dx        ; bp - 016h   dh 0 realtexpage
+push  dx        ; bp - 6   dh 0 realtexpage
 
 ;	uint8_t numpages = (texpage& 0x03);
 
@@ -3090,11 +3048,17 @@ cwd
 dec   dx ; dx = -1, ah is 0
 mov   bx, cx    ; NUM_TEXTURE_L1_CACHE_PAGES
 dec   bx        ; NUM_TEXTURE_L1_CACHE_PAGES - 1
-add   bx, word ptr [bp - 0Eh] ; _textureL1LRU
-mov   al, byte ptr ds:[bx]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
+mov   al, byte ptr ds:[bx + _spriteL1LRU]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
 mov   bx, ax
 mov   cx, ax
-call  word ptr [bp - 8] ; todo jmp instead of call?
+;call  R_MarkL1SpriteCacheMRU3_
+; inlined
+push word ptr ds:[_spriteL1LRU+1]     ; grab [1] and [2]
+pop  word ptr ds:[_spriteL1LRU+2]     ; put in [2] and [3]
+xchg al, byte ptr ds:[_spriteL1LRU+0] ; swap index for [0]
+mov  byte ptr ds:[_spriteL1LRU+1], al ; put [0] in [1]
+
+
 
 ;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 ;		if (activenumpages[startpage]) {
@@ -3134,30 +3098,26 @@ IFDEF COMP_CH
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         sal   bx, 1
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], 03FFh
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], 03FFh
     ELSEIF COMP_CH EQ CHIPSET_SCAMP
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         mov   dx, bx
         sal   bx, 1
-        add   dx, word ptr [bp - 010h]   ; page offset
+        add   dx, ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning   ; page offset
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], dx
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], dx
         mov   dx, -1
     ELSEIF COMP_CH EQ CHIPSET_HT18
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         sal   bx, 1
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], 0
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], 0
     ENDIF
 ELSE
     mov   byte ptr ds:[bx + si], dl   ; dl is -1
     sal   bx, 1
     SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-    add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-    mov   word ptr ds:[bx], dx  ; dx is -1
+    mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], dx ; dx is -1
 
 ENDIF
 
@@ -3212,7 +3172,7 @@ mov   dh, bl
 mark_all_pages_mru_loop:
 mov   ax, bx
 
-call  word ptr [bp - 2]
+call  R_MarkL1SpriteCacheMRU_
 inc   bl
 dec   dl
 jns   mark_all_pages_mru_loop
@@ -3222,8 +3182,8 @@ jns   mark_all_pages_mru_loop
 ;    R_MarkL2TextureCacheMRU(realtexpage);
 ;    return i;
 
-pop   ax;   word ptr [bp - 016h]
-call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
+pop   ax;   word ptr [bp - 6]
+call  R_MarkL2SpriteCacheMRU_
 mov   al, dh
 mov   es, ax
 LEAVE_MACRO 
@@ -3236,7 +3196,7 @@ ret
 
 evict_and_find_startpage_multi:
 xor   ax, ax ; set ah to 0. 
-mov   bx, word ptr [bp - 012h]
+mov   bx, word ptr [bp - 2]
 dec   bx
 mov   cx, bx
 sub   cl, dl
@@ -3244,7 +3204,7 @@ sub   cl, dl
 ; bx is startpage
 ; cx is ((NUM_TEXTURE_L1_CACHE_PAGES-1)-numpages)
 
-add   bx, word ptr [bp - 0Eh] ; _textureL1LRU
+add   bx, OFFSET _spriteL1LRU 
 
 find_start_page_loop_multi:
 
@@ -3264,14 +3224,14 @@ found_start_page_single:
 ;  cl/cx is startpage
 ;  bl/bx is startpage 
 
-pop   dx  ; bp - 016h, get realtexpage
+pop   dx  ; bp - 6, get realtexpage
 ; dx has realtexpage
 ; bx already ok
 
 mov   byte ptr ds:[bx + di], bh  ; zero
 mov   byte ptr ds:[bx + si], dl
 shl   bx, 1                      ; startpage word offset.
-pop   ax                         ; mov   ax, word ptr [bp - 014h]
+pop   ax                         ; mov   ax, word ptr [bp - 4]
 
 add   ax, dx                     ; _EPR(pageoffset + realtexpage);
 EPR_MACRO ax
@@ -3279,18 +3239,17 @@ EPR_MACRO ax
 ; pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT]
 
 SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-mov   word ptr ds:[bx], ax        ; = _EPR(pageoffset + realtexpage);
+mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], ax        ; = _EPR(pageoffset + realtexpage);
 
 ; dx should be realtexpage???
 xchg  ax, dx
 
-call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
-call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
+call  R_MarkL2SpriteCacheMRU_
+call  Z_QuickMapSpritePage_
 
 mov   ax, 0FFFFh
 
-cmp   byte ptr [bp - 012h], NUM_SPRITE_L1_CACHE_PAGES
+cmp   byte ptr [bp - 2], NUM_SPRITE_L1_CACHE_PAGES
 mov   dx, cx
 je    do_sprite_eviction
 do_tex_eviction:
@@ -3327,7 +3286,7 @@ found_startpage_multi:
 
 ; al already set to startpage
 mov   bx, ax    ; ah/bh is 0
-push  ax  ; bp - 018h
+push  ax  ; bp - 8
 mov   dh, al ; dh gets startpage..
 mov   cx, -1
 
@@ -3374,30 +3333,26 @@ IFDEF COMP_CH
         mov   byte ptr ds:[bx + si], cl  ; -1
         sal   bx, 1                      ; startpage word offset.
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], 03FFh
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], 03FFh
     ELSEIF COMP_CH EQ CHIPSET_SCAMP
         mov   byte ptr ds:[bx + si], cl  ; -1
         mov   cx, bx
         sal   bx, 1                      ; startpage word offset.
-        add   cx, word ptr [bp - 010h]   ; page offset
+        add   cx, ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning   ; page offset
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], cx
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], cx
         mov   cx, -1
     ELSEIF COMP_CH EQ CHIPSET_HT18
         mov   byte ptr ds:[bx + si], cl  ; -1
         sal   bx, 1                      ; startpage word offset.
         SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-        mov   word ptr ds:[bx], 0
+        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], 0
     ENDIF
 ELSE
     mov   byte ptr ds:[bx + si], cl  ; -1
     sal   bx, 1                      ; startpage word offset.
     SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-    add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-    mov   word ptr ds:[bx], cx  ; cx is -1  TODO NPR or whatever
+    mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], cx  ; cx is -1  TODO NPR or whatever
 
 ENDIF
 
@@ -3434,7 +3389,7 @@ mov   ch, dl
 
 ;	for (i = 0; i <= numpages; i++) {
 ; es gets currentpage
-mov   es, word ptr [bp - 016h]
+mov   es, word ptr [bp - 6]
 
 ;    for (i = 0; i <= numpages; i++) {
 ;        R_MarkL1TextureCacheMRU(startpage+i);
@@ -3451,7 +3406,7 @@ loop_mark_next_page_mru_multi:
 
 mov   al, cl
 
-call  [bp - 2]  ; does not affect es
+call  R_MarkL1SpriteCacheMRU_  ; does not affect es
 
 
 mov   ax, es ; currentpage in ax
@@ -3461,14 +3416,13 @@ mov   byte ptr ds:[bx + di], ch   ;   activenumpages[startpage + i] = numpages-i
 mov   byte ptr ds:[bx + si], al   ;	activetexturepages[startpage + i]  = currentpage;
 sal   bx, 1             ; word lookup
 
-add   ax, word ptr [bp - 014h]  ; pageoffset
+add   ax, word ptr [bp - 4]  ; pageoffset
 EPR_MACRO ax
 
 ;	pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
 
 SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-add   bx, word ptr [bp - 0Ah]     ; pageswapargs[pageswapargs_rend_texture_offset
-mov   word ptr ds:[bx], ax
+mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], ax
 
 dec   ch    ; dec numpages - i
 inc   cl    ; inc startpage + i
@@ -3476,8 +3430,7 @@ inc   cl    ; inc startpage + i
 ;    currentpage = texturecache_nodes[currentpage].prev;
 mov   bx, es ; currentpage
 SHIFT_MACRO sal   bx 2
-add   bx, word ptr [bp - 0Ch]   ; _texturecache_nodes
-mov   bl, byte ptr ds:[bx]
+mov   bl, byte ptr ds:[_spritecache_nodes]
 xor   bh, bh
 mov   es, bx
 dec   dl
@@ -3486,9 +3439,9 @@ jns   loop_mark_next_page_mru_multi
 ;    R_MarkL2TextureCacheMRU(realtexpage);
 ;    Z_QuickMapRenderTexture();
 
-mov   ax, word ptr [bp - 016h]
-call  word ptr [bp - 4]  ; R_MarkL2TextureCacheMRU_
-call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
+mov   ax, word ptr [bp - 6]
+call  R_MarkL2SpriteCacheMRU_
+call  Z_QuickMapSpritePage_
 
 ;	//todo: detected and only do -1 if its in the knocked out page? pretty infrequent though.
 ;    cachedtex = -1;
@@ -3497,7 +3450,7 @@ call  word ptr [bp - 6]  ; Z_QuickMapRenderTexture_
 mov   ax, 0FFFFh
 
 mov   dl, dh  ; numpages in cl
-cmp   byte ptr [bp - 012h], NUM_SPRITE_L1_CACHE_PAGES
+cmp   byte ptr [bp - 2], NUM_SPRITE_L1_CACHE_PAGES
 je    do_sprite_eviction
 jmp   do_tex_eviction
 ENDP
@@ -3660,6 +3613,249 @@ ret
 
 
 ENDP
+
+
+
+IF COMPISA GE COMPILE_386
+
+    PROC FastDiv3232FFFF_ NEAR
+    PUBLIC FastDiv3232FFFF_
+
+    ; EDX:EAX as 00000000 FFFFFFFF
+
+    db 066h, 031h, 0C0h              ; xor eax, eax
+    db 066h, 099h                    ; cdq
+    db 066h, 048h                    ; dec eax
+
+
+    ; set up ecx
+    db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+    db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
+
+    ; divide
+    db 066h, 0F7h, 0F1h              ; div ecx
+
+    ; set up return
+    db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
+    ret
+
+    ENDP
+
+ELSE
+
+    fast_div_32_16_FFFF:
+
+    xchg dx, cx   ; cx was 0, dx is FFFF
+    div bx        ; after this dx stores remainder, ax stores q1
+    xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+    div bx
+    mov dx, cx   ; q1:q0 is dx:ax
+    retf 
+
+
+    ; NOTE: this may not work right for negative params or DX:AX  besides 0xFFFFFFFF
+    ; TODO: We only use the low 24 bits of output from this function. can we optimize..?
+    ;FastDiv3232FFFF_
+    ; DX:AX / CX:BX
+
+    PROC FastDiv3232FFFF_ NEAR
+    PUBLIC FastDiv3232FFFF_
+
+
+
+    ; if top 16 bits missing just do a 32 / 16
+    mov  ax, -1
+    cwd
+
+    test cx, cx
+    je fast_div_32_16_FFFF
+
+    main_3232_div:
+
+    push  si
+    push  di
+
+
+
+    XOR SI, SI ; zero this out to get high bits of numhi
+
+
+
+
+    test ch, ch
+    jne shift_bits_3232
+    ; shift a whole byte immediately
+
+    mov ch, cl
+    mov cl, bh
+    mov bh, bl
+    xor bl, bl
+
+    ; dont need a full shift 8 because we know everything is FF
+    mov  si, 000FFh
+    xor al, al
+
+    shift_bits_3232:
+
+    ; less than a byte to shift
+    ; shift until MSB is 1
+    ; DX gets 1s so we can skip it.
+
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232  
+    SAL AX, 1
+    RCL SI, 1
+
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
+
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
+
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
+
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
+
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
+
+    SAL BX, 1
+    RCL CX, 1
+    JC done_shifting_3232
+    SAL AX, 1
+    RCL SI, 1
+
+    SAL BX, 1
+    RCL CX, 1
+
+
+
+    ; store this
+    done_shifting_3232:
+
+    ; we overshifted by one and caught it in the carry bit. lets shift back right one.
+
+    RCR CX, 1
+    RCR BX, 1
+
+
+    ; SI:DX:AX holds divisor...
+    ; CX:BX holds dividend...
+    ; numhi = SI:DX
+    ; numlo = AX:00...
+
+
+    ; save numlo word in sp.
+    ; avoid going to memory... lets do interrupt magic
+    mov di, ax
+
+
+    ; set up first div. 
+    ; dx:ax becomes numhi
+    mov   ax, dx
+    mov   dx, si    
+
+    ; store these two long term...
+    mov   si, bx
+
+
+
+    ; numhi is 00:SI in this case?
+
+    ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+    ; DX:AX = numhi.wu
+
+
+    div   cx
+
+    ; rhat = dx
+    ; qhat = ax
+    ;    c1 = FastMul16u16u(qhat , den0);
+
+    mov   bx, dx					; bx stores rhat
+    mov   es, ax     ; store qhat
+
+    mul   si   						; DX:AX = c1
+
+
+    ; c1 hi = dx, c2 lo = bx
+    cmp   dx, bx
+
+    ja    check_c1_c2_diff_3232
+    jne   q1_ready_3232
+    cmp   ax, di
+    jbe   q1_ready_3232
+    check_c1_c2_diff_3232:
+
+    ; (c1 - c2.wu > den.wu)
+
+    sub   ax, di
+    sbb   dx, bx
+    cmp   dx, cx
+    ja    qhat_subtract_2_3232
+    je    compare_low_word_3232
+
+    qhat_subtract_1_3232:
+    mov ax, es
+    dec ax
+    xor dx, dx
+
+    pop   di
+    pop   si
+    ret
+
+    compare_low_word_3232:
+    cmp   ax, si
+    jbe   qhat_subtract_1_3232
+
+    ; ugly but rare occurrence i think?
+    qhat_subtract_2_3232:
+    mov ax, es
+    dec ax
+    dec ax
+
+    pop   di
+    pop   si
+    ret  
+
+
+
+
+
+
+    q1_ready_3232:
+
+    mov  ax, es
+    xor  dx, dx;
+
+    pop   di
+    pop   si
+    ret
+
+
+    endp
+
+ENDIF
+
+
 
 
 PROC FixedMul1632MaskedLocal_ NEAR
