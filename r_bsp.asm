@@ -10976,7 +10976,14 @@ ENDP
 PATCH_TEXTURE_SEGMENT = 05000h
 COMPOSITE_TEXTURE_SEGMENT = 05000h
 
-; todo clone in both called segments
+
+PROC R_GetPatchTexture_Far_ FAR
+PUBLIC R_GetPatchTexture_Far_
+
+call R_GetPatchTexture_
+retf
+
+
 PROC R_GetPatchTexture_ NEAR
 PUBLIC R_GetPatchTexture_
 ;segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
@@ -11071,7 +11078,11 @@ jmp   done_doing_lookup
 
 ENDP
 
+PROC R_GetCompositeTexture_Far_ FAR
+PUBLIC R_GetCompositeTexture_Far_ 
 
+call R_GetCompositeTexture_
+retf
 
 
 PROC R_GetCompositeTexture_ NEAR

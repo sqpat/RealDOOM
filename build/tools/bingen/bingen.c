@@ -31,8 +31,8 @@ void __far R_BSP_STARTMARKER();
 void __far R_BSP_ENDMARKER();
 void __far R_WriteBackViewConstants();
 void __far R_RenderPlayerView();
-void __far R_GetCompositeTexture();
-void __far R_GetPatchTexture();
+void __far R_GetCompositeTexture_Far();
+void __far R_GetPatchTexture_Far();
 
 void __far R_DrawColumn (void);
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
@@ -305,8 +305,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // BSP offsets
 	fprintf(fp, "#define R_WriteBackViewConstantsOffset        0x%X\n", FP_OFF(R_WriteBackViewConstants)       - FP_OFF(R_BSP_STARTMARKER));
 	fprintf(fp, "#define R_RenderPlayerViewOffset              0x%X\n", FP_OFF(R_RenderPlayerView)             - FP_OFF(R_BSP_STARTMARKER));
-	fprintf(fp, "#define R_GetCompositeTextureOffset           0x%X\n", FP_OFF(R_GetCompositeTexture)          - FP_OFF(R_BSP_STARTMARKER));
-	fprintf(fp, "#define R_GetPatchTextureOffset               0x%X\n", FP_OFF(R_GetPatchTexture)              - FP_OFF(R_BSP_STARTMARKER));
+	fprintf(fp, "#define R_GetCompositeTextureOffset           0x%X\n", FP_OFF(R_GetCompositeTexture_Far)      - FP_OFF(R_BSP_STARTMARKER));
+	fprintf(fp, "#define R_GetPatchTextureOffset               0x%X\n", FP_OFF(R_GetPatchTexture_Far)          - FP_OFF(R_BSP_STARTMARKER));
 	
     // intermission/ wi stuff offsets
     fprintf(fp, "#define WI_StartOffset                        0x%X\n", FP_OFF(WI_Start)                       - FP_OFF(WI_STARTMARKER));
@@ -384,8 +384,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     fp = fopen("m_offset.inc", "wb");
 	fprintf(fp, "R_DRAWPLANESOFFSET = 0%Xh\n",                      FP_OFF(R_DrawPlanes)                    - FP_OFF(R_SPAN_STARTMARKER));
-	fprintf(fp, "R_GETCOMPOSITETEXTUREOFFSET = 0%Xh\n",             FP_OFF(R_GetCompositeTexture)           - FP_OFF(R_MASKED_STARTMARKER));
-	fprintf(fp, "R_GETPATCHTEXTUREOFFSET = 0%Xh\n",                 FP_OFF(R_GetPatchTexture)               - FP_OFF(R_SPAN_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTUREOFFSET = 0%Xh\n",             FP_OFF(R_GetCompositeTexture_Far)       - FP_OFF(R_BSP_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTUREOFFSET = 0%Xh\n",                 FP_OFF(R_GetPatchTexture_Far)           - FP_OFF(R_BSP_STARTMARKER));
 	fprintf(fp, "R_DRAWMASKEDOFFSET = 0%Xh\n",                      FP_OFF(R_DrawMasked)                    - FP_OFF(R_MASKED_STARTMARKER));
     fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTSOFFSET = 0%Xh\n",   FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
 
