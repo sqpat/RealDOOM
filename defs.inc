@@ -1035,7 +1035,7 @@ IFDEF COMP_CH
 		Z_QUICKMAPAI24 MACRO pageswapindex, page
 			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
 			mov  	dx, HT18_PAGE_SELECT_REGISTER
-			mov  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
+			mov  	al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 			out  	dx, al
 			mov  	dx, HT18_PAGE_SET_REGISTER
 			mov     cx, 24
@@ -1076,31 +1076,31 @@ IFDEF COMP_CH
 		Z_QUICKMAPAI1 &arg1 &arg2
 	ENDM
 	Z_QUICKMAPAI2_NO_DX MACRO  arg1, arg2
-		Z_QUICKMAPAI1 &arg1 &arg2
+		Z_QUICKMAPAI2 &arg1 &arg2
 	ENDM
 	Z_QUICKMAPAI3_NO_DX MACRO  arg1, arg2
-		Z_QUICKMAPAI1 &arg1 &arg2
+		Z_QUICKMAPAI3 &arg1 &arg2
 	ENDM
 	Z_QUICKMAPAI4_NO_DX MACRO  arg1, arg2
-		Z_QUICKMAPAI1 &arg1 &arg2
+		Z_QUICKMAPAI4 &arg1 &arg2
 	ENDM
 	Z_QUICKMAPAI5_NO_DX MACRO  arg1, arg2
-		Z_QUICKMAPAI1 &arg1 &arg2
+		Z_QUICKMAPAI5 &arg1 &arg2
 	ENDM
 	Z_QUICKMAPAI6_NO_DX MACRO  arg1, arg2
-		Z_QUICKMAPAI1 &arg1 &arg2
+		Z_QUICKMAPAI6 &arg1 &arg2
 	ENDM
 	Z_QUICKMAPAI7_NO_DX MACRO  arg1, arg2
-		Z_QUICKMAPAI1 &arg1 &arg2
+		Z_QUICKMAPAI7 &arg1 &arg2
 	ENDM
 	Z_QUICKMAPAI8_NO_DX MACRO  arg1, arg2
-		Z_QUICKMAPAI1 &arg1 &arg2
+		Z_QUICKMAPAI8 &arg1 &arg2
 	ENDM
 	Z_QUICKMAPAI16_NO_DX MACRO  arg1, arg2
-		Z_QUICKMAPAI1 &arg1 &arg2
+		Z_QUICKMAPAI16 &arg1 &arg2
 	ENDM
 	Z_QUICKMAPAI24_NO_DX MACRO  arg1, arg2
-		Z_QUICKMAPAI1 &arg1 &arg2
+		Z_QUICKMAPAI24 &arg1 &arg2
 	ENDM
 
 
