@@ -693,10 +693,10 @@ IFDEF COMP_CH
         inc   ax
         inc   si
         inc   si
-        cmp   ax, 4
+        cmp   ax, 24
         jl    loop_next_page_to_unmap
 
-        Z_QUICKMAPAI4 0 INDEXED_PAGE_9000_OFFSET
+        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE 4000_OFFSET
         
         pop   cx
         pop   si
