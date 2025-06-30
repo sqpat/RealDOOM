@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/29 20:39:27
+Created on:       25/06/29 20:49:00
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -763,9 +763,9 @@ Module: math.obj(math.ASM)
 031c:793a*     FixedMul16u32u_
 031c:7b35      FastDiv3216u_
 031c:7b75      FixedDivWholeA_
+031c:77df*     FixedMulBig16u32_
 031c:7869      FixedMulTrig_
 031c:77e8      FixedMul2432_
-031c:77df*     FixedMulBig16u32_
 031c:7829      FixedMul1632_
 031c:77a6      FixedMul_
 031c:7911*     FixedMulBig1632_
@@ -1295,9 +1295,9 @@ Module: z_zone.obj(z_zone.ASM)
 2019:4c9c*     Z_QuickMapScreen0_
 2019:4b20      Z_QuickMapRender_
 2019:4c86      Z_QuickMapScratch_4000_
+2019:4c44      Z_QuickMapScratch_5000_
 2019:4c70      Z_QuickMapScratch_7000_
 2019:507d*     CopyString13_Zonelocal_
-2019:4c44      Z_QuickMapScratch_5000_
 2019:4dc7      Z_QuickMapMenu_
 2019:4c5a      Z_QuickMapScratch_8000_
 2019:4d15*     Z_QuickMapFlatPage_

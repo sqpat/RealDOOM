@@ -202,7 +202,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define SAVESTRINGSIZE        24u
 
 //todo move a bit
-#define baselowermemoryaddress    (0x30CD0000)
+#define baselowermemoryaddress    (0x318D0000)
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
 #define size_sfxdata             (NUMSFX * sizeof(sfxinfo_t))
