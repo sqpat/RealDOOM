@@ -809,7 +809,7 @@ IFDEF COMP_CH
 		Z_QUICKMAPAI24 MACRO pageswapindex, page
 			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
 			mov  	dx, SCAT_PAGE_SELECT_REGISTER
-			mov		al, 080h
+			mov  	al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 			out  	dx, al
 			mov  	dx, SCAT_PAGE_SET_REGISTER
 			mov  	cx, 24
@@ -1045,7 +1045,6 @@ IFDEF COMP_CH
 	ENDM
 
 	NPR_MACRO MACRO amount
-
 
 	ENDM
 

@@ -686,17 +686,15 @@ IFDEF COMP_CH
         push  dx
         push  si
         push  cx
-        xor   ax, ax
-        mov   si, ax
+        xor   si, si
         loop_next_page_to_unmap:
         mov   word ptr ds:[si + _pageswapargs], 003FFh
-        inc   ax
         inc   si
         inc   si
-        cmp   ax, 24
+        cmp   si, 48
         jl    loop_next_page_to_unmap
 
-        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE 4000_OFFSET
+        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
         
         pop   cx
         pop   si
@@ -721,10 +719,10 @@ IFDEF COMP_CH
         inc   bx
         inc   si
         inc   si
-        cmp   ax, 24
+        cmp   si, 48
         jl    loop_next_page_to_unmap
 
-        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE 4000_OFFSET
+        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
         
         pop   bx
         pop   cx
@@ -736,17 +734,15 @@ IFDEF COMP_CH
         push  dx
         push  si
         push  cx
-        xor   ax, ax
-        mov   si, ax
+        xor   si, si
         loop_next_page_to_unmap:
         mov   word ptr ds:[si + _pageswapargs], 00000h
-        inc   ax
         inc   si
         inc   si
-        cmp   ax, 24
+        cmp   si, 48
         jl    loop_next_page_to_unmap
 
-        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE 4000_OFFSET
+        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE4000_OFFSET
         
         pop   cx
         pop   si
