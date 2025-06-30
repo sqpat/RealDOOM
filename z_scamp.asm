@@ -41,7 +41,7 @@ EMS_MEMORY_PAGE_OFFSET = 050h
 ; Z_QuickMapAI  (autoincrement)
 ;
 
-
+COMMENT @
 
 ; no need for input registers because its always going to be ems page 0x4000
 PROC Z_QuickMap24AIC_ NEAR
@@ -191,6 +191,8 @@ out SCAMP_PAGE_SET_REGISTER, ax
 pop si
 ret
 ENDP
+
+@
 
 COMMENT @
 void __far Z_QuickMapMusicPageFrame(uint8_t pageframeindex, uint8_t pagenumber){

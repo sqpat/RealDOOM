@@ -32,7 +32,7 @@ HT18_PAGE_SET_REGISTER = 01ECh
 
  
 
-
+COMMENT @
 
 ; no need for input registers because its always going to be ems page 0x4000
 PROC Z_QuickMap24AIC_ NEAR
@@ -215,6 +215,8 @@ ret
  
 
 ENDP
+
+@
 
 ;todo test
 
