@@ -716,8 +716,8 @@ IFDEF COMP_CH
 			mov     al, page OR EMS_AUTOINCREMENT_FLAG
 			out  	dx, al
 			mov  	dx, SCAT_PAGE_SET_REGISTER 
-			mov  	cx, 1
-			rep  	outsw
+			lodsw
+			out 	dx, ax
 		ENDM
 
 		Z_QUICKMAPAI2 MACRO pageswapindex, page
@@ -726,8 +726,10 @@ IFDEF COMP_CH
 			mov     al, page OR EMS_AUTOINCREMENT_FLAG
 			out  	dx, al
 			mov  	dx, SCAT_PAGE_SET_REGISTER
-			mov  	cx, 2
-			rep  	outsw
+			lodsw
+			out 	dx, ax
+			lodsw
+			out 	dx, ax
 		ENDM
 
 		Z_QUICKMAPAI3 MACRO pageswapindex, page
@@ -736,8 +738,12 @@ IFDEF COMP_CH
 			mov     al, page OR EMS_AUTOINCREMENT_FLAG
 			out  	dx, al
 			mov  	dx, SCAT_PAGE_SET_REGISTER
-			mov  	cx, 3
-			rep  	outsw
+			lodsw
+			out 	dx, ax
+			lodsw
+			out 	dx, ax
+			lodsw
+			out 	dx, ax
 		ENDM
 
 		Z_QUICKMAPAI4 MACRO pageswapindex, page
