@@ -53,10 +53,10 @@
 // 0xE000 Block
 
 
+#define baselowermemoryaddress    (0x21900000)
+#define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
 
-#define extramemoryblock    0xE0000000
-#define extramemoryblock_segment        ((segment_t) ((int32_t)extramemoryblock >> 16))
 
 typedef struct sfxinfo_struct sfxinfo_t;
 
@@ -85,7 +85,7 @@ struct sfxinfo_struct{
 
 
 
-#define sectors           ((sector_t __far*)        MAKE_FULL_SEGMENT(extramemoryblock , 0))
+#define sectors           ((sector_t __far*)        MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
 #define vertexes          ((vertex_t __far*)        MAKE_FULL_SEGMENT(sectors          , size_sectors))
 #define sides             ((side_t __far*)          MAKE_FULL_SEGMENT(vertexes         , size_vertexes))
 #define lines             ((line_t __far*)          MAKE_FULL_SEGMENT(sides            , size_sides))
@@ -97,6 +97,54 @@ struct sfxinfo_struct{
 #define seg_sides         ((uint8_t __far*)         MAKE_FULL_SEGMENT(seg_linedefs     , size_seg_linedefs))
 #define scantokey         ((byte __far*)            MAKE_FULL_SEGMENT(seg_sides        , size_seg_sides))
 
+
+#define sfx_data           ((sfxinfo_t __far*)          MAKE_FULL_SEGMENT(scantokey        , size_scantokey))
+#define sb_dmabuffer       ((uint8_t __far*)            MAKE_FULL_SEGMENT(sfx_data, size_sfxdata))  // 10240
+#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(sb_dmabuffer, size_sb_dmabuffer))  // 10240
+#define finecosine         ((int32_t __far*)            (((int32_t)finesine) + 0x2000))  // 10240
+#define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
+#define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
+#define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
+#define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
+#define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
+#define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable, size_rndtable))
+#define savegamestrings    ((int8_t __far *)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
+#define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(savegamestrings , size_savegamestrings))
+
+
+#define sfx_data_segment              ((segment_t) ((int32_t)sfx_data  >> 16))
+#define sb_dmabuffer_segment          ((segment_t) ((int32_t)sb_dmabuffer  >> 16))
+#define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
+// todo clean this and finecosine up
+#define finecosine_segment            ((segment_t) (finesine_segment + 0x200))
+#define events_segment                ((segment_t) ((int32_t)events >> 16))
+#define flattranslation_segment       ((segment_t) ((int32_t)flattranslation >> 16))
+#define texturetranslation_segment    ((segment_t) ((int32_t)texturetranslation >> 16))
+#define textureheights_segment        ((segment_t) ((int32_t)textureheights >> 16))
+#define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
+#define subsector_lines_segment       ((segment_t) ((int32_t)subsector_lines >> 16))
+#define savegamestrings_segment       ((segment_t) ((int32_t)savegamestrings >> 16))
+#define base_lower_end_segment        ((segment_t) ((int32_t)base_lower_end >> 16))
+
+#define FINE_SINE_ARGUMENT   finesine_segment
+#define FINE_COSINE_ARGUMENT finecosine_segment
+
+//todo recalculate after moving stuff around...
+
+// sfxdata              31CD:0000
+// sb_dmabuffer         31F6:0000
+// finesine             3216:0000
+// finecosine           3216:2000
+// events               3C16:0000
+// flattranslation      3C4A:0000
+// texturetranslation   3C53:0000
+// textureheights       3C8A:0000
+// rndtable             3CA5:0000
+// subsector_lines      3CB5:0000
+// savegamestrings      3CF1:0000
+// base_lower_end       3D00:0000
+//03CACh
+// done                 3D00:0000
 
 
 
@@ -202,8 +250,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define SAVESTRINGSIZE        24u
 
 //todo move a bit
-#define baselowermemoryaddress    (0x318D0000)
-#define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
 #define size_sfxdata             (NUMSFX * sizeof(sfxinfo_t))
 #define size_sb_dmabuffer        (256 * 2)
@@ -220,53 +266,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 
-#define sfx_data           ((sfxinfo_t __far*)          (baselowermemoryaddress))
-#define sb_dmabuffer       ((uint8_t __far*)            MAKE_FULL_SEGMENT(sfx_data, size_sfxdata))  // 10240
-#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(sb_dmabuffer, size_sb_dmabuffer))  // 10240
-#define finecosine         ((int32_t __far*)            (((int32_t)finesine) + 0x2000))  // 10240
-#define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
-#define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
-#define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
-#define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
-#define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
-#define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable, size_rndtable))
-#define savegamestrings    ((int8_t __far *)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
-#define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(savegamestrings , size_savegamestrings))
-
-
-#define sfx_data_segment              ((segment_t) ((int32_t)sfx_data  >> 16))
-#define sb_dmabuffer_segment          ((segment_t) ((int32_t)sb_dmabuffer  >> 16))
-#define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
-// todo clean this and finecosine up
-#define finecosine_segment            ((segment_t) (finesine_segment + 0x200))
-#define events_segment                ((segment_t) ((int32_t)events >> 16))
-#define flattranslation_segment       ((segment_t) ((int32_t)flattranslation >> 16))
-#define texturetranslation_segment    ((segment_t) ((int32_t)texturetranslation >> 16))
-#define textureheights_segment        ((segment_t) ((int32_t)textureheights >> 16))
-#define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
-#define subsector_lines_segment       ((segment_t) ((int32_t)subsector_lines >> 16))
-#define savegamestrings_segment       ((segment_t) ((int32_t)savegamestrings >> 16))
-#define base_lower_end_segment        ((segment_t) ((int32_t)base_lower_end >> 16))
-
-#define FINE_SINE_ARGUMENT   finesine_segment
-#define FINE_COSINE_ARGUMENT finecosine_segment
-
-//todo recalculate after moving stuff around...
-
-// sfxdata              31CD:0000
-// sb_dmabuffer         31F6:0000
-// finesine             3216:0000
-// finecosine           3216:2000
-// events               3C16:0000
-// flattranslation      3C4A:0000
-// texturetranslation   3C53:0000
-// textureheights       3C8A:0000
-// rndtable             3CA5:0000
-// subsector_lines      3CB5:0000
-// savegamestrings      3CF1:0000
-// base_lower_end       3D00:0000
-//03CACh
-// done                 3D00:0000
 
 
 
@@ -1497,7 +1496,7 @@ compositetextureoffset  4F80:01AC
 // #define lumpinfo5000 ((lumpinfo_t __far*) 0x54000000)
 // #define lumpinfo9000 ((lumpinfo_t __far*) 0x94000000)
 #define lumpinfoD800 ((lumpinfo_t __far*) 0xD8000000)
-#define lumpinfoinit ((lumpinfo_t __far*) extramemoryblock)
+#define lumpinfoinit ((lumpinfo_t __far*) baselowermemoryaddress)
 
 #define ANIMS_DOOMDATA_SIZE     0x1B5
 #define SPLIST_DOOMDATA_SIZE    0x2B2

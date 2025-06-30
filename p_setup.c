@@ -1004,7 +1004,7 @@ void __near Z_FreeConventionalAllocations() {
 	memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
 	//erase the level data region (BUT NOT SCANTOKEY)
-	FAR_memset(((byte __far*) extramemoryblock), 0, (scantokey_segment - extramemoryblock_segment) << 4);
+	FAR_memset(((byte __far*) baselowermemoryaddress), 0, (scantokey_segment - base_lower_memory_segment) << 4);
 
 	// todo make this area less jank. We want to free all the ems 4.0 region level data...
 	// handles blockmaps and lines_physics...
