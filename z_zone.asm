@@ -32,9 +32,22 @@ EXTRN _hu_font:WORD
 
 
 .CODE
+quickmap_by_taskjump_jump_table:
+dw task_num_0_jump
+dw task_num_1_jump
+dw task_num_2_jump
+dw task_num_3_jump
+dw task_num_4_jump
+dw task_num_5_jump
+dw task_num_6_jump
+dw task_num_7_jump
+dw task_num_8_jump
+dw task_num_9_jump
+dw task_num_10_jump
+dw task_num_11_jump
+
 
 ; todo get rid of tasks
-; todo put in constants?
 
 IFDEF COMP_CH
 ELSE
@@ -145,6 +158,7 @@ PUBLIC Z_QuickMapPhysics_
 push  dx
 push  cx
 push  si
+task_num_0_jump:
 
 Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS
@@ -181,6 +195,7 @@ push  dx
 push  cx
 push  si
 
+task_num_1_jump:
 Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_RENDER
 
@@ -267,6 +282,7 @@ push  dx
 push  cx
 push  si
 
+task_num_2_jump:
 Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
 Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
 Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
@@ -447,6 +463,7 @@ push  dx
 push  cx
 push  si
 
+task_num_9_jump:
 Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_MENU
@@ -463,6 +480,8 @@ PUBLIC Z_QuickMapIntermission_
 push  dx
 push  cx
 push  si
+
+task_num_11_jump:
 
 Z_QUICKMAPAI16 pageswapargs_intermission_offset_size INDEXED_PAGE_6000_OFFSET
 
@@ -486,44 +505,7 @@ Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
 Z_QUICKMAPAI8_NO_DX (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_WIPE
-pop   si
-pop   cx
-pop   dx
-retf  
 
-ENDP
-
-quickmap_by_taskjump_jump_table:
-dw task_num_0_jump
-dw task_num_1_jump
-dw task_num_2_jump
-dw task_num_3_jump
-dw task_num_4_jump
-dw task_num_5_jump
-dw task_num_6_jump
-dw task_num_7_jump
-dw task_num_8_jump
-dw task_num_9_jump
-dw task_num_10_jump
-dw task_num_11_jump
-
-
-
-PROC Z_QuickMapByTaskNum_ FAR
-PUBLIC Z_QuickMapByTaskNum_
-
-push  bx
-push  dx
-
-xor   ah, ah
-mov   bx, ax
-sal   bx, 1
-jmp   word ptr cs:[bx + quickmap_by_taskjump_jump_table]
-task_num_0_jump:
-
-Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-
-mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 task_num_3_jump:
 task_num_4_jump:
 task_num_5_jump:
@@ -531,46 +513,28 @@ task_num_6_jump:
 task_num_7_jump:
 task_num_8_jump:
 task_num_10_jump:
+pop   si
+pop   cx
 pop   dx
-pop   bx
-retf  
-task_num_1_jump:
-
-Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
-
-
-
-mov   byte ptr ds:[_currenttask], TASK_RENDER
-pop   dx
-pop   bx
-retf  
-task_num_2_jump:
-
-Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
-Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
-Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
-
-mov   byte ptr ds:[_currenttask], TASK_STATUS
-pop   dx
-pop   bx
 retf  
 
-task_num_9_jump:
+ENDP
 
-Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
 
-mov   byte ptr ds:[_currenttask], TASK_MENU
-pop   dx
-pop   bx
-retf  
-task_num_11_jump:
 
-Z_QUICKMAPAI16 pageswapargs_intermission_offset_size INDEXED_PAGE_6000_OFFSET
 
-mov   byte ptr ds:[_currenttask], TASK_INTERMISSION
-pop   dx
-pop   bx
-retf  
+PROC Z_QuickMapByTaskNum_ FAR
+PUBLIC Z_QuickMapByTaskNum_
+
+push  dx
+push  cx
+push  si
+
+xor   ah, ah
+mov   si, ax
+sal   si, 1
+jmp   word ptr cs:[si + quickmap_by_taskjump_jump_table]
+
 
 ENDP
 
