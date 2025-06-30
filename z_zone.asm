@@ -118,49 +118,6 @@ ELSE
 
     ENDP
 
-COMMENT @
-
-    PROC Z_QuickMap_ NEAR
-    PUBLIC Z_QuickMap_
-
-    MAX_COUNT_ITER = 8
-
-    push  bx
-    push  cx
-    push  si
-    mov   si, ax
-    mov   bl, dl
-    test  dl, dl
-    jle   done_with_quickmap_loop_exit
-    compare_next_quickmap_loop: ; todo move this to end of loop
-    mov   dx, word ptr ds:[_emshandle]
-    mov   ax, 05000h
-    cmp   bl, MAX_COUNT_ITER
-    jle   set_max_args_to_less_than_8
-    mov   cx, MAX_COUNT_ITER
-    loop_next_quickmap_args:
-    sub   bl, MAX_COUNT_ITER
-    int   067h
-    add   si, MAX_COUNT_ITER * 2 * PAGE_SWAP_ARG_MULT
-    test  bl, bl
-    jg    compare_next_quickmap_loop
-    done_with_quickmap_loop_exit:
-    pop   si
-    pop   cx
-    pop   bx
-    ret   
-    set_max_args_to_less_than_8:    ; todo dupe the loop contents
-    mov   cl, bl
-    xor   ch, ch
-    int   067h
-    pop   si
-    pop   cx
-    pop   bx
-    ret 
-
-    ENDP
-
-@
 
 ENDIF
 
@@ -268,22 +225,6 @@ retf
 
 ENDP
 
-PROC Z_QuickMapRender_9000To7000_ FAR
-PUBLIC Z_QuickMapRender_9000To7000_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI2 (pageswapargs_spritecache_offset_size+4) INDEXED_PAGE_7000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
 PROC Z_QuickMapRender_9000To6000_ FAR
 PUBLIC Z_QuickMapRender_9000To6000_
 
@@ -318,56 +259,6 @@ retf
 
 ENDP
 
-PROC Z_QuickMapRender5000_ FAR
-PUBLIC Z_QuickMapRender5000_
-
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
-PROC Z_QuickMapRender9000_ FAR
-PUBLIC Z_QuickMapRender9000_
-
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 pageswapargs_rend_9000_size INDEXED_PAGE_9000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
-PROC Z_QuickMapRenderTexture_ NEAR
-PUBLIC Z_QuickMapRenderTexture_
-
-
-push  dx
-push  cx
-push  si   
-
-Z_QUICKMAPAI8 pageswapargs_rend_texture_size INDEXED_PAGE_5000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-ret
-
-ENDP
 
 PROC Z_QuickMapStatus_ FAR
 PUBLIC Z_QuickMapStatus_
@@ -470,23 +361,6 @@ retf
 
 ENDP
 
-PROC Z_QuickMapRenderPlanes9000only_ FAR
-PUBLIC Z_QuickMapRenderPlanes9000only_
-
-push  dx
-push  cx
-push  si
-
-;call  Z_QuickMapRender9000_
-Z_QUICKMAPAI4 pageswapargs_rend_9000_size INDEXED_PAGE_9000_OFFSET
-Z_QUICKMAPAI4_NO_DX (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_9C00_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
 
 PROC Z_QuickMapRenderPlanes_ FAR
 PUBLIC Z_QuickMapRenderPlanes_
@@ -508,43 +382,7 @@ retf
 
 ENDP
 
-PROC Z_QuickMapRenderPlanesBack_ FAR
-PUBLIC Z_QuickMapRenderPlanesBack_
 
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI3 pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
-
-PROC Z_QuickMapFlatPage_ FAR
-PUBLIC Z_QuickMapFlatPage_
-
-push  cx
-push  si
-mov   si, dx
-shl   si, 1
-
-SHIFT_PAGESWAP_ARGS si
-
-mov   word ptr ds:[_pageswapargs + (pageswapargs_flatcache_offset * PAGE_SWAP_ARG_MULT) + si], ax
-;	pageswapargs[pageswapargs_flatcache_offset + offset * PAGE_SWAP_ARG_MULT] = _EPR(page);
-
-Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
-
-pop   si
-pop   cx
-retf  
-
-ENDP
 
 PROC Z_QuickMapUndoFlatCache_ FAR
 PUBLIC Z_QuickMapUndoFlatCache_
@@ -584,38 +422,6 @@ retf
 ENDP
 
 
-
-PROC Z_QuickMapPhysics5000_ FAR
-PUBLIC Z_QuickMapPhysics5000_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 (pageswapargs_phys_offset_size+4) INDEXED_PAGE_5000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
-PROC Z_QuickMapScreen1_ FAR
-PUBLIC Z_QuickMapScreen1_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 (pageswapargs_intermission_offset_size+12) INDEXED_PAGE_9000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
 
 PROC Z_QuickMapPalette_ FAR
 PUBLIC Z_QuickMapPalette_
@@ -906,24 +712,6 @@ mov   byte ptr ds:[bx + _active_visplanes], 0
 jmp   done_with_visplane_loop
 
 ENDP
-
-PROC Z_QuickMapVisplaneRevert_ FAR
-PUBLIC Z_QuickMapVisplaneRevert_
-
-push  dx
-mov   dx, 1
-mov   ax, dx
-call  Z_QuickMapVisplanePage_
-mov   dx, 2
-mov   ax, dx
-call  Z_QuickMapVisplanePage_
-mov   byte ptr ds:[_visplanedirty], 0
-pop   dx
-retf  
-
-ENDP
-
-
 
 
 IFDEF COMP_CH
