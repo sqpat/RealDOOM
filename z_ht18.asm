@@ -267,5 +267,33 @@ PUBLIC Z_QuickMapMusicPageFrame_
 	retf
 ENDP
 
+LUMP_MASK = 0FCh 
+
+PROC Z_QuickMapWADPageFrame_ FAR
+PUBLIC Z_QuickMapWADPageFrame_
+
+and  ah, LUMP_MASK
+
+cmp  ah, byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX]
+je   exit_wad_pageframe
+
+mov  byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX], ah
+
+mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + WAD_PAGE_FRAME_INDEX	; page D400
+out  SCAMP_PAGE_SELECT_REGISTER, al
+
+mov  al, ah
+xor  ah, ah
+
+SHIFT_MACRO SHR AX 2
+
+; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
+; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
+add  ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
+out  SCAMP_PAGE_SET_REGISTER, ax
+exit_wad_pageframe:
+
+retf
+
 
 END

@@ -265,12 +265,12 @@ PUBLIC Z_QuickMapWADPageFrame_
 
 and  ah, LUMP_MASK
 
-cmp  ah, byte ptr ds:[_currentpageframes + 2]
+cmp  ah, byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX]
 je   exit_wad_pageframe
 
-mov  byte ptr ds:[_currentpageframes + 2], ah
+mov  byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX], ah
 
-mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + 2	; page D400
+mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + WAD_PAGE_FRAME_INDEX	; page D400
 out  SCAMP_PAGE_SELECT_REGISTER, al
 
 mov  al, ah

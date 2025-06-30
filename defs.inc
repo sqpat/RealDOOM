@@ -703,23 +703,21 @@ IFDEF COMP_CH
 		EMS_AUTOINCREMENT_FLAG  =   080h
 		CHIPSET_PAGE_9000       =   014h
 
-		EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT = 08080h
-
-		; consider ; inc dx x2?
 
 		SCAT_PAGE_D000 = 018h
 		SCAT_PAGE_SELECT_REGISTER = 020Ah
 		SCAT_PAGE_SET_REGISTER = 0208h
-		EMS_MEMORY_PAGE_OFFSET = 080h
+		; consider ; inc dx x2?
 		
+
 		Z_QUICKMAPAI1 MACRO pageswapindex, page
 			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
 			mov  	dx, SCAT_PAGE_SELECT_REGISTER
 			mov     al, page OR EMS_AUTOINCREMENT_FLAG
 			out  	dx, al
 			mov  	dx, SCAT_PAGE_SET_REGISTER 
-			lodsw
-			out 	dx, ax
+			mov  	cx, 1
+			rep  	outsw
 		ENDM
 
 		Z_QUICKMAPAI2 MACRO pageswapindex, page
@@ -728,10 +726,8 @@ IFDEF COMP_CH
 			mov     al, page OR EMS_AUTOINCREMENT_FLAG
 			out  	dx, al
 			mov  	dx, SCAT_PAGE_SET_REGISTER
-			lodsw
-			out 	dx, ax
-			lodsw
-			out 	dx, ax
+			mov  	cx, 2
+			rep  	outsw
 		ENDM
 
 		Z_QUICKMAPAI3 MACRO pageswapindex, page
@@ -740,12 +736,8 @@ IFDEF COMP_CH
 			mov     al, page OR EMS_AUTOINCREMENT_FLAG
 			out  	dx, al
 			mov  	dx, SCAT_PAGE_SET_REGISTER
-			lodsw
-			out 	dx, ax
-			lodsw
-			out 	dx, ax
-			lodsw
-			out 	dx, ax
+			mov  	cx, 3
+			rep  	outsw
 		ENDM
 
 		Z_QUICKMAPAI4 MACRO pageswapindex, page
@@ -829,7 +821,6 @@ IFDEF COMP_CH
 		SCAMP_PAGE_FRAME_BASE_INDEX = 4    ; todo ??? d000?
 		SCAMP_PAGE_SELECT_REGISTER = 0E8h
 		SCAMP_PAGE_SET_REGISTER = 0EAh
-
 
 		Z_QUICKMAPAI1 MACRO pageswapindex, page
 			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
@@ -934,7 +925,6 @@ IFDEF COMP_CH
 
 		HT18_PAGE_SELECT_REGISTER = 01EEh
 		HT18_PAGE_SET_REGISTER = 01ECh
-
 
 		Z_QUICKMAPAI1 MACRO pageswapindex, page
 			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
@@ -1109,7 +1099,10 @@ ELSE
 	; unused
 	CHIPSET_PAGE_9000=0
 
-	EMS_MEMORY_PAGE_OFFSET  = 00280h
+	EMS_MEMORY_PAGE_OFFSET  = 00000h
+
+	EPR_OFFSET = EMS_MEMORY_PAGE_OFFSET
+
 	EPR_MACRO MACRO var
 
 	ENDM

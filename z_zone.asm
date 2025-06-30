@@ -677,33 +677,85 @@ jmp   done_with_visplane_loop
 
 ENDP
 
+PROC Z_QuickMapUnmapAll_ FAR
+PUBLIC Z_QuickMapUnmapAll_
 
 IFDEF COMP_CH
-    PROC Z_QuickMapUnmapAll_ FAR
-    PUBLIC Z_QuickMapUnmapAll_
 
-    push  dx
-    push  si
-    push  cx
-    xor   ax, ax
-    mov   si, ax
-    loop_next_page_to_unmap:
-    mov   word ptr ds:[bx + _pageswapargs], -1
-    inc   ax
-    inc   si
-    inc   si
-    cmp   ax, 24
-    jl    loop_next_page_to_unmap
+	IF COMP_CH EQ CHIPSET_SCAT
+        push  dx
+        push  si
+        push  cx
+        xor   ax, ax
+        mov   si, ax
+        loop_next_page_to_unmap:
+        mov   word ptr ds:[si + _pageswapargs], 003FFh
+        inc   ax
+        inc   si
+        inc   si
+        cmp   ax, 4
+        jl    loop_next_page_to_unmap
 
-    Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-    
-    pop   cx
-    pop   si
-    pop   dx
-    retf  
+        Z_QUICKMAPAI4 0 INDEXED_PAGE_9000_OFFSET
+        
+        pop   cx
+        pop   si
+        pop   dx
+        retf  
+	ELSEIF COMP_CH EQ CHIPSET_SCAMP
+
+        push  dx
+        push  si
+        push  cx
+        push  bx
+        xor   ax, ax
+        mov   si, ax
+        mov   bx, OFFSET _ems_backfill_page_order
+        loop_next_page_to_unmap:
+    ; todo test
+        xor   ax, ax
+        xlat
+        add   ax, (SCAMP_PAGE_9000_OFFSET + 4)
+
+        mov   word ptr ds:[si + _pageswapargs], ax
+        inc   bx
+        inc   si
+        inc   si
+        cmp   ax, 24
+        jl    loop_next_page_to_unmap
+
+        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE 4000_OFFSET
+        
+        pop   bx
+        pop   cx
+        pop   si
+        pop   dx
+        retf  
+
+	ELSEIF COMP_CH EQ CHIPSET_HT18
+        push  dx
+        push  si
+        push  cx
+        xor   ax, ax
+        mov   si, ax
+        loop_next_page_to_unmap:
+        mov   word ptr ds:[si + _pageswapargs], 00000h
+        inc   ax
+        inc   si
+        inc   si
+        cmp   ax, 24
+        jl    loop_next_page_to_unmap
+
+        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE 4000_OFFSET
+        
+        pop   cx
+        pop   si
+        pop   dx
+        retf  
+    ENDIF
+
+
 ELSE
-    PROC Z_QuickMapUnmapAll_ FAR
-    PUBLIC Z_QuickMapUnmapAll_
 
     push  bx
     push  cx
@@ -712,7 +764,7 @@ ELSE
     mov   cx, word ptr ds:[_pagenum9000]
     xor   si, si
     xor   bx, bx
-
+; todo get rid of _ems_backfill_page_order and calc in the loop
     loop_next_page_to_unmap:
     mov   word ptr ds:[bx + _pageswapargs], -1
     mov   al, byte ptr ds:[si + _ems_backfill_page_order]
