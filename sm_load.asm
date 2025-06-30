@@ -542,7 +542,7 @@ IFDEF COMP_CH
 
         mov  dx, SCAT_PAGE_SET_REGISTER
         xchg al, ah	 ; ah becomes 0
-        add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + MUS_DATA_PAGES)
+        add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
         out  dx, ax
 
         pop dx
