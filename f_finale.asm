@@ -136,8 +136,10 @@ movsb
 add   di, SCREENWIDTH-1
 jmp   loop_copy_pixel
 done_drawing_post_flipped:
-mov   al, byte ptr ds:[bx + 1]  ; grab length again.
-xor   ah, ah
+;mov   al, byte ptr ds:[bx + 1]  ; grab length again.
+;xor   ah, ah
+mov    ax, 1
+xlat
 ; bx is column offset
 ; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
 
@@ -505,10 +507,12 @@ dw _V_DrawFullscreenPatch_addr
 
 
 mov   al, byte ptr ds:[_castnum]
-cbw
-mov   bx, ax
-add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder - OFFSET F_START_]
+;mov   bx, ax
+;add   bx, ax
+;mov   al, byte ptr cs:[bx + _CSDATA_castorder - OFFSET F_START_]
+sal    ax, 1
+mov    bx, _CSDATA_castorder - OFFSET F_START_
+xlat   byte ptr cs:[bx]
 mov   cx, ds
 ;xor   ah, ah   ; between 0-17, cbw is fine
 cbw
@@ -800,15 +804,19 @@ mov   cx, ax    ; dest x
 cmp   byte ptr ds:[bx], 0FFh
 je    exit_drawpatchcol
 draw_next_post:
-mov   al, byte ptr ds:[bx]  ; get topdelta..
-xor   ah, ah
+xor   ax, ax
+xlat  
+;mov   al, byte ptr ds:[bx]  ; get topdelta..
+;xor   ah, ah
 mov   dx, SCREENWIDTH
 mul   dx
 mov   di, cx    ; screen x
 add   di, ax    ; plus column topdelta
-mov   al, byte ptr ds:[bx + 1]  ; get count
+;mov   al, byte ptr ds:[bx + 1]  ; get count
+;xor   ah, ah
+mov   ax, 1
+xlat
 lea   si, [bx + 3]              ; column pixels
-xor   ah, ah
 xchg  ax, cx     ; count in cx so we can loop.
 draw_next_pixel:
 movsb
@@ -817,8 +825,11 @@ loop  draw_next_pixel
 
 done_with_post:
 xchg  ax, cx                ; restore cx.
-mov   al, byte ptr ds:[bx + 1]
-xor   ah, ah
+;mov   al, byte ptr ds:[bx + 1]
+;xor   ah, ah
+mov   ax, 1
+xlat
+
 add   bx, ax
 add   bx, 4                     ; next post address
 cmp   byte ptr ds:[bx], 0FFh

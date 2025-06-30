@@ -3136,8 +3136,11 @@ push  di
 mov   bx, ax
 mov   ax, SUBSECTOR_LINES_SEGMENT
 mov   es, ax
-mov   al, byte ptr es:[bx]
-xor   ah, ah
+;mov   al, byte ptr es:[bx]
+;xor   ah, ah
+xor   ax, ax
+xlat  byte ptr es:[bx]
+
 mov   word ptr cs:[SELFMODIFY_countvalue+1 - OFFSET R_BSP_STARTMARKER_], ax    ; di stores count for later
 
 mov   ax, SECTORS_SEGMENT
@@ -3800,8 +3803,8 @@ jmp   exit_project_sprite
 not_too_far_off_right_side_highbits:
 mov   bx, word ptr [bp - 020h]
 mov   es, word ptr ds:[_spritewidths_segment]
-mov   al, byte ptr es:[bx]
-xor   ah, ah
+xor   ax, ax
+xlat  byte ptr es:[bx]
 
 
 ;    if (usedwidth == 1){
@@ -8581,8 +8584,11 @@ sub   sp, 4
 
 mov   ax, SPRITEOFFSETS_SEGMENT
 mov   es, ax
-mov   al, byte ptr es:[bx] ; spriteoffsets[spriteindex]
-xor   ah, ah
+;mov   al, byte ptr es:[bx] ; spriteoffsets[spriteindex]
+;xor   ah, ah
+xor   ax, ax
+xlat  byte ptr es:[bx]
+
 SELFMODIFY_BSP_centerx_7:
 mov   di, 01000h
 
@@ -8620,8 +8626,11 @@ add   di, word ptr [bp - 6]
 x1_calculcated:
 mov   bx, word ptr [bp - 0Ch]
 mov   es, word ptr ds:[_spritewidths_segment]
-mov   al, byte ptr es:[bx]
-xor   ah, ah
+;mov   al, byte ptr es:[bx]
+;xor   ah, ah
+xor   ax, ax
+xlat  byte ptr es:[bx]
+
 mov   word ptr [bp - 0Eh], di
 cmp   ax, 1
 jne   usedwidth_not_1_2

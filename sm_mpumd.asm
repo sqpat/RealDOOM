@@ -376,6 +376,7 @@ xor       ah, ah
 mov       bx, ax
 mov       al, byte ptr [bp - 2]
 SHIFT_MACRO shl       bx 4
+;todo xlat?
 add       bx, ax
 mov       al, byte ptr cs:[bx + _mididriverdata - OFFSET SM_MPUMD_STARTMARKER_]
 cmp       cl, CTRLVOLUME
