@@ -303,7 +303,7 @@ void __near HU_Init(void){
 		hu_font[i] = runningoffset;
 		W_CacheLumpNumDirect(lump, (byte __far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
 		
-		font_widths[i] = (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i]))->width);
+		font_widths_far[i] = (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i]))->width);
 	
 	}
 
@@ -358,9 +358,9 @@ void __near AM_loadPics(void){
 
 
 	for (i = 0; i < 10; i++) {
-		ammnumpatchoffsets[i] = offset;
+		ammnumpatchoffsets_far[i] = offset;
 		lump = W_GetNumForName(namebuf);
-		W_CacheLumpNumDirect(lump, &ammnumpatchbytes[offset]);
+		W_CacheLumpNumDirect(lump, &ammnumpatchbytes_far[offset]);
 		offset += W_LumpLength(lump);
 		namebuf[6]++;
 	}

@@ -247,7 +247,7 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
 
 	// find which type to spawn
 	for (i = 0; i < NUMMOBJTYPES; i++) {
-		if (mthingtype == doomednum[i]) {
+		if (mthingtype == doomednum_far[i]) {
 			break;
 		}
 	}

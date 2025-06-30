@@ -847,7 +847,7 @@ int16_t __near M_StringWidth(int8_t __far* string) {
         if (c < 0 || c >= HU_FONTSIZE){
             w += 4;
         } else {
-            w += font_widths[c];
+            w += font_widths_far[c];
         }
     }
                 
@@ -904,7 +904,7 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
             continue;
         }
 
-        w = font_widths[c];
+        w = font_widths_far[c];
 
         if (cx+w > SCREENWIDTH){
             break;

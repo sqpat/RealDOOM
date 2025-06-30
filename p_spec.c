@@ -899,11 +899,11 @@ void __near P_UpdateSpecials(void) {
 
 	//	ANIMATE LINE SPECIALS
 	for (i = 0; i < numlinespecials; i++) {
-		switch (lines_physics[linespeciallist[i]].special)
+		switch (lines_physics[linespeciallist_far[i]].special)
 		{
 		case 48:
 			// EFFECT FIRSTCOL SCROLL +
-			sides[lines[linespeciallist[i]].sidenum[0]].textureoffset += 1; // todo mod by tex width?
+			sides[lines[linespeciallist_far[i]].sidenum[0]].textureoffset += 1; // todo mod by tex width?
 			break;
 		}
 	}
@@ -1146,7 +1146,7 @@ void __far P_SpawnSpecials(void) {
 		switch (lines_physics[i].special) {
 		case 48:
 			// EFFECT FIRSTCOL SCROLL+
-			linespeciallist[numlinespecials] = i;
+			linespeciallist_far[numlinespecials] = i;
 			numlinespecials++;
 			break;
 		}

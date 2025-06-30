@@ -513,7 +513,7 @@ void __near Z_LoadBinaries() {
 	Z_QuickMapPhysics();
 
 	//274
-	FAR_fread(doomednum, 2, NUMMOBJTYPES, fp);
+	FAR_fread(doomednum_far, 2, NUMMOBJTYPES, fp);
 	
 	Z_QuickMapRender4000();
 	// todo put in doomdata...

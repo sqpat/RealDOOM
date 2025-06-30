@@ -1055,7 +1055,7 @@ void __near AM_drawMarks(void) {
  
 			if (fx >= 0 && fx <= automap_screenwidth - 5 && 
 				fy >= 0 && fy <= automap_screenheight - 6) {
-				V_DrawPatch(fx, fy, FB, ((patch_t __far*)&ammnumpatchbytes[ammnumpatchoffsets[i]]));
+				V_DrawPatch(fx, fy, FB, ((patch_t __far*)&ammnumpatchbytes_far[ammnumpatchoffsets_far[i]]));
 
 			
 			

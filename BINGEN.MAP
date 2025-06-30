@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/29 14:38:58
+Created on:       25/06/29 20:39:27
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -743,8 +743,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 031c:6d8b*     WI_drawAnimatedBack_
 031c:70d7*     WI_updateStats_
 031c:778d      WI_Start_
-031c:6cd2*     WI_updateAnimatedBack_
 031c:761e      WI_Drawer_
+031c:6cd2*     WI_updateAnimatedBack_
 031c:6c1d*     WI_drawEL_
 031c:76b6*     WI_Init_
 031c:6c70*     WI_drawOnLnode_
@@ -1177,8 +1177,8 @@ Module: r_bsp.obj(r_bsp.ASM)
 1ca9:3578*     R_WriteBackFrameConstants_
 1ca9:33d0      R_WriteBackViewConstants_
 1ca9:0845*     R_ClearPlanes_
-1ca9:10b2*     R_AddSprites_
 1ca9:09c7*     Z_QuickMapVisplaneRevert_BSPLocal_
+1ca9:10b2*     R_AddSprites_
 1ca9:0826*     R_ClearClipSegs_
 1ca9:09df*     R_FindPlane_
 1ca9:03b5*     FixedDivWholeA_BSPLocal_
