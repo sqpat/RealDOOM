@@ -69,7 +69,7 @@ void checkDS(int16_t a) {
 	ds = sregs.ds; // 2a56 2e06 c7a
 	ss = sregs.ss; // 2a56 2e06 c7a
 
-	if (ds != 0x3C00 || ss != 0x3C00){
+	if (ds != FIXED_DS_SEGMENT || ss != FIXED_DS_SEGMENT){
 		I_Error("\nvalues chaged! %x %x %i\n", ds, ss, a);
 	}
 
@@ -90,8 +90,8 @@ extern uint16_t __far* _GETDS;
 int16_t main ( int16_t argc, int8_t** argv ) { 
     myargc = argc; 
     myargv = argv; 
-	
-	// set DS to 0x3C00. we must also do this in interrupts.
+
+	// set DS to FIXED_DS_SEGMENT. we must also do this in interrupts.
 	hackDS();
 	// override __GETDS mov ax, #### but im not sure anything uses it after init anyway?
 	_GETDS[1] = FIXED_DS_SEGMENT;

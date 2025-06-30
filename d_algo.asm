@@ -68,7 +68,7 @@ push ax
 mov cx, BASE_LOWER_MEMORY_SEGMENT
 mov es, cx
 
-; zero up till 3C00h
+; zero up till FIXED_DS_SEGMENT
 mov cx, FIXED_DS_SEGMENT
 sub cx, BASE_LOWER_MEMORY_SEGMENT
 SHIFT_MACRO shl cx 3

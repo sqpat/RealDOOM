@@ -136,7 +136,7 @@ void checkDS(int16_t a) {
 	ds = sregs.ds; // 2a56 2e06 c7a
 	ss = sregs.ss; // 2a56 2e06 c7a
 
-	if (ds != 0x3C00 || ss != 0x3C00){
+	if (ds != FIXED_DS_SEGMENT || ss != FIXED_DS_SEGMENT){
 		I_Error("\nvalues chaged! %x %x %i", ds, ss, a);
 	}
 

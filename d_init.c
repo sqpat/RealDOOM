@@ -406,8 +406,8 @@ void __near G_RecordDemo (int8_t* name) {
     int16_t i;    
     usergame = false;
 	// i don't like this, but it works and watcom doesnt seem to know how to cast it otherwise.
-	// 0x3C00 is hardcoded nearsegment
-    combine_strings (MK_FP(NEAR_SEGMENT, (int16_t)demoname), name, ".lmp"); 
+	// FIXED_DS_SEGMENT is hardcoded nearsegment
+    combine_strings (MK_FP(FIXED_DS_SEGMENT, (int16_t)demoname), name, ".lmp"); 
     maxsize = DEMO_MAX_SIZE;
     i = M_CheckParm ("-maxdemo");
     if (i && i<myargc-1) 
@@ -528,8 +528,7 @@ void __far M_Init(void){
 	messageLastMenuActive = menuactive;
 	quickSaveSlot = -1;  // means to pick a slot now
 
-	if (commercial)
-	{
+	if (commercial) {
 		MainMenu[readthis] = MainMenu[quitdoom];
 		MainDef.numitems--;
 		MainDef.y += 8;

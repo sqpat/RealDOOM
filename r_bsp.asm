@@ -3535,7 +3535,7 @@ rep   movsw
 ;si is [si + 0xC] now...
 
 
-mov   ds, bx					; restore ds to 3C00
+mov   ds, bx					; restore ds to FIXED_DS_SEGMENT
 lea   si, [bp - 01Ah]
 
 lodsw

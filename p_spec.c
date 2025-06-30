@@ -1058,8 +1058,6 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
 
 
  
-//int16_t		linespeciallist[MAXLINEANIMS];
-
 
 // Parses command line parameters.
 void __far P_SpawnSpecials(void) {

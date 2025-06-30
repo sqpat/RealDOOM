@@ -55,7 +55,8 @@
 
 
 
-#define uppermemoryblock    0xE0000000
+#define extramemoryblock    0xE0000000
+#define extramemoryblock_segment        ((segment_t) ((int32_t)extramemoryblock >> 16))
 
 typedef struct sfxinfo_struct sfxinfo_t;
 
@@ -84,7 +85,7 @@ struct sfxinfo_struct{
 
 
 
-#define sectors           ((sector_t __far*)        MAKE_FULL_SEGMENT(uppermemoryblock , 0))
+#define sectors           ((sector_t __far*)        MAKE_FULL_SEGMENT(extramemoryblock , 0))
 #define vertexes          ((vertex_t __far*)        MAKE_FULL_SEGMENT(sectors          , size_sectors))
 #define sides             ((side_t __far*)          MAKE_FULL_SEGMENT(vertexes         , size_vertexes))
 #define lines             ((line_t __far*)          MAKE_FULL_SEGMENT(sides            , size_sides))
@@ -150,11 +151,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 // 0xB000 BLOCK
-
-
-
-#define B000BlockOffset 0x14B0
-#define B000Block 0xB14B0000
+// #define B000BlockOffset 0x14B0
+// #define B000Block 0xB14B0000
 
 
 
@@ -203,6 +201,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 #define SAVESTRINGSIZE        24u
 
+//todo move a bit
 #define baselowermemoryaddress    (0x30CD0000)
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 
@@ -254,20 +253,20 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 //todo recalculate after moving stuff around...
 
-// sfxdata              30CD:0000
-// sb_dmabuffer         30F6:0000
-// finesine             3116:0000
-// finecosine           3116:2000
-// events               3B16:0000
-// flattranslation      3B4A:0000
-// texturetranslation   3B53:0000
-// textureheights       3B8A:0000
-// rndtable             3BA5:0000
-// subsector_lines      3BB5:0000
-// savegamestrings      3BF1:0000
-// base_lower_end       3C00:0000
-//03BACh
-// done                 3C00:0000
+// sfxdata              31CD:0000
+// sb_dmabuffer         31F6:0000
+// finesine             3216:0000
+// finecosine           3216:2000
+// events               3C16:0000
+// flattranslation      3C4A:0000
+// texturetranslation   3C53:0000
+// textureheights       3C8A:0000
+// rndtable             3CA5:0000
+// subsector_lines      3CB5:0000
+// savegamestrings      3CF1:0000
+// base_lower_end       3D00:0000
+//03CACh
+// done                 3D00:0000
 
 
 
@@ -298,10 +297,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 
-
-// end at 0x9380
-
- // or 9380:0000
+ // 0x92FA
 #define InfoFuncLoadAddr      ((byte __far *) MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes))
 // note: entry point to the function is not necessarily the first byte of the compiled binary. (jump tables and stuff for switch cases)
 #define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0034))
@@ -447,26 +443,34 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define code_overlay_end_segment      ((segment_t) ((int32_t)code_overlay_end >> 16))
 // 4CE0h
 
- // 3C00:4000
-#define thinkerlist        ((thinker_t __near*)          0x4000)
-#define mobjinfo           ((mobjinfo_t  __near*)       (0x4000 + ((mobjinfo_segment        - thinkerlist_segment)<<4)))
-#define linebuffer         ((int16_t __near*)           (0x4000 + ((linebuffer_segment      - thinkerlist_segment)<<4)))
-#define sectors_physics    ((sector_physics_t __near* ) (0x4000 + ((sectors_physics_segment - thinkerlist_segment)<<4)))
+ // 3D00:4000
+#define thinkerlist        ((thinker_t __near*)          ((thinkerlist_segment       - FIXED_DS_SEGMENT) << 4))
+#define mobjinfo           ((mobjinfo_t  __near*)        ((mobjinfo_segment          - FIXED_DS_SEGMENT) << 4))
+#define linebuffer         ((int16_t __near*)            ((linebuffer_segment        - FIXED_DS_SEGMENT) << 4))
+#define sectors_physics    ((sector_physics_t __near* )  ((sectors_physics_segment   - FIXED_DS_SEGMENT) << 4))
+// #define sectors_soundorgs  ((sector_soundorg_t __near* ) ((sectors_soundorgs_segment - FIXED_DS_SEGMENT) << 4))
+// #define sector_soundtraversed  ((int8_t __near* )        ((sector_soundtraversed_segment - FIXED_DS_SEGMENT) << 4))
+// #define intercepts         ((intercept_t __near* )       ((intercepts_segment - FIXED_DS_SEGMENT) << 4))
+// #define ammnumpatchbytes   ((byte __near* )              ((ammnumpatchbytes_segment - FIXED_DS_SEGMENT) << 4))
+// #define ammnumpatchoffsets ((uint16_t __near* )          (((uint16_t)ammnumpatchbytes) + 0x020C))
+// #define doomednum          ((int16_t __near* )           ((doomednum_segment - FIXED_DS_SEGMENT) << 4))
+// #define linespeciallist    ((int8_t __near* )            ((linespeciallist_segment - FIXED_DS_SEGMENT) << 4))
+// #define font_widths        ((int8_t __near* )            ((font_widths_segment - FIXED_DS_SEGMENT) << 4))
 
 
 
-// 4000:0000  4000 thinkerlist
-// 4906:0000  D060 mobjinfo
-// 4965:0000  D650 linebuffer
-// 4AA3:0000  EA30 sectors_physics
-// 4BFF:0000  xxxx sectors_soundorgs
-// 4C56:0000  xxxx sectors_soundstraversed
-// 4C6c:0000  xxxx intercepts
-// 4CA4:0000  xxxx ammnumpatchbytes
-// 4CA4:020C  xxxx ammnumpatchoffsets
-// 4CC6:0000  xxxx doomednum
-// 4CD8:0000  xxxx linespeciallist
-// 4CE0:0000  xxxx font_widths
+// 4000:0000  3000 thinkerlist
+// 4906:0000  C060 mobjinfo
+// 4965:0000  C650 linebuffer
+// 4AA3:0000  DA30 sectors_physics
+// 4BFF:0000  EFF0 sectors_soundorgs
+// 4C56:0000  F560 sectors_soundstraversed
+// 4C6c:0000  F6C0 intercepts
+// 4CA4:0000  FA40 ammnumpatchbytes
+// 4CA4:020C  FC4C ammnumpatchoffsets
+// 4CC6:0000  FC60 doomednum
+// 4CD8:0000  FD80 linespeciallist
+// 4CE0:0000  FE00 font_widths
 // 4CE4:0000  xxxx code_overlay_segment
 // 4D16:0000  xxxx [empty]
 
@@ -1425,17 +1429,17 @@ spritedefs_bytes    7410:0000
 #define compositetextureoffset_segment      ((segment_t) ((int32_t)compositetextureoffset >> 16))
 
 
-#define segs_render             ((seg_render_t  __near*)      0x4000)
-#define seg_normalangles        ((fineangle_t  __near*)       (0x4000 + ((seg_normalangles_segment        - segs_render_segment)<<4)))
-#define sides_render            ((side_render_t __near*)      (0x4000 + ((sides_render_segment            - segs_render_segment)<<4)))
-#define vissprites              ((vissprite_t __near*)        (0x4000 + ((vissprites_segment              - segs_render_segment)<<4)))
-#define player_vissprites       ((vissprite_t __near*)        (0x4000 + ((player_vissprites_segment       - segs_render_segment)<<4)))
-#define texturepatchlump_offset ((uint16_t __near*)           (0x4000 + ((texturepatchlump_offset_segment - segs_render_segment)<<4)))
-#define visplaneheaders         ((visplaneheader_t __near*)   (0x4000 + ((visplaneheaders_segment         - segs_render_segment)<<4)))
-#define visplanepiclights       ((visplanepiclight_t __near*) (0x4000 + ((visplanepiclights_segment       - segs_render_segment)<<4)))
-#define scalelightfixed         ((uint8_t __near*)            (0x4000 + ((scalelightfixed_segment         - segs_render_segment)<<4)))
-#define scalelight              ((uint8_t __near*)            (0x4000 + ((scalelight_segment              - segs_render_segment)<<4)))
-#define patch_sizes             ((uint16_t __near*)           (0x4000 + ((patch_sizes_segment             - segs_render_segment)<<4)))
+#define segs_render             ((seg_render_t  __near*)      ((segs_render_segment             - FIXED_DS_SEGMENT) << 4))
+#define seg_normalangles        ((fineangle_t  __near*)       ((seg_normalangles_segment        - FIXED_DS_SEGMENT) << 4))
+#define sides_render            ((side_render_t __near*)      ((sides_render_segment            - FIXED_DS_SEGMENT) << 4))
+#define vissprites              ((vissprite_t __near*)        ((vissprites_segment              - FIXED_DS_SEGMENT) << 4))
+#define player_vissprites       ((vissprite_t __near*)        ((player_vissprites_segment       - FIXED_DS_SEGMENT) << 4))
+#define texturepatchlump_offset ((uint16_t __near*)           ((texturepatchlump_offset_segment - FIXED_DS_SEGMENT) << 4))
+#define visplaneheaders         ((visplaneheader_t __near*)   ((visplaneheaders_segment         - FIXED_DS_SEGMENT) << 4))
+#define visplanepiclights       ((visplanepiclight_t __near*) ((visplanepiclights_segment       - FIXED_DS_SEGMENT) << 4))
+#define scalelightfixed         ((uint8_t __near*)            ((scalelightfixed_segment         - FIXED_DS_SEGMENT) << 4))
+#define scalelight              ((uint8_t __near*)            ((scalelight_segment              - FIXED_DS_SEGMENT) << 4))
+#define patch_sizes             ((uint16_t __near*)           ((patch_sizes_segment             - FIXED_DS_SEGMENT) << 4))
 
 
 #define SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT (16 * (scalelight_segment - scalelightfixed_segment))
@@ -1455,19 +1459,18 @@ spritedefs_bytes    7410:0000
 
 /*
 
-segs_render             4000:0000   4000
-seg_normalangles        4580:0000   9800
-sides_render            46E0:0000   AE00
-vissprites              4967:0000   D670
-player_vissprites       4AAA:0000   EAA0
-texturepatchlump_offset 4AAF:0000   EAF0
-visplaneheaders         4AE5:0000   EE50
-visplanepiclights       4B24:0000   F240
-fuzzoffset              4B34:0000   F340    ; todo removed update
-scalelightfixed         4B3D:0000   F3D0
-scalelight              4B40:0000   F400
-patch_sizes             4B70:0000   F700
-viewangletox            4C00:0000   FAC0
+segs_render             4000:0000   3000
+seg_normalangles        4580:0000   8800
+sides_render            46E0:0000   9E00
+vissprites              4967:0000   C670
+player_vissprites       4AAA:0000   DAA0
+texturepatchlump_offset 4AAF:0000   DAF0
+visplaneheaders         4AE5:0000   DE50
+visplanepiclights       4B24:0000   E240
+scalelightfixed         4B3D:0000   E340
+scalelight              4B40:0000   E370
+patch_sizes             4B70:0000   E670
+viewangletox            4C00:0000   F000
 // 1392 bytes here?
 [near range over]       
 
@@ -1494,8 +1497,7 @@ compositetextureoffset  4F80:01AC
 // #define lumpinfo5000 ((lumpinfo_t __far*) 0x54000000)
 // #define lumpinfo9000 ((lumpinfo_t __far*) 0x94000000)
 #define lumpinfoD800 ((lumpinfo_t __far*) 0xD8000000)
-#define lumpinfoinit ((lumpinfo_t __far*) uppermemoryblock)
-
+#define lumpinfoinit ((lumpinfo_t __far*) extramemoryblock)
 
 #define ANIMS_DOOMDATA_SIZE     0x1B5
 #define SPLIST_DOOMDATA_SIZE    0x2B2

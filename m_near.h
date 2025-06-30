@@ -14,7 +14,7 @@
 //
 // DESCRIPTION:
 
-// eventually, DS will be fixed to 0x3C00 or so. Then, these will all 
+// eventually, DS will be fixed to 0x3D00 or so. Then, these will all 
 // become casted #define variable locations rather than linked variables.
 // this will make it easier to build collections of function binaries, 
 // export them to file and load them at runtime into EMS memory locations
@@ -80,7 +80,6 @@
 #define ST_NUMFACES \
           (ST_FACESTRIDE*ST_NUMPAINFACES+ST_NUMEXTRAFACES)
 
-#define NEAR_SEGMENT 0x3C00
 #define _NULL_OFFSET 0x30
  
 

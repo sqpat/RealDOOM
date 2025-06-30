@@ -1056,7 +1056,7 @@ void	resetDS();
 
 void __interrupt __far_func SB_ServiceInterrupt(void) {
     resetDS();  // interrupts need this...
-    continuecall(); // note SS may be non-3C00!
+    continuecall(); // note SS may be non FIXED_DS_SEGMENT!
 }
 
 

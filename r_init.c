@@ -747,6 +747,11 @@ void __near R_InitPatches(){
 	for (i = 0; i < numpatches; i++){
 		int16_t patchindex = firstpatch+i;
 		int16_t patchheight;
+		
+		//!!!!todo... can this be done by file seeking instead of loading every lump
+		//!!!!todo... can this be done by file seeking instead of loading every lump
+		//!!!!todo... can this be done by file seeking instead of loading every lump
+
 		W_CacheLumpNumDirect(patchindex, (byte __far*)wadpatch);
 		patchwidths[i] = wadpatch->width;
 

@@ -321,7 +321,7 @@ mov  cl, byte ptr ds:[_snd_SfxVolume]
 mov  ch, 080h
 add  dx, ax       ; length+offset. end condition
 mov  si, ax       ; si gets offset
-mov  ax, 0D400h   ; segment
+mov  ax, SFX_PAGE_SEGMENT   ; segment
 mov  ds, ax
 do_next_byte:
 lodsb
