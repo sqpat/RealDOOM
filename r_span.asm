@@ -1339,6 +1339,11 @@ push  cx
 push  si
 shl   bx, 1
 SHIFT_PAGESWAP_ARGS bx
+; _EPR here
+IFDEF COMP_CH
+    add  ax, EMS_MEMORY_PAGE_OFFSET
+ELSE
+ENDIF
 mov   word ptr ds:[_pageswapargs + (pageswapargs_flatcache_offset * 2) + bx], ax
 Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
 

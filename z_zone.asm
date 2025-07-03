@@ -682,20 +682,21 @@ IFDEF COMP_CH
 
 	IF COMP_CH EQ CHIPSET_SCAT
         push  dx
-        push  si
         push  cx
-        xor   si, si
-        loop_next_page_to_unmap:
-        mov   word ptr ds:[si + _pageswapargs], 003FFh
-        inc   si
-        inc   si
-        cmp   si, 48
-        jl    loop_next_page_to_unmap
 
-        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-        
+
+        mov   dx, SCAT_PAGE_SELECT_REGISTER
+        mov   al, EMS_AUTOINCREMENT_FLAG    ; page 0...
+        out   dx, al
+        mov   dx, SCAT_PAGE_SET_REGISTER
+        mov   ax, 03FFh
+        mov   cx, 24
+
+        do_next_unmap_scat:
+        out   dx, ax
+        loop do_next_unmap_scat
+
         pop   cx
-        pop   si
         pop   dx
         retf  
 	ELSEIF COMP_CH EQ CHIPSET_SCAMP
@@ -730,20 +731,21 @@ IFDEF COMP_CH
 
 	ELSEIF COMP_CH EQ CHIPSET_HT18
         push  dx
-        push  si
         push  cx
-        xor   si, si
-        loop_next_page_to_unmap:
-        mov   word ptr ds:[si + _pageswapargs], 00000h
-        inc   si
-        inc   si
-        cmp   si, 48
-        jl    loop_next_page_to_unmap
 
-        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-        
+
+        mov   dx, HT18_PAGE_SELECT_REGISTER
+        mov   al, EMS_AUTOINCREMENT_FLAG    ; page 0...
+        out   dx, al
+        mov   dx, HT18_PAGE_SET_REGISTER
+        xor   ax, ax
+        mov   cx, 24
+
+        do_next_unmap_scat:
+        out   dx, ax
+        loop do_next_unmap_scat
+
         pop   cx
-        pop   si
         pop   dx
         retf  
     ENDIF

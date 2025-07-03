@@ -1711,7 +1711,7 @@ je    exit_blocklinesiterator_return_1
 
 mov   si, bx
 SHIFT_MACRO shl   si 4
-mov   dx, LINES_PHYSICS_SEGMENT
+mov   dx, LINES_PHYSICS_SEGMENT	; dx needs to be this segment for the call....
 mov   es, dx
 SELFMODIFY_validcountglobal_1:
 mov   ax, 01000h
