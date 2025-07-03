@@ -15,7 +15,7 @@ RealDOOM is still in a pre-alpha state and so it does not cleanly support many h
 
 Performance on 32-bit PCs is similar to Vanilla DOOM, so performance should generally be okay on a 486 or Pentium. Slower machines might want to turn detail level to low or potato for faster framerates.
 
-The "minimum spec" is a standard 4.77 MhZ 8088 machine with a VGA card, 64kb of UMBs in E000 range, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets (C&T SCAT, VLSI SCAMP, VLSI TOPCAT... ) support EMS 4.0 and you will be able to use their appropriate EMS drivers or SQEMM, or the chipset specific build if available, which is faster.
+The "minimum spec" is a standard 4.77 MhZ 8088 machine with a VGA card, ~618KB conventional free, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets (C&T SCAT, VLSI SCAMP, VLSI TOPCAT... ) support EMS 4.0 and you will be able to use their appropriate EMS drivers or SQEMM, or the chipset specific build if available, which is faster.
 
 ### Building RealDOOM
 
@@ -119,16 +119,20 @@ There are also a lot of hard caps on things like texture size and count, node co
   - 30kb or so of c converted to asm
   - binary size decreased, code a little faster
 
+(Jul 3, 2025)      
+~~**v0.28** : E000 requirement removed~~
+  - Exported a ton more code to reduce binary size ~30k
+  - Moved E000 data into low memory area
+  - Moved pagination code from C to asm
+  
 ### Future Roadmap:
 
 **Alpha Goals:**
- - E000 UMB requirement removed
+ - reduce memory footprint
  - improved span drawing fidelity
  - improved sfx code
  - All known bugs fixed
- x Feature complete
- x EMS paginated WAD fields
-
+ 
 
 **Beta Goals:**
  - Focus on improved compatibility with more machines
@@ -145,7 +149,6 @@ There are also a lot of hard caps on things like texture size and count, node co
  - EMS 3.2 compatible version
  - Remove MS-DOS dependencies, self boot version?
   
-
 
 ### Speed
 
