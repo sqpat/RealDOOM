@@ -2941,8 +2941,8 @@ ret
 
 ENDP
 
+; todo inline...
 PROC Z_QuickMapSpritePage_ NEAR
-PUBLIC Z_QuickMapSpritePage_
 
 push  dx
 push  cx
@@ -3097,27 +3097,27 @@ IFDEF COMP_CH
     IF COMP_CH EQ CHIPSET_SCAT
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         sal   bx, 1
-        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], 03FFh
+        SHIFT_PAGESWAP_ARGS bx
+        mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], 03FFh
     ELSEIF COMP_CH EQ CHIPSET_SCAMP
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         mov   dx, bx
         sal   bx, 1
         add   dx, ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning   ; page offset
-        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], dx
+        SHIFT_PAGESWAP_ARGS bx
+        mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], dx
         mov   dx, -1
     ELSEIF COMP_CH EQ CHIPSET_HT18
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         sal   bx, 1
-        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], 0
+        SHIFT_PAGESWAP_ARGS bx
+        mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], 0
     ENDIF
 ELSE
     mov   byte ptr ds:[bx + si], dl   ; dl is -1
     sal   bx, 1
-    SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-    mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], dx ; dx is -1
+    SHIFT_PAGESWAP_ARGS bx
+    mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], dx ; dx is -1
 
 ENDIF
 
@@ -3238,8 +3238,8 @@ EPR_MACRO ax
 
 ; pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT]
 
-SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], ax        ; = _EPR(pageoffset + realtexpage);
+SHIFT_PAGESWAP_ARGS bx
+mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], ax        ; = _EPR(pageoffset + realtexpage);
 
 ; dx should be realtexpage???
 xchg  ax, dx
@@ -3312,27 +3312,27 @@ IFDEF COMP_CH
     IF COMP_CH EQ CHIPSET_SCAT
         mov   byte ptr ds:[bx + si], cl  ; -1
         sal   bx, 1                      ; startpage word offset.
-        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], 03FFh
+        SHIFT_PAGESWAP_ARGS bx
+        mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], 03FFh
     ELSEIF COMP_CH EQ CHIPSET_SCAMP
         mov   byte ptr ds:[bx + si], cl  ; -1
         mov   cx, bx
         sal   bx, 1                      ; startpage word offset.
         add   cx, ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning   ; page offset
-        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], cx
+        SHIFT_PAGESWAP_ARGS bx
+        mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], cx
         mov   cx, -1
     ELSEIF COMP_CH EQ CHIPSET_HT18
         mov   byte ptr ds:[bx + si], cl  ; -1
         sal   bx, 1                      ; startpage word offset.
-        SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-        mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], 0
+        SHIFT_PAGESWAP_ARGS bx
+        mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], 0
     ENDIF
 ELSE
     mov   byte ptr ds:[bx + si], cl  ; -1
     sal   bx, 1                      ; startpage word offset.
-    SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-    mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], cx  ; cx is -1  TODO NPR or whatever
+    SHIFT_PAGESWAP_ARGS bx
+    mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], cx  ; cx is -1  TODO NPR or whatever
 
 ENDIF
 
@@ -3392,8 +3392,8 @@ EPR_MACRO ax
 
 ;	pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
 
-SHIFT_PAGESWAP_ARGS bx            ; *PAGE_SWAP_ARG_MULT
-mov   word ptr ds:[bx + (OFFSET _pageswapargs) + (PAGESWAPARGS_SPRITECACHE_OFFSET * PAGE_SWAP_ARG_MULT)], ax
+SHIFT_PAGESWAP_ARGS bx
+mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], ax
 
 dec   ch    ; dec numpages - i
 inc   cl    ; inc startpage + i
@@ -3407,8 +3407,8 @@ mov   es, bx
 dec   dl
 jns   loop_mark_next_page_mru_multi
 
-;    R_MarkL2TextureCacheMRU(realtexpage);
-;    Z_QuickMapRenderTexture();
+;    R_MarkL2SpriteCacheMRU(realspritepage);
+;    Z_QuickMapSpritePage();
 
 mov   ax, word ptr [bp - 6]
 call  R_MarkL2SpriteCacheMRU_

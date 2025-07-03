@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/06/30 13:56:02
+Created on:       25/07/03 10:40:48
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -1250,7 +1250,6 @@ Module: r_masked.obj(r_masked.ASM)
 2018:2b54*     R_DrawVisSprite_
 2018:3c88      R_DrawMaskedColumn_
 2018:38cd*     FixedMul1632MaskedLocal_
-2018:35f2*     Z_QuickMapSpritePage_
 2018:34f1*     R_MarkL1SpriteCacheMRU_
 2018:32b7*     R_GetNextSpriteBlock_
 2018:3c2c      R_DrawMasked_

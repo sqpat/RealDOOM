@@ -32,8 +32,24 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp -0 -dCODEGEN_SKIP_MENU
+CCOPTS2 = -dCODEGEN_SKIP_MENU
  
+compileinstructionset = $(USE_ISA)
+
+!ifeq compileinstructionset 1
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -1 -s $(COPT)
+!else
+!ifeq compileinstructionset 2
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s $(COPT)
+!else
+!ifeq compileinstructionset 3
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s $(COPT)
+!else
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -0 -s $(COPT)
+!endif
+!endif
+!endif
+
 GLOBOBJS = &
  m_near.obj &
  codegen.obj
@@ -44,7 +60,7 @@ codegen.exe : $(GLOBOBJS)
  wstrip codegen.exe
 
 .c.obj :
- wcc $(CCOPTS) $[*
+ wcc $(CCOPTS) -dCODEGEN_SKIP_MENU $[*
 
 .c : build\tools\codegen\
 

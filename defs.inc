@@ -35,6 +35,17 @@ GC_MODE             =   5
 
 
 
+
+SCAMP_PAGE_9000_OFFSET  =   020h
+
+IFDEF COMP_CH
+	PAGE_SWAP_ARG_MULT = 1
+ELSE
+    PAGE_SWAP_ARG_MULT = 2
+ENDIF
+
+
+
 _NULL_OFFSET = 0030h
 
 
@@ -470,10 +481,10 @@ CURRENT_POSITION_6 =   			   	  (_usedtexturepagemem + (1 * NUM_TEXTURE_PAGES))
 
 
 
-
+; 93E
 _pageswapargs = CURRENT_POSITION_6
 
-CURRENT_POSITION_6 =   			   	  (_pageswapargs + (2 * TOTAL_PAGES_SIZE * PAGE_SWAP_ARG_MULT))
+CURRENT_POSITION_7 =   			   	  (_pageswapargs + (2 * TOTAL_PAGES))
 
 
 

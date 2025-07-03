@@ -850,7 +850,7 @@ void __near P_LoadBlockMap(int16_t lump) {
 
 	// clear out mobj chains
 
-	count = sizeof(THINKERREF) * bmapwidth*bmapheight;
+	// count = sizeof(THINKERREF) * bmapwidth*bmapheight;
 	
 
 	FAR_memset(blocklinks, 0, MAX_BLOCKLINKS_SIZE);

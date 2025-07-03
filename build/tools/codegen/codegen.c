@@ -5087,5 +5087,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     printf("Generated constant.inc file");
     
+	printf("Pageswapargs was %i %x", PAGE_SWAP_ARG_MULT, pageswapargs);
     return 0;
 } 

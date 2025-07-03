@@ -188,7 +188,7 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	HU_Start();
 
 	Z_QuickMapPhysics();
-	Z_QuickMapScratch_8000();
+	Z_QuickMapScratch_8000(); // gross, due to p_setup.... perhaps externalize.
 	Z_QuickMapPhysicsCode();
 } 
 

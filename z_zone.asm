@@ -579,13 +579,13 @@ IFDEF COMP_CH
     add  ax, EMS_MEMORY_PAGE_OFFSET
 ELSE
 ENDIF
-mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * PAGE_SWAP_ARG_MULT)], ax
+mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * 2)], ax
 
 
 ;pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
 IFDEF COMP_CH
 ELSE
-    mov   word ptr ds:[_pageswapargs + ((pageswapargs_visplanepage_offset+1) * PAGE_SWAP_ARG_MULT)], si
+    mov   word ptr ds:[_pageswapargs + ((pageswapargs_visplanepage_offset+1) * 2)], si
 ENDIF
 
 ;	physicalpage++;
@@ -625,7 +625,7 @@ IFDEF COMP_CH
         ; not necessary?
         ;or      al, EMS_AUTOINCREMENT_FLAG  
         out  	dx, al
-        mov     si,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        mov     si,  (pageswapargs_visplanepage_offset * 2) + _pageswapargs
         mov  	dx, SCAT_PAGE_SET_REGISTER
         lodsw
         out 	dx, ax
@@ -636,10 +636,8 @@ IFDEF COMP_CH
         ; not necessary?
         ;or      al, EMS_AUTOINCREMENT_FLAG  
         out     SCAMP_PAGE_SELECT_REGISTER, al
-        mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
-        lodsw
+        mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
         out 	SCAMP_PAGE_SET_REGISTER, ax
-
 
 	ELSEIF COMP_CH EQ CHIPSET_HT18
 
@@ -648,7 +646,7 @@ IFDEF COMP_CH
         ; not necessary?
         ;or      al, EMS_AUTOINCREMENT_FLAG  
         out  	dx, al
-        mov     si,  pageswapargs_visplanepage_offset_size * 2 * PAGE_SWAP_ARG_MULT + _pageswapargs
+        mov     si,  (pageswapargs_visplanepage_offset * 2) + _pageswapargs
         mov  	dx, HT18_PAGE_SET_REGISTER
         lodsw
         out 	dx, ax
@@ -742,7 +740,7 @@ IFDEF COMP_CH
         cmp   si, 48
         jl    loop_next_page_to_unmap
 
-        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE4000_OFFSET
+        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
         
         pop   cx
         pop   si

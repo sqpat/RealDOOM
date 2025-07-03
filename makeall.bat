@@ -20,7 +20,7 @@ GOTO PRINT_EXIT
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
-    wmake -f build\makecg 
+    wmake -f build\makecg ASMOPT="/dCOMPISA=0" USE_ISA="0"
     codegen.exe
     wmake -f build\make16 clean
     wmake -f build\makebg ASMOPT="/dCOMPISA=0" USE_ISA="0"
@@ -34,7 +34,7 @@ GOTO END
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
-    wmake -f build\makecg 
+    wmake -f build\makecg ASMOPT="/dCOMPISA=1" USE_ISA="1"
     codegen.exe
     wmake -f build\make186 clean
     wmake -f build\makebg ASMOPT="/dCOMPISA=1" USE_ISA="1"
@@ -48,7 +48,7 @@ GOTO END
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
-    wmake -f build\makecg 
+    wmake -f build\makecg ASMOPT="/dCOMPISA=2" USE_ISA="2"
     codegen.exe
     wmake -f build\make286 clean
     wmake -f build\makebg ASMOPT="/dCOMPISA=2" USE_ISA="2"
@@ -62,7 +62,7 @@ GOTO END
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
-    wmake -f build\makecg 
+    wmake -f build\makecg ASMOPT="/dCOMPISA=3" USE_ISA="3"
     codegen.exe
     wmake -f build\make386 clean
     wmake -f build\makebg ASMOPT="/dCOMPISA=3" USE_ISA="3"
@@ -77,7 +77,7 @@ GOTO END
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
-    wmake -f build\makecg 
+    wmake -f build\makecg COPT="-d__SCAT_BUILD=1 -d__CH_BLD=1" ASMOPT="/dCOMPISA=2 /dCOMP_CH=2" 286C="2" USE_ISA="2"
     codegen.exe
     wmake -f build\makescat clean 
     wmake -f build\makebg COPT="-d__SCAT_BUILD=1 -d__CH_BLD=1" ASMOPT="/dCOMPISA=2 /dCOMP_CH=2" 286C="2" USE_ISA="2"
@@ -93,7 +93,7 @@ GOTO END
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
-    wmake -f build\makecg 
+    wmake -f build\makecg COPT="-d__SCAMP_BUILD=1 -d__CH_BLD=1" ASMOPT="/dCOMPISA=2 /dCOMP_CH=1" 286C="1" USE_ISA="2"
     codegen.exe
     wmake -f build\makesc clean 
     wmake -f build\makebg COPT="-d__SCAMP_BUILD=1 -d__CH_BLD=1" ASMOPT="/dCOMPISA=2 /dCOMP_CH=1" 286C="1" USE_ISA="2"
@@ -109,7 +109,7 @@ GOTO END
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean
-    wmake -f build\makecg 
+    wmake -f build\makecg COPT="-d__HT18_BUILD=1 -d__CH_BLD=1" ASMOPT="/dCOMPISA=2 /dCOMP_CH=3" 286C="3" USE_ISA="2"
     codegen.exe
     wmake -f build\makeht clean 
     wmake -f build\makebg COPT="-d__HT18_BUILD=1 -d__CH_BLD=1" ASMOPT="/dCOMPISA=2 /dCOMP_CH=3" 286C="3" USE_ISA="2"

@@ -1689,9 +1689,10 @@ mov   ax, ds:[_validcount_global]
 mov   word ptr cs:[SELFMODIFY_validcountglobal_1 - OFFSET P_SIGHT_STARTMARKER_ + 1], ax
 
 xchg  ax, dx  ; ax gets y 
-imul  word ptr ds:[_bmapwidth]  ; y * width
+mul   word ptr ds:[_bmapwidth]  ; y * width
 add   bx, ax					; plus x
 sal   bx, 1
+; todo use line_physics and offset.
 
 mov   ax, BLOCKMAPLUMP_SEGMENT
 mov   es, ax

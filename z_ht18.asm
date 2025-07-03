@@ -269,30 +269,36 @@ ENDP
 
 LUMP_MASK = 0FCh 
 
-PROC Z_QuickMapWADPageFrame_ FAR
+PROC   Z_QuickMapWADPageFrame_ FAR
 PUBLIC Z_QuickMapWADPageFrame_
+
 
 and  ah, LUMP_MASK
 
 cmp  ah, byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX]
 je   exit_wad_pageframe
 
+push dx
+
 mov  byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX], ah
 
-mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + WAD_PAGE_FRAME_INDEX	; page D400
-out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  dx, HT18_PAGE_SELECT_REGISTER
+mov  al, HT18_PAGE_D000 + WAD_PAGE_FRAME_INDEX	; page D800
+out  dx, al
 
+mov  dx, HT18_PAGE_SET_REGISTER
 mov  al, ah
 xor  ah, ah
 
 SHIFT_MACRO SHR AX 2
 
-; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
-; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
-add  ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
-out  SCAMP_PAGE_SET_REGISTER, ax
-exit_wad_pageframe:
+add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + FIRST_LUMPINFO_LOGICAL_PAGE)
+out  dx, ax
 
+pop  dx
+
+exit_wad_pageframe:
+;pop  ax
 retf
 
 

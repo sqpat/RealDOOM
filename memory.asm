@@ -402,7 +402,7 @@ dw R_DrawPlanesOffset, spanfunc_jump_lookup_segment
 dw R_DrawMaskedOffset, drawfuzzcol_area_segment
 ; 810 R_WriteBackMaskedFrameConstants
 dw R_WriteBackMaskedFrameConstantsOffset, maskedconstants_funcarea_segment
-; 810 R_WriteBackViewConstantsSpan
+; 814 R_WriteBackViewConstantsSpan
 ;dw R_WriteBackViewConstantsSpanOffset, spanfunc_jump_lookup_segment
 
 dw  00, 00, 00, 00, 00, 00
@@ -434,7 +434,7 @@ REPT NUM_TEXTURE_PAGES
 	db  00
 ENDM
 
-
+;pageswapargs
 
 
 	; physics
@@ -450,12 +450,10 @@ ENDM
 	_NPR PAGE_6400_OFFSET							PAGE_6400_OFFSET
 	_EPR 13		 			 		            	PAGE_6800_OFFSET
 	_EPR 14 	 				    	 			PAGE_6C00_OFFSET
-
 	_NPR PAGE_7000_OFFSET				 			PAGE_7000_OFFSET
 	_NPR PAGE_7400_OFFSET	 						PAGE_7400_OFFSET
 	_NPR PAGE_7800_OFFSET				 			PAGE_7800_OFFSET 
 	_NPR PAGE_7C00_OFFSET	 						PAGE_7C00_OFFSET
-
 	_NPR PAGE_8000_OFFSET					 		PAGE_8000_OFFSET ;pageswapargs_screen0_offset_size
 	_NPR PAGE_8400_OFFSET					 		PAGE_8400_OFFSET
 	_NPR PAGE_8800_OFFSET					 		PAGE_8800_OFFSET
@@ -464,12 +462,11 @@ ENDM
 	_EPR FIRST_LUMPINFO_LOGICAL_PAGE    	 		PAGE_9400_OFFSET
 	_EPR FIRST_LUMPINFO_LOGICAL_PAGE+1 		 		PAGE_9800_OFFSET
 	_EPR FIRST_LUMPINFO_LOGICAL_PAGE+2 		 		PAGE_9C00_OFFSET
-		; render
-	_EPR 0		 									PAGE_4000_OFFSET ;pageswapargs_rend_offset_size
+		
+	_EPR 0		 									PAGE_4000_OFFSET ;pageswapargs_rend_offset_size   ; render
 	_EPR 1					 						PAGE_4400_OFFSET
 	_EPR 2								 			PAGE_4800_OFFSET
 	_EPR 3									 		PAGE_4C00_OFFSET
-
 	_EPR FIRST_TEXTURE_LOGICAL_PAGE+0		 		PAGE_5000_OFFSET ;pageswapargs_rend_texture_size
 	_EPR FIRST_TEXTURE_LOGICAL_PAGE+1		 		PAGE_5400_OFFSET
 	_EPR FIRST_TEXTURE_LOGICAL_PAGE+2		 		PAGE_5800_OFFSET
@@ -483,7 +480,6 @@ ENDM
 	_EPR 8								 			PAGE_7400_OFFSET
 	_EPR 9					 						PAGE_7800_OFFSET
 	_EPR 10		 									PAGE_7C00_OFFSET
-
 	_EPR 4									 		PAGE_8000_OFFSET
 	_EPR 5						 					PAGE_8400_OFFSET
 	_EPR 6			 								PAGE_8800_OFFSET
@@ -610,6 +606,7 @@ ENDM
 	_EPR SCREEN2_LOGICAL_PAGE+3 					PAGE_7C00_OFFSET 	; fwipe_ycolumns_segment here fwipe_mul160lookup_segment too
 	
 	_EPR EMS_VISPLANE_EXTRA_PAGE 				    PAGE_8400_OFFSET ;pageswapargs_visplanepage_offset_size
+	; note: no npr page_9000.
 	_NPR PAGE_9400_OFFSET 							PAGE_9400_OFFSET ;pageswapargs_physics_code_offset_size
 	_NPR PAGE_9800_OFFSET 							PAGE_9800_OFFSET
 

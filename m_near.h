@@ -518,6 +518,7 @@
 #define usedtexturepagemem				  (((uint8_t __near*) (CURRENT_POSITION_5)))
 #define CURRENT_POSITION_6  			  (((uint16_t) usedtexturepagemem) + (sizeof(uint8_t) * NUM_TEXTURE_PAGES))
 #define pageswapargs				  	  (((uint16_t __near*) (CURRENT_POSITION_6)))
+#define CURRENT_POSITION_7  			  (((uint16_t) pageswapargs) + (sizeof(uint16_t) * total_pages))
 //extern uint16_t pageswapargs[total_pages];
 
 
