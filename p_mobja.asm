@@ -664,17 +664,10 @@ PUBLIC P_ZMovement_
 ; bp - 2  segment for mobjpos (MOBJPOSLIST_6800_SEGMENT)
 ; bp - 4  floorz fixedheight hi
 ; bp - 6  floorz fixedheight lo
-; bp - 8    delta hi
-; bp - 0Ah  delta lo
-; bp - 0Ch  dist hi
-; bp - 0Eh  dist lo
-; bp - 010h UNUSED
-; bp - 012h UNUSED
-; bp - 014h mobj type
-; bp - 016h unused
-; bp - 018h unused
-; bp - 01Ah unused
-; bp - 01Ch unused
+; bp - 8  mobj type  
+; bp - 0Ah  dist hi
+; bp - 0Ch  dist lo
+
 
 
 push  dx
@@ -698,11 +691,9 @@ sar   ax, 1
 rcr   dx, 1
 push  ax ; bp - 4
 push  dx ; bp - 6
-sub   sp, 014h
 mov   es, cx
-xor   cx, cx
 mov   cl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-mov   word ptr [bp - 014h], cx  ; todo push
+push  cx  ; bp - 8
 ;    if (motype == MT_PLAYER && mo_pos->z.w < temp.w) {
 test  cl, cl
 jne   z_not_player
@@ -807,8 +798,8 @@ dw PHYSICS_HIGHCODE_SEGMENT
 
 pop   bx  ; recover offset
 mov   es, word ptr [bp - 2]
-mov   word ptr [bp - 0Eh], ax
-mov   word ptr [bp - 0Ch], dx
+push  dx  ; bp - 0Ah
+push  ax  ; bp - 0Ch
 
 ;	delta =(moTarget_pos->z.w + (mo->height.w>>1)) - mo_pos->z.w;
 
@@ -821,8 +812,7 @@ add   ax, word ptr es:[bx + MOBJ_POS_T.mp_z+0]
 adc   dx, word ptr es:[bx + MOBJ_POS_T.mp_z+2]
 sub   ax, word ptr es:[di + MOBJ_POS_T.mp_z+0]
 sbb   dx, word ptr es:[di + MOBJ_POS_T.mp_z+2]
-;mov   word ptr [bp - 0Ah], ax
-;mov   word ptr [bp - 8], dx
+
 
 ;    if (delta<0 && dist < -(FastMul8u32(3, delta)) )
 ;        mo_pos->z.h.intbits -= FLOATSPEED_HIGHBITS;
@@ -841,7 +831,7 @@ mov   ax, dx
 neg   ax
 neg   bx
 sbb   ax, 0
-cmp   ax, word ptr [bp - 0Ch]
+cmp   ax, word ptr [bp - 0Ah]
 jg    do_sub_floatspeed
 je    compare_low_bits_floatspeed
 jump_to_dont_sub_floatspeed:
@@ -849,7 +839,7 @@ pop   dx
 pop   ax
 jmp   dont_sub_floatspeed
 compare_low_bits_floatspeed:
-cmp   bx, word ptr [bp - 0Eh]
+cmp   bx, word ptr [bp - 0Ch]
 jbe   jump_to_dont_sub_floatspeed
 do_sub_floatspeed:
 mov   es, word ptr [bp - 2]
@@ -871,10 +861,10 @@ mov   bx, ax
 mov   cx, dx
 mov   ax, 3
 call  FastMul16u32u_
-cmp   dx, word ptr [bp - 0Ch]
+cmp   dx, word ptr [bp - 0Ah]
 jg    do_add_floatspeed
 jne   done_with_floating_with_target
-cmp   ax, word ptr [bp - 0Eh]
+cmp   ax, word ptr [bp - 0Ch]
 jbe   done_with_floating_with_target
 do_add_floatspeed:
 mov   es, word ptr [bp - 2]
@@ -1055,7 +1045,7 @@ ret
 continue_squat_check:
 ;	if (motype == MT_PLAYER && mo->momz.w < -GRAVITY*8)	 {
 
-cmp   word ptr [bp - 014h], MT_PLAYER
+cmp   byte ptr [bp - 8], MT_PLAYER
 jne   land_and_momz_0
 mov   ax, word ptr [si + 018h]
 cmp   ax, 0FFF8h                    ; -GRAVITY*8. gravity is FRACUNIT or 1 in the high word.
