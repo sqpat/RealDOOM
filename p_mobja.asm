@@ -147,34 +147,36 @@ ENDP
 
 PROC P_XYMovement_ NEAR
 PUBLIC P_XYMovement_
-; bp - 2    ptryx hi
-; bp - 4    ptryx lo
-; bp - 6    mobj_type
-; bp - 8    UNUSED
+; bp - 2    mobj/ax
+; bp - 4    mobjpos offset/bx
+; bp - 6    mobjpos seg/cx
+; bp - 8    mobj_type
 ; bp - 0Ah  mobj_secnum
 ; bp - 0Ch  ymove hi
 ; bp - 0Eh  ymove lo
 
-; bp - 010h  mobj/ax
-; bp - 012h  mobjpos offset/bx
-; bp - 014h  mobjpos seg/cx
+; bp - 010h  
+; bp - 012h  
+; bp - 014h  
 
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Eh
-push  ax        ; mobj
-push  cx
-push  bx
+
+push  ax ; bp - 2
+push  cx ; bp - 4
+push  bx ; bp - 6
+mov   di, bx
+mov   es, cx
 mov   bx, ax  ; bx gets mobj
 
 ;	if (!mo->momx.w && !mo->momy.w) {
 
 mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype] ; todo move push later. 
 xor   ah, ah
-mov   word ptr [bp - 6], ax
+push  ax  ; bp - 8
 
 mov   ax, word ptr ds:[bx + MOBJ_T.m_momx+2]
 or    ax, word ptr ds:[bx + MOBJ_T.m_momx+0]
@@ -185,8 +187,6 @@ jne   mobj_is_moving
 
 ;		if (mo_pos->flags2 & MF_SKULLFLY) {
 
-mov   di, word ptr [bp - 014h]
-mov   es, cx
 test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
 jne   skull_slammed_into_something
 exit_p_xymovement:
@@ -224,8 +224,8 @@ dw _P_SetMobjState_addr
 
 jmp   exit_p_xymovement
 mobj_is_moving:
-mov   ax, word ptr ds:[bx + m_secnum]         ; mosecnum = mo->secnum;
-mov   word ptr [bp - 0Ah], ax
+push  word ptr ds:[bx + MOBJ_T.m_secnum]        ; bp - 0Ah
+
 
 ;    if (mo->momx.w > MAXMOVE){
 ;		mo->momx.w = MAXMOVE;
@@ -275,10 +275,9 @@ done_capping_ymove:
 ;    xmove = mo->momx;
 ;    ymove = mo->momy;
 
-mov   ax, word ptr [bx + MOBJ_T.m_momy+0]
-mov   word ptr [bp - 0Eh], ax
-mov   ax, word ptr [bx + MOBJ_T.m_momy+2]
-mov   word ptr [bp - 0Ch], ax
+
+push  word ptr ds:[bx + MOBJ_T.m_momy+2] ; bp - 0Ch
+push  word ptr ds:[bx + MOBJ_T.m_momy+0] ; bp - 0Eh
 
 ; xmove is di:si
 ; ymove is 0C 0E
@@ -290,7 +289,7 @@ mov   di, word ptr [bx + MOBJ_T.m_momx+2]
 do_while_x_or_y_nonzero:
 
 ;	if (xmove.w > MAXMOVE/2 || ymove.w > MAXMOVE/2) {
-les   bx, dword ptr [bp - 014h]
+les   bx, dword ptr [bp - 6]
 
 cmp   di, (MAXMOVE SHR 1)
 jg    do_xy_shift
@@ -306,24 +305,21 @@ do_xy_shift:
 ;	ymove.w >>= 1;
 
 
-mov   ax, si
+mov   cx, si
 mov   dx, di
 sar   dx, 1
-rcr   ax, 1
-add   ax, word ptr es:[bx]
+rcr   cx, 1
+add   cx, word ptr es:[bx]
 adc   dx, word ptr es:[bx + 2]
-mov   word ptr [bp - 4], ax
-mov   word ptr [bp - 2], dx
-mov   dx, word ptr [bp - 0Ch]
-mov   ax, word ptr [bp - 0Eh]
 
-sar   dx, 1
-rcr   ax, 1
-
-add   ax, word ptr es:[bx + 4]
-adc   dx, word ptr es:[bx + 6]
 sar   word ptr [bp - 0Ch], 1
 rcr   word ptr [bp - 0Eh], 1
+
+mov   ax, word ptr es:[bx + 4]
+mov   bx, word ptr es:[bx + 6]
+add   ax, word ptr [bp - 0Eh]
+adc   bx, word ptr [bp - 0Ch]
+
 sar   di, 1
 rcr   si, 1
 
@@ -343,22 +339,21 @@ dont_do_xy_shift:
 ;    ptryy.w = mo_pos->y.w + ymove.w;
 ;    xmove.w = ymove.w = 0;
 
-mov   ax, word ptr es:[bx]
-add   ax, si
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr es:[bx + 2]
-adc   ax, di
-mov   word ptr [bp - 2], ax
+mov   cx, word ptr es:[bx]
+mov   dx, word ptr es:[bx + 2]
+add   cx, si
+adc   dx, di
+
 xor   si, si
 mov   di, si
 
 mov   ax, word ptr es:[bx + 4]
 add   ax, word ptr [bp - 0Eh]    
-mov   dx, word ptr es:[bx + 6]
-adc   dx, word ptr [bp - 0Ch]
+mov   bx, word ptr es:[bx + 6]
+adc   bx, word ptr [bp - 0Ch]
 
-mov   word ptr [bp - 0Eh], si
-mov   word ptr [bp - 0Ch], si
+mov   word ptr [bp - 0Eh], si ; zero
+mov   word ptr [bp - 0Ch], si ; zero
 
 
 
@@ -367,18 +362,18 @@ done_shifting_xymove:
 
 ;		if (!P_TryMove (mo, mo_pos, ptryx, ptryy)) {
 
-push  dx
+push  bx
 push  ax
-push  word ptr [bp - 2]
-push  word ptr [bp - 4]
-; bx already set
+push  dx
+push  cx
+mov   bx, word ptr [bp - 6]
 mov   cx, es
-mov   ax, word ptr [bp - 010h]
+mov   ax, word ptr [bp - 2]
 call  _P_TryMove   ; what if we returned in the carry flag...
 test  al, al
 jne   cant_move
 ; 
-cmp   word ptr [bp - 6], MT_PLAYER
+cmp   word ptr [bp - 8], MT_PLAYER
 je    player_try_slide
 jmp   do_missile_check
 player_try_slide:
@@ -399,12 +394,12 @@ jne   jump_to_do_while_x_or_y_nonzero
 cmp   word ptr [bp - 0Eh], 0
 jne   jump_to_do_while_x_or_y_nonzero
 
-mov   bx, word ptr [bp - 010h]
+mov   bx, word ptr [bp - 2]
 
 ;    // slow down
 ;    if (motype == MT_PLAYER && player.cheats & CF_NOMOMENTUM) {
 
-cmp   word ptr [bp - 6], MT_PLAYER
+cmp   word ptr [bp - 8], MT_PLAYER
 jne   skip_no_momentum_cheat ;todo inverse logic
 
 
@@ -422,7 +417,7 @@ mov   word ptr ds:[bx + MOBJ_T.m_momy+0], ax
 mov   word ptr ds:[bx + MOBJ_T.m_momy+2], ax
 jmp   exit_p_xymovement
 skip_no_momentum_cheat:
-les   di, dword ptr [bp - 014h]
+les   di, dword ptr [bp - 6]
 
 ;	if (mo_pos->flags2 & (MF_MISSILE | MF_SKULLFLY)) {
 
@@ -527,14 +522,14 @@ apply_friction:
 
 mov   ax, FRICTION
 call  FixedMul16u32_
-mov   bx, word ptr [bp - 010h]
+mov   bx, word ptr [bp - 2]
 mov   word ptr [bx + MOBJ_T.m_momx+0], ax
 mov   cx, si
 mov   word ptr [bx + MOBJ_T.m_momx+2], dx
 mov   bx, di
 mov   ax, FRICTION
 call  FixedMul16u32_
-mov   bx, word ptr [bp - 010h]
+mov   bx, word ptr [bp - 2]
 mov   word ptr [bx + MOBJ_T.m_momy+0], ax
 mov   word ptr [bx + MOBJ_T.m_momy+2], dx
 LEAVE_MACRO 
@@ -565,7 +560,7 @@ jne   apply_friction
 cmp   di, STOPSPEED
 jae   apply_friction
 continue_stopspeed_checks_4:
-cmp   word ptr [bp - 6], MT_PLAYER
+cmp   word ptr [bp - 8], MT_PLAYER
 jne   dont_apply_friction
 ; check if pressing buttons
 cmp   word ptr ds:[_player + PLAYER_T.player_cmd_forwardmove], 0
@@ -574,7 +569,7 @@ jne   apply_friction
 ;cmp   byte ptr ds:[_player + PLAYER_T.player_cmd_sidemove], 0
 ;jne   apply_friction
 dont_apply_friction:
-cmp   word ptr [bp - 6], MT_PLAYER
+cmp   word ptr [bp - 8], MT_PLAYER
 jne   done_stepping_stop_moving
 les   si, dword ptr ds:[_playerMobj_pos]
 mov   ax, word ptr es:[si + 012h]
@@ -592,7 +587,7 @@ dw _P_SetMobjState_addr
 done_stepping_stop_moving:
 ;		mo->momx.w = 0;
 ;		mo->momy.w = 0;
-mov   bx, word ptr [bp - 010h]
+mov   bx, word ptr [bp - 2]
 mov   word ptr [bx + MOBJ_T.m_momx+0], 0
 mov   word ptr [bx + MOBJ_T.m_momx+2], 0
 mov   word ptr [bx + MOBJ_T.m_momy+0], 0
@@ -609,7 +604,7 @@ do_missile_check:
 
 ;			} else if (mo_pos->flags2 & MF_MISSILE) {
 
-les   bx, dword ptr [bp - 014h]
+les   bx, dword ptr [bp - 6]
 test  byte ptr es:[bx + 016h], MF_MISSILE
 je    not_missile_dont_explode
 mov   bx, OFFSET _ceilinglinenum
@@ -628,18 +623,17 @@ mov   bx, ax
 mov   dx, SECTORS_SEGMENT
 SHIFT_MACRO shl   bx 4
 mov   es, dx
-add   bx, 5
-mov   al, byte ptr es:[bx]
+mov   al, byte ptr es:[bx + 5]
 cmp   al, byte ptr ds:[_skyflatnum]
 je    is_sky_dont_explode
 do_explosion:
-les   bx, dword ptr [bp - 014h]
+les   bx, dword ptr [bp - 6]
 mov   cx, es
-mov   ax, word ptr [bp - 010h]
+mov   ax, word ptr [bp - 2]
 call  P_ExplodeMissile_
 jmp   cant_move
 is_sky_dont_explode:
-mov   ax, word ptr [bp - 010h]
+mov   ax, word ptr [bp - 2]
 
 call  P_RemoveMobj_
 LEAVE_MACRO
@@ -651,7 +645,7 @@ not_missile_dont_explode:
 
 ;				mo->momx.w = mo->momy.w = 0;
 
-mov   bx, word ptr [bp - 010h]
+mov   bx, word ptr [bp - 2]
 xor   ax, ax
 mov   word ptr [bx + MOBJ_T.m_momx+0], ax
 mov   word ptr [bx + MOBJ_T.m_momx+2], ax
