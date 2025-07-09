@@ -143,9 +143,21 @@ retf
 
 ENDP
 
+;void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+
 
 PROC P_XYMovement_ NEAR
 PUBLIC P_XYMovement_
+; bp - 2    ptryx hi
+; bp - 4    ptryx lo
+; bp - 6    mobj_type
+; bp - 0Ah  mobj_secnum
+; bp - 0Ch  ymove hi
+; bp - 0Eh  ymove lo
+
+; bp - 010h  mobj/ax
+; bp - 012h  mobjpos offset/bx
+; bp - 014h  mobjpos seg/cx
 
 push  dx
 push  si
@@ -153,168 +165,267 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 0Eh
-push  ax
+push  ax        ; mobj
 push  bx
 push  cx
-mov   bx, ax
-mov   al, byte ptr [bx + 01Ah]
+mov   bx, ax  ; bx gets mobj
+
+;	if (!mo->momx.w && !mo->momy.w) {
+
+mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype] ; todo move push later. 
 xor   ah, ah
 mov   word ptr [bp - 6], ax
-mov   ax, word ptr [bx + 010h]
-or    ax, word ptr [bx + 0Eh]
-jne   label_1
-mov   ax, word ptr [bx + 014h]
-or    ax, word ptr [bx + 012h]
-jne   label_1
-mov   bx, word ptr [bp - 012h]
+
+mov   ax, word ptr ds:[bx + MOBJ_T.m_momx+2]
+or    ax, word ptr ds:[bx + MOBJ_T.m_momx+0]
+jne   mobj_is_moving
+mov   ax, word ptr ds:[bx + MOBJ_T.m_momy+2]
+or    ax, word ptr ds:[bx + MOBJ_T.m_momy+0]
+jne   mobj_is_moving
+
+;		if (mo_pos->flags2 & MF_SKULLFLY) {
+
+mov   di, word ptr [bp - 012h]
 mov   es, cx
-test  byte ptr es:[bx + 017h], (MF_SKULLFLY SHR 8)
-jne   label_2
+test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
+jne   skull_slammed_into_something
 exit_p_xymovement:
 LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
 ret   
-label_2:
-and   byte ptr es:[bx + 017h], (NOT (MF_SKULLFLY SHR 8))  ; 0xFE
-mov   bx, word ptr [bp - 010h]
-mov   word ptr [bx + 016h], ax
-mov   word ptr [bx + 018h], ax
-mov   word ptr [bx + 012h], ax
-mov   word ptr [bx + 014h], ax
-mov   dx, ax
-mov   ax, word ptr [bx + 012h]
-mov   word ptr [bx + 0Eh], ax
+skull_slammed_into_something:
+
+;			// the skull slammed into something
+;			mo_pos->flags2 &= ~MF_SKULLFLY;
+;			mo->momx.w = mo->momy.w = mo->momz.w = 0;
+;			P_SetMobjState (mo,mobjinfo[mo->type].spawnstate);
+and   byte ptr es:[di + MOBJ_POS_T.mp_flags2+1], (NOT (MF_SKULLFLY SHR 8))  ; 0xFE
+; ax already 0
+mov   word ptr [bx + MOBJ_T.m_momz+2], ax
+mov   word ptr [bx + MOBJ_T.m_momz+0], ax
+; if we are in this code block we already determined these were 0
+;mov   word ptr [bx + 012h], ax
+;mov   word ptr [bx + 014h], ax
+; mov   word ptr [bx + 0Eh], ax
+; mov   word ptr [bx + 010h], ax
+
 mov   al, byte ptr [bx + 01Ah]
-xor   ah, ah
-imul  ax, ax, 0Bh   ; todo
-mov   word ptr [bx + 010h], dx
-mov   bx, ax
-mov   ax, word ptr [bp - 010h]
+mov   ah, 0Bh
+mul   ah
+xchg  ax, bx
 mov   dx, word ptr ds:[bx + _mobjinfo]
-add   bx, OFFSET _mobjinfo
 
 ;call  P_SetMobjState_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
-nop
+
 jmp   exit_p_xymovement
-label_1:
-mov   bx, word ptr [bp - 010h]
-mov   ax, word ptr [bx + 4]
+mobj_is_moving:
+mov   ax, word ptr ds:[bx + m_secnum]         ; mosecnum = mo->secnum;
 mov   word ptr [bp - 0Ah], ax
+
+;    if (mo->momx.w > MAXMOVE){
+;		mo->momx.w = MAXMOVE;
+;	} else if (mo->momx.w < -MAXMOVE){
+;		mo->momx.w = -MAXMOVE;
+;	}
+
+
 mov   ax, word ptr [bx + 010h]
-cmp   ax, 01Eh
-jg    label_3
-je    label_4
-label_6:
-jmp   label_5
-label_4:
-cmp   word ptr [bx + 0Eh], 0
-jbe   label_6
-label_3:
-mov   word ptr [bx + 0Eh], 0
-mov   word ptr [bx + 010h], 01Eh  ; MAXXMOVE 1E0000
-label_32:
-mov   bx, word ptr [bp - 010h]
-mov   ax, word ptr [bx + 014h]
-cmp   ax, 01Eh
-jg    label_7
-je    label_8
-jump_to_label_9:
-jmp   label_9
-label_8:
-cmp   word ptr [bx + 012h], 0
-jbe   jump_to_label_9
-label_7:
-mov   word ptr [bx + 012h], 0
-mov   word ptr [bx + 014h], 01Eh
-label_34:
-mov   si, word ptr [bp - 010h]
-mov   bx, word ptr [bp - 010h]
-mov   di, word ptr [bp - 010h]
+cmp   ax, MAXMOVE
+
+jge   cap_x_at_maxmove
+
+
+cmp   ax, -MAXMOVE
+jnl   done_capping_xmove
+mov   word ptr [bx + MOBJ_T.m_momx+0], 0
+mov   word ptr [bx + MOBJ_T.m_momx+2], -MAXMOVE
+jmp   done_capping_xmove
+cap_x_at_maxmove:
+mov   word ptr [bx + MOBJ_T.m_momx+0], 0
+mov   word ptr [bx + MOBJ_T.m_momx+2], 01Eh  ; MAXXMOVE 1E0000
+done_capping_xmove:
+
+;    if (mo->momy.w > MAXMOVE){
+;		mo->momy.w = MAXMOVE;
+;	} else if (mo->momy.w < -MAXMOVE){
+;		mo->momy.w = -MAXMOVE;
+;	}
+
+
+
+mov   ax, word ptr ds:[bx + MOBJ_T.m_momy+2]
+cmp   ax, MAXMOVE
+jge   cap_y_at_maxmove
+cmp   ax, -MAXMOVE
+jnl   done_capping_ymove
+mov   word ptr ds:[bx + MOBJ_T.m_momy+0], 0
+mov   word ptr ds:[bx + MOBJ_T.m_momy+2], -MAXMOVE ; 0FFE2
+jmp   done_capping_ymove
+
+cap_y_at_maxmove:
+mov   word ptr ds:[bx + MOBJ_T.m_momy+0], 0
+mov   word ptr ds:[bx + MOBJ_T.m_momy+2], MAXMOVE
+done_capping_ymove:
+
+;    xmove = mo->momx;
+;    ymove = mo->momy;
+
 mov   ax, word ptr [bx + 012h]
-mov   si, word ptr [si + 0Eh]
 mov   word ptr [bp - 0Eh], ax
 mov   ax, word ptr [bx + 014h]
-mov   di, word ptr [di + 010h]
 mov   word ptr [bp - 0Ch], ax
-label_50:
-cmp   di, 0Fh
-jg    label_10
-je    label_11
-jump_to_label_12:
-jmp   label_12
-label_11:
-test  si, si
-jbe   jump_to_label_12
-label_10:
-mov   bx, 2
-mov   ax, si
-mov   dx, di
-xor   cx, cx
 
-call  __I4D  ; __I4D
+; xmove is di:si
+; ymove is 0C 0E
+mov   si, word ptr [bx + 0Eh]
+mov   di, word ptr [bx + 010h]
+
+;	do {
+
+do_while_x_or_y_nonzero:
+
+;	if (xmove.w > MAXMOVE/2 || ymove.w > MAXMOVE/2) {
 mov   es, word ptr [bp - 014h]
 mov   bx, word ptr [bp - 012h]
-mov   cx, word ptr es:[bx]
-add   cx, ax
-mov   word ptr [bp - 4], cx
-mov   ax, word ptr es:[bx + 2]
-mov   bx, 2
-adc   ax, dx
+
+cmp   di, (MAXMOVE SHR 1)
+jg    do_xy_shift
+jne   test_ymove
+test_xmove_lobits:
+test  si, si
+jbe   test_ymove
+do_xy_shift:
+
+;	ptryx.w = mo_pos->x.w + xmove.w/2;
+;	ptryy.w = mo_pos->y.w + ymove.w/2;
+;	xmove.w >>= 1;
+;	ymove.w >>= 1;
+
+
+mov   ax, si
+mov   dx, di
+sar   dx, 1
+rcr   ax, 1
+add   ax, word ptr es:[bx]
+adc   dx, word ptr es:[bx + 2]
+mov   word ptr [bp - 4], ax
+mov   word ptr [bp - 2], dx
 mov   dx, word ptr [bp - 0Ch]
-mov   word ptr [bp - 2], ax
-xor   cx, cx
 mov   ax, word ptr [bp - 0Eh]
 
-call  __I4D
+sar   dx, 1
+rcr   ax, 1
 
-mov   bx, word ptr [bp - 012h]
 add   ax, word ptr es:[bx + 4]
 adc   dx, word ptr es:[bx + 6]
 sar   word ptr [bp - 0Ch], 1
 rcr   word ptr [bp - 0Eh], 1
 sar   di, 1
 rcr   si, 1
-label_37:
+
+jmp   done_shifting_xymove
+test_ymove:
+
+cmp   word ptr [bp - 0Ch], (MAXMOVE SHR 1)
+jnle  do_xy_shift
+test_ymove_lobits:
+jne   dont_do_xy_shift
+cmp   word ptr [bp - 0Eh], 0
+ja    do_xy_shift
+dont_do_xy_shift:
+
+
+;    ptryx.w = mo_pos->x.w + xmove.w;
+;    ptryy.w = mo_pos->y.w + ymove.w;
+;    xmove.w = ymove.w = 0;
+
+mov   ax, word ptr es:[bx]
+add   ax, si
+mov   word ptr [bp - 4], ax
+mov   ax, word ptr es:[bx + 2]
+adc   ax, di
+mov   word ptr [bp - 2], ax
+xor   si, si
+mov   di, si
+
+mov   ax, word ptr es:[bx + 4]
+add   ax, word ptr [bp - 0Eh]    
+mov   dx, word ptr es:[bx + 6]
+adc   dx, word ptr [bp - 0Ch]
+
+mov   word ptr [bp - 0Eh], si
+mov   word ptr [bp - 0Ch], si
+
+
+
+done_shifting_xymove:
+
+
+;		if (!P_TryMove (mo, mo_pos, ptryx, ptryy)) {
+
 push  dx
 push  ax
-mov   bx, word ptr [bp - 012h]
 push  word ptr [bp - 2]
-mov   cx, word ptr [bp - 014h]
 push  word ptr [bp - 4]
+; bx already set
+mov   cx, es
 mov   ax, word ptr [bp - 010h]
-call  _P_TryMove
+call  _P_TryMove   ; what if we returned in the carry flag...
 test  al, al
-jne   label_41
+jne   cant_move
+; 
 cmp   word ptr [bp - 6], 0
 je    label_42
 jmp   label_43
 label_42:
 call  _P_SlideMove
-label_41:
+
+cant_move:
+;    } while (xmove.w || ymove.w);
+
 test  di, di
 je    label_26
-label_25:
-jmp   label_50
+jump_to_do_while_x_or_y_nonzero:
+jmp   do_while_x_or_y_nonzero
 label_26:
 test  si, si
-jne   label_25
+jne   jump_to_do_while_x_or_y_nonzero
 cmp   word ptr [bp - 0Ch], 0
-jne   label_25
+jne   jump_to_do_while_x_or_y_nonzero
 cmp   word ptr [bp - 0Eh], 0
-jne   label_25
-cmp   word ptr [bp - 6], 0
-jne   label_27
+jne   jump_to_do_while_x_or_y_nonzero
 
-mov   bx, OFFSET _player + PLAYER_T.player_cheats  ; player.cheats? 03Bh
-test  byte ptr [bx], CF_NOMOMENTUM
-je    label_27
-jmp   label_28
-label_27:
+;    // slow down
+;    if (motype == MT_PLAYER && player.cheats & CF_NOMOMENTUM) {
+;		// debug option for no sliding at all
+;		mo->momx.w = mo->momy.w = 0;
+;		return;
+;    }
+
+cmp   word ptr [bp - 6], 0
+jne   skip_no_momentum_cheap ;todo inverse logic
+
+test  byte ptr ds:[_player + PLAYER_T.player_cheats], CF_NOMOMENTUM
+je    skip_no_momentum_cheap
+
+mov   bx, word ptr [bp - 010h]
+mov   word ptr [bx + 012h], 0
+mov   word ptr [bx + 014h], 0
+mov   dx, word ptr [bx + 012h]
+mov   ax, word ptr [bx + 014h]
+mov   word ptr [bx + 0Eh], dx
+mov   word ptr [bx + 010h], ax
+leave 
+pop   di
+pop   si
+pop   dx
+ret   
+skip_no_momentum_cheap:
 mov   es, word ptr [bp - 014h]
 mov   bx, word ptr [bp - 012h]
 test  word ptr es:[bx + 016h], (MF_MISSILE OR MF_SKULLFLY)
@@ -422,22 +533,6 @@ pop   di
 pop   si
 pop   dx
 ret   
-label_5:
-cmp   ax, -MAXMOVE
-jl    label_31
-jmp   label_32
-label_31:
-mov   word ptr [bx + 0Eh], 0
-mov   word ptr [bx + 010h], -MAXMOVE
-jmp   label_32
-label_9:
-cmp   ax, -MAXMOVE
-jl    label_33
-jmp   label_34
-label_33:
-mov   word ptr [bx + 012h], 0
-mov   word ptr [bx + 014h], -MAXMOVE ; 0FFE2
-jmp   label_34
 label_20:
 mov   di, OFFSET _player + PLAYER_T.player_cmd_forwardmove
 cmp   byte ptr [di], 0
@@ -463,34 +558,7 @@ pop   di
 pop   si
 pop   dx
 ret   
-label_12:
-mov   ax, word ptr [bp - 0Ch]
-cmp   ax, 0Fh
-jle   label_36
-jump_to_label_10:
-jmp   label_10
-label_36:
-jne   label_35
-cmp   word ptr [bp - 0Eh], 0
-ja    jump_to_label_10
-label_35:
-mov   es, word ptr [bp - 014h]
-mov   bx, word ptr [bp - 012h]
-mov   ax, word ptr es:[bx]
-add   ax, si
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr es:[bx + 2]
-adc   ax, di
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr es:[bx + 4]
-add   ax, word ptr [bp - 0Eh]
-mov   word ptr [bp - 0Eh], 0
-mov   dx, word ptr es:[bx + 6]
-adc   dx, word ptr [bp - 0Ch]
-mov   word ptr [bp - 0Ch], 0
-xor   si, si
-xor   di, di
-jmp   label_37
+
 label_43:
 mov   es, word ptr [bp - 014h]
 mov   bx, word ptr [bp - 012h]
@@ -522,7 +590,7 @@ mov   bx, word ptr [bp - 012h]
 mov   cx, word ptr [bp - 014h]
 mov   ax, word ptr [bp - 010h]
 call  P_ExplodeMissile_
-jmp   label_41
+jmp   cant_move
 label_40:
 mov   ax, word ptr [bp - 010h]
 
@@ -540,20 +608,8 @@ mov   dx, word ptr [bx + 012h]
 mov   ax, word ptr [bx + 014h]
 mov   word ptr [bx + 0Eh], dx
 mov   word ptr [bx + 010h], ax
-jmp   label_41
-label_28:
-mov   bx, word ptr [bp - 010h]
-mov   word ptr [bx + 012h], 0
-mov   word ptr [bx + 014h], 0
-mov   dx, word ptr [bx + 012h]
-mov   ax, word ptr [bx + 014h]
-mov   word ptr [bx + 0Eh], dx
-mov   word ptr [bx + 010h], ax
-leave 
-pop   di
-pop   si
-pop   dx
-ret   
+jmp   cant_move
+
 label_23:
 cmp   ax, 0FFFFh
 jge   label_46
