@@ -156,9 +156,6 @@ PUBLIC P_XYMovement_
 ; bp - 0Ch  ymove hi
 ; bp - 0Eh  ymove lo
 
-; bp - 010h  
-; bp - 012h  
-; bp - 014h  
 
 push  dx
 push  si
@@ -657,26 +654,27 @@ jmp   cant_move
 
 ENDP
 
+
+FLOATSPEED_HIGHBITS = 4
 VIEWHEIGHT_HIGH = 41
 
 PROC P_ZMovement_ NEAR
 PUBLIC P_ZMovement_
 
-; bp - 2  segment for mobjpos
+; bp - 2  segment for mobjpos (MOBJPOSLIST_6800_SEGMENT)
 ; bp - 4  floorz fixedheight hi
 ; bp - 6  floorz fixedheight lo
-; bp - 8
-; bp - 0Ah
-; bp - 0Ch
-; bp - 0Eh
-; bp - 010h
-; bp - 012h
+; bp - 8    delta hi
+; bp - 0Ah  delta lo
+; bp - 0Ch  dist hi
+; bp - 0Eh  dist lo
+; bp - 010h UNUSED
+; bp - 012h UNUSED
 ; bp - 014h mobj type
-; bp - 016h
-; bp - 018h
-; bp - 01Ah
-; bp - 01Ch
-; bp - 01Eh
+; bp - 016h unused
+; bp - 018h unused
+; bp - 01Ah moTarget_pos offset
+; bp - 01Ch unused
 
 
 push  dx
@@ -700,7 +698,7 @@ sar   ax, 1
 rcr   dx, 1
 push  ax ; bp - 4
 push  dx ; bp - 6
-sub   sp, 018h
+sub   sp, 014h
 mov   es, cx
 xor   cx, cx
 mov   cl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
@@ -746,6 +744,7 @@ mov   dx, word ptr ds:[si + MOBJ_T.m_momz+2]
 
 add   word ptr es:[di + MOBJ_POS_T.mp_z+0], ax
 adc   word ptr es:[di + MOBJ_POS_T.mp_z+2], dx
+
 ;    if (mo_pos->flags1 & MF_FLOAT && mo->targetRef) {
 
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1+1], (MF_FLOAT SHR 8)
@@ -764,6 +763,9 @@ jne   jump_to_done_with_floating_with_target
 ;		if ( !(mo_pos->flags2 & MF_SKULLFLY) && !(mo_pos->flags2 & MF_INFLOAT) ) {
 
 
+;    moTarget = (mobj_t __near*)&thinkerlist[mo->targetRef].data;
+;    moTarget_pos = &mobjposlist_6800[mo->targetRef];
+
 IF COMPISA GE COMPILE_186
     imul  bx, word ptr [si + 022h], SIZEOF_MOBJ_POS_T
 ELSE
@@ -772,29 +774,27 @@ ELSE
     mov   bx, ax
 ENDIF
 
-mov   word ptr [bp - 01Eh], MOBJPOSLIST_6800_SEGMENT
-mov   ax, word ptr es:[di + 6]
-mov   dx, word ptr es:[di + 4]
-mov   word ptr [bp - 018h], ax
-mov   es, word ptr [bp - 01Eh]
 mov   word ptr [bp - 01Ah], bx
-mov   word ptr [bp - 01Ch], bx
-sub   dx, word ptr es:[bx + 4]
-mov   ax, word ptr es:[bx + 6]
-mov   es, word ptr [bp - 2]
-sbb   word ptr [bp - 018h], ax
+
+
+;    dist = P_AproxDistance (mo_pos->x.w - moTarget_pos->x.w,
+;        mo_pos->y.w - moTarget_pos->y.w);
+
+mov   ax, word ptr es:[di + 4]
+mov   cx, word ptr es:[di + 6]
+sub   ax, word ptr es:[bx + 4]
+sbb   cx, word ptr es:[bx + 6]
+push  ax    ; store y diff lo
+
+
+
 mov   ax, word ptr es:[di]
-mov   bx, word ptr es:[di + 2]
-mov   es, word ptr [bp - 01Eh]
-mov   word ptr [bp - 016h], bx
-mov   bx, word ptr [bp - 01Ah]
+mov   dx, word ptr es:[di + 2]
 sub   ax, word ptr es:[bx]
-mov   bx, word ptr [bp - 01Ch]
-mov   cx, word ptr es:[bx + 2]
-sbb   word ptr [bp - 016h], cx
-mov   bx, dx
-mov   cx, word ptr [bp - 018h]
-mov   dx, word ptr [bp - 016h]
+sbb   dx, word ptr es:[bx + 2]
+
+pop   bx
+
 ;call  dword ptr ds:[_P_AproxDistance]
 
 db    09Ah
@@ -802,49 +802,80 @@ dw P_AproxDistanceOffset
 dw PHYSICS_HIGHCODE_SEGMENT
 
 mov   bx, word ptr [bp - 01Ah]
+mov   es, word ptr [bp - 2]
 mov   word ptr [bp - 0Eh], ax
 mov   word ptr [bp - 0Ch], dx
-mov   word ptr [bp - 012h], ax
-mov   word ptr [bp - 010h], dx
-mov   ax, word ptr [si + 0Ah]
-mov   dx, word ptr [si + 0Ch]
-mov   es, word ptr [bp - 01Eh]
+
+;	delta =(moTarget_pos->z.w + (mo->height.w>>1)) - mo_pos->z.w;
+
+mov   ax, word ptr ds:[si + MOBJ_T.m_height+0]
+mov   dx, word ptr ds:[si + MOBJ_T.m_height+2]
 sar   dx, 1
 rcr   ax, 1
-mov   cx, word ptr es:[bx + 8]
-mov   bx, word ptr [bp - 01Ch]
-add   cx, ax
-mov   ax, word ptr es:[bx + 0Ah]
-mov   es, word ptr [bp - 2]
-adc   ax, dx
-mov   dx, cx
-sub   dx, word ptr es:[di + 8]
-sbb   ax, word ptr es:[di + 0Ah]
-mov   word ptr [bp - 0Ah], dx
-mov   word ptr [bp - 8], ax
-test  ax, ax
-jge   label_5
-jmp   label_6
-label_5:
-mov   ax, word ptr [bp - 8]
-test  ax, ax
-jg    label_7
-jne   done_with_floating_with_target
-cmp   word ptr [bp - 0Ah], 0
-jbe   done_with_floating_with_target
-label_7:
-mov   bx, word ptr [bp - 0Ah]
-mov   cx, ax
+
+add   ax, word ptr es:[bx + MOBJ_POS_T.mp_z+0]
+adc   dx, word ptr es:[bx + MOBJ_POS_T.mp_z+2]
+sub   ax, word ptr es:[di + MOBJ_POS_T.mp_z+0]
+sbb   dx, word ptr es:[di + MOBJ_POS_T.mp_z+2]
+;mov   word ptr [bp - 0Ah], ax
+;mov   word ptr [bp - 8], dx
+
+;    if (delta<0 && dist < -(FastMul8u32(3, delta)) )
+;        mo_pos->z.h.intbits -= FLOATSPEED_HIGHBITS;
+
+test  dx, dx
+jge   dont_sub_floatspeed
+check_for_sub_floatspeed:
+push  ax ; in case we need delta again
+push  dx ; in case we need delta again
+mov   bx, ax
+mov   cx, dx
 mov   ax, 3
 call  FastMul16u32u_
-cmp   dx, word ptr [bp - 010h]
-jg    label_8
-jne   done_with_floating_with_target
-cmp   ax, word ptr [bp - 012h]
-jbe   done_with_floating_with_target
-label_8:
+mov   bx, ax
+mov   ax, dx
+neg   ax
+neg   bx
+sbb   ax, 0
+cmp   ax, word ptr [bp - 0Ch]
+jg    do_sub_floatspeed
+je    compare_low_bits_floatspeed
+jump_to_dont_sub_floatspeed:
+pop   dx
+pop   ax
+jmp   dont_sub_floatspeed
+compare_low_bits_floatspeed:
+cmp   bx, word ptr [bp - 0Eh]
+jbe   jump_to_dont_sub_floatspeed
+do_sub_floatspeed:
 mov   es, word ptr [bp - 2]
-add   word ptr es:[di + 0Ah], 4
+sub   word ptr es:[di + 0Ah], FLOATSPEED_HIGHBITS
+jmp   done_with_floating_with_target
+
+dont_sub_floatspeed:
+; delta dx:ax
+;			else if (delta>0 && dist < FastMul8u32(3, delta)  )
+;				mo_pos->z.h.intbits += FLOATSPEED_HIGHBITS;
+
+test  dx, dx
+jg    check_for_add_floatspeed
+jne   done_with_floating_with_target
+cmp   ax, 0
+jbe   done_with_floating_with_target
+check_for_add_floatspeed:
+mov   bx, ax
+mov   cx, dx
+mov   ax, 3
+call  FastMul16u32u_
+cmp   dx, word ptr [bp - 0Ch]
+jg    do_add_floatspeed
+jne   done_with_floating_with_target
+cmp   ax, word ptr [bp - 0Eh]
+jbe   done_with_floating_with_target
+do_add_floatspeed:
+mov   es, word ptr [bp - 2]
+add   word ptr es:[di + 0Ah], FLOATSPEED_HIGHBITS
+
 done_with_floating_with_target:
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[di + 0Ah]
@@ -942,30 +973,9 @@ pop   di
 pop   si
 pop   dx
 ret   
-label_6:
-mov   bx, dx
-mov   cx, ax
-mov   ax, 3
-call  FastMul16u32u_
-mov   bx, ax
-mov   ax, dx
-neg   ax
-neg   bx
-sbb   ax, 0
-cmp   ax, word ptr [bp - 0Ch]
-jg    label_28
-je    label_27
-jump_to_label_5:
-jmp   label_5
-label_27:
-cmp   bx, word ptr [bp - 0Eh]
-jbe   jump_to_label_5
-label_28:
-mov   es, word ptr [bp - 2]
-sub   word ptr es:[di + 0Ah], 4
-jmp   done_with_floating_with_target
+
 label_14:
-cmp   word ptr [bp - 014h], 0
+cmp   word ptr [bp - 014h], MT_PLAYER
 jne   label_23
 mov   ax, word ptr [si + 018h]
 cmp   ax, 0fff8h
