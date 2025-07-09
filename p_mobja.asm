@@ -1093,32 +1093,38 @@ ENDP
 PROC P_ExplodeMissile_ NEAR
 PUBLIC P_ExplodeMissile_
 
+; bp - 2   mobjpos segment
+; bp - 4
+; bp - 6
+; bp - 8
+; bp - 0Ah
+
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ah
 mov   si, ax
-mov   word ptr [bp - 2], cx
-mov   word ptr [si + 016h], 0
-mov   word ptr [si + 018h], 0
-mov   ax, word ptr [si + 016h]
-mov   dx, word ptr [si + 018h]
-mov   word ptr [si + 012h], ax
-mov   word ptr [si + 014h], dx
-mov   ax, word ptr [si + 014h]
+push  cx  ; bp - 2
 
-mov   word ptr [si + 010h], ax
-
+xor   ax, ax
+;    mo->momx.w = mo->momy.w = mo->momz.w = 0;
+mov   cx, 6
+push  ds
+pop   es
+lea   di, [si + MOBJ_T.m_momx+0]
+rep   movsw
+; zero all six words out
 mov   al, byte ptr [si + 01Ah]
 mov   dx, word ptr [si + 012h]
 xor   ah, ah
-mov   word ptr [si + 0Eh], dx
+
+; call GetDeathState..
 db    09Ah
 dw    GETDEATHSTATEADDR
 dw    INFOFUNCLOADSEGMENT
-mov   dx, ax
+
+xchg  ax, dx
 mov   ax, si
 
 
@@ -1127,48 +1133,55 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
 
-inc   byte ptr ds:[_prndindex]
-mov   dl, byte ptr ds:[_prndindex]
 mov   ax, RNDTABLE_SEGMENT
-xor   dh, dh
 mov   es, ax
-mov   di, dx
-lea   cx, [si + 01Bh]
+inc   byte ptr ds:[_prndindex]
+mov   al, byte ptr ds:[_prndindex]
+xor   ah, ah
+xchg  ax, di
+
+;    mo->tics -= P_Random()&3;
+;	if (mo->tics < 1 || mo->tics > 240) {
+;		mo->tics = 1;
+;	}
+
 mov   al, byte ptr es:[di]
-mov   di, cx
 and   al, 3
-sub   byte ptr [di], al
+sub   byte ptr [si + 01Bh], al
 mov   al, byte ptr [si + 01Bh]
 cmp   al, 1
-jb    label_1
+jb    set_tics_to_1_b
 cmp   al, 240 ; check for tics overflow. jank
-jbe   label_2
-label_1:
+jbe   dont_set_tics_to_1_b
+set_tics_to_1_b:
 mov   byte ptr [si + 01Bh], 1
-label_2:
-mov   es, word ptr [bp - 2]
+dont_set_tics_to_1_b:
+
+;	mo_pos->flags2 &= ~MF_MISSILE;
+
+;	if (mobjinfo[mo->type].deathsound) {
+;		S_StartSound(mo, mobjinfo[mo->type].deathsound);
+;	}
+
+pop   es  ; was bp - 2, only use...
 and   byte ptr es:[bx + 016h], (NOT MF_MISSILE)
 mov   al, byte ptr [si + 01Ah]
 mov   ah, SIZEOF_MOBJINFO_T
 mul   ah
 
-mov   word ptr [bp - 4], 0
-mov   bx, ax
-mov   word ptr [bp - 6], ax
-mov   al, byte ptr ds:[bx + _mobjinfo+3] ; deathsound offset
+xchg  ax, si
+xor   dx, dx
+mov   dl, byte ptr ds:[si + _mobjinfo+3] ; deathsound offset
 
-test  al, al
-jne   label_3
+test  dl, dl
+jne   do_deathsound
 LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
 ret   
-label_3:
-mov   dl, al
-mov   ax, si
-xor   dh, dh
-
+do_deathsound:
+; ax got si earlier
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
