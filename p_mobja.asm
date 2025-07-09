@@ -187,7 +187,7 @@ jne   mobj_is_moving
 
 ;		if (mo_pos->flags2 & MF_SKULLFLY) {
 
-test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags2+1], (MF_SKULLFLY SHR 8)
 jne   skull_slammed_into_something
 exit_p_xymovement:
 LEAVE_MACRO
@@ -449,7 +449,7 @@ jb    jump_to_exit_p_xymovement
 not_in_air:
 
 ; if (mo_pos->flags2 & MF_CORPSE) {
-test  byte ptr es:[di + 016h], MF_CORPSE
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags2], MF_CORPSE
 je    is_not_corpse
 
 
@@ -604,31 +604,30 @@ do_missile_check:
 
 ;			} else if (mo_pos->flags2 & MF_MISSILE) {
 
-les   bx, dword ptr [bp - 6]
-test  byte ptr es:[bx + 016h], MF_MISSILE
+les   dx, dword ptr [bp - 6]
+mov   cx, es
+mov   bx, dx
+test  byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_MISSILE
 je    not_missile_dont_explode
-mov   bx, OFFSET _ceilinglinenum
-mov   bx, word ptr [bx]
-mov   dx, LINES_PHYSICS_SEGMENT
+mov   bx, word ptr ds:[_ceilinglinenum]
+cmp   bx, SECNUM_NULL
+je    do_explosion
 SHIFT_MACRO shl   bx 4
-mov   es, dx
-add   bx, 0Ch
-mov   ax, word ptr es:[bx]
+mov   ax, LINES_PHYSICS_SEGMENT
+mov   es, ax
+mov   bx, word ptr es:[bx + 0Ch]
 
-cmp   word ptr ds:[_ceilinglinenum], SECNUM_NULL
+cmp   bx, SECNUM_NULL
 je    do_explosion
-cmp   ax, SECNUM_NULL
-je    do_explosion
-mov   bx, ax
-mov   dx, SECTORS_SEGMENT
 SHIFT_MACRO shl   bx 4
-mov   es, dx
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
 mov   al, byte ptr es:[bx + 5]
 cmp   al, byte ptr ds:[_skyflatnum]
 je    is_sky_dont_explode
 do_explosion:
-les   bx, dword ptr [bp - 6]
-mov   cx, es
+mov   bx, dx
+;     cx already set above
 mov   ax, word ptr [bp - 2]
 call  P_ExplodeMissile_
 jmp   cant_move
