@@ -659,8 +659,24 @@ ENDP
 
 VIEWHEIGHT_HIGH = 41
 
-PROC P_ZMovement_ FAR
+PROC P_ZMovement_ NEAR
 PUBLIC P_ZMovement_
+
+; bp - 2  segment for mobjpos
+; bp - 4  floorz fixedheight hi
+; bp - 6  floorz fixedheight lo
+; bp - 8
+; bp - 0Ah
+; bp - 0Ch
+; bp - 0Eh
+; bp - 010h
+; bp - 012h
+; bp - 014h mobj type
+; bp - 016h
+; bp - 018h
+; bp - 01Ah
+; bp - 01Ch
+; bp - 01Eh
 
 
 push  dx
@@ -668,41 +684,49 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 01Eh
+push  cx ; bp - 2
 mov   si, ax
 mov   di, bx
-mov   word ptr [bp - 2], cx
-mov   dx, word ptr [si + 6]
-sar   dx, 3
-mov   word ptr [bp - 4], dx
-mov   dx, word ptr [si + 6]
-xor   dh, dh
-mov   al, byte ptr [si + 01Ah]
-and   dl, 7
-xor   ah, ah
-shl   dx, 0Dh
-mov   word ptr [bp - 014h], ax
-mov   word ptr [bp - 6], dx
-test  ax, ax
-jne   label_1
+
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
+
+mov   ax, word ptr ds:[si + MOBJ_T.m_floorz]
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+push  ax ; bp - 4
+push  dx ; bp - 6
+sub   sp, 018h
 mov   es, cx
-mov   ax, word ptr es:[di + 0Ah]
-cmp   ax, word ptr [bp - 4]
-jl    label_2
-jne   label_1
-mov   ax, word ptr es:[di + 8]
-cmp   ax, dx
-jae   label_1
-label_2:
+xor   cx, cx
+mov   cl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+mov   word ptr [bp - 014h], cx  ; todo push
+;    if (motype == MT_PLAYER && mo_pos->z.w < temp.w) {
+test  cl, cl
+jne   z_not_player
+cmp   ax, word ptr es:[di + 0Ah]    ; ax still has high
+jg    do_smooth_step_up
+jne   z_not_player
+cmp   dx, word ptr es:[di + 8]      ; dx still has low
+jnae  z_not_player
+do_smooth_step_up:
+
+;		player.viewheightvalue.w -= (temp.w-mo_pos->z.w);
 sub   dx, word ptr es:[di + 8]
-mov   ax, word ptr [bp - 4]
 sbb   ax, word ptr es:[di + 0Ah]
 sub   word ptr ds:[_player + PLAYER_T.player_viewheightvalue+0], dx
 sbb   word ptr ds:[_player + PLAYER_T.player_viewheightvalue+2], ax
+
+;		player.deltaviewheight.w = (VIEWHEIGHT - player.viewheightvalue.w)>>3;
+
 xor   ax, ax
-sub   ax, word ptr [bx]
+sub   ax, word ptr ds:[PLAYER_T.player_viewheightvalue+0]
 mov   dx, VIEWHEIGHT_HIGH
-sbb   dx, word ptr ds:[bx + 2]
+sbb   dx, word ptr ds:[PLAYER_T.player_viewheightvalue+2]
 
 sar   dx, 1
 rcr   ax, 1
@@ -713,28 +737,37 @@ rcr   ax, 1
 
 mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight+0], ax
 mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight+2], dx
-label_1:
-mov   ax, word ptr [si + 016h]
-mov   dx, word ptr [si + 018h]
-mov   es, word ptr [bp - 2]
-add   word ptr es:[di + 8], ax
-adc   word ptr es:[di + 0Ah], dx
-test  byte ptr es:[di + 015h], (MF_FLOAT SHR 8)
-jne   label_3
-jump_to_label_4:
-jmp   label_4
-label_3:
+z_not_player:
+
+;	mo_pos->z.w += mo->momz.w;
+
+mov   ax, word ptr ds:[si + MOBJ_T.m_momz+0]
+mov   dx, word ptr ds:[si + MOBJ_T.m_momz+2]
+
+add   word ptr es:[di + MOBJ_POS_T.mp_z+0], ax
+adc   word ptr es:[di + MOBJ_POS_T.mp_z+2], dx
+;    if (mo_pos->flags1 & MF_FLOAT && mo->targetRef) {
+
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags1+1], (MF_FLOAT SHR 8)
+jne   continue_floating_with_target_check
+jump_to_done_with_floating_with_target:
+jmp   done_with_floating_with_target
+continue_floating_with_target_check:
 cmp   word ptr [si + 022h], 0
-je    jump_to_label_4
+je    jump_to_done_with_floating_with_target
 test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
-jne   jump_to_label_4
+jne   jump_to_done_with_floating_with_target
 test  byte ptr es:[di + 016h], MF_INFLOAT
-jne   jump_to_label_4
+jne   jump_to_done_with_floating_with_target
+
+;		// float down towards target if too close
+;		if ( !(mo_pos->flags2 & MF_SKULLFLY) && !(mo_pos->flags2 & MF_INFLOAT) ) {
+
 
 IF COMPISA GE COMPILE_186
-    imul  bx, word ptr [si + 022h], 018h
+    imul  bx, word ptr [si + 022h], SIZEOF_MOBJ_POS_T
 ELSE
-    mov   ax, 018h
+    mov   ax, SIZEOF_MOBJ_POS_T
     mul   word ptr [si + 022h]
     mov   bx, ax
 ENDIF
@@ -796,9 +829,9 @@ label_5:
 mov   ax, word ptr [bp - 8]
 test  ax, ax
 jg    label_7
-jne   label_4
+jne   done_with_floating_with_target
 cmp   word ptr [bp - 0Ah], 0
-jbe   label_4
+jbe   done_with_floating_with_target
 label_7:
 mov   bx, word ptr [bp - 0Ah]
 mov   cx, ax
@@ -806,13 +839,13 @@ mov   ax, 3
 call  FastMul16u32u_
 cmp   dx, word ptr [bp - 010h]
 jg    label_8
-jne   label_4
+jne   done_with_floating_with_target
 cmp   ax, word ptr [bp - 012h]
-jbe   label_4
+jbe   done_with_floating_with_target
 label_8:
 mov   es, word ptr [bp - 2]
 add   word ptr es:[di + 0Ah], 4
-label_4:
+done_with_floating_with_target:
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[di + 0Ah]
 cmp   ax, word ptr [bp - 4]
@@ -930,7 +963,7 @@ jbe   jump_to_label_5
 label_28:
 mov   es, word ptr [bp - 2]
 sub   word ptr es:[di + 0Ah], 4
-jmp   label_4
+jmp   done_with_floating_with_target
 label_14:
 cmp   word ptr [bp - 014h], 0
 jne   label_23
