@@ -713,6 +713,7 @@ cmp   dx, word ptr es:[di + 8]      ; dx still has low
 jnae  z_not_player
 do_smooth_step_up:
 
+; todo maybe sub then compare to zero? fewer mem access?
 ;		player.viewheightvalue.w -= (temp.w-mo_pos->z.w);
 sub   dx, word ptr es:[di + 8]
 sbb   ax, word ptr es:[di + 0Ah]
@@ -721,9 +722,11 @@ sbb   word ptr ds:[_player + PLAYER_T.player_viewheightvalue+2], ax
 
 ;		player.deltaviewheight.w = (VIEWHEIGHT - player.viewheightvalue.w)>>3;
 
+; todo... neg and add?
+
 xor   ax, ax
-sub   ax, word ptr ds:[PLAYER_T.player_viewheightvalue+0]
 mov   dx, VIEWHEIGHT_HIGH
+sub   ax, word ptr ds:[PLAYER_T.player_viewheightvalue+0]
 sbb   dx, word ptr ds:[PLAYER_T.player_viewheightvalue+2]
 
 sar   dx, 1
@@ -877,96 +880,170 @@ mov   es, word ptr [bp - 2]
 add   word ptr es:[di + 0Ah], FLOATSPEED_HIGHBITS
 
 done_with_floating_with_target:
+
+;    // clip movement
+;    if (mo_pos->z.w <= temp.w) {
+
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[di + 0Ah]
 cmp   ax, word ptr [bp - 4]
-jl    label_9
-je    label_10
-jump_to_label_11:
-jmp   label_11
-label_10:
+jl    hit_floor
+je    check_floor_lobits
+
+didnt_hit_floor:
+
+;	} else if (! (mo_pos->flags1 & MF_NOGRAVITY) ) {
+
+test  byte ptr es:[di + 015h], (MF_NOGRAVITY SHR 8)
+je    do_gravity
+jmp   done_with_floor_z_collision
+do_gravity:
+;		if (mo->momz.w == 0) {
+mov   ax, word ptr [si + 018h]
+or    ax, word ptr [si + 016h]
+jne   add_gravity
+;	mo->momz.h.intbits = -GRAVITY_HIGHBITS << 1;
+mov   word ptr [si + 018h], 0FFFEh
+jmp   done_with_floor_z_collision
+add_gravity:
+;    mo->momz.h.intbits -= GRAVITY_HIGHBITS;
+
+dec   word ptr [si + 018h]
+jmp   done_with_floor_z_collision
+
+check_floor_lobits:
 mov   ax, word ptr es:[di + 8]
 cmp   ax, word ptr [bp - 6]
-ja    jump_to_label_11
-label_9:
+ja    didnt_hit_floor
+hit_floor:
 cmp   byte ptr ds:[_is_ultimate], 0
-je    label_12
-test  byte ptr es:[di + 017h], 1
-je    label_12
+je    skip_ultimate_hack
+
+
+test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
+je    skip_ultimate_hack
+
+;			// Note (id):
+;			//  somebody left this after the setting momz to 0,
+;			//  kinda useless there.
+;			if (mo_pos->flags2 & MF_SKULLFLY)
+;			{
+;				// the skull slammed into something
+;				mo->momz.w = -mo->momz.w;
+;			}
+
 neg   word ptr [si + 018h]
 neg   word ptr [si + 016h]
 sbb   word ptr [si + 018h], 0
-label_12:
+skip_ultimate_hack:
+
+;	if (mo->momz.h.intbits < 0) {
+
 cmp   word ptr [si + 018h], 0
-jge   label_13
-jmp   label_14
-label_13:
+jge   dont_squat
+jmp   continue_squat_check
+dont_squat:
+done_with_squat:
+
+;	mo_pos->z.w = temp.w;   (floor value)
+
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr [bp - 6]
 mov   word ptr es:[di + 8], ax
 mov   ax, word ptr [bp - 4]
-
 mov   word ptr es:[di + 0Ah], ax
+
+;		if (!is_ultimate){
+;			if (mo_pos->flags2 & MF_SKULLFLY) {
+;				// the skull slammed into something
+;				mo->momz.w = -mo->momz.w;
+
+
 cmp   byte ptr ds:[_is_ultimate], 0
-jne   label_15
-test  byte ptr es:[di + 017h], 1
-je    label_15
+jne   skip_ultimate_skull_check
+test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
+je    skip_ultimate_skull_check
 neg   word ptr [si + 018h]
 neg   word ptr [si + 016h]
 sbb   word ptr [si + 018h], 0
-label_15:
+skip_ultimate_skull_check:
+
+;mov   es, word ptr [bp - 2]
+test  byte ptr es:[di + 016h], MF_MISSILE
+je    dont_explode_missile
+test  byte ptr es:[di + 015h], (MF_NOCLIP SHR 8)
+jne   dont_explode_missile
+do_explode_missile:
+mov   bx, di
+mov   cx, es
+mov   ax, si
+call  P_ExplodeMissile_
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+ret   
+dont_explode_missile:
+done_with_floor_z_collision:
+
+;	SET_FIXED_UNIO;N_FROM_SHORT_HEIGHT(temp, mo->ceilingz);
+
 mov   es, word ptr [bp - 2]
-test  byte ptr es:[di + 016h], 1
-je    label_16
-test  byte ptr es:[di + 015h], 010h
-jne   label_16
-jmp   label_18
-label_16:
-mov   ax, word ptr [si + 8]
-sar   ax, 3
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr [si + 8]
-and   ax, 7
-mov   es, word ptr [bp - 2]
-shl   ax, 0Dh
-mov   dx, word ptr es:[di + 8]
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr es:[di + 0Ah]
-add   dx, word ptr [si + 0Ah]
-adc   ax, word ptr [si + 0Ch]
-cmp   ax, word ptr [bp - 4]
-jg    label_17
+mov   dx, word ptr [si + 8]
+xor   ax, ax
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+
+
+
+mov   bx, word ptr es:[di + 8]
+mov   cx, word ptr es:[di + 0Ah]
+add   bx, word ptr [si + 0Ah]
+adc   cx, word ptr [si + 0Ch]
+
+cmp   cx, dx
+jg    check_ceil_lobits
 jne   exit_p_zmovement
-cmp   dx, word ptr [bp - 6]
+cmp   bx, ax
 jbe   exit_p_zmovement
-label_17:
-mov   ax, word ptr [si + 018h]
-test  ax, ax
-jg    label_21
-jne   label_22
+check_ceil_lobits:
+
+cmp   word ptr [si + 018h], 0
+jg    hit_ceiling
+jne   cap_z_to_ceiling
 cmp   word ptr [si + 016h], 0
-jbe   label_22
-label_21:
+jbe   cap_z_to_ceiling
+hit_ceiling:
+
+;		if (mo->momz.w > 0) {
+;			mo->momz.w = 0;
+;		}
+
 mov   word ptr [si + 016h], 0
 mov   word ptr [si + 018h], 0
-label_22:
-mov   bx, word ptr [bp - 6]
-mov   dx, word ptr [si + 0Ah]
-mov   ax, word ptr [si + 0Ch]
-mov   es, word ptr [bp - 2]
-sub   bx, dx
-mov   word ptr es:[di + 8], bx
-mov   dx, word ptr [bp - 4]
-sbb   dx, ax
+cap_z_to_ceiling:
+
+sub   ax, word ptr [si + 0Ah]
+sbb   dx, word ptr [si + 0Ch]
+mov   word ptr es:[di + 8], ax
 mov   word ptr es:[di + 0Ah], dx
-test  byte ptr es:[di + 017h], 1
-jne   jump_to_label_19
-label_20:
-mov   es, word ptr [bp - 2]
-test  byte ptr es:[di + 016h], 1
+
+test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
+je    skip_skull_slam
+; skull slam
+neg   word ptr [si + 018h]
+neg   word ptr [si + 016h]
+sbb   word ptr [si + 018h], 0
+
+skip_skull_slam:
+test  byte ptr es:[di + 016h], MF_MISSILE
 je    exit_p_zmovement
-test  byte ptr es:[di + 015h], 010h
-je    jump_to_label_18
+test  byte ptr es:[di + 015h], (MF_NOCLIP SHR 8)
+je    do_explode_missile
 exit_p_zmovement:
 LEAVE_MACRO
 pop   di
@@ -974,21 +1051,24 @@ pop   si
 pop   dx
 ret   
 
-label_14:
+continue_squat_check:
+;	if (motype == MT_PLAYER && mo->momz.w < -GRAVITY*8)	 {
+
 cmp   word ptr [bp - 014h], MT_PLAYER
-jne   label_23
+jne   land_and_momz_0
 mov   ax, word ptr [si + 018h]
-cmp   ax, 0fff8h
-jl    label_24
-label_23:
-mov   word ptr [si + 016h], 0
-mov   word ptr [si + 018h], 0
-jmp   label_13
-jump_to_label_19:
-jmp   label_19
-jump_to_label_18:
-jmp   label_18
-label_24:
+cmp   ax, 0FFF8h                    ; -GRAVITY*8. gravity is FRACUNIT or 1 in the high word.
+jnl   land_and_momz_0
+
+do_player_squat_landing:
+
+;    // Squat down.
+;    // Decrease viewheight for a moment
+;    // after hitting the ground (hard),
+;    // and utter appropriate sound.
+;    player.deltaviewheight.w = mo->momz.w>>3;
+;    S_StartSound (mo, sfx_oof);
+
 mov   ax, word ptr [si + 016h]
 mov   dx, word ptr [si + 018h]
 
@@ -1010,36 +1090,18 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
+;	mo->momz.w = 0;
 
-jmp   label_23
-label_18:
-mov   bx, di
-mov   cx, es
-mov   ax, si
-call  P_ExplodeMissile_
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
-label_11:
-test  byte ptr es:[di + 015h], 2
-je    label_25
-jmp   label_16
-label_25:
-mov   ax, word ptr [si + 018h]
-or    ax, word ptr [si + 016h]
-jne   label_26
-mov   word ptr [si + 018h], 0fffeh
-jmp   label_16
-label_26:
-dec   word ptr [si + 018h]
-jmp   label_16
-label_19:
-neg   word ptr [si + 018h]
-neg   word ptr [si + 016h]
-sbb   word ptr [si + 018h], 0
-jmp   label_20
+land_and_momz_0:
+mov   word ptr [si + 016h], 0
+mov   word ptr [si + 018h], 0
+jmp   done_with_squat
+
+
+
+
+
+
 
 
 
