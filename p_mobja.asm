@@ -673,7 +673,7 @@ PUBLIC P_ZMovement_
 ; bp - 014h mobj type
 ; bp - 016h unused
 ; bp - 018h unused
-; bp - 01Ah moTarget_pos offset
+; bp - 01Ah unused
 ; bp - 01Ch unused
 
 
@@ -706,17 +706,17 @@ mov   word ptr [bp - 014h], cx  ; todo push
 ;    if (motype == MT_PLAYER && mo_pos->z.w < temp.w) {
 test  cl, cl
 jne   z_not_player
-cmp   ax, word ptr es:[di + 0Ah]    ; ax still has high
+sub   dx, word ptr es:[di + 8]
+sbb   ax, word ptr es:[di + 0Ah]
+
 jg    do_smooth_step_up
 jne   z_not_player
-cmp   dx, word ptr es:[di + 8]      ; dx still has low
+test   dx, dx
 jnae  z_not_player
 do_smooth_step_up:
 
 ; todo maybe sub then compare to zero? fewer mem access?
 ;		player.viewheightvalue.w -= (temp.w-mo_pos->z.w);
-sub   dx, word ptr es:[di + 8]
-sbb   ax, word ptr es:[di + 0Ah]
 sub   word ptr ds:[_player + PLAYER_T.player_viewheightvalue+0], dx
 sbb   word ptr ds:[_player + PLAYER_T.player_viewheightvalue+2], ax
 
@@ -724,20 +724,21 @@ sbb   word ptr ds:[_player + PLAYER_T.player_viewheightvalue+2], ax
 
 ; todo... neg and add?
 
-xor   ax, ax
-mov   dx, VIEWHEIGHT_HIGH
-sub   ax, word ptr ds:[PLAYER_T.player_viewheightvalue+0]
-sbb   dx, word ptr ds:[PLAYER_T.player_viewheightvalue+2]
+neg   ax
+neg   dx
+;sbb   ax, 0
+;add   ax, VIEWHEIGHT_HIGH ;todo combine with above.
+sbb   ax, (010000h - VIEWHEIGHT_HIGH)  ; combined
 
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
 
-mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight+0], ax
-mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight+2], dx
+mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight+0], dx
+mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight+2], ax
 z_not_player:
 
 ;	mo_pos->z.w += mo->momz.w;
@@ -777,7 +778,7 @@ ELSE
     mov   bx, ax
 ENDIF
 
-mov   word ptr [bp - 01Ah], bx
+push  bx  ; store for later
 
 
 ;    dist = P_AproxDistance (mo_pos->x.w - moTarget_pos->x.w,
@@ -796,7 +797,7 @@ mov   dx, word ptr es:[di + 2]
 sub   ax, word ptr es:[bx]
 sbb   dx, word ptr es:[bx + 2]
 
-pop   bx
+pop   bx    ; get y diff lo
 
 ;call  dword ptr ds:[_P_AproxDistance]
 
@@ -804,7 +805,7 @@ db    09Ah
 dw P_AproxDistanceOffset
 dw PHYSICS_HIGHCODE_SEGMENT
 
-mov   bx, word ptr [bp - 01Ah]
+pop   bx  ; recover offset
 mov   es, word ptr [bp - 2]
 mov   word ptr [bp - 0Eh], ax
 mov   word ptr [bp - 0Ch], dx
