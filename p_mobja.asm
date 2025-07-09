@@ -19,7 +19,6 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN __I4D:PROC
 EXTRN FixedMul16u32_:PROC
 EXTRN P_ExplodeMissile_:NEAR
 EXTRN P_RemoveMobj_:PROC
@@ -151,7 +150,7 @@ PUBLIC P_XYMovement_
 ; bp - 2    ptryx hi
 ; bp - 4    ptryx lo
 ; bp - 6    mobj_type
-; bp - 8    momomx hi
+; bp - 8    UNUSED
 ; bp - 0Ah  mobj_secnum
 ; bp - 0Ch  ymove hi
 ; bp - 0Eh  ymove lo
@@ -379,20 +378,20 @@ call  _P_TryMove   ; what if we returned in the carry flag...
 test  al, al
 jne   cant_move
 ; 
-cmp   word ptr [bp - 6], 0
-je    label_42
-jmp   label_43
-label_42:
+cmp   word ptr [bp - 6], MT_PLAYER
+je    player_try_slide
+jmp   do_missile_check
+player_try_slide:
 call  _P_SlideMove
 
 cant_move:
 ;    } while (xmove.w || ymove.w);
 
 test  di, di
-je    label_26
+je    continue_ymove_check
 jump_to_do_while_x_or_y_nonzero:
 jmp   do_while_x_or_y_nonzero
-label_26:
+continue_ymove_check:
 test  si, si
 jne   jump_to_do_while_x_or_y_nonzero
 cmp   word ptr [bp - 0Ch], 0
@@ -405,7 +404,7 @@ mov   bx, word ptr [bp - 010h]
 ;    // slow down
 ;    if (motype == MT_PLAYER && player.cheats & CF_NOMOMENTUM) {
 
-cmp   word ptr [bp - 6], 0
+cmp   word ptr [bp - 6], MT_PLAYER
 jne   skip_no_momentum_cheat ;todo inverse logic
 
 
@@ -473,7 +472,7 @@ je    check_y_pos
 ;		if (mo->momx.w > FRACUNIT/4 || mo->momx.w < -FRACUNIT/4 || mo->momy.w > FRACUNIT/4 || mo->momy.w < -FRACUNIT/4) {
 ; ax is momx hibits
 continue_fracunit_over_4_momentum_check:
-cmp   ax, 0FFFFh
+cmp   ax, 0FFFFh   ; hi bits negative
 jnge  check_floor_height
 jne   continue_momy_check_floor
 cmp   word ptr [bx + MOBJ_T.m_momx+0], -FRACUNITOVER4
@@ -486,7 +485,7 @@ jne   check_momy_negative
 cmp   word ptr [bx + MOBJ_T.m_momy+0], FRACUNITOVER4
 ja    check_floor_height
 check_momy_negative:
-cmp   ax, 0FFFFh
+cmp   ax, 0FFFFh   ; hi bits negative
 jl    check_floor_height
 jne   done_with_corpse_check
 cmp   word ptr [bx + MOBJ_T.m_momy+0], -FRACUNITOVER4  ; 0c000h
@@ -513,87 +512,26 @@ done_with_corpse_check:
 ;	momomx = mo->momx;
 ;	momomy = mo->momy;
 
-mov   ax, word ptr [bx + MOBJ_T.m_momy+0]
+mov   di, word ptr [bx + MOBJ_T.m_momy+0]
 mov   cx, word ptr [bx + MOBJ_T.m_momx+2]
 
 
 ; if ((momomx.w > -STOPSPEED && momomx.w < STOPSPEED && momomy.w > -STOPSPEED && momomy.w < STOPSPEED) && 
 
-mov   word ptr [bp - 8], ax
 mov   si, word ptr [bx + MOBJ_T.m_momy+2]
 mov   bx, word ptr [bx + MOBJ_T.m_momx+0]
 cmp   cx, 0FFFFh   ; hi bits negative
-jg    label_14
-je    label_15
-label_19:
-jmp   label_16
-label_15:
-cmp   bx, -STOPSPEED
-jbe   label_19
-label_14:
-test  cx, cx
-jl    label_18
-jne   label_19
-cmp   bx, STOPSPEED
-jae   label_19
-label_18:
-cmp   si, -1
-jg    label_44
-jne   label_19
-cmp   ax, -STOPSPEED
-jbe   label_19
-label_44:
-test  si, si
-jl    label_45
-jne   label_19
-cmp   ax, STOPSPEED
-jae   label_19
-label_45:
-cmp   word ptr [bp - 6], 0
-je    label_20
-label_17:
-cmp   word ptr [bp - 6], 0
-jne   label_13
-mov   bx, OFFSET _playerMobj_pos
-les   si, dword ptr [bx]
-mov   ax, word ptr es:[si + 012h]
-sub   ax, S_PLAY_RUN1
-cmp   ax, 4
-jae   label_13
-mov   bx, OFFSET _playerMobj
-mov   dx, S_PLAY
-mov   ax, word ptr [bx]
+jg    momomx_not_in_negative_range
+je    continue_stopspeed_checks_1
+apply_friction:
 
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
-label_13:
-mov   bx, word ptr [bp - 010h]
-mov   word ptr [bx + MOBJ_T.m_momx+0], 0
-mov   word ptr [bx + MOBJ_T.m_momx+2], 0
-mov   word ptr [bx + MOBJ_T.m_momy+0], 0
-mov   word ptr [bx + MOBJ_T.m_momy+2], 0
-LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-ret   
-label_20:
-mov   di, OFFSET _player + PLAYER_T.player_cmd_forwardmove
-cmp   byte ptr [di], 0
-jne   label_16
-mov   di, OFFSET _player + PLAYER_T.player_cmd_sidemove
-cmp   byte ptr [di], 0
-je    label_17
-label_16:
 mov   ax, FRICTION
 call  FixedMul16u32_
 mov   bx, word ptr [bp - 010h]
 mov   word ptr [bx + MOBJ_T.m_momx+0], ax
 mov   cx, si
 mov   word ptr [bx + MOBJ_T.m_momx+2], dx
-mov   bx, word ptr [bp - 8]
+mov   bx, di
 mov   ax, FRICTION
 call  FixedMul16u32_
 mov   bx, word ptr [bp - 010h]
@@ -605,10 +543,75 @@ pop   si
 pop   dx
 ret   
 
-label_43:
+continue_stopspeed_checks_1:
+cmp   bx, -STOPSPEED
+jbe   apply_friction
+momomx_not_in_negative_range:
+test  cx, cx
+jl    continue_stopspeed_checks_2
+jne   apply_friction
+cmp   bx, STOPSPEED
+jae   apply_friction
+continue_stopspeed_checks_2:
+cmp   si, 0FFFFh    ; hi bits negative
+jg    continue_stopspeed_checks_3
+jne   apply_friction
+cmp   di, -STOPSPEED
+jbe   apply_friction
+continue_stopspeed_checks_3:
+test  si, si
+jl    continue_stopspeed_checks_4
+jne   apply_friction
+cmp   di, STOPSPEED
+jae   apply_friction
+continue_stopspeed_checks_4:
+cmp   word ptr [bp - 6], MT_PLAYER
+jne   dont_apply_friction
+; check if pressing buttons
+cmp   word ptr ds:[_player + PLAYER_T.player_cmd_forwardmove], 0
+jne   apply_friction
+; gotten for free above
+;cmp   byte ptr ds:[_player + PLAYER_T.player_cmd_sidemove], 0
+;jne   apply_friction
+dont_apply_friction:
+cmp   word ptr [bp - 6], MT_PLAYER
+jne   done_stepping_stop_moving
+les   si, dword ptr ds:[_playerMobj_pos]
+mov   ax, word ptr es:[si + 012h]
+sub   ax, S_PLAY_RUN1
+cmp   ax, 4
+jae   done_stepping_stop_moving
+;	// if in a walking frame, stop moving
+mov   dx, S_PLAY
+mov   ax, word ptr ds:[_playerMobj]
+
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
+done_stepping_stop_moving:
+;		mo->momx.w = 0;
+;		mo->momy.w = 0;
+mov   bx, word ptr [bp - 010h]
+mov   word ptr [bx + MOBJ_T.m_momx+0], 0
+mov   word ptr [bx + MOBJ_T.m_momx+2], 0
+mov   word ptr [bx + MOBJ_T.m_momy+0], 0
+mov   word ptr [bx + MOBJ_T.m_momy+2], 0
+LEAVE_MACRO
+pop   di
+pop   si
+pop   dx
+ret   
+
+
+
+do_missile_check:
+
+;			} else if (mo_pos->flags2 & MF_MISSILE) {
+
 les   bx, dword ptr [bp - 014h]
 test  byte ptr es:[bx + 016h], MF_MISSILE
-je    label_38
+je    not_missile_dont_explode
 mov   bx, OFFSET _ceilinglinenum
 mov   bx, word ptr [bx]
 mov   dx, LINES_PHYSICS_SEGMENT
@@ -616,27 +619,26 @@ SHIFT_MACRO shl   bx 4
 mov   es, dx
 add   bx, 0Ch
 mov   ax, word ptr es:[bx]
-mov   bx, OFFSET _ceilinglinenum
-cmp   word ptr [bx], SECNUM_NULL
-je    label_39
+
+cmp   word ptr ds:[_ceilinglinenum], SECNUM_NULL
+je    do_explosion
 cmp   ax, SECNUM_NULL
-je    label_39
+je    do_explosion
 mov   bx, ax
 mov   dx, SECTORS_SEGMENT
 SHIFT_MACRO shl   bx 4
 mov   es, dx
 add   bx, 5
 mov   al, byte ptr es:[bx]
-mov   bx, OFFSET _skyflatnum
-cmp   al, byte ptr [bx]
-je    label_40
-label_39:
-mov   bx, word ptr [bp - 014h]
-mov   cx, word ptr [bp - 012h]
+cmp   al, byte ptr ds:[_skyflatnum]
+je    is_sky_dont_explode
+do_explosion:
+les   bx, dword ptr [bp - 014h]
+mov   cx, es
 mov   ax, word ptr [bp - 010h]
 call  P_ExplodeMissile_
 jmp   cant_move
-label_40:
+is_sky_dont_explode:
 mov   ax, word ptr [bp - 010h]
 
 call  P_RemoveMobj_
@@ -645,14 +647,16 @@ pop   di
 pop   si
 pop   dx
 ret   
-label_38:
+not_missile_dont_explode:
+
+;				mo->momx.w = mo->momy.w = 0;
+
 mov   bx, word ptr [bp - 010h]
-mov   word ptr [bx + MOBJ_T.m_momy+0], 0
-mov   word ptr [bx + MOBJ_T.m_momy+2], 0
-mov   dx, word ptr [bx + MOBJ_T.m_momy+0]
-mov   ax, word ptr [bx + MOBJ_T.m_momy+2]
-mov   word ptr [bx + MOBJ_T.m_momx+0], dx
+xor   ax, ax
+mov   word ptr [bx + MOBJ_T.m_momx+0], ax
 mov   word ptr [bx + MOBJ_T.m_momx+2], ax
+mov   word ptr [bx + MOBJ_T.m_momy+0], ax
+mov   word ptr [bx + MOBJ_T.m_momy+2], ax
 jmp   cant_move
 
 
