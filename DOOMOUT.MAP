@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/03 09:27:53
+Created on:       25/07/08 22:14:54
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -68,8 +68,8 @@ p_plats_TEXT           CODE           AUTO           0b85:6890       0000041b
 p_pspr_TEXT            CODE           AUTO           0b85:6cb0       00000c2f
 p_spec_TEXT            CODE           AUTO           0b85:78e0       000011f0
 p_switch_TEXT          CODE           AUTO           0b85:8ad0       00000ae2
-p_mobj_TEXT            CODE           AUTO           0b85:95c0       000016c5
-P_MOBJA_TEXT           CODE           AUTO           0b85:ac86       00000079
+p_mobj_TEXT            CODE           AUTO           0b85:95c0       000012d9
+P_MOBJA_TEXT           CODE           AUTO           0b85:a89a       00000466
 p_telept_TEXT          CODE           AUTO           0b85:ad00       0000022c
 P_TICK_TEXT            CODE           AUTO           0b85:af2c       000001c9
 p_user_TEXT            CODE           AUTO           0b85:b100       000006c8
@@ -730,8 +730,8 @@ Module: main.obj(main.ASM)
 02c6:678c*     CopyString13_
 02c6:644c      G_BuildTiccmd_
 02c6:6057      cht_CheckCheat_
-02c6:6bd2      M_SaveDefaults_
 02c6:60b9      cht_GetParam_
+02c6:6bd2      M_SaveDefaults_
 02c6:6ea2      I_FinishUpdate_
 02c6:6146      I_StartTic_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
@@ -1016,20 +1016,20 @@ Module: p_mobj.obj(C:\REALDOOM\p_mobj.c)
 0b85:95d6+     P_SetupPsprites_
 0b85:95f6+     P_SpawnPlayer_
 0b85:96de      P_SpawnMapThing_
-0b85:988c+     P_ExplodeMissile_
-0b85:993c+     P_XYMovement_
-0b85:9d28+     P_ZMovement_
-0b85:a042+     P_NightmareRespawn_
-0b85:a1e0      P_MobjThinker_
-0b85:a2e8      P_SpawnMobj_
-0b85:a4a0      P_RemoveMobj_
-0b85:a4ca+     P_CheckMissileSpawn_
-0b85:a56e      P_SpawnMissile_
-0b85:a78e      P_SpawnPlayerMissile_
-0b85:a99e      P_SetMobjState_
-0b85:ac78      OutOfThinkers_
+0b85:988c      P_ExplodeMissile_
+0b85:993c+     P_ZMovement_
+0b85:9c56+     P_NightmareRespawn_
+0b85:9df4      P_MobjThinker_
+0b85:9efc      P_SpawnMobj_
+0b85:a0b4      P_RemoveMobj_
+0b85:a0de+     P_CheckMissileSpawn_
+0b85:a182      P_SpawnMissile_
+0b85:a3a2      P_SpawnPlayerMissile_
+0b85:a5b2      P_SetMobjState_
+0b85:a88c      OutOfThinkers_
 Module: p_mobja.obj(p_mobja.ASM)
-0b85:ac86      P_SpawnPuff_
+0b85:a89a      P_SpawnPuff_
+0b85:a913      P_XYMovement_
 Module: p_telept.obj(C:\REALDOOM\p_telept.c)
 0b85:ad00      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)

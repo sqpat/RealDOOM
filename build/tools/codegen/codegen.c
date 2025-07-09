@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2280
+#define CONSTANTS_COUNT 2287
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -2349,8 +2349,14 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SPRITEWIDTHS_ULT_SEGMENT",
 	"SPRITEWIDTHS_NORMAL_SEGMENT",
 	"EMS_PAGE_SEGMENT",
-	"bsp_code_segment"
-
+	"bsp_code_segment",
+	"STOPSPEED",
+	"FRICTION",
+	"MAXMOVE",
+	"FRACUNITOVER4",
+	"CF_NOCLIP",
+	"CF_GODMODE",
+	"CF_NOMOMENTUM"
 
 
 };
@@ -4697,7 +4703,15 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	spritewidths_ult_segment,
 	spritewidths_normal_segment,
 	EMS_PAGE_SEGMENT,
-	bsp_code_segment
+	bsp_code_segment,
+	STOPSPEED,
+	FRICTION,
+	MAXMOVE >> 16,
+	FRACUNIT >> 2,
+	CF_NOCLIP,
+	CF_GODMODE,
+	CF_NOMOMENTUM
+
 	
     
 
@@ -5087,6 +5101,5 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     printf("Generated constant.inc file");
     
-	printf("Pageswapargs was %i %x", PAGE_SWAP_ARG_MULT, pageswapargs);
     return 0;
 } 

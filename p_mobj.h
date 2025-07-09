@@ -101,7 +101,8 @@
 //
 // Any questions?
 //
-
+#define STOPSPEED		0x1000
+#define FRICTION		0xe800
 //
 // Misc. mobj flags
 //
