@@ -304,9 +304,11 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
 }
  
 
-//
+// 
 // P_ExplodeMissile  
 //
+void __near P_ExplodeMissile(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+/*
 void __near P_ExplodeMissile(mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 	//todoaddr inline later
 	statenum_t (__far  * getDeathState)(uint8_t) = getDeathStateAddr;
@@ -326,7 +328,7 @@ void __near P_ExplodeMissile(mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 		S_StartSound(mo, mobjinfo[mo->type].deathsound);
 	}
 }
-
+*/
 
 //
 // P_XYMovement  
