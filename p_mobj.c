@@ -491,6 +491,8 @@ void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 //
 // P_ZMovement
 //
+
+/*
 void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
     fixed_t	dist;
 	fixed_t	delta;
@@ -599,6 +601,7 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 
 
 } 
+*/
 
 
 
