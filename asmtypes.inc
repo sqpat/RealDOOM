@@ -21,44 +21,45 @@
 PLAYER_T STRUC 
 
     ; cmd struct 8 bytes
-    player_cmd_forwardmove    db ? 
-    player_cmd_sidemove       db ?
-    player_cmd_angleturn      dw ?
-    player_cmd_consistancy    dw ?
-    player_cmd_chatchar       db ?
-    player_cmd_buttons        db ?
-    player_viewzvalue         dd ?
-    player_viewheightvalue    dd ?
-    player_deltaviewheight    dd ?
-    player_bob                dd ?
-    player_health             dw ?
-    player_armorpoints        dw ?
-    player_armortype	      db ?
-    player_playerstate        db ?
-    player_powers             dw NUMPOWERS   DUP(?)
-    player_cards              db NUMCARDS    DUP(?)
-    player_readyweapon        db ?
-    player_pendingweapon      db ?
-    player_weaponowned        db NUMWEAPONS  DUP(?)
-    player_cheats		      db ?
-    player_ammo               dw NUMAMMO     DUP(?)
-    player_maxammo            dw NUMAMMO     DUP(?)
-    player_attackdown         db ?
-    player_usedown            db ?
-    player_killcount          dw ?
-    player_itemcount          dw ?
-    player_secretcount        dw ?
-    player_message            dw ?
-	player_messagestring      dw ?
-    player_damagecount        dw ?
-    player_bonuscount         db ?
-    player_refire		      db ?
-    player_attackerRef        dw ?
-    player_extralightvalue    db ?
-    player_fixedcolormapvalue db ?
-    player_colormap	          db ?
-    player_didsecret	      db ?
-    player_backpack           db ?
+    player_cmd_forwardmove    db ?                      ; 0
+    player_cmd_sidemove       db ?                      ; 1
+    player_cmd_angleturn      dw ?                      ; 2
+    player_cmd_consistancy    dw ?                      ; 4
+    player_cmd_chatchar       db ?                      ; 6
+    player_cmd_buttons        db ?                      ; 7
+    player_viewzvalue         dd ?                      ; 8
+    player_viewheightvalue    dd ?                      ; C
+    player_deltaviewheight    dd ?                      ; 10
+    player_bob                dd ?                      ; 14
+    player_health             dw ?                      ; 18
+    player_armorpoints        dw ?                      ; 1A
+    player_armortype	      db ?                      ; 1C
+    player_playerstate        db ?                      ; 1D
+    player_powers             dw NUMPOWERS   DUP(?)     ; 1E
+    player_cards              db NUMCARDS    DUP(?)     ; 2A
+    player_readyweapon        db ?                      ; 30
+    player_pendingweapon      db ?                      ; 31
+    player_weaponowned        db NUMWEAPONS  DUP(?)     ; 32
+    player_cheats		      db ?                      ; 3B
+    player_ammo               dw NUMAMMO     DUP(?)     ; 3C
+    player_maxammo            dw NUMAMMO     DUP(?)     ; 44
+    player_attackdown         db ?                      ; 4C
+    player_usedown            db ?                      ; 4D
+    player_killcount          dw ?                      ; 4E
+    player_itemcount          dw ?                      ; 50
+    player_secretcount        dw ?                      ; 52
+    player_message            dw ?                      ; 54
+	player_messagestring      dw ?                      ; 56
+    player_damagecount        dw ?                      ; 58
+    player_bonuscount         db ?                      ; 5A
+    player_refire		      db ?                      ; 5B
+    player_attackerRef        dw ?                      ; 5C
+    player_extralightvalue    db ?                      ; 5E
+    player_fixedcolormapvalue db ?                      ; 5F
+    player_colormap	          db ?                      ; 60
+    player_didsecret	      db ?                      ; 61
+    player_backpack           db ?                      ; 62
+                                                        ; 63 or 99 dec
 
 PLAYER_T ENDS
 
