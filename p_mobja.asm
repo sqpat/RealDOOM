@@ -1576,18 +1576,18 @@ PUBLIC P_SpawnMissile_
 ; bp - 2     MOBJPOSLIST_6800_SEGMENT 
 ; bp - 4     dest_pos offset
 ; bp - 6     UNUSED
-; bp - 8     UNUSED (was th_pos segment (same as bp - 2))
-; bp - 0Ah   ax intbits   
+; bp - 8     UNUSED
+; bp - 0Ah   an intbits   
 ; bp - 0Ch   thRef
 ; bp - 0Eh   destz hi
 ; bp - 010h  destz lo
 ; bp - 012h  an fracbits
-; bp - 014h  type (bp + 8) with high byte 0
-; bp - 016h  
-; bp - 018h  
+; bp - 014h  UNUSED
+; bp - 016h  UNUSED
+; bp - 018h  mobjinfo speed value
 ; bp - 01Ah  th_pos offset
-; bp - 01Ch  0 (unused?)  
-; bp - 01Eh  mobjinfo offset
+; bp - 01Ch  UNUSED
+; bp - 01Eh  UNUSED
 ; bp - 020h  ax (mobj)
 
 push  si
@@ -1619,7 +1619,7 @@ mov   word ptr [bp - 4], bx
 
 xor   ax, ax
 mov   al, byte ptr [bp + 8]    ; TODO NOTE: increase when this becomes far.
-mov   word ptr [bp - 014h], ax
+
 
 mov   bx, word ptr [bp - 020h]
 push  word ptr [bx + 4]         ; secnum
@@ -1647,13 +1647,11 @@ mov   ax, word ptr ds:[_setStateReturn_pos]
 mov   word ptr [bp - 01Ah], ax
 
 mov   al, SIZEOF_MOBJINFO_T
-mul   byte ptr [bp - 014h]   ; type
+mul   byte ptr [bp + 8]   ; type
 
-
-;mov   word ptr [bp - 01Ch], 0 ; unused?
 mov   di, word ptr ds:[_setStateReturn]
 mov   bx, ax
-;mov   word ptr [bp - 01Eh], ax  ; unused?
+
 mov   al, byte ptr ds:[bx + _mobjInfo + 2]  ; seesound
 
 test  al, al
@@ -1706,6 +1704,7 @@ dw _R_PointToAngle2_addr
 les   bx, dword ptr [bp - 4]
 mov   word ptr [bp - 012h], ax
 test  byte ptr es:[bx + 016h], MF_SHADOW
+
 je    no_fuzzmissile
 mov   ax, RNDTABLE_SEGMENT
 mov   es, ax
@@ -1756,31 +1755,22 @@ dw P_AproxDistanceOffset
 dw PHYSICS_HIGHCODE_SEGMENT
 
 
-mov   ax, dx
-mov   dl, byte ptr [bp + 8]
-xor   dh, dh
-
-IF COMPISA GE COMPILE_186
-    imul  dx, dx, SIZEOF_MOBJINFO_T
-ELSE
-    push  ax
-    mov   ax, SIZEOF_MOBJINFO_T
-    mul   dx
-    xchg  ax, dx  ; dx gets result...
-    pop   ax
-ENDIF
-mov   bx, dx
-add   bx, OFFSET _mobjinfo + 4
-mov   dl, byte ptr [bx]
-xor   dh, dh
-
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr [bp + 8]
+xchg  ax, bx
+xchg  ax, dx
+mov   bl, byte ptr ds:[bx + _mobjinfo + 4]
+xor   bh, bh
 ;	dist16 = dist.h.intbits / (mobjinfo[type].speed - 0x80);
 
-mov   word ptr [bp - 018h], bx ;  really?
-mov   bx, dx
+mov   word ptr [bp - 018h], bx 
 sub   bx, 080h
 cwd   
 idiv  bx
+
+
+;	momz = FastDiv3216u(destz - source_pos->z.w, dist16);
+
 mov   cx, word ptr [bp - 010h]
 mov   es, word ptr [bp - 2]
 mov   bx, ax
@@ -1789,49 +1779,50 @@ mov   ax, cx
 mov   dx, word ptr [bp - 0Eh]
 sbb   dx, word ptr es:[si + 0Ah]
 call   FastDiv3216u_
+
+mov   word ptr [di + 016h], ax
+mov   word ptr [di + 018h], dx
+
+
 mov   es, word ptr [bp - 2]
 mov   bx, word ptr [bp - 01Ah]
-mov   word ptr [bp - 016h], ax
 mov   ax, word ptr [bp - 012h]
 mov   word ptr es:[bx + 0Eh], ax
-mov   ax, word ptr [bp - 0Ah]
-mov   word ptr [bp - 014h], dx
-mov   si, ax
-mov   word ptr es:[bx + 010h], ax
-mov   bx, word ptr [bp - 018h]
+
+;    th->momx.w = FixedMulTrigSpeedNoShift(FINE_COSINE_ARGUMENT, temp, mobjinfo[type].speed);
+
+mov   si, word ptr [bp - 0Ah]
+mov   word ptr es:[bx + 010h], si
 shr   si, 1
-mov   al, byte ptr [bx]
 and   si, 0FFFCh
-cbw  
 mov   dx, si
-mov   bx, ax
+mov   bx, word ptr [bp - 018h]
 mov   ax, FINECOSINE_SEGMENT
 call FixedMulTrigSpeedNoShift_
 mov   word ptr [di + 0Eh], ax
-mov   bx, word ptr [bp - 018h]
 mov   word ptr [di + 010h], dx
-mov   al, byte ptr [bx]
-cbw
+
+;    th->momy.w = FixedMulTrigSpeedNoShift(FINE_SINE_ARGUMENT  , temp, mobjinfo[type].speed);
+
 mov   dx, si
-mov   bx, ax
+mov   bx, word ptr [bp - 018h]
 mov   ax, FINESINE_SEGMENT
 call FixedMulTrigSpeedNoShift_
+
 mov   word ptr [di + 012h], ax
-mov   ax, word ptr [bp - 016h]
-mov   bx, word ptr [bp - 01Ah]
-mov   word ptr [di + 016h], ax
-mov   ax, word ptr [bp - 014h]
-mov   cx, word ptr [bp - 2]
-mov   word ptr [di + 018h], ax
-mov   ax, di
 mov   word ptr [di + 014h], dx
+
+mov   bx, word ptr [bp - 01Ah]
+mov   cx, word ptr [bp - 2]
+mov   ax, di
 call  P_CheckMissileSpawn_
+
 mov   si, word ptr [bp - 01Ah]
 mov   word ptr ds:[_setStateReturn], di
 
 mov   ax, word ptr [bp - 2]
 mov   word ptr ds:[_setStateReturn_pos], si
-mov   word ptr ds:[_setStateReturn_pos + 2], ax
+mov   word ptr ds:[_setStateReturn_pos + 2], ax ; todo should just stay hardcoded..
 mov   ax, word ptr [bp - 0Ch]
 LEAVE_MACRO 
 pop   di
