@@ -1577,11 +1577,11 @@ PUBLIC P_SpawnMissile_
 ; bp - 4     dest_pos offset
 ; bp - 6     UNUSED
 ; bp - 8     UNUSED (was th_pos segment (same as bp - 2))
-; bp - 0Ah   
+; bp - 0Ah   ax intbits   
 ; bp - 0Ch   thRef
-; bp - 0Eh   
-; bp - 010h  
-; bp - 012h  
+; bp - 0Eh   destz hi
+; bp - 010h  destz lo
+; bp - 012h  an fracbits
 ; bp - 014h  type (bp + 8) with high byte 0
 ; bp - 016h  
 ; bp - 018h  
@@ -1657,7 +1657,7 @@ mov   bx, ax
 mov   al, byte ptr ds:[bx + _mobjInfo + 2]  ; seesound
 
 test  al, al
-je    label_5
+je    no_see_sound
 mov   dl, al
 mov   ax, di
 xor   dh, dh
@@ -1666,73 +1666,89 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-label_5:
+no_see_sound:
+
+;    th->targetRef = GETTHINKERREF(source);	// where it came from
+
+
 mov   ax, word ptr [bp - 020h]
 mov   bx, SIZEOF_THINKER_T
-xor   dx, dx
 sub   ax, (_thinkerlist + 4)
+cwd
 div   bx
 les   bx, dword ptr [bp - 4]
 mov   word ptr [di + 022h], ax
-push  word ptr es:[bx + 6]
+
+;	destz = dest_pos->z.w;
+;	an.wu = R_PointToAngle2 (source_pos->x, source_pos->y, dest_pos->x, dest_pos->y);
+
+
 mov   ax, word ptr es:[bx + 8]
-push  word ptr es:[bx + 4]
 mov   word ptr [bp - 010h], ax
-push  word ptr es:[bx + 2]
 mov   ax, word ptr es:[bx + 0Ah]
-push  word ptr es:[bx]
-mov   es, word ptr [bp - 2]
+
 mov   word ptr [bp - 0Eh], ax
+
+push  word ptr es:[bx + 6]
+push  word ptr es:[bx + 4]
+push  word ptr es:[bx + 2]
+push  word ptr es:[bx]
+
 mov   bx, word ptr es:[si + 4]
 mov   cx, word ptr es:[si + 6]
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
+les   ax, dword ptr es:[si]
+mov   dx, es
 ;call  R_PointToAngle2_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_PointToAngle2_addr
+
 les   bx, dword ptr [bp - 4]
 mov   word ptr [bp - 012h], ax
-mov   word ptr [bp - 0Ah], dx
-test  byte ptr es:[bx + 016h], 4
-je    label_4
-inc   byte ptr ds:[_prndindex]
-mov   cl, byte ptr ds:[_prndindex]
+test  byte ptr es:[bx + 016h], MF_SHADOW
+je    no_fuzzmissile
 mov   ax, RNDTABLE_SEGMENT
 mov   es, ax
-xor   ch, ch
-mov   bx, cx
-mov   cl, byte ptr es:[bx]
 
-inc   byte ptr ds:[_prndindex]
-mov   al, byte ptr ds:[_prndindex]
-mov   byte ptr [bp - 013h], ch
-mov   byte ptr [bp - 014h], al
-mov   bx, word ptr [bp - 014h]
+
+;		temp = (P_Random() - P_Random());
+
+
+xor   ax, ax
+mov   bx, ax
+mov   bl, byte ptr ds:[_prndindex]
+inc   bl
 mov   al, byte ptr es:[bx]
-xor   ah, ah
-sub   cx, ax
-mov   ax, cx
-shl   ax, 4
+inc   bl
+sub   al, byte ptr es:[bx]
+mov   byte ptr ds:[_prndindex], bl
+
+;		temp  <<= 4;
+
+SHIFT_MACRO shl   ax 4
+;		an.hu.intbits += temp;
+
 add   dx, ax
+no_fuzzmissile:
 mov   word ptr [bp - 0Ah], dx
-label_4:
+
 les   bx, dword ptr [bp - 4]
+
+;	dist.w = P_AproxDistance(dest_pos->x.w - source_pos->x.w, dest_pos->y.w - source_pos->y.w);
+
 mov   ax, word ptr es:[bx + 4]
 mov   cx, word ptr es:[bx + 6]
-mov   es, word ptr [bp - 2]
+
 sub   ax, word ptr es:[si + 4]
 sbb   cx, word ptr es:[si + 6]
 
-mov   dx, word ptr es:[bx]
-mov   word ptr [bp - 014h], dx
 mov   dx, word ptr es:[bx + 2]
+mov   bx, word ptr es:[bx]
 
-mov   bx, word ptr es:[si]
-sub   word ptr [bp - 014h], bx
-mov   bx, ax
+sub   bx, word ptr es:[si]
 sbb   dx, word ptr es:[si + 2]
-mov   ax, word ptr [bp - 014h]
+
+xchg  ax, bx
 
 ;call  dword ptr ds:[_P_AproxDistance]
 db    09Ah
@@ -1743,7 +1759,16 @@ dw PHYSICS_HIGHCODE_SEGMENT
 mov   ax, dx
 mov   dl, byte ptr [bp + 8]
 xor   dh, dh
-imul  dx, dx, SIZEOF_MOBJINFO_T
+
+IF COMPISA GE COMPILE_186
+    imul  dx, dx, SIZEOF_MOBJINFO_T
+ELSE
+    push  ax
+    mov   ax, SIZEOF_MOBJINFO_T
+    mul   dx
+    xchg  ax, dx  ; dx gets result...
+    pop   ax
+ENDIF
 mov   bx, dx
 add   bx, OFFSET _mobjinfo + 4
 mov   dl, byte ptr [bx]
