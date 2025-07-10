@@ -964,6 +964,9 @@ void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos) {
 //
 // P_SpawnMissile
 //
+THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near*	dest, mobjtype_t	type ) ;
+
+/*
 THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near*	dest, mobjtype_t	type ) {
 	mobj_t __near*	th;
 	mobj_pos_t __far*	th_pos;
@@ -1022,6 +1025,9 @@ THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* sourc
 
     return thRef;
 }
+
+*/
+
 void __near A_BFGSpray(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
 //
