@@ -1196,14 +1196,14 @@ ENDP
 PROC P_NightmareRespawn_ NEAR
 PUBLIC P_NightmareRespawn_
 
-; bp - 2  
-; bp - 4  
-; bp - 6  
-; bp - 8  
-; bp - 0Ah    
-; bp - 0Ch    
-; bp - 0Eh    
-; bp - 010h    
+; bp - 2       unused
+; bp - 4       unused (x.fracbits)
+; bp - 6       unused
+; bp - 8       unused (y.fracbits?)
+; bp - 0Ah     unused
+; bp - 0Ch     unused
+; bp - 0Eh     unused
+; bp - 010h    unused
 ; bp - 012h    mapthing options
 ; bp - 014h    mapthing type
 ; bp - 016h    mapthing angle
@@ -1227,7 +1227,6 @@ mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 cwd
 div   bx
-mov   word ptr [bp - 4], 0
 
 lea   di, [bp - 01Ah]
 mov   si, ax
@@ -1260,14 +1259,12 @@ movsw
 push  ss
 pop   ds ; restore ds
 
-mov   di, word ptr [bp - 018h] ; y
-mov   si, word ptr [bp - 01Ah] ; x
-push  di
+push  word ptr [bp - 018h] ; y
+mov   cx, word ptr [bp - 01Ah] ; x
 ; bx is 0
 push  bx
-mov   word ptr [bp - 8], bx
 
-mov   cx, si
+
 
 ;	// somthing is occupying it's position?
 ;	if (!P_CheckPosition(mobj, -1, x, y)) {
@@ -1289,37 +1286,50 @@ pop   si
 pop   dx
 ret   
 do_respawn:
-mov   bx, word ptr [bp - 01Ch]
-mov   dx, word ptr [bx + 4]
+mov   si, word ptr [bp - 01Ch]
+mov   ax, word ptr [si + 4]     ; mobjsecnum
 mov   es, word ptr [bp - 020h]
-push  dx
-mov   bx, word ptr [bp - 01Eh]
-push  MT_TFOG      ; todo 
-mov   ax, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 6]
-mov   word ptr [bp - 0Eh], ax
-mov   word ptr [bp - 0Ah], cx
-mov   ax, word ptr es:[bx + 2]
-mov   cx, SECTORS_SEGMENT
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr es:[bx + 4]
-mov   bx, dx
-mov   es, cx
-shl   bx, 4
-mov   dx, word ptr [bp - 6]
-mov   cx, word ptr es:[bx]
-mov   bx, word ptr es:[bx]
-sar   cx, 3
-xor   bh, bh
-mov   word ptr [bp - 0Ch], cx
-and   bl, 7
-push  cx
-shl   bx, 0Dh                    ; todo ew
-mov   cx, word ptr [bp - 0Ah]
-mov   word ptr [bp - 010h], bx
-push  bx
-mov   bx, ax
-mov   ax, word ptr [bp - 0Eh]
+
+push  ax
+mov   di, word ptr [bp - 01Eh]
+
+IF COMPISA GE COMPILE_186
+    push  MT_TFOG
+ELSE
+    mov   dx, MT_TFOG
+    push  dx
+ENDIF
+
+
+mov   bx, word ptr es:[di + 4]
+mov   cx, word ptr es:[di + 6]
+les   di, dword ptr es:[di + 0]
+mov   dx, es
+
+xchg  ax, di
+SHIFT_MACRO shl   di 4
+
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[mobjsecnum].floorheight);
+mov   si, SECTORS_SEGMENT
+mov   es, si
+
+
+mov   di, word ptr es:[di] ; floorheight
+xor   si, si
+
+sar   di, 1
+rcr   si, 1
+sar   di, 1
+rcr   si, 1
+sar   di, 1
+rcr   si, 1
+
+
+
+push  di
+push  si
+
+;	moRef = P_SpawnMobj(mobjx.w, mobjy.w, temp.w, MT_TFOG, mobjsecnum);
 
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
@@ -1328,12 +1338,12 @@ dw _P_SpawnMobj_addr
 
 mov   dx, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
-mov   cx, di
+mov   cx, word ptr [bp - 018h]
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-mov   dx, si
+mov   dx, word ptr [bp - 01Ah]
 xor   bx, bx
 xor   ax, ax
 
@@ -1344,25 +1354,25 @@ dw    R_POINTINSUBSECTOROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 mov   bx, ax
+SHIFT_MACRO shl   bx 2
 mov   ax, SUBSECTORS_SEGMENT
-shl   bx, 2
 mov   es, ax
-mov   ax, word ptr es:[bx]
-push  ax
-mov   cx, di
+push  word ptr es:[bx]
 
 
 IF COMPISA GE COMPILE_186
     push  MT_TFOG
 ELSE
-    mov   dx, MT_TFOG
-    push  dx
+    mov   ax, MT_TFOG
+    push  ax
 ENDIF
-mov   dx, si
-push  word ptr [bp - 0Ch]
-xor   bx, bx
-push  word ptr [bp - 010h]
+
+mov   cx, word ptr [bp - 018h]
+mov   dx, word ptr [bp - 01Ah]
+push  di
+push  si
 xor   ax, ax
+mov   bx, ax
 
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
@@ -1372,11 +1382,13 @@ dw _P_SpawnMobj_addr
 mov   dx, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
 mov   bx, word ptr [bp - 01Ch]
+
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
+xor   cx, cx
 mov   cl, byte ptr [bx + 01Ah]
 mov   al, 0Bh
 mul   cl
@@ -1396,23 +1408,18 @@ done_setting_respawn_z:
 
 ; dx:bx is respawn z??
 
-IF COMPISA GE COMPILE_186
-    push  -1
+mov   ax, -1
+push  ax  ; -1
+push  cx  ; type
+push  dx  ; x hi
+push  bx  ; z lo
 
-ELSE
-    mov ax, -1
-    push ax
-ENDIF
+inc   ax  ; 0 now
+mov   bx, ax ; zero
+mov   cx, word ptr [bp - 018h]
+mov   dx, word ptr [bp - 01Ah]
 
-mov   al, cl
-xor   ah, ah
-push  ax
-mov   cx, di
-push  dx
-mov   ax, word ptr [bp - 4]
-push  bx
-mov   dx, si
-mov   bx, word ptr [bp - 8]
+;    moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype, -1);
 
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
@@ -1420,20 +1427,25 @@ db 01Eh  ;
 dw _P_SpawnMobj_addr
 
 mov   di, ax
-shl   di, 2
-lea   si, [bp - 01Ah]
+SHIFT_MACRO shl   di 2
 add   di, ax
+sal   di, 1    ; di * 10
+lea   si, [bp - 01Ah]
 mov   ax, NIGHTMARESPAWNS_SEGMENT
-add   di, di
 mov   es, ax
+
+;	nightmarespawns[moRef] = mobjspawnpoint;
+
 movsw 
 movsw 
 movsw 
 movsw 
 movsw 
-mov   bx, word ptr ds:[_setStateReturn]
-mov   ax, word ptr [bp - 016h]
-mov   word ptr [bp - 2], bx
+
+;	mo_pos->angle.wu = FastMul1632u((mobjspawnpoint.angle / 45), ANG45);
+
+
+mov   ax, word ptr [bp - 016h] ; the angle..
 cwd   
 mov   bx, 45    ; todo
 idiv  bx
@@ -1447,10 +1459,10 @@ mov   es, di
 mov   word ptr es:[si + 0Eh], ax
 mov   word ptr es:[si + 010h], dx
 test  byte ptr [bp - 012h], MTF_AMBUSH
-je    label_5
+je    no_ambush
 or    byte ptr es:[si + 014h], MF_AMBUSH
-label_5:
-mov   bx, word ptr [bp - 2]
+no_ambush:
+mov   bx, word ptr ds:[_setStateReturn]
 mov   ax, word ptr [bp - 01Ch]
 mov   byte ptr [bx + 024h], 18
 ;call  P_RemoveMobj_
