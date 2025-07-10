@@ -134,6 +134,8 @@ void __far ST_Start(void);
 // Most of the player structure stays unchanged
 //  between levels.
 //
+
+// todo move ot p_setup perhaps?
 void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	fixed_t_union		x;
 	fixed_t_union		y;
@@ -197,6 +199,8 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 // The fields of the mapthing should
 // already be in host byte order.
 //
+
+// todo move ot p_setup perhaps?
 void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
 
 

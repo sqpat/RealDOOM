@@ -1196,31 +1196,59 @@ ENDP
 PROC P_NightmareRespawn_ NEAR
 PUBLIC P_NightmareRespawn_
 
+; bp - 2  
+; bp - 4  
+; bp - 6  
+; bp - 8  
+; bp - 0Ah    
+; bp - 0Ch    
+; bp - 0Eh    
+; bp - 010h    
+; bp - 012h    mapthing options
+; bp - 014h    mapthing type
+; bp - 016h    mapthing angle
+; bp - 018h    mapthing y
+; bp - 01Ah    mapthing x
+; bp - 01Ch    ax arg (mobj)
+; bp - 01Eh    bx arg (mobjpos offset)
+; bp - 020h    cx arg (mobjpos segment)
+
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
 sub   sp, 01Ah
-push  ax
-push  bx
-push  cx
+push  ax    ; bp - 01Ch
+push  bx    ; bp - 01Eh
+push  cx    ; bp - 020h
+
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
-xor   dx, dx
+cwd
 div   bx
 mov   word ptr [bp - 4], 0
+
 lea   di, [bp - 01Ah]
 mov   si, ax
-push  ds
-shl   si, 2
-mov   dx, 0FFFFh
+
+SHIFT_MACRO shl   si 2
 add   si, ax
-mov   ax, ds
+sal   si, 1  ; si * 10
+mov   dx, 0FFFFh
+
+push  ds
+pop   es
 xor   bx, bx
-mov   es, ax
+
+;mapthing_t
+;    int16_t		x;
+;    int16_t		y;
+;    int16_t		angle;
+;    int16_t		type;
+;    int16_t		options;
+
 mov   ax, NIGHTMARESPAWNS_SEGMENT
-add   si, si
 mov   ds, ax
 mov   ax, word ptr [bp - 01Ch]
 movsw 
@@ -1228,26 +1256,39 @@ movsw
 movsw 
 movsw 
 movsw 
-pop   ds
-mov   di, word ptr [bp - 018h]
-mov   si, word ptr [bp - 01Ah]
+
+push  ss
+pop   ds ; restore ds
+
+mov   di, word ptr [bp - 018h] ; y
+mov   si, word ptr [bp - 01Ah] ; x
 push  di
+; bx is 0
+push  bx
+mov   word ptr [bp - 8], bx
+
 mov   cx, si
-push  0
-mov   word ptr [bp - 8], 0
+
+;	// somthing is occupying it's position?
+;	if (!P_CheckPosition(mobj, -1, x, y)) {
+;		return;	// no respwan
+;	}
+
+
 
 ; call P_CheckPosition_
 db    09Ah
 dw    P_CHECKPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 test  al, al
-jne   label_1
+jne   do_respawn
+exit_nightmare_respawn:
 LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
 ret   
-label_1:
+do_respawn:
 mov   bx, word ptr [bp - 01Ch]
 mov   dx, word ptr [bx + 4]
 mov   es, word ptr [bp - 020h]
@@ -1309,7 +1350,14 @@ mov   es, ax
 mov   ax, word ptr es:[bx]
 push  ax
 mov   cx, di
-push  MT_TFOG               ; todo 
+
+
+IF COMPISA GE COMPILE_186
+    push  MT_TFOG
+ELSE
+    mov   dx, MT_TFOG
+    push  dx
+ENDIF
 mov   dx, si
 push  word ptr [bp - 0Ch]
 xor   bx, bx
@@ -1330,21 +1378,33 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 mov   cl, byte ptr [bx + 01Ah]
-mov   al, cl
-xor   ah, ah
-imul  ax, ax, 0Bh    ; todo
+mov   al, 0Bh
+mul   cl
 mov   bx, ax
-add   bx, _mobjinfo + 7
-test  byte ptr [bx + 1], 1
-jne   label_2
-jmp   label_3
-label_2:
+test  byte ptr ds:[bx + _mobjinfo + 8], (MF_SPAWNCEILING SHR 8)
+jne   set_respawn_ceil
+; #define ONFLOORZ		MINLONG
+mov   dx, 08000h
+xor   bx, bx
+jmp   done_setting_respawn_z
+
+set_respawn_ceil:
 ; ONCEILINGZ = MAXLONG 
 mov   bx, 0FFFFh
 mov   dx, 07FFFh
-label_4:
+done_setting_respawn_z:
+
+; dx:bx is respawn z??
+
+IF COMPISA GE COMPILE_186
+    push  -1
+
+ELSE
+    mov ax, -1
+    push ax
+ENDIF
+
 mov   al, cl
-push  -1
 xor   ah, ah
 push  ax
 mov   cx, di
@@ -1397,17 +1457,7 @@ mov   byte ptr [bx + 024h], 18
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_RemoveMobj_addr
-LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-ret   
-label_3:
-; #define ONFLOORZ		MINLONG
-
-mov   dx, 08000h
-xor   bx, bx
-jmp   label_4
+jmp   exit_nightmare_respawn
 
 ENDP
 
