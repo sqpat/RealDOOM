@@ -1833,11 +1833,11 @@ PROC P_SpawnPlayerMissile_ NEAR
 PUBLIC P_SpawnPlayerMissile_
 
 ; bp - 2    type
-; bp - 4    UNUSED
-; bp - 6    slope hi
+; bp - 4    slope hi
+; bp - 6    slope lo
 ; bp - 8    thRef
-; bp - 0Ah  slope lo
-; bp - 0Ch  mobjinfo speed lookup
+; bp - 0Ah  mobjinfo speed lookup
+
 
 
 PUSHA_NO_AX_OR_BP_MACRO 
@@ -1846,7 +1846,7 @@ push   bp
 mov    bp, sp
 xor    ah, ah   ; todo necessary?
 push   ax
-sub    sp, 0Ah
+
 
 
 ;	an = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
@@ -1867,8 +1867,8 @@ db    09Ah
 dw    P_AIMLINEATTACKOFFSET
 dw    PHYSICS_HIGHCODE_SEGMENT
 
-mov    word ptr [bp - 0Ah], ax
-mov    word ptr [bp - 6], dx
+mov    di, ax
+mov    cx, dx
 cmp    word ptr ds:[_linetarget], 0
 jne    no_line_target
 
@@ -1884,8 +1884,8 @@ mov    dx, si
 db    09Ah
 dw    P_AIMLINEATTACKOFFSET
 dw    PHYSICS_HIGHCODE_SEGMENT
-mov    word ptr [bp - 0Ah], ax
-mov    word ptr [bp - 6], dx
+mov    di, ax
+mov    cx, dx
 
 cmp    word ptr ds:[_linetarget], 0
 
@@ -1900,21 +1900,24 @@ db    09Ah
 dw    P_AIMLINEATTACKOFFSET
 dw    PHYSICS_HIGHCODE_SEGMENT
 
-mov    word ptr [bp - 0Ah], ax
-mov    word ptr [bp - 6], dx
+mov    di, ax
+mov    cx, dx
 
 no_line_target_b:
 mov    ax, word ptr ds:[_linetarget]
 test   ax, ax
 jne    no_line_target
 ; ax is 0
-mov    word ptr [bp - 0Ah], ax
-mov    word ptr [bp - 6], ax
+mov    di, ax
+mov    cx, ax
 les    bx, dword ptr ds:[_playerMobj_pos]
 mov    si, word ptr es:[bx + 010h]
 SHIFT_MACRO shr    si 3
 
 no_line_target:
+push   cx  ; push hi
+push   di  ; push lo
+
 les    bx, dword ptr ds:[_playerMobj_pos]
 
 mov    di, word ptr es:[bx + 0Ah]
@@ -1945,16 +1948,16 @@ db     0FFh  ; lcall[addr]
 db     01Eh  ;
 dw     _P_SpawnMobj_addr
 
-mov    ax, word ptr ds:[_setStateReturn_pos]
-mov    word ptr [bp - 8], ax
+push   word ptr ds:[_setStateReturn_pos]   ; bp - 8
+
 
 mov    al, SIZEOF_MOBJINFO_T
 mul    byte ptr [bp - 2]
 
-;mov    word ptr [bp - 010h], 0
+
 mov    di, word ptr ds:[_setStateReturn]
 mov    bx, ax
-;mov    word ptr [bp - 012h], ax
+
 mov    al, byte ptr ds:[bx + _mobjinfo + 2]
 
 test   al, al
@@ -1986,24 +1989,24 @@ shl    word ptr es:[bx + 010h], 3
 mov    bx, ax
 mov    bl, byte ptr ds:[bx + _mobjinfo + 4]
 xor    bh, bh
-mov    word ptr [bp - 0Ch], bx
+push   bx  ; bp - 0Ah
 mov    ax, FINECOSINE_SEGMENT
 call   FixedMulTrigSpeed_
 mov    word ptr [di + 0Eh], ax
 mov    word ptr [di + 010h], dx
 
-mov    bx, word ptr [bp - 0Ch]
+mov    bx, word ptr [bp - 0Ah]
 mov    dx, si
 mov    ax, FINESINE_SEGMENT
 call   FixedMulTrigSpeed_
 mov    word ptr [di + 012h], ax
 mov    word ptr [di + 014h], dx
 
-mov    ax, word ptr [bp - 0Ch]
+pop    ax ; bp - 0Ah
 sub    ax, 080h
 
-mov    cx, word ptr [bp - 6]
-mov    bx, word ptr [bp - 0Ah]
+mov    cx, word ptr [bp - 4]
+mov    bx, word ptr [bp - 6]
 
 call   FastMul16u32u_
 mov    bx, word ptr [bp - 8]
