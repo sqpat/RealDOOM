@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/10 10:39:51
+Created on:       25/07/10 16:46:31
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -65,7 +65,8 @@ p_floor_TEXT           CODE           AUTO           0b98:4fb0       00000806
 p_inter_TEXT           CODE           AUTO           0b98:57c0       00000cf5
 p_lights_TEXT          CODE           AUTO           0b98:64c0       000003ed
 p_plats_TEXT           CODE           AUTO           0b98:68b0       0000041b
-p_pspr_TEXT            CODE           AUTO           0b98:6cd0       00000c31
+p_pspr_TEXT            CODE           AUTO           0b98:6cd0       00000000
+P_PSPRA_TEXT           CODE           AUTO           0b98:6cd0       00000c31
 p_spec_TEXT            CODE           AUTO           0b98:7910       000011f0
 p_switch_TEXT          CODE           AUTO           0b98:8b00       00000ae2
 p_mobj_TEXT            CODE           AUTO           0b98:95f0       00000923
@@ -935,38 +936,40 @@ Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0b98:6be0      EV_PlatFunc_
 0b98:6c5e      P_AddActivePlat_
 0b98:6c86+     P_RemoveActivePlat_
-Module: p_pspr.obj(C:\REALDOOM\p_pspr.c)
-0b98:6cd0      P_BringUpWeapon_
-0b98:6d24+     P_CheckAmmo_
-0b98:6d24*     A_CheckReload_
-0b98:6e42+     P_FireWeapon_
-0b98:6e74      P_DropWeapon_
-0b98:6e8c+     A_WeaponReady_
-0b98:6f86+     A_ReFire_
-0b98:6fb4+     A_Lower_
-0b98:7000+     A_Raise_
-0b98:7040+     A_GunFlash_
-0b98:7066+     A_Punch_
-0b98:7136+     A_Saw_
-0b98:72b0+     A_FireMissile_
-0b98:72d0+     A_FireBFG_
-0b98:72f2+     A_FirePlasma_
-0b98:7334+     P_BulletSlope_
-0b98:73ac+     P_GunShot_
-0b98:740c+     A_FirePistol_
-0b98:746e+     A_FireShotgun_
-0b98:74c8+     A_FireShotgun2_
-0b98:758c+     A_FireCGun_
-0b98:7618*     A_Light0_
-0b98:7622*     A_Light1_
+Module: p_pspra.obj(p_pspra.ASM)
+0b98:6fb4*     A_Lower_
+0b98:7066*     A_Punch_
 0b98:762c*     A_Light2_
+0b98:7622*     A_Light1_
+0b98:7618*     A_Light0_
+0b98:6e42*     P_FireWeapon_
+0b98:77d4*     P_SetPsprite_
+0b98:7000*     A_Raise_
+0b98:7040*     A_GunFlash_
+0b98:7136*     A_Saw_
 0b98:7636*     A_OpenShotgun2_
-0b98:7648*     A_LoadShotgun2_
-0b98:765a*     A_CloseShotgun2_
+0b98:740c*     A_FirePistol_
+0b98:6d24*     P_CheckAmmo_
+0b98:6f86*     A_ReFire_
 0b98:7676      A_BFGSpray_
-0b98:7738*     A_BFGsound_
+0b98:72b0*     A_FireMissile_
+0b98:72d0*     A_FireBFG_
 0b98:774a      P_MovePsprites_
-0b98:77d4+     P_SetPsprite_
+0b98:72f2*     A_FirePlasma_
+0b98:7901*     P_PSPR_ENDMARKER_
+0b98:73ac*     P_GunShot_
+0b98:7738*     A_BFGsound_
+0b98:6d24*     A_CheckReload_
+0b98:6e8c*     A_WeaponReady_
+0b98:746e*     A_FireShotgun_
+0b98:7334*     P_BulletSlope_
+0b98:7648*     A_LoadShotgun2_
+0b98:74c8*     A_FireShotgun2_
+0b98:6cd0*     P_PSPR_STARTMARKER_
+0b98:758c*     A_FireCGun_
+0b98:6e74      P_DropWeapon_
+0b98:765a*     A_CloseShotgun2_
+0b98:6cd0      P_BringUpWeapon_
 Module: p_spec.obj(C:\REALDOOM\p_spec.c)
 0b98:7910      twoSided_
 0b98:793c+     getNextSectorList_
@@ -1325,4 +1328,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  0001c680 (116352.)
 Entry point address: 0b98:c606
-Link time: 00:00.74
+Link time: 00:00.85

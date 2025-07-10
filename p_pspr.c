@@ -47,6 +47,8 @@
 // plasma cells for a bfg attack
 #define BFGCELLS		40		
 
+/*
+
 void __near P_SetPsprite(int8_t		position, statenum_t	stnum);
 
 
@@ -71,7 +73,7 @@ void __near P_SetPsprite(int8_t		position, statenum_t	stnum);
 // Starts bringing the pending weapon up
 // from the bottom of the screen.
 // Uses player
-//
+// 
 void __near P_BringUpWeapon () {
     statenum_t	newstate;
 	
@@ -796,3 +798,4 @@ void __near P_SetPsprite ( int8_t position, statenum_t stnum) {
 	} while (!psp->tics);
 	// an initial state of 0 could cycle through
 }
+*/

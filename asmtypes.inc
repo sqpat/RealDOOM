@@ -77,35 +77,35 @@ INTERCEPT_T ENDS
 
 
 MOBJ_T STRUC 
-    m_sprevRef     dw ?
-    m_bnextRef     dw ?
-    m_secnum       dw ?
+    m_sprevRef     dw ?     ; 0
+    m_bnextRef     dw ?     ; 2
+    m_secnum       dw ?     ; 4
 
-    m_floorz       dw ?
-    m_ceilingz     dw ?
+    m_floorz       dw ?     ; 6
+    m_ceilingz     dw ?     ; 8
 
-    m_height       dd ?
+    m_height       dd ?     ; A
 
-    m_momx         dd ?
-    m_momy         dd ?
-    m_momz         dd ?
+    m_momx         dd ?     ; E
+    m_momy         dd ?     ; 12
+    m_momz         dd ?     ; 16
 
-    m_mobjtype     db ?
-    m_tics         db ?
+    m_mobjtype     db ?     ; 1A
+    m_tics         db ?     ; 1B
 
-    m_health       dw ?
+    m_health       dw ?     ; 1C
 
-    m_radius       db ?
-    m_movedir      db ?
+    m_radius       db ?     ; 1E
+    m_movedir      db ?     ; 1F
 
-    m_movecount    dw ?
-    m_targetRef    dw ?
+    m_movecount    dw ?     ; 20
+    m_targetRef    dw ?     ; 22
 
-    m_reactiontime db ?
-    m_threshold    db ?
+    m_reactiontime db ?     ; 24
+    m_threshold    db ?     ; 25
 
-    m_tracerRef    dw ?
-
+    m_tracerRef    dw ?     ; 26
+                            ; 28
 MOBJ_T ENDS
 
 
@@ -119,14 +119,15 @@ THINKER_T ENDS
 
 
 MOBJ_POS_T STRUC 
-    mp_x        dd ?
-    mp_y        dd ?
-    mp_z        dd ?
-    mp_snextRef dw ?
-    mp_angle    dd ?
-    mp_statenum dw ?
-    mp_flags1   dw ?
-    mp_flags2   dw ?
+    mp_x        dd ?        ; 0
+    mp_y        dd ?        ; 4
+    mp_z        dd ?        ; 8
+    mp_snextRef dw ?        ; C
+    mp_angle    dd ?        ; E
+    mp_statenum dw ?        ; 12
+    mp_flags1   dw ?        ; 14
+    mp_flags2   dw ?        ; 16
+                            ; 18
 
 MOBJ_POS_T ENDS
 
