@@ -1196,39 +1196,31 @@ ENDP
 PROC P_NightmareRespawn_ NEAR
 PUBLIC P_NightmareRespawn_
 
-; bp - 2       unused
-; bp - 4       unused (x.fracbits)
-; bp - 6       unused
-; bp - 8       unused (y.fracbits?)
-; bp - 0Ah     unused
-; bp - 0Ch     unused
-; bp - 0Eh     unused
-; bp - 010h    unused
-; bp - 012h    mapthing options
-; bp - 014h    mapthing type
-; bp - 016h    mapthing angle
-; bp - 018h    mapthing y
-; bp - 01Ah    mapthing x
-; bp - 01Ch    ax arg (mobj)
-; bp - 01Eh    bx arg (mobjpos offset)
-; bp - 020h    cx arg (mobjpos segment)
+; bp - 2       ax arg (mobj)
+; bp - 4       bx arg (mobjpos offset)
+; bp - 6       cx arg (mobjpos segment); bp - 8       unused (y.fracbits?)
+; bp - 8       mapthing options
+; bp - 0Ah     mapthing type
+; bp - 0Ch     mapthing angle
+; bp - 0Eh     mapthing y
+; bp - 010h    mapthing x / top of mapthing
 
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 01Ah
-push  ax    ; bp - 01Ch
-push  bx    ; bp - 01Eh
-push  cx    ; bp - 020h
+push  ax    ; bp - 2
+push  bx    ; bp - 4
+push  cx    ; bp - 6
+sub   sp, 0Ah
 
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 cwd
 div   bx
 
-lea   di, [bp - 01Ah]
+lea   di, [bp - 010h]
 mov   si, ax
 
 SHIFT_MACRO shl   si 2
@@ -1249,7 +1241,7 @@ xor   bx, bx
 
 mov   ax, NIGHTMARESPAWNS_SEGMENT
 mov   ds, ax
-mov   ax, word ptr [bp - 01Ch]
+mov   ax, word ptr [bp - 2]
 movsw 
 movsw 
 movsw 
@@ -1259,8 +1251,8 @@ movsw
 push  ss
 pop   ds ; restore ds
 
-push  word ptr [bp - 018h] ; y
-mov   cx, word ptr [bp - 01Ah] ; x
+push  word ptr [bp - 0Eh] ; y
+mov   cx, word ptr [bp - 010h] ; x
 ; bx is 0
 push  bx
 
@@ -1286,12 +1278,12 @@ pop   si
 pop   dx
 ret   
 do_respawn:
-mov   si, word ptr [bp - 01Ch]
+mov   si, word ptr [bp - 2]
 mov   ax, word ptr [si + 4]     ; mobjsecnum
-mov   es, word ptr [bp - 020h]
+mov   es, word ptr [bp - 6]
 
 push  ax
-mov   di, word ptr [bp - 01Eh]
+mov   di, word ptr [bp - 4]
 
 IF COMPISA GE COMPILE_186
     push  MT_TFOG
@@ -1338,12 +1330,12 @@ dw _P_SpawnMobj_addr
 
 mov   dx, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
-mov   cx, word ptr [bp - 018h]
+mov   cx, word ptr [bp - 0Eh]
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-mov   dx, word ptr [bp - 01Ah]
+mov   dx, word ptr [bp - 010h]
 xor   bx, bx
 xor   ax, ax
 
@@ -1367,8 +1359,8 @@ ELSE
     push  ax
 ENDIF
 
-mov   cx, word ptr [bp - 018h]
-mov   dx, word ptr [bp - 01Ah]
+mov   cx, word ptr [bp - 0Eh]
+mov   dx, word ptr [bp - 010h]
 push  di
 push  si
 xor   ax, ax
@@ -1381,7 +1373,7 @@ dw _P_SpawnMobj_addr
 
 mov   dx, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
-mov   bx, word ptr [bp - 01Ch]
+mov   bx, word ptr [bp - 2]
 
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
@@ -1416,8 +1408,8 @@ push  bx  ; z lo
 
 inc   ax  ; 0 now
 mov   bx, ax ; zero
-mov   cx, word ptr [bp - 018h]
-mov   dx, word ptr [bp - 01Ah]
+mov   cx, word ptr [bp - 0Eh]
+mov   dx, word ptr [bp - 010h]
 
 ;    moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype, -1);
 
@@ -1430,7 +1422,7 @@ mov   di, ax
 SHIFT_MACRO shl   di 2
 add   di, ax
 sal   di, 1    ; di * 10
-lea   si, [bp - 01Ah]
+lea   si, [bp - 010h]
 mov   ax, NIGHTMARESPAWNS_SEGMENT
 mov   es, ax
 
@@ -1445,25 +1437,25 @@ movsw
 ;	mo_pos->angle.wu = FastMul1632u((mobjspawnpoint.angle / 45), ANG45);
 
 
-mov   ax, word ptr [bp - 016h] ; the angle..
+mov   ax, word ptr [bp - 0Ch] ; the angle..
 cwd   
 mov   bx, 45    ; todo
 idiv  bx
 
+xor   bx, bx
 mov   cx, ANG45_HIGHBITS
 mov   si, word ptr ds:[_setStateReturn_pos + 0]
-xor   bx, bx
 mov   di, word ptr ds:[_setStateReturn_pos + 2]
 call  FastMul16u32u_
 mov   es, di
 mov   word ptr es:[si + 0Eh], ax
 mov   word ptr es:[si + 010h], dx
-test  byte ptr [bp - 012h], MTF_AMBUSH
+test  byte ptr [bp - 8], MTF_AMBUSH
 je    no_ambush
 or    byte ptr es:[si + 014h], MF_AMBUSH
 no_ambush:
 mov   bx, word ptr ds:[_setStateReturn]
-mov   ax, word ptr [bp - 01Ch]
+mov   ax, word ptr [bp - 2]
 mov   byte ptr [bx + 024h], 18
 ;call  P_RemoveMobj_
 db 0FFh  ; lcall[addr]
