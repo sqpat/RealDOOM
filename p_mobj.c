@@ -1034,7 +1034,9 @@ void __near A_BFGSpray(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 // P_SpawnPlayerMissile
 // Tries to aim at a nearby monster
 //
+void __near P_SpawnPlayerMissile ( mobjtype_t type );
 
+/*
 void __near P_SpawnPlayerMissile ( mobjtype_t type ) {
 	mobj_t __near*	th;
 	mobj_pos_t __far*	th_pos;
@@ -1094,7 +1096,7 @@ void __near P_SpawnPlayerMissile ( mobjtype_t type ) {
 
     P_CheckMissileSpawn (th, th_pos);
 }
-
+*/
 
 boolean __far P_SetMobjState (mobj_t __near* mobj, statenum_t state) {
 	state_t __far*	st;

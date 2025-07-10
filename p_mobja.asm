@@ -23,6 +23,7 @@ EXTRN FixedMul16u32_:PROC
 EXTRN FastMul16u32u_:PROC
 EXTRN FastDiv3216u_:PROC
 EXTRN FixedMulTrigSpeedNoShift_:PROC
+EXTRN FixedMulTrigSpeed_:PROC
 
 .DATA
 
@@ -1826,5 +1827,199 @@ ret   2
 
 
 ENDP
+
+
+PROC P_SpawnPlayerMissile_ NEAR
+PUBLIC P_SpawnPlayerMissile_
+
+; bp - 2    type
+; bp - 4    UNUSED
+; bp - 6    slope hi
+; bp - 8    thRef
+; bp - 0Ah  slope lo
+; bp - 0Ch  mobjinfo speed lookup
+
+
+PUSHA_NO_AX_OR_BP_MACRO 
+
+push   bp
+mov    bp, sp
+xor    ah, ah   ; todo necessary?
+push   ax
+sub    sp, 0Ah
+
+
+;	an = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
+
+
+les    si, dword ptr ds:[_playerMobj_pos]
+mov    si, word ptr es:[si + 010h]
+
+SHIFT_MACRO shr    si 3
+
+;	slope = P_AimLineAttack (playerMobj, an, HALFMISSILERANGE);
+
+mov    ax, word ptr ds:[_playerMobj]
+mov    bx, HALFMISSILERANGE
+mov    dx, si
+
+db    09Ah
+dw    P_AIMLINEATTACKOFFSET
+dw    PHYSICS_HIGHCODE_SEGMENT
+
+mov    word ptr [bp - 0Ah], ax
+mov    word ptr [bp - 6], dx
+cmp    word ptr ds:[_linetarget], 0
+jne    no_line_target
+
+;		an = MOD_FINE_ANGLE(an +(1<<(26- ANGLETOFINESHIFT)));
+
+add    si, 080h   ; go 0x80 ticks one way
+and    si, 01FFFh ; modulo
+
+mov    ax, word ptr ds:[_playerMobj]
+mov    bx, HALFMISSILERANGE
+mov    dx, si
+
+db    09Ah
+dw    P_AIMLINEATTACKOFFSET
+dw    PHYSICS_HIGHCODE_SEGMENT
+mov    word ptr [bp - 0Ah], ax
+mov    word ptr [bp - 6], dx
+
+cmp    word ptr ds:[_linetarget], 0
+
+jne    no_line_target_b
+sub    si, 0100h  ; go back 0x80 ticks and an extra 0x80 to get the other side
+and    si, 01FFFh ; modulo
+mov    ax, word ptr ds:[_playerMobj]
+mov    bx, HALFMISSILERANGE
+mov    dx, si
+
+db    09Ah
+dw    P_AIMLINEATTACKOFFSET
+dw    PHYSICS_HIGHCODE_SEGMENT
+
+mov    word ptr [bp - 0Ah], ax
+mov    word ptr [bp - 6], dx
+
+no_line_target_b:
+mov    ax, word ptr ds:[_linetarget]
+test   ax, ax
+jne    no_line_target
+; ax is 0
+mov    word ptr [bp - 0Ah], ax
+mov    word ptr [bp - 6], ax
+les    bx, dword ptr ds:[_playerMobj_pos]
+mov    si, word ptr es:[bx + 010h]
+SHIFT_MACRO shr    si 3
+
+no_line_target:
+les    bx, dword ptr ds:[_playerMobj_pos]
+
+mov    di, word ptr es:[bx + 0Ah]
+
+mov    bx, word ptr ds:[_playerMobj]
+push   word ptr [bx + 4] ; secnum
+push   word ptr [bp - 2] ; type
+
+;	z.w = playerMobj_pos->z.w;
+;	z.h.intbits += 32;
+
+add    di, 32
+push   di ; z hi
+
+;    thRef = P_SpawnMobj (playerMobj_pos->x.w, playerMobj_pos->y.w,z.w, type, playerMobj->secnum);
+
+les    di, dword ptr ds:[_playerMobj_pos]
+push   word ptr es:[di + 8] ; z lo
+
+mov    bx, word ptr es:[di + 4]
+mov    cx, word ptr es:[di + 6]
+
+les    ax, dword ptr es:[di]
+mov    dx, es
+
+;call  P_SpawnMobj_
+db     0FFh  ; lcall[addr]
+db     01Eh  ;
+dw     _P_SpawnMobj_addr
+
+mov    ax, word ptr ds:[_setStateReturn_pos]
+mov    word ptr [bp - 8], ax
+
+mov    al, SIZEOF_MOBJINFO_T
+mul    byte ptr [bp - 2]
+
+;mov    word ptr [bp - 010h], 0
+mov    di, word ptr ds:[_setStateReturn]
+mov    bx, ax
+;mov    word ptr [bp - 012h], ax
+mov    al, byte ptr ds:[bx + _mobjinfo + 2]
+
+test   al, al
+je     no_see_sound_b
+
+mov    dl, al
+mov    ax, di
+xor    dh, dh
+
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
+no_see_sound_b:
+mov    ax, word ptr ds:[_playerMobjRef]
+mov    word ptr [di + 022h], ax
+
+mov    al, SIZEOF_MOBJINFO_T
+mul    byte ptr [bp - 2]
+
+mov    bx, MOBJPOSLIST_6800_SEGMENT
+mov    es, bx
+mov    bx, word ptr [bp - 8]
+mov    word ptr es:[bx + 0Eh], 0
+mov    word ptr es:[bx + 010h], si
+mov    dx, si
+shl    word ptr es:[bx + 010h], 3
+mov    bx, ax
+mov    bl, byte ptr ds:[bx + _mobjinfo + 4]
+xor    bh, bh
+mov    word ptr [bp - 0Ch], bx
+mov    ax, FINECOSINE_SEGMENT
+call   FixedMulTrigSpeed_
+mov    word ptr [di + 0Eh], ax
+mov    word ptr [di + 010h], dx
+
+mov    bx, word ptr [bp - 0Ch]
+mov    dx, si
+mov    ax, FINESINE_SEGMENT
+call   FixedMulTrigSpeed_
+mov    word ptr [di + 012h], ax
+mov    word ptr [di + 014h], dx
+
+mov    ax, word ptr [bp - 0Ch]
+sub    ax, 080h
+
+mov    cx, word ptr [bp - 6]
+mov    bx, word ptr [bp - 0Ah]
+
+call   FastMul16u32u_
+mov    bx, word ptr [bp - 8]
+mov    cx, MOBJPOSLIST_6800_SEGMENT
+mov    word ptr [di + 016h], ax
+mov    ax, di
+mov    word ptr [di + 018h], dx
+call   P_CheckMissileSpawn_
+
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+ret    
+
+
+
+ENDP
+
 
 END

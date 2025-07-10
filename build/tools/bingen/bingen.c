@@ -393,7 +393,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "R_POINTINSUBSECTOROFFSET = 0%Xh\n",                FP_OFF(R_PointInSubsector)             - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_TRYMOVEOFFSET = 0%Xh\n",                         FP_OFF(P_TryMove)                      - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_SLIDEMOVEOFFSET = 0%Xh\n",                       FP_OFF(P_SlideMove)                    - FP_OFF(P_SIGHT_STARTMARKER));
-
+    fprintf(fp, "P_AIMLINEATTACKOFFSET = 0%Xh\n",                   FP_OFF(P_AimLineAttack)                - FP_OFF(P_SIGHT_STARTMARKER));
 
 
     fclose(fp);
