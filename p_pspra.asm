@@ -928,12 +928,14 @@ PUBLIC P_BulletSlope_
 0x0000000000007355:  A3 24 1D             mov   word ptr [0x1d24], ax
 0x0000000000007358:  89 16 26 1D          mov   word ptr [0x1d26], dx
 0x000000000000735c:  83 3F 00             cmp   word ptr ds:[bx], 0
-0x000000000000735f:  74 05                je    0x7366
+0x000000000000735f:  74 05                je    label_54
+label_55:
 0x0000000000007361:  5E                   pop   si
 0x0000000000007362:  5A                   pop   dx
 0x0000000000007363:  59                   pop   cx
 0x0000000000007364:  5B                   pop   bx
 0x0000000000007365:  C3                   ret   
+label_54:
 0x0000000000007366:  81 C1 80 00          add   cx, 0x80
 0x000000000000736a:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x000000000000736d:  80 E5 1F             and   ch, (FINEMASK SHR 8)
@@ -945,7 +947,7 @@ PUBLIC P_BulletSlope_
 0x000000000000737e:  A3 24 1D             mov   word ptr [0x1d24], ax
 0x0000000000007381:  89 16 26 1D          mov   word ptr [0x1d26], dx
 0x0000000000007385:  83 3F 00             cmp   word ptr ds:[bx], 0
-0x0000000000007388:  75 D7                jne   0x7361
+0x0000000000007388:  75 D7                jne   label_55
 0x000000000000738a:  81 E9 00 01          sub   cx, 0x100
 0x000000000000738e:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000007391:  80 E5 1F             and   ch, (FINEMASK SHR 8)
@@ -987,7 +989,8 @@ PUBLIC P_GunShot_
 0x00000000000073ce:  26 8B 54 10          mov   dx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
 0x00000000000073d2:  C1 EA 03             shr   dx, 3
 0x00000000000073d5:  84 C9                test  cl, cl
-0x00000000000073d7:  74 1B                je    0x73f4
+0x00000000000073d7:  74 1B                je    label_56
+label_57:
 0x00000000000073d9:  57                   push  di
 0x00000000000073da:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x00000000000073dd:  FF 36 26 1D          push  word ptr [0x1d26]
@@ -1001,6 +1004,7 @@ PUBLIC P_GunShot_
 0x00000000000073f1:  59                   pop   cx
 0x00000000000073f2:  5B                   pop   bx
 0x00000000000073f3:  C3                   ret   
+label_56:
 0x00000000000073f4:  E8 F9 21             call  P_Random_
 0x00000000000073f7:  88 C3                mov   bl, al
 0x00000000000073f9:  E8 F4 21             call  P_Random_
@@ -1010,7 +1014,7 @@ PUBLIC P_GunShot_
 0x0000000000007402:  D1 FB                sar   bx, 1
 0x0000000000007404:  01 DA                add   dx, bx
 0x0000000000007406:  80 E6 1F             and   dh, (FINEMASK SHR 8)
-0x0000000000007409:  EB CE                jmp   0x73d9
+0x0000000000007409:  EB CE                jmp   label_57
 
 ENDP
 
@@ -1047,7 +1051,7 @@ PUBLIC A_FirePistol_
 0x000000000000744e:  E8 83 03             call  P_SetPsprite_
 0x0000000000007451:  E8 E0 FE             call  P_BulletSlope_
 0x0000000000007454:  80 3F 00             cmp   byte ptr ds:[bx], 0
-0x0000000000007457:  75 0A                jne   0x7463
+0x0000000000007457:  75 0A                jne   label_58
 0x0000000000007459:  B0 01                mov   al, 1
 0x000000000000745b:  98                   cbw  
 0x000000000000745c:  E8 4D FF             call  P_GunShot_
@@ -1055,6 +1059,7 @@ PUBLIC A_FirePistol_
 0x0000000000007460:  5A                   pop   dx
 0x0000000000007461:  5B                   pop   bx
 0x0000000000007462:  C3                   ret   
+label_58:
 0x0000000000007463:  30 C0                xor   al, al
 0x0000000000007465:  98                   cbw  
 0x0000000000007466:  E8 43 FF             call  P_GunShot_
@@ -1098,11 +1103,12 @@ PUBLIC A_FireShotgun_
 0x00000000000074af:  E8 22 03             call  P_SetPsprite_
 0x00000000000074b2:  E8 7F FE             call  P_BulletSlope_
 0x00000000000074b5:  30 D2                xor   dl, dl
+label_59:
 0x00000000000074b7:  31 C0                xor   ax, ax
 0x00000000000074b9:  FE C2                inc   dl
 0x00000000000074bb:  E8 EE FE             call  P_GunShot_
 0x00000000000074be:  80 FA 07             cmp   dl, 7
-0x00000000000074c1:  7C F4                jl    0x74b7
+0x00000000000074c1:  7C F4                jl    label_59
 0x00000000000074c3:  5E                   pop   si
 0x00000000000074c4:  5A                   pop   dx
 0x00000000000074c5:  5B                   pop   bx
@@ -1149,6 +1155,7 @@ PUBLIC A_FireShotgun2_
 0x0000000000007517:  E8 BA 02             call  P_SetPsprite_
 0x000000000000751a:  E8 17 FE             call  P_BulletSlope_
 0x000000000000751d:  FC                   cld   
+label_60:
 0x000000000000751e:  E8 CF 20             call  P_Random_
 0x0000000000007521:  30 E4                xor   ah, ah
 0x0000000000007523:  BB 03 00             mov   bx, 3
@@ -1190,7 +1197,7 @@ PUBLIC A_FireShotgun2_
 0x0000000000007578:  FE 46 FE             inc   byte ptr [bp - 2]
 0x000000000000757b:  FF 1E 7C 0C          call  dword ptr ds:[_P_LineAttack]
 0x000000000000757f:  80 7E FE 14          cmp   byte ptr [bp - 2], 0x14
-0x0000000000007583:  7C 99                jl    0x751e
+0x0000000000007583:  7C 99                jl    label_60
 0x0000000000007585:  C9                   LEAVE_MACRO 
 0x0000000000007586:  5F                   pop   di
 0x0000000000007587:  5E                   pop   si
@@ -1254,7 +1261,7 @@ label_21:
 0x00000000000075f7:  E8 DA 01             call  P_SetPsprite_
 0x00000000000075fa:  E8 37 FD             call  P_BulletSlope_
 0x00000000000075fd:  80 3F 00             cmp   byte ptr ds:[bx], 0
-0x0000000000007600:  75 0B                jne   0x760d
+0x0000000000007600:  75 0B                jne   label_61
 0x0000000000007602:  B0 01                mov   al, 1
 0x0000000000007604:  98                   cbw  
 0x0000000000007605:  E8 A4 FD             call  P_GunShot_
@@ -1262,7 +1269,8 @@ label_21:
 0x0000000000007609:  5E                   pop   si
 0x000000000000760a:  5A                   pop   dx
 0x000000000000760b:  5B                   pop   bx
-0x000000000000760c:  C3                   ret   
+z0x000000000000760c:  C3                   ret   
+label_61:
 0x000000000000760d:  30 C0                xor   al, al
 0x000000000000760f:  98                   cbw  
 0x0000000000007610:  E8 99 FD             call  P_GunShot_
@@ -1523,28 +1531,31 @@ label_49:
 
 ; todo probably switch jump table
 
-0x00000000000077a8:  12 78 40             adc   bh, byte ptr ds:[bx + si + 0x40]
-0x00000000000077ab:  78 47                js    0x77f4
-0x00000000000077ad:  78 4E                js    0x77fd
-0x00000000000077af:  78 55                js    0x7806
-0x00000000000077b1:  78 5C                js    0x780f
-0x00000000000077b3:  78 63                js    0x7818
-0x00000000000077b5:  78 6A                js    0x7821
-0x00000000000077b7:  78 71                js    0x782a
-0x00000000000077b9:  78 78                js    0x7833
-0x00000000000077bb:  78 80                js    0x773d
-0x00000000000077bd:  78 87                js    0x7746
-0x00000000000077bf:  78 8C                js    0x774d
-0x00000000000077c1:  78 9C                js    0x775f
-0x00000000000077c3:  78 AC                js    0x7771
-0x00000000000077c5:  78 C1                js    0x7788
-0x00000000000077c7:  78 C9                js    0x7792
-0x00000000000077c9:  78 D1                js    0x779c
-0x00000000000077cb:  78 D9                js    0x77a6
-0x00000000000077cd:  78 E1                js    0x77b0
-0x00000000000077cf:  78 E9                js    0x77ba
-0x00000000000077d1:  78 F9                js    0x77cc
-0x00000000000077d3:  78                 js    0x7828
+p_setpsprite_jump_table:
+dw switch_label_1
+dw switch_label_2
+dw switch_label_3
+dw switch_label_4
+dw switch_label_5
+dw switch_label_6
+dw switch_label_7
+dw switch_label_8
+dw switch_label_9
+dw switch_label_10
+dw switch_label_11
+dw switch_label_12
+dw switch_label_13
+dw switch_label_14
+dw switch_label_15
+dw switch_label_16
+dw switch_label_17
+dw switch_label_18
+dw switch_label_19
+dw switch_label_20
+dw switch_label_21
+dw switch_label_22
+
+
 
 
 
@@ -1559,13 +1570,14 @@ PUBLIC P_SetPsprite_
 0x00000000000077d5:  51                   push  cx
 0x00000000000077d6:  56                   push  si
 0x00000000000077d7:  98                   cbw  
-0x00000000000077d8:  6B D8 0C             imul  bx, ax, 0xc
-0x00000000000077db:  81 C3 88 03          add   bx, 0x388
+0x00000000000077d8:  6B D8 0C             imul  bx, ax, SIZEOF_PSPDEF_T   ; todo 0 or 1. mul not necessary.
+0x00000000000077db:  81 C3 88 03          add   bx, OFFSET _psprites
 0x00000000000077df:  85 D2                test  dx, dx
-0x00000000000077e1:  74 55                je    0x7838
+0x00000000000077e1:  74 55                je    label_51
 0x00000000000077e3:  B1 01                mov   cl, 1
-0x00000000000077e5:  83 FA FF             cmp   dx, -1
-0x00000000000077e8:  74 4E                je    0x7838
+label_53:
+0x00000000000077e5:  83 FA FF             cmp   dx, STATENUM_NULL
+0x00000000000077e8:  74 4E                je    label_51
 0x00000000000077ea:  6B F2 06             imul  si, dx, 6
 0x00000000000077ed:  B8 74 7D             mov   ax, STATES_SEGMENT
 0x00000000000077f0:  8E C0                mov   es, ax
@@ -1575,65 +1587,81 @@ PUBLIC P_SetPsprite_
 0x00000000000077f9:  89 47 02             mov   word ptr ds:[bx + 2], ax
 0x00000000000077fc:  26 8A 54 03          mov   dl, byte ptr es:[si + 3]
 0x0000000000007800:  28 CA                sub   dl, cl
-0x0000000000007802:  80 FA 15             cmp   dl, 0x15
-0x0000000000007805:  77 19                ja    0x7820
+0x0000000000007802:  80 FA 15             cmp   dl, 21   ; max state
+0x0000000000007805:  77 19                ja    label_52
 0x0000000000007807:  30 F6                xor   dh, dh
 0x0000000000007809:  89 D6                mov   si, dx
 0x000000000000780b:  01 D6                add   si, dx
-0x000000000000780d:  2E FF A4 A8 77       jmp   word ptr cs:[si + 0x77a8]
+0x000000000000780d:  2E FF A4 A8 77       jmp   word ptr cs:[si + OFFSET p_setpsprite_jump_table]
+switch_label_1:
 0x0000000000007812:  BE 2E 08             mov   si, OFFSET _player + PLAYER_T.player_extralightvalue
 0x0000000000007815:  88 34                mov   byte ptr ds:[si], dh
 label_29:
 0x0000000000007817:  84 C9                test  cl, cl
-0x0000000000007819:  74 05                je    0x7820
+0x0000000000007819:  74 05                je    label_52
 0x000000000000781b:  83 3F FF             cmp   word ptr ds:[bx], -1
-0x000000000000781e:  74 1C                je    0x783c
+0x000000000000781e:  74 1C                je    exit_p_setpsprite:
+label_52:
 0x0000000000007820:  6B 37 06             imul  si, word ptr ds:[bx], 6
 0x0000000000007823:  B8 74 7D             mov   ax, STATES_SEGMENT
 0x0000000000007826:  8E C0                mov   es, ax
 0x0000000000007828:  83 C6 04             add   si, 4
 0x000000000000782b:  26 8B 14             mov   dx, word ptr es:[si]
 0x000000000000782e:  83 7F 02 00          cmp   word ptr ds:[bx + 2], 0
-0x0000000000007832:  75 08                jne   0x783c
+0x0000000000007832:  75 08                jne   exit_p_setpsprite
 0x0000000000007834:  85 D2                test  dx, dx
-0x0000000000007836:  75 AD                jne   0x77e5
-0x0000000000007838:  C7 07 FF FF          mov   word ptr ds:[bx], 0xffff
+0x0000000000007836:  75 AD                jne   label_53
+label_51:
+0x0000000000007838:  C7 07 FF FF          mov   word ptr ds:[bx], STATENUM_NULL
+exit_p_setpsprite:
 0x000000000000783c:  5E                   pop   si
 0x000000000000783d:  59                   pop   cx
 0x000000000000783e:  5B                   pop   bx
 0x000000000000783f:  C3                   ret   
+switch_label_2:
 0x0000000000007840:  89 D8                mov   ax, bx
 0x0000000000007842:  E8 47 F6             call  A_WeaponReady_
 0x0000000000007845:  EB D0                jmp   label_29
+switch_label_3:
 0x0000000000007847:  89 D8                mov   ax, bx
 0x0000000000007849:  E8 68 F7             call  A_Lower_
 0x000000000000784c:  EB C9                jmp   label_29
+switch_label_4:
 0x000000000000784e:  89 D8                mov   ax, bx
 0x0000000000007850:  E8 AD F7             call  A_Raise_
 0x0000000000007853:  EB C2                jmp   label_29
+switch_label_5:
 0x0000000000007855:  89 D8                mov   ax, bx
 0x0000000000007857:  E8 0C F8             call  A_Punch_
 0x000000000000785a:  EB BB                jmp   label_29
+switch_label_6:
 0x000000000000785c:  89 D8                mov   ax, bx
 0x000000000000785e:  E8 25 F7             call  A_Refire_
 0x0000000000007861:  EB B4                jmp   label_29
+switch_label_7
 0x0000000000007863:  89 D8                mov   ax, bx
 0x0000000000007865:  E8 A4 FB             call  A_FirePistol_
 0x0000000000007868:  EB AD                jmp   label_29
+switch_label_8:
 0x000000000000786a:  BE 2E 08             mov   si, OFFSET _player + PLAYER_T.player_extralightvalue
 0x000000000000786d:  88 0C                mov   byte ptr ds:[si], cl
 0x000000000000786f:  EB A6                jmp   label_29
+switch_label_9:
 0x0000000000007871:  89 D8                mov   ax, bx
 0x0000000000007873:  E8 F8 FB             call  A_FireShotgun_
 0x0000000000007876:  EB 9F                jmp   label_29
+switch_label_10:
 0x0000000000007878:  BE 2E 08             mov   si, OFFSET _player + PLAYER_T.player_extralightvalue
 0x000000000000787b:  C6 04 02             mov   byte ptr ds:[si], 2
 0x000000000000787e:  EB 97                jmp   label_29
+switch_label_11:
 0x0000000000007880:  89 D8                mov   ax, bx
 0x0000000000007882:  E8 43 FC             call  A_FireShotgun2_
 0x0000000000007885:  EB 90                jmp   label_29
+switch_label_12:
 0x0000000000007887:  E8 9A F4             call  A_CheckReload_
 0x000000000000788a:  EB 8B                jmp   label_29
+switch_label_13:
 0x000000000000788c:  BE EC 06             mov   si, OFFSET _playerMobj
 0x000000000000788f:  BA 05 00             mov   dx, SFX_DBOPN
 0x0000000000007892:  8B 04                mov   ax, word ptr ds:[si]
@@ -1641,6 +1669,7 @@ label_29:
 0x0000000000007895:  E8 B8 8C             call  S_StartSound_
 0x0000000000007898:  90                   nop   
 0x0000000000007899:  E9 7B FF             jmp   label_29
+switch_label_14:
 0x000000000000789c:  BE EC 06             mov   si, OFFSET _playerMobj
 0x000000000000789f:  BA 07 00             mov   dx, SFX_DBLOAD
 0x00000000000078a2:  8B 04                mov   ax, word ptr ds:[si]
@@ -1648,6 +1677,7 @@ label_29:
 0x00000000000078a5:  E8 A8 8C             call  S_StartSound_
 0x00000000000078a8:  90                   nop   
 0x00000000000078a9:  E9 6B FF             jmp   label_29
+switch_label_15:
 0x00000000000078ac:  BE EC 06             mov   si, OFFSET _playerMobj
 0x00000000000078af:  BA 06 00             mov   dx, SFX_DBCLS
 0x00000000000078b2:  8B 04                mov   ax, word ptr ds:[si]
@@ -1657,27 +1687,34 @@ label_29:
 0x00000000000078b9:  89 D8                mov   ax, bx
 0x00000000000078bb:  E8 C8 F6             call  A_Refire_
 0x00000000000078be:  E9 56 FF             jmp   label_29
+switch_label_16:
 0x00000000000078c1:  89 D8                mov   ax, bx
 0x00000000000078c3:  E8 C6 FC             call  A_FireCGun_
 0x00000000000078c6:  E9 4E FF             jmp   label_29
+switch_label_17:
 0x00000000000078c9:  89 D8                mov   ax, bx
 0x00000000000078cb:  E8 72 F7             call  A_GunFlash_
 0x00000000000078ce:  E9 46 FF             jmp   label_29
+switch_label_18:
 0x00000000000078d1:  89 D8                mov   ax, bx
 0x00000000000078d3:  E8 DA F9             call  A_FireMissile_
 0x00000000000078d6:  E9 3E FF             jmp   label_29
+switch_label_19:
 0x00000000000078d9:  89 D8                mov   ax, bx
 0x00000000000078db:  E8 58 F8             call  A_Saw_
 0x00000000000078de:  E9 36 FF             jmp   label_29
+switch_label_20:
 0x00000000000078e1:  89 D8                mov   ax, bx
 0x00000000000078e3:  E8 0C FA             call  A_FirePlasma_
 0x00000000000078e6:  E9 2E FF             jmp   label_29
+switch_label_21:
 0x00000000000078e9:  BE EC 06             mov   si, OFFSET _playerMobj
 0x00000000000078ec:  BA 09 00             mov   dx, SFX_BFG
 0x00000000000078ef:  8B 04                mov   ax, word ptr ds:[si]
 0x00000000000078f1:  0E                   push  cs
 0x00000000000078f2:  3E E8 5A 8C          call  S_StartSound_
 0x00000000000078f6:  E9 1E FF             jmp   label_29
+switch_label_22:
 0x00000000000078f9:  89 D8                mov   ax, bx
 0x00000000000078fb:  E8 D2 F9             call  A_FireBFG_
 0x00000000000078fe:  E9 16 FF             jmp   label_29
