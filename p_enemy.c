@@ -1393,6 +1393,7 @@ void __near A_VileChase (mobj_t __near* actor, mobj_pos_t __far* actor_pos) {
 	THINKERREF		tempRef;
 	mobj_t __near*	corpsehit;
 	//todoaddr inline later
+	boolean (__far* P_BlockThingsIterator)() =    ((boolean (__far *)(int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*)))        (MK_FP(physics_highcode_segment, 		 P_BlockThingsIteratorOffset)));
 	int16_t (__far  * getSpawnHealth)(uint8_t) = getSpawnHealthAddr;
 	statenum_t (__far  * getRaiseState)(uint8_t) = getRaiseStateAddr;
 

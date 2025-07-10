@@ -674,46 +674,22 @@ extern mline_t              thintriangle_guy[3];
 
 
 
-extern void                 (__far* R_WriteBackViewConstantsSpanCall)();
 
 
-extern void                 (__far* wipe_StartScreenCall)();
-extern void                 (__far* wipe_WipeLoopCall)();
-extern void                 (__far* R_WriteBackViewConstantsMaskedCall)();
-
-extern void                 (__far* F_StartFinale)();
-extern void                 (__far* F_Ticker)();
-extern void                 (__far* F_Drawer)();
-extern boolean              (__far* F_Responder)(event_t  __far*event);
-
-extern void (__far* WI_Start)(wbstartstruct_t __near*, boolean);
-extern void (__far* WI_Ticker)();
-extern void (__far* WI_Drawer)();
 
 
-extern void                 (__far* P_UnArchivePlayers)();
-extern void                 (__far* P_UnArchiveWorld)();
-extern void                 (__far* P_UnArchiveThinkers)();
-extern void                 (__far* P_UnArchiveSpecials)();
 
-extern void                 (__far* P_ArchivePlayers)();
-extern void                 (__far* P_ArchiveWorld)();
-extern void                 (__far* P_ArchiveThinkers)();
-extern void                 (__far* P_ArchiveSpecials)();
 
-extern void                 (__far* S_ActuallyChangeMusic)();
-extern void 				(__far* LoadSFXWadLumps)();
+
 extern boolean 				(__far* P_CheckSightTemp)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4);
 
 extern fixed_t 				(__far* P_AproxDistance)(fixed_t dx, fixed_t dy);
 // extern void 				(__far* P_LineOpening)(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 extern void 				(__far* P_UnsetThingPosition)(mobj_t __near* thing, uint16_t mobj_pos_offset);             
 extern void 				(__far* P_SetThingPosition)(mobj_t __near* thing, uint16_t mobj_pos_offset, int16_t knownsecnum);
-extern int16_t 				(__far* R_PointInSubsector)(fixed_t_union x, fixed_t_union y);                          
-extern boolean 				(__far* P_BlockThingsIterator)(int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*));
+// extern boolean 				(__far* P_BlockThingsIterator)(int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*));
 extern boolean 				(__far* P_TryMove)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
 extern boolean 				(__far* P_CheckPosition)(mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y);
-extern void 				(__far* P_SlideMove)();
 extern boolean 				(__far* P_TeleportMove)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
 extern fixed_t 				(__far* P_AimLineAttack)(mobj_t __near* t1,fineangle_t angle,int16_t distance);
 extern void				    (__far* P_LineAttack)(mobj_t __near* t1,fineangle_t angle,int16_t distance,fixed_t slope,int16_t damage );
@@ -727,8 +703,6 @@ extern THINKERREF 			(__far* P_SpawnMissile)(mobj_t __near* source, mobj_pos_t _
 extern void 				(__far* P_SpawnPlayerMissile)(mobjtype_t type);
 
 
-extern void 				(__far* R_RenderPlayerView)();
-extern void 				(__far* R_WriteBackViewConstants)();
 
 
 

@@ -42,7 +42,6 @@ EXTRN Z_QuickMapPalette_:PROC
 EXTRN Z_QuickMapByTaskNum_:PROC
 
 
-EXTRN _F_Responder:DWORD
 EXTRN _singledemo:BYTE
 EXTRN _demoplayback:BYTE
 EXTRN _mousepresent:BYTE
@@ -1759,7 +1758,11 @@ mov   ax, OVERLAY_ID_FINALE
 call  Z_SetOverlay_
 mov   dx, cx
 mov   ax, bx
-call  dword ptr [_F_Responder]
+
+;call  dword ptr [_F_Responder]
+db 09Ah
+dw F_RESPONDEROFFSET, CODE_OVERLAY_SEGMENT
+
 test  al, al
 jne   exit_gresponder_return_1_2
 

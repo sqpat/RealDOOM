@@ -415,6 +415,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "P_SLIDEMOVEOFFSET = 0%Xh\n",                       FP_OFF(P_SlideMove)                    - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_AIMLINEATTACKOFFSET = 0%Xh\n",                   FP_OFF(P_AimLineAttack)                - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_CHECKMISSILESPAWNOFFSET = 0%Xh\n",               FP_OFF(P_CheckMissileSpawn)            - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "F_RESPONDEROFFSET = 0%Xh\n",                       FP_OFF(F_Responder)                    - FP_OFF(F_START));
+
 
 
     fclose(fp);

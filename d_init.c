@@ -326,6 +326,7 @@ int16_t   I_GetSfxLumpNum(sfxenum_t sfx);
 //
 void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 
+	void (__far* LoadSFXWadLumps)() = 							        		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 LoadSFXWadLumpsOffset)));
 
 	S_SetSfxVolume(sfxVolume);
 	S_SetMusicVolume(musicVolume);

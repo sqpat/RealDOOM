@@ -381,6 +381,9 @@ void __near G_CopyCmd(ticcmd_t __near * destcmd, int8_t srcindex);
 void __near G_Ticker (void)  { 
 	int8_t         buf;
     ticcmd_t __near*   cmd;
+    void (__far* WI_Ticker)() = 										  	 	  ((void    (__far *)())     							(MK_FP(wianim_codespace_segment, 		 WI_TickerOffset)));
+    void (__far* F_Ticker)() = 											  		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_TickerOffset)));
+    void (__far* F_StartFinale)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_StartFinaleOffset)));
     // do player reborns if needed
 
     // do player reborn if needed
@@ -575,6 +578,7 @@ void __far G_SecretExitLevel (void) {
 } 
  
 void __near G_DoCompleted (void)  { 
+    void (__far* WI_Start)(wbstartstruct_t __near*, boolean) = 					  ((void    (__far *)(wbstartstruct_t __near*, boolean))(MK_FP(wianim_codespace_segment, 		 WI_StartOffset)));
          
     gameaction = ga_nothing; 
 	G_PlayerFinishLevel(0); // take away cards and stuff
@@ -725,6 +729,11 @@ void __near G_DoLoadGame (void)  {
 	
 //	FILE* fp = fopen("log2.txt", "wb");
 	
+    void (__far* P_UnArchivePlayers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchivePlayersOffset)));
+    void (__far* P_UnArchiveWorld)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveWorldOffset)));
+    void (__far* P_UnArchiveThinkers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveThinkersOffset)));
+    void (__far* P_UnArchiveSpecials)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveSpecialsOffset)));
+
 	byte __far*           savebuffer = MK_FP(0x5000, 0);
     gameaction = ga_nothing; 
     
@@ -817,6 +826,10 @@ void __far G_SaveGame(int8_t   slot, int8_t __far* description ) {
 
 void __near G_DoSaveGame (void)  { 
 	
+    void (__far* P_ArchivePlayers)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchivePlayersOffset)));
+    void (__far* P_ArchiveWorld)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveWorldOffset)));
+    void (__far* P_ArchiveThinkers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveThinkersOffset)));
+    void (__far* P_ArchiveSpecials)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveSpecialsOffset)));
     int8_t name[13] = "doomsav0.dsg";
     int8_t i;
 

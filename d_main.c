@@ -694,6 +694,11 @@ void __near D_Display (void) {
 	int16_t                         y;
     boolean                     wipe;
     boolean                     redrawsbar;
+	void (__far* WI_Drawer)() = 										 		  ((void    (__far *)())     							(MK_FP(wianim_codespace_segment, 		 WI_DrawerOffset)));
+	void (__far* F_Drawer)() = 											  		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_DrawerOffset)));
+	void (__far* wipe_WipeLoopCall)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 wipe_WipeLoopOffset)));
+	void (__far* wipe_StartScreenCall)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 wipe_StartScreenOffset)));
+	void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_RenderPlayerViewOffset)));
 	if (novideo){
         return;                    // for comparative timing / profiling
 	}
@@ -917,6 +922,7 @@ void __near D_DoomLoop (void) {
 	//int32_t lasttick = 0;
 	FILE* fp;
 #endif
+	void (__far* S_ActuallyChangeMusic)() = 									  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 S_ActuallyChangeMusicOffset)));
 
     if (demorecording){
         G_BeginRecording ();

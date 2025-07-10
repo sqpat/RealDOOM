@@ -375,35 +375,13 @@ uint8_t quality_port_lookup[12] = {
 
 
 
-void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  								(MK_FP(spanfunc_jump_lookup_segment, 	 R_WriteBackViewConstantsSpanOffset)));
-
-void (__far* wipe_StartScreenCall)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 wipe_StartScreenOffset)));
-void (__far* wipe_WipeLoopCall)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 wipe_WipeLoopOffset)));
-void (__far* R_WriteBackViewConstantsMaskedCall)() = 						  ((void    (__far *)())     							(MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMaskedOffset)));
-
-void (__far* F_StartFinale)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_StartFinaleOffset)));
-void (__far* F_Ticker)() = 											  		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_TickerOffset)));
-void (__far* F_Drawer)() = 											  		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_DrawerOffset)));
-boolean (__far* F_Responder)() = 										      ((boolean (__far *)(event_t  __far*event))     		(MK_FP(code_overlay_segment, 		 	 F_ResponderOffset)));
-
-void (__far* WI_Start)(wbstartstruct_t __near*, boolean) = 					  ((void    (__far *)(wbstartstruct_t __near*, boolean))(MK_FP(wianim_codespace_segment, 		 WI_StartOffset)));
-void (__far* WI_Ticker)() = 										  	 	  ((void    (__far *)())     							(MK_FP(wianim_codespace_segment, 		 WI_TickerOffset)));
-void (__far* WI_Drawer)() = 										 		  ((void    (__far *)())     							(MK_FP(wianim_codespace_segment, 		 WI_DrawerOffset)));
 
 
 
-void (__far* P_UnArchivePlayers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchivePlayersOffset)));
-void (__far* P_UnArchiveWorld)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveWorldOffset)));
-void (__far* P_UnArchiveThinkers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveThinkersOffset)));
-void (__far* P_UnArchiveSpecials)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_UnArchiveSpecialsOffset)));
 
-void (__far* P_ArchivePlayers)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchivePlayersOffset)));
-void (__far* P_ArchiveWorld)() = 											  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveWorldOffset)));
-void (__far* P_ArchiveThinkers)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveThinkersOffset)));
-void (__far* P_ArchiveSpecials)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 P_ArchiveSpecialsOffset)));
 
-void (__far* S_ActuallyChangeMusic)() = 									  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 S_ActuallyChangeMusicOffset)));
-void (__far* LoadSFXWadLumps)() = 							        		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 LoadSFXWadLumpsOffset)));
+
+
 
 boolean (__far* P_CheckSightTemp)() = 		  ((boolean (__far *)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4))     	(MK_FP(physics_highcode_segment, 		 P_CheckSightOffset)));
 
@@ -422,11 +400,8 @@ fixed_t (__far* P_AproxDistance)() =          ((fixed_t (__far *)(fixed_t dx, fi
 // void (__far* P_LineOpening)() =               ((void (__far *)(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum))                                        (MK_FP(physics_highcode_segment, 		 P_LineOpeningOffset)));
 void (__far* P_UnsetThingPosition)() =        ((void (__far *)(mobj_t __near* thing, uint16_t mobj_pos_offset))     	                                                   (MK_FP(physics_highcode_segment, 		 P_UnsetThingPositionOffset)));
 void (__far* P_SetThingPosition)() =          ((void (__far *)(mobj_t __near* thing, uint16_t mobj_pos_offset, int16_t knownsecnum))                                       (MK_FP(physics_highcode_segment, 		 P_SetThingPositionOffset)));
-int16_t (__far* R_PointInSubsector)() =       ((int16_t (__far *)(fixed_t_union	x, fixed_t_union	y))     	                                                           (MK_FP(physics_highcode_segment, 		 R_PointInSubsectorOffset)));
-boolean (__far* P_BlockThingsIterator)() =    ((boolean (__far *)(int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*)))        (MK_FP(physics_highcode_segment, 		 P_BlockThingsIteratorOffset)));
 boolean (__far* P_TryMove)() =                ((boolean (__far *)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y))                    (MK_FP(physics_highcode_segment, 		 P_TryMoveOffset)));
 boolean (__far* P_CheckPosition)() =          ((boolean (__far *)(mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y))     	                       (MK_FP(physics_highcode_segment, 		 P_CheckPositionOffset)));
-void (__far* P_SlideMove)() =                 ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_SlideMoveOffset)));
 boolean (__far* P_TeleportMove)() =           ((boolean (__far *)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum)) (MK_FP(physics_highcode_segment, 		 P_TeleportMoveOffset)));
 fixed_t (__far* P_AimLineAttack)() =          ((fixed_t (__far *)(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance))     	                                       (MK_FP(physics_highcode_segment, 		 P_AimLineAttackOffset)));
 void (__far* P_LineAttack)() =                ((void (__far *)(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage ))     	   (MK_FP(physics_highcode_segment, 		 P_LineAttackOffset)));
@@ -445,8 +420,6 @@ void (__far* P_SpawnPlayerMissile)() =        ((void (__far *)(mobjtype_t type))
 
 
 
-void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_RenderPlayerViewOffset)));
-void (__far* R_WriteBackViewConstants)() =    ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_WriteBackViewConstantsOffset)));
 
 
 
