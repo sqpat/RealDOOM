@@ -1090,42 +1090,37 @@ jmp   done_with_squat
 ENDP
 
 
+
+
 PROC P_ExplodeMissile_ NEAR
 PUBLIC P_ExplodeMissile_
 
 ; bp - 2   mobjpos segment
-; bp - 4
-; bp - 6
-; bp - 8
-; bp - 0Ah
 
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-mov   si, ax
-push  cx  ; bp - 2
 
+xchg  ax, si
+push  cx   ; on stack for later
 xor   ax, ax
+
 ;    mo->momx.w = mo->momy.w = mo->momz.w = 0;
 mov   cx, 6
 push  ds
 pop   es
 lea   di, [si + MOBJ_T.m_momx+0]
-rep   movsw
-; zero all six words out
-mov   al, byte ptr [si + 01Ah]
-mov   dx, word ptr [si + 012h]
+rep   stosb ; zero all six words out
+
+mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
 
 ; call GetDeathState..
 db    09Ah
-dw    GETDEATHSTATEADDR
-dw    INFOFUNCLOADSEGMENT
+dw    GETDEATHSTATEADDR, INFOFUNCLOADSEGMENT
 
-xchg  ax, dx
-mov   ax, si
+xchg  ax, dx    ; dx gets deathstate
+mov   ax, si    ; ax gets mobj ptr back
 
 
 ;call  P_SetMobjState_
@@ -1165,30 +1160,29 @@ dont_set_tics_to_1_b:
 
 pop   es  ; was bp - 2, only use...
 and   byte ptr es:[bx + 016h], (NOT MF_MISSILE)
-mov   al, byte ptr [si + 01Ah]
-mov   ah, SIZEOF_MOBJINFO_T
-mul   ah
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
-xchg  ax, si
 xor   dx, dx
 mov   dl, byte ptr ds:[si + _mobjinfo+3] ; deathsound offset
+xchg  ax, si
 
 test  dl, dl
 jne   do_deathsound
-LEAVE_MACRO
+
 pop   di
 pop   si
 pop   dx
 ret   
 do_deathsound:
 ; ax got si earlier
+
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
 
-LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
