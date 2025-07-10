@@ -1573,30 +1573,24 @@ PUBLIC P_SpawnMissile_
 
 ; bp + 8    type
 
-; bp - 2     MOBJPOSLIST_6800_SEGMENT 
-; bp - 4     dest_pos offset
-; bp - 6     UNUSED
-; bp - 8     UNUSED
-; bp - 0Ah   an intbits   
-; bp - 0Ch   thRef
-; bp - 0Eh   destz hi
-; bp - 010h  destz lo
-; bp - 012h  an fracbits
-; bp - 014h  UNUSED
-; bp - 016h  UNUSED
-; bp - 018h  mobjinfo speed value
-; bp - 01Ah  th_pos offset
-; bp - 01Ch  UNUSED
-; bp - 01Eh  UNUSED
-; bp - 020h  ax (mobj)
+; bp - 2     ax (mobj)
+; bp - 4     MOBJPOSLIST_6800_SEGMENT
+; bp - 6     dest_pos offset
+; bp - 8     thRef
+; bp - 0Ah   th_pos offset
+; bp - 0Ch   destz hi
+; bp - 0Eh   destz lo
+; bp - 010h  an fracbits
+; bp - 012h  an intbits
+; bp - 014h  mobjinfo speed value
+
 
 push  si
 push  di
 push  bp
 mov   bp, sp
-push  cx
-sub   sp, 01Ch
-push  ax
+push  ax    ; bp - 2
+push  cx    ; bp - 4
 mov   si, bx
 
 mov   ax, dx
@@ -1613,15 +1607,14 @@ ELSE
     xchg  ax, bx
 ENDIF
 
-mov   word ptr [bp - 4], bx
+push  bx
 
 
 
 xor   ax, ax
 mov   al, byte ptr [bp + 8]    ; TODO NOTE: increase when this becomes far.
 
-
-mov   bx, word ptr [bp - 020h]
+mov   bx, word ptr [bp - 2]
 push  word ptr [bx + 4]         ; secnum
 push  ax                        ; type
 mov   es, cx
@@ -1642,9 +1635,12 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SpawnMobj_addr
 
-mov   word ptr [bp - 0Ch], ax
-mov   ax, word ptr ds:[_setStateReturn_pos]
-mov   word ptr [bp - 01Ah], ax
+
+
+push  ax  ; bp - 8
+push  word ptr ds:[_setStateReturn_pos] ; bp - 0Ah
+;sub   sp, 0Eh
+
 
 mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr [bp + 8]   ; type
@@ -1669,23 +1665,21 @@ no_see_sound:
 ;    th->targetRef = GETTHINKERREF(source);	// where it came from
 
 
-mov   ax, word ptr [bp - 020h]
+mov   ax, word ptr [bp - 2]
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 cwd
 div   bx
-les   bx, dword ptr [bp - 4]
+les   bx, dword ptr [bp - 6]
 mov   word ptr [di + 022h], ax
 
 ;	destz = dest_pos->z.w;
 ;	an.wu = R_PointToAngle2 (source_pos->x, source_pos->y, dest_pos->x, dest_pos->y);
 
+; store destz..
+push  word ptr es:[bx + 0Ah] ; bp - 0Ch
+push  word ptr es:[bx + 8]   ; bp - 0Eh
 
-mov   ax, word ptr es:[bx + 8]
-mov   word ptr [bp - 010h], ax
-mov   ax, word ptr es:[bx + 0Ah]
-
-mov   word ptr [bp - 0Eh], ax
 
 push  word ptr es:[bx + 6]
 push  word ptr es:[bx + 4]
@@ -1701,8 +1695,8 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_PointToAngle2_addr
 
-les   bx, dword ptr [bp - 4]
-mov   word ptr [bp - 012h], ax
+les   bx, dword ptr [bp - 6]
+push  ax  ; bp - 010h
 test  byte ptr es:[bx + 016h], MF_SHADOW
 
 je    no_fuzzmissile
@@ -1729,9 +1723,9 @@ SHIFT_MACRO shl   ax 4
 
 add   dx, ax
 no_fuzzmissile:
-mov   word ptr [bp - 0Ah], dx
+push  dx
 
-les   bx, dword ptr [bp - 4]
+les   bx, dword ptr [bp - 6]
 
 ;	dist.w = P_AproxDistance(dest_pos->x.w - source_pos->x.w, dest_pos->y.w - source_pos->y.w);
 
@@ -1763,7 +1757,7 @@ mov   bl, byte ptr ds:[bx + _mobjinfo + 4]
 xor   bh, bh
 ;	dist16 = dist.h.intbits / (mobjinfo[type].speed - 0x80);
 
-mov   word ptr [bp - 018h], bx 
+push  bx   ; bp - 014h
 sub   bx, 080h
 cwd   
 idiv  bx
@@ -1771,12 +1765,12 @@ idiv  bx
 
 ;	momz = FastDiv3216u(destz - source_pos->z.w, dist16);
 
-mov   cx, word ptr [bp - 010h]
-mov   es, word ptr [bp - 2]
+mov   cx, word ptr [bp - 0Eh]
+mov   es, word ptr [bp - 4]
 mov   bx, ax
 sub   cx, word ptr es:[si + 8]
 mov   ax, cx
-mov   dx, word ptr [bp - 0Eh]
+mov   dx, word ptr [bp - 0Ch]
 sbb   dx, word ptr es:[si + 0Ah]
 call   FastDiv3216u_
 
@@ -1784,19 +1778,19 @@ mov   word ptr [di + 016h], ax
 mov   word ptr [di + 018h], dx
 
 
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr [bp - 01Ah]
-mov   ax, word ptr [bp - 012h]
+mov   es, word ptr [bp - 4]
+mov   bx, word ptr [bp - 0Ah]
+mov   ax, word ptr [bp - 010h]
 mov   word ptr es:[bx + 0Eh], ax
 
 ;    th->momx.w = FixedMulTrigSpeedNoShift(FINE_COSINE_ARGUMENT, temp, mobjinfo[type].speed);
 
-mov   si, word ptr [bp - 0Ah]
+mov   si, word ptr [bp - 012h]
 mov   word ptr es:[bx + 010h], si
 shr   si, 1
 and   si, 0FFFCh
 mov   dx, si
-mov   bx, word ptr [bp - 018h]
+mov   bx, word ptr [bp - 014h]
 mov   ax, FINECOSINE_SEGMENT
 call FixedMulTrigSpeedNoShift_
 mov   word ptr [di + 0Eh], ax
@@ -1805,25 +1799,26 @@ mov   word ptr [di + 010h], dx
 ;    th->momy.w = FixedMulTrigSpeedNoShift(FINE_SINE_ARGUMENT  , temp, mobjinfo[type].speed);
 
 mov   dx, si
-mov   bx, word ptr [bp - 018h]
+;mov   bx, word ptr [bp - 014h]
+pop   bx
 mov   ax, FINESINE_SEGMENT
 call FixedMulTrigSpeedNoShift_
 
 mov   word ptr [di + 012h], ax
 mov   word ptr [di + 014h], dx
 
-mov   bx, word ptr [bp - 01Ah]
-mov   cx, word ptr [bp - 2]
+mov   bx, word ptr [bp - 0Ah]
+mov   cx, word ptr [bp - 4]
 mov   ax, di
 call  P_CheckMissileSpawn_
 
-mov   si, word ptr [bp - 01Ah]
+mov   si, word ptr [bp - 0Ah]
 mov   word ptr ds:[_setStateReturn], di
 
-mov   ax, word ptr [bp - 2]
+mov   ax, word ptr [bp - 4]
 mov   word ptr ds:[_setStateReturn_pos], si
 mov   word ptr ds:[_setStateReturn_pos + 2], ax ; todo should just stay hardcoded..
-mov   ax, word ptr [bp - 0Ch]
+mov   ax, word ptr [bp - 8]
 LEAVE_MACRO 
 pop   di
 pop   si
