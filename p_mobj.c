@@ -938,6 +938,9 @@ void __near P_SpawnBlood ( fixed_t x, fixed_t y, fixed_t z, int16_t damage ) {
 // Moves the missile forward a bit
 //  and possibly explodes it right there.
 //
+void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos);
+/*
+
 void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos) {
 
     th->tics -= P_Random()&3;
@@ -955,6 +958,7 @@ void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos) {
 		P_ExplodeMissile(th, th_pos);
 	}
 }
+*/
 
 
 //
@@ -1018,13 +1022,13 @@ THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* sourc
 
     return thRef;
 }
-
 void __near A_BFGSpray(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
 //
 // P_SpawnPlayerMissile
 // Tries to aim at a nearby monster
 //
+
 void __near P_SpawnPlayerMissile ( mobjtype_t type ) {
 	mobj_t __near*	th;
 	mobj_pos_t __far*	th_pos;

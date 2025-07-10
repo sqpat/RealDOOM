@@ -23,8 +23,6 @@ EXTRN FixedMul16u32_:PROC
 EXTRN FastMul16u32u_:PROC
 
 .DATA
-EXTRN _P_TryMove:DWORD
-EXTRN _P_SlideMove:DWORD
 
 
 .CODE
@@ -355,7 +353,6 @@ mov   word ptr [bp - 0Ch], si ; zero
 
 done_shifting_xymove:
 
-
 ;		if (!P_TryMove (mo, mo_pos, ptryx, ptryy)) {
 
 push  bx
@@ -365,7 +362,13 @@ push  cx
 mov   bx, word ptr [bp - 6]
 mov   cx, es
 mov   ax, word ptr [bp - 2]
-call  _P_TryMove   ; what if we returned in the carry flag...
+;call  _P_TryMove   ; what if we returned in the carry flag...
+
+db    09Ah
+dw P_TRYMOVEOFFSET
+dw PHYSICS_HIGHCODE_SEGMENT
+
+
 test  al, al
 jne   cant_move
 ; 
@@ -373,7 +376,10 @@ cmp   word ptr [bp - 8], MT_PLAYER
 je    player_try_slide
 jmp   do_missile_check
 player_try_slide:
-call  _P_SlideMove
+;call  _P_SlideMove
+db    09Ah
+dw P_SLIDEMOVEOFFSET
+dw PHYSICS_HIGHCODE_SEGMENT
 
 cant_move:
 ;    } while (xmove.w || ymove.w);
@@ -1462,6 +1468,304 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_RemoveMobj_addr
 jmp   exit_nightmare_respawn
+
+ENDP
+
+
+
+PROC P_CheckMissileSpawn_ NEAR
+PUBLIC P_CheckMissileSpawn_
+
+
+push  dx
+push  si
+push  di
+
+mov   di, ax
+mov   si, bx
+mov   es, cx
+inc   byte ptr ds:[_prndindex]
+mov   bl, byte ptr ds:[_prndindex]
+xor   bh, bh
+mov   ax, RNDTABLE_SEGMENT
+mov   es, ax
+
+mov   al, byte ptr es:[bx]
+mov   es, cx
+
+and   al, 3
+sub   byte ptr [di + 01Bh], al
+mov   al, byte ptr [di + 01Bh]
+cmp   al, 1
+jb    set_tics_to_1_c
+cmp   al, 240
+jbe   dont_set_tics_to_1_c
+set_tics_to_1_c:
+mov   byte ptr [di + 01Bh], 1
+dont_set_tics_to_1_c:
+
+;   // move a little forward so an angle can
+;   // be computed if it immediately explodes
+;	th_pos->x.w += (th->momx.w>>1);
+;	th_pos->y.w += (th->momy.w>>1);
+;	th_pos->z.w += (th->momz.w>>1);
+
+
+
+mov   ax, word ptr ds:[di + MOBJ_T.m_momx+0]
+mov   dx, word ptr ds:[di + MOBJ_T.m_momx+2]
+sar   dx, 1
+rcr   ax, 1
+add   word ptr es:[si], ax
+adc   word ptr es:[si + 2], dx
+
+mov   ax, word ptr ds:[di + MOBJ_T.m_momy+0]
+mov   dx, word ptr ds:[di + MOBJ_T.m_momy+2]
+sar   dx, 1
+rcr   ax, 1
+add   word ptr es:[si + 4], ax
+adc   word ptr es:[si + 6], dx
+
+mov   ax, word ptr ds:[di + MOBJ_T.m_momz+0]
+mov   dx, word ptr ds:[di + MOBJ_T.m_momz+2]
+sar   dx, 1
+rcr   ax, 1
+add   word ptr es:[si + 8], ax
+adc   word ptr es:[si + 0Ah], dx
+
+push  word ptr es:[si + 6]
+push  word ptr es:[si + 4]
+push  word ptr es:[si + 2]
+push  word ptr es:[si]
+
+
+mov   ax, di
+;mov   cx, es
+mov   bx, si
+
+;call  _P_TryMove   ; what if we returned in the carry flag...
+
+db    09Ah
+dw P_TRYMOVEOFFSET
+dw PHYSICS_HIGHCODE_SEGMENT
+
+test  al, al
+jne   exit_check_missile_sapwn
+do_missile_explode_on_spawn:
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   bx, si
+mov   ax, di
+call  P_ExplodeMissile_
+exit_check_missile_sapwn:
+pop   di
+pop   si
+pop   dx
+ret   
+
+ENDP
+
+
+
+COMMENT @
+
+PROC P_SpawnMissile_ NEAR
+PUBLIC P_SpawnMissile_
+
+
+0x00000000000000a4:  56                push  si
+0x00000000000000a5:  57                push  di
+0x00000000000000a6:  55                push  bp
+0x00000000000000a7:  89 E5             mov   bp, sp
+0x00000000000000a9:  83 EC 1E          sub   sp, 01Eh
+0x00000000000000ac:  50                push  ax
+0x00000000000000ad:  89 DE             mov   si, bx
+0x00000000000000af:  89 4E FE          mov   word ptr [bp - 2], cx
+0x00000000000000b2:  89 D0             mov   ax, dx
+0x00000000000000b4:  BB 2C 00          mov   bx, SIZEOF_THINKER_T
+0x00000000000000b7:  2D 04 34          sub   ax, (_thinkerlist + 4)
+0x00000000000000ba:  31 D2             xor   dx, dx
+0x00000000000000bc:  F7 F3             div   bx
+0x00000000000000be:  6B D8 18          imul  bx, ax, SIZEOF_MOBJ_POS_T
+0x00000000000000c1:  C6 46 ED 00       mov   byte ptr [bp - 013h], 0  ;todo weird
+0x00000000000000c5:  89 5E FA          mov   word ptr [bp - 6], bx
+0x00000000000000c8:  8B 5E E0          mov   bx, word ptr [bp - 020h]
+0x00000000000000cb:  8A 46 08          mov   al, byte ptr [bp + 8]
+0x00000000000000ce:  FF 77 04          push  word ptr [bx + 4]
+0x00000000000000d1:  8E C1             mov   es, cx
+0x00000000000000d3:  88 46 EC          mov   byte ptr [bp - 014h], al
+0x00000000000000d6:  26 8B 54 08       mov   dx, word ptr es:[si + 8]
+0x00000000000000da:  FF 76 EC          push  word ptr [bp - 014h]
+0x00000000000000dd:  83 C2 00          add   dx, 0
+0x00000000000000e0:  26 8B 44 0A       mov   ax, word ptr es:[si + 0Ah]
+0x00000000000000e4:  15 20 00          adc   ax, 0x20
+0x00000000000000e7:  26 8B 5C 04       mov   bx, word ptr es:[si + 4]
+0x00000000000000eb:  50                push  ax
+0x00000000000000ec:  26 8B 4C 06       mov   cx, word ptr es:[si + 6]
+0x00000000000000f0:  52                push  dx
+0x00000000000000f1:  26 8B 04          mov   ax, word ptr es:[si]
+0x00000000000000f4:  26 8B 54 02       mov   dx, word ptr es:[si + 2]
+0x00000000000000f8:  0E                push  cs
+0x00000000000000f9:  E8 22 FD          call  0xfe1e
+
+0x00000000000000ff:  89 46 F4          mov   word ptr [bp - 0Ch], ax
+0x0000000000000102:  8B 07             mov   ax, word ptr ds:[_setStateReturn_pos]
+0x0000000000000104:  89 46 E6          mov   word ptr [bp - 01Ah], ax
+0x0000000000000107:  8B 47 02          mov   ax, word ptr ds:[_setStateReturn_pos+2]
+0x000000000000010a:  89 46 F8          mov   word ptr [bp - 8], ax
+0x000000000000010d:  6B 46 EC 0B       imul  ax, word ptr [bp - 014h], SIZEOF_MOBJINFO_T
+0x0000000000000111:  C7 46 FC F5 6A    mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
+
+0x0000000000000119:  C7 46 E4 00 00    mov   word ptr [bp - 01Ch], 0
+0x000000000000011e:  8B 3D             mov   di, word ptr ds:[_setStateReturn]
+0x0000000000000120:  89 C3             mov   bx, ax
+0x0000000000000122:  89 46 E2          mov   word ptr [bp - 01Eh], ax
+0x0000000000000125:  8A 87 62 C4       mov   al, byte ptr ds:[bx + _mobjInfo + 2]
+
+0x000000000000012d:  84 C0             test  al, al
+0x000000000000012f:  74 0B             je    label_5
+0x0000000000000131:  88 C2             mov   dl, al
+0x0000000000000133:  89 F8             mov   ax, di
+0x0000000000000135:  30 F6             xor   dh, dh
+0x0000000000000137:  0E                push  cs
+0x0000000000000138:  3E E8 9E 68       call  0x69da
+label_5:
+0x000000000000013c:  8B 46 E0          mov   ax, word ptr [bp - 0x20]
+0x000000000000013f:  BB 2C 00          mov   bx, SIZEOF_THINKER_T
+0x0000000000000142:  31 D2             xor   dx, dx
+0x0000000000000144:  2D 04 34          sub   ax, (_thinkerlist + 4)
+0x0000000000000147:  F7 F3             div   bx
+0x0000000000000149:  8B 5E FA          mov   bx, word ptr [bp - 6]
+0x000000000000014c:  89 45 22          mov   word ptr [di + 022h], ax
+0x000000000000014f:  8E 46 FC          mov   es, word ptr [bp - 4]
+0x0000000000000152:  26 FF 77 06       push  word ptr es:[bx + 6]
+0x0000000000000156:  26 8B 47 08       mov   ax, word ptr es:[bx + 8]
+0x000000000000015a:  26 FF 77 04       push  word ptr es:[bx + 4]
+0x000000000000015e:  89 46 F0          mov   word ptr [bp - 010h], ax
+0x0000000000000161:  26 FF 77 02       push  word ptr es:[bx + 2]
+0x0000000000000165:  26 8B 47 0A       mov   ax, word ptr es:[bx + 0Ah]
+0x0000000000000169:  26 FF 37          push  word ptr es:[bx]
+0x000000000000016c:  8E 46 FE          mov   es, word ptr [bp - 2]
+0x000000000000016f:  89 46 F2          mov   word ptr [bp - 0Eh], ax
+0x0000000000000172:  26 8B 5C 04       mov   bx, word ptr es:[si + 4]
+0x0000000000000176:  26 8B 4C 06       mov   cx, word ptr es:[si + 6]
+0x000000000000017a:  26 8B 04          mov   ax, word ptr es:[si]
+0x000000000000017d:  26 8B 54 02       mov   dx, word ptr es:[si + 2]
+0x0000000000000181:  0E                push  cs
+0x0000000000000182:  3E E8 B9 1B       call  0x1d3f
+0x0000000000000186:  C4 5E FA          les   bx, ptr [bp - 6]
+0x0000000000000189:  89 46 EE          mov   word ptr [bp - 012h], ax
+0x000000000000018c:  89 56 F6          mov   word ptr [bp - 0Ah], dx
+0x000000000000018f:  26 F6 47 16 04    test  byte ptr es:[bx + 016h], 4
+0x0000000000000194:  74 34             je    label_4
+0x0000000000000199:  FE 07             inc   byte ptr ds:[_prndindex]
+0x000000000000019b:  8A 0F             mov   cl, byte ptr ds:[_prndindex]
+0x000000000000019d:  B8 65 3C          mov   ax, RNDTABLE_SEGMENT
+0x00000000000001a0:  30 ED             xor   ch, ch
+0x00000000000001a2:  8E C0             mov   es, ax
+0x00000000000001a4:  89 CB             mov   bx, cx
+0x00000000000001a6:  26 8A 0F          mov   cl, byte ptr es:[bx]
+
+0x00000000000001ac:  FE 07             inc   byte ptr ds:[_prndindex]
+0x00000000000001ae:  8A 07             mov   al, byte ptr ds:[_prndindex]
+0x00000000000001b0:  88 6E ED          mov   byte ptr [bp - 013h], ch
+0x00000000000001b3:  88 46 EC          mov   byte ptr [bp - 014h], al
+0x00000000000001b6:  8B 5E EC          mov   bx, word ptr [bp - 014h]
+0x00000000000001b9:  26 8A 07          mov   al, byte ptr es:[bx]
+0x00000000000001bc:  30 E4             xor   ah, ah
+0x00000000000001be:  29 C1             sub   cx, ax
+0x00000000000001c0:  89 C8             mov   ax, cx
+0x00000000000001c2:  C1 E0 04          shl   ax, 4
+0x00000000000001c5:  01 C2             add   dx, ax
+0x00000000000001c7:  89 56 F6          mov   word ptr [bp - 0Ah], dx
+label_4:
+0x00000000000001ca:  C4 5E FA          les   bx, ptr [bp - 6]
+0x00000000000001cd:  26 8B 47 04       mov   ax, word ptr es:[bx + 4]
+0x00000000000001d1:  26 8B 4F 06       mov   cx, word ptr es:[bx + 6]
+0x00000000000001d5:  8E 46 FE          mov   es, word ptr [bp - 2]
+0x00000000000001d8:  26 2B 44 04       sub   ax, word ptr es:[si + 4]
+0x00000000000001dc:  26 1B 4C 06       sbb   cx, word ptr es:[si + 6]
+0x00000000000001e0:  8E 46 FC          mov   es, word ptr [bp - 4]
+0x00000000000001e3:  26 8B 17          mov   dx, word ptr es:[bx]
+0x00000000000001e6:  89 56 EC          mov   word ptr [bp - 014h], dx
+0x00000000000001e9:  26 8B 57 02       mov   dx, word ptr es:[bx + 2]
+0x00000000000001ed:  8E 46 FE          mov   es, word ptr [bp - 2]
+0x00000000000001f0:  26 8B 1C          mov   bx, word ptr es:[si]
+0x00000000000001f3:  29 5E EC          sub   word ptr [bp - 014h], bx
+0x00000000000001f6:  89 C3             mov   bx, ax
+0x00000000000001f8:  26 1B 54 02       sbb   dx, word ptr es:[si + 2]
+0x00000000000001fc:  8B 46 EC          mov   ax, word ptr [bp - 014h]
+0x00000000000001ff:  FF 1E A4 0C       lcall [0xca4]
+0x0000000000000203:  89 D0             mov   ax, dx
+0x0000000000000205:  8A 56 08          mov   dl, byte ptr [bp + 8]
+0x0000000000000208:  30 F6             xor   dh, dh
+0x000000000000020a:  6B D2 0B          imul  dx, dx, SIZEOF_MOBJINFO_T
+0x000000000000020d:  89 D3             mov   bx, dx
+0x0000000000000213:  81 C3 64 C4       add   bx, OFFSET _mobjinfo + 4
+0x000000000000020f:  8A 97 64 C4       mov   dl, byte ptr [bx]
+0x0000000000000217:  30 F6             xor   dh, dh
+0x0000000000000219:  89 5E E8          mov   word ptr [bp - 018h], bx ;  really?
+0x000000000000021c:  89 D3             mov   bx, dx
+0x000000000000021e:  81 EB 80 00       sub   bx, 0x80
+0x0000000000000222:  99                cdq   
+0x0000000000000223:  F7 FB             idiv  bx
+0x0000000000000225:  8B 4E F0          mov   cx, word ptr [bp - 010h]
+0x0000000000000228:  8E 46 FE          mov   es, word ptr [bp - 2]
+0x000000000000022b:  89 C3             mov   bx, ax
+0x000000000000022d:  26 2B 4C 08       sub   cx, word ptr es:[si + 8]
+0x0000000000000231:  89 C8             mov   ax, cx
+0x0000000000000233:  8B 56 F2          mov   dx, word ptr [bp - 0Eh]
+0x0000000000000236:  26 1B 54 0A       sbb   dx, word ptr es:[si + 0Ah]
+0x000000000000023a:  9A AB 5D 81 0A    lcall 0xa81:0x5dab
+0x000000000000023f:  8E 46 F8          mov   es, word ptr [bp - 8]
+0x0000000000000242:  8B 5E E6          mov   bx, word ptr [bp - 01Ah]
+0x0000000000000245:  89 46 EA          mov   word ptr [bp - 016h], ax
+0x0000000000000248:  8B 46 EE          mov   ax, word ptr [bp - 012h]
+0x000000000000024b:  26 89 47 0E       mov   word ptr es:[bx + 0Eh], ax
+0x000000000000024f:  8B 46 F6          mov   ax, word ptr [bp - 0Ah]
+0x0000000000000252:  89 56 EC          mov   word ptr [bp - 014h], dx
+0x0000000000000255:  89 C6             mov   si, ax
+0x0000000000000257:  26 89 47 10       mov   word ptr es:[bx + 010h], ax
+0x000000000000025b:  8B 5E E8          mov   bx, word ptr [bp - 018h]
+0x000000000000025e:  D1 EE             shr   si, 1
+0x0000000000000260:  8A 07             mov   al, byte ptr [bx]
+0x0000000000000262:  83 E6 FC          and   si, 0FFFCh
+0x0000000000000265:  98                cwde  
+0x0000000000000266:  89 F2             mov   dx, si
+0x0000000000000268:  89 C3             mov   bx, ax
+0x000000000000026a:  B8 D6 33          mov   ax, FINECOSINE_SEGMENT
+0x000000000000026d:  9A 71 5B 81 0A    lcall 0xa81:0x5b71
+0x0000000000000272:  89 45 0E          mov   word ptr [di + 0Eh], ax
+0x0000000000000275:  8B 5E E8          mov   bx, word ptr [bp - 018h]
+0x0000000000000278:  89 55 10          mov   word ptr [di + 010h], dx
+0x000000000000027b:  8A 07             mov   al, byte ptr [bx]
+0x000000000000027d:  98                cwde  
+0x000000000000027e:  89 F2             mov   dx, si
+0x0000000000000280:  89 C3             mov   bx, ax
+0x0000000000000282:  B8 D6 31          mov   ax, FINESINE_SEGMENT
+0x0000000000000285:  9A 71 5B 81 0A    lcall 0xa81:0x5b71
+0x000000000000028a:  89 45 12          mov   word ptr [di + 012h], ax
+0x000000000000028d:  8B 46 EA          mov   ax, word ptr [bp - 016h]
+0x0000000000000290:  8B 5E E6          mov   bx, word ptr [bp - 01Ah]
+0x0000000000000293:  89 45 16          mov   word ptr [di + 016h], ax
+0x0000000000000296:  8B 46 EC          mov   ax, word ptr [bp - 014h]
+0x0000000000000299:  8B 4E F8          mov   cx, word ptr [bp - 8]
+0x000000000000029c:  89 45 18          mov   word ptr [di + 018h], ax
+0x000000000000029f:  89 F8             mov   ax, di
+0x00000000000002a1:  89 55 14          mov   word ptr [di + 014h], dx
+0x00000000000002a4:  E8 59 FD          call  0
+0x00000000000002aa:  8B 76 E6          mov   si, word ptr [bp - 01Ah]
+0x00000000000002ad:  89 3F             mov   word ptr ds:[_setStateReturn], di
+
+0x00000000000002b2:  8B 46 F8          mov   ax, word ptr [bp - 8]
+0x00000000000002b5:  89 37             mov   word ptr ds:[_setStateReturn_pos], si
+0x00000000000002b7:  89 47 02          mov   word ptr ds:[_setStateReturn_pos + 2], ax
+0x00000000000002ba:  8B 46 F4          mov   ax, word ptr [bp - 0Ch]
+0x00000000000002bd:  C9                LEAVE_MACRO 
+0x00000000000002be:  5F                pop   di
+0x00000000000002bf:  5E                pop   si
+0x00000000000002c0:  C2 02 00          ret   2
+
+@
 
 ENDP
 
