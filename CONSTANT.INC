@@ -2286,6 +2286,15 @@ FRACUNITOVER4 = 04000h
 CF_NOCLIP = 01h
 CF_GODMODE = 02h
 CF_NOMOMENTUM = 04h
+MTF_EASY = 01h
+MTF_NORMAL = 02h
+MTF_HARD = 04h
+MTF_AMBUSH = 08h
+SK_BABY = 00h
+SK_EASY = 01h
+SK_MEDIUM = 02h
+SK_HARD = 03h
+SK_NIGHTMARE = 04h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 03400h

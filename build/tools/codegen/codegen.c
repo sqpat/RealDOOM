@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2287
+#define CONSTANTS_COUNT 2296
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -2356,7 +2356,17 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"FRACUNITOVER4",
 	"CF_NOCLIP",
 	"CF_GODMODE",
-	"CF_NOMOMENTUM"
+	"CF_NOMOMENTUM",
+	"MTF_EASY",
+	"MTF_NORMAL",
+	"MTF_HARD",
+	"MTF_AMBUSH",
+	"SK_BABY",
+	"SK_EASY",
+	"SK_MEDIUM",
+	"SK_HARD",
+	"SK_NIGHTMARE"
+
 
 
 };
@@ -4710,7 +4720,16 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	FRACUNIT >> 2,
 	CF_NOCLIP,
 	CF_GODMODE,
-	CF_NOMOMENTUM
+	CF_NOMOMENTUM,
+	MTF_EASY,
+	MTF_NORMAL,
+	MTF_HARD,
+	MTF_AMBUSH,
+	sk_baby,
+	sk_easy,
+	sk_medium,
+	sk_hard,
+	sk_nightmare
 
 	
     

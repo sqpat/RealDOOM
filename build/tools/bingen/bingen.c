@@ -389,6 +389,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "R_DRAWMASKEDOFFSET = 0%Xh\n",                      FP_OFF(R_DrawMasked)                    - FP_OFF(R_MASKED_STARTMARKER));
     fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTSOFFSET = 0%Xh\n",   FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
     fprintf(fp, "P_APROXDISTANCEOFFSET = 0%Xh\n",                   FP_OFF(P_AproxDistance)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_CHECKPOSITIONOFFSET = 0%Xh\n",                   FP_OFF(P_CheckPosition)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "R_POINTINSUBSECTOROFFSET = 0%Xh\n",                FP_OFF(R_PointInSubsector)             - FP_OFF(P_SIGHT_STARTMARKER));
 
 
 

@@ -611,6 +611,9 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 //
 // P_NightmareRespawn
 //
+
+void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) ;
+/*
 void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) {
 
 	
@@ -697,7 +700,7 @@ void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) 
     P_RemoveMobj (mobj);
 
 }
-
+*/
 //
 // P_MobjThinker
 //
