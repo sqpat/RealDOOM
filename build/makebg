@@ -103,6 +103,7 @@ GLOBOBJS = $(GLOBOBJS) &
  p_map.obj &
  p_plats.obj &
  p_pspr.obj &
+ p_pspra.obj &
  p_setup.obj &
  p_sight.obj &
  p_spec.obj &
