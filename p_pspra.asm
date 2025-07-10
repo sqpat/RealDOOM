@@ -24,7 +24,8 @@ P_SIGHT_STARTMARKER_ = 0
 
 .DATA
 
-EXTRN _weaponinfo:DWORD
+EXTRN _weaponinfo:WORD
+EXTRN _bulletslope:DWORD
 
 .CODE
 
@@ -50,11 +51,14 @@ RAISESPEED_HIGH = 6
 RAISESPEED_LOW  = 0
 
 FINE_ANG90 = 0800h
+ANG90_FULL = 040000000h
+MINUS_ANG90_FULL = 0C0000000h
 
 PST_LIVE 0 ; Playing or camping.
 PST_DEAD 1 ; Dead on the ground, view follows killer.
 PST_REBORN	2 ; Ready to restart/respawn???
 
+ANGLETOFINESHIFT = 19
 
 ; todo constants
 WP_FIST = 0
@@ -768,22 +772,22 @@ label_38:
 0x000000000000720a:  26 2B 4C 0E          sub   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+0]
 0x000000000000720e:  89 D3                mov   bx, dx
 0x0000000000007210:  26 1B 5C 10          sbb   bx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
-0x0000000000007214:  81 FB 99 09          cmp   bx, 0x999
+0x0000000000007214:  81 FB 99 09          cmp   bx, ((MINUS_ANG90_FULL / 20) SHR 16)      ; 0x999
 0x0000000000007218:  72 08                jb    label_41
 0x000000000000721a:  75 39                jne   label_40
-0x000000000000721c:  81 F9 99 99          cmp   cx, 0x9999
+0x000000000000721c:  81 F9 99 99          cmp   cx, ((MINUS_ANG90_FULL / 20) AND 0FFFFh)  ; 0x9999
 0x0000000000007220:  73 33                jae   label_40
 label_41:
 0x0000000000007222:  BE 30 07             mov   si, OFFSET _playerMobj_pos
 0x0000000000007225:  C4 1C                les   bx, dword ptr ds:[si]
-0x0000000000007227:  05 C3 30             add   ax, 0x30c3
-0x000000000000722a:  81 D2 0C 03          adc   dx, 0x30c
+0x0000000000007227:  05 C3 30             add   ax, ((ANG90_FULL / 21) AND 0FFFFh)  ; 0x30c3
+0x000000000000722a:  81 D2 0C 03          adc   dx, ((ANG90_FULL / 21) SHR 16)      ; 0x30c
 0x000000000000722e:  26 89 47 0E          mov   word ptr es:[bx + MOBJ_POS_T.mp_angle+0], ax
 0x0000000000007232:  26 89 57 10          mov   word ptr es:[bx + MOBJ_POS_T.mp_angle+2], dx
 label_42:
 0x0000000000007236:  BB 30 07             mov   bx, OFFSET _playerMobj_pos
 0x0000000000007239:  C4 37                les   si, dword ptr ds:[bx]
-0x000000000000723b:  26 80 4C 14 80       or    byte ptr es:[si + 0x14], 0x80
+0x000000000000723b:  26 80 4C 14 80       or    byte ptr es:[si + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
 exit_a_saw:
 0x0000000000007240:  5F                   pop   di
 0x0000000000007241:  5E                   pop   si
@@ -812,16 +816,19 @@ label_39:
 0x000000000000726f:  26 2B 4C 0E          sub   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+0]
 0x0000000000007273:  89 D3                mov   bx, dx
 0x0000000000007275:  26 1B 5C 10          sbb   bx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
-0x0000000000007279:  81 FB 33 03          cmp   bx, 0x333
+0x0000000000007279:  81 FB 33 03          cmp   bx, ((ANG90_FULL / 20) SHR 16)      ; 0x333
 0x000000000000727d:  77 08                ja    label_43
 0x000000000000727f:  75 1C                jne   label_44
-0x0000000000007281:  81 F9 33 33          cmp   cx, 0x3333
+0x0000000000007281:  81 F9 33 33          cmp   cx, ((ANG90_FULL / 20) AND 0FFFFh)  ; 0x3333
 0x0000000000007285:  76 16                jbe   label_44
 label_43:
 0x0000000000007287:  BB 30 07             mov   bx, OFFSET _playerMobj_pos
 0x000000000000728a:  C4 37                les   si, dword ptr ds:[bx]
-0x000000000000728c:  05 3D CF             add   ax, 0xcf3d
-0x000000000000728f:  81 D2 F3 FC          adc   dx, 0xfcf3
+0x000000000000728c:  05 3D CF             add   ax, - ((ANG90_FULL / 21) AND 0FFFFh) ; 0xcf3d
+0x000000000000728f:  81 D2 F3 FC          adc   dx, - ((ANG90_FULL / 21) SHR 16)     ; 0xfcf3
+
+
+
 0x0000000000007293:  26 89 44 0E          mov   word ptr es:[si + MOBJ_POS_T.mp_angle+0], ax
 0x0000000000007297:  26 89 54 10          mov   word ptr es:[si + MOBJ_POS_T.mp_angle+2], dx
 0x000000000000729b:  EB 99                jmp   label_42
@@ -925,8 +932,8 @@ PUBLIC P_BulletSlope_
 0x000000000000734c:  89 CA                mov   dx, cx
 0x000000000000734e:  FF 1E 78 0C          call  dword ptr ds:[_P_AimLineAttack]
 0x0000000000007352:  BB 12 07             mov   bx, OFFSET _linetarget
-0x0000000000007355:  A3 24 1D             mov   word ptr [0x1d24], ax
-0x0000000000007358:  89 16 26 1D          mov   word ptr [0x1d26], dx
+0x0000000000007355:  A3 24 1D             mov   word ptr ds:[_bulletslope+0], ax
+0x0000000000007358:  89 16 26 1D          mov   word ptr ds:[_bulletslope+2], dx
 0x000000000000735c:  83 3F 00             cmp   word ptr ds:[bx], 0
 0x000000000000735f:  74 05                je    label_54
 label_55:
@@ -936,7 +943,7 @@ label_55:
 0x0000000000007364:  5B                   pop   bx
 0x0000000000007365:  C3                   ret   
 label_54:
-0x0000000000007366:  81 C1 80 00          add   cx, 0x80
+0x0000000000007366:  81 C1 80 00          add   cx, (1 SHL (26-ANGLETOFINESHIFT)) ; 0x80
 0x000000000000736a:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x000000000000736d:  80 E5 1F             and   ch, (FINEMASK SHR 8)
 0x0000000000007370:  8B 07                mov   ax, word ptr ds:[bx]
@@ -944,19 +951,19 @@ label_54:
 0x0000000000007375:  89 CA                mov   dx, cx
 0x0000000000007377:  FF 1E 78 0C          call  dword ptr ds:[_P_AimLineAttack]
 0x000000000000737b:  BB 12 07             mov   bx, OFFSET _linetarget
-0x000000000000737e:  A3 24 1D             mov   word ptr [0x1d24], ax
-0x0000000000007381:  89 16 26 1D          mov   word ptr [0x1d26], dx
+0x000000000000737e:  A3 24 1D             mov   word ptr ds:[_bulletslope+0], ax
+0x0000000000007381:  89 16 26 1D          mov   word ptr ds:[_bulletslope+2], dx
 0x0000000000007385:  83 3F 00             cmp   word ptr ds:[bx], 0
 0x0000000000007388:  75 D7                jne   label_55
-0x000000000000738a:  81 E9 00 01          sub   cx, 0x100
+0x000000000000738a:  81 E9 00 01          sub   cx, (2 SHL (26-ANGLETOFINESHIFT))  ; 0x100
 0x000000000000738e:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000007391:  80 E5 1F             and   ch, (FINEMASK SHR 8)
 0x0000000000007394:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000007396:  BB 00 04             mov   bx, HALFMISSILERANGE
 0x0000000000007399:  89 CA                mov   dx, cx
 0x000000000000739b:  FF 1E 78 0C          call  dword ptr ds:[_P_AimLineAttack]
-0x000000000000739f:  A3 24 1D             mov   word ptr [0x1d24], ax
-0x00000000000073a2:  89 16 26 1D          mov   word ptr [0x1d26], dx
+0x000000000000739f:  A3 24 1D             mov   word ptr ds:[_bulletslope+0], ax
+0x00000000000073a2:  89 16 26 1D          mov   word ptr ds:[_bulletslope+2], dx
 0x00000000000073a6:  5E                   pop   si
 0x00000000000073a7:  5A                   pop   dx
 0x00000000000073a8:  59                   pop   cx
@@ -993,9 +1000,9 @@ PUBLIC P_GunShot_
 label_57:
 0x00000000000073d9:  57                   push  di
 0x00000000000073da:  BB EC 06             mov   bx, OFFSET _playerMobj
-0x00000000000073dd:  FF 36 26 1D          push  word ptr [0x1d26]
+0x00000000000073dd:  FF 36 26 1D          push  word ptr ds:[_bulletslope+2]
 0x00000000000073e1:  8B 07                mov   ax, word ptr ds:[bx]
-0x00000000000073e3:  FF 36 24 1D          push  word ptr [0x1d24]
+0x00000000000073e3:  FF 36 24 1D          push  word ptr ds:[_bulletslope+0]
 0x00000000000073e7:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x00000000000073ea:  FF 1E 7C 0C          call  dword ptr ds:[_P_LineAttack]
 0x00000000000073ee:  5F                   pop   di
@@ -1186,8 +1193,8 @@ label_60:
 0x000000000000755d:  C1 E0 05             shl   ax, 5
 0x0000000000007560:  99                   cwd   
 0x0000000000007561:  80 E5 1F             and   ch, (FINEMASK SHR 8)
-0x0000000000007564:  03 06 24 1D          add   ax, word ptr [0x1d24]
-0x0000000000007568:  13 16 26 1D          adc   dx, word ptr [0x1d26]
+0x0000000000007564:  03 06 24 1D          add   ax, word ptr ds:[_bulletslope+0]
+0x0000000000007568:  13 16 26 1D          adc   dx, word ptr ds:[_bulletslope+2]
 0x000000000000756c:  52                   push  dx
 0x000000000000756d:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000007570:  50                   push  ax
@@ -1256,7 +1263,7 @@ label_21:
 0x00000000000075e8:  8B 97 17 0E          mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
 0x00000000000075ec:  03 14                add   dx, word ptr ds:[si]
 0x00000000000075ee:  B8 01 00             mov   ax, 1
-0x00000000000075f1:  83 EA 34             sub   dx, 0x34
+0x00000000000075f1:  83 EA 34             sub   dx, S_CHAIN1
 0x00000000000075f4:  BB 2B 08             mov   bx, OFFSET _player + PLAYER_T.player_refire
 0x00000000000075f7:  E8 DA 01             call  P_SetPsprite_
 0x00000000000075fa:  E8 37 FD             call  P_BulletSlope_
@@ -1269,7 +1276,7 @@ label_21:
 0x0000000000007609:  5E                   pop   si
 0x000000000000760a:  5A                   pop   dx
 0x000000000000760b:  5B                   pop   bx
-z0x000000000000760c:  C3                   ret   
+0x000000000000760c:  C3                   ret   
 label_61:
 0x000000000000760d:  30 C0                xor   al, al
 0x000000000000760f:  98                   cbw  
@@ -1386,12 +1393,12 @@ PUBLIC A_BFGSpray_
 label_46:
 0x0000000000007686:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x0000000000007689:  98                   cbw  
-0x000000000000768a:  6B C0 33             imul  ax, ax, 0x33
+0x000000000000768a:  6B C0 33             imul  ax, ax, (FINE_ANG90/40)  ; 0x33
 0x000000000000768d:  8E 46 F8             mov   es, word ptr [bp - 8]
 0x0000000000007690:  8B 5E FA             mov   bx, word ptr [bp - 6]
-0x0000000000007693:  26 8B 57 10          mov   dx, word ptr es:[bx + 0x10]
+0x0000000000007693:  26 8B 57 10          mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
 0x0000000000007697:  8B 5E FC             mov   bx, word ptr [bp - 4]
-0x000000000000769a:  6B 77 22 2C          imul  si, word ptr ds:[bx + 0x22], SIZEOF_THINKER_T
+0x000000000000769a:  6B 77 22 2C          imul  si, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x000000000000769e:  C1 EA 03             shr   dx, 3
 0x00000000000076a1:  81 EA 00 04          sub   dx, (FINE_ANG90/2)
 0x00000000000076a5:  01 C2                add   dx, ax
@@ -1406,7 +1413,7 @@ label_46:
 0x00000000000076be:  75 0E                jne   label_45
 label_47:
 0x00000000000076c0:  FE 46 FE             inc   byte ptr [bp - 2]
-0x00000000000076c3:  80 7E FE 28          cmp   byte ptr [bp - 2], 0x28
+0x00000000000076c3:  80 7E FE 28          cmp   byte ptr [bp - 2], 40
 0x00000000000076c7:  7C BD                jl    label_46
 0x00000000000076c9:  C9                   LEAVE_MACRO 
 0x00000000000076ca:  5F                   pop   di
@@ -1416,9 +1423,9 @@ label_47:
 label_45:
 0x00000000000076ce:  89 C3                mov   bx, ax
 0x00000000000076d0:  BF 14 07             mov   di, OFFSET _linetarget_pos
-0x00000000000076d3:  8B 47 0A             mov   ax, word ptr ds:[bx + 0xa]
-0x00000000000076d6:  8B 4F 0C             mov   cx, word ptr ds:[bx + 0xc]
-0x00000000000076d9:  FF 77 04             push  word ptr ds:[bx + 4]
+0x00000000000076d3:  8B 47 0A             mov   ax, word ptr ds:[bx + MOBJ_T.m_height+0]
+0x00000000000076d6:  8B 4F 0C             mov   cx, word ptr ds:[bx + MOBJ_T.m_height+2]
+0x00000000000076d9:  FF 77 04             push  word ptr ds:[bx + MOBJ_T.m_secnum]
 0x00000000000076dc:  D1 F9                sar   cx, 1
 0x00000000000076de:  D1 D8                rcr   ax, 1
 0x00000000000076e0:  BB 14 07             mov   bx, OFFSET _linetarget_pos
@@ -1427,14 +1434,14 @@ label_45:
 0x00000000000076e7:  8B 1F                mov   bx, word ptr ds:[bx]
 0x00000000000076e9:  8E 45 02             mov   es, word ptr ds:[di + 2]
 0x00000000000076ec:  6A 2A                push  0x2a        ; todo 186
-0x00000000000076ee:  26 03 47 08          add   ax, word ptr es:[bx + 8]
-0x00000000000076f2:  26 13 4F 0A          adc   cx, word ptr es:[bx + 0xa]
-0x00000000000076f6:  26 8B 17             mov   dx, word ptr es:[bx]
+0x00000000000076ee:  26 03 47 08          add   ax, word ptr es:[bx + MOBJ_POS_T.mp_z+0]
+0x00000000000076f2:  26 13 4F 0A          adc   cx, word ptr es:[bx + MOBJ_POS_T.mp_z+2]
+0x00000000000076f6:  26 8B 17             mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x+0]
 0x00000000000076f9:  51                   push  cx
-0x00000000000076fa:  26 8B 7F 02          mov   di, word ptr es:[bx + 2]
+0x00000000000076fa:  26 8B 7F 02          mov   di, word ptr es:[bx + MOBJ_POS_T.mp_x+2]
 0x00000000000076fe:  50                   push  ax
-0x00000000000076ff:  26 8B 47 04          mov   ax, word ptr es:[bx + 4]
-0x0000000000007703:  26 8B 4F 06          mov   cx, word ptr es:[bx + 6]
+0x00000000000076ff:  26 8B 47 04          mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y+0]
+0x0000000000007703:  26 8B 4F 06          mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_y+2]
 0x0000000000007707:  89 C3                mov   bx, ax
 0x0000000000007709:  89 D0                mov   ax, dx
 0x000000000000770b:  89 FA                mov   dx, di
@@ -1449,7 +1456,7 @@ label_48:
 0x000000000000771d:  40                   inc   ax
 0x000000000000771e:  FE C2                inc   dl
 0x0000000000007720:  01 C1                add   cx, ax
-0x0000000000007722:  80 FA 0F             cmp   dl, 0xf
+0x0000000000007722:  80 FA 0F             cmp   dl, 15
 0x0000000000007725:  7C EF                jl    label_48
 0x0000000000007727:  BB 12 07             mov   bx, OFFSET _linetarget
 0x000000000000772a:  89 F2                mov   dx, si
@@ -1492,7 +1499,7 @@ PUBLIC P_MovePsprites_
 0x000000000000774e:  BB 88 03             mov   bx, OFFSET _psprites
 0x0000000000007751:  30 C9                xor   cl, cl
 label_50:
-0x0000000000007753:  83 3F FF             cmp   word ptr ds:[bx], -1
+0x0000000000007753:  83 3F FF             cmp   word ptr ds:[bx], STATENUM_NULL
 0x0000000000007756:  74 20                je    label_49
 0x0000000000007758:  83 7F 02 FF          cmp   word ptr ds:[bx + 2], -1
 0x000000000000775c:  74 1A                je    label_49
@@ -1508,17 +1515,17 @@ label_50:
 0x0000000000007775:  E8 5C 00             call  P_SetPsprite_
 label_49:
 0x0000000000007778:  FE C1                inc   cl
-0x000000000000777a:  83 C3 0C             add   bx, 0xc
-0x000000000000777d:  80 F9 02             cmp   cl, 2
+0x000000000000777a:  83 C3 0C             add   bx, SIZEOF_PSPDEF_T
+0x000000000000777d:  80 F9 02             cmp   cl, NUMPSPRITES
 0x0000000000007780:  7C D1                jl    label_50
-0x0000000000007782:  BB 8C 03             mov   bx, 0x38c
-0x0000000000007785:  BE 98 03             mov   si, 0x398
+0x0000000000007782:  BB 8C 03             mov   bx, OFFSET _psprites + (PS_WEAPON * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sx
+0x0000000000007785:  BE 98 03             mov   si, OFFSET _psprites + (PS_FLASH  * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sx
 0x0000000000007788:  8B 07                mov   ax, word ptr ds:[bx]
 0x000000000000778a:  8B 57 02             mov   dx, word ptr ds:[bx + 2]
 0x000000000000778d:  89 04                mov   word ptr ds:[si], ax
 0x000000000000778f:  89 54 02             mov   word ptr ds:[si + 2], dx
-0x0000000000007792:  BE 90 03             mov   si, 0x390
-0x0000000000007795:  BB 9C 03             mov   bx, 0x39c
+0x0000000000007792:  BE 90 03             mov   si, OFFSET _psprites + (PS_WEAPON * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy
+0x0000000000007795:  BB 9C 03             mov   bx, OFFSET _psprites + (PS_FLASH  * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy
 0x0000000000007798:  8B 04                mov   ax, word ptr ds:[si]
 0x000000000000779a:  8B 54 02             mov   dx, word ptr ds:[si + 2]
 0x000000000000779d:  89 07                mov   word ptr ds:[bx], ax
