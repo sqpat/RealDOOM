@@ -1755,7 +1755,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 push   bp
 mov    bp, sp
 xor    ah, ah   ; todo necessary?
-push   ax
+push   ax      ; bp - 2
 
 
 
@@ -1823,8 +1823,8 @@ mov    si, word ptr es:[bx + 010h]
 SHIFT_MACRO shr    si 3
 
 no_line_target:
-push   cx  ; push hi
-push   di  ; push lo
+push   cx  ; push hi bp - 4
+push   di  ; push lo bp - 6
 
 les    bx, dword ptr ds:[_playerMobj_pos]
 

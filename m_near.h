@@ -706,7 +706,7 @@ extern void 				(__far* LoadSFXWadLumps)();
 extern boolean 				(__far* P_CheckSightTemp)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4);
 
 extern fixed_t 				(__far* P_AproxDistance)(fixed_t dx, fixed_t dy);
-extern void 				(__far* P_LineOpening)(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
+// extern void 				(__far* P_LineOpening)(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 extern void 				(__far* P_UnsetThingPosition)(mobj_t __near* thing, uint16_t mobj_pos_offset);             
 extern void 				(__far* P_SetThingPosition)(mobj_t __near* thing, uint16_t mobj_pos_offset, int16_t knownsecnum);
 extern int16_t 				(__far* R_PointInSubsector)(fixed_t_union x, fixed_t_union y);                          
@@ -717,12 +717,12 @@ extern void 				(__far* P_SlideMove)();
 extern boolean 				(__far* P_TeleportMove)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
 extern fixed_t 				(__far* P_AimLineAttack)(mobj_t __near* t1,fineangle_t angle,int16_t distance);
 extern void				    (__far* P_LineAttack)(mobj_t __near* t1,fineangle_t angle,int16_t distance,fixed_t slope,int16_t damage );
-extern void 				(__far* P_UseLines)();
+// extern void 				(__far* P_UseLines)();
 extern void 				(__far* P_RadiusAttack)(mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t damage);
 extern boolean 				(__far* P_ChangeSector)(sector_t __far* sector, boolean crunch);
-extern void 				(__far* P_XYMovement)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
-extern void 				(__far* P_ZMovement)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
-extern void				    (__far* P_NightmareRespawn)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+// extern void 				(__far* P_XYMovement)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+// extern void 				(__far* P_ZMovement)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+// extern void				    (__far* P_NightmareRespawn)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 extern THINKERREF 			(__far* P_SpawnMissile)(mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type);
 extern void 				(__far* P_SpawnPlayerMissile)(mobjtype_t type);
 

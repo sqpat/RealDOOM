@@ -21,6 +21,7 @@
 
 #include "doomdef.h"
 #include "d_event.h"
+#include <dos.h>
 
 #include "p_local.h"
 
@@ -247,6 +248,7 @@ void P_DeathThink () {
 void __near P_PlayerThink (void) {
     ticcmd_t __near*		cmd;
     weapontype_t	newweapon;
+	void (__far* P_UseLines)() =                  ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_UseLinesOffset)));
 
     // fixme: do this in the cheat code
     if (player.cheats & CF_NOCLIP){

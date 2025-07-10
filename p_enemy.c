@@ -107,10 +107,7 @@ int16_t __near P_FixedMulBySpeed(fixed_t num, uint8_t speed){
 
 
 
-void
-__near P_RecursiveSound
-( int16_t		secnum,
-	int8_t		soundblocks){
+void __near P_RecursiveSound ( int16_t secnum, int8_t soundblocks){
     int16_t		i;
 	line_t __far*	check;
 	line_physics_t __far* check_physics;
@@ -124,6 +121,7 @@ __near P_RecursiveSound
 	int16_t checkfrontsecnum;
 	int16_t checkbacksecnum;
 	uint16_t lineoffset;
+	void (__far* P_LineOpening)() =               ((void (__far *)(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum))                                        (MK_FP(physics_highcode_segment, 		 P_LineOpeningOffset)));
 
 #ifdef CHECK_FOR_ERRORS
 	if (soundblocks < 0) {

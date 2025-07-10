@@ -419,7 +419,7 @@ boolean (__far* P_CheckSightTemp)() = 		  ((boolean (__far *)(mobj_t __near* m1,
 
 
 fixed_t (__far* P_AproxDistance)() =          ((fixed_t (__far *)(fixed_t dx, fixed_t dy))     	                                                                           (MK_FP(physics_highcode_segment, 		 P_AproxDistanceOffset)));
-void (__far* P_LineOpening)() =               ((void (__far *)(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum))                                        (MK_FP(physics_highcode_segment, 		 P_LineOpeningOffset)));
+// void (__far* P_LineOpening)() =               ((void (__far *)(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum))                                        (MK_FP(physics_highcode_segment, 		 P_LineOpeningOffset)));
 void (__far* P_UnsetThingPosition)() =        ((void (__far *)(mobj_t __near* thing, uint16_t mobj_pos_offset))     	                                                   (MK_FP(physics_highcode_segment, 		 P_UnsetThingPositionOffset)));
 void (__far* P_SetThingPosition)() =          ((void (__far *)(mobj_t __near* thing, uint16_t mobj_pos_offset, int16_t knownsecnum))                                       (MK_FP(physics_highcode_segment, 		 P_SetThingPositionOffset)));
 int16_t (__far* R_PointInSubsector)() =       ((int16_t (__far *)(fixed_t_union	x, fixed_t_union	y))     	                                                           (MK_FP(physics_highcode_segment, 		 R_PointInSubsectorOffset)));
@@ -430,15 +430,15 @@ void (__far* P_SlideMove)() =                 ((void (__far *)())     	         
 boolean (__far* P_TeleportMove)() =           ((boolean (__far *)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum)) (MK_FP(physics_highcode_segment, 		 P_TeleportMoveOffset)));
 fixed_t (__far* P_AimLineAttack)() =          ((fixed_t (__far *)(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance))     	                                       (MK_FP(physics_highcode_segment, 		 P_AimLineAttackOffset)));
 void (__far* P_LineAttack)() =                ((void (__far *)(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage ))     	   (MK_FP(physics_highcode_segment, 		 P_LineAttackOffset)));
-void (__far* P_UseLines)() =                  ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_UseLinesOffset)));
+// void (__far* P_UseLines)() =                  ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_UseLinesOffset)));
 void (__far* P_RadiusAttack)() =              ((void (__far *)(mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage))     	               (MK_FP(physics_highcode_segment, 		 P_RadiusAttackOffset)));
 boolean (__far* P_ChangeSector)() =           ((boolean (__far *)(sector_t __far* sector, boolean crunch))     	                                                           (MK_FP(physics_highcode_segment, 		 P_ChangeSectorOffset)));
 
 
 // boolean (__far* P_SpawnPuff)() =              ((boolean (__far *)(sector_t __far* sector, boolean crunch))     	                                                       (MK_FP(physics_highcode_segment, 		 P_SpawnPuffOffset)));
-void (__far* P_XYMovement)() =                ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_XYMovementOffset)));
-void (__far* P_ZMovement)() =                 ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_ZMovementOffset)));
-void (__far* P_NightmareRespawn)() =          ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_NightmareRespawnOffset)));
+// void (__far* P_XYMovement)() =                ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_XYMovementOffset)));
+// void (__far* P_ZMovement)() =                 ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_ZMovementOffset)));
+// void (__far* P_NightmareRespawn)() =          ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_NightmareRespawnOffset)));
 THINKERREF (__far* P_SpawnMissile)() =        ((THINKERREF (__far *)(mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type))     	   (MK_FP(physics_highcode_segment, 		 P_SpawnMissileOffset)));
 void (__far* P_SpawnPlayerMissile)() =        ((void (__far *)(mobjtype_t type))     	                                                                                   (MK_FP(physics_highcode_segment, 		 P_SpawnPlayerMissileOffset)));
 

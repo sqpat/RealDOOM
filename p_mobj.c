@@ -710,6 +710,9 @@ void __near P_MobjThinker (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THIN
 
 	// momentum movement
     fixed_t_union temp;
+	void (__far* P_XYMovement)() =                ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_XYMovementOffset)));
+	void (__far* P_ZMovement)() =                 ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_ZMovementOffset)));
+	void (__far* P_NightmareRespawn)() =          ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_NightmareRespawnOffset)));
 
 	if (mobj->momx.w || mobj->momy.w || (mobj_pos->flags2&MF_SKULLFLY) ) {
 		P_XYMovement (mobj, mobj_pos);
