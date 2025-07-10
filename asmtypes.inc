@@ -21,7 +21,7 @@
 PLAYER_T STRUC 
 
     ; cmd struct 8 bytes
-    player_cmd_forwardmove    db ?
+    player_cmd_forwardmove    db ? 
     player_cmd_sidemove       db ?
     player_cmd_angleturn      dw ?
     player_cmd_consistancy    dw ?
@@ -384,3 +384,23 @@ VISPLANE_T ENDS
 
 
 
+PSPDEF_T STRUC
+
+    pspdef_statenum     dw ?
+    pspdef_tics         dw ?
+    pspdef_sx           dd ?
+    pspdef_sy           dd ?
+
+PSPDEF_T ENDS
+
+WEAPONINFO_T STRUC
+
+    weaponinfo_ammo         db ?
+    weaponinfo_upstate      dw ?
+    weaponinfo_downstate    dw ?
+    weaponinfo_readystate   dw ?
+    weaponinfo_atkstate     dw ?
+    weaponinfo_flashstate   dw ?
+
+
+WEAPONINFO_T ENDS

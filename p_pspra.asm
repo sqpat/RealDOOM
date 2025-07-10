@@ -24,7 +24,7 @@ P_SIGHT_STARTMARKER_ = 0
 
 .DATA
 
-
+EXTERN _weaponinfo:DWORD
 
 .CODE
 
@@ -36,48 +36,67 @@ ENDP
 
 COMMENT @
 
+PS_WEAPON = 0
+PS_FLASH = 1
+WEAPONBOTTOM_HIGH = 128
+WEAPONBOTTOM_LOW = 0
+
+; todo constants
+WP_FIST = 0
+WP_PISTOL = 1
+WP_SHOTGUN = 2
+WP_CHAINGUN = 3
+WP_MISSILE = 4
+WP_PLASMA = 5
+WP_BFG = 6
+WP_CHAINSAW = 7
+WP_SUPERSHOTGUN = 8
+WP_NOCHANGE = 0Ah
 
 PROC P_BringUpWeapon_ NEAR
 PUBLIC P_BringUpWeapon_
  
 
+
 0x0000000000006cd0:  53                   push  bx
 0x0000000000006cd1:  52                   push  dx
 0x0000000000006cd2:  56                   push  si
-0x0000000000006cd3:  BB 01 08             mov   bx, 0x801
-0x0000000000006cd6:  80 3F 0A             cmp   byte ptr [bx], 0xa
+0x0000000000006cd3:  BB 01 08             mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
+0x0000000000006cd6:  80 3F 0A             cmp   byte ptr [bx], WP_NOCHANGE
 0x0000000000006cd9:  74 31                je    label_1
-0x0000000000006cdb:  BB 01 08             mov   bx, 0x801
+label_3:
+0x0000000000006cdb:  BB 01 08             mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
 0x0000000000006cde:  80 3F 07             cmp   byte ptr [bx], 7
 0x0000000000006ce1:  74 32                je    label_2
-0x0000000000006ce3:  BB 01 08             mov   bx, 0x801
+label_4:
+0x0000000000006ce3:  BB 01 08             mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
 0x0000000000006ce6:  8A 1F                mov   bl, byte ptr [bx]
 0x0000000000006ce8:  30 FF                xor   bh, bh
-0x0000000000006cea:  6B DB 0B             imul  bx, bx, 0xb
+0x0000000000006cea:  6B DB 0B             imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000006ced:  8B 97 0F 0E          mov   dx, word ptr [bx + 0xe0f]
-0x0000000000006cf1:  BB 01 08             mov   bx, 0x801
-0x0000000000006cf4:  C6 07 0A             mov   byte ptr [bx], 0xa
-0x0000000000006cf7:  BB 90 03             mov   bx, 0x390
-0x0000000000006cfa:  C7 07 00 00          mov   word ptr [bx], 0
+0x0000000000006cf1:  BB 01 08             mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
+0x0000000000006cf4:  C6 07 0A             mov   byte ptr [bx], WP_NOCHANGE
+0x0000000000006cf7:  BB 90 03             mov   bx, OFFSET _psprites + (PS_WEAPON * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy
+0x0000000000006cfa:  C7 07 00 00          mov   word ptr [bx], WEAPONBOTTOM_LOW
 0x0000000000006cfe:  31 C0                xor   ax, ax
-0x0000000000006d00:  C7 47 02 80 00       mov   word ptr [bx + 2], 0x80
-0x0000000000006d05:  E8 CC 0A             call  0x77d4
+0x0000000000006d00:  C7 47 02 80 00       mov   word ptr [bx + 2], WEAPONBOTTOM_HIGH
+0x0000000000006d05:  E8 CC 0A             call  P_SetPsprite_
 0x0000000000006d08:  5E                   pop   si
 0x0000000000006d09:  5A                   pop   dx
 0x0000000000006d0a:  5B                   pop   bx
 0x0000000000006d0b:  C3                   ret   
 label_1:
-0x0000000000006d0c:  BE 00 08             mov   si, 0x800
+0x0000000000006d0c:  BE 00 08             mov   si, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000006d0f:  8A 04                mov   al, byte ptr [si]
 0x0000000000006d11:  88 07                mov   byte ptr [bx], al
-0x0000000000006d13:  EB C6                jmp   0x6cdb
+0x0000000000006d13:  EB C6                jmp   label_3
 label_2:
-0x0000000000006d15:  BB EC 06             mov   bx, 0x6ec
-0x0000000000006d18:  BA 0A 00             mov   dx, 0xa
+0x0000000000006d15:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x0000000000006d18:  BA 0A 00             mov   dx, SFX_SAWUP
 0x0000000000006d1b:  8B 07                mov   ax, word ptr [bx]
 0x0000000000006d1d:  0E                   push  cs
-0x0000000000006d1e:  3E E8 2E 98          call  0x550
-0x0000000000006d22:  EB BF                jmp   0x6ce3
+0x0000000000006d1e:  3E E8 2E 98          call  S_StartSound_
+0x0000000000006d22:  EB BF                jmp   label_4
 
 ENDP
 
@@ -91,12 +110,12 @@ PUBLIC A_CheckReload_
 0x0000000000006d24:  53                   push  bx
 0x0000000000006d25:  52                   push  dx
 0x0000000000006d26:  56                   push  si
-0x0000000000006d27:  BB 00 08             mov   bx, 0x800
+0x0000000000006d27:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000006d2a:  8A 07                mov   al, byte ptr [bx]
 0x0000000000006d2c:  30 E4                xor   ah, ah
-0x0000000000006d2e:  6B D8 0B             imul  bx, ax, 0xb
+0x0000000000006d2e:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000006d31:  8A 87 0E 0E          mov   al, byte ptr [bx + 0xe0e]
-0x0000000000006d35:  BB 00 08             mov   bx, 0x800
+0x0000000000006d35:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000006d38:  80 3F 06             cmp   byte ptr [bx], 6
 0x0000000000006d3b:  75 52                jne   0x6d8f
 0x0000000000006d3d:  BB 28 00             mov   bx, 0x28
@@ -107,7 +126,7 @@ PUBLIC A_CheckReload_
 0x0000000000006d48:  01 C6                add   si, ax
 0x0000000000006d4a:  3B 9C 0C 08          cmp   bx, word ptr [si + 0x80c]
 0x0000000000006d4e:  7E 4E                jle   0x6d9e
-0x0000000000006d50:  BA 01 08             mov   dx, 0x801
+0x0000000000006d50:  BA 01 08             mov   dx, OFFSET _player + PLAYER_T.player_pendingweapon
 0x0000000000006d53:  30 C0                xor   al, al
 0x0000000000006d55:  BB 07 08             mov   bx, 0x807
 0x0000000000006d58:  3A 07                cmp   al, byte ptr [bx]
@@ -123,13 +142,13 @@ PUBLIC A_CheckReload_
 0x0000000000006d6f:  89 D3                mov   bx, dx
 0x0000000000006d71:  80 3F 0A             cmp   byte ptr [bx], 0xa
 0x0000000000006d74:  74 DF                je    0x6d55
-0x0000000000006d76:  BB 00 08             mov   bx, 0x800
+0x0000000000006d76:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000006d79:  8A 07                mov   al, byte ptr [bx]
 0x0000000000006d7b:  30 E4                xor   ah, ah
-0x0000000000006d7d:  6B D8 0B             imul  bx, ax, 0xb
+0x0000000000006d7d:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000006d80:  8B 97 11 0E          mov   dx, word ptr [bx + 0xe11]
 0x0000000000006d84:  30 C0                xor   al, al
-0x0000000000006d86:  E8 4B 0A             call  0x77d4
+0x0000000000006d86:  E8 4B 0A             call  P_SetPsprite_
 0x0000000000006d89:  30 C0                xor   al, al
 0x0000000000006d8b:  5E                   pop   si
 0x0000000000006d8c:  5A                   pop   dx
@@ -224,18 +243,18 @@ PUBLIC P_FireWeapon_
 0x0000000000006e4b:  5A                   pop   dx
 0x0000000000006e4c:  5B                   pop   bx
 0x0000000000006e4d:  C3                   ret   
-0x0000000000006e4e:  BB EC 06             mov   bx, 0x6ec
+0x0000000000006e4e:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000006e51:  BA 9A 00             mov   dx, 0x9a
 0x0000000000006e54:  8B 07                mov   ax, word ptr [bx]
-0x0000000000006e56:  BB 00 08             mov   bx, 0x800
+0x0000000000006e56:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000006e59:  0E                   push  cs
 0x0000000000006e5a:  3E E8 CE 2D          call  0x9c2c
 0x0000000000006e5e:  8A 07                mov   al, byte ptr [bx]
 0x0000000000006e60:  30 E4                xor   ah, ah
-0x0000000000006e62:  6B D8 0B             imul  bx, ax, 0xb
+0x0000000000006e62:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000006e65:  8B 97 15 0E          mov   dx, word ptr [bx + 0xe15]
 0x0000000000006e69:  30 C0                xor   al, al
-0x0000000000006e6b:  E8 66 09             call  0x77d4
+0x0000000000006e6b:  E8 66 09             call  P_SetPsprite_
 0x0000000000006e6e:  E8 53 BB             call  0x29c4
 0x0000000000006e71:  5A                   pop   dx
 0x0000000000006e72:  5B                   pop   bx
@@ -248,13 +267,13 @@ PUBLIC P_DropWeapon_
 
 0x0000000000006e74:  53                   push  bx
 0x0000000000006e75:  52                   push  dx
-0x0000000000006e76:  BB 00 08             mov   bx, 0x800
+0x0000000000006e76:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000006e79:  8A 07                mov   al, byte ptr [bx]
 0x0000000000006e7b:  30 E4                xor   ah, ah
-0x0000000000006e7d:  6B D8 0B             imul  bx, ax, 0xb
+0x0000000000006e7d:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000006e80:  8B 97 11 0E          mov   dx, word ptr [bx + 0xe11]
 0x0000000000006e84:  30 C0                xor   al, al
-0x0000000000006e86:  E8 4B 09             call  0x77d4
+0x0000000000006e86:  E8 4B 09             call  P_SetPsprite_
 0x0000000000006e89:  5A                   pop   dx
 0x0000000000006e8a:  5B                   pop   bx
 0x0000000000006e8b:  C3                   ret   
@@ -280,24 +299,24 @@ PUBLIC A_WeaponReady_
 0x0000000000006ea5:  74 05                je    0x6eac
 0x0000000000006ea7:  3D 9B 00             cmp   ax, 0x9b
 0x0000000000006eaa:  75 0D                jne   0x6eb9
-0x0000000000006eac:  BB EC 06             mov   bx, 0x6ec
+0x0000000000006eac:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000006eaf:  BA 95 00             mov   dx, 0x95
 0x0000000000006eb2:  8B 07                mov   ax, word ptr [bx]
 0x0000000000006eb4:  0E                   push  cs
 0x0000000000006eb5:  E8 74 2D             call  0x9c2c
 0x0000000000006eb8:  90                   nop   
-0x0000000000006eb9:  BB 00 08             mov   bx, 0x800
+0x0000000000006eb9:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000006ebc:  80 3F 07             cmp   byte ptr [bx], 7
 0x0000000000006ebf:  75 12                jne   0x6ed3
 0x0000000000006ec1:  83 3C 43             cmp   word ptr [si], 0x43
 0x0000000000006ec4:  75 0D                jne   0x6ed3
-0x0000000000006ec6:  BB EC 06             mov   bx, 0x6ec
-0x0000000000006ec9:  BA 0B 00             mov   dx, 0xb
+0x0000000000006ec6:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x0000000000006ec9:  BA 0B 00             mov   dx, SFX_SAWIDL
 0x0000000000006ecc:  8B 07                mov   ax, word ptr [bx]
 0x0000000000006ece:  0E                   push  cs
-0x0000000000006ecf:  E8 7E 96             call  0x550
+0x0000000000006ecf:  E8 7E 96             call  S_StartSound_
 0x0000000000006ed2:  90                   nop   
-0x0000000000006ed3:  BB 01 08             mov   bx, 0x801
+0x0000000000006ed3:  BB 01 08             mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
 0x0000000000006ed6:  80 3F 0A             cmp   byte ptr [bx], 0xa
 0x0000000000006ed9:  75 35                jne   0x6f10
 0x0000000000006edb:  BB E8 07             mov   bx, 0x7e8
@@ -309,7 +328,7 @@ PUBLIC A_WeaponReady_
 0x0000000000006eeb:  BB 1C 08             mov   bx, 0x81c
 0x0000000000006eee:  80 3F 00             cmp   byte ptr [bx], 0
 0x0000000000006ef1:  74 0D                je    0x6f00
-0x0000000000006ef3:  BB 00 08             mov   bx, 0x800
+0x0000000000006ef3:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000006ef6:  8A 07                mov   al, byte ptr [bx]
 0x0000000000006ef8:  3C 04                cmp   al, 4
 0x0000000000006efa:  74 2F                je    0x6f2b
@@ -325,13 +344,13 @@ PUBLIC A_WeaponReady_
 0x0000000000006f0d:  59                   pop   cx
 0x0000000000006f0e:  5B                   pop   bx
 0x0000000000006f0f:  C3                   ret   
-0x0000000000006f10:  BB 00 08             mov   bx, 0x800
+0x0000000000006f10:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000006f13:  8A 1F                mov   bl, byte ptr [bx]
 0x0000000000006f15:  30 FF                xor   bh, bh
-0x0000000000006f17:  6B DB 0B             imul  bx, bx, 0xb
+0x0000000000006f17:  6B DB 0B             imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000006f1a:  31 C0                xor   ax, ax
 0x0000000000006f1c:  8B 97 11 0E          mov   dx, word ptr [bx + 0xe11]
-0x0000000000006f20:  E8 B1 08             call  0x77d4
+0x0000000000006f20:  E8 B1 08             call  P_SetPsprite_
 0x0000000000006f23:  EB E4                jmp   0x6f09
 0x0000000000006f25:  BB 1C 08             mov   bx, 0x81c
 0x0000000000006f28:  C6 07 00             mov   byte ptr [bx], 0
@@ -381,7 +400,7 @@ PUBLIC A_ReFire_
 0x0000000000006f87:  BB D7 07             mov   bx, 0x7d7
 0x0000000000006f8a:  F6 07 01             test  byte ptr [bx], 1
 0x0000000000006f8d:  74 1A                je    0x6fa9
-0x0000000000006f8f:  BB 01 08             mov   bx, 0x801
+0x0000000000006f8f:  BB 01 08             mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
 0x0000000000006f92:  80 3F 0A             cmp   byte ptr [bx], 0xa
 0x0000000000006f95:  75 12                jne   0x6fa9
 0x0000000000006f97:  BB E8 07             mov   bx, 0x7e8
@@ -420,7 +439,7 @@ PUBLIC A_Lower_
 0x0000000000006fd6:  85 C0                test  ax, ax
 0x0000000000006fd8:  75 15                jne   0x6fef
 0x0000000000006fda:  31 D2                xor   dx, dx
-0x0000000000006fdc:  E8 F5 07             call  0x77d4
+0x0000000000006fdc:  E8 F5 07             call  P_SetPsprite_
 0x0000000000006fdf:  5E                   pop   si
 0x0000000000006fe0:  5A                   pop   dx
 0x0000000000006fe1:  5B                   pop   bx
@@ -428,8 +447,8 @@ PUBLIC A_Lower_
 0x0000000000006fe3:  C7 47 08 00 00       mov   word ptr [bx + 8], 0
 0x0000000000006fe8:  C7 47 0A 80 00       mov   word ptr [bx + 0xa], 0x80
 0x0000000000006fed:  EB F0                jmp   0x6fdf
-0x0000000000006fef:  BB 01 08             mov   bx, 0x801
-0x0000000000006ff2:  BE 00 08             mov   si, 0x800
+0x0000000000006fef:  BB 01 08             mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
+0x0000000000006ff2:  BE 00 08             mov   si, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000006ff5:  8A 1F                mov   bl, byte ptr [bx]
 0x0000000000006ff7:  88 1C                mov   byte ptr [si], bl
 0x0000000000006ff9:  E8 D4 FC             call  0x6cd0
@@ -459,13 +478,13 @@ PUBLIC A_Raise_
 0x000000000000701e:  C3                   ret   
 0x000000000000701f:  C7 47 08 00 00       mov   word ptr [bx + 8], 0
 0x0000000000007024:  C7 47 0A 20 00       mov   word ptr [bx + 0xa], 0x20
-0x0000000000007029:  BB 00 08             mov   bx, 0x800
+0x0000000000007029:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x000000000000702c:  8A 1F                mov   bl, byte ptr [bx]
 0x000000000000702e:  30 FF                xor   bh, bh
-0x0000000000007030:  6B DB 0B             imul  bx, bx, 0xb
+0x0000000000007030:  6B DB 0B             imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000007033:  31 C0                xor   ax, ax
 0x0000000000007035:  8B 97 13 0E          mov   dx, word ptr [bx + 0xe13]
-0x0000000000007039:  E8 98 07             call  0x77d4
+0x0000000000007039:  E8 98 07             call  P_SetPsprite_
 0x000000000000703c:  5A                   pop   dx
 0x000000000000703d:  5B                   pop   bx
 0x000000000000703e:  C3                   ret   
@@ -478,18 +497,18 @@ PUBLIC A_GunFlash_
 
 0x0000000000007040:  53                   push  bx
 0x0000000000007041:  52                   push  dx
-0x0000000000007042:  BB EC 06             mov   bx, 0x6ec
+0x0000000000007042:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000007045:  BA 9B 00             mov   dx, 0x9b
 0x0000000000007048:  8B 07                mov   ax, word ptr [bx]
-0x000000000000704a:  BB 00 08             mov   bx, 0x800
+0x000000000000704a:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x000000000000704d:  0E                   push  cs
 0x000000000000704e:  3E E8 DA 2B          call  0x9c2c
 0x0000000000007052:  8A 07                mov   al, byte ptr [bx]
 0x0000000000007054:  30 E4                xor   ah, ah
-0x0000000000007056:  6B D8 0B             imul  bx, ax, 0xb
+0x0000000000007056:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000007059:  B8 01 00             mov   ax, 1
 0x000000000000705c:  8B 97 17 0E          mov   dx, word ptr [bx + 0xe17]
-0x0000000000007060:  E8 71 07             call  0x77d4
+0x0000000000007060:  E8 71 07             call  P_SetPsprite_
 0x0000000000007063:  5A                   pop   dx
 0x0000000000007064:  5B                   pop   bx
 0x0000000000007065:  C3                   ret   
@@ -532,14 +551,14 @@ PUBLIC A_Punch_
 0x00000000000070a7:  C1 E9 03             shr   cx, 3
 0x00000000000070aa:  D1 F8                sar   ax, 1
 0x00000000000070ac:  01 C1                add   cx, ax
-0x00000000000070ae:  BB EC 06             mov   bx, 0x6ec
+0x00000000000070ae:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x00000000000070b1:  89 CA                mov   dx, cx
 0x00000000000070b3:  8B 07                mov   ax, word ptr [bx]
 0x00000000000070b5:  BB 40 00             mov   bx, 0x40
 0x00000000000070b8:  FF 1E 78 0C          lcall [0xc78]
 0x00000000000070bc:  56                   push  si
 0x00000000000070bd:  52                   push  dx
-0x00000000000070be:  BB EC 06             mov   bx, 0x6ec
+0x00000000000070be:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x00000000000070c1:  50                   push  ax
 0x00000000000070c2:  89 CA                mov   dx, cx
 0x00000000000070c4:  8B 07                mov   ax, word ptr [bx]
@@ -554,12 +573,12 @@ PUBLIC A_Punch_
 0x00000000000070d8:  59                   pop   cx
 0x00000000000070d9:  5B                   pop   bx
 0x00000000000070da:  C3                   ret   
-0x00000000000070db:  BB EC 06             mov   bx, 0x6ec
-0x00000000000070de:  BA 53 00             mov   dx, 0x53
+0x00000000000070db:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x00000000000070de:  BA 53 00             mov   dx, SFX_PUNCH
 0x00000000000070e1:  8B 07                mov   ax, word ptr [bx]
 0x00000000000070e3:  BB 14 07             mov   bx, 0x714
 0x00000000000070e6:  0E                   push  cs
-0x00000000000070e7:  E8 66 94             call  0x550
+0x00000000000070e7:  E8 66 94             call  S_StartSound_
 0x00000000000070ea:  90                   nop   
 0x00000000000070eb:  C4 37                les   si, ptr [bx]
 0x00000000000070ed:  26 FF 74 06          push  word ptr es:[si + 6]
@@ -622,7 +641,7 @@ PUBLIC A_Saw_
 0x0000000000007163:  C1 E9 03             shr   cx, 3
 0x0000000000007166:  D1 F8                sar   ax, 1
 0x0000000000007168:  01 C1                add   cx, ax
-0x000000000000716a:  BB EC 06             mov   bx, 0x6ec
+0x000000000000716a:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x000000000000716d:  80 E5 1F             and   ch, 0x1f
 0x0000000000007170:  8B 07                mov   ax, word ptr [bx]
 0x0000000000007172:  BB 41 00             mov   bx, 0x41
@@ -631,7 +650,7 @@ PUBLIC A_Saw_
 0x000000000000717a:  FF 1E 78 0C          lcall [0xc78]
 0x000000000000717e:  57                   push  di
 0x000000000000717f:  52                   push  dx
-0x0000000000007180:  BB EC 06             mov   bx, 0x6ec
+0x0000000000007180:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000007183:  50                   push  ax
 0x0000000000007184:  89 CA                mov   dx, cx
 0x0000000000007186:  8B 07                mov   ax, word ptr [bx]
@@ -641,12 +660,12 @@ PUBLIC A_Saw_
 0x0000000000007192:  83 3F 00             cmp   word ptr [bx], 0
 0x0000000000007195:  75 03                jne   0x719a
 0x0000000000007197:  E9 AC 00             jmp   0x7246
-0x000000000000719a:  BB EC 06             mov   bx, 0x6ec
-0x000000000000719d:  BA 0D 00             mov   dx, 0xd
+0x000000000000719a:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x000000000000719d:  BA 0D 00             mov   dx, SFX_SAWHIT
 0x00000000000071a0:  8B 07                mov   ax, word ptr [bx]
 0x00000000000071a2:  BE 14 07             mov   si, 0x714
 0x00000000000071a5:  0E                   push  cs
-0x00000000000071a6:  3E E8 A6 93          call  0x550
+0x00000000000071a6:  3E E8 A6 93          call  S_StartSound_
 0x00000000000071aa:  C4 1C                les   bx, ptr [si]
 0x00000000000071ac:  26 FF 77 06          push  word ptr es:[bx + 6]
 0x00000000000071b0:  26 FF 77 04          push  word ptr es:[bx + 4]
@@ -706,11 +725,11 @@ PUBLIC A_Saw_
 0x0000000000007243:  59                   pop   cx
 0x0000000000007244:  5B                   pop   bx
 0x0000000000007245:  C3                   ret   
-0x0000000000007246:  BB EC 06             mov   bx, 0x6ec
-0x0000000000007249:  BA 0C 00             mov   dx, 0xc
+0x0000000000007246:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x0000000000007249:  BA 0C 00             mov   dx, SFX_SAWFUL
 0x000000000000724c:  8B 07                mov   ax, word ptr [bx]
 0x000000000000724e:  0E                   push  cs
-0x000000000000724f:  E8 FE 92             call  0x550
+0x000000000000724f:  E8 FE 92             call  S_StartSound_
 0x0000000000007252:  90                   nop   
 0x0000000000007253:  EB EB                jmp   0x7240
 0x0000000000007255:  BE 30 07             mov   si, 0x730
@@ -749,10 +768,10 @@ PUBLIC A_FireMissile_
 
 
 0x00000000000072b0:  53                   push  bx
-0x00000000000072b1:  BB 00 08             mov   bx, 0x800
+0x00000000000072b1:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x00000000000072b4:  8A 1F                mov   bl, byte ptr [bx]
 0x00000000000072b6:  30 FF                xor   bh, bh
-0x00000000000072b8:  6B DB 0B             imul  bx, bx, 0xb
+0x00000000000072b8:  6B DB 0B             imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x00000000000072bb:  8A 9F 0E 0E          mov   bl, byte ptr [bx + 0xe0e]
 0x00000000000072bf:  30 FF                xor   bh, bh
 0x00000000000072c1:  01 DB                add   bx, bx
@@ -768,10 +787,10 @@ PROC A_FireBFG_ NEAR
 PUBLIC A_FireBFG_
 
 0x00000000000072d0:  53                   push  bx
-0x00000000000072d1:  BB 00 08             mov   bx, 0x800
+0x00000000000072d1:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x00000000000072d4:  8A 1F                mov   bl, byte ptr [bx]
 0x00000000000072d6:  30 FF                xor   bh, bh
-0x00000000000072d8:  6B DB 0B             imul  bx, bx, 0xb
+0x00000000000072d8:  6B DB 0B             imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x00000000000072db:  8A 9F 0E 0E          mov   bl, byte ptr [bx + 0xe0e]
 0x00000000000072df:  30 FF                xor   bh, bh
 0x00000000000072e1:  01 DB                add   bx, bx
@@ -790,25 +809,25 @@ PUBLIC A_FirePlasma_
 0x00000000000072f2:  53                   push  bx
 0x00000000000072f3:  52                   push  dx
 0x00000000000072f4:  56                   push  si
-0x00000000000072f5:  BB 00 08             mov   bx, 0x800
+0x00000000000072f5:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x00000000000072f8:  8A 1F                mov   bl, byte ptr [bx]
 0x00000000000072fa:  30 FF                xor   bh, bh
-0x00000000000072fc:  6B DB 0B             imul  bx, bx, 0xb
+0x00000000000072fc:  6B DB 0B             imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x00000000000072ff:  8A 9F 0E 0E          mov   bl, byte ptr [bx + 0xe0e]
 0x0000000000007303:  30 FF                xor   bh, bh
 0x0000000000007305:  01 DB                add   bx, bx
-0x0000000000007307:  BE 00 08             mov   si, 0x800
+0x0000000000007307:  BE 00 08             mov   si, OFFSET _player + PLAYER_T.player_readyweapon
 0x000000000000730a:  FF 8F 0C 08          dec   word ptr [bx + 0x80c]
 0x000000000000730e:  8A 1C                mov   bl, byte ptr [si]
 0x0000000000007310:  30 FF                xor   bh, bh
-0x0000000000007312:  6B F3 0B             imul  si, bx, 0xb
+0x0000000000007312:  6B F3 0B             imul  si, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000007315:  E8 D8 22             call  0x95f0
 0x0000000000007318:  88 C3                mov   bl, al
 0x000000000000731a:  8B 94 17 0E          mov   dx, word ptr [si + 0xe17]
 0x000000000000731e:  80 E3 01             and   bl, 1
 0x0000000000007321:  B8 01 00             mov   ax, 1
 0x0000000000007324:  01 DA                add   dx, bx
-0x0000000000007326:  E8 AB 04             call  0x77d4
+0x0000000000007326:  E8 AB 04             call  P_SetPsprite_
 0x0000000000007329:  B8 22 00             mov   ax, 0x22
 0x000000000000732c:  FF 1E 8C 0C          lcall [0xc8c]
 0x0000000000007330:  5E                   pop   si
@@ -828,7 +847,7 @@ PUBLIC P_BulletSlope_
 0x0000000000007338:  BB 30 07             mov   bx, 0x730
 0x000000000000733b:  C4 37                les   si, ptr [bx]
 0x000000000000733d:  26 8B 4C 10          mov   cx, word ptr es:[si + 0x10]
-0x0000000000007341:  BB EC 06             mov   bx, 0x6ec
+0x0000000000007341:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000007344:  C1 E9 03             shr   cx, 3
 0x0000000000007347:  8B 07                mov   ax, word ptr [bx]
 0x0000000000007349:  BB 00 04             mov   bx, 0x400
@@ -845,7 +864,7 @@ PUBLIC P_BulletSlope_
 0x0000000000007364:  5B                   pop   bx
 0x0000000000007365:  C3                   ret   
 0x0000000000007366:  81 C1 80 00          add   cx, 0x80
-0x000000000000736a:  BB EC 06             mov   bx, 0x6ec
+0x000000000000736a:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x000000000000736d:  80 E5 1F             and   ch, 0x1f
 0x0000000000007370:  8B 07                mov   ax, word ptr [bx]
 0x0000000000007372:  BB 00 04             mov   bx, 0x400
@@ -857,7 +876,7 @@ PUBLIC P_BulletSlope_
 0x0000000000007385:  83 3F 00             cmp   word ptr [bx], 0
 0x0000000000007388:  75 D7                jne   0x7361
 0x000000000000738a:  81 E9 00 01          sub   cx, 0x100
-0x000000000000738e:  BB EC 06             mov   bx, 0x6ec
+0x000000000000738e:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000007391:  80 E5 1F             and   ch, 0x1f
 0x0000000000007394:  8B 07                mov   ax, word ptr [bx]
 0x0000000000007396:  BB 00 04             mov   bx, 0x400
@@ -899,11 +918,11 @@ PUBLIC P_GunShot_
 0x00000000000073d5:  84 C9                test  cl, cl
 0x00000000000073d7:  74 1B                je    0x73f4
 0x00000000000073d9:  57                   push  di
-0x00000000000073da:  BB EC 06             mov   bx, 0x6ec
+0x00000000000073da:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x00000000000073dd:  FF 36 26 1D          push  word ptr [0x1d26]
 0x00000000000073e1:  8B 07                mov   ax, word ptr [bx]
 0x00000000000073e3:  FF 36 24 1D          push  word ptr [0x1d24]
-0x00000000000073e7:  BB 00 08             mov   bx, 0x800
+0x00000000000073e7:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x00000000000073ea:  FF 1E 7C 0C          lcall [0xc7c]
 0x00000000000073ee:  5F                   pop   di
 0x00000000000073ef:  5E                   pop   si
@@ -930,31 +949,31 @@ PUBLIC A_FirePistol_
 0x000000000000740c:  53                   push  bx
 0x000000000000740d:  52                   push  dx
 0x000000000000740e:  56                   push  si
-0x000000000000740f:  BB EC 06             mov   bx, 0x6ec
-0x0000000000007412:  BA 01 00             mov   dx, 1
+0x000000000000740f:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x0000000000007412:  BA 01 00             mov   dx, SFX_PISTOL
 0x0000000000007415:  8B 07                mov   ax, word ptr [bx]
 0x0000000000007417:  0E                   push  cs
-0x0000000000007418:  3E E8 34 91          call  0x550
+0x0000000000007418:  3E E8 34 91          call  S_StartSound_
 0x000000000000741c:  BA 9B 00             mov   dx, 0x9b
 0x000000000000741f:  8B 07                mov   ax, word ptr [bx]
-0x0000000000007421:  BB 00 08             mov   bx, 0x800
+0x0000000000007421:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000007424:  0E                   push  cs
 0x0000000000007425:  E8 04 28             call  0x9c2c
 0x0000000000007428:  90                   nop   
 0x0000000000007429:  8A 07                mov   al, byte ptr [bx]
 0x000000000000742b:  30 E4                xor   ah, ah
-0x000000000000742d:  6B D8 0B             imul  bx, ax, 0xb
+0x000000000000742d:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000007430:  8A 87 0E 0E          mov   al, byte ptr [bx + 0xe0e]
 0x0000000000007434:  89 C3                mov   bx, ax
 0x0000000000007436:  01 C3                add   bx, ax
-0x0000000000007438:  BE 00 08             mov   si, 0x800
+0x0000000000007438:  BE 00 08             mov   si, OFFSET _player + PLAYER_T.player_readyweapon
 0x000000000000743b:  FF 8F 0C 08          dec   word ptr [bx + 0x80c]
 0x000000000000743f:  8A 04                mov   al, byte ptr [si]
-0x0000000000007441:  6B D8 0B             imul  bx, ax, 0xb
+0x0000000000007441:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000007444:  B8 01 00             mov   ax, 1
 0x0000000000007447:  8B 97 17 0E          mov   dx, word ptr [bx + 0xe17]
 0x000000000000744b:  BB 2B 08             mov   bx, 0x82b
-0x000000000000744e:  E8 83 03             call  0x77d4
+0x000000000000744e:  E8 83 03             call  P_SetPsprite_
 0x0000000000007451:  E8 E0 FE             call  0x7334
 0x0000000000007454:  80 3F 00             cmp   byte ptr [bx], 0
 0x0000000000007457:  75 0A                jne   0x7463
@@ -981,31 +1000,31 @@ PUBLIC A_FireShotgun_
 0x000000000000746e:  53                   push  bx
 0x000000000000746f:  52                   push  dx
 0x0000000000007470:  56                   push  si
-0x0000000000007471:  BB EC 06             mov   bx, 0x6ec
-0x0000000000007474:  BA 02 00             mov   dx, 2
+0x0000000000007471:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x0000000000007474:  BA 02 00             mov   dx, SFX_SHOTGN
 0x0000000000007477:  8B 07                mov   ax, word ptr [bx]
 0x0000000000007479:  0E                   push  cs
-0x000000000000747a:  3E E8 D2 90          call  0x550
+0x000000000000747a:  3E E8 D2 90          call  S_StartSound_
 0x000000000000747e:  BA 9B 00             mov   dx, 0x9b
 0x0000000000007481:  8B 07                mov   ax, word ptr [bx]
-0x0000000000007483:  BB 00 08             mov   bx, 0x800
+0x0000000000007483:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000007486:  0E                   push  cs
 0x0000000000007487:  E8 A2 27             call  0x9c2c
 0x000000000000748a:  90                   nop   
 0x000000000000748b:  8A 1F                mov   bl, byte ptr [bx]
 0x000000000000748d:  30 FF                xor   bh, bh
-0x000000000000748f:  6B DB 0B             imul  bx, bx, 0xb
+0x000000000000748f:  6B DB 0B             imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000007492:  8A 9F 0E 0E          mov   bl, byte ptr [bx + 0xe0e]
 0x0000000000007496:  30 FF                xor   bh, bh
 0x0000000000007498:  01 DB                add   bx, bx
-0x000000000000749a:  BE 00 08             mov   si, 0x800
+0x000000000000749a:  BE 00 08             mov   si, OFFSET _player + PLAYER_T.player_readyweapon
 0x000000000000749d:  FF 8F 0C 08          dec   word ptr [bx + 0x80c]
 0x00000000000074a1:  8A 1C                mov   bl, byte ptr [si]
 0x00000000000074a3:  30 FF                xor   bh, bh
-0x00000000000074a5:  6B DB 0B             imul  bx, bx, 0xb
+0x00000000000074a5:  6B DB 0B             imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x00000000000074a8:  B8 01 00             mov   ax, 1
 0x00000000000074ab:  8B 97 17 0E          mov   dx, word ptr [bx + 0xe17]
-0x00000000000074af:  E8 22 03             call  0x77d4
+0x00000000000074af:  E8 22 03             call  P_SetPsprite_
 0x00000000000074b2:  E8 7F FE             call  0x7334
 0x00000000000074b5:  30 D2                xor   dl, dl
 0x00000000000074b7:  31 C0                xor   ax, ax
@@ -1031,32 +1050,32 @@ PUBLIC A_FireShotgun2_
 0x00000000000074cd:  55                   push  bp
 0x00000000000074ce:  89 E5                mov   bp, sp
 0x00000000000074d0:  83 EC 02             sub   sp, 2
-0x00000000000074d3:  BB EC 06             mov   bx, 0x6ec
-0x00000000000074d6:  BA 04 00             mov   dx, 4
+0x00000000000074d3:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x00000000000074d6:  BA 04 00             mov   dx, SFX_DSHTGN
 0x00000000000074d9:  8B 07                mov   ax, word ptr [bx]
 0x00000000000074db:  0E                   push  cs
-0x00000000000074dc:  3E E8 70 90          call  0x550
+0x00000000000074dc:  3E E8 70 90          call  S_StartSound_
 0x00000000000074e0:  BA 9B 00             mov   dx, 0x9b
 0x00000000000074e3:  8B 07                mov   ax, word ptr [bx]
-0x00000000000074e5:  BB 00 08             mov   bx, 0x800
+0x00000000000074e5:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x00000000000074e8:  0E                   push  cs
 0x00000000000074e9:  E8 40 27             call  0x9c2c
 0x00000000000074ec:  90                   nop   
 0x00000000000074ed:  8A 07                mov   al, byte ptr [bx]
 0x00000000000074ef:  30 E4                xor   ah, ah
-0x00000000000074f1:  6B D8 0B             imul  bx, ax, 0xb
+0x00000000000074f1:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x00000000000074f4:  8A 9F 0E 0E          mov   bl, byte ptr [bx + 0xe0e]
 0x00000000000074f8:  30 FF                xor   bh, bh
 0x00000000000074fa:  01 DB                add   bx, bx
-0x00000000000074fc:  BE 00 08             mov   si, 0x800
+0x00000000000074fc:  BE 00 08             mov   si, OFFSET _player + PLAYER_T.player_readyweapon
 0x00000000000074ff:  83 AF 0C 08 02       sub   word ptr [bx + 0x80c], 2
 0x0000000000007504:  8A 04                mov   al, byte ptr [si]
-0x0000000000007506:  6B D8 0B             imul  bx, ax, 0xb
+0x0000000000007506:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x0000000000007509:  C6 46 FE 00          mov   byte ptr [bp - 2], 0
 0x000000000000750d:  B8 01 00             mov   ax, 1
 0x0000000000007510:  8B 97 17 0E          mov   dx, word ptr [bx + 0xe17]
 0x0000000000007514:  BF 30 07             mov   di, 0x730
-0x0000000000007517:  E8 BA 02             call  0x77d4
+0x0000000000007517:  E8 BA 02             call  P_SetPsprite_
 0x000000000000751a:  E8 17 FE             call  0x7334
 0x000000000000751d:  FC                   cld   
 0x000000000000751e:  E8 CF 20             call  0x95f0
@@ -1092,11 +1111,11 @@ PUBLIC A_FireShotgun2_
 0x0000000000007564:  03 06 24 1D          add   ax, word ptr [0x1d24]
 0x0000000000007568:  13 16 26 1D          adc   dx, word ptr [0x1d26]
 0x000000000000756c:  52                   push  dx
-0x000000000000756d:  BB EC 06             mov   bx, 0x6ec
+0x000000000000756d:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000007570:  50                   push  ax
 0x0000000000007571:  89 CA                mov   dx, cx
 0x0000000000007573:  8B 07                mov   ax, word ptr [bx]
-0x0000000000007575:  BB 00 08             mov   bx, 0x800
+0x0000000000007575:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x0000000000007578:  FE 46 FE             inc   byte ptr [bp - 2]
 0x000000000000757b:  FF 1E 7C 0C          lcall [0xc7c]
 0x000000000000757f:  80 7E FE 14          cmp   byte ptr [bp - 2], 0x14
@@ -1119,15 +1138,15 @@ PUBLIC A_FireCGun_
 0x000000000000758e:  56                   push  si
 0x000000000000758f:  57                   push  di
 0x0000000000007590:  89 C6                mov   si, ax
-0x0000000000007592:  BB EC 06             mov   bx, 0x6ec
-0x0000000000007595:  BA 01 00             mov   dx, 1
+0x0000000000007592:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x0000000000007595:  BA 01 00             mov   dx, SFX_PISTOL
 0x0000000000007598:  8B 07                mov   ax, word ptr [bx]
-0x000000000000759a:  BB 00 08             mov   bx, 0x800
+0x000000000000759a:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x000000000000759d:  0E                   push  cs
-0x000000000000759e:  3E E8 AE 8F          call  0x550
+0x000000000000759e:  3E E8 AE 8F          call  S_StartSound_
 0x00000000000075a2:  8A 07                mov   al, byte ptr [bx]
 0x00000000000075a4:  30 E4                xor   ah, ah
-0x00000000000075a6:  6B D8 0B             imul  bx, ax, 0xb
+0x00000000000075a6:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x00000000000075a9:  8A 87 0E 0E          mov   al, byte ptr [bx + 0xe0e]
 0x00000000000075ad:  89 C3                mov   bx, ax
 0x00000000000075af:  01 C3                add   bx, ax
@@ -1138,29 +1157,29 @@ PUBLIC A_FireCGun_
 0x00000000000075ba:  5A                   pop   dx
 0x00000000000075bb:  5B                   pop   bx
 0x00000000000075bc:  C3                   ret   
-0x00000000000075bd:  BB EC 06             mov   bx, 0x6ec
+0x00000000000075bd:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x00000000000075c0:  BA 9B 00             mov   dx, 0x9b
 0x00000000000075c3:  8B 07                mov   ax, word ptr [bx]
-0x00000000000075c5:  BB 00 08             mov   bx, 0x800
+0x00000000000075c5:  BB 00 08             mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 0x00000000000075c8:  0E                   push  cs
 0x00000000000075c9:  E8 60 26             call  0x9c2c
 0x00000000000075cc:  90                   nop   
 0x00000000000075cd:  8A 07                mov   al, byte ptr [bx]
 0x00000000000075cf:  30 E4                xor   ah, ah
-0x00000000000075d1:  6B D8 0B             imul  bx, ax, 0xb
+0x00000000000075d1:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x00000000000075d4:  8A 87 0E 0E          mov   al, byte ptr [bx + 0xe0e]
 0x00000000000075d8:  89 C3                mov   bx, ax
 0x00000000000075da:  01 C3                add   bx, ax
-0x00000000000075dc:  BF 00 08             mov   di, 0x800
+0x00000000000075dc:  BF 00 08             mov   di, OFFSET _player + PLAYER_T.player_readyweapon
 0x00000000000075df:  FF 8F 0C 08          dec   word ptr [bx + 0x80c]
 0x00000000000075e3:  8A 05                mov   al, byte ptr [di]
-0x00000000000075e5:  6B D8 0B             imul  bx, ax, 0xb
+0x00000000000075e5:  6B D8 0B             imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
 0x00000000000075e8:  8B 97 17 0E          mov   dx, word ptr [bx + 0xe17]
 0x00000000000075ec:  03 14                add   dx, word ptr [si]
 0x00000000000075ee:  B8 01 00             mov   ax, 1
 0x00000000000075f1:  83 EA 34             sub   dx, 0x34
 0x00000000000075f4:  BB 2B 08             mov   bx, 0x82b
-0x00000000000075f7:  E8 DA 01             call  0x77d4
+0x00000000000075f7:  E8 DA 01             call  P_SetPsprite_
 0x00000000000075fa:  E8 37 FD             call  0x7334
 0x00000000000075fd:  80 3F 00             cmp   byte ptr [bx], 0
 0x0000000000007600:  75 0B                jne   0x760d
@@ -1222,11 +1241,11 @@ PUBLIC A_OpenShotgun2_
 
 0x0000000000007636:  53                   push  bx
 0x0000000000007637:  52                   push  dx
-0x0000000000007638:  BB EC 06             mov   bx, 0x6ec
-0x000000000000763b:  BA 05 00             mov   dx, 5
+0x0000000000007638:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x000000000000763b:  BA 05 00             mov   dx, SFX_DBOPN
 0x000000000000763e:  8B 07                mov   ax, word ptr [bx]
 0x0000000000007640:  0E                   push  cs
-0x0000000000007641:  E8 0C 8F             call  0x550
+0x0000000000007641:  E8 0C 8F             call  S_StartSound_
 0x0000000000007644:  90                   nop   
 0x0000000000007645:  5A                   pop   dx
 0x0000000000007646:  5B                   pop   bx
@@ -1238,11 +1257,11 @@ PUBLIC A_LoadShotgun2_
 
 0x0000000000007648:  53                   push  bx
 0x0000000000007649:  52                   push  dx
-0x000000000000764a:  BB EC 06             mov   bx, 0x6ec
-0x000000000000764d:  BA 07 00             mov   dx, 7
+0x000000000000764a:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x000000000000764d:  BA 07 00             mov   dx, SFX_DBLOAD
 0x0000000000007650:  8B 07                mov   ax, word ptr [bx]
 0x0000000000007652:  0E                   push  cs
-0x0000000000007653:  E8 FA 8E             call  0x550
+0x0000000000007653:  E8 FA 8E             call  S_StartSound_
 0x0000000000007656:  90                   nop   
 0x0000000000007657:  5A                   pop   dx
 0x0000000000007658:  5B                   pop   bx
@@ -1257,11 +1276,11 @@ PUBLIC A_CloseShotgun2_
 0x000000000000765b:  52                   push  dx
 0x000000000000765c:  56                   push  si
 0x000000000000765d:  89 C3                mov   bx, ax
-0x000000000000765f:  BE EC 06             mov   si, 0x6ec
-0x0000000000007662:  BA 06 00             mov   dx, 6
+0x000000000000765f:  BE EC 06             mov   si, OFFSET _playerMobj
+0x0000000000007662:  BA 06 00             mov   dx, SFX_DBCLS
 0x0000000000007665:  8B 04                mov   ax, word ptr [si]
 0x0000000000007667:  0E                   push  cs
-0x0000000000007668:  3E E8 E4 8E          call  0x550
+0x0000000000007668:  3E E8 E4 8E          call  S_StartSound_
 0x000000000000766c:  89 D8                mov   ax, bx
 0x000000000000766e:  E8 15 F9             call  0x6f86
 0x0000000000007671:  5E                   pop   si
@@ -1366,11 +1385,11 @@ PUBLIC A_BFGsound_
 
 0x0000000000007738:  53                   push  bx
 0x0000000000007739:  52                   push  dx
-0x000000000000773a:  BB EC 06             mov   bx, 0x6ec
-0x000000000000773d:  BA 09 00             mov   dx, 9
+0x000000000000773a:  BB EC 06             mov   bx, OFFSET _playerMobj
+0x000000000000773d:  BA 09 00             mov   dx, SFX_BFG
 0x0000000000007740:  8B 07                mov   ax, word ptr [bx]
 0x0000000000007742:  0E                   push  cs
-0x0000000000007743:  E8 0A 8E             call  0x550
+0x0000000000007743:  E8 0A 8E             call  S_StartSound_
 0x0000000000007746:  90                   nop   
 0x0000000000007747:  5A                   pop   dx
 0x0000000000007748:  5B                   pop   bx
@@ -1401,7 +1420,7 @@ PUBLIC P_MovePsprites_
 0x000000000000776d:  26 8B 54 04          mov   dx, word ptr es:[si + 4]
 0x0000000000007771:  98                   cwde  
 0x0000000000007772:  83 C6 04             add   si, 4
-0x0000000000007775:  E8 5C 00             call  0x77d4
+0x0000000000007775:  E8 5C 00             call  P_SetPsprite_
 0x0000000000007778:  FE C1                inc   cl
 0x000000000000777a:  83 C3 0C             add   bx, 0xc
 0x000000000000777d:  80 F9 02             cmp   cl, 2
@@ -1536,25 +1555,25 @@ PUBLIC P_SetPsprite_
 0x0000000000007885:  EB 90                jmp   0x7817
 0x0000000000007887:  E8 9A F4             call  0x6d24
 0x000000000000788a:  EB 8B                jmp   0x7817
-0x000000000000788c:  BE EC 06             mov   si, 0x6ec
-0x000000000000788f:  BA 05 00             mov   dx, 5
+0x000000000000788c:  BE EC 06             mov   si, OFFSET _playerMobj
+0x000000000000788f:  BA 05 00             mov   dx, SFX_DBOPN
 0x0000000000007892:  8B 04                mov   ax, word ptr [si]
 0x0000000000007894:  0E                   push  cs
-0x0000000000007895:  E8 B8 8C             call  0x550
+0x0000000000007895:  E8 B8 8C             call  S_StartSound_
 0x0000000000007898:  90                   nop   
 0x0000000000007899:  E9 7B FF             jmp   0x7817
-0x000000000000789c:  BE EC 06             mov   si, 0x6ec
-0x000000000000789f:  BA 07 00             mov   dx, 7
+0x000000000000789c:  BE EC 06             mov   si, OFFSET _playerMobj
+0x000000000000789f:  BA 07 00             mov   dx, SFX_DBLOAD
 0x00000000000078a2:  8B 04                mov   ax, word ptr [si]
 0x00000000000078a4:  0E                   push  cs
-0x00000000000078a5:  E8 A8 8C             call  0x550
+0x00000000000078a5:  E8 A8 8C             call  S_StartSound_
 0x00000000000078a8:  90                   nop   
 0x00000000000078a9:  E9 6B FF             jmp   0x7817
-0x00000000000078ac:  BE EC 06             mov   si, 0x6ec
-0x00000000000078af:  BA 06 00             mov   dx, 6
+0x00000000000078ac:  BE EC 06             mov   si, OFFSET _playerMobj
+0x00000000000078af:  BA 06 00             mov   dx, SFX_DBCLS
 0x00000000000078b2:  8B 04                mov   ax, word ptr [si]
 0x00000000000078b4:  0E                   push  cs
-0x00000000000078b5:  E8 98 8C             call  0x550
+0x00000000000078b5:  E8 98 8C             call  S_StartSound_
 0x00000000000078b8:  90                   nop   
 0x00000000000078b9:  89 D8                mov   ax, bx
 0x00000000000078bb:  E8 C8 F6             call  0x6f86
@@ -1574,11 +1593,11 @@ PUBLIC P_SetPsprite_
 0x00000000000078e1:  89 D8                mov   ax, bx
 0x00000000000078e3:  E8 0C FA             call  0x72f2
 0x00000000000078e6:  E9 2E FF             jmp   0x7817
-0x00000000000078e9:  BE EC 06             mov   si, 0x6ec
-0x00000000000078ec:  BA 09 00             mov   dx, 9
+0x00000000000078e9:  BE EC 06             mov   si, OFFSET _playerMobj
+0x00000000000078ec:  BA 09 00             mov   dx, SFX_BFG
 0x00000000000078ef:  8B 04                mov   ax, word ptr [si]
 0x00000000000078f1:  0E                   push  cs
-0x00000000000078f2:  3E E8 5A 8C          call  0x550
+0x00000000000078f2:  3E E8 5A 8C          call  S_StartSound_
 0x00000000000078f6:  E9 1E FF             jmp   0x7817
 0x00000000000078f9:  89 D8                mov   ax, bx
 0x00000000000078fb:  E8 D2 F9             call  0x72d0
