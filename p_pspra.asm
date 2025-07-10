@@ -37,15 +37,19 @@ ENDP
 COMMENT @
 
 
+PROC P_BringUpWeapon_ NEAR
+PUBLIC P_BringUpWeapon_
+ 
+
 0x0000000000006cd0:  53                   push  bx
 0x0000000000006cd1:  52                   push  dx
 0x0000000000006cd2:  56                   push  si
 0x0000000000006cd3:  BB 01 08             mov   bx, 0x801
 0x0000000000006cd6:  80 3F 0A             cmp   byte ptr [bx], 0xa
-0x0000000000006cd9:  74 31                je    0x6d0c
+0x0000000000006cd9:  74 31                je    label_1
 0x0000000000006cdb:  BB 01 08             mov   bx, 0x801
 0x0000000000006cde:  80 3F 07             cmp   byte ptr [bx], 7
-0x0000000000006ce1:  74 32                je    0x6d15
+0x0000000000006ce1:  74 32                je    label_2
 0x0000000000006ce3:  BB 01 08             mov   bx, 0x801
 0x0000000000006ce6:  8A 1F                mov   bl, byte ptr [bx]
 0x0000000000006ce8:  30 FF                xor   bh, bh
@@ -62,16 +66,28 @@ COMMENT @
 0x0000000000006d09:  5A                   pop   dx
 0x0000000000006d0a:  5B                   pop   bx
 0x0000000000006d0b:  C3                   ret   
+label_1:
 0x0000000000006d0c:  BE 00 08             mov   si, 0x800
 0x0000000000006d0f:  8A 04                mov   al, byte ptr [si]
 0x0000000000006d11:  88 07                mov   byte ptr [bx], al
 0x0000000000006d13:  EB C6                jmp   0x6cdb
+label_2:
 0x0000000000006d15:  BB EC 06             mov   bx, 0x6ec
 0x0000000000006d18:  BA 0A 00             mov   dx, 0xa
 0x0000000000006d1b:  8B 07                mov   ax, word ptr [bx]
 0x0000000000006d1d:  0E                   push  cs
 0x0000000000006d1e:  3E E8 2E 98          call  0x550
 0x0000000000006d22:  EB BF                jmp   0x6ce3
+
+ENDP
+
+PROC P_CheckAmmo_ NEAR
+PUBLIC P_CheckAmmo_
+ENDP
+; same func apparently
+PROC A_CheckReload_ NEAR 
+PUBLIC A_CheckReload_
+
 0x0000000000006d24:  53                   push  bx
 0x0000000000006d25:  52                   push  dx
 0x0000000000006d26:  56                   push  si
@@ -193,6 +209,13 @@ COMMENT @
 0x0000000000006e3b:  89 D3                mov   bx, dx
 0x0000000000006e3d:  88 07                mov   byte ptr [bx], al
 0x0000000000006e3f:  E9 2D FF             jmp   0x6d6f
+
+ENDP
+
+PROC P_FireWeapon_ NEAR 
+PUBLIC P_FireWeapon_
+
+
 0x0000000000006e42:  53                   push  bx
 0x0000000000006e43:  52                   push  dx
 0x0000000000006e44:  E8 DD FE             call  0x6d24
@@ -217,6 +240,12 @@ COMMENT @
 0x0000000000006e71:  5A                   pop   dx
 0x0000000000006e72:  5B                   pop   bx
 0x0000000000006e73:  C3                   ret   
+
+ENDP
+
+PROC P_DropWeapon_ NEAR
+PUBLIC P_DropWeapon_
+
 0x0000000000006e74:  53                   push  bx
 0x0000000000006e75:  52                   push  dx
 0x0000000000006e76:  BB 00 08             mov   bx, 0x800
@@ -229,6 +258,12 @@ COMMENT @
 0x0000000000006e89:  5A                   pop   dx
 0x0000000000006e8a:  5B                   pop   bx
 0x0000000000006e8b:  C3                   ret   
+
+ENDP
+
+PROC A_WeaponReady_ NEAR
+PUBLIC A_WeaponReady_
+
 0x0000000000006e8c:  53                   push  bx
 0x0000000000006e8d:  51                   push  cx
 0x0000000000006e8e:  52                   push  dx
@@ -335,6 +370,13 @@ COMMENT @
 0x0000000000006f83:  59                   pop   cx
 0x0000000000006f84:  5B                   pop   bx
 0x0000000000006f85:  C3                   ret   
+
+ENDP
+
+PROC A_ReFire_ NEAR
+PUBLIC A_ReFire_
+
+
 0x0000000000006f86:  53                   push  bx
 0x0000000000006f87:  BB D7 07             mov   bx, 0x7d7
 0x0000000000006f8a:  F6 07 01             test  byte ptr [bx], 1
@@ -355,6 +397,12 @@ COMMENT @
 0x0000000000006faf:  E8 72 FD             call  0x6d24
 0x0000000000006fb2:  5B                   pop   bx
 0x0000000000006fb3:  C3                   ret   
+
+ENDP
+
+PROC A_Lower_ NEAR
+PUBLIC A_Lower_
+
 0x0000000000006fb4:  53                   push  bx
 0x0000000000006fb5:  52                   push  dx
 0x0000000000006fb6:  56                   push  si
@@ -389,6 +437,12 @@ COMMENT @
 0x0000000000006ffd:  5A                   pop   dx
 0x0000000000006ffe:  5B                   pop   bx
 0x0000000000006fff:  C3                   ret   
+
+ENDP
+
+PROC A_Raise_ NEAR
+PUBLIC A_Raise_
+
 0x0000000000007000:  53                   push  bx
 0x0000000000007001:  52                   push  dx
 0x0000000000007002:  89 C3                mov   bx, ax
@@ -415,7 +469,13 @@ COMMENT @
 0x000000000000703c:  5A                   pop   dx
 0x000000000000703d:  5B                   pop   bx
 0x000000000000703e:  C3                   ret   
-0x000000000000703f:  FC                   cld   
+
+
+ENDP
+
+PROC A_GunFlash_ NEAR
+PUBLIC A_GunFlash_
+
 0x0000000000007040:  53                   push  bx
 0x0000000000007041:  52                   push  dx
 0x0000000000007042:  BB EC 06             mov   bx, 0x6ec
@@ -433,6 +493,12 @@ COMMENT @
 0x0000000000007063:  5A                   pop   dx
 0x0000000000007064:  5B                   pop   bx
 0x0000000000007065:  C3                   ret   
+
+ENDP
+
+PROC A_Punch_ NEAR
+PUBLIC A_Punch_
+
 0x0000000000007066:  53                   push  bx
 0x0000000000007067:  51                   push  cx
 0x0000000000007068:  52                   push  dx
@@ -524,7 +590,13 @@ COMMENT @
 0x0000000000007132:  59                   pop   cx
 0x0000000000007133:  5B                   pop   bx
 0x0000000000007134:  C3                   ret   
-0x0000000000007135:  FC                   cld   
+
+
+ENDP
+
+PROC A_Saw_ NEAR
+PUBLIC A_Saw_
+
 0x0000000000007136:  53                   push  bx
 0x0000000000007137:  51                   push  cx
 0x0000000000007138:  52                   push  dx
@@ -669,6 +741,13 @@ COMMENT @
 0x00000000000072a2:  26 81 47 0E 33 33    add   word ptr es:[bx + 0xe], 0x3333
 0x00000000000072a8:  26 81 57 10 33 03    adc   word ptr es:[bx + 0x10], 0x333
 0x00000000000072ae:  EB 86                jmp   0x7236
+
+ENDP
+
+PROC A_FireMissile_ NEAR
+PUBLIC A_FireMissile_
+
+
 0x00000000000072b0:  53                   push  bx
 0x00000000000072b1:  BB 00 08             mov   bx, 0x800
 0x00000000000072b4:  8A 1F                mov   bl, byte ptr [bx]
@@ -682,6 +761,12 @@ COMMENT @
 0x00000000000072ca:  FF 1E 8C 0C          lcall [0xc8c]
 0x00000000000072ce:  5B                   pop   bx
 0x00000000000072cf:  C3                   ret   
+
+ENDP
+
+PROC A_FireBFG_ NEAR
+PUBLIC A_FireBFG_
+
 0x00000000000072d0:  53                   push  bx
 0x00000000000072d1:  BB 00 08             mov   bx, 0x800
 0x00000000000072d4:  8A 1F                mov   bl, byte ptr [bx]
@@ -695,7 +780,13 @@ COMMENT @
 0x00000000000072eb:  FF 1E 8C 0C          lcall [0xc8c]
 0x00000000000072ef:  5B                   pop   bx
 0x00000000000072f0:  C3                   ret   
-0x00000000000072f1:  FC                   cld   
+
+
+ENDP
+
+PROC A_FirePlasma_ NEAR
+PUBLIC A_FirePlasma_
+
 0x00000000000072f2:  53                   push  bx
 0x00000000000072f3:  52                   push  dx
 0x00000000000072f4:  56                   push  si
@@ -724,6 +815,12 @@ COMMENT @
 0x0000000000007331:  5A                   pop   dx
 0x0000000000007332:  5B                   pop   bx
 0x0000000000007333:  C3                   ret   
+
+ENDP
+
+PROC P_BulletSlope_ NEAR
+PUBLIC P_BulletSlope_
+
 0x0000000000007334:  53                   push  bx
 0x0000000000007335:  51                   push  cx
 0x0000000000007336:  52                   push  dx
@@ -773,7 +870,12 @@ COMMENT @
 0x00000000000073a8:  59                   pop   cx
 0x00000000000073a9:  5B                   pop   bx
 0x00000000000073aa:  C3                   ret   
-0x00000000000073ab:  FC                   cld   
+
+ENDP
+
+PROC P_GunShot_ NEAR
+PUBLIC P_GunShot_
+
 0x00000000000073ac:  53                   push  bx
 0x00000000000073ad:  51                   push  cx
 0x00000000000073ae:  52                   push  dx
@@ -819,7 +921,12 @@ COMMENT @
 0x0000000000007404:  01 DA                add   dx, bx
 0x0000000000007406:  80 E6 1F             and   dh, 0x1f
 0x0000000000007409:  EB CE                jmp   0x73d9
-0x000000000000740b:  FC                   cld   
+
+ENDP
+
+PROC A_FirePistol_ NEAR
+PUBLIC A_FirePistol_
+
 0x000000000000740c:  53                   push  bx
 0x000000000000740d:  52                   push  dx
 0x000000000000740e:  56                   push  si
@@ -865,7 +972,12 @@ COMMENT @
 0x000000000000746a:  5A                   pop   dx
 0x000000000000746b:  5B                   pop   bx
 0x000000000000746c:  C3                   ret   
-0x000000000000746d:  FC                   cld   
+
+ENDP
+
+PROC A_FireShotgun_ NEAR
+PUBLIC A_FireShotgun_
+
 0x000000000000746e:  53                   push  bx
 0x000000000000746f:  52                   push  dx
 0x0000000000007470:  56                   push  si
@@ -905,7 +1017,12 @@ COMMENT @
 0x00000000000074c4:  5A                   pop   dx
 0x00000000000074c5:  5B                   pop   bx
 0x00000000000074c6:  C3                   ret   
-0x00000000000074c7:  FC                   cld   
+
+ENDP
+
+PROC A_FireShotgun2_ NEAR
+PUBLIC A_FireShotgun2_
+
 0x00000000000074c8:  53                   push  bx
 0x00000000000074c9:  51                   push  cx
 0x00000000000074ca:  52                   push  dx
@@ -991,6 +1108,12 @@ COMMENT @
 0x0000000000007589:  59                   pop   cx
 0x000000000000758a:  5B                   pop   bx
 0x000000000000758b:  C3                   ret   
+
+ENDP
+
+PROC A_FireCGun_ NEAR
+PUBLIC A_FireCGun_
+
 0x000000000000758c:  53                   push  bx
 0x000000000000758d:  52                   push  dx
 0x000000000000758e:  56                   push  si
@@ -1057,24 +1180,46 @@ COMMENT @
 0x0000000000007615:  5A                   pop   dx
 0x0000000000007616:  5B                   pop   bx
 0x0000000000007617:  C3                   ret   
+
+
+ENDP
+
+PROC A_Light0_ NEAR
+PUBLIC A_Light0_
+
 0x0000000000007618:  53                   push  bx
 0x0000000000007619:  BB 2E 08             mov   bx, 0x82e
 0x000000000000761c:  C6 07 00             mov   byte ptr [bx], 0
 0x000000000000761f:  5B                   pop   bx
 0x0000000000007620:  C3                   ret   
-0x0000000000007621:  FC                   cld   
+
+ENDP
+
+PROC A_Light1_ NEAR
+PUBLIC A_Light1_
+
 0x0000000000007622:  53                   push  bx
 0x0000000000007623:  BB 2E 08             mov   bx, 0x82e
 0x0000000000007626:  C6 07 01             mov   byte ptr [bx], 1
 0x0000000000007629:  5B                   pop   bx
 0x000000000000762a:  C3                   ret   
-0x000000000000762b:  FC                   cld   
+
+ENDP
+
+PROC A_Light2_ NEAR
+PUBLIC A_Light2_
+
 0x000000000000762c:  53                   push  bx
 0x000000000000762d:  BB 2E 08             mov   bx, 0x82e
 0x0000000000007630:  C6 07 02             mov   byte ptr [bx], 2
 0x0000000000007633:  5B                   pop   bx
 0x0000000000007634:  C3                   ret   
-0x0000000000007635:  FC                   cld   
+
+ENDP
+
+PROC A_OpenShotgun2_ NEAR
+PUBLIC A_OpenShotgun2_
+
 0x0000000000007636:  53                   push  bx
 0x0000000000007637:  52                   push  dx
 0x0000000000007638:  BB EC 06             mov   bx, 0x6ec
@@ -1085,7 +1230,12 @@ COMMENT @
 0x0000000000007644:  90                   nop   
 0x0000000000007645:  5A                   pop   dx
 0x0000000000007646:  5B                   pop   bx
-0x0000000000007647:  C3                   ret   
+
+ENDP
+
+PROC A_LoadShotgun2_ NEAR
+PUBLIC A_LoadShotgun2_
+
 0x0000000000007648:  53                   push  bx
 0x0000000000007649:  52                   push  dx
 0x000000000000764a:  BB EC 06             mov   bx, 0x6ec
@@ -1097,6 +1247,12 @@ COMMENT @
 0x0000000000007657:  5A                   pop   dx
 0x0000000000007658:  5B                   pop   bx
 0x0000000000007659:  C3                   ret   
+
+ENDP
+
+PROC A_CloseShotgun2_ NEAR
+PUBLIC A_CloseShotgun2_
+
 0x000000000000765a:  53                   push  bx
 0x000000000000765b:  52                   push  dx
 0x000000000000765c:  56                   push  si
@@ -1112,7 +1268,12 @@ COMMENT @
 0x0000000000007672:  5A                   pop   dx
 0x0000000000007673:  5B                   pop   bx
 0x0000000000007674:  C3                   ret   
-0x0000000000007675:  FC                   cld   
+
+ENDP
+
+PROC A_BFGSpray_ NEAR
+PUBLIC A_BFGSpray_
+
 0x0000000000007676:  52                   push  dx
 0x0000000000007677:  56                   push  si
 0x0000000000007678:  57                   push  di
@@ -1196,6 +1357,13 @@ COMMENT @
 0x0000000000007734:  90                   nop   
 0x0000000000007735:  EB 89                jmp   0x76c0
 0x0000000000007737:  FC                   cld   
+
+ENDP
+
+PROC A_BFGsound_ NEAR
+PUBLIC A_BFGsound_
+
+
 0x0000000000007738:  53                   push  bx
 0x0000000000007739:  52                   push  dx
 0x000000000000773a:  BB EC 06             mov   bx, 0x6ec
@@ -1207,6 +1375,13 @@ COMMENT @
 0x0000000000007747:  5A                   pop   dx
 0x0000000000007748:  5B                   pop   bx
 0x0000000000007749:  C3                   ret   
+
+
+ENDP
+
+PROC P_MovePsprites_ NEAR
+PUBLIC P_MovePsprites_
+
 0x000000000000774a:  53                   push  bx
 0x000000000000774b:  51                   push  cx
 0x000000000000774c:  52                   push  dx
@@ -1248,7 +1423,9 @@ COMMENT @
 0x00000000000077a4:  59                   pop   cx
 0x00000000000077a5:  5B                   pop   bx
 0x00000000000077a6:  C3                   ret   
-0x00000000000077a7:  FC                   cld   
+
+; todo probably switch jump table
+
 0x00000000000077a8:  12 78 40             adc   bh, byte ptr [bx + si + 0x40]
 0x00000000000077ab:  78 47                js    0x77f4
 0x00000000000077ad:  78 4E                js    0x77fd
@@ -1270,7 +1447,18 @@ COMMENT @
 0x00000000000077cd:  78 E1                js    0x77b0
 0x00000000000077cf:  78 E9                js    0x77ba
 0x00000000000077d1:  78 F9                js    0x77cc
-0x00000000000077d3:  78 53                js    0x7828
+0x00000000000077d3:  78                 js    0x7828
+
+
+
+
+ENDP
+
+PROC P_SetPsprite_ NEAR
+PUBLIC P_SetPsprite_
+
+
+0x00000000000077d4:  53                   push  bx
 0x00000000000077d5:  51                   push  cx
 0x00000000000077d6:  56                   push  si
 0x00000000000077d7:  98                   cwde  
