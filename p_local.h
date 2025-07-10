@@ -159,8 +159,6 @@ void __near P_MobjThinker(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINK
 #pragma aux (P_SpawnPuffParams) P_SpawnPuff;
 void	__far P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 
-THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type);
-void	__near P_SpawnPlayerMissile (mobjtype_t type);
 
 
 

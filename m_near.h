@@ -501,7 +501,14 @@
 #define R_DrawMaskedCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x080C)))
 #define R_WriteBackMaskedFrameConstantsCall  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0810)))
 #define NetUpdate_addr					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0814)))
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0820)))
+
+#define FixedMul16u32_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0818)))
+#define FastMul16u32u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x081C)))
+#define FastDiv3216u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0820)))
+#define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0824)))
+#define FixedMulTrigSpeed_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0828)))
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0830)))
 
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
@@ -713,6 +720,13 @@ extern void				    (__far* P_LineAttack)(mobj_t __near* t1,fineangle_t angle,int
 extern void 				(__far* P_UseLines)();
 extern void 				(__far* P_RadiusAttack)(mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t damage);
 extern boolean 				(__far* P_ChangeSector)(sector_t __far* sector, boolean crunch);
+extern void 				(__far* P_XYMovement)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+extern void 				(__far* P_ZMovement)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+extern void				    (__far* P_NightmareRespawn)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+extern THINKERREF 			(__far* P_SpawnMissile)(mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type);
+extern void 				(__far* P_SpawnPlayerMissile)(mobjtype_t type);
+
+
 extern void 				(__far* R_RenderPlayerView)();
 extern void 				(__far* R_WriteBackViewConstants)();
 

@@ -400,14 +400,18 @@ dw  00, 00, 00, 00
 dw R_DrawPlanesOffset, spanfunc_jump_lookup_segment
 ; 80C R_DrawMaskedCall
 dw R_DrawMaskedOffset, drawfuzzcol_area_segment
+
 ; 810 R_WriteBackMaskedFrameConstants
 dw R_WriteBackMaskedFrameConstantsOffset, maskedconstants_funcarea_segment
 ; 814 R_WriteBackViewConstantsSpan
 ;dw R_WriteBackViewConstantsSpanOffset, spanfunc_jump_lookup_segment
 
+; 814
 dw  00, 00, 00, 00, 00, 00
 
 ; 820
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 830
 
 
 REPT NUM_FLAT_CACHE_PAGES

@@ -4837,7 +4837,7 @@ ENDP
 
 ; void __near P_SlideMove (){
 
-PROC P_SlideMove_ FAR
+PROC P_SlideMove_ NEAR
 PUBLIC P_SlideMove_ 
 
 ; bp - 2    retry counter
@@ -5264,7 +5264,7 @@ jmp   slidemove_retry
 exit_slidemove:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-retf   
+ret
 
 stairstep:
 les   bx, dword ptr ds:[_playerMobj_pos]
@@ -5301,7 +5301,7 @@ xchg  ax, si
 call  P_TryMove_
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-retf   
+ret   
 
 
 

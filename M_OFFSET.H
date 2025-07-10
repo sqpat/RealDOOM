@@ -52,6 +52,13 @@
 #define P_UseLinesOffset                      0x264E
 #define P_RadiusAttackOffset                  0x2759
 #define P_ChangeSectorOffset                  0x295A
+#define P_XYMovementOffset                    0x2A36
+#define P_ZMovementOffset                     0x2D33
+#define P_ExplodeMissileOffset                0x2FB0
+#define P_NightmareRespawnOffset              0x301A
+#define P_CheckMissileSpawnOffset             0x3172
+#define P_SpawnMissileOffset                  0x3201
+#define P_SpawnPlayerMissileOffset            0x3387
 
 #define R_DrawColumnCodeSize           0xE46
 #define R_DrawSpanCodeSize             0xEE5
@@ -60,7 +67,7 @@
 #define R_DrawSkyColumnCodeSize        0x6C0
 #define R_BSPCodeSize                  0x370E
 #define WI_StuffCodeSize               0x1019
-#define PSightCodeSize                 0x2A35
+#define PSightCodeSize                 0x34C3
 #define WipeCodeSize                   0x4B6
 #define FinaleCodeSize                 0xBCE
 #define SaveLoadCodeSize               0xB17

@@ -52,7 +52,6 @@ file hu_setup.obj
 file p_setup.obj
 
 
-
 NEWSEGMENT
 file s_sound.obj
 file s_sbsfx.obj
@@ -67,7 +66,7 @@ file p_pspr.obj
 file p_spec.obj
 file p_switch.obj
 file p_mobj.obj
-file p_mobja.obj
+file p_mobjn.obj
 file p_telept.obj
 file p_tick.obj
 file p_user.obj

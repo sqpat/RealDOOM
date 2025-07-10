@@ -19,133 +19,27 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN FixedMul16u32_:PROC
-EXTRN FastMul16u32u_:PROC
-EXTRN FastDiv3216u_:PROC
-EXTRN FixedMulTrigSpeedNoShift_:PROC
-EXTRN FixedMulTrigSpeed_:PROC
+; these can be called near but must have push cs prefix
+EXTRN P_TryMove_:NEAR
+EXTRN P_SlideMove_:NEAR         ; except this is really near
+EXTRN P_AproxDistance_:NEAR
+EXTRN P_AimLineAttack_:NEAR
+EXTRN P_CheckPosition_:NEAR
+EXTRN R_PointInSubsector_:NEAR
 
 .DATA
 
-
 .CODE
 
-
-;void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
-
-;P_SpawnPuff_
-
-PROC P_SpawnPuff_ FAR
-PUBLIC P_SpawnPuff_
-
-
-push  ax
-push  dx
-push  bx
-
-mov   ax, RNDTABLE_SEGMENT
-mov   es, ax
-
-mov   al, byte ptr ds:[_prndindex]
-add   byte ptr ds:[_prndindex], 3  ; for 3 calls this func..
-xor   ah, ah
-mov   bx, ax
-inc   bx
-mov   al, byte ptr es:[bx]
-sub   al, byte ptr es:[bx+1]
-
-sbb   ah, 0
-cwd
-
-; shift ax left 10
-mov   dl, ah ; shift 8
-mov   ah, al ; shift 8
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-and   ax, 0FC00h  ; clean out bottom bits
-
-
-add   si, ax
-adc   di, dx
-
-mov   al, byte ptr es:[bx+2]
-mov   byte ptr cs:[SELFMODIFY_set_rnd_value_3+1], al  
-
-pop   bx
-pop   dx
-pop   ax
-
-IF COMPISA GE COMPILE_186
-
-push  -1        ; complicated for 8088...
-push  MT_PUFF
-push  di
-push  si
-
-
-ELSE
-
-mov   es, si
-mov   si, -1
-push  si
-mov   si, MT_PUFF
-push  si
-push  di
-push  es
-
-
-ENDIF
-
-
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
-;	 th = setStateReturn;
-;    th->momz.h.intbits = 1;
-;    th->tics -= P_Random()&3;
-
-mov   bx, word ptr ds:[_setStateReturn];
-mov   word ptr [bx + 018h], 1
-SELFMODIFY_set_rnd_value_3:
-mov   al, 0FFh
-and   al, 3
-sub   byte ptr [bx + 01Bh], al
-
-;    if (th->tics < 1 || th->tics > 240){
-;		th->tics = 1;
-;	}
-
-
-mov   al, byte ptr [bx + 01Bh]
-cmp   al, 1
-jb    set_tics_to_1
-cmp   al, 240
-jbe   dont_set_tics_to_1
-set_tics_to_1:
-mov   byte ptr [bx + 01Bh], 1
-dont_set_tics_to_1:
-cmp   word ptr ds:[_attackrange16], MELEERANGE
-je    spark_punch_on_wall
-retf  
-spark_punch_on_wall:
-mov   dx, S_PUFF3
-mov   ax, bx
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
-retf   
-
-
+PROC    P_MOBJ_STARTMARKER_ 
+PUBLIC  P_MOBJ_STARTMARKER_
 ENDP
 
-;void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+
+;void __far P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
 
-PROC P_XYMovement_ NEAR
+PROC P_XYMovement_ FAR
 PUBLIC P_XYMovement_
 ; bp - 2    mobj/ax
 ; bp - 4    mobjpos offset/bx
@@ -191,7 +85,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret   
+retf   
 skull_slammed_into_something:
 
 ;			// the skull slammed into something
@@ -365,11 +259,9 @@ push  cx
 mov   bx, word ptr [bp - 6]
 mov   cx, es
 mov   ax, word ptr [bp - 2]
-;call  _P_TryMove   ; what if we returned in the carry flag...
 
-db    09Ah
-dw P_TRYMOVEOFFSET
-dw PHYSICS_HIGHCODE_SEGMENT
+push  cs
+call  P_TryMove_   ; what if we returned in the carry flag...
 
 
 test  al, al
@@ -379,10 +271,7 @@ cmp   word ptr [bp - 8], MT_PLAYER
 je    player_try_slide
 jmp   do_missile_check
 player_try_slide:
-;call  _P_SlideMove
-db    09Ah
-dw P_SLIDEMOVEOFFSET
-dw PHYSICS_HIGHCODE_SEGMENT
+call  P_SlideMove_
 
 cant_move:
 ;    } while (xmove.w || ymove.w);
@@ -526,14 +415,23 @@ je    continue_stopspeed_checks_1
 apply_friction:
 
 mov   ax, FRICTION
-call  FixedMul16u32_
+;call  FixedMul16u32_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul16u32_addr
+
+
 mov   bx, word ptr [bp - 2]
 mov   word ptr [bx + MOBJ_T.m_momx+0], ax
 mov   cx, si
 mov   word ptr [bx + MOBJ_T.m_momx+2], dx
 mov   bx, di
 mov   ax, FRICTION
-call  FixedMul16u32_
+;call  FixedMul16u32_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul16u32_addr
+
 mov   bx, word ptr [bp - 2]
 mov   word ptr [bx + MOBJ_T.m_momy+0], ax
 mov   word ptr [bx + MOBJ_T.m_momy+2], dx
@@ -541,7 +439,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret   
+retf   
 
 continue_stopspeed_checks_1:
 cmp   bx, -STOPSPEED
@@ -601,7 +499,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret   
+retf   
 
 
 
@@ -648,7 +546,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret   
+retf   
 not_missile_dont_explode:
 
 ;				mo->momx.w = mo->momy.w = 0;
@@ -668,7 +566,7 @@ ENDP
 FLOATSPEED_HIGHBITS = 4
 VIEWHEIGHT_HIGH = 41
 
-PROC P_ZMovement_ NEAR
+PROC P_ZMovement_ FAR
 PUBLIC P_ZMovement_
 
 ; bp - 2  segment for mobjpos (MOBJPOSLIST_6800_SEGMENT)
@@ -800,10 +698,8 @@ sbb   dx, word ptr es:[bx + 2]
 
 pop   bx    ; get y diff lo
 
-;call  dword ptr ds:[_P_AproxDistance]
-db    09Ah
-dw P_AproxDistanceOffset
-dw PHYSICS_HIGHCODE_SEGMENT
+push   cs
+call  P_AproxDistance_
 
 pop   bx  ; recover offset
 mov   es, word ptr [bp - 2]
@@ -834,7 +730,11 @@ push  dx ; in case we need delta again
 mov   bx, ax
 mov   cx, dx
 mov   ax, 3
-call  FastMul16u32u_
+; call  FastMul16u32u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastMul16u32u_addr
+
 mov   bx, ax
 mov   ax, dx
 neg   ax
@@ -869,7 +769,11 @@ check_for_add_floatspeed:
 mov   bx, ax
 mov   cx, dx
 mov   ax, 3
-call  FastMul16u32u_
+; call  FastMul16u32u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastMul16u32u_addr
+
 cmp   dx, word ptr [bp - 0Ah]
 jg    do_add_floatspeed
 jne   done_with_floating_with_target
@@ -982,7 +886,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret   
+retf   
 dont_explode_missile:
 done_with_floor_z_collision:
 
@@ -1049,7 +953,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret   
+retf   
 
 continue_squat_check:
 ;	if (motype == MT_PLAYER && mo->momz.w < -GRAVITY*8)	 {
@@ -1184,7 +1088,7 @@ jne   do_deathsound
 pop   di
 pop   si
 pop   dx
-ret   
+ret
 do_deathsound:
 ; ax got si earlier
 
@@ -1197,11 +1101,11 @@ dw _S_StartSound_addr
 pop   di
 pop   si
 pop   dx
-ret   
+ret
 
 ENDP
 
-PROC P_NightmareRespawn_ NEAR
+PROC P_NightmareRespawn_ FAR
 PUBLIC P_NightmareRespawn_
 
 ; bp - 2       ax arg (mobj)
@@ -1272,10 +1176,8 @@ push  bx
 ;	}
 
 
-
-; call P_CheckPosition_
-db    09Ah
-dw    P_CHECKPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+push cs
+call P_CheckPosition_
 
 test  al, al
 jne   do_respawn
@@ -1284,7 +1186,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret   
+retf   
 do_respawn:
 mov   si, word ptr [bp - 2]
 mov   ax, word ptr [si + 4]     ; mobjsecnum
@@ -1347,10 +1249,8 @@ mov   dx, word ptr [bp - 010h]
 xor   bx, bx
 xor   ax, ax
 
-
-; call P_CheckPosition_
-db    09Ah
-dw    R_POINTINSUBSECTOROFFSET, PHYSICS_HIGHCODE_SEGMENT
+push cs
+call R_PointInSubsector_
 
 
 mov   bx, ax
@@ -1454,7 +1354,11 @@ xor   bx, bx
 mov   cx, ANG45_HIGHBITS
 mov   si, word ptr ds:[_setStateReturn_pos + 0]
 mov   di, word ptr ds:[_setStateReturn_pos + 2]
-call  FastMul16u32u_
+; call  FastMul16u32u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastMul16u32u_addr
+
 mov   es, di
 mov   word ptr es:[si + 0Eh], ax
 mov   word ptr es:[si + 010h], dx
@@ -1545,11 +1449,9 @@ mov   ax, di
 ;mov   cx, es
 mov   bx, si
 
-;call  _P_TryMove   ; what if we returned in the carry flag...
 
-db    09Ah
-dw P_TRYMOVEOFFSET
-dw PHYSICS_HIGHCODE_SEGMENT
+push  cs
+call  P_TryMove_  ; what if we returned in the carry flag...
 
 test  al, al
 jne   exit_check_missile_sapwn
@@ -1562,17 +1464,17 @@ exit_check_missile_sapwn:
 pop   di
 pop   si
 pop   dx
-ret   
+ret
 
 ENDP
 
 
 
 
-PROC P_SpawnMissile_ NEAR
+PROC P_SpawnMissile_ FAR
 PUBLIC P_SpawnMissile_
 
-; bp + 8    type
+; bp + 0Ah    type
 
 ; bp - 2     ax (mobj)
 ; bp - 4     MOBJPOSLIST_6800_SEGMENT
@@ -1613,7 +1515,7 @@ push  bx
 
 
 xor   ax, ax
-mov   al, byte ptr [bp + 8]    ; TODO NOTE: increase when this becomes far.
+mov   al, byte ptr [bp + 0Ah]
 
 mov   bx, word ptr [bp - 2]
 push  word ptr [bx + 4]         ; secnum
@@ -1644,7 +1546,7 @@ push  word ptr ds:[_setStateReturn_pos] ; bp - 0Ah
 
 
 mov   al, SIZEOF_MOBJINFO_T
-mul   byte ptr [bp + 8]   ; type
+mul   byte ptr [bp + 0Ah]   ; type
 
 mov   di, word ptr ds:[_setStateReturn]
 mov   bx, ax
@@ -1744,14 +1646,12 @@ sbb   dx, word ptr es:[si + 2]
 
 xchg  ax, bx
 
-;call  dword ptr ds:[_P_AproxDistance]
-db    09Ah
-dw P_AproxDistanceOffset
-dw PHYSICS_HIGHCODE_SEGMENT
+push   cs
+call  P_AproxDistance_
 
 
 mov   al, SIZEOF_MOBJINFO_T
-mul   byte ptr [bp + 8]
+mul   byte ptr [bp + 0Ah]
 xchg  ax, bx
 xchg  ax, dx
 mov   bl, byte ptr ds:[bx + _mobjinfo + 4]
@@ -1773,8 +1673,10 @@ sub   cx, word ptr es:[si + 8]
 mov   ax, cx
 mov   dx, word ptr [bp - 0Ch]
 sbb   dx, word ptr es:[si + 0Ah]
-call   FastDiv3216u_
-
+;call   FastDiv3216u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastDiv3216u_addr
 mov   word ptr [di + 016h], ax
 mov   word ptr [di + 018h], dx
 
@@ -1793,7 +1695,11 @@ and   si, 0FFFCh
 mov   dx, si
 mov   bx, word ptr [bp - 014h]
 mov   ax, FINECOSINE_SEGMENT
-call FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
+
 mov   word ptr [di + 0Eh], ax
 mov   word ptr [di + 010h], dx
 
@@ -1803,7 +1709,11 @@ mov   dx, si
 ;mov   bx, word ptr [bp - 014h]
 pop   bx
 mov   ax, FINESINE_SEGMENT
-call FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
+
 
 mov   word ptr [di + 012h], ax
 mov   word ptr [di + 014h], dx
@@ -1823,13 +1733,13 @@ mov   ax, word ptr [bp - 8]
 LEAVE_MACRO 
 pop   di
 pop   si
-ret   2
+retf   2
 
 
 ENDP
 
 
-PROC P_SpawnPlayerMissile_ NEAR
+PROC P_SpawnPlayerMissile_ FAR
 PUBLIC P_SpawnPlayerMissile_
 
 ; bp - 2    type
@@ -1863,9 +1773,8 @@ mov    ax, word ptr ds:[_playerMobj]
 mov    bx, HALFMISSILERANGE
 mov    dx, si
 
-db    09Ah
-dw    P_AIMLINEATTACKOFFSET
-dw    PHYSICS_HIGHCODE_SEGMENT
+push   cs
+call   P_AimLineAttack_
 
 mov    di, ax
 mov    cx, dx
@@ -1881,9 +1790,9 @@ mov    ax, word ptr ds:[_playerMobj]
 mov    bx, HALFMISSILERANGE
 mov    dx, si
 
-db    09Ah
-dw    P_AIMLINEATTACKOFFSET
-dw    PHYSICS_HIGHCODE_SEGMENT
+push   cs
+call   P_AimLineAttack_
+
 mov    di, ax
 mov    cx, dx
 
@@ -1896,9 +1805,8 @@ mov    ax, word ptr ds:[_playerMobj]
 mov    bx, HALFMISSILERANGE
 mov    dx, si
 
-db    09Ah
-dw    P_AIMLINEATTACKOFFSET
-dw    PHYSICS_HIGHCODE_SEGMENT
+push   cs
+call   P_AimLineAttack_
 
 mov    di, ax
 mov    cx, dx
@@ -1991,14 +1899,22 @@ mov    bl, byte ptr ds:[bx + _mobjinfo + 4]
 xor    bh, bh
 push   bx  ; bp - 0Ah
 mov    ax, FINECOSINE_SEGMENT
-call   FixedMulTrigSpeed_
+;call   FixedMulTrigSpeed_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeed_addr
+
 mov    word ptr [di + 0Eh], ax
 mov    word ptr [di + 010h], dx
 
 mov    bx, word ptr [bp - 0Ah]
 mov    dx, si
 mov    ax, FINESINE_SEGMENT
-call   FixedMulTrigSpeed_
+;call   FixedMulTrigSpeed_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeed_addr
+
 mov    word ptr [di + 012h], ax
 mov    word ptr [di + 014h], dx
 
@@ -2008,7 +1924,11 @@ sub    ax, 080h
 mov    cx, word ptr [bp - 4]
 mov    bx, word ptr [bp - 6]
 
-call   FastMul16u32u_
+; call  FastMul16u32u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastMul16u32u_addr
+
 mov    bx, word ptr [bp - 8]
 mov    cx, MOBJPOSLIST_6800_SEGMENT
 mov    word ptr [di + 016h], ax
@@ -2018,11 +1938,16 @@ call   P_CheckMissileSpawn_
 
 LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
-ret    
+retf    
 
 
 
 ENDP
+
+PROC    P_MOBJ_ENDMARKER_ 
+PUBLIC  P_MOBJ_ENDMARKER_
+ENDP
+
 
 
 END

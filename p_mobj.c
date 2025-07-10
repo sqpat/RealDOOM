@@ -311,7 +311,6 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
 // 
 // P_ExplodeMissile  
 //
-void __near P_ExplodeMissile(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 /*
 void __near P_ExplodeMissile(mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 	//todoaddr inline later
@@ -341,7 +340,7 @@ void __near P_ExplodeMissile(mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 
 // todo make near?
 fixed_t  FastMulFriction (fixed_t num);
-void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+// void __far P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
 /*
 void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) { 	
@@ -497,7 +496,7 @@ void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 //
 // P_ZMovement
 //
-void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+// void __far P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
 /*
 void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
@@ -616,7 +615,6 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 // P_NightmareRespawn
 //
 
-void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) ;
 /*
 void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) {
 
@@ -886,7 +884,7 @@ void __far P_RemoveMobj (mobj_t __near* mobj) {
 
 #pragma aux P_SpawnPuffParams __parm [dx ax] [cx bx] [di si]  __modify [ax bx cx dx si di];                    
 #pragma aux (P_SpawnPuffParams) P_SpawnPuff;
-void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
+void __far P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
 	mobj_t __near*	th;
 	THINKERREF thRef;
 	
@@ -938,7 +936,6 @@ void __near P_SpawnBlood ( fixed_t x, fixed_t y, fixed_t z, int16_t damage ) {
 // Moves the missile forward a bit
 //  and possibly explodes it right there.
 //
-void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos);
 /*
 
 void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos) {
@@ -964,7 +961,7 @@ void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos) {
 //
 // P_SpawnMissile
 //
-THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near*	dest, mobjtype_t	type ) ;
+// THINKERREF __far P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near*	dest, mobjtype_t	type ) ;
 
 /*
 THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near*	dest, mobjtype_t	type ) {
@@ -1034,7 +1031,7 @@ void __near A_BFGSpray(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 // P_SpawnPlayerMissile
 // Tries to aim at a nearby monster
 //
-void __near P_SpawnPlayerMissile ( mobjtype_t type );
+// void __far P_SpawnPlayerMissile ( mobjtype_t type );
 
 /*
 void __near P_SpawnPlayerMissile ( mobjtype_t type ) {

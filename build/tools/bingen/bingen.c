@@ -85,6 +85,8 @@ void __far P_SIGHT_STARTMARKER();
 void __far P_SIGHT_ENDMARKER();
 void __far P_MAP_STARTMARKER();
 void __far P_MAP_ENDMARKER();
+void __far P_MOBJ_STARTMARKER();
+void __far P_MOBJ_ENDMARKER();
 
 void __far P_AproxDistance();
 void __far P_LineOpening();
@@ -102,6 +104,17 @@ void __far P_LineAttack();
 void __far P_UseLines();
 void __far P_RadiusAttack();
 void __far P_ChangeSector();
+
+
+// void __far P_SpawnPuff();
+void __far P_XYMovement();
+void __far P_ZMovement();
+void __far P_ExplodeMissile();
+void __far P_NightmareRespawn();
+void __far P_CheckMissileSpawn();
+void __far P_SpawnMissile();
+void __far P_SpawnPlayerMissile();
+
 
 
 
@@ -210,7 +223,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)WI_STARTMARKER, codesize[5], 1, fp);
 
 
-    codesize[6] = FP_OFF(P_MAP_ENDMARKER) - FP_OFF(P_SIGHT_STARTMARKER);
+    codesize[6] = FP_OFF(P_MOBJ_ENDMARKER) - FP_OFF(P_SIGHT_STARTMARKER);
     // write filesize..
     fwrite(&codesize[6], 2, 1, fp);
     // write data
@@ -358,7 +371,14 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define P_RadiusAttackOffset                  0x%X\n", FP_OFF(P_RadiusAttack)                 - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_ChangeSectorOffset                  0x%X\n", FP_OFF(P_ChangeSector)                 - FP_OFF(P_SIGHT_STARTMARKER));
 
-
+    // fprintf(fp, "#define P_SpawnPuffOffset                     0x%X\n", FP_OFF(P_SpawnPuff)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_XYMovementOffset                    0x%X\n", FP_OFF(P_XYMovement)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_ZMovementOffset                     0x%X\n", FP_OFF(P_ZMovement)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_ExplodeMissileOffset                0x%X\n", FP_OFF(P_ExplodeMissile)               - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_NightmareRespawnOffset              0x%X\n", FP_OFF(P_NightmareRespawn)             - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_CheckMissileSpawnOffset             0x%X\n", FP_OFF(P_CheckMissileSpawn)            - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SpawnMissileOffset                  0x%X\n", FP_OFF(P_SpawnMissile)                 - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SpawnPlayerMissileOffset            0x%X\n", FP_OFF(P_SpawnPlayerMissile)           - FP_OFF(P_SIGHT_STARTMARKER));
 
 
 	fprintf(fp, "\n");

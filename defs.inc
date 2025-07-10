@@ -464,8 +464,15 @@ _R_DrawMaskedCall = 			 	 _NULL_OFFSET + 0080Ch
 _R_WriteBackMaskedFrameConstantsCall =  _NULL_OFFSET + 00810h
 _NetUpdate_addr =					 _NULL_OFFSET + 00814h
 
+_FixedMul16u32_addr =				 _NULL_OFFSET + 00818h
+_FastMul16u32u_addr =				 _NULL_OFFSET + 0081Ch
+_FastDiv3216u_addr =				 _NULL_OFFSET + 00820h
+_FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00824h
+_FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00828h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00820h
+
+
+_flatcache_nodes =				     _NULL_OFFSET + 00830h
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
 CURRENT_POSITION_2 =   			      (_spritecache_nodes  + (SIZEOF_CACHE_NODE_PAGE_COUNT_T * NUM_SPRITE_CACHE_PAGES))
@@ -481,7 +488,7 @@ CURRENT_POSITION_6 =   			   	  (_usedtexturepagemem + (1 * NUM_TEXTURE_PAGES))
 
 
 
-; 93E
+; 94E ?
 _pageswapargs = CURRENT_POSITION_6
 
 CURRENT_POSITION_7 =   			   	  (_pageswapargs + (2 * TOTAL_PAGES))

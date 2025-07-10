@@ -434,6 +434,17 @@ void (__far* P_UseLines)() =                  ((void (__far *)())     	         
 void (__far* P_RadiusAttack)() =              ((void (__far *)(mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage))     	               (MK_FP(physics_highcode_segment, 		 P_RadiusAttackOffset)));
 boolean (__far* P_ChangeSector)() =           ((boolean (__far *)(sector_t __far* sector, boolean crunch))     	                                                           (MK_FP(physics_highcode_segment, 		 P_ChangeSectorOffset)));
 
+
+// boolean (__far* P_SpawnPuff)() =              ((boolean (__far *)(sector_t __far* sector, boolean crunch))     	                                                       (MK_FP(physics_highcode_segment, 		 P_SpawnPuffOffset)));
+void (__far* P_XYMovement)() =                ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_XYMovementOffset)));
+void (__far* P_ZMovement)() =                 ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_ZMovementOffset)));
+void (__far* P_NightmareRespawn)() =          ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_NightmareRespawnOffset)));
+THINKERREF (__far* P_SpawnMissile)() =        ((THINKERREF (__far *)(mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type))     	   (MK_FP(physics_highcode_segment, 		 P_SpawnMissileOffset)));
+void (__far* P_SpawnPlayerMissile)() =        ((void (__far *)(mobjtype_t type))     	                                                                                   (MK_FP(physics_highcode_segment, 		 P_SpawnPlayerMissileOffset)));
+
+
+
+
 void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_RenderPlayerViewOffset)));
 void (__far* R_WriteBackViewConstants)() =    ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_WriteBackViewConstantsOffset)));
 

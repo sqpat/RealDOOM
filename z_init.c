@@ -695,6 +695,13 @@ void __near Z_LoadBinaries() {
 	P_TouchSpecialThing_addr =			(uint32_t)(P_TouchSpecialThing);
 
 
+	FixedMul16u32_addr =				(uint32_t)(FixedMul16u32);
+	FastMul16u32u_addr =				(uint32_t)(FastMul16u32u);
+	FastDiv3216u_addr =					(uint32_t)(FastDiv3216u);
+	FixedMulTrigSpeedNoShift_addr =		(uint32_t)(FixedMulTrigSpeedNoShift);
+	FixedMulTrigSpeed_addr =			(uint32_t)(FixedMulTrigSpeed);
+
+
 
 }
 
