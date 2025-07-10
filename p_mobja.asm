@@ -1571,39 +1571,71 @@ ENDP
 PROC P_SpawnMissile_ NEAR
 PUBLIC P_SpawnMissile_
 
+; bp + 8    type
+
+; bp - 2     MOBJPOSLIST_6800_SEGMENT 
+; bp - 4     dest_pos offset
+; bp - 6     UNUSED
+; bp - 8     UNUSED (was th_pos segment (same as bp - 2))
+; bp - 0Ah   
+; bp - 0Ch   thRef
+; bp - 0Eh   
+; bp - 010h  
+; bp - 012h  
+; bp - 014h  type (bp + 8) with high byte 0
+; bp - 016h  
+; bp - 018h  
+; bp - 01Ah  th_pos offset
+; bp - 01Ch  0 (unused?)  
+; bp - 01Eh  mobjinfo offset
+; bp - 020h  ax (mobj)
 
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 01Eh
+push  cx
+sub   sp, 01Ch
 push  ax
 mov   si, bx
-mov   word ptr [bp - 2], cx
+
 mov   ax, dx
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 xor   dx, dx
 div   bx
-imul  bx, ax, SIZEOF_MOBJ_POS_T
-mov   byte ptr [bp - 013h], 0  ;todo weird
-mov   word ptr [bp - 6], bx
+
+IF COMPISA GE COMPILE_186
+    imul  bx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   bx, SIZEOF_MOBJ_POS_T
+    mul   bx
+    xchg  ax, bx
+ENDIF
+
+mov   word ptr [bp - 4], bx
+
+
+
+xor   ax, ax
+mov   al, byte ptr [bp + 8]    ; TODO NOTE: increase when this becomes far.
+mov   word ptr [bp - 014h], ax
+
 mov   bx, word ptr [bp - 020h]
-mov   al, byte ptr [bp + 8]
-push  word ptr [bx + 4]
+push  word ptr [bx + 4]         ; secnum
+push  ax                        ; type
 mov   es, cx
-mov   byte ptr [bp - 014h], al
-mov   dx, word ptr es:[si + 8]
-push  word ptr [bp - 014h]
 
 mov   ax, word ptr es:[si + 0Ah]
 add   ax, 32  ;  4*8*FRACUNIT
-mov   bx, word ptr es:[si + 4]
-push  ax
+
+push  ax                    ; z hi
+push  word ptr es:[si + 8]   ; z lo
+
+mov   bx, word ptr es:[si + 4] ; y
 mov   cx, word ptr es:[si + 6]
-push  dx
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
+les   ax, dword ptr es:[si]  ; x
+mov   dx, es
 
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
@@ -1613,16 +1645,16 @@ dw _P_SpawnMobj_addr
 mov   word ptr [bp - 0Ch], ax
 mov   ax, word ptr ds:[_setStateReturn_pos]
 mov   word ptr [bp - 01Ah], ax
-mov   ax, word ptr ds:[_setStateReturn_pos+2]
-mov   word ptr [bp - 8], ax
-imul  ax, word ptr [bp - 014h], SIZEOF_MOBJINFO_T
-mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
 
-mov   word ptr [bp - 01Ch], 0
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr [bp - 014h]   ; type
+
+
+;mov   word ptr [bp - 01Ch], 0 ; unused?
 mov   di, word ptr ds:[_setStateReturn]
 mov   bx, ax
-mov   word ptr [bp - 01Eh], ax
-mov   al, byte ptr ds:[bx + _mobjInfo + 2]
+;mov   word ptr [bp - 01Eh], ax  ; unused?
+mov   al, byte ptr ds:[bx + _mobjInfo + 2]  ; seesound
 
 test  al, al
 je    label_5
@@ -1640,9 +1672,8 @@ mov   bx, SIZEOF_THINKER_T
 xor   dx, dx
 sub   ax, (_thinkerlist + 4)
 div   bx
-mov   bx, word ptr [bp - 6]
+les   bx, dword ptr [bp - 4]
 mov   word ptr [di + 022h], ax
-mov   es, word ptr [bp - 4]
 push  word ptr es:[bx + 6]
 mov   ax, word ptr es:[bx + 8]
 push  word ptr es:[bx + 4]
@@ -1660,7 +1691,7 @@ mov   dx, word ptr es:[si + 2]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_PointToAngle2_addr
-les   bx, dword ptr [bp - 6]
+les   bx, dword ptr [bp - 4]
 mov   word ptr [bp - 012h], ax
 mov   word ptr [bp - 0Ah], dx
 test  byte ptr es:[bx + 016h], 4
@@ -1668,8 +1699,8 @@ je    label_4
 inc   byte ptr ds:[_prndindex]
 mov   cl, byte ptr ds:[_prndindex]
 mov   ax, RNDTABLE_SEGMENT
-xor   ch, ch
 mov   es, ax
+xor   ch, ch
 mov   bx, cx
 mov   cl, byte ptr es:[bx]
 
@@ -1686,17 +1717,17 @@ shl   ax, 4
 add   dx, ax
 mov   word ptr [bp - 0Ah], dx
 label_4:
-les   bx, dword ptr [bp - 6]
+les   bx, dword ptr [bp - 4]
 mov   ax, word ptr es:[bx + 4]
 mov   cx, word ptr es:[bx + 6]
 mov   es, word ptr [bp - 2]
 sub   ax, word ptr es:[si + 4]
 sbb   cx, word ptr es:[si + 6]
-mov   es, word ptr [bp - 4]
+
 mov   dx, word ptr es:[bx]
 mov   word ptr [bp - 014h], dx
 mov   dx, word ptr es:[bx + 2]
-mov   es, word ptr [bp - 2]
+
 mov   bx, word ptr es:[si]
 sub   word ptr [bp - 014h], bx
 mov   bx, ax
@@ -1733,7 +1764,7 @@ mov   ax, cx
 mov   dx, word ptr [bp - 0Eh]
 sbb   dx, word ptr es:[si + 0Ah]
 call   FastDiv3216u_
-mov   es, word ptr [bp - 8]
+mov   es, word ptr [bp - 2]
 mov   bx, word ptr [bp - 01Ah]
 mov   word ptr [bp - 016h], ax
 mov   ax, word ptr [bp - 012h]
@@ -1765,7 +1796,7 @@ mov   ax, word ptr [bp - 016h]
 mov   bx, word ptr [bp - 01Ah]
 mov   word ptr [di + 016h], ax
 mov   ax, word ptr [bp - 014h]
-mov   cx, word ptr [bp - 8]
+mov   cx, word ptr [bp - 2]
 mov   word ptr [di + 018h], ax
 mov   ax, di
 mov   word ptr [di + 014h], dx
@@ -1773,7 +1804,7 @@ call  P_CheckMissileSpawn_
 mov   si, word ptr [bp - 01Ah]
 mov   word ptr ds:[_setStateReturn], di
 
-mov   ax, word ptr [bp - 8]
+mov   ax, word ptr [bp - 2]
 mov   word ptr ds:[_setStateReturn_pos], si
 mov   word ptr ds:[_setStateReturn_pos + 2], ax
 mov   ax, word ptr [bp - 0Ch]
