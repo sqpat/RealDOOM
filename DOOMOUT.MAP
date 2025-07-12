@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/12 00:55:10
+Created on:       25/07/12 09:07:14
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -61,6 +61,7 @@ s_sbsfx_TEXT           CODE           AUTO           0ba0:0680       000017f3
 p_ceilng_TEXT          CODE           AUTO           0ba0:1e80       00000390
 p_doors_TEXT           CODE           AUTO           0ba0:2210       0000068c
 p_enemy_TEXT           CODE           AUTO           0ba0:28a0       00002706
+P_ENEMYA_TEXT          CODE           AUTO           0ba0:4fa6       00000000
 p_floor_TEXT           CODE           AUTO           0ba0:4fb0       00000806
 p_inter_TEXT           CODE           AUTO           0ba0:57c0       00000cf3
 p_lights_TEXT          CODE           AUTO           0ba0:64c0       000003ed
@@ -903,6 +904,9 @@ Module: p_enemy.obj(C:\REALDOOM\p_enemy.c)
 0ba0:4e20      A_SpawnSound_
 0ba0:4e34      A_SpawnFly_
 0ba0:4f7c      A_PlayerScream_
+Module: p_enemya.obj(p_enemya.ASM)
+0ba0:4fa6*     P_ENEMY_ENDMARKER_
+0ba0:4fa6*     P_ENEMY_STARTMARKER_
 Module: p_floor.obj(C:\REALDOOM\p_floor.c)
 0ba0:4fb0      T_MovePlane_
 0ba0:51cc      T_MoveFloor_
@@ -1294,4 +1298,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  0001bae0 (113376.)
 Entry point address: 0ba0:b9d6
-Link time: 00:00.19
+Link time: 00:00.20

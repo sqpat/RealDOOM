@@ -68,6 +68,7 @@ file s_sound.obj
 file p_ceilng.obj
 file p_doors.obj
 file p_enemy.obj
+file p_enemya.obj
 file p_floor.obj
 file p_inter.obj
 file p_lights.obj
