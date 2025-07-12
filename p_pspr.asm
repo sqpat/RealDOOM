@@ -276,25 +276,21 @@ PROC P_FireWeapon_ NEAR
 PUBLIC P_FireWeapon_
 
 
-push  bx
-push  dx
 call  A_CheckReload_
 test  al, al
-jne   label_20
-pop   dx
-pop   bx
+jne   do_fire_weapon
 ret   
-label_20:
-mov   bx, OFFSET _playerMobj
+do_fire_weapon:
+push  bx
+push  dx
 mov   dx, S_PLAY_ATK1
-mov   ax, word ptr ds:[bx]
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
+mov   ax, word ptr ds:[_playerMobj]
 call  P_SetMobjState_
-mov   al, byte ptr ds:[bx]
-xor   ah, ah
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_atkstate]
-xor   al, al
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[OFFSET _player + PLAYER_T.player_readyweapon]
+xchg  ax, bx
+mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_atkstate]
+xor   ax, ax
 call  P_SetPsprite_
 call  P_NoiseAlert_
 pop   dx
@@ -308,12 +304,11 @@ PUBLIC P_DropWeapon_
 
 push  bx
 push  dx
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-mov   al, byte ptr ds:[bx]
-xor   ah, ah
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[OFFSET _player + PLAYER_T.player_readyweapon]
+xchg  ax, bx
 mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
-xor   al, al
+xor   ax, ax
 call  P_SetPsprite_
 pop   dx
 pop   bx
@@ -324,115 +319,99 @@ ENDP
 PROC A_WeaponReady_ NEAR
 PUBLIC A_WeaponReady_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
+PUSHA_NO_AX_OR_BP_MACRO
 mov   si, ax
-mov   bx, OFFSET _playerMobj_pos
-les   di, dword ptr ds:[bx]
+; si is pspdef...
+
+les   di, dword ptr ds:[_playerMobj_pos]
 mov   ax, word ptr es:[di + MOBJ_POS_T.mp_statenum]
 cmp   ax, S_PLAY_ATK1
-je    label_22
+je    use_atk1_or_atk2_state
 cmp   ax, S_PLAY_ATK2
-jne   label_23
-label_22:
-mov   bx, OFFSET _playerMobj
+jne   dont_use_atk1_or_atk2_state
+use_atk1_or_atk2_state:
 mov   dx, S_PLAY
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 call  P_SetMobjState_
-label_23:
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-cmp   byte ptr ds:[bx], 7
-jne   label_24
+dont_use_atk1_or_atk2_state:
+
+cmp   byte ptr ds:[_player + PLAYER_T.player_readyweapon], WP_CHAINSAW
+jne   dont_do_chainsaw_sound
 cmp   word ptr ds:[si], S_SAW
-jne   label_24
-mov   bx, OFFSET _playerMobj
+jne   dont_do_chainsaw_sound
 mov   dx, SFX_SAWIDL
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
-label_24:
-mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
-cmp   byte ptr ds:[bx], WP_NOCHANGE
-jne   label_25
-mov   bx, OFFSET _player + PLAYER_T.player_health
-cmp   word ptr ds:[bx], 0
-je    label_25
-mov   bx, OFFSET _player + PLAYER_T.player_cmd_buttons
-test  byte ptr ds:[bx], 1
-je    label_26
-mov   bx, OFFSET _player + PLAYER_T.player_attackdown
-cmp   byte ptr ds:[bx], 0
-je    label_27
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-mov   al, byte ptr ds:[bx]
-cmp   al, 4
-je    label_28
-cmp   al, 6
-je    label_28
-label_27:
-mov   bx, OFFSET _player + PLAYER_T.player_attackdown
-mov   byte ptr ds:[bx], 1
+dont_do_chainsaw_sound:
+
+
+cmp   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_NOCHANGE
+jne   put_weapon_away
+cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
+je    put_weapon_away
+test  byte ptr ds:[_player + PLAYER_T.player_cmd_buttons], BT_ATTACK
+je    not_firing
+cmp   byte ptr ds:[_player + PLAYER_T.player_attackdown], 0
+je    fire_weapon
+mov   al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
+cmp   al, WP_MISSILE
+je    dont_fire_weapon
+cmp   al, WP_BFG
+je    dont_fire_weapon
+
+fire_weapon:
+mov   byte ptr ds:[_player + PLAYER_T.player_attackdown], 1
 call  P_FireWeapon_
 exit_a_weaponready:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+
+POPA_NO_AX_OR_BP_MACRO
 ret   
-label_25:
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-mov   bl, byte ptr ds:[bx]
-xor   bh, bh
-imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
+
+put_weapon_away:
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
+xchg  ax, bx
 xor   ax, ax
 mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
 call  P_SetPsprite_
 jmp   exit_a_weaponready
-label_26:
-mov   bx, OFFSET _player + PLAYER_T.player_attackdown
-mov   byte ptr ds:[bx], 0
-label_28:
-mov   bx, OFFSET _leveltime
-mov   ax, word ptr ds:[bx]
-shl   ax, 7
-mov   bx, OFFSET _player + PLAYER_T.player_bob
-and   ah, (FINEMASK SHR 8)
-mov   cx, word ptr ds:[bx + 2]
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr ds:[bx]
-mov   dx, word ptr [bp - 2]
-mov   bx, ax
+
+not_firing:
+mov   byte ptr ds:[_player + PLAYER_T.player_attackdown], PS_WEAPON
+
+dont_fire_weapon:
+mov   ax, word ptr ds:[_leveltime]
+shr   ax, 1
+mov   ah, al ; shift 7 left by shift 1 right and word move. technically high bit of ah is wrong but it gets ANDed out below.
+rcr   al, 1  ; restore bit 0 in bit 7
+and   ax, 01F80h  ; bottom 7 bits 0 (shifted out), the rest is FINEMASK
+
+mov   di, ax  ; store angle
+xchg  ax, dx
+
+les   bx, dword ptr ds:[_player + PLAYER_T.player_bob + 0]
+mov   cx, es
 mov   ax, FINECOSINE_SEGMENT
+
 call  FixedMulTrig_
-mov   bx, OFFSET _player + PLAYER_T.player_bob
-add   ax, 0
-adc   dx, 1
+
+inc   dx
 mov   word ptr ds:[si + 4], ax
-and   byte ptr [bp - 1], 0Fh
 mov   word ptr ds:[si + 6], dx
-mov   dx, word ptr [bp - 2]
-mov   ax, word ptr ds:[bx]
-mov   cx, word ptr ds:[bx + 2]
-mov   bx, ax
+
+mov   dx, di
+and   dh, 0Fh
+
+les   bx, dword ptr ds:[_player + PLAYER_T.player_bob + 0]
+mov   cx, es
 mov   ax, FINESINE_SEGMENT
 call  FixedMulTrig_
-add   ax, 0
-adc   dx, WEAPONTOP_HIGH
+
+add   dx, WEAPONTOP_HIGH
 mov   word ptr ds:[si + 8], ax
 mov   word ptr ds:[si + 0Ah], dx
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP
@@ -441,26 +420,21 @@ PROC A_ReFire_ NEAR
 PUBLIC A_ReFire_
 
 
-push  bx
-mov   bx, OFFSET _player + PLAYER_T.player_cmd_buttons
-test  byte ptr ds:[bx], 1
-je    label_30
-mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
-cmp   byte ptr ds:[bx], WP_NOCHANGE
-jne   label_30
-mov   bx, OFFSET _player + PLAYER_T.player_health
-cmp   word ptr ds:[bx], 0
-je    label_30
-mov   bx, OFFSET _player + PLAYER_T.player_refire
-inc   byte ptr ds:[bx]
+test  byte ptr ds:[_player + PLAYER_T.player_cmd_buttons], BT_ATTACK
+je    dont_refire
+cmp   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_NOCHANGE
+jne   dont_refire
+
+cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
+je    dont_refire
+
+inc   byte ptr ds:[_player + PLAYER_T.player_refire]
 call  P_FireWeapon_
-pop   bx
+
 ret   
-label_30:
-mov   bx, OFFSET _player + PLAYER_T.player_refire
-mov   byte ptr ds:[bx], 0
+dont_refire:
+mov   byte ptr ds:[_player + PLAYER_T.player_refire], 0
 call  A_CheckReload_
-pop   bx
 ret   
 
 ENDP
