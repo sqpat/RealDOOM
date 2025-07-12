@@ -508,7 +508,6 @@ call  P_SetPsprite_
 pop   dx
 pop   bx
 ret   
-cld  ;todo remove
 
 ENDP
 
@@ -1322,14 +1321,11 @@ PROC A_BFGsound_ NEAR
 PUBLIC A_BFGsound_
 
 
-push  bx
 push  dx
-mov   bx, OFFSET _playerMobj
 mov   dx, SFX_BFG
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
 pop   dx
-pop   bx
 ret   
 
 
@@ -1341,47 +1337,56 @@ PUBLIC P_MovePsprites_
 push  bx
 push  cx
 push  dx
-push  si
-mov   bx, OFFSET _psprites
-xor   cl, cl
-label_50:
-cmp   word ptr ds:[bx], STATENUM_NULL
-je    label_49
-cmp   word ptr ds:[bx + 2], -1
-je    label_49
-dec   word ptr ds:[bx + 2]
-jne   label_49
-imul  si, word ptr ds:[bx], 6
+
+xor   cx, cx
+; loop 0 
+mov   bx, OFFSET _psprites + (PS_WEAPON * SIZEOF_PSPDEF_T)
+
+do_second_loop:
+mov   ax, word ptr ds:[bx + PSPDEF_T.pspdef_statenum] ; get statenum and tics
+cmp   ax, STATENUM_NULL
+je    dont_set_this_psprite
+cmp   word ptr ds:[bx + PSPDEF_T.pspdef_tics], -1
+je    dont_set_this_psprite
+dec   word ptr ds:[bx + PSPDEF_T.pspdef_tics]
+jne   dont_set_this_psprite
+; mul 6
+sal   ax, 1     ; x2, na
+mov   bx, ax    ; x2, x2
+sal   bx, 1     ; x2, x4
+add   bx, ax    ; x2, x6
 mov   ax, STATES_SEGMENT
 mov   es, ax
-mov   al, cl
-mov   dx, word ptr es:[si + 4]
-cbw  
-add   si, 4
+mov   ax, cx
+mov   dx, word ptr es:[bx + 4]
 call  P_SetPsprite_
-label_49:
-inc   cl
-add   bx, SIZEOF_PSPDEF_T
+
+dont_set_this_psprite:
+inc   cx
 cmp   cl, NUMPSPRITES
-jl    label_50
-mov   bx, OFFSET _psprites + (PS_WEAPON * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sx
-mov   si, OFFSET _psprites + (PS_FLASH  * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sx
-mov   ax, word ptr ds:[bx]
-mov   dx, word ptr ds:[bx + 2]
-mov   word ptr ds:[si], ax
-mov   word ptr ds:[si + 2], dx
-mov   si, OFFSET _psprites + (PS_WEAPON * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy
-mov   bx, OFFSET _psprites + (PS_FLASH  * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy
-mov   ax, word ptr ds:[si]
-mov   dx, word ptr ds:[si + 2]
-mov   word ptr ds:[bx], ax
-mov   word ptr ds:[bx + 2], dx
-pop   si
+je    done_looping_psprites
+; 2nd loop case: 
+mov   bx, OFFSET _psprites + (PS_FLASH * SIZEOF_PSPDEF_T)
+
+jmp   do_second_loop
+
+done_looping_psprites:
+
+;    psprites[ps_flash].sx = psprites[ps_weapon].sx;
+;    psprites[ps_flash].sy = psprites[ps_weapon].sy;
+
+les   ax, dword ptr ds:[_psprites + (PS_WEAPON * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sx]
+mov   word ptr ds:[_psprites + (PS_FLASH  * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sx + 0], ax
+mov   word ptr ds:[_psprites + (PS_FLASH  * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sx + 2], es
+
+les   ax, dword ptr ds:[_psprites + (PS_WEAPON * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy]
+mov   word ptr ds:[_psprites + (PS_FLASH  * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy + 0], ax
+mov   word ptr ds:[_psprites + (PS_FLASH  * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy + 2], es
+
 pop   dx
 pop   cx
 pop   bx
 ret   
-cld  ;todo remove
 
 ; todo probably switch jump table
 
@@ -1423,148 +1428,139 @@ PUBLIC P_SetPsprite_
 push  bx
 push  cx
 push  si
-cbw  
-imul  bx, ax, SIZEOF_PSPDEF_T   ; todo 0 or 1. mul not necessary.
+push  di
+cmp   al, 0
+je    psprite_0
+mov   al, SIZEOF_PSPDEF_T
+psprite_0:
+cbw
+xchg  ax, bx
 add   bx, OFFSET _psprites
 test  dx, dx
-je    label_51
-mov   cl, 1
-label_53:
+
+je    null_statenum_break_and_exit
+loop_next_state:
 cmp   dx, STATENUM_NULL
-je    label_51
-imul  si, dx, 6
+je    null_statenum_break_and_exit
+
+mov   word ptr ds:[bx + PSPDEF_T.pspdef_statenum], dx
+
+mov   ax, 6
+mul   dx        ; dx clobbered but its ok.
+xchg  ax, si    ; es:si state ptr
 mov   ax, STATES_SEGMENT
 mov   es, ax
-mov   word ptr ds:[bx], dx
+
+mov   cl, 1 ; found = true
+
 mov   al, byte ptr es:[si + 2]
 cbw  
-mov   word ptr ds:[bx + 2], ax
-mov   dl, byte ptr es:[si + 3]
-sub   dl, cl
-cmp   dl, 21   ; max state
-ja    label_52
-xor   dh, dh
-mov   si, dx
-add   si, dx
-jmp   word ptr cs:[si + OFFSET p_setpsprite_jump_table]
+mov   word ptr ds:[bx + PSPDEF_T.pspdef_tics], ax
+
+mov   al, byte ptr es:[si + 3]
+cbw
+dec   ax
+cmp   al, 21   ; max state
+ja    bad_state
+
+mov   di, ax
+sal   di, 1
+mov   ax, bx ; ax gets psp
+
+jmp   word ptr cs:[di + OFFSET p_setpsprite_jump_table]
+
 switch_label_1:
-mov   si, OFFSET _player + PLAYER_T.player_extralightvalue
-mov   byte ptr ds:[si], dh
-label_29:
+call  A_Light0_
+
+
+finished_p_setpsprite_switchblock:
 test  cl, cl
-je    label_52
-cmp   word ptr ds:[bx], -1
+je    bad_state
+cmp   word ptr ds:[bx], STATENUM_NULL
 je    exit_p_setpsprite
-label_52:
-imul  si, word ptr ds:[bx], 6
+
+bad_state:
+
+
 mov   ax, STATES_SEGMENT
 mov   es, ax
-add   si, 4
-mov   dx, word ptr es:[si]
+mov   dx, word ptr es:[si+4]
 cmp   word ptr ds:[bx + 2], 0
 jne   exit_p_setpsprite
 test  dx, dx
-jne   label_53
-label_51:
+jne   loop_next_state
+
+null_statenum_break_and_exit:
 mov   word ptr ds:[bx], STATENUM_NULL
 exit_p_setpsprite:
+pop   di
 pop   si
 pop   cx
 pop   bx
 ret   
 switch_label_2:
-mov   ax, bx
 call  A_WeaponReady_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_3:
-mov   ax, bx
 call  A_Lower_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_4:
-mov   ax, bx
 call  A_Raise_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_5:
-mov   ax, bx
 call  A_Punch_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_6:
-mov   ax, bx
 call  A_Refire_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_7:
-mov   ax, bx
 call  A_FirePistol_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_8:
-mov   si, OFFSET _player + PLAYER_T.player_extralightvalue
-mov   byte ptr ds:[si], cl
-jmp   label_29
+call  A_Light1_
+jmp   finished_p_setpsprite_switchblock
 switch_label_9:
-mov   ax, bx
 call  A_FireShotgun_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_10:
-mov   si, OFFSET _player + PLAYER_T.player_extralightvalue
-mov   byte ptr ds:[si], 2
-jmp   label_29
+call  A_Light2_
+jmp   finished_p_setpsprite_switchblock
 switch_label_11:
-mov   ax, bx
 call  A_FireShotgun2_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_12:
 call  A_CheckReload_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_13:
-mov   si, OFFSET _playerMobj
-mov   dx, SFX_DBOPN
-mov   ax, word ptr ds:[si]
-call  S_StartSound_
-jmp   label_29
+call  A_OpenShotgun2_
+jmp   finished_p_setpsprite_switchblock
 switch_label_14:
-mov   si, OFFSET _playerMobj
-mov   dx, SFX_DBLOAD
-mov   ax, word ptr ds:[si]
-call  S_StartSound_
-jmp   label_29
+call  A_LoadShotgun2_
+jmp   finished_p_setpsprite_switchblock
 switch_label_15:
-mov   si, OFFSET _playerMobj
-mov   dx, SFX_DBCLS
-mov   ax, word ptr ds:[si]
-call  S_StartSound_
-mov   ax, bx
-call  A_Refire_
-jmp   label_29
+call  A_CloseShotgun2_
+jmp   finished_p_setpsprite_switchblock
 switch_label_16:
-mov   ax, bx
 call  A_FireCGun_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_17:
-mov   ax, bx
 call  A_GunFlash_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_18:
-mov   ax, bx
 call  A_FireMissile_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_19:
-mov   ax, bx
 call  A_Saw_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_20:
-mov   ax, bx
 call  A_FirePlasma_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 switch_label_21:
-mov   si, OFFSET _playerMobj
-mov   dx, SFX_BFG
-mov   ax, word ptr ds:[si]
-call  S_StartSound_
-jmp   label_29
+call  A_BFGsound_
+jmp   finished_p_setpsprite_switchblock
 switch_label_22:
-mov   ax, bx
 call  A_FireBFG_
-jmp   label_29
+jmp   finished_p_setpsprite_switchblock
 
 ENDP
 

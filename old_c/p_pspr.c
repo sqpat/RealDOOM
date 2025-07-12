@@ -580,7 +580,7 @@ void __near A_FireShotgun2 ( pspdef_t __near*	psp ) {
 	damage = 5*(P_Random ()%3+1);
 	// todo use fixed_t_union to reduce shift
 	angle = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-	angle = MOD_FINE_ANGLE( angle + ((P_Random()-P_Random())<<(19-ANGLETOFINESHIFT)));
+	angle = MOD_FINE_ANGLE( angle + ( ( P_Random()-P_Random() )<<(19-ANGLETOFINESHIFT)) );
 	P_LineAttack (playerMobj,
 		      angle,
 		MISSILERANGE,
