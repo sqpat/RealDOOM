@@ -36,6 +36,9 @@ PUBLIC  P_ENEMY_STARTMARKER_
 ENDP
 
 
+PROC    P_RecursiveSound_ NEAR
+PUBLIC  P_RecursiveSound_
+
 
 0x00000000000028a0:  53                   push  bx
 0x00000000000028a1:  51                   push  cx
@@ -43,10 +46,10 @@ ENDP
 0x00000000000028a3:  57                   push  di
 0x00000000000028a4:  55                   push  bp
 0x00000000000028a5:  89 E5                mov   bp, sp
-0x00000000000028a7:  83 EC 10             sub   sp, 0x10
+0x00000000000028a7:  83 EC 10             sub   sp, 010h
 0x00000000000028aa:  50                   push  ax
 0x00000000000028ab:  88 56 FC             mov   byte ptr [bp - 4], dl
-0x00000000000028ae:  C7 46 F8 90 21       mov   word ptr [bp - 8], 0x2190
+0x00000000000028ae:  C7 46 F8 90 21       mov   word ptr [bp - 8], SECTORS_SEGMENT
 0x00000000000028b3:  C7 46 F0 74 09       mov   word ptr [bp - 0x10], 0x974
 0x00000000000028b8:  C7 46 F2 00 94       mov   word ptr [bp - 0xe], 0x9400
 0x00000000000028bd:  89 C3                mov   bx, ax
@@ -83,7 +86,7 @@ ENDP
 0x000000000000290b:  31 C9                xor   cx, cx
 0x000000000000290d:  26 8B 47 0A          mov   ax, word ptr es:[bx + 0xa]
 0x0000000000002911:  8B 5E EE             mov   bx, word ptr [bp - 0x12]
-0x0000000000002914:  C7 46 F8 90 21       mov   word ptr [bp - 8], 0x2190
+0x0000000000002914:  C7 46 F8 90 21       mov   word ptr [bp - 8], SECTORS_SEGMENT
 0x0000000000002919:  C1 E3 04             shl   bx, 4
 0x000000000000291c:  89 46 F4             mov   word ptr [bp - 0xc], ax
 0x000000000000291f:  89 5E F6             mov   word ptr [bp - 0xa], bx
@@ -152,6 +155,13 @@ ENDP
 0x00000000000029be:  E8 DF FE             call  0x28a0
 0x00000000000029c1:  EB AC                jmp   0x296f
 0x00000000000029c3:  FC                   cld   
+
+ENDP
+
+
+PROC    P_NoiseAlert_ FAR
+PUBLIC  P_NoiseAlert_
+
 0x00000000000029c4:  53                   push  bx
 0x00000000000029c5:  52                   push  dx
 0x00000000000029c6:  56                   push  si
@@ -167,6 +177,13 @@ ENDP
 0x00000000000029db:  5B                   pop   bx
 0x00000000000029dc:  CB                   retf  
 0x00000000000029dd:  FC                   cld   
+
+ENDP
+
+
+PROC    P_CheckMeleeRange_ NEAR
+PUBLIC  P_CheckMeleeRange_
+
 0x00000000000029de:  53                   push  bx
 0x00000000000029df:  51                   push  cx
 0x00000000000029e0:  52                   push  dx
@@ -253,6 +270,13 @@ ENDP
 0x0000000000002aab:  59                   pop   cx
 0x0000000000002aac:  5B                   pop   bx
 0x0000000000002aad:  C3                   ret   
+
+ENDP
+
+
+PROC    P_CheckMissileRange_ NEAR
+PUBLIC  P_CheckMissileRange_
+
 0x0000000000002aae:  53                   push  bx
 0x0000000000002aaf:  51                   push  cx
 0x0000000000002ab0:  52                   push  dx
@@ -381,6 +405,9 @@ ENDP
 0x0000000000002be5:  59                   pop   cx
 0x0000000000002be6:  5B                   pop   bx
 0x0000000000002be7:  C3                   ret   
+
+; todo some table?
+
 0x0000000000002be8:  51                   push  cx
 0x0000000000002be9:  2C B6                sub   al, 0xb6
 0x0000000000002beb:  2C C8                sub   al, 0xc8
@@ -389,6 +416,15 @@ ENDP
 0x0000000000002bf1:  2C EE                sub   al, 0xee
 0x0000000000002bf3:  2C 01                sub   al, 1
 0x0000000000002bf5:  2D 12 2D             sub   ax, 0x2d12
+
+
+ENDP
+
+
+PROC    P_Move_ NEAR
+PUBLIC  P_Move_
+
+
 0x0000000000002bf8:  52                   push  dx
 0x0000000000002bf9:  56                   push  si
 0x0000000000002bfa:  57                   push  di
@@ -556,6 +592,13 @@ ENDP
 0x0000000000002d9f:  5E                   pop   si
 0x0000000000002da0:  5A                   pop   dx
 0x0000000000002da1:  C3                   ret   
+
+ENDP
+
+
+PROC    P_TryWalk_ NEAR
+PUBLIC  P_TryWalk_
+
 0x0000000000002da2:  56                   push  si
 0x0000000000002da3:  89 C6                mov   si, ax
 0x0000000000002da5:  E8 50 FE             call  0x2bf8
@@ -572,6 +615,13 @@ ENDP
 0x0000000000002dbd:  5E                   pop   si
 0x0000000000002dbe:  C3                   ret   
 0x0000000000002dbf:  FC                   cld   
+
+ENDP
+
+
+PROC    P_NewChaseDir_ NEAR
+PUBLIC  P_NewChaseDir_
+
 0x0000000000002dc0:  52                   push  dx
 0x0000000000002dc1:  56                   push  si
 0x0000000000002dc2:  57                   push  di
@@ -813,6 +863,13 @@ ENDP
 0x0000000000003021:  5A                   pop   dx
 0x0000000000003022:  C3                   ret   
 0x0000000000003023:  FC                   cld   
+
+ENDP
+
+
+PROC    P_LookForPlayers_ NEAR
+PUBLIC  P_LookForPlayers_
+
 0x0000000000003024:  53                   push  bx
 0x0000000000003025:  51                   push  cx
 0x0000000000003026:  56                   push  si
@@ -926,6 +983,13 @@ ENDP
 0x000000000000312f:  59                   pop   cx
 0x0000000000003130:  5B                   pop   bx
 0x0000000000003131:  C3                   ret   
+
+ENDP
+
+
+PROC    A_KeenDie_ NEAR
+PUBLIC  A_KeenDie_
+
 0x0000000000003132:  52                   push  dx
 0x0000000000003133:  56                   push  si
 0x0000000000003134:  55                   push  bp
@@ -974,6 +1038,13 @@ ENDP
 0x000000000000319f:  7F E6                jg    0x3187
 0x00000000000031a1:  EB CE                jmp   0x3171
 0x00000000000031a3:  FC                   cld   
+
+ENDP
+
+
+PROC    A_Look_ NEAR
+PUBLIC  A_Look_
+
 0x00000000000031a4:  52                   push  dx
 0x00000000000031a5:  56                   push  si
 0x00000000000031a6:  57                   push  di
@@ -1086,6 +1157,13 @@ ENDP
 0x00000000000032aa:  88 DA                mov   dl, bl
 0x00000000000032ac:  89 F0                mov   ax, si
 0x00000000000032ae:  EB 94                jmp   0x3244
+
+ENDP
+
+
+PROC    A_Chase_ NEAR
+PUBLIC  A_Chase_
+
 0x00000000000032b0:  52                   push  dx
 0x00000000000032b1:  56                   push  si
 0x00000000000032b2:  57                   push  di
@@ -1274,6 +1352,13 @@ ENDP
 0x0000000000003493:  5A                   pop   dx
 0x0000000000003494:  C3                   ret   
 0x0000000000003495:  FC                   cld   
+
+ENDP
+
+
+PROC    A_FaceTarget_ NEAR
+PUBLIC  A_FaceTarget_
+
 0x0000000000003496:  53                   push  bx
 0x0000000000003497:  51                   push  cx
 0x0000000000003498:  52                   push  dx
@@ -1345,6 +1430,13 @@ ENDP
 0x000000000000353d:  5B                   pop   bx
 0x000000000000353e:  C3                   ret   
 0x000000000000353f:  FC                   cld   
+
+ENDP
+
+
+PROC    A_PosAttack_ NEAR
+PUBLIC  A_PosAttack_
+
 0x0000000000003540:  53                   push  bx
 0x0000000000003541:  51                   push  cx
 0x0000000000003542:  52                   push  dx
@@ -1417,6 +1509,13 @@ ENDP
 0x00000000000035cf:  5B                   pop   bx
 0x00000000000035d0:  C3                   ret   
 0x00000000000035d1:  FC                   cld   
+
+ENDP
+
+
+PROC    A_SPosAttack_ NEAR
+PUBLIC  A_SPosAttack_
+
 0x00000000000035d2:  53                   push  bx
 0x00000000000035d3:  51                   push  cx
 0x00000000000035d4:  52                   push  dx
@@ -1496,6 +1595,13 @@ ENDP
 0x0000000000003673:  5B                   pop   bx
 0x0000000000003674:  C3                   ret   
 0x0000000000003675:  FC                   cld   
+
+ENDP
+
+
+PROC    A_CPosAttack_ NEAR
+PUBLIC  A_CPosAttack_
+
 0x0000000000003676:  53                   push  bx
 0x0000000000003677:  51                   push  cx
 0x0000000000003678:  52                   push  dx
@@ -1570,6 +1676,13 @@ ENDP
 0x0000000000003707:  59                   pop   cx
 0x0000000000003708:  5B                   pop   bx
 0x0000000000003709:  C3                   ret   
+
+ENDP
+
+
+PROC    A_CPosRefire_ NEAR
+PUBLIC  A_CPosRefire_
+
 0x000000000000370a:  52                   push  dx
 0x000000000000370b:  56                   push  si
 0x000000000000370c:  57                   push  di
@@ -1620,6 +1733,13 @@ ENDP
 0x0000000000003773:  5E                   pop   si
 0x0000000000003774:  5A                   pop   dx
 0x0000000000003775:  C3                   ret   
+
+ENDP
+
+
+PROC    A_SpidRefire_ NEAR
+PUBLIC  A_SpidRefire_
+
 0x0000000000003776:  52                   push  dx
 0x0000000000003777:  56                   push  si
 0x0000000000003778:  57                   push  di
@@ -1670,6 +1790,13 @@ ENDP
 0x00000000000037df:  5E                   pop   si
 0x00000000000037e0:  5A                   pop   dx
 0x00000000000037e1:  C3                   ret   
+
+ENDP
+
+
+PROC    A_BspiAttack_ NEAR
+PUBLIC  A_BspiAttack_
+
 0x00000000000037e2:  52                   push  dx
 0x00000000000037e3:  56                   push  si
 0x00000000000037e4:  89 C6                mov   si, ax
@@ -1688,6 +1815,13 @@ ENDP
 0x0000000000003803:  5A                   pop   dx
 0x0000000000003804:  C3                   ret   
 0x0000000000003805:  FC                   cld   
+
+ENDP
+
+
+PROC    A_TroopAttack_ NEAR
+PUBLIC  A_TroopAttack_
+
 0x0000000000003806:  52                   push  dx
 0x0000000000003807:  56                   push  si
 0x0000000000003808:  89 C6                mov   si, ax
@@ -1736,6 +1870,13 @@ ENDP
 0x0000000000003869:  5E                   pop   si
 0x000000000000386a:  5A                   pop   dx
 0x000000000000386b:  C3                   ret   
+
+ENDP
+
+
+PROC    A_SargAttack_ NEAR
+PUBLIC  A_SargAttack_
+
 0x000000000000386c:  53                   push  bx
 0x000000000000386d:  51                   push  cx
 0x000000000000386e:  52                   push  dx
@@ -1774,6 +1915,13 @@ ENDP
 0x00000000000038af:  5B                   pop   bx
 0x00000000000038b0:  C3                   ret   
 0x00000000000038b1:  FC                   cld   
+
+ENDP
+
+
+PROC    A_HeadAttack_ NEAR
+PUBLIC  A_HeadAttack_
+
 0x00000000000038b2:  52                   push  dx
 0x00000000000038b3:  56                   push  si
 0x00000000000038b4:  89 C6                mov   si, ax
@@ -1814,6 +1962,13 @@ ENDP
 0x0000000000003903:  5E                   pop   si
 0x0000000000003904:  5A                   pop   dx
 0x0000000000003905:  C3                   ret   
+ENDP
+
+
+PROC    A_CyberAttack_ NEAR
+PUBLIC  A_CyberAttack_
+
+
 0x0000000000003906:  52                   push  dx
 0x0000000000003907:  56                   push  si
 0x0000000000003908:  89 C6                mov   si, ax
@@ -1832,6 +1987,13 @@ ENDP
 0x0000000000003927:  5A                   pop   dx
 0x0000000000003928:  C3                   ret   
 0x0000000000003929:  FC                   cld   
+
+ENDP
+
+
+PROC    A_BruisAttack_ NEAR
+PUBLIC  A_BruisAttack_
+
 0x000000000000392a:  52                   push  dx
 0x000000000000392b:  56                   push  si
 0x000000000000392c:  89 C6                mov   si, ax
@@ -1880,6 +2042,13 @@ ENDP
 0x000000000000398b:  5A                   pop   dx
 0x000000000000398c:  C3                   ret   
 0x000000000000398d:  FC                   cld   
+
+ENDP
+
+
+PROC    A_SkelMissile_ NEAR
+PUBLIC  A_SkelMissile_
+
 0x000000000000398e:  52                   push  dx
 0x000000000000398f:  56                   push  si
 0x0000000000003990:  57                   push  di
@@ -1932,6 +2101,13 @@ ENDP
 0x0000000000003a0b:  5E                   pop   si
 0x0000000000003a0c:  5A                   pop   dx
 0x0000000000003a0d:  C3                   ret   
+
+ENDP
+
+
+PROC    A_Tracer_ NEAR
+PUBLIC  A_Tracer_
+
 0x0000000000003a0e:  52                   push  dx
 0x0000000000003a0f:  56                   push  si
 0x0000000000003a10:  57                   push  di
@@ -2176,6 +2352,14 @@ ENDP
 0x0000000000003cb7:  5E                   pop   si
 0x0000000000003cb8:  5A                   pop   dx
 0x0000000000003cb9:  C3                   ret   
+
+
+ENDP
+
+
+PROC    A_SkelWhoosh_ NEAR
+PUBLIC  A_SkelWhoosh_
+
 0x0000000000003cba:  53                   push  bx
 0x0000000000003cbb:  52                   push  dx
 0x0000000000003cbc:  89 C3                mov   bx, ax
@@ -2193,6 +2377,13 @@ ENDP
 0x0000000000003cd5:  5B                   pop   bx
 0x0000000000003cd6:  C3                   ret   
 0x0000000000003cd7:  FC                   cld   
+
+ENDP
+
+
+PROC    A_SkelFist_ NEAR
+PUBLIC  A_SkelFist_
+
 0x0000000000003cd8:  53                   push  bx
 0x0000000000003cd9:  51                   push  cx
 0x0000000000003cda:  52                   push  dx
@@ -2236,6 +2427,13 @@ ENDP
 0x0000000000003d27:  5B                   pop   bx
 0x0000000000003d28:  C3                   ret   
 0x0000000000003d29:  FC                   cld   
+
+ENDP
+
+
+PROC    PIT_VileCheck_ NEAR
+PUBLIC  PIT_VileCheck_
+
 0x0000000000003d2a:  56                   push  si
 0x0000000000003d2b:  57                   push  di
 0x0000000000003d2c:  55                   push  bp
@@ -2341,6 +2539,13 @@ ENDP
 ;3e28
 some_lookup_table:
 db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
+
+
+ENDP
+
+
+PROC    A_VileChase_ NEAR
+PUBLIC  A_VileChase_
 
 0x0000000000003e38:  52                   push  dx
 0x0000000000003e39:  56                   push  si
@@ -2573,6 +2778,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004084:  29 04                sub   word ptr [si], ax
 0x0000000000004086:  19 54 02             sbb   word ptr [si + 2], dx
 0x0000000000004089:  E9 3F FE             jmp   0x3ecb
+
+ENDP
+
+
+PROC    A_VileStart_ NEAR
+PUBLIC  A_VileStart_
+
 0x000000000000408c:  52                   push  dx
 0x000000000000408d:  BA 36 00             mov   dx, 0x36
 0x0000000000004090:  0E                   push  cs
@@ -2581,6 +2793,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004095:  5A                   pop   dx
 0x0000000000004096:  C3                   ret   
 0x0000000000004097:  FC                   cld   
+
+ENDP
+
+
+PROC    A_StartFire_ NEAR
+PUBLIC  A_StartFire_
+
 0x0000000000004098:  52                   push  dx
 0x0000000000004099:  56                   push  si
 0x000000000000409a:  89 C6                mov   si, ax
@@ -2592,6 +2811,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x00000000000040a9:  5E                   pop   si
 0x00000000000040aa:  5A                   pop   dx
 0x00000000000040ab:  C3                   ret   
+
+ENDP
+
+
+PROC    A_FireCrackle_ NEAR
+PUBLIC  A_FireCrackle_
+
 0x00000000000040ac:  52                   push  dx
 0x00000000000040ad:  56                   push  si
 0x00000000000040ae:  89 C6                mov   si, ax
@@ -2603,6 +2829,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x00000000000040bd:  5E                   pop   si
 0x00000000000040be:  5A                   pop   dx
 0x00000000000040bf:  C3                   ret   
+
+ENDP
+
+
+PROC    A_Fire_ NEAR
+PUBLIC  A_Fire_
+
 0x00000000000040c0:  52                   push  dx
 0x00000000000040c1:  56                   push  si
 0x00000000000040c2:  57                   push  di
@@ -2689,6 +2922,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x00000000000041a1:  5A                   pop   dx
 0x00000000000041a2:  C3                   ret   
 0x00000000000041a3:  FC                   cld   
+
+ENDP
+
+
+PROC    A_VileTarget_ NEAR
+PUBLIC  A_VileTarget_
+
 0x00000000000041a4:  53                   push  bx
 0x00000000000041a5:  51                   push  cx
 0x00000000000041a6:  52                   push  dx
@@ -2785,6 +3025,12 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004259:  42                   inc   dx
 0x000000000000425a:  91                   xchg  ax, cx
 0x000000000000425b:  42                   inc   dx
+
+ENDP
+
+PROC    GetVileMomz_ NEAR
+PUBLIC  GetVileMomz_
+
 0x000000000000425c:  53                   push  bx
 0x000000000000425d:  2C 03                sub   al, 3
 0x000000000000425f:  3C 16                cmp   al, 0x16
@@ -2820,6 +3066,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x000000000000429d:  5B                   pop   bx
 0x000000000000429e:  C3                   ret   
 0x000000000000429f:  FC                   cld   
+
+ENDP
+
+
+PROC    A_VileAttack_ NEAR
+PUBLIC  A_VileAttack_
+
 0x00000000000042a0:  52                   push  dx
 0x00000000000042a1:  56                   push  si
 0x00000000000042a2:  57                   push  di
@@ -2924,6 +3177,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x00000000000043ad:  5E                   pop   si
 0x00000000000043ae:  5A                   pop   dx
 0x00000000000043af:  C3                   ret   
+
+ENDP
+
+
+PROC    A_FatRaise_ NEAR
+PUBLIC  A_FatRaise_
+
 0x00000000000043b0:  53                   push  bx
 0x00000000000043b1:  52                   push  dx
 0x00000000000043b2:  89 C3                mov   bx, ax
@@ -2936,6 +3196,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x00000000000043c1:  5A                   pop   dx
 0x00000000000043c2:  5B                   pop   bx
 0x00000000000043c3:  C3                   ret   
+
+ENDP
+
+
+PROC    A_FatAttack1_ NEAR
+PUBLIC  A_FatAttack1_
+
 0x00000000000043c4:  52                   push  dx
 0x00000000000043c5:  56                   push  si
 0x00000000000043c6:  57                   push  di
@@ -3004,6 +3271,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x000000000000447b:  5A                   pop   dx
 0x000000000000447c:  C3                   ret   
 0x000000000000447d:  FC                   cld   
+
+ENDP
+
+
+PROC    A_FatAttack2_ NEAR
+PUBLIC  A_FatAttack2_
+
 0x000000000000447e:  52                   push  dx
 0x000000000000447f:  56                   push  si
 0x0000000000004480:  57                   push  di
@@ -3069,6 +3343,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x000000000000452d:  5E                   pop   si
 0x000000000000452e:  5A                   pop   dx
 0x000000000000452f:  C3                   ret   
+
+ENDP
+
+
+PROC    A_FatAttack3_ NEAR
+PUBLIC  A_FatAttack3_
+
 0x0000000000004530:  52                   push  dx
 0x0000000000004531:  56                   push  si
 0x0000000000004532:  57                   push  di
@@ -3150,6 +3431,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x000000000000460f:  5E                   pop   si
 0x0000000000004610:  5A                   pop   dx
 0x0000000000004611:  C3                   ret   
+
+ENDP
+
+
+PROC    A_SkullAttack_ NEAR
+PUBLIC  A_SkullAttack_
+
 0x0000000000004612:  52                   push  dx
 0x0000000000004613:  56                   push  si
 0x0000000000004614:  57                   push  di
@@ -3255,6 +3543,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x000000000000472f:  5A                   pop   dx
 0x0000000000004730:  C3                   ret   
 0x0000000000004731:  FC                   cld   
+
+ENDP
+
+
+PROC    A_PainShootSkull_ NEAR
+PUBLIC  A_PainShootSkull_
+
 0x0000000000004732:  52                   push  dx
 0x0000000000004733:  56                   push  si
 0x0000000000004734:  57                   push  di
@@ -3398,6 +3693,12 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x000000000000488d:  5A                   pop   dx
 0x000000000000488e:  C3                   ret   
 0x000000000000488f:  FC                   cld   
+
+ENDP
+
+PROC    A_PainAttack_ NEAR
+PUBLIC  A_PainAttack_
+
 0x0000000000004890:  56                   push  si
 0x0000000000004891:  89 C6                mov   si, ax
 0x0000000000004893:  83 7C 22 00          cmp   word ptr [si + 0x22], 0
@@ -3414,6 +3715,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x00000000000048af:  5E                   pop   si
 0x00000000000048b0:  C3                   ret   
 0x00000000000048b1:  FC                   cld   
+
+ENDP
+
+
+PROC    A_PainDie_ NEAR
+PUBLIC  A_PainDie_
+
 0x00000000000048b2:  52                   push  dx
 0x00000000000048b3:  56                   push  si
 0x00000000000048b4:  57                   push  di
@@ -3440,6 +3748,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x00000000000048e9:  5E                   pop   si
 0x00000000000048ea:  5A                   pop   dx
 0x00000000000048eb:  C3                   ret   
+
+ENDP
+
+
+PROC    A_Scream_ NEAR
+PUBLIC  A_Scream_
+
 0x00000000000048ec:  53                   push  bx
 0x00000000000048ed:  52                   push  dx
 0x00000000000048ee:  56                   push  si
@@ -3509,6 +3824,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x000000000000497d:  5B                   pop   bx
 0x000000000000497e:  C3                   ret   
 0x000000000000497f:  FC                   cld   
+
+ENDP
+
+
+PROC    A_XScream_ NEAR
+PUBLIC  A_XScream_
+
 0x0000000000004980:  52                   push  dx
 0x0000000000004981:  BA 1F 00             mov   dx, 0x1f
 0x0000000000004984:  0E                   push  cs
@@ -3517,6 +3839,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004989:  5A                   pop   dx
 0x000000000000498a:  C3                   ret   
 0x000000000000498b:  FC                   cld   
+
+ENDP
+
+
+PROC    A_Pain_ NEAR
+PUBLIC  A_Pain_
+
 0x000000000000498c:  53                   push  bx
 0x000000000000498d:  52                   push  dx
 0x000000000000498e:  55                   push  bp
@@ -3539,9 +3868,23 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x00000000000049b5:  5B                   pop   bx
 0x00000000000049b6:  C3                   ret   
 0x00000000000049b7:  FC                   cld   
+
+ENDP
+
+
+PROC    A_Fall_ NEAR
+PUBLIC  A_Fall_
+
 0x00000000000049b8:  8E C1                mov   es, cx
 0x00000000000049ba:  26 80 67 14 FD       and   byte ptr es:[bx + 0x14], 0xfd
 0x00000000000049bf:  C3                   ret   
+
+ENDP
+
+
+PROC    A_Explode_ NEAR
+PUBLIC  A_Explode_
+
 0x00000000000049c0:  52                   push  dx
 0x00000000000049c1:  56                   push  si
 0x00000000000049c2:  89 C6                mov   si, ax
@@ -3558,6 +3901,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x00000000000049dd:  4A                   dec   dx
 0x00000000000049de:  D7                   xlatb 
 0x00000000000049df:  4A                   dec   dx
+
+ENDP
+
+
+PROC    A_BossDeath_ NEAR
+PUBLIC  A_BossDeath_
+
 0x00000000000049e0:  53                   push  bx
 0x00000000000049e1:  51                   push  cx
 0x00000000000049e2:  52                   push  dx
@@ -3726,6 +4076,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004b69:  5B                   pop   bx
 0x0000000000004b6a:  C3                   ret   
 0x0000000000004b6b:  FC                   cld   
+
+ENDP
+
+
+PROC    A_Hoof_ NEAR
+PUBLIC  A_Hoof_
+
 0x0000000000004b6c:  52                   push  dx
 0x0000000000004b6d:  56                   push  si
 0x0000000000004b6e:  89 C6                mov   si, ax
@@ -3737,6 +4094,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004b7d:  5E                   pop   si
 0x0000000000004b7e:  5A                   pop   dx
 0x0000000000004b7f:  C3                   ret   
+
+ENDP
+
+
+PROC    A_Metal_ NEAR
+PUBLIC  A_Metal_
+
 0x0000000000004b80:  52                   push  dx
 0x0000000000004b81:  56                   push  si
 0x0000000000004b82:  89 C6                mov   si, ax
@@ -3748,6 +4112,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004b91:  5E                   pop   si
 0x0000000000004b92:  5A                   pop   dx
 0x0000000000004b93:  C3                   ret   
+
+ENDP
+
+
+PROC    A_BabyMetal_ NEAR
+PUBLIC  A_BabyMetal_
+
 0x0000000000004b94:  52                   push  dx
 0x0000000000004b95:  56                   push  si
 0x0000000000004b96:  89 C6                mov   si, ax
@@ -3759,6 +4130,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004ba5:  5E                   pop   si
 0x0000000000004ba6:  5A                   pop   dx
 0x0000000000004ba7:  C3                   ret   
+
+ENDP
+
+
+PROC    A_BrainAwake_ NEAR
+PUBLIC  A_BrainAwake_
+
 0x0000000000004ba8:  53                   push  bx
 0x0000000000004ba9:  52                   push  dx
 0x0000000000004baa:  BB 28 01             mov   bx, 0x128
@@ -3797,6 +4175,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004c03:  FF 07                inc   word ptr [bx]
 0x0000000000004c05:  EB CC                jmp   0x4bd3
 0x0000000000004c07:  FC                   cld   
+
+ENDP
+
+
+PROC    A_BrainPain_ NEAR
+PUBLIC  A_BrainPain_
+
 0x0000000000004c08:  52                   push  dx
 0x0000000000004c09:  BA 61 00             mov   dx, 0x61
 0x0000000000004c0c:  31 C0                xor   ax, ax
@@ -3806,6 +4191,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004c13:  5A                   pop   dx
 0x0000000000004c14:  C3                   ret   
 0x0000000000004c15:  FC                   cld   
+
+ENDP
+
+
+PROC    A_BrainScream_ NEAR
+PUBLIC  A_BrainScream_
+
 0x0000000000004c16:  52                   push  dx
 0x0000000000004c17:  56                   push  si
 0x0000000000004c18:  57                   push  di
@@ -3881,6 +4273,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004cc0:  77 F2                ja    0x4cb4
 0x0000000000004cc2:  83 C6 08             add   si, 8
 0x0000000000004cc5:  E9 71 FF             jmp   0x4c39
+
+ENDP
+
+
+PROC    A_BrainExplode_ NEAR
+PUBLIC  A_BrainExplode_
+
 0x0000000000004cc8:  52                   push  dx
 0x0000000000004cc9:  56                   push  si
 0x0000000000004cca:  57                   push  di
@@ -3941,6 +4340,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004d47:  5A                   pop   dx
 0x0000000000004d48:  C3                   ret   
 0x0000000000004d49:  FC                   cld   
+
+ENDP
+
+
+PROC    A_BrainSpit_ NEAR
+PUBLIC  A_BrainSpit_
+
 0x0000000000004d4a:  52                   push  dx
 0x0000000000004d4b:  56                   push  si
 0x0000000000004d4c:  57                   push  di
@@ -4030,6 +4436,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004e1d:  5A                   pop   dx
 0x0000000000004e1e:  C3                   ret   
 0x0000000000004e1f:  FC                   cld   
+
+ENDP
+
+
+PROC    A_SpawnSound_ NEAR
+PUBLIC  A_SpawnSound_
+
 0x0000000000004e20:  52                   push  dx
 0x0000000000004e21:  56                   push  si
 0x0000000000004e22:  89 C6                mov   si, ax
@@ -4041,6 +4454,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004e31:  5E                   pop   si
 0x0000000000004e32:  5A                   pop   dx
 0x0000000000004e33:  C3                   ret   
+
+ENDP
+
+
+PROC    A_SpawnFly_ NEAR
+PUBLIC  A_SpawnFly_
+
 0x0000000000004e34:  52                   push  dx
 0x0000000000004e35:  56                   push  si
 0x0000000000004e36:  57                   push  di
@@ -4174,6 +4594,13 @@ db C6, 3E, 90, 3F, A8, 3F, AE, 3F, C6, 3F, D1, 3F, 69, 40, 74, 40
 0x0000000000004f76:  B0 0F                mov   al, 0xf
 0x0000000000004f78:  E9 2F FF             jmp   0x4eaa
 0x0000000000004f7b:  FC                   cld   
+
+ENDP
+
+
+PROC    A_PlayerScream_ NEAR
+PUBLIC  A_PlayerScream_
+
 0x0000000000004f7c:  53                   push  bx
 0x0000000000004f7d:  52                   push  dx
 0x0000000000004f7e:  BB EB 02             mov   bx, 0x2eb
