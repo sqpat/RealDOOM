@@ -1086,66 +1086,35 @@ PUBLIC A_FireCGun_
 
 push  bx
 push  dx
-push  si
-push  di
-mov   si, ax
-mov   bx, OFFSET _playerMobj
+mov   bx, ax
 mov   dx, SFX_PISTOL
-mov   ax, word ptr ds:[bx]
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
+mov   ax, word ptr ds:[_playerMobj]
+
 call  S_StartSound_
-mov   al, byte ptr ds:[bx]
-xor   ah, ah
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   al, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
-mov   bx, ax
-add   bx, ax
-cmp   word ptr ds:[bx + OFFSET _player + PLAYER_T.player_ammo], 0
-jne   label_21
-pop   di
-pop   si
-pop   dx
-pop   bx
-ret   
-label_21:
-mov   bx, OFFSET _playerMobj
+
+
+cmp   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)], 0
+je    exit_fire_cgun
+
 mov   dx, S_PLAY_ATK2
-mov   ax, word ptr ds:[bx]
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
+mov   ax, word ptr ds:[_playerMobj]
 call  P_SetMobjState_
-mov   al, byte ptr ds:[bx]
-xor   ah, ah
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   al, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
-mov   bx, ax
-add   bx, ax
-mov   di, OFFSET _player + PLAYER_T.player_readyweapon
-dec   word ptr ds:[bx + OFFSET _player + PLAYER_T.player_ammo]
-mov   al, byte ptr ds:[di]
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
-add   dx, word ptr ds:[si]
-mov   ax, 1
+
+dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]
+mov   dx, word ptr ds:[_weaponinfo + (WP_CHAINGUN * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
+add   dx, word ptr ds:[bx + PSPDEF_T.pspdef_statenum]
 sub   dx, S_CHAIN1
-mov   bx, OFFSET _player + PLAYER_T.player_refire
+mov   ax, PS_FLASH
+
 call  P_SetPsprite_
 call  P_BulletSlope_
-cmp   byte ptr ds:[bx], 0
-jne   label_61
-mov   al, 1
-cbw  
+xor   ax, ax
+cmp   byte ptr ds:[_player + PLAYER_T.player_refire], al
+jne   do_inaccurate_chaingunshot
+inc   ax
+do_inaccurate_chaingunshot:
 call  P_GunShot_
-pop   di
-pop   si
-pop   dx
-pop   bx
-ret   
-label_61:
-xor   al, al
-cbw  
-call  P_GunShot_
-pop   di
-pop   si
+exit_fire_cgun:
 pop   dx
 pop   bx
 ret   
@@ -1156,50 +1125,35 @@ ENDP
 PROC A_Light0_ NEAR
 PUBLIC A_Light0_
 
-push  bx
-mov   bx, OFFSET _player + PLAYER_T.player_extralightvalue
-mov   byte ptr ds:[bx], 0
-pop   bx
+mov   byte ptr ds:[_player + PLAYER_T.player_extralightvalue], 0
 ret   
-cld  ;todo remove
 
 ENDP
 
 PROC A_Light1_ NEAR
 PUBLIC A_Light1_
 
-push  bx
-mov   bx, OFFSET _player + PLAYER_T.player_extralightvalue
-mov   byte ptr ds:[bx], 1
-pop   bx
+mov   byte ptr ds:[_player + PLAYER_T.player_extralightvalue], 1
 ret   
-cld  ;todo remove
 
 ENDP
 
 PROC A_Light2_ NEAR
 PUBLIC A_Light2_
 
-push  bx
-mov   bx, OFFSET _player + PLAYER_T.player_extralightvalue
-mov   byte ptr ds:[bx], 2
-pop   bx
+mov   byte ptr ds:[_player + PLAYER_T.player_extralightvalue], 2
 ret   
-cld  ;todo remove
 
 ENDP
 
 PROC A_OpenShotgun2_ NEAR
 PUBLIC A_OpenShotgun2_
 
-push  bx
 push  dx
-mov   bx, OFFSET _playerMobj
 mov   dx, SFX_DBOPN
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
 pop   dx
-pop   bx
 ret
 
 ENDP
@@ -1207,14 +1161,11 @@ ENDP
 PROC A_LoadShotgun2_ NEAR
 PUBLIC A_LoadShotgun2_
 
-push  bx
 push  dx
-mov   bx, OFFSET _playerMobj
 mov   dx, SFX_DBLOAD
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
 pop   dx
-pop   bx
 ret   
 
 ENDP
@@ -1222,21 +1173,15 @@ ENDP
 PROC A_CloseShotgun2_ NEAR
 PUBLIC A_CloseShotgun2_
 
-push  bx
 push  dx
-push  si
-mov   bx, ax
-mov   si, OFFSET _playerMobj
+push  ax
 mov   dx, SFX_DBCLS
-mov   ax, word ptr ds:[si]
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
-mov   ax, bx
+pop   ax
 call  A_Refire_
-pop   si
 pop   dx
-pop   bx
 ret   
-cld  ;todo remove
 
 ENDP
 
