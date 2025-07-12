@@ -383,7 +383,7 @@ VISPLANE_T STRUC
 
 
 VISPLANE_T ENDS
-
+ 
 
 
 PSPDEF_T STRUC
@@ -417,3 +417,15 @@ STATE_T STRUC
 
 STATE_T ENDS
 
+MOBJINFO_T STRUC
+
+	mobjinfo_spawnstate     dw ?  ; 0
+	mobjinfo_seesound       db ?  ; 2
+	mobjinfo_deathsound     db ?  ; 3
+    mobjinfo_speed          db ?  ; 4
+    mobjinfo_radius         db ?  ; 5
+    mobjinfo_height         db ?  ; 6
+    mobjinfo_flags1         dw ?  ; 7
+    mobjinfo_flags2         dw ?  ; 9
+
+MOBJINFO_T ENDS
