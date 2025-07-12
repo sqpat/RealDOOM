@@ -47,6 +47,7 @@ PROC    P_PSPR_STARTMARKER_
 PUBLIC  P_PSPR_STARTMARKER_
 ENDP
 
+SIZEOF_WEAPONINFO_T = 11
 
 PS_WEAPON = 0
 PS_FLASH = 1
@@ -107,7 +108,7 @@ check_for_chainsaw_pending:
 cmp   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_CHAINSAW
 je    rev_chainsaw_noise
 pending_weapon_checks_done:
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_pendingweapon]
 xchg  ax, bx
 
@@ -141,7 +142,7 @@ PUBLIC A_CheckReload_
 
 push  bx
 push  dx
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 mov   al, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
@@ -249,7 +250,7 @@ mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al                 
 fallback_weapon_attempt_selected:
 
 
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 
@@ -286,7 +287,7 @@ push  dx
 mov   dx, S_PLAY_ATK1
 mov   ax, word ptr ds:[_playerMobj]
 call  P_SetMobjState_
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_atkstate]
@@ -304,7 +305,7 @@ PUBLIC P_DropWeapon_
 
 push  bx
 push  dx
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
@@ -368,7 +369,7 @@ POPA_NO_AX_OR_BP_MACRO
 ret   
 
 put_weapon_away:
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 xor   ax, ax
@@ -498,7 +499,7 @@ ret
 set_weapon_top:
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_sy+0], WEAPONTOP_LOW
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_sy+2], WEAPONTOP_HIGH
-mov   al, SIZEOF_MOBJINFO_T 
+mov   al, SIZEOF_WEAPONINFO_T 
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 xor   ax, ax
@@ -519,7 +520,7 @@ push  dx
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
 call  P_SetMobjState_
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 mov   ax, 1
@@ -778,18 +779,9 @@ PROC A_FireMissile_ NEAR
 PUBLIC A_FireMissile_
 
 
-push  bx
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-mov   bl, byte ptr ds:[bx]
-xor   bh, bh
-imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   bl, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
-xor   bh, bh
-add   bx, bx
 mov   ax, MT_ROCKET
-dec   word ptr ds:[bx + OFFSET _player + PLAYER_T.player_ammo]
+dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_MISL)]
 call  dword ptr ds:[_P_SpawnPlayerMissile]
-pop   bx
 ret   
 
 ENDP
@@ -797,20 +789,10 @@ ENDP
 PROC A_FireBFG_ NEAR
 PUBLIC A_FireBFG_
 
-push  bx
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-mov   bl, byte ptr ds:[bx]
-xor   bh, bh
-imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   bl, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
-xor   bh, bh
-add   bx, bx
 mov   ax, MT_BFG
-sub   word ptr ds:[bx + OFFSET _player + PLAYER_T.player_ammo], BFGCELLS
+sub   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)], BFGCELLS
 call  dword ptr ds:[_P_SpawnPlayerMissile]
-pop   bx
 ret   
-cld  ;todo remove
 
 
 ENDP
@@ -818,33 +800,19 @@ ENDP
 PROC A_FirePlasma_ NEAR
 PUBLIC A_FirePlasma_
 
-push  bx
 push  dx
-push  si
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-mov   bl, byte ptr ds:[bx]
-xor   bh, bh
-imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   bl, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
-xor   bh, bh
-add   bx, bx
-mov   si, OFFSET _player + PLAYER_T.player_readyweapon
-dec   word ptr ds:[bx + OFFSET _player + PLAYER_T.player_ammo]
-mov   bl, byte ptr ds:[si]
-xor   bh, bh
-imul  si, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
+
+dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)]
 call  P_Random_
-mov   bl, al
-mov   dx, word ptr ds:[si + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
-and   bl, 1
-mov   ax, 1
-add   dx, bx
+and   ax, 1
+mov   dx, word ptr ds:[_weaponinfo + (WP_PLASMA * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
+add   dx, ax
+mov   al, PS_FLASH
 call  P_SetPsprite_
 mov   ax, MT_PLASMA
 call  dword ptr ds:[_P_SpawnPlayerMissile]
-pop   si
+
 pop   dx
-pop   bx
 ret   
 
 ENDP
@@ -856,45 +824,48 @@ push  bx
 push  cx
 push  dx
 push  si
-mov   bx, OFFSET _playerMobj_pos
-les   si, dword ptr ds:[bx]
+
+les   si, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
-mov   bx, OFFSET _playerMobj
-shr   cx, 3
-mov   ax, word ptr ds:[bx]
+
+SHIFT_MACRO shr   cx 3
+mov   ax, word ptr ds:[_playerMobj]
+
 mov   bx, HALFMISSILERANGE
 mov   dx, cx
 call  dword ptr ds:[_P_AimLineAttack]
-mov   bx, OFFSET _linetarget
+
 mov   word ptr ds:[_bulletslope+0], ax
 mov   word ptr ds:[_bulletslope+2], dx
-cmp   word ptr ds:[bx], 0
-je    label_54
-label_55:
+
+cmp   word ptr ds:[_linetarget], 0
+je    has_linetarget_bulletslope
+exit_bulletslope:
 pop   si
 pop   dx
 pop   cx
 pop   bx
 ret   
-label_54:
+has_linetarget_bulletslope:
 add   cx, (1 SHL (26-ANGLETOFINESHIFT)) ; 0x80
-mov   bx, OFFSET _playerMobj
 and   ch, (FINEMASK SHR 8)
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 mov   bx, HALFMISSILERANGE
 mov   dx, cx
+
 call  dword ptr ds:[_P_AimLineAttack]
-mov   bx, OFFSET _linetarget
+
 mov   word ptr ds:[_bulletslope+0], ax
 mov   word ptr ds:[_bulletslope+2], dx
-cmp   word ptr ds:[bx], 0
-jne   label_55
+cmp   word ptr ds:[_linetarget], 0
+jne   exit_bulletslope
+
 sub   cx, (2 SHL (26-ANGLETOFINESHIFT))  ; 0x100
-mov   bx, OFFSET _playerMobj
 and   ch, (FINEMASK SHR 8)
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 mov   bx, HALFMISSILERANGE
 mov   dx, cx
+
 call  dword ptr ds:[_P_AimLineAttack]
 mov   word ptr ds:[_bulletslope+0], ax
 mov   word ptr ds:[_bulletslope+2], dx
@@ -903,155 +874,130 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-cld  ;todo remove
+
 
 ENDP
 
 PROC P_GunShot_ NEAR
 PUBLIC P_GunShot_
+;void __near P_GunShot (  boolean	accurate ) {
 
 push  bx
-push  cx
 push  dx
-push  si
-push  di
-mov   cl, al
+mov   bl, al ; bl stores accuracy
 call  P_Random_
 xor   ah, ah
-mov   bx, 3
-cwd   
-idiv  bx
+mov   dx, 3 ; zero dh
+
+div   dl
+mov   dl, ah
 inc   dx
-mov   bx, OFFSET _playerMobj_pos
-mov   di, dx
-mov   si, word ptr ds:[bx]
-shl   di, 2
-mov   es, word ptr ds:[bx + 2]
-add   di, dx
-mov   dx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
-shr   dx, 3
-test  cl, cl
-je    label_56
-label_57:
-push  di
-mov   bx, OFFSET _playerMobj
-push  word ptr ds:[_bulletslope+2]
-mov   ax, word ptr ds:[bx]
-push  word ptr ds:[_bulletslope+0]
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-call  dword ptr ds:[_P_LineAttack]
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_56:
+
+mov   ax, dx
+SHIFT_MACRO shl   dx 2
+add   dx, ax
+push  dx  ; push damage argument for later
+
+xchg  ax, bx  ; ax gets accuracy back
+
+les   bx, dword ptr ds:[_playerMobj_pos]
+mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2] ; angle hibits..
+
+SHIFT_MACRO shr   dx 3
+test  al, al
+
+jne   do_shot
+; add shot inaccuracy
+
+xor   bx, bx
 call  P_Random_
 mov   bl, al
 call  P_Random_
-xor   bh, bh
 xor   ah, ah
+
 sub   bx, ax
 sar   bx, 1
 add   dx, bx
 and   dh, (FINEMASK SHR 8)
-jmp   label_57
-cld  ;todo remove
+
+
+do_shot:
+; dx has hangle..
+push  word ptr ds:[_bulletslope+2]
+push  word ptr ds:[_bulletslope+0]
+mov   ax, word ptr ds:[_playerMobj]
+mov   bx, MISSILERANGE
+call  dword ptr ds:[_P_LineAttack]
+pop   dx
+pop   bx
+ret   
+
 
 ENDP
 
 PROC A_FirePistol_ NEAR
 PUBLIC A_FirePistol_
 
-push  bx
 push  dx
-push  si
-mov   bx, OFFSET _playerMobj
 mov   dx, SFX_PISTOL
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
+
 mov   dx, S_PLAY_ATK2
-mov   ax, word ptr ds:[bx]
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
+mov   ax, word ptr ds:[_playerMobj]
+
 call  P_SetMobjState_
-mov   al, byte ptr ds:[bx]
-xor   ah, ah
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   al, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
-mov   bx, ax
-add   bx, ax
-mov   si, OFFSET _player + PLAYER_T.player_readyweapon
-dec   word ptr ds:[bx + OFFSET _player + PLAYER_T.player_ammo]
-mov   al, byte ptr ds:[si]
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   ax, 1
-mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
-mov   bx, OFFSET _player + PLAYER_T.player_refire
+
+
+dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]
+mov   ax, PS_FLASH
+mov   dx, word ptr ds:[_weaponinfo + (WP_PISTOL * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
+
+
 call  P_SetPsprite_
 call  P_BulletSlope_
-cmp   byte ptr ds:[bx], 0
-jne   label_58
-mov   al, 1
-cbw  
+xor   ax, ax
+cmp   byte ptr ds:[_player + PLAYER_T.player_refire], al
+jne   inaccurate_pistol_shot     ; ax 0
+inc   ax                         ; ax 1
+inaccurate_pistol_shot:
 call  P_GunShot_
-pop   si
 pop   dx
-pop   bx
 ret   
-label_58:
-xor   al, al
-cbw  
-call  P_GunShot_
-pop   si
-pop   dx
-pop   bx
-ret   
-cld  ;todo remove
 
 ENDP
 
 PROC A_FireShotgun_ NEAR
 PUBLIC A_FireShotgun_
 
-push  bx
 push  dx
-push  si
-mov   bx, OFFSET _playerMobj
+
 mov   dx, SFX_SHOTGN
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
+
 mov   dx, S_PLAY_ATK2
-mov   ax, word ptr ds:[bx]
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
+mov   ax, word ptr ds:[_playerMobj]
+
 call  P_SetMobjState_
-mov   bl, byte ptr ds:[bx]
-xor   bh, bh
-imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   bl, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
-xor   bh, bh
-add   bx, bx
-mov   si, OFFSET _player + PLAYER_T.player_readyweapon
-dec   word ptr ds:[bx + OFFSET _player + PLAYER_T.player_ammo]
-mov   bl, byte ptr ds:[si]
-xor   bh, bh
-imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   ax, 1
-mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
+
+
+dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)]
+mov   ax, PS_FLASH
+mov   dx, word ptr ds:[_weaponinfo + (WP_SHOTGUN * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
 call  P_SetPsprite_
 call  P_BulletSlope_
 xor   dl, dl
-label_59:
+do_next_shotgun_pellet:
 xor   ax, ax
 inc   dl
 call  P_GunShot_
 cmp   dl, 7
-jl    label_59
-pop   si
+jl    do_next_shotgun_pellet
+
 pop   dx
-pop   bx
+
 ret   
-cld  ;todo remove
 
 ENDP
 
@@ -1061,82 +1007,73 @@ PUBLIC A_FireShotgun2_
 push  bx
 push  cx
 push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   bx, OFFSET _playerMobj
+
 mov   dx, SFX_DSHTGN
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
 mov   dx, S_PLAY_ATK2
-mov   ax, word ptr ds:[bx]
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
+mov   ax, word ptr ds:[_playerMobj]
+
 call  P_SetMobjState_
-mov   al, byte ptr ds:[bx]
-xor   ah, ah
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   bl, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
-xor   bh, bh
-add   bx, bx
-mov   si, OFFSET _player + PLAYER_T.player_readyweapon
-sub   word ptr ds:[bx + OFFSET _player + PLAYER_T.player_ammo], 2
-mov   al, byte ptr ds:[si]
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   byte ptr [bp - 2], 0
-mov   ax, 1
-mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
-mov   di, OFFSET _playerMobj_pos
+
+
+sub   ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)], 2
+
+
+mov   ax, PS_FLASH
+mov   dx, word ptr ds:[_weaponinfo + (WP_SUPERSHOTGUN * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
 call  P_SetPsprite_
 call  P_BulletSlope_
-cld   
-label_60:
+
+mov   cx, 20  ; 20 pellets... crazy!
+
+loop_next_super_pellet:
+
+;	damage = 5*(P_Random ()%3+1);
+
 call  P_Random_
 xor   ah, ah
-mov   bx, 3
-cwd   
-idiv  bx
-inc   dx
-imul  si, dx, 5
-mov   bx, OFFSET _playerMobj_pos
-mov   bx, word ptr ds:[bx]
-mov   es, word ptr ds:[di + 2]
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
+mov   dx, 3  ; dh made 0 here
+div   dl
+mov   al, 5
+inc   ah
+mul   ah
+push  ax  ; store stack argument.
+
+les   bx, dword ptr ds:[_playerMobj_pos]
+mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
+
 call  P_Random_
-shr   cx, 3
+SHIFT_MACRO shr   bx 3
+mov   dl, al
+add   bx, dx   ; add rand1
+call  P_Random_
+mov   dl, al
+sub   bx, dx   ; sub rand2
+
+call  P_Random_
 mov   dl, al
 call  P_Random_
-xor   dh, dh
-xor   ah, ah
-push  si
-sub   dx, ax
-call  P_Random_
-add   cx, dx
-mov   dl, al
-call  P_Random_
-xor   dh, dh
+
 xor   ah, ah
 sub   dx, ax
-mov   ax, dx
-shl   ax, 5
+xchg  ax, dx
+SHIFT_MACRO shl   ax 5
 cwd   
-and   ch, (FINEMASK SHR 8)
+and   bh, (FINEMASK SHR 8)
 add   ax, word ptr ds:[_bulletslope+0]
 adc   dx, word ptr ds:[_bulletslope+2]
 push  dx
-mov   bx, OFFSET _playerMobj
 push  ax
-mov   dx, cx
-mov   ax, word ptr ds:[bx]
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
+mov   dx, bx
+mov   ax, word ptr ds:[_playerMobj]
+
 inc   byte ptr [bp - 2]
+mov   bx, MISSILERANGE
 call  dword ptr ds:[_P_LineAttack]
-cmp   byte ptr [bp - 2], 20
-jl    label_60
-LEAVE_MACRO 
-pop   di
-pop   si
+
+loop  loop_next_super_pellet
+
 pop   dx
 pop   cx
 pop   bx
