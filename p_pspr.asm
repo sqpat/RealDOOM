@@ -1391,28 +1391,28 @@ ret
 ; todo probably switch jump table
 
 p_setpsprite_jump_table:
-dw switch_label_1
-dw switch_label_2
-dw switch_label_3
-dw switch_label_4
-dw switch_label_5
-dw switch_label_6
-dw switch_label_7
-dw switch_label_8
-dw switch_label_9
-dw switch_label_10
-dw switch_label_11
-dw switch_label_12
-dw switch_label_13
-dw switch_label_14
-dw switch_label_15
-dw switch_label_16
-dw switch_label_17
-dw switch_label_18
-dw switch_label_19
-dw switch_label_20
-dw switch_label_21
-dw switch_label_22
+dw A_Light0_
+dw OFFSET A_WeaponReady_
+dw A_Lower_
+dw A_Raise_
+dw A_Punch_
+dw A_Refire_
+dw A_FirePistol_
+dw A_Light1_
+dw A_FireShotgun_
+dw A_Light2_
+dw A_FireShotgun2_
+dw A_CheckReload_
+dw A_OpenShotgun2_
+dw A_LoadShotgun2_
+dw A_CloseShotgun2_
+dw A_FireCGun_
+dw A_GunFlash_
+dw A_FireMissile_
+dw A_Saw_
+dw A_FirePlasma_
+dw A_BFGsound_
+dw A_FireBFG_
 
 
 
@@ -1426,9 +1426,7 @@ PUBLIC P_SetPsprite_
 
 
 push  bx
-push  cx
 push  si
-push  di
 cmp   al, 0
 je    psprite_0
 mov   al, SIZEOF_PSPDEF_T
@@ -1445,122 +1443,57 @@ je    null_statenum_break_and_exit
 
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_statenum], dx
 
-mov   ax, 6
-mul   dx        ; dx clobbered but its ok.
-xchg  ax, si    ; es:si state ptr
+sal   dx, 1
+mov   si, dx
+sal   si, 1
+add   si, dx  ; si has dx * 6..
+
 mov   ax, STATES_SEGMENT
 mov   es, ax
 
-mov   cl, 1 ; found = true
 
-mov   al, byte ptr es:[si + 2]
+mov   al, byte ptr es:[si + STATE_T.state_tics]
+
 cbw  
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_tics], ax
 
-mov   al, byte ptr es:[si + 3]
+mov   al, byte ptr es:[si + STATE_T.state_action]
 cbw
 dec   ax
+
+mov   dx, word ptr es:[si + STATE_T.state_nextstate] ; grab state now.... remove SI dependency
+
 cmp   al, 21   ; max state
 ja    bad_state
 
-mov   di, ax
-sal   di, 1
+
+mov   si, ax
+sal   si, 1
 mov   ax, bx ; ax gets psp
 
-jmp   word ptr cs:[di + OFFSET p_setpsprite_jump_table]
 
-switch_label_1:
-call  A_Light0_
+call   word ptr cs:[si + OFFSET p_setpsprite_jump_table]
 
 
 finished_p_setpsprite_switchblock:
-test  cl, cl
-je    bad_state
-cmp   word ptr ds:[bx], STATENUM_NULL
+cmp   word ptr ds:[bx + PSPDEF_T.pspdef_statenum], STATENUM_NULL
 je    exit_p_setpsprite
 
 bad_state:
 
 
-mov   ax, STATES_SEGMENT
-mov   es, ax
-mov   dx, word ptr es:[si+4]
-cmp   word ptr ds:[bx + 2], 0
+cmp   word ptr ds:[bx + PSPDEF_T.pspdef_tics], 0
 jne   exit_p_setpsprite
 test  dx, dx
 jne   loop_next_state
 
 null_statenum_break_and_exit:
-mov   word ptr ds:[bx], STATENUM_NULL
+mov   word ptr ds:[bx + PSPDEF_T.pspdef_statenum], STATENUM_NULL
 exit_p_setpsprite:
-pop   di
 pop   si
-pop   cx
 pop   bx
 ret   
-switch_label_2:
-call  A_WeaponReady_
-jmp   finished_p_setpsprite_switchblock
-switch_label_3:
-call  A_Lower_
-jmp   finished_p_setpsprite_switchblock
-switch_label_4:
-call  A_Raise_
-jmp   finished_p_setpsprite_switchblock
-switch_label_5:
-call  A_Punch_
-jmp   finished_p_setpsprite_switchblock
-switch_label_6:
-call  A_Refire_
-jmp   finished_p_setpsprite_switchblock
-switch_label_7:
-call  A_FirePistol_
-jmp   finished_p_setpsprite_switchblock
-switch_label_8:
-call  A_Light1_
-jmp   finished_p_setpsprite_switchblock
-switch_label_9:
-call  A_FireShotgun_
-jmp   finished_p_setpsprite_switchblock
-switch_label_10:
-call  A_Light2_
-jmp   finished_p_setpsprite_switchblock
-switch_label_11:
-call  A_FireShotgun2_
-jmp   finished_p_setpsprite_switchblock
-switch_label_12:
-call  A_CheckReload_
-jmp   finished_p_setpsprite_switchblock
-switch_label_13:
-call  A_OpenShotgun2_
-jmp   finished_p_setpsprite_switchblock
-switch_label_14:
-call  A_LoadShotgun2_
-jmp   finished_p_setpsprite_switchblock
-switch_label_15:
-call  A_CloseShotgun2_
-jmp   finished_p_setpsprite_switchblock
-switch_label_16:
-call  A_FireCGun_
-jmp   finished_p_setpsprite_switchblock
-switch_label_17:
-call  A_GunFlash_
-jmp   finished_p_setpsprite_switchblock
-switch_label_18:
-call  A_FireMissile_
-jmp   finished_p_setpsprite_switchblock
-switch_label_19:
-call  A_Saw_
-jmp   finished_p_setpsprite_switchblock
-switch_label_20:
-call  A_FirePlasma_
-jmp   finished_p_setpsprite_switchblock
-switch_label_21:
-call  A_BFGsound_
-jmp   finished_p_setpsprite_switchblock
-switch_label_22:
-call  A_FireBFG_
-jmp   finished_p_setpsprite_switchblock
+
 
 ENDP
 

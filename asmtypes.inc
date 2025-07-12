@@ -375,7 +375,7 @@ VISPLANE_T STRUC
     vp_top      db SCREENWIDTH DUP(?)
 
     vp_pad2     db ?
-    vp_pad3     db ?
+    vp_pad3     db ? 
     vp_bottom   db SCREENWIDTH DUP(?)
 
     vp_pad4     db ?
@@ -398,12 +398,22 @@ PSPDEF_T ENDS
 
 WEAPONINFO_T STRUC
 
-    weaponinfo_ammo         db ?
-    weaponinfo_upstate      dw ?
-    weaponinfo_downstate    dw ?
-    weaponinfo_readystate   dw ?
-    weaponinfo_atkstate     dw ?
-    weaponinfo_flashstate   dw ?
+    weaponinfo_ammo         db ?  ; 0
+    weaponinfo_upstate      dw ?  ; 1
+    weaponinfo_downstate    dw ?  ; 3
+    weaponinfo_readystate   dw ?  ; 5
+    weaponinfo_atkstate     dw ?  ; 7
+    weaponinfo_flashstate   dw ?  ; 9
 
 
 WEAPONINFO_T ENDS
+
+STATE_T STRUC
+    state_sprite            db ?  ; 0
+    state_frame             db ?  ; 1
+    state_tics              db ?  ; 2
+    state_action            db ?  ; 3
+    state_nextstate         dw ?  ; 4
+
+STATE_T ENDS
+
