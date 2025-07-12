@@ -30,6 +30,49 @@ P_SIGHT_STARTMARKER_ = 0
 .CODE
 
 
+;FATSPREAD = (ANG90/8)
+FATSPREADHIGH = 00800h
+FATSPREADLOW  =  0h
+
+; todo constants.inc
+
+DI_WEST = 0 
+DI_SOUTHWEST = 1
+DI_SOUTH = 2
+DI_SOUTHEAST = 3
+DI_EAST= 4
+DI_NORTHEAST= 5
+DI_NORTH = 6
+DI_NORTHWEST = 7
+DI_NODIR = 8
+
+DI_NORTHWEST = 0
+DI_NORTHEAST = 1
+DI_SOUTHWEST = 2 
+DI_SOUTHEAST = 3
+
+FLOATSPEED_HIGHBITS = 4
+
+
+TAG_1323 =		56
+TAG_1044 =		57
+TAG_86	=		58
+TAG_77	=		59
+TAG_99	=		60
+TAG_666	=		61
+TAG_667	=		62
+TAG_999	=		63
+
+DOOR_NORMAL = 0
+DOOR_CLOSE30THENOPEN = 1
+DOOR_CLOSE = 2
+DOOR_OPEN = 3
+DOOR_RAISEIN5MINS = 4
+DOOR_BLAZERAISE   = 5
+DOOR_BLAZEOPEN    = 6
+DOOR_BLAZECLOSE   = 7
+
+
 
 PROC    P_ENEMY_STARTMARKER_ 
 PUBLIC  P_ENEMY_STARTMARKER_
@@ -58,7 +101,7 @@ PUBLIC  P_RecursiveSound_
 0x00000000000028c5:  BE 24 01             mov   si, OFFSET _validcount_global
 0x00000000000028c8:  26 8B 47 06          mov   ax, word ptr es:[bx + 6]
 0x00000000000028cc:  89 5E F6             mov   word ptr [bp - 0Ah], bx
-0x00000000000028cf:  3B 04                cmp   ax, word ptr [si]
+0x00000000000028cf:  3B 04                cmp   ax, word ptr ds:[si]
 0x00000000000028d1:  75 19                jne   label_1
 0x00000000000028d3:  B8 56 4C             mov   ax, SECTOR_SOUNDTRAVERSED_SEGMENT
 0x00000000000028d6:  8B 5E EE             mov   bx, word ptr [bp - 012h]
@@ -74,7 +117,7 @@ PUBLIC  P_RecursiveSound_
 0x00000000000028e9:  E9 89 00             jmp   exit_p_recursive_sound
 label_1:
 0x00000000000028ec:  BB 24 01             mov   bx, OFFSET _validcount_global
-0x00000000000028ef:  8B 07                mov   ax, word ptr [bx]
+0x00000000000028ef:  8B 07                mov   ax, word ptr ds:[bx]
 0x00000000000028f1:  C4 5E F6             les   bx, ptr [bp - 0Ah]
 0x00000000000028f4:  26 89 47 06          mov   word ptr es:[bx + SECTOR_T.sec_validcount], ax
 0x00000000000028f8:  BB 56 4C             mov   bx, SECTOR_SOUNDTRAVERSED_SEGMENT
@@ -100,7 +143,7 @@ label_4:
 0x000000000000292f:  01 C0                add   ax, ax
 0x0000000000002931:  89 C3                mov   bx, ax
 0x0000000000002933:  81 C3 50 CA          add   bx, OFFSET _linebuffer
-0x0000000000002937:  8B 07                mov   ax, word ptr [bx]
+0x0000000000002937:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000002939:  BB 4A 2B             mov   bx, LINEFLAGSLIST_SEGMENT
 0x000000000000293c:  8E C3                mov   es, bx
 0x000000000000293e:  89 C3                mov   bx, ax
@@ -134,9 +177,9 @@ label_3:
 0x000000000000297b:  89 FA                mov   dx, di
 0x000000000000297d:  FF 5E F0             call  dword ptr [bp - 010h]
 0x0000000000002980:  BB F0 06             mov   bx, OFFSET _lineopening + 0
-0x0000000000002983:  8B 07                mov   ax, word ptr [bx]
+0x0000000000002983:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000002985:  BB F2 06             mov   bx, OFFSET _lineopening + 2
-0x0000000000002988:  3B 07                cmp   ax, word ptr [bx]
+0x0000000000002988:  3B 07                cmp   ax, word ptr ds:[bx]
 0x000000000000298a:  7E E3                jle   label_5
 0x000000000000298c:  8E 46 FA             mov   es, word ptr [bp - 6]
 0x000000000000298f:  26 8B 44 0A          mov   ax, word ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum]
@@ -175,10 +218,10 @@ PUBLIC  P_NoiseAlert_
 0x00000000000029c6:  56                   push  si
 0x00000000000029c7:  BB 24 01             mov   bx, OFFSET _validcount_global
 0x00000000000029ca:  BE EC 06             mov   si, OFFSET _playerMobj
-0x00000000000029cd:  FF 07                inc   word ptr [bx]
-0x00000000000029cf:  8B 1C                mov   bx, word ptr [si]
+0x00000000000029cd:  FF 07                inc   word ptr ds:[bx]
+0x00000000000029cf:  8B 1C                mov   bx, word ptr ds:[si]
 0x00000000000029d1:  31 D2                xor   dx, dx
-0x00000000000029d3:  8B 47 04             mov   ax, word ptr [bx + 4]
+0x00000000000029d3:  8B 47 04             mov   ax, word ptr ds:[bx + 4]
 0x00000000000029d6:  E8 C7 FE             call  P_RecursiveSound_
 0x00000000000029d9:  5E                   pop   si
 0x00000000000029da:  5A                   pop   dx
@@ -202,9 +245,11 @@ PUBLIC  P_CheckMeleeRange_
 0x00000000000029e6:  83 EC 10             sub   sp, 010h
 0x00000000000029e9:  50                   push  ax
 0x00000000000029ea:  89 C3                mov   bx, ax
-0x00000000000029ec:  83 7F 22 00          cmp   word ptr [bx + MOBJ_T.m_targetRef], 0
+0x00000000000029ec:  83 7F 22 00          cmp   word ptr ds:[bx + MOBJ_T.m_targetRef], 0
 0x00000000000029f0:  75 09                jne   label_9
+exit_check_meleerange_return_0:
 0x00000000000029f2:  30 C0                xor   al, al
+exit_check_meleerange:
 0x00000000000029f4:  C9                   LEAVE_MACRO 
 0x00000000000029f5:  5F                   pop   di
 0x00000000000029f6:  5E                   pop   si
@@ -214,7 +259,7 @@ PUBLIC  P_CheckMeleeRange_
 0x00000000000029fa:  C3                   ret   
 label_9:
 0x00000000000029fb:  BB 2C 00             mov   bx, SIZEOF_THINKER_T
-0x00000000000029fe:  2D 04 34             sub   ax, (OFFSET _thinkerlist + 4)
+0x00000000000029fe:  2D 04 34             sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000002a01:  31 D2                xor   dx, dx
 0x0000000000002a03:  F7 F3                div   bx
 0x0000000000002a05:  6B F0 18             imul  si, ax, SIZEOF_MOBJ_POS_T
@@ -226,11 +271,11 @@ label_9:
 0x0000000000002a17:  8B 7E EE             mov   di, word ptr [bp - 012h]
 0x0000000000002a1a:  89 46 F2             mov   word ptr [bp - 0Eh], ax
 0x0000000000002a1d:  26 8B 44 04          mov   ax, word ptr es:[si + 4]
-0x0000000000002a21:  8B 7D 22             mov   di, word ptr [di + MOBJ_T.m_targetRef]
+0x0000000000002a21:  8B 7D 22             mov   di, word ptr ds:[di + MOBJ_T.m_targetRef]
 0x0000000000002a24:  89 46 F4             mov   word ptr [bp - 0Ch], ax
 0x0000000000002a27:  6B C7 2C             imul  ax, di, SIZEOF_THINKER_T
 0x0000000000002a2a:  6B FF 18             imul  di, di, SIZEOF_MOBJ_POS_T
-0x0000000000002a2d:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x0000000000002a2d:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000002a30:  89 46 FE             mov   word ptr [bp - 2], ax
 0x0000000000002a33:  26 8B 05             mov   ax, word ptr es:[di]
 0x0000000000002a36:  89 46 F6             mov   word ptr [bp - 0Ah], ax
@@ -239,14 +284,14 @@ label_9:
 0x0000000000002a40:  26 8B 45 04          mov   ax, word ptr es:[di + 4]
 0x0000000000002a44:  8B 5E FE             mov   bx, word ptr [bp - 2]
 0x0000000000002a47:  89 46 F8             mov   word ptr [bp - 8], ax
-0x0000000000002a4a:  8A 47 1A             mov   al, byte ptr [bx + MOBJ_T.m_mobjtype]
+0x0000000000002a4a:  8A 47 1A             mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x0000000000002a4d:  30 E4                xor   ah, ah
 0x0000000000002a4f:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x0000000000002a52:  26 8B 4C 06          mov   cx, word ptr es:[si + 6]
 0x0000000000002a56:  89 C3                mov   bx, ax
 0x0000000000002a58:  26 8B 55 06          mov   dx, word ptr es:[di + 6]
 0x0000000000002a5c:  81 C3 65 C4          add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_radius)
-0x0000000000002a60:  8A 07                mov   al, byte ptr [bx]
+0x0000000000002a60:  8A 07                mov   al, byte ptr ds:[bx]
 0x0000000000002a62:  8B 5E F8             mov   bx, word ptr [bp - 8]
 0x0000000000002a65:  88 46 FA             mov   byte ptr [bp - 6], al
 0x0000000000002a68:  2B 5E F4             sub   bx, word ptr [bp - 0Ch]
@@ -261,16 +306,18 @@ label_9:
 0x0000000000002a83:  8B 46 FA             mov   ax, word ptr [bp - 6]
 0x0000000000002a86:  05 2C 00             add   ax, (MELEERANGE - 20)
 0x0000000000002a89:  39 C2                cmp   dx, ax
-0x0000000000002a8b:  7C 03                jl    0x2a90
-0x0000000000002a8d:  E9 62 FF             jmp   0x29f2
+0x0000000000002a8b:  7C 03                jl    label_10
+0x0000000000002a8d:  E9 62 FF             jmp   exit_check_meleerange_return_0
+label_10:
 0x0000000000002a90:  8B 56 FE             mov   dx, word ptr [bp - 2]
 0x0000000000002a93:  8B 46 EE             mov   ax, word ptr [bp - 012h]
 0x0000000000002a96:  89 F9                mov   cx, di
 0x0000000000002a98:  89 F3                mov   bx, si
 0x0000000000002a9a:  FF 1E CC 0C          call  dword ptr ds:[_P_CheckSightTemp]
 0x0000000000002a9e:  84 C0                test  al, al
-0x0000000000002aa0:  75 03                jne   0x2aa5
-0x0000000000002aa2:  E9 4F FF             jmp   0x29f4
+0x0000000000002aa0:  75 03                jne   exit_check_meleerange_return_1
+0x0000000000002aa2:  E9 4F FF             jmp   exit_check_meleerange
+exit_check_meleerange_return_1:
 0x0000000000002aa5:  B0 01                mov   al, 1
 0x0000000000002aa7:  C9                   LEAVE_MACRO 
 0x0000000000002aa8:  5F                   pop   di
@@ -295,12 +342,12 @@ PUBLIC  P_CheckMissileRange_
 0x0000000000002ab4:  89 E5                mov   bp, sp
 0x0000000000002ab6:  83 EC 12             sub   sp, 012h
 0x0000000000002ab9:  89 C6                mov   si, ax
-0x0000000000002abb:  6B 5C 22 2C          imul  bx, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x0000000000002abb:  6B 5C 22 2C          imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x0000000000002abf:  B9 2C 00             mov   cx, SIZEOF_THINKER_T
-0x0000000000002ac2:  8D 87 04 34          lea   ax, [bx + (OFFSET _thinkerlist + 4)]
+0x0000000000002ac2:  8D 87 04 34          lea   ax, ds:[bx + (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x0000000000002ac6:  31 D2                xor   dx, dx
 0x0000000000002ac8:  89 46 F6             mov   word ptr [bp - 0Ah], ax
-0x0000000000002acb:  8D 84 FC CB          lea   ax, [si - (OFFSET _thinkerlist + 4)]
+0x0000000000002acb:  8D 84 FC CB          lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x0000000000002acf:  F7 F1                div   cx
 0x0000000000002ad1:  6B F8 18             imul  di, ax, SIZEOF_MOBJ_POS_T
 0x0000000000002ad4:  31 D2                xor   dx, dx
@@ -318,13 +365,15 @@ PUBLIC  P_CheckMissileRange_
 0x0000000000002afb:  89 FB                mov   bx, di
 0x0000000000002afd:  FF 1E CC 0C          call  dword ptr ds:[_P_CheckSightTemp]
 0x0000000000002b01:  84 C0                test  al, al
-0x0000000000002b03:  74 12                je    0x2b17
+0x0000000000002b03:  74 12                je    exit_checkmissilerange
 0x0000000000002b05:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x0000000000002b08:  26 F6 45 14 40       test  byte ptr es:[di + 0x14], 0x40
-0x0000000000002b0d:  75 0F                jne   0x2b1e
-0x0000000000002b0f:  80 7C 24 00          cmp   byte ptr [si + 0x24], 0
-0x0000000000002b13:  74 12                je    0x2b27
+0x0000000000002b08:  26 F6 45 14 40       test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
+0x0000000000002b0d:  75 0F                jne   label_11
+0x0000000000002b0f:  80 7C 24 00          cmp   byte ptr ds:[si + MOBJ_T.m_reactiontime], 0
+0x0000000000002b13:  74 12                je    label_12
+exit_checkmissilerange_return_0:
 0x0000000000002b15:  30 C0                xor   al, al
+exit_checkmissilerange:
 0x0000000000002b17:  C9                   LEAVE_MACRO 
 0x0000000000002b18:  5F                   pop   di
 0x0000000000002b19:  5E                   pop   si
@@ -332,9 +381,11 @@ PUBLIC  P_CheckMissileRange_
 0x0000000000002b1b:  59                   pop   cx
 0x0000000000002b1c:  5B                   pop   bx
 0x0000000000002b1d:  C3                   ret   
+label_11:
 0x0000000000002b1e:  B0 01                mov   al, 1
-0x0000000000002b20:  26 80 65 14 BF       and   byte ptr es:[di + 0x14], 0xbf
-0x0000000000002b25:  EB F0                jmp   0x2b17
+0x0000000000002b20:  26 80 65 14 BF       and   byte ptr es:[di + MOBJ_POS_T.mp_flags1], (NOT MF_JUSTHIT)
+0x0000000000002b25:  EB F0                jmp   exit_checkmissilerange
+label_12:
 0x0000000000002b27:  8E 46 FA             mov   es, word ptr [bp - 6]
 0x0000000000002b2a:  8B 5E FC             mov   bx, word ptr [bp - 4]
 0x0000000000002b2d:  26 8B 07             mov   ax, word ptr es:[bx]
@@ -360,39 +411,47 @@ PUBLIC  P_CheckMissileRange_
 0x0000000000002b69:  89 D0                mov   ax, dx
 0x0000000000002b6b:  8B 56 F8             mov   dx, word ptr [bp - 8]
 0x0000000000002b6e:  FF 1E D0 0C          call  dword ptr ds:[_P_AproxDistance]
-0x0000000000002b72:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000002b72:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000002b75:  30 E4                xor   ah, ah
-0x0000000000002b77:  83 EA 40             sub   dx, 0x40
+0x0000000000002b77:  83 EA 40             sub   dx, 64
 0x0000000000002b7a:  FF 5E EE             call  dword ptr [bp - 012h]
 0x0000000000002b7d:  85 C0                test  ax, ax
-0x0000000000002b7f:  75 04                jne   0x2b85
-0x0000000000002b81:  81 EA 80 00          sub   dx, 0x80
-0x0000000000002b85:  80 7C 1A 03          cmp   byte ptr [si + MOBJ_T.m_mobjtype], 3
-0x0000000000002b89:  75 06                jne   0x2b91
-0x0000000000002b8b:  81 FA 80 03          cmp   dx, 0x380
-0x0000000000002b8f:  7F 84                jg    0x2b15
-0x0000000000002b91:  80 7C 1A 05          cmp   byte ptr [si + MOBJ_T.m_mobjtype], 5
-0x0000000000002b95:  75 0B                jne   0x2ba2
-0x0000000000002b97:  81 FA C4 00          cmp   dx, 0xc4
-0x0000000000002b9b:  7D 03                jge   0x2ba0
-0x0000000000002b9d:  E9 75 FF             jmp   0x2b15
+0x0000000000002b7f:  75 04                jne   label_13
+0x0000000000002b81:  81 EA 80 00          sub   dx, 128
+label_13:
+0x0000000000002b85:  80 7C 1A 03          cmp   byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_VILE
+0x0000000000002b89:  75 06                jne   label_14
+0x0000000000002b8b:  81 FA 80 03          cmp   dx, (14 * 64)
+0x0000000000002b8f:  7F 84                jg    exit_checkmissilerange_return_0
+label_14:
+0x0000000000002b91:  80 7C 1A 05          cmp   byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_UNDEAD
+0x0000000000002b95:  75 0B                jne   label_16
+0x0000000000002b97:  81 FA C4 00          cmp   dx, 196
+0x0000000000002b9b:  7D 03                jge   label_15
+0x0000000000002b9d:  E9 75 FF             jmp   exit_checkmissilerange_return_0
+label_15:
 0x0000000000002ba0:  D1 FA                sar   dx, 1
-0x0000000000002ba2:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
-0x0000000000002ba5:  3C 15                cmp   al, 0x15
-0x0000000000002ba7:  75 2C                jne   0x2bd5
+label_16:
+0x0000000000002ba2:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+0x0000000000002ba5:  3C 15                cmp   al, MT_CYBORG
+0x0000000000002ba7:  75 2C                jne   label_17
+label_20:
 0x0000000000002ba9:  D1 FA                sar   dx, 1
-0x0000000000002bab:  81 FA C8 00          cmp   dx, 0xc8
-0x0000000000002baf:  7E 03                jle   0x2bb4
-0x0000000000002bb1:  BA C8 00             mov   dx, 0xc8
-0x0000000000002bb4:  80 7C 1A 15          cmp   byte ptr [si + MOBJ_T.m_mobjtype], 0x15
-0x0000000000002bb8:  75 09                jne   0x2bc3
-0x0000000000002bba:  81 FA A0 00          cmp   dx, 0xa0
-0x0000000000002bbe:  7E 03                jle   0x2bc3
-0x0000000000002bc0:  BA A0 00             mov   dx, 0xa0
+label_21:
+0x0000000000002bab:  81 FA C8 00          cmp   dx, 200
+0x0000000000002baf:  7E 03                jle   label_18
+0x0000000000002bb1:  BA C8 00             mov   dx, 200
+label_18:
+0x0000000000002bb4:  80 7C 1A 15          cmp   byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_CYBORG
+0x0000000000002bb8:  75 09                jne   label_19
+0x0000000000002bba:  81 FA A0 00          cmp   dx, 160
+0x0000000000002bbe:  7E 03                jle   label_19
+0x0000000000002bc0:  BA A0 00             mov   dx, 160
+label_19:
 0x0000000000002bc3:  E8 EA 5D             call  P_Random_
 0x0000000000002bc6:  30 E4                xor   ah, ah
 0x0000000000002bc8:  39 D0                cmp   ax, dx
-0x0000000000002bca:  7D 13                jge   0x2bdf
+0x0000000000002bca:  7D 13                jge   exit_checkmissilerange_return_1
 0x0000000000002bcc:  30 C0                xor   al, al
 0x0000000000002bce:  C9                   LEAVE_MACRO 
 0x0000000000002bcf:  5F                   pop   di
@@ -401,11 +460,13 @@ PUBLIC  P_CheckMissileRange_
 0x0000000000002bd2:  59                   pop   cx
 0x0000000000002bd3:  5B                   pop   bx
 0x0000000000002bd4:  C3                   ret   
-0x0000000000002bd5:  3C 13                cmp   al, 0x13
-0x0000000000002bd7:  74 D0                je    0x2ba9
-0x0000000000002bd9:  3C 12                cmp   al, 0x12
-0x0000000000002bdb:  74 CC                je    0x2ba9
-0x0000000000002bdd:  EB CC                jmp   0x2bab
+label_17:
+0x0000000000002bd5:  3C 13                cmp   al, MT_SPIDER
+0x0000000000002bd7:  74 D0                je    label_20
+0x0000000000002bd9:  3C 12                cmp   al, MT_SKULL
+0x0000000000002bdb:  74 CC                je    label_20
+0x0000000000002bdd:  EB CC                jmp   label_21
+exit_checkmissilerange_return_1:
 0x0000000000002bdf:  B0 01                mov   al, 1
 0x0000000000002be1:  C9                   LEAVE_MACRO 
 0x0000000000002be2:  5F                   pop   di
@@ -445,8 +506,8 @@ PUBLIC  P_Move_
 0x0000000000002c01:  89 C6                mov   si, ax
 0x0000000000002c03:  89 DF                mov   di, bx
 0x0000000000002c05:  89 4E FC             mov   word ptr [bp - 4], cx
-0x0000000000002c08:  80 7C 1F 08          cmp   byte ptr [si + 0x1f], 8
-0x0000000000002c0c:  74 41                je    0x2c4f
+0x0000000000002c08:  80 7C 1F 08          cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
+0x0000000000002c0c:  74 41                je    label_22
 0x0000000000002c0e:  8E C1                mov   es, cx
 0x0000000000002c10:  26 8B 05             mov   ax, word ptr es:[di]
 0x0000000000002c13:  89 46 F8             mov   word ptr [bp - 8], ax
@@ -454,23 +515,25 @@ PUBLIC  P_Move_
 0x0000000000002c1a:  89 46 F6             mov   word ptr [bp - 0Ah], ax
 0x0000000000002c1d:  26 8B 45 06          mov   ax, word ptr es:[di + 6]
 0x0000000000002c21:  89 46 FA             mov   word ptr [bp - 6], ax
-0x0000000000002c24:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000002c24:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000002c27:  30 E4                xor   ah, ah
 0x0000000000002c29:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x0000000000002c2c:  26 8B 4D 02          mov   cx, word ptr es:[di + 2]
-0x0000000000002c30:  8A 54 1F             mov   dl, byte ptr [si + 0x1f]
+0x0000000000002c30:  8A 54 1F             mov   dl, byte ptr ds:[si + MOBJ_T.m_movedir]
 0x0000000000002c33:  89 C3                mov   bx, ax
-0x0000000000002c35:  8A 87 64 C4          mov   al, byte ptr [bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+0x0000000000002c35:  8A 87 64 C4          mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 0x0000000000002c39:  81 C3 64 C4          add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 0x0000000000002c3d:  30 E4                xor   ah, ah
-0x0000000000002c3f:  80 FA 07             cmp   dl, 7
-0x0000000000002c42:  77 0F                ja    0x2c53
+0x0000000000002c3f:  80 FA 07             cmp   dl, DI_NORTHWEST
+0x0000000000002c42:  77 0F                ja    label_24
 0x0000000000002c44:  30 F6                xor   dh, dh
 0x0000000000002c46:  89 D3                mov   bx, dx
 0x0000000000002c48:  01 D3                add   bx, dx
 0x0000000000002c4a:  2E FF A7 E8 2B       jmp   word ptr cs:[bx + OFFSET _some_lookup_table_2]
-0x0000000000002c4f:  EB 61                jmp   0x2cb2
+label_22:
+0x0000000000002c4f:  EB 61                jmp   label_23
 0x0000000000002c51:  01 C1                add   cx, ax
+label_24:
 0x0000000000002c53:  FF 76 FA             push  word ptr [bp - 6]
 0x0000000000002c56:  FF 76 F6             push  word ptr [bp - 0Ah]
 0x0000000000002c59:  89 FB                mov   bx, di
@@ -480,123 +543,135 @@ PUBLIC  P_Move_
 0x0000000000002c61:  8B 4E FC             mov   cx, word ptr [bp - 4]
 0x0000000000002c64:  FF 1E DC 0C          call  dword ptr ds:[_P_TryMove]
 0x0000000000002c68:  84 C0                test  al, al
-0x0000000000002c6a:  75 61                jne   0x2ccd
+0x0000000000002c6a:  75 61                jne   label_25
 0x0000000000002c6c:  8E 46 FC             mov   es, word ptr [bp - 4]
-0x0000000000002c6f:  26 F6 45 15 40       test  byte ptr es:[di + 0x15], 0x40
-0x0000000000002c74:  74 6D                je    0x2ce3
-0x0000000000002c76:  BB 2D 01             mov   bx, 0x12d
-0x0000000000002c79:  80 3F 00             cmp   byte ptr [bx], 0
-0x0000000000002c7c:  74 65                je    0x2ce3
-0x0000000000002c7e:  BB 52 01             mov   bx, 0x152
-0x0000000000002c81:  8B 17                mov   dx, word ptr [bx]
+0x0000000000002c6f:  26 F6 45 15 40       test  byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_FLOAT SHR 8)
+0x0000000000002c74:  74 6D                je    jump_to_label_28
+0x0000000000002c76:  BB 2D 01             mov   bx, OFFSET _floatok
+0x0000000000002c79:  80 3F 00             cmp   byte ptr ds:[bx], 0
+0x0000000000002c7c:  74 65                je    jump_to_label_28
+0x0000000000002c7e:  BB 52 01             mov   bx, OFFSET _tmfloorz
+0x0000000000002c81:  8B 17                mov   dx, word ptr ds:[bx]
 0x0000000000002c83:  30 F6                xor   dh, dh
-0x0000000000002c85:  8B 07                mov   ax, word ptr [bx]
+0x0000000000002c85:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000002c87:  80 E2 07             and   dl, 7
 0x0000000000002c8a:  C1 F8 03             sar   ax, 3
-0x0000000000002c8d:  C1 E2 0D             shl   dx, 0xd
-0x0000000000002c90:  26 3B 45 0A          cmp   ax, word ptr es:[di + 0xa]
-0x0000000000002c94:  7F 08                jg    0x2c9e
-0x0000000000002c96:  75 73                jne   0x2d0b
-0x0000000000002c98:  26 3B 55 08          cmp   dx, word ptr es:[di + 8]
-0x0000000000002c9c:  76 6D                jbe   0x2d0b
-0x0000000000002c9e:  26 83 45 0A 04       add   word ptr es:[di + 0xa], 4
+0x0000000000002c8d:  C1 E2 0D             shl   dx, 13
+0x0000000000002c90:  26 3B 45 0A          cmp   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+0x0000000000002c94:  7F 08                jg    label_29
+0x0000000000002c96:  75 73                jne   label_30
+0x0000000000002c98:  26 3B 55 08          cmp   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+0x0000000000002c9c:  76 6D                jbe   label_30
+label_29:
+0x0000000000002c9e:  26 83 45 0A 04       add   word ptr es:[di + MOBJ_POS_T.mp_z + 2], FLOATSPEED_HIGHBITS
+label_27:
 0x0000000000002ca3:  8E 46 FC             mov   es, word ptr [bp - 4]
 0x0000000000002ca6:  B0 01                mov   al, 1
-0x0000000000002ca8:  26 80 4D 16 20       or    byte ptr es:[di + 0x16], 0x20
+0x0000000000002ca8:  26 80 4D 16 20       or    byte ptr es:[di + MOBJ_POS_T.mp_flags2], MF_INFLOAT
+exit_p_move:
 0x0000000000002cad:  C9                   LEAVE_MACRO 
 0x0000000000002cae:  5F                   pop   di
 0x0000000000002caf:  5E                   pop   si
 0x0000000000002cb0:  5A                   pop   dx
 0x0000000000002cb1:  C3                   ret   
+label_23:
 0x0000000000002cb2:  30 C0                xor   al, al
-0x0000000000002cb4:  EB F7                jmp   0x2cad
+0x0000000000002cb4:  EB F7                jmp   exit_p_move
 0x0000000000002cb6:  BA 98 B7             mov   dx, 47000
 0x0000000000002cb9:  F7 E2                mul   dx
 0x0000000000002cbb:  01 46 F8             add   word ptr [bp - 8], ax
 0x0000000000002cbe:  11 D1                adc   cx, dx
 0x0000000000002cc0:  01 46 F6             add   word ptr [bp - 0Ah], ax
 0x0000000000002cc3:  11 56 FA             adc   word ptr [bp - 6], dx
-0x0000000000002cc6:  EB 8B                jmp   0x2c53
+0x0000000000002cc6:  EB 8B                jmp   label_24
 0x0000000000002cc8:  01 46 FA             add   word ptr [bp - 6], ax
-0x0000000000002ccb:  EB 86                jmp   0x2c53
-0x0000000000002ccd:  E9 A5 00             jmp   0x2d75
+0x0000000000002ccb:  EB 86                jmp   label_24
+label_25:
+0x0000000000002ccd:  E9 A5 00             jmp   label_26
 0x0000000000002cd0:  BA 98 B7             mov   dx, 47000
 0x0000000000002cd3:  F7 E2                mul   dx
 0x0000000000002cd5:  29 46 F8             sub   word ptr [bp - 8], ax
 0x0000000000002cd8:  19 D1                sbb   cx, dx
 0x0000000000002cda:  01 46 F6             add   word ptr [bp - 0Ah], ax
 0x0000000000002cdd:  11 56 FA             adc   word ptr [bp - 6], dx
-0x0000000000002ce0:  E9 70 FF             jmp   0x2c53
-0x0000000000002ce3:  EB 40                jmp   0x2d25
+0x0000000000002ce0:  E9 70 FF             jmp   label_24
+jump_to_label_28:
+0x0000000000002ce3:  EB 40                jmp   label_28
 0x0000000000002ce5:  83 6E F8 00          sub   word ptr [bp - 8], 0
 0x0000000000002ce9:  19 C1                sbb   cx, ax
-0x0000000000002ceb:  E9 65 FF             jmp   0x2c53
+0x0000000000002ceb:  E9 65 FF             jmp   label_24
 0x0000000000002cee:  BA 98 B7             mov   dx, 47000
 0x0000000000002cf1:  F7 E2                mul   dx
 0x0000000000002cf3:  29 46 F8             sub   word ptr [bp - 8], ax
 0x0000000000002cf6:  19 D1                sbb   cx, dx
 0x0000000000002cf8:  29 46 F6             sub   word ptr [bp - 0Ah], ax
 0x0000000000002cfb:  19 56 FA             sbb   word ptr [bp - 6], dx
-0x0000000000002cfe:  E9 52 FF             jmp   0x2c53
+0x0000000000002cfe:  E9 52 FF             jmp   label_24
 0x0000000000002d01:  83 6E F6 00          sub   word ptr [bp - 0Ah], 0
 0x0000000000002d05:  19 46 FA             sbb   word ptr [bp - 6], ax
-0x0000000000002d08:  E9 48 FF             jmp   0x2c53
-0x0000000000002d0b:  26 83 6D 0A 04       sub   word ptr es:[di + 0xa], 4
-0x0000000000002d10:  EB 91                jmp   0x2ca3
+0x0000000000002d08:  E9 48 FF             jmp   label_24
+label_30:
+0x0000000000002d0b:  26 83 6D 0A 04       sub   word ptr es:[di + MOBJ_POS_T.mp_z + 2], FLOATSPEED_HIGHBITS
+0x0000000000002d10:  EB 91                jmp   label_27
 0x0000000000002d12:  BA 98 B7             mov   dx, 47000
 0x0000000000002d15:  F7 E2                mul   dx
 0x0000000000002d17:  01 46 F8             add   word ptr [bp - 8], ax
 0x0000000000002d1a:  11 D1                adc   cx, dx
 0x0000000000002d1c:  29 46 F6             sub   word ptr [bp - 0Ah], ax
 0x0000000000002d1f:  19 56 FA             sbb   word ptr [bp - 6], dx
-0x0000000000002d22:  E9 2E FF             jmp   0x2c53
-0x0000000000002d25:  BB 06 07             mov   bx, 0x706
-0x0000000000002d28:  83 3F 00             cmp   word ptr [bx], 0
-0x0000000000002d2b:  74 85                je    0x2cb2
+0x0000000000002d22:  E9 2E FF             jmp   label_24
+label_28:
+0x0000000000002d25:  BB 06 07             mov   bx, OFFSET _numspechit
+0x0000000000002d28:  83 3F 00             cmp   word ptr ds:[bx], 0
+0x0000000000002d2b:  74 85                je    label_23
 0x0000000000002d2d:  BB 2C 00             mov   bx, SIZEOF_THINKER_T
-0x0000000000002d30:  8D 84 FC CB          lea   ax, [si - (OFFSET _thinkerlist + 4)]
+0x0000000000002d30:  8D 84 FC CB          lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x0000000000002d34:  31 D2                xor   dx, dx
 0x0000000000002d36:  F7 F3                div   bx
 0x0000000000002d38:  C6 46 FE 00          mov   byte ptr [bp - 2], 0
-0x0000000000002d3c:  C6 44 1F 08          mov   byte ptr [si + 0x1f], 8
+0x0000000000002d3c:  C6 44 1F 08          mov   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 0x0000000000002d40:  89 C7                mov   di, ax
-0x0000000000002d42:  BB 06 07             mov   bx, 0x706
-0x0000000000002d45:  8B 07                mov   ax, word ptr [bx]
+label_32:
+0x0000000000002d42:  BB 06 07             mov   bx, OFFSET _numspechit
+0x0000000000002d45:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000002d47:  89 C2                mov   dx, ax
 0x0000000000002d49:  4A                   dec   dx
-0x0000000000002d4a:  89 17                mov   word ptr [bx], dx
+0x0000000000002d4a:  89 17                mov   word ptr ds:[bx], dx
 0x0000000000002d4c:  85 C0                test  ax, ax
-0x0000000000002d4e:  74 1D                je    0x2d6d
+0x0000000000002d4e:  74 1D                je    label_31
 0x0000000000002d50:  89 D3                mov   bx, dx
 0x0000000000002d52:  89 F9                mov   cx, di
 0x0000000000002d54:  01 D3                add   bx, dx
 0x0000000000002d56:  89 F0                mov   ax, si
-0x0000000000002d58:  8B 97 BA 00          mov   dx, word ptr [bx + 0xba]
+0x0000000000002d58:  8B 97 BA 00          mov   dx, word ptr ds:[bx + _spechit]
 0x0000000000002d5c:  31 DB                xor   bx, bx
 0x0000000000002d5e:  0E                   push  cs
 0x0000000000002d5f:  E8 32 54             call  P_UseSpecialLine_
 0x0000000000002d62:  90                   nop   
 0x0000000000002d63:  84 C0                test  al, al
-0x0000000000002d65:  74 DB                je    0x2d42
+0x0000000000002d65:  74 DB                je    label_32
 0x0000000000002d67:  C6 46 FE 01          mov   byte ptr [bp - 2], 1
-0x0000000000002d6b:  EB D5                jmp   0x2d42
+0x0000000000002d6b:  EB D5                jmp   label_32
+label_31:
 0x0000000000002d6d:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x0000000000002d70:  C9                   LEAVE_MACRO 
 0x0000000000002d71:  5F                   pop   di
 0x0000000000002d72:  5E                   pop   si
 0x0000000000002d73:  5A                   pop   dx
 0x0000000000002d74:  C3                   ret   
+label_26:
 0x0000000000002d75:  8E 46 FC             mov   es, word ptr [bp - 4]
-0x0000000000002d78:  26 80 65 16 DF       and   byte ptr es:[di + 0x16], 0xdf
-0x0000000000002d7d:  26 F6 45 15 40       test  byte ptr es:[di + 0x15], 0x40
-0x0000000000002d82:  75 17                jne   0x2d9b
-0x0000000000002d84:  8B 44 06             mov   ax, word ptr [si + 6]
+0x0000000000002d78:  26 80 65 16 DF       and   byte ptr es:[di + MOBJ_POS_T.mp_flags2], (NOT MF_INFLOAT)
+0x0000000000002d7d:  26 F6 45 15 40       test  byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_FLOAT SHR 8)
+0x0000000000002d82:  75 17                jne   exit_p_move_return_1
+0x0000000000002d84:  8B 44 06             mov   ax, word ptr ds:[si + 6]
 0x0000000000002d87:  C1 F8 03             sar   ax, 3
-0x0000000000002d8a:  26 89 45 0A          mov   word ptr es:[di + 0xa], ax
-0x0000000000002d8e:  8B 44 06             mov   ax, word ptr [si + 6]
+0x0000000000002d8a:  26 89 45 0A          mov   word ptr es:[di + MOBJ_POS_T.mp_z + 2], ax
+0x0000000000002d8e:  8B 44 06             mov   ax, word ptr ds:[si + 6]
 0x0000000000002d91:  25 07 00             and   ax, 7
-0x0000000000002d94:  C1 E0 0D             shl   ax, 0xd
-0x0000000000002d97:  26 89 45 08          mov   word ptr es:[di + 8], ax
+0x0000000000002d94:  C1 E0 0D             shl   ax, 13
+0x0000000000002d97:  26 89 45 08          mov   word ptr es:[di + MOBJ_POS_T.mp_z + 0], ax
+exit_p_move_return_1:
 0x0000000000002d9b:  B0 01                mov   al, 1
 0x0000000000002d9d:  C9                   LEAVE_MACRO 
 0x0000000000002d9e:  5F                   pop   di
@@ -614,15 +689,16 @@ PUBLIC  P_TryWalk_
 0x0000000000002da3:  89 C6                mov   si, ax
 0x0000000000002da5:  E8 50 FE             call  P_Move_
 0x0000000000002da8:  84 C0                test  al, al
-0x0000000000002daa:  75 02                jne   0x2dae
+0x0000000000002daa:  75 02                jne   label_37
 0x0000000000002dac:  5E                   pop   si
 0x0000000000002dad:  C3                   ret   
+label_37:
 0x0000000000002dae:  E8 FF 5B             call  P_Random_
 0x0000000000002db1:  88 C3                mov   bl, al
-0x0000000000002db3:  80 E3 0F             and   bl, 0xf
+0x0000000000002db3:  80 E3 0F             and   bl, 15
 0x0000000000002db6:  30 FF                xor   bh, bh
 0x0000000000002db8:  B0 01                mov   al, 1
-0x0000000000002dba:  89 5C 20             mov   word ptr [si + 0x20], bx
+0x0000000000002dba:  89 5C 20             mov   word ptr ds:[si + MOBJ_T.m_movecount], bx
 0x0000000000002dbd:  5E                   pop   si
 0x0000000000002dbe:  C3                   ret   
 0x0000000000002dbf:  FC                   cld   
@@ -649,9 +725,9 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002ddc:  89 46 F2             mov   word ptr [bp - 0Eh], ax
 0x0000000000002ddf:  26 8B 45 04          mov   ax, word ptr es:[di + 4]
 0x0000000000002de3:  89 46 F0             mov   word ptr [bp - 010h], ax
-0x0000000000002de6:  8A 44 1F             mov   al, byte ptr [si + 0x1f]
+0x0000000000002de6:  8A 44 1F             mov   al, byte ptr ds:[si + MOBJ_T.m_movedir]
 0x0000000000002de9:  88 46 FE             mov   byte ptr [bp - 2], al
-0x0000000000002dec:  6B 44 22 2C          imul  ax, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x0000000000002dec:  6B 44 22 2C          imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x0000000000002df0:  BB 2C 00             mov   bx, SIZEOF_THINKER_T
 0x0000000000002df3:  31 D2                xor   dx, dx
 0x0000000000002df5:  F7 F3                div   bx
@@ -662,7 +738,7 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002e03:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x0000000000002e06:  98                   cwde  
 0x0000000000002e07:  89 C3                mov   bx, ax
-0x0000000000002e09:  8A 87 96 0E          mov   al, byte ptr [bx + 0xe96]
+0x0000000000002e09:  8A 87 96 0E          mov   al, byte ptr ds:[bx + 0xe96]
 0x0000000000002e0d:  89 D3                mov   bx, dx
 0x0000000000002e0f:  88 46 FC             mov   byte ptr [bp - 4], al
 0x0000000000002e12:  26 8B 07             mov   ax, word ptr es:[bx]
@@ -712,9 +788,9 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002e90:  76 F7                jbe   0x2e89
 0x0000000000002e92:  BB 01 00             mov   bx, 1
 0x0000000000002e95:  01 C3                add   bx, ax
-0x0000000000002e97:  8A 87 9F 0E          mov   al, byte ptr [bx + 0xe9f]
+0x0000000000002e97:  8A 87 9F 0E          mov   al, byte ptr ds:[bx + 0xe9f]
 0x0000000000002e9b:  88 C3                mov   bl, al
-0x0000000000002e9d:  88 44 1F             mov   byte ptr [si + 0x1f], al
+0x0000000000002e9d:  88 44 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 0x0000000000002ea0:  8A 46 FC             mov   al, byte ptr [bp - 4]
 0x0000000000002ea3:  30 FF                xor   bh, bh
 0x0000000000002ea5:  98                   cwde  
@@ -748,7 +824,7 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002eee:  74 11                je    0x2f01
 0x0000000000002ef0:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002ef3:  89 FB                mov   bx, di
-0x0000000000002ef5:  88 44 1F             mov   byte ptr [si + 0x1f], al
+0x0000000000002ef5:  88 44 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 0x0000000000002ef8:  89 F0                mov   ax, si
 0x0000000000002efa:  E8 A5 FE             call  P_TryWalk_
 0x0000000000002efd:  84 C0                test  al, al
@@ -765,7 +841,7 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002f16:  8A 46 FC             mov   al, byte ptr [bp - 4]
 0x0000000000002f19:  3C 08                cmp   al, 8
 0x0000000000002f1b:  75 4F                jne   0x2f6c
-0x0000000000002f1d:  C6 44 1F 08          mov   byte ptr [si + 0x1f], 8
+0x0000000000002f1d:  C6 44 1F 08          mov   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 0x0000000000002f21:  C9                   LEAVE_MACRO 
 0x0000000000002f22:  5F                   pop   di
 0x0000000000002f23:  5E                   pop   si
@@ -822,7 +898,7 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002fa2:  E9 1E FF             jmp   0x2ec3
 0x0000000000002fa5:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002fa8:  89 FB                mov   bx, di
-0x0000000000002faa:  88 44 1F             mov   byte ptr [si + 0x1f], al
+0x0000000000002faa:  88 44 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 0x0000000000002fad:  89 F0                mov   ax, si
 0x0000000000002faf:  E8 F0 FD             call  P_TryWalk_
 0x0000000000002fb2:  84 C0                test  al, al
@@ -831,7 +907,7 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002fb9:  E9 26 FF             jmp   0x2ee2
 0x0000000000002fbc:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002fbf:  89 FB                mov   bx, di
-0x0000000000002fc1:  88 44 1F             mov   byte ptr [si + 0x1f], al
+0x0000000000002fc1:  88 44 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 0x0000000000002fc4:  89 F0                mov   ax, si
 0x0000000000002fc6:  E8 D9 FD             call  P_TryWalk_
 0x0000000000002fc9:  84 C0                test  al, al
@@ -840,7 +916,7 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002fd0:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002fd3:  89 FB                mov   bx, di
 0x0000000000002fd5:  89 F0                mov   ax, si
-0x0000000000002fd7:  88 54 1F             mov   byte ptr [si + 0x1f], dl
+0x0000000000002fd7:  88 54 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], dl
 0x0000000000002fda:  E8 C5 FD             call  P_TryWalk_
 0x0000000000002fdd:  84 C0                test  al, al
 0x0000000000002fdf:  75 D5                jne   0x2fb6
@@ -855,19 +931,19 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002ff5:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002ff8:  89 FB                mov   bx, di
 0x0000000000002ffa:  89 F0                mov   ax, si
-0x0000000000002ffc:  88 54 1F             mov   byte ptr [si + 0x1f], dl
+0x0000000000002ffc:  88 54 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], dl
 0x0000000000002fff:  E8 A0 FD             call  P_TryWalk_
 0x0000000000003002:  84 C0                test  al, al
 0x0000000000003004:  74 E5                je    0x2feb
 0x0000000000003006:  E9 18 FF             jmp   0x2f21
 0x0000000000003009:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x000000000000300c:  89 FB                mov   bx, di
-0x000000000000300e:  88 44 1F             mov   byte ptr [si + 0x1f], al
+0x000000000000300e:  88 44 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 0x0000000000003011:  89 F0                mov   ax, si
 0x0000000000003013:  E8 8C FD             call  P_TryWalk_
 0x0000000000003016:  84 C0                test  al, al
 0x0000000000003018:  75 9C                jne   0x2fb6
-0x000000000000301a:  C6 44 1F 08          mov   byte ptr [si + 0x1f], 8
+0x000000000000301a:  C6 44 1F 08          mov   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 0x000000000000301e:  C9                   LEAVE_MACRO 
 0x000000000000301f:  5F                   pop   di
 0x0000000000003020:  5E                   pop   si
@@ -891,7 +967,7 @@ PUBLIC  P_LookForPlayers_
 0x000000000000302e:  89 C7                mov   di, ax
 0x0000000000003030:  88 56 FE             mov   byte ptr [bp - 2], dl
 0x0000000000003033:  BB E8 07             mov   bx, 0x7e8
-0x0000000000003036:  83 3F 00             cmp   word ptr [bx], 0
+0x0000000000003036:  83 3F 00             cmp   word ptr ds:[bx], 0
 0x0000000000003039:  7F 08                jg    0x3043
 0x000000000000303b:  30 C0                xor   al, al
 0x000000000000303d:  C9                   LEAVE_MACRO 
@@ -901,15 +977,15 @@ PUBLIC  P_LookForPlayers_
 0x0000000000003041:  5B                   pop   bx
 0x0000000000003042:  C3                   ret   
 0x0000000000003043:  BB 2C 00             mov   bx, SIZEOF_THINKER_T
-0x0000000000003046:  2D 04 34             sub   ax, (OFFSET _thinkerlist + 4)
+0x0000000000003046:  2D 04 34             sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003049:  31 D2                xor   dx, dx
 0x000000000000304b:  F7 F3                div   bx
 0x000000000000304d:  6B F0 18             imul  si, ax, SIZEOF_MOBJ_POS_T
 0x0000000000003050:  BB 30 07             mov   bx, 0x730
-0x0000000000003053:  8B 0F                mov   cx, word ptr [bx]
+0x0000000000003053:  8B 0F                mov   cx, word ptr ds:[bx]
 0x0000000000003055:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000003058:  C7 46 FC F5 6A       mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
-0x000000000000305d:  8B 17                mov   dx, word ptr [bx]
+0x000000000000305d:  8B 17                mov   dx, word ptr ds:[bx]
 0x000000000000305f:  89 F3                mov   bx, si
 0x0000000000003061:  89 F8                mov   ax, di
 0x0000000000003063:  FF 1E CC 0C          call  dword ptr ds:[_P_CheckSightTemp]
@@ -918,8 +994,8 @@ PUBLIC  P_LookForPlayers_
 0x000000000000306b:  80 7E FE 00          cmp   byte ptr [bp - 2], 0
 0x000000000000306f:  74 10                je    0x3081
 0x0000000000003071:  BB F6 06             mov   bx, 0x6f6
-0x0000000000003074:  8B 07                mov   ax, word ptr [bx]
-0x0000000000003076:  89 45 22             mov   word ptr [di + MOBJ_T.m_targetRef], ax
+0x0000000000003074:  8B 07                mov   ax, word ptr ds:[bx]
+0x0000000000003076:  89 45 22             mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
 0x0000000000003079:  B0 01                mov   al, 1
 0x000000000000307b:  C9                   LEAVE_MACRO 
 0x000000000000307c:  5F                   pop   di
@@ -928,12 +1004,12 @@ PUBLIC  P_LookForPlayers_
 0x000000000000307f:  5B                   pop   bx
 0x0000000000003080:  C3                   ret   
 0x0000000000003081:  BB 30 07             mov   bx, 0x730
-0x0000000000003084:  C4 07                les   ax, ptr [bx]
+0x0000000000003084:  C4 07                les   ax, ptr ds:[bx]
 0x0000000000003086:  89 C3                mov   bx, ax
 0x0000000000003088:  26 FF 77 06          push  word ptr es:[bx + 6]
 0x000000000000308c:  26 FF 77 04          push  word ptr es:[bx + 4]
 0x0000000000003090:  BB 30 07             mov   bx, 0x730
-0x0000000000003093:  C4 07                les   ax, ptr [bx]
+0x0000000000003093:  C4 07                les   ax, ptr ds:[bx]
 0x0000000000003095:  89 C3                mov   bx, ax
 0x0000000000003097:  26 FF 77 02          push  word ptr es:[bx + 2]
 0x000000000000309b:  26 FF 37             push  word ptr es:[bx]
@@ -959,7 +1035,7 @@ PUBLIC  P_LookForPlayers_
 0x00000000000030d1:  3D 00 C0             cmp   ax, 0xc000
 0x00000000000030d4:  73 9B                jae   0x3071
 0x00000000000030d6:  BB 30 07             mov   bx, 0x730
-0x00000000000030d9:  C4 17                les   dx, ptr [bx]
+0x00000000000030d9:  C4 17                les   dx, ptr ds:[bx]
 0x00000000000030db:  89 D3                mov   bx, dx
 0x00000000000030dd:  26 8B 47 04          mov   ax, word ptr es:[bx + 4]
 0x00000000000030e1:  26 8B 4F 06          mov   cx, word ptr es:[bx + 6]
@@ -970,7 +1046,7 @@ PUBLIC  P_LookForPlayers_
 0x00000000000030f1:  29 46 FA             sub   word ptr [bp - 6], ax
 0x00000000000030f4:  26 1B 4F 06          sbb   cx, word ptr es:[bx + 6]
 0x00000000000030f8:  BB 30 07             mov   bx, 0x730
-0x00000000000030fb:  C4 17                les   dx, ptr [bx]
+0x00000000000030fb:  C4 17                les   dx, ptr ds:[bx]
 0x00000000000030fd:  89 D3                mov   bx, dx
 0x00000000000030ff:  26 8B 07             mov   ax, word ptr es:[bx]
 0x0000000000003102:  26 8B 57 02          mov   dx, word ptr es:[bx + 2]
@@ -1009,45 +1085,50 @@ PUBLIC  A_KeenDie_
 0x000000000000313a:  89 C6                mov   si, ax
 0x000000000000313c:  8E C1                mov   es, cx
 0x000000000000313e:  B9 2C 00             mov   cx, SIZEOF_THINKER_T
-0x0000000000003141:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003141:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003144:  31 D2                xor   dx, dx
 0x0000000000003146:  88 46 FE             mov   byte ptr [bp - 2], al
-0x0000000000003149:  8D 84 FC CB          lea   ax, [si - (OFFSET _thinkerlist + 4)]
+0x0000000000003149:  8D 84 FC CB          lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x000000000000314d:  F7 F1                div   cx
 0x000000000000314f:  26 80 67 14 FD       and   byte ptr es:[bx + 0x14], 0xfd
-0x0000000000003154:  BB 02 34             mov   bx, 0x3402
+0x0000000000003154:  BB 02 34             mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
 0x0000000000003157:  89 C1                mov   cx, ax
-0x0000000000003159:  8B 07                mov   ax, word ptr [bx]
+0x0000000000003159:  8B 07                mov   ax, word ptr ds:[bx]
 0x000000000000315b:  85 C0                test  ax, ax
-0x000000000000315d:  74 1D                je    0x317c
+0x000000000000315d:  74 1D                je    label_33
+label_34:
 0x000000000000315f:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
-0x0000000000003162:  8B 97 00 34          mov   dx, word ptr [bx + 0x3400]
+0x0000000000003162:  8B 97 00 34          mov   dx, word ptr ds:[bx + _thinkerlist]
 0x0000000000003166:  30 D2                xor   dl, dl
-0x0000000000003168:  80 E6 F8             and   dh, 0xf8
-0x000000000000316b:  81 FA 00 08          cmp   dx, 0x800
-0x000000000000316f:  74 1A                je    0x318b
+0x0000000000003168:  80 E6 F8             and   dh, (TF_FUNCBITS SHR 8)
+0x000000000000316b:  81 FA 00 08          cmp   dx, TF_MOBJTHINKER_HIGHBITS
+0x000000000000316f:  74 1A                je    label_35
+label_36:
 0x0000000000003171:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
-0x0000000000003174:  8B 87 02 34          mov   ax, word ptr [bx + 0x3402]
+0x0000000000003174:  8B 87 02 34          mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
 0x0000000000003178:  85 C0                test  ax, ax
-0x000000000000317a:  75 E3                jne   0x315f
-0x000000000000317c:  BA 03 00             mov   dx, 3
-0x000000000000317f:  B8 3D 00             mov   ax, 0x3d
+0x000000000000317a:  75 E3                jne   label_34
+label_33:
+0x000000000000317c:  BA 03 00             mov   dx, DOOR_OPEN
+0x000000000000317f:  B8 3D 00             mov   ax, TAG_666
 0x0000000000003182:  0E                   push  cs
 0x0000000000003183:  E8 FE F2             call  EV_DoDoor_
 0x0000000000003186:  90                   nop   
+exit_keen_die:
 0x0000000000003187:  C9                   LEAVE_MACRO 
 0x0000000000003188:  5E                   pop   si
 0x0000000000003189:  5A                   pop   dx
 0x000000000000318a:  C3                   ret   
-0x000000000000318b:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + 4)
+label_35:
+0x000000000000318b:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x000000000000318f:  39 C8                cmp   ax, cx
-0x0000000000003191:  74 DE                je    0x3171
-0x0000000000003193:  8A 57 1A             mov   dl, byte ptr [bx + MOBJ_T.m_mobjtype]
+0x0000000000003191:  74 DE                je    label_36
+0x0000000000003193:  8A 57 1A             mov   dl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x0000000000003196:  3A 56 FE             cmp   dl, byte ptr [bp - 2]
-0x0000000000003199:  75 D6                jne   0x3171
-0x000000000000319b:  83 7F 1C 00          cmp   word ptr [bx + 0x1c], 0
-0x000000000000319f:  7F E6                jg    0x3187
-0x00000000000031a1:  EB CE                jmp   0x3171
+0x0000000000003199:  75 D6                jne   label_36
+0x000000000000319b:  83 7F 1C 00          cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
+0x000000000000319f:  7F E6                jg    exit_keen_die
+0x00000000000031a1:  EB CE                jmp   label_36
 0x00000000000031a3:  FC                   cld   
 
 ENDP
@@ -1065,25 +1146,25 @@ PUBLIC  A_Look_
 0x00000000000031ad:  89 C6                mov   si, ax
 0x00000000000031af:  C7 46 F8 50 03       mov   word ptr [bp - 8], GETSEESTATEADDR
 0x00000000000031b4:  B8 56 4C             mov   ax, SECTOR_SOUNDTRAVERSED_SEGMENT
-0x00000000000031b7:  8B 7C 04             mov   di, word ptr [si + 4]
-0x00000000000031ba:  C6 44 25 00          mov   byte ptr [si + 0x25], 0
+0x00000000000031b7:  8B 7C 04             mov   di, word ptr ds:[si + 4]
+0x00000000000031ba:  C6 44 25 00          mov   byte ptr ds:[si + 0x25], 0
 0x00000000000031be:  8E C0                mov   es, ax
 0x00000000000031c0:  C7 46 FA D9 92       mov   word ptr [bp - 6], INFOFUNCLOADSEGMENT
 0x00000000000031c5:  26 80 3D 00          cmp   byte ptr es:[di], 0
 0x00000000000031c9:  75 03                jne   0x31ce
 0x00000000000031cb:  E9 93 00             jmp   0x3261
 0x00000000000031ce:  BF F6 06             mov   di, 0x6f6
-0x00000000000031d1:  8B 05                mov   ax, word ptr [di]
+0x00000000000031d1:  8B 05                mov   ax, word ptr ds:[di]
 0x00000000000031d3:  85 C0                test  ax, ax
 0x00000000000031d5:  74 F4                je    0x31cb
 0x00000000000031d7:  6B F8 18             imul  di, ax, SIZEOF_MOBJ_POS_T
 0x00000000000031da:  BA F5 6A             mov   dx, MOBJPOSLIST_6800_SEGMENT
 0x00000000000031dd:  8E C2                mov   es, dx
 0x00000000000031df:  6B D0 2C             imul  dx, ax, SIZEOF_THINKER_T
-0x00000000000031e2:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x00000000000031e2:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000031e6:  26 F6 45 14 04       test  byte ptr es:[di + 0x14], 4
 0x00000000000031eb:  74 DE                je    0x31cb
-0x00000000000031ed:  89 44 22             mov   word ptr [si + MOBJ_T.m_targetRef], ax
+0x00000000000031ed:  89 44 22             mov   word ptr ds:[si + MOBJ_T.m_targetRef], ax
 0x00000000000031f0:  8E C1                mov   es, cx
 0x00000000000031f2:  26 F6 47 14 20       test  byte ptr es:[bx + 0x14], 0x20
 0x00000000000031f7:  74 0C                je    0x3205
@@ -1092,26 +1173,26 @@ PUBLIC  A_Look_
 0x00000000000031fd:  FF 1E CC 0C          call  dword ptr ds:[_P_CheckSightTemp]
 0x0000000000003201:  84 C0                test  al, al
 0x0000000000003203:  74 5C                je    0x3261
-0x0000000000003205:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003205:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003208:  30 E4                xor   ah, ah
 0x000000000000320a:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x000000000000320d:  C7 46 FE 00 00       mov   word ptr [bp - 2], 0
 0x0000000000003212:  89 C3                mov   bx, ax
 0x0000000000003214:  89 46 FC             mov   word ptr [bp - 4], ax
-0x0000000000003217:  8A 87 62 C4          mov   al, byte ptr [bx + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound]
+0x0000000000003217:  8A 87 62 C4          mov   al, byte ptr ds:[bx + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound]
 0x000000000000321b:  81 C3 62 C4          add   bx, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound
 0x000000000000321f:  84 C0                test  al, al
 0x0000000000003221:  74 28                je    0x324b
 0x0000000000003223:  3C 24                cmp   al, 0x24
 0x0000000000003225:  73 47                jae   0x326e
-0x0000000000003227:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003227:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x000000000000322a:  30 E4                xor   ah, ah
 0x000000000000322c:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x000000000000322f:  89 C3                mov   bx, ax
 0x0000000000003231:  81 C3 62 C4          add   bx, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound
-0x0000000000003235:  8A 1F                mov   bl, byte ptr [bx]
+0x0000000000003235:  8A 1F                mov   bl, byte ptr ds:[bx]
 0x0000000000003237:  30 FF                xor   bh, bh
-0x0000000000003239:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003239:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x000000000000323c:  3C 13                cmp   al, 0x13
 0x000000000000323e:  75 66                jne   0x32a6
 0x0000000000003240:  88 DA                mov   dl, bl
@@ -1120,7 +1201,7 @@ PUBLIC  A_Look_
 0x0000000000003246:  0E                   push  cs
 0x0000000000003247:  E8 06 D3             call  S_StartSound_
 0x000000000000324a:  90                   nop   
-0x000000000000324b:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x000000000000324b:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x000000000000324e:  30 E4                xor   ah, ah
 0x0000000000003250:  FF 5E F8             call  dword ptr [bp - 8]
 0x0000000000003253:  89 C2                mov   dx, ax
@@ -1184,7 +1265,7 @@ PUBLIC  A_Chase_
 0x00000000000032b9:  89 C6                mov   si, ax
 0x00000000000032bb:  89 DF                mov   di, bx
 0x00000000000032bd:  89 4E FE             mov   word ptr [bp - 2], cx
-0x00000000000032c0:  8B 44 22             mov   ax, word ptr [si + MOBJ_T.m_targetRef]
+0x00000000000032c0:  8B 44 22             mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
 0x00000000000032c3:  6B D0 2C             imul  dx, ax, SIZEOF_THINKER_T
 0x00000000000032c6:  6B C8 18             imul  cx, ax, SIZEOF_MOBJ_POS_T
 0x00000000000032c9:  C7 46 FC F5 6A       mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
@@ -1196,28 +1277,28 @@ PUBLIC  A_Chase_
 0x00000000000032e7:  C7 46 EE D9 92       mov   word ptr [bp - 012h], INFOFUNCLOADSEGMENT
 0x00000000000032ec:  C7 46 F8 B8 02       mov   word ptr [bp - 8], GETATTACKSOUNDADDR
 0x00000000000032f1:  C7 46 FA D9 92       mov   word ptr [bp - 6], INFOFUNCLOADSEGMENT
-0x00000000000032f6:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
-0x00000000000032fa:  80 7C 24 00          cmp   byte ptr [si + 0x24], 0
+0x00000000000032f6:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+0x00000000000032fa:  80 7C 24 00          cmp   byte ptr ds:[si + 0x24], 0
 0x00000000000032fe:  74 03                je    0x3303
 0x0000000000003300:  E9 77 00             jmp   0x337a
-0x0000000000003303:  80 7C 25 00          cmp   byte ptr [si + 0x25], 0
+0x0000000000003303:  80 7C 25 00          cmp   byte ptr ds:[si + 0x25], 0
 0x0000000000003307:  74 0B                je    0x3314
 0x0000000000003309:  85 C0                test  ax, ax
 0x000000000000330b:  74 03                je    0x3310
 0x000000000000330d:  E9 6F 00             jmp   0x337f
-0x0000000000003310:  C6 44 25 00          mov   byte ptr [si + 0x25], 0
-0x0000000000003314:  80 7C 1F 08          cmp   byte ptr [si + 0x1f], 8
+0x0000000000003310:  C6 44 25 00          mov   byte ptr ds:[si + 0x25], 0
+0x0000000000003314:  80 7C 1F 08          cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 0x0000000000003318:  73 2E                jae   0x3348
 0x000000000000331a:  8E 46 FE             mov   es, word ptr [bp - 2]
 0x000000000000331d:  26 C6 45 10 00       mov   byte ptr es:[di + 0x10], 0
 0x0000000000003322:  26 C7 45 0E 00 00    mov   word ptr es:[di + 0xe], 0
 0x0000000000003328:  26 80 65 11 E0       and   byte ptr es:[di + 0x11], 0xe0
-0x000000000000332d:  8A 44 1F             mov   al, byte ptr [si + 0x1f]
+0x000000000000332d:  8A 44 1F             mov   al, byte ptr ds:[si + MOBJ_T.m_movedir]
 0x0000000000003330:  30 E4                xor   ah, ah
 0x0000000000003332:  89 C3                mov   bx, ax
 0x0000000000003334:  01 C3                add   bx, ax
 0x0000000000003336:  26 8B 45 10          mov   ax, word ptr es:[di + 0x10]
-0x000000000000333a:  2B 87 A0 04          sub   ax, word ptr [bx + 0x4a0]
+0x000000000000333a:  2B 87 A0 04          sub   ax, word ptr ds:[bx + 0x4a0]
 0x000000000000333e:  85 C0                test  ax, ax
 0x0000000000003340:  7E 4A                jle   0x338c
 0x0000000000003342:  26 81 6D 10 00 20    sub   word ptr es:[di + 0x10], 0x2000
@@ -1240,12 +1321,12 @@ PUBLIC  A_Chase_
 0x0000000000003377:  5E                   pop   si
 0x0000000000003378:  5A                   pop   dx
 0x0000000000003379:  C3                   ret   
-0x000000000000337a:  FE 4C 24             dec   byte ptr [si + 0x24]
+0x000000000000337a:  FE 4C 24             dec   byte ptr ds:[si + 0x24]
 0x000000000000337d:  EB 84                jmp   0x3303
 0x000000000000337f:  89 D3                mov   bx, dx
-0x0000000000003381:  83 7F 1C 00          cmp   word ptr [bx + 0x1c], 0
+0x0000000000003381:  83 7F 1C 00          cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
 0x0000000000003385:  7E 89                jle   0x3310
-0x0000000000003387:  FE 4C 25             dec   byte ptr [si + 0x25]
+0x0000000000003387:  FE 4C 25             dec   byte ptr ds:[si + 0x25]
 0x000000000000338a:  EB 88                jmp   0x3314
 0x000000000000338c:  7D BA                jge   0x3348
 0x000000000000338e:  26 80 45 11 20       add   byte ptr es:[di + 0x11], 0x20
@@ -1255,12 +1336,12 @@ PUBLIC  A_Chase_
 0x000000000000339a:  E8 87 FC             call  P_LookForPlayers_
 0x000000000000339d:  84 C0                test  al, al
 0x000000000000339f:  75 D4                jne   0x3375
-0x00000000000033a1:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x00000000000033a1:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x00000000000033a4:  30 E4                xor   ah, ah
 0x00000000000033a6:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x00000000000033a9:  89 C7                mov   di, ax
 0x00000000000033ab:  89 F0                mov   ax, si
-0x00000000000033ad:  8B 95 60 C4          mov   dx, word ptr [di - 0x3ba0]
+0x00000000000033ad:  8B 95 60 C4          mov   dx, word ptr ds:[di - 0x3ba0]
 0x00000000000033b1:  81 C7 60 C4          add   di, OFFSET _mobjinfo
 0x00000000000033b5:  0E                   push  cs
 0x00000000000033b6:  3E E8 34 5C          call  P_SetMobjState_
@@ -1270,7 +1351,7 @@ PUBLIC  A_Chase_
 0x00000000000033c0:  89 F0                mov   ax, si
 0x00000000000033c2:  E8 FB F9             call  P_NewChaseDir_
 0x00000000000033c5:  EB AE                jmp   0x3375
-0x00000000000033c7:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x00000000000033c7:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x00000000000033ca:  30 E4                xor   ah, ah
 0x00000000000033cc:  FF 5E F4             call  dword ptr [bp - 0Ch]
 0x00000000000033cf:  85 C0                test  ax, ax
@@ -1279,7 +1360,7 @@ PUBLIC  A_Chase_
 0x00000000000033d5:  E8 06 F6             call  P_CheckMeleeRange_
 0x00000000000033d8:  84 C0                test  al, al
 0x00000000000033da:  75 69                jne   0x3445
-0x00000000000033dc:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x00000000000033dc:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x00000000000033df:  30 E4                xor   ah, ah
 0x00000000000033e1:  FF 5E F0             call  dword ptr [bp - 010h]
 0x00000000000033e4:  85 C0                test  ax, ax
@@ -1288,10 +1369,10 @@ PUBLIC  A_Chase_
 0x00000000000033ed:  73 54                jae   0x3443
 0x00000000000033ef:  80 3E 2F 22 00       cmp   byte ptr [0x222f], 0
 0x00000000000033f4:  75 4D                jne   0x3443
-0x00000000000033f6:  83 7C 20 00          cmp   word ptr [si + 0x20], 0
+0x00000000000033f6:  83 7C 20 00          cmp   word ptr ds:[si + 0x20], 0
 0x00000000000033fa:  74 72                je    0x346e
-0x00000000000033fc:  FF 4C 20             dec   word ptr [si + 0x20]
-0x00000000000033ff:  83 7C 20 00          cmp   word ptr [si + 0x20], 0
+0x00000000000033fc:  FF 4C 20             dec   word ptr ds:[si + 0x20]
+0x00000000000033ff:  83 7C 20 00          cmp   word ptr ds:[si + 0x20], 0
 0x0000000000003403:  7C 0E                jl    0x3413
 0x0000000000003405:  8B 4E FE             mov   cx, word ptr [bp - 2]
 0x0000000000003408:  89 FB                mov   bx, di
@@ -1303,7 +1384,7 @@ PUBLIC  A_Chase_
 0x0000000000003416:  89 FB                mov   bx, di
 0x0000000000003418:  89 F0                mov   ax, si
 0x000000000000341a:  E8 A3 F9             call  P_NewChaseDir_
-0x000000000000341d:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x000000000000341d:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003420:  30 E4                xor   ah, ah
 0x0000000000003422:  FF 5E EC             call  dword ptr [bp - 014h]
 0x0000000000003425:  88 C2                mov   dl, al
@@ -1323,7 +1404,7 @@ PUBLIC  A_Chase_
 0x0000000000003441:  5A                   pop   dx
 0x0000000000003442:  C3                   ret   
 0x0000000000003443:  EB 29                jmp   0x346e
-0x0000000000003445:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003445:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003448:  30 E4                xor   ah, ah
 0x000000000000344a:  FF 5E F8             call  dword ptr [bp - 8]
 0x000000000000344d:  88 C2                mov   dl, al
@@ -1331,7 +1412,7 @@ PUBLIC  A_Chase_
 0x0000000000003451:  30 F6                xor   dh, dh
 0x0000000000003453:  0E                   push  cs
 0x0000000000003454:  3E E8 F8 D0          call  S_StartSound_
-0x0000000000003458:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003458:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x000000000000345b:  30 E4                xor   ah, ah
 0x000000000000345d:  FF 5E F4             call  dword ptr [bp - 0Ch]
 0x0000000000003460:  89 C2                mov   dx, ax
@@ -1348,7 +1429,7 @@ PUBLIC  A_Chase_
 0x0000000000003470:  E8 3B F6             call  P_CheckMissileRange_
 0x0000000000003473:  84 C0                test  al, al
 0x0000000000003475:  74 85                je    0x33fc
-0x0000000000003477:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003477:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x000000000000347a:  30 E4                xor   ah, ah
 0x000000000000347c:  FF 5E F0             call  dword ptr [bp - 010h]
 0x000000000000347f:  89 C2                mov   dx, ax
@@ -1379,10 +1460,10 @@ PUBLIC  A_FaceTarget_
 0x000000000000349c:  89 E5                mov   bp, sp
 0x000000000000349e:  83 EC 04             sub   sp, 4
 0x00000000000034a1:  89 C3                mov   bx, ax
-0x00000000000034a3:  83 7F 22 00          cmp   word ptr [bx + MOBJ_T.m_targetRef], 0
+0x00000000000034a3:  83 7F 22 00          cmp   word ptr ds:[bx + MOBJ_T.m_targetRef], 0
 0x00000000000034a7:  74 65                je    0x350e
 0x00000000000034a9:  B9 2C 00             mov   cx, SIZEOF_THINKER_T
-0x00000000000034ac:  2D 04 34             sub   ax, (OFFSET _thinkerlist + 4)
+0x00000000000034ac:  2D 04 34             sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000034af:  31 D2                xor   dx, dx
 0x00000000000034b1:  F7 F1                div   cx
 0x00000000000034b3:  6B F8 18             imul  di, ax, SIZEOF_MOBJ_POS_T
@@ -1390,10 +1471,10 @@ PUBLIC  A_FaceTarget_
 0x00000000000034b9:  8E C0                mov   es, ax
 0x00000000000034bb:  26 80 65 14 DF       and   byte ptr es:[di + 0x14], 0xdf
 0x00000000000034c0:  89 FE                mov   si, di
-0x00000000000034c2:  6B 7F 22 18          imul  di, word ptr [bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
+0x00000000000034c2:  6B 7F 22 18          imul  di, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
 0x00000000000034c6:  89 46 FE             mov   word ptr [bp - 2], ax
 0x00000000000034c9:  89 FB                mov   bx, di
-0x00000000000034cb:  26 F6 45 16 04       test  byte ptr es:[di + 0x16], 4
+0x00000000000034cb:  26 F6 45 16 04       test  byte ptr es:[di + MOBJ_POS_T.mp_flags2], 4
 0x00000000000034d0:  74 43                je    0x3515
 0x00000000000034d2:  C7 46 FC 01 00       mov   word ptr [bp - 4], 1
 0x00000000000034d7:  26 FF 77 06          push  word ptr es:[bx + 6]
@@ -1457,7 +1538,7 @@ PUBLIC  A_PosAttack_
 0x0000000000003546:  89 E5                mov   bp, sp
 0x0000000000003548:  83 EC 02             sub   sp, 2
 0x000000000000354b:  89 C6                mov   si, ax
-0x000000000000354d:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x000000000000354d:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x0000000000003551:  75 07                jne   0x355a
 0x0000000000003553:  C9                   LEAVE_MACRO 
 0x0000000000003554:  5F                   pop   di
@@ -1467,7 +1548,7 @@ PUBLIC  A_PosAttack_
 0x0000000000003558:  5B                   pop   bx
 0x0000000000003559:  C3                   ret   
 0x000000000000355a:  BB 2C 00             mov   bx, SIZEOF_THINKER_T
-0x000000000000355d:  2D 04 34             sub   ax, (OFFSET _thinkerlist + 4)
+0x000000000000355d:  2D 04 34             sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003560:  31 D2                xor   dx, dx
 0x0000000000003562:  F7 F3                div   bx
 0x0000000000003564:  6B D8 18             imul  bx, ax, SIZEOF_MOBJ_POS_T
@@ -1536,7 +1617,7 @@ PUBLIC  A_SPosAttack_
 0x00000000000035d8:  89 E5                mov   bp, sp
 0x00000000000035da:  83 EC 06             sub   sp, 6
 0x00000000000035dd:  89 C7                mov   di, ax
-0x00000000000035df:  83 7D 22 00          cmp   word ptr [di + MOBJ_T.m_targetRef], 0
+0x00000000000035df:  83 7D 22 00          cmp   word ptr ds:[di + MOBJ_T.m_targetRef], 0
 0x00000000000035e3:  75 07                jne   0x35ec
 0x00000000000035e5:  C9                   LEAVE_MACRO 
 0x00000000000035e6:  5F                   pop   di
@@ -1546,7 +1627,7 @@ PUBLIC  A_SPosAttack_
 0x00000000000035ea:  5B                   pop   bx
 0x00000000000035eb:  C3                   ret   
 0x00000000000035ec:  BE 2C 00             mov   si, SIZEOF_THINKER_T
-0x00000000000035ef:  2D 04 34             sub   ax, (OFFSET _thinkerlist + 4)
+0x00000000000035ef:  2D 04 34             sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000035f2:  31 D2                xor   dx, dx
 0x00000000000035f4:  F7 F6                div   si
 0x00000000000035f6:  6B F0 18             imul  si, ax, SIZEOF_MOBJ_POS_T
@@ -1622,7 +1703,7 @@ PUBLIC  A_CPosAttack_
 0x000000000000367c:  89 E5                mov   bp, sp
 0x000000000000367e:  83 EC 02             sub   sp, 2
 0x0000000000003681:  89 C6                mov   si, ax
-0x0000000000003683:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x0000000000003683:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x0000000000003687:  75 07                jne   0x3690
 0x0000000000003689:  C9                   LEAVE_MACRO 
 0x000000000000368a:  5F                   pop   di
@@ -1632,7 +1713,7 @@ PUBLIC  A_CPosAttack_
 0x000000000000368e:  5B                   pop   bx
 0x000000000000368f:  C3                   ret   
 0x0000000000003690:  BB 2C 00             mov   bx, SIZEOF_THINKER_T
-0x0000000000003693:  2D 04 34             sub   ax, (OFFSET _thinkerlist + 4)
+0x0000000000003693:  2D 04 34             sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003696:  31 D2                xor   dx, dx
 0x0000000000003698:  F7 F3                div   bx
 0x000000000000369a:  6B D8 18             imul  bx, ax, SIZEOF_MOBJ_POS_T
@@ -1704,20 +1785,20 @@ PUBLIC  A_CPosRefire_
 0x0000000000003715:  E8 7E FD             call  A_FaceTarget_
 0x0000000000003718:  C7 46 FC 50 03       mov   word ptr [bp - 4], GETSEESTATEADDR
 0x000000000000371d:  C7 46 FE D9 92       mov   word ptr [bp - 2], INFOFUNCLOADSEGMENT
-0x0000000000003722:  8B 54 22             mov   dx, word ptr [si + MOBJ_T.m_targetRef]
+0x0000000000003722:  8B 54 22             mov   dx, word ptr ds:[si + MOBJ_T.m_targetRef]
 0x0000000000003725:  E8 88 52             call  P_Random_
 0x0000000000003728:  3C 28                cmp   al, 0x28
 0x000000000000372a:  72 2F                jb    0x375b
 0x000000000000372c:  85 D2                test  dx, dx
 0x000000000000372e:  74 2B                je    0x375b
 0x0000000000003730:  6B FA 2C             imul  di, dx, SIZEOF_THINKER_T
-0x0000000000003733:  81 C7 04 34          add   di, (OFFSET _thinkerlist + 4)
+0x0000000000003733:  81 C7 04 34          add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003737:  85 D2                test  dx, dx
 0x0000000000003739:  74 25                je    0x3760
-0x000000000000373b:  83 7D 1C 00          cmp   word ptr [di + 0x1c], 0
+0x000000000000373b:  83 7D 1C 00          cmp   word ptr ds:[di + MOBJ_T.m_health], 0
 0x000000000000373f:  7E 1F                jle   0x3760
 0x0000000000003741:  B9 2C 00             mov   cx, SIZEOF_THINKER_T
-0x0000000000003744:  8D 85 FC CB          lea   ax, [di - (OFFSET _thinkerlist + 4)]
+0x0000000000003744:  8D 85 FC CB          lea   ax, ds:[di - (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x0000000000003748:  31 D2                xor   dx, dx
 0x000000000000374a:  F7 F1                div   cx
 0x000000000000374c:  6B C8 18             imul  cx, ax, SIZEOF_MOBJ_POS_T
@@ -1731,7 +1812,7 @@ PUBLIC  A_CPosRefire_
 0x000000000000375d:  5E                   pop   si
 0x000000000000375e:  5A                   pop   dx
 0x000000000000375f:  C3                   ret   
-0x0000000000003760:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003760:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003763:  30 E4                xor   ah, ah
 0x0000000000003765:  FF 5E FC             call  dword ptr [bp - 4]
 0x0000000000003768:  89 C2                mov   dx, ax
@@ -1761,20 +1842,20 @@ PUBLIC  A_SpidRefire_
 0x0000000000003781:  E8 12 FD             call  A_FaceTarget_
 0x0000000000003784:  C7 46 FC 50 03       mov   word ptr [bp - 4], GETSEESTATEADDR
 0x0000000000003789:  C7 46 FE D9 92       mov   word ptr [bp - 2], INFOFUNCLOADSEGMENT
-0x000000000000378e:  8B 54 22             mov   dx, word ptr [si + MOBJ_T.m_targetRef]
+0x000000000000378e:  8B 54 22             mov   dx, word ptr ds:[si + MOBJ_T.m_targetRef]
 0x0000000000003791:  E8 1C 52             call  P_Random_
 0x0000000000003794:  3C 0A                cmp   al, 0xa
 0x0000000000003796:  72 2F                jb    0x37c7
 0x0000000000003798:  85 D2                test  dx, dx
 0x000000000000379a:  74 2B                je    0x37c7
 0x000000000000379c:  6B FA 2C             imul  di, dx, SIZEOF_THINKER_T
-0x000000000000379f:  81 C7 04 34          add   di, (OFFSET _thinkerlist + 4)
+0x000000000000379f:  81 C7 04 34          add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000037a3:  85 D2                test  dx, dx
 0x00000000000037a5:  74 25                je    0x37cc
-0x00000000000037a7:  83 7D 1C 00          cmp   word ptr [di + 0x1c], 0
+0x00000000000037a7:  83 7D 1C 00          cmp   word ptr ds:[di + MOBJ_T.m_health], 0
 0x00000000000037ab:  7E 1F                jle   0x37cc
 0x00000000000037ad:  B9 2C 00             mov   cx, SIZEOF_THINKER_T
-0x00000000000037b0:  8D 85 FC CB          lea   ax, [di - (OFFSET _thinkerlist + 4)]
+0x00000000000037b0:  8D 85 FC CB          lea   ax, ds:[di - (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x00000000000037b4:  31 D2                xor   dx, dx
 0x00000000000037b6:  F7 F1                div   cx
 0x00000000000037b8:  6B C8 18             imul  cx, ax, SIZEOF_MOBJ_POS_T
@@ -1788,7 +1869,7 @@ PUBLIC  A_SpidRefire_
 0x00000000000037c9:  5E                   pop   si
 0x00000000000037ca:  5A                   pop   dx
 0x00000000000037cb:  C3                   ret   
-0x00000000000037cc:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x00000000000037cc:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x00000000000037cf:  30 E4                xor   ah, ah
 0x00000000000037d1:  FF 5E FC             call  dword ptr [bp - 4]
 0x00000000000037d4:  89 C2                mov   dx, ax
@@ -1811,16 +1892,16 @@ PUBLIC  A_BspiAttack_
 0x00000000000037e2:  52                   push  dx
 0x00000000000037e3:  56                   push  si
 0x00000000000037e4:  89 C6                mov   si, ax
-0x00000000000037e6:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x00000000000037e6:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x00000000000037ea:  75 03                jne   0x37ef
 0x00000000000037ec:  5E                   pop   si
 0x00000000000037ed:  5A                   pop   dx
 0x00000000000037ee:  C3                   ret   
 0x00000000000037ef:  E8 A4 FC             call  A_FaceTarget_
-0x00000000000037f2:  6B 54 22 2C          imul  dx, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000037f2:  6B 54 22 2C          imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000037f6:  6A 24                push  0x24
 0x00000000000037f8:  89 F0                mov   ax, si
-0x00000000000037fa:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x00000000000037fa:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000037fe:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x0000000000003802:  5E                   pop   si
 0x0000000000003803:  5A                   pop   dx
@@ -1836,7 +1917,7 @@ PUBLIC  A_TroopAttack_
 0x0000000000003806:  52                   push  dx
 0x0000000000003807:  56                   push  si
 0x0000000000003808:  89 C6                mov   si, ax
-0x000000000000380a:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x000000000000380a:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x000000000000380e:  75 03                jne   0x3813
 0x0000000000003810:  5E                   pop   si
 0x0000000000003811:  5A                   pop   dx
@@ -1864,19 +1945,19 @@ PUBLIC  A_TroopAttack_
 0x000000000000383f:  89 C1                mov   cx, ax
 0x0000000000003841:  C1 E1 02             shl   cx, 2
 0x0000000000003844:  29 C1                sub   cx, ax
-0x0000000000003846:  6B 44 22 2C          imul  ax, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x0000000000003846:  6B 44 22 2C          imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x000000000000384a:  89 F3                mov   bx, si
 0x000000000000384c:  89 F2                mov   dx, si
-0x000000000000384e:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x000000000000384e:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003851:  0E                   push  cs
 0x0000000000003852:  3E E8 DA 28          call  P_DamageMobj_
 0x0000000000003856:  5E                   pop   si
 0x0000000000003857:  5A                   pop   dx
 0x0000000000003858:  C3                   ret   
-0x0000000000003859:  6B 54 22 2C          imul  dx, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x0000000000003859:  6B 54 22 2C          imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x000000000000385d:  6A 1F                push  0x1f
 0x000000000000385f:  89 F0                mov   ax, si
-0x0000000000003861:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x0000000000003861:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003865:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x0000000000003869:  5E                   pop   si
 0x000000000000386a:  5A                   pop   dx
@@ -1893,7 +1974,7 @@ PUBLIC  A_SargAttack_
 0x000000000000386e:  52                   push  dx
 0x000000000000386f:  56                   push  si
 0x0000000000003870:  89 C6                mov   si, ax
-0x0000000000003872:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x0000000000003872:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x0000000000003876:  75 05                jne   0x387d
 0x0000000000003878:  5E                   pop   si
 0x0000000000003879:  5A                   pop   dx
@@ -1910,14 +1991,14 @@ PUBLIC  A_SargAttack_
 0x000000000000388e:  B9 0A 00             mov   cx, 0xa
 0x0000000000003891:  99                   cdq   
 0x0000000000003892:  F7 F9                idiv  cx
-0x0000000000003894:  6B 44 22 2C          imul  ax, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x0000000000003894:  6B 44 22 2C          imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x0000000000003898:  89 D1                mov   cx, dx
 0x000000000000389a:  89 F3                mov   bx, si
 0x000000000000389c:  C1 E1 02             shl   cx, 2
 0x000000000000389f:  89 F2                mov   dx, si
 0x00000000000038a1:  83 C1 04             add   cx, 4
 
-0x00000000000038a4:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x00000000000038a4:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000038a7:  0E                   push  cs
 0x00000000000038a8:  3E E8 84 28          call  P_DamageMobj_
 0x00000000000038ac:  5E                   pop   si
@@ -1936,7 +2017,7 @@ PUBLIC  A_HeadAttack_
 0x00000000000038b2:  52                   push  dx
 0x00000000000038b3:  56                   push  si
 0x00000000000038b4:  89 C6                mov   si, ax
-0x00000000000038b6:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x00000000000038b6:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x00000000000038ba:  75 03                jne   0x38bf
 0x00000000000038bc:  5E                   pop   si
 0x00000000000038bd:  5A                   pop   dx
@@ -1951,7 +2032,7 @@ PUBLIC  A_HeadAttack_
 0x00000000000038d0:  BB 06 00             mov   bx, 6
 0x00000000000038d3:  99                   cdq   
 0x00000000000038d4:  F7 FB                idiv  bx
-0x00000000000038d6:  6B 44 22 2C          imul  ax, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000038d6:  6B 44 22 2C          imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000038da:  42                   inc   dx
 0x00000000000038db:  89 D1                mov   cx, dx
 0x00000000000038dd:  C1 E1 02             shl   cx, 2
@@ -1959,16 +2040,16 @@ PUBLIC  A_HeadAttack_
 0x00000000000038e2:  01 D1                add   cx, dx
 0x00000000000038e4:  89 F2                mov   dx, si
 0x00000000000038e6:  01 C9                add   cx, cx
-0x00000000000038e8:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x00000000000038e8:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000038eb:  0E                   push  cs
 0x00000000000038ec:  3E E8 40 28          call  P_DamageMobj_
 0x00000000000038f0:  5E                   pop   si
 0x00000000000038f1:  5A                   pop   dx
 0x00000000000038f2:  C3                   ret   
-0x00000000000038f3:  6B 54 22 2C          imul  dx, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000038f3:  6B 54 22 2C          imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000038f7:  6A 20                push  0x20
 0x00000000000038f9:  89 F0                mov   ax, si
-0x00000000000038fb:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x00000000000038fb:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000038ff:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x0000000000003903:  5E                   pop   si
 0x0000000000003904:  5A                   pop   dx
@@ -1983,16 +2064,16 @@ PUBLIC  A_CyberAttack_
 0x0000000000003906:  52                   push  dx
 0x0000000000003907:  56                   push  si
 0x0000000000003908:  89 C6                mov   si, ax
-0x000000000000390a:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x000000000000390a:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x000000000000390e:  75 03                jne   0x3913
 0x0000000000003910:  5E                   pop   si
 0x0000000000003911:  5A                   pop   dx
 0x0000000000003912:  C3                   ret   
 0x0000000000003913:  E8 80 FB             call  A_FaceTarget_
-0x0000000000003916:  6B 54 22 2C          imul  dx, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x0000000000003916:  6B 54 22 2C          imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x000000000000391a:  6A 21                push  0x21
 0x000000000000391c:  89 F0                mov   ax, si
-0x000000000000391e:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x000000000000391e:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003922:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x0000000000003926:  5E                   pop   si
 0x0000000000003927:  5A                   pop   dx
@@ -2008,7 +2089,7 @@ PUBLIC  A_BruisAttack_
 0x000000000000392a:  52                   push  dx
 0x000000000000392b:  56                   push  si
 0x000000000000392c:  89 C6                mov   si, ax
-0x000000000000392e:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x000000000000392e:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x0000000000003932:  75 03                jne   0x3937
 0x0000000000003934:  5E                   pop   si
 0x0000000000003935:  5A                   pop   dx
@@ -2033,21 +2114,21 @@ PUBLIC  A_BruisAttack_
 0x000000000000395e:  89 C1                mov   cx, ax
 0x0000000000003960:  C1 E1 02             shl   cx, 2
 0x0000000000003963:  01 C1                add   cx, ax
-0x0000000000003965:  6B 44 22 2C          imul  ax, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x0000000000003965:  6B 44 22 2C          imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x0000000000003969:  89 F3                mov   bx, si
 0x000000000000396b:  89 F2                mov   dx, si
 0x000000000000396d:  01 C9                add   cx, cx
-0x000000000000396f:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x000000000000396f:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003972:  0E                   push  cs
 0x0000000000003973:  E8 BA 27             call  P_DamageMobj_
 0x0000000000003976:  90                   nop   
 0x0000000000003977:  5E                   pop   si
 0x0000000000003978:  5A                   pop   dx
 0x0000000000003979:  C3                   ret   
-0x000000000000397a:  6B 54 22 2C          imul  dx, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x000000000000397a:  6B 54 22 2C          imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x000000000000397e:  6A 10                push  0x10
 0x0000000000003980:  89 F0                mov   ax, si
-0x0000000000003982:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x0000000000003982:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003986:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x000000000000398a:  5E                   pop   si
 0x000000000000398b:  5A                   pop   dx
@@ -2069,7 +2150,7 @@ PUBLIC  A_SkelMissile_
 0x0000000000003997:  89 C6                mov   si, ax
 0x0000000000003999:  89 5E FE             mov   word ptr [bp - 2], bx
 0x000000000000399c:  89 4E FC             mov   word ptr [bp - 4], cx
-0x000000000000399f:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x000000000000399f:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x00000000000039a3:  75 05                jne   0x39aa
 0x00000000000039a5:  C9                   LEAVE_MACRO 
 0x00000000000039a6:  5F                   pop   di
@@ -2079,34 +2160,34 @@ PUBLIC  A_SkelMissile_
 0x00000000000039aa:  E8 E9 FA             call  A_FaceTarget_
 0x00000000000039ad:  8E C1                mov   es, cx
 0x00000000000039af:  26 83 47 0A 10       add   word ptr es:[bx + 0xa], 0x10
-0x00000000000039b4:  6B 54 22 2C          imul  dx, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000039b4:  6B 54 22 2C          imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000039b8:  6A 06                push  6
 0x00000000000039ba:  89 F0                mov   ax, si
-0x00000000000039bc:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x00000000000039bc:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000039c0:  BF 34 07             mov   di, OFFSET _setStateReturn_pos
 0x00000000000039c3:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x00000000000039c7:  BB BA 01             mov   bx, OFFSET _setStateReturn
-0x00000000000039ca:  8B 45 02             mov   ax, word ptr [di + 2]
-0x00000000000039cd:  8B 0F                mov   cx, word ptr [bx]
-0x00000000000039cf:  8B 1D                mov   bx, word ptr [di]
+0x00000000000039ca:  8B 45 02             mov   ax, word ptr ds:[di + 2]
+0x00000000000039cd:  8B 0F                mov   cx, word ptr ds:[bx]
+0x00000000000039cf:  8B 1D                mov   bx, word ptr ds:[di]
 0x00000000000039d1:  8E 46 FC             mov   es, word ptr [bp - 4]
 0x00000000000039d4:  8B 7E FE             mov   di, word ptr [bp - 2]
 0x00000000000039d7:  26 83 6D 0A 10       sub   word ptr es:[di + 0xa], 0x10
 0x00000000000039dc:  89 46 FA             mov   word ptr [bp - 6], ax
-0x00000000000039df:  8B 44 22             mov   ax, word ptr [si + MOBJ_T.m_targetRef]
+0x00000000000039df:  8B 44 22             mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
 0x00000000000039e2:  89 CE                mov   si, cx
-0x00000000000039e4:  8B 54 0E             mov   dx, word ptr [si + 0xe]
-0x00000000000039e7:  8B 74 10             mov   si, word ptr [si + 0x10]
+0x00000000000039e4:  8B 54 0E             mov   dx, word ptr ds:[si + 0xe]
+0x00000000000039e7:  8B 74 10             mov   si, word ptr ds:[si + 0x10]
 0x00000000000039ea:  8E 46 FA             mov   es, word ptr [bp - 6]
 0x00000000000039ed:  26 01 17             add   word ptr es:[bx], dx
 0x00000000000039f0:  26 11 77 02          adc   word ptr es:[bx + 2], si
 0x00000000000039f4:  89 CE                mov   si, cx
 0x00000000000039f6:  89 CF                mov   di, cx
-0x00000000000039f8:  8B 74 12             mov   si, word ptr [si + 0x12]
-0x00000000000039fb:  8B 55 14             mov   dx, word ptr [di + 0x14]
+0x00000000000039f8:  8B 74 12             mov   si, word ptr ds:[si + 0x12]
+0x00000000000039fb:  8B 55 14             mov   dx, word ptr ds:[di + 0x14]
 0x00000000000039fe:  26 01 77 04          add   word ptr es:[bx + 4], si
 0x0000000000003a02:  26 11 57 06          adc   word ptr es:[bx + 6], dx
-0x0000000000003a06:  89 45 26             mov   word ptr [di + 0x26], ax
+0x0000000000003a06:  89 45 26             mov   word ptr ds:[di + 0x26], ax
 0x0000000000003a09:  C9                   LEAVE_MACRO 
 0x0000000000003a0a:  5F                   pop   di
 0x0000000000003a0b:  5E                   pop   si
@@ -2160,37 +2241,37 @@ PUBLIC  A_Tracer_
 0x0000000000003a66:  8B 76 FA             mov   si, word ptr [bp - 6]
 0x0000000000003a69:  26 FF 77 08          push  word ptr es:[bx + 8]
 0x0000000000003a6d:  26 8B 5F 04          mov   bx, word ptr es:[bx + 4]
-0x0000000000003a71:  2B 5C 12             sub   bx, word ptr [si + 0x12]
-0x0000000000003a74:  1B 4C 14             sbb   cx, word ptr [si + 0x14]
+0x0000000000003a71:  2B 5C 12             sub   bx, word ptr ds:[si + 0x12]
+0x0000000000003a74:  1B 4C 14             sbb   cx, word ptr ds:[si + 0x14]
 0x0000000000003a77:  8B 76 F8             mov   si, word ptr [bp - 8]
 0x0000000000003a7a:  26 8B 04             mov   ax, word ptr es:[si]
 0x0000000000003a7d:  26 8B 54 02          mov   dx, word ptr es:[si + 2]
 0x0000000000003a81:  8B 76 FA             mov   si, word ptr [bp - 6]
-0x0000000000003a84:  2B 44 0E             sub   ax, word ptr [si + 0xe]
-0x0000000000003a87:  1B 54 10             sbb   dx, word ptr [si + 0x10]
+0x0000000000003a84:  2B 44 0E             sub   ax, word ptr ds:[si + 0xe]
+0x0000000000003a87:  1B 54 10             sbb   dx, word ptr ds:[si + 0x10]
 0x0000000000003a8a:  0E                   push  cs
 0x0000000000003a8b:  E8 16 53             call  P_SpawnMobj_
 0x0000000000003a8e:  90                   nop   
 0x0000000000003a8f:  BB BA 01             mov   bx, OFFSET _setStateReturn
-0x0000000000003a92:  8B 1F                mov   bx, word ptr [bx]
-0x0000000000003a94:  C7 47 18 01 00       mov   word ptr [bx + 0x18], 1
+0x0000000000003a92:  8B 1F                mov   bx, word ptr ds:[bx]
+0x0000000000003a94:  C7 47 18 01 00       mov   word ptr ds:[bx + 0x18], 1
 0x0000000000003a99:  E8 14 4F             call  P_Random_
 0x0000000000003a9c:  24 03                and   al, 3
-0x0000000000003a9e:  28 47 1B             sub   byte ptr [bx + 0x1b], al
-0x0000000000003aa1:  8A 47 1B             mov   al, byte ptr [bx + 0x1b]
+0x0000000000003a9e:  28 47 1B             sub   byte ptr ds:[bx + 0x1b], al
+0x0000000000003aa1:  8A 47 1B             mov   al, byte ptr ds:[bx + 0x1b]
 0x0000000000003aa4:  3C 01                cmp   al, 1
 0x0000000000003aa6:  72 03                jb    0x3aab
 0x0000000000003aa8:  E9 B5 01             jmp   0x3c60
-0x0000000000003aab:  C6 47 1B 01          mov   byte ptr [bx + 0x1b], 1
+0x0000000000003aab:  C6 47 1B 01          mov   byte ptr ds:[bx + 0x1b], 1
 0x0000000000003aaf:  8B 5E FA             mov   bx, word ptr [bp - 6]
-0x0000000000003ab2:  8B 47 26             mov   ax, word ptr [bx + 0x26]
+0x0000000000003ab2:  8B 47 26             mov   ax, word ptr ds:[bx + 0x26]
 0x0000000000003ab5:  85 C0                test  ax, ax
 0x0000000000003ab7:  75 03                jne   0x3abc
 0x0000000000003ab9:  E9 65 FF             jmp   0x3a21
 0x0000000000003abc:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
-0x0000000000003abf:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + 4)
+0x0000000000003abf:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003ac3:  74 F4                je    0x3ab9
-0x0000000000003ac5:  83 7F 1C 00          cmp   word ptr [bx + 0x1c], 0
+0x0000000000003ac5:  83 7F 1C 00          cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
 0x0000000000003ac9:  7E EE                jle   0x3ab9
 0x0000000000003acb:  26 FF 77 06          push  word ptr es:[bx + 6]
 0x0000000000003acf:  26 FF 77 04          push  word ptr es:[bx + 4]
@@ -2234,15 +2315,15 @@ PUBLIC  A_Tracer_
 0x0000000000003b42:  E9 25 01             jmp   0x3c6a
 0x0000000000003b45:  8B 5E FA             mov   bx, word ptr [bp - 6]
 0x0000000000003b48:  8E 46 F6             mov   es, word ptr [bp - 0Ah]
-0x0000000000003b4b:  8A 47 1A             mov   al, byte ptr [bx + MOBJ_T.m_mobjtype]
+0x0000000000003b4b:  8A 47 1A             mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x0000000000003b4e:  30 E4                xor   ah, ah
 0x0000000000003b50:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x0000000000003b53:  8B 76 F8             mov   si, word ptr [bp - 8]
 0x0000000000003b56:  26 8B 74 10          mov   si, word ptr es:[si + 0x10]
 0x0000000000003b5a:  D1 EE                shr   si, 1
-0x0000000000003b5c:  83 E6 FC             and   si, 0xfffc
+0x0000000000003b5c:  83 E6 FC             and   si, 0FFFCh
 0x0000000000003b5f:  89 C3                mov   bx, ax
-0x0000000000003b61:  8A 87 64 C4          mov   al, byte ptr [bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+0x0000000000003b61:  8A 87 64 C4          mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 0x0000000000003b65:  81 C3 64 C4          add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 0x0000000000003b69:  98                   cwde  
 0x0000000000003b6a:  89 F2                mov   dx, si
@@ -2250,13 +2331,13 @@ PUBLIC  A_Tracer_
 0x0000000000003b6e:  B8 D6 33             mov   ax, FINECOSINE_SEGMENT
 0x0000000000003b71:  9A 8D 5C 88 0A       call  FixedMulTrigSpeed_
 0x0000000000003b76:  8B 5E FA             mov   bx, word ptr [bp - 6]
-0x0000000000003b79:  89 47 0E             mov   word ptr [bx + 0xe], ax
-0x0000000000003b7c:  8A 47 1A             mov   al, byte ptr [bx + MOBJ_T.m_mobjtype]
+0x0000000000003b79:  89 47 0E             mov   word ptr ds:[bx + 0xe], ax
+0x0000000000003b7c:  8A 47 1A             mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x0000000000003b7f:  30 E4                xor   ah, ah
 0x0000000000003b81:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
-0x0000000000003b84:  89 57 10             mov   word ptr [bx + 0x10], dx
+0x0000000000003b84:  89 57 10             mov   word ptr ds:[bx + 0x10], dx
 0x0000000000003b87:  89 C3                mov   bx, ax
-0x0000000000003b89:  8A 87 64 C4          mov   al, byte ptr [bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+0x0000000000003b89:  8A 87 64 C4          mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 0x0000000000003b8d:  81 C3 64 C4          add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 0x0000000000003b91:  98                   cwde  
 0x0000000000003b92:  89 F2                mov   dx, si
@@ -2264,9 +2345,9 @@ PUBLIC  A_Tracer_
 0x0000000000003b96:  B8 D6 31             mov   ax, FINESINE_SEGMENT
 0x0000000000003b99:  9A 8D 5C 88 0A       call  FixedMulTrigSpeed_
 0x0000000000003b9e:  8B 5E FA             mov   bx, word ptr [bp - 6]
-0x0000000000003ba1:  89 47 12             mov   word ptr [bx + 0x12], ax
-0x0000000000003ba4:  89 57 14             mov   word ptr [bx + 0x14], dx
-0x0000000000003ba7:  6B 5F 26 18          imul  bx, word ptr [bx + 0x26], SIZEOF_MOBJ_POS_T
+0x0000000000003ba1:  89 47 12             mov   word ptr ds:[bx + 0x12], ax
+0x0000000000003ba4:  89 57 14             mov   word ptr ds:[bx + 0x14], dx
+0x0000000000003ba7:  6B 5F 26 18          imul  bx, word ptr ds:[bx + 0x26], SIZEOF_MOBJ_POS_T
 0x0000000000003bab:  B8 F5 6A             mov   ax, MOBJPOSLIST_6800_SEGMENT
 0x0000000000003bae:  8B 76 F8             mov   si, word ptr [bp - 8]
 0x0000000000003bb1:  8E C0                mov   es, ax
@@ -2292,11 +2373,11 @@ PUBLIC  A_Tracer_
 0x0000000000003bf1:  FF 1E D0 0C          call  dword ptr ds:[_P_AproxDistance]
 0x0000000000003bf5:  8B 5E FA             mov   bx, word ptr [bp - 6]
 0x0000000000003bf8:  89 D0                mov   ax, dx
-0x0000000000003bfa:  8A 57 1A             mov   dl, byte ptr [bx + MOBJ_T.m_mobjtype]
+0x0000000000003bfa:  8A 57 1A             mov   dl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x0000000000003bfd:  30 F6                xor   dh, dh
 0x0000000000003bff:  6B D2 0B             imul  dx, dx, SIZEOF_MOBJINFO_T
 0x0000000000003c02:  89 D3                mov   bx, dx
-0x0000000000003c04:  8A 97 64 C4          mov   dl, byte ptr [bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+0x0000000000003c04:  8A 97 64 C4          mov   dl, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 0x0000000000003c08:  81 C3 64 C4          add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 0x0000000000003c0c:  30 F6                xor   dh, dh
 0x0000000000003c0e:  89 D3                mov   bx, dx
@@ -2319,13 +2400,13 @@ PUBLIC  A_Tracer_
 0x0000000000003c3c:  89 CA                mov   dx, cx
 0x0000000000003c3e:  9A CB 5E 88 0A       call  FastDiv3216u_
 0x0000000000003c43:  8B 5E FA             mov   bx, word ptr [bp - 6]
-0x0000000000003c46:  3B 57 18             cmp   dx, word ptr [bx + 0x18]
+0x0000000000003c46:  3B 57 18             cmp   dx, word ptr ds:[bx + 0x18]
 0x0000000000003c49:  7C 07                jl    0x3c52
 0x0000000000003c4b:  75 5F                jne   0x3cac
-0x0000000000003c4d:  3B 47 16             cmp   ax, word ptr [bx + 0x16]
+0x0000000000003c4d:  3B 47 16             cmp   ax, word ptr ds:[bx + 0x16]
 0x0000000000003c50:  73 5A                jae   0x3cac
-0x0000000000003c52:  81 47 16 00 E0       add   word ptr [bx + 0x16], 0xe000
-0x0000000000003c57:  83 57 18 FF          adc   word ptr [bx + 0x18], -1
+0x0000000000003c52:  81 47 16 00 E0       add   word ptr ds:[bx + 0x16], 0xe000
+0x0000000000003c57:  83 57 18 FF          adc   word ptr ds:[bx + 0x18], -1
 0x0000000000003c5b:  C9                   LEAVE_MACRO 
 0x0000000000003c5c:  5F                   pop   di
 0x0000000000003c5d:  5E                   pop   si
@@ -2356,8 +2437,8 @@ PUBLIC  A_Tracer_
 0x0000000000003ca1:  26 89 47 0E          mov   word ptr es:[bx + 0xe], ax
 0x0000000000003ca5:  26 89 57 10          mov   word ptr es:[bx + 0x10], dx
 0x0000000000003ca9:  E9 99 FE             jmp   0x3b45
-0x0000000000003cac:  81 47 16 00 20       add   word ptr [bx + 0x16], 0x2000
-0x0000000000003cb1:  83 57 18 00          adc   word ptr [bx + 0x18], 0
+0x0000000000003cac:  81 47 16 00 20       add   word ptr ds:[bx + 0x16], 0x2000
+0x0000000000003cb1:  83 57 18 00          adc   word ptr ds:[bx + 0x18], 0
 0x0000000000003cb5:  C9                   LEAVE_MACRO 
 0x0000000000003cb6:  5F                   pop   di
 0x0000000000003cb7:  5E                   pop   si
@@ -2374,7 +2455,7 @@ PUBLIC  A_SkelWhoosh_
 0x0000000000003cba:  53                   push  bx
 0x0000000000003cbb:  52                   push  dx
 0x0000000000003cbc:  89 C3                mov   bx, ax
-0x0000000000003cbe:  83 7F 22 00          cmp   word ptr [bx + MOBJ_T.m_targetRef], 0
+0x0000000000003cbe:  83 7F 22 00          cmp   word ptr ds:[bx + MOBJ_T.m_targetRef], 0
 0x0000000000003cc2:  75 03                jne   0x3cc7
 0x0000000000003cc4:  5A                   pop   dx
 0x0000000000003cc5:  5B                   pop   bx
@@ -2400,7 +2481,7 @@ PUBLIC  A_SkelFist_
 0x0000000000003cda:  52                   push  dx
 0x0000000000003cdb:  56                   push  si
 0x0000000000003cdc:  89 C6                mov   si, ax
-0x0000000000003cde:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x0000000000003cde:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x0000000000003ce2:  75 05                jne   0x3ce9
 0x0000000000003ce4:  5E                   pop   si
 0x0000000000003ce5:  5A                   pop   dx
@@ -2425,11 +2506,11 @@ PUBLIC  A_SkelFist_
 0x0000000000003d0a:  BA 35 00             mov   dx, 0x35
 0x0000000000003d0d:  0E                   push  cs
 0x0000000000003d0e:  3E E8 3E C8          call  S_StartSound_
-0x0000000000003d12:  6B 44 22 2C          imul  ax, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x0000000000003d12:  6B 44 22 2C          imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x0000000000003d16:  89 F3                mov   bx, si
 0x0000000000003d18:  01 C9                add   cx, cx
 0x0000000000003d1a:  89 F2                mov   dx, si
-0x0000000000003d1c:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x0000000000003d1c:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003d1f:  0E                   push  cs
 0x0000000000003d20:  3E E8 0C 24          call  P_DamageMobj_
 0x0000000000003d24:  5E                   pop   si
@@ -2456,37 +2537,37 @@ PUBLIC  PIT_VileCheck_
 0x0000000000003d38:  C7 46 FA B2 00       mov   word ptr [bp - 6], GETRAISESTATEADDR
 0x0000000000003d3d:  8E C1                mov   es, cx
 0x0000000000003d3f:  C7 46 FC D9 92       mov   word ptr [bp - 4], INFOFUNCLOADSEGMENT
-0x0000000000003d44:  26 F6 47 16 10       test  byte ptr es:[bx + 0x16], 0x10
+0x0000000000003d44:  26 F6 47 16 10       test  byte ptr es:[bx + MOBJ_POS_T.mp_flags2], 0x10
 0x0000000000003d49:  74 06                je    0x3d51
-0x0000000000003d4b:  80 7C 1B FF          cmp   byte ptr [si + 0x1b], 0xff
+0x0000000000003d4b:  80 7C 1B FF          cmp   byte ptr ds:[si + 0x1b], 0xff
 0x0000000000003d4f:  74 06                je    0x3d57
 0x0000000000003d51:  B0 01                mov   al, 1
 0x0000000000003d53:  C9                   LEAVE_MACRO 
 0x0000000000003d54:  5F                   pop   di
 0x0000000000003d55:  5E                   pop   si
 0x0000000000003d56:  C3                   ret   
-0x0000000000003d57:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003d57:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003d5a:  30 E4                xor   ah, ah
 0x0000000000003d5c:  FF 5E FA             call  dword ptr [bp - 6]
 0x0000000000003d5f:  85 C0                test  ax, ax
 0x0000000000003d61:  74 EE                je    0x3d51
-0x0000000000003d63:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003d63:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003d66:  30 E4                xor   ah, ah
 0x0000000000003d68:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x0000000000003d6b:  89 C7                mov   di, ax
 0x0000000000003d6d:  81 C7 65 C4          add   di, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_radius
-0x0000000000003d71:  8A 05                mov   al, byte ptr [di]
+0x0000000000003d71:  8A 05                mov   al, byte ptr ds:[di]
 0x0000000000003d73:  BF 86 C4             mov   di, 0xc486
 0x0000000000003d76:  30 E4                xor   ah, ah
-0x0000000000003d78:  8A 0D                mov   cl, byte ptr [di]
+0x0000000000003d78:  8A 0D                mov   cl, byte ptr ds:[di]
 0x0000000000003d7a:  BF FC 00             mov   di, 0xfc
 0x0000000000003d7d:  30 ED                xor   ch, ch
 0x0000000000003d7f:  8E 46 FE             mov   es, word ptr [bp - 2]
 0x0000000000003d82:  01 C1                add   cx, ax
 0x0000000000003d84:  26 8B 07             mov   ax, word ptr es:[bx]
 0x0000000000003d87:  26 8B 57 02          mov   dx, word ptr es:[bx + 2]
-0x0000000000003d8b:  2B 05                sub   ax, word ptr [di]
-0x0000000000003d8d:  1B 55 02             sbb   dx, word ptr [di + 2]
+0x0000000000003d8b:  2B 05                sub   ax, word ptr ds:[di]
+0x0000000000003d8d:  1B 55 02             sbb   dx, word ptr ds:[di + 2]
 0x0000000000003d90:  0B D2                or    dx, dx
 0x0000000000003d92:  7D 07                jge   0x3d9b
 0x0000000000003d94:  F7 D8                neg   ax
@@ -2500,8 +2581,8 @@ PUBLIC  PIT_VileCheck_
 0x0000000000003da5:  BF 00 01             mov   di, 0x100
 0x0000000000003da8:  26 8B 47 04          mov   ax, word ptr es:[bx + 4]
 0x0000000000003dac:  26 8B 57 06          mov   dx, word ptr es:[bx + 6]
-0x0000000000003db0:  2B 05                sub   ax, word ptr [di]
-0x0000000000003db2:  1B 55 02             sbb   dx, word ptr [di + 2]
+0x0000000000003db0:  2B 05                sub   ax, word ptr ds:[di]
+0x0000000000003db2:  1B 55 02             sbb   dx, word ptr ds:[di + 2]
 0x0000000000003db5:  0B D2                or    dx, dx
 0x0000000000003db7:  7D 07                jge   0x3dc0
 0x0000000000003db9:  F7 D8                neg   ax
@@ -2514,29 +2595,29 @@ PUBLIC  PIT_VileCheck_
 0x0000000000003dc8:  77 87                ja    0x3d51
 0x0000000000003dca:  BF 2E 01             mov   di, 0x12e
 0x0000000000003dcd:  8B 46 F8             mov   ax, word ptr [bp - 8]
-0x0000000000003dd0:  89 05                mov   word ptr [di], ax
-0x0000000000003dd2:  C7 44 12 00 00       mov   word ptr [si + 0x12], 0
-0x0000000000003dd7:  C7 44 14 00 00       mov   word ptr [si + 0x14], 0
-0x0000000000003ddc:  D1 64 0A             shl   word ptr [si + 0xa], 1
-0x0000000000003ddf:  D1 54 0C             rcl   word ptr [si + 0xc], 1
-0x0000000000003de2:  D1 64 0A             shl   word ptr [si + 0xa], 1
-0x0000000000003de5:  D1 54 0C             rcl   word ptr [si + 0xc], 1
-0x0000000000003de8:  8B 44 12             mov   ax, word ptr [si + 0x12]
-0x0000000000003deb:  8B 54 14             mov   dx, word ptr [si + 0x14]
-0x0000000000003dee:  89 44 0E             mov   word ptr [si + 0xe], ax
-0x0000000000003df1:  89 54 10             mov   word ptr [si + 0x10], dx
+0x0000000000003dd0:  89 05                mov   word ptr ds:[di], ax
+0x0000000000003dd2:  C7 44 12 00 00       mov   word ptr ds:[si + 0x12], 0
+0x0000000000003dd7:  C7 44 14 00 00       mov   word ptr ds:[si + 0x14], 0
+0x0000000000003ddc:  D1 64 0A             shl   word ptr ds:[si + 0xa], 1
+0x0000000000003ddf:  D1 54 0C             rcl   word ptr ds:[si + 0xc], 1
+0x0000000000003de2:  D1 64 0A             shl   word ptr ds:[si + 0xa], 1
+0x0000000000003de5:  D1 54 0C             rcl   word ptr ds:[si + 0xc], 1
+0x0000000000003de8:  8B 44 12             mov   ax, word ptr ds:[si + 0x12]
+0x0000000000003deb:  8B 54 14             mov   dx, word ptr ds:[si + 0x14]
+0x0000000000003dee:  89 44 0E             mov   word ptr ds:[si + 0xe], ax
+0x0000000000003df1:  89 54 10             mov   word ptr ds:[si + 0x10], dx
 0x0000000000003df4:  26 FF 77 06          push  word ptr es:[bx + 6]
 0x0000000000003df8:  26 8B 07             mov   ax, word ptr es:[bx]
 0x0000000000003dfb:  26 8B 4F 02          mov   cx, word ptr es:[bx + 2]
-0x0000000000003dff:  8B 54 04             mov   dx, word ptr [si + 4]
+0x0000000000003dff:  8B 54 04             mov   dx, word ptr ds:[si + 4]
 0x0000000000003e02:  26 FF 77 04          push  word ptr es:[bx + 4]
 0x0000000000003e06:  89 C3                mov   bx, ax
 0x0000000000003e08:  89 F0                mov   ax, si
 0x0000000000003e0a:  FF 1E E0 0C          call  dword ptr ds:[_P_CheckPosition]
-0x0000000000003e0e:  D1 7C 0C             sar   word ptr [si + 0xc], 1
-0x0000000000003e11:  D1 5C 0A             rcr   word ptr [si + 0xa], 1
-0x0000000000003e14:  D1 7C 0C             sar   word ptr [si + 0xc], 1
-0x0000000000003e17:  D1 5C 0A             rcr   word ptr [si + 0xa], 1
+0x0000000000003e0e:  D1 7C 0C             sar   word ptr ds:[si + 0xc], 1
+0x0000000000003e11:  D1 5C 0A             rcr   word ptr ds:[si + 0xa], 1
+0x0000000000003e14:  D1 7C 0C             sar   word ptr ds:[si + 0xc], 1
+0x0000000000003e17:  D1 5C 0A             rcr   word ptr ds:[si + 0xa], 1
 0x0000000000003e1a:  84 C0                test  al, al
 0x0000000000003e1c:  75 03                jne   0x3e21
 0x0000000000003e1e:  E9 30 FF             jmp   0x3d51
@@ -2584,9 +2665,9 @@ PUBLIC  A_VileChase_
 0x0000000000003e5d:  C7 46 EC D9 92       mov   word ptr [bp - 014h], INFOFUNCLOADSEGMENT
 0x0000000000003e62:  89 C6                mov   si, ax
 0x0000000000003e64:  31 DB                xor   bx, bx
-0x0000000000003e66:  80 7C 1F 08          cmp   byte ptr [si + 0x1f], 8
+0x0000000000003e66:  80 7C 1F 08          cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 0x0000000000003e6a:  74 57                je    0x3ec3
-0x0000000000003e6c:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000003e6c:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003e6f:  30 E4                xor   ah, ah
 0x0000000000003e71:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x0000000000003e74:  89 5E F8             mov   word ptr [bp - 8], bx
@@ -2594,21 +2675,21 @@ PUBLIC  A_VileChase_
 0x0000000000003e7a:  8B 76 F6             mov   si, word ptr [bp - 0Ah]
 0x0000000000003e7d:  31 C0                xor   ax, ax
 0x0000000000003e7f:  8B 7E E6             mov   di, word ptr [bp - 01Ah]
-0x0000000000003e82:  8A 84 64 C4          mov   al, byte ptr [si + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+0x0000000000003e82:  8A 84 64 C4          mov   al, byte ptr ds:[si + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 0x0000000000003e86:  81 C6 64 C4          add   si, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 0x0000000000003e8a:  8E C1                mov   es, cx
 0x0000000000003e8c:  BE FC 00             mov   si, 0xfc
 0x0000000000003e8f:  26 8B 0D             mov   cx, word ptr es:[di]
 0x0000000000003e92:  26 8B 55 02          mov   dx, word ptr es:[di + 2]
-0x0000000000003e96:  89 0C                mov   word ptr [si], cx
-0x0000000000003e98:  89 54 02             mov   word ptr [si + 2], dx
+0x0000000000003e96:  89 0C                mov   word ptr ds:[si], cx
+0x0000000000003e98:  89 54 02             mov   word ptr ds:[si + 2], dx
 0x0000000000003e9b:  BE 00 01             mov   si, 0x100
 0x0000000000003e9e:  26 8B 55 04          mov   dx, word ptr es:[di + 4]
 0x0000000000003ea2:  26 8B 4D 06          mov   cx, word ptr es:[di + 6]
-0x0000000000003ea6:  89 14                mov   word ptr [si], dx
-0x0000000000003ea8:  89 4C 02             mov   word ptr [si + 2], cx
+0x0000000000003ea6:  89 14                mov   word ptr ds:[si], dx
+0x0000000000003ea8:  89 4C 02             mov   word ptr ds:[si + 2], cx
 0x0000000000003eab:  8B 76 E8             mov   si, word ptr [bp - 018h]
-0x0000000000003eae:  8A 54 1F             mov   dl, byte ptr [si + 0x1f]
+0x0000000000003eae:  8A 54 1F             mov   dl, byte ptr ds:[si + MOBJ_T.m_movedir]
 0x0000000000003eb1:  30 FC                xor   ah, bh
 0x0000000000003eb3:  80 FA 07             cmp   dl, 7
 0x0000000000003eb6:  77 13                ja    0x3ecb
@@ -2618,25 +2699,25 @@ PUBLIC  A_VileChase_
 0x0000000000003ebe:  2E FF A4 28 3E       jmp   word ptr cs:[si + OFFSET _some_lookup_table]
 0x0000000000003ec3:  E9 B9 00             jmp   0x3f7f
 0x0000000000003ec6:  BE FE 00             mov   si, 0xfe
-0x0000000000003ec9:  01 04                add   word ptr [si], ax
+0x0000000000003ec9:  01 04                add   word ptr ds:[si], ax
 0x0000000000003ecb:  BE FC 00             mov   si, 0xfc
 0x0000000000003ece:  BF E0 05             mov   di, 0x5e0
-0x0000000000003ed1:  8B 14                mov   dx, word ptr [si]
-0x0000000000003ed3:  8B 3D                mov   di, word ptr [di]
+0x0000000000003ed1:  8B 14                mov   dx, word ptr ds:[si]
+0x0000000000003ed3:  8B 3D                mov   di, word ptr ds:[di]
 0x0000000000003ed5:  29 DA                sub   dx, bx
-0x0000000000003ed7:  8B 44 02             mov   ax, word ptr [si + 2]
+0x0000000000003ed7:  8B 44 02             mov   ax, word ptr ds:[si + 2]
 0x0000000000003eda:  19 F8                sbb   ax, di
 0x0000000000003edc:  83 C2 00             add   dx, 0
 0x0000000000003edf:  15 C0 FF             adc   ax, 0xffc0
 0x0000000000003ee2:  89 56 F6             mov   word ptr [bp - 0Ah], dx
 0x0000000000003ee5:  89 46 F8             mov   word ptr [bp - 8], ax
-0x0000000000003ee8:  8B 04                mov   ax, word ptr [si]
+0x0000000000003ee8:  8B 04                mov   ax, word ptr ds:[si]
 0x0000000000003eea:  B9 07 00             mov   cx, 7
 0x0000000000003eed:  D1 7E F8             sar   word ptr [bp - 8], 1
 0x0000000000003ef0:  D1 5E F6             rcr   word ptr [bp - 0Ah], 1
 0x0000000000003ef3:  E2 F8                loop  0x3eed
 0x0000000000003ef5:  29 D8                sub   ax, bx
-0x0000000000003ef7:  8B 54 02             mov   dx, word ptr [si + 2]
+0x0000000000003ef7:  8B 54 02             mov   dx, word ptr ds:[si + 2]
 0x0000000000003efa:  19 FA                sbb   dx, di
 0x0000000000003efc:  05 00 00             add   ax, 0
 0x0000000000003eff:  83 D2 40             adc   dx, 0x40
@@ -2646,10 +2727,10 @@ PUBLIC  A_VileChase_
 0x0000000000003f0a:  D1 D8                rcr   ax, 1
 0x0000000000003f0c:  E2 FA                loop  0x3f08
 0x0000000000003f0e:  BF E2 05             mov   di, 0x5e2
-0x0000000000003f11:  8B 14                mov   dx, word ptr [si]
-0x0000000000003f13:  8B 3D                mov   di, word ptr [di]
+0x0000000000003f11:  8B 14                mov   dx, word ptr ds:[si]
+0x0000000000003f13:  8B 3D                mov   di, word ptr ds:[di]
 0x0000000000003f15:  29 DA                sub   dx, bx
-0x0000000000003f17:  8B 74 02             mov   si, word ptr [si + 2]
+0x0000000000003f17:  8B 74 02             mov   si, word ptr ds:[si + 2]
 0x0000000000003f1a:  19 FE                sbb   si, di
 0x0000000000003f1c:  83 C2 00             add   dx, 0
 0x0000000000003f1f:  83 D6 C0             adc   si, -0x40
@@ -2662,10 +2743,10 @@ PUBLIC  A_VileChase_
 0x0000000000003f31:  E2 FA                loop  0x3f2d
 0x0000000000003f33:  89 76 FE             mov   word ptr [bp - 2], si
 0x0000000000003f36:  BE 00 01             mov   si, 0x100
-0x0000000000003f39:  8B 14                mov   dx, word ptr [si]
+0x0000000000003f39:  8B 14                mov   dx, word ptr ds:[si]
 0x0000000000003f3b:  89 46 FC             mov   word ptr [bp - 4], ax
 0x0000000000003f3e:  29 DA                sub   dx, bx
-0x0000000000003f40:  8B 5C 02             mov   bx, word ptr [si + 2]
+0x0000000000003f40:  8B 5C 02             mov   bx, word ptr ds:[si + 2]
 0x0000000000003f43:  19 FB                sbb   bx, di
 0x0000000000003f45:  89 D7                mov   di, dx
 0x0000000000003f47:  89 DA                mov   dx, bx
@@ -2705,60 +2786,60 @@ PUBLIC  A_VileChase_
 0x0000000000003f90:  BA 98 B7             mov   dx, 47000
 0x0000000000003f93:  BE FC 00             mov   si, 0xfc
 0x0000000000003f96:  F7 E2                mul   dx
-0x0000000000003f98:  01 04                add   word ptr [si], ax
-0x0000000000003f9a:  11 54 02             adc   word ptr [si + 2], dx
+0x0000000000003f98:  01 04                add   word ptr ds:[si], ax
+0x0000000000003f9a:  11 54 02             adc   word ptr ds:[si + 2], dx
 0x0000000000003f9d:  BE 00 01             mov   si, 0x100
-0x0000000000003fa0:  01 04                add   word ptr [si], ax
-0x0000000000003fa2:  11 54 02             adc   word ptr [si + 2], dx
+0x0000000000003fa0:  01 04                add   word ptr ds:[si], ax
+0x0000000000003fa2:  11 54 02             adc   word ptr ds:[si + 2], dx
 0x0000000000003fa5:  E9 23 FF             jmp   0x3ecb
 0x0000000000003fa8:  BE 02 01             mov   si, 0x102
 0x0000000000003fab:  E9 1B FF             jmp   0x3ec9
 0x0000000000003fae:  BA 98 B7             mov   dx, 47000
 0x0000000000003fb1:  BE FC 00             mov   si, 0xfc
 0x0000000000003fb4:  F7 E2                mul   dx
-0x0000000000003fb6:  29 04                sub   word ptr [si], ax
-0x0000000000003fb8:  19 54 02             sbb   word ptr [si + 2], dx
+0x0000000000003fb6:  29 04                sub   word ptr ds:[si], ax
+0x0000000000003fb8:  19 54 02             sbb   word ptr ds:[si + 2], dx
 0x0000000000003fbb:  BE 00 01             mov   si, 0x100
-0x0000000000003fbe:  01 04                add   word ptr [si], ax
-0x0000000000003fc0:  11 54 02             adc   word ptr [si + 2], dx
+0x0000000000003fbe:  01 04                add   word ptr ds:[si], ax
+0x0000000000003fc0:  11 54 02             adc   word ptr ds:[si + 2], dx
 0x0000000000003fc3:  E9 05 FF             jmp   0x3ecb
 0x0000000000003fc6:  BE FC 00             mov   si, 0xfc
-0x0000000000003fc9:  29 1C                sub   word ptr [si], bx
-0x0000000000003fcb:  19 44 02             sbb   word ptr [si + 2], ax
+0x0000000000003fc9:  29 1C                sub   word ptr ds:[si], bx
+0x0000000000003fcb:  19 44 02             sbb   word ptr ds:[si + 2], ax
 0x0000000000003fce:  E9 FA FE             jmp   0x3ecb
 0x0000000000003fd1:  BA 98 B7             mov   dx, 47000
 0x0000000000003fd4:  BE FC 00             mov   si, 0xfc
 0x0000000000003fd7:  F7 E2                mul   dx
-0x0000000000003fd9:  29 04                sub   word ptr [si], ax
-0x0000000000003fdb:  19 54 02             sbb   word ptr [si + 2], dx
+0x0000000000003fd9:  29 04                sub   word ptr ds:[si], ax
+0x0000000000003fdb:  19 54 02             sbb   word ptr ds:[si + 2], dx
 0x0000000000003fde:  BE 00 01             mov   si, 0x100
-0x0000000000003fe1:  29 04                sub   word ptr [si], ax
-0x0000000000003fe3:  19 54 02             sbb   word ptr [si + 2], dx
+0x0000000000003fe1:  29 04                sub   word ptr ds:[si], ax
+0x0000000000003fe3:  19 54 02             sbb   word ptr ds:[si + 2], dx
 0x0000000000003fe6:  E9 E2 FE             jmp   0x3ecb
 0x0000000000003fe9:  8B 5E E8             mov   bx, word ptr [bp - 018h]
-0x0000000000003fec:  8B 57 22             mov   dx, word ptr [bx + MOBJ_T.m_targetRef]
+0x0000000000003fec:  8B 57 22             mov   dx, word ptr ds:[bx + MOBJ_T.m_targetRef]
 0x0000000000003fef:  BB 2E 01             mov   bx, 0x12e
-0x0000000000003ff2:  8B 07                mov   ax, word ptr [bx]
+0x0000000000003ff2:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000003ff4:  8B 5E E8             mov   bx, word ptr [bp - 018h]
-0x0000000000003ff7:  89 47 22             mov   word ptr [bx + MOBJ_T.m_targetRef], ax
+0x0000000000003ff7:  89 47 22             mov   word ptr ds:[bx + MOBJ_T.m_targetRef], ax
 0x0000000000003ffa:  89 D8                mov   ax, bx
 0x0000000000003ffc:  E8 97 F4             call  A_FaceTarget_
 0x0000000000003fff:  89 D8                mov   ax, bx
-0x0000000000004001:  89 57 22             mov   word ptr [bx + MOBJ_T.m_targetRef], dx
+0x0000000000004001:  89 57 22             mov   word ptr ds:[bx + MOBJ_T.m_targetRef], dx
 0x0000000000004004:  BA 0A 01             mov   dx, 0x10a
 0x0000000000004007:  BB 2E 01             mov   bx, 0x12e
 0x000000000000400a:  0E                   push  cs
 0x000000000000400b:  E8 E0 4F             call  P_SetMobjState_
 0x000000000000400e:  90                   nop   
-0x000000000000400f:  6B 37 2C             imul  si, word ptr [bx], SIZEOF_THINKER_T
-0x0000000000004012:  6B 1F 18             imul  bx, word ptr [bx], SIZEOF_MOBJ_POS_T
-0x0000000000004015:  81 C6 04 34          add   si, (OFFSET _thinkerlist + 4)
+0x000000000000400f:  6B 37 2C             imul  si, word ptr ds:[bx], SIZEOF_THINKER_T
+0x0000000000004012:  6B 1F 18             imul  bx, word ptr ds:[bx], SIZEOF_MOBJ_POS_T
+0x0000000000004015:  81 C6 04 34          add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004019:  BA 1F 00             mov   dx, 0x1f
 0x000000000000401c:  89 F0                mov   ax, si
 0x000000000000401e:  0E                   push  cs
 0x000000000000401f:  E8 2E C5             call  S_StartSound_
 0x0000000000004022:  90                   nop   
-0x0000000000004023:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000004023:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004026:  30 E4                xor   ah, ah
 0x0000000000004028:  6B F8 0B             imul  di, ax, SIZEOF_MOBJINFO_T
 0x000000000000402b:  FF 5E EA             call  dword ptr [bp - 016h]
@@ -2767,36 +2848,36 @@ PUBLIC  A_VileChase_
 0x0000000000004032:  0E                   push  cs
 0x0000000000004033:  E8 B8 4F             call  P_SetMobjState_
 0x0000000000004036:  90                   nop   
-0x0000000000004037:  C1 64 0C 02          shl   word ptr [si + 0xc], 2
+0x0000000000004037:  C1 64 0C 02          shl   word ptr ds:[si + 0xc], 2
 0x000000000000403b:  B9 F5 6A             mov   cx, MOBJPOSLIST_6800_SEGMENT
-0x000000000000403e:  8B 85 67 C4          mov   ax, word ptr [di + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_flags1]
+0x000000000000403e:  8B 85 67 C4          mov   ax, word ptr ds:[di + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_flags1]
 0x0000000000004042:  8E C1                mov   es, cx
-0x0000000000004044:  26 89 47 14          mov   word ptr es:[bx + 0x14], ax
-0x0000000000004048:  8B 85 69 C4          mov   ax, word ptr [di + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_flags2]
-0x000000000000404c:  26 89 47 16          mov   word ptr es:[bx + 0x16], ax
-0x0000000000004050:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000004044:  26 89 47 14          mov   word ptr es:[bx + MOBJ_POS_T.mp_flags1], ax
+0x0000000000004048:  8B 85 69 C4          mov   ax, word ptr ds:[di + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_flags2]
+0x000000000000404c:  26 89 47 16          mov   word ptr es:[bx + MOBJ_POS_T.mp_flags2], ax
+0x0000000000004050:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004053:  30 E4                xor   ah, ah
 0x0000000000004055:  FF 5E F2             call  dword ptr [bp - 0Eh]
-0x0000000000004058:  C7 44 22 00 00       mov   word ptr [si + MOBJ_T.m_targetRef], 0
+0x0000000000004058:  C7 44 22 00 00       mov   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x000000000000405d:  81 C7 60 C4          add   di, OFFSET _mobjinfo
-0x0000000000004061:  89 44 1C             mov   word ptr [si + 0x1c], ax
+0x0000000000004061:  89 44 1C             mov   word ptr ds:[si + MOBJ_T.m_health], ax
 0x0000000000004064:  C9                   LEAVE_MACRO 
 0x0000000000004065:  5F                   pop   di
 0x0000000000004066:  5E                   pop   si
 0x0000000000004067:  5A                   pop   dx
 0x0000000000004068:  C3                   ret   
 0x0000000000004069:  BE 00 01             mov   si, 0x100
-0x000000000000406c:  29 1C                sub   word ptr [si], bx
-0x000000000000406e:  19 44 02             sbb   word ptr [si + 2], ax
+0x000000000000406c:  29 1C                sub   word ptr ds:[si], bx
+0x000000000000406e:  19 44 02             sbb   word ptr ds:[si + 2], ax
 0x0000000000004071:  E9 57 FE             jmp   0x3ecb
 0x0000000000004074:  BA 98 B7             mov   dx, 47000
 0x0000000000004077:  BE FC 00             mov   si, 0xfc
 0x000000000000407a:  F7 E2                mul   dx
-0x000000000000407c:  01 04                add   word ptr [si], ax
-0x000000000000407e:  11 54 02             adc   word ptr [si + 2], dx
+0x000000000000407c:  01 04                add   word ptr ds:[si], ax
+0x000000000000407e:  11 54 02             adc   word ptr ds:[si + 2], dx
 0x0000000000004081:  BE 00 01             mov   si, 0x100
-0x0000000000004084:  29 04                sub   word ptr [si], ax
-0x0000000000004086:  19 54 02             sbb   word ptr [si + 2], dx
+0x0000000000004084:  29 04                sub   word ptr ds:[si], ax
+0x0000000000004086:  19 54 02             sbb   word ptr ds:[si + 2], dx
 0x0000000000004089:  E9 3F FE             jmp   0x3ecb
 
 ENDP
@@ -2866,7 +2947,7 @@ PUBLIC  A_Fire_
 0x00000000000040ca:  89 DE                mov   si, bx
 0x00000000000040cc:  89 4E F8             mov   word ptr [bp - 8], cx
 0x00000000000040cf:  89 C7                mov   di, ax
-0x00000000000040d1:  8B 7D 26             mov   di, word ptr [di + 0x26]
+0x00000000000040d1:  8B 7D 26             mov   di, word ptr ds:[di + 0x26]
 0x00000000000040d4:  85 FF                test  di, di
 0x00000000000040d6:  75 05                jne   0x40dd
 0x00000000000040d8:  C9                   LEAVE_MACRO 
@@ -2876,14 +2957,14 @@ PUBLIC  A_Fire_
 0x00000000000040dc:  C3                   ret   
 0x00000000000040dd:  6B D7 2C             imul  dx, di, SIZEOF_THINKER_T
 0x00000000000040e0:  89 C3                mov   bx, ax
-0x00000000000040e2:  6B 47 22 18          imul  ax, word ptr [bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
+0x00000000000040e2:  6B 47 22 18          imul  ax, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
 0x00000000000040e6:  6B FF 18             imul  di, di, SIZEOF_MOBJ_POS_T
 0x00000000000040e9:  89 46 FC             mov   word ptr [bp - 4], ax
-0x00000000000040ec:  6B 47 22 2C          imul  ax, word ptr [bx + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-0x00000000000040f0:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x00000000000040ec:  6B 47 22 2C          imul  ax, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000040f0:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000040f4:  89 F9                mov   cx, di
 0x00000000000040f6:  8B 5E FC             mov   bx, word ptr [bp - 4]
-0x00000000000040f9:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x00000000000040f9:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000040fc:  C7 46 FE F5 6A       mov   word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
 0x0000000000004101:  FF 1E CC 0C          call  dword ptr ds:[_P_CheckSightTemp]
 0x0000000000004105:  84 C0                test  al, al
@@ -2958,7 +3039,7 @@ PUBLIC  A_VileTarget_
 0x00000000000041aa:  89 E5                mov   bp, sp
 0x00000000000041ac:  83 EC 02             sub   sp, 2
 0x00000000000041af:  89 C6                mov   si, ax
-0x00000000000041b1:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x00000000000041b1:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x00000000000041b5:  75 07                jne   0x41be
 0x00000000000041b7:  C9                   LEAVE_MACRO 
 0x00000000000041b8:  5F                   pop   di
@@ -2968,14 +3049,14 @@ PUBLIC  A_VileTarget_
 0x00000000000041bc:  5B                   pop   bx
 0x00000000000041bd:  C3                   ret   
 0x00000000000041be:  E8 D5 F2             call  A_FaceTarget_
-0x00000000000041c1:  8B 44 22             mov   ax, word ptr [si + MOBJ_T.m_targetRef]
+0x00000000000041c1:  8B 44 22             mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
 0x00000000000041c4:  89 46 FE             mov   word ptr [bp - 2], ax
 0x00000000000041c7:  6B F8 2C             imul  di, ax, SIZEOF_THINKER_T
 0x00000000000041ca:  6B D8 18             imul  bx, ax, SIZEOF_MOBJ_POS_T
 0x00000000000041cd:  B8 F5 6A             mov   ax, MOBJPOSLIST_6800_SEGMENT
-0x00000000000041d0:  81 C7 04 34          add   di, (OFFSET _thinkerlist + 4)
+0x00000000000041d0:  81 C7 04 34          add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000041d4:  8E C0                mov   es, ax
-0x00000000000041d6:  FF 75 04             push  word ptr [di + 4]
+0x00000000000041d6:  FF 75 04             push  word ptr ds:[di + 4]
 0x00000000000041d9:  26 8B 4F 06          mov   cx, word ptr es:[bx + 6]
 0x00000000000041dd:  26 8B 07             mov   ax, word ptr es:[bx]
 0x00000000000041e0:  6A 04                push  4
@@ -2990,17 +3071,17 @@ PUBLIC  A_VileTarget_
 0x00000000000041f9:  B9 2C 00             mov   cx, SIZEOF_THINKER_T
 0x00000000000041fc:  89 C3                mov   bx, ax
 0x00000000000041fe:  31 D2                xor   dx, dx
-0x0000000000004200:  8D 84 FC CB          lea   ax, [si - (OFFSET _thinkerlist + 4)]
+0x0000000000004200:  8D 84 FC CB          lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x0000000000004204:  F7 F1                div   cx
 0x0000000000004206:  BF BA 01             mov   di, OFFSET _setStateReturn
-0x0000000000004209:  8B 3D                mov   di, word ptr [di]
-0x000000000000420b:  89 45 22             mov   word ptr [di + MOBJ_T.m_targetRef], ax
+0x0000000000004209:  8B 3D                mov   di, word ptr ds:[di]
+0x000000000000420b:  89 45 22             mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
 0x000000000000420e:  8B 46 FE             mov   ax, word ptr [bp - 2]
-0x0000000000004211:  89 45 26             mov   word ptr [di + 0x26], ax
-0x0000000000004214:  89 5C 26             mov   word ptr [si + 0x26], bx
+0x0000000000004211:  89 45 26             mov   word ptr ds:[di + 0x26], ax
+0x0000000000004214:  89 5C 26             mov   word ptr ds:[si + 0x26], bx
 0x0000000000004217:  BB 34 07             mov   bx, OFFSET _setStateReturn_pos
-0x000000000000421a:  8B 07                mov   ax, word ptr [bx]
-0x000000000000421c:  8B 4F 02             mov   cx, word ptr [bx + 2]
+0x000000000000421a:  8B 07                mov   ax, word ptr ds:[bx]
+0x000000000000421c:  8B 4F 02             mov   cx, word ptr ds:[bx + 2]
 0x000000000000421f:  89 C3                mov   bx, ax
 0x0000000000004221:  89 F8                mov   ax, di
 0x0000000000004223:  E8 9A FE             call  A_Fire_
@@ -3101,7 +3182,7 @@ PUBLIC  A_VileAttack_
 0x00000000000042a9:  89 C6                mov   si, ax
 0x00000000000042ab:  89 5E F6             mov   word ptr [bp - 0Ah], bx
 0x00000000000042ae:  89 4E FA             mov   word ptr [bp - 6], cx
-0x00000000000042b1:  8B 44 22             mov   ax, word ptr [si + MOBJ_T.m_targetRef]
+0x00000000000042b1:  8B 44 22             mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
 0x00000000000042b4:  85 C0                test  ax, ax
 0x00000000000042b6:  75 05                jne   0x42bd
 0x00000000000042b8:  C9                   LEAVE_MACRO 
@@ -3112,11 +3193,11 @@ PUBLIC  A_VileAttack_
 0x00000000000042bd:  6B D8 18             imul  bx, ax, SIZEOF_MOBJ_POS_T
 0x00000000000042c0:  89 F0                mov   ax, si
 0x00000000000042c2:  E8 D1 F1             call  A_FaceTarget_
-0x00000000000042c5:  6B 7C 22 2C          imul  di, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000042c5:  6B 7C 22 2C          imul  di, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000042c9:  89 5E FE             mov   word ptr [bp - 2], bx
 0x00000000000042cc:  89 D9                mov   cx, bx
 0x00000000000042ce:  8B 5E F6             mov   bx, word ptr [bp - 0Ah]
-0x00000000000042d1:  81 C7 04 34          add   di, (OFFSET _thinkerlist + 4)
+0x00000000000042d1:  81 C7 04 34          add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000042d5:  89 F0                mov   ax, si
 0x00000000000042d7:  89 FA                mov   dx, di
 0x00000000000042d9:  C7 46 FC F5 6A       mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
@@ -3127,11 +3208,11 @@ PUBLIC  A_VileAttack_
 0x00000000000042e9:  89 F0                mov   ax, si
 0x00000000000042eb:  0E                   push  cs
 0x00000000000042ec:  3E E8 60 C2          call  S_StartSound_
-0x00000000000042f0:  6B 44 22 2C          imul  ax, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000042f0:  6B 44 22 2C          imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000042f4:  B9 14 00             mov   cx, 0x14
 0x00000000000042f7:  89 F3                mov   bx, si
 0x00000000000042f9:  89 F2                mov   dx, si
-0x00000000000042fb:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x00000000000042fb:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000042fe:  0E                   push  cs
 0x00000000000042ff:  E8 2E 1E             call  P_DamageMobj_
 0x0000000000004302:  90                   nop   
@@ -3141,18 +3222,18 @@ PUBLIC  A_VileAttack_
 0x000000000000430d:  D1 E8                shr   ax, 1
 0x000000000000430f:  24 FC                and   al, 0xfc
 0x0000000000004311:  89 46 F8             mov   word ptr [bp - 8], ax
-0x0000000000004314:  8A 45 1A             mov   al, byte ptr [di + MOBJ_T.m_mobjtype]
+0x0000000000004314:  8A 45 1A             mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype]
 0x0000000000004317:  98                   cwde  
-0x0000000000004318:  8B 5C 26             mov   bx, word ptr [si + 0x26]
+0x0000000000004318:  8B 5C 26             mov   bx, word ptr ds:[si + 0x26]
 0x000000000000431b:  E8 3E FF             call  GetVileMomz_
-0x000000000000431e:  89 45 16             mov   word ptr [di + 0x16], ax
-0x0000000000004321:  89 55 18             mov   word ptr [di + 0x18], dx
+0x000000000000431e:  89 45 16             mov   word ptr ds:[di + 0x16], ax
+0x0000000000004321:  89 55 18             mov   word ptr ds:[di + 0x18], dx
 0x0000000000004324:  85 DB                test  bx, bx
 0x0000000000004326:  74 90                je    0x42b8
 0x0000000000004328:  6B C3 2C             imul  ax, bx, SIZEOF_THINKER_T
 0x000000000000432b:  6B FB 18             imul  di, bx, SIZEOF_MOBJ_POS_T
 0x000000000000432e:  B9 18 00             mov   cx, 0x18
-0x0000000000004331:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x0000000000004331:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004334:  8B 56 F8             mov   dx, word ptr [bp - 8]
 0x0000000000004337:  89 46 F2             mov   word ptr [bp - 0Eh], ax
 0x000000000000433a:  B8 D6 33             mov   ax, FINECOSINE_SEGMENT
@@ -3233,57 +3314,57 @@ PUBLIC  A_FatAttack1_
 0x00000000000043d1:  89 4E FE             mov   word ptr [bp - 2], cx
 0x00000000000043d4:  E8 BF F0             call  A_FaceTarget_
 0x00000000000043d7:  8E C1                mov   es, cx
-0x00000000000043d9:  26 83 44 0E 00       add   word ptr es:[si + 0xe], 0
-0x00000000000043de:  26 81 54 10 00 08    adc   word ptr es:[si + 0x10], 0x800
-0x00000000000043e4:  6B 55 22 2C          imul  dx, word ptr [di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000043d9:  26 83 44 0E 00       add   word ptr es:[si + 0xe], FATSPREADLOW
+0x00000000000043de:  26 81 54 10 00 08    adc   word ptr es:[si + 0x10], FATSPREADHIGH
+0x00000000000043e4:  6B 55 22 2C          imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000043e8:  6A 09                push  9
 0x00000000000043ea:  89 F8                mov   ax, di
-0x00000000000043ec:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x00000000000043ec:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000043f0:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
-0x00000000000043f4:  6B 55 22 2C          imul  dx, word ptr [di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000043f4:  6B 55 22 2C          imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000043f8:  6A 09                push  9
 0x00000000000043fa:  8B 4E FE             mov   cx, word ptr [bp - 2]
 0x00000000000043fd:  89 F3                mov   bx, si
 0x00000000000043ff:  89 F8                mov   ax, di
-0x0000000000004401:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x0000000000004401:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004405:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x0000000000004409:  6B F0 2C             imul  si, ax, SIZEOF_THINKER_T
 0x000000000000440c:  6B F8 18             imul  di, ax, SIZEOF_MOBJ_POS_T
 0x000000000000440f:  B8 F5 6A             mov   ax, MOBJPOSLIST_6800_SEGMENT
-0x0000000000004412:  81 C6 04 34          add   si, (OFFSET _thinkerlist + 4)
+0x0000000000004412:  81 C6 04 34          add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004416:  8E C0                mov   es, ax
 0x0000000000004418:  89 FB                mov   bx, di
-0x000000000000441a:  26 83 45 0E 00       add   word ptr es:[di + 0xe], 0
-0x000000000000441f:  26 81 57 10 00 08    adc   word ptr es:[bx + 0x10], 0x800
-0x0000000000004425:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x000000000000441a:  26 83 45 0E 00       add   word ptr es:[di + 0xe], FATSPREADLOW
+0x000000000000441f:  26 81 57 10 00 08    adc   word ptr es:[bx + 0x10], FATSPREADHIGH
+0x0000000000004425:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004428:  30 E4                xor   ah, ah
 0x000000000000442a:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x000000000000442d:  26 8B 7D 10          mov   di, word ptr es:[di + 0x10]
 0x0000000000004431:  D1 EF                shr   di, 1
-0x0000000000004433:  83 E7 FC             and   di, 0xfffc
+0x0000000000004433:  83 E7 FC             and   di, 0FFFCh
 0x0000000000004436:  89 C3                mov   bx, ax
-0x0000000000004438:  8A 87 64 C4          mov   al, byte ptr [bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+0x0000000000004438:  8A 87 64 C4          mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 0x000000000000443c:  81 C3 64 C4          add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 0x0000000000004440:  98                   cwde  
 0x0000000000004441:  89 FA                mov   dx, di
 0x0000000000004443:  89 C3                mov   bx, ax
 0x0000000000004445:  B8 D6 33             mov   ax, FINECOSINE_SEGMENT
 0x0000000000004448:  9A 91 5C 88 0A       call  FixedMulTrigSpeedNoShift_
-0x000000000000444d:  89 44 0E             mov   word ptr [si + 0xe], ax
-0x0000000000004450:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x000000000000444d:  89 44 0E             mov   word ptr ds:[si + 0xe], ax
+0x0000000000004450:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004453:  30 E4                xor   ah, ah
 0x0000000000004455:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
-0x0000000000004458:  89 54 10             mov   word ptr [si + 0x10], dx
+0x0000000000004458:  89 54 10             mov   word ptr ds:[si + 0x10], dx
 0x000000000000445b:  89 C3                mov   bx, ax
-0x000000000000445d:  8A 87 64 C4          mov   al, byte ptr [bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+0x000000000000445d:  8A 87 64 C4          mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 0x0000000000004461:  81 C3 64 C4          add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 0x0000000000004465:  98                   cwde  
 0x0000000000004466:  89 FA                mov   dx, di
 0x0000000000004468:  89 C3                mov   bx, ax
 0x000000000000446a:  B8 D6 31             mov   ax, FINESINE_SEGMENT
 0x000000000000446d:  9A 91 5C 88 0A       call  FixedMulTrigSpeedNoShift_
-0x0000000000004472:  89 44 12             mov   word ptr [si + 0x12], ax
-0x0000000000004475:  89 54 14             mov   word ptr [si + 0x14], dx
+0x0000000000004472:  89 44 12             mov   word ptr ds:[si + 0x12], ax
+0x0000000000004475:  89 54 14             mov   word ptr ds:[si + 0x14], dx
 0x0000000000004478:  C9                   LEAVE_MACRO 
 0x0000000000004479:  5F                   pop   di
 0x000000000000447a:  5E                   pop   si
@@ -3308,55 +3389,55 @@ PUBLIC  A_FatAttack2_
 0x000000000000448b:  89 4E FE             mov   word ptr [bp - 2], cx
 0x000000000000448e:  E8 05 F0             call  A_FaceTarget_
 0x0000000000004491:  8E C1                mov   es, cx
-0x0000000000004493:  26 83 44 0E 00       add   word ptr es:[si + 0xe], 0
-0x0000000000004498:  26 81 54 10 00 F8    adc   word ptr es:[si + 0x10], 0xf800
-0x000000000000449e:  6B 55 22 2C          imul  dx, word ptr [di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-0x00000000000044a2:  6A 09                push  9
+0x0000000000004493:  26 83 44 0E 00       add   word ptr es:[si + 0xe], -FATSPREADLOW
+0x0000000000004498:  26 81 54 10 00 F8    adc   word ptr es:[si + 0x10], -FATSPREADHIGH
+0x000000000000449e:  6B 55 22 2C          imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000044a2:  6A 09                push  MT_FATSHOT  ; todo 186
 0x00000000000044a4:  89 F8                mov   ax, di
-0x00000000000044a6:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x00000000000044a6:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000044aa:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
-0x00000000000044ae:  6B 55 22 2C          imul  dx, word ptr [di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-0x00000000000044b2:  6A 09                push  9
+0x00000000000044ae:  6B 55 22 2C          imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000044b2:  6A 09                push  MT_FATSHOT  ; todo 186
 0x00000000000044b4:  8B 4E FE             mov   cx, word ptr [bp - 2]
 0x00000000000044b7:  89 F3                mov   bx, si
 0x00000000000044b9:  89 F8                mov   ax, di
-0x00000000000044bb:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x00000000000044bb:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000044bf:  BE BA 01             mov   si, OFFSET _setStateReturn
 0x00000000000044c2:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x00000000000044c6:  BB 34 07             mov   bx, OFFSET _setStateReturn_pos
-0x00000000000044c9:  8B 34                mov   si, word ptr [si]
-0x00000000000044cb:  C4 3F                les   di, ptr [bx]
-0x00000000000044cd:  26 83 45 0E 00       add   word ptr es:[di + 0xe], 0
-0x00000000000044d2:  26 81 55 10 00 F0    adc   word ptr es:[di + 0x10], 0xf000
-0x00000000000044d8:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x00000000000044c9:  8B 34                mov   si, word ptr ds:[si]
+0x00000000000044cb:  C4 3F                les   di, ptr ds:[bx]
+0x00000000000044cd:  26 83 45 0E 00       add   word ptr es:[di + 0xe], -(2*FATSPREADLOW)
+0x00000000000044d2:  26 81 55 10 00 F0    adc   word ptr es:[di + 0x10], -(2*FATSPREADHIGH)
+0x00000000000044d8:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x00000000000044db:  30 E4                xor   ah, ah
 0x00000000000044dd:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x00000000000044e0:  26 8B 7D 10          mov   di, word ptr es:[di + 0x10]
 0x00000000000044e4:  D1 EF                shr   di, 1
-0x00000000000044e6:  83 E7 FC             and   di, 0xfffc
+0x00000000000044e6:  83 E7 FC             and   di, 0FFFCh
 0x00000000000044e9:  89 C3                mov   bx, ax
-0x00000000000044eb:  8A 87 64 C4          mov   al, byte ptr [bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+0x00000000000044eb:  8A 87 64 C4          mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 0x00000000000044ef:  81 C3 64 C4          add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 0x00000000000044f3:  98                   cwde  
 0x00000000000044f4:  89 FA                mov   dx, di
 0x00000000000044f6:  89 C3                mov   bx, ax
 0x00000000000044f8:  B8 D6 33             mov   ax, FINECOSINE_SEGMENT
 0x00000000000044fb:  9A 91 5C 88 0A       call  FixedMulTrigSpeedNoShift_
-0x0000000000004500:  89 44 0E             mov   word ptr [si + 0xe], ax
-0x0000000000004503:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000004500:  89 44 0E             mov   word ptr ds:[si + 0xe], ax
+0x0000000000004503:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004506:  30 E4                xor   ah, ah
 0x0000000000004508:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
-0x000000000000450b:  89 54 10             mov   word ptr [si + 0x10], dx
+0x000000000000450b:  89 54 10             mov   word ptr ds:[si + 0x10], dx
 0x000000000000450e:  89 C3                mov   bx, ax
-0x0000000000004510:  8A 87 64 C4          mov   al, byte ptr [bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+0x0000000000004510:  8A 87 64 C4          mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 0x0000000000004514:  81 C3 64 C4          add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 0x0000000000004518:  98                   cwde  
 0x0000000000004519:  89 FA                mov   dx, di
 0x000000000000451b:  89 C3                mov   bx, ax
 0x000000000000451d:  B8 D6 31             mov   ax, FINESINE_SEGMENT
 0x0000000000004520:  9A 91 5C 88 0A       call  FixedMulTrigSpeedNoShift_
-0x0000000000004525:  89 44 12             mov   word ptr [si + 0x12], ax
-0x0000000000004528:  89 54 14             mov   word ptr [si + 0x14], dx
+0x0000000000004525:  89 44 12             mov   word ptr ds:[si + 0x12], ax
+0x0000000000004528:  89 54 14             mov   word ptr ds:[si + 0x14], dx
 0x000000000000452b:  C9                   LEAVE_MACRO 
 0x000000000000452c:  5F                   pop   di
 0x000000000000452d:  5E                   pop   si
@@ -3380,53 +3461,53 @@ PUBLIC  A_FatAttack3_
 0x000000000000453b:  51                   push  cx
 0x000000000000453c:  8B 5E F8             mov   bx, word ptr [bp - 8]
 0x000000000000453f:  E8 54 EF             call  A_FaceTarget_
-0x0000000000004542:  8B 47 22             mov   ax, word ptr [bx + MOBJ_T.m_targetRef]
+0x0000000000004542:  8B 47 22             mov   ax, word ptr ds:[bx + MOBJ_T.m_targetRef]
 0x0000000000004545:  6B C0 2C             imul  ax, ax, SIZEOF_THINKER_T
 0x0000000000004548:  6A 09                push  9
 0x000000000000454a:  BE BA 01             mov   si, OFFSET _setStateReturn
-0x000000000000454d:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x000000000000454d:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004550:  8B 5E F6             mov   bx, word ptr [bp - 0Ah]
 0x0000000000004553:  89 46 FC             mov   word ptr [bp - 4], ax
 0x0000000000004556:  89 C2                mov   dx, ax
 0x0000000000004558:  8B 46 F8             mov   ax, word ptr [bp - 8]
 0x000000000000455b:  BF 34 07             mov   di, OFFSET _setStateReturn_pos
 0x000000000000455e:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
-0x0000000000004562:  8B 34                mov   si, word ptr [si]
-0x0000000000004564:  C4 1D                les   bx, ptr [di]
+0x0000000000004562:  8B 34                mov   si, word ptr ds:[si]
+0x0000000000004564:  C4 1D                les   bx, ptr ds:[di]
 0x0000000000004566:  26 83 47 0E 00       add   word ptr es:[bx + 0xe], 0
 0x000000000000456b:  26 81 57 10 00 FC    adc   word ptr es:[bx + 0x10], 0xfc00
 0x0000000000004571:  26 8B 47 10          mov   ax, word ptr es:[bx + 0x10]
-0x0000000000004575:  8A 5C 1A             mov   bl, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000004575:  8A 5C 1A             mov   bl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004578:  30 FF                xor   bh, bh
 0x000000000000457a:  6B DB 0B             imul  bx, bx, SIZEOF_MOBJINFO_T
 0x000000000000457d:  D1 E8                shr   ax, 1
 0x000000000000457f:  24 FC                and   al, 0xfc
 0x0000000000004581:  89 46 FE             mov   word ptr [bp - 2], ax
 0x0000000000004584:  8B 56 FE             mov   dx, word ptr [bp - 2]
-0x0000000000004587:  8A 87 64 C4          mov   al, byte ptr [bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+0x0000000000004587:  8A 87 64 C4          mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 0x000000000000458b:  98                   cwde  
 0x000000000000458c:  81 C3 64 C4          add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 0x0000000000004590:  89 46 FA             mov   word ptr [bp - 6], ax
 0x0000000000004593:  89 C3                mov   bx, ax
 0x0000000000004595:  B8 D6 33             mov   ax, FINECOSINE_SEGMENT
 0x0000000000004598:  9A 91 5C 88 0A       call  FixedMulTrigSpeedNoShift_
-0x000000000000459d:  89 44 0E             mov   word ptr [si + 0xe], ax
+0x000000000000459d:  89 44 0E             mov   word ptr ds:[si + 0xe], ax
 0x00000000000045a0:  8B 5E FA             mov   bx, word ptr [bp - 6]
-0x00000000000045a3:  89 54 10             mov   word ptr [si + 0x10], dx
+0x00000000000045a3:  89 54 10             mov   word ptr ds:[si + 0x10], dx
 0x00000000000045a6:  8B 56 FE             mov   dx, word ptr [bp - 2]
 0x00000000000045a9:  B8 D6 31             mov   ax, FINESINE_SEGMENT
 0x00000000000045ac:  9A 91 5C 88 0A       call  FixedMulTrigSpeedNoShift_
 0x00000000000045b1:  6A 09                push  9
 0x00000000000045b3:  8B 5E F6             mov   bx, word ptr [bp - 0Ah]
-0x00000000000045b6:  89 44 12             mov   word ptr [si + 0x12], ax
+0x00000000000045b6:  89 44 12             mov   word ptr ds:[si + 0x12], ax
 0x00000000000045b9:  8B 4E F4             mov   cx, word ptr [bp - 0Ch]
-0x00000000000045bc:  89 54 14             mov   word ptr [si + 0x14], dx
+0x00000000000045bc:  89 54 14             mov   word ptr ds:[si + 0x14], dx
 0x00000000000045bf:  8B 56 FC             mov   dx, word ptr [bp - 4]
 0x00000000000045c2:  8B 46 F8             mov   ax, word ptr [bp - 8]
 0x00000000000045c5:  BE BA 01             mov   si, OFFSET _setStateReturn
 0x00000000000045c8:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
-0x00000000000045cc:  8B 34                mov   si, word ptr [si]
-0x00000000000045ce:  C4 1D                les   bx, ptr [di]
+0x00000000000045cc:  8B 34                mov   si, word ptr ds:[si]
+0x00000000000045ce:  C4 1D                les   bx, ptr ds:[di]
 0x00000000000045d0:  26 83 47 0E 00       add   word ptr es:[bx + 0xe], 0
 0x00000000000045d5:  26 81 57 10 00 04    adc   word ptr es:[bx + 0x10], 0x400
 0x00000000000045db:  26 8B 47 10          mov   ax, word ptr es:[bx + 0x10]
@@ -3437,14 +3518,14 @@ PUBLIC  A_FatAttack3_
 0x00000000000045e9:  89 C2                mov   dx, ax
 0x00000000000045eb:  B8 D6 33             mov   ax, FINECOSINE_SEGMENT
 0x00000000000045ee:  9A 91 5C 88 0A       call  FixedMulTrigSpeedNoShift_
-0x00000000000045f3:  89 44 0E             mov   word ptr [si + 0xe], ax
+0x00000000000045f3:  89 44 0E             mov   word ptr ds:[si + 0xe], ax
 0x00000000000045f6:  8B 5E FA             mov   bx, word ptr [bp - 6]
-0x00000000000045f9:  89 54 10             mov   word ptr [si + 0x10], dx
+0x00000000000045f9:  89 54 10             mov   word ptr ds:[si + 0x10], dx
 0x00000000000045fc:  8B 56 FE             mov   dx, word ptr [bp - 2]
 0x00000000000045ff:  B8 D6 31             mov   ax, FINESINE_SEGMENT
 0x0000000000004602:  9A 91 5C 88 0A       call  FixedMulTrigSpeedNoShift_
-0x0000000000004607:  89 44 12             mov   word ptr [si + 0x12], ax
-0x000000000000460a:  89 54 14             mov   word ptr [si + 0x14], dx
+0x0000000000004607:  89 44 12             mov   word ptr ds:[si + 0x12], ax
+0x000000000000460a:  89 54 14             mov   word ptr ds:[si + 0x14], dx
 0x000000000000460d:  C9                   LEAVE_MACRO 
 0x000000000000460e:  5F                   pop   di
 0x000000000000460f:  5E                   pop   si
@@ -3468,7 +3549,7 @@ PUBLIC  A_SkullAttack_
 0x000000000000461f:  89 4E FE             mov   word ptr [bp - 2], cx
 0x0000000000004622:  C7 46 F0 B8 02       mov   word ptr [bp - 010h], GETATTACKSOUNDADDR
 0x0000000000004627:  C7 46 F2 D9 92       mov   word ptr [bp - 0Eh], INFOFUNCLOADSEGMENT
-0x000000000000462c:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x000000000000462c:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x0000000000004630:  75 05                jne   0x4637
 0x0000000000004632:  C9                   LEAVE_MACRO 
 0x0000000000004633:  5F                   pop   di
@@ -3477,9 +3558,9 @@ PUBLIC  A_SkullAttack_
 0x0000000000004636:  C3                   ret   
 0x0000000000004637:  8E C1                mov   es, cx
 0x0000000000004639:  26 80 4D 17 01       or    byte ptr es:[di + 0x17], 1
-0x000000000000463e:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x000000000000463e:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004641:  30 E4                xor   ah, ah
-0x0000000000004643:  8B 4C 22             mov   cx, word ptr [si + MOBJ_T.m_targetRef]
+0x0000000000004643:  8B 4C 22             mov   cx, word ptr ds:[si + MOBJ_T.m_targetRef]
 0x0000000000004646:  FF 5E F0             call  dword ptr [bp - 010h]
 0x0000000000004649:  88 C2                mov   dl, al
 0x000000000000464b:  89 F0                mov   ax, si
@@ -3490,7 +3571,7 @@ PUBLIC  A_SkullAttack_
 0x0000000000004656:  E8 3D EE             call  A_FaceTarget_
 0x0000000000004659:  6B C1 2C             imul  ax, cx, SIZEOF_THINKER_T
 0x000000000000465c:  6B D9 18             imul  bx, cx, SIZEOF_MOBJ_POS_T
-0x000000000000465f:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x000000000000465f:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004662:  8E 46 FE             mov   es, word ptr [bp - 2]
 0x0000000000004665:  89 46 F8             mov   word ptr [bp - 8], ax
 0x0000000000004668:  26 8B 45 10          mov   ax, word ptr es:[di + 0x10]
@@ -3503,16 +3584,16 @@ PUBLIC  A_SkullAttack_
 0x000000000000467b:  B8 D6 33             mov   ax, FINECOSINE_SEGMENT
 0x000000000000467e:  BB 14 00             mov   bx, 0x14
 0x0000000000004681:  9A 91 5C 88 0A       call  FixedMulTrigSpeedNoShift_
-0x0000000000004686:  89 44 0E             mov   word ptr [si + 0xe], ax
+0x0000000000004686:  89 44 0E             mov   word ptr ds:[si + 0xe], ax
 0x0000000000004689:  BB 14 00             mov   bx, 0x14
-0x000000000000468c:  89 54 10             mov   word ptr [si + 0x10], dx
+0x000000000000468c:  89 54 10             mov   word ptr ds:[si + 0x10], dx
 0x000000000000468f:  8B 56 F4             mov   dx, word ptr [bp - 0Ch]
 0x0000000000004692:  B8 D6 31             mov   ax, FINESINE_SEGMENT
 0x0000000000004695:  C7 46 FC F5 6A       mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
 0x000000000000469a:  9A 91 5C 88 0A       call  FixedMulTrigSpeedNoShift_
-0x000000000000469f:  89 44 12             mov   word ptr [si + 0x12], ax
+0x000000000000469f:  89 44 12             mov   word ptr ds:[si + 0x12], ax
 0x00000000000046a2:  8B 5E F6             mov   bx, word ptr [bp - 0Ah]
-0x00000000000046a5:  89 54 14             mov   word ptr [si + 0x14], dx
+0x00000000000046a5:  89 54 14             mov   word ptr ds:[si + 0x14], dx
 0x00000000000046a8:  8E 46 FC             mov   es, word ptr [bp - 4]
 0x00000000000046ab:  26 8B 47 04          mov   ax, word ptr es:[bx + 4]
 0x00000000000046af:  26 8B 4F 06          mov   cx, word ptr es:[bx + 6]
@@ -3539,8 +3620,8 @@ PUBLIC  A_SkullAttack_
 0x00000000000046ee:  73 03                jae   0x46f3
 0x00000000000046f0:  B9 01 00             mov   cx, 1
 0x00000000000046f3:  8B 5E F8             mov   bx, word ptr [bp - 8]
-0x00000000000046f6:  8B 47 0A             mov   ax, word ptr [bx + 0xa]
-0x00000000000046f9:  8B 57 0C             mov   dx, word ptr [bx + 0xc]
+0x00000000000046f6:  8B 47 0A             mov   ax, word ptr ds:[bx + 0xa]
+0x00000000000046f9:  8B 57 0C             mov   dx, word ptr ds:[bx + 0xc]
 0x00000000000046fc:  8E 46 FC             mov   es, word ptr [bp - 4]
 0x00000000000046ff:  D1 FA                sar   dx, 1
 0x0000000000004701:  D1 D8                rcr   ax, 1
@@ -3554,8 +3635,8 @@ PUBLIC  A_SkullAttack_
 0x0000000000004719:  26 2B 45 08          sub   ax, word ptr es:[di + 8]
 0x000000000000471d:  26 1B 55 0A          sbb   dx, word ptr es:[di + 0xa]
 0x0000000000004721:  9A CB 5E 88 0A       call  FastDiv3216u_
-0x0000000000004726:  89 44 16             mov   word ptr [si + 0x16], ax
-0x0000000000004729:  89 54 18             mov   word ptr [si + 0x18], dx
+0x0000000000004726:  89 44 16             mov   word ptr ds:[si + 0x16], ax
+0x0000000000004729:  89 54 18             mov   word ptr ds:[si + 0x18], dx
 0x000000000000472c:  C9                   LEAVE_MACRO 
 0x000000000000472d:  5F                   pop   di
 0x000000000000472e:  5E                   pop   si
@@ -3577,18 +3658,18 @@ PUBLIC  A_PainShootSkull_
 0x0000000000004738:  83 EC 10             sub   sp, 010h
 0x000000000000473b:  89 C7                mov   di, ax
 0x000000000000473d:  89 4E F6             mov   word ptr [bp - 0Ah], cx
-0x0000000000004740:  BB 02 34             mov   bx, 0x3402
-0x0000000000004743:  8B 07                mov   ax, word ptr [bx]
+0x0000000000004740:  BB 02 34             mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
+0x0000000000004743:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000004745:  31 D2                xor   dx, dx
 0x0000000000004747:  85 C0                test  ax, ax
 0x0000000000004749:  74 1F                je    0x476a
 0x000000000000474b:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
-0x000000000000474e:  8B 8F 00 34          mov   cx, word ptr [bx + 0x3400]
+0x000000000000474e:  8B 8F 00 34          mov   cx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 0x0000000000004752:  30 C9                xor   cl, cl
-0x0000000000004754:  80 E5 F8             and   ch, 0xf8
-0x0000000000004757:  81 F9 00 08          cmp   cx, 0x800
+0x0000000000004754:  80 E5 F8             and   ch, (TF_FUNCBITS SHR 8)
+0x0000000000004757:  81 F9 00 08          cmp   cx, TF_MOBJTHINKER_HIGHBITS
 0x000000000000475b:  75 08                jne   0x4765
-0x000000000000475d:  80 BF 1A 34 12       cmp   byte ptr [bx + 0x341a], 0x12
+0x000000000000475d:  80 BF 1A 34 12       cmp   byte ptr ds:[bx + 0x341a], 0x12
 0x0000000000004762:  75 01                jne   0x4765
 0x0000000000004764:  42                   inc   dx
 0x0000000000004765:  83 FA 14             cmp   dx, 0x14
@@ -3601,7 +3682,7 @@ PUBLIC  A_PainShootSkull_
 0x0000000000004772:  5A                   pop   dx
 0x0000000000004773:  C3                   ret   
 0x0000000000004774:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
-0x0000000000004777:  8B 87 02 34          mov   ax, word ptr [bx + 0x3402]
+0x0000000000004777:  8B 87 02 34          mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
 0x000000000000477b:  85 C0                test  ax, ax
 0x000000000000477d:  75 CC                jne   0x474b
 0x000000000000477f:  EB E9                jmp   0x476a
@@ -3609,16 +3690,16 @@ PUBLIC  A_PainShootSkull_
 0x0000000000004784:  D1 E8                shr   ax, 1
 0x0000000000004786:  24 FC                and   al, 0xfc
 0x0000000000004788:  89 46 FA             mov   word ptr [bp - 6], ax
-0x000000000000478b:  8B 45 22             mov   ax, word ptr [di + MOBJ_T.m_targetRef]
+0x000000000000478b:  8B 45 22             mov   ax, word ptr ds:[di + MOBJ_T.m_targetRef]
 0x000000000000478e:  89 46 F8             mov   word ptr [bp - 8], ax
-0x0000000000004791:  8A 45 1A             mov   al, byte ptr [di + MOBJ_T.m_mobjtype]
+0x0000000000004791:  8A 45 1A             mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype]
 0x0000000000004794:  30 E4                xor   ah, ah
 0x0000000000004796:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x0000000000004799:  89 C3                mov   bx, ax
 0x000000000000479b:  81 C3 65 C4          add   bx, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_radius
-0x000000000000479f:  8A 07                mov   al, byte ptr [bx]
+0x000000000000479f:  8A 07                mov   al, byte ptr ds:[bx]
 0x00000000000047a1:  BB 2B C5             mov   bx, 0xc52b
-0x00000000000047a4:  8A 17                mov   dl, byte ptr [bx]
+0x00000000000047a4:  8A 17                mov   dl, byte ptr ds:[bx]
 0x00000000000047a6:  30 E4                xor   ah, ah
 0x00000000000047a8:  30 F6                xor   dh, dh
 0x00000000000047aa:  01 C2                add   dx, ax
@@ -3630,7 +3711,7 @@ PUBLIC  A_PainShootSkull_
 0x00000000000047b8:  05 04 00             add   ax, 4
 0x00000000000047bb:  31 D2                xor   dx, dx
 0x00000000000047bd:  89 46 FC             mov   word ptr [bp - 4], ax
-0x00000000000047c0:  8D 85 FC CB          lea   ax, [di - (OFFSET _thinkerlist + 4)]
+0x00000000000047c0:  8D 85 FC CB          lea   ax, ds:[di - (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x00000000000047c4:  F7 F3                div   bx
 0x00000000000047c6:  6B F0 18             imul  si, ax, SIZEOF_MOBJ_POS_T
 0x00000000000047c9:  8B 4E FC             mov   cx, word ptr [bp - 4]
@@ -3672,11 +3753,11 @@ PUBLIC  A_PainShootSkull_
 0x000000000000482f:  E8 72 45             call  P_SpawnMobj_
 0x0000000000004832:  90                   nop   
 0x0000000000004833:  BB BA 01             mov   bx, OFFSET _setStateReturn
-0x0000000000004836:  8B 1F                mov   bx, word ptr [bx]
+0x0000000000004836:  8B 1F                mov   bx, word ptr ds:[bx]
 0x0000000000004838:  89 5E FE             mov   word ptr [bp - 2], bx
 0x000000000000483b:  BB 34 07             mov   bx, OFFSET _setStateReturn_pos
-0x000000000000483e:  8B 57 02             mov   dx, word ptr [bx + 2]
-0x0000000000004841:  8B 37                mov   si, word ptr [bx]
+0x000000000000483e:  8B 57 02             mov   dx, word ptr ds:[bx + 2]
+0x0000000000004841:  8B 37                mov   si, word ptr ds:[bx]
 0x0000000000004843:  8E C2                mov   es, dx
 0x0000000000004845:  26 FF 74 06          push  word ptr es:[si + 6]
 0x0000000000004849:  8B 46 FE             mov   ax, word ptr [bp - 2]
@@ -3702,7 +3783,7 @@ PUBLIC  A_PainShootSkull_
 0x0000000000004877:  8B 46 F8             mov   ax, word ptr [bp - 8]
 0x000000000000487a:  8B 5E FE             mov   bx, word ptr [bp - 2]
 0x000000000000487d:  89 D1                mov   cx, dx
-0x000000000000487f:  89 47 22             mov   word ptr [bx + MOBJ_T.m_targetRef], ax
+0x000000000000487f:  89 47 22             mov   word ptr ds:[bx + MOBJ_T.m_targetRef], ax
 0x0000000000004882:  8B 46 FE             mov   ax, word ptr [bp - 2]
 0x0000000000004885:  89 F3                mov   bx, si
 0x0000000000004887:  E8 88 FD             call  A_SkullAttack_
@@ -3720,7 +3801,7 @@ PUBLIC  A_PainAttack_
 
 0x0000000000004890:  56                   push  si
 0x0000000000004891:  89 C6                mov   si, ax
-0x0000000000004893:  83 7C 22 00          cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+0x0000000000004893:  83 7C 22 00          cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 0x0000000000004897:  75 02                jne   0x489b
 0x0000000000004899:  5E                   pop   si
 0x000000000000489a:  C3                   ret   
@@ -3778,25 +3859,25 @@ PUBLIC  A_Scream_
 0x00000000000048ed:  52                   push  dx
 0x00000000000048ee:  56                   push  si
 0x00000000000048ef:  89 C3                mov   bx, ax
-0x00000000000048f1:  8A 47 1A             mov   al, byte ptr [bx + MOBJ_T.m_mobjtype]
+0x00000000000048f1:  8A 47 1A             mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x00000000000048f4:  30 E4                xor   ah, ah
 0x00000000000048f6:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x00000000000048f9:  89 C6                mov   si, ax
-0x00000000000048fb:  8A 84 63 C4          mov   al, byte ptr [si + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
+0x00000000000048fb:  8A 84 63 C4          mov   al, byte ptr ds:[si + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
 0x00000000000048ff:  81 C6 63 C4          add   si, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound
 0x0000000000004903:  3C 3B                cmp   al, SFX_PODTH1
 0x0000000000004905:  73 31                jae   0x4938
 0x0000000000004907:  84 C0                test  al, al
 0x0000000000004909:  74 29                je    0x4934
-0x000000000000490b:  8A 47 1A             mov   al, byte ptr [bx + MOBJ_T.m_mobjtype]
+0x000000000000490b:  8A 47 1A             mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x000000000000490e:  30 E4                xor   ah, ah
 0x0000000000004910:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x0000000000004913:  89 C6                mov   si, ax
-0x0000000000004915:  8A 84 63 C4          mov   al, byte ptr [si + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
+0x0000000000004915:  8A 84 63 C4          mov   al, byte ptr ds:[si + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
 0x0000000000004919:  81 C6 63 C4          add   si, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound
-0x000000000000491d:  80 7F 1A 13          cmp   byte ptr [bx + MOBJ_T.m_mobjtype], 0x13
+0x000000000000491d:  80 7F 1A 13          cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], 0x13
 0x0000000000004921:  74 06                je    0x4929
-0x0000000000004923:  80 7F 1A 15          cmp   byte ptr [bx + MOBJ_T.m_mobjtype], 0x15
+0x0000000000004923:  80 7F 1A 15          cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], 0x15
 0x0000000000004927:  75 47                jne   0x4970
 0x0000000000004929:  88 C2                mov   dl, al
 0x000000000000492b:  30 F6                xor   dh, dh
@@ -3872,7 +3953,7 @@ PUBLIC  A_Pain_
 0x0000000000004991:  83 EC 04             sub   sp, 4
 0x0000000000004994:  89 C3                mov   bx, ax
 0x0000000000004996:  C7 46 FC 84 02       mov   word ptr [bp - 4], GETPAINSOUNDADDR
-0x000000000000499b:  8A 47 1A             mov   al, byte ptr [bx + MOBJ_T.m_mobjtype]
+0x000000000000499b:  8A 47 1A             mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x000000000000499e:  C7 46 FE D9 92       mov   word ptr [bp - 2], INFOFUNCLOADSEGMENT
 0x00000000000049a3:  30 E4                xor   ah, ah
 0x00000000000049a5:  FF 5E FC             call  dword ptr [bp - 4]
@@ -3908,9 +3989,9 @@ PUBLIC  A_Explode_
 0x00000000000049c1:  56                   push  si
 0x00000000000049c2:  89 C6                mov   si, ax
 0x00000000000049c4:  89 DA                mov   dx, bx
-0x00000000000049c6:  6B 5C 22 2C          imul  bx, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+0x00000000000049c6:  6B 5C 22 2C          imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000049ca:  B9 80 00             mov   cx, 128
-0x00000000000049cd:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + 4)
+0x00000000000049cd:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x00000000000049d1:  FF 1E F0 0C          call  dword ptr ds:[_P_RadiusAttack]
 0x00000000000049d5:  5E                   pop   si
 0x00000000000049d6:  5A                   pop   dx
@@ -3936,12 +4017,12 @@ PUBLIC  A_BossDeath_
 0x00000000000049e3:  56                   push  si
 0x00000000000049e4:  89 C3                mov   bx, ax
 0x00000000000049e6:  BE EB 02             mov   si, OFFSET _commercial
-0x00000000000049e9:  8A 4F 1A             mov   cl, byte ptr [bx + MOBJ_T.m_mobjtype]
-0x00000000000049ec:  80 3C 00             cmp   byte ptr [si], 0
+0x00000000000049e9:  8A 4F 1A             mov   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
+0x00000000000049ec:  80 3C 00             cmp   byte ptr ds:[si], 0
 0x00000000000049ef:  75 03                jne   0x49f4
 0x00000000000049f1:  E9 7B 00             jmp   0x4a6f
 0x00000000000049f4:  BE BF 03             mov   si, OFFSET _gamemap
-0x00000000000049f7:  80 3C 07             cmp   byte ptr [si], 7
+0x00000000000049f7:  80 3C 07             cmp   byte ptr ds:[si], 7
 0x00000000000049fa:  74 03                je    0x49ff
 0x00000000000049fc:  E9 6B 00             jmp   0x4a6a
 0x00000000000049ff:  80 F9 08             cmp   cl, 8
@@ -3949,32 +4030,32 @@ PUBLIC  A_BossDeath_
 0x0000000000004a04:  80 F9 14             cmp   cl, 0x14
 0x0000000000004a07:  75 61                jne   0x4a6a
 0x0000000000004a09:  BE E8 07             mov   si, 0x7e8
-0x0000000000004a0c:  83 3C 00             cmp   word ptr [si], 0
+0x0000000000004a0c:  83 3C 00             cmp   word ptr ds:[si], 0
 0x0000000000004a0f:  7E 59                jle   0x4a6a
-0x0000000000004a11:  8D 87 FC CB          lea   ax, [bx - (OFFSET _thinkerlist + 4)]
+0x0000000000004a11:  8D 87 FC CB          lea   ax, ds:[bx - (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x0000000000004a15:  31 D2                xor   dx, dx
 0x0000000000004a17:  BB 2C 00             mov   bx, SIZEOF_THINKER_T
 0x0000000000004a1a:  F7 F3                div   bx
-0x0000000000004a1c:  BB 02 34             mov   bx, 0x3402
+0x0000000000004a1c:  BB 02 34             mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
 0x0000000000004a1f:  89 C6                mov   si, ax
-0x0000000000004a21:  8B 07                mov   ax, word ptr [bx]
+0x0000000000004a21:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000004a23:  85 C0                test  ax, ax
 0x0000000000004a25:  74 1D                je    0x4a44
 0x0000000000004a27:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
-0x0000000000004a2a:  8B 97 00 34          mov   dx, word ptr [bx + 0x3400]
+0x0000000000004a2a:  8B 97 00 34          mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 0x0000000000004a2e:  30 D2                xor   dl, dl
-0x0000000000004a30:  80 E6 F8             and   dh, 0xf8
-0x0000000000004a33:  81 FA 00 08          cmp   dx, 0x800
+0x0000000000004a30:  80 E6 F8             and   dh, (TF_FUNCBITS SHR 8)
+0x0000000000004a33:  81 FA 00 08          cmp   dx, TF_MOBJTHINKER_HIGHBITS
 0x0000000000004a37:  74 54                je    0x4a8d
 0x0000000000004a39:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
-0x0000000000004a3c:  8B 87 02 34          mov   ax, word ptr [bx + 0x3402]
+0x0000000000004a3c:  8B 87 02 34          mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
 0x0000000000004a40:  85 C0                test  ax, ax
 0x0000000000004a42:  75 E3                jne   0x4a27
 0x0000000000004a44:  BB EB 02             mov   bx, OFFSET _commercial
-0x0000000000004a47:  80 3F 00             cmp   byte ptr [bx], 0
+0x0000000000004a47:  80 3F 00             cmp   byte ptr ds:[bx], 0
 0x0000000000004a4a:  74 59                je    0x4aa5
 0x0000000000004a4c:  BB BF 03             mov   bx, OFFSET _gamemap
-0x0000000000004a4f:  80 3F 07             cmp   byte ptr [bx], 7
+0x0000000000004a4f:  80 3F 07             cmp   byte ptr ds:[bx], 7
 0x0000000000004a52:  75 62                jne   0x4ab6
 0x0000000000004a54:  80 F9 08             cmp   cl, 8
 0x0000000000004a57:  74 60                je    0x4ab9
@@ -3990,19 +4071,19 @@ PUBLIC  A_BossDeath_
 0x0000000000004a6d:  5B                   pop   bx
 0x0000000000004a6e:  C3                   ret   
 0x0000000000004a6f:  BE E5 00             mov   si, 0xe5
-0x0000000000004a72:  80 3C 00             cmp   byte ptr [si], 0
+0x0000000000004a72:  80 3C 00             cmp   byte ptr ds:[si], 0
 0x0000000000004a75:  75 18                jne   0x4a8f
 0x0000000000004a77:  BE BF 03             mov   si, OFFSET _gamemap
-0x0000000000004a7a:  80 3C 08             cmp   byte ptr [si], 8
+0x0000000000004a7a:  80 3C 08             cmp   byte ptr ds:[si], 8
 0x0000000000004a7d:  75 EB                jne   0x4a6a
 0x0000000000004a7f:  80 F9 0F             cmp   cl, 0xf
 0x0000000000004a82:  75 85                jne   0x4a09
 0x0000000000004a84:  BE BE 03             mov   si, 0x3be
-0x0000000000004a87:  80 3C 01             cmp   byte ptr [si], 1
+0x0000000000004a87:  80 3C 01             cmp   byte ptr ds:[si], 1
 0x0000000000004a8a:  E9 7A FF             jmp   0x4a07
 0x0000000000004a8d:  EB 6A                jmp   0x4af9
 0x0000000000004a8f:  BE BE 03             mov   si, 0x3be
-0x0000000000004a92:  8A 04                mov   al, byte ptr [si]
+0x0000000000004a92:  8A 04                mov   al, byte ptr ds:[si]
 0x0000000000004a94:  FE C8                dec   al
 0x0000000000004a96:  3C 03                cmp   al, 3
 0x0000000000004a98:  77 56                ja    0x4af0
@@ -4012,24 +4093,24 @@ PUBLIC  A_BossDeath_
 0x0000000000004aa0:  2E FF A4 D8 49       jmp   word ptr cs:[si + _some_lookup_table_4]
 0x0000000000004aa5:  E9 7E 00             jmp   0x4b26
 0x0000000000004aa8:  BE BF 03             mov   si, OFFSET _gamemap
-0x0000000000004aab:  80 3C 08             cmp   byte ptr [si], 8
+0x0000000000004aab:  80 3C 08             cmp   byte ptr ds:[si], 8
 0x0000000000004aae:  75 BA                jne   0x4a6a
 0x0000000000004ab0:  80 F9 0F             cmp   cl, 0xf
 0x0000000000004ab3:  E9 51 FF             jmp   0x4a07
 0x0000000000004ab6:  E9 A8 00             jmp   0x4b61
 0x0000000000004ab9:  EB 5A                jmp   0x4b15
 0x0000000000004abb:  BE BF 03             mov   si, OFFSET _gamemap
-0x0000000000004abe:  80 3C 08             cmp   byte ptr [si], 8
+0x0000000000004abe:  80 3C 08             cmp   byte ptr ds:[si], 8
 0x0000000000004ac1:  75 A7                jne   0x4a6a
 0x0000000000004ac3:  80 F9 15             cmp   cl, 0x15
 0x0000000000004ac6:  E9 3E FF             jmp   0x4a07
 0x0000000000004ac9:  BE BF 03             mov   si, OFFSET _gamemap
-0x0000000000004acc:  80 3C 08             cmp   byte ptr [si], 8
+0x0000000000004acc:  80 3C 08             cmp   byte ptr ds:[si], 8
 0x0000000000004acf:  75 99                jne   0x4a6a
 0x0000000000004ad1:  80 F9 13             cmp   cl, 0x13
 0x0000000000004ad4:  E9 30 FF             jmp   0x4a07
 0x0000000000004ad7:  BE BF 03             mov   si, OFFSET _gamemap
-0x0000000000004ada:  8A 04                mov   al, byte ptr [si]
+0x0000000000004ada:  8A 04                mov   al, byte ptr ds:[si]
 0x0000000000004adc:  3C 08                cmp   al, 8
 0x0000000000004ade:  75 06                jne   0x4ae6
 0x0000000000004ae0:  80 F9 13             cmp   cl, 0x13
@@ -4039,15 +4120,15 @@ PUBLIC  A_BossDeath_
 0x0000000000004aea:  80 F9 15             cmp   cl, 0x15
 0x0000000000004aed:  E9 17 FF             jmp   0x4a07
 0x0000000000004af0:  BE BF 03             mov   si, OFFSET _gamemap
-0x0000000000004af3:  80 3C 08             cmp   byte ptr [si], 8
+0x0000000000004af3:  80 3C 08             cmp   byte ptr ds:[si], 8
 0x0000000000004af6:  E9 0E FF             jmp   0x4a07
-0x0000000000004af9:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + 4)
+0x0000000000004af9:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004afd:  39 F0                cmp   ax, si
 0x0000000000004aff:  75 03                jne   0x4b04
 0x0000000000004b01:  E9 35 FF             jmp   0x4a39
-0x0000000000004b04:  3A 4F 1A             cmp   cl, byte ptr [bx + MOBJ_T.m_mobjtype]
+0x0000000000004b04:  3A 4F 1A             cmp   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x0000000000004b07:  75 F8                jne   0x4b01
-0x0000000000004b09:  83 7F 1C 00          cmp   word ptr [bx + 0x1c], 0
+0x0000000000004b09:  83 7F 1C 00          cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
 0x0000000000004b0d:  7E 03                jle   0x4b12
 0x0000000000004b0f:  E9 58 FF             jmp   0x4a6a
 0x0000000000004b12:  E9 24 FF             jmp   0x4a39
@@ -4061,11 +4142,11 @@ PUBLIC  A_BossDeath_
 0x0000000000004b24:  5B                   pop   bx
 0x0000000000004b25:  C3                   ret   
 0x0000000000004b26:  BB BE 03             mov   bx, 0x3be
-0x0000000000004b29:  8A 07                mov   al, byte ptr [bx]
+0x0000000000004b29:  8A 07                mov   al, byte ptr ds:[bx]
 0x0000000000004b2b:  3C 04                cmp   al, 4
 0x0000000000004b2d:  75 1D                jne   0x4b4c
 0x0000000000004b2f:  BB BF 03             mov   bx, OFFSET _gamemap
-0x0000000000004b32:  8A 07                mov   al, byte ptr [bx]
+0x0000000000004b32:  8A 07                mov   al, byte ptr ds:[bx]
 0x0000000000004b34:  3C 08                cmp   al, 8
 0x0000000000004b36:  74 18                je    0x4b50
 0x0000000000004b38:  3C 06                cmp   al, 6
@@ -4162,21 +4243,21 @@ PUBLIC  A_BrainAwake_
 0x0000000000004ba8:  53                   push  bx
 0x0000000000004ba9:  52                   push  dx
 0x0000000000004baa:  BB 28 01             mov   bx, 0x128
-0x0000000000004bad:  C7 07 00 00          mov   word ptr [bx], 0
+0x0000000000004bad:  C7 07 00 00          mov   word ptr ds:[bx], 0
 0x0000000000004bb1:  BB 2A 01             mov   bx, 0x12a
-0x0000000000004bb4:  C7 07 00 00          mov   word ptr [bx], 0
-0x0000000000004bb8:  BB 02 34             mov   bx, 0x3402
-0x0000000000004bbb:  8B 07                mov   ax, word ptr [bx]
+0x0000000000004bb4:  C7 07 00 00          mov   word ptr ds:[bx], 0
+0x0000000000004bb8:  BB 02 34             mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
+0x0000000000004bbb:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000004bbd:  85 C0                test  ax, ax
 0x0000000000004bbf:  74 1D                je    0x4bde
 0x0000000000004bc1:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
-0x0000000000004bc4:  8B 97 00 34          mov   dx, word ptr [bx + 0x3400]
+0x0000000000004bc4:  8B 97 00 34          mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 0x0000000000004bc8:  30 D2                xor   dl, dl
-0x0000000000004bca:  80 E6 F8             and   dh, 0xf8
-0x0000000000004bcd:  81 FA 00 08          cmp   dx, 0x800
+0x0000000000004bca:  80 E6 F8             and   dh, (TF_FUNCBITS SHR 8)
+0x0000000000004bcd:  81 FA 00 08          cmp   dx, TF_MOBJTHINKER_HIGHBITS
 0x0000000000004bd1:  74 18                je    0x4beb
 0x0000000000004bd3:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
-0x0000000000004bd6:  8B 87 02 34          mov   ax, word ptr [bx + 0x3402]
+0x0000000000004bd6:  8B 87 02 34          mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
 0x0000000000004bda:  85 C0                test  ax, ax
 0x0000000000004bdc:  75 E3                jne   0x4bc1
 0x0000000000004bde:  BA 60 00             mov   dx, 0x60
@@ -4186,15 +4267,15 @@ PUBLIC  A_BrainAwake_
 0x0000000000004be8:  5A                   pop   dx
 0x0000000000004be9:  5B                   pop   bx
 0x0000000000004bea:  C3                   ret   
-0x0000000000004beb:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + 4)
-0x0000000000004bef:  80 7F 1A 1B          cmp   byte ptr [bx + MOBJ_T.m_mobjtype], 0x1b
+0x0000000000004beb:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
+0x0000000000004bef:  80 7F 1A 1B          cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], 0x1b
 0x0000000000004bf3:  75 DE                jne   0x4bd3
 0x0000000000004bf5:  BB 28 01             mov   bx, 0x128
-0x0000000000004bf8:  8B 1F                mov   bx, word ptr [bx]
+0x0000000000004bf8:  8B 1F                mov   bx, word ptr ds:[bx]
 0x0000000000004bfa:  01 DB                add   bx, bx
-0x0000000000004bfc:  89 87 B0 04          mov   word ptr [bx + 0x4b0], ax
+0x0000000000004bfc:  89 87 B0 04          mov   word ptr ds:[bx + 0x4b0], ax
 0x0000000000004c00:  BB 28 01             mov   bx, 0x128
-0x0000000000004c03:  FF 07                inc   word ptr [bx]
+0x0000000000004c03:  FF 07                inc   word ptr ds:[bx]
 0x0000000000004c05:  EB CC                jmp   0x4bd3
 0x0000000000004c07:  FC                   cld   
 
@@ -4269,15 +4350,15 @@ label_2:
 0x0000000000004c7f:  E8 22 41             call  P_SpawnMobj_
 0x0000000000004c82:  90                   nop   
 0x0000000000004c83:  BB BA 01             mov   bx, OFFSET _setStateReturn
-0x0000000000004c86:  8B 1F                mov   bx, word ptr [bx]
+0x0000000000004c86:  8B 1F                mov   bx, word ptr ds:[bx]
 0x0000000000004c88:  E8 25 3D             call  P_Random_
 0x0000000000004c8b:  88 C1                mov   cl, al
 0x0000000000004c8d:  30 ED                xor   ch, ch
 0x0000000000004c8f:  89 C8                mov   ax, cx
 0x0000000000004c91:  C1 E0 09             shl   ax, 9
 0x0000000000004c94:  99                   cdq   
-0x0000000000004c95:  89 47 16             mov   word ptr [bx + 0x16], ax
-0x0000000000004c98:  89 57 18             mov   word ptr [bx + 0x18], dx
+0x0000000000004c95:  89 47 16             mov   word ptr ds:[bx + 0x16], ax
+0x0000000000004c98:  89 57 18             mov   word ptr ds:[bx + 0x18], dx
 0x0000000000004c9b:  BA 1F 03             mov   dx, 0x31f
 0x0000000000004c9e:  89 D8                mov   ax, bx
 0x0000000000004ca0:  0E                   push  cs
@@ -4285,11 +4366,11 @@ label_2:
 0x0000000000004ca4:  90                   nop   
 0x0000000000004ca5:  E8 08 3D             call  P_Random_
 0x0000000000004ca8:  24 07                and   al, 7
-0x0000000000004caa:  28 47 1B             sub   byte ptr [bx + 0x1b], al
-0x0000000000004cad:  8A 47 1B             mov   al, byte ptr [bx + 0x1b]
+0x0000000000004caa:  28 47 1B             sub   byte ptr ds:[bx + 0x1b], al
+0x0000000000004cad:  8A 47 1B             mov   al, byte ptr ds:[bx + 0x1b]
 0x0000000000004cb0:  3C 01                cmp   al, 1
 0x0000000000004cb2:  73 0A                jae   0x4cbe
-0x0000000000004cb4:  C6 47 1B 01          mov   byte ptr [bx + 0x1b], 1
+0x0000000000004cb4:  C6 47 1B 01          mov   byte ptr ds:[bx + 0x1b], 1
 0x0000000000004cb8:  83 C6 08             add   si, 8
 0x0000000000004cbb:  E9 7B FF             jmp   0x4c39
 0x0000000000004cbe:  3C F0                cmp   al, 0xf0
@@ -4334,21 +4415,21 @@ PUBLIC  A_BrainExplode_
 0x0000000000004d07:  0E                   push  cs
 0x0000000000004d08:  3E E8 98 40          call  P_SpawnMobj_
 0x0000000000004d0c:  BB BA 01             mov   bx, OFFSET _setStateReturn
-0x0000000000004d0f:  8B 1F                mov   bx, word ptr [bx]
+0x0000000000004d0f:  8B 1F                mov   bx, word ptr ds:[bx]
 0x0000000000004d11:  E8 9C 3C             call  P_Random_
 0x0000000000004d14:  30 E4                xor   ah, ah
 0x0000000000004d16:  C1 E0 09             shl   ax, 9
 0x0000000000004d19:  99                   cdq   
-0x0000000000004d1a:  89 47 16             mov   word ptr [bx + 0x16], ax
-0x0000000000004d1d:  89 57 18             mov   word ptr [bx + 0x18], dx
+0x0000000000004d1a:  89 47 16             mov   word ptr ds:[bx + 0x16], ax
+0x0000000000004d1d:  89 57 18             mov   word ptr ds:[bx + 0x18], dx
 0x0000000000004d20:  BA 1F 03             mov   dx, 0x31f
 0x0000000000004d23:  89 D8                mov   ax, bx
 0x0000000000004d25:  0E                   push  cs
 0x0000000000004d26:  3E E8 C4 42          call  P_SetMobjState_
 0x0000000000004d2a:  E8 83 3C             call  P_Random_
 0x0000000000004d2d:  24 07                and   al, 7
-0x0000000000004d2f:  28 47 1B             sub   byte ptr [bx + 0x1b], al
-0x0000000000004d32:  8A 47 1B             mov   al, byte ptr [bx + 0x1b]
+0x0000000000004d2f:  28 47 1B             sub   byte ptr ds:[bx + 0x1b], al
+0x0000000000004d32:  8A 47 1B             mov   al, byte ptr ds:[bx + 0x1b]
 0x0000000000004d35:  3C 01                cmp   al, 1
 0x0000000000004d37:  72 08                jb    0x4d41
 0x0000000000004d39:  3C F0                cmp   al, 0xf0
@@ -4357,7 +4438,7 @@ PUBLIC  A_BrainExplode_
 0x0000000000004d3e:  5E                   pop   si
 0x0000000000004d3f:  5A                   pop   dx
 0x0000000000004d40:  C3                   ret   
-0x0000000000004d41:  C6 47 1B 01          mov   byte ptr [bx + 0x1b], 1
+0x0000000000004d41:  C6 47 1B 01          mov   byte ptr ds:[bx + 0x1b], 1
 0x0000000000004d45:  5F                   pop   di
 0x0000000000004d46:  5E                   pop   si
 0x0000000000004d47:  5A                   pop   dx
@@ -4380,10 +4461,10 @@ PUBLIC  A_BrainSpit_
 0x0000000000004d55:  89 DE                mov   si, bx
 0x0000000000004d57:  89 4E FE             mov   word ptr [bp - 2], cx
 0x0000000000004d5a:  BB 2C 01             mov   bx, 0x12c
-0x0000000000004d5d:  80 37 01             xor   byte ptr [bx], 1
+0x0000000000004d5d:  80 37 01             xor   byte ptr ds:[bx], 1
 0x0000000000004d60:  80 3E 14 22 01       cmp   byte ptr [0x2214], 1
 0x0000000000004d65:  77 0A                ja    0x4d71
-0x0000000000004d67:  80 3F 00             cmp   byte ptr [bx], 0
+0x0000000000004d67:  80 3F 00             cmp   byte ptr ds:[bx], 0
 0x0000000000004d6a:  75 05                jne   0x4d71
 0x0000000000004d6c:  C9                   LEAVE_MACRO 
 0x0000000000004d6d:  5F                   pop   di
@@ -4391,34 +4472,34 @@ PUBLIC  A_BrainSpit_
 0x0000000000004d6f:  5A                   pop   dx
 0x0000000000004d70:  C3                   ret   
 0x0000000000004d71:  BB 2A 01             mov   bx, 0x12a
-0x0000000000004d74:  8B 1F                mov   bx, word ptr [bx]
+0x0000000000004d74:  8B 1F                mov   bx, word ptr ds:[bx]
 0x0000000000004d76:  01 DB                add   bx, bx
-0x0000000000004d78:  8B 87 B0 04          mov   ax, word ptr [bx + 0x4b0]
+0x0000000000004d78:  8B 87 B0 04          mov   ax, word ptr ds:[bx + 0x4b0]
 0x0000000000004d7c:  BB 2A 01             mov   bx, 0x12a
 0x0000000000004d7f:  89 46 F8             mov   word ptr [bp - 8], ax
-0x0000000000004d82:  8B 07                mov   ax, word ptr [bx]
+0x0000000000004d82:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000004d84:  40                   inc   ax
 0x0000000000004d85:  BB 28 01             mov   bx, 0x128
 0x0000000000004d88:  99                   cdq   
-0x0000000000004d89:  F7 3F                idiv  word ptr [bx]
+0x0000000000004d89:  F7 3F                idiv  word ptr ds:[bx]
 0x0000000000004d8b:  BB 2A 01             mov   bx, 0x12a
-0x0000000000004d8e:  89 17                mov   word ptr [bx], dx
+0x0000000000004d8e:  89 17                mov   word ptr ds:[bx], dx
 0x0000000000004d90:  6B 56 F8 2C          imul  dx, word ptr [bp - 8], SIZEOF_THINKER_T
 0x0000000000004d94:  6B 5E F8 18          imul  bx, word ptr [bp - 8], SIZEOF_MOBJ_POS_T
 0x0000000000004d98:  6A 1C                push  0x1c
 0x0000000000004d9a:  8B 4E FE             mov   cx, word ptr [bp - 2]
 0x0000000000004d9d:  89 F8                mov   ax, di
-0x0000000000004d9f:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + 4)
+0x0000000000004d9f:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004da3:  89 5E FC             mov   word ptr [bp - 4], bx
 0x0000000000004da6:  89 F3                mov   bx, si
 0x0000000000004da8:  BF BA 01             mov   di, OFFSET _setStateReturn
 0x0000000000004dab:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x0000000000004daf:  BB 34 07             mov   bx, OFFSET _setStateReturn_pos
 0x0000000000004db2:  8B 46 F8             mov   ax, word ptr [bp - 8]
-0x0000000000004db5:  8B 3D                mov   di, word ptr [di]
-0x0000000000004db7:  C4 17                les   dx, ptr [bx]
+0x0000000000004db5:  8B 3D                mov   di, word ptr ds:[di]
+0x0000000000004db7:  C4 17                les   dx, ptr ds:[bx]
 0x0000000000004db9:  89 D3                mov   bx, dx
-0x0000000000004dbb:  89 45 22             mov   word ptr [di + MOBJ_T.m_targetRef], ax
+0x0000000000004dbb:  89 45 22             mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
 0x0000000000004dbe:  26 8B 57 12          mov   dx, word ptr es:[bx + 0x12]
 0x0000000000004dc2:  89 D3                mov   bx, dx
 0x0000000000004dc4:  C1 E3 02             shl   bx, 2
@@ -4433,7 +4514,7 @@ PUBLIC  A_BrainSpit_
 0x0000000000004ddd:  99                   cdq   
 0x0000000000004dde:  8B 5E FC             mov   bx, word ptr [bp - 4]
 0x0000000000004de1:  89 C1                mov   cx, ax
-0x0000000000004de3:  8B 45 14             mov   ax, word ptr [di + 0x14]
+0x0000000000004de3:  8B 45 14             mov   ax, word ptr ds:[di + 0x14]
 0x0000000000004de6:  8E 46 F6             mov   es, word ptr [bp - 0Ah]
 0x0000000000004de9:  89 46 FA             mov   word ptr [bp - 6], ax
 0x0000000000004dec:  26 8B 47 06          mov   ax, word ptr es:[bx + 6]
@@ -4449,7 +4530,7 @@ PUBLIC  A_BrainSpit_
 0x0000000000004e09:  E8 1A 6E             call  __I4Dc26
 0x0000000000004e0c:  90                   nop   
 0x0000000000004e0d:  BA 5E 00             mov   dx, 0x5e
-0x0000000000004e10:  88 45 24             mov   byte ptr [di + 0x24], al
+0x0000000000004e10:  88 45 24             mov   byte ptr ds:[di + 0x24], al
 0x0000000000004e13:  31 C0                xor   ax, ax
 0x0000000000004e15:  0E                   push  cs
 0x0000000000004e16:  3E E8 36 B7          call  S_StartSound_
@@ -4493,20 +4574,20 @@ PUBLIC  A_SpawnFly_
 0x0000000000004e3d:  89 C7                mov   di, ax
 0x0000000000004e3f:  C7 46 F6 50 03       mov   word ptr [bp - 0Ah], GETSEESTATEADDR
 0x0000000000004e44:  C7 46 F8 D9 92       mov   word ptr [bp - 8], INFOFUNCLOADSEGMENT
-0x0000000000004e49:  FE 4D 24             dec   byte ptr [di + 0x24]
+0x0000000000004e49:  FE 4D 24             dec   byte ptr ds:[di + 0x24]
 0x0000000000004e4c:  74 05                je    0x4e53
 0x0000000000004e4e:  C9                   LEAVE_MACRO 
 0x0000000000004e4f:  5F                   pop   di
 0x0000000000004e50:  5E                   pop   si
 0x0000000000004e51:  5A                   pop   dx
 0x0000000000004e52:  C3                   ret   
-0x0000000000004e53:  8B 75 22             mov   si, word ptr [di + MOBJ_T.m_targetRef]
+0x0000000000004e53:  8B 75 22             mov   si, word ptr ds:[di + MOBJ_T.m_targetRef]
 0x0000000000004e56:  6B C6 2C             imul  ax, si, SIZEOF_THINKER_T
 0x0000000000004e59:  6B F6 18             imul  si, si, SIZEOF_MOBJ_POS_T
-0x0000000000004e5c:  05 04 34             add   ax, (OFFSET _thinkerlist + 4)
+0x0000000000004e5c:  05 04 34             add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004e5f:  89 46 FA             mov   word ptr [bp - 6], ax
 0x0000000000004e62:  8B 5E FA             mov   bx, word ptr [bp - 6]
-0x0000000000004e65:  FF 77 04             push  word ptr [bx + 4]
+0x0000000000004e65:  FF 77 04             push  word ptr ds:[bx + 4]
 0x0000000000004e68:  B8 F5 6A             mov   ax, MOBJPOSLIST_6800_SEGMENT
 0x0000000000004e6b:  6A 1D                push  0x1d
 0x0000000000004e6d:  8E C0                mov   es, ax
@@ -4521,7 +4602,7 @@ PUBLIC  A_SpawnFly_
 0x0000000000004e8a:  3E E8 16 3F          call  P_SpawnMobj_
 0x0000000000004e8e:  BB BA 01             mov   bx, OFFSET _setStateReturn
 0x0000000000004e91:  BA 23 00             mov   dx, 0x23
-0x0000000000004e94:  8B 07                mov   ax, word ptr [bx]
+0x0000000000004e94:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000004e96:  89 76 FC             mov   word ptr [bp - 4], si
 0x0000000000004e99:  0E                   push  cs
 0x0000000000004e9a:  3E E8 B2 B6          call  S_StartSound_
@@ -4532,7 +4613,7 @@ PUBLIC  A_SpawnFly_
 0x0000000000004ea8:  B0 0B                mov   al, SIZEOF_MOBJINFO_T
 0x0000000000004eaa:  8B 5E FA             mov   bx, word ptr [bp - 6]
 0x0000000000004ead:  30 E4                xor   ah, ah
-0x0000000000004eaf:  FF 77 04             push  word ptr [bx + 4]
+0x0000000000004eaf:  FF 77 04             push  word ptr ds:[bx + 4]
 0x0000000000004eb2:  C4 5E FC             les   bx, ptr [bp - 4]
 0x0000000000004eb5:  50                   push  ax
 0x0000000000004eb6:  8B 76 FC             mov   si, word ptr [bp - 4]
@@ -4547,14 +4628,14 @@ PUBLIC  A_SpawnFly_
 0x0000000000004ed4:  90                   nop   
 0x0000000000004ed5:  6B F0 2C             imul  si, ax, SIZEOF_THINKER_T
 0x0000000000004ed8:  6B D8 18             imul  bx, ax, SIZEOF_MOBJ_POS_T
-0x0000000000004edb:  81 C6 04 34          add   si, (OFFSET _thinkerlist + 4)
+0x0000000000004edb:  81 C6 04 34          add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004edf:  BA 01 00             mov   dx, 1
 0x0000000000004ee2:  89 F0                mov   ax, si
 0x0000000000004ee4:  B9 F5 6A             mov   cx, MOBJPOSLIST_6800_SEGMENT
 0x0000000000004ee7:  E8 3A E1             call  P_LookForPlayers_
 0x0000000000004eea:  84 C0                test  al, al
 0x0000000000004eec:  74 11                je    0x4eff
-0x0000000000004eee:  8A 44 1A             mov   al, byte ptr [si + MOBJ_T.m_mobjtype]
+0x0000000000004eee:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004ef1:  30 E4                xor   ah, ah
 0x0000000000004ef3:  FF 5E F6             call  dword ptr [bp - 0Ah]
 0x0000000000004ef6:  89 C2                mov   dx, ax
@@ -4562,7 +4643,7 @@ PUBLIC  A_SpawnFly_
 0x0000000000004efa:  0E                   push  cs
 0x0000000000004efb:  E8 F0 40             call  P_SetMobjState_
 0x0000000000004efe:  90                   nop   
-0x0000000000004eff:  FF 74 04             push  word ptr [si + 4]
+0x0000000000004eff:  FF 74 04             push  word ptr ds:[si + 4]
 0x0000000000004f02:  8E C1                mov   es, cx
 0x0000000000004f04:  26 FF 77 06          push  word ptr es:[bx + 6]
 0x0000000000004f08:  26 FF 77 04          push  word ptr es:[bx + 4]
@@ -4627,18 +4708,18 @@ PUBLIC  A_PlayerScream_
 0x0000000000004f7c:  53                   push  bx
 0x0000000000004f7d:  52                   push  dx
 0x0000000000004f7e:  BB EB 02             mov   bx, OFFSET _commercial
-0x0000000000004f81:  B0 39                mov   al, 0x39
-0x0000000000004f83:  80 3F 00             cmp   byte ptr [bx], 0
+0x0000000000004f81:  B0 39                mov   al, SFX_PLDETH 
+0x0000000000004f83:  80 3F 00             cmp   byte ptr ds:[bx], 0
 0x0000000000004f86:  74 0D                je    0x4f95
 0x0000000000004f88:  BB EC 06             mov   bx, OFFSET _playerMobj
-0x0000000000004f8b:  8B 1F                mov   bx, word ptr [bx]
-0x0000000000004f8d:  83 7F 1C CE          cmp   word ptr [bx + 0x1c], -0x32
+0x0000000000004f8b:  8B 1F                mov   bx, word ptr ds:[bx]
+0x0000000000004f8d:  83 7F 1C CE          cmp   word ptr ds:[bx + MOBJ_T.m_health], -50
 0x0000000000004f91:  7D 02                jge   0x4f95
-0x0000000000004f93:  B0 3A                mov   al, 0x3a
+0x0000000000004f93:  B0 3A                mov   al, SFX_PDIEHI
 0x0000000000004f95:  30 E4                xor   ah, ah
 0x0000000000004f97:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000004f9a:  89 C2                mov   dx, ax
-0x0000000000004f9c:  8B 07                mov   ax, word ptr [bx]
+0x0000000000004f9c:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000004f9e:  0E                   push  cs
 0x0000000000004f9f:  E8 AE B5             call  S_StartSound_
 0x0000000000004fa2:  90                   nop   
