@@ -738,7 +738,7 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002e03:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x0000000000002e06:  98                   cwde  
 0x0000000000002e07:  89 C3                mov   bx, ax
-0x0000000000002e09:  8A 87 96 0E          mov   al, byte ptr ds:[bx + 0xe96]
+0x0000000000002e09:  8A 87 96 0E          mov   al, byte ptr ds:[bx + _opposite] ; todo make cs?
 0x0000000000002e0d:  89 D3                mov   bx, dx
 0x0000000000002e0f:  88 46 FC             mov   byte ptr [bp - 4], al
 0x0000000000002e12:  26 8B 07             mov   ax, word ptr es:[bx]
@@ -753,196 +753,251 @@ PUBLIC  P_NewChaseDir_
 0x0000000000002e2f:  8B 46 F8             mov   ax, word ptr [bp - 8]
 0x0000000000002e32:  26 8B 57 06          mov   dx, word ptr es:[bx + 6]
 0x0000000000002e36:  19 CA                sbb   dx, cx
-0x0000000000002e38:  3D 0A 00             cmp   ax, 0xa
-0x0000000000002e3b:  7F 0B                jg    0x2e48
-0x0000000000002e3d:  74 03                je    0x2e42
-0x0000000000002e3f:  E9 E4 00             jmp   0x2f26
+0x0000000000002e38:  3D 0A 00             cmp   ax, 10  ; 10 * fracbits
+0x0000000000002e3b:  7F 0B                jg    label_38
+0x0000000000002e3d:  74 03                je    label_39
+jump_to_label_40:
+0x0000000000002e3f:  E9 E4 00             jmp   label_40
+label_39:
 0x0000000000002e42:  83 7E F6 00          cmp   word ptr [bp - 0Ah], 0
-0x0000000000002e46:  76 F7                jbe   0x2e3f
+0x0000000000002e46:  76 F7                jbe   jump_to_label_40
+label_38:
 0x0000000000002e48:  C6 46 EB 00          mov   byte ptr [bp - 015h], 0
-0x0000000000002e4c:  83 FA F6             cmp   dx, -0xa
-0x0000000000002e4f:  7D 03                jge   0x2e54
-0x0000000000002e51:  E9 E5 00             jmp   0x2f39
-0x0000000000002e54:  83 FA 0A             cmp   dx, 0xa
-0x0000000000002e57:  7F 0B                jg    0x2e64
-0x0000000000002e59:  74 03                je    0x2e5e
-0x0000000000002e5b:  E9 E2 00             jmp   0x2f40
+label_75:
+0x0000000000002e4c:  83 FA F6             cmp   dx, -10  ; -10 * fracbits
+0x0000000000002e4f:  7D 03                jge   label_41
+0x0000000000002e51:  E9 E5 00             jmp   label_42
+label_41:
+0x0000000000002e54:  83 FA 0A             cmp   dx, 10
+0x0000000000002e57:  7F 0B                jg    label_43
+0x0000000000002e59:  74 03                je    label_44
+jump_to_label_45:
+0x0000000000002e5b:  E9 E2 00             jmp   label_45
+label_44:
 0x0000000000002e5e:  83 7E F4 00          cmp   word ptr [bp - 0Ch], 0
-0x0000000000002e62:  76 F7                jbe   0x2e5b
+0x0000000000002e62:  76 F7                jbe   jump_to_label_45
+label_43:
 0x0000000000002e64:  C6 46 EC 02          mov   byte ptr [bp - 014h], 2
+label_48:
 0x0000000000002e68:  80 7E EB 08          cmp   byte ptr [bp - 015h], 8
-0x0000000000002e6c:  74 3F                je    0x2ead
+0x0000000000002e6c:  74 3F                je    label_46
 0x0000000000002e6e:  80 7E EC 08          cmp   byte ptr [bp - 014h], 8
-0x0000000000002e72:  74 39                je    0x2ead
+0x0000000000002e72:  74 39                je    label_46
 0x0000000000002e74:  85 D2                test  dx, dx
-0x0000000000002e76:  7D 03                jge   0x2e7b
-0x0000000000002e78:  E9 CE 00             jmp   0x2f49
+0x0000000000002e76:  7D 03                jge   label_49
+0x0000000000002e78:  E9 CE 00             jmp   label_50
+label_49:
 0x0000000000002e7b:  31 DB                xor   bx, bx
+label_51:
 0x0000000000002e7d:  89 D8                mov   ax, bx
 0x0000000000002e7f:  01 D8                add   ax, bx
 0x0000000000002e81:  83 7E F8 00          cmp   word ptr [bp - 8], 0
-0x0000000000002e85:  7F 0B                jg    0x2e92
-0x0000000000002e87:  74 03                je    0x2e8c
-0x0000000000002e89:  E9 C5 00             jmp   0x2f51
+0x0000000000002e85:  7F 0B                jg    label_52
+0x0000000000002e87:  74 03                je    label_53
+jump_to_label_54:
+0x0000000000002e89:  E9 C5 00             jmp   label_54
+label_53:
 0x0000000000002e8c:  83 7E F6 00          cmp   word ptr [bp - 0Ah], 0
-0x0000000000002e90:  76 F7                jbe   0x2e89
+0x0000000000002e90:  76 F7                jbe   jump_to_label_54
+label_52:
 0x0000000000002e92:  BB 01 00             mov   bx, 1
+label_55:
 0x0000000000002e95:  01 C3                add   bx, ax
-0x0000000000002e97:  8A 87 9F 0E          mov   al, byte ptr ds:[bx + 0xe9f]
+0x0000000000002e97:  8A 87 9F 0E          mov   al, byte ptr ds:[bx + _diags]
 0x0000000000002e9b:  88 C3                mov   bl, al
 0x0000000000002e9d:  88 44 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 0x0000000000002ea0:  8A 46 FC             mov   al, byte ptr [bp - 4]
 0x0000000000002ea3:  30 FF                xor   bh, bh
 0x0000000000002ea5:  98                   cwde  
 0x0000000000002ea6:  39 C3                cmp   bx, ax
-0x0000000000002ea8:  74 03                je    0x2ead
-0x0000000000002eaa:  E9 A9 00             jmp   0x2f56
+0x0000000000002ea8:  74 03                je    label_46
+0x0000000000002eaa:  E9 A9 00             jmp   label_47
+label_46:
 0x0000000000002ead:  E8 00 5B             call  P_Random_
-0x0000000000002eb0:  3C C8                cmp   al, 0xc8
+0x0000000000002eb0:  3C C8                cmp   al, 200
 0x0000000000002eb2:  77 03                ja    OFFSET _commercial7
-0x0000000000002eb4:  E9 B8 00             jmp   0x2f6f
+0x0000000000002eb4:  E9 B8 00             jmp   label_56
+label_63:
 0x0000000000002eb7:  8A 46 EB             mov   al, byte ptr [bp - 015h]
 0x0000000000002eba:  8A 66 EC             mov   ah, byte ptr [bp - 014h]
 0x0000000000002ebd:  88 66 EB             mov   byte ptr [bp - 015h], ah
 0x0000000000002ec0:  88 46 EC             mov   byte ptr [bp - 014h], al
+label_65:
 0x0000000000002ec3:  8A 46 EB             mov   al, byte ptr [bp - 015h]
 0x0000000000002ec6:  3A 46 FC             cmp   al, byte ptr [bp - 4]
-0x0000000000002ec9:  75 04                jne   0x2ecf
+0x0000000000002ec9:  75 04                jne   label_72
 0x0000000000002ecb:  C6 46 EB 08          mov   byte ptr [bp - 015h], 8
+label_72:
 0x0000000000002ecf:  8A 46 EC             mov   al, byte ptr [bp - 014h]
 0x0000000000002ed2:  3A 46 FC             cmp   al, byte ptr [bp - 4]
-0x0000000000002ed5:  75 04                jne   0x2edb
+0x0000000000002ed5:  75 04                jne   label_71
 0x0000000000002ed7:  C6 46 EC 08          mov   byte ptr [bp - 014h], 8
+label_71:
 0x0000000000002edb:  8A 46 EB             mov   al, byte ptr [bp - 015h]
 0x0000000000002ede:  3C 08                cmp   al, 8
-0x0000000000002ee0:  75 65                jne   0x2f47
+0x0000000000002ee0:  75 65                jne   jump_to_label_70
+label_78:
 0x0000000000002ee2:  8A 46 EC             mov   al, byte ptr [bp - 014h]
 0x0000000000002ee5:  3C 08                cmp   al, 8
-0x0000000000002ee7:  75 66                jne   0x2f4f
+0x0000000000002ee7:  75 66                jne   jump_to_label_73
+label_76:
 0x0000000000002ee9:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x0000000000002eec:  3C 08                cmp   al, 8
-0x0000000000002eee:  74 11                je    0x2f01
+0x0000000000002eee:  74 11                je    label_72
 0x0000000000002ef0:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002ef3:  89 FB                mov   bx, di
 0x0000000000002ef5:  88 44 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 0x0000000000002ef8:  89 F0                mov   ax, si
 0x0000000000002efa:  E8 A5 FE             call  P_TryWalk_
 0x0000000000002efd:  84 C0                test  al, al
-0x0000000000002eff:  75 20                jne   0x2f21
+0x0000000000002eff:  75 20                jne   exit_p_newchasedir
+label_72:
 0x0000000000002f01:  E8 AC 5A             call  P_Random_
 0x0000000000002f04:  A8 01                test  al, 1
-0x0000000000002f06:  74 5F                je    0x2f67
+0x0000000000002f06:  74 5F                je    jump_to_label_57
 0x0000000000002f08:  30 D2                xor   dl, dl
+label_67:
 0x0000000000002f0a:  3A 56 FC             cmp   dl, byte ptr [bp - 4]
-0x0000000000002f0d:  75 5B                jne   0x2f6a
+0x0000000000002f0d:  75 5B                jne   jump_to_label_58
+label_77:
 0x0000000000002f0f:  FE C2                inc   dl
 0x0000000000002f11:  80 FA 07             cmp   dl, 7
-0x0000000000002f14:  7E F4                jle   0x2f0a
+0x0000000000002f14:  7E F4                jle   label_67
+label_71:
 0x0000000000002f16:  8A 46 FC             mov   al, byte ptr [bp - 4]
 0x0000000000002f19:  3C 08                cmp   al, 8
-0x0000000000002f1b:  75 4F                jne   0x2f6c
+0x0000000000002f1b:  75 4F                jne   jump_to_label_59
 0x0000000000002f1d:  C6 44 1F 08          mov   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
+exit_p_newchasedir:
 0x0000000000002f21:  C9                   LEAVE_MACRO 
 0x0000000000002f22:  5F                   pop   di
 0x0000000000002f23:  5E                   pop   si
 0x0000000000002f24:  5A                   pop   dx
 0x0000000000002f25:  C3                   ret   
-0x0000000000002f26:  3D F6 FF             cmp   ax, 0xfff6
-0x0000000000002f29:  7C 07                jl    0x2f32
+label_40:
+0x0000000000002f26:  3D F6 FF             cmp   ax, -10  (neg 10 * fracunit)
+0x0000000000002f29:  7C 07                jl    label_74
 0x0000000000002f2b:  C6 46 EB 08          mov   byte ptr [bp - 015h], 8
-0x0000000000002f2f:  E9 1A FF             jmp   0x2e4c
+0x0000000000002f2f:  E9 1A FF             jmp   label_75
+label_74:
 0x0000000000002f32:  C6 46 EB 04          mov   byte ptr [bp - 015h], 4
-0x0000000000002f36:  E9 13 FF             jmp   0x2e4c
+0x0000000000002f36:  E9 13 FF             jmp   label_75
+label_42:
 0x0000000000002f39:  C6 46 EC 06          mov   byte ptr [bp - 014h], 6
-0x0000000000002f3d:  E9 28 FF             jmp   0x2e68
+0x0000000000002f3d:  E9 28 FF             jmp   label_48
+label_45:
 0x0000000000002f40:  C6 46 EC 08          mov   byte ptr [bp - 014h], 8
-0x0000000000002f44:  E9 21 FF             jmp   0x2e68
-0x0000000000002f47:  EB 5C                jmp   0x2fa5
+0x0000000000002f44:  E9 21 FF             jmp   label_48
+jump_to_label_70:
+0x0000000000002f47:  EB 5C                jmp   label_70
+label_50:
 0x0000000000002f49:  BB 01 00             mov   bx, 1
-0x0000000000002f4c:  E9 2E FF             jmp   0x2e7d
-0x0000000000002f4f:  EB 6B                jmp   0x2fbc
+0x0000000000002f4c:  E9 2E FF             jmp   label_51
+jump_to_label_73:
+0x0000000000002f4f:  EB 6B                jmp   label_73
+label_54:
 0x0000000000002f51:  31 DB                xor   bx, bx
-0x0000000000002f53:  E9 3F FF             jmp   0x2e95
+0x0000000000002f53:  E9 3F FF             jmp   label_55
+label_47:
 0x0000000000002f56:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002f59:  89 FB                mov   bx, di
 0x0000000000002f5b:  89 F0                mov   ax, si
 0x0000000000002f5d:  E8 42 FE             call  P_TryWalk_
 0x0000000000002f60:  84 C0                test  al, al
-0x0000000000002f62:  75 BD                jne   0x2f21
-0x0000000000002f64:  E9 46 FF             jmp   0x2ead
-0x0000000000002f67:  E9 7A 00             jmp   0x2fe4
-0x0000000000002f6a:  EB 64                jmp   0x2fd0
-0x0000000000002f6c:  E9 9A 00             jmp   0x3009
+0x0000000000002f62:  75 BD                jne   exit_p_newchasedir
+0x0000000000002f64:  E9 46 FF             jmp   label_46
+jump_to_label_57:
+0x0000000000002f67:  E9 7A 00             jmp   label_57
+jump_to_label_58:
+0x0000000000002f6a:  EB 64                jmp   label_58
+jump_to_label_59:
+0x0000000000002f6c:  E9 9A 00             jmp   label_59
+label_56:
 0x0000000000002f6f:  8B 46 F4             mov   ax, word ptr [bp - 0Ch]
 0x0000000000002f72:  0B D2                or    dx, dx
-0x0000000000002f74:  7D 07                jge   0x2f7d
+0x0000000000002f74:  7D 07                jge   label_60
 0x0000000000002f76:  F7 D8                neg   ax
 0x0000000000002f78:  83 D2 00             adc   dx, 0
 0x0000000000002f7b:  F7 DA                neg   dx
+label_60:
 0x0000000000002f7d:  89 C1                mov   cx, ax
 0x0000000000002f7f:  89 D3                mov   bx, dx
 0x0000000000002f81:  8B 46 F6             mov   ax, word ptr [bp - 0Ah]
 0x0000000000002f84:  8B 56 F8             mov   dx, word ptr [bp - 8]
 0x0000000000002f87:  0B D2                or    dx, dx
-0x0000000000002f89:  7D 07                jge   0x2f92
+0x0000000000002f89:  7D 07                jge   label_61
 0x0000000000002f8b:  F7 D8                neg   ax
 0x0000000000002f8d:  83 D2 00             adc   dx, 0
 0x0000000000002f90:  F7 DA                neg   dx
+label_61:
 0x0000000000002f92:  39 D3                cmp   bx, dx
-0x0000000000002f94:  7E 03                jle   0x2f99
-0x0000000000002f96:  E9 1E FF             jmp   OFFSET _commercial7
-0x0000000000002f99:  74 03                je    0x2f9e
-0x0000000000002f9b:  E9 25 FF             jmp   0x2ec3
+0x0000000000002f94:  7E 03                jle   label_62
+jump_to_label_63:
+0x0000000000002f96:  E9 1E FF             jmp   label_63
+label_62:
+0x0000000000002f99:  74 03                je    label_64
+0x0000000000002f9b:  E9 25 FF             jmp   label_65
+label_64:
 0x0000000000002f9e:  39 C1                cmp   cx, ax
-0x0000000000002fa0:  77 F4                ja    0x2f96
-0x0000000000002fa2:  E9 1E FF             jmp   0x2ec3
+0x0000000000002fa0:  77 F4                ja    jump_to_label_63
+0x0000000000002fa2:  E9 1E FF             jmp   label_65
+label_70:
 0x0000000000002fa5:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002fa8:  89 FB                mov   bx, di
 0x0000000000002faa:  88 44 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 0x0000000000002fad:  89 F0                mov   ax, si
 0x0000000000002faf:  E8 F0 FD             call  P_TryWalk_
 0x0000000000002fb2:  84 C0                test  al, al
-0x0000000000002fb4:  74 03                je    0x2fb9
-0x0000000000002fb6:  E9 68 FF             jmp   0x2f21
-0x0000000000002fb9:  E9 26 FF             jmp   0x2ee2
+0x0000000000002fb4:  74 03                je    label_66
+jump_to_exit_p_newchasedir:
+0x0000000000002fb6:  E9 68 FF             jmp   exit_p_newchasedir
+label_66:
+0x0000000000002fb9:  E9 26 FF             jmp   label_78
+label_73:
 0x0000000000002fbc:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002fbf:  89 FB                mov   bx, di
 0x0000000000002fc1:  88 44 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 0x0000000000002fc4:  89 F0                mov   ax, si
 0x0000000000002fc6:  E8 D9 FD             call  P_TryWalk_
 0x0000000000002fc9:  84 C0                test  al, al
-0x0000000000002fcb:  75 E9                jne   0x2fb6
-0x0000000000002fcd:  E9 19 FF             jmp   0x2ee9
+0x0000000000002fcb:  75 E9                jne   jump_to_exit_p_newchasedir
+0x0000000000002fcd:  E9 19 FF             jmp   label_76
+label_58:
 0x0000000000002fd0:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002fd3:  89 FB                mov   bx, di
 0x0000000000002fd5:  89 F0                mov   ax, si
 0x0000000000002fd7:  88 54 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], dl
 0x0000000000002fda:  E8 C5 FD             call  P_TryWalk_
 0x0000000000002fdd:  84 C0                test  al, al
-0x0000000000002fdf:  75 D5                jne   0x2fb6
-0x0000000000002fe1:  E9 2B FF             jmp   0x2f0f
-0x0000000000002fe4:  B2 07                mov   dl, 7
+0x0000000000002fdf:  75 D5                jne   jump_to_exit_p_newchasedir
+0x0000000000002fe1:  E9 2B FF             jmp   label_77
+label_57:
+0x0000000000002fe4:  B2 07                mov   dl, DI_EAST-1
+label_68:
 0x0000000000002fe6:  3A 56 FC             cmp   dl, byte ptr [bp - 4]
-0x0000000000002fe9:  75 0A                jne   0x2ff5
+0x0000000000002fe9:  75 0A                jne   label_69
+label_79:
 0x0000000000002feb:  FE CA                dec   dl
-0x0000000000002fed:  80 FA FF             cmp   dl, 0xff
-0x0000000000002ff0:  75 F4                jne   0x2fe6
-0x0000000000002ff2:  E9 21 FF             jmp   0x2f16
+0x0000000000002fed:  80 FA FF             cmp   dl, (DI_EAST-1)  ; 0FFh
+0x0000000000002ff0:  75 F4                jne   label_68
+0x0000000000002ff2:  E9 21 FF             jmp   label_71
+label_69:
 0x0000000000002ff5:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x0000000000002ff8:  89 FB                mov   bx, di
 0x0000000000002ffa:  89 F0                mov   ax, si
 0x0000000000002ffc:  88 54 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], dl
 0x0000000000002fff:  E8 A0 FD             call  P_TryWalk_
 0x0000000000003002:  84 C0                test  al, al
-0x0000000000003004:  74 E5                je    0x2feb
-0x0000000000003006:  E9 18 FF             jmp   0x2f21
+0x0000000000003004:  74 E5                je    label_79
+0x0000000000003006:  E9 18 FF             jmp   exit_p_newchasedir
+label_59:
 0x0000000000003009:  8B 4E FA             mov   cx, word ptr [bp - 6]
 0x000000000000300c:  89 FB                mov   bx, di
 0x000000000000300e:  88 44 1F             mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 0x0000000000003011:  89 F0                mov   ax, si
 0x0000000000003013:  E8 8C FD             call  P_TryWalk_
 0x0000000000003016:  84 C0                test  al, al
-0x0000000000003018:  75 9C                jne   0x2fb6
+0x0000000000003018:  75 9C                jne   jump_to_exit_p_newchasedir
 0x000000000000301a:  C6 44 1F 08          mov   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 0x000000000000301e:  C9                   LEAVE_MACRO 
 0x000000000000301f:  5F                   pop   di
@@ -966,22 +1021,25 @@ PUBLIC  P_LookForPlayers_
 0x000000000000302b:  83 EC 06             sub   sp, 6
 0x000000000000302e:  89 C7                mov   di, ax
 0x0000000000003030:  88 56 FE             mov   byte ptr [bp - 2], dl
-0x0000000000003033:  BB E8 07             mov   bx, 0x7e8
+0x0000000000003033:  BB E8 07             mov   bx, OFFSET _player + PLAYER_T.player_health
 0x0000000000003036:  83 3F 00             cmp   word ptr ds:[bx], 0
-0x0000000000003039:  7F 08                jg    0x3043
+0x0000000000003039:  7F 08                jg    do_look_for_players
+exit_look_for_players_return_0:
 0x000000000000303b:  30 C0                xor   al, al
+exit_look_for_players:
 0x000000000000303d:  C9                   LEAVE_MACRO 
 0x000000000000303e:  5F                   pop   di
 0x000000000000303f:  5E                   pop   si
 0x0000000000003040:  59                   pop   cx
 0x0000000000003041:  5B                   pop   bx
 0x0000000000003042:  C3                   ret   
+do_look_for_players
 0x0000000000003043:  BB 2C 00             mov   bx, SIZEOF_THINKER_T
 0x0000000000003046:  2D 04 34             sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000003049:  31 D2                xor   dx, dx
 0x000000000000304b:  F7 F3                div   bx
 0x000000000000304d:  6B F0 18             imul  si, ax, SIZEOF_MOBJ_POS_T
-0x0000000000003050:  BB 30 07             mov   bx, 0x730
+0x0000000000003050:  BB 30 07             mov   bx, OFFSET _playerMobj_pos
 0x0000000000003053:  8B 0F                mov   cx, word ptr ds:[bx]
 0x0000000000003055:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000003058:  C7 46 FC F5 6A       mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
@@ -990,10 +1048,11 @@ PUBLIC  P_LookForPlayers_
 0x0000000000003061:  89 F8                mov   ax, di
 0x0000000000003063:  FF 1E CC 0C          call  dword ptr ds:[_P_CheckSightTemp]
 0x0000000000003067:  84 C0                test  al, al
-0x0000000000003069:  74 D2                je    0x303d
+0x0000000000003069:  74 D2                je    exit_look_for_players
 0x000000000000306b:  80 7E FE 00          cmp   byte ptr [bp - 2], 0
-0x000000000000306f:  74 10                je    0x3081
-0x0000000000003071:  BB F6 06             mov   bx, 0x6f6
+0x000000000000306f:  74 10                je    label_80
+look_set_target_player:
+0x0000000000003071:  BB F6 06             mov   bx, OFFSET _playerMobjRef
 0x0000000000003074:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000003076:  89 45 22             mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
 0x0000000000003079:  B0 01                mov   al, 1
@@ -1003,12 +1062,13 @@ PUBLIC  P_LookForPlayers_
 0x000000000000307e:  59                   pop   cx
 0x000000000000307f:  5B                   pop   bx
 0x0000000000003080:  C3                   ret   
-0x0000000000003081:  BB 30 07             mov   bx, 0x730
+label_80:
+0x0000000000003081:  BB 30 07             mov   bx, OFFSET _playerMobj_pos
 0x0000000000003084:  C4 07                les   ax, ptr ds:[bx]
 0x0000000000003086:  89 C3                mov   bx, ax
 0x0000000000003088:  26 FF 77 06          push  word ptr es:[bx + 6]
 0x000000000000308c:  26 FF 77 04          push  word ptr es:[bx + 4]
-0x0000000000003090:  BB 30 07             mov   bx, 0x730
+0x0000000000003090:  BB 30 07             mov   bx, OFFSET _playerMobj_pos
 0x0000000000003093:  C4 07                les   ax, ptr ds:[bx]
 0x0000000000003095:  89 C3                mov   bx, ax
 0x0000000000003097:  26 FF 77 02          push  word ptr es:[bx + 2]
@@ -1025,16 +1085,17 @@ PUBLIC  P_LookForPlayers_
 0x00000000000030b8:  89 C1                mov   cx, ax
 0x00000000000030ba:  89 F3                mov   bx, si
 0x00000000000030bc:  89 D0                mov   ax, dx
-0x00000000000030be:  26 2B 4C 0E          sub   cx, word ptr es:[si + 0xe]
-0x00000000000030c2:  26 1B 47 10          sbb   ax, word ptr es:[bx + 0x10]
-0x00000000000030c6:  3D 00 40             cmp   ax, 0x4000
-0x00000000000030c9:  77 06                ja    0x30d1
-0x00000000000030cb:  75 A4                jne   0x3071
+0x00000000000030be:  26 2B 4C 0E          sub   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+0]
+0x00000000000030c2:  26 1B 47 10          sbb   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
+0x00000000000030c6:  3D 00 40             cmp   ax, ANG90_HIGHBITS
+0x00000000000030c9:  77 06                ja    lookforplayers_above_ang90
+0x00000000000030cb:  75 A4                jne   look_set_target_player
 0x00000000000030cd:  85 C9                test  cx, cx
-0x00000000000030cf:  76 A0                jbe   0x3071
-0x00000000000030d1:  3D 00 C0             cmp   ax, 0xc000
-0x00000000000030d4:  73 9B                jae   0x3071
-0x00000000000030d6:  BB 30 07             mov   bx, 0x730
+0x00000000000030cf:  76 A0                jbe   look_set_target_player
+lookforplayers_above_ang90:
+0x00000000000030d1:  3D 00 C0             cmp   ax, ANG270_HIGHBITS
+0x00000000000030d4:  73 9B                jae   look_set_target_player
+0x00000000000030d6:  BB 30 07             mov   bx, OFFSET _playerMobj_pos
 0x00000000000030d9:  C4 17                les   dx, ptr ds:[bx]
 0x00000000000030db:  89 D3                mov   bx, dx
 0x00000000000030dd:  26 8B 47 04          mov   ax, word ptr es:[bx + 4]
@@ -1045,7 +1106,7 @@ PUBLIC  P_LookForPlayers_
 0x00000000000030ef:  89 F3                mov   bx, si
 0x00000000000030f1:  29 46 FA             sub   word ptr [bp - 6], ax
 0x00000000000030f4:  26 1B 4F 06          sbb   cx, word ptr es:[bx + 6]
-0x00000000000030f8:  BB 30 07             mov   bx, 0x730
+0x00000000000030f8:  BB 30 07             mov   bx, OFFSET _playerMobj_pos
 0x00000000000030fb:  C4 17                les   dx, ptr ds:[bx]
 0x00000000000030fd:  89 D3                mov   bx, dx
 0x00000000000030ff:  26 8B 07             mov   ax, word ptr es:[bx]
@@ -1056,13 +1117,16 @@ PUBLIC  P_LookForPlayers_
 0x000000000000310e:  26 1B 57 02          sbb   dx, word ptr es:[bx + 2]
 0x0000000000003112:  8B 5E FA             mov   bx, word ptr [bp - 6]
 0x0000000000003115:  FF 1E D0 0C          call  dword ptr ds:[_P_AproxDistance]
-0x0000000000003119:  83 FA 40             cmp   dx, 0x40
-0x000000000000311c:  7E 03                jle   0x3121
-0x000000000000311e:  E9 1A FF             jmp   0x303b
-0x0000000000003121:  74 03                je    0x3126
-0x0000000000003123:  E9 4B FF             jmp   0x3071
+0x0000000000003119:  83 FA 40             cmp   dx, MELEERANGE
+0x000000000000311c:  7E 03                jle   label_81
+0x000000000000311e:  E9 1A FF             jmp   exit_look_for_players_return_0
+label_81:
+0x0000000000003121:  74 03                je    label_82
+jump_to_look_set_target_player:
+0x0000000000003123:  E9 4B FF             jmp   look_set_target_player
+label_82:
 0x0000000000003126:  85 C0                test  ax, ax
-0x0000000000003128:  76 F9                jbe   0x3123
+0x0000000000003128:  76 F9                jbe   jump_to_look_set_target_player
 0x000000000000312a:  30 C0                xor   al, al
 0x000000000000312c:  C9                   LEAVE_MACRO 
 0x000000000000312d:  5F                   pop   di
@@ -1090,7 +1154,7 @@ PUBLIC  A_KeenDie_
 0x0000000000003146:  88 46 FE             mov   byte ptr [bp - 2], al
 0x0000000000003149:  8D 84 FC CB          lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x000000000000314d:  F7 F1                div   cx
-0x000000000000314f:  26 80 67 14 FD       and   byte ptr es:[bx + 0x14], 0xfd
+0x000000000000314f:  26 80 67 14 FD       and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1], (NOT MF_SOLID)
 0x0000000000003154:  BB 02 34             mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
 0x0000000000003157:  89 C1                mov   cx, ax
 0x0000000000003159:  8B 07                mov   ax, word ptr ds:[bx]
@@ -1147,32 +1211,35 @@ PUBLIC  A_Look_
 0x00000000000031af:  C7 46 F8 50 03       mov   word ptr [bp - 8], GETSEESTATEADDR
 0x00000000000031b4:  B8 56 4C             mov   ax, SECTOR_SOUNDTRAVERSED_SEGMENT
 0x00000000000031b7:  8B 7C 04             mov   di, word ptr ds:[si + 4]
-0x00000000000031ba:  C6 44 25 00          mov   byte ptr ds:[si + 0x25], 0
+0x00000000000031ba:  C6 44 25 00          mov   byte ptr ds:[si + MOBJ_T.m_threshold], 0
 0x00000000000031be:  8E C0                mov   es, ax
 0x00000000000031c0:  C7 46 FA D9 92       mov   word ptr [bp - 6], INFOFUNCLOADSEGMENT
 0x00000000000031c5:  26 80 3D 00          cmp   byte ptr es:[di], 0
-0x00000000000031c9:  75 03                jne   0x31ce
-0x00000000000031cb:  E9 93 00             jmp   0x3261
-0x00000000000031ce:  BF F6 06             mov   di, 0x6f6
+0x00000000000031c9:  75 03                jne   label_83
+jump_to_label_84:
+0x00000000000031cb:  E9 93 00             jmp   label_84
+label_83:
+0x00000000000031ce:  BF F6 06             mov   di, OFFSET _playerMobjRef
 0x00000000000031d1:  8B 05                mov   ax, word ptr ds:[di]
 0x00000000000031d3:  85 C0                test  ax, ax
-0x00000000000031d5:  74 F4                je    0x31cb
+0x00000000000031d5:  74 F4                je    jump_to_label_84
 0x00000000000031d7:  6B F8 18             imul  di, ax, SIZEOF_MOBJ_POS_T
 0x00000000000031da:  BA F5 6A             mov   dx, MOBJPOSLIST_6800_SEGMENT
 0x00000000000031dd:  8E C2                mov   es, dx
 0x00000000000031df:  6B D0 2C             imul  dx, ax, SIZEOF_THINKER_T
 0x00000000000031e2:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-0x00000000000031e6:  26 F6 45 14 04       test  byte ptr es:[di + 0x14], 4
-0x00000000000031eb:  74 DE                je    0x31cb
+0x00000000000031e6:  26 F6 45 14 04       test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_SHOOTABLE
+0x00000000000031eb:  74 DE                je    jump_to_label_84
 0x00000000000031ed:  89 44 22             mov   word ptr ds:[si + MOBJ_T.m_targetRef], ax
 0x00000000000031f0:  8E C1                mov   es, cx
-0x00000000000031f2:  26 F6 47 14 20       test  byte ptr es:[bx + 0x14], 0x20
-0x00000000000031f7:  74 0C                je    0x3205
+0x00000000000031f2:  26 F6 47 14 20       test  byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_AMBUSH
+0x00000000000031f7:  74 0C                je    label_85
 0x00000000000031f9:  89 F9                mov   cx, di
 0x00000000000031fb:  89 F0                mov   ax, si
 0x00000000000031fd:  FF 1E CC 0C          call  dword ptr ds:[_P_CheckSightTemp]
 0x0000000000003201:  84 C0                test  al, al
-0x0000000000003203:  74 5C                je    0x3261
+0x0000000000003203:  74 5C                je    label_84
+label_85:
 0x0000000000003205:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003208:  30 E4                xor   ah, ah
 0x000000000000320a:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
@@ -1182,9 +1249,10 @@ PUBLIC  A_Look_
 0x0000000000003217:  8A 87 62 C4          mov   al, byte ptr ds:[bx + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound]
 0x000000000000321b:  81 C3 62 C4          add   bx, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound
 0x000000000000321f:  84 C0                test  al, al
-0x0000000000003221:  74 28                je    0x324b
-0x0000000000003223:  3C 24                cmp   al, 0x24
-0x0000000000003225:  73 47                jae   0x326e
+0x0000000000003221:  74 28                je    label_86
+0x0000000000003223:  3C 24                cmp   al, SFX_POSIT1
+0x0000000000003225:  73 47                jae   label_87
+label_89:
 0x0000000000003227:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x000000000000322a:  30 E4                xor   ah, ah
 0x000000000000322c:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
@@ -1192,15 +1260,19 @@ PUBLIC  A_Look_
 0x0000000000003231:  81 C3 62 C4          add   bx, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound
 0x0000000000003235:  8A 1F                mov   bl, byte ptr ds:[bx]
 0x0000000000003237:  30 FF                xor   bh, bh
+label_93:
 0x0000000000003239:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-0x000000000000323c:  3C 13                cmp   al, 0x13
-0x000000000000323e:  75 66                jne   0x32a6
+0x000000000000323c:  3C 13                cmp   al, MT_SPIDER
+0x000000000000323e:  75 66                jne   label_90
+label_91:
 0x0000000000003240:  88 DA                mov   dl, bl
 0x0000000000003242:  31 C0                xor   ax, ax
+label_92:
 0x0000000000003244:  30 F6                xor   dh, dh
 0x0000000000003246:  0E                   push  cs
 0x0000000000003247:  E8 06 D3             call  S_StartSound_
 0x000000000000324a:  90                   nop   
+label_86:
 0x000000000000324b:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x000000000000324e:  30 E4                xor   ah, ah
 0x0000000000003250:  FF 5E F8             call  dword ptr [bp - 8]
@@ -1208,47 +1280,52 @@ PUBLIC  A_Look_
 0x0000000000003255:  89 F0                mov   ax, si
 0x0000000000003257:  0E                   push  cs
 0x0000000000003258:  3E E8 92 5D          call  P_SetMobjState_
+exit_a_look:
 0x000000000000325c:  C9                   LEAVE_MACRO 
 0x000000000000325d:  5F                   pop   di
 0x000000000000325e:  5E                   pop   si
 0x000000000000325f:  5A                   pop   dx
 0x0000000000003260:  C3                   ret   
+label_84:
 0x0000000000003261:  89 F0                mov   ax, si
 0x0000000000003263:  31 D2                xor   dx, dx
 0x0000000000003265:  E8 BC FD             call  P_LookForPlayers_
 0x0000000000003268:  84 C0                test  al, al
-0x000000000000326a:  74 F0                je    0x325c
-0x000000000000326c:  EB 97                jmp   0x3205
-0x000000000000326e:  3C 26                cmp   al, 0x26
-0x0000000000003270:  76 22                jbe   0x3294
-0x0000000000003272:  3C 28                cmp   al, 0x28
-0x0000000000003274:  77 B1                ja    0x3227
+0x000000000000326a:  74 F0                je    exit_a_look
+0x000000000000326c:  EB 97                jmp   label_85
+label_87:
+0x000000000000326e:  3C 26                cmp   al, SFX_POSIT3
+0x0000000000003270:  76 22                jbe   label_88
+0x0000000000003272:  3C 28                cmp   al, sfx_bgsit2
+0x0000000000003274:  77 B1                ja    label_89
 0x0000000000003276:  E8 37 57             call  P_Random_
 0x0000000000003279:  88 C2                mov   dl, al
 0x000000000000327b:  30 F6                xor   dh, dh
 0x000000000000327d:  89 D0                mov   ax, dx
 0x000000000000327f:  89 D3                mov   bx, dx
-0x0000000000003281:  C1 F8 0F             sar   ax, 0xf
+0x0000000000003281:  C1 F8 0F             sar   ax, 0Fh ; todo no
 0x0000000000003284:  31 C3                xor   bx, ax
 0x0000000000003286:  29 C3                sub   bx, ax
 0x0000000000003288:  83 E3 01             and   bx, 1
 0x000000000000328b:  31 C3                xor   bx, ax
 0x000000000000328d:  29 C3                sub   bx, ax
-0x000000000000328f:  83 C3 27             add   bx, 0x27
-0x0000000000003292:  EB A5                jmp   0x3239
+0x000000000000328f:  83 C3 27             add   bx, SFX_BGSIT1
+0x0000000000003292:  EB A5                jmp   label_93
+label_88:
 0x0000000000003294:  E8 19 57             call  P_Random_
 0x0000000000003297:  30 E4                xor   ah, ah
 0x0000000000003299:  BB 03 00             mov   bx, 3
 0x000000000000329c:  99                   cdq   
 0x000000000000329d:  F7 FB                idiv  bx
 0x000000000000329f:  89 D3                mov   bx, dx
-0x00000000000032a1:  83 C3 24             add   bx, 0x24
-0x00000000000032a4:  EB 93                jmp   0x3239
-0x00000000000032a6:  3C 15                cmp   al, 0x15
-0x00000000000032a8:  74 96                je    0x3240
+0x00000000000032a1:  83 C3 24             add   bx, SFX_POSIT1
+0x00000000000032a4:  EB 93                jmp   label_93
+label_90:
+0x00000000000032a6:  3C 15                cmp   al, MT_CYBORG
+0x00000000000032a8:  74 96                je    label_91
 0x00000000000032aa:  88 DA                mov   dl, bl
 0x00000000000032ac:  89 F0                mov   ax, si
-0x00000000000032ae:  EB 94                jmp   0x3244
+0x00000000000032ae:  EB 94                jmp   label_92
 
 ENDP
 
@@ -1278,122 +1355,139 @@ PUBLIC  A_Chase_
 0x00000000000032ec:  C7 46 F8 B8 02       mov   word ptr [bp - 8], GETATTACKSOUNDADDR
 0x00000000000032f1:  C7 46 FA D9 92       mov   word ptr [bp - 6], INFOFUNCLOADSEGMENT
 0x00000000000032f6:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-0x00000000000032fa:  80 7C 24 00          cmp   byte ptr ds:[si + 0x24], 0
-0x00000000000032fe:  74 03                je    0x3303
-0x0000000000003300:  E9 77 00             jmp   0x337a
-0x0000000000003303:  80 7C 25 00          cmp   byte ptr ds:[si + 0x25], 0
-0x0000000000003307:  74 0B                je    0x3314
+0x00000000000032fa:  80 7C 24 00          cmp   byte ptr ds:[si + MOBJ_T.m_reactiontime], 0
+0x00000000000032fe:  74 03                je    label_94
+0x0000000000003300:  E9 77 00             jmp   label_96
+label_94:
+0x0000000000003303:  80 7C 25 00          cmp   byte ptr ds:[si + MOBJ_T.m_threshold], 0
+0x0000000000003307:  74 0B                je    label_95
 0x0000000000003309:  85 C0                test  ax, ax
-0x000000000000330b:  74 03                je    0x3310
-0x000000000000330d:  E9 6F 00             jmp   0x337f
-0x0000000000003310:  C6 44 25 00          mov   byte ptr ds:[si + 0x25], 0
+0x000000000000330b:  74 03                je    label_99
+0x000000000000330d:  E9 6F 00             jmp   label_100
+label_99:
+0x0000000000003310:  C6 44 25 00          mov   byte ptr ds:[si + MOBJ_T.m_threshold], 0
+label_95:
 0x0000000000003314:  80 7C 1F 08          cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
-0x0000000000003318:  73 2E                jae   0x3348
+0x0000000000003318:  73 2E                jae   label_98
 0x000000000000331a:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x000000000000331d:  26 C6 45 10 00       mov   byte ptr es:[di + 0x10], 0
-0x0000000000003322:  26 C7 45 0E 00 00    mov   word ptr es:[di + 0xe], 0
-0x0000000000003328:  26 80 65 11 E0       and   byte ptr es:[di + 0x11], 0xe0
+0x000000000000331d:  26 C6 45 10 00       mov   byte ptr es:[di + MOBJ_POS_T.mp_angle + 2], 0
+0x0000000000003322:  26 C7 45 0E 00 00    mov   word ptr es:[di + MOBJ_POS_T.mp_angle + 0], 0
+0x0000000000003328:  26 80 65 11 E0       and   byte ptr es:[di + MOBJ_POS_T.mp_angle+3], 0E0h
 0x000000000000332d:  8A 44 1F             mov   al, byte ptr ds:[si + MOBJ_T.m_movedir]
 0x0000000000003330:  30 E4                xor   ah, ah
 0x0000000000003332:  89 C3                mov   bx, ax
 0x0000000000003334:  01 C3                add   bx, ax
-0x0000000000003336:  26 8B 45 10          mov   ax, word ptr es:[di + 0x10]
-0x000000000000333a:  2B 87 A0 04          sub   ax, word ptr ds:[bx + 0x4a0]
+0x0000000000003336:  26 8B 45 10          mov   ax, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
+0x000000000000333a:  2B 87 A0 04          sub   ax, word ptr ds:[bx + _movedirangles]
 0x000000000000333e:  85 C0                test  ax, ax
-0x0000000000003340:  7E 4A                jle   0x338c
-0x0000000000003342:  26 81 6D 10 00 20    sub   word ptr es:[di + 0x10], 0x2000
+0x0000000000003340:  7E 4A                jle   label_97
+0x0000000000003342:  26 81 6D 10 00 20    sub   word ptr es:[di + MOBJ_POS_T.mp_angle+2], (ANG90_HIGHBITS / 2)
+label_98:
 0x0000000000003348:  85 D2                test  dx, dx
-0x000000000000334a:  74 49                je    0x3395
+0x000000000000334a:  74 49                je    label_106
 0x000000000000334c:  8E 46 FC             mov   es, word ptr [bp - 4]
 0x000000000000334f:  89 CB                mov   bx, cx
-0x0000000000003351:  26 F6 47 14 04       test  byte ptr es:[bx + 0x14], 4
-0x0000000000003356:  74 3D                je    0x3395
+0x0000000000003351:  26 F6 47 14 04       test  byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_SHOOTABLE
+0x0000000000003356:  74 3D                je    label_106
 0x0000000000003358:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x000000000000335b:  26 F6 45 14 80       test  byte ptr es:[di + 0x14], 0x80
-0x0000000000003360:  74 65                je    0x33c7
-0x0000000000003362:  26 80 65 14 7F       and   byte ptr es:[di + 0x14], 0x7f
-0x0000000000003367:  80 3E 14 22 04       cmp   byte ptr [0x2214], 4
-0x000000000000336c:  74 07                je    0x3375
-0x000000000000336e:  80 3E 2F 22 00       cmp   byte ptr [0x222f], 0
-0x0000000000003373:  74 47                je    0x33bc
+0x000000000000335b:  26 F6 45 14 80       test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
+0x0000000000003360:  74 65                je    label_107
+0x0000000000003362:  26 80 65 14 7F       and   byte ptr es:[di + MOBJ_POS_T.mp_flags1], (NOT MF_JUSTATTACKED)
+0x0000000000003367:  80 3E 14 22 04       cmp   byte ptr ds:[_gameskill], sk_nightmare
+0x000000000000336c:  74 07                je    exit_a_chase
+0x000000000000336e:  80 3E 2F 22 00       cmp   byte ptr ds:[_fastparm], 0
+0x0000000000003373:  74 47                je    label_110
+exit_a_chase:
 0x0000000000003375:  C9                   LEAVE_MACRO 
 0x0000000000003376:  5F                   pop   di
 0x0000000000003377:  5E                   pop   si
 0x0000000000003378:  5A                   pop   dx
 0x0000000000003379:  C3                   ret   
-0x000000000000337a:  FE 4C 24             dec   byte ptr ds:[si + 0x24]
-0x000000000000337d:  EB 84                jmp   0x3303
+label_96:
+0x000000000000337a:  FE 4C 24             dec   byte ptr ds:[si + MOBJ_T.m_reactiontime]
+0x000000000000337d:  EB 84                jmp   label_94
+label_100:
 0x000000000000337f:  89 D3                mov   bx, dx
 0x0000000000003381:  83 7F 1C 00          cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
-0x0000000000003385:  7E 89                jle   0x3310
-0x0000000000003387:  FE 4C 25             dec   byte ptr ds:[si + 0x25]
-0x000000000000338a:  EB 88                jmp   0x3314
-0x000000000000338c:  7D BA                jge   0x3348
-0x000000000000338e:  26 80 45 11 20       add   byte ptr es:[di + 0x11], 0x20
-0x0000000000003393:  EB B3                jmp   0x3348
+0x0000000000003385:  7E 89                jle   label_99
+0x0000000000003387:  FE 4C 25             dec   byte ptr ds:[si + MOBJ_T.m_threshold]
+0x000000000000338a:  EB 88                jmp   label_95
+label_97:
+0x000000000000338c:  7D BA                jge   label_98
+0x000000000000338e:  26 80 45 11 20       add   byte ptr es:[di + MOBJ_POS_T.mp_angle+3], (ANG90_HIGHBITS SHR 9)
+0x0000000000003393:  EB B3                jmp   label_98
+label_106:
 0x0000000000003395:  BA 01 00             mov   dx, 1
 0x0000000000003398:  89 F0                mov   ax, si
 0x000000000000339a:  E8 87 FC             call  P_LookForPlayers_
 0x000000000000339d:  84 C0                test  al, al
-0x000000000000339f:  75 D4                jne   0x3375
+0x000000000000339f:  75 D4                jne   exit_a_chase
 0x00000000000033a1:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x00000000000033a4:  30 E4                xor   ah, ah
 0x00000000000033a6:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x00000000000033a9:  89 C7                mov   di, ax
 0x00000000000033ab:  89 F0                mov   ax, si
-0x00000000000033ad:  8B 95 60 C4          mov   dx, word ptr ds:[di - 0x3ba0]
+0x00000000000033ad:  8B 95 60 C4          mov   dx, word ptr ds:[di + _mobjinfo]
 0x00000000000033b1:  81 C7 60 C4          add   di, OFFSET _mobjinfo
 0x00000000000033b5:  0E                   push  cs
 0x00000000000033b6:  3E E8 34 5C          call  P_SetMobjState_
-0x00000000000033ba:  EB B9                jmp   0x3375
+0x00000000000033ba:  EB B9                jmp   exit_a_chase
+label_110:
 0x00000000000033bc:  89 FB                mov   bx, di
 0x00000000000033be:  8C C1                mov   cx, es
 0x00000000000033c0:  89 F0                mov   ax, si
 0x00000000000033c2:  E8 FB F9             call  P_NewChaseDir_
-0x00000000000033c5:  EB AE                jmp   0x3375
+0x00000000000033c5:  EB AE                jmp   exit_a_chase
+label_107:
 0x00000000000033c7:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x00000000000033ca:  30 E4                xor   ah, ah
 0x00000000000033cc:  FF 5E F4             call  dword ptr [bp - 0Ch]
 0x00000000000033cf:  85 C0                test  ax, ax
-0x00000000000033d1:  74 09                je    0x33dc
+0x00000000000033d1:  74 09                je    label_108
 0x00000000000033d3:  89 F0                mov   ax, si
 0x00000000000033d5:  E8 06 F6             call  P_CheckMeleeRange_
 0x00000000000033d8:  84 C0                test  al, al
-0x00000000000033da:  75 69                jne   0x3445
+0x00000000000033da:  75 69                jne   label_109
+label_108:
 0x00000000000033dc:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x00000000000033df:  30 E4                xor   ah, ah
 0x00000000000033e1:  FF 5E F0             call  dword ptr [bp - 010h]
 0x00000000000033e4:  85 C0                test  ax, ax
-0x00000000000033e6:  74 14                je    0x33fc
-0x00000000000033e8:  80 3E 14 22 04       cmp   byte ptr [0x2214], 4
-0x00000000000033ed:  73 54                jae   0x3443
-0x00000000000033ef:  80 3E 2F 22 00       cmp   byte ptr [0x222f], 0
-0x00000000000033f4:  75 4D                jne   0x3443
-0x00000000000033f6:  83 7C 20 00          cmp   word ptr ds:[si + 0x20], 0
-0x00000000000033fa:  74 72                je    0x346e
-0x00000000000033fc:  FF 4C 20             dec   word ptr ds:[si + 0x20]
-0x00000000000033ff:  83 7C 20 00          cmp   word ptr ds:[si + 0x20], 0
-0x0000000000003403:  7C 0E                jl    0x3413
+0x00000000000033e6:  74 14                je    label_104
+0x00000000000033e8:  80 3E 14 22 04       cmp   byte ptr ds:[_gameskill], sk_nightmare
+0x00000000000033ed:  73 54                jae   jump_to_label_103
+0x00000000000033ef:  80 3E 2F 22 00       cmp   byte ptr ds:[_fastparm], 0
+0x00000000000033f4:  75 4D                jne   jump_to_label_103
+0x00000000000033f6:  83 7C 20 00          cmp   word ptr ds:[si + MOBJ_T.m_movecount], 0
+0x00000000000033fa:  74 72                je    label_103
+label_104:
+0x00000000000033fc:  FF 4C 20             dec   word ptr ds:[si + MOBJ_T.m_movecount]
+0x00000000000033ff:  83 7C 20 00          cmp   word ptr ds:[si + MOBJ_T.m_movecount], 0
+0x0000000000003403:  7C 0E                jl    label_101
 0x0000000000003405:  8B 4E FE             mov   cx, word ptr [bp - 2]
 0x0000000000003408:  89 FB                mov   bx, di
 0x000000000000340a:  89 F0                mov   ax, si
 0x000000000000340c:  E8 E9 F7             call  P_Move_
 0x000000000000340f:  84 C0                test  al, al
-0x0000000000003411:  75 0A                jne   0x341d
+0x0000000000003411:  75 0A                jne   label_102
+label_101:
 0x0000000000003413:  8B 4E FE             mov   cx, word ptr [bp - 2]
 0x0000000000003416:  89 FB                mov   bx, di
 0x0000000000003418:  89 F0                mov   ax, si
 0x000000000000341a:  E8 A3 F9             call  P_NewChaseDir_
+label_102:
 0x000000000000341d:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003420:  30 E4                xor   ah, ah
 0x0000000000003422:  FF 5E EC             call  dword ptr [bp - 014h]
 0x0000000000003425:  88 C2                mov   dl, al
 0x0000000000003427:  84 C0                test  al, al
-0x0000000000003429:  75 03                jne   0x342e
-0x000000000000342b:  E9 47 FF             jmp   0x3375
+0x0000000000003429:  75 03                jne   label_105
+jump_to_exit_a_chase:
+0x000000000000342b:  E9 47 FF             jmp   exit_a_chase
+label_105:
 0x000000000000342e:  E8 7F 55             call  P_Random_
 0x0000000000003431:  3C 03                cmp   al, 3
-0x0000000000003433:  73 F6                jae   0x342b
+0x0000000000003433:  73 F6                jae   jump_to_exit_a_chase
 0x0000000000003435:  89 F0                mov   ax, si
 0x0000000000003437:  30 F6                xor   dh, dh
 0x0000000000003439:  0E                   push  cs
@@ -1403,7 +1497,9 @@ PUBLIC  A_Chase_
 0x0000000000003440:  5E                   pop   si
 0x0000000000003441:  5A                   pop   dx
 0x0000000000003442:  C3                   ret   
-0x0000000000003443:  EB 29                jmp   0x346e
+jump_to_label_103:
+0x0000000000003443:  EB 29                jmp   label_103
+label_109:
 0x0000000000003445:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000003448:  30 E4                xor   ah, ah
 0x000000000000344a:  FF 5E F8             call  dword ptr [bp - 8]
@@ -1425,10 +1521,11 @@ PUBLIC  A_Chase_
 0x000000000000346b:  5E                   pop   si
 0x000000000000346c:  5A                   pop   dx
 0x000000000000346d:  C3                   ret   
+label_103:
 0x000000000000346e:  89 F0                mov   ax, si
 0x0000000000003470:  E8 3B F6             call  P_CheckMissileRange_
 0x0000000000003473:  84 C0                test  al, al
-0x0000000000003475:  74 85                je    0x33fc
+0x0000000000003475:  74 85                je    label_104
 0x0000000000003477:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x000000000000347a:  30 E4                xor   ah, ah
 0x000000000000347c:  FF 5E F0             call  dword ptr [bp - 010h]
@@ -1437,7 +1534,7 @@ PUBLIC  A_Chase_
 0x0000000000003483:  0E                   push  cs
 0x0000000000003484:  3E E8 66 5B          call  P_SetMobjState_
 0x0000000000003488:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x000000000000348b:  26 80 4D 14 80       or    byte ptr es:[di + 0x14], 0x80
+0x000000000000348b:  26 80 4D 14 80       or    byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
 0x0000000000003490:  C9                   LEAVE_MACRO 
 0x0000000000003491:  5F                   pop   di
 0x0000000000003492:  5E                   pop   si
@@ -1469,7 +1566,7 @@ PUBLIC  A_FaceTarget_
 0x00000000000034b3:  6B F8 18             imul  di, ax, SIZEOF_MOBJ_POS_T
 0x00000000000034b6:  B8 F5 6A             mov   ax, MOBJPOSLIST_6800_SEGMENT
 0x00000000000034b9:  8E C0                mov   es, ax
-0x00000000000034bb:  26 80 65 14 DF       and   byte ptr es:[di + 0x14], 0xdf
+0x00000000000034bb:  26 80 65 14 DF       and   byte ptr es:[di + MOBJ_POS_T.mp_flags1], 0xdf
 0x00000000000034c0:  89 FE                mov   si, di
 0x00000000000034c2:  6B 7F 22 18          imul  di, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
 0x00000000000034c6:  89 46 FE             mov   word ptr [bp - 2], ax
@@ -1490,8 +1587,8 @@ PUBLIC  A_FaceTarget_
 0x00000000000034f9:  E8 3D 6C             call  R_PointToAngle2_
 0x00000000000034fc:  90                   nop   
 0x00000000000034fd:  8E 46 FE             mov   es, word ptr [bp - 2]
-0x0000000000003500:  26 89 44 0E          mov   word ptr es:[si + 0xe], ax
-0x0000000000003504:  26 89 54 10          mov   word ptr es:[si + 0x10], dx
+0x0000000000003500:  26 89 44 0E          mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], ax
+0x0000000000003504:  26 89 54 10          mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], dx
 0x0000000000003508:  80 7E FC 00          cmp   byte ptr [bp - 4], 0
 0x000000000000350c:  75 0E                jne   0x351c
 0x000000000000350e:  C9                   LEAVE_MACRO 
@@ -2176,8 +2273,8 @@ PUBLIC  A_SkelMissile_
 0x00000000000039dc:  89 46 FA             mov   word ptr [bp - 6], ax
 0x00000000000039df:  8B 44 22             mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
 0x00000000000039e2:  89 CE                mov   si, cx
-0x00000000000039e4:  8B 54 0E             mov   dx, word ptr ds:[si + 0xe]
-0x00000000000039e7:  8B 74 10             mov   si, word ptr ds:[si + 0x10]
+0x00000000000039e4:  8B 54 0E             mov   dx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 0]
+0x00000000000039e7:  8B 74 10             mov   si, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 0x00000000000039ea:  8E 46 FA             mov   es, word ptr [bp - 6]
 0x00000000000039ed:  26 01 17             add   word ptr es:[bx], dx
 0x00000000000039f0:  26 11 77 02          adc   word ptr es:[bx + 2], si
@@ -2209,7 +2306,7 @@ PUBLIC  A_Tracer_
 0x0000000000003a17:  50                   push  ax
 0x0000000000003a18:  53                   push  bx
 0x0000000000003a19:  51                   push  cx
-0x0000000000003a1a:  F6 06 54 1E 03       test  byte ptr [0x1e54], 3
+0x0000000000003a1a:  F6 06 54 1E 03       test  byte ptr ds:[_gametic], 3
 0x0000000000003a1f:  74 05                je    0x3a26
 0x0000000000003a21:  C9                   LEAVE_MACRO 
 0x0000000000003a22:  5F                   pop   di
@@ -2247,8 +2344,8 @@ PUBLIC  A_Tracer_
 0x0000000000003a7a:  26 8B 04             mov   ax, word ptr es:[si]
 0x0000000000003a7d:  26 8B 54 02          mov   dx, word ptr es:[si + 2]
 0x0000000000003a81:  8B 76 FA             mov   si, word ptr [bp - 6]
-0x0000000000003a84:  2B 44 0E             sub   ax, word ptr ds:[si + 0xe]
-0x0000000000003a87:  1B 54 10             sbb   dx, word ptr ds:[si + 0x10]
+0x0000000000003a84:  2B 44 0E             sub   ax, word ptr ds:[si + MOBJ_POS_T.mp_angle + 0]
+0x0000000000003a87:  1B 54 10             sbb   dx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 0x0000000000003a8a:  0E                   push  cs
 0x0000000000003a8b:  E8 16 53             call  P_SpawnMobj_
 0x0000000000003a8e:  90                   nop   
@@ -2289,14 +2386,14 @@ PUBLIC  A_Tracer_
 0x0000000000003af6:  90                   nop   
 0x0000000000003af7:  8E 46 F6             mov   es, word ptr [bp - 0Ah]
 0x0000000000003afa:  89 F3                mov   bx, si
-0x0000000000003afc:  26 3B 57 10          cmp   dx, word ptr es:[bx + 0x10]
+0x0000000000003afc:  26 3B 57 10          cmp   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 0x0000000000003b00:  75 06                jne   0x3b08
-0x0000000000003b02:  26 3B 47 0E          cmp   ax, word ptr es:[bx + 0xe]
+0x0000000000003b02:  26 3B 47 0E          cmp   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
 0x0000000000003b06:  74 3D                je    0x3b45
 0x0000000000003b08:  89 C1                mov   cx, ax
-0x0000000000003b0a:  26 2B 4F 0E          sub   cx, word ptr es:[bx + 0xe]
+0x0000000000003b0a:  26 2B 4F 0E          sub   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
 0x0000000000003b0e:  89 D3                mov   bx, dx
-0x0000000000003b10:  26 1B 5C 10          sbb   bx, word ptr es:[si + 0x10]
+0x0000000000003b10:  26 1B 5C 10          sbb   bx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 0x0000000000003b14:  81 FB 00 80          cmp   bx, 0x8000
 0x0000000000003b18:  77 09                ja    0x3b23
 0x0000000000003b1a:  74 03                je    0x3b1f
@@ -2305,11 +2402,11 @@ PUBLIC  A_Tracer_
 0x0000000000003b21:  76 F9                jbe   0x3b1c
 0x0000000000003b23:  89 F3                mov   bx, si
 0x0000000000003b25:  89 C1                mov   cx, ax
-0x0000000000003b27:  26 83 47 0E 00       add   word ptr es:[bx + 0xe], 0
-0x0000000000003b2c:  26 81 57 10 00 F4    adc   word ptr es:[bx + 0x10], 0xf400
-0x0000000000003b32:  26 2B 4F 0E          sub   cx, word ptr es:[bx + 0xe]
+0x0000000000003b27:  26 83 47 0E 00       add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], 0
+0x0000000000003b2c:  26 81 57 10 00 F4    adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], 0xf400
+0x0000000000003b32:  26 2B 4F 0E          sub   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
 0x0000000000003b36:  89 D3                mov   bx, dx
-0x0000000000003b38:  26 1B 5C 10          sbb   bx, word ptr es:[si + 0x10]
+0x0000000000003b38:  26 1B 5C 10          sbb   bx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 0x0000000000003b3c:  81 FB 00 80          cmp   bx, 0x8000
 0x0000000000003b40:  73 03                jae   0x3b45
 0x0000000000003b42:  E9 25 01             jmp   0x3c6a
@@ -2417,16 +2514,16 @@ PUBLIC  A_Tracer_
 0x0000000000003c64:  E9 44 FE             jmp   0x3aab
 0x0000000000003c67:  E9 45 FE             jmp   0x3aaf
 0x0000000000003c6a:  89 F3                mov   bx, si
-0x0000000000003c6c:  26 89 47 0E          mov   word ptr es:[bx + 0xe], ax
-0x0000000000003c70:  26 89 57 10          mov   word ptr es:[bx + 0x10], dx
+0x0000000000003c6c:  26 89 47 0E          mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
+0x0000000000003c70:  26 89 57 10          mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], dx
 0x0000000000003c74:  E9 CE FE             jmp   0x3b45
 0x0000000000003c77:  89 F3                mov   bx, si
 0x0000000000003c79:  89 C1                mov   cx, ax
-0x0000000000003c7b:  26 83 47 0E 00       add   word ptr es:[bx + 0xe], 0
-0x0000000000003c80:  26 81 57 10 00 0C    adc   word ptr es:[bx + 0x10], 0xc00
-0x0000000000003c86:  26 2B 4F 0E          sub   cx, word ptr es:[bx + 0xe]
+0x0000000000003c7b:  26 83 47 0E 00       add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], 0
+0x0000000000003c80:  26 81 57 10 00 0C    adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], 0xc00
+0x0000000000003c86:  26 2B 4F 0E          sub   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
 0x0000000000003c8a:  89 D3                mov   bx, dx
-0x0000000000003c8c:  26 1B 5C 10          sbb   bx, word ptr es:[si + 0x10]
+0x0000000000003c8c:  26 1B 5C 10          sbb   bx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 0x0000000000003c90:  81 FB 00 80          cmp   bx, 0x8000
 0x0000000000003c94:  77 09                ja    0x3c9f
 0x0000000000003c96:  74 03                je    0x3c9b
@@ -2434,8 +2531,8 @@ PUBLIC  A_Tracer_
 0x0000000000003c9b:  85 C9                test  cx, cx
 0x0000000000003c9d:  76 F9                jbe   0x3c98
 0x0000000000003c9f:  89 F3                mov   bx, si
-0x0000000000003ca1:  26 89 47 0E          mov   word ptr es:[bx + 0xe], ax
-0x0000000000003ca5:  26 89 57 10          mov   word ptr es:[bx + 0x10], dx
+0x0000000000003ca1:  26 89 47 0E          mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
+0x0000000000003ca5:  26 89 57 10          mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], dx
 0x0000000000003ca9:  E9 99 FE             jmp   0x3b45
 0x0000000000003cac:  81 47 16 00 20       add   word ptr ds:[bx + 0x16], 0x2000
 0x0000000000003cb1:  83 57 18 00          adc   word ptr ds:[bx + 0x18], 0
@@ -3314,8 +3411,8 @@ PUBLIC  A_FatAttack1_
 0x00000000000043d1:  89 4E FE             mov   word ptr [bp - 2], cx
 0x00000000000043d4:  E8 BF F0             call  A_FaceTarget_
 0x00000000000043d7:  8E C1                mov   es, cx
-0x00000000000043d9:  26 83 44 0E 00       add   word ptr es:[si + 0xe], FATSPREADLOW
-0x00000000000043de:  26 81 54 10 00 08    adc   word ptr es:[si + 0x10], FATSPREADHIGH
+0x00000000000043d9:  26 83 44 0E 00       add   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], FATSPREADLOW
+0x00000000000043de:  26 81 54 10 00 08    adc   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], FATSPREADHIGH
 0x00000000000043e4:  6B 55 22 2C          imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000043e8:  6A 09                push  9
 0x00000000000043ea:  89 F8                mov   ax, di
@@ -3334,8 +3431,8 @@ PUBLIC  A_FatAttack1_
 0x0000000000004412:  81 C6 04 34          add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004416:  8E C0                mov   es, ax
 0x0000000000004418:  89 FB                mov   bx, di
-0x000000000000441a:  26 83 45 0E 00       add   word ptr es:[di + 0xe], FATSPREADLOW
-0x000000000000441f:  26 81 57 10 00 08    adc   word ptr es:[bx + 0x10], FATSPREADHIGH
+0x000000000000441a:  26 83 45 0E 00       add   word ptr es:[di + MOBJ_POS_T.mp_angle + 0], FATSPREADLOW
+0x000000000000441f:  26 81 57 10 00 08    adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], FATSPREADHIGH
 0x0000000000004425:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004428:  30 E4                xor   ah, ah
 0x000000000000442a:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
@@ -3389,8 +3486,8 @@ PUBLIC  A_FatAttack2_
 0x000000000000448b:  89 4E FE             mov   word ptr [bp - 2], cx
 0x000000000000448e:  E8 05 F0             call  A_FaceTarget_
 0x0000000000004491:  8E C1                mov   es, cx
-0x0000000000004493:  26 83 44 0E 00       add   word ptr es:[si + 0xe], -FATSPREADLOW
-0x0000000000004498:  26 81 54 10 00 F8    adc   word ptr es:[si + 0x10], -FATSPREADHIGH
+0x0000000000004493:  26 83 44 0E 00       add   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], -FATSPREADLOW
+0x0000000000004498:  26 81 54 10 00 F8    adc   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], -FATSPREADHIGH
 0x000000000000449e:  6B 55 22 2C          imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 0x00000000000044a2:  6A 09                push  MT_FATSHOT  ; todo 186
 0x00000000000044a4:  89 F8                mov   ax, di
@@ -3407,8 +3504,8 @@ PUBLIC  A_FatAttack2_
 0x00000000000044c6:  BB 34 07             mov   bx, OFFSET _setStateReturn_pos
 0x00000000000044c9:  8B 34                mov   si, word ptr ds:[si]
 0x00000000000044cb:  C4 3F                les   di, ptr ds:[bx]
-0x00000000000044cd:  26 83 45 0E 00       add   word ptr es:[di + 0xe], -(2*FATSPREADLOW)
-0x00000000000044d2:  26 81 55 10 00 F0    adc   word ptr es:[di + 0x10], -(2*FATSPREADHIGH)
+0x00000000000044cd:  26 83 45 0E 00       add   word ptr es:[di + MOBJ_POS_T.mp_angle + 0], -(2*FATSPREADLOW)
+0x00000000000044d2:  26 81 55 10 00 F0    adc   word ptr es:[di + MOBJ_POS_T.mp_angle + 2], -(2*FATSPREADHIGH)
 0x00000000000044d8:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x00000000000044db:  30 E4                xor   ah, ah
 0x00000000000044dd:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
@@ -3474,8 +3571,8 @@ PUBLIC  A_FatAttack3_
 0x000000000000455e:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x0000000000004562:  8B 34                mov   si, word ptr ds:[si]
 0x0000000000004564:  C4 1D                les   bx, ptr ds:[di]
-0x0000000000004566:  26 83 47 0E 00       add   word ptr es:[bx + 0xe], 0
-0x000000000000456b:  26 81 57 10 00 FC    adc   word ptr es:[bx + 0x10], 0xfc00
+0x0000000000004566:  26 83 47 0E 00       add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], 0
+0x000000000000456b:  26 81 57 10 00 FC    adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], 0xfc00
 0x0000000000004571:  26 8B 47 10          mov   ax, word ptr es:[bx + 0x10]
 0x0000000000004575:  8A 5C 1A             mov   bl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004578:  30 FF                xor   bh, bh
@@ -3508,8 +3605,8 @@ PUBLIC  A_FatAttack3_
 0x00000000000045c8:  FF 1E F8 0C          call  dword ptr ds:[_SpawnMissile]
 0x00000000000045cc:  8B 34                mov   si, word ptr ds:[si]
 0x00000000000045ce:  C4 1D                les   bx, ptr ds:[di]
-0x00000000000045d0:  26 83 47 0E 00       add   word ptr es:[bx + 0xe], 0
-0x00000000000045d5:  26 81 57 10 00 04    adc   word ptr es:[bx + 0x10], 0x400
+0x00000000000045d0:  26 83 47 0E 00       add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], 0
+0x00000000000045d5:  26 81 57 10 00 04    adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], 0x400
 0x00000000000045db:  26 8B 47 10          mov   ax, word ptr es:[bx + 0x10]
 0x00000000000045df:  D1 E8                shr   ax, 1
 0x00000000000045e1:  24 FC                and   al, 0xfc
@@ -3807,8 +3904,8 @@ PUBLIC  A_PainAttack_
 0x000000000000489a:  C3                   ret   
 0x000000000000489b:  E8 F8 EB             call  A_FaceTarget_
 0x000000000000489e:  8E C1                mov   es, cx
-0x00000000000048a0:  26 8B 47 0E          mov   ax, word ptr es:[bx + 0xe]
-0x00000000000048a4:  26 8B 4F 10          mov   cx, word ptr es:[bx + 0x10]
+0x00000000000048a0:  26 8B 47 0E          mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
+0x00000000000048a4:  26 8B 4F 10          mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 0x00000000000048a8:  89 C3                mov   bx, ax
 0x00000000000048aa:  89 F0                mov   ax, si
 0x00000000000048ac:  E8 83 FE             call  A_PainShootSkull_
@@ -3827,9 +3924,9 @@ PUBLIC  A_PainDie_
 0x00000000000048b4:  57                   push  di
 0x00000000000048b5:  89 C6                mov   si, ax
 0x00000000000048b7:  8E C1                mov   es, cx
-0x00000000000048b9:  26 8B 7F 0E          mov   di, word ptr es:[bx + 0xe]
-0x00000000000048bd:  26 8B 57 10          mov   dx, word ptr es:[bx + 0x10]
-0x00000000000048c1:  26 80 67 14 FD       and   byte ptr es:[bx + 0x14], 0xfd
+0x00000000000048b9:  26 8B 7F 0E          mov   di, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
+0x00000000000048bd:  26 8B 57 10          mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
+0x00000000000048c1:  26 80 67 14 FD       and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1],  (NOT MF_SOLID)
 0x00000000000048c6:  80 C6 40             add   dh, 0x40
 0x00000000000048c9:  89 FB                mov   bx, di
 0x00000000000048cb:  89 D1                mov   cx, dx
@@ -4029,7 +4126,7 @@ PUBLIC  A_BossDeath_
 0x0000000000004a02:  74 05                je    0x4a09
 0x0000000000004a04:  80 F9 14             cmp   cl, 0x14
 0x0000000000004a07:  75 61                jne   0x4a6a
-0x0000000000004a09:  BE E8 07             mov   si, 0x7e8
+0x0000000000004a09:  BE E8 07             mov   si, OFFSET _player + PLAYER_T.player_health
 0x0000000000004a0c:  83 3C 00             cmp   word ptr ds:[si], 0
 0x0000000000004a0f:  7E 59                jle   0x4a6a
 0x0000000000004a11:  8D 87 FC CB          lea   ax, ds:[bx - (OFFSET _thinkerlist + THINKER_T.t_data)]
@@ -4462,7 +4559,7 @@ PUBLIC  A_BrainSpit_
 0x0000000000004d57:  89 4E FE             mov   word ptr [bp - 2], cx
 0x0000000000004d5a:  BB 2C 01             mov   bx, 0x12c
 0x0000000000004d5d:  80 37 01             xor   byte ptr ds:[bx], 1
-0x0000000000004d60:  80 3E 14 22 01       cmp   byte ptr [0x2214], 1
+0x0000000000004d60:  80 3E 14 22 01       cmp   byte ptr ds:[_gameskill], SK_EASY
 0x0000000000004d65:  77 0A                ja    0x4d71
 0x0000000000004d67:  80 3F 00             cmp   byte ptr ds:[bx], 0
 0x0000000000004d6a:  75 05                jne   0x4d71
