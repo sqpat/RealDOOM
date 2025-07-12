@@ -73,7 +73,6 @@ file p_floor.obj
 file p_inter.obj
 file p_lights.obj
 file p_plats.obj
-file p_pspr.obj
 file p_spec.obj
 file p_switch.obj
 file p_mobj.obj
@@ -110,4 +109,5 @@ NEWSEGMENT
 file p_sight.obj
 file p_map.obj
 file p_mobja.obj
+file p_pspr.obj
 

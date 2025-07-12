@@ -192,7 +192,8 @@ void __near P_RecursiveSound ( int16_t secnum, int8_t soundblocks){
 // If a monster yells at a player,
 // it will alert other monsters to the player.
 //
-void __near P_NoiseAlert (){
+// todo make new..
+void __far P_NoiseAlert (){
     validcount_global++;
     P_RecursiveSound (playerMobj->secnum, 0);
 }

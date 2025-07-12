@@ -22,22 +22,16 @@ INSTRUCTION_SET_MACRO
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
 
-EXTRN S_StartSound_:PROC
-EXTRN P_DamageMobj_:PROC
-EXTRN P_SetMobjState_:PROC
-EXTRN P_SpawnMobj_:PROC
-EXTRN P_Random_:NEAR
-EXTRN R_PointToAngle2_:PROC
-EXTRN FixedMulTrig_:PROC
-EXTRN P_NoiseAlert_:NEAR
+
+; these can be called near but must have push cs prefix
+EXTRN P_Random_MapLocal_:NEAR   ; except this is really near
+EXTRN P_LineAttack_:NEAR
+EXTRN P_SpawnPlayerMissile_:NEAR
+EXTRN P_AimLineAttack_:NEAR   ; except this is really near
+
 
 .DATA
 
-EXTRN _weaponinfo:WORD
-EXTRN _bulletslope:DWORD
-EXTRN _P_AimLineAttack:DWORD
-EXTRN _P_SpawnPlayerMissile:DWORD
-EXTRN _P_LineAttack:DWORD
 
 .CODE
 
@@ -47,55 +41,6 @@ PROC    P_PSPR_STARTMARKER_
 PUBLIC  P_PSPR_STARTMARKER_
 ENDP
 
-SIZEOF_WEAPONINFO_T = 11
-
-PS_WEAPON = 0
-PS_FLASH = 1
-WEAPONBOTTOM_HIGH = 128
-WEAPONBOTTOM_LOW = 0
-WEAPONTOP_HIGH = 32
-WEAPONTOP_LOW = 0
-
-LOWERSPEED_HIGH = 6
-LOWERSPEED_LOW  = 0
-
-RAISESPEED_HIGH = 6
-RAISESPEED_LOW  = 0
-
-FINE_ANG90 = 0800h
-ANG90_FULL = 040000000h
-MINUS_ANG90_FULL = 0C0000000h
-
-PST_LIVE = 0    ; Playing or camping.
-PST_DEAD = 1    ; Dead on the ground, view follows killer.
-PST_REBORN = 2  ; Ready to restart/respawn???
-
-ANGLETOFINESHIFT = 19
-
-; todo constants
-WP_FIST = 0
-WP_PISTOL = 1
-WP_SHOTGUN = 2
-WP_CHAINGUN = 3
-WP_MISSILE = 4
-WP_PLASMA = 5
-WP_BFG = 6
-WP_CHAINSAW = 7
-WP_SUPERSHOTGUN = 8
-WP_NOCHANGE = 0Ah
-
-BFGCELLS = 40
-
-
-FINEMASK = 01FFFh
-
-
-AM_CLIP = 0	 ; Pistol / chaingun ammo.
-AM_SHELL = 1 ; Shotgun / double barreled shotgun.
-AM_CELL = 2  ; Plasma rifle, BFG.
-AM_MISL = 3	 ; Missile launcher.
-NUMAMMO = 4
-AM_NOAMMO = 5	 ; Unlimited for chainsaw / fist.	
 
 PROC P_BringUpWeapon_ NEAR
 PUBLIC P_BringUpWeapon_
@@ -128,7 +73,9 @@ jmp   check_for_chainsaw_pending
 rev_chainsaw_noise:
 mov   dx, SFX_SAWUP
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 jmp   pending_weapon_checks_done
 ENDP
 
@@ -286,14 +233,22 @@ push  bx
 push  dx
 mov   dx, S_PLAY_ATK1
 mov   ax, word ptr ds:[_playerMobj]
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_atkstate]
 xor   ax, ax
 call  P_SetPsprite_
-call  P_NoiseAlert_
+;call  P_NoiseAlert_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_NoiseAlert_Addr
+
+
 pop   dx
 pop   bx
 ret   
@@ -333,7 +288,10 @@ jne   dont_use_atk1_or_atk2_state
 use_atk1_or_atk2_state:
 mov   dx, S_PLAY
 mov   ax, word ptr ds:[_playerMobj]
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 dont_use_atk1_or_atk2_state:
 
 cmp   byte ptr ds:[_player + PLAYER_T.player_readyweapon], WP_CHAINSAW
@@ -342,7 +300,9 @@ cmp   word ptr ds:[si], S_SAW
 jne   dont_do_chainsaw_sound
 mov   dx, SFX_SAWIDL
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 dont_do_chainsaw_sound:
 
 
@@ -394,7 +354,11 @@ les   bx, dword ptr ds:[_player + PLAYER_T.player_bob + 0]
 mov   cx, es
 mov   ax, FINECOSINE_SEGMENT
 
-call  FixedMulTrig_
+;call  FixedMulTrig_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrig_addr
+
 
 inc   dx
 mov   word ptr ds:[si + 4], ax
@@ -406,7 +370,10 @@ and   dh, 0Fh
 les   bx, dword ptr ds:[_player + PLAYER_T.player_bob + 0]
 mov   cx, es
 mov   ax, FINESINE_SEGMENT
-call  FixedMulTrig_
+;call  FixedMulTrig_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrig_addr
 
 add   dx, WEAPONTOP_HIGH
 mov   word ptr ds:[si + 8], ax
@@ -518,7 +485,10 @@ push  bx
 push  dx
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
@@ -537,7 +507,7 @@ PUBLIC A_Punch_
 
 PUSHA_NO_AX_OR_BP_MACRO
 
-call  P_Random_
+call  P_Random_MapLocal_
 
 ;    damage = (P_Random ()%10+1)<<1;
 
@@ -563,9 +533,9 @@ push  dx ; damage parameter down the road
 
 les   di, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
-call  P_Random_
+call  P_Random_MapLocal_
 mov   bl, al
-call  P_Random_
+call  P_Random_MapLocal_
 ; bh still zero
 xor   ah, ah
 xchg  ax, bx
@@ -582,7 +552,8 @@ add   cx, ax
 mov   dx, cx
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, MELEERANGE
-call  dword ptr ds:[_P_AimLineAttack]
+push  cs
+call  P_AimLineAttack_
 
 ;    P_LineAttack (playerMobj, angle, MELEERANGE , slope, damage);
 
@@ -594,7 +565,8 @@ push  ax
 mov   dx, cx
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, MELEERANGE
-call  dword ptr ds:[_P_LineAttack]
+push  cs
+call  P_LineAttack_
 
 
 cmp   word ptr ds:[_linetarget], 0
@@ -604,7 +576,9 @@ ret
 have_linetarget:
 mov   dx, SFX_PUNCH
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 
 les   di, dword ptr ds:[_linetarget_pos]
 push  word ptr es:[di + 6]
@@ -617,7 +591,11 @@ mov   cx, word ptr es:[di + 6]
 les   ax, dword ptr es:[bx]
 mov   dx, es
 
-call  R_PointToAngle2_
+
+;call  R_PointToAngle2_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_PointToAngle2_addr
 les   di, dword ptr ds:[_playerMobj_pos]
 mov   word ptr es:[di + MOBJ_POS_T.mp_angle+0], ax
 mov   word ptr es:[di + MOBJ_POS_T.mp_angle+2], dx
@@ -631,7 +609,7 @@ PROC A_Saw_ NEAR
 PUBLIC A_Saw_
 
 PUSHA_NO_AX_OR_BP_MACRO
-call  P_Random_
+call  P_Random_MapLocal_
 
 ;    damage = 2*(P_Random ()%10+1);
 
@@ -648,9 +626,9 @@ push  dx   ; push damage for later
 les   si, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
 
-call  P_Random_
+call  P_Random_MapLocal_
 mov   bl, al
-call  P_Random_
+call  P_Random_MapLocal_
 
 xor   ah, ah
 xchg  ax, bx
@@ -667,7 +645,8 @@ and   ch, (FINEMASK SHR 8)
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, CHAINSAWRANGE
 mov   dx, cx
-call  dword ptr ds:[_P_AimLineAttack]
+push  cs
+call  P_AimLineAttack_
 
 
 push  dx
@@ -676,7 +655,8 @@ push  ax
 mov   dx, cx
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, CHAINSAWRANGE
-call  dword ptr ds:[_P_LineAttack]
+push  cs
+call  P_LineAttack_
 
 cmp   word ptr ds:[_linetarget], 0
 
@@ -685,7 +665,9 @@ jne   have_linetarget_chainsaw
 
 mov   dx, SFX_SAWFUL
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 POPA_NO_AX_OR_BP_MACRO
 ret   
 
@@ -694,7 +676,9 @@ ret
 have_linetarget_chainsaw:
 mov   dx, SFX_SAWHIT
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 
 les   si, dword ptr ds:[_linetarget_pos]
 push  word ptr es:[si + 6]
@@ -708,7 +692,11 @@ mov   cx, word ptr es:[si + 6]
 les   ax, dword ptr es:[si]
 mov   dx, es
 
-call  R_PointToAngle2_
+
+;call  R_PointToAngle2_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_PointToAngle2_addr
 
 les   si, dword ptr ds:[_playerMobj_pos]
 mov   bx, ax
@@ -780,7 +768,7 @@ PUBLIC A_FireMissile_
 
 mov   ax, MT_ROCKET
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_MISL)]
-call  dword ptr ds:[_P_SpawnPlayerMissile]
+call  P_SpawnPlayerMissile_
 ret   
 
 ENDP
@@ -790,7 +778,7 @@ PUBLIC A_FireBFG_
 
 mov   ax, MT_BFG
 sub   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)], BFGCELLS
-call  dword ptr ds:[_P_SpawnPlayerMissile]
+call  P_SpawnPlayerMissile_
 ret   
 
 
@@ -802,14 +790,14 @@ PUBLIC A_FirePlasma_
 push  dx
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)]
-call  P_Random_
+call  P_Random_MapLocal_
 and   ax, 1
 mov   dx, word ptr ds:[_weaponinfo + (WP_PLASMA * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
 add   dx, ax
 mov   al, PS_FLASH
 call  P_SetPsprite_
 mov   ax, MT_PLASMA
-call  dword ptr ds:[_P_SpawnPlayerMissile]
+call  P_SpawnPlayerMissile_
 
 pop   dx
 ret   
@@ -822,17 +810,17 @@ PUBLIC P_BulletSlope_
 push  bx
 push  cx
 push  dx
-push  si
 
-les   si, dword ptr ds:[_playerMobj_pos]
-mov   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
+les   bx, dword ptr ds:[_playerMobj_pos]
+mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
 
 SHIFT_MACRO shr   cx 3
 mov   ax, word ptr ds:[_playerMobj]
 
 mov   bx, HALFMISSILERANGE
 mov   dx, cx
-call  dword ptr ds:[_P_AimLineAttack]
+push  cs
+call  P_AimLineAttack_
 
 mov   word ptr ds:[_bulletslope+0], ax
 mov   word ptr ds:[_bulletslope+2], dx
@@ -840,7 +828,6 @@ mov   word ptr ds:[_bulletslope+2], dx
 cmp   word ptr ds:[_linetarget], 0
 je    has_linetarget_bulletslope
 exit_bulletslope:
-pop   si
 pop   dx
 pop   cx
 pop   bx
@@ -852,7 +839,8 @@ mov   ax, word ptr ds:[_playerMobj]
 mov   bx, HALFMISSILERANGE
 mov   dx, cx
 
-call  dword ptr ds:[_P_AimLineAttack]
+push  cs
+call  P_AimLineAttack_
 
 mov   word ptr ds:[_bulletslope+0], ax
 mov   word ptr ds:[_bulletslope+2], dx
@@ -865,10 +853,10 @@ mov   ax, word ptr ds:[_playerMobj]
 mov   bx, HALFMISSILERANGE
 mov   dx, cx
 
-call  dword ptr ds:[_P_AimLineAttack]
+push  cs
+call  P_AimLineAttack_
 mov   word ptr ds:[_bulletslope+0], ax
 mov   word ptr ds:[_bulletslope+2], dx
-pop   si
 pop   dx
 pop   cx
 pop   bx
@@ -884,7 +872,7 @@ PUBLIC P_GunShot_
 push  bx
 push  dx
 mov   bl, al ; bl stores accuracy
-call  P_Random_
+call  P_Random_MapLocal_
 xor   ah, ah
 mov   dx, 3 ; zero dh
 
@@ -909,9 +897,9 @@ jne   do_shot
 ; add shot inaccuracy
 
 xor   bx, bx
-call  P_Random_
+call  P_Random_MapLocal_
 mov   bl, al
-call  P_Random_
+call  P_Random_MapLocal_
 xor   ah, ah
 
 sub   bx, ax
@@ -926,7 +914,8 @@ push  word ptr ds:[_bulletslope+2]
 push  word ptr ds:[_bulletslope+0]
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, MISSILERANGE
-call  dword ptr ds:[_P_LineAttack]
+push  cs
+call  P_LineAttack_
 pop   dx
 pop   bx
 ret   
@@ -940,12 +929,17 @@ PUBLIC A_FirePistol_
 push  dx
 mov   dx, SFX_PISTOL
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
 
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]
@@ -973,12 +967,17 @@ push  dx
 
 mov   dx, SFX_SHOTGN
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
 
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)]
@@ -1009,11 +1008,16 @@ push  dx
 
 mov   dx, SFX_DSHTGN
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
 
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 
 
 sub   ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)], 2
@@ -1030,7 +1034,7 @@ loop_next_super_pellet:
 
 ;	damage = 5*(P_Random ()%3+1);
 
-call  P_Random_
+call  P_Random_MapLocal_
 xor   ah, ah
 mov   dx, 3  ; dh made 0 here
 div   dl
@@ -1042,17 +1046,17 @@ push  ax  ; store stack argument.
 les   bx, dword ptr ds:[_playerMobj_pos]
 mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
 
-call  P_Random_
+call  P_Random_MapLocal_
 SHIFT_MACRO shr   bx 3
 mov   dl, al
 add   bx, dx   ; add rand1
-call  P_Random_
+call  P_Random_MapLocal_
 mov   dl, al
 sub   bx, dx   ; sub rand2
 
-call  P_Random_
+call  P_Random_MapLocal_
 mov   dl, al
-call  P_Random_
+call  P_Random_MapLocal_
 
 xor   ah, ah
 sub   dx, ax
@@ -1069,7 +1073,8 @@ mov   ax, word ptr ds:[_playerMobj]
 
 inc   byte ptr [bp - 2]
 mov   bx, MISSILERANGE
-call  dword ptr ds:[_P_LineAttack]
+push  cs
+call  P_LineAttack_
 
 loop  loop_next_super_pellet
 
@@ -1089,7 +1094,9 @@ mov   bx, ax
 mov   dx, SFX_PISTOL
 mov   ax, word ptr ds:[_playerMobj]
 
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 
 
 cmp   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)], 0
@@ -1097,7 +1104,10 @@ je    exit_fire_cgun
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]
 mov   dx, word ptr ds:[_weaponinfo + (WP_CHAINGUN * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
@@ -1151,7 +1161,9 @@ PUBLIC A_OpenShotgun2_
 push  dx
 mov   dx, SFX_DBOPN
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 pop   dx
 ret
 
@@ -1163,7 +1175,9 @@ PUBLIC A_LoadShotgun2_
 push  dx
 mov   dx, SFX_DBLOAD
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 pop   dx
 ret   
 
@@ -1176,7 +1190,9 @@ push  dx
 push  ax
 mov   dx, SFX_DBCLS
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 pop   ax
 call  A_Refire_
 pop   dx
@@ -1231,7 +1247,8 @@ and   dh, (FINEMASK SHR 8)
 
 mov   ax, si
 mov   bx, HALFMISSILERANGE
-call  dword ptr ds:[_P_AimLineAttack]
+push  cs
+call  P_AimLineAttack_
 
 mov   bx, word ptr ds:[_linetarget]
 test  bx, bx
@@ -1285,7 +1302,10 @@ les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y+0]
 
 
 mov   cx, es
-call  P_SpawnMobj_
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
 
 
 mov   cx, 15
@@ -1295,7 +1315,7 @@ mov   dx, cx  ; add 1 15 times up front here (instead of inc in loop)
 ;        damage += (P_Random()&7) + 1;
 
 do_next_rand_damage_add:
-call  P_Random_
+call  P_Random_MapLocal_
 and   ax, 7
 add   dx, ax
 loop  do_next_rand_damage_add
@@ -1309,7 +1329,9 @@ mov   bx, si
 mov   ax, word ptr ds:[_linetarget]
 
 
-call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 
 pop   cx  ; get outer loop var..
 jmp   finish_this_bfg_spray_iter
@@ -1324,7 +1346,9 @@ PUBLIC A_BFGsound_
 push  dx
 mov   dx, SFX_BFG
 mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 pop   dx
 ret   
 
@@ -1391,28 +1415,28 @@ retf
 ; todo probably switch jump table
 
 p_setpsprite_jump_table:
-dw A_Light0_
-dw OFFSET A_WeaponReady_
-dw A_Lower_
-dw A_Raise_
-dw A_Punch_
-dw A_Refire_
-dw A_FirePistol_
-dw A_Light1_
-dw A_FireShotgun_
-dw A_Light2_
-dw A_FireShotgun2_
-dw A_CheckReload_
-dw A_OpenShotgun2_
-dw A_LoadShotgun2_
-dw A_CloseShotgun2_
-dw A_FireCGun_
-dw A_GunFlash_
-dw A_FireMissile_
-dw A_Saw_
-dw A_FirePlasma_
-dw A_BFGsound_
-dw A_FireBFG_
+dw OFFSET A_Light0_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_WeaponReady_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_Lower_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_Raise_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_Punch_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_Refire_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_FirePistol_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_Light1_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_FireShotgun_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_Light2_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_FireShotgun2_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_CheckReload_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_OpenShotgun2_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_LoadShotgun2_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_CloseShotgun2_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_FireCGun_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_GunFlash_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_FireMissile_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_Saw_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_FirePlasma_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_BFGsound_ - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET A_FireBFG_ - OFFSET P_SIGHT_STARTMARKER_
 
 
 
@@ -1472,9 +1496,7 @@ sal   si, 1
 mov   ax, bx ; ax gets psp
 
 
-call   word ptr cs:[si + OFFSET p_setpsprite_jump_table]
-; do this when exported.
-;call   word ptr cs:[si + OFFSET p_setpsprite_jump_table - OFFSET P_SIGHT_STARTMARKER_]
+call   word ptr cs:[si + OFFSET p_setpsprite_jump_table - OFFSET P_SIGHT_STARTMARKER_]
 
 
 finished_p_setpsprite_switchblock:
@@ -1498,6 +1520,34 @@ ret
 
 
 ENDP
+
+; far accessors... remove eventually
+
+PROC P_DropWeaponFar_ FAR
+PUBLIC P_DropWeaponFar_
+
+call   P_DropWeapon_
+retf
+
+ENDP
+
+
+PROC P_BringUpWeaponFar_ FAR
+PUBLIC P_BringUpWeaponFar_
+
+call   P_BringUpWeapon_
+retf
+
+ENDP
+
+PROC A_BFGSprayFar_ FAR
+PUBLIC A_BFGSprayFar_
+
+call   A_BFGSpray_
+retf
+
+ENDP
+
 
 PROC    P_PSPR_ENDMARKER_ 
 PUBLIC  P_PSPR_ENDMARKER_

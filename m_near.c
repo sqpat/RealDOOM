@@ -415,7 +415,12 @@ boolean (__far* P_ChangeSector)() =           ((boolean (__far *)(sector_t __far
 // void (__far* P_ZMovement)() =                 ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_ZMovementOffset)));
 // void (__far* P_NightmareRespawn)() =          ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_NightmareRespawnOffset)));
 THINKERREF (__far* P_SpawnMissile)() =        ((THINKERREF (__far *)(mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type))     	   (MK_FP(physics_highcode_segment, 		 P_SpawnMissileOffset)));
-void (__far* P_SpawnPlayerMissile)() =        ((void (__far *)(mobjtype_t type))     	                                                                                   (MK_FP(physics_highcode_segment, 		 P_SpawnPlayerMissileOffset)));
+
+void (__far* P_MovePsprites)() =              ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_MovePspritesOffset)));
+void (__far* P_DropWeaponFar)() =             ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_DropWeaponFarOffset)));
+void (__far* P_BringUpWeaponFar)() =          ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_BringUpWeaponFarOffset)));
+void (__far* A_BFGSprayFar)() =               ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 A_BFGSprayFarOffset)));
+
 
 
 
@@ -1054,93 +1059,9 @@ volatile int8_t TS_InInterrupt = false;
 boolean  st_stopped = true;
 uint16_t armsbgarray[1];
 THINKERREF		activeplats[MAXPLATS];
-weaponinfo_t	weaponinfo[NUMWEAPONS] = {
-
-    {
-		// fist
-		am_noammo,
-		S_PUNCHUP,
-		S_PUNCHDOWN,
-		S_PUNCH,
-		S_PUNCH1,
-		S_NULL
-    },	 
-    {
-		// pistol
-		am_clip,
-		S_PISTOLUP,
-		S_PISTOLDOWN,
-		S_PISTOL,
-		S_PISTOL1,
-		S_PISTOLFLASH
-    },	
-    {
-		// shotgun
-		am_shell,
-		S_SGUNUP,
-		S_SGUNDOWN,
-		S_SGUN,
-		S_SGUN1,
-		S_SGUNFLASH1
-    },
-    {
-		// chaingun
-		am_clip,
-		S_CHAINUP,
-		S_CHAINDOWN,
-		S_CHAIN,
-		S_CHAIN1,
-		S_CHAINFLASH1
-    },
-    {
-		// missile launcher
-		am_misl,
-		S_MISSILEUP,
-		S_MISSILEDOWN,
-		S_MISSILE,
-		S_MISSILE1,
-		S_MISSILEFLASH1
-    },
-    {
-		// plasma rifle
-		am_cell,
-		S_PLASMAUP,
-		S_PLASMADOWN,
-		S_PLASMA,
-		S_PLASMA1,
-		S_PLASMAFLASH1
-    },
-    {
-		// bfg 9000
-		am_cell,
-		S_BFGUP,
-		S_BFGDOWN,
-		S_BFG,
-		S_BFG1,
-		S_BFGFLASH1
-    },
-    {
-		// chainsaw
-		am_noammo,
-		S_SAWUP,
-		S_SAWDOWN,
-		S_SAW,
-		S_SAW1,
-		S_NULL
-    },
-    {
-		// super shotgun
-		am_shell,
-		S_DSGUNUP,
-		S_DSGUNDOWN,
-		S_DSGUN,
-		S_DSGUN1,
-		S_DSGUNFLASH1
-    },	
-};
 
 
-fixed_t		bulletslope;
+
 uint16_t		switchlist[MAXSWITCHES * 2];
 int16_t		numswitches;
 button_t        buttonlist[MAXBUTTONS];

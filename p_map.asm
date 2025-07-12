@@ -8185,6 +8185,7 @@ ENDP
 ; consider inlining
 
 PROC P_Random_MapLocal_ NEAR
+PUBLIC P_Random_MapLocal_
 push    bx
 inc 	byte ptr ds:[_prndindex]
 mov     ax, RNDTABLE_SEGMENT

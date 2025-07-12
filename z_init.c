@@ -700,6 +700,8 @@ void __near Z_LoadBinaries() {
 	FastDiv3216u_addr =					(uint32_t)(FastDiv3216u);
 	FixedMulTrigSpeedNoShift_addr =		(uint32_t)(FixedMulTrigSpeedNoShift);
 	FixedMulTrigSpeed_addr =			(uint32_t)(FixedMulTrigSpeed);
+	FixedMulTrig_addr =					(uint32_t)(FixedMulTrig);
+	P_NoiseAlert_addr =					(uint32_t)(P_NoiseAlert);
 
 
 

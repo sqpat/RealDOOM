@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2296
+#define CONSTANTS_COUNT 2330
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -217,6 +217,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SIZEOF_CLIPRANGE_T",
 	"SIZEOF_CACHE_NODE_T",
 	"SIZEOF_CACHE_NODE_PAGE_COUNT_T",
+	"SIZEOF_WEAPONINFO_T",
     "SPRITES_SEGMENT",
     "MAXVISSPRITES",
     "CODE_OVERLAY_SEGMENT",
@@ -2365,7 +2366,44 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SK_EASY",
 	"SK_MEDIUM",
 	"SK_HARD",
-	"SK_NIGHTMARE"
+	"SK_NIGHTMARE",
+
+	"AM_CLIP",
+	"AM_SHELL",
+	"AM_CELL",
+	"AM_MISL",
+	"NUMAMMO",
+	"AM_NOAMMO",
+
+	"WP_FIST",
+	"WP_PISTOL",
+	"WP_SHOTGUN",
+	"WP_CHAINGUN",
+	"WP_MISSILE",
+	"WP_PLASMA",
+	"WP_BFG",
+	"WP_CHAINSAW",
+	"WP_SUPERSHOTGUN",
+	"WP_NOCHANGE",
+	"BFGCELLS",
+	"FINEMASK",
+	
+	"PS_WEAPON",
+	"PS_FLASH",
+	"WEAPONBOTTOM_HIGH",
+	"WEAPONBOTTOM_LOW",
+	"WEAPONTOP_HIGH",
+	"WEAPONTOP_LOW",
+	"LOWERSPEED_HIGH",
+	"LOWERSPEED_LOW",
+	"RAISESPEED_HIGH",
+	"RAISESPEED_LOW",
+	"FINE_ANG90",
+	"PST_LIVE",
+	"PST_DEAD",
+	"PST_REBORN",
+	"ANGLETOFINESHIFT"
+
 
 
 
@@ -2576,6 +2614,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	sizeof(cliprange_t),
 	sizeof(cache_node_t),
 	sizeof(cache_node_page_count_t),
+	sizeof(weaponinfo_t),
 	sprites_segment,
     MAXVISSPRITES,
     code_overlay_segment,
@@ -4729,7 +4768,47 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	sk_easy,
 	sk_medium,
 	sk_hard,
-	sk_nightmare
+	sk_nightmare,
+	am_clip,
+	am_shell,
+	am_cell,
+	am_misl,
+	NUMAMMO,
+	am_noammo,
+
+	wp_fist,
+	wp_pistol,
+	wp_shotgun,
+	wp_chaingun,
+	wp_missile,
+	wp_plasma,
+	wp_bfg,
+	wp_chainsaw,
+	wp_supershotgun,
+	wp_nochange,
+
+	40, // bfgcells
+	FINEMASK,
+	ps_weapon,
+	ps_flash,
+	128,	// weaponbottom hi
+	0,		// weaponbottom lo
+	32,		// weapontop hi
+	0,		// weapontop lo
+	6,		// lowerspeed hi
+	0,		// lowerspeed lo
+	6,		// raisespeed hi
+	0,		// raisespeed lo
+	FINE_ANG90, 
+
+	PST_LIVE,
+	PST_DEAD,
+	PST_REBORN,
+
+	ANGLETOFINESHIFT,
+
+
+
 
 	
     

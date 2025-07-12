@@ -469,10 +469,14 @@ _FastMul16u32u_addr =				 _NULL_OFFSET + 0081Ch
 _FastDiv3216u_addr =				 _NULL_OFFSET + 00820h
 _FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00824h
 _FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00828h
+_FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0082Ch
+_P_NoiseAlert_addr = 			 	 _NULL_OFFSET + 00830h
+_bulletslope = 			 			 _NULL_OFFSET + 00834h
+_weaponinfo = 			 			 _NULL_OFFSET + 00838h
 
+;89b
 
-
-_flatcache_nodes =				     _NULL_OFFSET + 00830h
+_flatcache_nodes =				     _NULL_OFFSET + 008A0h
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
 CURRENT_POSITION_2 =   			      (_spritecache_nodes  + (SIZEOF_CACHE_NODE_PAGE_COUNT_T * NUM_SPRITE_CACHE_PAGES))

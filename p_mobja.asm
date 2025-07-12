@@ -1739,7 +1739,7 @@ retf   2
 ENDP
 
 
-PROC P_SpawnPlayerMissile_ FAR
+PROC P_SpawnPlayerMissile_ NEAR
 PUBLIC P_SpawnPlayerMissile_
 
 ; bp - 2    type
@@ -1938,7 +1938,7 @@ call   P_CheckMissileSpawn_
 
 LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
-retf    
+ret
 
 
 

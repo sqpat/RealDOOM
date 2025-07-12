@@ -141,6 +141,7 @@
 
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
+// todo dont need?
 #define player_ptr                      (*((player_t __near* _near*)         (_NULL_OFFSET + 0x00AC)))
 #define pendingmusicenum                (*((musicenum_t _near*)              (_NULL_OFFSET + 0x00AE)))
 #define pendingmusicenumlooping         (*((boolean _near*)              	 (_NULL_OFFSET + 0x00AF)))
@@ -507,9 +508,14 @@
 #define FastDiv3216u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0820)))
 #define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0824)))
 #define FixedMulTrigSpeed_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0828)))
+#define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x082C)))
+#define P_NoiseAlert_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0830)))
+#define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0834)))
+#define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0838))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0830)))
+// 89b
 
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x08A0)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -700,10 +706,10 @@ extern boolean 				(__far* P_ChangeSector)(sector_t __far* sector, boolean crunc
 // extern void 				(__far* P_ZMovement)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 // extern void				    (__far* P_NightmareRespawn)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 extern THINKERREF 			(__far* P_SpawnMissile)(mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type);
-extern void 				(__far* P_SpawnPlayerMissile)(mobjtype_t type);
-
-
-
+extern void 				(__far* P_MovePsprites)();
+extern void 				(__far* P_DropWeaponFar)();
+extern void 				(__far* P_BringUpWeaponFar)();
+extern void 				(__far* A_BFGSprayFar)();
 
 
 
@@ -1065,8 +1071,6 @@ extern uint16_t armsbgarray[1];
 
 
 extern THINKERREF	activeplats[MAXPLATS];
-extern weaponinfo_t	weaponinfo[NUMWEAPONS];
-extern fixed_t		bulletslope;
 extern uint16_t		switchlist[MAXSWITCHES * 2];
 extern int16_t		numswitches;
 extern button_t        buttonlist[MAXBUTTONS];

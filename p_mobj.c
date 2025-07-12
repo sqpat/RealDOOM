@@ -109,7 +109,7 @@ uint8_t __near P_Random(void) {
     return rndtable[prndindex];
 }
 
-void __near P_BringUpWeapon();
+
 
 //
 // P_SetupPsprites
@@ -124,7 +124,7 @@ void __near P_SetupPsprites() {
 
 	// spawn the gun
 	player.pendingweapon = player.readyweapon;
-	P_BringUpWeapon();
+	P_BringUpWeaponFar();
 }
 void __far ST_Start(void);
 
@@ -1028,7 +1028,7 @@ THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* sourc
 
 */
 
-void __near A_BFGSpray(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
+// void __near A_BFGSpray(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
 //
 // P_SpawnPlayerMissile
@@ -1130,7 +1130,7 @@ boolean __far P_SetMobjState (mobj_t __near* mobj, statenum_t state) {
 
 		switch (st->action) {
 
-			case ETF_A_BFGSpray: A_BFGSpray(mobj, mobj_pos); break;
+			case ETF_A_BFGSpray: A_BFGSprayFar(mobj, mobj_pos); break;
 			case ETF_A_Explode: A_Explode(mobj, mobj_pos); break;
 			case ETF_A_Pain: A_Pain(mobj); break;
 			case ETF_A_PlayerScream: A_PlayerScream(); break;

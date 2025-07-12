@@ -87,6 +87,8 @@ void __far P_MAP_STARTMARKER();
 void __far P_MAP_ENDMARKER();
 void __far P_MOBJ_STARTMARKER();
 void __far P_MOBJ_ENDMARKER();
+void __far P_PSPR_STARTMARKER();
+void __far P_PSPR_ENDMARKER();
 
 void __far P_AproxDistance();
 void __far P_LineOpening();
@@ -115,6 +117,11 @@ void __far P_CheckMissileSpawn();
 void __far P_SpawnMissile();
 void __far P_SpawnPlayerMissile();
 
+
+void __far P_MovePsprites();
+void __far P_DropWeaponFar();
+void __far P_BringUpWeaponFar();
+void __far A_BFGSprayFar();
 
 
 
@@ -223,7 +230,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)WI_STARTMARKER, codesize[5], 1, fp);
 
 
-    codesize[6] = FP_OFF(P_MOBJ_ENDMARKER) - FP_OFF(P_SIGHT_STARTMARKER);
+    codesize[6] = FP_OFF(P_PSPR_ENDMARKER) - FP_OFF(P_SIGHT_STARTMARKER);
     // write filesize..
     fwrite(&codesize[6], 2, 1, fp);
     // write data
@@ -379,6 +386,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define P_CheckMissileSpawnOffset             0x%X\n", FP_OFF(P_CheckMissileSpawn)            - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_SpawnMissileOffset                  0x%X\n", FP_OFF(P_SpawnMissile)                 - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_SpawnPlayerMissileOffset            0x%X\n", FP_OFF(P_SpawnPlayerMissile)           - FP_OFF(P_SIGHT_STARTMARKER));
+
+    fprintf(fp, "#define P_MovePspritesOffset                  0x%X\n", FP_OFF(P_MovePsprites)                 - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_DropWeaponFarOffset                 0x%X\n", FP_OFF(P_DropWeaponFar)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_BringUpWeaponFarOffset              0x%X\n", FP_OFF(P_BringUpWeaponFar)             - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define A_BFGSprayFarOffset                   0x%X\n", FP_OFF(A_BFGSprayFar)                  - FP_OFF(P_SIGHT_STARTMARKER));
+
 
 
 	fprintf(fp, "\n");

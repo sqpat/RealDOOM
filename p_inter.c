@@ -674,7 +674,7 @@ void __near P_KillMobj (	mobj_t __near* source, mobj_t __near*	target, mobj_pos_
 			
 		target_pos->flags1 &= ~MF_SOLID;
 		player.playerstate = PST_DEAD;
-		P_DropWeapon ();
+		P_DropWeaponFar ();
 
 		if (automapactive) {
 			// don't die in auto map,

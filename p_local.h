@@ -126,10 +126,7 @@ void __near P_RemoveThinker(THINKERREF thinkerRef);
 
 
 
-//
-// P_PSPR
-//
-void __near P_DropWeapon ();
+
 
 
 //
@@ -166,7 +163,7 @@ void	__far P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 //
 // P_ENEMY
 //
-void __near P_NoiseAlert ();
+void __far P_NoiseAlert ();
 
 
 //
