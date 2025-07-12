@@ -632,134 +632,128 @@ PUBLIC A_Saw_
 
 PUSHA_NO_AX_OR_BP_MACRO
 call  P_Random_
+
+;    damage = 2*(P_Random ()%10+1);
+
 xor   ah, ah
-mov   bx, 10
-cwd   
-idiv  bx  ; todo div byte not word
-mov   bx, OFFSET _playerMobj_pos
-mov   di, dx
-les   si, dword ptr ds:[bx]
-add   di, dx
+cwd   ; zero dx
+mov   bx, 10  ; zero bh
+div   bl
+mov   dl, ah  ; modulo in dl.
+inc   dx
+sal   dx, 1
+
+push  dx   ; push damage for later
+
+les   si, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
+
 call  P_Random_
-mov   dl, al
+mov   bl, al
 call  P_Random_
-xor   dh, dh
+
 xor   ah, ah
-sub   dx, ax
-mov   ax, dx
-shr   cx, 3
+xchg  ax, bx
+sub   ax, bx
+
+
+SHIFT_MACRO shr   cx 3
 sar   ax, 1
 add   cx, ax
-mov   bx, OFFSET _playerMobj
 and   ch, (FINEMASK SHR 8)
-mov   ax, word ptr ds:[bx]
+
+
+;    slope = P_AimLineAttack (playerMobj, angle, CHAINSAWRANGE);
+mov   ax, word ptr ds:[_playerMobj]
 mov   bx, CHAINSAWRANGE
 mov   dx, cx
-add   di, 2
 call  dword ptr ds:[_P_AimLineAttack]
-push  di
+
+
 push  dx
-mov   bx, OFFSET _playerMobj
 push  ax
+
 mov   dx, cx
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 mov   bx, CHAINSAWRANGE
 call  dword ptr ds:[_P_LineAttack]
-mov   bx, OFFSET _linetarget
-cmp   word ptr ds:[bx], 0
-jne   label_36
-jmp   label_37
-label_36:
-mov   bx, OFFSET _playerMobj
-mov   dx, SFX_SAWHIT
-mov   ax, word ptr ds:[bx]
-mov   si, OFFSET _linetarget_pos
+
+cmp   word ptr ds:[_linetarget], 0
+
+jne   have_linetarget_chainsaw
+
+
+mov   dx, SFX_SAWFUL
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
-les   bx, dword ptr ds:[si]
-push  word ptr es:[bx + 6]
-push  word ptr es:[bx + 4]
-mov   bx, si
-mov   si, word ptr ds:[si]
-mov   es, word ptr ds:[bx + 2]
+POPA_NO_AX_OR_BP_MACRO
+ret   
+
+
+
+have_linetarget_chainsaw:
+mov   dx, SFX_SAWHIT
+mov   ax, word ptr ds:[_playerMobj]
+call  S_StartSound_
+
+les   si, dword ptr ds:[_linetarget_pos]
+push  word ptr es:[si + 6]
+push  word ptr es:[si + 4]
 push  word ptr es:[si + 2]
-push  word ptr es:[si]
-mov   si, OFFSET _playerMobj_pos
-les   bx, dword ptr ds:[si]
-mov   ax, word ptr es:[bx + 4]
-mov   cx, word ptr es:[bx + 6]
-mov   bx, si
-mov   si, word ptr ds:[si]
-mov   es, word ptr ds:[bx + 2]
-mov   bx, ax
-mov   di, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
-mov   ax, di
-mov   si, OFFSET _playerMobj_pos
+push  word ptr es:[si + 0]
+
+les   si, dword ptr ds:[_playerMobj_pos]
+mov   bx, word ptr es:[si + 4]
+mov   cx, word ptr es:[si + 6]
+les   ax, dword ptr es:[si]
+mov   dx, es
+
 call  R_PointToAngle2_
-les   bx, dword ptr ds:[si]
-mov   cx, ax
-sub   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle+0]
-mov   si, dx
-sbb   si, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
-cmp   si, ANG180_HIGHBITS
-ja    label_38
-jne   label_39
-test  cx, cx
-jbe   label_39
-label_38:
-mov   bx, OFFSET _playerMobj_pos
-les   si, dword ptr ds:[bx]
-mov   cx, ax
-sub   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+0]
-mov   bx, dx
-sbb   bx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
-cmp   bx, 0999h;  ((MINUS_ANG90_FULL / 20) SHR 16)      ; 0x999
-jb    label_41
-jne   label_40
-cmp   cx, 09999h;  ((MINUS_ANG90_FULL / 20) AND 0FFFFh)  ; 0x9999
-jae   label_40
-label_41:
-mov   si, OFFSET _playerMobj_pos
-les   bx, dword ptr ds:[si]
+
+les   si, dword ptr ds:[_playerMobj_pos]
+mov   bx, ax
+mov   cx, dx
+sub   bx, word ptr es:[si + MOBJ_POS_T.mp_angle+0]
+sbb   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
+cmp   cx, ANG180_HIGHBITS
+
+ja    above_180
+jne   not_above_180
+test  bx, bx
+jbe   not_above_180
+above_180:
+
+cmp   cx, 0999h;  ((MINUS_ANG90_FULL / 20) SHR 16)      ; 0x999
+jb    less_than_negative_4point5
+jne   not_less_than_negative_4point5
+cmp   bx, 09999h;  ((MINUS_ANG90_FULL / 20) AND 0FFFFh)  ; 0x9999
+jae   not_less_than_negative_4point5
+less_than_negative_4point5:
+
 add   ax, 030C3h ; ((ANG90_FULL / 21) AND 0FFFFh)  ; 0x30c3
 adc   dx, 0030Ch ; ((ANG90_FULL / 21) SHR 16)      ; 0x30c
-mov   word ptr es:[bx + MOBJ_POS_T.mp_angle+0], ax
-mov   word ptr es:[bx + MOBJ_POS_T.mp_angle+2], dx
-label_42:
-mov   bx, OFFSET _playerMobj_pos
-les   si, dword ptr ds:[bx]
+mov   word ptr es:[si + MOBJ_POS_T.mp_angle+0], ax
+mov   word ptr es:[si + MOBJ_POS_T.mp_angle+2], dx
+done_with_angle_comparisons_saw:
+
 or    byte ptr es:[si + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
 exit_a_saw:
 POPA_NO_AX_OR_BP_MACRO
 ret   
-label_37:
-mov   bx, OFFSET _playerMobj
-mov   dx, SFX_SAWFUL
-mov   ax, word ptr ds:[bx]
-call  S_StartSound_
-jmp   exit_a_saw
-label_40:
-mov   si, OFFSET _playerMobj_pos
-les   bx, dword ptr ds:[si]
-add   word ptr es:[bx + MOBJ_POS_T.mp_angle+0], 0CCCDh
-adc   word ptr es:[bx + MOBJ_POS_T.mp_angle+2], 0FCCCh
-jmp   label_42
-label_39:
-mov   bx, OFFSET _playerMobj_pos
-les   si, dword ptr ds:[bx]
-mov   cx, ax
-sub   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+0]
-mov   bx, dx
-sbb   bx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
-cmp   bx, 00333h ; ((ANG90_FULL / 20) SHR 16)      ; 0x333
-ja    label_43
-jne   label_44
-cmp   cx, 03333h ; ((ANG90_FULL / 20) AND 0FFFFh)  ; 0x3333
-jbe   label_44
-label_43:
-mov   bx, OFFSET _playerMobj_pos
-les   si, dword ptr ds:[bx]
+not_less_than_negative_4point5:
+
+add   word ptr es:[si + MOBJ_POS_T.mp_angle+0], 0CCCDh
+adc   word ptr es:[si + MOBJ_POS_T.mp_angle+2], 0FCCCh
+jmp   done_with_angle_comparisons_saw
+not_above_180:
+
+cmp   cx, 00333h ; ((ANG90_FULL / 20) SHR 16)      ; 0x333
+ja    greater_than_positive_4point5
+jne   not_greater_than_positive_4point5
+cmp   bx, 03333h ; ((ANG90_FULL / 20) AND 0FFFFh)  ; 0x3333
+jbe   not_greater_than_positive_4point5
+greater_than_positive_4point5:
+
 add   ax, 0CF3Dh ; - ((ANG90_FULL / 21) AND 0FFFFh) ; 0xcf3d
 adc   dx, 0FCF3h ; - ((ANG90_FULL / 21) SHR 16)     ; 0xfcf3
 
@@ -767,13 +761,14 @@ adc   dx, 0FCF3h ; - ((ANG90_FULL / 21) SHR 16)     ; 0xfcf3
 
 mov   word ptr es:[si + MOBJ_POS_T.mp_angle+0], ax
 mov   word ptr es:[si + MOBJ_POS_T.mp_angle+2], dx
-jmp   label_42
-label_44:
-mov   si, OFFSET _playerMobj_pos
-les   bx, dword ptr ds:[si]
-add   word ptr es:[bx + MOBJ_POS_T.mp_angle+0], 03333h
-adc   word ptr es:[bx + MOBJ_POS_T.mp_angle+2], 00333h
-jmp   label_42
+jmp   done_with_angle_comparisons_saw
+
+not_greater_than_positive_4point5:
+add   word ptr es:[si + MOBJ_POS_T.mp_angle+0], 03333h
+adc   word ptr es:[si + MOBJ_POS_T.mp_angle+2], 00333h
+jmp   done_with_angle_comparisons_saw
+
+
 
 ENDP
 

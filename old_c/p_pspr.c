@@ -409,19 +409,18 @@ void __near A_Saw (  pspdef_t __near*	psp ){
 	
     // turn to face target
     bigangle.wu = R_PointToAngle2 (playerMobj_pos->x, playerMobj_pos->y, linetarget_pos->x, linetarget_pos->y);
-    if (bigangle.wu - playerMobj_pos->angle.wu > ANG180)
-    {
-	if (bigangle.wu - playerMobj_pos->angle.wu < -ANG90/20)
-		playerMobj_pos->angle.wu = bigangle.wu + ANG90/21;
-	else
-		playerMobj_pos->angle.wu -= ANG90/20;
-    }
-    else
-    {
-	if (bigangle.wu - playerMobj_pos->angle.wu > ANG90/20)
-		playerMobj_pos->angle.wu = bigangle.wu - ANG90/21;
-	else
-		playerMobj_pos->angle.wu += ANG90/20; // i dont think this math can be FINEd because 20 doesnt divide evenly??
+    if (bigangle.wu - playerMobj_pos->angle.wu > ANG180) {
+		if (bigangle.wu - playerMobj_pos->angle.wu < -ANG90/20){
+			playerMobj_pos->angle.wu = bigangle.wu + ANG90/21;
+		} else {
+			playerMobj_pos->angle.wu -= ANG90/20;
+		}
+    } else {
+		if (bigangle.wu - playerMobj_pos->angle.wu > ANG90/20){
+			playerMobj_pos->angle.wu = bigangle.wu - ANG90/21;
+		} else {
+			playerMobj_pos->angle.wu += ANG90/20; // i dont think this math can be FINEd because 20 doesnt divide evenly??
+		}
     }
 	playerMobj_pos->flags1 |= MF_JUSTATTACKED;
 }
