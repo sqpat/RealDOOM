@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/11 23:27:09
+Created on:       25/07/11 23:29:11
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -72,8 +72,8 @@ p_mobj_TEXT            CODE           AUTO           0b9e:9270       00000923
 P_MOBJN_TEXT           CODE           AUTO           0b9e:9b94       00000079
 p_telept_TEXT          CODE           AUTO           0b9e:9c10       0000022c
 P_TICK_TEXT            CODE           AUTO           0b9e:9e3c       000001c9
-p_user_TEXT            CODE           AUTO           0b9e:a010       000006da
-R_MAIN_TEXT            CODE           AUTO           0b9e:a6ea       000003dc
+p_user_TEXT            CODE           AUTO           0b9e:a010       000006de
+R_MAIN_TEXT            CODE           AUTO           0b9e:a6ee       000003dc
 w_wad_TEXT             CODE           AUTO           0b9e:aad0       0000030c
 V_VIDEO_TEXT           CODE           AUTO           0b9e:addc       00000616
 Z_ZONE_TEXT            CODE           AUTO           0b9e:b3f2       000004a4
@@ -1012,13 +1012,13 @@ Module: p_user.obj(C:\REALDOOM\p_user.c)
 0b9e:a070+     P_CalcHeight_
 0b9e:a27c+     P_MovePlayer_
 0b9e:a356+     P_DeathThink_
-0b9e:a4f6      P_PlayerThink_
+0b9e:a4f8      P_PlayerThink_
 Module: r_main.obj(r_main.ASM)
-0b9e:aa2a      R_VideoErase_
-0b9e:aa0c      R_PointToAngle2_16_
-0b9e:aa1b      R_SetViewSize_
-0b9e:a9e7      R_PointToAngle2_
-0b9e:aa69      R_DrawViewBorder_
+0b9e:aa2e      R_VideoErase_
+0b9e:aa10      R_PointToAngle2_16_
+0b9e:aa1f      R_SetViewSize_
+0b9e:a9eb      R_PointToAngle2_
+0b9e:aa6d      R_DrawViewBorder_
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 0b9e:aad0      locallib_far_fread_
 0b9e:ab5a      locallib_far_fwrite_
@@ -1328,4 +1328,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  0001c360 (115552.)
 Entry point address: 0b9e:c286
-Link time: 00:00.75
+Link time: 00:00.20

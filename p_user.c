@@ -167,7 +167,7 @@ void P_MovePlayer () {
     }
 }	
 
-void __near P_MovePsprites () ;
+void __far P_MovePsprites () ;
 
 
 //

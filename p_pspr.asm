@@ -1331,7 +1331,7 @@ ret
 
 ENDP
 
-PROC P_MovePsprites_ NEAR
+PROC P_MovePsprites_ FAR
 PUBLIC P_MovePsprites_
 
 push  bx
@@ -1386,7 +1386,7 @@ mov   word ptr ds:[_psprites + (PS_FLASH  * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_s
 pop   dx
 pop   cx
 pop   bx
-ret   
+retf
 
 ; todo probably switch jump table
 
@@ -1473,6 +1473,8 @@ mov   ax, bx ; ax gets psp
 
 
 call   word ptr cs:[si + OFFSET p_setpsprite_jump_table]
+; do this when exported.
+;call   word ptr cs:[si + OFFSET p_setpsprite_jump_table - OFFSET P_SIGHT_STARTMARKER_]
 
 
 finished_p_setpsprite_switchblock:
