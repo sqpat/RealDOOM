@@ -1833,6 +1833,7 @@ void __near A_PainShootSkull (mobj_t __near* actor, angle_t	angle ) {
 
     currentthinker = thinkerlist[0].next;
     while (currentthinker != 0) {
+		// todo i think this is a bug because were are not converting thinker.data  to mobj but rather thinker itself.
 		if (((thinkerlist[currentthinker].prevFunctype & TF_FUNCBITS) == TF_MOBJTHINKER_HIGHBITS)
 			&& ((mobj_t  __near*)&thinkerlist[currentthinker])->type == MT_SKULL) {
 			count++;

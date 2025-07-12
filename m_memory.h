@@ -330,7 +330,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // D_INFO           92D9:0000
 // [empty]          9343:0000
 // FREEBYTES 2784 bytes free
-
+ // todo disassembly the above and put it int he other physics code space code!
 
 /*
 #define getPainChance(a)      ((getPainChanceAddr)(a) )

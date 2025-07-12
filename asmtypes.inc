@@ -111,9 +111,9 @@ MOBJ_T ENDS
 
 THINKER_T STRUC 
 
-    t_prevFunctype  dw ?
-    t_next          dw ?
-    t_data          MOBJ_T ?
+    t_prevFunctype  dw ?       ; 0
+    t_next          dw ?       ; 2
+    t_data          MOBJ_T ?   ; 4
     
 THINKER_T ENDS
 
@@ -135,15 +135,15 @@ MOBJ_POS_T ENDS
 
 
 LINE_PHYSICS_T STRUC 
-    lp_v1Offset    dw ?
-    lp_v2Offset    dw ?
-    lp_dx       dw ?
-    lp_dy       dw ?
-    lp_validcount  dw ?
-    lp_frontsecnum dw ?
-    lp_backsecnum  dw ?
-    lp_tag         db ?
-    lp_special     db ?
+    lp_v1Offset    dw ?     ; 0
+    lp_v2Offset    dw ?     ; 2
+    lp_dx          dw ?     ; 4
+    lp_dy          dw ?     ; 6
+    lp_validcount  dw ?     ; 8
+    lp_frontsecnum dw ?     ; A
+    lp_backsecnum  dw ?     ; C
+    lp_tag         db ?     ; E
+    lp_special     db ?     ; F
 
 LINE_PHYSICS_T ENDS
 
@@ -156,16 +156,16 @@ VERTEX_T ENDS
 
 
 SECTOR_T STRUC 
-    sec_floorheight          dw ?
-    sec_ceilingheight        dw ?
-    sec_floorpic             db ?
-    sec_ceilingpic           db ?
-    sec_validcount           dw ?
-    sec_thinglistRef         dw ?
-    sec_linecount            dw ?
-    sec_linesoffset          dw ?
-    sec_lightlevel           db ?
-    sec_unused_padding       db ?
+    sec_floorheight          dw ?   ; 0
+    sec_ceilingheight        dw ?   ; 2
+    sec_floorpic             db ?   ; 4
+    sec_ceilingpic           db ?   ; 5
+    sec_validcount           dw ?   ; 6
+    sec_thinglistRef         dw ?   ; 8
+    sec_linecount            dw ?   ; A
+    sec_linesoffset          dw ?   ; C
+    sec_lightlevel           db ?   ; E
+    sec_unused_padding       db ?   ; F
 
 SECTOR_T ENDS
 

@@ -75,6 +75,20 @@ DOOR_BLAZERAISE   = 5
 DOOR_BLAZEOPEN    = 6
 DOOR_BLAZECLOSE   = 7
 
+FLOOR_LOWERFLOOR = 0
+FLOOR_LOWERFLOORTOLOWEST = 1
+FLOOR_TURBOLOWER = 2
+FLOOR_RAISEFLOOR = 3
+FLOOR_RAISEFLOORTONEAREST = 4
+FLOOR_RAISETOTEXTURE = 5
+FLOOR_LOWERANDCHANGE = 6
+FLOOR_RAISEFLOOR24 = 7
+FLOOR_RAISEFLOOR24ANDCHANGE = 8
+FLOOR_RAISEFLOORCRUSH = 9
+FLOOR_RAISEFLOORTURBO = 10
+FLOOR_DONUTRAISE = 11
+FLOOR_RAISEFLOOR512 = 12
+
 SKULLSPEED_SMALL = 20
 
 
@@ -4024,16 +4038,16 @@ PUBLIC  A_PainDie_
 0x00000000000048b9:  26 8B 7F 0E          mov   di, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
 0x00000000000048bd:  26 8B 57 10          mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 0x00000000000048c1:  26 80 67 14 FD       and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1],  (NOT MF_SOLID)
-0x00000000000048c6:  80 C6 40             add   dh, 0x40
+0x00000000000048c6:  80 C6 40             add   dh, (ANG90_HIGHBITS SHR 8)
 0x00000000000048c9:  89 FB                mov   bx, di
 0x00000000000048cb:  89 D1                mov   cx, dx
 0x00000000000048cd:  E8 62 FE             call  A_PainShootSkull_
-0x00000000000048d0:  80 C6 40             add   dh, 0x40
+0x00000000000048d0:  80 C6 40             add   dh, (ANG90_HIGHBITS SHR 8)
 0x00000000000048d3:  89 FB                mov   bx, di
 0x00000000000048d5:  89 F0                mov   ax, si
 0x00000000000048d7:  89 D1                mov   cx, dx
 0x00000000000048d9:  E8 56 FE             call  A_PainShootSkull_
-0x00000000000048dc:  80 C6 40             add   dh, 0x40
+0x00000000000048dc:  80 C6 40             add   dh, (ANG90_HIGHBITS SHR 8)
 0x00000000000048df:  89 FB                mov   bx, di
 0x00000000000048e1:  89 F0                mov   ax, si
 0x00000000000048e3:  89 D1                mov   cx, dx
@@ -4060,37 +4074,42 @@ PUBLIC  A_Scream_
 0x00000000000048fb:  8A 84 63 C4          mov   al, byte ptr ds:[si + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
 0x00000000000048ff:  81 C6 63 C4          add   si, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound
 0x0000000000004903:  3C 3B                cmp   al, SFX_PODTH1
-0x0000000000004905:  73 31                jae   0x4938
+0x0000000000004905:  73 31                jae   label_153
 0x0000000000004907:  84 C0                test  al, al
-0x0000000000004909:  74 29                je    0x4934
+0x0000000000004909:  74 29                je    exit_a_scream
+label_157:
 0x000000000000490b:  8A 47 1A             mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x000000000000490e:  30 E4                xor   ah, ah
 0x0000000000004910:  6B C0 0B             imul  ax, ax, SIZEOF_MOBJINFO_T
 0x0000000000004913:  89 C6                mov   si, ax
 0x0000000000004915:  8A 84 63 C4          mov   al, byte ptr ds:[si + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
 0x0000000000004919:  81 C6 63 C4          add   si, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound
-0x000000000000491d:  80 7F 1A 13          cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], 0x13
-0x0000000000004921:  74 06                je    0x4929
-0x0000000000004923:  80 7F 1A 15          cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], 0x15
-0x0000000000004927:  75 47                jne   0x4970
+label_158:
+0x000000000000491d:  80 7F 1A 13          cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_SPIDER
+0x0000000000004921:  74 06                je    label_154
+0x0000000000004923:  80 7F 1A 15          cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_CYBORG
+0x0000000000004927:  75 47                jne   label_155
+label_154:
 0x0000000000004929:  88 C2                mov   dl, al
 0x000000000000492b:  30 F6                xor   dh, dh
 0x000000000000492d:  31 C0                xor   ax, ax
 0x000000000000492f:  0E                   push  cs
 0x0000000000004930:  3E E8 1C BC          call  S_StartSound_
+exit_a_scream:
 0x0000000000004934:  5E                   pop   si
 0x0000000000004935:  5A                   pop   dx
 0x0000000000004936:  5B                   pop   bx
 0x0000000000004937:  C3                   ret   
+label_153:
 0x0000000000004938:  3C 3D                cmp   al, SFX_PDTH3
-0x000000000000493a:  76 22                jbe   0x495e
+0x000000000000493a:  76 22                jbe   label_156
 0x000000000000493c:  3C 3F                cmp   al, SFX_BGDTH2
-0x000000000000493e:  77 CB                ja    0x490b
+0x000000000000493e:  77 CB                ja    label_157
 0x0000000000004940:  E8 6D 40             call  P_Random_
 0x0000000000004943:  88 C2                mov   dl, al
 0x0000000000004945:  30 F6                xor   dh, dh
 0x0000000000004947:  89 D0                mov   ax, dx
-0x0000000000004949:  C1 F8 0F             sar   ax, 0xf
+0x0000000000004949:  C1 F8 0F             sar   ax, 0Fh ; todo no
 0x000000000000494c:  31 C2                xor   dx, ax
 0x000000000000494e:  29 C2                sub   dx, ax
 0x0000000000004950:  83 E2 01             and   dx, 1
@@ -4098,7 +4117,8 @@ PUBLIC  A_Scream_
 0x0000000000004955:  29 C2                sub   dx, ax
 0x0000000000004957:  89 D0                mov   ax, dx
 0x0000000000004959:  05 3E 00             add   ax, SFX_BGDTH1
-0x000000000000495c:  EB BF                jmp   0x491d
+0x000000000000495c:  EB BF                jmp   label_158
+label_156:
 0x000000000000495e:  E8 4F 40             call  P_Random_
 0x0000000000004961:  30 E4                xor   ah, ah
 0x0000000000004963:  BE 03 00             mov   si, 3
@@ -4106,7 +4126,8 @@ PUBLIC  A_Scream_
 0x0000000000004967:  F7 FE                idiv  si
 0x0000000000004969:  89 D0                mov   ax, dx
 0x000000000000496b:  05 3B 00             add   ax, SFX_PODTH1
-0x000000000000496e:  EB AD                jmp   0x491d
+0x000000000000496e:  EB AD                jmp   label_158
+label_155:
 0x0000000000004970:  88 C2                mov   dl, al
 0x0000000000004972:  89 D8                mov   ax, bx
 0x0000000000004974:  30 F6                xor   dh, dh
@@ -4213,19 +4234,23 @@ PUBLIC  A_BossDeath_
 0x00000000000049e6:  BE EB 02             mov   si, OFFSET _commercial
 0x00000000000049e9:  8A 4F 1A             mov   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 0x00000000000049ec:  80 3C 00             cmp   byte ptr ds:[si], 0
-0x00000000000049ef:  75 03                jne   0x49f4
-0x00000000000049f1:  E9 7B 00             jmp   0x4a6f
+0x00000000000049ef:  75 03                jne   label_159
+0x00000000000049f1:  E9 7B 00             jmp   label_160
+label_159:
 0x00000000000049f4:  BE BF 03             mov   si, OFFSET _gamemap
 0x00000000000049f7:  80 3C 07             cmp   byte ptr ds:[si], 7
-0x00000000000049fa:  74 03                je    0x49ff
-0x00000000000049fc:  E9 6B 00             jmp   0x4a6a
+0x00000000000049fa:  74 03                je    label_161
+0x00000000000049fc:  E9 6B 00             jmp   exit_a_bossdeath
+label_161:
 0x00000000000049ff:  80 F9 08             cmp   cl, 8
-0x0000000000004a02:  74 05                je    0x4a09
-0x0000000000004a04:  80 F9 14             cmp   cl, 0x14
-0x0000000000004a07:  75 61                jne   0x4a6a
+0x0000000000004a02:  74 05                je    label_164
+0x0000000000004a04:  80 F9 14             cmp   cl, MT_BABY
+label_165:
+0x0000000000004a07:  75 61                jne   exit_a_bossdeath
+label_164:
 0x0000000000004a09:  BE E8 07             mov   si, OFFSET _player + PLAYER_T.player_health
 0x0000000000004a0c:  83 3C 00             cmp   word ptr ds:[si], 0
-0x0000000000004a0f:  7E 59                jle   0x4a6a
+0x0000000000004a0f:  7E 59                jle   exit_a_bossdeath
 0x0000000000004a11:  8D 87 FC CB          lea   ax, ds:[bx - (OFFSET _thinkerlist + THINKER_T.t_data)]
 0x0000000000004a15:  31 D2                xor   dx, dx
 0x0000000000004a17:  BB 2C 00             mov   bx, SIZEOF_THINKER_T
@@ -4234,119 +4259,137 @@ PUBLIC  A_BossDeath_
 0x0000000000004a1f:  89 C6                mov   si, ax
 0x0000000000004a21:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000004a23:  85 C0                test  ax, ax
-0x0000000000004a25:  74 1D                je    0x4a44
+0x0000000000004a25:  74 1D                je    label_162
+label_166:
 0x0000000000004a27:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
 0x0000000000004a2a:  8B 97 00 34          mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 0x0000000000004a2e:  30 D2                xor   dl, dl
 0x0000000000004a30:  80 E6 F8             and   dh, (TF_FUNCBITS SHR 8)
 0x0000000000004a33:  81 FA 00 08          cmp   dx, TF_MOBJTHINKER_HIGHBITS
-0x0000000000004a37:  74 54                je    0x4a8d
+0x0000000000004a37:  74 54                je    jump_to_label_163
+label_174:
 0x0000000000004a39:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
 0x0000000000004a3c:  8B 87 02 34          mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
 0x0000000000004a40:  85 C0                test  ax, ax
-0x0000000000004a42:  75 E3                jne   0x4a27
+0x0000000000004a42:  75 E3                jne   label_166
+label_162:
 0x0000000000004a44:  BB EB 02             mov   bx, OFFSET _commercial
 0x0000000000004a47:  80 3F 00             cmp   byte ptr ds:[bx], 0
-0x0000000000004a4a:  74 59                je    0x4aa5
+0x0000000000004a4a:  74 59                je    jump_to_label_167
 0x0000000000004a4c:  BB BF 03             mov   bx, OFFSET _gamemap
 0x0000000000004a4f:  80 3F 07             cmp   byte ptr ds:[bx], 7
-0x0000000000004a52:  75 62                jne   0x4ab6
-0x0000000000004a54:  80 F9 08             cmp   cl, 8
-0x0000000000004a57:  74 60                je    0x4ab9
-0x0000000000004a59:  80 F9 14             cmp   cl, 0x14
-0x0000000000004a5c:  75 58                jne   0x4ab6
-0x0000000000004a5e:  BB 05 00             mov   bx, 5
-0x0000000000004a61:  BA FF FF             mov   dx, 0xffff
-0x0000000000004a64:  B8 3E 00             mov   ax, 0x3e
+0x0000000000004a52:  75 62                jne   jump_to_do_exit_level
+0x0000000000004a54:  80 F9 08             cmp   cl, MT_FATSO
+0x0000000000004a57:  74 60                je    jump_to_label_170
+0x0000000000004a59:  80 F9 14             cmp   cl, MT_BABY
+0x0000000000004a5c:  75 58                jne   jump_to_do_exit_level
+0x0000000000004a5e:  BB 05 00             mov   bx, FLOOR_RAISETOTEXTURE
+0x0000000000004a61:  BA FF FF             mov   dx, -1
+0x0000000000004a64:  B8 3E 00             mov   ax, TAG_667
 0x0000000000004a67:  E8 28 08             call  EV_DoFloor_
+exit_a_bossdeath:
 0x0000000000004a6a:  5E                   pop   si
 0x0000000000004a6b:  5A                   pop   dx
 0x0000000000004a6c:  59                   pop   cx
 0x0000000000004a6d:  5B                   pop   bx
 0x0000000000004a6e:  C3                   ret   
-0x0000000000004a6f:  BE E5 00             mov   si, 0xe5
+label_160:
+0x0000000000004a6f:  BE E5 00             mov   si, OFFSET _is_ultimate
 0x0000000000004a72:  80 3C 00             cmp   byte ptr ds:[si], 0
-0x0000000000004a75:  75 18                jne   0x4a8f
+0x0000000000004a75:  75 18                jne   label_173
 0x0000000000004a77:  BE BF 03             mov   si, OFFSET _gamemap
 0x0000000000004a7a:  80 3C 08             cmp   byte ptr ds:[si], 8
-0x0000000000004a7d:  75 EB                jne   0x4a6a
-0x0000000000004a7f:  80 F9 0F             cmp   cl, 0xf
-0x0000000000004a82:  75 85                jne   0x4a09
-0x0000000000004a84:  BE BE 03             mov   si, 0x3be
+0x0000000000004a7d:  75 EB                jne   exit_a_bossdeath
+0x0000000000004a7f:  80 F9 0F             cmp   cl, MT_BRUISER
+0x0000000000004a82:  75 85                jne   label_164
+0x0000000000004a84:  BE BE 03             mov   si, OFFSET _gameepisode
 0x0000000000004a87:  80 3C 01             cmp   byte ptr ds:[si], 1
-0x0000000000004a8a:  E9 7A FF             jmp   0x4a07
-0x0000000000004a8d:  EB 6A                jmp   0x4af9
-0x0000000000004a8f:  BE BE 03             mov   si, 0x3be
+0x0000000000004a8a:  E9 7A FF             jmp   label_165
+jump_to_label_163:
+0x0000000000004a8d:  EB 6A                jmp   jump_to_label_163
+label_173:
+0x0000000000004a8f:  BE BE 03             mov   si, OFFSET _gameepisode
 0x0000000000004a92:  8A 04                mov   al, byte ptr ds:[si]
 0x0000000000004a94:  FE C8                dec   al
 0x0000000000004a96:  3C 03                cmp   al, 3
-0x0000000000004a98:  77 56                ja    0x4af0
+0x0000000000004a98:  77 56                ja    label_175
 0x0000000000004a9a:  30 E4                xor   ah, ah
 0x0000000000004a9c:  89 C6                mov   si, ax
 0x0000000000004a9e:  01 C6                add   si, ax
 0x0000000000004aa0:  2E FF A4 D8 49       jmp   word ptr cs:[si + _some_lookup_table_4]
-0x0000000000004aa5:  E9 7E 00             jmp   0x4b26
+jump_to_label_167:
+0x0000000000004aa5:  E9 7E 00             jmp   label_167
 0x0000000000004aa8:  BE BF 03             mov   si, OFFSET _gamemap
 0x0000000000004aab:  80 3C 08             cmp   byte ptr ds:[si], 8
-0x0000000000004aae:  75 BA                jne   0x4a6a
-0x0000000000004ab0:  80 F9 0F             cmp   cl, 0xf
-0x0000000000004ab3:  E9 51 FF             jmp   0x4a07
-0x0000000000004ab6:  E9 A8 00             jmp   0x4b61
-0x0000000000004ab9:  EB 5A                jmp   0x4b15
+0x0000000000004aae:  75 BA                jne   exit_a_bossdeath
+0x0000000000004ab0:  80 F9 0F             cmp   cl, MT_BRUISER
+0x0000000000004ab3:  E9 51 FF             jmp   label_165
+jump_to_do_exit_level:
+0x0000000000004ab6:  E9 A8 00             jmp   do_exit_level
+jump_to_label_170:
+0x0000000000004ab9:  EB 5A                jmp   label_170
 0x0000000000004abb:  BE BF 03             mov   si, OFFSET _gamemap
 0x0000000000004abe:  80 3C 08             cmp   byte ptr ds:[si], 8
-0x0000000000004ac1:  75 A7                jne   0x4a6a
-0x0000000000004ac3:  80 F9 15             cmp   cl, 0x15
-0x0000000000004ac6:  E9 3E FF             jmp   0x4a07
+0x0000000000004ac1:  75 A7                jne   exit_a_bossdeath
+0x0000000000004ac3:  80 F9 15             cmp   cl, MT_CYBORG
+0x0000000000004ac6:  E9 3E FF             jmp   label_165
 0x0000000000004ac9:  BE BF 03             mov   si, OFFSET _gamemap
 0x0000000000004acc:  80 3C 08             cmp   byte ptr ds:[si], 8
-0x0000000000004acf:  75 99                jne   0x4a6a
-0x0000000000004ad1:  80 F9 13             cmp   cl, 0x13
-0x0000000000004ad4:  E9 30 FF             jmp   0x4a07
+0x0000000000004acf:  75 99                jne   exit_a_bossdeath
+0x0000000000004ad1:  80 F9 13             cmp   cl, MT_SPIDER
+0x0000000000004ad4:  E9 30 FF             jmp   label_165
 0x0000000000004ad7:  BE BF 03             mov   si, OFFSET _gamemap
 0x0000000000004ada:  8A 04                mov   al, byte ptr ds:[si]
 0x0000000000004adc:  3C 08                cmp   al, 8
-0x0000000000004ade:  75 06                jne   0x4ae6
-0x0000000000004ae0:  80 F9 13             cmp   cl, 0x13
-0x0000000000004ae3:  E9 21 FF             jmp   0x4a07
+0x0000000000004ade:  75 06                jne   label_171
+0x0000000000004ae0:  80 F9 13             cmp   cl, MT_SPIDER
+0x0000000000004ae3:  E9 21 FF             jmp   label_165
+label_171:
 0x0000000000004ae6:  3C 06                cmp   al, 6
-0x0000000000004ae8:  75 80                jne   0x4a6a
-0x0000000000004aea:  80 F9 15             cmp   cl, 0x15
-0x0000000000004aed:  E9 17 FF             jmp   0x4a07
+0x0000000000004ae8:  75 80                jne   exit_a_bossdeath
+0x0000000000004aea:  80 F9 15             cmp   cl, MT_CYBORG
+0x0000000000004aed:  E9 17 FF             jmp   label_165
+label_175:
 0x0000000000004af0:  BE BF 03             mov   si, OFFSET _gamemap
 0x0000000000004af3:  80 3C 08             cmp   byte ptr ds:[si], 8
-0x0000000000004af6:  E9 0E FF             jmp   0x4a07
+0x0000000000004af6:  E9 0E FF             jmp   label_165
+label_163:
 0x0000000000004af9:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
 0x0000000000004afd:  39 F0                cmp   ax, si
-0x0000000000004aff:  75 03                jne   0x4b04
-0x0000000000004b01:  E9 35 FF             jmp   0x4a39
+0x0000000000004aff:  75 03                jne   label_172
+jump_to_label_174_2:
+0x0000000000004b01:  E9 35 FF             jmp   label_174
+label_172:
 0x0000000000004b04:  3A 4F 1A             cmp   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-0x0000000000004b07:  75 F8                jne   0x4b01
+0x0000000000004b07:  75 F8                jne   jump_to_label_174_2
 0x0000000000004b09:  83 7F 1C 00          cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
-0x0000000000004b0d:  7E 03                jle   0x4b12
-0x0000000000004b0f:  E9 58 FF             jmp   0x4a6a
-0x0000000000004b12:  E9 24 FF             jmp   0x4a39
-0x0000000000004b15:  BB 01 00             mov   bx, 1
-0x0000000000004b18:  BA FF FF             mov   dx, 0xffff
-0x0000000000004b1b:  B8 3D 00             mov   ax, 0x3d
+0x0000000000004b0d:  7E 03                jle   jump_to_label_174
+0x0000000000004b0f:  E9 58 FF             jmp   exit_a_bossdeath
+jump_to_label_174:
+0x0000000000004b12:  E9 24 FF             jmp   label_174
+label_170;
+0x0000000000004b15:  BB 01 00             mov   bx, FLOOR_LOWERFLOORTOLOWEST
+0x0000000000004b18:  BA FF FF             mov   dx, -1
+0x0000000000004b1b:  B8 3D 00             mov   ax, TAG_666
 0x0000000000004b1e:  E8 71 07             call  EV_DoFloor_
 0x0000000000004b21:  5E                   pop   si
 0x0000000000004b22:  5A                   pop   dx
 0x0000000000004b23:  59                   pop   cx
 0x0000000000004b24:  5B                   pop   bx
 0x0000000000004b25:  C3                   ret   
-0x0000000000004b26:  BB BE 03             mov   bx, 0x3be
+label_167:
+0x0000000000004b26:  BB BE 03             mov   bx, OFFSET _gameepisode
 0x0000000000004b29:  8A 07                mov   al, byte ptr ds:[bx]
 0x0000000000004b2b:  3C 04                cmp   al, 4
-0x0000000000004b2d:  75 1D                jne   0x4b4c
+0x0000000000004b2d:  75 1D                jne   label_168
 0x0000000000004b2f:  BB BF 03             mov   bx, OFFSET _gamemap
 0x0000000000004b32:  8A 07                mov   al, byte ptr ds:[bx]
 0x0000000000004b34:  3C 08                cmp   al, 8
-0x0000000000004b36:  74 18                je    0x4b50
+0x0000000000004b36:  74 18                je    label_169
 0x0000000000004b38:  3C 06                cmp   al, 6
-0x0000000000004b3a:  75 25                jne   0x4b61
-0x0000000000004b3c:  BA 06 00             mov   dx, 6
-0x0000000000004b3f:  B8 3D 00             mov   ax, 0x3d
+0x0000000000004b3a:  75 25                jne   do_exit_level
+0x0000000000004b3c:  BA 06 00             mov   dx, DOOR_BLAZEOPEN
+0x0000000000004b3f:  B8 3D 00             mov   ax, TAG_666
 0x0000000000004b42:  0E                   push  cs
 0x0000000000004b43:  E8 3E D9             call  EV_DoDoor_
 0x0000000000004b46:  90                   nop   
@@ -4355,17 +4398,20 @@ PUBLIC  A_BossDeath_
 0x0000000000004b49:  59                   pop   cx
 0x0000000000004b4a:  5B                   pop   bx
 0x0000000000004b4b:  C3                   ret   
+label_168:
 0x0000000000004b4c:  3C 01                cmp   al, 1
-0x0000000000004b4e:  75 11                jne   0x4b61
-0x0000000000004b50:  BB 01 00             mov   bx, 1
-0x0000000000004b53:  BA FF FF             mov   dx, 0xffff
-0x0000000000004b56:  B8 3D 00             mov   ax, 0x3d
+0x0000000000004b4e:  75 11                jne   do_exit_level
+label_169:
+0x0000000000004b50:  BB 01 00             mov   bx, FLOOR_LOWERFLOORTOLOWEST
+0x0000000000004b53:  BA FF FF             mov   dx, -1
+0x0000000000004b56:  B8 3D 00             mov   ax, TAG_666
 0x0000000000004b59:  E8 36 07             call  EV_DoFloor_
 0x0000000000004b5c:  5E                   pop   si
 0x0000000000004b5d:  5A                   pop   dx
 0x0000000000004b5e:  59                   pop   cx
 0x0000000000004b5f:  5B                   pop   bx
 0x0000000000004b60:  C3                   ret   
+do_exit_level:
 0x0000000000004b61:  9A 68 19 88 0A       call  G_ExitLevel_
 0x0000000000004b66:  5E                   pop   si
 0x0000000000004b67:  5A                   pop   dx
@@ -4383,7 +4429,7 @@ PUBLIC  A_Hoof_
 0x0000000000004b6c:  52                   push  dx
 0x0000000000004b6d:  56                   push  si
 0x0000000000004b6e:  89 C6                mov   si, ax
-0x0000000000004b70:  BA 54 00             mov   dx, 0x54
+0x0000000000004b70:  BA 54 00             mov   dx, SFX_HOOF
 0x0000000000004b73:  0E                   push  cs
 0x0000000000004b74:  3E E8 D8 B9          call  S_StartSound_
 0x0000000000004b78:  89 F0                mov   ax, si
@@ -4401,7 +4447,7 @@ PUBLIC  A_Metal_
 0x0000000000004b80:  52                   push  dx
 0x0000000000004b81:  56                   push  si
 0x0000000000004b82:  89 C6                mov   si, ax
-0x0000000000004b84:  BA 55 00             mov   dx, 0x55
+0x0000000000004b84:  BA 55 00             mov   dx, SFX_METAL
 0x0000000000004b87:  0E                   push  cs
 0x0000000000004b88:  3E E8 C4 B9          call  S_StartSound_
 0x0000000000004b8c:  89 F0                mov   ax, si
@@ -4419,7 +4465,7 @@ PUBLIC  A_BabyMetal_
 0x0000000000004b94:  52                   push  dx
 0x0000000000004b95:  56                   push  si
 0x0000000000004b96:  89 C6                mov   si, ax
-0x0000000000004b98:  BA 4F 00             mov   dx, 0x4f
+0x0000000000004b98:  BA 4F 00             mov   dx, SFX_BSPWLK
 0x0000000000004b9b:  0E                   push  cs
 0x0000000000004b9c:  3E E8 B0 B9          call  S_StartSound_
 0x0000000000004ba0:  89 F0                mov   ax, si
@@ -4436,41 +4482,45 @@ PUBLIC  A_BrainAwake_
 
 0x0000000000004ba8:  53                   push  bx
 0x0000000000004ba9:  52                   push  dx
-0x0000000000004baa:  BB 28 01             mov   bx, 0x128
+0x0000000000004baa:  BB 28 01             mov   bx, OFFSET _numbraintargets
 0x0000000000004bad:  C7 07 00 00          mov   word ptr ds:[bx], 0
-0x0000000000004bb1:  BB 2A 01             mov   bx, 0x12a
+0x0000000000004bb1:  BB 2A 01             mov   bx, OFFSET _braintargeton
 0x0000000000004bb4:  C7 07 00 00          mov   word ptr ds:[bx], 0
 0x0000000000004bb8:  BB 02 34             mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
 0x0000000000004bbb:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000004bbd:  85 C0                test  ax, ax
-0x0000000000004bbf:  74 1D                je    0x4bde
+0x0000000000004bbf:  74 1D                je    label_176
+label_177:
 0x0000000000004bc1:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
 0x0000000000004bc4:  8B 97 00 34          mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 0x0000000000004bc8:  30 D2                xor   dl, dl
 0x0000000000004bca:  80 E6 F8             and   dh, (TF_FUNCBITS SHR 8)
 0x0000000000004bcd:  81 FA 00 08          cmp   dx, TF_MOBJTHINKER_HIGHBITS
-0x0000000000004bd1:  74 18                je    0x4beb
+0x0000000000004bd1:  74 18                je    label_178
+label_179:
 0x0000000000004bd3:  6B D8 2C             imul  bx, ax, SIZEOF_THINKER_T
 0x0000000000004bd6:  8B 87 02 34          mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
 0x0000000000004bda:  85 C0                test  ax, ax
-0x0000000000004bdc:  75 E3                jne   0x4bc1
-0x0000000000004bde:  BA 60 00             mov   dx, 0x60
+0x0000000000004bdc:  75 E3                jne   label_177
+label_176:
+0x0000000000004bde:  BA 60 00             mov   dx, SFX_BOSSIT
 0x0000000000004be1:  31 C0                xor   ax, ax
 0x0000000000004be3:  0E                   push  cs
 0x0000000000004be4:  3E E8 68 B9          call  S_StartSound_
 0x0000000000004be8:  5A                   pop   dx
 0x0000000000004be9:  5B                   pop   bx
 0x0000000000004bea:  C3                   ret   
+label_178:
 0x0000000000004beb:  81 C3 04 34          add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
-0x0000000000004bef:  80 7F 1A 1B          cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], 0x1b
-0x0000000000004bf3:  75 DE                jne   0x4bd3
-0x0000000000004bf5:  BB 28 01             mov   bx, 0x128
+0x0000000000004bef:  80 7F 1A 1B          cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_BOSSTARGET
+0x0000000000004bf3:  75 DE                jne   label_179
+0x0000000000004bf5:  BB 28 01             mov   bx, OFFSET _numbraintargets
 0x0000000000004bf8:  8B 1F                mov   bx, word ptr ds:[bx]
 0x0000000000004bfa:  01 DB                add   bx, bx
-0x0000000000004bfc:  89 87 B0 04          mov   word ptr ds:[bx + 0x4b0], ax
-0x0000000000004c00:  BB 28 01             mov   bx, 0x128
+0x0000000000004bfc:  89 87 B0 04          mov   word ptr ds:[bx + _braintargets], ax
+0x0000000000004c00:  BB 28 01             mov   bx, OFFSET _numbraintargets
 0x0000000000004c03:  FF 07                inc   word ptr ds:[bx]
-0x0000000000004c05:  EB CC                jmp   0x4bd3
+0x0000000000004c05:  EB CC                jmp   label_179
 0x0000000000004c07:  FC                   cld   
 
 ENDP
@@ -4480,7 +4530,7 @@ PROC    A_BrainPain_ NEAR
 PUBLIC  A_BrainPain_
 
 0x0000000000004c08:  52                   push  dx
-0x0000000000004c09:  BA 61 00             mov   dx, 0x61
+0x0000000000004c09:  BA 61 00             mov   dx, SFX_BOSPN
 0x0000000000004c0c:  31 C0                xor   ax, ax
 0x0000000000004c0e:  0E                   push  cs
 0x0000000000004c0f:  E8 3E B9             call  S_StartSound_
@@ -4508,13 +4558,14 @@ PUBLIC  A_BrainScream_
 0x0000000000004c2b:  26 8B 05             mov   ax, word ptr es:[di]
 0x0000000000004c2e:  26 8B 75 02          mov   si, word ptr es:[di + 2]
 0x0000000000004c32:  89 46 FC             mov   word ptr [bp - 4], ax
-0x0000000000004c35:  81 EE C4 00          sub   si, 0xc4
+0x0000000000004c35:  81 EE C4 00          sub   si, 196
+label_181:
 0x0000000000004c39:  8E 46 FE             mov   es, word ptr [bp - 2]
 0x0000000000004c3c:  26 8B 45 02          mov   ax, word ptr es:[di + 2]
-0x0000000000004c40:  05 40 01             add   ax, 0x140
+0x0000000000004c40:  05 40 01             add   ax, 320
 0x0000000000004c43:  39 C6                cmp   si, ax
 0x0000000000004c45:  7C 0F                jl    label_2:
-0x0000000000004c47:  BA 62 00             mov   dx, 0x62
+0x0000000000004c47:  BA 62 00             mov   dx, SFX_BOSDTH
 0x0000000000004c4a:  31 C0                xor   ax, ax
 0x0000000000004c4c:  0E                   push  cs
 0x0000000000004c4d:  E8 00 B9             call  S_StartSound_
@@ -4530,11 +4581,11 @@ label_2:
 0x0000000000004c5e:  E8 4F 3D             call  P_Random_
 0x0000000000004c61:  88 C3                mov   bl, al
 0x0000000000004c63:  30 FF                xor   bh, bh
-0x0000000000004c65:  6A FF                push  -1
+0x0000000000004c65:  6A FF                push  -1 ; todo 186
 0x0000000000004c67:  01 DB                add   bx, bx
-0x0000000000004c69:  6A 21                push  0x21
-0x0000000000004c6b:  81 C3 80 00          add   bx, 0x80
-0x0000000000004c6f:  81 E9 40 01          sub   cx, 0x140
+0x0000000000004c69:  6A 21                push  MT_ROCKET  ; todo 186
+0x0000000000004c6b:  81 C3 80 00          add   bx, 128
+0x0000000000004c6f:  81 E9 40 01          sub   cx, 320
 0x0000000000004c73:  53                   push  bx
 0x0000000000004c74:  8B 46 FC             mov   ax, word ptr [bp - 4]
 0x0000000000004c77:  FF 76 FA             push  word ptr [bp - 6]
@@ -4553,7 +4604,7 @@ label_2:
 0x0000000000004c94:  99                   cwd   
 0x0000000000004c95:  89 47 16             mov   word ptr ds:[bx + MOBJ_T.m_momz + 0], ax
 0x0000000000004c98:  89 57 18             mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], dx
-0x0000000000004c9b:  BA 1F 03             mov   dx, 0x31f
+0x0000000000004c9b:  BA 1F 03             mov   dx, S_BRAINEXPLODE1
 0x0000000000004c9e:  89 D8                mov   ax, bx
 0x0000000000004ca0:  0E                   push  cs
 0x0000000000004ca1:  E8 4A 43             call  P_SetMobjState_
@@ -4563,14 +4614,16 @@ label_2:
 0x0000000000004caa:  28 47 1B             sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 0x0000000000004cad:  8A 47 1B             mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
 0x0000000000004cb0:  3C 01                cmp   al, 1
-0x0000000000004cb2:  73 0A                jae   0x4cbe
+0x0000000000004cb2:  73 0A                jae   label_180
+label_182:
 0x0000000000004cb4:  C6 47 1B 01          mov   byte ptr ds:[bx + MOBJ_T.m_tics], 1
 0x0000000000004cb8:  83 C6 08             add   si, 8
-0x0000000000004cbb:  E9 7B FF             jmp   0x4c39
+0x0000000000004cbb:  E9 7B FF             jmp   label_181
+label_180:
 0x0000000000004cbe:  3C F0                cmp   al, 240
-0x0000000000004cc0:  77 F2                ja    0x4cb4
+0x0000000000004cc0:  77 F2                ja    label_182
 0x0000000000004cc2:  83 C6 08             add   si, 8
-0x0000000000004cc5:  E9 71 FF             jmp   0x4c39
+0x0000000000004cc5:  E9 71 FF             jmp   label_181
 
 ENDP
 
@@ -4598,13 +4651,13 @@ PUBLIC  A_BrainExplode_
 0x0000000000004cee:  26 13 57 02          adc   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
 0x0000000000004cf2:  E8 BB 3C             call  P_Random_
 0x0000000000004cf5:  30 E4                xor   ah, ah
-0x0000000000004cf7:  6A FF                push  -1
+0x0000000000004cf7:  6A FF                push  -1 ; todo 186
 0x0000000000004cf9:  01 C0                add   ax, ax
-0x0000000000004cfb:  6A 21                push  0x21
-0x0000000000004cfd:  05 80 00             add   ax, 0x80
+0x0000000000004cfb:  6A 21                push  MT_ROCKET ; todo 186
+0x0000000000004cfd:  05 80 00             add   ax, 128
 0x0000000000004d00:  50                   push  ax
 0x0000000000004d01:  89 FB                mov   bx, di
-0x0000000000004d03:  6A 00                push  0
+0x0000000000004d03:  6A 00                push  0 ; todo 186
 0x0000000000004d05:  89 F0                mov   ax, si
 0x0000000000004d07:  0E                   push  cs
 0x0000000000004d08:  3E E8 98 40          call  P_SpawnMobj_
@@ -4616,7 +4669,7 @@ PUBLIC  A_BrainExplode_
 0x0000000000004d19:  99                   cwd   
 0x0000000000004d1a:  89 47 16             mov   word ptr ds:[bx + MOBJ_T.m_momz + 0], ax
 0x0000000000004d1d:  89 57 18             mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], dx
-0x0000000000004d20:  BA 1F 03             mov   dx, 0x31f
+0x0000000000004d20:  BA 1F 03             mov   dx, S_BRAINEXPLODE1
 0x0000000000004d23:  89 D8                mov   ax, bx
 0x0000000000004d25:  0E                   push  cs
 0x0000000000004d26:  3E E8 C4 42          call  P_SetMobjState_
@@ -4625,13 +4678,14 @@ PUBLIC  A_BrainExplode_
 0x0000000000004d2f:  28 47 1B             sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 0x0000000000004d32:  8A 47 1B             mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
 0x0000000000004d35:  3C 01                cmp   al, 1
-0x0000000000004d37:  72 08                jb    0x4d41
+0x0000000000004d37:  72 08                jb    label_184
 0x0000000000004d39:  3C F0                cmp   al, 240
-0x0000000000004d3b:  77 04                ja    0x4d41
+0x0000000000004d3b:  77 04                ja    label_184
 0x0000000000004d3d:  5F                   pop   di
 0x0000000000004d3e:  5E                   pop   si
 0x0000000000004d3f:  5A                   pop   dx
 0x0000000000004d40:  C3                   ret   
+label_184:
 0x0000000000004d41:  C6 47 1B 01          mov   byte ptr ds:[bx + MOBJ_T.m_tics], 1
 0x0000000000004d45:  5F                   pop   di
 0x0000000000004d46:  5E                   pop   si
@@ -4654,33 +4708,34 @@ PUBLIC  A_BrainSpit_
 0x0000000000004d53:  89 C7                mov   di, ax
 0x0000000000004d55:  89 DE                mov   si, bx
 0x0000000000004d57:  89 4E FE             mov   word ptr [bp - 2], cx
-0x0000000000004d5a:  BB 2C 01             mov   bx, 0x12c
+0x0000000000004d5a:  BB 2C 01             mov   bx, OFFSET _brainspit_easy
 0x0000000000004d5d:  80 37 01             xor   byte ptr ds:[bx], 1
 0x0000000000004d60:  80 3E 14 22 01       cmp   byte ptr ds:[_gameskill], SK_EASY
-0x0000000000004d65:  77 0A                ja    0x4d71
+0x0000000000004d65:  77 0A                ja    label_183
 0x0000000000004d67:  80 3F 00             cmp   byte ptr ds:[bx], 0
-0x0000000000004d6a:  75 05                jne   0x4d71
+0x0000000000004d6a:  75 05                jne   label_183
 0x0000000000004d6c:  C9                   LEAVE_MACRO 
 0x0000000000004d6d:  5F                   pop   di
 0x0000000000004d6e:  5E                   pop   si
 0x0000000000004d6f:  5A                   pop   dx
 0x0000000000004d70:  C3                   ret   
-0x0000000000004d71:  BB 2A 01             mov   bx, 0x12a
+label_183:
+0x0000000000004d71:  BB 2A 01             mov   bx, OFFSET _braintargeton
 0x0000000000004d74:  8B 1F                mov   bx, word ptr ds:[bx]
 0x0000000000004d76:  01 DB                add   bx, bx
-0x0000000000004d78:  8B 87 B0 04          mov   ax, word ptr ds:[bx + 0x4b0]
-0x0000000000004d7c:  BB 2A 01             mov   bx, 0x12a
+0x0000000000004d78:  8B 87 B0 04          mov   ax, word ptr ds:[bx + _braintargets]
+0x0000000000004d7c:  BB 2A 01             mov   bx, OFFSET _braintargeton
 0x0000000000004d7f:  89 46 F8             mov   word ptr [bp - 8], ax
 0x0000000000004d82:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000004d84:  40                   inc   ax
-0x0000000000004d85:  BB 28 01             mov   bx, 0x128
+0x0000000000004d85:  BB 28 01             mov   bx, OFFSET _numbraintargets
 0x0000000000004d88:  99                   cwd   
 0x0000000000004d89:  F7 3F                idiv  word ptr ds:[bx]
-0x0000000000004d8b:  BB 2A 01             mov   bx, 0x12a
+0x0000000000004d8b:  BB 2A 01             mov   bx, OFFSET _braintargeton
 0x0000000000004d8e:  89 17                mov   word ptr ds:[bx], dx
 0x0000000000004d90:  6B 56 F8 2C          imul  dx, word ptr [bp - 8], SIZEOF_THINKER_T
 0x0000000000004d94:  6B 5E F8 18          imul  bx, word ptr [bp - 8], SIZEOF_MOBJ_POS_T
-0x0000000000004d98:  6A 1C                push  0x1c
+0x0000000000004d98:  6A 1C                push  MT_SPAWNSHOT ; todo 186
 0x0000000000004d9a:  8B 4E FE             mov   cx, word ptr [bp - 2]
 0x0000000000004d9d:  89 F8                mov   ax, di
 0x0000000000004d9f:  81 C2 04 34          add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
@@ -4694,11 +4749,11 @@ PUBLIC  A_BrainSpit_
 0x0000000000004db7:  C4 17                les   dx, ptr ds:[bx]
 0x0000000000004db9:  89 D3                mov   bx, dx
 0x0000000000004dbb:  89 45 22             mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
-0x0000000000004dbe:  26 8B 57 12          mov   dx, word ptr es:[bx + 0x12]
+0x0000000000004dbe:  26 8B 57 12          mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_statenum]
 0x0000000000004dc2:  89 D3                mov   bx, dx
 0x0000000000004dc4:  C1 E3 02             shl   bx, 2
 0x0000000000004dc7:  29 D3                sub   bx, dx
-0x0000000000004dc9:  BA 74 7D             mov   dx, 0x7d74
+0x0000000000004dc9:  BA 74 7D             mov   dx, STATES_SEGMENT
 0x0000000000004dcc:  01 DB                add   bx, bx
 0x0000000000004dce:  8E C2                mov   es, dx
 0x0000000000004dd0:  26 8A 47 02          mov   al, byte ptr es:[bx + 2]
@@ -4708,7 +4763,7 @@ PUBLIC  A_BrainSpit_
 0x0000000000004ddd:  99                   cwd   
 0x0000000000004dde:  8B 5E FC             mov   bx, word ptr [bp - 4]
 0x0000000000004de1:  89 C1                mov   cx, ax
-0x0000000000004de3:  8B 45 14             mov   ax, word ptr ds:[di + 0x14]
+0x0000000000004de3:  8B 45 14             mov   ax, word ptr ds:[di + MOBJ_T.m_momy + 2]
 0x0000000000004de6:  8E 46 F6             mov   es, word ptr [bp - 0Ah]
 0x0000000000004de9:  89 46 FA             mov   word ptr [bp - 6], ax
 0x0000000000004dec:  26 8B 47 06          mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
@@ -4721,10 +4776,10 @@ PUBLIC  A_BrainSpit_
 0x0000000000004e03:  89 CB                mov   bx, cx
 0x0000000000004e05:  8B 4E FC             mov   cx, word ptr [bp - 4]
 0x0000000000004e08:  0E                   push  cs
-0x0000000000004e09:  E8 1A 6E             call  __I4Dc26
+0x0000000000004e09:  E8 1A 6E             call  __I4D
 0x0000000000004e0c:  90                   nop   
-0x0000000000004e0d:  BA 5E 00             mov   dx, 0x5e
-0x0000000000004e10:  88 45 24             mov   byte ptr ds:[di + 0x24], al
+0x0000000000004e0d:  BA 5E 00             mov   dx, SFX_BOSPIT
+0x0000000000004e10:  88 45 24             mov   byte ptr ds:[di + MOBJ_T.m_reactiontime], al
 0x0000000000004e13:  31 C0                xor   ax, ax
 0x0000000000004e15:  0E                   push  cs
 0x0000000000004e16:  3E E8 36 B7          call  S_StartSound_
@@ -4744,7 +4799,7 @@ PUBLIC  A_SpawnSound_
 0x0000000000004e20:  52                   push  dx
 0x0000000000004e21:  56                   push  si
 0x0000000000004e22:  89 C6                mov   si, ax
-0x0000000000004e24:  BA 5F 00             mov   dx, 0x5f
+0x0000000000004e24:  BA 5F 00             mov   dx, SFX_BOSCUB
 0x0000000000004e27:  0E                   push  cs
 0x0000000000004e28:  3E E8 24 B7          call  S_StartSound_
 0x0000000000004e2c:  89 F0                mov   ax, si
@@ -4768,13 +4823,14 @@ PUBLIC  A_SpawnFly_
 0x0000000000004e3d:  89 C7                mov   di, ax
 0x0000000000004e3f:  C7 46 F6 50 03       mov   word ptr [bp - 0Ah], GETSEESTATEADDR
 0x0000000000004e44:  C7 46 F8 D9 92       mov   word ptr [bp - 8], INFOFUNCLOADSEGMENT
-0x0000000000004e49:  FE 4D 24             dec   byte ptr ds:[di + 0x24]
-0x0000000000004e4c:  74 05                je    0x4e53
+0x0000000000004e49:  FE 4D 24             dec   byte ptr ds:[di + MOBJ_T.m_reactiontime]
+0x0000000000004e4c:  74 05                je    do_spawnfly:
 0x0000000000004e4e:  C9                   LEAVE_MACRO 
 0x0000000000004e4f:  5F                   pop   di
 0x0000000000004e50:  5E                   pop   si
 0x0000000000004e51:  5A                   pop   dx
 0x0000000000004e52:  C3                   ret   
+do_spawnfly:
 0x0000000000004e53:  8B 75 22             mov   si, word ptr ds:[di + MOBJ_T.m_targetRef]
 0x0000000000004e56:  6B C6 2C             imul  ax, si, SIZEOF_THINKER_T
 0x0000000000004e59:  6B F6 18             imul  si, si, SIZEOF_MOBJ_POS_T
@@ -4783,7 +4839,7 @@ PUBLIC  A_SpawnFly_
 0x0000000000004e62:  8B 5E FA             mov   bx, word ptr [bp - 6]
 0x0000000000004e65:  FF 77 04             push  word ptr ds:[bx + MOBJ_T.m_secnum]
 0x0000000000004e68:  B8 F5 6A             mov   ax, MOBJPOSLIST_6800_SEGMENT
-0x0000000000004e6b:  6A 1D                push  0x1d
+0x0000000000004e6b:  6A 1D                push  MT_SPAWNFIRE ; todo 186
 0x0000000000004e6d:  8E C0                mov   es, ax
 0x0000000000004e6f:  89 46 FE             mov   word ptr [bp - 2], ax
 0x0000000000004e72:  26 FF 74 0A          push  word ptr es:[si + MOBJ_POS_T.mp_z + 2]
@@ -4795,16 +4851,18 @@ PUBLIC  A_SpawnFly_
 0x0000000000004e89:  0E                   push  cs
 0x0000000000004e8a:  3E E8 16 3F          call  P_SpawnMobj_
 0x0000000000004e8e:  BB BA 01             mov   bx, OFFSET _setStateReturn
-0x0000000000004e91:  BA 23 00             mov   dx, 0x23
+0x0000000000004e91:  BA 23 00             mov   dx, SFX_TELEPT
 0x0000000000004e94:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000004e96:  89 76 FC             mov   word ptr [bp - 4], si
 0x0000000000004e99:  0E                   push  cs
 0x0000000000004e9a:  3E E8 B2 B6          call  S_StartSound_
 0x0000000000004e9e:  E8 0F 3B             call  P_Random_
-0x0000000000004ea1:  3C 32                cmp   al, 0x32
-0x0000000000004ea3:  72 03                jb    0x4ea8
-0x0000000000004ea5:  E9 7D 00             jmp   0x4f25
+0x0000000000004ea1:  3C 32                cmp   al, 60
+0x0000000000004ea3:  72 03                jb    spawn_imp
+0x0000000000004ea5:  E9 7D 00             jmp   spawn_non_imp
+spawn_imp:
 0x0000000000004ea8:  B0 0B                mov   al, SIZEOF_MOBJINFO_T
+chose_spawn_unit:
 0x0000000000004eaa:  8B 5E FA             mov   bx, word ptr [bp - 6]
 0x0000000000004ead:  30 E4                xor   ah, ah
 0x0000000000004eaf:  FF 77 04             push  word ptr ds:[bx + MOBJ_T.m_secnum]
@@ -4828,7 +4886,7 @@ PUBLIC  A_SpawnFly_
 0x0000000000004ee4:  B9 F5 6A             mov   cx, MOBJPOSLIST_6800_SEGMENT
 0x0000000000004ee7:  E8 3A E1             call  P_LookForPlayers_
 0x0000000000004eea:  84 C0                test  al, al
-0x0000000000004eec:  74 11                je    0x4eff
+0x0000000000004eec:  74 11                je    label_185
 0x0000000000004eee:  8A 44 1A             mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000004ef1:  30 E4                xor   ah, ah
 0x0000000000004ef3:  FF 5E F6             call  dword ptr [bp - 0Ah]
@@ -4837,6 +4895,7 @@ PUBLIC  A_SpawnFly_
 0x0000000000004efa:  0E                   push  cs
 0x0000000000004efb:  E8 F0 40             call  P_SetMobjState_
 0x0000000000004efe:  90                   nop   
+label_185:
 0x0000000000004eff:  FF 74 04             push  word ptr ds:[si + 4]
 0x0000000000004f02:  8E C1                mov   es, cx
 0x0000000000004f04:  26 FF 77 06          push  word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
@@ -4853,44 +4912,54 @@ PUBLIC  A_SpawnFly_
 0x0000000000004f22:  5E                   pop   si
 0x0000000000004f23:  5A                   pop   dx
 0x0000000000004f24:  C3                   ret   
-0x0000000000004f25:  3C 5A                cmp   al, 0x5a
-0x0000000000004f27:  73 05                jae   0x4f2e
-0x0000000000004f29:  B0 0C                mov   al, 0xc
-0x0000000000004f2b:  E9 7C FF             jmp   0x4eaa
-0x0000000000004f2e:  3C 78                cmp   al, 0x78
-0x0000000000004f30:  73 05                jae   0x4f37
-0x0000000000004f32:  B0 0D                mov   al, 0xd
-0x0000000000004f34:  E9 73 FF             jmp   0x4eaa
-0x0000000000004f37:  3C 82                cmp   al, 0x82
-0x0000000000004f39:  73 05                jae   0x4f40
-0x0000000000004f3b:  B0 16                mov   al, 0x16
-0x0000000000004f3d:  E9 6A FF             jmp   0x4eaa
-0x0000000000004f40:  3C A0                cmp   al, 0xa0
-0x0000000000004f42:  73 05                jae   0x4f49
-0x0000000000004f44:  B0 0E                mov   al, 0xe
-0x0000000000004f46:  E9 61 FF             jmp   0x4eaa
-0x0000000000004f49:  3C A2                cmp   al, 0xa2
-0x0000000000004f4b:  73 05                jae   0x4f52
-0x0000000000004f4d:  B0 03                mov   al, 3
-0x0000000000004f4f:  E9 58 FF             jmp   0x4eaa
-0x0000000000004f52:  3C AC                cmp   al, 0xac
-0x0000000000004f54:  73 05                jae   0x4f5b
-0x0000000000004f56:  B0 05                mov   al, 5
-0x0000000000004f58:  E9 4F FF             jmp   0x4eaa
-0x0000000000004f5b:  3C C0                cmp   al, 0xc0
-0x0000000000004f5d:  73 05                jae   0x4f64
-0x0000000000004f5f:  B0 14                mov   al, 0x14
-0x0000000000004f61:  E9 46 FF             jmp   0x4eaa
-0x0000000000004f64:  3C DE                cmp   al, 0xde
-0x0000000000004f66:  73 05                jae   0x4f6d
-0x0000000000004f68:  B0 08                mov   al, 8
-0x0000000000004f6a:  E9 3D FF             jmp   0x4eaa
-0x0000000000004f6d:  3C F6                cmp   al, 0xf6
-0x0000000000004f6f:  73 05                jae   0x4f76
-0x0000000000004f71:  B0 11                mov   al, 0x11
-0x0000000000004f73:  E9 34 FF             jmp   0x4eaa
-0x0000000000004f76:  B0 0F                mov   al, 0xf
-0x0000000000004f78:  E9 2F FF             jmp   0x4eaa
+spawn_non_imp:
+0x0000000000004f25:  3C 5A                cmp   al, 90
+0x0000000000004f27:  73 05                jae   spawn_non_cgunner
+0x0000000000004f29:  B0 0C                mov   al, MT_SERGEANT
+0x0000000000004f2b:  E9 7C FF             jmp   chose_spawn_unit
+spawn_non_cgunner:
+0x0000000000004f2e:  3C 78                cmp   al, 120
+0x0000000000004f30:  73 05                jae   spawn_not_spectre
+0x0000000000004f32:  B0 0D                mov   al, MT_SHADOWS
+0x0000000000004f34:  E9 73 FF             jmp   chose_spawn_unit
+spawn_not_spectre:
+0x0000000000004f37:  3C 82                cmp   al, 130
+0x0000000000004f39:  73 05                jae   spawn_not_painelem
+0x0000000000004f3b:  B0 16                mov   al, MT_PAIN
+0x0000000000004f3d:  E9 6A FF             jmp   chose_spawn_unit
+spawn_not_painelem:
+0x0000000000004f40:  3C A0                cmp   al, 160
+0x0000000000004f42:  73 05                jae   spawn_not_caco
+0x0000000000004f44:  B0 0E                mov   al, MT_HEAD
+0x0000000000004f46:  E9 61 FF             jmp   chose_spawn_unit
+spawn_not_caco:
+0x0000000000004f49:  3C A2                cmp   al, 162
+0x0000000000004f4b:  73 05                jae   spawn_not_vile
+0x0000000000004f4d:  B0 03                mov   al, MT_VILE
+0x0000000000004f4f:  E9 58 FF             jmp   chose_spawn_unit
+spawn_not_vile:
+0x0000000000004f52:  3C AC                cmp   al, 172
+0x0000000000004f54:  73 05                jae   spawn_not_revenant
+0x0000000000004f56:  B0 05                mov   al, MT_UNDEAD
+0x0000000000004f58:  E9 4F FF             jmp   chose_spawn_unit
+spawn_not_revenant:
+0x0000000000004f5b:  3C C0                cmp   al, 192
+0x0000000000004f5d:  73 05                jae   spawn_not_spider
+0x0000000000004f5f:  B0 14                mov   al, MT_BABY
+0x0000000000004f61:  E9 46 FF             jmp   chose_spawn_unit
+spawn_not_spider:
+0x0000000000004f64:  3C DE                cmp   al, 222
+0x0000000000004f66:  73 05                jae   spawn_not_mancubus
+0x0000000000004f68:  B0 08                mov   al, MT_FATSO
+0x0000000000004f6a:  E9 3D FF             jmp   chose_spawn_unit
+spawn_not_mancubus:
+0x0000000000004f6d:  3C F6                cmp   al, 246
+0x0000000000004f6f:  73 05                jae   spawn_not_hellknight
+0x0000000000004f71:  B0 11                mov   al, MT_KNIGHT
+0x0000000000004f73:  E9 34 FF             jmp   chose_spawn_unit
+spawn_not_hellknight:
+0x0000000000004f76:  B0 0F                mov   al, MT_BRUISER
+0x0000000000004f78:  E9 2F FF             jmp   chose_spawn_unit
 0x0000000000004f7b:  FC                   cld   
 
 ENDP
@@ -4904,12 +4973,13 @@ PUBLIC  A_PlayerScream_
 0x0000000000004f7e:  BB EB 02             mov   bx, OFFSET _commercial
 0x0000000000004f81:  B0 39                mov   al, SFX_PLDETH 
 0x0000000000004f83:  80 3F 00             cmp   byte ptr ds:[bx], 0
-0x0000000000004f86:  74 0D                je    0x4f95
+0x0000000000004f86:  74 0D                je    label_186
 0x0000000000004f88:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000004f8b:  8B 1F                mov   bx, word ptr ds:[bx]
 0x0000000000004f8d:  83 7F 1C CE          cmp   word ptr ds:[bx + MOBJ_T.m_health], -50
-0x0000000000004f91:  7D 02                jge   0x4f95
+0x0000000000004f91:  7D 02                jge   label_186
 0x0000000000004f93:  B0 3A                mov   al, SFX_PDIEHI
+label_186:
 0x0000000000004f95:  30 E4                xor   ah, ah
 0x0000000000004f97:  BB EC 06             mov   bx, OFFSET _playerMobj
 0x0000000000004f9a:  89 C2                mov   dx, ax
