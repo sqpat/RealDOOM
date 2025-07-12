@@ -388,10 +388,11 @@ VISPLANE_T ENDS
 
 PSPDEF_T STRUC
 
-    pspdef_statenum     dw ?
-    pspdef_tics         dw ?
-    pspdef_sx           dd ?
-    pspdef_sy           dd ?
+    pspdef_statenum     dw ?  ; 0
+    pspdef_tics         dw ?  ; 2
+    pspdef_sx           dd ?  ; 4
+    pspdef_sy           dd ?  ; 8
+                              ; C
 
 PSPDEF_T ENDS
 

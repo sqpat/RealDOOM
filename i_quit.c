@@ -148,6 +148,7 @@ void __near Z_ShutdownEMS() {
 
 
 void hackDSBack();
+void zeroConventional();
 
 //
 // I_Shutdown
@@ -168,6 +169,7 @@ void __near I_Shutdown(void) {
 	I_ShutdownMouse();
 	I_ShutdownKeyboard();
 	Z_ShutdownEMS();
+	zeroConventional(); // zero conventional. clears various bugs that assume 0 in memory. kind of bad practice, the bugs shouldnt happen... todo fix
 	hackDSBack();
 	//Z_ShutdownUMB();
 }
@@ -392,6 +394,8 @@ void __near I_Quit(void) {
 	
 	//printf("\n");
 	Z_ShutdownEMS();
+	zeroConventional(); // zero conventional. clears various bugs that assume 0 in memory. kind of bad practice, the bugs shouldnt happen... todo fix
+
 	//Z_ShutdownUMB();
 	hackDSBack();
 

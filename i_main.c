@@ -84,6 +84,7 @@ _WCRTDATA unsigned _WCDATA _amblksiz = 0x700;
 
 
 void hackDS();
+void zeroConventional();
 void hackDSBack();
 extern uint16_t __far* _GETDS;
 
@@ -95,6 +96,8 @@ int16_t main ( int16_t argc, int8_t** argv ) {
 	hackDS();
 	// override __GETDS mov ax, #### but im not sure anything uses it after init anyway?
 	_GETDS[1] = FIXED_DS_SEGMENT;
+	
+	// zeroConventional(); // zero conventional. clears various bugs that assume 0 in memory. kind of bad practice, the bugs shouldnt happen... todo fix
 
     D_DoomMain (); 
 

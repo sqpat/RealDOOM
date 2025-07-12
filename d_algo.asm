@@ -79,6 +79,57 @@ retf
 ENDP
 
 
+PROC zeroConventional_ FAR
+PUBLIC zeroConventional_
+
+cli
+
+push cx
+push di
+
+xor  ax, ax
+mov  di, ax
+
+mov  cx, 04000h
+mov  es, cx
+mov  cx, 08000h
+rep  stosw
+
+mov  cx, 05000h
+mov  es, cx
+mov  cx, 08000h
+rep  stosw
+
+mov  cx, 06000h
+mov  es, cx
+mov  cx, 08000h
+rep  stosw
+
+mov  cx, 07000h
+mov  es, cx
+mov  cx, 08000h
+rep  stosw
+
+mov  cx, 08000h
+mov  es, cx
+mov  cx, 08000h
+rep  stosw
+
+mov  cx, 09000h
+mov  es, cx
+mov  cx, 08000h
+rep  stosw
+
+pop di
+pop cx
+sti
+
+
+retf
+
+ENDP
+
+
 ; nice for debug... 
 COMMENT @
 
