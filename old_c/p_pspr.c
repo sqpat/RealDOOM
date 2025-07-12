@@ -80,7 +80,7 @@ void __near P_BringUpWeapon () {
 	if (player.pendingweapon == wp_nochange) {
 		player.pendingweapon = player.readyweapon;
 	}
-	if (player.pendingweapon == wp_chainsaw) {
+	if (player.pendingweapon == wp_chainsaw) { 
 		S_StartSound(playerMobj, sfx_sawup);
 	}
 		
@@ -149,7 +149,7 @@ boolean __near P_CheckAmmo () {
 			player.pendingweapon = wp_fist;
 		}
 	
-    } while (player.pendingweapon == wp_nochange);
+    } while (player.pendingweapon == wp_nochange);  // note this while check makes no sense? removed from asm..
 
     // Now set appropriate weapon overlay.
     P_SetPsprite (

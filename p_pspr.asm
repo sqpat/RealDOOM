@@ -99,48 +99,38 @@ AM_NOAMMO = 5	 ; Unlimited for chainsaw / fist.
 PROC P_BringUpWeapon_ NEAR
 PUBLIC P_BringUpWeapon_
  
-
-
 push  bx
 push  dx
-push  si
-mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
-cmp   byte ptr ds:[bx], WP_NOCHANGE
-je    label_1
-label_3:
-mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
-cmp   byte ptr ds:[bx], 7
-je    label_2
-label_4:
-mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
-mov   bl, byte ptr ds:[bx]
-xor   bh, bh
-imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
+cmp   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_NOCHANGE
+je    set_pending_weapon_ready_weapon
+check_for_chainsaw_pending:
+cmp   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_CHAINSAW
+je    rev_chainsaw_noise
+pending_weapon_checks_done:
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[_player + PLAYER_T.player_pendingweapon]
+xchg  ax, bx
+
 mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_upstate]
-mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
-mov   byte ptr ds:[bx], WP_NOCHANGE
-mov   bx, OFFSET _psprites + (PS_WEAPON * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy
-mov   word ptr ds:[bx], WEAPONBOTTOM_LOW
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_NOCHANGE
 xor   ax, ax
-mov   word ptr ds:[bx + 2], WEAPONBOTTOM_HIGH
+mov   word ptr ds:[_psprites + (PS_WEAPON * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy + 0], ax   ; WEAPONBOTTOM_LOW
+mov   word ptr ds:[_psprites + (PS_WEAPON * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_sy + 2], WEAPONBOTTOM_HIGH
 call  P_SetPsprite_
-pop   si
 pop   dx
 pop   bx
 ret   
-label_1:
-mov   si, OFFSET _player + PLAYER_T.player_readyweapon
-mov   al, byte ptr ds:[si]
-mov   byte ptr ds:[bx], al
-jmp   label_3
-label_2:
-mov   bx, OFFSET _playerMobj
+set_pending_weapon_ready_weapon:
+mov   al, byte ptr ds:[OFFSET _player + PLAYER_T.player_readyweapon]
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
+jmp   check_for_chainsaw_pending
+rev_chainsaw_noise:
 mov   dx, SFX_SAWUP
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
-jmp   label_4
-
+jmp   pending_weapon_checks_done
 ENDP
+
 
 PROC P_CheckAmmo_ NEAR
 PUBLIC P_CheckAmmo_
@@ -151,141 +141,134 @@ PUBLIC A_CheckReload_
 
 push  bx
 push  dx
-push  si
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-mov   al, byte ptr ds:[bx]
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
+xchg  ax, bx
+mov   al, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
+cmp   byte ptr ds:[_player + PLAYER_T.player_readyweapon], WP_BFG
+jne   readyweapon_not_bfg
+mov   dx, BFGCELLS ; use 40 ammo per shot
+jmp   count_determined
+readyweapon_not_bfg:
+cmp   byte ptr ds:[bx], WP_SUPERSHOTGUN
+jne   not_super_shotgun
+mov   dx, 2 ; use two ammo per shot
+jmp   count_determined
+not_super_shotgun:
+mov   dx, 1  ; use one ammo per shot
+count_determined:
+; dx has number of ammo to use per shot.
+cmp   al, AM_NOAMMO ; this weapon doesn't use ammo
+je    passed_ammo_check
 xor   ah, ah
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   al, byte ptr ds:[bx + _weaponinfo]
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-cmp   byte ptr ds:[bx], WP_BFG
-jne   label_5
-mov   bx, BFGCELLS
-label_7:
-cmp   al, AM_NOAMMO
-je    label_8
-xor   ah, ah
-mov   si, ax
-add   si, ax
-cmp   bx, word ptr ds:[si + OFFSET _player + PLAYER_T.player_ammo]
-jle   label_8
-mov   dx, OFFSET _player + PLAYER_T.player_pendingweapon
-xor   al, al
-label_15:
-mov   bx, OFFSET _player + PLAYER_T.player_weaponowned + WP_PLASMA
-cmp   al, byte ptr ds:[bx]
-je    label_14
-mov   bx, OFFSET _player + PLAYER_T.player_ammo + (2 * AM_CELL)
-cmp   ax, word ptr ds:[bx]
-je    label_14
-mov   bx, OFFSET _shareware
-cmp   al, byte ptr ds:[bx]
-jne   label_14
-mov   bx, dx
-mov   byte ptr ds:[bx], WP_PLASMA
-label_11:
-mov   bx, dx
-cmp   byte ptr ds:[bx], WP_NOCHANGE
-je    label_15
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-mov   al, byte ptr ds:[bx]
-xor   ah, ah
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
+sal   ax, 1
+xchg  ax, bx
+cmp   dx, word ptr ds:[bx + _player + PLAYER_T.player_ammo] ; do we have enough ammo?
+jle   passed_ammo_check
+; not enough ammo..
+
+
+
+xor   ax, ax
+
+; dumb math flow to decide next weapon to change to! 
+; NOTE: AL/AX known zero here. used for various checks.
+ ; generally checking weapon ownership and then enough ammo to fire a shot, 
+ ; and commercial/shareware
+
+
+
+cmp   al, byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_PLASMA]       ; plasma owned?
+je    cant_use_plasma_rifle
+cmp   ax, word ptr ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)]          ; any cells?
+je    cant_use_plasma_rifle
+cmp   al, byte ptr ds:[_shareware]                                              ; no plasma in shareware
+jne   cant_use_plasma_rifle
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_PLASMA          ; pending weapon plasma
+jmp   fallback_weapon_attempt_selected
+passed_ammo_check:
+mov   al, 1  ; true
+jmp   exit_check_reload
+
+cant_use_plasma_rifle:
+cmp   al, byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_SUPERSHOTGUN] ; ss owned?
+je    cant_use_supershotgun
+cmp   word ptr ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)], 2          ; 2 shots per ss
+jle   cant_use_supershotgun
+cmp   al, byte ptr ds:[_commercial]                                             ; ss only commercial
+je    cant_use_supershotgun
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_SUPERSHOTGUN    ; pending weapon ss
+jmp   fallback_weapon_attempt_selected
+
+cant_use_supershotgun:
+cmp   al, byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_CHAINGUN]     ; chaingun owned?
+je    cant_use_chaingun
+cmp   ax, word ptr ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]          ; any ammo?
+je    cant_use_chaingun
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_CHAINGUN        ; pending chaingun
+jmp   fallback_weapon_attempt_selected
+cant_use_chaingun:
+cmp   al, byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_SHOTGUN]      ; shotgun owned?
+je    cant_use_shotgun
+cmp   ax, word ptr ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)]         ; any clips?
+je    cant_use_shotgun
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_SHOTGUN         ; pending shotgun
+jmp   fallback_weapon_attempt_selected
+
+cant_use_shotgun:
+cmp   ax, word ptr ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]          ; any ammo?
+je    cant_use_pistol
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_PISTOL          ; pending pistol
+jmp   fallback_weapon_attempt_selected
+cant_use_pistol:
+cmp   al, byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_CHAINSAW]     ; chainsaw owned?
+je    cant_use_chainsaw
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_CHAINSAW        ; pending chaisnaw
+jmp   fallback_weapon_attempt_selected
+
+cant_use_chainsaw:
+cmp   al, byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_MISSILE]      ; rocket launcher owned?
+je    cant_use_rocket
+cmp   ax, word ptr ds:[_player + PLAYER_T.player_ammo + (2 * AM_MISL)]          ; any rockets
+je    cant_use_rocket
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_MISSILE         ; pending rocket launcher
+jmp   fallback_weapon_attempt_selected
+cant_use_rocket:
+cmp   al, byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_BFG]          ; bfg owned?
+je    cant_use_bfg
+cmp   word ptr ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)], BFGCELLS    ; enough cells?
+jle   cant_use_bfg
+cmp   al, byte ptr ds:[_shareware]                                              ; no bfg in shareware..
+jne   cant_use_bfg
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_BFG             ; pending bfg
+jmp   fallback_weapon_attempt_selected
+cant_use_bfg:
+mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al                 ; pending fist... AL is 0
+;jmp   fallback_weapon_attempt_selected
+
+fallback_weapon_attempt_selected:
+
+
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
+xchg  ax, bx
+
+; pending weapon has been set.
+; set state to current weapon's down state.
 mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
 
-xor   al, al
-call  P_SetPsprite_
-xor   al, al
-label_9:
-pop   si
+xor   ax, ax
+call  P_SetPsprite_  ; change weapon anim
+
+xor   ax, ax ; failed ammo check
+exit_check_reload:
 pop   dx
 pop   bx
 ret   
-label_5:
-cmp   byte ptr ds:[bx], WP_SUPERSHOTGUN
-jne   label_6
-mov   bx, 2
-jmp   label_7
-label_6:
-mov   bx, 1
-jmp   label_7
-label_8:
-mov   al, 1
-jmp   label_9
-label_14:
-mov   bx, OFFSET _player + PLAYER_T.player_weaponowned + WP_SUPERSHOTGUN
-cmp   al, byte ptr ds:[bx]
-je    label_10
-mov   bx, OFFSET _player + PLAYER_T.player_ammo + (2 * AM_SHELL)
-cmp   word ptr ds:[bx], 2
-jle   label_10
-mov   bx, OFFSET _commercial
-cmp   al, byte ptr ds:[bx]
-je    label_10
-mov   bx, dx
-mov   byte ptr ds:[bx], 8
-jmp   label_11
-label_10:
-mov   bx, OFFSET _player + PLAYER_T.player_weaponowned + WP_CHAINGUN
-cmp   al, byte ptr ds:[bx]
-je    label_16
-mov   bx, OFFSET _player + PLAYER_T.player_ammo
-cmp   ax, word ptr ds:[bx]
-je    label_16
-mov   bx, dx
-mov   byte ptr ds:[bx], 3
-jmp   label_11
-label_16:
-mov   bx, OFFSET _player + PLAYER_T.player_weaponowned + WP_SHOTGUN
-cmp   al, byte ptr ds:[bx]
-je    label_13
-mov   bx, OFFSET _player + PLAYER_T.player_ammo + (2 * AM_SHELL)
-cmp   ax, word ptr ds:[bx]
-je    label_13
-mov   bx, dx
-mov   byte ptr ds:[bx], 2
-jmp   label_11
-label_13:
-mov   bx, OFFSET _player + PLAYER_T.player_ammo
-cmp   ax, word ptr ds:[bx]
-je    label_17
-mov   bx, dx
-mov   byte ptr ds:[bx], 1
-jmp   label_11
-label_17:
-mov   bx, OFFSET _player + PLAYER_T.player_weaponowned + WP_CHAINSAW
-cmp   al, byte ptr ds:[bx]
-je    label_18
-mov   bx, dx
-mov   byte ptr ds:[bx], 7
-jmp   label_11
-label_18:
-mov   bx, OFFSET _player + PLAYER_T.player_weaponowned + WP_MISSILE
-cmp   al, byte ptr ds:[bx]
-je    label_19
-mov   bx, OFFSET _player + PLAYER_T.player_ammo + (2 * AM_MISL)
-cmp   ax, word ptr ds:[bx]
-je    label_19
-mov   bx, dx
-mov   byte ptr ds:[bx], 4
-jmp   label_11
-label_19:
-mov   bx, OFFSET _player + PLAYER_T.player_weaponowned + WP_BFG
-cmp   al, byte ptr ds:[bx]
-je    label_12
-mov   bx, OFFSET _player + PLAYER_T.player_ammo + (2 * AM_CELL)
-cmp   word ptr ds:[bx], BFGCELLS
-jle   label_12
-mov   bx, OFFSET _shareware
-cmp   al, byte ptr ds:[bx]
-jne   label_12
-mov   bx, dx
-mov   byte ptr ds:[bx], 6
-jmp   label_11
-label_12:
-mov   bx, dx
-mov   byte ptr ds:[bx], al
-jmp   label_11
+
+
+
+
 
 ENDP
 
@@ -847,7 +830,7 @@ mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 mov   bl, byte ptr ds:[bx]
 xor   bh, bh
 imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   bl, byte ptr ds:[bx + _weaponinfo]
+mov   bl, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
 xor   bh, bh
 add   bx, bx
 mov   ax, MT_ROCKET
@@ -866,7 +849,7 @@ mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 mov   bl, byte ptr ds:[bx]
 xor   bh, bh
 imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   bl, byte ptr ds:[bx + _weaponinfo]
+mov   bl, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
 xor   bh, bh
 add   bx, bx
 mov   ax, MT_BFG
@@ -889,7 +872,7 @@ mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
 mov   bl, byte ptr ds:[bx]
 xor   bh, bh
 imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   bl, byte ptr ds:[bx + _weaponinfo]
+mov   bl, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
 xor   bh, bh
 add   bx, bx
 mov   si, OFFSET _player + PLAYER_T.player_readyweapon
@@ -1042,7 +1025,7 @@ call  P_SetMobjState_
 mov   al, byte ptr ds:[bx]
 xor   ah, ah
 imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   al, byte ptr ds:[bx + _weaponinfo]
+mov   al, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
 mov   bx, ax
 add   bx, ax
 mov   si, OFFSET _player + PLAYER_T.player_readyweapon
@@ -1092,7 +1075,7 @@ call  P_SetMobjState_
 mov   bl, byte ptr ds:[bx]
 xor   bh, bh
 imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   bl, byte ptr ds:[bx + _weaponinfo]
+mov   bl, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
 xor   bh, bh
 add   bx, bx
 mov   si, OFFSET _player + PLAYER_T.player_readyweapon
@@ -1141,7 +1124,7 @@ call  P_SetMobjState_
 mov   al, byte ptr ds:[bx]
 xor   ah, ah
 imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   bl, byte ptr ds:[bx + _weaponinfo]
+mov   bl, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
 xor   bh, bh
 add   bx, bx
 mov   si, OFFSET _player + PLAYER_T.player_readyweapon
@@ -1224,7 +1207,7 @@ call  S_StartSound_
 mov   al, byte ptr ds:[bx]
 xor   ah, ah
 imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   al, byte ptr ds:[bx + _weaponinfo]
+mov   al, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
 mov   bx, ax
 add   bx, ax
 cmp   word ptr ds:[bx + OFFSET _player + PLAYER_T.player_ammo], 0
@@ -1243,7 +1226,7 @@ call  P_SetMobjState_
 mov   al, byte ptr ds:[bx]
 xor   ah, ah
 imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
-mov   al, byte ptr ds:[bx + _weaponinfo]
+mov   al, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
 mov   bx, ax
 add   bx, ax
 mov   di, OFFSET _player + PLAYER_T.player_readyweapon
