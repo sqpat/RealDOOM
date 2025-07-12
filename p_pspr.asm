@@ -121,7 +121,7 @@ pop   dx
 pop   bx
 ret   
 set_pending_weapon_ready_weapon:
-mov   al, byte ptr ds:[OFFSET _player + PLAYER_T.player_readyweapon]
+mov   al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
 jmp   check_for_chainsaw_pending
 rev_chainsaw_noise:
@@ -255,7 +255,7 @@ xchg  ax, bx
 
 ; pending weapon has been set.
 ; set state to current weapon's down state.
-mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
+mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
 
 xor   ax, ax
 call  P_SetPsprite_  ; change weapon anim
@@ -287,7 +287,7 @@ mov   dx, S_PLAY_ATK1
 mov   ax, word ptr ds:[_playerMobj]
 call  P_SetMobjState_
 mov   al, SIZEOF_MOBJINFO_T
-mul   byte ptr ds:[OFFSET _player + PLAYER_T.player_readyweapon]
+mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_atkstate]
 xor   ax, ax
@@ -305,9 +305,9 @@ PUBLIC P_DropWeapon_
 push  bx
 push  dx
 mov   al, SIZEOF_MOBJINFO_T
-mul   byte ptr ds:[OFFSET _player + PLAYER_T.player_readyweapon]
+mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
-mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
+mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
 xor   ax, ax
 call  P_SetPsprite_
 pop   dx
@@ -372,7 +372,7 @@ mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 xor   ax, ax
-mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
+mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
 call  P_SetPsprite_
 jmp   exit_a_weaponready
 
@@ -444,38 +444,34 @@ PUBLIC A_Lower_
 
 push  bx
 push  dx
-push  si
-mov   bx, ax
-add   word ptr ds:[bx + PSPDEF_T.pspdef_sy+0], 0
-adc   word ptr ds:[bx + PSPDEF_T.pspdef_sy+2], LOWERSPEED_HIGH
-mov   ax, word ptr ds:[bx + PSPDEF_T.pspdef_sy+2]
-cmp   ax, WEAPONBOTTOM_HIGH
+xchg  ax, bx
+; bx gets pspdef
+
+add   word ptr ds:[bx + PSPDEF_T.pspdef_sy+2], LOWERSPEED_HIGH
+cmp   word ptr ds:[bx + PSPDEF_T.pspdef_sy+2], WEAPONBOTTOM_HIGH
 jl    exit_a_lower
-mov   si, OFFSET _player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)
-cmp   byte ptr ds:[si], PST_DEAD
-je    label_31
-mov   bx, OFFSET _player + PLAYER_T.player_health
-mov   ax, word ptr ds:[bx]
-test  ax, ax
-jne   label_32
-xor   dx, dx
+
+cmp   byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_DEAD
+je    player_dead
+
+cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
+jne   player_alive
+xor   ax, ax
+cwd
 call  P_SetPsprite_
 exit_a_lower:
-pop   si
 pop   dx
 pop   bx
 ret   
-label_31:
+
+player_dead:
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_sy+0], WEAPONBOTTOM_LOW
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_sy+2], WEAPONBOTTOM_HIGH
 jmp   exit_a_lower
-label_32:
-mov   bx, OFFSET _player + PLAYER_T.player_pendingweapon
-mov   si, OFFSET _player + PLAYER_T.player_readyweapon
-mov   bl, byte ptr ds:[bx]
-mov   byte ptr ds:[si], bl
+player_alive:
+mov   al, byte ptr ds:[_player + PLAYER_T.player_pendingweapon]
+mov   byte ptr ds:[_player + PLAYER_T.player_readyweapon], al
 call  P_BringUpWeapon_
-pop   si
 pop   dx
 pop   bx
 ret   
@@ -490,25 +486,23 @@ push  dx
 mov   bx, ax
 add   word ptr ds:[bx + PSPDEF_T.pspdef_sy+0], 0
 adc   word ptr ds:[bx + PSPDEF_T.pspdef_sy+2], -6
-mov   ax, word ptr ds:[bx + PSPDEF_T.pspdef_sy+2]
-cmp   ax, WEAPONTOP_HIGH
+cmp   word ptr ds:[bx + PSPDEF_T.pspdef_sy+2], WEAPONTOP_HIGH
 jg    exit_a_raise
-jne   label_33
+jne   set_weapon_top
 cmp   word ptr ds:[bx + 8], 0
-jbe   label_33
+jbe   set_weapon_top
 exit_a_raise:
 pop   dx
 pop   bx
 ret   
-label_33:
+set_weapon_top:
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_sy+0], WEAPONTOP_LOW
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_sy+2], WEAPONTOP_HIGH
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
-mov   bl, byte ptr ds:[bx]
-xor   bh, bh
-imul  bx, bx, SIZEOF_MOBJINFO_T  ; todo x86-16
+mov   al, SIZEOF_MOBJINFO_T 
+mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
+xchg  ax, bx
 xor   ax, ax
-mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_readystate]
+mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_readystate]
 call  P_SetPsprite_
 pop   dx
 pop   bx
@@ -522,16 +516,14 @@ PUBLIC A_GunFlash_
 
 push  bx
 push  dx
-mov   bx, OFFSET _playerMobj
 mov   dx, S_PLAY_ATK2
-mov   ax, word ptr ds:[bx]
-mov   bx, OFFSET _player + PLAYER_T.player_readyweapon
+mov   ax, word ptr ds:[_playerMobj]
 call  P_SetMobjState_
-mov   al, byte ptr ds:[bx]
-xor   ah, ah
-imul  bx, ax, SIZEOF_MOBJINFO_T  ; todo x86-16
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
+xchg  ax, bx
 mov   ax, 1
-mov   dx, word ptr ds:[bx + OFFSET _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
+mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
 call  P_SetPsprite_
 pop   dx
 pop   bx
@@ -542,97 +534,95 @@ ENDP
 PROC A_Punch_ NEAR
 PUBLIC A_Punch_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+
+PUSHA_NO_AX_OR_BP_MACRO
+
 call  P_Random_
+
+;    damage = (P_Random ()%10+1)<<1;
+
 xor   ah, ah
-mov   bx, 10
-cwd   
-idiv  bx          ; todo byte not word div
-mov   si, dx
-add   si, dx
-mov   bx, OFFSET _player + PLAYER_T.player_powers + (PW_STRENGTH * 2)
-add   si, 2
-cmp   word ptr ds:[bx], 0
-je    label_34
-mov   cx, si
-shl   cx, 2
-add   si, cx
-add   si, si
-label_34:
-mov   bx, OFFSET _playerMobj_pos
-les   di, dword ptr ds:[bx]
+cwd   ; zero dx
+mov   bx, 10  ; zero bh
+div   bl
+mov   dl, ah  ; modulo in dl.
+inc   dx
+sal   dx, 1
+
+cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_STRENGTH * 2)], 0
+je    no_berserk
+; multiply berserk dmg by 10
+shl   dx, 1  ; x2 na
+mov   ax, dx ; x2 x2
+shl   dx, 1  ; x4 x2
+shl   dx, 1  ; x8 x2
+add   dx, ax ; x10 x2
+no_berserk:
+
+push  dx ; damage parameter down the road 
+
+les   di, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
 call  P_Random_
 mov   bl, al
 call  P_Random_
-xor   bh, bh
+; bh still zero
 xor   ah, ah
-sub   bx, ax
-mov   ax, bx
-shr   cx, 3
+xchg  ax, bx
+sub   ax, bx
+
+SHIFT_MACRO shr   cx 3
 sar   ax, 1
 add   cx, ax
-mov   bx, OFFSET _playerMobj
+
+; cx has angle.
+
+;    slope = P_AimLineAttack (playerMobj, angle, MELEERANGE);
+
 mov   dx, cx
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 mov   bx, MELEERANGE
 call  dword ptr ds:[_P_AimLineAttack]
-push  si
+
+;    P_LineAttack (playerMobj, angle, MELEERANGE , slope, damage);
+
+; already pushed damage above
+
 push  dx
-mov   bx, OFFSET _playerMobj
 push  ax
+
 mov   dx, cx
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobj]
 mov   bx, MELEERANGE
 call  dword ptr ds:[_P_LineAttack]
-mov   bx, OFFSET _linetarget
-cmp   word ptr ds:[bx], 0
-jne   label_35
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+
+
+cmp   word ptr ds:[_linetarget], 0
+jne   have_linetarget
+POPA_NO_AX_OR_BP_MACRO
 ret   
-label_35:
-mov   bx, OFFSET _playerMobj
+have_linetarget:
 mov   dx, SFX_PUNCH
-mov   ax, word ptr ds:[bx]
-mov   bx, OFFSET _linetarget_pos
+mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
-les   si, dword ptr ds:[bx]
-push  word ptr es:[si + 6]
-push  word ptr es:[si + 4]
-push  word ptr es:[si + 2]
-mov   bx, OFFSET _playerMobj_pos
-push  word ptr es:[si]
-les   si, dword ptr ds:[bx]
-mov   ax, word ptr es:[si + 4]
-mov   cx, word ptr es:[si + 6]
-mov   si, bx
-mov   bx, word ptr ds:[bx]
-mov   es, word ptr ds:[si + 2]
-mov   dx, word ptr es:[bx]
-mov   si, word ptr es:[bx + 2]
-mov   bx, ax
-mov   ax, dx
-mov   dx, si
+
+les   di, dword ptr ds:[_linetarget_pos]
+push  word ptr es:[di + 6]
+push  word ptr es:[di + 4]
+push  word ptr es:[di + 2]
+push  word ptr es:[di]
+les   di, dword ptr ds:[_playerMobj_pos]
+mov   bx, word ptr es:[di + 4]
+mov   cx, word ptr es:[di + 6]
+les   ax, dword ptr es:[bx]
+mov   dx, es
+
 call  R_PointToAngle2_
-mov   bx, OFFSET _playerMobj_pos
-les   si, dword ptr ds:[bx]
-mov   word ptr es:[si + MOBJ_POS_T.mp_angle+0], ax
-mov   word ptr es:[si + MOBJ_POS_T.mp_angle+2], dx
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+les   di, dword ptr ds:[_playerMobj_pos]
+mov   word ptr es:[di + MOBJ_POS_T.mp_angle+0], ax
+mov   word ptr es:[di + MOBJ_POS_T.mp_angle+2], dx
+POPA_NO_AX_OR_BP_MACRO
 ret   
-cld  ;todo remove
 
 
 ENDP
@@ -640,11 +630,7 @@ ENDP
 PROC A_Saw_ NEAR
 PUBLIC A_Saw_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 call  P_Random_
 xor   ah, ah
 mov   bx, 10
@@ -745,11 +731,7 @@ mov   bx, OFFSET _playerMobj_pos
 les   si, dword ptr ds:[bx]
 or    byte ptr es:[si + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
 exit_a_saw:
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 label_37:
 mov   bx, OFFSET _playerMobj
@@ -794,6 +776,8 @@ adc   word ptr es:[bx + MOBJ_POS_T.mp_angle+2], 00333h
 jmp   label_42
 
 ENDP
+
+
 
 PROC A_FireMissile_ NEAR
 PUBLIC A_FireMissile_
