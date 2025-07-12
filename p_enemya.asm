@@ -1845,7 +1845,7 @@ mov   bp, sp
 sub   sp, 2
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   label_114
+jne   do_cposattack
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -1853,7 +1853,7 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-c:
+do_cposattack:
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
@@ -4272,7 +4272,7 @@ mov   si, OFFSET _gameepisode
 cmp   byte ptr ds:[si], 1
 jmp   label_165
 jump_to_label_163:
-jmp   jump_to_label_163
+jmp   label_163
 label_173:
 mov   si, OFFSET _gameepisode
 mov   al, byte ptr ds:[si]
