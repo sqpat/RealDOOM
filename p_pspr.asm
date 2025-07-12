@@ -1188,90 +1188,133 @@ ENDP
 PROC A_BFGSpray_ NEAR
 PUBLIC A_BFGSpray_
 
+;void __near A_BFGSpray (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
+
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-push  ax
-push  bx
-push  cx
-mov   byte ptr [bp - 2], 0
-label_46:
-mov   al, byte ptr [bp - 2]
-cbw  
-imul  ax, ax, (FINE_ANG90/40)  ; 0x33
-mov   es, word ptr [bp - 8]
-mov   bx, word ptr [bp - 6]
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
-mov   bx, word ptr [bp - 4]
-imul  si, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-shr   dx, 3
+
+mov   di, bx   ; di has mobjpos
+mov   si, ax   ; si has mobj
+mov   ax, SIZEOF_THINKER_T
+mul   word ptr ds:[si + MOBJ_T.m_targetRef]  ; targetRef  ; clobbers dx... gr
+add   ax, (_thinkerlist + 4)
+xchg  ax, si  ; si has target...
+
+; apparently target is supposed to be the originator of missile (player) so should be static for the loop.
+
+mov   cx, 40
+
+loop_bfg_spray:
+
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
+
+
+; not sure if we can pull this out and store it outside the loop. can targetref change?
+xchg  ax, bx ; bx stores
+
+;mov   al, (FINE_ANG90/40)
+;mov   ah, 40
+mov   ax, 02833h  ; set hi and low in one go
+sub   ah, cl
+mul   ah
+
+
+
+mov   dx, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
+SHIFT_MACRO shr   dx 3
 sub   dx, (FINE_ANG90/2)
-add   dx, ax
-mov   bx, HALFMISSILERANGE
-add   si, (_thinkerlist + 4)
+add   dx, ax; angle ready
 and   dh, (FINEMASK SHR 8)
+
+;	P_AimLineAttack (motarget, an, HALFMISSILERANGE);
+
 mov   ax, si
+mov   bx, HALFMISSILERANGE
 call  dword ptr ds:[_P_AimLineAttack]
-mov   bx, OFFSET _linetarget
-mov   ax, word ptr ds:[bx]
-test  ax, ax
-jne   label_45
-label_47:
-inc   byte ptr [bp - 2]
-cmp   byte ptr [bp - 2], 40
-jl    label_46
-LEAVE_MACRO 
+
+mov   bx, word ptr ds:[_linetarget]
+test  bx, bx
+jne   bfg_spray_hit_something
+finish_this_bfg_spray_iter:
+
+loop  loop_bfg_spray
 pop   di
 pop   si
 pop   dx
 ret   
-label_45:
-mov   bx, ax
-mov   di, OFFSET _linetarget_pos
-mov   ax, word ptr ds:[bx + MOBJ_T.m_height+0]
-mov   cx, word ptr ds:[bx + MOBJ_T.m_height+2]
+
+bfg_spray_hit_something:
+; bx is linetarget mobh
+
+push  cx ; store outer loop var...
+
+
+les   ax, dword ptr ds:[bx + MOBJ_T.m_height+0]
+mov   dx, es
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+
+
+;		P_SpawnMobj(linetarget_pos->x.w,
+;			linetarget_pos->y.w,
+;			linetarget_pos->z.w + (linetarget->height.w >> 2),
+;			MT_EXTRABFG, linetarget->secnum);
+
 push  word ptr ds:[bx + MOBJ_T.m_secnum]
-sar   cx, 1
-rcr   ax, 1
-mov   bx, OFFSET _linetarget_pos
-sar   cx, 1
-rcr   ax, 1
-mov   bx, word ptr ds:[bx]
-mov   es, word ptr ds:[di + 2]
-push  MT_EXTRABFG        ; todo 186
+
+IF COMPISA GE COMPILE_186
+    push  MT_EXTRABFG        ; todo 186
+ELSE
+    mov   bx, MT_EXTRABFG
+    push  bx
+ENDIF
+
+les   bx, dword ptr ds:[_linetarget_pos]
 add   ax, word ptr es:[bx + MOBJ_POS_T.mp_z+0]
-adc   cx, word ptr es:[bx + MOBJ_POS_T.mp_z+2]
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x+0]
-push  cx
-mov   di, word ptr es:[bx + MOBJ_POS_T.mp_x+2]
+adc   dx, word ptr es:[bx + MOBJ_POS_T.mp_z+2]
+push  dx
 push  ax
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y+0]
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_y+2]
-mov   bx, ax
-mov   ax, dx
-mov   dx, di
+
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x+0]
+mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x+2]
+
+les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y+0]
+
+
+mov   cx, es
 call  P_SpawnMobj_
-xor   cx, cx
-xor   dl, dl
-label_48:
+
+
+mov   cx, 15
+mov   dx, cx  ; add 1 15 times up front here (instead of inc in loop)
+
+;    for (j=0;j<15;j++)
+;        damage += (P_Random()&7) + 1;
+
+do_next_rand_damage_add:
 call  P_Random_
-and   al, 7
-xor   ah, ah
-inc   ax
-inc   dl
-add   cx, ax
-cmp   dl, 15
-jl    label_48
-mov   bx, OFFSET _linetarget
+and   ax, 7
+add   dx, ax
+loop  do_next_rand_damage_add
+
+
+;	P_DamageMobj (linetarget, motarget, motarget, damage);
+
+mov   cx, dx
 mov   dx, si
-mov   ax, word ptr ds:[bx]
 mov   bx, si
+mov   ax, word ptr ds:[_linetarget]
+
+
 call  P_DamageMobj_
-jmp   label_47
-cld   
+
+pop   cx  ; get outer loop var..
+jmp   finish_this_bfg_spray_iter
+
 
 ENDP
 
