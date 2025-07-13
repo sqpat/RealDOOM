@@ -537,14 +537,14 @@ ret
 
 _some_lookup_table_2:
 
-dw 02C51h
-dw 02CB6h
-dw 02CC8h
-dw 02CD0h
-dw 02CE5h
-dw 02CEEh
-dw 02D01h
-dw 02D12h
+dw OFFSET table_2_label_0
+dw OFFSET table_2_label_1
+dw OFFSET table_2_label_2
+dw OFFSET table_2_label_3
+dw OFFSET table_2_label_4
+dw OFFSET table_2_label_5
+dw OFFSET table_2_label_6
+dw OFFSET table_2_label_7
 
 
 ENDP
@@ -589,6 +589,7 @@ add   bx, dx
 jmp   word ptr cs:[bx + OFFSET _some_lookup_table_2]
 label_22:
 jmp   label_23
+table_2_label_0:
 add   cx, ax
 label_24:
 push  word ptr [bp - 6]
@@ -634,6 +635,7 @@ ret
 label_23:
 xor   al, al
 jmp   exit_p_move
+table_2_label_1:
 mov   dx, 47000
 mul   dx
 add   word ptr [bp - 8], ax
@@ -641,10 +643,12 @@ adc   cx, dx
 add   word ptr [bp - 0Ah], ax
 adc   word ptr [bp - 6], dx
 jmp   label_24
+table_2_label_2:
 add   word ptr [bp - 6], ax
 jmp   label_24
 label_25:
 jmp   label_26
+table_2_label_3:
 mov   dx, 47000
 mul   dx
 sub   word ptr [bp - 8], ax
@@ -654,9 +658,11 @@ adc   word ptr [bp - 6], dx
 jmp   label_24
 jump_to_label_28:
 jmp   label_28
+table_2_label_4:
 sub   word ptr [bp - 8], 0
 sbb   cx, ax
 jmp   label_24
+table_2_label_5:
 mov   dx, 47000
 mul   dx
 sub   word ptr [bp - 8], ax
@@ -664,12 +670,14 @@ sbb   cx, dx
 sub   word ptr [bp - 0Ah], ax
 sbb   word ptr [bp - 6], dx
 jmp   label_24
+table_2_label_6:
 sub   word ptr [bp - 0Ah], 0
 sbb   word ptr [bp - 6], ax
 jmp   label_24
 label_30:
 sub   word ptr es:[di + MOBJ_POS_T.mp_z + 2], FLOATSPEED_HIGHBITS
 jmp   label_27
+table_2_label_7:
 mov   dx, 47000
 mul   dx
 add   word ptr [bp - 8], ax
@@ -2800,14 +2808,14 @@ cld
 ;3e28
 _some_lookup_table:
 
-dw 03EC6h
-dw 03F90h
-dw 03FA8h
-dw 03FAEh
-dw 03FC6h
-dw 03FD1h
-dw 04069h
-dw 04074h
+dw OFFSET table_0_label_0
+dw OFFSET table_0_label_1
+dw OFFSET table_0_label_2
+dw OFFSET table_0_label_3
+dw OFFSET table_0_label_4
+dw OFFSET table_0_label_5
+dw OFFSET table_0_label_6
+dw OFFSET table_0_label_7
 
 ENDP
 
@@ -2866,6 +2874,7 @@ add   si, dx
 jmp   word ptr cs:[si + OFFSET _some_lookup_table]
 jump_to_label_139:
 jmp   label_139
+table_0_label_0:
 mov   si, OFFSET _viletryx + 2
 label_141:
 add   word ptr ds:[si], ax
@@ -2961,6 +2970,7 @@ pop   di
 pop   si
 pop   dx
 ret   
+table_0_label_1:
 mov   dx, 47000
 mov   si, OFFSET _viletryx
 mul   dx
@@ -2970,8 +2980,10 @@ mov   si, OFFSET _viletryy
 add   word ptr ds:[si], ax
 adc   word ptr ds:[si + 2], dx
 jmp   label_140
+table_0_label_2:
 mov   si, OFFSET _viletryy + 2
 jmp   label_141
+table_0_label_3:
 mov   dx, 47000
 mov   si, OFFSET _viletryx
 mul   dx
@@ -2981,10 +2993,12 @@ mov   si, OFFSET _viletryy
 add   word ptr ds:[si], ax
 adc   word ptr ds:[si + 2], dx
 jmp   label_140
+table_0_label_4:
 mov   si, OFFSET _viletryx
 sub   word ptr ds:[si], bx
 sbb   word ptr ds:[si + 2], ax
 jmp   label_140
+table_0_label_5:
 mov   dx, 47000
 mov   si, OFFSET _viletryx
 mul   dx
@@ -3039,10 +3053,12 @@ pop   di
 pop   si
 pop   dx
 ret   
+table_0_label_6:
 mov   si, OFFSET _viletryy
 sub   word ptr ds:[si], bx
 sbb   word ptr ds:[si + 2], ax
 jmp   label_140
+table_0_label_7:
 mov   dx, 47000
 mov   si, OFFSET _viletryx
 mul   dx
@@ -4180,10 +4196,10 @@ ret
 
 _some_lookup_table_4:
 
-dw 04AA8h
-dw 04ABBh
-dw 04AC9h
-dw 04AD7h
+dw OFFSET table_4_label_0
+dw OFFSET table_4_label_1
+dw OFFSET table_4_label_2
+dw OFFSET table_4_label_3
 
 
 ENDP
@@ -4285,6 +4301,7 @@ add   si, ax
 jmp   word ptr cs:[si + _some_lookup_table_4]
 jump_to_label_167:
 jmp   label_167
+table_4_label_0:
 mov   si, OFFSET _gamemap
 cmp   byte ptr ds:[si], 8
 jne   exit_a_bossdeath
@@ -4294,16 +4311,19 @@ jump_to_do_exit_level:
 jmp   do_exit_level
 jump_to_label_170:
 jmp   label_170
+table_4_label_1:
 mov   si, OFFSET _gamemap
 cmp   byte ptr ds:[si], 8
 jne   exit_a_bossdeath
 cmp   cl, MT_CYBORG
 jmp   label_165
+table_4_label_2:
 mov   si, OFFSET _gamemap
 cmp   byte ptr ds:[si], 8
 jne   exit_a_bossdeath
 cmp   cl, MT_SPIDER
 jmp   label_165
+table_4_label_3:
 mov   si, OFFSET _gamemap
 mov   al, byte ptr ds:[si]
 cmp   al, 8

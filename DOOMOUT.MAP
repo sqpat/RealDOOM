@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/12 15:36:44
+Created on:       25/07/12 16:57:27
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -846,8 +846,8 @@ Module: p_enemya.obj(p_enemya.ASM)
 0ba0:49bd      A_Explode_
 0ba0:29c4      P_NoiseAlert_
 0ba0:43ad      A_FatRaise_
-0ba0:49b5      A_Fall_
 0ba0:4e2e      A_SpawnFly_
+0ba0:49b5      A_Fall_
 0ba0:353d      A_PosAttack_
 0ba0:32af      A_Chase_
 0ba0:37df      A_BspiAttack_
@@ -1297,4 +1297,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  0001bad0 (113360.)
 Entry point address: 0ba0:b9c6
-Link time: 00:00.74
+Link time: 00:00.20
