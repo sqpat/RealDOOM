@@ -1024,7 +1024,7 @@ sub   word ptr ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)], 2
 
 ;    P_SetPsprite (
 ;		  ps_flash,;
-		  weaponinfo[player.readyweapon].flashstate);
+;		  weaponinfo[player.readyweapon].flashstate);
 
 
 mov   ax, PS_FLASH

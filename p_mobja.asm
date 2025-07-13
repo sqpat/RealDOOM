@@ -196,23 +196,39 @@ do_xy_shift:
 ;	ymove.w >>= 1;
 
 
+sar   di, 1
+rcr   si, 1
 mov   cx, si
 mov   dx, di
-sar   dx, 1
-rcr   cx, 1
-add   cx, word ptr es:[bx]
-adc   dx, word ptr es:[bx + 2]
+
+jnc   do_div1_no_round_up  ; if it was odd, then carry was set
+test  dx, dx
+jns   do_div1_no_round_up
+add   cx, 1                ; div 2 must round to 0, while shift rounds to negative infinity. timedemo desyncs if we dont do this.
+adc   dx, 0
+do_div1_no_round_up:
+
+add   cx, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+adc   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
 
 sar   word ptr [bp - 0Ch], 1
 rcr   word ptr [bp - 0Eh], 1
 
-mov   ax, word ptr es:[bx + 4]
-mov   bx, word ptr es:[bx + 6]
+; if rcr was odd then carry flag is set. 
+
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2] ; knocks out bx... 
+
+jnc   dont_round_up_div2 
+test  byte ptr [bp - 0Bh], 080h
+je    dont_round_up_div2
+; signed and odd ,add one...
+add   ax, 1
+adc   bx, 0
+dont_round_up_div2:
 add   ax, word ptr [bp - 0Eh]
 adc   bx, word ptr [bp - 0Ch]
 
-sar   di, 1
-rcr   si, 1
 
 jmp   done_shifting_xymove
 test_ymove:
