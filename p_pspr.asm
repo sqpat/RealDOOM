@@ -511,7 +511,6 @@ call  P_Random_MapLocal_
 
 ;    damage = (P_Random ()%10+1)<<1;
 
-xor   ah, ah
 cwd   ; zero dx
 mov   bx, 10  ; zero bh
 div   bl
@@ -534,10 +533,9 @@ push  dx ; damage parameter down the road
 les   di, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
 call  P_Random_MapLocal_
-mov   bl, al
+mov   bx, ax
 call  P_Random_MapLocal_
 ; bh still zero
-xor   ah, ah
 xchg  ax, bx
 sub   ax, bx
 
@@ -613,7 +611,6 @@ call  P_Random_MapLocal_
 
 ;    damage = 2*(P_Random ()%10+1);
 
-xor   ah, ah
 cwd   ; zero dx
 mov   bx, 10  ; zero bh
 div   bl
@@ -627,10 +624,9 @@ les   si, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
 
 call  P_Random_MapLocal_
-mov   bl, al
+mov   bx, ax
 call  P_Random_MapLocal_
 
-xor   ah, ah
 xchg  ax, bx
 sub   ax, bx
 
@@ -791,7 +787,7 @@ push  dx
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)]
 call  P_Random_MapLocal_
-and   ax, 1
+and   al, 1
 mov   dx, word ptr ds:[_weaponinfo + (WP_PLASMA * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
 add   dx, ax
 mov   al, PS_FLASH
@@ -873,7 +869,6 @@ push  bx
 push  dx
 mov   bl, al ; bl stores accuracy
 call  P_Random_MapLocal_
-xor   ah, ah
 mov   dx, 3 ; zero dh
 
 div   dl
@@ -896,11 +891,10 @@ test  al, al
 jne   do_shot
 ; add shot inaccuracy
 
-xor   bx, bx
+
 call  P_Random_MapLocal_
-mov   bl, al
+mov   bx, ax
 call  P_Random_MapLocal_
-xor   ah, ah
 
 sub   bx, ax
 sar   bx, 1
@@ -1006,26 +1000,39 @@ push  bx
 push  cx
 push  dx
 
+;	S_StartSound(playerMobj, sfx_dshtgn);
+
+
 mov   dx, SFX_DSHTGN
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
+
+;    P_SetMobjState (playerMobj, S_PLAY_ATK2);
+
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
-
 ;call  P_SetMobjState_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
 
+;    player.ammo[weaponinfo[player.readyweapon].ammo]-=2;
 
-sub   ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)], 2
+sub   word ptr ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)], 2
+
+;    P_SetPsprite (
+;		  ps_flash,;
+		  weaponinfo[player.readyweapon].flashstate);
 
 
 mov   ax, PS_FLASH
 mov   dx, word ptr ds:[_weaponinfo + (WP_SUPERSHOTGUN * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
 call  P_SetPsprite_
+
+;    P_BulletSlope ();
+
 call  P_BulletSlope_
 
 mov   cx, 20  ; 20 pellets... crazy!
@@ -1035,7 +1042,8 @@ loop_next_super_pellet:
 ;	damage = 5*(P_Random ()%3+1);
 
 call  P_Random_MapLocal_
-xor   ah, ah
+
+
 mov   dx, 3  ; dh made 0 here
 div   dl
 mov   al, 5
@@ -1043,36 +1051,42 @@ inc   ah
 mul   ah
 push  ax  ; store stack argument.
 
+;	angle = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
+
 les   bx, dword ptr ds:[_playerMobj_pos]
 mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
 
+;	angle = MOD_FINE_ANGLE( angle + ( ( P_Random()-P_Random() )<<(19-ANGLETOFINESHIFT)) );
+
 call  P_Random_MapLocal_
 SHIFT_MACRO shr   bx 3
-mov   dl, al
-add   bx, dx   ; add rand1
+add   bx, ax   ; add rand1
 call  P_Random_MapLocal_
-mov   dl, al
-sub   bx, dx   ; sub rand2
+sub   bx, ax   ; sub rand2
+and   bh, (FINEMASK SHR 8)
+
+;	P_LineAttack (playerMobj,
+;		      angle,
+;		MISSILERANGE,
+;		      bulletslope + ((P_Random()-P_Random())<<5), damage);
 
 call  P_Random_MapLocal_
-mov   dl, al
+mov   dx, ax
 call  P_Random_MapLocal_
 
-xor   ah, ah
 sub   dx, ax
 xchg  ax, dx
 SHIFT_MACRO shl   ax 5
 cwd   
-and   bh, (FINEMASK SHR 8)
 add   ax, word ptr ds:[_bulletslope+0]
 adc   dx, word ptr ds:[_bulletslope+2]
 push  dx
 push  ax
 mov   dx, bx
-mov   ax, word ptr ds:[_playerMobj]
 
-inc   byte ptr [bp - 2]
+mov   ax, word ptr ds:[_playerMobj]
 mov   bx, MISSILERANGE
+
 push  cs
 call  P_LineAttack_
 
@@ -1316,7 +1330,7 @@ mov   dx, cx  ; add 1 15 times up front here (instead of inc in loop)
 
 do_next_rand_damage_add:
 call  P_Random_MapLocal_
-and   ax, 7
+and   al, 7
 add   dx, ax
 loop  do_next_rand_damage_add
 

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/12 17:02:11
+Created on:       25/07/12 17:04:52
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -856,10 +856,10 @@ Module: p_doors.obj(C:\REALDOOM\p_doors.c)
 0e78:1040      P_SpawnDoorRaiseIn5Mins_
 Module: p_enemy.obj(p_enemy.ASM)
 0e78:31b9      A_Explode_
-0e78:2ba9      A_FatRaise_
 0e78:11c0      P_NoiseAlert_
-0e78:31b1      A_Fall_
+0e78:2ba9      A_FatRaise_
 0e78:362b      A_SpawnFly_
+0e78:31b1      A_Fall_
 0e78:1d39      A_PosAttack_
 0e78:1aab      A_Chase_
 0e78:1fdb      A_BspiAttack_

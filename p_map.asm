@@ -4394,7 +4394,7 @@ do_skull_fly_into_thing:
 ;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 
 call  P_Random_MapLocal_
-and   ax, 7
+and   al, 7
 inc   ax
 xchg  ax, cx  ; store random in cl
 mov   bx, word ptr ds:[_tmthing]
@@ -4465,7 +4465,7 @@ do_missile_damage:
 ;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 
 call  P_Random_MapLocal_
-and   ax, 7
+and   al, 7
 inc   ax
 xchg  ax, cx  ; store random in cl. keep ah 0
 mov   di, word ptr ds:[_tmthing]
@@ -8184,14 +8184,17 @@ ENDP
     ;return rndtable[prndindex];
 ; consider inlining
 
+; ah is 0 now
+
 PROC P_Random_MapLocal_ NEAR
 PUBLIC P_Random_MapLocal_
 push    bx
 inc 	byte ptr ds:[_prndindex]
 mov     ax, RNDTABLE_SEGMENT
 mov     es, ax
+xor     ax, ax
+mov     bx, ax
 mov     al, byte ptr ds:[_prndindex]
-xor     bx, bx
 xlat    byte ptr es:[bx]
 pop     bx
 ret
