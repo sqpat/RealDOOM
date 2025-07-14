@@ -140,129 +140,144 @@ PROC    P_RecursiveSound_ NEAR
 PUBLIC  P_RecursiveSound_
 
 
-push  bx
-push  cx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 010h
-push  ax
-mov   byte ptr [bp - 4], dl
-mov   word ptr [bp - 8], SECTORS_SEGMENT
-mov   word ptr [bp - 010h], P_LINEOPENINGOFFSET
-mov   word ptr [bp - 0Eh], PHYSICS_HIGHCODE_SEGMENT
-mov   bx, ax
-mov   es, word ptr [bp - 8]
-shl   bx, 4
-mov   si, OFFSET _validcount_global
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   word ptr [bp - 0Ah], bx
-cmp   ax, word ptr ds:[si]
-jne   label_1
-mov   ax, SECTOR_SOUNDTRAVERSED_SEGMENT
-mov   bx, word ptr [bp - 012h]
-mov   es, ax
-mov   al, byte ptr es:[bx]
-cbw  
-mov   bx, ax
-mov   al, dl
-cbw  
-inc   ax
-cmp   bx, ax
-jg    label_1
-jmp   exit_p_recursive_sound
-label_1:
-mov   bx, OFFSET _validcount_global
-mov   ax, word ptr ds:[bx]
-les   bx, dword ptr [bp - 0Ah]
-mov   word ptr es:[bx + SECTOR_T.sec_validcount], ax
-mov   bx, SECTOR_SOUNDTRAVERSED_SEGMENT
-mov   al, byte ptr [bp - 4]
-mov   es, bx
-mov   bx, word ptr [bp - 012h]
-inc   al
-mov   byte ptr es:[bx], al
-les   bx, dword ptr [bp - 0Ah]
-xor   cx, cx
-mov   ax, word ptr es:[bx + SECTOR_T.sec_linecount]
-mov   bx, word ptr [bp - 012h]
-mov   word ptr [bp - 8], SECTORS_SEGMENT
-shl   bx, 4
-mov   word ptr [bp - 0Ch], ax
-mov   word ptr [bp - 0Ah], bx
-test  ax, ax
-jle   exit_p_recursive_sound
-label_4:
-les   bx, dword ptr [bp - 0Ah]
-mov   ax, word ptr es:[bx + SECTOR_T.sec_linesoffset]
-add   ax, cx
-add   ax, ax
-mov   bx, ax
-add   bx, OFFSET _linebuffer
-mov   ax, word ptr ds:[bx]
-mov   bx, LINEFLAGSLIST_SEGMENT
-mov   es, bx
-mov   bx, ax
-mov   si, LINES_SEGMENT
-mov   bl, byte ptr es:[bx]
-mov   word ptr [bp - 6], LINES_PHYSICS_SEGMENT
-mov   byte ptr [bp - 2], bl
+PUSHA_NO_AX_MACRO
+;dl holds soundblocks.
+;dh will hold flags. dh is 0 at func start.
+
+mov   cx, SECTORS_SEGMENT
+mov   es, cx
+mov   di, ax ; di stores secnum for the function.
+xchg  ax, bx
+SHIFT_MACRO shl   bx 4
+mov   si, SECTOR_SOUNDTRAVERSED_SEGMENT
+mov   ax, word ptr es:[bx + SECTOR_T.sec_validcount]
+
+cmp   ax, word ptr ds:[_validcount_global]
+jne   do_sound_recursion
+
+;    if (soundsector->validcount == validcount_global && sector_soundtraversed_far[secnum] <= soundblocks+1) {
+;		return;		// already flooded
+;    }
+
+
 mov   es, si
-mov   bx, ax
-mov   si, ax
-shl   bx, 2
-shl   si, 4
-mov   ax, word ptr es:[bx + LINE_T.l_sidenum + 2]
-mov   es, word ptr [bp - 6]
-mov   di, word ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum]
-mov   bx, word ptr es:[si + LINE_PHYSICS_T.lp_backsecnum]
-test  byte ptr [bp - 2], ML_TWOSIDED
-jne   label_3
-label_5:
-inc   cx
-cmp   cx, word ptr [bp - 0Ch]
-jl    label_4
-exit_p_recursive_sound:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-label_3:
-mov   dx, di
-call  dword ptr [bp - 010h]
-mov   bx, OFFSET _lineopening + 0
-mov   ax, word ptr ds:[bx]
-mov   bx, OFFSET _lineopening + 2
-cmp   ax, word ptr ds:[bx]
-jle   label_5
-mov   es, word ptr [bp - 6]
-mov   ax, word ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum]
-cmp   ax, word ptr [bp - 012h]
-jne   label_6
-mov   si, word ptr es:[si + LINE_PHYSICS_T.lp_backsecnum]
-label_8:
-test  byte ptr [bp - 2], ML_SOUNDBLOCK
-je    label_7
-cmp   byte ptr [bp - 4], 0
-jne   label_5
+mov   al, byte ptr es:[di]
+cbw
+dec   ax ; instead of plus 1 to soundblocks do minus 12 to sector_soundtraversed_far
+js    exit_p_recursive_sound_2 ; was definitely too small...
+cmp   ax, dx
+jg    do_sound_recursion
+exit_p_recursive_sound_2:
+
+POPA_NO_AX_MACRO
+ret
+
+do_sound_recursion:
+
+;	soundsector->validcount = validcount_global;
+mov   es, cx
+mov   ax, word ptr ds:[_validcount_global]
+
+mov   word ptr es:[bx + SECTOR_T.sec_validcount], ax
+
+mov   cx, word ptr es:[bx + SECTOR_T.sec_linesoffset]
+mov   bp, word ptr es:[bx + SECTOR_T.sec_linecount]  
+add   bp, cx
+
+
+;	sector_soundtraversed_far[secnum] = soundblocks+1;
+mov   es, si
+mov   ax, dx
+inc   ax
+
+; lol... i mean its 1 byte shorter
+;mov   byte ptr es:[di], al
+stosb
+dec   di 
+
+
+
+do_next_sector_line_loop:
+mov   si, cx
+sal   si, 1
+mov   si, word ptr ds:[si + _linebuffer]  ; line number
+mov   ax, LINEFLAGSLIST_SEGMENT
+mov   es, ax
+
+mov   dh, byte ptr es:[si] ; dh has flags.
+
+test  dh, ML_TWOSIDED
+je    continue_recursive_sound_loop
+
+mov   ax, LINES_SEGMENT
+mov   es, ax
+SHIFT_MACRO shl   si 2  ; si has line number.
+mov   ax, word ptr es:[si + LINE_T.l_sidenum + 2]    ; back side
+SHIFT_MACRO shl   si 2  ; si shifted 4
+mov   bx, LINES_PHYSICS_SEGMENT
+mov   es, bx
+
+push   dx  ; store params... no where else ot put it.
+;mov   bx, word ptr es:[si + LINE_PHYSICS_T.lp_backsecnum]
+;mov   dx, word ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum]
+les    dx, dword ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum] ; backsecnum to es.
+mov    bx, es
+
+db    09Ah
+dw    P_LINEOPENINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+pop    dx
+
+;	if (lineopening.opentop <= lineopening.openbottom) {
+
+mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
+cmp   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
+jle   continue_recursive_sound_loop
+
+mov   ax, LINES_PHYSICS_SEGMENT
+mov   es, ax
+
+;		if (check_physics->frontsecnum == secnum) {
+;			othersecnum = check_physics->backsecnum;
+;		} else {
+;			othersecnum = check_physics->frontsecnum;
+;		}
+
+
+les   ax, dword ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum] ; es gets backsecnum
+cmp   ax, di
+jne   found_othersecnum
+mov   ax, es ; use backsecnum.
+found_othersecnum:
+; ax is othersecnum..
+
+;		if (checkflags & ML_SOUNDBLOCK) {
+;			if (!soundblocks) {
+;				P_RecursiveSound(othersecnum, 1);
+
+
+test  dh, ML_SOUNDBLOCK
+je    recursive_call_soundblocks
+cmp   dl, 0
+jne   continue_recursive_sound_loop
+
+mov   si, dx ; store old dl
 mov   dx, 1
-mov   ax, si
 call  P_RecursiveSound_
-jmp   label_5
-label_6:
-mov   si, ax
-jmp   label_8
-label_7:
-mov   al, byte ptr [bp - 4]
-cbw  
-mov   dx, ax
-mov   ax, si
+mov   dx, si ; restore old values..
+continue_recursive_sound_loop:
+inc   cx
+cmp   cx, bp
+jl    do_next_sector_line_loop
+
+exit_p_recursive_sound:
+POPA_NO_AX_MACRO
+ret   
+recursive_call_soundblocks:
+xor   dh, dh ; clear flags.
 call  P_RecursiveSound_
-jmp   label_5
-cld   
+jmp   continue_recursive_sound_loop
+
 
 ENDP
 
@@ -272,19 +287,14 @@ PUBLIC  P_NoiseAlert_
 
 push  bx
 push  dx
-push  si
-mov   bx, OFFSET _validcount_global
-mov   si, OFFSET _playerMobj
-inc   word ptr ds:[bx]
-mov   bx, word ptr ds:[si]
+inc   word ptr ds:[_validcount_global]
+mov   bx, word ptr ds:[_playerMobj]
 xor   dx, dx
-mov   ax, word ptr ds:[bx + 4]
+mov   ax, word ptr ds:[bx + MOBJ_T.m_secnum]
 call  P_RecursiveSound_
-pop   si
 pop   dx
 pop   bx
 retf  
-cld   
 
 ENDP
 
@@ -764,7 +774,6 @@ mov   al, 1
 mov   word ptr ds:[si + MOBJ_T.m_movecount], bx
 pop   si
 ret   
-cld   
 
 ENDP
 
@@ -1067,7 +1076,6 @@ pop   di
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -1252,7 +1260,6 @@ jne   label_36
 cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
 jg    exit_keen_die
 jmp   label_36
-cld   
 
 ENDP
 
@@ -1590,7 +1597,6 @@ pop   di
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -1670,7 +1676,6 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-cld   
 
 ENDP
 
@@ -1749,7 +1754,6 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-cld   
 
 ENDP
 
@@ -1835,7 +1839,6 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-cld   
 
 ENDP
 
@@ -2055,7 +2058,6 @@ call  dword ptr ds:[_P_SpawnMissile]
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -2155,7 +2157,6 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-cld   
 
 ENDP
 
@@ -2229,7 +2230,6 @@ call  dword ptr ds:[_P_SpawnMissile]
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -2283,7 +2283,6 @@ call  dword ptr ds:[_P_SpawnMissile]
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -2638,7 +2637,6 @@ call  S_StartSound_
 pop   dx
 pop   bx
 ret   
-cld   
 
 ENDP
 
@@ -2688,7 +2686,6 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-cld   
 
 ENDP
 
@@ -2803,7 +2800,6 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-cld   
 
 ;3e28
 _some_lookup_table:
@@ -3080,7 +3076,6 @@ mov   dx, SFX_VILATK
 call  S_StartSound_
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -3209,7 +3204,6 @@ pop   di
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -3278,7 +3272,6 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-cld   
 
 _vile_momz_lookuptable:
 
@@ -3359,7 +3352,6 @@ mov   dx, 10
 xor   ax, ax
 pop   bx
 ret   
-cld   
 
 ENDP
 
@@ -3561,7 +3553,6 @@ pop   di
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -3834,7 +3825,6 @@ pop   di
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -3988,7 +3978,6 @@ pop   di
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -4011,7 +4000,6 @@ mov   ax, si
 call  A_PainShootSkull_
 pop   si
 ret   
-cld   
 
 ENDP
 
@@ -4124,7 +4112,6 @@ pop   si
 pop   dx
 pop   bx
 ret   
-cld   
 
 ENDP
 
@@ -4137,7 +4124,6 @@ mov   dx, SFX_SLOP
 call  S_StartSound_
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -4164,7 +4150,6 @@ LEAVE_MACRO
 pop   dx
 pop   bx
 ret   
-cld   
 
 ENDP
 
@@ -4402,7 +4387,6 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-cld   
 
 ENDP
 
@@ -4501,7 +4485,6 @@ mov   word ptr ds:[bx + _braintargets], ax
 mov   bx, OFFSET _numbraintargets
 inc   word ptr ds:[bx]
 jmp   label_179
-cld   
 
 ENDP
 
@@ -4515,7 +4498,6 @@ xor   ax, ax
 call  S_StartSound_
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -4661,7 +4643,6 @@ pop   di
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -4755,7 +4736,6 @@ pop   di
 pop   si
 pop   dx
 ret   
-cld   
 
 ENDP
 
@@ -4919,7 +4899,6 @@ jmp   chose_spawn_unit
 spawn_not_hellknight:
 mov   al, MT_BRUISER
 jmp   chose_spawn_unit
-cld   
 
 ENDP
 
