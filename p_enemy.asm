@@ -49,13 +49,12 @@ EXTRN _gametic:DWORD
 EXTRN _fastparm:BYTE
 EXTRN _diags:WORD
 EXTRN _opposite:WORD
-EXTRN _P_AproxDistance:DWORD
+
 EXTRN _P_SpawnMissile:DWORD
 EXTRN _P_TeleportMove:DWORD
 EXTRN _P_RadiusAttack:DWORD
 EXTRN _P_TryMove:DWORD
 EXTRN _P_CheckPosition:DWORD
-EXTRN _P_CheckSightTemp:DWORD
 EXTRN _P_SetThingPosition:DWORD
 EXTRN _P_UnsetThingPosition:DWORD
 EXTRN _P_AimLineAttack:DWORD
@@ -421,147 +420,157 @@ ENDP
 PROC    P_CheckMissileRange_ NEAR
 PUBLIC  P_CheckMissileRange_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 012h
-mov   si, ax
-imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+mov   di, ax
+mov   si, bx
+
+IF COMPISA GE COMPILE_186
+    imul  bx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T 
+    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
+    mov   bx, ax
+ENDIF
+
 mov   cx, SIZEOF_THINKER_T
-lea   ax, ds:[bx + (OFFSET _thinkerlist + THINKER_T.t_data)]
-xor   dx, dx
-mov   word ptr [bp - 0Ah], ax
-lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
-div   cx
-imul  di, ax, SIZEOF_MOBJ_POS_T
+
+; di is actor mobj
+; si is actorpos
+; bx is targ mobj
+
 xor   dx, dx
 mov   ax, bx
 div   cx
-imul  bx, ax, SIZEOF_MOBJ_POS_T
-mov   word ptr [bp - 012h], GETMELEESTATEADDR
-mov   word ptr [bp - 010h], INFOFUNCLOADSEGMENT
-mov   word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
-mov   word ptr [bp - 6], MOBJPOSLIST_6800_SEGMENT
-mov   dx, word ptr [bp - 0Ah]
-mov   word ptr [bp - 4], bx
-mov   cx, bx
-mov   ax, si
-mov   bx, di
-call  dword ptr ds:[_P_CheckSightTemp]
+; ax has index...
+
+IF COMPISA GE COMPILE_186
+    imul  cx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   dx, SIZEOF_MOBJ_POS_T
+    mul   dx
+    mov   cx, ax
+ENDIF
+
+push  cx  ; bp - 2  store mobjpos for x/y subtraction later
+
+lea   dx, ds:[bx + (OFFSET _thinkerlist + THINKER_T.t_data)]
+mov   ax, di
+mov   bx, si
+
+db    09Ah
+dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 test  al, al
-je    exit_checkmissilerange
-mov   es, word ptr [bp - 2]
-test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
-jne   label_11
-cmp   byte ptr ds:[si + MOBJ_T.m_reactiontime], 0
-je    label_12
+je    exit_checkmissilerange_return_0
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
+test  byte ptr es:[si + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
+jne   just_hit_enemy
+cmp   byte ptr ds:[di + MOBJ_T.m_reactiontime], 0
+je    ready_to_attack
 exit_checkmissilerange_return_0:
-xor   al, al
-exit_checkmissilerange:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
+xor   ax, ax
 ret   
-label_11:
-mov   al, 1
-and   byte ptr es:[di + MOBJ_POS_T.mp_flags1], (NOT MF_JUSTHIT)
-jmp   exit_checkmissilerange
-label_12:
-mov   es, word ptr [bp - 6]
-mov   bx, word ptr [bp - 4]
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 0Eh], ax
-mov   ax, word ptr es:[bx + 2]
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   word ptr [bp - 0Ch], ax
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov   es, word ptr [bp - 2]
-mov   dx, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-mov   bx, di
-sub   dx, ax
-mov   ax, dx
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-sbb   dx, cx
-mov   cx, dx
-mov   dx, word ptr es:[di]
-sub   dx, word ptr [bp - 0Eh]
-mov   bx, word ptr es:[bx + 2]
-sbb   bx, word ptr [bp - 0Ch]
-mov   word ptr [bp - 8], bx
-mov   bx, ax
-mov   ax, dx
-mov   dx, word ptr [bp - 8]
-call  dword ptr ds:[_P_AproxDistance]
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
+just_hit_enemy:
+and   byte ptr es:[si + MOBJ_POS_T.mp_flags1], (NOT MF_JUSTHIT)
+jmp   exit_checkmissilerange_return_1
+ready_to_attack:
+xor   ax, ax
+mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype];
+pop   di   ; bp - 2 dont need actor ptr anymore. only use type ahead of here.
+push  ax   ; bp - 2 store type.
+
+;	disttemp.w = P_AproxDistance(actor_pos->x.w - actorTargetx.w,
+;		actor_pos->y.w - actorTargety.w);
+
+push  es
+pop   ds
+
+lodsw 
+sub   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
+xchg  ax, cx            ; cx holds onto x lo
+lodsw 
+sbb   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
+xchg  ax, dx            ; dx gets x hi
+lodsw 
+sub   ax, word ptr ds:[di + MOBJ_POS_T.mp_y + 0]
+xchg  ax, bx            ; bx gets y lo
+lodsw
+sbb   ax, word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
+xchg  ax, cx            ; cx gets y hi. and ax gets x lo back
+
+push  ss
+pop   ds
+
+db    09Ah
+dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+pop   ax  ; bp - 2
+push  ax  ; bp - 2
 sub   dx, 64
-call  dword ptr [bp - 012h]
+
+db    09Ah
+dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
+
 test  ax, ax
-jne   label_13
+jne   has_melee
+
+;		dist -= 128;	// no melee attack, so fire more
+
 sub   dx, 128
-label_13:
-cmp   byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_VILE
-jne   label_14
+has_melee:
+pop   ax  ; get type
+cmp   al, MT_VILE
+jne   missile_not_vile
 cmp   dx, (14 * 64)
 jg    exit_checkmissilerange_return_0
-label_14:
-cmp   byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_UNDEAD
-jne   label_16
+missile_not_vile:
+cmp   al, MT_UNDEAD
+jne   missile_not_revenant
 cmp   dx, 196
-jge   label_15
+jge   distance_not_too_close
 jmp   exit_checkmissilerange_return_0
-label_15:
+distance_not_too_close:
 sar   dx, 1
-label_16:
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+missile_not_revenant:
 cmp   al, MT_CYBORG
-jne   label_17
-label_20:
+jne   missile_not_cyberdemon
+missile_is_spider_skull_cyborg:
 sar   dx, 1
-label_21:
+missile_dist_200_check:
 cmp   dx, 200
-jle   label_18
+jle   missile_under_200_dont_cap
 mov   dx, 200
-label_18:
-cmp   byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_CYBORG
-jne   label_19
+missile_under_200_dont_cap:
+cmp   al, MT_CYBORG
+jne   not_cyborg_distance_check
 cmp   dx, 160
-jle   label_19
+jle   not_cyborg_distance_check
 mov   dx, 160
-label_19:
+not_cyborg_distance_check:
 call  P_Random_
 xor   ah, ah
 cmp   ax, dx
 jge   exit_checkmissilerange_return_1
-xor   al, al
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
+xor   ax, ax
 ret   
-label_17:
+missile_not_cyberdemon:
 cmp   al, MT_SPIDER
-je    label_20
+je    missile_is_spider_skull_cyborg
 cmp   al, MT_SKULL
-je    label_20
-jmp   label_21
+je    missile_is_spider_skull_cyborg
+jmp   missile_dist_200_check
 exit_checkmissilerange_return_1:
-mov   al, 1
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
+mov   al, 1
 ret   
 
 ; todo some table?
@@ -1138,7 +1147,10 @@ mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
 mov   dx, word ptr ds:[bx]
 mov   bx, si
 mov   ax, di
-call  dword ptr ds:[_P_CheckSightTemp]
+;call  dword ptr ds:[_P_CheckSightTemp]
+db    09Ah
+dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 test  al, al
 je    exit_look_for_players
 cmp   byte ptr [bp - 2], 0
@@ -1206,7 +1218,8 @@ mov   bx, si
 sub   ax, word ptr es:[si]
 sbb   dx, word ptr es:[bx + 2]
 mov   bx, word ptr [bp - 6]
-call  dword ptr ds:[_P_AproxDistance]
+db    09Ah
+dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 cmp   dx, MELEERANGE
 jle   label_81
 jmp   exit_look_for_players_return_0
@@ -1323,7 +1336,10 @@ test  byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_AMBUSH
 je    label_85
 mov   cx, di
 mov   ax, si
-call  dword ptr ds:[_P_CheckSightTemp]
+;call  dword ptr ds:[_P_CheckSightTemp]
+db    09Ah
+dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 test  al, al
 je    label_84
 label_85:
@@ -1603,6 +1619,7 @@ pop   dx
 ret   
 label_103:
 mov   ax, si
+mov   bx, di
 call  P_CheckMissileRange_
 test  al, al
 je    label_104
@@ -1977,7 +1994,10 @@ div   cx
 imul  cx, ax, SIZEOF_MOBJ_POS_T
 mov   dx, di
 mov   ax, si
-call  dword ptr ds:[_P_CheckSightTemp]
+;call  dword ptr ds:[_P_CheckSightTemp]
+db    09Ah
+dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 test  al, al
 je    label_115
 exit_a_cposrefire:
@@ -2034,7 +2054,10 @@ div   cx
 imul  cx, ax, SIZEOF_MOBJ_POS_T
 mov   dx, di
 mov   ax, si
-call  dword ptr ds:[_P_CheckSightTemp]
+;call  dword ptr ds:[_P_CheckSightTemp]
+db    09Ah
+dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 test  al, al
 je    label_116
 exit_a_spidrefire:
@@ -2552,7 +2575,8 @@ sbb   si, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
 mov   bx, ax
 mov   ax, dx
 mov   dx, si
-call  dword ptr ds:[_P_AproxDistance]
+db    09Ah
+dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 mov   bx, word ptr [bp - 6]
 mov   ax, dx
 mov   dl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
@@ -3168,7 +3192,10 @@ mov   cx, di
 mov   bx, word ptr [bp - 4]
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
-call  dword ptr ds:[_P_CheckSightTemp]
+;call  dword ptr ds:[_P_CheckSightTemp]
+db    09Ah
+dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 test  al, al
 je    exit_a_fire
 mov   es, word ptr [bp - 2]
@@ -3409,7 +3436,10 @@ add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   ax, si
 mov   dx, di
 mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
-call  dword ptr ds:[_P_CheckSightTemp]
+;call  dword ptr ds:[_P_CheckSightTemp]
+db    09Ah
+dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 test  al, al
 je    exit_vile_attack
 mov   dx, SFX_BAREXP
@@ -3812,7 +3842,8 @@ sub   word ptr [bp - 0Ah], bx
 mov   bx, ax
 sbb   dx, word ptr es:[di + 2]
 mov   ax, word ptr [bp - 0Ah]
-call  dword ptr ds:[_P_AproxDistance]
+db    09Ah
+dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 mov   ax, dx
 mov   cx, SKULLSPEED_SMALL
 cwd   
