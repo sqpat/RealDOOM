@@ -550,23 +550,25 @@ LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
 mov   al, 1
 ret   
-
-; todo some table?
-
-_some_lookup_table_2:
-
-dw OFFSET table_2_label_0
-dw OFFSET table_2_label_1
-dw OFFSET table_2_label_2
-dw OFFSET table_2_label_3
-dw OFFSET table_2_label_4
-dw OFFSET table_2_label_5
-dw OFFSET table_2_label_6
-dw OFFSET table_2_label_7
-
-
 ENDP
 
+
+
+_p_move_dir_switch_table:
+
+dw OFFSET switch_movedir_0
+dw OFFSET switch_movedir_1
+dw OFFSET switch_movedir_2
+dw OFFSET switch_movedir_3
+dw OFFSET switch_movedir_4
+dw OFFSET switch_movedir_5
+dw OFFSET switch_movedir_6
+dw OFFSET switch_movedir_7
+
+
+
+
+  
 
 PROC    P_Move_ NEAR
 PUBLIC  P_Move_
@@ -577,194 +579,196 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ah
-mov   si, ax
+
+xchg  ax, si
 mov   di, bx
-mov   word ptr [bp - 4], cx
+
 cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
-je    label_22
+
+jne   do_pmove
+xor   ax, ax
+jmp   exit_p_move
+
+do_pmove:
+mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
-mov   ax, word ptr es:[di]
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
-mov   word ptr [bp - 6], ax
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   cx, word ptr es:[di + 2]
-mov   dl, byte ptr ds:[si + MOBJ_T.m_movedir]
-mov   bx, ax
+mov   al, SIZEOF_MOBJINFO_T 
+mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
+xchg  ax, bx
+xor   ax, ax
 mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
-add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
-xor   ah, ah
-cmp   dl, DI_SOUTHEAST
-ja    label_24
-xor   dh, dh
-mov   bx, dx
-add   bx, dx
-jmp   word ptr cs:[bx + OFFSET _some_lookup_table_2]
-label_22:
-jmp   label_23
-table_2_label_0:
-add   cx, ax
-label_24:
-push  word ptr [bp - 6]
-push  word ptr [bp - 0Ah]
+mov   bx, ax ; zero out bh
+mov   bl, byte ptr ds:[si + MOBJ_T.m_movedir]
+
+test  bl, 1             ; diagonals are odd and use the 47000 mult in ax/dx
+je    skip_diag_mult
+mov   dx, 47000
+mul   dx
+skip_diag_mult:
+
+sal   bx, 1 ; jump word index...
+
+; ax has speed, or dx:ax has 47000 * speed
+; bx has jump lookup offset
+; cx already MOBJPOSLIST_6800_SEGMENT
+; trymove params will be pre-pushed here.
+
+push  word ptr es:[di + MOBJ_POS_T.mp_y + 2] ; bp - 2
+push  word ptr es:[di + MOBJ_POS_T.mp_y + 0] ; bp - 4
+push  word ptr es:[di + MOBJ_POS_T.mp_x + 2] ; bp - 6
+push  word ptr es:[di + MOBJ_POS_T.mp_x + 0] ; bp - 8
+
+
+jmp   word ptr cs:[bx + OFFSET _p_move_dir_switch_table]
+
+
+switch_movedir_0:
+add   word ptr [bp - 6], ax
+
+got_x_y_for_trymove: 
+
+
 mov   bx, di
-push  cx
 mov   ax, si
-push  word ptr [bp - 8]
-mov   cx, word ptr [bp - 4]
+;mov   cx, MOBJPOSLIST_6800_SEGMENT ; this was set above.
+
+
+
 ;call  dword ptr ds:[_P_TryMove]
 db    09Ah
 dw    P_TRYMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   es, cx
 test  al, al
-jne   label_25
-mov   es, word ptr [bp - 4]
+jne   try_ok
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_FLOAT SHR 8)
-je    jump_to_label_28
-mov   bx, OFFSET _floatok
-cmp   byte ptr ds:[bx], 0
-je    jump_to_label_28
-mov   bx, OFFSET _tmfloorz
-mov   dx, word ptr ds:[bx]
-xor   dh, dh
-mov   ax, word ptr ds:[bx]
-and   dl, 7
-sar   ax, 3
-shl   dx, 13
-cmp   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
-jg    label_29
-jne   label_30
-cmp   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
-jbe   label_30
-label_29:
-add   word ptr es:[di + MOBJ_POS_T.mp_z + 2], FLOATSPEED_HIGHBITS
-label_27:
-mov   es, word ptr [bp - 4]
-mov   al, 1
+je    check_for_specials_hit_in_move
+cmp   byte ptr ds:[_floatok], 0
+je    check_for_specials_hit_in_move
+; must adjust height.
+
+;			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmfloorz);
+xor   ax, ax
+mov   dx, word ptr ds:[_tmfloorz]
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+mov   bx, FLOATSPEED_HIGHBITS
+cmp   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+jg    add_floatspeed
+jne   sub_floatspeed
+cmp   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+jnbe  add_floatspeed
+sub_floatspeed:
+neg   bx    ; turn it into a subtract.
+add_floatspeed:
+add   word ptr es:[di + MOBJ_POS_T.mp_z + 2], bx
+
 or    byte ptr es:[di + MOBJ_POS_T.mp_flags2], MF_INFLOAT
+jmp   exit_p_move_return_1
+try_ok:
+and   byte ptr es:[di + MOBJ_POS_T.mp_flags2], (NOT MF_INFLOAT)
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_FLOAT SHR 8)
+jne   exit_p_move_return_1
+xor   ax, ax
+mov   dx, word ptr ds:[si + MOBJ_T.m_floorz]
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+mov   word ptr es:[di + MOBJ_POS_T.mp_z + 0], ax
+mov   word ptr es:[di + MOBJ_POS_T.mp_z + 2], dx
+exit_p_move_return_1:
+mov   al, 1
 exit_p_move:
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
-ret   
-label_23:
-xor   al, al
+ret 
+
+check_for_specials_hit_in_move:
+cmp   word ptr ds:[_numspechit], 0
+jne  specials_hit
+
+xor   ax, ax
 jmp   exit_p_move
-table_2_label_1:
-mov   dx, 47000
-mul   dx
-add   word ptr [bp - 8], ax
-adc   cx, dx
-add   word ptr [bp - 0Ah], ax
-adc   word ptr [bp - 6], dx
-jmp   label_24
-table_2_label_2:
-add   word ptr [bp - 6], ax
-jmp   label_24
-label_25:
-jmp   label_26
-table_2_label_3:
-mov   dx, 47000
-mul   dx
-sub   word ptr [bp - 8], ax
-sbb   cx, dx
-add   word ptr [bp - 0Ah], ax
-adc   word ptr [bp - 6], dx
-jmp   label_24
-jump_to_label_28:
-jmp   label_28
-table_2_label_4:
-sub   word ptr [bp - 8], 0
-sbb   cx, ax
-jmp   label_24
-table_2_label_5:
-mov   dx, 47000
-mul   dx
-sub   word ptr [bp - 8], ax
-sbb   cx, dx
-sub   word ptr [bp - 0Ah], ax
-sbb   word ptr [bp - 6], dx
-jmp   label_24
-table_2_label_6:
-sub   word ptr [bp - 0Ah], 0
-sbb   word ptr [bp - 6], ax
-jmp   label_24
-label_30:
-sub   word ptr es:[di + MOBJ_POS_T.mp_z + 2], FLOATSPEED_HIGHBITS
-jmp   label_27
-table_2_label_7:
-mov   dx, 47000
-mul   dx
-add   word ptr [bp - 8], ax
-adc   cx, dx
-sub   word ptr [bp - 0Ah], ax
-sbb   word ptr [bp - 6], dx
-jmp   label_24
-label_28:
-mov   bx, OFFSET _numspechit
-cmp   word ptr ds:[bx], 0
-je    label_23
+specials_hit:
+; specials hit..
 mov   bx, SIZEOF_THINKER_T
 lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
+;mov   bp, dx   ; bp is "good" boolean var (default to false)
+push  dx
 div   bx
-mov   byte ptr [bp - 2], 0
+mov   di, ax  ; store index in di...
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
-mov   di, ax
-label_32:
+
+do_next_spechit:
 mov   bx, OFFSET _numspechit
-mov   ax, word ptr ds:[bx]
-mov   dx, ax
-dec   dx
-mov   word ptr ds:[bx], dx
-test  ax, ax
-je    label_31
-mov   bx, dx
-mov   cx, di
-add   bx, dx
-mov   ax, si
+dec   word ptr ds:[bx]  
+js    end_spechit_loop
+mov   bx, ds:[bx]
+sal   bx, 1
 mov   dx, word ptr ds:[bx + _spechit]
+mov   cx, di
+mov   ax, si
 xor   bx, bx
 ;call  P_UseSpecialLine_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_UseSpecialLine_addr
 test  al, al
-je    label_32
-mov   byte ptr [bp - 2], 1
-jmp   label_32
-label_31:
-mov   al, byte ptr [bp - 2]
+je    do_next_spechit
+mov   word ptr [bp - 2], 1
+jmp   do_next_spechit
+end_spechit_loop:
+pop   ax  ;  result
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
 ret   
-label_26:
-mov   es, word ptr [bp - 4]
-and   byte ptr es:[di + MOBJ_POS_T.mp_flags2], (NOT MF_INFLOAT)
-test  byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_FLOAT SHR 8)
-jne   exit_p_move_return_1
-mov   ax, word ptr ds:[si + MOBJ_T.m_floorz]
-sar   ax, 3
-mov   word ptr es:[di + MOBJ_POS_T.mp_z + 2], ax
-mov   ax, word ptr ds:[si + MOBJ_T.m_floorz]
-and   ax, 7
-shl   ax, 13
-mov   word ptr es:[di + MOBJ_POS_T.mp_z + 0], ax
-exit_p_move_return_1:
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
+switch_movedir_1:
+add   word ptr [bp - 8], ax
+adc   word ptr [bp - 6], dx
+add   word ptr [bp - 4], ax
+adc   word ptr [bp - 2], dx
+jmp   got_x_y_for_trymove
+switch_movedir_2:
+add   word ptr [bp - 2], ax
+jmp   got_x_y_for_trymove
+switch_movedir_3:
+sub   word ptr [bp - 8], ax
+sbb   word ptr [bp - 6], dx
+add   word ptr [bp - 4], ax
+adc   word ptr [bp - 2], dx
+jmp   got_x_y_for_trymove
+switch_movedir_4:
+sub   word ptr [bp - 6], ax
+jmp   got_x_y_for_trymove
+switch_movedir_5:
+sub   word ptr [bp - 8], ax
+sbb   word ptr [bp - 6], dx
+sub   word ptr [bp - 4], ax
+sbb   word ptr [bp - 2], dx
+jmp   got_x_y_for_trymove
+switch_movedir_6:
+sub   word ptr [bp - 2], ax
+jmp   got_x_y_for_trymove
+switch_movedir_7:
+add   word ptr [bp - 8], ax
+adc   word ptr [bp - 6], dx
+sub   word ptr [bp - 4], ax
+sbb   word ptr [bp - 2], dx
+jmp   got_x_y_for_trymove
 
 ENDP
 

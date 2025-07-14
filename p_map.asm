@@ -3147,6 +3147,8 @@ ENDP
 ; ax thing ptr
 ; cx:bx thingpos
 
+; todo! thingpos ptr dx, use cx:bx as x?
+
 PROC P_TryMove_ FAR
 PUBLIC P_TryMove_ 
 
