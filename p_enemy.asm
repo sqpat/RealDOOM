@@ -298,103 +298,122 @@ retf
 
 ENDP
 
-; todo make this take mobjpos in cx:bx.
+; todo cx/bx should not need to be on stac
 
 PROC    P_CheckMeleeRange_ NEAR
 PUBLIC  P_CheckMeleeRange_
 
-push  bx
-push  cx
-push  dx
+; bp - 2    mobj (arg)
+; bp - 4    targ (pl)
+; bp - 6    
+
 push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 010h
-push  ax
 xchg  ax, si
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 jne   do_check_meleerange
-exit_check_meleerange_return_0:
+
 xor   ax, ax
-exit_check_meleerange:
-LEAVE_MACRO 
-pop   di
 pop   si
-pop   dx
-pop   cx
-pop   bx
 ret   
 
 do_check_meleerange:
 
-mov   si, bx
+push  bx
+push  cx
+push  dx
+push  di
+
+push  si  ; bp - 2
+
+
+mov   di, bx
 mov   cx, MOBJPOSLIST_6800_SEGMENT  ; might not be necessary. whatever.
 mov   es, cx
 
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
-mov   di, word ptr [bp - 012h]
-mov   word ptr [bp - 0Eh], ax
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
-mov   di, word ptr ds:[di + MOBJ_T.m_targetRef]
-mov   word ptr [bp - 0Ch], ax
 
-imul  ax, di, SIZEOF_THINKER_T
-imul  di, di, SIZEOF_MOBJ_POS_T
+mov   si, word ptr ds:[si + MOBJ_T.m_targetRef]
 
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr es:[di]
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[di + 2]
-mov   word ptr [bp - 010h], ax
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-mov   bx, word ptr [bp - 2]
-mov   word ptr [bp - 8], ax
-mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-mov   bx, ax
-mov   dx, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
+IF COMPISA GE COMPILE_186
+    imul  bx, si, SIZEOF_THINKER_T
+    add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
+    imul  si, si, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   si
+    mov   bx, ax
+    add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   si
+    mov   si, ax
+
+ENDIF
+
+
+push  bx  ; bp - 4
+
+
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
+xchg  ax, bx
 add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_radius)
+xor   ax, ax
 mov   al, byte ptr ds:[bx]
-mov   bx, word ptr [bp - 8]
-mov   byte ptr [bp - 6], al
-sub   bx, word ptr [bp - 0Ch]
-sbb   dx, cx
-mov   ax, word ptr [bp - 0Ah]
-mov   cx, dx
-sub   ax, word ptr [bp - 4]
-mov   dx, word ptr [bp - 010h]
-sbb   dx, word ptr [bp - 0Eh]
-mov   byte ptr [bp - 5], 0
-call  dword ptr ds:[_P_AproxDistance]
-mov   ax, word ptr [bp - 6]
 add   ax, (MELEERANGE - 20)
+
+push  ax  ; bp - 6
+
+push  es
+pop   ds
+
+lodsw 
+sub   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
+xchg  ax, cx            ; cx holds onto x lo
+lodsw 
+sbb   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
+xchg  ax, dx            ; dx gets x hi
+lodsw 
+sub   ax, word ptr ds:[di + MOBJ_POS_T.mp_y + 0]
+xchg  ax, bx            ; bx gets y lo
+lodsw
+sbb   ax, word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
+xchg  ax, cx            ; cx gets y hi. and ax gets x lo back
+
+push  ss
+pop   ds
+
+
+
+;call  dword ptr ds:[_P_AproxDistance]
+
+db    09Ah
+dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+;physics_highcode_segment, 		 P_AproxDistanceOffset
+
+pop   ax  ; bp - 6
 cmp   dx, ax
-jl    label_10
-jmp   exit_check_meleerange_return_0
-label_10:
-mov   dx, word ptr [bp - 2]
-mov   ax, word ptr [bp - 012h]
-mov   cx, di
-mov   bx, si
-call  dword ptr ds:[_P_CheckSightTemp]
+pop   dx  ; bp - 4
+pop   ax  ; bp - 2
+jnl   exit_check_meleerange_return_0
+mov   bx,  di
+lea   cx, [si - 8] ; because of lodsw increment above..
+db    09Ah
+dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 test  al, al
 jne   exit_check_meleerange_return_1
 jmp   exit_check_meleerange
 exit_check_meleerange_return_1:
-mov   al, 1
-LEAVE_MACRO 
+mov   ax, 1
+exit_check_meleerange:
 pop   di
-pop   si
 pop   dx
 pop   cx
 pop   bx
-ret   
+pop   si
+ret  
+exit_check_meleerange_return_0:
+xor   ax, ax
+jmp   exit_check_meleerange
 
 ENDP
 
