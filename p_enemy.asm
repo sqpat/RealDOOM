@@ -298,6 +298,7 @@ retf
 
 ENDP
 
+; todo make this take mobjpos in cx:bx.
 
 PROC    P_CheckMeleeRange_ NEAR
 PUBLIC  P_CheckMeleeRange_
@@ -311,11 +312,11 @@ push  bp
 mov   bp, sp
 sub   sp, 010h
 push  ax
-mov   bx, ax
-cmp   word ptr ds:[bx + MOBJ_T.m_targetRef], 0
-jne   label_9
+xchg  ax, si
+cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
+jne   do_check_meleerange
 exit_check_meleerange_return_0:
-xor   al, al
+xor   ax, ax
 exit_check_meleerange:
 LEAVE_MACRO 
 pop   di
@@ -324,24 +325,25 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_9:
-mov   bx, SIZEOF_THINKER_T
-sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-xor   dx, dx
-div   bx
-imul  si, ax, SIZEOF_MOBJ_POS_T
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   es, ax
-mov   ax, word ptr es:[si]
+
+do_check_meleerange:
+
+mov   si, bx
+mov   cx, MOBJPOSLIST_6800_SEGMENT  ; might not be necessary. whatever.
+mov   es, cx
+
+mov   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
 mov   word ptr [bp - 4], ax
-mov   ax, word ptr es:[si + 2]
+mov   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
 mov   di, word ptr [bp - 012h]
 mov   word ptr [bp - 0Eh], ax
 mov   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
 mov   di, word ptr ds:[di + MOBJ_T.m_targetRef]
 mov   word ptr [bp - 0Ch], ax
+
 imul  ax, di, SIZEOF_THINKER_T
 imul  di, di, SIZEOF_MOBJ_POS_T
+
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   word ptr [bp - 2], ax
 mov   ax, word ptr es:[di]
@@ -1507,6 +1509,7 @@ call  dword ptr [bp - 0Ch]
 test  ax, ax
 je    label_108
 mov   ax, si
+mov   bx, di
 call  P_CheckMeleeRange_
 test  al, al
 jne   label_109
@@ -2074,8 +2077,10 @@ pop   si
 pop   dx
 ret   
 do_a_troopattack:
+mov   dx, bx
 call  A_FaceTarget_
 mov   ax, si
+mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
 je    do_troop_missile
@@ -2119,8 +2124,6 @@ ENDP
 PROC    A_SargAttack_ NEAR
 PUBLIC  A_SargAttack_
 
-push  bx
-push  cx
 push  dx
 push  si
 mov   si, ax
@@ -2129,12 +2132,12 @@ jne   do_a_sargattack
 exit_a_sargattack:
 pop   si
 pop   dx
-pop   cx
-pop   bx
 ret   
 do_a_sargattack:
+mov   dx, bx
 call  A_FaceTarget_
 mov   ax, si
+mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
 je    exit_a_sargattack
@@ -2154,8 +2157,6 @@ add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 call  P_DamageMobj_
 pop   si
 pop   dx
-pop   cx
-pop   bx
 ret   
 
 ENDP
@@ -2173,8 +2174,10 @@ pop   si
 pop   dx
 ret   
 do_head_attack:
+mov   dx, bx
 call  A_FaceTarget_
 mov   ax, si
+mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
 je    label_117
@@ -2246,6 +2249,7 @@ pop   si
 pop   dx
 ret   
 do_a_bruisattack:
+; cx:bx here
 call  P_CheckMeleeRange_
 test  al, al
 je    do_bruis_missile
@@ -2644,8 +2648,7 @@ ENDP
 PROC    A_SkelFist_ NEAR
 PUBLIC  A_SkelFist_
 
-push  bx
-push  cx
+
 push  dx
 push  si
 mov   si, ax
@@ -2654,12 +2657,12 @@ jne   do_a_skelfist
 exit_a_skelfist:
 pop   si
 pop   dx
-pop   cx
-pop   bx
 ret   
 do_a_skelfist:
+mov   dx, bx
 call  A_FaceTarget_
 mov   ax, si
+mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
 je    exit_a_skelfist
@@ -2683,8 +2686,6 @@ add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 call  P_DamageMobj_
 pop   si
 pop   dx
-pop   cx
-pop   bx
 ret   
 
 ENDP
