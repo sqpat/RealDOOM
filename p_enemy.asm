@@ -780,16 +780,14 @@ push  si
 mov   si, ax
 call  P_Move_
 test  al, al
-jne   label_37
+jne   generate_next_movecount
 pop   si
 ret   
-label_37:
+generate_next_movecount:
 call  P_Random_
-mov   bl, al
-and   bl, 15
-xor   bh, bh
+and   ax, 15  ; todo al once proper random
+mov   word ptr ds:[si + MOBJ_T.m_movecount], ax
 mov   al, 1
-mov   word ptr ds:[si + MOBJ_T.m_movecount], bx
 pop   si
 ret   
 
