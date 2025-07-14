@@ -23,21 +23,8 @@ INSTRUCTION_SET_MACRO
 P_SIGHT_STARTMARKER_ = 0 
 
 EXTRN P_Random_:NEAR
-EXTRN FastDiv3216u_:PROC
-EXTRN FixedMulTrigSpeed_:PROC
-EXTRN FixedMulTrigSpeedNoShift_:PROC
-EXTRN FixedMulTrigNoShift_:PROC
 EXTRN G_ExitLevel_:PROC
-EXTRN S_StartSound_:PROC
-EXTRN P_SpawnMobj_:PROC
-EXTRN P_RemoveMobj_:PROC
-EXTRN P_DamageMobj_:PROC
-EXTRN R_PointToAngle2_:PROC
-EXTRN P_SpawnPuff_:PROC
-EXTRN P_UseSpecialLine_:PROC
 
-
-EXTRN P_SetMobjState_:PROC
 EXTRN EV_DoDoor_:PROC
 EXTRN EV_DoFloor_:NEAR
 EXTRN __I4D:PROC
@@ -50,15 +37,6 @@ EXTRN _fastparm:BYTE
 EXTRN _diags:WORD
 EXTRN _opposite:WORD
 
-EXTRN _P_SpawnMissile:DWORD
-EXTRN _P_TeleportMove:DWORD
-EXTRN _P_RadiusAttack:DWORD
-EXTRN _P_TryMove:DWORD
-EXTRN _P_CheckPosition:DWORD
-EXTRN _P_SetThingPosition:DWORD
-EXTRN _P_UnsetThingPosition:DWORD
-EXTRN _P_AimLineAttack:DWORD
-EXTRN _P_LineAttack:DWORD
 
 
 .CODE
@@ -639,7 +617,10 @@ push  cx
 mov   ax, si
 push  word ptr [bp - 8]
 mov   cx, word ptr [bp - 4]
-call  dword ptr ds:[_P_TryMove]
+;call  dword ptr ds:[_P_TryMove]
+db    09Ah
+dw    P_TRYMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 test  al, al
 jne   label_25
 mov   es, word ptr [bp - 4]
@@ -750,7 +731,10 @@ add   bx, dx
 mov   ax, si
 mov   dx, word ptr ds:[bx + _spechit]
 xor   bx, bx
-call  P_UseSpecialLine_
+;call  P_UseSpecialLine_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_UseSpecialLine_addr
 test  al, al
 je    label_32
 mov   byte ptr [bp - 2], 1
@@ -1182,7 +1166,10 @@ mov   bx, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
 mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
 mov   ax, word ptr es:[si]
 mov   dx, word ptr es:[si + 2]
-call  R_PointToAngle2_
+;call  R_PointToAngle2_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_PointToAngle2_addr
 mov   es, word ptr [bp - 4]
 mov   cx, ax
 mov   bx, si
@@ -1372,14 +1359,20 @@ mov   dl, bl
 xor   ax, ax
 label_92:
 xor   dh, dh
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 label_86:
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
 call  dword ptr [bp - 8]
 mov   dx, ax
 mov   ax, si
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 exit_a_look:
 LEAVE_MACRO 
 pop   di
@@ -1529,7 +1522,10 @@ mov   di, ax
 mov   ax, si
 mov   dx, word ptr ds:[di + _mobjinfo]
 add   di, OFFSET _mobjinfo
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 jmp   exit_a_chase
 label_110:
 mov   bx, di
@@ -1590,7 +1586,11 @@ cmp   al, 3
 jae   jump_to_exit_a_chase
 mov   ax, si
 xor   dh, dh
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -1605,13 +1605,20 @@ call  dword ptr [bp - 8]
 mov   dl, al
 mov   ax, si
 xor   dh, dh
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
 call  dword ptr [bp - 0Ch]
 mov   dx, ax
 mov   ax, si
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -1628,7 +1635,10 @@ xor   ah, ah
 call  dword ptr [bp - 010h]
 mov   dx, ax
 mov   ax, si
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 mov   es, word ptr [bp - 2]
 or    byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
 LEAVE_MACRO 
@@ -1679,7 +1689,10 @@ mov   bx, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
 mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
 mov   ax, word ptr es:[si]
 mov   dx, word ptr es:[si + 2]
-call  R_PointToAngle2_
+;call  R_PointToAngle2_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_PointToAngle2_addr
 mov   es, word ptr [bp - 2]
 mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], ax
 mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], dx
@@ -1755,12 +1768,19 @@ mov   ax, si
 shr   cx, 3
 mov   bx, MISSILERANGE
 mov   dx, cx
-call  dword ptr ds:[_P_AimLineAttack]
+;call  dword ptr ds:[_P_AimLineAttack]
+db    09Ah
+dw    P_AIMLINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   bx, ax
 mov   word ptr [bp - 2], dx
 mov   dx, 1
 mov   ax, si
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 call  P_Random_
 mov   dl, al
 call  P_Random_
@@ -1785,7 +1805,10 @@ push  word ptr [bp - 2]
 mov   ax, si
 push  bx
 mov   bx, MISSILERANGE
-call  dword ptr ds:[_P_LineAttack]
+;call  dword ptr ds:[_P_LineAttack]
+db    09Ah
+dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -1826,7 +1849,11 @@ div   si
 imul  si, ax, SIZEOF_MOBJ_POS_T
 mov   dx, 2
 mov   ax, di
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   ax, di
 mov   bx, MOBJPOSLIST_6800_SEGMENT
 call  A_FaceTarget_
@@ -1838,7 +1865,10 @@ mov   word ptr [bp - 2], ax
 mov   dx, ax
 mov   ax, di
 xor   cl, cl
-call  dword ptr ds:[_P_AimLineAttack]
+;call  dword ptr ds:[_P_AimLineAttack]
+db    09Ah
+dw    P_AIMLINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   word ptr [bp - 6], ax
 mov   word ptr [bp - 4], dx
 label_114:
@@ -1868,7 +1898,10 @@ push  word ptr [bp - 4]
 mov   ax, di
 push  word ptr [bp - 6]
 inc   cl
-call  dword ptr ds:[_P_LineAttack]
+;call  dword ptr ds:[_P_LineAttack]
+db    09Ah
+dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 cmp   cl, 3
 jl    label_114
 LEAVE_MACRO 
@@ -1911,7 +1944,11 @@ div   bx
 imul  bx, ax, SIZEOF_MOBJ_POS_T
 mov   dx, 2
 mov   ax, si
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   ax, si
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 call  A_FaceTarget_
@@ -1921,7 +1958,10 @@ mov   ax, si
 shr   cx, 3
 mov   bx, MISSILERANGE
 mov   dx, cx
-call  dword ptr ds:[_P_AimLineAttack]
+;call  dword ptr ds:[_P_AimLineAttack]
+db    09Ah
+dw    P_AIMLINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   word ptr [bp - 2], ax
 mov   bx, dx
 call  P_Random_
@@ -1950,7 +1990,10 @@ push  bx
 mov   ax, si
 push  word ptr [bp - 2]
 mov   bx, MISSILERANGE
-call  dword ptr ds:[_P_LineAttack]
+;call  dword ptr ds:[_P_LineAttack]
+db    09Ah
+dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -2012,7 +2055,10 @@ xor   ah, ah
 call  dword ptr [bp - 4]
 mov   dx, ax
 mov   ax, si
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -2072,7 +2118,10 @@ xor   ah, ah
 call  dword ptr [bp - 4]
 mov   dx, ax
 mov   ax, si
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -2099,7 +2148,10 @@ imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 push  MT_ARACHPLAZ  ; todo 186
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 pop   si
 pop   dx
 ret   
@@ -2128,7 +2180,11 @@ test  al, al
 je    do_troop_missile
 mov   dx, sfx_claw
 mov   ax, si
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 call  P_Random_
 xor   ah, ah
 mov   cx, ax
@@ -2146,7 +2202,10 @@ imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 mov   bx, si
 mov   dx, si
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 pop   si
 pop   dx
 ret   
@@ -2155,7 +2214,10 @@ imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 push  MT_TROOPSHOT  ; todo 186
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 pop   si
 pop   dx
 ret   
@@ -2196,7 +2258,10 @@ mov   dx, si
 add   cx, 4
 
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 pop   si
 pop   dx
 ret   
@@ -2237,7 +2302,10 @@ add   cx, dx
 mov   dx, si
 add   cx, cx
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 pop   si
 pop   dx
 ret   
@@ -2246,7 +2314,10 @@ imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 push  MT_HEADSHOT  ; todo 186
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 pop   si
 pop   dx
 ret   
@@ -2271,7 +2342,10 @@ imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 push  MT_ROCKET
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 pop   si
 pop   dx
 ret   
@@ -2297,7 +2371,11 @@ test  al, al
 je    do_bruis_missile
 mov   dx, sfx_claw
 mov   ax, si
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 call  P_Random_
 xor   ah, ah
 mov   cx, ax
@@ -2316,7 +2394,10 @@ mov   bx, si
 mov   dx, si
 add   cx, cx
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 pop   si
 pop   dx
 ret   
@@ -2325,7 +2406,10 @@ imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 push  MT_BRUISERSHOT ; todo 186
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 pop   si
 pop   dx
 ret   
@@ -2361,7 +2445,10 @@ push  MT_TRACER  ;todo 186
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   di, OFFSET _setStateReturn_pos
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   bx, OFFSET _setStateReturn
 mov   ax, word ptr ds:[di + 2]
 mov   cx, word ptr ds:[bx]
@@ -2430,7 +2517,10 @@ mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_y+0]
 mov   ax, word ptr es:[di + MOBJ_POS_T.mp_x+0]
 mov   di, cx
 mov   cx, word ptr [bp - 4]
-call  P_SpawnPuff_
+;call  P_SpawnPuff_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnPuff_addr
 push  -1 ; todo 186
 mov   es, word ptr [bp - 0Ah]
 mov   bx, word ptr [bp - 8]
@@ -2449,7 +2539,10 @@ mov   dx, word ptr es:[si + MOBJ_POS_T.mp_x+2]
 mov   si, word ptr [bp - 6]
 sub   ax, word ptr ds:[si + MOBJ_T.m_momx + 0]
 sbb   dx, word ptr ds:[si + MOBJ_T.m_momx + 2]
-call  P_SpawnMobj_
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
 mov   bx, OFFSET _setStateReturn
 mov   bx, word ptr ds:[bx]
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], 1
@@ -2486,7 +2579,10 @@ mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
 mov   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
 mov   dx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
-call  R_PointToAngle2_
+;call  R_PointToAngle2_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_PointToAngle2_addr
 mov   es, word ptr [bp - 0Ah]
 mov   bx, si
 cmp   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
@@ -2534,7 +2630,10 @@ cbw
 mov   dx, si
 mov   bx, ax
 mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigSpeed_
+;call   FixedMulTrigSpeed_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeed_addr
 mov   bx, word ptr [bp - 6]
 mov   word ptr ds:[bx + MOBJ_T.m_momx + 0], ax
 mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
@@ -2548,7 +2647,10 @@ cbw
 mov   dx, si
 mov   bx, ax
 mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigSpeed_
+;call   FixedMulTrigSpeed_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeed_addr
 mov   bx, word ptr [bp - 6]
 mov   word ptr ds:[bx + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[bx + MOBJ_T.m_momy + 2], dx
@@ -2605,7 +2707,10 @@ sbb   cx, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
 mov   bx, ax
 mov   ax, dx
 mov   dx, cx
-call  FastDiv3216u_
+;call   FastDiv3216u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastDiv3216u_addr
 mov   bx, word ptr [bp - 6]
 cmp   dx, word ptr ds:[bx + MOBJ_T.m_momz + 2]
 jl    label_129
@@ -2680,7 +2785,11 @@ do_a_skelwhoosh:
 call  A_FaceTarget_
 mov   dx, SFX_SKESWG
 mov   ax, bx
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 pop   dx
 pop   bx
 ret   
@@ -2720,13 +2829,20 @@ shl   cx, 2
 mov   ax, si
 sub   cx, dx
 mov   dx, SFX_SKEPCH
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 mov   bx, si
 add   cx, cx
 mov   dx, si
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 pop   si
 pop   dx
 ret   
@@ -2830,7 +2946,10 @@ mov   dx, word ptr ds:[si + 4]
 push  word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   bx, ax
 mov   ax, si
-call  dword ptr ds:[_P_CheckPosition]
+;call  dword ptr ds:[_P_CheckPosition]
+db    09Ah
+dw    P_CHECKPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 sar   word ptr ds:[si + MOBJ_T.m_height + 2], 1
 rcr   word ptr ds:[si + MOBJ_T.m_height + 0], 1
 sar   word ptr ds:[si + MOBJ_T.m_height + 2], 1
@@ -3061,20 +3180,30 @@ mov   ax, bx
 mov   word ptr ds:[bx + MOBJ_T.m_targetRef], dx
 mov   dx, S_VILE_HEAL1
 mov   bx, OFFSET _corpsehitRef
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 imul  si, word ptr ds:[bx], SIZEOF_THINKER_T
 imul  bx, word ptr ds:[bx], SIZEOF_MOBJ_POS_T
 add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   dx, SFX_SLOP
 mov   ax, si
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
 imul  di, ax, SIZEOF_MOBJINFO_T
 call  dword ptr [bp - 016h]
 mov   dx, ax
 mov   ax, si
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 shl   word ptr ds:[si + MOBJ_T.m_height+2], 2
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   ax, word ptr ds:[di + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_flags1]
@@ -3117,7 +3246,11 @@ PUBLIC  A_VileStart_
 
 push  dx
 mov   dx, SFX_VILATK
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 pop   dx
 ret   
 
@@ -3131,7 +3264,11 @@ push  dx
 push  si
 mov   si, ax
 mov   dx, SFX_FLAMST
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   ax, si
 call  A_Fire_
 pop   si
@@ -3148,7 +3285,11 @@ push  dx
 push  si
 mov   si, ax
 mov   dx, SFX_FLAME
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   ax, si
 call  A_Fire_
 pop   si
@@ -3207,10 +3348,16 @@ mov   dx, si
 mov   word ptr [bp - 6], ax
 mov   ax, word ptr [bp - 0Ah]
 xor   bx, bx
-call  dword ptr ds:[_P_UnsetThingPosition]
+;call  dword ptr ds:[_P_UnsetThingPosition]
+db    09Ah
+dw    P_UNSETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   dx, word ptr [bp - 6]
 mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 mov   es, word ptr [bp - 2]
 mov   cx, 24
 mov   word ptr [bp - 4], ax
@@ -3225,7 +3372,10 @@ mov   ax, FINESINE_SEGMENT
 xor   bx, bx
 mov   word ptr es:[si + MOBJ_POS_T.mp_x + 2], dx
 mov   dx, word ptr [bp - 6]
-call  FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 mov   es, word ptr [bp - 2]
 mov   bx, ax
 mov   cx, dx
@@ -3245,7 +3395,10 @@ mov   bx, -1
 mov   word ptr es:[si + MOBJ_POS_T.mp_z + 2], dx
 mov   ax, word ptr [bp - 0Ah]
 mov   dx, si
-call  dword ptr ds:[_P_SetThingPosition]
+;call  dword ptr ds:[_P_SetThingPosition]
+db    09Ah
+dw    P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -3294,7 +3447,10 @@ push  word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
 mov   di, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 push  word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
 mov   bx, di
-call  P_SpawnMobj_
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
 mov   cx, SIZEOF_THINKER_T
 mov   bx, ax
 xor   dx, dx
@@ -3444,13 +3600,20 @@ test  al, al
 je    exit_vile_attack
 mov   dx, SFX_BAREXP
 mov   ax, si
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 mov   cx, 20
 mov   bx, si
 mov   dx, si
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 mov   es, word ptr [bp - 6]
 mov   bx, word ptr [bp - 0Ah]
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
@@ -3474,7 +3637,10 @@ mov   word ptr [bp - 0Eh], ax
 mov   ax, FINECOSINE_SEGMENT
 xor   bx, bx
 mov   word ptr [bp - 0Ch], MOBJPOSLIST_6800_SEGMENT
-call  FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 mov   es, word ptr [bp - 4]
 mov   bx, word ptr [bp - 2]
 mov   word ptr [bp - 010h], ax
@@ -3490,7 +3656,10 @@ mov   dx, word ptr [bp - 8]
 xor   bx, bx
 mov   word ptr es:[di + 2], ax
 mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 mov   es, word ptr [bp - 4]
 mov   bx, word ptr [bp - 2]
 mov   cx, ax
@@ -3506,7 +3675,10 @@ mov   word ptr es:[di + MOBJ_POS_T.mp_y + 0], dx
 mov   dx, di
 mov   word ptr es:[di + MOBJ_POS_T.mp_y + 2], ax
 mov   ax, word ptr [bp - 0Eh]
-call  dword ptr ds:[_P_RadiusAttack]
+;call  dword ptr ds:[_P_RadiusAttack]
+db    09Ah
+dw    P_RADIUSATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -3525,7 +3697,11 @@ mov   bx, ax
 call  A_FaceTarget_
 mov   dx, SFX_MANATK
 mov   ax, bx
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 pop   dx
 pop   bx
 ret   
@@ -3553,14 +3729,20 @@ imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 push  9
 mov   ax, di
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 push  9
 mov   cx, word ptr [bp - 2]
 mov   bx, si
 mov   ax, di
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 imul  si, ax, SIZEOF_THINKER_T
 imul  di, ax, SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
@@ -3582,7 +3764,11 @@ cbw
 mov   dx, di
 mov   bx, ax
 mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
+
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
@@ -3595,7 +3781,10 @@ cbw
 mov   dx, di
 mov   bx, ax
 mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 LEAVE_MACRO 
@@ -3627,7 +3816,10 @@ imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 push  MT_FATSHOT  ; todo 186
 mov   ax, di
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 push  MT_FATSHOT  ; todo 186
 mov   cx, word ptr [bp - 2]
@@ -3635,7 +3827,10 @@ mov   bx, si
 mov   ax, di
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   si, OFFSET _setStateReturn
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   bx, OFFSET _setStateReturn_pos
 mov   si, word ptr ds:[si]
 les   di, dword ptr ds:[bx]
@@ -3654,7 +3849,10 @@ cbw
 mov   dx, di
 mov   bx, ax
 mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
@@ -3667,7 +3865,10 @@ cbw
 mov   dx, di
 mov   bx, ax
 mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 LEAVE_MACRO 
@@ -3703,7 +3904,10 @@ mov   word ptr [bp - 4], ax
 mov   dx, ax
 mov   ax, word ptr [bp - 8]
 mov   di, OFFSET _setStateReturn_pos
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   si, word ptr ds:[si]
 les   bx, dword ptr ds:[di]
 add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], FATSPREADLOW
@@ -3722,13 +3926,19 @@ add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
 mov   word ptr [bp - 6], ax
 mov   bx, ax
 mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 mov   bx, word ptr [bp - 6]
 mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
 mov   dx, word ptr [bp - 2]
 mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
 push  9
 mov   bx, word ptr [bp - 0Ah]
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
@@ -3737,7 +3947,10 @@ mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 mov   dx, word ptr [bp - 4]
 mov   ax, word ptr [bp - 8]
 mov   si, OFFSET _setStateReturn
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   si, word ptr ds:[si]
 les   bx, dword ptr ds:[di]
 add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], FATSPREADLOW
@@ -3749,13 +3962,19 @@ mov   bx, word ptr [bp - 6]
 mov   word ptr [bp - 2], ax
 mov   dx, ax
 mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 mov   bx, word ptr [bp - 6]
 mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
 mov   dx, word ptr [bp - 2]
 mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 LEAVE_MACRO 
@@ -3798,7 +4017,11 @@ call  dword ptr [bp - 010h]
 mov   dl, al
 mov   ax, si
 xor   dh, dh
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   ax, si
 call  A_FaceTarget_
 imul  ax, cx, SIZEOF_THINKER_T
@@ -3815,14 +4038,20 @@ mov   word ptr [bp - 0Ah], bx
 mov   word ptr [bp - 6], bx
 mov   ax, FINECOSINE_SEGMENT
 mov   bx, SKULLSPEED_SMALL
-call  FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 mov   bx, SKULLSPEED_SMALL
 mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
 mov   dx, word ptr [bp - 0Ch]
 mov   ax, FINESINE_SEGMENT
 mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
-call  FixedMulTrigSpeedNoShift_
+;call FixedMulTrigSpeedNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigSpeedNoShift_addr
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   bx, word ptr [bp - 0Ah]
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
@@ -3868,7 +4097,10 @@ adc   dx, word ptr [bp - 0Ah]
 mov   bx, cx
 sub   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
 sbb   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
-call  FastDiv3216u_
+;call   FastDiv3216u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastDiv3216u_addr
 mov   word ptr ds:[si + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momz + 2], dx
 LEAVE_MACRO 
@@ -3958,7 +4190,10 @@ mov   dx, word ptr [bp - 6]
 xor   bx, bx
 mov   ax, FINECOSINE_SEGMENT
 mov   word ptr [bp - 0Ch], MOBJPOSLIST_6800_SEGMENT
-call  FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 mov   es, word ptr [bp - 0Ch]
 mov   bx, word ptr es:[si]
 add   bx, ax
@@ -3971,7 +4206,10 @@ mov   dx, word ptr [bp - 6]
 mov   word ptr [bp - 010h], ax
 xor   bx, si
 mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 mov   es, word ptr [bp - 0Ch]
 push  -1  ; todo 186
 mov   cx, dx
@@ -3988,7 +4226,10 @@ mov   ax, word ptr [bp - 0Eh]
 push  bx
 mov   bx, dx
 mov   dx, word ptr [bp - 010h]
-call  P_SpawnMobj_
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
 mov   bx, OFFSET _setStateReturn
 mov   bx, word ptr ds:[bx]
 mov   word ptr [bp - 2], bx
@@ -4003,14 +4244,20 @@ mov   bx, si
 push  word ptr es:[si + 2]
 mov   cx, dx
 push  word ptr es:[si]
-call  dword ptr ds:[_P_TryMove]
+;call  dword ptr ds:[_P_TryMove]
+db    09Ah
+dw    P_TRYMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 test  al, al
 jne   label_152
 mov   cx, 10000
 mov   ax, word ptr [bp - 2]
 mov   bx, di
 mov   dx, di
-call  P_DamageMobj_
+;call  P_DamageMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_DamageMobj_addr
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4121,7 +4368,11 @@ label_154:
 mov   dl, al
 xor   dh, dh
 xor   ax, ax
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 exit_a_scream:
 pop   si
 pop   dx
@@ -4158,7 +4409,11 @@ label_155:
 mov   dl, al
 mov   ax, bx
 xor   dh, dh
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 pop   si
 pop   dx
 pop   bx
@@ -4172,7 +4427,11 @@ PUBLIC  A_XScream_
 
 push  dx
 mov   dx, SFX_SLOP
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 pop   dx
 ret   
 
@@ -4196,7 +4455,11 @@ call  dword ptr [bp - 4]
 xor   ah, ah
 mov   dx, ax
 mov   ax, bx
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 LEAVE_MACRO 
 pop   dx
 pop   bx
@@ -4225,7 +4488,10 @@ mov   dx, bx
 imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 mov   cx, 128
 add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
-call  dword ptr ds:[_P_RadiusAttack]
+;call  dword ptr ds:[_P_RadiusAttack]
+db    09Ah
+dw    P_RADIUSATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 pop   si
 pop   dx
 ret   
@@ -4449,7 +4715,11 @@ push  dx
 push  si
 mov   si, ax
 mov   dx, SFX_HOOF
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   ax, si
 call  A_Chase_
 pop   si
@@ -4466,7 +4736,11 @@ push  dx
 push  si
 mov   si, ax
 mov   dx, SFX_METAL
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   ax, si
 call  A_Chase_
 pop   si
@@ -4483,7 +4757,11 @@ push  dx
 push  si
 mov   si, ax
 mov   dx, SFX_BSPWLK
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   ax, si
 call  A_Chase_
 pop   si
@@ -4521,7 +4799,11 @@ jne   label_177
 label_176:
 mov   dx, SFX_BOSSIT
 xor   ax, ax
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 pop   dx
 pop   bx
 ret   
@@ -4546,7 +4828,11 @@ PUBLIC  A_BrainPain_
 push  dx
 mov   dx, SFX_BOSPN
 xor   ax, ax
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 pop   dx
 ret   
 
@@ -4578,7 +4864,11 @@ cmp   si, ax
 jl    label_2
 mov   dx, SFX_BOSDTH
 xor   ax, ax
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4600,7 +4890,10 @@ mov   ax, word ptr [bp - 4]
 push  word ptr [bp - 6]
 mov   bx, dx
 mov   dx, si
-call  P_SpawnMobj_
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
 mov   bx, OFFSET _setStateReturn
 mov   bx, word ptr ds:[bx]
 call  P_Random_
@@ -4613,7 +4906,10 @@ mov   word ptr ds:[bx + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], dx
 mov   dx, S_BRAINEXPLODE1
 mov   ax, bx
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 call  P_Random_
 and   al, 7
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
@@ -4664,7 +4960,10 @@ push  ax
 mov   bx, di
 push  0 ; todo 186
 mov   ax, si
-call  P_SpawnMobj_
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
 mov   bx, OFFSET _setStateReturn
 mov   bx, word ptr ds:[bx]
 call  P_Random_
@@ -4675,7 +4974,10 @@ mov   word ptr ds:[bx + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], dx
 mov   dx, S_BRAINEXPLODE1
 mov   ax, bx
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 call  P_Random_
 and   al, 7
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
@@ -4744,7 +5046,10 @@ add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   word ptr [bp - 4], bx
 mov   bx, si
 mov   di, OFFSET _setStateReturn
-call  dword ptr ds:[_P_SpawnMissile]
+;call  dword ptr ds:[_P_SpawnMissile]
+db    09Ah
+dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   bx, OFFSET _setStateReturn_pos
 mov   ax, word ptr [bp - 8]
 mov   di, word ptr ds:[di]
@@ -4774,14 +5079,21 @@ mov   word ptr [bp - 4], dx
 sub   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
 mov   bx, word ptr [bp - 6]
 cwd   
-call  FastDiv3216u_
+;call   FastDiv3216u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastDiv3216u_addr
 mov   bx, cx
 mov   cx, word ptr [bp - 4]
 call  __I4D
 mov   dx, SFX_BOSPIT
 mov   byte ptr ds:[di + MOBJ_T.m_reactiontime], al
 xor   ax, ax
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4798,7 +5110,11 @@ push  dx
 push  si
 mov   si, ax
 mov   dx, SFX_BOSCUB
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 mov   ax, si
 call  A_SpawnFly_
 pop   si
@@ -4845,12 +5161,19 @@ mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
 mov   ax, word ptr es:[si]
 push  word ptr es:[si + MOBJ_POS_T.mp_z + 0]
 mov   dx, word ptr es:[si + 2]
-call  P_SpawnMobj_
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
 mov   bx, OFFSET _setStateReturn
 mov   dx, SFX_TELEPT
 mov   ax, word ptr ds:[bx]
 mov   word ptr [bp - 4], si
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 call  P_Random_
 cmp   al, 50
 jb    spawn_imp
@@ -4870,7 +5193,10 @@ mov   ax, word ptr es:[si]
 mov   dx, word ptr es:[si + 2]
 push  word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
 mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-call  P_SpawnMobj_
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
 imul  si, ax, SIZEOF_THINKER_T
 imul  bx, ax, SIZEOF_MOBJ_POS_T
 add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
@@ -4885,7 +5211,10 @@ xor   ah, ah
 call  dword ptr [bp - 0Ah]
 mov   dx, ax
 mov   ax, si
-call  P_SetMobjState_
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
 label_185:
 push  word ptr ds:[si + 4]
 mov   es, cx
@@ -4894,9 +5223,17 @@ push  word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 push  word ptr es:[bx + 2]
 push  word ptr es:[bx]
 mov   ax, si
-call  dword ptr ds:[_P_TeleportMove]
+;call  dword ptr ds:[_P_TeleportMove]
+db    09Ah
+dw    P_TELEPORTMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   ax, di
-call  P_RemoveMobj_
+;call  P_RemoveMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_RemoveMobj_addr
+
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4973,7 +5310,11 @@ xor   ah, ah
 mov   bx, OFFSET _playerMobj
 mov   dx, ax
 mov   ax, word ptr ds:[bx]
-call  S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 pop   dx
 pop   bx
 ret   

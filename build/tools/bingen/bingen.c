@@ -431,6 +431,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "F_RESPONDEROFFSET = 0%Xh\n",                       FP_OFF(F_Responder)                     - FP_OFF(F_START));
     fprintf(fp, "P_BLOCKTHINGSITERATOROFFSET = 0%Xh\n",             FP_OFF(P_BlockThingsIterator)           - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_LINEOPENINGOFFSET = 0%Xh\n",                     FP_OFF(P_LineOpening)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_SPAWNMISSILEOFFSET = 0%Xh\n",                    FP_OFF(P_SpawnMissile)                  - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_UNSETTHINGPOSITIONOFFSET = 0%Xh\n",              FP_OFF(P_UnsetThingPosition)            - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_SETTHINGPOSITIONOFFSET = 0%Xh\n",                FP_OFF(P_SetThingPosition)              - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_RADIUSATTACKOFFSET = 0%Xh\n",                    FP_OFF(P_RadiusAttack)                  - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_TELEPORTMOVEOFFSET = 0%Xh\n",                    FP_OFF(P_TeleportMove)                  - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_LINEATTACKOFFSET = 0%Xh\n",                      FP_OFF(P_LineAttack)                    - FP_OFF(P_SIGHT_STARTMARKER));
 
 
 
