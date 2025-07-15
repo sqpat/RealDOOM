@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <i86.h>
 
-#include "m_misc.h"
+#include "m_misc.h" 
 #include "i_system.h"
 
 #include "p_local.h"
@@ -154,7 +154,7 @@ void __near P_RecursiveSound ( int16_t secnum, int8_t soundblocks){
 		check_physics = &lines_physics[linenumber];
 		checksidenum0 = check->sidenum[0];
 		checksidenum1 = check->sidenum[1];
-		checkfrontsecnum = check_physics->frontsecnum;
+		checkfrontsecnum = check_physics->frontsecnum; 
 		checkbacksecnum = check_physics->backsecnum;
 
 

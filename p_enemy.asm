@@ -797,6 +797,19 @@ ENDP
 PROC    P_NewChaseDir_ NEAR
 PUBLIC  P_NewChaseDir_
 
+; bp - 2   movedir
+; bp - 4   opposite
+; bp - 6   MOBJPOSLIST_6800_SEGMENT
+; bp - 8     deltax hi
+; bp - 0Ah   deltax lo
+; bp - 0Ch   deltay lo
+; bp - 0Eh   UNUSED actorx hi
+; bp - 010h  UNUSED actory lo
+; bp - 012h  UNUSED actorx lo
+; bp - 014h  d[2]
+; bp - 015h  d[1]
+; bp - 016h  UNUSED todo fix and word align.
+
 push  dx
 push  si
 push  di
@@ -805,14 +818,18 @@ mov   bp, sp
 sub   sp, 016h
 mov   si, ax
 mov   di, bx
+
+;	olddir = actor->movedir;
+;	actorTarget = (mobj_t __near*)(&thinkerlist[actor->targetRef].data);
+;	actorTarget_pos = GET_MOBJPOS_FROM_MOBJ(actorTarget);
+;   turnaround=opposite[olddir];
+
+
+
+
 mov   word ptr [bp - 6], cx
 mov   es, cx
-mov   ax, word ptr es:[di]
-mov   word ptr [bp - 012h], ax
-mov   ax, word ptr es:[di + 2]
-mov   word ptr [bp - 0Eh], ax
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-mov   word ptr [bp - 010h], ax
+
 mov   al, byte ptr ds:[si + MOBJ_T.m_movedir]
 mov   byte ptr [bp - 2], al
 imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
@@ -829,48 +846,80 @@ mov   bx, ax
 mov   al, byte ptr ds:[bx + _opposite] ; todo make cs?
 mov   bx, dx
 mov   byte ptr [bp - 4], al
-mov   ax, word ptr es:[bx]
-sub   ax, word ptr [bp - 012h]
+
+;    deltax.w = actorTarget_pos->x.w - actorx.w;
+;    deltay.w = actorTarget_pos->y.w - actory.w;
+
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+sub   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
 mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[bx + 2]
-sbb   ax, word ptr [bp - 0Eh]
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+sbb   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
 mov   word ptr [bp - 8], ax
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-sub   ax, word ptr [bp - 010h]
+sub   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
 mov   word ptr [bp - 0Ch], ax
 mov   ax, word ptr [bp - 8]
 mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 sbb   dx, cx
+
+;    if (deltax.w>10*FRACUNIT)
+;		d[1]= DI_EAST;
+;    else if (deltax.w<-10*FRACUNIT)
+;		d[1]= DI_WEST;
+;    else
+;		d[1]=DI_NODIR;
+
 cmp   ax, 10  ; 10 * fracbits
-jg    label_38
-je    label_39
-jump_to_label_40:
-jmp   label_40
-label_39:
+jg    set_d1_east
+je    compare_deltax_lobits
+set_d1_nodir:
+cmp   ax, -10  ; (neg 10 * fracunit)
+jl    set_d1_west
+mov   byte ptr [bp - 015h], 8
+jmp   d1_is_set
+set_d1_west:
+mov   byte ptr [bp - 015h], DI_WEST
+jmp   d1_is_set
+
+
+compare_deltax_lobits:
 cmp   word ptr [bp - 0Ah], 0
-jbe   jump_to_label_40
-label_38:
-mov   byte ptr [bp - 015h], 0
-label_75:
+jbe   set_d1_nodir
+set_d1_east:
+mov   byte ptr [bp - 015h], DI_EAST
+d1_is_set:
+
+;    if (deltay.w<-10*FRACUNIT)
+;		d[2]= DI_SOUTH;
+;    else if (deltay.w>10*FRACUNIT)
+;		d[2]= DI_NORTH;
+;    else
+;		d[2]=DI_NODIR;
+
 cmp   dx, -10  ; -10 * fracbits
-jge   label_41
-jmp   label_42
-label_41:
+jge   compare_deltay_north
+mov   byte ptr [bp - 014h], DI_SOUTH
+jmp   d2_is_set
+set_d2_nodir:
+mov   byte ptr [bp - 014h], DI_NODIR
+jmp   d2_is_set
+compare_deltay_north:
 cmp   dx, 10
-jg    label_43
-je    label_44
-jump_to_label_45:
-jmp   label_45
-label_44:
+jg    set_d2_north
+je    compare_deltay_lobits
+jmp   set_d2_nodir
+compare_deltay_lobits:
 cmp   word ptr [bp - 0Ch], 0
-jbe   jump_to_label_45
-label_43:
-mov   byte ptr [bp - 014h], 2
-label_48:
-cmp   byte ptr [bp - 015h], 8
-je    label_46
-cmp   byte ptr [bp - 014h], 8
-je    label_46
+jbe   set_d2_nodir
+set_d2_north:
+mov   byte ptr [bp - 014h], DI_NORTH
+d2_is_set:
+
+cmp   byte ptr [bp - 015h], DI_NODIR
+je    no_direct_route
+cmp   byte ptr [bp - 014h], DI_NODIR
+je    no_direct_route
 test  dx, dx
 jge   label_49
 jmp   label_50
@@ -898,9 +947,9 @@ mov   al, byte ptr [bp - 4]
 xor   bh, bh
 cbw  
 cmp   bx, ax
-je    label_46
+je    no_direct_route
 jmp   label_47
-label_46:
+no_direct_route:
 call  P_Random_
 cmp   al, 200
 ja    label_63
@@ -962,20 +1011,7 @@ pop   di
 pop   si
 pop   dx
 ret   
-label_40:
-cmp   ax, -10  ; (neg 10 * fracunit)
-jl    label_74
-mov   byte ptr [bp - 015h], 8
-jmp   label_75
-label_74:
-mov   byte ptr [bp - 015h], 4
-jmp   label_75
-label_42:
-mov   byte ptr [bp - 014h], 6
-jmp   label_48
-label_45:
-mov   byte ptr [bp - 014h], 8
-jmp   label_48
+
 jump_to_label_70:
 jmp   label_70
 label_50:
@@ -993,7 +1029,7 @@ mov   ax, si
 call  P_TryWalk_
 test  al, al
 jne   exit_p_newchasedir
-jmp   label_46
+jmp   no_direct_route
 jump_to_label_57:
 jmp   label_57
 jump_to_label_58:
@@ -1228,6 +1264,9 @@ pop   bx
 ret   
 
 ENDP
+
+
+
 
 
 PROC    A_KeenDie_ NEAR
