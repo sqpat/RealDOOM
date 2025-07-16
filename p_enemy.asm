@@ -2015,31 +2015,29 @@ ENDP
 PROC    A_CPosAttack_ NEAR
 PUBLIC  A_CPosAttack_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
+
+PUSHA_NO_AX_OR_BP_MACRO
+
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   do_cposattack
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
+je    exit_a_cposattack
+
 do_cposattack:
+
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
-imul  bx, ax, SIZEOF_MOBJ_POS_T
-mov   dx, 2
+
+IF COMPISA GE COMPILE_186
+    imul  bx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov  dx, SIZEOF_MOBJ_POS_T
+    mul  dx
+    xchg ax, bx
+ENDIF
+
+mov   dx, SFX_SHOTGN
 mov   ax, si
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
@@ -2047,56 +2045,57 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 mov   ax, si
-mov   cx, MOBJPOSLIST_6800_SEGMENT
 call  A_FaceTarget_
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
 mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 mov   ax, si
-shr   cx, 3
+SHIFT_MACRO shr   cx 3
 mov   bx, MISSILERANGE
 mov   dx, cx
 ;call  dword ptr ds:[_P_AimLineAttack]
 db    09Ah
 dw    P_AIMLINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-mov   word ptr [bp - 2], ax
+mov   di, ax
 mov   bx, dx
+
 call  P_Random_
 mov   dl, al
 call  P_Random_
 xor   dh, dh
 xor   ah, ah
 sub   dx, ax
-mov   ax, dx
-add   ax, dx
-add   cx, ax
+sal   dx, 1
+add   dx, cx
+and   dh, (FINEMASK SHR 8)
+
 call  P_Random_
 xor   ah, ah
-mov   di, 5
-cwd   
-idiv  di
-inc   dx
-mov   ax, dx
-shl   ax, 2
-sub   ax, dx
-cbw  
-and   ch, (FINEMASK SHR 8)
+mov   cl, 5
+div   cl
+mov   al, ah
+cbw
+inc   ax
+mov   cx, ax
+sal   ax, 1
+add   ax, cx
+
 push  ax
-mov   dx, cx
 push  bx
+push  di
+
+
 mov   ax, si
-push  word ptr [bp - 2]
 mov   bx, MISSILERANGE
 ;call  dword ptr ds:[_P_LineAttack]
 db    09Ah
 dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+exit_a_cposattack:
+POPA_NO_AX_OR_BP_MACRO
+
 ret   
 
 ENDP
