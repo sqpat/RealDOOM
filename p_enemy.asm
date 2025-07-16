@@ -1817,37 +1817,37 @@ ENDP
 PROC    A_PosAttack_ NEAR
 PUBLIC  A_PosAttack_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
+PUSHA_NO_AX_OR_BP_MACRO
+
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   do_a_posattack
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
+je    exit_a_posattack
+
 do_a_posattack:
+
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
-imul  bx, ax, SIZEOF_MOBJ_POS_T
+
+IF COMPISA GE COMPILE_186
+    imul  bx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov  dx, SIZEOF_MOBJ_POS_T
+    mul  dx
+    xchg ax, bx
+ENDIF
+
+
+
 mov   ax, si
-mov   dx, MOBJPOSLIST_6800_SEGMENT
 call  A_FaceTarget_
+
+mov   dx, MOBJPOSLIST_6800_SEGMENT
 mov   es, dx
 mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 mov   ax, si
-shr   cx, 3
+SHIFT_MACRO shr   cx, 3
 mov   bx, MISSILERANGE
 mov   dx, cx
 ;call  dword ptr ds:[_P_AimLineAttack]
@@ -1855,48 +1855,53 @@ db    09Ah
 dw    P_AIMLINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 mov   bx, ax
-mov   word ptr [bp - 2], dx
-mov   dx, 1
+mov   di, dx
+mov   dx, SFX_PISTOL
 mov   ax, si
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
+
+;    angle = MOD_FINE_ANGLE(angle + (((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
+;    damage = ((P_Random()%5)+1)*3;
+
 call  P_Random_
 mov   dl, al
 call  P_Random_
 xor   dh, dh
 xor   ah, ah
-mov   di, 5
 sub   dx, ax
+sal   dx, 1
+add   dx, cx ; angle into dx.
+and   dh, (FINEMASK SHR 8)
+
+
 call  P_Random_
-add   dx, dx
 xor   ah, ah
-add   cx, dx
-cwd   
-idiv  di
-inc   dx
-mov   ax, dx
-shl   ax, 2
-sub   ax, dx
-and   ch, (FINEMASK SHR 8)
-push  ax
-mov   dx, cx
-push  word ptr [bp - 2]
-mov   ax, si
-push  bx
+mov   cl, 5
+div   cl
+
+mov   al, ah  ; mod 5
+cbw     
+inc   ax      ; plus 1
+
+mov   cx, ax
+shl   ax, 1
+add   ax, cx ; times 3
+push  ax ; damage
+push  di ; slope hi
+push  bx ; slope lo
+
+xchg  ax, si
 mov   bx, MISSILERANGE
 ;call  dword ptr ds:[_P_LineAttack]
 db    09Ah
 dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+exit_a_posattack:
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP
