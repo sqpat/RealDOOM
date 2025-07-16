@@ -2425,14 +2425,11 @@ ENDP
 PROC    A_HeadAttack_ NEAR
 PUBLIC  A_HeadAttack_
 
-push  dx
 push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   do_head_attack
-pop   si
-pop   dx
-ret   
+je    exit_head_attack
+push  dx
 do_head_attack:
 mov   dx, bx
 call  A_FaceTarget_
@@ -2440,39 +2437,62 @@ mov   ax, si
 mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
-je    label_117
+je    do_head_missile
 call  P_Random_
+
+;		damage = (P_Random()%6+1)*10;
+
 xor   ah, ah
-mov   bx, 6
-cwd   
-idiv  bx
-imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-inc   dx
-mov   cx, dx
-shl   cx, 2
+mov   bx, 00A06h  ; 10 hi 6 lo
+div   bl
+
+mov   al, ah
+cbw
+inc   ax
+mul   bh
+xchg  ax, cx
+
+
+IF COMPISA GE COMPILE_186
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+ENDIF
+
+
 mov   bx, si
-add   cx, dx
 mov   dx, si
-add   cx, cx
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  P_DamageMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
-pop   si
 pop   dx
+pop   si
 ret   
-label_117:
-imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-push  MT_HEADSHOT  ; todo 186
+
+do_head_missile:
+
+IF COMPISA GE COMPILE_186
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    push  MT_HEADSHOT
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, dx
+    mov   ax, MT_HEADSHOT
+    push  ax
+ENDIF
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-pop   si
 pop   dx
+exit_head_attack:
+pop   si
 ret   
 ENDP
 
