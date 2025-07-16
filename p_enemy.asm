@@ -1310,8 +1310,6 @@ and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1], (NOT MF_SOLID)
 
 mov   cx, ax
 mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
-;test  ax, ax
-;je    label_33
 
 loop_next_thinker_keendie:
 
@@ -1718,18 +1716,14 @@ ret
 
 ENDP
 
+; void __near A_FaceTarget (mobj_t __near* actor){	
 
 PROC    A_FaceTarget_ NEAR
 PUBLIC  A_FaceTarget_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
+
+PUSHA_NO_AX_OR_BP_MACRO
+
 mov   bx, ax
 cmp   word ptr ds:[bx + MOBJ_T.m_targetRef], 0
 je    exit_a_facetarget
@@ -1737,66 +1731,85 @@ mov   cx, SIZEOF_THINKER_T
 sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   cx
-imul  di, ax, SIZEOF_MOBJ_POS_T
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   es, ax
-and   byte ptr es:[di + MOBJ_POS_T.mp_flags1], (NOT MF_AMBUSH)
-mov   si, di
-imul  di, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
-mov   word ptr [bp - 2], ax
-mov   bx, di
-test  byte ptr es:[di + MOBJ_POS_T.mp_flags2], 4
-je    label_111
-mov   word ptr [bp - 4], 1
-label_113:
-push  word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-push  word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-push  word ptr es:[bx + 2]
-push  word ptr es:[bx]
-mov   es, word ptr [bp - 2]
-mov   bx, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
-mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
+
+IF COMPISA GE COMPILE_186
+    imul  si, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov  dx, SIZEOF_MOBJ_POS_T
+    mul  dx
+    xchg ax, si
+ENDIF
+
+
+IF COMPISA GE COMPILE_186
+    imul  di, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
+ELSE
+    mov  ax, SIZEOF_MOBJ_POS_T
+    mul  word ptr ds:[bx + MOBJ_T.m_targetRef]
+    xchg ax, di
+ENDIF
+
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   ds, cx
+and   byte ptr ds:[si + MOBJ_POS_T.mp_flags1], (NOT MF_AMBUSH)
+
+
+
+
+push  word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
+push  word ptr ds:[di + MOBJ_POS_T.mp_y + 0]
+push  word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
+push  word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
+
+test  byte ptr ds:[di + MOBJ_POS_T.mp_flags2], MF_SHADOW
+mov   di, 0
+je    noshadow
+inc   di
+noshadow:
+
+lodsw 
+xchg  ax, cx
+lodsw 
+xchg  ax, dx
+lodsw 
+xchg  ax, bx
+lodsw 
+xchg  ax, cx
+
+lea   si, [si - 8]
+
+push  ss
+pop   ds
+
+
 ;call  R_PointToAngle2_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_PointToAngle2_addr
-mov   es, word ptr [bp - 2]
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   es, cx
 mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], ax
 mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], dx
-cmp   byte ptr [bp - 4], 0
-jne   label_112
-exit_a_facetarget:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_111:
-mov   word ptr [bp - 4], 0
-jmp   label_113
-label_112:
-call  P_Random_
-mov   dl, al
+
+test  di, di
+je    exit_a_facetarget
+
 call  P_Random_
 mov   bl, al
-xor   dh, dh
+call  P_Random_
 xor   bh, bh
-sub   dx, bx
-mov   bx, dx
-mov   es, word ptr [bp - 2]
-shl   bx, 5
+xor   ah, ah
+sub   bx, ax
+mov   es, cx
+SHIFT_MACRO shl   bx 5
 add   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], bx
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+exit_a_facetarget:
+POPA_NO_AX_OR_BP_MACRO
+
 ret   
+
 
 ENDP
 
