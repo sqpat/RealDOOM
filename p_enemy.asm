@@ -2991,15 +2991,12 @@ PROC    A_SkelFist_ NEAR
 PUBLIC  A_SkelFist_
 
 
-push  dx
 push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   do_a_skelfist
-exit_a_skelfist:
-pop   si
-pop   dx
-ret   
+je    exit_a_skelfist
+push  dx
+
 do_a_skelfist:
 mov   dx, bx
 call  A_FaceTarget_
@@ -3007,34 +3004,46 @@ mov   ax, si
 mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
-je    exit_a_skelfist
+je    exit_a_skelfist_full
+
+;		damage = ((P_Random()%10)+1)*6;
+
 call  P_Random_
 xor   ah, ah
-mov   cx, 10
-cwd   
-idiv  cx
-inc   dx
-mov   cx, dx
-shl   cx, 2
+mov   cl, 10
+div   cl
+mov   al, ah
+cbw
+inc   ax
+mov   cl, 6
+mul   cl
+xchg  ax, cx
+
 mov   ax, si
-sub   cx, dx
 mov   dx, SFX_SKEPCH
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+IF COMPISA GE COMPILE_186
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+ENDIF
+
 mov   bx, si
-add   cx, cx
 mov   dx, si
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  P_DamageMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
-pop   si
+exit_a_skelfist_full:
 pop   dx
+exit_a_skelfist:
+pop   si
 ret   
 
 ENDP
