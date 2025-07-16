@@ -1158,7 +1158,6 @@ push  di
 push  bp
 mov   bp, sp
 push  dx
-sub   sp, 2
 mov   di, ax
 
 
@@ -1191,8 +1190,10 @@ dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 test  al, al
 je    exit_look_for_players_2
 cmp   byte ptr [bp - 2], 0
-je    label_80
+je    check_angle_for_player
 look_set_target_player:
+push  ss
+pop   ds  ; might have been unset in some paths.
 mov   ax, word ptr ds:[_playerMobjRef]
 mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
 mov   al, 1
@@ -1203,7 +1204,7 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_80:
+check_angle_for_player:
 lds   bx, dword ptr ds:[_playerMobj_pos]
 
 push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 2]
@@ -1218,7 +1219,7 @@ lodsw
 xchg  ax, bx
 lodsw
 xchg  ax, cx
-lea   si, [si - 8]
+lea   si, [si - 8]  ; restore actor pos
 push  ss
 pop   ds
 
@@ -1227,52 +1228,49 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_PointToAngle2_addr
 mov   cx, MOBJPOSLIST_6800_SEGMENT
-mov   es, cx
+mov   ds, cx
 
-mov   cx, ax
-mov   bx, si
-mov   ax, dx
-sub   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+0]
-sbb   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
-cmp   ax, ANG90_HIGHBITS
+
+sub   ax, word ptr ds:[si + MOBJ_POS_T.mp_angle+0]
+sbb   dx, word ptr ds:[si + MOBJ_POS_T.mp_angle+2]
+cmp   dx, ANG90_HIGHBITS
 ja    lookforplayers_above_ang90
 jne   look_set_target_player
 test  cx, cx
 jbe   look_set_target_player
 lookforplayers_above_ang90:
-cmp   ax, ANG270_HIGHBITS
+cmp   dx, ANG270_HIGHBITS
 jae   look_set_target_player
-les   dx, dword ptr ds:[_playerMobj_pos]
-mov   bx, dx
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
-mov   bx, si
-sub   word ptr [bp - 4], ax
-sbb   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   bx, OFFSET _playerMobj_pos
-les   dx, dword ptr ds:[bx]
-mov   bx, dx
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
 
-mov   bx, si
-sub   ax, word ptr es:[si]
-sbb   dx, word ptr es:[bx + 2]
-mov   bx, word ptr [bp - 4]
+lodsw 
+xchg  ax, cx
+lodsw 
+xchg  ax, dx
+lodsw 
+xchg  ax, bx
+lodsw 
+xchg  ax, cx
+
+; done with actorpos. can clobber si
+
+mov   si, word ptr ds:[_playerMobj_pos]
+
+
+sub   ax, word ptr ds:[si + MOBJ_POS_T.mp_x + 0]
+sbb   dx, word ptr ds:[si + MOBJ_POS_T.mp_x + 2]
+sub   bx, word ptr ds:[si + MOBJ_POS_T.mp_y + 0]
+sbb   cx, word ptr ds:[si + MOBJ_POS_T.mp_y + 2]
+
+push  ss
+pop   ds
+
 db    09Ah
 dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 cmp   dx, MELEERANGE
-jle   label_81
-jmp   exit_look_for_players_return_0
-label_81:
-je    label_82
-jump_to_look_set_target_player:
-jmp   look_set_target_player
-label_82:
+jnle  exit_look_for_players_return_0
+jne   look_set_target_player
 test  ax, ax
-jbe   jump_to_look_set_target_player
+jbe   look_set_target_player
 exit_look_for_players_return_0:
 xor   al, al
 exit_look_for_players:
