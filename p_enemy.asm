@@ -2107,30 +2107,44 @@ PUBLIC  A_CPosRefire_
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
 mov   si, ax
 call  A_FaceTarget_
-mov   word ptr [bp - 4], GETSEESTATEADDR
-mov   word ptr [bp - 2], INFOFUNCLOADSEGMENT
-mov   dx, word ptr ds:[si + MOBJ_T.m_targetRef]
 call  P_Random_
 cmp   al, 40
 jb    exit_a_cposrefire
+mov   dx, word ptr ds:[si + MOBJ_T.m_targetRef]
 test  dx, dx
 je    exit_a_cposrefire
-imul  di, dx, SIZEOF_THINKER_T
+
+
+IF COMPISA GE COMPILE_186
+    imul  di, dx, SIZEOF_THINKER_T
+ELSE
+    mov  es, dx
+    mov  ax, SIZEOF_THINKER_T
+    mul  dx
+    mov  dx, es
+    xchg ax, di
+ENDIF
+
 add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
 test  dx, dx
-je    label_115
+je    set_cgunner_seestate
 cmp   word ptr ds:[di + MOBJ_T.m_health], 0
-jle   label_115
+jle   set_cgunner_seestate
 mov   cx, SIZEOF_THINKER_T
 lea   ax, ds:[di - (OFFSET _thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 div   cx
-imul  cx, ax, SIZEOF_MOBJ_POS_T
+
+IF COMPISA GE COMPILE_186
+    imul  cx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov  dx, SIZEOF_MOBJ_POS_T
+    mul  dx
+    xchg ax, cx
+ENDIF
+
 mov   dx, di
 mov   ax, si
 ;call  dword ptr ds:[_P_CheckSightTemp]
@@ -2138,24 +2152,26 @@ db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 test  al, al
-je    label_115
+je    set_cgunner_seestate
 exit_a_cposrefire:
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
 ret   
-label_115:
+set_cgunner_seestate:
+; dumb thought. this is a hardcoded value as per engine right. Why call a function?
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-call  dword ptr [bp - 4]
+db    09Ah
+dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+
+
 mov   dx, ax
 mov   ax, si
 ;call  P_SetMobjState_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
