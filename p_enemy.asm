@@ -1294,34 +1294,57 @@ push  dx
 push  si
 push  bp
 mov   bp, sp
-sub   sp, 2
+
 mov   si, ax
+push  word ptr ds:[si + MOBJ_T.m_mobjtype]
+
 mov   es, cx
 mov   cx, SIZEOF_THINKER_T
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   dx, dx
-mov   byte ptr [bp - 2], al
 lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
 div   cx
+
+; inlined A_Fall_
 and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1], (NOT MF_SOLID)
-mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
+
+
 mov   cx, ax
-mov   ax, word ptr ds:[bx]
-test  ax, ax
-je    label_33
-label_34:
-imul  bx, ax, SIZEOF_THINKER_T
+mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
+;test  ax, ax
+;je    label_33
+
+loop_next_thinker_keendie:
+
+IF COMPISA GE COMPILE_186
+    imul  bx, ax, SIZEOF_THINKER_T
+ELSE
+    mov  dx, SIZEOF_THINKER_T
+    mul  ax
+    xchg ax, bx
+ENDIF
+
 mov   dx, word ptr ds:[bx + _thinkerlist]
-xor   dl, dl
-and   dh, (TF_FUNCBITS SHR 8)
+and   dx, TF_FUNCBITS
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
-je    label_35
-label_36:
-imul  bx, ax, SIZEOF_THINKER_T
+
+jne    not_thinker_skip_keencheck
+
+
+
+cmp   ax, cx
+je    not_thinker_skip_keencheck
+mov   al, byte ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_mobjtype]
+cmp   al, byte ptr [bp - 2]
+jne   not_thinker_skip_keencheck
+cmp   word ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_health], 0
+jg    exit_keen_die
+not_thinker_skip_keencheck:
+
 mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
 test  ax, ax
-jne   label_34
-label_33:
+jne   loop_next_thinker_keendie
+
+; done iteratng
 mov   dx, DOOR_OPEN
 mov   ax, TAG_666
 call  EV_DoDoor_
@@ -1330,16 +1353,7 @@ LEAVE_MACRO
 pop   si
 pop   dx
 ret   
-label_35:
-add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
-cmp   ax, cx
-je    label_36
-mov   dl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-cmp   dl, byte ptr [bp - 2]
-jne   label_36
-cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
-jg    exit_keen_die
-jmp   label_36
+
 
 ENDP
 
