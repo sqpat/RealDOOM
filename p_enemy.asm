@@ -3262,20 +3262,29 @@ ret
 
 _vilechase_lookup_table:
 
-dw OFFSET table_0_label_0
-dw OFFSET table_0_label_1
-dw OFFSET table_0_label_2
-dw OFFSET table_0_label_3
-dw OFFSET table_0_label_4
-dw OFFSET table_0_label_5
-dw OFFSET table_0_label_6
-dw OFFSET table_0_label_7
+dw OFFSET vile_switch_movedir_0
+dw OFFSET vile_switch_movedir_1
+dw OFFSET vile_switch_movedir_2
+dw OFFSET vile_switch_movedir_3
+dw OFFSET vile_switch_movedir_4
+dw OFFSET vile_switch_movedir_5
+dw OFFSET vile_switch_movedir_6
+dw OFFSET vile_switch_movedir_7
 
 ENDP
 
 
 PROC    A_VileChase_ NEAR
 PUBLIC  A_VileChase_
+
+
+; bp - 2   yl
+; bp - 4   xh
+; bp - 6   UNUSED
+; bp - 8   UNUSED
+; bp - 0Ah mobjinfo pointer
+; bp - 0Ch ax arg
+; bp - 0Eh bx arg
 
 push  dx
 push  si
@@ -3288,18 +3297,18 @@ push  bx ; bp - 0Eh
 
 
 xchg  ax, si
+mov   di, bx
 xor   bx, bx
 cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 je    jump_to_do_chase_and_exit
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   word ptr [bp - 8], bx
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 mov   word ptr [bp - 0Ah], ax
-mov   si, word ptr [bp - 0Ah]
+mov   bx, ax
 xor   ax, ax
-mov   di, word ptr [bp - 0Eh]
-mov   al, byte ptr ds:[si + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+
+
+mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 
 mov   es, cx
 push  word ptr es:[di + MOBJ_POS_T.mp_x + 0]
@@ -3313,87 +3322,122 @@ pop   word ptr ds:[_viletryy + 2]
 
 ; would movsw save...?
 
-mov   si, word ptr [bp - 0Ch]
-mov   dl, byte ptr ds:[si + MOBJ_T.m_movedir]
-xor   ah, bh
-cmp   dl, 7
+
+mov   bl, byte ptr ds:[si + MOBJ_T.m_movedir]
+
+cmp   bl, 7
 ja    done_with_vile_switch_block
-xor   dh, dh
-mov   si, dx
-add   si, dx
-jmp   word ptr cs:[si + OFFSET _vilechase_lookup_table]
+
+
+
+test  bl, 1             ; diagonals are odd and use the 47000 mult in ax/dx
+je    skip_diag_mult2
+mov   dx, 47000
+mul   dx
+skip_diag_mult2:
+
+xor   bh, bh
+sal   bx, 1 ; jump word index...
+mov   si, OFFSET _viletryx
+
+jmp   word ptr cs:[bx + OFFSET _vilechase_lookup_table]
 jump_to_do_chase_and_exit:
 jmp   do_chase_and_exit
-table_0_label_0:
-add   word ptr ds:[_viletryx + 2], ax
+vile_switch_movedir_0:
+add   word ptr ds:[si + 2], ax
 
 done_with_vile_switch_block:
-mov   dx, word ptr ds:[_viletryx + 0]
-mov   di, word ptr ds:[_bmaporgx]
-sub   dx, bx
-mov   ax, word ptr ds:[_viletryx + 2]
-sbb   ax, di
-add   ax, -(MAXRADIUSNONFRAC * 2)
-mov   word ptr [bp - 0Ah], dx
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr ds:[si]
-mov   cx, 7
-loop_shift_7_4:
-sar   word ptr [bp - 8], 1
-rcr   word ptr [bp - 0Ah], 1
-loop  loop_shift_7_4
-sub   ax, bx
-mov   dx, word ptr ds:[si + 2]
-sbb   dx, di
-add   dx, (MAXRADIUSNONFRAC * 2)
 
-mov   cx, 7
-loop_shift_7:
-sar   dx, 1
-rcr   ax, 1
-loop  loop_shift_7
+; si is _viletryx
 
-mov   dx, word ptr ds:[_viletryy + 0]
-mov   di, word ptr ds:[_bmaporgy]
-sub   dx, bx
-mov   si, word ptr ds:[_viletryy + 2]
-sbb   si, di
+lodsw
+xchg  ax, dx
+lodsw
 
-add   si, -(MAXRADIUSNONFRAC * 2)
-mov   word ptr [bp - 6], si
-mov   si, dx
-mov   dx, word ptr [bp - 6]
-mov   cx, 7
-loop_shift_7_2:
-sar   dx, 1
-rcr   si, 1
-loop  loop_shift_7_2
-mov   word ptr [bp - 2], si
-mov   dx, word ptr ds:[_viletryy + 0]
-mov   word ptr [bp - 4], ax
-sub   dx, bx
-mov   bx, word ptr ds:[_viletryy + 2]
-sbb   bx, di
-mov   di, dx
-mov   dx, bx
-add   di, 0
-adc   dx, (MAXRADIUSNONFRAC * 2)
-mov   si, word ptr [bp - 0Ah]
-mov   cx, 7
-loop_shift_7_3:
-sar   dx, 1
-rcr   di, 1
-loop  loop_shift_7_3
-cmp   ax, si
-jl    do_chase_and_exit
-label_145:
-mov   cx, word ptr [bp - 2]
+; si is now _viletryy.
+; ax:dx viletryx
+
+;		xl = (viletryx.w - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+;		xh = (viletryx.w - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+
+mov   di, (MAXRADIUSNONFRAC * 2)
+
+sub   ax, word ptr ds:[_bmaporgx]
+
+mov   cx, ax
+mov   bx, dx
+
+sub   ax, di
+add   cx, di
+
+; shift right 7
+sal   dx, 1
+rcl   ax, 1
+mov   dl, dh
+mov   dh, al  ; only needs 16 bits.
+
+sal   bx, 1
+rcl   cx, 1
+mov   bl, bh
+mov   bh, cl  ; only needs 16 bits.
+
+mov   si, dx  ; si gets xl.
+mov   word ptr [bp - 4], bx  ; di has  xh
+
+
+
+
+lodsw           ; viletryy
+xchg  ax, cx
+lodsw
+
+
+sub   cx, word ptr ds:[_bmaporgy]
+
+
+mov   dx, ax
+mov   bx, cx
+
+sub   ax, di
+add   dx, di
+
+; shift right 7
+sal   cx, 1
+rcl   ax, 1
+mov   cl, ch
+mov   ch, al  ; only needs 16 bits.
+
+sal   bx, 1
+rcl   dx, 1
+mov   bl, bh
+mov   bh, dl  ; only needs 16 bits.
+
+; si has xl
+; cx has yl
+
+mov   di, bx
+
+mov   word ptr [bp - 2], cx
+
+; si has xl
+; di has yh
+; bp - 2 has yl
+; bp - 4 has xh
+
+
+;		for (bx=xl ; bx<=xh ; bx++)
+
+
+cmp   si, word ptr [bp - 4]
+jg    do_chase_and_exit
+loop_next_x_vile:
+mov   cx, word ptr [bp - 2]  ; reset each loop iter!
 cmp   di, cx
-jl    label_142
-label_144:
+jl    done_with_vile_y_loop
+loop_next_y_vile:
 mov   bx, OFFSET PIT_VileCheck_
-mov   dx, cx
-mov   ax, si
+mov   dx, cx   ; by
+mov   ax, si   ; bx
 ;call  dword ptr [bp - 012h]
 
 db    09Ah
@@ -3401,19 +3445,21 @@ dw    P_BLOCKTHINGSITERATOROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 test  al, al
-je    label_143
+je    got_vile_target
 inc   cx
 cmp   cx, di
-jle   label_144
-label_142:
+jle   loop_next_y_vile
+
+done_with_vile_y_loop:
 inc   si
 cmp   si, word ptr [bp - 4]
-jle   label_145
+jle   loop_next_x_vile
 do_chase_and_exit:
 pop   bx  ; bp - 0Eh
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 pop   ax  ; bp - 0Ch
 call  A_Chase_
+
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -3421,25 +3467,26 @@ pop   dx
 ret   
 
 
-label_143:
+got_vile_target:
 mov   bx, word ptr [bp - 0Ch]
-mov   dx, word ptr ds:[bx + MOBJ_T.m_targetRef]
-mov   bx, OFFSET _corpsehitRef
-mov   ax, word ptr ds:[bx]
-mov   bx, word ptr [bp - 0Ch]
-mov   word ptr ds:[bx + MOBJ_T.m_targetRef], ax
+mov   dx, word ptr ds:[bx + MOBJ_T.m_targetRef] ; tempref
+push  word ptr ds:[_corpsehitRef]
+pop   word ptr ds:[bx + MOBJ_T.m_targetRef]
 mov   ax, bx
 call  A_FaceTarget_
+
 mov   ax, bx
-mov   word ptr ds:[bx + MOBJ_T.m_targetRef], dx
+mov   word ptr ds:[bx + MOBJ_T.m_targetRef], dx  ; put tempref back.
 mov   dx, S_VILE_HEAL1
-mov   bx, OFFSET _corpsehitRef
+
 ;call  P_SetMobjState_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
-imul  si, word ptr ds:[bx], SIZEOF_THINKER_T
-imul  bx, word ptr ds:[bx], SIZEOF_MOBJ_POS_T
+
+imul  si, word ptr ds:[_corpsehitRef], SIZEOF_THINKER_T
+imul  bx, word ptr ds:[_corpsehitRef], SIZEOF_MOBJ_POS_T
+
 add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   dx, SFX_SLOP
 mov   ax, si
@@ -3450,7 +3497,6 @@ dw _S_StartSound_addr
 
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-imul  di, ax, SIZEOF_MOBJINFO_T
 
 db    09Ah
 dw    GETRAISESTATEADDR, INFOFUNCLOADSEGMENT
@@ -3462,9 +3508,11 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
 shl   word ptr ds:[si + MOBJ_T.m_height+2], 2
+
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
 
+mov   di, word ptr [bp - 0Ah]
 
 lea   ax, [di + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_flags1]
 lea   di, [bx + MOBJ_POS_T.mp_flags1]
@@ -3492,49 +3540,41 @@ pop   si
 pop   dx
 ret   
 
-table_0_label_1:
-mov   dx, 47000
-mul   dx
-add   word ptr ds:[_viletryx + 0], ax
-adc   word ptr ds:[_viletryx + 2], dx
-add   word ptr ds:[_viletryy + 0], ax
-adc   word ptr ds:[_viletryy + 2], dx
+vile_switch_movedir_1:
+add   word ptr ds:[si + 0], ax
+adc   word ptr ds:[si + 2], dx
+add   word ptr ds:[si + 4], ax
+adc   word ptr ds:[si + 6], dx
 jmp   done_with_vile_switch_block
-table_0_label_2:
+vile_switch_movedir_2:
 
-add   word ptr ds:[_viletryy + 2], ax
+add   word ptr ds:[si + 6], ax
 jmp   done_with_vile_switch_block
-table_0_label_3:
-mov   dx, 47000
-mul   dx
-sub   word ptr ds:[_viletryx + 0], ax
-sbb   word ptr ds:[_viletryx + 2], dx
-add   word ptr ds:[_viletryy + 0], ax
-adc   word ptr ds:[_viletryy + 2], dx
+vile_switch_movedir_3:
+sub   word ptr ds:[si + 0], ax
+sbb   word ptr ds:[si + 2], dx
+add   word ptr ds:[si + 4], ax
+adc   word ptr ds:[si + 6], dx
 jmp   done_with_vile_switch_block
-table_0_label_4:
-sub   word ptr ds:[_viletryx + 0], bx
-sbb   word ptr ds:[_viletryx + 2], ax
+vile_switch_movedir_4:
+sub   word ptr ds:[si + 0], bx
+sbb   word ptr ds:[si + 2], ax
 jmp   done_with_vile_switch_block
-table_0_label_5:
-mov   dx, 47000
-mul   dx
-sub   word ptr ds:[_viletryx], ax
-sbb   word ptr ds:[_viletryx + 2], dx
+vile_switch_movedir_5:
+sub   word ptr ds:[si], ax
+sbb   word ptr ds:[si + 2], dx
 sub   word ptr ds:[_viletryy], ax
-sbb   word ptr ds:[_viletryy + 2], dx
+sbb   word ptr ds:[si + 6], dx
 jmp   done_with_vile_switch_block
-table_0_label_6:
-sub   word ptr ds:[_viletryy + 0], bx
-sbb   word ptr ds:[_viletryy + 2], ax
+vile_switch_movedir_6:
+sub   word ptr ds:[si + 4], bx
+sbb   word ptr ds:[si + 6], ax
 jmp   done_with_vile_switch_block
-table_0_label_7:
-mov   dx, 47000
-mul   dx
-add   word ptr ds:[_viletryx + 0], ax
-adc   word ptr ds:[_viletryx + 2], dx
-sub   word ptr ds:[_viletryy + 0], ax
-sbb   word ptr ds:[_viletryy + 2], dx
+vile_switch_movedir_7:
+add   word ptr ds:[si + 0], ax
+adc   word ptr ds:[si + 2], dx
+sub   word ptr ds:[si + 4], ax
+sbb   word ptr ds:[si + 6], dx
 jmp   done_with_vile_switch_block
 
 
