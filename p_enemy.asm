@@ -3039,25 +3039,24 @@ ENDP
 PROC    A_SkelWhoosh_ NEAR
 PUBLIC  A_SkelWhoosh_
 
-push  bx
+push  si
+mov   si, ax
+cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
+je    exit_skelwhoosh
 push  dx
-mov   bx, ax
-cmp   word ptr ds:[bx + MOBJ_T.m_targetRef], 0
-jne   do_a_skelwhoosh
-pop   dx
-pop   bx
-ret   
+
 do_a_skelwhoosh:
 call  A_FaceTarget_
 mov   dx, SFX_SKESWG
-mov   ax, bx
+mov   ax, si
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
 pop   dx
-pop   bx
+exit_skelwhoosh
+pop   si
 ret   
 
 ENDP
