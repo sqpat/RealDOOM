@@ -1138,38 +1138,50 @@ ENDP
 PROC    P_LookForPlayers_ NEAR
 PUBLIC  P_LookForPlayers_
 
+; boolean __near P_LookForPlayers (mobj_t __near*	actor, boolean	allaround ) {
+
+
+; bp - 2   allaround (dl)
+; bp - 4   some temp thing
+
+cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
+jg    do_look_for_players
+xor   al, al
+ret
+
+do_look_for_players:
+
 push  bx
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 6
+push  dx
+sub   sp, 2
 mov   di, ax
-mov   byte ptr [bp - 2], dl
-mov   bx, OFFSET _player + PLAYER_T.player_health
-cmp   word ptr ds:[bx], 0
-jg    do_look_for_players
-exit_look_for_players_return_0:
-xor   al, al
-exit_look_for_players:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-do_look_for_players:
+
+
+
 mov   bx, SIZEOF_THINKER_T
 sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
-imul  si, ax, SIZEOF_MOBJ_POS_T
-mov   bx, OFFSET _playerMobj_pos
-mov   cx, word ptr ds:[bx]
-mov   bx, OFFSET _playerMobj
-mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
-mov   dx, word ptr ds:[bx]
+
+
+
+IF COMPISA GE COMPILE_186
+    imul  si, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov  dx, SIZEOF_MOBJ_POS_T
+    mul  ax
+    xchg ax, si
+ENDIF
+
+mov   cx, word ptr ds:[_playerMobj_pos]
+
+
+mov   dx, word ptr ds:[_playerMobj]
 mov   bx, si
 mov   ax, di
 ;call  dword ptr ds:[_P_CheckSightTemp]
@@ -1177,14 +1189,14 @@ db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 test  al, al
-je    exit_look_for_players
+je    exit_look_for_players_2
 cmp   byte ptr [bp - 2], 0
 je    label_80
 look_set_target_player:
-mov   bx, OFFSET _playerMobjRef
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobjRef]
 mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
 mov   al, 1
+exit_look_for_players_2:
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -1192,26 +1204,31 @@ pop   cx
 pop   bx
 ret   
 label_80:
-mov   bx, OFFSET _playerMobj_pos
-les   ax, dword ptr ds:[bx]
-mov   bx, ax
-push  word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-push  word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov   bx, OFFSET _playerMobj_pos
-les   ax, dword ptr ds:[bx]
-mov   bx, ax
-push  word ptr es:[bx + 2]
-push  word ptr es:[bx]
-mov   es, word ptr [bp - 4]
-mov   bx, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
-mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
+lds   bx, dword ptr ds:[_playerMobj_pos]
+
+push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 0]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 0]
+lodsw
+xchg  ax, cx
+lodsw
+xchg  ax, dx
+lodsw
+xchg  ax, bx
+lodsw
+xchg  ax, cx
+lea   si, [si - 8]
+push  ss
+pop   ds
+
 ;call  R_PointToAngle2_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_PointToAngle2_addr
-mov   es, word ptr [bp - 4]
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   es, cx
+
 mov   cx, ax
 mov   bx, si
 mov   ax, dx
@@ -1225,27 +1242,25 @@ jbe   look_set_target_player
 lookforplayers_above_ang90:
 cmp   ax, ANG270_HIGHBITS
 jae   look_set_target_player
-mov   bx, OFFSET _playerMobj_pos
-les   dx, dword ptr ds:[bx]
+les   dx, dword ptr ds:[_playerMobj_pos]
 mov   bx, dx
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   es, word ptr [bp - 4]
-mov   word ptr [bp - 6], ax
+mov   word ptr [bp - 4], ax
 mov   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
 mov   bx, si
-sub   word ptr [bp - 6], ax
+sub   word ptr [bp - 4], ax
 sbb   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 mov   bx, OFFSET _playerMobj_pos
 les   dx, dword ptr ds:[bx]
 mov   bx, dx
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
-mov   es, word ptr [bp - 4]
+
 mov   bx, si
 sub   ax, word ptr es:[si]
 sbb   dx, word ptr es:[bx + 2]
-mov   bx, word ptr [bp - 6]
+mov   bx, word ptr [bp - 4]
 db    09Ah
 dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 cmp   dx, MELEERANGE
@@ -1258,7 +1273,9 @@ jmp   look_set_target_player
 label_82:
 test  ax, ax
 jbe   jump_to_look_set_target_player
+exit_look_for_players_return_0:
 xor   al, al
+exit_look_for_players:
 LEAVE_MACRO 
 pop   di
 pop   si
