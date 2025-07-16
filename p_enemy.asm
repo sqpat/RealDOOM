@@ -2255,26 +2255,34 @@ ENDP
 PROC    A_BspiAttack_ NEAR
 PUBLIC  A_BspiAttack_
 
-push  dx
 push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   do_a_bspiattack
-pop   si
-pop   dx
-ret   
+je    a_bspiexit
+push  dx
 do_a_bspiattack:
 call  A_FaceTarget_
-imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-push  MT_ARACHPLAZ  ; todo 186
+
+
+IF COMPISA GE COMPILE_186
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    push  MT_ARACHPLAZ  
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, dx
+    mov   ax, MT_ARACHPLAZ
+    push  ax
+ENDIF
+
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-pop   si
 pop   dx
+a_bspiexit:
+pop   si
 ret   
 
 ENDP
