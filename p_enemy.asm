@@ -3055,7 +3055,7 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 pop   dx
-exit_skelwhoosh
+exit_skelwhoosh:
 pop   si
 ret   
 
@@ -3124,116 +3124,137 @@ ret
 ENDP
 
 
+
 PROC    PIT_VileCheck_ NEAR
 PUBLIC  PIT_VileCheck_
 
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 6
-push  ax
-mov   si, dx
-mov   word ptr [bp - 2], cx
-mov   word ptr [bp - 6], GETRAISESTATEADDR
 mov   es, cx
-mov   word ptr [bp - 4], INFOFUNCLOADSEGMENT
 test  byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_CORPSE
 je    exit_pit_vilecheck_return_1
+push  si
+mov   si, dx
+
 cmp   byte ptr ds:[si + MOBJ_T.m_tics], 0FFh
-je    label_134
+je    do_vilecheck
+pop   si
 exit_pit_vilecheck_return_1:
 mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
 ret   
-label_134:
+
+exit_pit_vilecheck_return_1_pop3:
+pop   ax ; garbage
+pop   di 
+pop   si 
+mov   al, 1
+ret   
+
+do_vilecheck:
+
+push  di
+
+push  ax    ; pop later... 3 pops
+
+
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-call  dword ptr [bp - 6]
+
+;call  dword ptr [bp - 6]
+db    09Ah
+dw    GETRAISESTATEADDR, INFOFUNCLOADSEGMENT
+
+
 test  ax, ax
-je    exit_pit_vilecheck_return_1
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+je    exit_pit_vilecheck_return_1_pop3
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
+xchg  ax, di
+
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
+
+mov   al, byte ptr ds:[di + _mobjinfo + MOBJINFO_T.mobjinfo_radius]
 xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   di, ax
-add   di, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_radius
-mov   al, byte ptr ds:[di]
-mov   di, OFFSET _mobjinfo + (MT_VILE * SIZEOF_MOBJINFO_T) + MOBJINFO_T.mobjinfo_radius
-xor   ah, ah
-mov   cl, byte ptr ds:[di]
-mov   di, OFFSET _viletryx
+
+mov   cl, byte ptr ds:[_mobjinfo + (MT_VILE * SIZEOF_MOBJINFO_T) + MOBJINFO_T.mobjinfo_radius]
+
 xor   ch, ch
-mov   es, word ptr [bp - 2]
 add   cx, ax
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
-sub   ax, word ptr ds:[di]
-sbb   dx, word ptr ds:[di + 2]
+
+;	if (labs(thing_pos->x.w - viletryx.w) > maxdist.w || labs(thing_pos->y.w - viletryy.w) > maxdist.w) {
+
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
+sub   ax, word ptr ds:[_viletryx + 0]
+sbb   dx, word ptr ds:[_viletryx + 2]
 or    dx, dx
-jge   label_135
+jge   skip_x_Labs
 neg   ax
 adc   dx, 0
 neg   dx
-label_135:
+skip_x_Labs:
 cmp   dx, cx
-jg    exit_pit_vilecheck_return_1
-jne   label_137
+jg    exit_pit_vilecheck_return_1_pop3
+jne   check_vile_y
 test  ax, ax
-ja    exit_pit_vilecheck_return_1
-label_137:
-mov   di, OFFSET _viletryy
+ja    exit_pit_vilecheck_return_1_pop3
+check_vile_y:
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-sub   ax, word ptr ds:[di]
-sbb   dx, word ptr ds:[di + 2]
+sub   ax, word ptr ds:[_viletryy + 0]
+sbb   dx, word ptr ds:[_viletryy + 2]
 or    dx, dx
-jge   label_136
+jge   skip_labs_y
 neg   ax
 adc   dx, 0
 neg   dx
-label_136:
+skip_labs_y:
 cmp   dx, cx
-jg    exit_pit_vilecheck_return_1
-jne   label_138
+jg    exit_pit_vilecheck_return_1_pop3
+jne   do_further_check
 test  ax, ax
-ja    exit_pit_vilecheck_return_1
-label_138:
-mov   di, OFFSET _corpsehitRef
-mov   ax, word ptr [bp - 8]
-mov   word ptr ds:[di], ax
-mov   word ptr ds:[si + MOBJ_T.m_momy + 0], 0
-mov   word ptr ds:[si + MOBJ_T.m_momy + 2], 0
-shl   word ptr ds:[si + MOBJ_T.m_height + 0], 1
-rcl   word ptr ds:[si + MOBJ_T.m_height + 2], 1
-shl   word ptr ds:[si + MOBJ_T.m_height + 0], 1
-rcl   word ptr ds:[si + MOBJ_T.m_height + 2], 1
-mov   ax, word ptr ds:[si + MOBJ_T.m_momy + 0]
-mov   dx, word ptr ds:[si + MOBJ_T.m_momy + 2]
+ja    exit_pit_vilecheck_return_1_pop3
+do_further_check:
+
+pop   word ptr ds:[_corpsehitRef]
+xor   ax, ax
+
+;    thing->momx.w = thing->momy.w = 0;
+
+
+mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
+mov   word ptr ds:[si + MOBJ_T.m_momy + 2], ax
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
-mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
+mov   word ptr ds:[si + MOBJ_T.m_momx + 2], ax
+
+;	thing->height.w <<= 2;
+shl   word ptr ds:[si + MOBJ_T.m_height + 0], 1
+rcl   word ptr ds:[si + MOBJ_T.m_height + 2], 1
+shl   word ptr ds:[si + MOBJ_T.m_height + 0], 1
+rcl   word ptr ds:[si + MOBJ_T.m_height + 2], 1
+
+;    check = P_CheckPosition (thing, thing->secnum, thing_pos->x, thing_pos->y);
+
 push  word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   ax, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 2]
-mov   dx, word ptr ds:[si + 4]
 push  word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov   bx, ax
+les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+mov   cx, es
+mov   dx, word ptr ds:[si + MOBJ_T.m_secnum]
 mov   ax, si
 ;call  dword ptr ds:[_P_CheckPosition]
 db    09Ah
 dw    P_CHECKPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+;	thing->height.w >>= 2;
 
 sar   word ptr ds:[si + MOBJ_T.m_height + 2], 1
 rcr   word ptr ds:[si + MOBJ_T.m_height + 0], 1
 sar   word ptr ds:[si + MOBJ_T.m_height + 2], 1
 rcr   word ptr ds:[si + MOBJ_T.m_height + 0], 1
 test  al, al
+mov   al, 0
 jne   exit_pit_vilecheck_return_0
-jmp   exit_pit_vilecheck_return_1
+mov   al, 1
 exit_pit_vilecheck_return_0:
-xor   al, al
-LEAVE_MACRO 
 pop   di
 pop   si
 ret   
