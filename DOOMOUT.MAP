@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/15 16:09:29
+Created on:       25/07/15 16:13:23
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -60,7 +60,7 @@ s_sound_TEXT           CODE           AUTO           0ba0:0000       0000067a
 s_sbsfx_TEXT           CODE           AUTO           0ba0:0680       000017f3
 p_ceilng_TEXT          CODE           AUTO           0ba0:1e80       00000390
 p_doors_TEXT           CODE           AUTO           0ba0:2210       0000068c
-P_ENEMY_TEXT           CODE           AUTO           0ba0:289c       00002304
+P_ENEMY_TEXT           CODE           AUTO           0ba0:289c       00002300
 p_floor_TEXT           CODE           AUTO           0ba0:4ba0       00000806
 p_inter_TEXT           CODE           AUTO           0ba0:53b0       00000cf3
 p_lights_TEXT          CODE           AUTO           0ba0:60b0       000003ed
@@ -842,69 +842,69 @@ Module: p_doors.obj(C:\REALDOOM\p_doors.c)
 0ba0:27f8      P_SpawnDoorCloseIn30_
 0ba0:2840      P_SpawnDoorRaiseIn5Mins_
 Module: p_enemy.obj(p_enemy.ASM)
-0ba0:45d4      A_Explode_
+0ba0:45d0      A_Explode_
 0ba0:2950      P_NoiseAlert_
-0ba0:3fd8      A_FatRaise_
-0ba0:4a35      A_SpawnFly_
-0ba0:45cc      A_Fall_
+0ba0:3fd4      A_FatRaise_
+0ba0:4a31      A_SpawnFly_
+0ba0:45c8      A_Fall_
 0ba0:320d      A_PosAttack_
 0ba0:2fcc      A_Chase_
 0ba0:3436      A_BspiAttack_
-0ba0:4814      A_BrainPain_
+0ba0:4810      A_BrainPain_
 0ba0:29dd*     P_CheckMissileRange_
 0ba0:319a      A_FaceTarget_
 0ba0:34ad      A_SargAttack_
-0ba0:3e87*     GetVileMomz_
-0ba0:44cd      A_PainDie_
-0ba0:494e      A_BrainSpit_
-0ba0:38f5      A_SkelWhoosh_
-0ba0:48cf      A_BrainExplode_
-0ba0:3dd1      A_VileTarget_
+0ba0:3e83*     GetVileMomz_
+0ba0:44c9      A_PainDie_
+0ba0:494a      A_BrainSpit_
+0ba0:38f1      A_SkelWhoosh_
+0ba0:48cb      A_BrainExplode_
+0ba0:3dcd      A_VileTarget_
 0ba0:2abd*     P_Move_
 0ba0:2daa*     P_LookForPlayers_
-0ba0:3911      A_SkelFist_
-0ba0:3cbd      A_VileStart_
-0ba0:3cda      A_FireCrackle_
-0ba0:4352*     A_PainShootSkull_
-0ba0:3a6c      A_VileChase_
-0ba0:4507      A_Scream_
-0ba0:477d      A_Hoof_
+0ba0:390d      A_SkelFist_
+0ba0:3cb9      A_VileStart_
+0ba0:3cd6      A_FireCrackle_
+0ba0:434e*     A_PainShootSkull_
+0ba0:3a68      A_VileChase_
+0ba0:4503      A_Scream_
+0ba0:4779      A_Hoof_
 0ba0:2965*     P_CheckMeleeRange_
-0ba0:40a4      A_FatAttack2_
+0ba0:40a0      A_FatAttack2_
 0ba0:289c*     P_RecursiveSound_
-0ba0:35cd      A_SkelMissile_
-0ba0:3feb      A_FatAttack1_
-0ba0:4156      A_FatAttack3_
-0ba0:4a22      A_SpawnSound_
+0ba0:35c9      A_SkelMissile_
+0ba0:3fe7      A_FatAttack1_
+0ba0:4152      A_FatAttack3_
+0ba0:4a1e      A_SpawnSound_
 0ba0:2ec1      A_Look_
-0ba0:47a3      A_BabyMetal_
-0ba0:4790      A_Metal_
-0ba0:356b      A_BruisAttack_
-0ba0:4598      A_XScream_
+0ba0:479f      A_BabyMetal_
+0ba0:478c      A_Metal_
+0ba0:3567      A_BruisAttack_
+0ba0:4594      A_XScream_
 0ba0:2c18*     P_TryWalk_
-0ba0:4820      A_BrainScream_
-0ba0:34ef      A_HeadAttack_
-0ba0:45a2      A_Pain_
-0ba0:395e*     PIT_VileCheck_
-0ba0:3eca      A_VileAttack_
-0ba0:45f5      A_BossDeath_
-0ba0:4ba0*     P_ENEMY_ENDMARKER_
-0ba0:3ced      A_Fire_
+0ba0:481c      A_BrainScream_
+0ba0:34eb      A_HeadAttack_
+0ba0:459e      A_Pain_
+0ba0:395a*     PIT_VileCheck_
+0ba0:3ec6      A_VileAttack_
+0ba0:45f1      A_BossDeath_
+0ba0:4b9c*     P_ENEMY_ENDMARKER_
+0ba0:3ce9      A_Fire_
 0ba0:3286      A_SPosAttack_
 0ba0:330c      A_CPosAttack_
 0ba0:33de      A_SpidRefire_
 0ba0:2c2b*     P_NewChaseDir_
-0ba0:3cc7      A_StartFire_
-0ba0:364e      A_Tracer_
-0ba0:4236      A_SkullAttack_
+0ba0:3cc3      A_StartFire_
+0ba0:364a      A_Tracer_
+0ba0:4232      A_SkullAttack_
 0ba0:289c*     P_ENEMY_STARTMARKER_
 0ba0:3386      A_CPosRefire_
 0ba0:3457      A_TroopAttack_
-0ba0:44ac      A_PainAttack_
-0ba0:47b6      A_BrainAwake_
-0ba0:4b77      A_PlayerScream_
+0ba0:44a8      A_PainAttack_
+0ba0:47b2      A_BrainAwake_
+0ba0:4b73      A_PlayerScream_
 0ba0:2e64      A_KeenDie_
-0ba0:3547      A_CyberAttack_
+0ba0:3543      A_CyberAttack_
 Module: p_floor.obj(C:\REALDOOM\p_floor.c)
 0ba0:4ba0      T_MovePlane_
 0ba0:4dbc      T_MoveFloor_

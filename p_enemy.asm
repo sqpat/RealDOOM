@@ -2371,15 +2371,12 @@ ENDP
 PROC    A_SargAttack_ NEAR
 PUBLIC  A_SargAttack_
 
-push  dx
 push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   do_a_sargattack
-exit_a_sargattack:
-pop   si
-pop   dx
-ret   
+je    exit_a_sargattack
+push  dx
+
 do_a_sargattack:
 mov   dx, bx
 call  A_FaceTarget_
@@ -2388,25 +2385,38 @@ mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
 je    exit_a_sargattack
+
+;		damage = ((P_Random()%10)+1)*4;
+
 call  P_Random_
 xor   ah, ah
-mov   cx, 10
-cwd   
-idiv  cx
-imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-mov   cx, dx
+mov   cl, 10
+div   cl
+mov   al, ah
+cbw
+inc   ax
+SHIFT_MACRO sal  ax 2
+xchg  ax, cx
+
+
+IF COMPISA GE COMPILE_186
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+ENDIF
+
 mov   bx, si
-shl   cx, 2
 mov   dx, si
-add   cx, 4
 
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  P_DamageMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
-pop   si
 pop   dx
+exit_a_sargattack:
+pop   si
 ret   
 
 ENDP
