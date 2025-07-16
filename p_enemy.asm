@@ -2610,65 +2610,51 @@ ENDP
 PROC    A_SkelMissile_ NEAR
 PUBLIC  A_SkelMissile_
 
-push  dx
 push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 6
 mov   si, ax
-mov   word ptr [bp - 2], bx
-mov   word ptr [bp - 4], cx
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   do_a_skelmissile
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
+je    exit_a_skelmissile
+
 do_a_skelmissile:
+push  dx
+
+
 call  A_FaceTarget_
+
 mov   es, cx
 add   word ptr es:[bx + MOBJ_POS_T.mp_z + 2], 16
 imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 push  MT_TRACER  ;todo 186
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-mov   di, OFFSET _setStateReturn_pos
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-mov   bx, OFFSET _setStateReturn
-mov   ax, word ptr ds:[di + 2]
-mov   cx, word ptr ds:[bx]
-mov   bx, word ptr ds:[di]
-mov   es, word ptr [bp - 4]
-mov   di, word ptr [bp - 2]
-sub   word ptr es:[di + MOBJ_POS_T.mp_z + 2], 16
-mov   word ptr [bp - 6], ax
+
 mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
-mov   si, cx
-mov   dx, word ptr ds:[si + MOBJ_T.m_momx + 0]
-mov   si, word ptr ds:[si + MOBJ_T.m_momx + 2]
-mov   es, word ptr [bp - 6]
-add   word ptr es:[bx + MOBJ_POS_T.mp_x+0], dx
-adc   word ptr es:[bx + MOBJ_POS_T.mp_x+2], si
-mov   si, cx
-mov   di, cx
+mov   si, word ptr ds:[_setStateReturn]
+mov   word ptr ds:[si + MOBJ_T.m_tracerRef], ax
+sub   word ptr es:[bx + MOBJ_POS_T.mp_z + 2], 16
+
+les   bx, dword ptr ds:[_setStateReturn_pos]
+
 
 ;	mo_pos->x.w += mo->momx.w;
 ;	mo_pos->y.w += mo->momy.w;
 
-mov   si, word ptr ds:[si + MOBJ_T.m_momy + 0]
-mov   dx, word ptr ds:[di + MOBJ_T.m_momy + 2]
-add   word ptr es:[bx + MOBJ_POS_T.mp_y+0], si
-adc   word ptr es:[bx + MOBJ_POS_T.mp_y+2], dx
-mov   word ptr ds:[di + MOBJ_T.m_tracerRef], ax
-LEAVE_MACRO 
-pop   di
-pop   si
+lea   si, [si + MOBJ_T.m_momx]
+lodsw
+add   word ptr es:[bx + MOBJ_POS_T.mp_x+0], ax
+lodsw
+adc   word ptr es:[bx + MOBJ_POS_T.mp_x+2], ax
+lodsw
+add   word ptr es:[bx + MOBJ_POS_T.mp_y+0], ax
+lodsw
+adc   word ptr es:[bx + MOBJ_POS_T.mp_y+2], ax
 pop   dx
+exit_a_skelmissile:
+pop   si
 ret   
 
 ENDP
