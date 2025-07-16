@@ -2501,26 +2501,32 @@ PROC    A_CyberAttack_ NEAR
 PUBLIC  A_CyberAttack_
 
 
-push  dx
 push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   label_118
-pop   si
-pop   dx
-ret   
-label_118:
+je    exit_cyber_attack
+push  dx
 call  A_FaceTarget_
-imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-push  MT_ROCKET
+IF COMPISA GE COMPILE_186
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    push  MT_ROCKET
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, dx
+    mov   ax, MT_ROCKET
+    push  ax
+ENDIF
+
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-pop   si
 pop   dx
+exit_cyber_attack:
+pop   si
 ret   
 
 ENDP
