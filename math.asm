@@ -888,7 +888,7 @@ ENDP
 
 ; equivalent to an unsigned mult even though it is signed.
 
-PROC FixedMulTrigSpeed_
+PROC FixedMulTrigSpeed_  FAR
 PUBLIC FixedMulTrigSpeed_
 
 SHIFT_MACRO shl dx 2
@@ -897,6 +897,8 @@ SHIFT_MACRO shl dx 2
 PROC FixedMulTrigSpeedNoShift_
 PUBLIC FixedMulTrigSpeedNoShift_
 
+; todo pass this in via ES
+
 mov es, ax  ; put segment in ES
 xchg dx, bx
 
@@ -904,8 +906,7 @@ les cx, dword ptr es:[BX]
 mov ax, es
 
 ; speed is dx, mul by ax:Cx 
-and dx, 07Fh  ; drop the 32 bit flag
-
+and dx, 07Fh  ; drop the 32 bit flag.   bit 7 stores that this is a * fracunit value.
 
 mov  BX, DX    ; dupe DX
 
@@ -917,12 +918,12 @@ ADD  DX, BX    ; add
 
 ; ax * cx:bx
 
-ret
+retf
 
 ENDP
 
 
-PROC FixedMulBig1632_
+PROC FixedMulBig1632_ FAR
 PUBLIC FixedMulBig1632_
 
 ; AX  *  CX:BX
@@ -977,7 +978,7 @@ MUL  BX        ; BX * DX
 ADD  DX, CX    ; add high bits back
  
 
-ret
+retf
 
 
 

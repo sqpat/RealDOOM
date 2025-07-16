@@ -671,7 +671,7 @@ jne   continue_floating_with_target_check
 jump_to_done_with_floating_with_target:
 jmp   done_with_floating_with_target
 continue_floating_with_target_check:
-cmp   word ptr [si + 022h], 0
+cmp   word ptr [si + MOBJ_T.m_targetRef], 0
 je    jump_to_done_with_floating_with_target
 test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
 jne   jump_to_done_with_floating_with_target
@@ -686,10 +686,10 @@ jne   jump_to_done_with_floating_with_target
 ;    moTarget_pos = &mobjposlist_6800[mo->targetRef];
 
 IF COMPISA GE COMPILE_186
-    imul  bx, word ptr [si + 022h], SIZEOF_MOBJ_POS_T
+    imul  bx, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
 ELSE
     mov   ax, SIZEOF_MOBJ_POS_T
-    mul   word ptr [si + 022h]
+    mul   word ptr [si + MOBJ_T.m_targetRef]
     mov   bx, ax
 ENDIF
 
@@ -1511,6 +1511,7 @@ mov   bp, sp
 push  ax    ; bp - 2
 push  cx    ; bp - 4
 mov   si, bx
+xchg  ax, di
 
 mov   ax, dx
 mov   bx, SIZEOF_THINKER_T
@@ -1518,23 +1519,18 @@ sub   ax, (_thinkerlist + 4)
 xor   dx, dx
 div   bx
 
-IF COMPISA GE COMPILE_186
-    imul  bx, ax, SIZEOF_MOBJ_POS_T
-ELSE
-    mov   bx, SIZEOF_MOBJ_POS_T
-    mul   bx
-    xchg  ax, bx
-ENDIF
+mov   dx, SIZEOF_MOBJ_POS_T
+mul   dx
 
-push  bx
+push  ax  ; bp - 6
 
 
 
 xor   ax, ax
 mov   al, byte ptr [bp + 0Ah]
 
-mov   bx, word ptr [bp - 2]
-push  word ptr [bx + 4]         ; secnum
+
+push  word ptr [di + 4]         ; secnum
 push  ax                        ; type
 mov   es, cx
 
@@ -1589,26 +1585,35 @@ mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + 4)
 cwd
 div   bx
-les   bx, dword ptr [bp - 6]
-mov   word ptr [di + 022h], ax
+mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
+lds   bx, dword ptr [bp - 6]
 
 ;	destz = dest_pos->z.w;
 ;	an.wu = R_PointToAngle2 (source_pos->x, source_pos->y, dest_pos->x, dest_pos->y);
 
 ; store destz..
-push  word ptr es:[bx + 0Ah] ; bp - 0Ch
-push  word ptr es:[bx + 8]   ; bp - 0Eh
+push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 2] ; bp - 0Ch
+push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 0]   ; bp - 0Eh
 
 
-push  word ptr es:[bx + 6]
-push  word ptr es:[bx + 4]
-push  word ptr es:[bx + 2]
-push  word ptr es:[bx]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 0]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 0]
 
-mov   bx, word ptr es:[si + 4]
-mov   cx, word ptr es:[si + 6]
-les   ax, dword ptr es:[si]
-mov   dx, es
+lodsw
+xchg ax, cx
+lodsw
+xchg ax, dx
+lodsw
+xchg ax, bx
+lodsw
+xchg ax, cx
+
+push  ss
+pop   ds
+lea   si, [si - 8]
+
 ;call  R_PointToAngle2_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1644,23 +1649,33 @@ add   dx, ax
 no_fuzzmissile:
 push  dx
 
-les   bx, dword ptr [bp - 6]
+mov   bx, si
+lds   si, dword ptr [bp - 6]
 
 ;	dist.w = P_AproxDistance(dest_pos->x.w - source_pos->x.w, dest_pos->y.w - source_pos->y.w);
 
-mov   ax, word ptr es:[bx + 4]
-mov   cx, word ptr es:[bx + 6]
+lodsw
+xchg ax, cx
+lodsw
+xchg ax, dx
+lodsw
+xchg ax, cx
+lodsw
+mov  si, bx
 
-sub   ax, word ptr es:[si + 4]
-sbb   cx, word ptr es:[si + 6]
+xchg ax, cx
+; ax/bx swapped.
 
-mov   dx, word ptr es:[bx + 2]
-mov   bx, word ptr es:[bx]
+sub   ax, word ptr ds:[si + MOBJ_POS_T.mp_y + 0]
+sbb   cx, word ptr ds:[si + MOBJ_POS_T.mp_y + 2]
+xchg ax, bx
 
-sub   bx, word ptr es:[si]
-sbb   dx, word ptr es:[si + 2]
+sub   ax, word ptr ds:[si + MOBJ_POS_T.mp_x + 0]
+sbb   dx, word ptr ds:[si + MOBJ_POS_T.mp_x + 2]
 
-xchg  ax, bx
+push  ss
+pop   ds
+
 
 push   cs
 call  P_AproxDistance_
@@ -1898,7 +1913,7 @@ dw _S_StartSound_addr
 
 no_see_sound_b:
 mov    ax, word ptr ds:[_playerMobjRef]
-mov    word ptr [di + 022h], ax
+mov    word ptr [di + MOBJ_T.m_targetRef], ax
 
 mov    al, SIZEOF_MOBJINFO_T
 mul    byte ptr [bp - 2]

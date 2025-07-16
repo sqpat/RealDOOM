@@ -2617,27 +2617,37 @@ je    exit_a_skelmissile
 
 do_a_skelmissile:
 push  dx
-
+push  di
+mov   di, bx
 
 call  A_FaceTarget_
 
 mov   es, cx
-add   word ptr es:[bx + MOBJ_POS_T.mp_z + 2], 16
-imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-push  MT_TRACER  ;todo 186
+add   word ptr es:[di + MOBJ_POS_T.mp_z + 2], 16
+
+IF COMPISA GE COMPILE_186
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    push  MT_TRACER
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef], 
+    xchg  ax, dx
+    mov   ax, MT_TRACER
+    push  ax
+ENDIF
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-
-mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
-mov   si, word ptr ds:[_setStateReturn]
-mov   word ptr ds:[si + MOBJ_T.m_tracerRef], ax
-sub   word ptr es:[bx + MOBJ_POS_T.mp_z + 2], 16
-
 les   bx, dword ptr ds:[_setStateReturn_pos]
+sub   word ptr es:[di + MOBJ_POS_T.mp_z + 2], 16
+
+push  word ptr ds:[si + MOBJ_T.m_targetRef]
+mov   si, word ptr ds:[_setStateReturn]
+pop   word ptr ds:[si + MOBJ_T.m_tracerRef]
+
 
 
 ;	mo_pos->x.w += mo->momx.w;
@@ -2652,6 +2662,9 @@ lodsw
 add   word ptr es:[bx + MOBJ_POS_T.mp_y+0], ax
 lodsw
 adc   word ptr es:[bx + MOBJ_POS_T.mp_y+2], ax
+
+
+pop   di
 pop   dx
 exit_a_skelmissile:
 pop   si
@@ -2660,282 +2673,362 @@ ret
 ENDP
 
 
+exit_a_tracer_ret:
+ret
+
 PROC    A_Tracer_ NEAR
 PUBLIC  A_Tracer_
+
+test  byte ptr ds:[_gametic], 3
+jne   exit_a_tracer_ret
+
+do_a_tracer:
 
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 4
-push  ax
-push  bx
-push  cx
-test  byte ptr ds:[_gametic], 3
-je    do_a_tracer
-exit_a_tracer:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
-do_a_tracer:
-mov   es, cx
+push  ax  ; bp - 2
+push  cx  ; bp - 4
+push  bx  ; bp - 6
+
+mov   ds, cx
 mov   si, bx
-mov   di, word ptr [bp - 8]
-mov   si, word ptr es:[si + MOBJ_POS_T.mp_z+0]
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_z+2]
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_y+2]
-mov   dx, word ptr es:[di + MOBJ_POS_T.mp_x+2]
-mov   word ptr [bp - 4], ax
-mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_y+0]
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_x+0]
-mov   di, cx
-mov   cx, word ptr [bp - 4]
+
+;    P_SpawnPuff (actor_pos->x.w, actor_pos->y.w, actor_pos->z.w);
+
+lodsw
+xchg  ax, di                ; for ax
+lodsw
+xchg  ax, dx
+lodsw
+xchg  ax, bx
+lodsw
+xchg  ax, cx
+lodsw                       ; for si
+mov   si, word ptr ds:[si]  ; for di
+xchg  ax, si                
+xchg  ax, di
+
+push  ss
+pop   ds
+
 ;call  P_SpawnPuff_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SpawnPuff_addr
-push  -1 ; todo 186
-mov   es, word ptr [bp - 0Ah]
-mov   bx, word ptr [bp - 8]
-mov   si, word ptr [bp - 8]
-push  MT_SMOKE ; todo 186
-mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-push  word ptr es:[bx + MOBJ_POS_T.mp_z+2]
-mov   si, word ptr [bp - 6]
-push  word ptr es:[bx + MOBJ_POS_T.mp_z+0]
-mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_y+0]
-sub   bx, word ptr ds:[si + MOBJ_T.m_momy + 0]
-sbb   cx, word ptr ds:[si + MOBJ_T.m_momy + 2]
-mov   si, word ptr [bp - 8]
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_x+0]
-mov   dx, word ptr es:[si + MOBJ_POS_T.mp_x+2]
-mov   si, word ptr [bp - 6]
-sub   ax, word ptr ds:[si + MOBJ_T.m_momx + 0]
-sbb   dx, word ptr ds:[si + MOBJ_T.m_momx + 2]
+
+
+;	thRef = P_SpawnMobj (actor_pos->x.w-actor->momx.w,
+;		actor_pos->y.w-actor->momy.w,
+;		actor_pos->z.w, MT_SMOKE, -1);
+
+IF COMPISA GE COMPILE_186
+    push  -1 
+    push  MT_SMOKE
+ELSE
+    mov   ax, -1 
+    push  ax
+    mov   ax, MT_SMOKE
+    push  ax
+ENDIF
+
+
+lds   si, dword ptr [bp - 6]
+
+lodsw 
+xchg  ax, cx
+lodsw 
+xchg  ax, dx
+lodsw 
+xchg  ax, bx
+lodsw 
+xchg  ax, cx
+
+push  word ptr ds:[si+2]
+push  word ptr ds:[si]
+
+push  ss
+pop   ds
+mov   di, word ptr [bp - 2]
+
+sub   ax, word ptr ds:[di + MOBJ_T.m_momx + 0]
+sbb   dx, word ptr ds:[di + MOBJ_T.m_momx + 2]
+
+sub   bx, word ptr ds:[di + MOBJ_T.m_momy + 0]
+sbb   cx, word ptr ds:[di + MOBJ_T.m_momy + 2]
+
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SpawnMobj_addr
-mov   bx, OFFSET _setStateReturn
-mov   bx, word ptr ds:[bx]
+
+;    th->momz = FRACUNIT
+
+mov   bx, word ptr ds:[_setStateReturn]
+mov   word ptr ds:[bx + MOBJ_T.m_momz + 0], 0
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], 1
+
+;    th->tics -= P_Random()&3;
+
 call  P_Random_
 and   al, 3
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
+
+;    if (th->tics < 1 || th->tics > 240)
+;		th->tics = 1;
+
+
 mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
 cmp   al, 1
-jb    label_119
-jmp   label_120
-label_119:
+jb    cap_tracer_tics_to_1
+cmp   al, 240
+jbe   dont_cap_tracer_tics
+jmp   cap_tracer_tics_to_1
+
+
+cap_tracer_tics_to_1:
 mov   byte ptr ds:[bx + MOBJ_T.m_tics], 1
-label_121:
-mov   bx, word ptr [bp - 6]
-mov   ax, word ptr ds:[bx + MOBJ_T.m_tracerRef]
+dont_cap_tracer_tics:
+
+;	if (!actor->tracerRef) {
+;		return;
+;	}
+
+mov   ax, word ptr ds:[di + MOBJ_T.m_tracerRef]
 test  ax, ax
-jne   label_122
+jne   valid_tracerref
 jump_to_exit_a_tracer:
 jmp   exit_a_tracer
-label_122:
-imul  bx, ax, SIZEOF_THINKER_T
-add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
-je    jump_to_exit_a_tracer
-cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
+
+valid_tracerref:
+
+IF COMPISA GE COMPILE_186
+    imul  bx, ax, SIZEOF_THINKER_T
+ELSE
+    xchg ax, bx
+    mov  ax, SIZEOF_THINKER_T
+    mul  bx
+    xchg ax, bx
+ENDIF
+
+
+cmp   word ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_health], 0
 jle   jump_to_exit_a_tracer
-push  word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-push  word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-push  word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-push  word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov   es, word ptr [bp - 0Ah]
-mov   bx, word ptr [bp - 8]
-mov   si, word ptr [bp - 8]
-mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
-mov   dx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
+
+IF COMPISA GE COMPILE_186
+    imul  bx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov  dx, SIZEOF_MOBJ_POS_T
+    mul  dx
+    xchg ax, bx
+ENDIF
+
+lds   si, dword ptr [bp - 6]
+
+push  bx ; bp - 8  ; store destpos
+
+push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 0]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 0]
+
+lodsw 
+xchg  ax, cx
+lodsw 
+xchg  ax, dx
+lodsw 
+xchg  ax, bx
+lodsw 
+xchg  ax, cx
+
+
+push  ss
+pop   ds
+
 ;call  R_PointToAngle2_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_PointToAngle2_addr
-mov   es, word ptr [bp - 0Ah]
-mov   bx, si
-cmp   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
-jne   label_123
-cmp   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-je    label_124
-label_123:
-mov   cx, ax
-sub   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-mov   bx, dx
-sbb   bx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-cmp   bx, 08000h
-ja    label_131
-je    label_132
-jump_to_label_133:
-jmp   label_133
-label_132:
-test  cx, cx
-jbe   jump_to_label_133
-label_131:
-mov   bx, si
-mov   cx, ax
-add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], TRACEANGLELOW
-adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], -TRACEANGLEHIGH
-sub   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-mov   bx, dx
-sbb   bx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-cmp   bx, 08000h
-jae   label_124
-jmp   label_125
-label_124:
-mov   bx, word ptr [bp - 6]
-mov   es, word ptr [bp - 0Ah]
-mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   si, word ptr [bp - 8]
-mov   si, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
+
+lds   si, dword ptr [bp - 6]
+
+;jmp   use_exact_angle  ; doesnt fix it?
+
+cmp   dx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
+jne   angle_not_exact_reaim
+cmp   ax, word ptr ds:[si + MOBJ_POS_T.mp_angle + 0]
+je    done_setting_tracer_angle
+angle_not_exact_reaim:
+mov   bx, ax
+mov   cx, dx
+sub   bx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 0]
+sbb   cx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
+cmp   cx, 08000h
+ja    subtract_trace_angle
+jne   add_trace_angle
+test  bx, bx
+jnz   subtract_trace_angle
+
+add_trace_angle:
+add   word ptr ds:[si + MOBJ_POS_T.mp_angle + 2], TRACEANGLEHIGH
+cmp   cx, (08000h + TRACEANGLEHIGH)
+ja    use_exact_angle
+jnz   done_setting_tracer_angle
+test  bx, bx
+jnz   use_exact_angle
+jmp   done_setting_tracer_angle
+
+
+subtract_trace_angle:
+
+sub   word ptr ds:[si + MOBJ_POS_T.mp_angle + 2], TRACEANGLEHIGH
+cmp   cx, (08000h - TRACEANGLEHIGH)
+jae   done_setting_tracer_angle
+use_exact_angle:
+
+mov   word ptr ds:[si + MOBJ_POS_T.mp_angle + 0], ax
+mov   word ptr ds:[si + MOBJ_POS_T.mp_angle + 2], dx
+done_setting_tracer_angle:
+
+;fineexact = (actor_pos->angle.hu.intbits >> 1) & 0xFFFC;
+mov   si, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
+
+push  ss
+pop   ds
+
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[di + MOBJ_T.m_mobjtype]
 shr   si, 1
 and   si, 0FFFCh
 mov   bx, ax
-mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
-add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
-cbw  
+mov   bl, byte ptr ds:[bx +  _mobjinfo + MOBJINFO_T.mobjinfo_speed]
+push  bx  ; store for next time
 mov   dx, si
-mov   bx, ax
 mov   ax, FINECOSINE_SEGMENT
-;call   FixedMulTrigSpeed_
+;call   FixedMulTrigSpeedNoShift_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _FixedMulTrigSpeed_addr
-mov   bx, word ptr [bp - 6]
-mov   word ptr ds:[bx + MOBJ_T.m_momx + 0], ax
-mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   word ptr ds:[bx + MOBJ_T.m_momx + 2], dx
-mov   bx, ax
-mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
-add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
-cbw  
-mov   dx, si
-mov   bx, ax
+dw _FixedMulTrigSpeedNoShift_addr
+mov   word ptr ds:[di + MOBJ_T.m_momx + 0], ax
+mov   word ptr ds:[di + MOBJ_T.m_momx + 2], dx
+
+mov   dx, si    ; restore fineexact
+pop   bx        ; restore speed
 mov   ax, FINESINE_SEGMENT
-;call   FixedMulTrigSpeed_
+;call   FixedMulTrigSpeedNoShift_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _FixedMulTrigSpeed_addr
-mov   bx, word ptr [bp - 6]
-mov   word ptr ds:[bx + MOBJ_T.m_momy + 0], ax
-mov   word ptr ds:[bx + MOBJ_T.m_momy + 2], dx
-imul  bx, word ptr ds:[bx + MOBJ_T.m_tracerRef], SIZEOF_MOBJ_POS_T
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   si, word ptr [bp - 8]
-mov   es, ax
-mov   word ptr [bp - 4], ax
-mov   di, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov   es, word ptr [bp - 0Ah]
-sub   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
-sbb   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-mov   es, word ptr [bp - 4]
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov   si, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-mov   es, word ptr [bp - 0Ah]
-mov   bx, word ptr [bp - 8]
-sub   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-sbb   si, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-mov   bx, ax
-mov   ax, dx
-mov   dx, si
+dw _FixedMulTrigSpeedNoShift_addr
+
+mov   word ptr ds:[di + MOBJ_T.m_momy + 0], ax
+mov   word ptr ds:[di + MOBJ_T.m_momy + 2], dx
+
+
+pop   si ; bp - 8
+
+lds   di, dword ptr [bp - 6]
+
+
+lodsw 
+xchg  ax, cx
+lodsw 
+xchg  ax, dx
+lodsw 
+xchg  ax, bx
+lodsw 
+xchg  ax, cx
+
+sub   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
+sbb   dx, word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
+sub   bx, word ptr ds:[di + MOBJ_POS_T.mp_y + 0]
+sbb   cx, word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
+
+push  ss
+pop   ds
+
 db    09Ah
 dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
-mov   bx, word ptr [bp - 6]
-mov   ax, dx
-mov   dl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-xor   dh, dh
-imul  dx, dx, SIZEOF_MOBJINFO_T
-mov   bx, dx
-mov   dl, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
-add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
-xor   dh, dh
-mov   bx, dx
+
+;	dist16 =  dist.h.intbits / (mobjinfo[actor->type].speed - 0x80);
+
+
+mov   bx, word ptr [bp - 2]
+
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
+xchg  ax, bx
+
+mov   bl, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+xor   bh, bh
+;xchg  ax, dx  ; intbits
+
 sub   bx, 080h
 cwd   
-idiv  bx
+div   bx
 cmp   ax, 1
-jge   label_130
+jge   dont_cap_dist16_to_1
 mov   ax, 1
-label_130:
-mov   es, word ptr [bp - 0Ah]
-mov   dx, di
-mov   bx, word ptr [bp - 8]
-add   dx, 0  ; todo remove 
-mov   cx, word ptr [bp - 2]
-adc   cx, 40 ; 40*FRACUNIT
-sub   dx, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-sbb   cx, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-mov   bx, ax
-mov   ax, dx
-mov   dx, cx
+dont_cap_dist16_to_1:
+
+mov   bx, ax ; dist16
+
+pop   di ; bp - 6
+pop   ds ; bp - 4
+
+lodsw ; dest x lo
+xchg  ax, dx
+lodsw ; dest x hi
+add   ax, 40
+xchg  ax, dx
+
+
+sub   ax, word ptr ds:[di + MOBJ_POS_T.mp_z + 0]
+sbb   dx, word ptr ds:[di + MOBJ_POS_T.mp_z + 2]
+
+push  ss
+pop   ds
+
 ;call   FastDiv3216u_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FastDiv3216u_addr
-mov   bx, word ptr [bp - 6]
-cmp   dx, word ptr ds:[bx + MOBJ_T.m_momz + 2]
-jl    label_129
-jne   label_128
-cmp   ax, word ptr ds:[bx + MOBJ_T.m_momz + 0]
-jae   label_128
-label_129:
-add   word ptr ds:[bx + MOBJ_T.m_momz + 0], 0E000h ; -fracunit / 8
-adc   word ptr ds:[bx + MOBJ_T.m_momz + 2], 0FFFFh
+
+;    if (slope < actor->momz.w)
+;		actor->momz.w -= FRACUNIT/8;
+;    else
+;		actor->momz.w += FRACUNIT/8;
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   ds, cx
+pop   di ; bp - 2
+cmp   dx, word ptr ds:[di + MOBJ_T.m_momz + 2]
+jl    subtract_fracover8
+jne   add_fracover8
+cmp   ax, word ptr ds:[di + MOBJ_T.m_momz + 0]
+jae   add_fracover8
+subtract_fracover8:
+sub   word ptr ds:[di + MOBJ_T.m_momz + 0], 02000h ; -fracunit / 8
+sbb   word ptr ds:[di + MOBJ_T.m_momz + 2], 0
+push  ss
+pop   ds
+
+exit_a_tracer:
+
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
 ret   
-label_120:
-cmp   al, 240
-jbe   jump_to_label_121
-jmp   label_119
-jump_to_label_121:
-jmp   label_121
-label_125:
-mov   bx, si
-mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
-mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], dx
-jmp   label_124
-label_133:
-mov   bx, si
-mov   cx, ax
-add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], TRACEANGLELOW
-adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], TRACEANGLEHIGH
-sub   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-mov   bx, dx
-sbb   bx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-cmp   bx, 08000h
-ja    label_126
-je    label_127
-jump_to_label_124:
-jmp   label_124
-label_127:
-test  cx, cx
-jbe   jump_to_label_124
-label_126:
-mov   bx, si
-mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
-mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], dx
-jmp   label_124
-label_128:
-add   word ptr ds:[bx + MOBJ_T.m_momz + 0], 02000h ; fracunit / 8
-adc   word ptr ds:[bx + MOBJ_T.m_momz + 2], 0
+
+
+add_fracover8:
+add   word ptr ds:[di + MOBJ_T.m_momz + 0], 02000h ; fracunit / 8
+adc   word ptr ds:[di + MOBJ_T.m_momz + 2], 0
+push  ss
+pop   ds
+
 LEAVE_MACRO 
 pop   di
 pop   si

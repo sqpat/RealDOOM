@@ -1254,14 +1254,13 @@ void __near A_Tracer (mobj_t __near* actor, mobj_pos_t __far* actor_pos) {
  
     if (!dest || dest->health <= 0)
 		return;
-    
+    ; BUG: dest_pos is undefined. (fixed in asm)
     // change angle	
     exact.wu = R_PointToAngle2 (actor_pos->x,
 		actor_pos->y,
 		dest_pos->x,
 		dest_pos->y);
 	
- 
     if (exact.wu != actor_pos->angle.wu) {
 		if (exact.wu - actor_pos->angle.wu > 0x80000000) {
 			actor_pos->angle.wu -= TRACEANGLE;
@@ -1276,8 +1275,8 @@ void __near A_Tracer (mobj_t __near* actor, mobj_pos_t __far* actor_pos) {
     fineexact = (actor_pos->angle.hu.intbits >> 1) & 0xFFFC;
     
 	
-	actor->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, fineexact, mobjinfo[actor->type].speed);
-	actor->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, fineexact, mobjinfo[actor->type].speed);
+	actor->momx.w = FixedMulTrigSpeedNoShift(FINE_COSINE_ARGUMENT, fineexact, mobjinfo[actor->type].speed);
+	actor->momy.w = FixedMulTrigSpeedNoShift(FINE_SINE_ARGUMENT, fineexact, mobjinfo[actor->type].speed);
 	
 	dest = (mobj_t __near*)(&thinkerlist[actor->tracerRef].data);
 	dest_pos = &mobjposlist_6800[actor->tracerRef];
