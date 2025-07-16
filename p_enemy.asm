@@ -580,8 +580,7 @@ push  di
 push  bp
 mov   bp, sp
 
-xchg  ax, si
-mov   di, bx
+; di/si have the offsets already
 
 cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 
@@ -776,19 +775,19 @@ ENDP
 PROC    P_TryWalk_ NEAR
 PUBLIC  P_TryWalk_
 
-push  si
-mov   si, ax
+; si/di have the ptr offsets.
+
+;todo change this to take si/di instead of ax/bx/cx... 
+
+
 call  P_Move_
 test  al, al
-jne   generate_next_movecount
-pop   si
-ret   
-generate_next_movecount:
+je    exit_try_walk  ; al 0
 call  P_Random_
 and   ax, 15  ; todo al once proper random
 mov   word ptr ds:[si + MOBJ_T.m_movecount], ax
 mov   al, 1
-pop   si
+exit_try_walk:
 ret   
 
 ENDP
@@ -797,27 +796,20 @@ ENDP
 PROC    P_NewChaseDir_ NEAR
 PUBLIC  P_NewChaseDir_
 
-; bp - 2   movedir
-; bp - 4   opposite
-; bp - 6   MOBJPOSLIST_6800_SEGMENT
-; bp - 8     deltax hi
-; bp - 0Ah   deltax lo
-; bp - 0Ch   deltay lo
-; bp - 0Eh   UNUSED actorx hi
-; bp - 010h  UNUSED actory lo
-; bp - 012h  UNUSED actorx lo
-; bp - 014h  d[2]
-; bp - 015h  d[1]
-; bp - 016h  UNUSED todo fix and word align.
+; bp - 1   turnaround
+; bp - 2   olddir
+; bp - 3  d[2]
+; bp - 4  d[1]
 
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 016h
-mov   si, ax
-mov   di, bx
+
+; si is mobj
+; di is mobjpos
+mov   cx, MOBJPOSLIST_6800_SEGMENT
 
 ;	olddir = actor->movedir;
 ;	actorTarget = (mobj_t __near*)(&thinkerlist[actor->targetRef].data);
@@ -827,41 +819,52 @@ mov   di, bx
 
 
 
-mov   word ptr [bp - 6], cx
-mov   es, cx
 
 mov   al, byte ptr ds:[si + MOBJ_T.m_movedir]
-mov   byte ptr [bp - 2], al
-imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-mov   bx, SIZEOF_THINKER_T
-xor   dx, dx
-div   bx
-imul  dx, ax, SIZEOF_MOBJ_POS_T
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   cx, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
-mov   es, ax
-mov   al, byte ptr [bp - 2]
-cbw  
+cbw
 mov   bx, ax
-mov   al, byte ptr ds:[bx + _opposite] ; todo make cs?
-mov   bx, dx
-mov   byte ptr [bp - 4], al
+mov   ah, byte ptr ds:[bx + _opposite] ; todo make cs?
+push  ax  ; bp - 2. both movedir and opposite.
+push  ax  ; garbage push instead of sub sp 2 to hold d[1] d[2]
+
+mov   es, si  ; backup si
+
+IF COMPISA GE COMPILE_186
+    imul  si, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
+ELSE
+    mov  ax, SIZEOF_MOBJ_POS_T
+    mul  word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, si
+ENDIF
+
+mov   ds, cx
 
 ;    deltax.w = actorTarget_pos->x.w - actorx.w;
 ;    deltay.w = actorTarget_pos->y.w - actory.w;
 
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-sub   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-sbb   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-sub   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-mov   word ptr [bp - 0Ch], ax
-mov   ax, word ptr [bp - 8]
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-sbb   dx, cx
+lodsw
+sub   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
+xchg  ax, cx
+
+lodsw
+sbb   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
+xchg  ax, dx
+
+lodsw
+sub   ax, word ptr ds:[di + MOBJ_POS_T.mp_y + 0]
+xchg  ax, bx
+
+lodsw
+sbb   ax, word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
+xchg  ax, cx  
+
+; dx:ax deltax.
+; cx:bx deltay
+
+mov   si, es  ; si restored.
+
+push  ss
+pop   ds
 
 ;    if (deltax.w>10*FRACUNIT)
 ;		d[1]= DI_EAST;
@@ -870,24 +873,26 @@ sbb   dx, cx
 ;    else
 ;		d[1]=DI_NODIR;
 
-cmp   ax, 10  ; 10 * fracbits
+cmp   dx, 10  ; 10 * fracbits
 jg    set_d1_east
-je    compare_deltax_lobits
-set_d1_nodir:
-cmp   ax, -10  ; (neg 10 * fracunit)
+jne   compare_deltax_west
+test  ax, ax
+jne   set_d1_east
+compare_deltax_west:
+cmp   dx, -10  ; (neg 10 * fracunit)
 jl    set_d1_west
-mov   byte ptr [bp - 015h], 8
+mov   byte ptr [bp - 4], DI_NODIR
 jmp   d1_is_set
 set_d1_west:
-mov   byte ptr [bp - 015h], DI_WEST
+mov   byte ptr [bp - 4], DI_WEST
 jmp   d1_is_set
 
 
-compare_deltax_lobits:
-cmp   word ptr [bp - 0Ah], 0
-jbe   set_d1_nodir
 set_d1_east:
-mov   byte ptr [bp - 015h], DI_EAST
+mov   byte ptr [bp - 4], DI_EAST
+
+
+
 d1_is_set:
 
 ;    if (deltay.w<-10*FRACUNIT)
@@ -897,113 +902,207 @@ d1_is_set:
 ;    else
 ;		d[2]=DI_NODIR;
 
-cmp   dx, -10  ; -10 * fracbits
+cmp   cx, -10  ; -10 * fracbits
 jge   compare_deltay_north
-mov   byte ptr [bp - 014h], DI_SOUTH
-jmp   d2_is_set
-set_d2_nodir:
-mov   byte ptr [bp - 014h], DI_NODIR
+mov   byte ptr [bp - 3], DI_SOUTH
 jmp   d2_is_set
 compare_deltay_north:
-cmp   dx, 10
+cmp   cx, 10
 jg    set_d2_north
-je    compare_deltay_lobits
-jmp   set_d2_nodir
+jne    set_d2_nodir
 compare_deltay_lobits:
-cmp   word ptr [bp - 0Ch], 0
-jbe   set_d2_nodir
+test  bx, bx
+je    set_d2_nodir
 set_d2_north:
-mov   byte ptr [bp - 014h], DI_NORTH
+mov   byte ptr [bp - 3], DI_NORTH
+jmp   d2_is_set
+set_d2_nodir:
+mov   byte ptr [bp - 3], DI_NODIR
 d2_is_set:
 
-cmp   byte ptr [bp - 015h], DI_NODIR
+cmp   byte ptr [bp - 4], DI_NODIR
 je    no_direct_route
-cmp   byte ptr [bp - 014h], DI_NODIR
+cmp   byte ptr [bp - 3], DI_NODIR
 je    no_direct_route
+
+;		actor->movedir = diags[((deltay.h.intbits<0)<<1)+(deltax.w>0)];
+;		if (actor->movedir != turnaround && P_TryWalk(actor, actor_pos)) {
+
+test  cx, cx    ; deltay.h.intbits<0
+jge   deltay_not_negative
+mov   si, 2     ; included shift
+jmp   deltay_sign_set
+deltay_not_negative:
+xor   si, si
+deltay_sign_set:
+
 test  dx, dx
-jge   label_49
-jmp   label_50
-label_49:
-xor   bx, bx
-label_51:
-mov   ax, bx
-add   ax, bx
-cmp   word ptr [bp - 8], 0
-jg    label_52
-je    label_53
-jump_to_label_54:
-jmp   label_54
-label_53:
-cmp   word ptr [bp - 0Ah], 0
-jbe   jump_to_label_54
-label_52:
-mov   bx, 1
-label_55:
-add   bx, ax
-mov   al, byte ptr ds:[bx + _diags]
-mov   bl, al
+jg    deltax_positive
+jne   movedir_set   ; dont add to si.
+check_deltax_lobits:
+test  ax, ax
+je    movedir_set   ; dont add to si_
+deltax_positive:
+inc   si            ; add 1 to dir.
+movedir_set:
+; es has mobj ptr still.
+; dx:ax, cx:bx are deltas. 
+; di has mobjpos...
+; si has movedir lookup.
+
+; store stuff in case of trywalk call.  need these for potential labs check later.
+push  ax  ; store deltax lo.
+
+
+mov   al, byte ptr ds:[si + _diags]  ; do diags lookup. todo make cs table
+mov   si, es    ; restore mobj ptr.
+
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
-mov   al, byte ptr [bp - 4]
-xor   bh, bh
-cbw  
-cmp   bx, ax
-je    no_direct_route
-jmp   label_47
+cmp   al, byte ptr [bp - 1]     ; turnaround check.
+
+je    no_direct_route_restore_deltax_delta_y_1
+
+push  bx
+push  cx
+
+call  P_TryWalk_
+test  al, al
+je    no_direct_route_restore_deltax_delta_y_2
+
+jmp   exit_p_newchasedir
+no_direct_route_restore_deltax_delta_y_2:
+
+pop   cx
+pop   bx
+
+no_direct_route_restore_deltax_delta_y_1:
+
+pop   ax 
+
 no_direct_route:
+
+; labs(deltay.w)>labs(deltax.w)
+
+; dx:ax, cx:bx are deltas. 
+
+or    cx, cx
+jge   deltay_is_positive
+neg   bx
+adc   cx, 0
+neg   cx
+deltay_is_positive:
+
+or    dx, dx
+jge   delta_x_is_positive
+neg   ax
+adc   dx, 0
+neg   dx
+delta_x_is_positive:
+
+cmp   cx, dx
+jg    do_other_direction_and_inc_random
+jl    try_random_check
+; equal....
+cmp   bx, ax
+ja    do_other_direction_and_inc_random
+;jmp   try_random_check
+try_random_check:
 call  P_Random_
 cmp   al, 200
-ja    label_63
-jmp   label_56
-label_63:
-mov   al, byte ptr [bp - 015h]
-mov   ah, byte ptr [bp - 014h]
-mov   byte ptr [bp - 015h], ah
-mov   byte ptr [bp - 014h], al
-label_65:
-mov   al, byte ptr [bp - 015h]
-cmp   al, byte ptr [bp - 4]
-jne   label_72
-mov   byte ptr [bp - 015h], 8
-label_72:
-mov   al, byte ptr [bp - 014h]
-cmp   al, byte ptr [bp - 4]
-jne   label_710
-mov   byte ptr [bp - 014h], 8
-label_710:
-mov   al, byte ptr [bp - 015h]
-cmp   al, 8
-jne   jump_to_label_70
-label_78:
-mov   al, byte ptr [bp - 014h]
-cmp   al, 8
-jne   jump_to_label_73
-label_76:
-mov   al, byte ptr [bp - 2]
-cmp   al, 8
-je    label_720
-mov   cx, word ptr [bp - 6]
-mov   bx, di
+ja    do_other_direction
+jmp   done_checking_for_direction_swap ; already incremented prndindex.
+
+
+
+do_other_direction_and_inc_random:
+inc   byte ptr ds:[_prndindex]  ; didnt call p_random but should have. just inc index.
+do_other_direction:
+mov   ax, word ptr [bp - 4]
+xchg  al, ah
+mov   word ptr [bp - 4], ax
+
+done_checking_for_direction_swap:
+
+;    if (d[1]==turnaround)
+;		d[1]=DI_NODIR;
+;    if (d[2]==turnaround)
+;		d[2]=DI_NODIR;
+
+mov   ax, word ptr [bp - 4]
+cmp   al, byte ptr [bp - 1]
+jne   d1_not_turnaround
+mov   al, DI_NODIR
+d1_not_turnaround:
+cmp   ah, byte ptr [bp - 1]
+jne   d2_not_turnaround
+mov   ah, DI_NODIR
+d2_not_turnaround:
+; write back.
+mov   word ptr [bp - 4], ax
+
+
+mov   al, byte ptr [bp - 4]
+cmp   al, DI_NODIR
+
+je    dont_try_d1
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
-mov   ax, si
 call  P_TryWalk_
 test  al, al
 jne   exit_p_newchasedir
-label_720:
+
+dont_try_d1:
+mov   al, byte ptr [bp - 3]
+cmp   al, DI_NODIR
+je    dont_try_d2
+mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
+call  P_TryWalk_
+test  al, al
+jne   exit_p_newchasedir
+
+dont_try_d2:
+mov   al, byte ptr [bp - 2]
+cmp   al, DI_NODIR
+je    dont_try_olddir
+mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
+call  P_TryWalk_
+test  al, al
+jne   exit_p_newchasedir
+
+dont_try_olddir:
+
+mov   dh, byte ptr [bp - 1]  ; store this in dh
+
 call  P_Random_
 test  al, 1
-je    jump_to_label_57
+je    loop_from_southeast
+
 xor   dl, dl
-label_67:
-cmp   dl, byte ptr [bp - 4]
-jne   jump_to_label_58
-label_77:
+loop_next_chase_try:
+cmp   dl, dh
+je    do_next_chase_try_loop
+mov   byte ptr ds:[si + MOBJ_T.m_movedir], dl
+call  P_TryWalk_
+test  al, al
+jne   exit_p_newchasedir
+
+do_next_chase_try_loop:
 inc   dl
-cmp   dl, 7
-jle   label_67
-label_71:
-mov   al, byte ptr [bp - 4]
-cmp   al, 8
-jne   jump_to_label_59
+cmp   dl, DI_SOUTHEAST
+jle   loop_next_chase_try
+
+check_turnaround:
+cmp   dh, DI_NODIR
+je    set_nodir_exit_p_newchasedir
+
+
+mov   byte ptr ds:[si + MOBJ_T.m_movedir], dh
+call  P_TryWalk_
+test  al, al
+jne   exit_p_newchasedir
+
+
+
+set_nodir_exit_p_newchasedir:
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 exit_p_newchasedir:
 LEAVE_MACRO 
@@ -1012,122 +1111,26 @@ pop   si
 pop   dx
 ret   
 
-jump_to_label_70:
-jmp   label_70
-label_50:
-mov   bx, 1
-jmp   label_51
-jump_to_label_73:
-jmp   label_73
-label_54:
-xor   bx, bx
-jmp   label_55
-label_47:
-mov   cx, word ptr [bp - 6]
-mov   bx, di
-mov   ax, si
+
+
+
+
+loop_from_southeast:
+
+mov   dl, DI_SOUTHEAST
+loop_next_chase_try_from_southeast:
+cmp   dl, dh
+je   do_next_chase_try_loop_from_southeast
+mov   byte ptr ds:[si + MOBJ_T.m_movedir], dl
 call  P_TryWalk_
 test  al, al
 jne   exit_p_newchasedir
-jmp   no_direct_route
-jump_to_label_57:
-jmp   label_57
-jump_to_label_58:
-jmp   label_58
-jump_to_label_59:
-jmp   label_59
-label_56:
-mov   ax, word ptr [bp - 0Ch]
-or    dx, dx
-jge   label_60
-neg   ax
-adc   dx, 0
-neg   dx
-label_60:
-mov   cx, ax
-mov   bx, dx
-mov   ax, word ptr [bp - 0Ah]
-mov   dx, word ptr [bp - 8]
-or    dx, dx
-jge   label_61
-neg   ax
-adc   dx, 0
-neg   dx
-label_61:
-cmp   bx, dx
-jle   label_62
-jump_to_label_63:
-jmp   label_63
-label_62:
-je    label_64
-jmp   label_65
-label_64:
-cmp   cx, ax
-ja    jump_to_label_63
-jmp   label_65
-label_70:
-mov   cx, word ptr [bp - 6]
-mov   bx, di
-mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
-mov   ax, si
-call  P_TryWalk_
-test  al, al
-je    label_66
-jump_to_exit_p_newchasedir:
-jmp   exit_p_newchasedir
-label_66:
-jmp   label_78
-label_73:
-mov   cx, word ptr [bp - 6]
-mov   bx, di
-mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
-mov   ax, si
-call  P_TryWalk_
-test  al, al
-jne   jump_to_exit_p_newchasedir
-jmp   label_76
-label_58:
-mov   cx, word ptr [bp - 6]
-mov   bx, di
-mov   ax, si
-mov   byte ptr ds:[si + MOBJ_T.m_movedir], dl
-call  P_TryWalk_
-test  al, al
-jne   jump_to_exit_p_newchasedir
-jmp   label_77
-label_57:
-mov   dl, DI_SOUTHEAST
-label_68:
-cmp   dl, byte ptr [bp - 4]
-jne   label_69
-label_79:
+do_next_chase_try_loop_from_southeast:
 dec   dl
-cmp   dl, (DI_EAST-1)  ; 0FFh
-jne   label_68
-jmp   label_71
-label_69:
-mov   cx, word ptr [bp - 6]
-mov   bx, di
-mov   ax, si
-mov   byte ptr ds:[si + MOBJ_T.m_movedir], dl
-call  P_TryWalk_
-test  al, al
-je    label_79
-jmp   exit_p_newchasedir
-label_59:
-mov   cx, word ptr [bp - 6]
-mov   bx, di
-mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
-mov   ax, si
-call  P_TryWalk_
-test  al, al
-jne   jump_to_exit_p_newchasedir
-mov   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
+jns   loop_next_chase_try_from_southeast
+
+jmp   check_turnaround
+
 
 ENDP
 
@@ -1569,9 +1572,7 @@ db 01Eh  ;
 dw _P_SetMobjState_addr
 jmp   exit_a_chase
 label_110:
-mov   bx, di
-mov   cx, es
-mov   ax, si
+
 call  P_NewChaseDir_
 jmp   exit_a_chase
 label_107:
@@ -1601,16 +1602,14 @@ label_104:
 dec   word ptr ds:[si + MOBJ_T.m_movecount]
 cmp   word ptr ds:[si + MOBJ_T.m_movecount], 0
 jl    label_101
-mov   cx, word ptr [bp - 2]
-mov   bx, di
-mov   ax, si
+
+
 call  P_Move_
 test  al, al
 jne   label_102
 label_101:
-mov   cx, word ptr [bp - 2]
-mov   bx, di
-mov   ax, si
+
+
 call  P_NewChaseDir_
 label_102:
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
