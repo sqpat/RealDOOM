@@ -2867,25 +2867,22 @@ sub   bx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 0]
 sbb   cx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 cmp   cx, 08000h
 ja    subtract_trace_angle
-jne   add_trace_angle
+jb    add_trace_angle
 test  bx, bx
-jnz   subtract_trace_angle
+jne   subtract_trace_angle
 
 add_trace_angle:
 add   word ptr ds:[si + MOBJ_POS_T.mp_angle + 2], TRACEANGLEHIGH
-cmp   cx, (08000h + TRACEANGLEHIGH)
-ja    use_exact_angle
-jnz   done_setting_tracer_angle
-test  bx, bx
-jnz   use_exact_angle
+sub   cx, TRACEANGLEHIGH
+jc    use_exact_angle
 jmp   done_setting_tracer_angle
 
 
 subtract_trace_angle:
 
 sub   word ptr ds:[si + MOBJ_POS_T.mp_angle + 2], TRACEANGLEHIGH
-cmp   cx, (08000h - TRACEANGLEHIGH)
-jae   done_setting_tracer_angle
+add   cx, TRACEANGLEHIGH
+jnc   done_setting_tracer_angle
 use_exact_angle:
 
 mov   word ptr ds:[si + MOBJ_POS_T.mp_angle + 0], ax
