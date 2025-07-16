@@ -2291,14 +2291,12 @@ ENDP
 PROC    A_TroopAttack_ NEAR
 PUBLIC  A_TroopAttack_
 
-push  dx
 push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   do_a_troopattack
-pop   si
-pop   dx
-ret   
+je    a_troopattack_exit
+push  dx
+
 do_a_troopattack:
 mov   dx, bx
 call  A_FaceTarget_
@@ -2307,7 +2305,7 @@ mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
 je    do_troop_missile
-mov   dx, sfx_claw
+mov   dx, SFX_CLAW
 mov   ax, si
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
@@ -2315,19 +2313,24 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 call  P_Random_
-xor   ah, ah
-mov   cx, ax
-sar   cx, 0Fh  ; todo no
-xor   ax, cx
-sub   ax, cx
+
+;		damage = (P_Random()%8+1)*3;
+
+
 and   ax, 7
-xor   ax, cx
-sub   ax, cx
 inc   ax
+
 mov   cx, ax
-shl   cx, 2
-sub   cx, ax
-imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+sal   ax, 1
+add   cx, ax  ; cx is damage.
+
+IF COMPISA GE COMPILE_186
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+ENDIF
+
 mov   bx, si
 mov   dx, si
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
@@ -2335,20 +2338,31 @@ add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
-pop   si
 pop   dx
+pop   si
 ret   
 do_troop_missile:
-imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-push  MT_TROOPSHOT  ; todo 186
+
+IF COMPISA GE COMPILE_186
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    push  MT_TROOPSHOT 
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, dx
+    mov   ax, MT_TROOPSHOT
+    push  ax
+ENDIF
+
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-pop   si
 pop   dx
+a_troopattack_exit:
+pop   si
 ret   
 
 ENDP
