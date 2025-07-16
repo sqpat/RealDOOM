@@ -1910,31 +1910,30 @@ ENDP
 PROC    A_SPosAttack_ NEAR
 PUBLIC  A_SPosAttack_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 6
 mov   di, ax
 cmp   word ptr ds:[di + MOBJ_T.m_targetRef], 0
-jne   do_asposattack
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-do_asposattack:
+je    exit_a_sposattack
+
+
+do_a_sposattack:
 mov   si, SIZEOF_THINKER_T
 sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   si
-imul  si, ax, SIZEOF_MOBJ_POS_T
-mov   dx, 2
+
+IF COMPISA GE COMPILE_186
+    imul  si, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov  dx, SIZEOF_MOBJ_POS_T
+    mul  dx
+    xchg ax, si
+ENDIF
+
+
+mov   dx, SFX_SHOTGN
 mov   ax, di
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
@@ -1942,61 +1941,72 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 mov   ax, di
-mov   bx, MOBJPOSLIST_6800_SEGMENT
 call  A_FaceTarget_
-mov   es, bx
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-shr   ax, 3
+
+;	bangle = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
+
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
+mov   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
+SHIFT_MACRO shr   dx 3
+
+;    slope = P_AimLineAttack (actor, bangle, MISSILERANGE);
+
 mov   bx, MISSILERANGE
-mov   word ptr [bp - 2], ax
-mov   dx, ax
+mov   si, dx ; store bangle
 mov   ax, di
-xor   cl, cl
 ;call  dword ptr ds:[_P_AimLineAttack]
 db    09Ah
 dw    P_AIMLINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-mov   word ptr [bp - 6], ax
-mov   word ptr [bp - 4], dx
-label_114:
+push  ax ; bp - 2
+push  dx ; bp - 4
+mov   cx, 3
+
+do_next_shotgun_pellet:
+
+;	angle = MOD_FINE_ANGLE((bangle + ((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
+
 call  P_Random_
-mov   si, word ptr [bp - 2]
+
 mov   dl, al
 call  P_Random_
 xor   dh, dh
 xor   ah, ah
-mov   bx, 5
+
 sub   dx, ax
+
+sal   dx, 1
+add   dx, si ; bangle
+and   dx, FINEMASK
+
+;		damage = ((P_Random()%5)+1)*3;
 call  P_Random_
-add   dx, dx
 xor   ah, ah
-add   si, dx
-cwd   
-idiv  bx
-mov   ax, dx
+mov   bl, 5
+div   bl
+mov   al, ah
+cbw
 inc   ax
-imul  ax, ax, 3
-and   si, FINEMASK
-cbw  
+mov   bx, ax
+sal   ax, 1
+add   ax, bx ; ax * 3
+
+; dx already set.
 mov   bx, MISSILERANGE
 push  ax
-mov   dx, si
 push  word ptr [bp - 4]
+push  word ptr [bp - 2]
 mov   ax, di
-push  word ptr [bp - 6]
-inc   cl
 ;call  dword ptr ds:[_P_LineAttack]
 db    09Ah
 dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-cmp   cl, 3
-jl    label_114
+loop  do_next_shotgun_pellet
+
+exit_a_sposattack:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP
