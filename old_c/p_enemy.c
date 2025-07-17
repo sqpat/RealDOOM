@@ -1551,7 +1551,6 @@ void __near A_Fire (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 
 	P_UnsetThingPosition (actor, FP_OFF(actor_pos));
 
-	//todo isnt this just multiplied by 24?
 	actor_pos->x.w = dest_pos->x.w + FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, an, 24*FRACUNIT);
 	actor_pos->y.w = dest_pos->y.w + FixedMulTrigNoShift(FINE_SINE_ARGUMENT,   an, 24*FRACUNIT);
 

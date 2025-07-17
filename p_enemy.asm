@@ -2341,6 +2341,7 @@ dw _P_DamageMobj_addr
 pop   dx
 pop   si
 ret   
+
 do_troop_missile:
 
 IF COMPISA GE COMPILE_186
@@ -2485,6 +2486,7 @@ ELSE
     mov   ax, MT_HEADSHOT
     push  ax
 ENDIF
+
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
@@ -2495,6 +2497,7 @@ pop   dx
 exit_head_attack:
 pop   si
 ret   
+
 ENDP
 
 
@@ -2508,6 +2511,7 @@ cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_cyber_attack
 push  dx
 call  A_FaceTarget_
+
 IF COMPISA GE COMPILE_186
     imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
     push  MT_ROCKET
@@ -2593,6 +2597,7 @@ ELSE
     mov   ax, MT_BRUISERSHOT
     push  ax
 ENDIF
+
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
@@ -2635,6 +2640,7 @@ ELSE
     mov   ax, MT_TRACER
     push  ax
 ENDIF
+
 mov   ax, si
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
@@ -3666,19 +3672,36 @@ push  dx
 push  si
 push  bp
 mov   bp, sp
-sub   sp, 6
-push  cx
-push  ax
+push  cx ; bp - 2
+push  ax ; bp - 4
 mov   si, bx
-imul  dx, di, SIZEOF_THINKER_T
-mov   bx, ax
-imul  ax, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
-imul  di, di, SIZEOF_MOBJ_POS_T
-mov   word ptr [bp - 4], ax
-imul  ax, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+xchg  ax, bx
+
+
+IF COMPISA GE COMPILE_186
+    
+    imul  dx, di, SIZEOF_THINKER_T
+    imul  bx, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
+    mov   ax, bx
+    imul  di, di, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   di
+    xchg  ax, cx
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   di
+    xchg  ax, di
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   word ptr ds:[bx + MOBJ_T.m_targetRef]
+    mov   bx, ax
+    mov   dx, cx
+
+ENDIF
+
+
+
 mov   cx, di
-mov   bx, word ptr [bp - 4]
+add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 
 ;call  dword ptr ds:[_P_CheckSightTemp]
@@ -3687,13 +3710,13 @@ dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 test  al, al
 je    exit_a_fire
-mov   es, word ptr [bp - 8]
+mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
 shr   ax, 1
 and   al, 0FCh
 mov   dx, si
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr [bp - 0Ah]
+push  ax  ; bp - 6
+mov   ax, word ptr [bp - 4]
 ;call  dword ptr ds:[_P_UnsetThingPosition]
 db    09Ah
 dw    P_UNSETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -3706,40 +3729,47 @@ mov   ax, FINECOSINE_SEGMENT
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
-mov   es, word ptr [bp - 8]
+mov   ds, word ptr [bp - 2]
 
-add   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
-adc   dx, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
-mov   word ptr es:[si + MOBJ_POS_T.mp_x + 0], ax
-mov   word ptr es:[si + MOBJ_POS_T.mp_x + 2], dx
+add   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
+adc   dx, word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
+mov   word ptr ds:[si + MOBJ_POS_T.mp_x + 0], ax
+mov   word ptr ds:[si + MOBJ_POS_T.mp_x + 2], dx
+
+push  ss
+pop   ds
 
 mov   cx, 24
 xor   bx, bx
 mov   ax, FINESINE_SEGMENT
-mov   dx, word ptr [bp - 6]
+pop   dx  ; bp - 6
 
 ;call  FixedMulTrigNoShift_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
-mov   es, word ptr [bp - 8]
+mov   ds, word ptr [bp - 2]
 
-add   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-adc   dx, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
-mov   word ptr es:[si + MOBJ_POS_T.mp_y + 0], ax
-mov   word ptr es:[si + MOBJ_POS_T.mp_y + 2], dx
+add   ax, word ptr ds:[di + MOBJ_POS_T.mp_y + 0]
+adc   dx, word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
+mov   word ptr ds:[si + MOBJ_POS_T.mp_y + 0], ax
+mov   word ptr ds:[si + MOBJ_POS_T.mp_y + 2], dx
 
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
-mov   word ptr es:[si + MOBJ_POS_T.mp_z + 0], ax
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
-mov   word ptr es:[si + MOBJ_POS_T.mp_z + 2], ax
+push  word ptr ds:[di + MOBJ_POS_T.mp_z + 0]
+push  word ptr ds:[di + MOBJ_POS_T.mp_z + 2]
+pop   word ptr ds:[si + MOBJ_POS_T.mp_z + 2]
+pop   word ptr ds:[si + MOBJ_POS_T.mp_z + 0]
+
+push  ss
+pop   ds
 
 mov   bx, -1
-mov   ax, word ptr [bp - 0Ah]
+pop   ax ; bp - 4
 mov   dx, si
 ;call  dword ptr ds:[_P_SetThingPosition]
 db    09Ah
 dw    P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 exit_a_fire:
 LEAVE_MACRO 
 pop   si
