@@ -3894,44 +3894,41 @@ PUBLIC  GetVileMomz_
 
 push  bx
 sub   al, 3
-cmp   al, MT_PAIN  ; todo this logic seems incorrect..?
-ja    vilemomz_ret_10
+cmp   al, (MT_BOSSBRAIN - 3) 
+ja    vilemomz_ret_10  ; default
 xor   ah, ah
-mov   bx, ax
-add   bx, ax
+xchg  ax, bx
+sal   bx, 1
+xor   ax, ax
+cwd
 jmp   word ptr cs:[bx + OFFSET _vile_momz_lookuptable]
 vilemomz_ret_2:
-mov   dx, 2
-vilemomz_lowbits_0_and_return:
-xor   ax, ax
+inc   dx
+inc   dx
 pop   bx
 ret   
 vilemomz_ret_20:
 mov   dx, 20
-xor   al, al
 pop   bx
 ret   
 vilemomz_ret_163840:
 mov   ax, 08000h
-mov   dx, 2
-pop   bx
-ret   
+jmp   vilemomz_ret_2  ; dx 2 and pop bx and ret.
 vilemomz_ret_109226:
 mov   ax, 0AAAAh
-mov   dx, 1
+inc   dx
 pop   bx
 ret   
 vilemomz_ret_1_high:
-mov   dx, 1
-jmp   vilemomz_lowbits_0_and_return
+inc   dx
+pop   bx
+ret   
 vilemomz_ret_1_low:
-mov   ax, 1
-xor   dx, dx
+inc   ax
 pop   bx
 ret   
 vilemomz_ret_10:
 mov   dx, 10
-xor   ax, ax
 pop   bx
 ret   
 
