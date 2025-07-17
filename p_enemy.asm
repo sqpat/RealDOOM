@@ -3617,17 +3617,15 @@ PROC    A_StartFire_ NEAR
 PUBLIC  A_StartFire_
 
 push  dx
-push  si
-mov   si, ax
+push  ax
 mov   dx, SFX_FLAMST
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-mov   ax, si
+pop   ax
 call  A_Fire_
-pop   si
 pop   dx
 ret   
 
@@ -3638,17 +3636,15 @@ PROC    A_FireCrackle_ NEAR
 PUBLIC  A_FireCrackle_
 
 push  dx
-push  si
-mov   si, ax
+push  ax
 mov   dx, SFX_FLAME
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-mov   ax, si
+pop   ax
 call  A_Fire_
-pop   si
 pop   dx
 ret   
 
