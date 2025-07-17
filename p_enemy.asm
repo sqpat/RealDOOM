@@ -3942,16 +3942,15 @@ PUBLIC  A_VileAttack_
 ; bp - 4   MOBJPOSLIST_6800_SEGMENT
 ; bp - 6   mobjpos offset
 ; bp - 8   angle
-; bp - 0Ah unused
-; bp - 0Ch unused
-; bp - 0Eh 
+; bp - 0Ah fire (mobj)
+; bp - 0Ch temp?
 
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 010h
+sub   sp, 6
 mov   si, ax
 mov   word ptr [bp - 6], bx
 mov   word ptr [bp - 4], cx
@@ -4016,7 +4015,7 @@ les   bx, dword ptr [bp - 6]
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 shr   ax, 1
 and   al, 0FCh
-mov   word ptr [bp - 8], ax
+push  ax  ; bp - 8
 mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype]
 cbw  
 mov   bx, word ptr ds:[si + MOBJ_T.m_tracerRef]
@@ -4025,12 +4024,22 @@ mov   word ptr ds:[di + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[di + MOBJ_T.m_momz + 2], dx
 test  bx, bx
 je    exit_vile_attack
-imul  ax, bx, SIZEOF_THINKER_T
-imul  di, bx, SIZEOF_MOBJ_POS_T
+
+IF COMPISA GE COMPILE_186
+    imul  ax, bx, SIZEOF_THINKER_T
+    imul  di, bx, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   bx
+    xchg  ax, di
+    mov   ax, SIZEOF_THINKER_T
+    mul   bx
+ENDIF
+
 mov   cx, 24
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   dx, word ptr [bp - 8]
-mov   word ptr [bp - 0Eh], ax
+push  ax  ; bp - 0Ah
 mov   ax, FINECOSINE_SEGMENT
 xor   bx, bx
 
@@ -4040,17 +4049,18 @@ db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
 mov   es, word ptr [bp - 4]
 mov   bx, word ptr [bp - 2]
-mov   word ptr [bp - 010h], ax
-mov   cx, dx
-mov   dx, word ptr es:[bx]
-mov   ax, word ptr es:[bx + 2]
-sub   dx, word ptr [bp - 010h]
-sbb   ax, cx
-mov   word ptr es:[di], dx
+xchg  ax, cx
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+sub   ax, cx
+mov   word ptr es:[di + MOBJ_POS_T.mp_x + 0], ax
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+sbb   ax, dx
+mov   word ptr es:[di + MOBJ_POS_T.mp_x + 2], ax
+
+
 mov   cx, 24
 mov   dx, word ptr [bp - 8]
 xor   bx, bx
-mov   word ptr es:[di + 2], ax
 mov   ax, FINESINE_SEGMENT
 ;call  FixedMulTrigNoShift_
 db 0FFh  ; lcall[addr]
@@ -4058,18 +4068,23 @@ db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
 mov   es, word ptr [bp - 4]
 mov   bx, word ptr [bp - 2]
-mov   cx, ax
-mov   word ptr [bp - 010h], dx
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+
+xchg  ax, cx
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+sub   ax, cx
+mov   word ptr es:[di + MOBJ_POS_T.mp_y + 0], ax
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
+sbb   ax, dx
+mov   word ptr es:[di + MOBJ_POS_T.mp_y + 2], ax
+
+
+
 mov   bx, si
 sub   dx, cx
 mov   cx, 70
-sbb   ax, word ptr [bp - 010h]
-mov   word ptr es:[di + MOBJ_POS_T.mp_y + 0], dx
 mov   dx, di
-mov   word ptr es:[di + MOBJ_POS_T.mp_y + 2], ax
-mov   ax, word ptr [bp - 0Eh]
+pop   ax ; bp - 0Ah fire mobj
+
 ;call  dword ptr ds:[_P_RadiusAttack]
 db    09Ah
 dw    P_RADIUSATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
