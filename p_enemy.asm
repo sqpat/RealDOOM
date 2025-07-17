@@ -3783,69 +3783,76 @@ ENDP
 PROC    A_VileTarget_ NEAR
 PUBLIC  A_VileTarget_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
+PUSHA_NO_AX_OR_BP_MACRO
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   do_vile_target
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
+je    exit_vile_target
+
 do_vile_target:
+
 call  A_FaceTarget_
-mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
-mov   word ptr [bp - 2], ax
-imul  di, ax, SIZEOF_THINKER_T
-imul  bx, ax, SIZEOF_MOBJ_POS_T
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+
+IF COMPISA GE COMPILE_186
+    mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
+    imul  di, ax, SIZEOF_THINKER_T
+    imul  bx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, di
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, bx
+
+ENDIF
+
 add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
-mov   es, ax
 push  word ptr ds:[di + MOBJ_T.m_secnum]
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   ax, word ptr es:[bx]
-push  MT_FIRE ; todo 186
-mov   dx, word ptr es:[bx + 2]
-push  word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-mov   di, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-push  word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-mov   bx, di
+IF COMPISA GE COMPILE_186
+    push  MT_FIRE
+ELSE
+    mov   ax, MT_FIRE
+    push  ax
+ENDIF
+
+mov   ds, cx
+
+
+push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 0]
+
+les   ax, dword ptr ds:[bx + MOBJ_POS_T.mp_x + 0]
+mov   dx, es
+les   bx, dword ptr ds:[bx + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+
+push  ss
+pop   ds
+
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SpawnMobj_addr
+
+
+mov   word ptr ds:[si + MOBJ_T.m_tracerRef], ax
+
 mov   cx, SIZEOF_THINKER_T
-mov   bx, ax
 xor   dx, dx
 lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
 div   cx
-mov   di, OFFSET _setStateReturn
-mov   di, word ptr ds:[di]
+
+mov   di, word ptr ds:[_setStateReturn]
+
 mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
-mov   ax, word ptr [bp - 2]
-mov   word ptr ds:[di + MOBJ_T.m_tracerRef], ax
-mov   word ptr ds:[si + MOBJ_T.m_tracerRef], bx
-mov   bx, OFFSET _setStateReturn_pos
-mov   ax, word ptr ds:[bx]
-mov   cx, word ptr ds:[bx + 2]
-mov   bx, ax
+push  word ptr ds:[si + MOBJ_T.m_targetRef]
+pop   word ptr ds:[di + MOBJ_T.m_tracerRef]
+les   bx, dword ptr ds:[_setStateReturn_pos]
+mov   cx, es
 mov   ax, di
 call  A_Fire_
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+exit_vile_target:
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 _vile_momz_lookuptable:
