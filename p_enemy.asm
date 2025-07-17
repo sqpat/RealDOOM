@@ -4114,41 +4114,16 @@ ret
 
 ENDP
 
+; di has actor ptr
+; cx has MOBJPOSLIST_6800_SEGMENT
+; bx has actor pos
+; dx target actor
+; ax free...
+; si carries angle
 
-PROC    A_FatAttack1_ NEAR
-PUBLIC  A_FatAttack1_
+PROC    A_DoFatShot_ NEAR
 
-push  dx
-push  si
-push  di
-mov   di, ax
-mov   si, bx
-call  A_FaceTarget_
-mov   es, cx
-add   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], FATSPREADHIGH
 
-IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-    add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-    push  dx  ; store to not calculate again
-    push  MT_FATSHOT
-ELSE
-    
-    mov   ax, SIZEOF_THINKER_T
-    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
-    xchg  ax, dx
-    add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-    push  dx
-    mov   ax, MT_FATSHOT
-    push  ax
-ENDIF
-mov   ax, di
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-pop   dx    ; restore previously calculated. i presume targetref does not change in spawnmissile...
-mov   cx, MOBJPOSLIST_6800_SEGMENT
 
 IF COMPISA GE COMPILE_186
     push  MT_FATSHOT
@@ -4156,16 +4131,19 @@ ELSE
     mov   ax, MT_FATSHOT
     push  ax
 ENDIF
-mov   bx, si
+
 mov   ax, di
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-mov   si, word ptr ds:[_setStateReturn]
+test  si, si
+je    no_angle_mod
+
 les   di, dword ptr ds:[_setStateReturn_pos]
 
-add   word ptr es:[di + MOBJ_POS_T.mp_angle + 2], FATSPREADHIGH
+add   word ptr es:[di + MOBJ_POS_T.mp_angle + 2], si  ; add angle
+mov   si, word ptr ds:[_setStateReturn]
 
 mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
@@ -4197,8 +4175,53 @@ mov   ax, FINESINE_SEGMENT
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigSpeedNoShift_addr
-mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
-mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
+mov   word ptr ds:[bx + MOBJ_T.m_momy + 0], ax
+mov   word ptr ds:[bx + MOBJ_T.m_momy + 2], dx
+
+no_angle_mod:
+ret
+
+ENDP
+
+
+PROC    A_FatAttack1_ NEAR
+PUBLIC  A_FatAttack1_
+
+push  dx
+push  si
+push  di
+mov   di, ax
+mov   si, bx
+call  A_FaceTarget_
+mov   es, cx
+add   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], FATSPREADHIGH
+
+IF COMPISA GE COMPILE_186
+    imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+ELSE
+    
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
+    xchg  ax, dx
+    add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+ENDIF
+
+push  dx  ; store to not calculate again
+push  si  ; store ptr...
+xor   si, si  ; 0 angle  
+call  A_DoFatShot_
+
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+pop   bx  ; restore ptr
+pop   dx  ; restore dx pushed earlier...
+mov   si, FATSPREADHIGH
+
+call  A_DoFatShot_
+
+
+
 
 pop   di
 pop   si
