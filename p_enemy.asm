@@ -4237,80 +4237,42 @@ PUBLIC  A_FatAttack2_
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
 mov   di, ax
 mov   si, bx
-mov   word ptr [bp - 2], cx
 call  A_FaceTarget_
 mov   es, cx
-add   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], FATSPREADLOW
-adc   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], -FATSPREADHIGH
-imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-push  MT_FATSHOT  ; todo 186
-mov   ax, di
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+add   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], -FATSPREADHIGH
 
-imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-push  MT_FATSHOT  ; todo 186
-mov   cx, word ptr [bp - 2]
-mov   bx, si
-mov   ax, di
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-mov   si, OFFSET _setStateReturn
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+IF COMPISA GE COMPILE_186
+    imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+ELSE
+    
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
+    xchg  ax, dx
+    add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+ENDIF
 
-mov   bx, OFFSET _setStateReturn_pos
-mov   si, word ptr ds:[si]
-les   di, dword ptr ds:[bx]
-add   word ptr es:[di + MOBJ_POS_T.mp_angle + 0], FATSPREADLOW
-adc   word ptr es:[di + MOBJ_POS_T.mp_angle + 2], -(2*FATSPREADHIGH)
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   di, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
-shr   di, 1
-and   di, 0FFFCh
-mov   bx, ax
-mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
-add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
-cbw  
-mov   dx, di
-mov   bx, ax
-mov   ax, FINECOSINE_SEGMENT
-;call FixedMulTrigSpeedNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeedNoShift_addr
-mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
-mov   bx, ax
-mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
-add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
-cbw  
-mov   dx, di
-mov   bx, ax
-mov   ax, FINESINE_SEGMENT
-;call FixedMulTrigSpeedNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeedNoShift_addr
-mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
-mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
-LEAVE_MACRO 
+push  dx  ; store to not calculate again
+push  si  ; store ptr...
+xor   si, si  ; 0 angle  
+call  A_DoFatShot_
+
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+pop   bx  ; restore ptr
+pop   dx  ; restore dx pushed earlier...
+mov   si, -(2*FATSPREADHIGH)
+
+call  A_DoFatShot_
+
+
+
+
 pop   di
 pop   si
 pop   dx
-ret   
 
 ENDP
 
