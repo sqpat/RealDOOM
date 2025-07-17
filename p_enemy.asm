@@ -2896,37 +2896,17 @@ mov   word ptr ds:[si + MOBJ_POS_T.mp_angle + 2], dx
 done_setting_tracer_angle:
 
 ;fineexact = (actor_pos->angle.hu.intbits >> 1) & 0xFFFC;
-mov   si, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 
+push  ds
+pop   es
 push  ss
 pop   ds
 
-mov   al, SIZEOF_MOBJINFO_T
-mul   byte ptr ds:[di + MOBJ_T.m_mobjtype]
-shr   si, 1
-and   si, 0FFFCh
-mov   bx, ax
-mov   bl, byte ptr ds:[bx +  _mobjinfo + MOBJINFO_T.mobjinfo_speed]
-push  bx  ; store for next time
-mov   dx, si
-mov   ax, FINECOSINE_SEGMENT
-;call   FixedMulTrigSpeedNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeedNoShift_addr
-mov   word ptr ds:[di + MOBJ_T.m_momx + 0], ax
-mov   word ptr ds:[di + MOBJ_T.m_momx + 2], dx
+mov   bx, si
+mov   si, di
 
-mov   dx, si    ; restore fineexact
-pop   bx        ; restore speed
-mov   ax, FINESINE_SEGMENT
-;call   FixedMulTrigSpeedNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeedNoShift_addr
+call  A_SetMomxMomyFromAngleAndGetSpeedAngle_
 
-mov   word ptr ds:[di + MOBJ_T.m_momy + 0], ax
-mov   word ptr ds:[di + MOBJ_T.m_momy + 2], dx
 
 
 pop   si ; bp - 8
@@ -4158,17 +4138,35 @@ add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], si  ; add angle
 
 mov   si, word ptr ds:[_setStateReturn]
 
+
+;call  A_SetMomxMomyFromAngleAndGetSpeedAngle_
+; INLINED 
+
+PROC  A_SetMomxMomyFromAngleAndGetSpeedAngle_ NEAR
+
+; es:bx is thing
+; si is mobj ptr
+
 mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
 
 mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
-shr   dx, 1
-and   dx, 0FFFCh
 xchg  ax, bx
 
 mov   bl, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 
+ENDP
+; fall thru
+
+PROC  A_SetMomxMomyFromAngle_  NEAR
+
+; bx has speed component.
+; dx has unshifted angle
+; si has mobj ptr
+
+shr   dx, 1
+and   dx, 0FFFCh
 
 push  dx  ; angle
 push  bx  ; speed
@@ -4289,12 +4287,12 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 010h
+push  cx
+sub   sp, 0Ah
 mov   si, ax
 mov   di, bx
-mov   word ptr [bp - 2], cx
-mov   word ptr [bp - 010h], GETATTACKSOUNDADDR
-mov   word ptr [bp - 0Eh], INFOFUNCLOADSEGMENT
+
+
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 jne   do_skullattack
 LEAVE_MACRO 
@@ -4308,7 +4306,11 @@ or    byte ptr es:[di + MOBJ_POS_T.mp_flags2 + 1], 1
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
 mov   cx, word ptr ds:[si + MOBJ_T.m_targetRef]
-call  dword ptr [bp - 010h]
+;call  dword ptr [bp - 010h]
+db    09Ah
+dw    GETATTACKSOUNDADDR, INFOFUNCLOADSEGMENT
+
+
 mov   dl, al
 mov   ax, si
 xor   dh, dh
