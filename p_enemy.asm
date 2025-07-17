@@ -5020,17 +5020,16 @@ PROC    A_Hoof_ NEAR
 PUBLIC  A_Hoof_
 
 push  dx
-push  si
-mov   si, ax
+push  ax
+
 mov   dx, SFX_HOOF
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-mov   ax, si
+pop   ax
 call  A_Chase_
-pop   si
 pop   dx
 ret   
 
@@ -5041,17 +5040,16 @@ PROC    A_Metal_ NEAR
 PUBLIC  A_Metal_
 
 push  dx
-push  si
-mov   si, ax
+push  ax
 mov   dx, SFX_METAL
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-mov   ax, si
+pop   ax
 call  A_Chase_
-pop   si
+
 pop   dx
 ret   
 
@@ -5062,17 +5060,15 @@ PROC    A_BabyMetal_ NEAR
 PUBLIC  A_BabyMetal_
 
 push  dx
-push  si
-mov   si, ax
+push  ax
 mov   dx, SFX_BSPWLK
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-mov   ax, si
+pop   ax
 call  A_Chase_
-pop   si
 pop   dx
 ret   
 
