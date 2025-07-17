@@ -4279,10 +4279,9 @@ ret
 
 ENDP
 
-; bp - 2 something
-; bp - 4 unused
-; bp - 6 
-; bp - 8 unused
+; bp - 2 destpos
+; bp - 4 dest
+; bp - 6 ang hibits
 
 PROC    A_SkullAttack_ NEAR
 PUBLIC  A_SkullAttack_
@@ -4298,7 +4297,6 @@ do_skullattack:
 push  dx
 push  di
 push  bp
-mov   bp, sp
 mov   di, bx
 
 
@@ -4337,13 +4335,13 @@ ENDIF
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 
+mov   dx, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
+shr   dx, 1
+and   dl, 0FCh
+mov   bp, bx  ; store 
 push  ax  ; bp - 2
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
-shr   ax, 1
-and   al, 0FCh
-push  ax  ; bp - 4
-mov   dx, ax
-push  bx  ; bp - 6
+push  dx  ; bp - 4
+
 
 mov   ax, FINECOSINE_SEGMENT
 mov   bx, SKULLSPEED_SMALL
@@ -4351,31 +4349,37 @@ mov   bx, SKULLSPEED_SMALL
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigSpeedNoShift_addr
+
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
-mov   bx, SKULLSPEED_SMALL
 mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
-mov   dx, word ptr [bp - 4]
+
+mov   bx, SKULLSPEED_SMALL
+pop   dx ; bp - 4
 mov   ax, FINESINE_SEGMENT
 ;call FixedMulTrigSpeedNoShift_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigSpeedNoShift_addr
-mov   cx, MOBJPOSLIST_6800_SEGMENT
-mov   es, cx
-mov   bx, word ptr [bp - 6]
 
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   ds, cx
+mov   bx, bp
 
-sub   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
-sbb   dx, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
-sub   bx, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-sbb   cx, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
+les   ax, dword ptr ds:[bx + MOBJ_POS_T.mp_x + 0]
+mov   dx, es
+les   bx, dword ptr ds:[bx + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+
+sub   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
+sbb   dx, word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
+sub   bx, word ptr ds:[di + MOBJ_POS_T.mp_y + 0]
+sbb   cx, word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
+
+push  ss
+pop   ds
 
 db    09Ah
 dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -4383,28 +4387,32 @@ dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
 
+
 mov   ax, dx
-mov   cx, SKULLSPEED_SMALL
 cwd   
+mov   cx, SKULLSPEED_SMALL
 idiv  cx
-mov   cx, ax
 cmp   ax, 1
 jae   dont_set_dist16_to_1
-mov   cx, 1
-
+mov   ax, 1
 dont_set_dist16_to_1:
-mov   bx, word ptr [bp - 2]
+mov   cx, ax
+
+pop   bx ; bp - 2
+
 mov   ax, word ptr ds:[bx + MOBJ_T.m_height+0]
 mov   dx, word ptr ds:[bx + MOBJ_T.m_height+2]
 sar   dx, 1
 rcr   ax, 1
-mov   bx, word ptr [bp - 6]
 
-add   ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-adc   dx, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-mov   bx, cx
 sub   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
 sbb   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+mov   di, bp
+add   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+adc   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+
+mov   bx, cx
+
 ;call   FastDiv3216u_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -4412,7 +4420,7 @@ dw _FastDiv3216u_addr
 mov   word ptr ds:[si + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momz + 2], dx
 
-LEAVE_MACRO 
+pop   bp
 pop   di
 pop   dx
 pop   si
