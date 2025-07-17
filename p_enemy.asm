@@ -3938,22 +3938,21 @@ ENDP
 PROC    A_VileAttack_ NEAR
 PUBLIC  A_VileAttack_
 
-; bp - 2   actorTarget_pos
-; bp - 4   MOBJPOSLIST_6800_SEGMENT
-; bp - 6   mobjpos offset
+; bp - 2   (bx) mobjpos offset
+; bp - 4   (cx) MOBJPOSLIST_6800_SEGMENT
+; bp - 6   actorTarget_pos
 ; bp - 8   angle
 ; bp - 0Ah fire (mobj)
-; bp - 0Ch temp?
 
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 6
+
 mov   si, ax
-mov   word ptr [bp - 6], bx
-mov   word ptr [bp - 4], cx
+push  bx ; bp - 2
+push  cx ; bp - 4
 mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
 test  ax, ax
 jne   do_vile_attack
@@ -3982,7 +3981,7 @@ ELSE
     xchg  ax, di
 ENDIF
 
-mov   word ptr [bp - 2], cx
+push  cx  ; bp - 6
 add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   ax, si
 mov   dx, di
@@ -4011,7 +4010,8 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
 
-les   bx, dword ptr [bp - 6]
+mov   bx, word ptr [bp - 2]
+mov   es, word ptr [bp - 4]
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 shr   ax, 1
 and   al, 0FCh
@@ -4047,8 +4047,8 @@ xor   bx, bx
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
-mov   es, word ptr [bp - 4]
-mov   bx, word ptr [bp - 2]
+les   bx, dword ptr [bp - 6]
+
 xchg  ax, cx
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
 sub   ax, cx
@@ -4066,8 +4066,7 @@ mov   ax, FINESINE_SEGMENT
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
-mov   es, word ptr [bp - 4]
-mov   bx, word ptr [bp - 2]
+les   bx, dword ptr [bp - 6]
 
 xchg  ax, cx
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
