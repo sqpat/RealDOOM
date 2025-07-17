@@ -4929,11 +4929,11 @@ mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 and   dx, TF_FUNCBITS 
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
 jne   not_live_boss_continue_scan
-label_163:
+
 add   bx, (_thinkerlist + THINKER_T.t_data)
 cmp   ax, si
 je    not_live_boss_continue_scan
-label_172:
+
 cmp   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 jne   not_live_boss_continue_scan
 cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
@@ -5062,27 +5062,54 @@ PUBLIC  A_BrainAwake_
 
 push  bx
 push  dx
-mov   bx, OFFSET _numbraintargets
-mov   word ptr ds:[bx], 0
-mov   bx, OFFSET _braintargeton
-mov   word ptr ds:[bx], 0
-mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
-mov   ax, word ptr ds:[bx]
-test  ax, ax
-je    label_176
-label_177:
-imul  bx, ax, SIZEOF_THINKER_T
+
+mov   word ptr ds:[_numbraintargets], 0
+
+mov   word ptr ds:[_braintargeton], 0
+
+mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
+
+loop_next_brainawake:
+
+IF COMPISA GE COMPILE_186
+    imul  bx, ax, SIZEOF_THINKER_T
+ELSE
+    mov   bx, SIZEOF_THINKER_T
+    mul   bx
+    xchg  ax, bx
+ENDIF
+
 mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
-xor   dl, dl
-and   dh, (TF_FUNCBITS SHR 8)
+and   dx, TF_FUNCBITS
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
-je    label_178
-label_179:
-imul  bx, ax, SIZEOF_THINKER_T
+jne   mobj_not_braintarget
+
+
+
+cmp   byte ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_data + MOBJ_T.m_mobjtype], MT_BOSSTARGET
+jne   mobj_not_braintarget
+
+mov   bx, word ptr ds:[_numbraintargets]
+sal   bx, 1
+mov   word ptr ds:[bx + _braintargets], ax
+inc   word ptr ds:[_numbraintargets]
+
+
+mobj_not_braintarget:
+
+IF COMPISA GE COMPILE_186
+    imul  bx, ax, SIZEOF_THINKER_T
+ELSE
+    mov   bx, SIZEOF_THINKER_T
+    mul   bx
+    xchg  ax, bx
+ENDIF
+
 mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
 test  ax, ax
-jne   label_177
-label_176:
+jne   loop_next_brainawake
+
+
 mov   dx, SFX_BOSSIT
 xor   ax, ax
 ;call  S_StartSound_
@@ -5093,17 +5120,7 @@ dw _S_StartSound_addr
 pop   dx
 pop   bx
 ret   
-label_178:
-add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
-cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_BOSSTARGET
-jne   label_179
-mov   bx, OFFSET _numbraintargets
-mov   bx, word ptr ds:[bx]
-add   bx, bx
-mov   word ptr ds:[bx + _braintargets], ax
-mov   bx, OFFSET _numbraintargets
-inc   word ptr ds:[bx]
-jmp   label_179
+
 
 ENDP
 
