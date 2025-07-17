@@ -4121,54 +4121,65 @@ PUBLIC  A_FatAttack1_
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
 mov   di, ax
 mov   si, bx
-mov   word ptr [bp - 2], cx
 call  A_FaceTarget_
 mov   es, cx
-add   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], FATSPREADLOW
-adc   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], FATSPREADHIGH
-imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-push  9
+add   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], FATSPREADHIGH
+
+IF COMPISA GE COMPILE_186
+    imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+    push  dx  ; store to not calculate again
+    push  MT_FATSHOT
+ELSE
+    
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
+    xchg  ax, dx
+    add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+    push  dx
+    mov   ax, MT_FATSHOT
+    push  ax
+ENDIF
 mov   ax, di
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-push  9
-mov   cx, word ptr [bp - 2]
+pop   dx    ; restore previously calculated. i presume targetref does not change in spawnmissile...
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+
+IF COMPISA GE COMPILE_186
+    push  MT_FATSHOT
+ELSE
+    mov   ax, MT_FATSHOT
+    push  ax
+ENDIF
 mov   bx, si
 mov   ax, di
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-imul  si, ax, SIZEOF_THINKER_T
-imul  di, ax, SIZEOF_MOBJ_POS_T
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
-mov   es, ax
-mov   bx, di
-add   word ptr es:[di + MOBJ_POS_T.mp_angle + 0], FATSPREADLOW
-adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], FATSPREADHIGH
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
+mov   si, word ptr ds:[_setStateReturn]
+les   di, dword ptr ds:[_setStateReturn_pos]
+
+add   word ptr es:[di + MOBJ_POS_T.mp_angle + 2], FATSPREADHIGH
+
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
+
+mov   bx, ax
 mov   di, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
 shr   di, 1
 and   di, 0FFFCh
-mov   bx, ax
-mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
-add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
-cbw  
+mov   bl, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+xor   bh, bh
+
+push  bx  ; speed
+
 mov   dx, di
-mov   bx, ax
 mov   ax, FINECOSINE_SEGMENT
 ;call FixedMulTrigSpeedNoShift_
 db 0FFh  ; lcall[addr]
@@ -4176,16 +4187,11 @@ db 01Eh  ;
 dw _FixedMulTrigSpeedNoShift_addr
 
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
 mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
-mov   bx, ax
-mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
-add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)
-cbw  
+
+
 mov   dx, di
-mov   bx, ax
+pop   bx  ; speed
 mov   ax, FINESINE_SEGMENT
 ;call FixedMulTrigSpeedNoShift_
 db 0FFh  ; lcall[addr]
@@ -4193,7 +4199,7 @@ db 01Eh  ;
 dw _FixedMulTrigSpeedNoShift_addr
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
-LEAVE_MACRO 
+
 pop   di
 pop   si
 pop   dx
