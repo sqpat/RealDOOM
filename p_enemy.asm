@@ -4141,7 +4141,7 @@ mov   si, word ptr ds:[_setStateReturn]
 
 ;call  A_SetMomxMomyFromAngleAndGetSpeedAngle_
 ; INLINED 
-
+ENDP
 PROC  A_SetMomxMomyFromAngleAndGetSpeedAngle_ NEAR
 
 ; es:bx is thing
@@ -4438,6 +4438,7 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 010h
+
 mov   di, ax
 mov   word ptr [bp - 0Ah], cx
 mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
@@ -4627,9 +4628,10 @@ push  si
 push  di
 mov   si, ax
 mov   es, cx
-mov   di, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
-and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1],  (NOT MF_SOLID)
+and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1],  (NOT MF_SOLID) ; inlined A_FALL?
+
+les   di, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
+mov   dx, es
 add   dh, (ANG90_HIGHBITS SHR 8)
 mov   bx, di
 mov   cx, dx
@@ -4647,6 +4649,7 @@ call  A_PainShootSkull_
 pop   di
 pop   si
 pop   dx
+
 ret   
 
 ENDP
@@ -4659,32 +4662,25 @@ push  bx
 push  dx
 push  si
 mov   bx, ax
-mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 mov   si, ax
 mov   al, byte ptr ds:[si + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
-add   si, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound
 cmp   al, SFX_PODTH1
-jae   label_153
+jae   check_for_other_deathsound_1
 test  al, al
 je    exit_a_scream
-label_157:
-mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   si, ax
-mov   al, byte ptr ds:[si + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
-add   si, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound
-label_158:
+
+got_deathsound:
 cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_SPIDER
-je    label_154
+je    full_sound_deathscream
 cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_CYBORG
-jne   label_155
-label_154:
-mov   dl, al
-xor   dh, dh
+jne   not_full_sound_deathscream
+full_sound_deathscream:
+xchg  ax, dx
 xor   ax, ax
+do_death_sound:
+xor   dh, dh
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -4695,46 +4691,34 @@ pop   si
 pop   dx
 pop   bx
 ret   
-label_153:
+check_for_other_deathsound_1:
 cmp   al, SFX_PODTH3
-jbe   label_156
+jbe   check_for_other_deathsound_2
 cmp   al, SFX_BGDTH2
-ja    label_157
+ja    got_deathsound
 call  P_Random_
-mov   dl, al
-xor   dh, dh
-mov   ax, dx
-sar   ax, 0Fh ; todo no
-xor   dx, ax
-sub   dx, ax
-and   dx, 1
-xor   dx, ax
-sub   dx, ax
-mov   ax, dx
-add   ax, SFX_BGDTH1
-jmp   label_158
-label_156:
+
+; sound = sfx_bgdth1 + P_Random ()%2;
+and   ax, 1
+add   al, SFX_BGDTH1
+jmp   got_deathsound
+
+check_for_other_deathsound_2:
 call  P_Random_
 xor   ah, ah
-mov   si, 3
-cwd   
-idiv  si
-mov   ax, dx
-add   ax, SFX_PODTH1
-jmp   label_158
-label_155:
-mov   dl, al
-mov   ax, bx
-xor   dh, dh
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
 
-pop   si
-pop   dx
-pop   bx
-ret   
+mov   dl, 3
+div   dl
+mov   al, ah
+cbw
+add   al, SFX_PODTH1
+
+jmp   got_deathsound
+not_full_sound_deathscream:
+xchg  ax, dx  ; dl gets al
+xchg  ax, bx  ; ax gets bx
+
+jmp   do_death_sound
 
 ENDP
 
