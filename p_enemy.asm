@@ -4744,24 +4744,22 @@ PUBLIC  A_Pain_
 
 push  bx
 push  dx
-push  bp
-mov   bp, sp
-sub   sp, 4
 mov   bx, ax
-mov   word ptr [bp - 4], GETPAINSOUNDADDR
 mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-mov   word ptr [bp - 2], INFOFUNCLOADSEGMENT
 xor   ah, ah
-call  dword ptr [bp - 4]
+
+db    09Ah
+dw    GETPAINSOUNDADDR, INFOFUNCLOADSEGMENT
+
+
 xor   ah, ah
-mov   dx, ax
-mov   ax, bx
+xchg  ax, dx  ; dx gets ax
+xchg  ax, bx  ; bx gets ax
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-LEAVE_MACRO 
 pop   dx
 pop   bx
 ret   
@@ -4784,9 +4782,18 @@ PUBLIC  A_Explode_
 
 push  dx
 push  si
-mov   si, ax
-mov   dx, bx
-imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+xchg  ax, si
+
+IF COMPISA GE COMPILE_186
+    mov   dx, bx
+    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, bx  ; product to bx
+    xchg  ax, dx  ; dx gets bx
+ENDIF
+
 mov   cx, 128
 add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_RadiusAttack]
