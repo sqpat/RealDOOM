@@ -1855,7 +1855,7 @@ void __near A_PainShootSkull (mobj_t __near* actor, angle_t	angle ) {
 	actortargetRef = actor->targetRef;
 	radii = mobjinfo[actor->type].radius + mobjinfo[MT_SKULL].radius;
 	prestep.h.intbits = 4 + 3 * ((radii) >> 1);
-	if (radii % 1)
+	if (radii % 2)
 		prestep.h.fracbits = -32768; // handle the radii / 2 case
 	else
 		prestep.h.fracbits = 0x0000;

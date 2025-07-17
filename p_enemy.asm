@@ -312,13 +312,13 @@ mov   si, word ptr ds:[si + MOBJ_T.m_targetRef]
 
 IF COMPISA GE COMPILE_186
     imul  bx, si, SIZEOF_THINKER_T
-    add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
+    add   bx, (_thinkerlist + THINKER_T.t_data)
     imul  si, si, SIZEOF_MOBJ_POS_T
 ELSE
     mov   ax, SIZEOF_THINKER_T
     mul   si
     mov   bx, ax
-    add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
+    add   bx, (_thinkerlist + THINKER_T.t_data)
     mov   ax, SIZEOF_MOBJ_POS_T
     mul   si
     mov   si, ax
@@ -332,7 +332,7 @@ push  bx  ; bp - 4
 mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 xchg  ax, bx
-add   bx, (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_radius)
+add   bx, (_mobjinfo + MOBJINFO_T.mobjinfo_radius)
 xor   ax, ax
 mov   al, byte ptr ds:[bx]
 add   ax, (MELEERANGE - 20)
@@ -434,7 +434,7 @@ ENDIF
 
 push  cx  ; bp - 2  store mobjpos for x/y subtraction later
 
-lea   dx, ds:[bx + (OFFSET _thinkerlist + THINKER_T.t_data)]
+lea   dx, ds:[bx + (_thinkerlist + THINKER_T.t_data)]
 mov   ax, di
 mov   bx, si
 
@@ -595,7 +595,7 @@ mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xchg  ax, bx
 xor   ax, ax
-mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+mov   al, byte ptr ds:[bx + (_mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 mov   bx, ax ; zero out bh
 mov   bl, byte ptr ds:[si + MOBJ_T.m_movedir]
 
@@ -702,7 +702,7 @@ jmp   exit_p_move
 specials_hit:
 ; specials hit..
 mov   bx, SIZEOF_THINKER_T
-lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
+lea   ax, ds:[si - (_thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 ;mov   bp, dx   ; bp is "good" boolean var (default to false)
 push  dx
@@ -1163,7 +1163,7 @@ mov   di, ax
 
 
 mov   bx, SIZEOF_THINKER_T
-sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
@@ -1301,7 +1301,7 @@ push  word ptr ds:[si + MOBJ_T.m_mobjtype]
 mov   es, cx
 mov   cx, SIZEOF_THINKER_T
 xor   dx, dx
-lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
+lea   ax, ds:[si - (_thinkerlist + THINKER_T.t_data)]
 div   cx
 
 ; inlined A_Fall_
@@ -1338,7 +1338,7 @@ cmp   word ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_health], 0
 jg    exit_keen_die
 not_thinker_skip_keencheck:
 
-mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
+mov   ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_next]
 test  ax, ax
 jne   loop_next_thinker_keendie
 
@@ -2025,7 +2025,7 @@ je    exit_a_cposattack
 do_cposattack:
 
 mov   bx, SIZEOF_THINKER_T
-sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
@@ -2125,11 +2125,11 @@ ELSE
     xchg ax, di
 ENDIF
 
-add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   di, (_thinkerlist + THINKER_T.t_data)
 cmp   word ptr ds:[di + MOBJ_T.m_health], 0
 jle   set_cgunner_seestate
 mov   cx, SIZEOF_THINKER_T
-lea   ax, ds:[di - (OFFSET _thinkerlist + THINKER_T.t_data)]
+lea   ax, ds:[di - (_thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 div   cx
 
@@ -2200,12 +2200,12 @@ ELSE
     xchg ax, di
 ENDIF
 
-add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   di, (_thinkerlist + THINKER_T.t_data)
 
 cmp   word ptr ds:[di + MOBJ_T.m_health], 0
 jle   set_spid_seestate
 mov   cx, SIZEOF_THINKER_T
-lea   ax, ds:[di - (OFFSET _thinkerlist + THINKER_T.t_data)]
+lea   ax, ds:[di - (_thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 div   cx
 
@@ -2276,7 +2276,7 @@ ELSE
 ENDIF
 
 mov   ax, si
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   dx, (_thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -2333,7 +2333,7 @@ ENDIF
 
 mov   bx, si
 mov   dx, si
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   ax, (_thinkerlist + THINKER_T.t_data)
 ;call  P_DamageMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -2356,7 +2356,7 @@ ELSE
 ENDIF
 
 mov   ax, si
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   dx, (_thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -2410,7 +2410,7 @@ ENDIF
 mov   bx, si
 mov   dx, si
 
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   ax, (_thinkerlist + THINKER_T.t_data)
 ;call  P_DamageMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -2465,7 +2465,7 @@ ENDIF
 
 mov   bx, si
 mov   dx, si
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   ax, (_thinkerlist + THINKER_T.t_data)
 ;call  P_DamageMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -2488,7 +2488,7 @@ ELSE
 ENDIF
 
 mov   ax, si
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   dx, (_thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -2524,7 +2524,7 @@ ELSE
 ENDIF
 
 mov   ax, si
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   dx, (_thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -2576,7 +2576,7 @@ ENDIF
 
 mov   bx, si
 mov   dx, si
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   ax, (_thinkerlist + THINKER_T.t_data)
 ;call  P_DamageMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -2599,7 +2599,7 @@ ELSE
 ENDIF
 
 mov   ax, si
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   dx, (_thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -2642,7 +2642,7 @@ ELSE
 ENDIF
 
 mov   ax, si
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   dx, (_thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -2943,7 +2943,7 @@ mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 xchg  ax, bx
 
-mov   bl, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+mov   bl, byte ptr ds:[bx + (_mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 xor   bh, bh
 ;xchg  ax, dx  ; intbits
 
@@ -3096,7 +3096,7 @@ ENDIF
 
 mov   bx, si
 mov   dx, si
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   ax, (_thinkerlist + THINKER_T.t_data)
 ;call  P_DamageMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -3291,7 +3291,7 @@ mov   di, ax
 xor   ax, ax
 
 
-mov   al, byte ptr ds:[di + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+mov   al, byte ptr ds:[di + (_mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 
 mov   ds, cx
 push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 0]
@@ -3486,7 +3486,7 @@ ELSE
 
 ENDIF
 
-add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   si, (_thinkerlist + THINKER_T.t_data)
 mov   dx, SFX_SLOP
 mov   ax, si
 ;call  S_StartSound_
@@ -3515,7 +3515,7 @@ mov   es, cx
 
 mov   di, word ptr [bp - 6]
 
-lea   ax, [di + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_flags1]
+lea   ax, [di + _mobjinfo + MOBJINFO_T.mobjinfo_flags1]
 lea   di, [bx + MOBJ_POS_T.mp_flags1]
 
 xchg  ax, si   ; si gets mobjtpos dest
@@ -3681,8 +3681,8 @@ ENDIF
 
 
 mov   cx, di
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   dx, (_thinkerlist + THINKER_T.t_data)
+add   ax, (_thinkerlist + THINKER_T.t_data)
 
 ;call  dword ptr ds:[_P_CheckSightTemp]
 db    09Ah
@@ -3786,7 +3786,7 @@ ELSE
 
 ENDIF
 
-add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   di, (_thinkerlist + THINKER_T.t_data)
 push  word ptr ds:[di + MOBJ_T.m_secnum]
 IF COMPISA GE COMPILE_186
     push  MT_FIRE
@@ -3819,7 +3819,7 @@ mov   word ptr ds:[si + MOBJ_T.m_tracerRef], ax
 
 mov   cx, SIZEOF_THINKER_T
 xor   dx, dx
-lea   ax, ds:[si - (OFFSET _thinkerlist + THINKER_T.t_data)]
+lea   ax, ds:[si - (_thinkerlist + THINKER_T.t_data)]
 div   cx
 
 mov   di, word ptr ds:[_setStateReturn]
@@ -3881,7 +3881,7 @@ xchg  ax, bx
 sal   bx, 1
 xor   ax, ax
 cwd
-jmp   word ptr cs:[bx + OFFSET _vile_momz_lookuptable]
+jmp   word ptr cs:[bx + _vile_momz_lookuptable]
 vilemomz_ret_2:
 inc   dx
 inc   dx
@@ -3962,7 +3962,7 @@ ELSE
 ENDIF
 
 push  cx  ; bp - 6
-add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   di, (_thinkerlist + THINKER_T.t_data)
 mov   ax, si
 mov   dx, di
 
@@ -4017,7 +4017,7 @@ ELSE
 ENDIF
 
 mov   cx, 24
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   ax, (_thinkerlist + THINKER_T.t_data)
 mov   dx, word ptr [bp - 8]
 push  ax  ; bp - 0Ah
 mov   ax, FINECOSINE_SEGMENT
@@ -4106,13 +4106,13 @@ PROC    A_DoFatShot_ NEAR
 
 IF COMPISA GE COMPILE_186
     imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-    add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+    add   dx, (_thinkerlist + THINKER_T.t_data)
 ELSE
     
     mov   ax, SIZEOF_THINKER_T
     mul   word ptr ds:[di + MOBJ_T.m_targetRef]
     xchg  ax, dx
-    add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+    add   dx, (_thinkerlist + THINKER_T.t_data)
 ENDIF
 
 
@@ -4154,7 +4154,7 @@ mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 xchg  ax, bx
 
-mov   bl, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+mov   bl, byte ptr ds:[bx + (_mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 
 ENDP
 ; fall thru
@@ -4332,7 +4332,7 @@ ELSE
 ENDIF
 
 
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   ax, (_thinkerlist + THINKER_T.t_data)
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 
 mov   dx, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
@@ -4432,168 +4432,185 @@ ENDP
 PROC    A_PainShootSkull_ NEAR
 PUBLIC  A_PainShootSkull_
 
+; bp - 2     fineangle
+; bp - 4     targref
+; bp - 6     x lo  then newmobj
+; bp - 8     x hi
+
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 010h
 
-mov   di, ax
-mov   word ptr [bp - 0Ah], cx
-mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
-mov   ax, word ptr ds:[bx]
-xor   dx, dx
+xchg  ax, di
+
+shr   cx, 1
+and   cl, 0FCh
+push  cx  ; bp - 2
+
+
+mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
+xor   cx, cx  ; count = 0
+continue_checking_thinkers_for_skulls:
+
+IF COMPISA GE COMPILE_186
+    imul  bx, ax, SIZEOF_THINKER_T
+ELSE
+    mov   bx, SIZEOF_THINKER_T
+    mul   bx
+    xchg  ax, bx
+ENDIF
+mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
+and   dx, TF_FUNCBITS SHR 8
+cmp   dx, TF_MOBJTHINKER_HIGHBITS
+jne   not_thinker_do_next
+cmp   byte ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_mobjtype], MT_SKULL
+jne   not_thinker_do_next
+inc   cx
+not_thinker_do_next:
+cmp   cx, 20
+jg    exit_a_painshootskull
+
+mov   ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_next]
 test  ax, ax
-je    label_147
-label_148:
-imul  bx, ax, SIZEOF_THINKER_T
-mov   cx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
-xor   cl, cl
-and   ch, (TF_FUNCBITS SHR 8)
-cmp   cx, TF_MOBJTHINKER_HIGHBITS
-jne   label_149
-; BIG BIG TODO this should (?) also have THINKER_T.t_data (4) added to it.
-cmp   byte ptr ds:[bx + _thinkerlist + MOBJ_T.m_mobjtype], MT_SKULL
-jne   label_149
-inc   dx
-label_149:
-cmp   dx, 20
-jle   label_150
-label_147:
-cmp   dx, 20
-jle   label_151
+jne   continue_checking_thinkers_for_skulls
+
+exit_a_painshootskull_loop:
+cmp   cx, 20
+jle   less_than_20_skulls
+exit_a_painshootskull:
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   dx
 ret   
-label_150:
-imul  bx, ax, SIZEOF_THINKER_T
-mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
-test  ax, ax
-jne   label_148
-jmp   label_147
-label_151:
-mov   ax, word ptr [bp - 0Ah]
-shr   ax, 1
-and   al, 0FCh
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr ds:[di + MOBJ_T.m_targetRef]
-mov   word ptr [bp - 8], ax
-mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   bx, ax
-add   bx, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_radius
-mov   al, byte ptr ds:[bx]
-mov   bx, OFFSET _mobjinfo + (SIZEOF_MOBJINFO_T * MT_SKULL) + MOBJINFO_T.mobjinfo_radius ;  0C52Bh
-mov   dl, byte ptr ds:[bx]
-xor   ah, ah
-xor   dh, dh
-add   dx, ax
-sar   dx, 1
-mov   ax, dx
-shl   ax, 2
-sub   ax, dx
+
+
+less_than_20_skulls:
+
+push  word ptr ds:[di + MOBJ_T.m_targetRef] ; bp - 4
+
+
+;	prestep.h.intbits = 4 + 3 * ((radii) >> 1);
+
+; this is a constant! 
+; evaluates to 0x4A8000
+
+lea   ax, ds:[di - (_thinkerlist + THINKER_T.t_data)]
+cwd
 mov   bx, SIZEOF_THINKER_T
-add   ax, 4
-xor   dx, dx
-mov   word ptr [bp - 4], ax
-lea   ax, ds:[di - (OFFSET _thinkerlist + THINKER_T.t_data)]
 div   bx
-imul  si, ax, SIZEOF_MOBJ_POS_T
-mov   cx, word ptr [bp - 4]
-mov   dx, word ptr [bp - 6]
-xor   bx, bx
+
+
+IF COMPISA GE COMPILE_186
+    imul  si, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   si, SIZEOF_MOBJ_POS_T
+    mul   si
+    xchg  ax, si
+ENDIF
+
+;    x = actor_pos->x.w + FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, an, prestep.w);
+
+
+mov   cx, 0004Ah
+mov   bx, 08000h
+mov   dx, word ptr [bp - 2]
 mov   ax, FINECOSINE_SEGMENT
-mov   word ptr [bp - 0Ch], MOBJPOSLIST_6800_SEGMENT
+
 ;call  FixedMulTrigNoShift_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
-mov   es, word ptr [bp - 0Ch]
-mov   bx, word ptr es:[si]
-add   bx, ax
-mov   word ptr [bp - 0Eh], bx
-mov   bx, si
-mov   cx, word ptr [bp - 4]
-mov   ax, word ptr es:[bx + 2]
-adc   ax, dx
-mov   dx, word ptr [bp - 6]
-mov   word ptr [bp - 010h], ax
-xor   bx, si
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   es, cx
+add   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
+adc   dx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
+push  ax  ; bp - 6h
+push  dx  ; bp - 8h
+mov   cx, 0004Ah
+mov   bx, 08000h
+mov   dx, word ptr [bp - 2]
 mov   ax, FINESINE_SEGMENT
 ;call  FixedMulTrigNoShift_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
-mov   es, word ptr [bp - 0Ch]
-push  -1  ; todo 186
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   es, cx
+
+add   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
+adc   dx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
+xchg  ax, bx
 mov   cx, dx
-mov   bx, si
-mov   dx, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
-push  MT_SKULL  ; todo 186
-add   dx, ax
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_z + 2]
-adc   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-add   ax, 8
-mov   bx, word ptr es:[si + MOBJ_POS_T.mp_z + 0]
-push  ax
-mov   ax, word ptr [bp - 0Eh]
-push  bx
-mov   bx, dx
-mov   dx, word ptr [bp - 010h]
+
+pop   dx ; bp - 8h
+pop   ax ; bp - 6h
+
+IF COMPISA GE COMPILE_186
+    push  -1
+    push  MT_SKULL
+ELSE
+    mov   es, ax
+    
+    mov   ax, -1
+    push  ax
+    mov   ax, MT_SKULL
+    push  ax
+    
+    mov   ax, MOBJPOSLIST_6800_SEGMENT
+    push  ax
+    mov   ax, es
+    pop   es
+ENDIF
+
+; UGLY but we're tapped out for registers...
+push  word ptr es:[si + MOBJ_POS_T.mp_z + 2]
+add   word ptr [bp - 0Ah], 8
+
+push  word ptr es:[si + MOBJ_POS_T.mp_z + 0]
+
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SpawnMobj_addr
-mov   bx, OFFSET _setStateReturn
-mov   bx, word ptr ds:[bx]
-mov   word ptr [bp - 2], bx
-mov   bx, OFFSET _setStateReturn_pos
-mov   dx, word ptr ds:[bx + 2]
-mov   si, word ptr ds:[bx]
-mov   es, dx
+mov   ax, word ptr ds:[_setStateReturn]
+push  ax ; bp - 6 again (newmobj)
+les   si, dword ptr ds:[_setStateReturn_pos]
 push  word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-mov   ax, word ptr [bp - 2]
 push  word ptr es:[si + MOBJ_POS_T.mp_y + 0]
+push  word ptr es:[si + MOBJ_POS_T.mp_x + 2]
+push  word ptr es:[si + MOBJ_POS_T.mp_x + 0]
+
 mov   bx, si
-push  word ptr es:[si + 2]
-mov   cx, dx
-push  word ptr es:[si]
+mov   cx, es
 ;call  dword ptr ds:[_P_TryMove]
 db    09Ah
 dw    P_TRYMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 test  al, al
-jne   label_152
+jne   skull_nodamage
 mov   cx, 10000
-mov   ax, word ptr [bp - 2]
+pop   ax ; bp - 6
 mov   bx, di
 mov   dx, di
 ;call  P_DamageMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
-label_152:
-mov   ax, word ptr [bp - 8]
-mov   bx, word ptr [bp - 2]
+jmp   exit_a_painshootskull
+
+skull_nodamage:
+pop   bx ; bp - 6
+pop   ax ; bp - 4
 mov   cx, dx
 mov   word ptr ds:[bx + MOBJ_T.m_targetRef], ax
-mov   ax, word ptr [bp - 2]
+xchg  ax, bx
 mov   bx, si
 call  A_SkullAttack_
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
+jmp   exit_a_painshootskull
 
 ENDP
 
@@ -4603,17 +4620,15 @@ PUBLIC  A_PainAttack_
 push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
-jne   do_painattack
-pop   si
-ret   
+je    exit_painattack
 do_painattack:
 call  A_FaceTarget_
 mov   es, cx
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
-mov   bx, ax
+les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
+mov   cx, es
 mov   ax, si
 call  A_PainShootSkull_
+exit_painattack:
 pop   si
 ret   
 
@@ -4665,7 +4680,7 @@ mov   bx, ax
 mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 mov   si, ax
-mov   al, byte ptr ds:[si + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
+mov   al, byte ptr ds:[si + _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
 cmp   al, SFX_PODTH1
 jae   check_for_other_deathsound_1
 test  al, al
@@ -4795,7 +4810,7 @@ ELSE
 ENDIF
 
 mov   cx, 128
-add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   bx, (_thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_RadiusAttack]
 db    09Ah
 dw    P_RADIUSATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -4898,7 +4913,7 @@ jne   exit_a_bossdeath
 test_player_health:
 cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
 jle   exit_a_bossdeath
-lea   ax, ds:[bx - (OFFSET _thinkerlist + THINKER_T.t_data)]
+lea   ax, ds:[bx - (_thinkerlist + THINKER_T.t_data)]
 cwd
 mov   si, SIZEOF_THINKER_T
 div   si
@@ -4915,7 +4930,7 @@ and   dx, TF_FUNCBITS
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
 jne   not_live_boss_continue_scan
 label_163:
-add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   bx, (_thinkerlist + THINKER_T.t_data)
 cmp   ax, si
 je    not_live_boss_continue_scan
 label_172:
