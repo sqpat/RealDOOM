@@ -3278,47 +3278,48 @@ PROC    A_VileChase_ NEAR
 PUBLIC  A_VileChase_
 
 
-; bp - 2   yl
-; bp - 4   xh
-; bp - 6   UNUSED
-; bp - 8   UNUSED
-; bp - 0Ah mobjinfo pointer
-; bp - 0Ch ax arg
-; bp - 0Eh bx arg
+; bp - 2   ax arg
+; bp - 4   bx arg
+; bp - 6   mobjinfo pointer
+; bp - 0Ah   yl
+; bp - 8 xh
+; bp - 0Ch 
+; bp - 0Eh 
 
 push  dx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ah
-push  ax ; bp - 0Ch
-push  bx ; bp - 0Eh
+push  ax ; bp - 2
+push  bx ; bp - 4
 
 
 xchg  ax, si
-mov   di, bx
-xor   bx, bx
 cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 je    jump_to_do_chase_and_exit
 mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
-mov   word ptr [bp - 0Ah], ax
-mov   bx, ax
+push  ax   ; bp - 6
+mov   di, ax
 xor   ax, ax
 
 
-mov   al, byte ptr ds:[bx + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
+mov   al, byte ptr ds:[di + (OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_speed)]
 
-mov   es, cx
-push  word ptr es:[di + MOBJ_POS_T.mp_x + 0]
-pop   word ptr ds:[_viletryx + 0]
-push  word ptr es:[di + MOBJ_POS_T.mp_x + 2]
-pop   word ptr ds:[_viletryx + 2]
-push  word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-pop   word ptr ds:[_viletryy + 0]
-push  word ptr es:[di + MOBJ_POS_T.mp_y + 2]
+mov   ds, cx
+push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 0]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 0]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 2]
+
+push  ss
+pop   ds
+
 pop   word ptr ds:[_viletryy + 2]
+pop   word ptr ds:[_viletryy + 0]
+pop   word ptr ds:[_viletryx + 2]
+pop   word ptr ds:[_viletryx + 0]
 
 ; would movsw save...?
 
@@ -3382,7 +3383,7 @@ mov   bl, bh
 mov   bh, cl  ; only needs 16 bits.
 
 mov   si, dx  ; si gets xl.
-mov   word ptr [bp - 4], bx  ; di has  xh
+push  bx  ; bp - 8
 
 
 
@@ -3417,21 +3418,21 @@ mov   bh, dl  ; only needs 16 bits.
 
 mov   di, bx
 
-mov   word ptr [bp - 2], cx
+push  cx   ; bp - 0Ah
 
 ; si has xl
+; bp - 8 has xh
 ; di has yh
-; bp - 2 has yl
-; bp - 4 has xh
+; bp - 0Ah has yl  ; (for refreshing each inner loop repeat)
 
 
 ;		for (bx=xl ; bx<=xh ; bx++)
 
 
-cmp   si, word ptr [bp - 4]
+cmp   si, word ptr [bp - 8]
 jg    do_chase_and_exit
 loop_next_x_vile:
-mov   cx, word ptr [bp - 2]  ; reset each loop iter!
+mov   cx, word ptr [bp - 0Ah]  ; reset each loop iter!
 cmp   di, cx
 jl    done_with_vile_y_loop
 loop_next_y_vile:
@@ -3452,12 +3453,12 @@ jle   loop_next_y_vile
 
 done_with_vile_y_loop:
 inc   si
-cmp   si, word ptr [bp - 4]
+cmp   si, word ptr [bp - 8]
 jle   loop_next_x_vile
 do_chase_and_exit:
-pop   bx  ; bp - 0Eh
+mov   bx, word ptr [bp - 4]
 mov   cx, MOBJPOSLIST_6800_SEGMENT
-pop   ax  ; bp - 0Ch
+mov   ax, word ptr [bp - 2]
 call  A_Chase_
 
 LEAVE_MACRO 
@@ -3468,7 +3469,7 @@ ret
 
 
 got_vile_target:
-mov   bx, word ptr [bp - 0Ch]
+mov   bx, word ptr [bp - 2]
 mov   dx, word ptr ds:[bx + MOBJ_T.m_targetRef] ; tempref
 push  word ptr ds:[_corpsehitRef]
 pop   word ptr ds:[bx + MOBJ_T.m_targetRef]
@@ -3484,8 +3485,20 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
 
-imul  si, word ptr ds:[_corpsehitRef], SIZEOF_THINKER_T
-imul  bx, word ptr ds:[_corpsehitRef], SIZEOF_MOBJ_POS_T
+
+IF COMPISA GE COMPILE_186
+    imul  si, word ptr ds:[_corpsehitRef], SIZEOF_THINKER_T
+    imul  bx, word ptr ds:[_corpsehitRef], SIZEOF_MOBJ_POS_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mov   cx, word ptr ds:[_corpsehitRef]
+    mul   cx
+    xchg  ax, si
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   cx
+    xchg  ax, bx
+
+ENDIF
 
 add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   dx, SFX_SLOP
@@ -3495,24 +3508,26 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
+xor   ax, ax
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
 
 db    09Ah
 dw    GETRAISESTATEADDR, INFOFUNCLOADSEGMENT
 
-mov   dx, ax
+xchg  ax, dx
 mov   ax, si
 ;call  P_SetMobjState_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
-shl   word ptr ds:[si + MOBJ_T.m_height+2], 2
+; todo dont know if shift_macro works on this.
+shl   word ptr ds:[si + MOBJ_T.m_height+2], 1
+shl   word ptr ds:[si + MOBJ_T.m_height+2], 1
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
 
-mov   di, word ptr [bp - 0Ah]
+mov   di, word ptr [bp - 6]
 
 lea   ax, [di + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_flags1]
 lea   di, [bx + MOBJ_POS_T.mp_flags1]
