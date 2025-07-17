@@ -3654,26 +3654,22 @@ ENDP
 PROC    A_Fire_ NEAR
 PUBLIC  A_Fire_
 
-push  dx
-push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 8
-push  ax
-mov   si, bx
-mov   word ptr [bp - 8], cx
 mov   di, ax
 mov   di, word ptr ds:[di + MOBJ_T.m_tracerRef]
 test  di, di
 jne   do_a_fire
-exit_a_fire:
-LEAVE_MACRO 
 pop   di
-pop   si
-pop   dx
 ret   
 do_a_fire:
+push  dx
+push  si
+push  bp
+mov   bp, sp
+sub   sp, 6
+push  cx
+push  ax
+mov   si, bx
 imul  dx, di, SIZEOF_THINKER_T
 mov   bx, ax
 imul  ax, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
@@ -3684,77 +3680,71 @@ add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   cx, di
 mov   bx, word ptr [bp - 4]
 add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-mov   word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
+
 ;call  dword ptr ds:[_P_CheckSightTemp]
 db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 test  al, al
 je    exit_a_fire
-mov   es, word ptr [bp - 2]
+mov   es, word ptr [bp - 8]
 mov   ax, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
 shr   ax, 1
-mov   cx, 24
 and   al, 0FCh
 mov   dx, si
 mov   word ptr [bp - 6], ax
 mov   ax, word ptr [bp - 0Ah]
-xor   bx, bx
 ;call  dword ptr ds:[_P_UnsetThingPosition]
 db    09Ah
 dw    P_UNSETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
+mov   cx, 24
+xor   bx, bx
 mov   dx, word ptr [bp - 6]
 mov   ax, FINECOSINE_SEGMENT
 ;call  FixedMulTrigNoShift_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
-mov   es, word ptr [bp - 2]
-mov   cx, 24
-mov   word ptr [bp - 4], ax
-mov   bx, dx
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
-mov   dx, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
 mov   es, word ptr [bp - 8]
-add   ax, word ptr [bp - 4]
-adc   dx, bx
+
+add   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
+adc   dx, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
 mov   word ptr es:[si + MOBJ_POS_T.mp_x + 0], ax
-mov   ax, FINESINE_SEGMENT
-xor   bx, bx
 mov   word ptr es:[si + MOBJ_POS_T.mp_x + 2], dx
+
+mov   cx, 24
+xor   bx, bx
+mov   ax, FINESINE_SEGMENT
 mov   dx, word ptr [bp - 6]
+
 ;call  FixedMulTrigNoShift_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
-mov   es, word ptr [bp - 2]
-mov   bx, ax
-mov   cx, dx
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-mov   dx, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
 mov   es, word ptr [bp - 8]
-add   ax, bx
-adc   dx, cx
+
+add   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
+adc   dx, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
 mov   word ptr es:[si + MOBJ_POS_T.mp_y + 0], ax
 mov   word ptr es:[si + MOBJ_POS_T.mp_y + 2], dx
-mov   es, word ptr [bp - 2]
+
 mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
-mov   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
-mov   es, word ptr [bp - 8]
 mov   word ptr es:[si + MOBJ_POS_T.mp_z + 0], ax
+mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+mov   word ptr es:[si + MOBJ_POS_T.mp_z + 2], ax
+
 mov   bx, -1
-mov   word ptr es:[si + MOBJ_POS_T.mp_z + 2], dx
 mov   ax, word ptr [bp - 0Ah]
 mov   dx, si
 ;call  dword ptr ds:[_P_SetThingPosition]
 db    09Ah
 dw    P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
-
+exit_a_fire:
 LEAVE_MACRO 
-pop   di
 pop   si
 pop   dx
+pop   di
 ret   
 
 ENDP
