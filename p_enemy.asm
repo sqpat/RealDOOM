@@ -4804,214 +4804,181 @@ pop   si
 pop   dx
 ret   
 
-_some_lookup_table_4:
-
-dw OFFSET table_4_label_0
-dw OFFSET table_4_label_1
-dw OFFSET table_4_label_2
-dw OFFSET table_4_label_3
 
 
 ENDP
+
+ultimate_episode_1:
+cmp   al, 8
+jne   exit_a_bossdeath_3
+cmp   cl, MT_BRUISER
+jmp   generic_shared_jne_weird
+
+ultimate_episode_3:
+cmp   al, 8
+jne   exit_a_bossdeath_3
+cmp   cl, MT_SPIDER
+jmp   generic_shared_jne_weird
+
+ultimate_episode_4:
+cmp   al, 8
+jne   map_not_8
+cmp   cl, MT_SPIDER
+jmp   generic_shared_jne_weird
+
+map_not_8:
+cmp   al, 6
+jne   exit_a_bossdeath_3
+cmp   cl, MT_CYBORG
+jmp   generic_shared_jne_weird
+
+
+is_ultimate_1:
+mov   al, byte ptr ds:[_gameepisode]
+cmp   al, 4
+ja    episode_above_4
+
+shr   al, 1
+mov   al, byte ptr ds:[_gamemap]
+ja    ultimate_episode_4 ; carry flag 0 and zero flag 0
+jnz   ultimate_episode_3 ; not zero
+jc    ultimate_episode_1 ; was odd, carried
+; fall thru
+ultimate_episode_2:
+
+cmp   al, 8
+jne   exit_a_bossdeath_3
+cmp   cl, MT_CYBORG
+jmp   generic_shared_jne_weird
+
+
+
+episode_above_4:
+
+cmp   byte ptr ds:[_gamemap], 8
+jmp   generic_shared_jne_weird
+
+do_floor_and_exit:
+call  EV_DoFloor_
+exit_a_bossdeath_3:
+POPA_NO_AX_OR_BP_MACRO
+ret   
 
 
 PROC    A_BossDeath_ NEAR
 PUBLIC  A_BossDeath_
 
-push  bx
-push  cx
-push  dx
-push  si
+PUSHA_NO_AX_OR_BP_MACRO
 mov   bx, ax
-mov   si, OFFSET _commercial
 mov   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-cmp   byte ptr ds:[si], 0
-jne   label_159
-jmp   label_160
-label_159:
-mov   si, OFFSET _gamemap
-cmp   byte ptr ds:[si], 7
-je    label_161
-jmp   exit_a_bossdeath
-label_161:
-cmp   cl, 8
-je    label_164
-cmp   cl, MT_BABY
-label_165:
+cmp   byte ptr ds:[_commercial], 0
+jne   is_commercial_1
+
+
+cmp   byte ptr ds:[_is_ultimate], 0
+jne   is_ultimate_1
+
+cmp   byte ptr ds:[_gamemap], 8
+jne   exit_a_bossdeath_3
+cmp   cl, MT_BRUISER
+jne   test_player_health
+
+cmp   byte ptr ds:[_gameepisode], 1
+jmp   generic_shared_jne_weird
+
+is_commercial_1:
+cmp   byte ptr ds:[_gamemap], 7
 jne   exit_a_bossdeath
-label_164:
-mov   si, OFFSET _player + PLAYER_T.player_health
-cmp   word ptr ds:[si], 0
+cmp   cl, 8
+je    test_player_health
+cmp   cl, MT_BABY
+generic_shared_jne_weird:
+jne   exit_a_bossdeath
+
+test_player_health:
+cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
 jle   exit_a_bossdeath
 lea   ax, ds:[bx - (OFFSET _thinkerlist + THINKER_T.t_data)]
-xor   dx, dx
+cwd
+mov   si, SIZEOF_THINKER_T
+div   si
+xchg  ax, si
+mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
+
+je    all_bosses_dead
+scan_next_mobj_for_bosscheck:
 mov   bx, SIZEOF_THINKER_T
-div   bx
-mov   bx, OFFSET _thinkerlist + THINKER_T.t_next
-mov   si, ax
-mov   ax, word ptr ds:[bx]
-test  ax, ax
-je    label_162
-label_166:
-imul  bx, ax, SIZEOF_THINKER_T
+mul   bx
+xchg  ax, bx
 mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
-xor   dl, dl
-and   dh, (TF_FUNCBITS SHR 8)
+and   dx, TF_FUNCBITS 
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
-je    jump_to_label_163
-label_174:
-imul  bx, ax, SIZEOF_THINKER_T
-mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
-test  ax, ax
-jne   label_166
-label_162:
-mov   bx, OFFSET _commercial
-cmp   byte ptr ds:[bx], 0
-je    jump_to_label_167
-mov   bx, OFFSET _gamemap
-cmp   byte ptr ds:[bx], 7
-jne   jump_to_do_exit_level
-cmp   cl, MT_FATSO
-je    jump_to_label_170
-cmp   cl, MT_BABY
-jne   jump_to_do_exit_level
-mov   bx, FLOOR_RAISETOTEXTURE
-mov   dx, -1
-mov   ax, TAG_667
-call  EV_DoFloor_
-exit_a_bossdeath:
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_160:
-mov   si, OFFSET _is_ultimate
-cmp   byte ptr ds:[si], 0
-jne   label_173
-mov   si, OFFSET _gamemap
-cmp   byte ptr ds:[si], 8
-jne   exit_a_bossdeath
-cmp   cl, MT_BRUISER
-jne   label_164
-mov   si, OFFSET _gameepisode
-cmp   byte ptr ds:[si], 1
-jmp   label_165
-jump_to_label_163:
-jmp   label_163
-label_173:
-mov   si, OFFSET _gameepisode
-mov   al, byte ptr ds:[si]
-dec   al
-cmp   al, 3
-ja    label_175
-xor   ah, ah
-mov   si, ax
-add   si, ax
-jmp   word ptr cs:[si + _some_lookup_table_4]
-jump_to_label_167:
-jmp   label_167
-table_4_label_0:
-mov   si, OFFSET _gamemap
-cmp   byte ptr ds:[si], 8
-jne   exit_a_bossdeath
-cmp   cl, MT_BRUISER
-jmp   label_165
-jump_to_do_exit_level:
-jmp   do_exit_level
-jump_to_label_170:
-jmp   label_170
-table_4_label_1:
-mov   si, OFFSET _gamemap
-cmp   byte ptr ds:[si], 8
-jne   exit_a_bossdeath
-cmp   cl, MT_CYBORG
-jmp   label_165
-table_4_label_2:
-mov   si, OFFSET _gamemap
-cmp   byte ptr ds:[si], 8
-jne   exit_a_bossdeath
-cmp   cl, MT_SPIDER
-jmp   label_165
-table_4_label_3:
-mov   si, OFFSET _gamemap
-mov   al, byte ptr ds:[si]
-cmp   al, 8
-jne   label_171
-cmp   cl, MT_SPIDER
-jmp   label_165
-label_171:
-cmp   al, 6
-jne   exit_a_bossdeath
-cmp   cl, MT_CYBORG
-jmp   label_165
-label_175:
-mov   si, OFFSET _gamemap
-cmp   byte ptr ds:[si], 8
-jmp   label_165
+jne   not_live_boss_continue_scan
 label_163:
 add   bx, (OFFSET _thinkerlist + THINKER_T.t_data)
 cmp   ax, si
-jne   label_172
-jump_to_label_174_2:
-jmp   label_174
+je    not_live_boss_continue_scan
 label_172:
 cmp   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-jne   jump_to_label_174_2
+jne   not_live_boss_continue_scan
 cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
-jle   jump_to_label_174
-jmp   exit_a_bossdeath
-jump_to_label_174:
-jmp   label_174
-label_170:
+jnle  exit_a_bossdeath
+
+not_live_boss_continue_scan:
+mov   ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_next]
+test  ax, ax
+jne   scan_next_mobj_for_bosscheck
+all_bosses_dead:
+
+cmp   byte ptr ds:[_commercial], 0
+je    not_commercial_bosses_dead
+
+cmp   byte ptr ds:[_gamemap], 7
+jne   do_exit_level
+cmp   cl, MT_FATSO
+je    do_lower_floor_to_lowest
+cmp   cl, MT_BABY
+jne   do_exit_level
+mov   bx, FLOOR_RAISETOTEXTURE
+mov   dx, -1
+mov   ax, TAG_667
+jmp   do_floor_and_exit
+do_exit_level:
+call  G_ExitLevel_
+exit_a_bossdeath:
+POPA_NO_AX_OR_BP_MACRO
+ret   
+
+continue_noncommercial_level_check:
+cmp   al, 1
+jne   do_exit_level
+
+do_lower_floor_to_lowest:
 mov   bx, FLOOR_LOWERFLOORTOLOWEST
 mov   dx, -1
+do_tag_66_and_door:
 mov   ax, TAG_666
-call  EV_DoFloor_
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_167:
-mov   bx, OFFSET _gameepisode
-mov   al, byte ptr ds:[bx]
+jmp   do_floor_and_exit
+
+
+not_commercial_bosses_dead:
+mov   al, byte ptr ds:[_gameepisode]
 cmp   al, 4
-jne   label_168
-mov   bx, OFFSET _gamemap
-mov   al, byte ptr ds:[bx]
+jne   continue_noncommercial_level_check
+mov   al, byte ptr ds:[_gamemap]
 cmp   al, 8
-je    label_169
+je    do_lower_floor_to_lowest
 cmp   al, 6
 jne   do_exit_level
 mov   dx, DOOR_BLAZEOPEN
-mov   ax, TAG_666
-call  EV_DoDoor_
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_168:
-cmp   al, 1
-jne   do_exit_level
-label_169:
-mov   bx, FLOOR_LOWERFLOORTOLOWEST
-mov   dx, -1
-mov   ax, TAG_666
-call  EV_DoFloor_
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-do_exit_level:
-call  G_ExitLevel_
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
+jmp   do_tag_66_and_door
+
+
+
+
+
+
+
 
 ENDP
 
