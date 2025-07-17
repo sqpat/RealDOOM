@@ -4067,19 +4067,16 @@ ENDP
 PROC    A_FatRaise_ NEAR
 PUBLIC  A_FatRaise_
 
-push  bx
 push  dx
-mov   bx, ax
+push  ax
 call  A_FaceTarget_
 mov   dx, SFX_MANATK
-mov   ax, bx
+pop   ax
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-
 pop   dx
-pop   bx
 ret   
 
 ENDP
@@ -5672,20 +5669,15 @@ PUBLIC  A_PlayerScream_
 
 push  bx
 push  dx
-mov   bx, OFFSET _commercial
-mov   al, SFX_PLDETH 
-cmp   byte ptr ds:[bx], 0
-je    label_186
-mov   bx, OFFSET _playerMobj
-mov   bx, word ptr ds:[bx]
+mov   dx, SFX_PLDETH 
+mov   bx, word ptr ds:[_playerMobj]
+cmp   byte ptr ds:[_commercial], 0
+je    normal_scream
 cmp   word ptr ds:[bx + MOBJ_T.m_health], -50
-jge   label_186
-mov   al, SFX_PDIEHI
-label_186:
-xor   ah, ah
-mov   bx, OFFSET _playerMobj
-mov   dx, ax
-mov   ax, word ptr ds:[bx]
+jge   normal_scream
+mov   dl, SFX_PDIEHI
+normal_scream:
+xchg  ax, bx ; player
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;

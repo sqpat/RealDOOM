@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/16 13:25:15
+Created on:       25/07/16 13:33:09
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -60,7 +60,7 @@ s_sound_TEXT           CODE           AUTO           0ba0:0000       0000067a
 s_sbsfx_TEXT           CODE           AUTO           0ba0:0680       000017f3
 p_ceilng_TEXT          CODE           AUTO           0ba0:1e80       00000390
 p_doors_TEXT           CODE           AUTO           0ba0:2210       0000068c
-P_ENEMY_TEXT           CODE           AUTO           0ba0:289c       00002054
+P_ENEMY_TEXT           CODE           AUTO           0ba0:289c       00002047
 p_floor_TEXT           CODE           AUTO           0ba0:48f0       00000806
 p_inter_TEXT           CODE           AUTO           0ba0:5100       00000cf3
 p_lights_TEXT          CODE           AUTO           0ba0:5e00       000003ed
@@ -842,53 +842,53 @@ Module: p_doors.obj(C:\REALDOOM\p_doors.c)
 0ba0:27f8      P_SpawnDoorCloseIn30_
 0ba0:2840      P_SpawnDoorRaiseIn5Mins_
 Module: p_enemy.obj(p_enemy.ASM)
-0ba0:4324      A_Explode_
+0ba0:4320      A_Explode_
 0ba0:2950      P_NoiseAlert_
 0ba0:3d28      A_FatRaise_
-0ba0:4785      A_SpawnFly_
-0ba0:431c      A_Fall_
+0ba0:4781      A_SpawnFly_
+0ba0:4318      A_Fall_
 0ba0:320d      A_PosAttack_
 0ba0:2fcc      A_Chase_
 0ba0:3436      A_BspiAttack_
 0ba0:29dd*     P_CheckMissileRange_
-0ba0:4564      A_BrainPain_
+0ba0:4560      A_BrainPain_
 0ba0:319a      A_FaceTarget_
 0ba0:34ad      A_SargAttack_
 0ba0:3be7*     GetVileMomz_
-0ba0:421d      A_PainDie_
-0ba0:469e      A_BrainSpit_
+0ba0:4219      A_PainDie_
+0ba0:469a      A_BrainSpit_
 0ba0:37a6      A_SkelWhoosh_
-0ba0:461f      A_BrainExplode_
+0ba0:461b      A_BrainExplode_
 0ba0:3b5c      A_VileTarget_
 0ba0:2abd*     P_Move_
 0ba0:2daa*     P_LookForPlayers_
 0ba0:37bf      A_SkelFist_
 0ba0:3a92      A_VileStart_
 0ba0:3aab      A_FireCrackle_
-0ba0:40a2*     A_PainShootSkull_
+0ba0:409e*     A_PainShootSkull_
 0ba0:38f0      A_VileChase_
-0ba0:4257      A_Scream_
-0ba0:44cd      A_Hoof_
+0ba0:4253      A_Scream_
+0ba0:44c9      A_Hoof_
 0ba0:2965*     P_CheckMeleeRange_
-0ba0:3df4      A_FatAttack2_
+0ba0:3df0      A_FatAttack2_
 0ba0:289c*     P_RecursiveSound_
 0ba0:35aa      A_SkelMissile_
-0ba0:3d3b      A_FatAttack1_
-0ba0:3ea6      A_FatAttack3_
-0ba0:4772      A_SpawnSound_
+0ba0:3d37      A_FatAttack1_
+0ba0:3ea2      A_FatAttack3_
+0ba0:476e      A_SpawnSound_
 0ba0:2ec1      A_Look_
-0ba0:44f3      A_BabyMetal_
-0ba0:44e0      A_Metal_
+0ba0:44ef      A_BabyMetal_
+0ba0:44dc      A_Metal_
 0ba0:355d      A_BruisAttack_
-0ba0:42e8      A_XScream_
+0ba0:42e4      A_XScream_
 0ba0:2c18*     P_TryWalk_
-0ba0:4570      A_BrainScream_
+0ba0:456c      A_BrainScream_
 0ba0:34eb      A_HeadAttack_
-0ba0:42f2      A_Pain_
+0ba0:42ee      A_Pain_
 0ba0:3806*     PIT_VileCheck_
 0ba0:3c1a      A_VileAttack_
-0ba0:4345      A_BossDeath_
-0ba0:48f0*     P_ENEMY_ENDMARKER_
+0ba0:4341      A_BossDeath_
+0ba0:48e3*     P_ENEMY_ENDMARKER_
 0ba0:3aba      A_Fire_
 0ba0:3286      A_SPosAttack_
 0ba0:330c      A_CPosAttack_
@@ -896,13 +896,13 @@ Module: p_enemy.obj(p_enemy.ASM)
 0ba0:2c2b*     P_NewChaseDir_
 0ba0:3a9c      A_StartFire_
 0ba0:3600      A_Tracer_
-0ba0:3f86      A_SkullAttack_
+0ba0:3f82      A_SkullAttack_
 0ba0:289c*     P_ENEMY_STARTMARKER_
 0ba0:3386      A_CPosRefire_
 0ba0:3457      A_TroopAttack_
-0ba0:41fc      A_PainAttack_
-0ba0:48c7      A_PlayerScream_
-0ba0:4506      A_BrainAwake_
+0ba0:41f8      A_PainAttack_
+0ba0:48c3      A_PlayerScream_
+0ba0:4502      A_BrainAwake_
 0ba0:2e64      A_KeenDie_
 0ba0:353c      A_CyberAttack_
 Module: p_floor.obj(C:\REALDOOM\p_floor.c)
@@ -1296,4 +1296,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  0001b460 (111712.)
 Entry point address: 0ba0:b356
-Link time: 00:00.19
+Link time: 00:00.20
