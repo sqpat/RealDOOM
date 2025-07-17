@@ -3938,6 +3938,14 @@ ENDP
 PROC    A_VileAttack_ NEAR
 PUBLIC  A_VileAttack_
 
+; bp - 2   actorTarget_pos
+; bp - 4   MOBJPOSLIST_6800_SEGMENT
+; bp - 6   mobjpos offset
+; bp - 8   angle
+; bp - 0Ah unused
+; bp - 0Ch unused
+; bp - 0Eh 
+
 push  dx
 push  si
 push  di
@@ -3945,8 +3953,8 @@ push  bp
 mov   bp, sp
 sub   sp, 010h
 mov   si, ax
-mov   word ptr [bp - 0Ah], bx
-mov   word ptr [bp - 6], cx
+mov   word ptr [bp - 6], bx
+mov   word ptr [bp - 4], cx
 mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
 test  ax, ax
 jne   do_vile_attack
@@ -3957,17 +3965,30 @@ pop   si
 pop   dx
 ret   
 do_vile_attack:
-imul  bx, ax, SIZEOF_MOBJ_POS_T
+
+IF COMPISA GE COMPILE_186
+    imul  cx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   cx, SIZEOF_MOBJ_POS_T
+    mul   cx
+    xchg  ax, cx
+ENDIF
 mov   ax, si
 call  A_FaceTarget_
-imul  di, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-mov   word ptr [bp - 2], bx
-mov   cx, bx
-mov   bx, word ptr [bp - 0Ah]
+IF COMPISA GE COMPILE_186
+    imul  di, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+ELSE
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, di
+ENDIF
+
+mov   word ptr [bp - 2], cx
 add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   ax, si
 mov   dx, di
-mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
+
+
 ;call  dword ptr ds:[_P_CheckSightTemp]
 db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -3981,17 +4002,17 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+mov   ax, di
 mov   cx, 20
 mov   bx, si
 mov   dx, si
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
+
 ;call  P_DamageMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
-mov   es, word ptr [bp - 6]
-mov   bx, word ptr [bp - 0Ah]
+
+les   bx, dword ptr [bp - 6]
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 shr   ax, 1
 and   al, 0FCh
@@ -4012,7 +4033,7 @@ mov   dx, word ptr [bp - 8]
 mov   word ptr [bp - 0Eh], ax
 mov   ax, FINECOSINE_SEGMENT
 xor   bx, bx
-mov   word ptr [bp - 0Ch], MOBJPOSLIST_6800_SEGMENT
+
 ;call  FixedMulTrigNoShift_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -4023,7 +4044,6 @@ mov   word ptr [bp - 010h], ax
 mov   cx, dx
 mov   dx, word ptr es:[bx]
 mov   ax, word ptr es:[bx + 2]
-mov   es, word ptr [bp - 0Ch]
 sub   dx, word ptr [bp - 010h]
 sbb   ax, cx
 mov   word ptr es:[di], dx
@@ -4042,7 +4062,6 @@ mov   cx, ax
 mov   word ptr [bp - 010h], dx
 mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   es, word ptr [bp - 0Ch]
 mov   bx, si
 sub   dx, cx
 mov   cx, 70
