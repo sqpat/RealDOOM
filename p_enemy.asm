@@ -5145,66 +5145,74 @@ ENDP
 PROC    A_BrainScream_ NEAR
 PUBLIC  A_BrainScream_
 
+
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 6
 mov   di, bx
-mov   word ptr [bp - 2], cx
 mov   es, cx
-mov   word ptr [bp - 6], 0
-mov   ax, word ptr es:[di]
-mov   si, word ptr es:[di + 2]
-mov   word ptr [bp - 4], ax
+
+
+mov   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
+mov   si, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
+
+
 sub   si, 196
-label_181:
-mov   es, word ptr [bp - 2]
-mov   ax, word ptr es:[di + 2]
+do_next_brain_scream_iter:
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   es, cx
+mov   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
 add   ax, 320
 cmp   si, ax
-jl    label_2
-mov   dx, SFX_BOSDTH
-xor   ax, ax
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+jnl   done_with_brain_scream_loop
 
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
-label_2:
-mov   dx, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-mov   cx, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
+mov   dx, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
+les   bx, dword ptr es:[di + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+
+IF COMPISA GE COMPILE_186
+    push  -1
+    push  MT_ROCKET
+ELSE
+    mov   ax, -1
+    push  ax
+    mov   ax, MT_ROCKET
+    push  ax
+ENDIF
+
 call  P_Random_
-mov   bl, al
-xor   bh, bh
-push  -1 ; todo 186
-add   bx, bx
-push  MT_ROCKET  ; todo 186
-add   bx, 128
+
+xor   ah, ah
+sal   ax, 1
+add   ax, 128
+push  ax  ; z hi
+
+IF COMPISA GE COMPILE_186
+    push  0   ; z lo
+ELSE
+    xor ax, ax
+    push  ax   ; z 
+ENDIF
+
 sub   cx, 320
-push  bx
-mov   ax, word ptr [bp - 4]
-push  word ptr [bp - 6]
-mov   bx, dx
-mov   dx, si
+xchg  ax, dx   ; ax gets x lobits
+mov   dx, si   ; dx gets stored x hibits
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SpawnMobj_addr
-mov   bx, OFFSET _setStateReturn
-mov   bx, word ptr ds:[bx]
+
+mov   bx, word ptr ds:[_setStateReturn]
 call  P_Random_
-mov   cl, al
-xor   ch, ch
-mov   ax, cx
-shl   ax, 9
-cwd   
+
+;		th->momz.w = P_Random()*512;
+
+xor   ah, ah
+cwd
+xchg  ah, al
+sal   ax, 1
+rcl   dx, 1
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], dx
 mov   dx, S_BRAINEXPLODE1
@@ -5213,21 +5221,37 @@ mov   ax, bx
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
+
 call  P_Random_
 and   al, 7
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
 cmp   al, 1
-jae   label_180
-label_182:
+jae   tics_above_1
+tics_negative_cap_to_1:
 mov   byte ptr ds:[bx + MOBJ_T.m_tics], 1
 add   si, 8
-jmp   label_181
-label_180:
+jmp   do_next_brain_scream_iter
+tics_above_1:
 cmp   al, 240
-ja    label_182
+ja    tics_negative_cap_to_1
 add   si, 8
-jmp   label_181
+jmp   do_next_brain_scream_iter
+
+
+done_with_brain_scream_loop:
+mov   dx, SFX_BOSDTH
+xor   ax, ax
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
+pop   di
+pop   si
+pop   dx
+ret   
+
 
 ENDP
 
