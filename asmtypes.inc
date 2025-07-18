@@ -429,3 +429,14 @@ MOBJINFO_T STRUC
     mobjinfo_flags2         dw ?  ; 9
 
 MOBJINFO_T ENDS
+
+
+MAPTHING_T STRUC
+
+    mapthing_x            dw ?  ; 0
+    mapthing_y            dw ?  ; 2
+    mapthing_angle        dw ?  ; 4
+    mapthing_type         dw ?  ; 6
+    mapthing_options      dw ?  ; 8
+
+MAPTHING_T ENDS

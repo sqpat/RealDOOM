@@ -442,7 +442,7 @@ label_4:
 0x0000000000008026:  A5                   movsw     
 0x0000000000008027:  A5                   movsw     
 0x0000000000008028:  A5                   movsw     
-0x0000000000008029:  8A 47 1B             mov       al, byte ptr ds:[bx + + MOBJ_T.m_tics]
+0x0000000000008029:  8A 47 1B             mov       al, byte ptr ds:[bx + MOBJ_T.m_tics]
 0x000000000000802c:  89 56 FE             mov       word ptr [bp - 2], dx
 0x000000000000802f:  84 C0                test      al, al
 0x0000000000008031:  76 24                jbe       dont_set_random_tics
@@ -504,95 +504,106 @@ PUBLIC P_MobjThinker_
 0x00000000000080ef:  57                   push      di
 0x00000000000080f0:  55                   push      bp
 0x00000000000080f1:  89 E5                mov       bp, sp
-0x00000000000080f3:  83 EC 0E             sub       sp, 0xe
 0x00000000000080f6:  89 C6                mov       si, ax
 0x00000000000080f8:  89 DF                mov       di, bx
-0x00000000000080fa:  89 4E FE             mov       word ptr [bp - 2], cx
-0x00000000000080fd:  C7 46 F2 36 2A       mov       word ptr [bp - 0xe], 0x2a36
-0x0000000000008102:  C7 46 F4 00 94       mov       word ptr [bp - 0xc], 0x9400
-0x0000000000008107:  C7 46 FA 49 2D       mov       word ptr [bp - 6], 0x2d49
-0x000000000000810c:  C7 46 FC 00 94       mov       word ptr [bp - 4], 0x9400
-0x0000000000008111:  C7 46 F6 30 30       mov       word ptr [bp - 0xa], 0x3030
-0x0000000000008116:  8B 44 10             mov       ax, word ptr ds:[si + 0x10]
-0x0000000000008119:  C7 46 F8 00 94       mov       word ptr [bp - 8], 0x9400
-0x000000000000811e:  0B 44 0E             or        ax, word ptr ds:[si + 0xe]
-0x0000000000008121:  75 48                jne       0x816b
-0x0000000000008123:  8B 44 14             mov       ax, word ptr ds:[si + 0x14]
-0x0000000000008126:  0B 44 12             or        ax, word ptr ds:[si + 0x12]
-0x0000000000008129:  75 40                jne       0x816b
+push cx
+
+0x0000000000008116:  8B 44 10             mov       ax, word ptr ds:[si + MOBJ_T.m_momx + 0]
+0x000000000000811e:  0B 44 0E             or        ax, word ptr ds:[si + MOBJ_T.m_momx + 2]
+0x0000000000008121:  75 48                jne       do_xy_movement
+0x0000000000008123:  8B 44 14             mov       ax, word ptr ds:[si + MOBJ_T.m_momy + 2]
+0x0000000000008126:  0B 44 12             or        ax, word ptr ds:[si + MOBJ_T.m_momy + 0]
+0x0000000000008129:  75 40                jne       do_xy_movement
 0x000000000000812b:  8E C1                mov       es, cx
-0x000000000000812d:  26 F6 45 17 01       test      byte ptr es:[di + 0x17], 1
-0x0000000000008132:  75 37                jne       0x816b
+0x000000000000812d:  26 F6 45 17 01       test      byte ptr es:[di + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
+0x0000000000008132:  75 37                jne       do_xy_movement
+label_13:
 0x0000000000008134:  8B 5C 06             mov       bx, word ptr ds:[si + 6]
 0x0000000000008137:  8B 44 06             mov       ax, word ptr ds:[si + 6]
 0x000000000000813a:  30 FF                xor       bh, bh
 0x000000000000813c:  8E 46 FE             mov       es, word ptr [bp - 2]
 0x000000000000813f:  80 E3 07             and       bl, 7
 0x0000000000008142:  C1 F8 03             sar       ax, 3
-0x0000000000008145:  C1 E3 0D             shl       bx, 0xd
-0x0000000000008148:  26 3B 45 0A          cmp       ax, word ptr es:[di + 0xa]
-0x000000000000814c:  75 3A                jne       0x8188
-0x000000000000814e:  26 3B 5D 08          cmp       bx, word ptr es:[di + 8]
-0x0000000000008152:  75 34                jne       0x8188
-0x0000000000008154:  8B 44 18             mov       ax, word ptr ds:[si + 0x18]
-0x0000000000008157:  0B 44 16             or        ax, word ptr ds:[si + 0x16]
-0x000000000000815a:  75 2C                jne       0x8188
-0x000000000000815c:  80 7C 1B FF          cmp       byte ptr ds:[si + 0x1b], 0xff
-0x0000000000008160:  74 67                je        0x81c9
-0x0000000000008162:  FE 4C 1B             dec       byte ptr ds:[si + 0x1b]
-0x0000000000008165:  74 3E                je        0x81a5
+0x0000000000008145:  C1 E3 0D             shl       bx, 0Dh ; todo no
+0x0000000000008148:  26 3B 45 0A          cmp       ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+0x000000000000814c:  75 3A                jne       label_9
+0x000000000000814e:  26 3B 5D 08          cmp       bx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+0x0000000000008152:  75 34                jne       label_9
+0x0000000000008154:  8B 44 18             mov       ax, word ptr ds:[si + MOBJ_T.m_momz + 2]
+0x0000000000008157:  0B 44 16             or        ax, word ptr ds:[si + MOBJ_T.m_momz + 0]
+0x000000000000815a:  75 2C                jne       label_9
+label_15:
+0x000000000000815c:  80 7C 1B FF          cmp       byte ptr ds:[si + MOBJ_T.m_tics], 255
+0x0000000000008160:  74 67                je        label_11
+0x0000000000008162:  FE 4C 1B             dec       byte ptr ds:[si + MOBJ_T.m_tics]
+0x0000000000008165:  74 3E                je        label_14
+exit_p_mobjthinker:
 0x0000000000008167:  C9                   LEAVE_MACRO     
 0x0000000000008168:  5F                   pop       di
 0x0000000000008169:  5E                   pop       si
 0x000000000000816a:  C3                   ret       
+
+do_xy_movement:
 0x000000000000816b:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000816e:  89 FB                mov       bx, di
 0x0000000000008170:  89 F0                mov       ax, si
-0x0000000000008172:  FF 5E F2             lcall     [bp - 0xe]
+
+db 09Ah
+dw P_XYMOVEMENTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 0x0000000000008175:  6B DA 2C             imul      bx, dx, SIZEOF_THINKER_T
 0x0000000000008178:  8B 87 00 34          mov       ax, word ptr ds:[bx + _thinkerlist]
-0x000000000000817c:  30 C0                xor       al, al
-0x000000000000817e:  80 E4 F8             and       ah, 0xf8
-0x0000000000008181:  3D 00 50             cmp       ax, 0x5000
-0x0000000000008184:  74 E1                je        0x8167
-0x0000000000008186:  EB AC                jmp       0x8134
+
+0x000000000000817e:  80 E4 F8             and       ax, TF_FUNCBITS
+0x0000000000008181:  3D 00 50             cmp       ax, TF_DELETEME_HIGHBITS
+0x0000000000008184:  74 E1                je        exit_p_mobjthinker
+0x0000000000008186:  EB AC                jmp       label_13
+label_9:
 0x0000000000008188:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000818b:  89 FB                mov       bx, di
 0x000000000000818d:  89 F0                mov       ax, si
-0x000000000000818f:  FF 5E FA             lcall     [bp - 6]
+
+db 09Ah
+dw P_ZMOVEMENTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
+
 0x0000000000008192:  6B DA 2C             imul      bx, dx, SIZEOF_THINKER_T
 0x0000000000008195:  8B 87 00 34          mov       ax, word ptr ds:[bx + _thinkerlist]
-0x0000000000008199:  30 C0                xor       al, al
-0x000000000000819b:  80 E4 F8             and       ah, 0xf8
-0x000000000000819e:  3D 00 50             cmp       ax, 0x5000
-0x00000000000081a1:  74 C4                je        0x8167
-0x00000000000081a3:  EB B7                jmp       0x815c
+0x000000000000819b:  80 E4 F8             and       ax, TF_FUNCBITS
+0x000000000000819e:  3D 00 50             cmp       ax, TF_DELETEME_HIGHBITS
+0x00000000000081a1:  74 C4                je        exit_p_mobjthinker
+0x00000000000081a3:  EB B7                jmp       label_15
+label_14:
 0x00000000000081a5:  8E 46 FE             mov       es, word ptr [bp - 2]
-0x00000000000081a8:  26 8B 45 12          mov       ax, word ptr es:[di + 0x12]
+0x00000000000081a8:  26 8B 45 12          mov       ax, word ptr es:[di + MOBJ_POS_T.mp_statenum]
 0x00000000000081ac:  89 C7                mov       di, ax
 0x00000000000081ae:  C1 E7 02             shl       di, 2
 0x00000000000081b1:  29 C7                sub       di, ax
-0x00000000000081b3:  B8 74 7D             mov       ax, 0x7d74
+0x00000000000081b3:  B8 74 7D             mov       ax, STATES_SEGMENT
 0x00000000000081b6:  01 FF                add       di, di
 0x00000000000081b8:  8E C0                mov       es, ax
 0x00000000000081ba:  89 F0                mov       ax, si
 0x00000000000081bc:  26 8B 55 04          mov       dx, word ptr es:[di + 4]
 0x00000000000081c0:  83 C7 04             add       di, 4
 0x00000000000081c3:  0E                   push      cs
-0x00000000000081c4:  E8 97 02             call      0x845e
-0x00000000000081c7:  EB 9E                jmp       0x8167
+0x00000000000081c4:  E8 97 02             call      P_SetMobjState_
+0x00000000000081c7:  EB 9E                jmp       exit_p_mobjthinker
+label_11:
 0x00000000000081c9:  8E 46 FE             mov       es, word ptr [bp - 2]
-0x00000000000081cc:  26 F6 45 16 40       test      byte ptr es:[di + 0x16], 0x40
-0x00000000000081d1:  74 94                je        0x8167
+0x00000000000081cc:  26 F6 45 16 40       test      byte ptr es:[di + MOBJ_POS_T.mp_flags2], MF_COUNTKILL
+0x00000000000081d1:  74 94                je        exit_p_mobjthinker
 0x00000000000081d3:  80 3E 15 22 00       cmp       byte ptr ds:[_respawnmonsters], 0
-0x00000000000081d8:  74 8D                je        0x8167
-0x00000000000081da:  FF 44 20             inc       word ptr ds:[si + 0x20]
-0x00000000000081dd:  81 7C 20 A4 01       cmp       word ptr ds:[si + 0x20], 0x1a4
-0x00000000000081e2:  7C 83                jl        0x8167
-0x00000000000081e4:  BB 1C 07             mov       bx, 0x71c
-0x00000000000081e7:  F6 07 1F             test      byte ptr ds:[bx], 0x1f
-0x00000000000081ea:  74 03                je        0x81ef
-0x00000000000081ec:  E9 78 FF             jmp       0x8167
+0x00000000000081d8:  74 8D                je        exit_p_mobjthinker
+0x00000000000081da:  FF 44 20             inc       word ptr ds:[si + MOBJ_T.m_movecount]
+0x00000000000081dd:  81 7C 20 A4 01       cmp       word ptr ds:[si + MOBJ_T.m_movecount], (12 * 35)
+0x00000000000081e2:  7C 83                jl        exit_p_mobjthinker
+0x00000000000081e4:  BB 1C 07             mov       bx, _leveltime
+0x00000000000081e7:  F6 07 1F             test      byte ptr ds:[bx], 31
+0x00000000000081ea:  74 03                je        label_12
+jump_to_exit_mobjthinker:
+0x00000000000081ec:  E9 78 FF             jmp       exit_p_mobjthinker
+label_12:
 0x00000000000081ef:  BB B8 01             mov       bx, OFFSET _prndindex
 0x00000000000081f2:  FE 07                inc       byte ptr ds:[bx]
 0x00000000000081f4:  8A 17                mov       dl, byte ptr ds:[bx]
@@ -602,11 +613,16 @@ PUBLIC P_MobjThinker_
 0x00000000000081fd:  89 D3                mov       bx, dx
 0x00000000000081ff:  26 8A 07             mov       al, byte ptr es:[bx]
 0x0000000000008202:  3C 04                cmp       al, 4
-0x0000000000008204:  77 E6                ja        0x81ec
+0x0000000000008204:  77 E6                ja        jump_to_exit_mobjthinker
 0x0000000000008206:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008209:  89 FB                mov       bx, di
 0x000000000000820b:  89 F0                mov       ax, si
-0x000000000000820d:  FF 5E F6             lcall     [bp - 0xa]
+
+
+db 09Ah
+dw P_NIGHTMARERESPAWNOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
 0x0000000000008210:  C9                   LEAVE_MACRO     
 0x0000000000008211:  5F                   pop       di
 0x0000000000008212:  5E                   pop       si
@@ -712,7 +728,7 @@ PUBLIC P_SpawnMobj_
 0x00000000000082fa:  89 C3                mov       bx, ax
 0x00000000000082fc:  C1 E3 02             shl       bx, 2
 0x00000000000082ff:  29 C3                sub       bx, ax
-0x0000000000008301:  B8 74 7D             mov       ax, 0x7d74
+0x0000000000008301:  B8 74 7D             mov       ax, STATES_SEGMENT
 0x0000000000008304:  01 DB                add       bx, bx
 0x0000000000008306:  8E C0                mov       es, ax
 0x0000000000008308:  83 C3 02             add       bx, 2
@@ -859,6 +875,8 @@ PUBLIC P_RemoveMobj_
 ENDP
 
 
+
+
 PROC P_SetMobjState_ FAR
 PUBLIC P_SetMobjState_
 
@@ -891,7 +909,7 @@ PUBLIC P_SetMobjState_
 0x0000000000008496:  BA F5 6A             mov       dx, MOBJPOSLIST_6800_SEGMENT
 0x0000000000008499:  89 46 F8             mov       word ptr [bp - 8], ax
 0x000000000000849c:  6B C1 06             imul      ax, cx, 6
-0x000000000000849f:  C7 46 FC 74 7D       mov       word ptr [bp - 4], 0x7d74
+0x000000000000849f:  C7 46 FC 74 7D       mov       word ptr [bp - 4], STATES_SEGMENT
 0x00000000000084a4:  8E 46 FE             mov       es, word ptr [bp - 2]
 0x00000000000084a7:  89 C7                mov       di, ax
 0x00000000000084a9:  26 89 4F 12          mov       word ptr es:[bx + 0x12], cx
