@@ -5479,17 +5479,15 @@ PROC    A_SpawnSound_ NEAR
 PUBLIC  A_SpawnSound_
 
 push  dx
-push  si
-mov   si, ax
+push  ax
 mov   dx, SFX_BOSCUB
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-mov   ax, si
+pop   ax
 call  A_SpawnFly_
-pop   si
 pop   dx
 ret   
 
@@ -5499,48 +5497,65 @@ ENDP
 PROC    A_SpawnFly_ NEAR
 PUBLIC  A_SpawnFly_
 
-push  dx
-push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 0Ah
-mov   di, ax
-mov   word ptr [bp - 0Ah], GETSEESTATEADDR
-mov   word ptr [bp - 8], INFOFUNCLOADSEGMENT
+xchg  ax, di
 dec   byte ptr ds:[di + MOBJ_T.m_reactiontime]
 je    do_spawnfly
-LEAVE_MACRO 
 pop   di
-pop   si
-pop   dx
 ret   
 do_spawnfly:
-mov   si, word ptr ds:[di + MOBJ_T.m_targetRef]
-imul  ax, si, SIZEOF_THINKER_T
-imul  si, si, SIZEOF_MOBJ_POS_T
-add   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-mov   word ptr [bp - 6], ax
-mov   bx, word ptr [bp - 6]
-push  word ptr ds:[bx + MOBJ_T.m_secnum]
+
+push  dx
+push  si
+
+
+IF COMPISA GE COMPILE_186
+    mov   si, word ptr ds:[di + MOBJ_T.m_targetRef]
+    imul  bx, si, SIZEOF_THINKER_T
+    imul  si, si, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
+    xchg  ax, si
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
+    xchg  ax, bx
+ENDIF
+
+
+; push once for arg for next function, once for arg to this function
+add   bx, _thinkerlist + THINKER_T.t_data + MOBJ_T.m_secnum
+push  word ptr ds:[bx]   ; param secnum
+
+push  word ptr ds:[bx]   ; param secnum
+
 mov   ax, MOBJPOSLIST_6800_SEGMENT
-push  MT_SPAWNFIRE ; todo 186
-mov   es, ax
-mov   word ptr [bp - 2], ax
-push  word ptr es:[si + MOBJ_POS_T.mp_z + 2]
-mov   bx, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
-mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-mov   ax, word ptr es:[si]
-push  word ptr es:[si + MOBJ_POS_T.mp_z + 0]
-mov   dx, word ptr es:[si + 2]
+mov   ds, ax
+
+IF COMPISA GE COMPILE_186
+    push  MT_SPAWNFIRE                      ; param graphic
+ELSE
+    mov   ax, MT_SPAWNFIRE
+    push  ax
+ENDIF
+push  word ptr ds:[si + MOBJ_POS_T.mp_z + 2] ; param z hi
+push  word ptr ds:[si + MOBJ_POS_T.mp_z + 0] ; param z lo
+
+les   bx, dword ptr ds:[si + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+les   ax, dword ptr ds:[si + MOBJ_POS_T.mp_x + 0]
+mov   dx, es
+
+push  ss
+pop   ds
+
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SpawnMobj_addr
-mov   bx, OFFSET _setStateReturn
+
 mov   dx, SFX_TELEPT
-mov   ax, word ptr ds:[bx]
-mov   word ptr [bp - 4], si
+mov   ax, word ptr ds:[_setStateReturn]
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -5549,68 +5564,6 @@ dw _S_StartSound_addr
 call  P_Random_
 cmp   al, 50
 jb    spawn_imp
-jmp   spawn_non_imp
-spawn_imp:
-mov   al, SIZEOF_MOBJINFO_T
-chose_spawn_unit:
-mov   bx, word ptr [bp - 6]
-xor   ah, ah
-push  word ptr ds:[bx + MOBJ_T.m_secnum]
-les   bx, dword ptr [bp - 4]
-push  ax
-mov   si, word ptr [bp - 4]
-push  word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
-push  word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
-imul  si, ax, SIZEOF_THINKER_T
-imul  bx, ax, SIZEOF_MOBJ_POS_T
-add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
-mov   dx, 1
-mov   ax, si
-mov   cx, MOBJPOSLIST_6800_SEGMENT
-call  P_LookForPlayers_
-test  al, al
-je    label_185
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-call  dword ptr [bp - 0Ah]
-mov   dx, ax
-mov   ax, si
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
-label_185:
-push  word ptr ds:[si + 4]
-mov   es, cx
-push  word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-push  word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-push  word ptr es:[bx + 2]
-push  word ptr es:[bx]
-mov   ax, si
-;call  dword ptr ds:[_P_TeleportMove]
-db    09Ah
-dw    P_TELEPORTMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-mov   ax, di
-;call  P_RemoveMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_RemoveMobj_addr
-
-
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
 spawn_non_imp:
 cmp   al, 90
 jae   spawn_non_cgunner
@@ -5659,6 +5612,103 @@ jmp   chose_spawn_unit
 spawn_not_hellknight:
 mov   al, MT_BRUISER
 jmp   chose_spawn_unit
+spawn_imp:
+mov   al, MT_TROOP
+chose_spawn_unit:
+
+; this was already pushed twice before last function call
+
+;pop   bx  ; bp - 2
+;push  word ptr ds:[bx + MOBJ_T.m_secnum]  ; secnum
+
+xor   ah, ah
+push  ax                                  ; type
+
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ds, ax
+
+push  word ptr ds:[si + MOBJ_POS_T.mp_z + 2]
+push  word ptr ds:[si + MOBJ_POS_T.mp_z + 0]
+
+les   bx, dword ptr ds:[si + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+les   ax, dword ptr ds:[si + MOBJ_POS_T.mp_x + 0]
+mov   dx, es
+
+push  ss
+pop   ds
+
+;call  P_SpawnMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SpawnMobj_addr
+
+
+IF COMPISA GE COMPILE_186
+    imul  si, ax, SIZEOF_THINKER_T
+    add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
+    imul  bx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    xchg  ax, bx
+    mov   ax, SIZEOF_THINKER_T
+    mul   bx
+    xchg  ax, si
+    add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   bx
+    xchg  ax, bx
+
+ENDIF
+
+mov   dx, 1
+mov   ax, si
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+call  P_LookForPlayers_
+test  al, al
+je    dont_set_seestate
+mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+xor   ah, ah
+
+db    09Ah
+dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+
+mov   dx, ax
+mov   ax, si
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr  ; cx and bx persist thru this call..
+
+
+dont_set_seestate:
+push  word ptr ds:[si + MOBJ_T.m_secnum]
+mov   ds, cx
+push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 0]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 0]
+mov   ax, si
+
+push  ss
+pop   ds
+
+;call  dword ptr ds:[_P_TeleportMove]
+db    09Ah
+dw    P_TELEPORTMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+mov   ax, di
+;call  P_RemoveMobj_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_RemoveMobj_addr
+
+
+pop   si
+pop   dx
+pop   di
+ret   
+
+
 
 ENDP
 
