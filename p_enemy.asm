@@ -3936,9 +3936,6 @@ PUBLIC  A_VileAttack_
 ; bp - 8   angle
 ; bp - 0Ah fire (mobj)
 
-push  dx
-push  si
-push  di
 push  bp
 mov   bp, sp
 
@@ -3950,9 +3947,6 @@ test  ax, ax
 jne   do_vile_attack
 exit_vile_attack:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
 ret   
 do_vile_attack:
 
@@ -4081,9 +4075,6 @@ db    09Ah
 dw    P_RADIUSATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
 ret   
 
 ENDP
@@ -4092,7 +4083,6 @@ ENDP
 PROC    A_FatRaise_ NEAR
 PUBLIC  A_FatRaise_
 
-push  dx
 push  ax
 call  A_FaceTarget_
 mov   dx, SFX_MANATK
@@ -4101,7 +4091,6 @@ pop   ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-pop   dx
 ret   
 
 ENDP
@@ -4212,9 +4201,6 @@ ENDP
 PROC    A_FatAttack1_ NEAR
 PUBLIC  A_FatAttack1_
 
-push  dx
-push  si
-push  di
 
 mov   di, ax
 call  A_FaceTarget_
@@ -4229,9 +4215,6 @@ pop   bx  ; restore ptr
 mov   si, FATSPREADHIGH
 call  A_DoFatShot_
 
-pop   di
-pop   si
-pop   dx
 ret   
 
 ENDP
@@ -4240,9 +4223,6 @@ ENDP
 PROC    A_FatAttack2_ NEAR
 PUBLIC  A_FatAttack2_
 
-push  dx
-push  si
-push  di
 
 mov   di, ax
 call  A_FaceTarget_
@@ -4257,9 +4237,6 @@ pop   bx  ; restore ptr
 mov   si, -(2*FATSPREADHIGH)
 call  A_DoFatShot_
 
-pop   di
-pop   si
-pop   dx
 ret
 
 ENDP
@@ -4268,9 +4245,6 @@ ENDP
 PROC    A_FatAttack3_ NEAR
 PUBLIC  A_FatAttack3_
 
-push  dx
-push  si
-push  di
 
 mov   di, ax
 call  A_FaceTarget_
@@ -4284,9 +4258,6 @@ mov   si, FATSPREADHIGH/2
 call  A_DoFatShot_
 
 exit_skull_attack_early:
-pop   di
-pop   si
-pop   dx
 ret
 
 ENDP
@@ -4298,16 +4269,12 @@ ENDP
 PROC    A_SkullAttack_ NEAR
 PUBLIC  A_SkullAttack_
 
-push  si
 xchg  ax, si
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 jne   do_skullattack
-pop   si
 ret   
 do_skullattack:
 
-push  dx
-push  di
 push  bp
 mov   di, bx
 
@@ -4433,9 +4400,6 @@ mov   word ptr ds:[si + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momz + 2], dx
 
 pop   bp
-pop   di
-pop   dx
-pop   si
 ret   
 
 ENDP
@@ -4449,9 +4413,6 @@ PUBLIC  A_PainShootSkull_
 ; bp - 6     x lo  then newmobj
 ; bp - 8     x hi
 
-push  dx
-push  si
-push  di
 push  bp
 mov   bp, sp
 
@@ -4493,9 +4454,6 @@ cmp   cx, 20
 jle   less_than_20_skulls
 exit_a_painshootskull:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
 ret   
 
 
@@ -4629,7 +4587,6 @@ ENDP
 PROC    A_PainAttack_ NEAR
 PUBLIC  A_PainAttack_
 
-push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_painattack
@@ -4641,7 +4598,6 @@ mov   cx, es
 mov   ax, si
 call  A_PainShootSkull_
 exit_painattack:
-pop   si
 ret   
 
 ENDP
@@ -4650,9 +4606,6 @@ ENDP
 PROC    A_PainDie_ NEAR
 PUBLIC  A_PainDie_
 
-push  dx
-push  si
-push  di
 mov   si, ax
 mov   es, cx
 and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1],  (NOT MF_SOLID) ; inlined A_FALL?
@@ -4673,9 +4626,6 @@ mov   bx, di
 mov   ax, si
 mov   cx, dx
 call  A_PainShootSkull_
-pop   di
-pop   si
-pop   dx
 
 ret   
 
@@ -4685,9 +4635,6 @@ ENDP
 PROC    A_Scream_ NEAR
 PUBLIC  A_Scream_
 
-push  bx
-push  dx
-push  si
 mov   bx, ax
 mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
@@ -4714,9 +4661,6 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 exit_a_scream:
-pop   si
-pop   dx
-pop   bx
 ret   
 check_for_other_deathsound_1:
 cmp   al, SFX_PODTH3
@@ -4753,14 +4697,12 @@ ENDP
 PROC    A_XScream_ NEAR
 PUBLIC  A_XScream_
 
-push  dx
 mov   dx, SFX_SLOP
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   dx
 ret   
 
 ENDP
@@ -4769,8 +4711,6 @@ ENDP
 PROC    A_Pain_ NEAR
 PUBLIC  A_Pain_
 
-push  bx
-push  dx
 mov   bx, ax
 mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 xor   ah, ah
@@ -4787,8 +4727,6 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   dx
-pop   bx
 ret   
 
 ENDP
@@ -4807,8 +4745,6 @@ ENDP
 PROC    A_Explode_ NEAR
 PUBLIC  A_Explode_
 
-push  dx
-push  si
 xchg  ax, si
 
 IF COMPISA GE COMPILE_186
@@ -4827,8 +4763,6 @@ add   bx, (_thinkerlist + THINKER_T.t_data)
 db    09Ah
 dw    P_RADIUSATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-pop   si
-pop   dx
 ret   
 
 
@@ -4888,14 +4822,12 @@ jmp   generic_shared_jne_weird
 do_floor_and_exit:
 call  EV_DoFloor_
 exit_a_bossdeath_3:
-POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
 PROC    A_BossDeath_ NEAR
 PUBLIC  A_BossDeath_
 
-PUSHA_NO_AX_OR_BP_MACRO
 mov   bx, ax
 mov   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 cmp   byte ptr ds:[_commercial], 0
@@ -4973,7 +4905,6 @@ jmp   do_floor_and_exit
 do_exit_level:
 call  G_ExitLevel_
 exit_a_bossdeath:
-POPA_NO_AX_OR_BP_MACRO
 ret   
 
 continue_noncommercial_level_check:
@@ -5013,7 +4944,6 @@ ENDP
 PROC    A_Hoof_ NEAR
 PUBLIC  A_Hoof_
 
-push  dx
 push  ax
 
 mov   dx, SFX_HOOF
@@ -5024,7 +4954,6 @@ dw _S_StartSound_addr
 
 pop   ax
 call  A_Chase_
-pop   dx
 ret   
 
 ENDP
@@ -5033,7 +4962,6 @@ ENDP
 PROC    A_Metal_ NEAR
 PUBLIC  A_Metal_
 
-push  dx
 push  ax
 mov   dx, SFX_METAL
 ;call  S_StartSound_
@@ -5044,7 +4972,6 @@ dw _S_StartSound_addr
 pop   ax
 call  A_Chase_
 
-pop   dx
 ret   
 
 ENDP
@@ -5053,7 +4980,6 @@ ENDP
 PROC    A_BabyMetal_ NEAR
 PUBLIC  A_BabyMetal_
 
-push  dx
 push  ax
 mov   dx, SFX_BSPWLK
 ;call  S_StartSound_
@@ -5063,7 +4989,6 @@ dw _S_StartSound_addr
 
 pop   ax
 call  A_Chase_
-pop   dx
 ret   
 
 ENDP
@@ -5072,8 +4997,6 @@ ENDP
 PROC    A_BrainAwake_ NEAR
 PUBLIC  A_BrainAwake_
 
-push  bx
-push  dx
 
 mov   word ptr ds:[_numbraintargets], 0
 
@@ -5129,8 +5052,6 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   dx
-pop   bx
 ret   
 
 
@@ -5140,7 +5061,6 @@ ENDP
 PROC    A_BrainPain_ NEAR
 PUBLIC  A_BrainPain_
 
-push  dx
 mov   dx, SFX_BOSPN
 xor   ax, ax
 ;call  S_StartSound_
@@ -5148,7 +5068,6 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   dx
 ret   
 
 ENDP
@@ -5158,9 +5077,6 @@ PROC    A_BrainScream_ NEAR
 PUBLIC  A_BrainScream_
 
 
-push  dx
-push  si
-push  di
 mov   di, bx
 mov   es, cx
 
@@ -5259,9 +5175,6 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   di
-pop   si
-pop   dx
 ret   
 
 
@@ -5270,9 +5183,6 @@ ENDP
 
 PROC    A_BrainExplode_ NEAR
 PUBLIC  A_BrainExplode_
-
-push  dx
-push  di
 
 
 
@@ -5372,13 +5282,9 @@ cmp   al, 1
 jb    cap_tics_to_1_2
 cmp   al, 240
 ja    cap_tics_to_1_2
-pop   di
-pop   dx
 ret   
 cap_tics_to_1_2:
 mov   byte ptr ds:[bx + MOBJ_T.m_tics], 1
-pop   di
-pop   dx
 ret   
 
 ENDP
@@ -5398,9 +5304,6 @@ jne   do_brainspit
 ret   
 do_brainspit:
 
-push  dx
-push  si
-push  di
 
 xchg  ax, di
 mov   si, bx
@@ -5530,9 +5433,6 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 
-pop   di
-pop   si
-pop   dx
 ret   
 
 ENDP
@@ -5541,7 +5441,6 @@ ENDP
 PROC    A_SpawnSound_ NEAR
 PUBLIC  A_SpawnSound_
 
-push  dx
 push  ax
 mov   dx, SFX_BOSCUB
 ;call  S_StartSound_
@@ -5551,7 +5450,6 @@ dw _S_StartSound_addr
 
 pop   ax
 call  A_SpawnFly_
-pop   dx
 ret   
 
 ENDP
@@ -5560,11 +5458,9 @@ ENDP
 PROC    A_SpawnFly_ NEAR
 PUBLIC  A_SpawnFly_
 
-push  di
 xchg  ax, di
 dec   byte ptr ds:[di + MOBJ_T.m_reactiontime]
 je    do_spawnfly
-pop   di
 ret   
 do_spawnfly:
 
@@ -5779,8 +5675,6 @@ ENDP
 PROC    A_PlayerScream_ NEAR
 PUBLIC  A_PlayerScream_
 
-push  bx
-push  dx
 mov   dx, SFX_PLDETH 
 mov   bx, word ptr ds:[_playerMobj]
 cmp   byte ptr ds:[_commercial], 0
@@ -5795,8 +5689,6 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   dx
-pop   bx
 ret   
 
 ENDP

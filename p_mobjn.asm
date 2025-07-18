@@ -1164,7 +1164,12 @@ xchg      ax, di
 
 mov       cx, MOBJPOSLIST_6800_SEGMENT
 mov       ax, si
+
+PUSHA_NO_AX_MACRO
+
 call      word ptr cs:[di + setmobjstate_jump_table]
+
+POPA_NO_AX_MACRO
 
 
 done_with_mobj_state_action:
