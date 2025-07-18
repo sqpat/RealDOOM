@@ -224,23 +224,25 @@ ENDP
 PROC P_Random_ NEAR
 PUBLIC P_Random_
 
+; ah guaranteed 0 now!
 
 push      bx
-push      si
-mov       bx, OFFSET _prndindex
-inc       byte ptr ds:[bx]
-mov       si, RNDTABLE_SEGMENT
-mov       bl, byte ptr ds:[bx]
-mov       es, si
-xor       bh, bh
+
+inc       byte ptr ds:[_prndindex]
+mov       ax, RNDTABLE_SEGMENT
+mov       es, ax
+mov       al, byte ptr ds:[_prndindex]
+xor       ah, ah
+mov       bx, ax
 mov       al, byte ptr es:[bx]
-pop       si
 pop       bx
 ret       
 
 ENDP
 
 
+COMMENT @
+; INLINED AT SINGLE USE
 PROC P_SetupPsprites_ NEAR
 PUBLIC P_SetupPsprites_
 
@@ -250,10 +252,11 @@ mov       al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 mov       byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
 db        09Ah
 dw        P_BRINGUPWEAPONFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
-
 ret       
 
 ENDP
+
+@
 
 
 PROC P_SpawnPlayer_ NEAR
@@ -261,77 +264,100 @@ PUBLIC P_SpawnPlayer_
 
 push      bx
 push      cx
-push      si
+
 mov       bx, ax
-mov       es, dx
-mov       dx, word ptr es:[bx]
-mov       cx, word ptr es:[bx + 2]
-mov       si, word ptr es:[bx + 4]
-mov       bx, OFFSET _player + PLAYER_T.player_playerstate
-cmp       byte ptr ds:[bx], 2
+mov       es, dx ; map thing ptr
+mov       dx, word ptr es:[bx + MAPTHING_T.mapthing_x]
+mov       cx, word ptr es:[bx + MAPTHING_T.mapthing_y]
+push      word ptr es:[bx + MAPTHING_T.mapthing_angle]  ; for later
+
+cmp       byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
 jne       dont_player_reborn
 call      G_PlayerReborn_
 dont_player_reborn:
-push      -1
-push      0
-push      ONFLOORZ_HIGHBITS
-push      ONFLOORZ_LOWBITS
+
 xor       bx, bx
-xor       ax, ax
+
+IF COMPISA GE COMPILE_186
+    push      -1
+    push      bx
+    push      ONFLOORZ_HIGHBITS
+    push      bx
+ELSE
+    mov       ax, -1
+    push      ax
+    push      bx
+    mov       ax, ONFLOORZ_HIGHBITS
+    push      ax
+    push      bx
+ENDIF
+
+mov       ax, bx
 call      P_SpawnMobj_
-mov       bx, OFFSET _playerMobjRef
-mov       word ptr ds:[bx], ax
-imul      ax, ax, SIZEOF_THINKER_T
-mov       bx, OFFSET _playerMobj
+
+mov       word ptr ds:[_playerMobjRef], ax
+mov       dx, SIZEOF_THINKER_T
+mul       dx
 add       ax, (_thinkerlist + THINKER_T.t_data)
-mov       word ptr ds:[bx], ax
-mov       bx, OFFSET _playerMobjRef
-imul      ax, word ptr ds:[bx], SIZEOF_MOBJ_POS_T
-mov       bx, OFFSET _playerMobj_pos
-mov       word ptr ds:[bx + 2], MOBJPOSLIST_6800_SEGMENT  
-mov       word ptr ds:[bx], ax
-mov       bx, OFFSET _playerMobj
-mov       ax, si
-mov       bx, word ptr ds:[bx]
+
+mov       word ptr ds:[_playerMobj], ax
+
+mov       ax, SIZEOF_MOBJ_POS_T
+mul       word ptr ds:[_playerMobjRef]
+
+mov       word ptr ds:[_playerMobj_pos], ax
+mov       word ptr ds:[_playerMobj_pos + 2], MOBJPOSLIST_6800_SEGMENT  
+
+pop       ax ; retrieve stored angle
 cwd       
-mov       byte ptr ds:[bx + MOBJ_T.m_reactiontime], 0
-mov       bx, 45
-idiv      bx
+
+mov       cx, 45
+idiv      cx
 mov       cx, ANG45_HIGHBITS
 xor       bx, bx
-mov       si, OFFSET _playerMobj_pos
 ;call      FastMul16u32u_
 ; call  FastMul16u32u_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FastMul16u32u_addr
 
-les       bx, dword ptr ds:[si]
+les       bx, dword ptr ds:[_playerMobj_pos]
 mov       word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
 mov       word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], dx
-mov       bx, OFFSET _playerMobj
-mov       si, OFFSET _player + PLAYER_T.player_health
-mov       bx, word ptr ds:[bx]
-mov       ax, word ptr ds:[si]
-mov       word ptr ds:[bx + MOBJ_T.m_health], ax
-mov       bx, OFFSET _player + PLAYER_T.player_playerstate
-mov       byte ptr ds:[bx], 0
-mov       bx, OFFSET _player + PLAYER_T.player_refire
-mov       byte ptr ds:[bx], 0
-mov       bx, OFFSET _player + PLAYER_T.player_message
-mov       word ptr ds:[bx], -1
-mov       bx, OFFSET _player + PLAYER_T.player_damagecount
-mov       word ptr ds:[bx], 0
-mov       bx, OFFSET _player + PLAYER_T.player_bonuscount
-mov       byte ptr ds:[bx], 0
-mov       bx, OFFSET _player + PLAYER_T.player_extralightvalue
-mov       byte ptr ds:[bx], 0
-mov       bx, OFFSET _player + PLAYER_T.player_fixedcolormapvalue
-mov       byte ptr ds:[bx], 0
-mov       bx, OFFSET _player + PLAYER_T.player_viewheightvalue
-mov       word ptr ds:[bx], VIEWHEIGHT_LOWBITS
-mov       word ptr ds:[bx + 2], VIEWHEIGHT_HIGHBITS
-call      P_SetupPsprites_
+
+mov       bx, word ptr ds:[_playerMobj]
+push      word ptr ds:[_player + PLAYER_T.player_health]
+pop       word ptr ds:[bx + MOBJ_T.m_health]
+
+xor       ax, ax
+mov       byte ptr ds:[bx + MOBJ_T.m_reactiontime], al
+
+mov       word ptr ds:[_player + PLAYER_T.player_damagecount], ax
+mov       byte ptr ds:[_player + PLAYER_T.player_playerstate], al
+mov       byte ptr ds:[_player + PLAYER_T.player_refire], al
+mov       byte ptr ds:[_player + PLAYER_T.player_bonuscount], al
+mov       byte ptr ds:[_player + PLAYER_T.player_extralightvalue], al
+mov       byte ptr ds:[_player + PLAYER_T.player_fixedcolormapvalue], al
+
+
+
+
+mov       word ptr ds:[_player + PLAYER_T.player_viewheightvalue + 0], ax
+mov       word ptr ds:[_player + PLAYER_T.player_viewheightvalue + 2], VIEWHEIGHT_HIGHBITS
+;call      P_SetupPsprites_
+
+dec       ax
+mov       word ptr ds:[_player + PLAYER_T.player_message], ax
+
+; inlined
+mov       word ptr ds:[_psprites + (0 * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_statenum], ax
+mov       word ptr ds:[_psprites + (1 * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_statenum], ax
+mov       al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
+mov       byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
+db        09Ah
+dw        P_BRINGUPWEAPONFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
 
 call      Z_QuickmapStatus_
 
@@ -341,7 +367,7 @@ call      HU_Start_
 call      Z_QuickMapPhysics_
 call      Z_QuickMapScratch_8000_   ; // gross, due to p_setup.... perhaps externalize.
 call      Z_QuickMapPhysicsCode_
-pop       si
+
 pop       cx
 pop       bx
 ret       
