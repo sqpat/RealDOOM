@@ -27,7 +27,6 @@ EXTRN G_ExitLevel_:PROC
 
 EXTRN EV_DoDoor_:PROC
 EXTRN EV_DoFloor_:NEAR
-EXTRN __I4D:PROC
 
 .DATA
 
@@ -5375,98 +5374,149 @@ ENDP
 PROC    A_BrainSpit_ NEAR
 PUBLIC  A_BrainSpit_
 
+; bp - 2   targRef
+; bp - 4   targ_pos
+
+xor   byte ptr ds:[_brainspit_easy], 1
+cmp   byte ptr ds:[_gameskill], SK_EASY
+ja    do_brainspit
+cmp   byte ptr ds:[_brainspit_easy], 0
+jne   do_brainspit
+ret   
+do_brainspit:
+
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 0Ah
-mov   di, ax
+
+xchg  ax, di
 mov   si, bx
-mov   word ptr [bp - 2], cx
-mov   bx, OFFSET _brainspit_easy
-xor   byte ptr ds:[bx], 1
-cmp   byte ptr ds:[_gameskill], SK_EASY
-ja    label_183
-cmp   byte ptr ds:[bx], 0
-jne   label_183
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
-label_183:
-mov   bx, OFFSET _braintargeton
-mov   bx, word ptr ds:[bx]
-add   bx, bx
-mov   ax, word ptr ds:[bx + _braintargets]
-mov   bx, OFFSET _braintargeton
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr ds:[bx]
+
+mov   bx, word ptr ds:[_braintargeton]
+sal   bx, 1
+mov   cx, word ptr ds:[bx + _braintargets]
+push  cx  ; bp - 2
+
+mov   ax, word ptr ds:[_braintargeton]
 inc   ax
-mov   bx, OFFSET _numbraintargets
-cwd   
-idiv  word ptr ds:[bx]
-mov   bx, OFFSET _braintargeton
-mov   word ptr ds:[bx], dx
-imul  dx, word ptr [bp - 8], SIZEOF_THINKER_T
-imul  bx, word ptr [bp - 8], SIZEOF_MOBJ_POS_T
-push  MT_SPAWNSHOT ; todo 186
-mov   cx, word ptr [bp - 2]
-mov   ax, di
+cmp   ax, word ptr ds:[_numbraintargets]
+jl    dont_mod_braintargets
+xor   ax, ax
+dont_mod_braintargets:
+mov   word ptr ds:[_braintargeton], ax
+
+
+IF COMPISA GE COMPILE_186
+    imul  dx, cx, SIZEOF_THINKER_T
+    imul  bx, cx, SIZEOF_MOBJ_POS_T
+    push  bx   ; bp - 4
+    push  MT_SPAWNSHOT ; todo 186
+ELSE
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   cx
+    xchg  ax, bx
+
+    mov   ax, SIZEOF_THINKER_T
+    mul   cx
+    xchg  ax, dx
+
+    push  bx   ; bp - 4
+
+    mov   ax, MT_SPAWNSHOT
+    push  ax
+
+ENDIF
+
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
-mov   word ptr [bp - 4], bx
+
+
+mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   ax, di
 mov   bx, si
-mov   di, OFFSET _setStateReturn
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-mov   bx, OFFSET _setStateReturn_pos
-mov   ax, word ptr [bp - 8]
-mov   di, word ptr ds:[di]
-les   dx, dword ptr ds:[bx]
-mov   bx, dx
-mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_statenum]
-mov   bx, dx
-shl   bx, 2
-sub   bx, dx
-mov   dx, STATES_SEGMENT
-add   bx, bx
-mov   es, dx
-mov   al, byte ptr es:[bx + 2]
-mov   word ptr [bp - 0Ah], MOBJPOSLIST_6800_SEGMENT
-cbw  
-add   bx, 2
-cwd   
-mov   bx, word ptr [bp - 4]
-mov   cx, ax
-mov   ax, word ptr ds:[di + MOBJ_T.m_momy + 2]
-mov   es, word ptr [bp - 0Ah]
-mov   word ptr [bp - 6], ax
+mov   di, word ptr ds:[_setStateReturn]
+
+;	newmobj->targetRef = targRef;
+pop   bx  ; bp - 4
+pop   word ptr ds:[di + MOBJ_T.m_targetRef]  ; bp - 2
+
+
+;    newmobj->reactiontime = ((targ->y - mo->y) / newmobj->momy) / newmobj->state->tics;
+
+
+; HACK alert
+; div 32 bit by 32 bit sucks, especially for a small (one byte) result.
+; to get an accurate answer without external dependencies or a lot of code we are looping.
+; it's fine. this runs really rarely. Once every many frames in one map of doom2.
+
+; ok you end up with a negative divided by a negative in doom 2 due to mobj positioning.
+; we will ABS then sub loop instead of add looping. 
+; in theory some wad might not have downward pointing boss?
+
+
+xor   dx, dx 
+mov   es, word ptr ds:[_setStateReturn_pos+2]
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   es, word ptr [bp - 2]
-mov   word ptr [bp - 4], dx
 sub   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-mov   bx, word ptr [bp - 6]
-cwd   
-;call   FastDiv3216u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastDiv3216u_addr
-mov   bx, cx
-mov   cx, word ptr [bp - 4]
-call  __I4D
-mov   dx, SFX_BOSPIT
+
+jns   dont_abs_y_1
+neg   ax
+; dx known zero. wont overflow.
+dont_abs_y_1:
+
+
+les   bx, dword ptr ds:[di + MOBJ_T.m_momy + 0]
+mov   si, es
+
+test  si, si
+jns   dont_abs_y_2
+neg   bx
+adc   si, 0
+neg   si
+
+dont_abs_y_2:
+
+xor   cx, cx
+dec   cx
+
+; the answer maxes at around 160?
+loop_subtract_to_divide_like_a_moron:
+inc   cx
+sub   dx, bx
+sbb   ax, si
+jns   loop_subtract_to_divide_like_a_moron
+
+; cx has first divide result
+
+mov   si, word ptr ds:[_setStateReturn_pos]  ; es already set
+
+mov   ax, 6
+mul   word ptr es:[si + MOBJ_POS_T.mp_statenum]
+xchg  ax, bx
+mov   dx, STATES_SEGMENT
+mov   es, dx
+mov   al, byte ptr es:[bx + STATE_T.state_tics] ; todo is this a hardcoded value
+cbw  
+
+;cwd
+;xchg  ax, cx
+;div   cx
+
+xchg  ax, cx
+div   cl
+
 mov   byte ptr ds:[di + MOBJ_T.m_reactiontime], al
+mov   dx, SFX_BOSPIT
 xor   ax, ax
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-LEAVE_MACRO 
+
 pop   di
 pop   si
 pop   dx
