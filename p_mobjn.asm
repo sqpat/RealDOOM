@@ -84,15 +84,12 @@ EXTRN S_StopSoundMobjRef_:PROC
 
 .DATA
 
-EXTRN _P_SetThingPosition:DWORD
-EXTRN _P_UnsetThingPosition:DWORD
 EXTRN _gameskill:BYTE
 EXTRN _respawnmonsters:BYTE
 EXTRN _nomonsters:BYTE
 EXTRN _totalkills:WORD
 EXTRN _totalitems:WORD
 EXTRN _gametic:DWORD
-EXTRN _A_BFGSprayFar:DWORD
 
 .CODE
 
@@ -794,8 +791,8 @@ PUBLIC P_SpawnMobj_
 
 
 ; bp - 2    MOBJPOSLIST_6800_SEGMENT
-; bp - 4    
-; bp - 5    
+; bp - 4    unused
+; bp - 6    
 ; bp - 8    
 ; bp - 0Ah  unused
 ; bp - 0Ch  unused
@@ -824,10 +821,10 @@ mov       cx, SIZEOF_THINKER_T
 db 01Eh  ;
 dw _P_CreateThinker_addr
 
-xor       dx, dx
 mov       bx, ax
 mov       si, ax
 sub       ax, (_thinkerlist + THINKER_T.t_data)
+xor       dx, dx
 div       cx
 mov       word ptr [bp - 6], ax
 imul      di, ax, SIZEOF_MOBJ_POS_T
@@ -917,7 +914,11 @@ mov       al, byte ptr es:[bx + STATE_T.state_tics]
 mov       bx, word ptr [bp + 010h]
 mov       byte ptr ds:[si + MOBJ_T.m_tics], al
 mov       ax, si
-call      dword ptr ds:[_P_SetThingPosition]
+;call      dword ptr ds:[_P_SetThingPosition]
+db        09Ah
+dw        P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
 mov       bx, word ptr ds:[si + MOBJ_T.m_secnum]
 mov       ax, SECTORS_SEGMENT
 SHIFT_MACRO shl       bx 4
@@ -992,27 +993,42 @@ PROC P_RemoveMobj_ FAR
 PUBLIC P_RemoveMobj_
 
 
-push      bx
+
 push      cx
 push      dx
-mov       bx, ax
+
+push      ax  ; store mobj
+
 mov       cx, SIZEOF_THINKER_T
 sub       ax, (_thinkerlist + THINKER_T.t_data)
 xor       dx, dx
-div       cx
-mov       cx, ax
-imul      dx, ax, SIZEOF_MOBJ_POS_T
-mov       ax, bx
-call      dword ptr ds:[_P_UnsetThingPosition]
-mov       ax, bx
+div       cx  ; get mobjref
 
+pop       cx  ;  store mobj in cx
+push      ax  ; store mobjref for later
+
+IF COMPISA GE COMPILE_186
+    imul  dx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   dx, SIZEOF_MOBJ_POS_T
+    mul   dx
+    xchg  ax, dx
+ENDIF
+
+mov       ax, cx
+
+;call      dword ptr ds:[_P_UnsetThingPosition]
+db        09Ah
+dw        P_UNSETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+mov       ax, cx
 call      S_StopSoundMobjRef_
        
-mov       ax, cx
+pop       ax  ; restore div result (mobjref)
 call      P_RemoveThinker_
+
 pop       dx
 pop       cx
-pop       bx
 retf      
 
 
@@ -1078,42 +1094,57 @@ ENDP
 PROC P_SetMobjState_ FAR
 PUBLIC P_SetMobjState_
 
+; bp - 2   unused
+; bp - 4   unused
+; bp - 6   state offset
+; bp - 8   mobjpos offset
+
+; dx state
+; ax mobj
 
 push      bx
 push      cx
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 8
+
 mov       si, ax
 mov       cx, dx
-mov       bx, OFFSET _setStateReturn
-xor       dx, dx
-mov       word ptr ds:[bx], ax
+
+mov       word ptr ds:[_setStateReturn], ax
 mov       bx, SIZEOF_THINKER_T
 sub       ax, (_thinkerlist + THINKER_T.t_data)
+xor       dx, dx
 div       bx
-imul      ax, ax, SIZEOF_MOBJ_POS_T
-mov       bx, OFFSET _setStateReturn_pos
-mov       word ptr ds:[bx + 2], MOBJPOSLIST_6800_SEGMENT
-mov       word ptr ds:[bx], ax
-mov       di, word ptr ds:[bx + 2]
-mov       dx, word ptr ds:[bx]
-mov       word ptr [bp - 2], di
-mov       bx, dx
-test      cx, cx
-je        label_16
-mov       dx, MOBJPOSLIST_6800_SEGMENT
-mov       word ptr [bp - 8], ax
-label_18:
-imul      ax, cx, 6
-mov       word ptr [bp - 4], STATES_SEGMENT
-mov       es, word ptr [bp - 2]
-mov       di, ax
+
+IF COMPISA GE COMPILE_186
+    imul  ax, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   di, SIZEOF_MOBJ_POS_T
+    mul   di
+ENDIF
+
+;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_6800_SEGMENT
+mov       word ptr ds:[_setStateReturn_pos], ax
+
+
+;test      cx, cx
+;je        state_is_null
+jcxz      state_is_null
+
+
+do_next_state:
+push      ax  ; mobjpos offset
+xchg      ax, bx   ; bx gets mobjpos offset
+mov       ax, 6
+mul       cx
+mov       di, MOBJPOSLIST_6800_SEGMENT
+mov       es, di
+push      ax    ; state offset
+xchg      ax, di
+
 mov       word ptr es:[bx + MOBJ_POS_T.mp_statenum], cx
-mov       es, word ptr [bp - 4]
-mov       word ptr [bp - 6], ax
+mov       ax, STATES_SEGMENT
+mov       es, ax
 mov       al, byte ptr es:[di + STATE_T.state_tics]
 mov       byte ptr ds:[si + MOBJ_T.m_tics], al
 mov       cl, byte ptr es:[di + state_action]
@@ -1123,311 +1154,326 @@ ja        done_with_mobj_state_action
 xor       ch, ch
 mov       di, cx
 add       di, cx
-jmp       word ptr cs:[di + setmobjstate_jump_table]
-setmobjstate_switch_jump_0:
-mov       cx, word ptr [bp - 2]
+mov       cx, MOBJPOSLIST_6800_SEGMENT
 mov       ax, si
-call      dword ptr ds:[_A_BFGSprayFar]
+jmp       word ptr cs:[di + setmobjstate_jump_table]
+
+setmobjstate_switch_jump_0:
+
+;call      dword ptr ds:[_A_BFGSprayFar]
+db        09Ah
+dw        A_BFGSPRAYFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 done_with_mobj_state_action:
-mov       bx, OFFSET _setStateReturn
-mov       word ptr ds:[bx], si
-mov       bx, OFFSET _setStateReturn_pos
-mov       ax, word ptr [bp - 8]
-mov       word ptr ds:[bx], ax
-mov       word ptr ds:[bx + 2], dx
-mov       di, OFFSET _setStateReturn_pos
-mov       bx, word ptr ds:[bx]
-mov       ax, word ptr ds:[di + 2]
-les       di, dword ptr [bp - 6]
-mov       word ptr [bp - 2], ax
-mov       cx, word ptr es:[di + 4]
+mov       word ptr ds:[_setStateReturn], si
+
+pop       di
+pop       ax
+mov       word ptr ds:[_setStateReturn_pos], ax
+
+;mov       word ptr ds:[_setStateReturn_pos + 2], dx
+
+mov       cx, STATES_SEGMENT
+mov       es, cx
+
+mov       cx, word ptr es:[di + STATE_T.state_nextstate]
 cmp       byte ptr ds:[si + MOBJ_T.m_tics], 0
 jne       exit_p_setmobjstate_return_1
 test      cx, cx
-jne       label_18
-label_16:
-mov       es, word ptr [bp - 2]
+
+jne       do_next_state
+
+state_is_null:
+xchg      ax, bx  ; bx gets ptr from ax
+
+mov       ax, MOBJPOSLIST_6800_SEGMENT
+mov       es, ax
 mov       ax, si
 mov       word ptr es:[bx + MOBJ_POS_T.mp_stateNum], 0
-mov       bx, OFFSET _setStateReturn
+
 xor       dx, dx
 
 call      P_RemoveMobj_
-mov       word ptr ds:[bx], si
-mov       bx, SIZEOF_THINKER_T
+mov       word ptr ds:[_setStateReturn], si
 lea       ax, [si - (_thinkerlist + THINKER_T.t_data)]
+mov       bx, SIZEOF_THINKER_T
 div       bx
-imul      ax, ax, SIZEOF_MOBJ_POS_T
-mov       bx, OFFSET _setStateReturn_pos
-mov       word ptr ds:[bx + 2], MOBJPOSLIST_6800_SEGMENT
-mov       word ptr ds:[bx], ax
+
+
+IF COMPISA GE COMPILE_186
+    imul  ax, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   di, SIZEOF_MOBJ_POS_T
+    mul   di
+ENDIF
+
+;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_6800_SEGMENT
+mov       word ptr ds:[_setStateReturn_pos], ax
 xor       al, al
-LEAVE_MACRO     
+
+exit_p_setmobjstate:
 pop       di
 pop       si
 pop       cx
 pop       bx
 retf      
+exit_p_setmobjstate_return_1:
+mov       al, 1
+jmp       exit_p_setmobjstate
+
 setmobjstate_switch_jump_1:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_Explode_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_2:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_Pain_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_3:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_PlayerScream_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_4:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_Fall_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_5:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_XScream_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_6:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_Look_
 jmp       done_with_mobj_state_action
-exit_p_setmobjstate_return_1:
-mov       al, 1
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-retf      
+  
 setmobjstate_switch_jump_7:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_Chase_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_8:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_FaceTarget_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_9:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_PosAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_10:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_Scream_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_11:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_SPosAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_12:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_VileChase_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_13:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_VileStart_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_14:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_VileTarget_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_15:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_VileAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_16:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_StartFire_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_17:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_Fire_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_18:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_FireCrackle_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_19:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_Tracer_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_20:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_SkelWhoosh_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_21:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_SkelFist_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_22:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_SkelMissile_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_23:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_FatRaise_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_24:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_FatAttack1_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_25:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_FatAttack2_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_26:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_FatAttack3_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_27:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_BossDeath_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_28:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_CPosAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_29:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_CPosRefire_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_30:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_TroopAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_31:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_SargAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_32:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_HeadAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_33:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_BruisAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_34:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_SkullAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_35:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_Metal_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_36:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_SpidRefire_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_37:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_BabyMetal_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_38:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_BspiAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_39:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_Hoof_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_40:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_CyberAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_41:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_PainAttack_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_42:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_PainDie_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_43:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_KeenDie_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_44:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_BrainPain_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_45:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_BrainScream_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_49:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_SpawnSound_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_50:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_SpawnFly_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_51:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 call      A_BrainExplode_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_46:
 call      G_ExitLevel_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_47:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 mov       byte ptr ds:[si + MOBJ_T.m_tics], 181
 call      A_BrainAwake_
 jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_48:
-mov       cx, word ptr [bp - 2]
-mov       ax, si
+
+
 mov       byte ptr ds:[si + MOBJ_T.m_tics], 150
 call      A_BrainSpit_
 jmp       done_with_mobj_state_action
