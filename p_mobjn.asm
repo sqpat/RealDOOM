@@ -635,19 +635,42 @@ PROC P_SpawnMobj_ FAR
 PUBLIC P_SpawnMobj_
 
 
+;THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
+
+; ugh also modify this when made near...
+; bp + 010h knownsecnum
+; bp + 0E   type
+; bp + 0C   z hi
+; bp + 0A   z lo
+
+
+; bp - 2    MOBJPOSLIST_6800_SEGMENT
+; bp - 4    
+; bp - 5    
+; bp - 8    
+; bp - 0Ah  unused
+; bp - 0Ch  unused
+
+; bp - 0Eh  x lo
+; bp - 010h x hi
+; bp - 012h y lo
+; bp - 014h y hi
+
+
+
 0x0000000000008214:  56                   push      si
 0x0000000000008215:  57                   push      di
 0x0000000000008216:  55                   push      bp
 0x0000000000008217:  89 E5                mov       bp, sp
-0x0000000000008219:  83 EC 0C             sub       sp, 0xc
+0x0000000000008219:  83 EC 0C             sub       sp, 0Ch
 0x000000000000821c:  50                   push      ax
 0x000000000000821d:  52                   push      dx
 0x000000000000821e:  53                   push      bx
 0x000000000000821f:  51                   push      cx
-0x0000000000008220:  B8 00 08             mov       ax, 0x800
+0x0000000000008220:  B8 00 08             mov       ax, TF_MOBJTHINKER_HIGHBITS
 0x0000000000008223:  B9 2C 00             mov       cx, SIZEOF_THINKER_T
 0x0000000000008226:  0E                   push      cs
-0x0000000000008227:  E8 02 08             call      0x8a2c
+0x0000000000008227:  E8 02 08             call      P_CreateThinker_
 0x000000000000822a:  90                   nop       
 0x000000000000822b:  31 D2                xor       dx, dx
 0x000000000000822d:  89 C3                mov       bx, ax
@@ -656,7 +679,7 @@ PUBLIC P_SpawnMobj_
 0x0000000000008234:  F7 F1                div       cx
 0x0000000000008236:  89 46 FA             mov       word ptr [bp - 6], ax
 0x0000000000008239:  6B F8 18             imul      di, ax, SIZEOF_MOBJ_POS_T
-0x000000000000823c:  B9 28 00             mov       cx, 0x28
+0x000000000000823c:  B9 28 00             mov       cx, SIZEOF_MOBJ_T
 0x000000000000823f:  89 7E F8             mov       word ptr [bp - 8], di
 0x0000000000008242:  89 7E FC             mov       word ptr [bp - 4], di
 0x0000000000008245:  30 C0                xor       al, al
@@ -667,9 +690,9 @@ PUBLIC P_SpawnMobj_
 0x000000000000824e:  07                   pop       es
 0x000000000000824f:  8A E0                mov       ah, al
 0x0000000000008251:  D1 E9                shr       cx, 1
-0x0000000000008253:  F3 AB                rep stosw word ptr es:[di], ax
+0x0000000000008253:  F3 AB                rep stosw 
 0x0000000000008255:  13 C9                adc       cx, cx
-0x0000000000008257:  F3 AA                rep stosb byte ptr es:[di], al
+0x0000000000008257:  F3 AA                rep stosb 
 0x0000000000008259:  5F                   pop       di
 0x000000000000825a:  B9 18 00             mov       cx, SIZEOF_MOBJ_POS_T
 0x000000000000825d:  8B 7E F8             mov       di, word ptr [bp - 8]
@@ -677,100 +700,107 @@ PUBLIC P_SpawnMobj_
 0x0000000000008262:  57                   push      di
 0x0000000000008263:  8A E0                mov       ah, al
 0x0000000000008265:  D1 E9                shr       cx, 1
-0x0000000000008267:  F3 AB                rep stosw word ptr es:[di], ax
+0x0000000000008267:  F3 AB                rep stosw 
 0x0000000000008269:  13 C9                adc       cx, cx
-0x000000000000826b:  F3 AA                rep stosb byte ptr es:[di], al
+0x000000000000826b:  F3 AA                rep stosb 
 0x000000000000826d:  5F                   pop       di
-0x000000000000826e:  8A 46 0E             mov       al, byte ptr [bp + 0xe]
-0x0000000000008271:  30 E4                xor       ah, ah
-0x0000000000008273:  6B C8 0B             imul      cx, ax, 0xb
+0x000000000000826e:  8A 46 0E             mov       cl, byte ptr [bp + 0Eh]
+0x000000000000826e:  8A 46 0E             mov       al, SIZEOF_MOBJINFO_T
+0x0000000000008271:  30 E4                mul       cl
+0x0000000000008273:  6B C8 0B             xchg      ax, cx
 0x0000000000008276:  C7 46 FE F5 6A       mov       word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
-0x000000000000827b:  88 47 1A             mov       byte ptr ds:[bx + 0x1a], al
+0x000000000000827b:  88 47 1A             mov       byte ptr ds:[bx + MOBJ_T.m_mobjtype], al
 0x000000000000827e:  8E 46 FE             mov       es, word ptr [bp - 2]
-0x0000000000008281:  8B 56 F2             mov       dx, word ptr [bp - 0xe]
-0x0000000000008284:  26 89 15             mov       word ptr es:[di], dx
-0x0000000000008287:  8B 56 F0             mov       dx, word ptr [bp - 0x10]
-0x000000000000828a:  26 89 55 02          mov       word ptr es:[di + 2], dx
-0x000000000000828e:  8B 56 EE             mov       dx, word ptr [bp - 0x12]
-0x0000000000008291:  26 89 55 04          mov       word ptr es:[di + 4], dx
-0x0000000000008295:  8B 56 EC             mov       dx, word ptr [bp - 0x14]
+; todo do this all ax or something. 
+0x0000000000008281:  8B 56 F2             mov       dx, word ptr [bp - 0Eh]
+0x0000000000008284:  26 89 15             mov       word ptr es:[di + MOBJ_POS_T.mp_x + 0], dx
+0x0000000000008287:  8B 56 F0             mov       dx, word ptr [bp - 010h]
+0x000000000000828a:  26 89 55 02          mov       word ptr es:[di + MOBJ_POS_T.mp_x + 2], dx
+0x000000000000828e:  8B 56 EE             mov       dx, word ptr [bp - 012h]
+0x0000000000008291:  26 89 55 04          mov       word ptr es:[di + MOBJ_POS_T.mp_y + 0], dx
+0x0000000000008295:  8B 56 EC             mov       dx, word ptr [bp - 014h]
+0x000000000000829c:  26 89 55 06          mov       word ptr es:[di + MOBJ_POS_T.mp_y + 2], dx
 0x0000000000008298:  81 C1 60 C4          add       cx, _mobjinfo + MOBJINFO_T.mobjinfo_spawnstate
-0x000000000000829c:  26 89 55 06          mov       word ptr es:[di + 6], dx
 0x00000000000082a0:  89 CF                mov       di, cx
-0x00000000000082a2:  8A 55 05             mov       dl, byte ptr ds:[di + 5]
-0x00000000000082a5:  88 57 1E             mov       byte ptr ds:[bx + 0x1e], dl
-0x00000000000082a8:  8A 55 06             mov       dl, byte ptr ds:[di + 6]
-0x00000000000082ab:  C7 47 0A 00 00       mov       word ptr ds:[bx + 0xa], 0
+0x00000000000082a2:  8A 55 05             mov       dl, byte ptr ds:[di + MOBJINFO_T.mobjinfo_radius]
+0x00000000000082a5:  88 57 1E             mov       byte ptr ds:[bx + MOBJ_T.m_radius], dl
+0x00000000000082a8:  8A 55 06             mov       dl, byte ptr ds:[di + MOBJINFO_T.mobjinfo_height]
+0x00000000000082ab:  C7 47 0A 00 00       mov       word ptr ds:[bx + MOBJ_T.m_height + 0], 0
 0x00000000000082b0:  30 F6                xor       dh, dh
-0x00000000000082b2:  89 57 0C             mov       word ptr ds:[bx + 0xc], dx
-0x00000000000082b5:  8B 55 07             mov       dx, word ptr ds:[di + 7]
+0x00000000000082b2:  89 57 0C             mov       word ptr ds:[bx + MOBJ_T.m_height + 2], dx
+0x00000000000082b5:  8B 55 07             mov       dx, word ptr ds:[di + MOBJINFO_T.mobjinfo_flags1]
 0x00000000000082b8:  8B 7E F8             mov       di, word ptr [bp - 8]
-0x00000000000082bb:  26 89 55 14          mov       word ptr es:[di + 0x14], dx
+0x00000000000082bb:  26 89 55 14          mov       word ptr es:[di + MOBJ_POS_T.mp_flags1], dx
 0x00000000000082bf:  89 CF                mov       di, cx
-0x00000000000082c1:  C7 46 F4 3C 06       mov       word ptr [bp - 0xc], 0x63c
-0x00000000000082c6:  8B 55 09             mov       dx, word ptr ds:[di + 9]
+0x00000000000082c6:  8B 55 09             mov       dx, word ptr ds:[di + MOBJINFO_T.mobjinfo_flags2]
 0x00000000000082c9:  8B 7E F8             mov       di, word ptr [bp - 8]
-0x00000000000082cc:  C7 46 F6 D9 92       mov       word ptr [bp - 0xa], 0x92d9
-0x00000000000082d1:  26 89 55 16          mov       word ptr es:[di + 0x16], dx
-0x00000000000082d5:  FF 5E F4             lcall     [bp - 0xc]
-0x00000000000082d8:  89 47 1C             mov       word ptr ds:[bx + 0x1c], ax
-0x00000000000082db:  80 3E 14 22 04       cmp       byte ptr ds:[_gameskill], 4
-0x00000000000082e0:  74 04                je        0x82e6
-0x00000000000082e2:  C6 47 24 08          mov       byte ptr ds:[bx + 0x24], 8
+0x00000000000082d1:  26 89 55 16          mov       word ptr es:[di + MOBJ_POS_T.mp_flags2], dx
+
+
+db 09Ah
+dw GETSPAWNHEALTHADDR, INFOFUNCLOADSEGMENT
+
+
+0x00000000000082d8:  89 47 1C             mov       word ptr ds:[bx + MOBJ_T.m_health], ax
+0x00000000000082db:  80 3E 14 22 04       cmp       byte ptr ds:[_gameskill], SK_NIGHTMARE
+0x00000000000082e0:  74 04                je        skill_not_nightmare
+0x00000000000082e2:  C6 47 24 08          mov       byte ptr ds:[bx + MOBJ_T.m_reactiontime], 8
+skill_not_nightmare:
 0x00000000000082e6:  BB B8 01             mov       bx, OFFSET _prndindex
 0x00000000000082e9:  FE 07                inc       byte ptr ds:[bx]
 0x00000000000082eb:  89 CB                mov       bx, cx
-0x00000000000082ed:  8B 07                mov       ax, word ptr ds:[bx]
+0x00000000000082ed:  8B 07                mov       ax, word ptr ds:[bx + MOBJINFO_T.mobjinfo_spawnstatex]
 0x00000000000082ef:  C4 5E FC             les       bx, ptr [bp - 4]
-0x00000000000082f2:  26 89 47 12          mov       word ptr es:[bx + 0x12], ax
+0x00000000000082f2:  26 89 47 12          mov       word ptr es:[bx + MOBJ_POS_T.mp_statenum], ax
 0x00000000000082f6:  89 CB                mov       bx, cx
-0x00000000000082f8:  8B 07                mov       ax, word ptr ds:[bx]
+0x00000000000082f8:  8B 07                mov       ax, word ptr ds:[bx + MOBJINFO_T.mobjinfo_spawnstate]
 0x00000000000082fa:  89 C3                mov       bx, ax
-0x00000000000082fc:  C1 E3 02             shl       bx, 2
+0x00000000000082fc:  C1 E3 02             SHIFT_MACRO shl       bx 2
 0x00000000000082ff:  29 C3                sub       bx, ax
 0x0000000000008301:  B8 74 7D             mov       ax, STATES_SEGMENT
-0x0000000000008304:  01 DB                add       bx, bx
+0x0000000000008304:  01 DB                add       bx, bx  ; 6 bytes per
 0x0000000000008306:  8E C0                mov       es, ax
-0x0000000000008308:  83 C3 02             add       bx, 2
 0x000000000000830b:  8B 56 FC             mov       dx, word ptr [bp - 4]
-0x000000000000830e:  26 8A 07             mov       al, byte ptr es:[bx]
-0x0000000000008311:  8B 5E 10             mov       bx, word ptr [bp + 0x10]
-0x0000000000008314:  88 44 1B             mov       byte ptr ds:[si + 0x1b], al
+0x000000000000830e:  26 8A 07             mov       al, byte ptr es:[bx + STATE_T.state_tics]
+0x0000000000008311:  8B 5E 10             mov       bx, word ptr [bp + 010h]
+0x0000000000008314:  88 44 1B             mov       byte ptr ds:[si + MOBJ_T.m_tics], al
 0x0000000000008317:  89 F0                mov       ax, si
-0x0000000000008319:  FF 1E D8 0C          lcall     [0xcd8]
-0x000000000000831d:  8B 5C 04             mov       bx, word ptr ds:[si + 4]
-0x0000000000008320:  B8 90 21             mov       ax, 0x2190
-0x0000000000008323:  C1 E3 04             shl       bx, 4
+0x0000000000008319:  FF 1E D8 0C          call      dword ptr ds:[_P_SetThingPosition]
+0x000000000000831d:  8B 5C 04             mov       bx, word ptr ds:[si + MOBJ_T.m_secnum]
+0x0000000000008320:  B8 90 21             mov       ax, SECTORS_SEGMENT
+0x0000000000008323:  C1 E3 04             SHIFT_MACRO shl       bx 4
 0x0000000000008326:  8E C0                mov       es, ax
-0x0000000000008328:  26 8B 07             mov       ax, word ptr es:[bx]
-0x000000000000832b:  89 44 06             mov       word ptr ds:[si + 6], ax
-0x000000000000832e:  26 8B 47 02          mov       ax, word ptr es:[bx + 2]
-0x0000000000008332:  83 C3 02             add       bx, 2
-0x0000000000008335:  89 44 08             mov       word ptr ds:[si + 8], ax
-0x0000000000008338:  81 7E 0C 00 80       cmp       word ptr [bp + 0xc], 0x8000
-0x000000000000833d:  75 06                jne       0x8345
-0x000000000000833f:  83 7E 0A 00          cmp       word ptr [bp + 0xa], 0
-0x0000000000008343:  74 59                je        0x839e
-0x0000000000008345:  81 7E 0C FF 7F       cmp       word ptr [bp + 0xc], 0x7fff
-0x000000000000834a:  75 71                jne       0x83bd
-0x000000000000834c:  83 7E 0A FF          cmp       word ptr [bp + 0xa], -1
-0x0000000000008350:  75 6B                jne       0x83bd
-0x0000000000008352:  8A 54 1A             mov       dl, byte ptr ds:[si + 0x1a]
+0x0000000000008328:  26 8B 07             mov       ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
+0x000000000000832b:  89 44 06             mov       word ptr ds:[si + MOBJ_T.m_floorz], ax
+0x000000000000832e:  26 8B 47 02          mov       ax, word ptr es:[bx + SECTOR_T.sec_ceilingheight]
+0x0000000000008335:  89 44 08             mov       word ptr ds:[si + MOBJ_T.m_ceilingz], ax
+0x0000000000008338:  81 7E 0C 00 80       cmp       word ptr [bp + 0Ch], ONFLOORZ_HIGHBITS
+0x000000000000833d:  75 06                jne       not_floor_spawn
+0x000000000000833f:  83 7E 0A 00          cmp       word ptr [bp + 0Ah], 0
+0x0000000000008343:  74 59                je        is_floor_spawn:
+not_floor_spawn:
+0x0000000000008345:  81 7E 0C FF 7F       cmp       word ptr [bp + 0Ch], ONCEILINGZ_HIGHBITS
+0x000000000000834a:  75 71                jne       not_ceiling_spawn
+0x000000000000834c:  83 7E 0A FF          cmp       word ptr [bp + 0Ah], ONCEILINGZ_LOWBITS
+0x0000000000008350:  75 6B                jne       not_ceiling_spawn
+0x0000000000008352:  8A 54 1A             mov       dl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 0x0000000000008355:  30 F6                xor       dh, dh
-0x0000000000008357:  6B D2 0B             imul      dx, dx, 0xb
+0x0000000000008357:  6B D2 0B             imul      dx, dx, SIZEOF_MOBJINFO_T
 0x000000000000835a:  8B 4C 08             mov       cx, word ptr ds:[si + 8]
 0x000000000000835d:  83 E1 07             and       cx, 7
 0x0000000000008360:  C1 F8 03             sar       ax, 3
-0x0000000000008363:  C1 E1 0D             shl       cx, 0xd
+0x0000000000008363:  C1 E1 0D             shl       cx, 0Dh   ; todo no
 0x0000000000008366:  89 D3                mov       bx, dx
-0x0000000000008368:  8A 97 66 C4          mov       dl, byte ptr ds:[bx - 0x3b9a]
-0x000000000000836c:  81 C3 66 C4          add       bx, _mobjinfo + MOBJINFO_T.mobjinfo_height
+0x0000000000008368:  8A 97 66 C4          mov       dl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_height]
+
 0x0000000000008370:  8E 46 FE             mov       es, word ptr [bp - 2]
 0x0000000000008373:  30 F6                xor       dh, dh
 0x0000000000008375:  8B 5E FC             mov       bx, word ptr [bp - 4]
 0x0000000000008378:  29 D0                sub       ax, dx
-0x000000000000837a:  26 89 4F 08          mov       word ptr es:[bx + 8], cx
-0x000000000000837e:  26 89 47 0A          mov       word ptr es:[bx + 0xa], ax
+0x000000000000837a:  26 89 4F 08          mov       word ptr es:[bx + MOBJ_POS_T.mp_z + 0], cx
+set_z_highbits:
+0x000000000000837e:  26 89 47 0A          mov       word ptr es:[bx + MOBJ_POS_T.mp_z + 2], ax
+done_setting_z:
 0x0000000000008382:  BB BA 01             mov       bx, OFFSET _setStateReturn
 0x0000000000008385:  89 37                mov       word ptr ds:[bx], si
 0x0000000000008387:  BB 34 07             mov       bx, OFFSET setStateReturn_pos
@@ -783,23 +813,27 @@ PUBLIC P_SpawnMobj_
 0x0000000000008399:  5F                   pop       di
 0x000000000000839a:  5E                   pop       si
 0x000000000000839b:  CA 08 00             retf      8
+is_floor_spawn:
 0x000000000000839e:  8B 5E FC             mov       bx, word ptr [bp - 4]
 0x00000000000083a1:  8B 44 06             mov       ax, word ptr ds:[si + 6]
 0x00000000000083a4:  8E 46 FE             mov       es, word ptr [bp - 2]
 0x00000000000083a7:  C1 F8 03             sar       ax, 3
-0x00000000000083aa:  26 89 47 0A          mov       word ptr es:[bx + 0xa], ax
+0x00000000000083aa:  26 89 47 0A          mov       word ptr es:[bx + MOBJ_POS_T.mp_z + 2], ax
 0x00000000000083ae:  8B 44 06             mov       ax, word ptr ds:[si + 6]
 0x00000000000083b1:  25 07 00             and       ax, 7
-0x00000000000083b4:  C1 E0 0D             shl       ax, 0xd
-0x00000000000083b7:  26 89 47 08          mov       word ptr es:[bx + 8], ax
-0x00000000000083bb:  EB C5                jmp       0x8382
+0x00000000000083b4:  C1 E0 0D             shl       ax, 0Dh  ; todo no
+0x00000000000083b7:  26 89 47 08          mov       word ptr es:[bx + MOBJ_POS_T.mp_z + 0], ax
+0x00000000000083bb:  EB C5                jmp       done_setting_z ; todo cleanup. do two writes at once
+not_ceiling_spawn:
 0x00000000000083bd:  C4 5E FC             les       bx, ptr [bp - 4]
-0x00000000000083c0:  8B 46 0A             mov       ax, word ptr [bp + 0xa]
-0x00000000000083c3:  26 89 47 08          mov       word ptr es:[bx + 8], ax
-0x00000000000083c7:  8B 46 0C             mov       ax, word ptr [bp + 0xc]
-0x00000000000083ca:  EB B2                jmp       0x837e
+0x00000000000083c0:  8B 46 0A             mov       ax, word ptr [bp + 0Ah]
+0x00000000000083c3:  26 89 47 08          mov       word ptr es:[bx + MOBJ_POS_T.mp_z + 0], ax
+0x00000000000083c7:  8B 46 0C             mov       ax, word ptr [bp + 0Ch]
+0x00000000000083ca:  EB B2                jmp       set_z_highbits
 
 ENDP
+
+
 
 
 PROC P_RemoveMobj_ FAR
@@ -817,60 +851,72 @@ PUBLIC P_RemoveMobj_
 0x00000000000083db:  89 C1                mov       cx, ax
 0x00000000000083dd:  6B D0 18             imul      dx, ax, SIZEOF_MOBJ_POS_T
 0x00000000000083e0:  89 D8                mov       ax, bx
-0x00000000000083e2:  FF 1E D4 0C          lcall     [0xcd4]
+0x00000000000083e2:  FF 1E D4 0C          call      dword ptr ds:[_P_UnsetThingPosition]
 0x00000000000083e6:  89 D8                mov       ax, bx
 0x00000000000083e8:  0E                   push      cs
-0x00000000000083e9:  E8 0A 7F             call      0x2f6
+0x00000000000083e9:  E8 0A 7F             call      S_StopSoundMobjRef_
 0x00000000000083ec:  90                   nop       
 0x00000000000083ed:  89 C8                mov       ax, cx
-0x00000000000083ef:  E8 D0 06             call      0x8ac2
+0x00000000000083ef:  E8 D0 06             call      P_RemoveThinker_
 0x00000000000083f2:  5A                   pop       dx
 0x00000000000083f3:  59                   pop       cx
 0x00000000000083f4:  5B                   pop       bx
 0x00000000000083f5:  CB                   retf      
-0x00000000000083f6:  D1 84 3A 85          rol       word ptr ds:[si - 0x7ac6], 1
-0x00000000000083fa:  44                   inc       sp
-0x00000000000083fb:  85 4E 85             test      word ptr [bp - 0x7b], cx
-0x00000000000083fe:  58                   pop       ax
-0x00000000000083ff:  85 63 85             test      word ptr [bp + di - 0x7b], sp
-0x0000000000008402:  6E                   outsb     dx, byte ptr ds:[si]
-0x0000000000008403:  85 81 85 8C          test      word ptr ds:[bx + di - 0x737b], ax
-0x0000000000008407:  85 97 85 A2          test      word ptr ds:[bx - 0x5d7b], dx
-0x000000000000840b:  85 AD 85 B8          test      word ptr ds:[di - 0x477b], bp
-0x000000000000840f:  85 C3                test      bx, ax
-0x0000000000008411:  85 CE                test      si, cx
-0x0000000000008413:  85 D9                test      cx, bx
-0x0000000000008415:  85 E4                test      sp, sp
-0x0000000000008417:  85 EF                test      di, bp
-0x0000000000008419:  85 FA                test      dx, di
-0x000000000000841b:  85 05                test      word ptr ds:[di], ax
-0x000000000000841d:  86 10                xchg      byte ptr ds:[bx + si], dl
-0x000000000000841f:  86 1B                xchg      byte ptr [bp + di], bl
-0x0000000000008421:  86 26 86 31          xchg      byte ptr ds:[0x3186], ah
-0x0000000000008425:  86 3C                xchg      byte ptr ds:[si], bh
-0x0000000000008427:  86 47 86             xchg      byte ptr ds:[bx - 0x7a], al
-0x000000000000842a:  52                   push      dx
-0x000000000000842b:  86 5D 86             xchg      byte ptr ds:[di - 0x7a], bl
-0x000000000000842e:  68 86 73             push      0x7386
-0x0000000000008431:  86 7E 86             xchg      byte ptr [bp - 0x7a], bh
-0x0000000000008434:  89 86 94 86          mov       word ptr [bp - 0x796c], ax
-0x0000000000008438:  9F                   lahf      
-0x0000000000008439:  86 AA 86 B5          xchg      byte ptr [bp + si - 0x4a7a], ch
-0x000000000000843d:  86 C0                xchg      al, al
-0x000000000000843f:  86 CB                xchg      bl, cl
-0x0000000000008441:  86 D6                xchg      dh, dl
-0x0000000000008443:  86 E1                xchg      cl, ah
-0x0000000000008445:  86 EC                xchg      ah, ch
-0x0000000000008447:  86 F7                xchg      bh, dh
-0x0000000000008449:  86 02                xchg      byte ptr [bp + si], al
-0x000000000000844b:  87 0D                xchg      word ptr ds:[di], cx
-0x000000000000844d:  87 18                xchg      word ptr ds:[bx + si], bx
-0x000000000000844f:  87 23                xchg      word ptr [bp + di], sp
-0x0000000000008451:  87 4F 87             xchg      word ptr ds:[bx - 0x79], cx
-0x0000000000008454:  57                   push      di
-0x0000000000008455:  87 66 87             xchg      word ptr [bp - 0x79], sp
-0x0000000000008458:  2E 87 39             xchg      word ptr cs:[bx + di], di
-0x000000000000845b:  87 44 87             xchg      word ptr ds:[si - 0x79], ax
+
+
+setmobjstate_jump_table:
+dw setmobjstate_switch_jump_0
+dw setmobjstate_switch_jump_1
+dw setmobjstate_switch_jump_2
+dw setmobjstate_switch_jump_3
+dw setmobjstate_switch_jump_4
+dw setmobjstate_switch_jump_5
+dw setmobjstate_switch_jump_6
+dw setmobjstate_switch_jump_7
+dw setmobjstate_switch_jump_8
+dw setmobjstate_switch_jump_9
+dw setmobjstate_switch_jump_10
+dw setmobjstate_switch_jump_11
+dw setmobjstate_switch_jump_12
+dw setmobjstate_switch_jump_13
+dw setmobjstate_switch_jump_14
+dw setmobjstate_switch_jump_15
+dw setmobjstate_switch_jump_16
+dw setmobjstate_switch_jump_17
+dw setmobjstate_switch_jump_18
+dw setmobjstate_switch_jump_19
+dw setmobjstate_switch_jump_20
+dw setmobjstate_switch_jump_21
+dw setmobjstate_switch_jump_22
+dw setmobjstate_switch_jump_23
+dw setmobjstate_switch_jump_24
+dw setmobjstate_switch_jump_25
+dw setmobjstate_switch_jump_26
+dw setmobjstate_switch_jump_27
+dw setmobjstate_switch_jump_28
+dw setmobjstate_switch_jump_29
+dw setmobjstate_switch_jump_30
+dw setmobjstate_switch_jump_31
+dw setmobjstate_switch_jump_32
+dw setmobjstate_switch_jump_33
+dw setmobjstate_switch_jump_34
+dw setmobjstate_switch_jump_35
+dw setmobjstate_switch_jump_36
+dw setmobjstate_switch_jump_37
+dw setmobjstate_switch_jump_38
+dw setmobjstate_switch_jump_39
+dw setmobjstate_switch_jump_40
+dw setmobjstate_switch_jump_41
+dw setmobjstate_switch_jump_42
+dw setmobjstate_switch_jump_43
+dw setmobjstate_switch_jump_44
+dw setmobjstate_switch_jump_45
+dw setmobjstate_switch_jump_46
+dw setmobjstate_switch_jump_47
+dw setmobjstate_switch_jump_48
+dw setmobjstate_switch_jump_49
+dw setmobjstate_switch_jump_50
+dw setmobjstate_switch_jump_51
 
 ENDP
 
@@ -915,19 +961,20 @@ PUBLIC P_SetMobjState_
 0x00000000000084a9:  26 89 4F 12          mov       word ptr es:[bx + 0x12], cx
 0x00000000000084ad:  8E 46 FC             mov       es, word ptr [bp - 4]
 0x00000000000084b0:  89 46 FA             mov       word ptr [bp - 6], ax
-0x00000000000084b3:  26 8A 45 02          mov       al, byte ptr es:[di + 2]
-0x00000000000084b7:  88 44 1B             mov       byte ptr ds:[si + 0x1b], al
-0x00000000000084ba:  26 8A 4D 03          mov       cl, byte ptr es:[di + 3]
+0x00000000000084b3:  26 8A 45 02          mov       al, byte ptr es:[di + STATE_T.state_tics]
+0x00000000000084b7:  88 44 1B             mov       byte ptr ds:[si + MOBJ_T.m_tics], al
+0x00000000000084ba:  26 8A 4D 03          mov       cl, byte ptr es:[di + state_action]
 0x00000000000084be:  80 E9 17             sub       cl, 0x17
 0x00000000000084c1:  80 F9 33             cmp       cl, 0x33
 0x00000000000084c4:  77 14                ja        0x84da
 0x00000000000084c6:  30 ED                xor       ch, ch
 0x00000000000084c8:  89 CF                mov       di, cx
 0x00000000000084ca:  01 CF                add       di, cx
-0x00000000000084cc:  2E FF A5 F6 83       jmp       word ptr cs:[di - 0x7c0a]
+0x00000000000084cc:  2E FF A5 F6 83       jmp       word ptr cs:[di + setmobjstate_jump_table]
+setmobjstate_switch_jump_0:
 0x00000000000084d1:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000084d4:  89 F0                mov       ax, si
-0x00000000000084d6:  FF 1E 08 0D          lcall     [0xd08]
+0x00000000000084d6:  FF 1E 08 0D          call      dword ptr ds:[_A_BFGSprayFar_]
 0x00000000000084da:  BB BA 01             mov       bx, OFFSET _setStateReturn
 0x00000000000084dd:  89 37                mov       word ptr ds:[bx], si
 0x00000000000084df:  BB 34 07             mov       bx, OFFSET setStateReturn_pos
@@ -940,7 +987,7 @@ PUBLIC P_SetMobjState_
 0x00000000000084f2:  C4 7E FA             les       di, ptr [bp - 6]
 0x00000000000084f5:  89 46 FE             mov       word ptr [bp - 2], ax
 0x00000000000084f8:  26 8B 4D 04          mov       cx, word ptr es:[di + 4]
-0x00000000000084fc:  80 7C 1B 00          cmp       byte ptr ds:[si + 0x1b], 0
+0x00000000000084fc:  80 7C 1B 00          cmp       byte ptr ds:[si + MOBJ_T.m_tics], 0
 0x0000000000008500:  75 77                jne       0x8579
 0x0000000000008502:  85 C9                test      cx, cx
 0x0000000000008504:  75 96                jne       0x849c
@@ -966,26 +1013,32 @@ PUBLIC P_SetMobjState_
 0x0000000000008537:  59                   pop       cx
 0x0000000000008538:  5B                   pop       bx
 0x0000000000008539:  CB                   retf      
+setmobjstate_switch_jump_1:
 0x000000000000853a:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000853d:  89 F0                mov       ax, si
 0x000000000000853f:  E8 27 BA             call      0x3f69
 0x0000000000008542:  EB 96                jmp       0x84da
+setmobjstate_switch_jump_2:
 0x0000000000008544:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008547:  89 F0                mov       ax, si
 0x0000000000008549:  E8 FC B9             call      0x3f48
 0x000000000000854c:  EB 8C                jmp       0x84da
+setmobjstate_switch_jump_3:
 0x000000000000854e:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008551:  89 F0                mov       ax, si
 0x0000000000008553:  E8 A4 BE             call      0x43fa
 0x0000000000008556:  EB 82                jmp       0x84da
+setmobjstate_switch_jump_4:
 0x0000000000008558:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000855b:  89 F0                mov       ax, si
 0x000000000000855d:  E8 01 BA             call      0x3f61
 0x0000000000008560:  E9 77 FF             jmp       0x84da
+setmobjstate_switch_jump_5:
 0x0000000000008563:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008566:  89 F0                mov       ax, si
 0x0000000000008568:  E8 D3 B9             call      0x3f3e
 0x000000000000856b:  E9 6C FF             jmp       0x84da
+setmobjstate_switch_jump_6:
 0x000000000000856e:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008571:  89 F0                mov       ax, si
 0x0000000000008573:  E8 4B A9             call      0x2ec1
@@ -997,184 +1050,229 @@ PUBLIC P_SetMobjState_
 0x000000000000857e:  59                   pop       cx
 0x000000000000857f:  5B                   pop       bx
 0x0000000000008580:  CB                   retf      
+setmobjstate_switch_jump_7:
 0x0000000000008581:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008584:  89 F0                mov       ax, si
 0x0000000000008586:  E8 E2 A9             call      0x2f6b
 0x0000000000008589:  E9 4E FF             jmp       0x84da
+setmobjstate_switch_jump_8:
 0x000000000000858c:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000858f:  89 F0                mov       ax, si
 0x0000000000008591:  E8 57 AB             call      0x30eb
 0x0000000000008594:  E9 43 FF             jmp       0x84da
+setmobjstate_switch_jump_9:
 0x0000000000008597:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000859a:  89 F0                mov       ax, si
 0x000000000000859c:  E8 BF AB             call      0x315e
 0x000000000000859f:  E9 38 FF             jmp       0x84da
+setmobjstate_switch_jump_10:
 0x00000000000085a2:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085a5:  89 F0                mov       ax, si
 0x00000000000085a7:  E8 3D B9             call      0x3ee7
 0x00000000000085aa:  E9 2D FF             jmp       0x84da
+setmobjstate_switch_jump_11:
 0x00000000000085ad:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085b0:  89 F0                mov       ax, si
 0x00000000000085b2:  E8 22 AC             call      0x31d7
 0x00000000000085b5:  E9 22 FF             jmp       0x84da
+setmobjstate_switch_jump_12:
 0x00000000000085b8:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085bb:  89 F0                mov       ax, si
 0x00000000000085bd:  E8 57 B2             call      0x3817
 0x00000000000085c0:  E9 17 FF             jmp       0x84da
+setmobjstate_switch_jump_13:
 0x00000000000085c3:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085c6:  89 F0                mov       ax, si
 0x00000000000085c8:  E8 EE B3             call      0x39b9
 0x00000000000085cb:  E9 0C FF             jmp       0x84da
+setmobjstate_switch_jump_14:
 0x00000000000085ce:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085d1:  89 F0                mov       ax, si
 0x00000000000085d3:  E8 AD B4             call      0x3a83
 0x00000000000085d6:  E9 01 FF             jmp       0x84da
+setmobjstate_switch_jump_15:
 0x00000000000085d9:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085dc:  89 F0                mov       ax, si
 0x00000000000085de:  E8 60 B5             call      0x3b41
 0x00000000000085e1:  E9 F6 FE             jmp       0x84da
+setmobjstate_switch_jump_16:
 0x00000000000085e4:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085e7:  89 F0                mov       ax, si
 0x00000000000085e9:  E8 D7 B3             call      0x39c3
 0x00000000000085ec:  E9 EB FE             jmp       0x84da
+setmobjstate_switch_jump_17:
 0x00000000000085ef:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085f2:  89 F0                mov       ax, si
 0x00000000000085f4:  E8 EA B3             call      0x39e1
 0x00000000000085f7:  E9 E0 FE             jmp       0x84da
+setmobjstate_switch_jump_18:
 0x00000000000085fa:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085fd:  89 F0                mov       ax, si
 0x00000000000085ff:  E8 D0 B3             call      0x39d2
 0x0000000000008602:  E9 D5 FE             jmp       0x84da
+setmobjstate_switch_jump_19:
 0x0000000000008605:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008608:  89 F0                mov       ax, si
 0x000000000000860a:  E8 44 AF             call      0x3551
 0x000000000000860d:  E9 CA FE             jmp       0x84da
+setmobjstate_switch_jump_20:
 0x0000000000008610:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008613:  89 F0                mov       ax, si
 0x0000000000008615:  E8 B5 B0             call      0x36cd
 0x0000000000008618:  E9 BF FE             jmp       0x84da
+setmobjstate_switch_jump_21:
 0x000000000000861b:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000861e:  89 F0                mov       ax, si
 0x0000000000008620:  E8 C3 B0             call      0x36e6
 0x0000000000008623:  E9 B4 FE             jmp       0x84da
+setmobjstate_switch_jump_22:
 0x0000000000008626:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008629:  89 F0                mov       ax, si
 0x000000000000862b:  E8 CD AE             call      0x34fb
 0x000000000000862e:  E9 A9 FE             jmp       0x84da
+setmobjstate_switch_jump_23:
 0x0000000000008631:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008634:  89 F0                mov       ax, si
 0x0000000000008636:  E8 DF B5             call      0x3c18
 0x0000000000008639:  E9 9E FE             jmp       0x84da
+setmobjstate_switch_jump_24:
 0x000000000000863c:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000863f:  89 F0                mov       ax, si
 0x0000000000008641:  E8 39 B6             call      0x3c7d
 0x0000000000008644:  E9 93 FE             jmp       0x84da
+setmobjstate_switch_jump_25:
 0x0000000000008647:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000864a:  89 F0                mov       ax, si
 0x000000000000864c:  E8 4F B6             call      0x3c9e
 0x000000000000864f:  E9 88 FE             jmp       0x84da
+setmobjstate_switch_jump_26:
 0x0000000000008652:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008655:  89 F0                mov       ax, si
 0x0000000000008657:  E8 65 B6             call      0x3cbf
 0x000000000000865a:  E9 7D FE             jmp       0x84da
+setmobjstate_switch_jump_27:
 0x000000000000865d:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008660:  89 F0                mov       ax, si
 0x0000000000008662:  E8 67 B9             call      0x3fcc
 0x0000000000008665:  E9 72 FE             jmp       0x84da
+setmobjstate_switch_jump_28:
 0x0000000000008668:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000866b:  89 F0                mov       ax, si
 0x000000000000866d:  E8 ED AB             call      0x325d
 0x0000000000008670:  E9 67 FE             jmp       0x84da
+setmobjstate_switch_jump_29:
 0x0000000000008673:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008676:  89 F0                mov       ax, si
 0x0000000000008678:  E8 5C AC             call      0x32d7
 0x000000000000867b:  E9 5C FE             jmp       0x84da
+setmobjstate_switch_jump_30:
 0x000000000000867e:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008681:  89 F0                mov       ax, si
 0x0000000000008683:  E8 22 AD             call      0x33a8
 0x0000000000008686:  E9 51 FE             jmp       0x84da
+setmobjstate_switch_jump_31:
 0x0000000000008689:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000868c:  89 F0                mov       ax, si
 0x000000000000868e:  E8 6D AD             call      0x33fe
 0x0000000000008691:  E9 46 FE             jmp       0x84da
+setmobjstate_switch_jump_32:
 0x0000000000008694:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008697:  89 F0                mov       ax, si
 0x0000000000008699:  E8 A0 AD             call      0x343c
 0x000000000000869c:  E9 3B FE             jmp       0x84da
+setmobjstate_switch_jump_33:
 0x000000000000869f:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086a2:  89 F0                mov       ax, si
 0x00000000000086a4:  E8 07 AE             call      0x34ae
 0x00000000000086a7:  E9 30 FE             jmp       0x84da
+setmobjstate_switch_jump_34:
 0x00000000000086aa:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086ad:  89 F0                mov       ax, si
 0x00000000000086af:  E8 27 B6             call      0x3cd9
 0x00000000000086b2:  E9 25 FE             jmp       0x84da
+setmobjstate_switch_jump_35:
 0x00000000000086b5:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086b8:  89 F0                mov       ax, si
 0x00000000000086ba:  E8 EE B9             call      0x40ab
 0x00000000000086bd:  E9 1A FE             jmp       0x84da
+setmobjstate_switch_jump_36:
 0x00000000000086c0:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086c3:  89 F0                mov       ax, si
 0x00000000000086c5:  E8 67 AC             call      0x332f
 0x00000000000086c8:  E9 0F FE             jmp       0x84da
+setmobjstate_switch_jump_37:
 0x00000000000086cb:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086ce:  89 F0                mov       ax, si
 0x00000000000086d0:  E8 E7 B9             call      0x40ba
 0x00000000000086d3:  E9 04 FE             jmp       0x84da
+setmobjstate_switch_jump_38:
 0x00000000000086d6:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086d9:  89 F0                mov       ax, si
 0x00000000000086db:  E8 A9 AC             call      0x3387
 0x00000000000086de:  E9 F9 FD             jmp       0x84da
+setmobjstate_switch_jump_39:
 0x00000000000086e1:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086e4:  89 F0                mov       ax, si
 0x00000000000086e6:  E8 B3 B9             call      0x409c
 0x00000000000086e9:  E9 EE FD             jmp       0x84da
+setmobjstate_switch_jump_40:
 0x00000000000086ec:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086ef:  89 F0                mov       ax, si
 0x00000000000086f1:  E8 99 AD             call      0x348d
 0x00000000000086f4:  E9 E3 FD             jmp       0x84da
+setmobjstate_switch_jump_41:
 0x00000000000086f7:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086fa:  89 F0                mov       ax, si
 0x00000000000086fc:  E8 95 B7             call      0x3e94
 0x00000000000086ff:  E9 D8 FD             jmp       0x84da
+setmobjstate_switch_jump_42:
 0x0000000000008702:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008705:  89 F0                mov       ax, si
 0x0000000000008707:  E8 A5 B7             call      0x3eaf
 0x000000000000870a:  E9 CD FD             jmp       0x84da
+setmobjstate_switch_jump_43:
 0x000000000000870d:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008710:  89 F0                mov       ax, si
 0x0000000000008712:  E8 4F A7             call      0x2e64
 0x0000000000008715:  E9 C2 FD             jmp       0x84da
+setmobjstate_switch_jump_44:
 0x0000000000008718:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000871b:  89 F0                mov       ax, si
 0x000000000000871d:  E8 F7 B9             call      0x4117
 0x0000000000008720:  E9 B7 FD             jmp       0x84da
+setmobjstate_switch_jump_45:
 0x0000000000008723:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008726:  89 F0                mov       ax, si
 0x0000000000008728:  E8 F8 B9             call      0x4123
 0x000000000000872b:  E9 AC FD             jmp       0x84da
+setmobjstate_switch_jump_49:
 0x000000000000872e:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008731:  89 F0                mov       ax, si
 0x0000000000008733:  E8 B3 BB             call      0x42e9
 0x0000000000008736:  E9 A1 FD             jmp       0x84da
+setmobjstate_switch_jump_50:
 0x0000000000008739:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000873c:  89 F0                mov       ax, si
 0x000000000000873e:  E8 B7 BB             call      0x42f8
 0x0000000000008741:  E9 96 FD             jmp       0x84da
+setmobjstate_switch_jump_51:
 0x0000000000008744:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008747:  89 F0                mov       ax, si
 0x0000000000008749:  E8 6B BA             call      0x41b7
 0x000000000000874c:  E9 8B FD             jmp       0x84da
-0x000000000000874f:  9A 68 19 88 0A       lcall     0xa88:0x1968
+setmobjstate_switch_jump_46:
+0x000000000000874f:  9A 68 19 88 0A       call      G_ExitLevel_
 0x0000000000008754:  E9 83 FD             jmp       0x84da
+setmobjstate_switch_jump_47:
 0x0000000000008757:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000875a:  89 F0                mov       ax, si
-0x000000000000875c:  C6 44 1B B5          mov       byte ptr ds:[si + 0x1b], 0xb5
+0x000000000000875c:  C6 44 1B B5          mov       byte ptr ds:[si + MOBJ_T.m_tics], 0xb5
 0x0000000000008760:  E8 66 B9             call      0x40c9
 0x0000000000008763:  E9 74 FD             jmp       0x84da
+setmobjstate_switch_jump_48:
 0x0000000000008766:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008769:  89 F0                mov       ax, si
-0x000000000000876b:  C6 44 1B 96          mov       byte ptr ds:[si + 0x1b], 0x96
+0x000000000000876b:  C6 44 1B 96          mov       byte ptr ds:[si + MOBJ_T.m_tics], 0x96
 0x000000000000876f:  E8 CD BA             call      0x423f
 0x0000000000008772:  E9 65 FD             jmp       0x84da
 0x0000000000008775:  FC                   cld       
