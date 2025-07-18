@@ -5260,45 +5260,92 @@ PROC    A_BrainExplode_ NEAR
 PUBLIC  A_BrainExplode_
 
 push  dx
-push  si
 push  di
+
+
+
 call  P_Random_
 mov   dl, al
 call  P_Random_
+;    x = mo_pos->x.w + (P_Random () - P_Random ())*2048;
+xor   ah, ah
 xor   dh, dh
-xor   ah, ah
 sub   dx, ax
-mov   es, cx
-mov   ax, dx
-mov   si, word ptr es:[bx]
-shl   ax, SIZEOF_MOBJINFO_T
-mov   di, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-cwd   
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-add   si, ax
-adc   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+
+
+
+
+IF COMPISA GE COMPILE_186
+    push  -1 
+    push  MT_ROCKET
+ELSE
+    mov   ax, -1
+    push  ax
+    mov   ax, MT_ROCKET
+    push  ax
+ENDIF
+
+
 call  P_Random_
+
+mov   es, cx
+
 xor   ah, ah
-push  -1 ; todo 186
-add   ax, ax
-push  MT_ROCKET ; todo 186
+sal   ax, 1
 add   ax, 128
 push  ax
-mov   bx, di
-push  0 ; todo 186
-mov   ax, si
+
+IF COMPISA GE COMPILE_186
+    push  0
+ELSE
+    xor   ax, ax
+    push  ax
+ENDIF
+
+; shift 11
+xor   cx, cx
+mov   cl, dh
+mov   dh, dl
+mov   dl, ch  ; zero
+sal   dx, 1
+rcl   cx, 1
+sal   dx, 1
+rcl   cx, 1
+sal   dx, 1
+rcl   cx, 1
+
+; cx:dx has (prandom - prandom * 2048)
+
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+add   ax, dx
+mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+adc   dx, cx
+
+les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+
+
+
+
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SpawnMobj_addr
-mov   bx, OFFSET _setStateReturn
-mov   bx, word ptr ds:[bx]
+
+
+mov   bx, word ptr ds:[_setStateReturn]
 call  P_Random_
+
+;    th->momz.w = P_Random()*512;
+
 xor   ah, ah
-shl   ax, 9
-cwd   
+cwd
+xchg  al, ah
+sal   ax, 1
+rcl   dx, 1
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], dx
+
 mov   dx, S_BRAINEXPLODE1
 mov   ax, bx
 ;call  P_SetMobjState_
@@ -5310,17 +5357,15 @@ and   al, 7
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
 cmp   al, 1
-jb    label_184
+jb    cap_tics_to_1_2
 cmp   al, 240
-ja    label_184
+ja    cap_tics_to_1_2
 pop   di
-pop   si
 pop   dx
 ret   
-label_184:
+cap_tics_to_1_2:
 mov   byte ptr ds:[bx + MOBJ_T.m_tics], 1
 pop   di
-pop   si
 pop   dx
 ret   
 
