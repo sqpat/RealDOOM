@@ -1487,218 +1487,244 @@ push  dx
 push  si
 push  di
 push  bp
-mov   bp, sp
-sub   sp, 014h
+
+mov   bp, MOBJPOSLIST_6800_SEGMENT
 mov   si, ax
 mov   di, bx
-mov   word ptr [bp - 2], cx
-mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
-imul  dx, ax, SIZEOF_THINKER_T
-imul  cx, ax, SIZEOF_MOBJ_POS_T
-mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
-mov   word ptr [bp - 010h], GETMISSILESTATEADDR
-mov   word ptr [bp - 0Eh], INFOFUNCLOADSEGMENT
-mov   word ptr [bp - 0Ch], GETMELEESTATEADDR
-mov   word ptr [bp - 0Ah], INFOFUNCLOADSEGMENT
-mov   word ptr [bp - 014h], GETACTIVESOUNDADDR
-mov   word ptr [bp - 012h], INFOFUNCLOADSEGMENT
-mov   word ptr [bp - 8], GETATTACKSOUNDADDR
-mov   word ptr [bp - 6], INFOFUNCLOADSEGMENT
+
+IF COMPISA GE COMPILE_186
+    mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
+    imul  dx, ax, SIZEOF_THINKER_T
+    imul  cx, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   bx
+    xchg  ax, cx
+    mov   ax, SIZEOF_THINKER_T
+    mul   bx
+    xchg  ax, dx
+    xchg  ax, bx
+    
+
+ENDIF
+
+
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 cmp   byte ptr ds:[si + MOBJ_T.m_reactiontime], 0
-je    label_94
-jmp   label_96
-label_94:
+je    dont_dec_reaction
+dec   byte ptr ds:[si + MOBJ_T.m_reactiontime]
+dont_dec_reaction:
 cmp   byte ptr ds:[si + MOBJ_T.m_threshold], 0
-je    label_95
+
+je    done_modifying_threshold
 test  ax, ax
-je    label_99
-jmp   label_100
-label_99:
+je    set_threshold_0
+
+mov   bx, dx
+cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
+jle   set_threshold_0
+dec   byte ptr ds:[si + MOBJ_T.m_threshold]
+jmp   done_modifying_threshold
+
+set_threshold_0:
 mov   byte ptr ds:[si + MOBJ_T.m_threshold], 0
-label_95:
+
+done_modifying_threshold:
+mov   es, bp
+
+;    // turn towards movement direction if not there yet
+
 cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
-jae   label_98
-mov   es, word ptr [bp - 2]
+jae   done_with_dir_change
 mov   byte ptr es:[di + MOBJ_POS_T.mp_angle + 2], 0
 mov   word ptr es:[di + MOBJ_POS_T.mp_angle + 0], 0
 and   byte ptr es:[di + MOBJ_POS_T.mp_angle+3], 0E0h
+xor   ax, ax
 mov   al, byte ptr ds:[si + MOBJ_T.m_movedir]
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
+sal   ax, 1
+xchg  ax, bx
 mov   ax, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
 sub   ax, word ptr ds:[bx + _movedirangles]
 test  ax, ax
-jle   label_97
+jnle  sub_dirchange
+
+jge   done_with_dir_change
+add   byte ptr es:[di + MOBJ_POS_T.mp_angle+3], (ANG90_HIGHBITS SHR 9)
+jmp   done_with_dir_change
+
+sub_dirchange:
 sub   word ptr es:[di + MOBJ_POS_T.mp_angle+2], (ANG90_HIGHBITS / 2)
-label_98:
+done_with_dir_change:
+
 test  dx, dx
-je    label_106
-mov   es, word ptr [bp - 4]
+je    look_for_new_target
+
 mov   bx, cx
 test  byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_SHOOTABLE
-je    label_106
-mov   es, word ptr [bp - 2]
+je    look_for_new_target
+
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
-je    label_107
+je    check_for_melee_attack
 and   byte ptr es:[di + MOBJ_POS_T.mp_flags1], (NOT MF_JUSTATTACKED)
 cmp   byte ptr ds:[_gameskill], sk_nightmare
 je    exit_a_chase
 cmp   byte ptr ds:[_fastparm], 0
-je    label_110
+je    new_chase_dir_and_exit
 exit_a_chase:
-LEAVE_MACRO 
+pop   bp
 pop   di
 pop   si
 pop   dx
 ret   
-label_96:
-dec   byte ptr ds:[si + MOBJ_T.m_reactiontime]
-jmp   label_94
-label_100:
-mov   bx, dx
-cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
-jle   label_99
-dec   byte ptr ds:[si + MOBJ_T.m_threshold]
-jmp   label_95
-label_97:
-jge   label_98
-add   byte ptr es:[di + MOBJ_POS_T.mp_angle+3], (ANG90_HIGHBITS SHR 9)
-jmp   label_98
-label_106:
+look_for_new_target:
 mov   dx, 1
 mov   ax, si
 call  P_LookForPlayers_
 test  al, al
 jne   exit_a_chase
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   di, ax
-mov   ax, si
-mov   dx, word ptr ds:[di + _mobjinfo]
-add   di, OFFSET _mobjinfo
+mov   al, SIZEOF_MOBJINFO_T
+mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
+xchg  ax, si
+mov   dx, word ptr ds:[si + _mobjinfo]
 ;call  P_SetMobjState_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
 jmp   exit_a_chase
-label_110:
+new_chase_dir_and_exit:
 
 call  P_NewChaseDir_
 jmp   exit_a_chase
-label_107:
+
+check_for_melee_attack:
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-call  dword ptr [bp - 0Ch]
+;call  dword ptr [bp - 0Ch]
+db    09Ah
+dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
+
+
 test  ax, ax
-je    label_108
+je    melee_check_failed_try_missile
 mov   ax, si
 mov   bx, di
 call  P_CheckMeleeRange_
 test  al, al
-jne   label_109
-label_108:
+je    melee_check_failed_try_missile
+
+do_melee_attack:
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-call  dword ptr [bp - 010h]
+;call  dword ptr [bp - 8]
+db    09Ah
+dw    GETATTACKSOUNDADDR, INFOFUNCLOADSEGMENT
+
+mov   dl, al
+mov   ax, si
+xor   dh, dh
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
+mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+xor   ah, ah
+;call  dword ptr [bp - 0Ch]
+db    09Ah
+dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
+
+mov   dx, ax
+mov   ax, si
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
+exit_a_chase_2:
+pop   bp
+pop   di
+pop   si
+pop   dx
+ret   
+
+melee_check_failed_try_missile:
+mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+xor   ah, ah
+;call  dword ptr [bp - 010h]
+db    09Ah
+dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
+
 test  ax, ax
-je    label_104
+je    nomissile
 cmp   byte ptr ds:[_gameskill], sk_nightmare
-jae   jump_to_label_103
+jae   check_missile_range
 cmp   byte ptr ds:[_fastparm], 0
-jne   jump_to_label_103
+jne   check_missile_range
 cmp   word ptr ds:[si + MOBJ_T.m_movecount], 0
-je    label_103
-label_104:
+je    check_missile_range
+
+
+nomissile:
 dec   word ptr ds:[si + MOBJ_T.m_movecount]
-cmp   word ptr ds:[si + MOBJ_T.m_movecount], 0
-jl    label_101
+js    dont_move_this_tic
 
 
 call  P_Move_
 test  al, al
-jne   label_102
-label_101:
+jne   dont_change_dir
+dont_move_this_tic:
 
 
 call  P_NewChaseDir_
-label_102:
+dont_change_dir:
+
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-call  dword ptr [bp - 014h]
+
+;call  dword ptr [bp - 014h]
+db    09Ah
+dw    GETACTIVESOUNDADDR, INFOFUNCLOADSEGMENT
+
 mov   dl, al
 test  al, al
-jne   label_105
-jump_to_exit_a_chase:
-jmp   exit_a_chase
-label_105:
+je    exit_a_chase_2
+
 call  P_Random_
 cmp   al, 3
-jae   jump_to_exit_a_chase
-mov   ax, si
+jae   exit_a_chase_2
+xchg  ax, si
 xor   dh, dh
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
-jump_to_label_103:
-jmp   label_103
-label_109:
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-call  dword ptr [bp - 8]
-mov   dl, al
-mov   ax, si
-xor   dh, dh
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+jmp   exit_a_chase_2
 
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-call  dword ptr [bp - 0Ch]
-mov   dx, ax
-mov   ax, si
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
-label_103:
+
+
+
+check_missile_range:
 mov   ax, si
 mov   bx, di
 call  P_CheckMissileRange_
 test  al, al
-je    label_104
+je    nomissile
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-call  dword ptr [bp - 010h]
+;call  dword ptr [bp - 010h]
+db    09Ah
+dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
+
 mov   dx, ax
 mov   ax, si
 ;call  P_SetMobjState_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
-mov   es, word ptr [bp - 2]
+mov   es, bp
 or    byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
+jmp   exit_a_chase
 
 ENDP
 
