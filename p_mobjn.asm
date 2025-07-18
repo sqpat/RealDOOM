@@ -553,8 +553,8 @@ movsw
 movsw     
 movsw     
 
-mov       bx, word ptr ds:[_setStateReturn]
-mov       al, byte ptr ds:[bx + MOBJ_T.m_tics]
+mov       si, word ptr ds:[_setStateReturn]
+mov       al, byte ptr ds:[si + MOBJ_T.m_tics]
 
 test      al, al
 jbe       dont_set_random_tics
@@ -565,21 +565,20 @@ jae       dont_set_random_tics
 
 
 inc       byte ptr ds:[_prndindex]
-mov       dl, byte ptr ds:[_prndindex]
-xor       dh, dh
-mov       si, dx
+mov       bl, byte ptr ds:[_prndindex]
+xor       bh, bh
 
 mov       dl, al
 
 mov       ax, RNDTABLE_SEGMENT
 mov       es, ax
 
-mov       al, byte ptr es:[si]
+mov       al, byte ptr es:[bx]
 xor       ah, ah
 div       dl
 inc       ah
 
-mov       byte ptr ds:[bx + MOBJ_T.m_tics], ah
+mov       byte ptr ds:[si + MOBJ_T.m_tics], ah
 
 dont_set_random_tics:
 les       bx, dword ptr ds:[_setStateReturn_pos]
@@ -620,13 +619,16 @@ ENDP
 PROC P_MobjThinker_ NEAR
 PUBLIC P_MobjThinker_
 
+;void __near P_MobjThinker (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef) {
+; ax    mobj
+; dx    ref
+; cx:bx mobjpos
+
 push      si
 push      di
-push      bp
-mov       bp, sp
 mov       si, ax
 mov       di, bx
-push cx
+mov       es, cx
 
 mov       ax, word ptr ds:[si + MOBJ_T.m_momx + 0]
 or        ax, word ptr ds:[si + MOBJ_T.m_momx + 2]
@@ -634,52 +636,62 @@ jne       do_xy_movement
 mov       ax, word ptr ds:[si + MOBJ_T.m_momy + 2]
 or        ax, word ptr ds:[si + MOBJ_T.m_momy + 0]
 jne       do_xy_movement
-mov       es, cx
 test      byte ptr es:[di + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
-jne       do_xy_movement
-label_13:
-mov       bx, word ptr ds:[si + 6]
-mov       ax, word ptr ds:[si + 6]
-xor       bh, bh
-mov       es, word ptr [bp - 2]
-and       bl, 7
-sar       ax, 3
-shl       bx, 0Dh ; todo no
-cmp       ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
-jne       label_9
-cmp       bx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
-jne       label_9
-mov       ax, word ptr ds:[si + MOBJ_T.m_momz + 2]
-or        ax, word ptr ds:[si + MOBJ_T.m_momz + 0]
-jne       label_9
-label_15:
-cmp       byte ptr ds:[si + MOBJ_T.m_tics], 255
-je        label_11
-dec       byte ptr ds:[si + MOBJ_T.m_tics]
-je        label_14
-exit_p_mobjthinker:
-LEAVE_MACRO     
-pop       di
-pop       si
-ret       
+je        done_with_xy_movement
 
 do_xy_movement:
-mov       cx, word ptr [bp - 2]
 mov       bx, di
 mov       ax, si
 
 db 09Ah
 dw P_XYMOVEMENTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-imul      bx, dx, SIZEOF_THINKER_T
+
+
+IF COMPISA GE COMPILE_186
+    imul  bx, dx, SIZEOF_THINKER_T
+ELSE
+    push  dx
+    mov   ax, SIZEOF_THINKER_T
+    mul   dx
+    xchg  ax, bx
+    pop   dx
+ENDIF
+
+
 mov       ax, word ptr ds:[bx + _thinkerlist]
 
 and       ax, TF_FUNCBITS
 cmp       ax, TF_DELETEME_HIGHBITS
 je        exit_p_mobjthinker
-jmp       label_13
-label_9:
-mov       cx, word ptr [bp - 2]
+
+
+done_with_xy_movement:
+mov       cx, MOBJPOSLIST_6800_SEGMENT
+mov       es, cx
+
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
+
+xor       ax, ax
+mov       bx, word ptr ds:[si + 6]
+sar       bx, 1
+rcr       ax, 1
+sar       bx, 1
+rcr       ax, 1
+sar       bx, 1
+rcr       ax, 1
+
+
+cmp       bx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+jne       do_z_movement
+cmp       ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+jne       do_z_movement
+
+mov       ax, word ptr ds:[si + MOBJ_T.m_momz + 2]
+or        ax, word ptr ds:[si + MOBJ_T.m_momz + 0]
+je        done_with_z_movement
+do_z_movement:
+
 mov       bx, di
 mov       ax, si
 
@@ -688,29 +700,53 @@ dw P_ZMOVEMENTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 
-imul      bx, dx, SIZEOF_THINKER_T
+
+IF COMPISA GE COMPILE_186
+    imul  bx, dx, SIZEOF_THINKER_T
+ELSE
+    push  dx
+    mov   ax, SIZEOF_THINKER_T
+    mul   dx
+    xchg  ax, bx
+    pop   dx
+
+ENDIF
+
+
+
 mov       ax, word ptr ds:[bx + _thinkerlist]
 and       ax, TF_FUNCBITS
 cmp       ax, TF_DELETEME_HIGHBITS
-je        exit_p_mobjthinker
-jmp       label_15
-label_14:
-mov       es, word ptr [bp - 2]
-mov       ax, word ptr es:[di + MOBJ_POS_T.mp_statenum]
-mov       di, ax
-shl       di, 2
-sub       di, ax
+jne       done_with_z_movement
+exit_p_mobjthinker:
+pop       di
+pop       si
+ret       
+
+
+done_with_z_movement:
+mov       cx, MOBJPOSLIST_6800_SEGMENT
+mov       es, cx
+
+cmp       byte ptr ds:[si + MOBJ_T.m_tics], 255
+je        tics_255
+dec       byte ptr ds:[si + MOBJ_T.m_tics]
+jne       exit_p_mobjthinker
+
+mov       di, word ptr es:[di + MOBJ_POS_T.mp_statenum]
+mov       ax, SIZEOF_STATE_T
+mul       di
+xchg      ax, di
 mov       ax, STATES_SEGMENT
-add       di, di
 mov       es, ax
+
 mov       ax, si
-mov       dx, word ptr es:[di + 4]
-add       di, 4
+mov       dx, word ptr es:[di + STATE_T.state_nextstate]
 
 call      P_SetMobjState_
 jmp       exit_p_mobjthinker
-label_11:
-mov       es, word ptr [bp - 2]
+tics_255:
+
 test      byte ptr es:[di + MOBJ_POS_T.mp_flags2], MF_COUNTKILL
 je        exit_p_mobjthinker
 cmp       byte ptr ds:[_respawnmonsters], 0
@@ -718,32 +754,25 @@ je        exit_p_mobjthinker
 inc       word ptr ds:[si + MOBJ_T.m_movecount]
 cmp       word ptr ds:[si + MOBJ_T.m_movecount], (12 * 35)
 jl        exit_p_mobjthinker
-mov       bx, _leveltime
-test      byte ptr ds:[bx], 31
-je        label_12
-jump_to_exit_mobjthinker:
-jmp       exit_p_mobjthinker
-label_12:
-mov       bx, OFFSET _prndindex
-inc       byte ptr ds:[bx]
-mov       dl, byte ptr ds:[bx]
+test      byte ptr ds:[_leveltime], 31
+jne       exit_p_mobjthinker
+
+
+inc       byte ptr ds:[_prndindex]
+mov       bl, byte ptr ds:[bx]
 mov       ax, RNDTABLE_SEGMENT
-xor       dh, dh
 mov       es, ax
-mov       bx, dx
+xor       bh, bh
 mov       al, byte ptr es:[bx]
 cmp       al, 4
-ja        jump_to_exit_mobjthinker
-mov       cx, word ptr [bp - 2]
+ja        exit_p_mobjthinker
+
 mov       bx, di
 mov       ax, si
 
 
 db 09Ah
 dw P_NIGHTMARERESPAWNOFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-
-LEAVE_MACRO     
 pop       di
 pop       si
 ret       
