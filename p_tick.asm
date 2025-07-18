@@ -46,7 +46,7 @@ EXTRN _demoplayback:BYTE
 
 ; THINKERREF __near P_GetNextThinkerRef(void) 
 
-PROC P_CreateThinker_ NEAR
+PROC P_CreateThinker_ FAR
 PUBLIC P_CreateThinker_
 
 

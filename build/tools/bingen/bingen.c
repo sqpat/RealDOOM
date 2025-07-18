@@ -440,6 +440,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "P_XYMOVEMENTOFFSET = 0%Xh\n",                      FP_OFF(P_XYMovement)                    - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_ZMOVEMENTOFFSET = 0%Xh\n",                       FP_OFF(P_ZMovement)                     - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_NIGHTMARERESPAWNOFFSET = 0%Xh\n",                FP_OFF(P_NightmareRespawn)              - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_BRINGUPWEAPONFAROFFSET = 0%Xh\n",                FP_OFF(P_BringUpWeaponFar)              - FP_OFF(P_SIGHT_STARTMARKER));
 
 
 

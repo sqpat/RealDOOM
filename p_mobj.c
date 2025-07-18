@@ -103,18 +103,20 @@ mobj_t __near* SAVEDUNIT;
 
 
 // Which one is deterministic?
+/*
 uint8_t __near P_Random(void) {
 	 
     prndindex++;
     return rndtable[prndindex];
 }
-
+*/
 
 
 //
 // P_SetupPsprites
 // Called at start of level for each player.
 //
+/*
 void __near P_SetupPsprites() {
 	int8_t	i;
 
@@ -126,6 +128,7 @@ void __near P_SetupPsprites() {
 	player.pendingweapon = player.readyweapon;
 	P_BringUpWeaponFar();
 }
+*/
 void __far ST_Start(void);
 
 //
@@ -136,6 +139,7 @@ void __far ST_Start(void);
 //
 
 // todo move ot p_setup perhaps?
+/*
 void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	fixed_t_union		x;
 	fixed_t_union		y;
@@ -192,7 +196,7 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	Z_QuickMapPhysics();
 	Z_QuickMapScratch_8000(); // gross, due to p_setup.... perhaps externalize.
 	Z_QuickMapPhysicsCode();
-} 
+} */
 
 //
 // P_SpawnMapThing
@@ -201,6 +205,8 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 //
 
 // todo move ot p_setup perhaps?
+
+/*
 void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
 
 
@@ -306,7 +312,7 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
  
 
 }
- 
+ */
 
 // 
 // P_ExplodeMissile  
@@ -706,6 +712,8 @@ void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) 
 //
 // P_MobjThinker
 //
+
+/*
 void __near P_MobjThinker (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef) {
 
 	// momentum movement
@@ -776,11 +784,12 @@ void __near P_MobjThinker (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THIN
     }
 
 }
-
+*/
 
 //
 // P_SpawnMobj
 //
+/*
 THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
 	mobj_t __near*	mobj;
 	mobj_pos_t __far*	mobj_pos;
@@ -850,13 +859,13 @@ THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type,
 	setStateReturn_pos = mobj_pos;
     return mobjRef;
 }
-
+*/
 
 //
 // P_RemoveMobj
 //
 
-
+/*
 void __far P_RemoveMobj (mobj_t __near* mobj) {
 	THINKERREF mobjRef = GETTHINKERREF(mobj);
     // unlink from sector and block lists
@@ -868,7 +877,7 @@ void __far P_RemoveMobj (mobj_t __near* mobj) {
 	// free block
 	P_RemoveThinker(GETTHINKERREF(mobj));
 }
-
+*/
 
 
  
@@ -1098,6 +1107,7 @@ void __near P_SpawnPlayerMissile ( mobjtype_t type ) {
 }
 */
 
+/*
 boolean __far P_SetMobjState (mobj_t __near* mobj, statenum_t state) {
 	state_t __far*	st;
 	mobj_pos_t __far* mobj_pos;
@@ -1201,7 +1211,7 @@ boolean __far P_SetMobjState (mobj_t __near* mobj, statenum_t state) {
 
 	return true;
 }
-
+*/
 void __near OutOfThinkers (){
 	I_Error("Out of thinkers!");
 }
