@@ -266,10 +266,10 @@ push      bx
 push      cx
 
 mov       bx, ax
-mov       es, dx ; map thing ptr
-mov       dx, word ptr es:[bx + MAPTHING_T.mapthing_x]
-mov       cx, word ptr es:[bx + MAPTHING_T.mapthing_y]
-push      word ptr es:[bx + MAPTHING_T.mapthing_angle]  ; for later
+
+mov       dx, word ptr ds:[bx + MAPTHING_T.mapthing_x]
+mov       cx, word ptr ds:[bx + MAPTHING_T.mapthing_y]
+push      word ptr ds:[bx + MAPTHING_T.mapthing_angle]  ; for later
 
 cmp       byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
 jne       dont_player_reborn
@@ -378,15 +378,7 @@ ENDP
 PROC P_SpawnMapThing_ FAR
 PUBLIC P_SpawnMapThing_
 
-; bp - 2    
-; bp - 4    
-; bp - 6    mthingoptions
-; bp - 8    mthingangle
-; bp - 0Ah  mthingx
-; bp - 0Ch  
-; bp - 0Eh  mthingy
 
-; bp + 010h:  mthing
 
 ;void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
     
@@ -401,39 +393,23 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 0Eh
 
-mov       ax, word ptr [bp + 010h + MAPTHING_T.mapthing_options]
-mov       word ptr [bp - 6], ax
-mov       ax, word ptr [bp + 010h + MAPTHING_T.mapthing_x]
-mov       word ptr [bp - 0Ah], ax
-mov       ax, word ptr [bp + 010h + MAPTHING_T.mapthing_y]
-mov       word ptr [bp - 0Eh], ax
-mov       ax, word ptr [bp + 010h + MAPTHING_T.mapthing_angle]
 mov       si, word ptr [bp + 010h + MAPTHING_T.mapthing_type]
-mov       word ptr [bp - 8], ax
+
 cmp       si, 11
 jne       thing_type_not_11
-exit_spawnmapthing:
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-retf   0Ch
+jmp       exit_spawnmapthing_2
 thing_type_not_11:
 cmp       si, 2
-je        exit_spawnmapthing
+je        exit_spawnmapthing_2
 cmp       si, 3
-je        exit_spawnmapthing
+je        exit_spawnmapthing_2
 cmp       si, 4
-je        exit_spawnmapthing
+je        exit_spawnmapthing_2
 cmp       si, 1
 jne       spawn_not_player
 ; spawn player..
 lea       ax, [bp + 010h]
-mov       dx, ds
 call      P_SpawnPlayer_
 exit_spawnmapthing_2:
 LEAVE_MACRO     
@@ -445,168 +421,198 @@ pop       bx
 retf      0Ch
 
 spawn_not_player:
-test      byte ptr [bp - 6], 010h
-jne       exit_spawnmapthing
+
+
+
+test      byte ptr [bp + 010h + MAPTHING_T.mapthing_options], 010h  ; todo what 'option' is this?
+jne       exit_spawnmapthing_2
+
 mov       al, byte ptr ds:[_gameskill]
+xor       ah, ah
 test      al, al
-je        label_6
+je        use_bit_1
 
 cmp       al, SK_NIGHTMARE
-jne       label_7
-mov       ax, 4
-jmp       label_8
-label_7:
-xor       ah, ah
+jne       calculate_bit
+mov       al, 4
+jmp       bit_calculcated
+calculate_bit:
 dec       ax
-mov       cl, al
-mov       ax, 1
+mov       cx, ax
+mov       al, 1
 shl       ax, cl
-jmp       label_8
+jmp       bit_calculcated
 
-label_6:
-mov       ax, 1
-label_8:
-test      word ptr [bp - 6], ax
-je        exit_spawnmapthing
-xor       ax, ax
-cwd
-label_3:
-mov       bx, DOOMEDNUM_SEGMENT   ; todo almost near?
-mov       es, bx
-mov       bx, dx
+use_bit_1:
+mov       al, 1
+bit_calculcated:
+
+test      word ptr [bp + 010h + MAPTHING_T.mapthing_options], ax
+je        exit_spawnmapthing_2
+mov       ax, DOOMEDNUM_SEGMENT   ; todo almost near?
+mov       es, ax
+
+xor       bx, bx
+loop_try_next_thingtype:
+
 cmp       si, word ptr es:[bx]
-je        label_2
-
-label_1:
-inc       ax
-add       dx, 2
-cmp       ax, NUMMOBJTYPES
-jge       label_2
-jmp       label_3
+je        break_thing_loop
+inc       bx
+inc       bx
+cmp       bx, (NUMMOBJTYPES * 2)
+jge       break_thing_loop   ; in theory should error, whatever, assume good data.
+jmp       loop_try_next_thingtype
 
 
-label_2:
+break_thing_loop:
+xchg      ax, bx
+sar       ax, 1
 cmp       byte ptr ds:[_nomonsters], 0
-je        label_5
+je        do_spawn_monster
 cmp       ax, MT_SKULL
 je        exit_spawnmapthing_2
-
-imul      bx, ax, SIZEOF_MOBJINFO_T ; todo 8 bit mul
+IF COMPISA GE COMPILE_186
+    imul  bx, ax, SIZEOF_MOBJINFO_T ; todo 8 bit mul
+ELSE
+    xchg  ax, bx
+    mov   ax, SIZEOF_MOBJINFO_T
+    mul   bx
+    xchg  ax, bx
+ENDIF
 test      byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_flags2], MF_COUNTKILL
 jne       exit_spawnmapthing_2
-label_5:
-mov       dx, word ptr [bp - 0Eh]
-mov       word ptr [bp - 0Ch], dx
-imul      bx, ax, SIZEOF_MOBJINFO_T  ; todo 8 bit mul
-mov       si, word ptr [bp - 0Ah]
-xor       di, di
-xor       cx, cx
+
+do_spawn_monster:
+
+xchg      ax, bx
+mov       al, SIZEOF_MOBJINFO_T
+mul       bl
+xchg      ax, bx
+
+; mobjRef = P_SpawnMobj(x.w, y.w, z.w, i, -1);
+
+IF COMPISA GE COMPILE_186
+    push      -1
+ELSE
+    mov       dx, -1
+    push      dx
+ENDIF
+
+xor       ah, ah
+push      ax
+
+xor       ax, ax
+
 test      byte ptr ds:[bx + _mobjinfo +MOBJINFO_T.mobjinfo_flags1 + 1], (MF_SPAWNCEILING SHR 8)
 jne       do_spawn_ceiling
-mov       dx, ONFLOORZ_HIGHBITS
-xor       bx, bx
+
+IF COMPISA GE COMPILE_186
+    push      ONFLOORZ_HIGHBITS
+    push      ax ; zero
+ELSE
+    mov       dx, ONFLOORZ_HIGHBITS
+    push      dx
+    push      ax ; zero
+ENDIF
+
 jmp       got_starting_z
 
 do_spawn_ceiling:
-mov       bx, ONCEILINGZ_LOWBITS
-mov       dx, ONCEILINGZ_HIGHBITS
+
+IF COMPISA GE COMPILE_186
+    push      ONCEILINGZ_HIGHBITS
+    push      ONCEILINGZ_LOWBITS
+ELSE
+    mov       dx, ONCEILINGZ_HIGHBITS
+    push      dx
+    mov       dx, ONCEILINGZ_LOWBITS
+    push      dx
+ENDIF
+
+
 got_starting_z:
-push      -1
-xor       ah, ah
-push      ax
-push      dx
-mov       ax, di
-push      bx
-mov       dx, si
-mov       bx, cx
-mov       cx, word ptr [bp - 0Ch]
-mov       si, OFFSET _setStateReturn_pos
+
+mov       bx, ax ; zero
+mov       dx, word ptr [bp + 010h + MAPTHING_T.mapthing_x]
+mov       cx, word ptr [bp + 010h + MAPTHING_T.mapthing_y]
+
 
 call      P_SpawnMobj_
-mov       bx, OFFSET _setStateReturn
-mov       di, word ptr ds:[si]
-mov       dx, word ptr ds:[si + 2]
-mov       word ptr [bp - 4], di
-mov       di, ax
+
+mov       di, SIZEOF_MAPTHING_T
+mul       di
+xchg      ax, di 
+
 lea       si, [bp + 010h]
-shl       di, 2
-mov       bx, word ptr ds:[bx]
-add       di, ax
+
 mov       ax, NIGHTMARESPAWNS_SEGMENT
-add       di, di
 mov       es, ax
 movsw     
 movsw     
 movsw     
 movsw     
 movsw     
+
+mov       bx, word ptr ds:[_setStateReturn]
 mov       al, byte ptr ds:[bx + MOBJ_T.m_tics]
-mov       word ptr [bp - 2], dx
+
 test      al, al
 jbe       dont_set_random_tics
 cmp       al, 240
 jae       dont_set_random_tics
-mov       si, OFFSET _prndindex
-inc       byte ptr ds:[si]
-mov       cl, al
-mov       dl, byte ptr ds:[si]
-mov       ax, RNDTABLE_SEGMENT
+
+;		mobj->tics = 1 + (P_Random() % mobj->tics);
+
+
+inc       byte ptr ds:[_prndindex]
+mov       dl, byte ptr ds:[_prndindex]
 xor       dh, dh
-mov       es, ax
 mov       si, dx
+
+mov       dl, al
+
+mov       ax, RNDTABLE_SEGMENT
+mov       es, ax
+
 mov       al, byte ptr es:[si]
 xor       ah, ah
-xor       ch, ch
-cwd       
-idiv      cx
-inc       dx
+div       dl
+inc       ah
 
-mov       byte ptr ds:[bx + MOBJ_T.m_tics], dl
+mov       byte ptr ds:[bx + MOBJ_T.m_tics], ah
 
 dont_set_random_tics:
-les       bx, dword ptr [bp - 4]
+les       bx, dword ptr ds:[_setStateReturn_pos]
 test      byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_COUNTKILL
 je        not_killable
 inc       word ptr ds:[_totalkills]
 not_killable:
-les       bx, dword ptr [bp - 4]
+
 test      byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_COUNTITEM
 je        not_an_item
 inc       word ptr ds:[_totalitems]
 not_an_item:
-mov       ax, word ptr [bp - 8]
-mov       bx, 45
+mov       ax, word ptr [bp + 010h + MAPTHING_T.mapthing_angle]
 cwd       
-idiv      bx
+mov       bx, dx ; zero
+mov       cx, 45
+idiv      cx
 mov       cx, ANG45_HIGHBITS
-xor       bx, bx
 ;call      FastMul16u32u_
 ; call  FastMul16u32u_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FastMul16u32u_addr
-les       bx, dword ptr [bp - 4]
+les       bx, dword ptr ds:[_setStateReturn_pos]
 mov       word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
 mov       word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], dx
-test      byte ptr [bp - 6], MTF_AMBUSH
+test      byte ptr [bp + 010h + MAPTHING_T.mapthing_options], MTF_AMBUSH
 jne       set_ambush_and_exit
+jmp       exit_spawnmapthing_2
 
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-retf      0Ch
 set_ambush_and_exit:
 or        byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_AMBUSH
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-retf      0Ch
+jmp       exit_spawnmapthing_2
 
 ENDP
 
