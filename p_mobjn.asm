@@ -1033,58 +1033,58 @@ retf
 
 
 setmobjstate_jump_table:
-dw setmobjstate_switch_jump_0
-dw setmobjstate_switch_jump_1
-dw setmobjstate_switch_jump_2
-dw setmobjstate_switch_jump_3
-dw setmobjstate_switch_jump_4
-dw setmobjstate_switch_jump_5
-dw setmobjstate_switch_jump_6
-dw setmobjstate_switch_jump_7
-dw setmobjstate_switch_jump_8
-dw setmobjstate_switch_jump_9
-dw setmobjstate_switch_jump_10
-dw setmobjstate_switch_jump_11
-dw setmobjstate_switch_jump_12
-dw setmobjstate_switch_jump_13
-dw setmobjstate_switch_jump_14
-dw setmobjstate_switch_jump_15
-dw setmobjstate_switch_jump_16
-dw setmobjstate_switch_jump_17
-dw setmobjstate_switch_jump_18
-dw setmobjstate_switch_jump_19
-dw setmobjstate_switch_jump_20
-dw setmobjstate_switch_jump_21
-dw setmobjstate_switch_jump_22
-dw setmobjstate_switch_jump_23
-dw setmobjstate_switch_jump_24
-dw setmobjstate_switch_jump_25
-dw setmobjstate_switch_jump_26
-dw setmobjstate_switch_jump_27
-dw setmobjstate_switch_jump_28
-dw setmobjstate_switch_jump_29
-dw setmobjstate_switch_jump_30
-dw setmobjstate_switch_jump_31
-dw setmobjstate_switch_jump_32
-dw setmobjstate_switch_jump_33
-dw setmobjstate_switch_jump_34
-dw setmobjstate_switch_jump_35
-dw setmobjstate_switch_jump_36
-dw setmobjstate_switch_jump_37
-dw setmobjstate_switch_jump_38
-dw setmobjstate_switch_jump_39
-dw setmobjstate_switch_jump_40
-dw setmobjstate_switch_jump_41
-dw setmobjstate_switch_jump_42
-dw setmobjstate_switch_jump_43
-dw setmobjstate_switch_jump_44
-dw setmobjstate_switch_jump_45
-dw setmobjstate_switch_jump_46
-dw setmobjstate_switch_jump_47
-dw setmobjstate_switch_jump_48
-dw setmobjstate_switch_jump_49
-dw setmobjstate_switch_jump_50
-dw setmobjstate_switch_jump_51
+dw 0
+dw OFFSET A_Explode_
+dw A_Pain_
+dw A_PlayerScream_
+dw A_Fall_
+dw A_XScream_
+dw A_Look_
+dw A_Chase_
+dw A_FaceTarget_
+dw A_PosAttack_
+dw A_Scream_
+dw A_SPosAttack_
+dw A_VileChase_
+dw A_VileStart_
+dw A_VileTarget_
+dw A_VileAttack_
+dw A_StartFire_
+dw A_Fire_
+dw A_FireCrackle_
+dw A_Tracer_
+dw A_SkelWhoosh_
+dw A_SkelFist_
+dw A_SkelMissile_
+dw A_FatRaise_
+dw A_FatAttack1_
+dw A_FatAttack2_
+dw A_FatAttack3_
+dw A_BossDeath_
+dw A_CPosAttack_
+dw A_CPosRefire_
+dw A_TroopAttack_
+dw A_SargAttack_
+dw A_HeadAttack_
+dw A_BruisAttack_
+dw A_SkullAttack_
+dw A_Metal_
+dw A_SpidRefire_
+dw A_BabyMetal_
+dw A_BspiAttack_
+dw A_Hoof_
+dw A_CyberAttack_
+dw A_PainAttack_
+dw A_PainDie_
+dw A_KeenDie_
+dw A_BrainPain_
+dw A_BrainScream_
+dw 0
+dw 0
+dw 0
+dw A_SpawnSound_
+dw A_SpawnFly_
+dw A_BrainExplode_
 
 ENDP
 
@@ -1147,22 +1147,25 @@ mov       ax, STATES_SEGMENT
 mov       es, ax
 mov       al, byte ptr es:[di + STATE_T.state_tics]
 mov       byte ptr ds:[si + MOBJ_T.m_tics], al
-mov       cl, byte ptr es:[di + state_action]
-sub       cl, ETF_A_BFGSpray                        ; minimum action number
-cmp       cl, (ETF_A_BrainExplode - ETF_A_BFGSpray) ; max range
+mov       al, byte ptr es:[di + state_action]
+sub       al, ETF_A_BFGSpray                        ; minimum action number
+je        do_bfg_spray_far        ; todo fix
+cmp       al, (ETF_A_BRAINEXPLODE - ETF_A_BFGSPRAY) ; max range
 ja        done_with_mobj_state_action
-xor       ch, ch
-mov       di, cx
-add       di, cx
+cmp       al, (ETF_A_BRAINAWAKE - ETF_A_BFGSPRAY)
+je        do_brainawake
+cmp       al, (ETF_A_BRAINSPIT - ETF_A_BFGSPRAY)
+je        do_brainspit
+cmp       al, (ETF_A_BRAINDIE - ETF_A_BFGSPRAY)
+je        do_exit_level
+cbw
+sal       ax, 1
+xchg      ax, di
+
 mov       cx, MOBJPOSLIST_6800_SEGMENT
 mov       ax, si
-jmp       word ptr cs:[di + setmobjstate_jump_table]
+call      word ptr cs:[di + setmobjstate_jump_table]
 
-setmobjstate_switch_jump_0:
-
-;call      dword ptr ds:[_A_BFGSprayFar]
-db        09Ah
-dw        A_BFGSPRAYFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 done_with_mobj_state_action:
 mov       word ptr ds:[_setStateReturn], si
@@ -1221,257 +1224,22 @@ exit_p_setmobjstate_return_1:
 mov       al, 1
 jmp       exit_p_setmobjstate
 
-setmobjstate_switch_jump_1:
+do_bfg_spray_far:
 
+;call      dword ptr ds:[_A_BFGSprayFar]
+db        09Ah
+dw        A_BFGSPRAYFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-call      A_Explode_
 jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_2:
 
-
-call      A_Pain_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_3:
-
-
-call      A_PlayerScream_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_4:
-
-
-call      A_Fall_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_5:
-
-
-call      A_XScream_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_6:
-
-
-call      A_Look_
-jmp       done_with_mobj_state_action
-  
-setmobjstate_switch_jump_7:
-
-
-call      A_Chase_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_8:
-
-
-call      A_FaceTarget_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_9:
-
-
-call      A_PosAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_10:
-
-
-call      A_Scream_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_11:
-
-
-call      A_SPosAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_12:
-
-
-call      A_VileChase_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_13:
-
-
-call      A_VileStart_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_14:
-
-
-call      A_VileTarget_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_15:
-
-
-call      A_VileAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_16:
-
-
-call      A_StartFire_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_17:
-
-
-call      A_Fire_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_18:
-
-
-call      A_FireCrackle_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_19:
-
-
-call      A_Tracer_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_20:
-
-
-call      A_SkelWhoosh_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_21:
-
-
-call      A_SkelFist_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_22:
-
-
-call      A_SkelMissile_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_23:
-
-
-call      A_FatRaise_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_24:
-
-
-call      A_FatAttack1_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_25:
-
-
-call      A_FatAttack2_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_26:
-
-
-call      A_FatAttack3_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_27:
-
-
-call      A_BossDeath_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_28:
-
-
-call      A_CPosAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_29:
-
-
-call      A_CPosRefire_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_30:
-
-
-call      A_TroopAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_31:
-
-
-call      A_SargAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_32:
-
-
-call      A_HeadAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_33:
-
-
-call      A_BruisAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_34:
-
-
-call      A_SkullAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_35:
-
-
-call      A_Metal_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_36:
-
-
-call      A_SpidRefire_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_37:
-
-
-call      A_BabyMetal_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_38:
-
-
-call      A_BspiAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_39:
-
-
-call      A_Hoof_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_40:
-
-
-call      A_CyberAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_41:
-
-
-call      A_PainAttack_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_42:
-
-
-call      A_PainDie_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_43:
-
-
-call      A_KeenDie_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_44:
-
-
-call      A_BrainPain_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_45:
-
-
-call      A_BrainScream_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_49:
-
-
-call      A_SpawnSound_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_50:
-
-
-call      A_SpawnFly_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_51:
-
-
-call      A_BrainExplode_
-jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_46:
+do_exit_level:
 call      G_ExitLevel_
 jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_47:
-
-
+do_brainawake:
 mov       byte ptr ds:[si + MOBJ_T.m_tics], 181
 call      A_BrainAwake_
 jmp       done_with_mobj_state_action
-setmobjstate_switch_jump_48:
+do_brainspit:
 
 
 mov       byte ptr ds:[si + MOBJ_T.m_tics], 150
