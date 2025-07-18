@@ -951,22 +951,23 @@ PUBLIC P_SetMobjState_
 0x000000000000848d:  89 7E FE             mov       word ptr [bp - 2], di
 0x0000000000008490:  89 D3                mov       bx, dx
 0x0000000000008492:  85 C9                test      cx, cx
-0x0000000000008494:  74 70                je        0x8506
+0x0000000000008494:  74 70                je        label_16
 0x0000000000008496:  BA F5 6A             mov       dx, MOBJPOSLIST_6800_SEGMENT
 0x0000000000008499:  89 46 F8             mov       word ptr [bp - 8], ax
+label_18:
 0x000000000000849c:  6B C1 06             imul      ax, cx, 6
 0x000000000000849f:  C7 46 FC 74 7D       mov       word ptr [bp - 4], STATES_SEGMENT
 0x00000000000084a4:  8E 46 FE             mov       es, word ptr [bp - 2]
 0x00000000000084a7:  89 C7                mov       di, ax
-0x00000000000084a9:  26 89 4F 12          mov       word ptr es:[bx + 0x12], cx
+0x00000000000084a9:  26 89 4F 12          mov       word ptr es:[bx + MOBJ_POS_T.mp_statenum], cx
 0x00000000000084ad:  8E 46 FC             mov       es, word ptr [bp - 4]
 0x00000000000084b0:  89 46 FA             mov       word ptr [bp - 6], ax
 0x00000000000084b3:  26 8A 45 02          mov       al, byte ptr es:[di + STATE_T.state_tics]
 0x00000000000084b7:  88 44 1B             mov       byte ptr ds:[si + MOBJ_T.m_tics], al
 0x00000000000084ba:  26 8A 4D 03          mov       cl, byte ptr es:[di + state_action]
-0x00000000000084be:  80 E9 17             sub       cl, 0x17
-0x00000000000084c1:  80 F9 33             cmp       cl, 0x33
-0x00000000000084c4:  77 14                ja        0x84da
+0x00000000000084be:  80 E9 17             sub       cl, ETF_A_BFGSpray                        ; minimum action number
+0x00000000000084c1:  80 F9 33             cmp       cl, (ETF_A_BrainExplode - ETF_A_BFGSpray) ; max range
+0x00000000000084c4:  77 14                ja        done_with_mobj_state_action
 0x00000000000084c6:  30 ED                xor       ch, ch
 0x00000000000084c8:  89 CF                mov       di, cx
 0x00000000000084ca:  01 CF                add       di, cx
@@ -975,6 +976,7 @@ setmobjstate_switch_jump_0:
 0x00000000000084d1:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000084d4:  89 F0                mov       ax, si
 0x00000000000084d6:  FF 1E 08 0D          call      dword ptr ds:[_A_BFGSprayFar_]
+done_with_mobj_state_action:
 0x00000000000084da:  BB BA 01             mov       bx, OFFSET _setStateReturn
 0x00000000000084dd:  89 37                mov       word ptr ds:[bx], si
 0x00000000000084df:  BB 34 07             mov       bx, OFFSET setStateReturn_pos
@@ -988,16 +990,17 @@ setmobjstate_switch_jump_0:
 0x00000000000084f5:  89 46 FE             mov       word ptr [bp - 2], ax
 0x00000000000084f8:  26 8B 4D 04          mov       cx, word ptr es:[di + 4]
 0x00000000000084fc:  80 7C 1B 00          cmp       byte ptr ds:[si + MOBJ_T.m_tics], 0
-0x0000000000008500:  75 77                jne       0x8579
+0x0000000000008500:  75 77                jne       exit_p_setmobjstate_return_1
 0x0000000000008502:  85 C9                test      cx, cx
-0x0000000000008504:  75 96                jne       0x849c
+0x0000000000008504:  75 96                jne       label_18
+label_16:
 0x0000000000008506:  8E 46 FE             mov       es, word ptr [bp - 2]
 0x0000000000008509:  89 F0                mov       ax, si
 0x000000000000850b:  26 C7 47 12 00 00    mov       word ptr es:[bx + 0x12], 0
 0x0000000000008511:  BB BA 01             mov       bx, OFFSET _setStateReturn
 0x0000000000008514:  31 D2                xor       dx, dx
 0x0000000000008516:  0E                   push      cs
-0x0000000000008517:  E8 B2 FE             call      0x83cc
+0x0000000000008517:  E8 B2 FE             call      P_RemoveMobj_
 0x000000000000851a:  89 37                mov       word ptr ds:[bx], si
 0x000000000000851c:  BB 2C 00             mov       bx, SIZEOF_THINKER_T
 0x000000000000851f:  8D 84 FC CB          lea       ax, [si - (_thinkerlist + THINKER_T.t_data)]
@@ -1016,33 +1019,34 @@ setmobjstate_switch_jump_0:
 setmobjstate_switch_jump_1:
 0x000000000000853a:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000853d:  89 F0                mov       ax, si
-0x000000000000853f:  E8 27 BA             call      0x3f69
-0x0000000000008542:  EB 96                jmp       0x84da
+0x000000000000853f:  E8 27 BA             call      A_Explode_
+0x0000000000008542:  EB 96                jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_2:
 0x0000000000008544:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008547:  89 F0                mov       ax, si
-0x0000000000008549:  E8 FC B9             call      0x3f48
-0x000000000000854c:  EB 8C                jmp       0x84da
+0x0000000000008549:  E8 FC B9             call      A_Pain_
+0x000000000000854c:  EB 8C                jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_3:
 0x000000000000854e:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008551:  89 F0                mov       ax, si
-0x0000000000008553:  E8 A4 BE             call      0x43fa
-0x0000000000008556:  EB 82                jmp       0x84da
+0x0000000000008553:  E8 A4 BE             call      A_PlayerScream_
+0x0000000000008556:  EB 82                jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_4:
 0x0000000000008558:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000855b:  89 F0                mov       ax, si
-0x000000000000855d:  E8 01 BA             call      0x3f61
-0x0000000000008560:  E9 77 FF             jmp       0x84da
+0x000000000000855d:  E8 01 BA             call      A_Fall_
+0x0000000000008560:  E9 77 FF             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_5:
 0x0000000000008563:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008566:  89 F0                mov       ax, si
-0x0000000000008568:  E8 D3 B9             call      0x3f3e
-0x000000000000856b:  E9 6C FF             jmp       0x84da
+0x0000000000008568:  E8 D3 B9             call      A_XScream_
+0x000000000000856b:  E9 6C FF             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_6:
 0x000000000000856e:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008571:  89 F0                mov       ax, si
-0x0000000000008573:  E8 4B A9             call      0x2ec1
-0x0000000000008576:  E9 61 FF             jmp       0x84da
+0x0000000000008573:  E8 4B A9             call      A_Look_
+0x0000000000008576:  E9 61 FF             jmp       done_with_mobj_state_action
+exit_p_setmobjstate_return_1:
 0x0000000000008579:  B0 01                mov       al, 1
 0x000000000000857b:  C9                   LEAVE_MACRO     
 0x000000000000857c:  5F                   pop       di
@@ -1053,228 +1057,228 @@ setmobjstate_switch_jump_6:
 setmobjstate_switch_jump_7:
 0x0000000000008581:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008584:  89 F0                mov       ax, si
-0x0000000000008586:  E8 E2 A9             call      0x2f6b
-0x0000000000008589:  E9 4E FF             jmp       0x84da
+0x0000000000008586:  E8 E2 A9             call      A_Chase_
+0x0000000000008589:  E9 4E FF             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_8:
 0x000000000000858c:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000858f:  89 F0                mov       ax, si
-0x0000000000008591:  E8 57 AB             call      0x30eb
-0x0000000000008594:  E9 43 FF             jmp       0x84da
+0x0000000000008591:  E8 57 AB             call      A_FaceTarget_
+0x0000000000008594:  E9 43 FF             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_9:
 0x0000000000008597:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000859a:  89 F0                mov       ax, si
-0x000000000000859c:  E8 BF AB             call      0x315e
-0x000000000000859f:  E9 38 FF             jmp       0x84da
+0x000000000000859c:  E8 BF AB             call      A_PosAttack_
+0x000000000000859f:  E9 38 FF             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_10:
 0x00000000000085a2:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085a5:  89 F0                mov       ax, si
-0x00000000000085a7:  E8 3D B9             call      0x3ee7
-0x00000000000085aa:  E9 2D FF             jmp       0x84da
+0x00000000000085a7:  E8 3D B9             call      A_Scream_
+0x00000000000085aa:  E9 2D FF             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_11:
 0x00000000000085ad:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085b0:  89 F0                mov       ax, si
-0x00000000000085b2:  E8 22 AC             call      0x31d7
-0x00000000000085b5:  E9 22 FF             jmp       0x84da
+0x00000000000085b2:  E8 22 AC             call      A_SPosAttack_
+0x00000000000085b5:  E9 22 FF             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_12:
 0x00000000000085b8:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085bb:  89 F0                mov       ax, si
-0x00000000000085bd:  E8 57 B2             call      0x3817
-0x00000000000085c0:  E9 17 FF             jmp       0x84da
+0x00000000000085bd:  E8 57 B2             call      A_VileChase_
+0x00000000000085c0:  E9 17 FF             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_13:
 0x00000000000085c3:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085c6:  89 F0                mov       ax, si
-0x00000000000085c8:  E8 EE B3             call      0x39b9
-0x00000000000085cb:  E9 0C FF             jmp       0x84da
+0x00000000000085c8:  E8 EE B3             call      A_VileStart_
+0x00000000000085cb:  E9 0C FF             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_14:
 0x00000000000085ce:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085d1:  89 F0                mov       ax, si
-0x00000000000085d3:  E8 AD B4             call      0x3a83
-0x00000000000085d6:  E9 01 FF             jmp       0x84da
+0x00000000000085d3:  E8 AD B4             call      A_VileTarget_
+0x00000000000085d6:  E9 01 FF             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_15:
 0x00000000000085d9:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085dc:  89 F0                mov       ax, si
-0x00000000000085de:  E8 60 B5             call      0x3b41
-0x00000000000085e1:  E9 F6 FE             jmp       0x84da
+0x00000000000085de:  E8 60 B5             call      A_VileAttack_
+0x00000000000085e1:  E9 F6 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_16:
 0x00000000000085e4:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085e7:  89 F0                mov       ax, si
-0x00000000000085e9:  E8 D7 B3             call      0x39c3
-0x00000000000085ec:  E9 EB FE             jmp       0x84da
+0x00000000000085e9:  E8 D7 B3             call      A_StartFire_
+0x00000000000085ec:  E9 EB FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_17:
 0x00000000000085ef:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085f2:  89 F0                mov       ax, si
-0x00000000000085f4:  E8 EA B3             call      0x39e1
-0x00000000000085f7:  E9 E0 FE             jmp       0x84da
+0x00000000000085f4:  E8 EA B3             call      A_Fire_
+0x00000000000085f7:  E9 E0 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_18:
 0x00000000000085fa:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000085fd:  89 F0                mov       ax, si
-0x00000000000085ff:  E8 D0 B3             call      0x39d2
-0x0000000000008602:  E9 D5 FE             jmp       0x84da
+0x00000000000085ff:  E8 D0 B3             call      A_FireCrackle_
+0x0000000000008602:  E9 D5 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_19:
 0x0000000000008605:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008608:  89 F0                mov       ax, si
-0x000000000000860a:  E8 44 AF             call      0x3551
-0x000000000000860d:  E9 CA FE             jmp       0x84da
+0x000000000000860a:  E8 44 AF             call      A_Tracer_
+0x000000000000860d:  E9 CA FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_20:
 0x0000000000008610:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008613:  89 F0                mov       ax, si
-0x0000000000008615:  E8 B5 B0             call      0x36cd
-0x0000000000008618:  E9 BF FE             jmp       0x84da
+0x0000000000008615:  E8 B5 B0             call      A_SkelWhoosh_
+0x0000000000008618:  E9 BF FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_21:
 0x000000000000861b:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000861e:  89 F0                mov       ax, si
-0x0000000000008620:  E8 C3 B0             call      0x36e6
-0x0000000000008623:  E9 B4 FE             jmp       0x84da
+0x0000000000008620:  E8 C3 B0             call      A_SkelFist_
+0x0000000000008623:  E9 B4 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_22:
 0x0000000000008626:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008629:  89 F0                mov       ax, si
-0x000000000000862b:  E8 CD AE             call      0x34fb
-0x000000000000862e:  E9 A9 FE             jmp       0x84da
+0x000000000000862b:  E8 CD AE             call      A_SkelMissile_
+0x000000000000862e:  E9 A9 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_23:
 0x0000000000008631:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008634:  89 F0                mov       ax, si
-0x0000000000008636:  E8 DF B5             call      0x3c18
-0x0000000000008639:  E9 9E FE             jmp       0x84da
+0x0000000000008636:  E8 DF B5             call      A_FatRaise_
+0x0000000000008639:  E9 9E FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_24:
 0x000000000000863c:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000863f:  89 F0                mov       ax, si
-0x0000000000008641:  E8 39 B6             call      0x3c7d
-0x0000000000008644:  E9 93 FE             jmp       0x84da
+0x0000000000008641:  E8 39 B6             call      A_FatAttack1_
+0x0000000000008644:  E9 93 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_25:
 0x0000000000008647:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000864a:  89 F0                mov       ax, si
-0x000000000000864c:  E8 4F B6             call      0x3c9e
-0x000000000000864f:  E9 88 FE             jmp       0x84da
+0x000000000000864c:  E8 4F B6             call      A_FatAttack2_
+0x000000000000864f:  E9 88 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_26:
 0x0000000000008652:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008655:  89 F0                mov       ax, si
-0x0000000000008657:  E8 65 B6             call      0x3cbf
-0x000000000000865a:  E9 7D FE             jmp       0x84da
+0x0000000000008657:  E8 65 B6             call      A_FatAttack3_
+0x000000000000865a:  E9 7D FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_27:
 0x000000000000865d:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008660:  89 F0                mov       ax, si
-0x0000000000008662:  E8 67 B9             call      0x3fcc
-0x0000000000008665:  E9 72 FE             jmp       0x84da
+0x0000000000008662:  E8 67 B9             call      A_BossDeath_
+0x0000000000008665:  E9 72 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_28:
 0x0000000000008668:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000866b:  89 F0                mov       ax, si
-0x000000000000866d:  E8 ED AB             call      0x325d
-0x0000000000008670:  E9 67 FE             jmp       0x84da
+0x000000000000866d:  E8 ED AB             call      A_CPosAttack_
+0x0000000000008670:  E9 67 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_29:
 0x0000000000008673:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008676:  89 F0                mov       ax, si
-0x0000000000008678:  E8 5C AC             call      0x32d7
-0x000000000000867b:  E9 5C FE             jmp       0x84da
+0x0000000000008678:  E8 5C AC             call      A_CPosRefire_
+0x000000000000867b:  E9 5C FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_30:
 0x000000000000867e:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008681:  89 F0                mov       ax, si
-0x0000000000008683:  E8 22 AD             call      0x33a8
-0x0000000000008686:  E9 51 FE             jmp       0x84da
+0x0000000000008683:  E8 22 AD             call      A_TroopAttack_
+0x0000000000008686:  E9 51 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_31:
 0x0000000000008689:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000868c:  89 F0                mov       ax, si
-0x000000000000868e:  E8 6D AD             call      0x33fe
-0x0000000000008691:  E9 46 FE             jmp       0x84da
+0x000000000000868e:  E8 6D AD             call      A_SargAttack_
+0x0000000000008691:  E9 46 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_32:
 0x0000000000008694:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008697:  89 F0                mov       ax, si
-0x0000000000008699:  E8 A0 AD             call      0x343c
-0x000000000000869c:  E9 3B FE             jmp       0x84da
+0x0000000000008699:  E8 A0 AD             call      A_HeadAttack_
+0x000000000000869c:  E9 3B FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_33:
 0x000000000000869f:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086a2:  89 F0                mov       ax, si
-0x00000000000086a4:  E8 07 AE             call      0x34ae
-0x00000000000086a7:  E9 30 FE             jmp       0x84da
+0x00000000000086a4:  E8 07 AE             call      A_BruisAttack_
+0x00000000000086a7:  E9 30 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_34:
 0x00000000000086aa:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086ad:  89 F0                mov       ax, si
-0x00000000000086af:  E8 27 B6             call      0x3cd9
-0x00000000000086b2:  E9 25 FE             jmp       0x84da
+0x00000000000086af:  E8 27 B6             call      A_SkullAttack_
+0x00000000000086b2:  E9 25 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_35:
 0x00000000000086b5:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086b8:  89 F0                mov       ax, si
-0x00000000000086ba:  E8 EE B9             call      0x40ab
-0x00000000000086bd:  E9 1A FE             jmp       0x84da
+0x00000000000086ba:  E8 EE B9             call      A_Metal_
+0x00000000000086bd:  E9 1A FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_36:
 0x00000000000086c0:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086c3:  89 F0                mov       ax, si
-0x00000000000086c5:  E8 67 AC             call      0x332f
-0x00000000000086c8:  E9 0F FE             jmp       0x84da
+0x00000000000086c5:  E8 67 AC             call      A_SpidRefire_
+0x00000000000086c8:  E9 0F FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_37:
 0x00000000000086cb:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086ce:  89 F0                mov       ax, si
-0x00000000000086d0:  E8 E7 B9             call      0x40ba
-0x00000000000086d3:  E9 04 FE             jmp       0x84da
+0x00000000000086d0:  E8 E7 B9             call      A_BabyMetal_
+0x00000000000086d3:  E9 04 FE             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_38:
 0x00000000000086d6:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086d9:  89 F0                mov       ax, si
-0x00000000000086db:  E8 A9 AC             call      0x3387
-0x00000000000086de:  E9 F9 FD             jmp       0x84da
+0x00000000000086db:  E8 A9 AC             call      A_BspiAttack_
+0x00000000000086de:  E9 F9 FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_39:
 0x00000000000086e1:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086e4:  89 F0                mov       ax, si
-0x00000000000086e6:  E8 B3 B9             call      0x409c
-0x00000000000086e9:  E9 EE FD             jmp       0x84da
+0x00000000000086e6:  E8 B3 B9             call      A_Hoof_
+0x00000000000086e9:  E9 EE FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_40:
 0x00000000000086ec:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086ef:  89 F0                mov       ax, si
-0x00000000000086f1:  E8 99 AD             call      0x348d
-0x00000000000086f4:  E9 E3 FD             jmp       0x84da
+0x00000000000086f1:  E8 99 AD             call      A_CyberAttack_
+0x00000000000086f4:  E9 E3 FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_41:
 0x00000000000086f7:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x00000000000086fa:  89 F0                mov       ax, si
-0x00000000000086fc:  E8 95 B7             call      0x3e94
-0x00000000000086ff:  E9 D8 FD             jmp       0x84da
+0x00000000000086fc:  E8 95 B7             call      A_PainAttack_
+0x00000000000086ff:  E9 D8 FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_42:
 0x0000000000008702:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008705:  89 F0                mov       ax, si
-0x0000000000008707:  E8 A5 B7             call      0x3eaf
-0x000000000000870a:  E9 CD FD             jmp       0x84da
+0x0000000000008707:  E8 A5 B7             call      A_PainDie_
+0x000000000000870a:  E9 CD FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_43:
 0x000000000000870d:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008710:  89 F0                mov       ax, si
-0x0000000000008712:  E8 4F A7             call      0x2e64
-0x0000000000008715:  E9 C2 FD             jmp       0x84da
+0x0000000000008712:  E8 4F A7             call      A_KeenDie_
+0x0000000000008715:  E9 C2 FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_44:
 0x0000000000008718:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000871b:  89 F0                mov       ax, si
-0x000000000000871d:  E8 F7 B9             call      0x4117
-0x0000000000008720:  E9 B7 FD             jmp       0x84da
+0x000000000000871d:  E8 F7 B9             call      A_BrainPain_
+0x0000000000008720:  E9 B7 FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_45:
 0x0000000000008723:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008726:  89 F0                mov       ax, si
-0x0000000000008728:  E8 F8 B9             call      0x4123
-0x000000000000872b:  E9 AC FD             jmp       0x84da
+0x0000000000008728:  E8 F8 B9             call      A_BrainScream_
+0x000000000000872b:  E9 AC FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_49:
 0x000000000000872e:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008731:  89 F0                mov       ax, si
-0x0000000000008733:  E8 B3 BB             call      0x42e9
-0x0000000000008736:  E9 A1 FD             jmp       0x84da
+0x0000000000008733:  E8 B3 BB             call      A_SpawnSound_
+0x0000000000008736:  E9 A1 FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_50:
 0x0000000000008739:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000873c:  89 F0                mov       ax, si
-0x000000000000873e:  E8 B7 BB             call      0x42f8
-0x0000000000008741:  E9 96 FD             jmp       0x84da
+0x000000000000873e:  E8 B7 BB             call      A_SpawnFly_
+0x0000000000008741:  E9 96 FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_51:
 0x0000000000008744:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008747:  89 F0                mov       ax, si
 0x0000000000008749:  E8 6B BA             call      0x41b7
-0x000000000000874c:  E9 8B FD             jmp       0x84da
+0x000000000000874c:  E9 8B FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_46:
 0x000000000000874f:  9A 68 19 88 0A       call      G_ExitLevel_
-0x0000000000008754:  E9 83 FD             jmp       0x84da
+0x0000000000008754:  E9 83 FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_47:
 0x0000000000008757:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x000000000000875a:  89 F0                mov       ax, si
 0x000000000000875c:  C6 44 1B B5          mov       byte ptr ds:[si + MOBJ_T.m_tics], 0xb5
-0x0000000000008760:  E8 66 B9             call      0x40c9
-0x0000000000008763:  E9 74 FD             jmp       0x84da
+0x0000000000008760:  E8 66 B9             call      A_BrainAwake_
+0x0000000000008763:  E9 74 FD             jmp       done_with_mobj_state_action
 setmobjstate_switch_jump_48:
 0x0000000000008766:  8B 4E FE             mov       cx, word ptr [bp - 2]
 0x0000000000008769:  89 F0                mov       ax, si
 0x000000000000876b:  C6 44 1B 96          mov       byte ptr ds:[si + MOBJ_T.m_tics], 0x96
-0x000000000000876f:  E8 CD BA             call      0x423f
-0x0000000000008772:  E9 65 FD             jmp       0x84da
+0x000000000000876f:  E8 CD BA             call      A_BrainSpit_
+0x0000000000008772:  E9 65 FD             jmp       done_with_mobj_state_action
 0x0000000000008775:  FC                   cld       
 
 ENDP
