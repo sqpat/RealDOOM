@@ -1361,36 +1361,28 @@ PUBLIC  A_Look_
 push  dx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 8
-mov   si, ax
-mov   word ptr [bp - 8], GETSEESTATEADDR
+
+xchg  ax, si
 mov   ax, SECTOR_SOUNDTRAVERSED_SEGMENT
-mov   di, word ptr ds:[si + 4]
-mov   byte ptr ds:[si + MOBJ_T.m_threshold], 0
 mov   es, ax
-mov   word ptr [bp - 6], INFOFUNCLOADSEGMENT
-cmp   byte ptr es:[di], 0
-jne   label_83
-jump_to_label_84:
-jmp   label_84
-label_83:
-mov   di, OFFSET _playerMobjRef
-mov   ax, word ptr ds:[di]
-test  ax, ax
-je    jump_to_label_84
-imul  di, ax, SIZEOF_MOBJ_POS_T
-mov   dx, MOBJPOSLIST_6800_SEGMENT
-mov   es, dx
-imul  dx, ax, SIZEOF_THINKER_T
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+xor   ax, ax
+mov   di, word ptr ds:[si + MOBJ_T.m_secnum] 
+mov   byte ptr ds:[si + MOBJ_T.m_threshold], al     ; actor->threshold = 0;	// any shot will wake up
+
+;    targRef = sector_soundtraversed_far[actorsecnum] ? playerMobjRef : 0;
+
+cmp   byte ptr es:[di], al
+je    no_target
+mov   dx, word ptr ds:[_playerMobj]
+les   di, dword ptr ds:[_playerMobj_pos]
+
+
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_SHOOTABLE
-je    jump_to_label_84
-mov   word ptr ds:[si + MOBJ_T.m_targetRef], ax
-mov   es, cx
+je    no_target
+push  ds:[_playerMobjRef]
+pop   word ptr ds:[si + MOBJ_T.m_targetRef]
 test  byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_AMBUSH
-je    label_85
+je    see_you
 mov   cx, di
 mov   ax, si
 ;call  dword ptr ds:[_P_CheckSightTemp]
@@ -1398,97 +1390,92 @@ db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 test  al, al
-je    label_84
-label_85:
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   word ptr [bp - 2], 0
-mov   bx, ax
-mov   word ptr [bp - 4], ax
-mov   al, byte ptr ds:[bx + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound]
-add   bx, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound
-test  al, al
-je    label_86
-cmp   al, SFX_POSIT1
-jae   label_87
-label_89:
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-imul  ax, ax, SIZEOF_MOBJINFO_T
-mov   bx, ax
-add   bx, OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound
-mov   bl, byte ptr ds:[bx]
-xor   bh, bh
-label_93:
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-cmp   al, MT_SPIDER
-jne   label_90
-label_91:
-mov   dl, bl
-xor   ax, ax
-label_92:
-xor   dh, dh
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
-label_86:
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
-call  dword ptr [bp - 8]
-mov   dx, ax
-mov   ax, si
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
-exit_a_look:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
-label_84:
+jne   see_you
+
+no_target:
 mov   ax, si
 xor   dx, dx
 call  P_LookForPlayers_
 test  al, al
 je    exit_a_look
-jmp   label_85
-label_87:
-cmp   al, SFX_POSIT3
-jbe   label_88
-cmp   al, sfx_bgsit2
-ja    label_89
-call  P_Random_
-mov   dl, al
+
+see_you:
+
+; di is free here?
+; bl is mobjtype
+
+mov   bl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+mov   al, SIZEOF_MOBJINFO_T
+mul   bl
+
+xchg  ax, di
+
+mov   al, byte ptr ds:[di + OFFSET _mobjinfo + MOBJINFO_T.mobjinfo_seesound]
+test  al, al
+je    no_seesound
+cmp   al, SFX_POSIT1
+jae   compare_seesound_1
+just_use_seesound:
+xchg  ax, dx  ; just use seesound.
+
+check_mobjtype:
+; dl should have sound.
+mov   al, bl
+cmp   al, MT_SPIDER
+jne   compare_mobjtype_not_spider
+found_boss_loud_mobjtype:
+xor   ax, ax
+do_seesound:
 xor   dh, dh
-mov   ax, dx
-mov   bx, dx
-sar   ax, 0Fh ; todo no
-xor   bx, ax
-sub   bx, ax
-and   bx, 1
-xor   bx, ax
-sub   bx, ax
-add   bx, SFX_BGSIT1
-jmp   label_93
-label_88:
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+no_seesound:
+mov   al, bl
+xor   ah, ah
+
+db    09Ah
+dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+
+xchg  ax, dx
+xchg  ax, si
+;call  P_SetMobjState_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_SetMobjState_addr
+
+exit_a_look:
+pop   di
+pop   si
+pop   dx
+ret   
+compare_seesound_1:
+cmp   al, SFX_POSIT3
+jbe   compare_seesound_2
+cmp   al, sfx_bgsit2
+ja    just_use_seesound
+
+call  P_Random_
+and   al, 1
+add   al, SFX_BGSIT1
+xchg  ax, dx
+jmp   check_mobjtype
+compare_seesound_2:
 call  P_Random_
 xor   ah, ah
-mov   bx, 3
-cwd   
-idiv  bx
-mov   bx, dx
-add   bx, SFX_POSIT1
-jmp   label_93
-label_90:
+mov   dl, 3
+div   dl
+mov   dl, SFX_POSIT1
+add   dl, ah ; modulo..
+jmp   check_mobjtype
+compare_mobjtype_not_spider:
 cmp   al, MT_CYBORG
-je    label_91
-mov   dl, bl
-mov   ax, si
-jmp   label_92
+je    found_boss_loud_mobjtype
+mov   ax, si  ; use actor sound source
+jmp   do_seesound
+
+
 
 ENDP
 
@@ -2634,7 +2621,7 @@ IF COMPISA GE COMPILE_186
     push  MT_TRACER
 ELSE
     mov   ax, SIZEOF_THINKER_T
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef], 
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef] 
     xchg  ax, dx
     mov   ax, MT_TRACER
     push  ax
