@@ -1145,7 +1145,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-push  dx
+push  dx  ; bp - 2
 mov   di, ax
 
 
@@ -5289,13 +5289,14 @@ jns   loop_subtract_to_divide_like_a_moron
 
 ; cx has first divide result
 
-mov   di, word ptr ds:[_setStateReturn_pos]  ; es already set
+les   di, dword ptr ds:[_setStateReturn_pos]
 
-mov   ax, 6
+mov   ax, SIZEOF_STATE_T
+
 mul   word ptr es:[di + MOBJ_POS_T.mp_statenum]
-xchg  ax, bx
 mov   dx, STATES_SEGMENT
 mov   es, dx
+xchg  ax, bx
 mov   al, byte ptr es:[bx + STATE_T.state_tics] ; todo is this a hardcoded value
 cbw  
 
@@ -5354,6 +5355,7 @@ IF COMPISA GE COMPILE_186
     imul  bx, di, SIZEOF_THINKER_T
     imul  di, di, SIZEOF_MOBJ_POS_T
 ELSE
+    mov   ax, SIZEOF_MOBJ_POS_T
     mul   di
     xchg  ax, di
     mov   bx, SIZEOF_THINKER_T
