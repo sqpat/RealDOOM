@@ -521,27 +521,35 @@ sal   dx, 1
 cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_STRENGTH * 2)], 0
 je    no_berserk
 ; multiply berserk dmg by 10
-shl   dx, 1  ; x2 na
-mov   ax, dx ; x2 x2
-shl   dx, 1  ; x4 x2
-shl   dx, 1  ; x8 x2
-add   dx, ax ; x10 x2
+mov   al, 10
+mul   dl
+xchg  ax, dx
 no_berserk:
+
+
+;	angle = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
+;	angle += ((P_Random()-P_Random())>> 1);
+
+;    slope = P_AimLineAttack (playerMobj, angle, MELEERANGE);
+;    P_LineAttack (playerMobj, angle, MELEERANGE , slope, damage);
+
+
 
 push  dx ; damage parameter down the road 
 
 les   di, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
+
 call  P_Random_MapLocal_
 mov   bx, ax
 call  P_Random_MapLocal_
 ; bh still zero
-xchg  ax, bx
-sub   ax, bx
+sub   bx, ax
 
 SHIFT_MACRO shr   cx 3
-sar   ax, 1
-add   cx, ax
+sar   bx, 1
+add   cx, bx
+and   ch, (FINEMASK SHR 8)
 
 ; cx has angle.
 
@@ -557,8 +565,8 @@ call  P_AimLineAttack_
 
 ; already pushed damage above
 
-push  dx
-push  ax
+push  dx ; push slope hi
+push  ax ; push slope lo
 
 mov   dx, cx
 mov   ax, word ptr ds:[_playerMobj]
@@ -566,37 +574,44 @@ mov   bx, MELEERANGE
 push  cs
 call  P_LineAttack_
 
-
 cmp   word ptr ds:[_linetarget], 0
-jne   have_linetarget
-POPA_NO_AX_OR_BP_MACRO
-ret   
+je    exit_a_punch
+
 have_linetarget:
+
+;		playerMobj_pos->angle.wu = R_PointToAngle2 (playerMobj_pos->x, playerMobj_pos->y, linetarget_pos->x, linetarget_pos->y);
+
+
 mov   dx, SFX_PUNCH
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-les   di, dword ptr ds:[_linetarget_pos]
-push  word ptr es:[di + 6]
-push  word ptr es:[di + 4]
-push  word ptr es:[di + 2]
-push  word ptr es:[di]
-les   di, dword ptr ds:[_playerMobj_pos]
-mov   bx, word ptr es:[di + 4]
-mov   cx, word ptr es:[di + 6]
-les   ax, dword ptr es:[bx]
+mov   si, word ptr ds:[_playerMobj_pos]
+lds   di, dword ptr ds:[_linetarget_pos]
+push  word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
+push  word ptr ds:[di + MOBJ_POS_T.mp_y + 0]
+push  word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
+push  word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
+
+les   bx, dword ptr ds:[si + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+les   ax, dword ptr ds:[si + MOBJ_POS_T.mp_x + 0]
 mov   dx, es
 
+push  ss
+pop   ds
 
 ;call  R_PointToAngle2_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _R_PointToAngle2_addr
+
 les   di, dword ptr ds:[_playerMobj_pos]
 mov   word ptr es:[di + MOBJ_POS_T.mp_angle+0], ax
 mov   word ptr es:[di + MOBJ_POS_T.mp_angle+2], dx
+exit_a_punch:
 POPA_NO_AX_OR_BP_MACRO
 ret   
 
@@ -644,6 +659,7 @@ mov   dx, cx
 push  cs
 call  P_AimLineAttack_
 
+; already pushed damage above
 
 push  dx
 push  ax
@@ -676,18 +692,20 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-les   si, dword ptr ds:[_linetarget_pos]
-push  word ptr es:[si + 6]
-push  word ptr es:[si + 4]
-push  word ptr es:[si + 2]
-push  word ptr es:[si + 0]
+mov   si, word ptr ds:[_playerMobj_pos]
+lds   di, dword ptr ds:[_linetarget_pos]
+push  word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
+push  word ptr ds:[di + MOBJ_POS_T.mp_y + 0]
+push  word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
+push  word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
 
-les   si, dword ptr ds:[_playerMobj_pos]
-mov   bx, word ptr es:[si + 4]
-mov   cx, word ptr es:[si + 6]
-les   ax, dword ptr es:[si]
+les   bx, dword ptr ds:[si + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+les   ax, dword ptr ds:[si + MOBJ_POS_T.mp_x + 0]
 mov   dx, es
 
+push  ss
+pop   ds
 
 ;call  R_PointToAngle2_
 db 0FFh  ; lcall[addr]
@@ -1227,7 +1245,7 @@ mov   di, bx   ; di has mobjpos
 mov   si, ax   ; si has mobj
 mov   ax, SIZEOF_THINKER_T
 mul   word ptr ds:[si + MOBJ_T.m_targetRef]  ; targetRef  ; clobbers dx... gr
-add   ax, (_thinkerlist + 4)
+add   ax, (_thinkerlist + THINKER_T.t_data)
 xchg  ax, si  ; si has target...
 
 ; apparently target is supposed to be the originator of missile (player) so should be static for the loop.
@@ -1303,19 +1321,20 @@ ELSE
     push  bx
 ENDIF
 
-les   bx, dword ptr ds:[_linetarget_pos]
-add   ax, word ptr es:[bx + MOBJ_POS_T.mp_z+0]
-adc   dx, word ptr es:[bx + MOBJ_POS_T.mp_z+2]
+lds   bx, dword ptr ds:[_linetarget_pos]
+add   ax, word ptr ds:[bx + MOBJ_POS_T.mp_z + 0]
+adc   dx, word ptr ds:[bx + MOBJ_POS_T.mp_z + 2]
 push  dx
 push  ax
 
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x+0]
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x+2]
-
-les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y+0]
-
-
+les   ax, dword ptr ds:[bx + MOBJ_POS_T.mp_x + 0]
+mov   dx, es
+les   bx, dword ptr ds:[bx + MOBJ_POS_T.mp_y + 0]
 mov   cx, es
+
+push  ss
+pop   ds
+
 ;call  P_SpawnMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1426,7 +1445,6 @@ pop   cx
 pop   bx
 retf
 
-; todo probably switch jump table
 
 p_setpsprite_jump_table:
 dw OFFSET A_Light0_ - OFFSET P_SIGHT_STARTMARKER_
@@ -1509,6 +1527,7 @@ mov   si, ax
 sal   si, 1
 mov   ax, bx ; ax gets psp
 
+; todo: push pop here, not in all the functions.
 
 call   word ptr cs:[si + OFFSET p_setpsprite_jump_table - OFFSET P_SIGHT_STARTMARKER_]
 

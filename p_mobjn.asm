@@ -654,7 +654,7 @@ ELSE
 ENDIF
 
 
-mov       ax, word ptr ds:[bx + _thinkerlist]
+mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 
 and       ax, TF_FUNCBITS
 cmp       ax, TF_DELETEME_HIGHBITS
@@ -709,7 +709,7 @@ ENDIF
 
 
 
-mov       ax, word ptr ds:[bx + _thinkerlist]
+mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 and       ax, TF_FUNCBITS
 cmp       ax, TF_DELETEME_HIGHBITS
 jne       done_with_z_movement

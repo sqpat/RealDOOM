@@ -406,7 +406,7 @@ push      di
 push      bp
 mov       bp, sp
 sub       sp, 6
-mov       si, word ptr ds:[_thinkerlist + 2]       ; currentthinker = thinkerlist[0].next...
+mov       si, word ptr ds:[_thinkerlist + THINKER_T.t_next]       ; currentthinker = thinkerlist[0].next...
 
 
 
@@ -415,10 +415,10 @@ mov       ax, SIZEOF_THINKER_T
 mul       si
 
 mov       di, ax                               ; thinker_t offset
-mov       ax, word ptr ds:[di + _thinkerlist]     ; prevfunctype
+mov       ax, word ptr ds:[di + _thinkerlist + THINKER_T.t_prevFunctype]     ; prevfunctype
 
 mov       si, word ptr ds:[_thinkerlist + di + 2] ; get thinker next
-add       di, (_thinkerlist + 4)        ; di = thinkerlist.data
+add       di, (_thinkerlist + THINKER_T.t_data)        ; di = thinkerlist.data
 and       ax, TF_FUNCBITS
 cmp       ax, TF_MOBJTHINKER_HIGHBITS
 je        call_removemobj
@@ -525,7 +525,7 @@ pop       ds                              ; ds is save seg again
 
 mov       bx, ax                          ; mobj pointer to bx
 mov       word ptr [bp - 6], ax           ; store mobj pointer              ; alternatively, push/pop
-sub       ax, ((_thinkerlist + 4))        ; get thinkerlist offset
+sub       ax, ((_thinkerlist + THINKER_T.t_data))        ; get thinkerlist offset
 xor       dx, dx
 mov       cx, SIZEOF_THINKER_T
 div       cx
@@ -775,7 +775,7 @@ pop    es
 mov    ds, cx
 
 mov    bx, ax
-sub    ax, (_thinkerlist + 4)
+sub    ax, (_thinkerlist + THINKER_T.t_data)
 xor    dx, dx
 div    di           ; store thinkerref
 mov    di, bx
@@ -827,7 +827,7 @@ pop    es
 mov    ds, cx
 
 mov    bx, ax
-sub    ax, (_thinkerlist + 4)
+sub    ax, (_thinkerlist + THINKER_T.t_data)
 xor    dx, dx
 div    di
 mov    di, bx
@@ -872,7 +872,7 @@ pop    es
 mov    ds, cx
 
 mov    bx, ax
-sub    ax, (_thinkerlist + 4)
+sub    ax, (_thinkerlist + THINKER_T.t_data)
 xor    dx, dx
 div    di
 mov    di, bx
@@ -914,7 +914,7 @@ pop    es
 mov    ds, cx
 
 mov    bx, ax
-sub    ax, (_thinkerlist + 4)
+sub    ax, (_thinkerlist + THINKER_T.t_data)
 xor    dx, dx
 div    di
 mov    di, bx
@@ -1545,7 +1545,7 @@ push      si
 push      di
 
 les       di, dword ptr ds:[_save_p]
-mov       dx, word ptr ds:[_thinkerlist + 2]
+mov       dx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 test      dx, dx
 je        exit_archivethinkers
 loop_check_next_thinker:
@@ -1555,7 +1555,7 @@ mul       dx
 pop       dx    ; restore th
 xchg      ax, bx
 
-mov       ax, word ptr ss:[bx + OFFSET _thinkerlist]
+mov       ax, word ptr ss:[bx + OFFSET _thinkerlist + THINKER_T.t_prevFunctype]
 and       ax, TF_FUNCBITS
 cmp       ax, TF_MOBJTHINKER_HIGHBITS
 je        do_save_next_thinker
@@ -1564,7 +1564,7 @@ iterate_to_next_thinker:
 mov       ax, SIZEOF_THINKER_T
 mul       dx
 xchg      ax, bx
-mov       dx, word ptr ss:[bx + OFFSET _thinkerlist + 2] ; next th
+mov       dx, word ptr ss:[bx + OFFSET _thinkerlist + THINKER_T.t_next] ; next th
 test      dx, dx
 jne       loop_check_next_thinker
 exit_archivethinkers:
@@ -1681,7 +1681,7 @@ add       di, 018h      ; di + 42h . skip a bunch of stuff related to sprites, b
 push      ss
 pop       ds
 
-lea       si, [bx + _thinkerlist + 4 + 0Ah ]       ; point to mobj + 0Ah now
+lea       si, [bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_height ]       ; point to mobj + 0Ah now
 
 mov       al, byte ptr ds:[si + 014h]   ; 042h <- 01Eh (14h + 0a) radius
 xor       ah, ah
@@ -1902,7 +1902,7 @@ push      si
 push      di
 
 les       di, dword ptr ds:[_save_p]
-mov       cx, word ptr ds:[_thinkerlist + 2]
+mov       cx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 test      cx, cx
 je        exit_archive_specials
 save_next_special:
@@ -1910,7 +1910,7 @@ mov       ax, SIZEOF_THINKER_T
 mul       cx
 xchg      ax, si
 
-mov       ax, word ptr ds:[si + OFFSET _thinkerlist]
+mov       ax, word ptr ds:[si + OFFSET _thinkerlist + THINKER_T.t_prevFunctype]
 and       ax, TF_FUNCBITS
 
 
@@ -1940,7 +1940,7 @@ jge       iterate_to_next_special
 dec       ax     ; offset 0 case. could just minus two in the lookup...
 
 force_ceiling:          ; active ceilings jump here from null thinker case.
-add       si, OFFSET _thinkerlist + 4   ; data pointer
+add       si, OFFSET _thinkerlist + THINKER_T.t_data   ; data pointer
 
 xchg      ax, bx
 mov       al, byte ptr cs:[bx + OFFSET _tc_enum_lookup - OFFSET P_LOADSTART_]
@@ -1985,7 +1985,7 @@ mov       ax, SIZEOF_THINKER_T
 mul       cx
 xchg      ax, bx
 
-mov       cx, word ptr ds:[bx + OFFSET _thinkerlist + 2]    ; thinker next
+mov       cx, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]    ; thinker next
 test      cx, cx
 jne       save_next_special
 exit_archive_specials:

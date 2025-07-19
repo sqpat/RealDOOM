@@ -1068,7 +1068,7 @@ push  ax  ; bp - 2
 
 
 ; calculate thisref numerator. only div to calculate in the end if necessary
-lea   cx, ds:[si - (_thinkerlist + 4) - 4]
+lea   cx, ds:[si - (_thinkerlist + THINKER_T.t_data) - 4]
 
 
 
@@ -1097,7 +1097,7 @@ IF COMPISA GE COMPILE_186
 
 	xchg  ax, si ; store si in ax
 	imul  si, di, SIZEOF_THINKER_T
-	mov   word ptr ds:[si + (_thinkerlist + 4)], dx
+	mov   word ptr ds:[si + (_thinkerlist + THINKER_T.t_data)], dx
 	xchg  ax, si  ; restore si
 
 ELSE
@@ -1109,7 +1109,7 @@ ELSE
 	xchg  ax, si 
 
 	pop   dx
-	mov   word ptr ds:[si + (_thinkerlist + 4)], dx
+	mov   word ptr ds:[si + (_thinkerlist + THINKER_T.t_data)], dx
 	xchg  ax, si 
 
 
@@ -1295,7 +1295,7 @@ ELSE
 
 ENDIF
 
-add   si, (_thinkerlist + 4) + 2
+add   si, (_thinkerlist + THINKER_T.t_data) + m_bnextRef
 cmp   cx, word ptr [si]
 jne   ref_not_a_match
 ; write bnextref and break look
@@ -1362,7 +1362,7 @@ mov   si, dx  ; thing_pos offset
 ;	THINKERREF thingRef = GETTHINKERREF(thing);
 
 mov   bx, SIZEOF_THINKER_T
-sub   ax, (_thinkerlist + 4)
+sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 push  ax	;bp - 2 is thingref
@@ -1441,7 +1441,7 @@ ELSE
 	pop   ax
 ENDIF
 
-add   di, (_thinkerlist + 4)
+add   di, (_thinkerlist + THINKER_T.t_data)
 mov   si, MOBJPOSLIST_6800_SEGMENT
 mov   es, si
 
@@ -1486,7 +1486,7 @@ ELSE
 	pop   dx
 ENDIF
 
-mov   word ptr ds:[bx + (_thinkerlist + 4)], dx
+mov   word ptr ds:[bx + (_thinkerlist + THINKER_T.t_data)], dx
 
 done_setting_sector_stuff:
 
@@ -1816,7 +1816,7 @@ ELSE
 
 ENDIF
 
-add  si, (_thinkerlist + 4)
+add  si, (_thinkerlist + THINKER_T.t_data)
 mov  cx, MOBJPOSLIST_6800_SEGMENT
 mov  dx, si
 call di
@@ -4352,11 +4352,11 @@ je    good_missile_target
 
 IF COMPISA GE COMPILE_186
 	imul  bx, ax, SIZEOF_THINKER_T
-	add   bx, (_thinkerlist + 4)
+	add   bx, (_thinkerlist + THINKER_T.t_data)
 ELSE
 	mov   bx, SIZEOF_THINKER_T
 	mul   bx
-	add   ax, (_thinkerlist + 4)
+	add   ax, (_thinkerlist + THINKER_T.t_data)
 	xchg  ax, bx
 ENDIF
 
@@ -4527,7 +4527,7 @@ mov   si, ax ; thing ptr
 mov   di, cx
 mov   bx, SIZEOF_THINKER_T
 mov   word ptr ds:[_tmthing], ax
-sub   ax, (_thinkerlist + 4)
+sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx  ; cwd seems bad??? are we passing in -1?
 div   bx
 
@@ -5750,7 +5750,7 @@ ELSE
 
 ENDIF
 
-add   dx, (_thinkerlist + 4)
+add   dx, (_thinkerlist + THINKER_T.t_data)
 cmp   dx, word ptr ds:[_shootthing]
 je    exit_shoottraverse_return_1
 
@@ -6292,7 +6292,7 @@ ELSE
 
 ENDIF
 
-add   ax, (_thinkerlist + 4)
+add   ax, (_thinkerlist + THINKER_T.t_data)
 cmp   ax, word ptr ds:[_shootthing]
 je    exit_aimtraverse_return_1
 push  ax  ; thing ptr
@@ -6824,7 +6824,7 @@ mov   cx, dx		; distance
 mov   si, bx
 
 mov   bx, SIZEOF_THINKER_T
-sub   ax, (_thinkerlist + 4)
+sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
@@ -7105,7 +7105,7 @@ mov   si, bx			; si gets distance..
 mov   cx, ax
 mov   word ptr ds:[_shootthing], ax
 mov   bx, SIZEOF_THINKER_T
-sub   ax, (_thinkerlist + 4)
+sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 

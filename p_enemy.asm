@@ -1281,7 +1281,7 @@ ELSE
     xchg ax, bx
 ENDIF
 
-mov   dx, word ptr ds:[bx + _thinkerlist]
+mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 and   dx, TF_FUNCBITS
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
 

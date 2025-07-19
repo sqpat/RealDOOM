@@ -106,7 +106,7 @@ pop       dx
 ;	thinkerlist[index].prevFunctype = temp + thinkfunc;
 ;	thinkerlist[temp].next = index;
 
-mov       word ptr ds:[si + _thinkerlist + 2], ax
+mov       word ptr ds:[si + _thinkerlist + THINKER_T.t_next], ax
 
 ;	thinkerlist[0].prevFunctype = index;
 
@@ -215,7 +215,7 @@ call      P_PlayerThink_
 
 
 PUSHA_NO_AX_MACRO ; revist once we call outer func...
-mov       si, word ptr ds:[_thinkerlist + 2]
+mov       si, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 ;test      si, si
 ;je        exit_run_thinkers  ; 0 thinkers ought to be impossible?
 do_next_thinker:
@@ -225,8 +225,8 @@ MUL_SIZEOF_THINKER_T bx, si
 
 
 ; consider inc bx?
-mov       al, byte ptr ds:[bx + _thinkerlist+1]  ; just get high bit
-lea       di, ds:[bx + _thinkerlist + 4]
+mov       al, byte ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype +1]  ; just get high bit
+lea       di, ds:[bx + _thinkerlist + THINKER_T.t_data]
 and       al, (TF_FUNCBITS SHR 8)
 cmp       al, (TF_MOBJTHINKER_HIGHBITS SHR 8)
 jne       continue_checking_tf_types
@@ -247,7 +247,7 @@ mov       dx, si
 call      P_MobjThinker_
 done_processing_thinker:
 
-mov       si, word ptr ds:[di - 2]  ; (was bx + _thinkerlist + 4)
+mov       si, word ptr ds:[di - 2]  ; (was bx + THINKER_T.t_data)
 test      si, si
 jne       do_next_thinker
 exit_run_thinkers:
@@ -291,12 +291,12 @@ mov       cx, es                                ; nectref
 ;imul      di, cx, SIZEOF_THINKER_T
 MUL_SIZEOF_THINKER_T di cx
 
-mov       byte ptr ds:[di + _thinkerlist], 0
+mov       byte ptr ds:[di + _thinkerlist + THINKER_T.t_prevFunctype], 0
 and       ah, (TF_PREVBITS SHR 8)
 ; thinkerlist[nextRef].prevFunctype &= TF_FUNCBITS;
-and       byte ptr ds:[di + _thinkerlist+1], (TF_FUNCBITS SHR 8)
+and       byte ptr ds:[di + _thinkerlist + THINKER_T.t_prevFunctype + 1], (TF_FUNCBITS SHR 8)
 ; thinkerlist[nextRef].prevFunctype += prevRef;
-add       word ptr ds:[di + _thinkerlist], ax
+add       word ptr ds:[di + _thinkerlist + THINKER_T.t_prevFunctype], ax
 
 
 
@@ -305,9 +305,9 @@ MUL_SIZEOF_THINKER_T di ax
 
 
 xor       ax, ax
-mov       word ptr [di + _thinkerlist + 2], cx
+mov       word ptr [di + _thinkerlist + THINKER_T.t_next], cx
 
-lea       di, ds:[bx + _thinkerlist + 4]
+lea       di, ds:[bx + _thinkerlist + THINKER_T.t_data]
 mov       cx, ds
 mov       es, cx
 mov       cx, SIZEOF_MOBJ_T / 2
@@ -327,7 +327,7 @@ mov       cx, SIZEOF_MOBJ_POS_T /2
 rep       stosw
 
 mov       word ptr ds:[bx + _thinkerlist], MAX_THINKERS
-lea       di, ds:[bx + _thinkerlist + 4]
+lea       di, ds:[bx + _thinkerlist + THINKER_T.t_data]
 jmp       done_processing_thinker
 
 

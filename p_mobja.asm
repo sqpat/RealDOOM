@@ -1144,7 +1144,7 @@ push  cx    ; bp - 6
 sub   sp, 0Ah
 
 mov   bx, SIZEOF_THINKER_T
-sub   ax, (_thinkerlist + 4)
+sub   ax, (_thinkerlist + THINKER_T.t_data)
 cwd
 div   bx
 
@@ -1515,7 +1515,7 @@ xchg  ax, di
 
 mov   ax, dx
 mov   bx, SIZEOF_THINKER_T
-sub   ax, (_thinkerlist + 4)
+sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
@@ -1582,7 +1582,7 @@ no_see_sound:
 
 mov   ax, word ptr [bp - 2]
 mov   bx, SIZEOF_THINKER_T
-sub   ax, (_thinkerlist + 4)
+sub   ax, (_thinkerlist + THINKER_T.t_data)
 cwd
 div   bx
 mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
