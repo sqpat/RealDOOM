@@ -270,7 +270,7 @@ retf
 
 ENDP
 
-; todo cx/bx should not need to be on stac
+; return result in carry flag
 
 PROC    P_CheckMeleeRange_ NEAR
 PUBLIC  P_CheckMeleeRange_
@@ -282,8 +282,7 @@ PUBLIC  P_CheckMeleeRange_
 
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 jne   do_check_meleerange
-
-xor   ax, ax
+clc
 ret   
 
 do_check_meleerange:
@@ -370,12 +369,12 @@ test  al, al
 jne   exit_check_meleerange_return_1
 exit_check_meleerange_return_0:
 POPA_NO_AX_OR_BP_MACRO
-xor   ax, ax
+clc  
 ret  
 
 exit_check_meleerange_return_1:
 POPA_NO_AX_OR_BP_MACRO
-mov   ax, 1
+stc
 ret  
 
 
@@ -387,13 +386,8 @@ PROC    P_CheckMissileRange_ NEAR
 PUBLIC  P_CheckMissileRange_
 
 
-
-
 PUSHA_NO_AX_OR_BP_MACRO
-push  bp
-mov   bp, sp
-
-xchg  si, di
+xchg  di, si
 
 IF COMPISA GE COMPILE_186
     imul  bx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
@@ -422,7 +416,7 @@ ELSE
     mov   cx, ax
 ENDIF
 
-push  cx  ; bp - 2  store mobjpos for x/y subtraction later
+mov   bp, cx
 
 lea   dx, ds:[bx + (_thinkerlist + THINKER_T.t_data)]
 mov   ax, di
@@ -432,7 +426,7 @@ db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 test  al, al
-je    exit_checkmissilerange_return_0
+je    exit_checkmissilerange_return_0_and_pop
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
 test  byte ptr es:[si + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
@@ -440,10 +434,11 @@ jne   just_hit_enemy
 cmp   byte ptr ds:[di + MOBJ_T.m_reactiontime], 0
 je    ready_to_attack
 
-exit_checkmissilerange_return_0:
-LEAVE_MACRO 
+exit_checkmissilerange_return_0_and_pop:
+
+;LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
-xor   ax, ax
+clc
 ret   
 just_hit_enemy:
 and   byte ptr es:[si + MOBJ_POS_T.mp_flags1], (NOT MF_JUSTHIT)
@@ -451,8 +446,8 @@ jmp   exit_checkmissilerange_return_1
 ready_to_attack:
 xor   ax, ax
 mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype];
-pop   di   ; bp - 2 dont need actor ptr anymore. only use type ahead of here.
-push  ax   ; bp - 2 store type.
+mov   di, bp ;  dont need actor ptr anymore. only use type ahead of here.
+mov   bp, ax ;  store type.
 
 ;	disttemp.w = P_AproxDistance(actor_pos->x.w - actorTargetx.w,
 ;		actor_pos->y.w - actorTargety.w);
@@ -479,8 +474,7 @@ pop   ds
 db    09Ah
 dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-pop   ax  ; bp - 2
-push  ax  ; bp - 2
+mov   ax, bp
 sub   dx, 64
 
 db    09Ah
@@ -493,7 +487,7 @@ jne   has_melee
 
 sub   dx, 128
 has_melee:
-pop   ax  ; get type
+xchg  ax, bp
 cmp   al, MT_VILE
 jne   missile_not_vile
 cmp   dx, (14 * 64)
@@ -526,9 +520,11 @@ call  P_Random_
 xor   ah, ah
 cmp   ax, dx
 jge   exit_checkmissilerange_return_1
-LEAVE_MACRO 
+exit_checkmissilerange_return_0:
+;LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
-xor   ax, ax
+exit_pmove_ret_0_early:
+clc
 ret   
 missile_not_cyberdemon:
 cmp   al, MT_SPIDER
@@ -537,9 +533,9 @@ cmp   al, MT_SKULL
 je    missile_is_spider_skull_cyborg
 jmp   missile_dist_200_check
 exit_checkmissilerange_return_1:
-LEAVE_MACRO 
+;LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
-mov   al, 1
+stc
 ret   
 ENDP
 
@@ -560,10 +556,21 @@ dw OFFSET switch_movedir_7
 
 
   
-
+; return boolean in carry
 PROC    P_Move_ NEAR
 PUBLIC  P_Move_
 
+
+
+
+; di/si have the offsets already
+
+cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
+
+je    exit_pmove_ret_0_early
+
+
+do_pmove:
 
 push  dx
 push  si
@@ -571,15 +578,6 @@ push  di
 push  bp
 mov   bp, sp
 
-; di/si have the offsets already
-
-cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
-
-jne   do_pmove
-xor   ax, ax
-jmp   exit_p_move
-
-do_pmove:
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
 mov   al, SIZEOF_MOBJINFO_T 
@@ -676,7 +674,7 @@ rcr   ax, 1
 mov   word ptr es:[di + MOBJ_POS_T.mp_z + 0], ax
 mov   word ptr es:[di + MOBJ_POS_T.mp_z + 2], dx
 exit_p_move_return_1:
-mov   al, 1
+stc
 exit_p_move:
 LEAVE_MACRO 
 pop   di
@@ -687,8 +685,8 @@ ret
 check_for_specials_hit_in_move:
 cmp   word ptr ds:[_numspechit], 0
 jne  specials_hit
-
-xor   ax, ax
+exit_p_move_return_0:
+clc
 jmp   exit_p_move
 specials_hit:
 ; specials hit..
@@ -720,12 +718,8 @@ je    do_next_spechit
 mov   word ptr [bp - 2], 1
 jmp   do_next_spechit
 end_spechit_loop:
-pop   ax  ;  result
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-ret   
+sar   word ptr [bp - 2], 1 ; set carry
+jmp   exit_p_move
 switch_movedir_1:
 add   word ptr [bp - 8], ax
 adc   word ptr [bp - 6], dx
@@ -762,6 +756,7 @@ jmp   got_x_y_for_trymove
 
 ENDP
 
+; return boolean in carry
 
 PROC    P_TryWalk_ NEAR
 PUBLIC  P_TryWalk_
@@ -772,12 +767,11 @@ PUBLIC  P_TryWalk_
 
 
 call  P_Move_
-test  al, al
-je    exit_try_walk  ; al 0
+jnc   exit_try_walk  ; al 0
 call  P_Random_
 and   ax, 15  ; todo al once proper random
 mov   word ptr ds:[si + MOBJ_T.m_movecount], ax
-mov   al, 1
+stc
 exit_try_walk:
 ret   
 
@@ -957,8 +951,7 @@ push  bx
 push  cx
 
 call  P_TryWalk_
-test  al, al
-je    no_direct_route_restore_deltax_delta_y_2
+jnc   no_direct_route_restore_deltax_delta_y_2
 
 jmp   exit_p_newchasedir
 no_direct_route_restore_deltax_delta_y_2:
@@ -1038,8 +1031,7 @@ cmp   al, DI_NODIR
 je    dont_try_d1
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 call  P_TryWalk_
-test  al, al
-jne   exit_p_newchasedir
+jc    exit_p_newchasedir
 
 dont_try_d1:
 mov   al, byte ptr [bp - 3]
@@ -1047,8 +1039,7 @@ cmp   al, DI_NODIR
 je    dont_try_d2
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 call  P_TryWalk_
-test  al, al
-jne   exit_p_newchasedir
+jc    exit_p_newchasedir
 
 dont_try_d2:
 mov   al, byte ptr [bp - 2]
@@ -1056,8 +1047,7 @@ cmp   al, DI_NODIR
 je    dont_try_olddir
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
 call  P_TryWalk_
-test  al, al
-jne   exit_p_newchasedir
+jc    exit_p_newchasedir
 
 dont_try_olddir:
 
@@ -1073,8 +1063,7 @@ cmp   dl, dh
 je    do_next_chase_try_loop
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], dl
 call  P_TryWalk_
-test  al, al
-jne   exit_p_newchasedir
+jc    exit_p_newchasedir
 
 do_next_chase_try_loop:
 inc   dl
@@ -1088,8 +1077,8 @@ je    set_nodir_exit_p_newchasedir
 
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], dh
 call  P_TryWalk_
-test  al, al
-jne   exit_p_newchasedir
+
+jc    exit_p_newchasedir
 
 
 
@@ -1114,8 +1103,7 @@ cmp   dl, dh
 je   do_next_chase_try_loop_from_southeast
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], dl
 call  P_TryWalk_
-test  al, al
-jne   exit_p_newchasedir
+jc   exit_p_newchasedir
 do_next_chase_try_loop_from_southeast:
 dec   dl
 jns   loop_next_chase_try_from_southeast
@@ -1132,23 +1120,16 @@ PUBLIC  P_LookForPlayers_
 ; boolean __near P_LookForPlayers (mobj_t __near*	actor, boolean	allaround ) {
 
 
-; bp - 2   allaround (dl)
-; bp - 4   some temp thing
-
 cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
-jg    do_look_for_players
-xor   al, al
+jg    do_look_for_players  ; would be nice to jump somehwere but too far
+clc
 ret
 
 do_look_for_players:
 
-push  bx
-push  cx
-push  si
-push  di
-push  bp
-mov   bp, sp
-push  dx  ; bp - 2
+PUSHA_NO_AX_MACRO
+
+mov   bp, dx
 mov   di, ax
 
 
@@ -1179,21 +1160,17 @@ db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 test  al, al
-je    exit_look_for_players_2
-cmp   byte ptr [bp - 2], 0
+je    exit_look_for_players_return_0
+cmp   bp, 0
 je    check_angle_for_player
 look_set_target_player:
 push  ss
 pop   ds  ; might have been unset in some paths.
 mov   ax, word ptr ds:[_playerMobjRef]
 mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
-mov   al, 1
-exit_look_for_players_2:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+exit_look_for_players_return_1:
+stc
+POPA_NO_AX_MACRO
 ret   
 check_angle_for_player:
 lds   bx, dword ptr ds:[_playerMobj_pos]
@@ -1263,13 +1240,8 @@ jne   look_set_target_player
 test  ax, ax
 jbe   look_set_target_player
 exit_look_for_players_return_0:
-xor   al, al
-exit_look_for_players:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+clc
+POPA_NO_AX_MACRO
 ret   
 
 ENDP
@@ -1381,8 +1353,7 @@ no_target:
 mov   ax, si
 xor   dx, dx
 call  P_LookForPlayers_
-test  al, al
-je    exit_a_look
+jnc   exit_a_look
 
 see_you:
 
@@ -1565,8 +1536,8 @@ look_for_new_target:
 mov   dx, 1
 mov   ax, si
 call  P_LookForPlayers_
-test  al, al
-jne   exit_a_chase
+
+jc    exit_a_chase
 mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xchg  ax, si
@@ -1591,11 +1562,9 @@ dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
 
 test  ax, ax
 je    melee_check_failed_try_missile
-
 mov   bx, di
 call  P_CheckMeleeRange_
-test  al, al
-je    melee_check_failed_try_missile
+jnc   melee_check_failed_try_missile
 
 do_melee_attack:
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
@@ -1654,16 +1623,15 @@ js    dont_move_this_tic
 
 
 call  P_Move_
-test  al, al
-jne   dont_change_dir
+jc   dont_change_dir
 dont_move_this_tic:
 
 
 call  P_NewChaseDir_
 dont_change_dir:
 
+xor   ax, ax
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor   ah, ah
 
 ;call  dword ptr [bp - 014h]
 db    09Ah
@@ -1689,9 +1657,10 @@ jmp   exit_a_chase_2
 
 
 check_missile_range:
+
 call  P_CheckMissileRange_
-test  al, al
-je    nomissile
+
+jnc    nomissile
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
 ;call  dword ptr [bp - 010h]
@@ -2262,11 +2231,9 @@ je    a_troopattack_exit
 do_a_troopattack:
 mov   dx, bx
 call  A_FaceTarget_
-
 mov   bx, dx
 call  P_CheckMeleeRange_
-test  al, al
-je    do_troop_missile
+jnc    do_troop_missile
 mov   dx, SFX_CLAW
 mov   ax, si
 ;call  S_StartSound_
@@ -2337,11 +2304,9 @@ je    exit_a_sargattack
 do_a_sargattack:
 mov   dx, bx
 call  A_FaceTarget_
-
 mov   bx, dx
 call  P_CheckMeleeRange_
-test  al, al
-je    exit_a_sargattack_full
+jnc   exit_a_sargattack_full
 
 ;		damage = ((P_Random()%10)+1)*4;
 
@@ -2387,11 +2352,9 @@ je    exit_head_attack
 do_head_attack:
 mov   dx, bx
 call  A_FaceTarget_
-
 mov   bx, dx
 call  P_CheckMeleeRange_
-test  al, al
-je    do_head_missile
+jnc   do_head_missile
 call  P_Random_
 
 ;		damage = (P_Random()%6+1)*10;
@@ -2491,8 +2454,8 @@ je    exit_a_bruisattack
 do_a_bruisattack:
 ; cx:bx here
 call  P_CheckMeleeRange_
-test  al, al
-je    do_bruis_missile
+
+jnc    do_bruis_missile
 mov   dx, SFX_CLAW
 mov   ax, si
 ;call  S_StartSound_
@@ -2987,11 +2950,10 @@ je    exit_a_skelfist
 do_a_skelfist:
 mov   dx, bx
 call  A_FaceTarget_
-
 mov   bx, dx
 call  P_CheckMeleeRange_
-test  al, al
-je    exit_a_skelfist_full
+
+jnc    exit_a_skelfist_full
 
 ;		damage = ((P_Random()%10)+1)*6;
 
@@ -5508,8 +5470,7 @@ mov   dx, 1
 mov   ax, di
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 call  P_LookForPlayers_
-test  al, al
-je    dont_set_seestate
+jnc   dont_set_seestate
 mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype]
 xor   ah, ah
 
