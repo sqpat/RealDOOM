@@ -7903,13 +7903,13 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SpawnMobj_addr
 call  P_Random_MapLocal_
-mov   dl, al
+mov   dx, ax
 call  P_Random_MapLocal_
 
 ;		mo->momx.w = (P_Random() - P_Random ())<<12;
 ;		mo->momy.w = (P_Random() - P_Random ())<<12;
 
-sub   al, dl
+sub   ax, dx
 SHIFT_MACRO  shl ax 4
 mov   ah, al
 xor   al, al
@@ -7919,9 +7919,9 @@ mov   si, word ptr ds:[_setStateReturn]
 mov   word ptr [si + 0Eh], ax
 mov   word ptr [si + 010h], dx
 call  P_Random_MapLocal_
-mov   dl, al
+mov   dx, ax
 call  P_Random_MapLocal_
-sub   al, dl
+sub   ax, dx
 SHIFT_MACRO  shl ax 4
 mov   ah, al
 xor   al, al

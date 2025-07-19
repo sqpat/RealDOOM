@@ -517,7 +517,6 @@ jle   not_cyborg_distance_check
 mov   dx, 160
 not_cyborg_distance_check:
 call  P_Random_
-xor   ah, ah
 cmp   ax, dx
 jge   exit_checkmissilerange_return_1
 exit_checkmissilerange_return_0:
@@ -769,7 +768,7 @@ PUBLIC  P_TryWalk_
 call  P_Move_
 jnc   exit_try_walk  ; al 0
 call  P_Random_
-and   ax, 15  ; todo al once proper random
+and   al, 15  
 mov   word ptr ds:[si + MOBJ_T.m_movecount], ax
 stc
 exit_try_walk:
@@ -1416,7 +1415,7 @@ xchg  ax, dx
 jmp   check_mobjtype
 compare_seesound_2:
 call  P_Random_
-xor   ah, ah
+
 mov   dl, 3
 div   dl
 mov   dl, SFX_POSIT1
@@ -1760,10 +1759,9 @@ test  di, di
 je    exit_a_facetarget
 
 call  P_Random_
-mov   bl, al
+xchg  ax, bx
 call  P_Random_
-xor   bh, bh
-xor   ah, ah
+
 sub   bx, ax
 mov   es, cx
 SHIFT_MACRO shl   bx 5
@@ -1830,10 +1828,8 @@ dw _S_StartSound_addr
 ;    damage = ((P_Random()%5)+1)*3;
 
 call  P_Random_
-mov   dl, al
+xchg  ax, dx
 call  P_Random_
-xor   dh, dh
-xor   ah, ah
 sub   dx, ax
 sal   dx, 1
 add   dx, cx ; angle into dx.
@@ -1841,7 +1837,7 @@ and   dh, (FINEMASK SHR 8)
 
 
 call  P_Random_
-xor   ah, ah
+
 mov   cl, 5
 div   cl
 
@@ -1929,10 +1925,8 @@ do_next_shotgun_pellet:
 
 call  P_Random_
 
-mov   dl, al
+xchg  ax, dx
 call  P_Random_
-xor   dh, dh
-xor   ah, ah
 
 sub   dx, ax
 
@@ -1942,7 +1936,7 @@ and   dx, FINEMASK
 
 ;		damage = ((P_Random()%5)+1)*3;
 call  P_Random_
-xor   ah, ah
+
 mov   bl, 5
 div   bl
 mov   al, ah
@@ -2018,17 +2012,16 @@ mov   di, ax
 mov   bx, dx
 
 call  P_Random_
-mov   dl, al
+xchg  ax, dx
 call  P_Random_
-xor   dh, dh
-xor   ah, ah
+
 sub   dx, ax
 sal   dx, 1
 add   dx, cx
 and   dh, (FINEMASK SHR 8)
 
 call  P_Random_
-xor   ah, ah
+
 mov   cl, 5
 div   cl
 mov   al, ah
@@ -2246,7 +2239,7 @@ call  P_Random_
 ;		damage = (P_Random()%8+1)*3;
 
 
-and   ax, 7
+and   al, 7
 inc   ax
 
 mov   cx, ax
@@ -2311,7 +2304,7 @@ jnc   exit_a_sargattack_full
 ;		damage = ((P_Random()%10)+1)*4;
 
 call  P_Random_
-xor   ah, ah
+
 mov   cl, 10
 div   cl
 mov   al, ah
@@ -2359,7 +2352,7 @@ call  P_Random_
 
 ;		damage = (P_Random()%6+1)*10;
 
-xor   ah, ah
+
 mov   bx, 00A06h  ; 10 hi 6 lo
 div   bl
 
@@ -2467,7 +2460,7 @@ dw _S_StartSound_addr
 
 
 call  P_Random_
-and   ax, 7
+and   al, 7
 inc   ax
 mov   ah, 10
 mul   ah
@@ -2958,7 +2951,7 @@ jnc    exit_a_skelfist_full
 ;		damage = ((P_Random()%10)+1)*6;
 
 call  P_Random_
-xor   ah, ah
+
 mov   cl, 10
 div   cl
 mov   al, ah
@@ -4522,13 +4515,13 @@ ja    got_deathsound
 call  P_Random_
 
 ; sound = sfx_bgdth1 + P_Random ()%2;
-and   ax, 1
+and   al, 1
 add   al, SFX_BGDTH1
 jmp   got_deathsound
 
 check_for_other_deathsound_2:
 call  P_Random_
-xor   ah, ah
+
 
 mov   dl, 3
 div   dl
@@ -4956,7 +4949,6 @@ ENDIF
 
 call  P_Random_
 
-xor   ah, ah
 sal   ax, 1
 add   ax, 128
 push  ax  ; z hi
@@ -4981,7 +4973,6 @@ call  P_Random_
 
 ;		th->momz.w = P_Random()*512;
 
-xor   ah, ah
 cwd
 xchg  ah, al
 sal   ax, 1
@@ -5032,11 +5023,9 @@ PUBLIC  A_BrainExplode_
 
 
 call  P_Random_
-mov   dl, al
+xchg  ax, dx
 call  P_Random_
 ;    x = mo_pos->x.w + (P_Random () - P_Random ())*2048;
-xor   ah, ah
-xor   dh, dh
 sub   dx, ax
 
 
@@ -5057,7 +5046,6 @@ call  P_Random_
 
 mov   es, cx
 
-xor   ah, ah
 sal   ax, 1
 add   ax, 128
 push  ax
@@ -5105,7 +5093,6 @@ call  P_Random_
 
 ;    th->momz.w = P_Random()*512;
 
-xor   ah, ah
 cwd
 xchg  al, ah
 sal   ax, 1

@@ -222,18 +222,16 @@ PROC P_Random_ NEAR
 PUBLIC P_Random_
 
 ; ah guaranteed 0 now!
-
-push      bx
-
-inc       byte ptr ds:[_prndindex]
-mov       ax, RNDTABLE_SEGMENT
-mov       es, ax
-mov       al, byte ptr ds:[_prndindex]
-xor       ah, ah
-mov       bx, ax
-mov       al, byte ptr es:[bx]
-pop       bx
-ret       
+push    bx
+inc 	byte ptr ds:[_prndindex]
+mov     ax, RNDTABLE_SEGMENT
+mov     es, ax
+xor     ax, ax
+mov     bx, ax
+mov     al, byte ptr ds:[_prndindex]
+xlat    byte ptr es:[bx]
+pop     bx
+ret
 
 ENDP
 
