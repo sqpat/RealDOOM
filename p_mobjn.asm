@@ -1034,7 +1034,7 @@ retf
 
 setmobjstate_jump_table:
 dw 0
-dw OFFSET A_Explode_
+dw A_Explode_
 dw A_Pain_
 dw A_PlayerScream_
 dw A_Fall_

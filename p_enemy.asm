@@ -261,15 +261,11 @@ ENDP
 PROC    P_NoiseAlert_ FAR
 PUBLIC  P_NoiseAlert_
 
-push  bx
-push  dx
 inc   word ptr ds:[_validcount_global]
 mov   bx, word ptr ds:[_playerMobj]
 xor   dx, dx
 mov   ax, word ptr ds:[bx + MOBJ_T.m_secnum]
 call  P_RecursiveSound_
-pop   dx
-pop   bx
 retf  
 
 ENDP
@@ -1289,8 +1285,6 @@ ENDP
 PROC    A_KeenDie_ NEAR
 PUBLIC  A_KeenDie_
 
-push  dx
-push  si
 push  bp
 mov   bp, sp
 
@@ -1347,8 +1341,6 @@ mov   ax, TAG_666
 call  EV_DoDoor_
 exit_keen_die:
 LEAVE_MACRO 
-pop   si
-pop   dx
 ret   
 
 
@@ -1358,9 +1350,6 @@ ENDP
 PROC    A_Look_ NEAR
 PUBLIC  A_Look_
 
-push  dx
-push  si
-push  di
 
 xchg  ax, si
 mov   ax, SECTOR_SOUNDTRAVERSED_SEGMENT
@@ -1446,9 +1435,6 @@ db 01Eh  ;
 dw _P_SetMobjState_addr
 
 exit_a_look:
-pop   di
-pop   si
-pop   dx
 ret   
 compare_seesound_1:
 cmp   al, SFX_POSIT3
@@ -1829,7 +1815,6 @@ ENDP
 PROC    A_PosAttack_ NEAR
 PUBLIC  A_PosAttack_
 
-PUSHA_NO_AX_OR_BP_MACRO
 
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
@@ -1913,7 +1898,6 @@ db    09Ah
 dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 exit_a_posattack:
-POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP
@@ -1922,7 +1906,6 @@ ENDP
 PROC    A_SPosAttack_ NEAR
 PUBLIC  A_SPosAttack_
 
-PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 mov   di, ax
@@ -2018,7 +2001,6 @@ loop  do_next_shotgun_pellet
 
 exit_a_sposattack:
 LEAVE_MACRO 
-POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP
@@ -2026,9 +2008,6 @@ ENDP
 
 PROC    A_CPosAttack_ NEAR
 PUBLIC  A_CPosAttack_
-
-
-PUSHA_NO_AX_OR_BP_MACRO
 
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
@@ -2106,7 +2085,6 @@ db    09Ah
 dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 exit_a_cposattack:
-POPA_NO_AX_OR_BP_MACRO
 
 ret   
 
@@ -2116,9 +2094,6 @@ ENDP
 PROC    A_CPosRefire_ NEAR
 PUBLIC  A_CPosRefire_
 
-push  dx
-push  si
-push  di
 mov   si, ax
 call  A_FaceTarget_
 call  P_Random_
@@ -2162,9 +2137,6 @@ dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 test  al, al
 je    set_cgunner_seestate
 exit_a_cposrefire:
-pop   di
-pop   si
-pop   dx
 ret   
 set_cgunner_seestate:
 ; dumb thought. this is a hardcoded value as per engine right. Why call a function?
@@ -2180,9 +2152,6 @@ mov   ax, si
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
-pop   di
-pop   si
-pop   dx
 ret   
 
 ENDP
@@ -2191,9 +2160,6 @@ ENDP
 PROC    A_SpidRefire_ NEAR
 PUBLIC  A_SpidRefire_
 
-push  dx
-push  si
-push  di
 mov   si, ax
 call  A_FaceTarget_
 
@@ -2238,9 +2204,6 @@ dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 test  al, al
 je    set_spid_seestate
 exit_a_spidrefire:
-pop   di
-pop   si
-pop   dx
 ret   
 
 set_spid_seestate:
@@ -2256,9 +2219,6 @@ mov   ax, si
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
-pop   di
-pop   si
-pop   dx
 ret   
 
 ENDP
@@ -2267,11 +2227,9 @@ ENDP
 PROC    A_BspiAttack_ NEAR
 PUBLIC  A_BspiAttack_
 
-push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    a_bspiexit
-push  dx
 do_a_bspiattack:
 call  A_FaceTarget_
 
@@ -2292,9 +2250,7 @@ add   dx, (_thinkerlist + THINKER_T.t_data)
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
-pop   dx
 a_bspiexit:
-pop   si
 ret   
 
 ENDP
@@ -2303,11 +2259,9 @@ ENDP
 PROC    A_TroopAttack_ NEAR
 PUBLIC  A_TroopAttack_
 
-push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    a_troopattack_exit
-push  dx
 
 do_a_troopattack:
 mov   dx, bx
@@ -2350,8 +2304,6 @@ add   ax, (_thinkerlist + THINKER_T.t_data)
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
-pop   dx
-pop   si
 ret   
 
 do_troop_missile:
@@ -2373,9 +2325,7 @@ add   dx, (_thinkerlist + THINKER_T.t_data)
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-pop   dx
 a_troopattack_exit:
-pop   si
 ret   
 
 ENDP
@@ -2384,11 +2334,9 @@ ENDP
 PROC    A_SargAttack_ NEAR
 PUBLIC  A_SargAttack_
 
-push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_sargattack
-push  dx
 
 do_a_sargattack:
 mov   dx, bx
@@ -2428,9 +2376,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
 exit_a_sargattack_full:
-pop   dx
 exit_a_sargattack:
-pop   si
 ret   
 
 ENDP
@@ -2439,11 +2385,9 @@ ENDP
 PROC    A_HeadAttack_ NEAR
 PUBLIC  A_HeadAttack_
 
-push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_head_attack
-push  dx
 do_head_attack:
 mov   dx, bx
 call  A_FaceTarget_
@@ -2482,8 +2426,6 @@ add   ax, (_thinkerlist + THINKER_T.t_data)
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
-pop   dx
-pop   si
 ret   
 
 do_head_missile:
@@ -2505,9 +2447,7 @@ add   dx, (_thinkerlist + THINKER_T.t_data)
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-pop   dx
 exit_head_attack:
-pop   si
 ret   
 
 ENDP
@@ -2517,11 +2457,9 @@ PROC    A_CyberAttack_ NEAR
 PUBLIC  A_CyberAttack_
 
 
-push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_cyber_attack
-push  dx
 call  A_FaceTarget_
 
 IF COMPISA GE COMPILE_186
@@ -2541,9 +2479,7 @@ add   dx, (_thinkerlist + THINKER_T.t_data)
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-pop   dx
 exit_cyber_attack:
-pop   si
 ret   
 
 ENDP
@@ -2552,11 +2488,9 @@ ENDP
 PROC    A_BruisAttack_ NEAR
 PUBLIC  A_BruisAttack_
 
-push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_bruisattack
-push  dx
 
 do_a_bruisattack:
 ; cx:bx here
@@ -2593,8 +2527,6 @@ add   ax, (_thinkerlist + THINKER_T.t_data)
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
-pop   dx
-pop   si
 ret   
 
 do_bruis_missile:
@@ -2616,9 +2548,7 @@ add   dx, (_thinkerlist + THINKER_T.t_data)
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-pop   dx
 exit_a_bruisattack:
-pop   si
 ret   
 
 ENDP
@@ -2627,14 +2557,11 @@ ENDP
 PROC    A_SkelMissile_ NEAR
 PUBLIC  A_SkelMissile_
 
-push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_skelmissile
 
 do_a_skelmissile:
-push  dx
-push  di
 mov   di, bx
 
 call  A_FaceTarget_
@@ -2682,10 +2609,7 @@ lodsw
 adc   word ptr es:[bx + MOBJ_POS_T.mp_y+2], ax
 
 
-pop   di
-pop   dx
 exit_a_skelmissile:
-pop   si
 ret   
 
 ENDP
@@ -3037,11 +2961,9 @@ ENDP
 PROC    A_SkelWhoosh_ NEAR
 PUBLIC  A_SkelWhoosh_
 
-push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_skelwhoosh
-push  dx
 
 do_a_skelwhoosh:
 call  A_FaceTarget_
@@ -3052,9 +2974,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   dx
 exit_skelwhoosh:
-pop   si
 ret   
 
 ENDP
@@ -3064,11 +2984,9 @@ PROC    A_SkelFist_ NEAR
 PUBLIC  A_SkelFist_
 
 
-push  si
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_skelfist
-push  dx
 
 do_a_skelfist:
 mov   dx, bx
@@ -3114,9 +3032,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
 exit_a_skelfist_full:
-pop   dx
 exit_a_skelfist:
-pop   si
 ret   
 
 ENDP
@@ -3284,9 +3200,6 @@ PUBLIC  A_VileChase_
 ; bp - 0Ch 
 ; bp - 0Eh 
 
-push  dx
-push  si
-push  di
 push  bp
 mov   bp, sp
 push  ax ; bp - 2
@@ -3460,9 +3373,6 @@ mov   ax, word ptr [bp - 2]
 call  A_Chase_
 
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
 ret   
 
 
@@ -3548,9 +3458,6 @@ dw    GETSPAWNHEALTHADDR, INFOFUNCLOADSEGMENT
 mov   word ptr ds:[si + MOBJ_T.m_health], ax
 
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
 ret   
 
 vile_switch_movedir_1:
@@ -3598,14 +3505,12 @@ ENDP
 PROC    A_VileStart_ NEAR
 PUBLIC  A_VileStart_
 
-push  dx
 mov   dx, SFX_VILATK
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   dx
 ret   
 
 ENDP
@@ -3614,7 +3519,6 @@ ENDP
 PROC    A_StartFire_ NEAR
 PUBLIC  A_StartFire_
 
-push  dx
 push  ax
 mov   dx, SFX_FLAMST
 ;call  S_StartSound_
@@ -3624,7 +3528,6 @@ dw _S_StartSound_addr
 
 pop   ax
 call  A_Fire_
-pop   dx
 ret   
 
 ENDP
@@ -3633,7 +3536,6 @@ ENDP
 PROC    A_FireCrackle_ NEAR
 PUBLIC  A_FireCrackle_
 
-push  dx
 push  ax
 mov   dx, SFX_FLAME
 ;call  S_StartSound_
@@ -3642,26 +3544,20 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 pop   ax
-call  A_Fire_
-pop   dx
-ret   
-
 ENDP
+
+; fall thru A_FIRE
 
 
 PROC    A_Fire_ NEAR
 PUBLIC  A_Fire_
 
-push  di
 mov   di, ax
 mov   di, word ptr ds:[di + MOBJ_T.m_tracerRef]
 test  di, di
 jne   do_a_fire
-pop   di
 ret   
 do_a_fire:
-push  dx
-push  si
 push  bp
 mov   bp, sp
 push  cx ; bp - 2
@@ -3764,9 +3660,6 @@ dw    P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 exit_a_fire:
 LEAVE_MACRO 
-pop   si
-pop   dx
-pop   di
 ret   
 
 ENDP
@@ -3775,7 +3668,6 @@ ENDP
 PROC    A_VileTarget_ NEAR
 PUBLIC  A_VileTarget_
 
-PUSHA_NO_AX_OR_BP_MACRO
 mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_vile_target
@@ -3844,7 +3736,6 @@ mov   cx, es
 mov   ax, di
 call  A_Fire_
 exit_vile_target:
-POPA_NO_AX_OR_BP_MACRO
 ret   
 
 _vile_momz_lookuptable:
@@ -4405,6 +4296,37 @@ ret
 ENDP
 
 
+
+
+
+PROC    A_PainDie_ NEAR
+PUBLIC  A_PainDie_
+
+mov   si, ax
+mov   es, cx
+and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1],  (NOT MF_SOLID) ; inlined A_FALL?
+
+les   di, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
+mov   dx, es
+add   dh, (ANG90_HIGHBITS SHR 8)
+mov   bx, di
+mov   cx, dx
+call  A_PainShootSkull_
+add   dh, (ANG90_HIGHBITS SHR 8)
+mov   bx, di
+mov   ax, si
+mov   cx, dx
+call  A_PainShootSkull_
+add   dh, (ANG90_HIGHBITS SHR 8)
+mov   bx, di
+mov   ax, si
+mov   cx, dx
+;call  A_PainShootSkull_
+
+; fall thru
+
+ENDP
+
 PROC    A_PainShootSkull_ NEAR
 PUBLIC  A_PainShootSkull_
 
@@ -4598,35 +4520,6 @@ mov   cx, es
 mov   ax, si
 call  A_PainShootSkull_
 exit_painattack:
-ret   
-
-ENDP
-
-
-PROC    A_PainDie_ NEAR
-PUBLIC  A_PainDie_
-
-mov   si, ax
-mov   es, cx
-and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1],  (NOT MF_SOLID) ; inlined A_FALL?
-
-les   di, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-mov   dx, es
-add   dh, (ANG90_HIGHBITS SHR 8)
-mov   bx, di
-mov   cx, dx
-call  A_PainShootSkull_
-add   dh, (ANG90_HIGHBITS SHR 8)
-mov   bx, di
-mov   ax, si
-mov   cx, dx
-call  A_PainShootSkull_
-add   dh, (ANG90_HIGHBITS SHR 8)
-mov   bx, di
-mov   ax, si
-mov   cx, dx
-call  A_PainShootSkull_
-
 ret   
 
 ENDP
