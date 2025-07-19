@@ -279,21 +279,16 @@ PUBLIC  P_CheckMeleeRange_
 ; bp - 4    targ (pl)
 ; bp - 6    
 
-push  si
-xchg  ax, si
+
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 jne   do_check_meleerange
 
 xor   ax, ax
-pop   si
 ret   
 
 do_check_meleerange:
 
-push  bx
-push  cx
-push  dx
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 
 push  si  ; bp - 2
 
@@ -373,19 +368,17 @@ db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 test  al, al
 jne   exit_check_meleerange_return_1
-jmp   exit_check_meleerange
-exit_check_meleerange_return_1:
-mov   ax, 1
-exit_check_meleerange:
-pop   di
-pop   dx
-pop   cx
-pop   bx
-pop   si
-ret  
 exit_check_meleerange_return_0:
+PUSHA_NO_AX_OR_BP_MACRO
 xor   ax, ax
-jmp   exit_check_meleerange
+ret  
+
+exit_check_meleerange_return_1:
+PUSHA_NO_AX_OR_BP_MACRO
+mov   ax, 1
+ret  
+
+
 
 ENDP
 
@@ -394,11 +387,10 @@ PROC    P_CheckMissileRange_ NEAR
 PUBLIC  P_CheckMissileRange_
 
 
+
+
 PUSHA_NO_AX_OR_BP_MACRO
-push  bp
-mov   bp, sp
-mov   di, ax
-mov   si, bx
+xchg  si, di
 
 IF COMPISA GE COMPILE_186
     imul  bx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
@@ -444,6 +436,7 @@ test  byte ptr es:[si + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
 jne   just_hit_enemy
 cmp   byte ptr ds:[di + MOBJ_T.m_reactiontime], 0
 je    ready_to_attack
+
 exit_checkmissilerange_return_0:
 LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
@@ -1595,7 +1588,7 @@ dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
 
 test  ax, ax
 je    melee_check_failed_try_missile
-mov   ax, si
+
 mov   bx, di
 call  P_CheckMeleeRange_
 test  al, al
@@ -1693,8 +1686,6 @@ jmp   exit_a_chase_2
 
 
 check_missile_range:
-mov   ax, si
-mov   bx, di
 call  P_CheckMissileRange_
 test  al, al
 je    nomissile
@@ -2268,7 +2259,7 @@ je    a_troopattack_exit
 do_a_troopattack:
 mov   dx, bx
 call  A_FaceTarget_
-mov   ax, si
+
 mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
@@ -2343,7 +2334,7 @@ je    exit_a_sargattack
 do_a_sargattack:
 mov   dx, bx
 call  A_FaceTarget_
-mov   ax, si
+
 mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
@@ -2393,7 +2384,7 @@ je    exit_head_attack
 do_head_attack:
 mov   dx, bx
 call  A_FaceTarget_
-mov   ax, si
+
 mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
@@ -2993,7 +2984,7 @@ je    exit_a_skelfist
 do_a_skelfist:
 mov   dx, bx
 call  A_FaceTarget_
-mov   ax, si
+
 mov   bx, dx
 call  P_CheckMeleeRange_
 test  al, al
@@ -3781,7 +3772,7 @@ ENDP
 PROC    GetVileMomz_ NEAR
 PUBLIC  GetVileMomz_
 
-push  bx
+
 sub   al, 3
 cmp   al, (MT_BOSSBRAIN - 3) 
 ja    vilemomz_ret_10  ; default
@@ -3794,11 +3785,9 @@ jmp   word ptr cs:[bx + _vile_momz_lookuptable]
 vilemomz_ret_2:
 inc   dx
 inc   dx
-pop   bx
 ret   
 vilemomz_ret_20:
 mov   dx, 20
-pop   bx
 ret   
 vilemomz_ret_163840:
 mov   ax, 08000h
@@ -3806,19 +3795,15 @@ jmp   vilemomz_ret_2  ; dx 2 and pop bx and ret.
 vilemomz_ret_109226:
 mov   ax, 0AAAAh
 inc   dx
-pop   bx
 ret   
 vilemomz_ret_1_high:
 inc   dx
-pop   bx
 ret   
 vilemomz_ret_1_low:
 inc   ax
-pop   bx
 ret   
 vilemomz_ret_10:
 mov   dx, 10
-pop   bx
 ret   
 
 ENDP
@@ -3902,21 +3887,22 @@ push  ax  ; bp - 8
 mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype]
 cbw  
 mov   bx, word ptr ds:[si + MOBJ_T.m_tracerRef]
+mov   cx, bx  ; back up so bx can be clobbered.
 call  GetVileMomz_
 mov   word ptr ds:[di + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[di + MOBJ_T.m_momz + 2], dx
-test  bx, bx
+test  cx, cx
 je    exit_vile_attack
 
 IF COMPISA GE COMPILE_186
-    imul  ax, bx, SIZEOF_THINKER_T
-    imul  di, bx, SIZEOF_MOBJ_POS_T
+    imul  ax, cx, SIZEOF_THINKER_T
+    imul  di, cx, SIZEOF_MOBJ_POS_T
 ELSE
     mov   ax, SIZEOF_MOBJ_POS_T
-    mul   bx
+    mul   cx
     xchg  ax, di
     mov   ax, SIZEOF_THINKER_T
-    mul   bx
+    mul   cx
 ENDIF
 
 mov   cx, 24
@@ -3991,6 +3977,24 @@ dw _S_StartSound_addr
 ret   
 
 ENDP
+
+
+PROC    A_FatAttack3_ NEAR
+PUBLIC  A_FatAttack3_
+
+
+mov   di, ax
+call  A_FaceTarget_
+
+push  bx  ; store ptr...
+mov   si,  -(FATSPREADHIGH/2)
+call  A_DoFatShot_
+
+pop   bx  ; restore ptr
+mov   si, FATSPREADHIGH/2
+;call  A_DoFatShot_
+
+; fall thru
 
 ; di has actor ptr
 ; cx has MOBJPOSLIST_6800_SEGMENT
@@ -4133,29 +4137,14 @@ call  A_DoFatShot_
 pop   bx  ; restore ptr
 mov   si, -(2*FATSPREADHIGH)
 call  A_DoFatShot_
+exit_skull_attack_early:
 
 ret
 
 ENDP
 
 
-PROC    A_FatAttack3_ NEAR
-PUBLIC  A_FatAttack3_
 
-
-mov   di, ax
-call  A_FaceTarget_
-
-push  bx  ; store ptr...
-mov   si,  -(FATSPREADHIGH/2)
-call  A_DoFatShot_
-
-pop   bx  ; restore ptr
-mov   si, FATSPREADHIGH/2
-call  A_DoFatShot_
-
-exit_skull_attack_early:
-ret
 
 ENDP
 
@@ -4166,7 +4155,6 @@ ENDP
 PROC    A_SkullAttack_ NEAR
 PUBLIC  A_SkullAttack_
 
-xchg  ax, si
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 jne   do_skullattack
 ret   
