@@ -1288,7 +1288,7 @@ PUBLIC  A_KeenDie_
 push  bp
 mov   bp, sp
 
-mov   si, ax
+;mov   si, ax
 push  word ptr ds:[si + MOBJ_T.m_mobjtype]
 
 mov   es, cx
@@ -1351,7 +1351,7 @@ PROC    A_Look_ NEAR
 PUBLIC  A_Look_
 
 
-xchg  ax, si
+;xchg  ax, si
 mov   ax, SECTOR_SOUNDTRAVERSED_SEGMENT
 mov   es, ax
 xor   ax, ax
@@ -1465,6 +1465,8 @@ jmp   do_seesound
 
 ENDP
 
+;todo make something call into chase.
+;todo make stuff jump into chase not call it. one less return on stack.
 
 PROC    A_Chase_ NEAR
 PUBLIC  A_Chase_
@@ -1475,7 +1477,7 @@ push  di
 push  bp
 
 mov   bp, MOBJPOSLIST_6800_SEGMENT
-mov   si, ax
+;mov   si, ax
 mov   di, bx
 
 IF COMPISA GE COMPILE_186
@@ -1816,7 +1818,7 @@ PROC    A_PosAttack_ NEAR
 PUBLIC  A_PosAttack_
 
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_posattack
 
@@ -2009,7 +2011,7 @@ ENDP
 PROC    A_CPosAttack_ NEAR
 PUBLIC  A_CPosAttack_
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_cposattack
 
@@ -2094,7 +2096,7 @@ ENDP
 PROC    A_CPosRefire_ NEAR
 PUBLIC  A_CPosRefire_
 
-mov   si, ax
+;mov   si, ax
 call  A_FaceTarget_
 call  P_Random_
 cmp   al, 40
@@ -2160,7 +2162,7 @@ ENDP
 PROC    A_SpidRefire_ NEAR
 PUBLIC  A_SpidRefire_
 
-mov   si, ax
+;mov   si, ax
 call  A_FaceTarget_
 
 call  P_Random_
@@ -2227,7 +2229,7 @@ ENDP
 PROC    A_BspiAttack_ NEAR
 PUBLIC  A_BspiAttack_
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    a_bspiexit
 do_a_bspiattack:
@@ -2259,7 +2261,7 @@ ENDP
 PROC    A_TroopAttack_ NEAR
 PUBLIC  A_TroopAttack_
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    a_troopattack_exit
 
@@ -2334,7 +2336,7 @@ ENDP
 PROC    A_SargAttack_ NEAR
 PUBLIC  A_SargAttack_
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_sargattack
 
@@ -2385,7 +2387,7 @@ ENDP
 PROC    A_HeadAttack_ NEAR
 PUBLIC  A_HeadAttack_
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_head_attack
 do_head_attack:
@@ -2457,7 +2459,7 @@ PROC    A_CyberAttack_ NEAR
 PUBLIC  A_CyberAttack_
 
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_cyber_attack
 call  A_FaceTarget_
@@ -2488,7 +2490,7 @@ ENDP
 PROC    A_BruisAttack_ NEAR
 PUBLIC  A_BruisAttack_
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_bruisattack
 
@@ -2557,7 +2559,7 @@ ENDP
 PROC    A_SkelMissile_ NEAR
 PUBLIC  A_SkelMissile_
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_skelmissile
 
@@ -2961,7 +2963,7 @@ ENDP
 PROC    A_SkelWhoosh_ NEAR
 PUBLIC  A_SkelWhoosh_
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_skelwhoosh
 
@@ -2984,7 +2986,7 @@ PROC    A_SkelFist_ NEAR
 PUBLIC  A_SkelFist_
 
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_skelfist
 
@@ -3511,6 +3513,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
+exit_a_fire_early:
 ret   
 
 ENDP
@@ -3519,16 +3522,14 @@ ENDP
 PROC    A_StartFire_ NEAR
 PUBLIC  A_StartFire_
 
-push  ax
+
 mov   dx, SFX_FLAMST
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   ax
-call  A_Fire_
-ret   
+jmp   A_Fire_
 
 ENDP
 
@@ -3536,14 +3537,13 @@ ENDP
 PROC    A_FireCrackle_ NEAR
 PUBLIC  A_FireCrackle_
 
-push  ax
+
 mov   dx, SFX_FLAME
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   ax
 ENDP
 
 ; fall thru A_FIRE
@@ -3552,43 +3552,50 @@ ENDP
 PROC    A_Fire_ NEAR
 PUBLIC  A_Fire_
 
-mov   di, ax
-mov   di, word ptr ds:[di + MOBJ_T.m_tracerRef]
-test  di, di
-jne   do_a_fire
-ret   
+
+mov   ax, word ptr ds:[si + MOBJ_T.m_tracerRef]
+test  ax, ax
+je    exit_a_fire_early
 do_a_fire:
 push  bp
 mov   bp, sp
 push  cx ; bp - 2
-push  ax ; bp - 4
-mov   si, bx
-xchg  ax, bx
+push  si ; bp - 4  ; mobj
+mov   di, bx
 
+; todo move this logic into checksight
+
+;; ax gets    targetRef thinker
+; dx gets    dest (tracerref thinker)
+; bx,        gets targetref mobjpos
+; cx         destpos (tracerref mobjpos)
 
 IF COMPISA GE COMPILE_186
     
-    imul  dx, di, SIZEOF_THINKER_T
-    imul  bx, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
-    mov   ax, bx
-    imul  di, di, SIZEOF_MOBJ_POS_T
-ELSE
-    mov   ax, SIZEOF_THINKER_T
-    mul   di
-    xchg  ax, cx
-    mov   ax, SIZEOF_MOBJ_POS_T
-    mul   di
-    xchg  ax, di
-    mov   ax, SIZEOF_MOBJ_POS_T
-    mul   word ptr ds:[bx + MOBJ_T.m_targetRef]
-    mov   bx, ax
-    mov   dx, cx
+    imul  dx, ax, SIZEOF_THINKER_T
+    imul  cx, ax, SIZEOF_MOBJ_POS_T
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
 
+ELSE
+    xchg  ax, cx   ; cx stores index
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, bx  ; bx has what it needs
+    mov   ax, SIZEOF_THINKER_T
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
+    xchg  ax, si   ; si has ax's contents
+    mov   ax, SIZEOF_MOBJ_POS_T
+    mul   cx
+    xchg  ax, cx   ; cx has what it needs, ax has index for next mult
+    mov   dx, SIZEOF_THINKER_T
+    mul   dx
+    xchg  ax, dx   ; dx has what it needs
+    xchg  ax, si   ; ax has what it needs
 ENDIF
 
 
-
-mov   cx, di
+mov   si, cx
 add   dx, (_thinkerlist + THINKER_T.t_data)
 add   ax, (_thinkerlist + THINKER_T.t_data)
 
@@ -3599,10 +3606,10 @@ dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 test  al, al
 je    exit_a_fire
 mov   es, word ptr [bp - 2]
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
+mov   ax, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 shr   ax, 1
 and   al, 0FCh
-mov   dx, si
+mov   dx, di
 push  ax  ; bp - 6
 mov   ax, word ptr [bp - 4]
 ;call  dword ptr ds:[_P_UnsetThingPosition]
@@ -3619,10 +3626,10 @@ db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
 mov   ds, word ptr [bp - 2]
 
-add   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
-adc   dx, word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
-mov   word ptr ds:[si + MOBJ_POS_T.mp_x + 0], ax
-mov   word ptr ds:[si + MOBJ_POS_T.mp_x + 2], dx
+add   ax, word ptr ds:[si + MOBJ_POS_T.mp_x + 0]
+adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_x + 2]
+mov   word ptr ds:[di + MOBJ_POS_T.mp_x + 0], ax
+mov   word ptr ds:[di + MOBJ_POS_T.mp_x + 2], dx
 
 push  ss
 pop   ds
@@ -3638,28 +3645,29 @@ db 01Eh  ;
 dw _FixedMulTrigNoShift_addr
 mov   ds, word ptr [bp - 2]
 
-add   ax, word ptr ds:[di + MOBJ_POS_T.mp_y + 0]
-adc   dx, word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
-mov   word ptr ds:[si + MOBJ_POS_T.mp_y + 0], ax
-mov   word ptr ds:[si + MOBJ_POS_T.mp_y + 2], dx
+add   ax, word ptr ds:[si + MOBJ_POS_T.mp_y + 0]
+adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_y + 2]
+mov   word ptr ds:[di + MOBJ_POS_T.mp_y + 0], ax
+mov   word ptr ds:[di + MOBJ_POS_T.mp_y + 2], dx
 
-push  word ptr ds:[di + MOBJ_POS_T.mp_z + 0]
-push  word ptr ds:[di + MOBJ_POS_T.mp_z + 2]
-pop   word ptr ds:[si + MOBJ_POS_T.mp_z + 2]
-pop   word ptr ds:[si + MOBJ_POS_T.mp_z + 0]
+push  word ptr ds:[si + MOBJ_POS_T.mp_z + 0]
+push  word ptr ds:[si + MOBJ_POS_T.mp_z + 2]
+pop   word ptr ds:[di + MOBJ_POS_T.mp_z + 2]
+pop   word ptr ds:[di + MOBJ_POS_T.mp_z + 0]
 
 push  ss
 pop   ds
 
 mov   bx, -1
 pop   ax ; bp - 4
-mov   dx, si
+mov   dx, di
 ;call  dword ptr ds:[_P_SetThingPosition]
 db    09Ah
 dw    P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 exit_a_fire:
 LEAVE_MACRO 
+exit_vile_target:
 ret   
 
 ENDP
@@ -3668,7 +3676,7 @@ ENDP
 PROC    A_VileTarget_ NEAR
 PUBLIC  A_VileTarget_
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_vile_target
 
@@ -3733,10 +3741,8 @@ push  word ptr ds:[si + MOBJ_T.m_targetRef]
 pop   word ptr ds:[di + MOBJ_T.m_tracerRef]
 les   bx, dword ptr ds:[_setStateReturn_pos]
 mov   cx, es
-mov   ax, di
-call  A_Fire_
-exit_vile_target:
-ret   
+mov   si, di
+jmp   A_Fire_
 
 _vile_momz_lookuptable:
 
@@ -3830,7 +3836,7 @@ PUBLIC  A_VileAttack_
 push  bp
 mov   bp, sp
 
-mov   si, ax
+;mov   si, ax
 push  bx ; bp - 2
 push  cx ; bp - 4
 mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
@@ -3974,10 +3980,10 @@ ENDP
 PROC    A_FatRaise_ NEAR
 PUBLIC  A_FatRaise_
 
-push  ax
+
 call  A_FaceTarget_
 mov   dx, SFX_MANATK
-pop   ax
+xchg  ax, si  ; si has ax value
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -4302,7 +4308,7 @@ ENDP
 PROC    A_PainDie_ NEAR
 PUBLIC  A_PainDie_
 
-mov   si, ax
+;mov   si, ax
 mov   es, cx
 and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1],  (NOT MF_SOLID) ; inlined A_FALL?
 
@@ -4509,7 +4515,7 @@ ENDP
 PROC    A_PainAttack_ NEAR
 PUBLIC  A_PainAttack_
 
-mov   si, ax
+;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_painattack
 do_painattack:
@@ -4638,7 +4644,7 @@ ENDP
 PROC    A_Explode_ NEAR
 PUBLIC  A_Explode_
 
-xchg  ax, si
+;xchg  ax, si
 
 IF COMPISA GE COMPILE_186
     mov   dx, bx
@@ -4837,7 +4843,6 @@ ENDP
 PROC    A_Hoof_ NEAR
 PUBLIC  A_Hoof_
 
-push  ax
 
 mov   dx, SFX_HOOF
 ;call  S_StartSound_
@@ -4845,9 +4850,8 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   ax
-call  A_Chase_
-ret   
+xchg  ax, si  ; si has ax value
+jmp   A_Chase_
 
 ENDP
 
@@ -4855,17 +4859,15 @@ ENDP
 PROC    A_Metal_ NEAR
 PUBLIC  A_Metal_
 
-push  ax
+
 mov   dx, SFX_METAL
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   ax
-call  A_Chase_
-
-ret   
+xchg  ax, si  ; si has ax value
+jmp   A_Chase_
 
 ENDP
 
@@ -4873,16 +4875,15 @@ ENDP
 PROC    A_BabyMetal_ NEAR
 PUBLIC  A_BabyMetal_
 
-push  ax
+
 mov   dx, SFX_BSPWLK
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   ax
-call  A_Chase_
-ret   
+xchg  ax, si  ; si has ax value
+jmp   A_Chase_
 
 ENDP
 
@@ -4890,11 +4891,9 @@ ENDP
 PROC    A_BrainAwake_ NEAR
 PUBLIC  A_BrainAwake_
 
-
+mov   byte ptr ds:[si + MOBJ_T.m_tics], 181
 mov   word ptr ds:[_numbraintargets], 0
-
 mov   word ptr ds:[_braintargeton], 0
-
 mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 
 loop_next_brainawake:
@@ -5174,10 +5173,11 @@ mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
 cmp   al, 1
 jb    cap_tics_to_1_2
 cmp   al, 240
-ja    cap_tics_to_1_2
-ret   
+jna   exit_brainexplode
 cap_tics_to_1_2:
 mov   byte ptr ds:[bx + MOBJ_T.m_tics], 1
+exit_brainexplode:
+exit_brainspit:
 ret   
 
 ENDP
@@ -5188,18 +5188,19 @@ PUBLIC  A_BrainSpit_
 
 ; bp - 2   targRef
 ; bp - 4   targ_pos
+mov   byte ptr ds:[si + MOBJ_T.m_tics], 150
 
 xor   byte ptr ds:[_brainspit_easy], 1
 cmp   byte ptr ds:[_gameskill], SK_EASY
 ja    do_brainspit
 cmp   byte ptr ds:[_brainspit_easy], 0
-jne   do_brainspit
-ret   
+je    exit_brainspit
+
 do_brainspit:
 
 
-xchg  ax, di
-mov   si, bx
+; si has ptr already...
+mov   di, bx
 
 mov   bx, word ptr ds:[_braintargeton]
 sal   bx, 1
@@ -5240,17 +5241,17 @@ add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
-mov   ax, di
-mov   bx, si
+mov   ax, si
+mov   bx, di
 ;call  dword ptr ds:[_P_SpawnMissile]
 db    09Ah
 dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-mov   di, word ptr ds:[_setStateReturn]
+mov   si, word ptr ds:[_setStateReturn]
 
 ;	newmobj->targetRef = targRef;
 pop   bx  ; bp - 4
-pop   word ptr ds:[di + MOBJ_T.m_targetRef]  ; bp - 2
+pop   word ptr ds:[si + MOBJ_T.m_targetRef]  ; bp - 2
 
 
 ;    newmobj->reactiontime = ((targ->y - mo->y) / newmobj->momy) / newmobj->state->tics;
@@ -5269,7 +5270,7 @@ pop   word ptr ds:[di + MOBJ_T.m_targetRef]  ; bp - 2
 xor   dx, dx 
 mov   es, word ptr ds:[_setStateReturn_pos+2]
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-sub   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
+sub   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
 
 jns   dont_abs_y_1
 neg   ax
@@ -5277,14 +5278,14 @@ neg   ax
 dont_abs_y_1:
 
 
-les   bx, dword ptr ds:[di + MOBJ_T.m_momy + 0]
-mov   si, es
+les   bx, dword ptr ds:[si + MOBJ_T.m_momy + 0]
+mov   di, es
 
-test  si, si
+test  di, di
 jns   dont_abs_y_2
 neg   bx
-adc   si, 0
-neg   si
+adc   di, 0
+neg   di
 
 dont_abs_y_2:
 
@@ -5295,15 +5296,15 @@ dec   cx
 loop_subtract_to_divide_like_a_moron:
 inc   cx
 sub   dx, bx
-sbb   ax, si
+sbb   ax, di
 jns   loop_subtract_to_divide_like_a_moron
 
 ; cx has first divide result
 
-mov   si, word ptr ds:[_setStateReturn_pos]  ; es already set
+mov   di, word ptr ds:[_setStateReturn_pos]  ; es already set
 
 mov   ax, 6
-mul   word ptr es:[si + MOBJ_POS_T.mp_statenum]
+mul   word ptr es:[di + MOBJ_POS_T.mp_statenum]
 xchg  ax, bx
 mov   dx, STATES_SEGMENT
 mov   es, dx
@@ -5317,15 +5318,14 @@ cbw
 xchg  ax, cx
 div   cl
 
-mov   byte ptr ds:[di + MOBJ_T.m_reactiontime], al
+mov   byte ptr ds:[si + MOBJ_T.m_reactiontime], al
 mov   dx, SFX_BOSPIT
 xor   ax, ax
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-
-
+exit_spawnfly:
 ret   
 
 ENDP
@@ -5334,16 +5334,18 @@ ENDP
 PROC    A_SpawnSound_ NEAR
 PUBLIC  A_SpawnSound_
 
-push  ax
 mov   dx, SFX_BOSCUB
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   ax
-call  A_SpawnFly_
-ret   
+
+
+;call  A_SpawnFly_
+;ret   
+
+; FALL THROUGH. use si for ax
 
 ENDP
 
@@ -5351,26 +5353,23 @@ ENDP
 PROC    A_SpawnFly_ NEAR
 PUBLIC  A_SpawnFly_
 
-xchg  ax, di
-dec   byte ptr ds:[di + MOBJ_T.m_reactiontime]
-je    do_spawnfly
-ret   
+
+dec   byte ptr ds:[si + MOBJ_T.m_reactiontime]
+jne   exit_spawnfly
+
 do_spawnfly:
 
-push  dx
-push  si
 
 
+mov   di, word ptr ds:[si + MOBJ_T.m_targetRef]
 IF COMPISA GE COMPILE_186
-    mov   si, word ptr ds:[di + MOBJ_T.m_targetRef]
-    imul  bx, si, SIZEOF_THINKER_T
-    imul  si, si, SIZEOF_MOBJ_POS_T
+    imul  bx, di, SIZEOF_THINKER_T
+    imul  di, di, SIZEOF_MOBJ_POS_T
 ELSE
-    mov   ax, SIZEOF_MOBJ_POS_T
-    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
-    xchg  ax, si
-    mov   ax, SIZEOF_THINKER_T
-    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
+    mul   di
+    xchg  ax, di
+    mov   bx, SIZEOF_THINKER_T
+    mul   bx
     xchg  ax, bx
 ENDIF
 
@@ -5381,8 +5380,8 @@ push  word ptr ds:[bx]   ; param secnum
 
 push  word ptr ds:[bx]   ; param secnum
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   ds, ax
+;mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ds, cx
 
 IF COMPISA GE COMPILE_186
     push  MT_SPAWNFIRE                      ; param graphic
@@ -5390,12 +5389,12 @@ ELSE
     mov   ax, MT_SPAWNFIRE
     push  ax
 ENDIF
-push  word ptr ds:[si + MOBJ_POS_T.mp_z + 2] ; param z hi
-push  word ptr ds:[si + MOBJ_POS_T.mp_z + 0] ; param z lo
+push  word ptr ds:[di + MOBJ_POS_T.mp_z + 2] ; param z hi
+push  word ptr ds:[di + MOBJ_POS_T.mp_z + 0] ; param z lo
 
-les   bx, dword ptr ds:[si + MOBJ_POS_T.mp_y + 0]
+les   bx, dword ptr ds:[di + MOBJ_POS_T.mp_y + 0]
 mov   cx, es
-les   ax, dword ptr ds:[si + MOBJ_POS_T.mp_x + 0]
+les   ax, dword ptr ds:[di + MOBJ_POS_T.mp_x + 0]
 mov   dx, es
 
 push  ss
@@ -5479,12 +5478,12 @@ push  ax                                  ; type
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   ds, ax
 
-push  word ptr ds:[si + MOBJ_POS_T.mp_z + 2]
-push  word ptr ds:[si + MOBJ_POS_T.mp_z + 0]
+push  word ptr ds:[di + MOBJ_POS_T.mp_z + 2]
+push  word ptr ds:[di + MOBJ_POS_T.mp_z + 0]
 
-les   bx, dword ptr ds:[si + MOBJ_POS_T.mp_y + 0]
+les   bx, dword ptr ds:[di + MOBJ_POS_T.mp_y + 0]
 mov   cx, es
-les   ax, dword ptr ds:[si + MOBJ_POS_T.mp_x + 0]
+les   ax, dword ptr ds:[di + MOBJ_POS_T.mp_x + 0]
 mov   dx, es
 
 push  ss
@@ -5497,15 +5496,15 @@ dw _P_SpawnMobj_addr
 
 
 IF COMPISA GE COMPILE_186
-    imul  si, ax, SIZEOF_THINKER_T
-    add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
+    imul  di, ax, SIZEOF_THINKER_T
+    add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
     imul  bx, ax, SIZEOF_MOBJ_POS_T
 ELSE
     xchg  ax, bx
     mov   ax, SIZEOF_THINKER_T
     mul   bx
-    xchg  ax, si
-    add   si, (OFFSET _thinkerlist + THINKER_T.t_data)
+    xchg  ax, di
+    add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
     mov   ax, SIZEOF_MOBJ_POS_T
     mul   bx
     xchg  ax, bx
@@ -5513,19 +5512,19 @@ ELSE
 ENDIF
 
 mov   dx, 1
-mov   ax, si
+mov   ax, di
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 call  P_LookForPlayers_
 test  al, al
 je    dont_set_seestate
-mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype]
 xor   ah, ah
 
 db    09Ah
 dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 
 mov   dx, ax
-mov   ax, si
+mov   ax, di
 ;call  P_SetMobjState_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -5533,13 +5532,13 @@ dw _P_SetMobjState_addr  ; cx and bx persist thru this call..
 
 
 dont_set_seestate:
-push  word ptr ds:[si + MOBJ_T.m_secnum]
+push  word ptr ds:[di + MOBJ_T.m_secnum]
 mov   ds, cx
 push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 2]
 push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 0]
 push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 2]
 push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 0]
-mov   ax, si
+xchg  ax, di 
 
 push  ss
 pop   ds
@@ -5548,16 +5547,11 @@ pop   ds
 db    09Ah
 dw    P_TELEPORTMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-mov   ax, di
+xchg   ax, si
 ;call  P_RemoveMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_RemoveMobj_addr
-
-
-pop   si
-pop   dx
-pop   di
 ret   
 
 

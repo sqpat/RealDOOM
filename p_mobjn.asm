@@ -1033,7 +1033,7 @@ retf
 
 
 setmobjstate_jump_table:
-dw 0
+dw A_DoBFGSpray_
 dw A_Explode_
 dw A_Pain_
 dw A_PlayerScream_
@@ -1079,9 +1079,9 @@ dw A_PainDie_
 dw A_KeenDie_
 dw A_BrainPain_
 dw A_BrainScream_
-dw 0
-dw 0
-dw 0
+dw A_DoBrainDie_
+dw A_BrainAwake_
+dw A_BrainSpit_
 dw A_SpawnSound_
 dw A_SpawnFly_
 dw A_BrainExplode_
@@ -1150,14 +1150,9 @@ mov       byte ptr ds:[si + MOBJ_T.m_tics], al
 mov       al, byte ptr es:[di + state_action]
 sub       al, ETF_A_BFGSpray                        ; minimum action number
 je        do_bfg_spray_far        ; todo fix
+;cmp       al, ETF_A_BRAINEXPLODE ; max range
 cmp       al, (ETF_A_BRAINEXPLODE - ETF_A_BFGSPRAY) ; max range
 ja        done_with_mobj_state_action
-cmp       al, (ETF_A_BRAINAWAKE - ETF_A_BFGSPRAY)
-je        do_brainawake
-cmp       al, (ETF_A_BRAINSPIT - ETF_A_BFGSPRAY)
-je        do_brainspit
-cmp       al, (ETF_A_BRAINDIE - ETF_A_BFGSPRAY)
-je        do_exit_level
 cbw
 sal       ax, 1
 xchg      ax, di
@@ -1167,7 +1162,7 @@ mov       ax, si
 
 PUSHA_NO_AX_MACRO
 
-call      word ptr cs:[di + setmobjstate_jump_table]
+call      word ptr cs:[di + OFFSET setmobjstate_jump_table] ; subtract lowest value
 
 POPA_NO_AX_MACRO
 
@@ -1229,6 +1224,9 @@ exit_p_setmobjstate_return_1:
 mov       al, 1
 jmp       exit_p_setmobjstate
 
+
+ENDP
+
 do_bfg_spray_far:
 
 ;call      dword ptr ds:[_A_BFGSprayFar]
@@ -1237,21 +1235,21 @@ dw        A_BFGSPRAYFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 jmp       done_with_mobj_state_action
 
-do_exit_level:
+
+
+PROC      A_DoBrainDie_ NEAR
 call      G_ExitLevel_
-jmp       done_with_mobj_state_action
-do_brainawake:
-mov       byte ptr ds:[si + MOBJ_T.m_tics], 181
-call      A_BrainAwake_
-jmp       done_with_mobj_state_action
-do_brainspit:
-
-
-mov       byte ptr ds:[si + MOBJ_T.m_tics], 150
-call      A_BrainSpit_
-jmp       done_with_mobj_state_action
-
+ret
 ENDP
+
+
+PROC      A_DoBFGSpray_ NEAR
+;call      dword ptr ds:[_A_BFGSprayFar]
+db        09Ah
+dw        A_BFGSPRAYFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+ret
+ENDP
+
 
 
 
