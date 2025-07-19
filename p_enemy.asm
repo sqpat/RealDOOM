@@ -369,12 +369,12 @@ dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 test  al, al
 jne   exit_check_meleerange_return_1
 exit_check_meleerange_return_0:
-PUSHA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_OR_BP_MACRO
 xor   ax, ax
 ret  
 
 exit_check_meleerange_return_1:
-PUSHA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_OR_BP_MACRO
 mov   ax, 1
 ret  
 
@@ -390,6 +390,9 @@ PUBLIC  P_CheckMissileRange_
 
 
 PUSHA_NO_AX_OR_BP_MACRO
+push  bp
+mov   bp, sp
+
 xchg  si, di
 
 IF COMPISA GE COMPILE_186
