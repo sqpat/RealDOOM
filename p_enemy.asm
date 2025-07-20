@@ -3109,7 +3109,10 @@ mov   ax, si
 db    09Ah
 dw    P_CHECKPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
+mov   al, 0
+rcl   al, 1  ; todo hack for now... get carry result into al.
 ;	thing->height.w >>= 2;
+
 
 sar   word ptr ds:[si + MOBJ_T.m_height + 2], 1
 rcr   word ptr ds:[si + MOBJ_T.m_height + 0], 1
@@ -3306,9 +3309,7 @@ mov   ax, si   ; bx
 db    09Ah
 dw    P_BLOCKTHINGSITERATOROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-
-test  al, al
-je    got_vile_target
+jnc   got_vile_target
 inc   cx
 cmp   cx, di
 jle   loop_next_y_vile
