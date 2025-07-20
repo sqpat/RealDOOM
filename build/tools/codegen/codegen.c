@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2406
+#define CONSTANTS_COUNT 2407		
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -30,6 +30,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SEGS_RENDER_9000_SEGMENT",
 	"SEG_NORMALANGLES_9000_SEGMENT",
 	"SIDES_RENDER_9000_SEGMENT",
+	"SIDES_RENDER_8000_SEGMENT",
 
 
     "SUBSECTORS_SEGMENT",
@@ -2510,6 +2511,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	segs_render_9000_segment,
 	seg_normalangles_9000_segment,
 	sides_render_9000_segment,
+	sides_render_8000_segment,
 
 
     subsectors_segment, 
@@ -5038,7 +5040,7 @@ void __near* VALUES[LOCALS_COUNT] = {
 
 };
 
-#define EMS_PAGE_STUFF_COUNT 122
+#define EMS_PAGE_STUFF_COUNT 123
 
 char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 
@@ -5070,6 +5072,7 @@ char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 	"PAGESWAPARGS_REND_TEXTURE_SIZE",
 	"PAGESWAPARGS_REND_9000_SIZE",
 	"PAGESWAPARGS_REND_OTHER9000_SIZE",
+	"PAGESWAPARGS_REND_OTHER8000_SIZE",
 	"PAGESWAPARGS_STAT_OFFSET_SIZE",
 	"PAGESWAPARGS_DEMO_OFFSET_SIZE",
 	"PAGESWAPARGS_SCRATCH5000_OFFSET_SIZE",
@@ -5208,6 +5211,7 @@ void __near* EMS_PAGE_VALUES[EMS_PAGE_STUFF_COUNT] = {
 	pageswapargs_rend_texture_size,
 	pageswapargs_rend_9000_size,
 	pageswapargs_rend_other9000_size,
+	pageswapargs_rend_other8000_size,
 	pageswapargs_stat_offset_size,
 	pageswapargs_demo_offset_size,
 	pageswapargs_scratch5000_offset_size,

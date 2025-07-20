@@ -647,6 +647,12 @@ ENDM
 	; note: no npr page_9000.
 	_NPR PAGE_9400_OFFSET 							PAGE_9400_OFFSET ;pageswapargs_physics_code_offset_size
 	_NPR PAGE_9800_OFFSET 							PAGE_9800_OFFSET
+			; render 4000 to 8000
+	_EPR 0					 						PAGE_8000_OFFSET ;pageswapargs_rend_other9000_size
+	_EPR 1					 						PAGE_8400_OFFSET 
+	_EPR 2					 						PAGE_8800_OFFSET 
+	_EPR 3				 							PAGE_8C00_OFFSET	
+
 
 
 ENDS _FIXEDDATA

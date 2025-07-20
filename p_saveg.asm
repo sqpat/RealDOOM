@@ -221,6 +221,10 @@ push  dx
 push  si
 push  di
 
+;PROC Z_QuickMapRender_4000To8000_8000Only_ NEAR
+Z_QUICKMAPAI4 pageswapargs_rend_other8000_size INDEXED_PAGE_8000_OFFSET
+
+
 mov   cx, SECTORS_SEGMENT
 mov   es, cx
 
@@ -330,7 +334,7 @@ mov   bx, word ptr es:[bx]
 cmp   bx, 0FFFFh
 je    skip_side
 
-mov   ax, SIDES_RENDER_9000_SEGMENT
+mov   ax, SIDES_RENDER_8000_SEGMENT
 mov   es, ax
 SHIFT_MACRO shl bx 2
 
@@ -1160,6 +1164,10 @@ push      dx
 push      si
 push      di
 
+;PROC Z_QuickMapRender_4000To8000_8000Only_ NEAR
+Z_QUICKMAPAI4 pageswapargs_rend_other8000_size INDEXED_PAGE_8000_OFFSET
+
+
 les       di, dword ptr ds:[_save_p]
 
 mov       dx, di
@@ -1374,6 +1382,7 @@ push  dx
 push  si
 push  di
 
+
 mov   cx, word ptr ds:[_numsectors]
 les   di, dword ptr ds:[_save_p]
 mov   ax, SECTORS_SEGMENT
@@ -1476,7 +1485,7 @@ xchg  si, ax    ; shove this in si
 
 mov   ax, SIDES_SEGMENT
 push  ax
-mov   ax, SIDES_RENDER_9000_SEGMENT
+mov   ax, SIDES_RENDER_8000_SEGMENT
 mov   ds, ax
 
 

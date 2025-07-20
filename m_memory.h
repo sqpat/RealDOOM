@@ -1455,6 +1455,15 @@ spritedefs_bytes    7410:0000
 #define seg_normalangles_9000_segment ((segment_t) ((int32_t)seg_normalangles_9000 >> 16))
 #define sides_render_9000_segment     ((segment_t) ((int32_t)sides_render_9000 >> 16))
 
+// used during saves..
+#define segs_render_8000      ((seg_render_t __far*)       (0x80000000 + 0))
+#define seg_normalangles_8000 ((fineangle_t  __far*)       MAKE_FULL_SEGMENT(segs_render_8000             , size_segs_render))
+#define sides_render_8000     ((side_render_t __far*)      MAKE_FULL_SEGMENT(seg_normalangles_8000        , size_seg_normalangles))
+
+#define segs_render_8000_segment      ((segment_t) ((int32_t)segs_render_8000 >> 16))
+#define seg_normalangles_8000_segment ((segment_t) ((int32_t)seg_normalangles_8000 >> 16))
+#define sides_render_8000_segment     ((segment_t) ((int32_t)sides_render_8000 >> 16))
+
 
 /*
 

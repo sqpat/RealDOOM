@@ -723,7 +723,8 @@ void __far G_LoadGame (int8_t* name)  {
 #define VERSIONSIZE             16 
 
 void __near R_ExecuteSetViewSize (void);
-void Z_QuickMapRender_4000To9000_9000Only();
+
+void Z_QuickMapRender_4000To8000_8000Only();
 
 void __near G_DoLoadGame (void)  { 
 	
@@ -760,6 +761,7 @@ void __near G_DoLoadGame (void)  {
 
     // reload the file, re-set memory because G_InitNew ran a million things.
 	Z_QuickMapPhysics();        // may be unnecessary, G_InitNew runs it?
+	Z_QuickMapPhysicsCode();        // may be unnecessary, G_InitNew runs it?
     Z_QuickMapScratch_5000();
 
     M_ReadFile (savename, savebuffer); 
@@ -774,7 +776,7 @@ void __near G_DoLoadGame (void)  {
     // dearchive all the modifications
     //dolog(save_p-savebuffer);
     P_UnArchivePlayers (); 
-	Z_QuickMapRender_4000To9000_9000Only();
+	//Z_QuickMapRender_4000To8000_8000Only();
     P_UnArchiveWorld (); 
     P_UnArchiveThinkers (); 
 
@@ -873,7 +875,7 @@ void __near G_DoSaveGame (void)  {
 	*save_p++ = leveltime.b.fracbytehigh;
 	*save_p++ = leveltime.b.fracbytelow;
 	// page in si_render_9000
-	Z_QuickMapRender_4000To9000_9000Only();
+	// Z_QuickMapRender_4000To8000_8000Only();
 
     P_ArchivePlayers (); 
     P_ArchiveWorld (); 
