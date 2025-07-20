@@ -788,17 +788,9 @@ PUBLIC P_SpawnMobj_
 ; bp + 0A   z lo
 
 
-; bp - 2    MOBJPOSLIST_6800_SEGMENT
-; bp - 4    unused
-; bp - 6    
-; bp - 8    
-; bp - 0Ah  unused
-; bp - 0Ch  unused
+; bp - 2    mobjRef
 
-; bp - 0Eh  x lo
-; bp - 010h x hi
-; bp - 012h y lo
-; bp - 014h y hi
+
 
 
 
@@ -806,108 +798,124 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 0Ch
+sub       sp, 2    ; need stack frame due to stack params. sad
+
 push      ax
 push      dx
 push      bx
 push      cx
 mov       ax, TF_MOBJTHINKER_HIGHBITS
-mov       cx, SIZEOF_THINKER_T
 
 ;call      P_CreateThinker_
  db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_CreateThinker_addr
 
-mov       bx, ax
 mov       si, ax
 sub       ax, (_thinkerlist + THINKER_T.t_data)
 xor       dx, dx
+mov       cx, SIZEOF_THINKER_T
 div       cx
-mov       word ptr [bp - 6], ax
-imul      di, ax, SIZEOF_MOBJ_POS_T
-mov       cx, SIZEOF_MOBJ_T
-mov       word ptr [bp - 8], di
-mov       word ptr [bp - 4], di
-xor       al, al
-mov       di, bx
-mov       dx, MOBJPOSLIST_6800_SEGMENT
-push      di
+
+mov       word ptr [bp - 2], ax
+
+IF COMPISA GE COMPILE_186
+    imul      di, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov       di, SIZEOF_MOBJ_POS_T
+    mul       di
+    xchg      ax, di
+ENDIF
+
+;	memset(mobj, 0, sizeof(mobj_t));
+;	FAR_memset(mobj_pos, 0, sizeof (mobj_pos_t));
+
+
+
+xchg      si, di
+xor       ax, ax
 push      ds
 pop       es
-mov       ah, al
-shr       cx, 1
+mov       cx, SIZEOF_MOBJ_T / 2
 rep stosw 
-adc       cx, cx
-rep stosb 
-pop       di
-mov       cx, SIZEOF_MOBJ_POS_T
-mov       di, word ptr [bp - 8]
+
+xchg      si, di
+
+mov       cx, SIZEOF_MOBJ_POS_T / 2
+mov       dx, MOBJPOSLIST_6800_SEGMENT
 mov       es, dx
-push      di
-mov       ah, al
-shr       cx, 1
+
 rep stosw 
-adc       cx, cx
-rep stosb 
-pop       di
-mov       cl, byte ptr [bp + 0Eh]
+
+sub       di, SIZEOF_MOBJ_POS_T
+sub       si, SIZEOF_MOBJ_T
+
+
+mov       cl, byte ptr [bp + 0Eh]  ; type
 mov       al, SIZEOF_MOBJINFO_T
 mul       cl
-xchg      ax, cx
-mov       word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
-mov       byte ptr ds:[bx + MOBJ_T.m_mobjtype], al
-mov       es, word ptr [bp - 2]
-; todo do this all ax or something. 
-mov       dx, word ptr [bp - 0Eh]
-mov       word ptr es:[di + MOBJ_POS_T.mp_x + 0], dx
-mov       dx, word ptr [bp - 010h]
-mov       word ptr es:[di + MOBJ_POS_T.mp_x + 2], dx
-mov       dx, word ptr [bp - 012h]
-mov       word ptr es:[di + MOBJ_POS_T.mp_y + 0], dx
-mov       dx, word ptr [bp - 014h]
-mov       word ptr es:[di + MOBJ_POS_T.mp_y + 2], dx
-add       cx, _mobjinfo + MOBJINFO_T.mobjinfo_spawnstate
-mov       di, cx
-mov       dl, byte ptr ds:[di + MOBJINFO_T.mobjinfo_radius]
-mov       byte ptr ds:[bx + MOBJ_T.m_radius], dl
-mov       dl, byte ptr ds:[di + MOBJINFO_T.mobjinfo_height]
-mov       word ptr ds:[bx + MOBJ_T.m_height + 0], 0
-xor       dh, dh
-mov       word ptr ds:[bx + MOBJ_T.m_height + 2], dx
-mov       dx, word ptr ds:[di + MOBJINFO_T.mobjinfo_flags1]
-mov       di, word ptr [bp - 8]
-mov       word ptr es:[di + MOBJ_POS_T.mp_flags1], dx
-mov       di, cx
-mov       dx, word ptr ds:[di + MOBJINFO_T.mobjinfo_flags2]
-mov       di, word ptr [bp - 8]
-mov       word ptr es:[di + MOBJ_POS_T.mp_flags2], dx
 
+add       ax, OFFSET _mobjinfo
+xchg      ax, cx                        ; al gets type!
+mov       bx, cx
+
+mov       byte ptr ds:[si + MOBJ_T.m_mobjtype], al
+
+
+
+; ax thru dx original arguments.
+pop       word ptr es:[di + MOBJ_POS_T.mp_y + 2]
+pop       word ptr es:[di + MOBJ_POS_T.mp_y + 0]
+pop       word ptr es:[di + MOBJ_POS_T.mp_x + 2]
+pop       word ptr es:[di + MOBJ_POS_T.mp_x + 0]
+
+push      ax
+
+; ds:bx is mobjinfo
+; ds:si is mobj
+; es:di is mobjpos
+
+mov       al, byte ptr ds:[bx + MOBJINFO_T.mobjinfo_radius]
+mov       byte ptr ds:[si + MOBJ_T.m_radius], al
+xor       ax, ax
+mov       word ptr ds:[si + MOBJ_T.m_height + 0], 0
+mov       al, byte ptr ds:[bx + MOBJINFO_T.mobjinfo_height]
+mov       word ptr ds:[si + MOBJ_T.m_height + 2], ax
+
+push      word ptr ds:[bx + MOBJINFO_T.mobjinfo_flags1]
+pop       word ptr es:[di + MOBJ_POS_T.mp_flags1]
+push      word ptr ds:[bx + MOBJINFO_T.mobjinfo_flags2]
+pop       word ptr es:[di + MOBJ_POS_T.mp_flags2]
+
+pop       ax
 
 db 09Ah
 dw GETSPAWNHEALTHADDR, INFOFUNCLOADSEGMENT
 
 
-mov       word ptr ds:[bx + MOBJ_T.m_health], ax
+mov       word ptr ds:[si + MOBJ_T.m_health], ax
 cmp       byte ptr ds:[_gameskill], SK_NIGHTMARE
 je        skill_not_nightmare
-mov       byte ptr ds:[bx + MOBJ_T.m_reactiontime], 8
+mov       byte ptr ds:[si + MOBJ_T.m_reactiontime], 8
 skill_not_nightmare:
-mov       bx, OFFSET _prndindex
-inc       byte ptr ds:[bx]
-mov       bx, cx
-mov       ax, word ptr ds:[bx + MOBJINFO_T.mobjinfo_spawnstate]
-les       bx, dword ptr [bp - 4]
-mov       word ptr es:[bx + MOBJ_POS_T.mp_statenum], ax
-mov       bx, cx
-mov       ax, word ptr ds:[bx + MOBJINFO_T.mobjinfo_spawnstate]
-mov       bx, ax
-SHIFT_MACRO shl       bx 2
-sub       bx, ax
-mov       ax, STATES_SEGMENT
-add       bx, bx  ; 6 bytes per
+
+inc       byte ptr ds:[_prndindex]
+
+mov       ax, MOBJPOSLIST_6800_SEGMENT
 mov       es, ax
-mov       dx, word ptr [bp - 4]
+
+mov       ax, word ptr ds:[bx + MOBJINFO_T.mobjinfo_spawnstate]
+mov       word ptr es:[di + MOBJ_POS_T.mp_statenum], ax
+
+
+mov       bx, 6
+mul       bx
+xchg      ax, bx
+
+mov       ax, STATES_SEGMENT
+mov       es, ax
+
+mov       dx, di
 mov       al, byte ptr es:[bx + STATE_T.state_tics]
 mov       bx, word ptr [bp + 010h]
 mov       byte ptr ds:[si + MOBJ_T.m_tics], al
@@ -918,13 +926,18 @@ dw        P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 mov       bx, word ptr ds:[si + MOBJ_T.m_secnum]
-mov       ax, SECTORS_SEGMENT
 SHIFT_MACRO shl       bx 4
+mov       ax, SECTORS_SEGMENT
 mov       es, ax
 mov       ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
 mov       word ptr ds:[si + MOBJ_T.m_floorz], ax
 mov       ax, word ptr es:[bx + SECTOR_T.sec_ceilingheight]
 mov       word ptr ds:[si + MOBJ_T.m_ceilingz], ax
+
+mov       ax, MOBJPOSLIST_6800_SEGMENT
+mov       es, ax
+xor       dx, dx
+
 cmp       word ptr [bp + 0Ch], ONFLOORZ_HIGHBITS
 jne       not_floor_spawn
 cmp       word ptr [bp + 0Ah], 0
@@ -934,53 +947,54 @@ cmp       word ptr [bp + 0Ch], ONCEILINGZ_HIGHBITS
 jne       not_ceiling_spawn
 cmp       word ptr [bp + 0Ah], ONCEILINGZ_LOWBITS
 jne       not_ceiling_spawn
-mov       dl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor       dh, dh
-imul      dx, dx, SIZEOF_MOBJINFO_T
-mov       cx, word ptr ds:[si + 8]
-and       cx, 7
-sar       ax, 3
-shl       cx, 0Dh   ; todo no
-mov       bx, dx
-mov       dl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_height]
 
-mov       es, word ptr [bp - 2]
-xor       dh, dh
-mov       bx, word ptr [bp - 4]
-sub       ax, dx
-mov       word ptr es:[bx + MOBJ_POS_T.mp_z + 0], cx
-set_z_highbits:
-mov       word ptr es:[bx + MOBJ_POS_T.mp_z + 2], ax
-done_setting_z:
-mov       bx, OFFSET _setStateReturn
-mov       word ptr ds:[bx], si
-mov       bx, OFFSET _setStateReturn_pos
-mov       si, word ptr [bp - 4]
+mov       bx, cx
+mov       ax, word ptr ds:[si + MOBJ_T.m_ceilingz]
+
+
+sar       ax, 1
+rcr       dx, 1
+sar       ax, 1
+rcr       dx, 1
+sar       ax, 1
+rcr       dx, 1
+
+sub       al, byte ptr ds:[bx + MOBJINFO_T.mobjinfo_height]
+
+sbb       ah, dl  ; guaranteed dl 0...
+
+write_z:
+mov       word ptr es:[di + MOBJ_POS_T.mp_z + 0], dx
+mov       word ptr es:[di + MOBJ_POS_T.mp_z + 2], ax
+
+
+mov       word ptr ds:[_setStateReturn], si
+
+mov       word ptr ds:[_setStateReturn_pos + 0], di
+mov       word ptr ds:[_setStateReturn_pos + 2], es
 mov       ax, word ptr [bp - 2]
-mov       word ptr ds:[bx], si
-mov       word ptr ds:[bx + 2], ax
-mov       ax, word ptr [bp - 6]
 LEAVE_MACRO     
 pop       di
 pop       si
 retf      8
 is_floor_spawn:
-mov       bx, word ptr [bp - 4]
-mov       ax, word ptr ds:[si + 6]
-mov       es, word ptr [bp - 2]
-sar       ax, 3
-mov       word ptr es:[bx + MOBJ_POS_T.mp_z + 2], ax
-mov       ax, word ptr ds:[si + 6]
-and       ax, 7
-shl       ax, 0Dh  ; todo no
-mov       word ptr es:[bx + MOBJ_POS_T.mp_z + 0], ax
-jmp       done_setting_z ; todo cleanup. do two writes at once
+
+
+mov       ax, word ptr ds:[si + MOBJ_T.m_floorz]
+
+sar       ax, 1
+rcr       dx, 1
+sar       ax, 1
+rcr       dx, 1
+sar       ax, 1
+rcr       dx, 1
+
+jmp       write_z ; todo cleanup. do two writes at once
 not_ceiling_spawn:
-les       bx, dword ptr [bp - 4]
-mov       ax, word ptr [bp + 0Ah]
-mov       word ptr es:[bx + MOBJ_POS_T.mp_z + 0], ax
+
+mov       dx, word ptr [bp + 0Ah]
 mov       ax, word ptr [bp + 0Ch]
-jmp       set_z_highbits
+jmp       write_z
 
 ENDP
 
