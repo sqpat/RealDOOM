@@ -1394,13 +1394,11 @@ jmp   exit_nightmare_respawn
 ENDP
 
 
-
+;; callers dont use si or dx. can freely clobber
 PROC P_CheckMissileSpawn_ NEAR
 PUBLIC P_CheckMissileSpawn_
 
 
-push  dx
-push  si
 push  di
 
 mov   di, ax
@@ -1478,8 +1476,6 @@ mov   ax, di
 call  P_ExplodeMissile_
 exit_check_missile_sapwn:
 pop   di
-pop   si
-pop   dx
 ret
 
 ENDP
@@ -1754,12 +1750,13 @@ mov   cx, word ptr [bp - 4]
 mov   ax, di
 call  P_CheckMissileSpawn_
 
-mov   si, word ptr [bp - 0Ah]
 mov   word ptr ds:[_setStateReturn], di
 
-mov   ax, word ptr [bp - 4]
-mov   word ptr ds:[_setStateReturn_pos], si
-mov   word ptr ds:[_setStateReturn_pos + 2], ax ; todo should just stay hardcoded..
+push  word ptr [bp - 0Ah]
+push  word ptr [bp - 4]
+pop   word ptr ds:[_setStateReturn_pos + 2]  ; todo should be constant write
+pop   word ptr ds:[_setStateReturn_pos + 0]
+
 mov   ax, word ptr [bp - 8]
 LEAVE_MACRO 
 pop   di

@@ -275,7 +275,6 @@ ENDP
 PROC A_WeaponReady_ NEAR
 PUBLIC A_WeaponReady_
 
-PUSHA_NO_AX_OR_BP_MACRO
 mov   si, ax
 ; si is pspdef...
 
@@ -325,8 +324,6 @@ mov   byte ptr ds:[_player + PLAYER_T.player_attackdown], 1
 call  P_FireWeapon_
 exit_a_weaponready:
 
-POPA_NO_AX_OR_BP_MACRO
-ret   
 
 put_weapon_away:
 mov   al, SIZEOF_WEAPONINFO_T
@@ -335,7 +332,7 @@ xchg  ax, bx
 xor   ax, ax
 mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
 call  P_SetPsprite_
-jmp   exit_a_weaponready
+ret   
 
 not_firing:
 mov   byte ptr ds:[_player + PLAYER_T.player_attackdown], PS_WEAPON
@@ -379,7 +376,6 @@ add   dx, WEAPONTOP_HIGH
 mov   word ptr ds:[si + 8], ax
 mov   word ptr ds:[si + 0Ah], dx
 
-POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP
@@ -410,8 +406,6 @@ ENDP
 PROC A_Lower_ NEAR
 PUBLIC A_Lower_
 
-push  bx
-push  dx
 xchg  ax, bx
 ; bx gets pspdef
 
@@ -428,20 +422,16 @@ xor   ax, ax
 cwd
 call  P_SetPsprite_
 exit_a_lower:
-pop   dx
-pop   bx
 ret   
 
 player_dead:
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_sy+0], WEAPONBOTTOM_LOW
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_sy+2], WEAPONBOTTOM_HIGH
-jmp   exit_a_lower
+ret   
 player_alive:
 mov   al, byte ptr ds:[_player + PLAYER_T.player_pendingweapon]
 mov   byte ptr ds:[_player + PLAYER_T.player_readyweapon], al
 call  P_BringUpWeapon_
-pop   dx
-pop   bx
 ret   
 
 ENDP
@@ -449,8 +439,6 @@ ENDP
 PROC A_Raise_ NEAR
 PUBLIC A_Raise_
 
-push  bx
-push  dx
 mov   bx, ax
 add   word ptr ds:[bx + PSPDEF_T.pspdef_sy+0], 0
 adc   word ptr ds:[bx + PSPDEF_T.pspdef_sy+2], -6
@@ -460,8 +448,6 @@ jne   set_weapon_top
 cmp   word ptr ds:[bx + 8], 0
 jbe   set_weapon_top
 exit_a_raise:
-pop   dx
-pop   bx
 ret   
 set_weapon_top:
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_sy+0], WEAPONTOP_LOW
@@ -472,8 +458,6 @@ xchg  ax, bx
 xor   ax, ax
 mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_readystate]
 call  P_SetPsprite_
-pop   dx
-pop   bx
 ret   
 
 ENDP
@@ -481,8 +465,6 @@ ENDP
 PROC A_GunFlash_ NEAR
 PUBLIC A_GunFlash_
 
-push  bx
-push  dx
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
 ;call  P_SetMobjState_
@@ -495,8 +477,6 @@ xchg  ax, bx
 mov   ax, 1
 mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
 call  P_SetPsprite_
-pop   dx
-pop   bx
 ret   
 
 ENDP
@@ -505,7 +485,6 @@ PROC A_Punch_ NEAR
 PUBLIC A_Punch_
 
 
-PUSHA_NO_AX_OR_BP_MACRO
 
 call  P_Random_MapLocal_
 
@@ -612,7 +591,6 @@ les   di, dword ptr ds:[_playerMobj_pos]
 mov   word ptr es:[di + MOBJ_POS_T.mp_angle+0], ax
 mov   word ptr es:[di + MOBJ_POS_T.mp_angle+2], dx
 exit_a_punch:
-POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
@@ -621,7 +599,6 @@ ENDP
 PROC A_Saw_ NEAR
 PUBLIC A_Saw_
 
-PUSHA_NO_AX_OR_BP_MACRO
 call  P_Random_MapLocal_
 
 ;    damage = 2*(P_Random ()%10+1);
@@ -680,7 +657,6 @@ mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
@@ -740,7 +716,6 @@ done_with_angle_comparisons_saw:
 
 or    byte ptr es:[si + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
 exit_a_saw:
-POPA_NO_AX_OR_BP_MACRO
 ret   
 not_less_than_negative_4point5:
 
@@ -801,7 +776,6 @@ ENDP
 PROC A_FirePlasma_ NEAR
 PUBLIC A_FirePlasma_
 
-push  dx
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)]
 call  P_Random_MapLocal_
@@ -813,7 +787,6 @@ call  P_SetPsprite_
 mov   ax, MT_PLASMA
 call  P_SpawnPlayerMissile_
 
-pop   dx
 ret   
 
 ENDP
@@ -938,7 +911,6 @@ ENDP
 PROC A_FirePistol_ NEAR
 PUBLIC A_FirePistol_
 
-push  dx
 mov   dx, SFX_PISTOL
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
@@ -967,7 +939,6 @@ jne   inaccurate_pistol_shot     ; ax 0
 inc   ax                         ; ax 1
 inaccurate_pistol_shot:
 call  P_GunShot_
-pop   dx
 ret   
 
 ENDP
@@ -975,7 +946,6 @@ ENDP
 PROC A_FireShotgun_ NEAR
 PUBLIC A_FireShotgun_
 
-push  dx
 
 mov   dx, SFX_SHOTGN
 mov   ax, word ptr ds:[_playerMobj]
@@ -1005,7 +975,6 @@ call  P_GunShot_
 cmp   dl, 7
 jl    do_next_shotgun_pellet
 
-pop   dx
 
 ret   
 
@@ -1014,9 +983,6 @@ ENDP
 PROC A_FireShotgun2_ NEAR
 PUBLIC A_FireShotgun2_
 
-push  bx
-push  cx
-push  dx
 
 ;	S_StartSound(playerMobj, sfx_dshtgn);
 
@@ -1110,9 +1076,6 @@ call  P_LineAttack_
 
 loop  loop_next_super_pellet
 
-pop   dx
-pop   cx
-pop   bx
 ret   
 
 ENDP
@@ -1120,8 +1083,6 @@ ENDP
 PROC A_FireCGun_ NEAR
 PUBLIC A_FireCGun_
 
-push  bx
-push  dx
 mov   bx, ax
 mov   dx, SFX_PISTOL
 mov   ax, word ptr ds:[_playerMobj]
@@ -1156,8 +1117,6 @@ inc   ax
 do_inaccurate_chaingunshot:
 call  P_GunShot_
 exit_fire_cgun:
-pop   dx
-pop   bx
 ret   
 
 
@@ -1190,13 +1149,11 @@ ENDP
 PROC A_OpenShotgun2_ NEAR
 PUBLIC A_OpenShotgun2_
 
-push  dx
 mov   dx, SFX_DBOPN
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-pop   dx
 ret
 
 ENDP
@@ -1204,13 +1161,11 @@ ENDP
 PROC A_LoadShotgun2_ NEAR
 PUBLIC A_LoadShotgun2_
 
-push  dx
 mov   dx, SFX_DBLOAD
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-pop   dx
 ret   
 
 ENDP
@@ -1218,7 +1173,6 @@ ENDP
 PROC A_CloseShotgun2_ NEAR
 PUBLIC A_CloseShotgun2_
 
-push  dx
 push  ax
 mov   dx, SFX_DBCLS
 mov   ax, word ptr ds:[_playerMobj]
@@ -1227,7 +1181,6 @@ db 01Eh  ;
 dw _S_StartSound_addr
 pop   ax
 call  A_Refire_
-pop   dx
 ret   
 
 ENDP
@@ -1376,13 +1329,11 @@ PROC A_BFGsound_ NEAR
 PUBLIC A_BFGsound_
 
 
-push  dx
 mov   dx, SFX_BFG
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-pop   dx
 ret   
 
 
@@ -1458,6 +1409,7 @@ dw OFFSET A_Light1_ - OFFSET P_SIGHT_STARTMARKER_
 dw OFFSET A_FireShotgun_ - OFFSET P_SIGHT_STARTMARKER_
 dw OFFSET A_Light2_ - OFFSET P_SIGHT_STARTMARKER_
 dw OFFSET A_FireShotgun2_ - OFFSET P_SIGHT_STARTMARKER_
+; this one is used a bit
 dw OFFSET A_CheckReload_ - OFFSET P_SIGHT_STARTMARKER_
 dw OFFSET A_OpenShotgun2_ - OFFSET P_SIGHT_STARTMARKER_
 dw OFFSET A_LoadShotgun2_ - OFFSET P_SIGHT_STARTMARKER_
@@ -1529,8 +1481,11 @@ mov   ax, bx ; ax gets psp
 
 ; todo: push pop here, not in all the functions.
 
+PUSHA_NO_AX_MACRO
+
 call   word ptr cs:[si + OFFSET p_setpsprite_jump_table - OFFSET P_SIGHT_STARTMARKER_]
 
+POPA_NO_AX_MACRO
 
 finished_p_setpsprite_switchblock:
 cmp   word ptr ds:[bx + PSPDEF_T.pspdef_statenum], STATENUM_NULL
