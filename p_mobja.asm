@@ -94,15 +94,15 @@ skull_slammed_into_something:
 ;			P_SetMobjState (mo,mobjinfo[mo->type].spawnstate);
 and   byte ptr es:[di + MOBJ_POS_T.mp_flags2+1], (NOT (MF_SKULLFLY SHR 8))  ; 0xFE
 ; ax already 0
-mov   word ptr [bx + MOBJ_T.m_momz+2], ax
-mov   word ptr [bx + MOBJ_T.m_momz+0], ax
+mov   word ptr ds:[bx + MOBJ_T.m_momz+2], ax
+mov   word ptr ds:[bx + MOBJ_T.m_momz+0], ax
 ; if we are in this code block we already determined these were 0
-; mov   word ptr [bx + MOBJ_T.m_momy+0], ax
-; mov   word ptr [bx + MOBJ_T.m_momy+2], ax
-; mov   word ptr [bx + MOBJ_T.m_momx+0], ax
-; mov   word ptr [bx + MOBJ_T.m_momx+2], ax
+; mov   word ptr ds:[bx + MOBJ_T.m_momy+0], ax
+; mov   word ptr ds:[bx + MOBJ_T.m_momy+2], ax
+; mov   word ptr ds:[bx + MOBJ_T.m_momx+0], ax
+; mov   word ptr ds:[bx + MOBJ_T.m_momx+2], ax
 
-mov   al, byte ptr [bx + 01Ah]
+mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 mov   ah, 0Bh
 mul   ah
 xchg  ax, bx
@@ -125,7 +125,7 @@ push  word ptr ds:[bx + MOBJ_T.m_secnum]        ; bp - 0Ah
 ;	}
 
 
-mov   ax, word ptr [bx + MOBJ_T.m_momx+2]
+mov   ax, word ptr ds:[bx + MOBJ_T.m_momx+2]
 cmp   ax, MAXMOVE
 
 jge   cap_x_at_maxmove
@@ -133,12 +133,12 @@ jge   cap_x_at_maxmove
 
 cmp   ax, -MAXMOVE
 jnl   done_capping_xmove
-mov   word ptr [bx + MOBJ_T.m_momx+0], 0
-mov   word ptr [bx + MOBJ_T.m_momx+2], -MAXMOVE
+mov   word ptr ds:[bx + MOBJ_T.m_momx+0], 0
+mov   word ptr ds:[bx + MOBJ_T.m_momx+2], -MAXMOVE
 jmp   done_capping_xmove
 cap_x_at_maxmove:
-mov   word ptr [bx + MOBJ_T.m_momx+0], 0
-mov   word ptr [bx + MOBJ_T.m_momx+2], 01Eh  ; MAXXMOVE 1E0000
+mov   word ptr ds:[bx + MOBJ_T.m_momx+0], 0
+mov   word ptr ds:[bx + MOBJ_T.m_momx+2], 01Eh  ; MAXXMOVE 1E0000
 done_capping_xmove:
 
 ;    if (mo->momy.w > MAXMOVE){
@@ -172,8 +172,8 @@ push  word ptr ds:[bx + MOBJ_T.m_momy+0] ; bp - 0Eh
 
 ; xmove is di:si
 ; ymove is 0C 0E
-mov   si, word ptr [bx + MOBJ_T.m_momx+0]
-mov   di, word ptr [bx + MOBJ_T.m_momx+2]
+mov   si, word ptr ds:[bx + MOBJ_T.m_momx+0]
+mov   di, word ptr ds:[bx + MOBJ_T.m_momx+2]
 
 ;	do {
 
@@ -254,9 +254,9 @@ adc   dx, di
 xor   si, si
 mov   di, si
 
-mov   ax, word ptr es:[bx + 4]
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 add   ax, word ptr [bp - 0Eh]    
-mov   bx, word ptr es:[bx + 6]
+mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 adc   bx, word ptr [bp - 0Ch]
 
 mov   word ptr [bp - 0Eh], si ; zero
@@ -338,7 +338,7 @@ jmp   exit_p_xymovement
 not_missile_or_skullfly:
 ;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
 xor   dx, dx
-mov   ax, word ptr [bx + 6]
+mov   ax, word ptr ds:[bx + MOBJ_T.m_floorz]
 sar       ax, 1
 rcr       dx, 1
 sar       ax, 1
@@ -351,10 +351,10 @@ rcr       dx, 1
 ;	}
 
 
-cmp   ax, word ptr es:[di + 0Ah]
+cmp   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
 jl    jump_to_exit_p_xymovement
 jne   not_in_air
-cmp   dx, word ptr es:[di + 8]
+cmp   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
 jb    jump_to_exit_p_xymovement
 not_in_air:
 
@@ -370,7 +370,7 @@ je    is_not_corpse
 ;			if (mo->floorz != sectorfloorheight) {				
 ;				return;
 
-mov   ax, word ptr [bx + MOBJ_T.m_momx+2]
+mov   ax, word ptr ds:[bx + MOBJ_T.m_momx+2]
 test  ax, ax
 jg    check_floor_height
 je    check_y_pos
@@ -380,20 +380,20 @@ continue_fracunit_over_4_momentum_check:
 cmp   ax, 0FFFFh   ; hi bits negative
 jnge  check_floor_height
 jne   continue_momy_check_floor
-cmp   word ptr [bx + MOBJ_T.m_momx+0], -FRACUNITOVER4
+cmp   word ptr ds:[bx + MOBJ_T.m_momx+0], -FRACUNITOVER4
 jb    check_floor_height
 continue_momy_check_floor:
-mov   ax, word ptr [bx + MOBJ_T.m_momy+2]
+mov   ax, word ptr ds:[bx + MOBJ_T.m_momy+2]
 test  ax, ax
 jg    check_floor_height
 jne   check_momy_negative
-cmp   word ptr [bx + MOBJ_T.m_momy+0], FRACUNITOVER4
+cmp   word ptr ds:[bx + MOBJ_T.m_momy+0], FRACUNITOVER4
 ja    check_floor_height
 check_momy_negative:
 cmp   ax, 0FFFFh   ; hi bits negative
 jl    check_floor_height
 jne   done_with_corpse_check
-cmp   word ptr [bx + MOBJ_T.m_momy+0], -FRACUNITOVER4  ; 0c000h
+cmp   word ptr ds:[bx + MOBJ_T.m_momy+0], -FRACUNITOVER4  ; 0c000h
 jb    check_floor_height
 jmp   done_with_corpse_check
 
@@ -406,7 +406,7 @@ mov   ax, SECTORS_SEGMENT
 SHIFT_MACRO shl   di 4
 mov   es, ax
 mov   ax, word ptr es:[di]
-cmp   ax, word ptr [bx + 6]
+cmp   ax, word ptr ds:[bx + 6]  ; ? MOBJ_T.m_floorz
 jne   jump_to_exit_p_xymovement
 
 
@@ -417,14 +417,14 @@ done_with_corpse_check:
 ;	momomx = mo->momx;
 ;	momomy = mo->momy;
 
-mov   di, word ptr [bx + MOBJ_T.m_momy+0]
-mov   cx, word ptr [bx + MOBJ_T.m_momx+2]
+mov   di, word ptr ds:[bx + MOBJ_T.m_momy+0]
+mov   cx, word ptr ds:[bx + MOBJ_T.m_momx+2]
 
 
 ; if ((momomx.w > -STOPSPEED && momomx.w < STOPSPEED && momomy.w > -STOPSPEED && momomy.w < STOPSPEED) && 
 
-mov   si, word ptr [bx + MOBJ_T.m_momy+2]
-mov   bx, word ptr [bx + MOBJ_T.m_momx+0]
+mov   si, word ptr ds:[bx + MOBJ_T.m_momy+2]
+mov   bx, word ptr ds:[bx + MOBJ_T.m_momx+0]
 cmp   cx, 0FFFFh   ; hi bits negative
 jg    momomx_not_in_negative_range
 je    continue_stopspeed_checks_1
@@ -438,9 +438,9 @@ dw _FixedMul16u32_addr
 
 
 mov   bx, word ptr [bp - 2]
-mov   word ptr [bx + MOBJ_T.m_momx+0], ax
+mov   word ptr ds:[bx + MOBJ_T.m_momx+0], ax
 mov   cx, si
-mov   word ptr [bx + MOBJ_T.m_momx+2], dx
+mov   word ptr ds:[bx + MOBJ_T.m_momx+2], dx
 mov   bx, di
 mov   ax, FRICTION
 ;call  FixedMul16u32_
@@ -449,8 +449,8 @@ db 01Eh  ;
 dw _FixedMul16u32_addr
 
 mov   bx, word ptr [bp - 2]
-mov   word ptr [bx + MOBJ_T.m_momy+0], ax
-mov   word ptr [bx + MOBJ_T.m_momy+2], dx
+mov   word ptr ds:[bx + MOBJ_T.m_momy+0], ax
+mov   word ptr ds:[bx + MOBJ_T.m_momy+2], dx
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -491,7 +491,7 @@ dont_apply_friction:
 cmp   word ptr [bp - 8], MT_PLAYER
 jne   done_stepping_stop_moving
 les   si, dword ptr ds:[_playerMobj_pos]
-mov   ax, word ptr es:[si + 012h]
+mov   ax, word ptr es:[si + MOBJ_POS_T.mp_statenum]
 sub   ax, S_PLAY_RUN1
 cmp   ax, 4
 jae   done_stepping_stop_moving
@@ -507,10 +507,10 @@ done_stepping_stop_moving:
 ;		mo->momx.w = 0;
 ;		mo->momy.w = 0;
 mov   bx, word ptr [bp - 2]
-mov   word ptr [bx + MOBJ_T.m_momx+0], 0
-mov   word ptr [bx + MOBJ_T.m_momx+2], 0
-mov   word ptr [bx + MOBJ_T.m_momy+0], 0
-mov   word ptr [bx + MOBJ_T.m_momy+2], 0
+mov   word ptr ds:[bx + MOBJ_T.m_momx+0], 0
+mov   word ptr ds:[bx + MOBJ_T.m_momx+2], 0
+mov   word ptr ds:[bx + MOBJ_T.m_momy+0], 0
+mov   word ptr ds:[bx + MOBJ_T.m_momy+2], 0
 LEAVE_MACRO
 pop   di
 pop   si
@@ -534,7 +534,7 @@ je    do_explosion
 SHIFT_MACRO shl   bx 4
 mov   ax, LINES_PHYSICS_SEGMENT
 mov   es, ax
-mov   bx, word ptr es:[bx + 0Ch]
+mov   bx, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
 
 cmp   bx, SECNUM_NULL
 je    do_explosion
@@ -569,10 +569,10 @@ not_missile_dont_explode:
 
 mov   bx, word ptr [bp - 2]
 xor   ax, ax
-mov   word ptr [bx + MOBJ_T.m_momx+0], ax
-mov   word ptr [bx + MOBJ_T.m_momx+2], ax
-mov   word ptr [bx + MOBJ_T.m_momy+0], ax
-mov   word ptr [bx + MOBJ_T.m_momy+2], ax
+mov   word ptr ds:[bx + MOBJ_T.m_momx+0], ax
+mov   word ptr ds:[bx + MOBJ_T.m_momx+2], ax
+mov   word ptr ds:[bx + MOBJ_T.m_momy+0], ax
+mov   word ptr ds:[bx + MOBJ_T.m_momy+2], ax
 jmp   cant_move
 
 
@@ -621,8 +621,8 @@ push  cx  ; bp - 8
 ;    if (motype == MT_PLAYER && mo_pos->z.w < temp.w) {
 test  cl, cl
 jne   z_not_player
-sub   dx, word ptr es:[di + 8]
-sbb   ax, word ptr es:[di + 0Ah]
+sub   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+sbb   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
 
 jg    do_smooth_step_up
 jne   z_not_player
@@ -671,11 +671,11 @@ jne   continue_floating_with_target_check
 jump_to_done_with_floating_with_target:
 jmp   done_with_floating_with_target
 continue_floating_with_target_check:
-cmp   word ptr [si + MOBJ_T.m_targetRef], 0
+cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    jump_to_done_with_floating_with_target
-test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
 jne   jump_to_done_with_floating_with_target
-test  byte ptr es:[di + 016h], MF_INFLOAT
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags2], MF_INFLOAT
 jne   jump_to_done_with_floating_with_target
 
 ;		// float down towards target if too close
@@ -686,10 +686,10 @@ jne   jump_to_done_with_floating_with_target
 ;    moTarget_pos = &mobjposlist_6800[mo->targetRef];
 
 IF COMPISA GE COMPILE_186
-    imul  bx, word ptr [si + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
+    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
 ELSE
     mov   ax, SIZEOF_MOBJ_POS_T
-    mul   word ptr [si + MOBJ_T.m_targetRef]
+    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     mov   bx, ax
 ENDIF
 
@@ -699,10 +699,10 @@ push  bx  ; store for later
 ;    dist = P_AproxDistance (mo_pos->x.w - moTarget_pos->x.w,
 ;        mo_pos->y.w - moTarget_pos->y.w);
 
-mov   ax, word ptr es:[di + 4]
-mov   cx, word ptr es:[di + 6]
-sub   ax, word ptr es:[bx + 4]
-sbb   cx, word ptr es:[bx + 6]
+mov   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
+mov   cx, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
+sub   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+sbb   cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 push  ax    ; store y diff lo
 
 
@@ -768,7 +768,7 @@ cmp   bx, word ptr [bp - 0Ch]
 jbe   jump_to_dont_sub_floatspeed
 do_sub_floatspeed:
 mov   es, word ptr [bp - 2]
-sub   word ptr es:[di + 0Ah], FLOATSPEED_HIGHBITS
+sub   word ptr es:[di + MOBJ_POS_T.mp_z + 2], FLOATSPEED_HIGHBITS
 jmp   done_with_floating_with_target
 
 dont_sub_floatspeed:
@@ -797,7 +797,7 @@ cmp   ax, word ptr [bp - 0Ch]
 jbe   done_with_floating_with_target
 do_add_floatspeed:
 mov   es, word ptr [bp - 2]
-add   word ptr es:[di + 0Ah], FLOATSPEED_HIGHBITS
+add   word ptr es:[di + MOBJ_POS_T.mp_z + 2], FLOATSPEED_HIGHBITS
 
 done_with_floating_with_target:
 
@@ -805,7 +805,7 @@ done_with_floating_with_target:
 ;    if (mo_pos->z.w <= temp.w) {
 
 mov   es, word ptr [bp - 2]
-mov   ax, word ptr es:[di + 0Ah]
+mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
 cmp   ax, word ptr [bp - 4]
 jl    hit_floor
 je    check_floor_lobits
@@ -814,25 +814,25 @@ didnt_hit_floor:
 
 ;	} else if (! (mo_pos->flags1 & MF_NOGRAVITY) ) {
 
-test  byte ptr es:[di + 015h], (MF_NOGRAVITY SHR 8)
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_NOGRAVITY SHR 8)
 je    do_gravity
 jmp   done_with_floor_z_collision
 do_gravity:
 ;		if (mo->momz.w == 0) {
-mov   ax, word ptr [si + 018h]
-or    ax, word ptr [si + 016h]
+mov   ax, word ptr ds:[si + MOBJ_T.m_momz + 2]
+or    ax, word ptr ds:[si + MOBJ_T.m_momz + 0]
 jne   add_gravity
 ;	mo->momz.h.intbits = -GRAVITY_HIGHBITS << 1;
-mov   word ptr [si + 018h], 0FFFEh
+mov   word ptr ds:[si + MOBJ_T.m_momz + 2], 0FFFEh
 jmp   done_with_floor_z_collision
 add_gravity:
 ;    mo->momz.h.intbits -= GRAVITY_HIGHBITS;
 
-dec   word ptr [si + 018h]
+dec   word ptr ds:[si + MOBJ_T.m_momz + 2]
 jmp   done_with_floor_z_collision
 
 check_floor_lobits:
-mov   ax, word ptr es:[di + 8]
+mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
 cmp   ax, word ptr [bp - 6]
 ja    didnt_hit_floor
 hit_floor:
@@ -840,7 +840,7 @@ cmp   byte ptr ds:[_is_ultimate], 0
 je    skip_ultimate_hack
 
 
-test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
 je    skip_ultimate_hack
 
 ;			// Note (id):
@@ -852,14 +852,14 @@ je    skip_ultimate_hack
 ;				mo->momz.w = -mo->momz.w;
 ;			}
 
-neg   word ptr [si + 018h]
-neg   word ptr [si + 016h]
-sbb   word ptr [si + 018h], 0
+neg   word ptr ds:[si + MOBJ_T.m_momz + 2]
+neg   word ptr ds:[si + MOBJ_T.m_momz + 0]
+sbb   word ptr ds:[si + MOBJ_T.m_momz + 2], 0
 skip_ultimate_hack:
 
 ;	if (mo->momz.h.intbits < 0) {
 
-cmp   word ptr [si + 018h], 0
+cmp   word ptr ds:[si + MOBJ_T.m_momz + 2], 0
 jge   dont_squat
 jmp   continue_squat_check
 dont_squat:
@@ -869,9 +869,9 @@ done_with_squat:
 
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr [bp - 6]
-mov   word ptr es:[di + 8], ax
+mov   word ptr es:[di + MOBJ_POS_T.mp_z + 0], ax
 mov   ax, word ptr [bp - 4]
-mov   word ptr es:[di + 0Ah], ax
+mov   word ptr es:[di + MOBJ_POS_T.mp_z + 2], ax
 
 ;		if (!is_ultimate){
 ;			if (mo_pos->flags2 & MF_SKULLFLY) {
@@ -881,17 +881,17 @@ mov   word ptr es:[di + 0Ah], ax
 
 cmp   byte ptr ds:[_is_ultimate], 0
 jne   skip_ultimate_skull_check
-test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
 je    skip_ultimate_skull_check
-neg   word ptr [si + 018h]
-neg   word ptr [si + 016h]
-sbb   word ptr [si + 018h], 0
+neg   word ptr ds:[si + MOBJ_T.m_momz + 2]
+neg   word ptr ds:[si + MOBJ_T.m_momz + 0]
+sbb   word ptr ds:[si + MOBJ_T.m_momz + 2], 0
 skip_ultimate_skull_check:
 
 ;mov   es, word ptr [bp - 2]
-test  byte ptr es:[di + 016h], MF_MISSILE
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags2], MF_MISSILE
 je    dont_explode_missile
-test  byte ptr es:[di + 015h], (MF_NOCLIP SHR 8)
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_NOCLIP SHR 8)
 jne   dont_explode_missile
 do_explode_missile:
 mov   bx, di
@@ -909,7 +909,7 @@ done_with_floor_z_collision:
 ;	SET_FIXED_UNIO;N_FROM_SHORT_HEIGHT(temp, mo->ceilingz);
 
 mov   es, word ptr [bp - 2]
-mov   dx, word ptr [si + 8]
+mov   dx, word ptr ds:[si + 8]
 xor   ax, ax
 sar   dx, 1
 rcr   ax, 1
@@ -920,10 +920,10 @@ rcr   ax, 1
 
 
 
-mov   bx, word ptr es:[di + 8]
-mov   cx, word ptr es:[di + 0Ah]
-add   bx, word ptr [si + 0Ah]
-adc   cx, word ptr [si + 0Ch]
+mov   bx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+mov   cx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+add   bx, word ptr ds:[si + MOBJ_T.m_height + 0]
+adc   cx, word ptr ds:[si + MOBJ_T.m_height + 2]
 
 cmp   cx, dx
 jg    check_ceil_lobits
@@ -932,10 +932,10 @@ cmp   bx, ax
 jbe   exit_p_zmovement
 check_ceil_lobits:
 
-cmp   word ptr [si + 018h], 0
+cmp   word ptr ds:[si + MOBJ_T.m_momz + 2], 0
 jg    hit_ceiling
 jne   cap_z_to_ceiling
-cmp   word ptr [si + 016h], 0
+cmp   word ptr ds:[si + MOBJ_T.m_momz + 0], 0
 jbe   cap_z_to_ceiling
 hit_ceiling:
 
@@ -943,26 +943,26 @@ hit_ceiling:
 ;			mo->momz.w = 0;
 ;		}
 
-mov   word ptr [si + 016h], 0
-mov   word ptr [si + 018h], 0
+mov   word ptr ds:[si + MOBJ_T.m_momz + 0], 0
+mov   word ptr ds:[si + MOBJ_T.m_momz + 2], 0
 cap_z_to_ceiling:
 
-sub   ax, word ptr [si + 0Ah]
-sbb   dx, word ptr [si + 0Ch]
-mov   word ptr es:[di + 8], ax
-mov   word ptr es:[di + 0Ah], dx
+sub   ax, word ptr ds:[si + MOBJ_T.m_height + 0]
+sbb   dx, word ptr ds:[si + MOBJ_T.m_height + 2]
+mov   word ptr es:[di + MOBJ_POS_T.mp_z + 0], ax
+mov   word ptr es:[di + MOBJ_POS_T.mp_z + 2], dx
 
-test  byte ptr es:[di + 017h], (MF_SKULLFLY SHR 8)
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
 je    skip_skull_slam
 ; skull slam
-neg   word ptr [si + 018h]
-neg   word ptr [si + 016h]
-sbb   word ptr [si + 018h], 0
+neg   word ptr ds:[si + MOBJ_T.m_momz + 2]
+neg   word ptr ds:[si + MOBJ_T.m_momz + 0]
+sbb   word ptr ds:[si + MOBJ_T.m_momz + 2], 0
 
 skip_skull_slam:
-test  byte ptr es:[di + 016h], MF_MISSILE
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags2], MF_MISSILE
 je    exit_p_zmovement
-test  byte ptr es:[di + 015h], (MF_NOCLIP SHR 8)
+test  byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_NOCLIP SHR 8)
 je    do_explode_missile
 exit_p_zmovement:
 LEAVE_MACRO
@@ -976,7 +976,7 @@ continue_squat_check:
 
 cmp   byte ptr [bp - 8], MT_PLAYER
 jne   land_and_momz_0
-mov   ax, word ptr [si + 018h]
+mov   ax, word ptr ds:[si + MOBJ_T.m_momz + 2]
 cmp   ax, 0FFF8h                    ; -GRAVITY*8. gravity is FRACUNIT or 1 in the high word.
 jnl   land_and_momz_0
 
@@ -989,8 +989,8 @@ do_player_squat_landing:
 ;    player.deltaviewheight.w = mo->momz.w>>3;
 ;    S_StartSound (mo, sfx_oof);
 
-mov   ax, word ptr [si + 016h]
-mov   dx, word ptr [si + 018h]
+mov   ax, word ptr ds:[si + MOBJ_T.m_momz + 0]
+mov   dx, word ptr ds:[si + MOBJ_T.m_momz + 2]
 
 
 sar   dx, 1
@@ -1013,8 +1013,8 @@ dw _S_StartSound_addr
 ;	mo->momz.w = 0;
 
 land_and_momz_0:
-mov   word ptr [si + 016h], 0
-mov   word ptr [si + 018h], 0
+mov   word ptr ds:[si + MOBJ_T.m_momz + 0], 0
+mov   word ptr ds:[si + MOBJ_T.m_momz + 2], 0
 jmp   done_with_squat
 
 
@@ -1041,7 +1041,7 @@ mov   cx, 6
 push  ds
 pop   es
 lea   di, [si + MOBJ_T.m_momx+0]
-rep   stosb ; zero all six words out
+rep   stosw ; zero all six words out
 
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
@@ -1073,14 +1073,14 @@ xchg  ax, di
 
 mov   al, byte ptr es:[di]
 and   al, 3
-sub   byte ptr [si + 01Bh], al
-mov   al, byte ptr [si + 01Bh]
+sub   byte ptr ds:[si + MOBJ_T.m_tics], al
+mov   al, byte ptr ds:[si + MOBJ_T.m_tics]
 cmp   al, 1
 jb    set_tics_to_1_b
 cmp   al, 240 ; check for tics overflow. jank
 jbe   dont_set_tics_to_1_b
 set_tics_to_1_b:
-mov   byte ptr [si + 01Bh], 1
+mov   byte ptr ds:[si + MOBJ_T.m_tics], 1
 dont_set_tics_to_1_b:
 
 ;	mo_pos->flags2 &= ~MF_MISSILE;
@@ -1090,7 +1090,7 @@ dont_set_tics_to_1_b:
 ;	}
 
 pop   es  ; was bp - 2, only use...
-and   byte ptr es:[bx + 016h], (NOT MF_MISSILE)
+and   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], (NOT MF_MISSILE)
 mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
@@ -1205,7 +1205,7 @@ pop   dx
 retf   
 do_respawn:
 mov   si, word ptr [bp - 2]
-mov   ax, word ptr [si + 4]     ; mobjsecnum
+mov   ax, word ptr ds:[si + MOBJ_T.m_secnum]     ; mobjsecnum
 mov   es, word ptr [bp - 6]
 
 push  ax
@@ -1219,9 +1219,9 @@ ELSE
 ENDIF
 
 
-mov   bx, word ptr es:[di + 4]
-mov   cx, word ptr es:[di + 6]
-les   di, dword ptr es:[di + 0]
+mov   bx, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
+mov   cx, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
+les   di, dword ptr es:[di + MOBJ_POS_T.mp_x + 0]
 mov   dx, es
 
 xchg  ax, di
@@ -1305,11 +1305,11 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 xor   cx, cx
-mov   cl, byte ptr [bx + 01Ah]
+mov   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 mov   al, 0Bh
 mul   cl
 mov   bx, ax
-test  byte ptr ds:[bx + _mobjinfo + 8], (MF_SPAWNCEILING SHR 8)
+test  byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_flags1 + 1], (MF_SPAWNCEILING SHR 8)
 jne   set_respawn_ceil
 ; #define ONFLOORZ		MINLONG
 mov   dx, 08000h
@@ -1376,15 +1376,15 @@ db 01Eh  ;
 dw _FastMul16u32u_addr
 
 mov   es, di
-mov   word ptr es:[si + 0Eh], ax
-mov   word ptr es:[si + 010h], dx
+mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], ax
+mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], dx
 test  byte ptr [bp - 8], MTF_AMBUSH
 je    no_ambush
-or    byte ptr es:[si + 014h], MF_AMBUSH
+or    byte ptr es:[si + MOBJ_POS_T.mp_flags1], MF_AMBUSH
 no_ambush:
 mov   bx, word ptr ds:[_setStateReturn]
 mov   ax, word ptr [bp - 2]
-mov   byte ptr [bx + 024h], 18
+mov   byte ptr ds:[bx + MOBJ_T.m_reactiontime], 18
 ;call  P_RemoveMobj_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1416,14 +1416,14 @@ mov   al, byte ptr es:[bx]
 mov   es, cx
 
 and   al, 3
-sub   byte ptr [di + 01Bh], al
-mov   al, byte ptr [di + 01Bh]
+sub   byte ptr ds:[di + MOBJ_T.m_tics], al
+mov   al, byte ptr ds:[di + MOBJ_T.m_tics]
 cmp   al, 1
 jb    set_tics_to_1_c
 cmp   al, 240
 jbe   dont_set_tics_to_1_c
 set_tics_to_1_c:
-mov   byte ptr [di + 01Bh], 1
+mov   byte ptr ds:[di + MOBJ_T.m_tics], 1
 dont_set_tics_to_1_c:
 
 ;   // move a little forward so an angle can
@@ -1445,20 +1445,20 @@ mov   ax, word ptr ds:[di + MOBJ_T.m_momy+0]
 mov   dx, word ptr ds:[di + MOBJ_T.m_momy+2]
 sar   dx, 1
 rcr   ax, 1
-add   word ptr es:[si + 4], ax
-adc   word ptr es:[si + 6], dx
+add   word ptr es:[si + MOBJ_POS_T.mp_y + 0], ax
+adc   word ptr es:[si + MOBJ_POS_T.mp_y + 2], dx
 
 mov   ax, word ptr ds:[di + MOBJ_T.m_momz+0]
 mov   dx, word ptr ds:[di + MOBJ_T.m_momz+2]
 sar   dx, 1
 rcr   ax, 1
-add   word ptr es:[si + 8], ax
-adc   word ptr es:[si + 0Ah], dx
+add   word ptr es:[si + MOBJ_POS_T.mp_z + 0], ax
+adc   word ptr es:[si + MOBJ_POS_T.mp_z + 2], dx
 
-push  word ptr es:[si + 6]
-push  word ptr es:[si + 4]
-push  word ptr es:[si + 2]
-push  word ptr es:[si]
+push  word ptr es:[si + MOBJ_POS_T.mp_y + 2]
+push  word ptr es:[si + MOBJ_POS_T.mp_y + 2]
+push  word ptr es:[si + MOBJ_POS_T.mp_x + 2]
+push  word ptr es:[si + MOBJ_POS_T.mp_x + 0]
 
 
 mov   ax, di
@@ -1530,18 +1530,18 @@ xor   ax, ax
 mov   al, byte ptr [bp + 0Ah]
 
 
-push  word ptr [di + 4]         ; secnum
+push  word ptr ds:[di + MOBJ_T.m_secnum]         ; secnum
 push  ax                        ; type
 mov   es, cx
 
-mov   ax, word ptr es:[si + 0Ah]
+mov   ax, word ptr es:[si + MOBJ_POS_T.mp_z + 2]
 add   ax, 32  ;  4*8*FRACUNIT
 
 push  ax                    ; z hi
-push  word ptr es:[si + 8]   ; z lo
+push  word ptr es:[si + MOBJ_POS_T.mp_z + 0]   ; z lo
 
-mov   bx, word ptr es:[si + 4] ; y
-mov   cx, word ptr es:[si + 6]
+mov   bx, word ptr es:[si + MOBJ_POS_T.mp_y + 0] ; y
+mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
 les   ax, dword ptr es:[si]  ; x
 mov   dx, es
 
@@ -1621,7 +1621,7 @@ dw _R_PointToAngle2_addr
 
 les   bx, dword ptr [bp - 6]
 push  ax  ; bp - 010h
-test  byte ptr es:[bx + 016h], MF_SHADOW
+test  byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_SHADOW
 
 je    no_fuzzmissile
 mov   ax, RNDTABLE_SEGMENT
@@ -1685,7 +1685,7 @@ mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr [bp + 0Ah]
 xchg  ax, bx
 xchg  ax, dx
-mov   bl, byte ptr ds:[bx + _mobjinfo + 4]
+mov   bl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_speed]
 xor   bh, bh
 ;	dist16 = dist.h.intbits / (mobjinfo[type].speed - 0x80);
 
@@ -1700,27 +1700,27 @@ idiv  bx
 mov   cx, word ptr [bp - 0Eh]
 mov   es, word ptr [bp - 4]
 mov   bx, ax
-sub   cx, word ptr es:[si + 8]
+sub   cx, word ptr es:[si + MOBJ_POS_T.mp_z + 0]
 mov   ax, cx
 mov   dx, word ptr [bp - 0Ch]
-sbb   dx, word ptr es:[si + 0Ah]
+sbb   dx, word ptr es:[si + MOBJ_POS_T.mp_z + 2]
 ;call   FastDiv3216u_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FastDiv3216u_addr
-mov   word ptr [di + 016h], ax
-mov   word ptr [di + 018h], dx
+mov   word ptr ds:[di + MOBJ_T.m_momz + 0], ax
+mov   word ptr ds:[di + MOBJ_T.m_momz + 2], dx
 
 
 mov   es, word ptr [bp - 4]
 mov   bx, word ptr [bp - 0Ah]
 mov   ax, word ptr [bp - 010h]
-mov   word ptr es:[bx + 0Eh], ax
+mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
 
 ;    th->momx.w = FixedMulTrigSpeedNoShift(FINE_COSINE_ARGUMENT, temp, mobjinfo[type].speed);
 
 mov   si, word ptr [bp - 012h]
-mov   word ptr es:[bx + 010h], si
+mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], si
 shr   si, 1
 and   si, 0FFFCh
 mov   dx, si
@@ -1731,8 +1731,8 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigSpeedNoShift_addr
 
-mov   word ptr [di + 0Eh], ax
-mov   word ptr [di + 010h], dx
+mov   word ptr ds:[di + MOBJ_T.m_momx + 0], ax
+mov   word ptr ds:[di + MOBJ_T.m_momx + 2], dx
 
 ;    th->momy.w = FixedMulTrigSpeedNoShift(FINE_SINE_ARGUMENT  , temp, mobjinfo[type].speed);
 
@@ -1746,8 +1746,8 @@ db 01Eh  ;
 dw _FixedMulTrigSpeedNoShift_addr
 
 
-mov   word ptr [di + 012h], ax
-mov   word ptr [di + 014h], dx
+mov   word ptr ds:[di + MOBJ_T.m_momy + 0], ax
+mov   word ptr ds:[di + MOBJ_T.m_momy + 2], dx
 
 mov   bx, word ptr [bp - 0Ah]
 mov   cx, word ptr [bp - 4]
@@ -1794,7 +1794,7 @@ push   ax      ; bp - 2
 
 
 les    si, dword ptr ds:[_playerMobj_pos]
-mov    si, word ptr es:[si + 010h]
+mov    si, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 
 SHIFT_MACRO shr    si 3
 
@@ -1850,7 +1850,7 @@ jne    no_line_target
 mov    di, ax
 mov    cx, ax
 les    bx, dword ptr ds:[_playerMobj_pos]
-mov    si, word ptr es:[bx + 010h]
+mov    si, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 SHIFT_MACRO shr    si 3
 
 no_line_target:
@@ -1859,10 +1859,10 @@ push   di  ; push lo bp - 6
 
 les    bx, dword ptr ds:[_playerMobj_pos]
 
-mov    di, word ptr es:[bx + 0Ah]
+mov    di, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
 
 mov    bx, word ptr ds:[_playerMobj]
-push   word ptr [bx + 4] ; secnum
+push   word ptr ds:[bx + MOBJ_T.m_secnum] ; secnum
 push   word ptr [bp - 2] ; type
 
 ;	z.w = playerMobj_pos->z.w;
@@ -1874,10 +1874,10 @@ push   di ; z hi
 ;    thRef = P_SpawnMobj (playerMobj_pos->x.w, playerMobj_pos->y.w,z.w, type, playerMobj->secnum);
 
 les    di, dword ptr ds:[_playerMobj_pos]
-push   word ptr es:[di + 8] ; z lo
+push   word ptr es:[di + MOBJ_POS_T.mp_z + 0] ; z lo
 
-mov    bx, word ptr es:[di + 4]
-mov    cx, word ptr es:[di + 6]
+mov    bx, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
+mov    cx, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
 
 les    ax, dword ptr es:[di]
 mov    dx, es
@@ -1913,7 +1913,7 @@ dw _S_StartSound_addr
 
 no_see_sound_b:
 mov    ax, word ptr ds:[_playerMobjRef]
-mov    word ptr [di + MOBJ_T.m_targetRef], ax
+mov    word ptr ds:[di + MOBJ_T.m_targetRef], ax
 
 mov    al, SIZEOF_MOBJINFO_T
 mul    byte ptr [bp - 2]
@@ -1921,12 +1921,15 @@ mul    byte ptr [bp - 2]
 mov    bx, MOBJPOSLIST_6800_SEGMENT
 mov    es, bx
 mov    bx, word ptr [bp - 8]
-mov    word ptr es:[bx + 0Eh], 0
-mov    word ptr es:[bx + 010h], si
+mov    word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], 0
 mov    dx, si
-shl    word ptr es:[bx + 010h], 3
+SHIFT_MACRO shl dx 3
+mov    word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], dx
+mov    dx, si
+
+
 mov    bx, ax
-mov    bl, byte ptr ds:[bx + _mobjinfo + 4]
+mov    bl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_speed]
 xor    bh, bh
 push   bx  ; bp - 0Ah
 mov    ax, FINECOSINE_SEGMENT
@@ -1935,8 +1938,8 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigSpeed_addr
 
-mov    word ptr [di + 0Eh], ax
-mov    word ptr [di + 010h], dx
+mov    word ptr ds:[di + MOBJ_T.m_momx + 0], ax
+mov    word ptr ds:[di + MOBJ_T.m_momx + 2], dx
 
 mov    bx, word ptr [bp - 0Ah]
 mov    dx, si
@@ -1946,8 +1949,8 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMulTrigSpeed_addr
 
-mov    word ptr [di + 012h], ax
-mov    word ptr [di + 014h], dx
+mov    word ptr ds:[di + MOBJ_T.m_momy + 0], ax
+mov    word ptr ds:[di + MOBJ_T.m_momy + 2], dx
 
 pop    ax ; bp - 0Ah
 sub    ax, 080h
@@ -1962,9 +1965,9 @@ dw _FastMul16u32u_addr
 
 mov    bx, word ptr [bp - 8]
 mov    cx, MOBJPOSLIST_6800_SEGMENT
-mov    word ptr [di + 016h], ax
+mov    word ptr ds:[di + MOBJ_T.m_momz + 0], ax
 mov    ax, di
-mov    word ptr [di + 018h], dx
+mov    word ptr ds:[di + MOBJ_T.m_momz + 2], dx
 call   P_CheckMissileSpawn_
 
 LEAVE_MACRO

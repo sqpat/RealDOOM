@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/19 10:27:21
+Created on:       25/07/19 11:06:11
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -92,8 +92,8 @@ Z_ZONE_TEXT            CODE           AUTO           1db9:4a72       000004a4
 p_setup_TEXT           CODE           AUTO           22ab:0000       0000127a
 P_SIGHT_TEXT           CODE           AUTO           23d3:0000       0000060b
 P_MAP_TEXT             CODE           AUTO           23d3:060c       00002429
-P_MOBJA_TEXT           CODE           AUTO           23d3:2a36       00000a98
-P_PSPR_TEXT            CODE           AUTO           23d3:34ce       0000087c
+P_MOBJA_TEXT           CODE           AUTO           23d3:2a36       00000a9b
+P_PSPR_TEXT            CODE           AUTO           23d3:34d2       0000087c
 _TEXT                  CODE           AUTO           23d3:3d50       000033dc
 FAR_DATA               FAR_DATA       AUTO           2ae5:000c       00000000
 _NULL                  BEGDATA        DGROUP         2ae6:0000       00000020
@@ -1299,45 +1299,45 @@ Module: p_mobja.obj(p_mobja.ASM)
 23d3:2a36*     P_MOBJ_STARTMARKER_
 23d3:2d49      P_ZMovement_
 23d3:3217      P_SpawnMissile_
-23d3:34ce*     P_MOBJ_ENDMARKER_
+23d3:34d1*     P_MOBJ_ENDMARKER_
 23d3:2a36      P_XYMovement_
 Module: p_pspr.obj(p_pspr.ASM)
-23d3:372b*     A_Lower_
-23d3:3d3e      P_DropWeaponFar_
-23d3:3d42      P_BringUpWeaponFar_
-23d3:37c2*     A_Punch_
-23d3:3b8a*     A_Light2_
-23d3:3b84*     A_Light1_
-23d3:3b7e*     A_Light0_
-23d3:3608*     P_FireWeapon_
-23d3:3ce1*     P_SetPsprite_
-23d3:3768*     A_Raise_
-23d3:3d46      A_BFGSprayFar_
-23d3:37a2*     A_GunFlash_
-23d3:3858*     A_Saw_
-23d3:3b90*     A_OpenShotgun2_
-23d3:3a4f*     A_FirePistol_
-23d3:3513*     P_CheckAmmo_
-23d3:3705*     A_ReFire_
-23d3:3bbc*     A_BFGSpray_
-23d3:395c*     A_FireMissile_
-23d3:3967*     A_FireBFG_
-23d3:3c60      P_MovePsprites_
-23d3:3973*     A_FirePlasma_
-23d3:3d4a      P_PSPR_ENDMARKER_
-23d3:39fe*     P_GunShot_
-23d3:3c53*     A_BFGsound_
-23d3:3513*     A_CheckReload_
-23d3:3648*     A_WeaponReady_
-23d3:3a83*     A_FireShotgun_
-23d3:3990*     P_BulletSlope_
-23d3:3b9d*     A_LoadShotgun2_
-23d3:3ab9*     A_FireShotgun2_
-23d3:34ce*     P_PSPR_STARTMARKER_
-23d3:3b3a*     A_FireCGun_
-23d3:3633*     P_DropWeapon_
-23d3:3baa*     A_CloseShotgun2_
-23d3:34ce*     P_BringUpWeapon_
+23d3:372f*     A_Lower_
+23d3:3d42      P_DropWeaponFar_
+23d3:3d46      P_BringUpWeaponFar_
+23d3:37c6*     A_Punch_
+23d3:3b8e*     A_Light2_
+23d3:3b88*     A_Light1_
+23d3:3b82*     A_Light0_
+23d3:360c*     P_FireWeapon_
+23d3:3ce5*     P_SetPsprite_
+23d3:376c*     A_Raise_
+23d3:3d4a      A_BFGSprayFar_
+23d3:37a6*     A_GunFlash_
+23d3:385c*     A_Saw_
+23d3:3b94*     A_OpenShotgun2_
+23d3:3a53*     A_FirePistol_
+23d3:3517*     P_CheckAmmo_
+23d3:3709*     A_ReFire_
+23d3:3bc0*     A_BFGSpray_
+23d3:3960*     A_FireMissile_
+23d3:396b*     A_FireBFG_
+23d3:3c64      P_MovePsprites_
+23d3:3977*     A_FirePlasma_
+23d3:3d4e      P_PSPR_ENDMARKER_
+23d3:3a02*     P_GunShot_
+23d3:3c57*     A_BFGsound_
+23d3:3517*     A_CheckReload_
+23d3:364c*     A_WeaponReady_
+23d3:3a87*     A_FireShotgun_
+23d3:3994*     P_BulletSlope_
+23d3:3ba1*     A_LoadShotgun2_
+23d3:3abd*     A_FireShotgun2_
+23d3:34d2*     P_PSPR_STARTMARKER_
+23d3:3b3e*     A_FireCGun_
+23d3:3637*     P_DropWeapon_
+23d3:3bae*     A_CloseShotgun2_
+23d3:34d2*     P_BringUpWeapon_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 23d3:3d50+     __open_flags_
 23d3:3efe+     _fsopen_
