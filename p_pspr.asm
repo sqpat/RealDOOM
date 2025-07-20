@@ -225,7 +225,7 @@ PUBLIC P_FireWeapon_
 
 
 call  A_CheckReload_
-jnc   dont_fire_weapon
+jnc   dont_fire_weapon_exit
 push  bx
 push  dx
 mov   dx, S_PLAY_ATK1
@@ -248,7 +248,7 @@ dw _P_NoiseAlert_Addr
 
 pop   dx
 pop   bx
-dont_fire_weapon:
+dont_fire_weapon_exit:
 ret   
 
 ENDP

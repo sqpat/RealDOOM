@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/20 05:54:02
+Created on:       25/07/20 07:27:02
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -93,7 +93,7 @@ p_setup_TEXT           CODE           AUTO           22a5:0000       0000127a
 P_SIGHT_TEXT           CODE           AUTO           23cd:0000       0000060b
 P_MAP_TEXT             CODE           AUTO           23cd:060c       000023fd
 P_MOBJA_TEXT           CODE           AUTO           23cd:2a0a       00000a92
-P_PSPR_TEXT            CODE           AUTO           23cd:349c       0000084c
+P_PSPR_TEXT            CODE           AUTO           23cd:349c       00000847
 _TEXT                  CODE           AUTO           23cd:3cf0       000033dc
 FAR_DATA               FAR_DATA       AUTO           2ad9:000c       00000000
 _NULL                  BEGDATA        DGROUP         2ada:0000       00000020
@@ -691,9 +691,9 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0322:6f0c*     WI_slamBackground_
 0322:6b0c      WI_STARTMARKER_
 0322:78b1*     WI_updateNoState_
-0322:71e7*     WI_drawNum_
-0322:6ef3*     WI_MRandomLocal_
 0322:7916      WI_Ticker_
+0322:6ef3*     WI_MRandomLocal_
+0322:71e7*     WI_drawNum_
 0322:79c5*     WI_initVariables_
 0322:73a2*     WI_drawNoState_
 0322:7361*     WI_initNoState_
@@ -1217,8 +1217,8 @@ Module: z_zone.obj(z_zone.ASM)
 1db3:4c82      Z_QuickMapRenderPlanes_
 1db3:4aa2      Z_QuickMapSFXPageFrame_
 1db3:4be3      Z_QuickMapStatus_
-1db3:4b48      Z_QuickMapRender_
 1db3:4c6c*     Z_QuickMapScreen0_
+1db3:4b48      Z_QuickMapRender_
 1db3:4c56      Z_QuickMapScratch_4000_
 1db3:4c40      Z_QuickMapScratch_7000_
 1db3:4c14      Z_QuickMapScratch_5000_
@@ -1291,41 +1291,41 @@ Module: p_mobja.obj(p_mobja.ASM)
 23cd:349c*     P_MOBJ_ENDMARKER_
 23cd:2a0a      P_XYMovement_
 Module: p_pspr.obj(p_pspr.ASM)
-23cd:36f5*     A_Lower_
-23cd:3cdc      P_DropWeaponFar_
-23cd:3ce0      P_BringUpWeaponFar_
-23cd:377b*     A_Punch_
-23cd:3b2e*     A_Light2_
-23cd:3b28*     A_Light1_
-23cd:3b22*     A_Light0_
-23cd:35d6*     P_FireWeapon_
-23cd:3c7d*     P_SetPsprite_
-23cd:372b*     A_Raise_
-23cd:3ce4      A_BFGSprayFar_
-23cd:375f*     A_GunFlash_
-23cd:380f*     A_Saw_
-23cd:3b34*     A_OpenShotgun2_
-23cd:3a01*     A_FirePistol_
+23cd:36f0*     A_Lower_
+23cd:3cd7      P_DropWeaponFar_
+23cd:3cdb      P_BringUpWeaponFar_
+23cd:3776*     A_Punch_
+23cd:3b29*     A_Light2_
+23cd:3b23*     A_Light1_
+23cd:3b1d*     A_Light0_
+23cd:35d4*     P_FireWeapon_
+23cd:3c78*     P_SetPsprite_
+23cd:3726*     A_Raise_
+23cd:3cdf      A_BFGSprayFar_
+23cd:375a*     A_GunFlash_
+23cd:380a*     A_Saw_
+23cd:3b2f*     A_OpenShotgun2_
+23cd:39fc*     A_FirePistol_
 23cd:34e1*     P_CheckAmmo_
-23cd:36cf*     A_ReFire_
-23cd:3b5a*     A_BFGSpray_
-23cd:3910*     A_FireMissile_
-23cd:391b*     A_FireBFG_
-23cd:3bfc      P_MovePsprites_
-23cd:3927*     A_FirePlasma_
-23cd:3ce8      P_PSPR_ENDMARKER_
-23cd:39b0*     P_GunShot_
-23cd:3bf1*     A_BFGsound_
+23cd:36ca*     A_ReFire_
+23cd:3b55*     A_BFGSpray_
+23cd:390b*     A_FireMissile_
+23cd:3916*     A_FireBFG_
+23cd:3bf7      P_MovePsprites_
+23cd:3922*     A_FirePlasma_
+23cd:3ce3      P_PSPR_ENDMARKER_
+23cd:39ab*     P_GunShot_
+23cd:3bec*     A_BFGsound_
 23cd:34e1*     A_CheckReload_
-23cd:3616*     A_WeaponReady_
-23cd:3a33*     A_FireShotgun_
-23cd:3942*     P_BulletSlope_
-23cd:3b3f*     A_LoadShotgun2_
-23cd:3a67*     A_FireShotgun2_
+23cd:3611*     A_WeaponReady_
+23cd:3a2e*     A_FireShotgun_
+23cd:393d*     P_BulletSlope_
+23cd:3b3a*     A_LoadShotgun2_
+23cd:3a62*     A_FireShotgun2_
 23cd:349c*     P_PSPR_STARTMARKER_
-23cd:3ae2*     A_FireCGun_
-23cd:3601*     P_DropWeapon_
-23cd:3b4a*     A_CloseShotgun2_
+23cd:3add*     A_FireCGun_
+23cd:35fc*     P_DropWeapon_
+23cd:3b45*     A_CloseShotgun2_
 23cd:349c*     P_BringUpWeapon_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 23cd:3cf0+     __open_flags_
@@ -1626,4 +1626,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e9e0 (190944.)
 Entry point address: 23cd:496e
-Link time: 00:00.29
+Link time: 00:00.85
