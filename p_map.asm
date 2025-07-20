@@ -1651,7 +1651,7 @@ ENDP
 
 
 ; boolean __far P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   func )(line_physics_t __far*, int16_t) );
-
+; return in carry
 PROC P_BlockLinesIterator_ NEAR
 
 push  cx
@@ -1740,10 +1740,10 @@ check_block_line:
 mov   word ptr es:[si + LINE_PHYSICS_T.lp_validcount], ax  ; set validcount
 mov   ax, si
 call  cx
-test  al, al  ;todo these
-jne   check_next_block_line
+
+jc    check_next_block_line
 ; al = 0, return false
-clc
+;clc  already set
 pop   di
 pop   si
 pop   cx
@@ -1821,24 +1821,24 @@ add  si, (_thinkerlist + THINKER_T.t_data)
 mov  cx, MOBJPOSLIST_6800_SEGMENT
 mov  dx, si
 call di
-test al, al
-je   exit_blockthingsiterator
+
+jnc  exit_blockthingsiterator  ; return noc arry as false as is.
 mov  si, word ptr [si + 2]
 test si, si
 jne  loop_check_next_block_thing
 exit_blockthingsiterator_return1:
-mov  al, 1
+stc
 exit_blockthingsiterator:
-sar  al, 1   ; carry if it was one, 0 if it was 0.
+
 pop  di
 pop  si
 pop  cx
 retf
 ENDP
 
-
+; always return true technically
 ;boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum) {
-
+; return in carry
 PROC PIT_AddLineIntercepts_ NEAR
 
 ; bp - 2 line_physics segment (constant)
@@ -1945,7 +1945,7 @@ compare_s1s2:
 cmp   al, 00h
 jne   s1_s2_not_equal
 exit_addlineintercepts_return_1:
-mov   al, 1
+stc
 LEAVE_MACRO
 pop   si
 pop   cx
@@ -2036,7 +2036,7 @@ stosb
 mov   ax, word ptr [bp - 2]
 stosw
 mov   word ptr ds:[_intercept_p], di
-mov   al, 1
+stc
 pop   di
 LEAVE_MACRO
 pop   si
@@ -2049,7 +2049,7 @@ ENDP
 
 
 ;boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thing, mobj_pos_t __far* thing_pos) ;
-
+; return in carry
 PROC PIT_AddThingIntercepts_ NEAR
 
 ; ax  thingref
@@ -2178,7 +2178,7 @@ SELFMODIFY_compares1s2_2:
 cmp   al, 01h 
 jne   s1_s2_not_equal_2
 exit_addthingintercepts_return_1:
-mov   al, 1
+stc
 LEAVE_MACRO
 pop   di
 pop   si
@@ -2229,7 +2229,7 @@ pop   ax ; word ptr [bp - 012h]
 stosw
 mov   word ptr ds:[_intercept_p], di
 
-mov   al, 1
+stc
 LEAVE_MACRO
 pop   di
 pop   si
@@ -3498,6 +3498,7 @@ ENDP
 
 ; NOTE: tried selfmodifies here, but i think it is possible
 ; to recursively call this via the func passed in.
+; return in carry
 PROC DoBlockmapLoop_ NEAR
 
 ; xl   ax
@@ -3597,8 +3598,8 @@ mov   bx, [bp - 4]
 mov   dx, si       ; set dx as by
 call  P_BlockThingsIterator_
 jc    dont_exit_doblockmaploop
-or    cl, cl ; if al and cl are zero (returnOnFalse true after dec DI) and AX is 0 then jump and exit
-je    exit_doblockmaploop_return_0_thru
+or    cl, cl ; if carry flag and cl are zero (returnOnFalse true after dec DI) and AX is 0 then jump and exit
+je    exit_doblockmaploop_return_0_thru ; clears CF
 
 dont_exit_doblockmaploop:
 
@@ -3617,12 +3618,12 @@ jle   do_first_blockmaploop
 
 
 exit_doblockmaploop_return_1:
-mov  al, 1
+stc
 exit_doblockmaploop_return_0_thru:
 LEAVE_MACRO
 ret   
 exit_doblockmaploop_return_0:
-xor  al, al  ; no stack frame cleanup!
+clc
 ret   
 
 ENDP
@@ -3816,7 +3817,7 @@ ENDP
 ML_BLOCKING = 1
 
 ; boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum) {
-
+; return in carry
 PROC PIT_CheckLine_ NEAR
 
 ; dx:ax ld_physics
@@ -3943,7 +3944,7 @@ mov   ax, word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2]
 cmp   ax, word ptr [bp - 0Eh] ;lineright
 jl    check_linetop
 exit_checkline_return_1_2:
-mov   al, 1
+stc
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -3987,7 +3988,7 @@ cmp   word ptr es:[di + 0Ch], SECNUM_NULL
 jne   sector_not_null  ; 7 bytes
 
 exit_checkline_return_0:
-xor   al, al
+clc
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4078,7 +4079,7 @@ mov   ax, word ptr [bp - 4]
 inc   word ptr ds:[_numspechit]
 mov   word ptr ds:[bx + _spechit], ax
 exit_checkline_return_1:
-mov   al, 1
+stc
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4094,7 +4095,7 @@ ENDP
 
 ; todo no stack frame or push pop di/si on this one
 exit_checkthing_return_1:
-mov   al, 1
+stc
 ret   
 
 ; bp - 2      thing (bx param)
@@ -4117,7 +4118,7 @@ ret
 ; bp - 01Eh   solid (pushed later)
 
 
-
+; return in carry
 PROC PIT_CheckThing_ NEAR
 
 
@@ -4289,14 +4290,14 @@ cmp   byte ptr [bp - 01Eh], 0
 jne   exit_checkthing_return_0_2
 
 exit_checkthing_return_1_3:
-mov   al, 1
+stc
 LEAVE_MACRO 
 pop   di
 pop   si
 ret   
 
 exit_checkthing_return_0_2:
-xor   al, al
+clc
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4304,7 +4305,7 @@ ret
 exit_checkthing_return_notsolid:
 test  cl, MF_SOLID
 je    exit_checkthing_return_1_3
-xor   al, al
+clc
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4389,7 +4390,7 @@ test  cl, MF_SHOOTABLE
 jne   do_missile_damage
 test  cl, MF_SOLID
 jne   exit_checkthing_return_0
-mov   al, 1
+stc
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4459,7 +4460,7 @@ db 01Eh  ;
 dw _P_SetMobjState_addr
 
 exit_checkthing_return_0:
-xor   al, al
+clc
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4493,7 +4494,7 @@ mov   ax, si   ; ax gets thing ptr
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
-xor   al, al
+clc
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4764,8 +4765,7 @@ mov   ax, es	; di gets 1
 mov   si, OFFSET PIT_CheckThing_ - OFFSET P_SIGHT_STARTMARKER_
 call  DoBlockmapLoop_
 
-test  al, al
-je    exit_checkposition_return_0
+jnc   exit_checkposition_return_0
 
 ;	if (xl2 < 0) xl2 = 0;
 ;	if (yl2 < 0) yl2 = 0;
@@ -6472,12 +6472,10 @@ ENDP
 
 
 ;boolean __near PTR_AimTraverse (intercept_t __far* in);
-
+; return in carry
 PROC PIT_StompThing_ NEAR
 
 push  si
-push  di
-mov   si, dx
 mov   es, cx
 
 ;    if (!(thing_pos->flags1 & MF_SHOOTABLE) ){
@@ -6491,8 +6489,9 @@ je    exit_stompthing_return_1
 ;	blockdist.h.fracbits = 0;
 
 xor   cx, cx
-mov   di, word ptr ds:[_tmthing]
-mov   cl, byte ptr [di + 01Eh]
+mov   si, word ptr ds:[_tmthing]
+mov   cl, byte ptr [si + 01Eh]
+mov   si, dx
 add   cl, byte ptr [si + 01Eh]
 adc   ch, ch
 
@@ -6544,8 +6543,7 @@ je    do_stomp
 
 cmp   byte ptr ds:[_gamemap], 30
 je    do_stomp
-xor   al, al
-pop   di
+clc
 pop   si
 ret   
 do_stomp:
@@ -6561,8 +6559,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
 exit_stompthing_return_1:
-mov   al, 1
-pop   di
+stc
 pop   si
 ret   
 
@@ -6760,8 +6757,7 @@ ENDIF
 mov   di, 1
 mov   si, OFFSET PIT_StompThing_ - OFFSET P_SIGHT_STARTMARKER_
 call  DoBlockmapLoop_
-test  al, al
-je    exit_teleport_move_return_0
+jnc   exit_teleport_move_return_0
 mov   dx, word ptr [bp - 6]
 mov   ax, word ptr [bp - 2]
 mov   bx, ax
@@ -7440,7 +7436,7 @@ ENDP
 ;always returns 1
 
 ;boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos);
-
+; return in carry
 PROC PIT_RadiusAttack_ NEAR
 
 ; ax unused.
@@ -7560,7 +7556,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
 exit_radiusattack_return_1:
-mov   al, 1
+stc ; unused ?
 pop   di
 pop   si
 ret   
@@ -7679,6 +7675,7 @@ ENDP
 
 
 ; always returns true?
+; return in carry. unused though?
 PROC PIT_ChangeSector_ NEAR
 
 ;boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) ;
@@ -7844,7 +7841,7 @@ je    exit_changesector_return_1
 test  byte ptr ds:[_leveltime], 3
 je    not_leveltime_mod_3
 exit_changesector_return_1:
-mov   al, 1
+stc ; unused ?
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -7871,7 +7868,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_RemoveMobj_addr
 
-mov   al, 1
+stc ; unused ?
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -7941,7 +7938,7 @@ cwd
 
 mov   word ptr [si + 012h], ax
 mov   word ptr [si + 014h], dx
-mov   al, 1
+stc ; unused ?
 LEAVE_MACRO 
 pop   di
 pop   si

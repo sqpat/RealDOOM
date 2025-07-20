@@ -3003,14 +3003,14 @@ cmp   byte ptr ds:[si + MOBJ_T.m_tics], 0FFh
 je    do_vilecheck
 pop   si
 exit_pit_vilecheck_return_1:
-mov   al, 1
+stc
 ret   
 
 exit_pit_vilecheck_return_1_pop3:
 pop   ax ; garbage
 pop   di 
 pop   si 
-mov   al, 1
+stc
 ret   
 
 do_vilecheck:
@@ -3118,11 +3118,15 @@ sar   word ptr ds:[si + MOBJ_T.m_height + 2], 1
 rcr   word ptr ds:[si + MOBJ_T.m_height + 0], 1
 sar   word ptr ds:[si + MOBJ_T.m_height + 2], 1
 rcr   word ptr ds:[si + MOBJ_T.m_height + 0], 1
-test  al, al
-mov   al, 0
-jne   exit_pit_vilecheck_return_0
-mov   al, 1
-exit_pit_vilecheck_return_0:
+; al 1 if carry 0 if false
+; return revers3
+sar   al, 1
+cmc
+;test  al, al
+;mov   al, 0
+;jne   exit_pit_vilecheck_return_0
+;stc
+;exit_pit_vilecheck_return_0:
 pop   di
 pop   si
 ret   

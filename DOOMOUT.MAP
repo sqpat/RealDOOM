@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/20 03:08:19
+Created on:       25/07/20 05:50:45
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -60,7 +60,7 @@ s_sound_TEXT           CODE           AUTO           0b9f:0000       0000067a
 s_sbsfx_TEXT           CODE           AUTO           0b9f:0680       000017f3
 p_ceilng_TEXT          CODE           AUTO           0b9f:1e80       00000390
 p_doors_TEXT           CODE           AUTO           0b9f:2210       0000068c
-P_ENEMY_TEXT           CODE           AUTO           0b9f:289c       000019b3
+P_ENEMY_TEXT           CODE           AUTO           0b9f:289c       000019ac
 p_floor_TEXT           CODE           AUTO           0b9f:4250       00000806
 p_inter_TEXT           CODE           AUTO           0b9f:4a60       00000cf3
 p_lights_TEXT          CODE           AUTO           0b9f:5760       000003ed
@@ -831,67 +831,67 @@ Module: p_doors.obj(C:\REALDOOM\p_doors.c)
 0b9f:27f8      P_SpawnDoorCloseIn30_
 0b9f:2840      P_SpawnDoorRaiseIn5Mins_
 Module: p_enemy.obj(p_enemy.ASM)
-0b9f:3dee      A_Explode_
-0b9f:3ae5      A_FatRaise_
+0b9f:3de7      A_Explode_
+0b9f:3ade      A_FatRaise_
 0b9f:2950      P_NoiseAlert_
-0b9f:4141      A_SpawnFly_
-0b9f:3de6      A_Fall_
+0b9f:413a      A_SpawnFly_
+0b9f:3ddf      A_Fall_
 0b9f:30ed      A_PosAttack_
 0b9f:2f0f      A_Chase_
 0b9f:32e1      A_BspiAttack_
 0b9f:29c9*     P_CheckMissileRange_
-0b9f:3f88      A_BrainPain_
+0b9f:3f81      A_BrainPain_
 0b9f:307f      A_FaceTarget_
 0b9f:3345      A_SargAttack_
-0b9f:39eb*     GetVileMomz_
-0b9f:3c57      A_PainDie_
-0b9f:4094      A_BrainSpit_
+0b9f:39e4*     GetVileMomz_
+0b9f:3c50      A_PainDie_
+0b9f:408d      A_BrainSpit_
 0b9f:35e1      A_SkelWhoosh_
-0b9f:401c      A_BrainExplode_
-0b9f:3965      A_VileTarget_
+0b9f:4015      A_BrainExplode_
+0b9f:395e      A_VileTarget_
 0b9f:2a9f*     P_Move_
 0b9f:2d70*     P_LookForPlayers_
-0b9f:38b4      A_VileStart_
-0b9f:38c5      A_FireCrackle_
+0b9f:38ad      A_VileStart_
+0b9f:38be      A_FireCrackle_
 0b9f:35f4      A_SkelFist_
-0b9f:3c83*     A_PainShootSkull_
-0b9f:371d      A_VileChase_
-0b9f:3d7b      A_Scream_
-0b9f:3f19      A_Hoof_
+0b9f:3c7c*     A_PainShootSkull_
+0b9f:3716      A_VileChase_
+0b9f:3d74      A_Scream_
+0b9f:3f12      A_Hoof_
 0b9f:2961*     P_CheckMeleeRange_
-0b9f:3b72      A_FatAttack2_
+0b9f:3b6b      A_FatAttack2_
 0b9f:289c*     P_RecursiveSound_
 0b9f:3417      A_SkelMissile_
-0b9f:3b57      A_FatAttack1_
-0b9f:3af1      A_FatAttack3_
-0b9f:413a      A_SpawnSound_
+0b9f:3b50      A_FatAttack1_
+0b9f:3aea      A_FatAttack3_
 0b9f:2e70      A_Look_
-0b9f:3f2f      A_BabyMetal_
-0b9f:3f24      A_Metal_
+0b9f:4133      A_SpawnSound_
+0b9f:3f28      A_BabyMetal_
+0b9f:3f1d      A_Metal_
 0b9f:33d5      A_BruisAttack_
-0b9f:3dc9      A_XScream_
+0b9f:3dc2      A_XScream_
 0b9f:2bf0*     P_TryWalk_
-0b9f:3f92      A_BrainScream_
+0b9f:3f8b      A_BrainScream_
 0b9f:3377      A_HeadAttack_
-0b9f:3dd1      A_Pain_
+0b9f:3dca      A_Pain_
 0b9f:362f*     PIT_VileCheck_
-0b9f:3a17      A_VileAttack_
-0b9f:3e4b      A_BossDeath_
-0b9f:424f*     P_ENEMY_ENDMARKER_
-0b9f:38cc      A_Fire_
+0b9f:3a10      A_VileAttack_
+0b9f:3e44      A_BossDeath_
+0b9f:4248*     P_ENEMY_ENDMARKER_
+0b9f:38c5      A_Fire_
 0b9f:315b      A_SPosAttack_
 0b9f:31d8      A_CPosAttack_
 0b9f:3294      A_SpidRefire_
 0b9f:2bff*     P_NewChaseDir_
-0b9f:38bc      A_StartFire_
+0b9f:38b5      A_StartFire_
 0b9f:3465      A_Tracer_
-0b9f:3b8d      A_SkullAttack_
+0b9f:3b86      A_SkullAttack_
 0b9f:289c*     P_ENEMY_STARTMARKER_
 0b9f:3247      A_CPosRefire_
 0b9f:32fc      A_TroopAttack_
-0b9f:3d64      A_PainAttack_
-0b9f:4233      A_PlayerScream_
-0b9f:3f3a      A_BrainAwake_
+0b9f:3d5d      A_PainAttack_
+0b9f:422c      A_PlayerScream_
+0b9f:3f33      A_BrainAwake_
 0b9f:2e19      A_KeenDie_
 0b9f:33ba      A_CyberAttack_
 Module: p_floor.obj(C:\REALDOOM\p_floor.c)
@@ -1007,8 +1007,8 @@ Module: z_zone.obj(z_zone.ASM)
 0b9f:9c72      Z_QuickMapRenderPlanes_
 0b9f:9a92      Z_QuickMapSFXPageFrame_
 0b9f:9bd3      Z_QuickMapStatus_
-0b9f:9c5c*     Z_QuickMapScreen0_
 0b9f:9b38      Z_QuickMapRender_
+0b9f:9c5c*     Z_QuickMapScreen0_
 0b9f:9c46      Z_QuickMapScratch_4000_
 0b9f:9c30      Z_QuickMapScratch_7000_
 0b9f:9c04      Z_QuickMapScratch_5000_
