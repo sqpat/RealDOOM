@@ -1191,9 +1191,7 @@ push  bx
 
 push cs
 call P_CheckPosition_
-
-test  al, al
-jne   do_respawn
+jc   do_respawn
 exit_nightmare_respawn:
 LEAVE_MACRO
 pop   di

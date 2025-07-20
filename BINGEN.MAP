@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/19 17:39:56
+Created on:       25/07/19 17:50:09
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -91,8 +91,8 @@ V_VIDEO_TEXT           CODE           AUTO           1db3:445c       00000616
 Z_ZONE_TEXT            CODE           AUTO           1db3:4a72       000004a4
 p_setup_TEXT           CODE           AUTO           22a5:0000       0000127a
 P_SIGHT_TEXT           CODE           AUTO           23cd:0000       0000060b
-P_MAP_TEXT             CODE           AUTO           23cd:060c       00002421
-P_MOBJA_TEXT           CODE           AUTO           23cd:2a2e       00000a94
+P_MAP_TEXT             CODE           AUTO           23cd:060c       00002424
+P_MOBJA_TEXT           CODE           AUTO           23cd:2a30       00000a92
 P_PSPR_TEXT            CODE           AUTO           23cd:34c2       0000084c
 _TEXT                  CODE           AUTO           23cd:3d10       000033dc
 FAR_DATA               FAR_DATA       AUTO           2adb:000c       00000000
@@ -1000,8 +1000,8 @@ Module: sm_opl2.obj(sm_opl2.ASM)
 15db:000c      SM_OPL2_STARTMARKER_
 Module: sm_opl3.obj(sm_opl3.ASM)
 15db:194e*     OPLpauseMusic_OPL3_
-15db:1f6a      SM_OPL3_ENDMARKER_
 15db:1cbd*     OPLreleaseNote_OPL3_
+15db:1f6a      SM_OPL3_ENDMARKER_
 15db:191d*     OPL3deinitHardware_OPL3_
 15db:1c37*     OPLplayNote_OPL3_
 15db:1826*     OPL3initHardware_OPL3_
@@ -1265,31 +1265,31 @@ Module: p_map.obj(p_map.ASM)
 23cd:0a74      P_SetThingPosition_
 23cd:0b53      R_PointInSubsector_
 23cd:060c*     P_MAP_STARTMARKER_
-23cd:1832      P_CheckPosition_
-23cd:23ba      P_AimLineAttack_
-23cd:250f      P_LineAttack_
-23cd:274f      P_RadiusAttack_
+23cd:1830      P_CheckPosition_
+23cd:23bd      P_AimLineAttack_
+23cd:2512      P_LineAttack_
+23cd:2752      P_RadiusAttack_
 23cd:0974      P_LineOpening_
 23cd:09a8      P_UnsetThingPosition_
 23cd:06a7      P_AproxDistance_
-23cd:2a18      P_Random_MapLocal_
-23cd:2644      P_UseLines_
-23cd:22a5      P_TeleportMove_
-23cd:19ed      P_SlideMove_
+23cd:2a1b      P_Random_MapLocal_
+23cd:2647      P_UseLines_
+23cd:22a8      P_TeleportMove_
+23cd:19f0      P_SlideMove_
 23cd:0c00      P_BlockThingsIterator_
-23cd:2a2d*     P_MAP_ENDMARKER_
+23cd:2a30*     P_MAP_ENDMARKER_
 23cd:1216      P_TryMove_
-23cd:2950      P_ChangeSector_
+23cd:2953      P_ChangeSector_
 Module: p_mobja.obj(p_mobja.ASM)
 23cd:3383      P_SpawnPlayerMissile_
 23cd:317e      P_CheckMissileSpawn_
-23cd:3026      P_NightmareRespawn_
-23cd:2fbc      P_ExplodeMissile_
-23cd:2a2e*     P_MOBJ_STARTMARKER_
-23cd:2d3f      P_ZMovement_
+23cd:3028      P_NightmareRespawn_
+23cd:2fbe      P_ExplodeMissile_
+23cd:2a30*     P_MOBJ_STARTMARKER_
+23cd:2d41      P_ZMovement_
 23cd:3207      P_SpawnMissile_
 23cd:34c2*     P_MOBJ_ENDMARKER_
-23cd:2a2e      P_XYMovement_
+23cd:2a30      P_XYMovement_
 Module: p_pspr.obj(p_pspr.ASM)
 23cd:371b*     A_Lower_
 23cd:3d02      P_DropWeaponFar_

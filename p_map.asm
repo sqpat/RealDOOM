@@ -3149,6 +3149,8 @@ ENDP
 
 ; todo! thingpos ptr dx, use cx:bx as x?
 
+
+; return in carry
 PROC P_TryMove_ FAR
 PUBLIC P_TryMove_ 
 
@@ -3193,8 +3195,7 @@ les   bx, dword ptr [bp + 0Ch]
 mov   cx, es
 mov   dx, -1
 call  P_CheckPosition_
-test  al, al
-je    exit_trymove_return0
+jnc   exit_trymove_return
 
 
 ;    if ( !(thing_pos->flags1 & MF_NOCLIP) ) {
@@ -3275,6 +3276,7 @@ test  cx, cx
 jbe   mobj_bot_ok
 exit_trymove_return0:
 clc
+exit_trymove_return:
 LEAVE_MACRO
 pop   di
 pop   si
@@ -4501,6 +4503,8 @@ ENDP
 
 ; boolean __near P_CheckPosition (mobj_t __near* thing, int16_t oldsecnum, fixed_t_union	x, fixed_t_union	y );
 
+; return in carry
+
 PROC P_CheckPosition_ FAR
 PUBLIC P_CheckPosition_
 
@@ -4616,7 +4620,7 @@ mov   word ptr ds:[_numspechit], ax
 test  byte ptr ds:[_tmflags1+1], (MF_NOCLIP SHR 8 )
 je    set_up_blockmap_loop
 exit_checkposition_return_1:
-mov   al, 1
+stc
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -4757,7 +4761,7 @@ mov   si, OFFSET PIT_CheckThing_ - OFFSET P_SIGHT_STARTMARKER_
 call  DoBlockmapLoop_
 
 test  al, al
-je    exit_checkposition
+je    exit_checkposition_return_0
 
 ;	if (xl2 < 0) xl2 = 0;
 ;	if (yl2 < 0) yl2 = 0;
@@ -4815,7 +4819,7 @@ mov   bx, OFFSET PIT_CheckLine_ - OFFSET P_SIGHT_STARTMARKER_
 mov   dx, cx
 call  P_BlockLinesIterator_
 test  al, al
-je    exit_checkposition  ; return 0
+je    exit_checkposition_return_0  ; return 0
 inc   cx
 cmp   cx, di
 jle   check_position_do_next_y_loop
@@ -4824,13 +4828,19 @@ inc   si
 jmp   check_position_do_next_x_loop
 
 exit_checkposition_return_1_2:
-mov   al, 1
-exit_checkposition:
+stc
+
 LEAVE_MACRO 
 pop   di
 pop   si
 retf   4
 
+exit_checkposition_return_0:
+clc
+LEAVE_MACRO 
+pop   di
+pop   si
+retf   4
 
 
 ENDP
