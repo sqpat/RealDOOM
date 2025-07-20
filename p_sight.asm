@@ -39,7 +39,7 @@ ENDP
 ; dx = t2 (near ptr)
 ; bx = t1_pos (far offset)
 ; cx = t2_pos (far offset)
-
+; return in carry
 PROC    P_CheckSight_ FAR
 PUBLIC  P_CheckSight_
 
@@ -90,7 +90,7 @@ mov   es, dx
 test  al, byte ptr es:[di]	; bit test the byte
 
 je    not_in_reject_table
-xor   ax, ax				; return 0
+clc
 
 pop   dx	; clean out the push earlier...
 pop   di
@@ -213,7 +213,7 @@ mov  ds, ax	; restore ds..
 
 mov   ax, word ptr ds:[_numnodes]
 dec   ax
-call  P_CrossBSPNode_
+call  P_CrossBSPNode_ ; seems good?
 
 
 pop   di
@@ -476,6 +476,7 @@ PUBLIC  P_DivlineSide16_
 
 ENDP
 
+; returns 0 1 or 2?
 PROC    P_DivlineSideNode_ NEAR
 PUBLIC  P_DivlineSideNode_
 
@@ -578,7 +579,7 @@ ret
 ENDP
 
 
-
+; return in carry
 PROC    P_CrossSubsector_ NEAR
 PUBLIC  P_CrossSubsector_
 
@@ -602,11 +603,7 @@ PUBLIC  P_CrossSubsector_
 
 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 022h
@@ -644,13 +641,9 @@ add   word ptr [bp - 4], 2
 dec   word ptr [bp - 0Ah]
 jne   cross_subsector_mainloop	
 cross_subsector_return_1:
-mov   al, 1
+stc
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 do_full_loop_iteration:
 mov   dx, LINEFLAGSLIST_SEGMENT
@@ -935,13 +928,9 @@ jne   jump_to_cross_subsector_mainloop_increment_2
 cmp   dx, word ptr ds:[_bottomslope]
 ja    jump_to_cross_subsector_mainloop_increment_2
 cross_bsp_node_return_0:
-xor   al, al
+clc
 LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 jump_to_cross_subsector_mainloop_increment_2:
 jmp   cross_subsector_mainloop_increment
@@ -953,15 +942,11 @@ ENDP
 
 ; what the heck?
 ; openwatcom turned this from a recursive to iterative function??? hello?? 
-
+;return carry
 PROC    P_CrossBSPNode_ NEAR
 PUBLIC  P_CrossBSPNode_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 4
@@ -996,8 +981,7 @@ mov   es, ax
 add   bx, word ptr [bp - 4]
 mov   ax, word ptr es:[bx]
 call  P_CrossBSPNode_
-test  al, al
-je    exit_crossbspnode
+jnc   exit_crossbspnode
 mov   si, OFFSET _cachedt2x
 les   bx, dword ptr [si + 4]	; cachedt2y
 mov   cx, es
@@ -1037,23 +1021,15 @@ do_cross_subsector_call:
 call  P_CrossSubsector_
 exit_crossbspnode:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 do_subsector_flag:
 and   ah, (NOT_NF_SUBSECTOR SHR 8)
 jmp   do_cross_subsector_call
 cross_bsp_node_return_1:
-mov   al, 1
+stc
 LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP

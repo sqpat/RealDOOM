@@ -7540,11 +7540,12 @@ mov   cx, word ptr ds:[_bombspot_pos + 0]
 mov   ax, si
 mov   di, dx  ; backup dist intbits
 mov   dx, word ptr ds:[_bombspot]
-call  dword ptr ds:[_P_CheckSight]
+;call  dword ptr ds:[_P_CheckSight]
 
-test  al, al
+db    09Ah
+dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-je    exit_radiusattack_return_1
+jnc   exit_radiusattack_return_1
 xchg  ax, si
 mov   dx, word ptr ds:[_bombspot]
 mov   cx, word ptr ds:[_bombdamage]
@@ -7556,7 +7557,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_DamageMobj_addr
 exit_radiusattack_return_1:
-stc ; unused ?
+stc 
 pop   di
 pop   si
 ret   
@@ -7675,7 +7676,7 @@ ENDP
 
 
 ; always returns true?
-; return in carry. unused though?
+; return in carry.
 PROC PIT_ChangeSector_ NEAR
 
 ;boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) ;
@@ -7841,7 +7842,7 @@ je    exit_changesector_return_1
 test  byte ptr ds:[_leveltime], 3
 je    not_leveltime_mod_3
 exit_changesector_return_1:
-stc ; unused ?
+stc 
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -7868,7 +7869,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_RemoveMobj_addr
 
-stc ; unused ?
+stc 
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -7938,7 +7939,7 @@ cwd
 
 mov   word ptr [si + 012h], ax
 mov   word ptr [si + 014h], dx
-stc ; unused ?
+stc 
 LEAVE_MACRO 
 pop   di
 pop   si

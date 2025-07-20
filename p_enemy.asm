@@ -365,18 +365,12 @@ mov   bx,  di
 lea   cx, [si - 8] ; because of lodsw increment above..
 db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
-test  al, al
-jne   exit_check_meleerange_return_1
+jc    exit_check_meleerange_return_1
 exit_check_meleerange_return_0:
-POPA_NO_AX_OR_BP_MACRO
 clc  
-ret  
-
 exit_check_meleerange_return_1:
 POPA_NO_AX_OR_BP_MACRO
-stc
 ret  
-
 
 
 ENDP
@@ -424,9 +418,7 @@ mov   bx, si
 
 db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-test  al, al
-je    exit_checkmissilerange_return_0_and_pop
+jnc   exit_checkmissilerange_return_0_and_pop
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
 test  byte ptr es:[si + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
@@ -1157,9 +1149,7 @@ mov   ax, di
 ;call  dword ptr ds:[_P_CheckSightTemp]
 db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-test  al, al
-je    exit_look_for_players_return_0
+jnc   exit_look_for_players_return_0
 cmp   bp, 0
 je    check_angle_for_player
 look_set_target_player:
@@ -1344,9 +1334,7 @@ mov   ax, si
 ;call  dword ptr ds:[_P_CheckSightTemp]
 db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-test  al, al
-jne   see_you
+jc    see_you
 
 no_target:
 mov   ax, si
@@ -2092,10 +2080,9 @@ mov   ax, si
 db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-test  al, al
-je    set_cgunner_seestate
-exit_a_cposrefire:
-ret   
+jc    exit_a_cposrefire
+
+
 set_cgunner_seestate:
 ; dumb thought. this is a hardcoded value as per engine right. Why call a function?
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
@@ -2110,6 +2097,7 @@ mov   ax, si
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
+exit_a_cposrefire:
 ret   
 
 ENDP
@@ -2159,10 +2147,7 @@ mov   ax, si
 db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-test  al, al
-je    set_spid_seestate
-exit_a_spidrefire:
-ret   
+jc   exit_a_spidrefire
 
 set_spid_seestate:
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
@@ -2177,6 +2162,7 @@ mov   ax, si
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_SetMobjState_addr
+exit_a_spidrefire:
 ret   
 
 ENDP
@@ -3557,8 +3543,7 @@ add   ax, (_thinkerlist + THINKER_T.t_data)
 db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-test  al, al
-je    exit_a_fire
+jnc   exit_a_fire
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 shr   ax, 1
@@ -3822,8 +3807,7 @@ mov   dx, di
 db    09Ah
 dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-test  al, al
-je    exit_vile_attack
+jnc   exit_vile_attack
 mov   dx, SFX_BAREXP
 mov   ax, si
 ;call  S_StartSound_

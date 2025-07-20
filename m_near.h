@@ -479,7 +479,7 @@
 
 #define playerMobj_pos   		     	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0700)))
 #define setStateReturn_pos	 	    	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0704)))
-#define P_CheckSight				      (((boolean (__far *)(mobj_t __near* , mobj_t __near*, uint16_t, uint16_t)) (_NULL_OFFSET + 0x0708)))
+// #define P_CheckSight				      (((boolean (__far *)(mobj_t __near* , mobj_t __near*, uint16_t, uint16_t)) (_NULL_OFFSET + 0x0708)))
 
 #define clipangle       			      (*((uint16_t __near*)              (_NULL_OFFSET + 0x070C)))
 #define fieldofview       			      (*((uint16_t __near*)              (_NULL_OFFSET + 0x070E)))
