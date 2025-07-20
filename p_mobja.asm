@@ -707,10 +707,10 @@ push  ax    ; store y diff lo
 
 
 
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
-sub   ax, word ptr es:[bx]
-sbb   dx, word ptr es:[bx + 2]
+mov   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
+mov   dx, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
+sub   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+sbb   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
 
 pop   bx    ; get y diff lo
 
@@ -832,7 +832,7 @@ dec   word ptr ds:[si + MOBJ_T.m_momz + 2]
 jmp   done_with_floor_z_collision
 
 check_floor_lobits:
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
 cmp   ax, word ptr [bp - 6]
 ja    didnt_hit_floor
 hit_floor:
@@ -909,7 +909,7 @@ done_with_floor_z_collision:
 ;	SET_FIXED_UNIO;N_FROM_SHORT_HEIGHT(temp, mo->ceilingz);
 
 mov   es, word ptr [bp - 2]
-mov   dx, word ptr ds:[si + 8]
+mov   dx, word ptr ds:[si + MOBJ_T.m_ceilingz]
 xor   ax, ax
 sar   dx, 1
 rcr   ax, 1
@@ -1454,7 +1454,7 @@ add   word ptr es:[si + MOBJ_POS_T.mp_z + 0], ax
 adc   word ptr es:[si + MOBJ_POS_T.mp_z + 2], dx
 
 push  word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-push  word ptr es:[si + MOBJ_POS_T.mp_y + 2]
+push  word ptr es:[si + MOBJ_POS_T.mp_y + 0]
 push  word ptr es:[si + MOBJ_POS_T.mp_x + 2]
 push  word ptr es:[si + MOBJ_POS_T.mp_x + 0]
 
