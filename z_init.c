@@ -673,7 +673,7 @@ void __near Z_LoadBinaries() {
 	I_Error_addr =		 				(uint32_t)(I_Error);
 	P_InitThinkers_addr =		 		(uint32_t)(P_InitThinkers);
 	P_CreateThinker_addr =		 		(uint32_t)(P_CreateThinker);
-	P_SetThingPosition_addr =	 		(uint32_t)(P_SetThingPosition);
+	
 	P_RemoveMobj_addr =		 			(uint32_t)(P_RemoveMobj);
 	P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
 	P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);

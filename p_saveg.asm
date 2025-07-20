@@ -674,9 +674,8 @@ push      ss
 pop       ds                            ; restore ds
 
 ;call      P_SetThingPosition_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetThingPosition_addr
+db    09Ah
+dw    P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 ; di is mobj
 mov       bx, word ptr [di + 4]            ; get mobj secnum

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/19 17:24:07
+Created on:       25/07/19 17:39:20
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -32,14 +32,14 @@ _NULL                  BEGDATA        DGROUP         02d1:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         02d3:0000       00000002
 CONST                  DATA           DGROUP         02d3:0002       000082ea
 CONST2                 DATA           DGROUP         0b01:000c       00000025
-_DATA                  DATA           DGROUP         0b05:0000       00002b6c
-XIB                    DATA           DGROUP         0dbb:000c       00000000
-XI                     DATA           DGROUP         0dbb:000c       00000012
-XIE                    DATA           DGROUP         0dbc:000e       00000000
-YIB                    DATA           DGROUP         0dbc:000e       00000000
-YI                     DATA           DGROUP         0dbc:000e       00000012
-YIE                    DATA           DGROUP         0dbe:0000       00000000
-DATA                   DATA           DGROUP         0dbe:0000       00000000
+_DATA                  DATA           DGROUP         0b05:0000       00002b64
+XIB                    DATA           DGROUP         0dbb:0004       00000000
+XI                     DATA           DGROUP         0dbb:0004       00000012
+XIE                    DATA           DGROUP         0dbc:0006       00000000
+YIB                    DATA           DGROUP         0dbc:0006       00000000
+YI                     DATA           DGROUP         0dbc:0006       00000012
+YIE                    DATA           DGROUP         0dbd:0008       00000000
+DATA                   DATA           DGROUP         0dbd:0008       00000000
 _BSS                   BSS            DGROUP         0dbe:0000       000009b5
 STACK                  STACK          DGROUP         0e5a:0000       00000c00
 
@@ -57,8 +57,8 @@ Address        Symbol
 Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:aed0*     _sb_voicelist
 02d1:af10*     _musdriverstartposition
-02d1:af20*     _codestartposition
-02d1:af38*     _channels
+02d1:af20*     _channels
+02d1:af50*     _codestartposition
 02d1:af68*     _anims
 02d1:b028*     _savename
 02d1:b038*     _wadfiles
@@ -68,9 +68,9 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:b128*     _w_ammo
 02d1:b150*     _w_arms
 02d1:b180*     _w_keyboxes
-02d1:b198*     _arms
-02d1:b1b0*     _w_armsbg
-02d1:b1b8*     _w_maxammo
+02d1:b198*     _w_armsbg
+02d1:b1a0*     _w_maxammo
+02d1:b1c8*     _arms
 02d1:b1e0*     _am_l
 02d1:b1e8*     _am_fl
 02d1:b1f0*     _am_lc
@@ -81,21 +81,21 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:b230*     _levelTimeCount
 02d1:b234*     _filetolumpsize
 02d1:b240*     _buttonlist
-02d1:b264*     _TaskServiceCount
-02d1:b268*     _OldInt8
-02d1:b26c*     _activeplats
+02d1:b264*     _activeplats
+02d1:b2a0*     _TaskServiceCount
+02d1:b2a4*     _OldInt8
 02d1:b2a8*     _st_stuff_buf
 02d1:b2dc*     _w_health
 02d1:b2e8*     _w_armor
-02d1:b2f4*     _faces
-02d1:b348*     _keys
-02d1:b354*     _shortnum
-02d1:b368*     _tallnum
+02d1:b2f4*     _keys
+02d1:b300*     _shortnum
+02d1:b314*     _tallnum
+02d1:b328*     _faces
 02d1:b37c+     _mousearray
 02d1:b380*     _starttime
 02d1:b384*     _gametic
-02d1:b388*     _gametime
-02d1:b38c*     _maketic
+02d1:b388*     _maketic
+02d1:b38c*     _gametime
 02d1:b390*     _p_init_sprtemp
 02d1:b394*     _am_max_scale_mtof
 02d1:b398*     _am_scale_mtof
@@ -121,22 +121,22 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:b462*     _saveStringEnter
 02d1:b464*     _itemOn
 02d1:b466*     _saveCharIndex
-02d1:b468*     _messageRoutine
-02d1:b46a*     _saveSlot
-02d1:b46c*     _st_calc_lastcalc
-02d1:b46e*     _messageLastMenuActive
+02d1:b468*     _saveSlot
+02d1:b46a*     _st_calc_lastcalc
+02d1:b46c*     _messageLastMenuActive
+02d1:b46e*     _messageRoutine
 02d1:b470*     _armsbg
 02d1:b472*     _faceback
 02d1:b474*     _sbar
 02d1:b476*     _defdemoname
-02d1:b478*     _myargc
-02d1:b47a*     _myargv
-02d1:b47c*     _tallpercent
-02d1:b47e*     _dclicks
-02d1:b480*     _dclicktime
-02d1:b482*     _dclickstate
-02d1:b484*     _dclicktime2
-02d1:b486*     _mousex
+02d1:b478*     _myargv
+02d1:b47a*     _tallpercent
+02d1:b47c*     _dclicks
+02d1:b47e*     _dclicktime
+02d1:b480*     _dclickstate
+02d1:b482*     _dclicktime2
+02d1:b484*     _mousex
+02d1:b486*     _myargc
 02d1:b488*     _dclickstate2
 02d1:b48a*     _dclicks2
 02d1:b48c*     _demo_p
@@ -184,50 +184,50 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:b719*     _messageNeedsInput
 02d1:b71a*     _message_on
 02d1:b71b*     _message_dontfuckwithme
-02d1:b71c*     _do_st_refresh
-02d1:b71d*     _message_counter
-02d1:b71e*     _message_nottobefuckedwith
-02d1:b71f*     _messageToPrint
-02d1:b720*     _st_randomnumber
+02d1:b71c*     _message_counter
+02d1:b71d*     _message_nottobefuckedwith
+02d1:b71e*     _messageToPrint
+02d1:b71f*     _st_randomnumber
+02d1:b720*     _do_st_refresh
 02d1:b721*     _secretexit
-02d1:b722*     _d_map
-02d1:b723*     _st_statusbaron
-02d1:b724*     _updatedthisframe
-02d1:b725*     _st_firsttime
-02d1:b726*     _st_gamestate
-02d1:b727*     _usemouse
-02d1:b728*     _mousebforward
-02d1:b729*     _d_episode
-02d1:b72a*     _turnheld
-02d1:b72b*     _d_skill
-02d1:b72c*     _mousebstrafe
-02d1:b72d*     _savegameslot
-02d1:b72e*     _key_speed
-02d1:b72f*     _mousebfire
-02d1:b730*     _key_left
-02d1:b731*     _key_fire
-02d1:b732*     _key_strafe
-02d1:b733*     _key_straferight
-02d1:b734*     _demoplayback
-02d1:b735*     _key_up
-02d1:b736*     _singledemo
-02d1:b737*     _netdemo
-02d1:b738*     _key_down
-02d1:b739*     _key_use
-02d1:b73a*     _key_right
-02d1:b73b*     _key_strafeleft
-02d1:b73c*     _paused
-02d1:b73d*     _timingdemo
-02d1:b73e*     _sendsave
-02d1:b73f*     _numChannels
-02d1:b740*     _gameskill
-02d1:b741*     _noblit
-02d1:b742*     _respawnmonsters
-02d1:b743*     _demorecording
-02d1:b744*     _usegamma
-02d1:b745*     _sendpause
-02d1:b746*     _usergame
-02d1:b747*     _borderdrawcount
+02d1:b722*     _st_statusbaron
+02d1:b723*     _updatedthisframe
+02d1:b724*     _st_firsttime
+02d1:b725*     _st_gamestate
+02d1:b726*     _usemouse
+02d1:b727*     _d_episode
+02d1:b728*     _turnheld
+02d1:b729*     _d_skill
+02d1:b72a*     _d_map
+02d1:b72b*     _savegameslot
+02d1:b72c*     _mousebforward
+02d1:b72d*     _key_speed
+02d1:b72e*     _mousebfire
+02d1:b72f*     _key_left
+02d1:b730*     _key_fire
+02d1:b731*     _key_strafe
+02d1:b732*     _key_straferight
+02d1:b733*     _key_up
+02d1:b734*     _mousebstrafe
+02d1:b735*     _singledemo
+02d1:b736*     _key_down
+02d1:b737*     _key_use
+02d1:b738*     _key_right
+02d1:b739*     _key_strafeleft
+02d1:b73a*     _paused
+02d1:b73b*     _timingdemo
+02d1:b73c*     _sendsave
+02d1:b73d*     _gameskill
+02d1:b73e*     _noblit
+02d1:b73f*     _respawnmonsters
+02d1:b740*     _demoplayback
+02d1:b741*     _demorecording
+02d1:b742*     _netdemo
+02d1:b743*     _usegamma
+02d1:b744*     _sendpause
+02d1:b745*     _usergame
+02d1:b746*     _borderdrawcount
+02d1:b747*     _numChannels
 02d1:b748*     _mousepresent
 02d1:b749*     _novideo
 02d1:b74a*     _eventtail
@@ -264,55 +264,53 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:834a*     _player_arrow
 02d1:8382*     _cheat_player_arrow
 02d1:8402*     _thintriangle_guy
-02d1:841c*     _P_CheckSightTemp
-02d1:8420*     _P_SetThingPosition
-02d1:8424*     _P_TeleportMove
-02d1:8428*     _P_RadiusAttack
-02d1:842c*     _P_ChangeSector
-02d1:8430*     _P_MovePsprites
-02d1:8434*     _P_DropWeaponFar
-02d1:8438*     _currentlumpindex
-02d1:843a*     _maskedcount
-02d1:843c*     _currentpostoffset
-02d1:843e*     _currentpostdataoffset
-02d1:8440*     _currentpixeloffset
-02d1:8442*     _grmode
-02d1:8444*     _oldkeyboardisr
-02d1:8448*     _viewactivestate
-02d1:8449*     _menuactivestate
-02d1:844a*     _inhelpscreensstate
-02d1:844b*     _fullscreen
-02d1:844c*     _oldgamestate
-02d1:844d*     _precache
-02d1:8450*     _forwardmove
-02d1:8458*     _sidemove
-02d1:8460*     _mousebuttons
-02d1:8462*     _st_oldhealth
-02d1:8464*     _st_facecount
-02d1:8466*     _st_faceindex
-02d1:8468*     _st_palette
-02d1:846a*     _st_calc_oldhealth
-02d1:846c*     _st_face_lastattackdown
-02d1:846d*     _st_face_priority
-02d1:846e*     _skullName
-02d1:8472*     _detailNames
-02d1:8474*     _msgNames
-02d1:8476*     _HeadTask
-02d1:8478*     _MUSTask
-02d1:847a*     _TS_Installed
-02d1:847b*     _TS_InInterrupt
-02d1:847c*     _st_stopped
-02d1:847e*     _maxammo
-02d1:8486*     _clipammo
-02d1:848a*     _opposite
-02d1:8493*     _diags
-02d1:8498*     _filetolumpindex
-02d1:849e*     _currentloadedfileindex
-02d1:849f*     _versionstring
-02d1:84ab*     _currentoverlay
-02d1:84ac*     _sfx_priority
-02d1:8519*     _FORCE_5000_LUMP_LOAD
-02d1:851a*     _lastpcspeakernotevalue
+02d1:841c*     _P_SetThingPosition
+02d1:8420*     _P_TeleportMove
+02d1:8424*     _P_ChangeSector
+02d1:8428*     _P_MovePsprites
+02d1:842c*     _P_DropWeaponFar
+02d1:8430*     _currentlumpindex
+02d1:8432*     _maskedcount
+02d1:8434*     _currentpostoffset
+02d1:8436*     _currentpostdataoffset
+02d1:8438*     _currentpixeloffset
+02d1:843a*     _grmode
+02d1:843c*     _oldkeyboardisr
+02d1:8440*     _viewactivestate
+02d1:8441*     _menuactivestate
+02d1:8442*     _inhelpscreensstate
+02d1:8443*     _fullscreen
+02d1:8444*     _oldgamestate
+02d1:8445*     _precache
+02d1:8448*     _forwardmove
+02d1:8450*     _sidemove
+02d1:8458*     _mousebuttons
+02d1:845a*     _st_oldhealth
+02d1:845c*     _st_facecount
+02d1:845e*     _st_faceindex
+02d1:8460*     _st_palette
+02d1:8462*     _st_calc_oldhealth
+02d1:8464*     _st_face_lastattackdown
+02d1:8465*     _st_face_priority
+02d1:8466*     _skullName
+02d1:846a*     _detailNames
+02d1:846c*     _msgNames
+02d1:846e*     _HeadTask
+02d1:8470*     _MUSTask
+02d1:8472*     _TS_Installed
+02d1:8473*     _TS_InInterrupt
+02d1:8474*     _st_stopped
+02d1:8476*     _maxammo
+02d1:847e*     _clipammo
+02d1:8482*     _opposite
+02d1:848b*     _diags
+02d1:8490*     _filetolumpindex
+02d1:8496*     _currentloadedfileindex
+02d1:8497*     _versionstring
+02d1:84a3*     _currentoverlay
+02d1:84a4*     _sfx_priority
+02d1:8511*     _FORCE_5000_LUMP_LOAD
+02d1:8512*     _lastpcspeakernotevalue
 02d1:b75f*     _fastparm
 02d1:b760*     _respawnparm
 02d1:b761*     _snd_SBdma
@@ -320,12 +318,12 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:b763*     _snd_DesiredMusicDevice
 Module: codegen.obj(C:\REALDOOM\build\tools\codegen\codegen.c)
 0000:0000      main_
-02d1:851c+     _CONSTANTS
-02d1:97ea+     _SEGMENTS
-02d1:aab8+     _LOCALS
-02d1:aae4+     _VALUES
-02d1:ab10+     _EMS_PAGE_STRINGS
-02d1:ac06+     _EMS_PAGE_VALUES
+02d1:8514+     _CONSTANTS
+02d1:97e2+     _SEGMENTS
+02d1:aab0+     _LOCALS
+02d1:aadc+     _VALUES
+02d1:ab08+     _EMS_PAGE_STRINGS
+02d1:abfe+     _EMS_PAGE_VALUES
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 0000:00b0+     __open_flags_
 0000:025e+     _fsopen_
@@ -342,9 +340,9 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(printf.c)
 0000:042f      printf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 02d1:0000*     __nullarea
-02d1:acfc*     __ovlflag
-02d1:acfd*     __intno
-02d1:acfe*     __ovlvec
+02d1:acf4*     __ovlflag
+02d1:acf5*     __intno
+02d1:acf6*     __ovlvec
 0000:0446      _cstart_
 0000:05f7      __exit_
 0000:0614      __do_exit_with_msg_
@@ -359,12 +357,12 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
 02d1:b76e      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 0000:06fe*     __set_commode_
-02d1:ad02      __commode
+02d1:acfa      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 0000:0705      __get_errno_ptr_
 02d1:b770+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
-02d1:ad04      __fmode
+02d1:acfc      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
 0000:0709      tolower_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(open.c)
@@ -380,7 +378,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(freefp.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(allocfp.c)
 0000:0af1      __allocfp_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
-02d1:ad06      ___iob
+02d1:acfe      ___iob
 02d1:b772      ___OpenStreams
 02d1:b774      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fprtf.c)
@@ -406,25 +404,25 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(initrtns.c)
 0000:0f18      __FiniRtns
 0000:0f18*     __FFiniRtns
 Module: C:\WATCOM2\lib286\dos\clibm.lib(crwdata)
-02d1:ae1e      __curbrk
-02d1:ae26      __STACKLOW
-02d1:ae28      __STACKTOP
-02d1:ae2a      __cbyte
-02d1:ae2c      __child
-02d1:ae2e      __no87
-02d1:ae3b      ___FPE_handler
-02d1:ae20      __psp
-02d1:ae2f      __get_ovl_stack
-02d1:ae33      __restore_ovl_stack
-02d1:ae37      __close_ovl_file
-02d1:ae3f      __LpCmdLine
-02d1:ae43      __LpPgmName
-02d1:ae22      __osmajor
-02d1:ae23      __osminor
-02d1:ae24      __osmode
-02d1:ae25      __HShift
+02d1:ae16      __curbrk
+02d1:ae1e      __STACKLOW
+02d1:ae20      __STACKTOP
+02d1:ae22      __cbyte
+02d1:ae24      __child
+02d1:ae26      __no87
+02d1:ae33      ___FPE_handler
+02d1:ae18      __psp
+02d1:ae27      __get_ovl_stack
+02d1:ae2b      __restore_ovl_stack
+02d1:ae2f      __close_ovl_file
+02d1:ae37      __LpCmdLine
+02d1:ae3b      __LpPgmName
+02d1:ae1a      __osmajor
+02d1:ae1b      __osminor
+02d1:ae1c      __osmode
+02d1:ae1d      __HShift
 Module: C:\WATCOM2\lib286\dos\clibm.lib(uselfn.c)
-02d1:ae48      ___uselfn
+02d1:ae40      ___uselfn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosseg)
 0000:0f76      __DOSseg__
 Module: C:\WATCOM2\lib286\dos\clibm.lib(initargv.c)
@@ -435,9 +433,9 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(opendos.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iomode.c)
 0000:1141      __GetIOMode_
 0000:1158      __SetIOMode_nogrow_
-02d1:ae4a      ___NFiles
-02d1:ae4c      ___init_mode
-02d1:ae74      ___io_mode
+02d1:ae42      ___NFiles
+02d1:ae44      ___init_mode
+02d1:ae6c      ___io_mode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 0000:116d      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosret.c)
@@ -447,7 +445,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 0000:11f8      __get_doserrno_ptr_
 02d1:b77a+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
-02d1:ae8a      ___umaskval
+02d1:ae82      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
 0000:11fc      _dos_creat_
 0000:1210*     _dos_creatnew_
@@ -462,9 +460,9 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(tell.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nmalloc.c)
 0000:1362      _nmalloc_
 0000:1362      malloc_
-02d1:ae8c      ___nheapbeg
-02d1:ae8e      ___MiniHeapRover
-02d1:ae90      ___LargestSizeB4MiniHeapRover
+02d1:ae84      ___nheapbeg
+02d1:ae86      ___MiniHeapRover
+02d1:ae88      ___LargestSizeB4MiniHeapRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(initfile.c)
 0000:1421      __InitFiles_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(ioexit.c)
@@ -485,7 +483,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fsync.c)
 0000:2431      fsync_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 0000:2436      __EnterWVIDEO_
-02d1:ae92+     __WD_Present
+02d1:ae8a+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
 02d1:b77e      ____Argv
 02d1:b780      ____Argc
@@ -493,13 +491,13 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(exit.c)
 0000:2452+     __null_int23_exit_
 0000:2453      exit_
 0000:2473*     _exit_
-02d1:ae94+     ___int23_exit
-02d1:ae98+     ___FPE_handler_exit
+02d1:ae8c+     ___int23_exit
+02d1:ae90+     ___FPE_handler_exit
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
-02d1:aeac      __Start_XI
-02d1:aebe      __End_XI
-02d1:aebe      __Start_YI
-02d1:aed0      __End_YI
+02d1:aea4      __Start_XI
+02d1:aeb6      __End_XI
+02d1:aeb6      __Start_YI
+02d1:aec8      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
 02d1:b782      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
@@ -525,8 +523,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(i4m.asm)
 0000:2782*     __I4M
 0000:2782      __U4M
 Module: C:\WATCOM2\lib286\dos\clibm.lib(noefgfmt.c)
-02d1:ae9c      ___EFG_printf
-02d1:aea0*     ___EFG_scanf
+02d1:ae94      ___EFG_printf
+02d1:ae98*     ___EFG_scanf
 Module: C:\WATCOM2\lib286\dos\clibm.lib(lltoa.c)
 0000:27a9      ulltoa_
 0000:286d*     lltoa_
@@ -536,7 +534,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(ltoa.c)
 0000:28e1      ultoa_
 0000:2934*     ltoa_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbisdbcs.c)
-02d1:aea4      ___IsDBCS
+02d1:ae9c      ___IsDBCS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbislead.c)
 0000:2955*     _ismbblead_
 02d1:b784      ___MBCSIsTable
@@ -550,10 +548,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(nexpand.c)
 0000:2998      _nexpand_
 0000:2998*     _expand_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(amblksiz.c)
-02d1:aea6      __amblksiz
+02d1:ae9e      __amblksiz
 Module: C:\WATCOM2\lib286\dos\clibm.lib(heapen.c)
 0000:29e7*     _heapenable_
-02d1:aea8      ___heap_enabled
+02d1:aea0      ___heap_enabled
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sbrk.c)
 0000:29f3      __brk_
 0000:2a49*     sbrk_
@@ -561,7 +559,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(alphabet.c)
 02d1:830c      ___Alphabet
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbinit.c)
 0000:2aac      __mbinit_
-02d1:aeaa+     ___MBCodePage
+02d1:aea2+     ___MBCodePage
 Module: C:\WATCOM2\lib286\dos\clibm.lib(_expand.c)
 0000:2b17      __HeapManager_expand_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(getltdos.c)

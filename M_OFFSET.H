@@ -29,11 +29,11 @@
 #define P_UnArchivePlayersOffset              0x2
 #define P_UnArchiveWorldOffset                0x17C
 #define P_UnArchiveThinkersOffset             0x2C5
-#define P_UnArchiveSpecialsOffset             0x443
-#define P_ArchivePlayersOffset                0x688
-#define P_ArchiveWorldOffset                  0x791
-#define P_ArchiveThinkersOffset               0x856
-#define P_ArchiveSpecialsOffset               0x9EE
+#define P_UnArchiveSpecialsOffset             0x444
+#define P_ArchivePlayersOffset                0x689
+#define P_ArchiveWorldOffset                  0x792
+#define P_ArchiveThinkersOffset               0x857
+#define P_ArchiveSpecialsOffset               0x9EF
 #define LoadSFXWadLumpsOffset                 0x3
 #define S_ActuallyChangeMusicOffset           0x404
 #define P_CheckSightOffset                    0x0
@@ -74,7 +74,7 @@
 #define PSightCodeSize                 0x3D0E
 #define WipeCodeSize                   0x4B6
 #define FinaleCodeSize                 0xBCE
-#define SaveLoadCodeSize               0xB35
+#define SaveLoadCodeSize               0xB36
 #define SMLoadCodeSize                 0x4CB
 #define SInitCodeSize                  0x557
 #define MaximumMusDriverSize           0x1014

@@ -393,7 +393,7 @@
 #define I_Error_addr                      (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B4)))
 #define P_InitThinkers_addr               (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B8)))
 #define P_CreateThinker_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05BC)))
-#define P_SetThingPosition_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C0)))
+// #define P_SetThingPosition_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C0)))
 #define P_RemoveMobj_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
 #define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
 #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
@@ -687,29 +687,29 @@ extern mline_t              thintriangle_guy[3];
 
 
 
-extern boolean 				(__far* P_CheckSightTemp)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4);
+// extern boolean 				(__far* P_CheckSightTemp)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4);
 
-extern fixed_t 				(__far* P_AproxDistance)(fixed_t dx, fixed_t dy);
+// extern fixed_t 				(__far* P_AproxDistance)(fixed_t dx, fixed_t dy);
 // extern void 				(__far* P_LineOpening)(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
-extern void 				(__far* P_UnsetThingPosition)(mobj_t __near* thing, uint16_t mobj_pos_offset);             
+// extern void 				(__far* P_UnsetThingPosition)(mobj_t __near* thing, uint16_t mobj_pos_offset);             
 extern void 				(__far* P_SetThingPosition)(mobj_t __near* thing, uint16_t mobj_pos_offset, int16_t knownsecnum);
 // extern boolean 				(__far* P_BlockThingsIterator)(int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*));
-extern boolean 				(__far* P_TryMove)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
-extern boolean 				(__far* P_CheckPosition)(mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y);
+// extern boolean 				(__far* P_TryMove)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
+// extern boolean 				(__far* P_CheckPosition)(mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y);
 extern boolean 				(__far* P_TeleportMove)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
-extern fixed_t 				(__far* P_AimLineAttack)(mobj_t __near* t1,fineangle_t angle,int16_t distance);
-extern void				    (__far* P_LineAttack)(mobj_t __near* t1,fineangle_t angle,int16_t distance,fixed_t slope,int16_t damage );
+// extern fixed_t 				(__far* P_AimLineAttack)(mobj_t __near* t1,fineangle_t angle,int16_t distance);
+// extern void				    (__far* P_LineAttack)(mobj_t __near* t1,fineangle_t angle,int16_t distance,fixed_t slope,int16_t damage );
 // extern void 				(__far* P_UseLines)();
-extern void 				(__far* P_RadiusAttack)(mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t damage);
+// extern void 				(__far* P_RadiusAttack)(mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t damage);
 extern boolean 				(__far* P_ChangeSector)(sector_t __far* sector, boolean crunch);
 // extern void 				(__far* P_XYMovement)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 // extern void 				(__far* P_ZMovement)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 // extern void				    (__far* P_NightmareRespawn)(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
-extern THINKERREF 			(__far* P_SpawnMissile)(mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type);
+// extern THINKERREF 			(__far* P_SpawnMissile)(mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type);
 extern void 				(__far* P_MovePsprites)();
 extern void 				(__far* P_DropWeaponFar)();
-extern void 				(__far* P_BringUpWeaponFar)();
-extern void 				(__far* A_BFGSprayFar)();
+// extern void 				(__far* P_BringUpWeaponFar)();
+// extern void 				(__far* A_BFGSprayFar)();
 
 
 
