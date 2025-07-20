@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/19 17:50:09
+Created on:       25/07/19 18:25:14
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -91,9 +91,9 @@ V_VIDEO_TEXT           CODE           AUTO           1db3:445c       00000616
 Z_ZONE_TEXT            CODE           AUTO           1db3:4a72       000004a4
 p_setup_TEXT           CODE           AUTO           22a5:0000       0000127a
 P_SIGHT_TEXT           CODE           AUTO           23cd:0000       0000060b
-P_MAP_TEXT             CODE           AUTO           23cd:060c       00002424
-P_MOBJA_TEXT           CODE           AUTO           23cd:2a30       00000a92
-P_PSPR_TEXT            CODE           AUTO           23cd:34c2       0000084c
+P_MAP_TEXT             CODE           AUTO           23cd:060c       00002422
+P_MOBJA_TEXT           CODE           AUTO           23cd:2a2e       00000a92
+P_PSPR_TEXT            CODE           AUTO           23cd:34c0       0000084c
 _TEXT                  CODE           AUTO           23cd:3d10       000033dc
 FAR_DATA               FAR_DATA       AUTO           2adb:000c       00000000
 _NULL                  BEGDATA        DGROUP         2adc:0000       00000020
@@ -690,10 +690,10 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0322:7297*     WI_drawPercent_
 0322:6f0c*     WI_slamBackground_
 0322:6b0c      WI_STARTMARKER_
-0322:78b1*     WI_updateNoState_
-0322:7916      WI_Ticker_
 0322:6ef3*     WI_MRandomLocal_
 0322:71e7*     WI_drawNum_
+0322:78b1*     WI_updateNoState_
+0322:7916      WI_Ticker_
 0322:79c5*     WI_initVariables_
 0322:73a2*     WI_drawNoState_
 0322:7361*     WI_initNoState_
@@ -1266,67 +1266,67 @@ Module: p_map.obj(p_map.ASM)
 23cd:0b53      R_PointInSubsector_
 23cd:060c*     P_MAP_STARTMARKER_
 23cd:1830      P_CheckPosition_
-23cd:23bd      P_AimLineAttack_
-23cd:2512      P_LineAttack_
-23cd:2752      P_RadiusAttack_
+23cd:23bb      P_AimLineAttack_
+23cd:2510      P_LineAttack_
+23cd:2750      P_RadiusAttack_
 23cd:0974      P_LineOpening_
 23cd:09a8      P_UnsetThingPosition_
 23cd:06a7      P_AproxDistance_
-23cd:2a1b      P_Random_MapLocal_
-23cd:2647      P_UseLines_
-23cd:22a8      P_TeleportMove_
-23cd:19f0      P_SlideMove_
+23cd:2a19      P_Random_MapLocal_
+23cd:2645      P_UseLines_
+23cd:22a6      P_TeleportMove_
+23cd:19ee      P_SlideMove_
 23cd:0c00      P_BlockThingsIterator_
-23cd:2a30*     P_MAP_ENDMARKER_
-23cd:1216      P_TryMove_
-23cd:2953      P_ChangeSector_
+23cd:2a2e*     P_MAP_ENDMARKER_
+23cd:1214      P_TryMove_
+23cd:2951      P_ChangeSector_
 Module: p_mobja.obj(p_mobja.ASM)
-23cd:3383      P_SpawnPlayerMissile_
-23cd:317e      P_CheckMissileSpawn_
-23cd:3028      P_NightmareRespawn_
-23cd:2fbe      P_ExplodeMissile_
-23cd:2a30*     P_MOBJ_STARTMARKER_
-23cd:2d41      P_ZMovement_
-23cd:3207      P_SpawnMissile_
-23cd:34c2*     P_MOBJ_ENDMARKER_
-23cd:2a30      P_XYMovement_
+23cd:3381      P_SpawnPlayerMissile_
+23cd:317c      P_CheckMissileSpawn_
+23cd:3026      P_NightmareRespawn_
+23cd:2fbc      P_ExplodeMissile_
+23cd:2a2e*     P_MOBJ_STARTMARKER_
+23cd:2d3f      P_ZMovement_
+23cd:3205      P_SpawnMissile_
+23cd:34c0*     P_MOBJ_ENDMARKER_
+23cd:2a2e      P_XYMovement_
 Module: p_pspr.obj(p_pspr.ASM)
-23cd:371b*     A_Lower_
-23cd:3d02      P_DropWeaponFar_
-23cd:3d06      P_BringUpWeaponFar_
-23cd:37a1*     A_Punch_
-23cd:3b54*     A_Light2_
-23cd:3b4e*     A_Light1_
-23cd:3b48*     A_Light0_
-23cd:35fc*     P_FireWeapon_
-23cd:3ca3*     P_SetPsprite_
-23cd:3751*     A_Raise_
-23cd:3d0a      A_BFGSprayFar_
-23cd:3785*     A_GunFlash_
-23cd:3835*     A_Saw_
-23cd:3b5a*     A_OpenShotgun2_
-23cd:3a27*     A_FirePistol_
-23cd:3507*     P_CheckAmmo_
-23cd:36f5*     A_ReFire_
-23cd:3b80*     A_BFGSpray_
-23cd:3936*     A_FireMissile_
-23cd:3941*     A_FireBFG_
-23cd:3c22      P_MovePsprites_
-23cd:394d*     A_FirePlasma_
-23cd:3d0e      P_PSPR_ENDMARKER_
-23cd:39d6*     P_GunShot_
-23cd:3c17*     A_BFGsound_
-23cd:3507*     A_CheckReload_
-23cd:363c*     A_WeaponReady_
-23cd:3a59*     A_FireShotgun_
-23cd:3968*     P_BulletSlope_
-23cd:3b65*     A_LoadShotgun2_
-23cd:3a8d*     A_FireShotgun2_
-23cd:34c2*     P_PSPR_STARTMARKER_
-23cd:3b08*     A_FireCGun_
-23cd:3627*     P_DropWeapon_
-23cd:3b70*     A_CloseShotgun2_
-23cd:34c2*     P_BringUpWeapon_
+23cd:3719*     A_Lower_
+23cd:3d00      P_DropWeaponFar_
+23cd:3d04      P_BringUpWeaponFar_
+23cd:379f*     A_Punch_
+23cd:3b52*     A_Light2_
+23cd:3b4c*     A_Light1_
+23cd:3b46*     A_Light0_
+23cd:35fa*     P_FireWeapon_
+23cd:3ca1*     P_SetPsprite_
+23cd:374f*     A_Raise_
+23cd:3d08      A_BFGSprayFar_
+23cd:3783*     A_GunFlash_
+23cd:3833*     A_Saw_
+23cd:3b58*     A_OpenShotgun2_
+23cd:3a25*     A_FirePistol_
+23cd:3505*     P_CheckAmmo_
+23cd:36f3*     A_ReFire_
+23cd:3b7e*     A_BFGSpray_
+23cd:3934*     A_FireMissile_
+23cd:393f*     A_FireBFG_
+23cd:3c20      P_MovePsprites_
+23cd:394b*     A_FirePlasma_
+23cd:3d0c      P_PSPR_ENDMARKER_
+23cd:39d4*     P_GunShot_
+23cd:3c15*     A_BFGsound_
+23cd:3505*     A_CheckReload_
+23cd:363a*     A_WeaponReady_
+23cd:3a57*     A_FireShotgun_
+23cd:3966*     P_BulletSlope_
+23cd:3b63*     A_LoadShotgun2_
+23cd:3a8b*     A_FireShotgun2_
+23cd:34c0*     P_PSPR_STARTMARKER_
+23cd:3b06*     A_FireCGun_
+23cd:3625*     P_DropWeapon_
+23cd:3b6e*     A_CloseShotgun2_
+23cd:34c0*     P_BringUpWeapon_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 23cd:3d10+     __open_flags_
 23cd:3ebe+     _fsopen_
@@ -1626,4 +1626,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002ea00 (190976.)
 Entry point address: 23cd:498e
-Link time: 00:00.29
+Link time: 00:00.85

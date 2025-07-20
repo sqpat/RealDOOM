@@ -1724,7 +1724,7 @@ check_next_block_line:
 add   di, 2
 jmp   loop_check_block_line
 exit_blocklinesiterator_return_1:
-mov   al, 1
+stc
 pop   di
 pop   si
 pop   cx
@@ -1740,9 +1740,10 @@ check_block_line:
 mov   word ptr es:[si + LINE_PHYSICS_T.lp_validcount], ax  ; set validcount
 mov   ax, si
 call  cx
-test  al, al
+test  al, al  ;todo these
 jne   check_next_block_line
 ; al = 0, return false
+clc
 pop   di
 pop   si
 pop   cx
@@ -1755,7 +1756,7 @@ ENDP
 ;boolean __near(*   func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*) ){
 
 ; todo di as func?
-
+; return in carry
 PROC P_BlockThingsIterator_ FAR
 PUBLIC P_BlockThingsIterator_
 
@@ -1828,6 +1829,7 @@ jne  loop_check_next_block_thing
 exit_blockthingsiterator_return1:
 mov  al, 1
 exit_blockthingsiterator:
+sar  al, 1   ; carry if it was one, 0 if it was 0.
 pop  di
 pop  si
 pop  cx
@@ -2799,8 +2801,8 @@ mov   bx, OFFSET PIT_AddLineIntercepts_ - OFFSET P_SIGHT_STARTMARKER_
 mov   dx, si
 mov   ax, cx
 call  P_BlockLinesIterator_
-test  al, al
-je   exit_path_traverse
+
+jnc   exit_path_traverse
 
 jmp   addlines_fallthru
 SELFMODIFY_addthings_jump_TARGET:
@@ -2812,8 +2814,8 @@ mov   bx, OFFSET PIT_AddThingIntercepts_ - OFFSET P_SIGHT_STARTMARKER_
 mov   dx, si
 mov   ax, cx
 call  P_BlockThingsIterator_
-test  al, al
-je    exit_path_traverse
+
+jnc   exit_path_traverse
 jmp   addthings_fallthru
 intercept_not_mapy:
 ;		} else if ( (xintercept.h.intbits) == mapx) {
@@ -3594,9 +3596,11 @@ do_second_blockmaploop:
 mov   bx, [bp - 4]
 mov   dx, si       ; set dx as by
 call  P_BlockThingsIterator_
-
-or    al, cl ; if al and cl are zero (returnOnFalse true after dec DI) and AX is 0 then jump and exit
+jc    dont_exit_doblockmaploop
+or    cl, cl ; if al and cl are zero (returnOnFalse true after dec DI) and AX is 0 then jump and exit
 je    exit_doblockmaploop_return_0_thru
+
+dont_exit_doblockmaploop:
 
 mov   ax, di  ; retrieve ax
 
@@ -4818,8 +4822,8 @@ mov   ax, si
 mov   bx, OFFSET PIT_CheckLine_ - OFFSET P_SIGHT_STARTMARKER_
 mov   dx, cx
 call  P_BlockLinesIterator_
-test  al, al
-je    exit_checkposition_return_0  ; return 0
+
+jnc   exit_checkposition_return_0  ; return 0
 inc   cx
 cmp   cx, di
 jle   check_position_do_next_y_loop
