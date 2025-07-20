@@ -135,7 +135,7 @@ jne   cant_use_plasma_rifle
 mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_PLASMA          ; pending weapon plasma
 jmp   fallback_weapon_attempt_selected
 passed_ammo_check:
-mov   al, 1  ; true
+stc
 jmp   exit_check_reload
 
 cant_use_plasma_rifle:
@@ -208,7 +208,7 @@ mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
 xor   ax, ax
 call  P_SetPsprite_  ; change weapon anim
 
-xor   ax, ax ; failed ammo check
+clc
 exit_check_reload:
 pop   dx
 pop   bx
@@ -225,10 +225,7 @@ PUBLIC P_FireWeapon_
 
 
 call  A_CheckReload_
-test  al, al
-jne   do_fire_weapon
-ret   
-do_fire_weapon:
+jnc   dont_fire_weapon
 push  bx
 push  dx
 mov   dx, S_PLAY_ATK1
@@ -251,6 +248,7 @@ dw _P_NoiseAlert_Addr
 
 pop   dx
 pop   bx
+dont_fire_weapon:
 ret   
 
 ENDP
