@@ -322,8 +322,8 @@ je    dont_fire_weapon
 fire_weapon:
 mov   byte ptr ds:[_player + PLAYER_T.player_attackdown], 1
 call  P_FireWeapon_
-exit_a_weaponready:
 
+ret
 
 put_weapon_away:
 mov   al, SIZEOF_WEAPONINFO_T
