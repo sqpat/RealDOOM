@@ -3194,7 +3194,7 @@ mov   cx, es
 mov   dx, -1
 call  P_CheckPosition_
 test  al, al
-je    exit_trymove_return
+je    exit_trymove_return0
 
 
 ;    if ( !(thing_pos->flags1 & MF_NOCLIP) ) {
@@ -3274,8 +3274,7 @@ jne   mobj_bot_ok
 test  cx, cx
 jbe   mobj_bot_ok
 exit_trymove_return0:
-xor   al, al
-exit_trymove_return:
+clc
 LEAVE_MACRO
 pop   di
 pop   si
@@ -3385,7 +3384,7 @@ mov   ds, ax   ; restore ds
 mov   si, bx
 je    loop_next_num_spec
 exit_trymove_return1:
-mov   al, 1
+stc
 LEAVE_MACRO
 pop   di
 pop   si
@@ -5160,8 +5159,7 @@ push  si
 mov   ax, word ptr ds:[_playerMobj]
 call  P_TryMove_
 
-test  al, al
-jne   bestslidefrac_lessthanzero
+jc    bestslidefrac_lessthanzero
 jmp   stairstep   ; 3D bytes off..
 continiue_check_bestslidefrac_lessthanzero:
 jne   bestslidefrac_lessthanzero
@@ -5255,8 +5253,8 @@ push  dx
 push  ax
 xchg  ax, si
 call  P_TryMove_
-test  al, al
-jne   exit_slidemove
+
+jc    exit_slidemove
 
 dec   word ptr [bp - 2]
 jz    stairstep
@@ -5283,8 +5281,7 @@ push  es
 push  ax
 xchg  ax, si
 call  P_TryMove_
-test  al, al
-jne   exit_slidemove
+jc    exit_slidemove
 les   bx, dword ptr ds:[_playerMobj_pos]
 mov   si, word ptr ds:[_playerMobj]
 push  word ptr es:[bx + 6]

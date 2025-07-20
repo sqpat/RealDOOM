@@ -628,8 +628,8 @@ dw    P_TRYMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
-test  al, al
-jne   try_ok
+
+jc    try_ok
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_FLOAT SHR 8)
 je    check_for_specials_hit_in_move
 cmp   byte ptr ds:[_floatok], 0
@@ -4434,8 +4434,7 @@ mov   cx, es
 db    09Ah
 dw    P_TRYMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-test  al, al
-jne   skull_nodamage
+jc    skull_nodamage
 mov   cx, 10000
 pop   ax ; bp - 6
 mov   bx, di

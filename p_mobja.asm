@@ -277,11 +277,8 @@ mov   cx, es
 mov   ax, word ptr [bp - 2]
 
 push  cs
-call  P_TryMove_   ; what if we returned in the carry flag...
-
-
-test  al, al
-jne   cant_move
+call  P_TryMove_ 
+jc    cant_move
 ; 
 cmp   word ptr [bp - 8], MT_PLAYER
 je    player_try_slide
@@ -1465,10 +1462,8 @@ mov   bx, si
 
 
 push  cs
-call  P_TryMove_  ; what if we returned in the carry flag...
-
-test  al, al
-jne   exit_check_missile_sapwn
+call  P_TryMove_  
+jc    exit_check_missile_sapwn
 do_missile_explode_on_spawn:
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   bx, si
