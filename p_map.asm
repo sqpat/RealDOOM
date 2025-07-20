@@ -2243,7 +2243,7 @@ ENDP
 ; NOTE: This is now jumped to instead of called. 
 PROC P_TraverseIntercepts_ NEAR
 
-; [bp + 12] is traverser func
+; [bp + 012h] is traverser func
 
 
 ;	count = intercept_p - intercepts;
@@ -2293,7 +2293,7 @@ cmp   bx, word ptr ds:[_intercept_p]
 jb    scan_next_intercept
 done_scanning_intercepts:
 
-cmp   ax, 1
+cmp   ax, 1	; FRACUNIT, not true boolean
 jg    exit_traverse_intercepts
 jne   do_func_call
 test  dx, dx
@@ -2315,8 +2315,8 @@ mov   ax, si
 push  es
 
 call  word ptr [bp + 012h]  ; from outer function frame
-test  al, al
-je    exit_traverse_intercepts
+
+jnc   exit_traverse_intercepts
 
 pop   es
 
@@ -2848,11 +2848,8 @@ ENDP
 PROC PTR_UseTraverse_ NEAR
 
 ; dx is fixed as intercepts segment. get rid of it?
-
-push  bx
-push  cx
-push  si
-push  di
+; return in carry
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 
@@ -2892,13 +2889,10 @@ mov   ax, word ptr ds:[_lineopening]
 cmp   ax, word ptr ds:[_lineopening+2]
 jl    use_thru_wall
 ; cant use thru wall
-mov   al, 1
+stc
 exit_usetraverse:
 LEAVE_MACRO
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 use_thru_wall:
 
@@ -2908,13 +2902,13 @@ mov   dx, SFX_NOWAY
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-xor   al, al
+clc
 jmp   exit_usetraverse
 no_line_special:
 
 
 
-; es:nbx lines_special
+; es:bx lines_special
 push  word ptr es:[bx + 6]
 push  word ptr es:[bx + 4]
 
@@ -2956,25 +2950,19 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_UseSpecialLine_addr
 
-xor   al, al
+clc
 LEAVE_MACRO
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP
 
 
 ;boolean __near PTR_SlideTraverse (intercept_t __far* in) {
-
+; return in carry
 PROC PTR_SlideTraverse_ NEAR
 
-push  bx
-push  cx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 xchg  ax, si   ; intercept to si
 
 
@@ -3020,11 +3008,9 @@ add   sp, 8  ; no stack frame, just directly do this
 test  al, al
 je   is_blocking
 exit_slidetraverse_return_1:
-mov   al, 1
-pop   di
-pop   si
-pop   cx
-pop   bx
+stc
+POPA_NO_AX_OR_BP_MACRO
+
 ret   
 
 
@@ -3095,12 +3081,9 @@ mov   word ptr ds:[_bestslidefrac+2], ax
 mov   word ptr ds:[_bestslidefrac+0], dx
 mov   word ptr ds:[_bestslidelinenum], cx
 exit_slidetraverse_return_0:
-xor   al, al
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
+clc
+POPA_NO_AX_OR_BP_MACRO   
+ret
 continue_blocking_check:
 
 ;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
@@ -3129,16 +3112,13 @@ sub   cx, word ptr es:[di + 8]
 sbb   ax, word ptr es:[di + 0Ah]
 cmp   ax, 24    ; too big a step up
 jg    is_blocking
-jne   exit_slidetraverse_return_2
+jne   exit_slidetraverse_return_1_2
 test  cx, cx
 ja    is_blocking		; jcxnz
-exit_slidetraverse_return_2:
-mov   al, 1
+exit_slidetraverse_return_1_2:
+stc
 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP
@@ -5407,6 +5387,7 @@ ENDP
 
 ; boolean __near PTR_ShootTraverse (intercept_t __far* in){
 
+; return in carry
 PROC PTR_ShootTraverse_ NEAR
 
 ; bp - 2     INTERCEPTS_SEGMENT
@@ -5626,7 +5607,7 @@ dw _P_SpawnPuff_addr
 exit_shoottraverse_return_0:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-xor   al, al
+clc
 ret   
 
 ; 2nd half of function
@@ -5745,7 +5726,7 @@ cmp   ax, word ptr ds:[_aimslope+0]
 jb    jump_to_hitline
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-mov   al, 1
+stc
 ret   
 
 is_not_a_line:
@@ -5788,7 +5769,7 @@ jne   did_not_hit_thing
 exit_shoottraverse_return_1:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-mov   al, 1
+stc
 ret   
 did_not_hit_thing:
 mov   es, word ptr [bp - 2]
@@ -5970,7 +5951,7 @@ dw _P_DamageMobj_addr
 exit_aimtraverse_return_0:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-xor   al, al
+clc
 ret   
 do_spawn_blood:
 
@@ -6099,6 +6080,7 @@ jmp   aimtraverse_is_not_a_line
 
 
 ; this function could probably use bp internally for something?
+; return in carry
 PROC PTR_AimTraverse_ NEAR
 
 
@@ -6120,7 +6102,7 @@ jne   aimtraverse_is_a_line
 exit_aimtraverse_return_0_2:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-xor   al, al
+clc
 ret   
 
 aimtraverse_is_a_line:
@@ -6278,7 +6260,7 @@ jbe   jump_to_exit_aimtraverse_return_0
 exit_aimtraverse_return_1:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-mov   al, 1
+stc
 ret   
 
 aimtraverse_is_not_a_line:
@@ -6375,7 +6357,7 @@ jae   done_checking_thingtopslope
 exit_aimtraverse_return_1_3:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-mov   al, 1
+stc
 
 ret   
 
@@ -6464,14 +6446,13 @@ mov   word ptr ds:[_linetarget_pos+2], MOBJPOSLIST_6800_SEGMENT  ; todo remove o
 
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-xor   al, al
+clc
 ret
 
 ENDP
 
 
 
-;boolean __near PTR_AimTraverse (intercept_t __far* in);
 ; return in carry
 PROC PIT_StompThing_ NEAR
 

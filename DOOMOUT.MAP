@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/20 08:32:17
+Created on:       25/07/20 09:15:43
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -862,8 +862,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 0b9f:3b56      A_FatAttack2_
 0b9f:289c*     P_RecursiveSound_
 0b9f:3406      A_SkelMissile_
-0b9f:3b3b      A_FatAttack1_
 0b9f:3ad5      A_FatAttack3_
+0b9f:3b3b      A_FatAttack1_
 0b9f:411e      A_SpawnSound_
 0b9f:2e67      A_Look_
 0b9f:3f13      A_BabyMetal_
