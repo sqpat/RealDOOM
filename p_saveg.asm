@@ -53,7 +53,8 @@ dont_pad:
 les   bx, dword ptr ds:[_save_p]
 
 mov   al, byte ptr es:[bx + 4]
-mov   di, word ptr ds:[_player_ptr]
+
+mov   di, OFFSET _player
 mov   byte ptr [di + 01Dh], al
 
 
@@ -78,8 +79,7 @@ push  ds
 pop   es
 pop   ds
 
-mov   di, word ptr ds:[_player_ptr]
-
+mov   di, OFFSET _player
 
 mov   al, byte ptr es:[bx + 05Ch]
 mov   byte ptr [di + 022h], al
@@ -1185,7 +1185,7 @@ rep stosw
 
 mov       di, dx
 
-mov       si, word ptr ds:[_player_ptr]
+mov       si, OFFSET _player
 lea       di, [di + 8]                  
 movsw                           ; 0 -> 8    
 movsw                           ; 2 -> A

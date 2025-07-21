@@ -1858,7 +1858,12 @@ PUBLIC G_WorldDone_
 
 mov   byte ptr ds:[_gameaction], 8
 cmp   byte ptr cs:[_secretexit - OFFSET WI_STARTMARKER_], 0
-jne   did_secret_stuff
+je    continue_world_done
+
+did_secret_stuff:
+mov   byte ptr ds:[_player + 061h], 1 	; player didsecret
+
+
 continue_world_done:
 
 cmp   byte ptr ds:[_commercial], 0
@@ -1874,12 +1879,6 @@ je    gamemap_finalesetup
 exit_worlddone:
 ret   
 
-did_secret_stuff:
-push  bx
-mov   bx, word ptr ds:[_player_ptr]
-mov   byte ptr ds:[bx + 061h], 1 	; player didsecret
-pop   bx
-jmp   continue_world_done
 
 gamemap_a_15:
 cmp   al, 31
@@ -1946,7 +1945,7 @@ music_already_init:
 
 ; inlined WI_checkForAccelerate_
 
-mov   bx, word ptr ds:[_player_ptr]
+mov   bx, OFFSET _player
 test  byte ptr ds:[bx + 07h], BT_ATTACK			; player.cmd.buttons & BT_ATTACK
 je    not_attack_pressed
 cmp   byte ptr ds:[bx + 04Ch], 0					; if (!player.attackdown){

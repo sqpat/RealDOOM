@@ -943,8 +943,6 @@ R_PointToAngle(y, x);
 	//FindResponseFile ();
 	//P_Init();
 
-	// todo remove once player is in fixed_data
-	player_ptr = &player;
 
 	if (!access("doom2.wad", R_OK)) {
 		commercial = true;

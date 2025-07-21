@@ -95,7 +95,7 @@ _bombspot_pos = 					_NULL_OFFSET + 000A0h
 
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
-_player_ptr = 						_NULL_OFFSET + 000ACh
+;_player_ptr = 						_NULL_OFFSET + 000ACh
 _pendingmusicenum =                 _NULL_OFFSET + 000AEh
 _pendingmusicenumlooping =          _NULL_OFFSET + 000AFh
 
@@ -441,7 +441,7 @@ _P_TouchSpecialThing_addr =          _NULL_OFFSET + 006FCh
 
 _playerMobj_pos =		         	 _NULL_OFFSET + 00700h
 _setStateReturn_pos =		         _NULL_OFFSET + 00704h
-;_P_CheckSight =				         _NULL_OFFSET + 00708h
+_gametic =						     _NULL_OFFSET + 00708h
 _clipangle =				         _NULL_OFFSET + 0070Ch
 _fieldofview =				         _NULL_OFFSET + 0070Eh
 

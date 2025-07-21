@@ -40,7 +40,6 @@ EXTRN _respawnmonsters:BYTE
 EXTRN _nomonsters:BYTE
 EXTRN _totalkills:WORD
 EXTRN _totalitems:WORD
-EXTRN _gametic:DWORD
 
 .CODE
 

@@ -142,7 +142,7 @@
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
 // todo dont need?
-#define player_ptr                      (*((player_t __near* _near*)         (_NULL_OFFSET + 0x00AC)))
+//#define player_ptr                      (*((player_t __near* _near*)         (_NULL_OFFSET + 0x00AC)))
 #define pendingmusicenum                (*((musicenum_t _near*)              (_NULL_OFFSET + 0x00AE)))
 #define pendingmusicenumlooping         (*((boolean _near*)              	 (_NULL_OFFSET + 0x00AF)))
 #define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B0)))
@@ -449,7 +449,7 @@
 #define ceilinglinenum				      (*((int16_t __near*)               (_NULL_OFFSET + 0x06BE)))
 
 #define lineopening  				      (*((lineopening_t __near*)         (_NULL_OFFSET + 0x06C0)))
-#define playerMobjRef  				      (*((THINKERREF __near*)         (_NULL_OFFSET + 0x06C6)))
+#define playerMobjRef  				      (*((THINKERREF __near*)         	 (_NULL_OFFSET + 0x06C6)))
 
 
 #define intercept_p  				      (*((intercept_t __far* __near*)    (_NULL_OFFSET + 0x06C8)))
@@ -479,7 +479,7 @@
 
 #define playerMobj_pos   		     	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0700)))
 #define setStateReturn_pos	 	    	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0704)))
-// #define P_CheckSight				      (((boolean (__far *)(mobj_t __near* , mobj_t __near*, uint16_t, uint16_t)) (_NULL_OFFSET + 0x0708)))
+#define gametic						      (*((ticcount_t __near*)   	   	 (_NULL_OFFSET + 0x0708)))
 
 #define clipangle       			      (*((uint16_t __near*)              (_NULL_OFFSET + 0x070C)))
 #define fieldofview       			      (*((uint16_t __near*)              (_NULL_OFFSET + 0x070E)))
@@ -820,7 +820,6 @@ extern boolean         	  noblit;                 // for comparative timing purp
 extern ticcount_t         starttime;              // for comparative timing purposes       
 
 
-extern ticcount_t          gametic;
 extern int16_t             totalkills; 
 extern int16_t             totalitems;
 extern int16_t             totalsecret;    // for intermission 

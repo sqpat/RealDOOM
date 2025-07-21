@@ -494,7 +494,7 @@ ticcount_t      	starttime;              // for comparative timing purposes
 
 
  
-ticcount_t          gametic;
+
 int16_t             totalkills, totalitems, totalsecret;    // for intermission 
  
 boolean         demorecording; 

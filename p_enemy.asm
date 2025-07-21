@@ -31,7 +31,6 @@ EXTRN EV_DoFloor_:NEAR
 .DATA
 
 EXTRN _gameskill:BYTE
-EXTRN _gametic:DWORD
 EXTRN _fastparm:BYTE
 
 

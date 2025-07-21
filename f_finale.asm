@@ -127,7 +127,7 @@ sal   ax, 1     ; times 2
 mov   di, cx
 add   di, ax
 mov   al, byte ptr ds:[bx + 1] ; get column length
-lea   si, [bx + 3]
+lea   si, ds:[bx + 3]
 loop_copy_pixel:
 dec   al
 js    done_drawing_post_flipped  ; jump if -1
@@ -722,7 +722,7 @@ loop_count:
 test      cx, cx
 je        exit_ftextwrite
 mov       bx, word ptr [bp - 4]
-mov       al, byte ptr [bx]
+mov       al, byte ptr ds:[bx]
 cbw      
 inc       word ptr [bp - 4]
 mov       dx, ax
@@ -816,7 +816,7 @@ add   di, ax    ; plus column topdelta
 ;xor   ah, ah
 mov   ax, 1
 xlat
-lea   si, [bx + 3]              ; column pixels
+lea   si, ds:[bx + 3]              ; column pixels
 xchg  ax, cx     ; count in cx so we can loop.
 draw_next_pixel:
 movsb
@@ -1624,7 +1624,7 @@ mov   ah, 0Bh  ; sizeof mobjinfo? todo constant
 mul   ah
 mov   bx, ax
 xor   ax, ax
-mov   dl, byte ptr [bx + _mobjinfo + 3]
+mov   dl, byte ptr ds:[bx + _mobjinfo + 3]
 xor   dh, dh
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1652,8 +1652,7 @@ cmp   byte ptr ds:[_commercial], 0
 je    done_checking_skipping
 cmp   word ptr ds:[_finalecount], 50
 jle   done_checking_skipping
-mov   bx, word ptr ds:[_player_ptr]
-cmp   byte ptr ds:[bx + 7], 0   ; player.cmd.buttons
+cmp   byte ptr ds:[_player + PLAYER_T.player_cmd_buttons], 0 
 je    done_checking_skipping
 cmp   byte ptr ds:[_gamemap], 30
 jne   do_worlddone
