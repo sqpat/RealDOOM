@@ -854,7 +854,7 @@ jmp   word ptr cs:[bx + set_overlay_jump_table]
 load_save_game_overlay_jump_target:
 mov   ax, CODE_OVERLAY_SEGMENT
 mov   es, ax
-mov   word ptr es:[0], OFFSET _playerMobjRef
+;mov   word ptr es:[0], OFFSET _playerMobjRef
 LEAVE_MACRO 
 pop   si
 pop   dx

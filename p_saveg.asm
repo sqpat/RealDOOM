@@ -55,14 +55,14 @@ les   bx, dword ptr ds:[_save_p]
 mov   al, byte ptr es:[bx + 4]
 
 mov   di, OFFSET _player
-mov   byte ptr [di + 01Dh], al
+mov   byte ptr ds:[di + 01Dh], al
 
 
 push  es  ; swap ds/es
 push  ds
 pop   es
 pop   ds
-lea   si, [bx + 8]
+lea   si, ds:[bx + 8]
 
 mov   cx, 13
 rep   movsw
@@ -82,39 +82,39 @@ pop   ds
 mov   di, OFFSET _player
 
 mov   al, byte ptr es:[bx + 05Ch]
-mov   byte ptr [di + 022h], al
+mov   byte ptr ds:[di + 022h], al
 
 mov   al, byte ptr es:[bx + 070h]
 mov   ah, byte ptr es:[bx + 074h]
-mov   word ptr [di + 030h], ax
+mov   word ptr ds:[di + 030h], ax
 
 mov   al, byte ptr es:[bx + 0BCh]
 mov   ah, byte ptr es:[bx + 0C0h]
-mov   word ptr [di + 04Ch], ax
+mov   word ptr ds:[di + 04Ch], ax
 
 mov   al, byte ptr es:[bx + 0C4h]
-mov   byte ptr [di + 03Bh], al
+mov   byte ptr ds:[di + 03Bh], al
 mov   al, byte ptr es:[bx + 0C8h]
-mov   byte ptr [di + 05Dh], al
+mov   byte ptr ds:[di + 05Dh], al
 
 mov   ax, word ptr es:[bx + 0CCh]
-mov   word ptr [di + 043h], ax
+mov   word ptr ds:[di + 043h], ax
 mov   ax, word ptr es:[bx + 0D0h]
-mov   word ptr [di + 050h], ax
+mov   word ptr ds:[di + 050h], ax
 mov   ax, word ptr es:[bx + 0D4h]
-mov   word ptr [di + 052h], ax
+mov   word ptr ds:[di + 052h], ax
 mov   ax, word ptr es:[bx + 0DCh]
-mov   word ptr [di + 058h], ax
+mov   word ptr ds:[di + 058h], ax
 mov   al, byte ptr es:[bx + 0E0h]
-mov   byte ptr [di + 05Ah], al
+mov   byte ptr ds:[di + 05Ah], al
 
 mov   al, byte ptr es:[bx + 0E8h]
 mov   ah, byte ptr es:[bx + 0ECh]
-mov   word ptr [di + 05Eh], ax
+mov   word ptr ds:[di + 05Eh], ax
 
 mov   al, byte ptr es:[bx + 0F0h]
 mov   ah, byte ptr es:[bx + 0114h]
-mov   word ptr [di + 060h], ax
+mov   word ptr ds:[di + 060h], ax
 
 mov   si, cx
 xor   bx, bx
@@ -122,7 +122,7 @@ load_next_power:
 add   bx, 2
 mov   ax, word ptr es:[si + 02Ch]
 add   si, 4
-mov   word ptr [bx + di + 01Ch], ax
+mov   word ptr ds:[bx + di + 01Ch], ax
 cmp   bx, NUMPOWERS * 2  ; sizeof dw
 jne   load_next_power
 mov   si, cx
@@ -132,7 +132,7 @@ load_next_key:
 inc   bx
 mov   al, byte ptr es:[si + 044h]
 add   si, 4
-mov   byte ptr [bx + di + 029h], al
+mov   byte ptr ds:[bx + di + 029h], al
 cmp   bx, NUMCARDS
 jl    load_next_key
 mov   si, cx
@@ -140,12 +140,12 @@ xor   bx, bx
 
 load_next_ammo:
 mov   ax, word ptr es:[si + 09ch]
-mov   word ptr [bx + di + 03Ch], ax
+mov   word ptr ds:[bx + di + 03Ch], ax
 inc   bx
 inc   bx
 mov   ax, word ptr es:[si + 0ach]
 add   si, 4
-mov   word ptr [bx + di + 042h], ax
+mov   word ptr ds:[bx + di + 042h], ax
 cmp   bx, NUMAMMO * 2
 jne   load_next_ammo
 mov   si, cx
@@ -155,39 +155,38 @@ load_next_weapon:
 inc   bx
 mov   al, byte ptr es:[si + 078h]
 add   si, 4
-mov   byte ptr [bx + di + 031h], al
+mov   byte ptr ds:[bx + di + 031h], al
 cmp   bx, NUMWEAPONS
 jl    load_next_weapon
 mov   si, cx
 xor   bx, bx
 load_next_sprite:
 mov   ax, word ptr es:[si + 0F4h]
-mov   word ptr [bx + _psprites], ax
+mov   word ptr ds:[bx + _psprites], ax
 test  ax, ax
 je    set_psprite_statenum_null
 done_with_psprite:
 mov   ax, word ptr es:[si + 0F8h]
-mov   word ptr [bx + _psprites + 2], ax
+mov   word ptr ds:[bx + _psprites + 2], ax
 mov   ax, word ptr es:[si + 0FCh]
-mov   word ptr [bx + _psprites + 4], ax
+mov   word ptr ds:[bx + _psprites + 4], ax
 mov   ax, word ptr es:[si + 0FEh]
-mov   word ptr [bx + _psprites + 6], ax
+mov   word ptr ds:[bx + _psprites + 6], ax
 mov   ax, word ptr es:[si + 0100h]
-mov   word ptr [bx + _psprites + 8], ax
+mov   word ptr ds:[bx + _psprites + 8], ax
 mov   ax, word ptr es:[si + 0102h]
-mov   word ptr [bx + _psprites + 0Ah], ax
+mov   word ptr ds:[bx + _psprites + 0Ah], ax
 add   si, SIZEOF_PSPDEF_VANILLA_T
 add   bx, SIZEOF_PSPDEF_T
 cmp   bx, SIZEOF_PSPDEF_T * NUMPSPRITES
 jne   load_next_sprite
-mov   word ptr [di + 056h], 0FFFFh
+mov   word ptr ds:[di + 056h], 0FFFFh
 xor   ax, ax
 add   word ptr ds:[_save_p], SIZEOF_PLAYER_VANILLA_T 
 
-mov   word ptr [di + 05Ch], ax
+mov   word ptr ds:[di + 05Ch], ax
 
-mov   di, word ptr cs:[_CSDATA_playerMobjRef_ptr - OFFSET P_LOADSTART_]
-mov   word ptr [di], ax
+mov   word ptr ds:[_playerMobjRef], ax
 
 pop   di
 pop   si
@@ -195,7 +194,7 @@ pop   cx
 pop   bx
 retf  
 set_psprite_statenum_null:
-mov   word ptr [bx + _psprites], 0FFFFh
+mov   word ptr ds:[bx + _psprites], 0FFFFh
 jmp   done_with_psprite
 
 
@@ -585,7 +584,7 @@ xor       ax, ax
 mov       word ptr es:[di + 2], ax      ; bnextref
 mov       word ptr es:[di + 022h], ax   ; targref
 
-lea       di, [di + 0Ah]
+lea       di, ds:[di + 0Ah]
 
 movsw      
 movsw               ; 048h -> 0Eh  height
@@ -603,12 +602,10 @@ stosb               ; 05Ah -> 1Bh  type
 cmp       al, MT_PLAYER
 jne       not_loading_player
 
-push      bx
 
-mov       bx, word ptr cs:[_CSDATA_playerMobjRef_ptr - OFFSET P_LOADSTART_]
-mov       word ptr ss:[bx], cx  ; ds is clobbered. use ss.
+mov       word ptr ss:[_playerMobjRef], cx  ; ds is clobbered. use ss.
 
-pop       bx
+
 not_loading_player:
 
 
@@ -678,14 +675,14 @@ db    09Ah
 dw    P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 ; di is mobj
-mov       bx, word ptr [di + 4]            ; get mobj secnum
+mov       bx, word ptr ds:[di + 4]            ; get mobj secnum
 mov       ax, SECTORS_SEGMENT
 mov       es, ax
 SHIFT_MACRO shl bx 4
 mov       ax, word ptr es:[bx]
-mov       word ptr [di + 6], ax              ; floorz
+mov       word ptr ds:[di + 6], ax              ; floorz
 mov       ax, word ptr es:[bx + 2]
-mov       word ptr [di + 8], ax              ; ceilingz
+mov       word ptr ds:[di + 8], ax              ; ceilingz
 
 
 add       si, (SIZEOF_MOBJ_VANILLA_T - 096h) ; add 4 (for tracer)
@@ -797,7 +794,7 @@ call   LoadInt8_
 
 
 
-mov    ax, word ptr [di - 0Ch]        ; di is 0Dh, we want 1
+mov    ax, word ptr ds:[di - 0Ch]        ; di is 0Dh, we want 1
 
 SHIFT_MACRO SHL AX 4
 
@@ -807,7 +804,7 @@ xchg   ax, bx
 mov    cx, ds
 push   ss
 pop    ds
-mov    word ptr [bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
+mov    word ptr ds:[bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
 ;call   P_AddActiveCeiling_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -847,7 +844,7 @@ call   LoadInt16_
 
 
 
-mov    ax, word ptr [di - 0Ch]  ; di is 0Dh, we want 1
+mov    ax, word ptr ds:[di - 0Ch]  ; di is 0Dh, we want 1
 IF COMPISA GE COMPILE_186
     shl    ax, 4
 ELSE
@@ -894,7 +891,7 @@ call   LoadShortHeight16_
 
 
 
-mov    ax, word ptr [di - 9]    ; di is + 0Bh, we want 2..
+mov    ax, word ptr ds:[di - 9]    ; di is + 0Bh, we want 2..
 
 SHIFT_MACRO SHL AX 4
 
@@ -951,7 +948,7 @@ ELSE
 ENDIF
 ; todo xchg
 xchg   ax, bx
-mov    word ptr [bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
+mov    word ptr ds:[bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
 mov    cx, ds
 push   ss
 pop    ds
@@ -1186,7 +1183,7 @@ rep stosw
 mov       di, dx
 
 mov       si, OFFSET _player
-lea       di, [di + 8]                  
+lea       di, ds:[di + 8]                  
 movsw                           ; 0 -> 8    
 movsw                           ; 2 -> A
 movsw                           ; 4 -> C
@@ -1625,7 +1622,7 @@ xor       ax, ax
 rep       stosw 
 
 
-lea       di, [di + 0Ch - SIZEOF_MOBJ_VANILLA_T] ; skip thinker fields and undo rep stosw
+lea       di, ds:[di + 0Ch - SIZEOF_MOBJ_VANILLA_T] ; skip thinker fields and undo rep stosw
 
 movsw   ; x
 movsw
@@ -1648,11 +1645,11 @@ lodsw                   ; si + 014h
 mov       word ptr es:[di + 040h], ax   ; di + 64h          statenum
 xchg      ax, cx        ; cx gets statenum. 
 
-lea       di, [di + 044h]
+lea       di, ds:[di + 044h]
 movsw ; si + 016h di + 6Ah          flags1
 movsw ; si + 018h di + 6Ch          flags2
 
-lea       di, [di - 048h]   ; di + 024h
+lea       di, ds:[di - 048h]   ; di + 024h
 
 
 ; 			savemobj->sprite 			= states[mobj_pos->stateNum].sprite;
@@ -1689,7 +1686,7 @@ add       di, 018h      ; di + 42h . skip a bunch of stuff related to sprites, b
 push      ss
 pop       ds
 
-lea       si, [bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_height ]       ; point to mobj + 0Ah now
+lea       si, ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_height ]       ; point to mobj + 0Ah now
 
 mov       al, byte ptr ds:[si + 014h]   ; 042h <- 01Eh (14h + 0a) radius
 xor       ah, ah
