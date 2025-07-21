@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/21 08:17:28
+Created on:       25/07/21 08:22:08
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -63,14 +63,14 @@ P_SAVEG_TEXT           CODE           AUTO           0dd2:0006       00000b36
 s_sound_TEXT           CODE           AUTO           0e86:0000       0000067a
 p_ceilng_TEXT          CODE           AUTO           0e86:0680       00000390
 p_doors_TEXT           CODE           AUTO           0e86:0a10       0000068c
-P_ENEMY_TEXT           CODE           AUTO           0e86:109c       00001997
-p_floor_TEXT           CODE           AUTO           0e86:2a40       00000806
-p_inter_TEXT           CODE           AUTO           0e86:3250       00000cf3
-p_lights_TEXT          CODE           AUTO           0e86:3f50       000003ed
-p_plats_TEXT           CODE           AUTO           0e86:4340       0000041b
-p_spec_TEXT            CODE           AUTO           0e86:4760       000011f0
-p_switch_TEXT          CODE           AUTO           0e86:5950       00000ae2
-P_MOBJ_TEXT            CODE           AUTO           0e86:6432       00000604
+P_ENEMY_TEXT           CODE           AUTO           0e86:109c       00001ab7
+p_floor_TEXT           CODE           AUTO           0e86:2b60       00000806
+p_inter_TEXT           CODE           AUTO           0e86:3370       00000cf3
+p_lights_TEXT          CODE           AUTO           0e86:4070       000003ed
+p_plats_TEXT           CODE           AUTO           0e86:4460       0000041b
+p_spec_TEXT            CODE           AUTO           0e86:4880       000011f0
+p_switch_TEXT          CODE           AUTO           0e86:5a70       00000ae2
+P_MOBJ_TEXT            CODE           AUTO           0e86:6552       000004e4
 p_telept_TEXT          CODE           AUTO           0e86:6a40       0000022c
 P_TICK_TEXT            CODE           AUTO           0e86:6c6c       000001c9
 p_user_TEXT            CODE           AUTO           0e86:6e40       000006f9
@@ -843,129 +843,129 @@ Module: p_doors.obj(C:\REALDOOM\p_doors.c)
 0e86:0ff8      P_SpawnDoorCloseIn30_
 0e86:1040      P_SpawnDoorRaiseIn5Mins_
 Module: p_enemy.obj(p_enemy.ASM)
-0e86:25d2      A_Explode_
-0e86:22c9      A_FatRaise_
+0e86:25d2*     A_Explode_
+0e86:22c9*     A_FatRaise_
 0e86:1150      P_NoiseAlert_
-0e86:2925      A_SpawnFly_
-0e86:25ca      A_Fall_
-0e86:18e2      A_PosAttack_
-0e86:1704      A_Chase_
-0e86:1ad0      A_BspiAttack_
+0e86:2925*     A_SpawnFly_
+0e86:25ca*     A_Fall_
+0e86:18e2*     A_PosAttack_
+0e86:1704*     A_Chase_
+0e86:1ad0*     A_BspiAttack_
 0e86:11c4*     P_CheckMissileRange_
-0e86:276c      A_BrainPain_
-0e86:1874      A_FaceTarget_
-0e86:1b34      A_SargAttack_
+0e86:276c*     A_BrainPain_
+0e86:1874*     A_FaceTarget_
+0e86:1b34*     A_SargAttack_
 0e86:21d1*     GetVileMomz_
-0e86:243b      A_PainDie_
-0e86:2878      A_BrainSpit_
-0e86:1dd0      A_SkelWhoosh_
-0e86:2800      A_BrainExplode_
-0e86:214b      A_VileTarget_
+0e86:243b*     A_PainDie_
+0e86:2878*     A_BrainSpit_
+0e86:1dd0*     A_SkelWhoosh_
+0e86:2800*     A_BrainExplode_
+0e86:214b*     A_VileTarget_
 0e86:1298*     P_Move_
 0e86:1569*     P_LookForPlayers_
-0e86:209c      A_VileStart_
-0e86:20ad      A_FireCrackle_
-0e86:1de3      A_SkelFist_
+0e86:209c*     A_VileStart_
+0e86:20ad*     A_FireCrackle_
+0e86:1de3*     A_SkelFist_
 0e86:2467*     A_PainShootSkull_
-0e86:1f05      A_VileChase_
-0e86:255f      A_Scream_
-0e86:26fd      A_Hoof_
+0e86:1f05*     A_VileChase_
+0e86:255f*     A_Scream_
+0e86:26fd*     A_Hoof_
 0e86:1161*     P_CheckMeleeRange_
-0e86:2356      A_FatAttack2_
+0e86:2356*     A_FatAttack2_
 0e86:109c*     P_RecursiveSound_
-0e86:1c06      A_SkelMissile_
-0e86:22d5      A_FatAttack3_
-0e86:233b      A_FatAttack1_
-0e86:291e      A_SpawnSound_
-0e86:1667      A_Look_
-0e86:2713      A_BabyMetal_
-0e86:2708      A_Metal_
-0e86:1bc4      A_BruisAttack_
-0e86:25ad      A_XScream_
+0e86:1c06*     A_SkelMissile_
+0e86:22d5*     A_FatAttack3_
+0e86:233b*     A_FatAttack1_
+0e86:291e*     A_SpawnSound_
+0e86:1667*     A_Look_
+0e86:2713*     A_BabyMetal_
+0e86:2708*     A_Metal_
+0e86:1bc4*     A_BruisAttack_
+0e86:25ad*     A_XScream_
 0e86:13e9*     P_TryWalk_
-0e86:2776      A_BrainScream_
-0e86:1b66      A_HeadAttack_
-0e86:25b5      A_Pain_
+0e86:2a9b      P_SetMobjState_
+0e86:2776*     A_BrainScream_
+0e86:1b66*     A_HeadAttack_
+0e86:25b5*     A_Pain_
 0e86:1e1e*     PIT_VileCheck_
-0e86:21fd      A_VileAttack_
-0e86:262f      A_BossDeath_
-0e86:2a33*     P_ENEMY_ENDMARKER_
-0e86:20b4      A_Fire_
-0e86:1950      A_SPosAttack_
-0e86:19cd      A_CPosAttack_
-0e86:1a86      A_SpidRefire_
+0e86:21fd*     A_VileAttack_
+0e86:262f*     A_BossDeath_
+0e86:2b53*     P_ENEMY_ENDMARKER_
+0e86:20b4*     A_Fire_
+0e86:1950*     A_SPosAttack_
+0e86:19cd*     A_CPosAttack_
+0e86:1a86*     A_SpidRefire_
 0e86:13f8*     P_NewChaseDir_
-0e86:20a4      A_StartFire_
-0e86:1c54      A_Tracer_
-0e86:2371      A_SkullAttack_
+0e86:20a4*     A_StartFire_
+0e86:1c54*     A_Tracer_
+0e86:2371*     A_SkullAttack_
 0e86:109c*     P_ENEMY_STARTMARKER_
-0e86:1a3c      A_CPosRefire_
-0e86:1aeb      A_TroopAttack_
-0e86:2548      A_PainAttack_
-0e86:2a17      A_PlayerScream_
-0e86:271e      A_BrainAwake_
-0e86:1610      A_KeenDie_
-0e86:1ba9      A_CyberAttack_
+0e86:1a3c*     A_CPosRefire_
+0e86:1aeb*     A_TroopAttack_
+0e86:2548*     A_PainAttack_
+0e86:2a17*     A_PlayerScream_
+0e86:271e*     A_BrainAwake_
+0e86:1610*     A_KeenDie_
+0e86:1ba9*     A_CyberAttack_
 Module: p_floor.obj(C:\REALDOOM\p_floor.c)
-0e86:2a40      T_MovePlane_
-0e86:2c5c      T_MoveFloor_
-0e86:2d22      EV_DoFloor_
-0e86:30b2      EV_BuildStairs_
+0e86:2b60      T_MovePlane_
+0e86:2d7c      T_MoveFloor_
+0e86:2e42      EV_DoFloor_
+0e86:31d2      EV_BuildStairs_
 Module: p_inter.obj(C:\REALDOOM\p_inter.c)
-0e86:3258+     P_GiveAmmo_
-0e86:3370+     P_GiveWeapon_
-0e86:33c8+     P_GiveBody_
-0e86:33f4+     P_GiveArmor_
-0e86:3414+     P_GiveCard_
-0e86:3432      P_GivePower_
-0e86:34f2      P_TouchSpecialThing_
-0e86:399a+     P_KillMobj_
-0e86:3b52+     getMassThrust_
-0e86:3bc0      P_DamageMobj_
+0e86:3378+     P_GiveAmmo_
+0e86:3490+     P_GiveWeapon_
+0e86:34e8+     P_GiveBody_
+0e86:3514+     P_GiveArmor_
+0e86:3534+     P_GiveCard_
+0e86:3552      P_GivePower_
+0e86:3612      P_TouchSpecialThing_
+0e86:3aba+     P_KillMobj_
+0e86:3c72+     getMassThrust_
+0e86:3ce0      P_DamageMobj_
 Module: p_lights.obj(C:\REALDOOM\p_lights.c)
-0e86:3f50      T_FireFlicker_
-0e86:3fb0      P_SpawnFireFlicker_
-0e86:4004      T_LightFlash_
-0e86:4044      P_SpawnLightFlash_
-0e86:40b4      T_StrobeFlash_
-0e86:40f2      P_SpawnStrobeFlash_
-0e86:4178      EV_StartLightStrobing_
-0e86:41b0      EV_LightChange_
-0e86:4282      T_Glow_
-0e86:42e0      P_SpawnGlowingLight_
+0e86:4070      T_FireFlicker_
+0e86:40d0      P_SpawnFireFlicker_
+0e86:4124      T_LightFlash_
+0e86:4164      P_SpawnLightFlash_
+0e86:41d4      T_StrobeFlash_
+0e86:4212      P_SpawnStrobeFlash_
+0e86:4298      EV_StartLightStrobing_
+0e86:42d0      EV_LightChange_
+0e86:43a2      T_Glow_
+0e86:4400      P_SpawnGlowingLight_
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
-0e86:4348      T_PlatRaise_
-0e86:446e      EV_DoPlat_
-0e86:4670      EV_PlatFunc_
-0e86:46ee      P_AddActivePlat_
-0e86:4716+     P_RemoveActivePlat_
+0e86:4468      T_PlatRaise_
+0e86:458e      EV_DoPlat_
+0e86:4790      EV_PlatFunc_
+0e86:480e      P_AddActivePlat_
+0e86:4836+     P_RemoveActivePlat_
 Module: p_spec.obj(C:\REALDOOM\p_spec.c)
-0e86:4760      twoSided_
-0e86:478c+     getNextSectorList_
-0e86:47f8      P_FindHighestOrLowestFloorSurrounding_
-0e86:48a8      P_FindNextHighestFloor_
-0e86:497a      P_FindLowestOrHighestCeilingSurrounding_
-0e86:4a40      P_FindSectorsFromLineTag_
-0e86:4aae      P_FindMinSurroundingLight_
-0e86:4c60      P_CrossSpecialLine_
-0e86:5256      P_ShootSpecialLine_
-0e86:5342      P_PlayerInSpecialSector_
-0e86:5464      P_UpdateSpecials_
-0e86:55d8      EV_DoDonut_
-0e86:57f4      P_SpawnSpecials_
+0e86:4880      twoSided_
+0e86:48ac+     getNextSectorList_
+0e86:4918      P_FindHighestOrLowestFloorSurrounding_
+0e86:49c8      P_FindNextHighestFloor_
+0e86:4a9a      P_FindLowestOrHighestCeilingSurrounding_
+0e86:4b60      P_FindSectorsFromLineTag_
+0e86:4bce      P_FindMinSurroundingLight_
+0e86:4d80      P_CrossSpecialLine_
+0e86:5376      P_ShootSpecialLine_
+0e86:5462      P_PlayerInSpecialSector_
+0e86:5584      P_UpdateSpecials_
+0e86:56f8      EV_DoDonut_
+0e86:5914      P_SpawnSpecials_
 Module: p_switch.obj(C:\REALDOOM\p_switch.c)
-0e86:5950+     P_StartButton_
-0e86:59b0      P_ChangeSwitchTexture_
-0e86:5c24      P_UseSpecialLine_
+0e86:5a70+     P_StartButton_
+0e86:5ad0      P_ChangeSwitchTexture_
+0e86:5d44      P_UseSpecialLine_
 Module: p_mobj.obj(p_mobj.ASM)
-0e86:67a6      P_SpawnMobj_
-0e86:64ab      P_Random_
-0e86:6582      P_SpawnMapThing_
-0e86:68ef      P_RemoveMobj_
-0e86:64c0*     P_SpawnPlayer_
-0e86:6432      P_SpawnPuff_
-0e86:697e      P_SetMobjState_
-0e86:66c0      P_MobjThinker_
+0e86:68c6      P_SpawnMobj_
+0e86:65cb      P_Random_
+0e86:66a2      P_SpawnMapThing_
+0e86:6a0f      P_RemoveMobj_
+0e86:65e0*     P_SpawnPlayer_
+0e86:6552      P_SpawnPuff_
+0e86:67e0      P_MobjThinker_
 Module: p_telept.obj(C:\REALDOOM\p_telept.c)
 0e86:6a40      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
@@ -1624,4 +1624,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e970 (190832.)
 Entry point address: 23cb:491e
-Link time: 00:00.30
+Link time: 00:00.29

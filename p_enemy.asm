@@ -37,7 +37,6 @@ EXTRN _diags:WORD
 EXTRN _opposite:WORD
 
 
-
 .CODE
 
 
@@ -5508,6 +5507,234 @@ dw _S_StartSound_addr
 ret   
 
 ENDP
+
+
+
+
+setmobjstate_jump_table:
+dw A_DoBFGSpray_
+dw A_Explode_
+dw A_Pain_
+dw A_PlayerScream_
+dw A_Fall_
+dw A_XScream_
+dw A_Look_
+dw A_Chase_
+dw A_FaceTarget_
+dw A_PosAttack_
+dw A_Scream_
+dw A_SPosAttack_
+dw A_VileChase_
+dw A_VileStart_
+dw A_VileTarget_
+dw A_VileAttack_
+dw A_StartFire_
+dw A_Fire_
+dw A_FireCrackle_
+dw A_Tracer_
+dw A_SkelWhoosh_
+dw A_SkelFist_
+dw A_SkelMissile_
+dw A_FatRaise_
+dw A_FatAttack1_
+dw A_FatAttack2_
+dw A_FatAttack3_
+dw A_BossDeath_
+dw A_CPosAttack_
+dw A_CPosRefire_
+dw A_TroopAttack_
+dw A_SargAttack_
+dw A_HeadAttack_
+dw A_BruisAttack_
+dw A_SkullAttack_
+dw A_Metal_
+dw A_SpidRefire_
+dw A_BabyMetal_
+dw A_BspiAttack_
+dw A_Hoof_
+dw A_CyberAttack_
+dw A_PainAttack_
+dw A_PainDie_
+dw A_KeenDie_
+dw A_BrainPain_
+dw A_BrainScream_
+dw A_DoBrainDie_
+dw A_BrainAwake_
+dw A_BrainSpit_
+dw A_SpawnSound_
+dw A_SpawnFly_
+dw A_BrainExplode_
+
+ENDP
+
+
+
+
+PROC P_SetMobjState_ FAR
+PUBLIC P_SetMobjState_
+
+; bp - 2   unused
+; bp - 4   unused
+; bp - 6   state offset
+; bp - 8   mobjpos offset
+
+; dx state
+; ax mobj
+
+push      bx
+push      cx
+push      si
+push      di
+
+mov       si, ax
+mov       cx, dx
+
+mov       word ptr ds:[_setStateReturn], ax
+mov       bx, SIZEOF_THINKER_T
+sub       ax, (_thinkerlist + THINKER_T.t_data)
+xor       dx, dx
+div       bx
+
+IF COMPISA GE COMPILE_186
+    imul  ax, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   di, SIZEOF_MOBJ_POS_T
+    mul   di
+ENDIF
+
+;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_6800_SEGMENT
+mov       word ptr ds:[_setStateReturn_pos], ax
+
+
+;test      cx, cx
+;je        state_is_null
+jcxz      state_is_null
+
+
+do_next_state:
+push      ax  ; mobjpos offset
+xchg      ax, bx   ; bx gets mobjpos offset
+mov       ax, 6
+mul       cx
+mov       di, MOBJPOSLIST_6800_SEGMENT
+mov       es, di
+push      ax    ; state offset
+xchg      ax, di
+
+mov       word ptr es:[bx + MOBJ_POS_T.mp_statenum], cx
+mov       ax, STATES_SEGMENT
+mov       es, ax
+mov       al, byte ptr es:[di + STATE_T.state_tics]
+mov       byte ptr ds:[si + MOBJ_T.m_tics], al
+mov       al, byte ptr es:[di + state_action]
+sub       al, ETF_A_BFGSpray                        ; minimum action number
+je        do_bfg_spray_far        ; todo fix
+;cmp       al, ETF_A_BRAINEXPLODE ; max range
+cmp       al, (ETF_A_BRAINEXPLODE - ETF_A_BFGSPRAY) ; max range
+ja        done_with_mobj_state_action
+cbw
+sal       ax, 1
+xchg      ax, di
+
+mov       cx, MOBJPOSLIST_6800_SEGMENT
+mov       ax, si
+
+PUSHA_NO_AX_MACRO
+
+call      word ptr cs:[di + OFFSET setmobjstate_jump_table] ; subtract lowest value
+
+POPA_NO_AX_MACRO
+
+
+done_with_mobj_state_action:
+mov       word ptr ds:[_setStateReturn], si
+
+pop       di
+pop       ax
+mov       word ptr ds:[_setStateReturn_pos], ax
+
+;mov       word ptr ds:[_setStateReturn_pos + 2], dx
+
+mov       cx, STATES_SEGMENT
+mov       es, cx
+
+mov       cx, word ptr es:[di + STATE_T.state_nextstate]
+cmp       byte ptr ds:[si + MOBJ_T.m_tics], 0
+jne       exit_p_setmobjstate_return_1
+test      cx, cx
+
+jne       do_next_state
+
+state_is_null:
+xchg      ax, bx  ; bx gets ptr from ax
+
+mov       ax, MOBJPOSLIST_6800_SEGMENT
+mov       es, ax
+mov       ax, si
+mov       word ptr es:[bx + MOBJ_POS_T.mp_stateNum], 0
+
+xor       dx, dx
+
+;call      P_RemoveMobj_
+; todo change to direct call 
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_RemoveMobj_addr
+
+
+mov       word ptr ds:[_setStateReturn], si
+lea       ax, [si - (_thinkerlist + THINKER_T.t_data)]
+mov       bx, SIZEOF_THINKER_T
+div       bx
+
+
+IF COMPISA GE COMPILE_186
+    imul  ax, ax, SIZEOF_MOBJ_POS_T
+ELSE
+    mov   di, SIZEOF_MOBJ_POS_T
+    mul   di
+ENDIF
+
+;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_6800_SEGMENT
+mov       word ptr ds:[_setStateReturn_pos], ax
+xor       al, al
+
+exit_p_setmobjstate:
+pop       di
+pop       si
+pop       cx
+pop       bx
+retf      
+exit_p_setmobjstate_return_1:
+mov       al, 1
+jmp       exit_p_setmobjstate
+
+
+ENDP
+
+do_bfg_spray_far:
+
+;call      dword ptr ds:[_A_BFGSprayFar]
+db        09Ah
+dw        A_BFGSPRAYFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+jmp       done_with_mobj_state_action
+
+
+
+PROC      A_DoBrainDie_ NEAR
+call      G_ExitLevel_
+ret
+ENDP
+
+
+PROC      A_DoBFGSpray_ NEAR
+;call      dword ptr ds:[_A_BFGSprayFar]
+db        09Ah
+dw        A_BFGSPRAYFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+ret
+ENDP
+
 
 PROC    P_ENEMY_ENDMARKER_ 
 PUBLIC  P_ENEMY_ENDMARKER_
