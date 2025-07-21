@@ -65,7 +65,6 @@ file p_plats.obj
 file p_spec.obj
 file p_switch.obj
 file p_mobj.obj
-file p_mobjn.obj
 file p_telept.obj
 file p_tick.obj
 file p_user.obj
