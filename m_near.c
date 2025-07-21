@@ -1076,20 +1076,6 @@ uint16_t oldentertics;
 
    
 
-//
-// P_NewChaseDir related LUT.
-//
-dirtype_t opposite[] = {
-
-  DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST,
-  DI_EAST, DI_NORTHEAST, DI_NORTH, DI_NORTHWEST, DI_NODIR
-};
-
-dirtype_t diags[] = {
-
-    DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
-};
-
 
 
 

@@ -1097,9 +1097,6 @@ extern uint16_t oldentertics;
 #define    NUMDIRS 9
  
 typedef int8_t dirtype_t;
-extern dirtype_t opposite[9];
-extern dirtype_t diags[4];
-
 
 
  

@@ -33,8 +33,7 @@ EXTRN EV_DoFloor_:NEAR
 EXTRN _gameskill:BYTE
 EXTRN _gametic:DWORD
 EXTRN _fastparm:BYTE
-EXTRN _diags:WORD
-EXTRN _opposite:WORD
+
 
 
 .CODE
@@ -69,6 +68,19 @@ DIAG_DI_SOUTHWEST = 2
 DIAG_DI_SOUTHEAST = 3
 
 FLOATSPEED_HIGHBITS = 4
+
+
+; P_NewChaseDir related LUT.
+
+_opposite:
+db  DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST
+db  DI_EAST, DI_NORTHEAST, DI_NORTH, DI_NORTHWEST, DI_NODIR
+
+
+_diags:
+db  DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
+
+
 
 
 TAG_1323 =		56
@@ -798,7 +810,7 @@ mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   al, byte ptr ds:[si + MOBJ_T.m_movedir]
 cbw
 mov   bx, ax
-mov   ah, byte ptr ds:[bx + _opposite] ; todo make cs?
+mov   ah, byte ptr cs:[bx + _opposite] ; todo make cs?
 push  ax  ; bp - 2. both movedir and opposite.
 push  ax  ; garbage push instead of sub sp 2 to hold d[1] d[2]
 
@@ -929,7 +941,7 @@ movedir_set:
 push  ax  ; store deltax lo.
 
 
-mov   al, byte ptr ds:[si + _diags]  ; do diags lookup. todo make cs table
+mov   al, byte ptr cs:[si + _diags]  ; do diags lookup. todo make cs table
 mov   si, es    ; restore mobj ptr.
 
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
@@ -1508,7 +1520,7 @@ je    look_for_new_target
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
 je    check_for_melee_attack
 and   byte ptr es:[di + MOBJ_POS_T.mp_flags1], (NOT MF_JUSTATTACKED)
-cmp   byte ptr ds:[_gameskill], sk_nightmare
+cmp   byte ptr ds:[_gameskill], SK_NIGHTMARE
 je    exit_a_chase
 cmp   byte ptr ds:[_fastparm], 0
 je    new_chase_dir_and_exit
@@ -1595,7 +1607,7 @@ dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
 
 test  ax, ax
 je    nomissile
-cmp   byte ptr ds:[_gameskill], sk_nightmare
+cmp   byte ptr ds:[_gameskill], SK_NIGHTMARE
 jae   check_missile_range
 cmp   byte ptr ds:[_fastparm], 0
 jne   check_missile_range
