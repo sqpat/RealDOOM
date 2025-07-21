@@ -388,3 +388,7 @@ void __near P_PlayerThink (void) {
 }
 
 
+
+void __near OutOfThinkers (){
+	I_Error("Out of thinkers!");
+}

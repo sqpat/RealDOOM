@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/20 09:44:25
+Created on:       25/07/21 08:14:35
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -67,12 +67,12 @@ p_lights_TEXT          CODE           AUTO           0b9f:5750       000003ed
 p_plats_TEXT           CODE           AUTO           0b9f:5b40       0000041b
 p_spec_TEXT            CODE           AUTO           0b9f:5f60       000011f0
 p_switch_TEXT          CODE           AUTO           0b9f:7150       00000ae2
-p_mobj_TEXT            CODE           AUTO           0b9f:7c40       0000000d
-P_MOBJN_TEXT           CODE           AUTO           0b9f:7c4e       00000604
-p_telept_TEXT          CODE           AUTO           0b9f:8260       0000022c
-P_TICK_TEXT            CODE           AUTO           0b9f:848c       000001c9
-p_user_TEXT            CODE           AUTO           0b9f:8660       000006ec
-R_MAIN_TEXT            CODE           AUTO           0b9f:8d4c       000003dc
+p_mobj_TEXT            CODE           AUTO           0b9f:7c40       00000000
+P_MOBJN_TEXT           CODE           AUTO           0b9f:7c40       00000604
+p_telept_TEXT          CODE           AUTO           0b9f:8250       0000022c
+P_TICK_TEXT            CODE           AUTO           0b9f:847c       000001c9
+p_user_TEXT            CODE           AUTO           0b9f:8650       000006f9
+R_MAIN_TEXT            CODE           AUTO           0b9f:8d4a       000003dc
 w_wad_TEXT             CODE           AUTO           0b9f:9130       0000030c
 V_VIDEO_TEXT           CODE           AUTO           0b9f:943c       00000616
 Z_ZONE_TEXT            CODE           AUTO           0b9f:9a52       000004a4
@@ -945,36 +945,35 @@ Module: p_switch.obj(C:\REALDOOM\p_switch.c)
 0b9f:7150+     P_StartButton_
 0b9f:71b0      P_ChangeSwitchTexture_
 0b9f:7424      P_UseSpecialLine_
-Module: p_mobj.obj(C:\REALDOOM\p_mobj.c)
-0b9f:7c40      OutOfThinkers_
 Module: p_mobjn.obj(p_mobjn.ASM)
-0b9f:7fc2      P_SpawnMobj_
-0b9f:7cc7      P_Random_
-0b9f:7d9e      P_SpawnMapThing_
-0b9f:810b      P_RemoveMobj_
-0b9f:7cdc*     P_SpawnPlayer_
-0b9f:7c4e      P_SpawnPuff_
-0b9f:819a      P_SetMobjState_
-0b9f:7edc      P_MobjThinker_
+0b9f:7fb4      P_SpawnMobj_
+0b9f:7cb9      P_Random_
+0b9f:7d90      P_SpawnMapThing_
+0b9f:80fd      P_RemoveMobj_
+0b9f:7cce*     P_SpawnPlayer_
+0b9f:7c40      P_SpawnPuff_
+0b9f:818c      P_SetMobjState_
+0b9f:7ece      P_MobjThinker_
 Module: p_telept.obj(C:\REALDOOM\p_telept.c)
-0b9f:8260      EV_Teleport_
+0b9f:8250      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-0b9f:8500      P_UpdateThinkerFunc_
-0b9f:8522      P_RemoveThinker_
-0b9f:8555      P_Ticker_
-0b9f:848c      P_CreateThinker_
+0b9f:84f0      P_UpdateThinkerFunc_
+0b9f:8512      P_RemoveThinker_
+0b9f:8545      P_Ticker_
+0b9f:847c      P_CreateThinker_
 Module: p_user.obj(C:\REALDOOM\p_user.c)
-0b9f:8660+     P_Thrust_
-0b9f:86c0+     P_CalcHeight_
-0b9f:88cc+     P_MovePlayer_
-0b9f:89a6+     P_DeathThink_
-0b9f:8b52      P_PlayerThink_
+0b9f:8650+     P_Thrust_
+0b9f:86b0+     P_CalcHeight_
+0b9f:88bc+     P_MovePlayer_
+0b9f:8996+     P_DeathThink_
+0b9f:8b42      P_PlayerThink_
+0b9f:8d3c      OutOfThinkers_
 Module: r_main.obj(r_main.ASM)
-0b9f:908c      R_VideoErase_
-0b9f:906e      R_PointToAngle2_16_
-0b9f:907d      R_SetViewSize_
-0b9f:9049      R_PointToAngle2_
-0b9f:90cb      R_DrawViewBorder_
+0b9f:908a      R_VideoErase_
+0b9f:906c      R_PointToAngle2_16_
+0b9f:907b      R_SetViewSize_
+0b9f:9047      R_PointToAngle2_
+0b9f:90c9      R_DrawViewBorder_
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 0b9f:9130      locallib_far_fread_
 0b9f:91ba      locallib_far_fwrite_
@@ -1284,4 +1283,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  0001a9d0 (109008.)
 Entry point address: 0b9f:a8e6
-Link time: 00:00.19
+Link time: 00:00.20
