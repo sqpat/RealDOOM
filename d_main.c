@@ -967,14 +967,7 @@ void __near D_DoomLoop (void) {
 		}
 
 
-		if((forwardmove[0] != 0x19) || 
-			(forwardmove[1] != 0x32) || 
-			(sidemove[0] != 0x18) || 
-			(sidemove[1] != 0x28)){
-				I_Error("leak detected? %lx %lx",
-				sidemove[0], sidemove[1]
-				);
-		}
+		
 
 #ifdef DETAILED_BENCH_STATS
 		cachedtics = ticcount;

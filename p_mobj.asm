@@ -35,11 +35,7 @@ EXTRN S_StopSoundMobjRef_:PROC
 
 .DATA
 
-EXTRN _gameskill:BYTE
-EXTRN _respawnmonsters:BYTE
-EXTRN _nomonsters:BYTE
-EXTRN _totalkills:WORD
-EXTRN _totalitems:WORD
+
 
 .CODE
 

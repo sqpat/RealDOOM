@@ -95,7 +95,9 @@ _bombspot_pos = 					_NULL_OFFSET + 000A0h
 
 _spryscale = 						_NULL_OFFSET + 000A4h
 _sprtopscreen =	 					_NULL_OFFSET + 000A8h
-;_player_ptr = 						_NULL_OFFSET + 000ACh
+_nomonsters =                       _NULL_OFFSET + 000ACh
+_respawnmonsters =                  _NULL_OFFSET + 000ADh
+
 _pendingmusicenum =                 _NULL_OFFSET + 000AEh
 _pendingmusicenumlooping =          _NULL_OFFSET + 000AFh
 
@@ -132,6 +134,9 @@ _tantoangle_segment  = 				_NULL_OFFSET + 000E8h
 _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 000EAh
 
 ; ec-f4 free
+_totalkills = 						_NULL_OFFSET + 000ECh
+_totalitems = 						_NULL_OFFSET + 000EEh
+_totalsecret = 						_NULL_OFFSET + 000F0h
 
 
 _validcount_global =				_NULL_OFFSET + 000F4h
@@ -144,6 +149,8 @@ _brainspit_easy = 					_NULL_OFFSET + 000FCh
 _floatok = 							_NULL_OFFSET + 000FDh
 _corpsehitRef = 					_NULL_OFFSET + 000FEh
 _vileobj = 							_NULL_OFFSET + 00100h
+_fastparm =	                        _NULL_OFFSET + 00100h
+_gameskill =	                    _NULL_OFFSET + 00101h
 
 
 _EMS_PAGE =                 	    _NULL_OFFSET + 00102h

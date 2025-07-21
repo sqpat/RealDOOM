@@ -64,9 +64,7 @@ uint16_t snd_Mport;
 
 
 
-boolean         nomonsters;     // checkparm of -nomonsters
 boolean         respawnparm;    // checkparm of -respawn
-boolean         fastparm;       // checkparm of -fast
 
 
 boolean         singletics = false; // debug flag to cancel adaptiveness
@@ -476,8 +474,6 @@ uint8_t				usegamma;
 
 
  
-skill_t         	gameskill; 
-boolean         	respawnmonsters;
  
 boolean         	paused; 
 boolean         	sendpause;              // send a pause event next tic 
@@ -495,7 +491,6 @@ ticcount_t      	starttime;              // for comparative timing purposes
 
  
 
-int16_t             totalkills, totalitems, totalsecret;    // for intermission 
  
 boolean         demorecording; 
 boolean         demoplayback; 

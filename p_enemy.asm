@@ -30,9 +30,6 @@ EXTRN EV_DoFloor_:NEAR
 
 .DATA
 
-EXTRN _gameskill:BYTE
-EXTRN _fastparm:BYTE
-
 
 
 .CODE

@@ -142,7 +142,11 @@
 #define spryscale                       (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                    (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x00A8)))
 // todo dont need?
-//#define player_ptr                      (*((player_t __near* _near*)         (_NULL_OFFSET + 0x00AC)))
+#define nomonsters                      (*((boolean __near*)                 (_NULL_OFFSET + 0x00AC)))
+#define respawnmonsters                 (*((boolean __near*)                 (_NULL_OFFSET + 0x00AD)))
+
+
+
 #define pendingmusicenum                (*((musicenum_t _near*)              (_NULL_OFFSET + 0x00AE)))
 #define pendingmusicenumlooping         (*((boolean _near*)              	 (_NULL_OFFSET + 0x00AF)))
 #define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B0)))
@@ -175,6 +179,10 @@
 #define tantoangle_segment              (*((segment_t  __near*)              (_NULL_OFFSET + 0x00E8)))
 #define spanfunc_jump_segment_storage   (*((segment_t __near*)               (_NULL_OFFSET + 0x00EA)))
 
+#define totalkills 			            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00EC))
+#define totalitems 			            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00EC))
+#define totalsecret 		            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F0))
+//f2 unused
 
 #define validcount_global	            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F4))
 #define firstpatch                      (*(int16_t  __near *)                (_NULL_OFFSET + 0x00F6))
@@ -186,7 +194,9 @@
 #define floatok                         (*(boolean __near *)                 (_NULL_OFFSET + 0x00FD))
 #define corpsehitRef                    (*(THINKERREF __near *)              (_NULL_OFFSET + 0x00FE))
 // unused apparently
-//#define vileobj                         (*(mobj_t __near * __near *)         (_NULL_OFFSET + 0x0100))
+
+#define fastparm	                    (*((boolean __near*)                 (_NULL_OFFSET + 0x0100)))
+#define gameskill	                    (*((skill_t __near*)                 (_NULL_OFFSET + 0x0101)))
 
 #define EMS_PAGE                 	    (*((segment_t __near*)               (_NULL_OFFSET + 0x0102)))
 #define viewangle_shiftright3           (*((fineangle_t __near*)             (_NULL_OFFSET + 0x0104)))
@@ -568,9 +578,7 @@ extern uint16_t             snd_Mport;
 
 
 
-extern boolean              nomonsters;     // checkparm of -nomonsters
 extern boolean              respawnparm;    // checkparm of -respawn
-extern boolean              fastparm;       // checkparm of -fast
 
 extern boolean              singletics;
 
@@ -809,8 +817,6 @@ extern uint8_t	usegamma;
 
  
 
-extern skill_t            gameskill; 
-extern boolean            respawnmonsters;
 extern boolean            paused; 
 extern boolean            sendpause;              // send a pause event next tic 
 extern boolean            sendsave;               // send a save event next tic 
@@ -820,9 +826,7 @@ extern boolean         	  noblit;                 // for comparative timing purp
 extern ticcount_t         starttime;              // for comparative timing purposes       
 
 
-extern int16_t             totalkills; 
-extern int16_t             totalitems;
-extern int16_t             totalsecret;    // for intermission 
+
 extern boolean         demorecording; 
 extern boolean         demoplayback; 
 extern boolean         netdemo; 
