@@ -961,7 +961,7 @@ ENDP
 ;	//short_height_t		openrange; // not worth storing thousands of bytes of a subtraction result
 ;} lineopening_t;
 
-PROC P_LineOpening_ FAR
+PROC P_LineOpening_ NEAR
 PUBLIC P_LineOpening_ 
 
 
@@ -1036,7 +1036,7 @@ mov  word ptr ds:[_lineopening+0], ax  ; set opentop
 
 
 return_lineopening:
-retf
+ret
 
 
 
@@ -1046,7 +1046,7 @@ ENDP
 
 ;void __near P_UnsetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset);
 
-PROC P_UnsetThingPosition_ FAR
+PROC P_UnsetThingPosition_ NEAR
 PUBLIC P_UnsetThingPosition_ 
 
 ; #define GETTHINKERREF(a) ((((uint16_t)((byte __near*)a - (byte __near*)thinkerlist))-4)/SIZEOF_THINKER_T)
@@ -1153,7 +1153,7 @@ pop   di
 pop   si
 pop   cx
 pop   bx
-retf   
+ret
 
 
 has_prev_ref:
@@ -1320,7 +1320,7 @@ pop   di
 pop   si
 pop   cx
 pop   bx
-retf   
+ret   
 
 ref_not_a_match:
 ; nextRef = innerthing->bnextRef;
@@ -1337,7 +1337,7 @@ pop   di
 pop   si
 pop   cx
 pop   bx
-retf   
+ret
 
 
 ENDP
@@ -1350,7 +1350,7 @@ ENDP
 ; dx    thing_pos_offset
 ; bx    knownsecnum
 
-PROC P_SetThingPosition_ FAR
+PROC P_SetThingPosition_ NEAR
 PUBLIC P_SetThingPosition_ 
 
 push  cx
@@ -1577,7 +1577,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-retf  
+ret  
 
 set_null_bnextref_and_exit:
 
@@ -1588,14 +1588,14 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-retf  
+ret  
 
 ENDP
 
 
 ; int16_t __far R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 
-PROC R_PointInSubsector_ FAR
+PROC R_PointInSubsector_ NEAR
 PUBLIC R_PointInSubsector_ 
 
 
@@ -1650,7 +1650,7 @@ pop   si
 pop   di
 
 exit_r_pointinsubsector:
-retf
+ret
 
 
 ENDP
@@ -1839,7 +1839,7 @@ exit_blockthingsiterator:
 pop  di
 pop  si
 pop  cx
-retf
+ret
 ENDP
 
 ; always return true technically
@@ -3139,7 +3139,7 @@ ENDP
 
 
 ; return in carry
-PROC P_TryMove_ FAR
+PROC P_TryMove_ NEAR
 PUBLIC P_TryMove_ 
 
 ; bp - 2	  thing_pos hi (segment)
@@ -3147,10 +3147,10 @@ PUBLIC P_TryMove_
 ; bp - 4      linespecial
 
 
-; bp + 0Ch   ; x lo
-; bp + 0Eh   ; x hi
-; bp + 010h   ; y lo
-; bp + 012h  ; y hi
+; bp + 0Ah   ; x lo
+; bp + 0Ch   ; x hi
+; bp + 0Eh   ; y lo
+; bp + 010h  ; y hi
 
 
 
@@ -3175,11 +3175,11 @@ sub   sp, 2
 ;	}
 
 
-push  word ptr [bp + 012h]
 push  word ptr [bp + 010h]
+push  word ptr [bp + 0Eh]
 
 mov   byte ptr ds:[_floatok], 0
-les   bx, dword ptr [bp + 0Ch]
+les   bx, dword ptr [bp + 0Ah]
 mov   cx, es
 mov   dx, -1
 call  P_CheckPosition_
@@ -3269,7 +3269,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-retf   8
+ret   8
 
 mobj_bot_ok:
 skip_checks_for_teleport:
@@ -3326,11 +3326,11 @@ xchg  si, di
 ;	thing_pos->y = y;
 
 
-lds   ax, dword ptr [bp + 0Ch]
+lds   ax, dword ptr [bp + 0Ah]
 stosw
 mov   ax, ds
 stosw
-lds   ax, dword ptr [bp + 010h]
+lds   ax, dword ptr [bp + 0Eh]
 stosw
 mov   ax, ds
 stosw
@@ -3379,7 +3379,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-retf   8
+ret   8
 
 loop_next_num_spec:
 dec   word ptr ds:[_numspechit]
@@ -4494,7 +4494,7 @@ ENDP
 
 ; return in carry
 
-PROC P_CheckPosition_ FAR
+PROC P_CheckPosition_ NEAR
 PUBLIC P_CheckPosition_
 
 ; - bp - 2   oldsecnum (dx)
@@ -4503,7 +4503,7 @@ PUBLIC P_CheckPosition_
 ; - bp - 8   xh2
 ; - bp - 0Ah yl2
 ; - bp - 0Ch yh2
-; bp + xx = y
+
 
 ;   y hi ; + 0Ah
 ;   y lo ; + 8
@@ -4541,7 +4541,7 @@ mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_flags1]
 mov   word ptr ds:[_tmflags1], ax
 
 
-mov   ax, word ptr [bp + 0Ah]
+mov   ax, word ptr [bp + 8]
 mov   word ptr ds:[_tmbbox + (4 * BOXTOP)], ax
 mov   word ptr ds:[_tmy+0], ax
 mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)], ax
@@ -4560,7 +4560,7 @@ mov   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
 mov   al, byte ptr ds:[si + 01Eh]
 xchg  ax, dx
 
-mov   ax, word ptr [bp + 0Ch]
+mov   ax, word ptr [bp + 0Ah]
 add   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
 mov   word ptr ds:[_tmy+2], ax
 
@@ -4582,7 +4582,7 @@ jne   use_cached_secnum
 mov   ax, word ptr [bp - 4]
 mov   bx, cx
 mov   dx, di
-mov   cx, word ptr [bp + 0Ch]
+mov   cx, word ptr [bp + 0Ah]
 call  R_PointInSubsector_
 mov   bx, ax
 mov   ax, SUBSECTORS_SEGMENT
@@ -4613,7 +4613,7 @@ stc
 LEAVE_MACRO 
 pop   di
 pop   si
-retf   4
+ret   4
 set_up_blockmap_loop:
 
 
@@ -4821,14 +4821,14 @@ stc
 LEAVE_MACRO 
 pop   di
 pop   si
-retf   4
+ret   4
 
 exit_checkposition_return_0:
 clc
 LEAVE_MACRO 
 pop   di
 pop   si
-retf   4
+ret   4
 
 
 ENDP
@@ -8184,6 +8184,11 @@ ret
 
 ENDP
 
+PROC   P_SetThingPositionFar_ FAR
+PUBLIC P_SetThingPositionFar_
+
+call   P_SetThingPosition_
+retf
 
 
 PROC    P_MAP_ENDMARKER_ 

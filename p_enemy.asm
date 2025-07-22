@@ -32,6 +32,12 @@ EXTRN A_BFGSpray_:NEAR
 EXTRN P_AimLineAttack_:NEAR
 EXTRN P_LineAttack_:NEAR
 EXTRN P_AproxDistance_:NEAR
+EXTRN P_LineOpening_:NEAR
+EXTRN P_UnsetThingPosition_:NEAR
+EXTRN P_SetThingPosition_:NEAR
+EXTRN P_TryMove_:NEAR
+EXTRN P_CheckPosition_:NEAR
+EXTRN P_SpawnMissile_:NEAR
 
 
 .DATA
@@ -212,8 +218,7 @@ push   dx  ; store params... no where else ot put it.
 les    dx, dword ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum] ; backsecnum to es.
 mov    bx, es
 
-db    09Ah
-dw    P_LINEOPENINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call   P_LineOpening_
 
 pop    dx
 
@@ -622,9 +627,8 @@ mov   ax, si
 
 
 
-;call  dword ptr ds:[_P_TryMove]
-db    09Ah
-dw    P_TRYMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_TryMove_
+
 
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
@@ -2175,9 +2179,7 @@ ENDIF
 
 mov   ax, si
 add   dx, (_thinkerlist + THINKER_T.t_data)
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_SpawnMissile_
 a_bspiexit:
 ret   
 
@@ -2247,9 +2249,7 @@ ENDIF
 
 mov   ax, si
 add   dx, (_thinkerlist + THINKER_T.t_data)
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_SpawnMissile_
 
 a_troopattack_exit:
 ret   
@@ -2365,9 +2365,7 @@ ENDIF
 
 mov   ax, si
 add   dx, (_thinkerlist + THINKER_T.t_data)
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_SpawnMissile_
 
 exit_head_attack:
 ret   
@@ -2397,9 +2395,7 @@ ENDIF
 
 mov   ax, si
 add   dx, (_thinkerlist + THINKER_T.t_data)
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_SpawnMissile_
 
 exit_cyber_attack:
 ret   
@@ -2466,9 +2462,7 @@ ENDIF
 
 mov   ax, si
 add   dx, (_thinkerlist + THINKER_T.t_data)
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_SpawnMissile_
 
 exit_a_bruisattack:
 ret   
@@ -2504,9 +2498,7 @@ ENDIF
 
 mov   ax, si
 add   dx, (_thinkerlist + THINKER_T.t_data)
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_SpawnMissile_
 
 les   bx, dword ptr ds:[_setStateReturn_pos]
 sub   word ptr es:[di + MOBJ_POS_T.mp_z + 2], 16
@@ -3069,9 +3061,9 @@ les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_x + 0]
 mov   cx, es
 mov   dx, word ptr ds:[si + MOBJ_T.m_secnum]
 mov   ax, si
-;call  dword ptr ds:[_P_CheckPosition]
-db    09Ah
-dw    P_CHECKPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+call  P_CheckPosition_
+
 
 mov   al, 0
 rcl   al, 1  ; todo hack for now... get carry result into al.
@@ -3522,9 +3514,7 @@ and   al, 0FCh
 mov   dx, di
 push  ax  ; bp - 6
 mov   ax, word ptr [bp - 4]
-;call  dword ptr ds:[_P_UnsetThingPosition]
-db    09Ah
-dw    P_UNSETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_UnsetThingPosition_
 
 mov   cx, 24
 xor   bx, bx
@@ -3571,9 +3561,9 @@ pop   ds
 mov   bx, -1
 pop   ax ; bp - 4
 mov   dx, di
-;call  dword ptr ds:[_P_SetThingPosition]
-db    09Ah
-dw    P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+call      P_SetThingPosition_
+
 
 exit_a_fire:
 LEAVE_MACRO 
@@ -3938,9 +3928,7 @@ ENDIF
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 
 mov   ax, di
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_SpawnMissile_
 
 test  si, si
 je    no_angle_mod
@@ -4381,9 +4369,8 @@ push  word ptr es:[si + MOBJ_POS_T.mp_x + 0]
 
 mov   bx, si
 mov   cx, es
-;call  dword ptr ds:[_P_TryMove]
-db    09Ah
-dw    P_TRYMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_TryMove_
+
 
 jc    skull_nodamage
 mov   cx, 10000
@@ -5133,9 +5120,7 @@ add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   ax, si
 mov   bx, di
-;call  dword ptr ds:[_P_SpawnMissile]
-db    09Ah
-dw    P_SPAWNMISSILEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_SpawnMissile_
 
 mov   si, word ptr ds:[_setStateReturn]
 

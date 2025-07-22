@@ -29,6 +29,8 @@ EXTRN P_CheckPosition_:NEAR
 EXTRN R_PointInSubsector_:NEAR
 EXTRN P_SetMobjState_:NEAR    
 EXTRN P_BringUpWeapon_:NEAR
+EXTRN P_UnsetThingPosition_:NEAR
+EXTRN P_SetThingPosition_:NEAR
 
 
 .DATA
@@ -878,9 +880,7 @@ mov       al, byte ptr es:[bx + STATE_T.state_tics]
 mov       bx, word ptr [bp + 010h]
 mov       byte ptr ds:[si + MOBJ_T.m_tics], al
 mov       ax, si
-;call      dword ptr ds:[_P_SetThingPosition]
-db        09Ah
-dw        P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call      P_SetThingPosition_
 
 
 mov       bx, word ptr ds:[si + MOBJ_T.m_secnum]
@@ -987,9 +987,7 @@ ENDIF
 
 mov       ax, cx
 
-;call      dword ptr ds:[_P_UnsetThingPosition]
-db        09Ah
-dw        P_UNSETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_UnsetThingPosition_
 
 mov       ax, cx
 ;call      S_StopSoundMobjRef_
@@ -1250,7 +1248,6 @@ mov   bx, word ptr [bp - 6]
 mov   cx, es
 mov   ax, word ptr [bp - 2]
 
-push  cs
 call  P_TryMove_ 
 jc    cant_move
 ; 
@@ -2156,7 +2153,6 @@ push  bx
 ;	}
 
 
-push cs
 call P_CheckPosition_
 jc   do_respawn
 exit_nightmare_respawn:
@@ -2224,7 +2220,7 @@ mov   dx, word ptr [bp - 010h]
 xor   bx, bx
 xor   ax, ax
 
-push cs
+
 call R_PointInSubsector_
 
 
@@ -2416,7 +2412,6 @@ mov   ax, di
 mov   bx, si
 
 
-push  cs
 call  P_TryMove_  
 jc    exit_check_missile_sapwn
 do_missile_explode_on_spawn:
@@ -2433,10 +2428,10 @@ ENDP
 
 
 
-PROC P_SpawnMissile_ FAR
+PROC P_SpawnMissile_ NEAR
 PUBLIC P_SpawnMissile_
 
-; bp + 0Ah    type
+; bp + 8     type
 
 ; bp - 2     ax (mobj)
 ; bp - 4     MOBJPOSLIST_6800_SEGMENT
@@ -2473,7 +2468,7 @@ push  ax  ; bp - 6
 
 
 xor   ax, ax
-mov   al, byte ptr [bp + 0Ah]
+mov   al, byte ptr [bp + 8]
 
 
 push  word ptr ds:[di + MOBJ_T.m_secnum]         ; secnum
@@ -2499,7 +2494,7 @@ push  word ptr ds:[_setStateReturn_pos] ; bp - 0Ah
 
 
 mov   al, SIZEOF_MOBJINFO_T
-mul   byte ptr [bp + 0Ah]   ; type
+mul   byte ptr [bp + 8]   ; type
 
 mov   di, word ptr ds:[_setStateReturn]
 mov   bx, ax
@@ -2622,7 +2617,7 @@ call  P_AproxDistance_
 
 
 mov   al, SIZEOF_MOBJINFO_T
-mul   byte ptr [bp + 0Ah]
+mul   byte ptr [bp + 8]
 xchg  ax, bx
 xchg  ax, dx
 mov   bl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_speed]
@@ -2705,7 +2700,7 @@ mov   ax, word ptr [bp - 8]
 LEAVE_MACRO 
 pop   di
 pop   si
-retf   2
+ret   2
 
 
 ENDP

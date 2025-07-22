@@ -671,7 +671,7 @@ pop       ds                            ; restore ds
 
 ;call      P_SetThingPosition_
 db    09Ah
-dw    P_SETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    P_SETTHINGPOSITIONFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 ; di is mobj
 mov       bx, word ptr ds:[di + 4]            ; get mobj secnum
