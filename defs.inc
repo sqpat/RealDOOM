@@ -255,7 +255,7 @@ _ticcount =			              	_NULL_OFFSET + 001F0h
 
 _P_UseSpecialLine_addr =             _NULL_OFFSET + 001F4h
 _P_DamageMobj_addr =                 _NULL_OFFSET + 001F8h
-_P_SetMobjState_addr =       		 _NULL_OFFSET + 001FCh
+;_P_SetMobjState_addr =       		 _NULL_OFFSET + 001FCh
 _M_Random_addr =                     _NULL_OFFSET + 00200h
 _P_CrossSpecialLine_addr =           _NULL_OFFSET + 00204h
 _P_ShootSpecialLine_addr =           _NULL_OFFSET + 00208h
@@ -442,8 +442,8 @@ _leveltime =     		   			 _NULL_OFFSET + 006ECh
 _fopen_rb_argument =                 _NULL_OFFSET + 006F0h
 _currenttask =            		     _NULL_OFFSET + 006F3h
 
-_P_SpawnMobj_addr =            		 _NULL_OFFSET + 006F4h
-_P_SpawnPuff_addr =            		 _NULL_OFFSET + 006F8h
+;_P_SpawnMobj_addr =            		 _NULL_OFFSET + 006F4h
+_EV_DoDoor_addr = 			 	 	 _NULL_OFFSET + 006F8h
 _P_TouchSpecialThing_addr =          _NULL_OFFSET + 006FCh
 
 _playerMobj_pos =		         	 _NULL_OFFSET + 00700h
@@ -477,7 +477,7 @@ _FastDiv3216u_addr =				 _NULL_OFFSET + 00820h
 _FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00824h
 _FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00828h
 _FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0082Ch
-_P_NoiseAlert_addr = 			 	 _NULL_OFFSET + 00830h
+_EV_DoFloor_addr = 			 	 	 _NULL_OFFSET + 00830h
 _bulletslope = 			 			 _NULL_OFFSET + 00834h
 _weaponinfo = 			 			 _NULL_OFFSET + 00838h
 
@@ -488,10 +488,8 @@ _HU_Start_addr = 			 	 	 _NULL_OFFSET + 008A0h
 _ST_Start_addr = 			 	 	 _NULL_OFFSET + 008A4h
 _P_RemoveThinker_addr = 			 _NULL_OFFSET + 008A8h
 _G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 008ACh
-_EV_DoDoor_addr = 			 	 	 _NULL_OFFSET + 008B0h
-_EV_DoFloor_addr = 			 	 	 _NULL_OFFSET + 008B4h
 ;8b8
-_flatcache_nodes =				     _NULL_OFFSET + 008C0h
+_flatcache_nodes =				     _NULL_OFFSET + 008B0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

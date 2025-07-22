@@ -27,7 +27,7 @@ EXTRN T_StrobeFlash_:NEAR
 EXTRN T_MoveCeiling_:NEAR
 EXTRN T_VerticalDoor_:NEAR
 EXTRN T_MoveFloor_:NEAR
-EXTRN P_MobjThinker_:NEAR
+
 EXTRN OutOfThinkers_:NEAR
 EXTRN P_PlayerThink_:NEAR
 EXTRN P_UpdateSpecials_:NEAR
@@ -244,7 +244,11 @@ mov       ax, di
 
 mov       cx, MOBJPOSLIST_6800_SEGMENT ; todo remove maybe?
 mov       dx, si
-call      P_MobjThinker_
+;call      P_MobjThinker_
+db    09Ah
+dw    P_MOBJTHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
 done_processing_thinker:
 
 mov       si, word ptr ds:[di - 2]  ; (was bx + THINKER_T.t_data)
@@ -334,6 +338,23 @@ jmp       done_processing_thinker
 ; END INLINED P_RunThinkers_
 
 
+
+ENDP
+
+PROC P_Random_ NEAR
+PUBLIC P_Random_
+
+; ah guaranteed 0 now!
+push    bx
+inc 	byte ptr ds:[_prndindex]
+mov     ax, RNDTABLE_SEGMENT
+mov     es, ax
+xor     ax, ax
+mov     bx, ax
+mov     al, byte ptr ds:[_prndindex]
+xlat    byte ptr es:[bx]
+pop     bx
+ret
 
 ENDP
 

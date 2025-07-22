@@ -18,6 +18,10 @@ INCLUDE CONSTANT.INC
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
+EXTRN P_SetMobjState_:NEAR         
+EXTRN P_SpawnPuff_:NEAR            ; except this is really near
+EXTRN P_SpawnMobj_:NEAR            
+EXTRN P_RemoveMobj_:NEAR
 
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
@@ -4435,10 +4439,8 @@ mul   dl
 xchg  ax, bx   ; ax gets tmthing from above, bx gets mobjinfo ptr
 mov   dx, word ptr ds:[bx + _mobjinfo]
 
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+push  cs
+call  P_SetMobjState_
 
 exit_checkthing_return_0:
 clc
@@ -5601,10 +5603,8 @@ pop   dx    ; x hi
 
 ; di:si are hi/lo z for spawnpuff
 
-;call  P_SpawnPuff_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnPuff_addr
+call  P_SpawnPuff_
+
 exit_shoottraverse_return_0:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
@@ -5931,10 +5931,8 @@ pop   dx   ; x hi
 je    do_spawn_blood
 
 do_spawn_puff:
-;call  P_SpawnPuff_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnPuff_addr
+call  P_SpawnPuff_
+
 
 
 done_spawning_blood_or_puff:
@@ -6018,10 +6016,8 @@ push  es
 ENDIF
 
 
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
+push  cs
+call  P_SpawnMobj_
 
 
 ;	 th = setStateReturn;
@@ -6055,18 +6051,16 @@ jmp   done_spawning_blood_or_puff
 draw_big_blood:
 mov   dx, S_BLOOD2
 mov   ax, bx
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+push  cs
+call  P_SetMobjState_
+
 jmp   done_spawning_blood_or_puff
 draw_small_blood:
 mov   dx, S_BLOOD3
 mov   ax, bx
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+push  cs
+call  P_SetMobjState_
+
 jmp   done_spawning_blood_or_puff
 
 
@@ -7832,10 +7826,9 @@ ret
 crush_to_gibs:
 mov   dx, S_GIBS
 mov   ax, si
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+push  cs
+call  P_SetMobjState_
+
 mov   si, word ptr ds:[_setStateReturn]
 pop   es
 and   byte ptr es:[di + MOBJ_POS_T.mp_flags1], ( NOT MF_SOLID)
@@ -7846,10 +7839,9 @@ mov   byte ptr ds:[si + 01Eh], al
 jmp   exit_changesector_return_1
 crunch_items:
 mov   ax, dx
-;call  P_RemoveMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_RemoveMobj_addr
+push  cs
+call  P_RemoveMobj_
+
 
 stc 
 LEAVE_MACRO 
@@ -7889,10 +7881,10 @@ mov   bx, word ptr es:[di + 4]
 mov   cx, word ptr es:[di + 6]
 les   ax, dword ptr es:[di]
 mov   dx, es
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
+
+push  cs
+call  P_SpawnMobj_
+
 call  P_Random_MapLocal_
 mov   dx, ax
 call  P_Random_MapLocal_

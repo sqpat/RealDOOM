@@ -291,7 +291,7 @@
 
 #define P_UseSpecialLine_addr          	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F4)))
 #define P_DamageMobj_addr             	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F8)))
-#define P_SetMobjState_addr     		(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01FC)))
+//#define P_SetMobjState_addr     		(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01FC)))
 #define M_Random_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0200)))
 #define P_CrossSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
 #define P_ShootSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
@@ -405,7 +405,7 @@
 #define P_CreateThinker_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05BC)))
 #define S_StopSoundMobjRef_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C0)))
 
-#define P_RemoveMobj_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
+// #define P_RemoveMobj_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
 #define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
 #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
 #define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x05D0))
@@ -484,8 +484,8 @@
 #define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x06F0))
 #define currenttask                       (*(int8_t __near *)                (_NULL_OFFSET + 0x06F3))
 
-#define P_SpawnMobj_addr     			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F4)))
-#define P_SpawnPuff_addr 			      (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F8)))
+// #define P_SpawnMobj_addr     			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F4)))
+#define EV_DoDoor_addr     				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F8)))
 #define P_TouchSpecialThing_addr     	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06FC)))
 
 #define playerMobj_pos   		     	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0700)))
@@ -520,7 +520,7 @@
 #define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0824)))
 #define FixedMulTrigSpeed_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0828)))
 #define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x082C)))
-#define P_NoiseAlert_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0830)))
+#define EV_DoFloor_addr		     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0830)))
 #define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0834)))
 #define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0838))
 
@@ -532,10 +532,8 @@
 #define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x08A4)))
 #define P_RemoveThinker_addr 			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08A8)))
 #define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08AC)))
-#define EV_DoDoor_addr     				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08B0)))
-#define EV_DoFloor_addr		     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08B4)))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x08C0)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x08B0)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -728,6 +726,11 @@ extern void 				(__far* P_MovePsprites)();
 extern void 				(__far* P_DropWeaponFar)();
 // extern void 				(__far* P_BringUpWeaponFar)();
 // extern void 				(__far* A_BFGSprayFar)();
+extern void 				(__far* P_RemoveMobj)();
+extern void 				(__far* P_MobjThinker)();
+extern THINKERREF 			(__far* P_SpawnMobj)();
+extern void 				(__far* P_SpawnMapThing)();
+extern void					(__far* P_SetMobjState)();
 
 
 

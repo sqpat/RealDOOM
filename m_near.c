@@ -419,6 +419,13 @@ void (__far* P_DropWeaponFar)() =             ((void (__far *)())     	         
 // void (__far* P_BringUpWeaponFar)() =          ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_BringUpWeaponFarOffset)));
 // void (__far* A_BFGSprayFar)() =               ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 A_BFGSprayFarOffset)));
 
+void (__far* P_RemoveMobj)() =                ((void (__far *)(mobj_t __near*	mobj))                                                                               	   (MK_FP(physics_highcode_segment, 		 P_RemoveMobjOffset)));
+void (__far* P_MobjThinker)() =                ((void (__far *)(mobj_t __near*	mobj, mobj_pos_t __far* thing_pos, THINKERREF mobjRef))                                    (MK_FP(physics_highcode_segment, 		 P_MobjThinkerOffset)));
+THINKERREF (__far* P_SpawnMobj)() =          ((THINKERREF (__far *)(fixed_t_union x, fixed_t_union y, fixed_t_union z, mobjtype_t type, int16_t knownsecnum))     	       (MK_FP(physics_highcode_segment, 		 P_SpawnMobjOffset)));
+void (__far* P_SpawnMapThing)() =            ((void (__far *)(mapthing_t mthing, int16_t key))                                        	                                   (MK_FP(physics_highcode_segment, 		 P_SpawnMapThingOffset)));
+void (__far* P_SetMobjState)() =            ((void (__far *)(mobj_t __near* mobj, statenum_t state))                                        	                           (MK_FP(physics_highcode_segment, 		 P_SetMobjStateOffset)));
+
+
 
 
 

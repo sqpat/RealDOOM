@@ -22,10 +22,10 @@ INSTRUCTION_SET_MACRO
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
 
-EXTRN P_Random_:NEAR
-;EXTRN G_ExitLevel_:PROC
-;EXTRN EV_DoDoor_:PROC
-;EXTRN EV_DoFloor_:NEAR
+EXTRN P_Random_MapLocal_:NEAR
+EXTRN P_SpawnPuff_:NEAR
+EXTRN P_SpawnMobj_:NEAR
+EXTRN P_RemoveMobj_:NEAR
 
 .DATA
 
@@ -264,7 +264,7 @@ jmp   continue_recursive_sound_loop
 ENDP
 
 
-PROC    P_NoiseAlert_ FAR
+PROC    P_NoiseAlert_ NEAR
 PUBLIC  P_NoiseAlert_
 
 inc   word ptr ds:[_validcount_global]
@@ -272,7 +272,7 @@ mov   bx, word ptr ds:[_playerMobj]
 xor   dx, dx
 mov   ax, word ptr ds:[bx + MOBJ_T.m_secnum]
 call  P_RecursiveSound_
-retf  
+ret
 
 ENDP
 
@@ -514,7 +514,7 @@ cmp   dx, 160
 jle   not_cyborg_distance_check
 mov   dx, 160
 not_cyborg_distance_check:
-call  P_Random_
+call  P_Random_MapLocal_
 cmp   ax, dx
 jge   exit_checkmissilerange_return_1
 exit_checkmissilerange_return_0:
@@ -540,14 +540,14 @@ ENDP
 
 _p_move_dir_switch_table:
 
-dw OFFSET switch_movedir_0
-dw OFFSET switch_movedir_1
-dw OFFSET switch_movedir_2
-dw OFFSET switch_movedir_3
-dw OFFSET switch_movedir_4
-dw OFFSET switch_movedir_5
-dw OFFSET switch_movedir_6
-dw OFFSET switch_movedir_7
+dw OFFSET switch_movedir_0 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET switch_movedir_1 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET switch_movedir_2 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET switch_movedir_3 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET switch_movedir_4 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET switch_movedir_5 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET switch_movedir_6 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET switch_movedir_7 - OFFSET P_SIGHT_STARTMARKER_
 
 
 
@@ -765,7 +765,7 @@ PUBLIC  P_TryWalk_
 
 call  P_Move_
 jnc   exit_try_walk  ; al 0
-call  P_Random_
+call  P_Random_MapLocal_
 and   al, 15  
 mov   word ptr ds:[si + MOBJ_T.m_movecount], ax
 stc
@@ -988,7 +988,7 @@ cmp   bx, ax
 ja    do_other_direction_and_inc_random
 ;jmp   try_random_check
 try_random_check:
-call  P_Random_
+call  P_Random_MapLocal_
 cmp   al, 200
 ja    do_other_direction
 jmp   done_checking_for_direction_swap ; already incremented prndindex.
@@ -1050,7 +1050,7 @@ dont_try_olddir:
 
 mov   dh, byte ptr [bp - 1]  ; store this in dh
 
-call  P_Random_
+call  P_Random_MapLocal_
 test  al, 1
 je    loop_from_southeast
 
@@ -1393,10 +1393,7 @@ dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 
 xchg  ax, dx
 xchg  ax, si
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+call  P_SetMobjState_
 
 exit_a_look:
 ret   
@@ -1406,13 +1403,13 @@ jbe   compare_seesound_2
 cmp   al, sfx_bgsit2
 ja    just_use_seesound
 
-call  P_Random_
+call  P_Random_MapLocal_
 and   al, 1
 add   al, SFX_BGSIT1
 xchg  ax, dx
 jmp   check_mobjtype
 compare_seesound_2:
-call  P_Random_
+call  P_Random_MapLocal_
 
 mov   dl, 3
 div   dl
@@ -1539,10 +1536,8 @@ mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xchg  ax, si
 mov   dx, word ptr ds:[si + _mobjinfo]
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+call  P_SetMobjState_
+
 jmp   exit_a_chase
 new_chase_dir_and_exit:
 
@@ -1586,10 +1581,8 @@ dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
 
 mov   dx, ax
 mov   ax, si
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+call  P_SetMobjState_
+
 exit_a_chase_2:
 pop   bp
 pop   di
@@ -1638,7 +1631,7 @@ mov   dl, al
 test  al, al
 je    exit_a_chase_2
 
-call  P_Random_
+call  P_Random_MapLocal_
 cmp   al, 3
 jae   exit_a_chase_2
 xchg  ax, si
@@ -1666,10 +1659,8 @@ dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
 
 mov   dx, ax
 mov   ax, si
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+call  P_SetMobjState_
+
 mov   es, bp
 or    byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
 jmp   exit_a_chase
@@ -1756,9 +1747,9 @@ mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], dx
 test  di, di
 je    exit_a_facetarget
 
-call  P_Random_
+call  P_Random_MapLocal_
 xchg  ax, bx
-call  P_Random_
+call  P_Random_MapLocal_
 
 sub   bx, ax
 mov   es, cx
@@ -1825,16 +1816,16 @@ dw _S_StartSound_addr
 ;    angle = MOD_FINE_ANGLE(angle + (((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
 ;    damage = ((P_Random()%5)+1)*3;
 
-call  P_Random_
+call  P_Random_MapLocal_
 xchg  ax, dx
-call  P_Random_
+call  P_Random_MapLocal_
 sub   dx, ax
 sal   dx, 1
 add   dx, cx ; angle into dx.
 and   dh, (FINEMASK SHR 8)
 
 
-call  P_Random_
+call  P_Random_MapLocal_
 
 mov   cl, 5
 div   cl
@@ -1921,10 +1912,10 @@ do_next_shotgun_pellet:
 
 ;	angle = MOD_FINE_ANGLE((bangle + ((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
 
-call  P_Random_
+call  P_Random_MapLocal_
 
 xchg  ax, dx
-call  P_Random_
+call  P_Random_MapLocal_
 
 sub   dx, ax
 
@@ -1933,7 +1924,7 @@ add   dx, si ; bangle
 and   dx, FINEMASK
 
 ;		damage = ((P_Random()%5)+1)*3;
-call  P_Random_
+call  P_Random_MapLocal_
 
 mov   bl, 5
 div   bl
@@ -2009,16 +2000,16 @@ dw    P_AIMLINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
 mov   di, ax
 mov   bx, dx
 
-call  P_Random_
+call  P_Random_MapLocal_
 xchg  ax, dx
-call  P_Random_
+call  P_Random_MapLocal_
 
 sub   dx, ax
 sal   dx, 1
 add   dx, cx
 and   dh, (FINEMASK SHR 8)
 
-call  P_Random_
+call  P_Random_MapLocal_
 
 mov   cl, 5
 div   cl
@@ -2052,7 +2043,7 @@ PUBLIC  A_CPosRefire_
 
 ;mov   si, ax
 call  A_FaceTarget_
-call  P_Random_
+call  P_Random_MapLocal_
 cmp   al, 40
 jb    exit_a_cposrefire
 mov   dx, word ptr ds:[si + MOBJ_T.m_targetRef]
@@ -2103,10 +2094,8 @@ dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 
 mov   dx, ax
 mov   ax, si
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+call  P_SetMobjState_
+
 exit_a_cposrefire:
 ret   
 
@@ -2119,7 +2108,7 @@ PUBLIC  A_SpidRefire_
 ;mov   si, ax
 call  A_FaceTarget_
 
-call  P_Random_
+call  P_Random_MapLocal_
 cmp   al, 10
 jb    exit_a_spidrefire
 mov   dx, word ptr ds:[si + MOBJ_T.m_targetRef]
@@ -2168,10 +2157,8 @@ dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 
 mov   dx, ax
 mov   ax, si
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+call  P_SetMobjState_
+
 exit_a_spidrefire:
 ret   
 
@@ -2230,7 +2217,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-call  P_Random_
+call  P_Random_MapLocal_
 
 ;		damage = (P_Random()%8+1)*3;
 
@@ -2299,7 +2286,7 @@ jnc   exit_a_sargattack_full
 
 ;		damage = ((P_Random()%10)+1)*4;
 
-call  P_Random_
+call  P_Random_MapLocal_
 
 mov   cl, 10
 div   cl
@@ -2344,7 +2331,7 @@ call  A_FaceTarget_
 mov   bx, dx
 call  P_CheckMeleeRange_
 jnc   do_head_missile
-call  P_Random_
+call  P_Random_MapLocal_
 
 ;		damage = (P_Random()%6+1)*10;
 
@@ -2455,7 +2442,7 @@ dw _S_StartSound_addr
 ;		damage = (P_Random()%8+1)*10;
 
 
-call  P_Random_
+call  P_Random_MapLocal_
 and   al, 7
 inc   ax
 mov   ah, 10
@@ -2604,10 +2591,7 @@ xchg  ax, di
 push  ss
 pop   ds
 
-;call  P_SpawnPuff_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnPuff_addr
+call  P_SpawnPuff_
 
 
 ;	thRef = P_SpawnMobj (actor_pos->x.w-actor->momx.w,
@@ -2649,10 +2633,8 @@ sbb   dx, word ptr ds:[di + MOBJ_T.m_momx + 2]
 sub   bx, word ptr ds:[di + MOBJ_T.m_momy + 0]
 sbb   cx, word ptr ds:[di + MOBJ_T.m_momy + 2]
 
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
+push  cs
+call  P_SpawnMobj_
 
 ;    th->momz = FRACUNIT
 
@@ -2662,7 +2644,7 @@ mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], 1
 
 ;    th->tics -= P_Random()&3;
 
-call  P_Random_
+call  P_Random_MapLocal_
 and   al, 3
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 
@@ -2946,7 +2928,7 @@ jnc    exit_a_skelfist_full
 
 ;		damage = ((P_Random()%10)+1)*6;
 
-call  P_Random_
+call  P_Random_MapLocal_
 
 mov   cl, 10
 div   cl
@@ -3130,14 +3112,14 @@ ret
 
 _vilechase_lookup_table:
 
-dw OFFSET vile_switch_movedir_0
-dw OFFSET vile_switch_movedir_1
-dw OFFSET vile_switch_movedir_2
-dw OFFSET vile_switch_movedir_3
-dw OFFSET vile_switch_movedir_4
-dw OFFSET vile_switch_movedir_5
-dw OFFSET vile_switch_movedir_6
-dw OFFSET vile_switch_movedir_7
+dw OFFSET vile_switch_movedir_0 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET vile_switch_movedir_1 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET vile_switch_movedir_2 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET vile_switch_movedir_3 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET vile_switch_movedir_4 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET vile_switch_movedir_5 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET vile_switch_movedir_6 - OFFSET P_SIGHT_STARTMARKER_
+dw OFFSET vile_switch_movedir_7 - OFFSET P_SIGHT_STARTMARKER_
 
 ENDP
 
@@ -3301,7 +3283,7 @@ mov   cx, word ptr [bp - 0Ah]  ; reset each loop iter!
 cmp   di, cx
 jl    done_with_vile_y_loop
 loop_next_y_vile:
-mov   bx, OFFSET PIT_VileCheck_
+mov   bx, OFFSET PIT_VileCheck_ - OFFSET P_SIGHT_STARTMARKER_
 mov   dx, cx   ; by
 mov   ax, si   ; bx
 ;call  dword ptr [bp - 012h]
@@ -3340,10 +3322,7 @@ mov   ax, bx
 mov   word ptr ds:[bx + MOBJ_T.m_targetRef], dx  ; put tempref back.
 mov   dx, S_VILE_HEAL1
 
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+call  P_SetMobjState_
 
 
 IF COMPISA GE COMPILE_186
@@ -3376,10 +3355,8 @@ dw    GETRAISESTATEADDR, INFOFUNCLOADSEGMENT
 
 xchg  ax, dx
 mov   ax, si
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+call  P_SetMobjState_
+
 ; todo dont know if shift_macro works on this.
 shl   word ptr ds:[si + MOBJ_T.m_height+2], 1
 shl   word ptr ds:[si + MOBJ_T.m_height+2], 1
@@ -3670,11 +3647,8 @@ mov   cx, es
 push  ss
 pop   ds
 
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
-
+push  cs
+call  P_SpawnMobj_
 
 mov   word ptr ds:[si + MOBJ_T.m_tracerRef], ax
 
@@ -4415,10 +4389,9 @@ add   word ptr [bp - 0Ah], 8
 
 push  word ptr es:[si + MOBJ_POS_T.mp_z + 0]
 
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
+push  cs
+call  P_SpawnMobj_
+
 mov   ax, word ptr ds:[_setStateReturn]
 push  ax ; bp - 6 again (newmobj)
 les   si, dword ptr ds:[_setStateReturn_pos]
@@ -4510,7 +4483,7 @@ cmp   al, SFX_PODTH3
 jbe   check_for_other_deathsound_2
 cmp   al, SFX_BGDTH2
 ja    got_deathsound
-call  P_Random_
+call  P_Random_MapLocal_
 
 ; sound = sfx_bgdth1 + P_Random ()%2;
 and   al, 1
@@ -4518,7 +4491,7 @@ add   al, SFX_BGDTH1
 jmp   got_deathsound
 
 check_for_other_deathsound_2:
-call  P_Random_
+call  P_Random_MapLocal_
 
 
 mov   dl, 3
@@ -4953,7 +4926,7 @@ ELSE
     push  ax
 ENDIF
 
-call  P_Random_
+call  P_Random_MapLocal_
 
 sal   ax, 1
 add   ax, 128
@@ -4969,13 +4942,13 @@ ENDIF
 sub   cx, 320
 xchg  ax, dx   ; ax gets x lobits
 mov   dx, si   ; dx gets stored x hibits
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
+
+push  cs
+call  P_SpawnMobj_
+
 
 mov   bx, word ptr ds:[_setStateReturn]
-call  P_Random_
+call  P_Random_MapLocal_
 
 ;		th->momz.w = P_Random()*512;
 
@@ -4987,12 +4960,10 @@ mov   word ptr ds:[bx + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], dx
 mov   dx, S_BRAINEXPLODE1
 mov   ax, bx
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+call  P_SetMobjState_
 
-call  P_Random_
+
+call  P_Random_MapLocal_
 and   al, 7
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
@@ -5028,9 +4999,9 @@ PUBLIC  A_BrainExplode_
 
 
 
-call  P_Random_
+call  P_Random_MapLocal_
 xchg  ax, dx
-call  P_Random_
+call  P_Random_MapLocal_
 ;    x = mo_pos->x.w + (P_Random () - P_Random ())*2048;
 sub   dx, ax
 
@@ -5048,7 +5019,7 @@ ELSE
 ENDIF
 
 
-call  P_Random_
+call  P_Random_MapLocal_
 
 mov   es, cx
 
@@ -5088,14 +5059,12 @@ mov   cx, es
 
 
 
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
+push  cs
+call  P_SpawnMobj_
 
 
 mov   bx, word ptr ds:[_setStateReturn]
-call  P_Random_
+call  P_Random_MapLocal_
 
 ;    th->momz.w = P_Random()*512;
 
@@ -5108,11 +5077,9 @@ mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], dx
 
 mov   dx, S_BRAINEXPLODE1
 mov   ax, bx
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
-call  P_Random_
+call  P_SetMobjState_
+
+call  P_Random_MapLocal_
 and   al, 7
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
@@ -5348,10 +5315,9 @@ mov   dx, es
 push  ss
 pop   ds
 
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
+push  cs
+call  P_SpawnMobj_
+
 
 mov   dx, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
@@ -5360,7 +5326,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-call  P_Random_
+call  P_Random_MapLocal_
 cmp   al, 50
 jb    spawn_imp
 spawn_non_imp:
@@ -5437,10 +5403,8 @@ mov   dx, es
 push  ss
 pop   ds
 
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
+push  cs
+call  P_SpawnMobj_
 
 
 IF COMPISA GE COMPILE_186
@@ -5472,11 +5436,7 @@ dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 
 mov   dx, ax
 mov   ax, di
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr  ; cx and bx persist thru this call..
-
+call  P_SetMobjState_
 
 dont_set_seestate:
 push  word ptr ds:[di + MOBJ_T.m_secnum]
@@ -5495,10 +5455,9 @@ db    09Ah
 dw    P_TELEPORTMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 xchg   ax, si
-;call  P_RemoveMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_RemoveMobj_addr
+push   cs
+call   P_RemoveMobj_
+
 ret   
 
 
@@ -5694,11 +5653,8 @@ mov       word ptr es:[bx + MOBJ_POS_T.mp_stateNum], 0
 
 xor       dx, dx
 
-;call      P_RemoveMobj_
-; todo change to direct call 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_RemoveMobj_addr
+push      cs
+call      P_RemoveMobj_
 
 
 mov       word ptr ds:[_setStateReturn], si
@@ -5723,7 +5679,7 @@ pop       di
 pop       si
 pop       cx
 pop       bx
-retf      
+retf
 exit_p_setmobjstate_return_1:
 mov       al, 1
 jmp       exit_p_setmobjstate

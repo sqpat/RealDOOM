@@ -143,18 +143,18 @@ void	__near P_PlayerThink ();
 
 // Time interval for item respawning.
 
-THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type,  int16_t knownsecnum );
+// THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type,  int16_t knownsecnum );
 
-void 	__far P_RemoveMobj (mobj_t __near* mobj);
+// void 	__far P_RemoveMobj (mobj_t __near* mobj);
 
-boolean	__far P_SetMobjState(mobj_t __near* mobj, statenum_t state);
-void __near P_MobjThinker(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef);
+// boolean	__far P_SetMobjState(mobj_t __near* mobj, statenum_t state);
+// void __near P_MobjThinker(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef);
 
 // todo re-enable
 
-#pragma aux P_SpawnPuffParams __parm [dx ax] [cx bx] [di si] __modify [ax bx cx dx si di];
-#pragma aux (P_SpawnPuffParams) P_SpawnPuff;
-void	__far P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
+// #pragma aux P_SpawnPuffParams __parm [dx ax] [cx bx] [di si] __modify [ax bx cx dx si di];
+// #pragma aux (P_SpawnPuffParams) P_SpawnPuff;
+// void	__far P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 
 
 
@@ -163,7 +163,7 @@ void	__far P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 //
 // P_ENEMY
 //
-void __far P_NoiseAlert ();
+// void __near P_NoiseAlert ();
 
 
 //

@@ -470,7 +470,7 @@ void __far G_ExitLevel (void);
  
 void __near Z_LoadBinaries() {
 	int16_t i;
-	int16_t codesize;
+	uint16_t codesize;
 	FILE* fp = fopen("DOOMDATA.BIN", "rb"); 
 	fseek(fp, DATA_DOOMDATA_OFFSET, SEEK_SET);
 	// currently in physics region!
@@ -680,24 +680,19 @@ void __near Z_LoadBinaries() {
 	P_InitThinkers_addr =		 		(uint32_t)(P_InitThinkers);
 	P_CreateThinker_addr =		 		(uint32_t)(P_CreateThinker);
 	
-	P_RemoveMobj_addr =		 			(uint32_t)(P_RemoveMobj);
 	P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
 	P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);
 
 	Z_SetOverlay_addr =	 				(uint32_t)(Z_SetOverlay);
 	W_LumpLength_addr =	 				(uint32_t)(W_LumpLength);
-	// Z_QuickMapMusicPageFrame_addr =     (uint32_t)(Z_QuickMapMusicPageFrame);
 
 	FixedMulTrigNoShift_addr =			(uint32_t)(FixedMulTrigNoShift);
 	R_PointToAngle2_16_addr =			(uint32_t)(R_PointToAngle2_16);
 	R_PointToAngle2_addr =				(uint32_t)(R_PointToAngle2);
 	P_UseSpecialLine_addr =				(uint32_t)(P_UseSpecialLine);
 	P_DamageMobj_addr =					(uint32_t)(P_DamageMobj);
-	P_SetMobjState_addr =				(uint32_t)(P_SetMobjState);
 	P_CrossSpecialLine_addr =			(uint32_t)(P_CrossSpecialLine);
 	P_ShootSpecialLine_addr =			(uint32_t)(P_ShootSpecialLine);
-	P_SpawnMobj_addr =					(uint32_t)(P_SpawnMobj);
-	P_SpawnPuff_addr =					(uint32_t)(P_SpawnPuff);
 	P_TouchSpecialThing_addr =			(uint32_t)(P_TouchSpecialThing);
 
 
@@ -707,7 +702,6 @@ void __near Z_LoadBinaries() {
 	FixedMulTrigSpeedNoShift_addr =		(uint32_t)(FixedMulTrigSpeedNoShift);
 	FixedMulTrigSpeed_addr =			(uint32_t)(FixedMulTrigSpeed);
 	FixedMulTrig_addr =					(uint32_t)(FixedMulTrig);
-	P_NoiseAlert_addr =					(uint32_t)(P_NoiseAlert);
 
 
 	G_ExitLevel_addr =					(uint32_t)(G_ExitLevel);

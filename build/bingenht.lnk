@@ -68,14 +68,12 @@ file s_sound.obj
 
 file p_ceilng.obj
 file p_doors.obj
-file p_enemy.obj
 file p_floor.obj
 file p_inter.obj
 file p_lights.obj
 file p_plats.obj
 file p_spec.obj
 file p_switch.obj
-file p_mobj.obj
 file p_telept.obj
 file p_tick.obj
 file p_user.obj
@@ -107,5 +105,6 @@ file p_setup.obj
 NEWSEGMENT
 file p_sight.obj
 file p_map.obj
-file p_mobja.obj
+file p_mobj.obj
 file p_pspr.obj
+file p_enemy.obj

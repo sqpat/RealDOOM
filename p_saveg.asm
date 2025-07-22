@@ -476,9 +476,8 @@ dw _I_Error_addr
 call_removemobj:
 mov       ax, di
 ;call      P_RemoveMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_RemoveMobj_addr
+db    09Ah
+dw    P_REMOVEMOBJOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 check_next_thinker_to_zero:

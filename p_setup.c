@@ -558,7 +558,6 @@ void __far G_PlayerReborn();
 
 
 
-void __far P_SpawnMapThing(mapthing_t mthing, int16_t key);
 
 
 //

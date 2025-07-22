@@ -28,6 +28,9 @@ EXTRN P_Random_MapLocal_:NEAR   ; except this is really near
 EXTRN P_LineAttack_:NEAR
 EXTRN P_SpawnPlayerMissile_:NEAR
 EXTRN P_AimLineAttack_:NEAR   ; except this is really near
+EXTRN P_SetMobjState_:NEAR         ; except this is really near
+EXTRN P_NoiseAlert_:NEAR         ; except this is really near
+EXTRN P_SpawnMobj_:NEAR          
 
 
 .DATA
@@ -230,20 +233,16 @@ push  bx
 push  dx
 mov   dx, S_PLAY_ATK1
 mov   ax, word ptr ds:[_playerMobj]
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+push  cs
+call  P_SetMobjState_
+
 mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_atkstate]
 xor   ax, ax
 call  P_SetPsprite_
-;call  P_NoiseAlert_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_NoiseAlert_Addr
+call  P_NoiseAlert_
 
 
 pop   dx
@@ -285,10 +284,9 @@ jne   dont_use_atk1_or_atk2_state
 use_atk1_or_atk2_state:
 mov   dx, S_PLAY
 mov   ax, word ptr ds:[_playerMobj]
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+push  cs
+call  P_SetMobjState_
+
 dont_use_atk1_or_atk2_state:
 
 cmp   byte ptr ds:[_player + PLAYER_T.player_readyweapon], WP_CHAINSAW
@@ -465,10 +463,9 @@ PUBLIC A_GunFlash_
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+push  cs
+call  P_SetMobjState_
+
 mov   al, SIZEOF_WEAPONINFO_T
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
@@ -918,11 +915,8 @@ dw _S_StartSound_addr
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
 
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
-
+push  cs
+call  P_SetMobjState_
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]
 mov   ax, PS_FLASH
@@ -954,11 +948,8 @@ dw _S_StartSound_addr
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
 
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
-
+push  cs
+call  P_SetMobjState_
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)]
 mov   ax, PS_FLASH
@@ -995,10 +986,8 @@ dw _S_StartSound_addr
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+push  cs
+call  P_SetMobjState_
 
 ;    player.ammo[weaponinfo[player.readyweapon].ammo]-=2;
 
@@ -1095,10 +1084,8 @@ je    exit_fire_cgun
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
-;call  P_SetMobjState_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SetMobjState_addr
+push  cs
+call  P_SetMobjState_
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]
 mov   dx, word ptr ds:[_weaponinfo + (WP_CHAINGUN * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
@@ -1286,11 +1273,8 @@ mov   cx, es
 push  ss
 pop   ds
 
-;call  P_SpawnMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_SpawnMobj_addr
-
+push  cs
+call  P_SpawnMobj_
 
 mov   cx, 15
 mov   dx, cx  ; add 1 15 times up front here (instead of inc in loop)
