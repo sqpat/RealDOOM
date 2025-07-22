@@ -17,20 +17,15 @@
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
+P_SIGHT_STARTMARKER_ = 0 
 
 
-
-EXTRN G_ExitLevel_:PROC
-EXTRN P_RemoveThinker_:NEAR
-EXTRN G_PlayerReborn_:PROC
-
-EXTRN Z_QuickMapScratch_8000_:PROC
-EXTRN Z_QuickMapPhysicsCode_:PROC
-EXTRN Z_QuickMapPhysics_:PROC
-EXTRN Z_QuickMapStatus_:PROC
-EXTRN HU_Start_:PROC
-EXTRN ST_Start_:PROC
-EXTRN S_StopSoundMobjRef_:PROC
+;EXTRN G_ExitLevel_:PROC
+;EXTRN HU_Start_:PROC
+;EXTRN ST_Start_:PROC
+;EXTRN P_RemoveThinker_:NEAR
+;EXTRN G_PlayerReborn_:PROC
+;EXTRN S_StopSoundMobjRef_:PROC
 
 
 .DATA
@@ -89,7 +84,7 @@ add   si, ax
 adc   di, dx
 
 mov   al, byte ptr es:[bx+2]
-mov   byte ptr cs:[SELFMODIFY_set_rnd_value_3+1], al  
+mov   byte ptr cs:[SELFMODIFY_set_rnd_value_3+1 - OFFSET P_SIGHT_STARTMARKER_], al  
 
 pop   bx
 pop   dx
@@ -205,6 +200,8 @@ PUBLIC P_SpawnPlayer_
 
 push      bx
 push      cx
+push      dx
+push      si
 
 mov       bx, ax
 
@@ -214,7 +211,10 @@ push      word ptr ds:[bx + MAPTHING_T.mapthing_angle]  ; for later
 
 cmp       byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
 jne       dont_player_reborn
-call      G_PlayerReborn_
+;call      G_PlayerReborn_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _G_PlayerReborn_addr
 dont_player_reborn:
 
 xor       bx, bx
@@ -300,15 +300,35 @@ dw        P_BRINGUPWEAPONFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 
-call      Z_QuickmapStatus_
+;call      Z_QuickmapStatus_
+Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_STATUS
 
-call      ST_Start_
-call      HU_Start_
 
-call      Z_QuickMapPhysics_
-call      Z_QuickMapScratch_8000_   ; // gross, due to p_setup.... perhaps externalize.
-call      Z_QuickMapPhysicsCode_
+;call      ST_Start_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _ST_Start_addr
 
+;call      HU_Start_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _HU_Start_addr
+
+
+
+;call      Z_QuickMapPhysics_
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_PHYSICS
+;call     Z_QuickMapScratch_8000_   ; // gross, due to p_setup.... perhaps externalize.
+Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
+;call     Z_QuickMapPhysicsCode_
+Z_QUICKMAPAI2 pageswapargs_physics_code_offset_size INDEXED_PAGE_9400_OFFSET
+
+pop       si
+pop       dx
 pop       cx
 pop       bx
 ret       
@@ -985,10 +1005,18 @@ db        09Ah
 dw        P_UNSETTHINGPOSITIONOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 mov       ax, cx
-call      S_StopSoundMobjRef_
+;call      S_StopSoundMobjRef_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StopSoundMobjRef_addr
+
        
 pop       ax  ; restore div result (mobjref)
-call      P_RemoveThinker_
+;call      P_RemoveThinker_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _P_RemoveThinker_addr
+
 
 pop       dx
 pop       cx

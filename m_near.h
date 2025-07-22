@@ -403,7 +403,8 @@
 #define I_Error_addr                      (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B4)))
 #define P_InitThinkers_addr               (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B8)))
 #define P_CreateThinker_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05BC)))
-// #define P_SetThingPosition_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C0)))
+#define S_StopSoundMobjRef_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C0)))
+
 #define P_RemoveMobj_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
 #define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
 #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
@@ -525,7 +526,16 @@
 
 // 89b
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x08A0)))
+
+#define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x089C)))
+#define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08A0)))
+#define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x08A4)))
+#define P_RemoveThinker_addr 			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08A8)))
+#define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08AC)))
+#define EV_DoDoor_addr     				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08B0)))
+#define EV_DoFloor_addr		     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08B4)))
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x08C0)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))

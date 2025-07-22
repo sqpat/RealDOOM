@@ -461,6 +461,12 @@ void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
 segment_t __far R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
 segment_t __far R_GetCompositeTexture(int16_t tex_index) ;
+void __far ST_Start(void) ;
+void __far G_PlayerReborn ();
+
+
+
+void __far G_ExitLevel (void);
  
 void __near Z_LoadBinaries() {
 	int16_t i;
@@ -704,6 +710,14 @@ void __near Z_LoadBinaries() {
 	P_NoiseAlert_addr =					(uint32_t)(P_NoiseAlert);
 
 
+	G_ExitLevel_addr =					(uint32_t)(G_ExitLevel);
+	HU_Start_addr =						(uint32_t)(HU_Start);
+	ST_Start_addr =						(uint32_t)(ST_Start);
+	P_RemoveThinker_addr =				(uint32_t)(P_RemoveThinker);
+	G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);
+	S_StopSoundMobjRef_addr =			(uint32_t)(S_StopSoundMobjRef);
+ 	EV_DoDoor_addr =					(uint32_t)(EV_DoDoor);
+ 	EV_DoFloor_addr =					(uint32_t)(EV_DoFloor);
 
 }
 

@@ -118,7 +118,7 @@ typedef struct thinker_s {
 void __near* __far P_CreateThinker(uint16_t thinkfunc);
 
 void __near P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
-void __near P_RemoveThinker(THINKERREF thinkerRef);
+void __far  P_RemoveThinker(THINKERREF thinkerRef);
 
 #define THINKER_SIZE sizeof(thinker_t)
 #define GETTHINKERREF(a) ((((uint16_t)((byte __near*)a - (byte __near*)thinkerlist))-4)/THINKER_SIZE)

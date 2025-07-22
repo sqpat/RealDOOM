@@ -322,7 +322,7 @@ void S_ResumeSound(void) {
     }
 }
 
-void S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
+void far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
 	
 	int8_t cnum;
 
@@ -352,7 +352,7 @@ void S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
 
 }
 
-void S_StopSoundMobjRef(mobj_t __near* origin) {
+void far S_StopSoundMobjRef(mobj_t __near* origin) {
 	
 	int8_t cnum;
 	if (origin){

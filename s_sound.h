@@ -76,8 +76,8 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 
 
 // Stop sound for thing at <origin>
-void S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum);
-void S_StopSoundMobjRef(mobj_t __near* origin);
+void far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum);
+void far S_StopSoundMobjRef(mobj_t __near* origin);
 
 
 // Start music using <music_id> from sounds.h

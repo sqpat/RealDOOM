@@ -371,7 +371,7 @@ _bmaporgy =				             _NULL_OFFSET + 005B2h
 _I_Error_addr =                      _NULL_OFFSET + 005B4h
 _P_InitThinkers_addr =               _NULL_OFFSET + 005B8h
 _P_CreateThinker_addr =              _NULL_OFFSET + 005BCh
-;_P_SetThingPosition_addr =           _NULL_OFFSET + 005C0h
+_S_StopSoundMobjRef_addr =           _NULL_OFFSET + 005C0h
 _P_RemoveMobj_addr =                 _NULL_OFFSET + 005C4h
 _P_AddActiveCeiling_addr =           _NULL_OFFSET + 005C8h
 _P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
@@ -483,7 +483,16 @@ _weaponinfo = 			 			 _NULL_OFFSET + 00838h
 
 ;89b
 
-_flatcache_nodes =				     _NULL_OFFSET + 008A0h
+_G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0089Ch
+_HU_Start_addr = 			 	 	 _NULL_OFFSET + 008A0h
+_ST_Start_addr = 			 	 	 _NULL_OFFSET + 008A4h
+_P_RemoveThinker_addr = 			 _NULL_OFFSET + 008A8h
+_G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 008ACh
+_EV_DoDoor_addr = 			 	 	 _NULL_OFFSET + 008B0h
+_EV_DoFloor_addr = 			 	 	 _NULL_OFFSET + 008B4h
+;8b8
+_flatcache_nodes =				     _NULL_OFFSET + 008C0h
+
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
 CURRENT_POSITION_2 =   			      (_spritecache_nodes  + (SIZEOF_CACHE_NODE_PAGE_COUNT_T * NUM_SPRITE_CACHE_PAGES))

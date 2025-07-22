@@ -267,16 +267,16 @@ typedef struct {
 // #define VDOORSPEED		FRACUNIT*2
 #define VDOORWAIT		150
 
-void EV_VerticalDoor (int16_t linenum, THINKERREF thingRef );
+void __near EV_VerticalDoor (int16_t linenum, THINKERREF thingRef );
 
-int16_t EV_DoDoor (uint8_t linetag, vldoor_e type );
+int16_t __far EV_DoDoor (uint8_t linetag, vldoor_e type );
 
-int16_t EV_DoLockedDoor (uint8_t linetag, int16_t linepsecial, vldoor_e type, THINKERREF thingRef);
+int16_t __near EV_DoLockedDoor (uint8_t linetag, int16_t linepsecial, vldoor_e type, THINKERREF thingRef);
 
 void __near T_VerticalDoor(vldoor_t __near* door, THINKERREF doorRef);
-void P_SpawnDoorCloseIn30 (int16_t secnum);
+void __near P_SpawnDoorCloseIn30 (int16_t secnum);
 
-void P_SpawnDoorRaiseIn5Mins ( int16_t secnum );
+void __near P_SpawnDoorRaiseIn5Mins ( int16_t secnum );
 
  
 
@@ -405,7 +405,7 @@ typedef uint8_t result_e;
 
 result_e __near T_MovePlane ( sector_t __far* sector, short_height_t	speed,short_height_t	dest,boolean	crush,int16_t		floorOrCeiling,int16_t		direction );
 int16_t __near EV_BuildStairs (uint8_t linetag, stair_e	type );
-int16_t __near EV_DoFloor (uint8_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
+int16_t __far EV_DoFloor (uint8_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
 void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef);
 
 //

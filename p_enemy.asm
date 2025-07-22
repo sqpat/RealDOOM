@@ -23,10 +23,9 @@ INSTRUCTION_SET_MACRO
 P_SIGHT_STARTMARKER_ = 0 
 
 EXTRN P_Random_:NEAR
-EXTRN G_ExitLevel_:PROC
-
-EXTRN EV_DoDoor_:PROC
-EXTRN EV_DoFloor_:NEAR
+;EXTRN G_ExitLevel_:PROC
+;EXTRN EV_DoDoor_:PROC
+;EXTRN EV_DoFloor_:NEAR
 
 .DATA
 
@@ -605,7 +604,7 @@ push  word ptr es:[di + MOBJ_POS_T.mp_x + 2] ; bp - 6
 push  word ptr es:[di + MOBJ_POS_T.mp_x + 0] ; bp - 8
 
 
-jmp   word ptr cs:[bx + OFFSET _p_move_dir_switch_table]
+jmp   word ptr cs:[bx + OFFSET _p_move_dir_switch_table - OFFSET P_SIGHT_STARTMARKER_]
 
 
 switch_movedir_0:
@@ -806,7 +805,7 @@ mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   al, byte ptr ds:[si + MOBJ_T.m_movedir]
 cbw
 mov   bx, ax
-mov   ah, byte ptr cs:[bx + _opposite] ; todo make cs?
+mov   ah, byte ptr cs:[bx + _opposite - OFFSET P_SIGHT_STARTMARKER_] ; todo make cs?
 push  ax  ; bp - 2. both movedir and opposite.
 push  ax  ; garbage push instead of sub sp 2 to hold d[1] d[2]
 
@@ -937,7 +936,7 @@ movedir_set:
 push  ax  ; store deltax lo.
 
 
-mov   al, byte ptr cs:[si + _diags]  ; do diags lookup. todo make cs table
+mov   al, byte ptr cs:[si + _diags - OFFSET P_SIGHT_STARTMARKER_]  ; do diags lookup. todo make cs table
 mov   si, es    ; restore mobj ptr.
 
 mov   byte ptr ds:[si + MOBJ_T.m_movedir], al
@@ -1302,7 +1301,11 @@ jne   loop_next_thinker_keendie
 ; done iteratng
 mov   dx, DOOR_OPEN
 mov   ax, TAG_666
-call  EV_DoDoor_
+;call  EV_DoDoor_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _EV_DoDoor_addr
+
 exit_keen_die:
 LEAVE_MACRO 
 ret   
@@ -3203,7 +3206,7 @@ xor   bh, bh
 sal   bx, 1 ; jump word index...
 mov   si, OFFSET _viletryx
 
-jmp   word ptr cs:[bx + OFFSET _vilechase_lookup_table]
+jmp   word ptr cs:[bx + OFFSET _vilechase_lookup_table - OFFSET P_SIGHT_STARTMARKER_]
 jump_to_do_chase_and_exit:
 jmp   do_chase_and_exit
 vile_switch_movedir_0:
@@ -3736,7 +3739,7 @@ xchg  ax, bx
 sal   bx, 1
 xor   ax, ax
 cwd
-jmp   word ptr cs:[bx + _vile_momz_lookuptable]
+jmp   word ptr cs:[bx + _vile_momz_lookuptable - OFFSET P_SIGHT_STARTMARKER_]
 vilemomz_ret_2:
 inc   dx
 inc   dx
@@ -4660,7 +4663,11 @@ cmp   byte ptr ds:[_gamemap], 8
 jmp   generic_shared_jne_weird
 
 do_floor_and_exit:
-call  EV_DoFloor_
+;call  EV_DoFloor_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _EV_DoFloor_addr
+
 exit_a_bossdeath_3:
 ret   
 
@@ -4743,7 +4750,11 @@ mov   dx, -1
 mov   ax, TAG_667
 jmp   do_floor_and_exit
 do_exit_level:
-call  G_ExitLevel_
+;call  G_ExitLevel_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _G_ExitLevel_addr
+
 exit_a_bossdeath:
 ret   
 
@@ -5649,7 +5660,7 @@ mov       ax, si
 
 PUSHA_NO_AX_MACRO
 
-call      word ptr cs:[di + OFFSET setmobjstate_jump_table] ; subtract lowest value
+call      word ptr cs:[di + OFFSET setmobjstate_jump_table - OFFSET P_SIGHT_STARTMARKER_]
 
 POPA_NO_AX_MACRO
 
@@ -5731,7 +5742,11 @@ jmp       done_with_mobj_state_action
 
 
 PROC      A_DoBrainDie_ NEAR
-call      G_ExitLevel_
+;call      G_ExitLevel_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _G_ExitLevel_addr
+
 ret
 ENDP
 
